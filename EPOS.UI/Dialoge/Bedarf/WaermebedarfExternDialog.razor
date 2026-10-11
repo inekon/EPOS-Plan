@@ -168,6 +168,11 @@
             </span>
             @if (IstKuehlkanal)
             {
+                @* KWN-0: die Art der Kaeltezeile (Raum/Prozess) neben der Kanalwahl, nur im Kanal Kuehlung. *@
+                <span class="epos-zweispalten-kanal" title="@HinweisKaelteArt">
+                    <Auswahlfeld Bezeichnung="@KaelteArtBezeichnung" Eintraege="@KaelteArteintraege"
+                                 Auswahl="@KaelteArtindex" AuswahlChanged="KaelteArtWaehlen" />
+                </span>
                 <span class="epos-zweispalten-kanalhinweis" title="@HinweisKanalKuehlung">@HinweisKanalKuehlung</span>
             }
         </ProjektKopf>
@@ -615,6 +620,19 @@
     /// </summary>
     [Parameter] public string HinweisKanalKuehlung { get; set; } = Resource.WBX_HRL_KANAL_KUEHLUNG;
 
+    /// <summary>Beschriftung der Art einer Kältezeile (KWN-0, <c>KAELTE_ART_LABEL</c>).</summary>
+    [Parameter] public string KaelteArtBezeichnung { get; set; } = Resource.KAELTE_ART_LABEL;
+
+    /// <summary>Tooltipp der Art (<c>KAELTE_ART_HINWEIS</c>).</summary>
+    [Parameter] public string HinweisKaelteArt { get; set; } = Resource.KAELTE_ART_HINWEIS;
+
+    /// <summary>
+    /// Die Arten einer Kältezeile (KWN-0): Steuerwert und Anzeigetext — Raumkühlung (Vorgabe) und Prozesskälte.
+    /// </summary>
+    [Parameter]
+    public IReadOnlyList<(string Wert, string Text)> KaelteArten { get; set; }
+        = new[] { (DbWerte.KAELTE_ART_RAUM, Resource.KAELTE_ART_RAUM), (DbWerte.KAELTE_ART_PROZESS, Resource.KAELTE_ART_PROZESS) };
+
     /// <summary>Steht die markierte Zuordnung auf dem Kanal „Kühlung"? Prüfhilfe für die Tests.</summary>
     public bool IstKuehlkanal
         => _gewaehlt is not null
@@ -905,7 +923,7 @@
         // Kanaleintraege kennt nur dieser Dialog.
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEBEDARF_EXTERN,
                                           () => _gewaehlt, KiHaken(),
-                                          ("kanal", Kanalwahleintraege));
+                                          ("kanal", Kanalwahleintraege), ("kaelte_art", KaelteArtwahleintraege));
     }
 
     // =================================================================================
@@ -917,6 +935,10 @@
     /// <summary>Die drei Bedarfskanäle für den Assistenten (KI-D-Q6).</summary>
     private IReadOnlyList<KiWahleintrag> Kanalwahleintraege()
         => KiMaskenanmeldung.Eintraege(Kanaele, k => k.Wert, k => k.Text);
+
+    /// <summary>Die Arten einer Kältezeile für den Assistenten (KWN-0).</summary>
+    private IReadOnlyList<KiWahleintrag> KaelteArtwahleintraege()
+        => KiMaskenanmeldung.Eintraege(KaelteArten, k => k.Wert, k => k.Text);
 
     /// <summary>
     /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
@@ -1075,6 +1097,30 @@
     // =================================================================================
     // Kanal
     // =================================================================================
+
+    /// <summary>Die Art der markierten Kältezeile; leer oder unbekannt fällt auf den ersten Eintrag (Raum).</summary>
+    private int? KaelteArtindex
+    {
+        get
+        {
+            if (_gewaehlt is null) return 0;
+            for (int i = 0; i < KaelteArten.Count; i++)
+                if (string.Equals(KaelteArten[i].Wert, _gewaehlt.KaelteArt, StringComparison.OrdinalIgnoreCase)) return i;
+            return 0;
+        }
+    }
+
+    private IReadOnlyList<(int Id, string Text)> KaelteArteintraege
+        => KaelteArten.Select((a, i) => (i, a.Text)).ToList();
+
+    /// <summary>KWN-0: setzt die Art der markierten Kältezeile.</summary>
+    private void KaelteArtWaehlen(int? index)
+    {
+        if (_gewaehlt is null || index is null) return;
+        if (index.Value < 0 || index.Value >= KaelteArten.Count) return;
+        _gewaehlt.KaelteArt = KaelteArten[index.Value].Wert;
+        Geaendert?.Invoke();
+    }
 
     private void KanalWaehlen(int? index)
     {

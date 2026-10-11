@@ -3481,6 +3481,24 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrSa + " - vollstaendig: " + SchnellaufheizungSchema.Vollstaendig() +
                                   ", Einstellungen mit Schalter: " + SchnellaufheizungSchema.ZeilenMitSchalter() + " (erwartet True, 0).");
             }
+
+            // ---- Schritt KaelteArtSchema.SCHRITT (KWN-0): Art der Kaeltebedarfszeilen - Kaelte_Art (RAUM/PROZESS, Vorgabe
+            //      RAUM) an Z_Projekt_Kaeltebedarf und Z_ProjektWaermebedarf. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_KaelteArt.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jede Bestandszeile steht auf RAUM; ohne Prozesszeile aendert sich keine Zahl.
+            string nrKwn = KaelteArtSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKwn + " - Art der Kaeltebedarfszeilen: " + (KaelteArtSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKwn = new List<string>();
+                angelegt += KaelteArtSchema.Ausfuehren(berichtKwn);
+                foreach (string zeile in berichtKwn)
+                    Console.WriteLine("Schritt " + nrKwn + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKwn + " - vollstaendig: " + KaelteArtSchema.Vollstaendig() +
+                                  ", Zeilen mit Prozesskaelte: " + KaelteArtSchema.ZeilenMitProzess() + " (erwartet True, 0).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

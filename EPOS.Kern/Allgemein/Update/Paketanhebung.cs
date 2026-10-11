@@ -429,6 +429,9 @@ namespace WindowsFormsApplication1
             // Ergebnisspalten bleiben leer.
             new Stufe(SchnellaufheizungSchema.SCHRITT, Art.Ddl,
                       "Schnellaufheizung des Vorheizens (Schalter, Raumsollwert-Überhöhung; Ergebnisse je Gebäude und Zone)"),
+            // Ein älteres Paket führt keine Art der Kältebedarfszeilen; seine Zeilen kommen als Raumkühlung an (Vorgabe).
+            new Stufe(KaelteArtSchema.SCHRITT, Art.Ddl,
+                      "Art der Kältebedarfszeilen (Raumkühlung oder Prozesskälte) an Profil- und Lastgangzuordnung"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

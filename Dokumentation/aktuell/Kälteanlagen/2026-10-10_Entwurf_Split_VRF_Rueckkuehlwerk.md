@@ -367,10 +367,50 @@ Rücklauf: auf AK3 der gerechnete Kühlrücklauf der Stunde, sonst Vorlauf + Aus
 (5.3) statt Ersatz-EER, sobald `Ventilator_Nenn_kW` gesetzt ist; sonst Ersatz-EER wie heute. Vorbild für den Mischbetrieb ist
 die freie Kühlung über die Wärmequelle (`Kaeltekaskade.cs`, Weg KU3-6). `PARALLEL` rechnet wie heute.
 
+**Festlegungen K-F3** (gebaut in `Kaeltemaschine.StundeReihe` und `Rueckkuehlwerk.TeilFreikuehlungKwh`, Vorgabe in
+`KaelteFestwerte`):
+
+- **Schwelle:** Die Teil-Freikühlung greift, wenn θ_FK ≤ θ_R − 3 K, verglichen über `Rechenrand.SchwelleErreicht` (Schwelle
+  θ_R − 3 K, Wert θ_FK, als Untergrenze vertauscht). θ_FK ist die Rückkühltemperatur mit Nenn-Annäherung — an ihr fällt die
+  Entscheidung, wie bei `PARALLEL`.
+- **Annahme: Spreizung konstant, Kaltwasserstrom folgt der Last.** Der Massenstrom ist der der Stunde, ṁ·c_p = Last / (θ_R − θ_V);
+  der Vorkühler kühlt den Rücklauf höchstens auf θ_FK und deckt den Temperaturanteil der Last, ohne Iteration (c_p kürzt
+  sich): Q̇_FK = min(Last · clamp((θ_R − θ_FK) / (θ_R − θ_V), 0, 1), Rückkühlerleistung). θ_FK am Vorlauf oder darunter deckt
+  die ganze Last; eine Spreizung der Stunde ≤ 0 (über `Rechenrand`) gibt keine Teil-Freikühlung. Beispiel: θ_V 7 °C,
+  θ_R 17 °C, θ_FK 13 °C, Last 40 % → 40 % der Last frei. Die Variante mit konstantem Massenstrom (Nenn-Massenstrom bei
+  wechselndem Rücklauf) ist ausdrücklich **nicht** gebaut.
+- **Rückkühlerleistung** = `Nennleistung_kW` des Rückkühlwerks; leer die Nennkälteleistung der Anlagenzeile (die Grenze der
+  parallelen freien Kühlung).
+- **Rücklauf:** auf AK3 der Kühlrücklauf der Lösung der Stunde, kühlleistungsgewichtet über die Zonen mit Kühlübergabe; sonst
+  (und in einer Stunde ohne kühlende Zone) Vorlauf + Δθ. Ein Rücklauf unter dem Vorlauf zählt als Vorlauf.
+- **Spreizung Δθ:** je Gebäude mit `Kuehluebergabe_Aktiv` und bekannter Art `Kuehl_Auslegung_Ruecklauf − Kuehl_Auslegung_Vorlauf`
+  (leer die Vorgabe der Übergabeart wie im Gebäudemodell), über die Gebäude die kleinste positive; ohne Kühlübergabe
+  `REIHE_SPREIZUNG_K` = 5 K. Der Lauf nennt Spreizung und Herkunft einmal je Anlage.
+- **Mischstunde:** Der Verdichter deckt den Rest am Kaltwasservorlauf mit seinem EER an der Rückkühltemperatur der Stunde (mit
+  `LASTABHAENGIG` genau ein Schätzschritt wie in K-F2); Randwert, Takt und Teillast bleiben die seinen. Die Bilanz des
+  Rückkühlwerks trägt Vorkühl- und Verflüssigerwärme (Abwärme = Kälte + Verdichterstrom).
+- **Platz in der Kältefolge:** Eine Stunde, in der der Rückkühler schon unter Vorlauf − 3 K liegt, rechnet die Maschine wie
+  `PARALLEL` vor dem Kältespeicher (die Vorkühlung deckt dann bis zum Tauscher, den Rest der eigene Verdichter); jede andere
+  Stunde an ihrem Platz nach dem Speicher, wie KU3-6.
+- **Strom der freien Kühlung:** mit `Ventilator_Nenn_kW` allein der Ventilator nach K-F2 (taktend an der Nenn-Annäherung, bzw.
+  Laufanteil des Verdichters unter `LASTABHAENGIG`) — der EER-Ersatz entfällt, auch bei `PARALLEL`. Ohne Ventilator EER-Ersatz
+  15 und Hilfsstrom der Rückkühlung nach Laufanteil (Vorkühlung Q̇_FK / Q̇_Nenn, zusammen mit dem Verdichter höchstens der
+  Nennhilfsstrom).
+- **Ergebnisse:** Eine Stunde ganz aus dem Rückkühler zählt als freie Kühlung (`FreieKuehlung_MWh`, `_Stunden`), die Vorkühlung
+  einer Mischstunde als Teil-Freikühlung (`TeilFreikuehlung_MWh`, `_Stunden`; nur mit `REIHE`, sonst NULL) — keine Kälte
+  zählt doppelt. Der Jahres-EER ohne Hilfsstrom zieht beide von der Kälteproduktion ab. Kennzahlen `kaelte.rk.teilfrei` und
+  `kaelte.rk.teilfrei_stunden`, Berichtskatalog v22 (`FASSUNG_TEILFREIKUEHLUNG`).
+
+| Größe | Vorgabe | Quelle bzw. Begründung |
+|---|---|---|
+| `REIHE_SPREIZUNG_K` | 5 K | Normbedingung Kaltwasser 12/7 °C der DIN EN 14511-2 (Flüssigkeitskühlsätze, Anwendung Gebläsekonvektor) — Quelle nicht am Wortlaut geprüft (vorläufig) |
+| Mindestabstand | 3 K | `FREIE_KUEHLUNG_ABSTAND_K` der parallelen freien Kühlung (K8), unverändert übernommen |
+| EER-Ersatz | 15 | `FREIE_KUEHLUNG_EER` (K8), unverändert übernommen |
+
 ### 5.6 Byte-Gleichheit
 
 Drei Schalter halten die Basis: kein Rückkühlwerk gewählt → heutiger Weg; Rückkühlwerk mit leeren Feldern → Festwerte;
-`PARALLEL` → heutige freie Kühlung. **Gleichwertigkeitsprobe:** eine Kopie von 1055 mit einem Rückkühlwerk
+`PARALLEL` ohne `Ventilator_Nenn_kW` → heutige freie Kühlung (mit Ventilator ersetzt dessen Strom den EER-Ersatz, K-F3). **Gleichwertigkeitsprobe:** eine Kopie von 1055 mit einem Rückkühlwerk
 `TROCKEN`/`FEST`/leer/`PARALLEL` rechnet byte-gleich zu 1055 (Datenbanktest, nicht in der Basis).
 
 ### 5.7 Optional: Wasser aus einer Quelle

@@ -230,6 +230,35 @@ namespace WindowsFormsApplication1
         /// </summary>
         public KaeltemaschinenStunde MitRueckkuehlung(double hilfs, RueckkuehlwerkStunde r) => new KaeltemaschinenStunde(this, hilfs, r);
 
+        /// <summary>
+        /// K-F3: Kälte der Teil-Freikühlung in einer Mischstunde [kWh] — der Anteil, den der Rückkühler in Reihe vorgekühlt
+        /// hat, während der Verdichter den Rest deckte; Teil von <see cref="KaelteKwh"/>. 0 in einer Stunde ganz in freier
+        /// Kühlung (<see cref="FreieKuehlung"/>), ohne Verdichter und ohne Schaltung <c>REIHE</c>.
+        /// </summary>
+        public readonly double TeilFreiKwh;
+
+        /// <summary>K-F3: Kälte des Verdichters der Stunde [kWh] — <see cref="KaelteKwh"/> ohne die Teil-Freikühlung.</summary>
+        public double VerdichterKaelteKwh => KaelteKwh - TeilFreiKwh;
+
+        private KaeltemaschinenStunde(KaeltemaschinenStunde v, double kaelte, double verdichter, double hilfs, double kapazitaet,
+                                      bool frei, double teilFrei, RueckkuehlwerkStunde r)
+            : this(kaelte, verdichter, hilfs, kapazitaet, frei, v.Randwert, v.Takt, v.MehrstromKwh, v.Starts, v.Lastgrad,
+                   v.Extrapoliert, v.Laufend)
+        {
+            TeilFreiKwh = teilFrei;
+            MitRueckkuehlwerk = true;
+            Rueckkuehlung = r;
+        }
+
+        /// <summary>
+        /// K-F3: die Stunde einer Maschine mit Rückkühlwerk in Reihe — Verdichteranteil <paramref name="v"/> (Randwert, Takt,
+        /// Teillast bleiben seine) und die Summen der Stunde samt Teil-Freikühlung und Bilanz des Rückkühlwerks.
+        /// </summary>
+        internal static KaeltemaschinenStunde Reihenstunde(KaeltemaschinenStunde v, double kaelte, double verdichter,
+                                                           double hilfs, double kapazitaet, bool frei, double teilFrei,
+                                                           RueckkuehlwerkStunde r) =>
+            new KaeltemaschinenStunde(v, kaelte, verdichter, hilfs, kapazitaet, frei, teilFrei, r);
+
         /// <summary>Strom der Stunde [kWh] — Verdichter und Rückkühlung.</summary>
         public double StromKwh => VerdichterKwh + HilfsstromKwh;
     }
@@ -374,10 +403,116 @@ namespace WindowsFormsApplication1
         /// zweidimensionale Kennlinie trägt die Achse; mit <see cref="Kaltwassertemperatur"/> Zeichen für Zeichen
         /// <see cref="Stunde(int, double)"/>.
         /// </summary>
-        public KaeltemaschinenStunde Stunde(int h, double lastKwh, double kaltwasserC)
+        public KaeltemaschinenStunde Stunde(int h, double lastKwh, double kaltwasserC) =>
+            Stunde(h, lastKwh, kaltwasserC, double.NaN);
+
+        /// <summary>
+        /// K-F3 (Entwurf Split/VRF/Rückkühlwerk 5.5): eine Stunde mit dem Kaltwasserrücklauf der Stunde
+        /// <paramref name="ruecklaufC"/> [°C] — auf Stufe AK3 der gerechnete Kühlrücklauf, NaN = Vorlauf +
+        /// <see cref="ReiheSpreizungK"/>. Den Rücklauf liest nur ein Rückkühlwerk in Reihe; sonst Zeichen für Zeichen
+        /// <see cref="Stunde(int, double, double)"/>.
+        /// </summary>
+        public KaeltemaschinenStunde Stunde(int h, double lastKwh, double kaltwasserC, double ruecklaufC)
         {
             if (Rueckkuehlwerk == null) return StundeBei(h, lastKwh, kaltwasserC, RueckkuehltemperaturDerStunde(h));
+            if (Rueckkuehlwerk.Reihe) return StundeReihe(h, lastKwh, kaltwasserC, ruecklaufC);
             return StundeMitRueckkuehlwerk(h, lastKwh, kaltwasserC);
+        }
+
+        /// <summary>
+        /// K-F3: Auslegungsspreizung des Kaltwassers [K] für die Teil-Freikühlung in Reihe — die kleinste gepflegte Spreizung
+        /// der Kühlübergabe der Gebäude (<c>Kuehl_Auslegung_Ruecklauf − Kuehl_Auslegung_Vorlauf</c>), ohne Kühlübergabe
+        /// <see cref="KaelteFestwerte.REIHE_SPREIZUNG_K"/>. Bezug des Rücklaufs ohne AK3 (Vorlauf + Spreizung).
+        /// </summary>
+        public double ReiheSpreizungK = KaelteFestwerte.REIHE_SPREIZUNG_K;
+
+        /// <summary>
+        /// Kühlt die Maschine in Stunde <paramref name="h"/> parallel frei (heutige freie Kühlung)? In Reihe nie — dort trägt
+        /// <see cref="StundeReihe"/> die freie Kühlung als Vorkühlung des Rücklaufs.
+        /// </summary>
+        private bool ParallelFrei(int h, double kaltwasserC) =>
+            (Rueckkuehlwerk == null || !Rueckkuehlwerk.Reihe) && FreieKuehlung(h, kaltwasserC);
+
+        /// <summary>
+        /// K-F3: der Kaltwasserrücklauf der Stunde [°C] — <paramref name="ruecklaufC"/> (AK3), sonst Vorlauf +
+        /// <see cref="ReiheSpreizungK"/>; nie unter dem Vorlauf.
+        /// </summary>
+        internal double RuecklaufDerStunde(double kaltwasserC, double ruecklaufC)
+        {
+            double r = double.IsNaN(ruecklaufC) || double.IsInfinity(ruecklaufC) ? kaltwasserC + ReiheSpreizungK : ruecklaufC;
+            return r < kaltwasserC ? kaltwasserC : r;
+        }
+
+        /// <summary>
+        /// K-F3 (Entwurf 5.5): eine Stunde mit Rückkühlwerk in Reihe. Liegt die Fluidtemperatur des Rückkühlers (Bezug +
+        /// Nenn-Annäherung) mindestens <see cref="KaelteFestwerte.FREIE_KUEHLUNG_ABSTAND_K"/> unter dem Rücklauf, kühlt er ihn
+        /// vor: Q̇_FK = min(Last · clamp((θ_R − θ_FK) / (θ_R − θ_V), 0, 1), Rückkühlerleistung) — der Kaltwasserstrom folgt der Last (<see cref="Rueckkuehlwerk.TeilFreikuehlungKwh"/>;
+        /// Rückkühlerleistung = <c>Nennleistung_kW</c> des Rückkühlwerks, leer die Nennkälteleistung der Anlagenzeile). Den
+        /// Rest deckt der Verdichter am Kaltwasservorlauf mit seinem EER an der Rückkühltemperatur der Stunde (mit
+        /// <c>LASTABHAENGIG</c> genau ein Schätzschritt wie in K-F2) — Vorbild ist die freie Kühlung über die Wärmequelle
+        /// (KU3-6). Strom der freien Kühlung: mit <c>Ventilator_Nenn_kW</c> allein der Ventilator (die Bilanz des Rückkühlwerks
+        /// trägt Vorkühl- und Verflüssigerwärme), sonst der EER-Ersatz <see cref="KaelteFestwerte.FREIE_KUEHLUNG_EER"/> und der
+        /// Hilfsstrom der Rückkühlung nach Laufanteil (zusammen mit dem Verdichteranteil höchstens der Nennhilfsstrom).
+        /// </summary>
+        private KaeltemaschinenStunde StundeReihe(int h, double lastKwh, double kaltwasserC, double ruecklaufC)
+        {
+            Rueckkuehlwerk r = Rueckkuehlwerk;
+            if (!(lastKwh > 0)) return default;
+            int anzahl = Math.Max(1, Anzahl);
+            double nenn = NennleistungKw * anzahl;
+            double rkNenn = RueckkuehltemperaturDerStunde(h);
+            double fk = FreieKuehlungMoeglich
+                ? Rueckkuehlwerk.TeilFreikuehlungKwh(lastKwh, kaltwasserC, RuecklaufDerStunde(kaltwasserC, ruecklaufC),
+                                                     rkNenn, r.NennleistungKw ?? nenn)
+                : 0.0;
+            if (!(fk > 0)) return StundeMitRueckkuehlwerk(h, lastKwh, kaltwasserC);
+
+            double rest = lastKwh - fk;
+            if (rest < Rechenrand.ABSOLUT) rest = 0.0;
+            double rk = rkNenn;
+            KaeltemaschinenStunde v = rest > 0 ? Verdichterstunde(h, rest, kaltwasserC, rkNenn, out rk) : default;
+            bool verdichter = v.KaelteKwh > 0;
+            double kaelte = verdichter ? fk + v.KaelteKwh : fk;
+            double abwaerme = verdichter ? kaelte + v.VerdichterKwh : fk;
+            double kap = verdichter ? v.KapazitaetKw : nenn;
+            double lauf = r.Lastabhaengig && verdichter ? LaufanteilDerStunde(v) : double.NaN;
+            RueckkuehlwerkStunde b = r.Stunde(h, abwaerme, kaelte, kap, verdichter ? rk : rkNenn, lauf);
+
+            double strom, hilfs;
+            if (r.MitVentilator)
+            {
+                strom = v.VerdichterKwh;
+                hilfs = b.VentilatorKwh;
+            }
+            else
+            {
+                strom = v.VerdichterKwh + fk / KaelteFestwerte.FREIE_KUEHLUNG_EER;
+                hilfs = v.HilfsstromKwh + (NennleistungKw > 0 ? HilfsstromRueckkuehlungKw * fk / NennleistungKw : 0.0);
+                double hilfsMax = HilfsstromRueckkuehlungKw * anzahl;
+                if (hilfs > hilfsMax) hilfs = hilfsMax;
+            }
+            return KaeltemaschinenStunde.Reihenstunde(v, kaelte, strom, hilfs, kap, !verdichter, verdichter ? fk : 0.0, b);
+        }
+
+        /// <summary>
+        /// K-F2/K-F3: die Verdichterstunde mit Rückkühlwerk — an der Nenn-Rückkühltemperatur <paramref name="rkNenn"/>, mit
+        /// <c>LASTABHAENGIG</c> genau ein Schätzschritt über die Abwärme; <paramref name="rk"/> ist die Rückkühltemperatur, mit
+        /// der die Stunde gerechnet wurde.
+        /// </summary>
+        private KaeltemaschinenStunde Verdichterstunde(int h, double lastKwh, double kaltwasserC, double rkNenn, out double rk)
+        {
+            Rueckkuehlwerk r = Rueckkuehlwerk;
+            rk = rkNenn;
+            KaeltemaschinenStunde s = StundeBei(h, lastKwh, kaltwasserC, rkNenn);
+            if (!(s.KaelteKwh > 0)) return s;
+            if (r.Lastabhaengig && !s.FreieKuehlung)
+            {
+                double x0 = r.Lastanteil(s.KaelteKwh + s.VerdichterKwh, s.KaelteKwh, s.KapazitaetKw);
+                rk = r.RueckkuehltemperaturLastabhaengig(rkNenn, x0);
+                if (BitConverter.DoubleToInt64Bits(rk) != BitConverter.DoubleToInt64Bits(rkNenn))
+                    s = StundeBei(h, lastKwh, kaltwasserC, rk);
+            }
+            return s;
         }
 
         /// <summary>Die Rückkühltemperatur der Stunde mit Nenn-Annäherung [°C]; ohne Reihe die des fremden Kühlwassers.</summary>
@@ -389,7 +524,7 @@ namespace WindowsFormsApplication1
         private KaeltemaschinenStunde StundeBei(int h, double lastKwh, double kaltwasserC, double rk)
         {
             // KM3: nur mit Teillast_Weg oder Randweg GUETEGRAD der neue Weg; freie Kühlung bleibt unverändert.
-            if (MitWeg && lastKwh > 0 && !FreieKuehlung(h, kaltwasserC)) return StundeMitWeg(h, lastKwh, kaltwasserC, rk);
+            if (MitWeg && lastKwh > 0 && !ParallelFrei(h, kaltwasserC)) return StundeMitWeg(h, lastKwh, kaltwasserC, rk);
             if (Anzahl <= 1) return StundeEinzeln(h, lastKwh, kaltwasserC, rk);
             KaeltemaschinenStunde s = StundeEinzeln(h, lastKwh / Anzahl, kaltwasserC, rk);
             return new KaeltemaschinenStunde(s.KaelteKwh * Anzahl, s.VerdichterKwh * Anzahl, s.HilfsstromKwh * Anzahl,
@@ -402,28 +537,20 @@ namespace WindowsFormsApplication1
         /// bildet die lastabhängige Rückkühltemperatur und rechnet die Stunde damit GENAU EINMAL neu — deterministisch, ohne
         /// Iteration. In freier Kühlung gilt die Nenn-Annäherung (die Entscheidung fiel an ihr). Dann die Bilanz des
         /// Rückkühlwerks; mit gepflegtem Ventilator ersetzt sein Strom den Hilfsstrom der Rückkühlung.
+        /// K-F3: In freier Kühlung (<c>PARALLEL</c>) mit gepflegtem Ventilator ist der Ventilator der ganze Strom der freien
+        /// Kühlung — der EER-Ersatz entfällt; ohne Ventilator bleibt er wie heute.
         /// </summary>
         private KaeltemaschinenStunde StundeMitRueckkuehlwerk(int h, double lastKwh, double kaltwasserC)
         {
             Rueckkuehlwerk r = Rueckkuehlwerk;
-            double rkNenn = RueckkuehltemperaturDerStunde(h);
-            KaeltemaschinenStunde s = StundeBei(h, lastKwh, kaltwasserC, rkNenn);
+            KaeltemaschinenStunde s = Verdichterstunde(h, lastKwh, kaltwasserC, RueckkuehltemperaturDerStunde(h), out double rk);
             if (!(s.KaelteKwh > 0)) return s;
-            double rk = rkNenn;
-            if (r.Lastabhaengig && !s.FreieKuehlung)
-            {
-                double x0 = r.Lastanteil(s.KaelteKwh + s.VerdichterKwh, s.KaelteKwh, s.KapazitaetKw);
-                rk = r.RueckkuehltemperaturLastabhaengig(rkNenn, x0);
-                if (BitConverter.DoubleToInt64Bits(rk) != BitConverter.DoubleToInt64Bits(rkNenn))
-                {
-                    s = StundeBei(h, lastKwh, kaltwasserC, rk);
-                    if (!(s.KaelteKwh > 0)) return s;
-                }
-            }
             double abwaerme = s.FreieKuehlung ? s.KaelteKwh : s.KaelteKwh + s.VerdichterKwh;
             // Der Laufanteil zählt nur an der lastabhängigen Annäherung (EIN_AUS läuft dann voll, solange die Maschine läuft).
             double lauf = r.Lastabhaengig && !s.FreieKuehlung ? LaufanteilDerStunde(s) : double.NaN;
             RueckkuehlwerkStunde b = r.Stunde(h, abwaerme, s.KaelteKwh, s.KapazitaetKw, rk, lauf);
+            if (r.MitVentilator && s.FreieKuehlung)
+                return KaeltemaschinenStunde.Reihenstunde(s, s.KaelteKwh, 0.0, b.VentilatorKwh, s.KapazitaetKw, true, 0.0, b);
             return s.MitRueckkuehlung(r.MitVentilator ? b.VentilatorKwh : s.HilfsstromKwh, b);
         }
 
@@ -448,7 +575,7 @@ namespace WindowsFormsApplication1
         {
             if (!(lastKwh > 0)) return default;
 
-            if (FreieKuehlung(h, kaltwasserC))
+            if (ParallelFrei(h, kaltwasserC))
             {
                 double kap = NennleistungKw;
                 if (!(kap > 0)) return default;

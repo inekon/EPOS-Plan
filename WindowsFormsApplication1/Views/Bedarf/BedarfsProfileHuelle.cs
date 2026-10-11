@@ -149,6 +149,7 @@ namespace WindowsFormsApplication1
                 {
                     IdZ = m.ID_Z, IdStamm = m.ID_Kaeltebedarf, Name = m.Bezeichner ?? "", Summe = m.Summe,
                     Vorlauf = m.Vorlauf, Ruecklauf = m.Ruecklauf, TemperaturGeaendert = m.TemperaturGeaendert,
+                    KaelteArt = KaelteArtSchema.Normal(m.KaelteArt),
                     KalenderId = m.ID_Betriebskalender
                 });
 
@@ -163,6 +164,7 @@ namespace WindowsFormsApplication1
                         : new Z_ProjektKaeltebedarfModel { ID_Z = z.IdZ, ID_Projekt = projektId };
                     m.ID_Kaeltebedarf = z.IdStamm; m.Bezeichner = z.Name; m.Summe = z.Summe;
                     m.Vorlauf = z.Vorlauf; m.Ruecklauf = z.Ruecklauf; m.TemperaturGeaendert = z.TemperaturGeaendert;
+                    m.KaelteArt = KaelteArtSchema.Normal(z.KaelteArt);
                     m.ID_Betriebskalender = z.KalenderId;
                     modelle.Add(m);
                 }
@@ -465,7 +467,15 @@ namespace WindowsFormsApplication1
             // Kälte (Konzept Kältebedarf 3.3): das Temperaturpaar als Angabe wie bei der Prozesswärme,
             // mit der Prüfung des Kältebedarfs (Kaltwasser auch unter 0 °C).
             if (art == BedarfsArt.Kaelte)
+            {
                 gaben["TemperaturPruefen"] = new Func<double?, double?, string>(KaeltebedarfSchema.Paarpruefung);
+                // KWN-0: die Art der Kaeltezeile (Raum/Prozess) - Steuerwert und Anzeigetext getrennt.
+                gaben["KaelteArten"] = (IReadOnlyList<(string Wert, string Text)>)new[]
+                {
+                    (DbWerte.KAELTE_ART_RAUM, MyResource.Resource.KAELTE_ART_RAUM),
+                    (DbWerte.KAELTE_ART_PROZESS, MyResource.Resource.KAELTE_ART_PROZESS),
+                };
+            }
 
             // Brauchwasser (5.2): Das OK schreibt Zuordnungen und Zapfprofil in EINEM Vorgang,
             // BEVOR der Dialog schliesst - lehnt der Schreibweg ab, bleibt er offen und nennt den

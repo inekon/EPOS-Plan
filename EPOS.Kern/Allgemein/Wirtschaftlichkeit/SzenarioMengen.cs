@@ -191,6 +191,9 @@ namespace WindowsFormsApplication1
                         Wasser_m3 = Mal(km.Wasser_m3, f),
                         Stunden_Nass = km.Stunden_Nass,
                         Rueckkuehltemperatur_Mittel = km.Rueckkuehltemperatur_Mittel,
+                        // K-F3: die Kälte der Teil-Freikühlung skaliert als Menge, die Stunden bleiben.
+                        TeilFreikuehlung_MWh = Mal(km.TeilFreikuehlung_MWh, f),
+                        TeilFreikuehlung_Stunden = km.TeilFreikuehlung_Stunden,
                     });
 
             if (m.BHKW != null)

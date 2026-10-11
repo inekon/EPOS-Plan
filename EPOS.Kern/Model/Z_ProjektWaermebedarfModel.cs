@@ -59,6 +59,13 @@ namespace WindowsFormsApplication1
         /// <summary>Eigener Zähler des Split-Stroms.</summary>
         public bool KuehlEigenerZaehler;
 
+        /// <summary>
+        /// Art der Kältebedarfszeile (KWN-0, Schritt <see cref="KaelteArtSchema.SCHRITT"/>): <see cref="KaelteArtSchema.RAUM"/>
+        /// (Vorgabe) oder <see cref="KaelteArtSchema.PROZESS"/>. Prozesskälte bleibt im Kühlkanal und wird als Unterposten
+        /// <c>Kaeltebedarf_Prozess</c> mitgeführt.
+        /// </summary>
+        public string KaelteArt = KaelteArtSchema.RAUM;
+
         public Z_ProjWaermebedarfModel()
         {
             items = null;
