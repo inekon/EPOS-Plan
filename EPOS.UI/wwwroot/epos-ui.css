@@ -4300,7 +4300,7 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 .epos-zweispalten-inhalt--zeilenwahl table.epos-raster.quickgrid > tbody > tr > td.epos-spalte-zeilenzelle { padding: 0; }
 /* Die Projektzeile behaelt ihr Mass (53 px, Kompaktstufe 46 px - Zweispaltenauswahl.ZEILE, nach dem die
    Trennlinie rechnet); nur die Klickflaeche fuellt sie jetzt ganz. */
-.epos-zweispalten-inhalt--zeilenwahl .epos-zeilenzelle {
+.epos-zweispalten-inhalt--zeilenwahl .epos-zeilenzelle.epos-projektzeile {
     height: calc(53px * var(--epos-zeilenskala, 1) - 1px);
     line-height: calc(53px * var(--epos-zeilenskala, 1) - 1px);
 }
