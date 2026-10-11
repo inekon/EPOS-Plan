@@ -176,4 +176,64 @@ public class UeberDialogTests : EposBunitContext
         leiste.QuerySelector("button")!.Click();
         Assert.False(geschlossen);
     }
+
+    private IRenderedComponent<UeberDialog> ZeigePaket(Func<bool, Task<SupportpaketAnzeige>>? speichern)
+        => Render<UeberDialog>(p => p
+            .Add(x => x.Daten, Daten())
+            .Add(x => x.SupportpaketSpeichern, speichern));
+
+    [Fact]
+    public void Ohne_Rueckruf_kein_Supportpaket()
+    {
+        var cut = ZeigePaket(null);
+
+        Assert.Empty(cut.FindAll(".epos-ueber-supportpaket-knopf"));
+        Assert.Empty(cut.FindAll(".epos-ueber-ki-haken"));
+    }
+
+    [Fact]
+    public void Der_Klick_uebergibt_den_Haken_Vorgabe_aus()
+    {
+        var haken = new List<bool>();
+        var cut = ZeigePaket(mitKi =>
+        {
+            haken.Add(mitKi);
+            return Task.FromResult(SupportpaketAnzeige.Abgebrochen);
+        });
+
+        Assert.False(cut.Find(".epos-ueber-ki-haken input").HasAttribute("checked"));
+        cut.Find(".epos-ueber-supportpaket-knopf").Click();
+        cut.Find(".epos-ueber-ki-haken input").Change(true);
+        cut.Find(".epos-ueber-supportpaket-knopf").Click();
+
+        Assert.Equal(new[] { false, true }, haken);
+        Assert.Empty(cut.FindAll(".epos-ueber-paketergebnis"));
+    }
+
+    [Fact]
+    public void Die_Ergebniszeile_zeigt_Pfad_Enthalten_und_Fehlend()
+    {
+        var erg = new SupportpaketAnzeige("/tmp/paket.zip", new[] { "Diagnosedaten.txt", "Ausnahmen.txt" },
+                                          new[] { "Ausnahmen.alt.txt" }, "");
+        var cut = ZeigePaket(_ => Task.FromResult(erg));
+
+        cut.Find(".epos-ueber-supportpaket-knopf").Click();
+
+        string text = cut.Find(".epos-ueber-paketergebnis").TextContent;
+        Assert.Contains("/tmp/paket.zip", text);
+        Assert.Contains("Diagnosedaten.txt, Ausnahmen.txt", text);
+        Assert.Contains("Nicht vorhanden: Ausnahmen.alt.txt", text);
+    }
+
+    [Fact]
+    public void Ein_Schreibfehler_steht_im_Banner()
+    {
+        var erg = new SupportpaketAnzeige("", Array.Empty<string>(), Array.Empty<string>(), "Zugriff verweigert");
+        var cut = ZeigePaket(_ => Task.FromResult(erg));
+
+        cut.Find(".epos-ueber-supportpaket-knopf").Click();
+
+        Assert.Contains("Zugriff verweigert", cut.Markup);
+        Assert.Empty(cut.FindAll(".epos-ueber-paketergebnis"));
+    }
 }

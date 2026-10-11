@@ -3,7 +3,7 @@
 **Für wen.** INEKON — Entwicklung und Support. Nicht für Anwender; nichts aus diesem Handbuch kommt
 ins Wiki, und die Entwicklerbereiche werden in der Anwenderdokumentation nicht erwähnt.
 
-**Stand.** 11.10.2026, Stufen 1 und 2 umgesetzt (11.10.2026, #972 und #973), Stufe 3a (Über und Diagnose) umgesetzt, 3b offen; Konzeptstand nach den Anwenderentscheiden AS-Q1 bis AS-Q10
+**Stand.** 11.10.2026, Stufen 1 und 2 umgesetzt (11.10.2026, #972 und #973), Stufe 3 (3a Über und Diagnose, 3b Supportpaket) umgesetzt; Konzeptstand nach den Anwenderentscheiden AS-Q1 bis AS-Q10
 ([`Konzept_Administration_Support_EPOS-Plan.md`](Konzept_Administration_Support_EPOS-Plan.md)).
 Jeder Abschnitt trägt die Stufe, ab der er gilt: **[heute]** vorhanden, **[Stufe 1]**
 Entwicklermodus, **[Stufe 2]** Fernwartung, **[Stufe 3]** Dialog „Über EPOS-Plan" und
@@ -119,7 +119,7 @@ stehen für alle Anwender in der Rubrik „Zapfprofil" des Einstellungsdialogs (
 |---|---|---|
 | `Ausnahmen.txt`, `Ausnahmen.alt.txt` | `%ProgramData%\EPOS_PLAN\Logs\` (Rückfall `%TEMP%\EPOS_PLAN\Logs\`) | jede ausgelöste .NET-Ausnahme sofort mit Aufrufstapel (`AppDomain.FirstChanceException`), dazu unbehandelte Ausnahmen und unbeobachtete Aufgaben; höchstens 20 Einträge je Sekunde, Wechsel bei 200 KB, nie mehr als zwei Dateien; Kopfzeile je Lauf mit Version und Prozess-Id. Nur Windows (`Program.Main`). |
 | `migration_protokoll.txt` | neben der Datenbank | je Start überschrieben; bei Fehlschlag nennt die Startmeldung den Pfad |
-| `ki_aktionen.txt` | neben der Datenbank, ab Stufe 3 in `Logs\` | Aktionen des Hilfe-Assistenten, wächst ohne Rotation |
+| `ki_aktionen.txt` | neben der Datenbank (das Supportpaket sucht zuerst in `Logs\`, dann daneben) | Aktionen des Hilfe-Assistenten, wächst ohne Rotation |
 | `Tab_Katalogabgleich` | in der Datenbank | eine Zeile je Abgleichaktion |
 | `<paket>.importbericht.txt` | neben dem Projektpaket | nur beim Projektimport |
 
@@ -130,7 +130,7 @@ WebView2 herausgelaufen. Die Ursache steht in `Logs\Ausnahmen.txt` — der letzt
 Kopf des nächsten Laufs. Diese Datei anfordern, nicht den Weg raten (Fallstricke in
 `WindowsFormsApplication1/CLAUDE.md`).
 
-### 3.3 Diagnosedaten [heute] und Supportpaket [Stufe 3b]
+### 3.3 Diagnosedaten und Supportpaket [heute]
 
 Den Diagnoseblock findet der Anwender unter *Hilfe → Version* im Dialog „Über EPOS-Plan" (unter dem
 Kopf mit Produktname, Claim, Version mit Baudatum und INEKON) als nur lesbares Textfeld; ebenso in
@@ -146,13 +146,30 @@ Quelle. Knöpfe unter dem Block: „Diagnosedaten kopieren" (Zwischenablage) und
 öffnen" (Windows; der Explorer im Ordner `Logs` neben der Datenbank, `Diagnosedaten.ProtokollordnerPfad`;
 fehlt der Ordner, sagt eine Meldung den Pfad). Darunter der Kontakt (Telefon, E-Mail als
 `mailto:`-Link, Erreichbarkeit) mit dem Knopf „Fernwartung…", der den Fernwartungsdialog öffnet.
-„Supportpaket speichern…" kommt mit Stufe 3b.
 
-Das Supportpaket ist eine ZIP-Datei mit `Diagnosedaten.txt`, `Ausnahmen.txt`,
-`Ausnahmen.alt.txt`, `migration_protokoll.txt` und dem Auszug aus `Tab_Katalogabgleich` — ohne
-Projektdaten; `ki_aktionen.txt` nur mit eigenem Haken, weil es Eingaben des Anwenders enthalten
-kann. Der Anwender hängt die Datei an seine E-Mail. Das ist der Supportweg ohne Fernwartung und
-steht auch der Testversion offen.
+**Supportpaket.** Unter dem Diagnoseblock stehen der Haken „KI-Protokoll beilegen" (Vorgabe aus,
+mit dem Hinweis, dass das Protokoll Eingaben des Anwenders an den Assistenten enthalten kann) und
+der Knopf „Supportpaket speichern…". Unter Windows öffnet er eine Nachricht später den
+Speicherdialog im Dokumentenordner mit dem Vorgabenamen `EPOS-Plan_Supportpaket_<yyyy-MM-dd_HHmm>.zip`
+und dem Filter ZIP; Abbruch schreibt nichts. Danach zeigt der Dialog eine Ergebniszeile mit Pfad,
+enthaltenen Einträgen und den Quellen, die es nicht gab — oder im Banner die Meldung des
+Schreibfehlers. Der Anwender hängt die Datei an seine E-Mail; das ist der Supportweg ohne
+Fernwartung und steht auch der Testversion offen.
+
+| Eintrag im Paket | Quelle |
+|---|---|
+| `Diagnosedaten.txt` | der Diagnoseblock, wie der Dialog ihn zeigt |
+| `Ausnahmen.txt`, `Ausnahmen.alt.txt` | Protokollordner `Logs\` neben der Datenbank (`Diagnosedaten.ProtokollordnerPfad`) |
+| `migration_protokoll.txt` | neben der Datenbank (Rückfall `Logs\`) |
+| `Katalogabgleich.txt` | die jüngsten 2 000 Zeilen von `Tab_Katalogabgleich`, neueste zuerst, tabulatorgetrennt mit Spaltenköpfen (über `Katalogabgleich.Protokoll`, kein eigenes SQL) |
+| `ki_aktionen.txt` | nur mit Haken; `Logs\`, sonst neben der Datenbank |
+
+Fehlt eine Quelle (kein Absturz bisher, keine Migration, Tabelle nicht vorhanden), ist das kein
+Fehler: Sie steht in der Ergebniszeile unter „Nicht vorhanden". **Datenschutz:** Das Paket nimmt
+nur diese benannten Einträge auf — nie Projektdaten, nie die Datenbank oder eine andere
+`.sqlite`-Datei; die Diagnosedaten nennen Lizenznummer, Firma und Datenbankpfad, wie der Block im
+Dialog. Das KI-Protokoll kann Eingaben des Anwenders enthalten und kommt deshalb nur mit dem Haken
+hinein. EPOS-Plan versendet das Paket nicht selbst.
 
 ### 3.4 Wo der Support sonst nachsieht [heute]
 
@@ -244,6 +261,7 @@ vom iPad ist bis dahin Telefon und E-Mail.
 | `LizenzCtrlTests` | `FernwartungErlaubt` für die vier Lesarten | 2 |
 | bunit `FernwartungDialog` | gesperrt und frei; Knopf ruft die Adresse | 2 |
 | `DiagnosedatenTests`, bunit `UeberDialog` | Textblock vollständig; Geste schaltet | 3 |
+| `SupportpaketTests` (Kern), bunit `UeberDialog` | Paket mit Diagnosedaten, vorhandene Protokolle drin, fehlende benannt, KI-Protokoll nur mit Haken, nie `.sqlite`, Schreibfehler benannt; ohne Rückruf kein Knopf, Klick übergibt den Haken, Ergebniszeile | 3 |
 
 Laufen wie üblich über den Kern-Filter:
 
@@ -280,6 +298,7 @@ dotnet build WindowsFormsApplication1/WindowsFormsApplication1.csproj -c Debug -
 | Geste des Entwicklermodus | `UeberFenster` (Abfang über `BlazorDialogForm.Befehlstaste`), `WindowsFormsApplication1/Views/Entwicklung/EntwicklungHuelle.cs` (`GesteUmschalten`) | heute |
 | Diagnosedaten | `EPOS.Kern/Allgemein/Diagnose/Diagnosedaten.cs` (`Textblock`, `ProtokollordnerPfad`) | heute |
 | Tests des Über-Dialogs | `EPOS.UI.Tests/Dialoge/UeberDialogTests.cs`, `EPOS.Kern.Tests/DiagnosedatenTests.cs` | heute |
+| Supportpaket | `EPOS.Kern/Allgemein/Support/Supportpaket.cs` (`Erstellen`, `Vorgabename`, `Supportpaketergebnis`), Anzeigeform `SupportpaketAnzeige` in `EPOS.UI/Dialoge/Hilfe/UeberDaten.cs`, Hülle `UeberHuelle.SupportpaketSpeichern`, Speicherdialog in `UeberFenster.SupportpaketSpeichern`, Tests `EPOS.Kern.Tests/SupportpaketTests.cs`; der Haken steht in `KiDialogAusnahmen` (Grund Export) | heute |
 | Maschinenweite Werte | `EPOS.Kern/Allgemein/Dienste/IEinstellungen.cs` (`LiesMaschine`), `WindowsFormsApplication1/Dienste/RegistryEinstellungen.cs` | heute |
 
 
@@ -289,7 +308,7 @@ dotnet build WindowsFormsApplication1/WindowsFormsApplication1.csproj -c Debug -
 |---|---|---|
 | 1 | Entwicklermodus, Entwicklerbereiche, Menükopf „Entwicklung", Projektdatei verborgen | umgesetzt (11.10.2026, #972); die Zapfprofil-Vorgaben sind Anwenderrubrik „Zapfprofil" statt Entwicklerbereich |
 | 2 | Fernwartung unter Windows: Menüpunkt, Dialog, Lizenzbedingung, Fernwartungsseite; Zuarbeit INEKON: Server, Client, Seite, Signatur. Das iPad ist zurückgestellt | umgesetzt (11.10.2026, #973); offen beim Anwender: Fernwartungsseite, Server, signierter Client |
-| 3 | Dialog „Über EPOS-Plan", Diagnosedaten, Supportpaket | 3a umgesetzt (Dialog, Diagnoseblock, Geste im Dialog); 3b Supportpaket offen |
+| 3 | Dialog „Über EPOS-Plan", Diagnosedaten, Supportpaket | umgesetzt: 3a (Dialog, Diagnoseblock, Geste im Dialog), 3b (Supportpaket) |
 | 4 | Supportvertrag im Lizenz-Token (`support_bis`) | offen, auf Zuruf |
 
 

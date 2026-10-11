@@ -52923,5 +52923,39 @@ chart</value>
   <data name="UEB_SCHLIESSEN" xml:space="preserve">
     <value>Close</value>
   </data>
+  <!-- Administration und Support, Stufe 3 (Welle 3b) -->
+  <data name="SUP_PAKET_KNOPF" xml:space="preserve">
+    <value>Save support package…</value>
+  </data>
+  <data name="SUP_PAKET_HAKEN" xml:space="preserve">
+    <value>Include AI log</value>
+  </data>
+  <data name="SUP_PAKET_HAKEN_HINWEIS" xml:space="preserve">
+    <value>The AI log may contain what you entered for the assistant.</value>
+  </data>
+  <data name="SUP_PAKET_HINWEIS" xml:space="preserve">
+    <value>The support package contains the diagnostic data and the program logs, no project data and no database. Attach the file to your e-mail to support.</value>
+  </data>
+  <data name="SUP_PAKET_GESPEICHERT" xml:space="preserve">
+    <value>Support package saved: {0}</value>
+  </data>
+  <data name="SUP_PAKET_ENTHALTEN" xml:space="preserve">
+    <value>Included: {0}</value>
+  </data>
+  <data name="SUP_PAKET_FEHLEND" xml:space="preserve">
+    <value>Not present: {0}</value>
+  </data>
+  <data name="SUP_PAKET_FEHLER" xml:space="preserve">
+    <value>The support package could not be saved: {0}</value>
+  </data>
+  <data name="SUP_PAKET_KEIN_ZIEL" xml:space="preserve">
+    <value>No target given for the support package.</value>
+  </data>
+  <data name="SUP_PAKET_DIALOGTITEL" xml:space="preserve">
+    <value>Save support package</value>
+  </data>
+  <data name="SUP_PAKET_DATEIFILTER" xml:space="preserve">
+    <value>ZIP archive (*.zip)|*.zip</value>
+  </data>
 </root>
 
