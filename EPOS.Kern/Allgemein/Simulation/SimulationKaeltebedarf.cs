@@ -78,6 +78,41 @@ namespace WindowsFormsApplication1
         /// <summary>Strom der dezentralen Deckung je Stunde [kWh] = Q_dez / EER(θ_e) (Konzept 4.2).</summary>
         public double[] Strom_Dezentral = new double[STUNDEN];
 
+        /// <summary>
+        /// <b>Der Unterposten Prozesskälte</b> [kWh je Stunde] (KWN-0, Konzept Kühlung 5.6.9; E127/KWN-Q7): die Lastgang- und
+        /// Profilzeilen mit <c>Kaelte_Art = PROZESS</c>, zentral und dezentral gedeckt. Er ist KEIN fünfter Kanal: Die Reihe
+        /// steht im Kühlkanal wie zuvor (der Kanal bleibt Zeichen für Zeichen, wie er war), der Unterposten zählt sie nur
+        /// mit. Der Raumanteil ist der Rest (<see cref="Kaeltebedarf_Raum"/>). Ohne Prozesszeile steht er auf 0.
+        /// </summary>
+        public double[] Kaeltebedarf_Prozess = new double[STUNDEN];
+
+        /// <summary>Der dezentral (Split) gedeckte Teil des Unterpostens Prozesskälte [kWh je Stunde] — er geht nicht an die Kaskade.</summary>
+        private readonly double[] _prozessDezentral = new double[STUNDEN];
+
+        /// <summary>Jahressumme des Unterpostens Prozesskälte [MWh]; 0 ohne Prozesszeile (KWN-0).</summary>
+        public double Kaeltebedarf_Prozess_Mwh = 0;
+
+        /// <summary>Hat eine Zeile mit <c>Kaelte_Art = PROZESS</c> gebucht? (KWN-0)</summary>
+        public bool MitProzess { get; private set; }
+
+        /// <summary>
+        /// Der Raumkühlanteil der Stunde <paramref name="h"/> [kWh] (KWN-0, 5.6.2): Kühlkanal minus Unterposten Prozesskälte.
+        /// Ohne Prozesszeile ist er der Kühlkanal selbst.
+        /// </summary>
+        public double Kaeltebedarf_Raum(int h) => MitProzess ? Kaeltebedarf[h] - Kaeltebedarf_Prozess[h] : Kaeltebedarf[h];
+
+        /// <summary>
+        /// <b>Die Prozesskälte der Stunde für die Kaskade</b> [kWh = kW im Stundenmittel] (KWN-0): der zentral gedeckte
+        /// Unterposten — die Belegung der Naht <c>Kaelteschranke.Prozesskaelte</c> (Vorrang vor der Raumkühlung). Der
+        /// dezentral gedeckte Teil steht neben der Kaskade und zählt nicht.
+        /// </summary>
+        internal double ProzesskaelteDerKaskade(int h)
+        {
+            if (!MitProzess) return 0.0;
+            double q = Kaeltebedarf_Prozess[h] - _prozessDezentral[h];
+            return q > 0.0 ? q : 0.0;
+        }
+
         /// <summary>Jahressumme der Kältebedarfsprofile [MWh]; 0 ohne Profilzeile.</summary>
         public double Kaeltebedarf_Profil_Gesamt = 0;
 
@@ -288,6 +323,10 @@ namespace WindowsFormsApplication1
             Strom_Dezentral_Gesamt = 0;
             MitProfil = false;
             DezentraleZeilen.Clear();
+            Array.Clear(Kaeltebedarf_Prozess, 0, STUNDEN);
+            Array.Clear(_prozessDezentral, 0, STUNDEN);
+            Kaeltebedarf_Prozess_Mwh = 0;
+            MitProzess = false;
 
             Gerechnet = false;
             Array.Clear(Kaeltebedarf, 0, STUNDEN);
@@ -418,6 +457,13 @@ namespace WindowsFormsApplication1
             if (profil) { Kaeltebedarf_Profil_Gesamt += summe / 1000; MitProfil = true; }
             else Kaeltebedarf_Extern_Gesamt += summe / 1000;
 
+            // KWN-0: Prozesskälte bleibt im Kanal (oben) und geht zusätzlich in den Unterposten - kein fünfter Kanal.
+            if (deckung.Prozess)
+            {
+                for (int h = 0; h < STUNDEN; h++) Kaeltebedarf_Prozess[h] += werte[h];
+                MitProzess = true;
+            }
+
             if (!deckung.Split) return;
 
             // Split ohne rechnenden EER: benannter Abbruch im Abschluss (Konzept 4.4), kein stiller Strom 0.
@@ -438,6 +484,7 @@ namespace WindowsFormsApplication1
                 if (q == 0.0) continue;
                 double p = q / deckung.Eer(Aussentemperatur[h]);
                 Kaeltebedarf_Dezentral[h] += q;
+                if (deckung.Prozess) _prozessDezentral[h] += q;
                 Strom_Dezentral[h] += p;
                 zeile.Strom_stuendlich[h] = p;
                 zeile.KaelteKwh += q;
@@ -582,6 +629,9 @@ namespace WindowsFormsApplication1
                 for (int h = 0; h < STUNDEN; h++)
                     if (Kaelte_Dezentral_Max < Kaeltebedarf_Dezentral[h]) Kaelte_Dezentral_Max = Kaeltebedarf_Dezentral[h];
             }
+
+            // KWN-0: die Jahressumme des Unterpostens Prozesskälte.
+            if (MitProzess) Kaeltebedarf_Prozess_Mwh = Jahressumme(Kaeltebedarf_Prozess) / 1000.0;
 
             // Vor der Deckung ist die ungedeckte Kälte der Bedarf; die Kältekaskade (KU2) setzt
             // danach ihren Rest (DeckungUebernehmen). Der dezentral gedeckte Teil ist kein Rest (K3).
@@ -900,6 +950,13 @@ namespace WindowsFormsApplication1
             new Gegenstueck(null, "Jahres_EER_Dezentral", "K3", "Jahres-EER der dezentralen Deckung = Σ Q / Σ P."),
             new Gegenstueck(null, "MitDezentral", "K3", "Hat eine Zeile dezentral gerechnet? Spalten und Export nur mit Wert."),
             new Gegenstueck(null, "DezentraleZeilen", "K3", "Die Split-Zeilen mit Strom, Kühlträger und Zähler (Abrechnung)."),
+
+            // ---- KWN-0 (Konzept Kühlung 5.6.9): Prozesskälte als Unterposten des Kühlkanals ----
+            new Gegenstueck("Waermebedarf_Prozess_Stunde", "Kaeltebedarf_Prozess", "KWN-0",
+                            "Unterposten, kein eigener Kanal (KWN-Q7): Die Wärmeseite führt Prozesswärme als Kanal PROZESS."),
+            new Gegenstueck("Waermebedarf_Prozess", "Kaeltebedarf_Prozess_Mwh", "KWN-0", "Jahressumme des Unterpostens [MWh]."),
+            new Gegenstueck(null, "MitProzess", "KWN-0", "Hat eine Prozesszeile gebucht? Ohne sie bleibt jede Zahl, wie sie war."),
+            new Gegenstueck(null, "Kaeltebedarf_Raum", "KWN-0", "Raumkühlanteil = Kühlkanal − Prozesskälte (5.6.2)."),
         };
     }
 
