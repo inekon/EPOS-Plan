@@ -208,6 +208,18 @@ Fehlt dem gewählten Stromträger der Arbeitspreis, bleiben die Energiekosten au
 
 Die Zahlen des Kältebedarfs – Kältelast, Stunden mit Kühlbedarf, Überhitzungsstunden – beschreibt [[Programm Dokumentation/Kühlung#ergebnisse|Kühlung: Ergebnisse]].
 
+== Zulässigkeit des Kältemittels ==
+{{Anker|kaeltemittel-zulaessigkeit}}
+
+Mit einem gesetzten '''Inbetriebnahmejahr''' ([[Programm Dokumentation/Kurzanleitung|Projektdaten]]) prüft EPOS-Plan, ob das Kältemittel einer Kältemaschine oder Wärmepumpe zu dem Jahr noch zu den Stichtagen der Verordnung (EU) 2024/573 über fluorierte Treibhausgase (Anhang IV, Verbote des Inverkehrbringens) passt. Ohne Jahr entfällt die Prüfung.
+
+* '''Was geprüft wird:''' Kältemittel von Kühlern, in sich geschlossenen Geräten und Split-Geräten, je nach Leistungsband und Stichtag. Die Angaben des Kältemittels (GWP, F-Gas-Kennzeichen, Stoffklasse) kommen aus der Kältemittelliste ([[Programm Dokumentation/Gerätekataloge#kaeltemittel|Kältemittel]]).
+* '''Nur ein Hinweis:''' Anhang IV verbietet das Inverkehrbringen, nicht den Betrieb. EPOS-Plan warnt deshalb nur und sperrt nichts; Ausnahmen des Anhangs kennt die Prüfung nicht.
+* '''Nicht prüfbar:''' Fehlt eine Angabe – Kältemittel, GWP, F-Gas-Kennzeichen, Stoffklasse, Nennleistung oder Geräteklasse –, steht ''nicht prüfbar'' mit der fehlenden Größe. Sole-Wasser- und Wasser-Wasser-Wärmepumpen gelten als nicht prüfbar.
+* '''Wo der Hinweis steht:''' als Meldung im Simulationslauf, am Knoten der Kältebahn, im Bericht – dort trägt die Spalte ''Kältemittel'' einen Stern mit Fußnote – und als Zeile auf der Kachel ''Kühlung und Kälteanlagen''. Die Lesezeile ''Zulässigkeit'' im Anlagendialog nennt Ergebnis und Jahr.
+
+Die Prüfung ist eine Orientierung und ersetzt keine Rechtsberatung.
+
 == Grenzen ==
 {{Anker|grenzen}}
 
@@ -228,6 +240,7 @@ Kältefolge, Rückkühlung und freie Kühlung, Teillast und Takten der Kältemas
 * [[Grundlagen/Kühlung]] – Kälteerzeugung, EER, freie Kühlung, Teillast und Takten fachlich
 * [[Programm Dokumentation/Berechnung/Kühlung|Berechnung: Kühlung]] – der Rechenweg mit Formeln
 * [[Programm Dokumentation/Wärmepumpe]] – der Heizbetrieb derselben Maschine
+* [[Programm Dokumentation/Gerätekataloge#kaeltemittel|Gerätekataloge: Kältemittel]] – die Kältemittelliste
 * [[Programm Dokumentation/Gerätekataloge#kaeltemaschinen|Gerätekataloge]] – Verwaltung und Import der Kältemaschinen
 * [[Programm Dokumentation/Pufferspeicher]] – Speicherdialog, Schwellen und Ladeleistung
 

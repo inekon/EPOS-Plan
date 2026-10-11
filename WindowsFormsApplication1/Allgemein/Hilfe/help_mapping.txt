@@ -845,7 +845,7 @@ Form_Simulation_Config_Aufheizung.btn_Help = Gebäudemodell VDI 6007
 
 # Kaeltemaschine: Katalogdialog und Anlagendialog (KU3-4b).
 KaeltemaschineKatalog.btn_Help = Kälteerzeugung#kaeltemaschine-katalog
-Kaeltemittel.btn_Help = Gerätekataloge
+Kaeltemittel.btn_Help = Gerätekataloge#kaeltemittel
 KaeltemaschineAnlage.btn_Help = Kälteerzeugung#kaeltemaschine-anlage
 
 # Fernwartung (Hilfe, Fernwartung...): Dialog der Stufe 2.
