@@ -110,7 +110,8 @@ public class BhkwDialogTests : EposBunitContext
         Satzbearbeitungswege? projektsatzWege = null,
         Satzbearbeitungswege? katalogsatzWege = null,
         Rueckwegwege? rueckwegWege = null,
-        Func<ErzeugerZeile, (double Invest, double Betrieb)>? kostensumme = null)
+        Func<ErzeugerZeile, (double Invest, double Betrieb)>? kostensumme = null,
+        Schlossweg? schloss = null)
     {
         return Render<BhkwDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<ErzeugerZeile> { Zeile(1, "Modul A", 100) })
@@ -145,6 +146,7 @@ public class BhkwDialogTests : EposBunitContext
             .Add(x => x.KatalogsatzWege, katalogsatzWege)
             .Add(x => x.RueckwegWege, rueckwegWege)
             .Add(x => x.Kostensumme, kostensumme)
+            .Add(x => x.Schloss, schloss)
             .Add(x => x.Geschlossen, ok => geschlossen?.Invoke(ok)));
     }
 
@@ -190,10 +192,14 @@ public class BhkwDialogTests : EposBunitContext
     /// UeS2: Das Fragment des Satzes steht nur in der Satz-Überlagerung — „Bearbeiten" der
     /// Detailzeile öffnet sie (falls zu); zurück kommt ihr Körper.
     /// </summary>
+    /// <summary>„Bearbeiten…" der Knopfleiste am gewählten Satz (AW1), je nach Satzart.</summary>
+    private const string BEARBEITEN_AM_SATZ =
+        ".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt, .epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-katalog";
+
     private static AngleSharp.Dom.IElement Satz(IRenderedComponent<BhkwDialog> cut)
     {
         if (cut.FindAll(".epos-satzueberlagerung-koerper").Count == 0)
-            cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten").Click();
+            cut.Find(BEARBEITEN_AM_SATZ).Click();
         return cut.Find(".epos-satzueberlagerung-koerper");
     }
 
@@ -245,7 +251,7 @@ public class BhkwDialogTests : EposBunitContext
         // P: Summe kWth, Bearbeiten…, Entfernen - der Rueckweg nur mit seinen Wegen (S3b).
         var p = cut.Find(".epos-zweispalten-bereich--projekt > .epos-zweispalten-kopfleiste");
         Assert.Contains("120", p.QuerySelector(".epos-zweispalten-summe")!.TextContent);
-        Assert.NotNull(p.QuerySelector(".epos-knopf--bearbeiten-projekt"));
+        Assert.Null(p.QuerySelector(".epos-knopf--bearbeiten-projekt"));   // AW1: nur noch am Satz
         Assert.NotNull(p.QuerySelector(".epos-zweispalten-knopf--entfernen"));
         Assert.DoesNotContain(cut.FindAll("button"), k => k.TextContent.Contains("Datenbank übernehmen"));
 
@@ -257,14 +263,18 @@ public class BhkwDialogTests : EposBunitContext
 
         // K-Fuss: Vergleichen, Schloss, Loeschen, Bearbeiten nach dem Namen; Neu rechts.
         KatalogsatzWaehlen(cut);
-        var fuss = cut.Find(".epos-zweispalten-fussleiste").Children.ToList();
-        Assert.Equal("Modul A:", fuss[0].TextContent);
-        Assert.Contains(fuss, e => e.ClassList.Contains("epos-knopf--vergleichen"));
-        Assert.Contains(fuss, e => e.ClassList.Contains("epos-knopf--loeschen"));
-        Assert.Contains(fuss, e => e.ClassList.Contains("epos-knopf--bearbeiten-katalog"));
-        int fueller = fuss.FindIndex(e => e.ClassList.Contains("epos-leiste-fueller"));
-        Assert.True(fuss.FindIndex(e => e.ClassList.Contains("epos-knopf--neu")) > fueller);
-        Assert.True(fuss.FindIndex(e => e.ClassList.Contains("epos-knopf--bearbeiten-katalog")) < fueller);
+        // AW1: keine Fussleiste unter dem Katalog - Vergleichen, Schloss, Loeschen, Bearbeiten, Neu
+        // stehen in dieser Folge in der Knopfleiste am gewaehlten Satz.
+        Assert.Empty(cut.FindAll(".epos-zweispalten-fussleiste"));
+        var leiste = cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-satzknoepfe").Children.ToList();
+        string[] folge = { "epos-knopf--vergleichen", "epos-katalogschloss", "epos-knopf--loeschen",
+                           "epos-knopf--bearbeiten-katalog", "epos-knopf--neu" };
+        var namen = leiste.Select(e => folge.FirstOrDefault(f => e.ClassList.Contains(f)))
+                          .OfType<string>().ToList();
+        Assert.Equal(folge.Where(namen.Contains), namen);
+        Assert.Contains("epos-knopf--vergleichen", namen);
+        Assert.Contains("epos-knopf--bearbeiten-katalog", namen);
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten"));   // AW1: kein Stift
     }
 
     [Fact]
@@ -458,6 +468,7 @@ public class BhkwDialogTests : EposBunitContext
 
         KatalogAnkreuzen(cut, 0, 1);
         Assert.Equal(2, cut.Instance.KatalogWahl.Anzahl);
+        KatalogsatzWaehlen(cut);   // AW1: die Katalogknoepfe wirken, wenn ein Katalogsatz gewaehlt ist
         cut.Find(".epos-knopf--bearbeiten-katalog").Click();
 
         Assert.False(cut.Instance.EditorOffen);
@@ -488,6 +499,7 @@ public class BhkwDialogTests : EposBunitContext
         var cut = Aufbauen(katalogsatzWege: Wege(), katalogzeilen: () => MitSchloss(22));
 
         KatalogAnkreuzen(cut, 0, 1);
+        KatalogsatzWaehlen(cut);   // AW1: die Katalogknoepfe wirken, wenn ein Katalogsatz gewaehlt ist
         cut.Find(".epos-knopf--bearbeiten-katalog").Click();
 
         var sb = cut.FindComponent<Satzbearbeitung>();
@@ -523,6 +535,7 @@ public class BhkwDialogTests : EposBunitContext
         var cut = Aufbauen(katalogsatzWege: Wege(ergebnis: new KatalogSpeicherErgebnis(false, "„Modul B“ ist gesperrt.", "")));
 
         KatalogAnkreuzen(cut, 0, 1);
+        KatalogsatzWaehlen(cut);   // AW1: die Katalogknoepfe wirken, wenn ein Katalogsatz gewaehlt ist
         cut.Find(".epos-knopf--bearbeiten-katalog").Click();
         cut.Find(".epos-satzbearbeitung input[type=text]:not([readonly])").Input("Neuwerk");
         cut.Find(".epos-satzbearbeitung-speichern").Click();
@@ -576,6 +589,7 @@ public class BhkwDialogTests : EposBunitContext
         var cut = Aufbauen(katalogzeilen: () => MitSchloss(22), katalogLoeschen: id => { geloescht.Add(id); return ""; });
 
         KatalogAnkreuzen(cut, 0, 1);
+        KatalogsatzWaehlen(cut);   // AW1: die Katalogknoepfe wirken, wenn ein Katalogsatz gewaehlt ist
         cut.Find(".epos-knopf--loeschen").Click();
         var frage = cut.Find(".epos-rueckfrage").TextContent;
         Assert.Contains(string.Format(Resource.Culture, Resource.SATZBEARB_UEBERSPRUNGEN, "„Modul B“"), frage);
@@ -851,7 +865,7 @@ public class BhkwDialogTests : EposBunitContext
         var entfernt = new List<ErzeugerZeile>();
         var cut = Aufbauen(zeilen, entfernen: z => entfernt.Add(z));
 
-        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[1].Click();
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[1].Click();
         cut.FindAll(".epos-zweispalten-knopf--entfernen")[0].Click();
 
         Assert.Single(zeilen);
@@ -1442,13 +1456,13 @@ public class BhkwDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>„Bearbeiten…" bleibt gesperrt, solange kein Katalogsatz gewählt ist</b> — die
-    /// Sperre ist mit dem Knopf nach oben gewandert, nicht verschwunden.
+    /// <b>„Bearbeiten…" bleibt gesperrt, solange kein Satz gewählt ist</b> — die
+    /// Sperre ist mit dem Knopf an den gewählten Satz gewandert (AW1), nicht verschwunden.
     /// </summary>
     [Fact]
     public void Bearbeiten_bleibt_in_der_Knopfzeile_ohne_Katalogsatz_gesperrt()
     {
-        var cut = Aufbauen();
+        var cut = Aufbauen(new List<ErzeugerZeile>());
 
         Assert.True(Knopf(cut, "Bearbeiten...").HasAttribute("disabled"));
 
@@ -1765,7 +1779,7 @@ public class BhkwDialogTests : EposBunitContext
         zeile.Senken = "Senken: Heizkreis (Heizung + Warmwasser); Prozesswärme";
         var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { zeile });
 
-        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[0].Click();
         Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
 
         Assert.Contains(cut.FindAll(".epos-formularraster .epos-herleitung-text"),
@@ -1778,7 +1792,7 @@ public class BhkwDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[0].Click();
         Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
 
         Assert.DoesNotContain(cut.FindAll(".epos-herleitung-text"),
@@ -1813,7 +1827,8 @@ public class BhkwDialogTests : EposBunitContext
         var knoepfe = leiste.QuerySelectorAll("button").ToList();
         int bearbeiten = knoepfe.FindIndex(k => k.ClassList.Contains("epos-knopf--bearbeiten-projekt"));
         int rueckweg = knoepfe.FindIndex(k => k.ClassList.Contains("epos-knopf--rueckweg"));
-        Assert.True(bearbeiten >= 0 && rueckweg == bearbeiten + 1);
+        // AW1: „Bearbeiten…" steht nicht mehr in der Projektleiste - der Rueckweg ist ihr erster Knopf.
+        Assert.True(bearbeiten < 0 && rueckweg == 0);
         Assert.Equal(Resource.KATRUECK_BTN, knoepfe[rueckweg].TextContent.Trim());
 
         // Drei Zeilen, zwei Geraete: gefragt wird je Geraet einmal.
@@ -2123,5 +2138,168 @@ public class BhkwDialogTests : EposBunitContext
         foreach (string s in schluessel)
             Assert.Single(cut.FindComponents<InfoKnopf>(), k => k.Instance.Schluessel == s);
         Assert.Empty(cut.FindAll(".epos-zweispalten-satzkopfknoepfe"));
+    }
+
+    // =================================================================================
+    // AW1 (AW3a): eine Wahl je Zeile, Knopfleiste am gewaehlten Satz (Anwenderentscheide 11.10.2026)
+    // =================================================================================
+
+    private static AngleSharp.Dom.IElement AmSatz(IRenderedComponent<BhkwDialog> cut, string klasse)
+        => cut.Find(".epos-zweispalten-satzknoepfe ." + klasse);
+
+    private static List<ErzeugerZeile> DreiZeilen()
+        => new() { Zeile(1, "Modul A", 100), Zeile(2, "Modul B", 101), Zeile(3, "Modul C", 102) };
+
+    /// <summary>AW1: Die Projektliste hat keinen Wahlknopf mehr — die Zeile ist die Wahl, das Kästchen die Mehrfachwahl.</summary>
+    [Fact]
+    public void AW1_Die_Projektliste_traegt_keinen_Wahlknopf()
+    {
+        var cut = Aufbauen(DreiZeilen());
+        var liste = cut.FindAll(".epos-raster")[0];
+
+        Assert.Empty(liste.QuerySelectorAll(".epos-zeilenwahl, .epos-anlagenwahl, input[type=radio]"));
+        Assert.Equal(3, liste.QuerySelectorAll("td .epos-wahlkaestchen").Length);
+        Assert.Equal(3, liste.QuerySelectorAll("td.epos-spalte-zeilenzelle > .epos-zeilenzelle").Length);
+        Assert.DoesNotContain(liste.QuerySelectorAll("th"), th => th.TextContent.Trim() == "Wahl");
+    }
+
+    /// <summary>
+    /// AW1: Ein Klick in die Zeile wählt sie — farbig hervorgehoben mit der Klasse der Katalogliste,
+    /// <c>aria-current</c> an der Zelle, die Detailzeile nennt sie —, die Kästchen bleiben unberührt.
+    /// </summary>
+    [Fact]
+    public void AW1_Ein_Klick_in_die_Zeile_waehlt_und_hebt_hervor()
+    {
+        var cut = Aufbauen(DreiZeilen());
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[1].Click();
+
+        var zeilen = cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr").ToList();
+        Assert.Single(zeilen, tr => tr.ClassList.Contains("epos-zeile--gewaehlt"));
+        Assert.Contains("epos-zeile--gewaehlt", zeilen[1].ClassList);
+        Assert.Equal("true", zeilen[1].QuerySelector(".epos-zeilenzelle")!.GetAttribute("aria-current"));
+        Assert.Equal("Modul B", cut.Find(".epos-zweispalten-satzname").TextContent);
+        Assert.Equal(Resource.AUSWAHL_MARKE_PROJEKTSATZ, cut.Find(".epos-zweispalten-satzzeile .epos-zweispalten-marke--satz").TextContent);
+        Assert.Equal(0, cut.Instance.ProjektWahl.Anzahl);
+        Assert.NotNull(cut.Find(".epos-zweispalten-bereich--projekt .epos-zweispalten-inhalt--zeilenwahl"));
+    }
+
+    /// <summary>AW1: Die Projektliste ist ein Tabulatorhalt; ↑ ↓ Pos1 Ende bewegen die Wahl.</summary>
+    [Fact]
+    public void AW1_Die_Pfeiltasten_bewegen_die_Wahl_der_Projektliste()
+    {
+        var cut = Aufbauen(DreiZeilen());
+        var huelle = cut.Find(".epos-zweispalten-bereich--projekt .epos-raster-huelle");
+        Assert.Equal("0", huelle.GetAttribute("tabindex"));
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[0].Click();
+        cut.Find(".epos-zweispalten-bereich--projekt .epos-raster-huelle").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        Assert.Equal("Modul B", cut.Find(".epos-zweispalten-satzname").TextContent);
+        cut.Find(".epos-zweispalten-bereich--projekt .epos-raster-huelle").KeyDown(new KeyboardEventArgs { Key = "End" });
+        Assert.Equal("Modul C", cut.Find(".epos-zweispalten-satzname").TextContent);
+        cut.Find(".epos-zweispalten-bereich--projekt .epos-raster-huelle").KeyDown(new KeyboardEventArgs { Key = "Home" });
+        Assert.Equal("Modul A", cut.Find(".epos-zweispalten-satzname").TextContent);
+        Assert.Contains("epos-zeile--gewaehlt", cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[0].ClassList);
+    }
+
+    /// <summary>
+    /// AW1: Ist ein Projektsatz gewählt, sind Schloss… und Löschen weich gesperrt — fokussierbar,
+    /// <c>aria-disabled</c>, Grund „Katalogsatz wählen" als Kurztext, ein Klick meldet ihn und
+    /// schreibt nichts. Bearbeiten… öffnet die Projektkopie in der Überlagerung.
+    /// </summary>
+    [Fact]
+    public void AW1_Beim_Projektsatz_sind_Schloss_und_Loeschen_weich_gesperrt()
+    {
+        var geloescht = new List<int>();
+        var pruefung = new Schlosspruefung();
+        var cut = Aufbauen(DreiZeilen(), projektsatzWege: Wege(), schloss: pruefung.Weg(),
+                           katalogLoeschen: id => { geloescht.Add(id); return ""; });
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[0].Click();
+        KatalogAnkreuzen(cut, 0);   // auch angekreuzte Katalogzeilen heben die Sperre nicht auf
+
+        foreach (string klasse in new[] { "epos-katalogschloss", "epos-knopf--loeschen" })
+        {
+            var knopf = AmSatz(cut, klasse);
+            Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+            Assert.False(knopf.HasAttribute("disabled"));
+            Assert.Equal(Resource.AUSWAHL_SPERRE_KATALOGSATZ, knopf.GetAttribute("title"));
+        }
+
+        AmSatz(cut, "epos-knopf--loeschen").Click();
+        Assert.Equal(Resource.AUSWAHL_SPERRE_KATALOGSATZ, cut.Find(".epos-warnbanner-text").TextContent);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+        AmSatz(cut, "epos-katalogschloss").Click();
+        Assert.Empty(pruefung.Aufrufe);
+        Assert.Empty(geloescht);
+
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-katalog"));
+        AmSatz(cut, "epos-knopf--bearbeiten-projekt").Click();
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal(Resource.AUSWAHL_MARKE_PROJEKTSATZ,
+                     cut.Find(".epos-ueberlagerung--satz .epos-ueberlagerung-kopf .epos-zweispalten-marke--satz").TextContent);
+    }
+
+    /// <summary>AW1: Beim Katalogsatz wirken Schloss…, Löschen und Bearbeiten… auf den Katalog.</summary>
+    [Fact]
+    public void AW1_Beim_Katalogsatz_wirken_Schloss_und_Loeschen_auf_den_Katalog()
+    {
+        var pruefung = new Schlosspruefung();
+        var cut = Aufbauen(new List<ErzeugerZeile>(), schloss: pruefung.Weg(), katalogfelder: _ => Felder());
+        KatalogsatzWaehlen(cut);
+
+        foreach (string klasse in new[] { "epos-katalogschloss", "epos-knopf--loeschen" })
+        {
+            var knopf = AmSatz(cut, klasse);
+            Assert.False(knopf.HasAttribute("aria-disabled"));
+            Assert.False(knopf.HasAttribute("disabled"));
+        }
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt"));
+        Assert.NotNull(AmSatz(cut, "epos-knopf--bearbeiten-katalog"));
+
+        AmSatz(cut, "epos-knopf--loeschen").Click();
+        Assert.NotEmpty(cut.FindAll(".epos-rueckfrage"));
+    }
+
+    /// <summary>
+    /// AW1: Der Stift einer Projektzeile tut, was „Bearbeiten…" am Satz für diese Zeile tut — die
+    /// Zeile wird der gewählte Satz, die Überlagerung zeigt ihre Projektkopie. Der Stift der
+    /// Detailzeile ist entfallen, die Fussleiste unter dem Katalog auch.
+    /// </summary>
+    [Fact]
+    public void AW1_Der_Stift_je_Zeile_ist_Bearbeiten_fuer_diese_Zeile()
+    {
+        var cut = Aufbauen(DreiZeilen(), projektsatzWege: Wege());
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[0].Click();
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten"));
+        Assert.Empty(cut.FindAll(".epos-zweispalten-fussleiste"));
+        Assert.Null(cut.Find(".epos-zweispalten-bereich--projekt > .epos-zweispalten-kopfleiste")
+                       .QuerySelector(".epos-knopf--bearbeiten-projekt"));
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-zeilenstift")[2].Click();
+
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal("Modul C", cut.Find(".epos-ueberlagerung--satz .epos-ueberlagerung-titel").TextContent.Trim());
+        Assert.Contains("epos-zeile--gewaehlt", cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[2].ClassList);
+    }
+
+    /// <summary>
+    /// AW1: Vergleichen… wirkt im Bereich des gewählten Satzes — beim Projektsatz die angekreuzten
+    /// Projektkopien (je Gerät einmal), unter zwei gesperrt.
+    /// </summary>
+    [Fact]
+    public void AW1_Vergleichen_beim_Projektsatz_vergleicht_die_angekreuzten_Projektkopien()
+    {
+        var cut = Aufbauen(DreiZeilen(), projektsatzWege: Wege());
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[0].Click();
+        Assert.True(AmSatz(cut, "epos-knopf--vergleichen").HasAttribute("disabled"));
+
+        foreach (int i in new[] { 0, 2 })
+            cut.FindAll(".epos-raster")[0].QuerySelectorAll("td .epos-wahlkaestchen")[i].Click();
+        Assert.False(AmSatz(cut, "epos-knopf--vergleichen").HasAttribute("disabled"));
+        AmSatz(cut, "epos-knopf--vergleichen").Click();
+
+        var koepfe = cut.FindAll(".epos-vergleich thead th").Select(th => th.TextContent).ToList();
+        Assert.Equal(new[] { "Modul A", "Modul C" }, koepfe.Skip(1).ToArray());
+        Assert.NotEmpty(cut.FindAll(".epos-vergleich tbody tr"));
     }
 }
