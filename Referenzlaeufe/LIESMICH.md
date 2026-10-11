@@ -782,7 +782,7 @@ danach im Wegweiser desselben Ordners.
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 11.10.2026, Stand `59ce46fc6`)
 gegen `Kenndaten_Test.sqlite` (Schemastand **215**, 96 546 816 Byte, LFS-SHA-256
 `832fda5088ad3bb21b3e7ec55dec715b573afe22a9c952d2e2730d3a78595f3f`, mit den Projekten 1053 bis 1065; die Nachträge der
-Schemaschritte 211 bis 215 unten sind darin enthalten; Nachtrag 216 unten). Gegen diese Basis hält
+Schemaschritte 211 bis 215 unten sind darin enthalten; Nachträge 216 und 217 unten). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -1256,6 +1256,16 @@ dreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `aaaa17565a5454d892422cf4b1f1d60335d31ad1642ca78dad5a5b92714620db`**. Alle dreißig Projekte rechnen gegen R52
 > GESAMT PASS und byte-gleich (979/979 CSV)
 > ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-11_AH_V7_Referenzprojekt_R52.md)).
+> **Nachtrag — Schema 217 (Schnellaufheizung, SA2, hängt an 216 KM4‑E1), Basis R52 unberührt.**
+> `SchnellaufheizungSchema` (217 = `KaeltemittelSchema.SCHRITT + 1`) legt an `Tab_Einstellungen`
+> `Aufheiz_Schnellaufheizung` (0/1, NULL = aus) und `Aufheiz_Ueberhoehung_K` (> 0 bis 10 K, NULL = Kern-Vorgabe) an, an
+> `Tab_ErgebnisGebaeude` und `Tab_ErgebnisZone` je sechs Größen der Überhöhung (alle leer). Gehoben aus der Fassung 216
+> (`55b1494c…`) mit `Werkzeuge/Testdatenbankschema`; der Zellvergleich der Bestandsspalten zeigt nur
+> `Tab_Applikation.SchemaVersion`, die vierzehn neuen Spalten sind leer, 192 Tabellen, davon 191 STRICT. Die
+> Testdatenbank steht auf **217** (`integrity_check` ok, `foreign_key_check` leer): **96 542 720 Byte, LFS-SHA-256
+> `d142b55928d2443c3d501b471913031a40eafa049dfbb08c85098c4b366b2d28`**. Alle dreißig Projekte rechnen gegen R52
+> GESAMT PASS und byte-gleich
+> ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-11_SA2_Schema217.md)).
 
 ### Die Vorgängerbasis R51 (freie Kühlung)
 
