@@ -159,6 +159,14 @@
     --epos-sicher-oben: env(safe-area-inset-top, 0px);
     --epos-sicher-unten: env(safe-area-inset-bottom, 0px);
 
+    /* DIE HOEHE DES LIZENZBANNERS. Das Banner der AppWurzel steht in #app ueber der
+       Ansicht; jede Regel, die eine Wurzel in voller Fensterhoehe rechnet, zieht es ab
+       wie --epos-sicher-oben, sonst rollte das Dokument um seine Hoehe. Der Baustein
+       Lizenzbanner setzt das Token an der Wurzel des Dokuments auf die gemessene
+       Hoehe, solange er steht (epos-lizenzbanner.js); ohne Banner gilt 0. Fest
+       stehende Ueberlagerungen bedecken das Banner und ziehen es nicht ab. */
+    --epos-banner-oben: 0px;
+
     /* DIE OBERGRENZE EINES DIAGRAMMS (Windows-Abnahme V2 07.09.2026, Befund
        W11b-B-4: "Simulation Uebersicht: Die Charts sind optisch zu gross").
        Jahresganglinie, Dauerlinie, Streuwolke, Speicherverlauf und
@@ -351,6 +359,13 @@ body {
 #app {
     padding-top: var(--epos-sicher-oben);
     padding-bottom: var(--epos-sicher-unten);
+}
+
+/* Der Wirt des Lizenzbanners (Baustein Lizenzbanner): Seine gemessene Hoehe ist das
+   Token --epos-banner-oben (Token oben). flow-root haelt die Raender des Banners im
+   Wirt, damit die Messung sie mitzaehlt. */
+.epos-lizenzbanner {
+    display: flow-root;
 }
 
 /* Wurzel eines Dialogs. tabindex="-1" traegt die Tastenbehandlung
@@ -4043,8 +4058,8 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 
 #app > .epos-dialog:has(> .epos-zweispalten),
 .epos-ueberlagerung-inhalt > .epos-dialog:has(> .epos-zweispalten) {
-    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
-    height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
+    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten));
+    height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten));
     overflow: hidden;
     box-sizing: border-box;
 }
@@ -7596,7 +7611,7 @@ table.epos-simerg-tabelle {
     position: sticky;
     top: 0;
     align-self: start;
-    height: max(var(--epos-assistent-band-min), calc(100dvh - var(--epos-assistent-band-abzug) - var(--epos-sicher-oben) - var(--epos-sicher-unten)));
+    height: max(var(--epos-assistent-band-min), calc(100dvh - var(--epos-assistent-band-abzug) - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten)));
 }
 
 .epos-assistentseite .epos-assistent-band > .epos-projektliste {
@@ -7754,7 +7769,7 @@ table.epos-simerg-tabelle {
    -------------------------------------------------------------------------- */
 #app > .epos-projektwahl,
 #app > .epos-projektkopie {
-    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
+    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten));
 }
 
 /* Wachsen von null aus (flex-basis 0) - aber nie unter den Inhalt: Die
@@ -8675,7 +8690,7 @@ table.epos-simerg-tabelle {
     flex-direction: column;
     gap: 12px;
     min-width: 0;
-    min-height: calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
+    min-height: calc(100vh - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten));
 }
 
 /* Kopfzeile: Titel und Untertitel links, der Hilfeknopf rechts - dieselbe Lage
@@ -9909,8 +9924,8 @@ table.epos-simerg-tabelle {
    die ehrliche Antwort; hidden schnitte die Knoepfe ab. */
 .epos-katalog-dialog {
     max-width: none;
-    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
-    height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
+    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten));
+    height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten));
     overflow: auto;
 }
 
@@ -11771,7 +11786,7 @@ table.epos-simerg-tabelle {
    ========================================================================== */
 
 .epos-kichat {
-    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
+    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten));
     padding: var(--epos-rand);
     gap: 10px;
 }

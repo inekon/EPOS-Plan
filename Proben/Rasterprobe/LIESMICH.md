@@ -1093,6 +1093,7 @@ Datenbank. bunit misst weder Lage noch Rollstand; die Voraussetzungen der Regel 
 | `…?fall=gebaeude` | `GebaeudeDialog`; „Simulation…" öffnet den Wärmebedarf als Überlagerung |
 | `…?fall=dubletten` | `KatalogDublettenDialog` — das Protokoll steht **unter** der Schlussleiste |
 | `…?fall=katalog` | `BedarfAdminDialog` (Katalogdialog, `.epos-katalog-dialog`) |
+| `…&lizenz=1` | das Lizenzbanner der `AppWurzel` (Baustein `Lizenzbanner`, Lesemodus-Satz) als erstes Kind von `#app` vor dem Dialog |
 | `…&marke=0` | ohne Fenstermarke — der Dialog steht wie ohne die Regel |
 | `…&zeilen=<n>`, `…&kultur=de-DE\|en-US` | Katalogzeilen; Kultur und Sprache wie bei `/gebaeudeimport` |
 
@@ -1150,6 +1151,30 @@ ihm im Fenster steht (Dublettenprüfung: Protokoll bei 520 px unterhalb des Fens
 Die Höhen im `scroll-padding` sind gerechnet, nicht gemessen: 71 und 69 px, unter 760 px Fensterbreite eine
 Knopfzeile mehr. Die WebView2 selbst misst die Probe nicht — sie ist dasselbe Chromium; die Sichtprobe am
 Gerät bleibt ein Abnahmepunkt unter Windows.
+
+### Fall „Lizenzbanner" — Dialog voller Höhe unter dem Lizenzbanner (`--nur lizenzbanner`)
+
+Das Lizenzbanner der `AppWurzel` steht in `#app` vor der Ansicht. Ein Dialog voller Höhe rechnet
+`100dvh` minus die sicheren Abstände; ohne die Bannerhöhe in dieser Rechnung rollte das Dokument um das
+Banner. Der Baustein `Lizenzbanner` meldet seine gemessene Höhe (`epos-lizenzbanner.js`, ResizeObserver)
+als Token `--epos-banner-oben` an der Wurzel des Dokuments; jede Höhenregel einer Wurzel in voller
+Fensterhöhe zieht es ab (Vorgabe `0px` in `:root`). Die Probe öffnet `…&lizenz=1&marke=0` (wie in der
+`AppWurzel` auf iOS) für den Katalogdialog (`fall=katalog`) und die Katalogauswahl (`fall=heizkessel`) in
+allen drei Fenstern und verlangt: Dokument rollt nicht (`scrollHeight` = `clientHeight`), Banner ab dem
+oberen sicheren Abstand, Kopf des Dialogs unter dem Banner, Schlussleiste und Dialog im Fenster über dem
+unteren Abstand. **Gegenprobe:** dasselbe mit `--epos-banner-oben: 0px !important` muss rot sein.
+
+**Ergebnis vom 11.10.2026:** kein Verstoß, Gegenprobe rot (je Fall 3 Verstöße: Dokument rollt, Schlussleiste
+und Dialog unter dem Fensterrand).
+
+| Fall | Fenster | Banner (Token) | Kopf ab | Schlussleiste bis | Dokument |
+|---|---|---|---|---|---|
+| Katalogdialog | 1 088 × 624 | 0–58,4 px (58,375 px) | 74,4 px | 608 px | 624 / 624 px |
+| Heizkessel | 1 088 × 624 | 0–58,4 px | 70,4 px | 612 px | 624 / 624 px |
+| Katalogdialog | 520 × 624 | 0–76,6 px (76,5625 px) | 92,6 px | 608 px | 624 / 624 px |
+| Heizkessel | 520 × 624 | 0–76,6 px | 88,6 px | 612 px | 624 / 624 px |
+| Katalogdialog | 1 194 × 834 (iPad) | 24–82,4 px (58,375 px) | 98,4 px | 798 px | 834 / 834 px |
+| Heizkessel | 1 194 × 834 (iPad) | 24–82,4 px | 94,4 px | 802 px | 834 / 834 px |
 
 ## Bannerprobe (Meldung im langen Fensterdialog) — Seite `/fensterprobe?meldung=1`
 
