@@ -262,6 +262,17 @@ namespace WindowsFormsApplication1
         /// Vorlaufgrenze <paramref name="anVorlaufgrenze"/>. Ohne Kühlübergabe, ohne Vorlauf oder ohne Änderung derselbe
         /// Rand, Zeichen für Zeichen.
         /// </summary>
+        /// <summary>
+        /// <b>Der Vorlauf der Heizkurve am Fenstersollwert</b> (SA1b, Vorausschau): setzt <paramref name="vorlaufC"/>, gekappt am
+        /// Vorlaufangebot der Anlage wie <see cref="MitVerfuegbarkeit"/>. Ohne Übergabe derselbe Rand.
+        /// </summary>
+        internal Stundenrand MitKurvenvorlauf(double vorlaufC)
+        {
+            if (!MitUebergabe || double.IsNaN(vorlaufC)) return this;
+            bool gekappt = !double.IsNaN(VorlaufAngebotC) && VorlaufAngebotC < vorlaufC;
+            return this with { VorlaufC = gekappt ? VorlaufAngebotC : vorlaufC, VorlaufAnlageGekappt = gekappt };
+        }
+
         internal Stundenrand MitKuehlvorlauf(double kuehlVorlaufC, bool anVorlaufgrenze)
         {
             if (!MitKuehluebergabe || double.IsNaN(KuehlVorlaufC) || double.IsNaN(kuehlVorlaufC)) return this;
