@@ -51,6 +51,16 @@
     {
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" />
     }
+    @* KT-7: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+    @* KT-7: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
     @if (_katalog.Count == 0)
     {
         <p class="epos-leisezeile epos-bauteilaufbau-leer">@Texte.LeerKatalog</p>
@@ -287,6 +297,12 @@
     private IReadOnlyList<Vergleichszeile>? _vergleichszeilen;
 
     private string _meldung = "";
+
+    /// <summary>KT-7: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
+    private string _listeFehler = "";
+
+    /// <summary>KT-7: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
     /// <summary>
     /// Die Statuszeile der Fußleiste. Jede Zuweisung ist eine Erfolgs- oder neutrale
     /// Meldung und nimmt die rote Färbung zurück; rot färbt allein
@@ -362,7 +378,8 @@
         _blattSchliessen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = false);
 
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Profil.Schluessel);
-        _baustoffe = Baustoffe?.Invoke() ?? Array.Empty<BaustoffWahl>();
+        // KT-7: Wirft das Lesen der Baustoffwahl, nennt der Listenbanner den Grund.
+        _baustoffe = Katalogladung.Lesen(Baustoffe, TitelText, out string baustoffFehler);
         // KT-2: Wirft die Liste beim Aufbau, bricht der Dialog nicht ab - der Banner nennt die Meldung
         // (Hausblatt „benannt ablehnen, nie still übergehen“; der Fang sitzt am Rand, nicht in der Hülle).
         try
@@ -373,6 +390,7 @@
         {
             _meldung = string.Format(CultureInfo.CurrentCulture, Resource.WURZEL_LISTE_FEHLER, Texte.Titel, ex.Message);
         }
+        if (_listeFehler.Length == 0) _listeFehler = baustoffFehler;
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BAUTEILAUFBAU, () => KiSicht(), KiHaken());
     }
@@ -437,7 +455,8 @@
 
     private void ListeLaden(string? wunsch = null)
     {
-        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        // KT-7: Wirft das Lesen der Liste, bleibt sie leer und der Banner nennt den Grund.
+        _katalog = Katalogladung.Lesen(Katalogzeilen, TitelText, out _listeFehler);
 
         _auswahl.Abgleichen(_katalog.Select(z => z.Schluessel));
         if (_auswahl.Vergleich) VergleichBauen();
@@ -464,7 +483,11 @@
         _meldung = "";
         _gewaehlt = schluessel ?? "";
         Katalogfilterzeile? zeile = ZeileZu(_gewaehlt);
-        BauteilaufbauDaten? gelesen = zeile is not null ? Lies?.Invoke(zeile.Id) : null;
+        // KT-7: Wirft das Lesen des Satzes, nennt der Satzbanner den Grund.
+        _satzFehler = "";
+        BauteilaufbauDaten? gelesen = zeile is not null && Lies is not null
+            ? Katalogladung.Satz(() => Lies(zeile.Id), zeile.Bezeichner, out _satzFehler)
+            : null;
         BauteilaufbauDaten daten = gelesen
             ?? (zeile is null ? new BauteilaufbauDaten() : new BauteilaufbauDaten { Id = zeile.Id, Bezeichner = zeile.Bezeichner });
         _auslieferung = zeile?.Geschuetzt == true || daten.Auslieferung;
@@ -639,7 +662,10 @@
         string? befund = Pruefbefund(_stand.Arbeit);
         if (befund is not null) { SpeichernAbgelehnt(befund); return; }
 
-        BauteilaufbauSpeicherErgebnis e = Speichern(_stand.Arbeit.Kopie());
+        // KT-7: Wirft der Schreibweg, bleiben die Felder stehen und die Meldung nennt den Grund.
+        BauteilaufbauDaten arbeit = _stand.Arbeit.Kopie();
+        BauteilaufbauSpeicherErgebnis e = Katalogladung.Schreiben(() => Speichern(arbeit), arbeit.Bezeichner,
+                                                                  g => new BauteilaufbauSpeicherErgebnis(false, g, arbeit.Id));
         if (!e.Ok) { SpeichernAbgelehnt(e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler); return; }
 
         ListeLaden(e.Id.ToString(CultureInfo.InvariantCulture));
@@ -682,7 +708,9 @@
         string? befund = Pruefbefund(neu);
         if (befund is not null) { _neuMeldung = befund; return; }
 
-        BauteilaufbauSpeicherErgebnis e = Speichern(neu);
+        // KT-7: Wirft das Anlegen, nennt die Meldung der Namensabfrage den Grund.
+        BauteilaufbauSpeicherErgebnis e = Katalogladung.Schreiben(() => Speichern(neu), neu.Bezeichner,
+                                                                  g => new BauteilaufbauSpeicherErgebnis(false, g, 0));
         if (!e.Ok) { _neuMeldung = e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler; return; }
 
         string name = neu.Bezeichner.Trim();
@@ -834,7 +862,9 @@
         {
             Katalogfilterzeile? z = ZeileZu(s);
             if (z is null) continue;
-            BauteilaufbauSpeicherErgebnis e = Loeschen(z.Id);
+            // KT-7: Wirft das Löschen, nennt die Meldung den Grund (Katalogladung.Loeschen).
+            BauteilaufbauSpeicherErgebnis e = Katalogladung.Loeschen(() => Loeschen(z.Id), z.Bezeichner,
+                                                                     g => new BauteilaufbauSpeicherErgebnis(false, g, z.Id));
             if (e.Ok) { geloescht++; einzeln = z.Bezeichner; }
             else if (fehler.Length == 0) fehler = e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler;
         }
@@ -879,7 +909,9 @@
         Katalogfilterzeile? zeile = ZeileZu(_duplizierQuelle);
         if (zeile is null) return;
 
-        BauteilaufbauSpeicherErgebnis e = Duplizieren(zeile.Id, name);
+        // KT-7: Wirft das Duplizieren, kommt die Ablehnung mit Grund zurück (Katalogladung.Schreiben).
+        BauteilaufbauSpeicherErgebnis e = Katalogladung.Schreiben(() => Duplizieren(zeile.Id, name), name,
+                                                                  g => new BauteilaufbauSpeicherErgebnis(false, g, 0));
         if (!e.Ok) { Warnen(e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler); return; }
 
         _auswahl.Aufheben();

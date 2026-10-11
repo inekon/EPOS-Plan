@@ -48,6 +48,16 @@
     {
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" />
     }
+    @* KT-7: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+    @* KT-7: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
     @if (_katalog.Count == 0)
     {
         <p class="epos-leisezeile epos-baustoff-leer">@Texte.LeerKatalog</p>
@@ -265,6 +275,12 @@
     private IReadOnlyList<Vergleichszeile>? _vergleichszeilen;
 
     private string _meldung = "";
+
+    /// <summary>KT-7: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
+    private string _listeFehler = "";
+
+    /// <summary>KT-7: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
     /// <summary>
     /// Die Statuszeile der Fußleiste. Jede Zuweisung ist eine Erfolgs- oder neutrale
     /// Meldung und nimmt die rote Färbung zurück; rot färbt allein
@@ -409,8 +425,13 @@
     /// <summary>Lädt Liste und Verwendung; die bisherige Wahl bleibt, sonst die erste Zeile.</summary>
     private void ListeLaden(string? wunsch = null)
     {
-        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
-        _verwendung = Verwendung?.Invoke() ?? new Dictionary<int, int>();
+        // KT-7: Liste und Verwendung lesen über die Fangstelle; wirft einer der Wege, bleibt
+        // die Liste leer und der Banner nennt den Grund.
+        _katalog = Katalogladung.Lesen(Katalogzeilen, TitelText, out _listeFehler);
+        IReadOnlyList<IReadOnlyDictionary<int, int>> verwendung = Katalogladung.Lesen<IReadOnlyDictionary<int, int>>(
+            Verwendung is null ? null : () => new IReadOnlyDictionary<int, int>[] { Verwendung() }, TitelText, out string verwendungFehler);
+        _verwendung = verwendung.Count > 0 && verwendung[0] is not null ? verwendung[0] : new Dictionary<int, int>();
+        if (_listeFehler.Length == 0) _listeFehler = verwendungFehler;
 
         _auswahl.Abgleichen(_katalog.Select(z => z.Schluessel));
         if (_auswahl.Vergleich) VergleichBauen();
@@ -440,7 +461,11 @@
         _meldung = "";
         _gewaehlt = schluessel ?? "";
         Katalogfilterzeile? zeile = ZeileZu(_gewaehlt);
-        BaustoffDaten? gelesen = zeile is not null ? Lies?.Invoke(zeile.Id) : null;
+        // KT-7: Wirft das Lesen des Satzes, nennt der Satzbanner den Grund.
+        _satzFehler = "";
+        BaustoffDaten? gelesen = zeile is not null && Lies is not null
+            ? Katalogladung.Satz(() => Lies(zeile.Id), zeile.Bezeichner, out _satzFehler)
+            : null;
         _daten = gelesen ?? (zeile is null ? new BaustoffDaten() : new BaustoffDaten { Id = zeile.Id, Bezeichner = zeile.Bezeichner });
         _auslieferung = zeile?.Geschuetzt == true || _daten.Auslieferung;
         Zuruecksetzen();
@@ -605,7 +630,9 @@
         string? befund = Pruefbefund(_arbeit);
         if (befund is not null) { SpeichernAbgelehnt(befund); return; }
 
-        BaustoffSpeicherErgebnis e = Speichern(_arbeit);
+        // KT-7: Wirft der Schreibweg, bleiben die Felder stehen und die Meldung nennt den Grund.
+        BaustoffSpeicherErgebnis e = Katalogladung.Schreiben(() => Speichern(_arbeit), _arbeit.Bezeichner,
+                                                             g => new BaustoffSpeicherErgebnis(false, g, _arbeit.Id));
         if (!e.Ok) { SpeichernAbgelehnt(e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler); return; }
 
         _geaendert = false;
@@ -646,7 +673,9 @@
         string? befund = Pruefbefund(_neu);
         if (befund is not null) { _neuMeldung = befund; return; }
 
-        BaustoffSpeicherErgebnis e = Speichern(_neu);
+        // KT-7: Wirft das Anlegen, nennt die Meldung der Namensabfrage den Grund.
+        BaustoffSpeicherErgebnis e = Katalogladung.Schreiben(() => Speichern(_neu), _neu.Bezeichner,
+                                                             g => new BaustoffSpeicherErgebnis(false, g, 0));
         if (!e.Ok) { _neuMeldung = e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler; return; }
 
         string name = _neu.Bezeichner.Trim();
@@ -757,7 +786,9 @@
         foreach (string s in schluessel)
         {
             Katalogfilterzeile? z = ZeileZu(s);
-            BaustoffDaten d = (z is null ? null : Lies?.Invoke(z.Id)) ?? new BaustoffDaten();
+            // KT-7: Wirft das Lesen eines Vergleichssatzes, nennt der Satzbanner den Grund.
+            BaustoffDaten d = (z is null ? null
+                : Katalogladung.SatzDazu(() => Lies?.Invoke(z.Id), z.Bezeichner, ref _satzFehler)) ?? new BaustoffDaten();
             var felder = Kenndatenwerte(d)
                 .Skip(1)
                 .Select((w, i) => new Vergleichsfeld("F" + i, w.Name, (w.Wert + " " + w.Einheit).Trim()))
@@ -814,7 +845,9 @@
         {
             Katalogfilterzeile? z = ZeileZu(s);
             if (z is null) continue;
-            BaustoffSpeicherErgebnis e = Loeschen(z.Id);
+            // KT-7: Wirft das Löschen, nennt die Meldung den Grund (Katalogladung.Loeschen).
+            BaustoffSpeicherErgebnis e = Katalogladung.Loeschen(() => Loeschen(z.Id), z.Bezeichner,
+                                                                g => new BaustoffSpeicherErgebnis(false, g, z.Id));
             if (e.Ok) { geloescht++; einzeln = z.Bezeichner; }
             else if (fehler.Length == 0) fehler = e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler;
         }
@@ -864,7 +897,9 @@
         Katalogfilterzeile? zeile = ZeileZu(_duplizierQuelle);
         if (zeile is null) return;
 
-        BaustoffSpeicherErgebnis e = Duplizieren(zeile.Id, name);
+        // KT-7: Wirft das Duplizieren, kommt die Ablehnung mit Grund zurück (Katalogladung.Schreiben).
+        BaustoffSpeicherErgebnis e = Katalogladung.Schreiben(() => Duplizieren(zeile.Id, name), name,
+                                                             g => new BaustoffSpeicherErgebnis(false, g, 0));
         if (!e.Ok) { Warnen(e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler); return; }
 
         _auswahl.Aufheben();
