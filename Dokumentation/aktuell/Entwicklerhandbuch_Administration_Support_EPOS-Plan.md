@@ -3,7 +3,7 @@
 **Für wen.** INEKON — Entwicklung und Support. Nicht für Anwender; nichts aus diesem Handbuch kommt
 ins Wiki, und die Entwicklerbereiche werden in der Anwenderdokumentation nicht erwähnt.
 
-**Stand.** 11.10.2026, Stufen 1 und 2 umgesetzt (11.10.2026, #972 und #973), Stufe 3 (3a Über und Diagnose, 3b Supportpaket) umgesetzt; Konzeptstand nach den Anwenderentscheiden AS-Q1 bis AS-Q10
+**Stand.** 11.10.2026, Stufen 1 und 2 umgesetzt (11.10.2026, #974 und #975), Stufe 3 (3a Über und Diagnose, 3b Supportpaket) umgesetzt (11.10.2026, #977), Nachzug Zapfprofil-Rubrik umgesetzt (11.10.2026, #976); Konzeptstand nach den Anwenderentscheiden AS-Q1 bis AS-Q10
 ([`Konzept_Administration_Support_EPOS-Plan.md`](Konzept_Administration_Support_EPOS-Plan.md)).
 Jeder Abschnitt trägt die Stufe, ab der er gilt: **[heute]** vorhanden, **[Stufe 1]**
 Entwicklermodus, **[Stufe 2]** Fernwartung, **[Stufe 3]** Dialog „Über EPOS-Plan" und
@@ -306,9 +306,9 @@ dotnet build WindowsFormsApplication1/WindowsFormsApplication1.csproj -c Debug -
 
 | Stufe | Inhalt | Stand |
 |---|---|---|
-| 1 | Entwicklermodus, Entwicklerbereiche, Menükopf „Entwicklung", Projektdatei verborgen | umgesetzt (11.10.2026, #972); die Zapfprofil-Vorgaben sind Anwenderrubrik „Zapfprofil" statt Entwicklerbereich |
-| 2 | Fernwartung unter Windows: Menüpunkt, Dialog, Lizenzbedingung, Fernwartungsseite; Zuarbeit INEKON: Server, Client, Seite, Signatur. Das iPad ist zurückgestellt | umgesetzt (11.10.2026, #973); offen beim Anwender: Fernwartungsseite, Server, signierter Client |
-| 3 | Dialog „Über EPOS-Plan", Diagnosedaten, Supportpaket | umgesetzt: 3a (Dialog, Diagnoseblock, Geste im Dialog), 3b (Supportpaket) |
+| 1 | Entwicklermodus, Entwicklerbereiche, Menükopf „Entwicklung", Projektdatei verborgen | umgesetzt (11.10.2026, #974); die Zapfprofil-Vorgaben sind Anwenderrubrik „Zapfprofil" statt Entwicklerbereich (Nachzug 11.10.2026, #976) |
+| 2 | Fernwartung unter Windows: Menüpunkt, Dialog, Lizenzbedingung, Fernwartungsseite; Zuarbeit INEKON: Server, Client, Seite, Signatur. Das iPad ist zurückgestellt | umgesetzt (11.10.2026, #975); offen beim Anwender: Fernwartungsseite, Server, signierter Client |
+| 3 | Dialog „Über EPOS-Plan", Diagnosedaten, Supportpaket | umgesetzt (11.10.2026, #977): 3a (Dialog, Diagnoseblock, Geste im Dialog), 3b (Supportpaket) |
 | 4 | Supportvertrag im Lizenz-Token (`support_bis`) | offen, auf Zuruf |
 
 
