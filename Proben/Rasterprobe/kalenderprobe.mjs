@@ -103,9 +103,10 @@ async function maske(seite, marke) {
   const w = seite.locator('.epos-ueberlagerung .epos-kalb');
   await w.locator('button.epos-kalb-zeile-neu').click(); await schlaf(400);
   const editor = w.locator('.epos-kalb-zuordnung .epos-kalb-editor');
-  await editor.locator('input[type=date]').nth(0).fill('2025-03-10'); await schlaf(200);
-  await editor.locator('input[type=date]').nth(1).fill('2025-03-14'); await schlaf(200);
-  await editor.locator('input:not([type=date])').first().fill('Probezeile'); await schlaf(200);
+  // Gemeinjahrdatum (Tag und Monat ohne Jahr): Eingabe „TT.MM.", übernommen beim Verlassen des Feldes.
+  await editor.locator('.epos-gemeinjahrdatum input').nth(0).fill('10.03.'); await editor.locator('.epos-gemeinjahrdatum input').nth(0).blur(); await schlaf(200);
+  await editor.locator('.epos-gemeinjahrdatum input').nth(1).fill('14.03.'); await editor.locator('.epos-gemeinjahrdatum input').nth(1).blur(); await schlaf(200);
+  await editor.locator('input:not([inputmode=decimal])').first().fill('Probezeile'); await schlaf(200);
   // Wirkung „aus“ (KalenderWirkung.Aus = 1): eine Angabe für alle Größen — die Zeile wird EINE gemeinsame Zeile.
   await editor.locator('select').first().selectOption('1'); await schlaf(300);
   await editor.locator('button.epos-kalb-uebernehmen').click(); await schlaf(600);
