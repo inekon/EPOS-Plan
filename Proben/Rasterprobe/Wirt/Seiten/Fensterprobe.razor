@@ -22,7 +22,8 @@
       ?fall=bhkw           BhkwDialog, ebenso
       ?fall=waermepumpen   WaermepumpenDialog mit eingebetteter Detailansicht; die
                            Temperaturpruefung schlaegt an (Warnband im Fussblock der Detailansicht)
-      ?fall=gebaeude       GebaeudeDialog mit "Simulation..." (Waermebedarf als Ueberlagerung)
+      ?fall=gebaeude       GebaeudeDialog (Katalogauswahl V1, Stufe 4): Zusammenfassung, Satz-Ueberlagerung mit
+                           "Simulation..." (Waermebedarf als Ueberlagerung darueber), Stift, Rueckfrage des Rueckwegs
       ?fall=dubletten      KatalogDublettenDialog - das Protokoll steht UNTER der Schlussleiste
       ?fall=katalog        BedarfAdminDialog (Katalogdialog, .epos-katalog-dialog)
       ?meldung=1           fuer die Bannerprobe (bannerprobe.mjs): Heizkessel und BHKW melden bei
@@ -116,6 +117,10 @@
                             StammSatz="@GebaeudeStammsatz"
                             BedarfGaben="@GebaeudeBedarfGaben"
                             InDbUebernehmen="@(_meldung ? (_, _) => null! : null)"
+                            RueckwegVorschau="@GebaeudeRueckwegVorschau"
+                            Rueckweg="@((z, ueber, name) => new GebaeudeDbUebernahme(true, ueber ? "Ursprung" : name, "Gebäude übernommen."))"
+                            RueckwegNameBelegt="@(n => GebaeudeZeilen.Any(z => z.Bezeichner == n))"
+                            ProjektGaben="@(_ => null)"
                             Geschlossen="@(b => Beendet(b))" />
             break;
 
@@ -345,8 +350,19 @@
         Einheit = "Wohnfläche [m²]",
         Jahresnutzungsgrad = 1,
         Rechenweg = "VDI 6007",
-        HgesWK = 512.3
+        HgesWK = 512.3,
+        // Stufe 4: die Projektkopie besteht (Zusammenfassung: Kühlung, Zonen; Rückweg ohne stilles Speichern).
+        HatProjektkopie = true,
+        KuehlungAktiv = idZ == 1,
+        Zonenzahl = 2
     };
+
+    // Die Vorschau des Rueckwegs (Stufe 4): Ursprung frei, eine Abweichung, Kindzeilen.
+    private WindowsFormsApplication1.GebaeudeRueckwegVorschau GebaeudeRueckwegVorschau(GebaeudeProjektZeile z)
+        => new(z.IdZ, z.IdGebaeude, z.Name, z.IdKatalog, z.Name, WindowsFormsApplication1.Rueckwegabsage.Keine, z.Name + " (Projekt)",
+               new[] { new WindowsFormsApplication1.GebaeudeAbweichung("Wohnflaeche_gesamt", "140", "150") },
+               new[] { new WindowsFormsApplication1.GebaeudeKindzahl(WindowsFormsApplication1.GebaeudeRueckweg.ART_ZONEN, 2, 2),
+                       new WindowsFormsApplication1.GebaeudeKindzahl(WindowsFormsApplication1.GebaeudeRueckweg.ART_BAUTEILE, 14, 12) });
 
     private GebaeudeStammDetail? GebaeudeStammdetail(string name)
     {

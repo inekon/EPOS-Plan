@@ -191,7 +191,7 @@ public class BaustoffzuordnungenDialogTests : EposBunitContext
         IRenderedComponent<GebaeudeDialog> cut = Gebaeudedialog(() => new Dictionary<string, object>(), mitImport: true);
         IElement knopf = Knopf(cut)!;
         IElement leiste = knopf.ParentElement!;
-        Assert.Equal("epos-leiste", leiste.ClassName);
+        Assert.Equal("epos-zweispalten-fussleiste", leiste.ClassName);
         Assert.Contains(leiste.Children, b => b.TextContent.Trim() == "Gebäude in DB neu...");
         Assert.DoesNotContain(leiste.Children, b => b.ClassList.Contains("epos-knopf--primaer"));
         Assert.Contains("epos-importknopf", knopf.PreviousElementSibling!.ClassName);

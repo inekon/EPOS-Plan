@@ -52120,5 +52120,68 @@ Chart</value>
   <data name="BPRO_LBL_BESCHR_KAELTE" xml:space="preserve">
     <value>Beschreibung des ausgewählten Kältetyps:</value>
   </data>
+  <data name="GEB_ZF_UWERTE" xml:space="preserve">
+    <value>U-Werte</value>
+  </data>
+  <data name="GEB_ZF_UWERTE_WERT" xml:space="preserve">
+    <value>AW {0} · FE {1} · DA {2} · GR {3} W/(m²·K)</value>
+  </data>
+  <data name="GEB_ZF_AUSRICHTUNG" xml:space="preserve">
+    <value>Ausrichtung</value>
+  </data>
+  <data name="GEB_ZF_AUSRICHTUNG_WERT" xml:space="preserve">
+    <value>Planoberseite {0}°</value>
+  </data>
+  <data name="GEB_ZF_KUEHLUNG" xml:space="preserve">
+    <value>Kühlung</value>
+  </data>
+  <data name="GEB_ZF_ZONEN" xml:space="preserve">
+    <value>Zonen</value>
+  </data>
+  <data name="GEB_RUECKWEG_BLEIBT" xml:space="preserve">
+    <value>Im Projekt bleiben die Zuordnung, die Wohnfläche und die Ausrichtung des Gebäudes.</value>
+  </data>
+  <data name="GEB_RUECKWEG_ABWEICHUNGEN" xml:space="preserve">
+    <value>Abweichende Kopfspalten gegenüber dem Ursprung „{0}“: {1}</value>
+  </data>
+  <data name="GEB_RUECKWEG_ABW_ZEILE" xml:space="preserve">
+    <value>{0} ({1} → {2})</value>
+  </data>
+  <data name="GEB_RUECKWEG_KEINE_ABWEICHUNG" xml:space="preserve">
+    <value>Keine abweichenden Kopfspalten gegenüber dem Ursprung „{0}“.</value>
+  </data>
+  <data name="GEB_RUECKWEG_KINDZEILEN" xml:space="preserve">
+    <value>Kindzeilen im Projekt / am Ursprung: {0}</value>
+  </data>
+  <data name="GEB_RUECKWEG_KIND_ZEILE" xml:space="preserve">
+    <value>{0} {1} / {2}</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_ZONEN" xml:space="preserve">
+    <value>Zonen</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_BAUTEILE" xml:space="preserve">
+    <value>Bauteile</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_LUFTSTROEME" xml:space="preserve">
+    <value>Luftströme</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_KALENDER" xml:space="preserve">
+    <value>Kalender</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_VORGABEN" xml:space="preserve">
+    <value>Vorgabezeilen</value>
+  </data>
+  <data name="GEB_RUECKWEG_ART_PERIODEN" xml:space="preserve">
+    <value>Perioden</value>
+  </data>
+  <data name="GEB_SPERRE_RUECKWEG_MEHRERE" xml:space="preserve">
+    <value>Nur für genau ein gewähltes Projektgebäude – mehrere Gebäude nacheinander übernehmen.</value>
+  </data>
+  <data name="GEB_SPERRE_BEARBEITEN_EINER" xml:space="preserve">
+    <value>„Bearbeiten…“ wirkt auf genau einen gewählten Satz.</value>
+  </data>
+  <data name="GEB_MSG_LOESCHEN_N" xml:space="preserve">
+    <value>{0} Gebäude gelöscht.</value>
+  </data>
 </root>
 

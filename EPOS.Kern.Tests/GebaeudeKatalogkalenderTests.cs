@@ -93,7 +93,9 @@ namespace EPOS.Kern.Tests
             var quelle = (Func<IReadOnlyList<Katalogfilterzeile>>)gaben["Katalogzeilen"];
             Assert.Equal(1.0, quelle().Single(z => z.Id == id).Zahl(Katalogfilterprofil.SpKonditionierungskalender));
             var profil = (Katalogfilterprofil)gaben["Katalogprofil"];
-            Assert.Equal(Katalogfilterprofil.SpKonditionierungskalender, profil.Spalten.Last().Schluessel);
+            // Die Kalenderspalte vor der Spalte „im Projekt verwendet" (Katalogauswahl 4.10), die das Projektprofil anhängt.
+            Assert.Equal(Katalogfilterprofil.SpKonditionierungskalender, profil.Spalten[^2].Schluessel);
+            Assert.Equal(Katalogfilterprofil.SpVerwendet, profil.Spalten.Last().Schluessel);
         }
 
         /// <summary>Die sechste Spalte: Schlüssel <c>KONDKALENDER</c>, Zahl, Titel aus <c>KOND_MSG_SP_KALENDER</c>.</summary>

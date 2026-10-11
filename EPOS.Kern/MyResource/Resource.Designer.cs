@@ -34809,6 +34809,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Gebäude gelöscht. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_LOESCHEN_N {
+            get {
+                return ResourceManager.GetString("GEB_MSG_LOESCHEN_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Soll {0} wirklich gelöscht werden ? ähnelt.
         /// </summary>
         public static string GEB_MSG_LOESCHFRAGE {
@@ -35070,6 +35079,123 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abweichende Kopfspalten gegenüber dem Ursprung „{0}“: {1} ähnelt.
+        /// </summary>
+        public static string GEB_RUECKWEG_ABWEICHUNGEN {
+            get {
+                return ResourceManager.GetString("GEB_RUECKWEG_ABWEICHUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1} → {2}) ähnelt.
+        /// </summary>
+        public static string GEB_RUECKWEG_ABW_ZEILE {
+            get {
+                return ResourceManager.GetString("GEB_RUECKWEG_ABW_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteile ähnelt.
+        /// </summary>
+        public static string GEB_RUECKWEG_ART_BAUTEILE {
+            get {
+                return ResourceManager.GetString("GEB_RUECKWEG_ART_BAUTEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender ähnelt.
+        /// </summary>
+        public static string GEB_RUECKWEG_ART_KALENDER {
+            get {
+                return ResourceManager.GetString("GEB_RUECKWEG_ART_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftströme ähnelt.
+        /// </summary>
+        public static string GEB_RUECKWEG_ART_LUFTSTROEME {
+            get {
+                return ResourceManager.GetString("GEB_RUECKWEG_ART_LUFTSTROEME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Perioden ähnelt.
+        /// </summary>
+        public static string GEB_RUECKWEG_ART_PERIODEN {
+            get {
+                return ResourceManager.GetString("GEB_RUECKWEG_ART_PERIODEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabezeilen ähnelt.
+        /// </summary>
+        public static string GEB_RUECKWEG_ART_VORGABEN {
+            get {
+                return ResourceManager.GetString("GEB_RUECKWEG_ART_VORGABEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen ähnelt.
+        /// </summary>
+        public static string GEB_RUECKWEG_ART_ZONEN {
+            get {
+                return ResourceManager.GetString("GEB_RUECKWEG_ART_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben die Zuordnung, die Wohnfläche und die Ausrichtung des Gebäudes. ähnelt.
+        /// </summary>
+        public static string GEB_RUECKWEG_BLEIBT {
+            get {
+                return ResourceManager.GetString("GEB_RUECKWEG_BLEIBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine abweichenden Kopfspalten gegenüber dem Ursprung „{0}“. ähnelt.
+        /// </summary>
+        public static string GEB_RUECKWEG_KEINE_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("GEB_RUECKWEG_KEINE_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kindzeilen im Projekt / am Ursprung: {0} ähnelt.
+        /// </summary>
+        public static string GEB_RUECKWEG_KINDZEILEN {
+            get {
+                return ResourceManager.GetString("GEB_RUECKWEG_KINDZEILEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} {1} / {2} ähnelt.
+        /// </summary>
+        public static string GEB_RUECKWEG_KIND_ZEILE {
+            get {
+                return ResourceManager.GetString("GEB_RUECKWEG_KIND_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Bearbeiten…“ wirkt auf genau einen gewählten Satz. ähnelt.
+        /// </summary>
+        public static string GEB_SPERRE_BEARBEITEN_EINER {
+            get {
+                return ResourceManager.GetString("GEB_SPERRE_BEARBEITEN_EINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten lässt es sich in die Datenbank übernehmen. ähnelt.
         /// </summary>
         public static string GEB_SPERRE_IN_DB_ASSISTENT {
@@ -35084,6 +35210,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_SPERRE_LOESCHEN_ASSISTENT {
             get {
                 return ResourceManager.GetString("GEB_SPERRE_LOESCHEN_ASSISTENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur für genau ein gewähltes Projektgebäude – mehrere Gebäude nacheinander übernehmen. ähnelt.
+        /// </summary>
+        public static string GEB_SPERRE_RUECKWEG_MEHRERE {
+            get {
+                return ResourceManager.GetString("GEB_SPERRE_RUECKWEG_MEHRERE", resourceCulture);
             }
         }
         
@@ -35183,6 +35318,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_TXT_EINHEIT_FLAECHE {
             get {
                 return ResourceManager.GetString("GEB_TXT_EINHEIT_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausrichtung ähnelt.
+        /// </summary>
+        public static string GEB_ZF_AUSRICHTUNG {
+            get {
+                return ResourceManager.GetString("GEB_ZF_AUSRICHTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Planoberseite {0}° ähnelt.
+        /// </summary>
+        public static string GEB_ZF_AUSRICHTUNG_WERT {
+            get {
+                return ResourceManager.GetString("GEB_ZF_AUSRICHTUNG_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung ähnelt.
+        /// </summary>
+        public static string GEB_ZF_KUEHLUNG {
+            get {
+                return ResourceManager.GetString("GEB_ZF_KUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U-Werte ähnelt.
+        /// </summary>
+        public static string GEB_ZF_UWERTE {
+            get {
+                return ResourceManager.GetString("GEB_ZF_UWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die AW {0} · FE {1} · DA {2} · GR {3} W/(m²·K) ähnelt.
+        /// </summary>
+        public static string GEB_ZF_UWERTE_WERT {
+            get {
+                return ResourceManager.GetString("GEB_ZF_UWERTE_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen ähnelt.
+        /// </summary>
+        public static string GEB_ZF_ZONEN {
+            get {
+                return ResourceManager.GetString("GEB_ZF_ZONEN", resourceCulture);
             }
         }
         
