@@ -29357,15 +29357,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bei der Fernwartung sieht ein Mitarbeiter des Supports Ihren Bildschirm und kann Ihnen die Bedienung zeigen oder einen Fehler mit Ihnen beheben. Den Bildschirm sieht nur der Support, mit dem Sie gerade sprechen; EPOS-Plan zeichnet dabei nichts auf. Jede Verbindung nehmen Sie im Fernwartungsprogramm selbst an, und Sie können sie dort jederzeit beenden. ähnelt.
-        /// </summary>
-        public static string FW_ERKLAERUNG {
-            get {
-                return ResourceManager.GetString("FW_ERKLAERUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kopieren ähnelt.
         /// </summary>
         public static string FW_KOPIEREN {
@@ -29393,38 +29384,74 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bei der Fernwartung sieht ein Mitarbeiter des Supports Ihren Bildschirm über Quick Assist, das Hilfeprogramm von Windows, und kann Ihnen die Bedienung zeigen oder einen Fehler mit Ihnen beheben. Die Verbindung läuft verschlüsselt über Microsoft; EPOS-Plan zeichnet dabei nichts auf. Jede Anfrage nehmen Sie in Quick Assist selbst an, und Sie können die Sitzung dort jederzeit beenden. ähnelt.
+        /// </summary>
+        public static string FW_QA_ERKLAERUNG {
+            get {
+                return ResourceManager.GetString("FW_QA_ERKLAERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quick Assist ist auf diesem Rechner nicht verfügbar. Öffnen Sie es über das Startmenü oder die Fernwartungsseite. ähnelt.
+        /// </summary>
+        public static string FW_QA_FEHLER {
+            get {
+                return ResourceManager.GetString("FW_QA_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quick Assist steht unter Windows zur Verfügung. Die Fernwartungsseite beschreibt den Weg. ähnelt.
+        /// </summary>
+        public static string FW_QA_NUR_WINDOWS {
+            get {
+                return ResourceManager.GetString("FW_QA_NUR_WINDOWS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rufen Sie uns an (Telefon unter „Kontakt“). ähnelt.
+        /// </summary>
+        public static string FW_QA_SCHRITT_1 {
+            get {
+                return ResourceManager.GetString("FW_QA_SCHRITT_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Starten Sie Quick Assist mit dem Knopf unten und geben Sie den sechsstelligen Code ein, den wir Ihnen nennen. ähnelt.
+        /// </summary>
+        public static string FW_QA_SCHRITT_2 {
+            get {
+                return ResourceManager.GetString("FW_QA_SCHRITT_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erlauben Sie die Bildschirmansicht oder die Steuerung, wenn Quick Assist fragt. ähnelt.
+        /// </summary>
+        public static string FW_QA_SCHRITT_3 {
+            get {
+                return ResourceManager.GetString("FW_QA_SCHRITT_3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quick Assist starten ähnelt.
+        /// </summary>
+        public static string FW_QA_STARTEN {
+            get {
+                return ResourceManager.GetString("FW_QA_STARTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
         /// </summary>
         public static string FW_SCHLIESSEN {
             get {
                 return ResourceManager.GetString("FW_SCHLIESSEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Laden Sie das Fernwartungsprogramm von der Fernwartungsseite und starten Sie es. ähnelt.
-        /// </summary>
-        public static string FW_SCHRITT_1 {
-            get {
-                return ResourceManager.GetString("FW_SCHRITT_1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nennen Sie dem Support die angezeigte Kennung und das Einmalkennwort. ähnelt.
-        /// </summary>
-        public static string FW_SCHRITT_2 {
-            get {
-                return ResourceManager.GetString("FW_SCHRITT_2", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nehmen Sie die Anfrage im Programm an. ähnelt.
-        /// </summary>
-        public static string FW_SCHRITT_3 {
-            get {
-                return ResourceManager.GetString("FW_SCHRITT_3", resourceCulture);
             }
         }
         

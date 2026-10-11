@@ -2,18 +2,19 @@
    Abschnitt 4).
 
    WOZU. Hilfe -> Fernwartung... buendelt, was der Anwender fuer den Support braucht: Kontakt,
-   seine Angaben (der Diagnoseblock des Kerns zum Kopieren) und den Weg zur Fernwartung. EPOS-Plan
-   oeffnet dafuer allein die Fernwartungsseite von INEKON im Browser (AS-Q9, Lesart c); das
-   Programm selbst laedt und startet der Anwender dort.
+   seine Angaben (der Diagnoseblock des Kerns zum Kopieren) und den Weg zur Fernwartung. Der Weg
+   ist Quick Assist, das Hilfeprogramm von Windows: Der Support nennt am Telefon einen
+   sechsstelligen Code, der Anwender startet Quick Assist aus diesem Dialog, gibt den Code ein und
+   erlaubt Ansicht oder Steuerung. Den Start steuert die Plattform als Rueckruf bei; ohne ihn (iOS)
+   gibt es den Knopf nicht, und ein Satz nennt Windows. Die Fernwartungsseite bleibt zweiter Weg.
 
    VIER ZONEN von oben nach unten: Kontakt, Ihre Angaben, Fernwartung, Fussleiste. Ohne bezahlte
-   Lizenz bleibt die dritte Zone SICHTBAR, der Knopf ist gesperrt, der Grund steht darueber.
-   Kein Einwilligungshaken: Die Einwilligung ist die Annahme der Verbindung im
-   Fernwartungsprogramm. Kein Arbeitsstand, deshalb nur „Schliessen".
+   Lizenz bleibt die dritte Zone SICHTBAR, die Knoepfe sind gesperrt, der Grund steht darueber.
+   Kein Einwilligungshaken: Die Einwilligung ist die Annahme der Anfrage in Quick Assist. Kein Arbeitsstand, deshalb nur „Schliessen".
 
    KEINE DATENBANK, KEIN KERN (Hausregel EPOS.UI): Freigabe, Grund, Kontakt und Diagnoseblock
    kommen fertig aus der Huelle (EPOS.UI.Daten/Hilfe/FernwartungHuelle.cs); Browser und
-   Zwischenablage sind Rueckrufe der Plattform. *@
+   Zwischenablage und der Start von Quick Assist sind Rueckrufe der Plattform. *@
 
 @namespace EPOS.UI.Dialoge.Hilfe
 @using EPOS.UI.Dialoge.Allgemein
@@ -70,7 +71,8 @@
         }
     </section>
 
-    @* (3) Fernwartung — Erklaerung, drei Schritte, der primaere Knopf. *@
+    @* (3) Fernwartung — Erklaerung, drei Schritte, „Quick Assist starten" (primaer) und die
+       Fernwartungsseite als zweiter Weg. *@
     <section class="epos-fernwartung-zone epos-fw-fernwartung">
         <h2 class="epos-untergruppe">@T.ZoneFernwartung</h2>
         <p class="epos-fw-erklaerung">@T.Erklaerung</p>
@@ -83,8 +85,17 @@
         {
             <p class="epos-fw-sperrgrund" role="note">@D.Sperrgrund</p>
         }
+        @if (FernwartungStarten is null)
+        {
+            <p class="epos-fw-nur-windows" role="note">@T.QuickAssistNurWindows</p>
+        }
         <div class="epos-kontextleiste">
-            <button type="button" class="epos-knopf epos-knopf--primaer epos-fw-seite"
+            @if (FernwartungStarten is not null)
+            {
+                <button type="button" class="epos-knopf epos-knopf--primaer epos-fw-quickassist"
+                        disabled="@(!D.Erlaubt)" @onclick="BeiQuickAssist">@T.QuickAssistStarten</button>
+            }
+            <button type="button" class="@SeiteKlasse"
                     disabled="@(!SeiteAktiv)" @onclick="BeiSeite">@T.SeiteOeffnen</button>
         </div>
     </section>
@@ -110,6 +121,12 @@
     /// Ohne Rueckruf ist der Knopf gesperrt und die E-Mail kein Link.
     /// </summary>
     [Parameter] public Func<string, bool>? AdresseOeffnen { get; set; }
+
+    /// <summary>
+    /// Startet Quick Assist auf diesem Rechner; <c>false</c> = misslungen. Ohne Rueckruf (iOS) gibt
+    /// es den Knopf „Quick Assist starten" nicht.
+    /// </summary>
+    [Parameter] public Func<bool>? FernwartungStarten { get; set; }
 
     /// <summary>Legt einen Text in die Zwischenablage; ohne Rueckruf kein Knopf „Kopieren".</summary>
     [Parameter] public Action<string>? Kopieren { get; set; }
@@ -137,9 +154,24 @@
     /// <summary>Frei nur mit Freigabe, Adresse und Rueckruf — kein Delegat, kein Knopf.</summary>
     private bool SeiteAktiv => D.Erlaubt && D.Seite.Length > 0 && AdresseOeffnen is not null;
 
+    /// <summary>Die Seite ist nur dann primaer, wenn es keinen Knopf „Quick Assist starten" gibt.</summary>
+    private string SeiteKlasse => FernwartungStarten is null
+        ? "epos-knopf epos-knopf--primaer epos-fw-seite"
+        : "epos-knopf epos-fw-seite";
+
     // =====================================================================
     // Handlungen
     // =====================================================================
+
+    private void BeiQuickAssist()
+    {
+        if (!D.Erlaubt || FernwartungStarten is null) return;
+        bool gestartet;
+        try { gestartet = FernwartungStarten(); }
+        catch { gestartet = false; }
+        if (gestartet) { _meldung = ""; return; }
+        Melden(WarnStufe.Warnung, T.QuickAssistFehler);
+    }
 
     private void BeiSeite()
     {
