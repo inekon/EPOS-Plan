@@ -159,8 +159,6 @@ Ein neuer Speicher rechnet als ein einziger Vorrat (''Schichten:'' 1) mit einer 
 * Dieselbe Tabelle der Pufferspeicher nennt Ladung, Entladung, Verluste und Vollzyklen und – mit Frischwassermodul – die Stunden, in denen die oberste Zone zu kalt zum Zapfen war.
 * Das ''Simulationsprotokoll'' nennt Zonenanteile, die der Lauf nicht annehmen konnte und durch gleich große Zonen ersetzt hat.
 
-[[Datei:Diagramm_Speichertemperaturen.png|mini|zentriert|800px|Temperatur der obersten und untersten Schicht zweier geschichteter Speicher und die Quelltemperatur einer Erdsonde in einer Winter-, Übergangs- und Sommerwoche; der Abstand zwischen oben und unten zeigt die Schichtung. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
-
 {{Anker|schichtung-fallstricke}}'''Worauf Sie achten.'''
 * '''Frischwassermodul und Vorlauf.''' Das Modul zapft nur, solange die oberste Zone die Zapftemperatur plus ''Grädigkeit Frischwassermodul'' hält. Mit 60&nbsp;°C Zapftemperatur und 5&nbsp;K Grädigkeit braucht es oben 65&nbsp;°C; ein Speicher mit 60&nbsp;°C Vorlauf erreicht das nie, und das Brauchwasser deckt dann die nächste Stufe der Kaskade. Vorlauf und Zapftemperatur aufeinander abstimmen.
 * '''Nutztemperatur über dem Vorlauf.''' Liegt die ''Nutztemperatur Brauchwasser'' über dem Vorlauf des Speichers, erreicht keine Zone sie, und das Brauchwasser bekommt nichts aus dem Speicher.
