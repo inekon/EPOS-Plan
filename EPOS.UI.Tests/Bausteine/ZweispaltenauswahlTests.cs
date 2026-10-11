@@ -623,7 +623,7 @@ public class ZweispaltenauswahlTests : EposBunitContext
     {
         string css = Stilblatt();
         string dialog = Block(css, "#app > .epos-dialog:has(> .epos-zweispalten),\n.epos-ueberlagerung-inhalt > .epos-dialog:has(> .epos-zweispalten) {");
-        Assert.Contains("height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-sicher-unten))", dialog);
+        Assert.Contains("height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten))", dialog);
         Assert.Contains("overflow: hidden", dialog);
 
         string raster = Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten {");
@@ -1114,7 +1114,7 @@ public class ZweispaltenauswahlTests : EposBunitContext
         // Keine Höhe des ganzen Fensters ohne Abzug.
         foreach (string voll in new[] { "height: 100vh;", "height: 100dvh;", "min-height: 100vh;", "calc(100dvh - var(--epos-assistent-band-abzug))" })
             Assert.DoesNotContain(voll, css);
-        Assert.Contains("height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-sicher-unten));",
+        Assert.Contains("height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten));",
             Block(css, "#app > .epos-dialog:has(> .epos-zweispalten),\n.epos-ueberlagerung-inhalt > .epos-dialog:has(> .epos-zweispalten) {"));
     }
 
