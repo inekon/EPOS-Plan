@@ -1220,8 +1220,9 @@ der Kopf, der Inhalt rollt — wer unten arbeitet, sah die Meldung nicht. Ein `W
 Kind der Dialogwurzel ist, haftet deshalb unter dem Kopf und über der Schlussleiste und trägt dort ein Kreuz zum
 Ausblenden (`epos-ui.css`, „Dialog im eigenen Fenster"; Wache `EPOS.UI.Tests/FensterrahmenTests`). Der Schalter
 `meldung=1` der Fensterprobenseite lässt die Trägerwahl von Heizkessel und BHKW fehlschlagen und gibt dem
-Gebäudedialog „In DB übernehmen" (weich gesperrt, der Versuch meldet den Grund); ohne ihn steht die Seite wie
-für die Fensterprobe.
+Gebäudedialog Projektzeilen ohne Projektkopie und ohne stillen Speicherweg: „In die Datenbank übernehmen…“ ist
+weich gesperrt, der Versuch meldet den Grund (mit Kopie öffnete der Knopf die Rückfrage des Rückwegs, kein Banner);
+ohne den Schalter steht die Seite wie für die Fensterprobe.
 
 ```bash
 node bannerprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner außerhalb des Repositorys>] [--nur heizkessel|bhkw|gebaeude] [--ohne-gegenprobe]

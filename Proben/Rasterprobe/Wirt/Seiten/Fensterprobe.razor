@@ -381,9 +381,9 @@
     private int _naechsteIdZ = 100000;
 
     private List<GebaeudeProjektZeile> GebaeudeProjektzeilen => _gebaeudeProjektzeilen ??=
-        GebaeudeZeilen.Take(2).Select((z, i) => Projektzeile(z, i + 1)).ToList();
+        GebaeudeZeilen.Take(2).Select((z, i) => Projektzeile(z, i + 1, !_meldung)).ToList();
 
-    private static GebaeudeProjektZeile Projektzeile(Katalogfilterzeile z, int idZ) => new()
+    private static GebaeudeProjektZeile Projektzeile(Katalogfilterzeile z, int idZ, bool kopie = true) => new()
     {
         IdZ = idZ,
         IdGebaeude = z.Id,
@@ -397,7 +397,9 @@
         Rechenweg = "VDI 6007",
         HgesWK = 512.3,
         // Stufe 4: die Projektkopie besteht (Zusammenfassung: Kühlung, Zonen; Rückweg ohne stilles Speichern).
-        HatProjektkopie = true,
+        // Bannerprobe (?meldung=1): ungespeicherte Zeilen ohne Kopie und ohne stillen Speicherweg - „In die
+        // Datenbank übernehmen…" ist weich gesperrt, der Versuch meldet den Grund im Warnbanner.
+        HatProjektkopie = kopie,
         KuehlungAktiv = idZ == 1,
         Zonenzahl = 2
     };
