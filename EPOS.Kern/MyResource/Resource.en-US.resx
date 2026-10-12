@@ -53615,5 +53615,41 @@ chart</value>
   <data name="GIMP_DLG_NAME_UEBERNEHMEN" xml:space="preserve">
     <value>Apply</value>
   </data>
+  <data name="GIMP_PLAN_ZONE_UNBEHEIZT" xml:space="preserve">
+    <value>unheated</value>
+  </data>
+  <data name="GIMP_PLAN_ZONE_REST" xml:space="preserve">
+    <value>Remainder</value>
+  </data>
+  <data name="GIMP_PLAN_ZONE_REST_GESCHOSS" xml:space="preserve">
+    <value>Remainder {0}</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_REST_PLATZIERT" xml:space="preserve">
+    <value>{0} rooms without a zone placed automatically: {1} into the zone “unheated”, {2} into the neighbouring zone, {3} into a remainder zone per storey.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_REST_PLATZIERT" xml:space="preserve">
+    <value>{0} rooms without a zone placed automatically: {1} into the zone “unheated”, {2} into the neighbouring zone, {3} into a remainder zone per storey.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_PLATZIERT" xml:space="preserve">
+    <value>{0} rooms without a zone placed automatically: {1} into “unheated”, {2} into the neighbouring zone, {3} into a remainder zone per storey – marked in the zone tree, where each can be undone.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_PLATZIERT_MARKE" xml:space="preserve">
+    <value>placed automatically</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_PLATZIERT_UNBEHEIZT" xml:space="preserve">
+    <value>placed automatically: unheated, into the shared zone “unheated”</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_PLATZIERT_NACHBAR" xml:space="preserve">
+    <value>placed automatically: into the neighbouring zone with the largest shared area ({0})</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_PLATZIERT_GESCHOSS" xml:space="preserve">
+    <value>placed automatically: no heated neighbouring zone, into the remainder zone of the storey</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZURUECKNEHMEN" xml:space="preserve">
+    <value>Undo</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZURUECKNEHMEN_RAUM" xml:space="preserve">
+    <value>Undo the placement of {0} – the room is then not assigned to any zone</value>
+  </data>
 </root>
 

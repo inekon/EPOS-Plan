@@ -53622,5 +53622,41 @@ Chart</value>
   <data name="GIMP_DLG_NAME_UEBERNEHMEN" xml:space="preserve">
     <value>Übernehmen</value>
   </data>
+  <data name="GIMP_PLAN_ZONE_UNBEHEIZT" xml:space="preserve">
+    <value>unbeheizt</value>
+  </data>
+  <data name="GIMP_PLAN_ZONE_REST" xml:space="preserve">
+    <value>Rest</value>
+  </data>
+  <data name="GIMP_PLAN_ZONE_REST_GESCHOSS" xml:space="preserve">
+    <value>Rest {0}</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_REST_PLATZIERT" xml:space="preserve">
+    <value>{0} Räume ohne Zone automatisch platziert: {1} in die Zone „unbeheizt“, {2} zur Nachbarzone, {3} in eine Restzone je Geschoss.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_REST_PLATZIERT" xml:space="preserve">
+    <value>{0} Räume ohne Zone automatisch platziert: {1} in die Zone „unbeheizt“, {2} zur Nachbarzone, {3} in eine Restzone je Geschoss.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_PLATZIERT" xml:space="preserve">
+    <value>{0} Räume ohne Zone automatisch platziert: {1} in „unbeheizt“, {2} zur Nachbarzone, {3} in eine Restzone je Geschoss – im Zonenbaum markiert und dort je Raum zurücknehmbar.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_PLATZIERT_MARKE" xml:space="preserve">
+    <value>automatisch platziert</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_PLATZIERT_UNBEHEIZT" xml:space="preserve">
+    <value>automatisch platziert: unbeheizt, in die gemeinsame Zone „unbeheizt“</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_PLATZIERT_NACHBAR" xml:space="preserve">
+    <value>automatisch platziert: zur Nachbarzone mit der größten gemeinsamen Fläche ({0})</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_PLATZIERT_GESCHOSS" xml:space="preserve">
+    <value>automatisch platziert: ohne beheizte Nachbarzone, in die Restzone des Geschosses</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZURUECKNEHMEN" xml:space="preserve">
+    <value>Zurücknehmen</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZURUECKNEHMEN_RAUM" xml:space="preserve">
+    <value>Platzierung von {0} zurücknehmen – der Raum ist danach keiner Zone zugeordnet</value>
+  </data>
 </root>
 

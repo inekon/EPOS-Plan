@@ -41019,6 +41019,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume ohne Zone automatisch platziert: {1} in „unbeheizt“, {2} zur Nachbarzone, {3} in eine Restzone je Geschoss – im Zonenbaum markiert und dort je Raum zurücknehmbar. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_PLATZIERT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_PLATZIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die automatisch platziert: ohne beheizte Nachbarzone, in die Restzone des Geschosses ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_PLATZIERT_GESCHOSS {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_PLATZIERT_GESCHOSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die automatisch platziert ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_PLATZIERT_MARKE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_PLATZIERT_MARKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die automatisch platziert: zur Nachbarzone mit der größten gemeinsamen Fläche ({0}) ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_PLATZIERT_NACHBAR {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_PLATZIERT_NACHBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die automatisch platziert: unbeheizt, in die gemeinsame Zone „unbeheizt“ ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_PLATZIERT_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_PLATZIERT_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ wählen ähnelt.
         /// </summary>
         public static string GIMP_DLG_PLAN_RAUM_WAEHLEN {
@@ -41114,6 +41159,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_PLAN_ZUORDNEN_GRUND {
             get {
                 return ResourceManager.GetString("GIMP_DLG_PLAN_ZUORDNEN_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zurücknehmen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ZURUECKNEHMEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ZURUECKNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Platzierung von {0} zurücknehmen – der Raum ist danach keiner Zone zugeordnet ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ZURUECKNEHMEN_RAUM {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ZURUECKNEHMEN_RAUM", resourceCulture);
             }
         }
         
@@ -42617,6 +42680,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_NUTZUNG_WOHNEN {
             get {
                 return ResourceManager.GetString("GIMP_NUTZUNG_WOHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rest ähnelt.
+        /// </summary>
+        public static string GIMP_PLAN_ZONE_REST {
+            get {
+                return ResourceManager.GetString("GIMP_PLAN_ZONE_REST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rest {0} ähnelt.
+        /// </summary>
+        public static string GIMP_PLAN_ZONE_REST_GESCHOSS {
+            get {
+                return ResourceManager.GetString("GIMP_PLAN_ZONE_REST_GESCHOSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unbeheizt ähnelt.
+        /// </summary>
+        public static string GIMP_PLAN_ZONE_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("GIMP_PLAN_ZONE_UNBEHEIZT", resourceCulture);
             }
         }
         
@@ -46473,6 +46563,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume ohne Zone automatisch platziert: {1} in die Zone „unbeheizt“, {2} zur Nachbarzone, {3} in eine Restzone je Geschoss. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_REST_PLATZIERT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_REST_PLATZIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone {0} gibt es nicht. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_PLAN_ZONE_UNBEKANNT {
@@ -48287,6 +48386,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_PLAN_REST_AUSSERHALB {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_PLAN_REST_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume ohne Zone automatisch platziert: {1} in die Zone „unbeheizt“, {2} zur Nachbarzone, {3} in eine Restzone je Geschoss. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_REST_PLATZIERT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_REST_PLATZIERT", resourceCulture);
             }
         }
         
