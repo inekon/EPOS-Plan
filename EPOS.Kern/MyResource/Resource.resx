@@ -53312,18 +53312,6 @@ Chart</value>
   <data name="FW_ZONE_FERNWARTUNG" xml:space="preserve">
     <value>Fernwartung</value>
   </data>
-  <data name="FW_ERKLAERUNG" xml:space="preserve">
-    <value>Bei der Fernwartung sieht ein Mitarbeiter des Supports Ihren Bildschirm und kann Ihnen die Bedienung zeigen oder einen Fehler mit Ihnen beheben. Den Bildschirm sieht nur der Support, mit dem Sie gerade sprechen; EPOS-Plan zeichnet dabei nichts auf. Jede Verbindung nehmen Sie im Fernwartungsprogramm selbst an, und Sie können sie dort jederzeit beenden.</value>
-  </data>
-  <data name="FW_SCHRITT_1" xml:space="preserve">
-    <value>Laden Sie das Fernwartungsprogramm von der Fernwartungsseite und starten Sie es.</value>
-  </data>
-  <data name="FW_SCHRITT_2" xml:space="preserve">
-    <value>Nennen Sie dem Support die angezeigte Kennung und das Einmalkennwort.</value>
-  </data>
-  <data name="FW_SCHRITT_3" xml:space="preserve">
-    <value>Nehmen Sie die Anfrage im Programm an.</value>
-  </data>
   <data name="FW_SEITE_OEFFNEN" xml:space="preserve">
     <value>Fernwartungsseite öffnen</value>
   </data>
@@ -53533,6 +53521,28 @@ Chart</value>
   </data>
   <data name="KAELTE_ART_GRUPPE" xml:space="preserve">
     <value>Art des Kältebedarfs</value>
+  </data>
+  <!-- Administration und Support, Stufe 2 Nachzug Quick Assist -->
+  <data name="FW_QA_ERKLAERUNG" xml:space="preserve">
+    <value>Bei der Fernwartung sieht ein Mitarbeiter des Supports Ihren Bildschirm über Quick Assist, das Hilfeprogramm von Windows, und kann Ihnen die Bedienung zeigen oder einen Fehler mit Ihnen beheben. Die Verbindung läuft verschlüsselt über Microsoft; EPOS-Plan zeichnet dabei nichts auf. Jede Anfrage nehmen Sie in Quick Assist selbst an, und Sie können die Sitzung dort jederzeit beenden.</value>
+  </data>
+  <data name="FW_QA_SCHRITT_1" xml:space="preserve">
+    <value>Rufen Sie uns an (Telefon unter „Kontakt“).</value>
+  </data>
+  <data name="FW_QA_SCHRITT_2" xml:space="preserve">
+    <value>Starten Sie Quick Assist mit dem Knopf unten und geben Sie den sechsstelligen Code ein, den wir Ihnen nennen.</value>
+  </data>
+  <data name="FW_QA_SCHRITT_3" xml:space="preserve">
+    <value>Erlauben Sie die Bildschirmansicht oder die Steuerung, wenn Quick Assist fragt.</value>
+  </data>
+  <data name="FW_QA_STARTEN" xml:space="preserve">
+    <value>Quick Assist starten</value>
+  </data>
+  <data name="FW_QA_FEHLER" xml:space="preserve">
+    <value>Quick Assist ist auf diesem Rechner nicht verfügbar. Öffnen Sie es über das Startmenü oder die Fernwartungsseite.</value>
+  </data>
+  <data name="FW_QA_NUR_WINDOWS" xml:space="preserve">
+    <value>Quick Assist steht unter Windows zur Verfügung. Die Fernwartungsseite beschreibt den Weg.</value>
   </data>
 </root>
 

@@ -53305,18 +53305,6 @@ chart</value>
   <data name="FW_ZONE_FERNWARTUNG" xml:space="preserve">
     <value>Remote support</value>
   </data>
-  <data name="FW_ERKLAERUNG" xml:space="preserve">
-    <value>During remote support, a member of our support team sees your screen and can show you how to use the program or fix a problem with you. Only the support person you are talking to sees your screen; EPOS-Plan records nothing. You accept every connection yourself in the remote support program and can end it there at any time.</value>
-  </data>
-  <data name="FW_SCHRITT_1" xml:space="preserve">
-    <value>Download the remote support program from the remote support page and start it.</value>
-  </data>
-  <data name="FW_SCHRITT_2" xml:space="preserve">
-    <value>Tell support the ID and the one-time password shown.</value>
-  </data>
-  <data name="FW_SCHRITT_3" xml:space="preserve">
-    <value>Accept the request in the program.</value>
-  </data>
   <data name="FW_SEITE_OEFFNEN" xml:space="preserve">
     <value>Open remote support page</value>
   </data>
@@ -53526,6 +53514,28 @@ chart</value>
   </data>
   <data name="KAELTE_ART_GRUPPE" xml:space="preserve">
     <value>Type of cooling demand</value>
+  </data>
+  <!-- Administration und Support, Stufe 2 Nachzug Quick Assist -->
+  <data name="FW_QA_ERKLAERUNG" xml:space="preserve">
+    <value>During remote support, a member of our support team sees your screen through Quick Assist, the Windows help program, and can show you how to use the program or fix a problem with you. The connection is encrypted and runs through Microsoft; EPOS-Plan records nothing. You accept every request yourself in Quick Assist and can end the session there at any time.</value>
+  </data>
+  <data name="FW_QA_SCHRITT_1" xml:space="preserve">
+    <value>Call us (phone number under “Contact”).</value>
+  </data>
+  <data name="FW_QA_SCHRITT_2" xml:space="preserve">
+    <value>Start Quick Assist with the button below and enter the six-digit code we give you.</value>
+  </data>
+  <data name="FW_QA_SCHRITT_3" xml:space="preserve">
+    <value>Allow screen viewing or control when Quick Assist asks.</value>
+  </data>
+  <data name="FW_QA_STARTEN" xml:space="preserve">
+    <value>Start Quick Assist</value>
+  </data>
+  <data name="FW_QA_FEHLER" xml:space="preserve">
+    <value>Quick Assist is not available on this computer. Open it from the Start menu or via the remote support page.</value>
+  </data>
+  <data name="FW_QA_NUR_WINDOWS" xml:space="preserve">
+    <value>Quick Assist is available on Windows. The remote support page describes how to use it.</value>
   </data>
 </root>
 

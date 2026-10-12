@@ -9,9 +9,11 @@ namespace WindowsFormsApplication1
     /// Abschnitt 4.2): fragt den Kern — Freigabe (<see cref="LizenzCtrl.FernwartungErlaubt()"/>,
     /// AS-Q8 Lesart b), Diagnoseblock (<see cref="Diagnosedaten.Textblock"/>), Kontakt
     /// (<c>SUP_KONTAKT_*</c>) und Fernwartungsseite (<see cref="Fernwartung.SEITE"/>) — und reicht
-    /// der Komponente nur die Ergebnisse. Browser und Zwischenablage steuert die Plattform als
-    /// Rueckrufe bei; Windows baut das Fenster in <c>FernwartungFenster</c>, iOS bietet den
-    /// Dialog nicht an (Konzept 4.5).
+    /// der Komponente nur die Ergebnisse. Browser, Zwischenablage und den Start von Quick Assist
+    /// steuert die Plattform als Rueckrufe bei; Windows baut das Fenster in
+    /// <c>FernwartungFenster</c> und startet Quick Assist ueber <c>QuickAssistStart</c>. iOS
+    /// bietet den Dialog nicht an (Konzept 4.5; <c>AppWurzel</c> fuehrt das Ziel nicht) — reichte
+    /// eine Plattform ihn ohne Startrueckruf, fehlte der Knopf und ein Satz nennt Windows.
     /// </summary>
     public static class FernwartungHuelle
     {
@@ -28,9 +30,12 @@ namespace WindowsFormsApplication1
         /// <param name="programmversion">Die Programmversion, wie die Schale sie kennt.</param>
         /// <param name="adresseOeffnen">Oeffnet eine Adresse im Standardprogramm; <c>false</c> = misslungen.</param>
         /// <param name="kopieren">Legt einen Text in die Zwischenablage.</param>
+        /// <param name="fernwartungStarten">Startet Quick Assist; <c>false</c> = misslungen;
+        /// <c>null</c>, wo die Plattform es nicht kann.</param>
         public static IReadOnlyDictionary<string, object> Gaben(string programmversion,
                                                                 Func<string, bool> adresseOeffnen,
-                                                                Action<string> kopieren)
+                                                                Action<string> kopieren,
+                                                                Func<bool> fernwartungStarten = null)
         {
             var gaben = new Dictionary<string, object>
             {
@@ -40,6 +45,7 @@ namespace WindowsFormsApplication1
             };
             if (adresseOeffnen != null) gaben["AdresseOeffnen"] = adresseOeffnen;
             if (kopieren != null) gaben["Kopieren"] = kopieren;
+            if (fernwartungStarten != null) gaben["FernwartungStarten"] = fernwartungStarten;
             return gaben;
         }
 
@@ -70,10 +76,13 @@ namespace WindowsFormsApplication1
             Kopieren = MyResource.Resource.FW_KOPIEREN,
             Kopiert = MyResource.Resource.FW_KOPIERT,
             ZoneFernwartung = MyResource.Resource.FW_ZONE_FERNWARTUNG,
-            Erklaerung = MyResource.Resource.FW_ERKLAERUNG,
-            Schritt1 = MyResource.Resource.FW_SCHRITT_1,
-            Schritt2 = MyResource.Resource.FW_SCHRITT_2,
-            Schritt3 = MyResource.Resource.FW_SCHRITT_3,
+            Erklaerung = MyResource.Resource.FW_QA_ERKLAERUNG,
+            Schritt1 = MyResource.Resource.FW_QA_SCHRITT_1,
+            Schritt2 = MyResource.Resource.FW_QA_SCHRITT_2,
+            Schritt3 = MyResource.Resource.FW_QA_SCHRITT_3,
+            QuickAssistStarten = MyResource.Resource.FW_QA_STARTEN,
+            QuickAssistFehler = MyResource.Resource.FW_QA_FEHLER,
+            QuickAssistNurWindows = MyResource.Resource.FW_QA_NUR_WINDOWS,
             SeiteOeffnen = MyResource.Resource.FW_SEITE_OEFFNEN,
             SeiteFehler = MyResource.Resource.FW_SEITE_FEHLER,
             Schliessen = MyResource.Resource.FW_SCHLIESSEN,

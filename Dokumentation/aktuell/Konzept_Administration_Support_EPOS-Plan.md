@@ -8,8 +8,8 @@ Anwenders: „AS-Q1 bis AS-Q6 und AS-Q8 wie vorgeschlagen. AS-Q7 mit RustDesk. A
 RustDesk und mit AS-Q10 iOS abstimmen — evtl nur (c) aus AS-Q9." und danach „stelle iPad-Support
 (remote) zurück, wird später bearbeitet." Dazu der Entscheid „Änderung in der Wiki vornehmen: kein
 TeamViewer als Support" — die beiden Wiki-Quellen nennen seither keinen Produktnamen mehr (1.1).
-Abschnitt 4 ist auf RustDesk umgeschrieben; die Tabelle 4.1 hält den Vergleich als Begründung fest.
-**Die Stufen 1 und 2 sind umgesetzt** (11.10.2026, #974 und #985; Protokolle [`2026-10-11_AS1_Entwicklermodus.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS1_Entwicklermodus.md) und [`2026-10-11_AS2_Fernwartung.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS2_Fernwartung.md)); Stufe 3 (3a Dialog „Über EPOS-Plan“, Diagnose, Geste im Dialog; 3b Supportpaket) ist umgesetzt (11.10.2026, #987; Protokoll [`2026-10-11_AS3_Ueber_Diagnose_Supportpaket.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS3_Ueber_Diagnose_Supportpaket.md)), die übrigen Stufen aus Abschnitt 8 sind offen. **Offen:** der Betrieb der Fernwartung bei INEKON (Fernwartungsseite, Server, signierter Client; 4.4, 4.8). Die Entwicklerseite
+Ein zweiter Entscheid am Abend des 11.10.2026 („nehme Quick Assist als Standardweg“) ersetzt RustDesk als Standardweg durch das Windows-Bordmittel Quick Assist (AS-Q7); Abschnitt 4 beschreibt diesen Weg, die Tabelle 4.1 hält den Vergleich als Begründung fest.
+**Die Stufen 1 und 2 sind umgesetzt** (11.10.2026, #974 und #985; Protokolle [`2026-10-11_AS1_Entwicklermodus.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS1_Entwicklermodus.md) und [`2026-10-11_AS2_Fernwartung.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS2_Fernwartung.md)); Stufe 3 (3a Dialog „Über EPOS-Plan“, Diagnose, Geste im Dialog; 3b Supportpaket) ist umgesetzt (11.10.2026, #987; Protokoll [`2026-10-11_AS3_Ueber_Diagnose_Supportpaket.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS3_Ueber_Diagnose_Supportpaket.md)), die übrigen Stufen aus Abschnitt 8 sind offen. **Offen:** Microsoft-Konto des Supports und Fernwartungsseite als Anleitung (4.8). Die Entwicklerseite
 (Tastenfolgen, Schlüssel, Pfade, Supportablauf) steht im
 [`Entwicklerhandbuch_Administration_Support_EPOS-Plan.md`](Entwicklerhandbuch_Administration_Support_EPOS-Plan.md),
 mit Word-Fassung daneben.
@@ -194,11 +194,12 @@ Release-Anwendung, auch beim Kunden.
 | Weg | Wann | Handhabung | Wieder aus |
 |---|---|---|---|
 | **Verknüpfung „EPOS-Plan (Entwickler)"** mit `--entwickler` | Entwicklerrechner, Vorführung, Fehlersuche beim Kunden über Fernwartung | Verknüpfung einmal anlegen (das Setup legt sie **nicht** an — sie bleibt dem Entwickler vorbehalten); Start über sie | nächster Start ohne Argument |
-| **Geste im Dialog „Über EPOS-Plan"** (Abschnitt 5) | am Kundenrechner ohne Verknüpfung, am iPad | Dialog öffnen, **Strg+Umschalt+Alt+E** (iOS: fünfmal auf die Versionszeile tippen), Rückfrage „Entwicklermodus einschalten? Er gilt bis zum Ausschalten.", wahlweise mit Kennwort (AS-Q2) | Menü *Entwicklung* → „Entwicklermodus ausschalten" oder dieselbe Geste im Dialog (löscht die Einstellung) |
+| **Geste im Dialog „Über EPOS-Plan"** (Abschnitt 5) | am Kundenrechner ohne Verknüpfung, am iPad | Dialog öffnen, **Strg+Umschalt+F12** (iOS: fünfmal auf die Versionszeile tippen), Rückfrage „Entwicklermodus einschalten? Er gilt bis zum Ausschalten.", wahlweise mit Kennwort (AS-Q2) | Menü *Entwicklung* → „Entwicklermodus ausschalten" oder dieselbe Geste im Dialog (löscht die Einstellung) |
 | **Umgebungsvariable** `EPOS_ENTWICKLER=1` | Entwicklerrechner dauerhaft, CI, Rasterprobe, Referenzlauf | einmal im System setzen | Variable entfernen |
 
-Die Geste wirkt nur im geöffneten Dialog „Über EPOS-Plan“, nicht im Hauptfenster. Unter Windows fängt
-das Fenster (`UeberFenster`) die Tastenfolge über `BlazorDialogForm.Befehlstaste` ab, bevor die WebView
+Die Geste wirkt nur im geöffneten Dialog „Über EPOS-Plan“, nicht im Hauptfenster. Der Dialog erkennt
+die Folge selbst (Tastencode F12 mit Strg und Umschalt) und ruft die Plattform; unter Windows fängt zusätzlich
+das Fenster (`UeberFenster`) dieselbe Folge über `BlazorDialogForm.Befehlstaste` ab, bevor die WebView
 sie sieht, und schaltet eine Nachricht später: Ist der Modus aus, nach der Rückfrage ein (bei Sperre
 des Administrators eine Meldung), ist er an, aus — läuft er über Umgebung oder Startargument, nennt
 die Meldung den Grund. Danach zeigt der Dialog den neuen Diagnoseblock, und das Hauptfenster versorgt
@@ -317,14 +318,17 @@ Vier Werkzeuge kommen in Frage; Angaben nach Herstellerseiten und Wissensdatenba
 | iOS | QuickSupport-App: nur Bildschirm *ansehen* (Apple lässt keine Fernsteuerung zu) | Android ja, iOS keine Angabe | nein | die iOS-App steuert nur; ein iPad kann weder gesteuert noch angesehen werden (Herstellerangabe) |
 | Betrieb und Risiko | Link bricht, wenn das Modul im Management-Konto gelöscht wird oder die Lizenz ausläuft (neu anlegen) | Lizenzmodell 2025 geändert, Preissteigerungen gemeldet | abhängig von Microsoft-Konto und Store; keine Anpassung | eigener Server (VPS, Ports, Pflege); die Herstellersignatur der Windows-Datei ist im Dezember 2025 zurückgezogen worden, eine eigene Signatur ist nötig (SmartScreen) |
 
-Die Empfehlung des Entwurfs lautete TeamViewer (Bestand im Wiki, Service-Warteschlange, keine
-eigene Infrastruktur). **Entschieden ist RustDesk** (AS-Q7, Anwender 11.10.2026): Die Sitzungen
-laufen über einen Server, den INEKON selbst betreibt, es fallen keine Lizenzkosten je Helfer an,
-der Client ist quelloffen, und der Kunde lädt ein kleines Programm ohne Installation. Was dieser
-Weg verlangt, steht in 4.4 und 4.8: einen eigenen Vermittlungsserver, den Pro-Tarif für den
-gestalteten Client und eine eigene Codesignatur. Quick Assist bleibt als **Ausweichweg ohne eigene
-Infrastruktur** erwähnenswert (auf der Fernwartungsseite als Hinweis „Alternativ: Quick Assist mit
-einem Code vom Support"), nicht als Automatik.
+Die Tabelle ist ein **Vergleich** der Werkzeuge, kein Betriebsplan. Die Empfehlung des Entwurfs
+lautete TeamViewer (Bestand im Wiki, Service-Warteschlange, keine eigene Infrastruktur). **Standardweg
+ist Windows Quick Assist** (AS-Q7, Anwender 11.10.2026): Es ist in Windows 10 und 11 enthalten, von
+Microsoft signiert, ohne Lizenz und ohne Server; der Helfer meldet sich mit einem Microsoft-Konto an,
+der Anwender gibt einen sechsstelligen Code ein. Gegen die Selbstbetriebswege sprach der laufende
+Betrieb: Server, Pro-Tarif, gestalteter Client und Codesignatur, dazu eine Gerätezählung des
+Pro-Tarifs, die jedes Gerät mitrechnet, das sich je mit dem Server verbunden hat.
+
+**Reserve.** Ist Quick Assist bei einem Kunden gesperrt, bleibt RustDesk quelloffen mit eigenem
+Server und einem Client mit Serverangabe im Dateinamen als beschriebener Ausweichweg (4.4); Server
+und Client werden erst eingerichtet, wenn der Fall eintritt.
 
 ### 4.2 Der Bedienweg
 
@@ -345,20 +349,22 @@ Fenster in der Schale wie `KatalogabgleichFenster`), vier Zonen von oben nach un
 2. **Ihre Angaben für den Support** — der Diagnoseblock aus Abschnitt 5 (Version, Schemastand,
    Katalogfassung, Lizenztyp und -nummer, Firma, Gerätekennung-Kurzform, Windows-Fassung, Sprache)
    mit dem Knopf „Kopieren". Der Support fragt genau das heute am Telefon ab.
-3. **Fernwartung** — Erklärtext (was geschieht, wer den Bildschirm sieht, dass EPOS-Plan nichts
-   aufzeichnet, dass der Anwender jede Verbindung im Fernwartungsprogramm selbst annimmt und
-   jederzeit beendet), die drei Schritte in Kurzform (Programm von der Fernwartungsseite laden und
-   starten, dem Support die angezeigte Kennung und das Einmalkennwort nennen, die Anfrage im
-   Programm annehmen) und der primäre Knopf **„Fernwartungsseite öffnen"**, der
-   `https://epos-plan.de/support/fernwartung` im Browser öffnet (AS-Q9 Lesart c, 4.4). Kein Haken
-   für die Einwilligung: Die Einwilligung ist die Annahme der Verbindung im Fernwartungsprogramm,
-   das sie je Sitzung abfragt; der Dialog sagt das. Fehler werden benannt (kein Browser, Adresse
-   nicht erreichbar).
+3. **Fernwartung** — Erklärtext (der Support sieht den Bildschirm über Quick Assist, die Verbindung
+   läuft verschlüsselt über Microsoft-Dienste, EPOS-Plan zeichnet nichts auf, der Anwender nimmt jede
+   Anfrage selbst an und beendet sie jederzeit), die drei Schritte — (1) INEKON anrufen; (2) Quick
+   Assist mit dem Knopf **„Quick Assist starten"** öffnen und den sechsstelligen Code eingeben, den der
+   Support nennt; (3) Ansicht oder Steuerung erlauben, wenn Quick Assist fragt — und als zweiter Weg
+   der Knopf **„Fernwartungsseite öffnen"**, der `https://epos-plan.de/support/fernwartung` im
+   Browser öffnet (AS-Q9 Lesart c, 4.4). Der Knopf „Quick Assist starten" startet Quick Assist aus
+   der Windows-Schale (Store-App, Rückfall auf die klassische `quickassist.exe`); ist es nicht
+   verfügbar, zeigt der Dialog einen Hinweis (Startmenü oder Fernwartungsseite). Kein Haken für die
+   Einwilligung: Die Einwilligung ist die Annahme in Quick Assist, die je Sitzung abgefragt wird; der
+   Dialog sagt das. Fehler werden benannt (kein Browser, Adresse nicht erreichbar).
 4. **Fußleiste** nach Hausregel: Füller · „Schließen" (primär). Kein OK/Abbrechen — der Dialog hat
    keinen Arbeitsstand.
 
-Der Knopf „Fernwartungsseite öffnen“ ist nur frei, wenn die Lizenzbedingung (4.3) erfüllt ist und die Schale den Aufruf zum Öffnen der Adresse mitgibt. Sonst bleibt Zone 3 **sichtbar, der Knopf gesperrt**, mit dem Grund
-in einer Hinweiszeile über ihm („Die Fernwartung gehört zum Wartungsvertrag. Aktivieren Sie zuerst Ihre
+Die Knöpfe „Quick Assist starten“ und „Fernwartungsseite öffnen“ sind nur frei, wenn die Lizenzbedingung (4.3) erfüllt ist und die Schale den jeweiligen Aufruf mitgibt. Sonst bleibt Zone 3 **sichtbar, die Knöpfe gesperrt**, mit dem Grund
+in einer Hinweiszeile über ihnen („Die Fernwartung gehört zum Wartungsvertrag. Aktivieren Sie zuerst Ihre
 Lizenz unter Hilfe → Lizenz." / für die Testversion: „Die Fernwartung steht in der Testversion nicht zur Verfügung. Sie erreichen uns per E-Mail.").
 
 ### 4.3 „Bei vorhandener Lizenz" — die Bedingung
@@ -378,49 +384,45 @@ und lässt die Kunden hinein, die Support am nötigsten haben; der Supportvertra
 Token, und die Grenze „nur mit Vertrag" wäre ohne Server-Erweiterung nicht prüfbar. Der
 `UhrManipuliert`-Fall bleibt gesperrt (der Zustand ist verdächtig; der Kontaktblock bleibt). Das Lesen des Zeitankers ohne Schreiben (`LizenzManager.AnkerOhneSchreiben`) macht ihn erkennbar, ohne die Lizenzablage zu verändern. Zusätzlich gesperrt sind ein unbekannter Lizenztyp und ein Token, das zu einem fremden Gerät gehört; die Gründe sind `FW_SPERRE_LIZENZ` (ohne Lizenz: Wartungsvertrag, zuerst die Lizenz aktivieren) und `FW_SPERRE_TEST` (Testversion).
 
-### 4.4 Bereitstellung des Fernwartungsprogramms
+### 4.4 Bereitstellung der Fernwartung
 
-Der Entwurf stellte drei Wege zur Wahl (AS-Q9): (a) Laden bei Bedarf mit Manifest, Prüfsumme und
-Signaturprüfung, (b) im Setup mitliefern, (c) nur ein Link. **Entschieden ist (c)** (Anwender
-11.10.2026, abgestimmt mit AS-Q10): EPOS-Plan öffnet einen Link, mehr nicht. Die
-**Fernwartungsseite** `https://epos-plan.de/support/fernwartung` auf INEKONs WordPress trägt den
-Download des Windows-Clients, die drei Schritte, den Hinweis auf Telefon und Zeiten und den Satz
-für das iPad (4.5). In der Anwendung bleibt damit allein `IDateiDienst.AdresseOeffnen` — kein
-Download, keine Prüfsumme, keine Signaturprüfung, keine zehnte Schnittstelle. Stufe 2 baut den Weg
-für Windows; das iPad ist zurückgestellt (4.5).
+Quick Assist ist **Windows-Bordmittel**: kein Download, kein Programm von INEKON, keine
+Signaturfrage für einen Client, keine Prüfsumme. Der Dialog startet es aus der Windows-Schale; die
+Anwendung kennt dafür keine zehnte Schnittstelle, die Schale trägt den Start. Der Anwender (AS-Q9,
+Lesart c, abgestimmt mit AS-Q10) behält den zweiten Weg: einen Link auf die **Fernwartungsseite**
+`https://epos-plan.de/support/fernwartung` auf INEKONs WordPress. Sie ist eine **Anleitung** mit den
+Schritten und Bildern, dem Hinweis auf Telefon und Zeiten und dem Satz für das iPad (4.5), ohne
+Download. In der Anwendung bleibt für die Seite allein `IDateiDienst.AdresseOeffnen`.
 
-**Der Client.** Ein gestalteter RustDesk-Client aus dem Generator des Pro-Tarifs (4.8): Name und
-Logo von INEKON, Vermittlungsserver und Schlüssel fest voreingestellt, Richtung „nur eingehend",
-Einstellungen gesperrt, Einmalkennwort je Sitzung, Annahme der Verbindung durch den Anwender. Er
-läuft ohne Installation als einzelne Datei unter einem festen Namen (`EPOS-Plan-Fernwartung.exe`)
-und liegt auf epos-plan.de — nicht beim Hersteller, damit INEKON die Fassung bewusst tauscht. Ohne
-Pro-Tarif ginge der quelloffene Client mit Serverangabe im Dateinamen
-(`rustdesk-host=<server>,key=<schlüssel>.exe`) oder per Startargument `--config`; ihm fehlen Logo,
-die Sperre der Einstellungen und „nur eingehend".
+**Ablauf beim Support.** Der Support öffnet Quick Assist, wählt „Einer anderen Person helfen“,
+meldet sich mit dem Microsoft-Konto von INEKON an (Firmenkonto bevorzugt) und erhält einen Code, der
+zehn Minuten gilt. Er nennt den Code am Telefon, wählt nach der Annahme „Vollständige Steuerung“
+oder „Bildschirm anzeigen“, der Anwender bestätigt; beide Seiten können die Sitzung beenden.
 
-**Signatur.** Die Herstellersignatur der RustDesk-Windows-Dateien ist im Dezember 2025 von der
-Zertifizierungsstelle zurückgezogen worden; ein unsignierter oder so signierter Client löst beim
-Kunden den SmartScreen-Hinweis „Unbekannter Herausgeber" aus. Das Setup-Konzept (§ 9) sieht ein
-Codesignaturzertifikat auf INEKON ohnehin vor; dasselbe Zertifikat signiert den
-Fernwartungs-Client. Bis es da ist, erklärt die Fernwartungsseite den Hinweis und den Weg
-„Weitere Informationen → Trotzdem ausführen".
+**Voraussetzungen und Grenzen.**
 
-**Ausbau (nicht entschieden, nicht Teil der Stufe 2):** Die Lesarten (a) und (b) bleiben möglich,
-weil die Datei INEKON gehört — (b) im Setup unter `{app}\Support\` mitliefern, dann startet der
-Dialog sie unmittelbar; (a) bei Bedarf laden mit Manifest, SHA‑256 und Signaturprüfung gegen
-INEKONs Zertifikat. Beides lohnt erst, wenn der Link-Weg im Support stört.
+- Windows 10 oder 11 mit Quick Assist (Store-App oder klassische `quickassist.exe`); fehlt es oder ist
+  es per Richtlinie gesperrt, zeigt der Dialog den Hinweis und verweist auf die Fernwartungsseite.
+- Der Code gilt zehn Minuten und nur für eine Sitzung; der Anwender gibt ihn selbst ein.
+- Der Anwender braucht kein Microsoft-Konto; der Helfer braucht eines.
+- Bei „Bildschirm anzeigen“ sieht der Support nur zu; die Windows-Abfrage des Setups bestätigt dann der Anwender.
+- Das iPad hat kein Quick Assist (4.5).
+- Unternehmensnetze können Quick Assist sperren (Firewall, Richtlinie); das ist der Fall der Reserve.
+
+**Reserve.** Ist Quick Assist beim Kunden gesperrt, geht der quelloffene RustDesk-Client mit
+Serverangabe im Dateinamen (`rustdesk-host=<server>,key=<schlüssel>.exe`) oder per Startargument
+`--config` gegen einen eigenen quelloffenen Server; er braucht eine eigene Signatur, sonst löst er
+den SmartScreen-Hinweis aus. Dieser Weg wird erst eingerichtet, wenn er gebraucht wird. Das iPad ist
+zurückgestellt (4.5).
 
 ### 4.5 iOS
 
 **Zurückgestellt** (Anwender 11.10.2026: „stelle iPad-Support (remote) zurück, wird später
 bearbeitet"). Stufe 2 baut die Fernwartung für Windows; auf dem iPad gibt es den Menüpunkt ohnehin
-nicht (die Kopfleiste ist dort leer), und der Fernwartungsdialog wird dort nicht angeboten, bis der
-iPad-Weg entschieden ist. Für diesen späteren Entscheid liegt der Befund bereit: Apple lässt keine
-Fernsteuerung zu, und die RustDesk-App für iOS kann nur *steuern* — ein iPad lässt sich mit
-RustDesk weder fernsteuern noch ansehen (Herstellerangabe, Stand 2025/2026). Denkbar sind dann
-Kontakt und Diagnosedaten auf dem iPad (Stufe 3, Einstieg in der Startansicht neben der
-Versionszeile) mit benannter Ablehnung der Fernwartung, oder ein anderes Werkzeug allein für das
-Ansehen des iPad-Bildschirms.
+nicht (die Kopfleiste ist dort leer), und der Fernwartungsdialog wird dort nicht angeboten. Für das
+iPad gibt es keinen Fernwartungsweg: Quick Assist existiert für iPadOS nicht, und iPadOS lässt eine
+Bildschirmsteuerung durch Fremdprogramme nicht zu; der Weg dort bleibt die E-Mail mit kopierten
+Diagnosedaten.
 
 ### 4.6 Supportvertrag ins Token (Ausbau)
 
@@ -436,12 +438,12 @@ Kein Teil der Stufe 2; eigener Schritt auf Zuruf.
 Die Fernwartung ist eine Sitzung, die der Anwender selbst startet, annimmt und beendet; EPOS-Plan
 speichert nichts davon (kein Protokoll, keine gemerkte Einwilligung — die Annahme gilt je Sitzung).
 Aus der Anwendung geht allein der Aufruf der Fernwartungsseite nach außen (Adresse ohne
-Kundendaten). Die Sitzung selbst läuft Ende-zu-Ende verschlüsselt über INEKONs eigenen
-Vermittlungsserver (4.8), nicht über einen Fremdanbieter; der Server sieht Kennungen und
-Verbindungsdaten, keine Bildschirminhalte. Das Sitzungsprotokoll des Pro-Tarifs (wer wann mit wem)
-ist die einzige Aufzeichnung und liegt bei INEKON. Das steht im Dialog (Zone 3) und wird in zwei
-Wiki-Seiten nachgezogen: „Installation und Update → Unterstützung" (Weg aus dem Menü, was
-übertragen wird) und „Über EPOS-Plan → Software-Service". Der Rechtstext `LIZR_RH_A6`
+Kundendaten). Die Sitzung läuft über die Microsoft-Dienste von Quick Assist und ist verschlüsselt;
+EPOS-Plan zeichnet nichts auf. Der Support meldet sich mit dem Firmenkonto von INEKON an, der
+Anwender sieht den Namen des Helfers, bevor er annimmt, und kann die Sitzung jederzeit beenden. Das
+steht im Dialog (Zone 3) und wird in zwei Wiki-Seiten nachgezogen: „Installation und Update →
+Unterstützung" (Weg aus dem Menü, was übertragen wird) und „Über EPOS-Plan → Software-Service".
+Der Rechtstext `LIZR_RH_A6`
 (Datenverarbeitung der Lizenz) bleibt unberührt — die Fernwartung ist keine Lizenzverarbeitung.
 Nebenbefund, nicht Teil dieses Konzepts: `LIZR_RH_A6` und Konzept Lizenzierung § 7 nennen den
 Gerätenamen und den Windows-Anmeldenamen nicht, die `activate` und `trial` heute senden
@@ -451,17 +453,13 @@ Gerätenamen und den Windows-Anmeldenamen nicht, die `activate` und `trial` heut
 
 | Baustein | Inhalt | Einmalig / laufend |
 |---|---|---|
-| Vermittlungsserver | ein kleiner VPS mit den beiden RustDesk-Diensten `hbbs` (Kennungen, Durchstich) und `hbbr` (Relais) aus dem Docker-Abbild des Herstellers, eigener Name wie `fernwartung.epos-plan.de`, Ports 21115 bis 21119 TCP und 21116 UDP nach außen; das Schlüsselpaar entsteht beim ersten Start | einmalig einrichten; laufend Updates und Erreichbarkeit — ohne Server keine Sitzung, sonst nichts |
-| Pro-Tarif | Web-Konsole, Generator des gestalteten Clients, Adressbuch, Sitzungsprotokoll; jährliche Abrechnung, kleinste Stufe genügt (Stand 2026 rund 20 bis 25 US-Dollar je Monat, beim Hersteller prüfen) | laufend |
-| Gestalteter Client | aus dem Generator: Name, Logo, Server und Schlüssel, nur eingehend, gesperrte Einstellungen, Einmalkennwort; signiert mit INEKONs Zertifikat; abgelegt auf epos-plan.de | einmalig, dann je Clientfassung |
-| Fernwartungsseite | `https://epos-plan.de/support/fernwartung`: Download, drei Schritte, SmartScreen-Hinweis, Telefon und Zeiten, Satz für das iPad | einmalig; Pflege mit dem Client |
-| Support-Arbeitsplatz | der RustDesk-Client in der Vollfassung auf den Rechnern des Supports, auf denselben Server eingestellt, mit Adressbuch | einmalig je Arbeitsplatz |
-| Codesignatur | das Zertifikat aus Setup-Konzept § 9 (Hardwaretoken); es signiert Setup, Anwendung und Fernwartungs-Client | einmalig beschaffen, jährlich verlängern |
+| Microsoft-Konto | ein Konto je Support-Mitarbeiter (Firmenkonto bevorzugt), mit dem Quick Assist die Sitzung als Helfer erzeugt | einmalig je Mitarbeiter |
+| Support-Arbeitsplatz | Quick Assist (in Windows enthalten) auf den Rechnern des Supports | einmalig je Arbeitsplatz |
+| Fernwartungsseite | `https://epos-plan.de/support/fernwartung`: Anleitung mit Schritten und Bildern, Telefon und Zeiten, Satz für das iPad; kein Download | einmalig; Pflege bei Änderung von Quick Assist |
 
-Ohne Pro-Tarif geht es mit dem quelloffenen Server und dem Client mit Serverangabe im Dateinamen
-(4.4); dann fehlen Logo, Adressbuch und Sitzungsprotokoll, und der Anwender sieht die Serverangabe
-im Client. Der Vergleich der Kosten gehört zur Zuarbeit des Anwenders vor Stufe 2.
-
+Kein Server, kein Pro-Tarif, kein gestalteter Client. Die Codesignatur bleibt ein Thema des
+Setup-Konzepts (§ 9) für Setup und Anwendung, nicht der Fernwartung. **Reserve:** RustDesk quelloffen
+mit eigenem Server (4.4); Server und Client werden erst bei Bedarf eingerichtet.
 
 ## 5 Der Dialog „Über EPOS-Plan" und die Diagnosedaten
 
@@ -523,15 +521,15 @@ fest, auch dort, wo der Entscheid abweicht.
 | Nr. | Frage | Lesarten | Empfehlung des Entwurfs | Entscheid 11.10.2026 |
 |---|---|---|---|---|
 | **AS-Q1** | Quellen des Entwicklermodus | (a) Einstellung + Startargument + Umgebungsvariable mit HKLM-Sperre (3.1); (b) nur Startargument und Umgebungsvariable, nichts Dauerhaftes; (c) Lizenztyp „intern" als einzige Quelle | (a) — ein Baustein, vier Quellen, der Administrator geht vor; (c) scheitert am Kundenrechner, auf dem der Entwickler mit der Kundenlizenz arbeitet | **(a)** |
-| **AS-Q2** | Geste zum Einschalten | (a) Tastenfolge Strg+Umschalt+Alt+E im Dialog „Über EPOS-Plan" mit Rückfrage; (b) wie (a) zusätzlich mit Kennwort (fest in den Ressourcen, kein Geheimnis vor einem Entwickler); (c) sichtbarer Haken im Einstellungsdialog | (a) — die Bereiche sind kein Geheimnis, nur kein Anwenderweg; ein Kennwort hält niemanden auf und kostet Pflege; (c) widerspricht dem Auftrag | **(a)** |
+| **AS-Q2** | Geste zum Einschalten | (a) Tastenfolge Strg+Umschalt+Alt+E im Dialog „Über EPOS-Plan" mit Rückfrage; (b) wie (a) zusätzlich mit Kennwort (fest in den Ressourcen, kein Geheimnis vor einem Entwickler); (c) sichtbarer Haken im Einstellungsdialog | (a) — die Bereiche sind kein Geheimnis, nur kein Anwenderweg; ein Kennwort hält niemanden auf und kostet Pflege; (c) widerspricht dem Auftrag | **(a)**; Anwenderentscheid 11.10.2026: Tastenfolge Strg+Umschalt+F12 statt Strg+Umschalt+Alt+E — Strg+Alt ist auf deutscher Tastatur AltGr, AltGr+E ist Zeicheneingabe; Umsetzung Commit ``e2b54d86`` |
 | **AS-Q3** | Wo verborgene Elemente stehen | (a) am Fachort (Knopf im Importdialog bleibt dort, nur verborgen) und eigener Kopf *Entwicklung* für Werkzeuge ohne Fachort; (b) alles in den Kopf *Entwicklung* | (a) — der Projektdatei-Knopf gehört neben die Dateizeile, sonst bricht der Bedienweg des Imports | **(a)** |
 | **AS-Q4** | Welche Kandidaten aus 3.4 Entwicklerbereich werden | je Zeile ja/nein | wie die Spalte „Empfehlung" in 3.4 — fünf werden Entwicklerbereich (Wiederherstellen im Katalogabgleich, KI-Werkzeuge, IDS-Zusage, Zapfprofil-Rechenvorgaben, WebView-Entwicklerwerkzeuge), vier bleiben Anwender, die Prüfhaken bleiben Build-Schalter | **wie empfohlen, mit einer Ausnahme (Entscheid 11.10.2026):** die Zapfprofil-Rechenvorgaben werden Anwenderrubrik „Zapfprofil" („sollte enthalten sein ohne Entwickler-Abhängigkeit") — vier werden Entwicklerbereich, fünf bleiben Anwender; im Code umgesetzt |
 | **AS-Q5** | Bestand aus dem Modus ohne Modus | (a) lesbar und „Neu lesen" möglich, nur Neuanlage verborgen; (b) alles zur Projektdatei verborgen | (a) — verborgene Daten wären verwaiste Daten; die Herkunft bleibt sichtbar | **(a)** |
 | **AS-Q6** | Protokolle und Supportpaket | (a) `ki_aktionen.txt` wandert nach `Logs\`, Supportpaket als ZIP ohne Projektdaten (Stufe 3b); (b) nur Diagnosedaten kopieren, kein Paket | (a) — ein Ordner, eine Datei an die E-Mail; der KI-Auszug nur mit eigenem Haken | **(a)** |
-| **AS-Q7** | Fernwartungswerkzeug | (a) TeamViewer personalisiertes QuickSupport-Modul; (b) AnyDesk Custom Client; (c) Windows Quick Assist; (d) RustDesk | (a) — Bestand bei INEKON, ohne Installation beim Kunden, Service-Warteschlange; (c) als Textzeile | **(d) RustDesk** — eigener Server, keine Lizenzkosten je Helfer, quelloffener Client; Folgen in 4.4 und 4.8; dazu „kein TeamViewer als Support" im Wiki |
+| **AS-Q7** | Fernwartungswerkzeug | (a) TeamViewer personalisiertes QuickSupport-Modul; (b) AnyDesk Custom Client; (c) Windows Quick Assist; (d) RustDesk | (a) — Bestand bei INEKON, ohne Installation beim Kunden, Service-Warteschlange; (c) als Textzeile | **(d) RustDesk** — eigener Server, keine Lizenzkosten je Helfer, quelloffener Client; dazu „kein TeamViewer als Support" im Wiki. Anwenderentscheid 11.10.2026 (zweiter Entscheid): Quick Assist als Standardweg statt RustDesk — Gerätezählung des Pro-Tarifs, laufender Betrieb; RustDesk quelloffen bleibt Reserve; Umsetzung Commit ``2733d64a`` |
 | **AS-Q8** | Lizenzbedingung | (a) schreibfähige Lizenz; (b) bezahlte Lizenz, Laufzeit egal; (c) jede Lizenz; (d) Supportvertrag im Token | (b), (d) als Ausbau (Stufe 4) | **(b)** |
-| **AS-Q9** | Bereitstellung des Fernwartungsprogramms | (a) Laden bei Bedarf mit Manifest, Prüfsumme, Signaturprüfung, 30-Tage-Ablage; (b) im Setup; (c) nur Link | (a) mit (c) als Zweitweg | **(c)** — Link auf die Fernwartungsseite, für Windows und iOS derselbe Knopf; (a) und (b) bleiben als Ausbau möglich (4.4) |
-| **AS-Q10** | iOS | (a) Kontakt und Diagnosedaten, Fernwartung benannt abgelehnt; (b) zusätzlich die App des Fernwartungsdienstes öffnen | (a) — erst, wenn Bildschirm-Ansehen am iPad als Supportweg angeboten wird, kommt (b) | **zurückgestellt** — „stelle iPad-Support (remote) zurück, wird später bearbeitet"; der Befund für dann steht in 4.5 (mit RustDesk ist (b) gegenstandslos) |
+| **AS-Q9** | Bereitstellung des Fernwartungsprogramms | (a) Laden bei Bedarf mit Manifest, Prüfsumme, Signaturprüfung, 30-Tage-Ablage; (b) im Setup; (c) nur Link | (a) mit (c) als Zweitweg | **(c)** — Link auf die Fernwartungsseite, für Windows und iOS derselbe Knopf; (a) und (b) bleiben als Ausbau möglich (4.4); (c) bleibt; der Dialog startet zusätzlich Quick Assist |
+| **AS-Q10** | iOS | (a) Kontakt und Diagnosedaten, Fernwartung benannt abgelehnt; (b) zusätzlich die App des Fernwartungsdienstes öffnen | (a) — erst, wenn Bildschirm-Ansehen am iPad als Supportweg angeboten wird, kommt (b) | **zurückgestellt** — „stelle iPad-Support (remote) zurück, wird später bearbeitet"; der Befund für dann steht in 4.5 (mit RustDesk ist (b) gegenstandslos; mit Quick Assist ebenso (kein iPadOS-Client)) |
 
 Noch nicht gefragt, weil sie keinen Entscheid brauchen: der Name des Menüpunkts („Fernwartung…",
 en „Remote support…"), die Lage im Hilfemenü (nach Dokumentation), die Fußleisten (Hausregel).
@@ -542,7 +540,7 @@ en „Remote support…"), die Lage im Hilfemenü (nach Dokumentation), die Fuß
 | Stufe | Inhalt | Abnahme |
 |---|---|---|
 | **1 — Entwicklermodus und Projektdatei** | `Entwicklermodus`, `Freigabestufe` am Menüpunkt, `Menuetabelle.Sichtbar`, Marke, Kopf *Entwicklung* mit den sieben Punkten (3.5), die drei Einstiege der Projektdatei, iOS-Dateifilter, KI-Feldkarten, `Program.Main(args)` | Kern-Filter grün; `EntwicklerbereicheWacheTests`, `MenuebandTests` mit zwei Bäumen; Windows-Build auf Linux (Schale berührt); Sichtprobe: ohne Modus kein Projektdatei-Knopf und kein Kopf *Entwicklung*, mit `--entwickler` beides und die Marke; HKLM-Sperre schlägt alles — **umgesetzt** (11.10.2026, #974) |
-| **2 — Fernwartung** | `Menuepunkt.sperrgrund`, gesperrter Punkt im `Menueband`, `FernwartungDialog` mit vier Zonen, `LizenzCtrl.FernwartungErlaubt`, Adresse der Fernwartungsseite im Kern, Ressourcen, Wiki-Quellen (Hilfeseite „Fernwartung" ohne Produktnamen), Logbuch-Entwurf — Windows; das iPad ist zurückgestellt | Kern-Filter grün; `LizenzCtrlTests` mit den vier Lesarten; bunit gesperrt/frei; Windows-Sichtprobe einer echten Sitzung gegen INEKONs Server — **umgesetzt** (11.10.2026, #985, Commit `bb594b7a`; Protokoll [`2026-10-11_AS2_Fernwartung.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS2_Fernwartung.md)); **offen beim Anwender (4.8):** Vermittlungsserver, Pro-Tarif oder quelloffener Weg, gestalteter Client, Fernwartungsseite, Codesignatur, Sichtprobe |
+| **2 — Fernwartung** | `Menuepunkt.sperrgrund`, gesperrter Punkt im `Menueband`, `FernwartungDialog` mit vier Zonen, `LizenzCtrl.FernwartungErlaubt`, Adresse der Fernwartungsseite im Kern, Ressourcen, Wiki-Quellen (Hilfeseite „Fernwartung" ohne Produktnamen), Logbuch-Entwurf — Windows; das iPad ist zurückgestellt | Kern-Filter grün; `LizenzCtrlTests` mit den vier Lesarten; bunit gesperrt/frei; Windows-Sichtprobe einer echten Sitzung gegen INEKONs Server — **umgesetzt** (11.10.2026, #985, Commit `bb594b7a`; Protokoll [`2026-10-11_AS2_Fernwartung.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS2_Fernwartung.md)); Nachzug Quick Assist umgesetzt (Commit ``2733d64a``, #998; Protokoll [`2026-10-11_AS2b_QuickAssist.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS2b_QuickAssist.md)) |
 | **3 — Über und Diagnose** | `UeberDialog` löst `Versionsmeldung` ab, `Diagnosedaten`, „Kopieren", „Protokollordner öffnen", Geste; 3b Supportpaket | Kern-Filter grün; `DiagnosedatenTests`, `UeberDialogTests`; Sichtprobe: Textblock vollständig, Geste schaltet — **umgesetzt** (11.10.2026, #987, Commits `fbb0d2c1`, `98b15126`; Protokoll [`2026-10-11_AS3_Ueber_Diagnose_Supportpaket.md`](../ueberholt/Protokolle/Administration_Support/2026-10-11_AS3_Ueber_Diagnose_Supportpaket.md)): 3a Dialog und Geste im Dialog, 3b Supportpaket |
 | **4 — Supportvertrag im Token** (auf Zuruf) | `support_bis` im Server, tolerantes Lesen im Client, Lesart (d) wählbar | Serverseite durch den Anwender ausgerollt; Clienttest mit Token ohne und mit Feld |
 
