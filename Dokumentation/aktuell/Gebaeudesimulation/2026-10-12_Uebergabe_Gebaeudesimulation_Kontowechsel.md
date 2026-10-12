@@ -4,7 +4,7 @@ Dieses Papier hält, was eine neue Cloud-Sitzung auf einem anderen Konto braucht
 ohne Verlust fortzuführen: Stand, laufende und nächste Arbeit, offene Anwenderpunkte, Arbeitsweise und am Ende den
 Einstiegs-Prompt. Regelquelle bleibt [`CLAUDE.md`](../../../CLAUDE.md) mit den Projekt-`CLAUDE.md`; der dauerhafte Stand steht
 in der [Statusdatei iOS-Migration](../Status_iOS_Migration.md) (eine Zeile je Schritt) und in der
-[Statusdatei Gebäudesimulation](../Status_Gebaeudesimulation_VDI6007.md) (Entscheidungsregister bis E132, Stufentabelle).
+[Statusdatei Gebäudesimulation](../Status_Gebaeudesimulation_VDI6007.md) (Entscheidungsregister bis E133, Stufentabelle).
 Es löst die [Übergabe vom 08.10.2026](../../ueberholt/2026-10-08_Uebergabe_Gebaeudesimulation_Kontowechsel.md) ab und wandert
 nach `Dokumentation/ueberholt/`, sobald die Fortsetzung BK-2 und die GD-Nachzüge abgeschlossen hat.
 
@@ -18,7 +18,7 @@ nach `Dokumentation/ueberholt/`, sobald die Fortsetzung BK-2 und die GD-Nachzüg
 | Referenzbasis | **R52** `Referenzlaeufe/2026-10-11_R52_Vorheizen`, dreißig Projekte; CI-Auswahl 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065. Nächste freie Basis **R53** (vorgesehen für SA4) |
 | Testdatenbank | Schemastand **220** (Git LFS) |
 | Schemakette | 218 `KaelteArtSchema` (Sitzung Kälteanlagen), 219 `RaumnutzungNormkategorienSchema` (NP6), 220 `RaumnutzungNormwerteSchema` (NP7); **221 angemeldet für BK-2**; **222 frei** |
-| Statuszeilen | höchste vergebene #1024; vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E132**, **E133 frei** |
+| Statuszeilen | höchste vergebene #1024; vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E133**, **E134 frei** |
 | Parallele Sitzungen | „Kälteanlagen“, „Dialoge und Korrekturen“ (Konto 3), „Administration und Support“; alle pushen auf denselben Zweig. Statuskonflikte zeilenweise lösen, Nummernkollisionen über die nächste freie Nummer |
 
 ## 2. Was die Sitzung seit dem 08.10.2026 gebaut hat
@@ -67,8 +67,9 @@ Festlegung aus NP7, die Folgewellen kennen müssen: **Außenluft je Person** ist
 4. **Wiki und Logbuch** der Wellen GD, AB, NP6/NP7, KS (Seiten „Gebäude“, „Gebäudeimport“, „Nutzungsprofile“); Upload nur
    gebündelt und auf Zuruf, Versionsnummer beim Anwender erfragen.
 5. **BK** (E132 entschieden, Entwurf Abschnitt 6a; BK-1 Editoren gebaut, #1023): BK-2 Schemaschritt mit allen
-   Feldern der Quelle, Herkunft, Gruppe, Klasse und Kennzeichen (ohne Löschregel der Auslieferung), BK-3 Austauschformat und
-   Import mit Zusammenführung der Dubletten, BK-4 LocalDB-Werkzeug (Windows), BK-5 inhomogene Schichten, BK-6 Fenster im
+   Feldern der Quelle, Herkunft, Gruppe, Klasse und Kennzeichen (ohne Löschregel der Auslieferung), BK-3 Import mit
+   Zusammenführung der Dubletten **direkt aus dem CSV-Export der Quelltabellen (E133)**, BK-4 LocalDB-Werkzeug (Windows, nur
+   für einen neuen Katalogstand), BK-5 inhomogene Schichten, BK-6 Fenster im
    Aufbaukatalog, BK-7 Wiki. Rund 12–16 PT.
    Grundlage für BK-2: [Feldinventar](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-12_BK_Feldinventar_Hottgenroth.md)
    mit Vorschlag der zu übernehmenden Felder, [Strukturbericht](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-12_BK_Strukturbericht_Hottgenroth.md);
