@@ -361,6 +361,9 @@ namespace WindowsFormsApplication1
         /// <summary>Die Prozesswaerme-Katalogverwaltung (<c>BedarfAdminDialog</c>).</summary>
         public const string PROZESSWAERME_ADMIN = "Form_Prozesswaerme_Admin";
 
+        /// <summary>Die Kaeltebedarf-Katalogverwaltung (<c>BedarfAdminDialog</c>, K5b).</summary>
+        public const string KAELTEBEDARF_ADMIN = "Form_Kaeltebedarf_Admin";
+
         /// <summary>Die Stromverbraucher-Katalogverwaltung (<c>BedarfAdminDialog</c>).</summary>
         public const string STROMVERBRAUCHER_ADMIN = "Form_Stromverbraucher_Admin";
 
@@ -911,6 +914,8 @@ namespace WindowsFormsApplication1
                             KiDialogTexte.MaskeStromverbraucherAdmin),
                 BedarfAdmin(KiMaskennamen.BRAUCHWASSER_ADMIN,
                             KiDialogTexte.MaskeBrauchwasserAdmin),
+                BedarfAdmin(KiMaskennamen.KAELTEBEDARF_ADMIN,
+                            KiDialogTexte.MaskeKaeltebedarfAdmin),
                 BedarfErgebnis(),
                 WaermebedarfExtern(),
                 Solarganglinie(),
@@ -4271,6 +4276,31 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kaelte_art", "BedarfsProfileKiSicht.KaelteArt",
                                      KiDialogTexte.KaelteArtName, KiParameterTyp.Wahl,
                                      KiDialogTexte.KaelteArtErl, leerErlaubt: true),
+                    // K5b (Konzept Kaeltebedarf 3.4): die Feldgruppe „Deckung" der markierten Kaeltezeile.
+                    new KiDialogFeld("deckung", "BedarfsProfileKiSicht.Deckungsart",
+                                     KiDialogTexte.BpfDeckungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BpfDeckungErl, leerErlaubt: true),
+                    new KiDialogFeld("eer_weg", "BedarfsProfileKiSicht.EerWeg",
+                                     KiDialogTexte.WbxEerWegName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WbxEerWegErl, leerErlaubt: true),
+                    new KiDialogFeld("eer_1", "BedarfsProfileKiSicht.Eer1",
+                                     KiDialogTexte.WbxEer1Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WbxEer1Erl, leerErlaubt: true),
+                    new KiDialogFeld("taussen_1", "BedarfsProfileKiSicht.Taussen1",
+                                     KiDialogTexte.WbxTaussen1Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WbxTaussen1Erl, einheit: "°C", leerErlaubt: true),
+                    new KiDialogFeld("eer_2", "BedarfsProfileKiSicht.Eer2",
+                                     KiDialogTexte.WbxEer2Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WbxEer2Erl, leerErlaubt: true),
+                    new KiDialogFeld("taussen_2", "BedarfsProfileKiSicht.Taussen2",
+                                     KiDialogTexte.WbxTaussen2Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WbxTaussen2Erl, einheit: "°C", leerErlaubt: true),
+                    new KiDialogFeld("kuehltraeger", "BedarfsProfileKiSicht.KuehlIdCarrier",
+                                     KiDialogTexte.WbxTraegerName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WbxTraegerErl, leerErlaubt: true),
+                    new KiDialogFeld("eigener_zaehler", "BedarfsProfileKiSicht.KuehlEigenerZaehler",
+                                     KiDialogTexte.WbxZaehlerName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WbxZaehlerErl),
                     new KiDialogFeld("profil", "BedarfsProfileKiSicht.Profil",
                                      KiDialogTexte.BpfProfilName, KiParameterTyp.Text,
                                      KiDialogTexte.BpfProfilErl,

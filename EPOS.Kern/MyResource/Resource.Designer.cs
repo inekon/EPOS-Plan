@@ -4929,6 +4929,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf [kW] ähnelt.
+        /// </summary>
+        public static string BERG_ACHSE_KAELTEBEDARF {
+            get {
+                return ResourceManager.GetString("BERG_ACHSE_KAELTEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf [kW] ähnelt.
         /// </summary>
         public static string BERG_ACHSE_STROMBEDARF {
@@ -5100,6 +5109,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamter Kältebedarf: ähnelt.
+        /// </summary>
+        public static string BERG_LBL_KAELTE_GESAMT {
+            get {
+                return ResourceManager.GetString("BERG_LBL_KAELTE_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die max. Kältelast: ähnelt.
+        /// </summary>
+        public static string BERG_LBL_MAX_KAELTELAST {
+            get {
+                return ResourceManager.GetString("BERG_LBL_MAX_KAELTELAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die max. Leistung: ähnelt.
         /// </summary>
         public static string BERG_LBL_MAX_LEISTUNG {
@@ -5235,6 +5262,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf ähnelt.
+        /// </summary>
+        public static string BERG_OPT_KAELTE {
+            get {
+                return ResourceManager.GetString("BERG_OPT_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Prozesse ähnelt.
         /// </summary>
         public static string BERG_OPT_PROZESSE {
@@ -5258,6 +5294,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BERG_REITER_GRAFIK {
             get {
                 return ResourceManager.GetString("BERG_REITER_GRAFIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf Ergebnisse ähnelt.
+        /// </summary>
+        public static string BERG_REITER_KAELTE_ERG {
+            get {
+                return ResourceManager.GetString("BERG_REITER_KAELTE_ERG", resourceCulture);
             }
         }
         
@@ -12894,6 +12939,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BPF_HINW_SIMULATION {
             get {
                 return ResourceManager.GetString("BPF_HINW_SIMULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf und Rücklauf des Kältebedarfs sind eine Angabe ohne Wirkung auf die Erzeuger. ähnelt.
+        /// </summary>
+        public static string BPF_HINW_TEMPERATUR_KAELTE {
+            get {
+                return ResourceManager.GetString("BPF_HINW_TEMPERATUR_KAELTE", resourceCulture);
             }
         }
         
@@ -21160,6 +21214,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string DECK_LBL_ZAEHLER {
             get {
                 return ResourceManager.GetString("DECK_LBL_ZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Deckung gibt es nur an einer Projektzeile der Kältebedarfsprofile. ähnelt.
+        /// </summary>
+        public static string DECK_MSG_NUR_KAELTE {
+            get {
+                return ResourceManager.GetString("DECK_MSG_NUR_KAELTE", resourceCulture);
             }
         }
         
@@ -58781,6 +58844,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckungsart der markierten Kältebedarfszeile: zentral über die Kältefolge des Projekts oder dezentral über eigene Split-Geräte; nur bei den Kältebedarfsprofilen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_DECKUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_DECKUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckungsart ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_DECKUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_DECKUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Anzeigeeinheit; sie gilt für den Infoblock, die Summen und das Eingabefeld daneben zugleich. ähnelt.
         /// </summary>
         public static string KI_DLG_BPF_EINHEIT_ERL {
@@ -63727,6 +63808,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_BADM_BW {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_BADM_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf-Katalog ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BADM_KAELTE {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BADM_KAELTE", resourceCulture);
             }
         }
         
@@ -88901,6 +88991,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MENU_IMPORT_KAELTEMASCHINEN {
             get {
                 return ResourceManager.GetString("MENU_IMPORT_KAELTEMASCHINEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf ähnelt.
+        /// </summary>
+        public static string MENU_KAELTEBEDARF {
+            get {
+                return ResourceManager.GetString("MENU_KAELTEBEDARF", resourceCulture);
             }
         }
         

@@ -119,9 +119,10 @@ public sealed class DeckungsartDaten
     {
         string art = Deckungsarten[IstSplit ? 1 : 0].Text;
         if (!IstSplit) return art;
-        var c = System.Globalization.CultureInfo.CurrentCulture;
+        // Wie die Felder daneben (Standards.Zahlen): Komma, unabhängig von der Kultur des Prozesses.
         string Punkt(double? eer, double? t)
-            => (eer?.ToString("0.00", c) ?? "–") + " (" + (t?.ToString("0.#", c) ?? "–") + " °C)";
+            => (eer is null ? "–" : EPOS.UI.Standards.Zahlen.Anzeigetext(eer, 2)) + " ("
+               + (t is null ? "–" : EPOS.UI.Standards.Zahlen.Anzeigetext(t)) + " °C)";
         string eerText = R.DECK_LBL_EER + " " + Punkt(Eer1, Taussen1);
         if (IstLinear) eerText += " … " + Punkt(Eer2, Taussen2);
         return art + " · " + eerText;
@@ -129,6 +130,33 @@ public sealed class DeckungsartDaten
 
     /// <summary>Eine flache Kopie.</summary>
     public DeckungsartDaten Kopie() => (DeckungsartDaten)MemberwiseClone();
+
+    /// <summary>
+    /// Übernimmt die acht Felder aus <paramref name="von"/> — der OK-Weg der Bearbeiten-Überlagerung
+    /// der Bedarfsprofile, die auf einer <see cref="Kopie"/> arbeitet.
+    /// </summary>
+    public void Uebernehmen(DeckungsartDaten von)
+    {
+        Deckungsart = von.Deckungsart; EerWeg = von.EerWeg;
+        Eer1 = von.Eer1; Taussen1 = von.Taussen1; Eer2 = von.Eer2; Taussen2 = von.Taussen2;
+        KuehlIdCarrier = von.KuehlIdCarrier; KuehlEigenerZaehler = von.KuehlEigenerZaehler;
+    }
+
+    /// <summary>Die acht Felder einer Kältebedarfszuordnung (<c>Z_Projekt_Kaeltebedarf</c>); leer = „zentral“.</summary>
+    public static DeckungsartDaten Aus(Z_ProjektKaeltebedarfModel m) => new()
+    {
+        Deckungsart = string.IsNullOrEmpty(m.Deckung) ? KaeltebedarfSchema.DECKUNG_ZENTRAL : m.Deckung,
+        EerWeg = m.EerWeg, Eer1 = m.Eer1, Taussen1 = m.Taussen1, Eer2 = m.Eer2, Taussen2 = m.Taussen2,
+        KuehlIdCarrier = m.KuehlIdCarrier, KuehlEigenerZaehler = m.KuehlEigenerZaehler
+    };
+
+    /// <summary>Schreibt die acht Felder in die Kältebedarfszuordnung <paramref name="m"/> (Rückweg der Hülle).</summary>
+    public void InModell(Z_ProjektKaeltebedarfModel m)
+    {
+        m.Deckung = string.IsNullOrEmpty(Deckungsart) ? KaeltebedarfSchema.DECKUNG_ZENTRAL : Deckungsart;
+        m.EerWeg = EerWeg; m.Eer1 = Eer1; m.Taussen1 = Taussen1; m.Eer2 = Eer2; m.Taussen2 = Taussen2;
+        m.KuehlIdCarrier = KuehlIdCarrier; m.KuehlEigenerZaehler = KuehlEigenerZaehler;
+    }
 
     /// <summary>Die Deckungsarten: Steuerwert und Anzeigetext.</summary>
     public static IReadOnlyList<(string Wert, string Text)> Deckungsarten => new[]

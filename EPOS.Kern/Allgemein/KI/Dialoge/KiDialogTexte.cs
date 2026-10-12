@@ -1841,6 +1841,9 @@
         /// <summary>Die Brauchwasser-Katalogverwaltung (Welle KI-F3).</summary>
         internal static string MaskeBrauchwasserAdmin => MyResource.Resource.KI_DLG_MASKE_BADM_BW;
 
+        /// <summary>Die Kältebedarf-Katalogverwaltung (K5b).</summary>
+        internal static string MaskeKaeltebedarfAdmin => MyResource.Resource.KI_DLG_MASKE_BADM_KAELTE;
+
         /// <summary>Die Ergebnisanzeige eines Bedarfs (Welle KI-F3).</summary>
         internal static string MaskeBedarfErgebnis => MyResource.Resource.KI_DLG_MASKE_BERG;
 
@@ -2590,6 +2593,10 @@
         internal static string BpfKalenderName => MyResource.Resource.BPF_LBL_KALENDER;
         internal static string BpfKalenderErl => MyResource.Resource.BPF_HINW_KALENDER;
         internal static string KaelteArtName => MyResource.Resource.KAELTE_ART_LABEL;
+        // K5b (Konzept Kaeltebedarf 3.4): die Deckungsart der Kaeltezeile in den Bedarfsprofilen; die uebrigen
+        // Deckungsfelder nehmen die Texte des Dialogs „Waermebedarf extern“ (KI_DLG_WBX_*).
+        internal static string BpfDeckungName => MyResource.Resource.KI_DLG_BPF_DECKUNG_NAME;
+        internal static string BpfDeckungErl => MyResource.Resource.KI_DLG_BPF_DECKUNG_ERL;
         internal static string KaelteArtErl => MyResource.Resource.KAELTE_ART_HINWEIS;
         internal static string NudSucheName => MyResource.Resource.IMP_KAT_FILTER_SUCHE;
         internal static string NudSucheErl => MyResource.Resource.KI_DLG_NUD_SUCHE_ERL;

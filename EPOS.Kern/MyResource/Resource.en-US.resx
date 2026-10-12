@@ -53804,5 +53804,38 @@ chart</value>
   <data name="DECK_BTN_BEARBEITEN" xml:space="preserve">
     <value>Coverage…</value>
   </data>
+  <data name="DECK_MSG_NUR_KAELTE" xml:space="preserve">
+    <value>Coverage exists only on a project row of the cooling demand profiles.</value>
+  </data>
+  <data name="KI_DLG_BPF_DECKUNG_NAME" xml:space="preserve">
+    <value>Coverage type</value>
+  </data>
+  <data name="KI_DLG_BPF_DECKUNG_ERL" xml:space="preserve">
+    <value>Coverage type of the selected cooling demand row: central via the project's cooling sequence or decentralised via separate split units; cooling demand profiles only.</value>
+  </data>
+  <data name="KI_DLG_MASKE_BADM_KAELTE" xml:space="preserve">
+    <value>Cooling demand catalogue</value>
+  </data>
+  <data name="BPF_HINW_TEMPERATUR_KAELTE" xml:space="preserve">
+    <value>Supply and return of the cooling demand are information only, without effect on the generators.</value>
+  </data>
+  <data name="BERG_REITER_KAELTE_ERG" xml:space="preserve">
+    <value>Cooling demand results</value>
+  </data>
+  <data name="BERG_OPT_KAELTE" xml:space="preserve">
+    <value>Cooling demand</value>
+  </data>
+  <data name="BERG_LBL_MAX_KAELTELAST" xml:space="preserve">
+    <value>max. cooling load:</value>
+  </data>
+  <data name="BERG_LBL_KAELTE_GESAMT" xml:space="preserve">
+    <value>Total cooling demand:</value>
+  </data>
+  <data name="BERG_ACHSE_KAELTEBEDARF" xml:space="preserve">
+    <value>Cooling demand [kW]</value>
+  </data>
+  <data name="MENU_KAELTEBEDARF" xml:space="preserve">
+    <value>Cooling demand</value>
+  </data>
 </root>
 

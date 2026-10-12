@@ -234,6 +234,9 @@ public static class Seitenschluessel
     /// <summary>Stammdaten Prozesswaerme (Razor seit W14b.1).</summary>
     public const string ProzesswaermeAdmin = WindowsFormsApplication1.Masken.ProzesswaermeAdmin;
 
+    /// <summary>Stammdaten Kaeltebedarf (K5b): die Bedarfsverwaltung mit der Art Kaelte.</summary>
+    public const string KaeltebedarfAdmin = WindowsFormsApplication1.Masken.KaeltebedarfAdmin;
+
     /// <summary>Stammdaten Stromverbraucher (Razor seit W14b.1).</summary>
     public const string StromverbraucherAdmin = WindowsFormsApplication1.Masken.StromverbraucherAdmin;
 
@@ -525,7 +528,7 @@ public static class Seitenschluessel
         KiAssistent, Assistent,
         Startseite, BerichteKosten, Varianten, StromspeicherAuslegung, PufferAuslegung,
         WpAdministration, StromspeicherAdmin, PeakShaving, GebaeudeAdmin,
-        GebaeudetypenAdmin, WaermebedarfExternAdmin, ProzesswaermeAdmin,
+        GebaeudetypenAdmin, WaermebedarfExternAdmin, ProzesswaermeAdmin, KaeltebedarfAdmin,
         StromverbraucherAdmin, StromganglinieAdmin, SolarganglinieAdmin, PvGanglinieAdmin,
         WpImport, WpKaelteImport, KaeltemaschineImport, HeizkesselAdmin, BhkwAdmin, SolarkollektorenAdmin, PvAdmin,
         HeizkesselImport, PufferSpImport, PufferSpAdmin, BrauchwasserAdmin,

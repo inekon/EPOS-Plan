@@ -103,6 +103,8 @@ const FAELLE = [
   ['photovoltaik', '/rollbereichprobe?fall=photovoltaik'],
   ['solarkollektoren', '/rollbereichprobe?fall=solarkollektoren'],
   ['bedarfsprofile', '/rollbereichprobe?fall=bedarfsprofile'],
+  // K5b: die Bedarfsprofile mit der Art Kaelte - Deckung allein in der Bearbeiten-Ueberlagerung.
+  ['kaelteprofile', '/rollbereichprobe?fall=kaelteprofile'],
   ['waermebedarf', '/rollbereichprobe?fall=waermebedarf'],
   // K5a: „Kaeltebedarf extern" (NurKuehlung, Deckung aufgeklappt) und der Waermedialog mit Kuehlzeile (OP-2).
   ['kaeltebedarf', '/rollbereichprobe?fall=kaeltebedarf'],
@@ -766,14 +768,17 @@ try {
           photovoltaik: ['button.epos-knopf--straenge', '„Stränge und Wechselrichter…"'],
           kaeltemaschine: ['.epos-kostenleiste button', 'Kostenknoepfe', '.epos-kaeltemaschine-satz'],
           // Stufe 4: die Bedarfsprofile - Verbrauch, Temperatur und Kalender allein in der Ueberlagerung.
-          bedarfsprofile: ['input[inputmode=decimal]', 'Verbrauchsfelder', '.epos-bpf-satz'] };
-        const ZUSAMMENFASSUNG_WIRTE = ['bhkw', 'pufferspeicher', 'stromspeicher', 'solarkollektoren', 'waermepumpen', 'photovoltaik', 'kaeltemaschine', 'bedarfsprofile'];
+          bedarfsprofile: ['input[inputmode=decimal]', 'Verbrauchsfelder', '.epos-bpf-satz'],
+          // K5b: die Feldgruppe „Deckung" steht allein in der Ueberlagerung, die Detailzeile fasst sie zusammen.
+          kaelteprofile: ['.epos-deckung', 'Deckungsgruppe', '.epos-bpf-satz'] };
+        const ZUSAMMENFASSUNG_WIRTE = ['bhkw', 'pufferspeicher', 'stromspeicher', 'solarkollektoren', 'waermepumpen', 'photovoltaik', 'kaeltemaschine', 'bedarfsprofile', 'kaelteprofile'];
         // Kopf der Detailzeile: zwei Infoknoepfe; die Waermepumpe traegt dort „Anlage…" (Grundlagen und Berechnung
         // stehen in ihrem Anlagendialog).
         // AW2: Die Waermepumpe hat keine Kopfknoepfe mehr - „Anlage…" ist in der Satz-Ueberlagerung aufgegangen.
         const KOPFKNOEPFE = { waermepumpen: ['.epos-knopf--anlage', 0, 'kein „Anlage…"'],
           // Bedarfsprofile: der Rechenweg der Auspraegung (eine Grundlagenseite gibt es nicht).
-          bedarfsprofile: ['.epos-hilfepille', 1, 'Infoknopf „Berechnung"'] };
+          bedarfsprofile: ['.epos-hilfepille', 1, 'Infoknopf „Berechnung"'],
+          kaelteprofile: ['.epos-hilfepille', 1, 'Infoknopf „Berechnung"'] };
         if (SATZ_WIRTE[fall]) {
           const [wahl, was, marke] = SATZ_WIRTE[fall];
           const zusammen = ZUSAMMENFASSUNG_WIRTE.includes(fall);

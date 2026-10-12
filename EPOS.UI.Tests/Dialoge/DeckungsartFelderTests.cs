@@ -126,4 +126,25 @@ public class DeckungsartFelderTests : EposBunitContext
         var ohne = Render<DeckungsartFelder>(p => p.Add(x => x.Daten, new DeckungsartDaten()).Add(x => x.TitelAnzeigen, false));
         Assert.Empty(ohne.FindAll(".epos-formulargruppe-titel"));
     }
+
+    /// <summary>
+    /// K5b-Nachzug (a): Die Herleitungszeile der Vorgaben zeigt die Zahlen wie die Felder daneben — „3,0 · 35 °C“, unter
+    /// de-DE wie unter en-US (vorher „3.0“ neben „3,00“ im Feld).
+    /// </summary>
+    [Theory]
+    [InlineData("de-DE")]
+    [InlineData("en-US")]
+    public void Die_Vorgabezeile_formatiert_wie_die_Felder(string kultur)
+    {
+        using var k = new Kulturvorrichtung(kultur);
+        var d = new DeckungsartDaten();
+        d.DeckungSetzen(KaeltebedarfSchema.DECKUNG_SPLIT);
+        d.EerWegSetzen(KaeltebedarfSchema.EER_LINEAR);
+        var cut = Zeige(d);
+
+        Assert.Contains(Resource.DECK_LBL_EER + " 3,0 · 35 °C", cut.Markup);
+        Assert.Contains(Resource.DECK_LBL_EER + " 4,0 · 25 °C", cut.Markup);
+        Assert.DoesNotContain("3.0", cut.Markup);
+        Assert.Contains("3,00", d.Zusammenfassung());
+    }
 }

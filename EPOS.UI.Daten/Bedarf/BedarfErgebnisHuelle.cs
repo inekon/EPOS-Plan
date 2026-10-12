@@ -485,6 +485,54 @@ namespace WindowsFormsApplication1
                          "Form_ErgStromverbraucher.btn_Help");
         }
 
+        /// <summary>
+        /// Der Parametersatz zum KÄLTEBEDARF (Konzept Kältebedarf 3.3, K5b) aus der Vorschau des Kerns
+        /// (<c>BedarfsVorschauCtrl</c> mit <c>ProfilQuelle.Kaelte</c>): die Stundenreihe [kWh je Stunde = kW], die
+        /// Monatssummen und die Jahressumme [MWh]. Farbe der Bedarfsrolle (<see cref="Farbrolle.BEDARF"/>), keine neue
+        /// Rolle. Kennzahlen: max. Kältelast [kW] und der Kältebedarf als Summe; Grafikreiter mit Jahr, Monat, Woche, Tag.
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> GabenKaelte(double[] stunde, double[] monatMwh,
+                                                                         double summeMwh, int startReiter)
+        {
+            return Gaben(KaelteDaten(stunde, monatMwh, summeMwh, startReiter),
+                         Text_("BERG_REITER_KAELTE_ERG", "Kältebedarf Ergebnisse"),
+                         Text_("BERG_REITER_MONAT", "Übersicht monatlich"),
+                         Text_("BERG_REITER_GRAFIK", "Grafik"),
+                         Text_("BERG_GRP_MONAT", "monatlicher Verlauf:"),
+                         "Form_ErgProzesswaerme.btn_Help");
+        }
+
+        private static readonly Farbrolle ROLLE_KAELTE = Farbrolle.BEDARF;
+
+        /// <summary>Der Feldsatz des Kältebedarfs — eine Sicht, eine Reihe (K5b).</summary>
+        internal static BedarfErgebnisDaten KaelteDaten(double[] stunde, double[] monatMwh, double summeMwh,
+                                                        int startReiter)
+        {
+            double[] reihe = stunde ?? new double[0];
+            double max = 0;
+            foreach (double w in reihe) if (w > max) max = w;
+            string name = Text_("BERG_OPT_KAELTE", "Kältebedarf");
+            return new BedarfErgebnisDaten
+            {
+                Sicht = ErgebnisSicht.Waerme,
+                MitBrauchwasser = false,
+                StartReiter = startReiter,
+                Kennzahlen = new[]
+                {
+                    new ErgebnisKennzahl(Text_("BERG_LBL_MAX_KAELTELAST", "max. Kältelast:"), F2(max), EINHEIT_KW)
+                    { Art = Kennzahlart.Leistung },
+                    Energie(Text_("BERG_LBL_KAELTE_GESAMT", "Gesamter Kältebedarf:"), summeMwh, Energieeinheit.MWh,
+                            Kennzahlart.Summe)
+                },
+                Sichten = new[]
+                {
+                    Sicht(name, monatMwh ?? new double[12], name, ROLLE_KAELTE)
+                },
+                Grafik = Grafikquelle(new[] { new Grafikreihe(name, reihe, ROLLE_KAELTE) }, name,
+                                      Text_("BERG_ACHSE_KAELTEBEDARF", "Kältebedarf [kW]"))
+            };
+        }
+
         /// <summary>Der Parametersatz zum WAERMEBEDARF (iU9-W9.5).</summary>
         internal static IReadOnlyDictionary<string, object> Gaben(
             SimulationWaermebedarf simulation, bool mitBrauchwasser, int startReiter,

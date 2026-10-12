@@ -948,23 +948,17 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Kachel „Kältebedarfsprofile“ — der Bedarfsprofile-Dialog mit <c>BedarfsArt.Kaelte</c>
         /// (<see cref="BedarfsProfileHuelle"/>). Löschen und Neuschreiben der Zuordnungen laufen in EINEM
-        /// Vorgang: Scheitert ein Schritt, meldet der Kern den Grund und die alten Zeilen bleiben stehen.
+        /// Vorgang (<see cref="KaeltebedarfsprofilAbbildung.Speichern"/>): Scheitert ein Schritt oder steht eine Zeile
+        /// auf „Split ohne EER“, nennt der Fehlerbanner den Grund und die alten Zeilen bleiben stehen.
         /// </summary>
         private void Kaeltebedarfsprofile(IWin32Window wirt)
         {
             List<Z_ProjektKaeltebedarfModel> liste = Z_ProjektKaeltebedarfCtrl.LiesProjekt(_kontext.Id);
 
+            // K5b: Speichern ueber die Abbildung - „Split ohne EER" lehnt sie benannt ab (Grund im Fehlerbanner).
             if (!BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste)) return;
-
-            WizardCtrl wizctrl = new WizardCtrl();
-            using (DbVorgang vorgang = DataRepository.Vorgang())
-            {
-                if (wizctrl.Del_Projekt_Kaelte(_kontext.Id, 0, vorgang)
-                    && wizctrl.Add_Projekt_Kaelte(_kontext.Id, liste, vorgang))
-                    vorgang.Commit();
-                else
-                    vorgang.Rollback();
-            }
+            string grund = KaeltebedarfsprofilAbbildung.Speichern(_kontext.Id, liste);
+            if (grund != null) _fehlerhinweis = grund;
         }
 
         /// <summary>
