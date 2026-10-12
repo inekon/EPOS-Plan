@@ -314,6 +314,8 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 12.10.2026: Die Kachel „Kältebedarf extern" öffnet den Dialog nur für Kältelastgänge; die Deckungsart (zentral oder dezentral mit EER) steht in der Bearbeiten-Überlagerung der Projektzeile. (#1024)
 - Seit 12.10.2026: Kältebedarfsprofile führen die Deckungsart; die Verwaltung „Kältebedarf" steht unter „Profile & Lastgänge". (#1024)
 - Seit 12.10.2026: „Vergleichen…" stellt Projektzeilen und Katalogsätze nebeneinander, die Herkunft steht im Spaltenkopf. (#1025)
+- Seit 12.10.2026: Die Bearbeiten-Überlagerung jeder Anlage zeigt links einen Steckbrief mit den wichtigsten Gerätedaten, bei der Wärmepumpe dazu Heizleistung und COP am eingestellten Vorlauf. (#1027, #1028)
+- Seit 12.10.2026: Im Konfigurationsdialog der Wärmepumpe sind die Betriebszeiten ein- und ausklappbar. (#1027)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 
