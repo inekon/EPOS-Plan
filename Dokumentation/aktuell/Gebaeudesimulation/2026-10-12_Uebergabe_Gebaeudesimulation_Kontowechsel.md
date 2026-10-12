@@ -63,7 +63,9 @@ Keine Agenten. Festlegungen, die Folgewellen kennen müssen:
    „Gebäudedatei + Projektdatei“ auch die Projektdatei prüfen; Sprung zur Kühlung auf das zuletzt gewählte Gebäude; eigener
    Maskenschlüssel für `Sprungziele.Kuehlung` (Seitenschlüssel, `AppWurzel`, beide Navigationsadapter); Zeile Jahreswärmebedarf
    nach Anwenderentscheid (Abschnitt 5).
-3a. **GD-6a** (Anwenderwunsch 12.10.2026): Knopf „Baustoff-Zuordnungen…“ aus der Aktionsleiste des Projektsatzes im
+3a. **GD-6a** (Anwenderwünsche 12.10.2026): „Simulation nur von ‚Im Projekt‘ – alle Gebäude oder Auswahl (auswählbar machen)“ —
+   Knopf „Simulation…“ in der Kopfleiste des Abschnitts IM PROJEKT, rechnet die gewählten Projektgebäude, ohne Wahl alle
+   (Mehrfachwahl der Projektzeilen; seit AW3b `de9bbc779` war der Knopf nicht mehr erreichbar); Knopf „Baustoff-Zuordnungen…“ aus der Aktionsleiste des Projektsatzes im
    Gebäudedialog (`GebaeudeDialog.razor`) nehmen und nur in den Gebäudedialogen an passender Stelle anbieten — im Importdialog
    an der Liste „Bauteilaufbauten“ und im Gebäudeeditor im Bereich Bauteile/Aufbauten; nach BK-2b (gleiche Dateien).
 4. **Wiki und Logbuch** der Wellen GD, AB, NP6/NP7, KS (Seiten „Gebäude“, „Gebäudeimport“, „Nutzungsprofile“); Upload nur
