@@ -5899,6 +5899,54 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_LBL_KOMPONENTEN_VERGLEICH" xml:space="preserve">
     <value>Components compared — base project and variants</value>
   </data>
+  <data name="BK_LBL_PROJEKTWAHL" xml:space="preserve">
+    <value>Project selection</value>
+  </data>
+  <data name="BK_LBL_VARIANTE_VERWALTEN" xml:space="preserve">
+    <value>Manage variant</value>
+  </data>
+  <data name="BK_LBL_NUR_UNTERSCHIEDE" xml:space="preserve">
+    <value>differences only</value>
+  </data>
+  <data name="BK_LBL_LEGENDE_ABWEICHUNG" xml:space="preserve">
+    <value>highlighted: differs from the base project</value>
+  </data>
+  <data name="BK_LBL_WEICHT_AB" xml:space="preserve">
+    <value>differs from the base project</value>
+  </data>
+  <data name="BK_LBL_SIMULIERT_AM" xml:space="preserve">
+    <value>simulated {0}</value>
+  </data>
+  <data name="BK_LBL_NICHT_SIMULIERT" xml:space="preserve">
+    <value>not simulated</value>
+  </data>
+  <data name="BK_LBL_KEINE_UNTERSCHIEDE" xml:space="preserve">
+    <value>All compared versions use the same components.</value>
+  </data>
+  <data name="BK_MSG_GEWERKE_EINS" xml:space="preserve">
+    <value>1 trade</value>
+  </data>
+  <data name="BK_MSG_GEWERKE_N" xml:space="preserve">
+    <value>{0} trades</value>
+  </data>
+  <data name="BK_MSG_UMFANG_NUR_STAMM" xml:space="preserve">
+    <value>base project only</value>
+  </data>
+  <data name="BK_MSG_UMFANG_VARIANTE_EINS" xml:space="preserve">
+    <value>base and 1 variant</value>
+  </data>
+  <data name="BK_MSG_UMFANG_VARIANTE_N" xml:space="preserve">
+    <value>base and {0} variants</value>
+  </data>
+  <data name="BK_MSG_UNTERSCHIEDE_KEINE" xml:space="preserve">
+    <value>no differences</value>
+  </data>
+  <data name="BK_MSG_UNTERSCHIEDE_EINS" xml:space="preserve">
+    <value>1 difference</value>
+  </data>
+  <data name="BK_MSG_UNTERSCHIEDE_N" xml:space="preserve">
+    <value>{0} differences</value>
+  </data>
   <data name="BK_LBL_VARIANTEN_GEKAPPT" xml:space="preserve">
     <value>only the first {0} variants shown, {1} more hidden</value>
   </data>
@@ -5907,9 +5955,6 @@ It then feeds the overview and the overall simulation. The existing simulation r
   </data>
   <data name="BK_LBL_VERGLEICHSWAHL" xml:space="preserve">
     <value>Compared:</value>
-  </data>
-  <data name="BK_MSG_VERGLEICH_UMFANG" xml:space="preserve">
-    <value>{0} component row(s) for the base project and {1} variant(s).</value>
   </data>
   <data name="BK_LBL_KOMPONENTEN_DIFF" xml:space="preserve">
     <value>Differences from the base project — variant “{0}”</value>
@@ -21496,7 +21541,7 @@ Do you want to allow this?</value>
     <value>{0} · {1} units</value>
   </data>
   <data name="SIM_SP_HERKUNFT" xml:space="preserve">
-    <value>Computed with storage fleet: {0} · {1} units</value>
+    <value>Computed with storage fleet: {0} · {1}</value>
   </data>
   <data name="SIM_SP_HERKUNFT_PEAK" xml:space="preserve">
     <value>Peak target {0} kW ({1})</value>
@@ -21505,7 +21550,13 @@ Do you want to allow this?</value>
     <value>Change configuration → ①</value>
   </data>
   <data name="SP_KONTEXT_FLOTTE" xml:space="preserve">
-    <value>with storage fleet: {0} · {1} units</value>
+    <value>with storage fleet: {0} · {1}</value>
+  </data>
+  <data name="SP_EINHEIT_EINS" xml:space="preserve">
+    <value>1 unit</value>
+  </data>
+  <data name="SP_EINHEITEN_N" xml:space="preserve">
+    <value>{0} units</value>
   </data>
   <data name="SP_KONTEXT_EINZEL" xml:space="preserve">
     <value>Single storage unit: {0}</value>
@@ -25607,6 +25658,15 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_BKU_SIM_ERL" xml:space="preserve">
     <value>When the selected version was last simulated, or that it has not been yet.</value>
+  </data>
+  <data name="KI_DLG_BKU_NURUNT_ERL" xml:space="preserve">
+    <value>Hides the trades in the comparison in which no version differs from the base project.</value>
+  </data>
+  <data name="KI_DLG_BKU_KOMP_NAME" xml:space="preserve">
+    <value>Components compared</value>
+  </data>
+  <data name="KI_DLG_BKU_KOMP_ERL" xml:space="preserve">
+    <value>The comparison per trade: per version “n × component” with key figures, differences from the base project marked.</value>
   </data>
   <data name="KI_DLG_BKB_AUSGABE_ERL" xml:space="preserve">
     <value>The format the report is produced in: Word, Excel or both.</value>
