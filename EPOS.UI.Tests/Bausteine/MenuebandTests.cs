@@ -1325,7 +1325,7 @@ public class MenuebandTests : EposBunitContext
         // samt „Fernwartung…" (Stufe 2, fuer den Anwender sichtbar) und „Kältemittel…" (KM4-E3-c).
         Assert.Equal(74, anwender.Count(p => !p.Trenner)); // K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
         Assert.Equal(13, anwender.Count(p => p.Trenner));
-        Assert.Equal(59, anwender.Count(p => !p.Trenner && !p.Klappt)); // K5b: + „Kältebedarf“
+        Assert.Equal(60, anwender.Count(p => !p.Trenner && !p.Klappt)); // K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
         Assert.Equal(new[] { "Projekte", "Administration", "Help", "Sprache" },
                      Menuetabelle.Sichtbar(Freigabestufe.Anwender).Select(p => p.Name).ToArray());
         Assert.All(anwender, p => Assert.Equal(Freigabestufe.Anwender, p.Stufe));

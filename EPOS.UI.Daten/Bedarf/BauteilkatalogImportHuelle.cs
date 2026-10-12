@@ -61,7 +61,7 @@ namespace WindowsFormsApplication1
             return new BauteilkatalogImportErgebnis(true, string.Format(CultureInfo.CurrentCulture, R.BKI_FERTIG,
                 Zahl(v.Baustoffe.Neu), Zahl(v.Baustoffe.MitKatalog + v.Baustoffe.InQuelle), Zahl(v.Baustoffe.Wiedererkannt),
                 Zahl(v.Aufbauten.Neu), Zahl(v.Aufbauten.Wiedererkannt), Zahl(v.Schichten.Neu + v.Schichten.Wiedererkannt),
-                Zahl(v.Gekennzeichnet), (v.DauerMs / 1000.0).ToString("0.0", CultureInfo.CurrentCulture)));
+                Zahl(v.Gekennzeichnet), TimeSpan.FromMilliseconds(v.DauerMs).TotalSeconds.ToString("0.0", CultureInfo.CurrentCulture)));
         }
 
         private static BauteilkatalogVorschauZeile Zeile(string art, BauteilkatalogZaehlung z) =>
