@@ -18,7 +18,7 @@ public partial class GebaeudeImportZonenDialogTests
     /// <summary>Der Zonenbaum mit einer Umformung jedes Stands der Hülle (der Katalog, den die Testumgebung nicht hat).</summary>
     private IRenderedComponent<GebaeudeImportDialog> ZonenbaumUmgeformt(Zonenbaumprobe p, Func<GebaeudeImportStand, GebaeudeImportStand> umformen,
                                                                        RaumnutzungWeg? katalog = null, bool projektdatei = false,
-                                                                       RaumnutzungKiZugang? ki = null)
+                                                                       RaumnutzungKiZugang? ki = null, Action<bool>? einzonenprofil = null)
     {
         string probe = Path.Combine(Wurzel(), "Referenzlaeufe", "Importproben", "ifc4_zonen.ifc");
         var huelle = new GebaeudeImportHuelle();
@@ -36,6 +36,7 @@ public partial class GebaeudeImportZonenDialogTests
             c.Add(x => x.Uebernehmen, (Func<GebaeudeImportErgebnis, Task<string?>>)(e => { p.Uebernommen.Add(e); return Task.FromResult<string?>(null); }));
             if (katalog is not null) c.Add(x => x.Raumnutzung, katalog);
             if (ki is not null) c.Add(x => x.RaumnutzungKi, ki);
+            if (einzonenprofil is not null) c.Add(x => x.EinzonenprofilWaehlen, einzonenprofil);
             if (projektdatei)
                 c.Add(x => x.ProjektdateiLesen, (Func<string, int, CancellationToken, Task<GebaeudeProjektdateiDaten>>)((_, _, _) =>
                     Task.FromResult(new GebaeudeProjektdateiDaten())));
@@ -101,7 +102,7 @@ public partial class GebaeudeImportZonenDialogTests
                                              "Heizen und Personen aus der Datei", "Mo–Fr · 7–18 h · 21 °C");
         IRenderedComponent<GebaeudeImportDialog> cut = ZonenbaumUmgeformt(p, s => MitPlan(s, plan => plan with
         {
-            Zonen = plan.Zonen.Select((z, i) => i == 0 ? z with { Herleitung = h } : z).ToList(),
+            Zonen = plan.Zonen.Select((z, i) => i == 0 ? z with { Herleitung = h } : z with { Herleitung = null }).ToList(),
         }));
 
         string erste = cut.FindAll("tr.epos-gebimport-planzone")[0].GetAttribute("data-zone")!;
@@ -137,6 +138,34 @@ public partial class GebaeudeImportZonenDialogTests
         cut.Find("[data-aktion=\"anlegen\"]").KlickAbgewartet();
         cut.Find(".epos-gebimport-anlegen-ok").KlickAbgewartet();
         Assert.Empty(cut.FindAll(".epos-gebimport-sqvorschlag"));
+    }
+
+    /// <summary>
+    /// <b>Die Vorgabe des Einzonenwegs ist abwählbar</b> (Vorgaberegel 2.5, E130 F5): Mit dem Weg der Hülle steht über der
+    /// Vorgabezeile der Haken „Profil als Vorgabe setzen“, gesetzt; das Abwählen meldet <c>false</c> an die Hülle, das
+    /// Wiedersetzen <c>true</c>.
+    /// </summary>
+    [Fact]
+    public void Der_Einzonenweg_waehlt_die_Vorgabe_ueber_den_Haken_ab()
+    {
+        const string VORGABE = "Vorgabe aus DIN-Nr. 1: Büro · EPOS-Muster — das Gebäude nimmt es als Kalender, die Datei geht vor";
+        var gemeldet = new List<bool>();
+        IRenderedComponent<GebaeudeImportDialog> cut = ZonenbaumUmgeformt(new Zonenbaumprobe(), s => s with
+        {
+            Projektdatei = new GebaeudeProjektdateiDaten { Dateiname = "haus.sqproj", Einzonenvorschlag = VORGABE },
+            Zonierung = s.Zonierung! with { Einzonig = true },
+        }, projektdatei: true, einzonenprofil: gemeldet.Add);
+
+        IElement block = cut.Find(".epos-gebimport-sqvorschlag");
+        Assert.Contains(VORGABE, block.TextContent);
+        IElement haken = cut.Find(".epos-gebimport-sqvorgabe input[type=checkbox]");
+        Assert.Equal("Profil als Vorgabe setzen", cut.Find(".epos-gebimport-sqvorgabe").TextContent.Trim());
+        Assert.True(haken.HasAttribute("checked"));
+
+        haken.Change(false);
+        Assert.False(cut.Find(".epos-gebimport-sqvorgabe input[type=checkbox]").HasAttribute("checked"));
+        cut.Find(".epos-gebimport-sqvorgabe input[type=checkbox]").Change(true);
+        Assert.Equal(new[] { false, true }, gemeldet);
     }
 
     /// <summary>

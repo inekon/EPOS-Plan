@@ -605,7 +605,7 @@ namespace WindowsFormsApplication1
                 return (null, null);
             v = Raumnutzungsvorbelegung.Lesen();
             return Zonenvorbesetzung.Vorgabe(v, _ablauf.Gebaeudeprofilnummer(_gebaeudeindex),
-                                             _ablauf.Abbild.Gebaeude[_gebaeudeindex].GebaeudeartDatei);
+                                             ImportGebaeudeart(_gebaeudeindex));
         }
 
         /// <summary>Hat der Anwender die Vorgabe des Einzonenwegs abgewählt?</summary>
@@ -756,12 +756,27 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die Vorgabe der Gebäudeart im Zonenplan</b> (Vorgaberegel 2.5, Stufe 4): nur mit mehreren Zonen — im Einzonenweg
-        /// nimmt das Gebäude die Vorgabe selbst (<see cref="Einzonenprofil"/>). Die Gebäudeart ist die der Datei.
+        /// nimmt das Gebäude die Vorgabe selbst (<see cref="Einzonenprofil"/>). Die Gebäudeart ist die, die das Gebäude bekommt
+        /// (<see cref="ImportGebaeudeart"/>).
         /// </summary>
-        private static void VorgabeAnwenden(Zonenplan plan)
+        private void VorgabeAnwenden(Zonenplan plan)
         {
-            if (plan == null || plan.Zonen.Count < 2) return;
-            Zonenvorbesetzung.Anwenden(plan, plan.Gebaeude?.GebaeudeartDatei);
+            if (plan == null || plan.Zonen.Count < 2 || _ablauf.Abbild == null) return;
+            Zonenvorbesetzung.Anwenden(plan, ImportGebaeudeart(_ablauf.Abbild.Gebaeude.IndexOf(plan.Gebaeude)));
+        }
+
+        /// <summary>
+        /// <b>Die Gebäudeart des importierten Gebäudes</b>, wie der vorbelegte Satz sie bekommt (<see cref="Vorbelegung"/>): die
+        /// der Datei (GD-2), sonst die Vorgabe eines neuen Satzes — „Sonstige“, wenn die Verwendung aus der Datei kein Wohnen ist.
+        /// </summary>
+        internal string ImportGebaeudeart(int index)
+        {
+            AbbildGebaeude g = _ablauf.Abbild?.Gebaeude.ElementAtOrDefault(index);
+            if (g == null) return null;
+            if (!string.IsNullOrWhiteSpace(g.GebaeudeartDatei)) return g.GebaeudeartDatei;
+            var d = new GebaeudeKatalogDaten { Gebaeudeart = new GebaeudeModel().Gebaeudeart };
+            VerwendungSetzen(d, _ablauf.Verwendung(index));
+            return d.Gebaeudeart;
         }
 
         /// <summary>Die Zonierung zum Schlüssel (<see cref="GebaeudeZonierungSchluessel"/>); <c>null</c> = keiner/unbekannt.</summary>

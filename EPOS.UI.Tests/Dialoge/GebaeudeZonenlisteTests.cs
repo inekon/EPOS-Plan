@@ -144,7 +144,7 @@ public class GebaeudeZonenlisteTests : EposBunitContext
         Assert.Contains("Summe", fuss.TextContent);
         Assert.Contains("150,00 m²", fuss.TextContent);
         Assert.Contains("120,0 W/K", fuss.TextContent);
-        Assert.Contains("6", fuss.QuerySelectorAll("td")[4].TextContent);
+        Assert.Contains("6", fuss.QuerySelectorAll("td")[5].TextContent);   // hinter der Spalte „Nutzung/Profil“ (GD-5)
         // 150 gegen 150 m²: kein Flächenhinweis.
         Assert.DoesNotContain("Σ Zonen", cut.Markup);
     }

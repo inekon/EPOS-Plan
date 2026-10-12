@@ -54,7 +54,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "Z:1", "Z:2", "Z:3" }, plan.Zonen.Select(z => z.Schluessel));
             Assert.Equal(zon.Zonen.Select(z => z.Name), plan.Zonen.Select(z => z.Name));
             Assert.Equal(zon.Zonen.Select(z => z.Schluessel), plan.Zonen.Select(z => z.Ansichtsschluessel));
-            Assert.All(plan.Zonen, z => Assert.Null(z.Nutzung));
+            // Vorgaberegel 2.5 (GD-5): die beheizten Zonen ohne Profil nehmen das der Gebäudeart (Einfamilienhaus → Wohnen).
+            Assert.All(plan.Zonen, z => Assert.Equal(z.Beheizt == true ? DbWerte.KOND_NUTZUNG_WOHNEN : null, z.Nutzung));
             Assert.Empty(plan.NichtZugeordnet);
             Assert.False(plan.Einzonig);
             Assert.Equal("Zone 4", plan.NeuerName);
