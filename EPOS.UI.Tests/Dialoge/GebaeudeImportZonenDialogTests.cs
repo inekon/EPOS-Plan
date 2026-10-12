@@ -513,8 +513,11 @@ public partial class GebaeudeImportZonenDialogTests : EposBunitContext
     private static void Waehlen(IElement wahl, Func<string, bool> eintrag)
         => wahl.WechselAbgewartet(wahl.QuerySelectorAll("option").First(o => eintrag(o.TextContent)).GetAttribute("value"));
 
+    /// <summary>Wählt das Ziel der Zuordnung über den Knopf seines Legendeneintrags (Auftrag AB2).</summary>
     private static void Ziel(IRenderedComponent<GebaeudeImportDialog> cut, string zone)
-        => Waehlen(Wahl(cut, "Räume zuordnen zu"), t => t == zone);
+        => cut.FindAll(".epos-gebansicht-legendeneintrag--zielwahl")
+              .First(e => e.QuerySelector(".epos-gebansicht-zonenname")!.TextContent == zone)
+              .QuerySelector("button")!.Click();
 
     private static IElement Raumbild(IRenderedComponent<GebaeudeImportDialog> cut, string kennung)
         => cut.Find(".epos-gebansicht g[data-raum='" + kennung + "']");
@@ -606,6 +609,72 @@ public partial class GebaeudeImportZonenDialogTests : EposBunitContext
         Assert.Equal(new[] { "Kellergeschoss", "Erdgeschoss", "Obergeschoss", "Küche" }, Zonenzeilen(cut));
         Assert.Equal("Z:2", Ansicht(cut).Instance.Daten!.Raum(lager)!.Zone);
         Assert.Empty(cut.FindAll(".epos-gebimport-ausweg"));
+    }
+
+    /// <summary>Der Dialog mit der echten Hülle, eingelesen aus der IFC-Probe mit Zonen; der Grundriss steht.</summary>
+    private IRenderedComponent<GebaeudeImportDialog> MitEchterHuelle()
+    {
+        string probe = Path.Combine(Wurzel(), "Referenzlaeufe", "Importproben", "ifc4_zonen.ifc");
+        var huelle = new GebaeudeImportHuelle();
+        IReadOnlyDictionary<string, object> g = huelle.Gaben();
+        IRenderedComponent<GebaeudeImportDialog> cut = Render<GebaeudeImportDialog>(c =>
+        {
+            c.Add(x => x.Profil, g["Profil"] as GebaeudeImportProfilDaten);
+            c.Add(x => x.Baualtersklassen, (IReadOnlyList<string>)g["Baualtersklassen"]);
+            c.Add(x => x.DateiWaehlen, (Func<string, Task<GebaeudeDateiwahl?>>)(_ =>
+                Task.FromResult<GebaeudeDateiwahl?>(new GebaeudeDateiwahl(probe, "ifc4_zonen.ifc", new FileInfo(probe).Length))));
+            c.Add(x => x.Lesen, (Func<string, IProgress<GebaeudeImportFortschritt>, CancellationToken, Task<GebaeudeLesestand>>)g["Lesen"]);
+            c.Add(x => x.Zuordnen, (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)g["Zuordnen"]);
+            c.Add(x => x.Pruefen, (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)g["Pruefen"]);
+        });
+        Einlesen(cut);
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-gebimport-grundriss .epos-gebansicht")));
+        return cut;
+    }
+
+    private static IElement Zielknopf(IRenderedComponent<GebaeudeImportDialog> cut, string zone)
+        => cut.FindAll(".epos-gebansicht-legendeneintrag--zielwahl")
+              .First(e => e.QuerySelector(".epos-gebansicht-zonenname")!.TextContent == zone)
+              .QuerySelector("button")!;
+
+    [Fact]
+    public void AB2_Die_Zielzone_waehlt_der_Anwender_in_der_Legende_ein_Auswahlfeld_gibt_es_nicht_mehr()
+    {
+        IRenderedComponent<GebaeudeImportDialog> cut = MitEchterHuelle();
+        GebaeudeAnsichtDaten daten = Ansicht(cut).Instance.Daten!;
+        string kueche = daten.Geschosse.SelectMany(x => x.Raeume).Single(r => r.Name == "Küche").Kennung;
+
+        // Kein Auswahlfeld „Räume zuordnen zu" mehr; die Legende trägt je Zone des Plans einen Knopf, dazu „als eigene Zone".
+        Assert.Empty(cut.FindAll(".epos-gebimport-zuordnungskopf"));
+        Assert.DoesNotContain(cut.FindAll("label"), l => l.TextContent.Contains("Räume zuordnen zu"));
+        Assert.Equal(new[] { "Kellergeschoss", "Erdgeschoss", "Obergeschoss", "als eigene Zone" },
+                     cut.FindAll(".epos-gebansicht-legendeneintrag--zielwahl .epos-gebansicht-zonenname").Select(e => e.TextContent));
+        Assert.All(cut.FindAll(".epos-gebansicht-legendeneintrag--zielwahl button"), k => Assert.Equal("false", k.GetAttribute("aria-pressed")));
+
+        // Je Zone der Hinweis der Nutzung — die Nutzung der Zone oder „ohne Nutzung".
+        Assert.All(new[] { "Kellergeschoss", "Erdgeschoss", "Obergeschoss" }, z =>
+            Assert.Matches("^(Nutzung: .+|ohne Nutzung)$", Zielknopf(cut, z).QuerySelector(".epos-gebansicht-nutzung")!.TextContent));
+
+        // Ohne Wahl: ein Raumklick tut nichts, „Umhängen" ist weich gesperrt mit Grund.
+        Geschoss(cut, "Erdgeschoss");
+        Raumbild(cut, kueche).Click();
+        Assert.Empty(cut.Instance.Planschritte);
+        IElement umhaengen = cut.Find("button.epos-gebimport-umhaengen");
+        Assert.Equal("true", umhaengen.GetAttribute("aria-disabled"));
+        Assert.Equal("zum Zuordnen zuerst eine Zone in der Legende wählen", umhaengen.GetAttribute("title"));
+
+        // Mit Wahl ordnet der Klick zu; ein zweiter Klick auf den Eintrag hebt die Wahl auf.
+        Zielknopf(cut, "als eigene Zone").Click();
+        Assert.Equal("true", Zielknopf(cut, "als eigene Zone").GetAttribute("aria-pressed"));
+        Assert.Null(cut.Find("button.epos-gebimport-umhaengen").GetAttribute("aria-disabled"));
+        Raumbild(cut, kueche).KlickAbgewartet();
+        Assert.Equal(new[] { GebaeudePlanschrittArt.EIGENE }, cut.Instance.Planschritte.Select(x => x.Art));
+        Assert.Contains("Küche", Zonenzeilen(cut));
+
+        Zielknopf(cut, "als eigene Zone").Click();
+        Assert.Equal("false", Zielknopf(cut, "als eigene Zone").GetAttribute("aria-pressed"));
+        Raumbild(cut, kueche).Click();
+        Assert.Single(cut.Instance.Planschritte);
     }
 
     private static string Wurzel()
