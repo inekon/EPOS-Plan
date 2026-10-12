@@ -77,7 +77,10 @@ Auftrag in Abschnitt 4 neu beauftragt. Die Routinen des alten Kontos sind gelös
    Ein/Ausblenden?“): In der Gebäudeansicht (`EPOS.UI/Bausteine/GebaeudeAnsicht.razor` samt JS-Modul) eine Werkzeugwahl
    „Zuordnen | Ein-/Ausblenden“ an der Legende: im Modus Zuordnen wie AB2 (Legendensymbol wählt das Ziel, Klick auf Räume ordnet
    zu), im Modus Ein-/Ausblenden schaltet ein Klick auf einen Legendeneintrag (Zone, Randbedingung bzw. Aufbau/Befund je
-   Farbmodus) dessen Körper unsichtbar/sichtbar, dazu „alle zeigen“; Sichtbarkeit nur Anzeige, nichts wird gespeichert;
+   Farbmodus) dessen Körper unsichtbar/sichtbar, dazu „alle zeigen“; ergänzt (Wortlaut: „Es soll möglich sein, einzelne
+   Bauteilgruppen ein- und auszublenden.“): zusätzlich je Bauteilgruppe (Außenwand, Innenwand, Dach, Decke, Boden, Fenster, Tür
+   u. a. nach Bauteilart) ein- und ausblenden, unabhängig vom Farbmodus, z. B. als Kästchenliste „Bauteilgruppen“ neben der
+   Legende; Sichtbarkeit nur Anzeige, nichts wird gespeichert;
    `diagrammprobe`/Rasterprobe nach `Proben/Rasterprobe/LIESMICH.md`, bunit. Auftrag an `opus-umsetzung`.
 3. **BK-3b** Nachzug am Import nach E134 (Auftrag an `opus-umsetzung`, Datei
    `EPOS.Kern/Allgemein/Import/Bauteilkatalog/BauteilkatalogImport.cs` samt Tests): Code-Tafel nach der Deutung im
