@@ -5312,6 +5312,13 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     border-left: 3px solid var(--epos-abweichung-marke);
 }
 
+/* Die Huelle ist der Bezugskasten der Sprachausgabe-Texte (position: absolute):
+   Ohne ihn hingen sie am Dokument und zoegen beim Querrollen der Tabelle die
+   ganze Seite mit in die Breite. */
+.epos-komponenten-huelle {
+    position: relative;
+}
+
 .epos-komponentenvergleich th,
 .epos-komponentenvergleich td {
     vertical-align: top;
