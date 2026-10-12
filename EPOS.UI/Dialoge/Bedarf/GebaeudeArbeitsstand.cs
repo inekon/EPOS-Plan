@@ -73,7 +73,7 @@ public sealed class GebaeudeArbeitsstand
         BandBeimLaden = Stand.ReglerProportionalband;
         BandFrei = false;
         _heizkurveVorgeschlagen = false;
-        BauweiseNachfuehren = neu || Stand.Bauweise <= 0;
+        BauweiseNachfuehren = (neu && !Stand.BauweiseAusDatei) || Stand.Bauweise <= 0;
         Fehlerfelder.Clear();
         _uebergabeFehlerfelder.Clear();
         _kuehlFehlerfelder.Clear();

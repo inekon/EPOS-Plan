@@ -683,6 +683,9 @@ namespace WindowsFormsApplication1
         {
             GebaeudePruefen(gebaeudeIndex);
             AbbildGebaeude g = Abbild.Gebaeude[gebaeudeIndex];
+            // GD-2 (F4): die Verwendung aus einem Code der Projektdatei geht jeder Ableitung vor.
+            if (g.VerwendungDatei != null)
+                return new Gebaeudeverwendung.Ergebnis(g.VerwendungDatei, Gebaeudeverwendung.Anhalt.Gebaeudeart, g.VerwendungDateiHerleitung);
             SqprojStand p = ProjektdateiFuer(gebaeudeIndex);
             IReadOnlyList<Gebaeudeverwendung.Zonenanteil> zonen = p != null && !p.Abgelehnt
                 ? SqprojZonen.Verwendungsanteile(p.Abbild, p.Abgleich, p.Gewaehlt)

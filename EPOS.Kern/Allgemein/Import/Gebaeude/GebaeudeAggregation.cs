@@ -140,15 +140,9 @@ namespace WindowsFormsApplication1
             // Die Klasse (Entscheid E47, F2): Das Baujahr schlägt vor — trägt die Datei eines, gilt die
             // Klasse daraus (A…M für jedes Jahr), es sei denn, der Anwender hat ausdrücklich gewählt
             // (Anwenderwunsch 08.10.2026: die Klasse ist immer wählbar); ohne Baujahr die gewählte.
-            char? k = klasseUebersteuert ? Klasse(klasse) : null;
+            // Die Regel steht EINMAL (Baujahrregel.KlasseWirksam, GD-2); die Vorbelegung des Editors nimmt dieselbe.
             Func<AbbildRaum, bool> istBeheizt = r => GebaeudeRaumzeile.BeheiztWirksam(r, uebersteuert);
-            bool klasseAusBaujahr = false;
-            if (!k.HasValue && g.Baujahr is int jahr)
-            {
-                k = Baujahrregel.Klasse(jahr);
-                klasseAusBaujahr = k.HasValue;
-            }
-            if (!k.HasValue) k = Klasse(klasse);
+            char? k = Baujahrregel.KlasseWirksam(Klasse(klasse), klasseUebersteuert, g.Baujahr, out bool klasseAusBaujahr);
 
             var meldungen = new List<PruefMeldung>(abbild.Meldungen);
             meldungen.AddRange(g.Meldungen);
@@ -199,7 +193,7 @@ namespace WindowsFormsApplication1
             Grundrand(aktiv, datei, z, meldungen);
             if (profil.FlaechenRueckfaelle)
                 Flaechenrueckfaelle(aktiv, sonstige, g, beheizt, z);
-            Bauart(aktiv, datei, z, meldungen);
+            Bauart(aktiv, datei, z, meldungen, g.BauweiseJeM2Datei);
             Innenflaechenfaktor(einordnung, datei, z);
             Fenster(aktiv, datei, k, z, meldungen);
             Waermebruecken(k, z);
@@ -404,12 +398,41 @@ namespace WindowsFormsApplication1
         /// <para>Die Türen stehen nicht in <paramref name="aktiv"/> (sie hängen an ihrer Wand) und
         /// zählen als Öffnung nicht mit, ebenso die Fenster.</para>
         /// </summary>
+        /// <param name="jeM2Datei">Die wirksame Wärmekapazität der Datei [Wh/(m²K)] (Projektdatei <c>Cwirk</c>, GD-2): Sie
+        /// geht den Schichten vor und setzt die Bauweise als Zahl (× Nutzfläche) mit Haken; die Bauart folgt als nächstliegende
+        /// Klasse, nur zur Anzeige.</param>
         private static void Bauart(List<Posten> aktiv, Importherkunft datei, Dictionary<string, GebaeudeFeldzeile> z,
-                                   List<PruefMeldung> meldungen)
+                                   List<PruefMeldung> meldungen, double? jeM2Datei = null)
         {
             GebaeudeFeldzeile bauart = z[GebaeudeZielfelder.BAUART];
             GebaeudeFeldzeile bauweise = z[GebaeudeZielfelder.BAUWEISE];
             double? nutzflaeche = z[GebaeudeZielfelder.NUTZFLAECHE].Wert;
+
+            if (jeM2Datei > 0.0)
+            {
+                double cwirk = jeM2Datei.Value;
+                double? summe = nutzflaeche > 0.0 ? cwirk * nutzflaeche.Value : null;
+                bauart.Textwert = GebaeudeZielfelder.BauartSchluessel(Gebaeudebauweise.BauartAusBauweise(cwirk, 1.0));
+                bauart.Herkunft = datei;
+                bauart.Beleg = new GebaeudeBeleg("GIMP_BELEG_BAUART_CWIRK", Zahl(cwirk));
+                if (summe.HasValue)
+                {
+                    bauweise.Wert = Math.Round(summe.Value);
+                    bauweise.Herkunft = datei;
+                    bauweise.Uebernehmen = true;
+                    bauweise.Beleg = new GebaeudeBeleg("GIMP_BELEG_BAUWEISE_CWIRK", Zahl(cwirk), Zahl(Math.Round(nutzflaeche.Value, 2)),
+                                                       Zahl(Math.Round(summe.Value)));
+                }
+                else
+                    bauweise.Beleg = new GebaeudeBeleg("GIMP_BELEG_BAUWEISE_AUS_BAUART");
+                if (!(cwirk >= GebaeudeFestwerte.BAUWEISE_JE_M2_MIN && cwirk <= GebaeudeFestwerte.BAUWEISE_JE_M2_MAX))
+                {
+                    meldungen.Add(new PruefMeldung(PruefStufe.Warnung, GebaeudeImportAblauf.MELDUNG + "BAUWEISE_AUSSERHALB",
+                        Zahl(cwirk), Zahl(GebaeudeFestwerte.BAUWEISE_JE_M2_MIN), Zahl(GebaeudeFestwerte.BAUWEISE_JE_M2_MAX)));
+                    bauart.Markieren(PruefStufe.Warnung);
+                }
+                return;
+            }
 
             int vollstaendig = 0;
             double summeCA = 0.0, summeA = 0.0;

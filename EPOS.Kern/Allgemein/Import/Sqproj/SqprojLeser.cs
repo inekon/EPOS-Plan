@@ -45,6 +45,7 @@ namespace WindowsFormsApplication1
         private const string SQL_TABELLEN = "SELECT name FROM sqlite_master WHERE type = 'table'";
         private const string SQL_REGISTER = "SELECT * FROM XmTables";
         private const string SQL_GEBAEUDE = "SELECT * FROM BmBuilding";
+        private const string SQL_GEBAEUDEDATEN = "SELECT * FROM BmBuildingData";
         private const string SQL_GESCHOSS = "SELECT * FROM BmFloor";
         private const string SQL_RAUM = "SELECT * FROM BmRoom";
         private const string SQL_ZONE = "SELECT * FROM BmZone";
@@ -177,12 +178,23 @@ namespace WindowsFormsApplication1
             List<Dictionary<string, object>> gebaeudeZeilen = Zeilen(c, SQL_GEBAEUDE);
             a.Gebaeudename = gebaeudeZeilen.Select(z => Name(z)).OrderBy(n => n, StringComparer.Ordinal).FirstOrDefault();
             var gebaeudeKennungen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            // GD-2 (F4): die Nutzung steht in BmBuildingData, dieselbe Kennung wie das Gebäude; die Tabelle ist optional.
+            var nutzungJeGebaeude = new Dictionary<string, int?>(StringComparer.OrdinalIgnoreCase);
+            if (vorhanden.Contains("BmBuildingData"))
+                foreach (Dictionary<string, object> z in Zeilen(c, SQL_GEBAEUDEDATEN))
+                    if (Text(z, "UUID") is string u && !nutzungJeGebaeude.ContainsKey(u))
+                        nutzungJeGebaeude[u] = Ganz(z, "BuildingUsageType");
             foreach (Dictionary<string, object> z in gebaeudeZeilen)
                 if (Text(z, "UUID") is string u && gebaeudeKennungen.Add(u))
                     a.Gebaeude.Add(new SqprojGebaeude
                     {
                         Uuid = u, Name = Name(z), BaujahrText = Text(z, "YearOfConstruction"),
                         Baujahr = Baujahr(z), StandortUuid = SqprojBauteilcodes.Verweis(Text(z, "SiteUUID")),
+                        Gebaeudetyp = Ganz(z, "BuildingType"),
+                        Nutzungstyp = nutzungJeGebaeude.TryGetValue(u, out int? nutzungsCode) ? nutzungsCode : null,
+                        Waermeschutzstandard = Ganz(z, "BuildingHeatInsulationStandardType"),
+                        Effizienzstandard = Ganz(z, "BuildingEnergyEfficientType"),
+                        CwirkWhM2K = Positiv(SqprojBauteilcodes.Gesetzt(Zahl(z, "Cwirk"))),
                     });
             a.Gebaeude.Sort((x, y) => string.CompareOrdinal(x.Name, y.Name) is int n && n != 0 ? n : string.CompareOrdinal(x.Uuid, y.Uuid));
             var geschosse = new Dictionary<string, SqprojGeschoss>(StringComparer.OrdinalIgnoreCase);

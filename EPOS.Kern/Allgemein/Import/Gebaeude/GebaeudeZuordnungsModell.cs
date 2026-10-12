@@ -237,21 +237,31 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Der vorgeschlagene Name des neuen Gebäudes</b>: der Name aus der Datei (IFC: <c>IfcBuilding.Name</c>,
-        /// sonst <c>LongName</c>; gbXML: <c>Building/Name</c>); trägt die Datei keinen — bei IFC auch, wenn er ein
-        /// Platzhalter ist (<see cref="PLATZHALTERNAMEN"/>, Protokoll <c>IMP_IFC_PROT_NAME_PLATZHALTER</c>) —, der
-        /// Dateiname ohne Endung; eine Kennung wie die <c>GlobalId</c> taugt nicht als Katalogname; ohne Datei die
-        /// Kennung. Der Anwender kann ihn im Dialog ändern.
+        /// <b>Der Name des neuen Gebäudes</b> (Dialogkonzept des Anwenders, Entscheid F8): der Dateiname ohne Endung — bei IFC,
+        /// gbXML und Projektdatei gleich. Ohne Dateinamen der Name aus der Datei (IFC: <c>IfcBuilding.Name</c>, sonst
+        /// <c>LongName</c>; gbXML: <c>Building/Name</c>; Projektdatei: <c>BmBuilding</c>), sofern er kein Platzhalter ist
+        /// (<see cref="PLATZHALTERNAMEN"/>); sonst die Kennung. Der Name der Datei steht als Vorschlag daneben
+        /// (<see cref="NameDerDatei"/>). Der Anwender kann ihn im Dialog ändern.
         /// </summary>
         public static string Vorschlagsname(GebaeudeImportSatz satz)
         {
             if (satz == null) return "";
-            bool platzhalter = string.Equals(satz.Quelle?.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal)
-                               && IstPlatzhaltername(satz.Gebaeudename);
-            if (!string.IsNullOrWhiteSpace(satz.Gebaeudename) && !platzhalter) return satz.Gebaeudename.Trim();
             string datei = satz.Quelle?.Dateiname;
             string ohneEndung = string.IsNullOrWhiteSpace(datei) ? null : System.IO.Path.GetFileNameWithoutExtension(datei.Trim());
-            return string.IsNullOrWhiteSpace(ohneEndung) ? satz.Gebaeudekennung ?? "" : ohneEndung.Trim();
+            if (!string.IsNullOrWhiteSpace(ohneEndung)) return ohneEndung.Trim();
+            if (!string.IsNullOrWhiteSpace(satz.Gebaeudename) && !IstPlatzhaltername(satz.Gebaeudename)) return satz.Gebaeudename.Trim();
+            return satz.Gebaeudekennung ?? "";
+        }
+
+        /// <summary>
+        /// <b>Der Gebäudename der Datei als Vorschlag</b> neben dem Namen (F8): der Name, den die Datei trägt — leer, wenn sie
+        /// keinen trägt, er ein Platzhalter ist (<see cref="PLATZHALTERNAMEN"/>) oder er dem <see cref="Vorschlagsname"/> gleicht.
+        /// </summary>
+        public static string NameDerDatei(GebaeudeImportSatz satz)
+        {
+            string name = satz?.Gebaeudename?.Trim();
+            if (string.IsNullOrEmpty(name) || IstPlatzhaltername(name)) return "";
+            return string.Equals(name, Vorschlagsname(satz), StringComparison.Ordinal) ? "" : name;
         }
 
         /// <summary>

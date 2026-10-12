@@ -1019,6 +1019,9 @@ public sealed record GebaeudeImportStand
     /// <summary>Der Name des neuen Gebäudes aus der Datei.</summary>
     public string Vorschlagsname { get; init; } = "";
 
+    /// <summary>Der Gebäudename, den die Datei trägt, als Vorschlag neben dem Namen (F8); leer = keiner oder gleich dem Namen.</summary>
+    public string NameDerDatei { get; init; } = "";
+
     /// <summary>Die Räume des Gebäudes in Dateireihenfolge.</summary>
     public IReadOnlyList<GebaeudeRaumzeileDaten> Raeume { get; init; } = Array.Empty<GebaeudeRaumzeileDaten>();
 
@@ -1335,6 +1338,12 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_DLG_SP_NUTZUNG</summary>
     public string SpalteNutzung { get; set; } = Resource.GIMP_DLG_SP_NUTZUNG;
+
+    /// <summary>GIMP_DLG_NAME_DATEI</summary>
+    public string NameDatei { get; set; } = Resource.GIMP_DLG_NAME_DATEI;
+
+    /// <summary>GIMP_DLG_NAME_UEBERNEHMEN</summary>
+    public string NameUebernehmen { get; set; } = Resource.GIMP_DLG_NAME_UEBERNEHMEN;
 
     /// <summary>GIMP_DLG_PLAN_WURZEL</summary>
     public string PlanWurzel { get; set; } = Resource.GIMP_DLG_PLAN_WURZEL;
