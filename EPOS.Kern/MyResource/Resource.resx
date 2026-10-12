@@ -50539,6 +50539,24 @@ Chart</value>
   <data name="AUSWAHL_ZF_SOLARKREIS" xml:space="preserve">
     <value>Solarkreis</value>
   </data>
+  <data name="AUSWAHL_VERGLEICH_HINWEIS" xml:space="preserve">
+    <value>Die angekreuzten Zeilen beider Listen nebeneinander vergleichen</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_PAAR_HINWEIS" xml:space="preserve">
+    <value>Die gewählte Projektzeile mit dem gewählten Katalogsatz vergleichen</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_SPERRE" xml:space="preserve">
+    <value>Zwei bis drei Zeilen ankreuzen oder Projektzeile und Katalogsatz wählen</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_GRENZE" xml:space="preserve">
+    <value>Höchstens drei Zeilen vergleichen – Kreuze zurücknehmen</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_HERKUNFT_PROJEKT" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_HERKUNFT_KATALOG" xml:space="preserve">
+    <value>Katalog</value>
+  </data>
   <data name="SATZBEARB_TITEL_PROJEKT" xml:space="preserve">
     <value>Projektsatz bearbeiten – {0}</value>
   </data>

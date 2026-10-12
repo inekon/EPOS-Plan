@@ -1689,15 +1689,28 @@ public class PufferspeicherDialogTests : EposBunitContext
     {
         var cut = Aufbauen(DreiZeilen(), projektsatzWege: Wege());
         cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[0].Click();
-        Assert.True(AmSatz(cut, "epos-knopf--vergleichen").HasAttribute("disabled"));
+        Assert.True((AmSatz(cut, "epos-knopf--vergleichen").GetAttribute("aria-disabled") == "true"));
 
         foreach (int i in new[] { 0, 2 })
             cut.FindAll(".epos-raster")[0].QuerySelectorAll("td .epos-wahlkaestchen")[i].Click();
-        Assert.False(AmSatz(cut, "epos-knopf--vergleichen").HasAttribute("disabled"));
+        Assert.False((AmSatz(cut, "epos-knopf--vergleichen").GetAttribute("aria-disabled") == "true"));
         AmSatz(cut, "epos-knopf--vergleichen").Click();
 
+        string P = WindowsFormsApplication1.MyResource.Resource.AUSWAHL_VERGLEICH_HERKUNFT_PROJEKT + " ";
         var koepfe = cut.FindAll(".epos-vergleich thead th").Select(th => th.TextContent).ToList();
-        Assert.Equal(new[] { "Speicher A", "Speicher C" }, koepfe.Skip(1).ToArray());
+        Assert.Equal(new[] { P + "Speicher A", P + "Speicher C" }, koepfe.Skip(1).ToArray());
         Assert.NotEmpty(cut.FindAll(".epos-vergleich tbody tr"));
+    }
+
+    /// <summary>KA-E-24: Vergleichen… stellt eine Projektzeile (Werte der Projektkopie über ihre ID) und einen Katalogsatz nebeneinander.</summary>
+    [Fact]
+    public void KA_E_24_Vergleichen_stellt_Projektzeile_und_Katalogsatz_nebeneinander()
+    {
+        var cut = Aufbauen(DreiZeilen());
+        var ids = new List<int>();
+        cut.Render(p => p
+            .Add(x => x.Vergleichsparameter, n => VergleichWirtHilfe.Werte("K:" + n))
+            .Add(x => x.VergleichsparameterProjekt, id => { ids.Add(id); return VergleichWirtHilfe.Werte("P:" + id); }));
+        VergleichWirtHilfe.ProjektzeileGegenKatalogsatz(cut, ids, "Speicher A");
     }
 }

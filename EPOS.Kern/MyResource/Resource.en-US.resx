@@ -50532,6 +50532,24 @@ chart</value>
   <data name="AUSWAHL_ZF_SOLARKREIS" xml:space="preserve">
     <value>Solar loop</value>
   </data>
+  <data name="AUSWAHL_VERGLEICH_HINWEIS" xml:space="preserve">
+    <value>Compare the ticked rows of both lists side by side</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_PAAR_HINWEIS" xml:space="preserve">
+    <value>Compare the selected project row with the selected catalogue record</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_SPERRE" xml:space="preserve">
+    <value>Tick two to three rows or select a project row and a catalogue record</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_GRENZE" xml:space="preserve">
+    <value>Compare at most three rows – untick some</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_HERKUNFT_PROJEKT" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_HERKUNFT_KATALOG" xml:space="preserve">
+    <value>Catalogue</value>
+  </data>
   <data name="SATZBEARB_TITEL_PROJEKT" xml:space="preserve">
     <value>Edit project record – {0}</value>
   </data>

@@ -50,6 +50,7 @@ namespace WindowsFormsApplication1
                 // Schloss wie in der Verwaltung, Loeschen ueber den Kernweg, der Katalogeditor als Ueberlagerung
                 // (die Windows-Schale reicht die Gaben samt Import herein, KaeltemaschineAnlageFensterHuelle).
                 ["Vergleichsparameter"] = new Func<string, IReadOnlyList<Parameterwert>>(KaeltemaschineParameteruebersicht.Werte),
+                ["VergleichsparameterProjekt"] = new Func<int, IReadOnlyList<Parameterwert>>(KaeltemaschineParameteruebersicht.ProjektWerte),
                 ["Schloss"] = Schlosswege.Aus(KaeltemaschineStammCtrl.SchlossSetzen),
                 ["KatalogLoeschen"] = new Func<int, string>(KatalogLoeschen),
                 ["KatalogGaben"] = new Func<IReadOnlyDictionary<string, object>>(KaeltemaschineKatalogHuelle.Gaben),

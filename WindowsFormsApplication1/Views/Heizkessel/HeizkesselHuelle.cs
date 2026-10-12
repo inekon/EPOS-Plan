@@ -519,6 +519,9 @@ namespace WindowsFormsApplication1
                 // Quelle wie die Parameteruebersicht (W14a-E-8) - keine zweite Liste.
                 ["Vergleichsparameter"] = new Func<string, IReadOnlyList<Parameterwert>>(
                     n => ParameterUebersichtCtrl.Werte(Anlagenart.Heizkessel, n, Text_)),
+                // KA-E-24: die Projektkopie (ID) in derselben Parameterliste - Vergleichen ueber beide Listen.
+                ["VergleichsparameterProjekt"] = new Func<int, IReadOnlyList<Parameterwert>>(
+                    id => ParameterUebersichtCtrl.ProjektWerte(Anlagenart.Heizkessel, id, Text_)),
 
                 ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
                     stamm.Katalogfilterzeilen),
