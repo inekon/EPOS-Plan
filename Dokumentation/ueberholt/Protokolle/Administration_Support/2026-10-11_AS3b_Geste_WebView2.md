@@ -50,13 +50,15 @@ Zahlen der Welle: Kern-Filter 0 Fehler; Windows-Schale auf Linux 0 Fehler (17 Wa
 `EPOS.UI.Tests` 9166 von 9166; `EPOS.Kern.Tests` Filter Wache/Dokumentation 512 von 512.
 Gate der Orchestrierung: `Kern-Filter 0 Fehler, Windows-Schale auf Linux 0 Fehler, `EPOS.UI.Tests` 9166/9166, `KiKern.Tests` 553/553, `SpeicherEngine.Tests` 397/397, `SpeicherPlanung.Tests` 27/28 (1 übersprungen, Bestand), `EPOS.Kern.Tests` nach Filter 2499/2499; der volle Kern-Lauf ist die CI`. Fensterprobe (`fensterprobe.mjs`, `bannerprobe.mjs`): ``fensterprobe.mjs` und `bannerprobe.mjs` grün mit Gegenproben (drei Fenstermaße; der Über-Dialog ist in den Proben nicht enthalten); Ersatzmessung des Über-Dialogs mit Playwright in vier Fenstermaßen: Kopf und Schlussleiste haften bei langem Inhalt am Fensterrand wie ohne die Regel, die Regel ändert nur die Boxhöhe; bei kurzem Inhalt steht die Schlussleiste wie bisher unter dem Inhalt, nicht am unteren Fensterrand (`margin-top` 10 px statt `auto` — Gestaltungsfrage, Anwenderentscheid)`.
 
+Nachtrag: gepusht `0636dcef` (nach dem Merge von `origin/ios_migration_september`), Kern-Lauf 38183856323 (kern.yml, ubuntu) grün, abgeschlossen 00:33 UTC am 12.10.
+
 ## 5 Offene Punkte
 
 - Sichtabnahme des Anwenders unter Windows: Geste sofort nach dem Öffnen; nach Klick auf die freie
   Fläche; nach Klick auf „Kopieren“; Escape nach Klick auf die Fläche; F12 allein öffnet die
   DevTools nur im Debug-Build; F1 im Hauptfenster bei Fokus in einem Eingabefeld öffnet den
   Hilfe-Assistenten genau einmal; kein senkrechter Rollbalken im Über-Dialog bei kurzem Inhalt.
-- Push-SHA und CI-Kennung nachtragen (Statuspunkt „Nach #1003“).
+- ~~Push-SHA und CI-Kennung nachtragen (Statuspunkt „Nach #1003“).~~ erledigt, siehe Nachtrag unter 4.
 
 ## 6 Lehre
 

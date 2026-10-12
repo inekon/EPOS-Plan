@@ -38,10 +38,12 @@ iPad bleibt zurückgestellt (kein Quick Assist dort).
 
 Das Gate lief am 11.10. im Hauptbaum nach dem Merge des Code-Zweigs (`2733d64a`), über den SDK-Umweg (10.0.112 statt 10.0.400) und mit der echten Testdatenbank: Kern-Filter 0 Fehler; Windows-Schale auf Linux 0 Fehler; `EPOS.UI.Tests` 9076 von 9076; `KiKern.Tests` 553 von 553; `SpeicherEngine.Tests` 397 von 397; `SpeicherPlanung.Tests` 27 von 28 (1 übersprungen, Bestand); `EPOS.Kern.Tests` nach Filter 2495 von 2495. Der volle Kern-Lauf ist die CI; Push-SHA und CI-Kennung stehen im Statuspunkt „Nach #1012“ (e).
 
+Nachtrag: gepusht `0636dcef` (nach dem Merge von `origin/ios_migration_september`, zusammen mit EG3), Kern-Lauf 38183856323 (kern.yml, ubuntu) grün, abgeschlossen 00:33 UTC am 12.10.; die Statuszeile zog wegen paralleler Sitzungen von #1005 über #1009 auf #1012 um (`c0a75a58`, `b5f8e074`, ohne CI-Lauf).
+
 ## 5 Offene Punkte
 
 - Sichtabnahme des Anwenders unter Windows (Knopf startet Quick Assist, Hinweis bei Fehlen).
 - Microsoft-Konto für den Support einrichten (Anwender).
 - Fernwartungsseite als Anleitung anlegen (Anwender).
 - Wiki-Upload gebündelt mit dem Logbuch-Satz; Versionsnummer beim Anwender erfragen.
-- Word-Fassung des Entwicklerhandbuchs neu erzeugen; Push-SHA und CI-Kennung nachtragen.
+- ~~Word-Fassung des Entwicklerhandbuchs neu erzeugen; Push-SHA und CI-Kennung nachtragen.~~ erledigt: Word neu erzeugt, CI-Vermerk im Nachtrag unter 4.
