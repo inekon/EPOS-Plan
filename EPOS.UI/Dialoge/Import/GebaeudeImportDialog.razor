@@ -299,11 +299,19 @@
                             </dd>
                         }
                     </dl>
-                    @* NP2b-4 (Anwenderentscheid 06.10.2026): im Einzonenweg der Vorschlag aus der DIN-Nummer der Datei als
-                       Hinweis - kein Auswahlfeld, gesetzt wird nichts; zugewiesen wird im Gebaeudeeditor. *@
+                    @* Vorgaberegel 2.5 (NP-F16, E130 F5): im Einzonenweg die Vorgabe aus der DIN-Nummer der Datei bzw. der
+                       Gebaeudeart - das Gebaeude nimmt sie als Kalender vor der Datei; der Haken waehlt sie ab. *@
                     @if (sq.Einzonenvorschlag.Length > 0 && (stand.Zonierung is not { Einzonig: false } || !AlsZoneWirksam))
                     {
                         <div class="epos-gebimport-sqvorschlag">
+                            @if (EinzonenprofilWaehlen is not null)
+                            {
+                                <label class="epos-gebimport-sqvorgabe">
+                                    <input type="checkbox" checked="@(!_einzonenprofilAbgewaehlt)"
+                                           @onchange="e => EinzonenprofilUmschalten(e.Value is true)" />
+                                    @Texte.SqEinzonenprofilSetzen
+                                </label>
+                            }
                             <Herleitungszeile Text="@sq.Einzonenvorschlag" />
                         </div>
                     }
@@ -990,6 +998,19 @@
 
     /// <summary>„Projektdatei entfernen“ an der Datenseite.</summary>
     [Parameter] public Action? ProjektdateiEntfernen { get; set; }
+
+    /// <summary>Haken „Profil als Vorgabe setzen“ des Einzonenwegs (Vorgaberegel 2.5): <c>false</c> wählt die Vorgabe ab.</summary>
+    [Parameter] public Action<bool>? EinzonenprofilWaehlen { get; set; }
+
+    /// <summary>Hat der Anwender die Vorgabe des Einzonenwegs abgewählt?</summary>
+    private bool _einzonenprofilAbgewaehlt;
+
+    /// <summary>Der Haken der Vorgabe des Einzonenwegs: an die Hülle, der Dialog merkt den Stand.</summary>
+    private void EinzonenprofilUmschalten(bool setzen)
+    {
+        _einzonenprofilAbgewaehlt = !setzen;
+        EinzonenprofilWaehlen?.Invoke(setzen);
+    }
 
     /// <summary>„Nutzungsprofile der Datei übernehmen…“ (NP4b, Q46): die Profile der geladenen Projektdatei in eine eigene Kategorie.</summary>
     [Parameter] public EPOS.UI.Dialoge.Bedarf.ProjektdateiProfileWeg? ProjektdateiProfile { get; set; }

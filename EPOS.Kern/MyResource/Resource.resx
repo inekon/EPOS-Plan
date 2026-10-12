@@ -47229,7 +47229,7 @@ Chart</value>
     <value>und</value>
   </data>
   <data name="RNP_IMP_EINZONE_VORSCHLAG" xml:space="preserve">
-    <value>Vorschlag aus DIN-Nr. {0}: {1} — zuweisbar im Gebäudeeditor über „Nutzungsprofil übernehmen…“</value>
+    <value>Vorgabe aus DIN-Nr. {0}: {1} — das Gebäude nimmt es als Kalender, die Datei geht vor</value>
   </data>
   <data name="KOND_LBL_HERKUNFT_PROFIL" xml:space="preserve">
     <value>Nutzungsprofil {0}</value>
@@ -53621,6 +53621,39 @@ Chart</value>
   </data>
   <data name="GIMP_DLG_NAME_UEBERNEHMEN" xml:space="preserve">
     <value>Übernehmen</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_VORGABE_DIN" xml:space="preserve">
+    <value>Vorgabe (DIN-Nr. {0} der Projektdatei)</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_VORGABE_ART" xml:space="preserve">
+    <value>Vorgabe (Profil der Gebäudeart „{0}“)</value>
+  </data>
+  <data name="RNP_IMP_OHNE_KENNWERT" xml:space="preserve">
+    <value>ohne Kennwert, vom Gebäude geerbt: {0}</value>
+  </data>
+  <data name="RNP_IMP_EINZONE_VORGABE_ART" xml:space="preserve">
+    <value>Vorgabe aus der Gebäudeart „{0}“: {1} — das Gebäude nimmt es als Kalender, die Datei geht vor</value>
+  </data>
+  <data name="RNP_IMP_EINZONE_SETZEN" xml:space="preserve">
+    <value>Profil als Vorgabe setzen</value>
+  </data>
+  <data name="GEBZ_SP_NUTZUNG" xml:space="preserve">
+    <value>Nutzung/Profil</value>
+  </data>
+  <data name="GEBZ_NUTZUNG_GEERBT" xml:space="preserve">
+    <value>geerbt vom Gebäude</value>
+  </data>
+  <data name="GEBZ_NUTZUNG_TEILGEERBT" xml:space="preserve">
+    <value>geerbt: {0}</value>
+  </data>
+  <data name="GEBZ_NUTZUNG_VORGABE" xml:space="preserve">
+    <value>Vorgabe (Profil der Gebäudeart): {0}</value>
+  </data>
+  <data name="GEBZ_NUTZUNG_UNBEHEIZT" xml:space="preserve">
+    <value>unbeheizt — ohne Heiz- und Kühlkalender</value>
+  </data>
+  <data name="GEBZ_BTN_PROFIL_ZUWEISEN" xml:space="preserve">
+    <value>Profil/Kalender zuweisen…</value>
   </data>
 </root>
 

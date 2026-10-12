@@ -427,6 +427,12 @@ public sealed class GebaeudeZonenweg
     /// <summary>Die Zonen des Projektgebäudes beim Öffnen, in Rangfolge.</summary>
     public IReadOnlyList<ZoneDaten> Zonen { get; init; } = Array.Empty<ZoneDaten>();
 
+    /// <summary>
+    /// Die Vorgabe der Gebäudeart (Vorgaberegel 2.5, GD-5): Gebäudeart → Name des Profils, das eine Zone ohne Profil
+    /// bekäme; <c>null</c> = keine Vorgabe. Die Zonenliste nennt es in der Spalte „Nutzung/Profil“; kein Delegat = keine.
+    /// </summary>
+    public Func<string?, string?>? Vorgabeprofil { get; init; }
+
     /// <summary>Die Luftströme zwischen den Zonen beim Öffnen (Stufe G6b).</summary>
     public IReadOnlyList<ZonenluftstromDaten> Luftstroeme { get; init; } = Array.Empty<ZonenluftstromDaten>();
 

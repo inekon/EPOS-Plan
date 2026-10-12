@@ -3031,9 +3031,12 @@ namespace WindowsFormsApplication1
 
                 // 3b) Stufe SQ-3: Einzonenweg mit Projektdatei - die Konditionierung der Gebaeudegruppe bzw. der einen
                 //     Zone als Gebaeudekalender (Eigentuemer Gebaeude ohne Zone), derselbe Schreibweg wie bei den Zonen.
-                if (item.Importherkunft.Gebaeudekonditionierung != null)
+                //     Davor das Profil der Vorgaberegel 2.5 (DIN-Nummer bzw. Gebäudeart), wenn der Anwender es nicht abgewählt hat
+                //     (Rangfolge Datei vor Profil).
+                if (item.Importherkunft.Gebaeudekonditionierung != null || item.Importherkunft.Gebaeudeprofil != null)
                 {
-                    string fehler = ZonenplanCtrl.ProjektdateiUebernehmen(idKopie, null, item.Importherkunft.Gebaeudekonditionierung);
+                    string fehler = ZonenplanCtrl.ProjektdateiUebernehmen(idKopie, null, item.Importherkunft.Gebaeudekonditionierung,
+                                                                          item.Importherkunft.Gebaeudeprofil);
                     if (fehler != null)
                     {
                         herkunftsfehler = fehler;

@@ -463,9 +463,13 @@ namespace WindowsFormsApplication1
     /// einen Zone, die das Gebäude als Gebäudekalender nimmt (<see cref="SqprojZonen.Gebaeudekonditionierung"/>); <c>null</c> = keine.</param>
     /// <param name="Raumgrundrisse">HC-5: die Grundrisse je Raum (<see cref="GebaeudeRaumgrundrisse.Bilden"/>), die
     /// <see cref="GebaeudeImportCtrl.SchreibeHerkunft"/> an die Quelle schreibt; <c>null</c> = keine.</param>
+    /// <param name="Gebaeudeprofil">Einzonenweg mit Projektdatei (Vorgaberegel 2.5, NP-F16): das Profil der DIN-Nummer bzw. der
+    /// Gebäudeart, das das Gebäude vor der Datei als Gebäudekalender nimmt (<see cref="Zonenvorbesetzung.Vorgabe"/>);
+    /// <c>null</c> = keins (abgewählt oder ohne Vorgabe).</param>
     internal sealed record GebaeudeImportHerkunft(GebaeudeQuelle Quelle, IReadOnlyList<GebaeudeQuellzuordnung> Paarungen,
                                                   GebaeudeBauteilvorschlag Vorschlag = null,
                                                   IReadOnlyDictionary<string, int?> Baustoffzuordnungen = null,
                                                   Zonenkonditionierung Gebaeudekonditionierung = null,
-                                                  IReadOnlyList<Raumgrundriss> Raumgrundrisse = null);
+                                                  IReadOnlyList<Raumgrundriss> Raumgrundrisse = null,
+                                                  Planprofil Gebaeudeprofil = null);
 }

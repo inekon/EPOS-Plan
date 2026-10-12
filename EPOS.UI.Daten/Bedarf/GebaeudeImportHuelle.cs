@@ -209,6 +209,7 @@ namespace WindowsFormsApplication1
                 ["ProjektdateiWaehlen"] = new Func<Task<string>>(ProjektdateiWaehlenAsync),
                 ["ProjektdateiLesen"] = new Func<string, int, CancellationToken, Task<GebaeudeProjektdateiDaten>>(ProjektdateiLesenAsync),
                 ["ProjektdateiEntfernen"] = new Action(ProjektdateiEntfernen),
+                ["EinzonenprofilWaehlen"] = new Action<bool>(EinzonenprofilWaehlen),
                 // Die Wahl der Aufbauquelle nach angeschlagener Standprüfung (Anwenderentscheid vom 08.10.2026).
                 ["AufbauquelleWaehlen"] = new Func<string, GebaeudeProjektdateiDaten>(AufbauquelleWaehlen),
                 // G5-N (N1-N3): die Nordrichtung des gelesenen Imports und ihr Setzen samt Neulesen.
@@ -574,23 +575,48 @@ namespace WindowsFormsApplication1
         {
             _ablauf.ProjektdateiEntfernen();
             _sqZonen = null;
+            _einzonenprofilAbgewaehlt = false;
         }
 
         /// <summary>
-        /// <b>Der Vorschlag des Einzonenwegs</b> (NP2b-4, Anwenderentscheid 06.10.2026): Liefert die Projektdatei eine
-        /// DIN-Nummer (Zählung DIN/TS 18599-10:2025), nennt die Zeile das Profil der Zuordnung samt Kategorie und den Weg „Nutzungsprofil übernehmen…“
-        /// im Gebäudeeditor; automatisch wird kein Profil gesetzt. Leer ohne Nummer oder wenn die Zuordnung auf „keine“ führt.
+        /// <b>Die Vorgabe des Einzonenwegs</b> (Vorgaberegel 2.5, NP-F16, E130 F5): Mit Projektdatei bekommt das Gebäude das Profil
+        /// ihrer DIN-Nummer (Zählung DIN/TS 18599-10:2025), sonst das seiner Gebäudeart aus der Datei
+        /// (<see cref="Zonenvorbesetzung.Vorgabe"/>) — vor der Konditionierung der Datei (Datei vor Profil). Die Zeile nennt Profil,
+        /// Kategorie und Herkunft; der Haken daneben wählt die Vorgabe ab (<see cref="EinzonenprofilWaehlen"/>). Leer ohne
+        /// Projektdatei oder ohne Vorgabe.
         /// </summary>
         private string Einzonenvorschlag()
         {
-            if (_ablauf.Gebaeudeprofilnummer(_gebaeudeindex) is not int nr) return "";
-            Raumnutzungsvorbelegung v = Raumnutzungsvorbelegung.Lesen();
-            Planprofil p = v.AusDinNummer(nr);
+            (Planprofil p, Profilquelle q) = EinzonenVorgabe(out Raumnutzungsvorbelegung v);
             if (p == null) return "";
             string kategorie = p.Id is long id ? v.Kategorie(id)?.Trim() : null;
             string profil = GebaeudeImportZonen.Profiltext(p) + (string.IsNullOrEmpty(kategorie) ? "" : " · " + kategorie);
-            return Formatieren(MyResource.Resource.RNP_IMP_EINZONE_VORSCHLAG, nr.ToString(CultureInfo.CurrentCulture), profil);
+            return q.Art == Zonenvorbesetzung.VORGABE_DIN
+                ? Formatieren(MyResource.Resource.RNP_IMP_EINZONE_VORSCHLAG, q.Schluessel ?? "", profil)
+                : Formatieren(MyResource.Resource.RNP_IMP_EINZONE_VORGABE_ART, q.Schluessel ?? "", profil);
         }
+
+        /// <summary>Die Vorgabe des Einzonenwegs mit Quelle; beides <c>null</c> ohne Projektdatei oder ohne Vorgabe.</summary>
+        private (Planprofil Profil, Profilquelle Quelle) EinzonenVorgabe(out Raumnutzungsvorbelegung v)
+        {
+            v = null;
+            if (_ablauf.ProjektdateiFuer(_gebaeudeindex) is not SqprojStand sq || sq.Abgelehnt || _ablauf.Abbild == null
+                || _gebaeudeindex < 0 || _gebaeudeindex >= _ablauf.Abbild.Gebaeude.Count)
+                return (null, null);
+            v = Raumnutzungsvorbelegung.Lesen();
+            return Zonenvorbesetzung.Vorgabe(v, _ablauf.Gebaeudeprofilnummer(_gebaeudeindex),
+                                             _ablauf.Abbild.Gebaeude[_gebaeudeindex].GebaeudeartDatei);
+        }
+
+        /// <summary>Hat der Anwender die Vorgabe des Einzonenwegs abgewählt?</summary>
+        private bool _einzonenprofilAbgewaehlt;
+
+        /// <summary>Haken „Profil als Vorgabe setzen“ des Einzonenwegs: <c>false</c> wählt die Vorgabe ab.</summary>
+        internal void EinzonenprofilWaehlen(bool setzen) => _einzonenprofilAbgewaehlt = !setzen;
+
+        /// <summary>Das Profil, das das Gebäude im Einzonenweg nimmt: die Vorgabe, wenn nicht abgewählt und im Katalog; sonst <c>null</c>.</summary>
+        internal Planprofil Einzonenprofil
+            => _einzonenprofilAbgewaehlt ? null : EinzonenVorgabe(out _).Profil is { Id: long } p ? p : null;
 
         /// <summary>
         /// <b>Die Projektdatei als Daten des Kopfs</b>: Datei, Fassung, Abgleich, Zonen, Zeitprofile, Abschnitte, nach der
@@ -724,7 +750,18 @@ namespace WindowsFormsApplication1
             if (probe.Uebernommen == 0)
                 return new Planschritt(false, bilanz == null ? null : new PruefMeldung(PruefStufe.Warnung, bilanz.Schluessel, bilanz.Werte));
             _sqZonen = _ablauf.ProjektdateiUebernehmen(plan);
+            VorgabeAnwenden(plan);
             return new Planschritt(true, bilanz);
+        }
+
+        /// <summary>
+        /// <b>Die Vorgabe der Gebäudeart im Zonenplan</b> (Vorgaberegel 2.5, Stufe 4): nur mit mehreren Zonen — im Einzonenweg
+        /// nimmt das Gebäude die Vorgabe selbst (<see cref="Einzonenprofil"/>). Die Gebäudeart ist die der Datei.
+        /// </summary>
+        private static void VorgabeAnwenden(Zonenplan plan)
+        {
+            if (plan == null || plan.Zonen.Count < 2) return;
+            Zonenvorbesetzung.Anwenden(plan, plan.Gebaeude?.GebaeudeartDatei);
         }
 
         /// <summary>Die Zonierung zum Schlüssel (<see cref="GebaeudeZonierungSchluessel"/>); <c>null</c> = keiner/unbekannt.</summary>
@@ -830,6 +867,8 @@ namespace WindowsFormsApplication1
                 bool mitSchritten = schritte is { Count: > 0 };
                 List<Raumumhaengung> hand = umhaengungen?.Where(u => u != null).Select(u => new Raumumhaengung(u.Raum, u.Zielzone)).ToList();
                 _plan = Zonenplan.Vorschlag(_ablauf.Abbild, index, _zonierung.Regel, mitSchritten ? grundhaken ?? haken : haken, hand);
+                // Vorgaberegel 2.5: Zonen ohne Profil nehmen das der Gebäudeart — vor den Schritten, damit „keine“ von Hand gilt.
+                VorgabeAnwenden(_plan);
                 if (mitSchritten)
                 {
                     _schritt = Auflegen(_plan, schritte, ProjektdateiSchritt);
@@ -1412,7 +1451,9 @@ namespace WindowsFormsApplication1
                                           // Gebäudegruppe bzw. der einen Zone als Gebäudekalender.
                                           !_alsZone || _vorschlag?.Mehrzonig != true ? _ablauf.Gebaeudekonditionierung(_gebaeudeindex) : null,
                                           // HC-5: der Grundriss je Raum aus Raumgrenzen bzw. Dateikörper, gespeichert an der Quelle.
-                                          GebaeudeRaumgrundrisse.Bilden(_ablauf.Abbild, _gebaeudeindex));
+                                          GebaeudeRaumgrundrisse.Bilden(_ablauf.Abbild, _gebaeudeindex),
+                                          // Vorgaberegel 2.5 (NP-F16): das Profil der DIN-Nummer bzw. der Gebäudeart, abwählbar.
+                                          !_alsZone || _vorschlag?.Mehrzonig != true ? Einzonenprofil : null);
 
         /// <summary>
         /// Die Quelle, wie sie gemerkt wird: Kommt das Gebäude mit mehreren Zonen (Stufe G6c), trägt sie die

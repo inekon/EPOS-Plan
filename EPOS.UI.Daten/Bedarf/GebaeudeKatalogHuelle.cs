@@ -520,9 +520,15 @@ namespace WindowsFormsApplication1
                                               w.Katalog ? BauteilaufbauHuelle.Baustoffe() : Projektbaustoffe(idProjekt));
             };
 
+            // GD-5 (Vorgaberegel 2.5): das Profil der Gebäudeart für Zonen ohne Profil - nur im Projekt, der Katalog einmal gelesen.
+            Raumnutzungsvorbelegung vorbelegung = null;
+            Func<string, string> vorgabeprofil = katalog ? null
+                : art => Zonenvorbesetzung.AusGebaeudeart(vorbelegung ??= Raumnutzungsvorbelegung.Lesen(), art)?.Name;
+
             return new GebaeudeZonenweg
             {
                 Zonen = gelesen.Values.OrderBy(z => z.Rang).Select(AlsDaten).ToList(),
+                Vorgabeprofil = vorgabeprofil,
                 Luftstroeme = LuftLesen(idGebaeude),
                 // Die Hochrechnung braucht das Klima eines Projekts, der Katalogaufbau steht im Katalog schon zur Wahl.
                 Uebernehmen = katalog ? null : uebernehmen,
