@@ -59,10 +59,9 @@
 
 <div class="epos-dialog epos-katalog-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    @* Ein Titel, eine Stelle: eingebettet in der Ueberlagerung "Modul-Katalog..."
-       (WaermepumpeAnlageDialog) traegt DIE den Titel, hier kommt TitelText=""
-       herein - dann bleiben Titel und Kreuz hier aus, die Ueberlagerung traegt
-       beides (Anwenderentscheid 15.09.2026: das Kreuz steht beim Titel). *@
+    @* Ein Titel, eine Stelle: eingebettet in eine Ueberlagerung, die selbst den Titel
+       traegt, kommt hier TitelText="" herein - dann bleiben Titel und Kreuz hier aus,
+       die Ueberlagerung traegt beides (Anwenderentscheid 15.09.2026: das Kreuz steht beim Titel). *@
     <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
         @if (!string.IsNullOrEmpty(TitelText))
         {

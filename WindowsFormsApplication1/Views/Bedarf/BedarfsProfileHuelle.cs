@@ -275,6 +275,15 @@ namespace WindowsFormsApplication1
             // Abbrechen räumt die in dieser Sitzung neu angelegten wieder ab (Projektkopievormerkung).
             var vormerkung = new Projektkopievormerkung(name => BedarfStammCtrl.ProjektkopieEntfernen(
                 art, BedarfStammCtrl.ProjektkopieId(art, name, projektId), projektId));
+            // „Aus dem Projekt entfernen" nimmt der Dialog selbst aus der Zeilenliste; der Bestand beim Öffnen
+            // zeigt nach dem Schließen, welche Kopien keine Zeile mehr hat (Muster HeizkesselHuelle.Entfernen:
+            // nur VORMERKEN, geloescht wird beim OK). Im Assistenten zeigt IdStamm auf den Katalog. Geloescht
+            // wird nur eine Kopie ohne Zuordnung in der Datenbank (ProjektkopieEntfernen): Das Brauchwasser
+            // schreibt seine Zuordnungen im OK des Dialogs, die uebrigen Arten schreibt der Aufrufer erst nach
+            // dem Schliessen - dort bleibt die Kopie einer entfernten Zeile stehen.
+            List<(string Bezeichner, int KopieId)> bestand = !wizard && projektId > 0
+                ? zeilen.Select(z => (z.Name ?? "", z.IdStamm)).ToList()
+                : null;
 
             var werte = new Dictionary<string, object>(
                 Gaben(besitzer, art, projektId, zeilen, geaendert, wizard, behaelter, vormerkung))
@@ -299,6 +308,7 @@ namespace WindowsFormsApplication1
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
             }
+            vormerkung.EntferntGegenueber(bestand, id => zeilen.Exists(z => z.IdStamm == id));
             vormerkung.Abschliessen(ok, id => zeilen.Exists(z => z.IdStamm == id));
             return ok;
         }

@@ -591,4 +591,106 @@ public class ProjektkopievormerkungTests : EposBunitContext
         Assert.True(h.Ergebnis);
         Assert.Empty(h.Geloescht);
     }
+
+    /// <summary>
+    /// Die Bedarfsprofile-Hülle im Kleinen, nach <c>BedarfsProfileHuelle.Zeigen</c>: Der Dialog entfernt Zeilen
+    /// selbst aus der Zeilenliste und meldet es nicht einzeln; die Hülle merkt sich den Bestand beim Öffnen und
+    /// gleicht ihn nach dem Schließen ab (<see cref="Projektkopievormerkung.EntferntGegenueber"/>), VOR dem
+    /// Abschluss. Die Zeile zeigt mit <c>IdStamm</c> auf ihre Projektkopie.
+    /// </summary>
+    private sealed class BedarfHuelle
+    {
+        public readonly List<EPOS.UI.Dialoge.Bedarf.BedarfsProfilZeile> Zeilen;
+        public readonly List<string> Geloescht = new();
+        public readonly Projektkopievormerkung Vormerkung;
+        private readonly List<(string Bezeichner, int KopieId)> _bestand;
+        public bool? Ergebnis;
+
+        public BedarfHuelle(params EPOS.UI.Dialoge.Bedarf.BedarfsProfilZeile[] zeilen)
+        {
+            Zeilen = zeilen.ToList();
+            Vormerkung = new Projektkopievormerkung(name => Geloescht.Add(name));
+            _bestand = Zeilen.Select(z => (z.Name ?? "", z.IdStamm)).ToList();
+        }
+
+        public void Geschlossen(bool ok)
+        {
+            Ergebnis = ok;
+            Vormerkung.EntferntGegenueber(_bestand, id => Zeilen.Exists(z => z.IdStamm == id));
+            Vormerkung.Abschliessen(ok, id => Zeilen.Exists(z => z.IdStamm == id));
+        }
+    }
+
+    private static EPOS.UI.Dialoge.Bedarf.BedarfsProfilZeile Bedarfszeile(int idZ, string name, int kopieId)
+        => new() { IdZ = idZ, IdStamm = kopieId, Name = name, Summe = 10 };
+
+    private IRenderedComponent<EPOS.UI.Dialoge.Bedarf.BedarfsProfileDialog> BedarfAufbauen(BedarfHuelle h)
+        => Render<EPOS.UI.Dialoge.Bedarf.BedarfsProfileDialog>(p => p
+            .Add(x => x.Art, BedarfsArt.Prozesswaerme)
+            .Add(x => x.Zeilen, h.Zeilen)
+            .Add(x => x.Katalogzeilen, () => new List<Katalogfilterzeile>())
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerBedarf(BedarfsArt.Prozesswaerme, s => s)
+                                                          .MitVerwendungsspalte(s => s))
+            .Add(x => x.ProjektGespeichert, () => true)
+            .Add(x => x.Geschlossen, b => h.Geschlossen(b)));
+
+    /// <summary>Die erste Projektzeile wählen und „Aus dem Projekt entfernen".</summary>
+    private static void BedarfEntfernen(IRenderedComponent<EPOS.UI.Dialoge.Bedarf.BedarfsProfileDialog> cut)
+    {
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[0].Click();
+        cut.FindAll(".epos-zweispalten-knopf--entfernen")[0].Click();
+    }
+
+    [Fact]
+    public void Bedarfsprofile_Entfernen_und_OK_loescht_die_Projektkopie()
+    {
+        var h = new BedarfHuelle(Bedarfszeile(1, "Profil A", 300), Bedarfszeile(2, "Profil B", 400));
+        var cut = BedarfAufbauen(h);
+
+        BedarfEntfernen(cut);
+        Assert.Equal(new[] { 400 }, h.Zeilen.Select(z => z.IdStamm));   // im Dialog ist die Zeile weg ...
+        Assert.Empty(h.Geloescht);                                        // ... die Kopie noch nicht
+
+        cut.FindAll(".epos-leiste button").First(b => b.TextContent.Trim() == "OK").Click();
+        Assert.True(h.Ergebnis);
+        Assert.Equal(new[] { "Profil A" }, h.Geloescht);
+    }
+
+    [Fact]
+    public void Bedarfsprofile_Entfernen_und_Abbrechen_laesst_die_Projektkopie_stehen()
+    {
+        var h = new BedarfHuelle(Bedarfszeile(1, "Profil A", 300), Bedarfszeile(2, "Profil B", 400));
+        var cut = BedarfAufbauen(h);
+
+        BedarfEntfernen(cut);
+        cut.FindAll(".epos-leiste button").First(b => b.TextContent.Trim() == "Abbrechen").Click();
+
+        Assert.False(h.Ergebnis);
+        Assert.Empty(h.Geloescht);
+    }
+
+    [Fact]
+    public void Bedarfsprofile_eine_noch_verwiesene_Kopie_bleibt_beim_OK()
+    {
+        // Zwei Zuordnungen derselben Projektkopie: Eine entfernt, die andere zeigt weiter auf sie.
+        var h = new BedarfHuelle(Bedarfszeile(1, "Profil A", 300), Bedarfszeile(2, "Profil A", 300));
+        var cut = BedarfAufbauen(h);
+
+        BedarfEntfernen(cut);
+        cut.FindAll(".epos-leiste button").First(b => b.TextContent.Trim() == "OK").Click();
+
+        Assert.True(h.Ergebnis);
+        Assert.Empty(h.Geloescht);
+    }
+
+    [Fact]
+    public void Der_Bestandsabgleich_merkt_nur_Kopien_ohne_Zeile_vor()
+    {
+        var v = new Projektkopievormerkung(_ => { });
+        v.EntferntGegenueber(new[] { ("A", 1), ("B", 2), ("A", 1), ("C", 0) }, id => id == 2);
+
+        Assert.Equal(new[] { ("A", 1), ("A", 1) }, v.Entfernte);   // die Kopie-Id 0 zählt nicht; doppelt räumt Abschliessen zusammen
+        v.EntferntGegenueber(null, _ => false);                     // ohne Bestand (Assistent) nichts
+        Assert.Equal(2, v.Entfernte.Count);
+    }
 }

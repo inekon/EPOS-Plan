@@ -107,7 +107,7 @@ namespace WindowsFormsApplication1
         public const string SOLARKOLLEKTOREN_PROJEKT = "Form_SolarKollektoren";
 
         /// <summary>
-        /// Die Waermepumpen-ANLAGE eines Projekts (<c>WaermepumpeAnlageDialog</c>)
+        /// Die Waermepumpen-ANLAGE eines Projekts (Baustein <c>WaermepumpeAnlageFelder</c>)
         /// samt ihren Teilbausteinen Konfiguration und Stammfelder.
         /// </summary>
         /// <remarks>
@@ -7645,7 +7645,7 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
-        // Form_WP_Anlage  ->  WaermepumpeAnlageDialog   (Welle KI-F1)
+        // Form_WP_Anlage  ->  WaermepumpeAnlageFelder   (Welle KI-F1)
         // =====================================================================
 
         /// <summary>
