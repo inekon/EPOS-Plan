@@ -32,6 +32,7 @@ bleiben für die dort genannten Entscheide gültig und werden nicht abgeschriebe
   „Schemaschritt angemeldet“ ist von dieser Sitzung nicht belegt.
 - **Logbuch:** Satz 1.2.0.9 nur für #966; alles Übrige sind Fangwege, Tests, Langtexte oder Hilfeziele
   ohne sichtbare Bedienänderung (Regel 13.4).
+- Parallel lief am 11.10. die Sitzung „Anlagendialog, Kältebedarf, KAL1“ (Statuszeilen #980–#982, #988/#989, #998/#999, #1009); ihr Stand steht in [`2026-10-11_Uebergabe_Dialoge_Anlagendialog_Kaeltebedarf.md`](2026-10-11_Uebergabe_Dialoge_Anlagendialog_Kaeltebedarf.md).
 
 ## 2 Geltende Entscheide des Anwenders (11.10.2026)
 
