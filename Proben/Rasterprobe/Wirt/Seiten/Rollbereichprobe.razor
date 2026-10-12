@@ -144,14 +144,19 @@
         case "kaeltemaschine":
             @* Stufe 5: der Erzeugerdialog als Wirt der Zweispaltenauswahl - Projektliste, Katalog, Zusammenfassung,
                Satz-Ueberlagerung mit Anlagenfeldern und Kostenknoepfen; ohne Datenbank. *@
-            <KaeltemaschineAnlageDialog Katalogprofil="@Profil(Anlagenart.Kaeltemaschine)"
-                                        Katalogzeilen="@(() => Katalog(Anlagenart.Kaeltemaschine))"
+            @* KM-K1: Katalog und Projekt mit beiden Arten (jede dritte Katalogzeile eine Waermepumpe), eine Projekt-
+               waermepumpe im Kuehlbetrieb mit Rang; das Uebernehmen einer Waermepumpe lehnt der Wirt benannt ab (Banner). *@
+            <KaeltemaschineAnlageDialog Katalogprofil="@KuehlerzeugerProfil"
+                                        Katalogzeilen="@KuehlerzeugerKatalog"
                                         Anlagen="@Kaelteanlagen" Katalogwerte="@(_ => KaelteGeraet)"
                                         Stromtraeger="@(new[] { (5, "Strom") })" ProjektStromtraeger="5"
                                         Anlegen="@((_, _) => -1)" Speichern="@(_ => null)" Loeschen="@(_ => { })"
                                         KatalogLoeschen="@(_ => "")" Kostensumme="@(_ => (1000.0, 50.0))"
                                         KostenOeffnen="@((_, _) => Task.CompletedTask)"
-                                        Waermepumpen="@(() => Array.Empty<EPOS.UI.Seiten.Start.KuehlWaermepumpe>())"
+                                        KuehlWaermepumpen="@(() => KuehlWp)"
+                                        WaermepumpeUebernehmen="@(id => new KuehlWpUebernahme(false, 900 + id, "Wärmepumpe " + id, false, "Zu diesem Gerät liegen keine Kühlkenndaten vor — der Kühlbetrieb bleibt gesperrt.", null))"
+                                        WpKuehlbetriebSetzen="@((_, _) => null)"
+                                        KaelteRaenge="@(() => new Dictionary<int, int> { [1] = 2 })"
                                         Geschlossen="@(b => Beendet(b))" />
             break;
         default:
@@ -211,6 +216,25 @@
     {
         Bezeichner = "Kältemaschine", Firma = "Musterwerk", Rueckkuehlart = "Luft", Nennkaelteleistung = 100, NennEer = 3.2,
         Mindestteillast = 30, KaltwasserMin = 6
+    };
+
+    /// <summary>KM-K1: das gemeinsame Profil (Art, Quelle) und ein Katalog beider Arten.</summary>
+    private Katalogfilterprofil? _kuehlerzeugerProfil;
+    private Katalogfilterprofil KuehlerzeugerProfil => _kuehlerzeugerProfil ??= KuehlerzeugerKatalogCtrl.Profil(s => Resource.ResourceManager.GetString(s) ?? s);
+    private IReadOnlyList<Katalogfilterzeile>? _kuehlerzeugerKatalog;
+    private IReadOnlyList<Katalogfilterzeile> KuehlerzeugerKatalog() => _kuehlerzeugerKatalog ??= Zeilenbau.Voll(KuehlerzeugerProfil, _anzahl)
+        .Select((z, i) => i % 3 == 2
+            ? new Katalogfilterzeile(i + 1, "Wärmepumpe " + (i + 1)) { Schluessel = KuehlerzeugerKatalogCtrl.WpSchluessel(i + 1) }
+                .MitText(KuehlerzeugerKatalogCtrl.SpArt, Resource.KMA_ART_WAERMEPUMPE)
+                .MitText(Katalogfilterprofil.SpBezeichner, "Wärmepumpe " + (i + 1))
+                .MitText(Katalogfilterprofil.SpHersteller, "Musterwerk")
+                .MitZahl(Katalogfilterprofil.SpNennkaelteleistung, 40, 1).MitZahl(Katalogfilterprofil.SpEer, 3.1, 2)
+                .MitText(Katalogfilterprofil.SpQuelle, "Luft-Wasser")
+            : z.MitText(KuehlerzeugerKatalogCtrl.SpArt, Resource.KMA_ART_KAELTEMASCHINE))
+        .ToList();
+    private static readonly KuehlWaermepumpeZeile[] KuehlWp =
+    {
+        new(501, 3, "Wärmepumpe Kühlung", "Musterwerk", "Luft-Wasser", 1, 1, 38.0, 3.4, 7, "Strom", false, "zulässig")
     };
 
     private IReadOnlyList<KaeltemaschineAnlageDaten> Kaelteanlagen() => Enumerable.Range(1, _projekt)

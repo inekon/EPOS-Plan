@@ -51,6 +51,11 @@
 // leer); ein weiterer oberer Abzug entfaellt. Dritte Gegenprobe (sichere Abstaende): dasselbe Fenster
 // 1 194 x 834 OHNE die Token - der Dialog reicht unter Statusleiste und Home-Anzeige und muss rot werden.
 //
+// KNOPFRAND (KA-E-27, KM-L1): in jedem Zustand liegt jeder sichtbare Knopf des Dialogs (ausserhalb einer
+// Ueberlagerung) ganz innerhalb des Dialogrands, und kein Knopf der Kopfleisten und des Satzkopfs ueberdeckt
+// einen anderen - die Knopfleiste am Satz bricht um, statt ueberzustehen. Gegenprobe (Kaeltemaschine,
+// 1 093 x 614): eine Knopfleiste, der der Umbruch genommen und ein breiter Knopf angehaengt wird, muss rot werden.
+//
 // Aufruf: node rollbereichprobe.mjs --url http://127.0.0.1:5299 [--nur <fall>] [--ohne-gegenprobe] [--fotos <ordner>]
 // Rueckgabe 0 = kein Verstoss und Gegenprobe rot, 1 = Verstoss oder Gegenprobe gruen, 2 = Aufbaufehler.
 
@@ -161,6 +166,26 @@ function messen(KOMPAKT_ABFRAGE) {
       if (b.right > r.right + 1 || b.left < r.left - 1) leistenfehler.push('Knopf "' + k.textContent.trim() + '" abgeschnitten');
     }
   }
+  // KNOPFRAND (KA-E-27): kein sichtbarer Knopf ausserhalb des Dialogrands, keine Ueberdeckung in einer Leiste.
+  const knopfrand = [];
+  if (d) {
+    const dr = d.getBoundingClientRect();
+    const text = k => (k.textContent.trim() || k.getAttribute('title') || k.getAttribute('aria-label') || k.className).slice(0, 40);
+    const knoepfe = [...d.querySelectorAll('button')].filter(k => sichtbar(k) && !k.closest('.epos-ueberlagerung, .epos-zweispalten-inhalt'));
+    for (const k of knoepfe) {
+      const b = k.getBoundingClientRect();
+      if (b.left < dr.left - 1 || b.right > dr.right + 1)
+        knopfrand.push('Knopf "' + text(k) + '" ausserhalb des Dialogrands (' + Math.round(b.left) + '..' + Math.round(b.right) + ' px, Dialog ' + Math.round(dr.left) + '..' + Math.round(dr.right) + ')');
+    }
+    for (const l of d.querySelectorAll('.epos-zweispalten-kopfleiste, .epos-zweispalten-satzkopf')) {
+      const ks = [...l.querySelectorAll('button')].filter(sichtbar).filter(k => !k.parentElement.closest('button'));
+      for (let i = 0; i < ks.length; i++) for (let j = i + 1; j < ks.length; j++) {
+        const a = ks[i].getBoundingClientRect(), b = ks[j].getBoundingClientRect();
+        if (a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1)
+          knopfrand.push('Knopf "' + text(ks[i]) + '" ueberdeckt "' + text(ks[j]) + '"');
+      }
+    }
+  }
   // Ueberlauf: ein Bereich oder sein Inhalt ist hoeher als sein Platz (die Liste ragte ueber die Fussleiste).
   const ueberlauf = d ? [...d.querySelectorAll('.epos-zweispalten, .epos-zweispalten-bereich, .epos-zweispalten-inhalt')].filter(sichtbar)
     .filter(e => e.scrollHeight > e.clientHeight + 1).map(e => name(e) + ' ' + (e.scrollHeight - e.clientHeight) + ' px') : [];
@@ -185,7 +210,7 @@ function messen(KOMPAKT_ABFRAGE) {
       zeile: parseFloat(getComputedStyle(z.closest('.epos-zweispalten')).getPropertyValue('--epos-zf-zeile')) || 20,
       rollt: z.scrollHeight > z.clientHeight + 1 || ['auto', 'scroll'].includes(getComputedStyle(z).overflowY),
       angaben: z.querySelectorAll('.epos-satzzusammenfassung-angabe').length } : null)(d && d.querySelector('.epos-zweispalten-satz--zusammenfassung')),
-    leistenfehler, ...satzmasse(d),
+    leistenfehler, knopfrand, ...satzmasse(d),
   };
   // DZ1: die Satzflaeche, ihr Rest bis zum unteren Rand des Bausteins und das Bild der Ganglinie.
   function satzmasse(d) {
@@ -613,6 +638,7 @@ function pruefen(fall, fenster, zustand, m, konsole, istWirt, frei) {
   const sollSchrift = m.kompakt ? 12 : 13;
   if (m.schrift !== null && Math.abs(m.schrift - sollSchrift) > 0.1) fehler.push(`Schrift ${m.schrift} px statt ${sollSchrift} px (${m.kompakt ? 'Kompakt' : 'Normal'}stufe)`);
   if (fenster.neu && !m.kompakt) fehler.push('Kompaktstufe nicht aktiv');
+  for (const t of m.knopfrand || []) fehler.push(t + ' (KA-E-27)');
   if (istWirt && m.projektZeile !== null) {
     const soll = m.kompakt ? 46 : 53;
     if (Math.abs(m.projektZeile - soll) > 1) fehler.push(`Projektzeile ${m.projektZeile} px statt ${soll} px`);
@@ -1195,6 +1221,27 @@ try {
     await kontext.close();
     console.log(`Gegenprobe: verschachtelt ${gegen.verschachtelt} Paar(e), Dialogkoerper rollt: ${gegen.dialog}`);
     if (gegen.verschachtelt === 0 || !gegen.dialog) { console.log('  GEGENPROBE GRUEN - die Probe sieht nichts'); rueckgabe = 1; }
+
+    // KNOPFRAND (KA-E-27): die Knopfleiste der Kaeltemaschine ohne Umbruch und mit breitem Zusatzknopf muss rot werden.
+    {
+      const kk = await browser.newContext({ viewport: { width: 1093, height: 614 } });
+      const sk = await kk.newPage();
+      await sk.goto(WURZEL + '/rollbereichprobe?fall=kaeltemaschine', { waitUntil: 'networkidle' });
+      await sk.waitForSelector('.epos-zweispalten-satzknoepfe');
+      const gruen = (await sk.evaluate(messen, KOMPAKT)).knopfrand.length === 0;
+      await sk.addStyleTag({ content: '.epos-zweispalten-satzkopf, .epos-zweispalten-satzknoepfe { flex-wrap: nowrap !important; } .epos-zweispalten-satzknoepfe { flex: 0 0 auto !important; }' });
+      await sk.evaluate(() => {
+        const l = document.querySelector('.epos-zweispalten-satzknoepfe');
+        const b = document.createElement('button');
+        b.className = 'epos-knopf'; b.textContent = 'Gegenprobe '.repeat(12);
+        l.appendChild(b);
+      });
+      await ruhe(sk);
+      const rot = (await sk.evaluate(messen, KOMPAKT)).knopfrand.length > 0;
+      await kk.close();
+      console.log(`Gegenprobe Knopfrand: ohne Eingriff gruen ${gruen ? 'ja' : 'nein'}; ohne Umbruch mit breitem Knopf - ${rot ? 'rot' : 'gruen'}`);
+      if (!gruen || !rot) { console.log('  GEGENPROBE KNOPFRAND VERFEHLT'); rueckgabe = 1; }
+    }
 
     // Satz-Ueberlagerung (UeS1): ein Rollbereich im Koerper, eine als Ganzes rollende Ueberlagerung mit
     // weggerollter Fussleiste muessen rot werden.

@@ -189,7 +189,7 @@ public class KachelKlickNieStillTests : EposBunitContext
     {
         var cut = Render<KaeltemaschineAnlageDialog>(b => b
             .Add(x => x.Anlagen, () => throw new InvalidOperationException("Tabelle gesperrt"))
-            .Add(x => x.Waermepumpen, () => throw new InvalidOperationException("WP gesperrt")));
+            .Add(x => x.KuehlWaermepumpen, () => throw new InvalidOperationException("WP gesperrt")));
 
         string text = cut.Find(".epos-warnbanner--warnung .epos-warnbanner-text").TextContent;
         Assert.Contains("Tabelle gesperrt", text);

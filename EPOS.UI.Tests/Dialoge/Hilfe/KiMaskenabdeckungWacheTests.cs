@@ -266,7 +266,7 @@ public sealed class KiMaskenabdeckungWacheTests
         // KU3-4c: der Erzeugerdialog der Kaeltemaschinen - Name, Anzahl, Kaltwasservorlauf, Hilfsstrom,
         // Kuehltraeger und eigener Zaehler der gewaehlten Anlage (die Felder der Feldkarte); die Katalogliste
         // der Geraetewahl ist eine Auswahl, kein Wert.
-        new("KaeltemaschineAnlageDialog", 1, "die Schalter „Wärmepumpen im Kühlbetrieb“ schreiben beim OK den Kühlbetrieb des Geräts über den Kernweg der Wärmepumpen-Konfiguration — derselbe Wert wie das Katalogfeld „kuehlbetrieb“ der Maske WaermepumpeKonfiguration, keine Eingabe der Kältemaschine"),
+        new("KaeltemaschineAnlageDialog", 0, "KM-K1: die Felder der Anlage stehen in KaeltemaschineKonfiguration; Wärmepumpen im Kühlbetrieb schalten Übernehmen und Entfernen der Katalogauswahl (Kernweg der Wärmepumpen-Konfiguration), keine Eingabe der Kältemaschine"),
         // ---- Ende Gebäudesimulation G3, Welle C ----
 
         // ---- Gebäudesimulation G3, Welle D2 (Zone und Bauteil) ----
