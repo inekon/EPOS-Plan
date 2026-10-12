@@ -1461,6 +1461,19 @@ Fenstern, 0 Verstöße, die elf Gegenproben rot (Rückgabe 0); `fensterprobe.mjs
 1 088 × 624, 520 × 624 und 1 194 × 834 rollen nur die zwei Listen, Gegenproben rot; `rasterprobe.mjs` 29 von 29 Fällen
 erfüllt.
 
+**Wärme- und Kältebedarf extern (K5c, KA‑E‑23).** Drei Fälle nach dem Muster der Wärmepumpe — Zeile „gewählter Satz“
+mit Zusammenfassung (ohne Ganglinie und Importknopf), Bearbeiten-Überlagerung für Projekt- und Katalogsatz, Esc schließt
+nur die Überlagerung:
+
+- `waermebedarf`: Wärmezeile — Überlagerung mit Stammdaten und Ganglinie, ohne Deckung; Fußleiste Abbrechen und OK.
+- `kaeltebedarf`: Modus `NurKuehlung`, Kühlzeile dezentral linear — Überlagerung mit Deckung, ohne Hinweis OP‑2.
+- `kaeltebedarfalle`: Modus `Alle` mit Kühlzeile vorn — Überlagerung mit Kanal, Deckung und Hinweis OP‑2.
+
+Je Fall: Kurve im Abschnitt „Ganglinie“ mindestens 90 % der Körperbreite und 150 px hoch, Modell im Behältermaß;
+Katalogsatz ohne Projektfelder; Neu… am Satz, Formathinweis im Katalogkopf. Gegenprobe: eine ausgeblendete Deckung im
+Fall `kaeltebedarf` muss rot werden. **Messung 12.10.2026:** je Fall 110 Zustände, 0 Verstöße, Gegenproben rot
+(Rückgabe 0); der Befund „unter der Mindesthöhe“ in 1 093 × 614 tritt nicht mehr auf.
+
 **Grenzen.** Bei 720 und 700 px Fensterhöhe behält der Heizkessel Kopf und zwei Katalogzeilen; die
 Wirte ohne eigenes Zeilenmaß (Stufe 3 und 4: Kontextzeile noch unter dem Kopf) klemmen dort weiter auf
 Kopf und eine Zeile (`@container katalogauswahl`). Die Probe misst Chromium, nicht die WebView2 selbst.

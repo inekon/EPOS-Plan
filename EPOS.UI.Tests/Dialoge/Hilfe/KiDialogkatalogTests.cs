@@ -1648,10 +1648,12 @@ public class KiDialogkatalogTests : IDisposable
         // Welle, die ihr Daten-Objekt anmeldet und damit die Markup-Probe traegt.
         { KiMaskennamen.TYPSTAMM, "EPOS.UI/Dialoge/Bedarf/TypStammDialog.razor" },
 
-        // Die gewaehlte Zuordnung der externen Waermebedarfsganglinien: Kanal und
-        // Bezeichner stehen beide im Markup; die Feldgruppe „Deckung" (K5a) im Baustein DeckungsartFelder.
+        // Die gewaehlte Zuordnung der externen Waermebedarfsganglinien: Kanal und Art stehen in der
+        // Kopfleiste des Dialogs und in der Bearbeiten-Ueberlagerung (WaermebedarfExternFelder, K5c), dort auch
+        // der Bezeichner; die Feldgruppe „Deckung" (K5a) im Baustein DeckungsartFelder.
         { KiMaskennamen.WAERMEBEDARF_EXTERN,
           "EPOS.UI/Dialoge/Bedarf/WaermebedarfExternDialog.razor;" +
+          "EPOS.UI/Dialoge/Bedarf/WaermebedarfExternFelder.razor;" +
           "EPOS.UI/Dialoge/Bedarf/DeckungsartFelder.razor" },
 
         // Welle KI-F5: die zwei KATALOGEDITOREN. Sie binden ihr Daten-Objekt und

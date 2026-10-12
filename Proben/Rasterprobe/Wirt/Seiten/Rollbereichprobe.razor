@@ -103,7 +103,7 @@
                                       Filterstandvorgabe="@_filterstand" Geschlossen="@(b => Beendet(b))"
                                       Kennzahlen="@GangKennzahlen" Bildauftrag="@GangBild" BildauftragMass="@GangBildMass"
                                       DateiWaehlen="@KeineDatei" Einlesen="@KeinImport" Kopieren="@KeineKopie"
-                                      KatalogLoeschen="@(_ => false)" VerwaltungGaben="@KeineVerwaltung"
+                                      KatalogLoeschen="@(_ => false)"
                                       Schloss="@KeinSchloss" Kanaele="@Wirtkanaele" />
             break;
         case "kaeltebedarf":
@@ -114,7 +114,7 @@
                                       Filterstandvorgabe="@_filterstand" Geschlossen="@(b => Beendet(b))"
                                       Kennzahlen="@GangKennzahlen" Bildauftrag="@GangBild" BildauftragMass="@GangBildMass"
                                       DateiWaehlen="@KeineDatei" Einlesen="@KeinImport" Kopieren="@KeineKopie"
-                                      KatalogLoeschen="@(_ => false)" VerwaltungGaben="@KeineVerwaltung"
+                                      KatalogLoeschen="@(_ => false)"
                                       Schloss="@KeinSchloss" Kanaele="@Wirtkanaele"
                                       Modus="@(_modusAlle ? WaermebedarfExternModus.Alle : WaermebedarfExternModus.NurKuehlung)"
                                       TitelText="@(_modusAlle ? "Wärmebedarf Extern" : "Kältebedarf extern")"

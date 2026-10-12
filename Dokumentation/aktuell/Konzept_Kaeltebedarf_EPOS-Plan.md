@@ -144,10 +144,16 @@ und `NurKuehlung`.
   `Del_WaermebedarfExtern(projektID, kanal)` mit Kanalfilter (`DELETE … WHERE ID_Projekt = ? AND Kanal = ?`), und der
   Modus `NurKuehlung` löscht und schreibt nur seine Kanalzeilen. Ein Test hält: eine Speicherung im Modus `NurKuehlung`
   lässt jede Wärmezeile (ID, Ganglinie, Bezeichner, Kanal) unverändert. Im Modus `Alle` ändert sich nichts.
-- **Katalogauswahl V1.** Der Dialog folgt dem Gerüst „Gerahmt und gestapelt“ der Stufe 4 des
-  [Katalogauswahlkonzepts](Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md) (Zeitreihen); die Ganglinie steht in der
-  Detailzeile „gewählter Satz“ als Kälteganglinie (Kältefarbe, Einheit kW).
-- **Deckungsart** steht als Feldgruppe in der Detailzeile der Projektzeile (3.4).
+- **Katalogauswahl V1.** Der Dialog folgt dem Gerüst „Gerahmt und gestapelt“ des
+  [Katalogauswahlkonzepts](Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md) im Aufbau des Wärmepumpendialogs
+  (KA‑E‑23), in beiden Modi gleich: Die Zeile „gewählter Satz“ zeigt nur das Wesentliche — Bezeichner, Kanal und Art,
+  Jahresarbeit, Vollbenutzungsstunden, bei einer Kühlzeile die Deckung in einem Satz — und die Knopfleiste Vergleichen…,
+  Schloss setzen…, Löschen, Bearbeiten…, Neu… (Neu… legt über die Importkette einen Katalogsatz an). Bearbeiten… und der
+  Stift je Listenzeile öffnen eine Überlagerung für Projekt- und Katalogsatz mit den Stammdaten (Bezeichner, Kanal, Art,
+  im Modus `Alle` bei Kanal Kühlung der Hinweis OP‑2), der Ganglinie (Kälteganglinie in Kältefarbe, Einheit kW, mit
+  Kennzahlen, „Datei importieren…“ und „Speichern unter…“ am Katalogsatz) und der Feldgruppe „Deckung“ beim Projektsatz
+  im Kanal Kühlung; Abbrechen, Kreuz und Esc verwerfen, OK prüft. Ein gesperrter Katalogsatz öffnet nur lesend.
+- **Deckungsart** steht als Feldgruppe in der Bearbeiten-Überlagerung der Projektzeile (3.4).
 
 ### 3.3 Dialog „Kältebedarfsprofile“
 

@@ -21272,15 +21272,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung… ähnelt.
-        /// </summary>
-        public static string DECK_BTN_BEARBEITEN {
-            get {
-                return ResourceManager.GetString("DECK_BTN_BEARBEITEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die fest ähnelt.
         /// </summary>
         public static string DECK_EER_FEST {
@@ -21295,15 +21286,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string DECK_EER_LINEAR {
             get {
                 return ResourceManager.GetString("DECK_EER_LINEAR", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung ähnelt.
-        /// </summary>
-        public static string DECK_GRUPPE {
-            get {
-                return ResourceManager.GetString("DECK_GRUPPE", resourceCulture);
             }
         }
         
@@ -59168,7 +59150,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ordnungsgruppe (etwa Mauerwerk, Beton, Dämmstoffe); leer = ohne Gruppe. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stoffgruppe aus der festen Liste (etwa Mauerwerk, Beton, Dämmstoffe, „Sonstige“ für alles Übrige); leer = ohne Gruppe. Je Gruppe nennt der Dialog Werte außerhalb des üblichen Bereichs als Hinweis. ähnelt.
         /// </summary>
         public static string KI_DLG_BST_GRUPPE_ERL {
             get {
@@ -132430,6 +132412,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganglinie ähnelt.
+        /// </summary>
+        public static string WBX_GRP_GANGLINIE {
+            get {
+                return ResourceManager.GetString("WBX_GRP_GANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stammdaten ähnelt.
+        /// </summary>
+        public static string WBX_GRP_STAMM {
+            get {
+                return ResourceManager.GetString("WBX_GRP_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Dateiformat: CSV- oder Textdatei (auch Excel .xlsx/.xlsm/.xls) mit einem Jahr Wärmebedarf — 8.760 Stundenwerte oder 35.040 Viertelstundenwerte, in Zeitfolge ab dem 1. Januar, je Zeile ein Wert. Als Feldtrennzeichen sind Semikolon, Komma, Tabulator und senkrechter Strich zugelassen; eine einspaltige Datei braucht keines. Eine Kopfzeile ist erlaubt und wird erkannt. Dezimaltrennzeichen Komma oder Punkt, kein Tausendertrennzeichen. Werte als Leistung in kW oder als Arbeit in kWh je Intervall — die Einheit wird [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string WBX_HINWEIS_FORMAT {
@@ -132466,6 +132466,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kanal, Art und Deckung gelten je Zuordnung im Projekt. ähnelt.
+        /// </summary>
+        public static string WBX_HRL_NUR_IM_PROJEKT {
+            get {
+                return ResourceManager.GetString("WBX_HRL_NUR_IM_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarfsdaten (Ganglinien) ähnelt.
         /// </summary>
         public static string WBX_KOPFBAND {
@@ -132480,6 +132489,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WBX_KOPFBAND_KAELTE {
             get {
                 return ResourceManager.GetString("WBX_KOPFBAND_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner ähnelt.
+        /// </summary>
+        public static string WBX_LBL_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("WBX_LBL_BEZEICHNER", resourceCulture);
             }
         }
         
