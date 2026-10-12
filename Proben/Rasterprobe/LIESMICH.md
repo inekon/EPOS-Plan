@@ -1116,6 +1116,16 @@ Unterdialogs haftet nicht, Kopf und Fuß des Fensters liegen unter der Abdunkelu
 und jede Zahl ist dieselbe wie mit `marke=0`. Katalogdialog: Kopf und Fuß statisch, das Dokument rollt nicht,
 jede Zahl dieselbe wie mit `marke=0`.
 
+**Fall `wp-steckbrief`** (`--nur wp-steckbrief`, bei **1 280 × 800** und **1 194 × 834** mit sicheren Abständen):
+die Satz-Überlagerung der Wärmepumpe („Bearbeiten…" der Projektkopie) mit dem Gerätesteckbrief links unter
+„Auslegung für Verteilung" — Überlagerung zwischen den sicheren Abständen, rollt nicht als Ganzes, nur ihr Körper
+rollt; der Steckbrief steht in der linken Spalte mit 14 Zeilen, weder er noch der Körper rollt quer, die linke
+Spalte überlappt die Kenndaten nicht; der Arbeitspunkt nennt den Normpunkt und folgt dem Vorlauf (35 → 55 °C).
+Dann „Konfiguration…": „Betriebszeiten" steht zugeklappt (`aria-expanded="false"`, Klappknopf mindestens das
+Berührungsziel des Hauses), „Höchster Vorlauf" steht darunter sichtbar, Aufklappen zeigt „Wochenraster bearbeiten"
+und das Raster öffnet. Fotos `wp_steckbrief_*`, `wp_konfiguration_zu_*`, `wp_konfiguration_auf_*`. Gegenprobe: ein
+Steckbrief mit `min-width: 1600px` ohne Umbruch muss rot sein.
+
 **Gegenprobe** (läuft mit): dieselben Fensterdialoge mit `marke=0` müssen die Haft-Kriterien verfehlen; mit
 Marke, aber `scroll-padding: 0` muss der Tabulator Felder unter Kopf oder Fuß legen; das eingebettete
 Warnband mit `bottom: 0` muss verdeckt sein; der Fuß der Dublettenprüfung mit negativem Rand muss das

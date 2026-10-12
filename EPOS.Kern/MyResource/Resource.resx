@@ -51463,6 +51463,39 @@ Chart</value>
   <data name="WPV_RUECK_BLEIBT" xml:space="preserve">
     <value>Mit dem Gerät gehen Heiz- und Kühlkennlinie mit allen Stützstellen. Im Projekt bleiben die Anlagendaten: Betriebsart, Temperaturen, Bivalenz, Heizstab, Sperrzeiten, Wärmequelle, Einbindung und Übergabegrenzen der Anlage sowie die Senken.</value>
   </data>
+  <data name="WPA_GRP_GERAET" xml:space="preserve">
+    <value>Gewähltes Gerät</value>
+  </data>
+  <data name="WPA_STB_HEIZLEISTUNG" xml:space="preserve">
+    <value>Heizleistung bei {0}</value>
+  </data>
+  <data name="WPA_STB_COP" xml:space="preserve">
+    <value>COP bei {0}</value>
+  </data>
+  <data name="WPA_STB_HEIZLEISTUNG_OHNE" xml:space="preserve">
+    <value>Heizleistung am Vorlauf</value>
+  </data>
+  <data name="WPA_STB_COP_OHNE" xml:space="preserve">
+    <value>COP am Vorlauf</value>
+  </data>
+  <data name="WPA_STB_ARBEITSPUNKT_HERLEITUNG" xml:space="preserve">
+    <value>Projektkennlinie am eingestellten Vorlauf, interpoliert wie in der Simulation</value>
+  </data>
+  <data name="WPA_STB_INVEST" xml:space="preserve">
+    <value>Invest</value>
+  </data>
+  <data name="WPA_STB_BETRIEB" xml:space="preserve">
+    <value>Betrieb</value>
+  </data>
+  <data name="WPA_KOPF_BZ_LEER" xml:space="preserve">
+    <value>nicht gepflegt — immer verfügbar</value>
+  </data>
+  <data name="WPA_KOPF_BZ_GEPFLEGT" xml:space="preserve">
+    <value>Zeitprogramm gepflegt</value>
+  </data>
+  <data name="WPA_KOPF_BZ_FEHLER" xml:space="preserve">
+    <value>Zeitprogramm ungültig</value>
+  </data>
   <data name="PVD_LBL_SUMME" xml:space="preserve">
     <value>Summe aller ausgewählten Module [kWp]:</value>
   </data>

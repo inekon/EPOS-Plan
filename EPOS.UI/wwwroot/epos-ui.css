@@ -7314,6 +7314,34 @@ table.epos-simerg-tabelle {
     margin-top: 8px;
 }
 
+/* DER GERAETESTECKBRIEF (Bausteine/Geraetesteckbrief.razor, WP1a): die wichtigsten Daten des gewaehlten
+   Satzes, lesend neben seinen Feldern. Das Raster aus Beschriftung und Wert nimmt die Regel des
+   Bauteilsteckbriefs (.epos-steckbrief-werte); hier steht nur, was er anders braucht - keine eigenen
+   Farben, die Herleitung leise unter ihrem Wert, ein langer Wert bricht um statt quer zu rollen. */
+.epos-geraetesteckbrief {
+    min-width: 0;
+}
+
+.epos-geraetesteckbrief-titel {
+    margin: 4px 0;
+    font-size: 0.9rem;
+}
+
+.epos-geraetesteckbrief-werte dt {
+    color: var(--epos-text-leise);
+}
+
+.epos-geraetesteckbrief-werte dd {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.epos-geraetesteckbrief-herleitung {
+    display: block;
+    color: var(--epos-text-leise);
+    font-size: 0.85em;
+}
+
 .epos-gebimport-aufbauzeile--offen td {
     border-bottom: 0;
 }
