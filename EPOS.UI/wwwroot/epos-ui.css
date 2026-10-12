@@ -4152,6 +4152,9 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten));
     overflow: hidden;
     box-sizing: border-box;
+    /* BREITENREGEL (KA-E-27, Konzept 4.8): Der Dialog folgt der Fensterbreite - kein Hoechstmass; was nicht passt,
+       regelt der Inhalt (Spaltenregel der Katalogliste, Umbruch der Knopfleiste am Satz). */
+    max-width: none;
 }
 
 .epos-ueberlagerung-inhalt > .epos-dialog:has(> .epos-zweispalten) {
@@ -4324,6 +4327,17 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
    sie brechen nicht um und geben nicht nach - zuerst kuerzen Name und Kenndaten des Satzes. */
 .epos-zweispalten-satzkopf > .epos-zweispalten-satzknoepfe { flex: 0 0 auto; display: inline-flex; flex-wrap: nowrap; align-items: center; gap: 8px; margin: 0 4px 0 4px; }
 .epos-zweispalten-satzknoepfe > * { flex: 0 0 auto; white-space: nowrap; }
+/* UMBRUCH DER KNOPFLEISTE (KA-E-27, Konzept 4.4a, KM-L1): Reicht die Breite des Dialogs nicht, rueckt die
+   Knopfleiste in eine zweite Zeile - rechtsbuendig, in derselben Reihenfolge; reicht auch die Zeile nicht, brechen
+   die Knoepfe selbst um. Kein Knopf ragt ueber den Rand des Dialogs, keiner ueberdeckt einen anderen, die Zeile
+   rollt nicht waagerecht. Gemessen: rollbereichprobe.mjs, Messung „Knopfrand". Gilt fuer alle Wirte. */
+.epos-zweispalten--knopfleiste-am-satz .epos-zweispalten-satzkopf { flex-wrap: wrap; row-gap: 4px; }
+.epos-zweispalten--knopfleiste-am-satz .epos-zweispalten-satzkopf > .epos-zweispalten-satzknoepfe {
+    flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-end; row-gap: 4px; margin-left: auto; max-width: 100%; min-width: 0;
+}
+/* Infoknoepfe im Kopf der Satzzeile neben dem Satznamen (KA-E-27, Kaeltemaschine): die Satzzeile nimmt nur ihre
+   Breite, die Kopfknoepfe folgen dem Namen, die Knopfleiste steht rechts. */
+.epos-kaeltemaschine-anlage .epos-zweispalten-satzkopf > .epos-zweispalten-satzzeile { flex: 0 1 auto; }
 /* Die Zeile ist die Wahl auch in der Projektliste (AW1): die Klickflaeche fuellt die Namenszelle. */
 .epos-zweispalten-inhalt--zeilenwahl table.epos-raster.quickgrid > tbody > tr > td.epos-spalte-zeilenzelle { padding: 0; }
 /* AW3b: dasselbe fuer die von Hand gebauten Projektlisten (Waermebedarf extern, Stromganglinie, Gebaeude). */

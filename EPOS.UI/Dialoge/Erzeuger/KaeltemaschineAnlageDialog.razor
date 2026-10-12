@@ -6,8 +6,8 @@
    leistung, EER/SEER, Rueckkuehlart, Anzahl, Kuehltraeger, eigener Zaehler; Kopfleiste mit der Summe kW
    Kaelte, Bearbeiten… und „Aus dem Projekt entfernen"), darunter der KATALOG (Tab_Kaeltemaschine_STAMM)
    in der Katalogliste mit Spaltenwahl, Verwendungsmarke, Suchfeld und Trefferzahl; Fuss „Vergleichen…",
-   Schloss, „Loeschen", „Bearbeiten…" (der Katalogeditor KaeltemaschineKatalogDialog fuer den Satz), rechts
-   „Typkennfelder laden…" und „Katalogverwaltung…". Die DETAILZEILE ist die Zusammenfassung des gewaehlten
+   Schloss, „Loeschen", „Bearbeiten…" (der Katalogeditor KaeltemaschineKatalogDialog fuer den Satz), Neu…;
+   „Typkennfelder laden…" und „Katalogverwaltung…" stehen in der Kopfzeile des Katalogs (KA-E-27, KM-L1). Die DETAILZEILE ist die Zusammenfassung des gewaehlten
    Satzes; „Bearbeiten" oeffnet die Satz-Ueberlagerung mit den Anlagenfeldern (dieselbe Komponente wie im
    Bereich „Kaelte" der Simulationskonfiguration), den Kostenknoepfen und den Kenndaten als Bild.
 
@@ -97,6 +97,18 @@
         <ProjektKopf>
             <span class="epos-zweispalten-summe">@Texte.Summe <b>@Summentext</b></span>
         </ProjektKopf>
+
+        <KatalogKopf>
+            @* KATALOGFUNKTIONEN OHNE SATZBEZUG (KA-E-27, KM-L1): in der Kopfzeile des Katalogs neben „Spalten…" -
+               die Knopfleiste am Satz traegt nur Satzaktionen. *@
+            @if (TypkennfelderLaden is not null)
+            {
+                <button type="button" class="epos-knopf epos-zweispalten-knopf epos-kaeltemaschine-typkennfelder"
+                        title="@Texte.KnopfTypkennfelder" @onclick="TypkennfelderEinspielen">@Texte.KnopfTypkennfelder</button>
+            }
+            <button type="button" class="epos-knopf epos-zweispalten-knopf epos-kaeltemaschine-verwaltung"
+                    title="@Texte.KnopfVerwaltung" @onclick="VerwaltungOeffnen">@Texte.KnopfVerwaltung</button>
+        </KatalogKopf>
 
         @* AW3b: „Bearbeiten…" steht nur noch EINMAL, in der Knopfleiste am gewaehlten Satz. *@
 
@@ -195,13 +207,6 @@
             {
                 <button type="button" class="epos-knopf epos-knopf--neu" @onclick="BeiNeu">@Resource.AUSWAHL_BTN_NEU</button>
             }
-            @if (TypkennfelderLaden is not null)
-            {
-                <button type="button" class="epos-knopf epos-kaeltemaschine-typkennfelder"
-                        @onclick="TypkennfelderEinspielen">@Texte.KnopfTypkennfelder</button>
-            }
-            <button type="button" class="epos-knopf epos-kaeltemaschine-verwaltung"
-                    @onclick="VerwaltungOeffnen">@Texte.KnopfVerwaltung</button>
         </KatalogFussRechts>
 
         <SatzKopfKnoepfe>
