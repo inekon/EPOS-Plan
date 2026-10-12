@@ -13,7 +13,7 @@ für die hier genannten Gegenstände ab.
 
 - Zweige: Arbeitszweig `ios_migration_september`; Sitzungszweig `claude/cool-ramanujan-3m1lhl`, nach jedem Push gleich dem Arbeitszweig; letzter Push vor diesem Papier `f2caa6008` (Statuszeile #1009).
 - Statuszeilen dieser Sitzung (11.10.2026): #980 K2 Kernwege Kälte, #981 K3 Rechenweg Kältebedarf mit Abzugsstelle für K‑D, #982 K4 Startseite Reiter „Kältebedarf“ (Nachtrag: Hotfix doppelte BOM in `epos-ui.css`); #988 AW1 Knopfleiste am gewählten Satz (Heizkessel, Wärmepumpe); #989 AW2 Wärmepumpe: Satz-Überlagerung und Anlage zusammengeführt; #998 AW3a fünf Erzeugerdialoge; #999 AW3b Stufe 4/5 und Kältemaschine; #1009 KAL1 Einzeltage als Klappgruppe.
-- CI-Vermerke: an #960–#965, #980–#982, #988/#989, #998/#999, #1009 ausstehend. Am 11.10. haben die Pushes der parallelen Sitzungen jeden Kern-Lauf abgebrochen; nachtragen, sobald ein grüner Lauf existiert, dessen headSha den jeweiligen Push enthält (Muster Commit `ba33792d8`).
+- CI-Vermerke: #960–#965, #980–#982, #988/#989, #998/#999 tragen den Kern-Lauf 38181227802 (grün auf `3d7172064`). Nur #1009 ist ausstehend; nachtragen, sobald ein grüner Lauf existiert, dessen headSha `f2caa6008` enthält (Muster Commit `ba33792d8`).
 - Katalogauswahl V1: alle Stufen gebaut; Knopfleiste am gewählten Satz (KA‑E‑17 bis KA‑E‑22, Konzept Abschnitt 4.4a) in allen Wirten; Wärmepumpe mit zusammengeführter Überlagerung (`WaermepumpeAnlageDialog` → Baustein `WaermepumpeAnlageFelder`).
 - Kältebedarf: Konzept `Konzept_Kaeltebedarf_EPOS-Plan.md`; K1–K4 gebaut, K5 und K6 offen.
 - Basis R52 `2026-10-11_R52_Vorheizen`; Schemaschritt zuletzt laut Kopfzeile der Statusdatei: 219 angemeldet (Sitzung Gebäudesimulation), 220 frei; von dieser Sitzung ist keiner belegt.
@@ -39,7 +39,7 @@ für die hier genannten Gegenstände ab.
 
 ## 4 Offene Punkte (mit Empfehlung)
 
-1. CI-Vermerke (Abschnitt 1) — zuerst.
+1. CI-Vermerk für #1009 (Abschnitt 1) — zuerst.
 2. Sichtabnahme unter Windows: AW1–AW3 (alle Wirte), die zwei „Vergrößern“, Kältebedarf-Reiter samt zwei abgeleiteten Kachelbildern (`PKaelteMessdaten.jpg`, `PKaelteProfil.jpg`), KAL1-Klappgruppe, Wärmepumpen-Überlagerung.
 3. Kältebedarf K5 und K6 (Konzept Abschnitt 7): K5 Modus „nur Kühlung“ im Dialog Wärmebedarf extern (Hülle `WaermebedarfExternHuelle.NachModell` führt die Deckungsfelder noch nicht mit), Deckungsfelder im Bedarfsprofile-Dialog, Sprungziel Kühlung im Gebäudedialog, Hinweis OP‑2, Ablehnung „Split ohne EER“ im Dialog; K6 Fläche „dezentral (Split)“ in `KaelteProduktionBild`, Kältegang, Bedarfsreiter, Posten „Kühlung dezentral“ in der Strombilanz (Reihe `Kaeltestrom_Dezentral_stuendlich`), `ProjektDetails`, Deckungsgrad mit/ohne dezentralen Anteil, Gruppe „Dezentrale Kältedeckung“, Schemaschritt für die Abrechnung des Split-Stroms je Träger, Wiki-Seite Kältebedarf, ggf. Referenzprojekt mit Basis (Nummer mit Gebäudesimulation abstimmen).
 4. Nachzüge der Katalogauswahl: Kommentarblöcke über `<Zweispaltenauswahl>` in den Erzeugerdialogen (alte Ortsverteilung), Regel `.epos-wp-eingebettet` in `epos-ui.css` ungeprüft, Kommentare mit `WaermepumpeAnlageDialog`, unbenutzte `KMA_*`-Ressourcen, Bedarfsprofile `vormerkung.Entfernt`, Gebäude Jahreswärmebedarf in der Zusammenfassung; danach Konzept Katalogauswahl nach `ueberholt/` (nach K5).
@@ -82,8 +82,8 @@ Parallel arbeiten auf demselben Arbeitszweig die Sitzung „Dialoge und Korrektu
 Berichterstellung und Wiki; Statusnummern, Basen und Schemaschritte werden schnell vergeben.
 
 Erste Schritte: (1) Stand prüfen: `git status` sauber, keine Konfliktmarker, keine liegen
-gebliebene AGENT_LAEUFT, die Zeilen #960–#965, #980–#982, #988/#989, #998/#999, #1009 tragen
-ihren CI-Vermerk. (2) Den Stand in höchstens fünf Zeilen melden. (3) Mit dem Anwender abstimmen,
-womit weitergemacht wird. Empfehlung: zuerst die CI-Vermerke, dann die Rückmeldungen des
+gebliebene AGENT_LAEUFT, die Zeilen #960–#965, #980–#982, #988/#989, #998/#999 tragen
+ihren CI-Vermerk (nur #1009 ausstehend). (2) Den Stand in höchstens fünf Zeilen melden. (3) Mit dem Anwender abstimmen,
+womit weitergemacht wird. Empfehlung: zuerst der CI-Vermerk für #1009, dann die Rückmeldungen des
 Anwenders aus der Sichtabnahme und die Nachzüge der Katalogauswahl, danach Kältebedarf K5/K6.
 ```
