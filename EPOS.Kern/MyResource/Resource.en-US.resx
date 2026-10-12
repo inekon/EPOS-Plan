@@ -33999,6 +33999,33 @@ Do you want to allow this?</value>
   <data name="GIMP_ANS_ABTRENNEN" xml:space="preserve">
     <value>Tapping splits off as a zone of its own</value>
   </data>
+  <data name="GIMP_ANS_ZIEL_NUTZUNG" xml:space="preserve">
+    <value>Use: {0}</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_OHNE_NUTZUNG" xml:space="preserve">
+    <value>no use</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_KLICK" xml:space="preserve">
+    <value>Click, then click rooms to assign them to this zone</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_AUFHEBEN" xml:space="preserve">
+    <value>Selected: click rooms to assign them to this zone; click again to clear the selection</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_FEHLT" xml:space="preserve">
+    <value>to assign, first select a zone in the legend</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_NUR_ZONEN" xml:space="preserve">
+    <value>Assigning only in the Zones mode</value>
+  </data>
+  <data name="GIMP_ANS_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>not assigned ({0} rooms)</value>
+  </data>
+  <data name="GIMP_ANS_NICHT_ZUGEORDNET_TITEL" xml:space="preserve">
+    <value>Rooms without a zone — not a target; clicking highlights them in the floor plan</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_LEGENDE" xml:space="preserve">
+    <value>Zones — choose the target of the assignment</value>
+  </data>
   <data name="GIMP_ANS_KEINE_UMRISSE" xml:space="preserve">
     <value>No space on this storey has an outline.</value>
   </data>
@@ -34010,9 +34037,6 @@ Do you want to allow this?</value>
   </data>
   <data name="GIMP_DLG_GRP_GRUNDRISS" xml:space="preserve">
     <value>Floor plan</value>
-  </data>
-  <data name="GIMP_DLG_ZUORDNEN_ZU" xml:space="preserve">
-    <value>Assign spaces to</value>
   </data>
   <data name="GIMP_DLG_EIGENE_ZONE" xml:space="preserve">
     <value>as a zone of its own</value>
@@ -34027,7 +34051,7 @@ Do you want to allow this?</value>
     <value>Reassign</value>
   </data>
   <data name="GIMP_DLG_UMHAENGEN_HINWEIS" xml:space="preserve">
-    <value>Choose a zone, then tap a space in the floor plan — or pick the space in the list and “Reassign”. Only spaces with the same heating; nothing is taken over before OK.</value>
+    <value>Choose a zone in the legend, then tap a space in the floor plan or the 3D view — or pick the space in the list and “Reassign”. Only spaces with the same heating; nothing is taken over before OK.</value>
   </data>
   <data name="GIMP_DLG_SCHON_DORT" xml:space="preserve">
     <value>“{0}” is already in zone “{1}”.</value>
@@ -38271,30 +38295,6 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="GIMP_BS_OHNE_GRUPPE" xml:space="preserve">
     <value>no group</value>
-  </data>
-  <data name="GIMP_DLG_GRP_BAUSTOFFE" xml:space="preserve">
-    <value>Building materials</value>
-  </data>
-  <data name="GIMP_DLG_BAUSTOFFE_HINWEIS" xml:space="preserve">
-    <value>Each material name in the file is matched to a catalogue material by name and synonyms; an air layer counts as an unventilated air layer, a hatch without material is omitted. An own assignment updates the proposal at once and is remembered for the project when the building list is saved.</value>
-  </data>
-  <data name="GIMP_DLG_SP_MATERIALNAME" xml:space="preserve">
-    <value>Name in the file</value>
-  </data>
-  <data name="GIMP_DLG_SP_SCHICHTEN" xml:space="preserve">
-    <value>Layers</value>
-  </data>
-  <data name="GIMP_DLG_SP_ABGLEICH" xml:space="preserve">
-    <value>Matched by</value>
-  </data>
-  <data name="GIMP_DLG_SP_BAUSTOFF" xml:space="preserve">
-    <value>Material</value>
-  </data>
-  <data name="GIMP_DLG_SP_STOFFWERTE" xml:space="preserve">
-    <value>Properties</value>
-  </data>
-  <data name="GIMP_DLG_SP_WERTE_AUS" xml:space="preserve">
-    <value>Values</value>
   </data>
   <data name="GIMP_DLG_BAUSTOFF_WAEHLEN" xml:space="preserve">
     <value>Material for “{0}”</value>
@@ -48514,9 +48514,6 @@ chart</value>
   <data name="GIMP_AB_NUR_BC" xml:space="preserve">
     <value>Only levels B and C</value>
   </data>
-  <data name="GIMP_AB_ZUR_BAUSTOFF" xml:space="preserve">
-    <value>Assign material</value>
-  </data>
   <data name="GIMP_AB_LEER" xml:space="preserve">
     <value>No constructions in the proposal.</value>
   </data>
@@ -48524,7 +48521,7 @@ chart</value>
     <value>without construction</value>
   </data>
   <data name="GIMP_AB_HINWEIS" xml:space="preserve">
-    <value>One row per construction; C₁,corr per m² is calculated for display only, using the component reduction to VDI 6007. Click “Layers” to show the construction.</value>
+    <value>One row per construction; C₁,corr per m² is calculated for display only, using the component reduction to VDI 6007. Click “Layers” to show the construction. If a layer lacks a material property, choose a catalogue material there; the assignment applies to all layers of that name, updates the proposal at once and is remembered for the project when the building list is saved.</value>
   </data>
   <data name="GIMP_AB_SCHICHTEN" xml:space="preserve">
     <value>Layers</value>
@@ -53536,6 +53533,15 @@ chart</value>
   </data>
   <data name="FW_QA_NUR_WINDOWS" xml:space="preserve">
     <value>Quick Assist is available on Windows. The remote support page describes how to use it.</value>
+  </data>
+  <data name="GIMP_AB_VERWALTUNG_HINWEIS" xml:space="preserve">
+    <value>Maintain materials and component build-ups under Administration › Building.</value>
+  </data>
+  <data name="GIMP_AB_HERKUNFT_HAND" xml:space="preserve">
+    <value>assigned manually</value>
+  </data>
+  <data name="GIMP_AB_DATEISCHICHTEN" xml:space="preserve">
+    <value>Layers of the file — the build-up is incomplete:</value>
   </data>
 </root>
 

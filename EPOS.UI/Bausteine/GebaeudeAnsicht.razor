@@ -133,6 +133,10 @@
         {
             <p class="epos-leisezeile epos-gebansicht-befund-hinweis" role="note">@BefundGrund(daten)</p>
         }
+        @if (ZielBedienung && GewaehltesZiel is not null && ImGruppenmodus)
+        {
+            <p class="epos-leisezeile epos-gebansicht-ziel-hinweis" role="note">@Texte.ZielNurZonen</p>
+        }
         @if (_sperrmeldung.Length > 0)
         {
             <p class="epos-leisezeile epos-gebansicht-sperrmeldung" role="status">@_sperrmeldung</p>
@@ -217,6 +221,21 @@
 
     /// <summary>Bedienbar? <c>false</c> (etwa während eines Laufs im Wirt) macht die Ansicht zur Anzeige.</summary>
     [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>
+    /// <b>Die Ziele der Zuordnung</b> (Auftrag AB2): Reicht der Wirt sie samt <see cref="ZielChanged"/> herein, ist im Farbmodus
+    /// „Zonen" jeder Legendeneintrag ein Knopf (<c>aria-pressed</c>) — ein Klick wählt die Zone als Ziel, ein zweiter hebt die
+    /// Wahl auf. Ein Raumklick im Grundriss oder Körper ordnet dann nur mit gewähltem Ziel zu (<see cref="GewaehlteZone"/> ist
+    /// dessen Schlüssel in der Ansicht, <c>null</c> = als eigene Zone abtrennen), ohne Wahl ist er reine Anzeige.
+    /// <c>null</c> = die Legende ist reine Anzeige, der Raumklick ordnet der <see cref="GewaehlteZone"/> zu.
+    /// </summary>
+    [Parameter] public IReadOnlyList<GebaeudeAnsichtZiel>? Zuordnungsziele { get; set; }
+
+    /// <summary>Das gewählte Ziel (<see cref="GebaeudeAnsichtZiel.Schluessel"/>); <c>null</c> = keine Wahl.</summary>
+    [Parameter] public string? GewaehltesZiel { get; set; }
+
+    /// <summary>Meldet die Wahl in der Legende: der Schlüssel des Ziels oder <c>null</c>, wenn ein zweiter Klick sie aufhebt.</summary>
+    [Parameter] public EventCallback<string?> ZielChanged { get; set; }
 
     /// <summary>Die Beschriftungen (Bündel).</summary>
     [Parameter] public GebaeudeAnsichtTexte Texte { get; set; } = new();
@@ -349,6 +368,21 @@
     /// <summary>Löst ein Klick eine Zuordnung aus? Nur mit Umhängbarkeit, Rückruf und ohne Sperre.</summary>
     public bool Bedienbar => Daten is { Umhaengbar: true } && Aktiv && RaumUmgehaengt.HasDelegate;
 
+    /// <summary>Wählt der Anwender das Ziel in der Legende (Auftrag AB2)? Nur mit Zielen, Rückruf und Umhängbarkeit.</summary>
+    public bool ZielBedienung => Zuordnungsziele is not null && ZielChanged.HasDelegate && Daten is { Umhaengbar: true };
+
+    /// <summary>
+    /// Ordnet ein Raumklick zu? Ohne Zielwahl wie <see cref="Bedienbar"/>; mit Zielwahl nur bei gewähltem Ziel und im Farbmodus
+    /// „Zonen".
+    /// </summary>
+    public bool OrdnetZu => Bedienbar && (!ZielBedienung || (GewaehltesZiel is not null && !ImGruppenmodus));
+
+    /// <summary>Sind die Räume ohne Zone hervorgehoben (Eintrag „nicht zugeordnet")? Prüfhilfe für Tests.</summary>
+    public bool OhneZoneHervorgehoben => _ohneHervor;
+
+    /// <summary>Der Schalter des Eintrags „nicht zugeordnet": hebt die Räume ohne Zone im Grundriss hervor.</summary>
+    private bool _ohneHervor;
+
     /// <summary>Das gezeigte Geschoss (Prüfhilfe für Tests und Wirt).</summary>
     public GebaeudeAnsichtGeschoss? GezeigtesGeschoss => Daten?.GeschossOderVorgabe(_geschoss);
 
@@ -424,7 +458,7 @@
                         string? boden = ImRandmodus ? Bodenstil(angaben) : ImBauteilmodus ? "fill:#ffffff" : null;
                         <g class="@Raumklasse(daten, r)" data-raum="@r.Kennung" data-zone="@r.Zone"
                            data-boden="@(ImRandmodus ? angaben?.Bodengruppe?.ToString() : null)"
-                           tabindex="@(Bedienbar ? "0" : null)" role="@(Bedienbar ? "button" : "img")"
+                           tabindex="@(OrdnetZu ? "0" : null)" role="@(OrdnetZu ? "button" : "img")"
                            aria-label="@beschreibung"
                            @onclick="() => BeiRaum(r)" @onkeydown="e => BeiRaumtaste(e, r)">
                             <title>@beschreibung</title>
@@ -466,8 +500,12 @@
             }
             else
             {
-            <ul class="epos-gebansicht-legende" aria-label="@Texte.Legende">
-                @foreach (GebaeudeAnsichtZone zone in ZonenIm(daten, g))
+            <ul class="@Legendenliste" aria-label="@(ZielBedienung ? Texte.ZielLegende : Texte.Legende)">
+                @if (ZielBedienung)
+                {
+                    @Zielknoepfe(daten)
+                }
+                @foreach (GebaeudeAnsichtZone zone in ZielBedienung ? Array.Empty<GebaeudeAnsichtZone>() : ZonenIm(daten, g))
                 {
                     GebaeudeAnsichtZone z = zone;
                     <li class="@Legendenklasse(z)" data-zone="@z.Schluessel">
@@ -484,13 +522,7 @@
                         }
                     </li>
                 }
-                @if (g.Raeume.Any(r => daten.Zone(r.Zone) is null))
-                {
-                    <li class="epos-gebansicht-legendeneintrag epos-gebansicht-legendeneintrag--ohnezone">
-                        <span class="epos-gebansicht-farbfeld epos-gebansicht-zone--ohne" aria-hidden="true"></span>
-                        <span class="epos-gebansicht-zonenname">@Texte.OhneZone</span>
-                    </li>
-                }
+                @Ohnezoneneintrag(g.Raeume.Count(r => daten.Zone(r.Zone) is null))
                 @if (g.Raeume.Any(r => r.Schematisch && r.Polygone.Count > 0))
                 {
                     <li class="epos-gebansicht-legendeneintrag epos-gebansicht-legendeneintrag--schematisch">
@@ -915,7 +947,7 @@
     // =====================================================================
 
     private Task BeiRaum(GebaeudeAnsichtRaum r)
-        => Bedienbar ? RaumUmgehaengt.InvokeAsync(new GebaeudeRaumumhaengung(r.Kennung, GewaehlteZone)) : Task.CompletedTask;
+        => OrdnetZu ? RaumUmgehaengt.InvokeAsync(new GebaeudeRaumumhaengung(r.Kennung, GewaehlteZone)) : Task.CompletedTask;
 
     private Task BeiRaumtaste(KeyboardEventArgs e, GebaeudeAnsichtRaum r)
         => e.Key is "Enter" or " " or "Spacebar" ? BeiRaum(r) : Task.CompletedTask;
@@ -954,6 +986,13 @@
                 SteckbriefOeffnen(flaeche);
                 StateHasChanged();
             });
+        if (ZielBedienung)
+        {
+            // AB2: mit gewähltem Ziel ordnet der Klick auf einen Körper seinen Raum zu, ohne Wahl ist er reine Anzeige.
+            if (OrdnetZu && raum is not null && Daten?.Raum(raum) is GebaeudeAnsichtRaum r)
+                await InvokeAsync(() => RaumUmgehaengt.InvokeAsync(new GebaeudeRaumumhaengung(r.Kennung, GewaehlteZone)));
+            return;
+        }
         if (!Aktiv || !ZoneGewaehlt.HasDelegate || Daten?.Zone(zone) is not GebaeudeAnsichtZone z) return;
         await InvokeAsync(() => ZoneGewaehlt.InvokeAsync(z.Schluessel));
     }
@@ -1071,8 +1110,12 @@
             }
             else
             {
-            <ul class="epos-gebansicht-legende" aria-label="@Texte.Legende">
-                @foreach (GebaeudeAnsichtZone zone in daten.Zonen.Where(z => koerper.Any(k => string.Equals(k.Raum.Zone, z.Schluessel, StringComparison.Ordinal))))
+            <ul class="@Legendenliste" aria-label="@(ZielBedienung ? Texte.ZielLegende : Texte.Legende)">
+                @if (ZielBedienung)
+                {
+                    @Zielknoepfe(daten)
+                }
+                @foreach (GebaeudeAnsichtZone zone in (ZielBedienung ? Array.Empty<GebaeudeAnsichtZone>() : daten.Zonen).Where(z => koerper.Any(k => string.Equals(k.Raum.Zone, z.Schluessel, StringComparison.Ordinal))))
                 {
                     GebaeudeAnsichtZone z = zone;
                     <li class="@Legendenklasse(z)" data-zone="@z.Schluessel">
@@ -1093,13 +1136,7 @@
                         }
                     </li>
                 }
-                @if (koerper.Any(k => daten.Zone(k.Raum.Zone) is null))
-                {
-                    <li class="epos-gebansicht-legendeneintrag epos-gebansicht-legendeneintrag--ohnezone">
-                        <span class="epos-gebansicht-farbfeld epos-gebansicht-zone--ohne" aria-hidden="true"></span>
-                        <span class="epos-gebansicht-zonenname">@Texte.OhneZone</span>
-                    </li>
-                }
+                @Ohnezoneneintrag(koerper.Count(k => daten.Zone(k.Raum.Zone) is null))
             </ul>
             }
             @if (koerper.Count > 0 && (ImDateimodus || koerper.Any(k => k.Herkunft == Koerperherkunft.Grundriss)))
@@ -1381,7 +1418,7 @@
     private string Geschosstitel(GebaeudeAnsichtGeschoss g)
         => g.Schematisch ? Format(Texte.GeschossSchematisch, Geschossname(g)) : Geschossname(g);
 
-    private string Bildklasse => Bedienbar ? "epos-gebansicht-bild epos-gebansicht-bild--bedienbar" : "epos-gebansicht-bild";
+    private string Bildklasse => OrdnetZu ? "epos-gebansicht-bild epos-gebansicht-bild--bedienbar" : "epos-gebansicht-bild";
 
     /// <summary>Die Farbklasse einer Zone nach ihrer Stelle; ohne Zone grau.</summary>
     private static string Zonenklasse(GebaeudeAnsichtDaten daten, string? schluessel)
@@ -1396,6 +1433,7 @@
         => "epos-gebansicht-raum " + Zonenklasse(daten, r.Zone)
            + (r.Schematisch ? " epos-gebansicht-raum--schematisch" : "")
            + (IstZiel(r.Zone) ? " epos-gebansicht-raum--ziel" : "")
+           + (_ohneHervor && daten.Zone(r.Zone) is null ? " epos-gebansicht-raum--hervor" : "")
            + (ImRandmodus ? " epos-gebansicht-raum--rand" : "");
 
     private string Legendenklasse(GebaeudeAnsichtZone z)
@@ -1412,12 +1450,95 @@
         string text = zone is null ? Format(Texte.RaumOhneZone, r.Name, r.Flaeche) : Format(Texte.Raum, r.Name, r.Flaeche, zone.Name);
         if (r.Schematisch) text += ", " + Texte.Schematisch;
         else if (r.AusDateikoerper) text += ", " + Texte.HerkunftGrundriss;
-        if (Bedienbar)
+        if (Bedienbar && ZielBedienung)
+            text += " — " + (GewaehltesZiel is null ? Texte.ZielFehlt
+                : Ziel(GewaehltesZiel) is { Abtrennen: false } ziel ? Format(Texte.Zuordnen, ziel.Name) : Texte.Abtrennen);
+        else if (Bedienbar)
             text += " — " + (GewaehlteZone is null
                 ? Texte.Abtrennen
                 : Format(Texte.Zuordnen, daten.Zone(GewaehlteZone)?.Name ?? GewaehlteZone));
         return text;
     }
+
+    // =====================================================================
+    //  Zielwahl in der Legende (Auftrag AB2)
+    // =====================================================================
+
+    /// <summary>Die Klasse der Zonenlegende — mit Zielwahl als Knopfliste.</summary>
+    private string Legendenliste => ZielBedienung ? "epos-gebansicht-legende epos-gebansicht-legende--zielwahl" : "epos-gebansicht-legende";
+
+    /// <summary>Das Ziel zu einem Schlüssel; <c>null</c> = unbekannt.</summary>
+    private GebaeudeAnsichtZiel? Ziel(string? schluessel)
+        => schluessel is null ? null : Zuordnungsziele?.FirstOrDefault(z => string.Equals(z.Schluessel, schluessel, StringComparison.Ordinal));
+
+    private bool IstGewaehlt(GebaeudeAnsichtZiel z) => GewaehltesZiel is not null && string.Equals(GewaehltesZiel, z.Schluessel, StringComparison.Ordinal);
+
+    /// <summary>
+    /// Je Ziel ein Knopf: Farbfeld, Name, Herkunft, Vermerke und die Nutzung; <c>aria-pressed</c> sagt, ob es gewählt ist,
+    /// <c>title</c> nennt Herkunft und was ein Klick tut. Enter und Leertaste wirken wie beim Knopf üblich.
+    /// </summary>
+    private RenderFragment Zielknoepfe(GebaeudeAnsichtDaten daten) => __builder =>
+    {
+        foreach (GebaeudeAnsichtZiel ziel in Zuordnungsziele ?? Array.Empty<GebaeudeAnsichtZiel>())
+        {
+            GebaeudeAnsichtZiel z = ziel;
+            GebaeudeAnsichtZone? zone = z.Ansichtsschluessel.Length > 0 ? daten.Zone(z.Ansichtsschluessel) : null;
+            bool gewaehlt = IstGewaehlt(z);
+            string herkunft = zone is null ? "" : zone.Schematisch ? Texte.Schematisch : zone.AusDateikoerper ? Texte.HerkunftGrundriss : Texte.Raumgrenzen;
+            string nutzung = z.Abtrennen ? "" : z.Nutzung.Length > 0 ? Format(Texte.ZielNutzung, z.Nutzung) : Texte.ZielOhneNutzung;
+            string titel = string.Join(" · ", new[] { z.Name, nutzung, z.Herkunft, herkunft }.Where(t => t.Length > 0))
+                           + " — " + (gewaehlt ? Texte.ZielAufheben : Texte.ZielKlick);
+            <li @key="@("ziel:" + z.Schluessel)" class="@("epos-gebansicht-legendeneintrag epos-gebansicht-legendeneintrag--zielwahl" + (gewaehlt ? " epos-gebansicht-legendeneintrag--ziel" : ""))"
+                data-zone="@(zone?.Schluessel)" data-ziel="@z.Schluessel">
+                <button type="button" class="epos-gebansicht-zielknopf" aria-pressed="@(gewaehlt ? "true" : "false")" title="@titel"
+                        aria-disabled="@(Aktiv ? null : "true")" @onclick="() => BeiZielknopf(z)">
+                    <span class="@("epos-gebansicht-farbfeld " + (zone is null ? "epos-gebansicht-farbfeld--neu" : Zonenklasse(daten, zone.Schluessel)))" aria-hidden="true"></span>
+                    <span class="epos-gebansicht-zonenname">@z.Name</span>
+                    @if (herkunft.Length > 0)
+                    {
+                        <span class="epos-gebansicht-herkunft">@herkunft</span>
+                    }
+                    @if (zone is { Beheizt: false })
+                    {
+                        <span class="epos-gebansicht-marke">@Texte.Unbeheizt</span>
+                    }
+                    @if (zone is { VonHand: true })
+                    {
+                        <span class="epos-gebansicht-marke epos-gebansicht-marke--hand">@Texte.VonHand</span>
+                    }
+                    @if (nutzung.Length > 0)
+                    {
+                        <span class="epos-gebansicht-nutzung">@nutzung</span>
+                    }
+                </button>
+            </li>
+        }
+    };
+
+    /// <summary>
+    /// Der Eintrag der Räume ohne Zone — „nicht zugeordnet (n Räume)" in eigener Farbe; kein Ziel, ein Klick hebt diese Räume im
+    /// Grundriss hervor (<c>aria-pressed</c>). Ohne solche Räume entfällt er.
+    /// </summary>
+    private RenderFragment Ohnezoneneintrag(int anzahl) => __builder =>
+    {
+        if (anzahl <= 0) return;
+        <li class="epos-gebansicht-legendeneintrag epos-gebansicht-legendeneintrag--ohnezone">
+            <button type="button" class="epos-gebansicht-zielknopf epos-gebansicht-ohneknopf" aria-pressed="@(_ohneHervor ? "true" : "false")"
+                    title="@Texte.NichtZugeordnetTitel" @onclick="BeiOhneZone">
+                <span class="epos-gebansicht-farbfeld epos-gebansicht-zone--ohne" aria-hidden="true"></span>
+                <span class="epos-gebansicht-zonenname">@Format(Texte.NichtZugeordnet, anzahl)</span>
+            </button>
+        </li>
+    };
+
+    /// <summary>Ein Klick auf einen Zielknopf: wählt das Ziel oder hebt die Wahl auf, wenn es schon gewählt ist.</summary>
+    private Task BeiZielknopf(GebaeudeAnsichtZiel z)
+    {
+        if (!Aktiv || !ZielChanged.HasDelegate) return Task.CompletedTask;
+        return ZielChanged.InvokeAsync(IstGewaehlt(z) ? null : z.Schluessel);
+    }
+
+    private void BeiOhneZone() => _ohneHervor = !_ohneHervor;
 
     private static string Format(string vorlage, params object?[] werte)
     {

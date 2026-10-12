@@ -166,6 +166,55 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// AB3 — die Baustoffwahl an der Schicht schreibt dieselbe gemerkte Zuordnung wie der frühere Abschnitt „Baustoffe":
+        /// Die unvollständige Kellerdecke trägt ihre Schichten der Datei; die Schicht „Fußbodenaufbau" ohne Stoffwert trägt den
+        /// Schlüssel der Materialzeile (<see cref="GebaeudeMaterialzeile.Normiert"/>) — den Schlüssel, unter dem der Dialog die
+        /// Zuordnung ins Ergebnis legt. Mit dieser Zuordnung wird die Kellerdecke vollständig (N7), und ihre Dateischichten fallen
+        /// weg; eine Schicht mit allen Werten bietet keine Wahl an.
+        /// </summary>
+        [Fact]
+        public void AB3_Die_Wahl_an_der_Schicht_schreibt_die_gemerkte_Zuordnung_des_Materialnamens()
+        {
+            GebaeudeBauteilvorschlag v = Mit(MATERIALHAUS);
+            GebaeudeBauteilzeile kd = v.Zeilen.Single(z => z.Bauteil.Bezeichner == "Kellerdecke");
+            Assert.NotEmpty(kd.Dateischichten);
+            GebaeudeDateischicht fb = Assert.Single(kd.Dateischichten, d => d.Name == "Fußbodenaufbau");
+            Assert.False(fb.AusDatei);
+            EPOS.UI.Dialoge.Bedarf.BauteilsteckbriefSchicht zeile = GebaeudeAufbauHuelle.Dateischichtzeile(fb);
+            Assert.True(zeile.OhneWert);
+            Assert.Equal(EPOS.UI.Dialoge.Bedarf.SteckbriefHerkunft.Leer, zeile.HerkunftSchluessel);
+            GebaeudeMaterialzeile material = v.Materialien.Single(m => m.Name == "Fußbodenaufbau");
+            Assert.Equal(material.Normiert, zeile.Materialschluessel);
+            Assert.Equal("fussbodenaufbau", zeile.Materialschluessel);
+
+            // Die Schichten mit Aufbau tragen keine Dateischichten.
+            Assert.All(v.Zeilen.Where(z => z.Bauteil.ID_Aufbau.HasValue && z.Typaufbau == null), z => Assert.Empty(z.Dateischichten));
+
+            // Dieselbe Zuordnung, wie sie der Dialog unter dem Schlüssel der Schicht ins Ergebnis legt.
+            GebaeudeBauteilvorschlag mit = Mit(MATERIALHAUS, Saat(new BaustoffNamenzuordnung(zeile.Materialschluessel!, 5)));
+            Assert.Equal(Abgleichstufe.Anwender, mit.Materialien.Single(m => m.Name == "Fußbodenaufbau").Treffer.Stufe);
+            GebaeudeBauteilzeile kdMit = mit.Zeilen.Single(z => z.Bauteil.Bezeichner == "Kellerdecke");
+            Assert.Empty(kdMit.Dateischichten);
+            FolgeOderUmkehrung(new int?[] { 5, 10, 36 }, Stamm(AufbauDerZeile(mit, "Kellerdecke")));
+        }
+
+        /// <summary>
+        /// AB3 — eine Schicht mit allen Stoffwerten aus der Datei ist nur Anzeige: Herkunft Datei, kein fehlender Wert.
+        /// </summary>
+        [Fact]
+        public void AB3_Eine_Dateischicht_mit_allen_Werten_braucht_keine_Wahl()
+        {
+            var d = new GebaeudeDateischicht("4.1.3.1", new Schichtwerte(0.175, 0.99, 1800.0, 1000.0), true, false);
+            EPOS.UI.Dialoge.Bedarf.BauteilsteckbriefSchicht zeile = GebaeudeAufbauHuelle.Dateischichtzeile(d);
+            Assert.False(zeile.OhneWert);
+            Assert.Equal(EPOS.UI.Dialoge.Bedarf.SteckbriefHerkunft.Datei, zeile.HerkunftSchluessel);
+            Assert.Equal("4.1.3.1", zeile.Materialschluessel);
+            var luft = new GebaeudeDateischicht("Air", new Schichtwerte(0.04, null, null, null, true), false, true);
+            Assert.False(GebaeudeAufbauHuelle.Dateischichtzeile(luft).OhneWert);
+            Assert.Null(GebaeudeAufbauHuelle.Dateischichtzeile(luft).Materialschluessel);
+        }
+
+        /// <summary>
         /// Die Nullwertprobe: Die Dämmung trägt λ = 0,04 und ρ = c = 0. λ im Band bleibt der Wert der Datei,
         /// ρ und c kommen aus dem getroffenen Baustoff; ohne Abgleich entsteht kein Aufbau.
         /// </summary>

@@ -2101,7 +2101,7 @@ namespace WindowsFormsApplication1
         /// Jede Wahl geht den Handweg (neu zuordnen, Zonenvorschlag oder Plan der Projektdatei neu bilden, Datei mit der
         /// neuen Nordrichtung neu lesen); die Pruefung meldet, was gegen die Uebernahme steht. <b>Kein Speicherweg:</b>
         /// „Uebernehmen" legt das Gebaeude sofort an und bleibt ein Klick des Anwenders. Draussen bleiben die Eingaben je
-        /// Zeile, Raum, Zone, Bauteil und Baustoff, die Mengenwahlen, die Filter der Listen und die Dateiwahl. Der
+        /// Zeile, Raum, Zone, Bauteil und die Baustoffwahl je Schicht, die Mengenwahlen, die Filter der Listen und die Dateiwahl. Der
         /// Sperrgrund sagt ab, solange der Schritt eines Feldes nicht vorn steht, und vor jedem Wechsel, vor dem der Dialog
         /// wegen Zuordnungen von Hand nachfragt. Das Blatt Nutzungsprofile (<c>np_*</c>) fuehrt die Maske des Wirts.
         /// </remarks>
