@@ -94,6 +94,8 @@
                               ProjektsatzWege="@SatzWege"
                               KatalogsatzWege="@SatzWege"
                               RueckwegWege="@RueckWege"
+                              Vergleichsparameter="@(n => VglWerte(n, 120))"
+                              VergleichsparameterProjekt="@(id => VglWerte("Kessel " + id, 100))"
                               RueckwegBleibtText="Im Projekt bleiben: Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage."
                               NeuGaben="@(() => new Dictionary<string, object>())"
                               SummePtherm="@(() => _summe ?? "240")"
@@ -126,6 +128,8 @@
                                 Katalogprofil="@WpProfil"
                                 AnlageGaben="@WpAnlageGaben"
                                 ProjektSatz="@(d => new WaermepumpeStammDaten { Id = 1, Name = d.Bezeichner, Firma = d.Firma, Nennleistung = d.Nennleistung, Heizstab = 6 })"
+                                Vergleichsparameter="@(n => VglWerte(n, 20))"
+                                VergleichsparameterProjekt="@(id => VglWerte("Pumpe " + id, 16))"
                                 KatalogSatz="@(id => new WaermepumpeStammDaten { Id = id, Name = "Katalog " + id, Firma = "Hersteller", Nennleistung = 20, Heizstab = 6 })"
                                 KatalogSpeichern="@((satz, _) => new KatalogSpeicherErgebnis(true, "", satz.Name))"
                                 KatalogKennlinien="@(_ => new List<KennlinienZeile>())"
@@ -193,6 +197,21 @@
 <p id="probe-ausgang" hidden data-ausgang="@_ausgang"></p>
 
 @code {
+    /// <summary>VG1 (KA-E-24): eine kleine Parameterliste für „Vergleichen…" über beide Listen — neutrale Werte.</summary>
+    private static IReadOnlyList<WindowsFormsApplication1.Parameterwert> VglWerte(string name, int leistung)
+    {
+        static WindowsFormsApplication1.Parameterwert P(string spalte, string text, string einheit, string wert)
+            => new(new WindowsFormsApplication1.ParameterEintrag(spalte, text, einheit,
+                   new[] { WindowsFormsApplication1.Verwendung.Simulation }, "Probe"), wert);
+        return new[]
+        {
+            P("Bezeichner", "Bezeichner", "", name),
+            P("Leistung", "Nennleistung", "kW", leistung.ToString(CultureInfo.CurrentCulture)),
+            P("Hersteller", "Hersteller", "", "Hersteller 1"),
+            P("Wirkungsgrad", "Wirkungsgrad", "%", "96"),
+        };
+    }
+
     private string _fall = "heizkessel";
     private bool _marke = true;
     private bool _meldung;

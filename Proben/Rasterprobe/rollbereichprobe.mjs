@@ -80,9 +80,12 @@ const BREITE_ANTEIL = 0.9;   // DZ1-N2: Kurvenbreite mindestens 90 % der Satzfla
 const MASS_TOLERANZ = 3;     // DZ1-N2: Zeichenmodell in Behaeltergroesse, je Richtung hoechstens 3 px
 const UNTERGRENZE_SPIEL = 5; // DZ1-N2: "auf der Untergrenze" heisst Kurve hoechstens 5 px ueber --epos-kurve-min (Rand der Flaeche, Rundung der Kopfmasse)
 const ROLLT_NICHT = ['stromganglinie', 'solarganglinie', 'pvganglinie'];   // DZ1-N2: Rollen in 1 280 x 800 / 720 nur auf der Untergrenze
-// Stufe 4 (Rest 3): Waermebedarf extern und Stromganglinie - mit offener Ganglinie rollt der Dialogkoerper in diesen
-// drei Fenstern gar nicht (Katalog Kopf und eine Zeile, Kurve bis an den unteren Rand der Satzflaeche).
-const ROLLT_GAR_NICHT = ['waermebedarf', 'stromganglinie'];
+// Stufe 4 (Rest 3): Stromganglinie - mit offener Ganglinie rollt der Dialogkoerper in diesen drei Fenstern gar nicht
+// (Katalog Kopf und eine Zeile, Kurve bis an den unteren Rand der Satzflaeche).
+const ROLLT_GAR_NICHT = ['stromganglinie'];
+// K5c (KA-E-23): Waerme-/Kaeltebedarf extern nach dem Muster der Waermepumpe - die Zeile „gewaehlter Satz" traegt die
+// Zusammenfassung, die Ganglinie steht mit Stammdaten und Deckung in der Bearbeiten-Ueberlagerung (OK/Abbrechen).
+const WBX = /^(waermebedarf|kaeltebedarf)/;
 const FENSTER_REST3 = ['1280x800', '1280x720', '1024x768'];
 
 const FENSTER = [{ breite: 1280, hoehe: 800 }, { breite: 1280, hoehe: 720 }, { breite: 1024, hoehe: 700 },
@@ -103,7 +106,12 @@ const FAELLE = [
   ['photovoltaik', '/rollbereichprobe?fall=photovoltaik'],
   ['solarkollektoren', '/rollbereichprobe?fall=solarkollektoren'],
   ['bedarfsprofile', '/rollbereichprobe?fall=bedarfsprofile'],
+  // K5b: die Bedarfsprofile mit der Art Kaelte - Deckung allein in der Bearbeiten-Ueberlagerung.
+  ['kaelteprofile', '/rollbereichprobe?fall=kaelteprofile'],
   ['waermebedarf', '/rollbereichprobe?fall=waermebedarf'],
+  // K5c: „Kaeltebedarf extern" (NurKuehlung, Kuehlzeile dezentral linear) und der Waermedialog mit Kuehlzeile (OP-2).
+  ['kaeltebedarf', '/rollbereichprobe?fall=kaeltebedarf'],
+  ['kaeltebedarfalle', '/rollbereichprobe?fall=kaeltebedarf&modus=alle'],
   ['stromganglinie', '/rollbereichprobe?fall=stromganglinie'],
   ['solarganglinie', '/rollbereichprobe?fall=solarganglinie'],
   ['pvganglinie', '/rollbereichprobe?fall=pvganglinie'],
@@ -314,6 +322,90 @@ async function massAbwartenUeberlagerung(seite) {
   await ruhe(seite);
 }
 
+/** K5c: die Abschnitte der Bearbeiten-Ueberlagerung von Waerme-/Kaeltebedarf extern, je sichtbar oder nicht. */
+function wbxUeberlagerung() {
+  const u = document.querySelector('.epos-ueberlagerung--satz');
+  const sicht = sel => { const e = u && u.querySelector(sel); if (!e) return false; const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(e).visibility !== 'hidden'; };
+  return { da: !!u, stamm: sicht('.epos-wbx-abschnitt--stamm'), ganglinie: sicht('.epos-wbx-abschnitt--ganglinie'),
+           deckung: sicht('.epos-wbx-abschnitt--deckung'), op2: sicht('.epos-wbx-hinweis--op2'), katalog: sicht('.epos-wbx-felder--katalog'),
+           knoepfe: u ? [...u.querySelectorAll('.epos-satzueberlagerung-fuss button')].map(k => k.className) : [] };
+}
+
+/** K5c: prueft die Abschnitte gegen den Fall; liefert die Liste der Fehler (leer = gut). */
+function wbxFehler(fall, w, katalog) {
+  const f = [];
+  if (!w.da) return ['Bearbeiten-Ueberlagerung fehlt'];
+  if (!w.stamm || !w.ganglinie) f.push('Stammdaten oder Ganglinie fehlen in der Ueberlagerung');
+  if (katalog) { if (!w.katalog || w.deckung) f.push('Katalogsatz: Ueberlagerung nicht ohne Projektfelder'); return f; }
+  if (/kaeltebedarf/.test(fall) && !w.deckung) f.push('Kuehlzeile ohne Deckung in der Ueberlagerung');
+  if (fall === 'waermebedarf' && w.deckung) f.push('Waermezeile mit Deckung');
+  if (fall === 'kaeltebedarfalle' && !w.op2) f.push('Modus „Alle" mit Kuehlzeile ohne Hinweis OP-2');
+  if (fall === 'kaeltebedarf' && w.op2) f.push('Modus „nur Kuehlung" mit Hinweis OP-2');
+  if (!(w.knoepfe.length === 2 && w.knoepfe.some(k => k.includes('abbrechen')) && w.knoepfe.some(k => k.includes('-ok'))))
+    f.push('Fussleiste nicht Abbrechen und OK');
+  return f;
+}
+
+/** K5c: Projektsatz und Katalogsatz in der Bearbeiten-Ueberlagerung von Waerme-/Kaeltebedarf extern. */
+async function pruefeWbx(seite, fall, fenster, mess) {
+  const kennung = `${fall} ${fenster.breite}x${fenster.hoehe}`;
+  const melde = t => { verstoesse.push(`${kennung}: ${t}`); console.log('  VERSTOSS ' + verstoesse.at(-1)); };
+  const gross = (fenster.breite === 1280 && fenster.hoehe === 800) || (fenster.breite === 1194 && fenster.hoehe === 834);
+  await satz(seite, false);
+  const wahl = seite.locator('.epos-zweispalten-bereich--projekt tbody tr .epos-projektzeile');
+  if (await wahl.count()) { await wahl.first().click(); await ruhe(seite); }
+  if (FOTOS && gross) { await satz(seite, true); await ruhe(seite); await seite.screenshot({ path: `${FOTOS}/${fall}_satzzeile_${fenster.breite}x${fenster.hoehe}.png` }); await satz(seite, false); }
+  await seite.locator(BEARBEITEN_AM_SATZ).first().click();
+  await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
+  await massAbwartenUeberlagerung(seite);
+  await mess('Bearbeiten-Ueberlagerung Projektsatz');
+  pruefeSatzUeberlagerung(fall, fenster, 'Bearbeiten-Ueberlagerung Projektsatz',
+    await seite.evaluate(satzUeberlagerung, { ...rand(fenster), marke: '.epos-wbx-felder' }));
+  // Die Ueberlagerung ist ein Formular (Stammdaten, Ganglinie, Deckung), keine reine Ansicht: Die Kurve steht im
+  // Abschnitt „Ganglinie" mit mindestens 90 % der Koerperbreite, auf mindestens --epos-kurve-min (150 px), im Mass.
+  const k = await seite.evaluate(kurveImKoerper);
+  if (!k.da) melde('Kurve fehlt in der Bearbeiten-Ueberlagerung');
+  else {
+    if (k.breite < BREITE_ANTEIL * k.koerper) melde(`Kurve ${k.breite} px < ${Math.round(BREITE_ANTEIL * 100)} % des Koerpers (${k.koerper} px)`);
+    if (k.hoehe < 150 - 1) melde(`Kurve ${k.hoehe} px hoch, unter 150 px`);
+    if (Math.abs(k.vbBreite - k.breite) > MASS_TOLERANZ + 1 || Math.abs(k.vbHoehe - k.hoehe) > MASS_TOLERANZ + 1)
+      melde(`Modell ${k.vbBreite} x ${k.vbHoehe} statt im Behaeltermass ${k.breite} x ${k.hoehe}`);
+    kurveUebZeilen.push(`${kennung} Bearbeiten-Ueberlagerung: Kurve ${k.breite} x ${k.hoehe} px (Koerper ${k.koerper} px), Modell ${k.vbBreite} x ${k.vbHoehe}`);
+  }
+  for (const f of wbxFehler(fall, await seite.evaluate(wbxUeberlagerung), false)) melde(f);
+  if (FOTOS && gross) await seite.screenshot({ path: `${FOTOS}/${fall}_ueberlagerung_projekt_${fenster.breite}x${fenster.hoehe}.png` });
+  await seite.locator('.epos-satzueberlagerung-abbrechen').click();
+  await ruhe(seite);
+  if (await seite.locator('.epos-ueberlagerung--satz').count()) melde('Abbrechen schliesst die Bearbeiten-Ueberlagerung nicht');
+  // Der Stift der Projektzeile: dieselbe Ueberlagerung; Esc schliesst nur sie.
+  const stift = seite.locator('.epos-zweispalten-bereich--projekt tbody .epos-zeilenstift');
+  if (await stift.count()) {
+    await stift.first().click();
+    await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
+    await ruhe(seite);
+    await seite.keyboard.press('Escape');
+    await ruhe(seite);
+    if (await seite.locator('.epos-ueberlagerung--satz').count()) melde('Esc schliesst die Bearbeiten-Ueberlagerung nicht');
+    if (await seite.locator('body > #app > .epos-dialog').count() === 0) melde('Esc schliesst den ganzen Dialog');
+  } else melde('Projektliste ohne Stift');
+  // Ein Katalogsatz: dieselbe Ueberlagerung ohne Projektfelder.
+  await seite.locator('.epos-zweispalten-bereich--katalog tbody tr .epos-zeilenzelle').first().click();
+  await ruhe(seite);
+  await seite.locator(BEARBEITEN_AM_SATZ).first().click();
+  await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
+  await massAbwartenUeberlagerung(seite);
+  await mess('Bearbeiten-Ueberlagerung Katalogsatz');
+  for (const f of wbxFehler(fall, await seite.evaluate(wbxUeberlagerung), true)) melde(f);
+  if (FOTOS && gross) await seite.screenshot({ path: `${FOTOS}/${fall}_ueberlagerung_katalog_${fenster.breite}x${fenster.hoehe}.png` });
+  await seite.locator('.epos-satzueberlagerung-abbrechen, .epos-satzueberlagerung-schliessen').first().click();
+  await ruhe(seite);
+  // Die Knopfleiste am Satz: Neu… (Importkette), Formathinweis als Infoknopf im Katalogkopf.
+  if (await seite.locator('.epos-zweispalten-satzknoepfe .epos-knopf--neu').count() !== 1
+      || await seite.locator('.epos-zweispalten-bereich--katalog .epos-zweispalten-kopfleiste .epos-formathinweis-knopf').count() !== 1)
+    melde('Knopfleiste am Satz ohne Neu… oder Formathinweis nicht im Katalogkopf');
+  await mess('nach Bearbeiten-Ueberlagerung');
+}
+
 /** UeS1c: oeffnet in einem Ganglinien-Wirt die Projektzeile, klappt die Detailzeile auf und vergroessert. */
 async function gangliniePerVergroessern(seite) {
   // Die Zeilenwahl der Projektzeile (nicht ihr Kaestchen und nicht der Stift).
@@ -443,6 +535,70 @@ async function satz(seite, offen) {
   const ist = (await z.getAttribute('aria-expanded')) === 'true';
   if (ist !== offen) { await z.evaluate(e => e.click()); await ruhe(seite); }
   return true;
+}
+
+/**
+ * VG1 (KA-E-24): die Vergleichsueberlagerung ueber beide Listen - offen, Herkunft je Satzspalte im Kopf,
+ * die Ueberlagerung ganz im Fenster, und in ihr kein Rollbereich in einem anderen (die Tabelle rollt allein).
+ */
+function vergleichMessen() {
+  const u = [...document.querySelectorAll('.epos-ueberlagerung')].find(e => e.querySelector('.epos-vergleich'));
+  if (!u) return { offen: false };
+  const rollt = e => /^(auto|scroll)$/.test(getComputedStyle(e).overflowY) || /^(auto|scroll)$/.test(getComputedStyle(e).overflowX);
+  const roller = [u, ...u.querySelectorAll('*')].filter(rollt);
+  const paare = roller.filter(e => roller.some(a => a !== e && a.contains(e))).length;
+  const b = u.getBoundingClientRect();
+  const koepfe = [...u.querySelectorAll('.epos-vergleich thead th')].slice(1);
+  return {
+    offen: true, spalten: koepfe.length,
+    herkunft: koepfe.filter(th => (th.querySelector('.epos-vergleich-herkunft')?.textContent || '').trim().length > 0).length,
+    verschachtelt: paare, imFenster: b.top >= -1 && b.left >= -1 && b.bottom <= innerHeight + 1 && b.right <= innerWidth + 1,
+  };
+}
+
+function pruefeVergleich(kennung, v) {
+  const fehler = [];
+  if (!v.offen) fehler.push('Vergleich nicht offen');
+  else {
+    if (v.spalten < 2) fehler.push(`Vergleich mit ${v.spalten} Satzspalte(n)`);
+    if (v.herkunft !== v.spalten) fehler.push(`Herkunft nur in ${v.herkunft} von ${v.spalten} Spaltenkoepfen`);
+    if (v.verschachtelt) fehler.push(`Vergleich: ${v.verschachtelt} Rollbereich(e) im Rollbereich`);
+    if (!v.imFenster) fehler.push('Vergleich ragt aus dem Fenster');
+  }
+  for (const f of fehler) { verstoesse.push(`${kennung}: ${f} (VG1)`); console.log('  VERSTOSS ' + verstoesse.at(-1)); }
+  return fehler.length === 0;
+}
+
+/** VG1: kreuzt die erste Projektzeile und den ersten Katalogsatz an (vorher alle Kreuze weg) und oeffnet „Vergleichen…". */
+async function vergleichOeffnen(seite, kennung, foto) {
+  const katalog = seite.locator('.epos-zweispalten-bereich--katalog td .epos-kaestchenzelle input');
+  for (let i = 0; i < await katalog.count(); i++) if (await katalog.nth(i).isChecked()) await katalog.nth(i).uncheck();
+  const projekt = seite.locator('.epos-zweispalten-bereich--projekt td .epos-wahlkaestchen');
+  for (let i = 0; i < await projekt.count(); i++)
+    if (await projekt.nth(i).evaluate(e => e.checked === true || e.getAttribute('aria-checked') === 'true')) await projekt.nth(i).click();
+  await ruhe(seite);
+  await projekt.first().click();
+  await ruhe(seite);
+  const knopf = seite.locator('.epos-zweispalten-satzknoepfe .epos-knopf--vergleichen');
+  if (await knopf.getAttribute('aria-disabled') !== 'true' || !(await knopf.getAttribute('title')))
+    { verstoesse.push(`${kennung}: ein Kreuz allein - Vergleichen nicht weich gesperrt mit Grund (VG1)`); console.log('  VERSTOSS ' + verstoesse.at(-1)); }
+  if (foto) {
+    // Headless zeichnet keinen Tooltip: fuer das Foto steht der Grund (title) als Schild ueber dem Knopf.
+    await knopf.evaluate(k => { const r = k.getBoundingClientRect(), d = document.createElement('div');
+      d.id = 'vg1-schild'; d.textContent = k.title;
+      d.style.cssText = `position:fixed;left:${Math.max(4, r.right - 420)}px;top:${r.top - 34}px;max-width:420px;padding:4px 8px;`
+        + 'background:#222;color:#fff;font:12px sans-serif;border-radius:4px;z-index:99999';
+      document.body.appendChild(d); });
+    await seite.screenshot({ path: foto + '_gesperrt.png' });
+    await seite.evaluate(() => document.getElementById('vg1-schild')?.remove());
+  }
+  await katalog.first().check();
+  await ruhe(seite);
+  if (await knopf.getAttribute('aria-disabled') === 'true')
+    { verstoesse.push(`${kennung}: Projektzeile und Katalogsatz angekreuzt - Vergleichen gesperrt (VG1)`); console.log('  VERSTOSS ' + verstoesse.at(-1)); }
+  await knopf.click();
+  await seite.waitForSelector('.epos-vergleich', { timeout: 5000 }).catch(() => {});
+  await ruhe(seite);
 }
 
 function pruefen(fall, fenster, zustand, m, konsole, istWirt, frei) {
@@ -575,17 +731,22 @@ try {
         // Stufe 4: die Zeile traegt vor der Wahl ein Kaestchen - gewaehlt wird ueber den Wahlknopf.
         // AW3b: oder ueber die Namenszelle (die Zeile ist die Wahl).
         const zeilenwahl = '.epos-zweispalten-bereich--projekt tbody tr button.epos-anlagenwahl, .epos-zweispalten-bereich--projekt tbody tr .epos-projektzeile';
-        if (/ganglinie|waermebedarf/.test(fall) && await seite.locator(zeilenwahl).count()) {
+        if (/ganglinie|waermebedarf|kaeltebedarf/.test(fall) && await seite.locator(zeilenwahl).count()) {
           await seite.locator(zeilenwahl).first().click();
           await ruhe(seite);
         }
         if (await satz(seite, true)) {
-          if (/ganglinie|waermebedarf/.test(fall) && await seite.locator('.epos-zweispalten-satz .epos-ganglinie-grafik .epos-diagramm-svg-flaeche').count() === 0) {
+          if (/ganglinie/.test(fall) && await seite.locator('.epos-zweispalten-satz .epos-ganglinie-grafik .epos-diagramm-svg-flaeche').count() === 0) {
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Detailzeile ohne Ganglinie`); console.log('  VERSTOSS ' + verstoesse.at(-1));
+          }
+          // K5c: die Satzzeile traegt nur die Zusammenfassung - keine Ganglinie, kein Importknopf.
+          if (WBX.test(fall) && (await seite.locator('.epos-zweispalten-satz--zusammenfassung .epos-satzzusammenfassung-angabe').count() < 2
+              || await seite.locator('.epos-zweispalten-satz .epos-ganglinie-grafik, .epos-zweispalten-satzknoepfe .epos-knopf--import').count())) {
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Satzzeile nicht nur Zusammenfassung (KA-E-23)`); console.log('  VERSTOSS ' + verstoesse.at(-1));
           }
           await massAbwarten(seite);
           await mess('Detailzeile auf, Trennlinie unten');
-          if (FOTOS && /ganglinie|waermebedarf/.test(fall))
+          if (FOTOS && /ganglinie|waermebedarf|kaeltebedarf/.test(fall))
             await seite.screenshot({ path: `${FOTOS}/${fall}_${fenster.breite}x${fenster.hoehe}.png` });
           if (await taste(seite, 'Home')) { await massAbwarten(seite); await mess('Detailzeile auf, Trennlinie oben'); }
           await satz(seite, false);
@@ -702,6 +863,21 @@ try {
           if (await seite.locator('.epos-rueckweg').count())
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Esc schliesst die Rueckfrage nicht`);
         }
+        // VG1 (KA-E-24): „Vergleichen…" ueber beide Listen - eine Projektzeile und ein Katalogsatz angekreuzt; die
+        // Vergleichsueberlagerung steht im Fenster, traegt die Herkunft je Spalte und keinen Rollbereich im Rollbereich.
+        if (['heizkessel', 'waermepumpen'].includes(fall)) {
+          const kennVg = `${fall} ${fenster.breite}x${fenster.hoehe}`;
+          const foto = FOTOS && fenster.breite === 1280 && fenster.hoehe === 800 && !fenster.neu && !fenster.ipad
+            ? `${FOTOS}/${fall}_vergleich_${fenster.breite}x${fenster.hoehe}` : null;
+          await vergleichOeffnen(seite, kennVg, foto);
+          await mess('Vergleich offen');
+          pruefeVergleich(kennVg, await seite.evaluate(vergleichMessen));
+          if (foto) await seite.screenshot({ path: foto + '.png' });
+          await seite.keyboard.press('Escape');
+          await ruhe(seite);
+          if (await seite.locator('.epos-vergleich').count())
+            { verstoesse.push(`${kennVg}: Esc schliesst den Vergleich nicht (VG1)`); console.log('  VERSTOSS ' + verstoesse.at(-1)); }
+        }
         // AW3a: BHKW, Puffer- und Stromspeicher, Solarkollektoren und Photovoltaik nach dem Schema des
         // Heizkessels (AW1) - die Knopfleiste steht am gewaehlten Satz, keine Fussleiste unter dem Katalog,
         // kein Stift in der Detailzeile, keine Wahlspalte; die Projektzeile ist die Wahl (hervorgehoben,
@@ -763,14 +939,17 @@ try {
           photovoltaik: ['button.epos-knopf--straenge', '„Stränge und Wechselrichter…"'],
           kaeltemaschine: ['.epos-kostenleiste button', 'Kostenknoepfe', '.epos-kaeltemaschine-satz'],
           // Stufe 4: die Bedarfsprofile - Verbrauch, Temperatur und Kalender allein in der Ueberlagerung.
-          bedarfsprofile: ['input[inputmode=decimal]', 'Verbrauchsfelder', '.epos-bpf-satz'] };
-        const ZUSAMMENFASSUNG_WIRTE = ['bhkw', 'pufferspeicher', 'stromspeicher', 'solarkollektoren', 'waermepumpen', 'photovoltaik', 'kaeltemaschine', 'bedarfsprofile'];
+          bedarfsprofile: ['input[inputmode=decimal]', 'Verbrauchsfelder', '.epos-bpf-satz'],
+          // K5b: die Feldgruppe „Deckung" steht allein in der Ueberlagerung, die Detailzeile fasst sie zusammen.
+          kaelteprofile: ['.epos-deckung', 'Deckungsgruppe', '.epos-bpf-satz'] };
+        const ZUSAMMENFASSUNG_WIRTE = ['bhkw', 'pufferspeicher', 'stromspeicher', 'solarkollektoren', 'waermepumpen', 'photovoltaik', 'kaeltemaschine', 'bedarfsprofile', 'kaelteprofile'];
         // Kopf der Detailzeile: zwei Infoknoepfe; die Waermepumpe traegt dort „Anlage…" (Grundlagen und Berechnung
         // stehen in ihrem Anlagendialog).
         // AW2: Die Waermepumpe hat keine Kopfknoepfe mehr - „Anlage…" ist in der Satz-Ueberlagerung aufgegangen.
         const KOPFKNOEPFE = { waermepumpen: ['.epos-knopf--anlage', 0, 'kein „Anlage…"'],
           // Bedarfsprofile: der Rechenweg der Auspraegung (eine Grundlagenseite gibt es nicht).
-          bedarfsprofile: ['.epos-hilfepille', 1, 'Infoknopf „Berechnung"'] };
+          bedarfsprofile: ['.epos-hilfepille', 1, 'Infoknopf „Berechnung"'],
+          kaelteprofile: ['.epos-hilfepille', 1, 'Infoknopf „Berechnung"'] };
         if (SATZ_WIRTE[fall]) {
           const [wahl, was, marke] = SATZ_WIRTE[fall];
           const zusammen = ZUSAMMENFASSUNG_WIRTE.includes(fall);
@@ -830,8 +1009,11 @@ try {
           }
           await mess('nach Satz-Ueberlagerung');
         }
+        // K5c: Bearbeiten… oeffnet die Ueberlagerung - Stammdaten, Ganglinie (Kurve fuellt den Koerper), Deckung bei der
+        // Kuehlzeile, OP-2 im Modus „Alle"; Fussleiste Abbrechen und OK. Dasselbe fuer einen Katalogsatz (ohne Deckung).
+        if (WBX.test(fall)) await pruefeWbx(seite, fall, fenster, mess);
         // UeS1c: die Ganglinien ueber „Vergroessern" - die Kurve fuellt den Koerper, reine Ansicht („Schließen").
-        if (/ganglinie|waermebedarf/.test(fall)) {
+        if (/ganglinie/.test(fall)) {
           await satz(seite, false);
           await gangliniePerVergroessern(seite);
           await mess('Satz-Ueberlagerung offen');
@@ -1039,6 +1221,28 @@ try {
       await k6.close();
     }
 
+    // VG1: die Vergleichsueberlagerung - ein Rollbereich um die Tabelle (verschachtelt) und ein Spaltenkopf ohne
+    // Herkunft muessen rot werden.
+    {
+      const k9 = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+      const s9 = await k9.newPage();
+      await s9.goto(WURZEL + '/fensterprobe?fall=heizkessel', { waitUntil: 'networkidle' });
+      await s9.waitForSelector('.epos-zweispalten');
+      await vergleichOeffnen(s9, 'gegenprobe-vergleich', null);
+      const vor = verstoesse.length;
+      const gruen = pruefeVergleich('gegenprobe-vergleich', await s9.evaluate(vergleichMessen));
+      await s9.addStyleTag({ content: '.epos-ueberlagerung-inhalt, .epos-vergleich { display: block; overflow: auto !important; max-height: 300px; }'
+        + ' .epos-vergleich thead th:nth-child(2) .epos-vergleich-herkunft { display: none; }' });
+      await s9.evaluate(() => { const e = document.querySelector('.epos-vergleich thead th:nth-child(2) .epos-vergleich-herkunft'); if (e) e.textContent = ''; });
+      await ruhe(s9);
+      const neu9 = (pruefeVergleich('gegenprobe-vergleich', await s9.evaluate(vergleichMessen)), verstoesse.slice(vor));
+      const rot = gruen && neu9.some(v => v.includes('Rollbereich')) && neu9.some(v => v.includes('Herkunft'));
+      verstoesse.splice(vor);
+      console.log(`Gegenprobe Vergleich: offen und gruen ${gruen ? 'ja' : 'nein'}; verschachtelt und ohne Herkunft - ${rot ? 'rot' : 'gruen'}`);
+      if (!rot) { console.log('  GEGENPROBE GRUEN - die Probe sieht den Vergleich nicht'); rueckgabe = 1; }
+      await k9.close();
+    }
+
     // geb3: Ueberlagerung „Simulation..." des Gebaeudes - eine Tabelle mit eigener Hoehe (Rollbereich im Rollkoerper)
     // und eine als Ganzes rollende Ueberlagerung mit weggerollter Fussleiste muessen rot werden.
     {
@@ -1127,6 +1331,21 @@ try {
       console.log(`Gegenprobe Kopfleiste: Umstellknopf mit 6 px Rand - ${rot ? 'rot' : 'gruen'}`);
       if (!rot) { console.log('  GEGENPROBE GRUEN - die Probe sieht die Kopfleiste nicht'); rueckgabe = 1; }
       await k5.close();
+    }
+
+    // K5c: eine ausgeblendete Deckung in der Bearbeiten-Ueberlagerung des Kaeltebedarfs muss rot werden.
+    {
+      const k8 = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+      const s8 = await k8.newPage();
+      await s8.goto(WURZEL + '/rollbereichprobe?fall=kaeltebedarf&zeilen=40', { waitUntil: 'networkidle' });
+      await s8.waitForSelector('.epos-zweispalten');
+      await s8.addStyleTag({ content: '.epos-wbx-abschnitt--deckung { display: none !important; }' });
+      await s8.locator(BEARBEITEN_AM_SATZ).first().click();
+      await s8.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
+      const rot = wbxFehler('kaeltebedarf', await s8.evaluate(wbxUeberlagerung), false).some(f => f.includes('Deckung'));
+      console.log(`Gegenprobe Bearbeiten-Ueberlagerung Kaeltebedarf: Deckung ausgeblendet - ${rot ? 'rot' : 'gruen'}`);
+      if (!rot) { console.log('  GEGENPROBE GRUEN - die Probe sieht die Deckung nicht'); rueckgabe = 1; }
+      await k8.close();
     }
 
     // UeS1c: die Kurve im Koerper der Satz-Ueberlagerung - auf 120 px gedrueckt und auf 300 px Breite begrenzt

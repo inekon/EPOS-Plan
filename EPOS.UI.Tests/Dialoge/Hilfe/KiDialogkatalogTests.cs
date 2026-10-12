@@ -220,6 +220,8 @@ public class KiDialogkatalogTests : IDisposable
           typeof(EPOS.UI.Dialoge.Bedarf.BedarfAdminKiSicht) },
         { KiMaskennamen.BRAUCHWASSER_ADMIN,
           typeof(EPOS.UI.Dialoge.Bedarf.BedarfAdminKiSicht) },
+        { KiMaskennamen.KAELTEBEDARF_ADMIN,
+          typeof(EPOS.UI.Dialoge.Bedarf.BedarfAdminKiSicht) },
 
         // Welle KI-F4: Kosten und Wirtschaftlichkeit. Auch sie melden je eine
         // SICHTKLASSE an - siehe OhneMarkupprobe.
@@ -401,7 +403,7 @@ public class KiDialogkatalogTests : IDisposable
 
         // Die drei Bedarfskanaele kennt ebenfalls nur der Dialog; sie kommen als
         // Parameter der Huelle herein.
-        KiMaskennamen.WAERMEBEDARF_EXTERN  => new[] { "kanal", "kaelte_art" },
+        KiMaskennamen.WAERMEBEDARF_EXTERN  => new[] { "kanal", "kaelte_art", "kuehltraeger" },
 
         // Welle KI-F4: Die VARIANTE der Kostenverwaltung haengt am Stand, ihre Liste
         // aber auch (KostenKomponenteStand.Varianten) - eine Begleiteigenschaft
@@ -508,7 +510,7 @@ public class KiDialogkatalogTests : IDisposable
         // Welle M3b (PW2, BW2): die Verwaltung der Betriebskalender. Stufe P2 der
         // Pufferspeicher-Auslegung: ihre Ansicht.
         // KM4-E3-c: + Kältemittel.
-        Assert.Equal(103, katalog.Anzahl);                            // KU3-1: + Kältemaschinen; KU3-4c: + Kältemaschinen im Projekt; PVG: + PV-Ganglinien; Importoptionen: + 4; Teil C: + 4; Teil B: + Gebäudeimport
+        Assert.Equal(104, katalog.Anzahl);                            // K5b: + Kältebedarf-Katalog;                            // KU3-1: + Kältemaschinen; KU3-4c: + Kältemaschinen im Projekt; PVG: + PV-Ganglinien; Importoptionen: + 4; Teil C: + 4; Teil B: + Gebäudeimport
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -623,6 +625,8 @@ public class KiDialogkatalogTests : IDisposable
                      KiMaskenziele.Ziel(KiMaskennamen.STROMVERBRAUCHER_ADMIN));
         Assert.Equal(WindowsFormsApplication1.Masken.BrauchwasserAdmin,
                      KiMaskenziele.Ziel(KiMaskennamen.BRAUCHWASSER_ADMIN));
+        Assert.Equal(WindowsFormsApplication1.Masken.KaeltebedarfAdmin,
+                     KiMaskenziele.Ziel(KiMaskennamen.KAELTEBEDARF_ADMIN));
 
         // Die Profile eines Projekts gehen aus den Startkacheln auf, das Ergebnis aus
         // der Ansicht „Simulation".
@@ -1192,6 +1196,7 @@ public class KiDialogkatalogTests : IDisposable
     [InlineData(KiMaskennamen.PROZESSWAERME_ADMIN)]
     [InlineData(KiMaskennamen.STROMVERBRAUCHER_ADMIN)]
     [InlineData(KiMaskennamen.BRAUCHWASSER_ADMIN)]
+    [InlineData(KiMaskennamen.KAELTEBEDARF_ADMIN)]
     public void Die_Bedarfsverwaltung_fuehrt_ihre_Kenndaten_als_Eingaben(string maske)
     {
         KiDialog d = KiDialoge.Katalog.Finde(maske)!;
@@ -1643,10 +1648,13 @@ public class KiDialogkatalogTests : IDisposable
         // Welle, die ihr Daten-Objekt anmeldet und damit die Markup-Probe traegt.
         { KiMaskennamen.TYPSTAMM, "EPOS.UI/Dialoge/Bedarf/TypStammDialog.razor" },
 
-        // Die gewaehlte Zuordnung der externen Waermebedarfsganglinien: Kanal und
-        // Bezeichner stehen beide im Markup.
+        // Die gewaehlte Zuordnung der externen Waermebedarfsganglinien: Kanal und Art stehen in der
+        // Kopfleiste des Dialogs und in der Bearbeiten-Ueberlagerung (WaermebedarfExternFelder, K5c), dort auch
+        // der Bezeichner; die Feldgruppe „Deckung" (K5a) im Baustein DeckungsartFelder.
         { KiMaskennamen.WAERMEBEDARF_EXTERN,
-          "EPOS.UI/Dialoge/Bedarf/WaermebedarfExternDialog.razor" },
+          "EPOS.UI/Dialoge/Bedarf/WaermebedarfExternDialog.razor;" +
+          "EPOS.UI/Dialoge/Bedarf/WaermebedarfExternFelder.razor;" +
+          "EPOS.UI/Dialoge/Bedarf/DeckungsartFelder.razor" },
 
         // Welle KI-F5: die zwei KATALOGEDITOREN. Sie binden ihr Daten-Objekt und
         // zeichnen jedes Feld selbst - eine Datei je Maske.
@@ -1831,6 +1839,9 @@ public class KiDialogkatalogTests : IDisposable
             "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und den " +
             "Arbeitsstand des Stammblatts; Zeuge ist BedarfAdminDialogTests",
         [KiMaskennamen.BRAUCHWASSER_ADMIN] =
+            "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und den " +
+            "Arbeitsstand des Stammblatts; Zeuge ist BedarfAdminDialogTests",
+        [KiMaskennamen.KAELTEBEDARF_ADMIN] =
             "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und den " +
             "Arbeitsstand des Stammblatts; Zeuge ist BedarfAdminDialogTests",
         [KiMaskennamen.BEDARF_ERGEBNIS] =

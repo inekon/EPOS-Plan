@@ -347,46 +347,16 @@
        hervorgehoben, gleiche leise - dieselbe Anmutung wie die Kohaerenzzeile
        ("stimmig"/"abweichend"), und die Kennzeichnung traegt WORTE, nicht nur
        Farbe. Breit, weil drei Geraetespalten plus Parameterspalte in die
-       Regelbreite von 900 px nicht passen (epos-ueberlagerung--breit, W7-E-2). *@
-    <Ueberlagerung Offen="@_vergleichOffen" Titel="@Texte.VergleichTitel"
-                   Zusatzklasse="epos-ueberlagerung--breit"
-                   SchliessenText="@Texte.VergleichSchliessen"
-                   Geschlossen="() => _vergleichOffen = false">
-        <KindInhalt>
-            @if (_vergleichOffen)
-            {
-                <div class="epos-raster-huelle">
-                    <table class="epos-raster epos-vergleich">
-                        <thead>
-                            <tr>
-                                <th scope="col">@Texte.VergleichSpalteParameter</th>
-                                @foreach (string kopf in Vergleichskoepfe())
-                                {
-                                    <th scope="col">@kopf</th>
-                                }
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (Vergleichzeile v in _vergleich)
-                            {
-                                <tr class="@Vergleichsklasse(v)">
-                                    <th scope="row" class="epos-vergleich-name">
-                                        <span class="epos-vergleich-zeichen" aria-hidden="true">@(v.Abweichend ? "≠" : "✓")</span>
-                                        <span>@v.Name</span>
-                                        <span class="epos-vergleich-stufe">@(v.Abweichend ? Texte.VergleichAbweichend : Texte.VergleichStimmig)</span>
-                                    </th>
-                                    @foreach (string wert in v.Werte)
-                                    {
-                                        <td>@wert</td>
-                                    }
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-        </KindInhalt>
-    </Ueberlagerung>
+       Regelbreite von 900 px nicht passen (epos-ueberlagerung--breit, W7-E-2).
+       Die Tabelle ist der Baustein Vergleichsueberlagerung - derselbe, den die
+       Zweispaltenauswahl fuer den Vergleich ueber beide Listen fuehrt (KA-E-24). *@
+    <Vergleichsueberlagerung Offen="@_vergleichOffen" Titel="@Texte.VergleichTitel"
+                             SchliessenText="@Texte.VergleichSchliessen"
+                             SpalteParameter="@Texte.VergleichSpalteParameter"
+                             StimmigText="@Texte.VergleichStimmig" AbweichendText="@Texte.VergleichAbweichend"
+                             Koepfe="@(_vergleichOffen ? Vergleichskoepfe().Select(k => new Vergleichskopf("", k)).ToList() : Array.Empty<Vergleichskopf>())"
+                             Zeilen="@_vergleich"
+                             Geschlossen="() => _vergleichOffen = false" />
 </div>
 }
 

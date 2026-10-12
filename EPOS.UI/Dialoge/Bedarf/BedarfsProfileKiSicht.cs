@@ -143,6 +143,66 @@ public sealed class BedarfsProfileKiSicht
         set => KaelteArtSetzen?.Invoke(value);
     }
 
+    // ---- K5b: die Feldgruppe „Deckung“ der markierten Kältezeile (Konzept Kältebedarf 3.4) ----------------------
+
+    /// <summary>Der Feldsatz „Deckung“ der markierten Kältezeile; <c>null</c> außerhalb einer Projektzeile der Art Kälte.</summary>
+    public Func<DeckungsartDaten?>? DeckungLesen { get; init; }
+
+    /// <summary>Liefert die Stromträger des Projekts (Kühlträger).</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? TraegerEintraege { get; init; }
+
+    private DeckungsartDaten? DeckungOderNull => DeckungLesen?.Invoke();
+
+    /// <summary>Schreibziel der Deckungsfelder; ohne Kältezeile nennt der Assistent den Grund.</summary>
+    private DeckungsartDaten DeckungZumSchreiben
+        => DeckungOderNull ?? throw new InvalidOperationException(WindowsFormsApplication1.MyResource.Resource.DECK_MSG_NUR_KAELTE);
+
+    /// <summary>Deckungsart als Steuerwert (<c>zentral</c>/<c>split</c>); leer außerhalb einer Kältezeile.</summary>
+    public string? Deckungsart
+    {
+        get => DeckungOderNull?.Deckungsart;
+        set => DeckungZumSchreiben.DeckungSetzen(value ?? "");
+    }
+
+    /// <summary>Die Einträge der Deckungsart.</summary>
+    public IReadOnlyList<KiWahleintrag> DeckungsartWahl => DeckungsartDaten.KiEintraege(DeckungsartDaten.Deckungsarten);
+
+    /// <summary>EER-Weg als Steuerwert (<c>fest</c>/<c>linear</c>), nur bei dezentraler Deckung.</summary>
+    public string? EerWeg
+    {
+        get => DeckungOderNull?.EerWeg;
+        set => DeckungZumSchreiben.EerWegSetzen(value ?? "");
+    }
+
+    /// <summary>Die Einträge des EER-Wegs.</summary>
+    public IReadOnlyList<KiWahleintrag> EerWegWahl => DeckungsartDaten.KiEintraege(DeckungsartDaten.EerWege);
+
+    /// <summary>Fester EER bzw. EER am Punkt 1.</summary>
+    public double? Eer1 { get => DeckungOderNull?.Eer1; set => DeckungZumSchreiben.Eer1 = value; }
+
+    /// <summary>Außentemperatur am Punkt 1 [°C].</summary>
+    public double? Taussen1 { get => DeckungOderNull?.Taussen1; set => DeckungZumSchreiben.Taussen1 = value; }
+
+    /// <summary>EER am Punkt 2 (nur linear).</summary>
+    public double? Eer2 { get => DeckungOderNull?.Eer2; set => DeckungZumSchreiben.Eer2 = value; }
+
+    /// <summary>Außentemperatur am Punkt 2 [°C] (nur linear).</summary>
+    public double? Taussen2 { get => DeckungOderNull?.Taussen2; set => DeckungZumSchreiben.Taussen2 = value; }
+
+    /// <summary>Der Kühlträger (Stromträger des Projekts); leer = Stromträger des Projekts.</summary>
+    public int? KuehlIdCarrier { get => DeckungOderNull?.KuehlIdCarrier; set => DeckungZumSchreiben.KuehlIdCarrier = value; }
+
+    /// <summary>Die Stromträger des Projekts zur Wahl des Kühlträgers.</summary>
+    public IReadOnlyList<KiWahleintrag> KuehlIdCarrierWahl
+        => TraegerEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Eigener Zähler der Split-Geräte.</summary>
+    public bool KuehlEigenerZaehler
+    {
+        get => DeckungOderNull?.KuehlEigenerZaehler ?? false;
+        set => DeckungZumSchreiben.KuehlEigenerZaehler = value;
+    }
+
     /// <summary>Der Bezeichner des markierten Profils.</summary>
     public string Profil => ProfilLesen?.Invoke() ?? "";
 

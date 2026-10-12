@@ -246,8 +246,9 @@ namespace WindowsFormsApplication1
                 case BedarfsArt.Stromverbraucher:
                     return BedarfErgebnisHuelle.Gaben(v.Strom, 1);
                 case BedarfsArt.Prozesswaerme:
-                case BedarfsArt.Kaelte:
                     return BedarfErgebnisHuelle.Gaben(v.Waerme, false, 1, "");
+                case BedarfsArt.Kaelte:
+                    return BedarfErgebnisHuelle.GabenKaelte(v.KaelteStunde, v.KaelteMonat, v.Kaeltebedarf, 1);
                 default:
                     return BedarfErgebnisHuelle.Gaben(v.Waerme, true, 2, name);
             }

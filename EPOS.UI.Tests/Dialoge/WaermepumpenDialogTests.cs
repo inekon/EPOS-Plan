@@ -1039,19 +1039,24 @@ public class WaermepumpenDialogTests : EposBunitContext
         var pumpen = DreiPumpen();
         for (int i = 0; i < pumpen.Count; i++) pumpen[i].IdWp = i + 1;
         var cut = Aufbauen(pumpen, katalog: ZweiSaetze());
-        Assert.True(AmSatz(cut, "epos-knopf--vergleichen").HasAttribute("disabled"));
+        Assert.True((AmSatz(cut, "epos-knopf--vergleichen").GetAttribute("aria-disabled") == "true"));
 
         // Projektsatz: zwei angekreuzte Projektzeilen verschiedener Geraete
         ProjektAnkreuzen(cut, 0, 1);
-        Assert.False(AmSatz(cut, "epos-knopf--vergleichen").HasAttribute("disabled"));
+        Assert.False((AmSatz(cut, "epos-knopf--vergleichen").GetAttribute("aria-disabled") == "true"));
 
-        // Katalogsatz: die Zeile waehlt, das Ankreuzen waehlt nicht (Anwenderentscheid)
+        // KA-E-24: die Kreuze BEIDER Listen zaehlen zusammen - die Wahl eines Katalogsatzes aendert daran nichts
         KatalogzeileWaehlen(cut);
         Assert.Equal(Satzmarke.Katalogsatz, cut.FindComponent<Zweispaltenauswahl>().Instance.SatzArt);
-        Assert.True(AmSatz(cut, "epos-knopf--vergleichen").HasAttribute("disabled"));
-        KatalogAnkreuzen(cut, 0, 1);
-        Assert.Equal(Satzmarke.Katalogsatz, cut.FindComponent<Zweispaltenauswahl>().Instance.SatzArt);
-        Assert.False(AmSatz(cut, "epos-knopf--vergleichen").HasAttribute("disabled"));
+        Assert.False((AmSatz(cut, "epos-knopf--vergleichen").GetAttribute("aria-disabled") == "true"));
+        KatalogAnkreuzen(cut, 0);
+        Assert.False((AmSatz(cut, "epos-knopf--vergleichen").GetAttribute("aria-disabled") == "true"));
+        // vier Kreuze: ueber der Grenze von drei, weich gesperrt mit Grund
+        KatalogAnkreuzen(cut, 1);
+        Assert.Equal("true", AmSatz(cut, "epos-knopf--vergleichen").GetAttribute("aria-disabled"));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.AUSWAHL_VERGLEICH_GRENZE,
+                     AmSatz(cut, "epos-knopf--vergleichen").GetAttribute("title"));
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("td .epos-kaestchenzelle input")[1].Change(false);
         AmSatz(cut, "epos-knopf--vergleichen").Click();
         Assert.NotEmpty(cut.FindAll(".epos-vergleich-name"));
     }
@@ -1124,5 +1129,19 @@ public class WaermepumpenDialogTests : EposBunitContext
 
         Assert.Contains(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.Contains("Kostenverwaltung gesperrt"));
         Assert.True(vermerke.Enthaelt("Kostenverwaltung gesperrt"));
+    }
+
+    /// <summary>KA-E-24: Vergleichen… stellt eine Projektzeile (Werte des Projektgeräts über seine ID) und einen Katalogsatz nebeneinander.</summary>
+    [Fact]
+    public void KA_E_24_Vergleichen_stellt_Projektzeile_und_Katalogsatz_nebeneinander()
+    {
+        var pumpen = DreiPumpen();
+        for (int i = 0; i < pumpen.Count; i++) pumpen[i].IdWp = i + 1;
+        var cut = Aufbauen(pumpen, katalog: ZweiSaetze());
+        var ids = new List<int>();
+        cut.Render(p => p
+            .Add(x => x.Vergleichsparameter, n => VergleichWirtHilfe.Werte("K:" + n))
+            .Add(x => x.VergleichsparameterProjekt, id => { ids.Add(id); return VergleichWirtHilfe.Werte("P:" + id); }));
+        VergleichWirtHilfe.ProjektzeileGegenKatalogsatz(cut, ids, "WP A");
     }
 }

@@ -3773,6 +3773,15 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     white-space: nowrap;
     color: var(--epos-text-leise);
 }
+/* K5c (KA-E-23): die Bearbeiten-Ueberlagerung von Waerme-/Kaeltebedarf extern (WaermebedarfExternFelder) -
+   Stammdaten, Ganglinie und Deckung untereinander; die Knopfleiste der Ganglinie (Datei importieren…, Speichern
+   unter…) steht ueber der Grafik, die Infozeile (OP-2 bzw. Kuehlkanal) leise unter den Stammfeldern. Die
+   OP-2-Infozeile der Kopfleiste (epos-zweispalten-kanalinfo) ist ein Kanalhinweis und braucht keine eigene Regel. */
+.epos-wbx-felder { display: flex; flex-direction: column; gap: var(--epos-abstand); min-width: 0; }
+.epos-wbx-abschnitt { min-width: 0; }
+.epos-wbx-ganglinienleiste { margin-bottom: calc(var(--epos-abstand) / 2); }
+.epos-wbx-hinweis { margin: calc(var(--epos-abstand) / 2) 0 0; color: var(--epos-text-leise); }
+.epos-deckung { margin-bottom: calc(var(--epos-abstand) / 2); }
 .epos-formathinweis-knopf, .epos-dialog-kontext { display: inline-flex; flex: 0 0 auto; }
 
 /* ---- SPALTENWAHL UND VERWENDUNGSMARKE (Konzept 4.10) ----------------
@@ -10528,6 +10537,25 @@ table.epos-simerg-tabelle {
     margin-left: 8px;
     font-size: 0.85em;
     font-weight: normal;
+}
+
+/* KA-E-24: die Herkunft eines Satzes im Spaltenkopf des Vergleichs (Projekt / Katalog) - leise vor dem Namen. */
+.epos-vergleich-herkunft {
+    margin-right: 4px;
+    font-size: 0.85em;
+    font-weight: normal;
+    color: var(--epos-text-leise);
+}
+
+/* VG1: im Vergleich rollt allein die Ueberlagerung - die Huelle der Tabelle rollt nicht mit (kein Rollbereich
+   im Rollbereich); lange Werte brechen in der Zelle um, statt die Ueberlagerung zu verbreitern. */
+.epos-raster-huelle.epos-vergleich-huelle {
+    overflow: visible;
+}
+
+.epos-vergleich-huelle .epos-vergleich th,
+.epos-vergleich-huelle .epos-vergleich td {
+    overflow-wrap: anywhere;
 }
 
 .epos-vergleich--stimmig {

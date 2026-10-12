@@ -361,6 +361,9 @@ namespace WindowsFormsApplication1
         /// <summary>Die Prozesswaerme-Katalogverwaltung (<c>BedarfAdminDialog</c>).</summary>
         public const string PROZESSWAERME_ADMIN = "Form_Prozesswaerme_Admin";
 
+        /// <summary>Die Kaeltebedarf-Katalogverwaltung (<c>BedarfAdminDialog</c>, K5b).</summary>
+        public const string KAELTEBEDARF_ADMIN = "Form_Kaeltebedarf_Admin";
+
         /// <summary>Die Stromverbraucher-Katalogverwaltung (<c>BedarfAdminDialog</c>).</summary>
         public const string STROMVERBRAUCHER_ADMIN = "Form_Stromverbraucher_Admin";
 
@@ -911,6 +914,8 @@ namespace WindowsFormsApplication1
                             KiDialogTexte.MaskeStromverbraucherAdmin),
                 BedarfAdmin(KiMaskennamen.BRAUCHWASSER_ADMIN,
                             KiDialogTexte.MaskeBrauchwasserAdmin),
+                BedarfAdmin(KiMaskennamen.KAELTEBEDARF_ADMIN,
+                            KiDialogTexte.MaskeKaeltebedarfAdmin),
                 BedarfErgebnis(),
                 WaermebedarfExtern(),
                 Solarganglinie(),
@@ -3975,6 +3980,12 @@ namespace WindowsFormsApplication1
         /// <b>Draussen bleiben der Katalog mit seinem Filterbaustein, der CSV-Import
         /// samt Vorschau und Ablage</b> (ein Ladevorgang) und die Ganglinienvorschau.
         /// </para>
+        /// <para>
+        /// <b>Die Felder der Bearbeiten-Ueberlagerung sind Felder des Dialogs</b> (K5c, KA-E-23, Muster
+        /// <c>WaermepumpeAnlageKiSicht</c>): Bezeichner, Kanal, Art und die Deckung stehen dort an derselben Zeile;
+        /// der Assistent setzt sie an der gewaehlten Zuordnung, ob die Ueberlagerung offen ist oder nicht. Die Zeile
+        /// selbst ist das flache Abbild (die Deckungsfelder reicht sie durch) - eine eigene Sichtklasse braucht es nicht.
+        /// </para>
         /// </remarks>
         private static KiDialog WaermebedarfExtern()
         {
@@ -3990,6 +4001,31 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kaelte_art", "WaermebedarfExternZeile.KaelteArt",
                                      KiDialogTexte.KaelteArtName, KiParameterTyp.Wahl,
                                      KiDialogTexte.KaelteArtErl, leerErlaubt: true),
+                    // K5a (Konzept Kaeltebedarf 3.4): die Feldgruppe „Deckung" der Kaeltezeile.
+                    new KiDialogFeld("deckung", "WaermebedarfExternZeile.Deckungsart",
+                                     KiDialogTexte.WbxDeckungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WbxDeckungErl, leerErlaubt: true),
+                    new KiDialogFeld("eer_weg", "WaermebedarfExternZeile.EerWeg",
+                                     KiDialogTexte.WbxEerWegName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WbxEerWegErl, leerErlaubt: true),
+                    new KiDialogFeld("eer_1", "WaermebedarfExternZeile.Eer1",
+                                     KiDialogTexte.WbxEer1Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WbxEer1Erl, leerErlaubt: true),
+                    new KiDialogFeld("taussen_1", "WaermebedarfExternZeile.Taussen1",
+                                     KiDialogTexte.WbxTaussen1Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WbxTaussen1Erl, einheit: "°C", leerErlaubt: true),
+                    new KiDialogFeld("eer_2", "WaermebedarfExternZeile.Eer2",
+                                     KiDialogTexte.WbxEer2Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WbxEer2Erl, leerErlaubt: true),
+                    new KiDialogFeld("taussen_2", "WaermebedarfExternZeile.Taussen2",
+                                     KiDialogTexte.WbxTaussen2Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WbxTaussen2Erl, einheit: "°C", leerErlaubt: true),
+                    new KiDialogFeld("kuehltraeger", "WaermebedarfExternZeile.KuehlIdCarrier",
+                                     KiDialogTexte.WbxTraegerName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WbxTraegerErl, leerErlaubt: true),
+                    new KiDialogFeld("eigener_zaehler", "WaermebedarfExternZeile.KuehlEigenerZaehler",
+                                     KiDialogTexte.WbxZaehlerName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WbxZaehlerErl),
                     new KiDialogFeld("ganglinie", "WaermebedarfExternZeile.Bezeichner",
                                      KiDialogTexte.WbxGanglinieName, KiParameterTyp.Text,
                                      KiDialogTexte.WbxGanglinieErl,
@@ -4246,6 +4282,31 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kaelte_art", "BedarfsProfileKiSicht.KaelteArt",
                                      KiDialogTexte.KaelteArtName, KiParameterTyp.Wahl,
                                      KiDialogTexte.KaelteArtErl, leerErlaubt: true),
+                    // K5b (Konzept Kaeltebedarf 3.4): die Feldgruppe „Deckung" der markierten Kaeltezeile.
+                    new KiDialogFeld("deckung", "BedarfsProfileKiSicht.Deckungsart",
+                                     KiDialogTexte.BpfDeckungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BpfDeckungErl, leerErlaubt: true),
+                    new KiDialogFeld("eer_weg", "BedarfsProfileKiSicht.EerWeg",
+                                     KiDialogTexte.WbxEerWegName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WbxEerWegErl, leerErlaubt: true),
+                    new KiDialogFeld("eer_1", "BedarfsProfileKiSicht.Eer1",
+                                     KiDialogTexte.WbxEer1Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WbxEer1Erl, leerErlaubt: true),
+                    new KiDialogFeld("taussen_1", "BedarfsProfileKiSicht.Taussen1",
+                                     KiDialogTexte.WbxTaussen1Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WbxTaussen1Erl, einheit: "°C", leerErlaubt: true),
+                    new KiDialogFeld("eer_2", "BedarfsProfileKiSicht.Eer2",
+                                     KiDialogTexte.WbxEer2Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WbxEer2Erl, leerErlaubt: true),
+                    new KiDialogFeld("taussen_2", "BedarfsProfileKiSicht.Taussen2",
+                                     KiDialogTexte.WbxTaussen2Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WbxTaussen2Erl, einheit: "°C", leerErlaubt: true),
+                    new KiDialogFeld("kuehltraeger", "BedarfsProfileKiSicht.KuehlIdCarrier",
+                                     KiDialogTexte.WbxTraegerName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WbxTraegerErl, leerErlaubt: true),
+                    new KiDialogFeld("eigener_zaehler", "BedarfsProfileKiSicht.KuehlEigenerZaehler",
+                                     KiDialogTexte.WbxZaehlerName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WbxZaehlerErl),
                     new KiDialogFeld("profil", "BedarfsProfileKiSicht.Profil",
                                      KiDialogTexte.BpfProfilName, KiParameterTyp.Text,
                                      KiDialogTexte.BpfProfilErl,

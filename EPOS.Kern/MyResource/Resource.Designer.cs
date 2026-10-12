@@ -3471,6 +3471,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchstens drei Zeilen vergleichen – Kreuze zurücknehmen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_VERGLEICH_GRENZE {
+            get {
+                return ResourceManager.GetString("AUSWAHL_VERGLEICH_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog ähnelt.
+        /// </summary>
+        public static string AUSWAHL_VERGLEICH_HERKUNFT_KATALOG {
+            get {
+                return ResourceManager.GetString("AUSWAHL_VERGLEICH_HERKUNFT_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt ähnelt.
+        /// </summary>
+        public static string AUSWAHL_VERGLEICH_HERKUNFT_PROJEKT {
+            get {
+                return ResourceManager.GetString("AUSWAHL_VERGLEICH_HERKUNFT_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die angekreuzten Zeilen beider Listen nebeneinander vergleichen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_VERGLEICH_HINWEIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_VERGLEICH_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Projektzeile mit dem gewählten Katalogsatz vergleichen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_VERGLEICH_PAAR_HINWEIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_VERGLEICH_PAAR_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zwei bis drei Zeilen ankreuzen oder Projektzeile und Katalogsatz wählen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_VERGLEICH_SPERRE {
+            get {
+                return ResourceManager.GetString("AUSWAHL_VERGLEICH_SPERRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Alle Treffer wählen ähnelt.
         /// </summary>
         public static string AUSWAHL_WAHL_ALLE {
@@ -4929,6 +4983,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf [kW] ähnelt.
+        /// </summary>
+        public static string BERG_ACHSE_KAELTEBEDARF {
+            get {
+                return ResourceManager.GetString("BERG_ACHSE_KAELTEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf [kW] ähnelt.
         /// </summary>
         public static string BERG_ACHSE_STROMBEDARF {
@@ -5100,6 +5163,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamter Kältebedarf: ähnelt.
+        /// </summary>
+        public static string BERG_LBL_KAELTE_GESAMT {
+            get {
+                return ResourceManager.GetString("BERG_LBL_KAELTE_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die max. Kältelast: ähnelt.
+        /// </summary>
+        public static string BERG_LBL_MAX_KAELTELAST {
+            get {
+                return ResourceManager.GetString("BERG_LBL_MAX_KAELTELAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die max. Leistung: ähnelt.
         /// </summary>
         public static string BERG_LBL_MAX_LEISTUNG {
@@ -5235,6 +5316,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf ähnelt.
+        /// </summary>
+        public static string BERG_OPT_KAELTE {
+            get {
+                return ResourceManager.GetString("BERG_OPT_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Prozesse ähnelt.
         /// </summary>
         public static string BERG_OPT_PROZESSE {
@@ -5258,6 +5348,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BERG_REITER_GRAFIK {
             get {
                 return ResourceManager.GetString("BERG_REITER_GRAFIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf Ergebnisse ähnelt.
+        /// </summary>
+        public static string BERG_REITER_KAELTE_ERG {
+            get {
+                return ResourceManager.GetString("BERG_REITER_KAELTE_ERG", resourceCulture);
             }
         }
         
@@ -12894,6 +12993,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BPF_HINW_SIMULATION {
             get {
                 return ResourceManager.GetString("BPF_HINW_SIMULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf und Rücklauf des Kältebedarfs sind eine Angabe ohne Wirkung auf die Erzeuger. ähnelt.
+        /// </summary>
+        public static string BPF_HINW_TEMPERATUR_KAELTE {
+            get {
+                return ResourceManager.GetString("BPF_HINW_TEMPERATUR_KAELTE", resourceCulture);
             }
         }
         
@@ -21196,6 +21304,195 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CSV_KOPF_WOCHENTAG {
             get {
                 return ResourceManager.GetString("CSV_KOPF_WOCHENTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die dezentral (Split) ähnelt.
+        /// </summary>
+        public static string DECK_ART_SPLIT {
+            get {
+                return ResourceManager.GetString("DECK_ART_SPLIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die zentral (Kältefolge) ähnelt.
+        /// </summary>
+        public static string DECK_ART_ZENTRAL {
+            get {
+                return ResourceManager.GetString("DECK_ART_ZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fest ähnelt.
+        /// </summary>
+        public static string DECK_EER_FEST {
+            get {
+                return ResourceManager.GetString("DECK_EER_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die linear über der Außentemperatur ähnelt.
+        /// </summary>
+        public static string DECK_EER_LINEAR {
+            get {
+                return ResourceManager.GetString("DECK_EER_LINEAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung ähnelt.
+        /// </summary>
+        public static string DECK_GRUPPE {
+            get {
+                return ResourceManager.GetString("DECK_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezentral heißt: eigene Geräte ohne Kaltwasser, ohne Leistungsgrenze. Raumklimageräte mit Inneneinheiten je Zone folgen als eigene Anlagenart. ähnelt.
+        /// </summary>
+        public static string DECK_HINWEIS {
+            get {
+                return ResourceManager.GetString("DECK_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Vorgabe, bitte mit Gerätedaten ersetzen ähnelt.
+        /// </summary>
+        public static string DECK_HRL_VORGABE {
+            get {
+                return ResourceManager.GetString("DECK_HRL_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckungsart ähnelt.
+        /// </summary>
+        public static string DECK_LBL_ART {
+            get {
+                return ResourceManager.GetString("DECK_LBL_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER ähnelt.
+        /// </summary>
+        public static string DECK_LBL_EER {
+            get {
+                return ResourceManager.GetString("DECK_LBL_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER am Punkt 1 ähnelt.
+        /// </summary>
+        public static string DECK_LBL_EER1 {
+            get {
+                return ResourceManager.GetString("DECK_LBL_EER1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER am Punkt 2 ähnelt.
+        /// </summary>
+        public static string DECK_LBL_EER2 {
+            get {
+                return ResourceManager.GetString("DECK_LBL_EER2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER-Weg ähnelt.
+        /// </summary>
+        public static string DECK_LBL_EER_WEG {
+            get {
+                return ResourceManager.GetString("DECK_LBL_EER_WEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur ähnelt.
+        /// </summary>
+        public static string DECK_LBL_TAUSSEN {
+            get {
+                return ResourceManager.GetString("DECK_LBL_TAUSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur Punkt 1 ähnelt.
+        /// </summary>
+        public static string DECK_LBL_TAUSSEN1 {
+            get {
+                return ResourceManager.GetString("DECK_LBL_TAUSSEN1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur Punkt 2 ähnelt.
+        /// </summary>
+        public static string DECK_LBL_TAUSSEN2 {
+            get {
+                return ResourceManager.GetString("DECK_LBL_TAUSSEN2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlträger ähnelt.
+        /// </summary>
+        public static string DECK_LBL_TRAEGER {
+            get {
+                return ResourceManager.GetString("DECK_LBL_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigener Zähler ähnelt.
+        /// </summary>
+        public static string DECK_LBL_ZAEHLER {
+            get {
+                return ResourceManager.GetString("DECK_LBL_ZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Deckung gibt es nur an einer Projektzeile der Kältebedarfsprofile. ähnelt.
+        /// </summary>
+        public static string DECK_MSG_NUR_KAELTE {
+            get {
+                return ResourceManager.GetString("DECK_MSG_NUR_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezentrale Deckung braucht einen EER größer 0 (bei linear zwei Punkte mit verschiedener Außentemperatur). ähnelt.
+        /// </summary>
+        public static string DECK_MSG_OHNE_EER {
+            get {
+                return ResourceManager.GetString("DECK_MSG_OHNE_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Lastgänge konnten nicht gespeichert werden; der vorige Stand bleibt erhalten. ähnelt.
+        /// </summary>
+        public static string DECK_MSG_SPEICHERN_FEHLER {
+            get {
+                return ResourceManager.GetString("DECK_MSG_SPEICHERN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromträger des Projekts ähnelt.
+        /// </summary>
+        public static string DECK_PLATZHALTER_TRAEGER {
+            get {
+                return ResourceManager.GetString("DECK_PLATZHALTER_TRAEGER", resourceCulture);
             }
         }
         
@@ -58934,6 +59231,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckungsart der markierten Kältebedarfszeile: zentral über die Kältefolge des Projekts oder dezentral über eigene Split-Geräte; nur bei den Kältebedarfsprofilen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_DECKUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_DECKUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckungsart ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_DECKUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_DECKUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Anzeigeeinheit; sie gilt für den Infoblock, die Summen und das Eingabefeld daneben zugleich. ähnelt.
         /// </summary>
         public static string KI_DLG_BPF_EINHEIT_ERL {
@@ -63880,6 +64195,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_BADM_BW {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_BADM_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf-Katalog ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BADM_KAELTE {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BADM_KAELTE", resourceCulture);
             }
         }
         
@@ -69878,6 +70202,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckungsart der Kältezeile: zentral über die Kältefolge des Projekts oder dezentral über eigene Split-Geräte; wirksam nur im Kanal Kühlung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_DECKUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_DECKUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckungsart ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_DECKUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_DECKUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fester EER bzw. EER am Punkt 1, größer 0; Vorgabe 3,0. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_EER1_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_EER1_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER am Punkt 1 ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_EER1_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_EER1_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER am Punkt 2 (nur linear), größer 0; Vorgabe 4,0. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_EER2_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_EER2_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER am Punkt 2 ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_EER2_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_EER2_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bei dezentraler Deckung: fester EER oder linear über der Außentemperatur zwischen zwei Punkten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_EER_WEG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_EER_WEG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER-Weg ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_EER_WEG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_EER_WEG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner der zugeordneten Ganglinie. ähnelt.
         /// </summary>
         public static string KI_DLG_WBX_GANGLINIE_ERL {
@@ -69892,6 +70288,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WBX_KANAL_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WBX_KANAL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur des Punkts 1 in °C, −20 bis 50; Vorgabe 35. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_TAUSSEN1_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_TAUSSEN1_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur Punkt 1 ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_TAUSSEN1_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_TAUSSEN1_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur des Punkts 2 in °C (nur linear), −20 bis 50 und verschieden von Punkt 1; Vorgabe 25. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_TAUSSEN2_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_TAUSSEN2_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur Punkt 2 ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_TAUSSEN2_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_TAUSSEN2_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromträger, über den der Strom der Split-Geräte abgerechnet wird; leer = Stromträger des Projekts. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_TRAEGER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_TRAEGER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlträger ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_TRAEGER_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_TRAEGER_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Strom der Split-Geräte läuft über einen eigenen Zähler. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_ZAEHLER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_ZAEHLER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigener Zähler ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_ZAEHLER_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_ZAEHLER_NAME", resourceCulture);
             }
         }
         
@@ -88910,6 +89378,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MENU_IMPORT_KAELTEMASCHINEN {
             get {
                 return ResourceManager.GetString("MENU_IMPORT_KAELTEMASCHINEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf ähnelt.
+        /// </summary>
+        public static string MENU_KAELTEBEDARF {
+            get {
+                return ResourceManager.GetString("MENU_KAELTEBEDARF", resourceCulture);
             }
         }
         
@@ -132142,6 +132619,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganglinie ähnelt.
+        /// </summary>
+        public static string WBX_GRP_GANGLINIE {
+            get {
+                return ResourceManager.GetString("WBX_GRP_GANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stammdaten ähnelt.
+        /// </summary>
+        public static string WBX_GRP_STAMM {
+            get {
+                return ResourceManager.GetString("WBX_GRP_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Dateiformat: CSV- oder Textdatei (auch Excel .xlsx/.xlsm/.xls) mit einem Jahr Wärmebedarf — 8.760 Stundenwerte oder 35.040 Viertelstundenwerte, in Zeitfolge ab dem 1. Januar, je Zeile ein Wert. Als Feldtrennzeichen sind Semikolon, Komma, Tabulator und senkrechter Strich zugelassen; eine einspaltige Datei braucht keines. Eine Kopfzeile ist erlaubt und wird erkannt. Dezimaltrennzeichen Komma oder Punkt, kein Tausendertrennzeichen. Werte als Leistung in kW oder als Arbeit in kWh je Intervall — die Einheit wird [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string WBX_HINWEIS_FORMAT {
@@ -132160,6 +132655,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältelastgänge pflegen Sie unter Kältebedarf extern. ähnelt.
+        /// </summary>
+        public static string WBX_HRL_KAELTE_EXTERN {
+            get {
+                return ResourceManager.GetString("WBX_HRL_KAELTE_EXTERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ein Lastgang im Kanal Kühlung ist Kältebedarf: Er wirkt nur mit der Projekteinstellung „Kühlung rechnen“, geht in keinen Wärmekanal und bleibt ohne Kälteerzeuger ungedeckt. ähnelt.
         /// </summary>
         public static string WBX_HRL_KANAL_KUEHLUNG {
@@ -132169,11 +132673,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kanal, Art und Deckung gelten je Zuordnung im Projekt. ähnelt.
+        /// </summary>
+        public static string WBX_HRL_NUR_IM_PROJEKT {
+            get {
+                return ResourceManager.GetString("WBX_HRL_NUR_IM_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarfsdaten (Ganglinien) ähnelt.
         /// </summary>
         public static string WBX_KOPFBAND {
             get {
                 return ResourceManager.GetString("WBX_KOPFBAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarfsdaten (Lastgänge) ähnelt.
+        /// </summary>
+        public static string WBX_KOPFBAND_KAELTE {
+            get {
+                return ResourceManager.GetString("WBX_KOPFBAND_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner ähnelt.
+        /// </summary>
+        public static string WBX_LBL_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("WBX_LBL_BEZEICHNER", resourceCulture);
             }
         }
         
@@ -132237,6 +132768,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WBX_TITEL {
             get {
                 return ResourceManager.GetString("WBX_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf extern ähnelt.
+        /// </summary>
+        public static string WBX_TITEL_KAELTE {
+            get {
+                return ResourceManager.GetString("WBX_TITEL_KAELTE", resourceCulture);
             }
         }
         

@@ -165,7 +165,7 @@ namespace EPOS.Kern.Tests
             {
                 Masken.WpAdministration, Masken.StromspeicherAdmin, Masken.PeakShaving,
                 Masken.GebaeudeAdmin, Masken.GebaeudetypenAdmin, Masken.WaermebedarfExternAdmin,
-                Masken.ProzesswaermeAdmin, Masken.StromverbraucherAdmin, Masken.StromganglinieAdmin,
+                Masken.ProzesswaermeAdmin, Masken.KaeltebedarfAdmin, Masken.StromverbraucherAdmin, Masken.StromganglinieAdmin,
                 Masken.SolarganglinieAdmin, Masken.PvGanglinieAdmin, Masken.WpImport, Masken.WpKaelteImport, Masken.KaeltemaschineImport, Masken.HeizkesselAdmin,
                 Masken.BhkwAdmin, Masken.SolarkollektorenAdmin, Masken.PvAdmin,
                 Masken.HeizkesselImport, Masken.PufferSpImport, Masken.PufferSpAdmin,

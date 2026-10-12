@@ -34,6 +34,8 @@
         public const string WaermebedarfExternAdmin = "Form_AdminWaermeeinlesen";
         /// <summary>Stammdaten Prozesswärme.</summary>
         public const string ProzesswaermeAdmin = "Form_Prozesswaerme_Admin";
+        /// <summary>Stammdaten Kältebedarf (Konzept Kältebedarf 3.3, K5b) — <c>BedarfAdminDialog</c> mit der Art Kälte.</summary>
+        public const string KaeltebedarfAdmin = "Form_Kaeltebedarf_Admin";
         /// <summary>Stammdaten Stromverbraucher.</summary>
         public const string StromverbraucherAdmin = "Form_Stromverbraucher_Admin";
         /// <summary>Stammdaten Stromganglinien.</summary>

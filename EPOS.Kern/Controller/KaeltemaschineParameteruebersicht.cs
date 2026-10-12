@@ -61,6 +61,23 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Werte der PROJEKTKOPIE <paramref name="id"/> (<c>Tab_Kaeltemaschine</c> samt Kennlinie) in
+        /// derselben Liste — „Vergleichen…" ueber Projektzeilen und Katalogsaetze (KA-E-24).
+        /// </summary>
+        public static IReadOnlyList<Parameterwert> ProjektWerte(int id)
+        {
+            if (id <= 0) return Werte(null, false);
+            try
+            {
+                return Werte(KaeltemaschineCtrl.Laden(id), false);
+            }
+            catch (Exception)
+            {
+                return Werte(null, false);
+            }
+        }
+
+        /// <summary>
         /// <b>Die Übersicht eines Satzes</b> ohne Datenbank: <paramref name="m"/> mit Kopf, Teillastfeldern und
         /// Kennlinie; <paramref name="katalogsatz"/> sagt, ob er einen Katalogschlüssel trägt (Herkunft
         /// „Auslieferung"). <c>null</c> liefert die Zeilen mit lauter <see cref="ParameterVerwendung.LEER"/>.

@@ -88,6 +88,8 @@
                         SatzUebernommen="BeiSatzUebernommen" SatzVerworfen="BeiSatzVerworfen"
                         SatzZusammenfassung="@Zusammenfassung()"
                         KnopfleisteAmSatz="true"
+                        VergleichProjekt="@VergleichProjektsatz" VergleichKatalog="@VergleichKatalogsatz"
+                        KatalogGewaehlt="@_katalogZeile?.Schluessel" VergleichAbgelehnt="BeiSchlossAbgelehnt"
                         ProjektGewaehlt="@(Aktuell is null ? null : _gewaehlt)"
                         ProjektGewaehltChanged="BeiProjektTastenwahl"
                         @ref="_zweispalten">
@@ -157,9 +159,6 @@
             @* DIE KNOPFLEISTE AM GEWAEHLTEN SATZ (AW3b, Schema AW1/AW2): Vergleichen… und Bearbeiten… wirken im
                Bereich des gewaehlten Satzes, Schloss… und Loeschen nur auf Katalogsaetze - beim Projektsatz weich
                gesperrt mit dem Grund „Katalogsatz waehlen"; rechts Neu… (Katalogeditor im Modus Neu). *@
-            <button type="button" class="epos-knopf epos-knopf--vergleichen"
-                    title="@Resource.AUSWAHL_BTN_VERGLEICHEN_HINWEIS"
-                    disabled="@(VergleichsZahl < 2)" @onclick="BeiVergleichen">@Resource.AUSWAHL_BTN_VERGLEICHEN</button>
             <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogZeile"
                             Sperrgrund="@KatalogSperrgrund"
                             JaText="@Texte.Ja" NeinText="@Texte.Nein"
@@ -384,6 +383,13 @@
 
     /// <summary>Die Parameterübersicht je Katalogsatz für „Vergleichen…" (<c>KaeltemaschineParameteruebersicht.Werte</c>).</summary>
     [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Vergleichsparameter { get; set; }
+
+    /// <summary>
+    /// Die Kennwerte einer PROJEKTKOPIE (<c>ID_Kaeltemaschine</c>) samt Kennlinie in derselben Parameterliste wie
+    /// <see cref="Vergleichsparameter"/> (<c>KaeltemaschineParameteruebersicht.ProjektWerte</c>) — „Vergleichen…" über
+    /// Projektzeilen und Katalogsätze (KA-E-24).
+    /// </summary>
+    [Parameter] public Func<int, IReadOnlyList<Parameterwert>>? VergleichsparameterProjekt { get; set; }
 
     /// <summary>Schloss setzen und aufheben an der Katalogliste — derselbe Weg wie in der Verwaltung.</summary>
     [Parameter] public Schlossweg? Schloss { get; set; }
@@ -637,11 +643,6 @@
     /// Projektsatz, nennen sie „Katalogsatz wählen".
     /// </summary>
     private string? KatalogSperrgrund => SatzArt == Satzmarke.Projektsatz ? Resource.AUSWAHL_SPERRE_KATALOGSATZ : null;
-
-    /// <summary>Wie viele Sätze „Vergleichen…" im Bereich des gewählten Satzes vergleichen würde.</summary>
-    private int VergleichsZahl => SatzArt == Satzmarke.Projektsatz
-        ? ProjektZiele().Count(z => z.Arbeit.Geraet is not null)
-        : Vergleichsparameter is null ? 0 : KatalogZiele().Count;
 
     private void BeiWahlGeaendert(Auswahlbereich bereich)
     {
@@ -1060,21 +1061,35 @@
     }
 
     /// <summary>
-    /// „Vergleichen…" — zwei oder mehr Sätze nebeneinander, im Bereich des gewählten Satzes (AW3b): beim Projektsatz
-    /// die angekreuzten Anlagen mit den Kennwerten ihrer Projektkopie, sonst die angekreuzten Katalogsätze.
+    /// „Vergleichen…" über beide Listen (KA-E-24, die Zweispaltenauswahl führt den Knopf): die Kennwerte einer
+    /// Anlage aus ihrer Projektkopie samt Kennlinie in derselben Parameterliste wie die des Katalogsatzes
+    /// (<see cref="VergleichsparameterProjekt"/>); ohne diese Gabe oder ohne gespeicherte Projektkopie die Felder der
+    /// Gerätegruppe.
     /// </summary>
-    private void BeiVergleichen()
+    private Vergleichssatz? VergleichProjektsatz(string schluessel)
     {
-        if (_katalogliste is null) return;
-        if (SatzArt == Satzmarke.Projektsatz)
+        Zeile? z = Sichtbare.FirstOrDefault(r => r.Schluessel == schluessel);
+        if (z is null) return null;
+        if (VergleichsparameterProjekt is not null && z.Arbeit.GeraetId is int id && id > 0)
         {
-            var saetze = ProjektZiele().Where(z => z.Arbeit.Geraet is not null)
-                .Select(z => (z.Arbeit.Bezeichner, GeraetWerte(z.Arbeit.Geraet!))).ToList();
-            if (saetze.Count >= 2) _katalogliste.VergleichenWerte(saetze);
-            return;
+            string grund = "";
+            IReadOnlyList<Parameterwert>? werte = Katalogladung.SatzDazu(() => VergleichsparameterProjekt(id),
+                                                                         z.Arbeit.Bezeichner, ref grund);
+            if (grund.Length > 0) BeiSchlossAbgelehnt(grund);
+            return Vergleichssatz.AusParametern(Satzmarke.Projektsatz, z.Arbeit.Bezeichner, werte);
         }
-        List<Katalogfilterzeile> ziele = KatalogZiele();
-        if (ziele.Count >= 2) _katalogliste.Vergleichen(ziele.Select(z => z.Schluessel).ToList());
+        if (z.Arbeit.Geraet is null) return null;
+        return new Vergleichssatz(Satzmarke.Projektsatz, z.Arbeit.Bezeichner, GeraetWerte(z.Arbeit.Geraet));
+    }
+
+    /// <summary>Die Kennwerte eines Katalogsatzes für „Vergleichen…" — die Parameterübersicht, ohne sie die Profilspalten.</summary>
+    private Vergleichssatz? VergleichKatalogsatz(string schluessel)
+    {
+        Katalogfilterzeile? k = _katalog.FirstOrDefault(r => r.Schluessel == schluessel);
+        if (k is null) return null;
+        return Vergleichsparameter is not null
+            ? Vergleichssatz.AusParametern(Satzmarke.Katalogsatz, k.Bezeichner, Vergleichsparameter(k.Bezeichner))
+            : Vergleichssatz.AusSpalten(Satzmarke.Katalogsatz, Katalogprofil, k);
     }
 
     /// <summary>Die Kennwerte einer Projektkopie für den Vergleich — dieselben Felder wie die Gerätegruppe des Satzes.</summary>

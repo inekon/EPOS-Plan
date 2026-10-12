@@ -50532,6 +50532,24 @@ chart</value>
   <data name="AUSWAHL_ZF_SOLARKREIS" xml:space="preserve">
     <value>Solar loop</value>
   </data>
+  <data name="AUSWAHL_VERGLEICH_HINWEIS" xml:space="preserve">
+    <value>Compare the ticked rows of both lists side by side</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_PAAR_HINWEIS" xml:space="preserve">
+    <value>Compare the selected project row with the selected catalogue record</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_SPERRE" xml:space="preserve">
+    <value>Tick two to three rows or select a project row and a catalogue record</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_GRENZE" xml:space="preserve">
+    <value>Compare at most three rows – untick some</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_HERKUNFT_PROJEKT" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_HERKUNFT_KATALOG" xml:space="preserve">
+    <value>Catalogue</value>
+  </data>
   <data name="SATZBEARB_TITEL_PROJEKT" xml:space="preserve">
     <value>Edit project record – {0}</value>
   </data>
@@ -53953,6 +53971,168 @@ chart</value>
   </data>
   <data name="GEB_SPRUNG_KEIN_GEBAEUDE" xml:space="preserve">
     <value>No building in the project yet.</value>
+  </data>
+  <data name="DECK_GRUPPE" xml:space="preserve">
+    <value>Coverage</value>
+  </data>
+  <data name="DECK_LBL_ART" xml:space="preserve">
+    <value>Coverage type</value>
+  </data>
+  <data name="DECK_ART_ZENTRAL" xml:space="preserve">
+    <value>central (cooling sequence)</value>
+  </data>
+  <data name="DECK_ART_SPLIT" xml:space="preserve">
+    <value>decentralised (split)</value>
+  </data>
+  <data name="DECK_LBL_EER_WEG" xml:space="preserve">
+    <value>EER method</value>
+  </data>
+  <data name="DECK_EER_FEST" xml:space="preserve">
+    <value>fixed</value>
+  </data>
+  <data name="DECK_EER_LINEAR" xml:space="preserve">
+    <value>linear over outdoor temperature</value>
+  </data>
+  <data name="DECK_LBL_EER" xml:space="preserve">
+    <value>EER</value>
+  </data>
+  <data name="DECK_LBL_TAUSSEN" xml:space="preserve">
+    <value>Outdoor temperature</value>
+  </data>
+  <data name="DECK_LBL_EER1" xml:space="preserve">
+    <value>EER at point 1</value>
+  </data>
+  <data name="DECK_LBL_TAUSSEN1" xml:space="preserve">
+    <value>Outdoor temperature point 1</value>
+  </data>
+  <data name="DECK_LBL_EER2" xml:space="preserve">
+    <value>EER at point 2</value>
+  </data>
+  <data name="DECK_LBL_TAUSSEN2" xml:space="preserve">
+    <value>Outdoor temperature point 2</value>
+  </data>
+  <data name="DECK_LBL_TRAEGER" xml:space="preserve">
+    <value>Cooling energy carrier</value>
+  </data>
+  <data name="DECK_PLATZHALTER_TRAEGER" xml:space="preserve">
+    <value>Electricity carrier of the project</value>
+  </data>
+  <data name="DECK_LBL_ZAEHLER" xml:space="preserve">
+    <value>Separate meter</value>
+  </data>
+  <data name="DECK_HRL_VORGABE" xml:space="preserve">
+    <value>{0}: default, please replace with device data</value>
+  </data>
+  <data name="DECK_HINWEIS" xml:space="preserve">
+    <value>Decentralised means: separate units without chilled water and without a capacity limit. Room air conditioners with indoor units per zone will follow as a separate plant type.</value>
+  </data>
+  <data name="DECK_MSG_OHNE_EER" xml:space="preserve">
+    <value>Decentralised coverage needs an EER greater than 0 (for linear, two points with different outdoor temperatures).</value>
+  </data>
+  <data name="WBX_TITEL_KAELTE" xml:space="preserve">
+    <value>External cooling demand</value>
+  </data>
+  <data name="WBX_KOPFBAND_KAELTE" xml:space="preserve">
+    <value>Cooling demand data (load profiles)</value>
+  </data>
+  <data name="WBX_HRL_KAELTE_EXTERN" xml:space="preserve">
+    <value>Maintain cooling load profiles under External cooling demand.</value>
+  </data>
+  <data name="WBX_GRP_STAMM" xml:space="preserve">
+    <value>Master data</value>
+  </data>
+  <data name="WBX_GRP_GANGLINIE" xml:space="preserve">
+    <value>Load profile</value>
+  </data>
+  <data name="WBX_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="WBX_HRL_NUR_IM_PROJEKT" xml:space="preserve">
+    <value>Channel, type and coverage apply per assignment in the project.</value>
+  </data>
+  <data name="KI_DLG_WBX_DECKUNG_NAME" xml:space="preserve">
+    <value>Coverage type</value>
+  </data>
+  <data name="KI_DLG_WBX_DECKUNG_ERL" xml:space="preserve">
+    <value>Coverage type of the cooling row: central via the project's cooling sequence or decentralised via separate split units; effective only in the cooling channel.</value>
+  </data>
+  <data name="KI_DLG_WBX_EER_WEG_NAME" xml:space="preserve">
+    <value>EER method</value>
+  </data>
+  <data name="KI_DLG_WBX_EER_WEG_ERL" xml:space="preserve">
+    <value>For decentralised coverage: fixed EER or linear over the outdoor temperature between two points.</value>
+  </data>
+  <data name="KI_DLG_WBX_EER1_NAME" xml:space="preserve">
+    <value>EER at point 1</value>
+  </data>
+  <data name="KI_DLG_WBX_EER1_ERL" xml:space="preserve">
+    <value>Fixed EER or EER at point 1, greater than 0; default 3.0.</value>
+  </data>
+  <data name="KI_DLG_WBX_TAUSSEN1_NAME" xml:space="preserve">
+    <value>Outdoor temperature point 1</value>
+  </data>
+  <data name="KI_DLG_WBX_TAUSSEN1_ERL" xml:space="preserve">
+    <value>Outdoor temperature of point 1 in °C, −20 to 50; default 35.</value>
+  </data>
+  <data name="KI_DLG_WBX_EER2_NAME" xml:space="preserve">
+    <value>EER at point 2</value>
+  </data>
+  <data name="KI_DLG_WBX_EER2_ERL" xml:space="preserve">
+    <value>EER at point 2 (linear only), greater than 0; default 4.0.</value>
+  </data>
+  <data name="KI_DLG_WBX_TAUSSEN2_NAME" xml:space="preserve">
+    <value>Outdoor temperature point 2</value>
+  </data>
+  <data name="KI_DLG_WBX_TAUSSEN2_ERL" xml:space="preserve">
+    <value>Outdoor temperature of point 2 in °C (linear only), −20 to 50 and different from point 1; default 25.</value>
+  </data>
+  <data name="KI_DLG_WBX_TRAEGER_NAME" xml:space="preserve">
+    <value>Cooling energy carrier</value>
+  </data>
+  <data name="KI_DLG_WBX_TRAEGER_ERL" xml:space="preserve">
+    <value>Electricity carrier billing the power of the split units; empty = electricity carrier of the project.</value>
+  </data>
+  <data name="KI_DLG_WBX_ZAEHLER_NAME" xml:space="preserve">
+    <value>Separate meter</value>
+  </data>
+  <data name="KI_DLG_WBX_ZAEHLER_ERL" xml:space="preserve">
+    <value>The power of the split units runs through a separate meter.</value>
+  </data>
+  <data name="DECK_MSG_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>The load profiles could not be saved; the previous state is kept.</value>
+  </data>
+  <data name="DECK_MSG_NUR_KAELTE" xml:space="preserve">
+    <value>Coverage exists only on a project row of the cooling demand profiles.</value>
+  </data>
+  <data name="KI_DLG_BPF_DECKUNG_NAME" xml:space="preserve">
+    <value>Coverage type</value>
+  </data>
+  <data name="KI_DLG_BPF_DECKUNG_ERL" xml:space="preserve">
+    <value>Coverage type of the selected cooling demand row: central via the project's cooling sequence or decentralised via separate split units; cooling demand profiles only.</value>
+  </data>
+  <data name="KI_DLG_MASKE_BADM_KAELTE" xml:space="preserve">
+    <value>Cooling demand catalogue</value>
+  </data>
+  <data name="BPF_HINW_TEMPERATUR_KAELTE" xml:space="preserve">
+    <value>Supply and return of the cooling demand are information only, without effect on the generators.</value>
+  </data>
+  <data name="BERG_REITER_KAELTE_ERG" xml:space="preserve">
+    <value>Cooling demand results</value>
+  </data>
+  <data name="BERG_OPT_KAELTE" xml:space="preserve">
+    <value>Cooling demand</value>
+  </data>
+  <data name="BERG_LBL_MAX_KAELTELAST" xml:space="preserve">
+    <value>max. cooling load:</value>
+  </data>
+  <data name="BERG_LBL_KAELTE_GESAMT" xml:space="preserve">
+    <value>Total cooling demand:</value>
+  </data>
+  <data name="BERG_ACHSE_KAELTEBEDARF" xml:space="preserve">
+    <value>Cooling demand [kW]</value>
+  </data>
+  <data name="MENU_KAELTEBEDARF" xml:space="preserve">
+    <value>Cooling demand</value>
   </data>
 </root>
 
