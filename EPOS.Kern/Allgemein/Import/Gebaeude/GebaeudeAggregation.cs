@@ -201,9 +201,10 @@ namespace WindowsFormsApplication1
             bool cadMoeglich = GebaeudeCadSollwert.Moeglich(beheizt);
             Sollwerte(beheizt, datei, z, meldungen, profil, g.Anzeigename, cadMoeglich && raumtemperaturAlsSollwert);
 
-            // Prüfgrößen und abgeleitete Felder (gesamte Fensterfläche, Bauweise) übernimmt nie jemand.
+            // Prüfgrößen und abgeleitete Felder (gesamte Fensterfläche, Bauweise) übernimmt nie jemand — außer der Bauweise
+            // aus der wirksamen Wärmekapazität der Projektdatei (Cwirk, GD-2): Sie ist ein Wert der Datei, kein abgeleiteter.
             foreach (GebaeudeFeldzeile r in zeilen)
-                r.Uebernehmen = r.HatWert && r.HakenSetzbar;
+                r.Uebernehmen = r.HatWert && (r.HakenSetzbar || (r.Zielfeld == GebaeudeZielfelder.BAUWEISE && g.BauweiseJeM2Datei > 0.0));
 
             // ---- Quellzuordnungen (Tab_Importzuordnung, 7.2) — Ziel in G4c immer das Gebäude ----
             var zuordnungen = new List<GebaeudeQuellzuordnung> { new GebaeudeQuellzuordnung(g.Quelltyp, g.Kennung, ImportZiel.Gebaeude) };

@@ -641,7 +641,9 @@ namespace EPOS.Kern.Tests
         public void Ohne_Gebaeudenamen_schlaegt_der_Dialog_den_Dateinamen_vor()
         {
             GebaeudeImportAblauf a = Lesen("ifc4_zwei_gebaeude.ifc");
-            Assert.Equal("Gebäude A", GebaeudeZuordnungsModell.Vorschlagsname(a.Zuordnen(0, null)));
+            // F8 (GD-2): der Name ist der Dateiname, der Gebäudename der Datei steht als Vorschlag daneben.
+            Assert.Equal("ifc4_zwei_gebaeude", GebaeudeZuordnungsModell.Vorschlagsname(a.Zuordnen(0, null)));
+            Assert.Equal("Gebäude A", GebaeudeZuordnungsModell.NameDerDatei(a.Zuordnen(0, null)));
 
             a.Abbild.Gebaeude[0].Name = null;
             GebaeudeImportSatz ohneName = a.Zuordnen(0, null);
