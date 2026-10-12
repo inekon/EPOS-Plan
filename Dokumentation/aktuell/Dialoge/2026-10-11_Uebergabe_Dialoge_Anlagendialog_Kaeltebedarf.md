@@ -11,10 +11,10 @@ für die hier genannten Gegenstände ab.
 
 ## 1 Stand
 
-- Zweige: Arbeitszweig `ios_migration_september`; Sitzungszweig `claude/cool-ramanujan-3m1lhl`, nach jedem Push gleich dem Arbeitszweig; letzter Push vor der Übergabe `9fad59455` (CI-Vermerk #1009; letzte Statuszeile dieser Sitzung #1009); Arbeitsbaum sauber, keine Agenten, keine Check-ins mehr aktiv.
+- Zweige: Arbeitszweig `ios_migration_september`; Sitzungszweig `claude/cool-ramanujan-3m1lhl`, nach jedem Push gleich dem Arbeitszweig; letzter Push `e43393577` (Statuszeile #1021, NK1), Statuscommit folgt; Arbeitsbaum sauber, keine Agenten, keine Check-ins mehr aktiv.
 - Statuszeilen dieser Sitzung (11.10.2026): #980 K2 Kernwege Kälte, #981 K3 Rechenweg Kältebedarf mit Abzugsstelle für K‑D, #982 K4 Startseite Reiter „Kältebedarf“ (Nachtrag: Hotfix doppelte BOM in `epos-ui.css`); #988 AW1 Knopfleiste am gewählten Satz (Heizkessel, Wärmepumpe); #989 AW2 Wärmepumpe: Satz-Überlagerung und Anlage zusammengeführt; #998 AW3a fünf Erzeugerdialoge; #999 AW3b Stufe 4/5 und Kältemaschine; #1009 KAL1 Einzeltage als Klappgruppe.
 - CI-Vermerke: #960–#965, #980–#982, #988/#989, #998/#999 tragen den Kern-Lauf 38181227802 (grün auf `3d7172064`), #1009 den Kern-Lauf 38186204735 (grün auf `f2caa6008`). Keine Vermerke ausstehend.
-- Katalogauswahl V1: alle Stufen gebaut; Knopfleiste am gewählten Satz (KA‑E‑17 bis KA‑E‑22, Konzept Abschnitt 4.4a) in allen Wirten; Wärmepumpe mit zusammengeführter Überlagerung (`WaermepumpeAnlageDialog` → Baustein `WaermepumpeAnlageFelder`).
+- Katalogauswahl V1: alle Stufen gebaut; Knopfleiste am gewählten Satz (KA‑E‑17 bis KA‑E‑22, Konzept Abschnitt 4.4a) in allen Wirten; Wärmepumpe mit zusammengeführter Überlagerung (`WaermepumpeAnlageDialog` → Baustein `WaermepumpeAnlageFelder`); Nachzüge NK1 (Statuszeile #1021) geschlossen.
 - Kältebedarf: Konzept `Konzept_Kaeltebedarf_EPOS-Plan.md`; K1–K4 gebaut, K5 und K6 offen.
 - Basis R52 `2026-10-11_R52_Vorheizen`; Schemaschritt zuletzt laut Kopfzeile der Statusdatei: 219 angemeldet (Sitzung Gebäudesimulation), 220 frei; von dieser Sitzung ist keiner belegt.
 - Abgestimmt mit der Sitzung Gebäudesimulation (11.10.): Gebäudedialog/Mehrzonen-Import (ihr Entwurf GD, #1004) und DIN‑18599‑10‑Normprofile liegen dort; Kalenderprobe-Reparatur (`de5043b0a`) und Konditionierungsprobe-Prüfzeile (`516199024`) von uns, mit ihnen abgestimmt.
@@ -41,10 +41,10 @@ für die hier genannten Gegenstände ab.
 
 1. Sichtabnahme unter Windows: AW1–AW3 (alle Wirte), die zwei „Vergrößern“, Kältebedarf-Reiter samt zwei abgeleiteten Kachelbildern (`PKaelteMessdaten.jpg`, `PKaelteProfil.jpg`), KAL1-Klappgruppe, Wärmepumpen-Überlagerung.
 2. Kältebedarf K5 und K6 (Konzept Abschnitt 7): K5 Modus „nur Kühlung“ im Dialog Wärmebedarf extern (Hülle `WaermebedarfExternHuelle.NachModell` führt die Deckungsfelder noch nicht mit), Deckungsfelder im Bedarfsprofile-Dialog, Sprungziel Kühlung im Gebäudedialog, Hinweis OP‑2, Ablehnung „Split ohne EER“ im Dialog; K6 Fläche „dezentral (Split)“ in `KaelteProduktionBild`, Kältegang, Bedarfsreiter, Posten „Kühlung dezentral“ in der Strombilanz (Reihe `Kaeltestrom_Dezentral_stuendlich`), `ProjektDetails`, Deckungsgrad mit/ohne dezentralen Anteil, Gruppe „Dezentrale Kältedeckung“, Schemaschritt für die Abrechnung des Split-Stroms je Träger, Wiki-Seite Kältebedarf, ggf. Referenzprojekt mit Basis (Nummer mit Gebäudesimulation abstimmen).
-3. Nachzüge der Katalogauswahl: Kommentarblöcke über `<Zweispaltenauswahl>` in den Erzeugerdialogen (alte Ortsverteilung), Regel `.epos-wp-eingebettet` in `epos-ui.css` ungeprüft, Kommentare mit `WaermepumpeAnlageDialog`, unbenutzte `KMA_*`-Ressourcen, Bedarfsprofile `vormerkung.Entfernt`, Gebäude Jahreswärmebedarf in der Zusammenfassung; danach Konzept Katalogauswahl nach `ueberholt/` (nach K5).
+3. Nachzüge der Katalogauswahl, Rest: Vormerkung beim OK für Stromverbraucher, Prozesswärme und Kälte (Zuordnungen in `StartseiteHuelle` nach dem Schließen — Vormerkung erst danach abschließen); tote Regel `.epos-dialog--eingebettet` samt Probenfall `warnband` in `fensterprobe.mjs` (mit Fensterprobe); `WaermepumpenKatalogDialog` ohne Wirt (Aufräumkandidat); danach Konzept Katalogauswahl nach `ueberholt/` (nach K5).
 4. Wiki: Repo-Quellen aller elf Wirte, Startseite Kältebedarf, Gebäude (Einzeltage) fortgeschrieben; Bilder neu ziehen (`wikibilder.mjs`); Sammel-Upload nur nach Rückfrage mit Versionsnummer; 33 Logbuchsätze unter 1.2.0.9.
 5. Fremde Befunde, nur gemeldet: Katalogprobe 8 Querroll-Verstöße in Verwaltungen N13b–N22a (Stammblatt 4–27 px); Fensterprobe `dubletten 1194x834`; Wärmebedarf extern unter der Mindesthöhe (1 093 × 614) 97 px.
-6. Bei der Gebäudesimulation: Gebäudedialog/Mehrzonen-Import (GD), Normprofile DIN 18599‑10 (Außenluft je Person, KI-Anweisungsweg).
+6. Bei der Gebäudesimulation: Gebäudedialog/Mehrzonen-Import (GD), Normprofile DIN 18599‑10 (Außenluft je Person, KI-Anweisungsweg), Jahreswärmebedarf in der Zusammenfassung des Gebäudedialogs (übergeben, Konzept Katalogauswahl Abschnitt 5).
 
 ## 5 Einstiegs-Prompt für die neue Sitzung
 
@@ -84,5 +84,5 @@ Erste Schritte: (1) Stand prüfen: `git status` sauber, keine Konfliktmarker, ke
 gebliebene AGENT_LAEUFT, die Zeilen #960–#965, #980–#982, #988/#989, #998/#999 und #1009 tragen
 ihren CI-Vermerk. (2) Den Stand in höchstens fünf Zeilen melden. (3) Mit dem Anwender abstimmen,
 womit weitergemacht wird. Empfehlung: zuerst die Rückmeldungen des
-Anwenders aus der Sichtabnahme und die Nachzüge der Katalogauswahl, danach Kältebedarf K5/K6.
+Anwenders aus der Sichtabnahme, danach Kältebedarf K5/K6.
 ```

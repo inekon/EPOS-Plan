@@ -1061,7 +1061,7 @@ Der Gebäudedialog ist Wirt der Katalogauswahl V1 nach dem Muster des BHKW (5.4,
   (Gabe `SatzBearbeiten` des Bausteins); vor dem Löschen eines Satzes, aus dem eine ungespeicherte Zeile stammt, und vor
   Bearbeiten, Export, Rückweg und Simulation einer ungespeicherten Zeile entsteht deren Kopie über `ZeileAnlegen` statt über
   das stille Speichern der ganzen Liste (Abbrechen räumt sie ab); im Assistenten bleibt es bei der weichen Sperre.
-- **Offen:** Ein Jahreswärmebedarf in der Zusammenfassung fehlt (keine Quelle ohne Rechenlauf); die Bilder der Überlagerung
+- **Offen:** Ein Jahreswärmebedarf in der Zusammenfassung fehlt (keine Quelle ohne Rechenlauf) — Entscheid beim Umbau des Gebäudedialogs (GD, Sitzung Gebäudesimulation); die Bilder der Überlagerung
   „Simulation…" zeichnen ihr Modell in festem Maß und skalieren es seitentreu in die Behälterbreite.
 
 ## 6 Abwägung: die fünf Varianten
