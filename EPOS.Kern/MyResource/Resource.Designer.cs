@@ -140228,6 +140228,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewähltes Gerät ähnelt.
+        /// </summary>
+        public static string WPA_GRP_GERAET {
+            get {
+                return ResourceManager.GetString("WPA_GRP_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen Kenndaten ähnelt.
         /// </summary>
         public static string WPA_GRP_KENNDATEN {
@@ -140611,6 +140620,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_INFO_SPERRZEIT_ZEITPROGRAMM {
             get {
                 return ResourceManager.GetString("WPA_INFO_SPERRZEIT_ZEITPROGRAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitprogramm ungültig ähnelt.
+        /// </summary>
+        public static string WPA_KOPF_BZ_FEHLER {
+            get {
+                return ResourceManager.GetString("WPA_KOPF_BZ_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitprogramm gepflegt ähnelt.
+        /// </summary>
+        public static string WPA_KOPF_BZ_GEPFLEGT {
+            get {
+                return ResourceManager.GetString("WPA_KOPF_BZ_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht gepflegt — immer verfügbar ähnelt.
+        /// </summary>
+        public static string WPA_KOPF_BZ_LEER {
+            get {
+                return ResourceManager.GetString("WPA_KOPF_BZ_LEER", resourceCulture);
             }
         }
         
@@ -141061,6 +141097,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_RUECKLAUF_VORSCHLAG {
             get {
                 return ResourceManager.GetString("WPA_RUECKLAUF_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektkennlinie am eingestellten Vorlauf, interpoliert wie in der Simulation ähnelt.
+        /// </summary>
+        public static string WPA_STB_ARBEITSPUNKT_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("WPA_STB_ARBEITSPUNKT_HERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb ähnelt.
+        /// </summary>
+        public static string WPA_STB_BETRIEB {
+            get {
+                return ResourceManager.GetString("WPA_STB_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die COP bei {0} ähnelt.
+        /// </summary>
+        public static string WPA_STB_COP {
+            get {
+                return ResourceManager.GetString("WPA_STB_COP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die COP am Vorlauf ähnelt.
+        /// </summary>
+        public static string WPA_STB_COP_OHNE {
+            get {
+                return ResourceManager.GetString("WPA_STB_COP_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizleistung bei {0} ähnelt.
+        /// </summary>
+        public static string WPA_STB_HEIZLEISTUNG {
+            get {
+                return ResourceManager.GetString("WPA_STB_HEIZLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizleistung am Vorlauf ähnelt.
+        /// </summary>
+        public static string WPA_STB_HEIZLEISTUNG_OHNE {
+            get {
+                return ResourceManager.GetString("WPA_STB_HEIZLEISTUNG_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Invest ähnelt.
+        /// </summary>
+        public static string WPA_STB_INVEST {
+            get {
+                return ResourceManager.GetString("WPA_STB_INVEST", resourceCulture);
             }
         }
         

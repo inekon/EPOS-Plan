@@ -367,6 +367,10 @@
             ["Daten"] = daten,
             ["Vorlaeufe"] = new Func<int, IReadOnlyList<int>>(_ => new[] { 35, 45, 55 }),
             ["Kennlinien"] = new Func<int, IReadOnlyList<KennlinienZeile>>(_ => new List<KennlinienZeile>()),
+            // WP1a: der Arbeitspunkt des Geraetesteckbriefs - synthetisch, er folgt dem Vorlauf.
+            ["Arbeitspunkt"] = new Func<int, int, string, WaermepumpeArbeitspunkt?>(
+                (_, v, _) => new WaermepumpeArbeitspunkt("B0/W" + v, 14.0 - v * 0.05, 5.5 - v * 0.05)),
+            ["Kostensumme"] = new Func<(double, double)>(() => (18000.0, 300.0)),
             ["TemperaturenPruefen"] = new Func<int?, int?, string?>(
                 (_, _) => "Die Vorlauftemperatur liegt über der Grenze der Wärmepumpe (Probe).")
         };

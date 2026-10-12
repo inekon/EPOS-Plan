@@ -47,11 +47,81 @@ public class WaermepumpeBetriebszeitenTests : EposBunitContext
             .Add(x => x.Aktiv, true)
             .Add(x => x.Geaendert, () => geaendert?.Invoke()));
 
+    /// <summary>Klappt die Gruppe „Betriebszeiten" auf (WP1a).</summary>
+    private static void Aufklappen(IRenderedComponent<WaermepumpeKonfiguration> c)
+        => c.Find(".epos-wp-betriebszeiten-klapp .epos-klappgruppe-knopf").Click();
+
+    // =================================================================================
+    // WP1a: die Betriebszeiten als Klappgruppe (Anwenderentscheid 12.10.2026)
+    // =================================================================================
+
+    [Fact]
+    public void WP1a_Die_Gruppe_steht_beim_Oeffnen_zu_und_Hoechster_Vorlauf_bleibt_sichtbar()
+    {
+        var t = new WaermepumpeKonfigurationTexte();
+        var c = Aufbauen(Daten());
+        Assert.False(c.Instance.BetriebszeitenOffen);
+        var knopf = c.Find(".epos-wp-betriebszeiten-klapp .epos-klappgruppe-knopf");
+        Assert.Equal("false", knopf.GetAttribute("aria-expanded"));
+        Assert.Contains(t.GruppeBetriebszeiten, knopf.TextContent);
+        // Zugeklappt: kein Zeitprogramm-Knopf, kein Raster - aber „Höchster Vorlauf" und das Folgende stehen.
+        Assert.Empty(c.FindAll("[data-aktion=zeitprogramm]"));
+        Assert.Contains(t.LabelVorlaufMax, c.Find("[data-gruppe=betriebszeiten]").TextContent);
+        Assert.Contains(t.HinweisSperrzeitVorrang, c.Find("[data-gruppe=betriebszeiten]").TextContent);
+        // „Heizstab mitrechnen" steht davor, außerhalb der Gruppe.
+        Assert.DoesNotContain(t.LabelHeizstab, c.Find(".epos-wp-betriebszeiten-klapp").TextContent);
+        Assert.Contains(t.LabelHeizstab, c.Markup);
+    }
+
+    [Fact]
+    public void WP1a_Der_Kopf_nennt_den_Stand_in_Kurzform()
+    {
+        var t = new WaermepumpeKonfigurationTexte();
+        Assert.Equal(t.KopfBetriebszeitenLeer, WaermepumpeKonfiguration.BetriebszeitenKopf(Daten(), t));
+        Assert.Equal(t.KopfBetriebszeitenGepflegt, WaermepumpeKonfiguration.BetriebszeitenKopf(Daten(Programm(168, 0.5)), t));
+        Assert.Equal(t.KopfBetriebszeitenFehler, WaermepumpeKonfiguration.BetriebszeitenKopf(Daten(Programm(167)), t));
+
+        Assert.Equal("nicht gepflegt — immer verfügbar",
+                     Aufbauen(Daten()).Find(".epos-wp-betriebszeiten-klapp .epos-klappgruppe-zusatz").TextContent.Trim());
+        Assert.Equal("Zeitprogramm gepflegt",
+                     Aufbauen(Daten(Programm(168, 0.5))).Find(".epos-wp-betriebszeiten-klapp .epos-klappgruppe-zusatz").TextContent.Trim());
+    }
+
+    [Fact]
+    public void WP1a_Aufklappen_zeigt_Knopf_und_Raster_wie_bisher_und_Zuklappen_behaelt_den_Stand()
+    {
+        var t = new WaermepumpeKonfigurationTexte();
+        var d = Daten(Programm(168, 0.5));
+        var c = Aufbauen(d);
+        Aufklappen(c);
+        Assert.True(c.Instance.BetriebszeitenOffen);
+        Assert.Contains("Gepflegt:", c.Find(".epos-wp-betriebszeiten-klapp").TextContent);
+        c.Find("[data-aktion=zeitprogramm]").Click();
+        Assert.NotNull(c.Find("[data-kennung=wp-zeitprogramm]"));
+        Assert.Contains(t.ZeileZeitprogrammFaktoren, c.Find(".epos-wp-betriebszeiten-klapp").TextContent);
+
+        // Zu- und wieder aufklappen: Das Raster steht wieder, das Programm ist unverändert.
+        Aufklappen(c);
+        Assert.Empty(c.FindAll("[data-kennung=wp-zeitprogramm]"));
+        Aufklappen(c);
+        Assert.NotNull(c.Find("[data-kennung=wp-zeitprogramm]"));
+        Assert.Equal(Programm(168, 0.5), d.Zeitprogramm);
+    }
+
+    [Fact]
+    public void WP1a_Ein_ungueltiges_Programm_meldet_auch_zugeklappt()
+    {
+        var c = Aufbauen(Daten(Programm(167)));
+        Assert.False(c.Instance.BetriebszeitenOffen);
+        Assert.Contains("167", c.Find("[data-gruppe=betriebszeiten] .epos-warnbanner").TextContent);
+    }
+
     [Fact]
     public void Die_Gruppe_zeigt_Zeitprogramm_Vorgabe_und_Vorrang_aber_keine_Nutzungszeit()
     {
         var t = new WaermepumpeKonfigurationTexte();
         var c = Aufbauen(Daten());
+        Aufklappen(c);   // WP1a: die Betriebszeiten stehen beim Öffnen zugeklappt
         var gruppe = c.Find("[data-gruppe=betriebszeiten]");
         Assert.Contains(t.ZeileZeitprogrammLeer, gruppe.TextContent);
         Assert.Contains("Vorgabe: projektierter Vorlauf 55 °C", gruppe.TextContent);
@@ -69,6 +139,7 @@ public class WaermepumpeBetriebszeitenTests : EposBunitContext
     {
         var d = Daten();
         var c = Aufbauen(d);
+        Aufklappen(c);
         c.Find("[data-aktion=zeitprogramm]").Click();
         Assert.NotNull(c.Find("[data-kennung=wp-zeitprogramm]"));
         Assert.Contains(new WaermepumpeKonfigurationTexte().KnopfZeitprogrammSchliessen, c.Markup);

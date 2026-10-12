@@ -102,6 +102,15 @@ public sealed class WaermepumpeKonfigurationTexte
     /// <summary>WPA_GRP_BETRIEBSZEITEN — die Gruppe mit Zeitprogramm und höchstem Vorlauf.</summary>
     public string GruppeBetriebszeiten { get; set; } = T("WPA_GRP_BETRIEBSZEITEN", "Betriebszeiten");
 
+    /// <summary>WPA_KOPF_BZ_LEER — Kopf der Klappgruppe ohne Zeitprogramm (WP1a).</summary>
+    public string KopfBetriebszeitenLeer { get; set; } = T("WPA_KOPF_BZ_LEER", "nicht gepflegt — immer verfügbar");
+
+    /// <summary>WPA_KOPF_BZ_GEPFLEGT — Kopf der Klappgruppe mit gültigem Zeitprogramm (WP1a).</summary>
+    public string KopfBetriebszeitenGepflegt { get; set; } = T("WPA_KOPF_BZ_GEPFLEGT", "Zeitprogramm gepflegt");
+
+    /// <summary>WPA_KOPF_BZ_FEHLER — Kopf der Klappgruppe mit ungültigem Zeitprogramm (WP1a).</summary>
+    public string KopfBetriebszeitenFehler { get; set; } = T("WPA_KOPF_BZ_FEHLER", "Zeitprogramm ungültig");
+
     /// <summary>WPA_LBL_ZEITPROGRAMM</summary>
     public string LabelZeitprogramm { get; set; } = T("WPA_LBL_ZEITPROGRAMM", "Zeitprogramm");
 

@@ -51438,6 +51438,39 @@ chart</value>
   <data name="WPV_RUECK_BLEIBT" xml:space="preserve">
     <value>The heating and cooling curves with all support points go with the unit. The system data stay in the project: operating mode, temperatures, bivalence, heating rod, blocking times, heat source, integration and transfer limits of the system, and the sinks.</value>
   </data>
+  <data name="WPA_GRP_GERAET" xml:space="preserve">
+    <value>Selected unit</value>
+  </data>
+  <data name="WPA_STB_HEIZLEISTUNG" xml:space="preserve">
+    <value>Heating capacity at {0}</value>
+  </data>
+  <data name="WPA_STB_COP" xml:space="preserve">
+    <value>COP at {0}</value>
+  </data>
+  <data name="WPA_STB_HEIZLEISTUNG_OHNE" xml:space="preserve">
+    <value>Heating capacity at the flow temperature</value>
+  </data>
+  <data name="WPA_STB_COP_OHNE" xml:space="preserve">
+    <value>COP at the flow temperature</value>
+  </data>
+  <data name="WPA_STB_ARBEITSPUNKT_HERLEITUNG" xml:space="preserve">
+    <value>Project curve at the set flow temperature, interpolated as in the simulation</value>
+  </data>
+  <data name="WPA_STB_INVEST" xml:space="preserve">
+    <value>Investment</value>
+  </data>
+  <data name="WPA_STB_BETRIEB" xml:space="preserve">
+    <value>Operation</value>
+  </data>
+  <data name="WPA_KOPF_BZ_LEER" xml:space="preserve">
+    <value>not maintained — always available</value>
+  </data>
+  <data name="WPA_KOPF_BZ_GEPFLEGT" xml:space="preserve">
+    <value>Time program maintained</value>
+  </data>
+  <data name="WPA_KOPF_BZ_FEHLER" xml:space="preserve">
+    <value>Time program invalid</value>
+  </data>
   <data name="PVD_LBL_SUMME" xml:space="preserve">
     <value>Total of all selected modules [kWp]:</value>
   </data>
