@@ -10530,6 +10530,14 @@ table.epos-simerg-tabelle {
     font-weight: normal;
 }
 
+/* KA-E-24: die Herkunft eines Satzes im Spaltenkopf des Vergleichs (Projekt / Katalog) - leise vor dem Namen. */
+.epos-vergleich-herkunft {
+    margin-right: 4px;
+    font-size: 0.85em;
+    font-weight: normal;
+    color: var(--epos-text-leise);
+}
+
 .epos-vergleich--stimmig {
     color: var(--epos-text-leise);
 }
