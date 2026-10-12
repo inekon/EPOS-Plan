@@ -266,7 +266,7 @@ public class BaustoffKatalogDialogTests : EposBunitContext
         Zeilenklick.Zeile(cut, 1);                                   // Holzfaser, eigener Satz
 
         IElement blatt = Stammblatt(cut);
-        Assert.Equal(new[] { "Name", "Gruppe", "Hersteller", "Wärmeleitfähigkeit λ", "Rohdichte ρ",
+        Assert.Equal(new[] { "Name", "Gruppe", "Klasse", "Hersteller", "Wärmeleitfähigkeit λ", "Rohdichte ρ",
                              "Spez. Wärmekapazität c_p", "Quelle" },
                      blatt.QuerySelectorAll(".epos-stammblattgruppe")[0].QuerySelectorAll(".epos-feld-text")
                           .Select(e => e.TextContent.Trim()).ToArray());
@@ -525,5 +525,83 @@ public class BaustoffKatalogDialogTests : EposBunitContext
         Knopf(cut, "Verwerfen").Click();
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.True(k.Geschlossen);
+    }
+
+    // =================================================================================
+    // BK-2b: Klasse unter der Gruppe, Herkunft, Importsatz
+    // =================================================================================
+
+    private static string[] Optionen(IElement wahl)
+        => wahl.QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToArray();
+
+    [Fact]
+    public void Die_Klasse_folgt_der_Gruppe_und_faellt_beim_Gruppenwechsel()
+    {
+        var k = new Katalog();
+        var cut = Aufbauen(k);
+        Zeilenklick.Zeile(cut, 1);                                   // Holzfaser, Dämmstoffe
+
+        string[] klassen = Optionen(Feld(Stammblatt(cut), "Klasse"));
+        Assert.Equal("(keine Klasse)", klassen[0]);
+        Assert.Contains("Mineralwolle", klassen);
+        Assert.Contains("Holzfaser", klassen);
+        Assert.DoesNotContain("Vollholz", klassen);
+
+        Feld(Stammblatt(cut), "Klasse").Change("4");                 // Holzfaser
+        Assert.Equal("HOLZFASER", cut.Instance.Arbeitsstand.KlasseCode);
+        Assert.True(cut.Instance.Geaendert);
+
+        Feld(Stammblatt(cut), "Gruppe").Change("6");                 // Holz und Holzwerkstoffe
+        Assert.Equal("", cut.Instance.Arbeitsstand.KlasseCode);
+        Assert.Equal(new[] { "(keine Klasse)", "Vollholz", "Holzwerkstoff" }, Optionen(Feld(Stammblatt(cut), "Klasse")));
+
+        Feld(Stammblatt(cut), "Klasse").Change("1");
+        Knopf(cut, "Speichern").Click();
+        Assert.Equal("VOLLHOLZ", k.Gespeichert.Last().KlasseCode);
+    }
+
+    [Fact]
+    public void Ein_Importsatz_traegt_die_Marke_und_die_Quelle_als_Lesewert()
+    {
+        var k = new Katalog();
+        k.Saetze[1].Import = true;
+        k.Saetze[1].Herkunft = "Import";
+        k.Saetze[1].Quelle = "Probekatalog, Datenstand 2026-01";
+        var cut = Aufbauen(k);
+        Zeilenklick.Zeile(cut, 1);
+
+        IElement blatt = Stammblatt(cut);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.BKAT_HERKUNFT_IMPORT,
+                        blatt.QuerySelector(".epos-stammblatt-unter")!.TextContent);
+        IElement quelle = Feld(blatt, "Quelle");
+        Assert.True(quelle.HasAttribute("readonly"));
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.BKAT_IMPORT_QUELLE, blatt.TextContent);
+        Assert.Contains("Probekatalog, Datenstand 2026-01", blatt.QuerySelectorAll(".epos-stammblattgruppe")[1].TextContent);
+    }
+
+    [Fact]
+    public void Die_Liste_fuehrt_Klasse_und_Herkunft_als_Spalten()
+    {
+        var cut = Aufbauen();
+        string kopf = cut.Find(".epos-katalogliste thead").TextContent;
+        Assert.Contains("Klasse", kopf);
+        Assert.Contains("Herkunft", kopf);
+    }
+
+    [Fact]
+    public void Klasse_und_Import_stehen_auf_Englisch()
+    {
+        using var kultur = new Kulturvorrichtung("en-US");
+        var k = new Katalog();
+        k.Saetze[1].Import = true;
+        var cut = Aufbauen(k);
+        Zeilenklick.Zeile(cut, 1);
+
+        IElement blatt = Stammblatt(cut);
+        string[] klassen = Optionen(Feld(blatt, "Class"));
+        Assert.Equal("(no class)", klassen[0]);
+        Assert.Contains("Mineral wool", klassen);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.BKAT_IMPORT_QUELLE, blatt.TextContent);
+        Assert.StartsWith("Imported record", WindowsFormsApplication1.MyResource.Resource.BKAT_IMPORT_QUELLE);
     }
 }
