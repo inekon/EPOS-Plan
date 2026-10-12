@@ -111,6 +111,22 @@ public sealed class DeckungsartDaten
         KuehlIdCarrier = KuehlIdCarrier, KuehlEigenerZaehler = KuehlEigenerZaehler
     };
 
+    /// <summary>
+    /// Die Zusammenfassung in einer Zeile: „zentral (Kältefolge)“ bzw. „dezentral (Split) · EER 3,00 (35 °C)“, linear
+    /// mit beiden Punkten.
+    /// </summary>
+    public string Zusammenfassung()
+    {
+        string art = Deckungsarten[IstSplit ? 1 : 0].Text;
+        if (!IstSplit) return art;
+        var c = System.Globalization.CultureInfo.CurrentCulture;
+        string Punkt(double? eer, double? t)
+            => (eer?.ToString("0.00", c) ?? "–") + " (" + (t?.ToString("0.#", c) ?? "–") + " °C)";
+        string eerText = R.DECK_LBL_EER + " " + Punkt(Eer1, Taussen1);
+        if (IstLinear) eerText += " … " + Punkt(Eer2, Taussen2);
+        return art + " · " + eerText;
+    }
+
     /// <summary>Eine flache Kopie.</summary>
     public DeckungsartDaten Kopie() => (DeckungsartDaten)MemberwiseClone();
 

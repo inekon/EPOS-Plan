@@ -73,7 +73,9 @@ public class WaermebedarfExternKaelteTests : EposBunitContext
         Assert.Equal("Kaeltelast", cut.Instance.Gewaehlt?.Bezeichner);
         Assert.DoesNotContain(cut.FindAll(".epos-zweispalten-kanal .epos-feld-text"), e => e.TextContent.Trim() == "Kanal");
         Assert.True(cut.Instance.DeckungSichtbar);
-        Assert.Single(cut.FindComponents<DeckungsartFelder>());
+        Assert.Contains(Resource.DECK_ART_ZENTRAL, cut.Find(".epos-deckung-zeile").TextContent);
+        // Die Feldgruppe steht in der Bearbeiten-Überlagerung, nicht in der Satzfläche.
+        Assert.Empty(cut.FindComponents<DeckungsartFelder>());
         // OP-2 gilt nur im Modus „Alle".
         Assert.Empty(cut.FindAll(".epos-zweispalten-kanalinfo"));
     }
@@ -109,7 +111,7 @@ public class WaermebedarfExternKaelteTests : EposBunitContext
         Projektzeilen(cut)[1].Click();
         Assert.True(cut.Instance.DeckungSichtbar);
         Assert.Equal(Resource.WBX_HRL_KAELTE_EXTERN, cut.Find(".epos-zweispalten-kanalinfo").TextContent.Trim());
-        Assert.Single(cut.FindComponents<DeckungsartFelder>());
+        Assert.Single(cut.FindAll(".epos-deckung-zeile"));
     }
 
     [Fact]
@@ -141,13 +143,26 @@ public class WaermebedarfExternKaelteTests : EposBunitContext
         var zeilen = Gemischt();
         var cut = Zeige(zeilen, WaermebedarfExternModus.NurKuehlung, geaendert: () => gemeldet++);
 
-        // Die Gruppe steht bei „zentral" zugeklappt; der Kopf klappt sie auf.
-        cut.Find(".epos-deckung button").Click();
+        // „Deckung…" öffnet die Bearbeiten-Überlagerung mit der Feldgruppe.
+        cut.Find(".epos-knopf--deckung").Click();
+        Assert.True(cut.Instance.DeckungOffen);
         cut.FindComponent<DeckungsartFelder>().FindAll("select")[0].Change("1");
 
         Assert.Equal(KaeltebedarfSchema.DECKUNG_SPLIT, zeilen[1].Deckungsart);
         Assert.Equal(DeckungsartDaten.VORGABE_EER_1, zeilen[1].Eer1);
         Assert.True(gemeldet > 0);
         Assert.Equal(KaeltebedarfSchema.DECKUNG_ZENTRAL, zeilen[0].Deckungsart);
+
+        // OK der Überlagerung prüft mit der Regel des Kerns: EER 0 bleibt offen und nennt den Grund.
+        zeilen[1].Deckung.Eer1 = 0;
+        cut.Find(".epos-knopf--deckung-ok").Click();
+        Assert.True(cut.Instance.DeckungOffen);
+        Assert.Contains(Resource.DECK_MSG_OHNE_EER, cut.Markup);
+
+        zeilen[1].Deckung.Eer1 = 3.2;
+        cut.Find(".epos-knopf--deckung-ok").Click();
+        Assert.False(cut.Instance.DeckungOffen);
+        Assert.Contains("3", cut.Find(".epos-deckung-zeile").TextContent);
+        Assert.Contains(Resource.DECK_ART_SPLIT, cut.Find(".epos-deckung-zeile").TextContent);
     }
 }

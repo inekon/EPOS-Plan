@@ -53808,5 +53808,8 @@ Chart</value>
   <data name="DECK_MSG_SPEICHERN_FEHLER" xml:space="preserve">
     <value>Die Lastgänge konnten nicht gespeichert werden; der vorige Stand bleibt erhalten.</value>
   </data>
+  <data name="DECK_BTN_BEARBEITEN" xml:space="preserve">
+    <value>Deckung…</value>
+  </data>
 </root>
 

@@ -19,7 +19,8 @@
 
     Gaben ueber die Adresse:
       ?fall=pufferspeicher|stromspeicher|photovoltaik|solarkollektoren|
-            bedarfsprofile|waermebedarf|stromganglinie|solarganglinie|pvganglinie|kaeltemaschine
+            bedarfsprofile|waermebedarf|kaeltebedarf|stromganglinie|solarganglinie|pvganglinie|kaeltemaschine
+      ?modus=alle  nur bei kaeltebedarf: der Dialog im Modus „Alle" mit einer Kuehlzeile vorn (OP-2-Hinweis)
       ?zeilen=40   Katalogzeilen
       ?projekt=2   Projektzeilen *@
 
@@ -86,6 +87,20 @@
                                       DateiWaehlen="@KeineDatei" Einlesen="@KeinImport" Kopieren="@KeineKopie"
                                       KatalogLoeschen="@(_ => false)" VerwaltungGaben="@KeineVerwaltung"
                                       Schloss="@KeinSchloss" Kanaele="@Wirtkanaele" />
+            break;
+        case "kaeltebedarf":
+            @* K5a: „Kaeltebedarf extern" - Modus NurKuehlung, die erste Zeile dezentral linear (Feldgruppe „Deckung"
+               aufgeklappt, die hoechste Detailzeile); mit ?modus=alle der Waermedialog mit Kuehlzeile vorn (OP-2). *@
+            <WaermebedarfExternDialog Zeilen="@KaelteZeilen" Katalogprofil="@Zeitreihe(Zeitreihenart.Waermebedarf)"
+                                      Katalogzeilen="@(() => Task.FromResult(Zeitreihenkatalog(Zeitreihenart.Waermebedarf)))"
+                                      Filterstandvorgabe="@_filterstand" Geschlossen="@(b => Beendet(b))"
+                                      Kennzahlen="@GangKennzahlen" Bildauftrag="@GangBild" BildauftragMass="@GangBildMass"
+                                      DateiWaehlen="@KeineDatei" Einlesen="@KeinImport" Kopieren="@KeineKopie"
+                                      KatalogLoeschen="@(_ => false)" VerwaltungGaben="@KeineVerwaltung"
+                                      Schloss="@KeinSchloss" Kanaele="@Wirtkanaele"
+                                      Modus="@(_modusAlle ? WaermebedarfExternModus.Alle : WaermebedarfExternModus.NurKuehlung)"
+                                      TitelText="@(_modusAlle ? "Wärmebedarf Extern" : "Kältebedarf extern")"
+                                      Stromtraeger="@(new[] { (5, "Strom") })" />
             break;
         case "stromganglinie":
             <StromganglinieDialog Zeilen="@StromZeilen" Katalogprofil="@Zeitreihe(Zeitreihenart.Stromganglinie)"
@@ -155,6 +170,7 @@
         if (abfrage.TryGetValue("fall", out var f)) _fall = f.ToString();
         if (abfrage.TryGetValue("zeilen", out var z) && int.TryParse(z, out int n)) _anzahl = n;
         if (abfrage.TryGetValue("projekt", out var p) && int.TryParse(p, out int m)) _projekt = m;
+        _modusAlle = abfrage.TryGetValue("modus", out var mo) && mo == "alle";
     }
 
     private void Beendet(bool ok) => _ausgang = ok ? "ok" : "abbrechen";
@@ -235,6 +251,20 @@
     private Katalogfilterprofil Zeitreihe(Zeitreihenart art)
         => _zeitreihen.TryGetValue(art, out var p) ? p : _zeitreihen[art] = Katalogfilterprofil.FuerZeitreihe(art, Uebersetzt).MitVerwendungsspalte(s => s);
     private IReadOnlyList<Katalogfilterzeile> Zeitreihenkatalog(Zeitreihenart art) => Zeilenbau.Voll(Zeitreihe(art), _anzahl);
+
+    private bool _modusAlle;
+    private List<WaermebedarfExternZeile>? _kaelte;
+    private List<WaermebedarfExternZeile> KaelteZeilen => _kaelte ??= Kaeltezeilen();
+    private List<WaermebedarfExternZeile> Kaeltezeilen()
+    {
+        var l = Enumerable.Range(1, _projekt)
+            .Select(i => new WaermebedarfExternZeile { IdZ = i, IdGanglinie = 100 + i, Bezeichner = "Kältelast " + i, Kanal = "KUEHLUNG" })
+            .ToList();
+        if (_modusAlle) { l[0].Bezeichner = "Kältelast 1"; return l; }
+        l[0].Deckung.DeckungSetzen("split");
+        l[0].Deckung.EerWegSetzen("linear");
+        return l;
+    }
 
     private List<WaermebedarfExternZeile>? _waerme;
     private List<WaermebedarfExternZeile> WaermeZeilen => _waerme ??= Enumerable.Range(1, _projekt)

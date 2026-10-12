@@ -27,7 +27,7 @@
 else
 {
     <div class="epos-deckung">
-        <Formulargruppe Titel="@Resource.DECK_GRUPPE">
+        <Formulargruppe Titel="@(TitelAnzeigen ? Resource.DECK_GRUPPE : "")">
             <KindInhalt>@Inhalt</KindInhalt>
         </Formulargruppe>
     </div>
@@ -45,6 +45,12 @@ else
 
     /// <summary>Jede Eingabe meldet sich; geschrieben wird erst im OK-Weg des Wirts.</summary>
     [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>
+    /// Trägt die Formulargruppe ihren Titel „Deckung“? <c>false</c>, wenn der Wirt den Titel schon zeigt (eine Überlagerung
+    /// mit eigenem Titel — „Ein Titel, eine Stelle“).
+    /// </summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
 
     /// <summary>In einer Klappgruppe (zugeklappt bei „zentral")? Sonst als Formulargruppe.</summary>
     [Parameter] public bool Klappbar { get; set; }

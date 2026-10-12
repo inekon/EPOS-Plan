@@ -21020,6 +21020,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung… ähnelt.
+        /// </summary>
+        public static string DECK_BTN_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("DECK_BTN_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die fest ähnelt.
         /// </summary>
         public static string DECK_EER_FEST {

@@ -53801,5 +53801,8 @@ chart</value>
   <data name="DECK_MSG_SPEICHERN_FEHLER" xml:space="preserve">
     <value>The load profiles could not be saved; the previous state is kept.</value>
   </data>
+  <data name="DECK_BTN_BEARBEITEN" xml:space="preserve">
+    <value>Coverage…</value>
+  </data>
 </root>
 

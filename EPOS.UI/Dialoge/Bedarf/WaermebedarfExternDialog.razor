@@ -177,7 +177,17 @@
                     <Auswahlfeld Bezeichnung="@KaelteArtBezeichnung" Eintraege="@KaelteArteintraege"
                                  Auswahl="@KaelteArtindex" AuswahlChanged="KaelteArtWaehlen" />
                 </span>
-                <span class="epos-zweispalten-kanalhinweis" title="@HinweisKanalKuehlung">@HinweisKanalKuehlung</span>
+                @* OP-2 (K5a): Im Modus „Alle" sagt die Infozeile neben der Kanalwahl, wo Kaeltelastgaenge gepflegt
+                   werden (kein Banner); der Wortlaut des Kuehlkanals bleibt im Tooltipp. *@
+                @if (Modus == WaermebedarfExternModus.Alle)
+                {
+                    <span class="epos-zweispalten-kanalhinweis epos-zweispalten-kanalinfo" role="note"
+                          title="@(HinweisKaelteExtern + " " + HinweisKanalKuehlung)">@HinweisKaelteExtern</span>
+                }
+                else
+                {
+                    <span class="epos-zweispalten-kanalhinweis" title="@HinweisKanalKuehlung">@HinweisKanalKuehlung</span>
+                }
             }
         </ProjektKopf>
 
@@ -304,17 +314,13 @@
 
         <Satz>
 
-    @* --- K5a: die Kaeltezeile in der Detailzeile der PROJEKTZEILE (Konzept Kaeltebedarf 3.2, 3.4, OP-2) ---
-       Im Modus „Alle" sagt eine Infozeile, wo Kaeltelastgaenge eigentlich gepflegt werden (OP-2, kein Banner);
-       darunter die Feldgruppe „Deckung" als Klappgruppe - zugeklappt bei „zentral" (Mindesthoehe). *@
-    @if (DeckungSichtbar && _gewaehlt is WaermebedarfExternZeile kz)
+    @* --- K5a: die Deckung der Kaeltezeile in der Detailzeile der PROJEKTZEILE (Konzept Kaeltebedarf 3.4) ---
+       Die Zusammenfassung und „Deckung…" stehen rechts in der Kennzahlenzeile der Ganglinie (Knoepfe, keine eigene
+       Zeile: Kopf der Satzflaeche hoechstens 90 px, DZ1-N1; rollbereichprobe Fall kaeltebedarf); ohne Ganglinie als
+       eigene Zeile. Die Feldgruppe selbst (DeckungsartFelder) steht in der Bearbeiten-Ueberlagerung. *@
+    @if (DeckungSichtbar && _kennzahlen is null)
     {
-        @if (Modus == WaermebedarfExternModus.Alle)
-        {
-            <p class="epos-zweispalten-kanalinfo" role="note">@HinweisKaelteExtern</p>
-        }
-        <DeckungsartFelder Daten="@kz.Deckung" Stromtraeger="@Stromtraeger" Klappbar="true"
-                           Geaendert="BeiDeckungGeaendert" />
+        <div class="epos-deckung-zeile">@Deckungsknopf</div>
     }
 
     @* --- Die Grafik der gewaehlten Ganglinie (W9-E-3) -------------------- *@
@@ -329,7 +335,8 @@
                           EinheitKw="@EinheitKw" EinheitStunden="@EinheitStunden"
                           Bildtext="@Bildtext" PlatzhalterBild="@PlatzhalterBild"
                           FarbeSetzen="@FarbeSetzen"
-                          FarbeZuruecksetzen="@FarbeZuruecksetzen" />
+                          FarbeZuruecksetzen="@FarbeZuruecksetzen"
+                          Knoepfe="@(DeckungSichtbar ? Deckungsknopf : null)" />
     }
 
         </Satz>
@@ -356,6 +363,28 @@
                               OkNurMitText="true" Pruefung="@KopieNamePruefen"
                               OkText="@OkText" AbbrechenText="@AbbrechenText"
                               Geschlossen="KopieFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- K5a: die Feldgruppe „Deckung" der gewaehlten Kuehlzeile als Bearbeiten-Ueberlagerung --------------
+       Die Felder schreiben an Ort und Stelle in die Zeile; OK prueft mit der Regel des Kerns und bleibt bei
+       „Split ohne EER" mit dem Grund offen, das Kreuz schliesst ohne Pruefung (OK des Dialogs prueft erneut). *@
+    <Ueberlagerung Offen="@(_deckungOffen && _gewaehlt is not null)" Titel="@DeckungTitel" Geschlossen="DeckungSchliessen">
+        <KindInhalt>
+            @if (_deckungOffen && _gewaehlt is WaermebedarfExternZeile dz)
+            {
+                @if (!string.IsNullOrEmpty(_deckungFehler))
+                {
+                    <Warnbanner Stufe="WarnStufe.Fehler" Text="@_deckungFehler" />
+                }
+                <DeckungsartFelder Daten="@dz.Deckung" Stromtraeger="@Stromtraeger" TitelAnzeigen="false"
+                                   Geaendert="BeiDeckungGeaendert" />
+                <div class="epos-leiste epos-deckung-leiste">
+                    <span class="epos-leiste-fueller"></span>
+                    <button type="button" class="epos-knopf epos-knopf--primaer epos-knopf--deckung-ok"
+                            @onclick="DeckungOk">@OkText</button>
+                </div>
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -681,7 +710,43 @@
     private void BeiDeckungGeaendert()
     {
         if (_meldungStufe == WarnStufe.Fehler) _meldung = "";
+        _deckungFehler = "";
         Geaendert?.Invoke();
+    }
+
+    /// <summary>Zusammenfassung der Deckung und „Deckung…“ — in der Kennzahlenzeile der Ganglinie oder als eigene Zeile.</summary>
+    private RenderFragment Deckungsknopf => __builder =>
+    {
+        if (_gewaehlt is not WaermebedarfExternZeile kz) return;
+        <span class="epos-deckung-zusammenfassung" title="@(Resource.DECK_GRUPPE + ": " + kz.Deckung.Zusammenfassung())">@kz.Deckung.Zusammenfassung()</span>
+        <button type="button" class="epos-knopf epos-knopf--deckung" @onclick="DeckungOeffnen">@Resource.DECK_BTN_BEARBEITEN</button>
+    };
+
+    private bool _deckungOffen;
+    private string _deckungFehler = "";
+
+    /// <summary>Steht die Bearbeiten-Überlagerung der Deckung offen? Prüfhilfe für die Tests.</summary>
+    public bool DeckungOffen => _deckungOffen;
+
+    private string DeckungTitel => Resource.DECK_GRUPPE + (_gewaehlt is null ? "" : " – " + _gewaehlt.Bezeichner);
+
+    private void DeckungOeffnen()
+    {
+        _deckungFehler = "";
+        _deckungOffen = true;
+    }
+
+    private void DeckungSchliessen() => _deckungOffen = false;
+
+    /// <summary>OK der Überlagerung: die Regel des Kerns; „Split ohne EER“ bleibt mit dem Grund offen.</summary>
+    private void DeckungOk()
+    {
+        if (_gewaehlt?.Deckung?.Pruefgrund() is not null)
+        {
+            _deckungFehler = MeldungDeckungOhneEer;
+            return;
+        }
+        _deckungOffen = false;
     }
 
     /// <summary>

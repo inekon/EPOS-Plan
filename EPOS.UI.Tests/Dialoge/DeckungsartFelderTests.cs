@@ -116,4 +116,14 @@ public class DeckungsartFelderTests : EposBunitContext
         Assert.All(cut.FindAll("select"), s => Assert.True(s.HasAttribute("disabled")));
         Assert.All(cut.FindAll("input"), i => Assert.True(i.HasAttribute("disabled")));
     }
+
+    [Fact]
+    public void Ohne_Titel_zeigt_die_Gruppe_keine_Ueberschrift()
+    {
+        var mit = Zeige(new DeckungsartDaten());
+        Assert.Single(mit.FindAll(".epos-formulargruppe-titel"));
+
+        var ohne = Render<DeckungsartFelder>(p => p.Add(x => x.Daten, new DeckungsartDaten()).Add(x => x.TitelAnzeigen, false));
+        Assert.Empty(ohne.FindAll(".epos-formulargruppe-titel"));
+    }
 }
