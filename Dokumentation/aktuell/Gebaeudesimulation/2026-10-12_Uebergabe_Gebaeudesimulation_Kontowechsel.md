@@ -13,12 +13,12 @@ nach `Dokumentation/ueberholt/`, sobald die Fortsetzung den ersten Importlauf, B
 | Was | Wert |
 |---|---|
 | Arbeitszweig | `ios_migration_september` (Remote `origin`). Der Sitzungszweig des alten Kontos `claude/magical-bohr-ff5ufj` wurde bei jedem Push mitgezogen; die neue Sitzung nimmt ihren eigenen Sitzungszweig |
-| Letzte Wellen | #1031 BK-3 Import, #1030 BK-2 (Schritt 221), #1026 GD-4, #1023 BK-1, #1020 GD-5, #1022 NP7/NP7b (Schritt 220); davor #1011 NP6, #1012 Quick Assist (Admin-Zweig), #1013 AB2, #1014 AB3, #1015 GD-1, #1016 GD-2, #1017 Entwurf BK — gepusht `f40fe2fa1`; danach Anmeldung Schritt 220 (`6870f7169`) und GD-3 mit diesem Papier (#1019) |
+| Letzte Wellen | #1032 BK-2b Oberfläche und Bänder, #1031 BK-3 Import, #1030 BK-2 (Schritt 221), #1026 GD-4, #1023 BK-1, #1020 GD-5, #1022 NP7/NP7b (Schritt 220); davor #1011 NP6, #1012 Quick Assist (Admin-Zweig), #1013 AB2, #1014 AB3, #1015 GD-1, #1016 GD-2, #1017 Entwurf BK — gepusht `f40fe2fa1`; danach Anmeldung Schritt 220 (`6870f7169`) und GD-3 mit diesem Papier (#1019) |
 | CI | Kern-Lauf 38206954119 grün auf `02d4ddfe0` (enthält alles bis #1022); #1010 grün mit 38188012085 auf `228a10287`; vermerkt in #1010, #1011, #1013–#1017, #1019, #1020, #1022. #1023 (BK-1) und die Papiere danach sind mit [skip ci] gepusht und laufen mit dem nächsten Push ohne [skip ci] durch die CI |
 | Referenzbasis | **R52** `Referenzlaeufe/2026-10-11_R52_Vorheizen`, dreißig Projekte; CI-Auswahl 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065. Nächste freie Basis **R53** (vorgesehen für SA4) |
 | Testdatenbank | Schemastand **220** (Git LFS) |
 | Schemakette | 218 `KaelteArtSchema` (Sitzung Kälteanlagen), 219 `RaumnutzungNormkategorienSchema` (NP6), 220 `RaumnutzungNormwerteSchema` (NP7); 221 `BauteilkatalogSchema` (BK-2); **222 frei** |
-| Statuszeilen | höchste vergebene #1031; vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E134**, **E135 frei** |
+| Statuszeilen | höchste vergebene #1032; vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E134**, **E135 frei** |
 | Parallele Sitzungen | „Kälteanlagen“, „Dialoge und Korrekturen“ (Konto 3), „Administration und Support“; alle pushen auf denselben Zweig. Statuskonflikte zeilenweise lösen, Nummernkollisionen über die nächste freie Nummer |
 
 ## 2. Was die Sitzung seit dem 08.10.2026 gebaut hat
@@ -43,10 +43,12 @@ Alle Zeilen mit grünem Gate gepusht; Einzelheiten in der Statuszeile und im Pro
 | GD-4 | #1026 | Als Mehrzonenmodell übernehmen (Prüfsumme, Blatt, Ersetzen in einem Vorgang), Sprung Kachel Gebäudekühlung → Gruppe „Kühlung“ |
 | BK-2 | #1030 | Schritt 221: Herkunft, Quellkennung, Gruppe/Klasse, Kennzeichen „meist nicht geeignet“, Felder der Quelle, Abschnitte |
 | BK-3 | #1031 | „Bauteilkatalog einlesen…“ direkt aus dem CSV-Export: Leser, Regeln, Zusammenführung, Vorschau, Dialog |
+| BK-2b | #1032 | Gruppe, Klasse, Herkunft und Kennzeichen in Katalogen und Bauteilwahl; Bänder des Rechenwegs ohne Ausnahme, Filter „nur geeignete“ |
 
 ## 3. Laufende Arbeit beim Schreiben
 
-Keine Agenten. Festlegungen, die Folgewellen kennen müssen:
+Kein Agent läuft. **GD-6a** wurde beim Kontowechsel mitten im Bau angehalten; seine Arbeit ist verworfen und wird mit dem
+Auftrag in Abschnitt 4 neu beauftragt. Die Routinen des alten Kontos sind gelöscht. Festlegungen, die Folgewellen kennen müssen:
 
 - **Außenluft je Person** (NP7) ist eine eigene Spalte `Aussenluft_Person` (m³/(h·Person)) neben `Aussenluft`/`Aussenluft_Einheit`;
   im Generator geht die raum- oder flächenbezogene Außenluft vor.
@@ -56,31 +58,38 @@ Keine Agenten. Festlegungen, die Folgewellen kennen müssen:
 
 ## 4. Nächste Arbeit (Reihenfolge)
 
-1. **CI-Vermerk für #1023** (BK-1) und alle folgenden Zeilen mit dem nächsten Kern-Lauf ohne [skip ci]; rot → `get_job_logs` mit
-   `failed_only`, Ursache eingrenzen, beheben.
-2. **NP7-Nachzug:** Nummern 70/71 der Projektdatei auf die Wohnprofile (nach Anwenderentscheid, Abschnitt 5).
-3. **GD-Nachzüge** (offene Punkte von GD-4, #1026): gespeicherten Zonenplan eines früheren Imports vorlegen; beim Weg
+1. **CI-Vermerk** für #1023 (BK-1), #1026 (GD-4), #1030 (BK-2), #1031 (BK-3) und #1032 (BK-2b) mit dem jüngsten Kern-Lauf auf
+   `ios_migration_september`; die Pushes danach trugen `[skip ci]`. Rot → `get_job_logs` mit `failed_only`, Ursache eingrenzen,
+   beheben.
+2. **GD-6a** (Anwenderwünsche 12.10.2026), Auftrag an `opus-umsetzung`, Datei `EPOS.UI/Dialoge/Bedarf/GebaeudeDialog.razor`:
+   - „Simulation nur von ‚Im Projekt‘ – alle Gebäude oder Auswahl (auswählbar machen)“: Knopf „Simulation…“ in die Kopfleiste
+     des Abschnitts IM PROJEKT (neben „In die Datenbank übernehmen…“, „Aus dem Projekt entfernen“); ohne Wahl alle Gebäude des
+     Projekts („Simulation… (alle n Gebäude)“), sonst die angekreuzten („(m gewählt)“); Mehrfachwahl der Projektzeilen mit
+     Kopfkästchen, ohne die Satzwahl des Katalogs zu stören; nicht im Assistenten, nicht in der Katalogverwaltung. Ursache:
+     AW3b (`de9bbc779`, „eine Wahl je Zeile, Knopfleiste am Satz“) — der alte Knopf (`BedarfGaben`, `BeiSimulation`) ist seitdem
+     nicht mehr erreichbar; prüfen, ob die Windows-Schale `BedarfGaben` überhaupt durchreicht (Startseite › Gebäude,
+     `GebaeudeFenster`), und ob Export, Neulesen, Ausrichtung ebenso unerreichbar wurden.
+   - „Baustoff-Zuordnungen…“ aus der Leiste des Projektsatzes nehmen; anbieten im Gebäudeimport an der Liste
+     „Bauteilaufbauten“ und im Gebäudeeditor (`GebaeudeKatalogDialog.razor`) bei Bauteilen/Aufbauten.
+   - bunit, Zählwachen, Hilfeziele; Kurzprotokoll `2026-10-12_GD-6a_Knopfleiste.md`.
+3. **BK-3b** Nachzug am Import nach E134 (Auftrag an `opus-umsetzung`, Datei
+   `EPOS.Kern/Allgemein/Import/Bauteilkatalog/BauteilkatalogImport.cs` samt Tests): Code-Tafel nach der Deutung im
+   [Protokoll BK-3](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-12_BK-3_Import.md) — Stoffgruppen 1 Putz/Mörtel/Estrich,
+   2 Beton, 3 Dämmstoffe mit Bauplatten, 4 Mauerwerk, 5 Dämmstoffe, 6 Holz, 7 Beläge/Abdichtungen, 8 Sonstige, 0/leer über
+   TcBasis sonst Sonstige; Basis-Codes 14, 19, 29, 30 → Gruppe „Sonstige“, Klasse „Haustechnik“ (19 an Aufbauten: Luftdurchlass,
+   gekennzeichnet); 15|0 und 16|0 → Wand; λ > 10 nur bei ρ ≥ 2 500 kg/m³; Nichtmetalle mit λ > 60 und λ/1 000 im Band 0,02–0,5
+   durch 1 000 teilen und im Protokoll nennen, übrige ablehnen. Danach **erneuter Lauf beim Anwender** („Bauteilkatalog
+   einlesen…“ ordnet per Quellkennung um, keine Dubletten) und Zahlen ins Protokoll.
+4. **GD-Nachzüge** (offene Punkte von GD-4, #1026): gespeicherten Zonenplan eines früheren Imports vorlegen; beim Weg
    „Gebäudedatei + Projektdatei“ auch die Projektdatei prüfen; Sprung zur Kühlung auf das zuletzt gewählte Gebäude; eigener
-   Maskenschlüssel für `Sprungziele.Kuehlung` (Seitenschlüssel, `AppWurzel`, beide Navigationsadapter); Zeile Jahreswärmebedarf
-   nach Anwenderentscheid (Abschnitt 5).
-3a. **GD-6a** (Anwenderwünsche 12.10.2026): „Simulation nur von ‚Im Projekt‘ – alle Gebäude oder Auswahl (auswählbar machen)“ —
-   Knopf „Simulation…“ in der Kopfleiste des Abschnitts IM PROJEKT, rechnet die gewählten Projektgebäude, ohne Wahl alle
-   (Mehrfachwahl der Projektzeilen; seit AW3b `de9bbc779` war der Knopf nicht mehr erreichbar); Knopf „Baustoff-Zuordnungen…“ aus der Aktionsleiste des Projektsatzes im
-   Gebäudedialog (`GebaeudeDialog.razor`) nehmen und nur in den Gebäudedialogen an passender Stelle anbieten — im Importdialog
-   an der Liste „Bauteilaufbauten“ und im Gebäudeeditor im Bereich Bauteile/Aufbauten; nach BK-2b (gleiche Dateien).
-4. **Wiki und Logbuch** der Wellen GD, AB, NP6/NP7, KS (Seiten „Gebäude“, „Gebäudeimport“, „Nutzungsprofile“); Upload nur
-   gebündelt und auf Zuruf, Versionsnummer beim Anwender erfragen.
-5. **BK** (E132–E134; BK-1 #1023, BK-2 #1030, BK-3 #1031 gebaut, erster Lauf beim Anwender erfolgreich): **BK-3b** Nachzug
-   nach E134 (Code-Tafel aus der Deutung im Protokoll BK-3, Haustechnik-Klasse, λ-Skalenkorrektur, Metallregel ρ ≥ 2 500, 15|0 und
-   16|0 als Wand), danach erneuter Lauf beim Anwender; BK-2b Oberfläche (Gruppe und Klasse in Katalogdialog und -liste, Filter nach dem
-   Kennzeichen, Texte der Klassen); Teilkatalognamen aus `Katalog_Inhalt.csv`; BK-4 LocalDB-Werkzeug nur für einen neuen
-   Katalogstand; BK-5 inhomogene Schichten; BK-6 Fenster ans Bauteil; BK-7 Wiki und Hilfeschlüssel. Rund 5–7 PT.
-   Grundlagen: [Feldinventar](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-12_BK_Feldinventar_Hottgenroth.md)
-   mit Vorschlag der zu übernehmenden Felder, [Strukturbericht](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-12_BK_Strukturbericht_Hottgenroth.md);
-   die `.mdf` und der Export liegen nur beim Anwender (lokale Sitzung „iOS migration merge conflicts“, `C:\Temp\Hsetu\`).
-6. **Übernommen von der Sitzung „Anlagendialog/Kältebedarf“:** Sprung der Kachel Gebäudekühlung mit GD-4 gebaut (#1026);
-   offen nur die Zeile Jahreswärmebedarf (Abschnitt 5).
-7. **SA4:** Referenzprojekt mit Schnellaufheizung, Basis R53, Wiki (Stufentabelle SA).
+   Maskenschlüssel für `Sprungziele.Kuehlung`; Zeile Jahreswärmebedarf nach Anwenderentscheid (Abschnitt 5).
+5. **NP7-Nachzug:** Nummern 70/71 der Projektdatei auf die Wohnprofile (nach Anwenderentscheid, Abschnitt 5).
+6. **Wiki und Logbuch** der Wellen GD, AB, NP6/NP7, KS, BK (Seiten „Gebäude“, „Gebäudeimport“, „Nutzungsprofile“, „Baustoffe“,
+   „Bauteilaufbauten“, „Bauteilkatalog einlesen“); Upload nur gebündelt und auf Zuruf, Versionsnummer beim Anwender erfragen.
+7. **BK-5 bis BK-7** (Entwurf Abschnitte 6a und 7): inhomogene Schichten nach DIN EN ISO 6946 (Abschnitte in Editor,
+   Projektkopie `CopyFromStamm`, Katalogpaket), Fenster ans Bauteil, Teilkatalognamen aus `Katalog_Inhalt.csv`, Hilfeschlüssel
+   des Importdialogs; BK-4 LocalDB-Werkzeug nur für einen neuen Katalogstand.
+8. **SA4:** Referenzprojekt mit Schnellaufheizung, Basis R53, Wiki (Stufentabelle SA).
 
 ## 5. Offen beim Anwender
 
@@ -126,15 +135,25 @@ Keine Agenten. Festlegungen, die Folgewellen kennen müssen:
 ## 7. Einstiegs-Prompt
 
 ```text
-Sitzung „Gebäudesimulation“ (EPOS-Plan, inekon/EPOS-Plan) auf neuem Konto fortsetzen. Arbeitszweig ios_migration_september,
-eigener Sitzungszweig wird bei jedem Push mitgezogen. Lies zuerst CLAUDE.md und das Übergabepapier
-Dokumentation/aktuell/Gebaeudesimulation/2026-10-12_Uebergabe_Gebaeudesimulation_Kontowechsel.md (ganz), dann aus
-Dokumentation/aktuell/Status_iOS_Migration.md nur den Kopf (Schemaanmeldung) und die Zeilen ab #1010, aus
-Dokumentation/aktuell/Status_Gebaeudesimulation_VDI6007.md die Entscheide E128–E131. Prüfe mit
-git log --format='%h %<(72,trunc)%s' -n 15 origin/ios_migration_september, welche Wellen aus Abschnitt 3 schon gepusht sind.
-Dann arbeite Abschnitt 4 der Reihe nach ab: CI-Vermerke, erster Importlauf am Export des Anwenders (Zahlen im Protokoll BK-3), BK-2b, Wiki, danach BK-5 ff. und nach meinen Entscheiden der NP7-Nachzug.
-Orchestriere mit Agenten (Modell ausdrücklich setzen), Reihenfolge Merge → Gate → Statuszeile und Protokoll → Push beider
-Zweige → CI-Vermerk [skip ci]. Push auf ios_migration_september und den Sitzungszweig ist erlaubt; keine macOS-, iOS- oder
-Setup-Läufe, kein Wiki-Upload, keine Pull Requests, kein Force-Push ohne Rückfrage. Anwenderdateien und Normwerte nie ins
-Repositorium. Offene Anwenderfragen stehen in Abschnitt 5 — lege sie mir gesammelt vor, mit Empfehlung.
+Sitzung „Gebäudesimulation“ (EPOS-Plan, inekon/EPOS-Plan) auf neuem Konto fortsetzen. Arbeitszweig ios_migration_september;
+der eigene Sitzungszweig wird bei jedem Push mitgezogen.
+
+1. Lies CLAUDE.md und das Übergabepapier
+   Dokumentation/aktuell/Gebaeudesimulation/2026-10-12_Uebergabe_Gebaeudesimulation_Kontowechsel.md ganz; aus
+   Dokumentation/aktuell/Status_iOS_Migration.md nur den Kopf (Schemaanmeldung) und die Zeilen ab #1019; aus
+   Dokumentation/aktuell/Status_Gebaeudesimulation_VDI6007.md die Entscheide E128–E134. Weitere Papiere nur gezielt.
+2. Prüfe mit git log --format='%h %<(72,trunc)%s' -n 20 origin/ios_migration_september, was seit dem Papier hinzukam.
+3. Arbeite Abschnitt 4 der Reihe nach ab: CI-Vermerk, GD-6a, BK-3b (danach Anwender um den erneuten Importlauf bitten),
+   GD-Nachzüge, Wiki, BK-5 ff. GD-6a und BK-3b berühren verschiedene Dateien und dürfen parallel laufen.
+4. Arbeitsweise: Orchestrierung mit Agenten (opus-umsetzung für Fachcode, sonnet-mechanik für Status/Protokolle, Modell immer
+   ausdrücklich setzen), je Welle ein Worktree; Merge im Integrations-Worktree, Gate nach Abschnitt 6, Statuszeile (nächste
+   freie Nummer vor dem Push gegen origin prüfen — andere Sitzungen vergeben laufend Nummern), Push auf
+   ios_migration_september und den Sitzungszweig; doppelten Kern-Lauf des Sitzungszweigs abbrechen; reine Papier-Pushes mit
+   [skip ci], damit ein laufender CI-Lauf nicht abbricht. Übergabepapier bei jedem Push nachführen.
+5. Grenzen: keine macOS-, iOS- oder Setup-Läufe, kein Wiki-Upload, keine Pull Requests, kein Force-Push ohne Rückfrage.
+   Anwenderdateien (.sqproj, .mdf, CSV-Export) und Normwerte nie ins Repositorium; aus ihnen nur Struktur und Zählungen.
+   Die lokale Sitzung „iOS migration merge conflicts“ auf dem Rechner des Anwenders kann den Hottgenroth-Export auswerten
+   (nur Kategorien und Zählungen zurückmelden lassen).
+6. Offene Anwenderfragen (Abschnitt 5) gesammelt mit Empfehlung vorlegen; kurze Antworten in Stichpunkten, Tabellen für
+   Stände.
 ```
