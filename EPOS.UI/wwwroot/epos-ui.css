@@ -3768,6 +3768,13 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     white-space: nowrap;
     color: var(--epos-text-leise);
 }
+/* K5a (Konzept Kaeltebedarf OP-2): die Infozeile in der Detailzeile einer Kuehlzeile im Modus „Alle" -
+   leise, eine Zeile, kein Banner. Darunter die Feldgruppe „Deckung" (DeckungsartFelder) als Klappgruppe. */
+.epos-zweispalten-kanalinfo {
+    margin: 0 0 calc(var(--epos-abstand) / 2);
+    color: var(--epos-text-leise);
+}
+.epos-deckung { margin-bottom: calc(var(--epos-abstand) / 2); }
 .epos-formathinweis-knopf, .epos-dialog-kontext { display: inline-flex; flex: 0 0 auto; }
 
 /* ---- SPALTENWAHL UND VERWENDUNGSMARKE (Konzept 4.10) ----------------

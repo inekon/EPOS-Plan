@@ -401,7 +401,7 @@ public class KiDialogkatalogTests : IDisposable
 
         // Die drei Bedarfskanaele kennt ebenfalls nur der Dialog; sie kommen als
         // Parameter der Huelle herein.
-        KiMaskennamen.WAERMEBEDARF_EXTERN  => new[] { "kanal", "kaelte_art" },
+        KiMaskennamen.WAERMEBEDARF_EXTERN  => new[] { "kanal", "kaelte_art", "kuehltraeger" },
 
         // Welle KI-F4: Die VARIANTE der Kostenverwaltung haengt am Stand, ihre Liste
         // aber auch (KostenKomponenteStand.Varianten) - eine Begleiteigenschaft
@@ -1644,9 +1644,10 @@ public class KiDialogkatalogTests : IDisposable
         { KiMaskennamen.TYPSTAMM, "EPOS.UI/Dialoge/Bedarf/TypStammDialog.razor" },
 
         // Die gewaehlte Zuordnung der externen Waermebedarfsganglinien: Kanal und
-        // Bezeichner stehen beide im Markup.
+        // Bezeichner stehen beide im Markup; die Feldgruppe „Deckung" (K5a) im Baustein DeckungsartFelder.
         { KiMaskennamen.WAERMEBEDARF_EXTERN,
-          "EPOS.UI/Dialoge/Bedarf/WaermebedarfExternDialog.razor" },
+          "EPOS.UI/Dialoge/Bedarf/WaermebedarfExternDialog.razor;" +
+          "EPOS.UI/Dialoge/Bedarf/DeckungsartFelder.razor" },
 
         // Welle KI-F5: die zwei KATALOGEDITOREN. Sie binden ihr Daten-Objekt und
         // zeichnen jedes Feld selbst - eine Datei je Maske.

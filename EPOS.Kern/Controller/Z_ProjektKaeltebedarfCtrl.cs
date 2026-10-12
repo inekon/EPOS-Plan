@@ -212,4 +212,15 @@ namespace WindowsFormsApplication1
 
         private static int? Ganz(object o) => o == null || o == DBNull.Value ? (int?)null : Convert.ToInt32(o, CultureInfo.InvariantCulture);
     }
+
+    /// <summary>
+    /// Der öffentliche Zugang der Oberfläche zur Deckungsregel (Konzept Kältebedarf 3.4, K5a): die Feldgruppe „Deckung“
+    /// (<c>EPOS.UI</c>, <c>DeckungsartDaten</c>) prüft mit DERSELBEN Regel wie der Schreibweg und das Warnkriterium
+    /// <c>DEZENTRALE_KAELTE_OHNE_EER</c> — <see cref="Z_ProjektKaeltebedarfCtrl.Deckungspruefung(Z_ProjektKaeltebedarfModel)"/>.
+    /// </summary>
+    public static class Kaeltedeckungsregel
+    {
+        /// <summary><c>null</c> = zulässig, sonst der Prüfgrund des Kerns.</summary>
+        public static string Pruefe(Z_ProjektKaeltebedarfModel zeile) => Z_ProjektKaeltebedarfCtrl.Deckungspruefung(zeile);
+    }
 }

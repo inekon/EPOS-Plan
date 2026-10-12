@@ -2272,6 +2272,22 @@
         internal static string WbxKanalErl => MyResource.Resource.KI_DLG_WBX_KANAL_ERL;
         internal static string WbxGanglinieName => MyResource.Resource.BHKWV_SP_NAME;
         internal static string WbxGanglinieErl => MyResource.Resource.KI_DLG_WBX_GANGLINIE_ERL;
+        internal static string WbxDeckungName => MyResource.Resource.KI_DLG_WBX_DECKUNG_NAME;
+        internal static string WbxDeckungErl => MyResource.Resource.KI_DLG_WBX_DECKUNG_ERL;
+        internal static string WbxEerWegName => MyResource.Resource.KI_DLG_WBX_EER_WEG_NAME;
+        internal static string WbxEerWegErl => MyResource.Resource.KI_DLG_WBX_EER_WEG_ERL;
+        internal static string WbxEer1Name => MyResource.Resource.KI_DLG_WBX_EER1_NAME;
+        internal static string WbxEer1Erl => MyResource.Resource.KI_DLG_WBX_EER1_ERL;
+        internal static string WbxTaussen1Name => MyResource.Resource.KI_DLG_WBX_TAUSSEN1_NAME;
+        internal static string WbxTaussen1Erl => MyResource.Resource.KI_DLG_WBX_TAUSSEN1_ERL;
+        internal static string WbxEer2Name => MyResource.Resource.KI_DLG_WBX_EER2_NAME;
+        internal static string WbxEer2Erl => MyResource.Resource.KI_DLG_WBX_EER2_ERL;
+        internal static string WbxTaussen2Name => MyResource.Resource.KI_DLG_WBX_TAUSSEN2_NAME;
+        internal static string WbxTaussen2Erl => MyResource.Resource.KI_DLG_WBX_TAUSSEN2_ERL;
+        internal static string WbxTraegerName => MyResource.Resource.KI_DLG_WBX_TRAEGER_NAME;
+        internal static string WbxTraegerErl => MyResource.Resource.KI_DLG_WBX_TRAEGER_ERL;
+        internal static string WbxZaehlerName => MyResource.Resource.KI_DLG_WBX_ZAEHLER_NAME;
+        internal static string WbxZaehlerErl => MyResource.Resource.KI_DLG_WBX_ZAEHLER_ERL;
 
         internal static string SglKatalogName => MyResource.Resource.SGL_LBL_KATALOGLISTE;
         internal static string SglKatalogErl => MyResource.Resource.KI_DLG_SGL_KATALOG_ERL;

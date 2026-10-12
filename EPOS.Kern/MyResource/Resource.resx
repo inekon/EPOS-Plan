@@ -53691,5 +53691,122 @@ Chart</value>
   <data name="GEBZ_BTN_PROFIL_ZUWEISEN" xml:space="preserve">
     <value>Profil/Kalender zuweisen…</value>
   </data>
+  <data name="DECK_GRUPPE" xml:space="preserve">
+    <value>Deckung</value>
+  </data>
+  <data name="DECK_LBL_ART" xml:space="preserve">
+    <value>Deckungsart</value>
+  </data>
+  <data name="DECK_ART_ZENTRAL" xml:space="preserve">
+    <value>zentral (Kältefolge)</value>
+  </data>
+  <data name="DECK_ART_SPLIT" xml:space="preserve">
+    <value>dezentral (Split)</value>
+  </data>
+  <data name="DECK_LBL_EER_WEG" xml:space="preserve">
+    <value>EER-Weg</value>
+  </data>
+  <data name="DECK_EER_FEST" xml:space="preserve">
+    <value>fest</value>
+  </data>
+  <data name="DECK_EER_LINEAR" xml:space="preserve">
+    <value>linear über der Außentemperatur</value>
+  </data>
+  <data name="DECK_LBL_EER" xml:space="preserve">
+    <value>EER</value>
+  </data>
+  <data name="DECK_LBL_TAUSSEN" xml:space="preserve">
+    <value>Außentemperatur</value>
+  </data>
+  <data name="DECK_LBL_EER1" xml:space="preserve">
+    <value>EER am Punkt 1</value>
+  </data>
+  <data name="DECK_LBL_TAUSSEN1" xml:space="preserve">
+    <value>Außentemperatur Punkt 1</value>
+  </data>
+  <data name="DECK_LBL_EER2" xml:space="preserve">
+    <value>EER am Punkt 2</value>
+  </data>
+  <data name="DECK_LBL_TAUSSEN2" xml:space="preserve">
+    <value>Außentemperatur Punkt 2</value>
+  </data>
+  <data name="DECK_LBL_TRAEGER" xml:space="preserve">
+    <value>Kühlträger</value>
+  </data>
+  <data name="DECK_PLATZHALTER_TRAEGER" xml:space="preserve">
+    <value>Stromträger des Projekts</value>
+  </data>
+  <data name="DECK_LBL_ZAEHLER" xml:space="preserve">
+    <value>Eigener Zähler</value>
+  </data>
+  <data name="DECK_HRL_VORGABE" xml:space="preserve">
+    <value>{0}: Vorgabe, bitte mit Gerätedaten ersetzen</value>
+  </data>
+  <data name="DECK_HINWEIS" xml:space="preserve">
+    <value>Dezentral heißt: eigene Geräte ohne Kaltwasser, ohne Leistungsgrenze. Raumklimageräte mit Inneneinheiten je Zone folgen als eigene Anlagenart.</value>
+  </data>
+  <data name="DECK_MSG_OHNE_EER" xml:space="preserve">
+    <value>Dezentrale Deckung braucht einen EER größer 0 (bei linear zwei Punkte mit verschiedener Außentemperatur).</value>
+  </data>
+  <data name="WBX_TITEL_KAELTE" xml:space="preserve">
+    <value>Kältebedarf extern</value>
+  </data>
+  <data name="WBX_KOPFBAND_KAELTE" xml:space="preserve">
+    <value>Kältebedarfsdaten (Lastgänge)</value>
+  </data>
+  <data name="WBX_HRL_KAELTE_EXTERN" xml:space="preserve">
+    <value>Kältelastgänge pflegen Sie unter Kältebedarf extern.</value>
+  </data>
+  <data name="KI_DLG_WBX_DECKUNG_NAME" xml:space="preserve">
+    <value>Deckungsart</value>
+  </data>
+  <data name="KI_DLG_WBX_DECKUNG_ERL" xml:space="preserve">
+    <value>Deckungsart der Kältezeile: zentral über die Kältefolge des Projekts oder dezentral über eigene Split-Geräte; wirksam nur im Kanal Kühlung.</value>
+  </data>
+  <data name="KI_DLG_WBX_EER_WEG_NAME" xml:space="preserve">
+    <value>EER-Weg</value>
+  </data>
+  <data name="KI_DLG_WBX_EER_WEG_ERL" xml:space="preserve">
+    <value>Bei dezentraler Deckung: fester EER oder linear über der Außentemperatur zwischen zwei Punkten.</value>
+  </data>
+  <data name="KI_DLG_WBX_EER1_NAME" xml:space="preserve">
+    <value>EER am Punkt 1</value>
+  </data>
+  <data name="KI_DLG_WBX_EER1_ERL" xml:space="preserve">
+    <value>Fester EER bzw. EER am Punkt 1, größer 0; Vorgabe 3,0.</value>
+  </data>
+  <data name="KI_DLG_WBX_TAUSSEN1_NAME" xml:space="preserve">
+    <value>Außentemperatur Punkt 1</value>
+  </data>
+  <data name="KI_DLG_WBX_TAUSSEN1_ERL" xml:space="preserve">
+    <value>Außentemperatur des Punkts 1 in °C, −20 bis 50; Vorgabe 35.</value>
+  </data>
+  <data name="KI_DLG_WBX_EER2_NAME" xml:space="preserve">
+    <value>EER am Punkt 2</value>
+  </data>
+  <data name="KI_DLG_WBX_EER2_ERL" xml:space="preserve">
+    <value>EER am Punkt 2 (nur linear), größer 0; Vorgabe 4,0.</value>
+  </data>
+  <data name="KI_DLG_WBX_TAUSSEN2_NAME" xml:space="preserve">
+    <value>Außentemperatur Punkt 2</value>
+  </data>
+  <data name="KI_DLG_WBX_TAUSSEN2_ERL" xml:space="preserve">
+    <value>Außentemperatur des Punkts 2 in °C (nur linear), −20 bis 50 und verschieden von Punkt 1; Vorgabe 25.</value>
+  </data>
+  <data name="KI_DLG_WBX_TRAEGER_NAME" xml:space="preserve">
+    <value>Kühlträger</value>
+  </data>
+  <data name="KI_DLG_WBX_TRAEGER_ERL" xml:space="preserve">
+    <value>Stromträger, über den der Strom der Split-Geräte abgerechnet wird; leer = Stromträger des Projekts.</value>
+  </data>
+  <data name="KI_DLG_WBX_ZAEHLER_NAME" xml:space="preserve">
+    <value>Eigener Zähler</value>
+  </data>
+  <data name="KI_DLG_WBX_ZAEHLER_ERL" xml:space="preserve">
+    <value>Der Strom der Split-Geräte läuft über einen eigenen Zähler.</value>
+  </data>
+  <data name="DECK_MSG_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>Die Lastgänge konnten nicht gespeichert werden; der vorige Stand bleibt erhalten.</value>
+  </data>
 </root>
 
