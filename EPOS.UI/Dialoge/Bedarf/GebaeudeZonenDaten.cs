@@ -514,7 +514,45 @@ public sealed class GebaeudeZonenweg
     /// im gespeicherten Stand kopiert hat. <c>null</c> = kein Neulesen.
     /// </summary>
     public Func<ZonenNeulesung>? Neulesen { get; init; }
+
+    /// <summary>
+    /// „Als Mehrzonenmodell übernehmen…“ (GD-4) — nur am Projektgebäude; <c>null</c> = kein Weg (der Knopf nennt den Grund).
+    /// </summary>
+    public GebaeudeMehrzonenweg? Mehrzonen { get; init; }
 }
+
+/// <summary>
+/// <b>Der Weg „Als Mehrzonenmodell übernehmen…“</b> (Entwurf Gebäudedialog 2.4, Welle GD-4; E130 F7): nur aus der gespeicherten
+/// Importquelle. <see cref="Oeffnen"/> wählt die Datei (Name der Quelle vorbelegt) und prüft die Prüfsumme; danach steht der
+/// Zonenbaum des Imports als Blatt. Sein OK merkt das Mehrzonenmodell vor, erst das OK des Gebäudedialogs schreibt es
+/// (<see cref="Schreiben"/>, Ersetzen in einem Vorgang).
+/// </summary>
+public sealed class GebaeudeMehrzonenweg
+{
+    /// <summary>Warum der Knopf gesperrt ist (etwa: kein Import gespeichert); <c>null</c> = frei.</summary>
+    public string? Sperre { get; init; }
+
+    /// <summary>Die gespeicherte Quelle als Zeile (Name, Format, Zeitpunkt); leer ohne Quelle.</summary>
+    public string Quelle { get; init; } = "";
+
+    /// <summary>Dateiwahl und Prüfsumme: <c>null</c> = die Wahl wurde abgebrochen; sonst Meldung oder Parametersatz des Blatts.</summary>
+    public Func<Task<GebaeudeMehrzonenstart?>>? Oeffnen { get; init; }
+
+    /// <summary>Die Zeile des vorgemerkten Mehrzonenmodells; <c>null</c> = keins vorgemerkt.</summary>
+    public Func<string?>? Ausstehend { get; init; }
+
+    /// <summary>Verwirft das vorgemerkte Mehrzonenmodell (Abbrechen des Gebäudedialogs).</summary>
+    public Action? Verwerfen { get; init; }
+
+    /// <summary>OK-Weg: ersetzt Zonen, Bauteile und Zonenkalender in einem Vorgang; <c>null</c> = geschrieben bzw. nichts vorgemerkt, sonst der Grund.</summary>
+    public Func<string?>? Schreiben { get; init; }
+}
+
+/// <summary>
+/// Der Start des Blatts: <see cref="Meldung"/> nennt eine benannte Ablehnung (Prüfsumme, fehlende Datei, Format) — dann ist
+/// <see cref="Gaben"/> <c>null</c>; sonst der Parametersatz des Importdialogs und der Pfad, den er sofort liest.
+/// </summary>
+public sealed record GebaeudeMehrzonenstart(string? Meldung, IReadOnlyDictionary<string, object>? Gaben, string Pfad);
 
 /// <summary>Die neu gelesenen Zonen samt Luftströmen (<see cref="GebaeudeZonenweg.Neulesen"/>).</summary>
 public sealed record ZonenNeulesung(IReadOnlyList<ZoneDaten> Zonen, IReadOnlyList<ZonenluftstromDaten> Luftstroeme);

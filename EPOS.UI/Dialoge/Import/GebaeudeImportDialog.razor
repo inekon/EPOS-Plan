@@ -117,10 +117,15 @@
 
 <div class="epos-dialog epos-gebimport" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@Texte.Titel</h1>
+    @* GD-4: Im Blatt „Als Mehrzonenmodell übernehmen…" traegt die Kopfzeile des Blatts Titel und Rueckweg - dann zeigt der
+       Dialog weder Titel noch Kreuz (TitelAnzeigen="false"; ein Titel, eine Stelle). *@
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Texte.Titel</h1>
+        }
         <InfoKnopf Schluessel="@WirksamerHilfeSchluessel" Dialogname="@Texte.Titel" />
-        @if (!Beschaeftigt)
+        @if (TitelAnzeigen && !Beschaeftigt)
         {
             <Schliesskreuz Geschlossen="BeiAbbrechen" />
         }
@@ -1086,6 +1091,15 @@
     /// </summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_GebaeudeImport.btn_Help";
 
+    /// <summary>Titel und Kreuz im Kopf; <c>false</c>, wo ein Blatt den Kopf trägt (GD-4, „Als Mehrzonenmodell übernehmen…“).</summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    /// <summary>
+    /// GD-4: Der Pfad einer schon gewählten und geprüften Datei (die gespeicherte Importquelle) — der Dialog liest sie beim
+    /// Öffnen, ohne Dateiwahl; leer = wie immer über „Datei wählen…“.
+    /// </summary>
+    [Parameter] public string? Vorgelesen { get; set; }
+
     // =====================================================================
     // Zustand — ein Arbeitsstand; hereingereichte Objekte bleiben unberührt
     // =====================================================================
@@ -1426,6 +1440,15 @@
 
         _kiSicht = new GebaeudeImportKiSicht(KiLesen, KiSetzen, KiWahl, KiSperrgrund);
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_IMPORT, () => _kiSicht, KiHaken());
+    }
+
+    /// <summary>GD-4: Eine vorgelesene Quelle wird sofort gelesen - derselbe Weg wie nach der Dateiwahl.</summary>
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(Vorgelesen)) return;
+        _pfad = Vorgelesen;
+        _dateianzeige = System.IO.Path.GetFileName(Vorgelesen);
+        await Einlesen(_pfad);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

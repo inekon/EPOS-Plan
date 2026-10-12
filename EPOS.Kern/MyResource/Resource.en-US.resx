@@ -53906,5 +53906,53 @@ chart</value>
   <data name="BTDLG_KAPAZITAET_BAUWEISE" xml:space="preserve">
     <value>from the construction type</value>
   </data>
+  <data name="GEBMZ_KNOPF" xml:space="preserve">
+    <value>Adopt as multi-zone model…</value>
+  </data>
+  <data name="GEBMZ_HINWEIS" xml:space="preserve">
+    <value>Rereads the stored import source and shows its zone tree; the building's OK replaces zones, components and zone calendars.</value>
+  </data>
+  <data name="GEBMZ_SPERRE_KEINE_QUELLE" xml:space="preserve">
+    <value>No import stored — create the building via “Import…”.</value>
+  </data>
+  <data name="GEBMZ_SPERRE_KATALOG" xml:space="preserve">
+    <value>Only for a project building: the adoption writes into the project copy.</value>
+  </data>
+  <data name="GEBMZ_SPERRE_GEAENDERT" xml:space="preserve">
+    <value>The zones have been changed — save or discard first.</value>
+  </data>
+  <data name="GEBMZ_SPERRE_LAEUFT" xml:space="preserve">
+    <value>The import source is being read.</value>
+  </data>
+  <data name="GEBMZ_MSG_KEINE_QUELLE" xml:space="preserve">
+    <value>The building has no stored import source.</value>
+  </data>
+  <data name="GEBMZ_MSG_DATEI_FEHLT" xml:space="preserve">
+    <value>The file “{0}” cannot be read: {1}</value>
+  </data>
+  <data name="GEBMZ_MSG_FORMAT" xml:space="preserve">
+    <value>The file “{0}” does not have the format of the stored import source ({1}). A different file is a new import (“Import…”).</value>
+  </data>
+  <data name="GEBMZ_MSG_PRUEFSUMME" xml:space="preserve">
+    <value>The file “{0}” differs from the stored import source (checksum {1} instead of {2}). A different file is a new import (“Import…”).</value>
+  </data>
+  <data name="GEBMZ_MSG_OHNE_ZONEN" xml:space="preserve">
+    <value>Only “as zones with components” can be adopted — please set the switch.</value>
+  </data>
+  <data name="GEBMZ_MSG_KEINE_PROJEKTKOPIE" xml:space="preserve">
+    <value>Building {0} is not a project copy — nothing adopted.</value>
+  </data>
+  <data name="GEBMZ_MSG_NICHT_UEBERNOMMEN" xml:space="preserve">
+    <value>The multi-zone model was not adopted, the previous state remains: {0}</value>
+  </data>
+  <data name="GEBMZ_AUSSTEHEND" xml:space="preserve">
+    <value>Multi-zone model from “{0}” with {1} zones is ready — OK replaces the existing zones with their components and zone calendars, Cancel discards it.</value>
+  </data>
+  <data name="GEBMZ_BLATT" xml:space="preserve">
+    <value>Multi-zone model from the import source</value>
+  </data>
+  <data name="GEB_SPRUNG_KEIN_GEBAEUDE" xml:space="preserve">
+    <value>No building in the project yet.</value>
+  </data>
 </root>
 
