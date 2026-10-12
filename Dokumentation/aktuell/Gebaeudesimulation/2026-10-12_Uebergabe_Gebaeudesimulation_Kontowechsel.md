@@ -72,6 +72,13 @@ Auftrag in Abschnitt 4 neu beauftragt. Die Routinen des alten Kontos sind gelös
    - „Baustoff-Zuordnungen…“ aus der Leiste des Projektsatzes nehmen; anbieten im Gebäudeimport an der Liste
      „Bauteilaufbauten“ und im Gebäudeeditor (`GebaeudeKatalogDialog.razor`) bei Bauteilen/Aufbauten.
    - bunit, Zählwachen, Hilfeziele; Kurzprotokoll `2026-10-12_GD-6a_Knopfleiste.md`.
+2a. **AB4** (Anwenderwunsch 12.10.2026, Wortlaut: „Ergänzung ifc-viewer: Es soll möglich sein einzelne Komponenten in der
+   Körper-Ansicht ein- und auszublenden (Zonen, Randbedingungen, Aufbau). Evtl. ein Select-Button mit zuordnen und
+   Ein/Ausblenden?“): In der Gebäudeansicht (`EPOS.UI/Bausteine/GebaeudeAnsicht.razor` samt JS-Modul) eine Werkzeugwahl
+   „Zuordnen | Ein-/Ausblenden“ an der Legende: im Modus Zuordnen wie AB2 (Legendensymbol wählt das Ziel, Klick auf Räume ordnet
+   zu), im Modus Ein-/Ausblenden schaltet ein Klick auf einen Legendeneintrag (Zone, Randbedingung bzw. Aufbau/Befund je
+   Farbmodus) dessen Körper unsichtbar/sichtbar, dazu „alle zeigen“; Sichtbarkeit nur Anzeige, nichts wird gespeichert;
+   `diagrammprobe`/Rasterprobe nach `Proben/Rasterprobe/LIESMICH.md`, bunit. Auftrag an `opus-umsetzung`.
 3. **BK-3b** Nachzug am Import nach E134 (Auftrag an `opus-umsetzung`, Datei
    `EPOS.Kern/Allgemein/Import/Bauteilkatalog/BauteilkatalogImport.cs` samt Tests): Code-Tafel nach der Deutung im
    [Protokoll BK-3](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-12_BK-3_Import.md) — Stoffgruppen 1 Putz/Mörtel/Estrich,
