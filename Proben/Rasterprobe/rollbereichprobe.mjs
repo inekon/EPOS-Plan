@@ -285,7 +285,10 @@ function kurveImKoerper() {
   const vb = fl.querySelector(':scope > svg')?.viewBox?.baseVal;
   const st = getComputedStyle(k);
   const innen = k.clientWidth - parseFloat(st.paddingLeft) - parseFloat(st.paddingRight);
+  // WP1b: steht die Kurve in der rechten Spalte einer zweispaltigen Ueberlagerung, gilt deren Breite.
+  const spalte = fl.closest('.epos-satz-zweispaltig-rechts');
   return { da: true, breite: Math.round(r.width), hoehe: Math.round(r.height), koerper: Math.round(innen),
+           spalte: spalte ? Math.round(spalte.getBoundingClientRect().width) : null,
            vbBreite: vb ? Math.round(vb.width) : 0, vbHoehe: vb ? Math.round(vb.height) : 0 };
 }
 
@@ -362,11 +365,13 @@ async function pruefeWbx(seite, fall, fenster, mess) {
   pruefeSatzUeberlagerung(fall, fenster, 'Bearbeiten-Ueberlagerung Projektsatz',
     await seite.evaluate(satzUeberlagerung, { ...rand(fenster), marke: '.epos-wbx-felder' }));
   // Die Ueberlagerung ist ein Formular (Stammdaten, Ganglinie, Deckung), keine reine Ansicht: Die Kurve steht im
-  // Abschnitt „Ganglinie" mit mindestens 90 % der Koerperbreite, auf mindestens --epos-kurve-min (150 px), im Mass.
+  // Abschnitt „Ganglinie" mit mindestens 90 % der Breite seiner Spalte (zweispaltig, WP1b: die rechte Spalte), auf
+  // mindestens --epos-kurve-min (150 px), im Mass.
   const k = await seite.evaluate(kurveImKoerper);
   if (!k.da) melde('Kurve fehlt in der Bearbeiten-Ueberlagerung');
   else {
-    if (k.breite < BREITE_ANTEIL * k.koerper) melde(`Kurve ${k.breite} px < ${Math.round(BREITE_ANTEIL * 100)} % des Koerpers (${k.koerper} px)`);
+    const bezug = k.spalte ?? k.koerper;
+    if (k.breite < BREITE_ANTEIL * bezug) melde(`Kurve ${k.breite} px < ${Math.round(BREITE_ANTEIL * 100)} % ${k.spalte ? 'der rechten Spalte' : 'des Koerpers'} (${bezug} px)`);
     if (k.hoehe < 150 - 1) melde(`Kurve ${k.hoehe} px hoch, unter 150 px`);
     if (Math.abs(k.vbBreite - k.breite) > MASS_TOLERANZ + 1 || Math.abs(k.vbHoehe - k.hoehe) > MASS_TOLERANZ + 1)
       melde(`Modell ${k.vbBreite} x ${k.vbHoehe} statt im Behaeltermass ${k.breite} x ${k.hoehe}`);

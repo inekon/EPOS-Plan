@@ -31,7 +31,6 @@ public static class StromspeicherSteckbrief
         (ModulKatalogProfil.FeldStandby, "standby"),
         (ModulKatalogProfil.FeldSelbstentladung, "selbstentladung"),
         (ModulKatalogProfil.FeldModulkosten, "modulkosten"),
-        (ModulKatalogProfil.FeldLeistungskosten, "leistungskosten"),
         (ModulKatalogProfil.FeldInvestitionFix, "invest"),
     };
 
