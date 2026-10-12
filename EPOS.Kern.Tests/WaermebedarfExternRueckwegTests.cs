@@ -119,6 +119,96 @@ namespace EPOS.Kern.Tests
             Assert.False(z.KuehlEigenerZaehler);
         }
 
+        // ---- K5a: Modus „nur Kühlung“ und der Speicherweg der Hülle (WaermebedarfExternAbbildung.Speichern) ------------
+
+        [Fact]
+        public void NurKuehlung_laesst_jede_Waermezeile_samt_Kennung_unveraendert()
+        {
+            if (!_db.Vorhanden) return;
+            int projekt = Anlegen("RW nur Kühlung", out _);
+            Ganglinien(NEU);
+            string waerme = WaermeAbdruck(projekt);
+
+            List<Z_ProjWaermebedarfModel> liste = WaermebedarfExternAbbildung.Modelle(
+                Z_ProjektGebGanglinieCtrl.LiesProjekt(projekt), WaermebedarfExternModus.NurKuehlung);
+            Assert.Single(liste);
+            List<WaermebedarfExternZeile> zeilen = WaermebedarfExternAbbildung.Zeilen(liste);
+            Action rueckweg = WaermebedarfExternAbbildung.Rueckweg(zeilen, liste, projekt);
+            zeilen[0].Eer1 = 2.8;
+            zeilen.Add(new WaermebedarfExternZeile
+            {
+                IdZ = 0, IdGanglinie = StammId(NEU), Bezeichner = NEU, Kanal = DbWerte.KANAL_KUEHLUNG
+            });
+            rueckweg();
+
+            Assert.Null(WaermebedarfExternAbbildung.Speichern(projekt, liste, WaermebedarfExternModus.NurKuehlung));
+
+            List<Z_ProjWaermebedarfModel> nachher = Z_ProjektGebGanglinieCtrl.LiesProjekt(projekt);
+            Assert.Equal(waerme, WaermeAbdruck(projekt));
+            Assert.Equal(4, nachher.Count);
+            Assert.Equal(2.8, nachher.Single(m => m.m_szBezeichner == KUEHLUNG).Eer1);
+            Assert.Equal(DbWerte.KANAL_KUEHLUNG, nachher.Single(m => m.m_szBezeichner == NEU).Kanal);
+        }
+
+        [Fact]
+        public void NurKuehlung_schreibt_auch_bei_Waermezeilen_im_Aufruf_nur_die_Kuehlzeilen()
+        {
+            if (!_db.Vorhanden) return;
+            int projekt = Anlegen("RW nur Kühlung Filter", out _);
+            string waerme = WaermeAbdruck(projekt);
+
+            // Eine Liste MIT Wärmezeilen (ein falsch verdrahteter Aufrufer): Der Speicherweg filtert selbst.
+            List<Z_ProjWaermebedarfModel> alle = Z_ProjektGebGanglinieCtrl.LiesProjekt(projekt);
+            Assert.Null(WaermebedarfExternAbbildung.Speichern(projekt, alle, WaermebedarfExternModus.NurKuehlung));
+
+            Assert.Equal(waerme, WaermeAbdruck(projekt));
+            Assert.Equal(3, Z_ProjektGebGanglinieCtrl.LiesProjekt(projekt).Count);
+        }
+
+        [Fact]
+        public void Alle_speichert_wie_bisher()
+        {
+            if (!_db.Vorhanden) return;
+            int projekt = Anlegen("RW Alle", out string vorher);
+
+            List<Z_ProjWaermebedarfModel> liste = Z_ProjektGebGanglinieCtrl.LiesProjekt(projekt);
+            List<WaermebedarfExternZeile> zeilen = WaermebedarfExternAbbildung.Zeilen(liste);
+            WaermebedarfExternAbbildung.Rueckweg(zeilen, liste, projekt)();
+            Assert.Null(WaermebedarfExternAbbildung.Speichern(projekt, liste, WaermebedarfExternModus.Alle));
+
+            Assert.Equal(vorher, Abdruck(projekt));
+        }
+
+        [Fact]
+        public void Split_ohne_EER_wird_benannt_abgelehnt_und_nichts_geschrieben()
+        {
+            if (!_db.Vorhanden) return;
+            int projekt = Anlegen("RW ohne EER", out string vorher);
+            string mitKennung = WaermeAbdruck(projekt, alle: true);
+
+            foreach (WaermebedarfExternModus modus in new[] { WaermebedarfExternModus.Alle, WaermebedarfExternModus.NurKuehlung })
+            {
+                List<Z_ProjWaermebedarfModel> liste = Z_ProjektGebGanglinieCtrl.LiesProjekt(projekt);
+                liste.Single(m => m.m_szBezeichner == KUEHLUNG).Eer1 = 0;
+
+                string grund = WaermebedarfExternAbbildung.Speichern(projekt, liste, modus);
+
+                Assert.NotNull(grund);
+                Assert.StartsWith(WindowsFormsApplication1.MyResource.Resource.DECK_MSG_OHNE_EER, grund);
+                Assert.Equal(vorher, Abdruck(projekt));
+                Assert.Equal(mitKennung, WaermeAbdruck(projekt, alle: true));
+            }
+        }
+
+        /// <summary>Die Wärmezeilen (alle außer Kühlung) samt Kennung ID_Z — „byte-gleich“ heißt hier: jede Spalte.</summary>
+        private static string WaermeAbdruck(int projekt, bool alle = false)
+        {
+            return string.Join("\n", Z_ProjektGebGanglinieCtrl.LiesProjekt(projekt)
+                .Where(m => alle || !Z_ProjektKaeltebedarfCtrl.IstKuehlkanal(m))
+                .OrderBy(m => m.m_ID_Z)
+                .Select(m => m.m_ID_Z + "|" + Abdruck(new[] { m })));
+        }
+
         // ---- Ablauf wie Startseite → Hülle → Dialog → Speichern -------------------------------------------------------
 
         /// <summary>

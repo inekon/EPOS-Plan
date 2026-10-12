@@ -1777,4 +1777,130 @@ public class BedarfsProfileDialogTests : EposBunitContext
         Assert.Contains("epos-zeile--gewaehlt", cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[2].ClassList);
         Assert.Equal("Profil C", cut.Find(".epos-zweispalten-satzname").TextContent);
     }
+
+    // =================================================================================
+    // K5b (Konzept Kaeltebedarf 3.3, 3.4): die Art Kaelte - Deckung an der Projektzeile
+    // =================================================================================
+
+    private static List<BedarfsProfilZeile> Kaeltezeilen() => new()
+    {
+        new() { IdZ = 1, IdStamm = 3, Name = "Serverraum", Summe = 20, Vorlauf = 18, Ruecklauf = 24, Deckung = new DeckungsartDaten() },
+        new() { IdZ = 2, IdStamm = 4, Name = "Büro", Summe = 10, Deckung = new DeckungsartDaten() }
+    };
+
+    /// <summary>Klappt die Gruppe „Deckung" der Bearbeiten-Überlagerung auf (zu bei „zentral").</summary>
+    private static void Klappe(IRenderedComponent<BedarfsProfileDialog> cut)
+    {
+        var felder = cut.FindComponent<DeckungsartFelder>();
+        if (!felder.Instance.Offen) felder.Find("h3 button, h4 button").Click();
+    }
+
+    [Fact]
+    public void K5b_Deckung_steht_nur_an_einer_Projektzeile_der_Art_Kaelte()
+    {
+        var kaelte = AufbauenS4(Kaeltezeilen(), art: BedarfsArt.Kaelte);
+        Assert.True(kaelte.Instance.DeckungSichtbar);
+        // Anwenderentscheid: in der Detailzeile nur die Zusammenfassung, kein eigener Knopf „Deckung…".
+        Assert.Empty(kaelte.FindAll(".epos-knopf--deckung"));
+        string zf = kaelte.Find(".epos-satzzusammenfassung").TextContent;
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.DECK_GRUPPE, zf);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.DECK_ART_ZENTRAL, zf);
+        // Die Felder stehen in der Bearbeiten-Überlagerung unter den Projektfeldern.
+        Assert.NotNull(Satz(kaelte).QuerySelector(".epos-deckung"));
+
+        // Die Katalogzeile trägt keine Deckung.
+        kaelte.Find(".epos-satzueberlagerung-abbrechen").Click();
+        kaelte.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle")[0].Click();
+        Assert.False(kaelte.Instance.DeckungSichtbar);
+
+        // Die Prozesswärme kennt die Gruppe nicht, auch nicht mit einem Feldsatz in der Zeile.
+        var prozess = AufbauenS4(Kaeltezeilen(), art: BedarfsArt.Prozesswaerme);
+        Assert.False(prozess.Instance.DeckungSichtbar);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.DECK_GRUPPE, prozess.Find(".epos-satzzusammenfassung").TextContent);
+        Assert.Null(Satz(prozess).QuerySelector(".epos-deckung"));
+    }
+
+    [Fact]
+    public void K5b_Bearbeiten_Abbrechen_verwirft_die_Deckung_OK_prueft_und_uebernimmt()
+    {
+        int gemeldet = 0;
+        var zeilen = Kaeltezeilen();
+        var cut = AufbauenS4(zeilen, art: BedarfsArt.Kaelte, geaendert: () => gemeldet++);
+
+        // Abbrechen verwirft: die Zeile bleibt zentral, nichts gemeldet.
+        Satz(cut);
+        Klappe(cut);
+        cut.FindComponent<DeckungsartFelder>().FindAll("select")[0].Change("1");
+        Assert.Equal(KaeltebedarfSchema.DECKUNG_SPLIT, cut.Instance.DeckungArbeitsstand!.Deckungsart);
+        Assert.Equal(KaeltebedarfSchema.DECKUNG_ZENTRAL, zeilen[0].Deckung!.Deckungsart);
+        cut.Find(".epos-satzueberlagerung-abbrechen").Click();
+        Assert.Equal(KaeltebedarfSchema.DECKUNG_ZENTRAL, zeilen[0].Deckung!.Deckungsart);
+        Assert.Equal(0, gemeldet);
+
+        // OK mit EER 0 bleibt offen und nennt den Grund; mit EER 3,2 übernimmt es.
+        Satz(cut);
+        Klappe(cut);
+        cut.FindComponent<DeckungsartFelder>().FindAll("select")[0].Change("1");
+        cut.Instance.DeckungArbeitsstand!.Eer1 = 0;
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.DECK_MSG_OHNE_EER, cut.Markup);
+        Assert.Equal(KaeltebedarfSchema.DECKUNG_ZENTRAL, zeilen[0].Deckung!.Deckungsart);
+
+        cut.Instance.DeckungArbeitsstand!.Eer1 = 3.2;
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal(KaeltebedarfSchema.DECKUNG_SPLIT, zeilen[0].Deckung!.Deckungsart);
+        Assert.Equal(3.2, zeilen[0].Deckung!.Eer1);
+        Assert.True(gemeldet > 0);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.DECK_ART_SPLIT, cut.Find(".epos-satzzusammenfassung").TextContent);
+        Assert.Contains("3,20", cut.Find(".epos-satzzusammenfassung").TextContent);
+    }
+
+    [Fact]
+    public void K5b_OK_des_Dialogs_lehnt_Split_ohne_EER_benannt_ab_und_waehlt_die_Zeile()
+    {
+        var zeilen = Kaeltezeilen();
+        zeilen[1].Deckung = new DeckungsartDaten { Deckungsart = KaeltebedarfSchema.DECKUNG_SPLIT, EerWeg = KaeltebedarfSchema.EER_FEST };
+        bool? geschlossen = null;
+        var cut = Render<BedarfsProfileDialog>(p => p
+            .Add(x => x.Art, BedarfsArt.Kaelte)
+            .Add(x => x.TitelText, "Kältebedarf")
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Katalogzeilen, () => Katalogzeilen())
+            .Add(x => x.Katalogprofil, Profil(BedarfsArt.Kaelte))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Info, n => new BedarfsProfilInfo(n, "", "Typ 1", 6.0, 12.0))
+            .Add(x => x.Jahressumme, _ => 1.0)
+            .Add(x => x.Geschlossen, b => geschlossen = b));
+
+        Assert.Equal("Serverraum", cut.Find(".epos-zweispalten-satzname").TextContent);
+        cut.FindAll(".epos-speichernleiste .epos-knopf--primaer, .epos-leiste .epos-knopf--primaer")
+           .Last().Click();
+
+        Assert.Null(geschlossen);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.DECK_MSG_OHNE_EER + " (Büro)", cut.Find(".epos-warnbanner").TextContent);
+        Assert.Equal("Büro", cut.Find(".epos-zweispalten-satzname").TextContent);
+        Assert.Same(zeilen[1], cut.Instance.UnzulaessigeDeckung());
+
+        zeilen[1].Deckung!.Eer1 = 3.0;
+        zeilen[1].Deckung!.Taussen1 = 35;
+        cut.FindAll(".epos-speichernleiste .epos-knopf--primaer, .epos-leiste .epos-knopf--primaer").Last().Click();
+        Assert.True(geschlossen);
+    }
+
+    [Fact]
+    public void K5b_Kaelte_zeigt_die_Temperaturangabe_ohne_Wirkung()
+    {
+        var cut = Render<BedarfsProfileDialog>(p => p
+            .Add(x => x.Art, BedarfsArt.Kaelte)
+            .Add(x => x.Zeilen, Kaeltezeilen())
+            .Add(x => x.Katalogzeilen, () => Katalogzeilen())
+            .Add(x => x.Katalogprofil, Profil(BedarfsArt.Kaelte))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Info, n => new BedarfsProfilInfo(n, "", "Typ 1", 6.0, 12.0))
+            .Add(x => x.TemperaturPruefen, (v, r) => null)
+            .Add(x => x.HinweisTemperatur, WindowsFormsApplication1.MyResource.Resource.BPF_HINW_TEMPERATUR_KAELTE));
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.BPF_HINW_TEMPERATUR_KAELTE, Satz(cut).TextContent);
+    }
 }

@@ -1442,6 +1442,13 @@ Rückgabe 0; in 1 093 × 614 rollt der Dialogkörper bei offener Detailzeile (Be
 Fensterprobe erfüllt (Gegenprobe rot), `rasterprobe.mjs` 29 von 29 Fällen erfüllt, `katalogprobe.mjs` alle 66 Fälle
 ohne Überlagerung. Fotos: `bedarfsprofile_zusammenfassung_1280x800.png`, `bedarfsprofile_satzueberlagerung_1280x800.png`.
 
+**Kältebedarfsprofile (K5b).** Der Fall `kaelteprofile` zeigt denselben Dialog mit der Art Kälte (Temperaturangabe,
+Kälte-Art, Kalender, erste Zeile „dezentral (Split)“ linear) und steht wie `bedarfsprofile` in `ZUSAMMENFASSUNG_WIRTE`
+und `KOPFKNOEPFE`; `SATZ_WIRTE` prüft, dass die Feldgruppe „Deckung“ (`.epos-deckung`) allein in der
+Bearbeiten-Überlagerung steht und die Detailzeile sie nur zusammenfasst. **Ergebnis vom 12.10.2026**
+(`--nur kaelteprofile`, Wirt Release, Chromium headless): **110 Zustände, 0 Verstöße**, Gegenproben rot, Rückgabe 0;
+`--nur bedarfsprofile` unverändert 110 Zustände, 0 Verstöße.
+
 Am selben Stand `diagrammprobe.mjs` erfüllt (41 Schritte, größter Abstand 0,50 px, Gegenprobe ohne Tafel verfehlt).
 
 Außerhalb des Bausteins meldet die Probe keinen Befund mehr: Die Überlagerung „Simulation…" des Gebäudes

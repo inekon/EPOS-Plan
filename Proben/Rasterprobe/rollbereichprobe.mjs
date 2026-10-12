@@ -103,7 +103,12 @@ const FAELLE = [
   ['photovoltaik', '/rollbereichprobe?fall=photovoltaik'],
   ['solarkollektoren', '/rollbereichprobe?fall=solarkollektoren'],
   ['bedarfsprofile', '/rollbereichprobe?fall=bedarfsprofile'],
+  // K5b: die Bedarfsprofile mit der Art Kaelte - Deckung allein in der Bearbeiten-Ueberlagerung.
+  ['kaelteprofile', '/rollbereichprobe?fall=kaelteprofile'],
   ['waermebedarf', '/rollbereichprobe?fall=waermebedarf'],
+  // K5a: „Kaeltebedarf extern" (NurKuehlung, Deckung aufgeklappt) und der Waermedialog mit Kuehlzeile (OP-2).
+  ['kaeltebedarf', '/rollbereichprobe?fall=kaeltebedarf'],
+  ['kaeltebedarfalle', '/rollbereichprobe?fall=kaeltebedarf&modus=alle'],
   ['stromganglinie', '/rollbereichprobe?fall=stromganglinie'],
   ['solarganglinie', '/rollbereichprobe?fall=solarganglinie'],
   ['pvganglinie', '/rollbereichprobe?fall=pvganglinie'],
@@ -575,17 +580,17 @@ try {
         // Stufe 4: die Zeile traegt vor der Wahl ein Kaestchen - gewaehlt wird ueber den Wahlknopf.
         // AW3b: oder ueber die Namenszelle (die Zeile ist die Wahl).
         const zeilenwahl = '.epos-zweispalten-bereich--projekt tbody tr button.epos-anlagenwahl, .epos-zweispalten-bereich--projekt tbody tr .epos-projektzeile';
-        if (/ganglinie|waermebedarf/.test(fall) && await seite.locator(zeilenwahl).count()) {
+        if (/ganglinie|waermebedarf|kaeltebedarf/.test(fall) && await seite.locator(zeilenwahl).count()) {
           await seite.locator(zeilenwahl).first().click();
           await ruhe(seite);
         }
         if (await satz(seite, true)) {
-          if (/ganglinie|waermebedarf/.test(fall) && await seite.locator('.epos-zweispalten-satz .epos-ganglinie-grafik .epos-diagramm-svg-flaeche').count() === 0) {
+          if (/ganglinie|waermebedarf|kaeltebedarf/.test(fall) && await seite.locator('.epos-zweispalten-satz .epos-ganglinie-grafik .epos-diagramm-svg-flaeche').count() === 0) {
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Detailzeile ohne Ganglinie`); console.log('  VERSTOSS ' + verstoesse.at(-1));
           }
           await massAbwarten(seite);
           await mess('Detailzeile auf, Trennlinie unten');
-          if (FOTOS && /ganglinie|waermebedarf/.test(fall))
+          if (FOTOS && /ganglinie|waermebedarf|kaeltebedarf/.test(fall))
             await seite.screenshot({ path: `${FOTOS}/${fall}_${fenster.breite}x${fenster.hoehe}.png` });
           if (await taste(seite, 'Home')) { await massAbwarten(seite); await mess('Detailzeile auf, Trennlinie oben'); }
           await satz(seite, false);
@@ -763,14 +768,17 @@ try {
           photovoltaik: ['button.epos-knopf--straenge', '„Stränge und Wechselrichter…"'],
           kaeltemaschine: ['.epos-kostenleiste button', 'Kostenknoepfe', '.epos-kaeltemaschine-satz'],
           // Stufe 4: die Bedarfsprofile - Verbrauch, Temperatur und Kalender allein in der Ueberlagerung.
-          bedarfsprofile: ['input[inputmode=decimal]', 'Verbrauchsfelder', '.epos-bpf-satz'] };
-        const ZUSAMMENFASSUNG_WIRTE = ['bhkw', 'pufferspeicher', 'stromspeicher', 'solarkollektoren', 'waermepumpen', 'photovoltaik', 'kaeltemaschine', 'bedarfsprofile'];
+          bedarfsprofile: ['input[inputmode=decimal]', 'Verbrauchsfelder', '.epos-bpf-satz'],
+          // K5b: die Feldgruppe „Deckung" steht allein in der Ueberlagerung, die Detailzeile fasst sie zusammen.
+          kaelteprofile: ['.epos-deckung', 'Deckungsgruppe', '.epos-bpf-satz'] };
+        const ZUSAMMENFASSUNG_WIRTE = ['bhkw', 'pufferspeicher', 'stromspeicher', 'solarkollektoren', 'waermepumpen', 'photovoltaik', 'kaeltemaschine', 'bedarfsprofile', 'kaelteprofile'];
         // Kopf der Detailzeile: zwei Infoknoepfe; die Waermepumpe traegt dort „Anlage…" (Grundlagen und Berechnung
         // stehen in ihrem Anlagendialog).
         // AW2: Die Waermepumpe hat keine Kopfknoepfe mehr - „Anlage…" ist in der Satz-Ueberlagerung aufgegangen.
         const KOPFKNOEPFE = { waermepumpen: ['.epos-knopf--anlage', 0, 'kein „Anlage…"'],
           // Bedarfsprofile: der Rechenweg der Auspraegung (eine Grundlagenseite gibt es nicht).
-          bedarfsprofile: ['.epos-hilfepille', 1, 'Infoknopf „Berechnung"'] };
+          bedarfsprofile: ['.epos-hilfepille', 1, 'Infoknopf „Berechnung"'],
+          kaelteprofile: ['.epos-hilfepille', 1, 'Infoknopf „Berechnung"'] };
         if (SATZ_WIRTE[fall]) {
           const [wahl, was, marke] = SATZ_WIRTE[fall];
           const zusammen = ZUSAMMENFASSUNG_WIRTE.includes(fall);
@@ -831,7 +839,7 @@ try {
           await mess('nach Satz-Ueberlagerung');
         }
         // UeS1c: die Ganglinien ueber „Vergroessern" - die Kurve fuellt den Koerper, reine Ansicht („Schließen").
-        if (/ganglinie|waermebedarf/.test(fall)) {
+        if (/ganglinie|waermebedarf|kaeltebedarf/.test(fall)) {
           await satz(seite, false);
           await gangliniePerVergroessern(seite);
           await mess('Satz-Ueberlagerung offen');

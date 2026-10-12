@@ -161,11 +161,15 @@
             @* Die Kanalwahl EINZEILIG in der Kopfleiste: Beschriftung vor dem Feld (wie
                .epos-ganglinie-kopf > .epos-feld). Der Kuehlkanal sagt in einer kurzen Zeile
                daneben, dass er Kaelte ist (KU1, K3); der volle Wortlaut steht im Tooltipp. *@
-            <span class="epos-zweispalten-kanal">
-                <Auswahlfeld Bezeichnung="@KanalBezeichnung" Eintraege="@Kanaleintraege"
-                             Auswahl="@Kanalindex" AuswahlChanged="KanalWaehlen"
-                             Aktiv="@(_gewaehlt is not null)" />
-            </span>
+            @* K5a (Konzept Kaeltebedarf 3.2): Im Modus „nur Kuehlung" steht der Kanal fest - keine Kanalwahl. *@
+            @if (Modus == WaermebedarfExternModus.Alle)
+            {
+                <span class="epos-zweispalten-kanal">
+                    <Auswahlfeld Bezeichnung="@KanalBezeichnung" Eintraege="@Kanaleintraege"
+                                 Auswahl="@Kanalindex" AuswahlChanged="KanalWaehlen"
+                                 Aktiv="@(_gewaehlt is not null)" />
+                </span>
+            }
             @if (IstKuehlkanal)
             {
                 @* KWN-0: die Art der Kaeltezeile (Raum/Prozess) neben der Kanalwahl, nur im Kanal Kuehlung. *@
@@ -173,7 +177,17 @@
                     <Auswahlfeld Bezeichnung="@KaelteArtBezeichnung" Eintraege="@KaelteArteintraege"
                                  Auswahl="@KaelteArtindex" AuswahlChanged="KaelteArtWaehlen" />
                 </span>
-                <span class="epos-zweispalten-kanalhinweis" title="@HinweisKanalKuehlung">@HinweisKanalKuehlung</span>
+                @* OP-2 (K5a): Im Modus „Alle" sagt die Infozeile neben der Kanalwahl, wo Kaeltelastgaenge gepflegt
+                   werden (kein Banner); der Wortlaut des Kuehlkanals bleibt im Tooltipp. *@
+                @if (Modus == WaermebedarfExternModus.Alle)
+                {
+                    <span class="epos-zweispalten-kanalhinweis epos-zweispalten-kanalinfo" role="note"
+                          title="@(HinweisKaelteExtern + " " + HinweisKanalKuehlung)">@HinweisKaelteExtern</span>
+                }
+                else
+                {
+                    <span class="epos-zweispalten-kanalhinweis" title="@HinweisKanalKuehlung">@HinweisKanalKuehlung</span>
+                }
             }
         </ProjektKopf>
 
@@ -191,7 +205,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (WaermebedarfExternZeile zeile in Zeilen)
+                        @foreach (WaermebedarfExternZeile zeile in SichtbareZeilen)
                         {
                             WaermebedarfExternZeile z = zeile;
                             <tr class="@(z == _gewaehlt ? "epos-zeile--gewaehlt" : null)">
@@ -300,6 +314,15 @@
 
         <Satz>
 
+    @* --- K5a: die Deckung der Kaeltezeile in der Detailzeile der PROJEKTZEILE (Konzept Kaeltebedarf 3.4) ---
+       Die Zusammenfassung und „Deckung…" stehen rechts in der Kennzahlenzeile der Ganglinie (Knoepfe, keine eigene
+       Zeile: Kopf der Satzflaeche hoechstens 90 px, DZ1-N1; rollbereichprobe Fall kaeltebedarf); ohne Ganglinie als
+       eigene Zeile. Die Feldgruppe selbst (DeckungsartFelder) steht in der Bearbeiten-Ueberlagerung. *@
+    @if (DeckungSichtbar && _kennzahlen is null)
+    {
+        <div class="epos-deckung-zeile">@Deckungsknopf</div>
+    }
+
     @* --- Die Grafik der gewaehlten Ganglinie (W9-E-3) -------------------- *@
     @if (_kennzahlen is not null)
     {
@@ -312,7 +335,8 @@
                           EinheitKw="@EinheitKw" EinheitStunden="@EinheitStunden"
                           Bildtext="@Bildtext" PlatzhalterBild="@PlatzhalterBild"
                           FarbeSetzen="@FarbeSetzen"
-                          FarbeZuruecksetzen="@FarbeZuruecksetzen" />
+                          FarbeZuruecksetzen="@FarbeZuruecksetzen"
+                          Knoepfe="@(DeckungSichtbar ? Deckungsknopf : null)" />
     }
 
         </Satz>
@@ -339,6 +363,28 @@
                               OkNurMitText="true" Pruefung="@KopieNamePruefen"
                               OkText="@OkText" AbbrechenText="@AbbrechenText"
                               Geschlossen="KopieFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- K5a: die Feldgruppe „Deckung" der gewaehlten Kuehlzeile als Bearbeiten-Ueberlagerung --------------
+       Die Felder schreiben an Ort und Stelle in die Zeile; OK prueft mit der Regel des Kerns und bleibt bei
+       „Split ohne EER" mit dem Grund offen, das Kreuz schliesst ohne Pruefung (OK des Dialogs prueft erneut). *@
+    <Ueberlagerung Offen="@(_deckungOffen && _gewaehlt is not null)" Titel="@DeckungTitel" Geschlossen="DeckungSchliessen">
+        <KindInhalt>
+            @if (_deckungOffen && _gewaehlt is WaermebedarfExternZeile dz)
+            {
+                @if (!string.IsNullOrEmpty(_deckungFehler))
+                {
+                    <Warnbanner Stufe="WarnStufe.Fehler" Text="@_deckungFehler" />
+                }
+                <DeckungsartFelder Daten="@dz.Deckung" Stromtraeger="@Stromtraeger" TitelAnzeigen="false"
+                                   Geaendert="BeiDeckungGeaendert" />
+                <div class="epos-leiste epos-deckung-leiste">
+                    <span class="epos-leiste-fueller"></span>
+                    <button type="button" class="epos-knopf epos-knopf--primaer epos-knopf--deckung-ok"
+                            @onclick="DeckungOk">@OkText</button>
+                </div>
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -633,6 +679,83 @@
     public IReadOnlyList<(string Wert, string Text)> KaelteArten { get; set; }
         = new[] { (DbWerte.KAELTE_ART_RAUM, Resource.KAELTE_ART_RAUM), (DbWerte.KAELTE_ART_PROZESS, Resource.KAELTE_ART_PROZESS) };
 
+    /// <summary>
+    /// Der Modus (Konzept Kältebedarf 3.2): <see cref="WaermebedarfExternModus.Alle"/> (Vorgabe) zeigt jeden Kanal;
+    /// <see cref="WaermebedarfExternModus.NurKuehlung"/> ist der Dialog „Kältebedarf extern“ — nur die Zeilen des Kanals
+    /// Kühlung, die Kanalwahl steht fest und ist ausgeblendet, eine neue Zeile steht auf Kühlung. Titel, Kopfband und
+    /// Bildtitel reicht die Hülle passend herein.
+    /// </summary>
+    [Parameter] public WaermebedarfExternModus Modus { get; set; } = WaermebedarfExternModus.Alle;
+
+    /// <summary>Die Stromträger des Projekts (Id, Anzeigetext) — die Auswahl des Kühlträgers der Feldgruppe „Deckung“.</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Stromtraeger { get; set; } = Array.Empty<(int, string)>();
+
+    /// <summary>OP-2: die Infozeile im Modus „Alle“ bei Kanal Kühlung (<c>WBX_HRL_KAELTE_EXTERN</c>).</summary>
+    [Parameter] public string HinweisKaelteExtern { get; set; } = Resource.WBX_HRL_KAELTE_EXTERN;
+
+    /// <summary>Die Ablehnung „Split ohne EER“ im Banner (<c>DECK_MSG_OHNE_EER</c>).</summary>
+    [Parameter] public string MeldungDeckungOhneEer { get; set; } = Resource.DECK_MSG_OHNE_EER;
+
+    /// <summary>Die Zeilen, die der Projektbereich zeigt: im Modus „nur Kühlung“ nur die des Kanals Kühlung.</summary>
+    private IEnumerable<WaermebedarfExternZeile> SichtbareZeilen
+        => Modus == WaermebedarfExternModus.NurKuehlung ? Zeilen.Where(IstKuehlzeile) : Zeilen;
+
+    private static bool IstKuehlzeile(WaermebedarfExternZeile z)
+        => string.Equals(z.Kanal, DbWerte.KANAL_KUEHLUNG, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Steht die Feldgruppe „Deckung“ in der Detailzeile? Nur bei gewählter Projektzeile im Kanal Kühlung.</summary>
+    public bool DeckungSichtbar => SatzArt == Satzmarke.Projektsatz && IstKuehlkanal;
+
+    /// <summary>Eine Eingabe in der Feldgruppe „Deckung“: der Rückweg der Hülle und die stehende Meldung fallen.</summary>
+    private void BeiDeckungGeaendert()
+    {
+        if (_meldungStufe == WarnStufe.Fehler) _meldung = "";
+        _deckungFehler = "";
+        Geaendert?.Invoke();
+    }
+
+    /// <summary>Zusammenfassung der Deckung und „Deckung…“ — in der Kennzahlenzeile der Ganglinie oder als eigene Zeile.</summary>
+    private RenderFragment Deckungsknopf => __builder =>
+    {
+        if (_gewaehlt is not WaermebedarfExternZeile kz) return;
+        <span class="epos-deckung-zusammenfassung" title="@(Resource.DECK_GRUPPE + ": " + kz.Deckung.Zusammenfassung())">@kz.Deckung.Zusammenfassung()</span>
+        <button type="button" class="epos-knopf epos-knopf--deckung" @onclick="DeckungOeffnen">@Resource.DECK_BTN_BEARBEITEN</button>
+    };
+
+    private bool _deckungOffen;
+    private string _deckungFehler = "";
+
+    /// <summary>Steht die Bearbeiten-Überlagerung der Deckung offen? Prüfhilfe für die Tests.</summary>
+    public bool DeckungOffen => _deckungOffen;
+
+    private string DeckungTitel => Resource.DECK_GRUPPE + (_gewaehlt is null ? "" : " – " + _gewaehlt.Bezeichner);
+
+    private void DeckungOeffnen()
+    {
+        _deckungFehler = "";
+        _deckungOffen = true;
+    }
+
+    private void DeckungSchliessen() => _deckungOffen = false;
+
+    /// <summary>OK der Überlagerung: die Regel des Kerns; „Split ohne EER“ bleibt mit dem Grund offen.</summary>
+    private void DeckungOk()
+    {
+        if (_gewaehlt?.Deckung?.Pruefgrund() is not null)
+        {
+            _deckungFehler = MeldungDeckungOhneEer;
+            return;
+        }
+        _deckungOffen = false;
+    }
+
+    /// <summary>
+    /// Die erste Kühlzeile, deren Deckung die Regel des Kerns verwirft (Split ohne rechnenden EER); <c>null</c> = alle
+    /// zulässig. Zeilen außerhalb des Kanals Kühlung schreiben stets „zentral“ und zählen nicht.
+    /// </summary>
+    public WaermebedarfExternZeile? UnzulaessigeDeckung()
+        => Zeilen.FirstOrDefault(z => IstKuehlzeile(z) && z.Deckung?.Pruefgrund() is not null);
+
     /// <summary>Steht die markierte Zuordnung auf dem Kanal „Kühlung"? Prüfhilfe für die Tests.</summary>
     public bool IstKuehlkanal
         => _gewaehlt is not null
@@ -768,7 +891,7 @@
         return s;
     }
 
-    private IReadOnlyList<string> ProjektSchluessel() => Zeilen.Select(Projektschluessel).ToList();
+    private IReadOnlyList<string> ProjektSchluessel() => SichtbareZeilen.Select(Projektschluessel).ToList();
 
     private IReadOnlyList<string> KatalogSichtbar()
         => (_katalogliste?.Angezeigt ?? _katalog).Select(z => z.Schluessel).ToList();
@@ -777,7 +900,7 @@
     private List<WaermebedarfExternZeile> ProjektZiele()
     {
         if (_projektWahl.Anzahl > 0)
-            return Zeilen.Where(z => _projektWahl.IstGewaehlt(Projektschluessel(z))).ToList();
+            return SichtbareZeilen.Where(z => _projektWahl.IstGewaehlt(Projektschluessel(z))).ToList();
         return _gewaehlt is null ? new() : new() { _gewaehlt };
     }
 
@@ -805,7 +928,7 @@
     /// <summary>Die Tastenführung hat eine andere Projektzeile gewählt.</summary>
     private Task BeiProjektTastenwahl(string schluessel)
     {
-        WaermebedarfExternZeile? zeile = Zeilen.FirstOrDefault(z => Projektschluessel(z) == schluessel);
+        WaermebedarfExternZeile? zeile = SichtbareZeilen.FirstOrDefault(z => Projektschluessel(z) == schluessel);
         return zeile is null ? Task.CompletedTask : ProjektZeileKlick(zeile);
     }
 
@@ -833,7 +956,7 @@
     {
         if (bereich != Auswahlbereich.Projekt || _projektWahl.Zuletzt is not string s) return;
         if (!_projektWahl.IstGewaehlt(s)) return;
-        WaermebedarfExternZeile? zeile = Zeilen.FirstOrDefault(z => Projektschluessel(z) == s);
+        WaermebedarfExternZeile? zeile = SichtbareZeilen.FirstOrDefault(z => Projektschluessel(z) == s);
         if (zeile is not null && zeile != _gewaehlt) await ProjektZeileWaehlen(zeile);
     }
 
@@ -916,14 +1039,15 @@
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(
             Katalogprofil?.Schluessel ?? ("ZEITREIHE_" + Zeitreihenart.Waermebedarf));
 
-        if (Zeilen.Count > 0) _gewaehlt = Zeilen[0];
+        _gewaehlt = SichtbareZeilen.FirstOrDefault();
 
         // Welle KI-F3: Angemeldet ist die GEWAEHLTE Zuordnung - sie wechselt mit jedem
         // Klick in der Projektliste, deshalb ein Delegat und keine Instanz. Die
         // Kanaleintraege kennt nur dieser Dialog.
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEBEDARF_EXTERN,
                                           () => _gewaehlt, KiHaken(),
-                                          ("kanal", Kanalwahleintraege), ("kaelte_art", KaelteArtwahleintraege));
+                                          ("kanal", Kanalwahleintraege), ("kaelte_art", KaelteArtwahleintraege),
+                                          ("kuehltraeger", Traegerwahleintraege));
     }
 
     // =================================================================================
@@ -935,6 +1059,10 @@
     /// <summary>Die drei Bedarfskanäle für den Assistenten (KI-D-Q6).</summary>
     private IReadOnlyList<KiWahleintrag> Kanalwahleintraege()
         => KiMaskenanmeldung.Eintraege(Kanaele, k => k.Wert, k => k.Text);
+
+    /// <summary>Die Stromträger des Projekts als Kühlträger der Feldgruppe „Deckung“ für den Assistenten (K5a).</summary>
+    private IReadOnlyList<KiWahleintrag> Traegerwahleintraege()
+        => KiMaskenanmeldung.Eintraege(Stromtraeger, t => t.Id, t => t.Text);
 
     /// <summary>Die Arten einer Kältezeile für den Assistenten (KWN-0).</summary>
     private IReadOnlyList<KiWahleintrag> KaelteArtwahleintraege()
@@ -1152,6 +1280,7 @@
         {
             WaermebedarfExternZeile? neu = Aufnehmen(k.Bezeichner);
             if (neu is null) continue;
+            if (Modus == WaermebedarfExternModus.NurKuehlung) neu.Kanal = DbWerte.KANAL_KUEHLUNG;
             Zeilen.Add(neu);
             letzte = neu;
         }
@@ -1176,7 +1305,7 @@
         // Entfernt GENAU die gewählten Zeilen (die angekreuzten, sonst die markierte).
         foreach (WaermebedarfExternZeile z in ziele) Zeilen.Remove(z);
         _projektWahl.Leeren();
-        _gewaehlt = Zeilen.Count > 0 ? Zeilen[0] : null;
+        _gewaehlt = SichtbareZeilen.FirstOrDefault();
         _meldung = "";
 
         if (_gewaehlt is null) GrafikVerwerfen();
@@ -1364,7 +1493,20 @@
         _meldungStufe = stufe;
     }
 
-    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
+    /// <summary>
+    /// OK prüft vor dem Schließen jede Kühlzeile mit der Regel des Kerns (K5a, Konzept 3.4): eine dezentrale Zeile ohne
+    /// rechnenden EER wird abgelehnt — Banner, die Zeile wird gewählt, der Dialog bleibt offen.
+    /// </summary>
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (ok && UnzulaessigeDeckung() is WaermebedarfExternZeile falsch)
+        {
+            if (_gewaehlt != falsch && SichtbareZeilen.Contains(falsch)) await ProjektZeileWaehlen(falsch);
+            Melden(MeldungDeckungOhneEer, WarnStufe.Fehler);
+            return;
+        }
+        await Geschlossen.InvokeAsync(ok);
+    }
 
     /// <summary>Abbrechen — von Esc (nach den Wächtern) und vom Schliesskreuz gleichermaßen gerufen.</summary>
     private Task Abbrechen() => Geschlossen.InvokeAsync(false);

@@ -360,6 +360,15 @@
             </KindInhalt>
         </Gruppenkopf>
     }
+
+    @* K5b (Konzept Kaeltebedarf 3.4, Anwenderentscheid: wie der Waermepumpendialog alle Einzelheiten in der EINEN
+       Bearbeiten-Ueberlagerung): die Feldgruppe „Deckung" der Kaeltezeile als Klappgruppe unter den Projektfeldern.
+       Sie schreibt in eine Arbeitskopie; OK der Ueberlagerung prueft mit der Regel des Kerns und uebernimmt,
+       Abbrechen verwirft. *@
+    @if (DeckungSichtbar && _deckungArbeit is not null)
+    {
+        <DeckungsartFelder Daten="@_deckungArbeit" Stromtraeger="@Stromtraeger" Klappbar="true" />
+    }
     }
     </div>
 
@@ -538,6 +547,12 @@
     /// nicht an (alle Arten außer Kälte), dann steht die Gruppe nicht da.
     /// </summary>
     [Parameter] public IReadOnlyList<(string Wert, string Text)>? KaelteArten { get; set; }
+
+    /// <summary>Die Stromträger des Projekts (Id, Anzeigetext) — der Kühlträger der Feldgruppe „Deckung“ (K5b).</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Stromtraeger { get; set; } = Array.Empty<(int, string)>();
+
+    /// <summary>Die Ablehnung „Split ohne EER“ (<c>DECK_MSG_OHNE_EER</c>); der Bezeichner der Zeile folgt in Klammern.</summary>
+    [Parameter] public string MeldungDeckungOhneEer { get; set; } = Resource.DECK_MSG_OHNE_EER;
 
     /// <summary><c>KAELTE_ART_GRUPPE</c></summary>
     [Parameter] public string GruppeKaelteArt { get; set; } = Resource.KAELTE_ART_GRUPPE;
@@ -999,7 +1014,10 @@
             KaelteArtEintraege = () => KiMaskenanmeldung.Eintraege(
                 KaelteArtEintraege, e => e.Id, e => e.Text),
             KalenderEintraege = () => KiMaskenanmeldung.Eintraege(
-                KalenderWahlEintraege, e => e.Id, e => e.Text)
+                KalenderWahlEintraege, e => e.Id, e => e.Text),
+            // K5b: die Feldgruppe „Deckung" der markierten Kaeltezeile - dieselben Felder wie die Ueberlagerung.
+            DeckungLesen = () => DeckungSichtbar ? _gewaehlt!.Deckung : null,
+            TraegerEintraege = () => KiMaskenanmeldung.Eintraege(Stromtraeger, t => t.Id, t => t.Text)
         };
     }
 
@@ -1432,6 +1450,8 @@
         if (_gewaehlt is not null && Betriebskalender is not null)
             l.Add(new(Resource.BPF_ZF_KALENDER,
                       KalenderWahlEintraege.FirstOrDefault(e => e.Id == (_gewaehlt.KalenderId ?? 0)).Text ?? TextOhneKalender));
+        if (DeckungSichtbar)
+            l.Add(new(Resource.DECK_GRUPPE, _gewaehlt!.Deckung!.Zusammenfassung()));
         if (_infoBeschreibung.Length > 0)
             l.Add(new(Resource.BPF_ZF_BESCHREIBUNG,
                       _infoBeschreibung.Length > 60 ? _infoBeschreibung[..57].TrimEnd() + "…" : _infoBeschreibung));
@@ -1445,6 +1465,7 @@
         _satzUeberlagerungFehler = null;
         _merker = _gewaehlt is not null ? Satzmerker.Von(_gewaehlt) : null;
         if (_gewaehlt is not null) { _neuVorlauf = _gewaehlt.Vorlauf; _neuRuecklauf = _gewaehlt.Ruecklauf; }
+        _deckungArbeit = DeckungSichtbar ? _gewaehlt!.Deckung!.Kopie() : null;
     }
 
     /// <summary>
@@ -1467,6 +1488,7 @@
         _satzGross = false;
         _satzUeberlagerungFehler = null;
         _merker = null;
+        _deckungArbeit = null;
     }
 
     /// <summary>Die angefangenen Eingaben der Überlagerung; leer = übernommen, sonst der Grund.</summary>
@@ -1488,6 +1510,12 @@
             _infoTemperatur = TemperaturText(_neuVorlauf, _neuRuecklauf);
             Geaendert?.Invoke();
         }
+        // K5b: die Deckung der Kaeltezeile - „Split ohne EER" haelt die Ueberlagerung mit dem Grund offen.
+        if (_deckungArbeit is not null && z.Deckung is not null)
+        {
+            if (_deckungArbeit.Pruefgrund() is not null) return MeldungDeckungOhneEer;
+            if (!DeckungGleich(z.Deckung, _deckungArbeit)) { z.Deckung.Uebernehmen(_deckungArbeit); Geaendert?.Invoke(); }
+        }
         return "";
     }
 
@@ -1503,6 +1531,7 @@
         }
         _merker = null;
         _neuerWert = null;
+        _deckungArbeit = null;
     }
 
     /// <summary>„Bearbeiten…" der Projekt-Kopfleiste: EINE Projektzeile in der Satz-Überlagerung.</summary>
@@ -1884,6 +1913,14 @@
     /// </summary>
     private Task BeiErgebnis(bool ok)
     {
+        // K5b (Konzept Kaeltebedarf 3.4): eine Kaeltezeile „Split ohne EER" lehnt OK benannt ab - Banner mit dem
+        // Bezeichner, die Zeile wird gewaehlt, der Dialog bleibt offen (Regel des Kerns, Kaeltedeckungsregel).
+        if (ok && UnzulaessigeDeckung() is BedarfsProfilZeile falsch)
+        {
+            if (_gewaehlt != falsch) ProjektzeileWaehlen(falsch);
+            Melden(MeldungDeckungOhneEer + " (" + falsch.Name + ")", WarnStufe.Fehler);
+            return Task.CompletedTask;
+        }
         if (ok && Speichern is not null)
         {
             // KT-4: Wirft der Schreibweg, bleibt der Dialog offen und die Meldung nennt den Grund.
@@ -1899,6 +1936,31 @@
 
     /// <summary>Abbrechen — von Esc (nach den Wächtern) und vom Schliesskreuz gleichermaßen gerufen.</summary>
     private Task Abbrechen() => Geschlossen.InvokeAsync(false);
+
+    // =================================================================================
+    // K5b: die Feldgruppe „Deckung" einer Kaeltezeile (Konzept Kaeltebedarf 3.4)
+    // =================================================================================
+
+    /// <summary>Die Arbeitskopie der Deckung, solange die Bearbeiten-Überlagerung einer Kältezeile offen steht.</summary>
+    private DeckungsartDaten? _deckungArbeit;
+
+    /// <summary>Steht die Feldgruppe „Deckung“ an der gewählten Zeile? Nur bei einer Projektzeile der Art Kälte.</summary>
+    public bool DeckungSichtbar => Art == BedarfsArt.Kaelte && _gewaehlt?.Deckung is not null;
+
+    /// <summary>Die Arbeitskopie der offenen Bearbeiten-Überlagerung — Prüfhilfe für die Tests.</summary>
+    public DeckungsartDaten? DeckungArbeitsstand => _deckungArbeit;
+
+    private static bool DeckungGleich(DeckungsartDaten a, DeckungsartDaten b)
+        => a.Deckungsart == b.Deckungsart && a.EerWeg == b.EerWeg && a.Eer1 == b.Eer1 && a.Taussen1 == b.Taussen1 &&
+           a.Eer2 == b.Eer2 && a.Taussen2 == b.Taussen2 && a.KuehlIdCarrier == b.KuehlIdCarrier &&
+           a.KuehlEigenerZaehler == b.KuehlEigenerZaehler;
+
+    /// <summary>
+    /// Die erste Kältezeile, deren Deckung die Regel des Kerns verwirft (Split ohne rechnenden EER); <c>null</c> = alle
+    /// zulässig. Nur bei der Art Kälte.
+    /// </summary>
+    public BedarfsProfilZeile? UnzulaessigeDeckung()
+        => Art != BedarfsArt.Kaelte ? null : Zeilen.FirstOrDefault(z => z.Deckung?.Pruefgrund() is not null);
 
     private Task BeiTaste(KeyboardEventArgs e)
     {

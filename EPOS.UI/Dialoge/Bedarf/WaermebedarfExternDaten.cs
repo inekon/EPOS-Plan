@@ -1,4 +1,6 @@
-﻿namespace EPOS.UI.Dialoge.Bedarf;
+﻿using System.Collections.Generic;
+
+namespace EPOS.UI.Dialoge.Bedarf;
 
 /// <summary>
 /// EINE Zuordnung „externe Wärmebedarfsganglinie ↔ Projekt" (iU9-W9.4) — das
@@ -32,4 +34,50 @@ public sealed class WaermebedarfExternZeile
     /// <c>DbWerte.KAELTE_ART_PROZESS</c>; wirksam nur im Kanal Kühlung.
     /// </summary>
     public string KaelteArt { get; set; } = WindowsFormsApplication1.DbWerte.KAELTE_ART_RAUM;
+
+    /// <summary>
+    /// Die Feldgruppe „Deckung“ (Konzept Kältebedarf 3.4, Schritt 213); wirksam nur im Kanal Kühlung — jeder andere
+    /// Kanal schreibt beim Speichern „zentral“ mit leeren Split-Feldern (Kern, <c>Normalisieren</c>).
+    /// </summary>
+    public DeckungsartDaten Deckung { get; set; } = new();
+
+    // ---- Die Deckungsfelder flach für den Hilfe-Assistenten (KI-Feldkarte der Maske Form_Waermebedarf) ----------------
+
+    /// <summary>Deckungsart als Steuerwert (<c>zentral</c>/<c>split</c>).</summary>
+    public string Deckungsart
+    {
+        get => Deckung.Deckungsart;
+        set => Deckung.DeckungSetzen(value);
+    }
+
+    /// <summary>Die Einträge der Deckungsart für den Assistenten.</summary>
+    public IReadOnlyList<KiKern.KiWahleintrag> DeckungsartWahl => DeckungsartDaten.KiEintraege(DeckungsartDaten.Deckungsarten);
+
+    /// <summary>EER-Weg als Steuerwert (<c>fest</c>/<c>linear</c>).</summary>
+    public string? EerWeg
+    {
+        get => Deckung.EerWeg;
+        set => Deckung.EerWegSetzen(value ?? "");
+    }
+
+    /// <summary>Die Einträge des EER-Wegs für den Assistenten.</summary>
+    public IReadOnlyList<KiKern.KiWahleintrag> EerWegWahl => DeckungsartDaten.KiEintraege(DeckungsartDaten.EerWege);
+
+    /// <summary>Fester EER bzw. EER am Punkt 1.</summary>
+    public double? Eer1 { get => Deckung.Eer1; set => Deckung.Eer1 = value; }
+
+    /// <summary>Außentemperatur am Punkt 1 [°C].</summary>
+    public double? Taussen1 { get => Deckung.Taussen1; set => Deckung.Taussen1 = value; }
+
+    /// <summary>EER am Punkt 2 (nur linear).</summary>
+    public double? Eer2 { get => Deckung.Eer2; set => Deckung.Eer2 = value; }
+
+    /// <summary>Außentemperatur am Punkt 2 [°C] (nur linear).</summary>
+    public double? Taussen2 { get => Deckung.Taussen2; set => Deckung.Taussen2 = value; }
+
+    /// <summary>Kühlträger des Split-Stroms; <c>null</c> = Stromträger des Projekts. Die Einträge reicht der Dialog herein.</summary>
+    public int? KuehlIdCarrier { get => Deckung.KuehlIdCarrier; set => Deckung.KuehlIdCarrier = value; }
+
+    /// <summary>Eigener Zähler des Split-Stroms.</summary>
+    public bool KuehlEigenerZaehler { get => Deckung.KuehlEigenerZaehler; set => Deckung.KuehlEigenerZaehler = value; }
 }

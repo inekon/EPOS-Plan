@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Start;
+using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dialoge.Projekt;
 
 namespace WindowsFormsApplication1
@@ -886,15 +887,19 @@ namespace WindowsFormsApplication1
         private void WaermebedarfDaten(IWin32Window wirt)
         {
             // Woertlich pBox_WBedarfDaten_Click (:239-262).
-            WizardCtrl wizctrl = new WizardCtrl();
-
             List<Z_ProjWaermebedarfModel> liste = Z_ProjektGebGanglinieCtrl.LiesProjekt(_kontext.Id);
 
+            // K5a: Loeschen + Neuanlegen in EINEM Vorgang; eine dezentrale Kuehlzeile ohne EER lehnt der Speicherweg
+            // benannt ab (Fehlerbanner der Seite), nichts wird geschrieben.
             if (WaermebedarfExternHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste))
-            {
-                wizctrl.Del_WaermebedarfExtern(_kontext.Id);
-                wizctrl.Add_WaermebedarfExtern(_kontext.Id, liste);
-            }
+                Speichern(liste, WaermebedarfExternModus.Alle);
+        }
+
+        /// <summary>Der Speicherweg beider Kacheln (Wärme- und Kältebedarf extern); ein Grund landet im Fehlerbanner.</summary>
+        private void Speichern(List<Z_ProjWaermebedarfModel> liste, WaermebedarfExternModus modus)
+        {
+            string grund = WaermebedarfExternAbbildung.Speichern(_kontext.Id, liste, modus);
+            if (grund != null) _fehlerhinweis = grund;
         }
 
         private void Prozesswaerme(IWin32Window wirt)
@@ -927,32 +932,33 @@ namespace WindowsFormsApplication1
         // ---- Reiter Kaeltebedarf (K4) --------------------------------------
 
         /// <summary>
-        /// Kachel „Kältebedarf extern“ — heute der Dialog „Wärmebedarf extern“ mit allen Kanälen; dort
-        /// wählt der Anwender den Kanal „Kühlung“. Den Modus „nur Kühlung“ bringt die Stufe K5
-        /// (Konzept Kältebedarf 3.2); Lesen und Schreiben sind dieselben wie bei <see cref="WaermebedarfDaten"/>.
+        /// Kachel „Kältebedarf extern“ — der Dialog „Wärmebedarf extern“ im Modus „nur Kühlung“ (K5a, Konzept
+        /// Kältebedarf 3.2): Er sieht und schreibt nur die Zeilen des Kanals Kühlung; jede Wärmezeile bleibt unverändert.
         /// </summary>
-        private void KaeltebedarfExtern(IWin32Window wirt) => WaermebedarfDaten(wirt);
+        private void KaeltebedarfExtern(IWin32Window wirt)
+        {
+            List<Z_ProjWaermebedarfModel> liste = WaermebedarfExternAbbildung.Modelle(
+                Z_ProjektGebGanglinieCtrl.LiesProjekt(_kontext.Id), WaermebedarfExternModus.NurKuehlung);
+
+            if (WaermebedarfExternHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste,
+                                                 WaermebedarfExternModus.NurKuehlung))
+                Speichern(liste, WaermebedarfExternModus.NurKuehlung);
+        }
 
         /// <summary>
         /// Kachel „Kältebedarfsprofile“ — der Bedarfsprofile-Dialog mit <c>BedarfsArt.Kaelte</c>
         /// (<see cref="BedarfsProfileHuelle"/>). Löschen und Neuschreiben der Zuordnungen laufen in EINEM
-        /// Vorgang: Scheitert ein Schritt, meldet der Kern den Grund und die alten Zeilen bleiben stehen.
+        /// Vorgang (<see cref="KaeltebedarfsprofilAbbildung.Speichern"/>): Scheitert ein Schritt oder steht eine Zeile
+        /// auf „Split ohne EER“, nennt der Fehlerbanner den Grund und die alten Zeilen bleiben stehen.
         /// </summary>
         private void Kaeltebedarfsprofile(IWin32Window wirt)
         {
             List<Z_ProjektKaeltebedarfModel> liste = Z_ProjektKaeltebedarfCtrl.LiesProjekt(_kontext.Id);
 
+            // K5b: Speichern ueber die Abbildung - „Split ohne EER" lehnt sie benannt ab (Grund im Fehlerbanner).
             if (!BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste)) return;
-
-            WizardCtrl wizctrl = new WizardCtrl();
-            using (DbVorgang vorgang = DataRepository.Vorgang())
-            {
-                if (wizctrl.Del_Projekt_Kaelte(_kontext.Id, 0, vorgang)
-                    && wizctrl.Add_Projekt_Kaelte(_kontext.Id, liste, vorgang))
-                    vorgang.Commit();
-                else
-                    vorgang.Rollback();
-            }
+            string grund = KaeltebedarfsprofilAbbildung.Speichern(_kontext.Id, liste);
+            if (grund != null) _fehlerhinweis = grund;
         }
 
         /// <summary>

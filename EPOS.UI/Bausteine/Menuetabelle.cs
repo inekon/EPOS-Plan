@@ -295,6 +295,8 @@ public static class Menuetabelle
                 {
                     new Menuepunkt("MenuItem_WaermebedarfExtern", "MENU_WAERMEBEDARF_EXTERN", Seitenschluessel.WaermebedarfExternAdmin),
                     new Menuepunkt("MenuItem_Prozesswaerme", "MENU_PROZESSWAERME", Seitenschluessel.ProzesswaermeAdmin),
+                    // K5b (Konzept Kaeltebedarf 3.3): die Kaeltebedarfsprofile neben der Prozesswaerme.
+                    new Menuepunkt("MenuItem_Kaeltebedarf", "MENU_KAELTEBEDARF", Seitenschluessel.KaeltebedarfAdmin),
                     new Menuepunkt("MenuItem_SolThermGanglinie", "MENU_SOL_THERM_GANGLINIE", Seitenschluessel.SolarganglinieAdmin),
                     // PVG (Schemaschritt 206): der Katalog der PV-Ganglinien - derselbe Dialog wie an der Kachel, ohne Projekt.
                     new Menuepunkt("MenuItem_PvGanglinie", "MENU_PV_GANGLINIE", Seitenschluessel.PvGanglinieAdmin),

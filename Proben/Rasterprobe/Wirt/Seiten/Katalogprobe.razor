@@ -61,7 +61,7 @@
                                Loeschen="@(_ => BedarfLoeschAusgang.Geloescht)"
                                Exists="@(_ => false)"
                                Schloss="@ProbeSchloss"
-                               TitelText="Stromverbraucher Verwaltung"
+                               TitelText="@(_bedarfArt == BedarfsArt.Kaelte ? "Kältebedarf Verwaltung" : "Stromverbraucher Verwaltung")"
                                LabelKatalog="Datenbank Stromverbraucher"
                                LabelJahressumme="jährlicher Strombedarf:" EinheitText="MWh"
                                BtnAendernText="Verbraucher in DB ändern..."
@@ -368,6 +368,7 @@
             case "stromspeicher": _modulArt = ModulKatalogArt.Stromspeicher; break;
             case "brauchwasser": _bedarfArt = BedarfsArt.Brauchwasser; break;
             case "prozesswaerme": _bedarfArt = BedarfsArt.Prozesswaerme; break;
+            case "kaelte": _bedarfArt = BedarfsArt.Kaelte; break;   // K5b: die Verwaltung mit der Art Kaelte
             case "stromverbraucher": _bedarfArt = BedarfsArt.Stromverbraucher; break;
         }
     }
