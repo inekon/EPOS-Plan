@@ -43,7 +43,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <returns><c>true</c>, wenn mit OK geschlossen wurde.</returns>
         internal static bool Oeffnen(IWin32Window besitzer, int projektId, string projektName,
-                                     List<Z_ProjGebModel> modelle)
+                                     List<Z_ProjGebModel> modelle, string sprungziel = null)
         {
             bool ok = false;
             BlazorDialogForm<GebaeudeDialog> dlg = null;
@@ -57,6 +57,8 @@ namespace WindowsFormsApplication1
                     if (dlg != null) dlg.Schliessen(b);
                 })
             };
+            // Sprungziel der Kachel (Konzept Kaeltebedarf 3.5): der Editor oeffnet an der Gruppe „Kuehlung“.
+            if (!string.IsNullOrEmpty(sprungziel)) werte["Sprungziel"] = sprungziel;
 
             // Das Fenster traegt den Gebaeudeimport als Ueberlagerung und wuenscht mindestens
             // dessen Mass (Konzept Administrationsdialoge 7.1 d).

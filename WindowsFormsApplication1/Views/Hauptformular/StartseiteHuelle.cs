@@ -868,11 +868,13 @@ namespace WindowsFormsApplication1
 
         // ---- Reiter 2: Waermebedarf ----------------------------------------
 
-        private void Gebaeude(IWin32Window wirt)
+        private void Gebaeude(IWin32Window wirt) => Gebaeude(wirt, null);
+
+        private void Gebaeude(IWin32Window wirt, string sprungziel)
         {
             List<Z_ProjGebModel> liste = Z_ProjGebCtrl.LiesProjekt(_kontext.Id);
 
-            if (!GebaeudeFenster.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste)) return;
+            if (!GebaeudeFenster.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste, sprungziel)) return;
 
             // Abgleich in EINEM Vorgang (Konzept Administrationsdialoge 7.1 (a)):
             // unveraenderte Zuordnungen behalten ihre Projektkopie, ein Fehlschlag rollt
@@ -959,7 +961,7 @@ namespace WindowsFormsApplication1
         /// Kachel „Gebäudekühlung“ — der Projektgebäudedialog wie die Kachel „Gebäude“. Der Sprung in die
         /// Gruppe „Kühlung“ (<c>Sprungziel = "KUEHLUNG"</c>) kommt mit der Stufe K5 (Konzept Kältebedarf 3.5).
         /// </summary>
-        private void Gebaeudekuehlung(IWin32Window wirt) => Gebaeude(wirt);
+        private void Gebaeudekuehlung(IWin32Window wirt) => Gebaeude(wirt, Sprungziele.Kuehlung);
 
         // ---- Reiter 3: Strombedarf -----------------------------------------
 

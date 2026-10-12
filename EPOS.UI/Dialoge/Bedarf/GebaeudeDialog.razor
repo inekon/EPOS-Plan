@@ -945,6 +945,30 @@
 
     [Parameter] public bool Wizard { get; set; }
 
+    /// <summary>
+    /// Ein Sprungziel beim Öffnen (<see cref="Sprungziele"/>; Konzept Kältebedarf 3.5): <see cref="Sprungziele.Kuehlung"/>
+    /// wählt das erste Projektgebäude und öffnet seinen Editor an der Gruppe „Kühlung“; ohne Projektgebäude steht der Hinweis
+    /// „Noch kein Gebäude im Projekt“. Leer = keins.
+    /// </summary>
+    [Parameter] public string Sprungziel { get; set; } = "";
+
+    /// <summary>Der Sprung beim Öffnen: Gebäude wählen, Editor mit dem Sprungziel öffnen — oder den Grund nennen.</summary>
+    private void SprungAusfuehren()
+    {
+        if (Wizard || !string.Equals(Sprungziel, Sprungziele.Kuehlung, StringComparison.Ordinal)) return;
+        if (Zeilen.Count == 0)
+        {
+            Melden(Resource.GEB_SPRUNG_KEIN_GEBAEUDE, WarnStufe.Hinweis);
+            return;
+        }
+        GebaeudeProjektZeile z = _gewaehlt ?? Zeilen[0];
+        if (!ReferenceEquals(_gewaehlt, z)) ProjektzeileWaehlen(z);
+        if (ProjektGaben is null || !z.HatProjektkopie) return;
+        IReadOnlyDictionary<string, object>? gaben = ProjektGaben(z);
+        if (gaben is null) return;
+        _projektGaben = new Dictionary<string, object>(gaben) { ["Sprungziel"] = Sprungziel };
+    }
+
     /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
@@ -1294,6 +1318,7 @@
 
         KatalogLaden();
         ProjektauswahlNachziehen();
+        SprungAusfuehren();
 
         // NP2b-5a: dazu die Einheit der Außenluft des Blatts „Nutzungsprofile" im Importdialog (np_luft_einheit).
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE, () => KiSicht(), KiHaken(),

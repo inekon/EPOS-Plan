@@ -78,13 +78,15 @@
 @using System.Globalization
 @using WindowsFormsApplication1
 @implements IDisposable
+@using Microsoft.JSInterop
+@inject IJSRuntime Js
 
 <div class="epos-dialog epos-gebk-editor" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
     @* ZWEI BLAETTER tauschen den INHALT des Editors (Baustein Blattwechsel, unten): der Zonendialog
        (Stufe KP2, Welle U4) und die Vorlagenverwaltung (Welle U2; E56 F4 (a)). Kopf, Reiter und
        Fussleiste stehen nur, solange keines steht; der Arbeitsstand bleibt dabei, wie er ist. *@
-    @if (_zoneOffen is null && _vorlagenBlatt is null && !_nutzungsblatt)
+    @if (_zoneOffen is null && _vorlagenBlatt is null && !_nutzungsblatt && _mehrzonenGaben is null)
     {
     <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
         @if (TitelAnzeigen)
@@ -560,6 +562,8 @@
                        der Rang der Kuehlung in der Knappheitsreihenfolge hat kein Bedienelement
                        (K4). Die Projekteinstellung „Kuehlung rechnen" steht nicht hier - sie
                        betrifft das ganze Projekt (8.3). *@
+                    @* Sprungziel KUEHLUNG (Konzept Kaeltebedarf 3.5): die Kachel „Gebaeudekuehlung" rollt diese Gruppe in Sicht. *@
+                    <div class="gebk-sprungziel" data-sprungziel="@Sprungziele.Kuehlung" @ref="_kuehlungMarke">
                     <Gruppenkopf Titel="@Texte.GruppeKuehlung">
                         <KindInhalt>
                             <div class="gebk-kuehlung">
@@ -601,6 +605,7 @@
                             </div>
                         </KindInhalt>
                     </Gruppenkopf>
+                    </div>
 
                 </KindInhalt>
             </Reiterblatt>
@@ -865,6 +870,20 @@
         </KindInhalt>
     </Blattwechsel>
 
+    @* --- GD-4: der Zonenbaum des Imports als BLATT (Entwurf Gebaeudedialog 2.4) - der Importdialog selbst, mit der
+       gespeicherten und geprueften Quelle vorgelesen. Sein OK merkt das Mehrzonenmodell vor; geschrieben wird im OK-Weg
+       dieses Dialogs. Rueckknopf, Esc und Abbrechen merken nichts vor. --- *@
+    <Blattwechsel Offen="@(_mehrzonenGaben is not null)" WirtTitel="@TitelText" Titel="@Resource.GEBMZ_BLATT"
+                  ZusatzKlasse="epos-blatt--breit" Zurueck="() => MehrzonenFertig(null)">
+        <KindInhalt>
+            @if (_mehrzonenGaben is not null)
+            {
+                <EPOS.UI.Dialoge.Import.GebaeudeImportDialog @attributes="_mehrzonenGaben" Vorgelesen="@_mehrzonenPfad"
+                                                             TitelAnzeigen="false" Geschlossen="MehrzonenFertig" />
+            }
+        </KindInhalt>
+    </Blattwechsel>
+
     @* --- Der Katalog der NUTZUNGSPROFILE als BLATT (Stufe NP3a; Konzept Nutzungsprofile 6.1, NP-F22) --- *@
     <Blattwechsel Offen="@_nutzungsblatt" WirtTitel="@TitelText" Titel="@RaumnutzungTexte.Blatt"
                   Zurueck="NutzungsprofileZurueck">
@@ -984,6 +1003,18 @@
     /// Gebäudeverwaltung, Welle ZK-b); leer = der erste.
     /// </summary>
     [Parameter] public string StartReiter { get; set; } = "";
+
+    /// <summary>
+    /// Ein Sprungziel (<see cref="Sprungziele"/>): <see cref="Sprungziele.Kuehlung"/> öffnet den Reiter „Gebäude und Hülle“,
+    /// rollt die Gruppe „Kühlung“ in Sicht und fokussiert ihr erstes Feld; leer = keins.
+    /// </summary>
+    [Parameter] public string Sprungziel { get; set; } = "";
+
+    /// <summary>Steht der Sprung noch aus? Prüfhilfe für die Tests: nach dem ersten Zeichnen <c>false</c>.</summary>
+    public bool SprungAusstehend => _sprungAusstehend;
+
+    private bool _sprungAusstehend;
+    private ElementReference _kuehlungMarke;
 
     /// <summary>
     /// Der Weg der Konditionierung (Stufe KP2, Welle K2): die Handlungen des Reiters „Konditionierung"
@@ -1479,6 +1510,7 @@
     private RenderFragment Uebernahmeblock => __builder =>
     {
         string? sperre = UebernahmeSperre;
+        string? mzSperre = MehrzonenSperre;
         <div class="epos-zonenuebernahme">
             @* Eine Knopfzeile im Blatt, keine Leiste: Die Fussleiste des Editors ist die SpeichernLeiste. *@
             <div class="epos-zeilenknoepfe">
@@ -1486,8 +1518,17 @@
                 <button type="button" class="epos-knopf epos-zonenuebernahme-knopf"
                         aria-disabled="@(sperre is null ? null : "true")" title="@sperre"
                         @onclick="BeiUebernehmen">@ZonenTexte.KnopfUebernehmen</button>
+                @* GD-4 (Entwurf 2.4, E130 F7): der zweite Knopf - nur aus der gespeicherten Importquelle, sonst weich gesperrt. *@
+                <button type="button" class="epos-knopf epos-mehrzonen-knopf"
+                        aria-disabled="@(mzSperre is null ? null : "true")" title="@(mzSperre ?? Zonen?.Mehrzonen?.Quelle)"
+                        @onclick="BeiMehrzonen">@Resource.GEBMZ_KNOPF</button>
             </div>
             <p class="epos-leisezeile">@(sperre ?? ZonenTexte.HinweisUebernehmen)</p>
+            <p class="epos-leisezeile epos-mehrzonen-hinweis">@(mzSperre ?? Resource.GEBMZ_HINWEIS)</p>
+            @if (MehrzonenAusstehend is string bereit)
+            {
+                <p class="epos-leisezeile epos-mehrzonen-ausstehend" role="status">@bereit</p>
+            }
         </div>
     };
 
@@ -1596,6 +1637,96 @@
             return;
         }
         _vorschlag = v;
+    }
+
+    // =================================================================================
+    // GD-4: „Als Mehrzonenmodell übernehmen…" (Entwurf Gebaeudedialog 2.4; E130 F7)
+    // =================================================================================
+
+    private IReadOnlyDictionary<string, object>? _mehrzonenGaben;
+    private string _mehrzonenPfad = "";
+    private bool _mehrzonenLaeuft;
+
+    /// <summary>Steht das Blatt des Zonenbaums? Prüfhilfe für die Tests.</summary>
+    public bool MehrzonenblattOffen => _mehrzonenGaben is not null;
+
+    /// <summary>Die Zeile des vorgemerkten Mehrzonenmodells; <c>null</c> = keins. Prüfhilfe für die Tests.</summary>
+    public string? MehrzonenAusstehend => Zonen?.Mehrzonen?.Ausstehend?.Invoke();
+
+    /// <summary>Warum „Als Mehrzonenmodell übernehmen…" gesperrt ist; <c>null</c> = frei. Prüfhilfe für die Tests.</summary>
+    public string? MehrzonenSperre
+    {
+        get
+        {
+            if (Modus != GebaeudeKatalogModus.Projekt) return Resource.GEBMZ_SPERRE_KATALOG;
+            if (Zonen?.Mehrzonen is not GebaeudeMehrzonenweg weg) return Zonensperre ?? Resource.GEBMZ_SPERRE_KEINE_QUELLE;
+            if (weg.Sperre is string grund) return grund;
+            if (weg.Oeffnen is null) return Resource.GEBMZ_SPERRE_KEINE_QUELLE;
+            if (_arbeit.ZonenGeaendert) return Resource.GEBMZ_SPERRE_GEAENDERT;
+            if (_mehrzonenLaeuft) return Resource.GEBMZ_SPERRE_LAEUFT;
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Dateiwahl mit dem Namen der gespeicherten Quelle und Prüfsumme (Hülle); eine Ablehnung steht als Meldung, sonst öffnet
+    /// das Blatt mit dem Zonenbaum. Ein Abbruch der Wahl tut nichts. Weich gesperrt meldet der Knopf den Grund.
+    /// </summary>
+    private async Task BeiMehrzonen()
+    {
+        if (MehrzonenSperre is string grund) { Melden(grund, WarnStufe.Hinweis); return; }
+        _meldung = "";
+        _mehrzonenLaeuft = true;
+        GebaeudeMehrzonenstart? start;
+        try
+        {
+            start = await Zonen!.Mehrzonen!.Oeffnen!();
+        }
+        catch (Exception ex)
+        {
+            Melden(ex.Message, WarnStufe.Warnung);
+            return;
+        }
+        finally
+        {
+            _mehrzonenLaeuft = false;
+        }
+        if (start is null) return;
+        if (start.Meldung is { Length: > 0 } meldung || start.Gaben is null)
+        {
+            Melden(start.Meldung ?? Resource.GEBMZ_MSG_KEINE_QUELLE, WarnStufe.Warnung);
+            return;
+        }
+        _mehrzonenPfad = start.Pfad;
+        _mehrzonenGaben = start.Gaben;
+    }
+
+    /// <summary>Das Blatt ist zu: Mit Ergebnis hat die Hülle das Modell vorgemerkt (die Zeile nennt es); ohne ist nichts geschehen.</summary>
+    private void MehrzonenFertig(EPOS.UI.Dialoge.Import.GebaeudeImportErgebnis? ergebnis)
+    {
+        _mehrzonenGaben = null;
+        _mehrzonenPfad = "";
+        _fokusNachBlatt = true;
+        _reiter = REITER_HUELLE;
+    }
+
+    /// <summary>OK-Weg: das vorgemerkte Modell schreiben, danach die Zonen neu lesen; scheitert es, bleibt der Dialog offen.</summary>
+    private bool MehrzonenSchreiben()
+    {
+        string? grund;
+        try { grund = Zonen?.Mehrzonen?.Schreiben?.Invoke(); }
+        catch (Exception ex) { grund = ex.Message; }
+        if (grund is { Length: > 0 })
+        {
+            Melden(grund, WarnStufe.Warnung);
+            return false;
+        }
+        if (Zonen?.Neulesen is not null)
+        {
+            ZonenNeulesung? n = Katalogladung.Satz(() => Zonen.Neulesen(), _ursprungsname, out string fehler);
+            if (n is not null) _arbeit.ZonenLaden(n.Zonen, true, n.Luftstroeme, katalog: false);
+        }
+        return true;
     }
 
     /// <summary>Die Antwort: Ja legt die Zone in den Arbeitsstand (negative Ids), Nein lässt alles.</summary>
@@ -1794,6 +1925,12 @@
         StandSetzen(Daten ?? new GebaeudeKatalogDaten());
 
         if (!string.IsNullOrEmpty(StartReiter)) _reiter = StartReiter;
+        // Sprungziel KUEHLUNG: der Reiter „Gebaeude und Huelle", die Gruppe rollt nach dem ersten Zeichnen in Sicht.
+        if (string.Equals(Sprungziel, Sprungziele.Kuehlung, StringComparison.Ordinal))
+        {
+            _reiter = REITER_HUELLE;
+            _sprungAusstehend = true;
+        }
 
         // Stufe G3: die Zonen eines Gebaeudes im Projekt; Welle ZK-b: auch die eines Katalogsatzes.
         _arbeit.ZonenLaden(Zonen?.Zonen, Zonen is not null, Zonen?.Luftstroeme, katalog: Modus != GebaeudeKatalogModus.Projekt);
@@ -1935,6 +2072,25 @@
         // um 70 px - Titel und Kreuz der Ueberlagerung standen beim Oeffnen ausserhalb des Bilds
         // (Konditionierungsprobe, Stufe KP2).
         await _wurzel.FocusAsync(preventScroll: true);
+        if (_sprungAusstehend) await SprungInSicht();
+    }
+
+    /// <summary>
+    /// Das Sprungziel (Konzept Kaeltebedarf 3.5) in Sicht rollen und sein erstes Feld fokussieren — über das kleine Modul
+    /// <c>epos-sprung.js</c>. Ohne das Modul (Prüfstand) bleibt der Dialog, wie er ist: ein Schönheitsfehler, kein Fehlschlag.
+    /// </summary>
+    private async Task SprungInSicht()
+    {
+        _sprungAusstehend = false;
+        try
+        {
+            Microsoft.JSInterop.IJSObjectReference modul = await Js.InvokeAsync<Microsoft.JSInterop.IJSObjectReference>("import", "./_content/EPOS.UI/epos-sprung.js");
+            await modul.InvokeVoidAsync("inSicht", _kuehlungMarke);
+        }
+        catch (Exception)
+        {
+            // Kein Modul, kein Rollen - die Gruppe steht trotzdem offen auf dem richtigen Reiter.
+        }
     }
 
     // =================================================================================
@@ -2334,7 +2490,9 @@
 
         // Schritt 3: die Zonen - samt der Zuordnung ihrer vorlaeufigen Ids (Stufe KP2, Befund B10):
         // Danach traegt der Arbeitsstand die endgueltigen, und ein zweites OK legt nichts noch einmal an.
-        if (!ZonenSchreiben()) return false;
+        // GD-4: Ein vorgemerktes Mehrzonenmodell ersetzt die Zonen in einem Vorgang des Kerns - statt des Zonenabgleichs.
+        if (MehrzonenAusstehend is not null) { if (!MehrzonenSchreiben()) return false; }
+        else if (!ZonenSchreiben()) return false;
         _meldung = "";
         return true;
     }
@@ -2503,7 +2661,7 @@
     /// <summary>Der Rückweg vom Blatt fokussiert die Wurzel, ohne zu rollen (der Blattwechsel stellt den Rollstand her).</summary>
     private async Task FokusNachBlatt()
     {
-        if (!_fokusNachBlatt || _vorlagenBlatt is not null || _zoneOffen is not null || _nutzungsblatt) return;
+        if (!_fokusNachBlatt || _vorlagenBlatt is not null || _zoneOffen is not null || _nutzungsblatt || _mehrzonenGaben is not null) return;
         _fokusNachBlatt = false;
         await _wurzel.FocusAsync(preventScroll: true);
     }
