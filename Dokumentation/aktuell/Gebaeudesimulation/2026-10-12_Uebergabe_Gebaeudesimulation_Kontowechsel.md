@@ -90,6 +90,7 @@ Auftrag in Abschnitt 4 neu beauftragt. Die Routinen des alten Kontos sind gelös
    gekennzeichnet); 15|0 und 16|0 → Wand; λ > 10 nur bei ρ ≥ 2 500 kg/m³; Nichtmetalle mit λ > 60 und λ/1 000 im Band 0,02–0,5
    durch 1 000 teilen und im Protokoll nennen, übrige ablehnen. Danach **erneuter Lauf beim Anwender** („Bauteilkatalog
    einlesen…“ ordnet per Quellkennung um, keine Dubletten) und Zahlen ins Protokoll.
+3b. **MA-1 Geführter Modellaufbau** nach dem [Entwurf Geführter Modellaufbau](2026-10-12_Entwurf_Gefuehrter_Modellaufbau.md) (Anwenderwunsch 12.10.2026, Leitziel: in wenig Zeit vom Import zum vollständigen Modell; Fragen F1–F8 in Abschnitt 5, Entscheid E135 frei): Modellprüfung in fünf Gruppen mit Rechenstatus, „Alle Vorschläge übernehmen“, Profilregel, Sprung in die Ansicht; danach MA-2 bis MA-8 nach Wellenplan des Entwurfs (MA-4 nach BK-3b, MA-5 nach AB4). Auftrag an `opus-umsetzung`.
 4. **GD-Nachzüge** (offene Punkte von GD-4, #1026): gespeicherten Zonenplan eines früheren Imports vorlegen; beim Weg
    „Gebäudedatei + Projektdatei“ auch die Projektdatei prüfen; Sprung zur Kühlung auf das zuletzt gewählte Gebäude; eigener
    Maskenschlüssel für `Sprungziele.Kuehlung`; Zeile Jahreswärmebedarf nach Anwenderentscheid (Abschnitt 5).
@@ -103,6 +104,7 @@ Auftrag in Abschnitt 4 neu beauftragt. Die Routinen des alten Kontos sind gelös
 
 ## 5. Offen beim Anwender
 
+- **Entwurf Geführter Modellaufbau, F1–F8** (Ampel je Prüfgruppe, „Alle Vorschläge übernehmen“, Rangfolge der Aufbauvorschläge, Baualtersvorgaben aus dem Bestand, Ferien/Saison je Projekt, Zone ohne Profil nach Regel, Wiederimport bewahrt Ergänzungen, Export mit Erweiterung gbXML/IFC): Empfehlung durchweg (a); vorgelegt 12.10.2026, Antwort offen.
 - **BK-1, Katalogprobe:** `Proben/Rasterprobe` Katalogprobe meldet 8 von 66 Fällen mit Überlagerung (Kessel, BHKW, Wärmepumpe,
   Klimadaten) — gegen den Stand vor BK-1 prüfen, ob vorbestehend (kein Baustofffall betroffen).
 - **NP7, Nummern 70/71 der Projektdatei:** beim Einlesen der Normwerte auf „Wohngebäude – Einfamilienhaus“ bzw.
