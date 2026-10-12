@@ -23891,7 +23891,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Name des Baustoffs; zusammen mit dem Hersteller ist er im Katalog eindeutig.</value>
   </data>
   <data name="KI_DLG_BST_GRUPPE_ERL" xml:space="preserve">
-    <value>Die Ordnungsgruppe (etwa Mauerwerk, Beton, Dämmstoffe); leer = ohne Gruppe.</value>
+    <value>Die Stoffgruppe aus der festen Liste (etwa Mauerwerk, Beton, Dämmstoffe, „Sonstige“ für alles Übrige); leer = ohne Gruppe. Je Gruppe nennt der Dialog Werte außerhalb des üblichen Bereichs als Hinweis.</value>
   </data>
   <data name="KI_DLG_BST_HERSTELLER_ERL" xml:space="preserve">
     <value>Der Hersteller; leer heißt herstellerneutral (Norm- oder Richtwert).</value>
@@ -53846,6 +53846,72 @@ Chart</value>
   </data>
   <data name="RNP_TXT_EINGELESEN_AUS" xml:space="preserve">
     <value>Werte eingelesen aus {0} am {1}</value>
+  </data>
+  <data name="BST_GRUPPE_MAUERWERK" xml:space="preserve">
+    <value>Mauerwerk</value>
+  </data>
+  <data name="BST_GRUPPE_BETON" xml:space="preserve">
+    <value>Beton</value>
+  </data>
+  <data name="BST_GRUPPE_ESTRICHE" xml:space="preserve">
+    <value>Estriche</value>
+  </data>
+  <data name="BST_GRUPPE_PUTZE" xml:space="preserve">
+    <value>Putze und Mörtel</value>
+  </data>
+  <data name="BST_GRUPPE_DAEMMSTOFFE" xml:space="preserve">
+    <value>Dämmstoffe</value>
+  </data>
+  <data name="BST_GRUPPE_HOLZ" xml:space="preserve">
+    <value>Holz und Holzwerkstoffe</value>
+  </data>
+  <data name="BST_GRUPPE_PLATTEN" xml:space="preserve">
+    <value>Platten</value>
+  </data>
+  <data name="BST_GRUPPE_BODENBELAEGE" xml:space="preserve">
+    <value>Bodenbeläge</value>
+  </data>
+  <data name="BST_GRUPPE_ABDICHTUNGEN" xml:space="preserve">
+    <value>Abdichtungen</value>
+  </data>
+  <data name="BST_GRUPPE_METALLE" xml:space="preserve">
+    <value>Metalle und Glas</value>
+  </data>
+  <data name="BST_GRUPPE_ERDREICH" xml:space="preserve">
+    <value>Erdreich</value>
+  </data>
+  <data name="BST_GRUPPE_SONSTIGE" xml:space="preserve">
+    <value>Sonstige</value>
+  </data>
+  <data name="BST_GRUPPE_KEINE" xml:space="preserve">
+    <value>(keine Gruppe)</value>
+  </data>
+  <data name="BST_GRUPPE_FREI_EINTRAG" xml:space="preserve">
+    <value>{0} (freie Angabe)</value>
+  </data>
+  <data name="BST_HINWEIS_GRUPPE_FREI" xml:space="preserve">
+    <value>Die Gruppe „{0}“ entspricht keiner festen Gruppe; sie bleibt erhalten. Wählen Sie eine Gruppe aus der Liste oder „{1}“.</value>
+  </data>
+  <data name="BST_HINWEIS_BAND" xml:space="preserve">
+    <value>Hinweis: {0} = {1} liegt außerhalb des üblichen Bereichs der Gruppe {2} ({3} bis {4}). Gespeichert wird trotzdem.</value>
+  </data>
+  <data name="BTA_SUMME_RSI" xml:space="preserve">
+    <value>R_si = {0} m²K/W</value>
+  </data>
+  <data name="BTA_SUMME_RSE" xml:space="preserve">
+    <value>R_se = {0} m²K/W</value>
+  </data>
+  <data name="BTA_SUMME_RT" xml:space="preserve">
+    <value>R_T = R_si + R + R_se = {0} m²K/W</value>
+  </data>
+  <data name="BTA_RICHTUNG" xml:space="preserve">
+    <value>Schichtfolge innen → außen: Schicht 1 liegt raumseitig, die letzte Schicht außen.</value>
+  </data>
+  <data name="BTDLG_LBL_KAPAZITAET" xml:space="preserve">
+    <value>Wärmekapazität C</value>
+  </data>
+  <data name="BTDLG_KAPAZITAET_BAUWEISE" xml:space="preserve">
+    <value>aus der Bauweise</value>
   </data>
 </root>
 

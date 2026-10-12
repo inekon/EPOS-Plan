@@ -177,6 +177,37 @@ public class BauteilDialogTests : EposBunitContext
     // =================================================================================
 
     /// <summary>Eine Wand an Außenluft ohne Azimut wird benannt abgelehnt - nicht auf Nord vorbelegt.</summary>
+    /// <summary>
+    /// BK-1: Die Kapazität C des gewählten Aufbaus steht als Lesewert neben dem U-Wert — aus dem
+    /// Summenfuß der Hülle; ohne Aufbau „aus der Bauweise"; auf Englisch übersetzt.
+    /// </summary>
+    [Fact]
+    public void Die_Kapazitaet_des_Aufbaus_steht_als_Lesewert()
+    {
+        static AufbauAnsichtDaten? Ansicht(AufbauWahl w) => new(
+            new BauteilaufbauDaten { Id = w.Id, Bezeichner = w.Text, Bauteilart = w.Bauteilart,
+                                     Schichten = { new BauteilschichtDaten { DickeMm = 240, Lambda = 0.45, Rho = 1000, Cp = 1000 } } },
+            new AufbauKennwerteDaten { RSi_M2KW = 0.13, RSe_M2KW = 0.04, R_M2KW = 0.533, U_WM2K = 1.42, Kapazitaet_KJM2K = 240 },
+            Array.Empty<BaustoffWahl>());
+        var cut = Render<BauteilDialog>(p => p
+            .Add(x => x.Bauteil, Wand())
+            .Add(x => x.Projektaufbauten, PROJEKT)
+            .Add(x => x.Aufbau, Ansicht));
+
+        IElement c = Feld(cut, "Wärmekapazität C")!;
+        Assert.Equal("aus der Bauweise", c.GetAttribute("value"));
+        Assert.True(c.HasAttribute("readonly"));
+
+        Feld(cut, "Aufbau im Projekt")!.Change("12");
+        Assert.Equal("240,0", Feld(cut, "Wärmekapazität C")!.GetAttribute("value"));
+        Assert.Contains("kJ/(m²K)", Feld(cut, "Wärmekapazität C")!.ParentElement!.ParentElement!.TextContent);
+
+        using var kultur = new Kulturvorrichtung("en-US");
+        var en = Render<BauteilDialog>(p => p.Add(x => x.Bauteil, Wand()).Add(x => x.Projektaufbauten, PROJEKT)
+                                              .Add(x => x.Texte, new BauteilDialogTexte()));
+        Assert.Equal("from the construction type", Feld(en, "Heat capacity C")!.GetAttribute("value"));
+    }
+
     [Fact]
     public void Eine_Wand_an_Aussenluft_ohne_Azimut_wird_benannt_abgelehnt()
     {

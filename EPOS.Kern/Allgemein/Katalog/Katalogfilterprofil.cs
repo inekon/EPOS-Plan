@@ -1219,9 +1219,12 @@ namespace WindowsFormsApplication1
                     new Katalogspalte(SpLambda, t("KFLT_SP_LAMBDA"), "W/(m·K)", Katalogspaltenart.Zahl),
                     new Katalogspalte(SpRho, t("KFLT_SP_RHO"), "kg/m³", Katalogspaltenart.Zahl,
                                       rang: Katalogspaltenrang.BeiPlatz),
-                    new Katalogspalte(SpCp, t("KFLT_SP_CP"), "J/(kg·K)", Katalogspaltenart.Zahl,
-                                      rang: Katalogspaltenrang.BeiPlatz),
+                    // c_p steht immer (Rang wie λ): die Wärmekapazität trägt den Gebäudelauf (Entwurf
+                    // Bauteilkatalog 2.2); ρ bleibt „bei Platz".
+                    new Katalogspalte(SpCp, t("KFLT_SP_CP"), "J/(kg·K)", Katalogspaltenart.Zahl),
                     new Katalogspalte(SpQuelle, t("KFLT_SP_QUELLE"), rang: Katalogspaltenrang.Breit)
+                    // NAHT BK-2: Hier treten die Klasse unter der Gruppe (E132) und die Herkunftsmarke
+                    // „Import" als Spalten hinzu, sobald der Schemaschritt sie trägt — vorher keine Spalte.
                 }
             };
         }
@@ -1257,6 +1260,9 @@ namespace WindowsFormsApplication1
                     new Katalogspalte(SpDicke, t("KFLT_SP_DICKE"), "m", Katalogspaltenart.Zahl,
                                       rang: Katalogspaltenrang.Breit),
                     new Katalogspalte(SpHerkunft, t("KFLT_SP_HERKUNFT"), rang: Katalogspaltenrang.Breit)
+                    // NAHT BK-2: Gruppe und Klasse des Aufbaus (E132) und das Kennzeichen „für die
+                    // Gebäudesimulation meist nicht geeignet" samt Filter treten hier hinzu, sobald der
+                    // Schemaschritt sie trägt — vorher keine Spalte.
                 }
             };
         }

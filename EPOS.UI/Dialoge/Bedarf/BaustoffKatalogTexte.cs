@@ -42,6 +42,12 @@ public sealed class BaustoffKatalogTexte
     /// <summary><c>BST_LBL_GRUPPE</c></summary>
     public string LabelGruppe { get; set; } = Resource.BST_LBL_GRUPPE;
 
+    /// <summary><c>BST_GRUPPE_KEINE</c> — die leere Zeile der Gruppenwahl.</summary>
+    public string GruppeKeine { get; set; } = Resource.BST_GRUPPE_KEINE;
+
+    /// <summary><c>BST_GRUPPE_FREI_EINTRAG</c> — „{0} (freie Angabe)": eine Gruppe, die keiner festen entspricht.</summary>
+    public string GruppeFreiEintrag { get; set; } = Resource.BST_GRUPPE_FREI_EINTRAG;
+
     /// <summary><c>BST_LBL_HERSTELLER</c></summary>
     public string LabelHersteller { get; set; } = Resource.BST_LBL_HERSTELLER;
 
