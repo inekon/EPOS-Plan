@@ -14,7 +14,7 @@ nach `Dokumentation/ueberholt/`, sobald die Fortsetzung GD-4 abgeschlossen hat.
 |---|---|
 | Arbeitszweig | `ios_migration_september` (Remote `origin`). Der Sitzungszweig des alten Kontos `claude/magical-bohr-ff5ufj` wurde bei jedem Push mitgezogen; die neue Sitzung nimmt ihren eigenen Sitzungszweig |
 | Letzte Wellen | #1023 BK-1 (gepusht mit [skip ci]), #1020 GD-5, #1022 NP7/NP7b (Schritt 220); davor #1011 NP6, #1012 Quick Assist (Admin-Zweig), #1013 AB2, #1014 AB3, #1015 GD-1, #1016 GD-2, #1017 Entwurf BK — gepusht `f40fe2fa1`; danach Anmeldung Schritt 220 (`6870f7169`) und GD-3 mit diesem Papier (#1019) |
-| CI | Kern-Lauf 38195098863 auf `f40fe2fa1` wurde von späteren Pushes abgebrochen (kein Nachweis); maßgeblich ist der jüngste Kern-Lauf auf `ios_migration_september` (beim Schreiben 38198823539 auf `b523a99da`, danach die Pushes von #1020 und #1022); #1010 grün mit Lauf 38188012085 auf `228a10287`; Vermerke für #1010, #1011, #1013–#1017, #1019, #1020 und #1022 stehen noch aus (Abschnitt 4 a) |
+| CI | Kern-Lauf 38206954119 grün auf `02d4ddfe0` (enthält alles bis #1022); #1010 grün mit 38188012085 auf `228a10287`; vermerkt in #1010, #1011, #1013–#1017, #1019, #1020, #1022. #1023 (BK-1) und die Papiere danach sind mit [skip ci] gepusht und laufen mit dem nächsten Push ohne [skip ci] durch die CI |
 | Referenzbasis | **R52** `Referenzlaeufe/2026-10-11_R52_Vorheizen`, dreißig Projekte; CI-Auswahl 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065. Nächste freie Basis **R53** (vorgesehen für SA4) |
 | Testdatenbank | Schemastand **220** (Git LFS) |
 | Schemakette | 218 `KaelteArtSchema` (Sitzung Kälteanlagen), 219 `RaumnutzungNormkategorienSchema` (NP6), 220 `RaumnutzungNormwerteSchema` (NP7); **221 angemeldet für BK-2**; **222 frei** |
@@ -60,9 +60,8 @@ Festlegung aus NP7, die Folgewellen kennen müssen: **Außenluft je Person** ist
 
 ## 4. Nächste Arbeit (Reihenfolge)
 
-1. **CI-Vermerke:** jüngsten Kern-Lauf auf `ios_migration_september` prüfen, der `f40fe2fa1` bzw. den GD-3-Push enthält; grün →
-   in #1010 „CI-Kern-Lauf 38188012085 grün auf `228a10287`“, in #1011, #1013–#1017, #1019, #1020 und #1022 Lauf-ID und Commit eintragen, Commit `[skip ci]`.
-   Rot → `get_job_logs` mit `failed_only`, Ursache eingrenzen, beheben.
+1. **CI-Vermerk für #1023** (BK-1) und alle folgenden Zeilen mit dem nächsten Kern-Lauf ohne [skip ci]; rot → `get_job_logs` mit
+   `failed_only`, Ursache eingrenzen, beheben.
 2. **NP7-Nachzug:** Nummern 70/71 der Projektdatei auf die Wohnprofile (nach Anwenderentscheid, Abschnitt 5).
 3. **GD-4 „Als Mehrzonenmodell übernehmen“** (Entwurf Abschnitt 7, nach GD-3 und AB3 frei): Knopf, Neulesen der gespeicherten
    Importquelle mit Prüfsumme (E130 F7), Zonenbaum als Blatt, Schreiben in das bestehende Gebäude mit Ersetzen in einem Vorgang;
