@@ -1288,6 +1288,17 @@ Fehler. **Gegenprobe** (läuft mit): ein absichtlich rollender Inhalt des Katalo
 verschachtelter Rollbereich, ein rollender Dialogkörper als solcher erkannt werden. Rückgabe `0` = kein
 Verstoß und Gegenprobe rot, `1` = Verstoß oder Gegenprobe grün, `2` = Aufbaufehler. Die Probe steht in keiner CI.
 
+**Vergleich über beide Listen (VG1, KA‑E‑24).** In den Fällen Heizkessel und Wärmepumpen nimmt die Probe je Fenster
+alle Kreuze zurück, kreuzt die erste Projektzeile an (dann muss „Vergleichen…“ weich gesperrt sein und einen Grund
+nennen), dazu den ersten Katalogsatz (dann frei) und öffnet den Vergleich — Zustand „Vergleich offen“: die
+Vergleichsüberlagerung steht ganz im Fenster, jeder Satzspalte steht die Herkunft im Kopf, und in ihr liegt kein
+Rollbereich in einem anderen (es rollt allein die Überlagerung, die Hülle der Tabelle nicht); Esc schließt sie. Die
+Fensterprobe reicht dafür beiden Wirten eine kleine Parameterliste (`Vergleichsparameter`, `VergleichsparameterProjekt`).
+**Gegenprobe** (läuft mit): ein Rollbereich um die Tabelle und ein Spaltenkopf ohne Herkunft müssen rot werden. Mit
+`--fotos` legt die Probe in 1 280 × 800 `<fall>_vergleich_1280x800.png` (offen) und `…_gesperrt.png` (ein Kreuz, der
+Grund als Schild über dem Knopf) ab. **Messung (12.10.2026):** Heizkessel 140 Zustände, Wärmepumpen 120 Zustände,
+0 Verstöße, Gegenprobe rot.
+
 **Ganglinie mit verdichtetem Kopf (DZ1-N1).** In den vier Ganglinien-Fällen (Wärmebedarf extern, Strom-, Solar-,
 PV-Ganglinie) misst die Probe aufgeklappt zusätzlich: Kopf der Satzfläche (bis zur Oberkante der Kurve, ohne Polster)
 ab 1 024 px Breite höchstens 90 px — in 768 × 1 024 brechen die Kennzahlen um (93 px) —, Kurve mindestens

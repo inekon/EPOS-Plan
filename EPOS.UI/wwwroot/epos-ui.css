@@ -10539,6 +10539,25 @@ table.epos-simerg-tabelle {
     font-weight: normal;
 }
 
+/* KA-E-24: die Herkunft eines Satzes im Spaltenkopf des Vergleichs (Projekt / Katalog) - leise vor dem Namen. */
+.epos-vergleich-herkunft {
+    margin-right: 4px;
+    font-size: 0.85em;
+    font-weight: normal;
+    color: var(--epos-text-leise);
+}
+
+/* VG1: im Vergleich rollt allein die Ueberlagerung - die Huelle der Tabelle rollt nicht mit (kein Rollbereich
+   im Rollbereich); lange Werte brechen in der Zelle um, statt die Ueberlagerung zu verbreitern. */
+.epos-raster-huelle.epos-vergleich-huelle {
+    overflow: visible;
+}
+
+.epos-vergleich-huelle .epos-vergleich th,
+.epos-vergleich-huelle .epos-vergleich td {
+    overflow-wrap: anywhere;
+}
+
 .epos-vergleich--stimmig {
     color: var(--epos-text-leise);
 }

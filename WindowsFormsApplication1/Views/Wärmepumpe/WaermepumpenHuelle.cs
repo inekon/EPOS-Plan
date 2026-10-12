@@ -137,6 +137,9 @@ namespace WindowsFormsApplication1
                 // Quelle wie die Parameteruebersicht (W14a-E-8) - keine zweite Liste.
                 ["Vergleichsparameter"] = new Func<string, IReadOnlyList<Parameterwert>>(
                     n => ParameterUebersichtCtrl.Werte(Anlagenart.Waermepumpe, n, KatalogBrowserHuelle.Text)),
+                // KA-E-24: die Projektkopie (ID) in derselben Parameterliste - Vergleichen ueber beide Listen.
+                ["VergleichsparameterProjekt"] = new Func<int, IReadOnlyList<Parameterwert>>(
+                    id => ParameterUebersichtCtrl.ProjektWerte(Anlagenart.Waermepumpe, id, KatalogBrowserHuelle.Text)),
 
                 // AW2: die Anlagenfelder in der Satz-Ueberlagerung des Projektsatzes. Ihr "In Stamm übernehmen…"
                 // entfaellt hier - der Rueckweg steht in der Projekt-Kopfleiste (KA-E-9), eine Handlung hat einen Ort.

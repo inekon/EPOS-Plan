@@ -185,15 +185,16 @@ public class KaeltemaschineAnlageKnopfleisteTests : EposBunitContext
     public void Vergleichen_beim_Projektsatz_vergleicht_die_angekreuzten_Anlagen()
     {
         var cut = Aufbauen(ZweiAnlagen());
-        Assert.True(AmSatz(cut, "epos-knopf--vergleichen").HasAttribute("disabled"));
+        Assert.True((AmSatz(cut, "epos-knopf--vergleichen").GetAttribute("aria-disabled") == "true"));
 
         foreach (int i in new[] { 0, 1 })
             cut.Find(".epos-zweispalten-bereich--projekt").QuerySelectorAll("td .epos-wahlkaestchen")[i].Click();
-        Assert.False(AmSatz(cut, "epos-knopf--vergleichen").HasAttribute("disabled"));
+        Assert.False((AmSatz(cut, "epos-knopf--vergleichen").GetAttribute("aria-disabled") == "true"));
         AmSatz(cut, "epos-knopf--vergleichen").Click();
 
+        string P = WindowsFormsApplication1.MyResource.Resource.AUSWAHL_VERGLEICH_HERKUNFT_PROJEKT + " ";
         var koepfe = cut.FindAll(".epos-vergleich thead th").Select(th => th.TextContent).ToList();
-        Assert.Equal(new[] { "KM Bestand", "KM Neubau" }, koepfe.Skip(1).ToArray());
+        Assert.Equal(new[] { P + "KM Bestand", P + "KM Neubau" }, koepfe.Skip(1).ToArray());
         Assert.NotEmpty(cut.FindAll(".epos-vergleich tbody tr"));
     }
 
@@ -223,5 +224,17 @@ public class KaeltemaschineAnlageKnopfleisteTests : EposBunitContext
         var knoepfe = cut.FindAll(".epos-kaeltemaschine-anlage > .epos-leiste button").Select(b => b.TextContent.Trim()).ToList();
         Assert.Equal(new[] { R.ALLG_BTN_ABBRECHEN, R.ALLG_BTN_OK }, knoepfe.TakeLast(2).ToArray());
         Assert.DoesNotContain(knoepfe, k => k.Contains('❌') || k.Contains('✔'));
+    }
+
+    /// <summary>KA-E-24: Vergleichen… stellt eine Projektzeile (Werte des Projektgeräts über seine ID) und einen Katalogsatz nebeneinander.</summary>
+    [Fact]
+    public void KA_E_24_Vergleichen_stellt_Projektzeile_und_Katalogsatz_nebeneinander()
+    {
+        var cut = Aufbauen(ZweiAnlagen());
+        var ids = new List<int>();
+        cut.Render(p => p
+            .Add(x => x.Vergleichsparameter, n => VergleichWirtHilfe.Werte("K:" + n))
+            .Add(x => x.VergleichsparameterProjekt, id => { ids.Add(id); return VergleichWirtHilfe.Werte("P:" + id); }));
+        VergleichWirtHilfe.ProjektzeileGegenKatalogsatz(cut, ids, "KM Bestand");
     }
 }

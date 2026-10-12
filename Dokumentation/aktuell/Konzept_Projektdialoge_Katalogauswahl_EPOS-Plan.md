@@ -128,6 +128,7 @@ KA‑Q1 bis KA‑Q9 des Entwurfs (Zuordnung in der letzten Spalte).
 | **KA‑E‑21** | Die Knopfleiste am gewählten Satz gilt für alle Wirte der Katalogauswahl: die sieben Erzeugerdialoge, Wärmebedarf extern, Strom-, Solar- und PV-Ganglinie, Bedarfsprofile, Gebäude (Projekt und Assistent) und die Kältemaschine (Schalter `KnopfleisteAmSatz` überall eingeschaltet). | 11.10.2026 | AW1, AW3 |
 | **KA‑E‑22** | Wärmepumpe: Bearbeiten… öffnet für Projekt- und Katalogsatz dieselbe Überlagerung aus Satzdaten und Anlage (Auslegung für Verteilung, Kenndaten mit einer Feldgruppe, Kennlinien); die Auswahlliste des Anlagen-Dialogs entfällt; je Aufruf eine Anlage mit ihrer Kennlinie; Abschnitte ohne Daten beim Katalogsatz weich gesperrt „nur im Projekt“. | 11.10.2026 | AW2 |
 | **KA‑E‑23** | Wärmebedarf/Kältebedarf extern folgt dem Gerüst des Wärmepumpendialogs: Satzzeile mit wesentlichen Angaben und Knopfleiste, Einzelheiten samt Ganglinie und Deckung in einer Bearbeiten-Überlagerung für Projekt- und Katalogsatz. | 12.10.2026 | Anwenderentscheid 12.10.2026 (Sichtabnahme K5a) |
+| **KA‑E‑24** | „Vergleichen…“ vergleicht die angekreuzten Zeilen beider Listen zusammen (Projektzeilen und Katalogsätze, zwei bis drei); ohne Kreuze vergleicht es die gewählte Projektzeile mit dem gewählten Katalogsatz, sobald beide gewählt sind; jede Spalte trägt im Kopf die Herkunft („Projekt“/„Katalog“) vor dem Namen. Die Kennwerte der Projektzeile kommen aus derselben Parameterliste wie die des Katalogsatzes (Projektkopie samt Kennlinie). | 12.10.2026 | VG1 |
 
 ## 4 Zielbild V1
 
@@ -177,7 +178,8 @@ des Dialogs, **Ü** = Überlagerung im selben Fenster.
 | Suche, Trefferzahl, Filter zurücksetzen | K (Kopf, links) | Katalogliste |
 | ▲ In das Projekt übernehmen (auch Doppelklick, Enter) | K (Kopf, rechts) | Auswahl des Katalogs → Projekt |
 | Spalten sortieren und filtern, Schloss- und „im Projekt“-Spalte | K (Listenkopf) | Katalogliste |
-| Vergleichen…, Schloss setzen/aufheben…, Löschen, Bearbeiten… (Katalogsatz) | K (Fuß, nach dem gewählten Namen) | Auswahl des Katalogs |
+| Vergleichen… | K (Fuß, nach dem gewählten Namen) | Kreuze beider Listen (zwei bis drei), ohne Kreuze gewählte Projektzeile und gewählter Katalogsatz (KA‑E‑24) |
+| Schloss setzen/aufheben…, Löschen, Bearbeiten… (Katalogsatz) | K (Fuß, nach dem gewählten Namen) | Auswahl des Katalogs |
 | Neu…, Import…, Speichern unter… | K (Fuß, rechts) | Katalog |
 | Baustoffzuordnungen… (Gebäude), Typ ändern… / DB ändern… (Bedarfsprofile) | K (Fuß) | Katalog |
 | Kenndaten des gewählten Satzes (eine Zeile, Marke „Projektsatz“/„Katalogsatz“) | S (zugeklappt) | zuletzt gewählte Zeile |
@@ -193,8 +195,9 @@ des Dialogs, **Ü** = Überlagerung im selben Fenster.
 | Verwaltungsbetriebsart (Gebäude, nur Katalog) | Projektbereich und Trennlinie entfallen | — |
 
 Bei Mehrfachauswahl nennt die Fußleiste des Katalogs statt des Namens die Zahl („3 Sätze:“); Knöpfe, die
-nur einen Satz vertragen (Vergleichen braucht zwei oder mehr, Umstellen genau einen), sind mit Hinweis
-ausgegraut. Ein Satzname als erstes Wort der Leiste folgt dem Haus-Muster der Auswahlleiste.
+nur einen Satz vertragen (Vergleichen braucht zwei bis drei Zeilen aus beiden Listen, Umstellen genau einen), sind mit Hinweis
+ausgegraut. Der Vergleich zeigt je Satz eine Spalte mit der Herkunft („Projekt“/„Katalog“) vor dem Namen und kennzeichnet
+je Parameter „stimmig“ oder „abweichend“. Ein Satzname als erstes Wort der Leiste folgt dem Haus-Muster der Auswahlleiste.
 
 ### 4.3 Trennlinie
 
@@ -267,7 +270,7 @@ zugeklappt, 214 px mit der Trennlinie unten, 85 px oben), die Katalogliste gibt 
 
 ### 4.4a Knopfleiste am gewählten Satz
 
-Heizkessel und Wärmepumpe führen eine Wahl je Zeile (KA‑E‑17): Das Kästchen markiert nur für Sammelaktionen, die gewählte Projektzeile ist farbig hervorgehoben, und der Klick auf die Zeile wählt. Die Knopfleiste des Katalogs steht in der Zeile „gewählter Satz“ und der Stift dort entfällt (KA‑E‑18); Schloss setzen… und Löschen wirken nur auf Katalogsätze und sind beim Projektsatz mit dem Grund „Katalogsatz wählen“ weich gesperrt (KA‑E‑19). Bearbeiten… im Kopf des Bereichs „Im Projekt“ entfällt, „In die Datenbank übernehmen…“ und „Aus dem Projekt entfernen“ bleiben (KA‑E‑20); der Schalter `KnopfleisteAmSatz` begrenzt die Geltung auf diese zwei Dialoge (KA‑E‑21). Bei der Wärmepumpe öffnet Bearbeiten… für Projekt- und Katalogsatz dieselbe Überlagerung aus Satzdaten und Anlage (KA‑E‑22). Alle Wirte der Katalogauswahl tragen die Knopfleiste am gewählten Satz; die Knopfmatrix K/S/D und die Abschnitte 4.2 und 4.4 gelten mit dieser Verschiebung (Fußleiste des Katalogs → Zeile ‚gewählter Satz‘). Dialoge ohne Katalogeditor haben kein Neu…, Dialoge ohne Vergleich kein Vergleichen…; Stromganglinie und Gebäude führen zusätzlich ‚Vergrößern‘ am Satz; Wärmebedarf extern folgt dem Aufbau der Wärmepumpe (KA‑E‑23).
+Heizkessel und Wärmepumpe führen eine Wahl je Zeile (KA‑E‑17): Das Kästchen markiert nur für Sammelaktionen, die gewählte Projektzeile ist farbig hervorgehoben, und der Klick auf die Zeile wählt. Die Knopfleiste des Katalogs steht in der Zeile „gewählter Satz“ und der Stift dort entfällt (KA‑E‑18); Schloss setzen… und Löschen wirken nur auf Katalogsätze und sind beim Projektsatz mit dem Grund „Katalogsatz wählen“ weich gesperrt (KA‑E‑19). Bearbeiten… im Kopf des Bereichs „Im Projekt“ entfällt, „In die Datenbank übernehmen…“ und „Aus dem Projekt entfernen“ bleiben (KA‑E‑20); der Schalter `KnopfleisteAmSatz` begrenzt die Geltung auf diese zwei Dialoge (KA‑E‑21). Bei der Wärmepumpe öffnet Bearbeiten… für Projekt- und Katalogsatz dieselbe Überlagerung aus Satzdaten und Anlage (KA‑E‑22). Alle Wirte der Katalogauswahl tragen die Knopfleiste am gewählten Satz; die Knopfmatrix K/S/D und die Abschnitte 4.2 und 4.4 gelten mit dieser Verschiebung (Fußleiste des Katalogs → Zeile ‚gewählter Satz‘). Dialoge ohne Katalogeditor haben kein Neu…, Dialoge ohne Vergleich kein Vergleichen…; Wärmebedarf extern, Stromganglinie und Gebäude führen zusätzlich ‚Vergrößern‘ am Satz. „Vergleichen…“ führt der Baustein selbst als ersten Knopf am Satz und vergleicht die Kreuze beider Listen zusammen, ohne Kreuze die zuletzt gewählte Projektzeile mit dem zuletzt gewählten Katalogsatz (KA‑E‑24). Unter zwei oder über drei Zeilen ist er weich gesperrt und nennt den Grund; die Herkunft jedes Satzes steht im Spaltenkopf des Vergleichs. Wärmebedarf extern folgt dem Aufbau der Wärmepumpe (KA‑E‑23).
 
 ### 4.5 Mehrfachauswahl
 

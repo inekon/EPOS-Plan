@@ -3471,6 +3471,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchstens drei Zeilen vergleichen – Kreuze zurücknehmen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_VERGLEICH_GRENZE {
+            get {
+                return ResourceManager.GetString("AUSWAHL_VERGLEICH_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog ähnelt.
+        /// </summary>
+        public static string AUSWAHL_VERGLEICH_HERKUNFT_KATALOG {
+            get {
+                return ResourceManager.GetString("AUSWAHL_VERGLEICH_HERKUNFT_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt ähnelt.
+        /// </summary>
+        public static string AUSWAHL_VERGLEICH_HERKUNFT_PROJEKT {
+            get {
+                return ResourceManager.GetString("AUSWAHL_VERGLEICH_HERKUNFT_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die angekreuzten Zeilen beider Listen nebeneinander vergleichen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_VERGLEICH_HINWEIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_VERGLEICH_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Projektzeile mit dem gewählten Katalogsatz vergleichen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_VERGLEICH_PAAR_HINWEIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_VERGLEICH_PAAR_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zwei bis drei Zeilen ankreuzen oder Projektzeile und Katalogsatz wählen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_VERGLEICH_SPERRE {
+            get {
+                return ResourceManager.GetString("AUSWAHL_VERGLEICH_SPERRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Alle Treffer wählen ähnelt.
         /// </summary>
         public static string AUSWAHL_WAHL_ALLE {
