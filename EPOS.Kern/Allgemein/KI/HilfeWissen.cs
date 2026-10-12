@@ -524,9 +524,10 @@ namespace WindowsFormsApplication1
                     "Die Kategorie 'DIN/TS 18599-10' des Katalogs der Nutzungsprofile wird mit Nummer und Name der " +
                     "Nutzungen ausgeliefert, aber ohne Werte: Die Norm ist kostenpflichtig, ihre Werte trägt der Anwender " +
                     "aus seiner eigenen Ausgabe ein. Der Assistent nennt dabei selbst keinen Normwert, ergänzt keinen und " +
-                    "schätzt keinen - jede Zahl stammt aus der Ausgabe des Anwenders. So geht es: 1. Vorlage holen: Die " +
-                    "Kategorie 'DIN/TS 18599-10' als CSV exportieren - solange sie keine Werte trägt, ist das die Vorlage " +
-                    "mit Kopfzeile, Nummern und Namen. 2. Die Datei in einer Tabellenkalkulation öffnen (Trennzeichen " +
+                    "schätzt keinen - jede Zahl stammt aus der Ausgabe des Anwenders. Ist im Katalogbaum des Blatts " +
+                    "'Nutzungsprofile' die Kategorie 'DIN/TS 18599-10' gewählt, stehen unter dem Baum 'Normwerte einlesen…' " +
+                    "und 'Eingelesene Werte entfernen…'. So geht es: 1. Vorlage holen: Im Dialog 'Normwerte einlesen…' " +
+                    "schreibt 'Vorlage speichern…' die CSV der Kategorie ohne Werte mit Kopfzeile, Nummern und Namen. 2. Die Datei in einer Tabellenkalkulation öffnen (Trennzeichen " +
                     "Semikolon, UTF-8) und je Nutzung die Spalten aus der Tabelle der Norm füllen: Nutzung_Von und " +
                     "Nutzung_Bis (volle Stunden 0 bis 24), Nutzungstage_Woche (sieben Ziffern Mo bis So, 1 = genutzt, etwa " +
                     "1111100), Heiz_Soll und Kuehl_Soll in °C, die Absenkung in einer angefügten Spalte Heiz_Absenkung_K in K (statt Heiz_Soll_Ausserhalb), Aussenluft mit " +
@@ -535,11 +536,14 @@ namespace WindowsFormsApplication1
                     "in W je Person, Geraete_Leistung und Beleuchtung_Leistung in W/m², Anteile als Zahl von 0 bis 1. " +
                     "Nummer und Name nicht ändern - zugeordnet wird über die Nummer, die zwei Wohnprofile ohne Nummer über " +
                     "ihren Namen. Eine leere Zelle heißt 'nicht belegt'. Dezimalzeichen ist der Punkt. 3. Als CSV " +
-                    "speichern und mit 'Normwerte einlesen…' am Blatt 'Nutzungsprofile' einlesen; die Vorschau nennt die " +
-                    "Treffer, unbekannte Nummern, Abweichungen zu vorhandenen Werten und fragt, ob vorhandene Werte " +
-                    "überschrieben werden. Die Profile tragen danach die Marke 'eingelesen' mit Quelle und Tag. Ebenso " +
-                    "liest 'Normwerte einlesen…' eine HottCAD-Projektdatei, deren Nutzungsprofile die DIN-Nummer tragen. " +
-                    "'Eingelesene Werte entfernen' stellt die Profile wieder ohne Werte. Die Außenluft je Person rechnet " +
+                    "speichern, im Dialog 'Normwerte einlesen…' 'CSV-Datei wählen…' und die Datei wählen; die Vorschau nennt " +
+                    "die Treffer mit Stand und abweichenden Spalten, die Abweichungen je Spalte und unter 'Nicht übernommen' " +
+                    "unbekannte Nummern, Profile ohne Wert und doppelte Nummern. Vorhandene Werte ersetzt das Einlesen nur, " +
+                    "wenn der Schalter 'vorhandene Werte überschreiben' gesetzt ist (Vorgabe aus); 'Übernehmen' schreibt " +
+                    "und nennt die Zahl der gefüllten und übersprungenen Profile, 'Abbrechen' schreibt nichts. Die Profile " +
+                    "tragen danach die Marke 'eingelesen' mit Quelle und Tag. Ebenso liest 'Projektdatei wählen…' eine " +
+                    "HottCAD-Projektdatei (.sqproj), deren Nutzungsprofile die DIN-Nummer tragen. 'Eingelesene Werte " +
+                    "entfernen…' stellt nach einer Rückfrage alle eingelesenen Profile wieder ohne Werte. Die Außenluft je Person rechnet " +
                     "die Übernahme eines Profils mit der Fläche je Person und der lichten Höhe in einen Luftwechsel um; " +
                     "fehlt die Fläche je Person, bleibt die Lüftung benannt ungesetzt."),
 

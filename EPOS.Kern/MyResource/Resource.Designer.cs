@@ -106256,6 +106256,249 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die doppelte Nummer ähnelt.
+        /// </summary>
+        public static string RNP_NW_ART_DOPPELT {
+            get {
+                return ResourceManager.GetString("RNP_NW_ART_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Wert ähnelt.
+        /// </summary>
+        public static string RNP_NW_ART_OHNE {
+            get {
+                return ResourceManager.GetString("RNP_NW_ART_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Meldung ähnelt.
+        /// </summary>
+        public static string RNP_NW_ART_SONST {
+            get {
+                return ResourceManager.GetString("RNP_NW_ART_SONST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unbekannte Nummer ähnelt.
+        /// </summary>
+        public static string RNP_NW_ART_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("RNP_NW_ART_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string RNP_NW_BTN_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("RNP_NW_BTN_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV-Datei wählen… ähnelt.
+        /// </summary>
+        public static string RNP_NW_BTN_CSV {
+            get {
+                return ResourceManager.GetString("RNP_NW_BTN_CSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Normwerte einlesen… ähnelt.
+        /// </summary>
+        public static string RNP_NW_BTN_EINLESEN {
+            get {
+                return ResourceManager.GetString("RNP_NW_BTN_EINLESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingelesene Werte entfernen… ähnelt.
+        /// </summary>
+        public static string RNP_NW_BTN_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("RNP_NW_BTN_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
+        /// </summary>
+        public static string RNP_NW_BTN_JA {
+            get {
+                return ResourceManager.GetString("RNP_NW_BTN_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht entfernen ähnelt.
+        /// </summary>
+        public static string RNP_NW_BTN_NEIN {
+            get {
+                return ResourceManager.GetString("RNP_NW_BTN_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdatei wählen… ähnelt.
+        /// </summary>
+        public static string RNP_NW_BTN_PROJEKT {
+            get {
+                return ResourceManager.GetString("RNP_NW_BTN_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string RNP_NW_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("RNP_NW_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage speichern… ähnelt.
+        /// </summary>
+        public static string RNP_NW_BTN_VORLAGE {
+            get {
+                return ResourceManager.GetString("RNP_NW_BTN_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV-Datei mit Normwerten wählen ähnelt.
+        /// </summary>
+        public static string RNP_NW_DLG_CSV {
+            get {
+                return ResourceManager.GetString("RNP_NW_DLG_CSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage der Normwerte speichern ähnelt.
+        /// </summary>
+        public static string RNP_NW_DLG_VORLAGE {
+            get {
+                return ResourceManager.GetString("RNP_NW_DLG_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die eingelesenen Werte von {0} Profil(en) entfernen? Die Profile stehen danach wieder ohne Werte. ähnelt.
+        /// </summary>
+        public static string RNP_NW_FRAGE_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("RNP_NW_FRAGE_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abweichungen ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_ART {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei: {0} ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_DATEI {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil oder Meldung ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_GRUND {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht übernommen ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_HINWEISE {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_HINWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nummer ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_NUMMER {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_NUMMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_PROFIL {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_STAND {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Normwerte einlesen ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_TITEL {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Treffer ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_TREFFER {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vorhandene Werte überschreiben ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_UEBERSCHREIBEN {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_UEBERSCHREIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nr. {0} „{1}“: nicht übernommen — {2} ähnelt.
         /// </summary>
         public static string RNP_NW_MSG_ABGELEHNT {
@@ -106324,6 +106567,123 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_NW_MSG_UNBEKANNT {
             get {
                 return ResourceManager.GetString("RNP_NW_MSG_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage gespeichert: {0} ähnelt.
+        /// </summary>
+        public static string RNP_NW_MSG_VORLAGE {
+            get {
+                return ResourceManager.GetString("RNP_NW_MSG_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuerst eine Datei wählen. ähnelt.
+        /// </summary>
+        public static string RNP_NW_SPERRE_DATEI {
+            get {
+                return ResourceManager.GetString("RNP_NW_SPERRE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Profil trägt eingelesene Werte. ähnelt.
+        /// </summary>
+        public static string RNP_NW_SPERRE_KEINE {
+            get {
+                return ResourceManager.GetString("RNP_NW_SPERRE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eingelesene Werte vorhanden ähnelt.
+        /// </summary>
+        public static string RNP_NW_STAND_EINGELESEN {
+            get {
+                return ResourceManager.GetString("RNP_NW_STAND_EINGELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Werte ähnelt.
+        /// </summary>
+        public static string RNP_NW_STAND_LEER {
+            get {
+                return ResourceManager.GetString("RNP_NW_STAND_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte vorhanden ähnelt.
+        /// </summary>
+        public static string RNP_NW_STAND_VORHANDEN {
+            get {
+                return ResourceManager.GetString("RNP_NW_STAND_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Füllt die Profile der Kategorie DIN/TS 18599-10 mit den Werten aus Ihrer CSV-Datei oder einer Projektdatei. Das Programm liefert keine Normwerte mit. ähnelt.
+        /// </summary>
+        public static string RNP_NW_TXT_HINWEIS {
+            get {
+                return ResourceManager.GetString("RNP_NW_TXT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Profile der Datei sind zugeordnet. ähnelt.
+        /// </summary>
+        public static string RNP_NW_TXT_KEINE_HINWEISE {
+            get {
+                return ResourceManager.GetString("RNP_NW_TXT_KEINE_HINWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch keine Datei gewählt. ähnelt.
+        /// </summary>
+        public static string RNP_NW_TXT_OHNE_DATEI {
+            get {
+                return ResourceManager.GetString("RNP_NW_TXT_OHNE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abweichungen je Spalte: {0} ähnelt.
+        /// </summary>
+        public static string RNP_NW_TXT_SPALTEN {
+            get {
+                return ResourceManager.GetString("RNP_NW_TXT_SPALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Haken bleiben {0} Profil(e) mit vorhandenen Werten unverändert. ähnelt.
+        /// </summary>
+        public static string RNP_NW_TXT_UEBERSPRINGEN {
+            get {
+                return ResourceManager.GetString("RNP_NW_TXT_UEBERSPRINGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage ist die CSV-Datei der Kategorie mit Nummern und Namen, ohne Werte. ähnelt.
+        /// </summary>
+        public static string RNP_NW_TXT_VORLAGE {
+            get {
+                return ResourceManager.GetString("RNP_NW_TXT_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Treffer, davon {1} mit vorhandenen Werten und {2} mit Abweichungen. ähnelt.
+        /// </summary>
+        public static string RNP_NW_TXT_ZAEHLUNG {
+            get {
+                return ResourceManager.GetString("RNP_NW_TXT_ZAEHLUNG", resourceCulture);
             }
         }
         

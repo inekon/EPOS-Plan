@@ -57,6 +57,7 @@ namespace WindowsFormsApplication1
                     => Ergebnis(ctrl.ZuordnungSetzen(Kern(art), schluessel, idProfil)),
                 ZuordnungLoeschen = id => Ergebnis(ctrl.ZuordnungLoeschen(id)),
                 Csv = RaumnutzungCsvHuelle.Weg(ctrl),
+                Normwerte = RaumnutzungNormwerteHuelle.Weg(),
                 Bild = RaumnutzungBildHuelle.Weg(),
             };
         }

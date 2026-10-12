@@ -46,6 +46,12 @@ namespace WindowsFormsApplication1
         public sealed record Vorschau(bool Ok, string Meldung, string Quelle, IReadOnlyList<Treffer> Treffer,
                                       IReadOnlyList<string> Unbekannt, IReadOnlyList<string> Meldungen)
         {
+            /// <summary>Die Meldungen zu Profilen der Quelle ohne einen Wert — ebenso in <see cref="Meldungen"/>.</summary>
+            public IReadOnlyList<string> OhneWerte { get; init; } = Array.Empty<string>();
+
+            /// <summary>Die Meldungen zu Nummern, die die Quelle mehr als einmal führt — ebenso in <see cref="Meldungen"/>.</summary>
+            public IReadOnlyList<string> Doppelt { get; init; } = Array.Empty<string>();
+
             /// <summary>Treffer, deren DIN-Profil schon Werte trägt (Rückfrage „überschreiben“).</summary>
             public int MitWerten => Treffer.Count(t => t.HatWerte);
 
@@ -103,6 +109,8 @@ namespace WindowsFormsApplication1
             var treffer = new List<Treffer>();
             var unbekannt = new List<string>();
             var vergeben = new HashSet<long>();
+            var ohneWerte = new List<string>();
+            var doppelt = new List<string>();
             foreach (Raumnutzungsprofil q in (quelle ?? Enumerable.Empty<Raumnutzungsprofil>()).Where(x => x != null))
             {
                 Raumnutzungsprofil ziel = Zuordnen(din, q);
@@ -113,13 +121,15 @@ namespace WindowsFormsApplication1
                 }
                 if (!vergeben.Add(ziel.Id))
                 {
-                    liste.Add(Text(MyResource.Resource.RNP_NW_MSG_DOPPELT, ziel.Nummer, ziel.Bezeichner));
+                    doppelt.Add(Text(MyResource.Resource.RNP_NW_MSG_DOPPELT, ziel.Nummer, ziel.Bezeichner));
+                    liste.Add(doppelt[doppelt.Count - 1]);
                     continue;
                 }
                 Raumnutzungsprofil neu = MitWerten(ziel, q);
                 if (neu.IstLeer)
                 {
-                    liste.Add(Text(MyResource.Resource.RNP_NW_MSG_OHNE_WERTE, ziel.Nummer, ziel.Bezeichner));
+                    ohneWerte.Add(Text(MyResource.Resource.RNP_NW_MSG_OHNE_WERTE, ziel.Nummer, ziel.Bezeichner));
+                    liste.Add(ohneWerte[ohneWerte.Count - 1]);
                     continue;
                 }
                 string pruefung = RaumnutzungCtrl.Profilpruefung(neu);
@@ -132,8 +142,9 @@ namespace WindowsFormsApplication1
                                         ziel.IstLeer ? Array.Empty<string>() : Abweichungen(ziel, neu)));
             }
             if (treffer.Count == 0)
-                return new Vorschau(false, MyResource.Resource.RNP_NW_MSG_NICHTS, name, treffer, unbekannt, liste);
-            return new Vorschau(true, null, name, treffer, unbekannt, liste);
+                return new Vorschau(false, MyResource.Resource.RNP_NW_MSG_NICHTS, name, treffer, unbekannt, liste)
+                    { OhneWerte = ohneWerte, Doppelt = doppelt };
+            return new Vorschau(true, null, name, treffer, unbekannt, liste) { OhneWerte = ohneWerte, Doppelt = doppelt };
         }
 
         // =================================================================

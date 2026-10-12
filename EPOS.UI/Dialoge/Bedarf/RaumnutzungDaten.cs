@@ -415,6 +415,9 @@ public sealed class RaumnutzungWeg
     /// <summary>CSV-Import und -Export (NP4a) — der Weg der Komponente <c>RaumnutzungCsvAustausch</c>; <c>null</c> = keine Knöpfe.</summary>
     public RaumnutzungCsvWeg? Csv { get; init; }
 
+    /// <summary>„Normwerte einlesen…" und „Eingelesene Werte entfernen…" an der Kategorie DIN (NP7b); <c>null</c> = keine Knöpfe.</summary>
+    public NormwerteWeg? Normwerte { get; init; }
+
     /// <summary>Bietet das Bündel die Verwaltung des Katalogs an (Lesen genügt nicht)?</summary>
     public bool MitKatalog => Kategorien is not null && Profile is not null;
 
