@@ -1413,5 +1413,6 @@
     /// Die Zeilen des Steckbriefs — je Zeichenlauf aus dem Feldsatz „Alle Daten" (in der Überlagerung aufgeklappt),
     /// den die Felder rechts bearbeiten; ohne Feldsatz aus dem Detailblock. Am Projektsatz mit den Kostensummen.
     /// </summary>
-    internal IReadOnlyList<Steckbriefzeile> Steckbriefzeilen => StromspeicherSteckbrief.Zeilen(_felder, _detail, SteckbriefTexte);
+    internal IReadOnlyList<Steckbriefzeile> Steckbriefzeilen => StromspeicherSteckbrief.Zeilen(_felder, _detail, SteckbriefTexte,
+        _projektZeile is not null ? _kosten : null);
 }

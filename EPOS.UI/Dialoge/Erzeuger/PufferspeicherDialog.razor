@@ -1403,9 +1403,11 @@
     internal IReadOnlyList<Steckbriefzeile> Steckbriefzeilen => PufferspeicherSteckbrief.Zeilen(_felder, _detail, SteckbriefTexte,
         _projektZeile is not null ? _kosten : null, _projektZeile is null ? null : new Steckbriefzeile[]
         {
-            new(Satzsteckbrief.Beschriftung(SteckbriefTexte.LabelVorlauf), Zahlen.Anzeigetext(_projektZeile.Vorlauf),
-                SteckbriefTexte.EinheitGrad, Kennung: "vorlauf"),
-            new(Satzsteckbrief.Beschriftung(SteckbriefTexte.LabelRuecklauf), Zahlen.Anzeigetext(_projektZeile.Ruecklauf),
-                SteckbriefTexte.EinheitGrad, Kennung: "ruecklauf"),
+            // Die Angaben der Anlage im Projekt (dieselbe Quelle wie die Zusammenfassung der Detailzeile).
+            new(Resource.AUSWAHL_ZF_VERWENDUNG, _angaben?.Verwendung, Kennung: "verwendung"),
+            new(Satzsteckbrief.Beschriftung(SteckbriefTexte.LabelVorlauf),
+                _angaben?.Vorlauf is int v && v > 0 ? Zahlen.Anzeigetext(v) : null, SteckbriefTexte.EinheitGrad, Kennung: "vorlauf"),
+            new(Satzsteckbrief.Beschriftung(SteckbriefTexte.LabelRuecklauf),
+                _angaben?.Ruecklauf is int r && r > 0 ? Zahlen.Anzeigetext(r) : null, SteckbriefTexte.EinheitGrad, Kennung: "ruecklauf"),
         });
 }

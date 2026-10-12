@@ -1724,13 +1724,15 @@ public class PufferspeicherDialogTests : EposBunitContext
     [Fact]
     public void WP1b_Der_Geraetesteckbrief_steht_links_und_folgt_den_Feldern_rechts()
     {
-        var cut = Aufbauen(projektsatzWege: new Satzbearbeitungswege { Lesen = _ => Katalogfelder("Satz"), Speichern = _ => new KatalogSpeicherErgebnis(true, "ok", "") });
+        var cut = Aufbauen(projektsatzWege: new Satzbearbeitungswege { Lesen = _ => Katalogfelder("Satz"), Speichern = _ => new KatalogSpeicherErgebnis(true, "ok", "") },
+                           projektangaben: _ => new Pufferangaben(70, 50, 10, 95, "Heizung"));
         var satz = Satz(cut);
         var links = satz.QuerySelector(".epos-satz-zweispaltig > .epos-satz-zweispaltig-links")!;
         Assert.NotNull(satz.QuerySelector(".epos-satz-zweispaltig > .epos-satz-zweispaltig-rechts .epos-modulparameter"));
         var steckbrief = links.QuerySelector(".epos-pspd-steckbrief")!;
         Assert.Equal("Musterwerk", steckbrief.QuerySelector("dd[data-zeile=hersteller]")!.TextContent.Trim());
-        Assert.NotNull(steckbrief.QuerySelector("dd[data-zeile=vorlauf]"));                // das Temperaturpaar der Anlage
+        Assert.Equal("70 °C", steckbrief.QuerySelector("dd[data-zeile=vorlauf]")!.TextContent.Trim());   // Angaben der Anlage
+        Assert.Equal("Heizung", steckbrief.QuerySelector("dd[data-zeile=verwendung]")!.TextContent.Trim());
 
         cut.FindAll(".epos-satz-zweispaltig-rechts .epos-modulparameter input")
            .First(e => e.GetAttribute("value") == "Musterwerk").Input("Geändert");

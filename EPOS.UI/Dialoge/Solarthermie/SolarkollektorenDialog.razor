@@ -1497,7 +1497,8 @@
     /// Die Zeilen des Steckbriefs — je Zeichenlauf aus dem Feldsatz „Alle Daten" (in der Überlagerung aufgeklappt),
     /// den die Felder rechts bearbeiten; ohne Feldsatz aus dem Detailblock. Am Projektsatz mit den Kostensummen.
     /// </summary>
-    internal IReadOnlyList<Steckbriefzeile> Steckbriefzeilen => SolarkollektorenSteckbrief.Zeilen(_felder, _detail, SteckbriefTexte);
+    internal IReadOnlyList<Steckbriefzeile> Steckbriefzeilen => SolarkollektorenSteckbrief.Zeilen(_felder, _detail, SteckbriefTexte,
+        _projektZeile is not null ? _kosten : null);
 
     /// <summary>Das Kollektorfeld (Anzahl, Ausrichtung, Albedo, Solarkreis, Senken) — EIN Fragment für Detailzeile und linke Spalte der Satz-Überlagerung (WP1b).</summary>
     private RenderFragment Projektblock => __builder =>
