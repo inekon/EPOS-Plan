@@ -146,8 +146,8 @@
                Satz-Ueberlagerung mit Anlagenfeldern und Kostenknoepfen; ohne Datenbank. *@
             @* KM-K1: Katalog und Projekt mit beiden Arten (jede dritte Katalogzeile eine Waermepumpe), eine Projekt-
                waermepumpe im Kuehlbetrieb mit Rang; das Uebernehmen einer Waermepumpe lehnt der Wirt benannt ab (Banner). *@
-            <KaeltemaschineAnlageDialog Katalogprofil="@KaelteProfil"
-                                        Katalogzeilen="@KaelteKatalog"
+            <KaeltemaschineAnlageDialog Katalogprofil="@KuehlerzeugerProfil"
+                                        Katalogzeilen="@KuehlerzeugerKatalog"
                                         Anlagen="@Kaelteanlagen" Katalogwerte="@(_ => KaelteGeraet)"
                                         Stromtraeger="@(new[] { (5, "Strom") })" ProjektStromtraeger="5"
                                         Anlegen="@((_, _) => -1)" Speichern="@(_ => null)" Loeschen="@(_ => { })"
@@ -218,10 +218,10 @@
     };
 
     /// <summary>KM-K1: das gemeinsame Profil (Art, Quelle) und ein Katalog beider Arten.</summary>
-    private Katalogfilterprofil? _kaelteProfil;
-    private Katalogfilterprofil KaelteProfil => _kaelteProfil ??= KuehlerzeugerKatalogCtrl.Profil(s => Resource.ResourceManager.GetString(s) ?? s);
-    private IReadOnlyList<Katalogfilterzeile>? _kaelteKatalog;
-    private IReadOnlyList<Katalogfilterzeile> KaelteKatalog() => _kaelteKatalog ??= Zeilenbau.Voll(KaelteProfil, _anzahl)
+    private Katalogfilterprofil? _kuehlerzeugerProfil;
+    private Katalogfilterprofil KuehlerzeugerProfil => _kuehlerzeugerProfil ??= KuehlerzeugerKatalogCtrl.Profil(s => Resource.ResourceManager.GetString(s) ?? s);
+    private IReadOnlyList<Katalogfilterzeile>? _kuehlerzeugerKatalog;
+    private IReadOnlyList<Katalogfilterzeile> KuehlerzeugerKatalog() => _kuehlerzeugerKatalog ??= Zeilenbau.Voll(KuehlerzeugerProfil, _anzahl)
         .Select((z, i) => i % 3 == 2
             ? new Katalogfilterzeile(i + 1, "Wärmepumpe " + (i + 1)) { Schluessel = KuehlerzeugerKatalogCtrl.WpSchluessel(i + 1) }
                 .MitText(KuehlerzeugerKatalogCtrl.SpArt, Resource.KMA_ART_WAERMEPUMPE)
