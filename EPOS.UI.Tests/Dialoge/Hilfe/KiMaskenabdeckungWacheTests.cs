@@ -162,6 +162,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("RaumnutzungBlatt",                  "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
         // NP4a (Konzept Nutzungsprofile 6.1, 6.4): CSV-Import und -Export im Kopf des Blatts — ein Baustein darin.
         new("RaumnutzungCsvAustausch",           "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
+        // NP7b (Konzept Nutzungsprofile 6.5): der Dialog „Normwerte einlesen" als Überlagerung im Blatt.
+        new("NormwerteEinlesenDialog",           "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
         // NP4c (Konzept Nutzungsprofile 6.1, NP-F7, NP-F9): Zeilenbild- und Stundenprofil-Editor im Profileditor des
         // Blatts (über RaumnutzungBildEditor) - dieselbe Anmeldung wie das Blatt.
         new("RaumnutzungZeilenbildEditor",       "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
@@ -437,6 +439,10 @@ public sealed class KiMaskenabdeckungWacheTests
         new("RaumnutzungCsvAustausch", 3, "Zielkategorie und Name der neuen Kategorie gehören zur Handlung „CSV importieren…“, die " +
             "erst mit „Übernehmen“ in den Katalog schreibt, die Kategorie zur Handlung „CSV exportieren…“, die eine Datei " +
             "schreibt — Dateiwahlen und Klicks des Anwenders, kein Einstellwert des Gebäudes"),
+        // NP7b (Konzept Nutzungsprofile 6.5): der Schalter „vorhandene Werte überschreiben" des Dialogs „Normwerte einlesen".
+        new("NormwerteEinlesenDialog", 1, "der Schalter „vorhandene Werte überschreiben“ gehört zur Handlung „Übernehmen“, die " +
+            "aus der Datei des Anwenders in die Kategorie DIN schreibt — eine Angabe dieser Handlung, kein Einstellwert des " +
+            "Gebäudes; Quelle und Datei wählt der Anwender über die Dateiwahl der Plattform"),
         // NP4c (Konzept Nutzungsprofile 6.1, NP-F7, NP-F9): Wert, Nachtfenster und ΔT je Zeile des Zeilenbilds und die
         // 24 Stundenwerte je Tagesart samt Einfügefeld - der ENTWURF des Profileditors; die Feldkarte führt Zeilenbild und
         // Stundenprofile als Raster zum Lesen (np_zeilenbild_*, np_stunden_*) und den Umschalter je Größe nur lesbar

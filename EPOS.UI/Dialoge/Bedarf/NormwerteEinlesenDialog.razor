@@ -1,6 +1,7 @@
 ﻿@* NORMWERTE EINLESEN (Stufe NP7b; Konzept Nutzungsprofile 6.5, E131) - der Dialog hinter "Normwerte einlesen..." am
    Blatt "Nutzungsprofile", nur an der Kategorie DIN/TS 18599-10. Er steht als Ueberlagerung im Blatt (Titel und Kreuz
-   traegt die Ueberlagerung; ein Unterdialog ist nie eine zweite BlazorWebView), der Kopf traegt Hinweis und Hilfepille.
+   traegt die Ueberlagerung, der Wirt setzt TitelText=""; ein Unterdialog ist nie eine zweite BlazorWebView), der Kopf
+   traegt die Hilfepille, darunter steht der Hinweis.
 
    1. QUELLE. "CSV-Datei waehlen..." oder "Projektdatei waehlen..." laesst die Plattform eine Datei waehlen (Dienste.Datei in
       der Huelle) und zeigt die Vorschau; "Vorlage speichern..." schreibt die CSV der Kategorie ohne Werte.
@@ -17,10 +18,18 @@
 @using System.Linq
 
 <div class="epos-normwerte">
-    <div class="epos-dialog-kopf epos-dialog-kopf--ohnetitel epos-normwerte-kopf">
-        <p class="epos-leisezeile epos-normwerte-hinweis">@T.Hinweis</p>
+    <div class="epos-dialog-kopf epos-normwerte-kopf @(string.IsNullOrEmpty(Titel) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(Titel))
+        {
+            <h1 class="epos-dialog-titel">@Titel</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@T.Titel" />
+        @if (!string.IsNullOrEmpty(Titel))
+        {
+            <Schliesskreuz Geschlossen="() => Abschluss(false)" />
+        }
     </div>
+    <p class="epos-leisezeile epos-normwerte-erklaerung">@T.Hinweis</p>
 
     @if (_fehler is not null)
     {
@@ -147,6 +156,14 @@
 @code {
     /// <summary>Der Weg — die Hülle füllt ihn aus <c>RaumnutzungNormwerte</c> und <c>Dienste.Datei</c>.</summary>
     [Parameter] public NormwerteWeg? Weg { get; set; }
+
+    /// <summary>
+    /// Der Titel im Kopf; <c>null</c> = der Titel der Texte, leer = keiner (Titel und Kreuz trägt dann die
+    /// <c>Ueberlagerung</c> des Wirts — ein Titel, eine Stelle).
+    /// </summary>
+    [Parameter] public string? TitelText { get; set; }
+
+    private string Titel => TitelText ?? T.Titel;
 
     /// <summary>Schlüssel der Hilfepille — links in <c>help_mapping.txt</c>, Ziel der Abschnitt „Normwerte einlesen".</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Nutzungsprofile.dlg_Normwerte";
