@@ -2,8 +2,9 @@
 
 **Stand 12.10.2026 · Befund und Entwurf, Fragen F1–F8 mit E132 entschieden (Abschnitt 6a), nichts gebaut.** Gelesen auf `23ca3798d` (Zweig `ios_migration_september`,
 Basis R52). Auftrag BK der Sitzung Gebäudesimulation. Grundlage sind der Code, die Testdatenbank, ein Strukturbericht des
-Hottgenroth-Gesamtkatalogs und eine Recherche offener Quellen. Beide Papiere liegen nur in der Sitzung, nicht im
-Repositorium. Der Strukturbericht enthält nur Struktur, Zählungen und Anteile. **Werte, Namen und Herstellerangaben
+Hottgenroth-Gesamtkatalogs und eine Recherche offener Quellen. Beide Papiere liegen als Protokolle vor:
+[Strukturbericht](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-12_BK_Strukturbericht_Hottgenroth.md) und
+[Recherche freier Kataloge](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-12_BK_Recherche_freie_Kataloge.md). Der Strukturbericht enthält nur Struktur, Zählungen und Anteile. **Werte, Namen und Herstellerangaben
 aus dem Katalog stehen weder hier noch an einer anderen Stelle des Repositoriums.**
 
 **Anwenderwünsche (Wortlaut, 11./12.10.2026):**
