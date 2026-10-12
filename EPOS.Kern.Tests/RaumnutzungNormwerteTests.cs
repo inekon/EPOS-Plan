@@ -115,6 +115,39 @@ namespace EPOS.Kern.Tests
                                                                           p.Werte_Quelle == null && p.Werte_Datum == null));
         }
 
+        /// <summary>
+        /// NP7b: Die Vorschau führt doppelte Nummern und Profile ohne Wert eigens (zugleich in den Meldungen); die Hülle des
+        /// Dialogs reicht sie getrennt weiter, die übrigen Meldungen ohne sie, und schreibt nur die zuletzt geladene Vorschau.
+        /// </summary>
+        [Fact]
+        public void Doppelte_Nummern_und_Profile_ohne_Wert_stehen_eigens_und_die_Huelle_trennt_sie()
+        {
+            if (!_db.Vorhanden) return;
+            RaumnutzungNormwerte.Vorschau v = RaumnutzungNormwerte.AusCsv(Csv("1;a;21;", "01;b;22;", "2;c;;", "99;x;20;"), "probe.csv");
+            Assert.True(v.Ok, v.Meldung);
+            Assert.Single(v.Treffer);
+            Assert.Single(v.Doppelt);
+            Assert.Single(v.OhneWerte);
+            Assert.Single(v.Unbekannt);
+            Assert.Equal(2, v.Meldungen.Count);
+            Assert.Contains(v.Doppelt[0], v.Meldungen);
+            Assert.Contains(v.OhneWerte[0], v.Meldungen);
+
+            EPOS.UI.Dialoge.Bedarf.NormwerteVorschau d = RaumnutzungNormwerteHuelle.Vorschau(v);
+            Assert.True(d.Ok);
+            Assert.Equal("probe.csv", d.Datei);
+            Assert.Equal("1", d.Treffer.Single().Nummer);
+            Assert.Single(d.Doppelt);
+            Assert.Single(d.OhneWerte);
+            Assert.Single(d.Unbekannt);
+            Assert.Empty(d.Sonstige);
+
+            Assert.False(RaumnutzungNormwerteHuelle.Einlesen(null, false).Ok);
+            Assert.NotNull(RaumnutzungNormwerteHuelle.Weg(ios: false));
+            Assert.Equal(1, RaumnutzungNormwerteHuelle.Einlesen(v, false).Id);
+            Assert.Equal(1, RaumnutzungNormwerte.Eingelesene());
+        }
+
         [Fact]
         public void Eine_Quelle_ohne_Treffer_oder_ohne_Werte_wird_benannt_abgelehnt()
         {
