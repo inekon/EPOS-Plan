@@ -4,7 +4,7 @@ Dieses Papier hält, was die neue Sitzung „Kälteanlage“ braucht, um den Kä
 nächste Arbeit, Papiere, Arbeitsweise und am Ende den Einstiegs-Prompt. Regelquelle bleibt [`CLAUDE.md`](../../../CLAUDE.md) mit
 den Projekt-`CLAUDE.md`; der dauerhafte Stand steht in der [Statusdatei iOS-Migration](../Status_iOS_Migration.md) und in der
 [Statusdatei Gebäudesimulation](../Status_Gebaeudesimulation_VDI6007.md) (Entscheide E117–E121, Stufe KAE). Die Arbeitsweise
-folgt der [Übergabe vom 08.10.2026](../Gebaeudesimulation/2026-10-08_Uebergabe_Gebaeudesimulation_Kontowechsel.md), Abschnitt 6.
+folgt der [Übergabe vom 08.10.2026](../../ueberholt/2026-10-08_Uebergabe_Gebaeudesimulation_Kontowechsel.md), Abschnitt 6.
 
 **Zwei Übergabepapiere.** Am selben Tag hat eine zweite, gleichnamige Sitzung „Gebäudesimulation“ (Konto 1, Statuszeile #912) die
 [Übergabe des gebauten Kältestands](2026-10-10_Uebergabe_Kaelteanlagen.md) geschrieben (KU3, AK3-K, Kühlkurve, KM1–KM3, Code-Landkarte).
