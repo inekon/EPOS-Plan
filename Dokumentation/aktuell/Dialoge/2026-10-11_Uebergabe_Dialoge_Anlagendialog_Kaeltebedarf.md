@@ -11,9 +11,9 @@ für die hier genannten Gegenstände ab.
 
 ## 1 Stand
 
-- Zweige: Arbeitszweig `ios_migration_september`; Sitzungszweig `claude/cool-ramanujan-3m1lhl`, nach jedem Push gleich dem Arbeitszweig; letzter Push `37f557526` (Statuscommit #1029 KM‑L1/KM‑K1); Arbeitsbaum sauber, keine Agenten, keine Worktrees. Ein Check-in der alten Sitzung (10:22 UTC) trägt die CI-Vermerke #1027–#1029 nach, wenn der Kern-Lauf auf `37f557526` grün ist — die neue Sitzung verlässt sich nicht darauf und prüft die Zeilen selbst.
+- Zweige: Arbeitszweig `ios_migration_september`; Sitzungszweig `claude/cool-ramanujan-3m1lhl`, nach jedem Push gleich dem Arbeitszweig; letzter Push `37f557526` (Statuscommit #1029 KM‑L1/KM‑K1); Arbeitsbaum sauber, keine Agenten, keine Worktrees. Alle CI-Vermerke sind eingetragen, keine Check-ins mehr aktiv.
 - Statuszeilen dieser Sitzung (11.10.2026): #980 K2 Kernwege Kälte, #981 K3 Rechenweg Kältebedarf mit Abzugsstelle für K‑D, #982 K4 Startseite Reiter „Kältebedarf“ (Nachtrag: Hotfix doppelte BOM in `epos-ui.css`); #988 AW1 Knopfleiste am gewählten Satz (Heizkessel, Wärmepumpe); #989 AW2 Wärmepumpe: Satz-Überlagerung und Anlage zusammengeführt; #998 AW3a fünf Erzeugerdialoge; #999 AW3b Stufe 4/5 und Kältemaschine; #1009 KAL1 Einzeltage als Klappgruppe.
-- CI-Vermerke: #960–#965, #980–#982, #988/#989, #998/#999 tragen den Kern-Lauf 38181227802 (grün auf `3d7172064`), #1009 den Kern-Lauf 38186204735 (grün auf `f2caa6008`). #1024/#1025 vermerkt; #1027, #1028, #1029 ausstehend (Check-ins).
+- CI-Vermerke: #960–#965, #980–#982, #988/#989, #998/#999 tragen den Kern-Lauf 38181227802 (grün auf `3d7172064`), #1009 den Kern-Lauf 38186204735 (grün auf `f2caa6008`). #1024/#1025 (Lauf 38215901446 auf `c9d5ed5b1`) und #1027–#1029 (Lauf 38226571128 auf `37f557526`) vermerkt. Keine Vermerke ausstehend.
 - Katalogauswahl V1: alle Stufen gebaut; Knopfleiste am gewählten Satz (KA‑E‑17 bis KA‑E‑22, Konzept Abschnitt 4.4a) in allen Wirten; Wärmepumpe mit zusammengeführter Überlagerung (`WaermepumpeAnlageDialog` → Baustein `WaermepumpeAnlageFelder`); Nachzüge NK1 (Statuszeile #1021) geschlossen.
 - Kältebedarf: Konzept `Konzept_Kaeltebedarf_EPOS-Plan.md`; K1–K5 gebaut (K5 #1024), K6 offen.
 - Vergleich Projekt/Katalog (KA‑E‑24, #1025) gebaut.
@@ -64,8 +64,7 @@ Dokumentation/aktuell/Status_iOS_Migration.md sowie
 `git log --format='%h %<(72,trunc)%s' -n 25 origin/ios_migration_september`.
 Stand bei der Übergabe (12.10.2026): letzter Push der Vorgängersitzung 37f557526 (Statuszeile #1029);
 Statuszeilen des 12.10.: #1021 NK1, #1024 K5, #1025 VG1, #1027 WP1a, #1028 WP1b, #1029 KM‑L1/KM‑K1;
-CI-Vermerke bis #1025 eingetragen, #1027–#1029 prüfen (grüner Kern-Lauf auf 37f557526 oder einem
-späteren Stand, der ihn enthält; Muster Commit 534664c4c). Basis R52 2026-10-11_R52_Vorheizen. Die
+Alle CI-Vermerke bis #1029 eingetragen (Muster Commit 534664c4c). Basis R52 2026-10-11_R52_Vorheizen. Die
 Kopfzeile der Statusdatei gilt vor dem Papier, wenn sie abweicht; der Schemaschritt wird dort gemessen.
 
 Rolle: Fable 5.1 orchestriert und arbeitet selbst nur, wenn ein Agentenaufruf teurer wäre als die
@@ -111,8 +110,8 @@ Offen beim Anwender: Sichtabnahme unter Windows (Papier Abschnitt 4, Punkt 1) un
 zwei „Vergrößern“-Knöpfen (Empfehlung: so lassen).
 
 Erste Schritte: (1) Stand prüfen: `git status` sauber, keine Konfliktmarker, keine liegen gebliebene
-AGENT_LAEUFT, Testdatenbank kein LFS-Zeiger, Ressourcen-XML gültig. (2) CI-Vermerke #1027–#1029
-prüfen und bei Grün nachtragen. (3) Stand in höchstens fünf Zeilen melden. (4) Mit dem Anwender
+AGENT_LAEUFT, Testdatenbank kein LFS-Zeiger, Ressourcen-XML gültig. (2) Stand in höchstens fünf Zeilen
+melden. (3) Mit dem Anwender
 abstimmen, womit weitergemacht wird. Empfehlung: zuerst die Rückmeldungen aus der Sichtabnahme, dann
 KM‑K2 (Papier Abschnitt 4, Punkt 7: Naht für eine Wärmepumpen-Anlagenzeile, Bearbeiten… im
 Kältemaschinen-Dialog, Wärmekaskade, Verwendungsmarke, drei unbenutzte Textfelder; Opus, Restgate),
