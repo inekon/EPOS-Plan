@@ -122,7 +122,8 @@ public class WaermepumpeAnlageFelderTests : EposBunitContext
         Func<int, bool>? projektkopieVorhanden = null,
         Func<int, WaermepumpeUebernahmeVorschau?>? uebernahmeVorschau = null,
         Func<int, bool, KatalogSpeicherErgebnis>? inStammUebernehmen = null,
-        WaermepumpeKuehlGaben? kuehlung = null)
+        WaermepumpeKuehlGaben? kuehlung = null,
+        Func<int, int, string, WaermepumpeArbeitspunkt?>? arbeitspunkt = null)
     {
         _geschlossen = geschlossen;
         return Render<WaermepumpeAnlageFelder>(p => p
@@ -150,6 +151,7 @@ public class WaermepumpeAnlageFelderTests : EposBunitContext
             .Add(x => x.InStammUebernehmen, inStammUebernehmen)
             .Add(x => x.Kennlinien, kennlinien)
             .Add(x => x.KennlinienAbgleichen, kennlinienAbgleichen)
+            .Add(x => x.Arbeitspunkt, arbeitspunkt)
             .Add(x => x.KostenleisteAnzeigen, true));
     }
 
@@ -208,7 +210,8 @@ public class WaermepumpeAnlageFelderTests : EposBunitContext
         var cut = Aufbauen();
 
         var gruppen = cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent.Trim()).ToList();
-        Assert.Equal(new[] { "Auslegung für Verteilung", "Wärmepumpen Kenndaten" }, gruppen);
+        // WP1a: links unter der Auslegung der Gerätesteckbrief.
+        Assert.Equal(new[] { "Auslegung für Verteilung", "Gewähltes Gerät", "Wärmepumpen Kenndaten" }, gruppen);
 
         var reiter = cut.FindAll(".epos-reiter-knopf").Select(b => b.TextContent.Trim()).ToList();
         Assert.Equal(new[] { "COP", "Leistung" }, reiter);
@@ -556,7 +559,7 @@ public class WaermepumpeAnlageFelderTests : EposBunitContext
                            energiekosten: _ => Task.CompletedTask,
                            kennlinien: _ => Array.Empty<KennlinienZeile>());
 
-        var gruppe = cut.FindAll(".epos-gruppenkopf-koerper")[1];
+        var gruppe = cut.Find(".epos-wp-abschnitt--kenndaten .epos-gruppenkopf-koerper");
         var erstes = gruppe.Children[0];
 
         // 17.09.2026: Links steht die KostenKnoepfeLeiste der sechs Erzeugerdialoge
@@ -2434,5 +2437,85 @@ public class WaermepumpeAnlageFelderTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-warnbanner"));
         Assert.True(vermerke.Leer);
         Assert.Equal(nachKlick, gefragt);
+    }
+
+    // =================================================================================
+    // WP1a: der Gerätesteckbrief links unter „Auslegung für Verteilung"
+    // =================================================================================
+
+    /// <summary>Der Wert einer Steckbriefzeile über ihren sprachneutralen Anker.</summary>
+    private static string Steckbriefwert(IRenderedComponent<WaermepumpeAnlageFelder> cut, string zeile)
+        => cut.Find($".epos-wp-abschnitt--auslegung .epos-wp-steckbrief dd[data-zeile={zeile}] .epos-geraetesteckbrief-wert")
+              .TextContent.Trim();
+
+    [Fact]
+    public void WP1a_Der_Steckbrief_zeigt_die_Satzwerte()
+    {
+        var cut = Aufbauen(arbeitspunkt: (_, v, _) => new WaermepumpeArbeitspunkt("A2/W" + v, 10.24, 3.456));
+
+        Assert.Equal("WP Alpha", Steckbriefwert(cut, "name"));
+        Assert.Equal("Alpha", Steckbriefwert(cut, "hersteller"));
+        Assert.Equal("Luft-Wasser", Steckbriefwert(cut, "typ"));
+        Assert.Equal("stetig", Steckbriefwert(cut, "stufen"));
+        Assert.Equal("2023", Steckbriefwert(cut, "baujahr"));
+        Assert.Equal("12 kW", Steckbriefwert(cut, "nennleistung"));
+        Assert.Equal("6 kW", Steckbriefwert(cut, "heizstab"));
+        Assert.Equal("10,2 kW", Steckbriefwert(cut, "heizleistung"));
+        Assert.Equal("3,46", Steckbriefwert(cut, "cop"));
+        Assert.Contains("A2/W35", cut.Find(".epos-wp-steckbrief").TextContent);
+        Assert.Equal((12000d).ToString("N0", CultureInfo.CurrentCulture) + " €", Steckbriefwert(cut, "invest"));
+        Assert.Equal("340 €/a", Steckbriefwert(cut, "betrieb"));
+        // Fehlende Werte stehen als Strich: kein Kältemittel, kein höchster Vorlauf, keine Aufstellung.
+        Assert.Equal("—", Steckbriefwert(cut, "kaeltemittel"));
+        Assert.Equal("—", Steckbriefwert(cut, "hoechstvorlauf"));
+        Assert.Equal("—", Steckbriefwert(cut, "aufstellung"));
+        // Die rechte Spalte bleibt, wie sie war: kein Steckbrief bei den Kenndaten.
+        Assert.Empty(cut.FindAll(".epos-wp-abschnitt--kenndaten .epos-geraetesteckbrief"));
+    }
+
+    [Fact]
+    public void WP1a_Der_Steckbrief_folgt_einer_Aenderung_rechts()
+    {
+        var cut = Aufbauen();
+        Assert.Equal("12 kW", Steckbriefwert(cut, "nennleistung"));
+
+        Feld(cut, "Nennleistung").Input("18");
+
+        Assert.Equal("18 kW", Steckbriefwert(cut, "nennleistung"));
+    }
+
+    [Fact]
+    public void WP1a_Der_Arbeitspunkt_folgt_dem_Vorlauf_links_und_liest_nur_bei_Wechsel()
+    {
+        var gefragt = new List<int>();
+        var cut = Aufbauen(arbeitspunkt: (id, v, typ) =>
+        {
+            gefragt.Add(v);
+            Assert.Equal(77, id);
+            Assert.Equal("Luft-Wasser", typ);
+            return new WaermepumpeArbeitspunkt("A2/W" + v, v == 55 ? 8.0 : 10.0, v == 55 ? 2.5 : 4.0);
+        });
+        Assert.Equal("10,0 kW", Steckbriefwert(cut, "heizleistung"));
+        Assert.Equal("4,00", Steckbriefwert(cut, "cop"));
+
+        Auslegung(cut).QuerySelector("select")!.Change("55");
+
+        Assert.Equal("8,0 kW", Steckbriefwert(cut, "heizleistung"));
+        Assert.Equal("2,50", Steckbriefwert(cut, "cop"));
+        Assert.Contains("A2/W55", cut.Find(".epos-wp-steckbrief").TextContent);
+        // Je Vorlauf EINE Abfrage — nicht je Zeichenlauf.
+        Assert.Equal(new[] { 35, 55 }, gefragt);
+    }
+
+    [Fact]
+    public void WP1a_Ohne_Arbeitspunkt_stehen_Striche()
+    {
+        var cut = Aufbauen(arbeitspunkt: (_, _, _) => null);
+        Assert.Equal("—", Steckbriefwert(cut, "heizleistung"));
+        Assert.Equal("—", Steckbriefwert(cut, "cop"));
+
+        var ohneWeg = Aufbauen(daten: new WaermepumpeAnlageDaten());
+        Assert.Equal("—", Steckbriefwert(ohneWeg, "nennleistung"));
+        Assert.Equal("—", Steckbriefwert(ohneWeg, "heizleistung"));
     }
 }

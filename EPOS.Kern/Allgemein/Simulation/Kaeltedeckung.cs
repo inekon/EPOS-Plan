@@ -52,16 +52,26 @@ namespace WindowsFormsApplication1
         /// <summary>Eigener Zähler des Split-Stroms.</summary>
         public bool EigenerZaehler;
 
+        /// <summary>
+        /// <c>true</c> = die Zeile ist Prozesskälte (KWN-0, <c>Kaelte_Art = PROZESS</c>): Sie bleibt im Kühlkanal und geht
+        /// zusätzlich in den Unterposten <c>Kaeltebedarf_Prozess</c>. Unabhängig von der Deckungsart.
+        /// </summary>
+        public bool Prozess;
+
         /// <summary>Der Grund, warum die Split-Felder nicht rechnen (<c>null</c> = sie rechnen) — dieselbe Regel wie beim Speichern.</summary>
         public string Pruefgrund;
 
         /// <summary>Aus einer Profilzeile; <c>null</c> ergibt <see cref="Zentral"/>.</summary>
         public static Kaeltedeckung AusProfilzeile(Z_ProjektKaeltebedarfModel z)
         {
-            if (z == null || z.Deckung != KaeltebedarfSchema.DECKUNG_SPLIT) return Zentral;
+            if (z == null) return Zentral;
+            bool prozess = KaelteArtSchema.IstProzess(z.KaelteArt);
+            if (z.Deckung != KaeltebedarfSchema.DECKUNG_SPLIT)
+                return prozess ? new Kaeltedeckung { Bezeichner = z.Bezeichner ?? "", Prozess = true } : Zentral;
             return new Kaeltedeckung
             {
                 Bezeichner = z.Bezeichner ?? "",
+                Prozess = prozess,
                 Split = true,
                 Linear = z.EerWeg == KaeltebedarfSchema.EER_LINEAR,
                 Eer1 = z.Eer1, Taussen1 = z.Taussen1, Eer2 = z.Eer2, Taussen2 = z.Taussen2,
@@ -73,11 +83,14 @@ namespace WindowsFormsApplication1
         /// <summary>Aus einer Lastgangzeile; außerhalb des Kanals Kühlung und ohne „split“ <see cref="Zentral"/>.</summary>
         public static Kaeltedeckung AusLastgang(Z_ProjWaermebedarfModel w)
         {
-            if (w == null || w.Deckung != KaeltebedarfSchema.DECKUNG_SPLIT || !Z_ProjektKaeltebedarfCtrl.IstKuehlkanal(w))
-                return Zentral;
+            if (w == null || !Z_ProjektKaeltebedarfCtrl.IstKuehlkanal(w)) return Zentral;
+            bool prozess = KaelteArtSchema.IstProzess(w.KaelteArt);
+            if (w.Deckung != KaeltebedarfSchema.DECKUNG_SPLIT)
+                return prozess ? new Kaeltedeckung { Bezeichner = w.m_szBezeichner ?? "", Prozess = true } : Zentral;
             return new Kaeltedeckung
             {
                 Bezeichner = w.m_szBezeichner ?? "",
+                Prozess = prozess,
                 Split = true,
                 Linear = w.EerWeg == KaeltebedarfSchema.EER_LINEAR,
                 Eer1 = w.Eer1, Taussen1 = w.Taussen1, Eer2 = w.Eer2, Taussen2 = w.Taussen2,

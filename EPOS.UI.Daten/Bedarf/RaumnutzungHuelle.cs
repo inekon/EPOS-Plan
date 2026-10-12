@@ -57,6 +57,7 @@ namespace WindowsFormsApplication1
                     => Ergebnis(ctrl.ZuordnungSetzen(Kern(art), schluessel, idProfil)),
                 ZuordnungLoeschen = id => Ergebnis(ctrl.ZuordnungLoeschen(id)),
                 Csv = RaumnutzungCsvHuelle.Weg(ctrl),
+                Normwerte = RaumnutzungNormwerteHuelle.Weg(),
                 Bild = RaumnutzungBildHuelle.Weg(),
             };
         }
@@ -77,8 +78,6 @@ namespace WindowsFormsApplication1
 
             t.ArtEposMuster = Text_("RNP_LBL_ART_EPOS", t.ArtEposMuster);
             t.ArtDin = Text_("RNP_LBL_ART_DIN", t.ArtDin);
-            t.ArtSia = Text_("RNP_LBL_ART_SIA", t.ArtSia);
-            t.ArtVdi = Text_("RNP_LBL_ART_VDI", t.ArtVdi);
             t.ArtEigen = Text_("RNP_LBL_ART_EIGEN", t.ArtEigen);
             t.ZuordnungsartDin = Text_("RNP_LBL_ZUART_DIN", t.ZuordnungsartDin);
             t.ZuordnungsartIfc = Text_("RNP_LBL_ZUART_IFC", t.ZuordnungsartIfc);
@@ -126,6 +125,9 @@ namespace WindowsFormsApplication1
             t.LabelLuft = Text_("RNP_LBL_LUFT", t.LabelLuft);
             t.LabelLuftAusserhalb = Text_("RNP_LBL_LUFT_AUSSERHALB", t.LabelLuftAusserhalb);
             t.LabelLuftEinheit = Text_("RNP_LBL_LUFT_EINHEIT", t.LabelLuftEinheit);
+            t.LabelLuftPerson = Text_("RNP_LBL_LUFT_PERSON", t.LabelLuftPerson);
+            t.Eingelesen = Text_("RNP_TXT_EINGELESEN", t.Eingelesen);
+            t.EingelesenAus = Text_("RNP_TXT_EINGELESEN_AUS", t.EingelesenAus);
 
             t.LabelPersonenFlaeche = Text_("RNP_LBL_PERSONEN_FLAECHE", t.LabelPersonenFlaeche);
             t.LabelPersonenWaerme = Text_("RNP_LBL_PERSONEN_WAERME", t.LabelPersonenWaerme);
@@ -228,6 +230,10 @@ namespace WindowsFormsApplication1
                 LuftEinheit = p.Aussenluft_Einheit == RaumnutzungSchema.EINHEIT_JE_FLAECHE
                     ? RaumnutzungLuftEinheit.JeFlaeche : RaumnutzungLuftEinheit.JeStunde,
                 AussenluftAusserhalb = p.Aussenluft_Ausserhalb,
+                AussenluftPerson = p.Aussenluft_Person,
+                Eingelesen = p.Eingelesen,
+                WerteQuelle = p.Werte_Quelle ?? "",
+                WerteDatum = p.Werte_Datum ?? "",
                 PersonenFlaeche = p.Personen_Flaeche,
                 PersonenWaerme = p.Personen_Waerme,
                 PersonenAnteil = p.Personen_Anteil,
@@ -291,6 +297,10 @@ namespace WindowsFormsApplication1
                 Kuehl_Aus_Ausserhalb = d.KuehlAusAusserhalb,
                 Aussenluft = d.Aussenluft,
                 Aussenluft_Ausserhalb = d.AussenluftAusserhalb,
+                Aussenluft_Person = d.AussenluftPerson,
+                Werte_Herkunft = d.Eingelesen ? RaumnutzungNormwerteSchema.HERKUNFT_EINGELESEN : null,
+                Werte_Quelle = d.Eingelesen && d.WerteQuelle.Length > 0 ? d.WerteQuelle : null,
+                Werte_Datum = d.Eingelesen && d.WerteDatum.Length > 0 ? d.WerteDatum : null,
                 Personen_Flaeche = d.PersonenFlaeche,
                 Personen_Waerme = d.PersonenWaerme,
                 Personen_Anteil = d.PersonenAnteil,
@@ -445,6 +455,8 @@ namespace WindowsFormsApplication1
             Raumnutzungshinweis.ProfilOhneWerte => t.TextOhneWerte,
             Raumnutzungshinweis.LueftungOhneHoehe => Text_("RNP_TXT_HINWEIS_HOEHE",
                 "Außenluft in m³/(h·m²) ohne lichte Höhe des Ziels: die Lüftung wird nicht gesetzt."),
+            Raumnutzungshinweis.LueftungOhneBelegung => Text_("RNP_TXT_HINWEIS_BELEGUNG",
+                "Außenluft je Person ohne Fläche je Person im Profil: die Lüftung wird nicht gesetzt."),
             Raumnutzungshinweis.FreierTagOhneTageswert => Text_("RNP_TXT_HINWEIS_FREIERTAG",
                 "Ein freier Einzeltag braucht einen Tageswert dieser Größe; die Matrix kennt nur das Wochenende."),
             Raumnutzungshinweis.StundenprofilUnlesbar => Text_("RNP_TXT_HINWEIS_STUNDEN",
@@ -548,12 +560,13 @@ namespace WindowsFormsApplication1
         //  Übersetzung der Kennungen
         // =================================================================
 
-        /// <summary>Die Kennung der Kategorieart des Kerns als Aufzählungswert der Oberfläche.</summary>
+        /// <summary>
+        /// Die Kennung der Kategorieart des Kerns als Aufzählungswert der Oberfläche. Die entfallenen Arten SIA 2024 und
+        /// VDI 2078 (E129) kennt die Oberfläche nicht mehr; ein Bestand vor dem Schritt liest sich als eigene Kategorie.
+        /// </summary>
         internal static RaumnutzungArt Art(string art)
         {
             if (art == RaumnutzungSchema.ART_DIN_V_18599_10) return RaumnutzungArt.Din18599;
-            if (art == RaumnutzungSchema.ART_SIA_2024) return RaumnutzungArt.Sia2024;
-            if (art == RaumnutzungSchema.ART_VDI_2078) return RaumnutzungArt.Vdi2078;
             if (art == RaumnutzungSchema.ART_EPOS_MUSTER) return RaumnutzungArt.EposMuster;
             return RaumnutzungArt.Eigen;
         }

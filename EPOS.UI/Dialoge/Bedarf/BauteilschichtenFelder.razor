@@ -24,6 +24,8 @@
 
 @if (!NurSummen)
 {
+    @* RICHTUNG: Schicht 1 ist raumseitig - "innen" oben, "aussen" unten (Entwurf Bauteilkatalog 2.2). *@
+    <p class="epos-leisezeile epos-bauteilschicht-richtung">@Texte.Richtung</p>
     <Zeilenraster Bezeichnung="@Texte.Raster" Spalten="@Spalten"
                   Spaltenmass="minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)"
                   Summen="@Summen">
@@ -186,7 +188,7 @@ else
             : Texte.ROffen;
     }
 
-    /// <summary>Der Summenfuß: R, U, C und T_BT — oder der Grund, warum sie nicht stehen.</summary>
+    /// <summary>Der Summenfuß: R_si, R, R_se, R_T, U, C und T_BT — oder der Grund, warum sie nicht stehen.</summary>
     private IReadOnlyList<(string Text, bool Stark)> Summen
     {
         get
@@ -201,7 +203,10 @@ else
 
             var liste = new List<(string, bool)>
             {
+                (string.Format(c, Texte.SummeRsi, k.RSi_M2KW.ToString("0.00", c)), false),
                 (string.Format(c, Texte.SummeR, (k.R_M2KW ?? 0).ToString("0.000", c)), false),
+                (string.Format(c, Texte.SummeRse, k.RSe_M2KW.ToString("0.00", c)), false),
+                (string.Format(c, Texte.SummeRt, (k.RT_M2KW ?? 0).ToString("0.000", c)), false),
                 (string.Format(c, Texte.SummeU, k.U_WM2K.Value.ToString("0.000", c)), true),
                 (string.Format(c, Texte.SummeC, (k.Kapazitaet_KJM2K ?? 0).ToString("0.0", c)), false)
             };

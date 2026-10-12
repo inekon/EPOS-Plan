@@ -44,6 +44,18 @@ public sealed class BedarfsProfilZeile
     /// gilt für alle Wochen. Gewählt im Dialog, geschrieben mit OK wie der Jahresverbrauch.
     /// </summary>
     public int? KalenderId { get; set; }
+
+    /// <summary>
+    /// Die Art einer Kältebedarfszeile als Steuerwert (KWN-0): <c>DbWerte.KAELTE_ART_RAUM</c> (Vorgabe) oder
+    /// <c>DbWerte.KAELTE_ART_PROZESS</c>; nur Kältebedarfsprofile, gewählt im Dialog, geschrieben mit OK.
+    /// </summary>
+    public string KaelteArt { get; set; } = WindowsFormsApplication1.DbWerte.KAELTE_ART_RAUM;
+
+    /// <summary>
+    /// Die Feldgruppe „Deckung“ einer Kältebedarfszeile (Konzept Kältebedarf 3.4, K5b); <c>null</c> außerhalb der
+    /// Kältebedarfsprofile. Bearbeitet in der Überlagerung „Deckung…“, geschrieben mit OK.
+    /// </summary>
+    public DeckungsartDaten? Deckung { get; set; }
 }
 
 /// <summary>

@@ -291,7 +291,7 @@ namespace EPOS.Kern.Tests
             Raumnutzungsprofil buero = c.ZuordnungAufloesen(RaumnutzungSchema.ZUORDNUNG_DIN, "1");
             Assert.True(buero.Ausgeliefert);
             Assert.Equal(19, buero.Zeilen.Count);
-            Assert.Equal(4, c.Kategorien().Count);
+            Assert.Equal(2, c.Kategorien().Count);
             Assert.Equal(9, c.Profile(c.Kategorien().Single(k => k.Art == RaumnutzungSchema.ART_EPOS_MUSTER).Id).Count);
         }
 

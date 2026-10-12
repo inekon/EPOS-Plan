@@ -83,6 +83,25 @@ namespace WindowsFormsApplication1
         /// <summary>Außenluft außerhalb in <see cref="Aussenluft_Einheit"/>.</summary>
         public double? Aussenluft_Ausserhalb { get; set; }
 
+        /// <summary>
+        /// Außenluft je Person [m³/(h·Person)] im Betriebsfenster (NP7, Schritt <see cref="RaumnutzungNormwerteSchema.SCHRITT"/>).
+        /// Der Generator rechnet sie mit <see cref="Personen_Flaeche"/> und der lichten Höhe in 1/h um — nur, wo
+        /// <see cref="Aussenluft"/> leer ist.
+        /// </summary>
+        public double? Aussenluft_Person { get; set; }
+
+        /// <summary>Herkunft der Werte: <c>null</c> oder <see cref="RaumnutzungNormwerteSchema.HERKUNFT_EINGELESEN"/> (NP7).</summary>
+        public string Werte_Herkunft { get; set; }
+
+        /// <summary>Die Quelle eingelesener Werte (Dateiname); <c>null</c> = ohne.</summary>
+        public string Werte_Quelle { get; set; }
+
+        /// <summary>Der Tag des Einlesens (JJJJ-MM-TT); <c>null</c> = ohne.</summary>
+        public string Werte_Datum { get; set; }
+
+        /// <summary>Stammen die Werte aus „Normwerte einlesen“ (NP7)?</summary>
+        public bool Eingelesen => string.Equals(Werte_Herkunft, RaumnutzungNormwerteSchema.HERKUNFT_EINGELESEN, StringComparison.Ordinal);
+
         /// <summary>Fläche je Person [m²].</summary>
         public double? Personen_Flaeche { get; set; }
 
@@ -128,7 +147,7 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>Trägt das Profil weder Kennwert noch Zeilenbild noch Stundenprofil (NP-F13)?</summary>
-        public bool IstLeer => Kennwerte().All(w => w == null) && (Zeilen?.Count ?? 0) == 0 && (Stunden?.Count ?? 0) == 0;
+        public bool IstLeer => Kennwerte().All(w => w == null) && Aussenluft_Person == null && (Zeilen?.Count ?? 0) == 0 && (Stunden?.Count ?? 0) == 0;
 
         /// <summary>Eine tiefe Kopie (Zeilen und Stunden neu).</summary>
         public Raumnutzungsprofil Kopie()

@@ -51,6 +51,15 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
+    @* KATALOGAUSWAHL V1 (Konzept Projektdialoge mit Katalogauswahl 4.2, 4.4a): jede Funktion an genau einem
+       Ort. P = Kopfleiste „Im Projekt" (Umstellen…, In die Datenbank übernehmen…, Aus dem Projekt entfernen), K
+       = Kopfleiste des Katalogs (Suche, In das Projekt übernehmen), S = Zeile „gewählter Satz" (Marke,
+       Kenndaten, Infoknöpfe und - KnopfleisteAmSatz, AW1 - Vergleichen…, Schloss setzen…, Löschen, Bearbeiten…,
+       Neu… auf den gewählten Satz; Schloss und Löschen nur beim Katalogsatz), D = Kopf und Fussleiste des
+       Dialogs. Der Stift je Listenzeile ist Bearbeiten… dieser Zeile. Der Klick auf die Zeile wählt (auch ↑ ↓
+       Pos1 Ende), die gewählte Projektzeile ist farbig hervorgehoben; die Kästchen markieren nur für die
+       Sammelaktionen, die auf die angekreuzten Zeilen wirken, sonst auf die gewählte. Bearbeiten… öffnet für
+       Projekt- und Katalogsatz dieselbe Überlagerung aus Satzdaten und Anlage (WaermepumpeAnlageFelder). *@
     <Zweispaltenauswahl Dialogname="Waermepumpe" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
                         KatalogZeile="@((int)Katalogliste.ZEILENHOEHE_ZEILENWAHL)"
                         UebernehmenText="@LabelHinzu"
@@ -67,6 +76,8 @@
                         SatzUebernommen="BeiSatzUebernommen" SatzVerworfen="BeiSatzVerworfen"
                         SatzZusammenfassung="@Zusammenfassung()"
                         KnopfleisteAmSatz="true"
+                        VergleichProjekt="@VergleichProjektsatz" VergleichKatalog="@VergleichKatalogsatz"
+                        KatalogGewaehlt="@_katalogZeile?.Schluessel" VergleichAbgelehnt="BeiSchlossAbgelehnt"
                         ProjektGewaehlt="@(_gewaehlt is null ? null : Projektschluessel(_gewaehlt))"
                         ProjektGewaehltChanged="BeiProjektTastenwahl"
                         @ref="_zweispalten">
@@ -156,9 +167,6 @@
                Schloss…, Loeschen, Bearbeiten…, rechts Neu…. Vergleichen… wirkt auf die angekreuzten Zeilen des
                Bereichs des gewaehlten Satzes (unter zwei gesperrt); Schloss… und Loeschen nur auf Katalogsaetze -
                beim Projektsatz weich gesperrt mit dem Grund „Katalogsatz waehlen". *@
-            <button type="button" class="epos-knopf epos-knopf--vergleichen"
-                    title="@Resource.AUSWAHL_BTN_VERGLEICHEN_HINWEIS"
-                    disabled="@(VergleichsZahl < 2)" @onclick="BeiVergleichen">@Resource.AUSWAHL_BTN_VERGLEICHEN</button>
             <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogZeile"
                             Sperrgrund="@KatalogSperrgrund"
                             JaText="@JaText" NeinText="@NeinText"
@@ -365,6 +373,12 @@
 
     /// <summary>Die Zeilen des VERGLEICHS (Q3, Stufe S3.3) — gehen an den Katalog weiter.</summary>
     [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Vergleichsparameter { get; set; }
+
+    /// <summary>
+    /// Die Kennwerte des PROJEKTGERÄTS (<c>Tab_WP.ID</c>) in derselben Parameterliste wie
+    /// <see cref="Vergleichsparameter"/> — „Vergleichen…" über Projektzeilen und Katalogsätze (KA-E-24).
+    /// </summary>
+    [Parameter] public Func<int, IReadOnlyList<Parameterwert>>? VergleichsparameterProjekt { get; set; }
 
     /// <summary>Die Beschriftungen der Katalogliste (Suche, Trefferzahl, Filter).</summary>
     [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
@@ -870,36 +884,38 @@
     /// <summary>Steht der Katalogeditor im Modus Neu? (Prüfhilfe.)</summary>
     public bool NeuOffen => _neuGaben is not null;
 
-    /// <summary>Wie viele Sätze „Vergleichen…" im Bereich des gewählten Satzes vergleichen würde.</summary>
-    private int VergleichsZahl => SatzArt == Satzmarke.Projektsatz
-        ? (ProjektSatz is null ? 0 : ProjektZiele().Select(z => z.IdWp).Distinct().Count())
-        : KatalogZiele().Count;
-
     /// <summary>
-    /// „Vergleichen…" — zwei oder mehr Sätze nebeneinander, im Bereich des gewählten Satzes: beim Projektsatz die
-    /// angekreuzten Projektkopien (je Gerät einmal, mit den Werten der Feldgruppe), sonst die angekreuzten Katalogsätze.
+    /// „Vergleichen…" über beide Listen (KA-E-24, die Zweispaltenauswahl führt den Knopf): die Kennwerte einer
+    /// Projektzeile aus derselben Parameterliste wie die des Katalogsatzes — das Projektgerät (<c>Tab_WP</c>) über
+    /// <see cref="VergleichsparameterProjekt"/>; ohne diese Gabe die Kenndaten der Feldgruppe aus dem Projektsatz.
     /// </summary>
-    private void BeiVergleichen()
+    private Vergleichssatz? VergleichProjektsatz(string schluessel)
     {
-        if (_katalogliste is null) return;
-        if (SatzArt != Satzmarke.Projektsatz)
+        WaermepumpeAnlageDaten? z = Zeilen.FirstOrDefault(r => Projektschluessel(r) == schluessel);
+        if (z is null) return null;
+        string grund = "";
+        if (VergleichsparameterProjekt is not null && z.IdWp > 0)
         {
-            List<Katalogfilterzeile> ziele = KatalogZiele();
-            if (ziele.Count >= 2) _katalogliste.Vergleichen(ziele.Select(z => z.Schluessel).ToList());
-            return;
+            IReadOnlyList<Parameterwert>? werte = Katalogladung.SatzDazu(() => VergleichsparameterProjekt(z.IdWp),
+                                                                         z.Bezeichner, ref grund);
+            if (grund.Length > 0) VergleichsfehlerMelden(grund);
+            return Vergleichssatz.AusParametern(Satzmarke.Projektsatz, z.Bezeichner, werte);
         }
-        if (ProjektSatz is null) return;
-        var saetze = new List<(string Name, IReadOnlyList<(string Beschriftung, string Wert)> Werte)>();
-        foreach (var g in ProjektZiele().GroupBy(z => z.IdWp))
-        {
-            WaermepumpeAnlageDaten z = g.First();
-            string grund = "";
-            WaermepumpeStammDaten? satz = Katalogladung.SatzDazu(() => ProjektSatz(z), z.Bezeichner, ref grund);
-            if (satz is null) { if (grund.Length > 0) Melden(grund, true); return; }
-            saetze.Add((z.Bezeichner, WaermepumpeStammFelder.Kenndatenwerte(satz, _felderTexte)
-                .Select(w => (w.Einheit.Length > 0 ? w.Name + " [" + w.Einheit + "]" : w.Name, w.Wert)).ToList()));
-        }
-        if (saetze.Count >= 2) _katalogliste.VergleichenWerte(saetze);
+        if (ProjektSatz is null) return null;
+        WaermepumpeStammDaten? satz = Katalogladung.SatzDazu(() => ProjektSatz(z), z.Bezeichner, ref grund);
+        if (satz is null) { if (grund.Length > 0) Melden(grund, true); return null; }
+        return new Vergleichssatz(Satzmarke.Projektsatz, z.Bezeichner, WaermepumpeStammFelder.Kenndatenwerte(satz, _felderTexte)
+            .Select(w => (w.Einheit.Length > 0 ? w.Name + " [" + w.Einheit + "]" : w.Name, w.Wert)).ToList());
+    }
+
+    /// <summary>Die Kennwerte eines Katalogsatzes für „Vergleichen…" — die Parameterübersicht, ohne sie die Profilspalten.</summary>
+    private Vergleichssatz? VergleichKatalogsatz(string schluessel)
+    {
+        Katalogfilterzeile? k = _katalog.FirstOrDefault(z => z.Schluessel == schluessel);
+        if (k is null) return null;
+        return _vergleichsgabe is not null
+            ? Vergleichssatz.AusParametern(Satzmarke.Katalogsatz, k.Bezeichner, _vergleichsgabe(k.Bezeichner))
+            : Vergleichssatz.AusSpalten(Satzmarke.Katalogsatz, Katalogprofil, k);
     }
 
     /// <summary>„Neu…": der Katalogeditor im Modus Neu.</summary>

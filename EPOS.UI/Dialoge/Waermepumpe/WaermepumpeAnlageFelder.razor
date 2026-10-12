@@ -87,6 +87,18 @@
                     </Formularraster>
                 </KindInhalt>
             </Gruppenkopf>
+
+            @* DER GERAETESTECKBRIEF (WP1a, Anwenderentscheid 12.10.2026: „auf der linken Seite Daten zur
+               ausgewaehlten Anlage - aus dem Datensatz die wichtigsten Daten"): lesend, aus DEMSELBEN Feldsatz,
+               den die Felder rechts bearbeiten - er folgt jeder Eingabe im selben Zeichenlauf. Dazu der
+               Arbeitspunkt am eingestellten Vorlauf (Kern: Kennlinienarbeitspunkt, dieselbe Auswertung wie der
+               Lauf) und die Kostensummen der Anlage. *@
+            <Gruppenkopf Titel="@SteckbriefTexte.GruppeGeraet">
+                <KindInhalt>
+                    <Geraetesteckbrief Titel="@SteckbriefTexte.GruppeGeraet" TitelAnzeigen="false"
+                                       Klasse="epos-wp-steckbrief" Zeilen="@Steckbriefzeilen" />
+                </KindInhalt>
+            </Gruppenkopf>
         </section>
 
         @* ================= RECHTS: Kenndaten und Kennlinien ================ *@
@@ -803,6 +815,15 @@
     /// <summary>Die Beschriftungen des Stamm-Feldrasters — EIN Bündel, ebenfalls selbstfüllend.</summary>
     [Parameter] public WaermepumpeStammFelderTexte StammfelderTexte { get; set; } = new();
 
+    /// <summary>Die Beschriftungen des Gerätesteckbriefs (WP1a); füllt sich selbst aus den Ressourcen.</summary>
+    [Parameter] public WaermepumpeSteckbriefTexte SteckbriefTexte { get; set; } = new();
+
+    /// <summary>
+    /// Der Arbeitspunkt am eingestellten Vorlauf (WP1a): Geräte-Id, Vorlauf, Wärmepumpentyp → Heizleistung und COP
+    /// der Projektkennlinie am Normpunkt der Quelle (Kern <c>Kennlinienarbeitspunkt</c>); <c>null</c> = „—".
+    /// </summary>
+    [Parameter] public Func<int, int, string, WaermepumpeArbeitspunkt?>? Arbeitspunkt { get; set; }
+
 
 
     private IReadOnlyList<int> _vorlaufstufen = Array.Empty<int>();
@@ -930,6 +951,40 @@
         => _kostensummen is { } s ? string.Format(TextKostenSummen, s.Invest, s.Betrieb) : TextKostenKeine;
 
     private (double Invest, double Betrieb)? _kostensummen;
+
+    // --- Der Gerätesteckbrief (WP1a) ---------------------------------------------
+
+    /// <summary>Die Zeilen des Steckbriefs — je Zeichenlauf aus <see cref="Daten"/>, damit er den Feldern folgt.</summary>
+    private IReadOnlyList<Steckbriefzeile> Steckbriefzeilen
+        => WaermepumpeSteckbrief.Zeilen(Daten, StammfelderTexte, KonfigTexte, SteckbriefTexte, ArbeitspunktJetzt,
+                                        _kostensummen);
+
+    /// <summary>Steigt mit jedem <see cref="Auffrischen"/> — die Kennlinien können sich geändert haben.</summary>
+    private int _kennlinienFassung;
+
+    private (int IdWp, int Vorlauf, string Typ, int Fassung)? _arbeitspunktFuer;
+    private WaermepumpeArbeitspunkt? _arbeitspunkt;
+
+    /// <summary>
+    /// Der Arbeitspunkt zu Gerät, Vorlauf und Typ — gelesen nur, wenn sich einer davon oder die Kennlinien geändert
+    /// haben, nicht je Zeichenlauf (der Weg fragt die Datenbank). Wirft er, bleibt er leer („—").
+    /// </summary>
+    private WaermepumpeArbeitspunkt? ArbeitspunktJetzt
+    {
+        get
+        {
+            if (Arbeitspunkt is null || Daten.IdWp <= 0 || Daten.Vorlauf is not int vorlauf || vorlauf <= 0) return null;
+            var schluessel = (Daten.IdWp, vorlauf, Daten.Typ ?? "", _kennlinienFassung);
+            if (_arbeitspunktFuer != schluessel)
+            {
+                _arbeitspunktFuer = schluessel;
+                Func<int, int, string, WaermepumpeArbeitspunkt?> weg = Arbeitspunkt;
+                _arbeitspunkt = Katalogladung.Wert(() => weg(schluessel.IdWp, vorlauf, schluessel.Item3),
+                                                   Daten.Bezeichner, null, out _);
+            }
+            return _arbeitspunkt;
+        }
+    }
 
     /// <summary>
     /// KT-8a: Bereitschaft und Summen der Kostenleiste über die Fangstelle lesen. Wirft ein Weg,
@@ -1102,6 +1157,7 @@
             ? Katalogladung.SatzDazu(() => Bilder(idWp), satz, ref _satzFehler) ?? KennlinienBilder.Leer
             : KennlinienBilder.Leer;
         KostenNachziehen();
+        _kennlinienFassung++;                 // WP1a: Arbeitspunkt neu lesen (Kennlinien können sich geändert haben)
         _projektkopieFuer = -1;               // KT-8a: Projektkopie neu fragen
         _ = Projektkopie;
         StammabbildNachziehen();

@@ -507,8 +507,16 @@
             <KindInhalt>
                 <Textfeld Bezeichnung="@Texte.LabelBezeichner" Wert="@d.Bezeichner"
                           WertChanged="w => Feld(d, () => d.Bezeichner = w ?? string.Empty)" />
-                <Textfeld Bezeichnung="@Texte.LabelGruppe" Wert="@d.Gruppe"
-                          WertChanged="w => Feld(d, () => d.Gruppe = w ?? string.Empty)" />
+                @* GRUPPE: feste Auswahl der Stoffgruppen des Kerns (Baustoffgruppen); ein freier Text
+                   eines Altsatzes bleibt als eigener Eintrag lesbar. Darunter die Klasse (BK-2b): ihre Wahl hängt
+                   von der Gruppe ab; ein Gruppenwechsel nimmt eine fremde Klasse weg. *@
+                <Auswahlfeld Bezeichnung="@Texte.LabelGruppe" Eintraege="@Gruppeneintraege(d)"
+                             Platzhalter="@Texte.GruppeKeine" Auswahl="@Gruppenwahl(d)"
+                             AuswahlChanged="id => Feld(d, () => GruppeSetzen(d, id))" />
+                <Auswahlfeld Bezeichnung="@Texte.LabelKlasse" Eintraege="@Klasseneintraege(d)"
+                             Platzhalter="@Texte.KlasseKeine" Auswahl="@Klassenwahl(d)"
+                             Aktiv="@(Klassen(d).Count > 0)"
+                             AuswahlChanged="id => Feld(d, () => d.KlasseCode = KlasseAus(d, id))" />
                 <Textfeld Bezeichnung="@Texte.LabelHersteller" Wert="@d.Hersteller"
                           Platzhalter="@Texte.Herstellerneutral"
                           WertChanged="w => Feld(d, () => d.Hersteller = w ?? string.Empty)" />
@@ -518,11 +526,89 @@
                             Wert="@d.Rho" WertChanged="w => Feld(d, () => d.Rho = w)" />
                 <Zahlenfeld Bezeichnung="@Texte.LabelCp" Einheit="@Texte.EinheitCp" Feldname="@Texte.LabelCp"
                             Wert="@d.Cp" WertChanged="w => Feld(d, () => d.Cp = w)" />
-                <Textfeld Bezeichnung="@Texte.LabelQuelle" Wert="@d.Quelle"
-                          WertChanged="w => Feld(d, () => d.Quelle = w ?? string.Empty)" />
+                @if (d.Import)
+                {
+                    @* IMPORT (BK-2b): die Quelle eines eingelesenen Satzes ist Lesewert. *@
+                    <Textfeld Bezeichnung="@Texte.LabelQuelle" Wert="@d.Quelle" NurLesen="true" />
+                }
+                else
+                {
+                    <Textfeld Bezeichnung="@Texte.LabelQuelle" Wert="@d.Quelle"
+                              WertChanged="w => Feld(d, () => d.Quelle = w ?? string.Empty)" />
+                }
             </KindInhalt>
         </Formularraster>
+        @if (d.Import)
+        {
+            <Herleitungszeile Text="@Texte.ImportQuelle" />
+        }
+        @* HINWEIS: die Baender der Gruppe aus dem Kern - weich, nie eine Sperre. *@
+        @if (Baustoffgruppen.Hinweis(d.Gruppe, d.Lambda, d.Rho, d.Cp) is { Length: > 0 } hinweis)
+        {
+            <Herleitungszeile Text="@hinweis" />
+        }
     };
+
+    /// <summary>Id des Eintrags „freie Angabe" — die festen Gruppen tragen Ids ab 1.</summary>
+    private const int FREIE_GRUPPE = -1;
+
+    /// <summary>Die festen Gruppen des Kerns, dazu die freie Angabe des Satzes, wenn er eine trägt.</summary>
+    private IReadOnlyList<(int Id, string Text)> Gruppeneintraege(BaustoffDaten d)
+    {
+        var liste = new List<(int, string)>(Baustoffgruppen.Alle.Count + 1);
+        for (int i = 0; i < Baustoffgruppen.Alle.Count; i++) liste.Add((i + 1, Baustoffgruppen.Alle[i].Anzeigename));
+        string frei = d.Gruppe.Trim();
+        if (frei.Length > 0 && !Baustoffgruppen.IstFest(frei))
+            liste.Add((FREIE_GRUPPE, string.Format(CultureInfo.CurrentCulture, Texte.GruppeFreiEintrag, frei)));
+        return liste;
+    }
+
+    /// <summary>Der Gruppencode des Satzes (feste Stoffgruppe des Textfelds); <c>null</c> = keine feste Gruppe.</summary>
+    private static string? Gruppencode(BaustoffDaten d) => Bauteilkatalog.GruppeAusStoffgruppe(d.Gruppe);
+
+    /// <summary>Die Klassen der Gruppe des Satzes (Codes des Kerns); ohne feste Gruppe keine.</summary>
+    private static IReadOnlyList<string> Klassen(BaustoffDaten d) => Bauteilkatalog.Klassen(true, Gruppencode(d));
+
+    /// <summary>Die Klassen zur Wahl — Id = Rang + 1, Text in der Sprache der Oberfläche.</summary>
+    private static IReadOnlyList<(int Id, string Text)> Klasseneintraege(BaustoffDaten d)
+        => Klassen(d).Select((k, i) => (i + 1, Bauteilkatalog.KlasseText(true, k))).ToList();
+
+    /// <summary>Die Id der Klasse des Satzes; <c>null</c> = ohne Klasse.</summary>
+    private static int? Klassenwahl(BaustoffDaten d)
+    {
+        int i = Klassen(d).ToList().IndexOf(d.KlasseCode);
+        return i < 0 ? null : i + 1;
+    }
+
+    private static string KlasseAus(BaustoffDaten d, int? id)
+    {
+        IReadOnlyList<string> k = Klassen(d);
+        return id is int n && n >= 1 && n <= k.Count ? k[n - 1] : "";
+    }
+
+    /// <summary>Setzt die Gruppe; eine Klasse, die nicht zur neuen Gruppe gehört, fällt weg.</summary>
+    private static void GruppeSetzen(BaustoffDaten d, int? id)
+    {
+        d.Gruppe = Gruppentext(d, id);
+        if (!Klassen(d).Contains(d.KlasseCode)) d.KlasseCode = "";
+    }
+
+    /// <summary>Die Id der Gruppe des Satzes; <c>null</c> = ohne Gruppe.</summary>
+    private static int? Gruppenwahl(BaustoffDaten d)
+    {
+        if (d.Gruppe.Trim().Length == 0) return null;
+        Baustoffgruppe? g = Baustoffgruppen.Finden(d.Gruppe);
+        if (g is null) return FREIE_GRUPPE;
+        for (int i = 0; i < Baustoffgruppen.Alle.Count; i++)
+            if (ReferenceEquals(Baustoffgruppen.Alle[i], g)) return i + 1;
+        return FREIE_GRUPPE;
+    }
+
+    /// <summary>Der gespeicherte Text zur gewählten Id; die freie Angabe bleibt, wie sie ist.</summary>
+    private static string Gruppentext(BaustoffDaten d, int? id)
+        => id is int i && i >= 1 && i <= Baustoffgruppen.Alle.Count ? Baustoffgruppen.Alle[i - 1].Wert
+         : id == FREIE_GRUPPE ? d.Gruppe
+         : string.Empty;
 
     /// <summary>Eine Eingabe in ein Feld — im Stammblatt zieht sie „geändert" nach, in „Neu…" nicht.</summary>
     private void Feld(BaustoffDaten d, Action schritt)
@@ -547,7 +633,9 @@
         {
             if (_daten.Bezeichner.Length == 0) return "";
             var teile = new List<string>(3);
-            if (_daten.Gruppe.Length > 0) teile.Add(_daten.Gruppe);
+            if (_daten.Gruppe.Length > 0) teile.Add(Baustoffgruppen.Anzeigename(_daten.Gruppe));
+            if (_daten.KlasseCode.Length > 0) teile.Add(Bauteilkatalog.KlasseText(true, _daten.KlasseCode));
+            if (_daten.Import) teile.Add(Texte.MarkeImport);
             teile.Add(_daten.Hersteller.Length > 0 ? _daten.Hersteller : Texte.Herstellerneutral);
             teile.Add(_auslieferung ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ);
             return string.Join(" · ", teile);
@@ -575,7 +663,8 @@
     private IReadOnlyList<Stammblattwert> Kenndatenwerte(BaustoffDaten d) => new[]
     {
         new Stammblattwert(Texte.LabelBezeichner, d.Bezeichner),
-        new Stammblattwert(Texte.LabelGruppe, d.Gruppe),
+        new Stammblattwert(Texte.LabelGruppe, Baustoffgruppen.Anzeigename(d.Gruppe)),
+        new Stammblattwert(Texte.LabelKlasse, Bauteilkatalog.KlasseText(true, d.KlasseCode)),
         new Stammblattwert(Texte.LabelHersteller, d.Hersteller.Length > 0 ? d.Hersteller : Texte.Herstellerneutral),
         new Stammblattwert(Texte.LabelLambda, Zahl(d.Lambda, "0.0###", "").Trim(), d.Lambda.HasValue ? Texte.EinheitLambda : ""),
         new Stammblattwert(Texte.LabelRho, Zahl(d.Rho, "0.#", "").Trim(), d.Rho.HasValue ? Texte.EinheitRho : ""),
@@ -591,6 +680,8 @@
         get
         {
             var liste = new List<Stammblattwert> { new(Texte.LabelHerkunft, _daten.Herkunft) };
+            // BK-2b: die Quelle eines Importsatzes als Lesewert neben der Marke.
+            if (_daten.Import && _daten.Quelle.Length > 0) liste.Add(new(Texte.LabelQuelle, _daten.Quelle));
             if (_daten.Quellkennung.Length > 0) liste.Add(new(Texte.LabelQuellkennung, _daten.Quellkennung));
             int n = Schichten(_gewaehlt);
             liste.Add(new(Texte.LabelVerwendung, n > 0

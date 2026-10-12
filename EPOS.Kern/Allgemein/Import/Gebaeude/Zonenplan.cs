@@ -48,6 +48,9 @@ namespace WindowsFormsApplication1
         /// <summary>Die Konditionierung aus der HottCAD-Projektdatei (Stufe SQ-1); <c>null</c> = keine.</summary>
         internal Zonenkonditionierung Projektdatei { get; set; }
 
+        /// <summary>Hat der Schritt „Rest platzieren“ die Zone angelegt (Restzone „unbeheizt“ bzw. je Geschoss)?</summary>
+        internal bool AusPlatzierung { get; set; }
+
         internal Planzone Kopie() => (Planzone)MemberwiseClone();
 
         public override string ToString() => Schluessel + " " + Name + (Nutzung == null ? "" : " [" + Nutzung + "]");
@@ -58,6 +61,23 @@ namespace WindowsFormsApplication1
     /// <param name="Meldung">Die Ablehnung (Fehler) oder ein Hinweis zum gelungenen Schritt; <c>null</c> = keiner.</param>
     /// <param name="Schluessel">Der Schlüssel der angelegten Zone; sonst <c>null</c>.</param>
     internal sealed record Planschritt(bool Ok, PruefMeldung Meldung = null, string Schluessel = null);
+
+    /// <summary>Warum der Schritt „Rest platzieren“ einen Raum wohin legte (Entwurf GD 2.3, E130/F3).</summary>
+    internal enum Platzierungsgrund
+    {
+        /// <summary>Der Raum ist unbeheizt — in die gemeinsame Zone „unbeheizt“.</summary>
+        Unbeheizt = 0,
+        /// <summary>Beheizt mit Nachbarraum in einer beheizten Zone — in die mit der größten gemeinsamen Fläche.</summary>
+        Nachbarzone = 1,
+        /// <summary>Beheizt ohne beheizte Nachbarzone — in die Restzone seines Geschosses.</summary>
+        Geschoss = 2,
+    }
+
+    /// <summary>
+    /// <b>Eine automatische Platzierung</b>: Raum, Grund, Zielzone (Schlüssel) und die gemeinsame Fläche mit der Nachbarzone
+    /// (nur beim Grund <see cref="Platzierungsgrund.Nachbarzone"/>).
+    /// </summary>
+    internal sealed record Restplatzierung(string Raum, Platzierungsgrund Grund, string Zone, double? GemeinsamM2 = null);
 
     /// <summary>Eine Zeile der Flächenbilanz des Plans — auch eine Zone ohne Raum (0 m²).</summary>
     internal sealed record Planbilanzzeile(string Schluessel, string Name, string Nutzung, bool? Beheizt, int Raeume, double FlaecheM2);
@@ -115,6 +135,7 @@ namespace WindowsFormsApplication1
         private readonly List<Planzone> _zonen = new List<Planzone>();
         private readonly Dictionary<string, string> _zoneJeRaum = new Dictionary<string, string>(StringComparer.Ordinal);
         private readonly HashSet<string> _ausserhalb = new HashSet<string>(StringComparer.Ordinal);
+        private readonly Dictionary<string, Restplatzierung> _platziert = new Dictionary<string, Restplatzierung>(StringComparer.Ordinal);
         private int _naechste = 1;
         private Raumnutzungsvorbelegung _vorbelegung;
 
@@ -253,6 +274,7 @@ namespace WindowsFormsApplication1
             k._zonen.AddRange(_zonen.Select(z => z.Kopie()));
             foreach (KeyValuePair<string, string> p in _zoneJeRaum) k._zoneJeRaum[p.Key] = p.Value;
             k._ausserhalb.UnionWith(_ausserhalb);
+            foreach (KeyValuePair<string, Restplatzierung> p in _platziert) k._platziert[p.Key] = p.Value;
             return k;
         }
 
@@ -261,6 +283,7 @@ namespace WindowsFormsApplication1
             _zonen.Clear();
             _zoneJeRaum.Clear();
             _ausserhalb.Clear();
+            _platziert.Clear();
             GebaeudeZonierung zon = GebaeudeZonierung.Bilden(_abbild, _index, regel, _haken, umhaengungen);
             Regel = zon.Regel;
             Ablehnung = zon.Meldungen.FirstOrDefault(m => m.Stufe == PruefStufe.Fehler);
@@ -459,6 +482,7 @@ namespace WindowsFormsApplication1
         {
             _zoneJeRaum.Clear();
             _ausserhalb.Clear();
+            _platziert.Clear();
             _zonen.RemoveAll(z => !z.Angelegt);
             return new Planschritt(true);
         }
@@ -559,6 +583,139 @@ namespace WindowsFormsApplication1
                                                 draussen.Count.ToString(CultureInfo.InvariantCulture), Liste(draussen), regel));
         }
 
+        // ==================================================================
+        //  Rest platzieren (Entwurf GD 2.3, E130/F3)
+        // ==================================================================
+
+        /// <summary>Die Meldungskennung der Zusammenfassung von <see cref="RestPlatzieren"/>.</summary>
+        internal const string PLAN_REST_PLATZIERT = "PLAN_REST_PLATZIERT";
+
+        /// <summary>Die automatische Platzierung eines Raums; <c>null</c> = nicht automatisch platziert.</summary>
+        internal Restplatzierung Platzierung(string raum)
+            => raum != null && _platziert.TryGetValue(raum, out Restplatzierung p) ? p : null;
+
+        /// <summary>Die automatischen Platzierungen in Dateireihenfolge der Räume.</summary>
+        internal IReadOnlyList<Restplatzierung> Platzierungen
+            => Gebaeude.Raeume.Where(r => _platziert.ContainsKey(r.Kennung)).Select(r => _platziert[r.Kennung]).ToList();
+
+        /// <summary>
+        /// <b>Platziert die nicht zugeordneten Räume selbst</b> (Entwurf GD 2.3, Anwenderentscheid E130 zu F3), in fester Folge
+        /// und deterministisch (Dateireihenfolge der Räume, Planreihenfolge der Zonen):
+        /// <list type="number">
+        /// <item><b>unbeheizt</b> → die gemeinsame Zone „unbeheizt“ (eine schon platzierte wird weiter belegt, sonst angelegt);</item>
+        /// <item><b>beheizt mit Nachbarraum in einer beheizten Zone</b> (gemeinsames Bauteil der Datei,
+        ///   <see cref="AbbildBauteil.Nachbarn"/>) → die Nachbarzone mit der größten gemeinsamen Fläche (Gleichstand: die
+        ///   erste im Plan); wiederholt, bis kein Raum mehr eine Nachbarzone findet — so wachsen Raumketten mit;</item>
+        /// <item><b>sonst</b> → die Restzone seines Geschosses („Rest EG“ …) ohne Profil.</item>
+        /// </list>
+        /// Jeder platzierte Raum trägt Grund und Ziel (<see cref="Platzierung"/>); die Zusammenfassung steht als Info im Schritt.
+        /// Ohne nicht zugeordneten Raum geschieht nichts. Räume außerhalb bleiben außerhalb.
+        /// </summary>
+        internal Planschritt RestPlatzieren()
+        {
+            List<AbbildRaum> rest = NichtZugeordnet.ToList();
+            if (rest.Count == 0) return new Planschritt(true);
+            int unbeheizt = 0, nachbar = 0, geschoss = 0;
+
+            // 1) Unbeheizt → eine gemeinsame Zone „unbeheizt“.
+            foreach (AbbildRaum r in rest.Where(r => !Beheizt(r)).ToList())
+            {
+                Platzieren(r, Restzone(MyResource.Resource.GIMP_PLAN_ZONE_UNBEHEIZT, false), Platzierungsgrund.Unbeheizt, null);
+                rest.Remove(r);
+                unbeheizt++;
+            }
+
+            // 2) Beheizt mit Nachbarraum in einer beheizten Zone → die Nachbarzone mit der größten gemeinsamen Fläche.
+            Dictionary<string, Dictionary<string, double>> gemeinsam = GemeinsameFlaechen();
+            for (bool weiter = true; weiter;)
+            {
+                weiter = false;
+                foreach (AbbildRaum r in rest.ToList())
+                {
+                    if (!gemeinsam.TryGetValue(r.Kennung, out Dictionary<string, double> nachbarn)) continue;
+                    var jeZone = new Dictionary<string, double>(StringComparer.Ordinal);
+                    foreach (KeyValuePair<string, double> n in nachbarn)
+                        if (ZoneVon(n.Key) is string z && ZoneBeheizt(z) == true)
+                            jeZone[z] = (jeZone.TryGetValue(z, out double a) ? a : 0.0) + n.Value;
+                    if (jeZone.Count == 0) continue;
+                    double groesste = jeZone.Values.Max();
+                    Planzone ziel = _zonen.First(z => jeZone.TryGetValue(z.Schluessel, out double a) && a == groesste);
+                    Platzieren(r, ziel, Platzierungsgrund.Nachbarzone, groesste);
+                    rest.Remove(r);
+                    nachbar++;
+                    weiter = true;
+                }
+            }
+
+            // 3) Sonst → die Restzone des Geschosses.
+            foreach (AbbildRaum r in rest)
+            {
+                string gname = Gebaeude.Geschosse.FirstOrDefault(g => string.Equals(g.Kennung, r.GeschossKennung, StringComparison.Ordinal))?.Anzeigename
+                               ?? (string.IsNullOrWhiteSpace(r.GeschossName) ? null : r.GeschossName.Trim());
+                string name = gname == null ? MyResource.Resource.GIMP_PLAN_ZONE_REST
+                                            : string.Format(CultureInfo.CurrentCulture, MyResource.Resource.GIMP_PLAN_ZONE_REST_GESCHOSS, gname);
+                Platzieren(r, Restzone(name, true), Platzierungsgrund.Geschoss, null);
+                geschoss++;
+            }
+            string Z(int n) => n.ToString(CultureInfo.InvariantCulture);
+            return new Planschritt(true, Hinweis(PruefStufe.Info, PLAN_REST_PLATZIERT,
+                                                 Z(unbeheizt + nachbar + geschoss), Z(unbeheizt), Z(nachbar), Z(geschoss)));
+        }
+
+        /// <summary>
+        /// <b>Nimmt eine automatische Platzierung zurück</b>: Der Raum ist danach nicht zugeordnet; eine Restzone, die dadurch
+        /// leer wird, entfällt. Ein unbekannter oder nicht automatisch platzierter Raum lehnt benannt ab.
+        /// </summary>
+        internal Planschritt PlatzierungZuruecknehmen(string raum)
+        {
+            AbbildRaum r = raum == null ? null : Gebaeude.Raeume.FirstOrDefault(x => string.Equals(x.Kennung, raum, StringComparison.Ordinal));
+            if (r == null || !_platziert.ContainsKey(r.Kennung)) return Ab(PLAN_RAUM_UNBEKANNT, raum ?? "");
+            string zone = ZoneVon(r.Kennung);
+            _platziert.Remove(r.Kennung);
+            _zoneJeRaum.Remove(r.Kennung);
+            if (Zone(zone) is Planzone z && z.AusPlatzierung && RaeumeVon(z.Schluessel).Count == 0) _zonen.Remove(z);
+            return new Planschritt(true);
+        }
+
+        /// <summary>Die Restzone eines Namens und einer Beheizung: eine schon platzierte wird weiter belegt, sonst angelegt.</summary>
+        private Planzone Restzone(string name, bool warm)
+        {
+            Planzone z = _zonen.FirstOrDefault(x => x.AusPlatzierung && string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase) && Passt(x, warm));
+            if (z != null) return z;
+            z = Neu(FreierName(name), null, null, null, angelegt: false);
+            z.AusPlatzierung = true;
+            return z;
+        }
+
+        private void Platzieren(AbbildRaum r, Planzone ziel, Platzierungsgrund grund, double? gemeinsamM2)
+        {
+            _zoneJeRaum[r.Kennung] = ziel.Schluessel;
+            _platziert[r.Kennung] = new Restplatzierung(r.Kennung, grund, ziel.Schluessel, gemeinsamM2);
+        }
+
+        /// <summary>
+        /// Je Raum die gemeinsame Fläche mit jedem Nachbarraum aus den Bauteilen der Datei, die beide als Nachbarn führen
+        /// (Nettofläche, sonst Brutto, sonst 0 — ein gemeinsames Bauteil ohne Fläche zählt als Nachbarschaft mit 0 m²).
+        /// </summary>
+        private Dictionary<string, Dictionary<string, double>> GemeinsameFlaechen()
+        {
+            var eigene = new HashSet<string>(Gebaeude.Raeume.Select(r => r.Kennung), StringComparer.Ordinal);
+            var e = new Dictionary<string, Dictionary<string, double>>(StringComparer.Ordinal);
+            foreach (AbbildBauteil b in Gebaeude.Bauteile)
+            {
+                List<string> raeume = b.Nachbarn.Select(n => n.Kennung).Where(k => k != null && eigene.Contains(k)).Distinct(StringComparer.Ordinal).ToList();
+                if (raeume.Count < 2) continue;
+                double flaeche = Math.Max(0.0, b.NettoflaecheM2 ?? b.BruttoflaecheM2 ?? 0.0);
+                foreach (string a in raeume)
+                    foreach (string c in raeume.Where(x => !string.Equals(x, a, StringComparison.Ordinal)))
+                    {
+                        if (!e.TryGetValue(a, out Dictionary<string, double> m)) e[a] = m = new Dictionary<string, double>(StringComparer.Ordinal);
+                        m[c] = (m.TryGetValue(c, out double v) ? v : 0.0) + flaeche;
+                    }
+            }
+            return e;
+        }
+
         /// <summary>
         /// <b>Bildet den Plan nach einer Regel neu</b> (der Regelwechsel des Dialogs, dort mit Rückfrage): alle Handänderungen
         /// gehen verloren; die Schlüssel zählen weiter.
@@ -580,6 +737,7 @@ namespace WindowsFormsApplication1
         private void Herausnehmen(AbbildRaum r)
         {
             _ausserhalb.Remove(r.Kennung);
+            _platziert.Remove(r.Kennung);
             if (_zoneJeRaum.TryGetValue(r.Kennung, out string alt))
             {
                 _zoneJeRaum.Remove(r.Kennung);

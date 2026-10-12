@@ -21,22 +21,21 @@ namespace EPOS.Kern.Tests
 
         public void Dispose() => _db.Dispose();
 
-        /// <summary>Die vier gesäten Kategorien mit ihren Arten und dem Schloss (NP-F3, NP-F4).</summary>
+        /// <summary>Die zwei ausgelieferten Kategorien mit ihren Arten und dem Schloss (NP-F3, NP-F4; SIA und VDI entfallen, E129).</summary>
         [Fact]
-        public void Der_Weg_liefert_die_vier_gesaeten_Kategorien_mit_Art_und_Schloss()
+        public void Der_Weg_liefert_die_zwei_ausgelieferten_Kategorien_mit_Art_und_Schloss()
         {
             RaumnutzungWeg w = RaumnutzungHuelle.Weg();
             Assert.True(w.MitKatalog);
             Assert.Null(w.Sperrgrund);
 
             IReadOnlyList<RaumnutzungKategorieDaten> kategorien = w.Kategorien();
-            Assert.Equal(RaumnutzungSaat.Kategorien.Count, kategorien.Count);
-            Assert.Equal(4, kategorien.Count);
+            // SIA 2024 und VDI 2078 entfallen (E129, RaumnutzungNormkategorienSchema).
+            Assert.Equal(2, kategorien.Count);
             Assert.All(kategorien, k => Assert.True(k.Ausgeliefert, k.Bezeichner + " ist nicht ausgeliefert"));
             Assert.Equal(new[]
                 {
                     RaumnutzungArt.EposMuster, RaumnutzungArt.Din18599,
-                    RaumnutzungArt.Sia2024, RaumnutzungArt.Vdi2078,
                 },
                 kategorien.Select(k => k.Art).ToArray());
             Assert.All(kategorien.Where(k => k.IstNorm), k => Assert.NotEqual("", k.Quellenhinweis));
@@ -53,7 +52,7 @@ namespace EPOS.Kern.Tests
             List<RaumnutzungProfilDaten> alle = w.Kategorien()
                 .SelectMany(k => w.Profile(k.Id)).ToList();
 
-            Assert.Equal(52, alle.Count);
+            Assert.Equal(RaumnutzungSaat.Profile.Count + RaumnutzungNormkategorienSchema.WOHNPROFILE.Count, alle.Count);
             Assert.All(alle, p => Assert.True(p.Ausgeliefert));
 
             RaumnutzungKategorieDaten muster = w.Kategorien().Single(k => k.Art == RaumnutzungArt.EposMuster);

@@ -69,6 +69,42 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Dieselbe Parameterliste mit den Werten der PROJEKTKOPIE <paramref name="id"/>
+        /// (<see cref="ParameterVerwendung.Projekttabelle"/>) — „Vergleichen…" stellt
+        /// Projektzeilen und Katalogsaetze in einer Tabelle nebeneinander (KA-E-24).
+        /// Unbekannte ID: lauter <see cref="ParameterVerwendung.LEER"/>.
+        /// </summary>
+        public static IReadOnlyList<Parameterwert> ProjektWerte(Anlagenart art, int id,
+                                                                Func<string, string> text = null)
+        {
+            IReadOnlyList<ParameterEintrag> katalog = ParameterVerwendung.Katalog(art, text);
+            DataRow zeile = ProjektSatz(art, id);
+
+            var liste = new List<Parameterwert>(katalog.Count);
+            foreach (ParameterEintrag e in katalog)
+                liste.Add(new Parameterwert(e, Anzeige(zeile, e.Spalte)));
+            return liste;
+        }
+
+        /// <summary>Die Projektkopie zur ID; <c>null</c>, wenn es sie nicht gibt oder die Datenbank schweigt.</summary>
+        private static DataRow ProjektSatz(Anlagenart art, int id)
+        {
+            if (id <= 0) return null;
+
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT * FROM [" + ParameterVerwendung.Projekttabelle(art) + "] WHERE ID = ?",
+                    new DbParam("@id", id));
+                return (dt == null || dt.Rows.Count == 0) ? null : dt.Rows[0];
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Der Katalogsatz zum Bezeichner; <c>null</c>, wenn es ihn nicht gibt oder die
         /// Datenbank schweigt.
         /// </summary>

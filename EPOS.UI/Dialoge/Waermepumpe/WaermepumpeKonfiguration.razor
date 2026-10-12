@@ -9,7 +9,8 @@
    Titel aendern auf 'Konfiguration'."
 
    ZWEI WIRTE, EIN BLOCK. Der Baustein wird an zwei Stellen gezeichnet:
-   im WaermepumpeAnlageDialog in der Ueberlagerung hinter dem Knopf
+   im Baustein WaermepumpeAnlageFelder (Satz-Ueberlagerung des WaermepumpenDialog)
+   in der Ueberlagerung hinter dem Knopf
    "Konfiguration…" und in Simulation > Konfiguration. Deshalb steht er HIER und
    nicht in einem der beiden Wirte - zwei Fassungen derselben Maske sind seit iZ5
    verboten.
@@ -68,26 +69,35 @@
 
             @* ANLAGENKOPPLUNG AK2 (Konzept 9.3): die Gruppe „Betriebszeiten" - Zeitprogramm als Wochenraster
                (leer = immer verfuegbar), hoechster Vorlauf (leer = projektierter Vorlauf) und der Vorrang der
-               Sperrzeit. Die Nutzungszeit steht hier nicht: Sie wirkt nicht (Konzept 8.2). *@
-            <Formulargruppe Titel="@Texte.GruppeBetriebszeiten">
+               Sperrzeit. Die Nutzungszeit steht hier nicht: Sie wirkt nicht (Konzept 8.2).
+               WP1a (Anwenderentscheid 12.10.2026): Der Bereich bis vor „Hoechster Vorlauf" - Zeitprogramm,
+               Wochenraster und Faktorhinweis - ist eine KLAPPGRUPPE, beim Oeffnen zugeklappt; ihr Kopf nennt den
+               Stand in Kurzform (BetriebszeitenKopf). Ein ungueltiges Programm meldet der Banner auch zugeklappt,
+               unter der Kopfzeile. „Hoechster Vorlauf" und das Folgende stehen ausserhalb. Die Felder erreicht der
+               Assistent ueber den Feldsatz (WaermepumpeAnlageKiSicht), nicht ueber das Markup. *@
+            <Formulargruppe>
                 <KindInhalt>
                     <div class="epos-wp-betriebszeiten" data-gruppe="betriebszeiten">
-                        <p class="epos-stammblattwerte-abschnitt">@Texte.LabelZeitprogramm</p>
-                        <div class="epos-zeilenknoepfe">
-                            <button type="button" class="epos-knopf" data-aktion="zeitprogramm"
-                                    @onclick="ZeitprogrammUmschalten">@(_rasterOffen ? Texte.KnopfZeitprogrammSchliessen : Texte.KnopfZeitprogramm)</button>
-                        </div>
-                        <Herleitungszeile Text="@ZeitprogrammZeile(Daten, Texte)" />
+                        <Klappgruppe Klasse="epos-wp-betriebszeiten-klapp" TitelKlasse="epos-formulargruppe-titel"
+                                     Titel="@Texte.GruppeBetriebszeiten" Zusatz="@BetriebszeitenKopf(Daten, Texte)"
+                                     @bind-Offen="_betriebszeitenOffen">
+                            <p class="epos-stammblattwerte-abschnitt">@Texte.LabelZeitprogramm</p>
+                            <div class="epos-zeilenknoepfe">
+                                <button type="button" class="epos-knopf" data-aktion="zeitprogramm"
+                                        @onclick="ZeitprogrammUmschalten">@(_rasterOffen ? Texte.KnopfZeitprogrammSchliessen : Texte.KnopfZeitprogramm)</button>
+                            </div>
+                            <Herleitungszeile Text="@ZeitprogrammZeile(Daten, Texte)" />
+                            @if (_rasterOffen)
+                            {
+                                <Wochenraster Wert="@_rasterWerte" WertChanged="BeiZeitprogramm"
+                                              Vorgabe="@IMMER_VERFUEGBAR" Min="0" Max="1" Nachkommastellen="2"
+                                              Kennung="wp-zeitprogramm" Aktiv="@Aktiv" />
+                                <Herleitungszeile Text="@Texte.ZeileZeitprogrammFaktoren" />
+                            }
+                        </Klappgruppe>
                         @if (ZeitprogrammFehler(Daten) is string zpFehler)
                         {
                             <Warnbanner Stufe="WarnStufe.Warnung" Text="@zpFehler" />
-                        }
-                        @if (_rasterOffen)
-                        {
-                            <Wochenraster Wert="@_rasterWerte" WertChanged="BeiZeitprogramm"
-                                          Vorgabe="@IMMER_VERFUEGBAR" Min="0" Max="1" Nachkommastellen="2"
-                                          Kennung="wp-zeitprogramm" Aktiv="@Aktiv" />
-                            <Herleitungszeile Text="@Texte.ZeileZeitprogrammFaktoren" />
                         }
                         <Zahlenfeld Bezeichnung="@Texte.LabelVorlaufMax" Feldname="@FELD_VORLAUF_MAX" Einheit="°C"
                                     Wert="@Daten.VorlaufMax" Min="@VORLAUF_MAX_MIN" Max="@VORLAUF_MAX_MAX"
@@ -534,6 +544,27 @@
 
     private bool _rasterOffen;
     private double[]? _rasterWerte;
+
+    /// <summary>
+    /// Die Klappgruppe „Betriebszeiten" steht offen (WP1a): beim Öffnen zugeklappt, sie lebt so lange wie die
+    /// Konfiguration. Das Wochenraster darin behält beim Auf- und Zuklappen seine eigene Stellung.
+    /// </summary>
+    private bool _betriebszeitenOffen;
+
+    /// <summary>Steht die Klappgruppe „Betriebszeiten" offen? Prüfhilfe.</summary>
+    public bool BetriebszeitenOffen => _betriebszeitenOffen;
+
+    /// <summary>
+    /// Der Stand im Kopf der Klappgruppe (WP1a): „nicht gepflegt — immer verfügbar", „Zeitprogramm gepflegt"
+    /// oder „Zeitprogramm ungültig".
+    /// </summary>
+    public static string BetriebszeitenKopf(WaermepumpeAnlageDaten daten, WaermepumpeKonfigurationTexte texte)
+    {
+        if (daten is null || string.IsNullOrWhiteSpace(daten.Zeitprogramm)) return texte.KopfBetriebszeitenLeer;
+        return ZeitprogrammFehler(daten) is null && ZeitprogrammWerte(daten.Zeitprogramm) is not null
+            ? texte.KopfBetriebszeitenGepflegt
+            : texte.KopfBetriebszeitenFehler;
+    }
 
     /// <summary>Öffnet das Raster mit dem gelesenen Programm (ein ungültiger Text öffnet leer) oder klappt es zu.</summary>
     private void ZeitprogrammUmschalten()

@@ -27,8 +27,9 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Anlagen"] = new Func<IReadOnlyList<KaeltemaschineAnlageDaten>>(() => Liste(projektId)),
-                ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(KaeltemaschineStammCtrl.Katalogfilterzeilen),
-                ["Katalogprofil"] = Katalogfilterprofil.MitVerwendung(Anlagenart.Kaeltemaschine, Katalogtexte.Fuer),
+                // KM-K1 (KA-E-26): Kältemaschinen und Katalog-Wärmepumpen mit Kühlkennlinie in einer Liste mit Spalte „Art“.
+                ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(KuehlerzeugerKatalogCtrl.Katalogzeilen),
+                ["Katalogprofil"] = KuehlerzeugerKatalogCtrl.Profil(Katalogtexte.Fuer),
                 ["Katalogwerte"] = new Func<int, KaeltemaschineGeraetwerte>(id => Werte(KaeltemaschineStammCtrl.Laden(id))),
                 ["Stromtraeger"] = (IReadOnlyList<(int Id, string Text)>)traeger,
                 ["ProjektStromtraeger"] = Kaeltestromabrechnung.Projekttraeger(projektId),
@@ -39,17 +40,30 @@ namespace WindowsFormsApplication1
                 ["Loeschen"] = new Action<int>(KaeltemaschineAnlageCtrl.Loeschen),
                 // KT: "Typkennfelder laden..." in der Katalogwahl - derselbe Weg wie in der Verwaltung.
                 ["TypkennfelderLaden"] = new Func<KaeltemaschineTypkennfelderErgebnis>(KaeltemaschineKatalogHuelle.TypkennfelderLaden),
-                // Block „Wärmepumpen im Kühlbetrieb“: Bestand und Schreibweg wie der Kühlschalter der
-                // Wärmepumpen-Konfiguration (WaermepumpeGeraeteCtrl.KuehlbetriebUmschalten), geschrieben beim OK.
-                ["Waermepumpen"] = new Func<IReadOnlyList<EPOS.UI.Seiten.Start.KuehlWaermepumpe>>(
-                    () => KuehlungKachelBau.Waermepumpen(projektId)),
-                ["KuehlbetriebSchreiben"] = new Func<int, bool, string>(
-                    (idWp, an) => KuehlungKachelBau.KuehlbetriebSchreiben(projektId, idWp, an)),
+                // KM-K1 (KA-E-26): Wärmepumpen mit Kühlfunktion — Projektliste, Übernehmen (Kopie und Anlage über den
+                // Anlegeweg der Erzeuger, Kühlbetrieb allein über WPCtrl.KuehlkonfigurationSchreiben), Ausschalten,
+                // Zurücknehmen und die Ränge der Kältefolge.
+                ["KuehlWaermepumpen"] = new Func<IReadOnlyList<KuehlWaermepumpeZeile>>(() => Waermepumpen(projektId)),
+                ["WaermepumpeUebernehmen"] = new Func<int, KuehlWpUebernahme>(stamm => WaermepumpeUebernehmen(projektId, stamm)),
+                ["WpKuehlbetriebSetzen"] = new Func<int, bool, string>(
+                    (idWp, an) => KuehlerzeugerKatalogCtrl.KuehlbetriebSetzen(projektId, idWp, an)),
+                ["WpUebernahmeZuruecknehmen"] = new Action<object>(m =>
+                    KuehlerzeugerKatalogCtrl.UebernahmeZuruecknehmen(projektId, m as KuehlerzeugerKatalogCtrl.Uebernahme)),
+                ["KaelteRaenge"] = new Func<IReadOnlyDictionary<int, int>>(() => KuehlerzeugerKatalogCtrl.Raenge(projektId)),
+                ["KaelteRaengeWiederherstellen"] = new Func<IReadOnlyDictionary<int, int>, string>(
+                    r => KaeltefolgeCtrl.RaengeWiederherstellen(projektId, r)),
+                ["SchlossWaermepumpe"] = Schlosswege.Aus(WPStammCtrl.SchlossSetzen),
+                ["WpKatalogLoeschen"] = new Func<int, string>(WpKatalogLoeschen),
+                ["VergleichsparameterWp"] = new Func<string, IReadOnlyList<Parameterwert>>(
+                    n => ParameterUebersichtCtrl.Werte(Anlagenart.Waermepumpe, n, Katalogtexte.Fuer)),
+                ["VergleichsparameterWpProjekt"] = new Func<int, IReadOnlyList<Parameterwert>>(
+                    id => ParameterUebersichtCtrl.ProjektWerte(Anlagenart.Waermepumpe, id, Katalogtexte.Fuer)),
 
                 // KATALOGAUSWAHL V1, STUFE 5 (Konzept 4.9, 5.10): die Wege der Zweispaltenauswahl - Vergleich und
                 // Schloss wie in der Verwaltung, Loeschen ueber den Kernweg, der Katalogeditor als Ueberlagerung
                 // (die Windows-Schale reicht die Gaben samt Import herein, KaeltemaschineAnlageFensterHuelle).
                 ["Vergleichsparameter"] = new Func<string, IReadOnlyList<Parameterwert>>(KaeltemaschineParameteruebersicht.Werte),
+                ["VergleichsparameterProjekt"] = new Func<int, IReadOnlyList<Parameterwert>>(KaeltemaschineParameteruebersicht.ProjektWerte),
                 ["Schloss"] = Schlosswege.Aus(KaeltemaschineStammCtrl.SchlossSetzen),
                 ["KatalogLoeschen"] = new Func<int, string>(KatalogLoeschen),
                 ["KatalogGaben"] = new Func<IReadOnlyDictionary<string, object>>(KaeltemaschineKatalogHuelle.Gaben),
@@ -67,6 +81,43 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Anlagen des Projekts samt Kennwerten ihrer Projektkopie.</summary>
         /// <summary>Ein Satz des Katalogs (<paramref name="katalog"/>) oder eine Projektkopie; <c>null</c> = es gibt ihn nicht.</summary>
+        /// <summary>
+        /// KM-K1: die Projektwärmepumpen im Kühlbetrieb als Zeilen des Dialogs — Kennwerte am Kühlvorlauf, Rang, Kühlträger
+        /// und die Zeile „Zulässigkeit“ (Kältemittel der Kopie, Inbetriebnahmejahr ihrer ersten Anlage).
+        /// </summary>
+        internal static IReadOnlyList<KuehlWaermepumpeZeile> Waermepumpen(int projektId)
+            => KuehlerzeugerKatalogCtrl.ProjektWaermepumpen(projektId).Select(w => new KuehlWaermepumpeZeile(
+                w.IdWp, w.IdStamm, w.Bezeichner ?? "", w.Firma ?? "", w.Bauart ?? "", w.AnlagenIds.Count, w.Rang,
+                w.Kennwert?.KuehlleistungKw, w.Kennwert?.Eer, w.Kennwert?.KaltwasserC, w.Kuehltraeger ?? "", w.EigenerZaehler,
+                Zulaessigkeit(projektId, w))).ToList();
+
+        private static string Zulaessigkeit(int projektId, KuehlerzeugerKatalogCtrl.ProjektWaermepumpe w)
+        {
+            if (w.AnlagenIds.Count == 0) return "";
+            try
+            {
+                object code = DataRepository.ExecuteScalar("SELECT Kaeltemittel FROM Tab_WP WHERE ID = ?", new DbParam("@id", w.IdWp));
+                return KaeltemittelZulaessigkeitszeile.Anlage(projektId, w.AnlagenIds[0], true, code as string ?? "") ?? "";
+            }
+            catch { return ""; }
+        }
+
+        /// <summary>KM-K1: übernimmt eine Katalog-Wärmepumpe (Vorbelegung der Einbindung wie im Wärmepumpendialog).</summary>
+        internal static KuehlWpUebernahme WaermepumpeUebernehmen(int projektId, int stammId)
+        {
+            KuehlerzeugerKatalogCtrl.Uebernahme u = KuehlerzeugerKatalogCtrl.WaermepumpeUebernehmen(projektId, stammId, BivalenzAbbildung.Vorbelegen);
+            bool angelegt = u.KopieNeu || u.NeueAnlagen.Count > 0;
+            return new KuehlWpUebernahme(u.Ok, u.IdWp, u.Bezeichner ?? "", u.SchonImProjekt, u.Meldung, angelegt ? u : null);
+        }
+
+        /// <summary>KM-K1: löscht einen Katalogsatz der Wärmepumpe (Katalogweg des Wärmepumpendialogs); "" = gelöscht.</summary>
+        internal static string WpKatalogLoeschen(int id)
+        {
+            WPStammCtrl.KatalogsatzLoeschung l = WPStammCtrl.KatalogsatzLoeschen(id);
+            if (!l.Ok) return MyResource.Resource.KMA_MSG_KATALOG_LOESCHFEHLER;
+            return "";
+        }
+
         internal static KaeltemaschineModel Satz(int id, bool katalog)
         {
             if (id <= 0) return null;
@@ -204,6 +255,8 @@ namespace WindowsFormsApplication1
                 Saisonkennzahl = m.Saisonkennzahl,
                 SaisonkennzahlArt = m.Saisonkennzahl_Art ?? "",
                 Geraeteart = string.IsNullOrEmpty(m.Geraeteart) ? "" : KaeltemaschineStammCtrl.GeraeteartText(m.Geraeteart),
+                Kaeltemittel = m.Kaeltemittel ?? "",
+                Gwp = m.Kaeltemittel_GWP,
                 Kaltwasserstuetzstellen = (m.Kennlinie ?? new List<KaeltemaschineKenndatenModel>())
                     .Select(k => k.Kaltwassertemperatur).Distinct().OrderBy(t => t).ToList()
             };

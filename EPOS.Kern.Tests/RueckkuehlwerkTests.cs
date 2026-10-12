@@ -145,15 +145,17 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Offen_bleibt_nur_die_Reihe_in_einer_Aufzaehlung()
+        public void Seit_K_F3_bleibt_kein_Merkmal_offen_auch_nicht_die_Reihe()
         {
             Rueckkuehlwerk r = Rueckkuehlwerk.AusModell(new RueckkuehlwerkModel
             {
                 Bauart = "HYBRID", Annaeherung_Weg = "LASTABHAENGIG", Ventilator_Nenn_kW = 3, Drift_Anteil = 0.001,
                 Freikuehlung_Schaltung = "REIHE"
             });
-            Assert.Equal(new[] { Rueckkuehlwerk.MERKMAL_REIHE }, r.NichtGerechnet);
-            string text = SimulationControl.RueckkuehlwerkMerkmale(r.NichtGerechnet);
+            Assert.Empty(r.NichtGerechnet);
+            Assert.True(r.Reihe);
+            // Die Aufzählung der Meldung bleibt für ein künftiges offenes Merkmal: ein Merkmal, kein Trenner.
+            string text = SimulationControl.RueckkuehlwerkMerkmale(new[] { Rueckkuehlwerk.MERKMAL_REIHE });
             Assert.False(string.IsNullOrWhiteSpace(text));
             Assert.DoesNotContain(";", text);
             // PARALLEL und FEST sind die heutigen Wege, kein Merkmal.

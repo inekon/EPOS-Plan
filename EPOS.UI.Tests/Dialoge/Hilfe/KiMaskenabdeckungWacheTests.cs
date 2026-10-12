@@ -74,6 +74,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // Die Satzbearbeitung „Bearbeiten…" der Katalogauswahl (Stufe 2) steht als Ueberlagerung im
         // Projektdialog; der Assistent arbeitet ueber „Alle Daten" der Detailzeile desselben Wirts.
         new("Satzbearbeitung",                "HeizkesselDialog",            KiMaskennamen.HEIZKESSEL_PROJEKT),
+        // K5: die Bearbeiten-Ueberlagerung von Waerme-/Kaeltebedarf extern und die Feldgruppe „Deckung" (auch im
+        // Bedarfsprofile-Dialog eingebettet; beide Felder stehen in den Feldkarten Form_Waermebedarf und Form_Prozesswaerme).
+        new("WaermebedarfExternFelder",       "WaermebedarfExternDialog",    KiMaskennamen.WAERMEBEDARF_EXTERN),
+        new("DeckungsartFelder",              "WaermebedarfExternDialog",    KiMaskennamen.WAERMEBEDARF_EXTERN),
         // Die Rueckfrage „In die Datenbank übernehmen…“ (Stufe 2b) steht ebenso als Ueberlagerung im Projektdialog;
         // sie fragt nur (Wahl und Name), der Assistent arbeitet ueber denselben Wirt.
         new("Rueckwegfrage",                  "HeizkesselDialog",            KiMaskennamen.HEIZKESSEL_PROJEKT),
@@ -162,6 +166,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("RaumnutzungBlatt",                  "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
         // NP4a (Konzept Nutzungsprofile 6.1, 6.4): CSV-Import und -Export im Kopf des Blatts — ein Baustein darin.
         new("RaumnutzungCsvAustausch",           "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
+        // NP7b (Konzept Nutzungsprofile 6.5): der Dialog „Normwerte einlesen" als Überlagerung im Blatt.
+        new("NormwerteEinlesenDialog",           "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
         // NP4c (Konzept Nutzungsprofile 6.1, NP-F7, NP-F9): Zeilenbild- und Stundenprofil-Editor im Profileditor des
         // Blatts (über RaumnutzungBildEditor) - dieselbe Anmeldung wie das Blatt.
         new("RaumnutzungZeilenbildEditor",       "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
@@ -247,8 +253,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // Trichter der Spalte Hersteller, kein Maskenfeld. Die Aufbauverwaltung führt vier
         // Kopffelder, das Schichtenraster als Baustein sechs (Baustoff, Dicke, λ, ρ, c_p,
         // Luftschicht - die Spalten schicht_* der Feldkarte).
-        new("BaustoffKatalogDialog", 8, "der Werkzeugschalter „nur herstellerneutral“ setzt den Filter der Liste"),
-        new("BauteilaufbauDialog", 4),
+        // BK-2b: die Klasse des Baustoffs (Katalogfeld klasse, 8 → 9); Gruppe und Klasse des Aufbaus (Katalogfelder
+        // gruppe, klasse) und der Werkzeugschalter „nur geeignete“ (Filter der Liste, kein Maskenfeld): 4 → 7.
+        new("BaustoffKatalogDialog", 9, "der Werkzeugschalter „nur herstellerneutral“ setzt den Filter der Liste"),
+        new("BauteilaufbauDialog", 7, "der Werkzeugschalter „nur geeignete“ blendet Zeilen der Liste aus"),
         new("BauteilschichtenFelder", 6),
 
         // KU3-1: die Verwaltung der Kaeltemaschinen - zwoelf Kenndaten als EIN Fragment fuer
@@ -260,7 +268,7 @@ public sealed class KiMaskenabdeckungWacheTests
         // KU3-4c: der Erzeugerdialog der Kaeltemaschinen - Name, Anzahl, Kaltwasservorlauf, Hilfsstrom,
         // Kuehltraeger und eigener Zaehler der gewaehlten Anlage (die Felder der Feldkarte); die Katalogliste
         // der Geraetewahl ist eine Auswahl, kein Wert.
-        new("KaeltemaschineAnlageDialog", 1, "die Schalter „Wärmepumpen im Kühlbetrieb“ schreiben beim OK den Kühlbetrieb des Geräts über den Kernweg der Wärmepumpen-Konfiguration — derselbe Wert wie das Katalogfeld „kuehlbetrieb“ der Maske WaermepumpeKonfiguration, keine Eingabe der Kältemaschine"),
+        new("KaeltemaschineAnlageDialog", 0, "KM-K1: die Felder der Anlage stehen in KaeltemaschineKonfiguration; Wärmepumpen im Kühlbetrieb schalten Übernehmen und Entfernen der Katalogauswahl (Kernweg der Wärmepumpen-Konfiguration), keine Eingabe der Kältemaschine"),
         // ---- Ende Gebäudesimulation G3, Welle C ----
 
         // ---- Gebäudesimulation G3, Welle D2 (Zone und Bauteil) ----
@@ -280,7 +288,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung): 19 → 22.
         // AH-V5: die Vorheizzeit der Zone - Katalogfeld vorheizzeit (22 → 23).
         new("ZonenDialog", 23),
-        new("BauteilDialog", 15, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“"),
+        // BK-2b: der Schalter „auch ungeeignete zeigen“ filtert nur die Aufbauwahl (15 → 16).
+        new("BauteilDialog", 16, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“; der Schalter „auch ungeeignete zeigen“ filtert nur die Wahl"),
         // Stufe G6b (W2): der Luftaustausch zwischen den Zonen - ein Raster, je Zeile Zone A, Zone B
         // und V̇; die Zonen liest der Assistent nur.
         new("LuftaustauschDialog", 3, "Zone A und Zone B wählt der Anwender; der Assistent liest sie und setzt den Volumenstrom"),
@@ -299,12 +308,14 @@ public sealed class KiMaskenabdeckungWacheTests
         new("ProjektBrennstoffeDialog", 2, "das Zahlenfeld steht in einer Schleife über die zehn Werte der Bearbeitung, die alle im Katalog stehen"),
         new("KatalogDublettenDialog", 1),
         // Freigabe der Masken, Teil B (10.10.2026): der Gebäudeimport mit seinen Kopfeingaben.
-        new("GebaeudeImportDialog", 31, "im Katalog stehen die acht Kopfeingaben (Baualtersklasse, Quelle, Gebäude, " +
+        new("GebaeudeImportDialog", 31, "der Haken „Profil als Vorgabe setzen“ des Einzonenwegs wählt nur die Vorgabe ab (GD-5); " +
+            "im Katalog stehen die acht Kopfeingaben (Baualtersklasse, Quelle, Gebäude, " +
             "Name, Heizsollwert aus der Datei, Zonenregel, Zonierung, als Zone mit Bauteilen) und die Nordrichtung " +
-            "(ein Baustein ohne gezählte Eingabe); draußen bleiben die Eingaben je Raum, Feldzeile, Zone, Baustoff und " +
+            "(ein Baustein ohne gezählte Eingabe); draußen bleiben die Eingaben je Raum, Feldzeile, Zone, Baustoff je Schicht und " +
             "Aufbauzeile (Haken, Werte, Namen, Nutzungen — Zeilen, keine Kopfwerte), die Mengenwahlen der Zonen und Räume " +
             "(Haken je Zeile für eine Massenaktion), die Eingaben der Schritte am Zonenplan (neue Zone, Geschoss, Regel " +
-            "für den Rest, Ziel- und Raumwahl im Grundriss, Ausweg-Haken — sie wirken erst mit ihrem Knopf), die fünf " +
+            "für den Rest, Raumwahl im Grundriss, Ausweg-Haken — sie wirken erst mit ihrem Knopf; die Zielzone wählt der " +
+            "Anwender als Knopf der Legende, keine Eingabe), die fünf " +
             "Filter der Listen (Anzeige, kein Einstellwert) und die Dateiwahl (Betriebssystemdialog)"),
         new("GebaeudeExportDialog", 5, "die Bestätigung der Meldungen ist ein Katalogfeld nur zum Lesen; die Formatwahl gbXML/IFC trifft der Anwender, sie nimmt die Bestätigung zurück; die Wahl „Originaldatei anreichern“ und die Bestätigung des Beipackzettels (fremde Datei verändert weitergeben) sind Handlungen des Anwenders, die eine Dateiwahl voraussetzen"),
         // ---- Ende Gebäudesimulation G3, Welle D2 ----
@@ -313,7 +324,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("BedarfErgebnisDialog", 2, "die Knopfgruppen Bedarfsart und Zeitraster des Grafikreiters sind Schaltknöpfe; der Assistent setzt sie über „grafiksicht“, „jahresverlauf“ und „zeitstufe“"),
         new("BedarfReiter", 3),
         // PW2/BW2: die Wahl des Betriebskalenders der gewählten Zuordnung - Katalogfeld betriebskalender (5 → 6).
-        new("BedarfsProfileDialog", 6, "die beiden Temperaturfelder der Prozesswärme (PW1 Stufe 1) sind Eingaben des Knopfes „Temperaturen übernehmen“ an der gewählten Projektzeile, wie der neue Jahresverbrauch; die Werte führt die Zeile, nicht die Maske"),
+        new("BedarfsProfileDialog", 7, "die beiden Temperaturfelder der Prozesswärme (PW1 Stufe 1) sind Eingaben des Knopfes „Temperaturen übernehmen“ an der gewählten Projektzeile, wie der neue Jahresverbrauch; die Werte führt die Zeile, nicht die Maske"),
         // PW2/BW2: die Verwaltung der Betriebskalender - Kalender, Bezeichnung, Bundesland, Feiertagsregel, die
         // Ferienfelder (eine Schleife über vier Paare), Ferienfaktor und Kürzen; Katalog Form_Betriebskalender.
         new("BetriebskalenderDialog", 8),
@@ -425,8 +436,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // Handlung schreibt sofort mit eigenem Knopf. NP3c: Die 28 Kennwerte des Profileditors führt die
         // Feldkarte KiNutzungsprofilfelder (np_*, Feldtafel am Entwurf des Blatts), dazu die Kategorie (nur
         // lesbar) und die Zuordnungszeilen als Raster zum Lesen; die Zahl bleibt 31.
-        new("RaumnutzungBlatt", 30, "Nummer, Name, Beschreibung, die Nutzungszeiten, die Woche, die Sollwerte, die " +
-            "Außenluft samt Einheit und die Lasten führt die Feldkarte KiNutzungsprofilfelder als np_* am ENTWURF " +
+        new("RaumnutzungBlatt", 31, "Nummer, Name, Beschreibung, die Nutzungszeiten, die Woche, die Sollwerte, die " +
+            "Außenluft samt Einheit, die Außenluft je Person (NP7) und die Lasten führt die Feldkarte KiNutzungsprofilfelder als np_* am ENTWURF " +
             "des Profileditors (in den Katalog erst mit „Speichern“ des Blatts, NP-F3); die Nutzungstage im Jahr sind " +
             "abgeleitet (E93), eine Lesezeile ohne Eingabe, und stehen nur lesbar als np_tage_jahr; die Zuordnungszeilen (Art, " +
             "Schlüssel, Profil) stehen als Raster zum Lesen. Profilwahl je Zeile sowie Art und Schlüssel einer neuen " +
@@ -436,6 +447,10 @@ public sealed class KiMaskenabdeckungWacheTests
         new("RaumnutzungCsvAustausch", 3, "Zielkategorie und Name der neuen Kategorie gehören zur Handlung „CSV importieren…“, die " +
             "erst mit „Übernehmen“ in den Katalog schreibt, die Kategorie zur Handlung „CSV exportieren…“, die eine Datei " +
             "schreibt — Dateiwahlen und Klicks des Anwenders, kein Einstellwert des Gebäudes"),
+        // NP7b (Konzept Nutzungsprofile 6.5): der Schalter „vorhandene Werte überschreiben" des Dialogs „Normwerte einlesen".
+        new("NormwerteEinlesenDialog", 1, "der Schalter „vorhandene Werte überschreiben“ gehört zur Handlung „Übernehmen“, die " +
+            "aus der Datei des Anwenders in die Kategorie DIN schreibt — eine Angabe dieser Handlung, kein Einstellwert des " +
+            "Gebäudes; Quelle und Datei wählt der Anwender über die Dateiwahl der Plattform"),
         // NP4c (Konzept Nutzungsprofile 6.1, NP-F7, NP-F9): Wert, Nachtfenster und ΔT je Zeile des Zeilenbilds und die
         // 24 Stundenwerte je Tagesart samt Einfügefeld - der ENTWURF des Profileditors; die Feldkarte führt Zeilenbild und
         // Stundenprofile als Raster zum Lesen (np_zeilenbild_*, np_stunden_*) und den Umschalter je Größe nur lesbar
@@ -631,6 +646,15 @@ public sealed class KiMaskenabdeckungWacheTests
                 "Filterschalter der Katalogliste (Trichter auf die Kühlleistung) — eine Listenauswahl, kein Einstellwert",
             ["(_kuehlung ? 1 : 0)"] =
                 "wählt nur das gezeigte Kennfeld (Wärme oder Kühlung) — ein Bildschalter"
+        },
+        [KiMaskennamen.WAERMEBEDARF_EXTERN] = new()
+        {
+            ["Kanalindex(z)"] =
+                "Kanal der Zeile in der Bearbeiten-Ueberlagerung (K5c) — dieselbe Bindung wie „Kanalindex“ der Kopfleiste, " +
+                "Feld kanal der Feldkarte",
+            ["KaelteArtindex(z)"] =
+                "Art der Kaeltezeile in der Bearbeiten-Ueberlagerung (K5c) — dieselbe Bindung wie „KaelteArtindex“ der " +
+                "Kopfleiste, Feld kaelte_art der Feldkarte"
         },
         [KiMaskennamen.PV_ANLAGENWERTE] = new()
         {

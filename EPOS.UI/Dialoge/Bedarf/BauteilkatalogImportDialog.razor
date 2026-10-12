@@ -1,0 +1,197 @@
+﻿@* BAUTEILKATALOG EINLESEN (BK-3, Entscheide E132 und E133) - freie Ansicht der AppWurzel auf beiden
+   Plattformen, Menue "Administration -> Gebaeude -> Bauteilkatalog einlesen...".
+
+   ABLAUF: Dateiwahl auf Baustoffe.csv des CSV-Exports (die fuenf uebrigen Dateien liegen daneben) ->
+   "Vorschau" (der Kern liest, plant gegen den Katalog und schreibt NICHTS) -> "Uebernehmen" (OK der
+   Schlussleiste: EIN Vorgang im Kern, Meldung mit Zahlen). Nach dem Uebernehmen bleibt der Dialog mit der
+   Meldung offen; OK ist dann hart gesperrt, damit ein zweites OK nichts wiederholt. "Schliessen" (Abbrechen,
+   Kreuz, Esc) schreibt nichts.
+
+   Die Komponente kennt keine Fachklasse: Vorschau und Ergebnis kommen als Records der Huelle
+   (EPOS.UI.Daten, BauteilkatalogImportHuelle). *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using EPOS.UI.Dialoge.Allgemein
+@using System.Globalization
+
+<div class="epos-dialog epos-bauteilkatalog-import" tabindex="-1" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Texte.Titel" />
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="Schliessen" />
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@(_meldungFehler ? WarnStufe.Warnung : WarnStufe.Hinweis)" Text="@_meldung" />
+    }
+
+    <div class="epos-dialog-inhalt">
+        <p class="epos-hinweis">@Texte.Hinweis</p>
+        <Dateiwahl Bezeichnung="@Texte.Datei" Pfad="@_pfad" PfadChanged="BeiPfad" Filter="@Texte.Filter"
+                   Waehlen="Waehlen" KnopfText="@Texte.Durchsuchen" />
+
+        @if (_vorschau is not null)
+        {
+            <div class="epos-bki-vorschau" role="region" aria-label="@Texte.Vorschau">
+                @if (_vorschau.Abgelehnt is not null)
+                {
+                    <p class="epos-status epos-status--fehler">@string.Format(CultureInfo.CurrentCulture, Texte.Abgelehnt, _vorschau.Abgelehnt)</p>
+                }
+                else
+                {
+                    <p>@string.Format(CultureInfo.CurrentCulture, Texte.Quelle, _vorschau.Quelle)</p>
+                    <table class="epos-raster epos-bki-zahlen">
+                        <thead>
+                            <tr>
+                                <th>@Texte.SpalteSatzart</th>
+                                <th>@Texte.SpalteNeu</th>
+                                <th>@Texte.SpalteKatalog</th>
+                                <th>@Texte.SpalteQuelle</th>
+                                <th>@Texte.SpalteWieder</th>
+                                <th>@Texte.SpalteAbgelehnt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (BauteilkatalogVorschauZeile z in _vorschau.Zeilen)
+                            {
+                                <tr @key="z.Satzart">
+                                    <td>@z.Satzart</td>
+                                    <td class="epos-zahl">@Z(z.Neu)</td>
+                                    <td class="epos-zahl">@Z(z.MitKatalog)</td>
+                                    <td class="epos-zahl">@Z(z.InQuelle)</td>
+                                    <td class="epos-zahl">@Z(z.Wiedererkannt)</td>
+                                    <td class="epos-zahl">@Z(z.Abgelehnt)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <p class="epos-bki-gekennzeichnet">@string.Format(CultureInfo.CurrentCulture, Texte.Gekennzeichnet, Z(_vorschau.Gekennzeichnet))</p>
+                    <p>@string.Format(CultureInfo.CurrentCulture, Texte.MitBaustoff, Z(_vorschau.SchichtenMitBaustoff))</p>
+                    <p class="epos-bki-richtung">@_vorschau.Richtung</p>
+                    @if (_vorschau.Gruende.Count > 0)
+                    {
+                        <h2 class="epos-abschnitt-titel">@Texte.Gruende</h2>
+                        <ul class="epos-bki-gruende">
+                            @foreach (string g in _vorschau.Gruende) { <li>@g</li> }
+                        </ul>
+                    }
+                    @if (_vorschau.CodesOhneDeutung.Count > 0)
+                    {
+                        <h2 class="epos-abschnitt-titel">@Texte.Codes</h2>
+                        <ul class="epos-bki-codes">
+                            @foreach (string c in _vorschau.CodesOhneDeutung) { <li>@c</li> }
+                        </ul>
+                    }
+                    @if (_vorschau.Protokoll.Count > 0)
+                    {
+                        <details class="epos-bki-protokoll">
+                            <summary>@Texte.Protokoll</summary>
+                            <ul>
+                                @foreach (string zeile in _vorschau.Protokoll) { <li>@zeile</li> }
+                            </ul>
+                        </details>
+                    }
+                }
+            </div>
+        }
+    </div>
+
+    <SpeichernLeiste OkText="@Texte.Uebernehmen" AbbrechenText="@Texte.Schliessen"
+                     OkErlaubt="@(!_uebernommen && Uebernehmen is not null)" OkSperrgrund="@OkSperrgrund"
+                     Ergebnis="BeiLeiste">
+        <Aktionen>
+            <button type="button" class="epos-knopf epos-bki-vorschauknopf" disabled="@(Vorschau is null || string.IsNullOrWhiteSpace(_pfad))"
+                    @onclick="BeiVorschau">@Texte.Vorschau</button>
+        </Aktionen>
+    </SpeichernLeiste>
+</div>
+
+@code {
+    /// <summary>Wählt <c>Baustoffe.csv</c> (Filter der Plattform); <c>null</c> oder leer = abgebrochen.</summary>
+    [Parameter] public Func<string, Task<string?>>? Waehlen { get; set; }
+
+    /// <summary>Die Vorschau zum gewählten Pfad (schreibt nichts).</summary>
+    [Parameter] public Func<string, BauteilkatalogVorschauDaten>? Vorschau { get; set; }
+
+    /// <summary>Übernehmen: schreibt in EINEM Vorgang des Kerns und meldet mit Zahlen.</summary>
+    [Parameter] public Func<string, BauteilkatalogImportErgebnis>? Uebernehmen { get; set; }
+
+    /// <summary>Vorbelegter Pfad (Tests, Wiederaufnahme).</summary>
+    [Parameter] public string? Pfad { get; set; }
+
+    /// <summary><c>true</c>, wenn übernommen wurde; <c>false</c> sonst.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Das Textbündel.</summary>
+    [Parameter] public BauteilkatalogImportTexte Texte { get; set; } = new();
+
+    /// <summary>Der Titel im Kopf; leer = die Überlagerung trägt ihn.</summary>
+    [Parameter] public string TitelText { get; set; } = WindowsFormsApplication1.MyResource.Resource.BKI_TITEL;
+
+    /// <summary>Der Hilfeschlüssel der Kopfpille (Katalog der Baustoffe).</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "BaustoffKatalog.btn_Help";
+
+    private string _pfad = "";
+    private BauteilkatalogVorschauDaten? _vorschau;
+    private string? _vorschauPfad;
+    private bool _uebernommen;
+    private string? _meldung;
+    private bool _meldungFehler;
+
+    /// <summary>Die Meldung (Ergebnis oder Fehler) — für Proben.</summary>
+    public string? Meldung => _meldung;
+
+    protected override void OnInitialized() => _pfad = Pfad ?? "";
+
+    private static string Z(int n) => n.ToString("N0", CultureInfo.CurrentCulture);
+
+    private bool VorschauGueltig => _vorschau is not null && _vorschau.Abgelehnt is null && _vorschauPfad == _pfad;
+
+    private string? OkSperrgrund => _uebernommen || VorschauGueltig ? null : Texte.OkSperre;
+
+    private void BeiPfad(string p)
+    {
+        _pfad = p ?? "";
+        _vorschau = null;
+        _meldung = null;
+    }
+
+    private void BeiVorschau()
+    {
+        if (Vorschau is null || string.IsNullOrWhiteSpace(_pfad)) return;
+        _vorschau = Vorschau(_pfad);
+        _vorschauPfad = _pfad;
+        _meldung = null;
+    }
+
+    private async Task BeiLeiste(bool ok)
+    {
+        if (!ok) { await Schliessen(); return; }
+        if (_uebernommen || Uebernehmen is null) return;
+        if (!VorschauGueltig)
+        {
+            _meldung = Texte.OkSperre;
+            _meldungFehler = true;
+            return;
+        }
+        BauteilkatalogImportErgebnis e = Uebernehmen(_pfad);
+        _meldung = e.Meldung;
+        _meldungFehler = !e.Erfolg;
+        _uebernommen = e.Erfolg;
+    }
+
+    private Task Schliessen() => Geschlossen.InvokeAsync(_uebernommen);
+
+    private async Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape") await Schliessen();
+    }
+}

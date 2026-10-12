@@ -23,11 +23,10 @@ Das Blatt trägt zwei Reiter: ''Profile'' mit Katalogbaum und Profileditor und '
 Links stehen die Kategorien mit ihren Profilen, nach Nummer und Name sortiert. Die Suche findet Nummer und Name.
 
 * '''EPOS-Muster''' – ausgelieferte Muster zum Einstieg, schreibgeschützt (Schloss).
-* '''DIN/TS 18599-10''' – ausgeliefert sind Nummern und Namen der 43 Nutzungen der Ausgabe 2025-10, ohne Werte. Zum Eintragen von Werten ''Duplizieren''.
-* '''SIA 2024''' und '''VDI 2078''' – ausgelieferte, zunächst leere Kategorien.
-* '''Eigene Kategorien''' – Ihre eigenen Kataloge, frei bearbeitbar.
+* '''DIN/TS 18599-10''' – ausgeliefert sind Nummern und Namen der 43 Nutzungen der Ausgabe 2025-10 und, am Ende der Kategorie ohne Nummer, die Wohngebäude nach Tabelle 5 (Einfamilienhaus, Mehrfamilienhaus), alle ohne Werte. Die Werte aus Ihrer eigenen Ausgabe der Norm lesen Sie mit ''Normwerte einlesen…'' ein (siehe [[#normwerte-einlesen|Normwerte einlesen]]) oder tragen sie in eine Kopie ein (''Duplizieren'').
+* '''Eigene Kategorien''' – Ihre eigenen Kataloge, frei bearbeitbar; auch für Werte aus weiteren Normen und Richtlinien, die Sie lizenziert haben (anlegen, duplizieren oder per CSV einlesen).
 
-Unter dem Baum stehen ''Neue Kategorie…'', ''Neues Profil…'', ''Duplizieren'' (auch in eine andere Kategorie), ''Umbenennen'' und ''Löschen''. Ausgelieferte Kategorien und Profile lassen sich nur duplizieren.
+Unter dem Baum stehen ''Neue Kategorie…'', ''Neues Profil…'', ''Duplizieren'' (auch in eine andere Kategorie), ''Umbenennen'' und ''Löschen''. Ausgelieferte Kategorien und Profile lassen sich nur duplizieren. Ist die Kategorie ''DIN/TS 18599-10'' gewählt, stehen dort zusätzlich ''Normwerte einlesen…'' und ''Eingelesene Werte entfernen…''. Profile mit eingelesenen Werten tragen die Marke ''eingelesen''.
 
 === Profileditor ===
 
@@ -35,7 +34,7 @@ Rechts steht das gewählte Profil: Kategorie, Nummer, Name, Beschreibung und Que
 
 * '''Nutzungszeit und Woche''' – ''Nutzung von'' und ''bis'', ''Betrieb von'' und ''bis'', die ''Nutzungstage der Woche'' und ''Feiertage wie Sonntag''.
 * '''Sollwerte Heizen und Kühlen''' – ''Heizen im Betrieb'' und ''Heizen außerhalb'' (oder ''Heizen außerhalb aus''), ebenso für das Kühlen.
-* '''Außenluft''' – ''Außenluft im Betrieb'' und ''außerhalb'' mit der ''Einheit der Außenluft'': Luftwechsel in 1/h oder Volumenstrom je Fläche in m³/(h·m²); diese braucht die lichte Höhe des Ziels.
+* '''Außenluft''' – ''Außenluft im Betrieb'' und ''außerhalb'' mit der ''Einheit der Außenluft'': Luftwechsel in 1/h oder Volumenstrom je Fläche in m³/(h·m²); diese braucht die lichte Höhe des Ziels. Dazu ''Außenluft je Person'' in m³/(h·Person); sie gilt nur, wenn keine Außenluft im Betrieb angegeben ist, und wird mit der Fläche je Person und der lichten Höhe in einen Luftwechsel umgerechnet.
 * '''Personen, Geräte und Beleuchtung''' – ''Fläche je Person'', ''Wärme je Person'', ''Gerätelast'', je der Anteil ''im Betrieb'' und ''außerhalb'', dazu ''Beleuchtung'' und ''Gleichzeitigkeit der Beleuchtung''. Die Beleuchtung zählt zu den Geräten: Deren Nennwert am Ziel ist Gerätelast plus Beleuchtung mal Gleichzeitigkeit, mal Fläche.
 
 ''Speichern'' schreibt den Entwurf des Profils in den Katalog, ''Abbrechen'' verwirft den Entwurf, ''Vorschau'' rechnet die Vorschau neu.
@@ -64,11 +63,24 @@ Im Reiter ''Konditionierung'' von Gebäudeeditor, Verwaltung Gebäude, Katalogba
 
 Die Nutzung einer Vorlage ist ein freier Text; beim Eintippen bietet das Programm die Namen aus dem Katalog an.
 
+=== Normwerte einlesen ===
+{{Anker|normwerte-einlesen}}
+
+Die Profile der Kategorie ''DIN/TS 18599-10'' werden ohne Werte ausgeliefert. ''Normwerte einlesen…'' füllt sie mit den Werten aus Ihrer eigenen Quelle; der Dialog öffnet sich im Blatt und schreibt erst mit ''Übernehmen''.
+
+# '''Vorlage holen''' – ''Vorlage speichern…'' schreibt die CSV-Datei der Kategorie mit Nummern und Namen, ohne Werte. Tragen Sie die Werte aus Ihrer Ausgabe der Norm ein; Nummer und Name bleiben, wie sie sind. Das Format steht unter [[#csv-format|CSV-Format]], die Außenluft je Person in der Spalte <code>Aussenluft_Person</code>.
+# '''Quelle wählen''' – ''CSV-Datei wählen…'' liest Ihre Datei, ''Projektdatei wählen…'' eine Projektdatei (.sqproj), deren Nutzungsprofile die DIN-Nummer tragen.
+# '''Vorschau prüfen''' – die Tabelle ''Treffer'' nennt je Profil Nummer, Name, Stand (ohne Werte, Werte vorhanden, eingelesene Werte vorhanden) und die Spalten, deren Wert vom vorhandenen abweicht; darunter die Abweichungen je Spalte. Die Tabelle ''Nicht übernommen'' nennt unbekannte Nummern, Profile ohne Wert, doppelte Nummern und weitere Meldungen.
+# '''Übernehmen''' – zugeordnet wird über die Nummer, die zwei Wohnprofile ohne Nummer über ihren Namen. Vorhandene Werte bleiben, solange ''vorhandene Werte überschreiben'' nicht gesetzt ist. Die Meldung nennt die Zahl der gefüllten und der übersprungenen Profile.
+
+Die eingelesenen Profile tragen die Marke ''eingelesen'' mit Datei und Tag; sie bleiben schreibgeschützt. ''Eingelesene Werte entfernen…'' stellt nach einer Rückfrage alle eingelesenen Profile wieder ohne Werte.
+
 === CSV importieren und exportieren ===
 
 Im Kopf des Blatts stehen ''CSV importieren…'' und ''CSV exportieren…''. Beim Import wählen Sie die Datei und eine eigene Zielkategorie; eine Vorschau zeigt je Zeile, was übernommen wird und was nicht, und geschrieben wird erst mit ''Übernehmen''. Der Export schreibt dasselbe Format; die Datei lässt sich wieder einlesen.
 
 == CSV-Format ==
+{{Anker|csv-format}}
 
 Die Datei ist UTF-8 mit Semikolon als Trennzeichen und Dezimalpunkt. Die erste Zeile nennt die Spalten, jede weitere Zeile ist ein Profil. Der Export schreibt UTF-8 mit Kennzeichen für Tabellenprogramme; der Import liest mit und ohne.
 

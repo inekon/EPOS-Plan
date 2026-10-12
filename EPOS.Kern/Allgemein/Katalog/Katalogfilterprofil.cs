@@ -622,6 +622,16 @@ namespace WindowsFormsApplication1
         /// <summary>Die Ordnungsgruppe eines Baustoffs (Mauerwerk, Beton, Dämmstoffe, …).</summary>
         public const string SpGruppe = "GRUPPE";
 
+        /// <summary>Die Klasse eines Baustoffs oder Aufbaus unter seiner Gruppe (BK-2b, Anzeigetext).</summary>
+        public const string SpKlasse = "KLASSE";
+
+        /// <summary>
+        /// Die Marke „für die Gebäudesimulation meist nicht geeignet" eines Aufbaus (BK-2b): leer = geeignet, sonst der kurze
+        /// Markentext. Der Schalter „nur geeignete" der Verwaltung blendet die Zeilen mit Marke vor der Liste aus (kein
+        /// Trichter: eine Spalte mit gesetztem Filter wiche nie und schöbe die Liste im schmalen Fenster quer).
+        /// </summary>
+        public const string SpEignung = "EIGNUNG";
+
         /// <summary>Die Wärmeleitfähigkeit λ eines Baustoffs in W/(m·K).</summary>
         public const string SpLambda = "LAMBDA";
 
@@ -1215,13 +1225,18 @@ namespace WindowsFormsApplication1
                 {
                     new Katalogspalte(SpBezeichner, t("KFLT_SP_NAME")),
                     new Katalogspalte(SpGruppe, t("KFLT_SP_GRUPPE"), rang: Katalogspaltenrang.BeiPlatz),
+                    // BK-2b: die Klasse unter der Gruppe (E132) — Trichter wie jede Textspalte.
+                    new Katalogspalte(SpKlasse, t("KFLT_SP_KLASSE"), rang: Katalogspaltenrang.BeiPlatz),
                     new Katalogspalte(SpHersteller, t("KFLT_SP_HERSTELLER"), rang: Katalogspaltenrang.Breit),
                     new Katalogspalte(SpLambda, t("KFLT_SP_LAMBDA"), "W/(m·K)", Katalogspaltenart.Zahl),
                     new Katalogspalte(SpRho, t("KFLT_SP_RHO"), "kg/m³", Katalogspaltenart.Zahl,
                                       rang: Katalogspaltenrang.BeiPlatz),
-                    new Katalogspalte(SpCp, t("KFLT_SP_CP"), "J/(kg·K)", Katalogspaltenart.Zahl,
-                                      rang: Katalogspaltenrang.BeiPlatz),
-                    new Katalogspalte(SpQuelle, t("KFLT_SP_QUELLE"), rang: Katalogspaltenrang.Breit)
+                    // c_p steht immer (Rang wie λ): die Wärmekapazität trägt den Gebäudelauf (Entwurf
+                    // Bauteilkatalog 2.2); ρ bleibt „bei Platz".
+                    new Katalogspalte(SpCp, t("KFLT_SP_CP"), "J/(kg·K)", Katalogspaltenart.Zahl),
+                    new Katalogspalte(SpQuelle, t("KFLT_SP_QUELLE"), rang: Katalogspaltenrang.Breit),
+                    // BK-2b: die Herkunft (Vorgabe, eigen, Import) — der Filter nach Herkunft ist ihr Trichter.
+                    new Katalogspalte(SpHerkunft, t("KFLT_SP_HERKUNFT"), rang: Katalogspaltenrang.Breit)
                 }
             };
         }
@@ -1246,6 +1261,10 @@ namespace WindowsFormsApplication1
                 Spalten = new[]
                 {
                     new Katalogspalte(SpBezeichner, t("KFLT_SP_NAME")),
+                    // BK-2b: die Marke „meist nicht geeignet" steht vorn und weicht als erste der Platzspalten nicht.
+                    new Katalogspalte(SpEignung, t("KFLT_SP_EIGNUNG"), rang: Katalogspaltenrang.BeiPlatz),
+                    new Katalogspalte(SpGruppe, t("KFLT_SP_GRUPPE"), rang: Katalogspaltenrang.Breit),
+                    new Katalogspalte(SpKlasse, t("KFLT_SP_KLASSE"), rang: Katalogspaltenrang.BeiPlatz),
                     new Katalogspalte(SpBauteilart, t("KFLT_SP_BAUTEILART"), rang: Katalogspaltenrang.BeiPlatz),
                     new Katalogspalte(SpUWert, t("KFLT_SP_UWERT"), "W/(m²·K)", Katalogspaltenart.Zahl),
                     new Katalogspalte(SpRWert, t("KFLT_SP_RWERT"), "m²·K/W", Katalogspaltenart.Zahl,

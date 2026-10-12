@@ -4,7 +4,7 @@
 [`Konzept_Administration_Support_EPOS-Plan.md`](../../../aktuell/Konzept_Administration_Support_EPOS-Plan.md),
 Entwicklerseite:
 [`Entwicklerhandbuch_Administration_Support_EPOS-Plan.md`](../../../aktuell/Entwicklerhandbuch_Administration_Support_EPOS-Plan.md).
-Statuszeile #1012 (vorläufig #995, beim Merge auf die nächste freie Nummer umgezogen). Kein Schemaschritt, kein Rechenweg. iOS bleibt zurückgestellt.
+Statuszeile #1012 (vorläufig #995, dann #998, beim Merge auf die nächste freie Nummer umgezogen). Kein Schemaschritt, kein Rechenweg. iOS bleibt zurückgestellt.
 
 ## 1 Anlass
 

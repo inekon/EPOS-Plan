@@ -91,6 +91,24 @@ public sealed class GebaeudeZonenTexte
     /// <summary><c>GEBZ_BTN_OEFFNEN</c></summary>
     public string KnopfOeffnen { get; set; } = Resource.GEBZ_BTN_OEFFNEN;
 
+    /// <summary><c>GEBZ_SP_NUTZUNG</c> — Spalte „Nutzung/Profil“ der Zonenliste (GD-5)</summary>
+    public string SpalteNutzung { get; set; } = Resource.GEBZ_SP_NUTZUNG;
+
+    /// <summary><c>GEBZ_NUTZUNG_GEERBT</c> — die Zone erbt vom Gebäude</summary>
+    public string NutzungGeerbt { get; set; } = Resource.GEBZ_NUTZUNG_GEERBT;
+
+    /// <summary><c>GEBZ_NUTZUNG_TEILGEERBT</c> — „geerbt: {0}“ (Größen)</summary>
+    public string NutzungTeilgeerbt { get; set; } = Resource.GEBZ_NUTZUNG_TEILGEERBT;
+
+    /// <summary><c>GEBZ_NUTZUNG_VORGABE</c> — „Vorgabe (Profil der Gebäudeart): {0}“</summary>
+    public string NutzungVorgabe { get; set; } = Resource.GEBZ_NUTZUNG_VORGABE;
+
+    /// <summary><c>GEBZ_NUTZUNG_UNBEHEIZT</c> — unbeheizte Zone ohne Heiz- und Kühlkalender</summary>
+    public string NutzungUnbeheizt { get; set; } = Resource.GEBZ_NUTZUNG_UNBEHEIZT;
+
+    /// <summary><c>GEBZ_BTN_PROFIL_ZUWEISEN</c> — „Profil/Kalender zuweisen…“ öffnet die Zone bei Nutzung und Kalendern</summary>
+    public string KnopfProfilZuweisen { get; set; } = Resource.GEBZ_BTN_PROFIL_ZUWEISEN;
+
     /// <summary><c>GEBZ_BTN_ENTFERNEN</c></summary>
     public string KnopfEntfernen { get; set; } = Resource.GEBZ_BTN_ENTFERNEN;
 
@@ -676,6 +694,12 @@ public sealed class BauteilDialogTexte
     /// <summary><c>BTDLG_LBL_UWERT</c></summary>
     public string LabelUWert { get; set; } = Resource.BTDLG_LBL_UWERT;
 
+    /// <summary><c>BTDLG_LBL_KAPAZITAET</c> — der Lesewert C des gewählten Aufbaus.</summary>
+    public string LabelKapazitaet { get; set; } = Resource.BTDLG_LBL_KAPAZITAET;
+
+    /// <summary><c>BTDLG_KAPAZITAET_BAUWEISE</c> — ohne Aufbau kommt die Speichermasse aus der Bauweise.</summary>
+    public string KapazitaetBauweise { get; set; } = Resource.BTDLG_KAPAZITAET_BAUWEISE;
+
     /// <summary><c>BTDLG_PLATZHALTER_U</c></summary>
     public string PlatzhalterU { get; set; } = Resource.BTDLG_PLATZHALTER_U;
 
@@ -690,6 +714,9 @@ public sealed class BauteilDialogTexte
 
     /// <summary><c>BTDLG_LBL_AUFBAU_KATALOG</c></summary>
     public string LabelAufbauKatalog { get; set; } = Resource.BTDLG_LBL_AUFBAU_KATALOG;
+
+    /// <summary><c>BKAT_SCHALTER_AUCH_UNGEEIGNETE</c> — zeigt die als ungeeignet gekennzeichneten Aufbauten (BK-2b).</summary>
+    public string SchalterAuchUngeeignete { get; set; } = Resource.BKAT_SCHALTER_AUCH_UNGEEIGNETE;
 
     /// <summary><c>BTDLG_KATALOG_WAHL</c></summary>
     public string KatalogWahl { get; set; } = Resource.BTDLG_KATALOG_WAHL;

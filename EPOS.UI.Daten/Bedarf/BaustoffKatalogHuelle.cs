@@ -64,6 +64,8 @@ namespace WindowsFormsApplication1
                 Rho = m.Rho,
                 Cp = m.Cp,
                 Quelle = m.Quelle ?? "",
+                KlasseCode = m.KlasseCode ?? "",
+                Import = m.Herkunft == BauteilkatalogSchema.HERKUNFT_IMPORT,
                 Herkunft = BaustoffCtrl.HerkunftText(m.Herkunft),
                 Quellkennung = m.Quellkennung ?? "",
                 Auslieferung = m.ReadOnly
@@ -78,6 +80,8 @@ namespace WindowsFormsApplication1
         internal static BaustoffModel AlsModell(BaustoffDaten d, BaustoffModel alt)
         {
             if (d == null) return null;
+            // BK-2b: Gruppe und Klasse aus der Wahl, die Felder der Quelle reisen vom gespeicherten Satz mit — sonst
+            // schriebe das Speichern sie leer. Die Quelle eines Importsatzes bleibt die gespeicherte.
             return new BaustoffModel
             {
                 ID = d.Id,
@@ -87,7 +91,10 @@ namespace WindowsFormsApplication1
                 Lambda = d.Lambda,
                 Rho = d.Rho,
                 Cp = d.Cp,
-                Quelle = Leer(d.Quelle),
+                Quelle = alt?.Herkunft == BauteilkatalogSchema.HERKUNFT_IMPORT ? alt.Quelle : Leer(d.Quelle),
+                GruppeCode = Bauteilkatalog.GruppeAusStoffgruppe(Leer(d.Gruppe)) ?? alt?.GruppeCode,
+                KlasseCode = Leer(d.KlasseCode),
+                Zusatz = alt?.Zusatz != null ? new Dictionary<string, object>(alt.Zusatz) : new Dictionary<string, object>(),
                 Herkunft = alt?.Herkunft,
                 Quellkennung = alt?.Quellkennung,
                 ReadOnly = alt?.ReadOnly ?? false

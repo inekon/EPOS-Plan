@@ -1116,6 +1116,26 @@ Unterdialogs haftet nicht, Kopf und Fuß des Fensters liegen unter der Abdunkelu
 und jede Zahl ist dieselbe wie mit `marke=0`. Katalogdialog: Kopf und Fuß statisch, das Dokument rollt nicht,
 jede Zahl dieselbe wie mit `marke=0`.
 
+**Fall `wp-steckbrief`** (`--nur wp-steckbrief`, bei **1 280 × 800** und **1 194 × 834** mit sicheren Abständen):
+die Satz-Überlagerung der Wärmepumpe („Bearbeiten…" der Projektkopie) mit dem Gerätesteckbrief links unter
+„Auslegung für Verteilung" — Überlagerung zwischen den sicheren Abständen, rollt nicht als Ganzes, nur ihr Körper
+rollt; der Steckbrief steht in der linken Spalte mit 14 Zeilen, weder er noch der Körper rollt quer, die linke
+Spalte überlappt die Kenndaten nicht; der Arbeitspunkt nennt den Normpunkt und folgt dem Vorlauf (35 → 55 °C).
+Dann „Konfiguration…": „Betriebszeiten" steht zugeklappt (`aria-expanded="false"`, Klappknopf mindestens das
+Berührungsziel des Hauses), „Höchster Vorlauf" steht darunter sichtbar, Aufklappen zeigt „Wochenraster bearbeiten"
+und das Raster öffnet. Fotos `wp_steckbrief_*`, `wp_konfiguration_zu_*`, `wp_konfiguration_auf_*`. Gegenprobe: ein
+Steckbrief mit `min-width: 1600px` ohne Umbruch muss rot sein.
+
+**Fall `satz-steckbrief`** (`--nur satz-steckbrief`, je Wirt bei **1 280 × 800**, der Heizkessel auch bei **1 194 × 834**
+mit sicheren Abständen): die zweispaltige Satz-Überlagerung („Bearbeiten…" der Projektkopie) von Heizkessel und BHKW
+(Seite `fensterprobe`) sowie Puffer-, Stromspeicher, Photovoltaik, Solarkollektoren und Wärmebedarf extern (Seite
+`rollbereichprobe`), je mit `steckbrief=1` — der Wirt reicht dann den vollen Feldsatz „Alle Daten" aus dem Katalogprofil
+des Kerns (`Wirt/Seiten/Steckbrieffelder.cs`, neutrale Werte). Gemessen: Überlagerung zwischen den sicheren Abständen,
+rollt nicht als Ganzes, nur ihr Körper rollt; beide Spalten nebeneinander; der Steckbrief steht in der linken Spalte unter
+den Projektfeldern (der Puffer hat keine), zeigt mindestens 8 Zeilen (Wärmebedarf extern 6), weder er noch der Körper
+rollt quer, die linke Spalte überlappt die Kenndaten nicht. Fotos `satz_steckbrief_<wirt>_<breite>x<hoehe>.png`.
+Gegenprobe: je Wirt ein Steckbrief mit `min-width: 1600px` ohne Umbruch muss rot sein.
+
 **Gegenprobe** (läuft mit): dieselben Fensterdialoge mit `marke=0` müssen die Haft-Kriterien verfehlen; mit
 Marke, aber `scroll-padding: 0` muss der Tabulator Felder unter Kopf oder Fuß legen; das eingebettete
 Warnband mit `bottom: 0` muss verdeckt sein; der Fuß der Dublettenprüfung mit negativem Rand muss das
@@ -1288,6 +1308,17 @@ Fehler. **Gegenprobe** (läuft mit): ein absichtlich rollender Inhalt des Katalo
 verschachtelter Rollbereich, ein rollender Dialogkörper als solcher erkannt werden. Rückgabe `0` = kein
 Verstoß und Gegenprobe rot, `1` = Verstoß oder Gegenprobe grün, `2` = Aufbaufehler. Die Probe steht in keiner CI.
 
+**Vergleich über beide Listen (VG1, KA‑E‑24).** In den Fällen Heizkessel und Wärmepumpen nimmt die Probe je Fenster
+alle Kreuze zurück, kreuzt die erste Projektzeile an (dann muss „Vergleichen…“ weich gesperrt sein und einen Grund
+nennen), dazu den ersten Katalogsatz (dann frei) und öffnet den Vergleich — Zustand „Vergleich offen“: die
+Vergleichsüberlagerung steht ganz im Fenster, jeder Satzspalte steht die Herkunft im Kopf, und in ihr liegt kein
+Rollbereich in einem anderen (es rollt allein die Überlagerung, die Hülle der Tabelle nicht); Esc schließt sie. Die
+Fensterprobe reicht dafür beiden Wirten eine kleine Parameterliste (`Vergleichsparameter`, `VergleichsparameterProjekt`).
+**Gegenprobe** (läuft mit): ein Rollbereich um die Tabelle und ein Spaltenkopf ohne Herkunft müssen rot werden. Mit
+`--fotos` legt die Probe in 1 280 × 800 `<fall>_vergleich_1280x800.png` (offen) und `…_gesperrt.png` (ein Kreuz, der
+Grund als Schild über dem Knopf) ab. **Messung (12.10.2026):** Heizkessel 140 Zustände, Wärmepumpen 120 Zustände,
+0 Verstöße, Gegenprobe rot.
+
 **Ganglinie mit verdichtetem Kopf (DZ1-N1).** In den vier Ganglinien-Fällen (Wärmebedarf extern, Strom-, Solar-,
 PV-Ganglinie) misst die Probe aufgeklappt zusätzlich: Kopf der Satzfläche (bis zur Oberkante der Kurve, ohne Polster)
 ab 1 024 px Breite höchstens 90 px — in 768 × 1 024 brechen die Kennzahlen um (93 px) —, Kurve mindestens
@@ -1442,6 +1473,13 @@ Rückgabe 0; in 1 093 × 614 rollt der Dialogkörper bei offener Detailzeile (Be
 Fensterprobe erfüllt (Gegenprobe rot), `rasterprobe.mjs` 29 von 29 Fällen erfüllt, `katalogprobe.mjs` alle 66 Fälle
 ohne Überlagerung. Fotos: `bedarfsprofile_zusammenfassung_1280x800.png`, `bedarfsprofile_satzueberlagerung_1280x800.png`.
 
+**Kältebedarfsprofile (K5b).** Der Fall `kaelteprofile` zeigt denselben Dialog mit der Art Kälte (Temperaturangabe,
+Kälte-Art, Kalender, erste Zeile „dezentral (Split)“ linear) und steht wie `bedarfsprofile` in `ZUSAMMENFASSUNG_WIRTE`
+und `KOPFKNOEPFE`; `SATZ_WIRTE` prüft, dass die Feldgruppe „Deckung“ (`.epos-deckung`) allein in der
+Bearbeiten-Überlagerung steht und die Detailzeile sie nur zusammenfasst. **Ergebnis vom 12.10.2026**
+(`--nur kaelteprofile`, Wirt Release, Chromium headless): **110 Zustände, 0 Verstöße**, Gegenproben rot, Rückgabe 0;
+`--nur bedarfsprofile` unverändert 110 Zustände, 0 Verstöße.
+
 Am selben Stand `diagrammprobe.mjs` erfüllt (41 Schritte, größter Abstand 0,50 px, Gegenprobe ohne Tafel verfehlt).
 
 Außerhalb des Bausteins meldet die Probe keinen Befund mehr: Die Überlagerung „Simulation…" des Gebäudes
@@ -1453,6 +1491,19 @@ sind seit Stufe 5 Wirt des Bausteins und zählen wie jeder Wirt: Zusammenfassung
 Fenstern, 0 Verstöße, die elf Gegenproben rot (Rückgabe 0); `fensterprobe.mjs --nur kaeltemaschine` erfüllt — in
 1 088 × 624, 520 × 624 und 1 194 × 834 rollen nur die zwei Listen, Gegenproben rot; `rasterprobe.mjs` 29 von 29 Fällen
 erfüllt.
+
+**Wärme- und Kältebedarf extern (K5c, KA‑E‑23).** Drei Fälle nach dem Muster der Wärmepumpe — Zeile „gewählter Satz“
+mit Zusammenfassung (ohne Ganglinie und Importknopf), Bearbeiten-Überlagerung für Projekt- und Katalogsatz, Esc schließt
+nur die Überlagerung:
+
+- `waermebedarf`: Wärmezeile — Überlagerung mit Stammdaten und Ganglinie, ohne Deckung; Fußleiste Abbrechen und OK.
+- `kaeltebedarf`: Modus `NurKuehlung`, Kühlzeile dezentral linear — Überlagerung mit Deckung, ohne Hinweis OP‑2.
+- `kaeltebedarfalle`: Modus `Alle` mit Kühlzeile vorn — Überlagerung mit Kanal, Deckung und Hinweis OP‑2.
+
+Je Fall: Kurve im Abschnitt „Ganglinie“ mindestens 90 % der Breite ihrer Spalte (die Überlagerung steht zweispaltig, die Ganglinie rechts) und 150 px hoch, Modell im Behältermaß;
+Katalogsatz ohne Projektfelder; Neu… am Satz, Formathinweis im Katalogkopf. Gegenprobe: eine ausgeblendete Deckung im
+Fall `kaeltebedarf` muss rot werden. **Messung 12.10.2026:** je Fall 110 Zustände, 0 Verstöße, Gegenproben rot
+(Rückgabe 0); der Befund „unter der Mindesthöhe“ in 1 093 × 614 tritt nicht mehr auf.
 
 **Grenzen.** Bei 720 und 700 px Fensterhöhe behält der Heizkessel Kopf und zwei Katalogzeilen; die
 Wirte ohne eigenes Zeilenmaß (Stufe 3 und 4: Kontextzeile noch unter dem Kopf) klemmen dort weiter auf

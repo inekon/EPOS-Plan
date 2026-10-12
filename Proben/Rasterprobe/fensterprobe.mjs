@@ -25,6 +25,13 @@
 //      der eingebetteten Detailansicht steht sichtbar UEBER der Leiste.
 //    - Dublettenpruefung (Protokoll UNTER der Schlussleiste): oben haftet der Fuss
 //      am Fensterrand, am Ende steht er ganz im Bild und das Protokoll frei darunter.
+//  WP-STECKBRIEF (WP1a, --nur wp-steckbrief, 1 280 x 800 und 1 194 x 834): die Satz-Ueberlagerung der
+//    Waermepumpe mit dem Geraetesteckbrief links (kein Querrollen, keine Ueberlappung, Arbeitspunkt folgt dem
+//    Vorlauf) und die Konfiguration mit zugeklappten Betriebszeiten; Gegenprobe: ein zu breiter Steckbrief.
+//  SATZ-STECKBRIEF (WP1b, --nur satz-steckbrief, je Wirt 1 280 x 800, Heizkessel auch 1 194 x 834): die
+//    zweispaltige Satz-Ueberlagerung von Heizkessel, BHKW, Puffer-, Stromspeicher, Photovoltaik, Solarkollektoren
+//    und Waermebedarf extern - Steckbrief links unter den Projektfeldern, Kenndaten rechts, nebeneinander, kein
+//    Querrollen, keine Ueberlappung; Gegenprobe: ein zu breiter Steckbrief.
 //  UEBERLAGERUNG (Gebaeude -> "Simulation..."): Die Ueberlagerung rollt nicht als
 //    Ganzes, genau ihr Rollkoerper rollt (geb3); die Fussleiste des eingebetteten
 //    Dialogs steht am Boden der Ueberlagerung, oben wie nach dem Rollen, sein Kopf
@@ -96,6 +103,8 @@ const MIT_GEGENPROBE = !process.argv.includes('--ohne-gegenprobe');
 const TOL = 1;   // px - Rollstaende sind gebrochen (Unterpixel)
 
 const FENSTER = [{ breite: 1088, hoehe: 624 }, { breite: 520, hoehe: 624 }, { breite: 1194, hoehe: 834, ipad: true }];
+/** WP1a: die Fenster des Geraetesteckbriefs (Desktop 1280 x 800, iPad quer 1194 x 834). */
+const WP_FENSTER = [{ breite: 1280, hoehe: 800 }, { breite: 1194, hoehe: 834, ipad: true }];
 // Sichere Abstaende des iPads (Punkte = CSS-Pixel); die Probe setzt die Token des Themas.
 const SICHER = { oben: 24, unten: 20 };
 const SICHER_TOKEN = `:root { --epos-sicher-oben: ${SICHER.oben}px; --epos-sicher-unten: ${SICHER.unten}px; }`;
@@ -415,6 +424,162 @@ async function katalog(browser, f, marke) {
   if (FOTOS && marke) await seite.screenshot({ path: `${FOTOS}/katalog_${f.breite}.png` });
   await seite.close();
   return m;
+}
+
+/**
+ * WP1b: die zweispaltige Satz-Ueberlagerung eines Wirts mit dem GERAETESTECKBRIEF links. Kopf und Fuss zwischen den
+ * sicheren Abstaenden, nur der Koerper rollt, die beiden Spalten stehen nebeneinander (ab 900 px), der Steckbrief
+ * steht in der linken Spalte unter den Projektfeldern, bricht um statt quer zu rollen und ueberlappt die Kenndaten
+ * nicht. Mit `stil` (Gegenprobe) wird eine Stilzeile eingeschoben; liefert die Zahl der Verstoesse und die Masse.
+ */
+const SATZ_WIRTE = [
+  { wirt: 'heizkessel', seite: 'fensterprobe', klasse: 'hk', ipad: true },
+  { wirt: 'bhkw', seite: 'fensterprobe', klasse: 'bhkw' },
+  { wirt: 'pufferspeicher', seite: 'rollbereichprobe', klasse: 'pspd', ohneProjektfelder: true },
+  { wirt: 'stromspeicher', seite: 'rollbereichprobe', klasse: 'stsp' },
+  { wirt: 'photovoltaik', seite: 'rollbereichprobe', klasse: 'pv' },
+  { wirt: 'solarkollektoren', seite: 'rollbereichprobe', klasse: 'skol' },
+  { wirt: 'waermebedarf', seite: 'rollbereichprobe', klasse: 'wbx', min: 6 },
+];
+
+async function satzSteckbrief(browser, w, f, fotos, stil = '') {
+  const seite = await browser.newPage({ viewport: { width: f.breite, height: f.hoehe } });
+  await seite.goto(`${WURZEL}/${w.seite}?fall=${w.wirt}&kultur=de-DE&steckbrief=1`);
+  if (f.ipad) await seite.addStyleTag({ content: SICHER_TOKEN });
+  await seite.waitForSelector('#app .epos-dialog', { timeout: 20000 });
+  await seite.waitForTimeout(800);
+  if (stil) await seite.addStyleTag({ content: stil });
+  // Im Rollbereich-Wirt die erste Projektzeile waehlen (der Fenster-Wirt hat sie schon gewaehlt), dann „Bearbeiten…" am gewaehlten Satz (Kopf der Detailzeile oder Knopfleiste).
+  const wahl = seite.locator('.epos-zweispalten-bereich--projekt tbody tr .epos-projektzeile');
+  if (w.seite === 'rollbereichprobe' && await wahl.count()) { await wahl.first().click(); await seite.waitForTimeout(300); }
+  await seite.locator('.epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten, .epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt')
+    .first().evaluate(e => e.click());
+  await seite.waitForSelector(`.epos-ueberlagerung--satz .epos-${w.klasse}-steckbrief`, { timeout: 5000 });
+  await seite.waitForTimeout(400);
+  const fehler = [];
+  const m = await seite.evaluate((klasse) => {
+    const u = document.querySelector('.epos-ueberlagerung--satz');
+    const r = e => { const b = e.getBoundingClientRect(); return [Math.round(b.top * 10) / 10, Math.round(b.bottom * 10) / 10]; };
+    const k = u.querySelector('.epos-satzueberlagerung-koerper');
+    const s = u.querySelector(`.epos-${klasse}-steckbrief`);
+    const links = u.querySelector('.epos-satz-zweispaltig-links'), rechts = u.querySelector('.epos-satz-zweispaltig-rechts');
+    const lb = links.getBoundingClientRect(), rb = rechts.getBoundingClientRect(), sb = s.getBoundingClientRect();
+    return {
+      ueberlagerung: r(u), ganzRollt: u.scrollHeight > u.clientHeight + 1, koerperRollt: getComputedStyle(k).overflowY,
+      koerperQuer: k.scrollWidth - k.clientWidth, steckbriefQuer: s.scrollWidth - s.clientWidth,
+      inLinks: links.contains(s), zeilen: s.querySelectorAll('dt').length,
+      projektOben: !!links.firstElementChild && !links.firstElementChild.contains(s),
+      steckbriefRechts: Math.round(sb.right), linksRechts: Math.round(lb.right), kenndatenLinks: Math.round(rb.left),
+      nebeneinander: rb.top < lb.bottom && rb.left > lb.left + 10,
+      steckbriefHoehe: Math.round(sb.height), linksBreite: Math.round(lb.width), rechtsBreite: Math.round(rb.width),
+    };
+  }, w.klasse);
+  if (m.ganzRollt) fehler.push('die Satz-Ueberlagerung rollt als Ganzes');
+  if (m.koerperRollt !== 'auto') fehler.push('der Koerper ist kein Rollbereich (' + m.koerperRollt + ')');
+  if (m.ueberlagerung[0] < rand(f).oben - TOL || m.ueberlagerung[1] > f.hoehe - rand(f).unten + TOL)
+    fehler.push(`Satz-Ueberlagerung ${m.ueberlagerung[0]}..${m.ueberlagerung[1]} px nicht zwischen den sicheren Abstaenden`);
+  if (!m.inLinks) fehler.push('der Steckbrief steht nicht in der linken Spalte');
+  if (m.zeilen < (w.min ?? 8)) fehler.push(`der Steckbrief zeigt nur ${m.zeilen} Zeilen`);
+  if (!w.ohneProjektfelder && !m.projektOben) fehler.push('ueber dem Steckbrief stehen keine Projektfelder');
+  if (!m.nebeneinander) fehler.push('die Spalten stehen nicht nebeneinander');
+  if (m.koerperQuer > TOL) fehler.push(`der Koerper rollt quer (${m.koerperQuer} px)`);
+  if (m.steckbriefQuer > TOL) fehler.push(`der Steckbrief rollt quer (${m.steckbriefQuer} px)`);
+  if (m.steckbriefRechts > m.linksRechts + TOL) fehler.push(`der Steckbrief ragt aus der linken Spalte (${m.steckbriefRechts} > ${m.linksRechts})`);
+  if (m.nebeneinander && m.linksRechts > m.kenndatenLinks + TOL) fehler.push(`linke Spalte ueberlappt die Kenndaten (${m.linksRechts} > ${m.kenndatenLinks})`);
+  if (fotos && FOTOS) await seite.screenshot({ path: `${FOTOS}/satz_steckbrief_${w.wirt}_${f.breite}x${f.hoehe}.png` });
+  await seite.close();
+  return { n: fehler.length, fehler, m };
+}
+
+/**
+ * WP1a: die Satz-Ueberlagerung der Waermepumpe mit dem GERAETESTECKBRIEF links unter „Auslegung fuer Verteilung"
+ * (die linke Spalte wird hoeher). Kopf und Fuss der Ueberlagerung zwischen den sicheren Abstaenden, nur der Koerper
+ * rollt, der Steckbrief steht in der linken Spalte und bricht um statt quer zu rollen (kein waagerechter Rollbereich,
+ * keine Ueberlappung mit den Kenndaten), sein Arbeitspunkt folgt dem Vorlauf. Dazu die Konfiguration: „Betriebszeiten"
+ * steht zugeklappt, „Hoechster Vorlauf" sichtbar, Aufklappen zeigt den Knopf des Wochenrasters. Mit `stil` (Gegenprobe)
+ * wird eine Stilzeile eingeschoben; liefert die Zahl der Verstoesse und die Masse.
+ */
+async function wpSteckbrief(browser, f, fotos, stil = '') {
+  const seite = await oeffnen(browser, 'waermepumpen', f);
+  if (stil) await seite.addStyleTag({ content: stil });
+  await seite.locator('.epos-knopf--bearbeiten-projekt').first().click();
+  await seite.waitForSelector('.epos-ueberlagerung--satz .epos-wp-steckbrief', { timeout: 5000 });
+  await seite.waitForTimeout(400);
+  const fehler = [];
+  const m = await seite.evaluate(() => {
+    const u = document.querySelector('.epos-ueberlagerung--satz');
+    const r = e => { const b = e.getBoundingClientRect(); return [Math.round(b.top * 10) / 10, Math.round(b.bottom * 10) / 10]; };
+    const k = u.querySelector('.epos-satzueberlagerung-koerper');
+    const s = u.querySelector('.epos-wp-steckbrief');
+    const links = u.querySelector('.epos-wp-abschnitt--auslegung'), rechts = u.querySelector('.epos-wp-abschnitt--kenndaten');
+    const lb = links.getBoundingClientRect(), rb = rechts.getBoundingClientRect(), sb = s.getBoundingClientRect();
+    return {
+      ueberlagerung: r(u), kopf: r(u.querySelector(':scope > .epos-ueberlagerung-kopf')), fuss: r(u.querySelector('.epos-satzueberlagerung-fuss')),
+      ganzRollt: u.scrollHeight > u.clientHeight + 1, koerperRollt: getComputedStyle(k).overflowY,
+      koerperQuer: k.scrollWidth - k.clientWidth, steckbriefQuer: s.scrollWidth - s.clientWidth,
+      inLinks: links.contains(s), zeilen: s.querySelectorAll('dt').length,
+      steckbriefRechts: Math.round(sb.right), linksRechts: Math.round(lb.right), kenndatenLinks: Math.round(rb.left),
+      nebeneinander: rb.top < lb.bottom && rb.left > lb.left + 10,
+      steckbriefHoehe: Math.round(sb.height), linksHoehe: Math.round(lb.height), rechtsHoehe: Math.round(rb.height),
+      heizleistung: (s.querySelector('dd[data-zeile=heizleistung]')?.textContent ?? '').trim(),
+      beschriftung: [...s.querySelectorAll('dt')].map(e => e.textContent.trim()).find(x => x.startsWith('Heizleistung')) ?? '',
+    };
+  });
+  if (m.ganzRollt) fehler.push('die Satz-Ueberlagerung rollt als Ganzes');
+  if (m.koerperRollt !== 'auto') fehler.push('der Koerper ist kein Rollbereich (' + m.koerperRollt + ')');
+  if (m.ueberlagerung[0] < rand(f).oben - TOL || m.ueberlagerung[1] > f.hoehe - rand(f).unten + TOL)
+    fehler.push(`Satz-Ueberlagerung ${m.ueberlagerung[0]}..${m.ueberlagerung[1]} px nicht zwischen den sicheren Abstaenden`);
+  if (!m.inLinks) fehler.push('der Steckbrief steht nicht in der linken Spalte');
+  if (m.zeilen < 14) fehler.push(`der Steckbrief zeigt ${m.zeilen} statt 14 Zeilen`);
+  if (m.koerperQuer > TOL) fehler.push(`der Koerper rollt quer (${m.koerperQuer} px)`);
+  if (m.steckbriefQuer > TOL) fehler.push(`der Steckbrief rollt quer (${m.steckbriefQuer} px)`);
+  if (m.steckbriefRechts > m.linksRechts + TOL) fehler.push(`der Steckbrief ragt aus der linken Spalte (${m.steckbriefRechts} > ${m.linksRechts})`);
+  if (m.nebeneinander && m.linksRechts > m.kenndatenLinks + TOL) fehler.push(`linke Spalte ueberlappt die Kenndaten (${m.linksRechts} > ${m.kenndatenLinks})`);
+  if (!/B0\/W35/.test(m.beschriftung)) fehler.push(`Arbeitspunkt nennt den Normpunkt nicht (${m.beschriftung})`);
+  if (fotos && FOTOS) await seite.screenshot({ path: `${FOTOS}/wp_steckbrief_${f.breite}x${f.hoehe}.png` });
+
+  // Der Arbeitspunkt folgt dem Vorlauf links.
+  await seite.locator('.epos-wp-abschnitt--auslegung select').first().selectOption('55');
+  await seite.waitForTimeout(300);
+  const nachher = await seite.evaluate(() => [...document.querySelectorAll('.epos-wp-steckbrief dt')].map(e => e.textContent.trim()).find(x => x.startsWith('Heizleistung')) ?? '');
+  if (!/W55/.test(nachher)) fehler.push(`Arbeitspunkt folgt dem Vorlauf nicht (${nachher})`);
+
+  // Die Konfiguration: Betriebszeiten zugeklappt, „Hoechster Vorlauf" sichtbar; Aufklappen zeigt das Raster-Werkzeug.
+  const konf = { zu: null, auf: null };
+  await seite.locator('.epos-satzueberlagerung-koerper button', { hasText: 'Konfiguration…' }).first().click();
+  await seite.waitForSelector('.epos-wp-betriebszeiten-klapp', { timeout: 5000 });
+  await seite.waitForTimeout(300);
+  const konfig = () => seite.evaluate(() => {
+    const g = document.querySelector('.epos-wp-betriebszeiten-klapp');
+    const knopf = g.querySelector('.epos-klappgruppe-knopf');
+    const vorlauf = [...document.querySelectorAll('.epos-wp-betriebszeiten .epos-feld-text')].find(e => e.textContent.trim().startsWith('Höchster Vorlauf'));
+    const vb = vorlauf ? vorlauf.getBoundingClientRect() : null;
+    const kb = knopf.getBoundingClientRect();
+    return { offen: knopf.getAttribute('aria-expanded'), zusatz: (g.querySelector('.epos-klappgruppe-zusatz')?.textContent ?? '').trim(),
+             knopfHoehe: Math.round(kb.height), touchziel: parseFloat(getComputedStyle(knopf).getPropertyValue('--epos-touchziel')) || 44,
+             zeitprogramm: !!document.querySelector('[data-aktion=zeitprogramm]'),
+             vorlaufSichtbar: !!vb && vb.height > 0, vorlaufNachKopf: !!vb && vb.top >= kb.bottom - 1 };
+  });
+  konf.zu = await konfig();
+  if (konf.zu.offen !== 'false') fehler.push('Betriebszeiten stehen beim Oeffnen nicht zugeklappt');
+  if (konf.zu.zeitprogramm) fehler.push('zugeklappt steht der Knopf des Wochenrasters');
+  if (!konf.zu.vorlaufSichtbar || !konf.zu.vorlaufNachKopf) fehler.push('„Hoechster Vorlauf" steht nicht unter der zugeklappten Gruppe');
+  // Das Beruehrungsziel des Hauses (in der kompakten Stufe der Zweispaltendialoge unter 1 280 px 37 px).
+  if (konf.zu.knopfHoehe < konf.zu.touchziel - TOL) fehler.push(`Klappknopf ${konf.zu.knopfHoehe} px unter dem Beruehrungsziel ${konf.zu.touchziel} px`);
+  if (fotos && FOTOS) await seite.screenshot({ path: `${FOTOS}/wp_konfiguration_zu_${f.breite}x${f.hoehe}.png` });
+  await seite.locator('.epos-wp-betriebszeiten-klapp .epos-klappgruppe-knopf').click();
+  await seite.waitForTimeout(300);
+  await seite.locator('[data-aktion=zeitprogramm]').click();
+  await seite.waitForTimeout(300);
+  konf.auf = await konfig();
+  if (konf.auf.offen !== 'true' || !konf.auf.zeitprogramm) fehler.push('Aufklappen zeigt den Knopf des Wochenrasters nicht');
+  if (!(await seite.locator('[data-kennung=wp-zeitprogramm]').count())) fehler.push('das Wochenraster oeffnet nicht');
+  if (fotos && FOTOS) {
+    await seite.locator('.epos-wp-betriebszeiten-klapp').scrollIntoViewIfNeeded();
+    await seite.screenshot({ path: `${FOTOS}/wp_konfiguration_auf_${f.breite}x${f.hoehe}.png` });
+  }
+  await seite.close();
+  return { n: fehler.length, fehler, m, nachher, konf };
 }
 
 /** Katalogauswahl: welche Elemente rollen, ob Dokument oder Dialog rollen, wo Kopf und Fuss stehen. */
@@ -757,8 +922,49 @@ try {
     }
   }
 
+  // ----------------------------------------- WP1a: Geraetesteckbrief der Waermepumpe
+  if (!NUR || NUR === 'wp-steckbrief') {
+    for (const f of WP_FENSTER) {
+      const name = `wp-steckbrief ${f.breite}x${f.hoehe}`;
+      console.log(`- ${name}`);
+      const r = await wpSteckbrief(browser, f, true);
+      for (const t of r.fehler) melde(name, t);
+      console.log(`    Steckbrief ${r.m.zeilen} Zeilen, ${r.m.steckbriefHoehe} px hoch; linke Spalte ${r.m.linksHoehe} px, rechte ${r.m.rechtsHoehe} px; `
+        + `quer ${r.m.koerperQuer}/${r.m.steckbriefQuer} px; ${r.m.beschriftung} -> ${r.nachher}; `
+        + `Betriebszeiten zu: „${r.konf.zu.zusatz}", auf: ${r.konf.auf.offen}`);
+    }
+  }
+
+  // ----------------------------------------- WP1b: Geraetesteckbrief der uebrigen Wirte
+  if (!NUR || NUR === 'satz-steckbrief') {
+    for (const w of SATZ_WIRTE) for (const f of (w.ipad ? WP_FENSTER : WP_FENSTER.slice(0, 1))) {
+      const name = `satz-steckbrief ${w.wirt} ${f.breite}x${f.hoehe}`;
+      console.log(`- ${name}`);
+      const r = await satzSteckbrief(browser, w, f, true);
+      for (const t of r.fehler) melde(name, t);
+      console.log(`    Steckbrief ${r.m.zeilen} Zeilen, ${r.m.steckbriefHoehe} px hoch; Spalten ${r.m.linksBreite}/${r.m.rechtsBreite} px; `
+        + `quer ${r.m.koerperQuer}/${r.m.steckbriefQuer} px`);
+    }
+  }
+
   // -------------------------------------------------------------- Gegenprobe
   let gegenGruen = 0;
+  if (MIT_GEGENPROBE && (!NUR || NUR === 'satz-steckbrief')) {
+    // WP1b: ein Steckbrief, der nicht umbricht und breiter ist als seine Spalte, muss je Wirt rot sein.
+    for (const w of SATZ_WIRTE) {
+      const g = await satzSteckbrief(browser, w, WP_FENSTER[0], false, '.epos-satz-steckbrief { min-width: 1600px; } .epos-satz-steckbrief dd { white-space: nowrap; }');
+      console.log(`    Gegenprobe satz-steckbrief ${w.wirt} zu breit: ${g.n} Verstoesse`);
+      if (g.n === 0) gegenGruen++;
+    }
+  }
+  if (MIT_GEGENPROBE && (!NUR || NUR === 'wp-steckbrief')) {
+    // WP1a: ein Steckbrief, der nicht umbricht und breiter ist als seine Spalte, muss rot sein.
+    for (const f of WP_FENSTER) {
+      const g = await wpSteckbrief(browser, f, false, '.epos-wp-steckbrief { min-width: 1600px; } .epos-wp-steckbrief dd { white-space: nowrap; }');
+      console.log(`    Gegenprobe wp-steckbrief zu breit ${f.breite}x${f.hoehe}: ${g.n} Verstoesse`);
+      if (g.n === 0) gegenGruen++;
+    }
+  }
   if (MIT_GEGENPROBE) {
     console.log('- GEGENPROBE (ohne Fenstermarke / ohne scroll-padding - muss rot sein)');
     let fokusRot = 0;

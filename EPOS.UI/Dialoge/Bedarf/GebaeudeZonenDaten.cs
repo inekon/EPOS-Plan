@@ -293,9 +293,12 @@ public sealed class BauteilDaten
 /// <summary>
 /// Ein Aufbau zur Wahl im <see cref="BauteilDialog"/> — aus dem Projekt (<see cref="Katalog"/>
 /// <c>false</c>) oder aus dem Stammkatalog; <see cref="UWert"/> im Kern gerechnet, <c>null</c> =
-/// nicht bestimmbar.
+/// nicht bestimmbar. <see cref="Ungeeignet"/> ist das Kennzeichen „für die Gebäudesimulation meist nicht geeignet" des
+/// Kerns (BK-2b) — die Wahl blendet solche Aufbauten aus, bis der Schalter sie zeigt; ihr U ist das U der Quelle.
+/// <see cref="Grund"/> sagt, warum <see cref="UWert"/> leer ist.
 /// </summary>
-public sealed record AufbauWahl(int Id, bool Katalog, string Text, string Bauteilart, double? UWert, bool Ersatz = false);
+public sealed record AufbauWahl(int Id, bool Katalog, string Text, string Bauteilart, double? UWert, bool Ersatz = false,
+                                bool Ungeeignet = false, string Grund = "");
 
 /// <summary>
 /// <b>Ein Luftstrom zwischen zwei Zonen</b> eines Gebäudes (Stufe G6b; <c>Tab_Zonenluftstrom</c>) — das
@@ -427,6 +430,12 @@ public sealed class GebaeudeZonenweg
     /// <summary>Die Zonen des Projektgebäudes beim Öffnen, in Rangfolge.</summary>
     public IReadOnlyList<ZoneDaten> Zonen { get; init; } = Array.Empty<ZoneDaten>();
 
+    /// <summary>
+    /// Die Vorgabe der Gebäudeart (Vorgaberegel 2.5, GD-5): Gebäudeart → Name des Profils, das eine Zone ohne Profil
+    /// bekäme; <c>null</c> = keine Vorgabe. Die Zonenliste nennt es in der Spalte „Nutzung/Profil“; kein Delegat = keine.
+    /// </summary>
+    public Func<string?, string?>? Vorgabeprofil { get; init; }
+
     /// <summary>Die Luftströme zwischen den Zonen beim Öffnen (Stufe G6b).</summary>
     public IReadOnlyList<ZonenluftstromDaten> Luftstroeme { get; init; } = Array.Empty<ZonenluftstromDaten>();
 
@@ -508,7 +517,45 @@ public sealed class GebaeudeZonenweg
     /// im gespeicherten Stand kopiert hat. <c>null</c> = kein Neulesen.
     /// </summary>
     public Func<ZonenNeulesung>? Neulesen { get; init; }
+
+    /// <summary>
+    /// „Als Mehrzonenmodell übernehmen…“ (GD-4) — nur am Projektgebäude; <c>null</c> = kein Weg (der Knopf nennt den Grund).
+    /// </summary>
+    public GebaeudeMehrzonenweg? Mehrzonen { get; init; }
 }
+
+/// <summary>
+/// <b>Der Weg „Als Mehrzonenmodell übernehmen…“</b> (Entwurf Gebäudedialog 2.4, Welle GD-4; E130 F7): nur aus der gespeicherten
+/// Importquelle. <see cref="Oeffnen"/> wählt die Datei (Name der Quelle vorbelegt) und prüft die Prüfsumme; danach steht der
+/// Zonenbaum des Imports als Blatt. Sein OK merkt das Mehrzonenmodell vor, erst das OK des Gebäudedialogs schreibt es
+/// (<see cref="Schreiben"/>, Ersetzen in einem Vorgang).
+/// </summary>
+public sealed class GebaeudeMehrzonenweg
+{
+    /// <summary>Warum der Knopf gesperrt ist (etwa: kein Import gespeichert); <c>null</c> = frei.</summary>
+    public string? Sperre { get; init; }
+
+    /// <summary>Die gespeicherte Quelle als Zeile (Name, Format, Zeitpunkt); leer ohne Quelle.</summary>
+    public string Quelle { get; init; } = "";
+
+    /// <summary>Dateiwahl und Prüfsumme: <c>null</c> = die Wahl wurde abgebrochen; sonst Meldung oder Parametersatz des Blatts.</summary>
+    public Func<Task<GebaeudeMehrzonenstart?>>? Oeffnen { get; init; }
+
+    /// <summary>Die Zeile des vorgemerkten Mehrzonenmodells; <c>null</c> = keins vorgemerkt.</summary>
+    public Func<string?>? Ausstehend { get; init; }
+
+    /// <summary>Verwirft das vorgemerkte Mehrzonenmodell (Abbrechen des Gebäudedialogs).</summary>
+    public Action? Verwerfen { get; init; }
+
+    /// <summary>OK-Weg: ersetzt Zonen, Bauteile und Zonenkalender in einem Vorgang; <c>null</c> = geschrieben bzw. nichts vorgemerkt, sonst der Grund.</summary>
+    public Func<string?>? Schreiben { get; init; }
+}
+
+/// <summary>
+/// Der Start des Blatts: <see cref="Meldung"/> nennt eine benannte Ablehnung (Prüfsumme, fehlende Datei, Format) — dann ist
+/// <see cref="Gaben"/> <c>null</c>; sonst der Parametersatz des Importdialogs und der Pfad, den er sofort liest.
+/// </summary>
+public sealed record GebaeudeMehrzonenstart(string? Meldung, IReadOnlyDictionary<string, object>? Gaben, string Pfad);
 
 /// <summary>Die neu gelesenen Zonen samt Luftströmen (<see cref="GebaeudeZonenweg.Neulesen"/>).</summary>
 public sealed record ZonenNeulesung(IReadOnlyList<ZoneDaten> Zonen, IReadOnlyList<ZonenluftstromDaten> Luftstroeme);

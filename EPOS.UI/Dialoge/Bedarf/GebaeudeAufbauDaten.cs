@@ -131,8 +131,11 @@ public sealed record BauteilsteckbriefSchicht(string Name, string Dicke, string 
     /// <summary>Der Grund des Weglassens; leer sonst.</summary>
     public string Grund { get; init; } = "";
 
-    /// <summary>Der Schlüssel des Materialnamens im Abschnitt „Baustoffe" (Sprung); <c>null</c> = kein Sprung.</summary>
+    /// <summary>Der Schlüssel des Materialnamens (Baustoffwahl je Schicht im Import, Sprung aus dem Steckbrief); <c>null</c> = keiner.</summary>
     public string? Materialschluessel { get; init; }
+
+    /// <summary>Fehlt der Schicht ein Stoffwert (λ, ρ oder c)? Dann bietet der Importdialog die Baustoffwahl an (AB3).</summary>
+    public bool OhneWert { get; init; }
 }
 
 /// <summary>

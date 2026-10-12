@@ -77,6 +77,21 @@ public sealed record GebaeudeAnsichtZone(string Schluessel, string Name, int Ste
 }
 
 /// <summary>
+/// <b>Ein Ziel der Zuordnung in der Legende</b> (Auftrag AB2): Der Wirt reicht je Zone seines Plans einen Eintrag herein, die
+/// Legende zeichnet ihn im Farbmodus „Zonen" als Knopf. Ein Klick wählt die Zone als Ziel, ein zweiter hebt die Wahl auf; mit
+/// gewählter Zone ordnet ein Raumklick den Raum ihr zu.
+/// </summary>
+/// <param name="Schluessel">Der Schlüssel des Ziels beim Wirt (Planschlüssel) — gemeldet über <c>ZielChanged</c>.</param>
+/// <param name="Name">Der Name der Zone.</param>
+/// <param name="Ansichtsschluessel">Der Schlüssel derselben Zone in der Ansicht (<see cref="GebaeudeAnsichtZone.Schluessel"/>;
+/// Farbe, Herkunft, Hervorhebung); leer = die Zone hat noch keinen Raum im Bild.</param>
+/// <param name="Nutzung">Die Nutzung als Anzeigetext („Sport · EPOS-Muster", „Nutzungsprofil 1 nach DIN/TS 18599-10"); leer = ohne.</param>
+/// <param name="Herkunft">Die Herkunft der Zone beim Wirt als Anzeigetext (etwa „aus der Projektdatei"); leer = keine.</param>
+/// <param name="Abtrennen">Das Ziel „als eigene Zone abtrennen" statt einer Zone des Plans.</param>
+public sealed record GebaeudeAnsichtZiel(string Schluessel, string Name, string Ansichtsschluessel = "", string Nutzung = "",
+                                         string Herkunft = "", bool Abtrennen = false);
+
+/// <summary>
 /// <b>Die Daten der Grundrissansicht</b>: die Geschosse mit ihren Räumen, die Zonen, ob irgendein
 /// Umriss schematisch ist (dann steht „schematisch" sichtbar am Bild), ob Räume von Hand umgehängt
 /// werden können (nur unter einer Regel mit mehreren Zonen) und die Hinweise der Geometrie als
@@ -181,6 +196,29 @@ public sealed record GebaeudeAnsichtDaten
 
     /// <summary>Der Steckbrief je Bauteilkennung — geöffnet beim Klick auf Bauteilkörper oder Raumfläche; leer = keiner.</summary>
     public IReadOnlyDictionary<string, BauteilsteckbriefDaten> Steckbriefe { get; init; } = new Dictionary<string, BauteilsteckbriefDaten>(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Der Grund, warum kein Bauteilvorschlag vorliegt (Auftrag AB), etwa nicht zugeordnete Räume des Zonenplans; leer = kein
+    /// besonderer Grund. Die Ansicht nennt ihn am gesperrten Farbmodus „Aufbau" und „Befund".
+    /// </summary>
+    public string Vorschlagsgrund { get; init; } = "";
+
+    /// <summary>
+    /// Die Zahl der Raumdreiecke ohne Bauteilbezug (Auftrag AB): Dreiecke mit Gruppe außer R0, deren Bauteil leer ist oder
+    /// keine Stufe hat — sie zeichnen in Aufbau und Befund neutral und stehen in einer eigenen Legendenzeile.
+    /// </summary>
+    public int DreieckeOhneBauteilbezug()
+    {
+        int n = 0;
+        if (!HatAufbaustufen) return 0;
+        foreach (GebaeudeAnsichtKoerperraum k in Koerperraeume)
+        {
+            if (k.Dateikoerper?.Gruppen is not { } gruppen || k.Dreiecksbauteile is not { } je) continue;
+            for (int t = 0; t < gruppen.Count; t++)
+                if (Stufenbyte(gruppen[t], t < je.Count ? je[t] : null) == (byte)Aufbaustufe.OhneBauteil) n++;
+        }
+        return n;
+    }
 
     /// <summary>Liegen Stufen vor (ein Bauteilvorschlag bzw. gespeicherte Bauteile)?</summary>
     public bool HatAufbaustufen => Bauteilstufen.Count > 0;
@@ -790,6 +828,33 @@ public sealed class GebaeudeAnsichtTexte
     /// <summary>GIMP_ANS_ABTRENNEN — was ein Klick ohne gewählte Zone tut.</summary>
     public string Abtrennen { get; set; } = Resource.GIMP_ANS_ABTRENNEN;
 
+    /// <summary>GIMP_ANS_ZIEL_NUTZUNG — die Nutzung im Legendeneintrag einer Zone, {0} = Nutzung.</summary>
+    public string ZielNutzung { get; set; } = Resource.GIMP_ANS_ZIEL_NUTZUNG;
+
+    /// <summary>GIMP_ANS_ZIEL_OHNE_NUTZUNG — der Legendeneintrag einer Zone ohne Nutzung.</summary>
+    public string ZielOhneNutzung { get; set; } = Resource.GIMP_ANS_ZIEL_OHNE_NUTZUNG;
+
+    /// <summary>GIMP_ANS_ZIEL_KLICK — der zweite Teil des Kurztexts eines Legendeneintrags: was ein Klick tut.</summary>
+    public string ZielKlick { get; set; } = Resource.GIMP_ANS_ZIEL_KLICK;
+
+    /// <summary>GIMP_ANS_ZIEL_AUFHEBEN — Kurztext des gewählten Legendeneintrags: ein zweiter Klick hebt die Wahl auf.</summary>
+    public string ZielAufheben { get; set; } = Resource.GIMP_ANS_ZIEL_AUFHEBEN;
+
+    /// <summary>GIMP_ANS_ZIEL_FEHLT — was ein Raumklick ohne gewählte Zone tut (Kurztext des Raums).</summary>
+    public string ZielFehlt { get; set; } = Resource.GIMP_ANS_ZIEL_FEHLT;
+
+    /// <summary>GIMP_ANS_ZIEL_NUR_ZONEN — der Hinweis in anderen Farbmodi, solange ein Ziel gewählt ist.</summary>
+    public string ZielNurZonen { get; set; } = Resource.GIMP_ANS_ZIEL_NUR_ZONEN;
+
+    /// <summary>GIMP_ANS_NICHT_ZUGEORDNET — der Eintrag der Räume ohne Zone, {0} = Zahl der Räume.</summary>
+    public string NichtZugeordnet { get; set; } = Resource.GIMP_ANS_NICHT_ZUGEORDNET;
+
+    /// <summary>GIMP_ANS_NICHT_ZUGEORDNET_TITEL — Kurztext des Eintrags „nicht zugeordnet": kein Ziel, ein Klick hebt hervor.</summary>
+    public string NichtZugeordnetTitel { get; set; } = Resource.GIMP_ANS_NICHT_ZUGEORDNET_TITEL;
+
+    /// <summary>GIMP_ANS_ZIEL_LEGENDE — Beschriftung der Legende als Zielwahl für die Sprachausgabe.</summary>
+    public string ZielLegende { get; set; } = Resource.GIMP_ANS_ZIEL_LEGENDE;
+
     /// <summary>GIMP_ANS_KEINE_UMRISSE — ein Geschoss, in dem kein Raum einen Umriss trägt.</summary>
     public string KeineUmrisse { get; set; } = Resource.GIMP_ANS_KEINE_UMRISSE;
 
@@ -919,6 +984,10 @@ public sealed class GebaeudeAnsichtTexte
 
     /// <summary>Der Grund der Sperre ohne Stufen (<c>GANS_AUFBAU_OHNE_STUFEN</c>).</summary>
     public string AufbauOhneStufen { get; set; } = Resource.GANS_AUFBAU_OHNE_STUFEN;
+    /// <summary>GANS_AUFBAU_OHNE_VORSCHLAG — {0} der Grund, warum kein Bauteilvorschlag vorliegt.</summary>
+    public string AufbauOhneVorschlag { get; set; } = Resource.GANS_AUFBAU_OHNE_VORSCHLAG;
+    /// <summary>GANS_OHNE_BAUTEILBEZUG — {0} Zahl der Dreiecke.</summary>
+    public string OhneBauteilbezug { get; set; } = Resource.GANS_OHNE_BAUTEILBEZUG;
 
     /// <summary>Die Legende der Stufen (<c>GANS_AUFBAU_LEGENDE</c>).</summary>
     public string AufbauLegende { get; set; } = Resource.GANS_AUFBAU_LEGENDE;
@@ -961,6 +1030,8 @@ public sealed class GebaeudeAnsichtTexte
 
     /// <summary>Warum „Befund" gesperrt ist: keine Befunde (<c>GANS_BEFUND_OHNE</c>).</summary>
     public string BefundOhne { get; set; } = Resource.GANS_BEFUND_OHNE;
+    /// <summary>GANS_BEFUND_OHNE_VORSCHLAG — {0} der Grund, warum kein Bauteilvorschlag vorliegt.</summary>
+    public string BefundOhneVorschlag { get; set; } = Resource.GANS_BEFUND_OHNE_VORSCHLAG;
 
     /// <summary>Titel der Befundlegende (<c>GANS_BEFUND_LEGENDE</c>).</summary>
     public string BefundLegende { get; set; } = Resource.GANS_BEFUND_LEGENDE;

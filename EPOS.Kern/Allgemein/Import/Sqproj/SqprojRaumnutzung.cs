@@ -233,7 +233,8 @@ namespace WindowsFormsApplication1
             else if (q.Absenkung.HasValue)
                 meldungen.Add(Text(MyResource.Resource.RNP_PD_MSG_ABSENKUNG, nr));
 
-            // Außenluft: Luftwechsel vor flächenbezogener Außenluft; je Person nur mit Belegungsdichte (keine).
+            // Außenluft: Luftwechsel vor flächenbezogener Außenluft; je Person in eigener Spalte (NP7), der Generator rechnet sie
+            // nur ohne die beiden anderen und nur mit Belegungsdichte um.
             if (q.Zuluftwechsel is double n)
             {
                 p.Aussenluft = n;
@@ -246,8 +247,8 @@ namespace WindowsFormsApplication1
                     p.Aussenluft = f;
                     p.Aussenluft_Einheit = RaumnutzungSchema.EINHEIT_JE_FLAECHE;
                 }
-                if (q.AussenluftJePerson.HasValue) meldungen.Add(Text(MyResource.Resource.RNP_PD_MSG_LUFT_PERSON, nr));
             }
+            if (q.AussenluftJePerson is double lp && lp >= 0.0 && double.IsFinite(lp)) p.Aussenluft_Person = lp;
 
             // Personen: W/m² als m² je Person bei der Wärmeabgabe des Hauses; Anteil aus Vollnutzungsstunden.
             if (q.PersonenWm2 is double pw && pw > 0.0)
@@ -266,6 +267,8 @@ namespace WindowsFormsApplication1
                 p.Geraete_Leistung = gw;
                 p.Geraete_Anteil = Anteil(q.VollnutzungGeraeteH, q.Betriebsstunden, "DailyEffectiveLoadHoursOfDevices", nr, meldungen);
             }
+            if (p.Aussenluft_Person.HasValue && p.Aussenluft == null && p.Personen_Flaeche == null)
+                meldungen.Add(Text(MyResource.Resource.RNP_PD_MSG_LUFT_PERSON, nr));
             return p;
         }
 

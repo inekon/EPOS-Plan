@@ -121,8 +121,11 @@ namespace WindowsFormsApplication1
         public static IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen()
         {
             var liste = new List<Katalogfilterzeile>();
+            // BK-2b: Gliederung und Herkunft nur, wenn der Schritt BK-2 steht (sonst fehlen die Spalten).
+            bool gegliedert = BauteilkatalogSchema.Lesbar();
             DataTable dt = StilleDb.Tabelle(
-                "SELECT \"ID\", \"Bezeichner\", \"Gruppe\", \"Hersteller\", \"Lambda\", \"Rho\", \"cp\", \"Quelle\", \"ReadOnly\" " +
+                "SELECT \"ID\", \"Bezeichner\", \"Gruppe\", \"Hersteller\", \"Lambda\", \"Rho\", \"cp\", \"Quelle\", \"ReadOnly\"" +
+                (gegliedert ? ", \"Gruppe_Code\", \"Klasse_Code\", \"Herkunft\" " : " ") +
                 "FROM \"" + TAB_STAMM + "\" ORDER BY \"Gruppe\", \"Bezeichner\"");
             if (dt == null) return liste;
 
@@ -137,14 +140,26 @@ namespace WindowsFormsApplication1
                 };
                 liste.Add(zeile
                     .MitText(Katalogfilterprofil.SpBezeichner, bezeichner)
-                    .MitText(Katalogfilterprofil.SpGruppe, Katalogfeld.Text(r, "Gruppe"))
+                    .MitText(Katalogfilterprofil.SpGruppe, Gruppenanzeige(Katalogfeld.Text(r, "Gruppe"), gegliedert ? TextAus(r, "Gruppe_Code") : null))
+                    .MitText(Katalogfilterprofil.SpKlasse, gegliedert ? Bauteilkatalog.KlasseText(true, TextAus(r, "Klasse_Code")) : "")
                     .MitText(Katalogfilterprofil.SpHersteller, Katalogfeld.Text(r, "Hersteller"))
                     .MitZahl(Katalogfilterprofil.SpLambda, Katalogfeld.Zahl(r, "Lambda"), 3)
                     .MitZahl(Katalogfilterprofil.SpRho, Katalogfeld.Zahl(r, "Rho"), 0)
                     .MitZahl(Katalogfilterprofil.SpCp, Katalogfeld.Zahl(r, "cp"), 0)
-                    .MitText(Katalogfilterprofil.SpQuelle, Katalogfeld.Text(r, "Quelle")));
+                    .MitText(Katalogfilterprofil.SpQuelle, Katalogfeld.Text(r, "Quelle"))
+                    .MitText(Katalogfilterprofil.SpHerkunft, gegliedert ? HerkunftText(TextAus(r, "Herkunft")) : ""));
             }
             return liste;
+        }
+
+        /// <summary>
+        /// Die Gruppe eines Stoffs in der Liste (BK-2b): eine feste Stoffgruppe des Textfelds übersetzt, eine freie Angabe wie
+        /// sie ist, sonst der Text des Gruppencodes.
+        /// </summary>
+        public static string Gruppenanzeige(string stoffgruppe, string gruppeCode)
+        {
+            if (!string.IsNullOrWhiteSpace(stoffgruppe)) return Baustoffgruppen.Anzeigename(stoffgruppe);
+            return Bauteilkatalog.GruppeText(true, gruppeCode);
         }
 
         /// <summary>
@@ -182,6 +197,8 @@ namespace WindowsFormsApplication1
                 case DbWerte.HERKUNFT_GBXML: return MyResource.Resource.GIMP_HERKUNFT_GBXML;
                 case DbWerte.HERKUNFT_SQPROJ: return MyResource.Resource.GIMP_HERKUNFT_SQPROJ;
                 case DbWerte.HERKUNFT_VORGABE: return MyResource.Resource.GIMP_HERKUNFT_VORGABE;
+                case BauteilkatalogSchema.HERKUNFT_EIGEN: return MyResource.Resource.BKAT_HERKUNFT_EIGEN;
+                case BauteilkatalogSchema.HERKUNFT_IMPORT: return MyResource.Resource.BKAT_HERKUNFT_IMPORT;
                 default: return herkunft;
             }
         }
@@ -222,7 +239,8 @@ namespace WindowsFormsApplication1
         /// <summary>Die Herkunft ist NULL oder einer der fünf Persistenzwerte; sonst die Meldung.</summary>
         internal static string HerkunftPruefen(string herkunft)
         {
-            if (herkunft == null || DbWerte.HERKUENFTE.Contains(herkunft)) return null;
+            if (herkunft == null || DbWerte.HERKUENFTE.Contains(herkunft) ||
+                herkunft == BauteilkatalogSchema.HERKUNFT_EIGEN || herkunft == BauteilkatalogSchema.HERKUNFT_IMPORT) return null;
             return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BAUTEIL_MSG_HERKUNFT, herkunft);
         }
 
@@ -260,11 +278,13 @@ namespace WindowsFormsApplication1
                 int id = DataRepository.ExecuteInsertAndGetId(
                     "INSERT INTO \"" + TAB_STAMM + "\" (\"Bezeichner\", " + Spaltenliste() + ", \"ReadOnly\") VALUES (?, " +
                     Fragezeichen(BaustoffSchema.Fachspalten.Count) + ", 0)",
-                    new[] { new DbParam("@b", m.Bezeichner.Trim()) }.Concat(Fachwerte(m, m.Herkunft ?? DbWerte.HERKUNFT_MANUELL)).ToArray());
+                    new[] { new DbParam("@b", m.Bezeichner.Trim()) }.Concat(Fachwerte(m, m.Herkunft ?? EigeneHerkunft())).ToArray());
                 if (id <= 0) return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture,
                                                                   MyResource.Resource.BAUSTOFF_MSG_NICHT_GESPEICHERT, ""));
                 m.ID = id;
                 m.ReadOnly = false;
+                m.Herkunft ??= EigeneHerkunft();
+                ZusatzSchreiben(TAB_STAMM, m);
                 return Ergebnis.Gut(id);
             }
             catch (Exception ex)
@@ -309,7 +329,7 @@ namespace WindowsFormsApplication1
             BaustoffModel neu = alt.Kopie();
             neu.ID = 0;
             neu.Bezeichner = neuerName ?? "";
-            neu.Herkunft = DbWerte.HERKUNFT_MANUELL;
+            neu.Herkunft = EigeneHerkunft();
             neu.Quellkennung = null;
             return KatalogAnlegen(neu);
         }
@@ -343,6 +363,7 @@ namespace WindowsFormsApplication1
                                                                   MyResource.Resource.BAUSTOFF_MSG_NICHT_GESPEICHERT, ""));
                 m.ID = id;
                 m.ID_Projekt = idProjekt;
+                ZusatzSchreiben(TAB_PROJEKT, m);
                 return Ergebnis.Gut(id);
             }
             catch (Exception ex)
@@ -422,9 +443,12 @@ namespace WindowsFormsApplication1
                     ? new DbParam("@herkunft", DbWerte.HERKUNFT_KATALOG)
                     : new DbParam("@" + spalte, s.Table.Columns.Contains(spalte) ? s[spalte] : DBNull.Value));
 
-            return v.EinfuegenUndId(
+            int neu = v.EinfuegenUndId(
                 "INSERT INTO \"" + TAB_PROJEKT + "\" (\"ID_Projekt\", \"Bezeichner\", " + Spaltenliste() + ") VALUES (?, ?, " +
                 Fragezeichen(BaustoffSchema.Fachspalten.Count) + ")", ps.ToArray());
+            // BK-2: Gliederung und Felder der Quelle reisen mit (nur, wenn der Schritt steht).
+            if (neu > 0) Bauteilkatalog.Uebertragen(v, TAB_STAMM, stammId, TAB_PROJEKT, neu, BauteilkatalogSchema.Lesbar());
+            return neu;
         }
 
         /// <summary>
@@ -464,11 +488,33 @@ namespace WindowsFormsApplication1
                     "UPDATE \"" + tabelle + "\" SET \"Bezeichner\" = ?, " +
                     string.Join(", ", BaustoffSchema.Fachspalten.Select(s => "\"" + s + "\" = ?")) + " WHERE \"ID\" = ?",
                     ps.ToArray());
-                return n == 1 ? Ergebnis.Gut(m.ID) : Ergebnis.Fehler(NichtGefunden(m.ID));
+                if (n != 1) return Ergebnis.Fehler(NichtGefunden(m.ID));
+                ZusatzSchreiben(tabelle, m);
+                return Ergebnis.Gut(m.ID);
             }
             catch (Exception ex)
             {
                 return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BAUSTOFF_MSG_NICHT_GESPEICHERT, ex.Message));
+            }
+        }
+
+        /// <summary>Die Herkunft eines neuen eigenen Katalogsatzes: <c>EIGEN</c>, solange der Schritt BK-2 fehlt <c>MANUELL</c>.</summary>
+        internal static string EigeneHerkunft() =>
+            BauteilkatalogSchema.Lesbar() ? BauteilkatalogSchema.HERKUNFT_EIGEN : DbWerte.HERKUNFT_MANUELL;
+
+        /// <summary>
+        /// <b>Gliederung und Felder der Quelle</b> (BK-2) nach dem Schreiben des Satzes — nur, wenn der Schritt steht. Die Gruppe
+        /// folgt einer festen Stoffgruppe des Textfelds; eine Klasse, die nicht zur Gruppe gehört, fällt weg.
+        /// </summary>
+        private static void ZusatzSchreiben(string tabelle, BaustoffModel m)
+        {
+            if (!BauteilkatalogSchema.Lesbar()) return;
+            m.GruppeCode = Bauteilkatalog.GruppeAusStoffgruppe(m.Gruppe) ?? m.GruppeCode;
+            if (m.KlasseCode != null && Bauteilkatalog.GliederungPruefen(true, m.GruppeCode, m.KlasseCode) != null) m.KlasseCode = null;
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                Bauteilkatalog.Schreiben(v, tabelle, m.ID, m.GruppeCode, m.KlasseCode, null, m.Zusatz, true);
+                v.Commit();
             }
         }
 
@@ -578,7 +624,10 @@ namespace WindowsFormsApplication1
                 Herkunft = TextAus(r, "Herkunft"),
                 Quellkennung = TextAus(r, "Quellkennung"),
                 ReadOnly = r.Table.Columns.Contains("ReadOnly") && r["ReadOnly"] != DBNull.Value
-                           && Convert.ToInt64(r["ReadOnly"], CultureInfo.InvariantCulture) != 0
+                           && Convert.ToInt64(r["ReadOnly"], CultureInfo.InvariantCulture) != 0,
+                GruppeCode = TextAus(r, BauteilkatalogSchema.SPALTE_GRUPPE) ?? Bauteilkatalog.GruppeAusStoffgruppe(TextAus(r, "Gruppe")),
+                KlasseCode = TextAus(r, BauteilkatalogSchema.SPALTE_KLASSE),
+                Zusatz = Bauteilkatalog.ZusatzLesen(r, TAB_STAMM)
             };
         }
 

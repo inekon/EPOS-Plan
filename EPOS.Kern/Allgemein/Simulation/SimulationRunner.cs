@@ -793,6 +793,11 @@ namespace WindowsFormsApplication1
                                 Wasser_m3 = e.Maschine.Rueckkuehlwerk != null ? (double?)e.RkWasserM3 : null,
                                 Stunden_Nass = e.Maschine.Rueckkuehlwerk != null ? (int?)e.RkStundenNass : null,
                                 Rueckkuehltemperatur_Mittel = e.Maschine.Rueckkuehlwerk != null ? e.RkTemperaturMittel : null,
+                                // K-F3: nur mit Rueckkuehlwerk in Reihe belegt, sonst NULL.
+                                TeilFreikuehlung_MWh = e.Maschine.Rueckkuehlwerk != null && e.Maschine.Rueckkuehlwerk.Reihe
+                                    ? (double?)(e.RkTeilFreiKwh / 1000.0) : null,
+                                TeilFreikuehlung_Stunden = e.Maschine.Rueckkuehlwerk != null && e.Maschine.Rueckkuehlwerk.Reihe
+                                    ? (int?)e.RkTeilFreiStunden : null,
                             });
             }
 

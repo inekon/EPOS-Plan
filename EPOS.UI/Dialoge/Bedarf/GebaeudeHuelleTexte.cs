@@ -203,6 +203,51 @@ public sealed class GebaeudeHuelleTexte
     /// <summary><c>GEBK_HERKUNFT_VORGABE</c></summary>
     public string HerkunftVorgabe { get; set; } = "Vorgabe";
 
+    // ---- Kopf zweigeteilt, Herkunft je Feld (Entwurf GD 2.1, Welle GD-1) ----------------------
+
+    /// <summary><c>GEBK_HINWEIS_EINORDNUNG</c> — die leise Zeile unter „Beschreibung und Einordnung".</summary>
+    public string HinweisEinordnung { get; set; } =
+        "Diese Angaben ordnen das Gebäude ein: Bericht, Vorgaben des Imports, Pufferauslegung. Der Rechenweg liest sie nicht.";
+
+    /// <summary><c>GEBK_MARKE_DATEI</c></summary>
+    public string MarkeDatei { get; set; } = "Datei";
+
+    /// <summary><c>GEBK_MARKE_VORGABE</c></summary>
+    public string MarkeVorgabe { get; set; } = "Vorgabe";
+
+    /// <summary><c>GEBK_MARKE_HAND</c></summary>
+    public string MarkeHand { get; set; } = "von Hand";
+
+    /// <summary><c>GEBK_MARKE_GEERBT</c></summary>
+    public string MarkeGeerbt { get; set; } = "geerbt";
+
+    /// <summary><c>GEBK_MARKE_WIRKUNGSLOS</c></summary>
+    public string MarkeWirkungslos { get; set; } = "wirkungslos";
+
+    /// <summary><c>GEBK_ZONEN_VORGABE_HOEHE</c> — „{0}" Zonen ohne eigene Höhe, „{1}" alle Zonen.</summary>
+    public string ZonenVorgabeHoehe { get; set; } = "Vorgabe für {0} von {1} Zonen ohne eigene Höhe";
+
+    /// <summary><c>GEBK_ZONEN_VORGABE_LUFTWECHSEL</c> — „{0}" Zonen ohne Lüftungswerte, „{1}" alle Zonen.</summary>
+    public string ZonenVorgabeLuftwechsel { get; set; } = "Vorgabe für {0} von {1} Zonen ohne Lüftungswerte";
+
+    /// <summary><c>GEBK_JEZONE_RAUMHOEHE</c> — statt des Feldes, wenn jede Zone Höhe bzw. Volumen trägt.</summary>
+    public string JeZoneRaumhoehe { get; set; } = "Raumhöhe: gilt je Zone, siehe Reiter „Zonen“.";
+
+    /// <summary><c>GEBK_JEZONE_LUFTWECHSEL</c> — statt des Feldes, wenn jede Zone Lüftungswerte trägt.</summary>
+    public string JeZoneLuftwechsel { get; set; } = "Luftwechselrate: Jede Zone rechnet mit Infiltration und Nutzerlüftung, siehe Reiter „Konditionierung“.";
+
+    /// <summary><c>GEBK_RUECKFALL_FENSTER</c> — „{0}" Fenster ohne eigenes g.</summary>
+    public string RueckfallFenster { get; set; } = "Rückfall für {0} Fenster ohne eigenes g";
+
+    /// <summary><c>GEBK_RUECKFALL_FENSTER_KEINES</c></summary>
+    public string RueckfallFensterKeines { get; set; } = "Rückfall: Jedes Fenster trägt ein eigenes g, der Wert wirkt derzeit nicht.";
+
+    /// <summary><c>GEBK_RUECKFALL_BAUWEISE</c> — „{0}" Bauteilgruppen ohne Aufbau.</summary>
+    public string RueckfallBauweise { get; set; } = "Rückfall für {0} Bauteilgruppen ohne Aufbau";
+
+    /// <summary><c>GEBK_RUECKFALL_BAUWEISE_KEINE</c></summary>
+    public string RueckfallBauweiseKeine { get; set; } = "Rückfall: Jede Bauteilgruppe trägt einen Aufbau, der Wert wirkt derzeit nicht.";
+
     /// <summary><c>GEBK_HINWEIS_SOMMERLUEFTUNG</c> — „{0}" Schwelle [°C], „{1}" Luftwechsel [1/h].</summary>
     public string HinweisSommerlueftung { get; set; }
         = "Sommerlüftung: Ist die Raumluft über {0} °C und die Außenluft mindestens 2 K kühler, steigt der Luftwechsel auf {1} 1/h.";

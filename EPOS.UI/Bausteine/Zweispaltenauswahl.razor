@@ -185,6 +185,22 @@
                     @* DIE KNOPFLEISTE AM SATZ (AW1): die Knoepfe der Katalog-Fussleiste, wirksam auf den
                        gewaehlten Satz; „Bearbeiten…" ersetzt den Stift der Detailzeile. *@
                     <span class="epos-zweispalten-satzknoepfe" role="group" aria-label="@Resource.AUSWAHL_SATZ_KNOEPFE">
+                        @if (VergleichAmSatz)
+                        {
+                            @* VERGLEICHEN… UEBER BEIDE LISTEN (KA-E-24): die Kreuze beider Listen zusammen (zwei bis
+                               drei), ohne Kreuze die gewaehlte Projektzeile gegen den gewaehlten Katalogsatz; sonst
+                               weich gesperrt - der Knopf bleibt fokussierbar und nennt seinen Grund. *@
+                            @if (VergleichFrei)
+                            {
+                                <button type="button" class="epos-knopf epos-knopf--vergleichen"
+                                        title="@VergleichHinweis" @onclick="BeiVergleichen">@VergleichKnopftext</button>
+                            }
+                            else
+                            {
+                                <button type="button" class="epos-knopf epos-knopf--vergleichen" aria-disabled="true"
+                                        title="@VergleichSperrgrund" @onclick="BeiVergleichGesperrt">@VergleichKnopftext</button>
+                            }
+                        }
                         @KatalogFuss
                         @KatalogFussRechts
                     </span>
@@ -308,6 +324,12 @@
         </KindInhalt>
     </Ueberlagerung>
 }
+@if (VergleichAmSatz)
+{
+    @* Der Vergleich ueber beide Listen (KA-E-24) - ausserhalb der Wurzel wie die Satz-Ueberlagerung. *@
+    <Vergleichsueberlagerung Offen="@_vergleichOffen" Koepfe="@_vergleichKoepfe" Zeilen="@_vergleich"
+                             Geschlossen="() => _vergleichOffen = false" />
+}
 </CascadingValue>
 
 @code {
@@ -401,6 +423,119 @@
 
     /// <summary>Die Tastenführung der Projektliste hat eine andere Zeile gewählt (ihr Schlüssel).</summary>
     [Parameter] public EventCallback<string> ProjektGewaehltChanged { get; set; }
+
+    // =====================================================================
+    // Vergleichen… über beide Listen (KA-E-24)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Kennwerte einer Projektzeile für „Vergleichen…"</b> (KA-E-24), Schlüssel der Projektliste → Satz
+    /// (Herkunft <see cref="Satzmarke.Projektsatz"/>), <c>null</c> = nicht vergleichbar. Die Werte kommen aus
+    /// derselben Parameterliste wie die des Katalogsatzes (<c>Vergleichsparameter</c>); hat die Projektzeile einen
+    /// anderen Modelltyp, liest der Wirt sie hier aus seiner Projektkopie. Mit dieser oder
+    /// <see cref="VergleichKatalog"/> und <see cref="KnopfleisteAmSatz"/> führt der Baustein „Vergleichen…" selbst:
+    /// als ersten Knopf der Knopfleiste am Satz, mit der <see cref="Vergleichsueberlagerung"/>.
+    /// </summary>
+    [Parameter] public Func<string, Vergleichssatz?>? VergleichProjekt { get; set; }
+
+    /// <summary>Die Kennwerte eines Katalogsatzes für „Vergleichen…", Schlüssel der Katalogliste → Satz.</summary>
+    [Parameter] public Func<string, Vergleichssatz?>? VergleichKatalog { get; set; }
+
+    /// <summary>Schlüssel des gewählten Katalogsatzes; <c>null</c>: keiner (oder eine Projektzeile ist gewählt).</summary>
+    [Parameter] public string? KatalogGewaehlt { get; set; }
+
+    /// <summary>Ein Klick auf das weich gesperrte „Vergleichen…" — der Wirt meldet den Grund (Banner).</summary>
+    [Parameter] public EventCallback<string> VergleichAbgelehnt { get; set; }
+
+    /// <summary>Führt der Baustein „Vergleichen…" selbst? (KA-E-24)</summary>
+    public bool VergleichAmSatz => KnopfleisteAmSatzAktiv && (VergleichProjekt is not null || VergleichKatalog is not null);
+
+    /// <summary>
+    /// Die zuletzt gewählte Zeile JE LISTE: Der Wirt führt einen gewählten Satz (Projektzeile ODER Katalogsatz);
+    /// „gewählt gegen gewählt" vergleicht die letzte Wahl beider Listen, solange die Zeile in ihrer Liste steht.
+    /// </summary>
+    private string? _vergleichProjektwahl, _vergleichKatalogwahl;
+
+    private bool _vergleichOffen;
+    private IReadOnlyList<Vergleichskopf> _vergleichKoepfe = Array.Empty<Vergleichskopf>();
+    private IReadOnlyList<Katalogliste.Vergleichzeile> _vergleich = Array.Empty<Katalogliste.Vergleichzeile>();
+
+    /// <summary>Steht der Vergleich über beide Listen? (Prüfhilfe.)</summary>
+    public bool VergleichOffen => _vergleichOffen;
+
+    /// <summary>Die Spaltenköpfe des Vergleichs (Prüfhilfe).</summary>
+    public IReadOnlyList<Vergleichskopf> Vergleichskoepfe => _vergleichKoepfe;
+
+    /// <summary>Die Zeilen des Vergleichs (Prüfhilfe).</summary>
+    public IReadOnlyList<Katalogliste.Vergleichzeile> Vergleich => _vergleich;
+
+    /// <summary>Die angekreuzten Zeilen beider Listen, die einen Weg zu ihren Kennwerten haben.</summary>
+    private (IReadOnlyList<string> Projekt, IReadOnlyList<string> Katalog) Vergleichskreuze()
+        => (VergleichProjekt is null ? Array.Empty<string>() : ProjektWahl?.Gewaehlte ?? Array.Empty<string>(),
+            VergleichKatalog is null ? Array.Empty<string>() : KatalogWahl?.Gewaehlte ?? Array.Empty<string>());
+
+    /// <summary>
+    /// Was „Vergleichen…" vergleicht: die Kreuze beider Listen zusammen; ohne Kreuze die gewählte Projektzeile
+    /// und den gewählten Katalogsatz, sobald beide gewählt sind.
+    /// </summary>
+    private (IReadOnlyList<string> Projekt, IReadOnlyList<string> Katalog) Vergleichsziele()
+    {
+        var kreuze = Vergleichskreuze();
+        if (kreuze.Projekt.Count + kreuze.Katalog.Count > 0) return kreuze;
+        if (VergleichProjekt is not null && VergleichKatalog is not null
+            && _vergleichProjektwahl is string p && _vergleichKatalogwahl is string k)
+            return (new[] { p }, new[] { k });
+        return (Array.Empty<string>(), Array.Empty<string>());
+    }
+
+    private int Vergleichszahl { get { var z = Vergleichsziele(); return z.Projekt.Count + z.Katalog.Count; } }
+
+    /// <summary>Zwei bis drei Zeilen machen „Vergleichen…" frei (5.5, KA-E-24).</summary>
+    private bool VergleichFrei => Vergleichszahl is >= 2 and <= Satzvergleich.HOECHSTENS;
+
+    private string VergleichKnopftext => Resource.AUSWAHL_BTN_VERGLEICHEN;
+
+    private string VergleichHinweis => Vergleichskreuze() is var k && k.Projekt.Count + k.Katalog.Count > 0
+        ? Resource.AUSWAHL_VERGLEICH_HINWEIS
+        : Resource.AUSWAHL_VERGLEICH_PAAR_HINWEIS;
+
+    /// <summary>Der Grund der weichen Sperre: über drei Zeilen die Grenze, sonst wie man wählt.</summary>
+    public string VergleichSperrgrund => Vergleichszahl > Satzvergleich.HOECHSTENS
+        ? Resource.AUSWAHL_VERGLEICH_GRENZE
+        : Resource.AUSWAHL_VERGLEICH_SPERRE;
+
+    private Task BeiVergleichGesperrt() => VergleichAbgelehnt.InvokeAsync(VergleichSperrgrund);
+
+    /// <summary>
+    /// Baut die Tabelle EINMAL beim Öffnen (hinter den Gaben steht je Satz ein Datenbankzugriff): erst die
+    /// Projektzeilen, dann die Katalogsätze, je Herkunft ein Name einmal (mehrere Zeilen desselben Geräts).
+    /// </summary>
+    private void BeiVergleichen()
+    {
+        if (!VergleichFrei) return;
+        var (projekt, katalog) = Vergleichsziele();
+        var saetze = new List<Vergleichssatz>();
+        var namen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (string s in projekt)
+            if (VergleichProjekt!(s) is Vergleichssatz v && namen.Add("P|" + v.Name)) saetze.Add(v);
+        foreach (string s in katalog)
+            if (VergleichKatalog!(s) is Vergleichssatz v && namen.Add("K|" + v.Name)) saetze.Add(v);
+        if (saetze.Count < 2) return;
+        _vergleichKoepfe = saetze.Select(v => new Vergleichskopf(v.Herkunftstext, v.Name)).ToList();
+        _vergleich = Satzvergleich.Zeilen(saetze);
+        _vergleichOffen = true;
+    }
+
+    /// <summary>Merkt die letzte Wahl je Liste; eine Zeile, die ihre Liste verlassen hat, fällt heraus.</summary>
+    private void VergleichswahlFolgen()
+    {
+        if (!string.IsNullOrEmpty(ProjektGewaehlt)) _vergleichProjektwahl = ProjektGewaehlt;
+        if (!string.IsNullOrEmpty(KatalogGewaehlt)) _vergleichKatalogwahl = KatalogGewaehlt;
+        if (_vergleichProjektwahl is not null && ProjektSichtbar is not null && !ProjektSichtbar.Contains(_vergleichProjektwahl))
+            _vergleichProjektwahl = null;
+        if (_vergleichKatalogwahl is not null && KatalogSichtbar is not null && !KatalogSichtbar.Contains(_vergleichKatalogwahl))
+            _vergleichKatalogwahl = null;
+    }
 
     /// <summary>
     /// <b>Die Tastenführung der Projektliste</b> (AW1, dieselbe Regel wie in der
@@ -740,6 +875,7 @@
     /// </summary>
     protected override void OnParametersSet()
     {
+        VergleichswahlFolgen();
         if (ProjektWahl is null || ProjektSichtbar is null) return;
         var jetzt = ProjektSichtbar.ToList();
         bool gewechselt = ProjektWahl.ListeFolgen(_projektVorher, jetzt);

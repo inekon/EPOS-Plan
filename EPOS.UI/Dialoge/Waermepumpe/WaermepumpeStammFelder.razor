@@ -135,7 +135,7 @@
     /// Darf der BEZEICHNER geändert werden? (Anwenderentscheid 16.09.2026)
     ///
     /// <para><c>false</c> stellt das Namensfeld nur lesend — der Weg des
-    /// <c>WaermepumpeAnlageDialog</c>: Dort bearbeitet der Baustein die PROJEKTKOPIE
+    /// Bausteins <c>WaermepumpeAnlageFelder</c>: Dort bearbeitet er die PROJEKTKOPIE
     /// eines Geräts, und deren einzige Klammer zum Katalogsatz ist der Name.
     /// <c>true</c> (Vorgabe) ist der Weg der Katalogverwaltung, in der umbenannt
     /// werden darf.</para>
@@ -145,8 +145,8 @@
     /// <summary>
     /// Darf die KÜHLLEISTUNG geändert werden? (Anwenderentscheid 16.09.2026)
     ///
-    /// <para><c>true</c> ist der Weg des <c>WaermepumpeAnlageDialog</c>: Dort bearbeitet
-    /// der Baustein die PROJEKTKOPIE, und <c>Tab_WP.Kuehlleistung</c> ist eine ihrer
+    /// <para><c>true</c> ist der Weg des Bausteins <c>WaermepumpeAnlageFelder</c>: Dort bearbeitet
+    /// er die PROJEKTKOPIE, und <c>Tab_WP.Kuehlleistung</c> ist eine ihrer
     /// Spalten — sie gehört der Anlage wie ihre Nennleistung. <c>false</c> (Vorgabe) ist
     /// der Weg der Katalogverwaltung: Dort kommt der Wert aus den Kühl-Kenndaten der
     /// Auslieferung, und der Vorläufer schrieb ihn nie zurück.</para>
@@ -157,7 +157,7 @@
     /// Dürfen MINDESTLEISTUNG und C_d geändert werden? (Welle M4, WP1)
     ///
     /// <para><c>true</c> (Vorgabe) ist der Weg der Katalogverwaltung, in der die beiden Werte gepflegt
-    /// werden. <c>false</c> ist der Weg des <c>WaermepumpeAnlageDialog</c>: Dort zeigt der Baustein die
+    /// werden. <c>false</c> ist der Weg des Bausteins <c>WaermepumpeAnlageFelder</c>: Dort zeigt er die
     /// Werte der Projektkopie, die mit der Übernahme aus dem Katalog kommen.</para>
     /// </summary>
     [Parameter] public bool TeillastAenderbar { get; set; } = true;

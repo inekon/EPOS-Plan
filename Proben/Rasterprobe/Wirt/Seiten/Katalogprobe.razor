@@ -61,7 +61,7 @@
                                Loeschen="@(_ => BedarfLoeschAusgang.Geloescht)"
                                Exists="@(_ => false)"
                                Schloss="@ProbeSchloss"
-                               TitelText="Stromverbraucher Verwaltung"
+                               TitelText="@(_bedarfArt == BedarfsArt.Kaelte ? "Kältebedarf Verwaltung" : "Stromverbraucher Verwaltung")"
                                LabelKatalog="Datenbank Stromverbraucher"
                                LabelJahressumme="jährlicher Strombedarf:" EinheitText="MWh"
                                BtnAendernText="Verbraucher in DB ändern..."
@@ -256,6 +256,24 @@
                             Geschlossen="@(b => { })" />
             break;
 
+        case "baustoff":
+            @* BK-2b: die Baustoffverwaltung mit zeilen=<n> synthetischen Saetzen (Groesse des eingelesenen Katalogs
+               rund 10 000) - Gruppe, Klasse und Herkunft als Spalten, Trichter je Spalte. *@
+            <BaustoffKatalogDialog Katalogzeilen="@(() => BaustoffZeilen)" Katalogprofil="@BaustoffProfil"
+                                   Filterstandvorgabe="@_filterstand"
+                                   Lies="@(id => new BaustoffDaten { Id = id, Bezeichner = "Stoff " + id, Gruppe = "Dämmstoffe" })"
+                                   Geschlossen="@(b => { })" />
+            break;
+
+        case "bauteilaufbau":
+            @* BK-2b: die Aufbauverwaltung mit zeilen=<n> synthetischen Aufbauten (rund 8 500), jeder siebte mit der Marke
+               "meist ungeeignet" - der Schalter "nur geeignete" steht als Vorgabe. *@
+            <BauteilaufbauDialog Katalogzeilen="@(() => AufbauZeilen)" Katalogprofil="@AufbauProfil"
+                                 Filterstandvorgabe="@_filterstand"
+                                 Lies="@(id => new BauteilaufbauDaten { Id = id, Bezeichner = "Aufbau " + id, Bauteilart = "AUSSENWAND" })"
+                                 Geschlossen="@(b => { })" />
+            break;
+
         case "gebaeudetyp":
             @* STUFE 5 (V16, A10): die Gebaeudetypen - Typliste als Katalogliste,
                Tagesprofil im Stammblatt, "Stundenwerte..." als Ueberlagerung. *@
@@ -368,6 +386,7 @@
             case "stromspeicher": _modulArt = ModulKatalogArt.Stromspeicher; break;
             case "brauchwasser": _bedarfArt = BedarfsArt.Brauchwasser; break;
             case "prozesswaerme": _bedarfArt = BedarfsArt.Prozesswaerme; break;
+            case "kaelte": _bedarfArt = BedarfsArt.Kaelte; break;   // K5b: die Verwaltung mit der Art Kaelte
             case "stromverbraucher": _bedarfArt = BedarfsArt.Stromverbraucher; break;
         }
     }
@@ -689,6 +708,46 @@
 
     private static readonly string[] GebaeudeStammklassen =
     { "bis 1859", "1860 bis 1918", "2002 bis 2009", "2016 bis 2020" };
+
+    // ----------------------- BK-2b: Baustoff- und Aufbaukatalog in der Groesse des eingelesenen Katalogs
+    private Katalogfilterprofil? _baustoffProfil, _aufbauProfil;
+    private List<Katalogfilterzeile>? _baustoffZeilen, _aufbauZeilen;
+
+    private Katalogfilterprofil BaustoffProfil => _baustoffProfil ??= Katalogfilterprofil.FuerBaustoff(Uebersetzt);
+    private Katalogfilterprofil AufbauProfil => _aufbauProfil ??= Katalogfilterprofil.FuerBauteilaufbau(Uebersetzt);
+
+    /// <summary>Synthetische Baustoffzeilen — Gruppe und Klasse reihum aus dem Kern, jeder dritte ein Importsatz.</summary>
+    private List<Katalogfilterzeile> BaustoffZeilen => _baustoffZeilen ??= Enumerable.Range(1, _anzahl).Select(i =>
+    {
+        (string g, string k) = BauteilkatalogSchema.BAUSTOFF_KLASSEN[i % BauteilkatalogSchema.BAUSTOFF_KLASSEN.Count];
+        return new Katalogfilterzeile(i, "Stoff " + i) { Schluessel = i.ToString(CultureInfo.InvariantCulture), Geschuetzt = i % 3 != 0 }
+            .MitText(Katalogfilterprofil.SpBezeichner, "Stoff " + i + " mit einem Namen in der Länge der Quelle")
+            .MitText(Katalogfilterprofil.SpGruppe, Bauteilkatalog.GruppeText(true, g))
+            .MitText(Katalogfilterprofil.SpKlasse, Bauteilkatalog.KlasseText(true, k))
+            .MitZahl(Katalogfilterprofil.SpLambda, 0.03 + i % 50 * 0.04, 3)
+            .MitZahl(Katalogfilterprofil.SpRho, 30 + i % 90 * 25, 0)
+            .MitZahl(Katalogfilterprofil.SpCp, 800 + i % 12 * 100, 0)
+            .MitText(Katalogfilterprofil.SpQuelle, i % 3 == 0 ? "Katalog, Datenstand 2026-01" : "DIN 4108-4")
+            .MitText(Katalogfilterprofil.SpHerkunft, i % 3 == 0 ? "Eingelesen" : "Vorgabe");
+    }).ToList();
+
+    /// <summary>Synthetische Aufbauzeilen — jeder siebte trägt die Marke „meist ungeeignet".</summary>
+    private List<Katalogfilterzeile> AufbauZeilen => _aufbauZeilen ??= Enumerable.Range(1, _anzahl).Select(i =>
+    {
+        (string g, string k) = BauteilkatalogSchema.AUFBAU_KLASSEN[i % BauteilkatalogSchema.AUFBAU_KLASSEN.Count];
+        return new Katalogfilterzeile(i, "Aufbau " + i) { Schluessel = i.ToString(CultureInfo.InvariantCulture), Geschuetzt = i % 3 != 0 }
+            .MitText(Katalogfilterprofil.SpBezeichner, "Aufbau " + i + " mit einem Namen in der Länge der Quelle")
+            .MitText(Katalogfilterprofil.SpEignung, i % 7 == 0 ? "meist ungeeignet" : "")
+            .MitText(Katalogfilterprofil.SpGruppe, Bauteilkatalog.GruppeText(false, g))
+            .MitText(Katalogfilterprofil.SpKlasse, Bauteilkatalog.KlasseText(false, k))
+            .MitText(Katalogfilterprofil.SpBauteilart, "Außenwand")
+            .MitZahl(Katalogfilterprofil.SpUWert, 0.1 + i % 30 * 0.05, 3)
+            .MitZahl(Katalogfilterprofil.SpRWert, 1 + i % 20 * 0.3, 2)
+            .MitZahl(Katalogfilterprofil.SpKapazitaet, 50 + i % 40 * 10, 0)
+            .MitZahl(Katalogfilterprofil.SpSchichten, 1 + i % 8, 0)
+            .MitZahl(Katalogfilterprofil.SpDicke, 0.1 + i % 30 * 0.02, 3)
+            .MitText(Katalogfilterprofil.SpHerkunft, i % 3 == 0 ? "Eingelesen" : "Vorgabe");
+    }).ToList();
 
     // ----------------------- Stufe G3, Welle K: der Gebaeudedialog des Projekts
     private Katalogfilterprofil? _gebaeudeProfil;

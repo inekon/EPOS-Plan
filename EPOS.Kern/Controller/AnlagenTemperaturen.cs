@@ -158,7 +158,7 @@ namespace WindowsFormsApplication1
         /// Ein bereits gesetzter Vorlauf bleibt stehen.
         ///
         /// <para><b>Der RÜCKLAUF bleibt unberührt.</b> Für ihn gibt es im Bestand keine
-        /// eindeutige Regel: <c>WaermepumpeAnlageDialog.RuecklaufVorschlaege</c> ist eine
+        /// eindeutige Regel: <c>WaermepumpeAnlageFelder.RuecklaufVorschlaege</c> ist eine
         /// FESTE Liste üblicher Werte (20…45 °C) ohne jeden Bezug zur gewählten
         /// Vorlaufstufe, und die Kennlinientabellen führen keinen Rücklauf. Eine
         /// Vorbelegung wäre hier eine erfundene Zahl.</para>

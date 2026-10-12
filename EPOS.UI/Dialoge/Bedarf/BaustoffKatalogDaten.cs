@@ -39,6 +39,12 @@ public sealed class BaustoffDaten
     /// <summary>Regelwerk oder Datenblatt, aus dem die Werte stammen.</summary>
     public string Quelle { get; set; } = "";
 
+    /// <summary>Klasse unter der Gruppe (Code aus dem Kern, BK-2b); leer = keine Klasse.</summary>
+    public string KlasseCode { get; set; } = "";
+
+    /// <summary>Ein eingelesener Satz (Herkunft <c>IMPORT</c>): die Quelle ist Lesewert.</summary>
+    public bool Import { get; set; }
+
     /// <summary>Die Herkunft als Anzeigetext („Vorgabe", „Manuell" …) — nur Anzeige.</summary>
     public string Herkunft { get; set; } = "";
 
@@ -66,6 +72,7 @@ public sealed class BaustoffDaten
         if (Rho != anderer.Rho) n++;
         if (Cp != anderer.Cp) n++;
         if (!Gleich(Quelle, anderer.Quelle)) n++;
+        if (!Gleich(KlasseCode, anderer.KlasseCode)) n++;
         return n;
     }
 

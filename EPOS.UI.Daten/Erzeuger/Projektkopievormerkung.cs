@@ -33,6 +33,11 @@ namespace WindowsFormsApplication1
     /// Übernehmen an und meldet eine neue hier; sein Entfernen räumt weiter der Aufrufer nach OK über
     /// <c>PufferSpCtrl.ProjektWaisenEntfernen</c> ab.</para>
     ///
+    /// <para><b>Auch die Bedarfsprofile</b> (Projektkopien der Stromverbraucher, Prozesswärme, Brauchwasser und
+    /// Kälte) legen ihre Kopie beim Übernehmen an; ihr Dialog entfernt Zeilen selbst, die Hülle gleicht deshalb
+    /// beim Schließen den Bestand ab (<see cref="EntferntGegenueber"/>). Gelöscht wird dort nur eine Kopie ohne
+    /// Zuordnung in der Datenbank.</para>
+    ///
     /// <para>Plattformfrei und ohne Datenbank: Gelöscht wird über den Delegaten der Hülle
     /// (<c>…Ctrl.DeleteFromProjekt(bezeichner, projekt)</c>).</para>
     /// </summary>
@@ -83,6 +88,21 @@ namespace WindowsFormsApplication1
         internal void Entfernt(string bezeichner, int kopieId)
         {
             if (kopieId > 0) _entfernt.Add((bezeichner ?? "", kopieId));
+        }
+
+        /// <summary>
+        /// „Aus dem Projekt entfernen“ für einen Dialog, der seine Zeilenliste selbst führt und das Entfernen nicht
+        /// einzeln meldet (Bedarfsprofile): merkt die Kopie jeder Zeile aus <paramref name="bestand"/> (dem Stand beim
+        /// Öffnen) vor, auf die keine Zeile mehr verweist. Der Aufrufer ruft es nach dem Schließen, VOR
+        /// <see cref="Abschliessen"/>.
+        /// </summary>
+        /// <param name="nochReferenziert">Verweist eine Zeile der Liste noch auf diese Kopie-Id?</param>
+        internal void EntferntGegenueber(IEnumerable<(string Bezeichner, int KopieId)> bestand,
+                                         Func<int, bool> nochReferenziert)
+        {
+            if (bestand == null) return;
+            foreach ((string bezeichner, int kopieId) in bestand)
+                if (nochReferenziert == null || !nochReferenziert(kopieId)) Entfernt(bezeichner, kopieId);
         }
 
         /// <summary>

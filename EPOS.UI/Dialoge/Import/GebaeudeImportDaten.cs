@@ -222,6 +222,11 @@ public static class GebaeudePlanschrittArt
     /// die Zonen der Projektdatei samt Konditionierung je Zone; ohne gelesene Projektdatei lehnt die Datenseite ab.
     /// </summary>
     public const string PROJEKTDATEI = "PROJEKTDATEI";
+    /// <summary>
+    /// Die automatische Platzierung eines Raums zurücknehmen (Räume mit einem Raum; Entwurf GD 2.3, E130/F3): der Raum ist
+    /// danach nicht zugeordnet, eine dadurch leere Restzone entfällt.
+    /// </summary>
+    public const string RUECKNAHME = "RUECKNAHME";
 }
 
 /// <summary>
@@ -466,8 +471,11 @@ public sealed record GebaeudeAufbaulistenzeileDaten
     /// <summary>Die Schichten (ausgeklappt), innen → außen, weggelassene markiert.</summary>
     public IReadOnlyList<EPOS.UI.Dialoge.Bedarf.BauteilsteckbriefSchicht> Schichten { get; init; } = Array.Empty<EPOS.UI.Dialoge.Bedarf.BauteilsteckbriefSchicht>();
 
-    /// <summary>Der Sprung in den Abschnitt „Baustoffe": Schlüssel des Materialnamens; <c>null</c> = kein Sprung.</summary>
-    public string? Materialschluessel { get; init; }
+    /// <summary>
+    /// Die Schichten der Datei, solange der Aufbau nicht vollständig ist (AB3), innen → außen, je Name und Werten einmal —
+    /// fehlende Stoffwerte als Strich, mit <see cref="EPOS.UI.Dialoge.Bedarf.BauteilsteckbriefSchicht.OhneWert"/>; leer = keine.
+    /// </summary>
+    public IReadOnlyList<EPOS.UI.Dialoge.Bedarf.BauteilsteckbriefSchicht> Dateischichten { get; init; } = Array.Empty<EPOS.UI.Dialoge.Bedarf.BauteilsteckbriefSchicht>();
 
     /// <summary>Der Schlüssel der Typwahl eines Ersatzaufbaus (E95-4); <c>null</c> = keine Typwahl (echter Aufbau, ohne Aufbau).</summary>
     public string? Typschluessel { get; init; }
@@ -479,7 +487,7 @@ public sealed record GebaeudeAufbaulistenzeileDaten
     public IReadOnlyList<GebaeudeZonenregelDaten> Typen { get; init; } = Array.Empty<GebaeudeZonenregelDaten>();
 }
 
-/// <summary>Ein Katalogbaustoff der Klappliste im Abschnitt „Baustoffe".</summary>
+/// <summary>Ein Katalogbaustoff der Klappliste der Baustoffwahl je Schicht (Liste „Bauteilaufbauten").</summary>
 /// <param name="Id">Die Id des Katalogbaustoffs — der Wert der Zuordnung.</param>
 /// <param name="Text">Der Anzeigetext; eine Herstellerzeile nennt den Hersteller.</param>
 public sealed record GebaeudeBaustoffwahl(int Id, string Text);
@@ -504,7 +512,7 @@ public static class GebaeudeAbgleichSchluessel
 }
 
 /// <summary>
-/// <b>Ein Materialname der Datei im Abschnitt „Baustoffe"</b> — was der Namensabgleich aus ihm
+/// <b>Ein Materialname der Datei (Namensabgleich)</b> — was der Namensabgleich aus ihm
 /// gemacht hat, als fertige Anzeigetexte: Stufe, zugeordneter Baustoff mit seinen Stoffwerten und
 /// woher die Werte der Schichten kommen. Unveränderlich.
 /// </summary>
@@ -551,7 +559,7 @@ public sealed record GebaeudeMaterialzeileDaten
 }
 
 /// <summary>
-/// <b>Der Abschnitt „Baustoffe"</b>: die Zusammenfassung, je Materialname der Datei eine Zeile und
+/// <b>Die Baustoffe des Namensabgleichs</b> (Baustoffwahl je Schicht in der Liste „Bauteilaufbauten"): die Zusammenfassung, je Materialname der Datei eine Zeile und
 /// die Katalogbaustoffe der Klappliste, gruppiert — alles fertige Anzeigetexte aus den Gaben.
 /// </summary>
 public sealed record GebaeudeBaustoffeDaten
@@ -616,7 +624,10 @@ public sealed record GebaeudeProfilherleitung(string Profil, string Kategorie, s
 /// <param name="Flaeche">Fläche mit Einheit.</param>
 /// <param name="Beheizt">Wirksam beheizt (mit den Haken).</param>
 /// <param name="BeheiztLautDatei">Was die Datei sagt.</param>
-public sealed record GebaeudePlanraumDaten(string Kennung, string Name, string Geschoss, string Flaeche, bool Beheizt, bool BeheiztLautDatei);
+/// <param name="Platzierung">Der Grund der automatischen Platzierung als Anzeigetext (E130/F3); <c>null</c> = nicht automatisch platziert.</param>
+/// <param name="Platzierungsgrund">Der Grund sprachneutral (<c>unbeheizt</c>, <c>nachbarzone</c>, <c>geschoss</c>; <c>data-platziert</c>); <c>null</c> = keiner.</param>
+public sealed record GebaeudePlanraumDaten(string Kennung, string Name, string Geschoss, string Flaeche, bool Beheizt, bool BeheiztLautDatei,
+                                           string? Platzierung = null, string? Platzierungsgrund = null);
 
 /// <summary>Eine Zone des Zonenplans: Schlüssel, Name, Nutzung, Beheizung, Zahl der Räume, Fläche, Sollwert und Räume.</summary>
 public sealed record GebaeudePlanzoneDaten
@@ -834,6 +845,12 @@ public sealed record GebaeudeZonenplanDaten
     /// <summary>Die nicht zugeordneten Räume in Dateireihenfolge — solange einer dasteht, ist OK gesperrt.</summary>
     public IReadOnlyList<GebaeudePlanraumDaten> NichtZugeordnet { get; init; } = Array.Empty<GebaeudePlanraumDaten>();
 
+    /// <summary>Die Zahl der automatisch platzierten Räume (E130/F3), die noch an ihrem Platz stehen.</summary>
+    public int Platziert { get; init; }
+
+    /// <summary>Die Meldung der automatischen Platzierung: wie viele Räume wohin; leer = keine Platzierung.</summary>
+    public string Platzierungsmeldung { get; init; } = "";
+
     /// <summary>Die Zahl der Räume, die die Regel bewusst außerhalb lässt (sie sperren das OK nicht).</summary>
     public int Ausserhalb { get; init; }
 
@@ -1002,7 +1019,7 @@ public sealed record GebaeudeZonierungDaten
 
 /// <summary>
 /// Der Stand einer Zuordnung, wie ihn die Hülle aus dem Kern baut: Kopfzeile, Namensvorschlag,
-/// Raumliste, Zeilen, Meldungen, der Bauteilvorschlag samt Abschnitt „Baustoffe" — und der
+/// Raumliste, Zeilen, Meldungen, der Bauteilvorschlag samt Baustoffen des Namensabgleichs — und der
 /// Herkunftstext für eine Handänderung, damit auch „manuell" aus den Gaben kommt.
 /// </summary>
 public sealed record GebaeudeImportStand
@@ -1018,6 +1035,9 @@ public sealed record GebaeudeImportStand
 
     /// <summary>Der Name des neuen Gebäudes aus der Datei.</summary>
     public string Vorschlagsname { get; init; } = "";
+
+    /// <summary>Der Gebäudename, den die Datei trägt, als Vorschlag neben dem Namen (F8); leer = keiner oder gleich dem Namen.</summary>
+    public string NameDerDatei { get; init; } = "";
 
     /// <summary>Die Räume des Gebäudes in Dateireihenfolge.</summary>
     public IReadOnlyList<GebaeudeRaumzeileDaten> Raeume { get; init; } = Array.Empty<GebaeudeRaumzeileDaten>();
@@ -1170,6 +1190,9 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_DLG_SQNUR_UNBEHEIZT — leiser Hinweis im Weg „nur Projektdatei“: unbeheizte Räume in einer Zone.</summary>
     public string SqNurUnbeheizt { get; set; } = Resource.GIMP_DLG_SQNUR_UNBEHEIZT;
+
+    /// <summary>Der Haken der Vorgabe im Einzonenweg (Vorgaberegel 2.5).</summary>
+    public string SqEinzonenprofilSetzen { get; set; } = Resource.RNP_IMP_EINZONE_SETZEN;
 
     /// <summary>GEB_AUSRICHTUNG_NORDRICHTUNG — der Abschnitt der Nordrichtung (G5-N).</summary>
     public string GruppeNordrichtung { get; set; } = Resource.GEB_AUSRICHTUNG_NORDRICHTUNG;
@@ -1336,6 +1359,12 @@ public sealed class GebaeudeImportTexte
     /// <summary>GIMP_DLG_SP_NUTZUNG</summary>
     public string SpalteNutzung { get; set; } = Resource.GIMP_DLG_SP_NUTZUNG;
 
+    /// <summary>GIMP_DLG_NAME_DATEI</summary>
+    public string NameDatei { get; set; } = Resource.GIMP_DLG_NAME_DATEI;
+
+    /// <summary>GIMP_DLG_NAME_UEBERNEHMEN</summary>
+    public string NameUebernehmen { get; set; } = Resource.GIMP_DLG_NAME_UEBERNEHMEN;
+
     /// <summary>GIMP_DLG_PLAN_WURZEL</summary>
     public string PlanWurzel { get; set; } = Resource.GIMP_DLG_PLAN_WURZEL;
 
@@ -1420,6 +1449,15 @@ public sealed class GebaeudeImportTexte
     /// <summary>GIMP_DLG_PLAN_AUFHEBEN_FRAGE</summary>
     public string PlanAufhebenFrage { get; set; } = Resource.GIMP_DLG_PLAN_AUFHEBEN_FRAGE;
 
+    /// <summary>GIMP_DLG_PLAN_PLATZIERT_MARKE</summary>
+    public string PlanPlatziertMarke { get; set; } = Resource.GIMP_DLG_PLAN_PLATZIERT_MARKE;
+
+    /// <summary>GIMP_DLG_PLAN_ZURUECKNEHMEN</summary>
+    public string PlanZuruecknehmen { get; set; } = Resource.GIMP_DLG_PLAN_ZURUECKNEHMEN;
+
+    /// <summary>GIMP_DLG_PLAN_ZURUECKNEHMEN_RAUM</summary>
+    public string PlanZuruecknehmenRaum { get; set; } = Resource.GIMP_DLG_PLAN_ZURUECKNEHMEN_RAUM;
+
     /// <summary>GIMP_DLG_PLAN_OK_GESPERRT</summary>
     public string PlanOkGesperrt { get; set; } = Resource.GIMP_DLG_PLAN_OK_GESPERRT;
 
@@ -1429,8 +1467,6 @@ public sealed class GebaeudeImportTexte
     /// <summary>GIMP_DLG_GRP_GRUNDRISS — Kopf des Grundrisses, wenn er nicht neben der Zonenliste steht.</summary>
     public string GruppeGrundriss { get; set; } = Resource.GIMP_DLG_GRP_GRUNDRISS;
 
-    /// <summary>GIMP_DLG_ZUORDNEN_ZU — die Zielzone eines Klicks im Grundriss und des Knopfs „Umhängen".</summary>
-    public string ZuordnenZu { get; set; } = Resource.GIMP_DLG_ZUORDNEN_ZU;
 
     /// <summary>GIMP_DLG_EIGENE_ZONE — der Eintrag „als eigene Zone" der Zielzone.</summary>
     public string EigeneZone { get; set; } = Resource.GIMP_DLG_EIGENE_ZONE;
@@ -1528,11 +1564,7 @@ public sealed class GebaeudeImportTexte
     /// <summary>GIMP_DLG_KEINE_BAUTEILE</summary>
     public string KeineBauteile { get; set; } = Resource.GIMP_DLG_KEINE_BAUTEILE;
 
-    /// <summary>GIMP_DLG_GRP_BAUSTOFFE — Kopf des Abschnitts mit den Materialnamen der Datei.</summary>
-    public string GruppeBaustoffe { get; set; } = Resource.GIMP_DLG_GRP_BAUSTOFFE;
 
-    /// <summary>GIMP_DLG_BAUSTOFFE_HINWEIS</summary>
-    public string BaustoffeHinweis { get; set; } = Resource.GIMP_DLG_BAUSTOFFE_HINWEIS;
 
     /// <summary>GIMP_GRP_AUFBAUTEN — Kopf der Liste „Bauteilaufbauten" (BA-3).</summary>
     public string GruppeAufbauten { get; set; } = Resource.GIMP_GRP_AUFBAUTEN;
@@ -1570,8 +1602,6 @@ public sealed class GebaeudeImportTexte
     /// <summary>GIMP_AB_NUR_BC — Filter „nur B und C".</summary>
     public string AbNurBC { get; set; } = Resource.GIMP_AB_NUR_BC;
 
-    /// <summary>GIMP_AB_ZUR_BAUSTOFF — Sprung in den Abschnitt „Baustoffe".</summary>
-    public string AbZurBaustoff { get; set; } = Resource.GIMP_AB_ZUR_BAUSTOFF;
 
     /// <summary>GIMP_AB_SCHICHTEN — klappt die Schichten einer Zeile auf.</summary>
     public string AbSchichten { get; set; } = Resource.GIMP_AB_SCHICHTEN;
@@ -1585,23 +1615,20 @@ public sealed class GebaeudeImportTexte
     /// <summary>GIMP_AB_HINWEIS</summary>
     public string AbHinweis { get; set; } = Resource.GIMP_AB_HINWEIS;
 
-    /// <summary>GIMP_DLG_SP_MATERIALNAME</summary>
-    public string SpalteMaterialname { get; set; } = Resource.GIMP_DLG_SP_MATERIALNAME;
+    /// <summary>GIMP_AB_VERWALTUNG_HINWEIS — Hinweis über der Liste: Baustoffe und Aufbauten pflegt die Administration (AB3).</summary>
+    public string AbVerwaltungHinweis { get; set; } = Resource.GIMP_AB_VERWALTUNG_HINWEIS;
 
-    /// <summary>GIMP_DLG_SP_SCHICHTEN</summary>
-    public string SpalteSchichten { get; set; } = Resource.GIMP_DLG_SP_SCHICHTEN;
+    /// <summary>GIMP_AB_HERKUNFT_HAND — Herkunft einer Schicht, deren Baustoff der Anwender gewählt hat (AB3).</summary>
+    public string AbHerkunftHand { get; set; } = Resource.GIMP_AB_HERKUNFT_HAND;
 
-    /// <summary>GIMP_DLG_SP_ABGLEICH</summary>
-    public string SpalteAbgleich { get; set; } = Resource.GIMP_DLG_SP_ABGLEICH;
+    /// <summary>GIMP_AB_DATEISCHICHTEN — Kopf der Schichten der Datei eines unvollständigen Aufbaus (AB3).</summary>
+    public string AbDateischichten { get; set; } = Resource.GIMP_AB_DATEISCHICHTEN;
 
-    /// <summary>GIMP_DLG_SP_BAUSTOFF</summary>
-    public string SpalteBaustoff { get; set; } = Resource.GIMP_DLG_SP_BAUSTOFF;
 
-    /// <summary>GIMP_DLG_SP_STOFFWERTE</summary>
-    public string SpalteStoffwerte { get; set; } = Resource.GIMP_DLG_SP_STOFFWERTE;
 
-    /// <summary>GIMP_DLG_SP_WERTE_AUS</summary>
-    public string SpalteWerteAus { get; set; } = Resource.GIMP_DLG_SP_WERTE_AUS;
+
+
+
 
     /// <summary>GIMP_DLG_BAUSTOFF_WAEHLEN — Beschriftung der Klappliste je Zeile für die Sprachausgabe, {0} = Materialname.</summary>
     public string BaustoffWaehlen { get; set; } = Resource.GIMP_DLG_BAUSTOFF_WAEHLEN;

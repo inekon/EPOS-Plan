@@ -123,7 +123,7 @@ namespace Auslieferungsvorlage
         /// <b>Was der Katalog der Nutzungsprofile in der Vorlage trägt.</b> Gezählt werden je Kategorie die Profile
         /// (gesperrt und eigen) und die Zuordnungen; geprüft wird dreierlei: die ausgelieferte Saat steht vollständig
         /// (<see cref="RaumnutzungSchema.OffeneSaat"/>), <b>kein Kennwert, kein Zeilenbild, kein Stundenprofil in einer
-        /// Normkategorie</b> (DIN V 18599-10, SIA 2024, VDI 2078 — Normwerte werden nie ausgeliefert) und in jedem Modus
+        /// Normkategorie</b> (DIN/TS 18599-10 — Normwerte werden nie ausgeliefert; SIA 2024 und VDI 2078 entfallen, E129) und in jedem Modus
         /// keine eigene Zeile mehr (NP-F21, Q46). Steht der Schemaschritt nicht, ist das ein Hinweis.
         /// </summary>
         private bool Nutzungsprofile()
@@ -151,13 +151,18 @@ namespace Auslieferungsvorlage
             bool ok = true;
             int offen = RaumnutzungSchema.OffeneSaat();
             ok &= Befund(offen == 0, "ausgelieferte Saat der Nutzungsprofile vollstaendig: offen " + offen);
+            // E129 (NP6): Die Kategorien SIA 2024 und VDI 2078 sind nicht mehr ausgeliefert, die DIN traegt beide Wohnprofile.
+            int offenNp6 = RaumnutzungNormkategorienSchema.Offen();
+            ok &= Befund(offenNp6 == 0, "Kategorien SIA 2024 und VDI 2078 entfallen, Wohnprofile der DIN stehen (E129): offen " + offenNp6);
 
             string norm = string.Join(", ", RaumnutzungSchema.ARTEN_NORM.Select(a => "'" + a + "'"));
             string normProfile = "SELECT p.\"ID\" FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" p JOIN \"" +
                                  RaumnutzungSchema.TAB_KATALOG + "\" k ON k.\"ID\" = p.\"ID_Katalog\" WHERE k.\"Art\" IN (" + norm + ")";
             long kennwerte = Vorlagenbau.Zaehle2(
                 "SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" WHERE \"ID\" IN (" + normProfile + ") AND (" +
-                string.Join(" OR ", RaumnutzungSchema.SPALTEN_KENNWERTE.Select(s => "\"" + s.Spalte + "\" IS NOT NULL")) + ")");
+                string.Join(" OR ", RaumnutzungSchema.SPALTEN_KENNWERTE.Select(s => s.Spalte)
+                    .Concat(RaumnutzungNormwerteSchema.Lesbar() ? RaumnutzungNormwerteSchema.SPALTEN.Select(s => s.Spalte) : Enumerable.Empty<string>())
+                    .Select(s => "\"" + s + "\" IS NOT NULL")) + ")");
             long zeilen = Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_ZEILE + "\" WHERE \"ID_Profil\" IN (" + normProfile + ")");
             long stunden = Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_STUNDEN + "\" WHERE \"ID_Profil\" IN (" + normProfile + ")");
             ok &= Befund(kennwerte + zeilen + stunden == 0,

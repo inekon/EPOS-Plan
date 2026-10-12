@@ -92,7 +92,9 @@ namespace EPOS.Kern.Tests
                     Raumnutzungsprofil p = v.Profil(id);
                     Assert.Equal(pz.Profil.Name, h.Profil);
                     Assert.Equal(v.Kategorie(id), h.Kategorie);
-                    Assert.Equal(p.IstLeer ? "" : RaumnutzungHuelle.Kurzform(p, t), h.Kennwerte);
+                    // Lücke 3 (NP-F18, GD-5): die Größen ohne Kennwert stehen hinter den Kennwerten.
+                    string kurz = p.IstLeer ? "" : RaumnutzungHuelle.Kurzform(p, t), ohne = GebaeudeImportZonen.Ohnekennwerttext(p);
+                    Assert.Equal(ohne.Length == 0 ? kurz : kurz.Length == 0 ? ohne : kurz + " · " + ohne, h.Kennwerte);
                     Assert.Equal("", h.Dateigroessen);
                     Assert.StartsWith(h.Profil + " · " + h.Kategorie + " — " + h.Quelle, h.Text);
                     erster ??= plan;
@@ -215,12 +217,13 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Der Einzonenweg der Projektdatei</b> (NP2b-4, Anwenderentscheid 06.10.2026): Liefert die Datei eine DIN-Nummer
-        /// (hier über die Gebäudegruppe), nennt der Stand den Vorschlag „Vorschlag aus DIN-Nr. n: Profil · Kategorie — zuweisbar
-        /// im Gebäudeeditor …“; gesetzt wird nichts. Ohne Nummer gibt es keinen Vorschlag.
+        /// <b>Der Einzonenweg der Projektdatei</b> (Vorgaberegel 2.5, NP-F16, E130 F5): Liefert die Datei eine DIN-Nummer (hier
+        /// über die Gebäudegruppe), nennt der Stand die Vorgabe „Vorgabe aus DIN-Nr. n: Profil · Kategorie — …“, sonst die Vorgabe der
+        /// Gebäudeart, die das Gebäude bekommt. Das Profil geht als Gebäudekalender ans Gebäude (<see cref="GebaeudeImportHuelle.Einzonenprofil"/>),
+        /// der Haken wählt es ab; der Zonenplan des Einzonenwegs bleibt ohne Profil.
         /// </summary>
         [Fact]
-        public async Task Der_Einzonenweg_nennt_den_Vorschlag_aus_der_DIN_Nummer_und_setzt_nichts()
+        public async Task Der_Einzonenweg_nennt_die_Vorgabe_und_setzt_sie_abwaehlbar_als_Gebaeudeprofil()
         {
             if (!_db.Vorhanden) return;
             foreach (bool mitGruppe in new[] { false, true })
@@ -237,19 +240,39 @@ namespace EPOS.Kern.Tests
                 GebaeudeImportStand stand = zuordnen(new GebaeudeZuordnungsanfrage(0, null, new Dictionary<string, bool>(), null, null, "Z4",
                                                                                    null, false, null, null));
                 string vorschlag = stand.Projektdatei!.Einzonenvorschlag;
-                Assert.All(h.Plan.Zonen, z => Assert.Null(z.Profil));     // gesetzt wird nichts
-                if (!mitGruppe)
-                {
-                    Assert.Equal("", vorschlag);
-                    continue;
-                }
-                System.Text.RegularExpressions.Match m = System.Text.RegularExpressions.Regex.Match(vorschlag,
-                    @"^Vorschlag aus DIN-Nr\. (\d+): (.+) — zuweisbar im Gebäudeeditor über „Nutzungsprofil übernehmen…“$");
-                Assert.True(m.Success, vorschlag);
+                Assert.All(h.Plan.Zonen, z => Assert.Null(z.Profil));     // der Zonenplan des Einzonenwegs bleibt ohne Profil
                 Raumnutzungsvorbelegung v = Raumnutzungsvorbelegung.Lesen();
-                Planprofil p = v.AusDinNummer(int.Parse(m.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture));
+                System.Text.RegularExpressions.Match m;
+                Planprofil p;
+                if (mitGruppe)
+                {
+                    m = System.Text.RegularExpressions.Regex.Match(vorschlag,
+                        @"^Vorgabe aus DIN-Nr\. (\d+): (.+) — das Gebäude nimmt es als Kalender, die Datei geht vor$");
+                    Assert.True(m.Success, vorschlag);
+                    p = v.AusDinNummer(int.Parse(m.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture));
+                }
+                else
+                {
+                    string art = h.ImportGebaeudeart(0);
+                    p = Zonenvorbesetzung.AusGebaeudeart(v, art);
+                    if (p == null)
+                    {
+                        Assert.Equal("", vorschlag);
+                        Assert.Null(h.Einzonenprofil);
+                        continue;
+                    }
+                    m = System.Text.RegularExpressions.Regex.Match(vorschlag,
+                        @"^Vorgabe aus der Gebäudeart „(.+)“: (.+) — das Gebäude nimmt es als Kalender, die Datei geht vor$");
+                    Assert.True(m.Success, vorschlag);
+                    Assert.Equal(art, m.Groups[1].Value);
+                }
                 Assert.Equal(RaumnutzungSaat.WOHNEN, p.Name);
                 Assert.Equal(p.Name + " · " + v.Kategorie(p.Id), m.Groups[2].Value);
+                Assert.Equal(p, h.Einzonenprofil);
+                ((Action<bool>)gaben["EinzonenprofilWaehlen"])(false);
+                Assert.Null(h.Einzonenprofil);
+                ((Action<bool>)gaben["EinzonenprofilWaehlen"])(true);
+                Assert.Equal(p, h.Einzonenprofil);
             }
         }
 

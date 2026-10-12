@@ -127,6 +127,11 @@ KA‑Q1 bis KA‑Q9 des Entwurfs (Zuordnung in der letzten Spalte).
 | **KA‑E‑20** | Bearbeiten… im Kopf des Bereichs „Im Projekt“ entfällt; „In die Datenbank übernehmen…“ und „Aus dem Projekt entfernen“ bleiben dort. | 11.10.2026 | AW1 |
 | **KA‑E‑21** | Die Knopfleiste am gewählten Satz gilt für alle Wirte der Katalogauswahl: die sieben Erzeugerdialoge, Wärmebedarf extern, Strom-, Solar- und PV-Ganglinie, Bedarfsprofile, Gebäude (Projekt und Assistent) und die Kältemaschine (Schalter `KnopfleisteAmSatz` überall eingeschaltet). | 11.10.2026 | AW1, AW3 |
 | **KA‑E‑22** | Wärmepumpe: Bearbeiten… öffnet für Projekt- und Katalogsatz dieselbe Überlagerung aus Satzdaten und Anlage (Auslegung für Verteilung, Kenndaten mit einer Feldgruppe, Kennlinien); die Auswahlliste des Anlagen-Dialogs entfällt; je Aufruf eine Anlage mit ihrer Kennlinie; Abschnitte ohne Daten beim Katalogsatz weich gesperrt „nur im Projekt“. | 11.10.2026 | AW2 |
+| **KA‑E‑23** | Wärmebedarf/Kältebedarf extern folgt dem Gerüst des Wärmepumpendialogs: Satzzeile mit wesentlichen Angaben und Knopfleiste, Einzelheiten samt Ganglinie und Deckung in einer Bearbeiten-Überlagerung für Projekt- und Katalogsatz. | 12.10.2026 | Anwenderentscheid 12.10.2026 (Sichtabnahme K5a) |
+| **KA‑E‑24** | „Vergleichen…“ vergleicht die angekreuzten Zeilen beider Listen zusammen (Projektzeilen und Katalogsätze, zwei bis drei); ohne Kreuze vergleicht es die gewählte Projektzeile mit dem gewählten Katalogsatz, sobald beide gewählt sind; jede Spalte trägt im Kopf die Herkunft („Projekt“/„Katalog“) vor dem Namen. Die Kennwerte der Projektzeile kommen aus derselben Parameterliste wie die des Katalogsatzes (Projektkopie samt Kennlinie). | 12.10.2026 | VG1 |
+| **KA‑E‑25** | Jede Bearbeiten-Überlagerung zeigt links einen Gerätesteckbrief mit den wichtigsten Daten des gewählten Satzes; Wärmepumpe zuerst (WP1a), die übrigen Wirte folgen (WP1b). | 12.10.2026 | WP1 |
+| **KA‑E‑26** | **Wärmepumpen mit Kühlfunktion in der Katalogauswahl der Kältemaschine:** Katalog und „Im Projekt“ führen Kältemaschinen und Wärmepumpen mit Kühlkennlinie in je einer Liste mit Spalte „Art“ (Kältemaschine / Wärmepumpe); Suche, Spaltenwahl und Filter gelten über beide Arten. Eine übernommene Wärmepumpe wird Projektwärmepumpe mit Kühlbetrieb — Projektkopie über den Weg des Wärmepumpendialogs, Kühlbetrieb allein über `WPCtrl.KuehlkonfigurationSchreiben`; ohne Kühlkennlinie im Projekt oder mit Quellspeicher lehnt der Kern benannt ab, der Dialog zeigt den Grund im Banner. Steht die Wärmepumpe schon im Projekt, wird nur ihr Kühlbetrieb eingeschaltet. „Aus dem Projekt entfernen“ schaltet bei einer Wärmepumpe nur den Kühlbetrieb aus. Bearbeiten… öffnet je Art ihre Überlagerung, das Rückkühlwerk gibt es nur bei Kältemaschinen, Vergleichen… vergleicht nur innerhalb einer Art; die Zeile „Wärmepumpen im Kühlbetrieb“ unter dem Dialog entfällt. Beim Einschalten bekommt die Wärmepumpe einen Rang hinter den Erzeugern mit Rang in der Kältefolge, beim Ausschalten wird er entfernt und die Folge geschlossen; Kühlleistung und EER einer Katalog-Wärmepumpe stehen am Bezugspunkt 7 °C Kaltwasser mit der Quelle nach EN 14511 (sonst an der kleinsten Kaltwasser-Stützstelle). | 12.10.2026 | KM‑K1 |
+| **KA‑E‑27** | **Knopfleiste und Breite:** Die Knopfleiste am gewählten Satz bricht um und bleibt in der Dialogbreite, der Dialog folgt der Bildschirmbreite — für alle Wirte der Katalogauswahl. Katalogfunktionen ohne Satzbezug (bei der Kältemaschine „Typkennfelder laden…“ und „Katalogverwaltung…“) stehen in der Kopfzeile des Katalogs neben „Spalten…“; die Infoknöpfe der Satzzeile stehen im Kopf der Satzzeile neben dem Satznamen. | 12.10.2026 | KM‑L1 |
 
 ## 4 Zielbild V1
 
@@ -176,9 +181,12 @@ des Dialogs, **Ü** = Überlagerung im selben Fenster.
 | Suche, Trefferzahl, Filter zurücksetzen | K (Kopf, links) | Katalogliste |
 | ▲ In das Projekt übernehmen (auch Doppelklick, Enter) | K (Kopf, rechts) | Auswahl des Katalogs → Projekt |
 | Spalten sortieren und filtern, Schloss- und „im Projekt“-Spalte | K (Listenkopf) | Katalogliste |
-| Vergleichen…, Schloss setzen/aufheben…, Löschen, Bearbeiten… (Katalogsatz) | K (Fuß, nach dem gewählten Namen) | Auswahl des Katalogs |
+| Vergleichen… | K (Fuß, nach dem gewählten Namen) | Kreuze beider Listen (zwei bis drei), ohne Kreuze gewählte Projektzeile und gewählter Katalogsatz (KA‑E‑24) |
+| Schloss setzen/aufheben…, Löschen, Bearbeiten… (Katalogsatz) | K (Fuß, nach dem gewählten Namen) | Auswahl des Katalogs |
 | Neu…, Import…, Speichern unter… | K (Fuß, rechts) | Katalog |
 | Baustoffzuordnungen… (Gebäude), Typ ändern… / DB ändern… (Bedarfsprofile) | K (Fuß) | Katalog |
+| Typkennfelder laden…, Katalogverwaltung… (Kältemaschine, KA‑E‑27) | K (Kopf, neben „Spalten…“) | Katalog |
+| Kühlbetrieb einer Wärmepumpe ein (Übernehmen) / aus (Entfernen) (Kältemaschine, KA‑E‑26) | K (Übernehmen) bzw. P (Entfernen) | Projektwärmepumpe |
 | Kenndaten des gewählten Satzes (eine Zeile, Marke „Projektsatz“/„Katalogsatz“) | S (zugeklappt) | zuletzt gewählte Zeile |
 | Alle Daten (bearbeitbar; gesperrter Katalogsatz nur lesen) · Speichern | S (aufgeklappt) | Projektkopie bzw. Katalogsatz |
 | Investitions-, Betriebs-, Energiekosten… | S (aufgeklappt, nur Projektsatz) | Kosten der Projektzeile |
@@ -192,8 +200,16 @@ des Dialogs, **Ü** = Überlagerung im selben Fenster.
 | Verwaltungsbetriebsart (Gebäude, nur Katalog) | Projektbereich und Trennlinie entfallen | — |
 
 Bei Mehrfachauswahl nennt die Fußleiste des Katalogs statt des Namens die Zahl („3 Sätze:“); Knöpfe, die
-nur einen Satz vertragen (Vergleichen braucht zwei oder mehr, Umstellen genau einen), sind mit Hinweis
-ausgegraut. Ein Satzname als erstes Wort der Leiste folgt dem Haus-Muster der Auswahlleiste.
+nur einen Satz vertragen (Vergleichen braucht zwei bis drei Zeilen aus beiden Listen, Umstellen genau einen), sind mit Hinweis
+ausgegraut. Der Vergleich zeigt je Satz eine Spalte mit der Herkunft („Projekt“/„Katalog“) vor dem Namen und kennzeichnet
+je Parameter „stimmig“ oder „abweichend“. Ein Satzname als erstes Wort der Leiste folgt dem Haus-Muster der Auswahlleiste.
+
+**Zeile Kältemaschine (KA‑E‑26, KA‑E‑27; gebaut, 5.10a):** P trägt die Summe der Nennkälteleistung über
+Kältemaschinen und Wärmepumpen im Kühlbetrieb, „Aus dem Projekt entfernen“ (bei einer Wärmepumpe nur Kühlbetrieb aus) — kein
+Rückweg in die Datenbank. K trägt Suche und Trefferzahl links, rechts „Spalten…“, „Typkennfelder laden…“, „Katalogverwaltung…“
+und „In das Projekt übernehmen“. S trägt im Kopf Marke, Art, Name und die Infoknöpfe, in der Knopfleiste Vergleichen…, Schloss
+setzen…, Löschen, Bearbeiten…, Neu…. Schloss setzen… und Löschen wirken auf den Katalog der Art des gewählten Satzes; Neu… legt
+immer eine Kältemaschine an.
 
 ### 4.3 Trennlinie
 
@@ -259,14 +275,22 @@ Wirt zusätzlich in den Kopf der Detailzeile (`SatzKopfKnoepfe`, rechts vor „B
 ohne Überlagerung erreichbar; solange die Überlagerung offen ist, zeichnet der Baustein sie im Kopf nicht, und sie
 stehen in der Knopfzeile der Überlagerung — je Ansicht an genau einer Stelle. Gespeichert wird „Alle Daten“ allein
 über das OK der Überlagerung; der Aufklapper trägt keinen eigenen Speicherknopf. Ohne Kurzangaben (die
-Ganglinien-Wirte) bleibt die Detailzeile wie oben. Gemessen am Heizkessel (Rollbereichprobe, zehn Fenster, 130 Zustände ohne Verstoß):
+Ganglinien-Wirte) bleibt die Detailzeile wie oben. Wärmebedarf/Kältebedarf extern weicht davon ab (KA‑E‑23): Die Satzzeile trägt Kurzangaben, die Ganglinie steht mit Stammdaten und Deckung in der Bearbeiten-Überlagerung. Gemessen am Heizkessel (Rollbereichprobe, zehn Fenster, 130 Zustände ohne Verstoß):
 die Zusammenfassung eine Zeile hoch (29 px in 1 280 × 800); die Projektliste folgt der Trennlinie (138 px wie
 zugeklappt, 214 px mit der Trennlinie unten, 85 px oben), die Katalogliste gibt nur die Höhe der Detailzeile ab
 (259 → 223 px).
 
 ### 4.4a Knopfleiste am gewählten Satz
 
-Heizkessel und Wärmepumpe führen eine Wahl je Zeile (KA‑E‑17): Das Kästchen markiert nur für Sammelaktionen, die gewählte Projektzeile ist farbig hervorgehoben, und der Klick auf die Zeile wählt. Die Knopfleiste des Katalogs steht in der Zeile „gewählter Satz“ und der Stift dort entfällt (KA‑E‑18); Schloss setzen… und Löschen wirken nur auf Katalogsätze und sind beim Projektsatz mit dem Grund „Katalogsatz wählen“ weich gesperrt (KA‑E‑19). Bearbeiten… im Kopf des Bereichs „Im Projekt“ entfällt, „In die Datenbank übernehmen…“ und „Aus dem Projekt entfernen“ bleiben (KA‑E‑20); der Schalter `KnopfleisteAmSatz` begrenzt die Geltung auf diese zwei Dialoge (KA‑E‑21). Bei der Wärmepumpe öffnet Bearbeiten… für Projekt- und Katalogsatz dieselbe Überlagerung aus Satzdaten und Anlage (KA‑E‑22). Alle Wirte der Katalogauswahl tragen die Knopfleiste am gewählten Satz; die Knopfmatrix K/S/D und die Abschnitte 4.2 und 4.4 gelten mit dieser Verschiebung (Fußleiste des Katalogs → Zeile ‚gewählter Satz‘). Dialoge ohne Katalogeditor haben kein Neu…, Dialoge ohne Vergleich kein Vergleichen…; Wärmebedarf extern, Stromganglinie und Gebäude führen zusätzlich ‚Vergrößern‘ am Satz.
+Heizkessel und Wärmepumpe führen eine Wahl je Zeile (KA‑E‑17): Das Kästchen markiert nur für Sammelaktionen, die gewählte Projektzeile ist farbig hervorgehoben, und der Klick auf die Zeile wählt. Die Knopfleiste des Katalogs steht in der Zeile „gewählter Satz“ und der Stift dort entfällt (KA‑E‑18); Schloss setzen… und Löschen wirken nur auf Katalogsätze und sind beim Projektsatz mit dem Grund „Katalogsatz wählen“ weich gesperrt (KA‑E‑19). Bearbeiten… im Kopf des Bereichs „Im Projekt“ entfällt, „In die Datenbank übernehmen…“ und „Aus dem Projekt entfernen“ bleiben (KA‑E‑20); der Schalter `KnopfleisteAmSatz` begrenzt die Geltung auf diese zwei Dialoge (KA‑E‑21). Bei der Wärmepumpe öffnet Bearbeiten… für Projekt- und Katalogsatz dieselbe Überlagerung aus Satzdaten und Anlage (KA‑E‑22). Alle Wirte der Katalogauswahl tragen die Knopfleiste am gewählten Satz; die Knopfmatrix K/S/D und die Abschnitte 4.2 und 4.4 gelten mit dieser Verschiebung (Fußleiste des Katalogs → Zeile ‚gewählter Satz‘). Dialoge ohne Katalogeditor haben kein Neu…, Dialoge ohne Vergleich kein Vergleichen…; Wärmebedarf extern, Stromganglinie und Gebäude führen zusätzlich ‚Vergrößern‘ am Satz. „Vergleichen…“ führt der Baustein selbst als ersten Knopf am Satz und vergleicht die Kreuze beider Listen zusammen, ohne Kreuze die zuletzt gewählte Projektzeile mit dem zuletzt gewählten Katalogsatz (KA‑E‑24). Unter zwei oder über drei Zeilen ist er weich gesperrt und nennt den Grund; die Herkunft jedes Satzes steht im Spaltenkopf des Vergleichs. Wärmebedarf extern folgt dem Aufbau der Wärmepumpe (KA‑E‑23).
+
+**Umbruch, Breite und Infoknöpfe (KA‑E‑27, gebaut in KM‑L1):** Die Knopfleiste am gewählten Satz bricht um: Reicht die
+Breite nicht, stehen die Knöpfe in einer zweiten Zeile, rechtsbündig in derselben Reihenfolge; kein Knopf ragt über den Rand des
+Dialogs, kein Knopf überdeckt einen anderen, und die Zeile bekommt keinen waagerechten Rollbalken. Das gilt für alle Wirte. Die
+Knopfleiste trägt nur Satzaktionen (Vergleichen…, Schloss setzen…, Löschen, Bearbeiten…, Neu…, wo vorhanden „Vergrößern“);
+Katalogfunktionen ohne Satzbezug stehen in der Kopfzeile des Katalogs neben „Spalten…“. Die Infoknöpfe „Grundlagen“ und
+„Berechnung“ stehen bei der Kältemaschine im Kopf der Satzzeile unmittelbar nach dem Satznamen — so wie der Infoknopf im
+Dialogkopf nach dem Titel steht —, als Sinnbilder mit Tooltipp; bei offener Satz-Überlagerung stehen sie dort (4.4, ÜS2).
 
 ### 4.5 Mehrfachauswahl
 
@@ -320,6 +344,17 @@ Spaltenwahl und berührt die Kästchen der Mehrfachwahl nicht. Sein Klick wählt
 Projektzeile ihre Projektkopie in der Satz-Überlagerung (nur, wo der Wirt den Weg der Projektkopie hat), eine gesperrte
 Katalogzeile die Satz-Überlagerung nur lesend, eine ungesperrte den Katalogeditor (KA‑E‑13). „Bearbeiten…“ in den
 Bereichsleisten bleibt der Weg für mehrere gewählte Sätze.
+
+**Zweispaltige Überlagerung mit Gerätesteckbrief (KA‑E‑25, Anwenderentscheid 12.10.2026):** Die Satz-Überlagerung eines
+einzelnen Satzes steht bei allen Wirten zweispaltig: links, schmal, die Projektfelder des Wirts (Träger, Grenzleistung,
+Vor- und Rücklauf, Senken, Ausrichtung — was der Wirt hat; beim Katalogsatz entfällt dieser Block) und darunter die Gruppe
+„Gewähltes Gerät“ (bei Wärme- und Kältebedarf extern „Gewählter Lastgang“) mit dem Baustein `Geraetesteckbrief`; rechts die
+Kenndaten mit „Alle Daten“. Der Steckbrief ist lesend und nennt die wichtigsten Daten des Satzes in 8 bis 14 Zeilen:
+Beschriftung und Einheit aus dem Katalogprofil, Zahlen im Anzeigeformat, ein Schalter als Ja/Nein, ein fehlender Wert als
+„—“, der Name immer, am Projektsatz Invest und Betrieb der Anlage. Er liest denselben Feldsatz, den die Felder rechts
+bearbeiten, und folgt jeder Eingabe im selben Zeichenlauf; abgeleitete Werte zeigt er nur, wo der Kern sie liefert
+(Arbeitspunkt der Wärmepumpe). Unter 900 px Breite stehen die Spalten untereinander (Regeln `.epos-satz-zweispaltig*`, bei
+der Wärmepumpe `.epos-wp-abschnitte`); in der Detailzeile bleibt der Aufbau einspaltig. Die Infoknöpfe bleiben an ihrem Ort.
 
 ### 4.7 Tastatur
 
@@ -380,6 +415,14 @@ ohne die sicheren Abstände des Geräts (Statusleiste und Home-Anzeige des iPads
 vollen Fensterhöhe halten sie frei, gemessen zusätzlich in den iPad-11-Zoll-Fenstern 1 180 × 820, 1 194 × 834,
 1 210 × 834 und 834 × 1 194 mit 24 px oben und 20 px unten.
 
+**Breitenregel (KA‑E‑27, gebaut in KM‑L1):** Der Dialog folgt der Fensterbreite: Er nimmt die Breite des Fensters
+abzüglich der sicheren Abstände und des Dialogrands, ohne festes Höchstmaß darunter; schmaler als das Fenster wird er nur,
+wo der Inhalt es nicht braucht. Was in der Breite nicht passt, regelt der Inhalt selbst: Die Katalogliste lässt Spalten nach
+ihrem Rang fallen (Spaltenregel der `Katalogliste`), die Knopfleiste am gewählten Satz bricht um (4.4a), die Kopfleisten von
+Projekt und Katalog brechen nicht um und zeigen in der Kompaktstufe ihre Knöpfe als Sinnbild mit Tooltipp. In keinem Fenster
+liegt ein Knopf außerhalb des Dialogs oder über einem anderen, und weder Dokument noch Dialogkörper rollen waagerecht; das hält
+die Rollbereichprobe mit einer Messung „kein Knopf außerhalb des Dialogrands, keine Überdeckung“ (Abschnitt 8, Stufe KM‑L1).
+
 ### 4.9 Zuschnitt je Dialog (Randnotiz)
 
 | Dialog | Projekt-Kopfleiste | Katalog-Fußleiste | Detailzeile aufgeklappt | Überlagerung |
@@ -392,8 +435,9 @@ vollen Fensterhöhe halten sie frei, gemessen zusätzlich in den iPad-11-Zoll-Fe
 | Wärmepumpe | Umstellen | Schloss, Löschen, Bearbeiten | Kenndaten; Projektsatz: Kosten | Anlage… (`WaermepumpeAnlageDialog`) |
 | Gebäude | — | Neu, Import, Baustoffzuordnungen, Schloss, Löschen | Kenndaten; Projektsatz: Wohnfläche, Ausrichtung, Simulation, Export | Gebäudedaten… |
 | Bedarfsprofile | Jahressumme | Neu, Typ ändern, DB ändern, Schloss, Löschen | Verbrauch, Temperatur, Kalender | — |
-| Wärmebedarf extern, Strom-, Solarthermie-, PV-Ganglinie | — | Speichern unter, Schloss, Löschen, Bearbeiten (Solarthermie und PV: Vergleichen, Schloss, Löschen, Import) | Ganglinie mit Kennzahlen; Solarthermie und PV davor Name, Beschreibung (PV: Raster, Jahresarbeit, Nennleistung) | — |
-| Kältemaschine | Summe kW Kälte | Vergleichen, Schloss, Löschen, Bearbeiten · Typkennfelder laden, Katalogverwaltung | Projektsatz: Anlagenfelder, Kosten, Kenndaten (Kennlinie, Teillast); Katalogsatz: Kenndaten | — (Wärmepumpen im Kühlbetrieb als Zeile unter der Auswahl) |
+| Wärmebedarf/Kältebedarf extern (KA‑E‑23) | Kanal, Art | Vergleichen, Schloss, Löschen, Bearbeiten, Neu (Importkette) | Kanal und Art, Jahresarbeit, Vollbenutzungsstunden, Deckung; Überlagerung: Stammdaten, Ganglinie (Import, Speichern unter), Deckung | — |
+| Strom-, Solarthermie-, PV-Ganglinie | — | Speichern unter, Schloss, Löschen, Bearbeiten (Solarthermie und PV: Vergleichen, Schloss, Löschen, Import) | Ganglinie mit Kennzahlen; Solarthermie und PV davor Name, Beschreibung (PV: Raster, Jahresarbeit, Nennleistung) | — |
+| Kältemaschine (KA‑E‑26, KA‑E‑27; gebaut 5.10 und 5.10a) | Summe kW Kälte über Kältemaschinen und Wärmepumpen im Kühlbetrieb; Spalte „Art“; Entfernen schaltet bei einer Wärmepumpe nur den Kühlbetrieb aus | Katalogkopf: Spalten, Typkennfelder laden, Katalogverwaltung, In das Projekt übernehmen; Satzzeile: Vergleichen (nur eine Art), Schloss, Löschen, Bearbeiten, Neu (legt eine Kältemaschine an); Liste mit Kältemaschinen und Wärmepumpen mit Kühlkennlinie, Spalte „Art“ | je Art Kurzangaben und Zeile „Zulässigkeit“; Infoknöpfe im Kopf neben dem Satznamen | Kältemaschine: Anlagenfelder, Rückkühlwerk, Kosten, Kenndaten (Kennlinie, Teillast); Wärmepumpe: Bearbeiten… weich gesperrt (bearbeitet im Wärmepumpendialog), keine Rückkühlgruppe; Spalte „Rang“ in „Im Projekt“ |
 
 **Präzisiert in DZ1 (Anwenderentscheid 10.10.2026: „Alle Dialoge mit CSV-Import … sollen unter ‚Gewählter
 Satz‘ analog zum Dialog Wärmebedarf extern den Lastgang darstellen“):** Alle vier Ganglinien-Dialoge übergeben der
@@ -665,6 +709,8 @@ Wärmepumpe, Pufferspeicher).
   bleibt (Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage). Die Meldung danach (Banner) nennt
   Zahl und Namen.
 
+**Gerätesteckbrief (KA‑E‑25):** In der Satz-Überlagerung stehen links unter „Anlage im Projekt“ Brennstoff Variante und die Auslegung für Verteilung, darunter „Gewähltes Gerät“ (Name, Hersteller, Brennwert, Brennstoff, Leistung, Mindestleistung, η₃₀, Wirkungsgrade Gas und Öl, Bereitschaftsverlust, Vorlauf, am Projektsatz Invest und Betrieb); rechts die Kenndaten.
+
 ### 5.4 Wie gebaut (Stufe 3, BHKW)
 
 Das BHKW folgt dem Heizkessel (5.3); hier steht nur, was abweicht.
@@ -688,6 +734,8 @@ Das BHKW folgt dem Heizkessel (5.3); hier steht nur, was abweicht.
   Anlage, Senken und Zeitprogramm.
 - **Neu…:** fragt zuerst den Namen und öffnet dann den Katalogeditor (`BhkwKatalogDialog` braucht ihn); der Knopf
   steht wie beim Heizkessel rechts im Katalogfuß.
+
+**Gerätesteckbrief (KA‑E‑25):** Links stehen Brennstoff Variante, Grenzleistung samt Herleitung, Vor- und Rücklauf und Senken, darunter „Gewähltes Gerät“ (Name, Hersteller, Energieträger, P_el, P_th, η_el, η_th, η gesamt, Grenzleistung, Mindestlaufzeit, höchster Rücklauf, Wartung, am Projektsatz Invest und Betrieb).
 
 ### 5.5 Wie gebaut (Stufe 3, Pufferspeicher)
 
@@ -719,6 +767,8 @@ Der Pufferspeicher folgt dem BHKW (5.4); hier steht nur, was abweicht.
   Katalogsätze entstehen über die Katalogverwaltung im Menü, über „Speichern unter" im Katalogeditor oder über den
   Rückweg.
 
+**Gerätesteckbrief (KA‑E‑25):** Der Puffer führt in der Überlagerung keine Projektfelder; links steht allein „Gewähltes Gerät“ (Name, Hersteller, Speichertyp, Volumen, Bereitschaftsverluste, am Projektsatz Verwendung, Vor- und Rücklauf aus den Projektangaben, Invest und Betrieb).
+
 ### 5.6 Wie gebaut (Stufe 3, Stromspeicher)
 
 Der Stromspeicher folgt Heizkessel und BHKW (5.3, 5.4); hier steht nur, was abweicht.
@@ -749,6 +799,8 @@ Der Stromspeicher folgt Heizkessel und BHKW (5.3, 5.4); hier steht nur, was abwe
 - **Löschen:** Der Projektdialog hatte keinen Löschknopf; jetzt steht er im Katalogfuß (Rückfrage, mehrere mit
   Überspringen der gesperrten), geschrieben über `StromspeicherStammCtrl.Loeschen`.
 
+**Gerätesteckbrief (KA‑E‑25):** Links stehen der Energieträger der Anlage und „Gewähltes Gerät“ (Name, Hersteller, Typ, Kapazität, Leistung, Wirkungsgrad, Ladezustand, Zyklen, Degradation, Standby, Selbstentladung, Modulkosten, am Projektsatz Invest und Betrieb).
+
 ### 5.7 Wie gebaut (Stufe 3, Solarkollektoren)
 
 Die Solarkollektoren folgen Heizkessel und BHKW (5.3, 5.4); hier steht nur, was abweicht.
@@ -775,6 +827,8 @@ Die Solarkollektoren folgen Heizkessel und BHKW (5.3, 5.4); hier steht nur, was 
   Anlage und die Senken (`Z_AnlageSenke`); die Ergebnistabellen der Simulation verweisen nicht auf die Kopie.
 - **Neu…:** fragt zuerst den Namen und öffnet dann den `SolarkollektorKatalogDialog` im Modus Neu; danach ist der neue
   Satz gewählt. „Bearbeiten…“ auf einen einzelnen ungesperrten Satz öffnet denselben Editor im Modus Bearbeiten.
+
+**Gerätesteckbrief (KA‑E‑25):** Links stehen das Kollektorfeld (Anzahl, Ausrichtung, Albedo, Solarkreis, Senken) und „Gewähltes Gerät“ (Name, Hersteller, Kollektortyp, Bezugs-, Brutto- und Aperturfläche, η₀, k₁, k₂, Kdir, Kdiff, am Projektsatz Invest und Betrieb).
 
 ### 5.8 Wie gebaut (Stufe 3, Wärmepumpe)
 
@@ -810,6 +864,8 @@ Die Wärmepumpe folgt dem BHKW (5.4); hier steht nur, was abweicht.
   der Übergabegrenze. Anlagenbezogen bleiben Betriebsart, Temperaturen, Bivalenz, Heizstab, Sperrzeiten und
   Zeitprogramm, die Quellfelder `WQ_*`, Einbindung, Vorwärmbetrieb, `Vorlauf_Max` und die Senken; die Rückfrage nennt es.
 
+**Gerätesteckbrief (KA‑E‑25):** Links unter „Auslegung für Verteilung“ steht „Gewähltes Gerät“ mit 14 Zeilen samt Heizleistung und COP am eingestellten Vorlauf (Kern `Kennlinienarbeitspunkt`).
+
 ### 5.9 Wie gebaut (Stufe 3, Photovoltaik)
 
 Die Photovoltaik folgt Heizkessel, BHKW und Stromspeicher (5.3, 5.4, 5.6); hier steht nur, was abweicht.
@@ -840,6 +896,8 @@ Die Photovoltaik folgt Heizkessel, BHKW und Stromspeicher (5.3, 5.4, 5.6); hier 
   Modulkatalog (`ModulKatalogDialog`, Parameter `Vorwahl`) mit Neu…, Duplizieren…, Löschen und Import…; der bisherige Knopf
   „Modul Bearbeiten…" öffnete den Modulkatalog ohne Vorwahl auch ohne gewählten Satz. Ist nur ein gesperrter Satz
   gewählt, ist Neu… allein über einen ungesperrten Satz oder die Verwaltung im Menü erreichbar.
+
+**Gerätesteckbrief (KA‑E‑25):** Links stehen der Anlagenblock (Neigung, Azimut, Träger, Modulanzahl, Ertragsmodell, Stränge) und „Gewähltes Gerät“ (Modul, Hersteller, Technologie, P_MPP, Wirkungsgrad, Länge, Breite, α, β, γ, T_NOCT, U_MPP, I_MPP, am Projektsatz Invest und Betrieb).
 
 ### 5.10 Wie gebaut (Stufe 5, Kältemaschine)
 
@@ -872,7 +930,92 @@ Die Kältemaschine folgt dem BHKW (5.4); hier steht nur, was abweicht.
 - **Nähte:** `KaeltemaschineAnlageHuelle` (plattformfrei) reicht Vergleich, Schloss, Katalogloeschen, Kostensumme und
   Kenndatenbilder; die Windows-Schale ergänzt in `KaeltemaschineAnlageFensterHuelle` die Kostenknöpfe
   (`ErzeugerKostenwege`) und den Katalogeditor samt „Import…". Auf iOS fehlen die Kostenknöpfe.
-- **Wärmepumpen im Kühlbetrieb:** Die Schalter stehen als Zeile unter der Katalogauswahl und werden beim OK geschrieben.
+- **Wärmepumpen im Kühlbetrieb:** stehen mit in Katalog und Projektliste (5.10a); die Zeile unter der Katalogauswahl entfällt.
+
+### 5.10a Wie gebaut (KM‑L1/KM‑K1, Kältemaschine mit Wärmepumpen)
+
+Entscheide KA‑E‑26 und KA‑E‑27 (Sichtabnahme des Kältemaschinen-Dialogs, 12.10.2026). Rechenweg, Schema und Simulation
+bleiben unberührt — der Lauf kennt Wärmepumpen im Kühlbetrieb als Kälteerzeuger —, ebenso die Anlagengruppe „Rückkühlung“.
+Der Dialog bleibt Wirt der `Zweispaltenauswahl` (Dialogname `Kaeltemaschine`); hier steht, was er zusätzlich kann.
+
+**Kernweg.** `KuehlerzeugerKatalogCtrl` (Kern, plattformfrei) führt das gemeinsame Profil (Schlüssel `KUEHLERZEUGER`:
+„Art“ vorn, die Spalten der Kältemaschine, „Quelle“, Verwendungsspalte), die Katalogzeilen beider Arten, die
+Projektwärmepumpen im Kühlbetrieb (über `Kaeltefolge.Lesen`, eine Zeile je Projektkopie), das Übernehmen, das Schalten des
+Kühlbetriebs samt Rang und das Zurücknehmen. `KaeltefolgeCtrl` trägt dazu `RangAnhaengen`, `RangEntfernen` und
+`RaengeWiederherstellen`. Die Hülle `KaeltemaschineAnlageHuelle` reicht die Wege als Gaben; die Oberfläche fragt keine
+Datenbank. Nachweis: `KuehlerzeugerKatalogCtrlTests` gegen eine Kopie der Testdatenbank.
+
+**Katalog.** Eine Liste mit zwei Arten: die Kältemaschinen aus `Tab_Kaeltemaschine_STAMM` (Schlüssel = ID) und die
+Katalog-Wärmepumpen aus `Tab_WP_STAMM`, die eine Kühlkennlinie führen (Zeilen in `Tab_Kenndaten_Kuehlung_STAMM`; Schlüssel
+„WP“ + ID). Die Spalte „Art“ nennt „Kältemaschine“ oder „Wärmepumpe“. Kühlleistung und EER einer Katalog-Wärmepumpe stehen
+am festen Bezugspunkt 7 °C Kaltwasser bei der Quelle nach EN 14511 (35 °C bei Luft-Wärmepumpen, 30 °C bei Sole und Wasser),
+über `Kuehlkennlinie` interpoliert; deckt die Kennlinie 7 °C nicht ab, gilt der Wert an der kleinsten Kaltwasser-Stützstelle
+(`Bezugswert.Rueckfall`). Spalten, die eine Art nicht kennt (Rückkühlart, Geräteart bei der Wärmepumpe; Quelle bei der
+Kältemaschine), bleiben leer. Suche, Spaltenwahl, Spaltenfilter, Schloss- und Verwendungsmarke gelten über beide Arten; die
+Verwendungsmarke einer Wärmepumpe folgt den Wärmepumpen im Kühlbetrieb.
+
+**Übernehmen.** Eine Kältemaschine wie in 5.10. Eine Wärmepumpe wird Projektwärmepumpe mit Kühlbetrieb — dasselbe Gerät wie
+im Wärmepumpendialog: `KuehlerzeugerKatalogCtrl.WaermepumpeUebernehmen` legt die Projektkopie über `WPCtrl.CopyFromStamm`
+(idempotent) und die Anlagenzeile über den einen Schreibweg der Erzeuger (`WizardCtrl.Add_WP_Waermeerzeuger`, mit den
+Vorbelegungen des Wärmepumpendialogs: Stromträger, Gerätedaten, Vorlauf aus den Kennlinien, Einbindung) sofort an; danach
+setzt allein `WPCtrl.KuehlkonfigurationSchreiben` den Kühlbetrieb (eine neue Kopie mit leerem Kühlvorlauf und
+Hilfsstromanteil, eine vorhandene behält ihre Werte). Steht das Gerät schon mit einer Anlage im Projekt, entsteht keine zweite
+Kopie und keine zweite Anlage: Nur der Kühlbetrieb wird eingeschaltet, der Banner sagt „bereits im Projekt — Kühlbetrieb
+eingeschaltet“ samt Rang. Die Wärmekaskade berührt das Übernehmen nicht.
+
+**Ablehnungen.** Der Kern lehnt den Kühlbetrieb benannt ab (`WPCtrl.KuehlbetriebSperrgrund`: ohne Kühlkennlinie im Projekt,
+mit Quellspeicher). Der Dialog zeigt den Grund im Banner („… steht im Projekt, der Kühlbetrieb bleibt aus: …“); eine eben
+angelegte Kopie samt Anlage bleibt vorgemerkt und geht mit Abbrechen wieder — nichts geschieht still. Eine Katalog-Wärmepumpe
+ohne Kühlkennlinie steht nicht in der Liste.
+
+**Kältefolge.** Beim Einschalten bekommen die Anlagen der Wärmepumpe einen Rang hinter den Erzeugern mit Rang
+(`KaeltefolgeCtrl.RangAnhaengen`: größter Rang des Projekts plus eins; ohne gepflegte Folge Rang 1, die Wärmepumpe deckt dann
+vor allen Erzeugern ohne Rang). Beim Ausschalten wird ihr Rang entfernt und die Folge geschlossen (`RangEntfernen`: die
+übrigen rücken lückenlos ab 1 nach). „Im Projekt“ zeigt den Rang als Spalte „Rang“ (auch bei Kältemaschinen); gepflegt wird
+die Reihenfolge weiter im Bereich „Kälte“ der Simulationskonfiguration.
+
+**Im Projekt.** Kältemaschinen-Anlagen und Wärmepumpen im Kühlbetrieb stehen in einer Liste mit den Spalten „Art“ und „Rang“,
+eine Zeile je Projektkopie der Wärmepumpe; die Kopfleiste summiert die Nennkälteleistung über beide (Kältemaschine:
+Nennkälteleistung mal Anzahl; Wärmepumpe: Kühlleistung am Kühlvorlauf mal Zahl ihrer Anlagen). „Aus dem Projekt entfernen“
+wirkt bei einer Kältemaschine wie in 5.10; bei einer Wärmepumpe merkt es das Ausschalten des Kühlbetriebs vor (Hinweis: Gerät,
+Anlage und Wärmekaskade bleiben), geschrieben wird beim OK (`KuehlbetriebSetzen` mit `an = false`, Rang weg) — das trifft alle
+Anlagen des Geräts. Abbrechen nimmt Übernahmen zurück (jüngste zuerst), schaltet in der Sitzung eingeschaltete Wärmepumpen
+wieder aus und schreibt die Ränge beim Öffnen zurück. Die Zeile „Wärmepumpen im Kühlbetrieb“ unter dem Dialog entfällt samt
+ihren Gaben (`Waermepumpen`, `KuehlbetriebSchreiben`).
+
+**Satzzeile und Bearbeiten….** Die Zusammenfassung beginnt mit der Art und zeigt je Art ihre Kurzangaben — Kältemaschine wie
+in 5.10 samt Rang, Wärmepumpe: Kühlleistung, EER, Kühlvorlauf, Quelle, Kühlträger, Zähler, Rang — und ihre Zeile
+„Zulässigkeit“: die Kältemaschine aus der Lesezeile ihrer Anlage (`KaeltemittelZulaessigkeitszeile.Anlage`), die Wärmepumpe
+aus demselben Weg mit dem Kältemittel der Kopie und dem Inbetriebnahmejahr ihrer ersten Anlage; ein Katalogsatz trägt kein
+Inbetriebnahmejahr und zeigt „nicht geprüft“. Bearbeiten… öffnet bei einer Kältemaschine die Überlagerung aus 5.10, links mit
+dem Gerätesteckbrief (`KaeltemaschineSteckbrief`: Name, Hersteller, Geräteart und Rückkühlart, Nennkälteleistung, EER/SEER,
+Kältemittel und GWP, Mindestteillast, Verdichterregelung, Kaltwasser-Vorlauf, Investition und Betrieb; Baustein
+`Geraetesteckbrief`, KA‑E‑25). Bei einer Wärmepumpe ist Bearbeiten… weich gesperrt mit dem Grund „Wärmepumpen bearbeitet der
+Wärmepumpendialog“ — die Überlagerung `WaermepumpeAnlageFelder` mit Kühlbetriebsgruppe braucht einen Schreibweg für EINE
+Anlagenzeile, den es plattformfrei noch nicht gibt. Das Rückkühlwerk steht nur bei einer Kältemaschine. Vergleichen…
+(KA‑E‑24) vergleicht nur Sätze einer Art; eine gemischte Auswahl sperrt weich mit dem Grund „Nur Sätze einer Art vergleichen“.
+Schloss setzen… und Löschen wirken auf den Katalog der Art des gewählten Satzes (Kältemaschine: Wege aus 5.10; Wärmepumpe:
+`WPStammCtrl.SchlossSetzen` und `WPStammCtrl.KatalogsatzLoeschen`). Neu… legt eine Kältemaschine an; der Tooltipp sagt, dass
+eine Wärmepumpe im Wärmepumpendialog entsteht.
+
+**Katalogdialog der Kältemaschine.** `KaeltemaschineKatalogDialog` bleibt, wie er ist: Kältemittel als Klappliste samt
+Lesezeilen und Schnellwahl „GWP aus Kältemittel übernehmen“ (KM4‑E3‑a).
+
+**Layout (KA‑E‑27, Stufe KM‑L1).** „Typkennfelder laden…“ und „Katalogverwaltung…“ stehen in der Kopfzeile des Katalogs
+neben „Spalten…“; die Infoknöpfe stehen im Kopf der Satzzeile unmittelbar nach dem Satznamen (die Satzzeile nimmt nur ihre
+Breite, höchstens 36 Zeichen); in der Knopfleiste der Satzzeile bleiben Vergleichen…, Schloss setzen…, Löschen, Bearbeiten…,
+Neu…. Umbruch und Breite nach 4.4a und 4.8, gemessen mit der Rollbereichprobe (Messung „Knopfrand“).
+
+**Entscheide zu den offenen Punkten (Anwender, 12.10.2026):**
+
+| Nr | Punkt | Entscheid |
+|---|---|---|
+| 1 | Platz einer neu in den Kühlbetrieb gesetzten Wärmepumpe in der Kältefolge | Rang hinter den Erzeugern mit Rang anhängen; beim Ausschalten Rang entfernen und Folge schließen; Spalte „Rang“ in „Im Projekt“ |
+| 2 | Vergleichen… mit gemischter Auswahl | weich gesperrt mit Grund „Nur Sätze einer Art vergleichen“ |
+| 3 | Darstellung der Zulässigkeit je Art | Lesezeile „Zulässigkeit“ in der Satzzeile je Art; Katalogsatz ohne Inbetriebnahmejahr „nicht geprüft“ |
+| 4 | Kühlleistung und EER eines Katalogsatzes der Wärmepumpe | fester Bezugspunkt 7 °C Kaltwasser, Quelle nach EN 14511; sonst kleinste Kaltwasser-Stützstelle mit Vermerk; Projektkopie am Kühlvorlauf |
+| 5 | Eine Wärmepumpe mit mehreren Anlagenzeilen | eine Listenzeile je Projektkopie, die Summe zählt jede Anlage; Entfernen schaltet den Kühlbetrieb des Geräts aus |
+| 6 | Infoknöpfe im Kopf der Satzzeile bei den übrigen Wirten | nur die Kältemaschine; die übrigen Wirte ziehen mit dem Gerätesteckbrief (WP1b) nach |
 
 ### 5.11 Wie gebaut (Stufe 4, Wärmebedarf extern und Stromganglinie)
 
@@ -911,6 +1054,8 @@ Datenbank haben sie nicht (die Zuordnung trägt nur Name und Kanal, die Projektk
 | Wärmebedarf extern, vorher | 1 110 × 153 px, 100 px | 1 118 × 154 px, 80 px | 982 × 154 px, 32 px |
 | Wärmebedarf extern, nachher | 1 110 × 152 px, 0 px | 1 118 × 160 px, 0 px | 982 × 208 px, 0 px |
 | Stromganglinie, nachher | 1 110 × 152 px, 0 px | 1 118 × 160 px, 0 px | 982 × 208 px, 0 px |
+
+**Gerätesteckbrief (KA‑E‑25):** Die Überlagerung von Wärme- und Kältebedarf extern steht zweispaltig: links Stammdaten, Deckung und „Gewählter Lastgang“ (Bezeichner, Kanal, Art, Jahresarbeit, Spitzenlast, Vollbenutzungsstunden, Deckung, Herkunft), rechts die Ganglinie.
 
 ### 5.12 Wie gebaut (Stufe 4, Solar- und PV-Ganglinie)
 
@@ -1061,7 +1206,7 @@ Der Gebäudedialog ist Wirt der Katalogauswahl V1 nach dem Muster des BHKW (5.4,
   (Gabe `SatzBearbeiten` des Bausteins); vor dem Löschen eines Satzes, aus dem eine ungespeicherte Zeile stammt, und vor
   Bearbeiten, Export, Rückweg und Simulation einer ungespeicherten Zeile entsteht deren Kopie über `ZeileAnlegen` statt über
   das stille Speichern der ganzen Liste (Abbrechen räumt sie ab); im Assistenten bleibt es bei der weichen Sperre.
-- **Offen:** Ein Jahreswärmebedarf in der Zusammenfassung fehlt (keine Quelle ohne Rechenlauf); die Bilder der Überlagerung
+- **Offen:** Ein Jahreswärmebedarf in der Zusammenfassung fehlt (keine Quelle ohne Rechenlauf) — Entscheid beim Umbau des Gebäudedialogs (GD, Sitzung Gebäudesimulation); die Bilder der Überlagerung
   „Simulation…" zeichnen ihr Modell in festem Maß und skalieren es seitentreu in die Behälterbreite.
 
 ## 6 Abwägung: die fünf Varianten
@@ -1121,6 +1266,8 @@ aus; breite Projektsätze, für die V1 keine Fläche hat, öffnen als Überlager
 | **3 Erzeuger** (umgesetzt 10.10.2026: BHKW Statuszeile #887, übrige Erzeuger Statuszeilen #905–#909, ÜS1/ÜS2 Statuszeilen #939/#940) | BHKW, Pufferspeicher, Stromspeicher, Solarkollektoren, Wärmepumpe (Überlagerung „Anlage…“), Photovoltaik (Überlagerung „Stränge und Wechselrichter…“) | je Gruppe Dialogtests und Proben |
 | **4 Bedarf und Zeitreihen** (Wärmebedarf extern, Stromganglinie, Solar-/PV-Ganglinie, Bedarfsprofile, Gebäude (Rückweg, Dialog, Überlagerung Simulation…) umgesetzt 11.10.2026 (#961 bis #964)) | Gebäude (Überlagerung, Rückweg auf die neue Regel gezogen, Verwaltungsbetriebsart ohne Projektbereich), Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie | Dialogtests, Proben, Gebäude-Rückwegtests |
 | **5 Kältemaschine und Abschluss** (Kältemaschine umgesetzt 11.10.2026, Statuszeile #960) | Katalogauswahl der Kältemaschine; Wiki-Quellen der Dialoge, Logbuch-Entwurf; Papier nach `ueberholt/` | Dokumentationswachen, Wiki-Gegenlese |
+| **KM‑L1 Knopfleiste und Breite** (KA‑E‑27, gebaut 12.10.2026) | Baustein `Zweispaltenauswahl`: Knopfleiste am gewählten Satz bricht um und bleibt in der Dialogbreite (alle Wirte); Dialograhmen folgt der Fensterbreite (4.8); Gabe für Katalogfunktionen in der Kopfzeile des Katalogs neben „Spalten…“; Infoknöpfe im Kopf der Satzzeile neben dem Satznamen; bei der Kältemaschine „Typkennfelder laden…“ und „Katalogverwaltung…“ in den Katalogkopf. Aufwand rund 1 bis 1,5 PT | bunit-Tests des Bausteins (Umbruchklasse, Ort der Katalogfunktionen und Infoknöpfe) und `KaeltemaschineAnlageDialogTests`; Rollbereichprobe mit der Messung „kein Knopf außerhalb des Dialogrands, keine Überdeckung“ samt Gegenprobe in den sechs Fenstern und den iPad-Fenstern; `fensterprobe.mjs` und `rasterprobe.mjs` grün |
+| **KM‑K1 Wärmepumpen mit Kühlfunktion in der Katalogauswahl der Kältemaschine** (KA‑E‑26, gebaut 12.10.2026; Bearbeiten… einer Wärmepumpe noch weich gesperrt) | gemeinsame Katalog- und Projektliste mit Spalte „Art“, Übernehmen und Entfernen je Art, Satzzeile und Bearbeiten… je Art, Vergleichen… nur innerhalb einer Art, Zeile „Wärmepumpen im Kühlbetrieb“ entfällt (5.10a); kein Schemaschritt, kein neuer Rechenweg. Aufwand rund 3 bis 4 PT | Hüllentests (`KaeltemaschineAnlageHuelleTests`: Katalog beider Arten, EER und Kühlleistung der Wärmepumpe, Ablehnungen durchgereicht, keine zweite Projektkopie), Dialogtests (Übernehmen, Entfernen, Banner, Vergleich gesperrt, Bearbeiten je Art), Kern-Tests des Kühlbetriebswegs unverändert grün; `katalogprobe.mjs` mit beiden Arten, Rollbereich- und Fensterprobe; Referenzlauf unverändert |
 
 **Proben sind Pflicht in jeder Stufe:** die Rasterprobe (virtualisierte `Katalogliste` mit fester Höhe aus
 dem Raster statt `max-height`), `fensterprobe.mjs` (Kopf und Fuß im eigenen Fenster; sie misst für diese

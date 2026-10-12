@@ -13,8 +13,8 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <b>Die Quellenwahl und der Weg „nur Projektdatei“</b> (Datenaustauschkonzept 16.1) im Gebäudeimportdialog, über die echte
 /// Hülle: die Wahl mit vier Einträgen (IFC, gbXML, IFC + Projektdatei, nur Projektdatei) setzt den Filter des Dateiwählers;
 /// eine gelesene <c>.sqproj</c> — auch über „alle Formate“ — blendet „Projektdatei dazuladen“ aus, zeigt „Quelle:
-/// Projektdatei“, die Nordrichtungsabfrage ohne Nordwinkel, die Herkunft „Projektdatei“ und den leisen Hinweis auf offene
-/// unbeheizte Räume; „IFC + Projektdatei“ öffnet nach dem Lesen die Wahl der Projektdatei.
+/// Projektdatei“, die Nordrichtungsabfrage ohne Nordwinkel, die Herkunft „Projektdatei“, die automatische Platzierung des
+/// Raums ohne Zone samt Marke und Rücknahme im Zonenbaum (E130/F3); „IFC + Projektdatei“ öffnet nach dem Lesen die Wahl der Projektdatei.
 /// </summary>
 public class GebaeudeImportNurProjektdateiDialogTests : EposBunitContext
 {
@@ -177,7 +177,7 @@ public class GebaeudeImportNurProjektdateiDialogTests : EposBunitContext
     }
 
     [Fact]
-    public void Nur_Projektdatei_bietet_die_Zonierung_und_meldet_offene_unbeheizte_Raeume_leise()
+    public void Nur_Projektdatei_bietet_die_Zonierung_und_platziert_den_unbeheizten_Raum()
     {
         IRenderedComponent<GebaeudeImportDialog> cut = Bauen(Sporthaus());
         Einlesen(cut);
@@ -185,9 +185,47 @@ public class GebaeudeImportNurProjektdateiDialogTests : EposBunitContext
         // Beide Zonierungen der Datei: der Umschalter DIN/Simulation bleibt, die Vorgabe ist Simulation.
         IElement umschalter = cut.Find("select.epos-gebimport-sq-zonierung");
         Assert.Equal(GebaeudeZonierungSchluessel.SIMULATION, umschalter.GetAttribute("data-zonierung"));
-        // Das unbeheizte Lager in der Zone „Verwaltung“: offen, bis die Beheizung entschieden ist — leise, kein Banner.
-        Assert.True(cut.Instance.NichtZugeordnet > 0);
-        Assert.Contains("unbeheizte Räume", cut.Find(".epos-gebimport-squnbeheizt").TextContent);
+        // Das unbeheizte Lager der Zone „Verwaltung“ platziert der Plan selbst in die Zone „unbeheizt“ (E130/F3): nichts
+        // bleibt offen, der leise Hinweis entfällt, die Meldung nennt Zahl und Ziel — unter dem Zonenbaum und am Schalter.
+        Assert.Equal(0, cut.Instance.NichtZugeordnet);
+        Assert.Empty(cut.FindAll(".epos-gebimport-squnbeheizt"));
+        IReadOnlyList<IElement> meldungen = cut.FindAll(".epos-gebimport-platzierung");
+        Assert.Equal(2, meldungen.Count);
+        Assert.All(meldungen, m => Assert.Contains("1 Räume ohne Zone automatisch platziert: 1 in „unbeheizt“", m.TextContent));
+        Assert.Single(cut.FindAll(".epos-gebimport-platzierung--schalter"));
+    }
+
+    /// <summary>Klappt die Zone eines Namens im Zonenbaum auf.</summary>
+    private static void ZoneAufklappen(IRenderedComponent<GebaeudeImportDialog> cut, string name)
+        => cut.FindAll(".epos-gebimport-zonenbaum tr.epos-gebimport-planzone")
+              .First(z => z.QuerySelector("input.epos-gebimport-zonenname")!.GetAttribute("value") == name)
+              .QuerySelector("button.epos-gebimport-aufklappen")!.Click();
+
+    [Fact]
+    public void Der_platzierte_Raum_traegt_die_Marke_und_laesst_sich_im_Zonenbaum_zuruecknehmen()
+    {
+        IRenderedComponent<GebaeudeImportDialog> cut = Bauen(Sporthaus());
+        Einlesen(cut);
+        ZoneAufklappen(cut, "unbeheizt");
+        IElement zeile = cut.Find("tr.epos-gebimport-planraum[data-platziert='unbeheizt']");
+        Assert.Contains("Lager", zeile.TextContent);
+        IElement marke = zeile.QuerySelector(".epos-gebimport-platziert")!;
+        Assert.Equal("automatisch platziert", marke.TextContent.Trim());
+        Assert.Contains("unbeheizt", marke.GetAttribute("title"));
+        // Die übrigen Räume stehen in ihren Zonen ohne Marke.
+        Assert.Single(cut.FindAll("tr.epos-gebimport-planraum[data-platziert]"));
+
+        // Zurücknehmen: der Raum steht wieder unter „Nicht zugeordnete Räume“, die Restzone entfällt, die Sperre am OK und
+        // der leise Hinweis auf offene unbeheizte Räume kehren zurück; der Schritt geht als RUECKNAHME an die Hülle.
+        IElement knopf = zeile.QuerySelector("button[data-aktion='ruecknahme']")!;
+        Assert.Contains("Lager", knopf.GetAttribute("aria-label"));
+        knopf.Click();
+        cut.WaitForAssertion(() => Assert.Equal(1, cut.Instance.NichtZugeordnet));
+        Assert.Contains("Lager", cut.Find(".epos-gebimport-offen").TextContent);
+        Assert.DoesNotContain(cut.FindAll("input.epos-gebimport-zonenname"), z => z.GetAttribute("value") == "unbeheizt");
+        Assert.Empty(cut.FindAll(".epos-gebimport-platzierung"));
+        Assert.NotEmpty(cut.FindAll(".epos-gebimport-squnbeheizt"));
+        Assert.NotEmpty(cut.FindAll(".epos-gebimport-okhinweis"));
     }
 
     [Fact]
@@ -218,6 +256,8 @@ public class GebaeudeImportNurProjektdateiDialogTests : EposBunitContext
             Assert.Equal("Source", en.Quellwahl);
             Assert.Equal("{0} + project file", en.QuelleMitProjektdatei);
             Assert.StartsWith("A zone of the project file", en.SqNurUnbeheizt);
+            Assert.Equal("placed automatically", en.PlanPlatziertMarke);
+            Assert.Equal("Undo", en.PlanZuruecknehmen);
         }
     }
 

@@ -126,6 +126,10 @@
                                                 {
                                                     <Kennzeichen Kurztext="@Texte.Ausgeliefert" />
                                                 }
+                                                @if (profil.Eingelesen)
+                                                {
+                                                    <Kennzeichen Kurztext="@Texte.Eingelesen" />
+                                                }
                                             </li>
                                         }
                                     </ul>
@@ -170,7 +174,23 @@
                                     aria-disabled="@(ProfilSperre is null ? null : "true")"
                                     title="@ProfilSperre" @onclick="ProfilLoeschenFragen">@Texte.KnopfLoeschen</button>
                         }
+                        @* NP7b (Konzept 6.5, E131): nur an der Kategorie DIN - die Werte kommen aus der Datei des Anwenders. *@
+                        @if (MitNormwerten && Kategorie?.IstNorm == true)
+                        {
+                            <button type="button" class="epos-knopf epos-raumnutzung-normwerte-einlesen"
+                                    @onclick="() => { _normMeldung = null; _normOffen = true; }">@Normtexte.KnopfEinlesen</button>
+                            @if (Weg.Normwerte?.Entfernen is not null)
+                            {
+                                <button type="button" class="epos-knopf epos-raumnutzung-normwerte-entfernen"
+                                        aria-disabled="@(EntfernenSperre is null ? null : "true")" title="@EntfernenSperre"
+                                        @onclick="EntfernenFragen">@Normtexte.KnopfEntfernen</button>
+                            }
+                        }
                     </div>
+                    @if (_normMeldung is not null)
+                    {
+                        <p class="epos-leisezeile epos-raumnutzung-normwerte-meldung" role="status">@_normMeldung</p>
+                    }
                 </section>
 
                 @* ------------------------------------------------ 2. Der Profileditor *@
@@ -188,6 +208,10 @@
                         @if (lesend)
                         {
                             <p class="epos-leisezeile epos-raumnutzung-lesend">@Texte.Ausgeliefert</p>
+                        }
+                        @if (s.Eingelesen)
+                        {
+                            <p class="epos-leisezeile epos-raumnutzung-eingelesen">@string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.EingelesenAus, s.WerteQuelle, s.WerteDatum)</p>
                         }
                         @if (s.IstLeer && s.Id > 0)
                         {
@@ -275,6 +299,9 @@
                                         <Zahlenfeld Bezeichnung="@Texte.LabelLuftAusserhalb" Einheit="@Lufteinheitstext(s)"
                                                     Min="0" Max="20" Wert="@s.AussenluftAusserhalb" Aktiv="@(!lesend)"
                                                     WertChanged="@(v => { s.AussenluftAusserhalb = v; })" />
+                                        <Zahlenfeld Bezeichnung="@Texte.LabelLuftPerson" Einheit="m³/(h·Person)"
+                                                    Min="0" Max="1000" Wert="@s.AussenluftPerson" Aktiv="@(!lesend)"
+                                                    WertChanged="@(v => { s.AussenluftPerson = v; })" />
                                     </KindInhalt>
                                 </Formularraster>
                             </KindInhalt>
@@ -478,6 +505,19 @@
 
         <Rueckfrage Offen="@(_frage is not null)" TitelText="@Texte.KnopfLoeschen" Frage="@(_frage ?? "")"
                     VorgabeNein="true" Beantwortet="FrageBeantwortet" JaText="@JaText" NeinText="@NeinText" />
+
+        @* NP7b: der Dialog „Normwerte einlesen" als Überlagerung (Titel und Kreuz trägt sie; Esc und Kreuz wie Abbrechen). *@
+        <Ueberlagerung Offen="@_normOffen" Titel="@Normtexte.Titel" Zusatzklasse="epos-ueberlagerung--breit"
+                       Geschlossen="() => _normOffen = false">
+            <KindInhalt>
+                @if (_normOffen)
+                {
+                    <NormwerteEinlesenDialog Weg="@Weg.Normwerte" Geschlossen="NormwerteGeschlossen" TitelText="" />
+                }
+            </KindInhalt>
+        </Ueberlagerung>
+        <Rueckfrage Offen="@_entfernenFrage" TitelText="@Normtexte.KnopfEntfernen" Frage="@EntfernenFrage"
+                    VorgabeNein="true" Beantwortet="EntfernenBeantwortet" JaText="@Normtexte.Ja" NeinText="@Normtexte.Nein" />
     }
 </div>
 
@@ -639,8 +679,6 @@
     {
         RaumnutzungArt.EposMuster => Texte.ArtEposMuster,
         RaumnutzungArt.Din18599 => Texte.ArtDin,
-        RaumnutzungArt.Sia2024 => Texte.ArtSia,
-        RaumnutzungArt.Vdi2078 => Texte.ArtVdi,
         _ => Texte.ArtEigen,
     };
 
@@ -700,6 +738,59 @@
         else _stand = null;
         _vorschau = null;
         _meldung = null;
+    }
+
+    // ------------------------------------------------------------------ Normwerte (NP7b)
+
+    private bool _normOffen;
+    private bool _entfernenFrage;
+    private string? _normMeldung;
+
+    private NormwerteTexte Normtexte => Weg.Normwerte?.Texte ?? new NormwerteTexte();
+
+    /// <summary>Bietet das Bündel „Normwerte einlesen…" an? Kein Delegat, kein Knopf.</summary>
+    private bool MitNormwerten => Weg.Normwerte is { Laden: not null, Einlesen: not null };
+
+    /// <summary>Steht der Dialog „Normwerte einlesen" offen? Prüfhilfe für die Tests.</summary>
+    public bool NormwerteOffen => _normOffen;
+
+    private int Eingelesene => Weg.Normwerte?.Eingelesene?.Invoke() ?? 0;
+
+    private string? EntfernenSperre => Eingelesene == 0 ? Normtexte.SperreKeine : null;
+
+    private string EntfernenFrage => string.Format(CultureInfo.CurrentCulture, Normtexte.FrageEntfernen, Eingelesene);
+
+    private void EntfernenFragen()
+    {
+        _normMeldung = null;
+        if (EntfernenSperre is string grund)
+        {
+            _normMeldung = grund;
+            return;
+        }
+        _entfernenFrage = true;
+    }
+
+    private async Task EntfernenBeantwortet(bool? ja)
+    {
+        _entfernenFrage = false;
+        if (ja != true || Weg.Normwerte?.Entfernen is null) return;
+        await NormwerteGeschrieben(Weg.Normwerte.Entfernen());
+    }
+
+    private async Task NormwerteGeschlossen(RaumnutzungErgebnis? e)
+    {
+        _normOffen = false;
+        if (e is not null) await NormwerteGeschrieben(e);
+    }
+
+    /// <summary>Nach Einlesen oder Entfernen: Meldung mit Zahl, Liste neu lesen, den Entwurf des gewählten Profils nachziehen.</summary>
+    private async Task NormwerteGeschrieben(RaumnutzungErgebnis e)
+    {
+        await Melden(e);
+        if (!e.Ok) return;
+        _normMeldung = e.Meldung;
+        if (_stand is not null && _stand.Ausgeliefert) Verwerfen();
     }
 
     private void NeuLaden()

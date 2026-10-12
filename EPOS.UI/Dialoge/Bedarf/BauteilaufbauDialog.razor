@@ -68,11 +68,19 @@
 
     <Katalograhmen BlattOffen="@_auswahl.BlattOffen">
         <Liste>
-            <Katalogliste Profil="@Profil" Zeilen="@_katalog"
+            <Katalogliste Profil="@Profil" Zeilen="@Listenzeilen"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
                           Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile" ZeileIstWahl="true"
                           Kaestchen="true" Gewaehlte="@_auswahl.Gewaehlte"
-                          GewaehlteChanged="BeiKaestchen" />
+                          GewaehlteChanged="BeiKaestchen">
+                <Werkzeug>
+                    @* "NUR GEEIGNETE" (BK-2b, E132): blendet die gekennzeichneten Aufbauten VOR der Liste aus (Vorgabe an).
+                       Bewusst kein Trichter auf der Spalte Eignung - eine Spalte mit gesetztem Filter weicht nie und
+                       schoebe die Liste im schmalen Fenster quer (katalogprobe BK2b). *@
+                    <Schalter Bezeichnung="@Texte.SchalterNurGeeignete" Wert="@NurGeeignete"
+                              WertChanged="NurGeeigneteGesetzt" />
+                </Werkzeug>
+            </Katalogliste>
         </Liste>
 
         <Auswahl>
@@ -470,7 +478,8 @@
 
         string ziel = wunsch ?? _gewaehlt;
         if (_katalog.Count == 0) { SatzWaehlen(""); return; }
-        SatzWaehlen(_katalog.Any(z => z.Schluessel == ziel) ? ziel : _katalog[0].Schluessel);
+        IReadOnlyList<Katalogfilterzeile> sichtbar = Listenzeilen.Count > 0 ? Listenzeilen : _katalog;
+        SatzWaehlen(_katalog.Any(z => z.Schluessel == ziel) ? ziel : sichtbar[0].Schluessel);
     }
 
     /// <summary>Die Liste meldet eine Zeile. <b>Geänderte Werte halten die Wahl</b> (Konzept 3.3).</summary>
@@ -520,13 +529,91 @@
                 <Auswahlfeld Bezeichnung="@Texte.LabelBauteilart" Eintraege="@Arteintraege"
                              Auswahl="@ArtIndex(d.Bauteilart)"
                              AuswahlChanged="i => Kopf(stand, () => d.Bauteilart = ArtWert(i))" />
+                @* GRUPPE UND KLASSE (BK-2b): feste Wahl aus dem Kern, die Klasse haengt von der Gruppe ab;
+                   ohne Gruppe setzt der Kern beim Speichern die Gliederung der Bauteilart. *@
+                <Auswahlfeld Bezeichnung="@Texte.LabelGruppe" Eintraege="@Gruppeneintraege"
+                             Platzhalter="@Texte.GruppeKeine" Auswahl="@Index(Bauteilkatalog.Gruppen(false), d.GruppeCode)"
+                             AuswahlChanged="i => Kopf(stand, () => GruppeSetzen(d, i))" />
+                <Auswahlfeld Bezeichnung="@Texte.LabelKlasse" Eintraege="@Klasseneintraege(d.GruppeCode)"
+                             Platzhalter="@Texte.KlasseKeine" Aktiv="@(Bauteilkatalog.Klassen(false, d.GruppeCode).Count > 0)"
+                             Auswahl="@Index(Bauteilkatalog.Klassen(false, d.GruppeCode), d.KlasseCode)"
+                             AuswahlChanged="i => Kopf(stand, () => d.KlasseCode = Code(Bauteilkatalog.Klassen(false, d.GruppeCode), i))" />
                 <Textfeld Bezeichnung="@Texte.LabelBeschreibung" Wert="@d.Beschreibung" Mehrzeilig="true" Zeilen="2"
                           WertChanged="w => Kopf(stand, () => d.Beschreibung = w ?? string.Empty)" />
-                <Textfeld Bezeichnung="@Texte.LabelQuelle" Wert="@d.Quelle"
-                          WertChanged="w => Kopf(stand, () => d.Quelle = w ?? string.Empty)" />
+                @if (d.Import)
+                {
+                    @* IMPORT (BK-2b): die Quelle eines eingelesenen Aufbaus ist Lesewert. *@
+                    <Textfeld Bezeichnung="@Texte.LabelQuelle" Wert="@d.Quelle" NurLesen="true" />
+                }
+                else
+                {
+                    <Textfeld Bezeichnung="@Texte.LabelQuelle" Wert="@d.Quelle"
+                              WertChanged="w => Kopf(stand, () => d.Quelle = w ?? string.Empty)" />
+                }
+                @* EIGNUNG (BK-2b): Lesewert mit Grund aus der Kernregel - nie von Hand setzbar. *@
+                <Textfeld Bezeichnung="@Texte.LabelEignung" NurLesen="true"
+                          Wert="@Eignungstext(ReferenceEquals(stand, _stand) ? _kennwerte : _neuKennwerte)" />
             </KindInhalt>
         </Formularraster>
+        @if (d.Import)
+        {
+            <Herleitungszeile Text="@Texte.ImportQuelle" />
+        }
     };
+
+    // --- Gruppe, Klasse, Eignung (BK-2b) ------------------------------------------
+
+    /// <summary>Steht „nur geeignete"? Vorgabe an bei jeder Öffnung; ausschalten gilt bis zum Schließen.</summary>
+    public bool NurGeeignete { get; private set; } = true;
+
+    private IReadOnlyList<Katalogfilterzeile>? _geeignete;
+    private IReadOnlyList<Katalogfilterzeile>? _geeigneteVon;
+
+    /// <summary>Die Zeilen der Liste: mit „nur geeignete" ohne die Zeilen mit Marke — EINMAL je Katalogladung gefiltert.</summary>
+    private IReadOnlyList<Katalogfilterzeile> Listenzeilen
+    {
+        get
+        {
+            if (!NurGeeignete) return _katalog;
+            if (_geeignete is null || !ReferenceEquals(_geeigneteVon, _katalog))
+            {
+                string leer = Katalogwert.Leer.Text;
+                _geeignete = _katalog.Where(z => z.Text(Katalogfilterprofil.SpEignung) is var t && (t.Length == 0 || t == leer)).ToList();
+                _geeigneteVon = _katalog;
+            }
+            return _geeignete;
+        }
+    }
+
+    private void NurGeeigneteGesetzt(bool wert) => NurGeeignete = wert;
+
+    private static IReadOnlyList<(int Id, string Text)> Gruppeneintraege
+        => Bauteilkatalog.Gruppen(false).Select((g, i) => (i + 1, Bauteilkatalog.GruppeText(false, g))).ToList();
+
+    private static IReadOnlyList<(int Id, string Text)> Klasseneintraege(string gruppe)
+        => Bauteilkatalog.Klassen(false, gruppe).Select((k, i) => (i + 1, Bauteilkatalog.KlasseText(false, k))).ToList();
+
+    /// <summary>Id (Rang + 1) eines Codes in seiner Liste; <c>null</c> = ohne.</summary>
+    private static int? Index(IReadOnlyList<string> codes, string code)
+    {
+        for (int i = 0; i < codes.Count; i++)
+            if (string.Equals(codes[i], code, StringComparison.Ordinal)) return i + 1;
+        return null;
+    }
+
+    private static string Code(IReadOnlyList<string> codes, int? id)
+        => id is int n && n >= 1 && n <= codes.Count ? codes[n - 1] : "";
+
+    /// <summary>Setzt die Gruppe; eine Klasse, die nicht zur neuen Gruppe gehört, fällt weg.</summary>
+    private static void GruppeSetzen(BauteilaufbauDaten d, int? id)
+    {
+        d.GruppeCode = Code(Bauteilkatalog.Gruppen(false), id);
+        if (!Bauteilkatalog.Klassen(false, d.GruppeCode).Contains(d.KlasseCode)) d.KlasseCode = "";
+    }
+
+    /// <summary>„geeignet" oder „für die Gebäudesimulation meist nicht geeignet – Grund".</summary>
+    private string Eignungstext(AufbauKennwerteDaten k)
+        => k.UngeeignetGrund.Length == 0 ? Texte.Geeignet : Texte.Ungeeignet + " – " + k.UngeeignetGrund;
 
     private IReadOnlyList<(int Id, string Text)> Arteintraege
         => Arten.Select((a, i) => (i, a.Text)).ToList();
@@ -591,7 +678,9 @@
             int n = d.Schichten.Count;
             string schichten = n == 1 ? Texte.SchichtenEins
                              : string.Format(CultureInfo.CurrentCulture, Texte.SchichtenZahl, n);
-            return ArtText(d.Bauteilart) + " · " + schichten + " · "
+            string gliederung = d.KlasseCode.Length > 0 ? Bauteilkatalog.KlasseText(false, d.KlasseCode) + " · " : "";
+            return ArtText(d.Bauteilart) + " · " + gliederung + schichten + " · "
+                   + (d.Import ? Texte.MarkeImport + " · " : "")
                    + (_auslieferung ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ);
         }
     }
@@ -617,8 +706,11 @@
     {
         new Stammblattwert(Texte.LabelBezeichner, d.Bezeichner),
         new Stammblattwert(Texte.LabelBauteilart, ArtText(d.Bauteilart)),
+        new Stammblattwert(Texte.LabelGruppe, Bauteilkatalog.GruppeText(false, d.GruppeCode)),
+        new Stammblattwert(Texte.LabelKlasse, Bauteilkatalog.KlasseText(false, d.KlasseCode)),
         new Stammblattwert(Texte.LabelBeschreibung, d.Beschreibung),
-        new Stammblattwert(Texte.LabelQuelle, d.Quelle)
+        new Stammblattwert(Texte.LabelQuelle, d.Quelle),
+        new Stammblattwert(Texte.LabelEignung, Eignungstext(_kennwerte))
     };
 
     private IReadOnlyList<Stammblattwert> Herkunftwerte
@@ -627,6 +719,8 @@
         {
             BauteilaufbauDaten d = _stand.Gespeichert;
             var liste = new List<Stammblattwert> { new(Texte.LabelHerkunft, d.Herkunft) };
+            // BK-2b: die Quelle eines Importsatzes als Lesewert neben der Marke.
+            if (d.Import && d.Quelle.Length > 0) liste.Add(new(Texte.LabelQuelle, d.Quelle));
             if (d.Quellkennung.Length > 0) liste.Add(new(Texte.LabelQuellkennung, d.Quellkennung));
             return liste;
         }

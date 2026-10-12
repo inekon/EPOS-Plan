@@ -3481,6 +3481,81 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrSa + " - vollstaendig: " + SchnellaufheizungSchema.Vollstaendig() +
                                   ", Einstellungen mit Schalter: " + SchnellaufheizungSchema.ZeilenMitSchalter() + " (erwartet True, 0).");
             }
+
+            // ---- Schritt KaelteArtSchema.SCHRITT (KWN-0): Art der Kaeltebedarfszeilen - Kaelte_Art (RAUM/PROZESS, Vorgabe
+            //      RAUM) an Z_Projekt_Kaeltebedarf und Z_ProjektWaermebedarf. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_KaelteArt.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jede Bestandszeile steht auf RAUM; ohne Prozesszeile aendert sich keine Zahl.
+            string nrKwn = KaelteArtSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKwn + " - Art der Kaeltebedarfszeilen: " + (KaelteArtSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKwn = new List<string>();
+                angelegt += KaelteArtSchema.Ausfuehren(berichtKwn);
+                foreach (string zeile in berichtKwn)
+                    Console.WriteLine("Schritt " + nrKwn + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKwn + " - vollstaendig: " + KaelteArtSchema.Vollstaendig() +
+                                  ", Zeilen mit Prozesskaelte: " + KaelteArtSchema.ZeilenMitProzess() + " (erwartet True, 0).");
+            }
+
+            // ---- Schritt RaumnutzungNormkategorienSchema.SCHRITT (NP6, E129): die leeren, ausgelieferten Kategorien
+            //      SIA 2024 und VDI 2078 des Katalogs der Nutzungsprofile entfallen; eine wider Erwarten befuellte wird eine
+            //      eigene; die Kategorie DIN bekommt die zwei Wohnprofile nach Tabelle 5 ohne Werte. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_RaumnutzungNormkategorien. Wiederholbar, kein DDL.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest eine Kategorie.
+            string nrNp6 = RaumnutzungNormkategorienSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrNp6 + " - Kategorien SIA 2024 und VDI 2078, Wohnprofile der DIN: " +
+                              (RaumnutzungNormkategorienSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtNp6 = new List<string>();
+                RaumnutzungNormkategorienSchema.Ausfuehren(berichtNp6);
+                foreach (string zeile in berichtNp6)
+                    Console.WriteLine("Schritt " + nrNp6 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrNp6 + " - vollstaendig: " + RaumnutzungNormkategorienSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt RaumnutzungNormwerteSchema.SCHRITT (NP7, E131): Aussenluft je Person und Herkunft der Werte
+            //      (Werte_Herkunft, Werte_Quelle, Werte_Datum) an Tab_Raumnutzungsprofil, leer. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_RaumnutzungNormwerte. Wiederholbar, reines DDL.
+            //
+            //      REFERENZLAUF UNVERAENDERT: alle vier Spalten stehen leer.
+            string nrNp7 = RaumnutzungNormwerteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrNp7 + " - Aussenluft je Person und Herkunft der Werte: " +
+                              (RaumnutzungNormwerteSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtNp7 = new List<string>();
+                angelegt += RaumnutzungNormwerteSchema.Ausfuehren(berichtNp7);
+                foreach (string zeile in berichtNp7)
+                    Console.WriteLine("Schritt " + nrNp7 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrNp7 + " - vollstaendig: " + RaumnutzungNormwerteSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt BauteilkatalogSchema.SCHRITT (BK-2, E132): Herkunft EIGEN/IMPORT (Neubau der vier Kopftabellen),
+            //      Gruppe und Klasse, Kennzeichen, Felder der Quelle und Abschnittstabellen am Baustoff- und Bauteilkatalog.
+            //      Aus DERSELBEN Quelle wie SchemaMigration.Schritt_Bauteilkatalog. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: der Bauteilweg liest keine neue Spalte.
+            string nrBk2 = BauteilkatalogSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBk2 + " - Bauteilkatalog (Herkunft, Gliederung, Kennzeichen, Felder): " +
+                              (BauteilkatalogSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBk2 = new List<string>();
+                angelegt += BauteilkatalogSchema.Ausfuehren(berichtBk2);
+                foreach (string zeile in berichtBk2)
+                    Console.WriteLine("Schritt " + nrBk2 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBk2 + " - vollstaendig: " + BauteilkatalogSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

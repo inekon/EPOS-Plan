@@ -329,6 +329,8 @@
     --epos-grundriss-zone-8: #e5c494;
     --epos-grundriss-zone-9: #cab2d6;
     --epos-grundriss-ohnezone: #d9d8d2;
+    --epos-grundriss-ziel-flaeche: #d9e8f7;   /* gewaehltes Ziel der Zuordnung in der Legende (AB2) */
+    --epos-grundriss-hervor: #c2410c;         /* Rand der hervorgehobenen Raeume ohne Zone (AB2) */
     --epos-grundriss-rand: var(--epos-text-leise);
 }
 
@@ -1972,6 +1974,15 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     border-color: var(--epos-karte-rahmen-hover);
 }
 
+/* Ein gesperrter Umschalter (Farbmodus der Gebaeudeansicht) sieht gesperrt aus: hart (disabled) wie weich
+   (aria-disabled, anklickbar, damit sein title den Grund nennt) in EINER Regel - sonst wirkt er aktiv und tut nichts. */
+.epos-diagramm-knopf:disabled,
+.epos-diagramm-knopf[aria-disabled="true"] {
+    color: var(--epos-text-sehr-leise);
+    border-style: dashed;
+    cursor: not-allowed;
+}
+
 /* Waehrend eines Zuges wechselt der Zeiger - sonst sieht man nicht, dass
    gerade geschoben wird. */
 .epos-diagramm--zieht { cursor: grabbing; }
@@ -2921,6 +2932,11 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     font-weight: 700;
 }
 
+/* Die Richtungsangabe ueber dem Schichtraster: Schicht 1 innen, die letzte aussen. */
+.epos-bauteilschicht-richtung {
+    margin: var(--epos-rand) 0 0;
+}
+
 @media (forced-colors: active) {
     .epos-ueberlagerung {
         border: 2px solid ButtonBorder;
@@ -3506,9 +3522,8 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 /* W14a-E-10-Q2 nur noch EINE Anordnung kennt: untereinander.            */
 /*                                                                      */
 /* Geblieben sind die Masken OHNE Pfeile, bei denen der Umbruch          */
-/* folgenlos ist: GebaeudetypDialog, TypProfilDialog,                    */
-/* KennlinienEditorDialog, WaermepumpeAnlageDialog,                      */
-/* WaermepumpeStammDialog.                                               */
+/* folgenlos ist: TypProfilDialog, ZapfprofilDialog,                     */
+/* KennlinienEditorDialog.                                               */
 /* ==================================================================== */
 
 .epos-auswahlpaar {
@@ -3758,6 +3773,15 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     white-space: nowrap;
     color: var(--epos-text-leise);
 }
+/* K5c (KA-E-23): die Bearbeiten-Ueberlagerung von Waerme-/Kaeltebedarf extern (WaermebedarfExternFelder) -
+   Stammdaten, Ganglinie und Deckung untereinander; die Knopfleiste der Ganglinie (Datei importieren…, Speichern
+   unter…) steht ueber der Grafik, die Infozeile (OP-2 bzw. Kuehlkanal) leise unter den Stammfeldern. Die
+   OP-2-Infozeile der Kopfleiste (epos-zweispalten-kanalinfo) ist ein Kanalhinweis und braucht keine eigene Regel. */
+.epos-wbx-felder { display: flex; flex-direction: column; gap: var(--epos-abstand); min-width: 0; }
+.epos-wbx-abschnitt { min-width: 0; }
+.epos-wbx-ganglinienleiste { margin-bottom: calc(var(--epos-abstand) / 2); }
+.epos-wbx-hinweis { margin: calc(var(--epos-abstand) / 2) 0 0; color: var(--epos-text-leise); }
+.epos-deckung { margin-bottom: calc(var(--epos-abstand) / 2); }
 .epos-formathinweis-knopf, .epos-dialog-kontext { display: inline-flex; flex: 0 0 auto; }
 
 /* ---- SPALTENWAHL UND VERWENDUNGSMARKE (Konzept 4.10) ----------------
@@ -4128,6 +4152,9 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten));
     overflow: hidden;
     box-sizing: border-box;
+    /* BREITENREGEL (KA-E-27, Konzept 4.8): Der Dialog folgt der Fensterbreite - kein Hoechstmass; was nicht passt,
+       regelt der Inhalt (Spaltenregel der Katalogliste, Umbruch der Knopfleiste am Satz). */
+    max-width: none;
 }
 
 .epos-ueberlagerung-inhalt > .epos-dialog:has(> .epos-zweispalten) {
@@ -4300,6 +4327,24 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
    sie brechen nicht um und geben nicht nach - zuerst kuerzen Name und Kenndaten des Satzes. */
 .epos-zweispalten-satzkopf > .epos-zweispalten-satzknoepfe { flex: 0 0 auto; display: inline-flex; flex-wrap: nowrap; align-items: center; gap: 8px; margin: 0 4px 0 4px; }
 .epos-zweispalten-satzknoepfe > * { flex: 0 0 auto; white-space: nowrap; }
+/* UMBRUCH DER KNOPFLEISTE (KA-E-27, Konzept 4.4a, KM-L1): Reicht die Breite des Dialogs nicht, rueckt die
+   Knopfleiste in eine zweite Zeile - rechtsbuendig, in derselben Reihenfolge; reicht auch die Zeile nicht, brechen
+   die Knoepfe selbst um. Kein Knopf ragt ueber den Rand des Dialogs, keiner ueberdeckt einen anderen, die Zeile
+   rollt nicht waagerecht. Gemessen: rollbereichprobe.mjs, Messung „Knopfrand". Gilt fuer alle Wirte. */
+.epos-zweispalten--knopfleiste-am-satz .epos-zweispalten-satzkopf { flex-wrap: wrap; row-gap: 4px; }
+/* Der Umbruch entscheidet an einer Grundbreite der Satzzeile (20 Zeichen), nicht an ihrem ganzen Inhalt: Erst kuerzen
+   Name und Kenndaten, dann rueckt die Knopfleiste in die zweite Zeile. */
+.epos-zweispalten--knopfleiste-am-satz .epos-zweispalten-satzkopf > .epos-zweispalten-satzzeile { flex: 1 1 20ch; }
+.epos-zweispalten--knopfleiste-am-satz .epos-zweispalten-satzkopf > .epos-zweispalten-satzknoepfe {
+    flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-end; row-gap: 4px; margin-left: auto; max-width: 100%; min-width: 0;
+}
+/* Infoknoepfe im Kopf der Satzzeile neben dem Satznamen (KA-E-27, Kaeltemaschine): die Satzzeile nimmt nur ihre
+   Breite, die Kopfknoepfe folgen dem Namen, die Knopfleiste steht rechts. */
+.epos-kaeltemaschine-anlage .epos-zweispalten-satzkopf > .epos-zweispalten-satzzeile { flex: 0 1 auto; max-width: 36ch; }
+/* Der Geraetesteckbrief der Kaeltemaschine (KA-E-25): links neben den Feldern der Satz-Ueberlagerung, schmal unter 900 px. */
+.epos-kaeltemaschine-satz--steckbrief { display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); gap: var(--epos-rand); align-items: start; }
+.epos-kaeltemaschine-satzfelder { min-width: 0; }
+@media (max-width: 900px) { .epos-kaeltemaschine-satz--steckbrief { grid-template-columns: minmax(0, 1fr); } }
 /* Die Zeile ist die Wahl auch in der Projektliste (AW1): die Klickflaeche fuellt die Namenszelle. */
 .epos-zweispalten-inhalt--zeilenwahl table.epos-raster.quickgrid > tbody > tr > td.epos-spalte-zeilenzelle { padding: 0; }
 /* AW3b: dasselbe fuer die von Hand gebauten Projektlisten (Waermebedarf extern, Stromganglinie, Gebaeude). */
@@ -6745,6 +6790,37 @@ table.epos-simerg-tabelle {
     color: var(--epos-text-leise);
 }
 
+/* Die Herkunftsmarke je Feld des Gebaeudedialogs (Entwurf GD 2.1, Welle GD-1): dieselben Farben wie die
+   Herkunft der Importzeilen - Datei im Quellblau, Vorgabe und geerbt leise kursiv, von Hand fett,
+   wirkungslos leise. Die Klasse ist der sprachneutrale Name der Herkunft. */
+.epos-gebk-marke {
+    display: inline-block;
+    margin-right: 0.4em;
+    padding: 0 0.4em;
+    border: 1px solid currentColor;
+    border-radius: 0.6em;
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+
+.epos-gebk-marke--datei {
+    color: var(--epos-quelle-text);
+}
+
+.epos-gebk-marke--vorgabe,
+.epos-gebk-marke--geerbt {
+    color: var(--epos-text-leise);
+    font-style: italic;
+}
+
+.epos-gebk-marke--hand {
+    font-weight: 600;
+}
+
+.epos-gebk-marke--wirkungslos {
+    color: var(--epos-text-leise);
+}
+
 .epos-gebimport-raum--umgestellt td.epos-gebimport-grund {
     font-weight: 600;
 }
@@ -6815,42 +6891,38 @@ table.epos-simerg-tabelle {
     min-width: 14em;
 }
 
-/* Die Baustoffe (Namensabgleich): Zahl der Schichten rechtsbuendig, die Klappliste so breit
-   wie ein Katalogname, Stoffwerte und Name brechen um. Die eigene Zuordnung steht fett, eine
-   verworfene Schicht und "ohne Treffer" leise; eine im Dialog geaenderte, noch nicht
-   gespeicherte Zuordnung traegt einen Randstreifen im Quellblau (im Kontrastmodus CanvasText,
-   gepunktet - verschieden vom gestrichelten Gelb). */
-.epos-gebimport-baustoffe td.epos-gebimport-zahl,
-.epos-gebimport-baustoffe th.epos-gebimport-zahl {
-    text-align: right;
+/* Die Baustoffwahl je Schicht in der Liste "Bauteilaufbauten" (AB3): Eine Schicht ohne Stoffwert
+   traegt Warnflaeche und gestrichelten Randstreifen, die Klappliste so breit wie ein Katalogname
+   und "Zuordnung entfernen" stehen in einem Flexkasten hinter dem Text und brechen mit ihm um. Eine
+   im Dialog geaenderte, noch nicht gespeicherte Zuordnung traegt einen gepunkteten Randstreifen im
+   Quellblau (im Kontrastmodus CanvasText) - verschieden vom gestrichelten Gelb. */
+.epos-gebimport-aufbauschichtliste > li.epos-gebimport-schicht--ohnewert {
+    background: var(--epos-warn-flaeche);
+    border-left: 4px dashed var(--epos-warn-rahmen);
+    padding-left: 0.4em;
 }
 
-.epos-gebimport-baustoffe td.epos-gebimport-materialname,
-.epos-gebimport-baustoffe td.epos-gebimport-stoffwerte {
-    white-space: normal;
-    min-width: 10em;
+.epos-gebimport-aufbauschichtliste > li.epos-gebimport-baustoff--vorgemerkt {
+    border-left: 4px dotted var(--epos-quelle-text);
+    padding-left: 0.4em;
 }
 
-.epos-gebimport-baustoffe select.epos-eingabe {
+.epos-gebimport-schichtwahl {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.4em;
+    align-items: center;
+    margin-left: 0.6em;
+}
+
+.epos-gebimport-schichtwahl select.epos-eingabe {
     width: 18em;
     max-width: 100%;
 }
 
-.epos-gebimport-abgleich--n7 {
-    font-weight: 600;
-}
-
-.epos-gebimport-abgleich--ohne,
-.epos-gebimport-abgleich--verworfen {
-    color: var(--epos-text-leise);
-}
-
-.epos-gebimport-baustoff--vorgemerkt td.epos-gebimport-baustoffwahl {
-    border-left: 4px dotted var(--epos-quelle-text);
-}
-
 @media (forced-colors: active) {
-    .epos-gebimport-baustoff--vorgemerkt td.epos-gebimport-baustoffwahl { border-left: 4px dotted CanvasText; }
+    .epos-gebimport-aufbauschichtliste > li.epos-gebimport-schicht--ohnewert { border-left: 4px dashed CanvasText; }
+    .epos-gebimport-aufbauschichtliste > li.epos-gebimport-baustoff--vorgemerkt { border-left: 4px dotted CanvasText; }
 }
 
 /* Der Grundriss des Gebaeudeimports (Stufe G6c, Welle D2) - der Baustein GebaeudeAnsicht und seine
@@ -7031,6 +7103,60 @@ table.epos-simerg-tabelle {
     border-style: dashed;
 }
 
+/* Zielwahl in der Legende (Auftrag AB2): im Farbmodus "Zonen" ist jeder Eintrag ein Knopf (aria-pressed).
+   Gewaehlt traegt er Flaeche und Rand der Marke, "nicht zugeordnet" ist kein Ziel und hebt nur hervor. */
+.epos-gebansicht-legende--zielwahl {
+    gap: 6px 8px;
+}
+
+.epos-gebansicht-zielknopf {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 6px;
+    min-height: var(--epos-touchziel);
+    padding: 4px 10px;
+    border: 1px solid var(--epos-grundriss-rand);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--epos-text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.epos-gebansicht-zielknopf:hover,
+.epos-gebansicht-zielknopf:focus-visible {
+    border-color: var(--epos-marke);
+}
+
+.epos-gebansicht-zielknopf[aria-pressed="true"] {
+    background: var(--epos-grundriss-ziel-flaeche);
+    border: 2px solid var(--epos-marke);
+    padding: 3px 9px;
+}
+
+.epos-gebansicht-zielknopf[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.epos-gebansicht-nutzung {
+    flex-basis: 100%;
+    color: var(--epos-text-leise);
+    font-size: 0.9em;
+}
+
+.epos-gebansicht-farbfeld--neu {
+    background: transparent;
+    border-style: dotted;
+}
+
+.epos-gebansicht-raum--hervor polygon {
+    stroke: var(--epos-grundriss-hervor);
+    stroke-width: 3px;
+}
+
 .epos-gebansicht-hinweise {
     margin: 0;
     padding-left: 1.2em;
@@ -7209,6 +7335,34 @@ table.epos-simerg-tabelle {
     margin-top: 8px;
 }
 
+/* DER GERAETESTECKBRIEF (Bausteine/Geraetesteckbrief.razor, WP1a): die wichtigsten Daten des gewaehlten
+   Satzes, lesend neben seinen Feldern. Das Raster aus Beschriftung und Wert nimmt die Regel des
+   Bauteilsteckbriefs (.epos-steckbrief-werte); hier steht nur, was er anders braucht - keine eigenen
+   Farben, die Herleitung leise unter ihrem Wert, ein langer Wert bricht um statt quer zu rollen. */
+.epos-geraetesteckbrief {
+    min-width: 0;
+}
+
+.epos-geraetesteckbrief-titel {
+    margin: 4px 0;
+    font-size: 0.9rem;
+}
+
+.epos-geraetesteckbrief-werte dt {
+    color: var(--epos-text-leise);
+}
+
+.epos-geraetesteckbrief-werte dd {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.epos-geraetesteckbrief-herleitung {
+    display: block;
+    color: var(--epos-text-leise);
+    font-size: 0.85em;
+}
+
 .epos-gebimport-aufbauzeile--offen td {
     border-bottom: 0;
 }
@@ -7231,6 +7385,9 @@ table.epos-simerg-tabelle {
     .epos-gebansicht-raum:focus-visible polygon { stroke: Highlight; }
     .epos-gebansicht-raum text { fill: CanvasText; }
     .epos-gebansicht-farbfeld { background: Canvas; border-color: CanvasText; }
+    .epos-gebansicht-zielknopf { border-color: ButtonText; }
+    .epos-gebansicht-zielknopf[aria-pressed="true"] { border-color: Highlight; outline: 2px solid Highlight; }
+    .epos-gebansicht-raum--hervor polygon { stroke: Highlight; }
     .epos-gebansicht-kante, .epos-gebansicht-oeffnung { stroke: CanvasText; }
     /* Befund ueber den Stufenschluessel: ohne Befund leer bzw. duenn, Koerper unlesbar gestrichelt, ohne
        Eigenschaften voll bzw. kraeftig, ohne Bauteil gepunktet - Farbfelder wie Kanten. */
@@ -7266,7 +7423,6 @@ table.epos-simerg-tabelle {
     gap: 6px;
 }
 
-.epos-gebimport-zuordnungskopf,
 .epos-gebimport-raumweg {
     display: flex;
     flex-wrap: wrap;
@@ -7274,7 +7430,6 @@ table.epos-simerg-tabelle {
     gap: 4px 12px;
 }
 
-.epos-gebimport-zuordnungskopf .epos-feld,
 .epos-gebimport-raumweg .epos-feld {
     flex: 1 1 12rem;
     min-width: 0;
@@ -7305,6 +7460,18 @@ table.epos-simerg-tabelle {
 
 .epos-gebimport-planraumname {
     padding-left: 1.5em;
+}
+
+/* Raeume ohne Zone, die der Plan selbst platziert hat (Entwurf GD 2.3, E130/F3): die Marke leise und kursiv
+   neben dem Raumnamen, der Grund im Tooltip; die Meldung "wie viele wohin" unter Zonenbaum und Schalter. */
+.epos-gebimport-platziert {
+    margin-left: 0.5em;
+    color: var(--epos-text-leise);
+    font-style: italic;
+}
+
+.epos-gebimport-platzierung {
+    margin-top: 0.25rem;
 }
 
 /* Die Projektdatei des CAD-Programms (Datenaustauschkonzept 16.4): Knoepfe neben der Dateizeile, die Bilanz als
@@ -10429,6 +10596,25 @@ table.epos-simerg-tabelle {
     font-weight: normal;
 }
 
+/* KA-E-24: die Herkunft eines Satzes im Spaltenkopf des Vergleichs (Projekt / Katalog) - leise vor dem Namen. */
+.epos-vergleich-herkunft {
+    margin-right: 4px;
+    font-size: 0.85em;
+    font-weight: normal;
+    color: var(--epos-text-leise);
+}
+
+/* VG1: im Vergleich rollt allein die Ueberlagerung - die Huelle der Tabelle rollt nicht mit (kein Rollbereich
+   im Rollbereich); lange Werte brechen in der Zelle um, statt die Ueberlagerung zu verbreitern. */
+.epos-raster-huelle.epos-vergleich-huelle {
+    overflow: visible;
+}
+
+.epos-vergleich-huelle .epos-vergleich th,
+.epos-vergleich-huelle .epos-vergleich td {
+    overflow-wrap: anywhere;
+}
+
 .epos-vergleich--stimmig {
     color: var(--epos-text-leise);
 }
@@ -12939,8 +13125,8 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
     max-height: min(94vh, calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten)));
 }
 
-/* W7-B-3 (08.09.2026): die Detailansicht eingebettet in der Waermepumpen
-   Verwaltung - kein zweiter Dialograhmen, ein Strich trennt sie von der Auswahl. */
+/* W7-B-3: ein eingebetteter Dialog (.epos-dialog--eingebettet, unten) traegt keinen
+   zweiten Dialograhmen. */
 /* W10b-B-3 (08.09.2026): der Extrapolationsschalter bei den Kennlinien der Waermepumpe. */
 .epos-wp-extrapolation {
     margin: 2px 0 10px;
@@ -12955,10 +13141,6 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
 .epos-dialog--eingebettet {
     padding: 0;
     max-width: none;
-}
-.epos-wp-eingebettet {
-    border-top: 1px solid var(--epos-rahmen-leise);
-    padding-top: var(--epos-rand);
 }
 
 /* Ohne Titel steht im Kopf nur der Hilfeknopf - er gehoert nach rechts, */
@@ -12999,6 +13181,38 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
 }
 @media (max-width: 900px) {
     .epos-wp-abschnitte {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* DIE ZWEISPALTIGE SATZ-UEBERLAGERUNG DER UEBRIGEN WIRTE (WP1b, KA-E-25): dasselbe Raster wie bei der
+   Waermepumpe - links (schmal) die Projektfelder und darunter der Geraetesteckbrief, rechts die Kenndaten.
+   Unter 900 px stehen beide untereinander. In der Detailzeile traegt der Satz die Klasse
+   .epos-satz-einspaltig: Huelle und rechte Spalte zeichnen dort keine eigene Box, der Aufbau bleibt. */
+.epos-satz-zweispaltig {
+    display: grid;
+    grid-template-columns: minmax(0, 0.6fr) minmax(0, 1fr);
+    align-items: start;
+    gap: var(--epos-rand);
+}
+.epos-satz-zweispaltig-links,
+.epos-satz-zweispaltig-rechts {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;                           /* laesst das Raster waagerecht rollen */
+}
+/* Die schmale Spalte: die Beschriftung bleibt NEBEN dem Feld. */
+.epos-satz-zweispaltig-links {
+    --epos-beschriftung-breite: 8rem;
+    --epos-formularspalte: 17rem;
+}
+.epos-satz-einspaltig,
+.epos-satz-einspaltig > .epos-satz-zweispaltig-rechts {
+    display: contents;
+}
+@media (max-width: 900px) {
+    .epos-satz-zweispaltig {
         grid-template-columns: minmax(0, 1fr);
     }
 }
@@ -16515,6 +16729,95 @@ td.epos-vorlage-katalogbeschreibung {
     }
 }
 
+/* ===== Klappgruppe (Bausteine/Klappgruppe.razor): ein Abschnitt, dessen Kopfzeile ihn auf- und
+   zuklappt. Kopfzeile = Ueberschrift mit Klappknopf (Zeichen, Titel, Zusatz) und rechts die
+   Handlungen des Wirts; der Inhalt steht nur aufgeklappt im Baum. ===== */
+.epos-klappgruppe {
+    min-width: 0;
+}
+
+.epos-klappgruppe-kopf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.epos-klappgruppe-titel {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+}
+
+.epos-klappgruppe-knopf {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-height: var(--epos-touchziel);
+    padding: 0 8px 0 0;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.epos-klappgruppe-knopf:hover .epos-klappgruppe-text {
+    text-decoration: underline;
+}
+
+.epos-klappgruppe-knopf:focus-visible {
+    outline: 2px solid var(--epos-marke);
+    outline-offset: 2px;
+}
+
+.epos-klappgruppe-zeichen {
+    flex: 0 0 auto;
+    width: 1em;
+    text-align: center;
+}
+
+.epos-klappgruppe-text {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.epos-klappgruppe-zusatz {
+    flex: 0 0 auto;
+    font-weight: 400;
+    opacity: 0.75;
+    white-space: nowrap;
+}
+
+.epos-klappgruppe-handlungen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.epos-klappgruppe-inhalt {
+    min-width: 0;
+    margin-top: 4px;
+}
+
+@media (forced-colors: active) {
+    .epos-klappgruppe-knopf {
+        color: ButtonText;
+        forced-color-adjust: none;
+    }
+
+    .epos-klappgruppe-knopf:focus-visible {
+        outline-color: Highlight;
+    }
+
+    .epos-klappgruppe-zusatz {
+        opacity: 1;
+    }
+}
+
 /* ==========================================================================
    DER REITER „KONDITIONIERUNG" (Stufe KP2, Welle U1; Teilkonzept
    Konditionierungsprofile 7.1, 7.2; Entwurf KP2 Festlegung 7) — die
@@ -17858,4 +18161,3 @@ td.epos-vorlage-katalogbeschreibung {
         grid-template-columns: minmax(0, 1fr);
     }
 }
-

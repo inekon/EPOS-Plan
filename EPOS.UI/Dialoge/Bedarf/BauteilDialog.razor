@@ -96,6 +96,14 @@
                         Platzhalter="@UPlatzhalter"
                         Feldname="@Texte.LabelUWert" FehlerZustand="FehlerMelden"
                         Wert="@_stand.UWert" WertChanged="w => _stand.UWert = w" />
+            @if (!Transparent)
+            {
+                @* KAPAZITAET: Lesewert C = Σ ρ·c_p·d des gewaehlten Aufbaus, fertig aus dem Kern
+                   (BauteilaufbauCtrl.Kennwerte); ohne Aufbau "aus der Bauweise". *@
+                <Textfeld Bezeichnung="@Texte.LabelKapazitaet" NurLesen="true" Kurz="true"
+                          Einheit="@(KapazitaetWert is null or "–" ? "" : "kJ/(m²K)")"
+                          Wert="@(KapazitaetWert ?? Texte.KapazitaetBauweise)" />
+            }
         </KindInhalt>
     </Formularraster>
     <Herleitungszeile Text="@Texte.HinweisAzimut" />
@@ -130,6 +138,12 @@
                     }
                 </KindInhalt>
             </Formularraster>
+            @if (MitUngeeigneten)
+            {
+                @* BK-2b: gekennzeichnete Aufbauten ("meist nicht geeignet") stehen erst nach diesem Schalter in der Wahl. *@
+                <Schalter Bezeichnung="@Texte.SchalterAuchUngeeignete" Wert="@_auchUngeeignete"
+                          WertChanged="w => _auchUngeeignete = w" />
+            }
             @if (Katalogaufbauten.Count > 0)
             {
                 <div class="epos-leiste">
@@ -144,6 +158,11 @@
                     }
                 </div>
                 <Herleitungszeile Text="@Texte.HinweisKatalog" />
+            }
+            @if (_aufbauGrund.Length > 0)
+            {
+                @* BK-2b: warum der gewaehlte Aufbau kein U traegt (Grund aus der Huelle). *@
+                <Herleitungszeile Text="@_aufbauGrund" />
             }
             @if (_ansicht is not null)
             {
@@ -449,7 +468,8 @@
             var l = new List<(int, string)> { (OHNE, Texte.OhneAufbau) };
             if (_stand.IdAufbauStamm.HasValue)
                 l.Add((KATALOG, string.Format(CultureInfo.CurrentCulture, Texte.AufbauAusKatalog, _stand.AufbauText)));
-            foreach (AufbauWahl a in Projektaufbauten) l.Add((a.Id, a.Text));
+            foreach (AufbauWahl a in Projektaufbauten)
+                if (Zeigen(a, _stand.IdAufbau)) l.Add((a.Id, a.Text));
             // Ein Aufbau, den die Liste nicht (mehr) führt, bleibt als Eintrag stehen.
             if (_stand.IdAufbau is int id && Projektaufbauten.All(a => a.Id != id))
                 l.Add((id, _stand.AufbauText.Length > 0 ? _stand.AufbauText : "#" + id.ToString(CultureInfo.InvariantCulture)));
@@ -460,7 +480,19 @@
     private int? Projektauswahl => _stand.IdAufbauStamm.HasValue ? KATALOG : _stand.IdAufbau ?? OHNE;
 
     private IReadOnlyList<(int Id, string Text)> Katalogeintraege
-        => Katalogaufbauten.Select(a => (a.Id, a.Text)).ToList();
+        => Katalogaufbauten.Where(a => Zeigen(a, _katalogwahl)).Select(a => (a.Id, a.Text)).ToList();
+
+    /// <summary>BK-2b: warum der gewählte Aufbau kein U trägt; leer = er trägt eins oder keiner ist gewählt.</summary>
+    private string _aufbauGrund = "";
+
+    /// <summary>BK-2b: „auch ungeeignete zeigen" — Vorgabe aus.</summary>
+    private bool _auchUngeeignete;
+
+    /// <summary>Führt eine der Wahlen einen gekennzeichneten Aufbau? Nur dann steht der Schalter.</summary>
+    private bool MitUngeeigneten => Katalogaufbauten.Any(a => a.Ungeeignet) || Projektaufbauten.Any(a => a.Ungeeignet);
+
+    /// <summary>Ein Aufbau steht in der Wahl, wenn er geeignet ist, der Schalter steht oder er die laufende Wahl ist.</summary>
+    private bool Zeigen(AufbauWahl a, int? gewaehlt) => !a.Ungeeignet || _auchUngeeignete || a.Id == gewaehlt;
 
     private void ProjektaufbauWaehlen(int? id)
     {
@@ -471,6 +503,7 @@
             _stand.IdAufbau = null;
             _stand.AufbauText = "";
             _stand.UAufbau = null;
+            _aufbauGrund = "";
         }
         else
         {
@@ -478,6 +511,7 @@
             _stand.IdAufbau = id;
             _stand.AufbauText = a?.Text ?? _stand.AufbauText;
             _stand.UAufbau = a?.UWert;
+            _aufbauGrund = a?.Grund ?? "";
         }
         AnsichtNachziehen();
     }
@@ -495,7 +529,22 @@
         _stand.IdAufbauStamm = a.Id;
         _stand.AufbauText = a.Text;
         _stand.UAufbau = a.UWert;
+        _aufbauGrund = a.Grund;
         AnsichtNachziehen();
+    }
+
+    /// <summary>
+    /// Die flächenbezogene Kapazität des gewählten Aufbaus als Text [kJ/(m²K)] — aus dem Summenfuß
+    /// des Kerns, nicht nachgerechnet; <c>null</c> ohne Aufbau, „–", wenn der Aufbau sie nicht trägt.
+    /// </summary>
+    private string? KapazitaetWert
+    {
+        get
+        {
+            if (!_stand.MitAufbau) return null;
+            double? c = _ansicht?.Kennwerte.Kapazitaet_KJM2K;
+            return c.HasValue ? c.Value.ToString("0.0", CultureInfo.CurrentCulture) : "–";
+        }
     }
 
     /// <summary>Die Schichten des gewählten Aufbaus — nur zum Ansehen.</summary>

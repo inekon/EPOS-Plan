@@ -27,10 +27,10 @@
    (Klasse, Gebaeude, Raumhaken, Handwert) bildet ihn neu; die Wahl des Anwenders bleibt, bis
    Datei oder Gebaeude wechseln. Das Ergebnis traegt sie als AlsZone.
 
-   DER ABSCHNITT "BAUSTOFFE" (Namensabgleich) steht darunter, sobald die Datei Materialnamen
-   traegt: je Name die Stufe des Abgleichs, der zugeordnete Katalogbaustoff (Klappliste,
-   gruppiert) und woher die Stoffwerte kommen; eine eigene Zuordnung laesst sich entfernen.
-   Jede Aenderung ordnet neu zu; die Zuordnungen reisen im Ergebnis (Baustoffzuordnungen) und
+   DIE BAUSTOFFWAHL (Namensabgleich, AB3) steht an der Schicht in der Liste "Bauteilaufbauten":
+   Fehlt einer Schicht ein Stoffwert, waehlt der Anwender dort einen Katalogbaustoff (Klappliste
+   nach Stoffgruppe); eine eigene Zuordnung bleibt waehlbar und laesst sich entfernen. Eine Schicht
+   mit Werten aus Datei oder Abgleich ist nur Anzeige. Jede Aenderung ordnet neu zu; die Zuordnungen reisen im Ergebnis (Baustoffzuordnungen) und
    werden erst mit der Gebaeudeliste fuer das Projekt gemerkt.
 
    MEHRERE ZONEN (Stufe G6c, Mehrzonenkonzept 6.4): Traegt die Datei fuer das Gebaeude mehr als
@@ -117,10 +117,15 @@
 
 <div class="epos-dialog epos-gebimport" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@Texte.Titel</h1>
+    @* GD-4: Im Blatt „Als Mehrzonenmodell übernehmen…" traegt die Kopfzeile des Blatts Titel und Rueckweg - dann zeigt der
+       Dialog weder Titel noch Kreuz (TitelAnzeigen="false"; ein Titel, eine Stelle). *@
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Texte.Titel</h1>
+        }
         <InfoKnopf Schluessel="@WirksamerHilfeSchluessel" Dialogname="@Texte.Titel" />
-        @if (!Beschaeftigt)
+        @if (TitelAnzeigen && !Beschaeftigt)
         {
             <Schliesskreuz Geschlossen="BeiAbbrechen" />
         }
@@ -299,11 +304,19 @@
                             </dd>
                         }
                     </dl>
-                    @* NP2b-4 (Anwenderentscheid 06.10.2026): im Einzonenweg der Vorschlag aus der DIN-Nummer der Datei als
-                       Hinweis - kein Auswahlfeld, gesetzt wird nichts; zugewiesen wird im Gebaeudeeditor. *@
+                    @* Vorgaberegel 2.5 (NP-F16, E130 F5): im Einzonenweg die Vorgabe aus der DIN-Nummer der Datei bzw. der
+                       Gebaeudeart - das Gebaeude nimmt sie als Kalender vor der Datei; der Haken waehlt sie ab. *@
                     @if (sq.Einzonenvorschlag.Length > 0 && (stand.Zonierung is not { Einzonig: false } || !AlsZoneWirksam))
                     {
                         <div class="epos-gebimport-sqvorschlag">
+                            @if (EinzonenprofilWaehlen is not null)
+                            {
+                                <label class="epos-gebimport-sqvorgabe">
+                                    <input type="checkbox" checked="@(!_einzonenprofilAbgewaehlt)"
+                                           @onchange="e => EinzonenprofilUmschalten(e.Value is true)" />
+                                    @Texte.SqEinzonenprofilSetzen
+                                </label>
+                            }
                             <Herleitungszeile Text="@sq.Einzonenvorschlag" />
                         </div>
                     }
@@ -345,6 +358,15 @@
                 <Textfeld Bezeichnung="@Texte.Name" Wert="@_name" WertChanged="BeiName" />
             </KindInhalt>
         </Formularraster>
+        @* F8: Der Name ist der Dateiname; der Gebaeudename der Datei steht als Vorschlag daneben, "Uebernehmen" setzt ihn. *@
+        @if (stand.NameDerDatei is { Length: > 0 } nameDatei && !string.Equals(_name.Trim(), nameDatei, StringComparison.Ordinal))
+        {
+            <div class="epos-gebimport-namevorschlag" data-feld="name-der-datei">
+                <Herleitungszeile Text="@Format(Texte.NameDatei, nameDatei)" />
+                <button type="button" class="epos-knopf" data-aktion="name-uebernehmen" disabled="@Beschaeftigt"
+                        @onclick="() => BeiName(nameDatei)">@Texte.NameUebernehmen</button>
+            </div>
+        }
         <Herleitungszeile Text="@stand.Kopftext" />
         @if (stand.CadSollwertMoeglich)
         {
@@ -607,19 +629,35 @@
                                     {
                                         foreach (GebaeudePlanraumDaten raum in zone.Raumliste)
                                         {
-                                            <tr @key="raum.Kennung" class="epos-gebimport-planraum" data-raum="@raum.Kennung">
+                                            <tr @key="raum.Kennung" class="epos-gebimport-planraum" data-raum="@raum.Kennung"
+                                                data-platziert="@raum.Platzierungsgrund">
                                                 <td></td>
                                                 <td>
                                                     <input type="checkbox" class="epos-gebimport-wahl" checked="@_raumwahlen.Contains(raum.Kennung)"
                                                            aria-label="@Format(Texte.RaumWaehlen, raum.Name)" disabled="@Beschaeftigt"
                                                            @onchange="e => BeiRaumwahlHaken(raum.Kennung, e)" />
                                                 </td>
-                                                <td class="epos-gebimport-planraumname" title="@raum.Kennung">@raum.Name</td>
+                                                <td class="epos-gebimport-planraumname" title="@raum.Kennung">
+                                                    @raum.Name
+                                                    @if (raum.Platzierung is string grund)
+                                                    {
+                                                        @* E130/F3: automatisch platziert - die Marke nennt den Grund im Tooltip. *@
+                                                        <span class="epos-gebimport-platziert" title="@grund">@Texte.PlanPlatziertMarke</span>
+                                                    }
+                                                </td>
                                                 <td>@raum.Geschoss</td>
                                                 <td>@(raum.Beheizt ? Texte.Ja : Texte.Nein)</td>
                                                 <td class="epos-gebimport-zahl">@raum.Flaeche</td>
                                                 <td></td>
-                                                <td></td>
+                                                <td>
+                                                    @if (raum.Platzierung is not null)
+                                                    {
+                                                        <button type="button" class="epos-knopf epos-gebimport-ruecknahme" data-aktion="ruecknahme"
+                                                                aria-label="@Format(Texte.PlanZuruecknehmenRaum, raum.Name)"
+                                                                title="@Format(Texte.PlanZuruecknehmenRaum, raum.Name)" disabled="@Beschaeftigt"
+                                                                @onclick="() => BeiRuecknahme(raum.Kennung)">@Texte.PlanZuruecknehmen</button>
+                                                    }
+                                                </td>
                                             </tr>
                                         }
                                     }
@@ -665,6 +703,10 @@
                                 @onclick="() => BeiRest(zplan)">@Texte.PlanRest</button>
                     </div>
                     <Herleitungszeile Text="@(plan.Einzonig ? Texte.PlanEinzonig : Texte.PlanHinweis)" />
+                    @if (plan.Platzierungsmeldung.Length > 0)
+                    {
+                        <div class="epos-gebimport-platzierung" role="status"><Herleitungszeile Text="@plan.Platzierungsmeldung" /></div>
+                    }
                 </div>
                 <div class="epos-gebimport-offenspalte">
                     <h3 class="epos-gebimport-offentitel">@Format(Texte.PlanOffenTitel, plan.NichtZugeordnet.Count)</h3>
@@ -735,6 +777,13 @@
                     <span class="epos-gebimport-bauteile-ablehnung">@Format(Texte.AlsZoneNicht, bauteile.Ablehnung)</span>
                 }
             </div>
+            @if (stand.Zonierung?.Plan is { Platzierungsmeldung.Length: > 0 } platzplan)
+            {
+                @* E130/F3: am Schalter, wie viele Raeume ohne Zone wohin platziert wurden. *@
+                <div class="epos-gebimport-platzierung epos-gebimport-platzierung--schalter">
+                    <Herleitungszeile Text="@platzplan.Platzierungsmeldung" />
+                </div>
+            }
             <Herleitungszeile Text="@(mehrere is not null ? Texte.AlsZonenHinweis
                                       : stand.Zonierung?.Plan is { Einzonig: true } ? Texte.AlsZonePlanHinweis : Texte.AlsZoneHinweis)" />
             @if (bauteile.Kopftext.Length > 0)
@@ -829,82 +878,6 @@
         @if (stand.Bauteile is not null)
         {
             @Aufbauliste(stand)
-        }
-
-        @if (stand.Baustoffe is { Zeilen.Count: > 0 } baustoffe)
-        {
-            @* DIE BAUSTOFFE (Namensabgleich): je Materialname der Datei die Stufe, der zugeordnete
-               Baustoff mit seinen Stoffwerten und woher die Werte der Schichten kommen; gelb, wo ein
-               Name einen Baustoff braucht und keinen trifft. Die Klappliste setzt oder aendert den
-               Baustoff, "Zuordnung entfernen" nimmt eine eigene zurueck - beides ordnet neu zu, der
-               Vorschlag darueber zeigt sofort die neuen Aufbauten. Gespeichert wird nichts: Die
-               Zuordnungen reisen im Ergebnis und werden erst mit der Gebaeudeliste gemerkt. Eine
-               schlichte Tabelle ohne Virtualisierung - die Liste ist kurz. *@
-            <Gruppenkopf Titel="@Texte.GruppeBaustoffe" />
-            <p class="epos-leisezeile epos-gebimport-baustoffe-summe">@baustoffe.Zusammenfassung</p>
-            <div class="epos-raster-huelle">
-                <table class="epos-raster epos-raster--bearbeitbar epos-gebimport-baustoffe">
-                    <thead>
-                        <tr>
-                            <th>@Texte.SpalteMaterialname</th>
-                            <th class="epos-gebimport-zahl">@Texte.SpalteSchichten</th>
-                            <th>@Texte.SpalteAbgleich</th>
-                            <th>@Texte.SpalteBaustoff</th>
-                            <th>@Texte.SpalteStoffwerte</th>
-                            <th>@Texte.SpalteWerteAus</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (GebaeudeMaterialzeileDaten eintrag in baustoffe.Zeilen)
-                        {
-                            GebaeudeMaterialzeileDaten z = eintrag;
-                            <tr @key="z.Name" class="@(Baustoffzeilenklasse(z) + (z.Schluessel == _baustoffziel ? " epos-gebimport-baustoff--ziel" : ""))" data-schluessel="@z.Schluessel">
-                                <td class="epos-gebimport-materialname">
-                                    @if (z.Schluessel == _baustoffziel)
-                                    {
-                                        <span class="epos-gebimport-zielmarke" tabindex="-1" @ref="_baustoffmarke"></span>
-                                    }
-                                    @z.Name
-                                </td>
-                                <td class="epos-gebimport-zahl">@z.Schichten.ToString(CultureInfo.CurrentCulture)</td>
-                                <td class="@("epos-gebimport-abgleich epos-gebimport-abgleich--" + (z.AbgleichSchluessel ?? "").ToLowerInvariant())"
-                                    title="@(z.Beleg.Length > 0 ? z.Beleg : null)">@z.Abgleich</td>
-                                <td class="epos-gebimport-baustoffwahl" title="@(z.Vorgemerkt ? Texte.BaustoffVorgemerkt : null)">
-                                    <select class="epos-eingabe" aria-label="@Format(Texte.BaustoffWaehlen, z.Name)" disabled="@Beschaeftigt"
-                                            value="@(z.IdBaustoff?.ToString(CultureInfo.InvariantCulture) ?? "")"
-                                            @onchange="e => BeiBaustoff(z, e)">
-                                        @if (z.IdBaustoff is null)
-                                        {
-                                            <option value="" selected>@Texte.BaustoffPlatzhalter</option>
-                                        }
-                                        @foreach (GebaeudeBaustoffgruppe gruppe in baustoffe.Katalog)
-                                        {
-                                            <optgroup label="@gruppe.Titel">
-                                                @foreach (GebaeudeBaustoffwahl w in gruppe.Eintraege)
-                                                {
-                                                    <option value="@w.Id.ToString(CultureInfo.InvariantCulture)" selected="@(w.Id == z.IdBaustoff)">@w.Text</option>
-                                                }
-                                            </optgroup>
-                                        }
-                                    </select>
-                                </td>
-                                <td class="epos-gebimport-stoffwerte">@z.Stoffwerte</td>
-                                <td class="epos-gebimport-werteaus">@z.Werte</td>
-                                <td>
-                                    @if (z.AbgleichSchluessel == GebaeudeAbgleichSchluessel.EigeneZuordnung)
-                                    {
-                                        <button type="button" class="epos-knopf epos-gebimport-entfernen" disabled="@Beschaeftigt"
-                                                title="@Format(Texte.ZuordnungEntfernenTitel, z.Name)"
-                                                @onclick="() => BeiEntfernen(z)">@Texte.ZuordnungEntfernen</button>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-            <Herleitungszeile Text="@Texte.BaustoffeHinweis" />
         }
 
         <Gruppenkopf Titel="@Texte.GruppeMeldungen" />
@@ -1058,6 +1031,19 @@
     /// <summary>„Projektdatei entfernen“ an der Datenseite.</summary>
     [Parameter] public Action? ProjektdateiEntfernen { get; set; }
 
+    /// <summary>Haken „Profil als Vorgabe setzen“ des Einzonenwegs (Vorgaberegel 2.5): <c>false</c> wählt die Vorgabe ab.</summary>
+    [Parameter] public Action<bool>? EinzonenprofilWaehlen { get; set; }
+
+    /// <summary>Hat der Anwender die Vorgabe des Einzonenwegs abgewählt?</summary>
+    private bool _einzonenprofilAbgewaehlt;
+
+    /// <summary>Der Haken der Vorgabe des Einzonenwegs: an die Hülle, der Dialog merkt den Stand.</summary>
+    private void EinzonenprofilUmschalten(bool setzen)
+    {
+        _einzonenprofilAbgewaehlt = !setzen;
+        EinzonenprofilWaehlen?.Invoke(setzen);
+    }
+
     /// <summary>„Nutzungsprofile der Datei übernehmen…“ (NP4b, Q46): die Profile der geladenen Projektdatei in eine eigene Kategorie.</summary>
     [Parameter] public EPOS.UI.Dialoge.Bedarf.ProjektdateiProfileWeg? ProjektdateiProfile { get; set; }
 
@@ -1104,6 +1090,15 @@
     /// der des Profils.
     /// </summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_GebaeudeImport.btn_Help";
+
+    /// <summary>Titel und Kreuz im Kopf; <c>false</c>, wo ein Blatt den Kopf trägt (GD-4, „Als Mehrzonenmodell übernehmen…“).</summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    /// <summary>
+    /// GD-4: Der Pfad einer schon gewählten und geprüften Datei (die gespeicherte Importquelle) — der Dialog liest sie beim
+    /// Öffnen, ohne Dateiwahl; leer = wie immer über „Datei wählen…“.
+    /// </summary>
+    [Parameter] public string? Vorgelesen { get; set; }
 
     // =====================================================================
     // Zustand — ein Arbeitsstand; hereingereichte Objekte bleiben unberührt
@@ -1210,7 +1205,7 @@
     /// <summary>Der Wert „als eigene Zone" der Zielzone.</summary>
     private const string EIGENE_ZONE = "";
 
-    /// <summary>Die Zielzone eines Klicks (Schlüssel); <see cref="EIGENE_ZONE"/> = abtrennen; <c>null</c> = die erste Zone.</summary>
+    /// <summary>Die Zielzone eines Klicks (Schlüssel), gewählt in der Legende; <see cref="EIGENE_ZONE"/> = abtrennen; <c>null</c> = keine Wahl.</summary>
     private string? _ziel;
 
     /// <summary>Das gezeigte Geschoss des Grundrisses (Kennung); <c>null</c> = die Vorbelegung der Ansicht.</summary>
@@ -1445,6 +1440,15 @@
 
         _kiSicht = new GebaeudeImportKiSicht(KiLesen, KiSetzen, KiWahl, KiSperrgrund);
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_IMPORT, () => _kiSicht, KiHaken());
+    }
+
+    /// <summary>GD-4: Eine vorgelesene Quelle wird sofort gelesen - derselbe Weg wie nach der Dateiwahl.</summary>
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(Vorgelesen)) return;
+        _pfad = Vorgelesen;
+        _dateianzeige = System.IO.Path.GetFileName(Vorgelesen);
+        await Einlesen(_pfad);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -1758,22 +1762,16 @@
     // =====================================================================
 
     /// <summary>
-    /// Der Grundriss samt Zuordnung von Hand: die Zielzone im Kopf, die Ansicht, die Meldung einer abgelehnten
+    /// Der Grundriss samt Zuordnung von Hand: die Ansicht mit der Zielwahl in ihrer Legende (Auftrag AB2), die Meldung einer abgelehnten
     /// Zuordnung mit dem Ausweg bei ungleicher Beheizung, die abgelehnten Zuordnungen des Stands und der Weg ohne
     /// Grundriss (Raum und „Umhängen"). Ohne Umhängbarkeit nur die Ansicht.
     /// </summary>
     private RenderFragment Grundriss(GebaeudeImportStand stand, GebaeudeAnsichtDaten ansicht) => __builder =>
     {
         bool zuordnen = ansicht.Umhaengbar;
-        if (zuordnen)
-        {
-            <div class="epos-gebimport-zuordnungskopf">
-                <Auswahlfeld Bezeichnung="@Texte.ZuordnenZu" Eintraege="@Zielliste(ansicht)" Auswahl="@Zielstelle(ansicht)"
-                             AuswahlChanged="BeiZiel" Aktiv="@(!Beschaeftigt)" />
-            </div>
-        }
         <GebaeudeAnsicht Daten="@ansicht" GewaehlteZone="@Zielzone(ansicht)" Geschoss="@_geschoss" GeschossChanged="BeiGeschoss"
-                         RaumUmgehaengt="BeiUmhaengen" ZoneGewaehlt="BeiZoneGewaehlt" Aktiv="@(!Beschaeftigt)" Texte="@Texte.Ansicht"
+                         RaumUmgehaengt="BeiUmhaengen" Zuordnungsziele="@Zuordnungsziele()" GewaehltesZiel="@PlanZiel()"
+                         ZielChanged="BeiZiel" Aktiv="@(!Beschaeftigt)" Texte="@Texte.Ansicht"
                          ZurBaustoffzuordnung="BeiBaustoffsprung" />
         if (_konflikt is Umhaengkonflikt k && stand.Zonierung?.Plan is null)
         {
@@ -1798,6 +1796,7 @@
                 <Auswahlfeld Bezeichnung="@Texte.Raumwahl" Eintraege="@Raumliste(ansicht)" Auswahl="@Raumstelle(ansicht)"
                              AuswahlChanged="BeiRaumwahl" Aktiv="@(!Beschaeftigt)" />
                 <button type="button" class="epos-knopf epos-gebimport-umhaengen" disabled="@Beschaeftigt"
+                        aria-disabled="@(PlanZiel() is null ? "true" : null)" title="@(PlanZiel() is null ? Texte.Ansicht.ZielFehlt : null)"
                         @onclick="BeiUmhaengenKnopf">@Texte.Umhaengen</button>
             </div>
             <Herleitungszeile Text="@Texte.UmhaengenHinweis" />
@@ -1822,15 +1821,15 @@
     private GebaeudeZonenplanDaten? Plan => _stand?.Zonierung?.Plan;
 
     /// <summary>
-    /// Die Zielzone eines Klicks im Plan (Planschlüssel): die gewählte, sonst die erste Zone; <see cref="EIGENE_ZONE"/> = als
-    /// eigene Zone abtrennen; <c>null</c> ohne Zone.
+    /// Die Zielzone eines Klicks im Plan (Planschlüssel): die in der Legende gewählte; <see cref="EIGENE_ZONE"/> = als
+    /// eigene Zone abtrennen; <c>null</c> = keine Wahl (ein Raumklick ist dann reine Anzeige).
     /// </summary>
     private string? PlanZiel()
     {
         if (Plan is not GebaeudeZonenplanDaten plan) return null;
         if (_ziel == EIGENE_ZONE) return EIGENE_ZONE;
         if (_ziel is not null && plan.Zonen.Any(z => z.Schluessel == _ziel)) return _ziel;
-        return plan.Zonen.Count > 0 ? plan.Zonen[0].Schluessel : EIGENE_ZONE;
+        return null;
     }
 
     /// <summary>Die Zielzone für den Grundriss — der Schlüssel, unter dem er die Zielzone des Plans führt; <c>null</c> = keine.</summary>
@@ -1841,45 +1840,45 @@
         return zone is { Ansichtsschluessel.Length: > 0 } ? zone.Ansichtsschluessel : null;
     }
 
-    /// <summary>Die Einträge der Zielzone: die Zonen des Plans (Id = Stelle + 1), dann „als eigene Zone" (Id 0).</summary>
-    private IReadOnlyList<(int Id, string Text)> Zielliste(GebaeudeAnsichtDaten ansicht)
+    /// <summary>
+    /// Die Ziele der Legende (Auftrag AB2): je Zone des Plans Name, Farbe (über den Schlüssel der Ansicht), die Nutzung und die
+    /// Herkunft, dann „als eigene Zone".
+    /// </summary>
+    private IReadOnlyList<GebaeudeAnsichtZiel> Zuordnungsziele()
     {
-        IReadOnlyList<GebaeudePlanzoneDaten> zonen = Plan?.Zonen ?? Array.Empty<GebaeudePlanzoneDaten>();
-        var liste = new List<(int Id, string Text)>(zonen.Count + 1);
-        for (int i = 0; i < zonen.Count; i++) liste.Add((i + 1, zonen[i].Name));
-        liste.Add((0, Texte.EigeneZone));
+        if (Plan is not GebaeudeZonenplanDaten plan) return Array.Empty<GebaeudeAnsichtZiel>();
+        var liste = new List<GebaeudeAnsichtZiel>(plan.Zonen.Count + 1);
+        foreach (GebaeudePlanzoneDaten z in plan.Zonen)
+            liste.Add(new GebaeudeAnsichtZiel(z.Schluessel, z.Name, z.Ansichtsschluessel, Nutzungstext(plan, z), z.HerkunftText));
+        liste.Add(new GebaeudeAnsichtZiel(EIGENE_ZONE, Texte.EigeneZone, Abtrennen: true));
         return liste;
     }
 
-    private int? Zielstelle(GebaeudeAnsichtDaten ansicht)
+    /// <summary>
+    /// Die Nutzung einer Zone als Anzeigetext: Profil und Kategorie der Herleitung („Sport · EPOS-Muster"), sonst der Text der
+    /// Nutzung aus der Klappliste, ohne Nutzung das Profil der Projektdatei (DIN-Nummer); leer = ohne Nutzung.
+    /// </summary>
+    private static string Nutzungstext(GebaeudeZonenplanDaten plan, GebaeudePlanzoneDaten z)
     {
-        string? ziel = PlanZiel();
-        if (ziel == EIGENE_ZONE) return 0;
-        IReadOnlyList<GebaeudePlanzoneDaten> zonen = Plan?.Zonen ?? Array.Empty<GebaeudePlanzoneDaten>();
-        for (int i = 0; i < zonen.Count; i++)
-            if (zonen[i].Schluessel == ziel) return i + 1;
-        return null;
+        if (z.Nutzung is string n)
+        {
+            if (z.Herleitung is { Profil.Length: > 0 } h) return h.Kategorie.Length > 0 ? h.Profil + " · " + h.Kategorie : h.Profil;
+            return plan.Nutzungen.FirstOrDefault(x => x.Schluessel == n)?.Text ?? n;
+        }
+        return z.Profiltext;
     }
 
-    private void BeiZiel(int? id)
+    /// <summary>Die Wahl in der Legende: ein Ziel oder <c>null</c> (die Wahl aufgehoben).</summary>
+    private void BeiZiel(string? schluessel)
     {
-        if (Plan is not GebaeudeZonenplanDaten plan || id is not int i) return;
-        if (i == 0) _ziel = EIGENE_ZONE;
-        else if (i - 1 < plan.Zonen.Count) _ziel = plan.Zonen[i - 1].Schluessel;
+        if (Plan is not GebaeudeZonenplanDaten plan) return;
+        _ziel = schluessel is null ? null
+              : schluessel == EIGENE_ZONE || plan.Zonen.Any(z => z.Schluessel == schluessel) ? schluessel : null;
         _konflikt = null;
         _notiz = "";
     }
 
     private void BeiGeschoss(string kennung) => _geschoss = kennung;
-
-    /// <summary>Ein Klick auf einen Körper der Ansicht wählt die Zone des Plans, die er zeigt, als Ziel der Zuordnung.</summary>
-    private void BeiZoneGewaehlt(string schluessel)
-    {
-        if (_stand?.Ansicht is not { Umhaengbar: true } || Plan?.Zonen.FirstOrDefault(z => z.Ansichtsschluessel == schluessel) is not { } zone) return;
-        _ziel = zone.Schluessel;
-        _konflikt = null;
-        _notiz = "";
-    }
 
     /// <summary>Der gewählte Raum des Wegs ohne Grundriss — im gezeigten Geschoss, sonst dessen erster.</summary>
     private GebaeudeAnsichtRaum? GewaehlterRaum(GebaeudeAnsichtDaten ansicht)
@@ -2157,6 +2156,13 @@
     private int? Reststelle(GebaeudeZonierungDaten zon)
         => _restregel is int i && i >= 0 && i < zon.Regeln.Count ? i : Regelstelle(zon);
 
+    /// <summary>„Zurücknehmen" an einem automatisch platzierten Raum (E130/F3): er steht danach unter „Nicht zugeordnete Räume".</summary>
+    private void BeiRuecknahme(string kennung)
+    {
+        if (Beschaeftigt) return;
+        if (Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.RUECKNAHME, new[] { kennung }))) _raumwahlen.Remove(kennung);
+    }
+
     /// <summary>„Rest nach Regel zuordnen": nur die nicht zugeordneten Räume, nach der gewählten Regel.</summary>
     private void BeiRest(GebaeudeZonierungDaten zon)
     {
@@ -2412,7 +2418,7 @@
     }
 
     /// <summary>
-    /// Die Klappliste einer Baustoffzeile: Der gewählte Katalogbaustoff wird die eigene Zuordnung
+    /// Die Baustoffwahl einer Schicht: Der gewählte Katalogbaustoff wird die eigene Zuordnung
     /// des Namens; danach ordnet der Dialog neu zu — aus Schichten ohne Stoffwerte können so
     /// Aufbauten werden.
     /// </summary>
@@ -2715,12 +2721,11 @@
         _ => null,
     };
 
-    /// <summary>Gelb, wo ein Name einen Baustoff braucht und keinen trifft; vorgemerkt, wo der Dialog etwas geändert hat.</summary>
     // =====================================================================
     //  Liste „Bauteilaufbauten" (Konzept Bauteilaufbau 5.4 b, BA-3)
     // =====================================================================
 
-    /// <summary>Der Materialname, zu dem der letzte Sprung führte (Abschnitt „Baustoffe"); <c>null</c> = keiner.</summary>
+    /// <summary>Der Materialname, zu dem der letzte Sprung führte (Schicht in der Liste „Bauteilaufbauten"); <c>null</c> = keiner.</summary>
     private string? _baustoffziel;
     private bool _baustoffzielNeu;
     private ElementReference _baustoffmarke;
@@ -2747,14 +2752,20 @@
     /// <summary>Die aufgeklappten Zeilen (Schlüssel).</summary>
     private readonly HashSet<string> _aufbauOffen = new(StringComparer.Ordinal);
 
-    /// <summary>Das Ziel des letzten Sprungs in die Baustoffe (Prüfhilfe für Tests).</summary>
+    /// <summary>Das Ziel des letzten Sprungs zur Baustoffwahl einer Schicht (Prüfhilfe für Tests).</summary>
     public string? Baustoffziel => _baustoffziel;
 
-    /// <summary>Der Sprung in den Abschnitt „Baustoffe" (aus Steckbrief oder Liste): markiert die Zeile und rollt zu ihr.</summary>
+    /// <summary>
+    /// Der Sprung zur Baustoffwahl (aus dem Steckbrief): klappt die Aufbauzeilen auf, deren Schichten den Materialnamen
+    /// tragen, markiert die Schicht und rollt zu ihr.
+    /// </summary>
     private void BeiBaustoffsprung(string schluessel)
     {
         _baustoffziel = schluessel;
         _baustoffzielNeu = true;
+        foreach (GebaeudeAufbaulistenzeileDaten z in _stand?.Aufbauten ?? Array.Empty<GebaeudeAufbaulistenzeileDaten>())
+            if (z.Schichten.Concat(z.Dateischichten).Any(s => string.Equals(s.Materialschluessel, schluessel, StringComparison.Ordinal)))
+                _aufbauOffen.Add(z.Schluessel);
     }
 
     private void BeiAufbauzeile(string schluessel)
@@ -2771,6 +2782,7 @@
     {
         IReadOnlyList<GebaeudeAufbaulistenzeileDaten> zeilen = stand.Aufbauten;
         <Gruppenkopf Titel="@Texte.GruppeAufbauten" />
+        <p class="epos-leisezeile epos-gebimport-verwaltungshinweis">@Texte.AbVerwaltungHinweis</p>
         @if (zeilen.Count == 0)
         {
             <p class="epos-leisezeile epos-gebimport-aufbauten-leer">@Texte.AbLeer</p>
@@ -2837,15 +2849,10 @@
                                             }
                                         </select>
                                     }
-                                    @if (z.Schichten.Count > 0)
+                                    @if (z.Schichten.Count > 0 || z.Dateischichten.Count > 0)
                                     {
                                         <button type="button" class="epos-knopf epos-gebimport-aufbauschichten" aria-expanded="@(offen ? "true" : "false")"
                                                 @onclick="() => BeiAufbauzeile(z.Schluessel)">@Texte.AbSchichten</button>
-                                    }
-                                    @if (z.Materialschluessel is { } material && stand.Baustoffe is { Zeilen.Count: > 0 })
-                                    {
-                                        <button type="button" class="epos-knopf epos-gebimport-aufbaubaustoff" data-material="@material"
-                                                @onclick="() => BeiBaustoffsprung(material)">@Texte.AbZurBaustoff</button>
                                     }
                                 </div>
                             </td>
@@ -2853,20 +2860,27 @@
                         string schichtschluessel = z.Schluessel + "|s";
                         @if (offen)
                         {
-                            <tr @key="schichtschluessel" class="epos-gebimport-aufbauschichtzeile">
+                            <tr @key="schichtschluessel" class="epos-gebimport-aufbauschichtzeile" data-zeile="@z.Schluessel">
                                 <td colspan="10">
-                                    <ul class="epos-gebimport-aufbauschichtliste">
-                                        @foreach (BauteilsteckbriefSchicht sch in z.Schichten)
-                                        {
-                                            <li class="@(sch.Weggelassen ? "epos-steckbrief-schicht--weggelassen" : null)" data-herkunft="@sch.HerkunftSchluessel">
-                                                @sch.Name · @sch.Dicke · λ @sch.Lambda · ρ @sch.Rohdichte · c @sch.Cp · @sch.Herkunft
-                                                @if (sch.Weggelassen)
-                                                {
-                                                    <span class="epos-steckbrief-grund">(@sch.Grund)</span>
-                                                }
-                                            </li>
-                                        }
-                                    </ul>
+                                    @if (z.Schichten.Count > 0)
+                                    {
+                                        <ul class="epos-gebimport-aufbauschichtliste">
+                                            @foreach (BauteilsteckbriefSchicht sch in z.Schichten)
+                                            {
+                                                @Schichtpunkt(stand, sch)
+                                            }
+                                        </ul>
+                                    }
+                                    @if (z.Dateischichten.Count > 0)
+                                    {
+                                        <p class="epos-leisezeile epos-gebimport-dateischichten-kopf">@Texte.AbDateischichten</p>
+                                        <ul class="epos-gebimport-aufbauschichtliste epos-gebimport-dateischichten">
+                                            @foreach (BauteilsteckbriefSchicht sch in z.Dateischichten)
+                                            {
+                                                @Schichtpunkt(stand, sch)
+                                            }
+                                        </ul>
+                                    }
                                 </td>
                             </tr>
                         }
@@ -2877,9 +2891,74 @@
         <Herleitungszeile Text="@Texte.AbHinweis" />
     };
 
-    private static string? Baustoffzeilenklasse(GebaeudeMaterialzeileDaten z)
+    /// <summary>
+    /// Die Materialzeile des Namensabgleichs zu einer Schicht; <c>null</c> = keine (Ersatz- oder Katalogschicht, Luftschicht,
+    /// ohne Abgleich).
+    /// </summary>
+    private static GebaeudeMaterialzeileDaten? Materialzeile(GebaeudeImportStand stand, BauteilsteckbriefSchicht sch)
+        => sch.Materialschluessel is { Length: > 0 } m && stand.Baustoffe is { } b
+            ? b.Zeilen.FirstOrDefault(z => string.Equals(z.Schluessel, m, StringComparison.Ordinal)) : null;
+
+    /// <summary>
+    /// Eine Schicht der aufgeklappten Zeile: Name, Dicke, λ, ρ, c und Herkunft. Fehlt ein Stoffwert oder hat der Anwender
+    /// den Baustoff gewählt, steht an der Schicht die Baustoffwahl des Katalogs (nach Stoffgruppe, „Zuordnung entfernen" bei
+    /// der eigenen) — sie schreibt die gemerkte Zuordnung des Materialnamens und ordnet neu zu (AB3). Trägt die Schicht ihre
+    /// Werte aus der Datei, bleibt es bei der Anzeige.
+    /// </summary>
+    private RenderFragment Schichtpunkt(GebaeudeImportStand stand, BauteilsteckbriefSchicht sch) => __builder =>
     {
-        string klasse = (z.OhneTreffer ? "epos-gebimport-zeile--gelb " : "") + (z.Vorgemerkt ? "epos-gebimport-baustoff--vorgemerkt" : "");
+        GebaeudeMaterialzeileDaten? m = sch.Weggelassen ? null : Materialzeile(stand, sch);
+        bool eigene = m is not null && m.AbgleichSchluessel == GebaeudeAbgleichSchluessel.EigeneZuordnung;
+        bool wahl = m is not null && stand.Baustoffe is { Katalog.Count: > 0 } && (sch.OhneWert || eigene);
+        string herkunft = eigene && !sch.OhneWert && sch.HerkunftSchluessel != SteckbriefHerkunft.Datei ? Texte.AbHerkunftHand : sch.Herkunft;
+        bool ziel = m is not null && m.Schluessel == _baustoffziel;
+        <li class="@Schichtklasse(sch, m, ziel)" data-herkunft="@(eigene ? "hand" : sch.HerkunftSchluessel)" data-material="@sch.Materialschluessel">
+            @if (ziel)
+            {
+                <span class="epos-gebimport-zielmarke" tabindex="-1" @ref="_baustoffmarke"></span>
+            }
+            @sch.Name · @sch.Dicke · λ @sch.Lambda · ρ @sch.Rohdichte · c @sch.Cp · @herkunft
+            @if (sch.Weggelassen)
+            {
+                <span class="epos-steckbrief-grund">(@sch.Grund)</span>
+            }
+            @if (wahl && m is not null && stand.Baustoffe is { } baustoffe)
+            {
+                <span class="epos-gebimport-schichtwahl" title="@(m.Vorgemerkt ? Texte.BaustoffVorgemerkt : null)">
+                    <select class="epos-eingabe epos-gebimport-baustoffwahl" aria-label="@Format(Texte.BaustoffWaehlen, sch.Name)" disabled="@Beschaeftigt"
+                            value="@(m.IdBaustoff?.ToString(CultureInfo.InvariantCulture) ?? "")"
+                            @onchange="e => BeiBaustoff(m, e)">
+                        @if (m.IdBaustoff is null)
+                        {
+                            <option @key="0" value="" selected>@Texte.BaustoffPlatzhalter</option>
+                        }
+                        @foreach (GebaeudeBaustoffgruppe gruppe in baustoffe.Katalog)
+                        {
+                            <optgroup label="@gruppe.Titel">
+                                @foreach (GebaeudeBaustoffwahl w in gruppe.Eintraege)
+                                {
+                                    <option @key="w.Id" value="@w.Id.ToString(CultureInfo.InvariantCulture)" selected="@(w.Id == m.IdBaustoff)">@w.Text</option>
+                                }
+                            </optgroup>
+                        }
+                    </select>
+                    @if (eigene)
+                    {
+                        <button type="button" class="epos-knopf epos-gebimport-entfernen" disabled="@Beschaeftigt"
+                                title="@Format(Texte.ZuordnungEntfernenTitel, m.Name)"
+                                @onclick="() => BeiEntfernen(m)">@Texte.ZuordnungEntfernen</button>
+                    }
+                </span>
+            }
+        </li>
+    };
+
+    private static string? Schichtklasse(BauteilsteckbriefSchicht sch, GebaeudeMaterialzeileDaten? m, bool ziel)
+    {
+        string klasse = (sch.Weggelassen ? "epos-steckbrief-schicht--weggelassen " : "")
+                        + (sch.OhneWert ? "epos-gebimport-schicht--ohnewert " : "")
+                        + (m is { Vorgemerkt: true } ? "epos-gebimport-baustoff--vorgemerkt " : "")
+                        + (ziel ? "epos-gebimport-baustoff--ziel" : "");
         klasse = klasse.Trim();
         return klasse.Length == 0 ? null : klasse;
     }

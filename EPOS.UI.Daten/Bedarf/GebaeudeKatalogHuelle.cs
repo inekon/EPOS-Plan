@@ -260,10 +260,8 @@ namespace WindowsFormsApplication1
             // entfällt (ZK-b).
             var projektaufbauten = (katalog ? aufbauCtrl.LesenKatalog() : aufbauCtrl.LesenJeProjekt(idProjekt))
                 .Where(a => a != null).ToDictionary(a => a.ID);
-            List<AufbauWahl> projektwahl = projektaufbauten.Values.Select(a => Wahl(a, katalog)).ToList();
-            List<AufbauWahl> katalogwahl = katalog
-                ? new List<AufbauWahl>()
-                : aufbauCtrl.LesenKatalog().Where(a => a != null).Select(a => Wahl(a, true)).ToList();
+            List<AufbauWahl> projektwahl = Wahlen(projektaufbauten.Values, katalog);
+            List<AufbauWahl> katalogwahl = katalog ? new List<AufbauWahl>() : Wahlen(aufbauCtrl.LesenKatalog(), true);
 
             // Die Konditionierung einer gelesenen Zone der Ebene.
             KonditionierungCtrl.Eigner Zoneneigner(int idZone)
@@ -520,15 +518,23 @@ namespace WindowsFormsApplication1
                                               w.Katalog ? BauteilaufbauHuelle.Baustoffe() : Projektbaustoffe(idProjekt));
             };
 
+            // GD-5 (Vorgaberegel 2.5): das Profil der Gebäudeart für Zonen ohne Profil - nur im Projekt, der Katalog einmal gelesen.
+            Raumnutzungsvorbelegung vorbelegung = null;
+            Func<string, string> vorgabeprofil = katalog ? null
+                : art => Zonenvorbesetzung.AusGebaeudeart(vorbelegung ??= Raumnutzungsvorbelegung.Lesen(), art)?.Name;
+
             return new GebaeudeZonenweg
             {
                 Zonen = gelesen.Values.OrderBy(z => z.Rang).Select(AlsDaten).ToList(),
+                Vorgabeprofil = vorgabeprofil,
                 Luftstroeme = LuftLesen(idGebaeude),
                 // Die Hochrechnung braucht das Klima eines Projekts, der Katalogaufbau steht im Katalog schon zur Wahl.
                 Uebernehmen = katalog ? null : uebernehmen,
                 AufbauUebernehmen = katalog ? null : aufbauUebernehmen,
                 Speichern = speichern,
                 Neulesen = neulesen,
+                // GD-4: „Als Mehrzonenmodell übernehmen…“ aus der gespeicherten Importquelle - nur am Projektgebäude.
+                Mehrzonen = katalog ? null : GebaeudeMehrzonenHuelle.Weg(gebaeudeId, idProjekt),
                 Katalog = katalog,
                 Pruefen = pruefen,
                 Hinweise = hinweise,
@@ -551,15 +557,36 @@ namespace WindowsFormsApplication1
             };
         }
 
-        /// <summary>Ein Aufbau zur Wahl: Name (samt Bauteilart) und der im Kern gerechnete U-Wert.</summary>
+        /// <summary>Die Aufbauten zur Wahl — eine Liste je Katalog oder Projekt (BK-2b: ohne Ausnahme, auch bei 8 500 Sätzen).</summary>
+        internal static List<AufbauWahl> Wahlen(IEnumerable<BauteilaufbauModel> aufbauten, bool katalog)
+            => aufbauten.Where(a => a != null).Select(a => Wahl(a, katalog)).ToList();
+
+        /// <summary>
+        /// Ein Aufbau zur Wahl: Name (samt Bauteilart) und der im Kern gerechnete U-Wert. BK-2b: Ein gekennzeichneter Aufbau
+        /// (gespeichertes Kennzeichen oder die Kernregel, die auch die Bänder des Rechenwegs prüft) wird nicht gerechnet — sein U
+        /// ist das U der Quelle, sonst leer mit Grund; die Wahl zeigt ihn erst nach „auch ungeeignete zeigen". Der Rechenweg
+        /// wirft für die gezeigten keine Ausnahme mehr (Prüfung ohne Ausnahme im Kern).
+        /// </summary>
         private static AufbauWahl Wahl(BauteilaufbauModel a, bool katalog)
         {
-            double? u = null;
-            try { u = BauteilaufbauCtrl.Kennwerte(a, mitBezugsperiode: false).U_WM2K; }
-            catch (Exception) { u = null; }
+            string grund = Bauteilkatalog.UngeeignetGrund(a);
+            bool ungeeignet = a.SimulationUngeeignet || grund != null;
+            double? u;
+            if (ungeeignet)
+            {
+                u = Bauteilkatalog.Zahl(a.Zusatz, BauteilkatalogSchema.SPALTE_U_QUELLE);
+            }
+            else
+            {
+                BauteilaufbauKennwerte k = BauteilaufbauCtrl.Kennwerte(a, mitBezugsperiode: false);
+                u = k.U_WM2K;
+                grund = u.HasValue ? null : k.Grund;
+            }
             string text = a.Bezeichner ?? "";
             if (!string.IsNullOrEmpty(a.Bauteilart)) text += " · " + BauteilaufbauCtrl.BauteilartText(a.Bauteilart);
-            return new AufbauWahl(a.ID, katalog, text, a.Bauteilart ?? "", u, !string.IsNullOrEmpty(a.Typaufbau));
+            if (ungeeignet) text += " · " + MyResource.Resource.BKAT_MARKE_UNGEEIGNET;
+            return new AufbauWahl(a.ID, katalog, text, a.Bauteilart ?? "", u, !string.IsNullOrEmpty(a.Typaufbau),
+                                  ungeeignet, u.HasValue ? "" : grund ?? "");
         }
 
         /// <summary>Die Baustoffe des Projekts — die Schichten eines Projektaufbaus zeigen auf sie.</summary>
@@ -621,7 +648,9 @@ namespace WindowsFormsApplication1
                 ["Texte"] = Texte(),
                 ["TitelText"] = Titel(),
 
-                ["GruppeKopf"] = Text_("GEBK_GRP_KENNGROESSEN", "Kenngrößen"),
+                // GD-1 (Entwurf GD 2.1): der Kopf zweigeteilt - "Beschreibung und Einordnung" und "Rechengrößen".
+                ["GruppeEinordnung"] = Text_("GEBK_GRP_EINORDNUNG", "Beschreibung und Einordnung"),
+                ["GruppeKopf"] = Text_("GEBK_GRP_RECHENGROESSEN", "Rechengrößen"),
                 ["GruppeRaumtemperaturen"] = Text_("GEBK_GRP_RAUMTEMPERATUREN", "Raumtemperaturen"),
                 ["GruppeFerienAnfang"] = Text_("GEBK_GRP_FERIEN_ANFANG", "Ferien Anfang"),
                 ["GruppeFerienEnde"] = Text_("GEBK_GRP_FERIEN_ENDE", "Ferien Ende"),
@@ -817,6 +846,20 @@ namespace WindowsFormsApplication1
             t.HerkunftInfiltrationNutzer = Text_("GEBK_HERKUNFT_INFILTRATION_NUTZER", t.HerkunftInfiltrationNutzer);
             t.HerkunftLuftwechselrate = Text_("GEBK_HERKUNFT_LUFTWECHSELRATE", t.HerkunftLuftwechselrate);
             t.HerkunftVorgabe = Text_("GEBK_HERKUNFT_VORGABE", t.HerkunftVorgabe);
+            t.HinweisEinordnung = Text_("GEBK_HINWEIS_EINORDNUNG", t.HinweisEinordnung);
+            t.MarkeDatei = Text_("GEBK_MARKE_DATEI", t.MarkeDatei);
+            t.MarkeVorgabe = Text_("GEBK_MARKE_VORGABE", t.MarkeVorgabe);
+            t.MarkeHand = Text_("GEBK_MARKE_HAND", t.MarkeHand);
+            t.MarkeGeerbt = Text_("GEBK_MARKE_GEERBT", t.MarkeGeerbt);
+            t.MarkeWirkungslos = Text_("GEBK_MARKE_WIRKUNGSLOS", t.MarkeWirkungslos);
+            t.ZonenVorgabeHoehe = Text_("GEBK_ZONEN_VORGABE_HOEHE", t.ZonenVorgabeHoehe);
+            t.ZonenVorgabeLuftwechsel = Text_("GEBK_ZONEN_VORGABE_LUFTWECHSEL", t.ZonenVorgabeLuftwechsel);
+            t.JeZoneRaumhoehe = Text_("GEBK_JEZONE_RAUMHOEHE", t.JeZoneRaumhoehe);
+            t.JeZoneLuftwechsel = Text_("GEBK_JEZONE_LUFTWECHSEL", t.JeZoneLuftwechsel);
+            t.RueckfallFenster = Text_("GEBK_RUECKFALL_FENSTER", t.RueckfallFenster);
+            t.RueckfallFensterKeines = Text_("GEBK_RUECKFALL_FENSTER_KEINES", t.RueckfallFensterKeines);
+            t.RueckfallBauweise = Text_("GEBK_RUECKFALL_BAUWEISE", t.RueckfallBauweise);
+            t.RueckfallBauweiseKeine = Text_("GEBK_RUECKFALL_BAUWEISE_KEINE", t.RueckfallBauweiseKeine);
             t.HinweisSommerlueftung = Text_("GEBK_HINWEIS_SOMMERLUEFTUNG", t.HinweisSommerlueftung);
             t.VorgabeFormat = Text_("GEBK_VORGABE", t.VorgabeFormat);
             t.VorgabeUnbegrenzt = Text_("GEBK_VORGABE_UNBEGRENZT", t.VorgabeUnbegrenzt);

@@ -204,7 +204,7 @@ namespace EPOS.Kern.Tests
             BaustoffModel gelesen = ctrl.LesenKatalogsatz(e.Id);
             Assert.Equal("Stampflehm", gelesen.Bezeichner);
             Assert.False(gelesen.ReadOnly);
-            Assert.Equal(DbWerte.HERKUNFT_MANUELL, gelesen.Herkunft);
+            Assert.Equal(BauteilkatalogSchema.HERKUNFT_EIGEN, gelesen.Herkunft);          // ein eigener Katalogsatz (BK-2)
             Assert.Null(gelesen.Cp);                                    // NULL bleibt NULL
             Assert.Null(gelesen.Hersteller);
 
@@ -221,7 +221,7 @@ namespace EPOS.Kern.Tests
             BaustoffModel k = ctrl.LesenKatalogsatz(kopie.Id);
             Assert.False(k.ReadOnly);
             Assert.Equal(0.036, k.Lambda);
-            Assert.Equal(DbWerte.HERKUNFT_MANUELL, k.Herkunft);
+            Assert.Equal(BauteilkatalogSchema.HERKUNFT_EIGEN, k.Herkunft);
             Assert.Equal(BaustoffSchema.SaatZu(36).Quelle, k.Quelle);
 
             Assert.True(ctrl.KatalogLoeschen(e.Id).Ok);
@@ -274,7 +274,7 @@ namespace EPOS.Kern.Tests
             BauteilaufbauModel g = ctrl.LesenKatalogsatz(e.Id);
             Assert.Equal(3, g.Schichten.Count);
             Assert.Equal(new[] { 1, 2, 3 }, g.Schichten.Select(s => s.Reihenfolge));
-            Assert.Equal(DbWerte.HERKUNFT_MANUELL, g.Herkunft);
+            Assert.Equal(BauteilkatalogSchema.HERKUNFT_EIGEN, g.Herkunft);
             Assert.False(g.ReadOnly);
 
             // Schicht 1 traegt den Stoff Kalksandstein 1400 (Id 18) - die fehlenden Werte kommen aus ihm.

@@ -16,7 +16,7 @@ Split-Kälte …“.
 |---|---|
 | **E-K1** | Eigene Gruppe „Kältebedarf“ auf der Startseite mit drei Kacheln: „Kältebedarf extern“ (CSV-Lastgang), „Kältebedarfsprofile“ (Typkatalog, Jahressumme, Temperatur, Kalender), „Gebäudekühlung“ (Sprung zu den Kühleinstellungen der Gebäude). Die Startseite kennt Reiter (Projekt, Wärmebedarf, Strombedarf, Energieerzeuger, Simulation, Berichte & Kosten), also wird es ein **siebter Reiter „Kältebedarf“**. |
 | **E-K2** | Deckungsart je Zuordnungszeile (CSV-Lastgang und Profil): „zentral“ (Vorgabe, geht in die Kältefolge wie heute) oder „dezentral Split“ mit EER (fest oder linear über der Außentemperatur), Kühlträger und eigenem Zähler; der Split-Anteil wird **neben** der Kaskade gebucht und als Strom gezählt — ohne Gerätegrenze, ohne Inneneinheiten (die gehören zum Raumklimagerät Typ 14 des Entwurfs K-D; Kennfeld später von dort). |
-| **E-K3** | Kältebedarfsprofile tragen Vorlauf/Rücklauf nur als Angabe ohne Wirkung auf die Erzeuger; Prozesskälte mit Vorrang (Naht `Kaelteangebot.Prozesskaelte`) ist eine spätere Welle. |
+| **E-K3** | Kältebedarfsprofile tragen Vorlauf/Rücklauf nur als Angabe ohne Wirkung auf die Erzeuger; Prozesskälte mit Vorrang (Naht `Kaelteangebot.Prozesskaelte`) ist eine spätere Welle. Die Art je Zeile (Raumkühlung/Prozesskälte, `Kaelte_Art`, Schema 218), der Unterposten `Kaeltebedarf_Prozess` und die Belegung der Naht sind mit KWN‑0 gebaut, beschrieben im [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 5.6.9 und 5.6.13; das Temperaturpaar wirkt erst für gekoppelte Geräte ab KWN‑1. |
 
 Schemaschritt **213** ist für die Welle K1 angemeldet (Zeile „Schemaschritt angemeldet“ im Kopf von
 [`Status_iOS_Migration.md`](Status_iOS_Migration.md), 10.10.2026 21:26 UTC); er hängt an 212 `KaelteRangSchema` (Welle KB-D der
@@ -144,10 +144,16 @@ und `NurKuehlung`.
   `Del_WaermebedarfExtern(projektID, kanal)` mit Kanalfilter (`DELETE … WHERE ID_Projekt = ? AND Kanal = ?`), und der
   Modus `NurKuehlung` löscht und schreibt nur seine Kanalzeilen. Ein Test hält: eine Speicherung im Modus `NurKuehlung`
   lässt jede Wärmezeile (ID, Ganglinie, Bezeichner, Kanal) unverändert. Im Modus `Alle` ändert sich nichts.
-- **Katalogauswahl V1.** Der Dialog folgt dem Gerüst „Gerahmt und gestapelt“ der Stufe 4 des
-  [Katalogauswahlkonzepts](Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md) (Zeitreihen); die Ganglinie steht in der
-  Detailzeile „gewählter Satz“ als Kälteganglinie (Kältefarbe, Einheit kW).
-- **Deckungsart** steht als Feldgruppe in der Detailzeile der Projektzeile (3.4).
+- **Katalogauswahl V1.** Der Dialog folgt dem Gerüst „Gerahmt und gestapelt“ des
+  [Katalogauswahlkonzepts](Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md) im Aufbau des Wärmepumpendialogs
+  (KA‑E‑23), in beiden Modi gleich: Die Zeile „gewählter Satz“ zeigt nur das Wesentliche — Bezeichner, Kanal und Art,
+  Jahresarbeit, Vollbenutzungsstunden, bei einer Kühlzeile die Deckung in einem Satz — und die Knopfleiste Vergleichen…,
+  Schloss setzen…, Löschen, Bearbeiten…, Neu… (Neu… legt über die Importkette einen Katalogsatz an). Bearbeiten… und der
+  Stift je Listenzeile öffnen eine Überlagerung für Projekt- und Katalogsatz mit den Stammdaten (Bezeichner, Kanal, Art,
+  im Modus `Alle` bei Kanal Kühlung der Hinweis OP‑2), der Ganglinie (Kälteganglinie in Kältefarbe, Einheit kW, mit
+  Kennzahlen, „Datei importieren…“ und „Speichern unter…“ am Katalogsatz) und der Feldgruppe „Deckung“ beim Projektsatz
+  im Kanal Kühlung; Abbrechen, Kreuz und Esc verwerfen, OK prüft. Ein gesperrter Katalogsatz öffnet nur lesend.
+- **Deckungsart** steht als Feldgruppe in der Bearbeiten-Überlagerung der Projektzeile (3.4).
 
 ### 3.3 Dialog „Kältebedarfsprofile“
 

@@ -1,0 +1,175 @@
+﻿@* DIE FELDGRUPPE „DECKUNG" einer Kaeltezuordnung (Konzept Kaeltebedarf 3.4, Stufe K5a) - ein eigener Baustein,
+   damit der Dialog „Waermebedarf extern“ / „Kaeltebedarf extern“ (Detailzeile der Projektzeile) und der
+   Bedarfsprofile-Dialog (K5b, Bearbeiten-Ueberlagerung) DIESELBE Gruppe zeigen. Nichts Dialogspezifisches hier.
+
+   FELDER UND SICHTBARKEIT (Konzept 3.4): Deckungsart immer; EER-Weg, EER/T1, Kuehltraeger und eigener Zaehler bei
+   „dezentral (Split)"; EER/T2 bei „linear". Der Wechsel auf dezentral belegt leere Felder mit den Vorgaben
+   3,0 · 35 °C (linear dazu 4,0 · 25 °C); eine Herleitungszeile nennt sie als „Vorgabe, bitte mit Geraetedaten
+   ersetzen", solange sie unveraendert stehen. Unter der Gruppe der Hinweis aus dem Konzept.
+
+   SCHREIBWEG: Die Komponente schreibt AN ORT UND STELLE in den Feldsatz des Wirts (DeckungsartDaten) und meldet
+   jede Eingabe ueber „Geaendert". Geprueft wird im OK-Weg des Wirts mit der Regel des Kerns
+   (DeckungsartDaten.Pruefgrund); bei „zentral" leert der Kern die Split-Felder beim Speichern. Keine Datenbank.
+
+   KLAPPBAR: Mit Klappbar="true" steht die Gruppe in einer Klappgruppe - zugeklappt bei „zentral", aufgeklappt bei
+   „dezentral" (Mindesthoehe der Detailzeile); sonst als Formulargruppe. *@
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1
+
+@if (Klappbar)
+{
+    <Klappgruppe Klasse="epos-deckung" Titel="@Resource.DECK_GRUPPE" Zusatz="@ArtText"
+                 Offen="@_offen" OffenChanged="@(o => _offen = o)">
+        @Inhalt
+    </Klappgruppe>
+}
+else
+{
+    <div class="epos-deckung">
+        <Formulargruppe Titel="@(TitelAnzeigen ? Resource.DECK_GRUPPE : "")">
+            <KindInhalt>@Inhalt</KindInhalt>
+        </Formulargruppe>
+    </div>
+}
+
+@code {
+    /// <summary>Der bearbeitete Feldsatz — die Arbeitskopie des Wirts; die Komponente schreibt hinein.</summary>
+    [Parameter] public DeckungsartDaten Daten { get; set; } = new();
+
+    /// <summary>Gesperrt? <c>true</c> zeigt die Werte, nimmt aber keine Eingabe an.</summary>
+    [Parameter] public bool Gesperrt { get; set; }
+
+    /// <summary>Die Stromträger des Projekts (Id, Anzeigetext) — die Auswahl des Kühlträgers; leer = Stromträger des Projekts.</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Stromtraeger { get; set; } = Array.Empty<(int, string)>();
+
+    /// <summary>Jede Eingabe meldet sich; geschrieben wird erst im OK-Weg des Wirts.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>
+    /// Trägt die Formulargruppe ihren Titel „Deckung“? <c>false</c>, wenn der Wirt den Titel schon zeigt (eine Überlagerung
+    /// mit eigenem Titel — „Ein Titel, eine Stelle“).
+    /// </summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    /// <summary>In einer Klappgruppe (zugeklappt bei „zentral")? Sonst als Formulargruppe.</summary>
+    [Parameter] public bool Klappbar { get; set; }
+
+    private bool _offen;
+    private DeckungsartDaten? _vorher;
+
+    protected override void OnParametersSet()
+    {
+        // Ein neuer Feldsatz (andere Zeile) klappt nach seiner Deckungsart auf oder zu.
+        if (ReferenceEquals(_vorher, Daten)) return;
+        _vorher = Daten;
+        _offen = Daten.IstSplit;
+    }
+
+    /// <summary>Steht die Gruppe offen? Prüfhilfe für die Tests.</summary>
+    public bool Offen => !Klappbar || _offen;
+
+    private bool Aktiv => !Gesperrt;
+
+    /// <summary>Der Anzeigetext der gewählten Deckungsart (Zusatz im Klappkopf).</summary>
+    private string ArtText
+    {
+        get
+        {
+            foreach ((string wert, string text) in DeckungsartDaten.Deckungsarten)
+                if (wert == Daten.Deckungsart) return text;
+            return DeckungsartDaten.Deckungsarten[0].Text;
+        }
+    }
+
+    private static IReadOnlyList<(int Id, string Text)> Eintraege(IReadOnlyList<(string Wert, string Text)> liste)
+    {
+        var l = new List<(int, string)>();
+        for (int i = 0; i < liste.Count; i++) l.Add((i, liste[i].Text));
+        return l;
+    }
+
+    private static int Index(IReadOnlyList<(string Wert, string Text)> liste, string? wert)
+    {
+        for (int i = 0; i < liste.Count; i++) if (liste[i].Wert == wert) return i;
+        return 0;
+    }
+
+    private RenderFragment Inhalt => @<text>
+        <Formularraster>
+          <KindInhalt>
+            <Auswahlfeld Bezeichnung="@Resource.DECK_LBL_ART" Eintraege="@Eintraege(DeckungsartDaten.Deckungsarten)"
+                         Auswahl="@Index(DeckungsartDaten.Deckungsarten, Daten.Deckungsart)" Aktiv="@Aktiv"
+                         AuswahlChanged="BeiDeckung" />
+            @if (Daten.IstSplit)
+            {
+                <Auswahlfeld Bezeichnung="@Resource.DECK_LBL_EER_WEG" Eintraege="@Eintraege(DeckungsartDaten.EerWege)"
+                             Auswahl="@Index(DeckungsartDaten.EerWege, Daten.EerWeg)" Aktiv="@Aktiv"
+                             AuswahlChanged="BeiEerWeg" />
+                <Zahlenfeld Bezeichnung="@(Daten.IstLinear ? Resource.DECK_LBL_EER1 : Resource.DECK_LBL_EER)"
+                            Feldname="@Resource.DECK_LBL_EER1" Wert="@Daten.Eer1" Nachkommastellen="2"
+                            Aktiv="@Aktiv" WertChanged="BeiEer1" />
+                <Zahlenfeld Bezeichnung="@(Daten.IstLinear ? Resource.DECK_LBL_TAUSSEN1 : Resource.DECK_LBL_TAUSSEN)"
+                            Feldname="@Resource.DECK_LBL_TAUSSEN1" Einheit="°C" Wert="@Daten.Taussen1"
+                            Min="@KaeltebedarfSchema.TAUSSEN_MIN" Max="@KaeltebedarfSchema.TAUSSEN_MAX"
+                            Aktiv="@Aktiv" WertChanged="BeiTaussen1" />
+                @if (Daten.IstLinear)
+                {
+                    <Zahlenfeld Bezeichnung="@Resource.DECK_LBL_EER2" Feldname="@Resource.DECK_LBL_EER2"
+                                Wert="@Daten.Eer2" Nachkommastellen="2" Aktiv="@Aktiv" WertChanged="BeiEer2" />
+                    <Zahlenfeld Bezeichnung="@Resource.DECK_LBL_TAUSSEN2" Feldname="@Resource.DECK_LBL_TAUSSEN2"
+                                Einheit="°C" Wert="@Daten.Taussen2"
+                                Min="@KaeltebedarfSchema.TAUSSEN_MIN" Max="@KaeltebedarfSchema.TAUSSEN_MAX"
+                                Aktiv="@Aktiv" WertChanged="BeiTaussen2" />
+                }
+                <Auswahlfeld Bezeichnung="@Resource.DECK_LBL_TRAEGER" Eintraege="@Stromtraeger"
+                             Auswahl="@Daten.KuehlIdCarrier" Platzhalter="@Resource.DECK_PLATZHALTER_TRAEGER"
+                             Aktiv="@Aktiv" AuswahlChanged="BeiTraeger" />
+                <Schalter Bezeichnung="@Resource.DECK_LBL_ZAEHLER" Wert="@Daten.KuehlEigenerZaehler" Aktiv="@Aktiv"
+                          WertChanged="BeiZaehler" />
+            }
+          </KindInhalt>
+        </Formularraster>
+        @if (Daten.PunktEinsIstVorgabe)
+        {
+            <Herleitungszeile Text="@Vorgabezeile(Daten.Eer1, Daten.Taussen1)" />
+        }
+        @if (Daten.PunktZweiIstVorgabe)
+        {
+            <Herleitungszeile Text="@Vorgabezeile(Daten.Eer2, Daten.Taussen2)" />
+        }
+        <Herleitungszeile Text="@Resource.DECK_HINWEIS" />
+    </text>;
+
+    /// <summary>
+    /// „EER 3,0 · 35 °C: Vorgabe, bitte mit Gerätedaten ersetzen" — die Zahlen wie in den Feldern daneben
+    /// (<see cref="EPOS.UI.Standards.Zahlen.Anzeigetext(double?, int?)"/>: Komma, unabhängig von der Prozesskultur).
+    /// </summary>
+    internal static string Vorgabezeile(double? eer, double? t)
+        => string.Format(CultureInfo.CurrentCulture, Resource.DECK_HRL_VORGABE,
+                         Resource.DECK_LBL_EER + " " + EPOS.UI.Standards.Zahlen.Anzeigetext(eer ?? 0, 1)
+                         + " · " + EPOS.UI.Standards.Zahlen.Anzeigetext(t ?? 0, 0) + " °C");
+
+    private Task BeiDeckung(int? i)
+    {
+        if (i is not int n || n < 0 || n >= DeckungsartDaten.Deckungsarten.Count) return Task.CompletedTask;
+        Daten.DeckungSetzen(DeckungsartDaten.Deckungsarten[n].Wert);
+        _offen = _offen || Daten.IstSplit;
+        return Melden();
+    }
+
+    private Task BeiEerWeg(int? i)
+    {
+        if (i is not int n || n < 0 || n >= DeckungsartDaten.EerWege.Count) return Task.CompletedTask;
+        Daten.EerWegSetzen(DeckungsartDaten.EerWege[n].Wert);
+        return Melden();
+    }
+
+    private Task BeiEer1(double? w) { Daten.Eer1 = w; return Melden(); }
+    private Task BeiTaussen1(double? w) { Daten.Taussen1 = w; return Melden(); }
+    private Task BeiEer2(double? w) { Daten.Eer2 = w; return Melden(); }
+    private Task BeiTaussen2(double? w) { Daten.Taussen2 = w; return Melden(); }
+    private Task BeiTraeger(int? id) { Daten.KuehlIdCarrier = id; return Melden(); }
+    private Task BeiZaehler(bool w) { Daten.KuehlEigenerZaehler = w; return Melden(); }
+    private Task Melden() => Geaendert.InvokeAsync();
+}

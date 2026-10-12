@@ -206,6 +206,27 @@ namespace WindowsFormsApplication1
             throw new ArgumentOutOfRangeException(nameof(art));
         }
 
+        /// <summary>
+        /// Die Projekttabelle einer Anlagenart — die Projektkopien derselben Spalten wie die
+        /// Stammtabelle (ohne Katalogspalten wie <c>ReadOnly</c>). Grundlage des Vergleichs
+        /// einer Projektzeile mit Katalogsaetzen (KA-E-24).
+        /// </summary>
+        public static string Projekttabelle(Anlagenart art)
+        {
+            switch (art)
+            {
+                case Anlagenart.Heizkessel: return "Tab_Heizkessel";
+                case Anlagenart.Bhkw: return "Tab_BHKW";
+                case Anlagenart.Waermepumpe: return "Tab_WP";
+                case Anlagenart.Solarkollektoren: return "Tab_Solarkollektoren";
+                case Anlagenart.Photovoltaik: return "Tab_PV";
+                case Anlagenart.Stromspeicher: return "Tab_Stromspeicher";
+                case Anlagenart.Pufferspeicher: return PufferSpCtrl.TABLE;
+                case Anlagenart.Kaeltemaschine: return KaeltemaschineCtrl.TABLE;
+            }
+            throw new ArgumentOutOfRangeException(nameof(art));
+        }
+
         /// <summary>Alle acht Auspraegungen — fuer Stapelpruefungen und die Doku.</summary>
         public static IEnumerable<Anlagenart> AlleArten
         {

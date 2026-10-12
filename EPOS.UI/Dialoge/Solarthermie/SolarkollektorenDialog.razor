@@ -57,9 +57,14 @@
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
     }
 
-    @* P = Kopfleiste „Im Projekt" (Summe Module, Bearbeiten…, In die Datenbank übernehmen…,
-       Entfernen), K = Kopf- und Fussleiste des Katalogs, S = Detailzeile „gewaehlter Satz",
-       D = Kopf und Fuss des Dialogs. Beide Listen fuehren eine Mehrfachwahl. *@
+    @* KATALOGAUSWAHL V1 (Konzept Projektdialoge mit Katalogauswahl 4.2, 4.4a): jede Funktion an genau einem
+       Ort. P = Kopfleiste „Im Projekt" (Summe Module, In die Datenbank übernehmen…, Aus dem Projekt entfernen),
+       K = Kopfleiste des Katalogs (Suche, In das Projekt übernehmen), S = Zeile „gewählter Satz" (Marke,
+       Kenndaten, Infoknöpfe und - KnopfleisteAmSatz, AW1 - Vergleichen…, Schloss setzen…, Löschen, Bearbeiten…,
+       Neu… auf den gewählten Satz; Schloss und Löschen nur beim Katalogsatz), D = Kopf und Fussleiste des
+       Dialogs. Der Stift je Listenzeile ist Bearbeiten… dieser Zeile. Der Klick auf die Zeile wählt (auch ↑ ↓
+       Pos1 Ende), die gewählte Projektzeile ist farbig hervorgehoben; die Kästchen markieren nur für die
+       Sammelaktionen, die auf die angekreuzten Zeilen wirken, sonst auf die gewählte. *@
     <Zweispaltenauswahl Dialogname="Solarkollektoren" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
                         KatalogZeile="@((int)Katalogliste.ZEILENHOEHE_ZEILENWAHL)"
                         UebernehmenText="@LabelHinzu"
@@ -76,6 +81,8 @@
                         SatzUebernommen="BeiSatzUebernommen" SatzVerworfen="BeiSatzVerworfen"
                         SatzZusammenfassung="@Zusammenfassung()"
                         KnopfleisteAmSatz="true"
+                        VergleichProjekt="@VergleichProjektsatz" VergleichKatalog="@VergleichKatalogsatz"
+                        KatalogGewaehlt="@_katalogZeile?.Schluessel" VergleichAbgelehnt="BeiSchlossAbgelehnt"
                         ProjektGewaehlt="@(_projektZeile is null ? null : Projektschluessel(_projektZeile))"
                         ProjektGewaehltChanged="BeiProjektTastenwahl"
                         @ref="_zweispalten">
@@ -148,9 +155,6 @@
         </Rechts>
 
         <KatalogFuss>
-            <button type="button" class="epos-knopf epos-knopf--vergleichen"
-                    title="@Resource.AUSWAHL_BTN_VERGLEICHEN_HINWEIS"
-                    disabled="@(VergleichsZahl < 2)" @onclick="BeiVergleichen">@Resource.AUSWAHL_BTN_VERGLEICHEN</button>
             <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogZeile"
                             Sperrgrund="@KatalogSperrgrund"
                             Ungespeichert="@_felderGeaendert" JaText="@JaText" NeinText="@NeinText"
@@ -226,6 +230,24 @@
         }
         else
         {
+            @* DIE ZWEISPALTIGE SATZ-UEBERLAGERUNG (WP1b, KA-E-25, Anwenderentscheid 12.10.2026: „auf der linken
+               Seite Daten zur ausgewaehlten Anlage - aus dem Datensatz die wichtigsten Daten"): links die Projektfelder
+               (nur Projektsatz) und darunter der Geraetesteckbrief, lesend aus DEMSELBEN Feldsatz, den die Felder rechts
+               bearbeiten; rechts die Kenndaten wie in der Detailzeile. In der Detailzeile bleibt der Aufbau einspaltig. *@
+            <div class="@SatzAufbauKlasse">
+            @if (_satzGross)
+            {
+                <section class="epos-satz-zweispaltig-links">
+                    @Projektblock
+                    <Gruppenkopf Titel="@SteckbriefTexte.GruppeGeraet">
+                        <KindInhalt>
+                            <Geraetesteckbrief Titel="@SteckbriefTexte.GruppeGeraet" TitelAnzeigen="false"
+                                               Klasse="epos-satz-steckbrief epos-skol-steckbrief" Zeilen="@Steckbriefzeilen" />
+                        </KindInhalt>
+                    </Gruppenkopf>
+                </section>
+            }
+            <section class="epos-satz-zweispaltig-rechts">
             <Formularraster>
                 <KindInhalt>
                 <Textfeld Bezeichnung="@LabelName" Wert="@_detail.Bezeichner" NurLesen="true" />
@@ -237,69 +259,11 @@
                 </KindInhalt>
             </Formularraster>
 
-            @* DIE FELDER DER ANLAGE stehen NUR beim Projektsatz (4.2: S aufgeklappt) - ein
-               Katalogsatz hat keine Ausrichtung und keinen Solarkreis. *@
-            @if (_projektZeile is not null)
+            @* Die Felder der Anlage: in der Detailzeile hier, in der Satz-Ueberlagerung links (WP1b). *@
+            @if (!_satzGross)
             {
-                <Gruppenkopf Titel="@GruppeKollektor">
-                    <KindInhalt>
-                        <Formularraster>
-                            <KindInhalt>
-                        <Ganzzahlfeld Bezeichnung="@LabelAnzahl" Feldname="@LabelAnzahl"
-                                      Wert="@_eingaben.Anzahl" WertChanged="w => { _eingaben.Anzahl = w; }" />
-                        <Textfeld Bezeichnung="@LabelAperturflaeche" Wert="@Gesamtflaeche" NurLesen="true"
-                                  Kurz="true" />
-                        <Ganzzahlfeld Bezeichnung="@LabelNeigung" Feldname="@LabelNeigung"
-                                      Wert="@_eingaben.Neigung" WertChanged="w => { _eingaben.Neigung = w; }" />
-                        <Ganzzahlfeld Bezeichnung="@LabelAzimut" Feldname="@LabelAzimut"
-                                      Wert="@_eingaben.Azimut" WertChanged="w => { _eingaben.Azimut = w; }" />
-                        @* Die BODENALBEDO vor dem Kollektorfeld (Entscheidungsvorlage Modellgrenzen, PV4):
-                           leer = 0,2; die Auswahlhilfe steht als Hinweis darunter. *@
-                        <Zahlenfeld Bezeichnung="@LabelAlbedo" Feldname="@LabelAlbedo"
-                                    Wert="@_eingaben.Albedo" Min="0" Max="1" Nachkommastellen="2"
-                                    WertChanged="w => { _eingaben.Albedo = w; }" />
-                        <Herleitungszeile Text="@HinweisAlbedo" />
-                        @* SOLARKREIS (Welle M2 der Entscheidungsvorlage Modellgrenzen, ST1 bis ST4):
-                           Pumpe, Verluste, Arbeitstemperatur mit Graedigkeit und Spreizung. Leer
-                           heisst Vorgabe - der Platzhalter nennt sie. *@
-                        <Zahlenfeld Bezeichnung="@Resource.SKV_LBL_PUMPENLEISTUNG" Feldname="@Resource.SKV_LBL_PUMPENLEISTUNG"
-                                    Wert="@_eingaben.PumpenleistungW" Min="0" Max="10000" Platzhalter="0"
-                                    WertChanged="w => { _eingaben.PumpenleistungW = w; }" />
-                        <Zahlenfeld Bezeichnung="@Resource.SKV_LBL_VERLUSTE" Feldname="@Resource.SKV_LBL_VERLUSTE"
-                                    Wert="@_eingaben.VerlusteProzent" Min="0" Max="50" Platzhalter="8"
-                                    WertChanged="w => { _eingaben.VerlusteProzent = w; }" />
-                        <Auswahlfeld Bezeichnung="@Resource.SKV_LBL_ARBEITSTEMPERATUR" Eintraege="@ArbeitstemperaturWege"
-                                     Auswahl="@(_eingaben.ArbeitstemperaturAusSpeicher ? 1 : 0)"
-                                     AuswahlChanged="w => { _eingaben.ArbeitstemperaturAusSpeicher = w == 1; }" />
-                        <Zahlenfeld Bezeichnung="@Resource.SKV_LBL_GRAEDIGKEIT" Feldname="@Resource.SKV_LBL_GRAEDIGKEIT"
-                                    Wert="@_eingaben.GraedigkeitK" Min="0" Max="30" Platzhalter="5"
-                                    Aktiv="@_eingaben.ArbeitstemperaturAusSpeicher"
-                                    WertChanged="w => { _eingaben.GraedigkeitK = w; }" />
-                        <Zahlenfeld Bezeichnung="@Resource.SKV_LBL_SPREIZUNG" Feldname="@Resource.SKV_LBL_SPREIZUNG"
-                                    Wert="@_eingaben.SpreizungK" Min="0" Max="30" Platzhalter="10"
-                                    Aktiv="@_eingaben.ArbeitstemperaturAusSpeicher"
-                                    WertChanged="w => { _eingaben.SpreizungK = w; }" />
-                        <Herleitungszeile Text="@(_eingaben.ArbeitstemperaturAusSpeicher
-                                                  ? Resource.SKV_HINT_ARBEITSTEMPERATUR_SPEICHER
-                                                  : Resource.SKV_HINT_ARBEITSTEMPERATUR_FEST)" />
-                        @if (_eingaben.ArbeitstemperaturAusSpeicher)
-                        {
-                            <Herleitungszeile Text="@Resource.SKV_HINT_GRAEDIGKEIT" />
-                        }
-                        <Herleitungszeile Text="@Resource.SKV_HINT_PUMPE" />
-                        @* DIE SENKEN DER ANLAGE (Anwenderentscheid 23.09.2026): Ohne Senke fuer ihren
-                           Bedarf findet das Kollektorfeld keinen Abnehmer. *@
-                        @if (!string.IsNullOrEmpty(_projektZeile.Senken))
-                        {
-                            <Herleitungszeile Text="@_projektZeile.Senken" />
-                        }
-                            </KindInhalt>
-                        </Formularraster>
-                        @* Die Anlagenfelder uebernimmt das OK der Satz-Ueberlagerung - das Fragment steht nur dort (UeS2). *@
-                    </KindInhalt>
-                </Gruppenkopf>
+                @Projektblock
             }
-
             @* ALLE DATEN DES GEWAEHLTEN SATZES, aufklappbar und BEARBEITBAR: beim Katalogsatz der
                Katalog (gesperrt nur lesen), beim Projektsatz die Projektkopie - dieselben Felder
                samt den Investitionskosten. *@
@@ -326,6 +290,8 @@
                     }
                 </div>
             }
+            </section>
+            </div>
         }
         </Satz>
     </Zweispaltenauswahl>
@@ -406,6 +372,12 @@
 
     /// <summary>Die Zeilen des Vergleichs je Satzname (W14a-E-10, S3.3).</summary>
     [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Vergleichsparameter { get; set; }
+
+    /// <summary>
+    /// Die Kennwerte einer PROJEKTKOPIE (ID) in derselben Parameterliste wie <see cref="Vergleichsparameter"/>
+    /// (<c>ParameterUebersichtCtrl.ProjektWerte</c>) — „Vergleichen…" über Projektzeilen und Katalogsätze (KA-E-24).
+    /// </summary>
+    [Parameter] public Func<int, IReadOnlyList<Parameterwert>>? VergleichsparameterProjekt { get; set; }
 
     /// <summary>Die Zeilen der Katalogliste, ungefiltert; nach jeder Katalogpflege neu erfragt.</summary>
     [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Katalogzeilen { get; set; }
@@ -677,11 +649,6 @@
     /// Katalogsätze; steht ein Projektsatz, nennen sie „Katalogsatz wählen".
     /// </summary>
     private string? KatalogSperrgrund => SatzArt == Satzmarke.Projektsatz ? Resource.AUSWAHL_SPERRE_KATALOGSATZ : null;
-
-    /// <summary>Wie viele Sätze „Vergleichen…" im Bereich des gewählten Satzes vergleichen würde.</summary>
-    private int VergleichsZahl => SatzArt == Satzmarke.Projektsatz
-        ? (ProjektsatzWege is null ? 0 : ProjektZiele().Select(z => z.GeraetId).Distinct().Count())
-        : KatalogZiele().Count;
 
     private void BeiWahlGeaendert(Auswahlbereich bereich)
     {
@@ -1345,36 +1312,39 @@
     }
 
     /// <summary>
-    /// „Vergleichen…" — zwei oder mehr Sätze nebeneinander, im Bereich des gewählten Satzes
-    /// (AW1): beim Projektsatz die angekreuzten Projektkopien (je Gerät einmal), sonst die
-    /// gewählten Katalogsätze.
+    /// „Vergleichen…" über beide Listen (KA-E-24, die Zweispaltenauswahl führt den Knopf): die Kennwerte einer
+    /// Projektzeile aus derselben Parameterliste wie die des Katalogsatzes (<see cref="VergleichsparameterProjekt"/>,
+    /// Projektkopie über ihre ID); ohne diese Gabe die Felder aus dem Weg der Projektkopie.
     /// </summary>
-    private void BeiVergleichen()
+    private Vergleichssatz? VergleichProjektsatz(string schluessel)
     {
-        if (SatzArt == Satzmarke.Projektsatz)
+        ErzeugerZeile? z = Zeilen.FirstOrDefault(r => Projektschluessel(r) == schluessel);
+        if (z is null) return null;
+        if (VergleichsparameterProjekt is not null)
         {
-            ProjektVergleichen();
-            return;
+            string grund = "";
+            IReadOnlyList<Parameterwert>? werte = Katalogladung.SatzDazu(() => VergleichsparameterProjekt(z.GeraetId),
+                                                                         z.Bezeichner, ref grund);
+            if (grund.Length > 0) BeiSchlossAbgelehnt(grund);
+            return Vergleichssatz.AusParametern(Satzmarke.Projektsatz, z.Bezeichner, werte);
         }
-        List<Katalogfilterzeile> ziele = KatalogZiele();
-        if (ziele.Count >= 2) _katalogliste?.Vergleichen(ziele.Select(z => z.Schluessel).ToList());
+        if (ProjektsatzWege is null) return null;
+        IReadOnlyList<BrowserFeldwert>? felder = Katalogladung.Satz(() => ProjektsatzWege.Lesen(z.GeraetId),
+                                                                      z.Bezeichner, out _satzFehler);
+        if (felder is null) return null;
+        return new Vergleichssatz(Satzmarke.Projektsatz, z.Bezeichner, felder
+            .Select(f => (f.Einheit.Length > 0 ? f.Feldname + " [" + f.Einheit + "]" : f.Feldname, f.Wert)).ToList());
     }
 
-    /// <summary>Die angekreuzten Projektkopien nebeneinander — ihre Felder aus dem Weg der Projektkopie.</summary>
-    private void ProjektVergleichen()
+    /// <summary>Die Kennwerte eines Katalogsatzes für „Vergleichen…" — die Parameterübersicht, ohne sie die Profilspalten.</summary>
+    private Vergleichssatz? VergleichKatalogsatz(string schluessel)
     {
-        if (ProjektsatzWege is null || _katalogliste is null) return;
-        var saetze = new List<(string, IReadOnlyList<(string, string)>)>();
-        foreach (var g in ProjektZiele().GroupBy(z => z.GeraetId))
-        {
-            IReadOnlyList<BrowserFeldwert>? felder = Katalogladung.Satz(() => ProjektsatzWege.Lesen(g.Key),
-                                                                          g.First().Bezeichner, out _satzFehler);
-            if (felder is null) return;
-            saetze.Add((g.First().Bezeichner, felder
-                .Select(f => (f.Einheit.Length > 0 ? f.Feldname + " [" + f.Einheit + "]" : f.Feldname, f.Wert))
-                .ToList()));
-        }
-        _katalogliste.VergleichenWerte(saetze);
+        Katalogfilterzeile? k = _katalog.FirstOrDefault(z => z.Schluessel == schluessel);
+        if (k is null) return null;
+        Func<string, IReadOnlyList<Parameterwert>>? gabe = Vergleichsparameter;
+        return gabe is not null
+            ? Vergleichssatz.AusParametern(Satzmarke.Katalogsatz, k.Bezeichner, gabe(k.Bezeichner))
+            : Vergleichssatz.AusSpalten(Satzmarke.Katalogsatz, Katalogprofil, k);
     }
 
     /// <summary>„Neu…": nach dem Namen der Katalogeditor im Modus Neu.</summary>
@@ -1515,4 +1485,85 @@
     }
 
     private void BeiSchlossAbgelehnt(string grund) => Melden(grund ?? "", true);
+    // --- Der Geraetesteckbrief der Satz-Ueberlagerung (WP1b, KA-E-25) -------------------
+
+    /// <summary>Die Beschriftungen des Gerätesteckbriefs; füllen sich selbst aus den Ressourcen.</summary>
+    [Parameter] public SolarkollektorenSteckbriefTexte SteckbriefTexte { get; set; } = new();
+
+    /// <summary>Zweispaltig nur in der Satz-Überlagerung; in der Detailzeile bleibt der Aufbau, wie er ist.</summary>
+    private string SatzAufbauKlasse => _satzGross ? "epos-satz-zweispaltig" : "epos-satz-einspaltig";
+
+    /// <summary>
+    /// Die Zeilen des Steckbriefs — je Zeichenlauf aus dem Feldsatz „Alle Daten" (in der Überlagerung aufgeklappt),
+    /// den die Felder rechts bearbeiten; ohne Feldsatz aus dem Detailblock. Am Projektsatz mit den Kostensummen.
+    /// </summary>
+    internal IReadOnlyList<Steckbriefzeile> Steckbriefzeilen => SolarkollektorenSteckbrief.Zeilen(_felder, _detail, SteckbriefTexte,
+        _projektZeile is not null ? _kosten : null);
+
+    /// <summary>Das Kollektorfeld (Anzahl, Ausrichtung, Albedo, Solarkreis, Senken) — EIN Fragment für Detailzeile und linke Spalte der Satz-Überlagerung (WP1b).</summary>
+    private RenderFragment Projektblock => __builder =>
+    {
+        @* DIE FELDER DER ANLAGE stehen NUR beim Projektsatz (4.2: S aufgeklappt) - ein
+           Katalogsatz hat keine Ausrichtung und keinen Solarkreis. *@
+        if (_projektZeile is not null)
+        {
+            <Gruppenkopf Titel="@GruppeKollektor">
+                <KindInhalt>
+                    <Formularraster>
+                        <KindInhalt>
+                    <Ganzzahlfeld Bezeichnung="@LabelAnzahl" Feldname="@LabelAnzahl"
+                                  Wert="@_eingaben.Anzahl" WertChanged="w => { _eingaben.Anzahl = w; }" />
+                    <Textfeld Bezeichnung="@LabelAperturflaeche" Wert="@Gesamtflaeche" NurLesen="true"
+                              Kurz="true" />
+                    <Ganzzahlfeld Bezeichnung="@LabelNeigung" Feldname="@LabelNeigung"
+                                  Wert="@_eingaben.Neigung" WertChanged="w => { _eingaben.Neigung = w; }" />
+                    <Ganzzahlfeld Bezeichnung="@LabelAzimut" Feldname="@LabelAzimut"
+                                  Wert="@_eingaben.Azimut" WertChanged="w => { _eingaben.Azimut = w; }" />
+                    @* Die BODENALBEDO vor dem Kollektorfeld (Entscheidungsvorlage Modellgrenzen, PV4):
+                       leer = 0,2; die Auswahlhilfe steht als Hinweis darunter. *@
+                    <Zahlenfeld Bezeichnung="@LabelAlbedo" Feldname="@LabelAlbedo"
+                                Wert="@_eingaben.Albedo" Min="0" Max="1" Nachkommastellen="2"
+                                WertChanged="w => { _eingaben.Albedo = w; }" />
+                    <Herleitungszeile Text="@HinweisAlbedo" />
+                    @* SOLARKREIS (Welle M2 der Entscheidungsvorlage Modellgrenzen, ST1 bis ST4):
+                       Pumpe, Verluste, Arbeitstemperatur mit Graedigkeit und Spreizung. Leer
+                       heisst Vorgabe - der Platzhalter nennt sie. *@
+                    <Zahlenfeld Bezeichnung="@Resource.SKV_LBL_PUMPENLEISTUNG" Feldname="@Resource.SKV_LBL_PUMPENLEISTUNG"
+                                Wert="@_eingaben.PumpenleistungW" Min="0" Max="10000" Platzhalter="0"
+                                WertChanged="w => { _eingaben.PumpenleistungW = w; }" />
+                    <Zahlenfeld Bezeichnung="@Resource.SKV_LBL_VERLUSTE" Feldname="@Resource.SKV_LBL_VERLUSTE"
+                                Wert="@_eingaben.VerlusteProzent" Min="0" Max="50" Platzhalter="8"
+                                WertChanged="w => { _eingaben.VerlusteProzent = w; }" />
+                    <Auswahlfeld Bezeichnung="@Resource.SKV_LBL_ARBEITSTEMPERATUR" Eintraege="@ArbeitstemperaturWege"
+                                 Auswahl="@(_eingaben.ArbeitstemperaturAusSpeicher ? 1 : 0)"
+                                 AuswahlChanged="w => { _eingaben.ArbeitstemperaturAusSpeicher = w == 1; }" />
+                    <Zahlenfeld Bezeichnung="@Resource.SKV_LBL_GRAEDIGKEIT" Feldname="@Resource.SKV_LBL_GRAEDIGKEIT"
+                                Wert="@_eingaben.GraedigkeitK" Min="0" Max="30" Platzhalter="5"
+                                Aktiv="@_eingaben.ArbeitstemperaturAusSpeicher"
+                                WertChanged="w => { _eingaben.GraedigkeitK = w; }" />
+                    <Zahlenfeld Bezeichnung="@Resource.SKV_LBL_SPREIZUNG" Feldname="@Resource.SKV_LBL_SPREIZUNG"
+                                Wert="@_eingaben.SpreizungK" Min="0" Max="30" Platzhalter="10"
+                                Aktiv="@_eingaben.ArbeitstemperaturAusSpeicher"
+                                WertChanged="w => { _eingaben.SpreizungK = w; }" />
+                    <Herleitungszeile Text="@(_eingaben.ArbeitstemperaturAusSpeicher
+                                              ? Resource.SKV_HINT_ARBEITSTEMPERATUR_SPEICHER
+                                              : Resource.SKV_HINT_ARBEITSTEMPERATUR_FEST)" />
+                    @if (_eingaben.ArbeitstemperaturAusSpeicher)
+                    {
+                        <Herleitungszeile Text="@Resource.SKV_HINT_GRAEDIGKEIT" />
+                    }
+                    <Herleitungszeile Text="@Resource.SKV_HINT_PUMPE" />
+                    @* DIE SENKEN DER ANLAGE (Anwenderentscheid 23.09.2026): Ohne Senke fuer ihren
+                       Bedarf findet das Kollektorfeld keinen Abnehmer. *@
+                    @if (!string.IsNullOrEmpty(_projektZeile.Senken))
+                    {
+                        <Herleitungszeile Text="@_projektZeile.Senken" />
+                    }
+                        </KindInhalt>
+                    </Formularraster>
+                    @* Die Anlagenfelder uebernimmt das OK der Satz-Ueberlagerung - das Fragment steht nur dort (UeS2). *@
+                </KindInhalt>
+            </Gruppenkopf>
+        }
+    };
 }

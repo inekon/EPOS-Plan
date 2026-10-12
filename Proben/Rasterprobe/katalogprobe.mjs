@@ -1192,6 +1192,15 @@ for (const [nr, name, maske, art, zeilen] of IMPORT) {
   }
 }
 
+// BK-2b: Baustoff- und Aufbauverwaltung in der Groesse des eingelesenen Katalogs (10 000 Baustoffe, 8 500 Aufbauten),
+// Gruppe, Klasse, Herkunft und Eignung als Spalten; Geruest der Verwaltungen (Zeile ist Wahl, Schloss).
+for (const [buchstabe, breite] of [['a', 1088], ['b', 400]]) {
+  FAELLE.push({ name: `BK1${buchstabe}_baustoff_${breite}x624`, maske: 'baustoff', art: '', zeilen: 10000, breite, hoehe: 624,
+                stufe1: true, stufe2: true, zeile: 46, schloss: true, bezeichnerKurz: true });
+  FAELLE.push({ name: `BK2${buchstabe}_bauteilaufbau_${breite}x624`, maske: 'bauteilaufbau', art: '', zeilen: 8500, breite,
+                hoehe: 624, stufe1: true, stufe2: true, zeile: 46, schloss: true, bezeichnerKurz: true });
+}
+
 // ZAPFPROFILGENERATOR (Stufe Z4, Gruppe 3): der Katalog der Brauchwasser-
 // Nutzungsarten (Seite maske=tww) im Geruest der Verwaltungen - Liste mit sechs
 // Spalten (Zeile ist Wahl, Schloss, keine Kaestchen), Stammblatt mit Kennwerten und

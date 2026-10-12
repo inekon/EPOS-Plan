@@ -320,7 +320,9 @@ namespace EPOS.Kern.Tests
         {
             (GebaeudeImportHuelle h, _, GebaeudeImportStand stand) = await Probenhaus();
 
-            Assert.Equal("Haus 1", stand.Vorschlagsname);
+            // F8 (GD-2): der Name ist der Dateiname, der Gebäudename der Datei steht als Vorschlag daneben.
+            Assert.Equal("gbxml_haus_si", stand.Vorschlagsname);
+            Assert.Equal("Haus 1", stand.NameDerDatei);
             Assert.Equal("Manuell", stand.ManuellHerkunftText);
             Assert.StartsWith("gbxml_haus_si.xml · Gebäude „Haus 1“ · Baualtersklasse F", stand.Kopftext);
             Assert.Equal(GebaeudeZielfelder.Alle.Count, stand.Zeilen.Count);
@@ -449,7 +451,7 @@ namespace EPOS.Kern.Tests
             var zeilen = stand.Zeilen.Select(z => z.Zielfeld == GebaeudeZielfelder.LAENGE_WAND_DACH ? z with { Haken = true } : z).ToList();
             GebaeudeKatalogDaten d = GebaeudeImportHuelle.NachKatalogdaten(grundlage, Ergebnis(stand, zeilen));
 
-            Assert.Equal("Haus 1", d.Name);
+            Assert.Equal("gbxml_haus_si", d.Name);   // der Name des Ergebnisses: der Dateiname (F8)
             Assert.Equal(120.0, d.WohnflaecheGesamt);
             Assert.Equal(2.5, d.Raumhoehe);
             Assert.Equal(24.0, d.FlaecheNutzer);

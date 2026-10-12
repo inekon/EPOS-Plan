@@ -1689,15 +1689,64 @@ public class PufferspeicherDialogTests : EposBunitContext
     {
         var cut = Aufbauen(DreiZeilen(), projektsatzWege: Wege());
         cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[0].Click();
-        Assert.True(AmSatz(cut, "epos-knopf--vergleichen").HasAttribute("disabled"));
+        Assert.True((AmSatz(cut, "epos-knopf--vergleichen").GetAttribute("aria-disabled") == "true"));
 
         foreach (int i in new[] { 0, 2 })
             cut.FindAll(".epos-raster")[0].QuerySelectorAll("td .epos-wahlkaestchen")[i].Click();
-        Assert.False(AmSatz(cut, "epos-knopf--vergleichen").HasAttribute("disabled"));
+        Assert.False((AmSatz(cut, "epos-knopf--vergleichen").GetAttribute("aria-disabled") == "true"));
         AmSatz(cut, "epos-knopf--vergleichen").Click();
 
+        string P = WindowsFormsApplication1.MyResource.Resource.AUSWAHL_VERGLEICH_HERKUNFT_PROJEKT + " ";
         var koepfe = cut.FindAll(".epos-vergleich thead th").Select(th => th.TextContent).ToList();
-        Assert.Equal(new[] { "Speicher A", "Speicher C" }, koepfe.Skip(1).ToArray());
+        Assert.Equal(new[] { P + "Speicher A", P + "Speicher C" }, koepfe.Skip(1).ToArray());
         Assert.NotEmpty(cut.FindAll(".epos-vergleich tbody tr"));
+    }
+
+    /// <summary>KA-E-24: Vergleichen… stellt eine Projektzeile (Werte der Projektkopie über ihre ID) und einen Katalogsatz nebeneinander.</summary>
+    [Fact]
+    public void KA_E_24_Vergleichen_stellt_Projektzeile_und_Katalogsatz_nebeneinander()
+    {
+        var cut = Aufbauen(DreiZeilen());
+        var ids = new List<int>();
+        cut.Render(p => p
+            .Add(x => x.Vergleichsparameter, n => VergleichWirtHilfe.Werte("K:" + n))
+            .Add(x => x.VergleichsparameterProjekt, id => { ids.Add(id); return VergleichWirtHilfe.Werte("P:" + id); }));
+        VergleichWirtHilfe.ProjektzeileGegenKatalogsatz(cut, ids, "Speicher A");
+    }
+    // =================================================================================
+    // WP1b (KA-E-25): der Gerätesteckbrief links in der zweispaltigen Satz-Überlagerung
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Links stehen die Projektfelder und darunter der Gerätesteckbrief</b>, rechts die Kenndaten; der Steckbrief
+    /// zeigt die Werte des Feldsatzes und folgt einer Eingabe rechts im selben Zeichenlauf.
+    /// </summary>
+    [Fact]
+    public void WP1b_Der_Geraetesteckbrief_steht_links_und_folgt_den_Feldern_rechts()
+    {
+        var cut = Aufbauen(projektsatzWege: new Satzbearbeitungswege { Lesen = _ => Katalogfelder("Satz"), Speichern = _ => new KatalogSpeicherErgebnis(true, "ok", "") },
+                           projektangaben: _ => new Pufferangaben(70, 50, 10, 95, "Heizung"));
+        var satz = Satz(cut);
+        var links = satz.QuerySelector(".epos-satz-zweispaltig > .epos-satz-zweispaltig-links")!;
+        Assert.NotNull(satz.QuerySelector(".epos-satz-zweispaltig > .epos-satz-zweispaltig-rechts .epos-modulparameter"));
+        var steckbrief = links.QuerySelector(".epos-pspd-steckbrief")!;
+        Assert.Equal("Musterwerk", steckbrief.QuerySelector("dd[data-zeile=hersteller]")!.TextContent.Trim());
+        Assert.Equal("70 °C", steckbrief.QuerySelector("dd[data-zeile=vorlauf]")!.TextContent.Trim());   // Angaben der Anlage
+        Assert.Equal("Heizung", steckbrief.QuerySelector("dd[data-zeile=verwendung]")!.TextContent.Trim());
+
+        cut.FindAll(".epos-satz-zweispaltig-rechts .epos-modulparameter input")
+           .First(e => e.GetAttribute("value") == "Musterwerk").Input("Geändert");
+        Assert.Equal("Geändert", cut.Find(".epos-pspd-steckbrief dd[data-zeile=hersteller]").TextContent.Trim());
+    }
+
+    /// <summary><b>Der Katalogsatz zeigt links nur den Steckbrief</b> — Projektfelder gibt es dort nicht.</summary>
+    [Fact]
+    public void WP1b_Der_Katalogsatz_zeigt_links_nur_den_Steckbrief()
+    {
+        var cut = Aufbauen(katalogfelder: n => Katalogfelder(n));
+        KatalogZeileWaehlen(cut, 0);
+        var links = Satz(cut).QuerySelector(".epos-satz-zweispaltig-links")!;
+        Assert.Single(links.Children);
+        Assert.NotNull(links.QuerySelector(".epos-pspd-steckbrief dd[data-zeile=name]"));
     }
 }

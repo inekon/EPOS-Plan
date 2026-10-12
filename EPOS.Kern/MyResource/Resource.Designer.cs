@@ -3471,6 +3471,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchstens drei Zeilen vergleichen – Kreuze zurücknehmen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_VERGLEICH_GRENZE {
+            get {
+                return ResourceManager.GetString("AUSWAHL_VERGLEICH_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog ähnelt.
+        /// </summary>
+        public static string AUSWAHL_VERGLEICH_HERKUNFT_KATALOG {
+            get {
+                return ResourceManager.GetString("AUSWAHL_VERGLEICH_HERKUNFT_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt ähnelt.
+        /// </summary>
+        public static string AUSWAHL_VERGLEICH_HERKUNFT_PROJEKT {
+            get {
+                return ResourceManager.GetString("AUSWAHL_VERGLEICH_HERKUNFT_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die angekreuzten Zeilen beider Listen nebeneinander vergleichen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_VERGLEICH_HINWEIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_VERGLEICH_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Projektzeile mit dem gewählten Katalogsatz vergleichen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_VERGLEICH_PAAR_HINWEIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_VERGLEICH_PAAR_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zwei bis drei Zeilen ankreuzen oder Projektzeile und Katalogsatz wählen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_VERGLEICH_SPERRE {
+            get {
+                return ResourceManager.GetString("AUSWAHL_VERGLEICH_SPERRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Alle Treffer wählen ähnelt.
         /// </summary>
         public static string AUSWAHL_WAHL_ALLE {
@@ -4929,6 +4983,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf [kW] ähnelt.
+        /// </summary>
+        public static string BERG_ACHSE_KAELTEBEDARF {
+            get {
+                return ResourceManager.GetString("BERG_ACHSE_KAELTEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf [kW] ähnelt.
         /// </summary>
         public static string BERG_ACHSE_STROMBEDARF {
@@ -5100,6 +5163,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamter Kältebedarf: ähnelt.
+        /// </summary>
+        public static string BERG_LBL_KAELTE_GESAMT {
+            get {
+                return ResourceManager.GetString("BERG_LBL_KAELTE_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die max. Kältelast: ähnelt.
+        /// </summary>
+        public static string BERG_LBL_MAX_KAELTELAST {
+            get {
+                return ResourceManager.GetString("BERG_LBL_MAX_KAELTELAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die max. Leistung: ähnelt.
         /// </summary>
         public static string BERG_LBL_MAX_LEISTUNG {
@@ -5235,6 +5316,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf ähnelt.
+        /// </summary>
+        public static string BERG_OPT_KAELTE {
+            get {
+                return ResourceManager.GetString("BERG_OPT_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Prozesse ähnelt.
         /// </summary>
         public static string BERG_OPT_PROZESSE {
@@ -5258,6 +5348,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BERG_REITER_GRAFIK {
             get {
                 return ResourceManager.GetString("BERG_REITER_GRAFIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf Ergebnisse ähnelt.
+        /// </summary>
+        public static string BERG_REITER_KAELTE_ERG {
+            get {
+                return ResourceManager.GetString("BERG_REITER_KAELTE_ERG", resourceCulture);
             }
         }
         
@@ -9240,6 +9339,1023 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aluminium ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_ALUMINIUM {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_ALUMINIUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bindiger Boden ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_BINDIG {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_BINDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitumen ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_BITUMEN {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_BITUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Calciumsulfatestrich ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_CALCIUMSULFATESTRICH {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_CALCIUMSULFATESTRICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dämmputz ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_DAEMMPUTZ {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_DAEMMPUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstiger Dämmstoff ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_DAEMMSTOFF_SONSTIGE {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_DAEMMSTOFF_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dampfbremse ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_DAMPFBREMSE {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_DAMPFBREMSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fels ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_FELS {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_FELS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gipsplatte ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_GIPSPLATTE {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_GIPSPLATTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gipsputz ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_GIPSPUTZ {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_GIPSPUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Glas ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_GLAS {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_GLAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gussasphalt ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_GUSSASPHALT {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_GUSSASPHALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Holzfaser ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_HOLZFASER {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_HOLZFASER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Holzwerkstoff ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_HOLZWERKSTOFF {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_HOLZWERKSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalkputz ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_KALKPUTZ {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_KALKPUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalksandstein ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_KALKSANDSTEIN {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_KALKSANDSTEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keramik ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_KERAMIK {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_KERAMIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kunststoffbahn ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_KUNSTSTOFFBAHN {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_KUNSTSTOFFBAHN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kunststoffbelag ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_KUNSTSTOFFBELAG {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_KUNSTSTOFFBELAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kupfer ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_KUPFER {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_KUPFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lehmputz ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_LEHMPUTZ {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_LEHMPUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leichtbeton ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_LEICHTBETON {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_LEICHTBETON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leichtbetonstein ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_LEICHTBETONSTEIN {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_LEICHTBETONSTEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luft ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_LUFT {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_LUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstiges Mauerwerk ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_MAUERWERK_SONSTIGE {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_MAUERWERK_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mineralwolle ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_MINERALWOLLE {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_MINERALWOLLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mörtel ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_MOERTEL {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_MOERTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Naturfaser ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_NATURFASER {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_NATURFASER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Naturstein ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_NATURSTEIN {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_NATURSTEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nichtbindiger Boden ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_NICHTBINDIG {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_NICHTBINDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Normalbeton ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_NORMALBETON {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_NORMALBETON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parkett ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_PARKETT {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_PARKETT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstige Platte ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_PLATTE_SONSTIGE {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_PLATTE_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Polystyrol ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_POLYSTYROL {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_POLYSTYROL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Polyurethan ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_POLYURETHAN {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_POLYURETHAN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Porenbeton ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_PORENBETON {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_PORENBETON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schaumglas ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_SCHAUMGLAS {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_SCHAUMGLAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stahl ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_STAHL {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_STAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stahlbeton ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_STAHLBETON {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_STAHLBETON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstiger Stoff ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_STOFF_SONSTIGE {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_STOFF_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Textilbelag ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_TEXTILBELAG {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_TEXTILBELAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trockenestrich ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_TROCKENESTRICH {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_TROCKENESTRICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vakuumdämmung ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_VAKUUMDAEMMUNG {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_VAKUUMDAEMMUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollholz ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_VOLLHOLZ {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_VOLLHOLZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zementestrich ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_ZEMENTESTRICH {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_ZEMENTESTRICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zementplatte ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_ZEMENTPLATTE {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_ZEMENTPLATTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zementputz ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_ZEMENTPUTZ {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_ZEMENTPUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ziegel ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_ZIEGEL {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_ZIEGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dächer ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_GRUPPE_DAECHER {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_GRUPPE_DAECHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Decken ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_GRUPPE_DECKEN {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_GRUPPE_DECKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Öffnungen ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_GRUPPE_OEFFNUNGEN {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_GRUPPE_OEFFNUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstige ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_GRUPPE_SONSTIGE {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_GRUPPE_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wände ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_GRUPPE_WAENDE {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_GRUPPE_WAENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenwand ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_AUSSENWAND {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_AUSSENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenwand am Erdreich ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_AUSSENWAND_ERDREICH {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_AUSSENWAND_ERDREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bodenplatte ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_BODENPLATTE {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_BODENPLATTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dachfenster ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_DACHFENSTER {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_DACHFENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Oberste Geschossdecke ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_DECKE_OBEN {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_DECKE_OBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Decke nach unten ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_DECKE_UNTEN {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_DECKE_UNTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fenster ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_FENSTER {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_FENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flachdach ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_FLACHDACH {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_FLACHDACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geschossdecke ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_GESCHOSSDECKE {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_GESCHOSSDECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Innenwand ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_INNENWAND {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_INNENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstiges ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_SONSTIGES {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_SONSTIGES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Steildach ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_STEILDACH {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_STEILDACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tür ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_TUER {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_TUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorhangfassade ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_VORHANGFASSADE {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_VORHANGFASSADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die geeignet ähnelt.
+        /// </summary>
+        public static string BKAT_GEEIGNET {
+            get {
+                return ResourceManager.GetString("BKAT_GEEIGNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Öffnung ohne Schicht und ohne U-Wert der Quelle ähnelt.
+        /// </summary>
+        public static string BKAT_GRUND_OEFFNUNG_OHNE_U {
+            get {
+                return ResourceManager.GetString("BKAT_GRUND_OEFFNUNG_OHNE_U", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau ohne Schicht ähnelt.
+        /// </summary>
+        public static string BKAT_GRUND_OHNE_SCHICHT {
+            get {
+                return ResourceManager.GetString("BKAT_GRUND_OHNE_SCHICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schicht {0} ohne Wärmeleitfähigkeit ähnelt.
+        /// </summary>
+        public static string BKAT_GRUND_SCHICHT_OHNE_LAMBDA {
+            get {
+                return ResourceManager.GetString("BKAT_GRUND_SCHICHT_OHNE_LAMBDA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (keine Gruppe) ähnelt.
+        /// </summary>
+        public static string BKAT_GRUPPE_KEINE {
+            get {
+                return ResourceManager.GetString("BKAT_GRUPPE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigener Satz ähnelt.
+        /// </summary>
+        public static string BKAT_HERKUNFT_EIGEN {
+            get {
+                return ResourceManager.GetString("BKAT_HERKUNFT_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingelesen ähnelt.
+        /// </summary>
+        public static string BKAT_HERKUNFT_IMPORT {
+            get {
+                return ResourceManager.GetString("BKAT_HERKUNFT_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Importierter Satz – die Quelle stammt aus dem Einlesen und ist nicht änderbar. ähnelt.
+        /// </summary>
+        public static string BKAT_IMPORT_QUELLE {
+            get {
+                return ResourceManager.GetString("BKAT_IMPORT_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (keine Klasse) ähnelt.
+        /// </summary>
+        public static string BKAT_KLASSE_KEINE {
+            get {
+                return ResourceManager.GetString("BKAT_KLASSE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudesimulation ähnelt.
+        /// </summary>
+        public static string BKAT_LBL_EIGNUNG {
+            get {
+                return ResourceManager.GetString("BKAT_LBL_EIGNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gruppe ähnelt.
+        /// </summary>
+        public static string BKAT_LBL_GRUPPE {
+            get {
+                return ResourceManager.GetString("BKAT_LBL_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klasse ähnelt.
+        /// </summary>
+        public static string BKAT_LBL_KLASSE {
+            get {
+                return ResourceManager.GetString("BKAT_LBL_KLASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die meist ungeeignet ähnelt.
+        /// </summary>
+        public static string BKAT_MARKE_UNGEEIGNET {
+            get {
+                return ResourceManager.GetString("BKAT_MARKE_UNGEEIGNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die auch ungeeignete zeigen ähnelt.
+        /// </summary>
+        public static string BKAT_SCHALTER_AUCH_UNGEEIGNETE {
+            get {
+                return ResourceManager.GetString("BKAT_SCHALTER_AUCH_UNGEEIGNETE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur geeignete ähnelt.
+        /// </summary>
+        public static string BKAT_SCHALTER_NUR_GEEIGNETE {
+            get {
+                return ResourceManager.GetString("BKAT_SCHALTER_NUR_GEEIGNETE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die für die Gebäudesimulation meist nicht geeignet ähnelt.
+        /// </summary>
+        public static string BKAT_UNGEEIGNET {
+            get {
+                return ResourceManager.GetString("BKAT_UNGEEIGNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle ist abgelehnt: {0} ähnelt.
+        /// </summary>
+        public static string BKI_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("BKI_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abschnitte ähnelt.
+        /// </summary>
+        public static string BKI_ART_ABSCHNITTE {
+            get {
+                return ResourceManager.GetString("BKI_ART_ABSCHNITTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbauten ähnelt.
+        /// </summary>
+        public static string BKI_ART_AUFBAUTEN {
+            get {
+                return ResourceManager.GetString("BKI_ART_AUFBAUTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoffe ähnelt.
+        /// </summary>
+        public static string BKI_ART_BAUSTOFFE {
+            get {
+                return ResourceManager.GetString("BKI_ART_BAUSTOFFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichten ähnelt.
+        /// </summary>
+        public static string BKI_ART_SCHICHTEN {
+            get {
+                return ResourceManager.GetString("BKI_ART_SCHICHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Codes ohne Deutung (sie fallen auf „Sonstige“) ähnelt.
+        /// </summary>
+        public static string BKI_CODES {
+            get {
+                return ResourceManager.GetString("BKI_CODES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoffe.csv des Exports ähnelt.
+        /// </summary>
+        public static string BKI_DATEI {
+            get {
+                return ResourceManager.GetString("BKI_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Durchsuchen… ähnelt.
+        /// </summary>
+        public static string BKI_DURCHSUCHEN {
+            get {
+                return ResourceManager.GetString("BKI_DURCHSUCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nichts übernommen, der Katalog ist unverändert: {0} ähnelt.
+        /// </summary>
+        public static string BKI_FEHLER {
+            get {
+                return ResourceManager.GetString("BKI_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernommen: Baustoffe {0} neu, {1} zusammengeführt, {2} wiedererkannt; Aufbauten {3} neu, {4} wiedererkannt; Schichten {5}; {6} Aufbauten gekennzeichnet. Dauer {7} s. ähnelt.
+        /// </summary>
+        public static string BKI_FERTIG {
+            get {
+                return ResourceManager.GetString("BKI_FERTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoffe.csv|Baustoffe.csv|CSV-Dateien (*.csv)|*.csv ähnelt.
+        /// </summary>
+        public static string BKI_FILTER {
+            get {
+                return ResourceManager.GetString("BKI_FILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Aufbauten sind für die Gebäudesimulation meist nicht geeignet und werden gekennzeichnet. ähnelt.
+        /// </summary>
+        public static string BKI_GEKENNZEICHNET {
+            get {
+                return ResourceManager.GetString("BKI_GEKENNZEICHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ablehnungsgründe ähnelt.
+        /// </summary>
+        public static string BKI_GRUENDE {
+            get {
+                return ResourceManager.GetString("BKI_GRUENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wählen Sie die Datei Baustoffe.csv des CSV-Exports; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv und Basis_Auszug.csv liegen daneben. Die Vorschau schreibt nichts. ähnelt.
+        /// </summary>
+        public static string BKI_HINWEIS {
+            get {
+                return ResourceManager.GetString("BKI_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Einlesen des Bauteilkatalogs steht auf dieser Plattform nicht zur Verfügung. ähnelt.
+        /// </summary>
+        public static string BKI_KEINE_ANSICHT {
+            get {
+                return ResourceManager.GetString("BKI_KEINE_ANSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Schichten treffen über den Namen einen Baustoff derselben Gruppe. ähnelt.
+        /// </summary>
+        public static string BKI_MIT_BAUSTOFF {
+            get {
+                return ResourceManager.GetString("BKI_MIT_BAUSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst eine Vorschau ohne Ablehnung erstellen. ähnelt.
+        /// </summary>
+        public static string BKI_OK_SPERRE {
+            get {
+                return ResourceManager.GetString("BKI_OK_SPERRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Protokoll ähnelt.
+        /// </summary>
+        public static string BKI_PROTOKOLL {
+            get {
+                return ResourceManager.GetString("BKI_PROTOKOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle der Sätze: {0} ähnelt.
+        /// </summary>
+        public static string BKI_QUELLE {
+            get {
+                return ResourceManager.GetString("BKI_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Richtung innen → außen: Dämmlage hinter der tragenden Schicht in {0} von {1} Außenwänden. U aus den Schichten gegen U der Quelle: Median {2}, außerhalb ±10 % {3} von {4} Aufbauten. ähnelt.
+        /// </summary>
+        public static string BKI_RICHTUNG {
+            get {
+                return ResourceManager.GetString("BKI_RICHTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string BKI_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("BKI_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abgelehnt ähnelt.
+        /// </summary>
+        public static string BKI_SP_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("BKI_SP_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit Katalog zusammengeführt ähnelt.
+        /// </summary>
+        public static string BKI_SP_KATALOG {
+            get {
+                return ResourceManager.GetString("BKI_SP_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu ähnelt.
+        /// </summary>
+        public static string BKI_SP_NEU {
+            get {
+                return ResourceManager.GetString("BKI_SP_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In der Quelle zusammengeführt ähnelt.
+        /// </summary>
+        public static string BKI_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("BKI_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satzart ähnelt.
+        /// </summary>
+        public static string BKI_SP_SATZART {
+            get {
+                return ResourceManager.GetString("BKI_SP_SATZART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wiedererkannt ähnelt.
+        /// </summary>
+        public static string BKI_SP_WIEDER {
+            get {
+                return ResourceManager.GetString("BKI_SP_WIEDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilkatalog einlesen ähnelt.
+        /// </summary>
+        public static string BKI_TITEL {
+            get {
+                return ResourceManager.GetString("BKI_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string BKI_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("BKI_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau ähnelt.
+        /// </summary>
+        public static string BKI_VORSCHAU {
+            get {
+                return ResourceManager.GetString("BKI_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Variante anlegen ähnelt.
         /// </summary>
         public static string BKS_BTN_ANLEGEN {
@@ -12898,6 +14014,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf und Rücklauf des Kältebedarfs sind eine Angabe ohne Wirkung auf die Erzeuger. ähnelt.
+        /// </summary>
+        public static string BPF_HINW_TEMPERATUR_KAELTE {
+            get {
+                return ResourceManager.GetString("BPF_HINW_TEMPERATUR_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Öffnet die Wochen-Stundenprofile der Typen. ähnelt.
         /// </summary>
         public static string BPF_HINW_TYP_AENDERN {
@@ -13636,6 +14761,150 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abdichtungen ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_ABDICHTUNGEN {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_ABDICHTUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beton ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_BETON {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_BETON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bodenbeläge ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_BODENBELAEGE {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_BODENBELAEGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dämmstoffe ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_DAEMMSTOFFE {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_DAEMMSTOFFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erdreich ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_ERDREICH {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_ERDREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Estriche ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_ESTRICHE {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_ESTRICHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (freie Angabe) ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_FREI_EINTRAG {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_FREI_EINTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Holz und Holzwerkstoffe ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_HOLZ {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_HOLZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (keine Gruppe) ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_KEINE {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mauerwerk ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_MAUERWERK {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_MAUERWERK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Metalle und Glas ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_METALLE {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_METALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Platten ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_PLATTEN {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_PLATTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Putze und Mörtel ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_PUTZE {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_PUTZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstige ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_SONSTIGE {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis: {0} = {1} liegt außerhalb des üblichen Bereichs der Gruppe {2} ({3} bis {4}). Gespeichert wird trotzdem. ähnelt.
+        /// </summary>
+        public static string BST_HINWEIS_BAND {
+            get {
+                return ResourceManager.GetString("BST_HINWEIS_BAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gruppe „{0}“ entspricht keiner festen Gruppe; sie bleibt erhalten. Wählen Sie eine Gruppe aus der Liste oder „{1}“. ähnelt.
+        /// </summary>
+        public static string BST_HINWEIS_GRUPPE_FREI {
+            get {
+                return ResourceManager.GetString("BST_HINWEIS_GRUPPE_FREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Baustoffverwaltung steht auf diesem Gerät noch nicht zur Verfügung. ähnelt.
         /// </summary>
         public static string BST_KEINE_ANSICHT {
@@ -14329,6 +15598,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichtfolge innen → außen: Schicht 1 liegt raumseitig, die letzte Schicht außen. ähnelt.
+        /// </summary>
+        public static string BTA_RICHTUNG {
+            get {
+                return ResourceManager.GetString("BTA_RICHTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die R: – (nicht bestimmbar) ähnelt.
         /// </summary>
         public static string BTA_R_OFFEN {
@@ -14424,6 +15702,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BTA_SUMME_R {
             get {
                 return ResourceManager.GetString("BTA_SUMME_R", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R_se = {0} m²K/W ähnelt.
+        /// </summary>
+        public static string BTA_SUMME_RSE {
+            get {
+                return ResourceManager.GetString("BTA_SUMME_RSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R_si = {0} m²K/W ähnelt.
+        /// </summary>
+        public static string BTA_SUMME_RSI {
+            get {
+                return ResourceManager.GetString("BTA_SUMME_RSI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R_T = R_si + R + R_se = {0} m²K/W ähnelt.
+        /// </summary>
+        public static string BTA_SUMME_RT {
+            get {
+                return ResourceManager.GetString("BTA_SUMME_RT", resourceCulture);
             }
         }
         
@@ -14527,6 +15832,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus der Bauweise ähnelt.
+        /// </summary>
+        public static string BTDLG_KAPAZITAET_BAUWEISE {
+            get {
+                return ResourceManager.GetString("BTDLG_KAPAZITAET_BAUWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die (Aufbau aus dem Katalog wählen) ähnelt.
         /// </summary>
         public static string BTDLG_KATALOG_WAHL {
@@ -14595,6 +15909,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BTDLG_LBL_GWERT {
             get {
                 return ResourceManager.GetString("BTDLG_LBL_GWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmekapazität C ähnelt.
+        /// </summary>
+        public static string BTDLG_LBL_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("BTDLG_LBL_KAPAZITAET", resourceCulture);
             }
         }
         
@@ -20998,6 +22321,195 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CSV_KOPF_WOCHENTAG {
             get {
                 return ResourceManager.GetString("CSV_KOPF_WOCHENTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die dezentral (Split) ähnelt.
+        /// </summary>
+        public static string DECK_ART_SPLIT {
+            get {
+                return ResourceManager.GetString("DECK_ART_SPLIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die zentral (Kältefolge) ähnelt.
+        /// </summary>
+        public static string DECK_ART_ZENTRAL {
+            get {
+                return ResourceManager.GetString("DECK_ART_ZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fest ähnelt.
+        /// </summary>
+        public static string DECK_EER_FEST {
+            get {
+                return ResourceManager.GetString("DECK_EER_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die linear über der Außentemperatur ähnelt.
+        /// </summary>
+        public static string DECK_EER_LINEAR {
+            get {
+                return ResourceManager.GetString("DECK_EER_LINEAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung ähnelt.
+        /// </summary>
+        public static string DECK_GRUPPE {
+            get {
+                return ResourceManager.GetString("DECK_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezentral heißt: eigene Geräte ohne Kaltwasser, ohne Leistungsgrenze. Raumklimageräte mit Inneneinheiten je Zone folgen als eigene Anlagenart. ähnelt.
+        /// </summary>
+        public static string DECK_HINWEIS {
+            get {
+                return ResourceManager.GetString("DECK_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Vorgabe, bitte mit Gerätedaten ersetzen ähnelt.
+        /// </summary>
+        public static string DECK_HRL_VORGABE {
+            get {
+                return ResourceManager.GetString("DECK_HRL_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckungsart ähnelt.
+        /// </summary>
+        public static string DECK_LBL_ART {
+            get {
+                return ResourceManager.GetString("DECK_LBL_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER ähnelt.
+        /// </summary>
+        public static string DECK_LBL_EER {
+            get {
+                return ResourceManager.GetString("DECK_LBL_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER am Punkt 1 ähnelt.
+        /// </summary>
+        public static string DECK_LBL_EER1 {
+            get {
+                return ResourceManager.GetString("DECK_LBL_EER1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER am Punkt 2 ähnelt.
+        /// </summary>
+        public static string DECK_LBL_EER2 {
+            get {
+                return ResourceManager.GetString("DECK_LBL_EER2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER-Weg ähnelt.
+        /// </summary>
+        public static string DECK_LBL_EER_WEG {
+            get {
+                return ResourceManager.GetString("DECK_LBL_EER_WEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur ähnelt.
+        /// </summary>
+        public static string DECK_LBL_TAUSSEN {
+            get {
+                return ResourceManager.GetString("DECK_LBL_TAUSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur Punkt 1 ähnelt.
+        /// </summary>
+        public static string DECK_LBL_TAUSSEN1 {
+            get {
+                return ResourceManager.GetString("DECK_LBL_TAUSSEN1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur Punkt 2 ähnelt.
+        /// </summary>
+        public static string DECK_LBL_TAUSSEN2 {
+            get {
+                return ResourceManager.GetString("DECK_LBL_TAUSSEN2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlträger ähnelt.
+        /// </summary>
+        public static string DECK_LBL_TRAEGER {
+            get {
+                return ResourceManager.GetString("DECK_LBL_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigener Zähler ähnelt.
+        /// </summary>
+        public static string DECK_LBL_ZAEHLER {
+            get {
+                return ResourceManager.GetString("DECK_LBL_ZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Deckung gibt es nur an einer Projektzeile der Kältebedarfsprofile. ähnelt.
+        /// </summary>
+        public static string DECK_MSG_NUR_KAELTE {
+            get {
+                return ResourceManager.GetString("DECK_MSG_NUR_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezentrale Deckung braucht einen EER größer 0 (bei linear zwei Punkte mit verschiedener Außentemperatur). ähnelt.
+        /// </summary>
+        public static string DECK_MSG_OHNE_EER {
+            get {
+                return ResourceManager.GetString("DECK_MSG_OHNE_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Lastgänge konnten nicht gespeichert werden; der vorige Stand bleibt erhalten. ähnelt.
+        /// </summary>
+        public static string DECK_MSG_SPEICHERN_FEHLER {
+            get {
+                return ResourceManager.GetString("DECK_MSG_SPEICHERN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromträger des Projekts ähnelt.
+        /// </summary>
+        public static string DECK_PLATZHALTER_TRAEGER {
+            get {
+                return ResourceManager.GetString("DECK_PLATZHALTER_TRAEGER", resourceCulture);
             }
         }
         
@@ -29600,6 +31112,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Aufbau“ ist gesperrt: Es liegt kein Bauteilvorschlag vor. {0} ähnelt.
+        /// </summary>
+        public static string GANS_AUFBAU_OHNE_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("GANS_AUFBAU_OHNE_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} ein- oder ausblenden ähnelt.
         /// </summary>
         public static string GANS_AUFBAU_SCHALTER {
@@ -29650,6 +31171,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GANS_BEFUND_OHNE {
             get {
                 return ResourceManager.GetString("GANS_BEFUND_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Befund“ ist gesperrt: Es liegt kein Bauteilvorschlag vor. {0} ähnelt.
+        /// </summary>
+        public static string GANS_BEFUND_OHNE_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("GANS_BEFUND_OHNE_VORSCHLAG", resourceCulture);
             }
         }
         
@@ -29866,6 +31396,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GANS_MODUS {
             get {
                 return ResourceManager.GetString("GANS_MODUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Bauteilbezug ({0}) ähnelt.
+        /// </summary>
+        public static string GANS_OHNE_BAUTEILBEZUG {
+            get {
+                return ResourceManager.GetString("GANS_OHNE_BAUTEILBEZUG", resourceCulture);
             }
         }
         
@@ -31859,6 +33398,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung und Einordnung ähnelt.
+        /// </summary>
+        public static string GEBK_GRP_EINORDNUNG {
+            get {
+                return ResourceManager.GetString("GEBK_GRP_EINORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Fenster nach Orientierung ähnelt.
         /// </summary>
         public static string GEBK_GRP_FENSTER_ORIENTIERUNG {
@@ -31940,6 +33488,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechengrößen ähnelt.
+        /// </summary>
+        public static string GEBK_GRP_RECHENGROESSEN {
+            get {
+                return ResourceManager.GetString("GEBK_GRP_RECHENGROESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Sonstiges ähnelt.
         /// </summary>
         public static string GEBK_GRP_SONSTIGES {
@@ -31990,6 +33547,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_HERKUNFT_VORGABE {
             get {
                 return ResourceManager.GetString("GEBK_HERKUNFT_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Angaben ordnen das Gebäude ein: Bericht, Vorgaben des Imports, Pufferauslegung. Der Rechenweg liest sie nicht. ähnelt.
+        /// </summary>
+        public static string GEBK_HINWEIS_EINORDNUNG {
+            get {
+                return ResourceManager.GetString("GEBK_HINWEIS_EINORDNUNG", resourceCulture);
             }
         }
         
@@ -32071,6 +33637,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_HINWEIS_SPEICHERN_UNTER {
             get {
                 return ResourceManager.GetString("GEBK_HINWEIS_SPEICHERN_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftwechselrate: Jede Zone rechnet mit Infiltration und Nutzerlüftung, siehe Reiter „Konditionierung“. ähnelt.
+        /// </summary>
+        public static string GEBK_JEZONE_LUFTWECHSEL {
+            get {
+                return ResourceManager.GetString("GEBK_JEZONE_LUFTWECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumhöhe: gilt je Zone, siehe Reiter „Zonen“. ähnelt.
+        /// </summary>
+        public static string GEBK_JEZONE_RAUMHOEHE {
+            get {
+                return ResourceManager.GetString("GEBK_JEZONE_RAUMHOEHE", resourceCulture);
             }
         }
         
@@ -32957,6 +34541,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei ähnelt.
+        /// </summary>
+        public static string GEBK_MARKE_DATEI {
+            get {
+                return ResourceManager.GetString("GEBK_MARKE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die geerbt ähnelt.
+        /// </summary>
+        public static string GEBK_MARKE_GEERBT {
+            get {
+                return ResourceManager.GetString("GEBK_MARKE_GEERBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die von Hand ähnelt.
+        /// </summary>
+        public static string GEBK_MARKE_HAND {
+            get {
+                return ResourceManager.GetString("GEBK_MARKE_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe ähnelt.
+        /// </summary>
+        public static string GEBK_MARKE_VORGABE {
+            get {
+                return ResourceManager.GetString("GEBK_MARKE_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wirkungslos ähnelt.
+        /// </summary>
+        public static string GEBK_MARKE_WIRKUNGSLOS {
+            get {
+                return ResourceManager.GetString("GEBK_MARKE_WIRKUNGSLOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Baujahr muss zwischen {0} und {1} liegen. ähnelt.
         /// </summary>
         public static string GEBK_MSG_BAUJAHR {
@@ -33404,6 +35033,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_REITER_TEMPERATUREN {
             get {
                 return ResourceManager.GetString("GEBK_REITER_TEMPERATUREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfall für {0} Bauteilgruppen ohne Aufbau ähnelt.
+        /// </summary>
+        public static string GEBK_RUECKFALL_BAUWEISE {
+            get {
+                return ResourceManager.GetString("GEBK_RUECKFALL_BAUWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfall: Jede Bauteilgruppe trägt einen Aufbau, der Wert wirkt derzeit nicht. ähnelt.
+        /// </summary>
+        public static string GEBK_RUECKFALL_BAUWEISE_KEINE {
+            get {
+                return ResourceManager.GetString("GEBK_RUECKFALL_BAUWEISE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfall für {0} Fenster ohne eigenes g ähnelt.
+        /// </summary>
+        public static string GEBK_RUECKFALL_FENSTER {
+            get {
+                return ResourceManager.GetString("GEBK_RUECKFALL_FENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfall: Jedes Fenster trägt ein eigenes g, der Wert wirkt derzeit nicht. ähnelt.
+        /// </summary>
+        public static string GEBK_RUECKFALL_FENSTER_KEINES {
+            get {
+                return ResourceManager.GetString("GEBK_RUECKFALL_FENSTER_KEINES", resourceCulture);
             }
         }
         
@@ -34110,6 +35775,159 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe für {0} von {1} Zonen ohne eigene Höhe ähnelt.
+        /// </summary>
+        public static string GEBK_ZONEN_VORGABE_HOEHE {
+            get {
+                return ResourceManager.GetString("GEBK_ZONEN_VORGABE_HOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe für {0} von {1} Zonen ohne Lüftungswerte ähnelt.
+        /// </summary>
+        public static string GEBK_ZONEN_VORGABE_LUFTWECHSEL {
+            get {
+                return ResourceManager.GetString("GEBK_ZONEN_VORGABE_LUFTWECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrzonenmodell aus „{0}“ mit {1} Zonen steht bereit — das OK ersetzt die vorhandenen Zonen samt Bauteilen und Zonenkalendern, Abbrechen verwirft es. ähnelt.
+        /// </summary>
+        public static string GEBMZ_AUSSTEHEND {
+            get {
+                return ResourceManager.GetString("GEBMZ_AUSSTEHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrzonenmodell aus der Importquelle ähnelt.
+        /// </summary>
+        public static string GEBMZ_BLATT {
+            get {
+                return ResourceManager.GetString("GEBMZ_BLATT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Liest die gespeicherte Importquelle neu und zeigt ihren Zonenbaum; das OK des Gebäudes ersetzt Zonen, Bauteile und Zonenkalender. ähnelt.
+        /// </summary>
+        public static string GEBMZ_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEBMZ_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Als Mehrzonenmodell übernehmen… ähnelt.
+        /// </summary>
+        public static string GEBMZ_KNOPF {
+            get {
+                return ResourceManager.GetString("GEBMZ_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ ist nicht lesbar: {1} ähnelt.
+        /// </summary>
+        public static string GEBMZ_MSG_DATEI_FEHLT {
+            get {
+                return ResourceManager.GetString("GEBMZ_MSG_DATEI_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ hat nicht das Format der gespeicherten Importquelle ({1}). Eine andere Datei ist ein neuer Import („Import…“). ähnelt.
+        /// </summary>
+        public static string GEBMZ_MSG_FORMAT {
+            get {
+                return ResourceManager.GetString("GEBMZ_MSG_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude {0} ist keine Projektkopie — nichts übernommen. ähnelt.
+        /// </summary>
+        public static string GEBMZ_MSG_KEINE_PROJEKTKOPIE {
+            get {
+                return ResourceManager.GetString("GEBMZ_MSG_KEINE_PROJEKTKOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude hat keine gespeicherte Importquelle. ähnelt.
+        /// </summary>
+        public static string GEBMZ_MSG_KEINE_QUELLE {
+            get {
+                return ResourceManager.GetString("GEBMZ_MSG_KEINE_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Mehrzonenmodell ist nicht übernommen, der vorige Stand bleibt: {0} ähnelt.
+        /// </summary>
+        public static string GEBMZ_MSG_NICHT_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("GEBMZ_MSG_NICHT_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernommen wird nur „als Zonen mit Bauteilen“ — bitte den Schalter setzen. ähnelt.
+        /// </summary>
+        public static string GEBMZ_MSG_OHNE_ZONEN {
+            get {
+                return ResourceManager.GetString("GEBMZ_MSG_OHNE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ weicht von der gespeicherten Importquelle ab (Prüfsumme {1} statt {2}). Eine andere Datei ist ein neuer Import („Import…“). ähnelt.
+        /// </summary>
+        public static string GEBMZ_MSG_PRUEFSUMME {
+            get {
+                return ResourceManager.GetString("GEBMZ_MSG_PRUEFSUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen sind geändert — erst speichern oder verwerfen. ähnelt.
+        /// </summary>
+        public static string GEBMZ_SPERRE_GEAENDERT {
+            get {
+                return ResourceManager.GetString("GEBMZ_SPERRE_GEAENDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur am Gebäude im Projekt: Die Übernahme schreibt in die Projektkopie. ähnelt.
+        /// </summary>
+        public static string GEBMZ_SPERRE_KATALOG {
+            get {
+                return ResourceManager.GetString("GEBMZ_SPERRE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Import gespeichert — Gebäude über „Import…“ anlegen. ähnelt.
+        /// </summary>
+        public static string GEBMZ_SPERRE_KEINE_QUELLE {
+            get {
+                return ResourceManager.GetString("GEBMZ_SPERRE_KEINE_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Importquelle wird gelesen. ähnelt.
+        /// </summary>
+        public static string GEBMZ_SPERRE_LAEUFT {
+            get {
+                return ResourceManager.GetString("GEBMZ_SPERRE_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe für das ausgewählte Gebäude ähnelt.
         /// </summary>
         public static string GEBW_GRP_EINGABE {
@@ -34331,6 +36149,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBZ_BTN_OEFFNEN {
             get {
                 return ResourceManager.GetString("GEBZ_BTN_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil/Kalender zuweisen… ähnelt.
+        /// </summary>
+        public static string GEBZ_BTN_PROFIL_ZUWEISEN {
+            get {
+                return ResourceManager.GetString("GEBZ_BTN_PROFIL_ZUWEISEN", resourceCulture);
             }
         }
         
@@ -34596,6 +36423,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die geerbt vom Gebäude ähnelt.
+        /// </summary>
+        public static string GEBZ_NUTZUNG_GEERBT {
+            get {
+                return ResourceManager.GetString("GEBZ_NUTZUNG_GEERBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die geerbt: {0} ähnelt.
+        /// </summary>
+        public static string GEBZ_NUTZUNG_TEILGEERBT {
+            get {
+                return ResourceManager.GetString("GEBZ_NUTZUNG_TEILGEERBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unbeheizt — ohne Heiz- und Kühlkalender ähnelt.
+        /// </summary>
+        public static string GEBZ_NUTZUNG_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("GEBZ_NUTZUNG_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe (Profil der Gebäudeart): {0} ähnelt.
+        /// </summary>
+        public static string GEBZ_NUTZUNG_VORGABE {
+            get {
+                return ResourceManager.GetString("GEBZ_NUTZUNG_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zonen ähnelt.
         /// </summary>
         public static string GEBZ_REITER {
@@ -34736,6 +36599,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBZ_SP_NUTZFLAECHE {
             get {
                 return ResourceManager.GetString("GEBZ_SP_NUTZFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung/Profil ähnelt.
+        /// </summary>
+        public static string GEBZ_SP_NUTZUNG {
+            get {
+                return ResourceManager.GetString("GEBZ_SP_NUTZUNG", resourceCulture);
             }
         }
         
@@ -36428,6 +38300,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_SPERRE_WAHL_SIMULATION {
             get {
                 return ResourceManager.GetString("GEB_SPERRE_WAHL_SIMULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch kein Gebäude im Projekt. ähnelt.
+        /// </summary>
+        public static string GEB_SPRUNG_KEIN_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("GEB_SPRUNG_KEIN_GEBAEUDE", resourceCulture);
             }
         }
         
@@ -38535,7 +40416,25 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Je Aufbau eine Zeile; C₁,korr je m² ist nur zur Anzeige über die Bauteilreduktion nach VDI 6007 gerechnet. Ein Klick auf „Schichten“ zeigt den Aufbau. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichten der Datei — der Aufbau ist unvollständig: ähnelt.
+        /// </summary>
+        public static string GIMP_AB_DATEISCHICHTEN {
+            get {
+                return ResourceManager.GetString("GIMP_AB_DATEISCHICHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnung von Hand ähnelt.
+        /// </summary>
+        public static string GIMP_AB_HERKUNFT_HAND {
+            get {
+                return ResourceManager.GetString("GIMP_AB_HERKUNFT_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Aufbau eine Zeile; C₁,korr je m² ist nur zur Anzeige über die Bauteilreduktion nach VDI 6007 gerechnet. Ein Klick auf „Schichten“ zeigt den Aufbau. Fehlt einer Schicht ein Stoffwert, wählen Sie dort einen Baustoff des Katalogs; die Zuordnung gilt für alle Schichten dieses Namens, ändert den Vorschlag sofort und wird beim Speichern der Gebäudeliste für das Projekt gemerkt. ähnelt.
         /// </summary>
         public static string GIMP_AB_HINWEIS {
             get {
@@ -38688,11 +40587,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoff zuordnen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoffe und Bauteilaufbauten pflegen Sie unter Administration › Gebäude. ähnelt.
         /// </summary>
-        public static string GIMP_AB_ZUR_BAUSTOFF {
+        public static string GIMP_AB_VERWALTUNG_HINWEIS {
             get {
-                return ResourceManager.GetString("GIMP_AB_ZUR_BAUSTOFF", resourceCulture);
+                return ResourceManager.GetString("GIMP_AB_VERWALTUNG_HINWEIS", resourceCulture);
             }
         }
         
@@ -38832,6 +40731,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht zugeordnet ({0} Räume) ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_NICHT_ZUGEORDNET {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_NICHT_ZUGEORDNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume ohne Zone — kein Ziel; Klicken hebt sie im Grundriss hervor ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_NICHT_ZUGEORDNET_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_NICHT_ZUGEORDNET_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nur Anzeige: Räume lassen sich unter einer Zonenregel mit mehreren Zonen zuordnen. ähnelt.
         /// </summary>
         public static string GIMP_ANS_NUR_ANZEIGE {
@@ -38922,11 +40839,83 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählt: Räume anklicken, um sie dieser Zone zuzuordnen; erneut klicken hebt die Wahl auf ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_ZIEL_AUFHEBEN {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_ZIEL_AUFHEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die zum Zuordnen zuerst eine Zone in der Legende wählen ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_ZIEL_FEHLT {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_ZIEL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klicken, dann Räume anklicken, um sie dieser Zone zuzuordnen ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_ZIEL_KLICK {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_ZIEL_KLICK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen — Ziel der Zuordnung wählen ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_ZIEL_LEGENDE {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_ZIEL_LEGENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnen nur im Modus Zonen ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_ZIEL_NUR_ZONEN {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_ZIEL_NUR_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung: {0} ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_ZIEL_NUTZUNG {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_ZIEL_NUTZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Nutzung ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_ZIEL_OHNE_NUTZUNG {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_ZIEL_OHNE_NUTZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Antippen ordnet der Zone „{0}“ zu ähnelt.
         /// </summary>
         public static string GIMP_ANS_ZUORDNEN {
             get {
                 return ResourceManager.GetString("GIMP_ANS_ZUORDNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nächstliegende Bauart zur wirksamen Wärmekapazität der Projektdatei (Cwirk {0} Wh/(m²K)) ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_BAUART_CWIRK {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_BAUART_CWIRK", resourceCulture);
             }
         }
         
@@ -39053,6 +41042,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_BELEG_BAUWEISE_AUS_BAUART {
             get {
                 return ResourceManager.GetString("GIMP_BELEG_BAUWEISE_AUS_BAUART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wirksame Wärmekapazität der Projektdatei: Cwirk {0} Wh/(m²K) × Nutzfläche {1} m² = {2} Wh/K ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_BAUWEISE_CWIRK {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_BAUWEISE_CWIRK", resourceCulture);
             }
         }
         
@@ -39741,6 +41739,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die N,NO,O,SO,S,SW,W,NW ähnelt.
+        /// </summary>
+        public static string GIMP_BT_RICHTUNGEN {
+            get {
+                return ResourceManager.GetString("GIMP_BT_RICHTUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Als Zone mit Bauteilen übernehmen ähnelt.
         /// </summary>
         public static string GIMP_DLG_ALS_ZONE {
@@ -39998,15 +42005,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_AUSWEG {
             get {
                 return ResourceManager.GetString("GIMP_DLG_AUSWEG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Jeder Materialname der Datei wird über Namen und Synonyme einem Baustoff des Katalogs zugeordnet; eine Luftschicht rechnet als ruhende Luftschicht, eine Schraffur ohne Stoff entfällt. Eine eigene Zuordnung ändert den Vorschlag sofort und wird beim Speichern der Gebäudeliste für das Projekt gemerkt. ähnelt.
-        /// </summary>
-        public static string GIMP_DLG_BAUSTOFFE_HINWEIS {
-            get {
-                return ResourceManager.GetString("GIMP_DLG_BAUSTOFFE_HINWEIS", resourceCulture);
             }
         }
         
@@ -40299,15 +42297,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoffe ähnelt.
-        /// </summary>
-        public static string GIMP_DLG_GRP_BAUSTOFFE {
-            get {
-                return ResourceManager.GetString("GIMP_DLG_GRP_BAUSTOFFE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bauteile (echte Hülle) ähnelt.
         /// </summary>
         public static string GIMP_DLG_GRP_BAUTEILE {
@@ -40524,6 +42513,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name in der Datei: „{0}“ ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_NAME_DATEI {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_NAME_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_NAME_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_NAME_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei enthält kein Gebäude, das sich übernehmen ließe. ähnelt.
         /// </summary>
         public static string GIMP_DLG_NICHT_GELESEN {
@@ -40722,6 +42729,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume ohne Zone automatisch platziert: {1} in „unbeheizt“, {2} zur Nachbarzone, {3} in eine Restzone je Geschoss – im Zonenbaum markiert und dort je Raum zurücknehmbar. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_PLATZIERT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_PLATZIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die automatisch platziert: ohne beheizte Nachbarzone, in die Restzone des Geschosses ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_PLATZIERT_GESCHOSS {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_PLATZIERT_GESCHOSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die automatisch platziert ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_PLATZIERT_MARKE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_PLATZIERT_MARKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die automatisch platziert: zur Nachbarzone mit der größten gemeinsamen Fläche ({0}) ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_PLATZIERT_NACHBAR {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_PLATZIERT_NACHBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die automatisch platziert: unbeheizt, in die gemeinsame Zone „unbeheizt“ ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_PLATZIERT_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_PLATZIERT_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ wählen ähnelt.
         /// </summary>
         public static string GIMP_DLG_PLAN_RAUM_WAEHLEN {
@@ -40817,6 +42869,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_PLAN_ZUORDNEN_GRUND {
             get {
                 return ResourceManager.GetString("GIMP_DLG_PLAN_ZUORDNEN_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zurücknehmen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ZURUECKNEHMEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ZURUECKNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Platzierung von {0} zurücknehmen – der Raum ist danach keiner Zone zugeordnet ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_PLAN_ZURUECKNEHMEN_RAUM {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_PLAN_ZURUECKNEHMEN_RAUM", resourceCulture);
             }
         }
         
@@ -40929,15 +42999,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnung über ähnelt.
-        /// </summary>
-        public static string GIMP_DLG_SP_ABGLEICH {
-            get {
-                return ResourceManager.GetString("GIMP_DLG_SP_ABGLEICH", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
         /// </summary>
         public static string GIMP_DLG_SP_ART {
@@ -40952,15 +43013,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_SP_AZIMUT {
             get {
                 return ResourceManager.GetString("GIMP_DLG_SP_AZIMUT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoff ähnelt.
-        /// </summary>
-        public static string GIMP_DLG_SP_BAUSTOFF {
-            get {
-                return ResourceManager.GetString("GIMP_DLG_SP_BAUSTOFF", resourceCulture);
             }
         }
         
@@ -41073,15 +43125,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Name in der Datei ähnelt.
-        /// </summary>
-        public static string GIMP_DLG_SP_MATERIALNAME {
-            get {
-                return ResourceManager.GetString("GIMP_DLG_SP_MATERIALNAME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Meldung ähnelt.
         /// </summary>
         public static string GIMP_DLG_SP_MELDUNG {
@@ -41145,29 +43188,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schichten ähnelt.
-        /// </summary>
-        public static string GIMP_DLG_SP_SCHICHTEN {
-            get {
-                return ResourceManager.GetString("GIMP_DLG_SP_SCHICHTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizsollwert Tag ähnelt.
         /// </summary>
         public static string GIMP_DLG_SP_SOLLWERT {
             get {
                 return ResourceManager.GetString("GIMP_DLG_SP_SOLLWERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Stoffwerte ähnelt.
-        /// </summary>
-        public static string GIMP_DLG_SP_STOFFWERTE {
-            get {
-                return ResourceManager.GetString("GIMP_DLG_SP_STOFFWERTE", resourceCulture);
             }
         }
         
@@ -41222,15 +43247,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_SP_WERT {
             get {
                 return ResourceManager.GetString("GIMP_DLG_SP_WERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Werte ähnelt.
-        /// </summary>
-        public static string GIMP_DLG_SP_WERTE_AUS {
-            get {
-                return ResourceManager.GetString("GIMP_DLG_SP_WERTE_AUS", resourceCulture);
             }
         }
         
@@ -41541,7 +43557,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone wählen, dann einen Raum im Grundriss antippen — oder den Raum in der Liste wählen und „Umhängen“. Nur Räume gleicher Beheizung; übernommen wird erst mit OK. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone in der Legende wählen, dann einen Raum im Grundriss oder Körper antippen — oder den Raum in der Liste wählen und „Umhängen“. Nur Räume gleicher Beheizung; übernommen wird erst mit OK. ähnelt.
         /// </summary>
         public static string GIMP_DLG_UMHAENGEN_HINWEIS {
             get {
@@ -41591,15 +43607,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_ZONE_ZUKLAPPEN {
             get {
                 return ResourceManager.GetString("GIMP_DLG_ZONE_ZUKLAPPEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Räume zuordnen zu ähnelt.
-        /// </summary>
-        public static string GIMP_DLG_ZUORDNEN_ZU {
-            get {
-                return ResourceManager.GetString("GIMP_DLG_ZUORDNEN_ZU", resourceCulture);
             }
         }
         
@@ -42383,6 +44390,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_NUTZUNG_WOHNEN {
             get {
                 return ResourceManager.GetString("GIMP_NUTZUNG_WOHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rest ähnelt.
+        /// </summary>
+        public static string GIMP_PLAN_ZONE_REST {
+            get {
+                return ResourceManager.GetString("GIMP_PLAN_ZONE_REST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rest {0} ähnelt.
+        /// </summary>
+        public static string GIMP_PLAN_ZONE_REST_GESCHOSS {
+            get {
+                return ResourceManager.GetString("GIMP_PLAN_ZONE_REST_GESCHOSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unbeheizt ähnelt.
+        /// </summary>
+        public static string GIMP_PLAN_ZONE_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("GIMP_PLAN_ZONE_UNBEHEIZT", resourceCulture);
             }
         }
         
@@ -46239,6 +48273,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume ohne Zone automatisch platziert: {1} in die Zone „unbeheizt“, {2} zur Nachbarzone, {3} in eine Restzone je Geschoss. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_REST_PLATZIERT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_REST_PLATZIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone {0} gibt es nicht. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_PLAN_ZONE_UNBEKANNT {
@@ -46590,6 +48633,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiestandard „{0}“ aus der Projektdatei ({1} = {2}). ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_ENERGIESTANDARD_PROJEKTDATEI {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_ENERGIESTANDARD_PROJEKTDATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Wände oder Decken gegen Erdreich ({1} m²) zählen zur Grundfläche — nur sie rechnet gegen das Erdreich. ähnelt.
         /// </summary>
         public static string IMP_GEB_PROT_ERDREICH_ZUR_GRUNDFLAECHE {
@@ -46622,6 +48674,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GEB_PROT_FLAECHE_GEGEN_UNBEHEIZT {
             get {
                 return ResourceManager.GetString("IMP_GEB_PROT_FLAECHE_GEGEN_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudeart „{0}“ aus der Projektdatei ({1} = {2}). ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_GEBAEUDEART_PROJEKTDATEI {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_GEBAEUDEART_PROJEKTDATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdatei: {0} = {1} hat keine Abbildung; es gilt die Ableitung bzw. die Vorgabe. ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_GEBAEUDECODE_OHNE_ABBILDUNG {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_GEBAEUDECODE_OHNE_ABBILDUNG", resourceCulture);
             }
         }
         
@@ -46856,6 +48926,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GEB_PROT_VERWENDUNG_KEINE {
             get {
                 return ResourceManager.GetString("IMP_GEB_PROT_VERWENDUNG_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendung „{0}“ aus der Projektdatei ({1} = {2}). ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_VERWENDUNG_PROJEKTDATEI {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_VERWENDUNG_PROJEKTDATEI", resourceCulture);
             }
         }
         
@@ -48017,6 +50096,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_PLAN_REST_AUSSERHALB {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_PLAN_REST_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume ohne Zone automatisch platziert: {1} in die Zone „unbeheizt“, {2} zur Nachbarzone, {3} in eine Restzone je Geschoss. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_REST_PLATZIERT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_REST_PLATZIERT", resourceCulture);
             }
         }
         
@@ -51158,6 +53246,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KAELTEFOLGE_HINWEIS_VORGABE {
             get {
                 return ResourceManager.GetString("KAELTEFOLGE_HINWEIS_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art des Kältebedarfs ähnelt.
+        /// </summary>
+        public static string KAELTE_ART_GRUPPE {
+            get {
+                return ResourceManager.GetString("KAELTE_ART_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesskälte bleibt im Kältebedarf und wird als eigener Posten mitgeführt; die Kälteerzeuger decken sie vor der Raumkühlung. Ihr Temperaturpaar ist eine Angabe ohne Wirkung auf die Erzeuger. ähnelt.
+        /// </summary>
+        public static string KAELTE_ART_HINWEIS {
+            get {
+                return ResourceManager.GetString("KAELTE_ART_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
+        /// </summary>
+        public static string KAELTE_ART_LABEL {
+            get {
+                return ResourceManager.GetString("KAELTE_ART_LABEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesskälte ähnelt.
+        /// </summary>
+        public static string KAELTE_ART_PROZESS {
+            get {
+                return ResourceManager.GetString("KAELTE_ART_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumkühlung ähnelt.
+        /// </summary>
+        public static string KAELTE_ART_RAUM {
+            get {
+                return ResourceManager.GetString("KAELTE_ART_RAUM", resourceCulture);
             }
         }
         
@@ -54736,6 +56869,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eignung ähnelt.
+        /// </summary>
+        public static string KFLT_SP_EIGNUNG {
+            get {
+                return ResourceManager.GetString("KFLT_SP_EIGNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die E ähnelt.
         /// </summary>
         public static string KFLT_SP_ENERGIE {
@@ -54903,6 +57045,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_SP_KATALOGVERSION {
             get {
                 return ResourceManager.GetString("KFLT_SP_KATALOGVERSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klasse ähnelt.
+        /// </summary>
+        public static string KFLT_SP_KLASSE {
+            get {
+                return ResourceManager.GetString("KFLT_SP_KLASSE", resourceCulture);
             }
         }
         
@@ -58115,6 +60266,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckungsart der markierten Kältebedarfszeile: zentral über die Kältefolge des Projekts oder dezentral über eigene Split-Geräte; nur bei den Kältebedarfsprofilen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_DECKUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_DECKUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckungsart ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_DECKUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_DECKUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Anzeigeeinheit; sie gilt für den Infoblock, die Summen und das Eingabefeld daneben zugleich. ähnelt.
         /// </summary>
         public static string KI_DLG_BPF_EINHEIT_ERL {
@@ -58223,7 +60392,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ordnungsgruppe (etwa Mauerwerk, Beton, Dämmstoffe); leer = ohne Gruppe. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stoffgruppe aus der festen Liste (etwa Mauerwerk, Beton, Dämmstoffe, „Sonstige“ für alles Übrige); leer = ohne Gruppe. Je Gruppe nennt der Dialog Werte außerhalb des üblichen Bereichs als Hinweis. ähnelt.
         /// </summary>
         public static string KI_DLG_BST_GRUPPE_ERL {
             get {
@@ -58237,6 +60406,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BST_HERSTELLER_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_BST_HERSTELLER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klasse des Baustoffs unter seiner Gruppe; die Wahl hängt von der Gruppe ab, leer = keine Klasse. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BST_KLASSE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BST_KLASSE_ERL", resourceCulture);
             }
         }
         
@@ -58309,6 +60487,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BTA_BEZEICHNER_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_BTA_BEZEICHNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gruppe des Aufbaus (Wände, Decken, Dächer, Öffnungen, Sonstige); leer = aus der Bauteilart. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_GRUPPE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_GRUPPE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klasse des Aufbaus unter seiner Gruppe; die Wahl hängt von der Gruppe ab, leer = keine Klasse. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_KLASSE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_KLASSE_ERL", resourceCulture);
             }
         }
         
@@ -59996,7 +62192,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart, zum Beispiel Einfamilienhaus oder Bürogebäude. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart, zum Beispiel Einfamilienhaus oder Bürogebäude. Sie ordnet das Gebäude ein (Bericht, Pufferauslegung); der Rechenweg liest sie nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_ART_ERL {
             get {
@@ -60059,7 +62255,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Baualtersklasse des Gebäudes, ein Bauzeitraum von A (bis 1859) bis M (ab 2021); sie bestimmt die Vorgaben der Bauteile. Ist das Baujahr gesetzt, folgt sie ihm und ist nicht wählbar. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Baualtersklasse des Gebäudes, ein Bauzeitraum von A (bis 1859) bis M (ab 2021); sie bestimmt die Vorgaben der Bauteile. Ist das Baujahr gesetzt, folgt sie ihm und ist nicht wählbar. Der Rechenweg liest sie nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_BAUALTERSKLASSE_ERL {
             get {
@@ -60068,7 +62264,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauart: leicht, schwer oder sehr schwer. Sie zieht die Bauweise nach, die aus Bauart und Nutzfläche gerechnet wird. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauart: leicht, schwer oder sehr schwer. Sie zieht die Bauweise nach, die aus Bauart und Nutzfläche gerechnet wird. Mit Zonen und Bauteilen ist die Bauweise nur der Rückfall für Bauteilgruppen ohne Aufbau. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_BAUART_ERL {
             get {
@@ -60122,7 +62318,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gesamtenergiedurchlassgrad der Fenster als Anteil, zum Beispiel 0,4. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gesamtenergiedurchlassgrad der Fenster als Anteil, zum Beispiel 0,4. Mit Zonen und Bauteilen ist er nur der Rückfall für Fenster ohne eigenen g-Wert. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_DURCHLASSGRAD_ERL {
             get {
@@ -60509,7 +62705,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Luftwechselrate des Gebäudes; sie bestimmt die Lüftungsverluste. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Luftwechselrate des Gebäudes; sie bestimmt die Lüftungsverluste. Sie wirkt nur, wo weder Infiltration noch Nutzerlüftung gesetzt sind; mit Zonen gilt sie für die Zonen ohne Lüftungswerte, und braucht keine Zone sie, ist das Feld ausgeblendet. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_LUFTWECHSEL_ERL {
             get {
@@ -60626,7 +62822,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die mittlere lichte Raumhöhe; sie geht in das beheizte Luftvolumen ein. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die mittlere lichte Raumhöhe; sie geht in das beheizte Luftvolumen ein. Mit Zonen gilt sie nur für Zonen ohne eigene Höhe und ohne eigenes Volumen; trägt jede Zone eine, ist das Feld ausgeblendet. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_RAUMHOEHE_ERL {
             get {
@@ -60779,7 +62975,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wohngebäude oder Gewerbe und Sonstiges; die Verwendung entscheidet, aus welcher Liste die Gebäudearten kommen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohngebäude oder Gewerbe und Sonstiges; die Verwendung entscheidet, aus welcher Liste die Gebäudearten kommen. Der Rechenweg liest sie nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_VERWENDUNG_ERL {
             get {
@@ -62003,7 +64199,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Kältemaschinen-Anlage des Projekts. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Kältemaschinen-Anlage des Projekts. Wärmepumpen im Kühlbetrieb stehen mit in der Liste, ihre Anlage bearbeitet der Wärmepumpendialog. ähnelt.
         /// </summary>
         public static string KI_DLG_KMA_ANLAGE_ERL {
             get {
@@ -63061,6 +65257,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_BADM_BW {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_BADM_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf-Katalog ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BADM_KAELTE {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BADM_KAELTE", resourceCulture);
             }
         }
         
@@ -69059,6 +71264,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckungsart der Kältezeile: zentral über die Kältefolge des Projekts oder dezentral über eigene Split-Geräte; wirksam nur im Kanal Kühlung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_DECKUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_DECKUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckungsart ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_DECKUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_DECKUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fester EER bzw. EER am Punkt 1, größer 0; Vorgabe 3,0. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_EER1_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_EER1_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER am Punkt 1 ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_EER1_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_EER1_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER am Punkt 2 (nur linear), größer 0; Vorgabe 4,0. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_EER2_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_EER2_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER am Punkt 2 ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_EER2_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_EER2_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bei dezentraler Deckung: fester EER oder linear über der Außentemperatur zwischen zwei Punkten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_EER_WEG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_EER_WEG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER-Weg ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_EER_WEG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_EER_WEG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner der zugeordneten Ganglinie. ähnelt.
         /// </summary>
         public static string KI_DLG_WBX_GANGLINIE_ERL {
@@ -69073,6 +71350,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WBX_KANAL_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WBX_KANAL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur des Punkts 1 in °C, −20 bis 50; Vorgabe 35. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_TAUSSEN1_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_TAUSSEN1_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur Punkt 1 ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_TAUSSEN1_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_TAUSSEN1_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur des Punkts 2 in °C (nur linear), −20 bis 50 und verschieden von Punkt 1; Vorgabe 25. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_TAUSSEN2_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_TAUSSEN2_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur Punkt 2 ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_TAUSSEN2_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_TAUSSEN2_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromträger, über den der Strom der Split-Geräte abgerechnet wird; leer = Stromträger des Projekts. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_TRAEGER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_TRAEGER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlträger ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_TRAEGER_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_TRAEGER_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Strom der Split-Geräte läuft über einen eigenen Zähler. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_ZAEHLER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_ZAEHLER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigener Zähler ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_ZAEHLER_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_ZAEHLER_NAME", resourceCulture);
             }
         }
         
@@ -78283,6 +80632,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine ähnelt.
+        /// </summary>
+        public static string KMA_ART_KAELTEMASCHINE {
+            get {
+                return ResourceManager.GetString("KMA_ART_KAELTEMASCHINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe ähnelt.
+        /// </summary>
+        public static string KMA_ART_WAERMEPUMPE {
+            get {
+                return ResourceManager.GetString("KMA_ART_WAERMEPUMPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlleistung und EER bei {0} °C Kaltwasser und {1} °C Quelle (EN 14511). ähnelt.
+        /// </summary>
+        public static string KMA_BEZUG_HINWEIS {
+            get {
+                return ResourceManager.GetString("KMA_BEZUG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kW bei {1} °C ähnelt.
+        /// </summary>
+        public static string KMA_BEZUG_RUECKFALL {
+            get {
+                return ResourceManager.GetString("KMA_BEZUG_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Hinzufügen… ähnelt.
         /// </summary>
         public static string KMA_BTN_HINZU {
@@ -78364,6 +80749,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät ähnelt.
+        /// </summary>
+        public static string KMA_GRUPPE_STECKBRIEF {
+            get {
+                return ResourceManager.GetString("KMA_GRUPPE_STECKBRIEF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen im Kühlbetrieb ähnelt.
         /// </summary>
         public static string KMA_GRUPPE_WP {
@@ -78405,6 +80799,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KMA_HINWEIS_NEU {
             get {
                 return ResourceManager.GetString("KMA_HINWEIS_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Legt eine Kältemaschine an — eine Wärmepumpe entsteht im Wärmepumpendialog. ähnelt.
+        /// </summary>
+        public static string KMA_HINWEIS_NEU_ART {
+            get {
+                return ResourceManager.GetString("KMA_HINWEIS_NEU_ART", resourceCulture);
             }
         }
         
@@ -78508,11 +80911,65 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition / Betrieb ähnelt.
+        /// </summary>
+        public static string KMA_LBL_INVEST_BETRIEB {
+            get {
+                return ResourceManager.GetString("KMA_LBL_INVEST_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwasser-Vorlauf min. ähnelt.
+        /// </summary>
+        public static string KMA_LBL_KALTWASSER {
+            get {
+                return ResourceManager.GetString("KMA_LBL_KALTWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlleistung ähnelt.
+        /// </summary>
+        public static string KMA_LBL_KUEHLLEISTUNG {
+            get {
+                return ResourceManager.GetString("KMA_LBL_KUEHLLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlvorlauf ähnelt.
+        /// </summary>
+        public static string KMA_LBL_KUEHLVORLAUF {
+            get {
+                return ResourceManager.GetString("KMA_LBL_KUEHLVORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Name der Anlage ähnelt.
         /// </summary>
         public static string KMA_LBL_NAME {
             get {
                 return ResourceManager.GetString("KMA_LBL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string KMA_LBL_QUELLE {
+            get {
+                return ResourceManager.GetString("KMA_LBL_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang in der Kältefolge ähnelt.
+        /// </summary>
+        public static string KMA_LBL_RANG {
+            get {
+                return ResourceManager.GetString("KMA_LBL_RANG", resourceCulture);
             }
         }
         
@@ -78540,6 +80997,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KMA_LBL_ZAEHLER {
             get {
                 return ResourceManager.GetString("KMA_LBL_ZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässigkeit ähnelt.
+        /// </summary>
+        public static string KMA_LBL_ZULAESSIGKEIT {
+            get {
+                return ResourceManager.GetString("KMA_LBL_ZULAESSIGKEIT", resourceCulture);
             }
         }
         
@@ -78589,6 +81055,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ steht im Projekt, der Kühlbetrieb bleibt aus: {1} ähnelt.
+        /// </summary>
+        public static string KMA_MSG_WP_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("KMA_MSG_WP_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlbetrieb von „{0}“ wird mit OK ausgeschaltet — Gerät, Anlage und Wärmekaskade bleiben im Projekt. ähnelt.
+        /// </summary>
+        public static string KMA_MSG_WP_ENTFERNT {
+            get {
+                return ResourceManager.GetString("KMA_MSG_WP_ENTFERNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmepumpe konnte nicht ins Projekt übernommen werden. ähnelt.
+        /// </summary>
+        public static string KMA_MSG_WP_FEHLER {
+            get {
+                return ResourceManager.GetString("KMA_MSG_WP_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ steht bereits im Projekt — Kühlbetrieb eingeschaltet, Rang {1} in der Kältefolge. ähnelt.
+        /// </summary>
+        public static string KMA_MSG_WP_SCHON_IM_PROJEKT {
+            get {
+                return ResourceManager.GetString("KMA_MSG_WP_SCHON_IM_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ steht im Projekt, Kühlbetrieb eingeschaltet — Rang {1} in der Kältefolge. ähnelt.
+        /// </summary>
+        public static string KMA_MSG_WP_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("KMA_MSG_WP_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stromträger des Projekts ähnelt.
         /// </summary>
         public static string KMA_PLATZHALTER_TRAEGER {
@@ -78607,11 +81118,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Rang (Vorgabefolge) ähnelt.
+        /// </summary>
+        public static string KMA_RANG_KEINER {
+            get {
+                return ResourceManager.GetString("KMA_RANG_KEINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl ähnelt.
         /// </summary>
         public static string KMA_SP_ANZAHL {
             get {
                 return ResourceManager.GetString("KMA_SP_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
+        /// </summary>
+        public static string KMA_SP_ART {
+            get {
+                return ResourceManager.GetString("KMA_SP_ART", resourceCulture);
             }
         }
         
@@ -78639,6 +81168,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KMA_SP_NAME {
             get {
                 return ResourceManager.GetString("KMA_SP_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang ähnelt.
+        /// </summary>
+        public static string KMA_SP_RANG {
+            get {
+                return ResourceManager.GetString("KMA_SP_RANG", resourceCulture);
             }
         }
         
@@ -78688,6 +81226,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Sätze einer Art vergleichen ähnelt.
+        /// </summary>
+        public static string KMA_VERGLEICH_EINE_ART {
+            get {
+                return ResourceManager.GetString("KMA_VERGLEICH_EINE_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen bearbeitet der Wärmepumpendialog ähnelt.
+        /// </summary>
+        public static string KMA_WP_BEARBEITEN_GESPERRT {
+            get {
+                return ResourceManager.GetString("KMA_WP_BEARBEITEN_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlbetrieb der Wärmepumpe konnte nicht gespeichert werden. ähnelt.
         /// </summary>
         public static string KMA_WP_FEHLER {
@@ -78720,6 +81276,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KMA_WP_LEER {
             get {
                 return ResourceManager.GetString("KMA_WP_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht geprüft (Katalogsatz ohne Inbetriebnahmejahr) ähnelt.
+        /// </summary>
+        public static string KMA_ZULAESSIGKEIT_NICHT_GEPRUEFT {
+            get {
+                return ResourceManager.GetString("KMA_ZULAESSIGKEIT_NICHT_GEPRUEFT", resourceCulture);
             }
         }
         
@@ -82919,6 +85484,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_LBL_KATALOG_KALENDER {
             get {
                 return ResourceManager.GetString("KOND_LBL_KATALOG_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Tage ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KLAPP_EINZELTAGE_ANZAHL {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KLAPP_EINZELTAGE_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Tag ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KLAPP_EINZELTAGE_EINER {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KLAPP_EINZELTAGE_EINER", resourceCulture);
             }
         }
         
@@ -87834,6 +90417,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilkatalog einlesen… ähnelt.
+        /// </summary>
+        public static string MENU_BAUTEILKATALOG_EINLESEN {
+            get {
+                return ResourceManager.GetString("MENU_BAUTEILKATALOG_EINLESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskalender ähnelt.
         /// </summary>
         public static string MENU_BETRIEBSKALENDER {
@@ -88073,6 +90665,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MENU_IMPORT_KAELTEMASCHINEN {
             get {
                 return ResourceManager.GetString("MENU_IMPORT_KAELTEMASCHINEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf ähnelt.
+        /// </summary>
+        public static string MENU_KAELTEBEDARF {
+            get {
+                return ResourceManager.GetString("MENU_KAELTEBEDARF", resourceCulture);
             }
         }
         
@@ -105167,7 +107768,25 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag aus DIN-Nr. {0}: {1} — zuweisbar im Gebäudeeditor über „Nutzungsprofil übernehmen…“ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil als Vorgabe setzen ähnelt.
+        /// </summary>
+        public static string RNP_IMP_EINZONE_SETZEN {
+            get {
+                return ResourceManager.GetString("RNP_IMP_EINZONE_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe aus der Gebäudeart „{0}“: {1} — das Gebäude nimmt es als Kalender, die Datei geht vor ähnelt.
+        /// </summary>
+        public static string RNP_IMP_EINZONE_VORGABE_ART {
+            get {
+                return ResourceManager.GetString("RNP_IMP_EINZONE_VORGABE_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe aus DIN-Nr. {0}: {1} — das Gebäude nimmt es als Kalender, die Datei geht vor ähnelt.
         /// </summary>
         public static string RNP_IMP_EINZONE_VORSCHLAG {
             get {
@@ -105181,6 +107800,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_IMP_NICHT_IM_KATALOG {
             get {
                 return ResourceManager.GetString("RNP_IMP_NICHT_IM_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Kennwert, vom Gebäude geerbt: {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_OHNE_KENNWERT {
+            get {
+                return ResourceManager.GetString("RNP_IMP_OHNE_KENNWERT", resourceCulture);
             }
         }
         
@@ -105235,6 +107863,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_IMP_QUELLE_RAUMTYP {
             get {
                 return ResourceManager.GetString("RNP_IMP_QUELLE_RAUMTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe (Profil der Gebäudeart „{0}“) ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_VORGABE_ART {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_VORGABE_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe (DIN-Nr. {0} der Projektdatei) ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_VORGABE_DIN {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_VORGABE_DIN", resourceCulture);
             }
         }
         
@@ -105397,24 +108043,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_LBL_ART_EPOS {
             get {
                 return ResourceManager.GetString("RNP_LBL_ART_EPOS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die SIA 2024 ähnelt.
-        /// </summary>
-        public static string RNP_LBL_ART_SIA {
-            get {
-                return ResourceManager.GetString("RNP_LBL_ART_SIA", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 2078 ähnelt.
-        /// </summary>
-        public static string RNP_LBL_ART_VDI {
-            get {
-                return ResourceManager.GetString("RNP_LBL_ART_VDI", resourceCulture);
             }
         }
         
@@ -105658,6 +108286,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_LBL_LUFT_EINHEIT {
             get {
                 return ResourceManager.GetString("RNP_LBL_LUFT_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenluft je Person ähnelt.
+        /// </summary>
+        public static string RNP_LBL_LUFT_PERSON {
+            get {
+                return ResourceManager.GetString("RNP_LBL_LUFT_PERSON", resourceCulture);
             }
         }
         
@@ -105932,6 +108569,438 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die doppelte Nummer ähnelt.
+        /// </summary>
+        public static string RNP_NW_ART_DOPPELT {
+            get {
+                return ResourceManager.GetString("RNP_NW_ART_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Wert ähnelt.
+        /// </summary>
+        public static string RNP_NW_ART_OHNE {
+            get {
+                return ResourceManager.GetString("RNP_NW_ART_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Meldung ähnelt.
+        /// </summary>
+        public static string RNP_NW_ART_SONST {
+            get {
+                return ResourceManager.GetString("RNP_NW_ART_SONST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unbekannte Nummer ähnelt.
+        /// </summary>
+        public static string RNP_NW_ART_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("RNP_NW_ART_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string RNP_NW_BTN_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("RNP_NW_BTN_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV-Datei wählen… ähnelt.
+        /// </summary>
+        public static string RNP_NW_BTN_CSV {
+            get {
+                return ResourceManager.GetString("RNP_NW_BTN_CSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Normwerte einlesen… ähnelt.
+        /// </summary>
+        public static string RNP_NW_BTN_EINLESEN {
+            get {
+                return ResourceManager.GetString("RNP_NW_BTN_EINLESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingelesene Werte entfernen… ähnelt.
+        /// </summary>
+        public static string RNP_NW_BTN_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("RNP_NW_BTN_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
+        /// </summary>
+        public static string RNP_NW_BTN_JA {
+            get {
+                return ResourceManager.GetString("RNP_NW_BTN_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht entfernen ähnelt.
+        /// </summary>
+        public static string RNP_NW_BTN_NEIN {
+            get {
+                return ResourceManager.GetString("RNP_NW_BTN_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdatei wählen… ähnelt.
+        /// </summary>
+        public static string RNP_NW_BTN_PROJEKT {
+            get {
+                return ResourceManager.GetString("RNP_NW_BTN_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string RNP_NW_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("RNP_NW_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage speichern… ähnelt.
+        /// </summary>
+        public static string RNP_NW_BTN_VORLAGE {
+            get {
+                return ResourceManager.GetString("RNP_NW_BTN_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV-Datei mit Normwerten wählen ähnelt.
+        /// </summary>
+        public static string RNP_NW_DLG_CSV {
+            get {
+                return ResourceManager.GetString("RNP_NW_DLG_CSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage der Normwerte speichern ähnelt.
+        /// </summary>
+        public static string RNP_NW_DLG_VORLAGE {
+            get {
+                return ResourceManager.GetString("RNP_NW_DLG_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die eingelesenen Werte von {0} Profil(en) entfernen? Die Profile stehen danach wieder ohne Werte. ähnelt.
+        /// </summary>
+        public static string RNP_NW_FRAGE_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("RNP_NW_FRAGE_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abweichungen ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_ART {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei: {0} ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_DATEI {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil oder Meldung ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_GRUND {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht übernommen ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_HINWEISE {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_HINWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nummer ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_NUMMER {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_NUMMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_PROFIL {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_STAND {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Normwerte einlesen ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_TITEL {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Treffer ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_TREFFER {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vorhandene Werte überschreiben ähnelt.
+        /// </summary>
+        public static string RNP_NW_LBL_UEBERSCHREIBEN {
+            get {
+                return ResourceManager.GetString("RNP_NW_LBL_UEBERSCHREIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. {0} „{1}“: nicht übernommen — {2} ähnelt.
+        /// </summary>
+        public static string RNP_NW_MSG_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("RNP_NW_MSG_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. {0} „{1}“: Die Quelle führt diese Nutzung mehrfach; das erste Profil gilt. ähnelt.
+        /// </summary>
+        public static string RNP_NW_MSG_DOPPELT {
+            get {
+                return ResourceManager.GetString("RNP_NW_MSG_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingelesene Werte aus {0} Profil(en) der DIN entfernt. ähnelt.
+        /// </summary>
+        public static string RNP_NW_MSG_ENTFERNT {
+            get {
+                return ResourceManager.GetString("RNP_NW_MSG_ENTFERNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Profil(e) der DIN mit Werten gefüllt, {1} übersprungen (Werte vorhanden), {2} Profil(e) der Quelle ohne Zuordnung. ähnelt.
+        /// </summary>
+        public static string RNP_NW_MSG_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("RNP_NW_MSG_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datenbank führt keine ausgelieferte Kategorie DIN/TS 18599-10. ähnelt.
+        /// </summary>
+        public static string RNP_NW_MSG_KEINE_DIN {
+            get {
+                return ResourceManager.GetString("RNP_NW_MSG_KEINE_DIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle führt keine Nutzung der Kategorie DIN/TS 18599-10 mit Werten; nichts einzulesen. ähnelt.
+        /// </summary>
+        public static string RNP_NW_MSG_NICHTS {
+            get {
+                return ResourceManager.GetString("RNP_NW_MSG_NICHTS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. {0} „{1}“: Die Quelle führt zu dieser Nutzung keinen Wert — nicht übernommen. ähnelt.
+        /// </summary>
+        public static string RNP_NW_MSG_OHNE_WERTE {
+            get {
+                return ResourceManager.GetString("RNP_NW_MSG_OHNE_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. {0} „{1}“: keine Nutzung der Kategorie DIN/TS 18599-10 mit dieser Nummer bzw. diesem Namen — nicht übernommen. ähnelt.
+        /// </summary>
+        public static string RNP_NW_MSG_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("RNP_NW_MSG_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage gespeichert: {0} ähnelt.
+        /// </summary>
+        public static string RNP_NW_MSG_VORLAGE {
+            get {
+                return ResourceManager.GetString("RNP_NW_MSG_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuerst eine Datei wählen. ähnelt.
+        /// </summary>
+        public static string RNP_NW_SPERRE_DATEI {
+            get {
+                return ResourceManager.GetString("RNP_NW_SPERRE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Profil trägt eingelesene Werte. ähnelt.
+        /// </summary>
+        public static string RNP_NW_SPERRE_KEINE {
+            get {
+                return ResourceManager.GetString("RNP_NW_SPERRE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eingelesene Werte vorhanden ähnelt.
+        /// </summary>
+        public static string RNP_NW_STAND_EINGELESEN {
+            get {
+                return ResourceManager.GetString("RNP_NW_STAND_EINGELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Werte ähnelt.
+        /// </summary>
+        public static string RNP_NW_STAND_LEER {
+            get {
+                return ResourceManager.GetString("RNP_NW_STAND_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte vorhanden ähnelt.
+        /// </summary>
+        public static string RNP_NW_STAND_VORHANDEN {
+            get {
+                return ResourceManager.GetString("RNP_NW_STAND_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Füllt die Profile der Kategorie DIN/TS 18599-10 mit den Werten aus Ihrer CSV-Datei oder einer Projektdatei. Das Programm liefert keine Normwerte mit. ähnelt.
+        /// </summary>
+        public static string RNP_NW_TXT_HINWEIS {
+            get {
+                return ResourceManager.GetString("RNP_NW_TXT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Profile der Datei sind zugeordnet. ähnelt.
+        /// </summary>
+        public static string RNP_NW_TXT_KEINE_HINWEISE {
+            get {
+                return ResourceManager.GetString("RNP_NW_TXT_KEINE_HINWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch keine Datei gewählt. ähnelt.
+        /// </summary>
+        public static string RNP_NW_TXT_OHNE_DATEI {
+            get {
+                return ResourceManager.GetString("RNP_NW_TXT_OHNE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abweichungen je Spalte: {0} ähnelt.
+        /// </summary>
+        public static string RNP_NW_TXT_SPALTEN {
+            get {
+                return ResourceManager.GetString("RNP_NW_TXT_SPALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Haken bleiben {0} Profil(e) mit vorhandenen Werten unverändert. ähnelt.
+        /// </summary>
+        public static string RNP_NW_TXT_UEBERSPRINGEN {
+            get {
+                return ResourceManager.GetString("RNP_NW_TXT_UEBERSPRINGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage ist die CSV-Datei der Kategorie mit Nummern und Namen, ohne Werte. ähnelt.
+        /// </summary>
+        public static string RNP_NW_TXT_VORLAGE {
+            get {
+                return ResourceManager.GetString("RNP_NW_TXT_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Treffer, davon {1} mit vorhandenen Werten und {2} mit Abweichungen. ähnelt.
+        /// </summary>
+        public static string RNP_NW_TXT_ZAEHLUNG {
+            get {
+                return ResourceManager.GetString("RNP_NW_TXT_ZAEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aus der Projektdatei {0}, DIN-Nr. {1} ähnelt.
         /// </summary>
         public static string RNP_PD_BESCHREIBUNG {
@@ -106130,7 +109199,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. {0}: Außenluft je Person nicht übernommen — das Profil führt keine Belegungsdichte dazu. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. {0}: Außenluft je Person übernommen — ohne Belegungsdichte im Profil rechnet der Generator sie nicht in einen Luftwechsel um. ähnelt.
         /// </summary>
         public static string RNP_PD_MSG_LUFT_PERSON {
             get {
@@ -106279,6 +109348,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_TXT_AUSGELIEFERT {
             get {
                 return ResourceManager.GetString("RNP_TXT_AUSGELIEFERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eingelesen ähnelt.
+        /// </summary>
+        public static string RNP_TXT_EINGELESEN {
+            get {
+                return ResourceManager.GetString("RNP_TXT_EINGELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte eingelesen aus {0} am {1} ähnelt.
+        /// </summary>
+        public static string RNP_TXT_EINGELESEN_AUS {
+            get {
+                return ResourceManager.GetString("RNP_TXT_EINGELESEN_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenluft je Person ohne Fläche je Person im Profil: die Lüftung wird nicht gesetzt. ähnelt.
+        /// </summary>
+        public static string RNP_TXT_HINWEIS_BELEGUNG {
+            get {
+                return ResourceManager.GetString("RNP_TXT_HINWEIS_BELEGUNG", resourceCulture);
             }
         }
         
@@ -108434,7 +111530,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die freie Kühlung in Reihe (gerechnet wird parallel) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die freie Kühlung in Reihe ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_RKW_MERKMAL_REIHE {
             get {
@@ -108484,6 +111580,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_KAELTE_RKW_OHNE_FEUCHTE {
             get {
                 return ResourceManager.GetString("SIMENG_KAELTE_RKW_OHNE_FEUCHTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ kühlt den Kaltwasserrücklauf in Reihe vor (Teil-Freikühlung); Kaltwasserspreizung {2} K aus {3}. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_REIHE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die der Kühlübergabe der Gebäude ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_REIHE_QUELLE_UEBERGABE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_REIHE_QUELLE_UEBERGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die der EPOS-Vorgabe (kein Gebäude pflegt eine Kühlübergabe) ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_REIHE_QUELLE_VORGABE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_REIHE_QUELLE_VORGABE", resourceCulture);
             }
         }
         
@@ -121548,6 +124671,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählter Lastgang ähnelt.
+        /// </summary>
+        public static string SST_GRP_LASTGANG {
+            get {
+                return ResourceManager.GetString("SST_GRP_LASTGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage im Projekt ähnelt.
+        /// </summary>
+        public static string SST_GRP_PROJEKT {
+            get {
+                return ResourceManager.GetString("SST_GRP_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
+        /// </summary>
+        public static string SST_LBL_HERKUNFT {
+            get {
+                return ResourceManager.GetString("SST_LBL_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ➕ Neue Variante anlegen… ähnelt.
         /// </summary>
         public static string START_BTN_VARIANTE_ANLEGEN {
@@ -130783,6 +133933,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganglinie ähnelt.
+        /// </summary>
+        public static string WBX_GRP_GANGLINIE {
+            get {
+                return ResourceManager.GetString("WBX_GRP_GANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stammdaten ähnelt.
+        /// </summary>
+        public static string WBX_GRP_STAMM {
+            get {
+                return ResourceManager.GetString("WBX_GRP_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Dateiformat: CSV- oder Textdatei (auch Excel .xlsx/.xlsm/.xls) mit einem Jahr Wärmebedarf — 8.760 Stundenwerte oder 35.040 Viertelstundenwerte, in Zeitfolge ab dem 1. Januar, je Zeile ein Wert. Als Feldtrennzeichen sind Semikolon, Komma, Tabulator und senkrechter Strich zugelassen; eine einspaltige Datei braucht keines. Eine Kopfzeile ist erlaubt und wird erkannt. Dezimaltrennzeichen Komma oder Punkt, kein Tausendertrennzeichen. Werte als Leistung in kW oder als Arbeit in kWh je Intervall — die Einheit wird [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string WBX_HINWEIS_FORMAT {
@@ -130801,6 +133969,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältelastgänge pflegen Sie unter Kältebedarf extern. ähnelt.
+        /// </summary>
+        public static string WBX_HRL_KAELTE_EXTERN {
+            get {
+                return ResourceManager.GetString("WBX_HRL_KAELTE_EXTERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ein Lastgang im Kanal Kühlung ist Kältebedarf: Er wirkt nur mit der Projekteinstellung „Kühlung rechnen“, geht in keinen Wärmekanal und bleibt ohne Kälteerzeuger ungedeckt. ähnelt.
         /// </summary>
         public static string WBX_HRL_KANAL_KUEHLUNG {
@@ -130810,11 +133987,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kanal, Art und Deckung gelten je Zuordnung im Projekt. ähnelt.
+        /// </summary>
+        public static string WBX_HRL_NUR_IM_PROJEKT {
+            get {
+                return ResourceManager.GetString("WBX_HRL_NUR_IM_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarfsdaten (Ganglinien) ähnelt.
         /// </summary>
         public static string WBX_KOPFBAND {
             get {
                 return ResourceManager.GetString("WBX_KOPFBAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarfsdaten (Lastgänge) ähnelt.
+        /// </summary>
+        public static string WBX_KOPFBAND_KAELTE {
+            get {
+                return ResourceManager.GetString("WBX_KOPFBAND_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner ähnelt.
+        /// </summary>
+        public static string WBX_LBL_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("WBX_LBL_BEZEICHNER", resourceCulture);
             }
         }
         
@@ -130878,6 +134082,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WBX_TITEL {
             get {
                 return ResourceManager.GetString("WBX_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf extern ähnelt.
+        /// </summary>
+        public static string WBX_TITEL_KAELTE {
+            get {
+                return ResourceManager.GetString("WBX_TITEL_KAELTE", resourceCulture);
             }
         }
         
@@ -138527,6 +141740,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewähltes Gerät ähnelt.
+        /// </summary>
+        public static string WPA_GRP_GERAET {
+            get {
+                return ResourceManager.GetString("WPA_GRP_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen Kenndaten ähnelt.
         /// </summary>
         public static string WPA_GRP_KENNDATEN {
@@ -138910,6 +142132,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_INFO_SPERRZEIT_ZEITPROGRAMM {
             get {
                 return ResourceManager.GetString("WPA_INFO_SPERRZEIT_ZEITPROGRAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitprogramm ungültig ähnelt.
+        /// </summary>
+        public static string WPA_KOPF_BZ_FEHLER {
+            get {
+                return ResourceManager.GetString("WPA_KOPF_BZ_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitprogramm gepflegt ähnelt.
+        /// </summary>
+        public static string WPA_KOPF_BZ_GEPFLEGT {
+            get {
+                return ResourceManager.GetString("WPA_KOPF_BZ_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht gepflegt — immer verfügbar ähnelt.
+        /// </summary>
+        public static string WPA_KOPF_BZ_LEER {
+            get {
+                return ResourceManager.GetString("WPA_KOPF_BZ_LEER", resourceCulture);
             }
         }
         
@@ -139360,6 +142609,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_RUECKLAUF_VORSCHLAG {
             get {
                 return ResourceManager.GetString("WPA_RUECKLAUF_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektkennlinie am eingestellten Vorlauf, interpoliert wie in der Simulation ähnelt.
+        /// </summary>
+        public static string WPA_STB_ARBEITSPUNKT_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("WPA_STB_ARBEITSPUNKT_HERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb ähnelt.
+        /// </summary>
+        public static string WPA_STB_BETRIEB {
+            get {
+                return ResourceManager.GetString("WPA_STB_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die COP bei {0} ähnelt.
+        /// </summary>
+        public static string WPA_STB_COP {
+            get {
+                return ResourceManager.GetString("WPA_STB_COP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die COP am Vorlauf ähnelt.
+        /// </summary>
+        public static string WPA_STB_COP_OHNE {
+            get {
+                return ResourceManager.GetString("WPA_STB_COP_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizleistung bei {0} ähnelt.
+        /// </summary>
+        public static string WPA_STB_HEIZLEISTUNG {
+            get {
+                return ResourceManager.GetString("WPA_STB_HEIZLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizleistung am Vorlauf ähnelt.
+        /// </summary>
+        public static string WPA_STB_HEIZLEISTUNG_OHNE {
+            get {
+                return ResourceManager.GetString("WPA_STB_HEIZLEISTUNG_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Invest ähnelt.
+        /// </summary>
+        public static string WPA_STB_INVEST {
+            get {
+                return ResourceManager.GetString("WPA_STB_INVEST", resourceCulture);
             }
         }
         

@@ -23623,10 +23623,10 @@ Do you want to allow this?</value>
     <value>Free text for the catalogue record.</value>
   </data>
   <data name="KI_DLG_GEBK_ART_ERL" xml:space="preserve">
-    <value>The building type, for example detached house or office building.</value>
+    <value>The building type, for example detached house or office building. It classifies the building (report, buffer sizing); the calculation does not read it.</value>
   </data>
   <data name="KI_DLG_GEBK_BAUALTERSKLASSE_ERL" xml:space="preserve">
-    <value>The building age class of the building, a construction period from A (up to 1859) to M (from 2021); it determines the defaults of the components. If the year of construction is set, the class follows it and cannot be chosen.</value>
+    <value>The building age class of the building, a construction period from A (up to 1859) to M (from 2021); it determines the defaults of the components. If the year of construction is set, the class follows it and cannot be chosen. The calculation does not read it.</value>
   </data>
   <data name="KI_DLG_GEBK_BAUJAHR_ERL" xml:space="preserve">
     <value>The year of construction of the building, 1500 to 2100; empty = unknown. If it is set, it determines the building age class; it does not change the calculation.</value>
@@ -23635,10 +23635,10 @@ Do you want to allow this?</value>
     <value>The energy standard of the building if its envelope is better than the minimum standard of its building age class (Efficiency House, Passive House …); empty = none. Efficiency House 115/100 and 85 exist for residential buildings only. It determines the component defaults before the class; it does not change the calculation.</value>
   </data>
   <data name="KI_DLG_GEBK_VERWENDUNG_ERL" xml:space="preserve">
-    <value>Residential building, or commercial and other; the use decides which list the building types come from.</value>
+    <value>Residential building, or commercial and other; the use decides which list the building types come from. The calculation does not read it.</value>
   </data>
   <data name="KI_DLG_GEBK_BAUART_ERL" xml:space="preserve">
-    <value>The construction class: light, heavy or very heavy. It updates the thermal mass derived from class and usable floor area.</value>
+    <value>The construction class: light, heavy or very heavy. It updates the thermal mass derived from class and usable floor area. With zones and components the thermal mass is only the fallback for component groups without layer build-up.</value>
   </data>
   <data name="KI_DLG_GEBK_WOHNFLAECHE_ERL" xml:space="preserve">
     <value>The total living or usable area of the building.</value>
@@ -23650,10 +23650,10 @@ Do you want to allow this?</value>
     <value>The internal heat gains from people and appliances.</value>
   </data>
   <data name="KI_DLG_GEBK_DURCHLASSGRAD_ERL" xml:space="preserve">
-    <value>The total solar energy transmittance of the windows as a fraction, for example 0.4.</value>
+    <value>The total solar energy transmittance of the windows as a fraction, for example 0.4. With zones and components it is only the fallback for windows without their own g-value.</value>
   </data>
   <data name="KI_DLG_GEBK_RAUMHOEHE_ERL" xml:space="preserve">
-    <value>The mean clear room height; it enters the heated air volume.</value>
+    <value>The mean clear room height; it enters the heated air volume. With zones it applies only to zones without their own height and volume; if every zone has one, the field is hidden.</value>
   </data>
   <data name="KI_DLG_GEBK_FF_NORD_ERL" xml:space="preserve">
     <value>The window area facing north.</value>
@@ -23725,7 +23725,7 @@ Do you want to allow this?</value>
     <value>The length of the external wall-to-basement joint.</value>
   </data>
   <data name="KI_DLG_GEBK_LUFTWECHSEL_ERL" xml:space="preserve">
-    <value>The air change rate of the building; it determines the ventilation losses.</value>
+    <value>The air change rate of the building; it determines the ventilation losses. It applies only where neither infiltration nor user ventilation is set; with zones it applies to the zones without ventilation values, and if no zone needs it, the field is hidden.</value>
   </data>
   <data name="KI_DLG_GEBK_RAHMENANTEIL_ERL" xml:space="preserve">
     <value>Share of the window frame in the window area (VDI 6007); empty = default value 0.3.</value>
@@ -23884,7 +23884,7 @@ Do you want to allow this?</value>
     <value>The name of the building material; together with the manufacturer it is unique in the catalogue.</value>
   </data>
   <data name="KI_DLG_BST_GRUPPE_ERL" xml:space="preserve">
-    <value>The group (e.g. masonry, concrete, insulation); empty = no group.</value>
+    <value>The material group from the fixed list (e.g. masonry, concrete, insulation, “Other” for everything else); empty = no group. Per group the dialog notes values outside the usual range.</value>
   </data>
   <data name="KI_DLG_BST_HERSTELLER_ERL" xml:space="preserve">
     <value>The manufacturer; empty means manufacturer-neutral (standard or guide value).</value>
@@ -28537,7 +28537,7 @@ Do you want to allow this?</value>
     <value>water balance</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_MERKMAL_REIHE" xml:space="preserve">
-    <value>free cooling in series (calculated in parallel)</value>
+    <value>free cooling in series</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_BIMSCHV" xml:space="preserve">
     <value>Chiller "{0}": the heat rejection unit "{1}" is an evaporative cooling system — observe the notification, inspection and operating duties of the German 42nd BImSchV (note only, not checked by EPOS).</value>
@@ -28550,6 +28550,15 @@ Do you want to allow this?</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_OHNE_FEUCHTE" xml:space="preserve">
     <value>Chiller "{0}": the climate has no humidity — the heat rejection unit "{1}" runs dry in {2} hours above the switching limit, without humidification and without water use.</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_REIHE" xml:space="preserve">
+    <value>Chiller "{0}": the heat rejection unit "{1}" pre-cools the chilled-water return in series (partial free cooling); chilled-water temperature difference {2} K from {3}.</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_REIHE_QUELLE_UEBERGABE" xml:space="preserve">
+    <value>the cooling emitters of the buildings</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_REIHE_QUELLE_VORGABE" xml:space="preserve">
+    <value>the EPOS default (no building maintains a cooling emitter)</value>
   </data>
   <data name="SIMENG_KAELTE_RKW_UEBERLAST" xml:space="preserve">
     <value>Chiller "{0}": the heat rejection unit "{1}" exceeded its rated capacity in {2} hours — the fan ran at full speed, a load-dependent approach rose above its rated value.</value>
@@ -33501,6 +33510,12 @@ Do you want to allow this?</value>
   <data name="GIMP_HERKUNFT_VORGABE" xml:space="preserve">
     <value>Default value</value>
   </data>
+  <data name="BKAT_HERKUNFT_EIGEN" xml:space="preserve">
+    <value>Own entry</value>
+  </data>
+  <data name="BKAT_HERKUNFT_IMPORT" xml:space="preserve">
+    <value>Imported</value>
+  </data>
   <data name="GIMP_HERKUNFT_VORGABEFREI" xml:space="preserve">
     <value>Default value (open value)</value>
   </data>
@@ -33990,6 +34005,33 @@ Do you want to allow this?</value>
   <data name="GIMP_ANS_ABTRENNEN" xml:space="preserve">
     <value>Tapping splits off as a zone of its own</value>
   </data>
+  <data name="GIMP_ANS_ZIEL_NUTZUNG" xml:space="preserve">
+    <value>Use: {0}</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_OHNE_NUTZUNG" xml:space="preserve">
+    <value>no use</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_KLICK" xml:space="preserve">
+    <value>Click, then click rooms to assign them to this zone</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_AUFHEBEN" xml:space="preserve">
+    <value>Selected: click rooms to assign them to this zone; click again to clear the selection</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_FEHLT" xml:space="preserve">
+    <value>to assign, first select a zone in the legend</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_NUR_ZONEN" xml:space="preserve">
+    <value>Assigning only in the Zones mode</value>
+  </data>
+  <data name="GIMP_ANS_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>not assigned ({0} rooms)</value>
+  </data>
+  <data name="GIMP_ANS_NICHT_ZUGEORDNET_TITEL" xml:space="preserve">
+    <value>Rooms without a zone — not a target; clicking highlights them in the floor plan</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_LEGENDE" xml:space="preserve">
+    <value>Zones — choose the target of the assignment</value>
+  </data>
   <data name="GIMP_ANS_KEINE_UMRISSE" xml:space="preserve">
     <value>No space on this storey has an outline.</value>
   </data>
@@ -34001,9 +34043,6 @@ Do you want to allow this?</value>
   </data>
   <data name="GIMP_DLG_GRP_GRUNDRISS" xml:space="preserve">
     <value>Floor plan</value>
-  </data>
-  <data name="GIMP_DLG_ZUORDNEN_ZU" xml:space="preserve">
-    <value>Assign spaces to</value>
   </data>
   <data name="GIMP_DLG_EIGENE_ZONE" xml:space="preserve">
     <value>as a zone of its own</value>
@@ -34018,7 +34057,7 @@ Do you want to allow this?</value>
     <value>Reassign</value>
   </data>
   <data name="GIMP_DLG_UMHAENGEN_HINWEIS" xml:space="preserve">
-    <value>Choose a zone, then tap a space in the floor plan — or pick the space in the list and “Reassign”. Only spaces with the same heating; nothing is taken over before OK.</value>
+    <value>Choose a zone in the legend, then tap a space in the floor plan or the 3D view — or pick the space in the list and “Reassign”. Only spaces with the same heating; nothing is taken over before OK.</value>
   </data>
   <data name="GIMP_DLG_SCHON_DORT" xml:space="preserve">
     <value>“{0}” is already in zone “{1}”.</value>
@@ -38035,6 +38074,9 @@ This folder holds the standard template, the short report, the detailed template
   <data name="GIMP_DLG_KEINE_BAUTEILE" xml:space="preserve">
     <value>No components.</value>
   </data>
+  <data name="GIMP_BT_RICHTUNGEN" xml:space="preserve">
+    <value>N,NE,E,SE,S,SW,W,NW</value>
+  </data>
   <data name="GIMP_BT_AUS_SCHICHTEN" xml:space="preserve">
     <value>from layers</value>
   </data>
@@ -38259,30 +38301,6 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="GIMP_BS_OHNE_GRUPPE" xml:space="preserve">
     <value>no group</value>
-  </data>
-  <data name="GIMP_DLG_GRP_BAUSTOFFE" xml:space="preserve">
-    <value>Building materials</value>
-  </data>
-  <data name="GIMP_DLG_BAUSTOFFE_HINWEIS" xml:space="preserve">
-    <value>Each material name in the file is matched to a catalogue material by name and synonyms; an air layer counts as an unventilated air layer, a hatch without material is omitted. An own assignment updates the proposal at once and is remembered for the project when the building list is saved.</value>
-  </data>
-  <data name="GIMP_DLG_SP_MATERIALNAME" xml:space="preserve">
-    <value>Name in the file</value>
-  </data>
-  <data name="GIMP_DLG_SP_SCHICHTEN" xml:space="preserve">
-    <value>Layers</value>
-  </data>
-  <data name="GIMP_DLG_SP_ABGLEICH" xml:space="preserve">
-    <value>Matched by</value>
-  </data>
-  <data name="GIMP_DLG_SP_BAUSTOFF" xml:space="preserve">
-    <value>Material</value>
-  </data>
-  <data name="GIMP_DLG_SP_STOFFWERTE" xml:space="preserve">
-    <value>Properties</value>
-  </data>
-  <data name="GIMP_DLG_SP_WERTE_AUS" xml:space="preserve">
-    <value>Values</value>
   </data>
   <data name="GIMP_DLG_BAUSTOFF_WAEHLEN" xml:space="preserve">
     <value>Material for “{0}”</value>
@@ -46100,7 +46118,7 @@ chart</value>
     <value>Plant</value>
   </data>
   <data name="KI_DLG_KMA_ANLAGE_ERL" xml:space="preserve">
-    <value>The selected chiller plant of the project.</value>
+    <value>The selected chiller plant of the project. Heat pumps in cooling mode are listed as well; their plant is edited in the heat pump dialog.</value>
   </data>
   <data name="KI_DLG_KMA_NAME_NAME" xml:space="preserve">
     <value>Plant name</value>
@@ -46741,12 +46759,6 @@ chart</value>
   <data name="RNP_LBL_ART_DIN" xml:space="preserve">
     <value>DIN/TS 18599-10</value>
   </data>
-  <data name="RNP_LBL_ART_SIA" xml:space="preserve">
-    <value>SIA 2024</value>
-  </data>
-  <data name="RNP_LBL_ART_VDI" xml:space="preserve">
-    <value>VDI 2078</value>
-  </data>
   <data name="RNP_LBL_ART_EIGEN" xml:space="preserve">
     <value>Own</value>
   </data>
@@ -47216,7 +47228,7 @@ chart</value>
     <value>and</value>
   </data>
   <data name="RNP_IMP_EINZONE_VORSCHLAG" xml:space="preserve">
-    <value>Suggestion from DIN no. {0}: {1} — assign it in the building editor with “Apply usage profile…”</value>
+    <value>Default from DIN no. {0}: {1} — the building takes it as its calendar, the file takes precedence</value>
   </data>
   <data name="KOND_LBL_HERKUNFT_PROFIL" xml:space="preserve">
     <value>Usage profile {0}</value>
@@ -47633,7 +47645,7 @@ chart</value>
     <value>No. {0}: setback without room temperature — not applied.</value>
   </data>
   <data name="RNP_PD_MSG_LUFT_PERSON" xml:space="preserve">
-    <value>No. {0}: outdoor air per person not applied — the profile has no occupancy density for it.</value>
+    <value>No. {0}: outdoor air per person applied — without an occupancy density in the profile the generator does not convert it into an air change rate.</value>
   </data>
   <data name="RNP_PD_MSG_PERSONEN" xml:space="preserve">
     <value>No. {0}: occupants {1} W/m² applied as {2} m²/person at {3} W/person.</value>
@@ -48277,6 +48289,15 @@ chart</value>
   <data name="GANS_FARBMODUS_AUFBAU" xml:space="preserve">
     <value>Construction</value>
   </data>
+  <data name="GANS_AUFBAU_OHNE_VORSCHLAG" xml:space="preserve">
+    <value>“Construction” is unavailable: there is no component proposal. {0}</value>
+  </data>
+  <data name="GANS_BEFUND_OHNE_VORSCHLAG" xml:space="preserve">
+    <value>“Findings” is unavailable: there is no component proposal. {0}</value>
+  </data>
+  <data name="GANS_OHNE_BAUTEILBEZUG" xml:space="preserve">
+    <value>without component reference ({0})</value>
+  </data>
   <data name="GANS_AUFBAU_OHNE_STUFEN" xml:space="preserve">
     <value>“Construction” is unavailable: there are no assignment levels for the components (no component proposal).</value>
   </data>
@@ -48499,9 +48520,6 @@ chart</value>
   <data name="GIMP_AB_NUR_BC" xml:space="preserve">
     <value>Only levels B and C</value>
   </data>
-  <data name="GIMP_AB_ZUR_BAUSTOFF" xml:space="preserve">
-    <value>Assign material</value>
-  </data>
   <data name="GIMP_AB_LEER" xml:space="preserve">
     <value>No constructions in the proposal.</value>
   </data>
@@ -48509,7 +48527,7 @@ chart</value>
     <value>without construction</value>
   </data>
   <data name="GIMP_AB_HINWEIS" xml:space="preserve">
-    <value>One row per construction; C₁,corr per m² is calculated for display only, using the component reduction to VDI 6007. Click “Layers” to show the construction.</value>
+    <value>One row per construction; C₁,corr per m² is calculated for display only, using the component reduction to VDI 6007. Click “Layers” to show the construction. If a layer lacks a material property, choose a catalogue material there; the assignment applies to all layers of that name, updates the proposal at once and is remembered for the project when the building list is saved.</value>
   </data>
   <data name="GIMP_AB_SCHICHTEN" xml:space="preserve">
     <value>Layers</value>
@@ -50028,6 +50046,12 @@ chart</value>
   <data name="KOND_LBL_KALB_EINZELTAGE" xml:space="preserve">
     <value>Single days (public holidays, exceptions)</value>
   </data>
+  <data name="KOND_LBL_KLAPP_EINZELTAGE_EINER" xml:space="preserve">
+    <value>1 day</value>
+  </data>
+  <data name="KOND_LBL_KLAPP_EINZELTAGE_ANZAHL" xml:space="preserve">
+    <value>{0} days</value>
+  </data>
   <data name="KOND_LBL_KALB_DATUM" xml:space="preserve">
     <value>Date</value>
   </data>
@@ -50513,6 +50537,24 @@ chart</value>
   </data>
   <data name="AUSWAHL_ZF_SOLARKREIS" xml:space="preserve">
     <value>Solar loop</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_HINWEIS" xml:space="preserve">
+    <value>Compare the ticked rows of both lists side by side</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_PAAR_HINWEIS" xml:space="preserve">
+    <value>Compare the selected project row with the selected catalogue record</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_SPERRE" xml:space="preserve">
+    <value>Tick two to three rows or select a project row and a catalogue record</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_GRENZE" xml:space="preserve">
+    <value>Compare at most three rows – untick some</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_HERKUNFT_PROJEKT" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="AUSWAHL_VERGLEICH_HERKUNFT_KATALOG" xml:space="preserve">
+    <value>Catalogue</value>
   </data>
   <data name="SATZBEARB_TITEL_PROJEKT" xml:space="preserve">
     <value>Edit project record – {0}</value>
@@ -51419,6 +51461,48 @@ chart</value>
   </data>
   <data name="WPV_RUECK_BLEIBT" xml:space="preserve">
     <value>The heating and cooling curves with all support points go with the unit. The system data stay in the project: operating mode, temperatures, bivalence, heating rod, blocking times, heat source, integration and transfer limits of the system, and the sinks.</value>
+  </data>
+  <data name="WPA_GRP_GERAET" xml:space="preserve">
+    <value>Selected unit</value>
+  </data>
+  <data name="WPA_STB_HEIZLEISTUNG" xml:space="preserve">
+    <value>Heating capacity at {0}</value>
+  </data>
+  <data name="WPA_STB_COP" xml:space="preserve">
+    <value>COP at {0}</value>
+  </data>
+  <data name="WPA_STB_HEIZLEISTUNG_OHNE" xml:space="preserve">
+    <value>Heating capacity at the flow temperature</value>
+  </data>
+  <data name="WPA_STB_COP_OHNE" xml:space="preserve">
+    <value>COP at the flow temperature</value>
+  </data>
+  <data name="WPA_STB_ARBEITSPUNKT_HERLEITUNG" xml:space="preserve">
+    <value>Project curve at the set flow temperature, interpolated as in the simulation</value>
+  </data>
+  <data name="WPA_STB_INVEST" xml:space="preserve">
+    <value>Investment</value>
+  </data>
+  <data name="WPA_STB_BETRIEB" xml:space="preserve">
+    <value>Operation</value>
+  </data>
+  <data name="SST_GRP_PROJEKT" xml:space="preserve">
+    <value>Installation in the project</value>
+  </data>
+  <data name="SST_GRP_LASTGANG" xml:space="preserve">
+    <value>Selected load profile</value>
+  </data>
+  <data name="SST_LBL_HERKUNFT" xml:space="preserve">
+    <value>Origin</value>
+  </data>
+  <data name="WPA_KOPF_BZ_LEER" xml:space="preserve">
+    <value>not maintained — always available</value>
+  </data>
+  <data name="WPA_KOPF_BZ_GEPFLEGT" xml:space="preserve">
+    <value>Time program maintained</value>
+  </data>
+  <data name="WPA_KOPF_BZ_FEHLER" xml:space="preserve">
+    <value>Time program invalid</value>
   </data>
   <data name="PVD_LBL_SUMME" xml:space="preserve">
     <value>Total of all selected modules [kWp]:</value>
@@ -52370,6 +52454,78 @@ chart</value>
   </data>
   <data name="KMA_SP_WAHL" xml:space="preserve">
     <value>Select</value>
+  </data>
+  <data name="KMA_ART_KAELTEMASCHINE" xml:space="preserve">
+    <value>Chiller</value>
+  </data>
+  <data name="KMA_ART_WAERMEPUMPE" xml:space="preserve">
+    <value>Heat pump</value>
+  </data>
+  <data name="KMA_SP_ART" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="KMA_SP_RANG" xml:space="preserve">
+    <value>Rank</value>
+  </data>
+  <data name="KMA_MSG_WP_FEHLER" xml:space="preserve">
+    <value>The heat pump could not be added to the project.</value>
+  </data>
+  <data name="KMA_MSG_WP_UEBERNOMMEN" xml:space="preserve">
+    <value>“{0}” is in the project, cooling mode switched on — rank {1} in the cooling sequence.</value>
+  </data>
+  <data name="KMA_MSG_WP_SCHON_IM_PROJEKT" xml:space="preserve">
+    <value>“{0}” is already in the project — cooling mode switched on, rank {1} in the cooling sequence.</value>
+  </data>
+  <data name="KMA_MSG_WP_ABGELEHNT" xml:space="preserve">
+    <value>“{0}” is in the project, cooling mode stays off: {1}</value>
+  </data>
+  <data name="KMA_MSG_WP_ENTFERNT" xml:space="preserve">
+    <value>Cooling mode of “{0}” is switched off with OK — unit, plant and heating cascade stay in the project.</value>
+  </data>
+  <data name="KMA_HINWEIS_NEU_ART" xml:space="preserve">
+    <value>Creates a chiller — a heat pump is created in the heat pump dialog.</value>
+  </data>
+  <data name="KMA_VERGLEICH_EINE_ART" xml:space="preserve">
+    <value>Compare records of one type only</value>
+  </data>
+  <data name="KMA_BEZUG_HINWEIS" xml:space="preserve">
+    <value>Cooling capacity and EER at {0} °C chilled water and {1} °C source (EN 14511).</value>
+  </data>
+  <data name="KMA_BEZUG_RUECKFALL" xml:space="preserve">
+    <value>{0} kW at {1} °C</value>
+  </data>
+  <data name="KMA_LBL_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="KMA_LBL_KUEHLLEISTUNG" xml:space="preserve">
+    <value>Cooling capacity</value>
+  </data>
+  <data name="KMA_LBL_KUEHLVORLAUF" xml:space="preserve">
+    <value>Cooling flow</value>
+  </data>
+  <data name="KMA_LBL_ZULAESSIGKEIT" xml:space="preserve">
+    <value>Admissibility</value>
+  </data>
+  <data name="KMA_LBL_RANG" xml:space="preserve">
+    <value>Rank in the cooling sequence</value>
+  </data>
+  <data name="KMA_ZULAESSIGKEIT_NICHT_GEPRUEFT" xml:space="preserve">
+    <value>not checked (catalogue record without commissioning year)</value>
+  </data>
+  <data name="KMA_RANG_KEINER" xml:space="preserve">
+    <value>no rank (default sequence)</value>
+  </data>
+  <data name="KMA_WP_BEARBEITEN_GESPERRT" xml:space="preserve">
+    <value>Heat pumps are edited in the heat pump dialog</value>
+  </data>
+  <data name="KMA_GRUPPE_STECKBRIEF" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="KMA_LBL_INVEST_BETRIEB" xml:space="preserve">
+    <value>Investment / operation</value>
+  </data>
+  <data name="KMA_LBL_KALTWASSER" xml:space="preserve">
+    <value>Chilled water flow min.</value>
   </data>
   <data name="GANGL_UEBERSPRUNGEN_ZUGEORDNET" xml:space="preserve">
     <value>Skipped (assigned in the project): {0}</value>
@@ -53479,6 +53635,21 @@ chart</value>
   <data name="ABW_MERKMAL_VORH_UEBERHOEHUNG" xml:space="preserve">
     <value>Setpoint boost Δθ</value>
   </data>
+  <data name="KAELTE_ART_LABEL" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="KAELTE_ART_RAUM" xml:space="preserve">
+    <value>Space cooling</value>
+  </data>
+  <data name="KAELTE_ART_PROZESS" xml:space="preserve">
+    <value>Process cooling</value>
+  </data>
+  <data name="KAELTE_ART_HINWEIS" xml:space="preserve">
+    <value>Process cooling stays in the cooling demand and is carried as a separate item; the cooling generators cover it before space cooling. Its temperature pair is information without effect on the generators.</value>
+  </data>
+  <data name="KAELTE_ART_GRUPPE" xml:space="preserve">
+    <value>Type of cooling demand</value>
+  </data>
   <!-- Administration und Support, Stufe 2 Nachzug Quick Assist -->
   <data name="FW_QA_ERKLAERUNG" xml:space="preserve">
     <value>During remote support, a member of our support team sees your screen through Quick Assist, the Windows help program, and can show you how to use the program or fix a problem with you. The connection is encrypted and runs through Microsoft; EPOS-Plan records nothing. You accept every request yourself in Quick Assist and can end the session there at any time.</value>
@@ -53500,6 +53671,939 @@ chart</value>
   </data>
   <data name="FW_QA_NUR_WINDOWS" xml:space="preserve">
     <value>Quick Assist is available on Windows. The remote support page describes how to use it.</value>
+  </data>
+  <data name="GIMP_AB_VERWALTUNG_HINWEIS" xml:space="preserve">
+    <value>Maintain materials and component build-ups under Administration › Building.</value>
+  </data>
+  <data name="GIMP_AB_HERKUNFT_HAND" xml:space="preserve">
+    <value>assigned manually</value>
+  </data>
+  <data name="GIMP_AB_DATEISCHICHTEN" xml:space="preserve">
+    <value>Layers of the file — the build-up is incomplete:</value>
+  </data>
+  <data name="GEBK_GRP_EINORDNUNG" xml:space="preserve">
+    <value>Description and classification</value>
+  </data>
+  <data name="GEBK_GRP_RECHENGROESSEN" xml:space="preserve">
+    <value>Calculation inputs</value>
+  </data>
+  <data name="GEBK_HINWEIS_EINORDNUNG" xml:space="preserve">
+    <value>These entries classify the building: report, import defaults, buffer sizing. The calculation does not read them.</value>
+  </data>
+  <data name="GEBK_MARKE_DATEI" xml:space="preserve">
+    <value>file</value>
+  </data>
+  <data name="GEBK_MARKE_VORGABE" xml:space="preserve">
+    <value>default</value>
+  </data>
+  <data name="GEBK_MARKE_HAND" xml:space="preserve">
+    <value>manual</value>
+  </data>
+  <data name="GEBK_MARKE_GEERBT" xml:space="preserve">
+    <value>inherited</value>
+  </data>
+  <data name="GEBK_MARKE_WIRKUNGSLOS" xml:space="preserve">
+    <value>no effect</value>
+  </data>
+  <data name="GEBK_ZONEN_VORGABE_HOEHE" xml:space="preserve">
+    <value>Default for {0} of {1} zones without their own height</value>
+  </data>
+  <data name="GEBK_ZONEN_VORGABE_LUFTWECHSEL" xml:space="preserve">
+    <value>Default for {0} of {1} zones without ventilation values</value>
+  </data>
+  <data name="GEBK_JEZONE_RAUMHOEHE" xml:space="preserve">
+    <value>Room height: set per zone, see tab “Zones”.</value>
+  </data>
+  <data name="GEBK_JEZONE_LUFTWECHSEL" xml:space="preserve">
+    <value>Air change rate: every zone uses infiltration and user ventilation, see tab “Conditioning”.</value>
+  </data>
+  <data name="GEBK_RUECKFALL_FENSTER" xml:space="preserve">
+    <value>Fallback for {0} windows without their own g-value</value>
+  </data>
+  <data name="GEBK_RUECKFALL_FENSTER_KEINES" xml:space="preserve">
+    <value>Fallback: every window has its own g-value, the value currently has no effect.</value>
+  </data>
+  <data name="GEBK_RUECKFALL_BAUWEISE" xml:space="preserve">
+    <value>Fallback for {0} component groups without layer build-up</value>
+  </data>
+  <data name="GEBK_RUECKFALL_BAUWEISE_KEINE" xml:space="preserve">
+    <value>Fallback: every component group has a layer build-up, the value currently has no effect.</value>
+  </data>
+  <data name="IMP_GEB_PROT_GEBAEUDECODE_OHNE_ABBILDUNG" xml:space="preserve">
+    <value>Project file: {0} = {1} has no mapping; the derivation or the default applies.</value>
+  </data>
+  <data name="IMP_GEB_PROT_VERWENDUNG_PROJEKTDATEI" xml:space="preserve">
+    <value>Use “{0}” from the project file ({1} = {2}).</value>
+  </data>
+  <data name="IMP_GEB_PROT_GEBAEUDEART_PROJEKTDATEI" xml:space="preserve">
+    <value>Building type “{0}” from the project file ({1} = {2}).</value>
+  </data>
+  <data name="IMP_GEB_PROT_ENERGIESTANDARD_PROJEKTDATEI" xml:space="preserve">
+    <value>Energy standard “{0}” from the project file ({1} = {2}).</value>
+  </data>
+  <data name="GIMP_BELEG_BAUART_CWIRK" xml:space="preserve">
+    <value>nearest construction class to the effective heat capacity of the project file (Cwirk {0} Wh/(m²K))</value>
+  </data>
+  <data name="GIMP_BELEG_BAUWEISE_CWIRK" xml:space="preserve">
+    <value>effective heat capacity of the project file: Cwirk {0} Wh/(m²K) × floor area {1} m² = {2} Wh/K</value>
+  </data>
+  <data name="GIMP_DLG_NAME_DATEI" xml:space="preserve">
+    <value>Name in the file: “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_NAME_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="GIMP_PLAN_ZONE_UNBEHEIZT" xml:space="preserve">
+    <value>unheated</value>
+  </data>
+  <data name="GIMP_PLAN_ZONE_REST" xml:space="preserve">
+    <value>Remainder</value>
+  </data>
+  <data name="GIMP_PLAN_ZONE_REST_GESCHOSS" xml:space="preserve">
+    <value>Remainder {0}</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_REST_PLATZIERT" xml:space="preserve">
+    <value>{0} rooms without a zone placed automatically: {1} into the zone “unheated”, {2} into the neighbouring zone, {3} into a remainder zone per storey.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_REST_PLATZIERT" xml:space="preserve">
+    <value>{0} rooms without a zone placed automatically: {1} into the zone “unheated”, {2} into the neighbouring zone, {3} into a remainder zone per storey.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_PLATZIERT" xml:space="preserve">
+    <value>{0} rooms without a zone placed automatically: {1} into “unheated”, {2} into the neighbouring zone, {3} into a remainder zone per storey – marked in the zone tree, where each can be undone.</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_PLATZIERT_MARKE" xml:space="preserve">
+    <value>placed automatically</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_PLATZIERT_UNBEHEIZT" xml:space="preserve">
+    <value>placed automatically: unheated, into the shared zone “unheated”</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_PLATZIERT_NACHBAR" xml:space="preserve">
+    <value>placed automatically: into the neighbouring zone with the largest shared area ({0})</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_PLATZIERT_GESCHOSS" xml:space="preserve">
+    <value>placed automatically: no heated neighbouring zone, into the remainder zone of the storey</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZURUECKNEHMEN" xml:space="preserve">
+    <value>Undo</value>
+  </data>
+  <data name="GIMP_DLG_PLAN_ZURUECKNEHMEN_RAUM" xml:space="preserve">
+    <value>Undo the placement of {0} – the room is then not assigned to any zone</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_VORGABE_DIN" xml:space="preserve">
+    <value>Default (DIN no. {0} of the project file)</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_VORGABE_ART" xml:space="preserve">
+    <value>Default (profile of the building type “{0}”)</value>
+  </data>
+  <data name="RNP_IMP_OHNE_KENNWERT" xml:space="preserve">
+    <value>no characteristic value, inherited from the building: {0}</value>
+  </data>
+  <data name="RNP_IMP_EINZONE_VORGABE_ART" xml:space="preserve">
+    <value>Default from the building type “{0}”: {1} — the building takes it as its calendar, the file takes precedence</value>
+  </data>
+  <data name="RNP_IMP_EINZONE_SETZEN" xml:space="preserve">
+    <value>Apply the profile as default</value>
+  </data>
+  <data name="GEBZ_SP_NUTZUNG" xml:space="preserve">
+    <value>Use/profile</value>
+  </data>
+  <data name="GEBZ_NUTZUNG_GEERBT" xml:space="preserve">
+    <value>inherited from the building</value>
+  </data>
+  <data name="GEBZ_NUTZUNG_TEILGEERBT" xml:space="preserve">
+    <value>inherited: {0}</value>
+  </data>
+  <data name="GEBZ_NUTZUNG_VORGABE" xml:space="preserve">
+    <value>Default (profile of the building type): {0}</value>
+  </data>
+  <data name="GEBZ_NUTZUNG_UNBEHEIZT" xml:space="preserve">
+    <value>unheated — no heating or cooling calendar</value>
+  </data>
+  <data name="GEBZ_BTN_PROFIL_ZUWEISEN" xml:space="preserve">
+    <value>Assign profile/calendar…</value>
+  </data>
+  <data name="RNP_NW_MSG_KEINE_DIN" xml:space="preserve">
+    <value>The database has no delivered category DIN/TS 18599-10.</value>
+  </data>
+  <data name="RNP_NW_MSG_UNBEKANNT" xml:space="preserve">
+    <value>No. {0} "{1}": no use of the category DIN/TS 18599-10 with this number or name — not applied.</value>
+  </data>
+  <data name="RNP_NW_MSG_DOPPELT" xml:space="preserve">
+    <value>No. {0} "{1}": The source lists this use more than once; the first profile applies.</value>
+  </data>
+  <data name="RNP_NW_MSG_OHNE_WERTE" xml:space="preserve">
+    <value>No. {0} "{1}": The source has no value for this use — not applied.</value>
+  </data>
+  <data name="RNP_NW_MSG_ABGELEHNT" xml:space="preserve">
+    <value>No. {0} "{1}": not applied — {2}</value>
+  </data>
+  <data name="RNP_NW_MSG_NICHTS" xml:space="preserve">
+    <value>The source has no use of the category DIN/TS 18599-10 with values; nothing to read in.</value>
+  </data>
+  <data name="RNP_NW_MSG_ERGEBNIS" xml:space="preserve">
+    <value>{0} DIN profile(s) filled with values, {1} skipped (values present), {2} source profile(s) without assignment.</value>
+  </data>
+  <data name="RNP_NW_MSG_ENTFERNT" xml:space="preserve">
+    <value>Read-in values removed from {0} DIN profile(s).</value>
+  </data>
+  <data name="RNP_NW_BTN_EINLESEN" xml:space="preserve">
+    <value>Read in standard values…</value>
+  </data>
+  <data name="RNP_NW_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Remove read-in values…</value>
+  </data>
+  <data name="RNP_NW_LBL_TITEL" xml:space="preserve">
+    <value>Read in standard values</value>
+  </data>
+  <data name="RNP_NW_TXT_HINWEIS" xml:space="preserve">
+    <value>Fills the profiles of the category DIN/TS 18599-10 with the values from your CSV file or a project file. The program ships no standard values.</value>
+  </data>
+  <data name="RNP_NW_BTN_CSV" xml:space="preserve">
+    <value>Choose CSV file…</value>
+  </data>
+  <data name="RNP_NW_BTN_PROJEKT" xml:space="preserve">
+    <value>Choose project file…</value>
+  </data>
+  <data name="RNP_NW_BTN_VORLAGE" xml:space="preserve">
+    <value>Save template…</value>
+  </data>
+  <data name="RNP_NW_TXT_VORLAGE" xml:space="preserve">
+    <value>The template is the CSV file of the category with numbers and names, without values.</value>
+  </data>
+  <data name="RNP_NW_LBL_DATEI" xml:space="preserve">
+    <value>File: {0}</value>
+  </data>
+  <data name="RNP_NW_TXT_OHNE_DATEI" xml:space="preserve">
+    <value>No file chosen yet.</value>
+  </data>
+  <data name="RNP_NW_LBL_TREFFER" xml:space="preserve">
+    <value>Matches</value>
+  </data>
+  <data name="RNP_NW_LBL_NUMMER" xml:space="preserve">
+    <value>Number</value>
+  </data>
+  <data name="RNP_NW_LBL_PROFIL" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="RNP_NW_LBL_STAND" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="RNP_NW_LBL_ABWEICHUNG" xml:space="preserve">
+    <value>Differences</value>
+  </data>
+  <data name="RNP_NW_STAND_LEER" xml:space="preserve">
+    <value>no values</value>
+  </data>
+  <data name="RNP_NW_STAND_VORHANDEN" xml:space="preserve">
+    <value>values present</value>
+  </data>
+  <data name="RNP_NW_STAND_EINGELESEN" xml:space="preserve">
+    <value>read-in values present</value>
+  </data>
+  <data name="RNP_NW_TXT_ZAEHLUNG" xml:space="preserve">
+    <value>{0} match(es), {1} of them with existing values and {2} with differences.</value>
+  </data>
+  <data name="RNP_NW_TXT_SPALTEN" xml:space="preserve">
+    <value>Differences per column: {0}</value>
+  </data>
+  <data name="RNP_NW_LBL_HINWEISE" xml:space="preserve">
+    <value>Not taken over</value>
+  </data>
+  <data name="RNP_NW_LBL_ART" xml:space="preserve">
+    <value>Kind</value>
+  </data>
+  <data name="RNP_NW_LBL_GRUND" xml:space="preserve">
+    <value>Profile or message</value>
+  </data>
+  <data name="RNP_NW_ART_UNBEKANNT" xml:space="preserve">
+    <value>unknown number</value>
+  </data>
+  <data name="RNP_NW_ART_OHNE" xml:space="preserve">
+    <value>no value</value>
+  </data>
+  <data name="RNP_NW_ART_DOPPELT" xml:space="preserve">
+    <value>duplicate number</value>
+  </data>
+  <data name="RNP_NW_ART_SONST" xml:space="preserve">
+    <value>message</value>
+  </data>
+  <data name="RNP_NW_TXT_KEINE_HINWEISE" xml:space="preserve">
+    <value>All profiles of the file are assigned.</value>
+  </data>
+  <data name="RNP_NW_LBL_UEBERSCHREIBEN" xml:space="preserve">
+    <value>overwrite existing values</value>
+  </data>
+  <data name="RNP_NW_TXT_UEBERSPRINGEN" xml:space="preserve">
+    <value>Unchecked, {0} profile(s) with existing values stay unchanged.</value>
+  </data>
+  <data name="RNP_NW_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="RNP_NW_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="RNP_NW_SPERRE_DATEI" xml:space="preserve">
+    <value>Choose a file first.</value>
+  </data>
+  <data name="RNP_NW_SPERRE_KEINE" xml:space="preserve">
+    <value>No profile carries read-in values.</value>
+  </data>
+  <data name="RNP_NW_FRAGE_ENTFERNEN" xml:space="preserve">
+    <value>Remove the read-in values of {0} profile(s)? The profiles are then without values again.</value>
+  </data>
+  <data name="RNP_NW_BTN_JA" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="RNP_NW_BTN_NEIN" xml:space="preserve">
+    <value>Keep</value>
+  </data>
+  <data name="RNP_NW_DLG_CSV" xml:space="preserve">
+    <value>Choose CSV file with standard values</value>
+  </data>
+  <data name="RNP_NW_DLG_VORLAGE" xml:space="preserve">
+    <value>Save template for standard values</value>
+  </data>
+  <data name="RNP_NW_MSG_VORLAGE" xml:space="preserve">
+    <value>Template saved: {0}</value>
+  </data>
+  <data name="RNP_TXT_HINWEIS_BELEGUNG" xml:space="preserve">
+    <value>Outdoor air per person without floor area per person in the profile: ventilation is not set.</value>
+  </data>
+  <data name="RNP_LBL_LUFT_PERSON" xml:space="preserve">
+    <value>Outdoor air per person</value>
+  </data>
+  <data name="RNP_TXT_EINGELESEN" xml:space="preserve">
+    <value>read in</value>
+  </data>
+  <data name="RNP_TXT_EINGELESEN_AUS" xml:space="preserve">
+    <value>Values read in from {0} on {1}</value>
+  </data>
+  <data name="BST_GRUPPE_MAUERWERK" xml:space="preserve">
+    <value>Masonry</value>
+  </data>
+  <data name="BST_GRUPPE_BETON" xml:space="preserve">
+    <value>Concrete</value>
+  </data>
+  <data name="BST_GRUPPE_ESTRICHE" xml:space="preserve">
+    <value>Screeds</value>
+  </data>
+  <data name="BST_GRUPPE_PUTZE" xml:space="preserve">
+    <value>Plasters and mortars</value>
+  </data>
+  <data name="BST_GRUPPE_DAEMMSTOFFE" xml:space="preserve">
+    <value>Insulation</value>
+  </data>
+  <data name="BST_GRUPPE_HOLZ" xml:space="preserve">
+    <value>Timber and wood-based materials</value>
+  </data>
+  <data name="BST_GRUPPE_PLATTEN" xml:space="preserve">
+    <value>Boards</value>
+  </data>
+  <data name="BST_GRUPPE_BODENBELAEGE" xml:space="preserve">
+    <value>Floor coverings</value>
+  </data>
+  <data name="BST_GRUPPE_ABDICHTUNGEN" xml:space="preserve">
+    <value>Waterproofing</value>
+  </data>
+  <data name="BST_GRUPPE_METALLE" xml:space="preserve">
+    <value>Metals and glass</value>
+  </data>
+  <data name="BST_GRUPPE_ERDREICH" xml:space="preserve">
+    <value>Soil</value>
+  </data>
+  <data name="BST_GRUPPE_SONSTIGE" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="BST_GRUPPE_KEINE" xml:space="preserve">
+    <value>(no group)</value>
+  </data>
+  <data name="BST_GRUPPE_FREI_EINTRAG" xml:space="preserve">
+    <value>{0} (free entry)</value>
+  </data>
+  <data name="BST_HINWEIS_GRUPPE_FREI" xml:space="preserve">
+    <value>The group “{0}” does not match a fixed group; it is kept. Choose a group from the list or “{1}”.</value>
+  </data>
+  <data name="BST_HINWEIS_BAND" xml:space="preserve">
+    <value>Note: {0} = {1} lies outside the usual range of the group {2} ({3} to {4}). It is saved nevertheless.</value>
+  </data>
+  <data name="BTA_SUMME_RSI" xml:space="preserve">
+    <value>R_si = {0} m²K/W</value>
+  </data>
+  <data name="BTA_SUMME_RSE" xml:space="preserve">
+    <value>R_se = {0} m²K/W</value>
+  </data>
+  <data name="BTA_SUMME_RT" xml:space="preserve">
+    <value>R_T = R_si + R + R_se = {0} m²K/W</value>
+  </data>
+  <data name="BTA_RICHTUNG" xml:space="preserve">
+    <value>Layer order inside → outside: layer 1 faces the room, the last layer faces outside.</value>
+  </data>
+  <data name="BTDLG_LBL_KAPAZITAET" xml:space="preserve">
+    <value>Heat capacity C</value>
+  </data>
+  <data name="BTDLG_KAPAZITAET_BAUWEISE" xml:space="preserve">
+    <value>from the construction type</value>
+  </data>
+  <data name="GEBMZ_KNOPF" xml:space="preserve">
+    <value>Adopt as multi-zone model…</value>
+  </data>
+  <data name="GEBMZ_HINWEIS" xml:space="preserve">
+    <value>Rereads the stored import source and shows its zone tree; the building's OK replaces zones, components and zone calendars.</value>
+  </data>
+  <data name="GEBMZ_SPERRE_KEINE_QUELLE" xml:space="preserve">
+    <value>No import stored — create the building via “Import…”.</value>
+  </data>
+  <data name="GEBMZ_SPERRE_KATALOG" xml:space="preserve">
+    <value>Only for a project building: the adoption writes into the project copy.</value>
+  </data>
+  <data name="GEBMZ_SPERRE_GEAENDERT" xml:space="preserve">
+    <value>The zones have been changed — save or discard first.</value>
+  </data>
+  <data name="GEBMZ_SPERRE_LAEUFT" xml:space="preserve">
+    <value>The import source is being read.</value>
+  </data>
+  <data name="GEBMZ_MSG_KEINE_QUELLE" xml:space="preserve">
+    <value>The building has no stored import source.</value>
+  </data>
+  <data name="GEBMZ_MSG_DATEI_FEHLT" xml:space="preserve">
+    <value>The file “{0}” cannot be read: {1}</value>
+  </data>
+  <data name="GEBMZ_MSG_FORMAT" xml:space="preserve">
+    <value>The file “{0}” does not have the format of the stored import source ({1}). A different file is a new import (“Import…”).</value>
+  </data>
+  <data name="GEBMZ_MSG_PRUEFSUMME" xml:space="preserve">
+    <value>The file “{0}” differs from the stored import source (checksum {1} instead of {2}). A different file is a new import (“Import…”).</value>
+  </data>
+  <data name="GEBMZ_MSG_OHNE_ZONEN" xml:space="preserve">
+    <value>Only “as zones with components” can be adopted — please set the switch.</value>
+  </data>
+  <data name="GEBMZ_MSG_KEINE_PROJEKTKOPIE" xml:space="preserve">
+    <value>Building {0} is not a project copy — nothing adopted.</value>
+  </data>
+  <data name="GEBMZ_MSG_NICHT_UEBERNOMMEN" xml:space="preserve">
+    <value>The multi-zone model was not adopted, the previous state remains: {0}</value>
+  </data>
+  <data name="GEBMZ_AUSSTEHEND" xml:space="preserve">
+    <value>Multi-zone model from “{0}” with {1} zones is ready — OK replaces the existing zones with their components and zone calendars, Cancel discards it.</value>
+  </data>
+  <data name="GEBMZ_BLATT" xml:space="preserve">
+    <value>Multi-zone model from the import source</value>
+  </data>
+  <data name="GEB_SPRUNG_KEIN_GEBAEUDE" xml:space="preserve">
+    <value>No building in the project yet.</value>
+  </data>
+  <data name="DECK_GRUPPE" xml:space="preserve">
+    <value>Coverage</value>
+  </data>
+  <data name="DECK_LBL_ART" xml:space="preserve">
+    <value>Coverage type</value>
+  </data>
+  <data name="DECK_ART_ZENTRAL" xml:space="preserve">
+    <value>central (cooling sequence)</value>
+  </data>
+  <data name="DECK_ART_SPLIT" xml:space="preserve">
+    <value>decentralised (split)</value>
+  </data>
+  <data name="DECK_LBL_EER_WEG" xml:space="preserve">
+    <value>EER method</value>
+  </data>
+  <data name="DECK_EER_FEST" xml:space="preserve">
+    <value>fixed</value>
+  </data>
+  <data name="DECK_EER_LINEAR" xml:space="preserve">
+    <value>linear over outdoor temperature</value>
+  </data>
+  <data name="DECK_LBL_EER" xml:space="preserve">
+    <value>EER</value>
+  </data>
+  <data name="DECK_LBL_TAUSSEN" xml:space="preserve">
+    <value>Outdoor temperature</value>
+  </data>
+  <data name="DECK_LBL_EER1" xml:space="preserve">
+    <value>EER at point 1</value>
+  </data>
+  <data name="DECK_LBL_TAUSSEN1" xml:space="preserve">
+    <value>Outdoor temperature point 1</value>
+  </data>
+  <data name="DECK_LBL_EER2" xml:space="preserve">
+    <value>EER at point 2</value>
+  </data>
+  <data name="DECK_LBL_TAUSSEN2" xml:space="preserve">
+    <value>Outdoor temperature point 2</value>
+  </data>
+  <data name="DECK_LBL_TRAEGER" xml:space="preserve">
+    <value>Cooling energy carrier</value>
+  </data>
+  <data name="DECK_PLATZHALTER_TRAEGER" xml:space="preserve">
+    <value>Electricity carrier of the project</value>
+  </data>
+  <data name="DECK_LBL_ZAEHLER" xml:space="preserve">
+    <value>Separate meter</value>
+  </data>
+  <data name="DECK_HRL_VORGABE" xml:space="preserve">
+    <value>{0}: default, please replace with device data</value>
+  </data>
+  <data name="DECK_HINWEIS" xml:space="preserve">
+    <value>Decentralised means: separate units without chilled water and without a capacity limit. Room air conditioners with indoor units per zone will follow as a separate plant type.</value>
+  </data>
+  <data name="DECK_MSG_OHNE_EER" xml:space="preserve">
+    <value>Decentralised coverage needs an EER greater than 0 (for linear, two points with different outdoor temperatures).</value>
+  </data>
+  <data name="WBX_TITEL_KAELTE" xml:space="preserve">
+    <value>External cooling demand</value>
+  </data>
+  <data name="WBX_KOPFBAND_KAELTE" xml:space="preserve">
+    <value>Cooling demand data (load profiles)</value>
+  </data>
+  <data name="WBX_HRL_KAELTE_EXTERN" xml:space="preserve">
+    <value>Maintain cooling load profiles under External cooling demand.</value>
+  </data>
+  <data name="WBX_GRP_STAMM" xml:space="preserve">
+    <value>Master data</value>
+  </data>
+  <data name="WBX_GRP_GANGLINIE" xml:space="preserve">
+    <value>Load profile</value>
+  </data>
+  <data name="WBX_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="WBX_HRL_NUR_IM_PROJEKT" xml:space="preserve">
+    <value>Channel, type and coverage apply per assignment in the project.</value>
+  </data>
+  <data name="KI_DLG_WBX_DECKUNG_NAME" xml:space="preserve">
+    <value>Coverage type</value>
+  </data>
+  <data name="KI_DLG_WBX_DECKUNG_ERL" xml:space="preserve">
+    <value>Coverage type of the cooling row: central via the project's cooling sequence or decentralised via separate split units; effective only in the cooling channel.</value>
+  </data>
+  <data name="KI_DLG_WBX_EER_WEG_NAME" xml:space="preserve">
+    <value>EER method</value>
+  </data>
+  <data name="KI_DLG_WBX_EER_WEG_ERL" xml:space="preserve">
+    <value>For decentralised coverage: fixed EER or linear over the outdoor temperature between two points.</value>
+  </data>
+  <data name="KI_DLG_WBX_EER1_NAME" xml:space="preserve">
+    <value>EER at point 1</value>
+  </data>
+  <data name="KI_DLG_WBX_EER1_ERL" xml:space="preserve">
+    <value>Fixed EER or EER at point 1, greater than 0; default 3.0.</value>
+  </data>
+  <data name="KI_DLG_WBX_TAUSSEN1_NAME" xml:space="preserve">
+    <value>Outdoor temperature point 1</value>
+  </data>
+  <data name="KI_DLG_WBX_TAUSSEN1_ERL" xml:space="preserve">
+    <value>Outdoor temperature of point 1 in °C, −20 to 50; default 35.</value>
+  </data>
+  <data name="KI_DLG_WBX_EER2_NAME" xml:space="preserve">
+    <value>EER at point 2</value>
+  </data>
+  <data name="KI_DLG_WBX_EER2_ERL" xml:space="preserve">
+    <value>EER at point 2 (linear only), greater than 0; default 4.0.</value>
+  </data>
+  <data name="KI_DLG_WBX_TAUSSEN2_NAME" xml:space="preserve">
+    <value>Outdoor temperature point 2</value>
+  </data>
+  <data name="KI_DLG_WBX_TAUSSEN2_ERL" xml:space="preserve">
+    <value>Outdoor temperature of point 2 in °C (linear only), −20 to 50 and different from point 1; default 25.</value>
+  </data>
+  <data name="KI_DLG_WBX_TRAEGER_NAME" xml:space="preserve">
+    <value>Cooling energy carrier</value>
+  </data>
+  <data name="KI_DLG_WBX_TRAEGER_ERL" xml:space="preserve">
+    <value>Electricity carrier billing the power of the split units; empty = electricity carrier of the project.</value>
+  </data>
+  <data name="KI_DLG_WBX_ZAEHLER_NAME" xml:space="preserve">
+    <value>Separate meter</value>
+  </data>
+  <data name="KI_DLG_WBX_ZAEHLER_ERL" xml:space="preserve">
+    <value>The power of the split units runs through a separate meter.</value>
+  </data>
+  <data name="DECK_MSG_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>The load profiles could not be saved; the previous state is kept.</value>
+  </data>
+  <data name="DECK_MSG_NUR_KAELTE" xml:space="preserve">
+    <value>Coverage exists only on a project row of the cooling demand profiles.</value>
+  </data>
+  <data name="KI_DLG_BPF_DECKUNG_NAME" xml:space="preserve">
+    <value>Coverage type</value>
+  </data>
+  <data name="KI_DLG_BPF_DECKUNG_ERL" xml:space="preserve">
+    <value>Coverage type of the selected cooling demand row: central via the project's cooling sequence or decentralised via separate split units; cooling demand profiles only.</value>
+  </data>
+  <data name="KI_DLG_MASKE_BADM_KAELTE" xml:space="preserve">
+    <value>Cooling demand catalogue</value>
+  </data>
+  <data name="BPF_HINW_TEMPERATUR_KAELTE" xml:space="preserve">
+    <value>Supply and return of the cooling demand are information only, without effect on the generators.</value>
+  </data>
+  <data name="BERG_REITER_KAELTE_ERG" xml:space="preserve">
+    <value>Cooling demand results</value>
+  </data>
+  <data name="BERG_OPT_KAELTE" xml:space="preserve">
+    <value>Cooling demand</value>
+  </data>
+  <data name="BERG_LBL_MAX_KAELTELAST" xml:space="preserve">
+    <value>max. cooling load:</value>
+  </data>
+  <data name="BERG_LBL_KAELTE_GESAMT" xml:space="preserve">
+    <value>Total cooling demand:</value>
+  </data>
+  <data name="BERG_ACHSE_KAELTEBEDARF" xml:space="preserve">
+    <value>Cooling demand [kW]</value>
+  </data>
+  <data name="MENU_KAELTEBEDARF" xml:space="preserve">
+    <value>Cooling demand</value>
+  </data>
+  <data name="MENU_BAUTEILKATALOG_EINLESEN" xml:space="preserve">
+    <value>Import building element catalogue…</value>
+  </data>
+  <data name="BKI_TITEL" xml:space="preserve">
+    <value>Import building element catalogue</value>
+  </data>
+  <data name="BKI_KEINE_ANSICHT" xml:space="preserve">
+    <value>Importing the building element catalogue is not available on this platform.</value>
+  </data>
+  <data name="BKI_DATEI" xml:space="preserve">
+    <value>Baustoffe.csv of the export</value>
+  </data>
+  <data name="BKI_DURCHSUCHEN" xml:space="preserve">
+    <value>Browse…</value>
+  </data>
+  <data name="BKI_HINWEIS" xml:space="preserve">
+    <value>Select the file Baustoffe.csv of the CSV export; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv and Basis_Auszug.csv lie next to it. The preview writes nothing.</value>
+  </data>
+  <data name="BKI_FILTER" xml:space="preserve">
+    <value>Baustoffe.csv|Baustoffe.csv|CSV files (*.csv)|*.csv</value>
+  </data>
+  <data name="BKI_VORSCHAU" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="BKI_SP_SATZART" xml:space="preserve">
+    <value>Record type</value>
+  </data>
+  <data name="BKI_SP_NEU" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="BKI_SP_KATALOG" xml:space="preserve">
+    <value>Merged with catalogue</value>
+  </data>
+  <data name="BKI_SP_QUELLE" xml:space="preserve">
+    <value>Merged within source</value>
+  </data>
+  <data name="BKI_SP_WIEDER" xml:space="preserve">
+    <value>Recognised</value>
+  </data>
+  <data name="BKI_SP_ABGELEHNT" xml:space="preserve">
+    <value>Rejected</value>
+  </data>
+  <data name="BKI_ART_BAUSTOFFE" xml:space="preserve">
+    <value>Materials</value>
+  </data>
+  <data name="BKI_ART_AUFBAUTEN" xml:space="preserve">
+    <value>Constructions</value>
+  </data>
+  <data name="BKI_ART_SCHICHTEN" xml:space="preserve">
+    <value>Layers</value>
+  </data>
+  <data name="BKI_ART_ABSCHNITTE" xml:space="preserve">
+    <value>Sections</value>
+  </data>
+  <data name="BKI_GEKENNZEICHNET" xml:space="preserve">
+    <value>{0} constructions are mostly unsuitable for building simulation and will be flagged.</value>
+  </data>
+  <data name="BKI_MIT_BAUSTOFF" xml:space="preserve">
+    <value>{0} layers match a material of the same group by name.</value>
+  </data>
+  <data name="BKI_CODES" xml:space="preserve">
+    <value>Codes without interpretation (they fall back to “Other”)</value>
+  </data>
+  <data name="BKI_GRUENDE" xml:space="preserve">
+    <value>Reasons for rejection</value>
+  </data>
+  <data name="BKI_RICHTUNG" xml:space="preserve">
+    <value>Direction inside → outside: insulation behind the load-bearing layer in {0} of {1} external walls. U from the layers against U of the source: median {2}, outside ±10 % {3} of {4} constructions.</value>
+  </data>
+  <data name="BKI_PROTOKOLL" xml:space="preserve">
+    <value>Log</value>
+  </data>
+  <data name="BKI_QUELLE" xml:space="preserve">
+    <value>Source of the records: {0}</value>
+  </data>
+  <data name="BKI_UEBERNEHMEN" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="BKI_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="BKI_OK_SPERRE" xml:space="preserve">
+    <value>Create a preview without rejection first.</value>
+  </data>
+  <data name="BKI_FERTIG" xml:space="preserve">
+    <value>Imported: materials {0} new, {1} merged, {2} recognised; constructions {3} new, {4} recognised; layers {5}; {6} constructions flagged. Duration {7} s.</value>
+  </data>
+  <data name="BKI_FEHLER" xml:space="preserve">
+    <value>Nothing imported, the catalogue is unchanged: {0}</value>
+  </data>
+  <data name="BKI_ABGELEHNT" xml:space="preserve">
+    <value>The source is rejected: {0}</value>
+  </data>
+  <data name="KFLT_SP_KLASSE" xml:space="preserve">
+    <value>Class</value>
+  </data>
+  <data name="KFLT_SP_EIGNUNG" xml:space="preserve">
+    <value>Suitability</value>
+  </data>
+  <data name="BKAT_MARKE_UNGEEIGNET" xml:space="preserve">
+    <value>mostly unsuitable</value>
+  </data>
+  <data name="BKAT_UNGEEIGNET" xml:space="preserve">
+    <value>mostly unsuitable for building simulation</value>
+  </data>
+  <data name="BKAT_GEEIGNET" xml:space="preserve">
+    <value>suitable</value>
+  </data>
+  <data name="BKAT_LBL_EIGNUNG" xml:space="preserve">
+    <value>Building simulation</value>
+  </data>
+  <data name="BKAT_GRUND_SCHICHT_OHNE_LAMBDA" xml:space="preserve">
+    <value>Layer {0} without thermal conductivity</value>
+  </data>
+  <data name="BKAT_GRUND_OHNE_SCHICHT" xml:space="preserve">
+    <value>Construction without layers</value>
+  </data>
+  <data name="BKAT_GRUND_OEFFNUNG_OHNE_U" xml:space="preserve">
+    <value>Opening without layers and without a source U-value</value>
+  </data>
+  <data name="BKAT_SCHALTER_NUR_GEEIGNETE" xml:space="preserve">
+    <value>suitable only</value>
+  </data>
+  <data name="BKAT_SCHALTER_AUCH_UNGEEIGNETE" xml:space="preserve">
+    <value>also show unsuitable</value>
+  </data>
+  <data name="BKAT_LBL_GRUPPE" xml:space="preserve">
+    <value>Group</value>
+  </data>
+  <data name="BKAT_LBL_KLASSE" xml:space="preserve">
+    <value>Class</value>
+  </data>
+  <data name="BKAT_GRUPPE_KEINE" xml:space="preserve">
+    <value>(no group)</value>
+  </data>
+  <data name="BKAT_KLASSE_KEINE" xml:space="preserve">
+    <value>(no class)</value>
+  </data>
+  <data name="BKAT_IMPORT_QUELLE" xml:space="preserve">
+    <value>Imported record – the source comes from the import and cannot be changed.</value>
+  </data>
+  <data name="KI_DLG_BST_KLASSE_ERL" xml:space="preserve">
+    <value>Class of the material within its group; the choice depends on the group, empty = no class.</value>
+  </data>
+  <data name="KI_DLG_BTA_GRUPPE_ERL" xml:space="preserve">
+    <value>Group of the construction (walls, floors, roofs, openings, other); empty = from the component type.</value>
+  </data>
+  <data name="KI_DLG_BTA_KLASSE_ERL" xml:space="preserve">
+    <value>Class of the construction within its group; the choice depends on the group, empty = no class.</value>
+  </data>
+  <data name="BKAT_BTA_GRUPPE_WAENDE" xml:space="preserve">
+    <value>Walls</value>
+  </data>
+  <data name="BKAT_BTA_GRUPPE_DECKEN" xml:space="preserve">
+    <value>Floors and ceilings</value>
+  </data>
+  <data name="BKAT_BTA_GRUPPE_DAECHER" xml:space="preserve">
+    <value>Roofs</value>
+  </data>
+  <data name="BKAT_BTA_GRUPPE_OEFFNUNGEN" xml:space="preserve">
+    <value>Openings</value>
+  </data>
+  <data name="BKAT_BTA_GRUPPE_SONSTIGE" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_AUSSENWAND" xml:space="preserve">
+    <value>External wall</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_AUSSENWAND_ERDREICH" xml:space="preserve">
+    <value>External wall against ground</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_INNENWAND" xml:space="preserve">
+    <value>Internal wall</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_GESCHOSSDECKE" xml:space="preserve">
+    <value>Intermediate floor</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_DECKE_OBEN" xml:space="preserve">
+    <value>Top floor ceiling</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_DECKE_UNTEN" xml:space="preserve">
+    <value>Floor towards below</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_BODENPLATTE" xml:space="preserve">
+    <value>Ground slab</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_FLACHDACH" xml:space="preserve">
+    <value>Flat roof</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_STEILDACH" xml:space="preserve">
+    <value>Pitched roof</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_FENSTER" xml:space="preserve">
+    <value>Window</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_DACHFENSTER" xml:space="preserve">
+    <value>Roof window</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_VORHANGFASSADE" xml:space="preserve">
+    <value>Curtain wall</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_TUER" xml:space="preserve">
+    <value>Door</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_SONSTIGES" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_ZIEGEL" xml:space="preserve">
+    <value>Clay brick</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_KALKSANDSTEIN" xml:space="preserve">
+    <value>Calcium silicate brick</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_PORENBETON" xml:space="preserve">
+    <value>Aerated concrete</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_LEICHTBETONSTEIN" xml:space="preserve">
+    <value>Lightweight concrete block</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_NATURSTEIN" xml:space="preserve">
+    <value>Natural stone</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_MAUERWERK_SONSTIGE" xml:space="preserve">
+    <value>Other masonry</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_NORMALBETON" xml:space="preserve">
+    <value>Normal concrete</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_STAHLBETON" xml:space="preserve">
+    <value>Reinforced concrete</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_LEICHTBETON" xml:space="preserve">
+    <value>Lightweight concrete</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_ZEMENTESTRICH" xml:space="preserve">
+    <value>Cement screed</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_CALCIUMSULFATESTRICH" xml:space="preserve">
+    <value>Calcium sulphate screed</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_GUSSASPHALT" xml:space="preserve">
+    <value>Mastic asphalt</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_TROCKENESTRICH" xml:space="preserve">
+    <value>Dry screed</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_KALKPUTZ" xml:space="preserve">
+    <value>Lime plaster</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_ZEMENTPUTZ" xml:space="preserve">
+    <value>Cement plaster</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_GIPSPUTZ" xml:space="preserve">
+    <value>Gypsum plaster</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_LEHMPUTZ" xml:space="preserve">
+    <value>Clay plaster</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_DAEMMPUTZ" xml:space="preserve">
+    <value>Insulating plaster</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_MOERTEL" xml:space="preserve">
+    <value>Mortar</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_MINERALWOLLE" xml:space="preserve">
+    <value>Mineral wool</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_POLYSTYROL" xml:space="preserve">
+    <value>Polystyrene</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_POLYURETHAN" xml:space="preserve">
+    <value>Polyurethane</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_HOLZFASER" xml:space="preserve">
+    <value>Wood fibre</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_NATURFASER" xml:space="preserve">
+    <value>Natural fibre</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_SCHAUMGLAS" xml:space="preserve">
+    <value>Cellular glass</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_VAKUUMDAEMMUNG" xml:space="preserve">
+    <value>Vacuum insulation</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_DAEMMSTOFF_SONSTIGE" xml:space="preserve">
+    <value>Other insulation</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_VOLLHOLZ" xml:space="preserve">
+    <value>Solid wood</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_HOLZWERKSTOFF" xml:space="preserve">
+    <value>Wood-based material</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_GIPSPLATTE" xml:space="preserve">
+    <value>Gypsum board</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_ZEMENTPLATTE" xml:space="preserve">
+    <value>Cement board</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_PLATTE_SONSTIGE" xml:space="preserve">
+    <value>Other board</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_KERAMIK" xml:space="preserve">
+    <value>Ceramic</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_PARKETT" xml:space="preserve">
+    <value>Parquet</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_TEXTILBELAG" xml:space="preserve">
+    <value>Textile covering</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_KUNSTSTOFFBELAG" xml:space="preserve">
+    <value>Plastic covering</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_BITUMEN" xml:space="preserve">
+    <value>Bitumen</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_KUNSTSTOFFBAHN" xml:space="preserve">
+    <value>Plastic membrane</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_DAMPFBREMSE" xml:space="preserve">
+    <value>Vapour retarder</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_STAHL" xml:space="preserve">
+    <value>Steel</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_ALUMINIUM" xml:space="preserve">
+    <value>Aluminium</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_KUPFER" xml:space="preserve">
+    <value>Copper</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_GLAS" xml:space="preserve">
+    <value>Glass</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_BINDIG" xml:space="preserve">
+    <value>Cohesive soil</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_NICHTBINDIG" xml:space="preserve">
+    <value>Non-cohesive soil</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_FELS" xml:space="preserve">
+    <value>Rock</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_LUFT" xml:space="preserve">
+    <value>Air</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_STOFF_SONSTIGE" xml:space="preserve">
+    <value>Other material</value>
   </data>
 </root>
 

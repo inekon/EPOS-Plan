@@ -136,37 +136,16 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der KÄLTEBEDARF eines Projekts (Konzept Kältebedarf 3.3) — derselbe Dialog mit
-        /// <c>BedarfsArt.Kaelte</c>, Temperaturpaar wie die Prozesswärme. Die Deckungsfelder der
-        /// Zuordnung (K4/K5) reicht der Dialog unverändert durch: Der Rückweg schreibt nur Name,
-        /// Kopie, Summe, Temperaturpaar und Kalender in die Modelle des Aufrufers zurück.
+        /// <c>BedarfsArt.Kaelte</c>, Temperaturpaar wie die Prozesswärme (als Angabe). Die Feldgruppe
+        /// „Deckung“ (Konzept 3.4) bearbeitet der Dialog in der Überlagerung „Deckung…“; der Rückweg schreibt
+        /// sie mit Name, Kopie, Summe, Temperaturpaar, Kalender und Kälte-Art in die Modelle des Aufrufers zurück.
         /// </summary>
         internal static bool Oeffnen(IWin32Window besitzer, int projektId, string projektName,
                                      List<Z_ProjektKaeltebedarfModel> modelle)
         {
-            var zeilen = new List<BedarfsProfilZeile>();
-            foreach (Z_ProjektKaeltebedarfModel m in modelle)
-                zeilen.Add(new BedarfsProfilZeile
-                {
-                    IdZ = m.ID_Z, IdStamm = m.ID_Kaeltebedarf, Name = m.Bezeichner ?? "", Summe = m.Summe,
-                    Vorlauf = m.Vorlauf, Ruecklauf = m.Ruecklauf, TemperaturGeaendert = m.TemperaturGeaendert,
-                    KalenderId = m.ID_Betriebskalender
-                });
-
-            var vorher = new Dictionary<int, Z_ProjektKaeltebedarfModel>();
-            foreach (Z_ProjektKaeltebedarfModel m in modelle) vorher[m.ID_Z] = m;
-            Action geaendert = () =>
-            {
-                modelle.Clear();
-                foreach (BedarfsProfilZeile z in zeilen)
-                {
-                    Z_ProjektKaeltebedarfModel m = vorher.TryGetValue(z.IdZ, out var alt) ? alt
-                        : new Z_ProjektKaeltebedarfModel { ID_Z = z.IdZ, ID_Projekt = projektId };
-                    m.ID_Kaeltebedarf = z.IdStamm; m.Bezeichner = z.Name; m.Summe = z.Summe;
-                    m.Vorlauf = z.Vorlauf; m.Ruecklauf = z.Ruecklauf; m.TemperaturGeaendert = z.TemperaturGeaendert;
-                    m.ID_Betriebskalender = z.KalenderId;
-                    modelle.Add(m);
-                }
-            };
+            // K5b: Abbildung samt den acht Deckungsfeldern plattformfrei (KaeltebedarfsprofilAbbildung).
+            List<BedarfsProfilZeile> zeilen = KaeltebedarfsprofilAbbildung.Zeilen(modelle);
+            Action geaendert = KaeltebedarfsprofilAbbildung.Rueckweg(zeilen, modelle, projektId);
 
             return Zeigen(besitzer, BedarfsArt.Kaelte, projektId, zeilen, geaendert, wizard: false);
         }
@@ -273,6 +252,15 @@ namespace WindowsFormsApplication1
             // Abbrechen räumt die in dieser Sitzung neu angelegten wieder ab (Projektkopievormerkung).
             var vormerkung = new Projektkopievormerkung(name => BedarfStammCtrl.ProjektkopieEntfernen(
                 art, BedarfStammCtrl.ProjektkopieId(art, name, projektId), projektId));
+            // „Aus dem Projekt entfernen" nimmt der Dialog selbst aus der Zeilenliste; der Bestand beim Öffnen
+            // zeigt nach dem Schließen, welche Kopien keine Zeile mehr hat (Muster HeizkesselHuelle.Entfernen:
+            // nur VORMERKEN, geloescht wird beim OK). Im Assistenten zeigt IdStamm auf den Katalog. Geloescht
+            // wird nur eine Kopie ohne Zuordnung in der Datenbank (ProjektkopieEntfernen): Das Brauchwasser
+            // schreibt seine Zuordnungen im OK des Dialogs, die uebrigen Arten schreibt der Aufrufer erst nach
+            // dem Schliessen - dort bleibt die Kopie einer entfernten Zeile stehen.
+            List<(string Bezeichner, int KopieId)> bestand = !wizard && projektId > 0
+                ? zeilen.Select(z => (z.Name ?? "", z.IdStamm)).ToList()
+                : null;
 
             var werte = new Dictionary<string, object>(
                 Gaben(besitzer, art, projektId, zeilen, geaendert, wizard, behaelter, vormerkung))
@@ -297,6 +285,7 @@ namespace WindowsFormsApplication1
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
             }
+            vormerkung.EntferntGegenueber(bestand, id => zeilen.Exists(z => z.IdStamm == id));
             vormerkung.Abschliessen(ok, id => zeilen.Exists(z => z.IdStamm == id));
             return ok;
         }
@@ -465,7 +454,20 @@ namespace WindowsFormsApplication1
             // Kälte (Konzept Kältebedarf 3.3): das Temperaturpaar als Angabe wie bei der Prozesswärme,
             // mit der Prüfung des Kältebedarfs (Kaltwasser auch unter 0 °C).
             if (art == BedarfsArt.Kaelte)
+            {
                 gaben["TemperaturPruefen"] = new Func<double?, double?, string>(KaeltebedarfSchema.Paarpruefung);
+                // KWN-0: die Art der Kaeltezeile (Raum/Prozess) - Steuerwert und Anzeigetext getrennt.
+                gaben["KaelteArten"] = (IReadOnlyList<(string Wert, string Text)>)new[]
+                {
+                    (DbWerte.KAELTE_ART_RAUM, MyResource.Resource.KAELTE_ART_RAUM),
+                    (DbWerte.KAELTE_ART_PROZESS, MyResource.Resource.KAELTE_ART_PROZESS),
+                };
+                // Vorlauf/Ruecklauf sind beim Kaeltebedarf eine Angabe ohne Wirkung auf die Erzeuger (E-K3).
+                gaben["HinweisTemperatur"] = MyResource.Resource.BPF_HINW_TEMPERATUR_KAELTE;
+                // K5b (Konzept 3.4): die Stromtraeger des Projekts fuer den Kuehltraeger der Feldgruppe „Deckung".
+                gaben["Stromtraeger"] = (IReadOnlyList<(int Id, string Text)>)Kaeltestromabrechnung
+                    .StromtraegerDesProjekts(projektId).Select(t => (t.Key, t.Value)).ToList();
+            }
 
             // Brauchwasser (5.2): Das OK schreibt Zuordnungen und Zapfprofil in EINEM Vorgang,
             // BEVOR der Dialog schliesst - lehnt der Schreibweg ab, bleibt er offen und nennt den
@@ -573,6 +575,9 @@ namespace WindowsFormsApplication1
                         return BedarfErgebnisHuelle.Gaben(_stand.Strom, 1);
                     case BedarfsArt.Prozesswaerme:
                         return BedarfErgebnisHuelle.Gaben(_stand.Waerme, false, 1, "");
+                    case BedarfsArt.Kaelte:
+                        return BedarfErgebnisHuelle.GabenKaelte(_stand.KaelteStunde, _stand.KaelteMonat,
+                                                                _stand.Kaeltebedarf, 1);
                     default:
                         return BedarfErgebnisHuelle.Gaben(_stand.Waerme, true, 2, _titelZusatz);
                 }

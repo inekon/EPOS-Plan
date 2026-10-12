@@ -5445,6 +5445,43 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_SCHNELLAUFHEIZUNG = SchnellaufheizungSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="KaelteArtSchema.SCHRITT"/> — <b>Art der Kältebedarfszeilen</b> (KWN-0, E127): <c>Kaelte_Art</c>
+        /// (Raum/Prozess, Vorgabe Raum) an <c>Z_Projekt_Kaeltebedarf</c> und <c>Z_ProjektWaermebedarf</c>.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Jede Bestandszeile steht auf Raum; ohne Prozesszeile ändert sich keine
+        /// Zahl.</para>
+        /// </summary>
+        public const int SCHRITT_KAELTE_ART = KaelteArtSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="RaumnutzungNormkategorienSchema.SCHRITT"/> — <b>Kategorien SIA 2024 und VDI 2078 entfallen</b>
+        /// (NP6, E129): Die leeren, ausgelieferten Kategorien des Katalogs der Nutzungsprofile fallen weg; eine wider Erwarten
+        /// befüllte wird eine eigene Kategorie und steht im Protokoll. Die Kategorie DIN bekommt die zwei Wohnprofile nach
+        /// Tabelle 5 (Einfamilienhaus, Mehrfamilienhaus; ohne Nummer, ohne Werte).
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Rechenweg liest eine Kategorie.</para>
+        /// </summary>
+        public const int SCHRITT_RAUMNUTZUNG_NORMKATEGORIEN = RaumnutzungNormkategorienSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="RaumnutzungNormwerteSchema.SCHRITT"/> — <b>Normwerte der DIN einlesen</b> (NP7, E131):
+        /// <c>Aussenluft_Person</c> (m³/(h·Person)) und die Herkunft eingelesener Werte (<c>Werte_Herkunft</c>,
+        /// <c>Werte_Quelle</c>, <c>Werte_Datum</c>) an <c>Tab_Raumnutzungsprofil</c>.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Alle vier Spalten stehen leer.</para>
+        /// </summary>
+        public const int SCHRITT_RAUMNUTZUNG_NORMWERTE = RaumnutzungNormwerteSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="BauteilkatalogSchema.SCHRITT"/> — <b>Schema und Felder des Bauteilkatalogs</b> (BK-2, E132):
+        /// Herkunft EIGEN/IMPORT (Neubau der vier Kopftabellen mit Erhalt der IDs), Gruppe und Klasse, das Kennzeichen „für die
+        /// Gebäudesimulation meist nicht geeignet“, die Felder der Quelle und die Abschnittstabellen.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Bauteilweg liest keine neue Spalte.</para>
+        /// </summary>
+        public const int SCHRITT_BAUTEILKATALOG = BauteilkatalogSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7978,6 +8015,32 @@ namespace WindowsFormsApplication1
                         "Ein Projekt koennte die Schnellaufheizung nicht speichern. KEIN Rechenergebnis aendert sich - jede " +
                         "Spalte steht auf NULL, und NULL heisst aus.",
                         Schritt_Schnellaufheizung),
+            // KWN-0: Art der Kaeltebedarfszeilen. Quelle ist KaelteArtSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KAELTE_ART,
+                        "Z_Projekt_Kaeltebedarf und Z_ProjektWaermebedarf: Kaelte_Art (RAUM/PROZESS, Vorgabe RAUM)",
+                        "Ein Projekt koennte Prozesskaelte nicht von Raumkuehlung unterscheiden. KEIN Rechenergebnis aendert " +
+                        "sich - jede Bestandszeile steht auf RAUM.",
+                        Schritt_KaelteArt),
+            // NP6: Kategorien SIA 2024 und VDI 2078 entfallen. Quelle ist RaumnutzungNormkategorienSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_RAUMNUTZUNG_NORMKATEGORIEN,
+                        "Tab_Raumnutzungskatalog: die ausgelieferten Kategorien SIA 2024 und VDI 2078 (ohne Profil) entfallen; " +
+                        "Tab_Raumnutzungsprofil: zwei Wohnprofile der DIN (Einfamilienhaus, Mehrfamilienhaus) ohne Werte",
+                        "Der Katalog der Nutzungsprofile fuehrte zwei leere, schreibgeschuetzte Kategorien, in die kein Profil " +
+                        "eingetragen werden kann, und der Kategorie DIN fehlten die Wohngebaeude. KEIN Rechenergebnis aendert sich - kein Rechenweg liest eine Kategorie.",
+                        Schritt_RaumnutzungNormkategorien),
+            // NP7: Normwerte der DIN einlesen. Quelle ist RaumnutzungNormwerteSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_RAUMNUTZUNG_NORMWERTE,
+                        "Tab_Raumnutzungsprofil: Aussenluft_Person, Werte_Herkunft, Werte_Quelle, Werte_Datum (leer)",
+                        "Die Normwerte der DIN koennten nicht in die ausgelieferten Profile eingelesen werden, und die Aussenluft " +
+                        "je Person haette keinen Platz. KEIN Rechenergebnis aendert sich - alle Spalten stehen leer.",
+                        Schritt_RaumnutzungNormwerte),
+            // BK-2: Schema und Felder des Bauteilkatalogs. Quelle ist BauteilkatalogSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_BAUTEILKATALOG,
+                        "Tab_Baustoff(_STAMM), Tab_Bauteilaufbau(_STAMM), Tab_Bauteilschicht(_STAMM): Herkunft EIGEN/IMPORT, Gruppe, Klasse, " +
+                        "Kennzeichen, Felder der Quelle; Tab_Bauteilabschnitt(_STAMM)",
+                        "Ein eingelesener Katalogsatz waere nicht als solcher erkennbar, Baustoffe und Aufbauten nicht gegliedert, und die " +
+                        "Felder der Quelle haetten keinen Platz. KEIN Rechenergebnis aendert sich - der Bauteilweg liest keine neue Spalte.",
+                        Schritt_Bauteilkatalog),
         };
 
         /// <summary>
@@ -15423,6 +15486,223 @@ namespace WindowsFormsApplication1
                     (erg.Angelegt == 0 ? "stand bereits." : erg.Angelegt + " Schemaanweisung(en).") +
                     " " + erg.Saat + " Kaeltemittel gesaet, " + (erg.KatalogZugeordnet + erg.ProjektZugeordnet) +
                     " Zeile(n) zugeordnet. KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Art der Kältebedarfszeilen" — Anlass und Wirkung stehen bei <see cref="SCHRITT_KAELTE_ART"/>, die
+        /// Anweisungen bei <see cref="KaelteArtSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_KaelteArt(Lauf l)
+        {
+            string nr = KaelteArtSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KaelteArtSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = KaelteArtSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KaelteArtSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Art der Kaeltebedarfszeilen (Kaelte_Art) steht nach dem Schritt nicht.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Art der Kaeltebedarfszeilen - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Bauteilkatalog" — Anlass und Wirkung stehen bei <see cref="SCHRITT_BAUTEILKATALOG"/>, die Anweisungen bei
+        /// <see cref="BauteilkatalogSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Bauteilkatalog(Lauf l)
+        {
+            string nr = BauteilkatalogSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in BauteilkatalogSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = BauteilkatalogSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!BauteilkatalogSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Schema und Felder des Bauteilkatalogs stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Bauteilkatalog - " + (handgriffe == 0 ? "stand bereits." : handgriffe + " Handgriff(e).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Normwerte der DIN einlesen" — Anlass und Wirkung stehen bei <see cref="SCHRITT_RAUMNUTZUNG_NORMWERTE"/>,
+        /// die Anweisungen bei <see cref="RaumnutzungNormwerteSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_RaumnutzungNormwerte(Lauf l)
+        {
+            string nr = RaumnutzungNormwerteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in RaumnutzungNormwerteSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = RaumnutzungNormwerteSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!RaumnutzungNormwerteSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalten der Normwerte stehen nach dem Schritt nicht vollstaendig an Tab_Raumnutzungsprofil.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Aussenluft je Person und Herkunft der Werte - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Kategorien SIA 2024 und VDI 2078 entfallen" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_RAUMNUTZUNG_NORMKATEGORIEN"/>, die Anweisungen bei <see cref="RaumnutzungNormkategorienSchema"/>.
+        /// <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_RaumnutzungNormkategorien(Lauf l)
+        {
+            string nr = RaumnutzungNormkategorienSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in RaumnutzungNormkategorienSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = RaumnutzungNormkategorienSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!RaumnutzungNormkategorienSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Kategorien SIA 2024 und VDI 2078 stehen nach dem Schritt noch als ausgelieferte Kategorien, " +
+                                  "oder der Kategorie DIN fehlt ein Wohnprofil.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Kategorien SIA 2024 und VDI 2078, Wohnprofile der DIN - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Kategorie(n) oder Profil(e) entfernt, umgestellt oder angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

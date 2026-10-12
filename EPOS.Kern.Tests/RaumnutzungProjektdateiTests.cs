@@ -127,6 +127,7 @@ namespace EPOS.Kern.Tests
             Assert.Null(p.Heiz_Soll);
             Assert.Null(p.Heiz_Soll_Ausserhalb);
             Assert.Null(p.Aussenluft);
+            Assert.Equal(10.0, p.Aussenluft_Person);
             Assert.Null(p.Personen_Flaeche);
             Assert.Null(p.Beleuchtung_Leistung);
             Assert.Equal(Text(R.RNP_PD_NAME_OHNE, "90"), p.Bezeichner);

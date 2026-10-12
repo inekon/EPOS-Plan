@@ -653,4 +653,37 @@ public class RaumnutzungBlattTests : EposBunitContext
             WindowsFormsApplication1.Schreibnaht.Schreibrecht = vorher;
         }
     }
+
+    // =====================================================================
+    //  NP6 (E129): Profile ohne Nummer am Ende der DIN-Gruppe
+    // =====================================================================
+
+    /// <summary>
+    /// Die Zuordnungsauswahl gruppiert je Kategorie (<c>optgroup</c>) in der Ordnung des Wegs: In der DIN-Gruppe stehen die
+    /// Profile mit Nummer vorn, die zwei Wohnprofile ohne Nummer am Ende; die übrigen Gruppen bleiben, wie sie sind. Eine
+    /// Kategorie SIA 2024 oder VDI 2078 gibt es nicht mehr.
+    /// </summary>
+    [Fact]
+    public void Die_Wohnprofile_ohne_Nummer_stehen_am_Ende_der_DIN_Gruppe()
+    {
+        const long katDin = 3;
+        Probeweg w = Probekatalog();
+        w.Kategorien.Add(new RaumnutzungKategorieDaten(katDin, "DIN/TS 18599-10", RaumnutzungArt.Din18599, true, "", ""));
+        // Die Ordnung des Kerns (RaumnutzungCtrl): Nummer vorn, ohne Nummer dahinter.
+        w.Profile.Add(new RaumnutzungProfilDaten { Id = 31, IdKategorie = katDin, Nummer = "1", Bezeichner = "Einzelbüro", Ausgeliefert = true });
+        w.Profile.Add(new RaumnutzungProfilDaten { Id = 32, IdKategorie = katDin, Nummer = "43", Bezeichner = "Lager", Ausgeliefert = true });
+        w.Profile.Add(new RaumnutzungProfilDaten { Id = 33, IdKategorie = katDin, Nummer = "", Bezeichner = "Wohngebäude – Einfamilienhaus", Ausgeliefert = true });
+        w.Profile.Add(new RaumnutzungProfilDaten { Id = 34, IdKategorie = katDin, Nummer = "", Bezeichner = "Wohngebäude – Mehrfamilienhaus", Ausgeliefert = true });
+
+        var cut = Blatt(w);
+        cut.Find(".epos-raumnutzung-reiter-zuordnung").Click();
+        IElement auswahl = cut.Find("[data-zuordnung=\"21\"] .epos-raumnutzung-zuordnung-profil");
+        string[] gruppen = auswahl.QuerySelectorAll("optgroup").Select(g => g.GetAttribute("label") ?? "").ToArray();
+        Assert.Equal(new[] { "EPOS-Muster", "Eigene Profile", "DIN/TS 18599-10" }, gruppen);
+        Assert.DoesNotContain(gruppen, g => g.Contains("SIA", StringComparison.Ordinal) || g.Contains("VDI", StringComparison.Ordinal));
+        string[] din = auswahl.QuerySelectorAll("optgroup")[2].QuerySelectorAll("option").Select(o => o.GetAttribute("value") ?? "").ToArray();
+        Assert.Equal(new[] { "31", "32", "33", "34" }, din);
+        Assert.EndsWith("Mehrfamilienhaus", auswahl.QuerySelectorAll("optgroup")[2].QuerySelectorAll("option").Last().TextContent.Trim(),
+                        StringComparison.Ordinal);
+    }
 }

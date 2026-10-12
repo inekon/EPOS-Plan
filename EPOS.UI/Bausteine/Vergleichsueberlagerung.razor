@@ -1,0 +1,84 @@
+﻿@* DIE VERGLEICHSUEBERLAGERUNG (5.5, Q3; KA-E-24). EINE Zeile je Parameter, EINE Spalte je Satz.
+   Abweichende Werte stehen hervorgehoben, gleiche leise - dieselbe Anmutung wie die Kohaerenzzeile
+   ("stimmig"/"abweichend"), und die Kennzeichnung traegt WORTE, nicht nur Farbe. Breit, weil drei
+   Satzspalten plus Parameterspalte in die Regelbreite von 900 px nicht passen
+   (epos-ueberlagerung--breit, W7-E-2). Traegt ein Kopf eine Herkunft (Projekt / Katalog), steht sie
+   vor dem Namen - der Vergleich ueber beide Listen der Katalogauswahl (Zweispaltenauswahl).
+   EIN Rollbereich: Es rollt die Ueberlagerung, die Huelle der Tabelle nicht (epos-vergleich-huelle). *@
+@namespace EPOS.UI.Bausteine
+
+<Ueberlagerung Offen="@Offen" Titel="@Titel"
+               Zusatzklasse="epos-ueberlagerung--breit"
+               SchliessenText="@SchliessenText"
+               Geschlossen="Geschlossen">
+    <KindInhalt>
+        @if (Offen)
+        {
+            <div class="epos-raster-huelle epos-raster-huelle--frei epos-vergleich-huelle">
+                <table class="epos-raster epos-vergleich">
+                    <thead>
+                        <tr>
+                            <th scope="col">@SpalteParameter</th>
+                            @foreach (Vergleichskopf kopf in Koepfe)
+                            {
+                                @if (kopf.Herkunft.Length > 0)
+                                {
+                                    <th scope="col"><span class="epos-vergleich-herkunft">@kopf.Herkunft</span> @kopf.Name</th>
+                                }
+                                else
+                                {
+                                    <th scope="col">@kopf.Name</th>
+                                }
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (Katalogliste.Vergleichzeile v in Zeilen)
+                        {
+                            <tr class="@(v.Abweichend ? "epos-vergleich--abweichend" : "epos-vergleich--stimmig")">
+                                <th scope="row" class="epos-vergleich-name">
+                                    <span class="epos-vergleich-zeichen" aria-hidden="true">@(v.Abweichend ? "≠" : "✓")</span>
+                                    <span>@v.Name</span>
+                                    <span class="epos-vergleich-stufe">@(v.Abweichend ? AbweichendText : StimmigText)</span>
+                                </th>
+                                @foreach (string wert in v.Werte)
+                                {
+                                    <td>@wert</td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </KindInhalt>
+</Ueberlagerung>
+
+@code {
+    /// <summary>Steht die Überlagerung?</summary>
+    [Parameter] public bool Offen { get; set; }
+
+    /// <summary>Der Titel („Vergleich").</summary>
+    [Parameter] public string Titel { get; set; } = Resource.KFLT_VERGLEICH_TITEL;
+
+    /// <summary>Der Text des Schließknopfs.</summary>
+    [Parameter] public string SchliessenText { get; set; } = Resource.KFLT_VERGLEICH_SCHLIESSEN;
+
+    /// <summary>Der Kopf der Parameterspalte.</summary>
+    [Parameter] public string SpalteParameter { get; set; } = Resource.KFLT_VERGLEICH_SP_PARAMETER;
+
+    /// <summary>Das Wort für gleiche Werte.</summary>
+    [Parameter] public string StimmigText { get; set; } = Resource.KFLT_VERGLEICH_STIMMIG;
+
+    /// <summary>Das Wort für abweichende Werte.</summary>
+    [Parameter] public string AbweichendText { get; set; } = Resource.KFLT_VERGLEICH_ABWEICHEND;
+
+    /// <summary>Die Spaltenköpfe, je Satz einer.</summary>
+    [Parameter] public IReadOnlyList<Vergleichskopf> Koepfe { get; set; } = Array.Empty<Vergleichskopf>();
+
+    /// <summary>Die Zeilen, je Parameter eine.</summary>
+    [Parameter] public IReadOnlyList<Katalogliste.Vergleichzeile> Zeilen { get; set; } = Array.Empty<Katalogliste.Vergleichzeile>();
+
+    /// <summary>✕, Esc, Schließen.</summary>
+    [Parameter] public EventCallback Geschlossen { get; set; }
+}

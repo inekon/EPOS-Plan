@@ -419,6 +419,12 @@ public interface IProjektQuelle
     /// </summary>
     IReadOnlyDictionary<string, object>? BetriebskalenderGaben() => null;
 
+    /// <summary>
+    /// Der fertige PARAMETERSATZ von „Bauteilkatalog einlesen…" (<c>Dialoge.Bedarf.BauteilkatalogImportDialog</c>, BK-3);
+    /// <c>null</c> = diese Hülle führt ihn nicht (die Wurzel nennt dann den Grund).
+    /// </summary>
+    IReadOnlyDictionary<string, object>? BauteilkatalogImportGaben() => null;
+
     // =====================================================================
     //  Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (Anwenderentscheid ZU26)
     // =====================================================================

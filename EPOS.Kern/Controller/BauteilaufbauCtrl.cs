@@ -36,8 +36,14 @@ namespace WindowsFormsApplication1
             internal static Ergebnis Fehler(string meldung) => new Ergebnis(false, meldung ?? "", 0);
         }
 
-        private const string SCHICHTSPALTEN_SQL =
+        private const string SCHICHTSPALTEN_GRUND =
             "\"ID\", \"ID_Aufbau\", \"Reihenfolge\", \"ID_Baustoff\", \"Dicke\", \"IstLuftschicht\", \"Lambda\", \"Rho\", \"cp\"";
+
+        /// <summary>Die gelesenen Schichtspalten — mit den Feldern der Quelle, wenn der Schritt BK-2 steht.</summary>
+        private static string SCHICHTSPALTEN_SQL =>
+            BauteilkatalogSchema.Lesbar()
+                ? SCHICHTSPALTEN_GRUND + ", " + string.Join(", ", Bauteilkatalog.Zusatzspalten(BauteilaufbauSchema.TAB_SCHICHT).Select(s => "\"" + s.Name + "\""))
+                : SCHICHTSPALTEN_GRUND;
 
         // =================================================================
         //  Lesen
@@ -114,6 +120,10 @@ namespace WindowsFormsApplication1
                 };
                 liste.Add(zeile
                     .MitText(Katalogfilterprofil.SpBezeichner, a.Bezeichner)
+                    // BK-2b: Marke, Gruppe und Klasse; die Marke ist das gespeicherte Kennzeichen des Kerns.
+                    .MitText(Katalogfilterprofil.SpEignung, a.SimulationUngeeignet ? MyResource.Resource.BKAT_MARKE_UNGEEIGNET : "")
+                    .MitText(Katalogfilterprofil.SpGruppe, Bauteilkatalog.GruppeText(false, a.GruppeCode))
+                    .MitText(Katalogfilterprofil.SpKlasse, Bauteilkatalog.KlasseText(false, a.KlasseCode))
                     .MitText(Katalogfilterprofil.SpBauteilart, BauteilartText(a.Bauteilart))
                     .MitZahl(Katalogfilterprofil.SpUWert, k.U_WM2K, 3)
                     .MitZahl(Katalogfilterprofil.SpRWert, k.R_M2KW, 2)
@@ -193,15 +203,10 @@ namespace WindowsFormsApplication1
                     continue;
                 }
                 schichten.Add(schicht);
-                try
-                {
-                    Bauteilreduktion.Pruefen(new[] { schicht }, wer);
+                // BK-2b: ohne Ausnahme geprüft - eine Wahlliste rechnet tausende Aufbauten; die Meldung mit der richtigen
+                // Schichtnummer liefert die Gesamtprüfung darunter.
+                if (Bauteilreduktion.SchichtBefund(schicht, wer, i + 1) == null)
                     rJe[i] = Bauteilreduktion.Waermedurchlasswiderstand(schicht, richtung, wer, i + 1);
-                }
-                catch (GebaeudeModellException)
-                {
-                    // Die Meldung mit der richtigen Schichtnummer liefert der Gesamtlauf darunter.
-                }
             }
 
             var basis = new BauteilaufbauKennwerte
@@ -212,6 +217,7 @@ namespace WindowsFormsApplication1
                 RJeSchicht_M2KW = rJe
             };
             if (grund != null) return basis with { Grund = grund };
+            if (Bauteilreduktion.PruefenOhneAusnahme(schichten, wer) is string befund) return basis with { Grund = befund };
 
             Schichtkennwerte k;
             try
@@ -353,7 +359,7 @@ namespace WindowsFormsApplication1
             BauteilaufbauModel neu = alt.Kopie();
             neu.ID = 0;
             neu.Bezeichner = neuerName ?? "";
-            neu.Herkunft = DbWerte.HERKUNFT_MANUELL;
+            neu.Herkunft = BaustoffCtrl.EigeneHerkunft();
             neu.Quellkennung = null;
             neu.ReadOnly = false;
             foreach (BauteilschichtModel s in neu.Schichten) { s.ID = 0; s.ID_Aufbau = 0; }
@@ -496,6 +502,8 @@ namespace WindowsFormsApplication1
                         "INSERT INTO \"" + BauteilaufbauSchema.TAB_AUFBAU + "\" (\"ID_Projekt\", \"Bezeichner\", " +
                         string.Join(", ", BauteilaufbauSchema.Fachspalten.Select(x => "\"" + x + "\"")) + ") VALUES (?, ?, " +
                         BaustoffCtrl.Fragezeichen(BauteilaufbauSchema.Fachspalten.Count) + ")", ps.ToArray());
+                    bool lesbar = BauteilkatalogSchema.Lesbar();
+                    Bauteilkatalog.Uebertragen(v, BauteilaufbauSchema.TAB_AUFBAU_STAMM, stammId, BauteilaufbauSchema.TAB_AUFBAU, neu, lesbar);
 
                     DataTable schichten = v.Lese(
                         "SELECT " + SCHICHTSPALTEN_SQL + " FROM \"" + BauteilaufbauSchema.TAB_SCHICHT_STAMM + "\" " +
@@ -515,7 +523,9 @@ namespace WindowsFormsApplication1
                             }
                             sch.ID_Baustoff = projektStoff;
                         }
-                        SchichtEinfuegen(v, BauteilaufbauSchema.TAB_SCHICHT, neu, ++rang, sch);
+                        int quelle = sch.ID;
+                        int ziel = SchichtEinfuegen(v, BauteilaufbauSchema.TAB_SCHICHT, neu, ++rang, sch);
+                        Bauteilkatalog.Uebertragen(v, BauteilaufbauSchema.TAB_SCHICHT_STAMM, quelle, BauteilaufbauSchema.TAB_SCHICHT, ziel, lesbar);
                     }
 
                     v.Commit();
@@ -602,7 +612,8 @@ namespace WindowsFormsApplication1
                     kp.Add(BaustoffCtrl.Text("@be", m.Beschreibung));
                     kp.Add(BaustoffCtrl.Text("@art", m.Bauteilart));
                     kp.Add(BaustoffCtrl.Text("@q", m.Quelle));
-                    kp.Add(BaustoffCtrl.Text("@h", m.Herkunft ?? (neu ? DbWerte.HERKUNFT_MANUELL : null)));
+                    string eigene = seite == Seite.Katalog ? BaustoffCtrl.EigeneHerkunft() : DbWerte.HERKUNFT_MANUELL;
+                    kp.Add(BaustoffCtrl.Text("@h", m.Herkunft ?? (neu ? eigene : null)));
                     kp.Add(BaustoffCtrl.Text("@qk", m.Quellkennung));
 
                     if (neu)
@@ -613,7 +624,7 @@ namespace WindowsFormsApplication1
                             (seite == Seite.Katalog ? ", \"ReadOnly\"" : "") + ") VALUES (" +
                             (seite == Seite.Projekt ? "?, " : "") + "?, ?, ?, ?, ?, ?" + (seite == Seite.Katalog ? ", 0" : "") + ")",
                             kp.ToArray());
-                        if (m.Herkunft == null) m.Herkunft = DbWerte.HERKUNFT_MANUELL;
+                        if (m.Herkunft == null) m.Herkunft = eigene;
                     }
                     else
                     {
@@ -628,6 +639,7 @@ namespace WindowsFormsApplication1
                     foreach (BauteilschichtModel s in m.Schichten.Where(x => x != null))
                         s.ID = SchichtEinfuegen(v, SchichtTabelle(seite), m.ID, ++rang, s);
                     m.Schichten = m.Schichten.Where(x => x != null).ToList();
+                    KatalogfelderSchreiben(v, seite, m, BauteilkatalogSchema.Lesbar());
 
                     v.Commit();
                     return Ergebnis.Gut(m.ID);
@@ -678,7 +690,25 @@ namespace WindowsFormsApplication1
             int rang = 0;
             foreach (BauteilschichtModel s in m.Schichten)
                 s.ID = SchichtEinfuegen(v, BauteilaufbauSchema.TAB_SCHICHT, id, ++rang, s);
+            KatalogfelderSchreiben(v, Seite.Projekt, m, BauteilkatalogSchema.Lesbar());
             return id;
+        }
+
+        /// <summary>
+        /// <b>Gliederung, Kennzeichen und Felder der Quelle</b> (BK-2) eines geschriebenen Aufbaus samt Schichten, im Vorgang
+        /// des Aufrufers und nur, wenn der Schritt steht. Ohne Gruppe gilt die Gliederung der Bauteilart; eine Klasse, die nicht
+        /// zur Gruppe gehört, fällt weg. Das Kennzeichen setzt allein der Kern (<see cref="Bauteilkatalog.MeistUngeeignet"/>).
+        /// </summary>
+        private static void KatalogfelderSchreiben(DbVorgang v, Seite seite, BauteilaufbauModel m, bool lesbar)
+        {
+            if (!lesbar) return;
+            if (m.GruppeCode == null)
+                (m.GruppeCode, m.KlasseCode) = Bauteilkatalog.GliederungAusBauteilart(m.Bauteilart, m.Typaufbau);
+            if (m.KlasseCode != null && Bauteilkatalog.GliederungPruefen(false, m.GruppeCode, m.KlasseCode) != null) m.KlasseCode = null;
+            m.SimulationUngeeignet = Bauteilkatalog.MeistUngeeignet(m);
+            Bauteilkatalog.Schreiben(v, AufbauTabelle(seite), m.ID, m.GruppeCode, m.KlasseCode, m.SimulationUngeeignet, m.Zusatz, true);
+            foreach (BauteilschichtModel s in m.Schichten.Where(x => x != null))
+                Bauteilkatalog.Schreiben(v, SchichtTabelle(seite), s.ID, null, null, null, s.Zusatz, true);
         }
 
         /// <summary>
@@ -757,8 +787,13 @@ namespace WindowsFormsApplication1
                     Herkunft = BaustoffCtrl.TextAus(r, "Herkunft"),
                     Quellkennung = BaustoffCtrl.TextAus(r, "Quellkennung"),
                     Typaufbau = BaustoffCtrl.TextAus(r, TypaufbauSchema.SPALTE),
-                    ReadOnly = (BaustoffCtrl.GanzAus(r, "ReadOnly") ?? 0) != 0
+                    ReadOnly = (BaustoffCtrl.GanzAus(r, "ReadOnly") ?? 0) != 0,
+                    GruppeCode = BaustoffCtrl.TextAus(r, BauteilkatalogSchema.SPALTE_GRUPPE),
+                    KlasseCode = BaustoffCtrl.TextAus(r, BauteilkatalogSchema.SPALTE_KLASSE),
+                    SimulationUngeeignet = (BaustoffCtrl.GanzAus(r, BauteilkatalogSchema.SPALTE_UNGEEIGNET) ?? 0) != 0,
+                    Zusatz = Bauteilkatalog.ZusatzLesen(r, BauteilaufbauSchema.TAB_AUFBAU_STAMM)
                 };
+                if (a.GruppeCode == null) (a.GruppeCode, a.KlasseCode) = Bauteilkatalog.GliederungAusBauteilart(a.Bauteilart, a.Typaufbau);
                 liste.Add(a);
                 jeId[a.ID] = a;
             }
@@ -783,7 +818,8 @@ namespace WindowsFormsApplication1
                 IstLuftschicht = (BaustoffCtrl.GanzAus(r, "IstLuftschicht") ?? 0) != 0,
                 Lambda = BaustoffCtrl.ZahlAus(r, "Lambda"),
                 Rho = BaustoffCtrl.ZahlAus(r, "Rho"),
-                Cp = BaustoffCtrl.ZahlAus(r, "cp")
+                Cp = BaustoffCtrl.ZahlAus(r, "cp"),
+                Zusatz = Bauteilkatalog.ZusatzLesen(r, BauteilaufbauSchema.TAB_SCHICHT_STAMM)
             };
         }
 

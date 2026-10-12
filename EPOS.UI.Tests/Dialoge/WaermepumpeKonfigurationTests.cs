@@ -16,7 +16,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <c>Ueberlagerung</c> hinter dem Knopf „Konfiguration…", Simulation › Konfiguration
 /// in ihrem eigenen Abschnitt. Hier stehen deshalb die Regeln des BAUSTEINS —
 /// Feldbestand, Bindung, Sichtbarkeit —, in
-/// <c>WaermepumpeAnlageDialogTests</c> nur, dass der Dialog sie durchreicht.</para>
+/// <c>WaermepumpeAnlageFelderTests</c> nur, dass der Baustein sie durchreicht.</para>
 /// </summary>
 public class WaermepumpeKonfigurationTests : EposBunitContext
 {

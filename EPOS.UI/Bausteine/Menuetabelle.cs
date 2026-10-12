@@ -264,6 +264,9 @@ public static class Menuetabelle
                 // ihnen. Beide sind freie Ansichten der Wurzel, auf beiden Plattformen.
                 new Menuepunkt("MenuItem_Baustoffe", "MENU_BAUSTOFFE", Seitenschluessel.BaustoffKatalog, katalog: true),
                 new Menuepunkt("MenuItem_Bauteilaufbauten", "MENU_BAUTEILAUFBAUTEN", Seitenschluessel.BauteilaufbauKatalog, katalog: true),
+                // BK-3 (E133): der Import des Bauteilkatalogs aus dem CSV-Export - hinter den zwei
+                // Katalogen, in die er schreibt; eine freie Ansicht der Wurzel auf beiden Plattformen.
+                new Menuepunkt("MenuItem_BauteilkatalogEinlesen", "MENU_BAUTEILKATALOG_EINLESEN", Seitenschluessel.BauteilkatalogImport),
             },
             // W16c-O-7: der Punkt stand bis zum 07.09.2026 als EINZIGES Kind
             // im Untermenue MenuItem_Klima ("Klimadaten" ueber "Klimadaten").
@@ -295,6 +298,8 @@ public static class Menuetabelle
                 {
                     new Menuepunkt("MenuItem_WaermebedarfExtern", "MENU_WAERMEBEDARF_EXTERN", Seitenschluessel.WaermebedarfExternAdmin),
                     new Menuepunkt("MenuItem_Prozesswaerme", "MENU_PROZESSWAERME", Seitenschluessel.ProzesswaermeAdmin),
+                    // K5b (Konzept Kaeltebedarf 3.3): die Kaeltebedarfsprofile neben der Prozesswaerme.
+                    new Menuepunkt("MenuItem_Kaeltebedarf", "MENU_KAELTEBEDARF", Seitenschluessel.KaeltebedarfAdmin),
                     new Menuepunkt("MenuItem_SolThermGanglinie", "MENU_SOL_THERM_GANGLINIE", Seitenschluessel.SolarganglinieAdmin),
                     // PVG (Schemaschritt 206): der Katalog der PV-Ganglinien - derselbe Dialog wie an der Kachel, ohne Projekt.
                     new Menuepunkt("MenuItem_PvGanglinie", "MENU_PV_GANGLINIE", Seitenschluessel.PvGanglinieAdmin),

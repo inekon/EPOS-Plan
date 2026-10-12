@@ -234,6 +234,9 @@ public static class Seitenschluessel
     /// <summary>Stammdaten Prozesswaerme (Razor seit W14b.1).</summary>
     public const string ProzesswaermeAdmin = WindowsFormsApplication1.Masken.ProzesswaermeAdmin;
 
+    /// <summary>Stammdaten Kaeltebedarf (K5b): die Bedarfsverwaltung mit der Art Kaelte.</summary>
+    public const string KaeltebedarfAdmin = WindowsFormsApplication1.Masken.KaeltebedarfAdmin;
+
     /// <summary>Stammdaten Stromverbraucher (Razor seit W14b.1).</summary>
     public const string StromverbraucherAdmin = WindowsFormsApplication1.Masken.StromverbraucherAdmin;
 
@@ -406,6 +409,13 @@ public static class Seitenschluessel
     /// </summary>
     public const string Betriebskalender = "BETRIEBSKALENDER";
 
+    /// <summary>
+    /// Menue „Administration -> Gebäude -> Bauteilkatalog einlesen…" (<c>BauteilkatalogImportDialog</c>, BK-3) —
+    /// eine freie Ansicht der Wurzel auf beiden Plattformen wie <see cref="BaustoffKatalog"/>; der Parametersatz kommt
+    /// aus <c>BauteilkatalogImportHuelle</c> (EPOS.UI.Daten).
+    /// </summary>
+    public const string BauteilkatalogImport = "BAUTEILKATALOG_IMPORT";
+
     /// <summary>Menue „Administration -> Kosten -> Kostenverwaltung…" (<c>KostenKomponenteDialog</c>, W4.2).</summary>
     public const string Kostenverwaltung = "KOSTENVERWALTUNG";
 
@@ -525,7 +535,7 @@ public static class Seitenschluessel
         KiAssistent, Assistent,
         Startseite, BerichteKosten, Varianten, StromspeicherAuslegung, PufferAuslegung,
         WpAdministration, StromspeicherAdmin, PeakShaving, GebaeudeAdmin,
-        GebaeudetypenAdmin, WaermebedarfExternAdmin, ProzesswaermeAdmin,
+        GebaeudetypenAdmin, WaermebedarfExternAdmin, ProzesswaermeAdmin, KaeltebedarfAdmin,
         StromverbraucherAdmin, StromganglinieAdmin, SolarganglinieAdmin, PvGanglinieAdmin,
         WpImport, WpKaelteImport, KaeltemaschineImport, HeizkesselAdmin, BhkwAdmin, SolarkollektorenAdmin, PvAdmin,
         HeizkesselImport, PufferSpImport, PufferSpAdmin, BrauchwasserAdmin,
@@ -536,7 +546,7 @@ public static class Seitenschluessel
         ProjektAuswahl, ProjektDelete,
         ProjektNeu, ProjektOeffnen, ProjektBearbeiten, ProjektZuletzt,
         ProjektLoeschen, ProjektTransfer, ProjektAlsVariante, Klimadaten,
-        BaustoffKatalog, BauteilaufbauKatalog, Betriebskalender, KaeltemaschineKatalog, KaeltemaschineAnlage,
+        BaustoffKatalog, BauteilaufbauKatalog, BauteilkatalogImport, Betriebskalender, KaeltemaschineKatalog, KaeltemaschineAnlage,
         Kostenverwaltung, EnergietraegerVerwaltung, ProjektBrennstoffe, NutzungsdauerVerwaltung, Einstellungen,
         Gesetzeskatalog, Kaeltemittel, KatalogDubletten, Katalogabgleich, LizenzVerwaltung, Lizenztext,
         Version, Dokumentation, Fernwartung, SpracheDeutsch, SpracheEnglisch,

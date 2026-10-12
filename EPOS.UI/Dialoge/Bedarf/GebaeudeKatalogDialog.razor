@@ -78,13 +78,15 @@
 @using System.Globalization
 @using WindowsFormsApplication1
 @implements IDisposable
+@using Microsoft.JSInterop
+@inject IJSRuntime Js
 
 <div class="epos-dialog epos-gebk-editor" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
     @* ZWEI BLAETTER tauschen den INHALT des Editors (Baustein Blattwechsel, unten): der Zonendialog
        (Stufe KP2, Welle U4) und die Vorlagenverwaltung (Welle U2; E56 F4 (a)). Kopf, Reiter und
        Fussleiste stehen nur, solange keines steht; der Arbeitsstand bleibt dabei, wie er ist. *@
-    @if (_zoneOffen is null && _vorlagenBlatt is null && !_nutzungsblatt)
+    @if (_zoneOffen is null && _vorlagenBlatt is null && !_nutzungsblatt && _mehrzonenGaben is null)
     {
     <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
         @if (TitelAnzeigen)
@@ -131,7 +133,14 @@
             <Reiterblatt Schluessel="@REITER_HUELLE" Titel="@Texte.ReiterHuelle">
                 <KindInhalt>
 
-                    <Gruppenkopf Titel="@GruppeKopf">
+                    @* GD-1 (Entwurf GD 2.1, F1): Der Kopf ist zweigeteilt. "Beschreibung und Einordnung" traegt die Felder,
+                       die kein Rechenweg liest (Bericht, Vorgaben des Imports, Pufferauslegung); "Rechengroessen" die Felder,
+                       die wirken - jede Zeile mit ihrer Herkunftsmarke aus der Auskunft des Kerns
+                       (Gebaeudefeldherkunft: ruft Zonenvorgaben und WirksamerLuftwechsel). Mit Zonen (F2, F6) stehen
+                       Raumhoehe und Luftwechselrate nur, wo eine Zone sie erbt; g und Bauweise als Rueckfall. Der
+                       Rechenweg bleibt, ausgeblendet wird nur. *@
+                    @{ IReadOnlyDictionary<Gebaeudefeld, Feldauskunft> herkunft = _arbeit.Feldherkunft(); }
+                    <Gruppenkopf Titel="@GruppeEinordnung">
                         <KindInhalt>
                             <Formularraster>
                                 <KindInhalt>
@@ -166,9 +175,22 @@
                             <Auswahlfeld Bezeichnung="@LabelEnergiestandard" Eintraege="@_arbeit.Energiestandardeintraege()"
                                          Auswahl="@_arbeit.EnergiestandardIndex" Platzhalter="@Energiestandard.KeinerText()"
                                          AuswahlChanged="_arbeit.EnergiestandardWaehlen" />
+                                </KindInhalt>
+                            </Formularraster>
+                            <p class="epos-herleitung epos-gebk-einordnung">
+                                <span class="epos-gebk-marke epos-gebk-marke--wirkungslos">@Texte.MarkeWirkungslos</span>
+                                <span class="epos-herleitung-text">@Texte.HinweisEinordnung</span>
+                            </p>
+                        </KindInhalt>
+                    </Gruppenkopf>
+
+                    <Gruppenkopf Titel="@GruppeKopf">
+                        <KindInhalt>
+                            <Formularraster>
+                                <KindInhalt>
                             <Auswahlfeld Bezeichnung="@LabelBauart" Eintraege="@Bauarteintraege"
                                          Auswahl="@_stand.Bauart" AuswahlChanged="BauartWaehlen" />
-
+                            @Marke(herkunft[Gebaeudefeld.Bauweise])
                             <Zahlenfeld Bezeichnung="@LabelWohnflaeche" Einheit="m²" Min="0"
                                         Feldname="@FeldWohnflaeche" FehlerZustand="FehlerMelden"
                                         Wert="@_stand.WohnflaecheGesamt" WertChanged="NutzflaecheSetzen" />
@@ -180,25 +202,51 @@
                             {
                                 <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, ZonenTexte.ZeileNutzflaecheZonen, Zahl(_arbeit.NutzflaecheWirksam, 2), _arbeit.Zonen.Count)" />
                             }
+                            @Marke(herkunft[Gebaeudefeld.Nutzflaeche])
                             <Zahlenfeld Bezeichnung="@LabelFlaecheNutzer" Einheit="m²" Min="0"
                                         Feldname="@FeldFlaecheNutzer" FehlerZustand="FehlerMelden"
                                         Wert="@_stand.FlaecheNutzer"
                                         WertChanged="w => _stand.FlaecheNutzer = w" />
+                            @Marke(herkunft[Gebaeudefeld.FlaecheJeNutzer])
                             <Zahlenfeld Bezeichnung="@LabelFensterdurchlassgrad" Min="0" Max="1"
                                         Feldname="@FeldFensterdurchlassgrad" FehlerZustand="FehlerMelden"
                                         Wert="@_stand.Fensterdurchlassgrad"
                                         WertChanged="w => _stand.Fensterdurchlassgrad = w" />
                             <Herleitungszeile Text="@HinweisFensterdurchlassgrad" />
-                            <Zahlenfeld Bezeichnung="@LabelRaumhoehe" Einheit="m" Min="0"
-                                        Feldname="@FeldRaumhoehe" FehlerZustand="FehlerMelden"
-                                        Wert="@_stand.Raumhoehe" WertChanged="w => _stand.Raumhoehe = w" />
-                            <Zahlenfeld Bezeichnung="@LabelLuftwechsel" Einheit="1/h" Min="0"
-                                        Feldname="@Feld(LabelLuftwechsel)" FehlerZustand="FehlerMelden"
-                                        Wert="@_stand.Luftwechselrate"
-                                        WertChanged="w => _stand.Luftwechselrate = w" />
+                            @Marke(herkunft[Gebaeudefeld.Fensterdurchlassgrad])
+                            @if (herkunft[Gebaeudefeld.Raumhoehe].Anzeige == Feldanzeige.JeZone)
+                            {
+                                <p class="epos-herleitung epos-gebk-jezone" data-feld="Raumhoehe">
+                                    <span class="epos-herleitung-text">@Texte.JeZoneRaumhoehe</span>
+                                </p>
+                            }
+                            else
+                            {
+                                <Zahlenfeld Bezeichnung="@LabelRaumhoehe" Einheit="m" Min="0"
+                                            Feldname="@FeldRaumhoehe" FehlerZustand="FehlerMelden"
+                                            Wert="@_stand.Raumhoehe" WertChanged="w => _stand.Raumhoehe = w" />
+                                @Marke(herkunft[Gebaeudefeld.Raumhoehe])
+                            }
+                            @if (herkunft[Gebaeudefeld.Luftwechselrate].Anzeige == Feldanzeige.JeZone)
+                            {
+                                <p class="epos-herleitung epos-gebk-jezone" data-feld="Luftwechselrate">
+                                    <span class="epos-herleitung-text">@Texte.JeZoneLuftwechsel</span>
+                                </p>
+                            }
+                            else
+                            {
+                                <Zahlenfeld Bezeichnung="@LabelLuftwechsel" Einheit="1/h" Min="0"
+                                            Feldname="@Feld(LabelLuftwechsel)" FehlerZustand="FehlerMelden"
+                                            Wert="@_stand.Luftwechselrate"
+                                            WertChanged="w => _stand.Luftwechselrate = w" />
+                                @Marke(herkunft[Gebaeudefeld.Luftwechselrate])
+                            }
                                 </KindInhalt>
                             </Formularraster>
-                            <Herleitungszeile Text="@Luftwechselzeile" />
+                            @if (herkunft[Gebaeudefeld.Luftwechselrate].Zonenzahl == 0)
+                            {
+                                <Herleitungszeile Text="@Luftwechselzeile" />
+                            }
                             @* E56 F3 (a): Sollwerte, innere Waermegewinne, Infiltration, Nutzerlueftung,
                                Sommerlueftung und Maximalraumtemperatur stehen nur im Reiter
                                "Konditionierung" - die Zeile sagt, wo. *@
@@ -514,6 +562,8 @@
                        der Rang der Kuehlung in der Knappheitsreihenfolge hat kein Bedienelement
                        (K4). Die Projekteinstellung „Kuehlung rechnen" steht nicht hier - sie
                        betrifft das ganze Projekt (8.3). *@
+                    @* Sprungziel KUEHLUNG (Konzept Kaeltebedarf 3.5): die Kachel „Gebaeudekuehlung" rollt diese Gruppe in Sicht. *@
+                    <div class="gebk-sprungziel" data-sprungziel="@Sprungziele.Kuehlung" @ref="_kuehlungMarke">
                     <Gruppenkopf Titel="@Texte.GruppeKuehlung">
                         <KindInhalt>
                             <div class="gebk-kuehlung">
@@ -555,6 +605,7 @@
                             </div>
                         </KindInhalt>
                     </Gruppenkopf>
+                    </div>
 
                 </KindInhalt>
             </Reiterblatt>
@@ -627,6 +678,7 @@
                             @if (_arbeit.Zonen.Count > 0)
                             {
                                 IReadOnlyList<Zonenkennwerte> kennliste = _arbeit.Kennwerte;
+                                string? vorgabeprofil = Zonen?.Vorgabeprofil?.Invoke(_stand.Gebaeudeart);
                                 <div class="epos-raster-huelle epos-raster-huelle--frei">
                                     <table class="epos-raster epos-zonenliste">
                                         <thead>
@@ -635,6 +687,7 @@
                                                 <th class="epos-zahl">@ZonenTexte.SpalteNutzflaeche</th>
                                                 <th class="epos-zahl">@ZonenTexte.SpalteVolumen</th>
                                                 <th>@ZonenTexte.SpalteBeheizt</th>
+                                                <th class="epos-zonennutzung">@ZonenTexte.SpalteNutzung</th>
                                                 <th class="epos-zahl">@ZonenTexte.SpalteHT</th>
                                                 <th class="epos-zahl">@ZonenTexte.SpalteBauteile</th>
                                                 <th class="epos-zellenaktionen">@ZonenTexte.SpalteAktionen</th>
@@ -652,6 +705,8 @@
                                                     <td class="epos-zahl">@Flaechentext(listenzone, kennwerte)</td>
                                                     <td class="epos-zahl">@Volumentext(kennwerte.Volumen)</td>
                                                     <td>@(listenzone.IstBeheizt ? ZonenTexte.BeheiztJa : ZonenTexte.BeheiztNein)</td>
+                                                    @* GD-5 (Vorgaberegel 2.5): Profil, geerbte Groessen (auch ohne Kennwert, NP-F18), Vorgabe der Gebaeudeart. *@
+                                                    <td class="epos-zonennutzung" data-geerbt="@(Zonennutzung.GanzGeerbt(listenzone) ? "ganz" : Zonennutzung.Geerbt(listenzone).Count > 0 ? "teil" : "nein")">@Zonennutzung.Text(listenzone, vorgabeprofil, ZonenTexte, KonditionierungTexte)</td>
                                                     <td class="epos-zahl">@Leitwert(kennwerte.HT)</td>
                                                     <td class="epos-zahl">@kennwerte.Bauteile</td>
                                                     <td class="epos-zellenaktionen">
@@ -663,6 +718,10 @@
                                                                     title="@ZonenTexte.KnopfRunter" aria-label="@(listenzone.Bezeichner + " – " + ZonenTexte.KnopfRunter)"
                                                                     @onclick="() => ZoneVerschieben(id, +1)"><span aria-hidden="true">▼</span></button>
                                                             <button type="button" class="epos-knopf" @onclick="() => ZoneOeffnen(id)">@ZonenTexte.KnopfOeffnen</button>
+                                                            @* GD-5: der Weg zu „Nutzungsprofil übernehmen…“ und den Kalendern der Zone (Zonendialog). *@
+                                                            <button type="button" class="epos-knopf epos-zone-profil"
+                                                                    aria-label="@(listenzone.Bezeichner + " – " + ZonenTexte.KnopfProfilZuweisen)"
+                                                                    @onclick="() => ZoneOeffnen(id)">@ZonenTexte.KnopfProfilZuweisen</button>
                                                             <button type="button" class="epos-knopf" aria-disabled="@(NeueZoneSperre is null ? null : "true")"
                                                                     title="@NeueZoneSperre" @onclick="() => BeiDuplizieren(id)">@ZonenTexte.KnopfDuplizieren</button>
                                                             <button type="button" class="epos-knopf" aria-disabled="@(Zonensperre is null ? null : "true")"
@@ -677,6 +736,7 @@
                                                 <th scope="row">@ZonenTexte.Summe</th>
                                                 <td class="epos-zahl">@Zahl(_arbeit.NutzflaecheWirksam, 2) m²</td>
                                                 <td class="epos-zahl">@Volumentext(Volumensumme(kennliste))</td>
+                                                <td></td>
                                                 <td></td>
                                                 <td class="epos-zahl">@Leitwert(_arbeit.HTAnzeige)</td>
                                                 <td class="epos-zahl">@kennliste.Sum(k => k.Bauteile)</td>
@@ -810,6 +870,20 @@
         </KindInhalt>
     </Blattwechsel>
 
+    @* --- GD-4: der Zonenbaum des Imports als BLATT (Entwurf Gebaeudedialog 2.4) - der Importdialog selbst, mit der
+       gespeicherten und geprueften Quelle vorgelesen. Sein OK merkt das Mehrzonenmodell vor; geschrieben wird im OK-Weg
+       dieses Dialogs. Rueckknopf, Esc und Abbrechen merken nichts vor. --- *@
+    <Blattwechsel Offen="@(_mehrzonenGaben is not null)" WirtTitel="@TitelText" Titel="@Resource.GEBMZ_BLATT"
+                  ZusatzKlasse="epos-blatt--breit" Zurueck="() => MehrzonenFertig(null)">
+        <KindInhalt>
+            @if (_mehrzonenGaben is not null)
+            {
+                <EPOS.UI.Dialoge.Import.GebaeudeImportDialog @attributes="_mehrzonenGaben" Vorgelesen="@_mehrzonenPfad"
+                                                             TitelAnzeigen="false" Geschlossen="MehrzonenFertig" />
+            }
+        </KindInhalt>
+    </Blattwechsel>
+
     @* --- Der Katalog der NUTZUNGSPROFILE als BLATT (Stufe NP3a; Konzept Nutzungsprofile 6.1, NP-F22) --- *@
     <Blattwechsel Offen="@_nutzungsblatt" WirtTitel="@TitelText" Titel="@RaumnutzungTexte.Blatt"
                   Zurueck="NutzungsprofileZurueck">
@@ -931,6 +1005,18 @@
     [Parameter] public string StartReiter { get; set; } = "";
 
     /// <summary>
+    /// Ein Sprungziel (<see cref="Sprungziele"/>): <see cref="Sprungziele.Kuehlung"/> öffnet den Reiter „Gebäude und Hülle“,
+    /// rollt die Gruppe „Kühlung“ in Sicht und fokussiert ihr erstes Feld; leer = keins.
+    /// </summary>
+    [Parameter] public string Sprungziel { get; set; } = "";
+
+    /// <summary>Steht der Sprung noch aus? Prüfhilfe für die Tests: nach dem ersten Zeichnen <c>false</c>.</summary>
+    public bool SprungAusstehend => _sprungAusstehend;
+
+    private bool _sprungAusstehend;
+    private ElementReference _kuehlungMarke;
+
+    /// <summary>
     /// Der Weg der Konditionierung (Stufe KP2, Welle K2): die Handlungen des Reiters „Konditionierung"
     /// über die reinen Schritte des Kerns, gefüllt von der Hülle. Der Reiter bindet ihn in Welle U1;
     /// bis dahin trägt der Dialog ihn nur. Die Konditionierung selbst reist im Feldsatz
@@ -990,7 +1076,10 @@
     /// </summary>
     [Parameter] public bool TitelAnzeigen { get; set; } = true;
 
-    [Parameter] public string GruppeKopf { get; set; } = "Kenngrößen";
+    /// <summary>Titel des Blocks „Rechengrößen" (<c>GEBK_GRP_RECHENGROESSEN</c>, GD-1).</summary>
+    [Parameter] public string GruppeKopf { get; set; } = "Rechengrößen";
+    /// <summary>Titel des Blocks „Beschreibung und Einordnung" (<c>GEBK_GRP_EINORDNUNG</c>, GD-1).</summary>
+    [Parameter] public string GruppeEinordnung { get; set; } = "Beschreibung und Einordnung";
     [Parameter] public string GruppeRaumtemperaturen { get; set; } = "Raumtemperaturen";
     [Parameter] public string GruppeFerienAnfang { get; set; } = "Ferien Anfang";
     [Parameter] public string GruppeFerienEnde { get; set; } = "Ferien Ende";
@@ -1421,6 +1510,7 @@
     private RenderFragment Uebernahmeblock => __builder =>
     {
         string? sperre = UebernahmeSperre;
+        string? mzSperre = MehrzonenSperre;
         <div class="epos-zonenuebernahme">
             @* Eine Knopfzeile im Blatt, keine Leiste: Die Fussleiste des Editors ist die SpeichernLeiste. *@
             <div class="epos-zeilenknoepfe">
@@ -1428,8 +1518,17 @@
                 <button type="button" class="epos-knopf epos-zonenuebernahme-knopf"
                         aria-disabled="@(sperre is null ? null : "true")" title="@sperre"
                         @onclick="BeiUebernehmen">@ZonenTexte.KnopfUebernehmen</button>
+                @* GD-4 (Entwurf 2.4, E130 F7): der zweite Knopf - nur aus der gespeicherten Importquelle, sonst weich gesperrt. *@
+                <button type="button" class="epos-knopf epos-mehrzonen-knopf"
+                        aria-disabled="@(mzSperre is null ? null : "true")" title="@(mzSperre ?? Zonen?.Mehrzonen?.Quelle)"
+                        @onclick="BeiMehrzonen">@Resource.GEBMZ_KNOPF</button>
             </div>
             <p class="epos-leisezeile">@(sperre ?? ZonenTexte.HinweisUebernehmen)</p>
+            <p class="epos-leisezeile epos-mehrzonen-hinweis">@(mzSperre ?? Resource.GEBMZ_HINWEIS)</p>
+            @if (MehrzonenAusstehend is string bereit)
+            {
+                <p class="epos-leisezeile epos-mehrzonen-ausstehend" role="status">@bereit</p>
+            }
         </div>
     };
 
@@ -1538,6 +1637,96 @@
             return;
         }
         _vorschlag = v;
+    }
+
+    // =================================================================================
+    // GD-4: „Als Mehrzonenmodell übernehmen…" (Entwurf Gebaeudedialog 2.4; E130 F7)
+    // =================================================================================
+
+    private IReadOnlyDictionary<string, object>? _mehrzonenGaben;
+    private string _mehrzonenPfad = "";
+    private bool _mehrzonenLaeuft;
+
+    /// <summary>Steht das Blatt des Zonenbaums? Prüfhilfe für die Tests.</summary>
+    public bool MehrzonenblattOffen => _mehrzonenGaben is not null;
+
+    /// <summary>Die Zeile des vorgemerkten Mehrzonenmodells; <c>null</c> = keins. Prüfhilfe für die Tests.</summary>
+    public string? MehrzonenAusstehend => Zonen?.Mehrzonen?.Ausstehend?.Invoke();
+
+    /// <summary>Warum „Als Mehrzonenmodell übernehmen…" gesperrt ist; <c>null</c> = frei. Prüfhilfe für die Tests.</summary>
+    public string? MehrzonenSperre
+    {
+        get
+        {
+            if (Modus != GebaeudeKatalogModus.Projekt) return Resource.GEBMZ_SPERRE_KATALOG;
+            if (Zonen?.Mehrzonen is not GebaeudeMehrzonenweg weg) return Zonensperre ?? Resource.GEBMZ_SPERRE_KEINE_QUELLE;
+            if (weg.Sperre is string grund) return grund;
+            if (weg.Oeffnen is null) return Resource.GEBMZ_SPERRE_KEINE_QUELLE;
+            if (_arbeit.ZonenGeaendert) return Resource.GEBMZ_SPERRE_GEAENDERT;
+            if (_mehrzonenLaeuft) return Resource.GEBMZ_SPERRE_LAEUFT;
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Dateiwahl mit dem Namen der gespeicherten Quelle und Prüfsumme (Hülle); eine Ablehnung steht als Meldung, sonst öffnet
+    /// das Blatt mit dem Zonenbaum. Ein Abbruch der Wahl tut nichts. Weich gesperrt meldet der Knopf den Grund.
+    /// </summary>
+    private async Task BeiMehrzonen()
+    {
+        if (MehrzonenSperre is string grund) { Melden(grund, WarnStufe.Hinweis); return; }
+        _meldung = "";
+        _mehrzonenLaeuft = true;
+        GebaeudeMehrzonenstart? start;
+        try
+        {
+            start = await Zonen!.Mehrzonen!.Oeffnen!();
+        }
+        catch (Exception ex)
+        {
+            Melden(ex.Message, WarnStufe.Warnung);
+            return;
+        }
+        finally
+        {
+            _mehrzonenLaeuft = false;
+        }
+        if (start is null) return;
+        if (start.Meldung is { Length: > 0 } meldung || start.Gaben is null)
+        {
+            Melden(start.Meldung ?? Resource.GEBMZ_MSG_KEINE_QUELLE, WarnStufe.Warnung);
+            return;
+        }
+        _mehrzonenPfad = start.Pfad;
+        _mehrzonenGaben = start.Gaben;
+    }
+
+    /// <summary>Das Blatt ist zu: Mit Ergebnis hat die Hülle das Modell vorgemerkt (die Zeile nennt es); ohne ist nichts geschehen.</summary>
+    private void MehrzonenFertig(EPOS.UI.Dialoge.Import.GebaeudeImportErgebnis? ergebnis)
+    {
+        _mehrzonenGaben = null;
+        _mehrzonenPfad = "";
+        _fokusNachBlatt = true;
+        _reiter = REITER_HUELLE;
+    }
+
+    /// <summary>OK-Weg: das vorgemerkte Modell schreiben, danach die Zonen neu lesen; scheitert es, bleibt der Dialog offen.</summary>
+    private bool MehrzonenSchreiben()
+    {
+        string? grund;
+        try { grund = Zonen?.Mehrzonen?.Schreiben?.Invoke(); }
+        catch (Exception ex) { grund = ex.Message; }
+        if (grund is { Length: > 0 })
+        {
+            Melden(grund, WarnStufe.Warnung);
+            return false;
+        }
+        if (Zonen?.Neulesen is not null)
+        {
+            ZonenNeulesung? n = Katalogladung.Satz(() => Zonen.Neulesen(), _ursprungsname, out string fehler);
+            if (n is not null) _arbeit.ZonenLaden(n.Zonen, true, n.Luftstroeme, katalog: false);
+        }
+        return true;
     }
 
     /// <summary>Die Antwort: Ja legt die Zone in den Arbeitsstand (negative Ids), Nein lässt alles.</summary>
@@ -1736,6 +1925,12 @@
         StandSetzen(Daten ?? new GebaeudeKatalogDaten());
 
         if (!string.IsNullOrEmpty(StartReiter)) _reiter = StartReiter;
+        // Sprungziel KUEHLUNG: der Reiter „Gebaeude und Huelle", die Gruppe rollt nach dem ersten Zeichnen in Sicht.
+        if (string.Equals(Sprungziel, Sprungziele.Kuehlung, StringComparison.Ordinal))
+        {
+            _reiter = REITER_HUELLE;
+            _sprungAusstehend = true;
+        }
 
         // Stufe G3: die Zonen eines Gebaeudes im Projekt; Welle ZK-b: auch die eines Katalogsatzes.
         _arbeit.ZonenLaden(Zonen?.Zonen, Zonen is not null, Zonen?.Luftstroeme, katalog: Modus != GebaeudeKatalogModus.Projekt);
@@ -1877,6 +2072,25 @@
         // um 70 px - Titel und Kreuz der Ueberlagerung standen beim Oeffnen ausserhalb des Bilds
         // (Konditionierungsprobe, Stufe KP2).
         await _wurzel.FocusAsync(preventScroll: true);
+        if (_sprungAusstehend) await SprungInSicht();
+    }
+
+    /// <summary>
+    /// Das Sprungziel (Konzept Kaeltebedarf 3.5) in Sicht rollen und sein erstes Feld fokussieren — über das kleine Modul
+    /// <c>epos-sprung.js</c>. Ohne das Modul (Prüfstand) bleibt der Dialog, wie er ist: ein Schönheitsfehler, kein Fehlschlag.
+    /// </summary>
+    private async Task SprungInSicht()
+    {
+        _sprungAusstehend = false;
+        try
+        {
+            Microsoft.JSInterop.IJSObjectReference modul = await Js.InvokeAsync<Microsoft.JSInterop.IJSObjectReference>("import", "./_content/EPOS.UI/epos-sprung.js");
+            await modul.InvokeVoidAsync("inSicht", _kuehlungMarke);
+        }
+        catch (Exception)
+        {
+            // Kein Modul, kein Rollen - die Gruppe steht trotzdem offen auf dem richtigen Reiter.
+        }
     }
 
     // =================================================================================
@@ -2010,6 +2224,44 @@
     private string Groessenname(Huellbauteil b) => _prueftexte.Groessenname(b, Texte);
 
     private static string Zahl(double? wert, int stellen) => GebaeudeArbeitsstand.Zahl(wert, stellen);
+
+    /// <summary>Die Herkunftsmarke eines Gebäudefelds samt Herleitung (GD-1, Entwurf GD 2.1).</summary>
+    private RenderFragment Marke(Feldauskunft a) => __builder =>
+    {
+        string text = Herkunftstext(a);
+        <p class="epos-herleitung epos-gebk-herkunft" data-feld="@a.Feld" data-herkunft="@a.Herkunft">
+            <span class="epos-gebk-marke epos-gebk-marke--@a.Herkunft.ToString().ToLowerInvariant()">@Markentext(a.Herkunft)</span>
+            @if (text.Length > 0)
+            {
+                <span class="epos-herleitung-text">@text</span>
+            }
+        </p>
+    };
+
+    private string Markentext(Feldherkunft h) => h switch
+    {
+        Feldherkunft.Datei => Texte.MarkeDatei,
+        Feldherkunft.Vorgabe => Texte.MarkeVorgabe,
+        Feldherkunft.Geerbt => Texte.MarkeGeerbt,
+        Feldherkunft.Wirkungslos => Texte.MarkeWirkungslos,
+        _ => Texte.MarkeHand,
+    };
+
+    /// <summary>Die Herleitung neben der Marke: Zonen, die erben, und die Rückfälle des Bauteilwegs.</summary>
+    private string Herkunftstext(Feldauskunft a)
+    {
+        CultureInfo k = CultureInfo.CurrentCulture;
+        if (a.Anzeige == Feldanzeige.Rueckfall)
+            return a.Feld == Gebaeudefeld.Fensterdurchlassgrad
+                ? (a.Anzahl > 0 ? string.Format(k, Texte.RueckfallFenster, a.Anzahl) : Texte.RueckfallFensterKeines)
+                : (a.Anzahl > 0 ? string.Format(k, Texte.RueckfallBauweise, a.Anzahl) : Texte.RueckfallBauweiseKeine);
+        if (a.Zonenzahl > 0 && a.Anzahl > 0)
+        {
+            if (a.Feld == Gebaeudefeld.Raumhoehe) return string.Format(k, Texte.ZonenVorgabeHoehe, a.Anzahl, a.Zonenzahl);
+            if (a.Feld == Gebaeudefeld.Luftwechselrate) return string.Format(k, Texte.ZonenVorgabeLuftwechsel, a.Anzahl, a.Zonenzahl);
+        }
+        return "";
+    }
 
     private static string Leitwert(double wert) => Zahl(wert, 1) + " W/K";
 
@@ -2238,7 +2490,9 @@
 
         // Schritt 3: die Zonen - samt der Zuordnung ihrer vorlaeufigen Ids (Stufe KP2, Befund B10):
         // Danach traegt der Arbeitsstand die endgueltigen, und ein zweites OK legt nichts noch einmal an.
-        if (!ZonenSchreiben()) return false;
+        // GD-4: Ein vorgemerktes Mehrzonenmodell ersetzt die Zonen in einem Vorgang des Kerns - statt des Zonenabgleichs.
+        if (MehrzonenAusstehend is not null) { if (!MehrzonenSchreiben()) return false; }
+        else if (!ZonenSchreiben()) return false;
         _meldung = "";
         return true;
     }
@@ -2407,7 +2661,7 @@
     /// <summary>Der Rückweg vom Blatt fokussiert die Wurzel, ohne zu rollen (der Blattwechsel stellt den Rollstand her).</summary>
     private async Task FokusNachBlatt()
     {
-        if (!_fokusNachBlatt || _vorlagenBlatt is not null || _zoneOffen is not null || _nutzungsblatt) return;
+        if (!_fokusNachBlatt || _vorlagenBlatt is not null || _zoneOffen is not null || _nutzungsblatt || _mehrzonenGaben is not null) return;
         _fokusNachBlatt = false;
         await _wurzel.FocusAsync(preventScroll: true);
     }

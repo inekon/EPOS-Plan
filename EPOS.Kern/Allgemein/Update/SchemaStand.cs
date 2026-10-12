@@ -1029,7 +1029,24 @@ namespace WindowsFormsApplication1
         /// Danach, mit der SCHNELLAUFHEIZUNG (SA2, E128), steht das Ziel auf <see cref="SchnellaufheizungSchema.SCHRITT"/>:
         /// Schalter und Raumsollwert-Überhöhung an <c>Tab_Einstellungen</c> und sechs Ergebnisspalten je Gebäude und Zone
         /// (<see cref="SchnellaufheizungSchema"/>). <b>Ergebnisneutral:</b> Jede Spalte steht auf NULL, und NULL ist „aus“.
-        public const int Zielversion = SchnellaufheizungSchema.SCHRITT;
+        /// Danach, mit der ART DER KÄLTEBEDARFSZEILEN (KWN-0, E127), steht das Ziel auf <see cref="KaelteArtSchema.SCHRITT"/>:
+        /// <c>Kaelte_Art</c> (Raum/Prozess, Vorgabe Raum) an <c>Z_Projekt_Kaeltebedarf</c> und <c>Z_ProjektWaermebedarf</c>
+        /// (<see cref="KaelteArtSchema"/>). <b>Ergebnisneutral:</b> Jede Bestandszeile steht auf Raum; ohne Prozesszeile ändert
+        /// sich keine Zahl.
+        /// Danach, mit dem WEGFALL DER KATEGORIEN SIA 2024 UND VDI 2078 (NP6, E129), steht das Ziel auf
+        /// <see cref="RaumnutzungNormkategorienSchema.SCHRITT"/>: Die beiden leeren, ausgelieferten Kategorien des Katalogs der
+        /// Nutzungsprofile fallen weg, die Kategorie DIN bekommt die zwei Wohnprofile nach Tabelle 5 ohne Werte
+        /// (<see cref="RaumnutzungNormkategorienSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg
+        /// liest eine Kategorie.
+        /// Danach, mit den NORMWERTEN DER DIN (NP7, E131), steht das Ziel auf <see cref="RaumnutzungNormwerteSchema.SCHRITT"/>:
+        /// <c>Aussenluft_Person</c> und die Herkunft der Werte (<c>Werte_Herkunft</c>, <c>Werte_Quelle</c>, <c>Werte_Datum</c>)
+        /// an <c>Tab_Raumnutzungsprofil</c> (<see cref="RaumnutzungNormwerteSchema"/>). <b>Ergebnisneutral:</b> Alle vier
+        /// Spalten stehen leer.
+        /// Danach, mit SCHEMA UND FELDERN DES BAUTEILKATALOGS (BK-2, E132), steht das Ziel auf
+        /// <see cref="BauteilkatalogSchema.SCHRITT"/>: Herkunft EIGEN/IMPORT, Gruppe und Klasse, das Kennzeichen „für die
+        /// Gebäudesimulation meist nicht geeignet“, die Felder der Quelle und die Abschnittstabellen
+        /// (<see cref="BauteilkatalogSchema"/>). <b>Ergebnisneutral:</b> Der Bauteilweg liest keine neue Spalte.
+        public const int Zielversion = BauteilkatalogSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

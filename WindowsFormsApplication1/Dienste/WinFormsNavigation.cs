@@ -72,6 +72,10 @@ namespace WindowsFormsApplication1
                 case Masken.ProzesswaermeAdmin:
                     return BedarfAdminHuelle.Oeffnen(null, BedarfsArt.Prozesswaerme);
 
+                // K5b (Konzept Kaeltebedarf 3.3): dieselbe Verwaltung mit der Art Kaelte.
+                case Masken.KaeltebedarfAdmin:
+                    return BedarfAdminHuelle.Oeffnen(null, BedarfsArt.Kaelte);
+
                 case Masken.StromverbraucherAdmin:
                     return BedarfAdminHuelle.Oeffnen(null, BedarfsArt.Stromverbraucher);
 

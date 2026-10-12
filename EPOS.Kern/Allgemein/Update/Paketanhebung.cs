@@ -429,6 +429,20 @@ namespace WindowsFormsApplication1
             // Ergebnisspalten bleiben leer.
             new Stufe(SchnellaufheizungSchema.SCHRITT, Art.Ddl,
                       "Schnellaufheizung des Vorheizens (Schalter, Raumsollwert-Überhöhung; Ergebnisse je Gebäude und Zone)"),
+            // Ein älteres Paket führt keine Art der Kältebedarfszeilen; seine Zeilen kommen als Raumkühlung an (Vorgabe).
+            new Stufe(KaelteArtSchema.SCHRITT, Art.Ddl,
+                      "Art der Kältebedarfszeilen (Raumkühlung oder Prozesskälte) an Profil- und Lastgangzuordnung"),
+            // Ein Paket führt keinen Katalog der Nutzungsprofile (er bleibt im Ziel); die Kategorien SIA 2024 und VDI 2078
+            // nimmt der Schritt am Ziel heraus und legt die Wohnprofile der DIN an.
+            new Stufe(RaumnutzungNormkategorienSchema.SCHRITT, Art.Katalog,
+                      "Kategorien SIA 2024 und VDI 2078 des Katalogs der Nutzungsprofile entfallen, Wohnprofile der DIN (E129)"),
+            // Ein Paket führt keinen Katalog der Nutzungsprofile (er bleibt im Ziel); die Spalten legt der Schritt am Ziel an.
+            new Stufe(RaumnutzungNormwerteSchema.SCHRITT, Art.Katalog,
+                      "Außenluft je Person und Herkunft eingelesener Normwerte am Nutzungsprofil (E131)"),
+            // Ein älteres Paket bringt seine Baustoffe und Aufbauten ohne die neuen Felder; Gliederung und Kennzeichen setzt
+            // der Kern beim nächsten Schreiben, gelesen leitet er die Gruppe aus Stoffgruppe bzw. Bauteilart ab.
+            new Stufe(BauteilkatalogSchema.SCHRITT, Art.Ddl,
+                      "Herkunft EIGEN/IMPORT, Gruppe und Klasse, Kennzeichen und Felder der Quelle am Bauteilkatalog (E132)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

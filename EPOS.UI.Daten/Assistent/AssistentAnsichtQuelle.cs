@@ -144,6 +144,11 @@ namespace WindowsFormsApplication1
 
                 ["Speichern"] = new Func<(string Text, string Titel)?>(() =>
                 {
+                    // K5c: „Split ohne EER“ nennt der Assistent mit dem Wortlaut des Dialogs, bevor der Kern schreibt
+                    // (sonst meldete nur der Kern „Add_WaermebedarfExtern“).
+                    string deckung = DeckungsgrundWaermebedarf(ctrl);
+                    if (deckung != null) return (deckung, Text_("WIZ_TITEL", "Projektassistent"));
+
                     AssistentErgebnis e = ctrl.Speichern();
                     if (!e.Erfolg)
                         return (AssistentCtrl.Meldungstext(e), AssistentCtrl.Meldungstitel(e));
@@ -226,6 +231,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static string SeitePruefen(AssistentCtrl ctrl, int nr)
         {
+            // K5c: die Seite Wärmebedarf prüft beim Verlassen jede Kühlzeile mit der Regel des Kerns — der Grund steht
+            // als Banner des Assistenten, die Seite bleibt stehen.
+            if (nr == WizardItemClass.WAERMEBEDARF_ITEM) return DeckungsgrundWaermebedarf(ctrl);
             if (nr != WizardItemClass.PROJEKT_ITEM || ctrl.Kopf.Count == 0) return null;
             switch (ProjektKopfRegeln.Pruefe(ctrl.Kopf[0], ProjektKopfHuelle.VergebeneNamen()))
             {
@@ -239,6 +247,15 @@ namespace WindowsFormsApplication1
                     return null;
             }
         }
+
+        /// <summary>
+        /// „Split ohne EER“ auf der Seite Wärmebedarf (K5c, Konzept Kältebedarf 3.4): nur, wenn die Seite aktiv ist —
+        /// eine abgewählte Seite schreibt keine Zuordnung (<c>EntferneNichtAktiveZuordnungen</c>).
+        /// </summary>
+        internal static string DeckungsgrundWaermebedarf(AssistentCtrl ctrl)
+            => ctrl.SeiteAktiv(WizardItemClass.WAERMEBEDARF_ITEM)
+                ? WaermebedarfExternAbbildung.Deckungsgrund(ctrl.Waermebedarf)
+                : null;
 
         /// <summary>
         /// Ein Schritt wird verlassen — wörtlich <c>WizardParent.Next</c> (:275-283):

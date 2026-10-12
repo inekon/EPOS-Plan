@@ -83,9 +83,9 @@ namespace WindowsFormsApplication1
         /// <summary>Trägt der Satz die Werte des Teillastwegs (Maschine mit Weg)?</summary>
         public static bool MitWeg(ErgebnisKaeltemaschineModel k) => k != null && k.Taktstrom_MWh.HasValue;
 
-        /// <summary>Die Kälte über den Verdichter [MWh/a] = Kälteproduktion − freie Kühlung.</summary>
+        /// <summary>Die Kälte über den Verdichter [MWh/a] = Kälteproduktion − freie Kühlung − Teil-Freikühlung in Reihe (K-F3).</summary>
         public static double VerdichterkaelteMwh(ErgebnisKaeltemaschineModel k)
-            => k == null ? 0.0 : Math.Max(0.0, k.Kaelteproduktion_MWh - k.FreieKuehlung_MWh);
+            => k == null ? 0.0 : Math.Max(0.0, k.Kaelteproduktion_MWh - k.FreieKuehlung_MWh - (k.TeilFreikuehlung_MWh ?? 0.0));
 
         /// <summary>Der Verdichterstrom [MWh/a] = Strom − Hilfsstrom (samt Zuschlag und Rückkühlung).</summary>
         public static double VerdichterstromMwh(ErgebnisKaeltemaschineModel k)

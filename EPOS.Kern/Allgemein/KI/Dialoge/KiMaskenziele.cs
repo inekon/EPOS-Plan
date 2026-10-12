@@ -459,6 +459,7 @@ namespace WindowsFormsApplication1
                 { KiMaskennamen.PROZESSWAERME_ADMIN,    Masken.ProzesswaermeAdmin },
                 { KiMaskennamen.STROMVERBRAUCHER_ADMIN, Masken.StromverbraucherAdmin },
                 { KiMaskennamen.BRAUCHWASSER_ADMIN,     Masken.BrauchwasserAdmin },
+                { KiMaskennamen.KAELTEBEDARF_ADMIN,     Masken.KaeltebedarfAdmin },
 
                 // Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (Zapfprofilgenerator 5.4) ist selbst
                 // ein Menuepunkt; sein Editor ist eine Ueberlagerung darin und hat dasselbe Ziel.

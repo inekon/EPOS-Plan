@@ -586,7 +586,8 @@ namespace WindowsFormsApplication1
         internal void ProjektdateiEntfernen() => Projektdatei = null;
 
         /// <summary>
-        /// <b>Übernimmt die Zonen der Projektdatei in den Plan</b> (<see cref="SqprojZonen.Uebernehmen"/>) und hängt die
+        /// <b>Übernimmt die Zonen der Projektdatei in den Plan</b> (<see cref="SqprojZonen.Uebernehmen"/>), platziert die Räume
+        /// ohne Zone selbst (<see cref="Zonenplan.RestPlatzieren"/>, E130/F3; nur wenn eine Zone übernommen ist) und hängt die
         /// Zonierung (<c>IMP_SQ_PROT_ZONIERUNG</c>) und die Bilanz an (<c>IMP_SQ_PROT_BILANZ</c>: abgeglichen, nicht abgeglichen,
         /// IFC ohne Gegenstück, Zonen übernommen). <paramref name="zonierung"/> setzt die Wahl am Stand (E87, F1; der Wechsel
         /// liest nicht neu — das Abbild bleibt); <c>null</c> = die bisherige Wahl. Ohne gelesene Projektdatei ein leeres Ergebnis.
@@ -597,6 +598,8 @@ namespace WindowsFormsApplication1
             if (p == null || p.Abgelehnt) return new SqprojZonenergebnis();
             if (zonierung is SqprojZonierung z) p.Gewaehlt = z;
             SqprojZonenergebnis e = SqprojZonen.Uebernehmen(plan, p.Abbild, p.Abgleich, p.Gewaehlt);
+            // Räume ohne Zone der Datei platziert der Plan selbst (Entwurf GD 2.3, E130/F3) — nichts sperrt stumm.
+            if (e.Uebernommen > 0 && plan.RestPlatzieren().Meldung is PruefMeldung platziert) e.Meldungen.Add(platziert);
             if (p.Zonierungsmeldung() is PruefMeldung zm) e.Meldungen.Add(zm);
             e.Meldungen.Add(new PruefMeldung(PruefStufe.Info, SqprojProtokoll.BILANZ,
                 SqprojProtokoll.Z(p.Abgeglichen), SqprojProtokoll.Z(p.NichtAbgeglichen), SqprojProtokoll.Z(p.IfcOhneGegenstueck),
@@ -683,6 +686,9 @@ namespace WindowsFormsApplication1
         {
             GebaeudePruefen(gebaeudeIndex);
             AbbildGebaeude g = Abbild.Gebaeude[gebaeudeIndex];
+            // GD-2 (F4): die Verwendung aus einem Code der Projektdatei geht jeder Ableitung vor.
+            if (g.VerwendungDatei != null)
+                return new Gebaeudeverwendung.Ergebnis(g.VerwendungDatei, Gebaeudeverwendung.Anhalt.Gebaeudeart, g.VerwendungDateiHerleitung);
             SqprojStand p = ProjektdateiFuer(gebaeudeIndex);
             IReadOnlyList<Gebaeudeverwendung.Zonenanteil> zonen = p != null && !p.Abgelehnt
                 ? SqprojZonen.Verwendungsanteile(p.Abbild, p.Abgleich, p.Gewaehlt)

@@ -88,7 +88,8 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Spalten.</b> <c>Nummer</c>, <c>Bezeichner</c> (Pflicht), <c>Beschreibung</c> und die Kennwerte aus
     /// <see cref="RaumnutzungSchema.SPALTEN_KENNWERTE"/> ohne <c>Nutzungstage_Jahr</c> — die Zahl ist abgeleitet (E93), wird
-    /// nicht geschrieben und beim Lesen benannt ignoriert. <c>Heiz_Absenkung_K</c> wird als Alternative zu
+    /// nicht geschrieben und beim Lesen benannt ignoriert —, dazu <c>Aussenluft_Person</c> (NP7, m³/(h·Person)) hinter
+    /// <c>Aussenluft_Ausserhalb</c>. <c>Heiz_Absenkung_K</c> wird als Alternative zu
     /// <c>Heiz_Soll_Ausserhalb</c> angenommen (<c>Heiz_Soll − Absenkung</c>). Stundenprofile (NP-F9) stehen als
     /// <c>Stunden_&lt;Größe&gt;_&lt;Tagesart&gt;</c> mit 24 Werten, durch Leerzeichen getrennt (Größe als Kennwort
     /// <c>HEIZSOLL</c> … <c>PERSONEN</c>, Tagesart <c>WERKTAG</c>/<c>FREI</c>); das Zeilenbild (NP-F7) als
@@ -169,6 +170,8 @@ namespace WindowsFormsApplication1
             S("Aussenluft", Typ.NichtNegativ, p => p.Aussenluft, (p, w) => p.Aussenluft = (double?)w),
             S("Aussenluft_Einheit", Typ.Einheit, p => p.Aussenluft_Einheit, (p, w) => p.Aussenluft_Einheit = (string)w),
             S("Aussenluft_Ausserhalb", Typ.NichtNegativ, p => p.Aussenluft_Ausserhalb, (p, w) => p.Aussenluft_Ausserhalb = (double?)w),
+            // NP7: Außenluft je Person [m³/(h·Person)] - eigene Spalte neben der flächenbezogenen (Schritt 220).
+            S(RaumnutzungNormwerteSchema.SPALTE_AUSSENLUFT_PERSON, Typ.NichtNegativ, p => p.Aussenluft_Person, (p, w) => p.Aussenluft_Person = (double?)w),
             S("Personen_Flaeche", Typ.Positiv, p => p.Personen_Flaeche, (p, w) => p.Personen_Flaeche = (double?)w),
             S("Personen_Waerme", Typ.NichtNegativ, p => p.Personen_Waerme, (p, w) => p.Personen_Waerme = (double?)w),
             S("Personen_Anteil", Typ.Anteil, p => p.Personen_Anteil, (p, w) => p.Personen_Anteil = (double?)w),

@@ -1638,6 +1638,12 @@
         internal static string BstBezeichnerErl => MyResource.Resource.KI_DLG_BST_BEZEICHNER_ERL;
         internal static string BstGruppeName => MyResource.Resource.BST_LBL_GRUPPE;
         internal static string BstGruppeErl => MyResource.Resource.KI_DLG_BST_GRUPPE_ERL;
+        // BK-2b: Gruppe und Klasse des Bauteilkatalogs.
+        internal static string BkatGruppeName => MyResource.Resource.BKAT_LBL_GRUPPE;
+        internal static string BkatKlasseName => MyResource.Resource.BKAT_LBL_KLASSE;
+        internal static string BstKlasseErl => MyResource.Resource.KI_DLG_BST_KLASSE_ERL;
+        internal static string BtaGruppeErl => MyResource.Resource.KI_DLG_BTA_GRUPPE_ERL;
+        internal static string BtaKlasseErl => MyResource.Resource.KI_DLG_BTA_KLASSE_ERL;
         internal static string BstHerstellerName => MyResource.Resource.BST_LBL_HERSTELLER;
         internal static string BstHerstellerErl => MyResource.Resource.KI_DLG_BST_HERSTELLER_ERL;
         internal static string BstLambdaName => MyResource.Resource.BST_LBL_LAMBDA;
@@ -1840,6 +1846,9 @@
 
         /// <summary>Die Brauchwasser-Katalogverwaltung (Welle KI-F3).</summary>
         internal static string MaskeBrauchwasserAdmin => MyResource.Resource.KI_DLG_MASKE_BADM_BW;
+
+        /// <summary>Die Kältebedarf-Katalogverwaltung (K5b).</summary>
+        internal static string MaskeKaeltebedarfAdmin => MyResource.Resource.KI_DLG_MASKE_BADM_KAELTE;
 
         /// <summary>Die Ergebnisanzeige eines Bedarfs (Welle KI-F3).</summary>
         internal static string MaskeBedarfErgebnis => MyResource.Resource.KI_DLG_MASKE_BERG;
@@ -2272,6 +2281,22 @@
         internal static string WbxKanalErl => MyResource.Resource.KI_DLG_WBX_KANAL_ERL;
         internal static string WbxGanglinieName => MyResource.Resource.BHKWV_SP_NAME;
         internal static string WbxGanglinieErl => MyResource.Resource.KI_DLG_WBX_GANGLINIE_ERL;
+        internal static string WbxDeckungName => MyResource.Resource.KI_DLG_WBX_DECKUNG_NAME;
+        internal static string WbxDeckungErl => MyResource.Resource.KI_DLG_WBX_DECKUNG_ERL;
+        internal static string WbxEerWegName => MyResource.Resource.KI_DLG_WBX_EER_WEG_NAME;
+        internal static string WbxEerWegErl => MyResource.Resource.KI_DLG_WBX_EER_WEG_ERL;
+        internal static string WbxEer1Name => MyResource.Resource.KI_DLG_WBX_EER1_NAME;
+        internal static string WbxEer1Erl => MyResource.Resource.KI_DLG_WBX_EER1_ERL;
+        internal static string WbxTaussen1Name => MyResource.Resource.KI_DLG_WBX_TAUSSEN1_NAME;
+        internal static string WbxTaussen1Erl => MyResource.Resource.KI_DLG_WBX_TAUSSEN1_ERL;
+        internal static string WbxEer2Name => MyResource.Resource.KI_DLG_WBX_EER2_NAME;
+        internal static string WbxEer2Erl => MyResource.Resource.KI_DLG_WBX_EER2_ERL;
+        internal static string WbxTaussen2Name => MyResource.Resource.KI_DLG_WBX_TAUSSEN2_NAME;
+        internal static string WbxTaussen2Erl => MyResource.Resource.KI_DLG_WBX_TAUSSEN2_ERL;
+        internal static string WbxTraegerName => MyResource.Resource.KI_DLG_WBX_TRAEGER_NAME;
+        internal static string WbxTraegerErl => MyResource.Resource.KI_DLG_WBX_TRAEGER_ERL;
+        internal static string WbxZaehlerName => MyResource.Resource.KI_DLG_WBX_ZAEHLER_NAME;
+        internal static string WbxZaehlerErl => MyResource.Resource.KI_DLG_WBX_ZAEHLER_ERL;
 
         internal static string SglKatalogName => MyResource.Resource.SGL_LBL_KATALOGLISTE;
         internal static string SglKatalogErl => MyResource.Resource.KI_DLG_SGL_KATALOG_ERL;
@@ -2573,6 +2598,12 @@
         internal static string BkalKuerzenErl => MyResource.Resource.BKAL_HRL_KUERZEN;
         internal static string BpfKalenderName => MyResource.Resource.BPF_LBL_KALENDER;
         internal static string BpfKalenderErl => MyResource.Resource.BPF_HINW_KALENDER;
+        internal static string KaelteArtName => MyResource.Resource.KAELTE_ART_LABEL;
+        // K5b (Konzept Kaeltebedarf 3.4): die Deckungsart der Kaeltezeile in den Bedarfsprofilen; die uebrigen
+        // Deckungsfelder nehmen die Texte des Dialogs „Waermebedarf extern“ (KI_DLG_WBX_*).
+        internal static string BpfDeckungName => MyResource.Resource.KI_DLG_BPF_DECKUNG_NAME;
+        internal static string BpfDeckungErl => MyResource.Resource.KI_DLG_BPF_DECKUNG_ERL;
+        internal static string KaelteArtErl => MyResource.Resource.KAELTE_ART_HINWEIS;
         internal static string NudSucheName => MyResource.Resource.IMP_KAT_FILTER_SUCHE;
         internal static string NudSucheErl => MyResource.Resource.KI_DLG_NUD_SUCHE_ERL;
         internal static string NudTechnikName => MyResource.Resource.KI_DLG_NUD_TECHNIK_NAME;

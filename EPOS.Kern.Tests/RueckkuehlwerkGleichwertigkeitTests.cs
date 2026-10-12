@@ -201,19 +201,100 @@ namespace EPOS.Kern.Tests
             Assert.True(wasser > 0, "kein Wasser");
             Assert.True(nass > 0 && nass <= 8760);
             Assert.True(rk > -30 && rk < 50, "Rückkühltemperatur " + rk);
-            Assert.Null(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_TEILFREIKUEHLUNG));
+            // K-F3: die Reihe rechnet - die Spalten der Teil-Freikühlung sind belegt.
+            Assert.NotNull(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_TEILFREIKUEHLUNG));
+            Assert.NotNull(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_TEILFREIKUEHLUNG_STUNDEN));
             Assert.True(KaelteSumme(projekt, "Kaelteproduktion_MWh") > 0);
 
-            // Die Hinweise je einmal: Ausweichweg ohne Feuchte, 42. BImSchV, Wasser mit Kosten, offene Reihe.
+            // Die Hinweise je einmal: Ausweichweg ohne Feuchte, 42. BImSchV, Wasser mit Kosten, Reihe mit Spreizung (K-F3).
             Assert.Single(lauf.Protokoll.Hinweise, h => h.Contains("RK Kuehlturm", StringComparison.Ordinal) && h.Contains("BImSchV", StringComparison.Ordinal));
             string w = Assert.Single(lauf.Protokoll.Hinweise, h => h.Contains("RK Kuehlturm", StringComparison.Ordinal) && h.Contains("m³", StringComparison.Ordinal));
             Assert.Contains("€/a", w, StringComparison.Ordinal);
             Assert.Single(lauf.Protokoll.Hinweise, h => h.Contains("RK Kuehlturm", StringComparison.Ordinal) &&
-                                                       h.Contains(SimulationControl.RueckkuehlwerkMerkmale(new[] { Rueckkuehlwerk.MERKMAL_REIHE }), StringComparison.Ordinal));
+                                                       h.Contains("Teil-Freikühlung", StringComparison.Ordinal));
+            Assert.DoesNotContain(lauf.Protokoll.Hinweise, h => h.Contains("noch nicht gerechnet", StringComparison.Ordinal));
             Assert.Contains(lauf.Protokoll.Hinweise, h => h.Contains("Luftfeuchte", StringComparison.Ordinal));
             _aus.WriteLine("1055 mit Kühlturm: Kälte {0:F3} MWh (ohne {1:F3}), Ventilator {2:F4} MWh, Wasser {3:F1} m³, {4} Nassstunden, Rückkühlung im Mittel {5:F2} °C",
                            KaelteSumme(projekt, "Kaelteproduktion_MWh"), kaelteOhne, ventilator, wasser, nass, rk);
             _aus.WriteLine(w);
+        }
+
+        /// <summary>Kälteproduktion, freie Kühlung, Teil-Freikühlung und Strom der Kältemaschine des jüngsten Laufs.</summary>
+        private static (double Kaelte, double Frei, double TeilFrei, long TeilStunden, double Strom) Kaeltebilanz(int projekt) =>
+            (KaelteSumme(projekt, "Kaelteproduktion_MWh"), KaelteSumme(projekt, "FreieKuehlung_MWh"),
+             Convert.ToDouble(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_TEILFREIKUEHLUNG) ?? 0.0, CultureInfo.InvariantCulture),
+             Convert.ToInt64(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_TEILFREIKUEHLUNG_STUNDEN) ?? 0L, CultureInfo.InvariantCulture),
+             KaelteSumme(projekt, "Stromverbrauch_MWh"));
+
+        /// <summary>Setzt die Schaltung des Rückkühlwerks <paramref name="kopie"/>, rechnet das Projekt und liefert die Bilanz.</summary>
+        private static (double Kaelte, double Frei, double TeilFrei, long TeilStunden, double Strom) LaufMit(
+            int projekt, int kopie, string schaltung, out SimulationRunner lauf)
+        {
+            RueckkuehlwerkModel m = RueckkuehlwerkCtrl.Laden(kopie);
+            m.Freikuehlung_Schaltung = schaltung;
+            Assert.Null(RueckkuehlwerkCtrl.Speichern(m));
+            lauf = new SimulationRunner();
+            Assert.True(lauf.SimuliereUndSpeichere(projekt, out string fehler) > 0, "Lauf gescheitert: " + fehler);
+            return Kaeltebilanz(projekt);
+        }
+
+        /// <summary>
+        /// K-F3 (Entwurf 5.5): 1055 mit einem trockenen Rückkühlwerk in Reihe (Annäherung 4 K) gegen dasselbe Rückkühlwerk
+        /// parallel — die Spalten der Teil-Freikühlung sind belegt (1055 kühlt nur an Sommertagen bei Kaltwasser 6 °C: keine
+        /// Stunde unter Rücklauf − 3 K, darum 0), Kälte und Strom gleich. Dann mit Kaltwasser 18 °C (Flächenkühlung), Annäherung 2 K und Rückkühlerleistung 1 kW: die
+        /// Mischstunden zählen, die freie Kühlung in Reihe (ganze Stunden plus Vorkühlung) ist mindestens die parallele, der
+        /// Kältestrom höchstens der parallele; die Kälteproduktion bleibt in der Größenordnung (gleicher Bedarf).
+        /// </summary>
+        [Fact]
+        public void Trocken_in_Reihe_fuellt_die_Teil_Freikuehlung_plausibel()
+        {
+            if (!_db.Vorhanden) return;
+            const int projekt = 1055;
+            int anlage = Anlage(projekt);
+
+            RueckkuehlwerkStammCtrl.SpeicherErgebnis s = RueckkuehlwerkStammCtrl.Speichern(new RueckkuehlwerkModel
+            {
+                Bezeichner = "RK Reihe", Bauart = RueckkuehlwerkSchema.BAUART_TROCKEN, Annaeherung_Nenn_K = 4.0,
+                Annaeherung_Weg = RueckkuehlwerkSchema.WEG_FEST, Freikuehlung_Schaltung = RueckkuehlwerkSchema.SCHALTUNG_PARALLEL
+            });
+            Assert.True(s.Ok, s.Meldung);
+            Assert.Null(KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen(anlage, s.Id));
+            int kopie = KaeltemaschineAnlageCtrl.Laden(anlage).IdRueckkuehlwerk.Value;
+
+            // 1. Die Daten von 1055: belegt, ohne Mischstunde.
+            var parallel = LaufMit(projekt, kopie, RueckkuehlwerkSchema.SCHALTUNG_PARALLEL, out _);
+            Assert.Null(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_TEILFREIKUEHLUNG));
+            var reihe = LaufMit(projekt, kopie, RueckkuehlwerkSchema.SCHALTUNG_REIHE, out SimulationRunner lauf);
+            Assert.NotNull(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_TEILFREIKUEHLUNG));
+            Assert.NotNull(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_TEILFREIKUEHLUNG_STUNDEN));
+            Assert.Equal(0L, reihe.TeilStunden);
+            Assert.Equal(parallel.Kaelte, reihe.Kaelte, 9);
+            Assert.Equal(parallel.Strom, reihe.Strom, 9);
+            Assert.Single(lauf.Protokoll.Hinweise, h => h.Contains("RK Reihe", StringComparison.Ordinal) &&
+                                                       h.Contains("Teil-Freikühlung", StringComparison.Ordinal));
+            _aus.WriteLine("1055 trocken 4 K, Kaltwasser 6 °C: Kälte {0:F3} MWh, Teil-Freikühlung {1:F3} MWh in {2} h, Strom {3:F4} / {4:F4} MWh",
+                           reihe.Kaelte, reihe.TeilFrei, reihe.TeilStunden, reihe.Strom, parallel.Strom);
+
+            // 2. Kaltwasser 18 °C an der Projektkopie der Kältemaschine (Kopie der Testdatenbank), Annäherung 2 K.
+            int idKm = KaeltemaschineAnlageCtrl.Laden(anlage).IdKaeltemaschine.Value;
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Kaeltemaschine SET Kuehl_Vorlauf = ? WHERE ID = ?",
+                                           new DbParam("?", 18.0), new DbParam("?", idKm));
+            RueckkuehlwerkModel rm = RueckkuehlwerkCtrl.Laden(kopie);
+            rm.Annaeherung_Nenn_K = 2.0;
+            rm.Nennleistung_kW = 1.0;   // die Rückkühlerleistung begrenzt die Vorkühlung: Mischstunden
+            Assert.Null(RueckkuehlwerkCtrl.Speichern(rm));
+            parallel = LaufMit(projekt, kopie, RueckkuehlwerkSchema.SCHALTUNG_PARALLEL, out _);
+            reihe = LaufMit(projekt, kopie, RueckkuehlwerkSchema.SCHALTUNG_REIHE, out _);
+            Assert.True(reihe.TeilStunden > 0 && reihe.TeilStunden <= 8760, "Mischstunden " + reihe.TeilStunden);
+            Assert.True(reihe.TeilFrei >= 0, "Teil-Freikühlung negativ");   // auf 0,01 MWh gerundet gespeichert
+            Assert.True(reihe.TeilFrei <= reihe.Kaelte - reihe.Frei + 0.01, "Teil-Freikühlung über der Kälte der Mischstunden");
+            Assert.True(reihe.Frei + reihe.TeilFrei >= parallel.Frei - 1e-9,
+                        "freie Kühlung in Reihe " + (reihe.Frei + reihe.TeilFrei) + " unter parallel " + parallel.Frei);
+            Assert.True(reihe.Strom <= parallel.Strom + 1e-9, "Kältestrom in Reihe " + reihe.Strom + " über parallel " + parallel.Strom);
+            Assert.InRange(reihe.Kaelte, parallel.Kaelte * 0.9, parallel.Kaelte * 1.1);
+            _aus.WriteLine("1055 trocken 2 K, Kaltwasser 18 °C: parallel Kälte {0:F3} MWh, frei {1:F3} MWh, Strom {2:F4} MWh; Reihe Kälte {3:F3} MWh, " +
+                           "frei {4:F3} MWh, Teil-Freikühlung {5:F3} MWh in {6} h, Strom {7:F4} MWh",
+                           parallel.Kaelte, parallel.Frei, parallel.Strom, reihe.Kaelte, reihe.Frei, reihe.TeilFrei, reihe.TeilStunden, reihe.Strom);
         }
     }
 }

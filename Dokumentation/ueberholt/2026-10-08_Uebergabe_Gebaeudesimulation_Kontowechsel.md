@@ -2,10 +2,10 @@
 
 Dieses Papier hält, was eine neue Cloud-Sitzung auf einem anderen Konto braucht, um die Sitzung „Gebäudesimulation“
 ohne Verlust fortzuführen: Stand, offene Punkte, nächste Arbeit, Arbeitsweise und am Ende den Einstiegs-Prompt. Regelquelle
-bleibt [`CLAUDE.md`](../../../CLAUDE.md) mit den Projekt-`CLAUDE.md`; der dauerhafte Stand steht in der
-[Statusdatei iOS-Migration](../Status_iOS_Migration.md) (eine Zeile je Schritt, Blöcke „Nach #…“ darunter) und in der
-[Statusdatei Gebäudesimulation](../Status_Gebaeudesimulation_VDI6007.md) (Entscheidungsregister E1–E108, Stufentabelle).
-Es löst die [Übergabe vom 03.10.2026](../../ueberholt/2026-10-03_Uebergabe_Gebaeudesimulation_Kontowechsel.md) ab und wandert
+bleibt [`CLAUDE.md`](../../CLAUDE.md) mit den Projekt-`CLAUDE.md`; der dauerhafte Stand steht in der
+[Statusdatei iOS-Migration](../aktuell/Status_iOS_Migration.md) (eine Zeile je Schritt, Blöcke „Nach #…“ darunter) und in der
+[Statusdatei Gebäudesimulation](../aktuell/Status_Gebaeudesimulation_VDI6007.md) (Entscheidungsregister E1–E108, Stufentabelle).
+Es löst die [Übergabe vom 03.10.2026](2026-10-03_Uebergabe_Gebaeudesimulation_Kontowechsel.md) ab und wandert
 nach `Dokumentation/ueberholt/`, sobald die Fortsetzung die Sichtabnahmen aus Abschnitt 5 und die Welle UB-E1 abgeschlossen hat.
 
 ## 1. Stand bei der Übergabe
@@ -20,7 +20,7 @@ nach `Dokumentation/ueberholt/`, sobald die Fortsetzung die Sichtabnahmen aus Ab
 | Statuszeilen | höchste vergebene beim Schreiben #833; Entscheide bis E108 (E108 gehört der Sitzung IFC), **E109 frei** |
 | Laufende Arbeit | keine: kein Agent, kein Worktree im Repositorium, kein offener CI-Lauf, kein angemeldeter Schemaschritt, keine Routine dieser Sitzung |
 | Lokale Zweige des alten Containers | `np5c-zuordnung-hilfe` (inhaltsgleich auf origin), `sicherung/pb1-cloud`, `sicherung/vor-601` (Sicherungen vom 29.09., überholt) — nichts davon wird gebraucht |
-| Parallele Sitzungen | „IFC / Gebäudeimport“ und „Berichterstellung_Wirtschaftlichkeit“ sind am 08.10. ebenfalls übergeben worden ([IFC](2026-10-08_Uebergabe_IFC_Gebaeudeimport.md), [Berichterstellung](../Uebergabe_Cloud_Berichterstellung_2026-10-08.md)); „Dialoge und Korrekturen“ arbeitet weiter (#829, #830). Alle pushen auf denselben Zweig |
+| Parallele Sitzungen | „IFC / Gebäudeimport“ und „Berichterstellung_Wirtschaftlichkeit“ sind am 08.10. ebenfalls übergeben worden ([IFC](../aktuell/Gebaeudesimulation/2026-10-08_Uebergabe_IFC_Gebaeudeimport.md), [Berichterstellung](../aktuell/Uebergabe_Cloud_Berichterstellung_2026-10-08.md)); „Dialoge und Korrekturen“ arbeitet weiter (#829, #830). Alle pushen auf denselben Zweig |
 
 ## 2. Was die Sitzung seit dem 03.10.2026 gebaut hat
 
@@ -40,13 +40,13 @@ Alle Zeilen mit grünem Gate gepusht; der CI-Nachweis steht in der jeweiligen Ze
 | AK3 | #796–#810 | geschlossener Kreis Gebäude ↔ Erzeuger, Heizungspuffer, Raumeinfluss der Heizkurve, Kennlinie über den Vorlauf interpoliert (Schritt 198), Referenzprojekt 1058 (R42, in der CI) |
 | AK3-K | #817 | Zonensperre (nie Heizen und Kühlen am selben Tag), Kälteseite im Kreis, Kälteschranke (Schritt 201), Referenzprojekt 1059 (R43) |
 | G5-Abnahme | #820, #824 | Abnahme des IFC-Imports am Rechenweg, A1–A6 erfüllt (E101) |
-| KK | #827 | raumgeführte Kühlkurve auf AK3, Kühlübergabe je Zone ab AK1, Auslegungsweg wählbar (E105–E107, Schritt 202), Referenzprojekte 1061/1062 (R44); [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-08_KK_Kuehlkurve.md) |
+| KK | #827 | raumgeführte Kühlkurve auf AK3, Kühlübergabe je Zone ab AK1, Auslegungsweg wählbar (E105–E107, Schritt 202), Referenzprojekte 1061/1062 (R44); [Protokoll](Protokolle/Gebaeudesimulation/2026-10-08_KK_Kuehlkurve.md) |
 
 ## 3. Nächste Arbeit: Übergabegrenze und Bivalenz der Wärmepumpe (UB)
 
 Die Sitzung Berichterstellung hat Fach- und Umsetzungskonzept fertig übergeben; den Rechenweg baut diese Sitzung
-([Fachkonzept](../../ueberholt/Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md), Fassung 2, #818;
-[Umsetzungskonzept](../../ueberholt/Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md), #819, Abschnitt 10 „Übergabe an die Sitzung
+([Fachkonzept](Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md), Fassung 2, #818;
+[Umsetzungskonzept](Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md), #819, Abschnitt 10 „Übergabe an die Sitzung
 Gebäudesimulation“). Alle Entscheide UB-Q1 bis UB-Q11 und die Abweichungen U-1 bis U-4 sind eingetragen; der Baubeginn ist frei,
 aber erst auf Auftrag des Anwenders.
 
@@ -74,13 +74,13 @@ aber erst auf Auftrag des Anwenders.
 - Freie Kühlung ohne Regressionsnetz (kein Referenzprojekt nutzt sie, #728) — erledigt (umgesetzt 10.10.2026, #916: Referenzprojekt 1064, Basis R51).
 - Feste deutsche Texte in `AbweichungsErmittler` (#790, Bestand).
 - Sporadisch rot gesehen: `KalenderkarteInhaltTests` (Teppichbild, Zeitsteuerung), `GebaeudeImportZonenDialogTests` — erledigt (umgesetzt 10.10.2026, #917).
-- [Konzept Heizlastspitzen-Glättung](2026-10-03_Konzept_Heizlastspitzen_Glaettung.md): Umsetzung nicht erkennbar, Entscheid
+- [Konzept Heizlastspitzen-Glättung](../aktuell/Gebaeudesimulation/2026-10-03_Konzept_Heizlastspitzen_Glaettung.md): Umsetzung nicht erkennbar, Entscheid
   beim Anwender klären.
 - Papierpflege: Die Statusdatei Gebäudesimulation führt veraltete Statuswörter (E58–E60 „offen“, E67 „in Umsetzung“, Stufe NP
   „offen“, KP3 „teilweise“), obwohl die Wellen gebaut sind — mit der nächsten Statuspflege nachziehen (`sonnet-mechanik`) — erledigt (umgesetzt 10.10.2026, #915).
-- Aufräumen nach den Sichtabnahmen: [Entwurf AK3](../../ueberholt/2026-10-07_Entwurf_AK3.md), [Entwurf AK3-K](../../ueberholt/2026-10-07_Entwurf_AK3-K.md),
-  [Entwurf KK](../../ueberholt/2026-10-08_Entwurf_KK_Kuehlkurve.md), [Entwurf KP3](../../ueberholt/2026-10-02_Entwurf_KP3.md) und
-  [Übergabe KP3](../../ueberholt/2026-10-02_Uebergabe_KP3.md) nach `ueberholt/` (Verweise nachziehen, Indexzeile entfernen; die Konzepte
+- Aufräumen nach den Sichtabnahmen: [Entwurf AK3](2026-10-07_Entwurf_AK3.md), [Entwurf AK3-K](2026-10-07_Entwurf_AK3-K.md),
+  [Entwurf KK](2026-10-08_Entwurf_KK_Kuehlkurve.md), [Entwurf KP3](2026-10-02_Entwurf_KP3.md) und
+  [Übergabe KP3](2026-10-02_Uebergabe_KP3.md) nach `ueberholt/` (Verweise nachziehen, Indexzeile entfernen; die Konzepte
   Anlagenkopplung und Kühlung verweisen auf die Entwürfe) — die fünf Papiere samt Übergaben 22.09. und 26.09. erledigt (umgesetzt 10.10.2026, #915). Die Befund- und Gegenlese-Papiere vom 15.–17.09. sind ebenfalls
   Kandidaten.
 
@@ -119,7 +119,7 @@ aber erst auf Auftrag des Anwenders.
   `Werkzeuge/Gate/gate_rest_linux.sh <Repo> <Ablage>` (rund 15 Minuten, Referenzlauf aller Projekte gegen die Basis mit
   Byte-Vergleich). Ist die CI rot, lässt sich das Protokoll über den GitHub-Zugang der Sitzung nicht laden (nur Annotationen);
   dann `Werkzeuge/Gate/kern_bloecke.sh` in zwei parallelen Aufrufen (rund 35 Minuten). Beschreibung in
-  [`Werkzeuge/Gate/LIESMICH.md`](../../../Werkzeuge/Gate/LIESMICH.md).
+  [`Werkzeuge/Gate/LIESMICH.md`](../../Werkzeuge/Gate/LIESMICH.md).
 - **Push:** `git -c "lfs.https://github.com/inekon/EPOS-Plan.git/info/lfs.locksverify=false" push origin <sha>:refs/heads/<zweig>`
   (sonst scheitert die LFS-Sperrprüfung); Commits signiert, Trailer nach `CLAUDE.md` und dem Sitzungshinweis.
   Reine Kopfzeilen-Pushes (Schemaschritt, Basis) ohne Checkout: Statusdatei aus `origin` lesen, Zeile ersetzen, mit
@@ -133,7 +133,7 @@ aber erst auf Auftrag des Anwenders.
   `[skip ci]`; den doppelten Lauf auf dem Sitzungszweig nach einem Push beider Zweige abbrechen
   (`gh api -X POST repos/inekon/EPOS-Plan/actions/runs/<id>/cancel`). Warten auf Läufe mit einem einzigen Hintergrundbefehl.
 - **Abgrenzung:** Der Import (`EPOS.Kern/Allgemein/Import/Ifc/`, `…/Import/Gebaeude/`, `…/Import/Sqproj/`) gehört der Sitzung
-  „IFC / Gebäudeimport“; Befunde dorthin über ein Abstimmungspapier (Muster: [Abstimmung G5](2026-10-07_Abstimmung_G5_IFC.md)).
+  „IFC / Gebäudeimport“; Befunde dorthin über ein Abstimmungspapier (Muster: [Abstimmung G5](../aktuell/Gebaeudesimulation/2026-10-07_Abstimmung_G5_IFC.md)).
   Anwenderdateien (`.wpx`, `.sqproj`) werden nie committet; Werte und Namen aus ihnen gehören nicht in Code, Tests oder Protokolle.
 - **Rückfragepflicht:** vor jedem macOS- oder iOS-Lauf und dem Setup-Lauf (jedes Mal), vor Basiswechseln ohne Auftrag, vor
   dem Aufweiten von Testbändern, vor Wiki-Uploads. Keine Pull Requests, kein Force-Push, keine Tags.

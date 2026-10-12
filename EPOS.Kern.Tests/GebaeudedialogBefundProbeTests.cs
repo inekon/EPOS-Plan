@@ -13,8 +13,9 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>Probe zum Befund GD</b> (Entwurf Gebäudedialog und Mehrzonenübernahme, 11.10.2026): der Weg „nur Projektdatei“ mit
-    /// DIN-V-18599-Zonen, die einen Raum nicht erfassen. Hält den Bestand fest, wie er ist — die Übernahme der DIN-Zonen hebt
-    /// die Zonierung der Regel auf, der Raum ohne DIN-Zone bleibt „nicht zugeordnet“, das sperrt OK und den Bauteilvorschlag;
+    /// DIN-V-18599-Zonen, die einen Raum nicht erfassen. Die Übernahme der DIN-Zonen hebt die Zonierung der Regel auf, den Raum
+    /// ohne DIN-Zone platziert der Plan selbst (Welle GD-3, E130/F3) — OK und Bauteilvorschlag sind frei, die Zonen werden ohne
+    /// Handschritt gespeichert; erst die Rücknahme im Zonenbaum lässt ihn offen und sperrt wie zuvor;
     /// der vorbelegte Satz trägt Baujahr und Verwendung aus der Datei, die Gebäudeart bleibt die Vorgabe eines neuen Satzes.
     /// </summary>
     [Collection("Testdatenbank")]
@@ -60,7 +61,7 @@ namespace EPOS.Kern.Tests
                                               schritte.Length > 0 ? schritte : null, schritte.Length > 0 ? haken : null));
 
         [Fact]
-        public async Task Raum_ohne_DIN_Zone_sperrt_Uebernahme_und_Zonen()
+        public async Task Raum_ohne_DIN_Zone_wird_platziert_und_die_Zonen_werden_gespeichert()
         {
             var h = new GebaeudeImportHuelle(ios: false);
             IReadOnlyDictionary<string, object> gaben = h.Gaben();
@@ -71,26 +72,62 @@ namespace EPOS.Kern.Tests
             GebaeudeImportStand ohne = Zuordnen(gaben, new Dictionary<string, bool>());
             IReadOnlyDictionary<string, bool> haken = ohne.Raeume.ToDictionary(r => r.Kennung, _ => true);
 
-            // Der Schritt „Zonen der Projektdatei“ (DIN): hebt die Zonierung der Regel auf, R4 bleibt nicht zugeordnet.
+            // Der Schritt „Zonen der Projektdatei“ (DIN) hebt die Zonierung der Regel auf; den Raum ohne DIN-Zone platziert der
+            // Plan selbst (E130/F3): beheizt, ohne Nachbarraum in einer Zone → die Restzone seines Geschosses.
             var schritte = new[] { new GebaeudePlanschritt(GebaeudePlanschrittArt.PROJEKTDATEI, Zonierung: GebaeudeZonierungSchluessel.DIN) };
             GebaeudeImportStand mitPlan = Zuordnen(gaben, haken, schritte);
-            Assert.NotNull(mitPlan.Zonierung?.Plan);
-            Assert.Equal(new[] { "Lager" }, mitPlan.Zonierung!.Plan!.NichtZugeordnet.Select(r => r.Name));
-            Assert.False(mitPlan.Bauteile!.Moeglich);
+            GebaeudeZonenplanDaten plan = mitPlan.Zonierung!.Plan!;
+            Assert.Empty(plan.NichtZugeordnet);
+            Assert.Equal(1, plan.Platziert);
+            Assert.NotEmpty(plan.Platzierungsmeldung);
+            GebaeudePlanzoneDaten rest = Assert.Single(plan.Zonen, z => z.Raumliste.Any(r => r.Name == "Lager"));
+            Assert.Equal("Rest OG", rest.Name);
+            GebaeudePlanraumDaten lager = rest.Raumliste.Single(r => r.Name == "Lager");
+            Assert.Equal("geschoss", lager.Platzierungsgrund);
+            Assert.True(mitPlan.Bauteile!.Moeglich);
 
-            // OK ist gesperrt — mit und ohne „als Zonen mit Bauteilen“; ein stiller Einzonenweg entsteht hier nicht.
+            // OK ist frei — mit und ohne „als Zonen mit Bauteilen“.
             var pruefen = (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)gaben["Pruefen"];
-            foreach (bool alsZone in new[] { true, false })
+            foreach (bool alsZone in new[] { false, true })
             {
                 var ergebnis = new GebaeudeImportErgebnis(0, null, "Probe", haken, mitPlan.Zeilen.ToList(), AlsZone: alsZone,
                                                           Zonenregel: null, Planschritte: schritte, Plangrundhaken: haken);
-                Assert.Contains(pruefen(ergebnis), m => m.Stufe == WarnStufe.Fehler);
+                Assert.DoesNotContain(pruefen(ergebnis), m => m.Stufe == WarnStufe.Fehler);
             }
 
-            // „Rest nach Regel zuordnen“ (X3, je Raum) löst die Sperre: der Raum bekommt eine eigene Zone.
-            var mitRest = new[] { schritte[0], new GebaeudePlanschritt(GebaeudePlanschrittArt.REST, Regel: GebaeudeImportProfil.ZONENREGEL_X3) };
-            GebaeudeImportStand rest = Zuordnen(gaben, haken, mitRest);
-            Assert.Empty(rest.Zonierung!.Plan!.NichtZugeordnet);
+            // Der Durchlauf „nur Projektdatei“ speichert die Zonen ohne Handschritt — drei Zonen samt Restzone.
+            GebaeudeBauteilvorschlag vorschlag = h.Herkunft!.Vorschlag!;
+            Assert.Equal(3, vorschlag.Zonen.Count);
+            using (var db = new TestDatenbank())
+            {
+                if (db.Vorhanden)
+                {
+                    var ctrl = new ProjektGebaeudeCtrl();
+                    ctrl.ReadAll(1045);
+                    ProjektGebaeudeModel g = ctrl.items[0];
+                    using (DbVorgang vorgang = DataRepository.Vorgang())
+                    {
+                        GebaeudeZonenCtrl.Vorschlagsergebnis e = new GebaeudeZonenCtrl().VorschlagSchreiben(g.ID_Gebaeude, vorschlag, vorgang);
+                        Assert.True(e.Ok, e.Meldung);
+                        vorgang.Commit();
+                    }
+                    Assert.Equal(3, new GebaeudeZonenCtrl().LesenJeGebaeude(g.ID_Gebaeude).Count());
+                }
+            }
+
+            // Die Rücknahme im Zonenbaum stellt den Raum zurück auf „ohne Zone“: dann sperrt er wie zuvor OK und Bauteilvorschlag.
+            var zurueck = new[] { schritte[0], new GebaeudePlanschritt(GebaeudePlanschrittArt.RUECKNAHME, new[] { lager.Kennung }) };
+            GebaeudeImportStand offen = Zuordnen(gaben, haken, zurueck);
+            Assert.Equal(new[] { "Lager" }, offen.Zonierung!.Plan!.NichtZugeordnet.Select(r => r.Name));
+            Assert.DoesNotContain(offen.Zonierung.Plan.Zonen, z => z.Name == "Rest OG");
+            Assert.False(offen.Bauteile!.Moeglich);
+            var gesperrt = new GebaeudeImportErgebnis(0, null, "Probe", haken, offen.Zeilen.ToList(), AlsZone: false,
+                                                      Zonenregel: null, Planschritte: zurueck, Plangrundhaken: haken);
+            Assert.Contains(pruefen(gesperrt), m => m.Stufe == WarnStufe.Fehler);
+
+            // „Rest nach Regel zuordnen“ (X3, je Raum) löst auch diese Sperre.
+            var mitRest = new[] { zurueck[0], zurueck[1], new GebaeudePlanschritt(GebaeudePlanschrittArt.REST, Regel: GebaeudeImportProfil.ZONENREGEL_X3) };
+            Assert.Empty(Zuordnen(gaben, haken, mitRest).Zonierung!.Plan!.NichtZugeordnet);
 
             // Ohne Plan (Regelvorschlag ohne Schritt): Vorbelegung des Gebäudesatzes — Baujahr und Verwendung aus der Datei,
             // die Gebäudeart bleibt die Vorgabe eines neuen Satzes bzw. wird „Sonstige“ bei einem Nichtwohngebäude.

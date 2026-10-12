@@ -13,7 +13,8 @@ namespace WindowsFormsApplication1
     // WAS DER SCHRITT ANLEGT (alle STRICT, Beziehungen ueber IDs, Boolean 0/1 mit CHECK):
     //
     //   Tab_Raumnutzungskatalog   die Kategorie: Bezeichner (eindeutig ohne Unterschied der Schreibung),
-    //                             Art (EPOS_MUSTER, DIN_V_18599_10, SIA_2024, VDI_2078, EIGEN),
+    //                             Art (EPOS_MUSTER, DIN_V_18599_10, SIA_2024, VDI_2078, EIGEN; SIA_2024 und
+    //                             VDI_2078 entfallen mit E129, im CHECK nur noch Bestand),
     //                             Beschreibung, Quellenhinweis, ReadOnly, Reihenfolge
     //   Tab_Raumnutzungsprofil    das Profil: ID_Katalog -> Kategorie (CASCADE), Nummer (Text, eindeutig je
     //                             Kategorie), Bezeichner (eindeutig je Kategorie), Beschreibung, ReadOnly
@@ -126,21 +127,23 @@ namespace WindowsFormsApplication1
         /// <summary>Art der Kategorie: DIN 18599-10 — die Kennung nennt die Ausgabe 2018, die Kategorie führt seit Schritt
         /// <see cref="RaumnutzungDinTsSchema.SCHRITT"/> die DIN/TS 18599-10:2025-10.</summary>
         public const string ART_DIN_V_18599_10 = "DIN_V_18599_10";
-        /// <summary>Art der Kategorie: SIA 2024.</summary>
+        /// <summary>Art der Kategorie: SIA 2024 — entfallen (E129), im CHECK nur noch Bestand; die Saat von Schritt 189 legt
+        /// sie an, <see cref="RaumnutzungNormkategorienSchema"/> nimmt sie heraus.</summary>
         public const string ART_SIA_2024 = "SIA_2024";
-        /// <summary>Art der Kategorie: VDI 2078.</summary>
+        /// <summary>Art der Kategorie: VDI 2078 — entfallen (E129), im CHECK nur noch Bestand.</summary>
         public const string ART_VDI_2078 = "VDI_2078";
         /// <summary>Art der Kategorie: eigene des Anwenders.</summary>
         public const string ART_EIGEN = "EIGEN";
 
-        /// <summary>Die fünf Arten der Kategorie (NP-F4).</summary>
+        /// <summary>Die fünf Arten im CHECK der Kategorie (NP-F4); SIA 2024 und VDI 2078 sind entfallen (E129) und stehen
+        /// nur noch als Bestand darin.</summary>
         public static readonly IReadOnlyList<string> ARTEN_KATALOG = new[]
         {
             ART_EPOS_MUSTER, ART_DIN_V_18599_10, ART_SIA_2024, ART_VDI_2078, ART_EIGEN
         };
 
-        /// <summary>Die Arten der Normkategorien — ausgeliefert ohne Kennwert (NP-F21).</summary>
-        public static readonly IReadOnlyList<string> ARTEN_NORM = new[] { ART_DIN_V_18599_10, ART_SIA_2024, ART_VDI_2078 };
+        /// <summary>Die Arten der Normkategorien — ausgeliefert ohne Kennwert (NP-F21); nach E129 allein DIN.</summary>
+        public static readonly IReadOnlyList<string> ARTEN_NORM = new[] { ART_DIN_V_18599_10 };
 
         /// <summary>Art der Zuordnung: DIN-V-18599-10-Profilnummer.</summary>
         public const string ZUORDNUNG_DIN = "DIN_NUMMER";
@@ -462,13 +465,17 @@ namespace WindowsFormsApplication1
         /// <summary>Trägt <c>Tab_Zone</c> die Spalte <c>Nutzungsprofil</c>? (Wächter der Zonenwege, etwa für einen älteren Stand auf iOS.)</summary>
         public static bool ZonenspalteVorhanden() => DataRepository.SpalteVorhanden(TAB_ZONE, SPALTE_ZONE_NUTZUNGSPROFIL);
 
-        /// <summary>Wie viele Zeilen der Saat noch fehlen (Kategorien, Profile, Zeilenbild, Zuordnung, Pufferzuordnung).</summary>
+        /// <summary>
+        /// Wie viele Zeilen der Saat noch fehlen (Kategorien, Profile, Zeilenbild, Zuordnung, Pufferzuordnung). Die Kategorien
+        /// der entfallenen Arten SIA 2024 und VDI 2078 (E129, <see cref="RaumnutzungNormkategorienSchema"/>) zählen nicht: Die
+        /// Saat legt sie weiter an, der spätere Schritt nimmt sie heraus.
+        /// </summary>
         public static int OffeneSaat()
         {
             if (!TABELLEN.All(DataRepository.TabelleVorhanden)) return -1;
             int offen = 0;
             foreach (RaumnutzungSaatkategorie k in RaumnutzungSaat.Kategorien)
-                if (Zaehle(DataRepository.ExecuteScalar(SQL_ZAHL_KATALOG_GESAAT, new DbParam("@b", k.Bezeichner))) == 0) offen++;
+                if (!RaumnutzungNormkategorienSchema.ARTEN_ENTFALLEN.Contains(k.Art) && Zaehle(DataRepository.ExecuteScalar(SQL_ZAHL_KATALOG_GESAAT, new DbParam("@b", k.Bezeichner))) == 0) offen++;
             foreach (RaumnutzungSaatprofil p in RaumnutzungSaat.Profile)
                 if (Zaehle(DataRepository.ExecuteScalar(SQL_ZAHL_PROFIL_GESAAT,
                                                         new DbParam("@k", p.Kategorie), new DbParam("@p", p.Bezeichner))) == 0) offen++;

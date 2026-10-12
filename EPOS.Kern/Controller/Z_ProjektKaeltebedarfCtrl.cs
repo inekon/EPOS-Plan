@@ -23,9 +23,12 @@ namespace WindowsFormsApplication1
             var liste = new List<Z_ProjektKaeltebedarfModel>();
             if (idProjekt <= 0 || !KaeltebedarfSchema.TabellenVorhanden()) return liste;
 
-            const string sql =
+            // KWN-0: die Art nur, wenn der Schritt KaelteArtSchema steht - vorher heisst jede Zeile Raum.
+            bool mitArt = KaelteArtSchema.ProfilLesbar();
+            string sql =
                 "SELECT z.ID, z.ID_Kaeltebedarf, k.Bezeichner, z.Summe, z.ID_Betriebskalender, z.Deckung, z.Split_EER_Weg, " +
                 "z.Split_EER_1, z.Split_Taussen_1, z.Split_EER_2, z.Split_Taussen_2, z.Kuehl_ID_Carrier, z.Kuehl_EigenerZaehler, " +
+                (mitArt ? "z.Kaelte_Art, " : "") +
                 "k.Vorlauf, k.Ruecklauf " +
                 "FROM Z_Projekt_Kaeltebedarf z INNER JOIN Tab_Kaeltebedarf k ON z.ID_Kaeltebedarf = k.ID " +
                 "WHERE z.ID_Projekt = ? ORDER BY z.ID";
@@ -49,6 +52,7 @@ namespace WindowsFormsApplication1
                     Taussen2 = Zahl(r["Split_Taussen_2"]),
                     KuehlIdCarrier = Ganz(r["Kuehl_ID_Carrier"]),
                     KuehlEigenerZaehler = (Ganz(r["Kuehl_EigenerZaehler"]) ?? 0) != 0,
+                    KaelteArt = mitArt ? KaelteArtSchema.Normal(r[KaelteArtSchema.SPALTE]) : KaelteArtSchema.RAUM,
                     Vorlauf = Zahl(r["Vorlauf"]),
                     Ruecklauf = Zahl(r["Ruecklauf"]),
                 });
@@ -94,6 +98,7 @@ namespace WindowsFormsApplication1
         {
             if (z == null) return;
             if (string.IsNullOrEmpty(z.Deckung)) z.Deckung = KaeltebedarfSchema.DECKUNG_ZENTRAL;
+            z.KaelteArt = KaelteArtSchema.Normal(z.KaelteArt);
             if (z.Deckung == KaeltebedarfSchema.DECKUNG_ZENTRAL)
             {
                 z.EerWeg = null; z.Eer1 = null; z.Taussen1 = null; z.Eer2 = null; z.Taussen2 = null;
@@ -135,6 +140,8 @@ namespace WindowsFormsApplication1
             w.Deckung = k.Deckung; w.EerWeg = k.EerWeg; w.Eer1 = k.Eer1; w.Taussen1 = k.Taussen1;
             w.Eer2 = k.Eer2; w.Taussen2 = k.Taussen2; w.KuehlIdCarrier = k.KuehlIdCarrier;
             w.KuehlEigenerZaehler = k.KuehlEigenerZaehler;
+            // KWN-0: Die Art wirkt nur im Kanal Kuehlung; jeder andere Kanal schreibt Raum.
+            w.KaelteArt = IstKuehlkanal(w) ? k.KaelteArt : KaelteArtSchema.RAUM;
         }
 
         /// <summary>Tragen die Lastgangzuordnungen die Deckungsspalten (Schritt <see cref="KaeltebedarfSchema"/>)?</summary>
@@ -177,6 +184,7 @@ namespace WindowsFormsApplication1
             w.Taussen2 = Zahl(Feld(KaeltebedarfSchema.SPALTE_TAUSSEN_2));
             w.KuehlIdCarrier = Ganz(Feld(KaeltebedarfSchema.SPALTE_KUEHL_ID_CARRIER));
             w.KuehlEigenerZaehler = (Ganz(Feld(KaeltebedarfSchema.SPALTE_KUEHL_EIGENER_ZAEHLER)) ?? 0) != 0;
+            w.KaelteArt = KaelteArtSchema.Normal(Feld(KaelteArtSchema.SPALTE));
         }
 
         /// <summary>Übernimmt die Deckungsfelder von <paramref name="quelle"/> nach <paramref name="ziel"/>.</summary>
@@ -186,6 +194,7 @@ namespace WindowsFormsApplication1
             ziel.Deckung = quelle.Deckung; ziel.EerWeg = quelle.EerWeg; ziel.Eer1 = quelle.Eer1; ziel.Taussen1 = quelle.Taussen1;
             ziel.Eer2 = quelle.Eer2; ziel.Taussen2 = quelle.Taussen2; ziel.KuehlIdCarrier = quelle.KuehlIdCarrier;
             ziel.KuehlEigenerZaehler = quelle.KuehlEigenerZaehler;
+            ziel.KaelteArt = quelle.KaelteArt;
         }
 
         private static Z_ProjektKaeltebedarfModel Als(Z_ProjWaermebedarfModel w) => new Z_ProjektKaeltebedarfModel
@@ -193,6 +202,7 @@ namespace WindowsFormsApplication1
             Bezeichner = w.m_szBezeichner ?? "",
             Deckung = w.Deckung, EerWeg = w.EerWeg, Eer1 = w.Eer1, Taussen1 = w.Taussen1, Eer2 = w.Eer2,
             Taussen2 = w.Taussen2, KuehlIdCarrier = w.KuehlIdCarrier, KuehlEigenerZaehler = w.KuehlEigenerZaehler,
+            KaelteArt = w.KaelteArt,
         };
 
         private static bool ImBereich(double? t) =>
@@ -201,5 +211,16 @@ namespace WindowsFormsApplication1
         private static double? Zahl(object o) => o == null || o == DBNull.Value ? (double?)null : Convert.ToDouble(o, CultureInfo.InvariantCulture);
 
         private static int? Ganz(object o) => o == null || o == DBNull.Value ? (int?)null : Convert.ToInt32(o, CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>
+    /// Der öffentliche Zugang der Oberfläche zur Deckungsregel (Konzept Kältebedarf 3.4, K5a): die Feldgruppe „Deckung“
+    /// (<c>EPOS.UI</c>, <c>DeckungsartDaten</c>) prüft mit DERSELBEN Regel wie der Schreibweg und das Warnkriterium
+    /// <c>DEZENTRALE_KAELTE_OHNE_EER</c> — <see cref="Z_ProjektKaeltebedarfCtrl.Deckungspruefung(Z_ProjektKaeltebedarfModel)"/>.
+    /// </summary>
+    public static class Kaeltedeckungsregel
+    {
+        /// <summary><c>null</c> = zulässig, sonst der Prüfgrund des Kerns.</summary>
+        public static string Pruefe(Z_ProjektKaeltebedarfModel zeile) => Z_ProjektKaeltebedarfCtrl.Deckungspruefung(zeile);
     }
 }

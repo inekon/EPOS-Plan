@@ -279,10 +279,17 @@ namespace WindowsFormsApplication1
             {
                 foreach (SqprojGebaeude g in _p.Gebaeude)
                 {
-                    _gebaeude.Add(new AbbildGebaeude
+                    // GD-2 (F4): die Gebäudecodes der Datei über die festen Tabellen; Unbekanntes steht benannt im Protokoll.
+                    SqprojGebaeudecodes.Ergebnis codes = SqprojGebaeudecodes.Abbilden(g);
+                    var neu = new AbbildGebaeude
                     {
                         Kennung = g.Uuid, Name = g.Name, Quelltyp = QUELLTYP_GEBAEUDE, Baujahr = g.Baujahr, BaujahrText = g.BaujahrText,
-                    });
+                        GebaeudeartDatei = codes.Gebaeudeart, VerwendungDatei = codes.Verwendung,
+                        VerwendungDateiHerleitung = codes.VerwendungHerleitung, EnergiestandardDatei = codes.Energiestandard,
+                        BauweiseJeM2Datei = codes.BauweiseJeM2,
+                    };
+                    neu.Meldungen.AddRange(codes.Meldungen);
+                    _gebaeude.Add(neu);
                     if (_abbild.Ort == null && g.StandortUuid != null && _p.Standorte.TryGetValue(g.StandortUuid, out SqprojStandort s))
                     {
                         string ort = string.Join(" ", new[] { s.Plz, s.Ort }.Where(x => !string.IsNullOrWhiteSpace(x)));
