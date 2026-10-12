@@ -131,7 +131,14 @@
             <Reiterblatt Schluessel="@REITER_HUELLE" Titel="@Texte.ReiterHuelle">
                 <KindInhalt>
 
-                    <Gruppenkopf Titel="@GruppeKopf">
+                    @* GD-1 (Entwurf GD 2.1, F1): Der Kopf ist zweigeteilt. "Beschreibung und Einordnung" traegt die Felder,
+                       die kein Rechenweg liest (Bericht, Vorgaben des Imports, Pufferauslegung); "Rechengroessen" die Felder,
+                       die wirken - jede Zeile mit ihrer Herkunftsmarke aus der Auskunft des Kerns
+                       (Gebaeudefeldherkunft: ruft Zonenvorgaben und WirksamerLuftwechsel). Mit Zonen (F2, F6) stehen
+                       Raumhoehe und Luftwechselrate nur, wo eine Zone sie erbt; g und Bauweise als Rueckfall. Der
+                       Rechenweg bleibt, ausgeblendet wird nur. *@
+                    @{ IReadOnlyDictionary<Gebaeudefeld, Feldauskunft> herkunft = _arbeit.Feldherkunft(); }
+                    <Gruppenkopf Titel="@GruppeEinordnung">
                         <KindInhalt>
                             <Formularraster>
                                 <KindInhalt>
@@ -166,9 +173,22 @@
                             <Auswahlfeld Bezeichnung="@LabelEnergiestandard" Eintraege="@_arbeit.Energiestandardeintraege()"
                                          Auswahl="@_arbeit.EnergiestandardIndex" Platzhalter="@Energiestandard.KeinerText()"
                                          AuswahlChanged="_arbeit.EnergiestandardWaehlen" />
+                                </KindInhalt>
+                            </Formularraster>
+                            <p class="epos-herleitung epos-gebk-einordnung">
+                                <span class="epos-gebk-marke epos-gebk-marke--wirkungslos">@Texte.MarkeWirkungslos</span>
+                                <span class="epos-herleitung-text">@Texte.HinweisEinordnung</span>
+                            </p>
+                        </KindInhalt>
+                    </Gruppenkopf>
+
+                    <Gruppenkopf Titel="@GruppeKopf">
+                        <KindInhalt>
+                            <Formularraster>
+                                <KindInhalt>
                             <Auswahlfeld Bezeichnung="@LabelBauart" Eintraege="@Bauarteintraege"
                                          Auswahl="@_stand.Bauart" AuswahlChanged="BauartWaehlen" />
-
+                            @Marke(herkunft[Gebaeudefeld.Bauweise])
                             <Zahlenfeld Bezeichnung="@LabelWohnflaeche" Einheit="m²" Min="0"
                                         Feldname="@FeldWohnflaeche" FehlerZustand="FehlerMelden"
                                         Wert="@_stand.WohnflaecheGesamt" WertChanged="NutzflaecheSetzen" />
@@ -180,25 +200,51 @@
                             {
                                 <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, ZonenTexte.ZeileNutzflaecheZonen, Zahl(_arbeit.NutzflaecheWirksam, 2), _arbeit.Zonen.Count)" />
                             }
+                            @Marke(herkunft[Gebaeudefeld.Nutzflaeche])
                             <Zahlenfeld Bezeichnung="@LabelFlaecheNutzer" Einheit="m²" Min="0"
                                         Feldname="@FeldFlaecheNutzer" FehlerZustand="FehlerMelden"
                                         Wert="@_stand.FlaecheNutzer"
                                         WertChanged="w => _stand.FlaecheNutzer = w" />
+                            @Marke(herkunft[Gebaeudefeld.FlaecheJeNutzer])
                             <Zahlenfeld Bezeichnung="@LabelFensterdurchlassgrad" Min="0" Max="1"
                                         Feldname="@FeldFensterdurchlassgrad" FehlerZustand="FehlerMelden"
                                         Wert="@_stand.Fensterdurchlassgrad"
                                         WertChanged="w => _stand.Fensterdurchlassgrad = w" />
                             <Herleitungszeile Text="@HinweisFensterdurchlassgrad" />
-                            <Zahlenfeld Bezeichnung="@LabelRaumhoehe" Einheit="m" Min="0"
-                                        Feldname="@FeldRaumhoehe" FehlerZustand="FehlerMelden"
-                                        Wert="@_stand.Raumhoehe" WertChanged="w => _stand.Raumhoehe = w" />
-                            <Zahlenfeld Bezeichnung="@LabelLuftwechsel" Einheit="1/h" Min="0"
-                                        Feldname="@Feld(LabelLuftwechsel)" FehlerZustand="FehlerMelden"
-                                        Wert="@_stand.Luftwechselrate"
-                                        WertChanged="w => _stand.Luftwechselrate = w" />
+                            @Marke(herkunft[Gebaeudefeld.Fensterdurchlassgrad])
+                            @if (herkunft[Gebaeudefeld.Raumhoehe].Anzeige == Feldanzeige.JeZone)
+                            {
+                                <p class="epos-herleitung epos-gebk-jezone" data-feld="Raumhoehe">
+                                    <span class="epos-herleitung-text">@Texte.JeZoneRaumhoehe</span>
+                                </p>
+                            }
+                            else
+                            {
+                                <Zahlenfeld Bezeichnung="@LabelRaumhoehe" Einheit="m" Min="0"
+                                            Feldname="@FeldRaumhoehe" FehlerZustand="FehlerMelden"
+                                            Wert="@_stand.Raumhoehe" WertChanged="w => _stand.Raumhoehe = w" />
+                                @Marke(herkunft[Gebaeudefeld.Raumhoehe])
+                            }
+                            @if (herkunft[Gebaeudefeld.Luftwechselrate].Anzeige == Feldanzeige.JeZone)
+                            {
+                                <p class="epos-herleitung epos-gebk-jezone" data-feld="Luftwechselrate">
+                                    <span class="epos-herleitung-text">@Texte.JeZoneLuftwechsel</span>
+                                </p>
+                            }
+                            else
+                            {
+                                <Zahlenfeld Bezeichnung="@LabelLuftwechsel" Einheit="1/h" Min="0"
+                                            Feldname="@Feld(LabelLuftwechsel)" FehlerZustand="FehlerMelden"
+                                            Wert="@_stand.Luftwechselrate"
+                                            WertChanged="w => _stand.Luftwechselrate = w" />
+                                @Marke(herkunft[Gebaeudefeld.Luftwechselrate])
+                            }
                                 </KindInhalt>
                             </Formularraster>
-                            <Herleitungszeile Text="@Luftwechselzeile" />
+                            @if (herkunft[Gebaeudefeld.Luftwechselrate].Zonenzahl == 0)
+                            {
+                                <Herleitungszeile Text="@Luftwechselzeile" />
+                            }
                             @* E56 F3 (a): Sollwerte, innere Waermegewinne, Infiltration, Nutzerlueftung,
                                Sommerlueftung und Maximalraumtemperatur stehen nur im Reiter
                                "Konditionierung" - die Zeile sagt, wo. *@
@@ -990,7 +1036,10 @@
     /// </summary>
     [Parameter] public bool TitelAnzeigen { get; set; } = true;
 
-    [Parameter] public string GruppeKopf { get; set; } = "Kenngrößen";
+    /// <summary>Titel des Blocks „Rechengrößen" (<c>GEBK_GRP_RECHENGROESSEN</c>, GD-1).</summary>
+    [Parameter] public string GruppeKopf { get; set; } = "Rechengrößen";
+    /// <summary>Titel des Blocks „Beschreibung und Einordnung" (<c>GEBK_GRP_EINORDNUNG</c>, GD-1).</summary>
+    [Parameter] public string GruppeEinordnung { get; set; } = "Beschreibung und Einordnung";
     [Parameter] public string GruppeRaumtemperaturen { get; set; } = "Raumtemperaturen";
     [Parameter] public string GruppeFerienAnfang { get; set; } = "Ferien Anfang";
     [Parameter] public string GruppeFerienEnde { get; set; } = "Ferien Ende";
@@ -2010,6 +2059,44 @@
     private string Groessenname(Huellbauteil b) => _prueftexte.Groessenname(b, Texte);
 
     private static string Zahl(double? wert, int stellen) => GebaeudeArbeitsstand.Zahl(wert, stellen);
+
+    /// <summary>Die Herkunftsmarke eines Gebäudefelds samt Herleitung (GD-1, Entwurf GD 2.1).</summary>
+    private RenderFragment Marke(Feldauskunft a) => __builder =>
+    {
+        string text = Herkunftstext(a);
+        <p class="epos-herleitung epos-gebk-herkunft" data-feld="@a.Feld" data-herkunft="@a.Herkunft">
+            <span class="epos-gebk-marke epos-gebk-marke--@a.Herkunft.ToString().ToLowerInvariant()">@Markentext(a.Herkunft)</span>
+            @if (text.Length > 0)
+            {
+                <span class="epos-herleitung-text">@text</span>
+            }
+        </p>
+    };
+
+    private string Markentext(Feldherkunft h) => h switch
+    {
+        Feldherkunft.Datei => Texte.MarkeDatei,
+        Feldherkunft.Vorgabe => Texte.MarkeVorgabe,
+        Feldherkunft.Geerbt => Texte.MarkeGeerbt,
+        Feldherkunft.Wirkungslos => Texte.MarkeWirkungslos,
+        _ => Texte.MarkeHand,
+    };
+
+    /// <summary>Die Herleitung neben der Marke: Zonen, die erben, und die Rückfälle des Bauteilwegs.</summary>
+    private string Herkunftstext(Feldauskunft a)
+    {
+        CultureInfo k = CultureInfo.CurrentCulture;
+        if (a.Anzeige == Feldanzeige.Rueckfall)
+            return a.Feld == Gebaeudefeld.Fensterdurchlassgrad
+                ? (a.Anzahl > 0 ? string.Format(k, Texte.RueckfallFenster, a.Anzahl) : Texte.RueckfallFensterKeines)
+                : (a.Anzahl > 0 ? string.Format(k, Texte.RueckfallBauweise, a.Anzahl) : Texte.RueckfallBauweiseKeine);
+        if (a.Zonenzahl > 0 && a.Anzahl > 0)
+        {
+            if (a.Feld == Gebaeudefeld.Raumhoehe) return string.Format(k, Texte.ZonenVorgabeHoehe, a.Anzahl, a.Zonenzahl);
+            if (a.Feld == Gebaeudefeld.Luftwechselrate) return string.Format(k, Texte.ZonenVorgabeLuftwechsel, a.Anzahl, a.Zonenzahl);
+        }
+        return "";
+    }
 
     private static string Leitwert(double wert) => Zahl(wert, 1) + " W/K";
 

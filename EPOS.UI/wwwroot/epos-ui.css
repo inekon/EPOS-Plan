@@ -6756,6 +6756,37 @@ table.epos-simerg-tabelle {
     color: var(--epos-text-leise);
 }
 
+/* Die Herkunftsmarke je Feld des Gebaeudedialogs (Entwurf GD 2.1, Welle GD-1): dieselben Farben wie die
+   Herkunft der Importzeilen - Datei im Quellblau, Vorgabe und geerbt leise kursiv, von Hand fett,
+   wirkungslos leise. Die Klasse ist der sprachneutrale Name der Herkunft. */
+.epos-gebk-marke {
+    display: inline-block;
+    margin-right: 0.4em;
+    padding: 0 0.4em;
+    border: 1px solid currentColor;
+    border-radius: 0.6em;
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+
+.epos-gebk-marke--datei {
+    color: var(--epos-quelle-text);
+}
+
+.epos-gebk-marke--vorgabe,
+.epos-gebk-marke--geerbt {
+    color: var(--epos-text-leise);
+    font-style: italic;
+}
+
+.epos-gebk-marke--hand {
+    font-weight: 600;
+}
+
+.epos-gebk-marke--wirkungslos {
+    color: var(--epos-text-leise);
+}
+
 .epos-gebimport-raum--umgestellt td.epos-gebimport-grund {
     font-weight: 600;
 }

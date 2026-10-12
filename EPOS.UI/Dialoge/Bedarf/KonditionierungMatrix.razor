@@ -295,6 +295,7 @@
         <Zahlenfeld Bezeichnung="@feld" Feldname="@feld" FehlerZustand="FehlerZustand"
                     AusText="@(KonditionierungBearbeitung.MitAus(g, z) ? Texte.ZelleAus : "")"
                     Min="@Minimum(g, z)" Max="@Maximum(g, z)" Platzhalter="@Platzhalter(g, z)"
+                    Nachkommastellen="@Stellen(g, z)"
                     Wert="@Bearbeitung.Wert(g, z)" WertChanged="w => WertSetzen(g, z, w)" />
         if (z == KonditionierungZeile.Nacht && !Altweg && Bearbeitung.Bearbeitbar(g, z)
             && (Bearbeitung.MitWeg || (g == KonditionierungGroesse.Heizen && !Bearbeitung.IstZone)))
@@ -390,6 +391,18 @@
         // Die Infiltration ist nie null (Stufe G2) - wie das Feld, das die Zelle abloest.
         (KonditionierungGroesse.Lueftung, KonditionierungZeile.Nennwert) => 0.01,
         _ => 0
+    };
+
+    /// <summary>
+    /// Die Stellen der ANZEIGE einer Zelle (GD-1, Nebenwunsch): Die Nennwerte von Geräten und Personen sind Leistungen
+    /// in W und stehen ohne Nachkommastellen; alle übrigen Zellen zeigen so genau wie nötig (höchstens vier Stellen).
+    /// Gespeichert wird der eingegebene Wert unverändert — gerundet wird nur, was das Feld zeigt.
+    /// </summary>
+    public static int? Stellen(KonditionierungGroesse g, KonditionierungZeile z) => (g, z) switch
+    {
+        (KonditionierungGroesse.Geraete, KonditionierungZeile.Nennwert) => 0,
+        (KonditionierungGroesse.Personen, KonditionierungZeile.Nennwert) => 0,
+        _ => null
     };
 
     /// <summary>

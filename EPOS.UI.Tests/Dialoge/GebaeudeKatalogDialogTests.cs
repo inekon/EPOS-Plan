@@ -142,7 +142,7 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        foreach (string gruppe in new[] { "Kenngrößen", "Hülle: Transmission je Bauteil",
+        foreach (string gruppe in new[] { "Beschreibung und Einordnung", "Rechengrößen", "Hülle: Transmission je Bauteil",
                                           "Wärmeleitwerte", "Fenster nach Orientierung",
                                           "Modellparameter (VDI 6007)", "Rechenweg" })
             Assert.Contains(gruppe, cut.Markup);

@@ -621,7 +621,9 @@ namespace WindowsFormsApplication1
                 ["Texte"] = Texte(),
                 ["TitelText"] = Titel(),
 
-                ["GruppeKopf"] = Text_("GEBK_GRP_KENNGROESSEN", "Kenngrößen"),
+                // GD-1 (Entwurf GD 2.1): der Kopf zweigeteilt - "Beschreibung und Einordnung" und "Rechengrößen".
+                ["GruppeEinordnung"] = Text_("GEBK_GRP_EINORDNUNG", "Beschreibung und Einordnung"),
+                ["GruppeKopf"] = Text_("GEBK_GRP_RECHENGROESSEN", "Rechengrößen"),
                 ["GruppeRaumtemperaturen"] = Text_("GEBK_GRP_RAUMTEMPERATUREN", "Raumtemperaturen"),
                 ["GruppeFerienAnfang"] = Text_("GEBK_GRP_FERIEN_ANFANG", "Ferien Anfang"),
                 ["GruppeFerienEnde"] = Text_("GEBK_GRP_FERIEN_ENDE", "Ferien Ende"),
@@ -817,6 +819,20 @@ namespace WindowsFormsApplication1
             t.HerkunftInfiltrationNutzer = Text_("GEBK_HERKUNFT_INFILTRATION_NUTZER", t.HerkunftInfiltrationNutzer);
             t.HerkunftLuftwechselrate = Text_("GEBK_HERKUNFT_LUFTWECHSELRATE", t.HerkunftLuftwechselrate);
             t.HerkunftVorgabe = Text_("GEBK_HERKUNFT_VORGABE", t.HerkunftVorgabe);
+            t.HinweisEinordnung = Text_("GEBK_HINWEIS_EINORDNUNG", t.HinweisEinordnung);
+            t.MarkeDatei = Text_("GEBK_MARKE_DATEI", t.MarkeDatei);
+            t.MarkeVorgabe = Text_("GEBK_MARKE_VORGABE", t.MarkeVorgabe);
+            t.MarkeHand = Text_("GEBK_MARKE_HAND", t.MarkeHand);
+            t.MarkeGeerbt = Text_("GEBK_MARKE_GEERBT", t.MarkeGeerbt);
+            t.MarkeWirkungslos = Text_("GEBK_MARKE_WIRKUNGSLOS", t.MarkeWirkungslos);
+            t.ZonenVorgabeHoehe = Text_("GEBK_ZONEN_VORGABE_HOEHE", t.ZonenVorgabeHoehe);
+            t.ZonenVorgabeLuftwechsel = Text_("GEBK_ZONEN_VORGABE_LUFTWECHSEL", t.ZonenVorgabeLuftwechsel);
+            t.JeZoneRaumhoehe = Text_("GEBK_JEZONE_RAUMHOEHE", t.JeZoneRaumhoehe);
+            t.JeZoneLuftwechsel = Text_("GEBK_JEZONE_LUFTWECHSEL", t.JeZoneLuftwechsel);
+            t.RueckfallFenster = Text_("GEBK_RUECKFALL_FENSTER", t.RueckfallFenster);
+            t.RueckfallFensterKeines = Text_("GEBK_RUECKFALL_FENSTER_KEINES", t.RueckfallFensterKeines);
+            t.RueckfallBauweise = Text_("GEBK_RUECKFALL_BAUWEISE", t.RueckfallBauweise);
+            t.RueckfallBauweiseKeine = Text_("GEBK_RUECKFALL_BAUWEISE_KEINE", t.RueckfallBauweiseKeine);
             t.HinweisSommerlueftung = Text_("GEBK_HINWEIS_SOMMERLUEFTUNG", t.HinweisSommerlueftung);
             t.VorgabeFormat = Text_("GEBK_VORGABE", t.VorgabeFormat);
             t.VorgabeUnbegrenzt = Text_("GEBK_VORGABE_UNBEGRENZT", t.VorgabeUnbegrenzt);
