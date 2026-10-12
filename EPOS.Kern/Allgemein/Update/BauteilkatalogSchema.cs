@@ -410,8 +410,23 @@ namespace WindowsFormsApplication1
         /// Steht der Schritt? (Leser fragen das, bevor sie die Spalten nennen.) Der Schritt läuft in EINEM Vorgang; deshalb
         /// genügt die Marke, die er zuletzt setzt: die Projekt-Abschnittstabelle und der Abschnittsverweis der Projektschicht.
         /// </summary>
-        public static bool Lesbar() =>
-            DataRepository.TabelleVorhanden(TAB_ABSCHNITT) && DataRepository.SpalteVorhanden(TAB_SCHICHT, SPALTE_ID_ABSCHNITT);
+        public static bool Lesbar()
+        {
+            // Gemerkt je Datenbank, sobald der Schritt steht (ein Schritt wird nie zurückgenommen): Der Leser des Bauteilwegs
+            // fragt je Projekt eine feste Zahl Abfragen (GebaeudeBauteilwegDatenbankTests).
+            string pfad;
+            try { pfad = DataRepository.GetDBPath() ?? ""; }
+            catch (Exception) { pfad = ""; }
+            lock (_sperre)
+                if (pfad.Length > 0 && string.Equals(pfad, _pfadLesbar, StringComparison.OrdinalIgnoreCase)) return true;
+            bool da = DataRepository.TabelleVorhanden(TAB_ABSCHNITT) && DataRepository.SpalteVorhanden(TAB_SCHICHT, SPALTE_ID_ABSCHNITT);
+            if (da)
+                lock (_sperre) _pfadLesbar = pfad;
+            return da;
+        }
+
+        private static readonly object _sperre = new object();
+        private static string _pfadLesbar;
 
         /// <summary>Was noch offen ist: je umzubauende Tabelle, fehlende Spalte, Tabelle oder Index 1 (−1: Tabelle fehlt).</summary>
         public static int Offen()
