@@ -120,6 +120,10 @@ namespace WindowsFormsApplication1
                 };
                 liste.Add(zeile
                     .MitText(Katalogfilterprofil.SpBezeichner, a.Bezeichner)
+                    // BK-2b: Marke, Gruppe und Klasse; die Marke ist das gespeicherte Kennzeichen des Kerns.
+                    .MitText(Katalogfilterprofil.SpEignung, a.SimulationUngeeignet ? MyResource.Resource.BKAT_MARKE_UNGEEIGNET : "")
+                    .MitText(Katalogfilterprofil.SpGruppe, Bauteilkatalog.GruppeText(false, a.GruppeCode))
+                    .MitText(Katalogfilterprofil.SpKlasse, Bauteilkatalog.KlasseText(false, a.KlasseCode))
                     .MitText(Katalogfilterprofil.SpBauteilart, BauteilartText(a.Bauteilart))
                     .MitZahl(Katalogfilterprofil.SpUWert, k.U_WM2K, 3)
                     .MitZahl(Katalogfilterprofil.SpRWert, k.R_M2KW, 2)

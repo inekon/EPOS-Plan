@@ -715,6 +715,9 @@ public sealed class BauteilDialogTexte
     /// <summary><c>BTDLG_LBL_AUFBAU_KATALOG</c></summary>
     public string LabelAufbauKatalog { get; set; } = Resource.BTDLG_LBL_AUFBAU_KATALOG;
 
+    /// <summary><c>BKAT_SCHALTER_AUCH_UNGEEIGNETE</c> — zeigt die als ungeeignet gekennzeichneten Aufbauten (BK-2b).</summary>
+    public string SchalterAuchUngeeignete { get; set; } = Resource.BKAT_SCHALTER_AUCH_UNGEEIGNETE;
+
     /// <summary><c>BTDLG_KATALOG_WAHL</c></summary>
     public string KatalogWahl { get; set; } = Resource.BTDLG_KATALOG_WAHL;
 

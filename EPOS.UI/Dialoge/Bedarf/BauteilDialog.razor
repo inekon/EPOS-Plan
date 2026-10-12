@@ -138,6 +138,12 @@
                     }
                 </KindInhalt>
             </Formularraster>
+            @if (MitUngeeigneten)
+            {
+                @* BK-2b: gekennzeichnete Aufbauten ("meist nicht geeignet") stehen erst nach diesem Schalter in der Wahl. *@
+                <Schalter Bezeichnung="@Texte.SchalterAuchUngeeignete" Wert="@_auchUngeeignete"
+                          WertChanged="w => _auchUngeeignete = w" />
+            }
             @if (Katalogaufbauten.Count > 0)
             {
                 <div class="epos-leiste">
@@ -457,7 +463,8 @@
             var l = new List<(int, string)> { (OHNE, Texte.OhneAufbau) };
             if (_stand.IdAufbauStamm.HasValue)
                 l.Add((KATALOG, string.Format(CultureInfo.CurrentCulture, Texte.AufbauAusKatalog, _stand.AufbauText)));
-            foreach (AufbauWahl a in Projektaufbauten) l.Add((a.Id, a.Text));
+            foreach (AufbauWahl a in Projektaufbauten)
+                if (Zeigen(a, _stand.IdAufbau)) l.Add((a.Id, a.Text));
             // Ein Aufbau, den die Liste nicht (mehr) führt, bleibt als Eintrag stehen.
             if (_stand.IdAufbau is int id && Projektaufbauten.All(a => a.Id != id))
                 l.Add((id, _stand.AufbauText.Length > 0 ? _stand.AufbauText : "#" + id.ToString(CultureInfo.InvariantCulture)));
@@ -468,7 +475,16 @@
     private int? Projektauswahl => _stand.IdAufbauStamm.HasValue ? KATALOG : _stand.IdAufbau ?? OHNE;
 
     private IReadOnlyList<(int Id, string Text)> Katalogeintraege
-        => Katalogaufbauten.Select(a => (a.Id, a.Text)).ToList();
+        => Katalogaufbauten.Where(a => Zeigen(a, _katalogwahl)).Select(a => (a.Id, a.Text)).ToList();
+
+    /// <summary>BK-2b: „auch ungeeignete zeigen" — Vorgabe aus.</summary>
+    private bool _auchUngeeignete;
+
+    /// <summary>Führt eine der Wahlen einen gekennzeichneten Aufbau? Nur dann steht der Schalter.</summary>
+    private bool MitUngeeigneten => Katalogaufbauten.Any(a => a.Ungeeignet) || Projektaufbauten.Any(a => a.Ungeeignet);
+
+    /// <summary>Ein Aufbau steht in der Wahl, wenn er geeignet ist, der Schalter steht oder er die laufende Wahl ist.</summary>
+    private bool Zeigen(AufbauWahl a, int? gewaehlt) => !a.Ungeeignet || _auchUngeeignete || a.Id == gewaehlt;
 
     private void ProjektaufbauWaehlen(int? id)
     {

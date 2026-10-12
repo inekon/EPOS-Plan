@@ -567,7 +567,8 @@ namespace WindowsFormsApplication1
             catch (Exception) { u = null; }
             string text = a.Bezeichner ?? "";
             if (!string.IsNullOrEmpty(a.Bauteilart)) text += " · " + BauteilaufbauCtrl.BauteilartText(a.Bauteilart);
-            return new AufbauWahl(a.ID, katalog, text, a.Bauteilart ?? "", u, !string.IsNullOrEmpty(a.Typaufbau));
+            return new AufbauWahl(a.ID, katalog, text, a.Bauteilart ?? "", u, !string.IsNullOrEmpty(a.Typaufbau),
+                                  a.SimulationUngeeignet);
         }
 
         /// <summary>Die Baustoffe des Projekts — die Schichten eines Projektaufbaus zeigen auf sie.</summary>

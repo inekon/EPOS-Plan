@@ -9339,6 +9339,654 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aluminium ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_ALUMINIUM {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_ALUMINIUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bindiger Boden ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_BINDIG {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_BINDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitumen ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_BITUMEN {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_BITUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Calciumsulfatestrich ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_CALCIUMSULFATESTRICH {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_CALCIUMSULFATESTRICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dämmputz ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_DAEMMPUTZ {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_DAEMMPUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstiger Dämmstoff ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_DAEMMSTOFF_SONSTIGE {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_DAEMMSTOFF_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dampfbremse ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_DAMPFBREMSE {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_DAMPFBREMSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fels ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_FELS {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_FELS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gipsplatte ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_GIPSPLATTE {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_GIPSPLATTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gipsputz ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_GIPSPUTZ {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_GIPSPUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Glas ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_GLAS {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_GLAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gussasphalt ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_GUSSASPHALT {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_GUSSASPHALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Holzfaser ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_HOLZFASER {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_HOLZFASER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Holzwerkstoff ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_HOLZWERKSTOFF {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_HOLZWERKSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalkputz ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_KALKPUTZ {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_KALKPUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalksandstein ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_KALKSANDSTEIN {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_KALKSANDSTEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keramik ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_KERAMIK {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_KERAMIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kunststoffbahn ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_KUNSTSTOFFBAHN {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_KUNSTSTOFFBAHN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kunststoffbelag ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_KUNSTSTOFFBELAG {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_KUNSTSTOFFBELAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kupfer ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_KUPFER {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_KUPFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lehmputz ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_LEHMPUTZ {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_LEHMPUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leichtbeton ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_LEICHTBETON {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_LEICHTBETON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leichtbetonstein ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_LEICHTBETONSTEIN {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_LEICHTBETONSTEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luft ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_LUFT {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_LUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstiges Mauerwerk ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_MAUERWERK_SONSTIGE {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_MAUERWERK_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mineralwolle ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_MINERALWOLLE {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_MINERALWOLLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mörtel ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_MOERTEL {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_MOERTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Naturfaser ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_NATURFASER {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_NATURFASER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Naturstein ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_NATURSTEIN {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_NATURSTEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nichtbindiger Boden ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_NICHTBINDIG {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_NICHTBINDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Normalbeton ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_NORMALBETON {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_NORMALBETON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parkett ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_PARKETT {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_PARKETT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstige Platte ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_PLATTE_SONSTIGE {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_PLATTE_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Polystyrol ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_POLYSTYROL {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_POLYSTYROL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Polyurethan ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_POLYURETHAN {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_POLYURETHAN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Porenbeton ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_PORENBETON {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_PORENBETON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schaumglas ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_SCHAUMGLAS {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_SCHAUMGLAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stahl ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_STAHL {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_STAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stahlbeton ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_STAHLBETON {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_STAHLBETON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstiger Stoff ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_STOFF_SONSTIGE {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_STOFF_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Textilbelag ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_TEXTILBELAG {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_TEXTILBELAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trockenestrich ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_TROCKENESTRICH {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_TROCKENESTRICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vakuumdämmung ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_VAKUUMDAEMMUNG {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_VAKUUMDAEMMUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollholz ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_VOLLHOLZ {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_VOLLHOLZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zementestrich ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_ZEMENTESTRICH {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_ZEMENTESTRICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zementplatte ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_ZEMENTPLATTE {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_ZEMENTPLATTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zementputz ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_ZEMENTPUTZ {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_ZEMENTPUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ziegel ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_ZIEGEL {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_ZIEGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dächer ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_GRUPPE_DAECHER {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_GRUPPE_DAECHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Decken ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_GRUPPE_DECKEN {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_GRUPPE_DECKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Öffnungen ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_GRUPPE_OEFFNUNGEN {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_GRUPPE_OEFFNUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstige ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_GRUPPE_SONSTIGE {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_GRUPPE_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wände ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_GRUPPE_WAENDE {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_GRUPPE_WAENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenwand ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_AUSSENWAND {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_AUSSENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenwand am Erdreich ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_AUSSENWAND_ERDREICH {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_AUSSENWAND_ERDREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bodenplatte ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_BODENPLATTE {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_BODENPLATTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dachfenster ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_DACHFENSTER {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_DACHFENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Oberste Geschossdecke ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_DECKE_OBEN {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_DECKE_OBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Decke nach unten ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_DECKE_UNTEN {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_DECKE_UNTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fenster ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_FENSTER {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_FENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flachdach ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_FLACHDACH {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_FLACHDACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geschossdecke ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_GESCHOSSDECKE {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_GESCHOSSDECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Innenwand ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_INNENWAND {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_INNENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstiges ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_SONSTIGES {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_SONSTIGES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Steildach ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_STEILDACH {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_STEILDACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tür ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_TUER {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_TUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorhangfassade ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_VORHANGFASSADE {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_VORHANGFASSADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die geeignet ähnelt.
+        /// </summary>
+        public static string BKAT_GEEIGNET {
+            get {
+                return ResourceManager.GetString("BKAT_GEEIGNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Öffnung ohne Schicht und ohne U-Wert der Quelle ähnelt.
+        /// </summary>
+        public static string BKAT_GRUND_OEFFNUNG_OHNE_U {
+            get {
+                return ResourceManager.GetString("BKAT_GRUND_OEFFNUNG_OHNE_U", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau ohne Schicht ähnelt.
+        /// </summary>
+        public static string BKAT_GRUND_OHNE_SCHICHT {
+            get {
+                return ResourceManager.GetString("BKAT_GRUND_OHNE_SCHICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schicht {0} ohne Wärmeleitfähigkeit ähnelt.
+        /// </summary>
+        public static string BKAT_GRUND_SCHICHT_OHNE_LAMBDA {
+            get {
+                return ResourceManager.GetString("BKAT_GRUND_SCHICHT_OHNE_LAMBDA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (keine Gruppe) ähnelt.
+        /// </summary>
+        public static string BKAT_GRUPPE_KEINE {
+            get {
+                return ResourceManager.GetString("BKAT_GRUPPE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eigener Satz ähnelt.
         /// </summary>
         public static string BKAT_HERKUNFT_EIGEN {
@@ -9353,6 +10001,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BKAT_HERKUNFT_IMPORT {
             get {
                 return ResourceManager.GetString("BKAT_HERKUNFT_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Importierter Satz – die Quelle stammt aus dem Einlesen und ist nicht änderbar. ähnelt.
+        /// </summary>
+        public static string BKAT_IMPORT_QUELLE {
+            get {
+                return ResourceManager.GetString("BKAT_IMPORT_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (keine Klasse) ähnelt.
+        /// </summary>
+        public static string BKAT_KLASSE_KEINE {
+            get {
+                return ResourceManager.GetString("BKAT_KLASSE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudesimulation ähnelt.
+        /// </summary>
+        public static string BKAT_LBL_EIGNUNG {
+            get {
+                return ResourceManager.GetString("BKAT_LBL_EIGNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gruppe ähnelt.
+        /// </summary>
+        public static string BKAT_LBL_GRUPPE {
+            get {
+                return ResourceManager.GetString("BKAT_LBL_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klasse ähnelt.
+        /// </summary>
+        public static string BKAT_LBL_KLASSE {
+            get {
+                return ResourceManager.GetString("BKAT_LBL_KLASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die meist ungeeignet ähnelt.
+        /// </summary>
+        public static string BKAT_MARKE_UNGEEIGNET {
+            get {
+                return ResourceManager.GetString("BKAT_MARKE_UNGEEIGNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die auch ungeeignete zeigen ähnelt.
+        /// </summary>
+        public static string BKAT_SCHALTER_AUCH_UNGEEIGNETE {
+            get {
+                return ResourceManager.GetString("BKAT_SCHALTER_AUCH_UNGEEIGNETE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur geeignete ähnelt.
+        /// </summary>
+        public static string BKAT_SCHALTER_NUR_GEEIGNETE {
+            get {
+                return ResourceManager.GetString("BKAT_SCHALTER_NUR_GEEIGNETE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die für die Gebäudesimulation meist nicht geeignet ähnelt.
+        /// </summary>
+        public static string BKAT_UNGEEIGNET {
+            get {
+                return ResourceManager.GetString("BKAT_UNGEEIGNET", resourceCulture);
             }
         }
         
@@ -56140,6 +56869,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eignung ähnelt.
+        /// </summary>
+        public static string KFLT_SP_EIGNUNG {
+            get {
+                return ResourceManager.GetString("KFLT_SP_EIGNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die E ähnelt.
         /// </summary>
         public static string KFLT_SP_ENERGIE {
@@ -56307,6 +57045,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_SP_KATALOGVERSION {
             get {
                 return ResourceManager.GetString("KFLT_SP_KATALOGVERSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klasse ähnelt.
+        /// </summary>
+        public static string KFLT_SP_KLASSE {
+            get {
+                return ResourceManager.GetString("KFLT_SP_KLASSE", resourceCulture);
             }
         }
         
@@ -59663,6 +60410,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klasse des Baustoffs unter seiner Gruppe; die Wahl hängt von der Gruppe ab, leer = keine Klasse. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BST_KLASSE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BST_KLASSE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmeleitfähigkeit λ in W/(mK), zulässig 0,005 bis 500; leer = nicht angegeben (0 wäre ein anderer Stoff). ähnelt.
         /// </summary>
         public static string KI_DLG_BST_LAMBDA_ERL {
@@ -59731,6 +60487,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BTA_BEZEICHNER_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_BTA_BEZEICHNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gruppe des Aufbaus (Wände, Decken, Dächer, Öffnungen, Sonstige); leer = aus der Bauteilart. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_GRUPPE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_GRUPPE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klasse des Aufbaus unter seiner Gruppe; die Wahl hängt von der Gruppe ab, leer = keine Klasse. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_KLASSE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_KLASSE_ERL", resourceCulture);
             }
         }
         
