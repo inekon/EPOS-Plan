@@ -5473,6 +5473,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_RAUMNUTZUNG_NORMWERTE = RaumnutzungNormwerteSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="BauteilkatalogSchema.SCHRITT"/> — <b>Schema und Felder des Bauteilkatalogs</b> (BK-2, E132):
+        /// Herkunft EIGEN/IMPORT (Neubau der vier Kopftabellen mit Erhalt der IDs), Gruppe und Klasse, das Kennzeichen „für die
+        /// Gebäudesimulation meist nicht geeignet“, die Felder der Quelle und die Abschnittstabellen.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Bauteilweg liest keine neue Spalte.</para>
+        /// </summary>
+        public const int SCHRITT_BAUTEILKATALOG = BauteilkatalogSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -8025,6 +8034,13 @@ namespace WindowsFormsApplication1
                         "Die Normwerte der DIN koennten nicht in die ausgelieferten Profile eingelesen werden, und die Aussenluft " +
                         "je Person haette keinen Platz. KEIN Rechenergebnis aendert sich - alle Spalten stehen leer.",
                         Schritt_RaumnutzungNormwerte),
+            // BK-2: Schema und Felder des Bauteilkatalogs. Quelle ist BauteilkatalogSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_BAUTEILKATALOG,
+                        "Tab_Baustoff(_STAMM), Tab_Bauteilaufbau(_STAMM), Tab_Bauteilschicht(_STAMM): Herkunft EIGEN/IMPORT, Gruppe, Klasse, " +
+                        "Kennzeichen, Felder der Quelle; Tab_Bauteilabschnitt(_STAMM)",
+                        "Ein eingelesener Katalogsatz waere nicht als solcher erkennbar, Baustoffe und Aufbauten nicht gegliedert, und die " +
+                        "Felder der Quelle haetten keinen Platz. KEIN Rechenergebnis aendert sich - der Bauteilweg liest keine neue Spalte.",
+                        Schritt_Bauteilkatalog),
         };
 
         /// <summary>
@@ -15523,6 +15539,59 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Art der Kaeltebedarfszeilen - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Bauteilkatalog" — Anlass und Wirkung stehen bei <see cref="SCHRITT_BAUTEILKATALOG"/>, die Anweisungen bei
+        /// <see cref="BauteilkatalogSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Bauteilkatalog(Lauf l)
+        {
+            string nr = BauteilkatalogSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in BauteilkatalogSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = BauteilkatalogSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!BauteilkatalogSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Schema und Felder des Bauteilkatalogs stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Bauteilkatalog - " + (handgriffe == 0 ? "stand bereits." : handgriffe + " Handgriff(e).") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

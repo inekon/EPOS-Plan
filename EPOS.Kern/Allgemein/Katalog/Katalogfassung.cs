@@ -337,15 +337,22 @@ namespace WindowsFormsApplication1
         private static readonly Katalogtabelle[] STUFE2 =
         {
             new Katalogtabelle("Tab_Baustoff_STAMM", "BST",
-                new[] { "Bezeichner", "Gruppe", "Hersteller", "Lambda", "Rho", "cp", "Quelle", "Herkunft", "Quellkennung" },
+                new[] { "Bezeichner", "Gruppe", "Hersteller", "Lambda", "Rho", "cp", "Quelle", "Herkunft", "Quellkennung" }
+                    .Concat(BauteilkatalogSchema.BAUSTOFF_SPALTEN.Select(s => s.Name)).ToArray(),
                 new Katalogkind("Tab_Baustoffsynonym_STAMM", "ID_Baustoff", new[] { "Materialname", "Sprache", "Quelle" })
                 { GesperrtEinfuegen = true })
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_BAUSTOFF" },
             new Katalogtabelle("Tab_Bauteilaufbau_STAMM", "BTA",
-                new[] { "Bezeichner", "Beschreibung", "Bauteilart", "Quelle", "Herkunft", "Quellkennung", "Typaufbau" },
+                new[] { "Bezeichner", "Beschreibung", "Bauteilart", "Quelle", "Herkunft", "Quellkennung", "Typaufbau" }
+                    .Concat(BauteilkatalogSchema.AUFBAU_SPALTEN.Select(s => s.Name)).ToArray(),
                 new Katalogkind("Tab_Bauteilschicht_STAMM", "ID_Aufbau",
-                    new[] { "Reihenfolge", "ID_Baustoff", "Dicke", "IstLuftschicht", "Lambda", "Rho", "cp" })
-                { Verweise = new[] { new Katalogverweis("ID_Baustoff", "Tab_Baustoff_STAMM", SPALTE_SCHLUESSEL) } })
+                    new[] { "Reihenfolge", "ID_Baustoff", "Dicke", "IstLuftschicht", "Lambda", "Rho", "cp" }
+                        .Concat(BauteilkatalogSchema.SCHICHT_SPALTEN.Select(s => s.Name)).ToArray())
+                {
+                    Verweise = new[] { new Katalogverweis("ID_Baustoff", "Tab_Baustoff_STAMM", SPALTE_SCHLUESSEL) },
+                    // BK-2: Der Abschnittsverweis reist erst mit den Abschnitten (BK-5); bis dahin laesst der Abgleich ihn leer.
+                    Nebenspalten = new[] { BauteilkatalogSchema.SPALTE_ID_ABSCHNITT }
+                })
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_BAUTEILAUFBAU" },
             new Katalogtabelle("Tab_Brennstoff_Stamm", "BRS",
                 new[]

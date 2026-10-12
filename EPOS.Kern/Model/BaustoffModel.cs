@@ -51,7 +51,21 @@
         /// <summary>„Gehört zur Auslieferung" — nur im Katalog; schützt vor Ändern und Löschen.</summary>
         public bool ReadOnly;
 
+        /// <summary>Gruppe (Code, BK-2); <c>null</c> = nicht gegliedert.</summary>
+        public string GruppeCode;
+
+        /// <summary>Klasse (Code, BK-2); <c>null</c> = nicht gegliedert.</summary>
+        public string KlasseCode;
+
+        /// <summary>Die Felder der Quelle (Spalten aus <c>BauteilkatalogSchema.BAUSTOFF_SPALTEN</c>), roh je Spaltenname.</summary>
+        public System.Collections.Generic.Dictionary<string, object> Zusatz = new System.Collections.Generic.Dictionary<string, object>();
+
         /// <summary>Eine entkoppelte Kopie.</summary>
-        public BaustoffModel Kopie() => (BaustoffModel)MemberwiseClone();
+        public BaustoffModel Kopie()
+        {
+            var k = (BaustoffModel)MemberwiseClone();
+            k.Zusatz = new System.Collections.Generic.Dictionary<string, object>(Zusatz ?? new System.Collections.Generic.Dictionary<string, object>());
+            return k;
+        }
     }
 }

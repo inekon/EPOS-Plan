@@ -33510,6 +33510,12 @@ Do you want to allow this?</value>
   <data name="GIMP_HERKUNFT_VORGABE" xml:space="preserve">
     <value>Default value</value>
   </data>
+  <data name="BKAT_HERKUNFT_EIGEN" xml:space="preserve">
+    <value>Own entry</value>
+  </data>
+  <data name="BKAT_HERKUNFT_IMPORT" xml:space="preserve">
+    <value>Imported</value>
+  </data>
   <data name="GIMP_HERKUNFT_VORGABEFREI" xml:space="preserve">
     <value>Default value (open value)</value>
   </data>

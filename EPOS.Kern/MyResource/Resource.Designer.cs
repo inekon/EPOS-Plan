@@ -9240,6 +9240,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigener Satz ähnelt.
+        /// </summary>
+        public static string BKAT_HERKUNFT_EIGEN {
+            get {
+                return ResourceManager.GetString("BKAT_HERKUNFT_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingelesen ähnelt.
+        /// </summary>
+        public static string BKAT_HERKUNFT_IMPORT {
+            get {
+                return ResourceManager.GetString("BKAT_HERKUNFT_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Variante anlegen ähnelt.
         /// </summary>
         public static string BKS_BTN_ANLEGEN {
@@ -58898,7 +58916,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ordnungsgruppe (etwa Mauerwerk, Beton, Dämmstoffe); leer = ohne Gruppe. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stoffgruppe aus der festen Liste (etwa Mauerwerk, Beton, Dämmstoffe, „Sonstige“ für alles Übrige); leer = ohne Gruppe. Je Gruppe nennt der Dialog Werte außerhalb des üblichen Bereichs als Hinweis. ähnelt.
         /// </summary>
         public static string KI_DLG_BST_GRUPPE_ERL {
             get {

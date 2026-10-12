@@ -1042,7 +1042,11 @@ namespace WindowsFormsApplication1
         /// <c>Aussenluft_Person</c> und die Herkunft der Werte (<c>Werte_Herkunft</c>, <c>Werte_Quelle</c>, <c>Werte_Datum</c>)
         /// an <c>Tab_Raumnutzungsprofil</c> (<see cref="RaumnutzungNormwerteSchema"/>). <b>Ergebnisneutral:</b> Alle vier
         /// Spalten stehen leer.
-        public const int Zielversion = RaumnutzungNormwerteSchema.SCHRITT;
+        /// Danach, mit SCHEMA UND FELDERN DES BAUTEILKATALOGS (BK-2, E132), steht das Ziel auf
+        /// <see cref="BauteilkatalogSchema.SCHRITT"/>: Herkunft EIGEN/IMPORT, Gruppe und Klasse, das Kennzeichen „für die
+        /// Gebäudesimulation meist nicht geeignet“, die Felder der Quelle und die Abschnittstabellen
+        /// (<see cref="BauteilkatalogSchema"/>). <b>Ergebnisneutral:</b> Der Bauteilweg liest keine neue Spalte.
+        public const int Zielversion = BauteilkatalogSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

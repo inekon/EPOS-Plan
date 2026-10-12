@@ -50,6 +50,18 @@ namespace WindowsFormsApplication1
         /// <summary>Die Schichten, innen → außen; beim Speichern gilt die Listenreihenfolge.</summary>
         public List<BauteilschichtModel> Schichten = new List<BauteilschichtModel>();
 
+        /// <summary>Gruppe (Code, BK-2); <c>null</c> = nicht gegliedert.</summary>
+        public string GruppeCode;
+
+        /// <summary>Klasse (Code, BK-2); <c>null</c> = nicht gegliedert.</summary>
+        public string KlasseCode;
+
+        /// <summary>„Für die Gebäudesimulation meist nicht geeignet“ — vom Kern gesetzt (<c>Bauteilkatalog.MeistUngeeignet</c>).</summary>
+        public bool SimulationUngeeignet;
+
+        /// <summary>Die Felder der Quelle (Spalten aus <c>BauteilkatalogSchema.AUFBAU_SPALTEN</c>), roh je Spaltenname.</summary>
+        public Dictionary<string, object> Zusatz = new Dictionary<string, object>();
+
         /// <summary>Summe der Schichtdicken [m].</summary>
         public double Gesamtdicke => Schichten.Sum(s => s.Dicke);
 
@@ -58,6 +70,7 @@ namespace WindowsFormsApplication1
         {
             var k = (BauteilaufbauModel)MemberwiseClone();
             k.Schichten = Schichten.Select(s => s.Kopie()).ToList();
+            k.Zusatz = new Dictionary<string, object>(Zusatz ?? new Dictionary<string, object>());
             return k;
         }
     }

@@ -283,6 +283,34 @@ namespace Auslieferungsvorlage
                 _bericht.Zeile("    eingelesene Normwerte entfernt: " + normwerte.Geschrieben + " Profil(e) der DIN" +
                                (normwerte.Ok ? "" : " - FEHLER: " + normwerte.Meldung));
             }
+            HerkunftZaehlen();
+        }
+
+        /// <summary>
+        /// <b>BK-2 (E132 F8):</b> Eingelesene Katalogsätze (<c>Herkunft = 'IMPORT'</c>) dürfen in die Auslieferung — es gibt
+        /// KEINE Löschregel für sie. Der Prüfbericht zählt die Sätze des Baustoff- und des Aufbaukatalogs je Herkunft.
+        /// </summary>
+        private void HerkunftZaehlen()
+        {
+            foreach (string t in new[] { BauteilkatalogSchema.TAB_BAUSTOFF_STAMM, BauteilkatalogSchema.TAB_AUFBAU_STAMM })
+            {
+                if (!DataRepository.TabelleVorhanden(t) || !DataRepository.SpalteVorhanden(t, "Herkunft")) continue;
+                foreach (KeyValuePair<string, long> z in HerkunftJeTabelle(t))
+                    _bericht.Zeile("    " + t + " Herkunft " + z.Key + ": " + z.Value.ToString(CultureInfo.InvariantCulture) + " Satz/Saetze");
+            }
+        }
+
+        /// <summary>Die Zahl der Sätze je Herkunft (leer als „(leer)“), nach Herkunft geordnet.</summary>
+        internal static List<KeyValuePair<string, long>> HerkunftJeTabelle(string tabelle)
+        {
+            var liste = new List<KeyValuePair<string, long>>();
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT IFNULL(\"Herkunft\", '(leer)') AS h, COUNT(*) AS n FROM \"" + tabelle + "\" GROUP BY h ORDER BY h");
+            if (dt == null) return liste;
+            foreach (DataRow r in dt.Rows)
+                liste.Add(new KeyValuePair<string, long>(Convert.ToString(r["h"], CultureInfo.InvariantCulture),
+                                                         Convert.ToInt64(r["n"], CultureInfo.InvariantCulture)));
+            return liste;
         }
 
         // =================================================================================
