@@ -6,19 +6,19 @@ Einstiegs-Prompt. Regelquelle bleibt [`CLAUDE.md`](../../../CLAUDE.md) mit den P
 in der [Statusdatei iOS-Migration](../Status_iOS_Migration.md) (eine Zeile je Schritt) und in der
 [Statusdatei Gebäudesimulation](../Status_Gebaeudesimulation_VDI6007.md) (Entscheidungsregister bis E133, Stufentabelle).
 Es löst die [Übergabe vom 08.10.2026](../../ueberholt/2026-10-08_Uebergabe_Gebaeudesimulation_Kontowechsel.md) ab und wandert
-nach `Dokumentation/ueberholt/`, sobald die Fortsetzung BK-2 und die GD-Nachzüge abgeschlossen hat.
+nach `Dokumentation/ueberholt/`, sobald die Fortsetzung BK-3 und die GD-Nachzüge abgeschlossen hat.
 
 ## 1. Stand bei der Übergabe
 
 | Was | Wert |
 |---|---|
 | Arbeitszweig | `ios_migration_september` (Remote `origin`). Der Sitzungszweig des alten Kontos `claude/magical-bohr-ff5ufj` wurde bei jedem Push mitgezogen; die neue Sitzung nimmt ihren eigenen Sitzungszweig |
-| Letzte Wellen | #1026 GD-4, #1023 BK-1, #1020 GD-5, #1022 NP7/NP7b (Schritt 220); davor #1011 NP6, #1012 Quick Assist (Admin-Zweig), #1013 AB2, #1014 AB3, #1015 GD-1, #1016 GD-2, #1017 Entwurf BK — gepusht `f40fe2fa1`; danach Anmeldung Schritt 220 (`6870f7169`) und GD-3 mit diesem Papier (#1019) |
+| Letzte Wellen | #1027 BK-2 (Schritt 221), #1026 GD-4, #1023 BK-1, #1020 GD-5, #1022 NP7/NP7b (Schritt 220); davor #1011 NP6, #1012 Quick Assist (Admin-Zweig), #1013 AB2, #1014 AB3, #1015 GD-1, #1016 GD-2, #1017 Entwurf BK — gepusht `f40fe2fa1`; danach Anmeldung Schritt 220 (`6870f7169`) und GD-3 mit diesem Papier (#1019) |
 | CI | Kern-Lauf 38206954119 grün auf `02d4ddfe0` (enthält alles bis #1022); #1010 grün mit 38188012085 auf `228a10287`; vermerkt in #1010, #1011, #1013–#1017, #1019, #1020, #1022. #1023 (BK-1) und die Papiere danach sind mit [skip ci] gepusht und laufen mit dem nächsten Push ohne [skip ci] durch die CI |
 | Referenzbasis | **R52** `Referenzlaeufe/2026-10-11_R52_Vorheizen`, dreißig Projekte; CI-Auswahl 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065. Nächste freie Basis **R53** (vorgesehen für SA4) |
 | Testdatenbank | Schemastand **220** (Git LFS) |
-| Schemakette | 218 `KaelteArtSchema` (Sitzung Kälteanlagen), 219 `RaumnutzungNormkategorienSchema` (NP6), 220 `RaumnutzungNormwerteSchema` (NP7); **221 angemeldet für BK-2**; **222 frei** |
-| Statuszeilen | höchste vergebene #1026; vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E133**, **E134 frei** |
+| Schemakette | 218 `KaelteArtSchema` (Sitzung Kälteanlagen), 219 `RaumnutzungNormkategorienSchema` (NP6), 220 `RaumnutzungNormwerteSchema` (NP7); 221 `BauteilkatalogSchema` (BK-2); **222 frei** |
+| Statuszeilen | höchste vergebene #1027; vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E133**, **E134 frei** |
 | Parallele Sitzungen | „Kälteanlagen“, „Dialoge und Korrekturen“ (Konto 3), „Administration und Support“; alle pushen auf denselben Zweig. Statuskonflikte zeilenweise lösen, Nummernkollisionen über die nächste freie Nummer |
 
 ## 2. Was die Sitzung seit dem 08.10.2026 gebaut hat
@@ -41,19 +41,17 @@ Alle Zeilen mit grünem Gate gepusht; Einzelheiten in der Statuszeile und im Pro
 | BK-Entwurf | #1017 | [Entwurf Bauteilkatalog und Hottgenroth-Import](2026-10-12_Entwurf_Bauteilkatalog_Hottgenroth.md), Fragen F1–F8 mit E132 entschieden |
 | BK-1 | #1023 | Editoren ohne Schema: Wärmekapazität immer sichtbar, Stoffgruppe als Auswahl mit Bändern, Summenfuß R_si…U/C, Kapazität im Bauteildialog |
 | GD-4 | #1026 | Als Mehrzonenmodell übernehmen (Prüfsumme, Blatt, Ersetzen in einem Vorgang), Sprung Kachel Gebäudekühlung → Gruppe „Kühlung“ |
+| BK-2 | #1027 | Schritt 221: Herkunft, Quellkennung, Gruppe/Klasse, Kennzeichen „meist nicht geeignet“, Felder der Quelle, Abschnitte |
 
 ## 3. Laufende Arbeit beim Schreiben
 
-Ein Opus-Agent arbeitet im Container des alten Kontos, ohne Push. Ist ihre Arbeit beim Wechsel nicht in einer Statuszeile
-gepusht, ist sie verloren und wird neu beauftragt (ein Auftrag an `opus-umsetzung` mit `model: opus` im eigenen Worktree):
+Keine Agenten. Festlegungen, die Folgewellen kennen müssen:
 
-- **BK-2 „Schema und Felder“** (Schritt **221 angemeldet**, E132): Herkunft, Quelle, Quellkennung, Gruppe und Klasse,
-  Kennzeichen „für die Gebäudesimulation meist nicht geeignet“, die Felder nach „Folgerung für BK-2“ im
-  [Feldinventar](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-12_BK_Feldinventar_Hottgenroth.md) für Baustoff, Aufbau,
-  Schicht, Abschnitt und Fenster; keine Löschregel der Auslieferung; Testdatenbank auf 221; Rechenweg unberührt.
-
-Festlegung aus NP7, die Folgewellen kennen müssen: **Außenluft je Person** ist eine eigene Spalte `Aussenluft_Person`
-(m³/(h·Person)) neben `Aussenluft`/`Aussenluft_Einheit`; im Generator geht die raum- oder flächenbezogene Außenluft vor.
+- **Außenluft je Person** (NP7) ist eine eigene Spalte `Aussenluft_Person` (m³/(h·Person)) neben `Aussenluft`/`Aussenluft_Einheit`;
+  im Generator geht die raum- oder flächenbezogene Außenluft vor.
+- **Bauteilkatalog** (BK-2): Gruppe und Klasse sind Code-Spalten mit CHECK (Texte zweisprachig), Abschnitte stehen in
+  `Tab_Bauteilabschnitt(_STAMM)`, das Kennzeichen `Simulation_Ungeeignet` setzt nur der Kern; importierte Sätze tragen
+  Herkunft IMPORT, Quelle und Quellkennung und bleiben in der Auslieferung.
 
 ## 4. Nächste Arbeit (Reihenfolge)
 
@@ -66,12 +64,13 @@ Festlegung aus NP7, die Folgewellen kennen müssen: **Außenluft je Person** ist
    nach Anwenderentscheid (Abschnitt 5).
 4. **Wiki und Logbuch** der Wellen GD, AB, NP6/NP7, KS (Seiten „Gebäude“, „Gebäudeimport“, „Nutzungsprofile“); Upload nur
    gebündelt und auf Zuruf, Versionsnummer beim Anwender erfragen.
-5. **BK** (E132 entschieden, Entwurf Abschnitt 6a; BK-1 Editoren gebaut, #1023): BK-2 Schemaschritt mit allen
-   Feldern der Quelle, Herkunft, Gruppe, Klasse und Kennzeichen (ohne Löschregel der Auslieferung), BK-3 Import mit
-   Zusammenführung der Dubletten **direkt aus dem CSV-Export der Quelltabellen (E133)**, BK-4 LocalDB-Werkzeug (Windows, nur
-   für einen neuen Katalogstand), BK-5 inhomogene Schichten, BK-6 Fenster im
-   Aufbaukatalog, BK-7 Wiki. Rund 12–16 PT.
-   Grundlage für BK-2: [Feldinventar](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-12_BK_Feldinventar_Hottgenroth.md)
+5. **BK** (E132, E133; BK-1 #1023 und BK-2 #1027 gebaut): BK-2b Oberfläche (Gruppe und Klasse in Katalogdialog und -liste,
+   Filter nach dem Kennzeichen, Texte der Klassen in beiden Sprachen); BK-3 Import **direkt aus dem CSV-Export der
+   Quelltabellen (E133)** mit Abbildungsregeln, Fremdcode-Tafel, Einheiten der offenen Felder, Zusammenführung der Dubletten und
+   Dialog „Bauteilkatalog einlesen…“ — Formatdetails und `Basis_Auszug.csv` (Bauteilart) sind bei der lokalen Sitzung
+   angefragt; BK-4 LocalDB-Werkzeug nur für einen neuen Katalogstand; BK-5 inhomogene Schichten (Abschnitte in Editor,
+   Projektkopie, Katalogpaket); BK-6 Fenster; BK-7 Wiki. Rund 8–11 PT.
+   Grundlagen: [Feldinventar](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-12_BK_Feldinventar_Hottgenroth.md)
    mit Vorschlag der zu übernehmenden Felder, [Strukturbericht](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-12_BK_Strukturbericht_Hottgenroth.md);
    die `.mdf` und der Export liegen nur beim Anwender (lokale Sitzung „iOS migration merge conflicts“, `C:\Temp\Hsetu\`).
 6. **Übernommen von der Sitzung „Anlagendialog/Kältebedarf“:** Sprung der Kachel Gebäudekühlung mit GD-4 gebaut (#1026);
@@ -128,7 +127,7 @@ Dokumentation/aktuell/Gebaeudesimulation/2026-10-12_Uebergabe_Gebaeudesimulation
 Dokumentation/aktuell/Status_iOS_Migration.md nur den Kopf (Schemaanmeldung) und die Zeilen ab #1010, aus
 Dokumentation/aktuell/Status_Gebaeudesimulation_VDI6007.md die Entscheide E128–E131. Prüfe mit
 git log --format='%h %<(72,trunc)%s' -n 15 origin/ios_migration_september, welche Wellen aus Abschnitt 3 schon gepusht sind.
-Dann arbeite Abschnitt 4 der Reihe nach ab: CI-Vermerke, BK-2 (neu beauftragen, falls nicht gepusht), Wiki, danach BK-3 ff. nach E132 und nach meinen Entscheiden der NP7-Nachzug.
+Dann arbeite Abschnitt 4 der Reihe nach ab: CI-Vermerke, BK-3 (Import direkt aus dem CSV-Export, E133) mit BK-2b, Wiki, danach BK-5 ff. und nach meinen Entscheiden der NP7-Nachzug.
 Orchestriere mit Agenten (Modell ausdrücklich setzen), Reihenfolge Merge → Gate → Statuszeile und Protokoll → Push beider
 Zweige → CI-Vermerk [skip ci]. Push auf ios_migration_september und den Sitzungszweig ist erlaubt; keine macOS-, iOS- oder
 Setup-Läufe, kein Wiki-Upload, keine Pull Requests, kein Force-Push ohne Rückfrage. Anwenderdateien und Normwerte nie ins
