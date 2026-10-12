@@ -71,6 +71,18 @@ public sealed class BaustoffKatalogKiSicht
     }
 
     /// <summary>Der Hersteller im Arbeitsstand; leer = herstellerneutral.</summary>
+    /// <summary>Die Klassen der Gruppe des Arbeitsstands (Code, Anzeigetext) — BK-2b.</summary>
+    public IReadOnlyList<KiWahleintrag> KlasseWahl
+        => Bauteilkatalog.Klassen(true, Bauteilkatalog.GruppeAusStoffgruppe(ArbeitLesen?.Invoke()?.Gruppe ?? ""))
+               .Select(k => new KiWahleintrag(k, Bauteilkatalog.KlasseText(true, k))).ToList();
+
+    /// <summary>Die Klasse als Code; leer = keine Klasse.</summary>
+    public string Klasse
+    {
+        get => ArbeitLesen?.Invoke()?.KlasseCode ?? "";
+        set => Setzen(d => d.KlasseCode = value ?? "");
+    }
+
     public string Hersteller
     {
         get => ArbeitLesen?.Invoke()?.Hersteller ?? "";

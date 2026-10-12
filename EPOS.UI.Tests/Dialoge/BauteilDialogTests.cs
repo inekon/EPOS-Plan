@@ -432,4 +432,47 @@ public class BauteilDialogTests : EposBunitContext
         Assert.NotNull(flaeche);
         Assert.Equal(60.0, flaeche.Lesen());
     }
+
+    // =================================================================================
+    // BK-2b: gekennzeichnete Aufbauten in der Wahl
+    // =================================================================================
+
+    [Fact]
+    public void Gekennzeichnete_Aufbauten_stehen_erst_nach_dem_Schalter_in_der_Wahl()
+    {
+        var projekt = new[]
+        {
+            new AufbauWahl(11, false, "Außenwand Bestand", DbWerte.BAUTEILART_AUSSENWAND, 1.2),
+            new AufbauWahl(13, false, "Außenwand ohne Lambda", DbWerte.BAUTEILART_AUSSENWAND, null, Ungeeignet: true)
+        };
+        var cut = Render<BauteilDialog>(p => p
+            .Add(x => x.Bauteil, Wand())
+            .Add(x => x.Projektaufbauten, projekt)
+            .Add(x => x.Katalogaufbauten, KATALOG)
+            .Add(x => x.Geschlossen, _ => { }));
+
+        IElement Wahl() => cut.FindAll("select").First(s => s.TextContent.Contains("Außenwand Bestand"));
+        Assert.DoesNotContain("Außenwand ohne Lambda", Wahl().TextContent);
+        IElement schalter = cut.FindAll("label").First(l => l.TextContent.Contains("auch ungeeignete zeigen"));
+        schalter.QuerySelector(".epos-schalter-kasten")!.Change(true);
+        Assert.Contains("Außenwand ohne Lambda", Wahl().TextContent);
+    }
+
+    [Fact]
+    public void Ohne_gekennzeichnete_Aufbauten_steht_kein_Schalter()
+    {
+        var cut = Aufbauen(katalog: KATALOG);
+        Assert.DoesNotContain("auch ungeeignete zeigen", cut.Markup);
+    }
+
+    [Fact]
+    public void Der_Schalter_steht_auf_Englisch()
+    {
+        using var kultur = new Kulturvorrichtung("en-US");
+        var cut = Render<BauteilDialog>(p => p
+            .Add(x => x.Bauteil, Wand())
+            .Add(x => x.Projektaufbauten, new[] { new AufbauWahl(13, false, "Wall", DbWerte.BAUTEILART_AUSSENWAND, null, Ungeeignet: true) })
+            .Add(x => x.Geschlossen, _ => { }));
+        Assert.Contains("also show unsuitable", cut.Markup);
+    }
 }

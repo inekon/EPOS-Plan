@@ -120,6 +120,10 @@ namespace WindowsFormsApplication1
                 };
                 liste.Add(zeile
                     .MitText(Katalogfilterprofil.SpBezeichner, a.Bezeichner)
+                    // BK-2b: Marke, Gruppe und Klasse; die Marke ist das gespeicherte Kennzeichen des Kerns.
+                    .MitText(Katalogfilterprofil.SpEignung, a.SimulationUngeeignet ? MyResource.Resource.BKAT_MARKE_UNGEEIGNET : "")
+                    .MitText(Katalogfilterprofil.SpGruppe, Bauteilkatalog.GruppeText(false, a.GruppeCode))
+                    .MitText(Katalogfilterprofil.SpKlasse, Bauteilkatalog.KlasseText(false, a.KlasseCode))
                     .MitText(Katalogfilterprofil.SpBauteilart, BauteilartText(a.Bauteilart))
                     .MitZahl(Katalogfilterprofil.SpUWert, k.U_WM2K, 3)
                     .MitZahl(Katalogfilterprofil.SpRWert, k.R_M2KW, 2)
@@ -199,15 +203,10 @@ namespace WindowsFormsApplication1
                     continue;
                 }
                 schichten.Add(schicht);
-                try
-                {
-                    Bauteilreduktion.Pruefen(new[] { schicht }, wer);
+                // BK-2b: ohne Ausnahme geprüft - eine Wahlliste rechnet tausende Aufbauten; die Meldung mit der richtigen
+                // Schichtnummer liefert die Gesamtprüfung darunter.
+                if (Bauteilreduktion.SchichtBefund(schicht, wer, i + 1) == null)
                     rJe[i] = Bauteilreduktion.Waermedurchlasswiderstand(schicht, richtung, wer, i + 1);
-                }
-                catch (GebaeudeModellException)
-                {
-                    // Die Meldung mit der richtigen Schichtnummer liefert der Gesamtlauf darunter.
-                }
             }
 
             var basis = new BauteilaufbauKennwerte
@@ -218,6 +217,7 @@ namespace WindowsFormsApplication1
                 RJeSchicht_M2KW = rJe
             };
             if (grund != null) return basis with { Grund = grund };
+            if (Bauteilreduktion.PruefenOhneAusnahme(schichten, wer) is string befund) return basis with { Grund = befund };
 
             Schichtkennwerte k;
             try

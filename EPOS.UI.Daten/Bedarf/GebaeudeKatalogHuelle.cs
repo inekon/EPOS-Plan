@@ -260,10 +260,8 @@ namespace WindowsFormsApplication1
             // entfällt (ZK-b).
             var projektaufbauten = (katalog ? aufbauCtrl.LesenKatalog() : aufbauCtrl.LesenJeProjekt(idProjekt))
                 .Where(a => a != null).ToDictionary(a => a.ID);
-            List<AufbauWahl> projektwahl = projektaufbauten.Values.Select(a => Wahl(a, katalog)).ToList();
-            List<AufbauWahl> katalogwahl = katalog
-                ? new List<AufbauWahl>()
-                : aufbauCtrl.LesenKatalog().Where(a => a != null).Select(a => Wahl(a, true)).ToList();
+            List<AufbauWahl> projektwahl = Wahlen(projektaufbauten.Values, katalog);
+            List<AufbauWahl> katalogwahl = katalog ? new List<AufbauWahl>() : Wahlen(aufbauCtrl.LesenKatalog(), true);
 
             // Die Konditionierung einer gelesenen Zone der Ebene.
             KonditionierungCtrl.Eigner Zoneneigner(int idZone)
@@ -559,15 +557,36 @@ namespace WindowsFormsApplication1
             };
         }
 
-        /// <summary>Ein Aufbau zur Wahl: Name (samt Bauteilart) und der im Kern gerechnete U-Wert.</summary>
+        /// <summary>Die Aufbauten zur Wahl — eine Liste je Katalog oder Projekt (BK-2b: ohne Ausnahme, auch bei 8 500 Sätzen).</summary>
+        internal static List<AufbauWahl> Wahlen(IEnumerable<BauteilaufbauModel> aufbauten, bool katalog)
+            => aufbauten.Where(a => a != null).Select(a => Wahl(a, katalog)).ToList();
+
+        /// <summary>
+        /// Ein Aufbau zur Wahl: Name (samt Bauteilart) und der im Kern gerechnete U-Wert. BK-2b: Ein gekennzeichneter Aufbau
+        /// (gespeichertes Kennzeichen oder die Kernregel, die auch die Bänder des Rechenwegs prüft) wird nicht gerechnet — sein U
+        /// ist das U der Quelle, sonst leer mit Grund; die Wahl zeigt ihn erst nach „auch ungeeignete zeigen". Der Rechenweg
+        /// wirft für die gezeigten keine Ausnahme mehr (Prüfung ohne Ausnahme im Kern).
+        /// </summary>
         private static AufbauWahl Wahl(BauteilaufbauModel a, bool katalog)
         {
-            double? u = null;
-            try { u = BauteilaufbauCtrl.Kennwerte(a, mitBezugsperiode: false).U_WM2K; }
-            catch (Exception) { u = null; }
+            string grund = Bauteilkatalog.UngeeignetGrund(a);
+            bool ungeeignet = a.SimulationUngeeignet || grund != null;
+            double? u;
+            if (ungeeignet)
+            {
+                u = Bauteilkatalog.Zahl(a.Zusatz, BauteilkatalogSchema.SPALTE_U_QUELLE);
+            }
+            else
+            {
+                BauteilaufbauKennwerte k = BauteilaufbauCtrl.Kennwerte(a, mitBezugsperiode: false);
+                u = k.U_WM2K;
+                grund = u.HasValue ? null : k.Grund;
+            }
             string text = a.Bezeichner ?? "";
             if (!string.IsNullOrEmpty(a.Bauteilart)) text += " · " + BauteilaufbauCtrl.BauteilartText(a.Bauteilart);
-            return new AufbauWahl(a.ID, katalog, text, a.Bauteilart ?? "", u, !string.IsNullOrEmpty(a.Typaufbau));
+            if (ungeeignet) text += " · " + MyResource.Resource.BKAT_MARKE_UNGEEIGNET;
+            return new AufbauWahl(a.ID, katalog, text, a.Bauteilart ?? "", u, !string.IsNullOrEmpty(a.Typaufbau),
+                                  ungeeignet, u.HasValue ? "" : grund ?? "");
         }
 
         /// <summary>Die Baustoffe des Projekts — die Schichten eines Projektaufbaus zeigen auf sie.</summary>

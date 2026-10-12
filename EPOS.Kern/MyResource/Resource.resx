@@ -54354,5 +54354,263 @@ Chart</value>
   <data name="BKI_ABGELEHNT" xml:space="preserve">
     <value>Die Quelle ist abgelehnt: {0}</value>
   </data>
+  <data name="KFLT_SP_KLASSE" xml:space="preserve">
+    <value>Klasse</value>
+  </data>
+  <data name="KFLT_SP_EIGNUNG" xml:space="preserve">
+    <value>Eignung</value>
+  </data>
+  <data name="BKAT_MARKE_UNGEEIGNET" xml:space="preserve">
+    <value>meist ungeeignet</value>
+  </data>
+  <data name="BKAT_UNGEEIGNET" xml:space="preserve">
+    <value>für die Gebäudesimulation meist nicht geeignet</value>
+  </data>
+  <data name="BKAT_GEEIGNET" xml:space="preserve">
+    <value>geeignet</value>
+  </data>
+  <data name="BKAT_LBL_EIGNUNG" xml:space="preserve">
+    <value>Gebäudesimulation</value>
+  </data>
+  <data name="BKAT_GRUND_SCHICHT_OHNE_LAMBDA" xml:space="preserve">
+    <value>Schicht {0} ohne Wärmeleitfähigkeit</value>
+  </data>
+  <data name="BKAT_GRUND_OHNE_SCHICHT" xml:space="preserve">
+    <value>Aufbau ohne Schicht</value>
+  </data>
+  <data name="BKAT_GRUND_OEFFNUNG_OHNE_U" xml:space="preserve">
+    <value>Öffnung ohne Schicht und ohne U-Wert der Quelle</value>
+  </data>
+  <data name="BKAT_SCHALTER_NUR_GEEIGNETE" xml:space="preserve">
+    <value>nur geeignete</value>
+  </data>
+  <data name="BKAT_SCHALTER_AUCH_UNGEEIGNETE" xml:space="preserve">
+    <value>auch ungeeignete zeigen</value>
+  </data>
+  <data name="BKAT_LBL_GRUPPE" xml:space="preserve">
+    <value>Gruppe</value>
+  </data>
+  <data name="BKAT_LBL_KLASSE" xml:space="preserve">
+    <value>Klasse</value>
+  </data>
+  <data name="BKAT_GRUPPE_KEINE" xml:space="preserve">
+    <value>(keine Gruppe)</value>
+  </data>
+  <data name="BKAT_KLASSE_KEINE" xml:space="preserve">
+    <value>(keine Klasse)</value>
+  </data>
+  <data name="BKAT_IMPORT_QUELLE" xml:space="preserve">
+    <value>Importierter Satz – die Quelle stammt aus dem Einlesen und ist nicht änderbar.</value>
+  </data>
+  <data name="KI_DLG_BST_KLASSE_ERL" xml:space="preserve">
+    <value>Klasse des Baustoffs unter seiner Gruppe; die Wahl hängt von der Gruppe ab, leer = keine Klasse.</value>
+  </data>
+  <data name="KI_DLG_BTA_GRUPPE_ERL" xml:space="preserve">
+    <value>Gruppe des Aufbaus (Wände, Decken, Dächer, Öffnungen, Sonstige); leer = aus der Bauteilart.</value>
+  </data>
+  <data name="KI_DLG_BTA_KLASSE_ERL" xml:space="preserve">
+    <value>Klasse des Aufbaus unter seiner Gruppe; die Wahl hängt von der Gruppe ab, leer = keine Klasse.</value>
+  </data>
+  <data name="BKAT_BTA_GRUPPE_WAENDE" xml:space="preserve">
+    <value>Wände</value>
+  </data>
+  <data name="BKAT_BTA_GRUPPE_DECKEN" xml:space="preserve">
+    <value>Decken</value>
+  </data>
+  <data name="BKAT_BTA_GRUPPE_DAECHER" xml:space="preserve">
+    <value>Dächer</value>
+  </data>
+  <data name="BKAT_BTA_GRUPPE_OEFFNUNGEN" xml:space="preserve">
+    <value>Öffnungen</value>
+  </data>
+  <data name="BKAT_BTA_GRUPPE_SONSTIGE" xml:space="preserve">
+    <value>Sonstige</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_AUSSENWAND" xml:space="preserve">
+    <value>Außenwand</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_AUSSENWAND_ERDREICH" xml:space="preserve">
+    <value>Außenwand am Erdreich</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_INNENWAND" xml:space="preserve">
+    <value>Innenwand</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_GESCHOSSDECKE" xml:space="preserve">
+    <value>Geschossdecke</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_DECKE_OBEN" xml:space="preserve">
+    <value>Oberste Geschossdecke</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_DECKE_UNTEN" xml:space="preserve">
+    <value>Decke nach unten</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_BODENPLATTE" xml:space="preserve">
+    <value>Bodenplatte</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_FLACHDACH" xml:space="preserve">
+    <value>Flachdach</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_STEILDACH" xml:space="preserve">
+    <value>Steildach</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_FENSTER" xml:space="preserve">
+    <value>Fenster</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_DACHFENSTER" xml:space="preserve">
+    <value>Dachfenster</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_VORHANGFASSADE" xml:space="preserve">
+    <value>Vorhangfassade</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_TUER" xml:space="preserve">
+    <value>Tür</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_SONSTIGES" xml:space="preserve">
+    <value>Sonstiges</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_ZIEGEL" xml:space="preserve">
+    <value>Ziegel</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_KALKSANDSTEIN" xml:space="preserve">
+    <value>Kalksandstein</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_PORENBETON" xml:space="preserve">
+    <value>Porenbeton</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_LEICHTBETONSTEIN" xml:space="preserve">
+    <value>Leichtbetonstein</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_NATURSTEIN" xml:space="preserve">
+    <value>Naturstein</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_MAUERWERK_SONSTIGE" xml:space="preserve">
+    <value>Sonstiges Mauerwerk</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_NORMALBETON" xml:space="preserve">
+    <value>Normalbeton</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_STAHLBETON" xml:space="preserve">
+    <value>Stahlbeton</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_LEICHTBETON" xml:space="preserve">
+    <value>Leichtbeton</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_ZEMENTESTRICH" xml:space="preserve">
+    <value>Zementestrich</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_CALCIUMSULFATESTRICH" xml:space="preserve">
+    <value>Calciumsulfatestrich</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_GUSSASPHALT" xml:space="preserve">
+    <value>Gussasphalt</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_TROCKENESTRICH" xml:space="preserve">
+    <value>Trockenestrich</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_KALKPUTZ" xml:space="preserve">
+    <value>Kalkputz</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_ZEMENTPUTZ" xml:space="preserve">
+    <value>Zementputz</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_GIPSPUTZ" xml:space="preserve">
+    <value>Gipsputz</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_LEHMPUTZ" xml:space="preserve">
+    <value>Lehmputz</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_DAEMMPUTZ" xml:space="preserve">
+    <value>Dämmputz</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_MOERTEL" xml:space="preserve">
+    <value>Mörtel</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_MINERALWOLLE" xml:space="preserve">
+    <value>Mineralwolle</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_POLYSTYROL" xml:space="preserve">
+    <value>Polystyrol</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_POLYURETHAN" xml:space="preserve">
+    <value>Polyurethan</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_HOLZFASER" xml:space="preserve">
+    <value>Holzfaser</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_NATURFASER" xml:space="preserve">
+    <value>Naturfaser</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_SCHAUMGLAS" xml:space="preserve">
+    <value>Schaumglas</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_VAKUUMDAEMMUNG" xml:space="preserve">
+    <value>Vakuumdämmung</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_DAEMMSTOFF_SONSTIGE" xml:space="preserve">
+    <value>Sonstiger Dämmstoff</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_VOLLHOLZ" xml:space="preserve">
+    <value>Vollholz</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_HOLZWERKSTOFF" xml:space="preserve">
+    <value>Holzwerkstoff</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_GIPSPLATTE" xml:space="preserve">
+    <value>Gipsplatte</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_ZEMENTPLATTE" xml:space="preserve">
+    <value>Zementplatte</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_PLATTE_SONSTIGE" xml:space="preserve">
+    <value>Sonstige Platte</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_KERAMIK" xml:space="preserve">
+    <value>Keramik</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_PARKETT" xml:space="preserve">
+    <value>Parkett</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_TEXTILBELAG" xml:space="preserve">
+    <value>Textilbelag</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_KUNSTSTOFFBELAG" xml:space="preserve">
+    <value>Kunststoffbelag</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_BITUMEN" xml:space="preserve">
+    <value>Bitumen</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_KUNSTSTOFFBAHN" xml:space="preserve">
+    <value>Kunststoffbahn</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_DAMPFBREMSE" xml:space="preserve">
+    <value>Dampfbremse</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_STAHL" xml:space="preserve">
+    <value>Stahl</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_ALUMINIUM" xml:space="preserve">
+    <value>Aluminium</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_KUPFER" xml:space="preserve">
+    <value>Kupfer</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_GLAS" xml:space="preserve">
+    <value>Glas</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_BINDIG" xml:space="preserve">
+    <value>Bindiger Boden</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_NICHTBINDIG" xml:space="preserve">
+    <value>Nichtbindiger Boden</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_FELS" xml:space="preserve">
+    <value>Fels</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_LUFT" xml:space="preserve">
+    <value>Luft</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_STOFF_SONSTIGE" xml:space="preserve">
+    <value>Sonstiger Stoff</value>
+  </data>
 </root>
 

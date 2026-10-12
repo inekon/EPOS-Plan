@@ -133,13 +133,60 @@ namespace WindowsFormsApplication1
         /// λ > 0, oder ein Aufbau ohne Schicht — ein Fenster, eine Vorhangfassade oder eine Tür mit U der Quelle
         /// ausgenommen. Der Schemaschritt rechnet dieselbe Regel in SQL (<see cref="BauteilkatalogSchema.KennzeichenSetzen"/>).
         /// </summary>
-        public static bool MeistUngeeignet(BauteilaufbauModel m)
+        public static bool MeistUngeeignet(BauteilaufbauModel m) => UngeeignetGrund(m) != null;
+
+        /// <summary>
+        /// <b>Der Grund des Kennzeichens</b> (BK-2b) nach derselben Regel wie <see cref="MeistUngeeignet"/>: die erste Schicht
+        /// ohne λ (Nummer innen → außen) oder der Aufbau ohne Schicht; <c>null</c> = geeignet. Übersetzter Anzeigetext.
+        /// </summary>
+        public static string UngeeignetGrund(BauteilaufbauModel m)
         {
-            if (m == null) return true;
+            if (m == null) return MyResource.Resource.BKAT_GRUND_OHNE_SCHICHT;
             List<BauteilschichtModel> schichten = (m.Schichten ?? new List<BauteilschichtModel>()).Where(s => s != null).ToList();
-            if (schichten.Any(s => !s.IstLuftschicht && !(s.Lambda > 0))) return true;
-            if (schichten.Count > 0) return false;
-            return !(m.Bauteilart != null && OEFFNUNGSARTEN.Contains(m.Bauteilart) && Zahl(m.Zusatz, BauteilkatalogSchema.SPALTE_U_QUELLE).HasValue);
+            for (int i = 0; i < schichten.Count; i++)
+                if (!schichten[i].IstLuftschicht && !(schichten[i].Lambda > 0))
+                    return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BKAT_GRUND_SCHICHT_OHNE_LAMBDA, i + 1);
+            // Die Bänder des Rechenwegs (GebaeudeFestwerte: Dicke, λ, ρ, c_p): ein angegebener Wert außerhalb seines Bandes
+            // kennzeichnet den Aufbau - ohne Ausnahme geprüft, mit der Meldung des Rechenwegs als Grund. Ein fehlender Wert
+            // (ρ, c_p, Dicke) kennzeichnet nicht; der Summenfuß nennt ihn.
+            string wer = string.IsNullOrWhiteSpace(m.Bezeichner) ? MyResource.Resource.BTA_WER_AUFBAU : m.Bezeichner.Trim();
+            for (int i = 0; i < schichten.Count; i++)
+            {
+                if (!BauteilaufbauCtrl.SchichtAusModell(schichten[i], i + 1, out Schicht schicht, out _)) continue;
+                if (Bauteilreduktion.SchichtBefund(schicht, wer, i + 1) is string befund) return befund;
+            }
+            if (schichten.Count > 0) return null;
+            bool oeffnung = m.Bauteilart != null && OEFFNUNGSARTEN.Contains(m.Bauteilart);
+            if (oeffnung && Zahl(m.Zusatz, BauteilkatalogSchema.SPALTE_U_QUELLE).HasValue) return null;
+            return oeffnung ? MyResource.Resource.BKAT_GRUND_OEFFNUNG_OHNE_U : MyResource.Resource.BKAT_GRUND_OHNE_SCHICHT;
+        }
+
+        // ---- Anzeige der Gliederung (BK-2b) ----------------------------------------------
+
+        /// <summary>Die Gruppencodes eines Katalogs in fester Reihenfolge.</summary>
+        public static IReadOnlyList<string> Gruppen(bool baustoff) =>
+            baustoff ? BauteilkatalogSchema.BAUSTOFF_GRUPPEN : BauteilkatalogSchema.AUFBAU_GRUPPEN;
+
+        /// <summary>Die Klassencodes einer Gruppe in fester Reihenfolge; ohne Gruppe keine.</summary>
+        public static IReadOnlyList<string> Klassen(bool baustoff, string gruppe) =>
+            string.IsNullOrEmpty(gruppe)
+                ? Array.Empty<string>()
+                : (baustoff ? BauteilkatalogSchema.BAUSTOFF_KLASSEN : BauteilkatalogSchema.AUFBAU_KLASSEN)
+                    .Where(k => k.Gruppe == gruppe).Select(k => k.Klasse).ToList();
+
+        /// <summary>Der Anzeigetext eines Gruppencodes in der Sprache der Oberfläche; ein unbekannter Code erscheint, wie er ist.</summary>
+        public static string GruppeText(bool baustoff, string code) =>
+            Anzeige((baustoff ? "BST_GRUPPE_" : "BKAT_BTA_GRUPPE_") + code, code);
+
+        /// <summary>Der Anzeigetext eines Klassencodes in der Sprache der Oberfläche; ein unbekannter Code erscheint, wie er ist.</summary>
+        public static string KlasseText(bool baustoff, string code) =>
+            Anzeige((baustoff ? "BKAT_BST_KLASSE_" : "BKAT_BTA_KLASSE_") + code, code);
+
+        private static string Anzeige(string schluessel, string code)
+        {
+            if (string.IsNullOrEmpty(code)) return "";
+            string t = MyResource.Resource.ResourceManager.GetString(schluessel, MyResource.Resource.Culture);
+            return string.IsNullOrEmpty(t) ? code : t;
         }
 
         // ---- Zusatzfelder ----------------------------------------------------------------

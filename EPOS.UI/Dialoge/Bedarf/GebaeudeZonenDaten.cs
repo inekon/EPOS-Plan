@@ -293,9 +293,12 @@ public sealed class BauteilDaten
 /// <summary>
 /// Ein Aufbau zur Wahl im <see cref="BauteilDialog"/> — aus dem Projekt (<see cref="Katalog"/>
 /// <c>false</c>) oder aus dem Stammkatalog; <see cref="UWert"/> im Kern gerechnet, <c>null</c> =
-/// nicht bestimmbar.
+/// nicht bestimmbar. <see cref="Ungeeignet"/> ist das Kennzeichen „für die Gebäudesimulation meist nicht geeignet" des
+/// Kerns (BK-2b) — die Wahl blendet solche Aufbauten aus, bis der Schalter sie zeigt; ihr U ist das U der Quelle.
+/// <see cref="Grund"/> sagt, warum <see cref="UWert"/> leer ist.
 /// </summary>
-public sealed record AufbauWahl(int Id, bool Katalog, string Text, string Bauteilart, double? UWert, bool Ersatz = false);
+public sealed record AufbauWahl(int Id, bool Katalog, string Text, string Bauteilart, double? UWert, bool Ersatz = false,
+                                bool Ungeeignet = false, string Grund = "");
 
 /// <summary>
 /// <b>Ein Luftstrom zwischen zwei Zonen</b> eines Gebäudes (Stufe G6b; <c>Tab_Zonenluftstrom</c>) — das

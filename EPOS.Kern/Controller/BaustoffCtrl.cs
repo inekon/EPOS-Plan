@@ -121,8 +121,11 @@ namespace WindowsFormsApplication1
         public static IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen()
         {
             var liste = new List<Katalogfilterzeile>();
+            // BK-2b: Gliederung und Herkunft nur, wenn der Schritt BK-2 steht (sonst fehlen die Spalten).
+            bool gegliedert = BauteilkatalogSchema.Lesbar();
             DataTable dt = StilleDb.Tabelle(
-                "SELECT \"ID\", \"Bezeichner\", \"Gruppe\", \"Hersteller\", \"Lambda\", \"Rho\", \"cp\", \"Quelle\", \"ReadOnly\" " +
+                "SELECT \"ID\", \"Bezeichner\", \"Gruppe\", \"Hersteller\", \"Lambda\", \"Rho\", \"cp\", \"Quelle\", \"ReadOnly\"" +
+                (gegliedert ? ", \"Gruppe_Code\", \"Klasse_Code\", \"Herkunft\" " : " ") +
                 "FROM \"" + TAB_STAMM + "\" ORDER BY \"Gruppe\", \"Bezeichner\"");
             if (dt == null) return liste;
 
@@ -137,14 +140,26 @@ namespace WindowsFormsApplication1
                 };
                 liste.Add(zeile
                     .MitText(Katalogfilterprofil.SpBezeichner, bezeichner)
-                    .MitText(Katalogfilterprofil.SpGruppe, Katalogfeld.Text(r, "Gruppe"))
+                    .MitText(Katalogfilterprofil.SpGruppe, Gruppenanzeige(Katalogfeld.Text(r, "Gruppe"), gegliedert ? TextAus(r, "Gruppe_Code") : null))
+                    .MitText(Katalogfilterprofil.SpKlasse, gegliedert ? Bauteilkatalog.KlasseText(true, TextAus(r, "Klasse_Code")) : "")
                     .MitText(Katalogfilterprofil.SpHersteller, Katalogfeld.Text(r, "Hersteller"))
                     .MitZahl(Katalogfilterprofil.SpLambda, Katalogfeld.Zahl(r, "Lambda"), 3)
                     .MitZahl(Katalogfilterprofil.SpRho, Katalogfeld.Zahl(r, "Rho"), 0)
                     .MitZahl(Katalogfilterprofil.SpCp, Katalogfeld.Zahl(r, "cp"), 0)
-                    .MitText(Katalogfilterprofil.SpQuelle, Katalogfeld.Text(r, "Quelle")));
+                    .MitText(Katalogfilterprofil.SpQuelle, Katalogfeld.Text(r, "Quelle"))
+                    .MitText(Katalogfilterprofil.SpHerkunft, gegliedert ? HerkunftText(TextAus(r, "Herkunft")) : ""));
             }
             return liste;
+        }
+
+        /// <summary>
+        /// Die Gruppe eines Stoffs in der Liste (BK-2b): eine feste Stoffgruppe des Textfelds übersetzt, eine freie Angabe wie
+        /// sie ist, sonst der Text des Gruppencodes.
+        /// </summary>
+        public static string Gruppenanzeige(string stoffgruppe, string gruppeCode)
+        {
+            if (!string.IsNullOrWhiteSpace(stoffgruppe)) return Baustoffgruppen.Anzeigename(stoffgruppe);
+            return Bauteilkatalog.GruppeText(true, gruppeCode);
         }
 
         /// <summary>

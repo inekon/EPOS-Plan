@@ -41,6 +41,18 @@ public sealed class BauteilaufbauDaten
     /// <summary>Die Schichten, innen → außen; beim Speichern gilt die Listenreihenfolge.</summary>
     public List<BauteilschichtDaten> Schichten { get; set; } = new();
 
+    /// <summary>Gruppe (Code des Kerns, BK-2b); leer = beim Speichern aus der Bauteilart.</summary>
+    public string GruppeCode { get; set; } = "";
+
+    /// <summary>Klasse unter der Gruppe (Code des Kerns); leer = keine Klasse.</summary>
+    public string KlasseCode { get; set; } = "";
+
+    /// <summary>U-Wert der Quelle [W/(m²K)] — Lesewert eines eingelesenen Aufbaus; er trägt das Kennzeichen einer Öffnung ohne Schicht.</summary>
+    public double? UQuelle { get; set; }
+
+    /// <summary>Ein eingelesener Aufbau (Herkunft <c>IMPORT</c>).</summary>
+    public bool Import { get; set; }
+
     /// <summary>Eine entkoppelte Kopie samt Schichten — der Arbeitsstand der Verwaltung.</summary>
     public BauteilaufbauDaten Kopie()
     {
@@ -148,6 +160,12 @@ public sealed record AufbauKennwerteDaten
 
     /// <summary>Warum T_BT nicht bestimmbar ist; leer, wenn sie steht.</summary>
     public string PeriodeGrund { get; init; } = "";
+
+    /// <summary>
+    /// Warum der Aufbau „für die Gebäudesimulation meist nicht geeignet" ist (Kernregel <c>Bauteilkatalog.UngeeignetGrund</c>,
+    /// BK-2b); leer = geeignet. Ein Lesewert — nie von Hand setzbar.
+    /// </summary>
+    public string UngeeignetGrund { get; init; } = "";
 
     /// <summary>Nichts gerechnet — der Zustand ohne Hülle.</summary>
     public static AufbauKennwerteDaten Leer { get; } = new();

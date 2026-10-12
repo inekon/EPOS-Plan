@@ -281,7 +281,8 @@ namespace EPOS.Kern.Tests
             Katalogfilterprofil p = Katalogfilterprofil.FuerBauteilaufbau();
             Assert.Equal(new[]
             {
-                Katalogfilterprofil.SpBezeichner, Katalogfilterprofil.SpBauteilart, Katalogfilterprofil.SpUWert,
+                Katalogfilterprofil.SpBezeichner, Katalogfilterprofil.SpEignung, Katalogfilterprofil.SpGruppe,
+                Katalogfilterprofil.SpKlasse, Katalogfilterprofil.SpBauteilart, Katalogfilterprofil.SpUWert,
                 Katalogfilterprofil.SpRWert, Katalogfilterprofil.SpKapazitaet, Katalogfilterprofil.SpSchichten,
                 Katalogfilterprofil.SpDicke, Katalogfilterprofil.SpHerkunft
             }, p.Spalten.Select(s => s.Schluessel));

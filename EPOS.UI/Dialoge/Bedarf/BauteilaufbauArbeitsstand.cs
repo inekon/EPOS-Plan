@@ -54,6 +54,8 @@ public sealed class BauteilaufbauArbeitsstand
             if (!Gleich(Arbeit.Beschreibung, Gespeichert.Beschreibung)) n++;
             if (!Gleich(Arbeit.Bauteilart, Gespeichert.Bauteilart)) n++;
             if (!Gleich(Arbeit.Quelle, Gespeichert.Quelle)) n++;
+            if (!Gleich(Arbeit.GruppeCode, Gespeichert.GruppeCode)) n++;
+            if (!Gleich(Arbeit.KlasseCode, Gespeichert.KlasseCode)) n++;
             int gemeinsam = Math.Min(Arbeit.Schichten.Count, Gespeichert.Schichten.Count);
             for (int i = 0; i < gemeinsam; i++)
                 if (!Arbeit.Schichten[i].GleicheWerte(Gespeichert.Schichten[i])) n++;

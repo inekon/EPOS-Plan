@@ -1638,6 +1638,12 @@
         internal static string BstBezeichnerErl => MyResource.Resource.KI_DLG_BST_BEZEICHNER_ERL;
         internal static string BstGruppeName => MyResource.Resource.BST_LBL_GRUPPE;
         internal static string BstGruppeErl => MyResource.Resource.KI_DLG_BST_GRUPPE_ERL;
+        // BK-2b: Gruppe und Klasse des Bauteilkatalogs.
+        internal static string BkatGruppeName => MyResource.Resource.BKAT_LBL_GRUPPE;
+        internal static string BkatKlasseName => MyResource.Resource.BKAT_LBL_KLASSE;
+        internal static string BstKlasseErl => MyResource.Resource.KI_DLG_BST_KLASSE_ERL;
+        internal static string BtaGruppeErl => MyResource.Resource.KI_DLG_BTA_GRUPPE_ERL;
+        internal static string BtaKlasseErl => MyResource.Resource.KI_DLG_BTA_KLASSE_ERL;
         internal static string BstHerstellerName => MyResource.Resource.BST_LBL_HERSTELLER;
         internal static string BstHerstellerErl => MyResource.Resource.KI_DLG_BST_HERSTELLER_ERL;
         internal static string BstLambdaName => MyResource.Resource.BST_LBL_LAMBDA;
