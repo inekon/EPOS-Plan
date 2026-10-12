@@ -535,6 +535,8 @@ namespace WindowsFormsApplication1
                 AufbauUebernehmen = katalog ? null : aufbauUebernehmen,
                 Speichern = speichern,
                 Neulesen = neulesen,
+                // GD-4: „Als Mehrzonenmodell übernehmen…“ aus der gespeicherten Importquelle - nur am Projektgebäude.
+                Mehrzonen = katalog ? null : GebaeudeMehrzonenHuelle.Weg(gebaeudeId, idProjekt),
                 Katalog = katalog,
                 Pruefen = pruefen,
                 Hinweise = hinweise,

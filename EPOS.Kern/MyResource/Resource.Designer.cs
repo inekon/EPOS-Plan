@@ -34479,6 +34479,141 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrzonenmodell aus „{0}“ mit {1} Zonen steht bereit — das OK ersetzt die vorhandenen Zonen samt Bauteilen und Zonenkalendern, Abbrechen verwirft es. ähnelt.
+        /// </summary>
+        public static string GEBMZ_AUSSTEHEND {
+            get {
+                return ResourceManager.GetString("GEBMZ_AUSSTEHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrzonenmodell aus der Importquelle ähnelt.
+        /// </summary>
+        public static string GEBMZ_BLATT {
+            get {
+                return ResourceManager.GetString("GEBMZ_BLATT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Liest die gespeicherte Importquelle neu und zeigt ihren Zonenbaum; das OK des Gebäudes ersetzt Zonen, Bauteile und Zonenkalender. ähnelt.
+        /// </summary>
+        public static string GEBMZ_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEBMZ_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Als Mehrzonenmodell übernehmen… ähnelt.
+        /// </summary>
+        public static string GEBMZ_KNOPF {
+            get {
+                return ResourceManager.GetString("GEBMZ_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ ist nicht lesbar: {1} ähnelt.
+        /// </summary>
+        public static string GEBMZ_MSG_DATEI_FEHLT {
+            get {
+                return ResourceManager.GetString("GEBMZ_MSG_DATEI_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ hat nicht das Format der gespeicherten Importquelle ({1}). Eine andere Datei ist ein neuer Import („Import…“). ähnelt.
+        /// </summary>
+        public static string GEBMZ_MSG_FORMAT {
+            get {
+                return ResourceManager.GetString("GEBMZ_MSG_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude {0} ist keine Projektkopie — nichts übernommen. ähnelt.
+        /// </summary>
+        public static string GEBMZ_MSG_KEINE_PROJEKTKOPIE {
+            get {
+                return ResourceManager.GetString("GEBMZ_MSG_KEINE_PROJEKTKOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude hat keine gespeicherte Importquelle. ähnelt.
+        /// </summary>
+        public static string GEBMZ_MSG_KEINE_QUELLE {
+            get {
+                return ResourceManager.GetString("GEBMZ_MSG_KEINE_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Mehrzonenmodell ist nicht übernommen, der vorige Stand bleibt: {0} ähnelt.
+        /// </summary>
+        public static string GEBMZ_MSG_NICHT_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("GEBMZ_MSG_NICHT_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernommen wird nur „als Zonen mit Bauteilen“ — bitte den Schalter setzen. ähnelt.
+        /// </summary>
+        public static string GEBMZ_MSG_OHNE_ZONEN {
+            get {
+                return ResourceManager.GetString("GEBMZ_MSG_OHNE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ weicht von der gespeicherten Importquelle ab (Prüfsumme {1} statt {2}). Eine andere Datei ist ein neuer Import („Import…“). ähnelt.
+        /// </summary>
+        public static string GEBMZ_MSG_PRUEFSUMME {
+            get {
+                return ResourceManager.GetString("GEBMZ_MSG_PRUEFSUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen sind geändert — erst speichern oder verwerfen. ähnelt.
+        /// </summary>
+        public static string GEBMZ_SPERRE_GEAENDERT {
+            get {
+                return ResourceManager.GetString("GEBMZ_SPERRE_GEAENDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur am Gebäude im Projekt: Die Übernahme schreibt in die Projektkopie. ähnelt.
+        /// </summary>
+        public static string GEBMZ_SPERRE_KATALOG {
+            get {
+                return ResourceManager.GetString("GEBMZ_SPERRE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Import gespeichert — Gebäude über „Import…“ anlegen. ähnelt.
+        /// </summary>
+        public static string GEBMZ_SPERRE_KEINE_QUELLE {
+            get {
+                return ResourceManager.GetString("GEBMZ_SPERRE_KEINE_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Importquelle wird gelesen. ähnelt.
+        /// </summary>
+        public static string GEBMZ_SPERRE_LAEUFT {
+            get {
+                return ResourceManager.GetString("GEBMZ_SPERRE_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe für das ausgewählte Gebäude ähnelt.
         /// </summary>
         public static string GEBW_GRP_EINGABE {
@@ -36851,6 +36986,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_SPERRE_WAHL_SIMULATION {
             get {
                 return ResourceManager.GetString("GEB_SPERRE_WAHL_SIMULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch kein Gebäude im Projekt. ähnelt.
+        /// </summary>
+        public static string GEB_SPRUNG_KEIN_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("GEB_SPRUNG_KEIN_GEBAEUDE", resourceCulture);
             }
         }
         
@@ -58898,7 +59042,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ordnungsgruppe (etwa Mauerwerk, Beton, Dämmstoffe); leer = ohne Gruppe. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stoffgruppe aus der festen Liste (etwa Mauerwerk, Beton, Dämmstoffe, „Sonstige“ für alles Übrige); leer = ohne Gruppe. Je Gruppe nennt der Dialog Werte außerhalb des üblichen Bereichs als Hinweis. ähnelt.
         /// </summary>
         public static string KI_DLG_BST_GRUPPE_ERL {
             get {

@@ -53913,5 +53913,53 @@ Chart</value>
   <data name="BTDLG_KAPAZITAET_BAUWEISE" xml:space="preserve">
     <value>aus der Bauweise</value>
   </data>
+  <data name="GEBMZ_KNOPF" xml:space="preserve">
+    <value>Als Mehrzonenmodell übernehmen…</value>
+  </data>
+  <data name="GEBMZ_HINWEIS" xml:space="preserve">
+    <value>Liest die gespeicherte Importquelle neu und zeigt ihren Zonenbaum; das OK des Gebäudes ersetzt Zonen, Bauteile und Zonenkalender.</value>
+  </data>
+  <data name="GEBMZ_SPERRE_KEINE_QUELLE" xml:space="preserve">
+    <value>Kein Import gespeichert — Gebäude über „Import…“ anlegen.</value>
+  </data>
+  <data name="GEBMZ_SPERRE_KATALOG" xml:space="preserve">
+    <value>Nur am Gebäude im Projekt: Die Übernahme schreibt in die Projektkopie.</value>
+  </data>
+  <data name="GEBMZ_SPERRE_GEAENDERT" xml:space="preserve">
+    <value>Die Zonen sind geändert — erst speichern oder verwerfen.</value>
+  </data>
+  <data name="GEBMZ_SPERRE_LAEUFT" xml:space="preserve">
+    <value>Die Importquelle wird gelesen.</value>
+  </data>
+  <data name="GEBMZ_MSG_KEINE_QUELLE" xml:space="preserve">
+    <value>Das Gebäude hat keine gespeicherte Importquelle.</value>
+  </data>
+  <data name="GEBMZ_MSG_DATEI_FEHLT" xml:space="preserve">
+    <value>Die Datei „{0}“ ist nicht lesbar: {1}</value>
+  </data>
+  <data name="GEBMZ_MSG_FORMAT" xml:space="preserve">
+    <value>Die Datei „{0}“ hat nicht das Format der gespeicherten Importquelle ({1}). Eine andere Datei ist ein neuer Import („Import…“).</value>
+  </data>
+  <data name="GEBMZ_MSG_PRUEFSUMME" xml:space="preserve">
+    <value>Die Datei „{0}“ weicht von der gespeicherten Importquelle ab (Prüfsumme {1} statt {2}). Eine andere Datei ist ein neuer Import („Import…“).</value>
+  </data>
+  <data name="GEBMZ_MSG_OHNE_ZONEN" xml:space="preserve">
+    <value>Übernommen wird nur „als Zonen mit Bauteilen“ — bitte den Schalter setzen.</value>
+  </data>
+  <data name="GEBMZ_MSG_KEINE_PROJEKTKOPIE" xml:space="preserve">
+    <value>Das Gebäude {0} ist keine Projektkopie — nichts übernommen.</value>
+  </data>
+  <data name="GEBMZ_MSG_NICHT_UEBERNOMMEN" xml:space="preserve">
+    <value>Das Mehrzonenmodell ist nicht übernommen, der vorige Stand bleibt: {0}</value>
+  </data>
+  <data name="GEBMZ_AUSSTEHEND" xml:space="preserve">
+    <value>Mehrzonenmodell aus „{0}“ mit {1} Zonen steht bereit — das OK ersetzt die vorhandenen Zonen samt Bauteilen und Zonenkalendern, Abbrechen verwirft es.</value>
+  </data>
+  <data name="GEBMZ_BLATT" xml:space="preserve">
+    <value>Mehrzonenmodell aus der Importquelle</value>
+  </data>
+  <data name="GEB_SPRUNG_KEIN_GEBAEUDE" xml:space="preserve">
+    <value>Noch kein Gebäude im Projekt.</value>
+  </data>
 </root>
 
