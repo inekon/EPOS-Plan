@@ -53757,6 +53757,18 @@ Chart</value>
   <data name="WBX_HRL_KAELTE_EXTERN" xml:space="preserve">
     <value>Kältelastgänge pflegen Sie unter Kältebedarf extern.</value>
   </data>
+  <data name="WBX_GRP_STAMM" xml:space="preserve">
+    <value>Stammdaten</value>
+  </data>
+  <data name="WBX_GRP_GANGLINIE" xml:space="preserve">
+    <value>Ganglinie</value>
+  </data>
+  <data name="WBX_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichner</value>
+  </data>
+  <data name="WBX_HRL_NUR_IM_PROJEKT" xml:space="preserve">
+    <value>Kanal, Art und Deckung gelten je Zuordnung im Projekt.</value>
+  </data>
   <data name="KI_DLG_WBX_DECKUNG_NAME" xml:space="preserve">
     <value>Deckungsart</value>
   </data>
@@ -53807,9 +53819,6 @@ Chart</value>
   </data>
   <data name="DECK_MSG_SPEICHERN_FEHLER" xml:space="preserve">
     <value>Die Lastgänge konnten nicht gespeichert werden; der vorige Stand bleibt erhalten.</value>
-  </data>
-  <data name="DECK_BTN_BEARBEITEN" xml:space="preserve">
-    <value>Deckung…</value>
   </data>
 </root>
 

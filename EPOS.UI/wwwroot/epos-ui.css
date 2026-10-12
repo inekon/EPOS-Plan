@@ -3768,30 +3768,15 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     white-space: nowrap;
     color: var(--epos-text-leise);
 }
-/* K5a (Konzept Kaeltebedarf 3.4): die Deckung einer Kuehlzeile in der Detailzeile - Zusammenfassung und Knopf
-   „Deckung…" rechts in der Kennzahlenzeile der Ganglinie, ohne Ganglinie als eigene Zeile; die Feldgruppe steht in
-   der Bearbeiten-Ueberlagerung. Die
-   OP-2-Infozeile (epos-zweispalten-kanalinfo) ist ein Kanalhinweis der Kopfleiste und braucht keine eigene Regel. */
-.epos-deckung-zeile {
-    display: flex;
-    align-items: center;
-    gap: calc(var(--epos-abstand) / 2);
-    min-width: 0;
-    margin-bottom: calc(var(--epos-abstand) / 2);
-}
-.epos-deckung-zusammenfassung {
-    flex: 0 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: var(--epos-text-leise);
-}
-.epos-deckung-zeile .epos-knopf { flex: 0 0 auto; }
-/* In der Kennzahlenzeile der Ganglinie (Knoepfe): die Zusammenfassung schmal und mittig zum Knopf. */
-.epos-ganglinie-knoepfe > .epos-deckung-zusammenfassung { align-self: center; max-width: 28ch; }
+/* K5c (KA-E-23): die Bearbeiten-Ueberlagerung von Waerme-/Kaeltebedarf extern (WaermebedarfExternFelder) -
+   Stammdaten, Ganglinie und Deckung untereinander; die Knopfleiste der Ganglinie (Datei importieren…, Speichern
+   unter…) steht ueber der Grafik, die Infozeile (OP-2 bzw. Kuehlkanal) leise unter den Stammfeldern. Die
+   OP-2-Infozeile der Kopfleiste (epos-zweispalten-kanalinfo) ist ein Kanalhinweis und braucht keine eigene Regel. */
+.epos-wbx-felder { display: flex; flex-direction: column; gap: var(--epos-abstand); min-width: 0; }
+.epos-wbx-abschnitt { min-width: 0; }
+.epos-wbx-ganglinienleiste { margin-bottom: calc(var(--epos-abstand) / 2); }
+.epos-wbx-hinweis { margin: calc(var(--epos-abstand) / 2) 0 0; color: var(--epos-text-leise); }
 .epos-deckung { margin-bottom: calc(var(--epos-abstand) / 2); }
-.epos-deckung-leiste { display: flex; margin-top: var(--epos-abstand); }
 .epos-formathinweis-knopf, .epos-dialog-kontext { display: inline-flex; flex: 0 0 auto; }
 
 /* ---- SPALTENWAHL UND VERWENDUNGSMARKE (Konzept 4.10) ----------------

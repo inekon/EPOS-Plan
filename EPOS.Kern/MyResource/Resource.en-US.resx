@@ -53750,6 +53750,18 @@ chart</value>
   <data name="WBX_HRL_KAELTE_EXTERN" xml:space="preserve">
     <value>Maintain cooling load profiles under External cooling demand.</value>
   </data>
+  <data name="WBX_GRP_STAMM" xml:space="preserve">
+    <value>Master data</value>
+  </data>
+  <data name="WBX_GRP_GANGLINIE" xml:space="preserve">
+    <value>Load profile</value>
+  </data>
+  <data name="WBX_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="WBX_HRL_NUR_IM_PROJEKT" xml:space="preserve">
+    <value>Channel, type and coverage apply per assignment in the project.</value>
+  </data>
   <data name="KI_DLG_WBX_DECKUNG_NAME" xml:space="preserve">
     <value>Coverage type</value>
   </data>
@@ -53800,9 +53812,6 @@ chart</value>
   </data>
   <data name="DECK_MSG_SPEICHERN_FEHLER" xml:space="preserve">
     <value>The load profiles could not be saved; the previous state is kept.</value>
-  </data>
-  <data name="DECK_BTN_BEARBEITEN" xml:space="preserve">
-    <value>Coverage…</value>
   </data>
 </root>
 

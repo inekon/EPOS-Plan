@@ -81,3 +81,33 @@ public sealed class WaermebedarfExternZeile
     /// <summary>Eigener Zähler des Split-Stroms.</summary>
     public bool KuehlEigenerZaehler { get => Deckung.KuehlEigenerZaehler; set => Deckung.KuehlEigenerZaehler = value; }
 }
+
+/// <summary>
+/// Der Stand einer Zuordnung beim Öffnen der Bearbeiten-Überlagerung (K5c): Kanal, Kälte-Art und eine Kopie der
+/// Deckung. Die Felder der Überlagerung schreiben an Ort und Stelle in die Zeile; „Abbrechen“, Kreuz und Esc stellen mit
+/// <see cref="Zuruecksetzen"/> diesen Stand wieder her.
+/// </summary>
+public sealed class WaermebedarfExternStand
+{
+    private readonly string _kanal;
+    private readonly string _kaelteArt;
+    private readonly DeckungsartDaten _deckung;
+
+    private WaermebedarfExternStand(WaermebedarfExternZeile zeile)
+    {
+        _kanal = zeile.Kanal;
+        _kaelteArt = zeile.KaelteArt;
+        _deckung = (zeile.Deckung ?? new DeckungsartDaten()).Kopie();
+    }
+
+    /// <summary>Hält den Stand der Zeile fest.</summary>
+    public static WaermebedarfExternStand Merken(WaermebedarfExternZeile zeile) => new(zeile);
+
+    /// <summary>Stellt den festgehaltenen Stand in der Zeile wieder her (eine eigene Kopie der Deckung).</summary>
+    public void Zuruecksetzen(WaermebedarfExternZeile zeile)
+    {
+        zeile.Kanal = _kanal;
+        zeile.KaelteArt = _kaelteArt;
+        zeile.Deckung = _deckung.Kopie();
+    }
+}

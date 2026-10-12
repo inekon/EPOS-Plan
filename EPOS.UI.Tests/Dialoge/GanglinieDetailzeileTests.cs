@@ -265,7 +265,11 @@ public class GanglinieDetailzeileTests : EposBunitContext
         Waehlen(cut, 1, 1);
         Assert.Equal("Ganglinie Süd", Satzname(cut));
         Assert.Equal(Resource.AUSWAHL_MARKE_KATALOGSATZ, Satzmarke(cut));
-        Assert.True(AufgeklapptMitGanglinie(cut));
+        // KA-E-23: Wärmebedarf extern weicht vom Ganglinien-Gerüst ab - die Satzzeile trägt nur die Zusammenfassung
+        // (Jahresarbeit, Vollbenutzungsstunden), die Ganglinie steht allein in der Bearbeiten-Überlagerung.
+        cut.Find(".epos-zweispalten-satzzeile").Click();
+        Assert.Contains(Resource.STROMGL_LBL_JAHRESARBEIT.TrimEnd(':'), cut.Find(".epos-satzzusammenfassung").TextContent);
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satz .epos-ganglinie-grafik"));
     }
 
     // =================================================================================
@@ -349,7 +353,7 @@ public class GanglinieDetailzeileTests : EposBunitContext
     }
 
     [Fact]
-    public void UeS1c_WaermebedarfExtern_Vergroessern_zeichnet_die_Kurve_im_Mass_der_Ueberlagerung()
+    public void UeS1c_WaermebedarfExtern_Bearbeiten_zeichnet_die_Kurve_im_Mass_der_Ueberlagerung()
     {
         var masse = new List<(bool Sortiert, int Breite, int Hoehe)>();
         var cut = Render<WaermebedarfExternDialog>(p => p
@@ -361,6 +365,19 @@ public class GanglinieDetailzeileTests : EposBunitContext
             .Add(x => x.Kennzahlen, Kennzahlen)
             .Add(x => x.Bildauftrag, Bild)
             .Add(x => x.BildauftragMass, (w, s, b, h) => { masse.Add((s, b, h)); return null; }));
-        UeberlagerungPruefen(cut, masse, () => cut.FindComponent<DiagrammSvg>());
+
+        // KA-E-23: „Bearbeiten…" öffnet die Satz-Überlagerung mit OK und Abbrechen; die Kurve steht dort genau einmal
+        // und folgt dem gemeldeten Behältermaß.
+        cut.Find(".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt").Click();
+        Assert.Single(cut.FindAll(".epos-satzueberlagerung-koerper .epos-ganglinie-grafik"));
+        Assert.Single(cut.FindAll(".epos-satzueberlagerung-ok"));
+        Assert.Single(cut.FindAll(".epos-satzueberlagerung-abbrechen"));
+        var svg = cut.FindComponent<DiagrammSvg>();
+        cut.InvokeAsync(() => svg.Instance.MassGemeldet(1240, 560));
+        Assert.Equal((false, 1240, 560), masse[^1]);
+
+        cut.Find(".epos-satzueberlagerung-abbrechen").Click();
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung--satz"));
+        Assert.Empty(cut.FindAll(".epos-ganglinie-grafik"));
     }
 }

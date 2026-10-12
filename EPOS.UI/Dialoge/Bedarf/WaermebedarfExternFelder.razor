@@ -1,0 +1,160 @@
+﻿@* DIE BEARBEITEN-UEBERLAGERUNG des Dialogs „Waermebedarf extern“ / „Kaeltebedarf extern“ (K5c, KA-E-23) - EIN
+   Aufbau fuer Projekt- und Katalogsatz nach dem Muster der Waermepumpe (WaermepumpeAnlageFelder): Stammdaten,
+   Ganglinie, Deckung. Der Baustein steht im Abschnitt Satz der Zweispaltenauswahl und damit allein in deren
+   Satz-Ueberlagerung (die Zeile „gewaehlter Satz“ zeigt nur die Zusammenfassung).
+
+   STAMMDATEN. Bezeichner (nur lesen - die Ganglinie traegt ihren Namen aus dem Katalog), beim Projektsatz Kanal
+   (Modus „Alle“) und Art einer Kaeltezeile; im Modus „Alle“ bei Kanal Kuehlung der Hinweis OP-2. Beim Katalogsatz
+   stehen Kanal, Art und Deckung nicht: Sie gelten je Zuordnung im Projekt (Hinweis „nur im Projekt“).
+
+   GANGLINIE. Die Knopfleiste des Wirts (Datei importieren…, Speichern unter…) und die Grafik mit Kennzahlen,
+   Sortierschalter, Einheit und Zoom - beides reicht der Wirt als Fragment herein, weil Importkette, Bildvorrat
+   und Kopie ihm gehoeren.
+
+   DECKUNG. Die Feldgruppe DeckungsartFelder nur beim Projektsatz im Kanal Kuehlung.
+
+   SCHREIBWEG. Die Felder schreiben AN ORT UND STELLE in die Zeile; den Stand beim Oeffnen haelt der Wirt
+   (WaermebedarfExternStand) und stellt ihn bei Abbrechen wieder her. OK prueft der Wirt mit der Regel des Kerns. *@
+@namespace EPOS.UI.Dialoge.Bedarf
+@using WindowsFormsApplication1
+
+<div class="epos-wbx-felder @(Zeile is null ? "epos-wbx-felder--katalog" : "epos-wbx-felder--projekt")">
+    <section class="epos-wbx-abschnitt epos-wbx-abschnitt--stamm">
+        <Gruppenkopf Titel="@Resource.WBX_GRP_STAMM">
+            <KindInhalt>
+                <Formularraster>
+                    <KindInhalt>
+                        <Textfeld Bezeichnung="@Resource.WBX_LBL_BEZEICHNER" Wert="@Bezeichner" NurLesen="true" />
+                        @if (Zeile is WaermebedarfExternZeile z)
+                        {
+                            @if (Modus == WaermebedarfExternModus.Alle)
+                            {
+                                <Auswahlfeld Bezeichnung="@KanalBezeichnung" Eintraege="@Kanaleintraege"
+                                             Auswahl="@Kanalindex(z)" AuswahlChanged="KanalWaehlen" Aktiv="@(!NurLesen)" />
+                            }
+                            @if (IstKuehlzeile(z))
+                            {
+                                @* KWN-0: die Art der Kaeltezeile (Raum/Prozess); ihr Hinweis steht im Tooltipp der Infozeile darunter. *@
+                                <Auswahlfeld Bezeichnung="@KaelteArtBezeichnung" Eintraege="@KaelteArteintraege"
+                                             Auswahl="@KaelteArtindex(z)" AuswahlChanged="KaelteArtWaehlen" Aktiv="@(!NurLesen)" />
+                            }
+                        }
+                    </KindInhalt>
+                </Formularraster>
+                @if (Zeile is WaermebedarfExternZeile k && IstKuehlzeile(k))
+                {
+                    @* OP-2 (K5a): im Modus „Alle“ sagt die Infozeile, wo Kaeltelastgaenge gepflegt werden (kein Banner);
+                       im Modus „nur Kuehlung“ steht dort, was der Kuehlkanal ist. *@
+                    <p class="epos-wbx-hinweis@(Modus == WaermebedarfExternModus.Alle ? " epos-wbx-hinweis--op2" : "")" role="note"
+                       title="@(HinweisKaelteArt + " " + HinweisKanalKuehlung)">@(Modus == WaermebedarfExternModus.Alle ? HinweisKaelteExtern : HinweisKanalKuehlung)</p>
+                }
+                else if (Zeile is null)
+                {
+                    <p class="epos-nurprojekt-hinweis" role="note">@HinweisNurImProjekt</p>
+                }
+            </KindInhalt>
+        </Gruppenkopf>
+    </section>
+
+    <section class="epos-wbx-abschnitt epos-wbx-abschnitt--ganglinie">
+        <Gruppenkopf Titel="@Resource.WBX_GRP_GANGLINIE">
+            <KindInhalt>
+                @if (Ganglinienknoepfe is not null)
+                {
+                    <div class="epos-leiste epos-wbx-ganglinienleiste">@Ganglinienknoepfe</div>
+                }
+                @Ganglinie
+            </KindInhalt>
+        </Gruppenkopf>
+    </section>
+
+    @if (Zeile is WaermebedarfExternZeile d && IstKuehlzeile(d))
+    {
+        <section class="epos-wbx-abschnitt epos-wbx-abschnitt--deckung">
+            <Gruppenkopf Titel="@Resource.DECK_GRUPPE">
+                <KindInhalt>
+                    <DeckungsartFelder Daten="@d.Deckung" Stromtraeger="@Stromtraeger" Gesperrt="@NurLesen"
+                                       TitelAnzeigen="false" Geaendert="BeiGeaendert" />
+                </KindInhalt>
+            </Gruppenkopf>
+        </section>
+    }
+</div>
+
+@code {
+    /// <summary>Die bearbeitete Zuordnung (Projektsatz); <c>null</c> = ein Katalogsatz ohne Projektfelder.</summary>
+    [Parameter] public WaermebedarfExternZeile? Zeile { get; set; }
+
+    /// <summary>Der Bezeichner des Satzes (Projektzeile oder Katalogsatz).</summary>
+    [Parameter] public string Bezeichner { get; set; } = "";
+
+    /// <summary>Nur lesen (gesperrter Katalogsatz): Felder gesperrt.</summary>
+    [Parameter] public bool NurLesen { get; set; }
+
+    /// <summary>Der Modus des Dialogs: „Alle“ zeigt die Kanalwahl, „nur Kühlung“ nicht (der Kanal steht fest).</summary>
+    [Parameter] public WaermebedarfExternModus Modus { get; set; } = WaermebedarfExternModus.Alle;
+
+    /// <summary>Die Kanäle (Steuerwert, Anzeigetext).</summary>
+    [Parameter] public IReadOnlyList<(string Wert, string Text)> Kanaele { get; set; } = Array.Empty<(string, string)>();
+
+    /// <summary>Die Arten einer Kältezeile (Steuerwert, Anzeigetext).</summary>
+    [Parameter] public IReadOnlyList<(string Wert, string Text)> KaelteArten { get; set; } = Array.Empty<(string, string)>();
+
+    /// <summary>Die Stromträger des Projekts — der Kühlträger der Feldgruppe „Deckung“.</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Stromtraeger { get; set; } = Array.Empty<(int, string)>();
+
+    [Parameter] public string KanalBezeichnung { get; set; } = Resource.KANAL_LABEL;
+    [Parameter] public string KaelteArtBezeichnung { get; set; } = Resource.KAELTE_ART_LABEL;
+    [Parameter] public string HinweisKaelteArt { get; set; } = Resource.KAELTE_ART_HINWEIS;
+    [Parameter] public string HinweisKanalKuehlung { get; set; } = Resource.WBX_HRL_KANAL_KUEHLUNG;
+    [Parameter] public string HinweisKaelteExtern { get; set; } = Resource.WBX_HRL_KAELTE_EXTERN;
+    [Parameter] public string HinweisNurImProjekt { get; set; } = Resource.WBX_HRL_NUR_IM_PROJEKT;
+
+    /// <summary>Die Knöpfe der Ganglinie (Datei importieren…, Speichern unter…) — vom Wirt.</summary>
+    [Parameter] public RenderFragment? Ganglinienknoepfe { get; set; }
+
+    /// <summary>Die Grafik der Ganglinie mit Kennzahlen — vom Wirt; <c>null</c> = keine brauchbare Reihe.</summary>
+    [Parameter] public RenderFragment? Ganglinie { get; set; }
+
+    /// <summary>Jede Eingabe meldet sich beim Wirt.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    internal static bool IstKuehlzeile(WaermebedarfExternZeile z)
+        => string.Equals(z.Kanal, DbWerte.KANAL_KUEHLUNG, StringComparison.OrdinalIgnoreCase);
+
+    private IReadOnlyList<(int Id, string Text)> Kanaleintraege => Kanaele.Select((k, i) => (i, k.Text)).ToList();
+
+    private IReadOnlyList<(int Id, string Text)> KaelteArteintraege => KaelteArten.Select((a, i) => (i, a.Text)).ToList();
+
+    /// <summary>Der Kanal der Zeile; leer oder unbekannt fällt auf den ersten Eintrag (Heizung, F18).</summary>
+    private int? Kanalindex(WaermebedarfExternZeile z)
+    {
+        for (int i = 0; i < Kanaele.Count; i++)
+            if (string.Equals(Kanaele[i].Wert, z.Kanal, StringComparison.OrdinalIgnoreCase)) return i;
+        return 0;
+    }
+
+    /// <summary>Die Art der Kältezeile; leer oder unbekannt fällt auf den ersten Eintrag (Raum).</summary>
+    private int? KaelteArtindex(WaermebedarfExternZeile z)
+    {
+        for (int i = 0; i < KaelteArten.Count; i++)
+            if (string.Equals(KaelteArten[i].Wert, z.KaelteArt, StringComparison.OrdinalIgnoreCase)) return i;
+        return 0;
+    }
+
+    private Task KanalWaehlen(int? index)
+    {
+        if (NurLesen || Zeile is null || index is not int i || i < 0 || i >= Kanaele.Count) return Task.CompletedTask;
+        Zeile.Kanal = Kanaele[i].Wert;
+        return BeiGeaendert();
+    }
+
+    private Task KaelteArtWaehlen(int? index)
+    {
+        if (NurLesen || Zeile is null || index is not int i || i < 0 || i >= KaelteArten.Count) return Task.CompletedTask;
+        Zeile.KaelteArt = KaelteArten[i].Wert;
+        return BeiGeaendert();
+    }
+
+    private Task BeiGeaendert() => Geaendert.InvokeAsync();
+}

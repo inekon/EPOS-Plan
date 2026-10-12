@@ -3975,6 +3975,12 @@ namespace WindowsFormsApplication1
         /// <b>Draussen bleiben der Katalog mit seinem Filterbaustein, der CSV-Import
         /// samt Vorschau und Ablage</b> (ein Ladevorgang) und die Ganglinienvorschau.
         /// </para>
+        /// <para>
+        /// <b>Die Felder der Bearbeiten-Ueberlagerung sind Felder des Dialogs</b> (K5c, KA-E-23, Muster
+        /// <c>WaermepumpeAnlageKiSicht</c>): Bezeichner, Kanal, Art und die Deckung stehen dort an derselben Zeile;
+        /// der Assistent setzt sie an der gewaehlten Zuordnung, ob die Ueberlagerung offen ist oder nicht. Die Zeile
+        /// selbst ist das flache Abbild (die Deckungsfelder reicht sie durch) - eine eigene Sichtklasse braucht es nicht.
+        /// </para>
         /// </remarks>
         private static KiDialog WaermebedarfExtern()
         {

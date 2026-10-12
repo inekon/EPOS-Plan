@@ -42,9 +42,8 @@ namespace WindowsFormsApplication1
         internal static string Speichern(int projektId, List<Z_ProjWaermebedarfModel> modelle, WaermebedarfExternModus modus)
         {
             List<Z_ProjWaermebedarfModel> liste = Modelle(modelle, modus);
-            foreach (Z_ProjWaermebedarfModel m in liste)
-                if (Z_ProjektKaeltebedarfCtrl.Deckungspruefung(m) != null)
-                    return MyResource.Resource.DECK_MSG_OHNE_EER + " (" + (m.m_szBezeichner ?? "") + ")";
+            string grund = Deckungsgrund(liste);
+            if (grund != null) return grund;
 
             var wiz = new WizardCtrl();
             using (DbVorgang vorgang = DataRepository.Vorgang())
@@ -60,6 +59,20 @@ namespace WindowsFormsApplication1
                 vorgang.Rollback();
             }
             return MyResource.Resource.DECK_MSG_SPEICHERN_FEHLER;
+        }
+
+        /// <summary>
+        /// Die Prüfung „Split ohne EER“ über eine Modellliste — derselbe Wortlaut wie der Banner des Dialogs, mit dem
+        /// Namen der ersten verworfenen Zeile; <c>null</c> = alle Kühlzeilen zulässig. Der Speicherweg der Hülle und der
+        /// Assistent (Seite Wärmebedarf, <c>AssistentAnsichtQuelle</c>) prüfen damit, bevor der Kern schreibt.
+        /// </summary>
+        internal static string Deckungsgrund(IEnumerable<Z_ProjWaermebedarfModel> modelle)
+        {
+            if (modelle == null) return null;
+            foreach (Z_ProjWaermebedarfModel m in modelle)
+                if (m != null && Z_ProjektKaeltebedarfCtrl.Deckungspruefung(m) != null)
+                    return MyResource.Resource.DECK_MSG_OHNE_EER + " (" + (m.m_szBezeichner ?? "") + ")";
+            return null;
         }
 
         /// <summary>Die Dialogzeilen aus der Modellliste des Aufrufers.</summary>

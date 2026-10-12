@@ -128,10 +128,8 @@ namespace WindowsFormsApplication1
                     name => new WaermebedarfStammCtrl().HatProjektzuordnung(name)),
                 ["KatalogLoeschen"] = new Func<string, bool>(
                     name => new WaermebedarfStammCtrl().Delete(name)),
-                // iU9-W13.2: Die Ganglinienverwaltung ist selbst Blazor. Statt des
-                // Sprungs in ein WinForms-Fenster bekommt der Dialog ihren
-                // PARAMETERSATZ und zeigt sie als Ueberlagerung (Risiko R2).
-                ["VerwaltungGaben"] = WaermebedarfAdminHuelle.Gaben(),
+                // K5c (KA-E-23): Bearbeiten… oeffnet die Satz-Ueberlagerung des Dialogs; einen neuen Katalogsatz legt
+                // Neu… ueber die Importkette an. Die Ganglinienverwaltung haengt hier nicht mehr.
 
                 // iU9-W9-E-3: die Datenbankseite der neuen Knopfleiste. Import und
                 // Vorschau sind WOERTLICH die Wege der Verwaltung - damit es keinen

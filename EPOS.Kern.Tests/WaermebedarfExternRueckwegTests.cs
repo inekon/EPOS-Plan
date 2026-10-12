@@ -200,6 +200,32 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// K5c: Der Assistent prüft die Seite Wärmebedarf mit derselben Regel wie Dialog und Hülle — „Split ohne EER“
+        /// kommt als Banner mit dem Namen der Zeile, nur solange die Seite aktiv ist; eine Wärmezeile prüft nichts.
+        /// </summary>
+        [Fact]
+        public void Der_Assistent_nennt_Split_ohne_EER_vor_dem_Schreiben()
+        {
+            var ctrl = new AssistentCtrl();
+            ctrl.SeiteSchalten(WizardItemClass.WAERMEBEDARF_ITEM, true);
+            ctrl.Waermebedarf.Add(new Z_ProjWaermebedarfModel { m_szBezeichner = "Heizung", Kanal = DbWerte.KANAL_HEIZUNG });
+            Assert.Null(AssistentAnsichtQuelle.DeckungsgrundWaermebedarf(ctrl));
+
+            ctrl.Waermebedarf.Add(new Z_ProjWaermebedarfModel
+            {
+                m_szBezeichner = "Kaelte", Kanal = DbWerte.KANAL_KUEHLUNG, Deckung = KaeltebedarfSchema.DECKUNG_SPLIT,
+                EerWeg = KaeltebedarfSchema.EER_FEST, Eer1 = 0, Taussen1 = 35
+            });
+            string grund = AssistentAnsichtQuelle.DeckungsgrundWaermebedarf(ctrl);
+            Assert.StartsWith(WindowsFormsApplication1.MyResource.Resource.DECK_MSG_OHNE_EER, grund);
+            Assert.EndsWith("(Kaelte)", grund);
+            Assert.Equal(grund, WaermebedarfExternAbbildung.Deckungsgrund(ctrl.Waermebedarf));
+
+            ctrl.SeiteSchalten(WizardItemClass.WAERMEBEDARF_ITEM, false);
+            Assert.Null(AssistentAnsichtQuelle.DeckungsgrundWaermebedarf(ctrl));
+        }
+
         /// <summary>Die Wärmezeilen (alle außer Kühlung) samt Kennung ID_Z — „byte-gleich“ heißt hier: jede Spalte.</summary>
         private static string WaermeAbdruck(int projekt, bool alle = false)
         {
