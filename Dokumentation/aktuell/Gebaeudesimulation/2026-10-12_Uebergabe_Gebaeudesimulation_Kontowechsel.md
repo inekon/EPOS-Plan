@@ -66,8 +66,8 @@ Auftrag in Abschnitt 4 neu beauftragt. Die Routinen des alten Kontos sind gelös
      des Abschnitts IM PROJEKT (neben „In die Datenbank übernehmen…“, „Aus dem Projekt entfernen“); ohne Wahl alle Gebäude des
      Projekts („Simulation… (alle n Gebäude)“), sonst die angekreuzten („(m gewählt)“); Mehrfachwahl der Projektzeilen mit
      Kopfkästchen, ohne die Satzwahl des Katalogs zu stören; nicht im Assistenten, nicht in der Katalogverwaltung. Ursache:
-     AW3b (`de9bbc779`, „eine Wahl je Zeile, Knopfleiste am Satz“) — der alte Knopf (`BedarfGaben`, `BeiSimulation`) ist seitdem
-     nicht mehr erreichbar; prüfen, ob die Windows-Schale `BedarfGaben` überhaupt durchreicht (Startseite › Gebäude,
+     AW3b (`de9bbc779`, „eine Wahl je Zeile, Knopfleiste am Satz“) — der Knopf (`BedarfGaben`, `BeiSimulation`) steht seitdem
+     nur noch in der Satz-Überlagerung hinter „⤢“ am Projektsatz (`epos-gebaeude-satzknoepfe`) und wird nicht gefunden; prüfen, ob die Windows-Schale `BedarfGaben` überhaupt durchreicht (Startseite › Gebäude,
      `GebaeudeFenster`), und ob Export, Neulesen, Ausrichtung ebenso unerreichbar wurden.
    - „Baustoff-Zuordnungen…“ aus der Leiste des Projektsatzes nehmen; anbieten im Gebäudeimport an der Liste
      „Bauteilaufbauten“ und im Gebäudeeditor (`GebaeudeKatalogDialog.razor`) bei Bauteilen/Aufbauten.
