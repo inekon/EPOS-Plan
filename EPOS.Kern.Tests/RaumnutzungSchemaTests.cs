@@ -121,7 +121,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, RaumnutzungSchema.OffeneSaat());
             // Nach dem Schritt RaumnutzungNormkategorienSchema (NP6, E129) nur noch EPOS-Muster und DIN.
             Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungskatalog WHERE ReadOnly = 1"));
-            Assert.Equal(52L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil WHERE ReadOnly = 1"));
+            Assert.Equal((long)(RaumnutzungSaat.Profile.Count + RaumnutzungNormkategorienSchema.WOHNPROFILE.Count), Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil WHERE ReadOnly = 1"));
             Assert.Equal(50L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszeile"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsstunden"));
             Assert.Equal(27L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszuordnung WHERE ReadOnly = 1 AND ID_Profil IS NOT NULL"));
@@ -361,7 +361,7 @@ namespace EPOS.Kern.Tests
             Assert.True(RaumnutzungSchema.Vollstaendig());
             Assert.Equal(27L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszuordnung"));
             Assert.Equal(50L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszeile"));
-            Assert.Equal(52L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil"));
+            Assert.Equal((long)(RaumnutzungSaat.Profile.Count + RaumnutzungNormkategorienSchema.WOHNPROFILE.Count), Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil"));
             Assert.Equal(4L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungskatalog"));
         }
 

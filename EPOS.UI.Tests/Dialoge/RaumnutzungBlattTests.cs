@@ -676,6 +676,7 @@ public class RaumnutzungBlattTests : EposBunitContext
         w.Profile.Add(new RaumnutzungProfilDaten { Id = 34, IdKategorie = katDin, Nummer = "", Bezeichner = "Wohngebäude – Mehrfamilienhaus", Ausgeliefert = true });
 
         var cut = Blatt(w);
+        cut.Find(".epos-raumnutzung-reiter-zuordnung").Click();
         IElement auswahl = cut.Find("[data-zuordnung=\"21\"] .epos-raumnutzung-zuordnung-profil");
         string[] gruppen = auswahl.QuerySelectorAll("optgroup").Select(g => g.GetAttribute("label") ?? "").ToArray();
         Assert.Equal(new[] { "EPOS-Muster", "Eigene Profile", "DIN/TS 18599-10" }, gruppen);

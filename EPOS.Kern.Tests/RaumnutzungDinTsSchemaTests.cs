@@ -121,7 +121,8 @@ namespace EPOS.Kern.Tests
             long k = KategorieDin();
             Assert.Equal(RaumnutzungSaat.QUELLE_DIN, Convert.ToString(DataRepository.ExecuteScalar(
                 "SELECT Quellenhinweis FROM Tab_Raumnutzungskatalog WHERE ID = ?", new DbParam("@i", k)), CultureInfo.InvariantCulture));
-            Assert.Equal(43L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil WHERE ReadOnly = 1 AND ID_Katalog = " + k));
+            Assert.Equal((long)(RaumnutzungSaat.Din.Count + RaumnutzungNormkategorienSchema.WOHNPROFILE.Count),
+                Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil WHERE ReadOnly = 1 AND ID_Katalog = " + k));
             foreach (RaumnutzungSaatprofil p in RaumnutzungSaat.Din)
                 Assert.Equal(1L, Convert.ToInt64(DataRepository.ExecuteScalar(
                     "SELECT COUNT(*) FROM Tab_Raumnutzungsprofil WHERE ID_Katalog = ? AND Nummer = ? AND Bezeichner = ?",

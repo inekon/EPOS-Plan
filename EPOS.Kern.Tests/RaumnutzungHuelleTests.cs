@@ -52,7 +52,7 @@ namespace EPOS.Kern.Tests
             List<RaumnutzungProfilDaten> alle = w.Kategorien()
                 .SelectMany(k => w.Profile(k.Id)).ToList();
 
-            Assert.Equal(52, alle.Count);
+            Assert.Equal(RaumnutzungSaat.Profile.Count + RaumnutzungNormkategorienSchema.WOHNPROFILE.Count, alle.Count);
             Assert.All(alle, p => Assert.True(p.Ausgeliefert));
 
             RaumnutzungKategorieDaten muster = w.Kategorien().Single(k => k.Art == RaumnutzungArt.EposMuster);
