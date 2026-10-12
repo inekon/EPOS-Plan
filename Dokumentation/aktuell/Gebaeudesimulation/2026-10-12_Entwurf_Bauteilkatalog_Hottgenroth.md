@@ -290,16 +290,28 @@ Nach der Recherche gibt es **keine belegt frei lizenzierte Quelle** für λ, ρ 
 
 ### 5.1 Schema
 
-- Ein Schritt für 2.1, die nächste freie Nummer laut Kopfzeile der Statusdatei (219 ist vergeben, 220 frei). Er wird
-  **erst vor dem Bau** angemeldet.
-- Er erweitert den CHECK von `Herkunft` um `IMPORT` (Neubau von `Tab_Baustoff(_STAMM)` und `Tab_Bauteilaufbau(_STAMM)`)
-  und legt diese Spalten an:
-  - `U_Quelle`, `U_Wert`, `g_Wert`, `Rahmenanteil` am Aufbau;
-  - `Abschnitt`, `Flaechenanteil` an der Schicht.
-- Alle neuen Spalten sind nullbar, mit `CHECK` (Rahmenanteil und Flächenanteil 0…1).
-- Das Katalogregister und das Katalogpaket kennen die neuen Spalten; die Prüfsumme der neun Auslieferungsaufbauten ändert
-  sich nicht, solange die neuen Felder leer bleiben.
-- Falls BK-5 getrennt kommt, bekommt es einen zweiten Schritt.
+Gebaut ist **Schemaschritt 221** (`EPOS.Kern/Allgemein/Update/BauteilkatalogSchema.cs`, Kernregeln in
+`EPOS.Kern/Allgemein/Katalog/Bauteilkatalog.cs`; Spalten, Abbildung und Nachweis im Protokoll
+[BK-2 Schema 221](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-12_BK-2_Schema221.md)):
+
+- **Herkunft** an `Tab_Baustoff(_STAMM)` und `Tab_Bauteilaufbau(_STAMM)` mit `EIGEN` und `IMPORT`, `Quelle` bis 400
+  Zeichen (Neubau der vier Tabellen, IDs und Fremdschlüssel bleiben); `Quellkennung` eindeutig je Herkunft `IMPORT`.
+  Bestand: ausgeliefert `VORGABE`, eigene Sätze `EIGEN`, eine Importherkunft der Projektdatei bleibt.
+- **Gliederung** zweistufig als Code-Spalten mit CHECK: `Gruppe_Code` und `Klasse_Code` an Baustoff und Aufbau
+  (Gruppen der Baustoffe = die zwölf festen Stoffgruppen, der Aufbauten = Wände, Decken, Dächer, Öffnungen, Sonstige).
+  Abgeleitet aus Stoffgruppe bzw. Bauteilart und Typaufbau; die Abbildungstafel der Fremdcodes liegt im Kern.
+- **Kennzeichen** `Simulation_Ungeeignet` am Aufbau (0/1, vom Kern gesetzt): eine Schicht ohne λ oder ein Aufbau ohne
+  Schicht (ein Fenster, eine Vorhangfassade oder eine Tür mit `U_Quelle` ausgenommen).
+- **Felder der Quelle** (E132 F2), alle nullbar mit Bereichs-CHECK: am Baustoff 17 (Lang-/Infotext, Bemessungswert λ,
+  µ-Grenzen, Baustoff- und Oberflächenart, drei Schalter, Feuchtegehalt, Höchsttemperatur, Rauheit, Längenausdehnung,
+  OI3); am Aufbau 20 (Infotext, Dicke, `U_Quelle`, R, Rsi, Rse, hinterlüftet, die Fensterfelder Rahmenanteil, g, Ug,
+  Uf, Rahmenbreite, Verschattungsfaktor, ψ gesamt/System/Geometrie, OI3 des Rahmens, Gültigkeit); an der Schicht 29
+  samt `Quellkennung` und EN-6946-Geometrie.
+- **Abschnitte** als eigene Tabelle `Tab_Bauteilabschnitt(_STAMM)` (Nummer, Flächenanteil 0…1, Text, Quellkennung) mit
+  `ID_Abschnitt` an der Schicht; die Rechnung nach DIN EN ISO 6946 6.7 bleibt BK-5.
+- Das Katalogregister führt Gliederung, Kennzeichen und Felder als Fachspalten; die Prüfsummen der Auslieferungssätze
+  stempelt der Schritt neu. Die Auslieferungsvorlage behält Importsätze (F8) und zählt die Sätze je Herkunft.
+- Der Bauteilweg liest keine neue Spalte; der Referenzlauf bleibt gleich.
 
 ### 5.2 Einfrierregeln
 
