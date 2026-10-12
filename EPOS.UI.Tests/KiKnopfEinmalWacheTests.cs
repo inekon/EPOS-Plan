@@ -53,7 +53,7 @@ public sealed class KiKnopfEinmalWacheTests
             ["EPOS.UI/Dialoge/Bedarf/GebaeudeKuehluebergabeFelder.razor"] =
                 "steht in GebaeudeKatalogDialog und GebaeudeStammblattFelder; die Kopfpille des Wirts führt den Assistenten",
             ["EPOS.UI/Dialoge/Waermepumpe/WaermepumpeKonfiguration.razor"] =
-                "steht in WaermepumpeAnlageDialog und KomponentenKonfigurationDialog; deren Kopfpille führt den Assistenten",
+                "steht in WaermepumpeAnlageFelder (im WaermepumpenDialog) und KomponentenKonfigurationDialog; deren Kopfpille führt den Assistenten",
             ["EPOS.UI/Dialoge/Waermepumpe/WaermepumpeAnlageFelder.razor"] =
                 "steht nur in der Satz-Überlagerung des WaermepumpenDialog; dessen Kopfpille führt den Assistenten",
             ["EPOS.UI/Dialoge/Waermepumpe/WaermepumpeKuehlbetriebGruppe.razor"] =

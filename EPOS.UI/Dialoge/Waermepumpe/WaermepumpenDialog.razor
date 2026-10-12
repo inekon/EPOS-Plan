@@ -51,6 +51,15 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
+    @* KATALOGAUSWAHL V1 (Konzept Projektdialoge mit Katalogauswahl 4.2, 4.4a): jede Funktion an genau einem
+       Ort. P = Kopfleiste „Im Projekt" (Umstellen…, In die Datenbank übernehmen…, Aus dem Projekt entfernen), K
+       = Kopfleiste des Katalogs (Suche, In das Projekt übernehmen), S = Zeile „gewählter Satz" (Marke,
+       Kenndaten, Infoknöpfe und - KnopfleisteAmSatz, AW1 - Vergleichen…, Schloss setzen…, Löschen, Bearbeiten…,
+       Neu… auf den gewählten Satz; Schloss und Löschen nur beim Katalogsatz), D = Kopf und Fussleiste des
+       Dialogs. Der Stift je Listenzeile ist Bearbeiten… dieser Zeile. Der Klick auf die Zeile wählt (auch ↑ ↓
+       Pos1 Ende), die gewählte Projektzeile ist farbig hervorgehoben; die Kästchen markieren nur für die
+       Sammelaktionen, die auf die angekreuzten Zeilen wirken, sonst auf die gewählte. Bearbeiten… öffnet für
+       Projekt- und Katalogsatz dieselbe Überlagerung aus Satzdaten und Anlage (WaermepumpeAnlageFelder). *@
     <Zweispaltenauswahl Dialogname="Waermepumpe" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
                         KatalogZeile="@((int)Katalogliste.ZEILENHOEHE_ZEILENWAHL)"
                         UebernehmenText="@LabelHinzu"

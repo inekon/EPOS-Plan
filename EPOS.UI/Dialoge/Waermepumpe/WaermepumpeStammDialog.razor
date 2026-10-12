@@ -61,9 +61,8 @@
 
 <div class="epos-dialog epos-katalog-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    @* Ein Titel, eine Stelle: eingebettet in der Ueberlagerung "Parameter Bearbeiten..."
-       (WaermepumpeAnlageDialog) traegt DIE den Titel; der Wirt setzt dort
-       TitelAnzeigen="false" - dann bleiben Titel und Kreuz hier aus, die
+    @* Ein Titel, eine Stelle: eingebettet in eine Ueberlagerung, die selbst den Titel
+       traegt, setzt der Wirt TitelAnzeigen="false" - dann bleiben Titel und Kreuz hier aus, die
        Ueberlagerung traegt beides. TitelText bleibt dabei gesetzt: Er nennt die
        Maske auch in der Assistentenmeldung ohne Speicherweg (KiSpeichern) - Bauart
        b der Hausregel, wie PufferSpProjektDialog. *@
@@ -468,9 +467,8 @@
 
     /// <summary>
     /// Zeichnet der Dialog seinen eigenen Kopf (Titel und Schliesskreuz)? <c>false</c>,
-    /// wenn eine <c>Ueberlagerung</c> den Titel trägt (Hausregel „Ein Titel, eine Stelle";
-    /// so bettet ihn <c>WaermepumpeAnlageDialog</c> ein). <see cref="TitelText"/> bleibt
-    /// dabei gesetzt — er nennt die Maske auch in der Assistentenmeldung ohne Speicherweg.
+    /// wenn eine <c>Ueberlagerung</c> den Titel trägt (Hausregel „Ein Titel, eine Stelle").
+    /// <see cref="TitelText"/> bleibt dabei gesetzt — er nennt die Maske auch in der Assistentenmeldung ohne Speicherweg.
     /// </summary>
     [Parameter] public bool TitelAnzeigen { get; set; } = true;
     [Parameter] public string KopfbandText { get; set; } = "Verwaltung Daten zu Wärmepumpen und deren Kennlinien";

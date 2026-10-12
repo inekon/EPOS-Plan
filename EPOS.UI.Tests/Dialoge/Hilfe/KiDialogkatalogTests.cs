@@ -1989,7 +1989,7 @@ public class KiDialogkatalogTests : IDisposable
             "bindet über die Sichtklasse WaermepumpeAnlageKiSicht: den Feldsatz " +
             "WaermepumpeAnlageDaten reicht sie unverändert durch, der Schalter " +
             "„Extrapolation der WP-Kennlinie erlauben“ gehört dem PROJEKT und schreibt " +
-            "über ExtrapolationSchreiben; Zeuge ist WaermepumpeAnlageDialogTests",
+            "über ExtrapolationSchreiben; Zeuge ist WaermepumpeAnlageFelderTests",
         [KiMaskennamen.KOSTENVERWALTUNG] =
             "bindet über die Sichtklasse KostenKomponenteKiSicht: den Arbeitsstand " +
             "samt Raster reicht sie unverändert durch, dazu die Komponentenwahl aus " +
