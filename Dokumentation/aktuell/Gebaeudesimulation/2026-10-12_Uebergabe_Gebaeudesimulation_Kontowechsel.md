@@ -77,6 +77,9 @@ selbst (Abschnitt 4 a).
 
 - **NP7, Nummern 70/71 der Projektdatei:** beim Einlesen der Normwerte auf „Wohngebäude – Einfamilienhaus“ bzw.
   „– Mehrfamilienhaus“ abbilden? Empfehlung: ja, nur für das Einlesen; die Raumzuordnung auf das Muster Wohnen bleibt.
+- **Jahreswärmebedarf in der Zusammenfassung des Gebäudedialogs** (übernommen von der Sitzung „Anlagendialog/Kältebedarf“,
+  Konzept Projektdialoge Katalogauswahl, Abschnitt 5): Wert aus dem letzten Rechenlauf mit Datum zeigen oder die Zeile streichen?
+  Empfehlung: Wert des letzten Laufs mit Datum, ohne Lauf „noch nicht gerechnet“; gehört zu GD-4 bzw. einer GD-Nachwelle.
 - **BK F1–F8** des Entwurfs Bauteilkatalog (Empfehlungen im Entwurf; „F1–F8: Empfehlung“ genügt).
 - **Sichtabnahmen unter Windows:** gesperrte Farbmodusknöpfe mit Grund (#1010), Legendenzuordnung (#1013), Schichtwahl im
   Aufbau (#1014), Herkunftsmarken und Rundung im Gebäudekopf (#1015), Namensvorschlag „Übernehmen“ im Importdialog (#1016),
