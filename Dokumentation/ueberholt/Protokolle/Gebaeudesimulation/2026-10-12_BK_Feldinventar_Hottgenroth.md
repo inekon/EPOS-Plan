@@ -270,6 +270,41 @@ Keine bauphysikalischen Kennwerte (λ, ρ, c) in TechData — nur Schallschutz u
 - Skripte und Rohdaten liegen beim Anwender (`sql\feldinventar.sql`, `feldinventar_ph.sql`, `roh\feldinventar_alle.txt`,
   `feldinventar_ph.txt` unter `C:\Temp\Hsetu\`).
 
+## Format des CSV-Exports (für BK-3, E133)
+
+Erhoben von derselben lokalen Sitzung am 12.10.2026 an `C:\Temp\Hsetu\Export\` (nur Struktur).
+
+| Datei | Datenzeilen | Spalten | Felder mit Zeilenumbruch | Felder mit ; | Felder mit " |
+|---|---|---|---|---|---|
+| Baustoffe.csv | 10 719 | 101 | 1 510 | 377 | 4 040 |
+| Aufbauten.csv | 8 427 | 157 | 2 251 | 22 | 2 312 |
+| Schichten.csv | 9 296 | 104 | 243 | 0 | 451 |
+| Schichten_Abschnitte.csv | 538 | 34 | 0 | 0 | 0 |
+| Fenster.csv | 2 239 | 73 | 0 | 0 | 304 |
+| Basis_Auszug.csv | 31 972 | 4 | 0 | 0 | 0 |
+
+Weitere Dateien des Exports (nicht für BK-3): Baustoffe_Dimension, Katalog, Katalog_Index, Katalog_Inhalt, Hersteller, Quellen,
+EPD, Inventar_Spalten, Inventar_Tabellen, Codes_Zaehlung. Jede Datenzeile hat genau so viele Felder wie die Kopfzeile.
+
+- UTF-8 ohne BOM, Trennzeichen `;`, Kopfzeile = SQL-Spaltennamen in Tabellenreihenfolge.
+- Datensätze enden mit CRLF; Textfelder können ein einzelnes LF im Feldinneren tragen. Die Dateien sind RFC-4180-konform
+  (gequotet), ein zeilenweise lesender Parser scheitert — nötig ist ein regelkonformer CSV-Leser.
+- Quoting nur bei `;`, `"` oder Zeilenumbruch, `"` verdoppelt; leere Felder nie gequotet.
+- GUID: 36 Zeichen, Großbuchstaben-Hex ohne Klammern; Leer-GUID `AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA` und Null-GUID heißen
+  „kein Verweis“.
+- Datum ISO `JJJJ-MM-TTThh:mm:ss`; bit 0/1; int mit optionalem Minus; float mit Dezimalpunkt, 1–16 Nachkommastellen, auch
+  Exponentenschreibweise (InvariantCulture, AllowExponent). Platzhalter wörtlich `-987654321.99` bzw. `-987654.32`.
+- NULL ist ein leeres Feld; leerer Text und NULL sind nicht unterscheidbar.
+
+**`Basis_Auszug.csv`** (Spalten `UId;GroupType;SubType;MaterialUId`): die TcBasis-Zeilen, auf die Aufbauten (`BasisUId`) oder
+Baustoffe (`TcBasis.MaterialUId`) verweisen. 8 394 der 8 427 Aufbauten finden ihre Basiszeile; 23 579 Basiszeilen zeigen auf
+10 472 verschiedene Baustoffe (Lieferformen) — die Stoffgruppe je Baustoff ist auf Eindeutigkeit zu prüfen. 16 GroupType,
+22 Paare (GroupType|SubType: Zeilen): 1|0 3 689 · 1|2 7 · 2|0 269 · 2|1 1 · 3|0 3 892 · 3|2 487 · 3|3 408 · 4|0 3 227 ·
+5|0 2 988 · 6|0 163 · 7|0 11 252 · 8|0 1 264 · 14|0 1 890 · 14|1 2 · 14|2 2 · 15|0 15 · 16|0 8 · 17|0 467 · 19|0 1 363 ·
+29|0 38 · 30|0 539 · 31|0 1. Deutung (Vermutung aus dem Strukturbericht): an Aufbauten 1 Wände, 2 Türen, 3 Fenster,
+4 Decken/Böden, 5 Dächer, 17 Wärmebrücken, 19 Luftdurchlässe; an Baustoffen ist GroupType die Stoffgruppe 1…8 (DIN 4108-4
+Tabelle 1, Vermutung); die Codes 14, 15, 16, 29, 30, 31 sind nicht gedeutet.
+
 ## Folgerung für BK-2 (Vorschlag der Orchestrierung)
 
 „Alle Felder“ (E132 F2) heißt fachlich alle **belegten bauphysikalischen und beschreibenden** Felder; interne Kennungen,

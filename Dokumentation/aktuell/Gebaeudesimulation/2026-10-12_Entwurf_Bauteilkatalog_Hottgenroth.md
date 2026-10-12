@@ -358,6 +358,10 @@ Katalog: alle Felder aufnehmen. Alle anderen F1, F5–F7: Empfehlung. F8: nehme 
 | F7 Inhomogene Schichten | Empfehlung: bauen | BK-5 |
 | F8 Lizenz | **Lizenzen geklärt, die Datensätze werden aufgenommen** | Importierte Sätze dürfen in den Auslieferungskatalog: die Löschregel der Auslieferungsvorlage für `Herkunft = 'IMPORT'` (2.3, BK-2) entfällt; Herkunft und Quelle bleiben am Satz. Die Werte gelangen über das Austauschformat in die Datenbank des Anwenders und von dort über `Werkzeuge/Auslieferungsvorlage` in die Auslieferung — nicht ins Repositorium (die Testdatenbank bleibt ohne Importsätze, Tests lesen synthetische Dateien). Das Wiki bleibt ohne Hersteller- und Produktdaten (Regel der Wurzel-`CLAUDE.md`) |
 
+**E133 (12.10.2026, „BK-3: direkt lesen“):** BK-3 liest den vorhandenen CSV-Export der Quelltabellen direkt (Spaltennamen der
+Quelle, Platzhalter unverändert) und wendet die Regeln 1–12 im Kern an; ein eigenes Austauschformat und das LocalDB-Werkzeug
+BK-4 kommen erst, wenn ein neuer Katalogstand eingelesen werden soll.
+
 **Geänderte Wellen:** BK-2 ohne Löschregel, mit allen Feldern und den Spalten für Gruppe, Klasse und Kennzeichen; BK-3 mit
 Gliederung, Kennzeichen und Zusammenführung statt Abwahl; BK-1 zeigt Gruppe und Klasse und filtert nach dem Kennzeichen.
 Reihenfolge unverändert: BK-1 sofort, BK-2 und BK-6 mit einem Schemaschritt, BK-3 mit BK-4, BK-5, BK-7.
