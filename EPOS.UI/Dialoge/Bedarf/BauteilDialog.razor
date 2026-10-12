@@ -159,6 +159,11 @@
                 </div>
                 <Herleitungszeile Text="@Texte.HinweisKatalog" />
             }
+            @if (_aufbauGrund.Length > 0)
+            {
+                @* BK-2b: warum der gewaehlte Aufbau kein U traegt (Grund aus der Huelle). *@
+                <Herleitungszeile Text="@_aufbauGrund" />
+            }
             @if (_ansicht is not null)
             {
                 <Stammblattwerte Werte="@Schichtwerte" />
@@ -477,6 +482,9 @@
     private IReadOnlyList<(int Id, string Text)> Katalogeintraege
         => Katalogaufbauten.Where(a => Zeigen(a, _katalogwahl)).Select(a => (a.Id, a.Text)).ToList();
 
+    /// <summary>BK-2b: warum der gewählte Aufbau kein U trägt; leer = er trägt eins oder keiner ist gewählt.</summary>
+    private string _aufbauGrund = "";
+
     /// <summary>BK-2b: „auch ungeeignete zeigen" — Vorgabe aus.</summary>
     private bool _auchUngeeignete;
 
@@ -495,6 +503,7 @@
             _stand.IdAufbau = null;
             _stand.AufbauText = "";
             _stand.UAufbau = null;
+            _aufbauGrund = "";
         }
         else
         {
@@ -502,6 +511,7 @@
             _stand.IdAufbau = id;
             _stand.AufbauText = a?.Text ?? _stand.AufbauText;
             _stand.UAufbau = a?.UWert;
+            _aufbauGrund = a?.Grund ?? "";
         }
         AnsichtNachziehen();
     }
@@ -519,6 +529,7 @@
         _stand.IdAufbauStamm = a.Id;
         _stand.AufbauText = a.Text;
         _stand.UAufbau = a.UWert;
+        _aufbauGrund = a.Grund;
         AnsichtNachziehen();
     }
 

@@ -673,8 +673,13 @@ namespace WindowsFormsApplication1
                 if (a.Aktion == ERGAENZEN) continue;
                 var m = new BauteilaufbauModel { Bauteilart = (string)a.Werte["Bauteilart"] };
                 m.Zusatz[BauteilkatalogSchema.SPALTE_U_QUELLE] = a.Werte[BauteilkatalogSchema.SPALTE_U_QUELLE];
+                // BK-2b: mit Dicke, ρ und c_p - das Kennzeichen prüft auch die Bänder des Rechenwegs.
                 foreach (Satz s in a.Schichten)
-                    m.Schichten.Add(new BauteilschichtModel { IstLuftschicht = (int)s.Werte["IstLuftschicht"] == 1, Lambda = s.Lambda });
+                    m.Schichten.Add(new BauteilschichtModel
+                    {
+                        IstLuftschicht = (int)s.Werte["IstLuftschicht"] == 1, Lambda = s.Lambda,
+                        Dicke = s.W("Dicke") ?? 0.0, Rho = s.W("Rho"), Cp = s.W("cp")
+                    });
                 bool ungeeignet = Bauteilkatalog.MeistUngeeignet(m);
                 a.Werte[BauteilkatalogSchema.SPALTE_UNGEEIGNET] = ungeeignet ? 1 : 0;
                 if (ungeeignet) v.Gekennzeichnet++;

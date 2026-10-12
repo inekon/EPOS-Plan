@@ -146,6 +146,15 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < schichten.Count; i++)
                 if (!schichten[i].IstLuftschicht && !(schichten[i].Lambda > 0))
                     return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BKAT_GRUND_SCHICHT_OHNE_LAMBDA, i + 1);
+            // Die Bänder des Rechenwegs (GebaeudeFestwerte: Dicke, λ, ρ, c_p): ein angegebener Wert außerhalb seines Bandes
+            // kennzeichnet den Aufbau - ohne Ausnahme geprüft, mit der Meldung des Rechenwegs als Grund. Ein fehlender Wert
+            // (ρ, c_p, Dicke) kennzeichnet nicht; der Summenfuß nennt ihn.
+            string wer = string.IsNullOrWhiteSpace(m.Bezeichner) ? MyResource.Resource.BTA_WER_AUFBAU : m.Bezeichner.Trim();
+            for (int i = 0; i < schichten.Count; i++)
+            {
+                if (!BauteilaufbauCtrl.SchichtAusModell(schichten[i], i + 1, out Schicht schicht, out _)) continue;
+                if (Bauteilreduktion.SchichtBefund(schicht, wer, i + 1) is string befund) return befund;
+            }
             if (schichten.Count > 0) return null;
             bool oeffnung = m.Bauteilart != null && OEFFNUNGSARTEN.Contains(m.Bauteilart);
             if (oeffnung && Zahl(m.Zusatz, BauteilkatalogSchema.SPALTE_U_QUELLE).HasValue) return null;

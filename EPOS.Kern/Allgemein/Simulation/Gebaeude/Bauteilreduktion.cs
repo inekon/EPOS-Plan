@@ -332,38 +332,58 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < schichten.Count; i++) SchichtPruefen(schichten[i], wer, i + 1);
         }
 
-        private static void SchichtPruefen(in Schicht s, string wer, int nummer)
+        /// <summary>
+        /// <b>Der Befund einer Schicht ohne Ausnahme</b> (BK-2b): dieselben Bänder wie <see cref="Pruefen"/>; <c>null</c> = in
+        /// Ordnung, sonst die Meldung, die <see cref="Pruefen"/> werfen würde. Für Wahllisten und das Kennzeichen des Katalogs,
+        /// die tausende Aufbauten prüfen.
+        /// </summary>
+        internal static string SchichtBefund(in Schicht s, string wer, int nummer)
         {
             if (!ImBand(s.Dicke_M, GebaeudeFestwerte.SCHICHT_DICKE_MIN_M, GebaeudeFestwerte.SCHICHT_DICKE_MAX_M))
-                throw SchichtFehler(wer, nummer, "d", s.Dicke_M, "m", GebaeudeFestwerte.SCHICHT_DICKE_MIN_M, GebaeudeFestwerte.SCHICHT_DICKE_MAX_M);
+                return SchichtFehlertext(wer, nummer, "d", s.Dicke_M, "m", GebaeudeFestwerte.SCHICHT_DICKE_MIN_M, GebaeudeFestwerte.SCHICHT_DICKE_MAX_M);
 
             if (s.IstRuhendeLuftschicht)
             {
                 if (s.Dicke_M > GebaeudeFestwerte.LUFTSCHICHT_DICKE_MAX_M)
-                    throw new GebaeudeModellException(GebaeudeModellFehler.SchichtUngueltig,
-                        Format(MyResource.Resource.SIMENG_G3_LUFTSCHICHT_DICKE, Wer(wer), Text(nummer),
-                               Text(s.Dicke_M), Text(GebaeudeFestwerte.LUFTSCHICHT_DICKE_MAX_M)));
-                return;
+                    return Format(MyResource.Resource.SIMENG_G3_LUFTSCHICHT_DICKE, Wer(wer), Text(nummer),
+                                  Text(s.Dicke_M), Text(GebaeudeFestwerte.LUFTSCHICHT_DICKE_MAX_M));
+                return null;
             }
 
             if (!ImBand(s.Lambda_WmK, GebaeudeFestwerte.LAMBDA_MIN_WMK, GebaeudeFestwerte.LAMBDA_MAX_WMK))
-                throw SchichtFehler(wer, nummer, "λ", s.Lambda_WmK, "W/(mK)", GebaeudeFestwerte.LAMBDA_MIN_WMK, GebaeudeFestwerte.LAMBDA_MAX_WMK);
+                return SchichtFehlertext(wer, nummer, "λ", s.Lambda_WmK, "W/(mK)", GebaeudeFestwerte.LAMBDA_MIN_WMK, GebaeudeFestwerte.LAMBDA_MAX_WMK);
 
             if (s.IstLuftschicht)
             {
                 // Luftschicht mit äquivalenter Leitfähigkeit: ρ darf unter dem Band liegen,
                 // ohne ρ oder c_p trägt sie keine Kapazität.
                 if (!double.IsNaN(s.Rohdichte_KgM3) && !ImBand(s.Rohdichte_KgM3, 0.0, GebaeudeFestwerte.ROHDICHTE_MAX_KGM3))
-                    throw SchichtFehler(wer, nummer, "ρ", s.Rohdichte_KgM3, "kg/m³", 0.0, GebaeudeFestwerte.ROHDICHTE_MAX_KGM3);
+                    return SchichtFehlertext(wer, nummer, "ρ", s.Rohdichte_KgM3, "kg/m³", 0.0, GebaeudeFestwerte.ROHDICHTE_MAX_KGM3);
                 if (!double.IsNaN(s.Cp_JkgK) && !ImBand(s.Cp_JkgK, GebaeudeFestwerte.CP_MIN_JKGK, GebaeudeFestwerte.CP_MAX_JKGK))
-                    throw SchichtFehler(wer, nummer, "c_p", s.Cp_JkgK, "J/(kgK)", GebaeudeFestwerte.CP_MIN_JKGK, GebaeudeFestwerte.CP_MAX_JKGK);
-                return;
+                    return SchichtFehlertext(wer, nummer, "c_p", s.Cp_JkgK, "J/(kgK)", GebaeudeFestwerte.CP_MIN_JKGK, GebaeudeFestwerte.CP_MAX_JKGK);
+                return null;
             }
 
             if (!ImBand(s.Rohdichte_KgM3, GebaeudeFestwerte.ROHDICHTE_MIN_KGM3, GebaeudeFestwerte.ROHDICHTE_MAX_KGM3))
-                throw SchichtFehler(wer, nummer, "ρ", s.Rohdichte_KgM3, "kg/m³", GebaeudeFestwerte.ROHDICHTE_MIN_KGM3, GebaeudeFestwerte.ROHDICHTE_MAX_KGM3);
+                return SchichtFehlertext(wer, nummer, "ρ", s.Rohdichte_KgM3, "kg/m³", GebaeudeFestwerte.ROHDICHTE_MIN_KGM3, GebaeudeFestwerte.ROHDICHTE_MAX_KGM3);
             if (!ImBand(s.Cp_JkgK, GebaeudeFestwerte.CP_MIN_JKGK, GebaeudeFestwerte.CP_MAX_JKGK))
-                throw SchichtFehler(wer, nummer, "c_p", s.Cp_JkgK, "J/(kgK)", GebaeudeFestwerte.CP_MIN_JKGK, GebaeudeFestwerte.CP_MAX_JKGK);
+                return SchichtFehlertext(wer, nummer, "c_p", s.Cp_JkgK, "J/(kgK)", GebaeudeFestwerte.CP_MIN_JKGK, GebaeudeFestwerte.CP_MAX_JKGK);
+            return null;
+        }
+
+        /// <summary>Der erste Befund eines Aufbaus ohne Ausnahme; <c>null</c> = <see cref="Pruefen"/> wirft nicht.</summary>
+        internal static string PruefenOhneAusnahme(IReadOnlyList<Schicht> schichten, string wer = null)
+        {
+            if (schichten == null || schichten.Count == 0) return Format(MyResource.Resource.SIMENG_G3_AUFBAU_LEER, Wer(wer));
+            for (int i = 0; i < schichten.Count; i++)
+                if (SchichtBefund(schichten[i], wer, i + 1) is string b) return b;
+            return null;
+        }
+
+        private static void SchichtPruefen(in Schicht s, string wer, int nummer)
+        {
+            if (SchichtBefund(s, wer, nummer) is string befund)
+                throw new GebaeudeModellException(GebaeudeModellFehler.SchichtUngueltig, befund);
         }
 
         /// <summary>
@@ -563,9 +583,8 @@ namespace WindowsFormsApplication1
         //  Werkzeug
         // =====================================================================
 
-        private static GebaeudeModellException SchichtFehler(string wer, int nummer, string groesse, double wert, string einheit, double min, double max)
-            => new GebaeudeModellException(GebaeudeModellFehler.SchichtUngueltig,
-                Format(MyResource.Resource.SIMENG_G3_SCHICHT_STOFFWERT, Wer(wer), Text(nummer), groesse, Text(wert), einheit, Text(min), Text(max)));
+        private static string SchichtFehlertext(string wer, int nummer, string groesse, double wert, string einheit, double min, double max)
+            => Format(MyResource.Resource.SIMENG_G3_SCHICHT_STOFFWERT, Wer(wer), Text(nummer), groesse, Text(wert), einheit, Text(min), Text(max));
 
         private static bool ImBand(double w, double min, double max) => w >= min && w <= max;
 

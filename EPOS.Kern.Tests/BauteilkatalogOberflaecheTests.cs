@@ -147,6 +147,82 @@ namespace EPOS.Kern.Tests
             Assert.True(msAufbau < 1000 && msStoff < 1000, "Filterzeit " + msAufbau + " ms / " + msStoff + " ms");
         }
 
+        // ---- Befund Windows (8 427 eingelesene Aufbauten): Bänder des Rechenwegs ohne Ausnahme -------------
+
+        private static BauteilaufbauModel Wand(int id, double rho) => new BauteilaufbauModel
+        {
+            ID = id, Bezeichner = "Wand " + id, Bauteilart = DbWerte.BAUTEILART_AUSSENWAND,
+            Schichten =
+            {
+                new BauteilschichtModel { Dicke = 0.015, Lambda = 0.7, Rho = 1400, Cp = 1000 },
+                new BauteilschichtModel { Dicke = 0.12, Lambda = 0.035, Rho = rho, Cp = 1030 }
+            }
+        };
+
+        [Fact]
+        public void Eine_Schicht_ausserhalb_der_Baender_kennzeichnet_den_Aufbau_ohne_Ausnahme()
+        {
+            BauteilaufbauModel wand = Wand(1, 2.0);                         // ρ unter 5 kg/m³
+            string grund = Bauteilkatalog.UngeeignetGrund(wand);
+            Assert.NotNull(grund);
+            Assert.Contains("ρ", grund);
+            Assert.True(Bauteilkatalog.MeistUngeeignet(wand));
+            BauteilaufbauKennwerte k = BauteilaufbauCtrl.Kennwerte(wand, mitBezugsperiode: false);
+            Assert.Null(k.U_WM2K);
+            Assert.Contains("ρ", k.Grund);
+            Assert.Null(Bauteilkatalog.UngeeignetGrund(Wand(2, 30.0)));
+
+            BauteilaufbauModel kapazitaet = Wand(3, 30.0);
+            kapazitaet.Schichten[1].Cp = 50;                                // c_p unter 100
+            Assert.Contains("c_p", Bauteilkatalog.UngeeignetGrund(kapazitaet));
+        }
+
+        /// <summary>
+        /// Der Weg der Bauteilwahl (<c>GebaeudeKatalogHuelle.Wahlen</c>, gerufen vom Zonenweg für Projekt und Katalog) über
+        /// 8 000 synthetische Aufbauten, jeder fünfte mit ρ unter dem Band: keine Ausnahme (auch keine abgefangene), unter einer
+        /// Sekunde; die gekennzeichneten tragen das U der Quelle oder leer mit Grund.
+        /// </summary>
+        [Fact]
+        public void Die_Bauteilwahl_rechnet_8000_Aufbauten_ohne_Ausnahme_unter_einer_Sekunde()
+        {
+            var aufbauten = new List<BauteilaufbauModel>(8000);
+            for (int i = 1; i <= 8000; i++)
+            {
+                BauteilaufbauModel a = Wand(i, i % 5 == 0 ? 2.0 : 30.0);
+                if (i % 10 == 0) a.Zusatz[BauteilkatalogSchema.SPALTE_U_QUELLE] = 0.3;
+                aufbauten.Add(a);
+            }
+            BauteilkatalogHuelleWarm();
+
+            int faden = Environment.CurrentManagedThreadId;
+            int ausnahmen = 0;
+            EventHandler<System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs> zaehler =
+                (_, _) => { if (Environment.CurrentManagedThreadId == faden) ausnahmen++; };
+            AppDomain.CurrentDomain.FirstChanceException += zaehler;
+            var uhr = Stopwatch.StartNew();
+            List<EPOS.UI.Dialoge.Bedarf.AufbauWahl> wahl;
+            try
+            {
+                wahl = GebaeudeKatalogHuelle.Wahlen(aufbauten, true);
+            }
+            finally
+            {
+                uhr.Stop();
+                AppDomain.CurrentDomain.FirstChanceException -= zaehler;
+            }
+
+            Assert.Equal(0, ausnahmen);
+            Assert.True(uhr.ElapsedMilliseconds < 1000, "Bauteilwahl " + uhr.ElapsedMilliseconds + " ms");
+            Assert.Equal(8000, wahl.Count);
+            Assert.Equal(1600, wahl.Count(w => w.Ungeeignet));
+            Assert.All(wahl.Where(w => !w.Ungeeignet), w => Assert.True(w.UWert > 0));
+            Assert.All(wahl.Where(w => w.Ungeeignet && w.Id % 10 == 0), w => Assert.Equal(0.3, w.UWert));
+            Assert.All(wahl.Where(w => w.Ungeeignet && w.Id % 10 != 0), w => { Assert.Null(w.UWert); Assert.Contains("ρ", w.Grund); });
+        }
+
+        /// <summary>Wärmt Ressourcen und Rechenweg vor der Zeitmessung an (JIT, Ressourcenleser).</summary>
+        private static void BauteilkatalogHuelleWarm() => GebaeudeKatalogHuelle.Wahlen(new[] { Wand(1, 30.0), Wand(2, 2.0) }, true);
+
         // ---- mit Testdatenbank ------------------------------------------------------------------
 
         [Fact]
