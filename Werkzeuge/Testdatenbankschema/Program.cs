@@ -3518,6 +3518,25 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrNp6 + " - vollstaendig: " + RaumnutzungNormkategorienSchema.Vollstaendig() +
                                   " (erwartet True).");
             }
+
+            // ---- Schritt RaumnutzungNormwerteSchema.SCHRITT (NP7, E131): Aussenluft je Person und Herkunft der Werte
+            //      (Werte_Herkunft, Werte_Quelle, Werte_Datum) an Tab_Raumnutzungsprofil, leer. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_RaumnutzungNormwerte. Wiederholbar, reines DDL.
+            //
+            //      REFERENZLAUF UNVERAENDERT: alle vier Spalten stehen leer.
+            string nrNp7 = RaumnutzungNormwerteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrNp7 + " - Aussenluft je Person und Herkunft der Werte: " +
+                              (RaumnutzungNormwerteSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtNp7 = new List<string>();
+                angelegt += RaumnutzungNormwerteSchema.Ausfuehren(berichtNp7);
+                foreach (string zeile in berichtNp7)
+                    Console.WriteLine("Schritt " + nrNp7 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrNp7 + " - vollstaendig: " + RaumnutzungNormwerteSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

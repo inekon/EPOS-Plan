@@ -1038,7 +1038,11 @@ namespace WindowsFormsApplication1
         /// Nutzungsprofile fallen weg, die Kategorie DIN bekommt die zwei Wohnprofile nach Tabelle 5 ohne Werte
         /// (<see cref="RaumnutzungNormkategorienSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg
         /// liest eine Kategorie.
-        public const int Zielversion = RaumnutzungNormkategorienSchema.SCHRITT;
+        /// Danach, mit den NORMWERTEN DER DIN (NP7, E131), steht das Ziel auf <see cref="RaumnutzungNormwerteSchema.SCHRITT"/>:
+        /// <c>Aussenluft_Person</c> und die Herkunft der Werte (<c>Werte_Herkunft</c>, <c>Werte_Quelle</c>, <c>Werte_Datum</c>)
+        /// an <c>Tab_Raumnutzungsprofil</c> (<see cref="RaumnutzungNormwerteSchema"/>). <b>Ergebnisneutral:</b> Alle vier
+        /// Spalten stehen leer.
+        public const int Zielversion = RaumnutzungNormwerteSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
