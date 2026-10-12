@@ -56,8 +56,10 @@ namespace Auslieferungsvorlage.Tests
 
             Lesen(ziel, () =>
             {
-                Assert.Equal(4, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungskatalog\""));
-                Assert.Equal(RaumnutzungSaat.Profile.Count, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungsprofil\""));
+                // Nach RaumnutzungNormkategorienSchema (E129) nur noch EPOS-Muster und DIN.
+                Assert.Equal(2, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungskatalog\""));
+                Assert.Equal(RaumnutzungSaat.Profile.Count + RaumnutzungNormkategorienSchema.WOHNPROFILE.Count,
+                    Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungsprofil\""));
                 Assert.Equal(RaumnutzungSaat.Zuordnungen.Count, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungszuordnung\""));
                 Assert.Equal(1, Zahl(
                     "SELECT COUNT(*) FROM \"Tab_Raumnutzungszuordnung\" z JOIN \"Tab_Raumnutzungsprofil\" p ON p.\"ID\" = z.\"ID_Profil\" " +
@@ -116,7 +118,8 @@ namespace Auslieferungsvorlage.Tests
                 Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungskatalog\" WHERE \"Bezeichner\" = 'Projektdatei Probe.sqproj'"));
                 Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungskatalog\" WHERE \"ReadOnly\" = 0"));
                 Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungsprofil\" WHERE \"ReadOnly\" = 0"));
-                Assert.Equal(RaumnutzungSaat.Profile.Count, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungsprofil\""));
+                Assert.Equal(RaumnutzungSaat.Profile.Count + RaumnutzungNormkategorienSchema.WOHNPROFILE.Count,
+                    Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungsprofil\""));
             });
         }
 
