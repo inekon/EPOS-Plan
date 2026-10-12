@@ -34006,6 +34006,33 @@ Möchten Sie das zulassen?</value>
   <data name="GIMP_ANS_ABTRENNEN" xml:space="preserve">
     <value>Antippen trennt als eigene Zone ab</value>
   </data>
+  <data name="GIMP_ANS_ZIEL_NUTZUNG" xml:space="preserve">
+    <value>Nutzung: {0}</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_OHNE_NUTZUNG" xml:space="preserve">
+    <value>ohne Nutzung</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_KLICK" xml:space="preserve">
+    <value>Klicken, dann Räume anklicken, um sie dieser Zone zuzuordnen</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_AUFHEBEN" xml:space="preserve">
+    <value>Gewählt: Räume anklicken, um sie dieser Zone zuzuordnen; erneut klicken hebt die Wahl auf</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_FEHLT" xml:space="preserve">
+    <value>zum Zuordnen zuerst eine Zone in der Legende wählen</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_NUR_ZONEN" xml:space="preserve">
+    <value>Zuordnen nur im Modus Zonen</value>
+  </data>
+  <data name="GIMP_ANS_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>nicht zugeordnet ({0} Räume)</value>
+  </data>
+  <data name="GIMP_ANS_NICHT_ZUGEORDNET_TITEL" xml:space="preserve">
+    <value>Räume ohne Zone — kein Ziel; Klicken hebt sie im Grundriss hervor</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_LEGENDE" xml:space="preserve">
+    <value>Zonen — Ziel der Zuordnung wählen</value>
+  </data>
   <data name="GIMP_ANS_KEINE_UMRISSE" xml:space="preserve">
     <value>In diesem Geschoss trägt kein Raum einen Umriss.</value>
   </data>
@@ -34017,9 +34044,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="GIMP_DLG_GRP_GRUNDRISS" xml:space="preserve">
     <value>Grundriss</value>
-  </data>
-  <data name="GIMP_DLG_ZUORDNEN_ZU" xml:space="preserve">
-    <value>Räume zuordnen zu</value>
   </data>
   <data name="GIMP_DLG_EIGENE_ZONE" xml:space="preserve">
     <value>als eigene Zone</value>
@@ -34034,7 +34058,7 @@ Möchten Sie das zulassen?</value>
     <value>Umhängen</value>
   </data>
   <data name="GIMP_DLG_UMHAENGEN_HINWEIS" xml:space="preserve">
-    <value>Zone wählen, dann einen Raum im Grundriss antippen — oder den Raum in der Liste wählen und „Umhängen“. Nur Räume gleicher Beheizung; übernommen wird erst mit OK.</value>
+    <value>Zone in der Legende wählen, dann einen Raum im Grundriss oder Körper antippen — oder den Raum in der Liste wählen und „Umhängen“. Nur Räume gleicher Beheizung; übernommen wird erst mit OK.</value>
   </data>
   <data name="GIMP_DLG_SCHON_DORT" xml:space="preserve">
     <value>„{0}“ liegt schon in der Zone „{1}“.</value>

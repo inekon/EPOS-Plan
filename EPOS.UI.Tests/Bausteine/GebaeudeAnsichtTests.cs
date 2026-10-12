@@ -248,7 +248,7 @@ public class GebaeudeAnsichtTests : EposBunitContext
         Assert.Contains("von Hand", eg.TextContent);
         Assert.DoesNotContain("unbeheizt", eg.TextContent);
         Assert.Contains("epos-gebansicht-zone--1", eg.QuerySelector(".epos-gebansicht-farbfeld")!.ClassName);
-        Assert.Equal("ohne Zone", eintraege[1].TextContent.Trim());
+        Assert.Equal("nicht zugeordnet (1 Räume)", eintraege[1].TextContent.Trim());
         Assert.Contains("epos-gebansicht-zone--ohne", eintraege[1].QuerySelector(".epos-gebansicht-farbfeld")!.ClassName);
 
         // Die Räume der Zielzone tragen den kräftigeren Rand.
@@ -1180,5 +1180,211 @@ public class GebaeudeAnsichtTests : EposBunitContext
         Assert.Contains("Stufen im Boden", wohnen.TextContent);
         Assert.Contains("Dachschräge", wohnen.TextContent);
         Assert.Equal("umriss", cut.Find(".epos-gebansicht-raumherkunft li[data-raum='r-kueche']").GetAttribute("data-herkunft"));
+    }
+
+    // =====================================================================
+    //  AB2: Zuordnung über die Legende
+    // =====================================================================
+
+    private static readonly IReadOnlyList<GebaeudeAnsichtZiel> Ziele = new[]
+    {
+        new GebaeudeAnsichtZiel("P-KG", "Kellergeschoss", ZONE_KG, "", "aus der Projektdatei"),
+        new GebaeudeAnsichtZiel("P-EG", "Erdgeschoss", ZONE_EG, "Sport · EPOS-Muster"),
+        new GebaeudeAnsichtZiel("P-NEU", "Zone 3"),
+        new GebaeudeAnsichtZiel("", "als eigene Zone", Abtrennen: true),
+    };
+
+    /// <summary>Die Ansicht mit Zielwahl; der Wirt ist nachgestellt: Er übernimmt die gemeldete Wahl und reicht sie zurück.</summary>
+    private IRenderedComponent<GebaeudeAnsicht> ZeigeMitZielen(List<GebaeudeRaumumhaengung> gemeldet, List<string?> wahl,
+                                                              string? gewaehlt = null, bool aktiv = true, GebaeudeAnsichtDaten? daten = null)
+    {
+        IRenderedComponent<GebaeudeAnsicht>? cut = null;
+        cut = Render<GebaeudeAnsicht>(p =>
+        {
+            p.Add(x => x.Daten, daten ?? Daten());
+            p.Add(x => x.Aktiv, aktiv);
+            p.Add(x => x.Zuordnungsziele, Ziele);
+            p.Add(x => x.GewaehltesZiel, gewaehlt);
+            p.Add(x => x.GewaehlteZone, Ziele.FirstOrDefault(z => z.Schluessel == gewaehlt)?.Ansichtsschluessel is { Length: > 0 } a ? a : null);
+            p.Add(x => x.RaumUmgehaengt, (GebaeudeRaumumhaengung u) => gemeldet.Add(u));
+            p.Add(x => x.ZielChanged, (string? z) =>
+            {
+                wahl.Add(z);
+                cut!.Render(q =>
+                {
+                    q.Add(x => x.GewaehltesZiel, z);
+                    q.Add(x => x.GewaehlteZone, Ziele.FirstOrDefault(y => y.Schluessel == z)?.Ansichtsschluessel is { Length: > 0 } a ? a : null);
+                });
+            });
+        });
+        return cut;
+    }
+
+    private static IElement Zielknopf(IRenderedComponent<GebaeudeAnsicht> cut, string name)
+        => cut.FindAll(".epos-gebansicht-legendeneintrag--zielwahl")
+              .First(e => e.QuerySelector(".epos-gebansicht-zonenname")!.TextContent == name)
+              .QuerySelector("button.epos-gebansicht-zielknopf")!;
+
+    [Fact]
+    public void AB2_Ein_Legendenklick_waehlt_die_Zone_ein_zweiter_hebt_die_Wahl_auf()
+    {
+        var gemeldet = new List<GebaeudeRaumumhaengung>();
+        var wahl = new List<string?>();
+        IRenderedComponent<GebaeudeAnsicht> cut = ZeigeMitZielen(gemeldet, wahl);
+
+        // Ohne Wahl ist kein Eintrag gedrückt.
+        Assert.All(cut.FindAll("button.epos-gebansicht-zielknopf:not(.epos-gebansicht-ohneknopf)"),
+                   k => Assert.Equal("false", k.GetAttribute("aria-pressed")));
+
+        Zielknopf(cut, "Erdgeschoss").Click();
+        Assert.Equal(new string?[] { "P-EG" }, wahl);
+        Assert.Equal("true", Zielknopf(cut, "Erdgeschoss").GetAttribute("aria-pressed"));
+        Assert.Equal("false", Zielknopf(cut, "Kellergeschoss").GetAttribute("aria-pressed"));
+        Assert.Contains("epos-gebansicht-legendeneintrag--ziel", Zielknopf(cut, "Erdgeschoss").ParentElement!.ClassName);
+        Assert.Contains("erneut klicken hebt die Wahl auf", Zielknopf(cut, "Erdgeschoss").GetAttribute("title"));
+
+        Zielknopf(cut, "Erdgeschoss").Click();
+        Assert.Equal(new string?[] { "P-EG", null }, wahl);
+        Assert.Equal("false", Zielknopf(cut, "Erdgeschoss").GetAttribute("aria-pressed"));
+
+        // „als eigene Zone" ist ein Ziel mit dem Schlüssel des Wirts (hier leer), nicht „keine Wahl".
+        Zielknopf(cut, "als eigene Zone").Click();
+        Assert.Equal("", wahl[^1]);
+        Assert.Equal("true", Zielknopf(cut, "als eigene Zone").GetAttribute("aria-pressed"));
+    }
+
+    [Fact]
+    public void AB2_Ein_Raumklick_ordnet_nur_mit_gewaehlter_Zone_zu()
+    {
+        var gemeldet = new List<GebaeudeRaumumhaengung>();
+        var wahl = new List<string?>();
+        IRenderedComponent<GebaeudeAnsicht> cut = ZeigeMitZielen(gemeldet, wahl);
+        Erdgeschoss(cut);
+
+        // Ohne Wahl: reine Anzeige, der Kurztext sagt, wie man zuordnet.
+        IElement kueche = Raum(cut, "r-kueche");
+        Assert.Equal("img", kueche.GetAttribute("role"));
+        Assert.False(kueche.HasAttribute("tabindex"));
+        Assert.EndsWith("— zum Zuordnen zuerst eine Zone in der Legende wählen", kueche.GetAttribute("aria-label"));
+        kueche.Click();
+        Assert.Empty(gemeldet);
+        Assert.False(cut.Instance.OrdnetZu);
+
+        // Mit Wahl: der Klick ordnet der gewählten Zone zu.
+        Zielknopf(cut, "Kellergeschoss").Click();
+        kueche = Raum(cut, "r-kueche");
+        Assert.Equal("button", kueche.GetAttribute("role"));
+        Assert.EndsWith("— Antippen ordnet der Zone „Kellergeschoss“ zu", kueche.GetAttribute("aria-label"));
+        kueche.Click();
+        Assert.Equal(new[] { new GebaeudeRaumumhaengung("r-kueche", ZONE_KG) }, gemeldet);
+
+        // Wahl aufgehoben: wieder nur Anzeige.
+        Zielknopf(cut, "Kellergeschoss").Click();
+        Raum(cut, "r-wohnen").Click();
+        Assert.Single(gemeldet);
+    }
+
+    [Fact]
+    public async Task AB2_Ein_Klick_auf_einen_Koerper_ordnet_mit_Wahl_seinen_Raum_zu_ohne_Wahl_nichts()
+    {
+        var gemeldet = new List<GebaeudeRaumumhaengung>();
+        var wahl = new List<string?>();
+        IRenderedComponent<GebaeudeAnsicht> cut = ZeigeMitZielen(gemeldet, wahl);
+
+        await cut.InvokeAsync(() => cut.Instance.BeiKoerperklick(ZONE_EG, "r-wohnen"));
+        Assert.Empty(gemeldet);
+
+        Zielknopf(cut, "Kellergeschoss").Click();
+        await cut.InvokeAsync(() => cut.Instance.BeiKoerperklick(ZONE_EG, "r-wohnen"));
+        await cut.InvokeAsync(() => cut.Instance.BeiKoerperklick(ZONE_EG, "gibt-es-nicht"));
+        Assert.Equal(new[] { new GebaeudeRaumumhaengung("r-wohnen", ZONE_KG) }, gemeldet);
+    }
+
+    [Fact]
+    public void AB2_Der_Eintrag_nennt_die_Nutzung_und_im_Titel_Herkunft_und_was_ein_Klick_tut()
+    {
+        IRenderedComponent<GebaeudeAnsicht> cut = ZeigeMitZielen(new(), new());
+
+        IElement eg = Zielknopf(cut, "Erdgeschoss");
+        Assert.Equal("Nutzung: Sport · EPOS-Muster", eg.QuerySelector(".epos-gebansicht-nutzung")!.TextContent);
+        Assert.Contains("epos-gebansicht-zone--1", eg.QuerySelector(".epos-gebansicht-farbfeld")!.ClassName);
+        Assert.EndsWith("— Klicken, dann Räume anklicken, um sie dieser Zone zuzuordnen", eg.GetAttribute("title"));
+
+        IElement kg = Zielknopf(cut, "Kellergeschoss");
+        Assert.Equal("ohne Nutzung", kg.QuerySelector(".epos-gebansicht-nutzung")!.TextContent);
+        Assert.Contains("aus der Projektdatei", kg.GetAttribute("title"));
+        Assert.Contains("unbeheizt", kg.TextContent);
+
+        // Eine Zone ohne Raum im Bild ist ein Ziel mit leerem Farbfeld; „als eigene Zone" trägt keine Nutzung.
+        IElement neu = Zielknopf(cut, "Zone 3");
+        Assert.Contains("epos-gebansicht-farbfeld--neu", neu.QuerySelector(".epos-gebansicht-farbfeld")!.ClassName);
+        Assert.Null(Zielknopf(cut, "als eigene Zone").QuerySelector(".epos-gebansicht-nutzung"));
+
+        // Alle Ziele stehen in jedem Geschoss — auch eine Zone ohne Raum dort.
+        Assert.Equal(new[] { "Kellergeschoss", "Erdgeschoss", "Zone 3", "als eigene Zone" },
+                     cut.FindAll(".epos-gebansicht-legendeneintrag--zielwahl .epos-gebansicht-zonenname").Select(e => e.TextContent));
+    }
+
+    [Fact]
+    public void AB2_Nicht_zugeordnete_Raeume_haben_einen_eigenen_Eintrag_der_hervorhebt_und_kein_Ziel_ist()
+    {
+        var wahl = new List<string?>();
+        IRenderedComponent<GebaeudeAnsicht> cut = ZeigeMitZielen(new(), wahl);
+        Erdgeschoss(cut);
+
+        IElement ohne = cut.Find(".epos-gebansicht-legendeneintrag--ohnezone button.epos-gebansicht-ohneknopf");
+        Assert.Equal("nicht zugeordnet (1 Räume)", ohne.TextContent.Trim());
+        Assert.Contains("epos-gebansicht-zone--ohne", ohne.QuerySelector(".epos-gebansicht-farbfeld")!.ClassName);
+        Assert.Equal("false", ohne.GetAttribute("aria-pressed"));
+        Assert.Contains("kein Ziel", ohne.GetAttribute("title"));
+
+        ohne.Click();
+        Assert.Empty(wahl);                                                         // kein Ziel
+        Assert.True(cut.Instance.OhneZoneHervorgehoben);
+        Assert.Equal("true", cut.Find("button.epos-gebansicht-ohneknopf").GetAttribute("aria-pressed"));
+        Assert.Contains("epos-gebansicht-raum--hervor", Raum(cut, "r-flur").ClassName);
+        Assert.DoesNotContain("epos-gebansicht-raum--hervor", Raum(cut, "r-wohnen").ClassName);
+
+        cut.Find("button.epos-gebansicht-ohneknopf").Click();
+        Assert.DoesNotContain("epos-gebansicht-raum--hervor", Raum(cut, "r-flur").ClassName);
+    }
+
+    [Fact]
+    public void AB2_Die_Eintraege_sind_echte_Knoepfe_fuer_Enter_und_Leertaste_und_gesperrt_weich()
+    {
+        var wahl = new List<string?>();
+        IRenderedComponent<GebaeudeAnsicht> cut = ZeigeMitZielen(new(), wahl);
+
+        // Ein <button type="button"> löst Enter und Leertaste selbst als Klick aus; aria-pressed trägt den Zustand.
+        foreach (IElement k in cut.FindAll(".epos-gebansicht-legende--zielwahl button"))
+        {
+            Assert.Equal("button", k.GetAttribute("type"));
+            Assert.True(k.HasAttribute("aria-pressed"));
+            Assert.False(k.HasAttribute("disabled"));
+        }
+
+        IRenderedComponent<GebaeudeAnsicht> gesperrt = ZeigeMitZielen(new(), wahl, aktiv: false);
+        IElement eg = Zielknopf(gesperrt, "Erdgeschoss");
+        Assert.Equal("true", eg.GetAttribute("aria-disabled"));
+        eg.Click();
+        Assert.Empty(wahl);
+    }
+
+    [Fact]
+    public void AB2_In_anderen_Farbmodi_sind_die_Eintraege_keine_Knoepfe_und_ein_Ziel_meldet_den_Hinweis()
+    {
+        var gemeldet = new List<GebaeudeRaumumhaengung>();
+        IRenderedComponent<GebaeudeAnsicht> cut = ZeigeMitZielen(gemeldet, new(), gewaehlt: "P-KG",
+                                                                 daten: RandDaten() with { Umhaengbar = true });
+        Assert.True(cut.Instance.OrdnetZu);
+        Assert.Empty(cut.FindAll(".epos-gebansicht-ziel-hinweis"));
+
+        Farbmodusknopf(cut, "randbedingung").Click();
+        cut.WaitForAssertion(() => Assert.Equal("randbedingung", cut.Instance.Farbmodus));
+        Assert.Empty(cut.FindAll(".epos-gebansicht-zielknopf"));
+        Assert.Equal("Zuordnen nur im Modus Zonen", cut.Find(".epos-gebansicht-ziel-hinweis").TextContent);
+        cut.Find("g.epos-gebansicht-raum").Click();
+        Assert.Empty(gemeldet);
+        Assert.False(cut.Instance.OrdnetZu);
     }
 }
