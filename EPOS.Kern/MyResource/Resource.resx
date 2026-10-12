@@ -23630,10 +23630,10 @@ Möchten Sie das zulassen?</value>
     <value>Freitext zum Katalogsatz.</value>
   </data>
   <data name="KI_DLG_GEBK_ART_ERL" xml:space="preserve">
-    <value>Die Gebäudeart, zum Beispiel Einfamilienhaus oder Bürogebäude.</value>
+    <value>Die Gebäudeart, zum Beispiel Einfamilienhaus oder Bürogebäude. Sie ordnet das Gebäude ein (Bericht, Pufferauslegung); der Rechenweg liest sie nicht.</value>
   </data>
   <data name="KI_DLG_GEBK_BAUALTERSKLASSE_ERL" xml:space="preserve">
-    <value>Die Baualtersklasse des Gebäudes, ein Bauzeitraum von A (bis 1859) bis M (ab 2021); sie bestimmt die Vorgaben der Bauteile. Ist das Baujahr gesetzt, folgt sie ihm und ist nicht wählbar.</value>
+    <value>Die Baualtersklasse des Gebäudes, ein Bauzeitraum von A (bis 1859) bis M (ab 2021); sie bestimmt die Vorgaben der Bauteile. Ist das Baujahr gesetzt, folgt sie ihm und ist nicht wählbar. Der Rechenweg liest sie nicht.</value>
   </data>
   <data name="KI_DLG_GEBK_BAUJAHR_ERL" xml:space="preserve">
     <value>Das Baujahr des Gebäudes als Jahreszahl, 1500 bis 2100; leer = unbekannt. Ist es gesetzt, bestimmt es die Baualtersklasse; die Rechnung ändert es nicht.</value>
@@ -23642,10 +23642,10 @@ Möchten Sie das zulassen?</value>
     <value>Der Energiestandard des Gebäudes, wenn seine Hülle besser ist als der Mindeststandard seiner Baualtersklasse (Effizienzhaus, Passivhaus …); leer = keiner. Effizienzhaus 115/100 und 85 gibt es nur für Wohngebäude. Er bestimmt die Vorgaben der Bauteile vor der Klasse, die Rechnung ändert er nicht.</value>
   </data>
   <data name="KI_DLG_GEBK_VERWENDUNG_ERL" xml:space="preserve">
-    <value>Wohngebäude oder Gewerbe und Sonstiges; die Verwendung entscheidet, aus welcher Liste die Gebäudearten kommen.</value>
+    <value>Wohngebäude oder Gewerbe und Sonstiges; die Verwendung entscheidet, aus welcher Liste die Gebäudearten kommen. Der Rechenweg liest sie nicht.</value>
   </data>
   <data name="KI_DLG_GEBK_BAUART_ERL" xml:space="preserve">
-    <value>Die Bauart: leicht, schwer oder sehr schwer. Sie zieht die Bauweise nach, die aus Bauart und Nutzfläche gerechnet wird.</value>
+    <value>Die Bauart: leicht, schwer oder sehr schwer. Sie zieht die Bauweise nach, die aus Bauart und Nutzfläche gerechnet wird. Mit Zonen und Bauteilen ist die Bauweise nur der Rückfall für Bauteilgruppen ohne Aufbau.</value>
   </data>
   <data name="KI_DLG_GEBK_WOHNFLAECHE_ERL" xml:space="preserve">
     <value>Die gesamte Wohn- oder Nutzfläche des Gebäudes.</value>
@@ -23657,10 +23657,10 @@ Möchten Sie das zulassen?</value>
     <value>Die inneren Wärmegewinne durch Personen und Geräte.</value>
   </data>
   <data name="KI_DLG_GEBK_DURCHLASSGRAD_ERL" xml:space="preserve">
-    <value>Der Gesamtenergiedurchlassgrad der Fenster als Anteil, zum Beispiel 0,4.</value>
+    <value>Der Gesamtenergiedurchlassgrad der Fenster als Anteil, zum Beispiel 0,4. Mit Zonen und Bauteilen ist er nur der Rückfall für Fenster ohne eigenen g-Wert.</value>
   </data>
   <data name="KI_DLG_GEBK_RAUMHOEHE_ERL" xml:space="preserve">
-    <value>Die mittlere lichte Raumhöhe; sie geht in das beheizte Luftvolumen ein.</value>
+    <value>Die mittlere lichte Raumhöhe; sie geht in das beheizte Luftvolumen ein. Mit Zonen gilt sie nur für Zonen ohne eigene Höhe und ohne eigenes Volumen; trägt jede Zone eine, ist das Feld ausgeblendet.</value>
   </data>
   <data name="KI_DLG_GEBK_FF_NORD_ERL" xml:space="preserve">
     <value>Die Fensterfläche nach Norden.</value>
@@ -23732,7 +23732,7 @@ Möchten Sie das zulassen?</value>
     <value>Die Länge des Anschlusses Außenwand an Keller.</value>
   </data>
   <data name="KI_DLG_GEBK_LUFTWECHSEL_ERL" xml:space="preserve">
-    <value>Die Luftwechselrate des Gebäudes; sie bestimmt die Lüftungsverluste.</value>
+    <value>Die Luftwechselrate des Gebäudes; sie bestimmt die Lüftungsverluste. Sie wirkt nur, wo weder Infiltration noch Nutzerlüftung gesetzt sind; mit Zonen gilt sie für die Zonen ohne Lüftungswerte, und braucht keine Zone sie, ist das Feld ausgeblendet.</value>
   </data>
   <data name="KI_DLG_GEBK_RAHMENANTEIL_ERL" xml:space="preserve">
     <value>Anteil des Fensterrahmens an der Fensterfläche (VDI 6007); leer = Vorgabe 0,3.</value>
@@ -34006,6 +34006,33 @@ Möchten Sie das zulassen?</value>
   <data name="GIMP_ANS_ABTRENNEN" xml:space="preserve">
     <value>Antippen trennt als eigene Zone ab</value>
   </data>
+  <data name="GIMP_ANS_ZIEL_NUTZUNG" xml:space="preserve">
+    <value>Nutzung: {0}</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_OHNE_NUTZUNG" xml:space="preserve">
+    <value>ohne Nutzung</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_KLICK" xml:space="preserve">
+    <value>Klicken, dann Räume anklicken, um sie dieser Zone zuzuordnen</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_AUFHEBEN" xml:space="preserve">
+    <value>Gewählt: Räume anklicken, um sie dieser Zone zuzuordnen; erneut klicken hebt die Wahl auf</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_FEHLT" xml:space="preserve">
+    <value>zum Zuordnen zuerst eine Zone in der Legende wählen</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_NUR_ZONEN" xml:space="preserve">
+    <value>Zuordnen nur im Modus Zonen</value>
+  </data>
+  <data name="GIMP_ANS_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>nicht zugeordnet ({0} Räume)</value>
+  </data>
+  <data name="GIMP_ANS_NICHT_ZUGEORDNET_TITEL" xml:space="preserve">
+    <value>Räume ohne Zone — kein Ziel; Klicken hebt sie im Grundriss hervor</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_LEGENDE" xml:space="preserve">
+    <value>Zonen — Ziel der Zuordnung wählen</value>
+  </data>
   <data name="GIMP_ANS_KEINE_UMRISSE" xml:space="preserve">
     <value>In diesem Geschoss trägt kein Raum einen Umriss.</value>
   </data>
@@ -34017,9 +34044,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="GIMP_DLG_GRP_GRUNDRISS" xml:space="preserve">
     <value>Grundriss</value>
-  </data>
-  <data name="GIMP_DLG_ZUORDNEN_ZU" xml:space="preserve">
-    <value>Räume zuordnen zu</value>
   </data>
   <data name="GIMP_DLG_EIGENE_ZONE" xml:space="preserve">
     <value>als eigene Zone</value>
@@ -34034,7 +34058,7 @@ Möchten Sie das zulassen?</value>
     <value>Umhängen</value>
   </data>
   <data name="GIMP_DLG_UMHAENGEN_HINWEIS" xml:space="preserve">
-    <value>Zone wählen, dann einen Raum im Grundriss antippen — oder den Raum in der Liste wählen und „Umhängen“. Nur Räume gleicher Beheizung; übernommen wird erst mit OK.</value>
+    <value>Zone in der Legende wählen, dann einen Raum im Grundriss oder Körper antippen — oder den Raum in der Liste wählen und „Umhängen“. Nur Räume gleicher Beheizung; übernommen wird erst mit OK.</value>
   </data>
   <data name="GIMP_DLG_SCHON_DORT" xml:space="preserve">
     <value>„{0}“ liegt schon in der Zone „{1}“.</value>
@@ -38278,30 +38302,6 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="GIMP_BS_OHNE_GRUPPE" xml:space="preserve">
     <value>ohne Gruppe</value>
-  </data>
-  <data name="GIMP_DLG_GRP_BAUSTOFFE" xml:space="preserve">
-    <value>Baustoffe</value>
-  </data>
-  <data name="GIMP_DLG_BAUSTOFFE_HINWEIS" xml:space="preserve">
-    <value>Jeder Materialname der Datei wird über Namen und Synonyme einem Baustoff des Katalogs zugeordnet; eine Luftschicht rechnet als ruhende Luftschicht, eine Schraffur ohne Stoff entfällt. Eine eigene Zuordnung ändert den Vorschlag sofort und wird beim Speichern der Gebäudeliste für das Projekt gemerkt.</value>
-  </data>
-  <data name="GIMP_DLG_SP_MATERIALNAME" xml:space="preserve">
-    <value>Name in der Datei</value>
-  </data>
-  <data name="GIMP_DLG_SP_SCHICHTEN" xml:space="preserve">
-    <value>Schichten</value>
-  </data>
-  <data name="GIMP_DLG_SP_ABGLEICH" xml:space="preserve">
-    <value>Zuordnung über</value>
-  </data>
-  <data name="GIMP_DLG_SP_BAUSTOFF" xml:space="preserve">
-    <value>Baustoff</value>
-  </data>
-  <data name="GIMP_DLG_SP_STOFFWERTE" xml:space="preserve">
-    <value>Stoffwerte</value>
-  </data>
-  <data name="GIMP_DLG_SP_WERTE_AUS" xml:space="preserve">
-    <value>Werte</value>
   </data>
   <data name="GIMP_DLG_BAUSTOFF_WAEHLEN" xml:space="preserve">
     <value>Baustoff für „{0}“</value>
@@ -46760,12 +46760,6 @@ Chart</value>
   <data name="RNP_LBL_ART_DIN" xml:space="preserve">
     <value>DIN/TS 18599-10</value>
   </data>
-  <data name="RNP_LBL_ART_SIA" xml:space="preserve">
-    <value>SIA 2024</value>
-  </data>
-  <data name="RNP_LBL_ART_VDI" xml:space="preserve">
-    <value>VDI 2078</value>
-  </data>
   <data name="RNP_LBL_ART_EIGEN" xml:space="preserve">
     <value>Eigene</value>
   </data>
@@ -48527,9 +48521,6 @@ Chart</value>
   <data name="GIMP_AB_NUR_BC" xml:space="preserve">
     <value>Nur Stufe B und C</value>
   </data>
-  <data name="GIMP_AB_ZUR_BAUSTOFF" xml:space="preserve">
-    <value>Baustoff zuordnen</value>
-  </data>
   <data name="GIMP_AB_LEER" xml:space="preserve">
     <value>Keine Aufbauten im Vorschlag.</value>
   </data>
@@ -48537,7 +48528,7 @@ Chart</value>
     <value>ohne Aufbau</value>
   </data>
   <data name="GIMP_AB_HINWEIS" xml:space="preserve">
-    <value>Je Aufbau eine Zeile; C₁,korr je m² ist nur zur Anzeige über die Bauteilreduktion nach VDI 6007 gerechnet. Ein Klick auf „Schichten“ zeigt den Aufbau.</value>
+    <value>Je Aufbau eine Zeile; C₁,korr je m² ist nur zur Anzeige über die Bauteilreduktion nach VDI 6007 gerechnet. Ein Klick auf „Schichten“ zeigt den Aufbau. Fehlt einer Schicht ein Stoffwert, wählen Sie dort einen Baustoff des Katalogs; die Zuordnung gilt für alle Schichten dieses Namens, ändert den Vorschlag sofort und wird beim Speichern der Gebäudeliste für das Projekt gemerkt.</value>
   </data>
   <data name="GIMP_AB_SCHICHTEN" xml:space="preserve">
     <value>Schichten</value>
@@ -53318,18 +53309,6 @@ Chart</value>
   <data name="FW_ZONE_FERNWARTUNG" xml:space="preserve">
     <value>Fernwartung</value>
   </data>
-  <data name="FW_ERKLAERUNG" xml:space="preserve">
-    <value>Bei der Fernwartung sieht ein Mitarbeiter des Supports Ihren Bildschirm und kann Ihnen die Bedienung zeigen oder einen Fehler mit Ihnen beheben. Den Bildschirm sieht nur der Support, mit dem Sie gerade sprechen; EPOS-Plan zeichnet dabei nichts auf. Jede Verbindung nehmen Sie im Fernwartungsprogramm selbst an, und Sie können sie dort jederzeit beenden.</value>
-  </data>
-  <data name="FW_SCHRITT_1" xml:space="preserve">
-    <value>Laden Sie das Fernwartungsprogramm von der Fernwartungsseite und starten Sie es.</value>
-  </data>
-  <data name="FW_SCHRITT_2" xml:space="preserve">
-    <value>Nennen Sie dem Support die angezeigte Kennung und das Einmalkennwort.</value>
-  </data>
-  <data name="FW_SCHRITT_3" xml:space="preserve">
-    <value>Nehmen Sie die Anfrage im Programm an.</value>
-  </data>
   <data name="FW_SEITE_OEFFNEN" xml:space="preserve">
     <value>Fernwartungsseite öffnen</value>
   </data>
@@ -53539,6 +53518,109 @@ Chart</value>
   </data>
   <data name="KAELTE_ART_GRUPPE" xml:space="preserve">
     <value>Art des Kältebedarfs</value>
+  </data>
+  <!-- Administration und Support, Stufe 2 Nachzug Quick Assist -->
+  <data name="FW_QA_ERKLAERUNG" xml:space="preserve">
+    <value>Bei der Fernwartung sieht ein Mitarbeiter des Supports Ihren Bildschirm über Quick Assist, das Hilfeprogramm von Windows, und kann Ihnen die Bedienung zeigen oder einen Fehler mit Ihnen beheben. Die Verbindung läuft verschlüsselt über Microsoft; EPOS-Plan zeichnet dabei nichts auf. Jede Anfrage nehmen Sie in Quick Assist selbst an, und Sie können die Sitzung dort jederzeit beenden.</value>
+  </data>
+  <data name="FW_QA_SCHRITT_1" xml:space="preserve">
+    <value>Rufen Sie uns an (Telefon unter „Kontakt“).</value>
+  </data>
+  <data name="FW_QA_SCHRITT_2" xml:space="preserve">
+    <value>Starten Sie Quick Assist mit dem Knopf unten und geben Sie den sechsstelligen Code ein, den wir Ihnen nennen.</value>
+  </data>
+  <data name="FW_QA_SCHRITT_3" xml:space="preserve">
+    <value>Erlauben Sie die Bildschirmansicht oder die Steuerung, wenn Quick Assist fragt.</value>
+  </data>
+  <data name="FW_QA_STARTEN" xml:space="preserve">
+    <value>Quick Assist starten</value>
+  </data>
+  <data name="FW_QA_FEHLER" xml:space="preserve">
+    <value>Quick Assist ist auf diesem Rechner nicht verfügbar. Öffnen Sie es über das Startmenü oder die Fernwartungsseite.</value>
+  </data>
+  <data name="FW_QA_NUR_WINDOWS" xml:space="preserve">
+    <value>Quick Assist steht unter Windows zur Verfügung. Die Fernwartungsseite beschreibt den Weg.</value>
+  </data>
+  <data name="GIMP_AB_VERWALTUNG_HINWEIS" xml:space="preserve">
+    <value>Baustoffe und Bauteilaufbauten pflegen Sie unter Administration › Gebäude.</value>
+  </data>
+  <data name="GIMP_AB_HERKUNFT_HAND" xml:space="preserve">
+    <value>Zuordnung von Hand</value>
+  </data>
+  <data name="GIMP_AB_DATEISCHICHTEN" xml:space="preserve">
+    <value>Schichten der Datei — der Aufbau ist unvollständig:</value>
+  </data>
+  <data name="GEBK_GRP_EINORDNUNG" xml:space="preserve">
+    <value>Beschreibung und Einordnung</value>
+  </data>
+  <data name="GEBK_GRP_RECHENGROESSEN" xml:space="preserve">
+    <value>Rechengrößen</value>
+  </data>
+  <data name="GEBK_HINWEIS_EINORDNUNG" xml:space="preserve">
+    <value>Diese Angaben ordnen das Gebäude ein: Bericht, Vorgaben des Imports, Pufferauslegung. Der Rechenweg liest sie nicht.</value>
+  </data>
+  <data name="GEBK_MARKE_DATEI" xml:space="preserve">
+    <value>Datei</value>
+  </data>
+  <data name="GEBK_MARKE_VORGABE" xml:space="preserve">
+    <value>Vorgabe</value>
+  </data>
+  <data name="GEBK_MARKE_HAND" xml:space="preserve">
+    <value>von Hand</value>
+  </data>
+  <data name="GEBK_MARKE_GEERBT" xml:space="preserve">
+    <value>geerbt</value>
+  </data>
+  <data name="GEBK_MARKE_WIRKUNGSLOS" xml:space="preserve">
+    <value>wirkungslos</value>
+  </data>
+  <data name="GEBK_ZONEN_VORGABE_HOEHE" xml:space="preserve">
+    <value>Vorgabe für {0} von {1} Zonen ohne eigene Höhe</value>
+  </data>
+  <data name="GEBK_ZONEN_VORGABE_LUFTWECHSEL" xml:space="preserve">
+    <value>Vorgabe für {0} von {1} Zonen ohne Lüftungswerte</value>
+  </data>
+  <data name="GEBK_JEZONE_RAUMHOEHE" xml:space="preserve">
+    <value>Raumhöhe: gilt je Zone, siehe Reiter „Zonen“.</value>
+  </data>
+  <data name="GEBK_JEZONE_LUFTWECHSEL" xml:space="preserve">
+    <value>Luftwechselrate: Jede Zone rechnet mit Infiltration und Nutzerlüftung, siehe Reiter „Konditionierung“.</value>
+  </data>
+  <data name="GEBK_RUECKFALL_FENSTER" xml:space="preserve">
+    <value>Rückfall für {0} Fenster ohne eigenes g</value>
+  </data>
+  <data name="GEBK_RUECKFALL_FENSTER_KEINES" xml:space="preserve">
+    <value>Rückfall: Jedes Fenster trägt ein eigenes g, der Wert wirkt derzeit nicht.</value>
+  </data>
+  <data name="GEBK_RUECKFALL_BAUWEISE" xml:space="preserve">
+    <value>Rückfall für {0} Bauteilgruppen ohne Aufbau</value>
+  </data>
+  <data name="GEBK_RUECKFALL_BAUWEISE_KEINE" xml:space="preserve">
+    <value>Rückfall: Jede Bauteilgruppe trägt einen Aufbau, der Wert wirkt derzeit nicht.</value>
+  </data>
+  <data name="IMP_GEB_PROT_GEBAEUDECODE_OHNE_ABBILDUNG" xml:space="preserve">
+    <value>Projektdatei: {0} = {1} hat keine Abbildung; es gilt die Ableitung bzw. die Vorgabe.</value>
+  </data>
+  <data name="IMP_GEB_PROT_VERWENDUNG_PROJEKTDATEI" xml:space="preserve">
+    <value>Verwendung „{0}“ aus der Projektdatei ({1} = {2}).</value>
+  </data>
+  <data name="IMP_GEB_PROT_GEBAEUDEART_PROJEKTDATEI" xml:space="preserve">
+    <value>Gebäudeart „{0}“ aus der Projektdatei ({1} = {2}).</value>
+  </data>
+  <data name="IMP_GEB_PROT_ENERGIESTANDARD_PROJEKTDATEI" xml:space="preserve">
+    <value>Energiestandard „{0}“ aus der Projektdatei ({1} = {2}).</value>
+  </data>
+  <data name="GIMP_BELEG_BAUART_CWIRK" xml:space="preserve">
+    <value>nächstliegende Bauart zur wirksamen Wärmekapazität der Projektdatei (Cwirk {0} Wh/(m²K))</value>
+  </data>
+  <data name="GIMP_BELEG_BAUWEISE_CWIRK" xml:space="preserve">
+    <value>wirksame Wärmekapazität der Projektdatei: Cwirk {0} Wh/(m²K) × Nutzfläche {1} m² = {2} Wh/K</value>
+  </data>
+  <data name="GIMP_DLG_NAME_DATEI" xml:space="preserve">
+    <value>Name in der Datei: „{0}“</value>
+  </data>
+  <data name="GIMP_DLG_NAME_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
   </data>
 </root>
 

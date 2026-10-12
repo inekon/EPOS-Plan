@@ -73,7 +73,7 @@ public sealed class GebaeudeArbeitsstand
         BandBeimLaden = Stand.ReglerProportionalband;
         BandFrei = false;
         _heizkurveVorgeschlagen = false;
-        BauweiseNachfuehren = neu || Stand.Bauweise <= 0;
+        BauweiseNachfuehren = (neu && !Stand.BauweiseAusDatei) || Stand.Bauweise <= 0;
         Fehlerfelder.Clear();
         _uebergabeFehlerfelder.Clear();
         _kuehlFehlerfelder.Clear();
@@ -438,6 +438,24 @@ public sealed class GebaeudeArbeitsstand
                 Stand.KuehlungAktiv, Stand.KuehlSollwert, Stand.KuehlSollwertNacht, Stand.KuehlleistungMax);
         }
     }
+
+    /// <summary>
+    /// Felder, deren Wert aus der Importdatei stammt (Marke „Datei"). Die Herkunft der Gebäudefelder wird noch nicht
+    /// gespeichert (Entwurf GD 5.1); bis dahin bleibt die Menge leer, wenn kein Wirt sie setzt.
+    /// </summary>
+    public IReadOnlyCollection<Gebaeudefeld> FelderAusDatei { get; set; } = Array.Empty<Gebaeudefeld>();
+
+    /// <summary>
+    /// <b>Die wirksame Herkunft je Gebäudefeld</b> (Entwurf GD 2.1, Welle GD-1) — die Auskunft des Kerns
+    /// (<see cref="Gebaeudefeldherkunft.Bilden"/>) aus dem Arbeitsstand: dieselben Gebäudevorgaben wie die Anzeige
+    /// „Vorgabe: …" des Zonendialogs, dieselben Zoneneingaben, die Bauteile der Zonen als Merkmale.
+    /// </summary>
+    public IReadOnlyDictionary<Gebaeudefeld, Feldauskunft> Feldherkunft()
+        => Gebaeudefeldherkunft.Bilden(Vorgaben, IstVdi6007,
+            Zonen.Select(z => new Zonenmerkmale(z.Eingaben(),
+                z.Bauteile.Select(b => new Bauteilmerkmal(b.Bauteilart, b.Randbedingung, b.TrennflaecheZuordnung,
+                                                          b.MitAufbau, b.GWert.HasValue)).ToList())).ToList(),
+            Stand.FlaecheNutzer, FelderAusDatei);
 
     /// <summary>Die Kennwerte der Zone mit dieser Id; <c>null</c> = keine solche Zone.</summary>
     public Zonenkennwerte? KennwerteVon(int id)

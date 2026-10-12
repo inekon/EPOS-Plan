@@ -77,8 +77,6 @@ namespace WindowsFormsApplication1
 
             t.ArtEposMuster = Text_("RNP_LBL_ART_EPOS", t.ArtEposMuster);
             t.ArtDin = Text_("RNP_LBL_ART_DIN", t.ArtDin);
-            t.ArtSia = Text_("RNP_LBL_ART_SIA", t.ArtSia);
-            t.ArtVdi = Text_("RNP_LBL_ART_VDI", t.ArtVdi);
             t.ArtEigen = Text_("RNP_LBL_ART_EIGEN", t.ArtEigen);
             t.ZuordnungsartDin = Text_("RNP_LBL_ZUART_DIN", t.ZuordnungsartDin);
             t.ZuordnungsartIfc = Text_("RNP_LBL_ZUART_IFC", t.ZuordnungsartIfc);
@@ -548,12 +546,13 @@ namespace WindowsFormsApplication1
         //  Übersetzung der Kennungen
         // =================================================================
 
-        /// <summary>Die Kennung der Kategorieart des Kerns als Aufzählungswert der Oberfläche.</summary>
+        /// <summary>
+        /// Die Kennung der Kategorieart des Kerns als Aufzählungswert der Oberfläche. Die entfallenen Arten SIA 2024 und
+        /// VDI 2078 (E129) kennt die Oberfläche nicht mehr; ein Bestand vor dem Schritt liest sich als eigene Kategorie.
+        /// </summary>
         internal static RaumnutzungArt Art(string art)
         {
             if (art == RaumnutzungSchema.ART_DIN_V_18599_10) return RaumnutzungArt.Din18599;
-            if (art == RaumnutzungSchema.ART_SIA_2024) return RaumnutzungArt.Sia2024;
-            if (art == RaumnutzungSchema.ART_VDI_2078) return RaumnutzungArt.Vdi2078;
             if (art == RaumnutzungSchema.ART_EPOS_MUSTER) return RaumnutzungArt.EposMuster;
             return RaumnutzungArt.Eigen;
         }

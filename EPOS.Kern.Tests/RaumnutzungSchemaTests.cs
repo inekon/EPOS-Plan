@@ -119,15 +119,15 @@ namespace EPOS.Kern.Tests
             Assert.True(Zahl("SELECT SchemaVersion FROM Tab_Applikation") >= RaumnutzungSchema.SCHRITT);
             Assert.True(RaumnutzungSchema.Vollstaendig());
             Assert.Equal(0, RaumnutzungSchema.OffeneSaat());
-            Assert.Equal(4L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungskatalog WHERE ReadOnly = 1"));
-            Assert.Equal(52L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil WHERE ReadOnly = 1"));
+            // Nach dem Schritt RaumnutzungNormkategorienSchema (NP6, E129) nur noch EPOS-Muster und DIN.
+            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungskatalog WHERE ReadOnly = 1"));
+            Assert.Equal((long)(RaumnutzungSaat.Profile.Count + RaumnutzungNormkategorienSchema.WOHNPROFILE.Count), Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil WHERE ReadOnly = 1"));
             Assert.Equal(50L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszeile"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsstunden"));
             Assert.Equal(27L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszuordnung WHERE ReadOnly = 1 AND ID_Profil IS NOT NULL"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zone WHERE Nutzungsprofil IS NOT NULL"));
-            // Kein Wert in einer Normkategorie (NP-F21); SIA und VDI leer.
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil p JOIN Tab_Raumnutzungskatalog k ON k.ID = p.ID_Katalog " +
-                                  "WHERE k.Art IN ('SIA_2024','VDI_2078')"));
+            // Kein Wert in einer Normkategorie (NP-F21); SIA und VDI entfallen (E129).
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungskatalog WHERE Art IN ('SIA_2024','VDI_2078')"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil p JOIN Tab_Raumnutzungskatalog k ON k.ID = p.ID_Katalog " +
                                   "WHERE k.Art = 'DIN_V_18599_10' AND (" +
                                   string.Join(" OR ", RaumnutzungSchema.SPALTEN_KENNWERTE.Select(s => s.Spalte + " IS NOT NULL")) + ")"));
@@ -361,7 +361,7 @@ namespace EPOS.Kern.Tests
             Assert.True(RaumnutzungSchema.Vollstaendig());
             Assert.Equal(27L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszuordnung"));
             Assert.Equal(50L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszeile"));
-            Assert.Equal(52L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil"));
+            Assert.Equal((long)(RaumnutzungSaat.Profile.Count + RaumnutzungNormkategorienSchema.WOHNPROFILE.Count), Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil"));
             Assert.Equal(4L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungskatalog"));
         }
 

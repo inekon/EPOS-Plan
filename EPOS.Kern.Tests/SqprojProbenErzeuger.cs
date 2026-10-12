@@ -25,7 +25,10 @@ namespace EPOS.Kern.Tests
         internal static readonly IReadOnlyDictionary<string, string[]> SPALTEN = new Dictionary<string, string[]>
         {
             ["XmTables"] = new[] { "UUID", "Name", "Version" },
-            ["BmBuilding"] = new[] { "UUID", "ShortDesc", "ProfileGroupUUID", "YearOfConstruction", "SiteUUID", "Constructed" },
+            ["BmBuilding"] = new[] { "UUID", "ShortDesc", "ProfileGroupUUID", "YearOfConstruction", "SiteUUID", "Constructed",
+                                     "BuildingType", "BuildingHeatInsulationStandardType", "BuildingEnergyEfficientType", "Cwirk" },
+            // GD-2: die Nutzung des Gebäudes (über die Kennung); nur geschrieben, wenn Nutzungstyp gesetzt ist.
+            ["BmBuildingData"] = new[] { "UUID", "BuildingUsageType" },
             ["BmFloor"] = new[] { "UUID", "ShortDesc", "BuildingUUID", "ElevationOfRefHeight", "Height" },
             ["BmRoom"] = new[] { "UUID", "ShortDesc", "FloorUUID", "GId", "BIMUUID", "Area", "Volume", "RoomType", "HeatingType", "Height" },
             ["SmSite"] = new[] { "UUID", "Location", "PostalCode", "Latitude", "Longitude" },
@@ -128,6 +131,21 @@ namespace EPOS.Kern.Tests
 
         /// <summary>Der Standort des Gebäudes (<c>SiteUUID</c>); <c>null</c> = keiner.</summary>
         internal string Standort { get; set; }
+
+        /// <summary>GD-2: <c>BmBuilding.BuildingType</c>; <c>null</c> = leer.</summary>
+        internal int? Gebaeudetyp { get; set; }
+
+        /// <summary>GD-2: <c>BmBuilding.BuildingHeatInsulationStandardType</c>; <c>null</c> = leer.</summary>
+        internal int? Waermeschutzstandard { get; set; }
+
+        /// <summary>GD-2: <c>BmBuilding.BuildingEnergyEfficientType</c>; <c>null</c> = leer.</summary>
+        internal int? Effizienzstandard { get; set; }
+
+        /// <summary>GD-2: <c>BmBuilding.Cwirk</c> [Wh/(m²K)]; <c>null</c> = leer.</summary>
+        internal double? Cwirk { get; set; }
+
+        /// <summary>GD-2: <c>BmBuildingData.BuildingUsageType</c>; <c>null</c> = keine Tabelle <c>BmBuildingData</c>.</summary>
+        internal int? Nutzungstyp { get; set; }
 
         /// <summary>Ein Standort (<c>SmSite</c>).</summary>
         internal SqprojProbenErzeuger Ort(string uuid, string ort, string plz, double breite, double laenge)
@@ -259,7 +277,8 @@ namespace EPOS.Kern.Tests
                     foreach (KeyValuePair<string, string[]> tab in SPALTEN.Concat(MitBauteilen ? BAUTEIL_SPALTEN : Enumerable.Empty<KeyValuePair<string, string[]>>())
                                                                           .Concat(_zeilen.Any(z => JOURNAL_SPALTEN.ContainsKey(z.Tabelle)) ? JOURNAL_SPALTEN
                                                                                   : Enumerable.Empty<KeyValuePair<string, string[]>>())
-                                                                          .Where(p => !_ohne.Contains(p.Key)))
+                                                                          .Where(p => !_ohne.Contains(p.Key)
+                                                                                      && (p.Key != "BmBuildingData" || Nutzungstyp.HasValue)))
                     {
                         using (SqliteCommand k = c.CreateCommand())
                         {
@@ -270,7 +289,10 @@ namespace EPOS.Kern.Tests
                         if (tab.Key != "XmTables")
                             Einfuegen(c, t, "XmTables", new object[] { "X-" + tab.Key, tab.Key, tab.Key.StartsWith("Bm", StringComparison.Ordinal) ? "16.7" : "15.1" });
                     }
-                    if (!_ohne.Contains("BmBuilding")) Einfuegen(c, t, "BmBuilding", new object[] { "B1", "Probegebäude", Gebaeudegruppe, Baujahr, Standort });
+                    if (!_ohne.Contains("BmBuilding"))
+                        Einfuegen(c, t, "BmBuilding", new object[] { "B1", "Probegebäude", Gebaeudegruppe, Baujahr, Standort, null,
+                                                                     Gebaeudetyp, Waermeschutzstandard, Effizienzstandard, Cwirk });
+                    if (Nutzungstyp.HasValue) Einfuegen(c, t, "BmBuildingData", new object[] { "B1", Nutzungstyp });
                     foreach ((string tabelle, object[] werte) in _zeilen.Where(z => !_ohne.Contains(z.Tabelle)))
                         Einfuegen(c, t, tabelle, werte);
                     GeometrieNachtragen(c, t);

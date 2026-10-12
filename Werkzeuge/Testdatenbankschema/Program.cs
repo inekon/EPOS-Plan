@@ -3499,6 +3499,25 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrKwn + " - vollstaendig: " + KaelteArtSchema.Vollstaendig() +
                                   ", Zeilen mit Prozesskaelte: " + KaelteArtSchema.ZeilenMitProzess() + " (erwartet True, 0).");
             }
+
+            // ---- Schritt RaumnutzungNormkategorienSchema.SCHRITT (NP6, E129): die leeren, ausgelieferten Kategorien
+            //      SIA 2024 und VDI 2078 des Katalogs der Nutzungsprofile entfallen; eine wider Erwarten befuellte wird eine
+            //      eigene; die Kategorie DIN bekommt die zwei Wohnprofile nach Tabelle 5 ohne Werte. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_RaumnutzungNormkategorien. Wiederholbar, kein DDL.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest eine Kategorie.
+            string nrNp6 = RaumnutzungNormkategorienSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrNp6 + " - Kategorien SIA 2024 und VDI 2078, Wohnprofile der DIN: " +
+                              (RaumnutzungNormkategorienSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtNp6 = new List<string>();
+                RaumnutzungNormkategorienSchema.Ausfuehren(berichtNp6);
+                foreach (string zeile in berichtNp6)
+                    Console.WriteLine("Schritt " + nrNp6 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrNp6 + " - vollstaendig: " + RaumnutzungNormkategorienSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

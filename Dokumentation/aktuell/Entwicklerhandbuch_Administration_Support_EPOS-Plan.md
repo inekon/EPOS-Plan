@@ -24,7 +24,7 @@ Anwender nicht sieht. Was er zeigt, steht in Abschnitt 2.
 
 | Weg | Wann | So geht es | Wieder aus |
 |---|---|---|---|
-| **Tastenfolge** | am Kundenrechner oder am eigenen Rechner, dauerhaft | *Hilfe → Version* öffnen; im Dialog „Über EPOS-Plan" **Strg + Umschalt + Alt + E**, Rückfrage „Entwicklermodus einschalten? Er gilt bis zum Ausschalten." bestätigen. Im Hauptfenster wirkt die Tastenfolge nicht. Der Diagnoseblock des Dialogs zeigt danach „Entwickler (Einstellung)". iPad: nicht gebaut (geplant: fünfmal auf die Versionszeile tippen). | Menü *Entwicklung → Entwicklermodus ausschalten* oder dieselbe Tastenfolge im Dialog |
+| **Tastenfolge** | am Kundenrechner oder am eigenen Rechner, dauerhaft | *Hilfe → Version* öffnen; im Dialog „Über EPOS-Plan" **Strg + Umschalt + F12** (ohne Alt, damit AltGr auf deutscher Tastatur nicht stört; der Dialog erkennt die Folge selbst, das Fenster fängt sie zusätzlich ab), Rückfrage „Entwicklermodus einschalten? Er gilt bis zum Ausschalten." bestätigen. Im Hauptfenster wirkt die Tastenfolge nicht. Der Diagnoseblock des Dialogs zeigt danach „Entwickler (Einstellung)". iPad: nicht gebaut (geplant: fünfmal auf die Versionszeile tippen). | Menü *Entwicklung → Entwicklermodus ausschalten* oder dieselbe Tastenfolge im Dialog |
 | **Startargument** | ein einzelner Lauf, Vorführung, Fehlersuche in einer Fernwartungssitzung | `EPOS_Plan.exe --entwickler`. Praktisch: eine Verknüpfung „EPOS-Plan (Entwickler)" mit diesem Ziel selbst anlegen; das Setup legt sie absichtlich nicht an. Nur Windows. | nächster Start ohne Argument |
 | **Umgebungsvariable** | Entwicklerrechner dauerhaft, CI, Rasterprobe, Referenzlauf, iOS-Simulator | `EPOS_ENTWICKLER=1` als Benutzer- oder Systemvariable. iOS-Simulator wie beim Prüfmodus: `SIMCTL_CHILD_EPOS_ENTWICKLER=1`. | Variable entfernen |
 | **Sperre des Administrators** | Kundeninstallation, deren Verwaltung den Modus verbietet | Registrywert `HKLM\SOFTWARE\wp-plan\EntwicklermodusGesperrt = 1` (in beiden Registry-Sichten gelesen, wie der KI-Abschalter). Die Sperre schlägt alle drei anderen Wege. | Wert löschen; aus der Anwendung heraus nie |
@@ -191,37 +191,37 @@ importieren, mit dem Referenzlauf rechnen.
 
 ### 4.1 Das Werkzeug
 
-RustDesk mit einem Vermittlungsserver, den INEKON selbst betreibt (Entscheid AS-Q7). Platzhalter in
-diesem Handbuch: Server `fernwartung.epos-plan.de`, Fernwartungsseite
-`https://epos-plan.de/support/fernwartung`, Client-Datei `EPOS-Plan-Fernwartung.exe`. Die echten
-Werte, den Serverschlüssel und die Zugangsdaten der Web-Konsole verwahrt INEKON außerhalb des
-Repositoriums; sie stehen nie in diesem Handbuch und nie im Quelltext.
+Windows Quick Assist (Entscheid AS-Q7): in Windows 10 und 11 enthalten, von Microsoft signiert, ohne
+Lizenz und ohne Server. Fernwartungsseite (Anleitung): `https://epos-plan.de/support/fernwartung`.
+Der Support braucht ein Microsoft-Konto (Firmenkonto von INEKON bevorzugt) und Quick Assist am
+Arbeitsplatz. Zugangsdaten der Konten verwahrt INEKON außerhalb des Repositoriums; sie stehen nie in
+diesem Handbuch und nie im Quelltext.
 
 ### 4.2 Was der Anwender tut
 
 1. *Hilfe → Fernwartung…* öffnet den Dialog: Kontakt, die Angaben für den Support (Abschnitt 3.3),
-   der Erklärtext und der Knopf „Fernwartungsseite öffnen". Ohne bezahlte Lizenz ist der Knopf
-   gesperrt, der Grund steht dabei (Abschnitt 4.4). Telefon und E-Mail (Link) stehen im Dialog immer.
-2. Auf der Fernwartungsseite lädt er `EPOS-Plan-Fernwartung.exe` und startet sie; keine
-   Installation, keine Administratorrechte. Bis INEKON ein Codesignaturzertifikat hat, erscheint der
-   SmartScreen-Hinweis „Unbekannter Herausgeber"; die Seite erklärt „Weitere Informationen →
-   Trotzdem ausführen".
-3. Das Programm zeigt eine Kennung und ein Einmalkennwort. Der Anwender nennt beides dem Support am
-   Telefon und nimmt die eingehende Verbindung im Programm an.
-4. Er beendet die Sitzung im Programm oder schließt es. Es bleibt nichts installiert.
+   der Erklärtext, die drei Schritte und die Knöpfe „Quick Assist starten" und „Fernwartungsseite
+   öffnen". Ohne bezahlte Lizenz sind die Knöpfe gesperrt, der Grund steht dabei (Abschnitt 4.4).
+   Telefon und E-Mail (Link) stehen im Dialog immer.
+2. Er ruft INEKON an.
+3. Mit „Quick Assist starten" öffnet er Quick Assist und gibt den sechsstelligen Code ein, den der
+   Support nennt. Fehlt Quick Assist, zeigt der Dialog einen Hinweis (Startmenü oder
+   Fernwartungsseite).
+4. Er erlaubt Ansicht oder Steuerung, wenn Quick Assist fragt, und beendet die Sitzung jederzeit
+   in Quick Assist. Es bleibt nichts installiert.
 
 ### 4.3 Was der Support tut
 
-1. RustDesk in der Vollfassung am Support-Arbeitsplatz, auf INEKONs Server eingestellt; Kennung des
-   Kunden eingeben, Einmalkennwort eintragen, auf die Annahme warten.
+1. Quick Assist öffnen, „Einer anderen Person helfen" wählen, mit dem Microsoft-Konto von INEKON
+   anmelden; der Code gilt zehn Minuten. Den Code am Telefon nennen, nach der Annahme „Vollständige
+   Steuerung" oder „Bildschirm anzeigen" wählen; der Anwender bestätigt.
 2. In der Sitzung bei Bedarf den Entwicklermodus einschalten: `--entwickler` über eine Verknüpfung
    oder die Tastenfolge aus Abschnitt 1.1. **Vor dem Ende der Sitzung wieder ausschalten.**
 3. Soll ein Update eingespielt werden, braucht das Setup Administratorrechte. Die Windows-Abfrage
-   sieht der Support nur, wenn der Fernwartungs-Client mit Administratorrechten läuft; sonst muss
-   der Anwender sie selbst bestätigen. Vorher mit dem Anwender absprechen.
-4. Ob der Anwender die Fernwartung nutzen darf, prüft der Support an `LizenzCtrl.FernwartungErlaubt()` (Erlaubt, Grund) oder am Menüpunkt: ist er gesperrt, steht der Grund im Tooltip. Ist die Lage unklar, lässt er sich den Diagnoseblock aus dem Dialog (Knopf „Kopieren“) per E-Mail schicken. Führt der Knopf ins Leere, fehlt die Fernwartungsseite `Fernwartung.SEITE` (`EPOS.Kern/Allgemein/Support/Fernwartung.cs`) bei INEKON: Seite und Client prüfen (4.6) und bis dahin den Weg Telefon und E-Mail nehmen.
-5. Nach der Sitzung: kein Eintrag in EPOS-Plan; das Sitzungsprotokoll der Web-Konsole (wer wann mit
-   wem) ist die einzige Aufzeichnung.
+   sieht der Support nur bei voller Steuerung und wenn Quick Assist sie weitergibt; sonst muss der
+   Anwender sie selbst bestätigen. Vorher mit dem Anwender absprechen.
+4. Ob der Anwender die Fernwartung nutzen darf, prüft der Support an `LizenzCtrl.FernwartungErlaubt()` (Erlaubt, Grund) oder am Menüpunkt: ist er gesperrt, steht der Grund im Tooltip. Ist die Lage unklar, lässt er sich den Diagnoseblock aus dem Dialog (Knopf „Kopieren“) per E-Mail schicken. Führt der Knopf „Fernwartungsseite öffnen" ins Leere, fehlt die Seite `Fernwartung.SEITE` (`EPOS.Kern/Allgemein/Support/Fernwartung.cs`) bei INEKON: Seite prüfen (4.6) und bis dahin den Weg Telefon und E-Mail nehmen.
+5. Nach der Sitzung: kein Eintrag in EPOS-Plan; EPOS-Plan zeichnet nichts auf.
 
 ### 4.4 Die Lizenzbedingung (AS-Q8, Lesart b)
 
@@ -232,21 +232,22 @@ Telefon und E-Mail mit Diagnosedaten; eine Testversion bekommt keine Fernwartung
 `LizenzCtrl.FernwartungErlaubt()` (ohne Nebenwirkung, liefert `Fernwartungsfreigabe(Erlaubt, Grund)`); ein Supportvertrag im Token (`support_bis`) ist Stufe 4
 und ändert die Regel erst dann.
 
+Fundstellen des Dialogs: `FernwartungDialog` und `FernwartungFenster`; der Start von Quick Assist liegt in `WindowsFormsApplication1/Allgemein/Support/QuickAssistStart.cs` (Abschnitt 6).
+
 ### 4.5 iPad
 
 Zurückgestellt (Anwender 11.10.2026: „wird später bearbeitet"). Stufe 2 baut die Fernwartung für
 Windows; auf dem iPad gibt es weder Menüpunkt noch Dialog, bis der iPad-Weg entschieden ist.
-Befund für dann: Ein iPad lässt sich mit RustDesk weder fernsteuern noch ansehen. Der Supportweg
+Befund für dann: Quick Assist gibt es auf dem iPad nicht. Der Supportweg
 vom iPad ist bis dahin Telefon und E-Mail.
 
 ### 4.6 Betrieb bei INEKON
 
 | Aufgabe | Wie |
 |---|---|
-| Server prüfen | `hbbs` und `hbbr` laufen (Docker), Ports 21115 bis 21119 TCP und 21116 UDP erreichbar; nach einem Serverupdate eine Probesitzung zwischen zwei INEKON-Rechnern |
-| Clientfassung tauschen | neuen Client im Generator der Web-Konsole bauen, mit INEKONs Zertifikat signieren, Datei auf epos-plan.de ersetzen, Fernwartungsseite prüfen; der alte Client auf Kundenrechnern ist eine Einzeldatei und wird beim nächsten Fall neu geladen |
-| Schlüssel oder Servername ändern | neuer Client nötig (Server und Schlüssel sind fest eingebaut); alte Clients verbinden sich dann nicht mehr |
-| Ohne Pro-Tarif | quelloffener Client mit Serverangabe im Dateinamen `rustdesk-host=<server>,key=<schlüssel>.exe` oder Startargument `--config`; ohne Logo, Adressbuch und Sitzungsprotokoll |
+| Support-Konto anlegen | Microsoft-Konto je Mitarbeiter (Firmenkonto bevorzugt); Quick Assist am Arbeitsplatz einmal anmelden und eine Probesitzung zwischen zwei INEKON-Rechnern fahren |
+| Fernwartungsseite pflegen | Anleitung auf epos-plan.de prüfen, wenn Quick Assist seine Oberfläche ändert; Schritte, Bilder, Telefon und Zeiten, Satz für das iPad |
+| Quick Assist gesperrt | Reserve: quelloffener RustDesk-Client mit Serverangabe im Dateinamen `rustdesk-host=<server>,key=<schlüssel>.exe` gegen einen eigenen quelloffenen Server; erst einrichten, wenn der Fall eintritt |
 
 
 ## 5 Wachen und Tests
@@ -290,12 +291,13 @@ dotnet build WindowsFormsApplication1/WindowsFormsApplication1.csproj -c Debug -
 | Lizenzstand | `EPOS.Kern/Allgemein/Lizenz/LizenzManager.cs` (`LizenzStatus`), `LizenzToken.cs` (`Typ`), `EPOS.Kern/Controller/LizenzCtrl.cs` | heute |
 | Adresse öffnen | `EPOS.Kern/Allgemein/Dienste/IDateiDienst.cs` (`AdresseOeffnen`), `WindowsFormsApplication1/Dienste/WindowsDateiDienst.cs`; der iOS-Adapter liefert heute die Vorgabe `false` | heute |
 | Fernwartungsdialog | `EPOS.UI/Dialoge/Hilfe/FernwartungDialog.razor`, `FernwartungDaten.cs` (mit `FernwartungTexte`), Hülle `EPOS.UI.Daten/Hilfe/FernwartungHuelle.cs`, Fenster `WindowsFormsApplication1/Views/Help/FernwartungFenster.cs` | 2 |
+| Start von Quick Assist | `WindowsFormsApplication1/Allgemein/Support/QuickAssistStart.cs` | 2 (Nachzug) |
 | Fernwartungsregel, Adresse | `EPOS.Kern/Allgemein/Support/Fernwartung.cs` (`SEITE`, `Fernwartungsfreigabe`), `EPOS.Kern/Controller/LizenzCtrl.cs` (`FernwartungErlaubt`), `LizenzManager.AnkerOhneSchreiben` | 2 |
 | Menüsperre | `EPOS.UI/Bausteine/Menuepunkt.cs` (`Sperrgrund`), `Menuetabelle.cs` (Punkt `MenuItem_Fernwartung`), `Menueband.razor`, `HauptfensterHuelle.cs` (Fall `Fernwartung`) | 2 |
 | Tests der Fernwartung | `EPOS.Kern.Tests/FernwartungFreigabeTests.cs`, `EPOS.UI.Tests/Dialoge/FernwartungDialogTests.cs`, `MenuebandTests` | 2 |
 | Wiki-Quelle | `Projekte/Wiki/Programm Dokumentation - Fernwartung.wiki` | 2 |
 | Über-Dialog | `EPOS.UI/Dialoge/Hilfe/UeberDialog.razor`, `UeberDaten.cs` (mit `UeberAnstoss`, `UeberTexte`), Hülle `EPOS.UI.Daten/Hilfe/UeberHuelle.cs`, Fenster `WindowsFormsApplication1/Views/Help/UeberFenster.cs`, Fall `Version` in `HauptfensterHuelle.cs` | heute |
-| Geste des Entwicklermodus | `UeberFenster` (Abfang über `BlazorDialogForm.Befehlstaste`), `WindowsFormsApplication1/Views/Entwicklung/EntwicklungHuelle.cs` (`GesteUmschalten`) | heute |
+| Geste des Entwicklermodus | `UeberDialog` (erkennt Strg+Umschalt+F12 selbst) und `UeberFenster` (fängt dieselbe Folge über `BlazorDialogForm.Befehlstaste` zusätzlich ab), `WindowsFormsApplication1/Views/Entwicklung/EntwicklungHuelle.cs` (`GesteUmschalten`) | heute |
 | Diagnosedaten | `EPOS.Kern/Allgemein/Diagnose/Diagnosedaten.cs` (`Textblock`, `ProtokollordnerPfad`) | heute |
 | Tests des Über-Dialogs | `EPOS.UI.Tests/Dialoge/UeberDialogTests.cs`, `EPOS.Kern.Tests/DiagnosedatenTests.cs` | heute |
 | Supportpaket | `EPOS.Kern/Allgemein/Support/Supportpaket.cs` (`Erstellen`, `Vorgabename`, `Supportpaketergebnis`), Anzeigeform `SupportpaketAnzeige` in `EPOS.UI/Dialoge/Hilfe/UeberDaten.cs`, Hülle `UeberHuelle.SupportpaketSpeichern`, Speicherdialog in `UeberFenster.SupportpaketSpeichern`, Tests `EPOS.Kern.Tests/SupportpaketTests.cs`; der Haken steht in `KiDialogAusnahmen` (Grund Export) | heute |
@@ -307,7 +309,7 @@ dotnet build WindowsFormsApplication1/WindowsFormsApplication1.csproj -c Debug -
 | Stufe | Inhalt | Stand |
 |---|---|---|
 | 1 | Entwicklermodus, Entwicklerbereiche, Menükopf „Entwicklung", Projektdatei verborgen | umgesetzt (11.10.2026, #974); die Zapfprofil-Vorgaben sind Anwenderrubrik „Zapfprofil" statt Entwicklerbereich (Nachzug 11.10.2026, #986) |
-| 2 | Fernwartung unter Windows: Menüpunkt, Dialog, Lizenzbedingung, Fernwartungsseite; Zuarbeit INEKON: Server, Client, Seite, Signatur. Das iPad ist zurückgestellt | umgesetzt (11.10.2026, #985); offen beim Anwender: Fernwartungsseite, Server, signierter Client |
+| 2 | Fernwartung unter Windows: Menüpunkt, Dialog, Lizenzbedingung, Fernwartungsseite; Zuarbeit INEKON: Microsoft-Konto, Seite. Das iPad ist zurückgestellt | umgesetzt (11.10.2026, #985); Nachzug Quick Assist (#1012); offen beim Anwender: Microsoft-Konto des Supports, Fernwartungsseite als Anleitung |
 | 3 | Dialog „Über EPOS-Plan", Diagnosedaten, Supportpaket | umgesetzt (11.10.2026, #987): 3a (Dialog, Diagnoseblock, Geste im Dialog), 3b (Supportpaket) |
 | 4 | Supportvertrag im Lizenz-Token (`support_bis`) | offen, auf Zuruf |
 

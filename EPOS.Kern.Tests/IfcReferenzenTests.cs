@@ -408,9 +408,12 @@ namespace EPOS.Kern.Tests
             Assert.Equal("ifc2x3_referenzen", GebaeudeZuordnungsModell.Vorschlagsname(satz));
             Assert.Contains(satz.Meldungen, x => x.Schluessel == P + "NAME_PLATZHALTER");
 
-            // Ein eigener Name bleibt, ohne Hinweis.
+            Assert.Equal("", GebaeudeZuordnungsModell.NameDerDatei(satz));   // ein Platzhalter ist kein Vorschlag
+
+            // Ein eigener Name steht als Vorschlag neben dem Dateinamen (F8, GD-2), ohne Hinweis.
             GebaeudeImportAblauf e = Lesen("ifc2x3_enthaltensein.ifc");
-            Assert.Equal("Probengebäude", GebaeudeZuordnungsModell.Vorschlagsname(e.Zuordnen(0, null)));
+            Assert.Equal("ifc2x3_enthaltensein", GebaeudeZuordnungsModell.Vorschlagsname(e.Zuordnen(0, null)));
+            Assert.Equal("Probengebäude", GebaeudeZuordnungsModell.NameDerDatei(e.Zuordnen(0, null)));
             Assert.False(Hat(e.Abbild.Gebaeude.Single().Meldungen, "NAME_PLATZHALTER"));
         }
 

@@ -52,3 +52,52 @@ Simulationszonen ohne „Rest nach Regel“: 3 Räume ohne Zone, kein Vorschlag.
 2. Simulationszonen ohne „Rest nach Regel“: Der Grund nennt die Räume ohne Zone.
 3. Mit allen Räumen zugeordnet: Der Dateikörper färbt in „Aufbau“ (A grün, B gelb, transparent grau) und „Befund“. Graue Dreiecke ohne Bezug stehen in der Legendenzeile „ohne Bauteilbezug (464)“.
 4. Flächenliste: Die Spalte „Bauteil“ zeigt „Außenwand <Raum> S“ usw. statt der GUID, und der Steckbrief zeigt die Kennung.
+
+## AB2 — Räume über die Legende zuordnen
+
+Wunsch des Anwenders vom 11.10.2026: „Die Zuordnung der Nutzung zu den Räumen sollte nicht über das Dropdown erfolgen,
+sondern über das Anklicken der Legendensymbole (mit Hinweis der Nutzung).“
+
+**Umsetzung.**
+
+- Das Auswahlfeld „Räume zuordnen zu“ entfällt samt Schlüssel `GIMP_DLG_ZUORDNEN_ZU`.
+- Im Farbmodus „Zonen“ ist jeder Legendeneintrag ein Knopf (`button`, `aria-pressed`). Der Wirt reicht die Einträge als
+  `Zuordnungsziele` (`GebaeudeAnsichtZiel`) herein: je Zone des Plans einen, auch für eine angelegte Zone ohne Raum im
+  Bild (gepunktetes Farbfeld), dazu „als eigene Zone“.
+- Ein Klick wählt das Ziel, ein zweiter hebt die Wahl auf. Gemeldet wird über `ZielChanged`, der Dialog hält die Wahl.
+  Ohne Wahl wählt der Dialog keine erste Zone mehr vor.
+- Mit Wahl ordnet ein Raumklick im Grundriss oder im Körper den Raum zu. Der Körperklick ordnet zu, statt eine Zone zu
+  wählen. Ohne Wahl ist der Raum reine Anzeige (`role="img"`), sein Kurztext sagt, wie man zuordnet. „Umhängen“ auf dem
+  Weg ohne Grundriss ist dann weich gesperrt (`aria-disabled` mit Grund).
+- Jeder Eintrag nennt die Nutzung: „Nutzung: Profil · Kategorie“ aus der Herleitung, sonst den Text der Nutzung, ohne
+  Nutzung das Profil der Projektdatei (DIN-Nummer) oder „ohne Nutzung“. Der `title` nennt Herkunft und „Klicken, dann
+  Räume anklicken, um sie dieser Zone zuzuordnen“.
+- „nicht zugeordnet (n Räume)“ ersetzt den Eintrag „ohne Zone“, in der grauen Farbe der Räume ohne Zone. Er ist kein
+  Ziel. Ein Klick hebt diese Räume im Grundriss hervor (`epos-gebansicht-raum--hervor`, Token `--epos-grundriss-hervor`).
+- In den anderen Farbmodi gibt es keine Zielknöpfe. Ist ein Ziel gewählt, steht dort „Zuordnen nur im Modus Zonen“, und
+  ein Raumklick ordnet nicht zu.
+- „Rest nach Regel zuordnen“, Zone anlegen und Zone löschen bleiben unverändert. Die Ansicht im Gebäudedialog („neu
+  lesen“) ordnet nichts zu und bleibt, wie sie ist.
+- Neue Schlüssel in beiden Sprachen: `GIMP_ANS_ZIEL_NUTZUNG`, `GIMP_ANS_ZIEL_OHNE_NUTZUNG`, `GIMP_ANS_ZIEL_KLICK`,
+  `GIMP_ANS_ZIEL_AUFHEBEN`, `GIMP_ANS_ZIEL_FEHLT`, `GIMP_ANS_ZIEL_NUR_ZONEN`, `GIMP_ANS_NICHT_ZUGEORDNET`,
+  `GIMP_ANS_NICHT_ZUGEORDNET_TITEL`, `GIMP_ANS_ZIEL_LEGENDE`. `GIMP_DLG_UMHAENGEN_HINWEIS` nennt jetzt die Legende.
+- Die KI-Feldkarte führte die Zielwahl nicht. Die Eingabebilanz des `GebaeudeImportDialog` sinkt von 31 auf 30, der
+  Vermerk ist nachgezogen.
+
+**Prüfung.**
+
+- Kern-Filter und Windows-Schale (`EnableWindowsTargeting=true`): 0 Fehler.
+- UI, Filter GebaeudeAnsicht|GebaeudeImport|Zonen|Stilblatt|KiDialog|KiMasken|Wache: 746/746, darunter 8 neue Proben.
+- Kern, Filter GebaeudeImport|Zonenplan|Ressource|Wache: 858/858.
+- `designer_neu.py`: zweiter Lauf ohne Befund.
+- Dialogkopf, Schlussleiste und Rasterregeln sind nicht berührt, deshalb keine Rasterprobe.
+
+**Für die Windows-Sichtabnahme.**
+
+1. Gebäudeimport, Reiter „Grundriss“, Modus „Zonen“: Über dem Bild steht kein Auswahlfeld mehr. Die Legende zeigt
+   Knöpfe mit Farbfeld, Name und Nutzungszeile. Der gewählte Knopf ist hellblau mit Markenrand.
+2. Ein Raumklick ohne Wahl tut nichts. Mit Wahl ordnet er zu, auch im Reiter „Körper“. Ein zweiter Klick auf den Knopf
+   hebt die Wahl auf.
+3. „nicht zugeordnet (n Räume)“: Ein Klick rahmt diese Räume orange.
+4. „Randbedingung“, „Aufbau“ oder „Befund“ mit gewähltem Ziel: Der Hinweis „Zuordnen nur im Modus Zonen“ steht da.
+5. Eine neu angelegte Zone steht sofort als Knopf in der Legende, mit gepunktetem Farbfeld.

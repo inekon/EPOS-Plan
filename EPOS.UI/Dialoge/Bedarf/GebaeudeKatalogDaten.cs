@@ -111,6 +111,12 @@ public sealed class GebaeudeKatalogDaten
     /// </summary>
     public double Bauweise { get; set; }
 
+    /// <summary>
+    /// Die <see cref="Bauweise"/> kommt aus der Importdatei (Projektdatei <c>Cwirk</c>, GD-2) und folgt im Modus Neu NICHT der
+    /// Bauart; eine Bauart- oder Nutzflächenänderung im Editor führt sie wieder nach. Nicht gespeichert.
+    /// </summary>
+    public bool BauweiseAusDatei { get; set; }
+
     // ------------------------------------------------------- Kenngrößen (5)
 
     public double? WohnflaecheGesamt { get; set; }

@@ -21,6 +21,19 @@ namespace WindowsFormsApplication1
         internal string BaujahrText { get; init; }
         internal int? Baujahr { get; init; }
         internal string StandortUuid { get; init; }
+        /// <summary>Der Gebäudetyp der Datei (<c>BmBuilding.BuildingType</c>); <c>null</c> = keiner.</summary>
+        internal int? Gebaeudetyp { get; init; }
+        /// <summary>Die Nutzung der Datei (<c>BmBuildingData.BuildingUsageType</c>, über die Kennung); <c>null</c> = keine.</summary>
+        internal int? Nutzungstyp { get; init; }
+        /// <summary>Der Wärmeschutzstandard der Datei (<c>BmBuilding.BuildingHeatInsulationStandardType</c>); <c>null</c> = keiner.</summary>
+        internal int? Waermeschutzstandard { get; init; }
+        /// <summary>Der Effizienzstandard der Datei (<c>BmBuilding.BuildingEnergyEfficientType</c>); <c>null</c> = keiner.</summary>
+        internal int? Effizienzstandard { get; init; }
+        /// <summary>
+        /// Die wirksame Wärmekapazität der Datei (<c>BmBuilding.Cwirk</c>) in Wh/(m²K) — der flächenbezogene Wert nach
+        /// DIN V 18599-2 (Vorgabewerte 50/90/130); der Platzhalter „nicht gesetzt“ und Werte ≤ 0 werden <c>null</c>.
+        /// </summary>
+        internal double? CwirkWhM2K { get; init; }
     }
 
     /// <summary><b>Ein Standort der Projektdatei</b> (<c>SmSite</c>): Ort, Postleitzahl, Breite und Länge [°] — nur zur Anzeige.</summary>

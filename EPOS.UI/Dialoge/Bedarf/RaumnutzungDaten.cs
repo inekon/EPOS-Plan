@@ -17,12 +17,6 @@ public enum RaumnutzungArt
     /// <summary>DIN V 18599-10 — ausgeliefert ohne Werte.</summary>
     Din18599 = 1,
 
-    /// <summary>SIA 2024 — ausgeliefert leer.</summary>
-    Sia2024 = 2,
-
-    /// <summary>VDI 2078 — ausgeliefert leer.</summary>
-    Vdi2078 = 3,
-
     /// <summary>Eine eigene Kategorie des Anwenders.</summary>
     Eigen = 4,
 }
@@ -77,7 +71,7 @@ public sealed record RaumnutzungKategorieDaten(long Id, string Bezeichner, Raumn
                                                string Beschreibung, string Quellenhinweis)
 {
     /// <summary>Trägt die Art eine Norm (dann bleibt sie ausgeliefert ohne Werte)?</summary>
-    public bool IstNorm => Art is RaumnutzungArt.Din18599 or RaumnutzungArt.Sia2024 or RaumnutzungArt.Vdi2078;
+    public bool IstNorm => Art is RaumnutzungArt.Din18599;
 }
 
 /// <summary>

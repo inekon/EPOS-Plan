@@ -101,6 +101,13 @@ namespace WindowsFormsApplication1
         internal Aufbauluecke Fehlt { get; set; } = Aufbauluecke.KeineSchichten;
 
         /// <summary>
+        /// Die Schichten der Datei eines Aufbaus, der nicht vollständig wurde (AB3), innen → außen mit den Werten nach Datei
+        /// und Namensabgleich — nur zur Anzeige und für die Baustoffwahl je Schicht im Importdialog; leer = die Zeile trägt
+        /// einen Aufbau, die Datei keine Schichten oder der Abgleich ist aus. Die Rechnung liest sie nicht.
+        /// </summary>
+        internal IReadOnlyList<GebaeudeDateischicht> Dateischichten { get; set; } = Array.Empty<GebaeudeDateischicht>();
+
+        /// <summary>
         /// Der Ersatzaufbau der Zeile (BA-2, Konzept 5.3): Typ, Abgleich und Vermerke; <c>null</c> = keiner (echter
         /// Aufbau oder ohne Aufbau). Mit Ersatzaufbau bleibt die Zeile in Stufe B bzw. C.
         /// </summary>
@@ -232,6 +239,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal string Ersatzschluessel { get; init; }
     }
+
+    /// <summary>
+    /// Eine Schicht der Datei mit ihren Werten nach Datei und Namensabgleich (AB3): Stoffname, wie die Datei ihn schreibt,
+    /// die Werte (<c>null</c> = fehlt), stammen alle aus der Datei, ist es eine Luftschicht.
+    /// </summary>
+    internal sealed record GebaeudeDateischicht(string Name, Schichtwerte Werte, bool AusDatei, bool Luftschicht);
 
     /// <summary>Eine Schicht der Datei, die die Relevanzregel weggelassen hat: Stoffname, Dicke [m], Grund, Anteile an R und C [–].</summary>
     internal sealed record GebaeudeWeggelasseneSchicht(string Name, double Dicke_M, Schichtrelevanzgrund Grund, double AnteilR, double AnteilC);
@@ -1297,6 +1310,7 @@ namespace WindowsFormsApplication1
                 }
 
                 z.Fehlt = Luecken(s.Aufbau, rand != Bauteilrand.Innen);
+                z.Dateischichten = Dateischichten(s.Aufbau);
                 if (z.UDatei.HasValue)
                 {
                     z.Bauteil.U_Wert = z.UDatei;
@@ -1779,7 +1793,11 @@ namespace WindowsFormsApplication1
                     z.HerkunftU = aufbau.Herkunft;
                     z.Fehlt = Aufbauluecke.Keine;
                 }
-                else z.Fehlt = Luecken(s.Aufbau, false);
+                else
+                {
+                    z.Fehlt = Luecken(s.Aufbau, false);
+                    z.Dateischichten = Dateischichten(s.Aufbau);
+                }
                 Abschliessen(z);
             }
 
@@ -1912,7 +1930,11 @@ namespace WindowsFormsApplication1
                     z.HerkunftU = aufbau.Herkunft;
                     z.Fehlt = Aufbauluecke.Keine;
                 }
-                else z.Fehlt = Luecken(s.Aufbau, false);
+                else
+                {
+                    z.Fehlt = Luecken(s.Aufbau, false);
+                    z.Dateischichten = Dateischichten(s.Aufbau);
+                }
                 Abschliessen(z);
             }
 
@@ -2015,6 +2037,8 @@ namespace WindowsFormsApplication1
                 internal readonly List<Schichteintrag> Schichten = new List<Schichteintrag>();
                 /// <summary>Je Schicht der Datei (ohne verworfene) die Werte nach Datei und Abgleich — für <see cref="Bauteilzuordnung.Luecken"/>.</summary>
                 internal readonly List<Schichtwerte> Werte = new List<Schichtwerte>();
+                /// <summary>Je Schicht der Datei (ohne verworfene) Name und Werte — die Anzeige eines unvollständigen Aufbaus (AB3).</summary>
+                internal readonly List<GebaeudeDateischicht> Dateischichten = new List<GebaeudeDateischicht>();
                 internal bool Vollstaendig;
                 internal bool Katalog;
                 internal string Grund;
@@ -2187,6 +2211,18 @@ namespace WindowsFormsApplication1
             }
 
             /// <summary>
+            /// Die Schichten der Datei eines unvollständigen Aufbaus innen → außen (AB3, nur Anzeige); leer ohne Abgleich oder
+            /// ohne Schichten.
+            /// </summary>
+            private IReadOnlyList<GebaeudeDateischicht> Dateischichten(AbbildAufbau a)
+            {
+                if (_abgleich == null || a == null || a.Schichten.Count == 0) return Array.Empty<GebaeudeDateischicht>();
+                List<GebaeudeDateischicht> folge = Ergaenzen(a).Dateischichten.ToList();
+                if (a.Richtung != Schichtrichtung.InnenNachAussen) folge.Reverse();
+                return folge;
+            }
+
+            /// <summary>
             /// Was dem Aufbau der Datei fehlt (<see cref="Bauteilzuordnung.Luecken"/>) — mit dem Namensabgleich aus
             /// den ergänzten Werten, sonst aus den Werten der Datei im Stoffwertband.
             /// </summary>
@@ -2245,6 +2281,7 @@ namespace WindowsFormsApplication1
                         if (m != null) m.SchichtenAusDatei++;
                         Gegenprobe(s, l.Value, t);
                         e.Werte.Add(new Schichtwerte(d, l, r, c));
+                        e.Dateischichten.Add(new GebaeudeDateischicht(s.Name?.Trim() ?? "", e.Werte[^1], true, false));
                         e.Schichten.Add(new Schichteintrag(new Schicht(d.Value, l.Value, r.Value, c.Value), null, s, sperre));
                         continue;
                     }
@@ -2257,6 +2294,7 @@ namespace WindowsFormsApplication1
                     if (t.Sonderfall == Abgleichsonderfall.Luftschicht)
                     {
                         e.Werte.Add(new Schichtwerte(d, l, r, c, true));
+                        e.Dateischichten.Add(new GebaeudeDateischicht(s.Name?.Trim() ?? "", e.Werte[^1], false, true));
                         if (!d.HasValue)
                         {
                             e.Vollstaendig = false;
@@ -2275,6 +2313,7 @@ namespace WindowsFormsApplication1
                     double? rw = r ?? (Baustoffabgleich.RhoImBand(b?.Rho) ? b.Rho : null);
                     double? cw = c ?? (Baustoffabgleich.CpImBand(b?.Cp) ? b.Cp : null);
                     e.Werte.Add(new Schichtwerte(d, lw, rw, cw));
+                    e.Dateischichten.Add(new GebaeudeDateischicht(s.Name?.Trim() ?? "", e.Werte[^1], false, false));
                     if (b == null || !d.HasValue || !lw.HasValue || !rw.HasValue || !cw.HasValue)
                     {
                         e.Vollstaendig = false;

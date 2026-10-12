@@ -27,7 +27,8 @@ namespace WindowsFormsApplication1
     //                    (Tabelle 5, ohne Nummer) fuehrt der Katalog nicht als Profil, sondern ueber das
     //                    Muster Wohnen und die Werte 70 und 71 der Projektdatei.
     //   SIA 2024,
-    //   VDI 2078         leer, nur Beschreibung und Quellenhinweis (Konzept 5.3).
+    //   VDI 2078         leer, nur Beschreibung und Quellenhinweis. Entfallen (E129): Die Saat legt sie als
+    //                    Saat des Schritts 189 weiter an, RaumnutzungNormkategorienSchema nimmt sie heraus.
     //   Zuordnung        die heutigen festen Paare (Din18599Nutzung, Zonenplan.NutzungAusKlasse) und
     //                    die Paare der neuen Muster (Konzept 5.4, Q42). Der Schluessel DIN_NUMMER ist die
     //                    Nummer der HottCAD-Projektdatei (PdProfileUsage.ProfileUsageType); HottCAD zaehlt
@@ -288,7 +289,10 @@ namespace WindowsFormsApplication1
         /// <summary>Die Beschreibung der Kategorie DIN/TS 18599-10.</summary>
         public const string BESCHREIBUNG_DIN = "Nutzungsprofile nach DIN/TS 18599-10 mit Nummer und Name, ohne Werte";
 
-        /// <summary>Die vier ausgelieferten Kategorien in Anzeigereihenfolge.</summary>
+        /// <summary>
+        /// Die vier Kategorien der Saat des Schritts 189 in Anzeigereihenfolge. SIA 2024 und VDI 2078 sind entfallen (E129):
+        /// <see cref="RaumnutzungNormkategorienSchema"/> nimmt sie heraus, ausgeliefert werden nur EPOS-Muster und DIN.
+        /// </summary>
         public static IReadOnlyList<RaumnutzungSaatkategorie> Kategorien { get; } = new[]
         {
             new RaumnutzungSaatkategorie(RaumnutzungSchema.ART_EPOS_MUSTER, KATEGORIE_EPOS,

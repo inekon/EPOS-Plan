@@ -386,7 +386,10 @@
     private string PersonenPlatzhalter
         => _lasten is { PersonenNennwertW: > 0 } l ? Zahlen.Anzeigetext(Math.Round(l.PersonenNennwertW, 1)) : "";
 
-    /// <summary>Die Zeile der Jahresmittel (Teilkonzept 7.2): Geräte, Personen, Summe in W und W/m², die Gesamtangabe.</summary>
+    /// <summary>
+    /// Die Zeile der Jahresmittel (Teilkonzept 7.2): Geräte, Personen, Summe in W und W/m², die Gesamtangabe. Watt stehen
+    /// ohne Nachkommastellen mit Tausendertrennung (<see cref="Zahlen.Watt"/>, GD-1) — nur die Anzeige, nicht der Wert.
+    /// </summary>
     private string? Jahresmittel
     {
         get
@@ -395,11 +398,11 @@
             double summe = l.GeraeteJahresmittelW + l.PersonenJahresmittelW;
             double? flaeche = l.NutzflaecheM2 is double a && a > 0 ? a : null;
             return string.Format(CultureInfo.CurrentCulture, Texte.TextJahresmittel,
-                                 Zahlen.Anzeigetext(Math.Round(l.GeraeteJahresmittelW, 0)),
-                                 Zahlen.Anzeigetext(Math.Round(l.PersonenJahresmittelW, 0)),
-                                 Zahlen.Anzeigetext(Math.Round(summe, 0)),
+                                 Zahlen.Watt(l.GeraeteJahresmittelW),
+                                 Zahlen.Watt(l.PersonenJahresmittelW),
+                                 Zahlen.Watt(summe),
                                  flaeche is double f ? Zahlen.Anzeigetext(Math.Round(summe / f, 2)) : "—",
-                                 Zahlen.Anzeigetext(Arbeit.Stand.Waermegewinne));
+                                 Zahlen.Watt(Arbeit.Stand.Waermegewinne));
         }
     }
 

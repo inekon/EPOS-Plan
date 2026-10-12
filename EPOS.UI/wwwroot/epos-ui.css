@@ -329,6 +329,8 @@
     --epos-grundriss-zone-8: #e5c494;
     --epos-grundriss-zone-9: #cab2d6;
     --epos-grundriss-ohnezone: #d9d8d2;
+    --epos-grundriss-ziel-flaeche: #d9e8f7;   /* gewaehltes Ziel der Zuordnung in der Legende (AB2) */
+    --epos-grundriss-hervor: #c2410c;         /* Rand der hervorgehobenen Raeume ohne Zone (AB2) */
     --epos-grundriss-rand: var(--epos-text-leise);
 }
 
@@ -6754,6 +6756,37 @@ table.epos-simerg-tabelle {
     color: var(--epos-text-leise);
 }
 
+/* Die Herkunftsmarke je Feld des Gebaeudedialogs (Entwurf GD 2.1, Welle GD-1): dieselben Farben wie die
+   Herkunft der Importzeilen - Datei im Quellblau, Vorgabe und geerbt leise kursiv, von Hand fett,
+   wirkungslos leise. Die Klasse ist der sprachneutrale Name der Herkunft. */
+.epos-gebk-marke {
+    display: inline-block;
+    margin-right: 0.4em;
+    padding: 0 0.4em;
+    border: 1px solid currentColor;
+    border-radius: 0.6em;
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+
+.epos-gebk-marke--datei {
+    color: var(--epos-quelle-text);
+}
+
+.epos-gebk-marke--vorgabe,
+.epos-gebk-marke--geerbt {
+    color: var(--epos-text-leise);
+    font-style: italic;
+}
+
+.epos-gebk-marke--hand {
+    font-weight: 600;
+}
+
+.epos-gebk-marke--wirkungslos {
+    color: var(--epos-text-leise);
+}
+
 .epos-gebimport-raum--umgestellt td.epos-gebimport-grund {
     font-weight: 600;
 }
@@ -6824,42 +6857,38 @@ table.epos-simerg-tabelle {
     min-width: 14em;
 }
 
-/* Die Baustoffe (Namensabgleich): Zahl der Schichten rechtsbuendig, die Klappliste so breit
-   wie ein Katalogname, Stoffwerte und Name brechen um. Die eigene Zuordnung steht fett, eine
-   verworfene Schicht und "ohne Treffer" leise; eine im Dialog geaenderte, noch nicht
-   gespeicherte Zuordnung traegt einen Randstreifen im Quellblau (im Kontrastmodus CanvasText,
-   gepunktet - verschieden vom gestrichelten Gelb). */
-.epos-gebimport-baustoffe td.epos-gebimport-zahl,
-.epos-gebimport-baustoffe th.epos-gebimport-zahl {
-    text-align: right;
+/* Die Baustoffwahl je Schicht in der Liste "Bauteilaufbauten" (AB3): Eine Schicht ohne Stoffwert
+   traegt Warnflaeche und gestrichelten Randstreifen, die Klappliste so breit wie ein Katalogname
+   und "Zuordnung entfernen" stehen in einem Flexkasten hinter dem Text und brechen mit ihm um. Eine
+   im Dialog geaenderte, noch nicht gespeicherte Zuordnung traegt einen gepunkteten Randstreifen im
+   Quellblau (im Kontrastmodus CanvasText) - verschieden vom gestrichelten Gelb. */
+.epos-gebimport-aufbauschichtliste > li.epos-gebimport-schicht--ohnewert {
+    background: var(--epos-warn-flaeche);
+    border-left: 4px dashed var(--epos-warn-rahmen);
+    padding-left: 0.4em;
 }
 
-.epos-gebimport-baustoffe td.epos-gebimport-materialname,
-.epos-gebimport-baustoffe td.epos-gebimport-stoffwerte {
-    white-space: normal;
-    min-width: 10em;
+.epos-gebimport-aufbauschichtliste > li.epos-gebimport-baustoff--vorgemerkt {
+    border-left: 4px dotted var(--epos-quelle-text);
+    padding-left: 0.4em;
 }
 
-.epos-gebimport-baustoffe select.epos-eingabe {
+.epos-gebimport-schichtwahl {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.4em;
+    align-items: center;
+    margin-left: 0.6em;
+}
+
+.epos-gebimport-schichtwahl select.epos-eingabe {
     width: 18em;
     max-width: 100%;
 }
 
-.epos-gebimport-abgleich--n7 {
-    font-weight: 600;
-}
-
-.epos-gebimport-abgleich--ohne,
-.epos-gebimport-abgleich--verworfen {
-    color: var(--epos-text-leise);
-}
-
-.epos-gebimport-baustoff--vorgemerkt td.epos-gebimport-baustoffwahl {
-    border-left: 4px dotted var(--epos-quelle-text);
-}
-
 @media (forced-colors: active) {
-    .epos-gebimport-baustoff--vorgemerkt td.epos-gebimport-baustoffwahl { border-left: 4px dotted CanvasText; }
+    .epos-gebimport-aufbauschichtliste > li.epos-gebimport-schicht--ohnewert { border-left: 4px dashed CanvasText; }
+    .epos-gebimport-aufbauschichtliste > li.epos-gebimport-baustoff--vorgemerkt { border-left: 4px dotted CanvasText; }
 }
 
 /* Der Grundriss des Gebaeudeimports (Stufe G6c, Welle D2) - der Baustein GebaeudeAnsicht und seine
@@ -7038,6 +7067,60 @@ table.epos-simerg-tabelle {
 .epos-gebansicht-farbfeld--schematisch {
     background: transparent;
     border-style: dashed;
+}
+
+/* Zielwahl in der Legende (Auftrag AB2): im Farbmodus "Zonen" ist jeder Eintrag ein Knopf (aria-pressed).
+   Gewaehlt traegt er Flaeche und Rand der Marke, "nicht zugeordnet" ist kein Ziel und hebt nur hervor. */
+.epos-gebansicht-legende--zielwahl {
+    gap: 6px 8px;
+}
+
+.epos-gebansicht-zielknopf {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 6px;
+    min-height: var(--epos-touchziel);
+    padding: 4px 10px;
+    border: 1px solid var(--epos-grundriss-rand);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--epos-text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.epos-gebansicht-zielknopf:hover,
+.epos-gebansicht-zielknopf:focus-visible {
+    border-color: var(--epos-marke);
+}
+
+.epos-gebansicht-zielknopf[aria-pressed="true"] {
+    background: var(--epos-grundriss-ziel-flaeche);
+    border: 2px solid var(--epos-marke);
+    padding: 3px 9px;
+}
+
+.epos-gebansicht-zielknopf[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.epos-gebansicht-nutzung {
+    flex-basis: 100%;
+    color: var(--epos-text-leise);
+    font-size: 0.9em;
+}
+
+.epos-gebansicht-farbfeld--neu {
+    background: transparent;
+    border-style: dotted;
+}
+
+.epos-gebansicht-raum--hervor polygon {
+    stroke: var(--epos-grundriss-hervor);
+    stroke-width: 3px;
 }
 
 .epos-gebansicht-hinweise {
@@ -7240,6 +7323,9 @@ table.epos-simerg-tabelle {
     .epos-gebansicht-raum:focus-visible polygon { stroke: Highlight; }
     .epos-gebansicht-raum text { fill: CanvasText; }
     .epos-gebansicht-farbfeld { background: Canvas; border-color: CanvasText; }
+    .epos-gebansicht-zielknopf { border-color: ButtonText; }
+    .epos-gebansicht-zielknopf[aria-pressed="true"] { border-color: Highlight; outline: 2px solid Highlight; }
+    .epos-gebansicht-raum--hervor polygon { stroke: Highlight; }
     .epos-gebansicht-kante, .epos-gebansicht-oeffnung { stroke: CanvasText; }
     /* Befund ueber den Stufenschluessel: ohne Befund leer bzw. duenn, Koerper unlesbar gestrichelt, ohne
        Eigenschaften voll bzw. kraeftig, ohne Bauteil gepunktet - Farbfelder wie Kanten. */
@@ -7275,7 +7361,6 @@ table.epos-simerg-tabelle {
     gap: 6px;
 }
 
-.epos-gebimport-zuordnungskopf,
 .epos-gebimport-raumweg {
     display: flex;
     flex-wrap: wrap;
@@ -7283,7 +7368,6 @@ table.epos-simerg-tabelle {
     gap: 4px 12px;
 }
 
-.epos-gebimport-zuordnungskopf .epos-feld,
 .epos-gebimport-raumweg .epos-feld {
     flex: 1 1 12rem;
     min-width: 0;

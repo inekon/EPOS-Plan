@@ -10,7 +10,7 @@ namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
 /// Der Dialog „Fernwartung" (Konzept Administration und Support, Abschnitt 4.2): vier Zonen,
-/// gesperrter Knopf mit Grund, Rueckrufe fuer Browser, E-Mail und Zwischenablage.
+/// gesperrte Knoepfe mit Grund, Rueckrufe fuer Quick Assist, Browser, E-Mail und Zwischenablage.
 /// </summary>
 public class FernwartungDialogTests : EposBunitContext
 {
@@ -28,11 +28,81 @@ public class FernwartungDialogTests : EposBunitContext
             DIAGNOSE, Fernwartung.SEITE);
 
     private IRenderedComponent<FernwartungDialog> Zeige(bool erlaubt, Func<string, bool>? oeffnen = null,
-                                                        Action<string>? kopieren = null)
+                                                        Action<string>? kopieren = null,
+                                                        Func<bool>? starten = null)
         => Render<FernwartungDialog>(p => p
             .Add(x => x.Daten, Daten(erlaubt))
             .Add(x => x.AdresseOeffnen, oeffnen)
-            .Add(x => x.Kopieren, kopieren));
+            .Add(x => x.Kopieren, kopieren)
+            .Add(x => x.FernwartungStarten, starten));
+
+    [Fact]
+    public void Quick_Assist_starten_gibt_es_nur_mit_Rueckruf()
+    {
+        var ohne = Zeige(true, _ => true);
+        Assert.Empty(ohne.FindAll("button.epos-fw-quickassist"));
+        // Ohne Startweg nennt ein Satz Windows, die Seite ist der primaere Knopf.
+        Assert.Equal(new FernwartungTexte().QuickAssistNurWindows,
+                     ohne.Find(".epos-fw-nur-windows").TextContent.Trim());
+        Assert.Contains("epos-knopf--primaer", ohne.Find("button.epos-fw-seite").ClassList);
+
+        var mit = Zeige(true, _ => true, starten: () => true);
+        var knopf = mit.Find("button.epos-fw-quickassist");
+        Assert.Contains("epos-knopf--primaer", knopf.ClassList);
+        Assert.Equal(new FernwartungTexte().QuickAssistStarten, knopf.TextContent.Trim());
+        Assert.Empty(mit.FindAll(".epos-fw-nur-windows"));
+        // Die Seite bleibt als zweiter, nicht primaerer Weg.
+        Assert.DoesNotContain("epos-knopf--primaer", mit.Find("button.epos-fw-seite").ClassList);
+    }
+
+    [Fact]
+    public void Der_Klick_startet_Quick_Assist_ueber_den_Rueckruf()
+    {
+        int aufrufe = 0;
+        var geoeffnet = new List<string>();
+        var cut = Zeige(true, a => { geoeffnet.Add(a); return true; }, starten: () => { aufrufe++; return true; });
+
+        cut.Find("button.epos-fw-quickassist").Click();
+
+        Assert.Equal(1, aufrufe);
+        Assert.Empty(geoeffnet);
+        Assert.DoesNotContain(new FernwartungTexte().QuickAssistFehler, cut.Markup);
+    }
+
+    [Fact]
+    public void Misslingt_der_Start_zeigt_der_Dialog_den_Hinweis()
+    {
+        var cut = Zeige(true, _ => true, starten: () => false);
+
+        cut.Find("button.epos-fw-quickassist").Click();
+
+        Assert.Contains(new FernwartungTexte().QuickAssistFehler, cut.Markup);
+    }
+
+    [Fact]
+    public void Wirft_der_Start_gilt_er_als_misslungen()
+    {
+        var cut = Zeige(true, _ => true, starten: () => throw new InvalidOperationException("kaputt"));
+
+        cut.Find("button.epos-fw-quickassist").Click();
+
+        Assert.Contains(new FernwartungTexte().QuickAssistFehler, cut.Markup);
+    }
+
+    [Fact]
+    public void Gesperrt_ist_Quick_Assist_starten_disabled_mit_Grund()
+    {
+        int aufrufe = 0;
+        var cut = Zeige(false, _ => true, starten: () => { aufrufe++; return true; });
+
+        var knopf = cut.Find("button.epos-fw-quickassist");
+        Assert.True(knopf.HasAttribute("disabled"));
+        Assert.True(cut.Find("button.epos-fw-seite").HasAttribute("disabled"));
+        Assert.Equal(GRUND, cut.Find(".epos-fw-sperrgrund").TextContent.Trim());
+
+        knopf.Click();
+        Assert.Equal(0, aufrufe);
+    }
 
     [Fact]
     public void Gesperrt_ist_der_Knopf_disabled_und_der_Grund_sichtbar()
@@ -53,16 +123,17 @@ public class FernwartungDialogTests : EposBunitContext
     public void Frei_oeffnet_der_Knopf_die_Fernwartungsseite()
     {
         var geoeffnet = new List<string>();
-        var cut = Zeige(true, a => { geoeffnet.Add(a); return true; });
+        int gestartet = 0;
+        var cut = Zeige(true, a => { geoeffnet.Add(a); return true; }, starten: () => { gestartet++; return true; });
 
         Assert.Empty(cut.FindAll(".epos-fw-sperrgrund"));
         var knopf = cut.Find("button.epos-fw-seite");
         Assert.False(knopf.HasAttribute("disabled"));
-        Assert.Contains("epos-knopf--primaer", knopf.ClassList);
 
         knopf.Click();
 
         Assert.Equal(new[] { Fernwartung.SEITE }, geoeffnet);
+        Assert.Equal(0, gestartet);
         Assert.Empty(cut.FindAll("[role=alert]"));
     }
 
@@ -115,8 +186,9 @@ public class FernwartungDialogTests : EposBunitContext
         var leiste = cut.Find(".epos-leiste");
         Assert.Single(leiste.QuerySelectorAll("button"));
         Assert.NotNull(leiste.QuerySelector(".epos-leiste-fueller"));
-        // Ohne Rueckrufe: kein Kopierknopf, Seitenknopf gesperrt.
+        // Ohne Rueckrufe: kein Kopierknopf, kein Quick-Assist-Knopf, Seitenknopf gesperrt.
         Assert.Empty(cut.FindAll("button.epos-fw-kopieren"));
+        Assert.Empty(cut.FindAll("button.epos-fw-quickassist"));
         Assert.True(cut.Find("button.epos-fw-seite").HasAttribute("disabled"));
 
         leiste.QuerySelector("button")!.Click();

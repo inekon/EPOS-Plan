@@ -257,4 +257,29 @@ public class NutzungsprofilUebernahmeTests : EposBunitContext
         Assert.False(b.ProfilUebernehmenFragen(new RaumnutzungTexte()));
         Assert.Null(b.OffeneFrage);
     }
+
+    /// <summary>
+    /// NP6 (E129): Die Liste „Nutzungsprofil übernehmen…“ übernimmt die Ordnung des Kerns — in der DIN-Gruppe die Profile mit
+    /// Nummer vorn, die Wohnprofile ohne Nummer am Ende; die Gruppe „Eigene“ bleibt unverändert.
+    /// </summary>
+    [Fact]
+    public void Die_Wohnprofile_ohne_Nummer_stehen_am_Ende_der_DIN_Gruppe()
+    {
+        var profile = new (string, Raumnutzungsprofil)[]
+        {
+            ("Eigene", Buero()), ("Eigene", Flaechenluft()),
+            ("DIN/TS 18599-10", new Raumnutzungsprofil { Id = 21, Bezeichner = "Einzelbüro", Nummer = "1" }),
+            ("DIN/TS 18599-10", new Raumnutzungsprofil { Id = 22, Bezeichner = "Lager", Nummer = "43" }),
+            ("DIN/TS 18599-10", new Raumnutzungsprofil { Id = 23, Bezeichner = "Wohngebäude – Einfamilienhaus" }),
+            ("DIN/TS 18599-10", new Raumnutzungsprofil { Id = 24, Bezeichner = "Wohngebäude – Mehrfamilienhaus" }),
+        };
+        var (cut, _, _) = Aufbauen(KonditionierungHuelle.ReinerWeg(Kalendereigentuemer.Katalogbau, projekt: false, profile: profile));
+        cut.Find(".epos-nutzungsuebernahme-oeffnen").Click();
+
+        var gruppen = cut.FindAll(".epos-nutzungsuebernahme-gruppe");
+        Assert.Equal(new[] { "Eigene", "DIN/TS 18599-10" }, gruppen.Select(g => g.GetAttribute("aria-label")).ToArray());
+        Assert.Equal(new[] { "11", "13" }, gruppen[0].QuerySelectorAll("[data-profil]").Select(e => e.GetAttribute("data-profil")).ToArray());
+        Assert.Equal(new[] { "21", "22", "23", "24" },
+                     gruppen[1].QuerySelectorAll("[data-profil]").Select(e => e.GetAttribute("data-profil")).ToArray());
+    }
 }
