@@ -694,6 +694,12 @@ public sealed class BauteilDialogTexte
     /// <summary><c>BTDLG_LBL_UWERT</c></summary>
     public string LabelUWert { get; set; } = Resource.BTDLG_LBL_UWERT;
 
+    /// <summary><c>BTDLG_LBL_KAPAZITAET</c> — der Lesewert C des gewählten Aufbaus.</summary>
+    public string LabelKapazitaet { get; set; } = Resource.BTDLG_LBL_KAPAZITAET;
+
+    /// <summary><c>BTDLG_KAPAZITAET_BAUWEISE</c> — ohne Aufbau kommt die Speichermasse aus der Bauweise.</summary>
+    public string KapazitaetBauweise { get; set; } = Resource.BTDLG_KAPAZITAET_BAUWEISE;
+
     /// <summary><c>BTDLG_PLATZHALTER_U</c></summary>
     public string PlatzhalterU { get; set; } = Resource.BTDLG_PLATZHALTER_U;
 

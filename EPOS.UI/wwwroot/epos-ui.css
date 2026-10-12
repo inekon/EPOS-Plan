@@ -2932,6 +2932,11 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     font-weight: 700;
 }
 
+/* Die Richtungsangabe ueber dem Schichtraster: Schicht 1 innen, die letzte aussen. */
+.epos-bauteilschicht-richtung {
+    margin: var(--epos-rand) 0 0;
+}
+
 @media (forced-colors: active) {
     .epos-ueberlagerung {
         border: 2px solid ButtonBorder;

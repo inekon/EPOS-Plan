@@ -131,7 +131,7 @@ public class BaustoffKatalogDialogTests : EposBunitContext
     private static IElement Feld(IElement bereich, string beschriftung)
         => bereich.QuerySelectorAll("label.epos-feld")
                   .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == beschriftung)
-                  .QuerySelector("input, textarea")!;
+                  .QuerySelector("input, textarea, select")!;
 
     private static IElement Stammblatt(IRenderedComponent<BaustoffKatalogDialog> cut) => cut.Find(".epos-stammblatt");
 
@@ -164,6 +164,99 @@ public class BaustoffKatalogDialogTests : EposBunitContext
         string kopf = cut.Find(".epos-katalogliste thead").TextContent;
         foreach (string spalte in new[] { "Name", "Gruppe", "Hersteller", "λ", "Rohdichte", "Wärmekapazität", "Quelle" })
             Assert.Contains(spalte, kopf);
+    }
+
+    /// <summary>
+    /// BK-1: c_p steht immer (Rang wie λ) und weicht im schmalen Fenster nie; ρ bleibt „bei Platz"
+    /// und trägt seine Stufe. bunit misst keine Breite — geprüft wird die Klasse, nach der das
+    /// Stilblatt ausblendet.
+    /// </summary>
+    [Fact]
+    public void Die_Waermekapazitaet_steht_auch_im_schmalen_Fenster()
+    {
+        var cut = Aufbauen();
+        IElement Kopf(string text) => cut.FindAll(".epos-katalogliste thead th")
+                                         .First(e => e.TextContent.Contains(text, StringComparison.Ordinal));
+        string cp = Kopf("Wärmekapazität").GetAttribute("class") ?? "";
+        string rho = Kopf("Rohdichte").GetAttribute("class") ?? "";
+
+        Assert.Contains("epos-spalte-rang1", cp);
+        Assert.DoesNotContain("epos-spalte-ab-", cp);
+        Assert.Contains("epos-spalte-ab-", rho);
+        Assert.Equal(Katalogspaltenrang.Immer,
+                     Katalogfilterprofil.FuerBaustoff().Spalten.First(s => s.Schluessel == Katalogfilterprofil.SpCp).Rang);
+    }
+
+    /// <summary>BK-1: Die Gruppe ist eine feste Auswahl der Gruppen des Kerns; gespeichert wird der Text der Gruppe.</summary>
+    [Fact]
+    public void Die_Gruppe_ist_eine_feste_Auswahl()
+    {
+        var k = new Katalog();
+        var cut = Aufbauen(k);
+        Zeilenklick.Zeile(cut, 1);                                   // Holzfaser, Dämmstoffe
+
+        IElement wahl = Feld(Stammblatt(cut), "Gruppe");
+        Assert.Equal("SELECT", wahl.TagName);
+        string[] texte = wahl.QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToArray();
+        Assert.Equal("(keine Gruppe)", texte[0]);
+        Assert.Equal(Baustoffgruppen.Alle.Select(g => g.Anzeigename), texte.Skip(1));
+        Assert.Equal("Dämmstoffe", wahl.QuerySelector("option[selected]")!.TextContent.Trim());
+
+        wahl.Change("1");                                            // Mauerwerk
+        Assert.Equal("Mauerwerk", cut.Instance.Arbeitsstand.Gruppe);
+        Knopf(cut, "Speichern").Click();
+        Assert.Equal("Mauerwerk", Assert.Single(k.Gespeichert).Gruppe);
+    }
+
+    /// <summary>BK-1: Ein Wert außerhalb des Gruppenbands steht als leiser Hinweis — gespeichert wird trotzdem.</summary>
+    [Fact]
+    public void Ein_Wert_ausserhalb_des_Gruppenbands_ist_ein_Hinweis_keine_Sperre()
+    {
+        var k = new Katalog();
+        var cut = Aufbauen(k);
+        Zeilenklick.Zeile(cut, 1);                                   // Dämmstoffe, λ 0,04
+        Assert.DoesNotContain("üblichen Bereichs", Stammblatt(cut).TextContent);
+
+        Feld(Stammblatt(cut), "Wärmeleitfähigkeit λ").Input("0,8");
+        string hinweis = Stammblatt(cut).QuerySelector(".epos-herleitung")!.TextContent;
+        Assert.Contains("λ = 0,8 liegt außerhalb des üblichen Bereichs der Gruppe Dämmstoffe (0,015 bis 0,1)", hinweis);
+
+        Knopf(cut, "Speichern").Click();
+        Assert.Equal(0.8, Assert.Single(k.Gespeichert).Lambda);
+    }
+
+    /// <summary>BK-1: Eine Gruppe, die keiner festen entspricht, bleibt als eigener Eintrag lesbar und wird benannt.</summary>
+    [Fact]
+    public void Eine_freie_Gruppe_bleibt_lesbar_mit_Hinweis()
+    {
+        var k = new Katalog();
+        k.Saetze[1].Gruppe = "Naturstoffe";
+        var cut = Aufbauen(k);
+        Zeilenklick.Zeile(cut, 1);
+
+        IElement wahl = Feld(Stammblatt(cut), "Gruppe");
+        Assert.Equal("Naturstoffe (freie Angabe)", wahl.QuerySelector("option[selected]")!.TextContent.Trim());
+        Assert.Contains("„Naturstoffe“ entspricht keiner festen Gruppe", Stammblatt(cut).TextContent);
+        Assert.False(cut.Instance.Geaendert);
+    }
+
+    /// <summary>BK-1: Gruppenwahl und Hinweis auf Englisch; gespeichert bleibt der Text der Gruppe.</summary>
+    [Fact]
+    public void Gruppe_und_Hinweis_stehen_auf_Englisch()
+    {
+        using var kultur = new Kulturvorrichtung("en-US");
+        var k = new Katalog();
+        var cut = Aufbauen(k);
+        Zeilenklick.Zeile(cut, 1);
+
+        IElement blatt = Stammblatt(cut);
+        IElement wahl = blatt.QuerySelectorAll("select").First(s => s.QuerySelector("option[selected]")?.TextContent.Trim() == "Insulation");
+        Assert.Contains("Other", wahl.TextContent);
+        IElement lambda = blatt.QuerySelectorAll("label.epos-feld").First(l => l.TextContent.Contains("λ", StringComparison.Ordinal))
+                               .QuerySelector("input")!;
+        lambda.Input("0.8");
+        Assert.Contains("usual range of the group Insulation", Stammblatt(cut).QuerySelector(".epos-herleitung")!.TextContent);
+        Assert.Equal("Dämmstoffe", cut.Instance.Arbeitsstand.Gruppe);
     }
 
     [Fact]
@@ -283,7 +376,7 @@ public class BaustoffKatalogDialogTests : EposBunitContext
         var k = new Katalog();
         var cut = Aufbauen(k);
         Zeilenklick.Zeile(cut, 1);
-        Feld(Stammblatt(cut), "Gruppe").Input("Holz");
+        Feld(Stammblatt(cut), "Gruppe").Change("6");                 // Holz und Holzwerkstoffe
 
         Zeilenklick.Zeile(cut, 2);                                   // haelt an
         Assert.Equal("2", cut.Instance.Gewaehlt);

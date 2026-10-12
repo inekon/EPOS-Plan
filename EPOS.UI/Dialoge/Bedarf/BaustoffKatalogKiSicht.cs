@@ -1,4 +1,6 @@
-﻿using KiKern;
+﻿using System.Linq;
+using KiKern;
+using WindowsFormsApplication1;
 
 namespace EPOS.UI.Dialoge.Bedarf;
 
@@ -57,7 +59,11 @@ public sealed class BaustoffKatalogKiSicht
         set => Setzen(d => d.Bezeichner = value ?? "");
     }
 
-    /// <summary>Die Ordnungsgruppe im Arbeitsstand.</summary>
+    /// <summary>Die festen Stoffgruppen des Kerns (<c>Baustoffgruppen.Alle</c>; Schlüssel = gespeicherter Text).</summary>
+    public IReadOnlyList<KiWahleintrag> GruppeWahl
+        => Baustoffgruppen.Alle.Select(g => new KiWahleintrag(g.Wert, g.Anzeigename)).ToList();
+
+    /// <summary>Die Ordnungsgruppe im Arbeitsstand — eine der festen Gruppen; ein freier Text bleibt lesbar.</summary>
     public string Gruppe
     {
         get => ArbeitLesen?.Invoke()?.Gruppe ?? "";

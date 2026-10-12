@@ -83,6 +83,7 @@ namespace WindowsFormsApplication1
                 RSe_M2KW = k.RSe_M2KW,
                 RJeSchicht_M2KW = k.RJeSchicht_M2KW,
                 R_M2KW = k.R_M2KW,
+                RT_M2KW = k.RT_M2KW,
                 U_WM2K = k.U_WM2K,
                 Kapazitaet_KJM2K = k.Kapazitaet_KJM2K,
                 KapazitaetWirksam_KJM2K = k.KapazitaetWirksam_KJM2K,

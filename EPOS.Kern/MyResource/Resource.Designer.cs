@@ -13636,6 +13636,150 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abdichtungen ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_ABDICHTUNGEN {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_ABDICHTUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beton ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_BETON {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_BETON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bodenbeläge ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_BODENBELAEGE {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_BODENBELAEGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dämmstoffe ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_DAEMMSTOFFE {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_DAEMMSTOFFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erdreich ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_ERDREICH {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_ERDREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Estriche ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_ESTRICHE {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_ESTRICHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (freie Angabe) ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_FREI_EINTRAG {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_FREI_EINTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Holz und Holzwerkstoffe ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_HOLZ {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_HOLZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (keine Gruppe) ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_KEINE {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mauerwerk ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_MAUERWERK {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_MAUERWERK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Metalle und Glas ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_METALLE {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_METALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Platten ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_PLATTEN {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_PLATTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Putze und Mörtel ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_PUTZE {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_PUTZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstige ähnelt.
+        /// </summary>
+        public static string BST_GRUPPE_SONSTIGE {
+            get {
+                return ResourceManager.GetString("BST_GRUPPE_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis: {0} = {1} liegt außerhalb des üblichen Bereichs der Gruppe {2} ({3} bis {4}). Gespeichert wird trotzdem. ähnelt.
+        /// </summary>
+        public static string BST_HINWEIS_BAND {
+            get {
+                return ResourceManager.GetString("BST_HINWEIS_BAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gruppe „{0}“ entspricht keiner festen Gruppe; sie bleibt erhalten. Wählen Sie eine Gruppe aus der Liste oder „{1}“. ähnelt.
+        /// </summary>
+        public static string BST_HINWEIS_GRUPPE_FREI {
+            get {
+                return ResourceManager.GetString("BST_HINWEIS_GRUPPE_FREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Baustoffverwaltung steht auf diesem Gerät noch nicht zur Verfügung. ähnelt.
         /// </summary>
         public static string BST_KEINE_ANSICHT {
@@ -14329,6 +14473,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichtfolge innen → außen: Schicht 1 liegt raumseitig, die letzte Schicht außen. ähnelt.
+        /// </summary>
+        public static string BTA_RICHTUNG {
+            get {
+                return ResourceManager.GetString("BTA_RICHTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die R: – (nicht bestimmbar) ähnelt.
         /// </summary>
         public static string BTA_R_OFFEN {
@@ -14424,6 +14577,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BTA_SUMME_R {
             get {
                 return ResourceManager.GetString("BTA_SUMME_R", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R_se = {0} m²K/W ähnelt.
+        /// </summary>
+        public static string BTA_SUMME_RSE {
+            get {
+                return ResourceManager.GetString("BTA_SUMME_RSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R_si = {0} m²K/W ähnelt.
+        /// </summary>
+        public static string BTA_SUMME_RSI {
+            get {
+                return ResourceManager.GetString("BTA_SUMME_RSI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R_T = R_si + R + R_se = {0} m²K/W ähnelt.
+        /// </summary>
+        public static string BTA_SUMME_RT {
+            get {
+                return ResourceManager.GetString("BTA_SUMME_RT", resourceCulture);
             }
         }
         
@@ -14527,6 +14707,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus der Bauweise ähnelt.
+        /// </summary>
+        public static string BTDLG_KAPAZITAET_BAUWEISE {
+            get {
+                return ResourceManager.GetString("BTDLG_KAPAZITAET_BAUWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die (Aufbau aus dem Katalog wählen) ähnelt.
         /// </summary>
         public static string BTDLG_KATALOG_WAHL {
@@ -14595,6 +14784,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BTDLG_LBL_GWERT {
             get {
                 return ResourceManager.GetString("BTDLG_LBL_GWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmekapazität C ähnelt.
+        /// </summary>
+        public static string BTDLG_LBL_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("BTDLG_LBL_KAPAZITAET", resourceCulture);
             }
         }
         

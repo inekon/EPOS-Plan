@@ -507,8 +507,11 @@
             <KindInhalt>
                 <Textfeld Bezeichnung="@Texte.LabelBezeichner" Wert="@d.Bezeichner"
                           WertChanged="w => Feld(d, () => d.Bezeichner = w ?? string.Empty)" />
-                <Textfeld Bezeichnung="@Texte.LabelGruppe" Wert="@d.Gruppe"
-                          WertChanged="w => Feld(d, () => d.Gruppe = w ?? string.Empty)" />
+                @* GRUPPE: feste Auswahl der Stoffgruppen des Kerns (Baustoffgruppen); ein freier Text
+                   eines Altsatzes bleibt als eigener Eintrag lesbar. Gruppe/Klasse zweistufig folgt mit BK-2. *@
+                <Auswahlfeld Bezeichnung="@Texte.LabelGruppe" Eintraege="@Gruppeneintraege(d)"
+                             Platzhalter="@Texte.GruppeKeine" Auswahl="@Gruppenwahl(d)"
+                             AuswahlChanged="id => Feld(d, () => d.Gruppe = Gruppentext(d, id))" />
                 <Textfeld Bezeichnung="@Texte.LabelHersteller" Wert="@d.Hersteller"
                           Platzhalter="@Texte.Herstellerneutral"
                           WertChanged="w => Feld(d, () => d.Hersteller = w ?? string.Empty)" />
@@ -522,7 +525,43 @@
                           WertChanged="w => Feld(d, () => d.Quelle = w ?? string.Empty)" />
             </KindInhalt>
         </Formularraster>
+        @* HINWEIS: die Baender der Gruppe aus dem Kern - weich, nie eine Sperre. *@
+        @if (Baustoffgruppen.Hinweis(d.Gruppe, d.Lambda, d.Rho, d.Cp) is { Length: > 0 } hinweis)
+        {
+            <Herleitungszeile Text="@hinweis" />
+        }
     };
+
+    /// <summary>Id des Eintrags „freie Angabe" — die festen Gruppen tragen Ids ab 1.</summary>
+    private const int FREIE_GRUPPE = -1;
+
+    /// <summary>Die festen Gruppen des Kerns, dazu die freie Angabe des Satzes, wenn er eine trägt.</summary>
+    private IReadOnlyList<(int Id, string Text)> Gruppeneintraege(BaustoffDaten d)
+    {
+        var liste = new List<(int, string)>(Baustoffgruppen.Alle.Count + 1);
+        for (int i = 0; i < Baustoffgruppen.Alle.Count; i++) liste.Add((i + 1, Baustoffgruppen.Alle[i].Anzeigename));
+        string frei = d.Gruppe.Trim();
+        if (frei.Length > 0 && !Baustoffgruppen.IstFest(frei))
+            liste.Add((FREIE_GRUPPE, string.Format(CultureInfo.CurrentCulture, Texte.GruppeFreiEintrag, frei)));
+        return liste;
+    }
+
+    /// <summary>Die Id der Gruppe des Satzes; <c>null</c> = ohne Gruppe.</summary>
+    private static int? Gruppenwahl(BaustoffDaten d)
+    {
+        if (d.Gruppe.Trim().Length == 0) return null;
+        Baustoffgruppe? g = Baustoffgruppen.Finden(d.Gruppe);
+        if (g is null) return FREIE_GRUPPE;
+        for (int i = 0; i < Baustoffgruppen.Alle.Count; i++)
+            if (ReferenceEquals(Baustoffgruppen.Alle[i], g)) return i + 1;
+        return FREIE_GRUPPE;
+    }
+
+    /// <summary>Der gespeicherte Text zur gewählten Id; die freie Angabe bleibt, wie sie ist.</summary>
+    private static string Gruppentext(BaustoffDaten d, int? id)
+        => id is int i && i >= 1 && i <= Baustoffgruppen.Alle.Count ? Baustoffgruppen.Alle[i - 1].Wert
+         : id == FREIE_GRUPPE ? d.Gruppe
+         : string.Empty;
 
     /// <summary>Eine Eingabe in ein Feld — im Stammblatt zieht sie „geändert" nach, in „Neu…" nicht.</summary>
     private void Feld(BaustoffDaten d, Action schritt)
@@ -547,7 +586,7 @@
         {
             if (_daten.Bezeichner.Length == 0) return "";
             var teile = new List<string>(3);
-            if (_daten.Gruppe.Length > 0) teile.Add(_daten.Gruppe);
+            if (_daten.Gruppe.Length > 0) teile.Add(Baustoffgruppen.Anzeigename(_daten.Gruppe));
             teile.Add(_daten.Hersteller.Length > 0 ? _daten.Hersteller : Texte.Herstellerneutral);
             teile.Add(_auslieferung ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ);
             return string.Join(" · ", teile);
@@ -575,7 +614,7 @@
     private IReadOnlyList<Stammblattwert> Kenndatenwerte(BaustoffDaten d) => new[]
     {
         new Stammblattwert(Texte.LabelBezeichner, d.Bezeichner),
-        new Stammblattwert(Texte.LabelGruppe, d.Gruppe),
+        new Stammblattwert(Texte.LabelGruppe, Baustoffgruppen.Anzeigename(d.Gruppe)),
         new Stammblattwert(Texte.LabelHersteller, d.Hersteller.Length > 0 ? d.Hersteller : Texte.Herstellerneutral),
         new Stammblattwert(Texte.LabelLambda, Zahl(d.Lambda, "0.0###", "").Trim(), d.Lambda.HasValue ? Texte.EinheitLambda : ""),
         new Stammblattwert(Texte.LabelRho, Zahl(d.Rho, "0.#", "").Trim(), d.Rho.HasValue ? Texte.EinheitRho : ""),

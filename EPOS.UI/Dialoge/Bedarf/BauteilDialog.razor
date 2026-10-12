@@ -96,6 +96,14 @@
                         Platzhalter="@UPlatzhalter"
                         Feldname="@Texte.LabelUWert" FehlerZustand="FehlerMelden"
                         Wert="@_stand.UWert" WertChanged="w => _stand.UWert = w" />
+            @if (!Transparent)
+            {
+                @* KAPAZITAET: Lesewert C = Σ ρ·c_p·d des gewaehlten Aufbaus, fertig aus dem Kern
+                   (BauteilaufbauCtrl.Kennwerte); ohne Aufbau "aus der Bauweise". *@
+                <Textfeld Bezeichnung="@Texte.LabelKapazitaet" NurLesen="true" Kurz="true"
+                          Einheit="@(KapazitaetWert is null or "–" ? "" : "kJ/(m²K)")"
+                          Wert="@(KapazitaetWert ?? Texte.KapazitaetBauweise)" />
+            }
         </KindInhalt>
     </Formularraster>
     <Herleitungszeile Text="@Texte.HinweisAzimut" />
@@ -496,6 +504,20 @@
         _stand.AufbauText = a.Text;
         _stand.UAufbau = a.UWert;
         AnsichtNachziehen();
+    }
+
+    /// <summary>
+    /// Die flächenbezogene Kapazität des gewählten Aufbaus als Text [kJ/(m²K)] — aus dem Summenfuß
+    /// des Kerns, nicht nachgerechnet; <c>null</c> ohne Aufbau, „–", wenn der Aufbau sie nicht trägt.
+    /// </summary>
+    private string? KapazitaetWert
+    {
+        get
+        {
+            if (!_stand.MitAufbau) return null;
+            double? c = _ansicht?.Kennwerte.Kapazitaet_KJM2K;
+            return c.HasValue ? c.Value.ToString("0.0", CultureInfo.CurrentCulture) : "–";
+        }
     }
 
     /// <summary>Die Schichten des gewählten Aufbaus — nur zum Ansehen.</summary>

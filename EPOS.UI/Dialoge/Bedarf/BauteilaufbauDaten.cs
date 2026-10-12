@@ -122,6 +122,9 @@ public sealed record AufbauKennwerteDaten
     /// <summary>R = Σ d/λ [m²K/W].</summary>
     public double? R_M2KW { get; init; }
 
+    /// <summary>R_T = R_si + R + R_se [m²K/W] — aus dem Kern, nicht nachgerechnet.</summary>
+    public double? RT_M2KW { get; init; }
+
     /// <summary>U [W/(m²K)].</summary>
     public double? U_WM2K { get; init; }
 

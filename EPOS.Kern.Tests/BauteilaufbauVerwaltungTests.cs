@@ -70,6 +70,25 @@ namespace EPOS.Kern.Tests
             Assert.Equal(wahl.Kennwerte.C1_Jk / 1000.0, k.KapazitaetWirksam_KJM2K!.Value, 12);
         }
 
+        /// <summary>
+        /// BK-1: Der Summenfuß nennt R_T = R_si + R + R_se aus dem Kern — derselbe Nenner wie U, nicht
+        /// nachgerechnet; ohne R steht kein R_T.
+        /// </summary>
+        [Fact]
+        public void Der_Summenfuss_traegt_R_T_als_Nenner_von_U()
+        {
+            BauteilaufbauModel wand = Wand(Stoff(0.175, 0.99, 1800, 1000), Stoff(0.14, 0.035, 30, 1030));
+            BauteilaufbauKennwerte k = BauteilaufbauCtrl.Kennwerte(wand);
+
+            Assert.Equal(0.13, k.RSi_M2KW, 12);
+            Assert.Equal(0.04, k.RSe_M2KW, 12);
+            Assert.Equal(k.RSi_M2KW + k.R_M2KW!.Value + k.RSe_M2KW, k.RT_M2KW!.Value, 12);
+            Assert.Equal(1.0, k.U_WM2K!.Value * k.RT_M2KW.Value, 9);
+
+            BauteilaufbauKennwerte leer = BauteilaufbauCtrl.Kennwerte(Wand());
+            Assert.Null(leer.RT_M2KW);
+        }
+
         [Fact]
         public void Die_Bauteilart_waehlt_die_Uebergaenge()
         {

@@ -40,7 +40,7 @@ public class BauteilaufbauDialogTests : EposBunitContext
     {
         NeigungGrad = 90, RSi_M2KW = 0.13, RSe_M2KW = 0.04,
         RJeSchicht_M2KW = d.Schichten.Select((s, i) => (double?)(0.1 * (i + 1))).ToList(),
-        R_M2KW = 4.0, U_WM2K = 0.25, Kapazitaet_KJM2K = 320, KapazitaetWirksam_KJM2K = 60,
+        R_M2KW = 4.0, RT_M2KW = 4.17, U_WM2K = 0.25, Kapazitaet_KJM2K = 320, KapazitaetWirksam_KJM2K = 60,
         Bezugsperiode_D = 7, R1Rel = 1.0, C1Rel = 0.9
     };
 
@@ -199,12 +199,33 @@ public class BauteilaufbauDialogTests : EposBunitContext
         Assert.Contains("U = 0,250 W/(m²K)", summen);
         Assert.Contains("C = Σ ρ·c_p·d = 320,0 kJ/(m²K)", summen);
         Assert.Contains("T_BT = 7 d", summen);
+        // BK-1: R_si und R_se der Bauteilart und R_T stehen im Summenfuß selbst, nicht nur in der Herleitung.
+        Assert.Contains("R_si = 0,13 m²K/W", summen);
+        Assert.Contains("R_se = 0,04 m²K/W", summen);
+        Assert.Contains("R_T = R_si + R + R_se = 4,170 m²K/W", summen);
+        // Die Richtung der Schichtfolge steht über dem Raster.
+        Assert.Contains("innen → außen", blatt.QuerySelector(".epos-bauteilschicht-richtung")!.TextContent);
         Assert.Contains("R_si = 0,13 und R_se = 0,04", blatt.QuerySelector(".epos-herleitung, .epos-herleitungszeile")?.TextContent
                                                         ?? blatt.TextContent);
         Assert.Equal(new[] { "R = 0,100 m²K/W", "R = 0,200 m²K/W", "R = 0,300 m²K/W" },
                      blatt.QuerySelectorAll(".epos-bauteilschicht-r").Select(e => e.TextContent.Trim()).ToArray());
         Assert.Equal("0,250 W/(m²K)", cut.FindAll(".epos-stammblatt-kennzahl dd").First().TextContent);
         Assert.Equal(3, k.Gerechnet.Last().Schichten.Count);
+    }
+
+    /// <summary>BK-1: Summenfuß und Richtungsangabe auch auf Englisch (beide Ressourcen gepflegt).</summary>
+    [Fact]
+    public void Summenfuss_und_Richtung_stehen_auf_Englisch()
+    {
+        using var kultur = new Kulturvorrichtung("en-US");
+        var cut = Aufbauen(new Katalog());
+        Zeilenklick.Zeile(cut, 1);
+
+        IElement blatt = Stammblatt(cut);
+        string summen = string.Join(" | ", blatt.QuerySelectorAll(".epos-zr-summenzelle").Select(e => e.TextContent.Trim()));
+        Assert.Contains("R_si = 0.13 m²K/W", summen);
+        Assert.Contains("R_T = R_si + R + R_se = 4.170 m²K/W", summen);
+        Assert.Contains("inside → outside", blatt.QuerySelector(".epos-bauteilschicht-richtung")!.TextContent);
     }
 
     [Fact]

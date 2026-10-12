@@ -5558,7 +5558,7 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("bezeichner", SICHT + "Bezeichner", KiDialogTexte.BstBezeichnerName,
                                      KiParameterTyp.Text, KiDialogTexte.BstBezeichnerErl),
                     new KiDialogFeld("gruppe", SICHT + "Gruppe", KiDialogTexte.BstGruppeName,
-                                     KiParameterTyp.Text, KiDialogTexte.BstGruppeErl, leerErlaubt: true),
+                                     KiParameterTyp.Wahl, KiDialogTexte.BstGruppeErl, leerErlaubt: true),
                     new KiDialogFeld("hersteller", SICHT + "Hersteller", KiDialogTexte.BstHerstellerName,
                                      KiParameterTyp.Text, KiDialogTexte.BstHerstellerErl, leerErlaubt: true),
                     new KiDialogFeld("lambda", SICHT + "Lambda", KiDialogTexte.BstLambdaName,

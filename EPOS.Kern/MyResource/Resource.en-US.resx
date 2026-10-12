@@ -23884,7 +23884,7 @@ Do you want to allow this?</value>
     <value>The name of the building material; together with the manufacturer it is unique in the catalogue.</value>
   </data>
   <data name="KI_DLG_BST_GRUPPE_ERL" xml:space="preserve">
-    <value>The group (e.g. masonry, concrete, insulation); empty = no group.</value>
+    <value>The material group from the fixed list (e.g. masonry, concrete, insulation, “Other” for everything else); empty = no group. Per group the dialog notes values outside the usual range.</value>
   </data>
   <data name="KI_DLG_BST_HERSTELLER_ERL" xml:space="preserve">
     <value>The manufacturer; empty means manufacturer-neutral (standard or guide value).</value>
@@ -53839,6 +53839,72 @@ chart</value>
   </data>
   <data name="RNP_TXT_EINGELESEN_AUS" xml:space="preserve">
     <value>Values read in from {0} on {1}</value>
+  </data>
+  <data name="BST_GRUPPE_MAUERWERK" xml:space="preserve">
+    <value>Masonry</value>
+  </data>
+  <data name="BST_GRUPPE_BETON" xml:space="preserve">
+    <value>Concrete</value>
+  </data>
+  <data name="BST_GRUPPE_ESTRICHE" xml:space="preserve">
+    <value>Screeds</value>
+  </data>
+  <data name="BST_GRUPPE_PUTZE" xml:space="preserve">
+    <value>Plasters and mortars</value>
+  </data>
+  <data name="BST_GRUPPE_DAEMMSTOFFE" xml:space="preserve">
+    <value>Insulation</value>
+  </data>
+  <data name="BST_GRUPPE_HOLZ" xml:space="preserve">
+    <value>Timber and wood-based materials</value>
+  </data>
+  <data name="BST_GRUPPE_PLATTEN" xml:space="preserve">
+    <value>Boards</value>
+  </data>
+  <data name="BST_GRUPPE_BODENBELAEGE" xml:space="preserve">
+    <value>Floor coverings</value>
+  </data>
+  <data name="BST_GRUPPE_ABDICHTUNGEN" xml:space="preserve">
+    <value>Waterproofing</value>
+  </data>
+  <data name="BST_GRUPPE_METALLE" xml:space="preserve">
+    <value>Metals and glass</value>
+  </data>
+  <data name="BST_GRUPPE_ERDREICH" xml:space="preserve">
+    <value>Soil</value>
+  </data>
+  <data name="BST_GRUPPE_SONSTIGE" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="BST_GRUPPE_KEINE" xml:space="preserve">
+    <value>(no group)</value>
+  </data>
+  <data name="BST_GRUPPE_FREI_EINTRAG" xml:space="preserve">
+    <value>{0} (free entry)</value>
+  </data>
+  <data name="BST_HINWEIS_GRUPPE_FREI" xml:space="preserve">
+    <value>The group “{0}” does not match a fixed group; it is kept. Choose a group from the list or “{1}”.</value>
+  </data>
+  <data name="BST_HINWEIS_BAND" xml:space="preserve">
+    <value>Note: {0} = {1} lies outside the usual range of the group {2} ({3} to {4}). It is saved nevertheless.</value>
+  </data>
+  <data name="BTA_SUMME_RSI" xml:space="preserve">
+    <value>R_si = {0} m²K/W</value>
+  </data>
+  <data name="BTA_SUMME_RSE" xml:space="preserve">
+    <value>R_se = {0} m²K/W</value>
+  </data>
+  <data name="BTA_SUMME_RT" xml:space="preserve">
+    <value>R_T = R_si + R + R_se = {0} m²K/W</value>
+  </data>
+  <data name="BTA_RICHTUNG" xml:space="preserve">
+    <value>Layer order inside → outside: layer 1 faces the room, the last layer faces outside.</value>
+  </data>
+  <data name="BTDLG_LBL_KAPAZITAET" xml:space="preserve">
+    <value>Heat capacity C</value>
+  </data>
+  <data name="BTDLG_KAPAZITAET_BAUWEISE" xml:space="preserve">
+    <value>from the construction type</value>
   </data>
 </root>
 
