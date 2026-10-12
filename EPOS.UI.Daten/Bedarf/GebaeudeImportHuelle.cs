@@ -888,6 +888,8 @@ namespace WindowsFormsApplication1
                 case GebaeudePlanschrittArt.ZUORDNEN: return plan.Zuordnen(raeume, s.Zone);
                 case GebaeudePlanschrittArt.GESCHOSS: return plan.GeschossZuordnen(s.Geschoss, s.Zone);
                 case GebaeudePlanschrittArt.REST: return plan.RestNachRegelZuordnen(s.Regel);
+                case GebaeudePlanschrittArt.RUECKNAHME:
+                    return plan.PlatzierungZuruecknehmen(raeume.Count == 1 ? raeume[0] : null);
                 case GebaeudePlanschrittArt.HAKEN:
                     return raeume.Count == 1 ? plan.BeheizungSetzen(raeume[0], s.Beheizt) : new Planschritt(true);
                 case GebaeudePlanschrittArt.LOESCHEN:

@@ -222,6 +222,11 @@ public static class GebaeudePlanschrittArt
     /// die Zonen der Projektdatei samt Konditionierung je Zone; ohne gelesene Projektdatei lehnt die Datenseite ab.
     /// </summary>
     public const string PROJEKTDATEI = "PROJEKTDATEI";
+    /// <summary>
+    /// Die automatische Platzierung eines Raums zurücknehmen (Räume mit einem Raum; Entwurf GD 2.3, E130/F3): der Raum ist
+    /// danach nicht zugeordnet, eine dadurch leere Restzone entfällt.
+    /// </summary>
+    public const string RUECKNAHME = "RUECKNAHME";
 }
 
 /// <summary>
@@ -619,7 +624,10 @@ public sealed record GebaeudeProfilherleitung(string Profil, string Kategorie, s
 /// <param name="Flaeche">Fläche mit Einheit.</param>
 /// <param name="Beheizt">Wirksam beheizt (mit den Haken).</param>
 /// <param name="BeheiztLautDatei">Was die Datei sagt.</param>
-public sealed record GebaeudePlanraumDaten(string Kennung, string Name, string Geschoss, string Flaeche, bool Beheizt, bool BeheiztLautDatei);
+/// <param name="Platzierung">Der Grund der automatischen Platzierung als Anzeigetext (E130/F3); <c>null</c> = nicht automatisch platziert.</param>
+/// <param name="Platzierungsgrund">Der Grund sprachneutral (<c>unbeheizt</c>, <c>nachbarzone</c>, <c>geschoss</c>; <c>data-platziert</c>); <c>null</c> = keiner.</param>
+public sealed record GebaeudePlanraumDaten(string Kennung, string Name, string Geschoss, string Flaeche, bool Beheizt, bool BeheiztLautDatei,
+                                           string? Platzierung = null, string? Platzierungsgrund = null);
 
 /// <summary>Eine Zone des Zonenplans: Schlüssel, Name, Nutzung, Beheizung, Zahl der Räume, Fläche, Sollwert und Räume.</summary>
 public sealed record GebaeudePlanzoneDaten
@@ -836,6 +844,12 @@ public sealed record GebaeudeZonenplanDaten
 
     /// <summary>Die nicht zugeordneten Räume in Dateireihenfolge — solange einer dasteht, ist OK gesperrt.</summary>
     public IReadOnlyList<GebaeudePlanraumDaten> NichtZugeordnet { get; init; } = Array.Empty<GebaeudePlanraumDaten>();
+
+    /// <summary>Die Zahl der automatisch platzierten Räume (E130/F3), die noch an ihrem Platz stehen.</summary>
+    public int Platziert { get; init; }
+
+    /// <summary>Die Meldung der automatischen Platzierung: wie viele Räume wohin; leer = keine Platzierung.</summary>
+    public string Platzierungsmeldung { get; init; } = "";
 
     /// <summary>Die Zahl der Räume, die die Regel bewusst außerhalb lässt (sie sperren das OK nicht).</summary>
     public int Ausserhalb { get; init; }
@@ -1431,6 +1445,15 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_DLG_PLAN_AUFHEBEN_FRAGE</summary>
     public string PlanAufhebenFrage { get; set; } = Resource.GIMP_DLG_PLAN_AUFHEBEN_FRAGE;
+
+    /// <summary>GIMP_DLG_PLAN_PLATZIERT_MARKE</summary>
+    public string PlanPlatziertMarke { get; set; } = Resource.GIMP_DLG_PLAN_PLATZIERT_MARKE;
+
+    /// <summary>GIMP_DLG_PLAN_ZURUECKNEHMEN</summary>
+    public string PlanZuruecknehmen { get; set; } = Resource.GIMP_DLG_PLAN_ZURUECKNEHMEN;
+
+    /// <summary>GIMP_DLG_PLAN_ZURUECKNEHMEN_RAUM</summary>
+    public string PlanZuruecknehmenRaum { get; set; } = Resource.GIMP_DLG_PLAN_ZURUECKNEHMEN_RAUM;
 
     /// <summary>GIMP_DLG_PLAN_OK_GESPERRT</summary>
     public string PlanOkGesperrt { get; set; } = Resource.GIMP_DLG_PLAN_OK_GESPERRT;

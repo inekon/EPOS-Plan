@@ -616,19 +616,35 @@
                                     {
                                         foreach (GebaeudePlanraumDaten raum in zone.Raumliste)
                                         {
-                                            <tr @key="raum.Kennung" class="epos-gebimport-planraum" data-raum="@raum.Kennung">
+                                            <tr @key="raum.Kennung" class="epos-gebimport-planraum" data-raum="@raum.Kennung"
+                                                data-platziert="@raum.Platzierungsgrund">
                                                 <td></td>
                                                 <td>
                                                     <input type="checkbox" class="epos-gebimport-wahl" checked="@_raumwahlen.Contains(raum.Kennung)"
                                                            aria-label="@Format(Texte.RaumWaehlen, raum.Name)" disabled="@Beschaeftigt"
                                                            @onchange="e => BeiRaumwahlHaken(raum.Kennung, e)" />
                                                 </td>
-                                                <td class="epos-gebimport-planraumname" title="@raum.Kennung">@raum.Name</td>
+                                                <td class="epos-gebimport-planraumname" title="@raum.Kennung">
+                                                    @raum.Name
+                                                    @if (raum.Platzierung is string grund)
+                                                    {
+                                                        @* E130/F3: automatisch platziert - die Marke nennt den Grund im Tooltip. *@
+                                                        <span class="epos-gebimport-platziert" title="@grund">@Texte.PlanPlatziertMarke</span>
+                                                    }
+                                                </td>
                                                 <td>@raum.Geschoss</td>
                                                 <td>@(raum.Beheizt ? Texte.Ja : Texte.Nein)</td>
                                                 <td class="epos-gebimport-zahl">@raum.Flaeche</td>
                                                 <td></td>
-                                                <td></td>
+                                                <td>
+                                                    @if (raum.Platzierung is not null)
+                                                    {
+                                                        <button type="button" class="epos-knopf epos-gebimport-ruecknahme" data-aktion="ruecknahme"
+                                                                aria-label="@Format(Texte.PlanZuruecknehmenRaum, raum.Name)"
+                                                                title="@Format(Texte.PlanZuruecknehmenRaum, raum.Name)" disabled="@Beschaeftigt"
+                                                                @onclick="() => BeiRuecknahme(raum.Kennung)">@Texte.PlanZuruecknehmen</button>
+                                                    }
+                                                </td>
                                             </tr>
                                         }
                                     }
@@ -674,6 +690,10 @@
                                 @onclick="() => BeiRest(zplan)">@Texte.PlanRest</button>
                     </div>
                     <Herleitungszeile Text="@(plan.Einzonig ? Texte.PlanEinzonig : Texte.PlanHinweis)" />
+                    @if (plan.Platzierungsmeldung.Length > 0)
+                    {
+                        <div class="epos-gebimport-platzierung" role="status"><Herleitungszeile Text="@plan.Platzierungsmeldung" /></div>
+                    }
                 </div>
                 <div class="epos-gebimport-offenspalte">
                     <h3 class="epos-gebimport-offentitel">@Format(Texte.PlanOffenTitel, plan.NichtZugeordnet.Count)</h3>
@@ -744,6 +764,13 @@
                     <span class="epos-gebimport-bauteile-ablehnung">@Format(Texte.AlsZoneNicht, bauteile.Ablehnung)</span>
                 }
             </div>
+            @if (stand.Zonierung?.Plan is { Platzierungsmeldung.Length: > 0 } platzplan)
+            {
+                @* E130/F3: am Schalter, wie viele Raeume ohne Zone wohin platziert wurden. *@
+                <div class="epos-gebimport-platzierung epos-gebimport-platzierung--schalter">
+                    <Herleitungszeile Text="@platzplan.Platzierungsmeldung" />
+                </div>
+            }
             <Herleitungszeile Text="@(mehrere is not null ? Texte.AlsZonenHinweis
                                       : stand.Zonierung?.Plan is { Einzonig: true } ? Texte.AlsZonePlanHinweis : Texte.AlsZoneHinweis)" />
             @if (bauteile.Kopftext.Length > 0)
@@ -2084,6 +2111,13 @@
 
     private int? Reststelle(GebaeudeZonierungDaten zon)
         => _restregel is int i && i >= 0 && i < zon.Regeln.Count ? i : Regelstelle(zon);
+
+    /// <summary>„Zurücknehmen" an einem automatisch platzierten Raum (E130/F3): er steht danach unter „Nicht zugeordnete Räume".</summary>
+    private void BeiRuecknahme(string kennung)
+    {
+        if (Beschaeftigt) return;
+        if (Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.RUECKNAHME, new[] { kennung }))) _raumwahlen.Remove(kennung);
+    }
 
     /// <summary>„Rest nach Regel zuordnen": nur die nicht zugeordneten Räume, nach der gewählten Regel.</summary>
     private void BeiRest(GebaeudeZonierungDaten zon)

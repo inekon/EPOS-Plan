@@ -162,6 +162,8 @@ namespace WindowsFormsApplication1
             {
                 Zonen = liste,
                 NichtZugeordnet = plan.NichtZugeordnet.Select(r => Planraum(plan, r)).ToList(),
+                Platziert = plan.Platzierungen.Count,
+                Platzierungsmeldung = Platzierungsmeldung(plan),
                 Ausserhalb = plan.RaeumeAusserhalb.Count,
                 Geschosse = plan.Geschosse.Select(g => new GebaeudeZonenregelDaten(g, Geschosstext(plan, g))).ToList(),
                 Nutzungen = Nutzungsliste(plan),
@@ -291,8 +293,35 @@ namespace WindowsFormsApplication1
             var zeile = new GebaeudeRaumzeile(r, plan.Haken);
             string geschoss = plan.Gebaeude.Geschosse.FirstOrDefault(s => s.Kennung == r.GeschossKennung)?.Anzeigename
                               ?? (string.IsNullOrWhiteSpace(r.GeschossName) ? Leer : r.GeschossName.Trim());
+            Restplatzierung p = plan.Platzierung(r.Kennung);
             return new GebaeudePlanraumDaten(r.Kennung, zeile.Anzeigename, geschoss, MitEinheit(r.FlaecheM2, "m²"),
-                                             plan.Beheizt(r), zeile.BeheiztLautDatei);
+                                             plan.Beheizt(r), zeile.BeheiztLautDatei, Platzierungstext(p), Platzierungsschluessel(p));
+        }
+
+        /// <summary>Der Grund einer automatischen Platzierung als Anzeigetext (E130/F3); <c>null</c> = keine.</summary>
+        internal static string Platzierungstext(Restplatzierung p)
+            => p == null ? null
+             : p.Grund == Platzierungsgrund.Unbeheizt ? MyResource.Resource.GIMP_DLG_PLAN_PLATZIERT_UNBEHEIZT
+             : p.Grund == Platzierungsgrund.Nachbarzone ? Formatieren(MyResource.Resource.GIMP_DLG_PLAN_PLATZIERT_NACHBAR, MitEinheit(p.GemeinsamM2, "m²"))
+             : MyResource.Resource.GIMP_DLG_PLAN_PLATZIERT_GESCHOSS;
+
+        /// <summary>Der Grund einer automatischen Platzierung sprachneutral (<c>data-platziert</c>); <c>null</c> = keine.</summary>
+        internal static string Platzierungsschluessel(Restplatzierung p)
+            => p == null ? null
+             : p.Grund == Platzierungsgrund.Unbeheizt ? "unbeheizt"
+             : p.Grund == Platzierungsgrund.Nachbarzone ? "nachbarzone" : "geschoss";
+
+        /// <summary>
+        /// <b>Die Meldung der automatischen Platzierung</b> (Entwurf GD 2.3): wie viele Räume in „unbeheizt“, zur Nachbarzone und
+        /// je Geschoss stehen — gezählt am Plan, eine zurückgenommene fällt heraus; leer ohne Platzierung.
+        /// </summary>
+        internal static string Platzierungsmeldung(Zonenplan plan)
+        {
+            IReadOnlyList<Restplatzierung> alle = plan.Platzierungen;
+            if (alle.Count == 0) return "";
+            int Zahl(Platzierungsgrund g) => alle.Count(x => x.Grund == g);
+            return Formatieren(MyResource.Resource.GIMP_DLG_PLAN_PLATZIERT, alle.Count, Zahl(Platzierungsgrund.Unbeheizt),
+                               Zahl(Platzierungsgrund.Nachbarzone), Zahl(Platzierungsgrund.Geschoss));
         }
 
         /// <summary>Die Meldungen des Kerns, mit denen er eine Zuordnung von Hand ablehnt (Welle D2).</summary>
