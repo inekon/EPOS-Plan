@@ -74,6 +74,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // Die Satzbearbeitung „Bearbeiten…" der Katalogauswahl (Stufe 2) steht als Ueberlagerung im
         // Projektdialog; der Assistent arbeitet ueber „Alle Daten" der Detailzeile desselben Wirts.
         new("Satzbearbeitung",                "HeizkesselDialog",            KiMaskennamen.HEIZKESSEL_PROJEKT),
+        // K5: die Bearbeiten-Ueberlagerung von Waerme-/Kaeltebedarf extern und die Feldgruppe „Deckung" (auch im
+        // Bedarfsprofile-Dialog eingebettet; beide Felder stehen in den Feldkarten Form_Waermebedarf und Form_Prozesswaerme).
+        new("WaermebedarfExternFelder",       "WaermebedarfExternDialog",    KiMaskennamen.WAERMEBEDARF_EXTERN),
+        new("DeckungsartFelder",              "WaermebedarfExternDialog",    KiMaskennamen.WAERMEBEDARF_EXTERN),
         // Die Rueckfrage „In die Datenbank übernehmen…“ (Stufe 2b) steht ebenso als Ueberlagerung im Projektdialog;
         // sie fragt nur (Wahl und Name), der Assistent arbeitet ueber denselben Wirt.
         new("Rueckwegfrage",                  "HeizkesselDialog",            KiMaskennamen.HEIZKESSEL_PROJEKT),
@@ -639,6 +643,15 @@ public sealed class KiMaskenabdeckungWacheTests
                 "Filterschalter der Katalogliste (Trichter auf die Kühlleistung) — eine Listenauswahl, kein Einstellwert",
             ["(_kuehlung ? 1 : 0)"] =
                 "wählt nur das gezeigte Kennfeld (Wärme oder Kühlung) — ein Bildschalter"
+        },
+        [KiMaskennamen.WAERMEBEDARF_EXTERN] = new()
+        {
+            ["Kanalindex(z)"] =
+                "Kanal der Zeile in der Bearbeiten-Ueberlagerung (K5c) — dieselbe Bindung wie „Kanalindex“ der Kopfleiste, " +
+                "Feld kanal der Feldkarte",
+            ["KaelteArtindex(z)"] =
+                "Art der Kaeltezeile in der Bearbeiten-Ueberlagerung (K5c) — dieselbe Bindung wie „KaelteArtindex“ der " +
+                "Kopfleiste, Feld kaelte_art der Feldkarte"
         },
         [KiMaskennamen.PV_ANLAGENWERTE] = new()
         {
