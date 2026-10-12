@@ -13,12 +13,12 @@ nach `Dokumentation/ueberholt/`, sobald die Fortsetzung GD-5, NP7 und GD-4 abges
 | Was | Wert |
 |---|---|
 | Arbeitszweig | `ios_migration_september` (Remote `origin`). Der Sitzungszweig des alten Kontos `claude/magical-bohr-ff5ufj` wurde bei jedem Push mitgezogen; die neue Sitzung nimmt ihren eigenen Sitzungszweig |
-| Letzte Wellen | #1011 NP6, #1012 Quick Assist (Admin-Zweig), #1013 AB2, #1014 AB3, #1015 GD-1, #1016 GD-2, #1017 Entwurf BK — gepusht `f40fe2fa1`; danach Anmeldung Schritt 220 (`6870f7169`) und GD-3 mit diesem Papier (#1018) |
-| CI | Kern-Lauf 38195098863 auf `f40fe2fa1` beim Schreiben offen; #1010 grün mit Lauf 38188012085 auf `228a10287`; Vermerke für #1010, #1011, #1013–#1018 stehen noch aus (Abschnitt 4 a) |
+| Letzte Wellen | #1011 NP6, #1012 Quick Assist (Admin-Zweig), #1013 AB2, #1014 AB3, #1015 GD-1, #1016 GD-2, #1017 Entwurf BK — gepusht `f40fe2fa1`; danach Anmeldung Schritt 220 (`6870f7169`) und GD-3 mit diesem Papier (#1019) |
+| CI | Kern-Lauf 38195098863 auf `f40fe2fa1` beim Schreiben offen; #1010 grün mit Lauf 38188012085 auf `228a10287`; Vermerke für #1010, #1011, #1013–#1017 und #1019 stehen noch aus (Abschnitt 4 a) |
 | Referenzbasis | **R52** `Referenzlaeufe/2026-10-11_R52_Vorheizen`, dreißig Projekte; CI-Auswahl 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065. Nächste freie Basis **R53** (vorgesehen für SA4) |
 | Testdatenbank | Schemastand **219**, 96 542 720 Byte, SHA-256 `0008e2e3555dfb5f…` (Git LFS) |
 | Schemakette | 217 `SchnellaufheizungSchema`, 218 `KaelteArtSchema` (Sitzung Kälteanlagen), 219 `RaumnutzungNormkategorienSchema` (NP6); **220 angemeldet für NP7**; **221 frei** |
-| Statuszeilen | höchste vergebene #1018; vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E131**, **E132 frei** |
+| Statuszeilen | höchste vergebene #1019; vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E131**, **E132 frei** |
 | Parallele Sitzungen | „Kälteanlagen“, „Dialoge und Korrekturen“ (Konto 3), „Administration und Support“; alle pushen auf denselben Zweig. Statuskonflikte zeilenweise lösen, Nummernkollisionen über die nächste freie Nummer |
 
 ## 2. Was die Sitzung seit dem 08.10.2026 gebaut hat
@@ -36,7 +36,7 @@ Alle Zeilen mit grünem Gate gepusht; Einzelheiten in der Statuszeile und im Pro
 | GD-Entwurf | #1004 | [Entwurf Gebäudedialog und Mehrzonenübernahme](2026-10-11_Entwurf_Gebaeudedialog_Mehrzonen.md), F1–F8 mit E130 entschieden |
 | AB, AB2, AB3 | #1010, #1013, #1014 | Farbmodi „Aufbau“/„Befund“, Zuordnung über die Legende, Baustoffwahl an der Schicht statt Abschnitt „Baustoffe“ im Import |
 | NP6 | #1011 | SIA 2024 und VDI 2078 aus dem Katalog der Nutzungsprofile, zwei Wohnprofile der DIN, Schritt 219 (E129) |
-| GD-1, GD-2, GD-3 | #1015, #1016, #1018 | Gebäudekopf mit Herkunft; Gebäudewerte der Projektdatei und Name = Dateiname; Räume ohne DIN-Zone automatisch platziert |
+| GD-1, GD-2, GD-3 | #1015, #1016, #1019 | Gebäudekopf mit Herkunft; Gebäudewerte der Projektdatei und Name = Dateiname; Räume ohne DIN-Zone automatisch platziert |
 | BK-Entwurf | #1017 | [Entwurf Bauteilkatalog und Hottgenroth-Import](2026-10-12_Entwurf_Bauteilkatalog_Hottgenroth.md), Fragen F1–F8 offen |
 
 ## 3. Laufende Arbeit beim Schreiben
@@ -60,7 +60,7 @@ selbst (Abschnitt 4 a).
 ## 4. Nächste Arbeit (Reihenfolge)
 
 1. **CI-Vermerke:** jüngsten Kern-Lauf auf `ios_migration_september` prüfen, der `f40fe2fa1` bzw. den GD-3-Push enthält; grün →
-   in #1010 „CI-Kern-Lauf 38188012085 grün auf `228a10287`“, in #1011, #1013–#1018 Lauf-ID und Commit eintragen, Commit `[skip ci]`.
+   in #1010 „CI-Kern-Lauf 38188012085 grün auf `228a10287`“, in #1011, #1013–#1017 und #1019 Lauf-ID und Commit eintragen, Commit `[skip ci]`.
    Rot → `get_job_logs` mit `failed_only`, Ursache eingrenzen, beheben.
 2. **GD-5 und NP7** abnehmen oder neu beauftragen (Abschnitt 3), mergen, Gate, Statuszeilen, Push; Schritt 220 danach im Kopf
    als gebaut eintragen, 221 frei.
@@ -79,7 +79,7 @@ selbst (Abschnitt 4 a).
 - **BK F1–F8** des Entwurfs Bauteilkatalog (Empfehlungen im Entwurf; „F1–F8: Empfehlung“ genügt).
 - **Sichtabnahmen unter Windows:** gesperrte Farbmodusknöpfe mit Grund (#1010), Legendenzuordnung (#1013), Schichtwahl im
   Aufbau (#1014), Herkunftsmarken und Rundung im Gebäudekopf (#1015), Namensvorschlag „Übernehmen“ im Importdialog (#1016),
-  Marke und „Zurücknehmen“ der automatisch platzierten Räume (#1018), Saisondatum (#1002), Geste Strg+Umschalt+F12 (#997).
+  Marke und „Zurücknehmen“ der automatisch platzierten Räume (#1019), Saisondatum (#1002), Geste Strg+Umschalt+F12 (#997).
 - **SQ2:** gegen welchen Wert der Anwender die Raumgrößen des Sportheims verglichen hat.
 - **GD-2:** fachliche Bestätigung Gebäudetyp 3 = Nichtwohngebäude und Code 0 = keine Angabe an weiteren Projektdateien.
 - **Lizenzanfragen** für einen auszuliefernden Bauteilkatalog (BK F8) stellt der Anwender selbst.
