@@ -39201,6 +39201,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nächstliegende Bauart zur wirksamen Wärmekapazität der Projektdatei (Cwirk {0} Wh/(m²K)) ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_BAUART_CWIRK {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_BAUART_CWIRK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die raumseitige Schichten bis 10 cm: {0} Wh/(m²K), flächengewichtet über {1} Hüllbauteile ({2} m²) ähnelt.
         /// </summary>
         public static string GIMP_BELEG_BAUART_SCHICHTEN {
@@ -39323,6 +39332,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_BELEG_BAUWEISE_AUS_BAUART {
             get {
                 return ResourceManager.GetString("GIMP_BELEG_BAUWEISE_AUS_BAUART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wirksame Wärmekapazität der Projektdatei: Cwirk {0} Wh/(m²K) × Nutzfläche {1} m² = {2} Wh/K ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_BAUWEISE_CWIRK {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_BAUWEISE_CWIRK", resourceCulture);
             }
         }
         
@@ -40781,6 +40799,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_NAME {
             get {
                 return ResourceManager.GetString("GIMP_DLG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name in der Datei: „{0}“ ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_NAME_DATEI {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_NAME_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_NAME_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_NAME_UEBERNEHMEN", resourceCulture);
             }
         }
         
@@ -46788,6 +46824,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiestandard „{0}“ aus der Projektdatei ({1} = {2}). ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_ENERGIESTANDARD_PROJEKTDATEI {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_ENERGIESTANDARD_PROJEKTDATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Wände oder Decken gegen Erdreich ({1} m²) zählen zur Grundfläche — nur sie rechnet gegen das Erdreich. ähnelt.
         /// </summary>
         public static string IMP_GEB_PROT_ERDREICH_ZUR_GRUNDFLAECHE {
@@ -46820,6 +46865,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GEB_PROT_FLAECHE_GEGEN_UNBEHEIZT {
             get {
                 return ResourceManager.GetString("IMP_GEB_PROT_FLAECHE_GEGEN_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudeart „{0}“ aus der Projektdatei ({1} = {2}). ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_GEBAEUDEART_PROJEKTDATEI {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_GEBAEUDEART_PROJEKTDATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdatei: {0} = {1} hat keine Abbildung; es gilt die Ableitung bzw. die Vorgabe. ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_GEBAEUDECODE_OHNE_ABBILDUNG {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_GEBAEUDECODE_OHNE_ABBILDUNG", resourceCulture);
             }
         }
         
@@ -47054,6 +47117,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GEB_PROT_VERWENDUNG_KEINE {
             get {
                 return ResourceManager.GetString("IMP_GEB_PROT_VERWENDUNG_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendung „{0}“ aus der Projektdatei ({1} = {2}). ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_VERWENDUNG_PROJEKTDATEI {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_VERWENDUNG_PROJEKTDATEI", resourceCulture);
             }
         }
         

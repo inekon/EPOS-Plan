@@ -53591,5 +53591,29 @@ chart</value>
   <data name="GEBK_RUECKFALL_BAUWEISE_KEINE" xml:space="preserve">
     <value>Fallback: every component group has a layer build-up, the value currently has no effect.</value>
   </data>
+  <data name="IMP_GEB_PROT_GEBAEUDECODE_OHNE_ABBILDUNG" xml:space="preserve">
+    <value>Project file: {0} = {1} has no mapping; the derivation or the default applies.</value>
+  </data>
+  <data name="IMP_GEB_PROT_VERWENDUNG_PROJEKTDATEI" xml:space="preserve">
+    <value>Use “{0}” from the project file ({1} = {2}).</value>
+  </data>
+  <data name="IMP_GEB_PROT_GEBAEUDEART_PROJEKTDATEI" xml:space="preserve">
+    <value>Building type “{0}” from the project file ({1} = {2}).</value>
+  </data>
+  <data name="IMP_GEB_PROT_ENERGIESTANDARD_PROJEKTDATEI" xml:space="preserve">
+    <value>Energy standard “{0}” from the project file ({1} = {2}).</value>
+  </data>
+  <data name="GIMP_BELEG_BAUART_CWIRK" xml:space="preserve">
+    <value>nearest construction class to the effective heat capacity of the project file (Cwirk {0} Wh/(m²K))</value>
+  </data>
+  <data name="GIMP_BELEG_BAUWEISE_CWIRK" xml:space="preserve">
+    <value>effective heat capacity of the project file: Cwirk {0} Wh/(m²K) × floor area {1} m² = {2} Wh/K</value>
+  </data>
+  <data name="GIMP_DLG_NAME_DATEI" xml:space="preserve">
+    <value>Name in the file: “{0}”</value>
+  </data>
+  <data name="GIMP_DLG_NAME_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
 </root>
 

@@ -774,6 +774,7 @@ namespace WindowsFormsApplication1
                 CadSollwertMoeglich = satz.CadSollwertMoeglich,
                 Kopftext = GebaeudeZuordnungsModell.KopfText(satz),
                 Vorschlagsname = GebaeudeZuordnungsModell.Vorschlagsname(satz),
+                NameDerDatei = GebaeudeZuordnungsModell.NameDerDatei(satz),
                 Raeume = _ablauf.Raeume(anfrage.Gebaeudeindex, haken).Select(RaumDaten).ToList(),
                 Zeilen = satz.Zeilen.Select(ZeileDaten).ToList(),
                 // Die Verwendung, die die Datei hergibt, mit Herleitung (Anwenderwunsch 08.10.2026) - als letzte Meldung.
@@ -1450,6 +1451,7 @@ namespace WindowsFormsApplication1
             GebaeudeKatalogDaten daten = NachKatalogdaten(GebaeudeKatalogHuelle.AusModell(new GebaeudeModel()), ergebnis);
             Gebaeudeverwendung.Ergebnis verwendung = SatzAusErgebnis(ergebnis)?.Verwendung;
             VerwendungSetzen(daten, verwendung);
+            GebaeudewerteSetzen(daten, _ablauf.Abbild?.Gebaeude.ElementAtOrDefault(ergebnis?.Gebaeudeindex ?? -1));
             string text = vorgaben.Length == 0 ? Vorbelegungstext : Vorbelegungstext + " " + vorgaben;
             if (verwendung?.Herleitung is PruefMeldung m) text = (text + " " + GebaeudeZuordnungsModell.MeldungText(m)).Trim();
             return new GebaeudeVorbelegung(daten, text);
@@ -1468,6 +1470,17 @@ namespace WindowsFormsApplication1
             if (string.Equals(wert, GebaeudeStammCtrl.FILTERWERT_SONSTIGE, StringComparison.Ordinal)
                 && Gebaeudeverwendung.WohnenAusGebaeudeart(d.Gebaeudeart) == true)
                 d.Gebaeudeart = GEBAEUDEART_SONSTIGE;
+        }
+
+        /// <summary>
+        /// <b>Die Gebäudewerte der Projektdatei in den vorbelegten Satz</b> (GD-2, F4): Gebäudeart und Energiestandard aus den
+        /// Codes der Datei (<see cref="SqprojGebaeudecodes"/>) gehen der Vorgabe des neuen Satzes vor; ohne Code bleibt sie.
+        /// </summary>
+        internal static void GebaeudewerteSetzen(GebaeudeKatalogDaten d, AbbildGebaeude g)
+        {
+            if (d == null || g == null) return;
+            if (!string.IsNullOrWhiteSpace(g.GebaeudeartDatei)) d.Gebaeudeart = g.GebaeudeartDatei;
+            if (!string.IsNullOrWhiteSpace(g.EnergiestandardDatei)) d.Energiestandard = g.EnergiestandardDatei;
         }
 
         /// <summary>
@@ -1514,8 +1527,9 @@ namespace WindowsFormsApplication1
             if (ergebnis == null) return d;
             if (!string.IsNullOrWhiteSpace(ergebnis.Gebaeudename)) d.Name = ergebnis.Gebaeudename.Trim();
 
-            bool bauartGesetzt = false, ostWestBeruehrt = false;
+            bool bauartGesetzt = false, ostWestBeruehrt = false, klasseZeile = false;
             double? eigeneBauweise = null;
+            int? klasseDerZeile = null;
 
             foreach (GebaeudeFeldzeileDaten z in ergebnis.Zeilen ?? Array.Empty<GebaeudeFeldzeileDaten>())
             {
@@ -1529,9 +1543,10 @@ namespace WindowsFormsApplication1
                     case GebaeudeZielfelder.FLAECHE_JE_NUTZER: d.FlaecheNutzer = w; break;
                     case GebaeudeZielfelder.INNERE_GEWINNE: d.Waermegewinne = w; break;
                     case GebaeudeZielfelder.BAUALTERSKLASSE:
-                        // Die Klasse des Satzes (E47: das Baujahr der Datei führt), sonst die gewählte.
-                        if (!string.IsNullOrEmpty(z.Textwert)) d.Baualtersklasse = GebaeudeStammCtrl.KlassenIndex(z.Textwert);
-                        else if (ergebnis.Baualtersklasse is int k && k >= 0 && k < GebaeudeVorgaben.Alle.Count) d.Baualtersklasse = k;
+                        // Die Klasse folgt nach der Schleife EINER Regel (Baujahrregel.KlasseWirksam, GD-2) — dieselbe wie im Kopf.
+                        klasseZeile = true;
+                        if (!string.IsNullOrEmpty(z.Textwert)) klasseDerZeile = GebaeudeStammCtrl.KlassenIndex(z.Textwert);
+                        else if (ergebnis.Baualtersklasse is int k && k >= 0 && k < GebaeudeVorgaben.Alle.Count) klasseDerZeile = k;
                         break;
                     case GebaeudeZielfelder.BAUJAHR: d.Baujahr = Jahr(w); break;
                     case GebaeudeZielfelder.BAUART:
@@ -1590,7 +1605,13 @@ namespace WindowsFormsApplication1
                 if (ostWest.HasValue) d.FensterflaecheOstWest = ostWest;
             }
 
-            if (eigeneBauweise.HasValue) d.Bauweise = eigeneBauweise.Value;
+            // Die Klasse: die ausdrückliche Wahl, sonst die des (übernommenen) Baujahrs, sonst die der Zeile — eine Quelle.
+            if (klasseZeile && Baujahrregel.KlassenIndexWirksam(ergebnis.KlasseGewaehlt ? ergebnis.Baualtersklasse ?? klasseDerZeile : klasseDerZeile,
+                                                                ergebnis.KlasseGewaehlt, d.Baujahr) is int wirksam)
+                d.Baualtersklasse = wirksam;
+
+            // Eine Bauweise der Datei (Projektdatei Cwirk, GD-2) bleibt fest: Der Editor führt sie nicht der Bauart nach.
+            if (eigeneBauweise.HasValue) { d.Bauweise = eigeneBauweise.Value; d.BauweiseAusDatei = true; }
             else if (bauartGesetzt) d.Bauweise = Gebaeudebauweise.BauweiseAusBauart(d.Bauart, d.WohnflaecheGesamt ?? 0);
             return d;
         }

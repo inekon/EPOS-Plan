@@ -157,6 +157,24 @@ namespace WindowsFormsApplication1
         /// <summary>Gebäudeart der Datei (gbXML <c>@buildingType</c>), nur Anzeige.</summary>
         public string Art { get; set; }
 
+        /// <summary>Die Gebäudeart des Katalogs aus einem Code der Projektdatei (<see cref="SqprojGebaeudecodes"/>); <c>null</c> = keine.</summary>
+        public string GebaeudeartDatei { get; set; }
+
+        /// <summary>Die Verwendung (Steuerwert) aus einem Code der Projektdatei; <c>null</c> = keine. Sie geht der Ableitung vor.</summary>
+        public string VerwendungDatei { get; set; }
+
+        /// <summary>Die Herleitung von <see cref="VerwendungDatei"/> als Protokollmeldung; <c>null</c> = keine.</summary>
+        public PruefMeldung VerwendungDateiHerleitung { get; set; }
+
+        /// <summary>Der Energiestandard (<see cref="Energiestandard.CODES"/>) aus einem Code der Projektdatei; <c>null</c> = keiner.</summary>
+        public string EnergiestandardDatei { get; set; }
+
+        /// <summary>
+        /// Die wirksame Wärmekapazität der Datei je Fläche [Wh/(m²K)] (Projektdatei <c>Cwirk</c>); <c>null</c> = keine. Sie
+        /// setzt die Bauweise (× Nutzfläche) vor jeder Ableitung aus den Schichten.
+        /// </summary>
+        public double? BauweiseJeM2Datei { get; set; }
+
         /// <summary>Typ der Quellentität für <c>Tab_Importzuordnung.Quelltyp</c> (gbXML <c>Building</c>, IFC <c>IfcBuilding</c>).</summary>
         public string Quelltyp { get; set; } = "Building";
 

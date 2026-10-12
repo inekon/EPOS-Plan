@@ -345,6 +345,15 @@
                 <Textfeld Bezeichnung="@Texte.Name" Wert="@_name" WertChanged="BeiName" />
             </KindInhalt>
         </Formularraster>
+        @* F8: Der Name ist der Dateiname; der Gebaeudename der Datei steht als Vorschlag daneben, "Uebernehmen" setzt ihn. *@
+        @if (stand.NameDerDatei is { Length: > 0 } nameDatei && !string.Equals(_name.Trim(), nameDatei, StringComparison.Ordinal))
+        {
+            <div class="epos-gebimport-namevorschlag" data-feld="name-der-datei">
+                <Herleitungszeile Text="@Format(Texte.NameDatei, nameDatei)" />
+                <button type="button" class="epos-knopf" data-aktion="name-uebernehmen" disabled="@Beschaeftigt"
+                        @onclick="() => BeiName(nameDatei)">@Texte.NameUebernehmen</button>
+            </div>
+        }
         <Herleitungszeile Text="@stand.Kopftext" />
         @if (stand.CadSollwertMoeglich)
         {
