@@ -17,7 +17,7 @@ nach `Dokumentation/ueberholt/`, sobald die Fortsetzung GD-4 abgeschlossen hat.
 | CI | Kern-Lauf 38195098863 auf `f40fe2fa1` wurde von späteren Pushes abgebrochen (kein Nachweis); maßgeblich ist der jüngste Kern-Lauf auf `ios_migration_september` (beim Schreiben 38198823539 auf `b523a99da`, danach die Pushes von #1020 und #1022); #1010 grün mit Lauf 38188012085 auf `228a10287`; Vermerke für #1010, #1011, #1013–#1017, #1019, #1020 und #1022 stehen noch aus (Abschnitt 4 a) |
 | Referenzbasis | **R52** `Referenzlaeufe/2026-10-11_R52_Vorheizen`, dreißig Projekte; CI-Auswahl 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065. Nächste freie Basis **R53** (vorgesehen für SA4) |
 | Testdatenbank | Schemastand **220** (Git LFS) |
-| Schemakette | 218 `KaelteArtSchema` (Sitzung Kälteanlagen), 219 `RaumnutzungNormkategorienSchema` (NP6), 220 `RaumnutzungNormwerteSchema` (NP7); **221 frei** |
+| Schemakette | 218 `KaelteArtSchema` (Sitzung Kälteanlagen), 219 `RaumnutzungNormkategorienSchema` (NP6), 220 `RaumnutzungNormwerteSchema` (NP7); **221 angemeldet für BK-2**; **222 frei** |
 | Statuszeilen | höchste vergebene #1023; vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E132**, **E133 frei** |
 | Parallele Sitzungen | „Kälteanlagen“, „Dialoge und Korrekturen“ (Konto 3), „Administration und Support“; alle pushen auf denselben Zweig. Statuskonflikte zeilenweise lösen, Nummernkollisionen über die nächste freie Nummer |
 
@@ -43,12 +43,20 @@ Alle Zeilen mit grünem Gate gepusht; Einzelheiten in der Statuszeile und im Pro
 
 ## 3. Laufende Arbeit beim Schreiben
 
-Keine: GD-5 (#1020) und NP7 mit NP7b (#1022, Schritt 220) sind gepusht, kein Agent läuft. Festlegung aus NP7, die
-Folgewellen kennen müssen: **Außenluft je Person** ist eine eigene Spalte `Aussenluft_Person` (m³/(h·Person)) neben
-`Aussenluft`/`Aussenluft_Einheit`; im Generator geht die raum- oder flächenbezogene Außenluft vor.
+Zwei Opus-Agenten arbeiten im Container des alten Kontos, ohne Push. Ist ihre Arbeit beim Wechsel nicht in einer Statuszeile
+gepusht, ist sie verloren und wird neu beauftragt (je ein Auftrag an `opus-umsetzung` mit `model: opus` im eigenen Worktree):
 
-Die Routine „CI-Vermerk Welle f40fe2fa1“ des alten Kontos feuert in die alte Sitzung; die neue Sitzung übernimmt ihren Inhalt
-selbst (Abschnitt 4 a).
+- **GD-4 „Als Mehrzonenmodell übernehmen“** (Entwurf Gebäudedialog, Wellenzeile GD-4, E130 F7): Aktion im Gebäudedialog,
+  ohne gespeicherte Importquelle benannt gesperrt; Neulesen mit Prüfsumme; Zonenbaum als Blatt mit `RestPlatzieren` (GD-3) und
+  `Zonenvorbesetzung` (GD-5); Ersetzen von Zonen, Bauteilen und Zonenkalendern in einem Vorgang mit Rückweg; dazu der Sprung
+  `Sprungziele.Kuehlung` (Abschnitt 4, Punkt 6 a). Kein Schemaschritt.
+- **BK-2 „Schema und Felder“** (Schritt **221 angemeldet**, E132): Herkunft, Quelle, Quellkennung, Gruppe und Klasse,
+  Kennzeichen „für die Gebäudesimulation meist nicht geeignet“, die Felder nach „Folgerung für BK-2“ im
+  [Feldinventar](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-12_BK_Feldinventar_Hottgenroth.md) für Baustoff, Aufbau,
+  Schicht, Abschnitt und Fenster; keine Löschregel der Auslieferung; Testdatenbank auf 221; Rechenweg unberührt.
+
+Festlegung aus NP7, die Folgewellen kennen müssen: **Außenluft je Person** ist eine eigene Spalte `Aussenluft_Person`
+(m³/(h·Person)) neben `Aussenluft`/`Aussenluft_Einheit`; im Generator geht die raum- oder flächenbezogene Außenluft vor.
 
 ## 4. Nächste Arbeit (Reihenfolge)
 
@@ -126,7 +134,7 @@ Dokumentation/aktuell/Gebaeudesimulation/2026-10-12_Uebergabe_Gebaeudesimulation
 Dokumentation/aktuell/Status_iOS_Migration.md nur den Kopf (Schemaanmeldung) und die Zeilen ab #1010, aus
 Dokumentation/aktuell/Status_Gebaeudesimulation_VDI6007.md die Entscheide E128–E131. Prüfe mit
 git log --format='%h %<(72,trunc)%s' -n 15 origin/ios_migration_september, welche Wellen aus Abschnitt 3 schon gepusht sind.
-Dann arbeite Abschnitt 4 der Reihe nach ab: CI-Vermerke, GD-4, Wiki, danach BK nach E132 und nach meinen Entscheiden der NP7-Nachzug.
+Dann arbeite Abschnitt 4 der Reihe nach ab: CI-Vermerke, GD-4 und BK-2 (neu beauftragen, falls nicht gepusht), Wiki, danach BK-3 ff. nach E132 und nach meinen Entscheiden der NP7-Nachzug.
 Orchestriere mit Agenten (Modell ausdrücklich setzen), Reihenfolge Merge → Gate → Statuszeile und Protokoll → Push beider
 Zweige → CI-Vermerk [skip ci]. Push auf ios_migration_september und den Sitzungszweig ist erlaubt; keine macOS-, iOS- oder
 Setup-Läufe, kein Wiki-Upload, keine Pull Requests, kein Force-Push ohne Rückfrage. Anwenderdateien und Normwerte nie ins
