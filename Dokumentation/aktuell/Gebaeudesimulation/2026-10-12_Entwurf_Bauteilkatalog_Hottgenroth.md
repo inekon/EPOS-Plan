@@ -1,6 +1,6 @@
 # Entwurf BK — Baustoff- und Bauteilkatalog vervollständigen, Importweg aus dem Hottgenroth-Katalog
 
-**Stand 12.10.2026 · Befund und Entwurf, nichts gebaut.** Gelesen auf `23ca3798d` (Zweig `ios_migration_september`,
+**Stand 12.10.2026 · Befund und Entwurf, Fragen F1–F8 mit E132 entschieden (Abschnitt 6a), nichts gebaut.** Gelesen auf `23ca3798d` (Zweig `ios_migration_september`,
 Basis R52). Auftrag BK der Sitzung Gebäudesimulation. Grundlage sind der Code, die Testdatenbank, ein Strukturbericht des
 Hottgenroth-Gesamtkatalogs und eine Recherche offener Quellen. Beide Papiere liegen nur in der Sitzung, nicht im
 Repositorium. Der Strukturbericht enthält nur Struktur, Zählungen und Anteile. **Werte, Namen und Herstellerangaben
@@ -338,6 +338,28 @@ wird; dann gilt die Regel „gesäte Zonendaten“ (Bauteile samt Aufbau).
    **Empfehlung:** BK-5 bauen. 209 Aufbauten, darunter typische Holzbauwände, wären sonst nicht nutzbar.
 8. **F8 Lizenz:** Fragt der Anwender bei Hottgenroth, MASEA und ÖKOBAUDAT an (Fragen in 2.4)? **Empfehlung:** ja, vor
    BK-3. Bis zur Antwort nur im eigenen Hause und ausschließlich in der Anwenderdatenbank.
+
+## 6a Entscheide (E132, Anwender 12.10.2026)
+
+Wortlaut: „F3 – Umfang des Imports: Kennzeichne Bauteile ohne Wärmeleitfähigkeit (Auswahl), da meistens nicht geeignet für
+Gebäudesimulation. Erstelle Gruppen wie und Klassen für die Bauteile. Baustoffe nicht kennzeichnen nach Wärmeleitfähigkeit,
+auch in Gruppen und Klassen einteilen. F4 – Dubletten: Zusammenführen – keine Doubletten. F2 – Zusätzliche Felder im
+Katalog: alle Felder aufnehmen. Alle anderen F1, F5–F7: Empfehlung. F8: nehme die Datensätze auf. Lizenzen geklärt.“
+
+| Frage | Entscheid | Folge für Entwurf und Wellen |
+|---|---|---|
+| F1 Weg | Empfehlung: Austauschformat mit Leser im Kern (ii), Windows-Werkzeug über LocalDB davor (i) | wie 2.3; BK-3 und BK-4 |
+| F2 Felder | **alle Felder der Quelle aufnehmen**, nicht nur Herkunft, `U_Quelle`, Fenster und Abschnitte | Schemaschritt von BK-2 trägt zusätzlich die bauphysikalischen Felder der Quelle (u. a. μ, Feuchte, Emissionsgrad, Bemessungsmarke); welche Spalten genau, legt BK-2 aus dem Strukturbericht fest — nur fachliche Felder, keine internen Kennungen außer der Quellkennung; der Rechenweg liest weiterhin nur λ, ρ, c, Dicke, Luftschicht, U und die Fensterwerte |
+| F3 Umfang | **alles übernehmen.** Bauteilaufbauten ohne Wärmeleitfähigkeit (reine U-Wert-Aufbauten, Schichten ohne λ) bekommen eine Kennzeichnung „für die Gebäudesimulation meist nicht geeignet“ und lassen sich in der Auswahl danach filtern. Baustoffe werden **nicht** nach λ gekennzeichnet. Bauteile **und** Baustoffe werden in **Gruppen und Klassen** eingeteilt | Regeln 4 und 8 in 2.3 entfallen als Ausschluss; dafür Kennzeichen am Aufbau und Filter in der Katalogliste und an der Bauteilwahl; Gliederung zweistufig (Gruppe, Klasse) für Baustoffe und Aufbauten aus den Gruppen- und Untertypen der Quelle, abgebildet auf feste EPOS-Gruppen mit Klassen darunter; die Abbildungstabellen legt BK-3 im Kern fest und das Protokoll nennt sie |
+| F4 Dubletten | **zusammenführen, keine Dubletten** | gleiche Sätze (Regel in 2.3) werden ein Satz: innerhalb der Quelle ohnehin, gegen den EPOS-Katalog ebenso — ein ausgelieferter Satz bleibt mit seinen Werten bestehen, der Import ergänzt nur leere Felder und hängt seine Quelle an; kein zweiter Satz |
+| F5 Fenster | Empfehlung: jetzt | BK-6 |
+| F6 Wärmebrücken | Empfehlung: später | kein ψ-Katalog in BK |
+| F7 Inhomogene Schichten | Empfehlung: bauen | BK-5 |
+| F8 Lizenz | **Lizenzen geklärt, die Datensätze werden aufgenommen** | Importierte Sätze dürfen in den Auslieferungskatalog: die Löschregel der Auslieferungsvorlage für `Herkunft = 'IMPORT'` (2.3, BK-2) entfällt; Herkunft und Quelle bleiben am Satz. Die Werte gelangen über das Austauschformat in die Datenbank des Anwenders und von dort über `Werkzeuge/Auslieferungsvorlage` in die Auslieferung — nicht ins Repositorium (die Testdatenbank bleibt ohne Importsätze, Tests lesen synthetische Dateien). Das Wiki bleibt ohne Hersteller- und Produktdaten (Regel der Wurzel-`CLAUDE.md`) |
+
+**Geänderte Wellen:** BK-2 ohne Löschregel, mit allen Feldern und den Spalten für Gruppe, Klasse und Kennzeichen; BK-3 mit
+Gliederung, Kennzeichen und Zusammenführung statt Abwahl; BK-1 zeigt Gruppe und Klasse und filtert nach dem Kennzeichen.
+Reihenfolge unverändert: BK-1 sofort, BK-2 und BK-6 mit einem Schemaschritt, BK-3 mit BK-4, BK-5, BK-7.
 
 ## 7 Wellenplan
 

@@ -4,7 +4,7 @@ Dieses Papier hält, was eine neue Cloud-Sitzung auf einem anderen Konto braucht
 ohne Verlust fortzuführen: Stand, laufende und nächste Arbeit, offene Anwenderpunkte, Arbeitsweise und am Ende den
 Einstiegs-Prompt. Regelquelle bleibt [`CLAUDE.md`](../../../CLAUDE.md) mit den Projekt-`CLAUDE.md`; der dauerhafte Stand steht
 in der [Statusdatei iOS-Migration](../Status_iOS_Migration.md) (eine Zeile je Schritt) und in der
-[Statusdatei Gebäudesimulation](../Status_Gebaeudesimulation_VDI6007.md) (Entscheidungsregister bis E131, Stufentabelle).
+[Statusdatei Gebäudesimulation](../Status_Gebaeudesimulation_VDI6007.md) (Entscheidungsregister bis E132, Stufentabelle).
 Es löst die [Übergabe vom 08.10.2026](../../ueberholt/2026-10-08_Uebergabe_Gebaeudesimulation_Kontowechsel.md) ab und wandert
 nach `Dokumentation/ueberholt/`, sobald die Fortsetzung GD-4 abgeschlossen hat.
 
@@ -18,7 +18,7 @@ nach `Dokumentation/ueberholt/`, sobald die Fortsetzung GD-4 abgeschlossen hat.
 | Referenzbasis | **R52** `Referenzlaeufe/2026-10-11_R52_Vorheizen`, dreißig Projekte; CI-Auswahl 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065. Nächste freie Basis **R53** (vorgesehen für SA4) |
 | Testdatenbank | Schemastand **220** (Git LFS) |
 | Schemakette | 218 `KaelteArtSchema` (Sitzung Kälteanlagen), 219 `RaumnutzungNormkategorienSchema` (NP6), 220 `RaumnutzungNormwerteSchema` (NP7); **221 frei** |
-| Statuszeilen | höchste vergebene #1021; vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E131**, **E132 frei** |
+| Statuszeilen | höchste vergebene #1021; vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E132**, **E133 frei** |
 | Parallele Sitzungen | „Kälteanlagen“, „Dialoge und Korrekturen“ (Konto 3), „Administration und Support“; alle pushen auf denselben Zweig. Statuskonflikte zeilenweise lösen, Nummernkollisionen über die nächste freie Nummer |
 
 ## 2. Was die Sitzung seit dem 08.10.2026 gebaut hat
@@ -38,7 +38,7 @@ Alle Zeilen mit grünem Gate gepusht; Einzelheiten in der Statuszeile und im Pro
 | NP6 | #1011 | SIA 2024 und VDI 2078 aus dem Katalog der Nutzungsprofile, zwei Wohnprofile der DIN, Schritt 219 (E129) |
 | GD-1, GD-2, GD-3, GD-5 | #1015, #1016, #1019, #1020 | Gebäudekopf mit Herkunft; Gebäudewerte der Projektdatei und Name = Dateiname; Räume ohne DIN-Zone automatisch platziert; Vorbesetzung der Zonen mit Profilen |
 | NP7, NP7b | #1021 | Normwerte der DIN einlesen (CSV oder Projektdatei), Außenluft je Person, Schritt 220, Dialog, Anleitung im Assistenten (E131) |
-| BK-Entwurf | #1017 | [Entwurf Bauteilkatalog und Hottgenroth-Import](2026-10-12_Entwurf_Bauteilkatalog_Hottgenroth.md), Fragen F1–F8 offen |
+| BK-Entwurf | #1017 | [Entwurf Bauteilkatalog und Hottgenroth-Import](2026-10-12_Entwurf_Bauteilkatalog_Hottgenroth.md), Fragen F1–F8 mit E132 entschieden |
 
 ## 3. Laufende Arbeit beim Schreiben
 
@@ -60,9 +60,11 @@ selbst (Abschnitt 4 a).
    `fensterprobe.mjs`.
 4. **Wiki und Logbuch** der Wellen GD, AB, NP6/NP7, KS (Seiten „Gebäude“, „Gebäudeimport“, „Nutzungsprofile“); Upload nur
    gebündelt und auf Zuruf, Versionsnummer beim Anwender erfragen.
-5. **BK** nach Entscheid F1–F8: BK-1 Editoren (Wärmekapazität in der schmalen Liste, Rsi/Rse im Aufbaueditor), BK-2
-   Schemaschritt Herkunft „Import“ mit Auslieferungsregel, BK-3 Austauschformat und Import, BK-4 LocalDB-Werkzeug (Windows),
-   BK-5 inhomogene Schichten, BK-6 Fenster im Aufbaukatalog, BK-7 Wiki.
+5. **BK** (E132 entschieden, Entwurf Abschnitt 6a): BK-1 Editoren (Wärmekapazität in der schmalen Liste, Rsi/Rse im
+   Aufbaueditor, Gruppe und Klasse, Filter „für die Gebäudesimulation meist nicht geeignet“), BK-2 Schemaschritt mit allen
+   Feldern der Quelle, Herkunft, Gruppe, Klasse und Kennzeichen (ohne Löschregel der Auslieferung), BK-3 Austauschformat und
+   Import mit Zusammenführung der Dubletten, BK-4 LocalDB-Werkzeug (Windows), BK-5 inhomogene Schichten, BK-6 Fenster im
+   Aufbaukatalog, BK-7 Wiki. Rund 12–16 PT.
 6. **SA4:** Referenzprojekt mit Schnellaufheizung, Basis R53, Wiki (Stufentabelle SA).
 
 ## 5. Offen beim Anwender
@@ -72,13 +74,11 @@ selbst (Abschnitt 4 a).
 - **Jahreswärmebedarf in der Zusammenfassung des Gebäudedialogs** (übernommen von der Sitzung „Anlagendialog/Kältebedarf“,
   Konzept Projektdialoge Katalogauswahl, Abschnitt 5): Wert aus dem letzten Rechenlauf mit Datum zeigen oder die Zeile streichen?
   Empfehlung: Wert des letzten Laufs mit Datum, ohne Lauf „noch nicht gerechnet“; gehört zu GD-4 bzw. einer GD-Nachwelle.
-- **BK F1–F8** des Entwurfs Bauteilkatalog (Empfehlungen im Entwurf; „F1–F8: Empfehlung“ genügt).
 - **Sichtabnahmen unter Windows:** gesperrte Farbmodusknöpfe mit Grund (#1010), Legendenzuordnung (#1013), Schichtwahl im
   Aufbau (#1014), Herkunftsmarken und Rundung im Gebäudekopf (#1015), Namensvorschlag „Übernehmen“ im Importdialog (#1016),
   Marke und „Zurücknehmen“ der automatisch platzierten Räume (#1019), Saisondatum (#1002), Geste Strg+Umschalt+F12 (#997).
 - **SQ2:** gegen welchen Wert der Anwender die Raumgrößen des Sportheims verglichen hat.
 - **GD-2:** fachliche Bestätigung Gebäudetyp 3 = Nichtwohngebäude und Code 0 = keine Angabe an weiteren Projektdateien.
-- **Lizenzanfragen** für einen auszuliefernden Bauteilkatalog (BK F8) stellt der Anwender selbst.
 
 ## 6. Arbeitsweise in der Cloud
 
@@ -115,7 +115,7 @@ Dokumentation/aktuell/Gebaeudesimulation/2026-10-12_Uebergabe_Gebaeudesimulation
 Dokumentation/aktuell/Status_iOS_Migration.md nur den Kopf (Schemaanmeldung) und die Zeilen ab #1010, aus
 Dokumentation/aktuell/Status_Gebaeudesimulation_VDI6007.md die Entscheide E128–E131. Prüfe mit
 git log --format='%h %<(72,trunc)%s' -n 15 origin/ios_migration_september, welche Wellen aus Abschnitt 3 schon gepusht sind.
-Dann arbeite Abschnitt 4 der Reihe nach ab: CI-Vermerke, GD-4, Wiki, danach nach meinen Entscheiden NP7-Nachzug und BK.
+Dann arbeite Abschnitt 4 der Reihe nach ab: CI-Vermerke, GD-4, Wiki, danach BK nach E132 und nach meinen Entscheiden der NP7-Nachzug.
 Orchestriere mit Agenten (Modell ausdrücklich setzen), Reihenfolge Merge → Gate → Statuszeile und Protokoll → Push beider
 Zweige → CI-Vermerk [skip ci]. Push auf ios_migration_september und den Sitzungszweig ist erlaubt; keine macOS-, iOS- oder
 Setup-Läufe, kein Wiki-Upload, keine Pull Requests, kein Force-Push ohne Rückfrage. Anwenderdateien und Normwerte nie ins
