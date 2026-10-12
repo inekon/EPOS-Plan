@@ -43,7 +43,7 @@ public class EntwicklerbereicheWacheTests
         Assert.DoesNotContain(anwender, p => p.Stufe > Freigabestufe.Anwender);
         Assert.DoesNotContain(anwender, p => p.Name == "MenuItem_Entwicklung");
         // Der Anwenderbaum: 73 Punkte ohne Trenner (Stufe 2 bringt „Fernwartung…", KM4-E3-c „Kältemittel…", K5b „Kältebedarf" unter „Profile & Lastgänge").
-        Assert.Equal(73, anwender.Count(p => !p.Trenner));
+        Assert.Equal(74, anwender.Count(p => !p.Trenner)); // BK-3: + „Bauteilkatalog einlesen…“
         foreach (string name in EntwicklungPunkte)
             Assert.DoesNotContain(anwender, p => p.Name == name);
     }

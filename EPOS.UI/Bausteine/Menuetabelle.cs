@@ -264,6 +264,9 @@ public static class Menuetabelle
                 // ihnen. Beide sind freie Ansichten der Wurzel, auf beiden Plattformen.
                 new Menuepunkt("MenuItem_Baustoffe", "MENU_BAUSTOFFE", Seitenschluessel.BaustoffKatalog, katalog: true),
                 new Menuepunkt("MenuItem_Bauteilaufbauten", "MENU_BAUTEILAUFBAUTEN", Seitenschluessel.BauteilaufbauKatalog, katalog: true),
+                // BK-3 (E133): der Import des Bauteilkatalogs aus dem CSV-Export - hinter den zwei
+                // Katalogen, in die er schreibt; eine freie Ansicht der Wurzel auf beiden Plattformen.
+                new Menuepunkt("MenuItem_BauteilkatalogEinlesen", "MENU_BAUTEILKATALOG_EINLESEN", Seitenschluessel.BauteilkatalogImport),
             },
             // W16c-O-7: der Punkt stand bis zum 07.09.2026 als EINZIGES Kind
             // im Untermenue MenuItem_Klima ("Klimadaten" ueber "Klimadaten").

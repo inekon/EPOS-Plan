@@ -9357,6 +9357,276 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle ist abgelehnt: {0} ähnelt.
+        /// </summary>
+        public static string BKI_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("BKI_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abschnitte ähnelt.
+        /// </summary>
+        public static string BKI_ART_ABSCHNITTE {
+            get {
+                return ResourceManager.GetString("BKI_ART_ABSCHNITTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbauten ähnelt.
+        /// </summary>
+        public static string BKI_ART_AUFBAUTEN {
+            get {
+                return ResourceManager.GetString("BKI_ART_AUFBAUTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoffe ähnelt.
+        /// </summary>
+        public static string BKI_ART_BAUSTOFFE {
+            get {
+                return ResourceManager.GetString("BKI_ART_BAUSTOFFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichten ähnelt.
+        /// </summary>
+        public static string BKI_ART_SCHICHTEN {
+            get {
+                return ResourceManager.GetString("BKI_ART_SCHICHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Codes ohne Deutung (sie fallen auf „Sonstige“) ähnelt.
+        /// </summary>
+        public static string BKI_CODES {
+            get {
+                return ResourceManager.GetString("BKI_CODES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoffe.csv des Exports ähnelt.
+        /// </summary>
+        public static string BKI_DATEI {
+            get {
+                return ResourceManager.GetString("BKI_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Durchsuchen… ähnelt.
+        /// </summary>
+        public static string BKI_DURCHSUCHEN {
+            get {
+                return ResourceManager.GetString("BKI_DURCHSUCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nichts übernommen, der Katalog ist unverändert: {0} ähnelt.
+        /// </summary>
+        public static string BKI_FEHLER {
+            get {
+                return ResourceManager.GetString("BKI_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernommen: Baustoffe {0} neu, {1} zusammengeführt, {2} wiedererkannt; Aufbauten {3} neu, {4} wiedererkannt; Schichten {5}; {6} Aufbauten gekennzeichnet. Dauer {7} s. ähnelt.
+        /// </summary>
+        public static string BKI_FERTIG {
+            get {
+                return ResourceManager.GetString("BKI_FERTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoffe.csv|Baustoffe.csv|CSV-Dateien (*.csv)|*.csv ähnelt.
+        /// </summary>
+        public static string BKI_FILTER {
+            get {
+                return ResourceManager.GetString("BKI_FILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Aufbauten sind für die Gebäudesimulation meist nicht geeignet und werden gekennzeichnet. ähnelt.
+        /// </summary>
+        public static string BKI_GEKENNZEICHNET {
+            get {
+                return ResourceManager.GetString("BKI_GEKENNZEICHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ablehnungsgründe ähnelt.
+        /// </summary>
+        public static string BKI_GRUENDE {
+            get {
+                return ResourceManager.GetString("BKI_GRUENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wählen Sie die Datei Baustoffe.csv des CSV-Exports; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv und Basis_Auszug.csv liegen daneben. Die Vorschau schreibt nichts. ähnelt.
+        /// </summary>
+        public static string BKI_HINWEIS {
+            get {
+                return ResourceManager.GetString("BKI_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Einlesen des Bauteilkatalogs steht auf dieser Plattform nicht zur Verfügung. ähnelt.
+        /// </summary>
+        public static string BKI_KEINE_ANSICHT {
+            get {
+                return ResourceManager.GetString("BKI_KEINE_ANSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Schichten treffen über den Namen einen Baustoff derselben Gruppe. ähnelt.
+        /// </summary>
+        public static string BKI_MIT_BAUSTOFF {
+            get {
+                return ResourceManager.GetString("BKI_MIT_BAUSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst eine Vorschau ohne Ablehnung erstellen. ähnelt.
+        /// </summary>
+        public static string BKI_OK_SPERRE {
+            get {
+                return ResourceManager.GetString("BKI_OK_SPERRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Protokoll ähnelt.
+        /// </summary>
+        public static string BKI_PROTOKOLL {
+            get {
+                return ResourceManager.GetString("BKI_PROTOKOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle der Sätze: {0} ähnelt.
+        /// </summary>
+        public static string BKI_QUELLE {
+            get {
+                return ResourceManager.GetString("BKI_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Richtung innen → außen: Dämmlage hinter der tragenden Schicht in {0} von {1} Außenwänden. U aus den Schichten gegen U der Quelle: Median {2}, außerhalb ±10 % {3} von {4} Aufbauten. ähnelt.
+        /// </summary>
+        public static string BKI_RICHTUNG {
+            get {
+                return ResourceManager.GetString("BKI_RICHTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string BKI_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("BKI_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abgelehnt ähnelt.
+        /// </summary>
+        public static string BKI_SP_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("BKI_SP_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit Katalog zusammengeführt ähnelt.
+        /// </summary>
+        public static string BKI_SP_KATALOG {
+            get {
+                return ResourceManager.GetString("BKI_SP_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu ähnelt.
+        /// </summary>
+        public static string BKI_SP_NEU {
+            get {
+                return ResourceManager.GetString("BKI_SP_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In der Quelle zusammengeführt ähnelt.
+        /// </summary>
+        public static string BKI_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("BKI_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satzart ähnelt.
+        /// </summary>
+        public static string BKI_SP_SATZART {
+            get {
+                return ResourceManager.GetString("BKI_SP_SATZART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wiedererkannt ähnelt.
+        /// </summary>
+        public static string BKI_SP_WIEDER {
+            get {
+                return ResourceManager.GetString("BKI_SP_WIEDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilkatalog einlesen ähnelt.
+        /// </summary>
+        public static string BKI_TITEL {
+            get {
+                return ResourceManager.GetString("BKI_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string BKI_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("BKI_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau ähnelt.
+        /// </summary>
+        public static string BKI_VORSCHAU {
+            get {
+                return ResourceManager.GetString("BKI_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Variante anlegen ähnelt.
         /// </summary>
         public static string BKS_BTN_ANLEGEN {
@@ -89153,6 +89423,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MENU_BAUTEILAUFBAUTEN {
             get {
                 return ResourceManager.GetString("MENU_BAUTEILAUFBAUTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilkatalog einlesen… ähnelt.
+        /// </summary>
+        public static string MENU_BAUTEILKATALOG_EINLESEN {
+            get {
+                return ResourceManager.GetString("MENU_BAUTEILKATALOG_EINLESEN", resourceCulture);
             }
         }
         

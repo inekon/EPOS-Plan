@@ -67,6 +67,7 @@
                KaeltemaschineKatalogGaben="@KaeltemaschineKatalogGaben"
                KaeltemaschineAnlageGaben="@KaeltemaschineAnlageGaben"
                BetriebskalenderGaben="@BetriebskalenderGaben"
+               BauteilkatalogImportGaben="@BauteilkatalogImportGaben"
                Lizenzlage="@Lizenzlage">
         <Kopfleiste>
             <Menueband @ref="_band"
@@ -341,6 +342,9 @@
 
     /// <summary>Der Parametersatz der Betriebskalender (Windows: <c>BetriebskalenderHuelle.Gaben</c>); nur durchgereicht.</summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BetriebskalenderGaben { get; set; }
+
+    /// <summary>Der Parametersatz von „Bauteilkatalog einlesen…" (Windows: <c>BauteilkatalogImportHuelle.Gaben</c>); nur durchgereicht.</summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BauteilkatalogImportGaben { get; set; }
 
     /// <summary>
     /// Das Lagebild der Lizenz für das Banner der Wurzel (Welle iF30). Es kommt
