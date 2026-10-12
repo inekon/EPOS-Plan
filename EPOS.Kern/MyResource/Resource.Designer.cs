@@ -106247,6 +106247,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. {0} „{1}“: nicht übernommen — {2} ähnelt.
+        /// </summary>
+        public static string RNP_NW_MSG_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("RNP_NW_MSG_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. {0} „{1}“: Die Quelle führt diese Nutzung mehrfach; das erste Profil gilt. ähnelt.
+        /// </summary>
+        public static string RNP_NW_MSG_DOPPELT {
+            get {
+                return ResourceManager.GetString("RNP_NW_MSG_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingelesene Werte aus {0} Profil(en) der DIN entfernt. ähnelt.
+        /// </summary>
+        public static string RNP_NW_MSG_ENTFERNT {
+            get {
+                return ResourceManager.GetString("RNP_NW_MSG_ENTFERNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Profil(e) der DIN mit Werten gefüllt, {1} übersprungen (Werte vorhanden), {2} Profil(e) der Quelle ohne Zuordnung. ähnelt.
+        /// </summary>
+        public static string RNP_NW_MSG_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("RNP_NW_MSG_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datenbank führt keine ausgelieferte Kategorie DIN/TS 18599-10. ähnelt.
+        /// </summary>
+        public static string RNP_NW_MSG_KEINE_DIN {
+            get {
+                return ResourceManager.GetString("RNP_NW_MSG_KEINE_DIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle führt keine Nutzung der Kategorie DIN/TS 18599-10 mit Werten; nichts einzulesen. ähnelt.
+        /// </summary>
+        public static string RNP_NW_MSG_NICHTS {
+            get {
+                return ResourceManager.GetString("RNP_NW_MSG_NICHTS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. {0} „{1}“: Die Quelle führt zu dieser Nutzung keinen Wert — nicht übernommen. ähnelt.
+        /// </summary>
+        public static string RNP_NW_MSG_OHNE_WERTE {
+            get {
+                return ResourceManager.GetString("RNP_NW_MSG_OHNE_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. {0} „{1}“: keine Nutzung der Kategorie DIN/TS 18599-10 mit dieser Nummer bzw. diesem Namen — nicht übernommen. ähnelt.
+        /// </summary>
+        public static string RNP_NW_MSG_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("RNP_NW_MSG_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aus der Projektdatei {0}, DIN-Nr. {1} ähnelt.
         /// </summary>
         public static string RNP_PD_BESCHREIBUNG {
@@ -106445,7 +106517,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. {0}: Außenluft je Person nicht übernommen — das Profil führt keine Belegungsdichte dazu. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. {0}: Außenluft je Person übernommen — ohne Belegungsdichte im Profil rechnet der Generator sie nicht in einen Luftwechsel um. ähnelt.
         /// </summary>
         public static string RNP_PD_MSG_LUFT_PERSON {
             get {
@@ -106594,6 +106666,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_TXT_AUSGELIEFERT {
             get {
                 return ResourceManager.GetString("RNP_TXT_AUSGELIEFERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenluft je Person ohne Fläche je Person im Profil: die Lüftung wird nicht gesetzt. ähnelt.
+        /// </summary>
+        public static string RNP_TXT_HINWEIS_BELEGUNG {
+            get {
+                return ResourceManager.GetString("RNP_TXT_HINWEIS_BELEGUNG", resourceCulture);
             }
         }
         

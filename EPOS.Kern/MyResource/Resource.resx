@@ -47646,7 +47646,7 @@ Chart</value>
     <value>Nr. {0}: Absenkung ohne Raumtemperatur — nicht übernommen.</value>
   </data>
   <data name="RNP_PD_MSG_LUFT_PERSON" xml:space="preserve">
-    <value>Nr. {0}: Außenluft je Person nicht übernommen — das Profil führt keine Belegungsdichte dazu.</value>
+    <value>Nr. {0}: Außenluft je Person übernommen — ohne Belegungsdichte im Profil rechnet der Generator sie nicht in einen Luftwechsel um.</value>
   </data>
   <data name="RNP_PD_MSG_PERSONEN" xml:space="preserve">
     <value>Nr. {0}: Personen {1} W/m² als {2} m²/Person bei {3} W/Person übernommen.</value>
@@ -53621,6 +53621,33 @@ Chart</value>
   </data>
   <data name="GIMP_DLG_NAME_UEBERNEHMEN" xml:space="preserve">
     <value>Übernehmen</value>
+  </data>
+  <data name="RNP_NW_MSG_KEINE_DIN" xml:space="preserve">
+    <value>Die Datenbank führt keine ausgelieferte Kategorie DIN/TS 18599-10.</value>
+  </data>
+  <data name="RNP_NW_MSG_UNBEKANNT" xml:space="preserve">
+    <value>Nr. {0} „{1}“: keine Nutzung der Kategorie DIN/TS 18599-10 mit dieser Nummer bzw. diesem Namen — nicht übernommen.</value>
+  </data>
+  <data name="RNP_NW_MSG_DOPPELT" xml:space="preserve">
+    <value>Nr. {0} „{1}“: Die Quelle führt diese Nutzung mehrfach; das erste Profil gilt.</value>
+  </data>
+  <data name="RNP_NW_MSG_OHNE_WERTE" xml:space="preserve">
+    <value>Nr. {0} „{1}“: Die Quelle führt zu dieser Nutzung keinen Wert — nicht übernommen.</value>
+  </data>
+  <data name="RNP_NW_MSG_ABGELEHNT" xml:space="preserve">
+    <value>Nr. {0} „{1}“: nicht übernommen — {2}</value>
+  </data>
+  <data name="RNP_NW_MSG_NICHTS" xml:space="preserve">
+    <value>Die Quelle führt keine Nutzung der Kategorie DIN/TS 18599-10 mit Werten; nichts einzulesen.</value>
+  </data>
+  <data name="RNP_NW_MSG_ERGEBNIS" xml:space="preserve">
+    <value>{0} Profil(e) der DIN mit Werten gefüllt, {1} übersprungen (Werte vorhanden), {2} Profil(e) der Quelle ohne Zuordnung.</value>
+  </data>
+  <data name="RNP_NW_MSG_ENTFERNT" xml:space="preserve">
+    <value>Eingelesene Werte aus {0} Profil(en) der DIN entfernt.</value>
+  </data>
+  <data name="RNP_TXT_HINWEIS_BELEGUNG" xml:space="preserve">
+    <value>Außenluft je Person ohne Fläche je Person im Profil: die Lüftung wird nicht gesetzt.</value>
   </data>
 </root>
 

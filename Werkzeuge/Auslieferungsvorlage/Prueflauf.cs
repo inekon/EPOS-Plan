@@ -160,7 +160,9 @@ namespace Auslieferungsvorlage
                                  RaumnutzungSchema.TAB_KATALOG + "\" k ON k.\"ID\" = p.\"ID_Katalog\" WHERE k.\"Art\" IN (" + norm + ")";
             long kennwerte = Vorlagenbau.Zaehle2(
                 "SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" WHERE \"ID\" IN (" + normProfile + ") AND (" +
-                string.Join(" OR ", RaumnutzungSchema.SPALTEN_KENNWERTE.Select(s => "\"" + s.Spalte + "\" IS NOT NULL")) + ")");
+                string.Join(" OR ", RaumnutzungSchema.SPALTEN_KENNWERTE.Select(s => s.Spalte)
+                    .Concat(RaumnutzungNormwerteSchema.Lesbar() ? RaumnutzungNormwerteSchema.SPALTEN.Select(s => s.Spalte) : Enumerable.Empty<string>())
+                    .Select(s => "\"" + s + "\" IS NOT NULL")) + ")");
             long zeilen = Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_ZEILE + "\" WHERE \"ID_Profil\" IN (" + normProfile + ")");
             long stunden = Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_STUNDEN + "\" WHERE \"ID_Profil\" IN (" + normProfile + ")");
             ok &= Befund(kennwerte + zeilen + stunden == 0,

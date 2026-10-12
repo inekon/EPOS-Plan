@@ -79,8 +79,10 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Kennwertspalten_sind_die_des_Schemas_ohne_Nutzungstage_Jahr()
         {
-            Assert.Equal(RaumnutzungSchema.SPALTEN_KENNWERTE.Select(s => s.Spalte).Where(s => s != RaumnutzungCsv.SPALTE_TAGE_JAHR),
-                         RaumnutzungCsv.Kennwertspalten);
+            // NP7: Außenluft je Person (Schritt 220) steht hinter Aussenluft_Ausserhalb.
+            var erwartet = RaumnutzungSchema.SPALTEN_KENNWERTE.Select(s => s.Spalte).Where(s => s != RaumnutzungCsv.SPALTE_TAGE_JAHR).ToList();
+            erwartet.Insert(erwartet.IndexOf("Aussenluft_Ausserhalb") + 1, RaumnutzungNormwerteSchema.SPALTE_AUSSENLUFT_PERSON);
+            Assert.Equal(erwartet, RaumnutzungCsv.Kennwertspalten);
         }
 
         [Fact]

@@ -443,6 +443,8 @@ namespace WindowsFormsApplication1
             Raumnutzungshinweis.ProfilOhneWerte => t.TextOhneWerte,
             Raumnutzungshinweis.LueftungOhneHoehe => Text_("RNP_TXT_HINWEIS_HOEHE",
                 "Außenluft in m³/(h·m²) ohne lichte Höhe des Ziels: die Lüftung wird nicht gesetzt."),
+            Raumnutzungshinweis.LueftungOhneBelegung => Text_("RNP_TXT_HINWEIS_BELEGUNG",
+                "Außenluft je Person ohne Fläche je Person im Profil: die Lüftung wird nicht gesetzt."),
             Raumnutzungshinweis.FreierTagOhneTageswert => Text_("RNP_TXT_HINWEIS_FREIERTAG",
                 "Ein freier Einzeltag braucht einen Tageswert dieser Größe; die Matrix kennt nur das Wochenende."),
             Raumnutzungshinweis.StundenprofilUnlesbar => Text_("RNP_TXT_HINWEIS_STUNDEN",

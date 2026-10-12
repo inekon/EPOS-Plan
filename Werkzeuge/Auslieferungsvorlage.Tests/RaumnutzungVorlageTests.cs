@@ -86,6 +86,39 @@ namespace Auslieferungsvorlage.Tests
         }
 
         /// <summary>
+        /// <b>Eingelesene Normwerte fallen</b> (NP7, E131): Werte, die „Normwerte einlesen“ in ein ausgeliefertes DIN-Profil
+        /// geschrieben hat, nimmt Schritt 3d heraus; der Prüfbericht nennt die Zahl und findet danach keinen Kennwert in der
+        /// Normkategorie. Die Werte der Probe sind runde Phantasiewerte.
+        /// </summary>
+        [Fact]
+        public void Eingelesene_Normwerte_der_DIN_fallen_mit_Pruefberichtzeile()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string ziel = o.Datei("Kenndaten.sqlite");
+            Bearbeiten(quelle, () => DataRepository.ExecuteNonQuery(
+                "UPDATE \"Tab_Raumnutzungsprofil\" SET \"Heiz_Soll\" = 21, \"Aussenluft_Person\" = 30, \"Werte_Herkunft\" = 'EINGELESEN', " +
+                "\"Werte_Quelle\" = 'probe.csv', \"Werte_Datum\" = '2026-10-12' WHERE \"Nummer\" IN ('1', '2') AND \"ID_Katalog\" = " +
+                "(SELECT \"ID\" FROM \"Tab_Raumnutzungskatalog\" WHERE \"Art\" = 'DIN_V_18599_10')"));
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
+            Assert.True(e.Code == 0, e.Alles);
+            Assert.Contains("eingelesene Normwerte entfernt: 2 Profil(e) der DIN", e.Ausgabe, StringComparison.Ordinal);
+            Assert.Contains("ok      Werte in Normkategorien: Profile mit Kennwert 0", e.Ausgabe, StringComparison.Ordinal);
+            Lesen(ziel, () =>
+            {
+                Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungsprofil\" WHERE \"Werte_Herkunft\" IS NOT NULL " +
+                                     "OR \"Aussenluft_Person\" IS NOT NULL OR \"Heiz_Soll\" IS NOT NULL AND \"ReadOnly\" = 1 AND \"ID_Katalog\" = " +
+                                     "(SELECT \"ID\" FROM \"Tab_Raumnutzungskatalog\" WHERE \"Art\" = 'DIN_V_18599_10')"));
+                Assert.Equal(RaumnutzungSaat.Din.Count + RaumnutzungNormkategorienSchema.WOHNPROFILE.Count,
+                             Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungsprofil\" p JOIN \"Tab_Raumnutzungskatalog\" k ON k.\"ID\" = p.\"ID_Katalog\" " +
+                                  "WHERE k.\"Art\" = 'DIN_V_18599_10'"));
+            });
+        }
+
+        /// <summary>
         /// <b>Eine Kategorie aus einer Projektdatei fällt auch im Modus „alle"</b> (NP4b, Q46, NP-F21): Ihre Werte stammen
         /// aus der lizenzierten Software des Anwenders und gehören nie in die Auslieferung — dieselbe Regel wie jede eigene
         /// Kategorie, unabhängig von der Vorgabe für die <c>_STAMM</c>-Kataloge (#160-E-1a). Die Werte der Probe sind

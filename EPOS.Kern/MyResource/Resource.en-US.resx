@@ -47639,7 +47639,7 @@ chart</value>
     <value>No. {0}: setback without room temperature — not applied.</value>
   </data>
   <data name="RNP_PD_MSG_LUFT_PERSON" xml:space="preserve">
-    <value>No. {0}: outdoor air per person not applied — the profile has no occupancy density for it.</value>
+    <value>No. {0}: outdoor air per person applied — without an occupancy density in the profile the generator does not convert it into an air change rate.</value>
   </data>
   <data name="RNP_PD_MSG_PERSONEN" xml:space="preserve">
     <value>No. {0}: occupants {1} W/m² applied as {2} m²/person at {3} W/person.</value>
@@ -53614,6 +53614,33 @@ chart</value>
   </data>
   <data name="GIMP_DLG_NAME_UEBERNEHMEN" xml:space="preserve">
     <value>Apply</value>
+  </data>
+  <data name="RNP_NW_MSG_KEINE_DIN" xml:space="preserve">
+    <value>The database has no delivered category DIN/TS 18599-10.</value>
+  </data>
+  <data name="RNP_NW_MSG_UNBEKANNT" xml:space="preserve">
+    <value>No. {0} "{1}": no use of the category DIN/TS 18599-10 with this number or name — not applied.</value>
+  </data>
+  <data name="RNP_NW_MSG_DOPPELT" xml:space="preserve">
+    <value>No. {0} "{1}": The source lists this use more than once; the first profile applies.</value>
+  </data>
+  <data name="RNP_NW_MSG_OHNE_WERTE" xml:space="preserve">
+    <value>No. {0} "{1}": The source has no value for this use — not applied.</value>
+  </data>
+  <data name="RNP_NW_MSG_ABGELEHNT" xml:space="preserve">
+    <value>No. {0} "{1}": not applied — {2}</value>
+  </data>
+  <data name="RNP_NW_MSG_NICHTS" xml:space="preserve">
+    <value>The source has no use of the category DIN/TS 18599-10 with values; nothing to read in.</value>
+  </data>
+  <data name="RNP_NW_MSG_ERGEBNIS" xml:space="preserve">
+    <value>{0} DIN profile(s) filled with values, {1} skipped (values present), {2} source profile(s) without assignment.</value>
+  </data>
+  <data name="RNP_NW_MSG_ENTFERNT" xml:space="preserve">
+    <value>Read-in values removed from {0} DIN profile(s).</value>
+  </data>
+  <data name="RNP_TXT_HINWEIS_BELEGUNG" xml:space="preserve">
+    <value>Outdoor air per person without floor area per person in the profile: ventilation is not set.</value>
   </data>
 </root>
 
