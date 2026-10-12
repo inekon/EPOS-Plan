@@ -65,7 +65,13 @@ selbst (Abschnitt 4 a).
    Feldern der Quelle, Herkunft, Gruppe, Klasse und Kennzeichen (ohne Löschregel der Auslieferung), BK-3 Austauschformat und
    Import mit Zusammenführung der Dubletten, BK-4 LocalDB-Werkzeug (Windows), BK-5 inhomogene Schichten, BK-6 Fenster im
    Aufbaukatalog, BK-7 Wiki. Rund 12–16 PT.
-6. **SA4:** Referenzprojekt mit Schnellaufheizung, Basis R53, Wiki (Stufentabelle SA).
+6. **Übernommen von der Sitzung „Anlagendialog/Kältebedarf“:** (a) Sprung der Kachel Gebäudekühlung (K5-Teil,
+   [`Konzept_Kaeltebedarf_EPOS-Plan.md`](../Konzept_Kaeltebedarf_EPOS-Plan.md) Abschnitt 3.5): Sprungziel `Sprungziele.Kuehlung` im
+   Kern neben `Masken`, Aufruf über `OeffneMaske(Masken.…, args)`; der Projektgebäudedialog wählt das erste bzw. zuletzt gewählte
+   Gebäude, klappt die Gruppe „Kühlung“ auf und rollt sie in Sicht (kleines JS-Modul, Fokus aufs erste Feld); ohne
+   Projektgebäude Banner „Noch kein Gebäude im Projekt“; die Zustandszeile der Kachel stammt aus K4 und bleibt. (b) Zeile
+   Jahreswärmebedarf der Gebäudezusammenfassung (Abschnitt 5). Beides mit GD-4 oder einer GD-Nachwelle.
+7. **SA4:** Referenzprojekt mit Schnellaufheizung, Basis R53, Wiki (Stufentabelle SA).
 
 ## 5. Offen beim Anwender
 
