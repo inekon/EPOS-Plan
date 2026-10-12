@@ -334,7 +334,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(k.U_WM2K!.Value, zeile.Zahl(Katalogfilterprofil.SpUWert)!.Value, 12);
             Assert.Equal(k.R_M2KW!.Value, zeile.Zahl(Katalogfilterprofil.SpRWert)!.Value, 12);
             Assert.Equal(2, zeile.Zahl(Katalogfilterprofil.SpSchichten));
-            Assert.Equal(R.GIMP_HERKUNFT_MANUELL, zeile.Text(Katalogfilterprofil.SpHerkunft));
+            Assert.Equal(R.BKAT_HERKUNFT_EIGEN, zeile.Text(Katalogfilterprofil.SpHerkunft));     // ein eigener Katalogsatz (BK-2)
             Assert.False(zeile.Geschuetzt);
         }
 
@@ -355,7 +355,7 @@ namespace EPOS.Kern.Tests
             BauteilaufbauModel neu = ctrl.LesenKatalogsatz(kopie.Id);
             Assert.True(alt.ReadOnly);
             Assert.False(neu.ReadOnly);
-            Assert.Equal(DbWerte.HERKUNFT_MANUELL, neu.Herkunft);
+            Assert.Equal(BauteilkatalogSchema.HERKUNFT_EIGEN, neu.Herkunft);             // ein eigener Katalogsatz (BK-2)
             Assert.Equal(alt.Bauteilart, neu.Bauteilart);
             Assert.Equal(alt.Schichten.Count, neu.Schichten.Count);
             for (int i = 0; i < alt.Schichten.Count; i++)

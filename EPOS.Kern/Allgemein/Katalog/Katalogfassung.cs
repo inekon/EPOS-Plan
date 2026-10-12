@@ -567,6 +567,12 @@ namespace WindowsFormsApplication1
             "Paket des Gebaeudes bleiben ohne Zonen; die Konditionierung der Katalogzonen faellt ueber die Leerspalte " +
             "ID_Zone_Stamm aus seinen Kindern.";
 
+        /// <summary>Grund der Ausnahme der Abschnitte inhomogener Schichten (Schritt 221, BK-2).</summary>
+        public const string GRUND_ABSCHNITTE =
+            "Abschnitte inhomogener Schichten (Schritt 221, BK-2): Die Schicht verweist ueber ID_Abschnitt auf den Abschnitt " +
+            "desselben Aufbaus; diesen Verweis bildet der Paketweg erst mit BK-5 ab. Bis dahin tragen weder Pruefsumme noch Paket " +
+            "des Aufbaus Abschnitte, der Verweis ist Nebenspalte der Schicht.";
+
         private static IReadOnlyDictionary<string, string> AusnahmenBauen()
         {
             var d = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -582,6 +588,7 @@ namespace WindowsFormsApplication1
             d[ProzessNutzungSchema.TAB_PROFIL] = GRUND_NUTZUNGSPROFIL;
             foreach (string t in new[] { ZonenKatalogSchema.TAB_ZONE, ZonenKatalogSchema.TAB_BAUTEIL, ZonenKatalogSchema.TAB_LUFTSTROM })
                 d[t] = GRUND_KATALOGZONEN;
+            d[BauteilkatalogSchema.TAB_ABSCHNITT_STAMM] = GRUND_ABSCHNITTE;
             return d;
         }
 

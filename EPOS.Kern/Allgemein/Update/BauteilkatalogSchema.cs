@@ -383,7 +383,9 @@ namespace WindowsFormsApplication1
             if (bestand.Contains(CHECK_HERKUNFT_NEU, StringComparison.Ordinal)) return null;
             if (!bestand.TrimEnd().EndsWith(") STRICT", StringComparison.Ordinal))
                 throw new InvalidOperationException(tabelle + " ist keine STRICT-Tabelle - der Schritt " + Nr + " baut sie nicht um.");
-            return Tauschen(Tauschen(bestand, tabelle, CHECK_HERKUNFT_ALT, CHECK_HERKUNFT_NEU), tabelle, CHECK_QUELLE_ALT, CHECK_QUELLE_NEU);
+            string ziel = Tauschen(bestand, tabelle, CHECK_HERKUNFT_ALT, CHECK_HERKUNFT_NEU);
+            // Die Quellklausel nur, wo sie noch die alte ist (ein Rückbau der Herkunft allein lässt sie stehen).
+            return ziel.Contains(CHECK_QUELLE_NEU, StringComparison.Ordinal) ? ziel : Tauschen(ziel, tabelle, CHECK_QUELLE_ALT, CHECK_QUELLE_NEU);
         }
 
         private static string Tauschen(string text, string tabelle, string alt, string neu)
