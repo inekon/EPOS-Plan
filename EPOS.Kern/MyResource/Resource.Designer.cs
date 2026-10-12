@@ -62993,7 +62993,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Kältemaschinen-Anlage des Projekts. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Kältemaschinen-Anlage des Projekts. Wärmepumpen im Kühlbetrieb stehen mit in der Liste, ihre Anlage bearbeitet der Wärmepumpendialog. ähnelt.
         /// </summary>
         public static string KI_DLG_KMA_ANLAGE_ERL {
             get {

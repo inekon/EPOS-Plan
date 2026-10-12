@@ -46119,7 +46119,7 @@ Chart</value>
     <value>Anlage</value>
   </data>
   <data name="KI_DLG_KMA_ANLAGE_ERL" xml:space="preserve">
-    <value>Die gewählte Kältemaschinen-Anlage des Projekts.</value>
+    <value>Die gewählte Kältemaschinen-Anlage des Projekts. Wärmepumpen im Kühlbetrieb stehen mit in der Liste, ihre Anlage bearbeitet der Wärmepumpendialog.</value>
   </data>
   <data name="KI_DLG_KMA_NAME_NAME" xml:space="preserve">
     <value>Name der Anlage</value>

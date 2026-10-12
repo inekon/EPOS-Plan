@@ -46112,7 +46112,7 @@ chart</value>
     <value>Plant</value>
   </data>
   <data name="KI_DLG_KMA_ANLAGE_ERL" xml:space="preserve">
-    <value>The selected chiller plant of the project.</value>
+    <value>The selected chiller plant of the project. Heat pumps in cooling mode are listed as well; their plant is edited in the heat pump dialog.</value>
   </data>
   <data name="KI_DLG_KMA_NAME_NAME" xml:space="preserve">
     <value>Plant name</value>
