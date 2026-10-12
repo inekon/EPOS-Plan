@@ -29573,6 +29573,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Aufbau“ ist gesperrt: Es liegt kein Bauteilvorschlag vor. {0} ähnelt.
+        /// </summary>
+        public static string GANS_AUFBAU_OHNE_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("GANS_AUFBAU_OHNE_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} ein- oder ausblenden ähnelt.
         /// </summary>
         public static string GANS_AUFBAU_SCHALTER {
@@ -29623,6 +29632,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GANS_BEFUND_OHNE {
             get {
                 return ResourceManager.GetString("GANS_BEFUND_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Befund“ ist gesperrt: Es liegt kein Bauteilvorschlag vor. {0} ähnelt.
+        /// </summary>
+        public static string GANS_BEFUND_OHNE_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("GANS_BEFUND_OHNE_VORSCHLAG", resourceCulture);
             }
         }
         
@@ -29839,6 +29857,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GANS_MODUS {
             get {
                 return ResourceManager.GetString("GANS_MODUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Bauteilbezug ({0}) ähnelt.
+        /// </summary>
+        public static string GANS_OHNE_BAUTEILBEZUG {
+            get {
+                return ResourceManager.GetString("GANS_OHNE_BAUTEILBEZUG", resourceCulture);
             }
         }
         
@@ -39710,6 +39737,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_BT_RAND_INNEN {
             get {
                 return ResourceManager.GetString("GIMP_BT_RAND_INNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die N,NO,O,SO,S,SW,W,NW ähnelt.
+        /// </summary>
+        public static string GIMP_BT_RICHTUNGEN {
+            get {
+                return ResourceManager.GetString("GIMP_BT_RICHTUNGEN", resourceCulture);
             }
         }
         

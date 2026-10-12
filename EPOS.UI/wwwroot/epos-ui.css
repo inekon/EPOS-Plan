@@ -1972,6 +1972,15 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     border-color: var(--epos-karte-rahmen-hover);
 }
 
+/* Ein gesperrter Umschalter (Farbmodus der Gebaeudeansicht) sieht gesperrt aus: hart (disabled) wie weich
+   (aria-disabled, anklickbar, damit sein title den Grund nennt) in EINER Regel - sonst wirkt er aktiv und tut nichts. */
+.epos-diagramm-knopf:disabled,
+.epos-diagramm-knopf[aria-disabled="true"] {
+    color: var(--epos-text-sehr-leise);
+    border-style: dashed;
+    cursor: not-allowed;
+}
+
 /* Waehrend eines Zuges wechselt der Zeiger - sonst sieht man nicht, dass
    gerade geschoben wird. */
 .epos-diagramm--zieht { cursor: grabbing; }

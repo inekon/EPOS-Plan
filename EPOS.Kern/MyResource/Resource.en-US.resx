@@ -38044,6 +38044,9 @@ This folder holds the standard template, the short report, the detailed template
   <data name="GIMP_DLG_KEINE_BAUTEILE" xml:space="preserve">
     <value>No components.</value>
   </data>
+  <data name="GIMP_BT_RICHTUNGEN" xml:space="preserve">
+    <value>N,NE,E,SE,S,SW,W,NW</value>
+  </data>
   <data name="GIMP_BT_AUS_SCHICHTEN" xml:space="preserve">
     <value>from layers</value>
   </data>
@@ -48285,6 +48288,15 @@ chart</value>
   </data>
   <data name="GANS_FARBMODUS_AUFBAU" xml:space="preserve">
     <value>Construction</value>
+  </data>
+  <data name="GANS_AUFBAU_OHNE_VORSCHLAG" xml:space="preserve">
+    <value>“Construction” is unavailable: there is no component proposal. {0}</value>
+  </data>
+  <data name="GANS_BEFUND_OHNE_VORSCHLAG" xml:space="preserve">
+    <value>“Findings” is unavailable: there is no component proposal. {0}</value>
+  </data>
+  <data name="GANS_OHNE_BAUTEILBEZUG" xml:space="preserve">
+    <value>without component reference ({0})</value>
   </data>
   <data name="GANS_AUFBAU_OHNE_STUFEN" xml:space="preserve">
     <value>“Construction” is unavailable: there are no assignment levels for the components (no component proposal).</value>
