@@ -105473,24 +105473,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die SIA 2024 ähnelt.
-        /// </summary>
-        public static string RNP_LBL_ART_SIA {
-            get {
-                return ResourceManager.GetString("RNP_LBL_ART_SIA", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 2078 ähnelt.
-        /// </summary>
-        public static string RNP_LBL_ART_VDI {
-            get {
-                return ResourceManager.GetString("RNP_LBL_ART_VDI", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Beleuchtung ähnelt.
         /// </summary>
         public static string RNP_LBL_BELEUCHTUNG {

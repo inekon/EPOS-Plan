@@ -1033,7 +1033,12 @@ namespace WindowsFormsApplication1
         /// <c>Kaelte_Art</c> (Raum/Prozess, Vorgabe Raum) an <c>Z_Projekt_Kaeltebedarf</c> und <c>Z_ProjektWaermebedarf</c>
         /// (<see cref="KaelteArtSchema"/>). <b>Ergebnisneutral:</b> Jede Bestandszeile steht auf Raum; ohne Prozesszeile ändert
         /// sich keine Zahl.
-        public const int Zielversion = KaelteArtSchema.SCHRITT;
+        /// Danach, mit dem WEGFALL DER KATEGORIEN SIA 2024 UND VDI 2078 (NP6, E129), steht das Ziel auf
+        /// <see cref="RaumnutzungNormkategorienSchema.SCHRITT"/>: Die beiden leeren, ausgelieferten Kategorien des Katalogs der
+        /// Nutzungsprofile fallen weg, die Kategorie DIN bekommt die zwei Wohnprofile nach Tabelle 5 ohne Werte
+        /// (<see cref="RaumnutzungNormkategorienSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg
+        /// liest eine Kategorie.
+        public const int Zielversion = RaumnutzungNormkategorienSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

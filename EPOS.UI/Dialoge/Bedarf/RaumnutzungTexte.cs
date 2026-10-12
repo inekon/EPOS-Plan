@@ -44,12 +44,6 @@ public sealed class RaumnutzungTexte
     /// <summary>Die Art „DIN V 18599-10" (<c>RNP_LBL_ART_DIN</c>).</summary>
     public string ArtDin { get; set; } = "DIN/TS 18599-10";
 
-    /// <summary>Die Art „SIA 2024" (<c>RNP_LBL_ART_SIA</c>).</summary>
-    public string ArtSia { get; set; } = "SIA 2024";
-
-    /// <summary>Die Art „VDI 2078" (<c>RNP_LBL_ART_VDI</c>).</summary>
-    public string ArtVdi { get; set; } = "VDI 2078";
-
     /// <summary>Die Art „Eigene" (<c>RNP_LBL_ART_EIGEN</c>).</summary>
     public string ArtEigen { get; set; } = "Eigene";
 

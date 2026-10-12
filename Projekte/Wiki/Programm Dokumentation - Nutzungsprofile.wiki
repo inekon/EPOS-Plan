@@ -23,9 +23,8 @@ Das Blatt trägt zwei Reiter: ''Profile'' mit Katalogbaum und Profileditor und '
 Links stehen die Kategorien mit ihren Profilen, nach Nummer und Name sortiert. Die Suche findet Nummer und Name.
 
 * '''EPOS-Muster''' – ausgelieferte Muster zum Einstieg, schreibgeschützt (Schloss).
-* '''DIN/TS 18599-10''' – ausgeliefert sind Nummern und Namen der 43 Nutzungen der Ausgabe 2025-10, ohne Werte. Zum Eintragen von Werten ''Duplizieren''.
-* '''SIA 2024''' und '''VDI 2078''' – ausgelieferte, zunächst leere Kategorien.
-* '''Eigene Kategorien''' – Ihre eigenen Kataloge, frei bearbeitbar.
+* '''DIN/TS 18599-10''' – ausgeliefert sind Nummern und Namen der 43 Nutzungen der Ausgabe 2025-10 und, am Ende der Kategorie ohne Nummer, die Wohngebäude nach Tabelle 5 (Einfamilienhaus, Mehrfamilienhaus), alle ohne Werte. Zum Eintragen von Werten ''Duplizieren''.
+* '''Eigene Kategorien''' – Ihre eigenen Kataloge, frei bearbeitbar; auch für Werte aus weiteren Normen und Richtlinien, die Sie lizenziert haben (anlegen, duplizieren oder per CSV einlesen).
 
 Unter dem Baum stehen ''Neue Kategorie…'', ''Neues Profil…'', ''Duplizieren'' (auch in eine andere Kategorie), ''Umbenennen'' und ''Löschen''. Ausgelieferte Kategorien und Profile lassen sich nur duplizieren.
 
