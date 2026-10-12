@@ -345,6 +345,17 @@ Projektzeile ihre Projektkopie in der Satz-Überlagerung (nur, wo der Wirt den W
 Katalogzeile die Satz-Überlagerung nur lesend, eine ungesperrte den Katalogeditor (KA‑E‑13). „Bearbeiten…“ in den
 Bereichsleisten bleibt der Weg für mehrere gewählte Sätze.
 
+**Zweispaltige Überlagerung mit Gerätesteckbrief (KA‑E‑25, Anwenderentscheid 12.10.2026):** Die Satz-Überlagerung eines
+einzelnen Satzes steht bei allen Wirten zweispaltig: links, schmal, die Projektfelder des Wirts (Träger, Grenzleistung,
+Vor- und Rücklauf, Senken, Ausrichtung — was der Wirt hat; beim Katalogsatz entfällt dieser Block) und darunter die Gruppe
+„Gewähltes Gerät“ (bei Wärme- und Kältebedarf extern „Gewählter Lastgang“) mit dem Baustein `Geraetesteckbrief`; rechts die
+Kenndaten mit „Alle Daten“. Der Steckbrief ist lesend und nennt die wichtigsten Daten des Satzes in 8 bis 14 Zeilen:
+Beschriftung und Einheit aus dem Katalogprofil, Zahlen im Anzeigeformat, ein Schalter als Ja/Nein, ein fehlender Wert als
+„—“, der Name immer, am Projektsatz Invest und Betrieb der Anlage. Er liest denselben Feldsatz, den die Felder rechts
+bearbeiten, und folgt jeder Eingabe im selben Zeichenlauf; abgeleitete Werte zeigt er nur, wo der Kern sie liefert
+(Arbeitspunkt der Wärmepumpe). Unter 900 px Breite stehen die Spalten untereinander (Regeln `.epos-satz-zweispaltig*`, bei
+der Wärmepumpe `.epos-wp-abschnitte`); in der Detailzeile bleibt der Aufbau einspaltig. Die Infoknöpfe bleiben an ihrem Ort.
+
 ### 4.7 Tastatur
 
 - Tab-Folge: Dialogkopf → Projekt-Kopfleiste → Projektliste → Trennlinie → Katalog-Kopfleiste (Suche,
@@ -698,6 +709,8 @@ Wärmepumpe, Pufferspeicher).
   bleibt (Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage). Die Meldung danach (Banner) nennt
   Zahl und Namen.
 
+**Gerätesteckbrief (KA‑E‑25):** In der Satz-Überlagerung stehen links unter „Anlage im Projekt“ Brennstoff Variante und die Auslegung für Verteilung, darunter „Gewähltes Gerät“ (Name, Hersteller, Brennwert, Brennstoff, Leistung, Mindestleistung, η₃₀, Wirkungsgrade Gas und Öl, Bereitschaftsverlust, Vorlauf, am Projektsatz Invest und Betrieb); rechts die Kenndaten.
+
 ### 5.4 Wie gebaut (Stufe 3, BHKW)
 
 Das BHKW folgt dem Heizkessel (5.3); hier steht nur, was abweicht.
@@ -721,6 +734,8 @@ Das BHKW folgt dem Heizkessel (5.3); hier steht nur, was abweicht.
   Anlage, Senken und Zeitprogramm.
 - **Neu…:** fragt zuerst den Namen und öffnet dann den Katalogeditor (`BhkwKatalogDialog` braucht ihn); der Knopf
   steht wie beim Heizkessel rechts im Katalogfuß.
+
+**Gerätesteckbrief (KA‑E‑25):** Links stehen Brennstoff Variante, Grenzleistung samt Herleitung, Vor- und Rücklauf und Senken, darunter „Gewähltes Gerät“ (Name, Hersteller, Energieträger, P_el, P_th, η_el, η_th, η gesamt, Grenzleistung, Mindestlaufzeit, höchster Rücklauf, Wartung, am Projektsatz Invest und Betrieb).
 
 ### 5.5 Wie gebaut (Stufe 3, Pufferspeicher)
 
@@ -752,6 +767,8 @@ Der Pufferspeicher folgt dem BHKW (5.4); hier steht nur, was abweicht.
   Katalogsätze entstehen über die Katalogverwaltung im Menü, über „Speichern unter" im Katalogeditor oder über den
   Rückweg.
 
+**Gerätesteckbrief (KA‑E‑25):** Der Puffer führt in der Überlagerung keine Projektfelder; links steht allein „Gewähltes Gerät“ (Name, Hersteller, Speichertyp, Volumen, Bereitschaftsverluste, am Projektsatz Verwendung, Vor- und Rücklauf aus den Projektangaben, Invest und Betrieb).
+
 ### 5.6 Wie gebaut (Stufe 3, Stromspeicher)
 
 Der Stromspeicher folgt Heizkessel und BHKW (5.3, 5.4); hier steht nur, was abweicht.
@@ -782,6 +799,8 @@ Der Stromspeicher folgt Heizkessel und BHKW (5.3, 5.4); hier steht nur, was abwe
 - **Löschen:** Der Projektdialog hatte keinen Löschknopf; jetzt steht er im Katalogfuß (Rückfrage, mehrere mit
   Überspringen der gesperrten), geschrieben über `StromspeicherStammCtrl.Loeschen`.
 
+**Gerätesteckbrief (KA‑E‑25):** Links stehen der Energieträger der Anlage und „Gewähltes Gerät“ (Name, Hersteller, Typ, Kapazität, Leistung, Wirkungsgrad, Ladezustand, Zyklen, Degradation, Standby, Selbstentladung, Modulkosten, am Projektsatz Invest und Betrieb).
+
 ### 5.7 Wie gebaut (Stufe 3, Solarkollektoren)
 
 Die Solarkollektoren folgen Heizkessel und BHKW (5.3, 5.4); hier steht nur, was abweicht.
@@ -808,6 +827,8 @@ Die Solarkollektoren folgen Heizkessel und BHKW (5.3, 5.4); hier steht nur, was 
   Anlage und die Senken (`Z_AnlageSenke`); die Ergebnistabellen der Simulation verweisen nicht auf die Kopie.
 - **Neu…:** fragt zuerst den Namen und öffnet dann den `SolarkollektorKatalogDialog` im Modus Neu; danach ist der neue
   Satz gewählt. „Bearbeiten…“ auf einen einzelnen ungesperrten Satz öffnet denselben Editor im Modus Bearbeiten.
+
+**Gerätesteckbrief (KA‑E‑25):** Links stehen das Kollektorfeld (Anzahl, Ausrichtung, Albedo, Solarkreis, Senken) und „Gewähltes Gerät“ (Name, Hersteller, Kollektortyp, Bezugs-, Brutto- und Aperturfläche, η₀, k₁, k₂, Kdir, Kdiff, am Projektsatz Invest und Betrieb).
 
 ### 5.8 Wie gebaut (Stufe 3, Wärmepumpe)
 
@@ -843,6 +864,8 @@ Die Wärmepumpe folgt dem BHKW (5.4); hier steht nur, was abweicht.
   der Übergabegrenze. Anlagenbezogen bleiben Betriebsart, Temperaturen, Bivalenz, Heizstab, Sperrzeiten und
   Zeitprogramm, die Quellfelder `WQ_*`, Einbindung, Vorwärmbetrieb, `Vorlauf_Max` und die Senken; die Rückfrage nennt es.
 
+**Gerätesteckbrief (KA‑E‑25):** Links unter „Auslegung für Verteilung“ steht „Gewähltes Gerät“ mit 14 Zeilen samt Heizleistung und COP am eingestellten Vorlauf (Kern `Kennlinienarbeitspunkt`).
+
 ### 5.9 Wie gebaut (Stufe 3, Photovoltaik)
 
 Die Photovoltaik folgt Heizkessel, BHKW und Stromspeicher (5.3, 5.4, 5.6); hier steht nur, was abweicht.
@@ -873,6 +896,8 @@ Die Photovoltaik folgt Heizkessel, BHKW und Stromspeicher (5.3, 5.4, 5.6); hier 
   Modulkatalog (`ModulKatalogDialog`, Parameter `Vorwahl`) mit Neu…, Duplizieren…, Löschen und Import…; der bisherige Knopf
   „Modul Bearbeiten…" öffnete den Modulkatalog ohne Vorwahl auch ohne gewählten Satz. Ist nur ein gesperrter Satz
   gewählt, ist Neu… allein über einen ungesperrten Satz oder die Verwaltung im Menü erreichbar.
+
+**Gerätesteckbrief (KA‑E‑25):** Links stehen der Anlagenblock (Neigung, Azimut, Träger, Modulanzahl, Ertragsmodell, Stränge) und „Gewähltes Gerät“ (Modul, Hersteller, Technologie, P_MPP, Wirkungsgrad, Länge, Breite, α, β, γ, T_NOCT, U_MPP, I_MPP, am Projektsatz Invest und Betrieb).
 
 ### 5.10 Wie gebaut (Stufe 5, Kältemaschine)
 
@@ -1019,6 +1044,8 @@ Datenbank haben sie nicht (die Zuordnung trägt nur Name und Kanal, die Projektk
 | Wärmebedarf extern, vorher | 1 110 × 153 px, 100 px | 1 118 × 154 px, 80 px | 982 × 154 px, 32 px |
 | Wärmebedarf extern, nachher | 1 110 × 152 px, 0 px | 1 118 × 160 px, 0 px | 982 × 208 px, 0 px |
 | Stromganglinie, nachher | 1 110 × 152 px, 0 px | 1 118 × 160 px, 0 px | 982 × 208 px, 0 px |
+
+**Gerätesteckbrief (KA‑E‑25):** Die Überlagerung von Wärme- und Kältebedarf extern steht zweispaltig: links Stammdaten, Deckung und „Gewählter Lastgang“ (Bezeichner, Kanal, Art, Jahresarbeit, Spitzenlast, Vollbenutzungsstunden, Deckung, Herkunft), rechts die Ganglinie.
 
 ### 5.12 Wie gebaut (Stufe 4, Solar- und PV-Ganglinie)
 

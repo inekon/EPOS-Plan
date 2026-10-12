@@ -258,6 +258,36 @@
         }
         else
         {
+            @* DIE ZWEISPALTIGE SATZ-UEBERLAGERUNG (WP1b, KA-E-25, Anwenderentscheid 12.10.2026: „auf der linken
+               Seite Daten zur ausgewaehlten Anlage - aus dem Datensatz die wichtigsten Daten"): links die Projektfelder
+               (nur Projektsatz) und darunter der Geraetesteckbrief, lesend aus DEMSELBEN Feldsatz, den die Felder rechts
+               bearbeiten; rechts die Kenndaten wie in der Detailzeile. In der Detailzeile bleibt der Aufbau einspaltig. *@
+            <div class="@SatzAufbauKlasse">
+            @if (_satzGross)
+            {
+                <section class="epos-satz-zweispaltig-links">
+                    @if (_projektZeile is not null)
+                    {
+                        <Gruppenkopf Titel="@SteckbriefTexte.GruppeProjekt">
+                            <KindInhalt>
+                                <Formularraster Einspaltig="true">
+                                    <KindInhalt>
+                                        @TraegerwahlFeld
+                                        @Projektfelder
+                                    </KindInhalt>
+                                </Formularraster>
+                            </KindInhalt>
+                        </Gruppenkopf>
+                    }
+                    <Gruppenkopf Titel="@SteckbriefTexte.GruppeGeraet">
+                        <KindInhalt>
+                            <Geraetesteckbrief Titel="@SteckbriefTexte.GruppeGeraet" TitelAnzeigen="false"
+                                               Klasse="epos-satz-steckbrief epos-hk-steckbrief" Zeilen="@Steckbriefzeilen" />
+                        </KindInhalt>
+                    </Gruppenkopf>
+                </section>
+            }
+            <section class="epos-satz-zweispaltig-rechts">
             <Formularraster>
                 <KindInhalt>
                 <Textfeld Bezeichnung="@LabelName" Wert="@_detail.Bezeichner" NurLesen="true" />
@@ -265,7 +295,7 @@
                 {
                     @* Brennstoff Typ und Brennstoff Variante untereinander (16.09.2026): beide
                        in EINEM Block ueber die volle Rasterbreite. *@
-                    @if (_projektZeile is not null && feld.Feld == LabelBrennstofftyp)
+                    @if (_projektZeile is not null && feld.Feld == LabelBrennstofftyp && !_satzGross)
                     {
                         <div class="epos-feld--breit">
                             <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true" />
@@ -286,32 +316,15 @@
                               Wert="@_detail.Schalter.Value.Wert" Aktiv="false" />
                 }
 
-                @* Die Traegerwahl gilt nur fuer eine PROJEKTzeile. *@
-                @if (_projektZeile is not null)
+                @* Die Traegerwahl gilt nur fuer eine PROJEKTzeile; in der Satz-Ueberlagerung steht sie links (WP1b). *@
+                @if (_projektZeile is not null && !_satzGross)
                 {
                     @if (!BrennstofftypImDetail)
                     {
                         @TraegerwahlFeld
                     }
 
-                    @* AUSLEGUNG FUER VERTEILUNG (30.09.2026): Vorlauf und Ruecklauf
-                       nebeneinander, darunter die Herkunft der Vorbelegung, dann die Senken. *@
-                    <Formulargruppe Titel="@GruppeAuslegung">
-                        <KindInhalt>
-                        <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="°C"
-                                      Wert="@_projektZeile.Vorlauf" WertChanged="BeiVorlauf" />
-                        <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="°C"
-                                      Wert="@_projektZeile.Ruecklauf" WertChanged="BeiRuecklauf" />
-                        @if (!string.IsNullOrEmpty(_projektZeile.TemperaturHerleitung))
-                        {
-                            <Herleitungszeile Text="@_projektZeile.TemperaturHerleitung" />
-                        }
-                        @if (!string.IsNullOrEmpty(_projektZeile.Senken))
-                        {
-                            <Herleitungszeile Text="@_projektZeile.Senken" />
-                        }
-                        </KindInhalt>
-                    </Formulargruppe>
+                    @Projektfelder
                 }
                 </KindInhalt>
             </Formularraster>
@@ -342,6 +355,8 @@
                     }
                 </div>
             }
+            </section>
+            </div>
         }
         </Satz>
     </Zweispaltenauswahl>
@@ -1924,4 +1939,44 @@
         _meldung = grund ?? "";
         _meldungStufe = WarnStufe.Warnung;
     }
+    // --- Der Geraetesteckbrief der Satz-Ueberlagerung (WP1b, KA-E-25) -------------------
+
+    /// <summary>Die Beschriftungen des Gerätesteckbriefs; füllen sich selbst aus den Ressourcen.</summary>
+    [Parameter] public HeizkesselSteckbriefTexte SteckbriefTexte { get; set; } = new();
+
+    /// <summary>Zweispaltig nur in der Satz-Überlagerung; in der Detailzeile bleibt der Aufbau, wie er ist.</summary>
+    private string SatzAufbauKlasse => _satzGross ? "epos-satz-zweispaltig" : "epos-satz-einspaltig";
+
+    /// <summary>
+    /// Die Zeilen des Steckbriefs — je Zeichenlauf aus dem Feldsatz „Alle Daten" (in der Überlagerung aufgeklappt),
+    /// den die Felder rechts bearbeiten; ohne Feldsatz aus dem Detailblock. Am Projektsatz mit den Kostensummen.
+    /// </summary>
+    internal IReadOnlyList<Steckbriefzeile> Steckbriefzeilen => HeizkesselSteckbrief.Zeilen(_felder, _detail, SteckbriefTexte, _projektZeile is not null ? _kosten : null);
+
+    /// <summary>
+    /// Die Auslegung für Verteilung (Vorlauf, Rücklauf, Herkunft, Senken) — EIN Fragment für die Detailzeile und die
+    /// linke Spalte der Satz-Überlagerung (WP1b).
+    /// </summary>
+    private RenderFragment Projektfelder => __builder =>
+    {
+        if (_projektZeile is null) return;
+        @* AUSLEGUNG FUER VERTEILUNG (30.09.2026): Vorlauf und Ruecklauf
+           nebeneinander, darunter die Herkunft der Vorbelegung, dann die Senken. *@
+        <Formulargruppe Titel="@GruppeAuslegung">
+            <KindInhalt>
+            <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="°C"
+                          Wert="@_projektZeile.Vorlauf" WertChanged="BeiVorlauf" />
+            <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="°C"
+                          Wert="@_projektZeile.Ruecklauf" WertChanged="BeiRuecklauf" />
+            @if (!string.IsNullOrEmpty(_projektZeile.TemperaturHerleitung))
+            {
+                <Herleitungszeile Text="@_projektZeile.TemperaturHerleitung" />
+            }
+            @if (!string.IsNullOrEmpty(_projektZeile.Senken))
+            {
+                <Herleitungszeile Text="@_projektZeile.Senken" />
+            }
+            </KindInhalt>
+        </Formulargruppe>
+    };
 }

@@ -123384,6 +123384,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählter Lastgang ähnelt.
+        /// </summary>
+        public static string SST_GRP_LASTGANG {
+            get {
+                return ResourceManager.GetString("SST_GRP_LASTGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage im Projekt ähnelt.
+        /// </summary>
+        public static string SST_GRP_PROJEKT {
+            get {
+                return ResourceManager.GetString("SST_GRP_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
+        /// </summary>
+        public static string SST_LBL_HERKUNFT {
+            get {
+                return ResourceManager.GetString("SST_LBL_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ➕ Neue Variante anlegen… ähnelt.
         /// </summary>
         public static string START_BTN_VARIANTE_ANLEGEN {

@@ -19,66 +19,81 @@
 @using WindowsFormsApplication1
 
 <div class="epos-wbx-felder @(Zeile is null ? "epos-wbx-felder--katalog" : "epos-wbx-felder--projekt")">
-    <section class="epos-wbx-abschnitt epos-wbx-abschnitt--stamm">
-        <Gruppenkopf Titel="@Resource.WBX_GRP_STAMM">
-            <KindInhalt>
-                <Formularraster>
+    @* ZWEISPALTIG (WP1b, KA-E-25, Anwenderentscheid 12.10.2026): links die Projektfelder (Stammdaten, Deckung) und
+       darunter der Steckbrief „Gewaehlter Lastgang"; rechts die Ganglinie. Unter 900 px stehen beide untereinander. *@
+    <div class="epos-satz-zweispaltig">
+        <section class="epos-satz-zweispaltig-links">
+            <section class="epos-wbx-abschnitt epos-wbx-abschnitt--stamm">
+                <Gruppenkopf Titel="@Resource.WBX_GRP_STAMM">
                     <KindInhalt>
-                        <Textfeld Bezeichnung="@Resource.WBX_LBL_BEZEICHNER" Wert="@Bezeichner" NurLesen="true" />
-                        @if (Zeile is WaermebedarfExternZeile z)
+                        <Formularraster>
+                            <KindInhalt>
+                                <Textfeld Bezeichnung="@Resource.WBX_LBL_BEZEICHNER" Wert="@Bezeichner" NurLesen="true" />
+                                @if (Zeile is WaermebedarfExternZeile z)
+                                {
+                                    @if (Modus == WaermebedarfExternModus.Alle)
+                                    {
+                                        <Auswahlfeld Bezeichnung="@KanalBezeichnung" Eintraege="@Kanaleintraege"
+                                                     Auswahl="@Kanalindex(z)" AuswahlChanged="KanalWaehlen" Aktiv="@(!NurLesen)" />
+                                    }
+                                    @if (IstKuehlzeile(z))
+                                    {
+                                        @* KWN-0: die Art der Kaeltezeile (Raum/Prozess); ihr Hinweis steht im Tooltipp der Infozeile darunter. *@
+                                        <Auswahlfeld Bezeichnung="@KaelteArtBezeichnung" Eintraege="@KaelteArteintraege"
+                                                     Auswahl="@KaelteArtindex(z)" AuswahlChanged="KaelteArtWaehlen" Aktiv="@(!NurLesen)" />
+                                    }
+                                }
+                            </KindInhalt>
+                        </Formularraster>
+                        @if (Zeile is WaermebedarfExternZeile k && IstKuehlzeile(k))
                         {
-                            @if (Modus == WaermebedarfExternModus.Alle)
-                            {
-                                <Auswahlfeld Bezeichnung="@KanalBezeichnung" Eintraege="@Kanaleintraege"
-                                             Auswahl="@Kanalindex(z)" AuswahlChanged="KanalWaehlen" Aktiv="@(!NurLesen)" />
-                            }
-                            @if (IstKuehlzeile(z))
-                            {
-                                @* KWN-0: die Art der Kaeltezeile (Raum/Prozess); ihr Hinweis steht im Tooltipp der Infozeile darunter. *@
-                                <Auswahlfeld Bezeichnung="@KaelteArtBezeichnung" Eintraege="@KaelteArteintraege"
-                                             Auswahl="@KaelteArtindex(z)" AuswahlChanged="KaelteArtWaehlen" Aktiv="@(!NurLesen)" />
-                            }
+                            @* OP-2 (K5a): im Modus „Alle“ sagt die Infozeile, wo Kaeltelastgaenge gepflegt werden (kein Banner);
+                               im Modus „nur Kuehlung“ steht dort, was der Kuehlkanal ist. *@
+                            <p class="epos-wbx-hinweis@(Modus == WaermebedarfExternModus.Alle ? " epos-wbx-hinweis--op2" : "")" role="note"
+                               title="@(HinweisKaelteArt + " " + HinweisKanalKuehlung)">@(Modus == WaermebedarfExternModus.Alle ? HinweisKaelteExtern : HinweisKanalKuehlung)</p>
+                        }
+                        else if (Zeile is null)
+                        {
+                            <p class="epos-nurprojekt-hinweis" role="note">@HinweisNurImProjekt</p>
                         }
                     </KindInhalt>
-                </Formularraster>
-                @if (Zeile is WaermebedarfExternZeile k && IstKuehlzeile(k))
-                {
-                    @* OP-2 (K5a): im Modus „Alle“ sagt die Infozeile, wo Kaeltelastgaenge gepflegt werden (kein Banner);
-                       im Modus „nur Kuehlung“ steht dort, was der Kuehlkanal ist. *@
-                    <p class="epos-wbx-hinweis@(Modus == WaermebedarfExternModus.Alle ? " epos-wbx-hinweis--op2" : "")" role="note"
-                       title="@(HinweisKaelteArt + " " + HinweisKanalKuehlung)">@(Modus == WaermebedarfExternModus.Alle ? HinweisKaelteExtern : HinweisKanalKuehlung)</p>
-                }
-                else if (Zeile is null)
-                {
-                    <p class="epos-nurprojekt-hinweis" role="note">@HinweisNurImProjekt</p>
-                }
-            </KindInhalt>
-        </Gruppenkopf>
-    </section>
+                </Gruppenkopf>
+            </section>
+            @if (Zeile is WaermebedarfExternZeile d && IstKuehlzeile(d))
+            {
+                <section class="epos-wbx-abschnitt epos-wbx-abschnitt--deckung">
+                    <Gruppenkopf Titel="@Resource.DECK_GRUPPE">
+                        <KindInhalt>
+                            <DeckungsartFelder Daten="@d.Deckung" Stromtraeger="@Stromtraeger" Gesperrt="@NurLesen"
+                                               TitelAnzeigen="false" Geaendert="BeiGeaendert" />
+                        </KindInhalt>
+                    </Gruppenkopf>
+                </section>
+            }
 
-    <section class="epos-wbx-abschnitt epos-wbx-abschnitt--ganglinie">
-        <Gruppenkopf Titel="@Resource.WBX_GRP_GANGLINIE">
-            <KindInhalt>
-                @if (Ganglinienknoepfe is not null)
-                {
-                    <div class="epos-leiste epos-wbx-ganglinienleiste">@Ganglinienknoepfe</div>
-                }
-                @Ganglinie
-            </KindInhalt>
-        </Gruppenkopf>
-    </section>
-
-    @if (Zeile is WaermebedarfExternZeile d && IstKuehlzeile(d))
-    {
-        <section class="epos-wbx-abschnitt epos-wbx-abschnitt--deckung">
-            <Gruppenkopf Titel="@Resource.DECK_GRUPPE">
-                <KindInhalt>
-                    <DeckungsartFelder Daten="@d.Deckung" Stromtraeger="@Stromtraeger" Gesperrt="@NurLesen"
-                                       TitelAnzeigen="false" Geaendert="BeiGeaendert" />
-                </KindInhalt>
-            </Gruppenkopf>
+            <section class="epos-wbx-abschnitt epos-wbx-abschnitt--steckbrief">
+                <Gruppenkopf Titel="@SteckbriefTitel">
+                    <KindInhalt>
+                        <Geraetesteckbrief Titel="@SteckbriefTitel" TitelAnzeigen="false"
+                                           Klasse="epos-satz-steckbrief epos-wbx-steckbrief" Zeilen="@Steckbriefzeilen" />
+                    </KindInhalt>
+                </Gruppenkopf>
+            </section>
         </section>
-    }
+        <section class="epos-satz-zweispaltig-rechts">
+            <section class="epos-wbx-abschnitt epos-wbx-abschnitt--ganglinie">
+                <Gruppenkopf Titel="@Resource.WBX_GRP_GANGLINIE">
+                    <KindInhalt>
+                        @if (Ganglinienknoepfe is not null)
+                        {
+                            <div class="epos-leiste epos-wbx-ganglinienleiste">@Ganglinienknoepfe</div>
+                        }
+                        @Ganglinie
+                    </KindInhalt>
+                </Gruppenkopf>
+            </section>
+        </section>
+    </div>
 </div>
 
 @code {
@@ -115,6 +130,12 @@
 
     /// <summary>Die Grafik der Ganglinie mit Kennzahlen — vom Wirt; <c>null</c> = keine brauchbare Reihe.</summary>
     [Parameter] public RenderFragment? Ganglinie { get; set; }
+
+    /// <summary>Die Zeilen des Steckbriefs „Gewählter Lastgang" (WP1b) — vom Wirt, je Zeichenlauf aus Zeile und Kennzahlen.</summary>
+    [Parameter] public IReadOnlyList<Steckbriefzeile> Steckbriefzeilen { get; set; } = Array.Empty<Steckbriefzeile>();
+
+    /// <summary>Der Titel des Steckbriefs (Gruppenkopf).</summary>
+    [Parameter] public string SteckbriefTitel { get; set; } = new WaermebedarfExternSteckbriefTexte().GruppeLastgang;
 
     /// <summary>Jede Eingabe meldet sich beim Wirt.</summary>
     [Parameter] public EventCallback Geaendert { get; set; }

@@ -240,6 +240,23 @@
         }
         else
         {
+            @* DIE ZWEISPALTIGE SATZ-UEBERLAGERUNG (WP1b, KA-E-25, Anwenderentscheid 12.10.2026: „auf der linken
+               Seite Daten zur ausgewaehlten Anlage - aus dem Datensatz die wichtigsten Daten"): links die Projektfelder
+               (nur Projektsatz) und darunter der Geraetesteckbrief, lesend aus DEMSELBEN Feldsatz, den die Felder rechts
+               bearbeiten; rechts die Kenndaten wie in der Detailzeile. In der Detailzeile bleibt der Aufbau einspaltig. *@
+            <div class="@SatzAufbauKlasse">
+            @if (_satzGross)
+            {
+                <section class="epos-satz-zweispaltig-links">
+                    <Gruppenkopf Titel="@SteckbriefTexte.GruppeGeraet">
+                        <KindInhalt>
+                            <Geraetesteckbrief Titel="@SteckbriefTexte.GruppeGeraet" TitelAnzeigen="false"
+                                               Klasse="epos-satz-steckbrief epos-pspd-steckbrief" Zeilen="@Steckbriefzeilen" />
+                        </KindInhalt>
+                    </Gruppenkopf>
+                </section>
+            }
+            <section class="epos-satz-zweispaltig-rechts">
             <Formularraster>
                 <KindInhalt>
                 <Textfeld Bezeichnung="@LabelName" Wert="@_detail.Bezeichner" NurLesen="true" />
@@ -277,6 +294,8 @@
                     }
                 </div>
             }
+            </section>
+            </div>
         }
         </Satz>
     </Zweispaltenauswahl>
@@ -1369,4 +1388,26 @@
         _meldung = grund ?? "";
         _meldungStufe = WarnStufe.Warnung;
     }
+    // --- Der Geraetesteckbrief der Satz-Ueberlagerung (WP1b, KA-E-25) -------------------
+
+    /// <summary>Die Beschriftungen des Gerätesteckbriefs; füllen sich selbst aus den Ressourcen.</summary>
+    [Parameter] public PufferspeicherSteckbriefTexte SteckbriefTexte { get; set; } = new();
+
+    /// <summary>Zweispaltig nur in der Satz-Überlagerung; in der Detailzeile bleibt der Aufbau, wie er ist.</summary>
+    private string SatzAufbauKlasse => _satzGross ? "epos-satz-zweispaltig" : "epos-satz-einspaltig";
+
+    /// <summary>
+    /// Die Zeilen des Steckbriefs — je Zeichenlauf aus dem Feldsatz „Alle Daten" (in der Überlagerung aufgeklappt),
+    /// den die Felder rechts bearbeiten; ohne Feldsatz aus dem Detailblock. Am Projektsatz mit den Kostensummen.
+    /// </summary>
+    internal IReadOnlyList<Steckbriefzeile> Steckbriefzeilen => PufferspeicherSteckbrief.Zeilen(_felder, _detail, SteckbriefTexte,
+        _projektZeile is not null ? _kosten : null, _projektZeile is null ? null : new Steckbriefzeile[]
+        {
+            // Die Angaben der Anlage im Projekt (dieselbe Quelle wie die Zusammenfassung der Detailzeile).
+            new(Resource.AUSWAHL_ZF_VERWENDUNG, _angaben?.Verwendung, Kennung: "verwendung"),
+            new(Satzsteckbrief.Beschriftung(SteckbriefTexte.LabelVorlauf),
+                _angaben?.Vorlauf is int v && v > 0 ? Zahlen.Anzeigetext(v) : null, SteckbriefTexte.EinheitGrad, Kennung: "vorlauf"),
+            new(Satzsteckbrief.Beschriftung(SteckbriefTexte.LabelRuecklauf),
+                _angaben?.Ruecklauf is int r && r > 0 ? Zahlen.Anzeigetext(r) : null, SteckbriefTexte.EinheitGrad, Kennung: "ruecklauf"),
+        });
 }

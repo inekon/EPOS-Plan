@@ -51487,6 +51487,15 @@ Chart</value>
   <data name="WPA_STB_BETRIEB" xml:space="preserve">
     <value>Betrieb</value>
   </data>
+  <data name="SST_GRP_PROJEKT" xml:space="preserve">
+    <value>Anlage im Projekt</value>
+  </data>
+  <data name="SST_GRP_LASTGANG" xml:space="preserve">
+    <value>Gewählter Lastgang</value>
+  </data>
+  <data name="SST_LBL_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
   <data name="WPA_KOPF_BZ_LEER" xml:space="preserve">
     <value>nicht gepflegt — immer verfügbar</value>
   </data>

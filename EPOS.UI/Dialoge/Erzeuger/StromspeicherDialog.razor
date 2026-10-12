@@ -223,6 +223,41 @@
         }
         else
         {
+            @* DIE ZWEISPALTIGE SATZ-UEBERLAGERUNG (WP1b, KA-E-25, Anwenderentscheid 12.10.2026: „auf der linken
+               Seite Daten zur ausgewaehlten Anlage - aus dem Datensatz die wichtigsten Daten"): links die Projektfelder
+               (nur Projektsatz) und darunter der Geraetesteckbrief, lesend aus DEMSELBEN Feldsatz, den die Felder rechts
+               bearbeiten; rechts die Kenndaten wie in der Detailzeile. In der Detailzeile bleibt der Aufbau einspaltig. *@
+            <div class="@SatzAufbauKlasse">
+            @if (_satzGross)
+            {
+                <section class="epos-satz-zweispaltig-links">
+                    @if (_projektZeile is not null)
+                    {
+                        <Gruppenkopf Titel="@SteckbriefTexte.GruppeProjekt">
+                            <KindInhalt>
+                                <Formularraster Einspaltig="true">
+                                    <KindInhalt>
+                                        @if (Traegerkatalog.Count > 0)
+                                        {
+                                            <EnergietraegerWahl Eintraege="@Traegerkatalog"
+                                                                LabelGruppe="@LabelTraegerGruppe" LabelArt="@LabelTraegerArt"
+                                                                Auswahl="@(_projektZeile.CarrierId > 0 ? _projektZeile.CarrierId : null)"
+                                                                AuswahlChanged="BeiTraegerwechsel" />
+                                        }
+                                    </KindInhalt>
+                                </Formularraster>
+                            </KindInhalt>
+                        </Gruppenkopf>
+                    }
+                    <Gruppenkopf Titel="@SteckbriefTexte.GruppeGeraet">
+                        <KindInhalt>
+                            <Geraetesteckbrief Titel="@SteckbriefTexte.GruppeGeraet" TitelAnzeigen="false"
+                                               Klasse="epos-satz-steckbrief epos-stsp-steckbrief" Zeilen="@Steckbriefzeilen" />
+                        </KindInhalt>
+                    </Gruppenkopf>
+                </section>
+            }
+            <section class="epos-satz-zweispaltig-rechts">
             <Formularraster>
                 <KindInhalt>
                 <Textfeld Bezeichnung="@LabelName" Wert="@_detail.Bezeichner" NurLesen="true" />
@@ -231,8 +266,9 @@
                     <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true"
                               Kurz="@ErzeugerDetail.IstZahl(feld.Wert)" />
                 }
-                @* ET-5: der Energietraeger der PROJEKTzeile (4.2: S aufgeklappt, nur Projektsatz). *@
-                @if (_projektZeile is not null && Traegerkatalog.Count > 0)
+                @* ET-5: der Energietraeger der PROJEKTzeile (4.2: S aufgeklappt, nur Projektsatz); in der
+                   Satz-Ueberlagerung steht er links (WP1b). *@
+                @if (_projektZeile is not null && Traegerkatalog.Count > 0 && !_satzGross)
                 {
                     <EnergietraegerWahl Eintraege="@Traegerkatalog"
                                         LabelGruppe="@LabelTraegerGruppe" LabelArt="@LabelTraegerArt"
@@ -268,6 +304,8 @@
                     }
                 </div>
             }
+            </section>
+            </div>
         }
         </Satz>
     </Zweispaltenauswahl>
@@ -1363,4 +1401,18 @@
         _meldung = grund ?? "";
         _meldungStufe = WarnStufe.Warnung;
     }
+    // --- Der Geraetesteckbrief der Satz-Ueberlagerung (WP1b, KA-E-25) -------------------
+
+    /// <summary>Die Beschriftungen des Gerätesteckbriefs; füllen sich selbst aus den Ressourcen.</summary>
+    [Parameter] public StromspeicherSteckbriefTexte SteckbriefTexte { get; set; } = new();
+
+    /// <summary>Zweispaltig nur in der Satz-Überlagerung; in der Detailzeile bleibt der Aufbau, wie er ist.</summary>
+    private string SatzAufbauKlasse => _satzGross ? "epos-satz-zweispaltig" : "epos-satz-einspaltig";
+
+    /// <summary>
+    /// Die Zeilen des Steckbriefs — je Zeichenlauf aus dem Feldsatz „Alle Daten" (in der Überlagerung aufgeklappt),
+    /// den die Felder rechts bearbeiten; ohne Feldsatz aus dem Detailblock. Am Projektsatz mit den Kostensummen.
+    /// </summary>
+    internal IReadOnlyList<Steckbriefzeile> Steckbriefzeilen => StromspeicherSteckbrief.Zeilen(_felder, _detail, SteckbriefTexte,
+        _projektZeile is not null ? _kosten : null);
 }
