@@ -53905,6 +53905,7 @@ chart</value>
   </data>
   <data name="BTDLG_KAPAZITAET_BAUWEISE" xml:space="preserve">
     <value>from the construction type</value>
+  </data>
   <data name="DECK_GRUPPE" xml:space="preserve">
     <value>Coverage</value>
   </data>

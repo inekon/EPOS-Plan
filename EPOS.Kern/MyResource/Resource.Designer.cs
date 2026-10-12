@@ -21290,6 +21290,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung ähnelt.
+        /// </summary>
+        public static string DECK_GRUPPE {
+            get {
+                return ResourceManager.GetString("DECK_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Dezentral heißt: eigene Geräte ohne Kaltwasser, ohne Leistungsgrenze. Raumklimageräte mit Inneneinheiten je Zone folgen als eigene Anlagenart. ähnelt.
         /// </summary>
         public static string DECK_HINWEIS {
