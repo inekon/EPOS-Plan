@@ -1191,6 +1191,9 @@ public sealed class GebaeudeImportTexte
     /// <summary>GIMP_DLG_SQNUR_UNBEHEIZT — leiser Hinweis im Weg „nur Projektdatei“: unbeheizte Räume in einer Zone.</summary>
     public string SqNurUnbeheizt { get; set; } = Resource.GIMP_DLG_SQNUR_UNBEHEIZT;
 
+    /// <summary>Der Haken der Vorgabe im Einzonenweg (Vorgaberegel 2.5).</summary>
+    public string SqEinzonenprofilSetzen { get; set; } = Resource.RNP_IMP_EINZONE_SETZEN;
+
     /// <summary>GEB_AUSRICHTUNG_NORDRICHTUNG — der Abschnitt der Nordrichtung (G5-N).</summary>
     public string GruppeNordrichtung { get; set; } = Resource.GEB_AUSRICHTUNG_NORDRICHTUNG;
 

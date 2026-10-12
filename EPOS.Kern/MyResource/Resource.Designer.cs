@@ -34506,6 +34506,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil/Kalender zuweisen… ähnelt.
+        /// </summary>
+        public static string GEBZ_BTN_PROFIL_ZUWEISEN {
+            get {
+                return ResourceManager.GetString("GEBZ_BTN_PROFIL_ZUWEISEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude im Projekt bearbeiten… ähnelt.
         /// </summary>
         public static string GEBZ_BTN_PROJEKT {
@@ -34767,6 +34776,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die geerbt vom Gebäude ähnelt.
+        /// </summary>
+        public static string GEBZ_NUTZUNG_GEERBT {
+            get {
+                return ResourceManager.GetString("GEBZ_NUTZUNG_GEERBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die geerbt: {0} ähnelt.
+        /// </summary>
+        public static string GEBZ_NUTZUNG_TEILGEERBT {
+            get {
+                return ResourceManager.GetString("GEBZ_NUTZUNG_TEILGEERBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unbeheizt — ohne Heiz- und Kühlkalender ähnelt.
+        /// </summary>
+        public static string GEBZ_NUTZUNG_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("GEBZ_NUTZUNG_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe (Profil der Gebäudeart): {0} ähnelt.
+        /// </summary>
+        public static string GEBZ_NUTZUNG_VORGABE {
+            get {
+                return ResourceManager.GetString("GEBZ_NUTZUNG_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zonen ähnelt.
         /// </summary>
         public static string GEBZ_REITER {
@@ -34907,6 +34952,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBZ_SP_NUTZFLAECHE {
             get {
                 return ResourceManager.GetString("GEBZ_SP_NUTZFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung/Profil ähnelt.
+        /// </summary>
+        public static string GEBZ_SP_NUTZUNG {
+            get {
+                return ResourceManager.GetString("GEBZ_SP_NUTZUNG", resourceCulture);
             }
         }
         
@@ -105608,7 +105662,25 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag aus DIN-Nr. {0}: {1} — zuweisbar im Gebäudeeditor über „Nutzungsprofil übernehmen…“ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil als Vorgabe setzen ähnelt.
+        /// </summary>
+        public static string RNP_IMP_EINZONE_SETZEN {
+            get {
+                return ResourceManager.GetString("RNP_IMP_EINZONE_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe aus der Gebäudeart „{0}“: {1} — das Gebäude nimmt es als Kalender, die Datei geht vor ähnelt.
+        /// </summary>
+        public static string RNP_IMP_EINZONE_VORGABE_ART {
+            get {
+                return ResourceManager.GetString("RNP_IMP_EINZONE_VORGABE_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe aus DIN-Nr. {0}: {1} — das Gebäude nimmt es als Kalender, die Datei geht vor ähnelt.
         /// </summary>
         public static string RNP_IMP_EINZONE_VORSCHLAG {
             get {
@@ -105622,6 +105694,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_IMP_NICHT_IM_KATALOG {
             get {
                 return ResourceManager.GetString("RNP_IMP_NICHT_IM_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Kennwert, vom Gebäude geerbt: {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_OHNE_KENNWERT {
+            get {
+                return ResourceManager.GetString("RNP_IMP_OHNE_KENNWERT", resourceCulture);
             }
         }
         
@@ -105676,6 +105757,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_IMP_QUELLE_RAUMTYP {
             get {
                 return ResourceManager.GetString("RNP_IMP_QUELLE_RAUMTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe (Profil der Gebäudeart „{0}“) ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_VORGABE_ART {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_VORGABE_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe (DIN-Nr. {0} der Projektdatei) ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_VORGABE_DIN {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_VORGABE_DIN", resourceCulture);
             }
         }
         

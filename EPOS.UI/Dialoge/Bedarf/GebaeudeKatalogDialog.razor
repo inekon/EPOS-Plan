@@ -673,6 +673,7 @@
                             @if (_arbeit.Zonen.Count > 0)
                             {
                                 IReadOnlyList<Zonenkennwerte> kennliste = _arbeit.Kennwerte;
+                                string? vorgabeprofil = Zonen?.Vorgabeprofil?.Invoke(_stand.Gebaeudeart);
                                 <div class="epos-raster-huelle epos-raster-huelle--frei">
                                     <table class="epos-raster epos-zonenliste">
                                         <thead>
@@ -681,6 +682,7 @@
                                                 <th class="epos-zahl">@ZonenTexte.SpalteNutzflaeche</th>
                                                 <th class="epos-zahl">@ZonenTexte.SpalteVolumen</th>
                                                 <th>@ZonenTexte.SpalteBeheizt</th>
+                                                <th class="epos-zonennutzung">@ZonenTexte.SpalteNutzung</th>
                                                 <th class="epos-zahl">@ZonenTexte.SpalteHT</th>
                                                 <th class="epos-zahl">@ZonenTexte.SpalteBauteile</th>
                                                 <th class="epos-zellenaktionen">@ZonenTexte.SpalteAktionen</th>
@@ -698,6 +700,8 @@
                                                     <td class="epos-zahl">@Flaechentext(listenzone, kennwerte)</td>
                                                     <td class="epos-zahl">@Volumentext(kennwerte.Volumen)</td>
                                                     <td>@(listenzone.IstBeheizt ? ZonenTexte.BeheiztJa : ZonenTexte.BeheiztNein)</td>
+                                                    @* GD-5 (Vorgaberegel 2.5): Profil, geerbte Groessen (auch ohne Kennwert, NP-F18), Vorgabe der Gebaeudeart. *@
+                                                    <td class="epos-zonennutzung" data-geerbt="@(Zonennutzung.GanzGeerbt(listenzone) ? "ganz" : Zonennutzung.Geerbt(listenzone).Count > 0 ? "teil" : "nein")">@Zonennutzung.Text(listenzone, vorgabeprofil, ZonenTexte, KonditionierungTexte)</td>
                                                     <td class="epos-zahl">@Leitwert(kennwerte.HT)</td>
                                                     <td class="epos-zahl">@kennwerte.Bauteile</td>
                                                     <td class="epos-zellenaktionen">
@@ -709,6 +713,10 @@
                                                                     title="@ZonenTexte.KnopfRunter" aria-label="@(listenzone.Bezeichner + " – " + ZonenTexte.KnopfRunter)"
                                                                     @onclick="() => ZoneVerschieben(id, +1)"><span aria-hidden="true">▼</span></button>
                                                             <button type="button" class="epos-knopf" @onclick="() => ZoneOeffnen(id)">@ZonenTexte.KnopfOeffnen</button>
+                                                            @* GD-5: der Weg zu „Nutzungsprofil übernehmen…“ und den Kalendern der Zone (Zonendialog). *@
+                                                            <button type="button" class="epos-knopf epos-zone-profil"
+                                                                    aria-label="@(listenzone.Bezeichner + " – " + ZonenTexte.KnopfProfilZuweisen)"
+                                                                    @onclick="() => ZoneOeffnen(id)">@ZonenTexte.KnopfProfilZuweisen</button>
                                                             <button type="button" class="epos-knopf" aria-disabled="@(NeueZoneSperre is null ? null : "true")"
                                                                     title="@NeueZoneSperre" @onclick="() => BeiDuplizieren(id)">@ZonenTexte.KnopfDuplizieren</button>
                                                             <button type="button" class="epos-knopf" aria-disabled="@(Zonensperre is null ? null : "true")"
@@ -723,6 +731,7 @@
                                                 <th scope="row">@ZonenTexte.Summe</th>
                                                 <td class="epos-zahl">@Zahl(_arbeit.NutzflaecheWirksam, 2) m²</td>
                                                 <td class="epos-zahl">@Volumentext(Volumensumme(kennliste))</td>
+                                                <td></td>
                                                 <td></td>
                                                 <td class="epos-zahl">@Leitwert(_arbeit.HTAnzeige)</td>
                                                 <td class="epos-zahl">@kennliste.Sum(k => k.Bauteile)</td>

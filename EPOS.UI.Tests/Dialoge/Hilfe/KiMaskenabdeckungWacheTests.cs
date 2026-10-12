@@ -299,7 +299,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("ProjektBrennstoffeDialog", 2, "das Zahlenfeld steht in einer Schleife über die zehn Werte der Bearbeitung, die alle im Katalog stehen"),
         new("KatalogDublettenDialog", 1),
         // Freigabe der Masken, Teil B (10.10.2026): der Gebäudeimport mit seinen Kopfeingaben.
-        new("GebaeudeImportDialog", 30, "im Katalog stehen die acht Kopfeingaben (Baualtersklasse, Quelle, Gebäude, " +
+        new("GebaeudeImportDialog", 31, "der Haken „Profil als Vorgabe setzen“ des Einzonenwegs wählt nur die Vorgabe ab (GD-5); " +
+            "im Katalog stehen die acht Kopfeingaben (Baualtersklasse, Quelle, Gebäude, " +
             "Name, Heizsollwert aus der Datei, Zonenregel, Zonierung, als Zone mit Bauteilen) und die Nordrichtung " +
             "(ein Baustein ohne gezählte Eingabe); draußen bleiben die Eingaben je Raum, Feldzeile, Zone, Baustoff je Schicht und " +
             "Aufbauzeile (Haken, Werte, Namen, Nutzungen — Zeilen, keine Kopfwerte), die Mengenwahlen der Zonen und Räume " +

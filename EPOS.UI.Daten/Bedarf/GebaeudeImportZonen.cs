@@ -240,10 +240,23 @@ namespace WindowsFormsApplication1
                 kurz ??= RaumnutzungHuelle.Texte();
                 kennwerte = RaumnutzungHuelle.Kurzform(profil, kurz);
             }
+            // Lücke 3 (NP-F18): Größen ohne Kennwert bekommen keinen Kalender — die Zone erbt sie sichtbar vom Gebäude.
+            if (Ohnekennwerttext(profil) is { Length: > 0 } ohne) kennwerte = kennwerte.Length == 0 ? ohne : kennwerte + " · " + ohne;
             return new GebaeudeProfilherleitung(
                 p == null ? MyResource.Resource.GIMP_DLG_PLAN_NUTZUNG_KEINE : Profiltext(p),
                 p?.Id is long k ? v?.Kategorie(k)?.Trim() ?? "" : "",
                 q?.Art ?? "", Quellentext(q), Dateigroessen(pz.Projektdatei), kennwerte);
+        }
+
+        /// <summary>
+        /// <b>Lücke 3 sichtbar</b> (NP-F18): „ohne Kennwert, vom Gebäude geerbt: Lüftung, Geräte“ für die Größen, für die das
+        /// Profil keinen Kennwert trägt (<see cref="Zonenvorbesetzung.OhneKennwert"/>); leer ohne Profil oder wenn jede Größe belegt ist.
+        /// </summary>
+        internal static string Ohnekennwerttext(Raumnutzungsprofil profil)
+        {
+            IReadOnlyList<Konditionierungsgroesse> ohne = Zonenvorbesetzung.OhneKennwert(profil);
+            if (ohne.Count == 0) return "";
+            return Formatieren(MyResource.Resource.RNP_IMP_OHNE_KENNWERT, string.Join(", ", ohne.Select(Konditionierungsarbeit.Groessenname)));
         }
 
         /// <summary>Die Quelle der Vorbelegung als Text („aus IFC-Klasse Buero“, „aus DIN-Nr. 1 der Projektdatei“, „von Hand“).</summary>
@@ -255,6 +268,8 @@ namespace WindowsFormsApplication1
             Profilquelle.DATEI => MyResource.Resource.RNP_IMP_QUELLE_DATEI,
             Profilquelle.GESPEICHERT => MyResource.Resource.RNP_IMP_QUELLE_GESPEICHERT,
             Profilquelle.HAND => MyResource.Resource.RNP_IMP_QUELLE_HAND,
+            Zonenvorbesetzung.VORGABE_DIN => Formatieren(MyResource.Resource.RNP_IMP_QUELLE_VORGABE_DIN, q.Schluessel ?? ""),
+            Zonenvorbesetzung.VORGABE_GEBAEUDEART => Formatieren(MyResource.Resource.RNP_IMP_QUELLE_VORGABE_ART, q.Schluessel ?? ""),
             _ => "",
         };
 

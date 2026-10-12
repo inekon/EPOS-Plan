@@ -133,6 +133,13 @@ namespace WindowsFormsApplication1
                 string fehlerProfil = NutzungUebernehmen(idGebaeude, zp, profil, flaeche, lichteHoehe);
                 if (fehlerProfil != null) return fehlerProfil;
             }
+            else if (profil?.Id is long idProfil && idZone == null)
+            {
+                // Einzonenweg (Vorgaberegel 2.5, NP-F16): das Profil der DIN-Nummer bzw. der Gebäudeart als Gebäudekalender —
+                // mit Fläche und lichter Höhe des Gebäudes; danach die Datei (Datei vor Profil).
+                RaumnutzungCtrl.Uebernahme u = new RaumnutzungCtrl().ProfilUebernehmen(idProfil, idGebaeude, null);
+                if (!u.Ok) return u.Meldung ?? "";
+            }
             if (konditionierung == null || !konditionierung.Liefert) return null;
             var kond = new KonditionierungCtrl();
             Konditionierungsarbeitsstand stand = kond.ArbeitsstandLesen(idGebaeude, null, out string gelesen);
