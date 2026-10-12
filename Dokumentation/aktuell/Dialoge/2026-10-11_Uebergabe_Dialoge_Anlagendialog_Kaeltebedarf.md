@@ -11,7 +11,7 @@ für die hier genannten Gegenstände ab.
 
 ## 1 Stand
 
-- Zweige: Arbeitszweig `ios_migration_september`; Sitzungszweig `claude/cool-ramanujan-3m1lhl`, nach jedem Push gleich dem Arbeitszweig; letzter Push vor diesem Papier `f2caa6008` (Statuszeile #1009).
+- Zweige: Arbeitszweig `ios_migration_september`; Sitzungszweig `claude/cool-ramanujan-3m1lhl`, nach jedem Push gleich dem Arbeitszweig; letzter Push vor der Übergabe `9fad59455` (CI-Vermerk #1009; letzte Statuszeile dieser Sitzung #1009); Arbeitsbaum sauber, keine Agenten, keine Check-ins mehr aktiv.
 - Statuszeilen dieser Sitzung (11.10.2026): #980 K2 Kernwege Kälte, #981 K3 Rechenweg Kältebedarf mit Abzugsstelle für K‑D, #982 K4 Startseite Reiter „Kältebedarf“ (Nachtrag: Hotfix doppelte BOM in `epos-ui.css`); #988 AW1 Knopfleiste am gewählten Satz (Heizkessel, Wärmepumpe); #989 AW2 Wärmepumpe: Satz-Überlagerung und Anlage zusammengeführt; #998 AW3a fünf Erzeugerdialoge; #999 AW3b Stufe 4/5 und Kältemaschine; #1009 KAL1 Einzeltage als Klappgruppe.
 - CI-Vermerke: #960–#965, #980–#982, #988/#989, #998/#999 tragen den Kern-Lauf 38181227802 (grün auf `3d7172064`), #1009 den Kern-Lauf 38186204735 (grün auf `f2caa6008`). Keine Vermerke ausstehend.
 - Katalogauswahl V1: alle Stufen gebaut; Knopfleiste am gewählten Satz (KA‑E‑17 bis KA‑E‑22, Konzept Abschnitt 4.4a) in allen Wirten; Wärmepumpe mit zusammengeführter Überlagerung (`WaermepumpeAnlageDialog` → Baustein `WaermepumpeAnlageFelder`).
@@ -81,7 +81,7 @@ Parallel arbeiten auf demselben Arbeitszweig die Sitzung „Dialoge und Korrektu
 Berichterstellung und Wiki; Statusnummern, Basen und Schemaschritte werden schnell vergeben.
 
 Erste Schritte: (1) Stand prüfen: `git status` sauber, keine Konfliktmarker, keine liegen
-gebliebene AGENT_LAEUFT, die Zeilen #960–#965, #980–#982, #988/#989, #998/#999 tragen
+gebliebene AGENT_LAEUFT, die Zeilen #960–#965, #980–#982, #988/#989, #998/#999 und #1009 tragen
 ihren CI-Vermerk. (2) Den Stand in höchstens fünf Zeilen melden. (3) Mit dem Anwender abstimmen,
 womit weitergemacht wird. Empfehlung: zuerst die Rückmeldungen des
 Anwenders aus der Sichtabnahme und die Nachzüge der Katalogauswahl, danach Kältebedarf K5/K6.
