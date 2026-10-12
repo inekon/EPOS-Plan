@@ -1429,8 +1429,6 @@ public sealed class GebaeudeImportTexte
     /// <summary>GIMP_DLG_GRP_GRUNDRISS — Kopf des Grundrisses, wenn er nicht neben der Zonenliste steht.</summary>
     public string GruppeGrundriss { get; set; } = Resource.GIMP_DLG_GRP_GRUNDRISS;
 
-    /// <summary>GIMP_DLG_ZUORDNEN_ZU — die Zielzone eines Klicks im Grundriss und des Knopfs „Umhängen".</summary>
-    public string ZuordnenZu { get; set; } = Resource.GIMP_DLG_ZUORDNEN_ZU;
 
     /// <summary>GIMP_DLG_EIGENE_ZONE — der Eintrag „als eigene Zone" der Zielzone.</summary>
     public string EigeneZone { get; set; } = Resource.GIMP_DLG_EIGENE_ZONE;

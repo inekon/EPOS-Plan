@@ -1210,7 +1210,7 @@
     /// <summary>Der Wert „als eigene Zone" der Zielzone.</summary>
     private const string EIGENE_ZONE = "";
 
-    /// <summary>Die Zielzone eines Klicks (Schlüssel); <see cref="EIGENE_ZONE"/> = abtrennen; <c>null</c> = die erste Zone.</summary>
+    /// <summary>Die Zielzone eines Klicks (Schlüssel), gewählt in der Legende; <see cref="EIGENE_ZONE"/> = abtrennen; <c>null</c> = keine Wahl.</summary>
     private string? _ziel;
 
     /// <summary>Das gezeigte Geschoss des Grundrisses (Kennung); <c>null</c> = die Vorbelegung der Ansicht.</summary>
@@ -1758,22 +1758,16 @@
     // =====================================================================
 
     /// <summary>
-    /// Der Grundriss samt Zuordnung von Hand: die Zielzone im Kopf, die Ansicht, die Meldung einer abgelehnten
+    /// Der Grundriss samt Zuordnung von Hand: die Ansicht mit der Zielwahl in ihrer Legende (Auftrag AB2), die Meldung einer abgelehnten
     /// Zuordnung mit dem Ausweg bei ungleicher Beheizung, die abgelehnten Zuordnungen des Stands und der Weg ohne
     /// Grundriss (Raum und „Umhängen"). Ohne Umhängbarkeit nur die Ansicht.
     /// </summary>
     private RenderFragment Grundriss(GebaeudeImportStand stand, GebaeudeAnsichtDaten ansicht) => __builder =>
     {
         bool zuordnen = ansicht.Umhaengbar;
-        if (zuordnen)
-        {
-            <div class="epos-gebimport-zuordnungskopf">
-                <Auswahlfeld Bezeichnung="@Texte.ZuordnenZu" Eintraege="@Zielliste(ansicht)" Auswahl="@Zielstelle(ansicht)"
-                             AuswahlChanged="BeiZiel" Aktiv="@(!Beschaeftigt)" />
-            </div>
-        }
         <GebaeudeAnsicht Daten="@ansicht" GewaehlteZone="@Zielzone(ansicht)" Geschoss="@_geschoss" GeschossChanged="BeiGeschoss"
-                         RaumUmgehaengt="BeiUmhaengen" ZoneGewaehlt="BeiZoneGewaehlt" Aktiv="@(!Beschaeftigt)" Texte="@Texte.Ansicht"
+                         RaumUmgehaengt="BeiUmhaengen" Zuordnungsziele="@Zuordnungsziele()" GewaehltesZiel="@PlanZiel()"
+                         ZielChanged="BeiZiel" Aktiv="@(!Beschaeftigt)" Texte="@Texte.Ansicht"
                          ZurBaustoffzuordnung="BeiBaustoffsprung" />
         if (_konflikt is Umhaengkonflikt k && stand.Zonierung?.Plan is null)
         {
@@ -1798,6 +1792,7 @@
                 <Auswahlfeld Bezeichnung="@Texte.Raumwahl" Eintraege="@Raumliste(ansicht)" Auswahl="@Raumstelle(ansicht)"
                              AuswahlChanged="BeiRaumwahl" Aktiv="@(!Beschaeftigt)" />
                 <button type="button" class="epos-knopf epos-gebimport-umhaengen" disabled="@Beschaeftigt"
+                        aria-disabled="@(PlanZiel() is null ? "true" : null)" title="@(PlanZiel() is null ? Texte.Ansicht.ZielFehlt : null)"
                         @onclick="BeiUmhaengenKnopf">@Texte.Umhaengen</button>
             </div>
             <Herleitungszeile Text="@Texte.UmhaengenHinweis" />
@@ -1822,15 +1817,15 @@
     private GebaeudeZonenplanDaten? Plan => _stand?.Zonierung?.Plan;
 
     /// <summary>
-    /// Die Zielzone eines Klicks im Plan (Planschlüssel): die gewählte, sonst die erste Zone; <see cref="EIGENE_ZONE"/> = als
-    /// eigene Zone abtrennen; <c>null</c> ohne Zone.
+    /// Die Zielzone eines Klicks im Plan (Planschlüssel): die in der Legende gewählte; <see cref="EIGENE_ZONE"/> = als
+    /// eigene Zone abtrennen; <c>null</c> = keine Wahl (ein Raumklick ist dann reine Anzeige).
     /// </summary>
     private string? PlanZiel()
     {
         if (Plan is not GebaeudeZonenplanDaten plan) return null;
         if (_ziel == EIGENE_ZONE) return EIGENE_ZONE;
         if (_ziel is not null && plan.Zonen.Any(z => z.Schluessel == _ziel)) return _ziel;
-        return plan.Zonen.Count > 0 ? plan.Zonen[0].Schluessel : EIGENE_ZONE;
+        return null;
     }
 
     /// <summary>Die Zielzone für den Grundriss — der Schlüssel, unter dem er die Zielzone des Plans führt; <c>null</c> = keine.</summary>
@@ -1841,45 +1836,45 @@
         return zone is { Ansichtsschluessel.Length: > 0 } ? zone.Ansichtsschluessel : null;
     }
 
-    /// <summary>Die Einträge der Zielzone: die Zonen des Plans (Id = Stelle + 1), dann „als eigene Zone" (Id 0).</summary>
-    private IReadOnlyList<(int Id, string Text)> Zielliste(GebaeudeAnsichtDaten ansicht)
+    /// <summary>
+    /// Die Ziele der Legende (Auftrag AB2): je Zone des Plans Name, Farbe (über den Schlüssel der Ansicht), die Nutzung und die
+    /// Herkunft, dann „als eigene Zone".
+    /// </summary>
+    private IReadOnlyList<GebaeudeAnsichtZiel> Zuordnungsziele()
     {
-        IReadOnlyList<GebaeudePlanzoneDaten> zonen = Plan?.Zonen ?? Array.Empty<GebaeudePlanzoneDaten>();
-        var liste = new List<(int Id, string Text)>(zonen.Count + 1);
-        for (int i = 0; i < zonen.Count; i++) liste.Add((i + 1, zonen[i].Name));
-        liste.Add((0, Texte.EigeneZone));
+        if (Plan is not GebaeudeZonenplanDaten plan) return Array.Empty<GebaeudeAnsichtZiel>();
+        var liste = new List<GebaeudeAnsichtZiel>(plan.Zonen.Count + 1);
+        foreach (GebaeudePlanzoneDaten z in plan.Zonen)
+            liste.Add(new GebaeudeAnsichtZiel(z.Schluessel, z.Name, z.Ansichtsschluessel, Nutzungstext(plan, z), z.HerkunftText));
+        liste.Add(new GebaeudeAnsichtZiel(EIGENE_ZONE, Texte.EigeneZone, Abtrennen: true));
         return liste;
     }
 
-    private int? Zielstelle(GebaeudeAnsichtDaten ansicht)
+    /// <summary>
+    /// Die Nutzung einer Zone als Anzeigetext: Profil und Kategorie der Herleitung („Sport · EPOS-Muster"), sonst der Text der
+    /// Nutzung aus der Klappliste, ohne Nutzung das Profil der Projektdatei (DIN-Nummer); leer = ohne Nutzung.
+    /// </summary>
+    private static string Nutzungstext(GebaeudeZonenplanDaten plan, GebaeudePlanzoneDaten z)
     {
-        string? ziel = PlanZiel();
-        if (ziel == EIGENE_ZONE) return 0;
-        IReadOnlyList<GebaeudePlanzoneDaten> zonen = Plan?.Zonen ?? Array.Empty<GebaeudePlanzoneDaten>();
-        for (int i = 0; i < zonen.Count; i++)
-            if (zonen[i].Schluessel == ziel) return i + 1;
-        return null;
+        if (z.Nutzung is string n)
+        {
+            if (z.Herleitung is { Profil.Length: > 0 } h) return h.Kategorie.Length > 0 ? h.Profil + " · " + h.Kategorie : h.Profil;
+            return plan.Nutzungen.FirstOrDefault(x => x.Schluessel == n)?.Text ?? n;
+        }
+        return z.Profiltext;
     }
 
-    private void BeiZiel(int? id)
+    /// <summary>Die Wahl in der Legende: ein Ziel oder <c>null</c> (die Wahl aufgehoben).</summary>
+    private void BeiZiel(string? schluessel)
     {
-        if (Plan is not GebaeudeZonenplanDaten plan || id is not int i) return;
-        if (i == 0) _ziel = EIGENE_ZONE;
-        else if (i - 1 < plan.Zonen.Count) _ziel = plan.Zonen[i - 1].Schluessel;
+        if (Plan is not GebaeudeZonenplanDaten plan) return;
+        _ziel = schluessel is null ? null
+              : schluessel == EIGENE_ZONE || plan.Zonen.Any(z => z.Schluessel == schluessel) ? schluessel : null;
         _konflikt = null;
         _notiz = "";
     }
 
     private void BeiGeschoss(string kennung) => _geschoss = kennung;
-
-    /// <summary>Ein Klick auf einen Körper der Ansicht wählt die Zone des Plans, die er zeigt, als Ziel der Zuordnung.</summary>
-    private void BeiZoneGewaehlt(string schluessel)
-    {
-        if (_stand?.Ansicht is not { Umhaengbar: true } || Plan?.Zonen.FirstOrDefault(z => z.Ansichtsschluessel == schluessel) is not { } zone) return;
-        _ziel = zone.Schluessel;
-        _konflikt = null;
-        _notiz = "";
-    }
 
     /// <summary>Der gewählte Raum des Wegs ohne Grundriss — im gezeigten Geschoss, sonst dessen erster.</summary>
     private GebaeudeAnsichtRaum? GewaehlterRaum(GebaeudeAnsichtDaten ansicht)

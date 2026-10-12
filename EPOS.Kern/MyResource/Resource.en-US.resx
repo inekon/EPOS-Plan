@@ -33999,6 +33999,33 @@ Do you want to allow this?</value>
   <data name="GIMP_ANS_ABTRENNEN" xml:space="preserve">
     <value>Tapping splits off as a zone of its own</value>
   </data>
+  <data name="GIMP_ANS_ZIEL_NUTZUNG" xml:space="preserve">
+    <value>Use: {0}</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_OHNE_NUTZUNG" xml:space="preserve">
+    <value>no use</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_KLICK" xml:space="preserve">
+    <value>Click, then click rooms to assign them to this zone</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_AUFHEBEN" xml:space="preserve">
+    <value>Selected: click rooms to assign them to this zone; click again to clear the selection</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_FEHLT" xml:space="preserve">
+    <value>to assign, first select a zone in the legend</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_NUR_ZONEN" xml:space="preserve">
+    <value>Assigning only in the Zones mode</value>
+  </data>
+  <data name="GIMP_ANS_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>not assigned ({0} rooms)</value>
+  </data>
+  <data name="GIMP_ANS_NICHT_ZUGEORDNET_TITEL" xml:space="preserve">
+    <value>Rooms without a zone — not a target; clicking highlights them in the floor plan</value>
+  </data>
+  <data name="GIMP_ANS_ZIEL_LEGENDE" xml:space="preserve">
+    <value>Zones — choose the target of the assignment</value>
+  </data>
   <data name="GIMP_ANS_KEINE_UMRISSE" xml:space="preserve">
     <value>No space on this storey has an outline.</value>
   </data>
@@ -34010,9 +34037,6 @@ Do you want to allow this?</value>
   </data>
   <data name="GIMP_DLG_GRP_GRUNDRISS" xml:space="preserve">
     <value>Floor plan</value>
-  </data>
-  <data name="GIMP_DLG_ZUORDNEN_ZU" xml:space="preserve">
-    <value>Assign spaces to</value>
   </data>
   <data name="GIMP_DLG_EIGENE_ZONE" xml:space="preserve">
     <value>as a zone of its own</value>
@@ -34027,7 +34051,7 @@ Do you want to allow this?</value>
     <value>Reassign</value>
   </data>
   <data name="GIMP_DLG_UMHAENGEN_HINWEIS" xml:space="preserve">
-    <value>Choose a zone, then tap a space in the floor plan — or pick the space in the list and “Reassign”. Only spaces with the same heating; nothing is taken over before OK.</value>
+    <value>Choose a zone in the legend, then tap a space in the floor plan or the 3D view — or pick the space in the list and “Reassign”. Only spaces with the same heating; nothing is taken over before OK.</value>
   </data>
   <data name="GIMP_DLG_SCHON_DORT" xml:space="preserve">
     <value>“{0}” is already in zone “{1}”.</value>

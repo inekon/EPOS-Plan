@@ -38832,6 +38832,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht zugeordnet ({0} Räume) ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_NICHT_ZUGEORDNET {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_NICHT_ZUGEORDNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume ohne Zone — kein Ziel; Klicken hebt sie im Grundriss hervor ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_NICHT_ZUGEORDNET_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_NICHT_ZUGEORDNET_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nur Anzeige: Räume lassen sich unter einer Zonenregel mit mehreren Zonen zuordnen. ähnelt.
         /// </summary>
         public static string GIMP_ANS_NUR_ANZEIGE {
@@ -38918,6 +38936,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_ANS_VON_HAND {
             get {
                 return ResourceManager.GetString("GIMP_ANS_VON_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählt: Räume anklicken, um sie dieser Zone zuzuordnen; erneut klicken hebt die Wahl auf ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_ZIEL_AUFHEBEN {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_ZIEL_AUFHEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die zum Zuordnen zuerst eine Zone in der Legende wählen ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_ZIEL_FEHLT {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_ZIEL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klicken, dann Räume anklicken, um sie dieser Zone zuzuordnen ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_ZIEL_KLICK {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_ZIEL_KLICK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen — Ziel der Zuordnung wählen ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_ZIEL_LEGENDE {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_ZIEL_LEGENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnen nur im Modus Zonen ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_ZIEL_NUR_ZONEN {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_ZIEL_NUR_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung: {0} ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_ZIEL_NUTZUNG {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_ZIEL_NUTZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Nutzung ähnelt.
+        /// </summary>
+        public static string GIMP_ANS_ZIEL_OHNE_NUTZUNG {
+            get {
+                return ResourceManager.GetString("GIMP_ANS_ZIEL_OHNE_NUTZUNG", resourceCulture);
             }
         }
         
@@ -41550,7 +41631,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone wählen, dann einen Raum im Grundriss antippen — oder den Raum in der Liste wählen und „Umhängen“. Nur Räume gleicher Beheizung; übernommen wird erst mit OK. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone in der Legende wählen, dann einen Raum im Grundriss oder Körper antippen — oder den Raum in der Liste wählen und „Umhängen“. Nur Räume gleicher Beheizung; übernommen wird erst mit OK. ähnelt.
         /// </summary>
         public static string GIMP_DLG_UMHAENGEN_HINWEIS {
             get {
@@ -41600,15 +41681,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_ZONE_ZUKLAPPEN {
             get {
                 return ResourceManager.GetString("GIMP_DLG_ZONE_ZUKLAPPEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Räume zuordnen zu ähnelt.
-        /// </summary>
-        public static string GIMP_DLG_ZUORDNEN_ZU {
-            get {
-                return ResourceManager.GetString("GIMP_DLG_ZUORDNEN_ZU", resourceCulture);
             }
         }
         
