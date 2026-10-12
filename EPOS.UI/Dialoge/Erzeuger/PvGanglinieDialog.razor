@@ -156,8 +156,12 @@
     }
     else
     {
-        @* KATALOGAUSWAHL V1, STUFE 4 (Konzept 4.2, 4.5, UeS2): beide Listen mit Kaestchen und Stift, die
-           Katalogknoepfe der Seite in den Slots der Fussleiste, der Formathinweis im Katalogkopf. *@
+        @* KATALOGAUSWAHL V1 (Konzept 4.2, 4.4a, 4.5, UeS2): P = Kopfleiste „Im Projekt" (Aus dem Projekt
+           entfernen), K = Kopfleiste des Katalogs mit dem Formathinweis, S = Zeile „gewählter Satz" mit den
+           Knöpfen der Katalogseite und Bearbeiten… (KnopfleisteAmSatz, siehe KatalogFuss), D = Kopf und
+           Fussleiste des Dialogs. Der Stift je Listenzeile ist Bearbeiten… dieser Zeile. Die Kästchen
+           markieren nur für die Sammelaktionen; der Klick auf die Zeile wählt, die gewählte Projektzeile
+           ist farbig hervorgehoben. *@
         <Zweispaltenauswahl Dialogname="PvGanglinie" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
                             KatalogZeile="@((int)Katalogliste.ZEILENHOEHE_ZEILENWAHL)"
                             UebernehmenText="@LabelHinzu"

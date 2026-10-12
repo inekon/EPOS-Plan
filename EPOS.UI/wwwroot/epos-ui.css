@@ -3517,9 +3517,8 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 /* W14a-E-10-Q2 nur noch EINE Anordnung kennt: untereinander.            */
 /*                                                                      */
 /* Geblieben sind die Masken OHNE Pfeile, bei denen der Umbruch          */
-/* folgenlos ist: GebaeudetypDialog, TypProfilDialog,                    */
-/* KennlinienEditorDialog, WaermepumpeAnlageDialog,                      */
-/* WaermepumpeStammDialog.                                               */
+/* folgenlos ist: TypProfilDialog, ZapfprofilDialog,                     */
+/* KennlinienEditorDialog.                                               */
 /* ==================================================================== */
 
 .epos-auswahlpaar {
@@ -13036,8 +13035,8 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
     max-height: min(94vh, calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten)));
 }
 
-/* W7-B-3 (08.09.2026): die Detailansicht eingebettet in der Waermepumpen
-   Verwaltung - kein zweiter Dialograhmen, ein Strich trennt sie von der Auswahl. */
+/* W7-B-3: ein eingebetteter Dialog (.epos-dialog--eingebettet, unten) traegt keinen
+   zweiten Dialograhmen. */
 /* W10b-B-3 (08.09.2026): der Extrapolationsschalter bei den Kennlinien der Waermepumpe. */
 .epos-wp-extrapolation {
     margin: 2px 0 10px;
@@ -13052,10 +13051,6 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
 .epos-dialog--eingebettet {
     padding: 0;
     max-width: none;
-}
-.epos-wp-eingebettet {
-    border-top: 1px solid var(--epos-rahmen-leise);
-    padding-top: var(--epos-rand);
 }
 
 /* Ohne Titel steht im Kopf nur der Hilfeknopf - er gehoert nach rechts, */
