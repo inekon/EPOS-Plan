@@ -53,7 +53,7 @@ namespace WindowsFormsApplication1
             Nummer, Name, Beschreibung, Kategorie,
             NutzungVon, NutzungBis, BetriebVon, BetriebBis, Woche, TageJahr, Feiertage,
             HeizSoll, HeizAusserhalb, HeizAus, KuehlSoll, KuehlAusserhalb, KuehlAus,
-            LuftEinheit, Luft, LuftAusserhalb,
+            LuftEinheit, Luft, LuftAusserhalb, LuftPerson,
             PersonenFlaeche, PersonenWaerme, PersonenAnteil, PersonenAusserhalb,
             Geraete, GeraeteAnteil, GeraeteAusserhalb, Beleuchtung, BeleuchtungAnteil,
             // NP4c: der Umschalter je Größe „aus Kennwerten | Zeilenbild | Stundenprofil" (nur lesbar).
@@ -129,6 +129,7 @@ namespace WindowsFormsApplication1
             new Feld("np_luft_einheit", Kennwert.LuftEinheit, KiParameterTyp.Wahl, () => MyResource.Resource.RNP_LBL_LUFT_EINHEIT),
             new Feld("np_luft", Kennwert.Luft, KiParameterTyp.Zahl, () => MyResource.Resource.RNP_LBL_LUFT, null, 0, 20),
             new Feld("np_luft_ausserhalb", Kennwert.LuftAusserhalb, KiParameterTyp.Zahl, () => MyResource.Resource.RNP_LBL_LUFT_AUSSERHALB, null, 0, 20),
+            new Feld("np_luft_person", Kennwert.LuftPerson, KiParameterTyp.Zahl, () => MyResource.Resource.RNP_LBL_LUFT_PERSON, "m³/(h·Person)", 0, 1000),
             new Feld("np_personen_flaeche", Kennwert.PersonenFlaeche, KiParameterTyp.Zahl, () => MyResource.Resource.RNP_LBL_PERSONEN_FLAECHE, KiDialogTexte.EINHEIT_M2, 1, 200),
             new Feld("np_personen_waerme", Kennwert.PersonenWaerme, KiParameterTyp.Zahl, () => MyResource.Resource.RNP_LBL_PERSONEN_WAERME, KiDialogTexte.EINHEIT_W, 0, 500),
             new Feld("np_personen_anteil", Kennwert.PersonenAnteil, KiParameterTyp.Zahl, () => MyResource.Resource.RNP_LBL_PERSONEN_ANTEIL, KiDialogTexte.EINHEIT_PROZENT, 0, 100),

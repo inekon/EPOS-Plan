@@ -53649,5 +53649,14 @@ Chart</value>
   <data name="RNP_TXT_HINWEIS_BELEGUNG" xml:space="preserve">
     <value>Außenluft je Person ohne Fläche je Person im Profil: die Lüftung wird nicht gesetzt.</value>
   </data>
+  <data name="RNP_LBL_LUFT_PERSON" xml:space="preserve">
+    <value>Außenluft je Person</value>
+  </data>
+  <data name="RNP_TXT_EINGELESEN" xml:space="preserve">
+    <value>eingelesen</value>
+  </data>
+  <data name="RNP_TXT_EINGELESEN_AUS" xml:space="preserve">
+    <value>Werte eingelesen aus {0} am {1}</value>
+  </data>
 </root>
 

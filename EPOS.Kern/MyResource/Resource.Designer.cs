@@ -105977,6 +105977,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenluft je Person ähnelt.
+        /// </summary>
+        public static string RNP_LBL_LUFT_PERSON {
+            get {
+                return ResourceManager.GetString("RNP_LBL_LUFT_PERSON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Name ähnelt.
         /// </summary>
         public static string RNP_LBL_NAME {
@@ -106666,6 +106675,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_TXT_AUSGELIEFERT {
             get {
                 return ResourceManager.GetString("RNP_TXT_AUSGELIEFERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eingelesen ähnelt.
+        /// </summary>
+        public static string RNP_TXT_EINGELESEN {
+            get {
+                return ResourceManager.GetString("RNP_TXT_EINGELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte eingelesen aus {0} am {1} ähnelt.
+        /// </summary>
+        public static string RNP_TXT_EINGELESEN_AUS {
+            get {
+                return ResourceManager.GetString("RNP_TXT_EINGELESEN_AUS", resourceCulture);
             }
         }
         

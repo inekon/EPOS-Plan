@@ -98,6 +98,7 @@ public sealed class RaumnutzungKiZugang
                 ? KiNutzungsprofilfelder.LUFT_JE_FLAECHE : KiNutzungsprofilfelder.LUFT_JE_STUNDE,
             KiNutzungsprofilfelder.Kennwert.Luft => s.Aussenluft,
             KiNutzungsprofilfelder.Kennwert.LuftAusserhalb => s.AussenluftAusserhalb,
+            KiNutzungsprofilfelder.Kennwert.LuftPerson => s.AussenluftPerson,
             KiNutzungsprofilfelder.Kennwert.PersonenFlaeche => s.PersonenFlaeche,
             KiNutzungsprofilfelder.Kennwert.PersonenWaerme => s.PersonenWaerme,
             KiNutzungsprofilfelder.Kennwert.PersonenAnteil => Prozent(s.PersonenAnteil),
@@ -165,6 +166,7 @@ public sealed class RaumnutzungKiZugang
                 break;
             case KiNutzungsprofilfelder.Kennwert.Luft: s.Aussenluft = zahl; break;
             case KiNutzungsprofilfelder.Kennwert.LuftAusserhalb: s.AussenluftAusserhalb = zahl; break;
+            case KiNutzungsprofilfelder.Kennwert.LuftPerson: s.AussenluftPerson = zahl; break;
             case KiNutzungsprofilfelder.Kennwert.PersonenFlaeche: s.PersonenFlaeche = zahl; break;
             case KiNutzungsprofilfelder.Kennwert.PersonenWaerme: s.PersonenWaerme = zahl; break;
             case KiNutzungsprofilfelder.Kennwert.PersonenAnteil: s.PersonenAnteil = Anteil(zahl); break;

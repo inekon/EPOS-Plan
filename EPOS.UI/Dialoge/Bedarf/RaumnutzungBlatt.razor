@@ -126,6 +126,10 @@
                                                 {
                                                     <Kennzeichen Kurztext="@Texte.Ausgeliefert" />
                                                 }
+                                                @if (profil.Eingelesen)
+                                                {
+                                                    <Kennzeichen Kurztext="@Texte.Eingelesen" />
+                                                }
                                             </li>
                                         }
                                     </ul>
@@ -188,6 +192,10 @@
                         @if (lesend)
                         {
                             <p class="epos-leisezeile epos-raumnutzung-lesend">@Texte.Ausgeliefert</p>
+                        }
+                        @if (s.Eingelesen)
+                        {
+                            <p class="epos-leisezeile epos-raumnutzung-eingelesen">@string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.EingelesenAus, s.WerteQuelle, s.WerteDatum)</p>
                         }
                         @if (s.IstLeer && s.Id > 0)
                         {
@@ -275,6 +283,9 @@
                                         <Zahlenfeld Bezeichnung="@Texte.LabelLuftAusserhalb" Einheit="@Lufteinheitstext(s)"
                                                     Min="0" Max="20" Wert="@s.AussenluftAusserhalb" Aktiv="@(!lesend)"
                                                     WertChanged="@(v => { s.AussenluftAusserhalb = v; })" />
+                                        <Zahlenfeld Bezeichnung="@Texte.LabelLuftPerson" Einheit="m³/(h·Person)"
+                                                    Min="0" Max="1000" Wert="@s.AussenluftPerson" Aktiv="@(!lesend)"
+                                                    WertChanged="@(v => { s.AussenluftPerson = v; })" />
                                     </KindInhalt>
                                 </Formularraster>
                             </KindInhalt>

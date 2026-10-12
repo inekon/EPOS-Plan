@@ -8,6 +8,9 @@
 > `Din18599Nutzung` zählen wie die Kategorie DIN (30, 31 → Schule, 33, 37 → Sport, 43 → Lager; Schritt 190 und Saat, 5.4).
 > **NP6 gebaut:** SIA 2024 und VDI 2078 entfallen (E129, Schritt 219); die Kategorie DIN führt dazu die zwei Wohnprofile
 > nach Tabelle 5 ohne Nummer und ohne Werte (5.2, 5.3).
+> **NP7 gebaut (Kern):** „Normwerte einlesen“ füllt die ausgelieferten DIN-Profile in der Datenbank des Anwenders aus
+> seiner CSV oder Projektdatei, mit Außenluft je Person und Herkunft (E131, Schritt 220, 6.5); Profileditor mit Feld
+> „Außenluft je Person“ und Marke „eingelesen“. Offen als **NP7b**: der Dialog „Normwerte einlesen…“ am Blatt.
 
 > **Rev. 2 (vereint aus zwei Fassungen vom 05.10.2026) — Auftrag aus Entscheid E90 (Q37, 05.10.2026); Fragen
 > Q38 bis Q47 mit E91 nach Empfehlung entschieden.** Der Anwender hat entschieden: Nutzungsprofile werden ein
@@ -209,10 +212,11 @@ dazu die Kennwerte, jeder nullbar (NP-F6):
 | Tage | `Nutzungstage_Woche` (sieben Zeichen, Mo bis So, etwa `1111100`), `Nutzungstage_Jahr`, `Feiertage_Wie_Sonntag` | Text aus sieben Ziffern 0/1; `Nutzungstage_Jahr` abgeleitet aus Wochenmuster, Feiertagen und Ferien (E93), keine Eingabe — die Spalte bleibt nullbar und wird nicht beschrieben; 0/1 |
 | Heizen | `Heiz_Soll`, `Heiz_Soll_Ausserhalb`, `Heiz_Aus_Ausserhalb` | °C in den Grenzen der Heizspalte; 0/1 |
 | Kühlen | `Kuehl_Soll`, `Kuehl_Soll_Ausserhalb`, `Kuehl_Aus_Ausserhalb` | °C in den Grenzen der Kühlspalte; 0/1 |
-| Lüftung | `Aussenluft`, `Aussenluft_Einheit`, `Aussenluft_Ausserhalb` | `'1/h'` oder `'m3/hm2'` (NP-F10) |
+| Lüftung | `Aussenluft`, `Aussenluft_Einheit`, `Aussenluft_Ausserhalb`, `Aussenluft_Person` | `'1/h'` oder `'m3/hm2'` (NP-F10); `Aussenluft_Person` in m³/(h·Person), eigene Spalte neben der flächenbezogenen (Schritt 220, 6.5) |
 | Personen | `Personen_Flaeche`, `Personen_Waerme`, `Personen_Anteil`, `Personen_Anteil_Ausserhalb` | m²/Person, W/Person, 0…1 |
 | Geräte | `Geraete_Leistung`, `Geraete_Anteil`, `Geraete_Anteil_Ausserhalb` | W/m², 0…1 |
 | Beleuchtung | `Beleuchtung_Leistung`, `Beleuchtung_Anteil` | W/m², 0…1 (Q38) |
+| Herkunft | `Werte_Herkunft`, `Werte_Quelle`, `Werte_Datum` | `NULL` oder `'EINGELESEN'`; Dateiname ≤ 400; `JJJJ-MM-TT` (6.5) |
 
 **`Tab_Raumnutzungszeile`** — das Zeilenbild (NP-F7): `ID`; `ID_Profil`; `Groesse`; `Zeile`; `Wert`; `Aus`; `Von`;
 `Bis`; `Bedingt_K` — dieselben Spalten und Prüfklauseln wie `Tab_Konditionierungsvorgabe` ohne die Zeilen `NENNWERT`
@@ -251,7 +255,7 @@ Vorlage den Kalender an (Ferienzeiträume des Ziels, P12). Reihenfolge je Größ
 |---|---|---|---|---|
 | Heizen | `Heiz_Soll` im Betriebsfenster | `Heiz_Soll_Ausserhalb` bzw. „aus“ | wie außerhalb | wie außerhalb |
 | Kühlen | `Kuehl_Soll` im Betriebsfenster | `Kuehl_Soll_Ausserhalb` bzw. „aus“ | wie außerhalb | wie außerhalb |
-| Lüftung | `Aussenluft` (umgerechnet) im Betriebsfenster | `Aussenluft_Ausserhalb` | wie außerhalb | wie außerhalb |
+| Lüftung | `Aussenluft` (umgerechnet) im Betriebsfenster; ohne `Aussenluft` und `Aussenluft_Ausserhalb` die Außenluft je Person ÷ `Personen_Flaeche` ÷ lichte Höhe | `Aussenluft_Ausserhalb` (je Person: wie im Fenster) | wie außerhalb | wie außerhalb |
 | Geräte | `Geraete_Anteil` (leer = 1) im Nutzungsfenster | `Geraete_Anteil_Ausserhalb` | wie außerhalb | wie außerhalb |
 | Personen | `Personen_Anteil` (leer = 1) im Nutzungsfenster | `Personen_Anteil_Ausserhalb` (leer = 0) | wie außerhalb | wie außerhalb |
 
@@ -474,13 +478,35 @@ Beschreibung). Format in 6.4.
 
 UTF-8, Semikolon, Dezimalpunkt, eine Kopfzeile mit den Spaltennamen aus 4.1 (`Nummer;Bezeichner;Nutzung_Von;…`),
 eine Zeile je Profil; unbekannte Spalten werden benannt ignoriert, fehlende heißen „leer“; eine Spalte `Nutzungstage_Jahr` wird benannt ignoriert — die Zahl ist abgeleitet (E93) und wird nicht exportiert; eine Spalte
-`Heiz_Absenkung_K` wird als Alternative zu `Heiz_Soll_Ausserhalb` angenommen und umgerechnet; Stundenprofile als
+`Heiz_Absenkung_K` wird als Alternative zu `Heiz_Soll_Ausserhalb` angenommen und umgerechnet; `Aussenluft_Person` steht
+hinter `Aussenluft_Ausserhalb`; Stundenprofile als
 Spalten `Stunden_<Größe>_<Tagesart>` mit 24 Werten, durch Leerzeichen getrennt; die Größe steht als Kennwort (`HEIZSOLL`, `KUEHLSOLL`,
 `LUEFTUNG`, `GERAETE`, `PERSONEN`), die Tagesart ist `WERKTAG` oder `FREI`. Das Zeilenbild steht in Spalten `Zeile_<Größe>_<Zeile>` mit
 `<Zeile>` = `TAG`, `NACHT`, `WOCHENENDE`, `FERIEN`; die Zelle trägt den Wert, `aus` oder `-` (nur Zeiten) und die Zusätze `von=`, `bis=`,
 `bedingt=`. Export UTF-8 mit BOM (für Tabellenprogramme), Import mit und ohne BOM. Dasselbe Format exportiert ein
 Katalog (Rundlauf). Beschrieben auf der Wiki-Seite, mit einer Beispieldatei aus runden Phantasiewerten in den
 Testdaten.
+
+### 6.5 Normwerte einlesen (NP7, E131)
+
+Die Kategorie „DIN/TS 18599-10“ bleibt ausgeliefert ohne Werte; die Werte füllt der Anwender in **seiner** Datenbank
+(`RaumnutzungNormwerte` im Kern):
+
+| Punkt | Festlegung |
+|---|---|
+| Quellen | (a) CSV im Format 6.4 mit der Spalte `Aussenluft_Person`; (b) eine HottCAD-Projektdatei über den Leser der Profile (4.4, Q46), deren Nutzungsprofile die DIN-Nummer tragen |
+| Zuordnung | über die DIN-Nummer (führende Nullen gleich); die zwei Wohnprofile ohne Nummer über ihren Namen; eine zweite Zeile derselben Nummer und eine Nummer ohne DIN-Profil werden benannt und nicht übernommen |
+| Was geschrieben wird | allein die Kennwerte und `Aussenluft_Person` der ausgelieferten DIN-Profile; Nummer, Name, Beschreibung und `ReadOnly` bleiben, Zeilenbild und Stundenprofile der Quelle nicht; jedes Profil durchläuft die Profilprüfung (NP-F11) |
+| Vorschau | Treffer, unbekannte Nummern, Profile ohne Wert, Abweichungen zu vorhandenen Werten je Spalte; vorhandene Werte werden nur mit „überschreiben“ ersetzt, sonst übersprungen |
+| Herkunft | `Werte_Herkunft = 'EINGELESEN'`, `Werte_Quelle` (Dateiname), `Werte_Datum` (Tag); Marke „eingelesen“ in Liste und Editor |
+| Rücknahme | „eingelesene Werte entfernen“ stellt jedes eingelesene Profil wieder ohne Werte |
+| Auslieferung | Schritt 3d der Auslieferungsvorlage nimmt eingelesene Werte heraus und nennt die Zahl im Prüfbericht; die Prüfung „kein Kennwert in einer Normkategorie“ zählt `Aussenluft_Person` und die Herkunft mit (NP-F21) |
+| Generator | Außenluft je Person gilt nur ohne `Aussenluft` und `Aussenluft_Ausserhalb`: m³/(h·Person) ÷ m²/Person ÷ lichte Höhe = 1/h; ohne `Personen_Flaeche` Hinweis „ohne Belegung“, ohne Höhe „ohne Höhe“ — die Lüftung bleibt dann ungesetzt, nichts wird angenommen |
+| Vorlage (Weg 3) | die CSV der Kategorie DIN ohne Werte: Kopfzeile, Nummern und Namen wie im Katalog; der Assistent führt durch das Übertragen aus der Ausgabe des Anwenders und nennt selbst keinen Normwert |
+
+**Einheit der Außenluft je Person:** eine eigene Spalte, keine dritte Einheit von `Aussenluft_Einheit` — die Tabelle der
+Norm führt die Außenluft je Person und je Fläche nebeneinander, ein Profil trägt beide zugleich; der Schritt bleibt
+`ADD COLUMN` ohne Tabellenneubau.
 
 ---
 

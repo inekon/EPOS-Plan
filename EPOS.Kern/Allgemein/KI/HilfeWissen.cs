@@ -516,6 +516,33 @@ namespace WindowsFormsApplication1
                     "der Zone einen eigenen Zonenkalender. Das OK des Zonendialogs übernimmt die Zone in den " +
                     "Arbeitsstand; geschrieben wird mit dem OK des Gebäudeeditors."),
 
+                // ---- Normwerte der DIN uebertragen (Stufe NP7, Entscheid E131, Weg 3) -------------------------
+                // Der Assistent fuehrt durch das Uebertragen aus der eigenen Normausgabe des Anwenders in die
+                // CSV-Vorlage ohne Werte. Er nennt selbst nie einen Normwert.
+                new WissensAbschnitt("Nutzungsprofile: Normwerte der DIN/TS 18599-10 aus der eigenen Ausgabe übertragen und einlesen (standard values, read in, template)",
+                    KiChatKontext.B_GEBAEUDE,
+                    "Die Kategorie 'DIN/TS 18599-10' des Katalogs der Nutzungsprofile wird mit Nummer und Name der " +
+                    "Nutzungen ausgeliefert, aber ohne Werte: Die Norm ist kostenpflichtig, ihre Werte trägt der Anwender " +
+                    "aus seiner eigenen Ausgabe ein. Der Assistent nennt dabei selbst keinen Normwert, ergänzt keinen und " +
+                    "schätzt keinen - jede Zahl stammt aus der Ausgabe des Anwenders. So geht es: 1. Vorlage holen: Die " +
+                    "Kategorie 'DIN/TS 18599-10' als CSV exportieren - solange sie keine Werte trägt, ist das die Vorlage " +
+                    "mit Kopfzeile, Nummern und Namen. 2. Die Datei in einer Tabellenkalkulation öffnen (Trennzeichen " +
+                    "Semikolon, UTF-8) und je Nutzung die Spalten aus der Tabelle der Norm füllen: Nutzung_Von und " +
+                    "Nutzung_Bis (volle Stunden 0 bis 24), Nutzungstage_Woche (sieben Ziffern Mo bis So, 1 = genutzt, etwa " +
+                    "1111100), Heiz_Soll und Kuehl_Soll in °C, die Absenkung in einer angefügten Spalte Heiz_Absenkung_K in K (statt Heiz_Soll_Ausserhalb), Aussenluft mit " +
+                    "Aussenluft_Einheit 'm3/hm2' für den flächenbezogenen Wert, Aussenluft_Person in m³/(h·Person) für den " +
+                    "Wert je Person (beide dürfen nebeneinander stehen), Personen_Flaeche in m² je Person, Personen_Waerme " +
+                    "in W je Person, Geraete_Leistung und Beleuchtung_Leistung in W/m², Anteile als Zahl von 0 bis 1. " +
+                    "Nummer und Name nicht ändern - zugeordnet wird über die Nummer, die zwei Wohnprofile ohne Nummer über " +
+                    "ihren Namen. Eine leere Zelle heißt 'nicht belegt'. Dezimalzeichen ist der Punkt. 3. Als CSV " +
+                    "speichern und mit 'Normwerte einlesen…' am Blatt 'Nutzungsprofile' einlesen; die Vorschau nennt die " +
+                    "Treffer, unbekannte Nummern, Abweichungen zu vorhandenen Werten und fragt, ob vorhandene Werte " +
+                    "überschrieben werden. Die Profile tragen danach die Marke 'eingelesen' mit Quelle und Tag. Ebenso " +
+                    "liest 'Normwerte einlesen…' eine HottCAD-Projektdatei, deren Nutzungsprofile die DIN-Nummer tragen. " +
+                    "'Eingelesene Werte entfernen' stellt die Profile wieder ohne Werte. Die Außenluft je Person rechnet " +
+                    "die Übernahme eines Profils mit der Fläche je Person und der lichten Höhe in einen Luftwechsel um; " +
+                    "fehlt die Fläche je Person, bleibt die Lüftung benannt ungesetzt."),
+
                 new WissensAbschnitt("Konditionierung in der Gebäudeverwaltung (conditioning in the building administration)",
                     KiChatKontext.B_GEBAEUDE,
                     "Im Stammblatt der Gebäudeverwaltung zeigt die Gruppe 'Konditionierung' fünf Zustandszeilen - " +

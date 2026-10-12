@@ -124,6 +124,9 @@ namespace WindowsFormsApplication1
             t.LabelLuft = Text_("RNP_LBL_LUFT", t.LabelLuft);
             t.LabelLuftAusserhalb = Text_("RNP_LBL_LUFT_AUSSERHALB", t.LabelLuftAusserhalb);
             t.LabelLuftEinheit = Text_("RNP_LBL_LUFT_EINHEIT", t.LabelLuftEinheit);
+            t.LabelLuftPerson = Text_("RNP_LBL_LUFT_PERSON", t.LabelLuftPerson);
+            t.Eingelesen = Text_("RNP_TXT_EINGELESEN", t.Eingelesen);
+            t.EingelesenAus = Text_("RNP_TXT_EINGELESEN_AUS", t.EingelesenAus);
 
             t.LabelPersonenFlaeche = Text_("RNP_LBL_PERSONEN_FLAECHE", t.LabelPersonenFlaeche);
             t.LabelPersonenWaerme = Text_("RNP_LBL_PERSONEN_WAERME", t.LabelPersonenWaerme);
@@ -226,6 +229,10 @@ namespace WindowsFormsApplication1
                 LuftEinheit = p.Aussenluft_Einheit == RaumnutzungSchema.EINHEIT_JE_FLAECHE
                     ? RaumnutzungLuftEinheit.JeFlaeche : RaumnutzungLuftEinheit.JeStunde,
                 AussenluftAusserhalb = p.Aussenluft_Ausserhalb,
+                AussenluftPerson = p.Aussenluft_Person,
+                Eingelesen = p.Eingelesen,
+                WerteQuelle = p.Werte_Quelle ?? "",
+                WerteDatum = p.Werte_Datum ?? "",
                 PersonenFlaeche = p.Personen_Flaeche,
                 PersonenWaerme = p.Personen_Waerme,
                 PersonenAnteil = p.Personen_Anteil,
@@ -289,6 +296,10 @@ namespace WindowsFormsApplication1
                 Kuehl_Aus_Ausserhalb = d.KuehlAusAusserhalb,
                 Aussenluft = d.Aussenluft,
                 Aussenluft_Ausserhalb = d.AussenluftAusserhalb,
+                Aussenluft_Person = d.AussenluftPerson,
+                Werte_Herkunft = d.Eingelesen ? RaumnutzungNormwerteSchema.HERKUNFT_EINGELESEN : null,
+                Werte_Quelle = d.Eingelesen && d.WerteQuelle.Length > 0 ? d.WerteQuelle : null,
+                Werte_Datum = d.Eingelesen && d.WerteDatum.Length > 0 ? d.WerteDatum : null,
                 Personen_Flaeche = d.PersonenFlaeche,
                 Personen_Waerme = d.PersonenWaerme,
                 Personen_Anteil = d.PersonenAnteil,

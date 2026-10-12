@@ -53642,5 +53642,14 @@ chart</value>
   <data name="RNP_TXT_HINWEIS_BELEGUNG" xml:space="preserve">
     <value>Outdoor air per person without floor area per person in the profile: ventilation is not set.</value>
   </data>
+  <data name="RNP_LBL_LUFT_PERSON" xml:space="preserve">
+    <value>Outdoor air per person</value>
+  </data>
+  <data name="RNP_TXT_EINGELESEN" xml:space="preserve">
+    <value>read in</value>
+  </data>
+  <data name="RNP_TXT_EINGELESEN_AUS" xml:space="preserve">
+    <value>Values read in from {0} on {1}</value>
+  </data>
 </root>
 

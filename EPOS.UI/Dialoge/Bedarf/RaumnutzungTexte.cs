@@ -172,6 +172,15 @@ public sealed class RaumnutzungTexte
     /// <summary>„Einheit der Außenluft" (<c>RNP_LBL_LUFT_EINHEIT</c>).</summary>
     public string LabelLuftEinheit { get; set; } = "Einheit der Außenluft";
 
+    /// <summary>„Außenluft je Person" (<c>RNP_LBL_LUFT_PERSON</c>, NP7).</summary>
+    public string LabelLuftPerson { get; set; } = "Außenluft je Person";
+
+    /// <summary>Kennzeichen „eingelesen" (<c>RNP_TXT_EINGELESEN</c>, NP7).</summary>
+    public string Eingelesen { get; set; } = "eingelesen";
+
+    /// <summary>„Werte eingelesen aus {0} am {1}" (<c>RNP_TXT_EINGELESEN_AUS</c>, NP7).</summary>
+    public string EingelesenAus { get; set; } = "Werte eingelesen aus {0} am {1}";
+
     /// <summary>„Fläche je Person" (<c>RNP_LBL_PERSONEN_FLAECHE</c>).</summary>
     public string LabelPersonenFlaeche { get; set; } = "Fläche je Person";
 
