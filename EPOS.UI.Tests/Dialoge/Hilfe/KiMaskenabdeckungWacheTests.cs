@@ -256,7 +256,7 @@ public sealed class KiMaskenabdeckungWacheTests
         // BK-2b: die Klasse des Baustoffs (Katalogfeld klasse, 8 → 9); Gruppe und Klasse des Aufbaus (Katalogfelder
         // gruppe, klasse) und der Werkzeugschalter „nur geeignete“ (Filter der Liste, kein Maskenfeld): 4 → 7.
         new("BaustoffKatalogDialog", 9, "der Werkzeugschalter „nur herstellerneutral“ setzt den Filter der Liste"),
-        new("BauteilaufbauDialog", 7, "der Werkzeugschalter „nur geeignete“ setzt den Filter der Liste"),
+        new("BauteilaufbauDialog", 7, "der Werkzeugschalter „nur geeignete“ blendet Zeilen der Liste aus"),
         new("BauteilschichtenFelder", 6),
 
         // KU3-1: die Verwaltung der Kaeltemaschinen - zwoelf Kenndaten als EIN Fragment fuer

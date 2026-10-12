@@ -92,7 +92,7 @@ namespace EPOS.Kern.Tests
             Katalogfilterprofil bta = Katalogfilterprofil.FuerBauteilaufbau();
             Katalogspalte eignung = bta.Spalten.Single(s => s.Schluessel == Katalogfilterprofil.SpEignung);
             Assert.True(eignung.Filterbar);
-            Assert.Equal(Katalogspaltenrang.Immer, eignung.Rang);
+            Assert.Equal(Katalogspaltenrang.BeiPlatz, eignung.Rang);
             Assert.Contains(bta.Spalten, s => s.Schluessel == Katalogfilterprofil.SpGruppe);
             Assert.Contains(bta.Spalten, s => s.Schluessel == Katalogfilterprofil.SpKlasse);
             Assert.Equal(bta.Spalten.Count, bta.Spalten.Select(s => s.Schluessel).Distinct().Count());

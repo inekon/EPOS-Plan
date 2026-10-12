@@ -627,7 +627,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Marke „für die Gebäudesimulation meist nicht geeignet" eines Aufbaus (BK-2b): leer = geeignet, sonst der kurze
-        /// Markentext. Der Schalter „nur geeignete" setzt den Trichter <see cref="AUSDRUCK_LEER"/> auf diese Spalte.
+        /// Markentext. Der Schalter „nur geeignete" der Verwaltung blendet die Zeilen mit Marke vor der Liste aus (kein
+        /// Trichter: eine Spalte mit gesetztem Filter wiche nie und schöbe die Liste im schmalen Fenster quer).
         /// </summary>
         public const string SpEignung = "EIGNUNG";
 
@@ -1260,8 +1261,8 @@ namespace WindowsFormsApplication1
                 Spalten = new[]
                 {
                     new Katalogspalte(SpBezeichner, t("KFLT_SP_NAME")),
-                    // BK-2b: die Marke „meist nicht geeignet" steht vorn, damit sie im schmalen Fenster bleibt.
-                    new Katalogspalte(SpEignung, t("KFLT_SP_EIGNUNG")),
+                    // BK-2b: die Marke „meist nicht geeignet" steht vorn und weicht als erste der Platzspalten nicht.
+                    new Katalogspalte(SpEignung, t("KFLT_SP_EIGNUNG"), rang: Katalogspaltenrang.BeiPlatz),
                     new Katalogspalte(SpGruppe, t("KFLT_SP_GRUPPE"), rang: Katalogspaltenrang.Breit),
                     new Katalogspalte(SpKlasse, t("KFLT_SP_KLASSE"), rang: Katalogspaltenrang.BeiPlatz),
                     new Katalogspalte(SpBauteilart, t("KFLT_SP_BAUTEILART"), rang: Katalogspaltenrang.BeiPlatz),

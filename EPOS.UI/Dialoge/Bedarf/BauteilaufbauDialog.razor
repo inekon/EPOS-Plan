@@ -68,14 +68,15 @@
 
     <Katalograhmen BlattOffen="@_auswahl.BlattOffen">
         <Liste>
-            <Katalogliste Profil="@Profil" Zeilen="@_katalog"
+            <Katalogliste Profil="@Profil" Zeilen="@Listenzeilen"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
                           Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile" ZeileIstWahl="true"
                           Kaestchen="true" Gewaehlte="@_auswahl.Gewaehlte"
                           GewaehlteChanged="BeiKaestchen">
                 <Werkzeug>
-                    @* "NUR GEEIGNETE" (BK-2b, E132): Der Schalter fuehrt keinen eigenen Zustand, er setzt den
-                       Trichter "=" auf die Spalte Eignung - "Filter zuruecksetzen" nimmt ihn mit. Vorgabe an. *@
+                    @* "NUR GEEIGNETE" (BK-2b, E132): blendet die gekennzeichneten Aufbauten VOR der Liste aus (Vorgabe an).
+                       Bewusst kein Trichter auf der Spalte Eignung - eine Spalte mit gesetztem Filter weicht nie und
+                       schoebe die Liste im schmalen Fenster quer (katalogprobe BK2b). *@
                     <Schalter Bezeichnung="@Texte.SchalterNurGeeignete" Wert="@NurGeeignete"
                               WertChanged="NurGeeigneteGesetzt" />
                 </Werkzeug>
@@ -385,8 +386,6 @@
         _blattSchliessen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = false);
 
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Profil.Schluessel);
-        // BK-2b: „nur geeignete" ist die Vorgabe jeder Öffnung; ausschalten gilt bis zum Schließen.
-        NurGeeigneteGesetzt(true);
         // KT-7: Wirft das Lesen der Baustoffwahl, nennt der Listenbanner den Grund.
         _baustoffe = Katalogladung.Lesen(Baustoffe, TitelText, out string baustoffFehler);
         // KT-2: Wirft die Liste beim Aufbau, bricht der Dialog nicht ab - der Banner nennt die Meldung
@@ -479,7 +478,8 @@
 
         string ziel = wunsch ?? _gewaehlt;
         if (_katalog.Count == 0) { SatzWaehlen(""); return; }
-        SatzWaehlen(_katalog.Any(z => z.Schluessel == ziel) ? ziel : _katalog[0].Schluessel);
+        IReadOnlyList<Katalogfilterzeile> sichtbar = Listenzeilen.Count > 0 ? Listenzeilen : _katalog;
+        SatzWaehlen(_katalog.Any(z => z.Schluessel == ziel) ? ziel : sichtbar[0].Schluessel);
     }
 
     /// <summary>Die Liste meldet eine Zeile. <b>Geänderte Werte halten die Wahl</b> (Konzept 3.3).</summary>
@@ -563,13 +563,29 @@
 
     // --- Gruppe, Klasse, Eignung (BK-2b) ------------------------------------------
 
-    /// <summary>Steht „nur geeignete"? Der Schalter LIEST den Filterstand.</summary>
-    public bool NurGeeignete
-        => _filterstand.Ausdruck(Katalogfilterprofil.SpEignung) == Katalogfilterprofil.AUSDRUCK_LEER;
+    /// <summary>Steht „nur geeignete"? Vorgabe an bei jeder Öffnung; ausschalten gilt bis zum Schließen.</summary>
+    public bool NurGeeignete { get; private set; } = true;
 
-    /// <summary>Setzt bzw. nimmt den Ausdruck „=" (ohne Wert) auf der Spalte Eignung.</summary>
-    private void NurGeeigneteGesetzt(bool wert)
-        => _filterstand.Setzen(Katalogfilterprofil.SpEignung, wert ? Katalogfilterprofil.AUSDRUCK_LEER : "");
+    private IReadOnlyList<Katalogfilterzeile>? _geeignete;
+    private IReadOnlyList<Katalogfilterzeile>? _geeigneteVon;
+
+    /// <summary>Die Zeilen der Liste: mit „nur geeignete" ohne die Zeilen mit Marke — EINMAL je Katalogladung gefiltert.</summary>
+    private IReadOnlyList<Katalogfilterzeile> Listenzeilen
+    {
+        get
+        {
+            if (!NurGeeignete) return _katalog;
+            if (_geeignete is null || !ReferenceEquals(_geeigneteVon, _katalog))
+            {
+                string leer = Katalogwert.Leer.Text;
+                _geeignete = _katalog.Where(z => z.Text(Katalogfilterprofil.SpEignung) is var t && (t.Length == 0 || t == leer)).ToList();
+                _geeigneteVon = _katalog;
+            }
+            return _geeignete;
+        }
+    }
+
+    private void NurGeeigneteGesetzt(bool wert) => NurGeeignete = wert;
 
     private static IReadOnlyList<(int Id, string Text)> Gruppeneintraege
         => Bauteilkatalog.Gruppen(false).Select((g, i) => (i + 1, Bauteilkatalog.GruppeText(false, g))).ToList();
