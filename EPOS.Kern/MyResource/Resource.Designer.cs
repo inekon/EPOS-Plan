@@ -9339,6 +9339,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigener Satz ähnelt.
+        /// </summary>
+        public static string BKAT_HERKUNFT_EIGEN {
+            get {
+                return ResourceManager.GetString("BKAT_HERKUNFT_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingelesen ähnelt.
+        /// </summary>
+        public static string BKAT_HERKUNFT_IMPORT {
+            get {
+                return ResourceManager.GetString("BKAT_HERKUNFT_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Variante anlegen ähnelt.
         /// </summary>
         public static string BKS_BTN_ANLEGEN {

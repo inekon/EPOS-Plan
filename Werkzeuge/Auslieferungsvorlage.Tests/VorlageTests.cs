@@ -252,7 +252,10 @@ namespace Auslieferungsvorlage.Tests
             // 191 seit dem Schemaschritt 216 (KaeltemittelSchema, KM4-E1): Tab_Kaeltemittel_STAMM, STRICT von ihrer ersten
             // Zeile an; die achtzehn ausgelieferten Codes bleiben in der Vorlage.
             //
-            Assert.Equal(191, befund.Strict);
+            // 193 seit dem Schemaschritt 221 (BauteilkatalogSchema, BK-2): Tab_Bauteilabschnitt(_STAMM), STRICT von ihrer
+            // ersten Zeile an und in der Vorlage LEER.
+            //
+            Assert.Equal(193, befund.Strict);
         }
 
         // =============================================================================

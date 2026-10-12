@@ -278,11 +278,15 @@ namespace EPOS.Kern.Tests
                          Spalten(SchemaKatalog.TAB_BAUTEILAUFBAU).Where(s => s != "ID_Projekt"));
             Assert.Equal(Spalten(SchemaKatalog.TAB_BAUTEILSCHICHT_STAMM), Spalten(SchemaKatalog.TAB_BAUTEILSCHICHT));
 
-            Assert.Equal(new[] { "ID" }.Concat(new[] { "Bezeichner" }).Concat(BaustoffSchema.Fachspalten).Concat(new[] { "ReadOnly" }),
+            Assert.Equal(new[] { "ID" }.Concat(new[] { "Bezeichner" }).Concat(BaustoffSchema.Fachspalten).Concat(new[] { "ReadOnly" })
+                             .Concat(BauteilkatalogSchema.BAUSTOFF_SPALTEN.Select(s => s.Name)),
                          Spalten(SchemaKatalog.TAB_BAUSTOFF_STAMM));
-            Assert.Equal(new[] { "ID", "Bezeichner" }.Concat(BauteilaufbauSchema.Fachspalten).Concat(new[] { "ReadOnly", TypaufbauSchema.SPALTE }),
+            Assert.Equal(new[] { "ID", "Bezeichner" }.Concat(BauteilaufbauSchema.Fachspalten).Concat(new[] { "ReadOnly" }).Concat(new[] { TypaufbauSchema.SPALTE })
+                             .Concat(BauteilkatalogSchema.AUFBAU_SPALTEN.Select(s => s.Name)),
                          Spalten(SchemaKatalog.TAB_BAUTEILAUFBAU_STAMM));
-            Assert.Equal(new[] { "ID" }.Concat(BauteilaufbauSchema.Schichtspalten), Spalten(SchemaKatalog.TAB_BAUTEILSCHICHT));
+            Assert.Equal(new[] { "ID" }.Concat(BauteilaufbauSchema.Schichtspalten)
+                             .Concat(BauteilkatalogSchema.SpaltenVon(SchemaKatalog.TAB_BAUTEILSCHICHT).Select(s => s.Name)),
+                         Spalten(SchemaKatalog.TAB_BAUTEILSCHICHT));
             // Hinter den Spalten von S-C hängt der eigene Zonenschritt der Kühlübergabe (E37,
             // KuehluebergabeSchema.SCHRITT_ZONE) seine drei Spalten an, dahinter die Uebergabe je Zone
             // (E63, ZonenUebergabeSchema.SCHRITT) ihre vier, dahinter der Profilname (Q41, RaumnutzungSchema.SCHRITT) und die
@@ -314,9 +318,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { ("ID_Aufbau", "Tab_Bauteilaufbau", "NO ACTION"), ("ID_Nachbarzone", "Tab_Zone", "NO ACTION"),
                                  ("ID_Zone", "Tab_Zone", "CASCADE") },
                          Fks(SchemaKatalog.TAB_BAUTEIL));
-            Assert.Equal(new[] { ("ID_Aufbau", "Tab_Bauteilaufbau", "CASCADE"), ("ID_Baustoff", "Tab_Baustoff", "NO ACTION") },
+            // BK-2 (Schritt 221): der Abschnitt einer inhomogenen Schicht, mit Kaskade.
+            Assert.Equal(new[] { ("ID_Abschnitt", "Tab_Bauteilabschnitt", "CASCADE"), ("ID_Aufbau", "Tab_Bauteilaufbau", "CASCADE"), ("ID_Baustoff", "Tab_Baustoff", "NO ACTION") },
                          Fks(SchemaKatalog.TAB_BAUTEILSCHICHT));
-            Assert.Equal(new[] { ("ID_Aufbau", "Tab_Bauteilaufbau_STAMM", "CASCADE"), ("ID_Baustoff", "Tab_Baustoff_STAMM", "NO ACTION") },
+            Assert.Equal(new[] { ("ID_Abschnitt", "Tab_Bauteilabschnitt_STAMM", "CASCADE"), ("ID_Aufbau", "Tab_Bauteilaufbau_STAMM", "CASCADE"), ("ID_Baustoff", "Tab_Baustoff_STAMM", "NO ACTION") },
                          Fks(SchemaKatalog.TAB_BAUTEILSCHICHT_STAMM));
             // Die Projektkopien tragen den Projektfremdschluessel der Hausregel (Schritt 96).
             Assert.Equal(new[] { ("ID_Projekt", "Tab_Projekt", "CASCADE") }, Fks(SchemaKatalog.TAB_BAUSTOFF));

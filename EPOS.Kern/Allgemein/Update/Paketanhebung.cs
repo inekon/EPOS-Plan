@@ -439,6 +439,10 @@ namespace WindowsFormsApplication1
             // Ein Paket führt keinen Katalog der Nutzungsprofile (er bleibt im Ziel); die Spalten legt der Schritt am Ziel an.
             new Stufe(RaumnutzungNormwerteSchema.SCHRITT, Art.Katalog,
                       "Außenluft je Person und Herkunft eingelesener Normwerte am Nutzungsprofil (E131)"),
+            // Ein älteres Paket bringt seine Baustoffe und Aufbauten ohne die neuen Felder; Gliederung und Kennzeichen setzt
+            // der Kern beim nächsten Schreiben, gelesen leitet er die Gruppe aus Stoffgruppe bzw. Bauteilart ab.
+            new Stufe(BauteilkatalogSchema.SCHRITT, Art.Ddl,
+                      "Herkunft EIGEN/IMPORT, Gruppe und Klasse, Kennzeichen und Felder der Quelle am Bauteilkatalog (E132)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

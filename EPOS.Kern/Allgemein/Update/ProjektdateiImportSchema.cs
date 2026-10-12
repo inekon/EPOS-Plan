@@ -126,7 +126,7 @@ namespace WindowsFormsApplication1
             if (u == null) throw new ArgumentNullException(nameof(u));
             if (string.IsNullOrEmpty(bestand))
                 throw new InvalidOperationException("Zu " + u.Tabelle + " gibt es keinen CREATE-Text in sqlite_master.");
-            if (bestand.Contains(u.Neu, StringComparison.Ordinal)) return null;
+            if (Erfuellt(u, bestand)) return null;
             int stelle = bestand.IndexOf(u.Alt, StringComparison.Ordinal);
             if (stelle < 0)
                 throw new InvalidOperationException(
@@ -138,6 +138,14 @@ namespace WindowsFormsApplication1
                 throw new InvalidOperationException(u.Tabelle + " ist keine STRICT-Tabelle - der Schritt baut sie nicht um.");
             return bestand.Substring(0, stelle) + u.Neu + bestand.Substring(stelle + u.Alt.Length);
         }
+
+        /// <summary>
+        /// Trägt <paramref name="bestand"/> die Klausel dieses Schritts — oder die eines späteren Schritts, der sie erweitert
+        /// (<see cref="BauteilkatalogSchema.CHECK_HERKUNFT_NEU"/> an den vier Katalogtabellen, Schritt 221)?
+        /// </summary>
+        public static bool Erfuellt(Umbau u, string bestand) =>
+            bestand != null && (bestand.Contains(u.Neu, StringComparison.Ordinal) ||
+                                (u.Spalte == "Herkunft" && bestand.Contains(BauteilkatalogSchema.CHECK_HERKUNFT_NEU, StringComparison.Ordinal)));
 
         /// <summary>Muss die Tabelle noch neu gebaut werden? <c>false</c> ohne die Tabelle.</summary>
         public static bool UmbauNoetig(Umbau u)

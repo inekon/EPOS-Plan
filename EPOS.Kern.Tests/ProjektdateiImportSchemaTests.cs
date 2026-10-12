@@ -140,7 +140,8 @@ namespace EPOS.Kern.Tests
             foreach (ProjektdateiImportSchema.Umbau u in ProjektdateiImportSchema.TABELLEN)
             {
                 string sql = Sql(u.Tabelle);
-                Assert.Equal(1, Vorkommen(sql, u.Neu));
+                // Die vier Katalogtabellen tragen seit Schritt 221 (BauteilkatalogSchema) die erweiterte Liste.
+                Assert.True(ProjektdateiImportSchema.Erfuellt(u, sql), u.Tabelle);
                 Assert.Equal(0, Vorkommen(sql, u.Alt));
                 Assert.EndsWith(") STRICT", sql.TrimEnd(), StringComparison.Ordinal);
             }
@@ -189,6 +190,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ProjektdateiImportSchema.TABELLEN.Count, ProjektdateiImportSchema.Ausfuehren(bericht));
             Assert.Contains(bericht, z => z.Contains("neu gebaut", StringComparison.Ordinal));
             Assert.True(ProjektdateiImportSchema.Vollstaendig());
+            // Schritt 221 erweitert die Liste der vier Katalogtabellen wieder (BauteilkatalogSchema).
+            BauteilkatalogSchema.Ausfuehren(null);
             foreach (ProjektdateiImportSchema.Umbau u in ProjektdateiImportSchema.TABELLEN)
             {
                 Assert.Equal(textVorher[u.Tabelle], Sql(u.Tabelle));
@@ -263,7 +266,7 @@ namespace EPOS.Kern.Tests
                 k.CommandText = "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = $n";
                 k.Parameters.AddWithValue("$n", u.Tabelle);
                 string sql = Convert.ToString(k.ExecuteScalar(), CultureInfo.InvariantCulture);
-                Assert.True(sql.Contains(u.Neu, StringComparison.Ordinal), "Die Repo-Datei: " + u.Tabelle + " ohne SQPROJ.");
+                Assert.True(ProjektdateiImportSchema.Erfuellt(u, sql), "Die Repo-Datei: " + u.Tabelle + " ohne SQPROJ.");
             }
             // Kein Datensatz trägt SQPROJ - der Schritt ist ergebnisneutral.
             Assert.Equal(0L, Skalar(verbindung, "SELECT COUNT(*) FROM Tab_Importquelle WHERE Format = 'SQPROJ'"));
@@ -282,7 +285,8 @@ namespace EPOS.Kern.Tests
                 {
                     string text = Convert.ToString(v.Skalar("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?",
                                                             new DbParam("p1", u.Tabelle)), CultureInfo.InvariantCulture);
-                    TwwBezugsartSchema.Neubau(v, u.Tabelle, text.Replace(u.Neu, u.Alt), u.Tabelle + "_Probe_alt");
+                    TwwBezugsartSchema.Neubau(v, u.Tabelle, text.Replace(u.Neu, u.Alt).Replace(BauteilkatalogSchema.CHECK_HERKUNFT_NEU, u.Alt),
+                                              u.Tabelle + "_Probe_alt");
                 }
                 v.Commit();
             }

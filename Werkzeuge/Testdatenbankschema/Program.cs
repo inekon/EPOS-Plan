@@ -3537,6 +3537,25 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrNp7 + " - vollstaendig: " + RaumnutzungNormwerteSchema.Vollstaendig() +
                                   " (erwartet True).");
             }
+
+            // ---- Schritt BauteilkatalogSchema.SCHRITT (BK-2, E132): Herkunft EIGEN/IMPORT (Neubau der vier Kopftabellen),
+            //      Gruppe und Klasse, Kennzeichen, Felder der Quelle und Abschnittstabellen am Baustoff- und Bauteilkatalog.
+            //      Aus DERSELBEN Quelle wie SchemaMigration.Schritt_Bauteilkatalog. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: der Bauteilweg liest keine neue Spalte.
+            string nrBk2 = BauteilkatalogSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBk2 + " - Bauteilkatalog (Herkunft, Gliederung, Kennzeichen, Felder): " +
+                              (BauteilkatalogSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBk2 = new List<string>();
+                angelegt += BauteilkatalogSchema.Ausfuehren(berichtBk2);
+                foreach (string zeile in berichtBk2)
+                    Console.WriteLine("Schritt " + nrBk2 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBk2 + " - vollstaendig: " + BauteilkatalogSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
