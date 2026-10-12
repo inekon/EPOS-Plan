@@ -6826,42 +6826,38 @@ table.epos-simerg-tabelle {
     min-width: 14em;
 }
 
-/* Die Baustoffe (Namensabgleich): Zahl der Schichten rechtsbuendig, die Klappliste so breit
-   wie ein Katalogname, Stoffwerte und Name brechen um. Die eigene Zuordnung steht fett, eine
-   verworfene Schicht und "ohne Treffer" leise; eine im Dialog geaenderte, noch nicht
-   gespeicherte Zuordnung traegt einen Randstreifen im Quellblau (im Kontrastmodus CanvasText,
-   gepunktet - verschieden vom gestrichelten Gelb). */
-.epos-gebimport-baustoffe td.epos-gebimport-zahl,
-.epos-gebimport-baustoffe th.epos-gebimport-zahl {
-    text-align: right;
+/* Die Baustoffwahl je Schicht in der Liste "Bauteilaufbauten" (AB3): Eine Schicht ohne Stoffwert
+   traegt Warnflaeche und gestrichelten Randstreifen, die Klappliste so breit wie ein Katalogname
+   und "Zuordnung entfernen" stehen in einem Flexkasten hinter dem Text und brechen mit ihm um. Eine
+   im Dialog geaenderte, noch nicht gespeicherte Zuordnung traegt einen gepunkteten Randstreifen im
+   Quellblau (im Kontrastmodus CanvasText) - verschieden vom gestrichelten Gelb. */
+.epos-gebimport-aufbauschichtliste > li.epos-gebimport-schicht--ohnewert {
+    background: var(--epos-warn-flaeche);
+    border-left: 4px dashed var(--epos-warn-rahmen);
+    padding-left: 0.4em;
 }
 
-.epos-gebimport-baustoffe td.epos-gebimport-materialname,
-.epos-gebimport-baustoffe td.epos-gebimport-stoffwerte {
-    white-space: normal;
-    min-width: 10em;
+.epos-gebimport-aufbauschichtliste > li.epos-gebimport-baustoff--vorgemerkt {
+    border-left: 4px dotted var(--epos-quelle-text);
+    padding-left: 0.4em;
 }
 
-.epos-gebimport-baustoffe select.epos-eingabe {
+.epos-gebimport-schichtwahl {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.4em;
+    align-items: center;
+    margin-left: 0.6em;
+}
+
+.epos-gebimport-schichtwahl select.epos-eingabe {
     width: 18em;
     max-width: 100%;
 }
 
-.epos-gebimport-abgleich--n7 {
-    font-weight: 600;
-}
-
-.epos-gebimport-abgleich--ohne,
-.epos-gebimport-abgleich--verworfen {
-    color: var(--epos-text-leise);
-}
-
-.epos-gebimport-baustoff--vorgemerkt td.epos-gebimport-baustoffwahl {
-    border-left: 4px dotted var(--epos-quelle-text);
-}
-
 @media (forced-colors: active) {
-    .epos-gebimport-baustoff--vorgemerkt td.epos-gebimport-baustoffwahl { border-left: 4px dotted CanvasText; }
+    .epos-gebimport-aufbauschichtliste > li.epos-gebimport-schicht--ohnewert { border-left: 4px dashed CanvasText; }
+    .epos-gebimport-aufbauschichtliste > li.epos-gebimport-baustoff--vorgemerkt { border-left: 4px dotted CanvasText; }
 }
 
 /* Der Grundriss des Gebaeudeimports (Stufe G6c, Welle D2) - der Baustein GebaeudeAnsicht und seine

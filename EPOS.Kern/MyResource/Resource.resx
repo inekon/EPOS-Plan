@@ -38303,30 +38303,6 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="GIMP_BS_OHNE_GRUPPE" xml:space="preserve">
     <value>ohne Gruppe</value>
   </data>
-  <data name="GIMP_DLG_GRP_BAUSTOFFE" xml:space="preserve">
-    <value>Baustoffe</value>
-  </data>
-  <data name="GIMP_DLG_BAUSTOFFE_HINWEIS" xml:space="preserve">
-    <value>Jeder Materialname der Datei wird über Namen und Synonyme einem Baustoff des Katalogs zugeordnet; eine Luftschicht rechnet als ruhende Luftschicht, eine Schraffur ohne Stoff entfällt. Eine eigene Zuordnung ändert den Vorschlag sofort und wird beim Speichern der Gebäudeliste für das Projekt gemerkt.</value>
-  </data>
-  <data name="GIMP_DLG_SP_MATERIALNAME" xml:space="preserve">
-    <value>Name in der Datei</value>
-  </data>
-  <data name="GIMP_DLG_SP_SCHICHTEN" xml:space="preserve">
-    <value>Schichten</value>
-  </data>
-  <data name="GIMP_DLG_SP_ABGLEICH" xml:space="preserve">
-    <value>Zuordnung über</value>
-  </data>
-  <data name="GIMP_DLG_SP_BAUSTOFF" xml:space="preserve">
-    <value>Baustoff</value>
-  </data>
-  <data name="GIMP_DLG_SP_STOFFWERTE" xml:space="preserve">
-    <value>Stoffwerte</value>
-  </data>
-  <data name="GIMP_DLG_SP_WERTE_AUS" xml:space="preserve">
-    <value>Werte</value>
-  </data>
   <data name="GIMP_DLG_BAUSTOFF_WAEHLEN" xml:space="preserve">
     <value>Baustoff für „{0}“</value>
   </data>
@@ -48551,9 +48527,6 @@ Chart</value>
   <data name="GIMP_AB_NUR_BC" xml:space="preserve">
     <value>Nur Stufe B und C</value>
   </data>
-  <data name="GIMP_AB_ZUR_BAUSTOFF" xml:space="preserve">
-    <value>Baustoff zuordnen</value>
-  </data>
   <data name="GIMP_AB_LEER" xml:space="preserve">
     <value>Keine Aufbauten im Vorschlag.</value>
   </data>
@@ -48561,7 +48534,7 @@ Chart</value>
     <value>ohne Aufbau</value>
   </data>
   <data name="GIMP_AB_HINWEIS" xml:space="preserve">
-    <value>Je Aufbau eine Zeile; C₁,korr je m² ist nur zur Anzeige über die Bauteilreduktion nach VDI 6007 gerechnet. Ein Klick auf „Schichten“ zeigt den Aufbau.</value>
+    <value>Je Aufbau eine Zeile; C₁,korr je m² ist nur zur Anzeige über die Bauteilreduktion nach VDI 6007 gerechnet. Ein Klick auf „Schichten“ zeigt den Aufbau. Fehlt einer Schicht ein Stoffwert, wählen Sie dort einen Baustoff des Katalogs; die Zuordnung gilt für alle Schichten dieses Namens, ändert den Vorschlag sofort und wird beim Speichern der Gebäudeliste für das Projekt gemerkt.</value>
   </data>
   <data name="GIMP_AB_SCHICHTEN" xml:space="preserve">
     <value>Schichten</value>
@@ -53563,6 +53536,15 @@ Chart</value>
   </data>
   <data name="KAELTE_ART_GRUPPE" xml:space="preserve">
     <value>Art des Kältebedarfs</value>
+  </data>
+  <data name="GIMP_AB_VERWALTUNG_HINWEIS" xml:space="preserve">
+    <value>Baustoffe und Bauteilaufbauten pflegen Sie unter Administration › Gebäude.</value>
+  </data>
+  <data name="GIMP_AB_HERKUNFT_HAND" xml:space="preserve">
+    <value>Zuordnung von Hand</value>
+  </data>
+  <data name="GIMP_AB_DATEISCHICHTEN" xml:space="preserve">
+    <value>Schichten der Datei — der Aufbau ist unvollständig:</value>
   </data>
 </root>
 

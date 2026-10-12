@@ -2,6 +2,7 @@
 using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Bausteine;
+using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dialoge.Import;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components;
@@ -719,9 +720,10 @@ public class GebaeudeImportDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Der Stand mit dem Abschnitt „Baustoffe": Gipsputz trifft über den Wortanfang, Fußbodenaufbau
-    /// nichts, Air ist eine Luftschicht. Die Datenseite bildet den Vorschlag neu — mit einem Baustoff
-    /// für Fußbodenaufbau hat er einen Aufbau mehr.
+    /// Der Stand mit Materialnamen (AB3): Gipsputz trifft über den Wortanfang (Aufbau „AW massiv", Werte aus dem Katalog),
+    /// Fußbodenaufbau nichts, Air ist eine Luftschicht (beide in der Kellerdecke, solange sie unvollständig ist), „4.1.3.1"
+    /// trägt alle Werte aus der Datei (Aufbau „PD Wand"). Die Datenseite bildet den Vorschlag neu — mit einem Baustoff für
+    /// Fußbodenaufbau hat er einen Aufbau mehr, und die Kellerdecke trägt ihre Schichten.
     /// </summary>
     private static GebaeudeImportStand MitBaustoffen(GebaeudeZuordnungsanfrage a, IReadOnlyDictionary<string, int>? gemerkt = null)
     {
@@ -732,101 +734,132 @@ public class GebaeudeImportDialogTests : EposBunitContext
             Materialzeile(dialog, gemerkt, "Gipsputz", "gipsputz", 2, "N5", "Wortanfang"),
             Materialzeile(dialog, gemerkt, "Fußbodenaufbau", "fussbodenaufbau", null, GebaeudeAbgleichSchluessel.Ohne, "ohne Treffer"),
             Materialzeile(dialog, gemerkt, "Air", "air", null, "LUFTSCHICHT", "Luftschicht"),
+            Materialzeile(dialog, gemerkt, "4.1.3.1", "4.1.3.1", null, "N1", "Gegenprobe") with { Werte = "aus der Datei" },
         };
-        int aufbauten = 6 + (zeilen[1].IdBaustoff.HasValue ? 1 : 0);
+        bool fbZugeordnet = zeilen[1].IdBaustoff.HasValue;
+        int aufbauten = 6 + (fbZugeordnet ? 1 : 0);
+        var gips = new BauteilsteckbriefSchicht("Gipsputz", "15 mm", "0,51 W/(mK)", "1200 kg/m³", "1000 J/(kgK)", "aus dem Katalog", "katalog")
+            { Materialschluessel = "gipsputz" };
+        var fbKatalog = new BauteilsteckbriefSchicht("Fußbodenaufbau", "50 mm", "1,4 W/(mK)", "2000 kg/m³", "1000 J/(kgK)", "aus dem Katalog", "katalog")
+            { Materialschluessel = "fussbodenaufbau" };
+        var fbOhne = new BauteilsteckbriefSchicht("Fußbodenaufbau", "50 mm", "–", "–", "–", "–", "leer")
+            { Materialschluessel = "fussbodenaufbau", OhneWert = true };
+        var luft = new BauteilsteckbriefSchicht("Air", "40 mm", "–", "–", "–", "–", "leer");
+        var pd = new BauteilsteckbriefSchicht("4.1.3.1", "175 mm", "0,99 W/(mK)", "1800 kg/m³", "1000 J/(kgK)", "aus der Datei", "datei")
+            { Materialschluessel = "4.1.3.1" };
         return Stand(a) with
         {
             Bauteile = Bauteile(true) with { Kopftext = "Zone-Probe · " + aufbauten + " Aufbauten" },
             Baustoffe = new GebaeudeBaustoffeDaten
             {
-                Zusammenfassung = zeilen.Count(z => z.IdBaustoff.HasValue) + " von 3 zugeordnet, " + zeilen.Count(z => z.OhneTreffer) + " ohne Treffer",
+                Zusammenfassung = zeilen.Count(z => z.IdBaustoff.HasValue) + " von 4 zugeordnet, " + zeilen.Count(z => z.OhneTreffer) + " ohne Treffer",
                 Zeilen = zeilen,
                 Katalog = BaustoffKatalog,
+            },
+            Aufbauten = new[]
+            {
+                new GebaeudeAufbaulistenzeileDaten
+                {
+                    Schluessel = "K", Aufbau = fbZugeordnet ? "Kellerdecke" : "ohne Aufbau", Art = "Kellerdecke",
+                    Stufe = fbZugeordnet ? EPOS.UI.Dialoge.Bedarf.Aufbaustufe.A : EPOS.UI.Dialoge.Bedarf.Aufbaustufe.C, Bauteile = 1, Flaeche = "60",
+                    Schichten = fbZugeordnet ? new[] { fbKatalog, luft } : Array.Empty<BauteilsteckbriefSchicht>(),
+                    Dateischichten = fbZugeordnet ? Array.Empty<BauteilsteckbriefSchicht>() : new[] { fbOhne, luft },
+                },
+                new GebaeudeAufbaulistenzeileDaten
+                {
+                    Schluessel = "A-1", Aufbau = "AW massiv", Art = "Außenwand", Stufe = EPOS.UI.Dialoge.Bedarf.Aufbaustufe.A, Bauteile = 4, Flaeche = "120",
+                    Schichten = new[] { gips },
+                },
+                new GebaeudeAufbaulistenzeileDaten
+                {
+                    Schluessel = "A-PD", Aufbau = "PD Wand", Art = "Außenwand", Stufe = EPOS.UI.Dialoge.Bedarf.Aufbaustufe.A, Bauteile = 2, Flaeche = "40",
+                    Schichten = new[] { pd },
+                },
             },
         };
     }
 
-    private static IElement Baustoffzeile(IRenderedComponent<GebaeudeImportDialog> cut, string schluessel)
-        => cut.Find(".epos-gebimport-baustoffe tr[data-schluessel=\"" + schluessel + "\"]");
-
-    private static IReadOnlyList<string> Zellen(IElement zeile)
-        => zeile.QuerySelectorAll("td").Select(t => t.TextContent.Trim()).ToList();
+    /// <summary>Die Schicht eines Materialnamens in der aufgeklappten Zeile (klappt sie auf, wenn nötig).</summary>
+    private static IElement Schicht(IRenderedComponent<GebaeudeImportDialog> cut, string zeile, string material)
+    {
+        if (cut.FindAll(".epos-gebimport-aufbauschichtzeile[data-zeile=\"" + zeile + "\"]").Count == 0)
+            cut.Find(".epos-gebimport-aufbauten tr.epos-gebimport-aufbauzeile[data-schluessel=\"" + zeile + "\"] .epos-gebimport-aufbauschichten").Click();
+        return cut.Find(".epos-gebimport-aufbauschichtzeile[data-zeile=\"" + zeile + "\"] li[data-material=\"" + material + "\"]");
+    }
 
     [Fact]
-    public void Der_Abschnitt_Baustoffe_steht_nur_mit_Materialnamen()
+    public void AB3_Der_Abschnitt_Baustoffe_ist_fort_und_ein_Hinweis_nennt_die_Administration()
     {
-        var ohne = Bauen(new Protokoll(), zuordnen: MitBauteilen);
-        Einlesen(ohne);
-        Assert.Empty(ohne.FindAll(".epos-gebimport-baustoffe"));
-        Assert.DoesNotContain(">Baustoffe<", ohne.Markup);
-
         var cut = Bauen(new Protokoll(), zuordnen: a => MitBaustoffen(a));
         Einlesen(cut);
-        Assert.Contains(cut.FindAll("h2, h3, .epos-gruppenkopf"), k => k.TextContent.Trim() == "Baustoffe");
-        Assert.Equal(3, cut.FindAll(".epos-gebimport-baustoffe tbody tr").Count);
-        Assert.Equal("1 von 3 zugeordnet, 1 ohne Treffer", cut.Find(".epos-gebimport-baustoffe-summe").TextContent);
-        string kopf = cut.Find(".epos-gebimport-baustoffe thead").TextContent;
-        foreach (string spalte in new[] { "Name in der Datei", "Schichten", "Zuordnung über", "Baustoff", "Stoffwerte", "Werte" })
-            Assert.Contains(spalte, kopf);
-        // Der Abschnitt steht unter den Bauteilen und vor den Meldungen.
+        Assert.Empty(cut.FindAll(".epos-gebimport-baustoffe"));
+        Assert.Empty(cut.FindAll(".epos-gebimport-baustoffe-summe"));
+        Assert.DoesNotContain(cut.FindAll("h2, h3, .epos-gruppenkopf"), k => k.TextContent.Trim() == "Baustoffe");
+        Assert.DoesNotContain("ohne Treffer", cut.Markup);
+        Assert.Equal("Baustoffe und Bauteilaufbauten pflegen Sie unter Administration › Gebäude.",
+                     cut.Find(".epos-gebimport-verwaltungshinweis").TextContent.Trim());
+        // Der Hinweis steht unter dem Kopf der Liste „Bauteilaufbauten" und vor der Tabelle.
         string markup = cut.Markup;
-        Assert.True(markup.IndexOf("epos-gebimport-bauteilliste", StringComparison.Ordinal) < markup.IndexOf("epos-gebimport-baustoffe", StringComparison.Ordinal));
-        Assert.True(markup.IndexOf("epos-gebimport-baustoffe", StringComparison.Ordinal) < markup.IndexOf("epos-gebimport-meldungen", StringComparison.Ordinal));
+        Assert.True(markup.IndexOf("epos-gebimport-verwaltungshinweis", StringComparison.Ordinal)
+                    < markup.IndexOf("epos-gebimport-aufbauten", StringComparison.Ordinal));
     }
 
     [Fact]
-    public void Die_Zeilen_zeigen_Stufe_Baustoff_und_Werte_und_ohne_Treffer_ist_gelb()
+    public void AB3_Eine_Schicht_ohne_Stoffwert_bietet_die_Baustoffwahl_nach_Stoffgruppe()
     {
         var cut = Bauen(new Protokoll(), zuordnen: a => MitBaustoffen(a));
         Einlesen(cut);
 
-        IElement gips = Baustoffzeile(cut, "gipsputz");
-        IReadOnlyList<string> zellen = Zellen(gips);
-        Assert.Equal(new[] { "Gipsputz", "2", "Wortanfang" }, zellen.Take(3));
-        Assert.Equal(new[] { "λ-Probe", "aus dem Katalog" }, zellen.Skip(4).Take(2));
-        Assert.Equal("Beleg-gipsputz", gips.QuerySelector(".epos-gebimport-abgleich")!.GetAttribute("title"));
-        Assert.Contains("epos-gebimport-abgleich--n5", gips.QuerySelector(".epos-gebimport-abgleich")!.ClassName);
-        IElement wahl = gips.QuerySelector("select")!;
-        Assert.Equal("Baustoff für „Gipsputz“", wahl.GetAttribute("aria-label"));
+        IElement fb = Schicht(cut, "K", "fussbodenaufbau");
+        Assert.Contains("epos-gebimport-schicht--ohnewert", fb.ClassName);
+        Assert.Equal("Schichten der Datei — der Aufbau ist unvollständig:", cut.Find(".epos-gebimport-dateischichten-kopf").TextContent.Trim());
+        IElement wahl = fb.QuerySelector("select")!;
+        Assert.Equal("Baustoff für „Fußbodenaufbau“", wahl.GetAttribute("aria-label"));
         Assert.Equal(new[] { "Putze", "Estriche" }, wahl.QuerySelectorAll("optgroup").Select(g => g.GetAttribute("label")));
-        IElement gewaehlt = Assert.Single(wahl.QuerySelectorAll("option"), o => o.HasAttribute("selected"));
-        Assert.Equal(("2", "Gipsputz 1200"), (gewaehlt.GetAttribute("value"), gewaehlt.TextContent));
-        Assert.Empty(wahl.QuerySelectorAll("option[value='']"));                 // mit Baustoff keine leere Zeile
-        Assert.Contains("Fließestrich (Hersteller A)", wahl.TextContent);
-        Assert.Null(gips.QuerySelector(".epos-gebimport-entfernen"));             // nur eine eigene Zuordnung lässt sich entfernen
-        Assert.DoesNotContain("epos-gebimport-zeile--gelb", gips.ClassName ?? "");
-
-        IElement fb = Baustoffzeile(cut, "fussbodenaufbau");
-        Assert.Contains("epos-gebimport-zeile--gelb", fb.ClassName);
-        Assert.Equal("ohne Treffer", Zellen(fb)[2]);
-        IElement leer = Assert.Single(fb.QuerySelectorAll("option"), o => o.HasAttribute("selected"));
+        IElement leer = Assert.Single(wahl.QuerySelectorAll("option"), o => o.HasAttribute("selected"));
         Assert.Equal(("", "(Baustoff wählen)"), (leer.GetAttribute("value"), leer.TextContent));
+        Assert.Contains("Fließestrich (Hersteller A)", wahl.TextContent);
+        Assert.Null(fb.QuerySelector(".epos-gebimport-entfernen"));
 
-        IElement luft = Baustoffzeile(cut, "air");
-        Assert.Equal("Luftschicht", Zellen(luft)[2]);
-        Assert.DoesNotContain("epos-gebimport-zeile--gelb", luft.ClassName ?? "");
+        // Die Luftschicht braucht keinen Baustoff: keine Wahl.
+        IElement luft = Assert.Single(cut.FindAll(".epos-gebimport-aufbauschichtzeile[data-zeile=\"K\"] li"), l => l.TextContent.Contains("Air"));
+        Assert.Null(luft.QuerySelector("select"));
     }
 
     [Fact]
-    public void Die_Auswahl_setzt_den_Baustoff_und_bildet_den_Vorschlag_neu()
+    public void AB3_Schichten_mit_Werten_aus_der_Datei_oder_dem_Abgleich_zeigen_keine_Wahl()
+    {
+        var cut = Bauen(new Protokoll(), zuordnen: a => MitBaustoffen(a));
+        Einlesen(cut);
+        IElement pd = Schicht(cut, "A-PD", "4.1.3.1");
+        Assert.Contains("aus der Datei", pd.TextContent);
+        Assert.Null(pd.QuerySelector("select"));
+        Assert.DoesNotContain("epos-gebimport-schicht--ohnewert", pd.ClassName ?? "");
+        IElement gips = Schicht(cut, "A-1", "gipsputz");
+        Assert.Contains("aus dem Katalog", gips.TextContent);
+        Assert.Null(gips.QuerySelector("select"));
+    }
+
+    [Fact]
+    public void AB3_Die_Wahl_an_der_Schicht_setzt_die_Zuordnung_und_bildet_den_Vorschlag_neu()
     {
         var p = new Protokoll();
         var cut = Bauen(p, zuordnen: a => MitBaustoffen(a));
         Einlesen(cut);
         Assert.Contains("6 Aufbauten", cut.Find(".epos-gebimport-bauteile-kopf").TextContent);
 
-        Baustoffzeile(cut, "fussbodenaufbau").QuerySelector("select")!.Change("5");
+        Schicht(cut, "K", "fussbodenaufbau").QuerySelector("select")!.Change("5");
         cut.WaitForAssertion(() => Assert.Equal(2, p.Anfragen.Count));
         Assert.Equal(new Dictionary<string, int?> { ["fussbodenaufbau"] = 5 }, p.Anfragen[1].Baustoffzuordnungen);
-        // Der Vorschlag ist neu gebildet: ein Aufbau mehr; die Zeile trägt die eigene Zuordnung.
+        // Der Vorschlag ist neu gebildet: ein Aufbau mehr; die Schicht trägt die Zuordnung von Hand und bleibt wählbar.
         Assert.Contains("7 Aufbauten", cut.Find(".epos-gebimport-bauteile-kopf").TextContent);
-        IElement fb = Baustoffzeile(cut, "fussbodenaufbau");
-        Assert.Equal("eigene Zuordnung", Zellen(fb)[2]);
-        Assert.DoesNotContain("epos-gebimport-zeile--gelb", fb.ClassName);
+        IElement fb = Schicht(cut, "K", "fussbodenaufbau");
+        Assert.Contains("Zuordnung von Hand", fb.TextContent);
+        Assert.Equal("hand", fb.GetAttribute("data-herkunft"));
+        Assert.DoesNotContain("epos-gebimport-schicht--ohnewert", fb.ClassName);
         Assert.Contains("epos-gebimport-baustoff--vorgemerkt", fb.ClassName);
         Assert.Equal("5", Assert.Single(fb.QuerySelectorAll("option"), o => o.HasAttribute("selected")).GetAttribute("value"));
         Assert.NotNull(fb.QuerySelector(".epos-gebimport-entfernen"));
-        Assert.Equal("2 von 3 zugeordnet, 0 ohne Treffer", cut.Find(".epos-gebimport-baustoffe-summe").TextContent);
 
         // Ein Klassenwechsel ordnet neu zu und behält die Zuordnung.
         cut.FindAll(".epos-feld")[0].QuerySelector("select")!.Change("4");
@@ -842,7 +875,7 @@ public class GebaeudeImportDialogTests : EposBunitContext
     }
 
     [Fact]
-    public void Entfernen_nimmt_die_eigene_Zuordnung_zurueck()
+    public void AB3_Entfernen_an_der_Schicht_nimmt_die_eigene_Zuordnung_zurueck()
     {
         var p = new Protokoll();
         var gemerkt = new Dictionary<string, int> { ["gipsputz"] = 1 };
@@ -850,23 +883,22 @@ public class GebaeudeImportDialogTests : EposBunitContext
         Einlesen(cut);
 
         // Eine im Dialog gesetzte Zuordnung fällt beim Entfernen einfach weg.
-        Baustoffzeile(cut, "fussbodenaufbau").QuerySelector("select")!.Change("5");
+        Schicht(cut, "K", "fussbodenaufbau").QuerySelector("select")!.Change("5");
         cut.WaitForAssertion(() => Assert.Equal(2, p.Anfragen.Count));
-        Baustoffzeile(cut, "fussbodenaufbau").QuerySelector(".epos-gebimport-entfernen")!.Click();
+        Schicht(cut, "K", "fussbodenaufbau").QuerySelector(".epos-gebimport-entfernen")!.Click();
         cut.WaitForAssertion(() => Assert.Equal(3, p.Anfragen.Count));
         Assert.Empty(p.Anfragen[2].Baustoffzuordnungen!);
-        Assert.Contains("epos-gebimport-zeile--gelb", Baustoffzeile(cut, "fussbodenaufbau").ClassName);
+        Assert.Contains("epos-gebimport-schicht--ohnewert", Schicht(cut, "K", "fussbodenaufbau").ClassName);
         Assert.Contains("6 Aufbauten", cut.Find(".epos-gebimport-bauteile-kopf").TextContent);
 
-        // Eine gemerkte wird zum Entfernen vorgemerkt (null) — gespeichert wird erst mit der Liste.
-        IElement gips = Baustoffzeile(cut, "gipsputz");
-        Assert.Equal("eigene Zuordnung", Zellen(gips)[2]);
+        // Eine gemerkte steht an ihrer Schicht wählbar und wird zum Entfernen vorgemerkt (null).
+        IElement gips = Schicht(cut, "A-1", "gipsputz");
+        Assert.Contains("Zuordnung von Hand", gips.TextContent);
         Assert.Equal("Die eigene Zuordnung von „Gipsputz“ entfernen", gips.QuerySelector(".epos-gebimport-entfernen")!.GetAttribute("title"));
         gips.QuerySelector(".epos-gebimport-entfernen")!.Click();
         cut.WaitForAssertion(() => Assert.Equal(4, p.Anfragen.Count));
         Assert.Equal(new Dictionary<string, int?> { ["gipsputz"] = null }, p.Anfragen[3].Baustoffzuordnungen);
-        Assert.Equal("Wortanfang", Zellen(Baustoffzeile(cut, "gipsputz"))[2]);
-        Assert.Null(Baustoffzeile(cut, "gipsputz").QuerySelector(".epos-gebimport-entfernen"));
+        Assert.Null(Schicht(cut, "A-1", "gipsputz").QuerySelector("select"));
 
         Ok(cut);
         cut.WaitForAssertion(() => Assert.Single(p.Geschlossen));
@@ -879,7 +911,7 @@ public class GebaeudeImportDialogTests : EposBunitContext
         var p = new Protokoll();
         var cut = Bauen(p, lesestand: Gelesen("Haus 1", "Haus 2"), zuordnen: a => MitBaustoffen(a));
         Einlesen(cut);
-        Baustoffzeile(cut, "fussbodenaufbau").QuerySelector("select")!.Change("5");
+        Schicht(cut, "K", "fussbodenaufbau").QuerySelector("select")!.Change("5");
         cut.WaitForAssertion(() => Assert.Equal(2, p.Anfragen.Count));
         Assert.Single(cut.Instance.Baustoffzuordnungen);
 
@@ -896,14 +928,15 @@ public class GebaeudeImportDialogTests : EposBunitContext
     }
 
     [Fact]
-    public void Die_Texte_des_Abschnitts_Baustoffe_stehen_auch_englisch()
+    public void AB3_Die_Texte_der_Baustoffwahl_stehen_auch_englisch()
     {
         GebaeudeImportTexte englisch;
         using (new Kulturvorrichtung("en-US")) englisch = new GebaeudeImportTexte();
-        Assert.Equal("Building materials", englisch.GruppeBaustoffe);
         Assert.Equal("Remove assignment", englisch.ZuordnungEntfernen);
         Assert.Equal("Material for “{0}”", englisch.BaustoffWaehlen);
         Assert.Equal("(choose a material)", englisch.BaustoffPlatzhalter);
+        Assert.Equal("Maintain materials and component build-ups under Administration › Building.", englisch.AbVerwaltungHinweis);
+        Assert.Equal("assigned manually", englisch.AbHerkunftHand);
 
         var p = new Protokoll();
         var cut = Render<GebaeudeImportDialog>(c =>
@@ -918,17 +951,16 @@ public class GebaeudeImportDialogTests : EposBunitContext
             c.Add(x => x.Zuordnen, (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)(a => { p.Anfragen.Add(a); return MitBaustoffen(a); }));
         });
         cut.FindAll("button").First(k => k.TextContent.Contains(englisch.DateiKnopf.TrimEnd('…', '.'))).Click();
-        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-gebimport-baustoffe tbody tr")));
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-gebimport-aufbauten")));
 
-        Assert.Contains(cut.FindAll("h2, h3, .epos-gruppenkopf"), k => k.TextContent.Trim() == "Building materials");
-        string kopf = cut.Find(".epos-gebimport-baustoffe thead").TextContent;
-        foreach (string spalte in new[] { "Name in the file", "Layers", "Matched by", "Material", "Properties", "Values" })
-            Assert.Contains(spalte, kopf);
-        Assert.Equal("Material for “Gipsputz”", Baustoffzeile(cut, "gipsputz").QuerySelector("select")!.GetAttribute("aria-label"));
-        Assert.Equal("(choose a material)", Baustoffzeile(cut, "fussbodenaufbau").QuerySelector("option[selected]")!.TextContent);
-        Baustoffzeile(cut, "fussbodenaufbau").QuerySelector("select")!.Change("5");
+        Assert.Equal(englisch.AbVerwaltungHinweis, cut.Find(".epos-gebimport-verwaltungshinweis").TextContent.Trim());
+        IElement fb = Schicht(cut, "K", "fussbodenaufbau");
+        Assert.Equal("Material for “Fußbodenaufbau”", fb.QuerySelector("select")!.GetAttribute("aria-label"));
+        Assert.Equal("(choose a material)", fb.QuerySelector("option[selected]")!.TextContent);
+        fb.QuerySelector("select")!.Change("5");
         cut.WaitForAssertion(() => Assert.Equal("Remove assignment",
-            Baustoffzeile(cut, "fussbodenaufbau").QuerySelector(".epos-gebimport-entfernen")!.TextContent));
+            Schicht(cut, "K", "fussbodenaufbau").QuerySelector(".epos-gebimport-entfernen")!.TextContent));
+        Assert.Contains("assigned manually", Schicht(cut, "K", "fussbodenaufbau").TextContent);
     }
 
     [Fact]
@@ -1210,7 +1242,6 @@ public class GebaeudeImportDialogTests : EposBunitContext
             {
                 Schluessel = "A-2", Aufbau = "Dach (Ersatz)", Art = "Dach", Stufe = EPOS.UI.Dialoge.Bedarf.Aufbaustufe.B, Bauteile = 1, Flaeche = "80",
                 UDatei = "0,2", C1korr = "41,3", Typaufbau = "Typaufbau: Dach gedämmt, Dämmdicke 18 cm", Fehlt = "keine Schichten",
-                Materialschluessel = "fussbodenaufbau",
                 Typschluessel = "Dach|Aussenluft|0|0.2", Typcode = "DA_STAHLBETON_GEDAEMMT",
                 Typen = new[] { new GebaeudeZonenregelDaten("DA_STAHLBETON_GEDAEMMT", "Dach Stahlbeton gedämmt"),
                                 new GebaeudeZonenregelDaten("DA_SPARRENDACH", "Sparrendach") },
@@ -1223,7 +1254,7 @@ public class GebaeudeImportDialogTests : EposBunitContext
             new GebaeudeAufbaulistenzeileDaten
             {
                 Schluessel = "A-1", Aufbau = "AW massiv", Art = "Außenwand", Stufe = EPOS.UI.Dialoge.Bedarf.Aufbaustufe.A, Bauteile = 4, Flaeche = "120",
-                UDatei = "0,28", USchichten = "0,3", C1korr = "61,2", Materialschluessel = "gipsputz",
+                UDatei = "0,28", USchichten = "0,3", C1korr = "61,2",
                 Schichten = new[]
                 {
                     new EPOS.UI.Dialoge.Bedarf.BauteilsteckbriefSchicht("Gipsputz", "15 mm", "0,51 W/(mK)", "1200 kg/m³", "1000 J/(kgK)", "aus Katalog", "katalog"),
@@ -1234,7 +1265,7 @@ public class GebaeudeImportDialogTests : EposBunitContext
     };
 
     [Fact]
-    public void BA3_Die_Liste_Bauteilaufbauten_steht_je_Aufbau_mit_Spalten_Filter_Schichten_und_Sprung()
+    public void BA3_Die_Liste_Bauteilaufbauten_steht_je_Aufbau_mit_Spalten_Filter_und_Schichten()
     {
         var cut = Bauen(new Protokoll(), zuordnen: MitAufbauten);
         Einlesen(cut);
@@ -1258,10 +1289,8 @@ public class GebaeudeImportDialogTests : EposBunitContext
         cut.Find(".epos-gebimport-aufbaufilter input").Change(true);
         Assert.Equal(new[] { "b", "c" }, cut.FindAll(".epos-gebimport-aufbauten tr.epos-gebimport-aufbauzeile").Select(z => z.GetAttribute("data-stufe")));
 
-        // Sprung in die Baustoffe: die Zeile des Materialnamens ist markiert.
-        cut.Find(".epos-gebimport-aufbauten tr[data-schluessel='A-2'] .epos-gebimport-aufbaubaustoff").Click();
-        Assert.Equal("fussbodenaufbau", cut.Instance.Baustoffziel);
-        Assert.Contains("epos-gebimport-baustoff--ziel", Baustoffzeile(cut, "fussbodenaufbau").ClassList);
+        // Kein Sprung in einen Abschnitt „Baustoffe" mehr (AB3): die Wahl steht an der Schicht.
+        Assert.Empty(cut.FindAll(".epos-gebimport-aufbaubaustoff"));
     }
 
     [Fact]

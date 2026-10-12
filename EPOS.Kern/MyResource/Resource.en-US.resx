@@ -38296,30 +38296,6 @@ This folder holds the standard template, the short report, the detailed template
   <data name="GIMP_BS_OHNE_GRUPPE" xml:space="preserve">
     <value>no group</value>
   </data>
-  <data name="GIMP_DLG_GRP_BAUSTOFFE" xml:space="preserve">
-    <value>Building materials</value>
-  </data>
-  <data name="GIMP_DLG_BAUSTOFFE_HINWEIS" xml:space="preserve">
-    <value>Each material name in the file is matched to a catalogue material by name and synonyms; an air layer counts as an unventilated air layer, a hatch without material is omitted. An own assignment updates the proposal at once and is remembered for the project when the building list is saved.</value>
-  </data>
-  <data name="GIMP_DLG_SP_MATERIALNAME" xml:space="preserve">
-    <value>Name in the file</value>
-  </data>
-  <data name="GIMP_DLG_SP_SCHICHTEN" xml:space="preserve">
-    <value>Layers</value>
-  </data>
-  <data name="GIMP_DLG_SP_ABGLEICH" xml:space="preserve">
-    <value>Matched by</value>
-  </data>
-  <data name="GIMP_DLG_SP_BAUSTOFF" xml:space="preserve">
-    <value>Material</value>
-  </data>
-  <data name="GIMP_DLG_SP_STOFFWERTE" xml:space="preserve">
-    <value>Properties</value>
-  </data>
-  <data name="GIMP_DLG_SP_WERTE_AUS" xml:space="preserve">
-    <value>Values</value>
-  </data>
   <data name="GIMP_DLG_BAUSTOFF_WAEHLEN" xml:space="preserve">
     <value>Material for “{0}”</value>
   </data>
@@ -48544,9 +48520,6 @@ chart</value>
   <data name="GIMP_AB_NUR_BC" xml:space="preserve">
     <value>Only levels B and C</value>
   </data>
-  <data name="GIMP_AB_ZUR_BAUSTOFF" xml:space="preserve">
-    <value>Assign material</value>
-  </data>
   <data name="GIMP_AB_LEER" xml:space="preserve">
     <value>No constructions in the proposal.</value>
   </data>
@@ -48554,7 +48527,7 @@ chart</value>
     <value>without construction</value>
   </data>
   <data name="GIMP_AB_HINWEIS" xml:space="preserve">
-    <value>One row per construction; C₁,corr per m² is calculated for display only, using the component reduction to VDI 6007. Click “Layers” to show the construction.</value>
+    <value>One row per construction; C₁,corr per m² is calculated for display only, using the component reduction to VDI 6007. Click “Layers” to show the construction. If a layer lacks a material property, choose a catalogue material there; the assignment applies to all layers of that name, updates the proposal at once and is remembered for the project when the building list is saved.</value>
   </data>
   <data name="GIMP_AB_SCHICHTEN" xml:space="preserve">
     <value>Layers</value>
@@ -53556,6 +53529,15 @@ chart</value>
   </data>
   <data name="KAELTE_ART_GRUPPE" xml:space="preserve">
     <value>Type of cooling demand</value>
+  </data>
+  <data name="GIMP_AB_VERWALTUNG_HINWEIS" xml:space="preserve">
+    <value>Maintain materials and component build-ups under Administration › Building.</value>
+  </data>
+  <data name="GIMP_AB_HERKUNFT_HAND" xml:space="preserve">
+    <value>assigned manually</value>
+  </data>
+  <data name="GIMP_AB_DATEISCHICHTEN" xml:space="preserve">
+    <value>Layers of the file — the build-up is incomplete:</value>
   </data>
 </root>
 

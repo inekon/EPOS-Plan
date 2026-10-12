@@ -301,7 +301,7 @@ public sealed class KiMaskenabdeckungWacheTests
         // Freigabe der Masken, Teil B (10.10.2026): der Gebäudeimport mit seinen Kopfeingaben.
         new("GebaeudeImportDialog", 30, "im Katalog stehen die acht Kopfeingaben (Baualtersklasse, Quelle, Gebäude, " +
             "Name, Heizsollwert aus der Datei, Zonenregel, Zonierung, als Zone mit Bauteilen) und die Nordrichtung " +
-            "(ein Baustein ohne gezählte Eingabe); draußen bleiben die Eingaben je Raum, Feldzeile, Zone, Baustoff und " +
+            "(ein Baustein ohne gezählte Eingabe); draußen bleiben die Eingaben je Raum, Feldzeile, Zone, Baustoff je Schicht und " +
             "Aufbauzeile (Haken, Werte, Namen, Nutzungen — Zeilen, keine Kopfwerte), die Mengenwahlen der Zonen und Räume " +
             "(Haken je Zeile für eine Massenaktion), die Eingaben der Schritte am Zonenplan (neue Zone, Geschoss, Regel " +
             "für den Rest, Raumwahl im Grundriss, Ausweg-Haken — sie wirken erst mit ihrem Knopf; die Zielzone wählt der " +

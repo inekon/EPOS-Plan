@@ -373,11 +373,9 @@ namespace WindowsFormsApplication1
                     AufbauHerkunftSchluessel = steckbrief.AufbauHerkunftSchluessel,
                     Aufbaurang = steckbrief.Aufbaurang,
                     Schichten = steckbrief.Schichten,
-                    Materialschluessel = steckbrief.Schichten.Where(s => !s.Weggelassen && !string.IsNullOrEmpty(s.Materialschluessel)
-                                                                         && (s.Lambda == "–" || s.Rohdichte == "–" || s.Cp == "–"))
-                                                              .Select(s => s.Materialschluessel).FirstOrDefault()
-                                         ?? steckbrief.Schichten.Where(s => !s.Weggelassen).Select(s => s.Materialschluessel)
-                                                                .FirstOrDefault(m => !string.IsNullOrEmpty(m)),
+                    Dateischichten = zeilen.SelectMany(z => z.Dateischichten)
+                                          .GroupBy(d => (d.Name, d.Werte))
+                                          .Select(g => Dateischichtzeile(g.First())).ToList(),
                     Typschluessel = a?.Ersatzschluessel,
                     Typcode = a?.Ersatz?.Typ.Code ?? "",
                     Typen = a?.Ersatz != null ? Typen(a.Ersatz.Typ.Code) : Array.Empty<GebaeudeZonenregelDaten>(),
@@ -519,6 +517,26 @@ namespace WindowsFormsApplication1
                                             s.Rho.HasValue ? Zahl(Math.Round(s.Rho.Value, 0)) + " kg/m³" : "–",
                                             s.Cp.HasValue ? Zahl(Math.Round(s.Cp.Value, 0)) + " J/(kgK)" : "–",
                                             Herkunftstext(herkunft), herkunft);
+
+        /// <summary>
+        /// Eine Schicht der Datei eines unvollständigen Aufbaus als Anzeigezeile (AB3): fehlende Werte als Strich, die
+        /// Herkunft Datei, Katalog (Namensabgleich) oder leer, der Schlüssel des Materialnamens für die Baustoffwahl.
+        /// </summary>
+        internal static BauteilsteckbriefSchicht Dateischichtzeile(GebaeudeDateischicht d)
+        {
+            Schichtwerte w = d.Werte;
+            bool ohneWert = !d.Luftschicht && (!w.Lambda_WmK.HasValue || !w.Rohdichte_KgM3.HasValue || !w.Cp_JkgK.HasValue);
+            string hk = d.AusDatei ? SteckbriefHerkunft.Datei : ohneWert ? SteckbriefHerkunft.Leer : SteckbriefHerkunft.Katalog;
+            return new BauteilsteckbriefSchicht(d.Name ?? "", w.Dicke_M is double dm ? DickeText(dm) : "–",
+                                                w.Lambda_WmK is double l ? Zahl(Math.Round(l, 4)) + " W/(mK)" : "–",
+                                                w.Rohdichte_KgM3 is double r ? Zahl(Math.Round(r, 0)) + " kg/m³" : "–",
+                                                w.Cp_JkgK is double c ? Zahl(Math.Round(c, 0)) + " J/(kgK)" : "–",
+                                                Herkunftstext(hk), hk)
+            {
+                Materialschluessel = string.IsNullOrEmpty(d.Name) || d.Luftschicht ? null : Baustoffabgleich.Schluessel(d.Name),
+                OhneWert = ohneWert,
+            };
+        }
 
         private static string DickeText(double dicke_M) => Zahl(Math.Round(1000.0 * dicke_M, 1)) + " mm";
 

@@ -38535,7 +38535,25 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Je Aufbau eine Zeile; C₁,korr je m² ist nur zur Anzeige über die Bauteilreduktion nach VDI 6007 gerechnet. Ein Klick auf „Schichten“ zeigt den Aufbau. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichten der Datei — der Aufbau ist unvollständig: ähnelt.
+        /// </summary>
+        public static string GIMP_AB_DATEISCHICHTEN {
+            get {
+                return ResourceManager.GetString("GIMP_AB_DATEISCHICHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnung von Hand ähnelt.
+        /// </summary>
+        public static string GIMP_AB_HERKUNFT_HAND {
+            get {
+                return ResourceManager.GetString("GIMP_AB_HERKUNFT_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Aufbau eine Zeile; C₁,korr je m² ist nur zur Anzeige über die Bauteilreduktion nach VDI 6007 gerechnet. Ein Klick auf „Schichten“ zeigt den Aufbau. Fehlt einer Schicht ein Stoffwert, wählen Sie dort einen Baustoff des Katalogs; die Zuordnung gilt für alle Schichten dieses Namens, ändert den Vorschlag sofort und wird beim Speichern der Gebäudeliste für das Projekt gemerkt. ähnelt.
         /// </summary>
         public static string GIMP_AB_HINWEIS {
             get {
@@ -38688,11 +38706,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoff zuordnen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoffe und Bauteilaufbauten pflegen Sie unter Administration › Gebäude. ähnelt.
         /// </summary>
-        public static string GIMP_AB_ZUR_BAUSTOFF {
+        public static string GIMP_AB_VERWALTUNG_HINWEIS {
             get {
-                return ResourceManager.GetString("GIMP_AB_ZUR_BAUSTOFF", resourceCulture);
+                return ResourceManager.GetString("GIMP_AB_VERWALTUNG_HINWEIS", resourceCulture);
             }
         }
         
@@ -40092,15 +40110,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Jeder Materialname der Datei wird über Namen und Synonyme einem Baustoff des Katalogs zugeordnet; eine Luftschicht rechnet als ruhende Luftschicht, eine Schraffur ohne Stoff entfällt. Eine eigene Zuordnung ändert den Vorschlag sofort und wird beim Speichern der Gebäudeliste für das Projekt gemerkt. ähnelt.
-        /// </summary>
-        public static string GIMP_DLG_BAUSTOFFE_HINWEIS {
-            get {
-                return ResourceManager.GetString("GIMP_DLG_BAUSTOFFE_HINWEIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die (Baustoff wählen) ähnelt.
         /// </summary>
         public static string GIMP_DLG_BAUSTOFF_PLATZHALTER {
@@ -40385,15 +40394,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_GROEBERE_REGEL {
             get {
                 return ResourceManager.GetString("GIMP_DLG_GROEBERE_REGEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoffe ähnelt.
-        /// </summary>
-        public static string GIMP_DLG_GRP_BAUSTOFFE {
-            get {
-                return ResourceManager.GetString("GIMP_DLG_GRP_BAUSTOFFE", resourceCulture);
             }
         }
         
@@ -41019,15 +41019,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnung über ähnelt.
-        /// </summary>
-        public static string GIMP_DLG_SP_ABGLEICH {
-            get {
-                return ResourceManager.GetString("GIMP_DLG_SP_ABGLEICH", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
         /// </summary>
         public static string GIMP_DLG_SP_ART {
@@ -41042,15 +41033,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_SP_AZIMUT {
             get {
                 return ResourceManager.GetString("GIMP_DLG_SP_AZIMUT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoff ähnelt.
-        /// </summary>
-        public static string GIMP_DLG_SP_BAUSTOFF {
-            get {
-                return ResourceManager.GetString("GIMP_DLG_SP_BAUSTOFF", resourceCulture);
             }
         }
         
@@ -41163,15 +41145,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Name in der Datei ähnelt.
-        /// </summary>
-        public static string GIMP_DLG_SP_MATERIALNAME {
-            get {
-                return ResourceManager.GetString("GIMP_DLG_SP_MATERIALNAME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Meldung ähnelt.
         /// </summary>
         public static string GIMP_DLG_SP_MELDUNG {
@@ -41235,29 +41208,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schichten ähnelt.
-        /// </summary>
-        public static string GIMP_DLG_SP_SCHICHTEN {
-            get {
-                return ResourceManager.GetString("GIMP_DLG_SP_SCHICHTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizsollwert Tag ähnelt.
         /// </summary>
         public static string GIMP_DLG_SP_SOLLWERT {
             get {
                 return ResourceManager.GetString("GIMP_DLG_SP_SOLLWERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Stoffwerte ähnelt.
-        /// </summary>
-        public static string GIMP_DLG_SP_STOFFWERTE {
-            get {
-                return ResourceManager.GetString("GIMP_DLG_SP_STOFFWERTE", resourceCulture);
             }
         }
         
@@ -41312,15 +41267,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_SP_WERT {
             get {
                 return ResourceManager.GetString("GIMP_DLG_SP_WERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Werte ähnelt.
-        /// </summary>
-        public static string GIMP_DLG_SP_WERTE_AUS {
-            get {
-                return ResourceManager.GetString("GIMP_DLG_SP_WERTE_AUS", resourceCulture);
             }
         }
         
