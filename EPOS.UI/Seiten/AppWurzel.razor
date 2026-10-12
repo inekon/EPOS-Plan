@@ -219,6 +219,12 @@ else if (_ansicht == Seitenschluessel.KaeltemaschineAnlage && _kaeltemaschineAnl
 @* DIE BETRIEBSKALENDER der Bedarfsprofile (Entscheidungsvorlage Modellgrenzen PW2, BW2): eine
    freie Ansicht wie die Kataloge der Gebaeudesimulation - die Huelle liegt plattformfrei in
    EPOS.UI.Daten (BetriebskalenderHuelle). *@
+else if (_ansicht == Seitenschluessel.BauteilkatalogImport && _bauteilkatalogImport is not null)
+{
+    @* BAUTEILKATALOG EINLESEN (BK-3): freie Ansicht wie die Kataloge; Huelle in EPOS.UI.Daten. *@
+    <EPOS.UI.Dialoge.Bedarf.BauteilkatalogImportDialog @attributes="_bauteilkatalogImport"
+                                                       Geschlossen="BeiBauteilkatalogImportFertig" />
+}
 else if (_ansicht == Seitenschluessel.Betriebskalender && _betriebskalender is not null)
 {
     <EPOS.UI.Dialoge.Bedarf.BetriebskalenderDialog @attributes="_betriebskalender"
@@ -471,6 +477,7 @@ else
     private IReadOnlyDictionary<string, object>? _kaeltemaschineKatalog;
     private IReadOnlyDictionary<string, object>? _kaeltemaschineAnlage;
     private IReadOnlyDictionary<string, object>? _betriebskalender;
+    private IReadOnlyDictionary<string, object>? _bauteilkatalogImport;
     private ProjektZeile? _projekt;
     private string _statuszeile = "";
 
@@ -720,6 +727,12 @@ else
     /// <c>IProjektQuelle.BetriebskalenderGaben</c>.
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BetriebskalenderGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz von „Bauteilkatalog einlesen…" (BK-3) — dieselbe Form wie <see cref="BaustoffKatalogGaben"/>;
+    /// ohne ihn fragt die Wurzel <c>IProjektQuelle.BauteilkatalogImportGaben</c>.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BauteilkatalogImportGaben { get; set; }
 
     // =====================================================================
     // Das Lizenzbanner (Welle iF30)
@@ -1375,6 +1388,15 @@ else
         }
 
         // ---- Die Betriebskalender der Bedarfsprofile (PW2, BW2) ------------------
+        // ---- Bauteilkatalog einlesen (BK-3) --------------------------------------
+        if (maske == Seitenschluessel.BauteilkatalogImport)
+        {
+            _bauteilkatalogImport = BauteilkatalogImportGaben?.Invoke() ?? Quelle.BauteilkatalogImportGaben();
+            if (_bauteilkatalogImport is null) { _statuszeile = KeinBauteilkatalogImportText; return false; }
+            _ansicht = maske;
+            return true;
+        }
+
         if (maske == Seitenschluessel.Betriebskalender)
         {
             _betriebskalender = BetriebskalenderGaben?.Invoke() ?? Quelle.BetriebskalenderGaben();
@@ -1607,6 +1629,7 @@ else
         _bauteilaufbauKatalog = null;
         _kaeltemaschineKatalog = null;
         _betriebskalender = null;
+        _bauteilkatalogImport = null;
         _nutzungsartKatalog = null;
         _auslegungGeklaert = true;
         _rueckweg.Clear();
@@ -1685,6 +1708,8 @@ else
 
     /// <summary>Die Betriebskalender sind zu — sie schreiben in ihrem Speicherweg.</summary>
     private void BeiBetriebskalenderFertig(bool ok) => ZurueckZurListe();
+
+    private void BeiBauteilkatalogImportFertig(bool ok) => ZurueckZurListe();
 
     /// <summary>
     /// Der Katalog der Brauchwasser-Nutzungsarten ist zu (ZU26) — er schreibt in EINER
@@ -2004,6 +2029,7 @@ else
            || maske == Seitenschluessel.KaeltemaschineKatalog
            || maske == Seitenschluessel.KaeltemaschineAnlage
            || maske == Seitenschluessel.Betriebskalender
+           || maske == Seitenschluessel.BauteilkatalogImport
 
            // Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (Anwenderentscheid
            // ZU26) - der einzige Katalog, der auf iOS aufgeht. Unter Windows
@@ -2057,6 +2083,7 @@ else
          : maske == Seitenschluessel.KaeltemaschineKatalog ? Resource.KM_TITEL
          : maske == Seitenschluessel.BaustoffKatalog ? Resource.BST_TITEL
          : maske == Seitenschluessel.BauteilaufbauKatalog ? Resource.BTA_TITEL
+         : maske == Seitenschluessel.BauteilkatalogImport ? Resource.BKI_TITEL
          : maske;
 
     /// <summary>
@@ -2316,6 +2343,9 @@ else
 
     /// <summary>Meldung, wenn die Verwaltung der Betriebskalender nicht aufzubauen ist.</summary>
     [Parameter] public string KeinBetriebskalenderText { get; set; } = Resource.BKAL_KEINE_ANSICHT;
+
+    /// <summary>Statuszeile, wenn die Hülle „Bauteilkatalog einlesen…" nicht führt.</summary>
+    [Parameter] public string KeinBauteilkatalogImportText { get; set; } = Resource.BKI_KEINE_ANSICHT;
 
     /// <summary>Meldung, wenn die Pufferspeicher-Auslegung nicht aufzubauen ist (kein Projekt, keine Quelle).</summary>
     [Parameter] public string KeinePufferAuslegungText { get; set; } = Resource.PAUS_KEINE_ANSICHT;

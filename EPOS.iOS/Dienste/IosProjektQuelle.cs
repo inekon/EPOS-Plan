@@ -619,6 +619,14 @@ public sealed class IosProjektQuelle : IProjektQuelle
     }
 
     /// <inheritdoc />
+    /// <remarks>Bauteilkatalog einlesen (BK-3) - dieselbe plattformfreie Hülle wie unter Windows.</remarks>
+    public IReadOnlyDictionary<string, object>? BauteilkatalogImportGaben()
+    {
+        try { return BauteilkatalogImportHuelle.Gaben(); }
+        catch (Exception ex) { Console.WriteLine("Bauteilkatalog einlesen: " + ex.Message); return null; }
+    }
+
+    /// <inheritdoc />
     /// <remarks>
     /// Der Katalog der BRAUCHWASSER-NUTZUNGSARTEN (Anwenderentscheid ZU26) - dieselbe
     /// plattformfreie Hülle wie unter Windows (<c>ZapfprofilHuelle.KatalogGaben</c>). Er ist

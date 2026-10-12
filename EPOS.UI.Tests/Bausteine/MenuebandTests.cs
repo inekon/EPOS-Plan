@@ -207,7 +207,7 @@ public class MenuebandTests : EposBunitContext
         // zu Menuetabelle.Sichtbar weiter unten und EntwicklerbereicheWacheTests.
         // Administration und Support, Stufe 2: „Fernwartung…" unter Hilfe (78 -> 79, 63 -> 64).
         // KM4-E3-c: die Verwaltung „Kältemittel…" unter „Daten & Import" (79 -> 80, 64 -> 65).
-        Assert.Equal(81, Punkte.Count);                 // K5b: + „Kältebedarf“
+        Assert.Equal(82, Punkte.Count);                 // K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
@@ -891,6 +891,8 @@ public class MenuebandTests : EposBunitContext
             // Kataloge der Baustoffe und der Bauteilaufbauten.
             Seitenschluessel.BaustoffKatalog,
             Seitenschluessel.BauteilaufbauKatalog,
+            // BK-3: „Bauteilkatalog einlesen…" unter „Gebaeude" - ein neuer Weg.
+            Seitenschluessel.BauteilkatalogImport,
             // PW2/BW2: die Betriebskalender der Bedarfsprofile - ein neuer Weg.
             Seitenschluessel.Betriebskalender,
             Seitenschluessel.BhkwAdmin,
@@ -1307,7 +1309,7 @@ public class MenuebandTests : EposBunitContext
         // „Fernwartung…" (Administration und Support, Stufe 2) ist ein echter Weg (63 -> 64).
         //
         // Die Verwaltung der Kältemittel (KM4-E3-c) ist ein echter Weg (64 -> 65).
-        Assert.Equal(66, Punkte.Count(p => !p.Klappt)); // K5b: + „Kältebedarf“
+        Assert.Equal(67, Punkte.Count(p => !p.Klappt)); // K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
     }
 
     // =====================================================================
@@ -1321,9 +1323,9 @@ public class MenuebandTests : EposBunitContext
 
         // 80 - 8 = 72 Punkte, 15 - 2 = 13 Trenner, 65 - 7 = 58 handelnde: der Stand vor Stufe 1
         // samt „Fernwartung…" (Stufe 2, fuer den Anwender sichtbar) und „Kältemittel…" (KM4-E3-c).
-        Assert.Equal(73, anwender.Count(p => !p.Trenner)); // K5b: + „Kältebedarf“
+        Assert.Equal(74, anwender.Count(p => !p.Trenner)); // K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
         Assert.Equal(13, anwender.Count(p => p.Trenner));
-        Assert.Equal(59, anwender.Count(p => !p.Trenner && !p.Klappt)); // K5b: + „Kältebedarf“
+        Assert.Equal(60, anwender.Count(p => !p.Trenner && !p.Klappt)); // K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
         Assert.Equal(new[] { "Projekte", "Administration", "Help", "Sprache" },
                      Menuetabelle.Sichtbar(Freigabestufe.Anwender).Select(p => p.Name).ToArray());
         Assert.All(anwender, p => Assert.Equal(Freigabestufe.Anwender, p.Stufe));
@@ -1336,7 +1338,7 @@ public class MenuebandTests : EposBunitContext
         List<Menuepunkt> alle = Menuetabelle.Alle.ToList();
 
         Assert.Equal(alle.Select(p => p.Name), entwickler.Select(p => p.Name));
-        Assert.Equal(81, entwickler.Count(p => !p.Trenner)); // K5b: + „Kältebedarf“
+        Assert.Equal(82, entwickler.Count(p => !p.Trenner)); // K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
         Assert.Equal(15, entwickler.Count(p => p.Trenner));
     }
 

@@ -54254,5 +54254,98 @@ chart</value>
   <data name="MENU_KAELTEBEDARF" xml:space="preserve">
     <value>Cooling demand</value>
   </data>
+  <data name="MENU_BAUTEILKATALOG_EINLESEN" xml:space="preserve">
+    <value>Import building element catalogue…</value>
+  </data>
+  <data name="BKI_TITEL" xml:space="preserve">
+    <value>Import building element catalogue</value>
+  </data>
+  <data name="BKI_KEINE_ANSICHT" xml:space="preserve">
+    <value>Importing the building element catalogue is not available on this platform.</value>
+  </data>
+  <data name="BKI_DATEI" xml:space="preserve">
+    <value>Baustoffe.csv of the export</value>
+  </data>
+  <data name="BKI_DURCHSUCHEN" xml:space="preserve">
+    <value>Browse…</value>
+  </data>
+  <data name="BKI_HINWEIS" xml:space="preserve">
+    <value>Select the file Baustoffe.csv of the CSV export; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv and Basis_Auszug.csv lie next to it. The preview writes nothing.</value>
+  </data>
+  <data name="BKI_FILTER" xml:space="preserve">
+    <value>Baustoffe.csv|Baustoffe.csv|CSV files (*.csv)|*.csv</value>
+  </data>
+  <data name="BKI_VORSCHAU" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="BKI_SP_SATZART" xml:space="preserve">
+    <value>Record type</value>
+  </data>
+  <data name="BKI_SP_NEU" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="BKI_SP_KATALOG" xml:space="preserve">
+    <value>Merged with catalogue</value>
+  </data>
+  <data name="BKI_SP_QUELLE" xml:space="preserve">
+    <value>Merged within source</value>
+  </data>
+  <data name="BKI_SP_WIEDER" xml:space="preserve">
+    <value>Recognised</value>
+  </data>
+  <data name="BKI_SP_ABGELEHNT" xml:space="preserve">
+    <value>Rejected</value>
+  </data>
+  <data name="BKI_ART_BAUSTOFFE" xml:space="preserve">
+    <value>Materials</value>
+  </data>
+  <data name="BKI_ART_AUFBAUTEN" xml:space="preserve">
+    <value>Constructions</value>
+  </data>
+  <data name="BKI_ART_SCHICHTEN" xml:space="preserve">
+    <value>Layers</value>
+  </data>
+  <data name="BKI_ART_ABSCHNITTE" xml:space="preserve">
+    <value>Sections</value>
+  </data>
+  <data name="BKI_GEKENNZEICHNET" xml:space="preserve">
+    <value>{0} constructions are mostly unsuitable for building simulation and will be flagged.</value>
+  </data>
+  <data name="BKI_MIT_BAUSTOFF" xml:space="preserve">
+    <value>{0} layers match a material of the same group by name.</value>
+  </data>
+  <data name="BKI_CODES" xml:space="preserve">
+    <value>Codes without interpretation (they fall back to “Other”)</value>
+  </data>
+  <data name="BKI_GRUENDE" xml:space="preserve">
+    <value>Reasons for rejection</value>
+  </data>
+  <data name="BKI_RICHTUNG" xml:space="preserve">
+    <value>Direction inside → outside: insulation behind the load-bearing layer in {0} of {1} external walls. U from the layers against U of the source: median {2}, outside ±10 % {3} of {4} constructions.</value>
+  </data>
+  <data name="BKI_PROTOKOLL" xml:space="preserve">
+    <value>Log</value>
+  </data>
+  <data name="BKI_QUELLE" xml:space="preserve">
+    <value>Source of the records: {0}</value>
+  </data>
+  <data name="BKI_UEBERNEHMEN" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="BKI_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="BKI_OK_SPERRE" xml:space="preserve">
+    <value>Create a preview without rejection first.</value>
+  </data>
+  <data name="BKI_FERTIG" xml:space="preserve">
+    <value>Imported: materials {0} new, {1} merged, {2} recognised; constructions {3} new, {4} recognised; layers {5}; {6} constructions flagged. Duration {7} s.</value>
+  </data>
+  <data name="BKI_FEHLER" xml:space="preserve">
+    <value>Nothing imported, the catalogue is unchanged: {0}</value>
+  </data>
+  <data name="BKI_ABGELEHNT" xml:space="preserve">
+    <value>The source is rejected: {0}</value>
+  </data>
 </root>
 

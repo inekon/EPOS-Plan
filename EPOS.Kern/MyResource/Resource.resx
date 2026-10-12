@@ -54261,5 +54261,98 @@ Chart</value>
   <data name="MENU_KAELTEBEDARF" xml:space="preserve">
     <value>Kältebedarf</value>
   </data>
+  <data name="MENU_BAUTEILKATALOG_EINLESEN" xml:space="preserve">
+    <value>Bauteilkatalog einlesen…</value>
+  </data>
+  <data name="BKI_TITEL" xml:space="preserve">
+    <value>Bauteilkatalog einlesen</value>
+  </data>
+  <data name="BKI_KEINE_ANSICHT" xml:space="preserve">
+    <value>Das Einlesen des Bauteilkatalogs steht auf dieser Plattform nicht zur Verfügung.</value>
+  </data>
+  <data name="BKI_DATEI" xml:space="preserve">
+    <value>Baustoffe.csv des Exports</value>
+  </data>
+  <data name="BKI_DURCHSUCHEN" xml:space="preserve">
+    <value>Durchsuchen…</value>
+  </data>
+  <data name="BKI_HINWEIS" xml:space="preserve">
+    <value>Wählen Sie die Datei Baustoffe.csv des CSV-Exports; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv und Basis_Auszug.csv liegen daneben. Die Vorschau schreibt nichts.</value>
+  </data>
+  <data name="BKI_FILTER" xml:space="preserve">
+    <value>Baustoffe.csv|Baustoffe.csv|CSV-Dateien (*.csv)|*.csv</value>
+  </data>
+  <data name="BKI_VORSCHAU" xml:space="preserve">
+    <value>Vorschau</value>
+  </data>
+  <data name="BKI_SP_SATZART" xml:space="preserve">
+    <value>Satzart</value>
+  </data>
+  <data name="BKI_SP_NEU" xml:space="preserve">
+    <value>Neu</value>
+  </data>
+  <data name="BKI_SP_KATALOG" xml:space="preserve">
+    <value>Mit Katalog zusammengeführt</value>
+  </data>
+  <data name="BKI_SP_QUELLE" xml:space="preserve">
+    <value>In der Quelle zusammengeführt</value>
+  </data>
+  <data name="BKI_SP_WIEDER" xml:space="preserve">
+    <value>Wiedererkannt</value>
+  </data>
+  <data name="BKI_SP_ABGELEHNT" xml:space="preserve">
+    <value>Abgelehnt</value>
+  </data>
+  <data name="BKI_ART_BAUSTOFFE" xml:space="preserve">
+    <value>Baustoffe</value>
+  </data>
+  <data name="BKI_ART_AUFBAUTEN" xml:space="preserve">
+    <value>Aufbauten</value>
+  </data>
+  <data name="BKI_ART_SCHICHTEN" xml:space="preserve">
+    <value>Schichten</value>
+  </data>
+  <data name="BKI_ART_ABSCHNITTE" xml:space="preserve">
+    <value>Abschnitte</value>
+  </data>
+  <data name="BKI_GEKENNZEICHNET" xml:space="preserve">
+    <value>{0} Aufbauten sind für die Gebäudesimulation meist nicht geeignet und werden gekennzeichnet.</value>
+  </data>
+  <data name="BKI_MIT_BAUSTOFF" xml:space="preserve">
+    <value>{0} Schichten treffen über den Namen einen Baustoff derselben Gruppe.</value>
+  </data>
+  <data name="BKI_CODES" xml:space="preserve">
+    <value>Codes ohne Deutung (sie fallen auf „Sonstige“)</value>
+  </data>
+  <data name="BKI_GRUENDE" xml:space="preserve">
+    <value>Ablehnungsgründe</value>
+  </data>
+  <data name="BKI_RICHTUNG" xml:space="preserve">
+    <value>Richtung innen → außen: Dämmlage hinter der tragenden Schicht in {0} von {1} Außenwänden. U aus den Schichten gegen U der Quelle: Median {2}, außerhalb ±10 % {3} von {4} Aufbauten.</value>
+  </data>
+  <data name="BKI_PROTOKOLL" xml:space="preserve">
+    <value>Protokoll</value>
+  </data>
+  <data name="BKI_QUELLE" xml:space="preserve">
+    <value>Quelle der Sätze: {0}</value>
+  </data>
+  <data name="BKI_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="BKI_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="BKI_OK_SPERRE" xml:space="preserve">
+    <value>Erst eine Vorschau ohne Ablehnung erstellen.</value>
+  </data>
+  <data name="BKI_FERTIG" xml:space="preserve">
+    <value>Übernommen: Baustoffe {0} neu, {1} zusammengeführt, {2} wiedererkannt; Aufbauten {3} neu, {4} wiedererkannt; Schichten {5}; {6} Aufbauten gekennzeichnet. Dauer {7} s.</value>
+  </data>
+  <data name="BKI_FEHLER" xml:space="preserve">
+    <value>Nichts übernommen, der Katalog ist unverändert: {0}</value>
+  </data>
+  <data name="BKI_ABGELEHNT" xml:space="preserve">
+    <value>Die Quelle ist abgelehnt: {0}</value>
+  </data>
 </root>
 

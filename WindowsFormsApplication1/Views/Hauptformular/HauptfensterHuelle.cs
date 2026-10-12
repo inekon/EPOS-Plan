@@ -154,6 +154,9 @@ namespace WindowsFormsApplication1
                 // Ansicht der Wurzel - dieselbe Bauart wie die Kataloge darueber.
                 ["BetriebskalenderGaben"] =
                     new Func<IReadOnlyDictionary<string, object>>(BetriebskalenderHuelle.Gaben),
+                // BAUTEILKATALOG EINLESEN (BK-3) - dieselbe Bauart, Huelle in EPOS.UI.Daten.
+                ["BauteilkatalogImportGaben"] =
+                    new Func<IReadOnlyDictionary<string, object>>(BauteilkatalogImportHuelle.Gaben),
 
                 // Das Kopfband (InitMarke). Die drei Produkttexte waren deutsche
                 // Literale im Code (Befund W16-B25); zwei davon stehen jetzt im
