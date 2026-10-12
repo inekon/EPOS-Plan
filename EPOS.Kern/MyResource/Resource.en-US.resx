@@ -23623,10 +23623,10 @@ Do you want to allow this?</value>
     <value>Free text for the catalogue record.</value>
   </data>
   <data name="KI_DLG_GEBK_ART_ERL" xml:space="preserve">
-    <value>The building type, for example detached house or office building.</value>
+    <value>The building type, for example detached house or office building. It classifies the building (report, buffer sizing); the calculation does not read it.</value>
   </data>
   <data name="KI_DLG_GEBK_BAUALTERSKLASSE_ERL" xml:space="preserve">
-    <value>The building age class of the building, a construction period from A (up to 1859) to M (from 2021); it determines the defaults of the components. If the year of construction is set, the class follows it and cannot be chosen.</value>
+    <value>The building age class of the building, a construction period from A (up to 1859) to M (from 2021); it determines the defaults of the components. If the year of construction is set, the class follows it and cannot be chosen. The calculation does not read it.</value>
   </data>
   <data name="KI_DLG_GEBK_BAUJAHR_ERL" xml:space="preserve">
     <value>The year of construction of the building, 1500 to 2100; empty = unknown. If it is set, it determines the building age class; it does not change the calculation.</value>
@@ -23635,10 +23635,10 @@ Do you want to allow this?</value>
     <value>The energy standard of the building if its envelope is better than the minimum standard of its building age class (Efficiency House, Passive House …); empty = none. Efficiency House 115/100 and 85 exist for residential buildings only. It determines the component defaults before the class; it does not change the calculation.</value>
   </data>
   <data name="KI_DLG_GEBK_VERWENDUNG_ERL" xml:space="preserve">
-    <value>Residential building, or commercial and other; the use decides which list the building types come from.</value>
+    <value>Residential building, or commercial and other; the use decides which list the building types come from. The calculation does not read it.</value>
   </data>
   <data name="KI_DLG_GEBK_BAUART_ERL" xml:space="preserve">
-    <value>The construction class: light, heavy or very heavy. It updates the thermal mass derived from class and usable floor area.</value>
+    <value>The construction class: light, heavy or very heavy. It updates the thermal mass derived from class and usable floor area. With zones and components the thermal mass is only the fallback for component groups without layer build-up.</value>
   </data>
   <data name="KI_DLG_GEBK_WOHNFLAECHE_ERL" xml:space="preserve">
     <value>The total living or usable area of the building.</value>
@@ -23650,10 +23650,10 @@ Do you want to allow this?</value>
     <value>The internal heat gains from people and appliances.</value>
   </data>
   <data name="KI_DLG_GEBK_DURCHLASSGRAD_ERL" xml:space="preserve">
-    <value>The total solar energy transmittance of the windows as a fraction, for example 0.4.</value>
+    <value>The total solar energy transmittance of the windows as a fraction, for example 0.4. With zones and components it is only the fallback for windows without their own g-value.</value>
   </data>
   <data name="KI_DLG_GEBK_RAUMHOEHE_ERL" xml:space="preserve">
-    <value>The mean clear room height; it enters the heated air volume.</value>
+    <value>The mean clear room height; it enters the heated air volume. With zones it applies only to zones without their own height and volume; if every zone has one, the field is hidden.</value>
   </data>
   <data name="KI_DLG_GEBK_FF_NORD_ERL" xml:space="preserve">
     <value>The window area facing north.</value>
@@ -23725,7 +23725,7 @@ Do you want to allow this?</value>
     <value>The length of the external wall-to-basement joint.</value>
   </data>
   <data name="KI_DLG_GEBK_LUFTWECHSEL_ERL" xml:space="preserve">
-    <value>The air change rate of the building; it determines the ventilation losses.</value>
+    <value>The air change rate of the building; it determines the ventilation losses. It applies only where neither infiltration nor user ventilation is set; with zones it applies to the zones without ventilation values, and if no zone needs it, the field is hidden.</value>
   </data>
   <data name="KI_DLG_GEBK_RAHMENANTEIL_ERL" xml:space="preserve">
     <value>Share of the window frame in the window area (VDI 6007); empty = default value 0.3.</value>
@@ -53520,6 +53520,54 @@ chart</value>
   </data>
   <data name="KAELTE_ART_GRUPPE" xml:space="preserve">
     <value>Type of cooling demand</value>
+  </data>
+  <data name="GEBK_GRP_EINORDNUNG" xml:space="preserve">
+    <value>Description and classification</value>
+  </data>
+  <data name="GEBK_GRP_RECHENGROESSEN" xml:space="preserve">
+    <value>Calculation inputs</value>
+  </data>
+  <data name="GEBK_HINWEIS_EINORDNUNG" xml:space="preserve">
+    <value>These entries classify the building: report, import defaults, buffer sizing. The calculation does not read them.</value>
+  </data>
+  <data name="GEBK_MARKE_DATEI" xml:space="preserve">
+    <value>file</value>
+  </data>
+  <data name="GEBK_MARKE_VORGABE" xml:space="preserve">
+    <value>default</value>
+  </data>
+  <data name="GEBK_MARKE_HAND" xml:space="preserve">
+    <value>manual</value>
+  </data>
+  <data name="GEBK_MARKE_GEERBT" xml:space="preserve">
+    <value>inherited</value>
+  </data>
+  <data name="GEBK_MARKE_WIRKUNGSLOS" xml:space="preserve">
+    <value>no effect</value>
+  </data>
+  <data name="GEBK_ZONEN_VORGABE_HOEHE" xml:space="preserve">
+    <value>Default for {0} of {1} zones without their own height</value>
+  </data>
+  <data name="GEBK_ZONEN_VORGABE_LUFTWECHSEL" xml:space="preserve">
+    <value>Default for {0} of {1} zones without ventilation values</value>
+  </data>
+  <data name="GEBK_JEZONE_RAUMHOEHE" xml:space="preserve">
+    <value>Room height: set per zone, see tab “Zones”.</value>
+  </data>
+  <data name="GEBK_JEZONE_LUFTWECHSEL" xml:space="preserve">
+    <value>Air change rate: every zone uses infiltration and user ventilation, see tab “Conditioning”.</value>
+  </data>
+  <data name="GEBK_RUECKFALL_FENSTER" xml:space="preserve">
+    <value>Fallback for {0} windows without their own g-value</value>
+  </data>
+  <data name="GEBK_RUECKFALL_FENSTER_KEINES" xml:space="preserve">
+    <value>Fallback: every window has its own g-value, the value currently has no effect.</value>
+  </data>
+  <data name="GEBK_RUECKFALL_BAUWEISE" xml:space="preserve">
+    <value>Fallback for {0} component groups without layer build-up</value>
+  </data>
+  <data name="GEBK_RUECKFALL_BAUWEISE_KEINE" xml:space="preserve">
+    <value>Fallback: every component group has a layer build-up, the value currently has no effect.</value>
   </data>
 </root>
 

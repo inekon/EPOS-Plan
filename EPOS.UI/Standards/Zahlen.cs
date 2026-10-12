@@ -98,6 +98,16 @@ public static class Zahlen
     private static readonly string Hoechstformat =
         "0." + new string('#', HOECHSTE_NACHKOMMASTELLEN);
 
+    /// <summary>
+    /// Eine Leistung in Watt fuer eine TEXTZEILE (nicht fuer ein Eingabefeld): ohne Nachkommastellen, mit
+    /// Tausendertrennung der aktuellen Kultur, etwa „3.595"; leer = „—". Ein Eingabefeld zeigt nie
+    /// Tausendertrennzeichen, denn der Parser liest den Punkt als Dezimalzeichen.
+    /// </summary>
+    public static string Watt(double? dWert)
+        => dWert is double d && !double.IsNaN(d) && !double.IsInfinity(d)
+            ? Math.Round(d, 0, MidpointRounding.AwayFromZero).ToString("N0", CultureInfo.CurrentCulture)
+            : "—";
+
     /// <summary>Anzeigetext einer Ganzzahl - ohne jedes Trennzeichen.</summary>
     public static string Anzeigetext(int? nWert)
     {

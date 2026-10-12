@@ -31832,6 +31832,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung und Einordnung ähnelt.
+        /// </summary>
+        public static string GEBK_GRP_EINORDNUNG {
+            get {
+                return ResourceManager.GetString("GEBK_GRP_EINORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Fenster nach Orientierung ähnelt.
         /// </summary>
         public static string GEBK_GRP_FENSTER_ORIENTIERUNG {
@@ -31913,6 +31922,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechengrößen ähnelt.
+        /// </summary>
+        public static string GEBK_GRP_RECHENGROESSEN {
+            get {
+                return ResourceManager.GetString("GEBK_GRP_RECHENGROESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Sonstiges ähnelt.
         /// </summary>
         public static string GEBK_GRP_SONSTIGES {
@@ -31963,6 +31981,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_HERKUNFT_VORGABE {
             get {
                 return ResourceManager.GetString("GEBK_HERKUNFT_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Angaben ordnen das Gebäude ein: Bericht, Vorgaben des Imports, Pufferauslegung. Der Rechenweg liest sie nicht. ähnelt.
+        /// </summary>
+        public static string GEBK_HINWEIS_EINORDNUNG {
+            get {
+                return ResourceManager.GetString("GEBK_HINWEIS_EINORDNUNG", resourceCulture);
             }
         }
         
@@ -32044,6 +32071,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_HINWEIS_SPEICHERN_UNTER {
             get {
                 return ResourceManager.GetString("GEBK_HINWEIS_SPEICHERN_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftwechselrate: Jede Zone rechnet mit Infiltration und Nutzerlüftung, siehe Reiter „Konditionierung“. ähnelt.
+        /// </summary>
+        public static string GEBK_JEZONE_LUFTWECHSEL {
+            get {
+                return ResourceManager.GetString("GEBK_JEZONE_LUFTWECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumhöhe: gilt je Zone, siehe Reiter „Zonen“. ähnelt.
+        /// </summary>
+        public static string GEBK_JEZONE_RAUMHOEHE {
+            get {
+                return ResourceManager.GetString("GEBK_JEZONE_RAUMHOEHE", resourceCulture);
             }
         }
         
@@ -32930,6 +32975,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei ähnelt.
+        /// </summary>
+        public static string GEBK_MARKE_DATEI {
+            get {
+                return ResourceManager.GetString("GEBK_MARKE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die geerbt ähnelt.
+        /// </summary>
+        public static string GEBK_MARKE_GEERBT {
+            get {
+                return ResourceManager.GetString("GEBK_MARKE_GEERBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die von Hand ähnelt.
+        /// </summary>
+        public static string GEBK_MARKE_HAND {
+            get {
+                return ResourceManager.GetString("GEBK_MARKE_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe ähnelt.
+        /// </summary>
+        public static string GEBK_MARKE_VORGABE {
+            get {
+                return ResourceManager.GetString("GEBK_MARKE_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wirkungslos ähnelt.
+        /// </summary>
+        public static string GEBK_MARKE_WIRKUNGSLOS {
+            get {
+                return ResourceManager.GetString("GEBK_MARKE_WIRKUNGSLOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Baujahr muss zwischen {0} und {1} liegen. ähnelt.
         /// </summary>
         public static string GEBK_MSG_BAUJAHR {
@@ -33377,6 +33467,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_REITER_TEMPERATUREN {
             get {
                 return ResourceManager.GetString("GEBK_REITER_TEMPERATUREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfall für {0} Bauteilgruppen ohne Aufbau ähnelt.
+        /// </summary>
+        public static string GEBK_RUECKFALL_BAUWEISE {
+            get {
+                return ResourceManager.GetString("GEBK_RUECKFALL_BAUWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfall: Jede Bauteilgruppe trägt einen Aufbau, der Wert wirkt derzeit nicht. ähnelt.
+        /// </summary>
+        public static string GEBK_RUECKFALL_BAUWEISE_KEINE {
+            get {
+                return ResourceManager.GetString("GEBK_RUECKFALL_BAUWEISE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfall für {0} Fenster ohne eigenes g ähnelt.
+        /// </summary>
+        public static string GEBK_RUECKFALL_FENSTER {
+            get {
+                return ResourceManager.GetString("GEBK_RUECKFALL_FENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfall: Jedes Fenster trägt ein eigenes g, der Wert wirkt derzeit nicht. ähnelt.
+        /// </summary>
+        public static string GEBK_RUECKFALL_FENSTER_KEINES {
+            get {
+                return ResourceManager.GetString("GEBK_RUECKFALL_FENSTER_KEINES", resourceCulture);
             }
         }
         
@@ -34079,6 +34205,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_ZEILE_WB_KELLER {
             get {
                 return ResourceManager.GetString("GEBK_ZEILE_WB_KELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe für {0} von {1} Zonen ohne eigene Höhe ähnelt.
+        /// </summary>
+        public static string GEBK_ZONEN_VORGABE_HOEHE {
+            get {
+                return ResourceManager.GetString("GEBK_ZONEN_VORGABE_HOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe für {0} von {1} Zonen ohne Lüftungswerte ähnelt.
+        /// </summary>
+        public static string GEBK_ZONEN_VORGABE_LUFTWECHSEL {
+            get {
+                return ResourceManager.GetString("GEBK_ZONEN_VORGABE_LUFTWECHSEL", resourceCulture);
             }
         }
         
@@ -60014,7 +60158,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart, zum Beispiel Einfamilienhaus oder Bürogebäude. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart, zum Beispiel Einfamilienhaus oder Bürogebäude. Sie ordnet das Gebäude ein (Bericht, Pufferauslegung); der Rechenweg liest sie nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_ART_ERL {
             get {
@@ -60077,7 +60221,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Baualtersklasse des Gebäudes, ein Bauzeitraum von A (bis 1859) bis M (ab 2021); sie bestimmt die Vorgaben der Bauteile. Ist das Baujahr gesetzt, folgt sie ihm und ist nicht wählbar. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Baualtersklasse des Gebäudes, ein Bauzeitraum von A (bis 1859) bis M (ab 2021); sie bestimmt die Vorgaben der Bauteile. Ist das Baujahr gesetzt, folgt sie ihm und ist nicht wählbar. Der Rechenweg liest sie nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_BAUALTERSKLASSE_ERL {
             get {
@@ -60086,7 +60230,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauart: leicht, schwer oder sehr schwer. Sie zieht die Bauweise nach, die aus Bauart und Nutzfläche gerechnet wird. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauart: leicht, schwer oder sehr schwer. Sie zieht die Bauweise nach, die aus Bauart und Nutzfläche gerechnet wird. Mit Zonen und Bauteilen ist die Bauweise nur der Rückfall für Bauteilgruppen ohne Aufbau. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_BAUART_ERL {
             get {
@@ -60140,7 +60284,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gesamtenergiedurchlassgrad der Fenster als Anteil, zum Beispiel 0,4. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gesamtenergiedurchlassgrad der Fenster als Anteil, zum Beispiel 0,4. Mit Zonen und Bauteilen ist er nur der Rückfall für Fenster ohne eigenen g-Wert. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_DURCHLASSGRAD_ERL {
             get {
@@ -60527,7 +60671,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Luftwechselrate des Gebäudes; sie bestimmt die Lüftungsverluste. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Luftwechselrate des Gebäudes; sie bestimmt die Lüftungsverluste. Sie wirkt nur, wo weder Infiltration noch Nutzerlüftung gesetzt sind; mit Zonen gilt sie für die Zonen ohne Lüftungswerte, und braucht keine Zone sie, ist das Feld ausgeblendet. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_LUFTWECHSEL_ERL {
             get {
@@ -60644,7 +60788,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die mittlere lichte Raumhöhe; sie geht in das beheizte Luftvolumen ein. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die mittlere lichte Raumhöhe; sie geht in das beheizte Luftvolumen ein. Mit Zonen gilt sie nur für Zonen ohne eigene Höhe und ohne eigenes Volumen; trägt jede Zone eine, ist das Feld ausgeblendet. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_RAUMHOEHE_ERL {
             get {
@@ -60797,7 +60941,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wohngebäude oder Gewerbe und Sonstiges; die Verwendung entscheidet, aus welcher Liste die Gebäudearten kommen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohngebäude oder Gewerbe und Sonstiges; die Verwendung entscheidet, aus welcher Liste die Gebäudearten kommen. Der Rechenweg liest sie nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_VERWENDUNG_ERL {
             get {
