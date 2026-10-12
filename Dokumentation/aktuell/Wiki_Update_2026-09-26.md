@@ -311,6 +311,9 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 11.10.2026: In den Verwaltungsdialogen für BHKW, Pufferspeicher, Stromspeicher, Solarthermie und Photovoltaik wählt der Klick auf die Zeile den Satz; die Knöpfe Vergleichen…, Schloss, Löschen, Bearbeiten… und, wo vorhanden, Neu… stehen in der Zeile „Gewählter Satz“. (#998)
 - Seit 11.10.2026: Kältemaschinen, Bedarfsprofile, Wärmebedarf extern, Stromganglinie, Solar- und PV-Ganglinien sowie Gebäude haben ebenfalls die Knopfleiste am gewählten Satz; „DB ändern…“ heißt jetzt „Bearbeiten…“. (#999)
 - Seit 11.10.2026: Die Einzeltage (Feiertage, Ausnahmen) im Kalender der Konditionierung lassen sich auf- und zuklappen; der Kopf nennt ihre Anzahl, „+ Einzeltag“ und „Feiertage laden“ stehen in der Kopfzeile.
+- Seit 12.10.2026: Die Kachel „Kältebedarf extern" öffnet den Dialog nur für Kältelastgänge; die Deckungsart (zentral oder dezentral mit EER) steht in der Bearbeiten-Überlagerung der Projektzeile. (#1024)
+- Seit 12.10.2026: Kältebedarfsprofile führen die Deckungsart; die Verwaltung „Kältebedarf" steht unter „Profile & Lastgänge". (#1024)
+- Seit 12.10.2026: „Vergleichen…" stellt Projektzeilen und Katalogsätze nebeneinander, die Herkunft steht im Spaltenkopf. (#1025)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 
