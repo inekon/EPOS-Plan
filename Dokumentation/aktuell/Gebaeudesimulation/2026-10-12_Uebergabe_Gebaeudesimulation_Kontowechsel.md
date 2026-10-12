@@ -45,7 +45,12 @@ Alle Zeilen mit grünem Gate gepusht; Einzelheiten in der Statuszeile und im Pro
 
 ## 3. Laufende Arbeit beim Schreiben
 
-Keine Agenten. Festlegungen, die Folgewellen kennen müssen:
+Ein Opus-Agent arbeitet im Container des alten Kontos, ohne Push: **BK-3 „Bauteilkatalog einlesen“** direkt aus dem
+CSV-Export (E133) — Leser, Regeln 1–12, Zusammenführung, Wiederimport per Quellkennung, Vorschau mit Richtungsstichprobe,
+Transaktion, Dialog unter Administration › Gebäude. Ist er beim Wechsel nicht gepusht, wird er neu beauftragt: Grundlage
+sind Entwurf Abschnitte 2.3, 5.1, 6a, das Feldinventar mit „Format des CSV-Exports“ und das Protokoll BK-2.
+
+Festlegungen, die Folgewellen kennen müssen:
 
 - **Außenluft je Person** (NP7) ist eine eigene Spalte `Aussenluft_Person` (m³/(h·Person)) neben `Aussenluft`/`Aussenluft_Einheit`;
   im Generator geht die raum- oder flächenbezogene Außenluft vor.
