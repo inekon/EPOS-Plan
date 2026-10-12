@@ -32,7 +32,7 @@
                                   Katalogzeilen="@(() => Katalog(Anlagenart.Pufferspeicher))"
                                   Filterstandvorgabe="@_filterstand"
                                   KatalogDetail="@(n => Detail("Puffer " + n))" ProjektDetail="@(n => Detail("Puffer " + n))"
-                                  Katalogfelder="@(_ => Felder())" ProjektsatzWege="@SatzWege"
+                                  Katalogfelder="@(_ => _steckbrief ? Steckbrieffelder.Fuer(_fall) : Felder())" ProjektsatzWege="@SatzWege"
                                   AuslegenOeffnen="@(_ => Task.CompletedTask)" Geschlossen="@(b => Beendet(b))"
                                   Kostensumme="@(_ => (2500.0, 40.0))"
                                   Projektangaben="@(_ => new Pufferangaben(70, 50, 10, 95, "Heizung"))" />
@@ -42,7 +42,7 @@
                                  Katalogzeilen="@(() => Katalog(Anlagenart.Stromspeicher))"
                                  Filterstandvorgabe="@_filterstand" KatalogDetail="@(n => Detail(n))"
                                  ProjektDetail="@(z => Detail(z.Bezeichner))"
-                                 Katalogfelder="@(_ => Felder())" ProjektsatzWege="@SatzWege"
+                                 Katalogfelder="@(_ => _steckbrief ? Steckbrieffelder.Fuer(_fall) : Felder())" ProjektsatzWege="@SatzWege"
                                  Traegerkatalog="@Traeger" TraegerWechseln="@((_, _) => { })"
                                  Kostensumme="@(_ => (8000.0, 120.0))"
                                  Geschlossen="@(b => Beendet(b))" />
@@ -52,7 +52,7 @@
                                 Katalogzeilen="@(() => Katalog(Anlagenart.Photovoltaik))"
                                 Filterstandvorgabe="@_filterstand" Detail="@(n => Detail(n))"
                                 ProjektDetail="@(z => Detail(z.Bezeichner))" Modulname="@(z => z.Bezeichner)"
-                                Katalogfelder="@(_ => Felder())" ProjektsatzWege="@SatzWege"
+                                Katalogfelder="@(_ => _steckbrief ? Steckbrieffelder.Fuer(_fall) : Felder())" ProjektsatzWege="@SatzWege"
                                 Gesamtleistung="@(() => "12,0")" Kostensumme="@(_ => (14000.0, 180.0))"
                                 Geschlossen="@(b => Beendet(b))" />
             break;
@@ -63,7 +63,7 @@
                                     ProjektDetail="@(z => Detail(z.Bezeichner))"
                                     ProjektModulflaeche="@(_ => 2.0)" ProjektsatzWege="@SatzWege"
                                     Kostensumme="@(_ => (6500.0, 90.0))"
-                                    Katalogfelder="@(_ => Felder())" Geschlossen="@(b => Beendet(b))" />
+                                    Katalogfelder="@(_ => _steckbrief ? Steckbrieffelder.Fuer(_fall) : Felder())" Geschlossen="@(b => Beendet(b))" />
             break;
         case "bedarfsprofile":
             @* Stufe 4 der Katalogauswahl: die Prozesswärme (mit Temperaturpaar und Kalender) - die
@@ -144,14 +144,19 @@
         case "kaeltemaschine":
             @* Stufe 5: der Erzeugerdialog als Wirt der Zweispaltenauswahl - Projektliste, Katalog, Zusammenfassung,
                Satz-Ueberlagerung mit Anlagenfeldern und Kostenknoepfen; ohne Datenbank. *@
-            <KaeltemaschineAnlageDialog Katalogprofil="@Profil(Anlagenart.Kaeltemaschine)"
-                                        Katalogzeilen="@(() => Katalog(Anlagenart.Kaeltemaschine))"
+            @* KM-K1: Katalog und Projekt mit beiden Arten (jede dritte Katalogzeile eine Waermepumpe), eine Projekt-
+               waermepumpe im Kuehlbetrieb mit Rang; das Uebernehmen einer Waermepumpe lehnt der Wirt benannt ab (Banner). *@
+            <KaeltemaschineAnlageDialog Katalogprofil="@KuehlerzeugerProfil"
+                                        Katalogzeilen="@KuehlerzeugerKatalog"
                                         Anlagen="@Kaelteanlagen" Katalogwerte="@(_ => KaelteGeraet)"
                                         Stromtraeger="@(new[] { (5, "Strom") })" ProjektStromtraeger="5"
                                         Anlegen="@((_, _) => -1)" Speichern="@(_ => null)" Loeschen="@(_ => { })"
                                         KatalogLoeschen="@(_ => "")" Kostensumme="@(_ => (1000.0, 50.0))"
                                         KostenOeffnen="@((_, _) => Task.CompletedTask)"
-                                        Waermepumpen="@(() => Array.Empty<EPOS.UI.Seiten.Start.KuehlWaermepumpe>())"
+                                        KuehlWaermepumpen="@(() => KuehlWp)"
+                                        WaermepumpeUebernehmen="@(id => new KuehlWpUebernahme(false, 900 + id, "Wärmepumpe " + id, false, "Zu diesem Gerät liegen keine Kühlkenndaten vor — der Kühlbetrieb bleibt gesperrt.", null))"
+                                        WpKuehlbetriebSetzen="@((_, _) => null)"
+                                        KaelteRaenge="@(() => new Dictionary<int, int> { [1] = 2 })"
                                         Geschlossen="@(b => Beendet(b))" />
             break;
         default:
@@ -186,6 +191,7 @@
     {
         var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
         if (abfrage.TryGetValue("fall", out var f)) _fall = f.ToString();
+        _steckbrief = abfrage.TryGetValue("steckbrief", out var sb) && sb == "1";   // WP1b: voller Feldsatz
         if (abfrage.TryGetValue("zeilen", out var z) && int.TryParse(z, out int n)) _anzahl = n;
         if (abfrage.TryGetValue("projekt", out var p) && int.TryParse(p, out int m)) _projekt = m;
         _modusAlle = abfrage.TryGetValue("modus", out var mo) && mo == "alle";
@@ -212,6 +218,25 @@
         Mindestteillast = 30, KaltwasserMin = 6
     };
 
+    /// <summary>KM-K1: das gemeinsame Profil (Art, Quelle) und ein Katalog beider Arten.</summary>
+    private Katalogfilterprofil? _kuehlerzeugerProfil;
+    private Katalogfilterprofil KuehlerzeugerProfil => _kuehlerzeugerProfil ??= KuehlerzeugerKatalogCtrl.Profil(s => Resource.ResourceManager.GetString(s) ?? s);
+    private IReadOnlyList<Katalogfilterzeile>? _kuehlerzeugerKatalog;
+    private IReadOnlyList<Katalogfilterzeile> KuehlerzeugerKatalog() => _kuehlerzeugerKatalog ??= Zeilenbau.Voll(KuehlerzeugerProfil, _anzahl)
+        .Select((z, i) => i % 3 == 2
+            ? new Katalogfilterzeile(i + 1, "Wärmepumpe " + (i + 1)) { Schluessel = KuehlerzeugerKatalogCtrl.WpSchluessel(i + 1) }
+                .MitText(KuehlerzeugerKatalogCtrl.SpArt, Resource.KMA_ART_WAERMEPUMPE)
+                .MitText(Katalogfilterprofil.SpBezeichner, "Wärmepumpe " + (i + 1))
+                .MitText(Katalogfilterprofil.SpHersteller, "Musterwerk")
+                .MitZahl(Katalogfilterprofil.SpNennkaelteleistung, 40, 1).MitZahl(Katalogfilterprofil.SpEer, 3.1, 2)
+                .MitText(Katalogfilterprofil.SpQuelle, "Luft-Wasser")
+            : z.MitText(KuehlerzeugerKatalogCtrl.SpArt, Resource.KMA_ART_KAELTEMASCHINE))
+        .ToList();
+    private static readonly KuehlWaermepumpeZeile[] KuehlWp =
+    {
+        new(501, 3, "Wärmepumpe Kühlung", "Musterwerk", "Luft-Wasser", 1, 1, 38.0, 3.4, 7, "Strom", false, "zulässig")
+    };
+
     private IReadOnlyList<KaeltemaschineAnlageDaten> Kaelteanlagen() => Enumerable.Range(1, _projekt)
         .Select(i => new KaeltemaschineAnlageDaten { AnlagenId = i, GeraetId = 100 + i, Bezeichner = "KM " + i, Anzahl = 1,
                                                     KuehlCarrierId = 5, Geraet = KaelteGeraet })
@@ -233,6 +258,9 @@
         PthermKw = 120, PelKw = 60, VolumenLiter = 1000, KapazitaetKwh = 20, LeistungKw = 10, ModulleistungW = 400
     };
 
+    /// <summary>WP1b (?steckbrief=1): der volle Feldsatz aus dem Katalogprofil statt des knappen.</summary>
+    private bool _steckbrief;
+
     private static List<BrowserFeldwert> Felder() => new()
     {
         new BrowserFeldwert { Schluessel = KatalogBrowserProfil.FeldFirma, Bezeichnung = "Hersteller:",
@@ -243,7 +271,7 @@
     private Satzbearbeitungswege? _satzWege;
     private Satzbearbeitungswege SatzWege => _satzWege ??= new Satzbearbeitungswege
     {
-        Lesen = _ => Felder(),
+        Lesen = _ => _steckbrief ? Steckbrieffelder.Fuer(_fall) : Felder(),
         Speichern = _ => new KatalogSpeicherErgebnis(true, "", "")
     };
 

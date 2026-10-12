@@ -161,6 +161,13 @@ namespace WindowsFormsApplication1
                 ["KennlinienAbgleichen"] = new Func<int, IReadOnlyList<KennlinienZeile>, bool>(
                     WaermepumpeStammHuelle.KennlinienProjektAbgleichen),
 
+                // WP1a: der Arbeitspunkt am eingestellten Vorlauf fuer den Geraetesteckbrief - Heizleistung
+                // und COP der Projektkennlinie am Normpunkt der Quelle, ausgewertet wie im Lauf.
+                ["Arbeitspunkt"] = new Func<int, int, string, WaermepumpeArbeitspunkt>(
+                    (idWp, vorlauf, typ) => Kennlinienarbeitspunkt.Rechnen(idWp, vorlauf, typ) is KennlinienArbeitspunkt a
+                        ? new WaermepumpeArbeitspunkt(a.Normpunkt, a.Heizleistung, a.Cop)
+                        : null),
+
                 // --- "In Stamm uebernehmen..." (Anwenderentscheid 16.09.2026) ----------
                 // Der EINE Weg, auf dem dieser Dialog den Katalog anfasst - und er fragt
                 // vorher. Die Projekt-Id kennt nur die Huelle; der Dialog reicht die

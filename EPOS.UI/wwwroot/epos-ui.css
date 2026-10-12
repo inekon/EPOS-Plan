@@ -4152,6 +4152,9 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-banner-oben) - var(--epos-sicher-unten));
     overflow: hidden;
     box-sizing: border-box;
+    /* BREITENREGEL (KA-E-27, Konzept 4.8): Der Dialog folgt der Fensterbreite - kein Hoechstmass; was nicht passt,
+       regelt der Inhalt (Spaltenregel der Katalogliste, Umbruch der Knopfleiste am Satz). */
+    max-width: none;
 }
 
 .epos-ueberlagerung-inhalt > .epos-dialog:has(> .epos-zweispalten) {
@@ -4324,6 +4327,24 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
    sie brechen nicht um und geben nicht nach - zuerst kuerzen Name und Kenndaten des Satzes. */
 .epos-zweispalten-satzkopf > .epos-zweispalten-satzknoepfe { flex: 0 0 auto; display: inline-flex; flex-wrap: nowrap; align-items: center; gap: 8px; margin: 0 4px 0 4px; }
 .epos-zweispalten-satzknoepfe > * { flex: 0 0 auto; white-space: nowrap; }
+/* UMBRUCH DER KNOPFLEISTE (KA-E-27, Konzept 4.4a, KM-L1): Reicht die Breite des Dialogs nicht, rueckt die
+   Knopfleiste in eine zweite Zeile - rechtsbuendig, in derselben Reihenfolge; reicht auch die Zeile nicht, brechen
+   die Knoepfe selbst um. Kein Knopf ragt ueber den Rand des Dialogs, keiner ueberdeckt einen anderen, die Zeile
+   rollt nicht waagerecht. Gemessen: rollbereichprobe.mjs, Messung „Knopfrand". Gilt fuer alle Wirte. */
+.epos-zweispalten--knopfleiste-am-satz .epos-zweispalten-satzkopf { flex-wrap: wrap; row-gap: 4px; }
+/* Der Umbruch entscheidet an einer Grundbreite der Satzzeile (20 Zeichen), nicht an ihrem ganzen Inhalt: Erst kuerzen
+   Name und Kenndaten, dann rueckt die Knopfleiste in die zweite Zeile. */
+.epos-zweispalten--knopfleiste-am-satz .epos-zweispalten-satzkopf > .epos-zweispalten-satzzeile { flex: 1 1 20ch; }
+.epos-zweispalten--knopfleiste-am-satz .epos-zweispalten-satzkopf > .epos-zweispalten-satzknoepfe {
+    flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-end; row-gap: 4px; margin-left: auto; max-width: 100%; min-width: 0;
+}
+/* Infoknoepfe im Kopf der Satzzeile neben dem Satznamen (KA-E-27, Kaeltemaschine): die Satzzeile nimmt nur ihre
+   Breite, die Kopfknoepfe folgen dem Namen, die Knopfleiste steht rechts. */
+.epos-kaeltemaschine-anlage .epos-zweispalten-satzkopf > .epos-zweispalten-satzzeile { flex: 0 1 auto; max-width: 36ch; }
+/* Der Geraetesteckbrief der Kaeltemaschine (KA-E-25): links neben den Feldern der Satz-Ueberlagerung, schmal unter 900 px. */
+.epos-kaeltemaschine-satz--steckbrief { display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); gap: var(--epos-rand); align-items: start; }
+.epos-kaeltemaschine-satzfelder { min-width: 0; }
+@media (max-width: 900px) { .epos-kaeltemaschine-satz--steckbrief { grid-template-columns: minmax(0, 1fr); } }
 /* Die Zeile ist die Wahl auch in der Projektliste (AW1): die Klickflaeche fuellt die Namenszelle. */
 .epos-zweispalten-inhalt--zeilenwahl table.epos-raster.quickgrid > tbody > tr > td.epos-spalte-zeilenzelle { padding: 0; }
 /* AW3b: dasselbe fuer die von Hand gebauten Projektlisten (Waermebedarf extern, Stromganglinie, Gebaeude). */
@@ -7312,6 +7333,34 @@ table.epos-simerg-tabelle {
     flex-wrap: wrap;
     gap: 6px;
     margin-top: 8px;
+}
+
+/* DER GERAETESTECKBRIEF (Bausteine/Geraetesteckbrief.razor, WP1a): die wichtigsten Daten des gewaehlten
+   Satzes, lesend neben seinen Feldern. Das Raster aus Beschriftung und Wert nimmt die Regel des
+   Bauteilsteckbriefs (.epos-steckbrief-werte); hier steht nur, was er anders braucht - keine eigenen
+   Farben, die Herleitung leise unter ihrem Wert, ein langer Wert bricht um statt quer zu rollen. */
+.epos-geraetesteckbrief {
+    min-width: 0;
+}
+
+.epos-geraetesteckbrief-titel {
+    margin: 4px 0;
+    font-size: 0.9rem;
+}
+
+.epos-geraetesteckbrief-werte dt {
+    color: var(--epos-text-leise);
+}
+
+.epos-geraetesteckbrief-werte dd {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.epos-geraetesteckbrief-herleitung {
+    display: block;
+    color: var(--epos-text-leise);
+    font-size: 0.85em;
 }
 
 .epos-gebimport-aufbauzeile--offen td {
@@ -13124,6 +13173,38 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
 }
 @media (max-width: 900px) {
     .epos-wp-abschnitte {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* DIE ZWEISPALTIGE SATZ-UEBERLAGERUNG DER UEBRIGEN WIRTE (WP1b, KA-E-25): dasselbe Raster wie bei der
+   Waermepumpe - links (schmal) die Projektfelder und darunter der Geraetesteckbrief, rechts die Kenndaten.
+   Unter 900 px stehen beide untereinander. In der Detailzeile traegt der Satz die Klasse
+   .epos-satz-einspaltig: Huelle und rechte Spalte zeichnen dort keine eigene Box, der Aufbau bleibt. */
+.epos-satz-zweispaltig {
+    display: grid;
+    grid-template-columns: minmax(0, 0.6fr) minmax(0, 1fr);
+    align-items: start;
+    gap: var(--epos-rand);
+}
+.epos-satz-zweispaltig-links,
+.epos-satz-zweispaltig-rechts {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;                           /* laesst das Raster waagerecht rollen */
+}
+/* Die schmale Spalte: die Beschriftung bleibt NEBEN dem Feld. */
+.epos-satz-zweispaltig-links {
+    --epos-beschriftung-breite: 8rem;
+    --epos-formularspalte: 17rem;
+}
+.epos-satz-einspaltig,
+.epos-satz-einspaltig > .epos-satz-zweispaltig-rechts {
+    display: contents;
+}
+@media (max-width: 900px) {
+    .epos-satz-zweispaltig {
         grid-template-columns: minmax(0, 1fr);
     }
 }

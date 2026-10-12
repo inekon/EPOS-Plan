@@ -100,13 +100,29 @@ public class KaeltemaschineAnlageKnopfleisteTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten"));
         Assert.Null(cut.Find(".epos-zweispalten-bereich--projekt > .epos-zweispalten-kopfleiste").QuerySelector(".epos-knopf--bearbeiten-projekt"));
         string[] folge = { "epos-knopf--vergleichen", "epos-katalogschloss", "epos-knopf--loeschen",
-                           "epos-knopf--bearbeiten-projekt", "epos-knopf--neu", "epos-kaeltemaschine-typkennfelder",
-                           "epos-kaeltemaschine-verwaltung" };
+                           "epos-knopf--bearbeiten-projekt", "epos-knopf--neu" };
         var namen = cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-satzknoepfe").Children
             .Select(e => folge.FirstOrDefault(f => e.ClassList.Contains(f))).OfType<string>().ToList();
         Assert.Equal(folge.Where(namen.Contains), namen);
         foreach (string f in new[] { "epos-knopf--vergleichen", "epos-katalogschloss", "epos-knopf--loeschen", "epos-knopf--bearbeiten-projekt", "epos-knopf--neu" })
             Assert.Contains(f, namen);
+    }
+
+    [Fact]
+    public void Katalogfunktionen_stehen_im_Katalogkopf_und_Infoknoepfe_im_Satzkopf()
+    {
+        // KA-E-27 (KM-L1): Typkennfelder und Verwaltung neben „Spalten…" in der Kopfzeile des Katalogs, die Infoknöpfe im
+        // Kopf der Satzzeile — die Knopfleiste am Satz trägt nur Satzaktionen.
+        var cut = Aufbauen(ZweiAnlagen(), mitEditor: true);
+        var kopf = cut.Find(".epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste");
+        Assert.NotNull(kopf.QuerySelector(".epos-kaeltemaschine-verwaltung"));
+        var leiste = cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-satzknoepfe");
+        Assert.Null(leiste.QuerySelector(".epos-kaeltemaschine-typkennfelder"));
+        Assert.Null(leiste.QuerySelector(".epos-kaeltemaschine-verwaltung"));
+        var satzkopf = cut.Find(".epos-zweispalten-satzkopf");
+        Assert.Single(satzkopf.QuerySelectorAll(".epos-zweispalten-satzkopfknoepfe .epos-berechnungshilfe"));
+        // Der Umbruch hängt an der Klasse des Bausteins (Stilregel in epos-ui.css, gemessen in der Rollbereichprobe).
+        Assert.Contains("epos-zweispalten--knopfleiste-am-satz", cut.Find(".epos-zweispalten").ClassName);
     }
 
     [Fact]

@@ -91,4 +91,10 @@ public sealed class KaeltemaschineGeraetwerte
 
     /// <summary>Die Geräteart als Anzeigetext (<c>KaeltemaschineStammCtrl.GeraeteartText</c>); leer = keine.</summary>
     public string Geraeteart { get; init; } = "";
+
+    /// <summary>Kältemittel (Anzeigetext) — für den Gerätesteckbrief (KA‑E‑25).</summary>
+    public string Kaeltemittel { get; init; } = "";
+
+    /// <summary>GWP des Kältemittels [—]; beschreibend.</summary>
+    public double? Gwp { get; init; }
 }

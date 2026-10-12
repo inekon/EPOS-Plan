@@ -1116,6 +1116,26 @@ Unterdialogs haftet nicht, Kopf und Fuß des Fensters liegen unter der Abdunkelu
 und jede Zahl ist dieselbe wie mit `marke=0`. Katalogdialog: Kopf und Fuß statisch, das Dokument rollt nicht,
 jede Zahl dieselbe wie mit `marke=0`.
 
+**Fall `wp-steckbrief`** (`--nur wp-steckbrief`, bei **1 280 × 800** und **1 194 × 834** mit sicheren Abständen):
+die Satz-Überlagerung der Wärmepumpe („Bearbeiten…" der Projektkopie) mit dem Gerätesteckbrief links unter
+„Auslegung für Verteilung" — Überlagerung zwischen den sicheren Abständen, rollt nicht als Ganzes, nur ihr Körper
+rollt; der Steckbrief steht in der linken Spalte mit 14 Zeilen, weder er noch der Körper rollt quer, die linke
+Spalte überlappt die Kenndaten nicht; der Arbeitspunkt nennt den Normpunkt und folgt dem Vorlauf (35 → 55 °C).
+Dann „Konfiguration…": „Betriebszeiten" steht zugeklappt (`aria-expanded="false"`, Klappknopf mindestens das
+Berührungsziel des Hauses), „Höchster Vorlauf" steht darunter sichtbar, Aufklappen zeigt „Wochenraster bearbeiten"
+und das Raster öffnet. Fotos `wp_steckbrief_*`, `wp_konfiguration_zu_*`, `wp_konfiguration_auf_*`. Gegenprobe: ein
+Steckbrief mit `min-width: 1600px` ohne Umbruch muss rot sein.
+
+**Fall `satz-steckbrief`** (`--nur satz-steckbrief`, je Wirt bei **1 280 × 800**, der Heizkessel auch bei **1 194 × 834**
+mit sicheren Abständen): die zweispaltige Satz-Überlagerung („Bearbeiten…" der Projektkopie) von Heizkessel und BHKW
+(Seite `fensterprobe`) sowie Puffer-, Stromspeicher, Photovoltaik, Solarkollektoren und Wärmebedarf extern (Seite
+`rollbereichprobe`), je mit `steckbrief=1` — der Wirt reicht dann den vollen Feldsatz „Alle Daten" aus dem Katalogprofil
+des Kerns (`Wirt/Seiten/Steckbrieffelder.cs`, neutrale Werte). Gemessen: Überlagerung zwischen den sicheren Abständen,
+rollt nicht als Ganzes, nur ihr Körper rollt; beide Spalten nebeneinander; der Steckbrief steht in der linken Spalte unter
+den Projektfeldern (der Puffer hat keine), zeigt mindestens 8 Zeilen (Wärmebedarf extern 6), weder er noch der Körper
+rollt quer, die linke Spalte überlappt die Kenndaten nicht. Fotos `satz_steckbrief_<wirt>_<breite>x<hoehe>.png`.
+Gegenprobe: je Wirt ein Steckbrief mit `min-width: 1600px` ohne Umbruch muss rot sein.
+
 **Gegenprobe** (läuft mit): dieselben Fensterdialoge mit `marke=0` müssen die Haft-Kriterien verfehlen; mit
 Marke, aber `scroll-padding: 0` muss der Tabulator Felder unter Kopf oder Fuß legen; das eingebettete
 Warnband mit `bottom: 0` muss verdeckt sein; der Fuß der Dublettenprüfung mit negativem Rand muss das
@@ -1480,7 +1500,7 @@ nur die Überlagerung:
 - `kaeltebedarf`: Modus `NurKuehlung`, Kühlzeile dezentral linear — Überlagerung mit Deckung, ohne Hinweis OP‑2.
 - `kaeltebedarfalle`: Modus `Alle` mit Kühlzeile vorn — Überlagerung mit Kanal, Deckung und Hinweis OP‑2.
 
-Je Fall: Kurve im Abschnitt „Ganglinie“ mindestens 90 % der Körperbreite und 150 px hoch, Modell im Behältermaß;
+Je Fall: Kurve im Abschnitt „Ganglinie“ mindestens 90 % der Breite ihrer Spalte (die Überlagerung steht zweispaltig, die Ganglinie rechts) und 150 px hoch, Modell im Behältermaß;
 Katalogsatz ohne Projektfelder; Neu… am Satz, Formathinweis im Katalogkopf. Gegenprobe: eine ausgeblendete Deckung im
 Fall `kaeltebedarf` muss rot werden. **Messung 12.10.2026:** je Fall 110 Zustände, 0 Verstöße, Gegenproben rot
 (Rückgabe 0); der Befund „unter der Mindesthöhe“ in 1 093 × 614 tritt nicht mehr auf.

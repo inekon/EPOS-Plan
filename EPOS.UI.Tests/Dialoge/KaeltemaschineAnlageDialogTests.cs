@@ -169,8 +169,11 @@ public class KaeltemaschineAnlageDialogTests : EposBunitContext
 
         Assert.Empty(cut.FindAll(".epos-zweispalten-fussleiste"));                               // AW3b: Knopfleiste am Satz
         string fuss = cut.Find(".epos-zweispalten-satzknoepfe").TextContent;
-        foreach (string knopf in new[] { R.AUSWAHL_BTN_VERGLEICHEN, R.KMA_BTN_LOESCHEN, R.AUSWAHL_BTN_BEARBEITEN, R.KM_BTN_TYPKENNFELDER, R.KM_ANL_BTN_VERWALTUNG })
+        foreach (string knopf in new[] { R.AUSWAHL_BTN_VERGLEICHEN, R.KMA_BTN_LOESCHEN, R.AUSWAHL_BTN_BEARBEITEN })
             Assert.Contains(knopf, fuss);
+        string katalogkopf = cut.Find(".epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste").TextContent;   // KA-E-27
+        foreach (string knopf in new[] { R.KM_BTN_TYPKENNFELDER, R.KM_ANL_BTN_VERWALTUNG })
+            Assert.Contains(knopf, katalogkopf);
         Assert.Empty(cut.FindAll(".epos-ueberlagerung--offen .epos-katalogliste"));             // keine Katalogüberlagerung mehr
     }
 

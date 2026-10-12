@@ -277,6 +277,7 @@
                                           KaelteArtBezeichnung="@KaelteArtBezeichnung" HinweisKaelteArt="@HinweisKaelteArt"
                                           HinweisKanalKuehlung="@HinweisKanalKuehlung" HinweisKaelteExtern="@HinweisKaelteExtern"
                                           Ganglinienknoepfe="@Ganglinienknoepfe" Ganglinie="@Ganglinienbild"
+                                          Steckbriefzeilen="@Steckbriefzeilen" SteckbriefTitel="@SteckbriefTexte.GruppeLastgang"
                                           Geaendert="BeiFeldGeaendert" />
             }
         </Satz>
@@ -1574,4 +1575,25 @@
 
     /// <summary>Warum nicht geschaltet wurde.</summary>
     private void BeiSchlossAbgelehnt(string grund) => Melden(grund ?? "", WarnStufe.Warnung);
+    // --- Der Steckbrief „Gewählter Lastgang" der Satz-Ueberlagerung (WP1b, KA-E-25) -------------
+
+    /// <summary>Die Beschriftungen des Steckbriefs; füllen sich selbst aus den Ressourcen.</summary>
+    [Parameter] public WaermebedarfExternSteckbriefTexte SteckbriefTexte { get; set; } = new();
+
+    /// <summary>Die Zeilen des Steckbriefs — je Zeichenlauf aus der gewählten Zeile und den Kennzahlen der Ganglinie.</summary>
+    internal IReadOnlyList<Steckbriefzeile> Steckbriefzeilen
+    {
+        get
+        {
+            WaermebedarfExternZeile? z = _gewaehlt;
+            (string, string)? kanal = z is not null && Modus == WaermebedarfExternModus.Alle
+                ? (KanalBezeichnung, Kanaele.ElementAtOrDefault(Kanalindex ?? 0).Text ?? "") : null;
+            (string, string)? art = z is not null && IstKuehlzeile(z)
+                ? (KaelteArtBezeichnung, KaelteArten.ElementAtOrDefault(KaelteArtindex ?? 0).Text ?? "") : null;
+            string? deckung = z is not null && IstKuehlzeile(z) ? z.Deckung.Zusammenfassung() : null;
+            return WaermebedarfExternSteckbrief.Zeilen(SatzName ?? "", z is not null, kanal, art,
+                (LabelJahresarbeit, _kennzahlen is GanglinienKennzahlen k ? Jahresarbeitstext(k) : null), _kennzahlen,
+                (LabelVollbenutzung, EinheitStunden), deckung, SteckbriefTexte);
+        }
+    }
 }

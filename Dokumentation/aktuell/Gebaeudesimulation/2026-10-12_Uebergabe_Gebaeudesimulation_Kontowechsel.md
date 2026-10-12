@@ -13,12 +13,12 @@ nach `Dokumentation/ueberholt/`, sobald die Fortsetzung BK-3 und die GD-Nachzüg
 | Was | Wert |
 |---|---|
 | Arbeitszweig | `ios_migration_september` (Remote `origin`). Der Sitzungszweig des alten Kontos `claude/magical-bohr-ff5ufj` wurde bei jedem Push mitgezogen; die neue Sitzung nimmt ihren eigenen Sitzungszweig |
-| Letzte Wellen | #1027 BK-2 (Schritt 221), #1026 GD-4, #1023 BK-1, #1020 GD-5, #1022 NP7/NP7b (Schritt 220); davor #1011 NP6, #1012 Quick Assist (Admin-Zweig), #1013 AB2, #1014 AB3, #1015 GD-1, #1016 GD-2, #1017 Entwurf BK — gepusht `f40fe2fa1`; danach Anmeldung Schritt 220 (`6870f7169`) und GD-3 mit diesem Papier (#1019) |
+| Letzte Wellen | #1030 BK-2 (Schritt 221), #1026 GD-4, #1023 BK-1, #1020 GD-5, #1022 NP7/NP7b (Schritt 220); davor #1011 NP6, #1012 Quick Assist (Admin-Zweig), #1013 AB2, #1014 AB3, #1015 GD-1, #1016 GD-2, #1017 Entwurf BK — gepusht `f40fe2fa1`; danach Anmeldung Schritt 220 (`6870f7169`) und GD-3 mit diesem Papier (#1019) |
 | CI | Kern-Lauf 38206954119 grün auf `02d4ddfe0` (enthält alles bis #1022); #1010 grün mit 38188012085 auf `228a10287`; vermerkt in #1010, #1011, #1013–#1017, #1019, #1020, #1022. #1023 (BK-1) und die Papiere danach sind mit [skip ci] gepusht und laufen mit dem nächsten Push ohne [skip ci] durch die CI |
 | Referenzbasis | **R52** `Referenzlaeufe/2026-10-11_R52_Vorheizen`, dreißig Projekte; CI-Auswahl 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065. Nächste freie Basis **R53** (vorgesehen für SA4) |
 | Testdatenbank | Schemastand **220** (Git LFS) |
 | Schemakette | 218 `KaelteArtSchema` (Sitzung Kälteanlagen), 219 `RaumnutzungNormkategorienSchema` (NP6), 220 `RaumnutzungNormwerteSchema` (NP7); 221 `BauteilkatalogSchema` (BK-2); **222 frei** |
-| Statuszeilen | höchste vergebene #1027; vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E133**, **E134 frei** |
+| Statuszeilen | höchste vergebene #1030; vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E133**, **E134 frei** |
 | Parallele Sitzungen | „Kälteanlagen“, „Dialoge und Korrekturen“ (Konto 3), „Administration und Support“; alle pushen auf denselben Zweig. Statuskonflikte zeilenweise lösen, Nummernkollisionen über die nächste freie Nummer |
 
 ## 2. Was die Sitzung seit dem 08.10.2026 gebaut hat
@@ -41,7 +41,7 @@ Alle Zeilen mit grünem Gate gepusht; Einzelheiten in der Statuszeile und im Pro
 | BK-Entwurf | #1017 | [Entwurf Bauteilkatalog und Hottgenroth-Import](2026-10-12_Entwurf_Bauteilkatalog_Hottgenroth.md), Fragen F1–F8 mit E132 entschieden |
 | BK-1 | #1023 | Editoren ohne Schema: Wärmekapazität immer sichtbar, Stoffgruppe als Auswahl mit Bändern, Summenfuß R_si…U/C, Kapazität im Bauteildialog |
 | GD-4 | #1026 | Als Mehrzonenmodell übernehmen (Prüfsumme, Blatt, Ersetzen in einem Vorgang), Sprung Kachel Gebäudekühlung → Gruppe „Kühlung“ |
-| BK-2 | #1027 | Schritt 221: Herkunft, Quellkennung, Gruppe/Klasse, Kennzeichen „meist nicht geeignet“, Felder der Quelle, Abschnitte |
+| BK-2 | #1030 | Schritt 221: Herkunft, Quellkennung, Gruppe/Klasse, Kennzeichen „meist nicht geeignet“, Felder der Quelle, Abschnitte |
 
 ## 3. Laufende Arbeit beim Schreiben
 
@@ -69,7 +69,7 @@ Festlegungen, die Folgewellen kennen müssen:
    nach Anwenderentscheid (Abschnitt 5).
 4. **Wiki und Logbuch** der Wellen GD, AB, NP6/NP7, KS (Seiten „Gebäude“, „Gebäudeimport“, „Nutzungsprofile“); Upload nur
    gebündelt und auf Zuruf, Versionsnummer beim Anwender erfragen.
-5. **BK** (E132, E133; BK-1 #1023 und BK-2 #1027 gebaut): BK-2b Oberfläche (Gruppe und Klasse in Katalogdialog und -liste,
+5. **BK** (E132, E133; BK-1 #1023 und BK-2 #1030 gebaut): BK-2b Oberfläche (Gruppe und Klasse in Katalogdialog und -liste,
    Filter nach dem Kennzeichen, Texte der Klassen in beiden Sprachen); BK-3 Import **direkt aus dem CSV-Export der
    Quelltabellen (E133)** mit Abbildungsregeln, Fremdcode-Tafel, Einheiten der offenen Felder, Zusammenführung der Dubletten und
    Dialog „Bauteilkatalog einlesen…“ — Formatdetails und `Basis_Auszug.csv` (Bauteilart) sind bei der lokalen Sitzung

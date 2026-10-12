@@ -90,7 +90,7 @@
                               Aufnehmen="@(_aufnahme ? (id, t) => Aufnahme("Kessel", id) : null)"
                               KostenOeffnen="@((_, _) => Task.CompletedTask)"
                               EnergiekostenOeffnen="@(_ => Task.CompletedTask)"
-                              Katalogfelder="@(_ => Felder())"
+                              Katalogfelder="@(_ => _steckbrief ? Steckbrieffelder.Fuer(_fall) : Felder())"
                               ProjektsatzWege="@SatzWege"
                               KatalogsatzWege="@SatzWege"
                               RueckwegWege="@RueckWege"
@@ -117,7 +117,7 @@
                         SummePtherm="@(() => _summe ?? "80")"
                         KostenOeffnen="@((_, _) => Task.CompletedTask)"
                         EnergiekostenOeffnen="@(_ => Task.CompletedTask)"
-                        Katalogfelder="@(_ => Felder())"
+                        Katalogfelder="@(_ => _steckbrief ? Steckbrieffelder.Fuer(_fall) : Felder())"
                         ProjektsatzWege="@SatzWege"
                         Geschlossen="@(b => Beendet(b))" />
             break;
@@ -232,6 +232,7 @@
     {
         var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
         if (abfrage.TryGetValue("fall", out var f)) _fall = f.ToString();
+        _steckbrief = abfrage.TryGetValue("steckbrief", out var sb) && sb == "1";   // WP1b: voller Feldsatz
         if (abfrage.TryGetValue("marke", out var m)) _marke = m.ToString() != "0";
         if (abfrage.TryGetValue("meldung", out var g)) { _meldung = g.ToString() == "1"; _meldungListe = g.ToString() == "liste"; }
         if (abfrage.TryGetValue("lizenz", out var l)) _lizenz = l.ToString() == "1";
@@ -268,7 +269,7 @@
     private Satzbearbeitungswege? _satzWege;
     private Satzbearbeitungswege SatzWege => _satzWege ??= new Satzbearbeitungswege
     {
-        Lesen = _ => Felder(),
+        Lesen = _ => _steckbrief ? Steckbrieffelder.Fuer(_fall) : Felder(),
         Speichern = _ => new KatalogSpeicherErgebnis(true, "", "")
     };
 
@@ -322,6 +323,9 @@
         new ErzeugerKennwerte { PthermKw = 120, PelKw = 60 });   // UeS2b: die Zahlwerte der Zusammenfassung
 
     /// <summary>Die Felder des Aufklappers "Alle Daten anzeigen" - ein Text, eine Zahl, ein Schalter.</summary>
+    /// <summary>WP1b (?steckbrief=1): der volle Feldsatz aus dem Katalogprofil statt des knappen.</summary>
+    private bool _steckbrief;
+
     private static List<BrowserFeldwert> Felder() => new()
     {
         new BrowserFeldwert { Schluessel = KatalogBrowserProfil.FeldFirma, Bezeichnung = "Hersteller:",
@@ -386,6 +390,10 @@
             ["Daten"] = daten,
             ["Vorlaeufe"] = new Func<int, IReadOnlyList<int>>(_ => new[] { 35, 45, 55 }),
             ["Kennlinien"] = new Func<int, IReadOnlyList<KennlinienZeile>>(_ => new List<KennlinienZeile>()),
+            // WP1a: der Arbeitspunkt des Geraetesteckbriefs - synthetisch, er folgt dem Vorlauf.
+            ["Arbeitspunkt"] = new Func<int, int, string, WaermepumpeArbeitspunkt?>(
+                (_, v, _) => new WaermepumpeArbeitspunkt("B0/W" + v, 14.0 - v * 0.05, 5.5 - v * 0.05)),
+            ["Kostensumme"] = new Func<(double, double)>(() => (18000.0, 300.0)),
             ["TemperaturenPruefen"] = new Func<int?, int?, string?>(
                 (_, _) => "Die Vorlauftemperatur liegt über der Grenze der Wärmepumpe (Probe).")
         };
