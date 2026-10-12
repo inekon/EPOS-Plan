@@ -44,4 +44,10 @@ n Zonen“) und F6 (nur ausblenden, der Rechenweg bleibt) um.
 
 - Kern-Tests `GebaeudefeldherkunftTests` (12), bunit `GebaeudeKopfHerkunftTests` (4: Feldbestand einzonig, mehrzonig mit
   eigenen Werten, mehrzonig erbend, Rundung der Anzeige).
-- Gefilterte Läufe und Referenzlauf: siehe Bericht der Welle; der Rechenweg ist unberührt.
+- Gefilterte Läufe (Gebaeude, Zonen, Konditionierung, Ki, Wache, Ressource; UI dazu Stilblatt, Fensterrahmen, Zahl):
+  EPOS.UI.Tests 2083/2083, EPOS.Kern.Tests 2991/2992 (1 übersprungen), je grün.
+- Bau: Kern-Filter `WP-Plan.Kern.slnf` und Windows-Schale (`EnableWindowsTargeting=true`) mit 0 Fehlern.
+- Referenzlauf der CI-Auswahl (zwölf Projekte) gegen `2026-10-11_R52_Vorheizen`: zwölfmal PASS, 409 Dateien
+  byte-gleich, keine abweichend. Der Rechenweg ist unberührt.
+- `fensterprobe.mjs` nicht gezogen: Kopf und Schlussleiste des Dialogs sind unverändert, geändert ist nur der Inhalt
+  des ersten Reiters.
