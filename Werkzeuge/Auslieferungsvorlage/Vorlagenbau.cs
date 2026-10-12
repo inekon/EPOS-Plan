@@ -44,6 +44,8 @@ namespace Auslieferungsvorlage
             "Tab_Klimadaten_STAMM",
             "Tab_Solar_STAMM",
             SchemaKatalog.TAB_BAUTEILSCHICHT_STAMM,
+            // BK-2 (Schritt 221): die Abschnitte eines Katalogaufbaus haengen an Tab_Bauteilaufbau_STAMM (Kaskade).
+            BauteilkatalogSchema.TAB_ABSCHNITT_STAMM,
             // Schritt ZK: die Zonen eines Katalogsatzes haengen an Tab_Gebaeude_STAMM (Kaskade), gesperrt ist der Kopf.
             SchemaKatalog.TAB_ZONE_STAMM,
             SchemaKatalog.TAB_BAUTEIL_STAMM,
