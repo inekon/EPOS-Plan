@@ -51480,6 +51480,15 @@ chart</value>
   <data name="WPA_STB_BETRIEB" xml:space="preserve">
     <value>Operation</value>
   </data>
+  <data name="SST_GRP_PROJEKT" xml:space="preserve">
+    <value>Installation in the project</value>
+  </data>
+  <data name="SST_GRP_LASTGANG" xml:space="preserve">
+    <value>Selected load profile</value>
+  </data>
+  <data name="SST_LBL_HERKUNFT" xml:space="preserve">
+    <value>Origin</value>
+  </data>
   <data name="WPA_KOPF_BZ_LEER" xml:space="preserve">
     <value>not maintained — always available</value>
   </data>

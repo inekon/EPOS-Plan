@@ -1713,4 +1713,38 @@ public class PufferspeicherDialogTests : EposBunitContext
             .Add(x => x.VergleichsparameterProjekt, id => { ids.Add(id); return VergleichWirtHilfe.Werte("P:" + id); }));
         VergleichWirtHilfe.ProjektzeileGegenKatalogsatz(cut, ids, "Speicher A");
     }
+    // =================================================================================
+    // WP1b (KA-E-25): der Gerätesteckbrief links in der zweispaltigen Satz-Überlagerung
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Links stehen die Projektfelder und darunter der Gerätesteckbrief</b>, rechts die Kenndaten; der Steckbrief
+    /// zeigt die Werte des Feldsatzes und folgt einer Eingabe rechts im selben Zeichenlauf.
+    /// </summary>
+    [Fact]
+    public void WP1b_Der_Geraetesteckbrief_steht_links_und_folgt_den_Feldern_rechts()
+    {
+        var cut = Aufbauen(projektsatzWege: new Satzbearbeitungswege { Lesen = _ => Katalogfelder("Satz"), Speichern = _ => new KatalogSpeicherErgebnis(true, "ok", "") });
+        var satz = Satz(cut);
+        var links = satz.QuerySelector(".epos-satz-zweispaltig > .epos-satz-zweispaltig-links")!;
+        Assert.NotNull(satz.QuerySelector(".epos-satz-zweispaltig > .epos-satz-zweispaltig-rechts .epos-modulparameter"));
+        var steckbrief = links.QuerySelector(".epos-pspd-steckbrief")!;
+        Assert.Equal("Musterwerk", steckbrief.QuerySelector("dd[data-zeile=hersteller]")!.TextContent.Trim());
+        Assert.NotNull(steckbrief.QuerySelector("dd[data-zeile=vorlauf]"));                // das Temperaturpaar der Anlage
+
+        cut.FindAll(".epos-satz-zweispaltig-rechts .epos-modulparameter input")
+           .First(e => e.GetAttribute("value") == "Musterwerk").Input("Geändert");
+        Assert.Equal("Geändert", cut.Find(".epos-pspd-steckbrief dd[data-zeile=hersteller]").TextContent.Trim());
+    }
+
+    /// <summary><b>Der Katalogsatz zeigt links nur den Steckbrief</b> — Projektfelder gibt es dort nicht.</summary>
+    [Fact]
+    public void WP1b_Der_Katalogsatz_zeigt_links_nur_den_Steckbrief()
+    {
+        var cut = Aufbauen(katalogfelder: n => Katalogfelder(n));
+        KatalogZeileWaehlen(cut, 0);
+        var links = Satz(cut).QuerySelector(".epos-satz-zweispaltig-links")!;
+        Assert.Single(links.Children);
+        Assert.NotNull(links.QuerySelector(".epos-pspd-steckbrief dd[data-zeile=name]"));
+    }
 }

@@ -188,7 +188,7 @@ public class SolarkollektorenDialogTests : EposBunitContext
         Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
         // Die Felder der Anlage stehen in EINER Gruppe beim Projektsatz; den Modulblock gibt es nicht mehr.
         var gruppen = cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent.Trim()).ToList();
-        Assert.Equal(new[] { "Kollektor" }, gruppen);
+        Assert.Equal(new[] { "Kollektor", "Gewähltes Gerät" }, gruppen);   // WP1b: der Gerätesteckbrief links
 
         var knoepfe = cut.FindAll("button").Select(b => b.TextContent.Trim()).ToList();
         Assert.Contains("Bearbeiten...", knoepfe);
@@ -320,7 +320,7 @@ public class SolarkollektorenDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
         Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
-        var raster = cut.FindAll(".epos-formularraster")[0];
+        var raster = cut.Find(".epos-satz-zweispaltig-rechts .epos-formularraster");   // WP1b: Kenndaten rechts
 
         // Name plus die vier Detailfelder.
         Assert.Equal(5, raster.QuerySelectorAll("input[readonly]").Length);
@@ -382,14 +382,15 @@ public class SolarkollektorenDialogTests : EposBunitContext
         // dataGridView1_Click:289 blendete groupBox_Kollektor aus.
         var cut = Aufbauen();
         Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
-        Assert.Single(cut.FindAll(".epos-gruppenkopf-titel"));
+        // WP1b: dazu links immer die Gruppe „Gewähltes Gerät" des Steckbriefs.
+        Assert.Equal(new[] { "Kollektor", "Gewähltes Gerät" }, cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent.Trim()));
         SatzZu(cut);
 
         KatalogZeileWaehlen(cut, 0);
         Satz(cut);
 
-        Assert.Empty(cut.FindAll(".epos-gruppenkopf-titel"));
-        Assert.Equal("Vitosol 200", cut.FindAll(".epos-formularraster")[0].QuerySelector("input")!.GetAttribute("value"));
+        Assert.Equal(new[] { "Gewähltes Gerät" }, cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent.Trim()));
+        Assert.Equal("Vitosol 200", cut.Find(".epos-satz-zweispaltig-rechts .epos-formularraster").QuerySelector("input")!.GetAttribute("value"));
     }
 
     [Fact]
@@ -2024,5 +2025,39 @@ public class SolarkollektorenDialogTests : EposBunitContext
             .Add(x => x.Vergleichsparameter, n => VergleichWirtHilfe.Werte("K:" + n))
             .Add(x => x.VergleichsparameterProjekt, id => { ids.Add(id); return VergleichWirtHilfe.Werte("P:" + id); }));
         VergleichWirtHilfe.ProjektzeileGegenKatalogsatz(cut, ids, "Kollektor A");
+    }
+    // =================================================================================
+    // WP1b (KA-E-25): der Gerätesteckbrief links in der zweispaltigen Satz-Überlagerung
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Links stehen die Projektfelder und darunter der Gerätesteckbrief</b>, rechts die Kenndaten; der Steckbrief
+    /// zeigt die Werte des Feldsatzes und folgt einer Eingabe rechts im selben Zeichenlauf.
+    /// </summary>
+    [Fact]
+    public void WP1b_Der_Geraetesteckbrief_steht_links_und_folgt_den_Feldern_rechts()
+    {
+        var cut = Aufbauen(projektsatzWege: new Satzbearbeitungswege { Lesen = _ => Katalogfelder("Satz"), Speichern = _ => new KatalogSpeicherErgebnis(true, "ok", "") });
+        var satz = Satz(cut);
+        var links = satz.QuerySelector(".epos-satz-zweispaltig > .epos-satz-zweispaltig-links")!;
+        Assert.NotNull(satz.QuerySelector(".epos-satz-zweispaltig > .epos-satz-zweispaltig-rechts .epos-modulparameter"));
+        Assert.NotEmpty(links.QuerySelectorAll(".epos-gruppenkopf, .epos-anlagenblock"));   // die Projektfelder oben links
+        var steckbrief = links.QuerySelector(".epos-skol-steckbrief")!;
+        Assert.Equal("Flach", steckbrief.QuerySelector("dd[data-zeile=bauart]")!.TextContent.Trim());
+
+        cut.FindAll(".epos-satz-zweispaltig-rechts .epos-modulparameter input")
+           .First(e => e.GetAttribute("value") == "Flach").Input("Geändert");
+        Assert.Equal("Geändert", cut.Find(".epos-skol-steckbrief dd[data-zeile=bauart]").TextContent.Trim());
+    }
+
+    /// <summary><b>Der Katalogsatz zeigt links nur den Steckbrief</b> — Projektfelder gibt es dort nicht.</summary>
+    [Fact]
+    public void WP1b_Der_Katalogsatz_zeigt_links_nur_den_Steckbrief()
+    {
+        var cut = Aufbauen(katalogfelder: n => Katalogfelder(n));
+        KatalogZeileWaehlen(cut, 0);
+        var links = Satz(cut).QuerySelector(".epos-satz-zweispaltig-links")!;
+        Assert.Single(links.Children);
+        Assert.NotNull(links.QuerySelector(".epos-skol-steckbrief dd[data-zeile=name]"));
     }
 }

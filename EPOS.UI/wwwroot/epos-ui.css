@@ -13155,6 +13155,38 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+/* DIE ZWEISPALTIGE SATZ-UEBERLAGERUNG DER UEBRIGEN WIRTE (WP1b, KA-E-25): dasselbe Raster wie bei der
+   Waermepumpe - links (schmal) die Projektfelder und darunter der Geraetesteckbrief, rechts die Kenndaten.
+   Unter 900 px stehen beide untereinander. In der Detailzeile traegt der Satz die Klasse
+   .epos-satz-einspaltig: Huelle und rechte Spalte zeichnen dort keine eigene Box, der Aufbau bleibt. */
+.epos-satz-zweispaltig {
+    display: grid;
+    grid-template-columns: minmax(0, 0.6fr) minmax(0, 1fr);
+    align-items: start;
+    gap: var(--epos-rand);
+}
+.epos-satz-zweispaltig-links,
+.epos-satz-zweispaltig-rechts {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;                           /* laesst das Raster waagerecht rollen */
+}
+/* Die schmale Spalte: die Beschriftung bleibt NEBEN dem Feld. */
+.epos-satz-zweispaltig-links {
+    --epos-beschriftung-breite: 8rem;
+    --epos-formularspalte: 17rem;
+}
+.epos-satz-einspaltig,
+.epos-satz-einspaltig > .epos-satz-zweispaltig-rechts {
+    display: contents;
+}
+@media (max-width: 900px) {
+    .epos-satz-zweispaltig {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
 /* Die weiche Sperre „nur im Projekt" am Katalogsatz: der Hinweis steht als Text in der Gruppe. */
 .epos-nurprojekt-hinweis {
     margin: 0;

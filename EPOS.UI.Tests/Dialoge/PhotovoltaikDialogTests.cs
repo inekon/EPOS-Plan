@@ -519,10 +519,14 @@ public class PhotovoltaikDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-zweispalten-satz .epos-leiste"));   // UeS2: zu steht nur die Zusammenfassung
         var kinder = Satz(cut).Children.ToList();
         Assert.Contains("epos-leiste", kinder[0].ClassList);
-        int raster = kinder.FindIndex(k => k.ClassList.Contains("epos-formularraster"));
-        int anlage = kinder.FindIndex(k => k.ClassList.Contains("epos-anlagenblock"));
-        int parameter = kinder.FindIndex(k => k.ClassList.Contains("epos-modulparameter"));
-        Assert.True(0 < raster && raster < anlage && anlage < parameter);
+        // WP1b: darunter die zweispaltige Satz-Ueberlagerung - links der Anlagenblock, rechts die Kenndaten, dann
+        // „Alle Daten".
+        Assert.Contains("epos-satz-zweispaltig", kinder[1].ClassList);
+        Assert.NotNull(kinder[1].QuerySelector(".epos-satz-zweispaltig-links > .epos-anlagenblock"));
+        var rechts = kinder[1].QuerySelector(".epos-satz-zweispaltig-rechts")!.Children.ToList();
+        int raster = rechts.FindIndex(k => k.ClassList.Contains("epos-formularraster"));
+        int parameter = rechts.FindIndex(k => k.ClassList.Contains("epos-modulparameter"));
+        Assert.True(0 <= raster && raster < parameter);
 
         var teile = kinder[0].Children.ToList();
         Assert.Contains("epos-kostenleiste", teile[0].ClassList);
@@ -2274,5 +2278,39 @@ public class PhotovoltaikDialogTests : EposBunitContext
             .Add(x => x.Vergleichsparameter, n => VergleichWirtHilfe.Werte("K:" + n))
             .Add(x => x.VergleichsparameterProjekt, id => { ids.Add(id); return VergleichWirtHilfe.Werte("P:" + id); }));
         VergleichWirtHilfe.ProjektzeileGegenKatalogsatz(cut, ids, "Modul A");
+    }
+    // =================================================================================
+    // WP1b (KA-E-25): der Gerätesteckbrief links in der zweispaltigen Satz-Überlagerung
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Links stehen die Projektfelder und darunter der Gerätesteckbrief</b>, rechts die Kenndaten; der Steckbrief
+    /// zeigt die Werte des Feldsatzes und folgt einer Eingabe rechts im selben Zeichenlauf.
+    /// </summary>
+    [Fact]
+    public void WP1b_Der_Geraetesteckbrief_steht_links_und_folgt_den_Feldern_rechts()
+    {
+        var cut = Aufbauen(projektsatzWege: Wege());
+        var satz = Satz(cut);
+        var links = satz.QuerySelector(".epos-satz-zweispaltig > .epos-satz-zweispaltig-links")!;
+        Assert.NotNull(satz.QuerySelector(".epos-satz-zweispaltig > .epos-satz-zweispaltig-rechts .epos-modulparameter"));
+        Assert.NotEmpty(links.QuerySelectorAll(".epos-gruppenkopf, .epos-anlagenblock"));   // die Projektfelder oben links
+        var steckbrief = links.QuerySelector(".epos-pv-steckbrief")!;
+        Assert.Equal("Wert FIRMA", steckbrief.QuerySelector("dd[data-zeile=hersteller]")!.TextContent.Trim());
+
+        cut.FindAll(".epos-satz-zweispaltig-rechts .epos-modulparameter input")
+           .First(e => e.GetAttribute("value") == "Wert FIRMA").Input("Geändert");
+        Assert.Equal("Geändert", cut.Find(".epos-pv-steckbrief dd[data-zeile=hersteller]").TextContent.Trim());
+    }
+
+    /// <summary><b>Der Katalogsatz zeigt links nur den Steckbrief</b> — Projektfelder gibt es dort nicht.</summary>
+    [Fact]
+    public void WP1b_Der_Katalogsatz_zeigt_links_nur_den_Steckbrief()
+    {
+        var cut = Aufbauen(katalogfelder: Katalogfelder);
+        KatalogsatzWaehlen(cut);
+        var links = Satz(cut).QuerySelector(".epos-satz-zweispaltig-links")!;
+        Assert.Single(links.Children);
+        Assert.NotNull(links.QuerySelector(".epos-pv-steckbrief dd[data-zeile=name]"));
     }
 }

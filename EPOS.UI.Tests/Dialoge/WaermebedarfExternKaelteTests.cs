@@ -264,4 +264,49 @@ public class WaermebedarfExternKaelteTests : EposBunitContext
         Assert.Equal(KaeltebedarfSchema.DECKUNG_ZENTRAL, zeilen[1].Deckungsart);
         Assert.Null(geschlossen);
     }
+    // =================================================================================
+    // WP1b (KA-E-25): zweispaltige Überlagerung mit dem Steckbrief „Gewählter Lastgang"
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Links Stammdaten, Deckung und Steckbrief, rechts die Ganglinie</b>; der Steckbrief nennt Name, Kanal, Art,
+    /// Deckung und Herkunft und folgt einer Eingabe links (Kanal) im selben Zeichenlauf.
+    /// </summary>
+    [Fact]
+    public void WP1b_Der_Steckbrief_steht_links_und_folgt_dem_Kanal()
+    {
+        var cut = Zeige(Gemischt(), WaermebedarfExternModus.Alle);
+        Projektzeilen(cut)[1].Click();
+        Bearbeiten(cut);
+
+        var links = cut.Find(".epos-satz-zweispaltig > .epos-satz-zweispaltig-links");
+        Assert.NotNull(links.QuerySelector(".epos-wbx-abschnitt--stamm"));
+        Assert.NotNull(links.QuerySelector(".epos-wbx-abschnitt--deckung"));
+        Assert.NotNull(cut.Find(".epos-satz-zweispaltig > .epos-satz-zweispaltig-rechts").QuerySelector(".epos-wbx-abschnitt--ganglinie"));
+        var sb = links.QuerySelector(".epos-wbx-steckbrief")!;
+        Assert.Equal("Kaeltelast", sb.QuerySelector("dd[data-zeile=name]")!.TextContent.Trim());
+        Assert.NotNull(sb.QuerySelector("dd[data-zeile=art]"));
+        Assert.NotNull(sb.QuerySelector("dd[data-zeile=deckung]"));
+        Assert.Equal(Resource.AUSWAHL_MARKE_PROJEKTSATZ, sb.QuerySelector("dd[data-zeile=herkunft]")!.TextContent.Trim());
+
+        var kanal = links.QuerySelector(".epos-wbx-abschnitt--stamm select")!;
+        string erster = kanal.QuerySelector("option[value='0']")!.TextContent.Trim();
+        kanal.Change("0");
+        Assert.Equal(erster, cut.Find(".epos-wbx-steckbrief dd[data-zeile=kanal]").TextContent.Trim());
+    }
+
+    /// <summary><b>Der Katalogsatz</b>: links Stammdaten und Steckbrief ohne Kanal, Art und Deckung; Herkunft Katalog.</summary>
+    [Fact]
+    public void WP1b_Der_Katalogsatz_zeigt_den_Steckbrief_ohne_Projektzeilen()
+    {
+        var cut = Zeige(Gemischt(), WaermebedarfExternModus.Alle);
+        cut.FindAll(".epos-zweispalten-spalte--unten .epos-zeilenzelle--name")[0].Click();
+        Bearbeiten(cut);
+
+        var sb = cut.Find(".epos-satz-zweispaltig-links .epos-wbx-steckbrief");
+        Assert.Equal("Ganglinie A", sb.QuerySelector("dd[data-zeile=name]")!.TextContent.Trim());
+        Assert.Null(sb.QuerySelector("dd[data-zeile=kanal]"));
+        Assert.Null(sb.QuerySelector("dd[data-zeile=deckung]"));
+        Assert.Equal(Resource.AUSWAHL_MARKE_KATALOGSATZ, sb.QuerySelector("dd[data-zeile=herkunft]")!.TextContent.Trim());
+    }
 }

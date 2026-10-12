@@ -231,6 +231,24 @@
         }
         else
         {
+            @* DIE ZWEISPALTIGE SATZ-UEBERLAGERUNG (WP1b, KA-E-25, Anwenderentscheid 12.10.2026: „auf der linken
+               Seite Daten zur ausgewaehlten Anlage - aus dem Datensatz die wichtigsten Daten"): links die Projektfelder
+               (nur Projektsatz) und darunter der Geraetesteckbrief, lesend aus DEMSELBEN Feldsatz, den die Felder rechts
+               bearbeiten; rechts die Kenndaten wie in der Detailzeile. In der Detailzeile bleibt der Aufbau einspaltig. *@
+            <div class="@SatzAufbauKlasse">
+            @if (_satzGross)
+            {
+                <section class="epos-satz-zweispaltig-links">
+                    @Projektblock
+                    <Gruppenkopf Titel="@SteckbriefTexte.GruppeGeraet">
+                        <KindInhalt>
+                            <Geraetesteckbrief Titel="@SteckbriefTexte.GruppeGeraet" TitelAnzeigen="false"
+                                               Klasse="epos-satz-steckbrief epos-pv-steckbrief" Zeilen="@Steckbriefzeilen" />
+                        </KindInhalt>
+                    </Gruppenkopf>
+                </section>
+            }
+            <section class="epos-satz-zweispaltig-rechts">
             <Formularraster>
                 <KindInhalt>
                 <Textfeld Bezeichnung="@LabelName" Wert="@_detail.Bezeichner" NurLesen="true" />
@@ -244,50 +262,11 @@
                 </KindInhalt>
             </Formularraster>
 
-            @* DER PROJEKTSATZ (4.9): Stueckzahl, Neigung, Azimut und Energietraeger der Anlage,
-               darunter das Ertragsmodell samt Albedo (PvModellFelder) und der Knopf zur
-               Ueberlagerung „Stränge und Wechselrichter…" (KA-E-11). Der gestrichelte Rahmen
-               sagt „diese Werte gehoeren zur markierten Anlage". *@
-            @if (_projektZeile is not null)
+            @* Die Felder der Anlage: in der Detailzeile hier, in der Satz-Ueberlagerung links (WP1b). *@
+            @if (!_satzGross)
             {
-                <div class="epos-anlagenblock">
-                    <Formularraster>
-                        <KindInhalt>
-                    <Ganzzahlfeld Bezeichnung="@LabelNeigung" Wert="@_projektZeile.Neigung"
-                                  WertChanged="BeiNeigung" />
-                    <Ganzzahlfeld Bezeichnung="@LabelAzimut" Wert="@_projektZeile.Azimut"
-                                  WertChanged="BeiAzimut" />
-                    @if (Traegerkatalog.Count > 0)
-                    {
-                        <EnergietraegerWahl Eintraege="@Traegerkatalog"
-                                            LabelGruppe="@LabelTraegerGruppe" LabelArt="@LabelTraegerArt"
-                                            Auswahl="@(_projektZeile.CarrierId > 0 ? _projektZeile.CarrierId : null)"
-                                            AuswahlChanged="BeiTraegerwechsel" />
-                    }
-                    @* ANZAHL MODULE - abgeleitet, sobald ein Strang besteht (Q9, „eine
-                       Wahrheit"): die Summe aus Reihe x Parallel ueber alle Straenge. *@
-                    @if (_projektZeile.Straenge.Count > 0)
-                    {
-                        <Textfeld Bezeichnung="@LabelAnzahl" Wert="@ModulzahlText" NurLesen="true"
-                                  Kurz="true" Einheit="@LabelAnzahlAbgeleitet" />
-                    }
-                    else
-                    {
-                        <Zahlenfeld Bezeichnung="@LabelAnzahl" Wert="@_projektZeile.AnzahlModule"
-                                    WertChanged="BeiAnzahl" />
-                    }
-                        </KindInhalt>
-                    </Formularraster>
-                </div>
-                <PvModellFelder Zeile="@_projektZeile"
-                                Geaendert="@(() => ZeileUebernehmen(_projektZeile!))" />
-                <div class="epos-leiste epos-pv-straengeleiste">
-                    <button type="button" class="epos-knopf epos-knopf--straenge"
-                            @onclick="BeiStraengeOeffnen">@BtnStraengeText</button>
-                    <span class="epos-pv-straengestand">@StraengeStand</span>
-                </div>
+                @Projektblock
             }
-
             @* ALLE DATEN DES GEWAEHLTEN SATZES, aufklappbar und BEARBEITBAR: beim Katalogsatz der
                Katalog (gesperrt nur lesen), beim Projektsatz die Projektkopie - dieselben Felder
                wie im Modulkatalog, dazu die Koeffizienten alpha_SC und beta_OC als Lesewerte. *@
@@ -314,6 +293,8 @@
                     }
                 </div>
             }
+            </section>
+            </div>
         }
         </Satz>
     </Zweispaltenauswahl>
@@ -1934,4 +1915,65 @@
         _meldung = grund ?? "";
         _meldungStufe = WarnStufe.Warnung;
     }
+    // --- Der Geraetesteckbrief der Satz-Ueberlagerung (WP1b, KA-E-25) -------------------
+
+    /// <summary>Die Beschriftungen des Gerätesteckbriefs; füllen sich selbst aus den Ressourcen.</summary>
+    [Parameter] public PhotovoltaikSteckbriefTexte SteckbriefTexte { get; set; } = new();
+
+    /// <summary>Zweispaltig nur in der Satz-Überlagerung; in der Detailzeile bleibt der Aufbau, wie er ist.</summary>
+    private string SatzAufbauKlasse => _satzGross ? "epos-satz-zweispaltig" : "epos-satz-einspaltig";
+
+    /// <summary>
+    /// Die Zeilen des Steckbriefs — je Zeichenlauf aus dem Feldsatz „Alle Daten" (in der Überlagerung aufgeklappt),
+    /// den die Felder rechts bearbeiten; ohne Feldsatz aus dem Detailblock. Am Projektsatz mit den Kostensummen.
+    /// </summary>
+    internal IReadOnlyList<Steckbriefzeile> Steckbriefzeilen => PhotovoltaikSteckbrief.Zeilen(_felder, _detail, SteckbriefTexte, _projektZeile is not null ? _kosten : null);
+
+    /// <summary>Die Felder der Anlage (Neigung, Azimut, Träger, Modulanzahl, Ertragsmodell, Stränge) — EIN Fragment für Detailzeile und linke Spalte der Satz-Überlagerung (WP1b).</summary>
+    private RenderFragment Projektblock => __builder =>
+    {
+        @* DER PROJEKTSATZ (4.9): Stueckzahl, Neigung, Azimut und Energietraeger der Anlage,
+           darunter das Ertragsmodell samt Albedo (PvModellFelder) und der Knopf zur
+           Ueberlagerung „Stränge und Wechselrichter…" (KA-E-11). Der gestrichelte Rahmen
+           sagt „diese Werte gehoeren zur markierten Anlage". *@
+        if (_projektZeile is not null)
+        {
+            <div class="epos-anlagenblock">
+                <Formularraster>
+                    <KindInhalt>
+                <Ganzzahlfeld Bezeichnung="@LabelNeigung" Wert="@_projektZeile.Neigung"
+                              WertChanged="BeiNeigung" />
+                <Ganzzahlfeld Bezeichnung="@LabelAzimut" Wert="@_projektZeile.Azimut"
+                              WertChanged="BeiAzimut" />
+                @if (Traegerkatalog.Count > 0)
+                {
+                    <EnergietraegerWahl Eintraege="@Traegerkatalog"
+                                        LabelGruppe="@LabelTraegerGruppe" LabelArt="@LabelTraegerArt"
+                                        Auswahl="@(_projektZeile.CarrierId > 0 ? _projektZeile.CarrierId : null)"
+                                        AuswahlChanged="BeiTraegerwechsel" />
+                }
+                @* ANZAHL MODULE - abgeleitet, sobald ein Strang besteht (Q9, „eine
+                   Wahrheit"): die Summe aus Reihe x Parallel ueber alle Straenge. *@
+                @if (_projektZeile.Straenge.Count > 0)
+                {
+                    <Textfeld Bezeichnung="@LabelAnzahl" Wert="@ModulzahlText" NurLesen="true"
+                              Kurz="true" Einheit="@LabelAnzahlAbgeleitet" />
+                }
+                else
+                {
+                    <Zahlenfeld Bezeichnung="@LabelAnzahl" Wert="@_projektZeile.AnzahlModule"
+                                WertChanged="BeiAnzahl" />
+                }
+                    </KindInhalt>
+                </Formularraster>
+            </div>
+            <PvModellFelder Zeile="@_projektZeile"
+                            Geaendert="@(() => ZeileUebernehmen(_projektZeile!))" />
+            <div class="epos-leiste epos-pv-straengeleiste">
+                <button type="button" class="epos-knopf epos-knopf--straenge"
+                        @onclick="BeiStraengeOeffnen">@BtnStraengeText</button>
+                <span class="epos-pv-straengestand">@StraengeStand</span>
+            </div>
+        }
+    };
 }
