@@ -41,6 +41,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Profil ohne einen einzigen Wert (NP-F13): nur der Name geht ans Ziel.</summary>
         ProfilOhneWerte = 4,
+
+        /// <summary>
+        /// Außenluft je Person ohne Fläche je Person im Profil (NP7): ohne Belegung wird nichts angenommen, die Lüftung wird
+        /// nicht gesetzt.
+        /// </summary>
+        LueftungOhneBelegung = 5,
     }
 
     /// <summary>
@@ -201,6 +207,20 @@ namespace WindowsFormsApplication1
                     (von, bis) = Betriebsfenster(p);
                     break;
                 case Konditionierungsgroesse.Lueftung:
+                    if (AussenluftJePersonGilt(p))
+                    {
+                        // NP7: Außenluft je Person ÷ Fläche je Person ÷ lichte Höhe = 1/h, im Betriebsfenster wie außerhalb.
+                        double rate = Personenluftwechsel(p, hoehe, out Raumnutzungshinweis grund);
+                        if (double.IsNaN(rate))
+                        {
+                            hinweis = grund;
+                            return null;
+                        }
+                        tag = new Angabe(Gerundet(rate), false);
+                        ausser = tag;
+                        (von, bis) = Betriebsfenster(p);
+                        break;
+                    }
                     if (p.Aussenluft == null && p.Aussenluft_Ausserhalb == null) return null;
                     double faktor = Lueftungsfaktor(p, hoehe);
                     if (double.IsNaN(faktor))
@@ -270,6 +290,35 @@ namespace WindowsFormsApplication1
             return hoehe.HasValue && hoehe.Value > 0.0 && double.IsFinite(hoehe.Value) ? 1.0 / hoehe.Value : double.NaN;
         }
 
+        /// <summary>
+        /// Gilt die Außenluft je Person (NP7)? Nur, wo das Profil weder <c>Aussenluft</c> noch <c>Aussenluft_Ausserhalb</c>
+        /// trägt — die raum- oder flächenbezogene Angabe geht vor.
+        /// </summary>
+        internal static bool AussenluftJePersonGilt(Raumnutzungsprofil p)
+            => p.Aussenluft == null && p.Aussenluft_Ausserhalb == null && p.Aussenluft_Person.HasValue;
+
+        /// <summary>
+        /// <b>Die Außenluft je Person als Luftwechsel</b> [1/h] (NP7): m³/(h·Person) ÷ m²/Person ÷ m. Ohne Fläche je Person
+        /// NaN mit <see cref="Raumnutzungshinweis.LueftungOhneBelegung"/>, ohne lichte Höhe NaN mit
+        /// <see cref="Raumnutzungshinweis.LueftungOhneHoehe"/> — keine stille Annahme.
+        /// </summary>
+        internal static double Personenluftwechsel(Raumnutzungsprofil p, double? hoehe, out Raumnutzungshinweis hinweis)
+        {
+            hinweis = Raumnutzungshinweis.Keiner;
+            if (p?.Aussenluft_Person is not double q) return double.NaN;
+            if (!(p.Personen_Flaeche is double a && a > 0.0 && double.IsFinite(a)))
+            {
+                hinweis = Raumnutzungshinweis.LueftungOhneBelegung;
+                return double.NaN;
+            }
+            if (!(hoehe is double h && h > 0.0 && double.IsFinite(h)))
+            {
+                hinweis = Raumnutzungshinweis.LueftungOhneHoehe;
+                return double.NaN;
+            }
+            return q / a / h;
+        }
+
         private static double? Gerundet(double? w)
             => w.HasValue ? Math.Round(w.Value, NACHKOMMA, MidpointRounding.AwayFromZero) : (double?)null;
 
@@ -319,6 +368,16 @@ namespace WindowsFormsApplication1
                     return null;
                 }
                 faktor *= p.Aussenluft.Value;
+            }
+            else if (g == Konditionierungsgroesse.Lueftung && AussenluftJePersonGilt(p))
+            {
+                // NP7: die Stundenwerte sind Faktoren auf die Außenluft je Person, umgerechnet in 1/h.
+                faktor = Personenluftwechsel(p, hoehe, out Raumnutzungshinweis grund);
+                if (double.IsNaN(faktor))
+                {
+                    hinweis = grund;
+                    return null;
+                }
             }
             double[] w = Stundenwerte(werktag.Werte, g, faktor), f = Stundenwerte(frei.Werte, g, faktor);
             if (w == null || f == null)

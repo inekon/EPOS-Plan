@@ -162,6 +162,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("RaumnutzungBlatt",                  "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
         // NP4a (Konzept Nutzungsprofile 6.1, 6.4): CSV-Import und -Export im Kopf des Blatts — ein Baustein darin.
         new("RaumnutzungCsvAustausch",           "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
+        // NP7b (Konzept Nutzungsprofile 6.5): der Dialog „Normwerte einlesen" als Überlagerung im Blatt.
+        new("NormwerteEinlesenDialog",           "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
         // NP4c (Konzept Nutzungsprofile 6.1, NP-F7, NP-F9): Zeilenbild- und Stundenprofil-Editor im Profileditor des
         // Blatts (über RaumnutzungBildEditor) - dieselbe Anmeldung wie das Blatt.
         new("RaumnutzungZeilenbildEditor",       "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
@@ -427,8 +429,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // Handlung schreibt sofort mit eigenem Knopf. NP3c: Die 28 Kennwerte des Profileditors führt die
         // Feldkarte KiNutzungsprofilfelder (np_*, Feldtafel am Entwurf des Blatts), dazu die Kategorie (nur
         // lesbar) und die Zuordnungszeilen als Raster zum Lesen; die Zahl bleibt 31.
-        new("RaumnutzungBlatt", 30, "Nummer, Name, Beschreibung, die Nutzungszeiten, die Woche, die Sollwerte, die " +
-            "Außenluft samt Einheit und die Lasten führt die Feldkarte KiNutzungsprofilfelder als np_* am ENTWURF " +
+        new("RaumnutzungBlatt", 31, "Nummer, Name, Beschreibung, die Nutzungszeiten, die Woche, die Sollwerte, die " +
+            "Außenluft samt Einheit, die Außenluft je Person (NP7) und die Lasten führt die Feldkarte KiNutzungsprofilfelder als np_* am ENTWURF " +
             "des Profileditors (in den Katalog erst mit „Speichern“ des Blatts, NP-F3); die Nutzungstage im Jahr sind " +
             "abgeleitet (E93), eine Lesezeile ohne Eingabe, und stehen nur lesbar als np_tage_jahr; die Zuordnungszeilen (Art, " +
             "Schlüssel, Profil) stehen als Raster zum Lesen. Profilwahl je Zeile sowie Art und Schlüssel einer neuen " +
@@ -438,6 +440,10 @@ public sealed class KiMaskenabdeckungWacheTests
         new("RaumnutzungCsvAustausch", 3, "Zielkategorie und Name der neuen Kategorie gehören zur Handlung „CSV importieren…“, die " +
             "erst mit „Übernehmen“ in den Katalog schreibt, die Kategorie zur Handlung „CSV exportieren…“, die eine Datei " +
             "schreibt — Dateiwahlen und Klicks des Anwenders, kein Einstellwert des Gebäudes"),
+        // NP7b (Konzept Nutzungsprofile 6.5): der Schalter „vorhandene Werte überschreiben" des Dialogs „Normwerte einlesen".
+        new("NormwerteEinlesenDialog", 1, "der Schalter „vorhandene Werte überschreiben“ gehört zur Handlung „Übernehmen“, die " +
+            "aus der Datei des Anwenders in die Kategorie DIN schreibt — eine Angabe dieser Handlung, kein Einstellwert des " +
+            "Gebäudes; Quelle und Datei wählt der Anwender über die Dateiwahl der Plattform"),
         // NP4c (Konzept Nutzungsprofile 6.1, NP-F7, NP-F9): Wert, Nachtfenster und ΔT je Zeile des Zeilenbilds und die
         // 24 Stundenwerte je Tagesart samt Einfügefeld - der ENTWURF des Profileditors; die Feldkarte führt Zeilenbild und
         // Stundenprofile als Raster zum Lesen (np_zeilenbild_*, np_stunden_*) und den Umschalter je Größe nur lesbar

@@ -177,6 +177,18 @@ public sealed class RaumnutzungProfilDaten
     /// <summary>Außenluft außerhalb in <see cref="LuftEinheit"/>.</summary>
     public double? AussenluftAusserhalb { get; set; }
 
+    /// <summary>Außenluft je Person [m³/(h·Person)] (NP7); gilt im Generator nur ohne die beiden Felder davor.</summary>
+    public double? AussenluftPerson { get; set; }
+
+    /// <summary>Stammen die Werte aus „Normwerte einlesen" (NP7)?</summary>
+    public bool Eingelesen { get; set; }
+
+    /// <summary>Die Quelle eingelesener Werte (Dateiname); leer = ohne.</summary>
+    public string WerteQuelle { get; set; } = "";
+
+    /// <summary>Der Tag des Einlesens (JJJJ-MM-TT); leer = ohne.</summary>
+    public string WerteDatum { get; set; } = "";
+
     // ---------------------------------------------------------------- Lasten
 
     /// <summary>Fläche je Person [m²].</summary>
@@ -229,7 +241,7 @@ public sealed class RaumnutzungProfilDaten
     };
 
     /// <summary>Trägt das Profil weder Kennwert noch Zeilenbild noch Stundenprofil (NP-F13)?</summary>
-    public bool IstLeer => Kennwerte().All(w => w is null) && Zeilenbild.Count == 0 && Stunden.Count == 0;
+    public bool IstLeer => Kennwerte().All(w => w is null) && AussenluftPerson is null && Zeilenbild.Count == 0 && Stunden.Count == 0;
 
     /// <summary>Eine Kopie — der Editor arbeitet auf ihr und gibt sie erst beim Speichern weiter.</summary>
     public RaumnutzungProfilDaten Kopie()
@@ -402,6 +414,9 @@ public sealed class RaumnutzungWeg
 
     /// <summary>CSV-Import und -Export (NP4a) — der Weg der Komponente <c>RaumnutzungCsvAustausch</c>; <c>null</c> = keine Knöpfe.</summary>
     public RaumnutzungCsvWeg? Csv { get; init; }
+
+    /// <summary>„Normwerte einlesen…" und „Eingelesene Werte entfernen…" an der Kategorie DIN (NP7b); <c>null</c> = keine Knöpfe.</summary>
+    public NormwerteWeg? Normwerte { get; init; }
 
     /// <summary>Bietet das Bündel die Verwaltung des Katalogs an (Lesen genügt nicht)?</summary>
     public bool MitKatalog => Kategorien is not null && Profile is not null;

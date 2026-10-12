@@ -1,0 +1,261 @@
+﻿@* NORMWERTE EINLESEN (Stufe NP7b; Konzept Nutzungsprofile 6.5, E131) - der Dialog hinter "Normwerte einlesen..." am
+   Blatt "Nutzungsprofile", nur an der Kategorie DIN/TS 18599-10. Er steht als Ueberlagerung im Blatt (Titel und Kreuz
+   traegt die Ueberlagerung, der Wirt setzt TitelText=""; ein Unterdialog ist nie eine zweite BlazorWebView), der Kopf
+   traegt die Hilfepille, darunter steht der Hinweis.
+
+   1. QUELLE. "CSV-Datei waehlen..." oder "Projektdatei waehlen..." laesst die Plattform eine Datei waehlen (Dienste.Datei in
+      der Huelle) und zeigt die Vorschau; "Vorlage speichern..." schreibt die CSV der Kategorie ohne Werte.
+   2. VORSCHAU. Je Treffer Nummer, Profil, Stand (ohne Werte | Werte vorhanden | eingelesene Werte vorhanden) und die
+      abweichenden Spalten; darunter die Zaehlung, die Abweichungen je Spalte und die Tabelle "Nicht uebernommen" mit
+      unbekannten Nummern, Profilen ohne Wert, doppelten Nummern und den uebrigen Meldungen. Der Schalter "vorhandene
+      Werte ueberschreiben" steht vorgabegemaess aus.
+   3. UEBERNEHMEN (OK der Schlussleiste) schreibt ueber den Kern und schliesst mit der Meldung; ohne gelesene Datei oder
+      ohne Treffer ist es weich gesperrt und meldet den Grund. Abbrechen, Kreuz und Esc schliessen ohne zu schreiben.
+
+   Keine Normwerte im Programm: die Werte kommen allein aus der Datei des Anwenders. *@
+
+@using System.Globalization
+@using System.Linq
+
+<div class="epos-normwerte">
+    <div class="epos-dialog-kopf epos-normwerte-kopf @(string.IsNullOrEmpty(Titel) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(Titel))
+        {
+            <h1 class="epos-dialog-titel">@Titel</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@T.Titel" />
+        @if (!string.IsNullOrEmpty(Titel))
+        {
+            <Schliesskreuz Geschlossen="() => Abschluss(false)" />
+        }
+    </div>
+    <p class="epos-leisezeile epos-normwerte-erklaerung">@T.Hinweis</p>
+
+    @if (_fehler is not null)
+    {
+        <Warnbanner Stufe="WarnStufe.Fehler" Text="@_fehler" />
+    }
+
+    <div class="epos-zeilenknoepfe epos-normwerte-quelle">
+        @if (Weg?.Laden is not null)
+        {
+            <button type="button" class="epos-knopf epos-normwerte-csv" data-quelle="csv"
+                    @onclick="() => Laden(NormwerteQuelle.Csv)">@T.KnopfCsv</button>
+            <button type="button" class="epos-knopf epos-normwerte-projekt" data-quelle="projektdatei"
+                    @onclick="() => Laden(NormwerteQuelle.Projektdatei)">@T.KnopfProjekt</button>
+        }
+        @if (Weg?.VorlageSpeichern is not null)
+        {
+            <button type="button" class="epos-knopf epos-normwerte-vorlage" title="@T.HinweisVorlage"
+                    @onclick="VorlageSpeichern">@T.KnopfVorlage</button>
+        }
+    </div>
+    @if (_meldung is not null)
+    {
+        <p class="epos-leisezeile epos-normwerte-meldung" role="status">@_meldung</p>
+    }
+
+    @if (_vorschau is null)
+    {
+        <p class="epos-leisezeile epos-normwerte-ohnedatei">@T.OhneDatei</p>
+    }
+    else
+    {
+        NormwerteVorschau v = _vorschau;
+        <p class="epos-leisezeile epos-normwerte-datei">@string.Format(CultureInfo.CurrentCulture, T.Datei, v.Datei)</p>
+        @if (!v.Ok && !string.IsNullOrEmpty(v.Meldung))
+        {
+            <p class="epos-normwerte-ablehnung" role="alert">@v.Meldung</p>
+        }
+        @if (v.Treffer.Count > 0)
+        {
+            <h3 class="epos-normwerte-titel">@T.TitelTreffer</h3>
+            <div class="epos-raster-huelle epos-normwerte-treffer">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th scope="col">@T.Nummer</th>
+                            <th scope="col">@T.Profil</th>
+                            <th scope="col">@T.Stand</th>
+                            <th scope="col">@T.Abweichungen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ int nr = 0; }
+                        @foreach (NormwerteTreffer t in v.Treffer)
+                        {
+                            nr++;
+                            <tr @key="nr" class="epos-normwerte-zeile" data-nummer="@t.Nummer"
+                                data-stand="@(t.HatWerte ? (t.Eingelesen ? "eingelesen" : "vorhanden") : "leer")">
+                                <td>@t.Nummer</td>
+                                <td>@t.Bezeichner</td>
+                                <td>@Standtext(t)</td>
+                                <td class="epos-normwerte-abweichung">@string.Join(", ", t.Abweichungen)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <p class="epos-leisezeile epos-normwerte-zaehlung">@string.Format(CultureInfo.CurrentCulture, T.Zaehlung, v.Treffer.Count, v.MitWerten, v.MitAbweichung)</p>
+            @if (v.AbweichungenJeSpalte.Count > 0)
+            {
+                <p class="epos-leisezeile epos-normwerte-spalten">@string.Format(CultureInfo.CurrentCulture, T.Spalten,
+                    string.Join(", ", v.AbweichungenJeSpalte.Select(a => a.Spalte + " " + a.Zahl.ToString(CultureInfo.CurrentCulture))))</p>
+            }
+        }
+
+        <h3 class="epos-normwerte-titel">@T.TitelHinweise</h3>
+        @if (Hinweise.Count == 0)
+        {
+            <p class="epos-leisezeile epos-normwerte-ohnehinweise">@T.KeineHinweise</p>
+        }
+        else
+        {
+            <div class="epos-raster-huelle epos-normwerte-hinweise">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th scope="col">@T.Art</th>
+                            <th scope="col">@T.Grund</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ int hn = 0; }
+                        @foreach ((string art, string kennung, string text) in Hinweise)
+                        {
+                            hn++;
+                            <tr @key="hn" class="epos-normwerte-hinweis" data-art="@kennung">
+                                <td>@art</td>
+                                <td>@text</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        @if (v.Ok)
+        {
+            <Formularraster>
+                <KindInhalt>
+                    <Schalter Bezeichnung="@T.Ueberschreiben" Wert="@_ueberschreiben"
+                              WertChanged="@(w => { _ueberschreiben = w; })" />
+                </KindInhalt>
+            </Formularraster>
+            @if (!_ueberschreiben && v.MitWerten > 0)
+            {
+                <p class="epos-leisezeile epos-normwerte-ueberspringen">@string.Format(CultureInfo.CurrentCulture, T.Ueberspringen, v.MitWerten)</p>
+            }
+        }
+    }
+
+    <SpeichernLeiste OkText="@T.KnopfUebernehmen" AbbrechenText="@T.KnopfAbbrechen"
+                     OkSperrgrund="@Sperre" Ergebnis="Abschluss" />
+</div>
+
+@code {
+    /// <summary>Der Weg — die Hülle füllt ihn aus <c>RaumnutzungNormwerte</c> und <c>Dienste.Datei</c>.</summary>
+    [Parameter] public NormwerteWeg? Weg { get; set; }
+
+    /// <summary>
+    /// Der Titel im Kopf; <c>null</c> = der Titel der Texte, leer = keiner (Titel und Kreuz trägt dann die
+    /// <c>Ueberlagerung</c> des Wirts — ein Titel, eine Stelle).
+    /// </summary>
+    [Parameter] public string? TitelText { get; set; }
+
+    private string Titel => TitelText ?? T.Titel;
+
+    /// <summary>Schlüssel der Hilfepille — links in <c>help_mapping.txt</c>, Ziel der Abschnitt „Normwerte einlesen".</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Nutzungsprofile.dlg_Normwerte";
+
+    /// <summary>
+    /// Das Ende des Dialogs: das Ergebnis des Einlesens nach „Übernehmen", <c>null</c> bei Abbrechen, Kreuz und Esc
+    /// (ohne zu schreiben).
+    /// </summary>
+    [Parameter] public EventCallback<RaumnutzungErgebnis?> Geschlossen { get; set; }
+
+    private NormwerteVorschau? _vorschau;
+    private bool _ueberschreiben;
+    private string? _fehler;
+    private string? _meldung;
+
+    private NormwerteTexte T => Weg?.Texte ?? new NormwerteTexte();
+
+    /// <summary>Steht der Schalter „vorhandene Werte überschreiben"? Prüfhilfe für die Tests.</summary>
+    public bool Ueberschreiben => _ueberschreiben;
+
+    /// <summary>Die geladene Vorschau. Prüfhilfe für die Tests.</summary>
+    public NormwerteVorschau? Vorschau => _vorschau;
+
+    /// <summary>Der Grund, aus dem „Übernehmen" nicht schreibt; <c>null</c> = frei.</summary>
+    private string? Sperre
+        => Weg?.Einlesen is null ? T.SperreDatei
+           : _vorschau is null ? T.SperreDatei
+           : !_vorschau.Ok ? (string.IsNullOrEmpty(_vorschau.Meldung) ? T.SperreDatei : _vorschau.Meldung)
+           : null;
+
+    /// <summary>Die Zeilen der Tabelle „Nicht übernommen": Art (Text und Kennung) und Meldung.</summary>
+    private IReadOnlyList<(string Art, string Kennung, string Text)> Hinweise
+    {
+        get
+        {
+            if (_vorschau is not NormwerteVorschau v) return Array.Empty<(string, string, string)>();
+            return v.Unbekannt.Select(t => (T.ArtUnbekannt, "unbekannt", t))
+                .Concat(v.OhneWerte.Select(t => (T.ArtOhneWert, "ohnewert", t)))
+                .Concat(v.Doppelt.Select(t => (T.ArtDoppelt, "doppelt", t)))
+                .Concat(v.Sonstige.Select(t => (T.ArtSonstige, "meldung", t)))
+                .ToList();
+        }
+    }
+
+    private string Standtext(NormwerteTreffer t)
+        => !t.HatWerte ? T.StandLeer : t.Eingelesen ? T.StandEingelesen : T.StandVorhanden;
+
+    private async Task Laden(NormwerteQuelle quelle)
+    {
+        if (Weg?.Laden is null) return;
+        _fehler = _meldung = null;
+        NormwerteVorschau? v;
+        try
+        {
+            v = await Weg.Laden(quelle);
+        }
+        catch (Exception ex)
+        {
+            _fehler = ex.Message;
+            return;
+        }
+        if (v is null) return; // abgebrochen: der Stand bleibt
+        _vorschau = v;
+    }
+
+    private async Task VorlageSpeichern()
+    {
+        if (Weg?.VorlageSpeichern is null) return;
+        _fehler = _meldung = null;
+        RaumnutzungErgebnis e = await Weg.VorlageSpeichern();
+        if (!e.Ok) _fehler = e.Meldung;
+        else if (!string.IsNullOrEmpty(e.Meldung)) _meldung = e.Meldung;
+    }
+
+    private async Task Abschluss(bool ok)
+    {
+        if (!ok)
+        {
+            await Geschlossen.InvokeAsync(null);
+            return;
+        }
+        if (Sperre is string sperre)
+        {
+            _fehler = sperre;
+            return;
+        }
+        RaumnutzungErgebnis e = Weg!.Einlesen!(_ueberschreiben);
+        if (!e.Ok)
+        {
+            _fehler = e.Meldung;
+            return;
+        }
+        await Geschlossen.InvokeAsync(e);
+    }
+}

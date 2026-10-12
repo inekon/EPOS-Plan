@@ -648,6 +648,7 @@ namespace WindowsFormsApplication1
                 ?? Groesse("Kuehl_Soll_Ausserhalb", p.Kuehl_Soll_Ausserhalb, Konditionierungsgroesse.Kuehlsoll)
                 ?? Bereich("Aussenluft", p.Aussenluft, 0.0, double.MaxValue)
                 ?? Bereich("Aussenluft_Ausserhalb", p.Aussenluft_Ausserhalb, 0.0, double.MaxValue)
+                ?? Bereich(RaumnutzungNormwerteSchema.SPALTE_AUSSENLUFT_PERSON, p.Aussenluft_Person, 0.0, double.MaxValue)
                 ?? Bereich("Personen_Waerme", p.Personen_Waerme, 0.0, double.MaxValue)
                 ?? Bereich("Personen_Anteil", p.Personen_Anteil, 0.0, 1.0)
                 ?? Bereich("Personen_Anteil_Ausserhalb", p.Personen_Anteil_Ausserhalb, 0.0, 1.0)
@@ -692,9 +693,16 @@ namespace WindowsFormsApplication1
         //  Schreiben
         // =================================================================
 
-        private static readonly string SQL_PROFIL =
+        /// <summary>Stehen die Spalten des Schritts NP7 (<see cref="RaumnutzungNormwerteSchema"/>)?</summary>
+        internal static bool NormwertspaltenDa() => RaumnutzungNormwerteSchema.Lesbar();
+
+        /// <summary>Die Spalten des Schritts NP7, soweit die Datenbank sie führt.</summary>
+        private static IReadOnlyList<string> Normwertspalten()
+            => NormwertspaltenDa() ? RaumnutzungNormwerteSchema.SPALTEN.Select(s => s.Spalte).ToList() : new List<string>();
+
+        private static string SQL_PROFIL =>
             "SELECT \"ID\", \"ID_Katalog\", \"Nummer\", \"Bezeichner\", \"Beschreibung\", \"ReadOnly\", " +
-            string.Join(", ", RaumnutzungSchema.SPALTEN_KENNWERTE.Select(s => "\"" + s.Spalte + "\"")) +
+            string.Join(", ", RaumnutzungSchema.SPALTEN_KENNWERTE.Select(s => s.Spalte).Concat(Normwertspalten()).Select(s => "\"" + s + "\"")) +
             " FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\"";
 
         private const string SQL_PROFIL_ORDNUNG = "ORDER BY \"ID_Katalog\", IIF(\"Nummer\" IS NULL, 1, 0), \"Nummer\" COLLATE NOCASE, \"Bezeichner\" COLLATE NOCASE, \"ID\"";
@@ -711,9 +719,13 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Spalten von Kopf und Kennwerten in der Ordnung von <see cref="KopfParameter"/>.</summary>
-        private static readonly IReadOnlyList<string> SPALTEN_ALLE =
+        private static IReadOnlyList<string> SPALTEN_ALLE =>
             new[] { "ID_Katalog", "Nummer", "Bezeichner", "Beschreibung", "ReadOnly" }
-                .Concat(RaumnutzungSchema.SPALTEN_KENNWERTE.Select(s => s.Spalte)).ToList();
+                .Concat(RaumnutzungSchema.SPALTEN_KENNWERTE.Select(s => s.Spalte)).Concat(Normwertspalten()).ToList();
+
+        /// <summary>Die Werte der Spalten des Schritts NP7 in der Ordnung von <see cref="RaumnutzungNormwerteSchema.SPALTEN"/>.</summary>
+        internal static object[] Normwerte(Raumnutzungsprofil p)
+            => new object[] { p.Aussenluft_Person, p.Werte_Herkunft, p.Werte_Quelle, p.Werte_Datum };
 
         private static List<DbParam> KopfParameter(Raumnutzungsprofil p)
         {
@@ -727,6 +739,11 @@ namespace WindowsFormsApplication1
             {
                 object w = kennwerte[i] is bool b ? (b ? 1 : 0) : kennwerte[i];
                 par.Add(new DbParam("@w" + i.ToString(CultureInfo.InvariantCulture), w));
+            }
+            if (NormwertspaltenDa())
+            {
+                object[] n = Normwerte(p);
+                for (int i = 0; i < n.Length; i++) par.Add(new DbParam("@nw" + i.ToString(CultureInfo.InvariantCulture), n[i]));
             }
             return par;
         }
@@ -837,7 +854,13 @@ namespace WindowsFormsApplication1
             Geraete_Anteil_Ausserhalb = Zahl(r, "Geraete_Anteil_Ausserhalb"),
             Beleuchtung_Leistung = Zahl(r, "Beleuchtung_Leistung"),
             Beleuchtung_Anteil = Zahl(r, "Beleuchtung_Anteil"),
+            Aussenluft_Person = Spalte(r, RaumnutzungNormwerteSchema.SPALTE_AUSSENLUFT_PERSON) ? Zahl(r, RaumnutzungNormwerteSchema.SPALTE_AUSSENLUFT_PERSON) : null,
+            Werte_Herkunft = Spalte(r, RaumnutzungNormwerteSchema.SPALTE_HERKUNFT) ? Text(r, RaumnutzungNormwerteSchema.SPALTE_HERKUNFT) : null,
+            Werte_Quelle = Spalte(r, RaumnutzungNormwerteSchema.SPALTE_QUELLE) ? Text(r, RaumnutzungNormwerteSchema.SPALTE_QUELLE) : null,
+            Werte_Datum = Spalte(r, RaumnutzungNormwerteSchema.SPALTE_DATUM) ? Text(r, RaumnutzungNormwerteSchema.SPALTE_DATUM) : null,
         };
+
+        private static bool Spalte(DataRow r, string spalte) => r.Table.Columns.Contains(spalte);
 
         /// <summary>Kopf eines Profils ohne Inhalt (Prüfungen).</summary>
         private static Raumnutzungsprofil ProfilKopf(long id)

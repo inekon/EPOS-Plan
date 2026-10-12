@@ -5464,6 +5464,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_RAUMNUTZUNG_NORMKATEGORIEN = RaumnutzungNormkategorienSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="RaumnutzungNormwerteSchema.SCHRITT"/> — <b>Normwerte der DIN einlesen</b> (NP7, E131):
+        /// <c>Aussenluft_Person</c> (m³/(h·Person)) und die Herkunft eingelesener Werte (<c>Werte_Herkunft</c>,
+        /// <c>Werte_Quelle</c>, <c>Werte_Datum</c>) an <c>Tab_Raumnutzungsprofil</c>.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Alle vier Spalten stehen leer.</para>
+        /// </summary>
+        public const int SCHRITT_RAUMNUTZUNG_NORMWERTE = RaumnutzungNormwerteSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -8010,6 +8019,12 @@ namespace WindowsFormsApplication1
                         "Der Katalog der Nutzungsprofile fuehrte zwei leere, schreibgeschuetzte Kategorien, in die kein Profil " +
                         "eingetragen werden kann, und der Kategorie DIN fehlten die Wohngebaeude. KEIN Rechenergebnis aendert sich - kein Rechenweg liest eine Kategorie.",
                         Schritt_RaumnutzungNormkategorien),
+            // NP7: Normwerte der DIN einlesen. Quelle ist RaumnutzungNormwerteSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_RAUMNUTZUNG_NORMWERTE,
+                        "Tab_Raumnutzungsprofil: Aussenluft_Person, Werte_Herkunft, Werte_Quelle, Werte_Datum (leer)",
+                        "Die Normwerte der DIN koennten nicht in die ausgelieferten Profile eingelesen werden, und die Aussenluft " +
+                        "je Person haette keinen Platz. KEIN Rechenergebnis aendert sich - alle Spalten stehen leer.",
+                        Schritt_RaumnutzungNormwerte),
         };
 
         /// <summary>
@@ -15508,6 +15523,60 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Art der Kaeltebedarfszeilen - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Normwerte der DIN einlesen" — Anlass und Wirkung stehen bei <see cref="SCHRITT_RAUMNUTZUNG_NORMWERTE"/>,
+        /// die Anweisungen bei <see cref="RaumnutzungNormwerteSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_RaumnutzungNormwerte(Lauf l)
+        {
+            string nr = RaumnutzungNormwerteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in RaumnutzungNormwerteSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = RaumnutzungNormwerteSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!RaumnutzungNormwerteSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalten der Normwerte stehen nach dem Schritt nicht vollstaendig an Tab_Raumnutzungsprofil.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Aussenluft je Person und Herkunft der Werte - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

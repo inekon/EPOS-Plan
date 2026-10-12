@@ -1293,7 +1293,7 @@ public class KiDialogkatalogTests : IDisposable
     {
         KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.GEBAEUDE_KATALOG)!;
 
-        Assert.Equal(34, KiNutzungsprofilfelder.Alle.Count);
+        Assert.Equal(35, KiNutzungsprofilfelder.Alle.Count);   // NP7: + np_luft_person
         foreach (KiNutzungsprofilfelder.Feld f in KiNutzungsprofilfelder.Alle)
         {
             KiDialogFeld feld = d.FindeFeld(f.Schluessel)!;
@@ -1360,7 +1360,7 @@ public class KiDialogkatalogTests : IDisposable
         // Mit NP4c die fünf Umschalter je Größe (nur lesbar) und die Spalten von Zeilenbild (5) und Stundenprofil (3).
         // Mit KP3 O2 (E59) die manuelle Aufheizzeit (aufheizzeit_manuell, nur im Projekt). Mit AK3-W4b der Raumeinfluss
         // der Heizkurve (heizkurve_raumeinfluss, Festlegung 23). Mit KK4 die fünf Felder der Kühlkurve (kuehlkurve_*).
-        Assert.Equal(89 + 47 + 34 + 3 + 5 + 3 + 1 + 1 + 5 + 1, d.Felder.Count);   // KT-8b: + Ladestand
+        Assert.Equal(89 + 47 + 35 + 3 + 5 + 3 + 1 + 1 + 5 + 1, d.Felder.Count);   // KT-8b: + Ladestand; NP7: + np_luft_person
         Assert.Equal(47, KiKonditionierungsfelder.Alle.Count);
         foreach (KiKonditionierungsfelder.Feld f in KiKonditionierungsfelder.Alle)
         {

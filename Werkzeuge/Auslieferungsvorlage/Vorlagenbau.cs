@@ -275,6 +275,14 @@ namespace Auslieferungsvorlage
             _bericht.Zeile("    entfernt: " + zuordnungen + " eigene Zuordnung(en), " + profile + " eigene(s) Profil(e), " +
                            kategorien + " eigene Kategorie(n); " + zurueck + " ausgelieferte Zuordnung(en) auf ihr Saatprofil zurueckgestellt, " +
                            nachgesaet + " nachgesaet");
+            // NP7 (E131): Normwerte, die der Anwender in die ausgelieferten DIN-Profile eingelesen hat, gehoeren nie in die
+            // Auslieferung - die Profile stehen danach wieder ohne Werte (Kennwerte, Aussenluft je Person, Herkunft leer).
+            if (RaumnutzungNormwerteSchema.Lesbar())
+            {
+                RaumnutzungNormwerte.Bilanz normwerte = RaumnutzungNormwerte.Entfernen();
+                _bericht.Zeile("    eingelesene Normwerte entfernt: " + normwerte.Geschrieben + " Profil(e) der DIN" +
+                               (normwerte.Ok ? "" : " - FEHLER: " + normwerte.Meldung));
+            }
         }
 
         // =================================================================================

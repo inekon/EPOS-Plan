@@ -436,6 +436,9 @@ namespace WindowsFormsApplication1
             // nimmt der Schritt am Ziel heraus und legt die Wohnprofile der DIN an.
             new Stufe(RaumnutzungNormkategorienSchema.SCHRITT, Art.Katalog,
                       "Kategorien SIA 2024 und VDI 2078 des Katalogs der Nutzungsprofile entfallen, Wohnprofile der DIN (E129)"),
+            // Ein Paket führt keinen Katalog der Nutzungsprofile (er bleibt im Ziel); die Spalten legt der Schritt am Ziel an.
+            new Stufe(RaumnutzungNormwerteSchema.SCHRITT, Art.Katalog,
+                      "Außenluft je Person und Herkunft eingelesener Normwerte am Nutzungsprofil (E131)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

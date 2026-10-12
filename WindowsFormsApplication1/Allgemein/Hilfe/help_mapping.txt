@@ -316,6 +316,8 @@ Bauteilaufbau.btn_Help = Baustoffe und Bauteilaufbauten#bauteilaufbauten
 # dem Gebaeudeimport): Razor-Komponente ohne WinForms-Vorlaeufer, der Schluessel steht in der Komponente
 # (HilfeSchluessel); die Seite hat eine Repo-Quelle (Projekte/Wiki/Programm Dokumentation - Nutzungsprofile.wiki).
 Nutzungsprofile.btn_Help = Nutzungsprofile
+# Der Dialog "Normwerte einlesen" des Blatts (Ueberlagerung, NormwerteEinlesenDialog): sein Abschnitt der Seite.
+Nutzungsprofile.dlg_Normwerte = Nutzungsprofile#normwerte-einlesen
 # Gebaeudeimport (gbXML, IFC): der Zuordnungsdialog hat eine eigene Seite mit
 # Repo-Quelle (Projekte/Wiki/Programm Dokumentation - Gebäudeimport.wiki); beide
 # Importprofile tragen diesen Schluessel (GebaeudeImportProfil.HILFE_ZUORDNUNG).

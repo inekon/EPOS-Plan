@@ -47646,7 +47646,7 @@ Chart</value>
     <value>Nr. {0}: Absenkung ohne Raumtemperatur — nicht übernommen.</value>
   </data>
   <data name="RNP_PD_MSG_LUFT_PERSON" xml:space="preserve">
-    <value>Nr. {0}: Außenluft je Person nicht übernommen — das Profil führt keine Belegungsdichte dazu.</value>
+    <value>Nr. {0}: Außenluft je Person übernommen — ohne Belegungsdichte im Profil rechnet der Generator sie nicht in einen Luftwechsel um.</value>
   </data>
   <data name="RNP_PD_MSG_PERSONEN" xml:space="preserve">
     <value>Nr. {0}: Personen {1} W/m² als {2} m²/Person bei {3} W/Person übernommen.</value>
@@ -53690,6 +53690,162 @@ Chart</value>
   </data>
   <data name="GEBZ_BTN_PROFIL_ZUWEISEN" xml:space="preserve">
     <value>Profil/Kalender zuweisen…</value>
+  </data>
+  <data name="RNP_NW_MSG_KEINE_DIN" xml:space="preserve">
+    <value>Die Datenbank führt keine ausgelieferte Kategorie DIN/TS 18599-10.</value>
+  </data>
+  <data name="RNP_NW_MSG_UNBEKANNT" xml:space="preserve">
+    <value>Nr. {0} „{1}“: keine Nutzung der Kategorie DIN/TS 18599-10 mit dieser Nummer bzw. diesem Namen — nicht übernommen.</value>
+  </data>
+  <data name="RNP_NW_MSG_DOPPELT" xml:space="preserve">
+    <value>Nr. {0} „{1}“: Die Quelle führt diese Nutzung mehrfach; das erste Profil gilt.</value>
+  </data>
+  <data name="RNP_NW_MSG_OHNE_WERTE" xml:space="preserve">
+    <value>Nr. {0} „{1}“: Die Quelle führt zu dieser Nutzung keinen Wert — nicht übernommen.</value>
+  </data>
+  <data name="RNP_NW_MSG_ABGELEHNT" xml:space="preserve">
+    <value>Nr. {0} „{1}“: nicht übernommen — {2}</value>
+  </data>
+  <data name="RNP_NW_MSG_NICHTS" xml:space="preserve">
+    <value>Die Quelle führt keine Nutzung der Kategorie DIN/TS 18599-10 mit Werten; nichts einzulesen.</value>
+  </data>
+  <data name="RNP_NW_MSG_ERGEBNIS" xml:space="preserve">
+    <value>{0} Profil(e) der DIN mit Werten gefüllt, {1} übersprungen (Werte vorhanden), {2} Profil(e) der Quelle ohne Zuordnung.</value>
+  </data>
+  <data name="RNP_NW_MSG_ENTFERNT" xml:space="preserve">
+    <value>Eingelesene Werte aus {0} Profil(en) der DIN entfernt.</value>
+  </data>
+  <data name="RNP_NW_BTN_EINLESEN" xml:space="preserve">
+    <value>Normwerte einlesen…</value>
+  </data>
+  <data name="RNP_NW_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Eingelesene Werte entfernen…</value>
+  </data>
+  <data name="RNP_NW_LBL_TITEL" xml:space="preserve">
+    <value>Normwerte einlesen</value>
+  </data>
+  <data name="RNP_NW_TXT_HINWEIS" xml:space="preserve">
+    <value>Füllt die Profile der Kategorie DIN/TS 18599-10 mit den Werten aus Ihrer CSV-Datei oder einer Projektdatei. Das Programm liefert keine Normwerte mit.</value>
+  </data>
+  <data name="RNP_NW_BTN_CSV" xml:space="preserve">
+    <value>CSV-Datei wählen…</value>
+  </data>
+  <data name="RNP_NW_BTN_PROJEKT" xml:space="preserve">
+    <value>Projektdatei wählen…</value>
+  </data>
+  <data name="RNP_NW_BTN_VORLAGE" xml:space="preserve">
+    <value>Vorlage speichern…</value>
+  </data>
+  <data name="RNP_NW_TXT_VORLAGE" xml:space="preserve">
+    <value>Die Vorlage ist die CSV-Datei der Kategorie mit Nummern und Namen, ohne Werte.</value>
+  </data>
+  <data name="RNP_NW_LBL_DATEI" xml:space="preserve">
+    <value>Datei: {0}</value>
+  </data>
+  <data name="RNP_NW_TXT_OHNE_DATEI" xml:space="preserve">
+    <value>Noch keine Datei gewählt.</value>
+  </data>
+  <data name="RNP_NW_LBL_TREFFER" xml:space="preserve">
+    <value>Treffer</value>
+  </data>
+  <data name="RNP_NW_LBL_NUMMER" xml:space="preserve">
+    <value>Nummer</value>
+  </data>
+  <data name="RNP_NW_LBL_PROFIL" xml:space="preserve">
+    <value>Profil</value>
+  </data>
+  <data name="RNP_NW_LBL_STAND" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="RNP_NW_LBL_ABWEICHUNG" xml:space="preserve">
+    <value>Abweichungen</value>
+  </data>
+  <data name="RNP_NW_STAND_LEER" xml:space="preserve">
+    <value>ohne Werte</value>
+  </data>
+  <data name="RNP_NW_STAND_VORHANDEN" xml:space="preserve">
+    <value>Werte vorhanden</value>
+  </data>
+  <data name="RNP_NW_STAND_EINGELESEN" xml:space="preserve">
+    <value>eingelesene Werte vorhanden</value>
+  </data>
+  <data name="RNP_NW_TXT_ZAEHLUNG" xml:space="preserve">
+    <value>{0} Treffer, davon {1} mit vorhandenen Werten und {2} mit Abweichungen.</value>
+  </data>
+  <data name="RNP_NW_TXT_SPALTEN" xml:space="preserve">
+    <value>Abweichungen je Spalte: {0}</value>
+  </data>
+  <data name="RNP_NW_LBL_HINWEISE" xml:space="preserve">
+    <value>Nicht übernommen</value>
+  </data>
+  <data name="RNP_NW_LBL_ART" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="RNP_NW_LBL_GRUND" xml:space="preserve">
+    <value>Profil oder Meldung</value>
+  </data>
+  <data name="RNP_NW_ART_UNBEKANNT" xml:space="preserve">
+    <value>unbekannte Nummer</value>
+  </data>
+  <data name="RNP_NW_ART_OHNE" xml:space="preserve">
+    <value>ohne Wert</value>
+  </data>
+  <data name="RNP_NW_ART_DOPPELT" xml:space="preserve">
+    <value>doppelte Nummer</value>
+  </data>
+  <data name="RNP_NW_ART_SONST" xml:space="preserve">
+    <value>Meldung</value>
+  </data>
+  <data name="RNP_NW_TXT_KEINE_HINWEISE" xml:space="preserve">
+    <value>Alle Profile der Datei sind zugeordnet.</value>
+  </data>
+  <data name="RNP_NW_LBL_UEBERSCHREIBEN" xml:space="preserve">
+    <value>vorhandene Werte überschreiben</value>
+  </data>
+  <data name="RNP_NW_TXT_UEBERSPRINGEN" xml:space="preserve">
+    <value>Ohne Haken bleiben {0} Profil(e) mit vorhandenen Werten unverändert.</value>
+  </data>
+  <data name="RNP_NW_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="RNP_NW_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="RNP_NW_SPERRE_DATEI" xml:space="preserve">
+    <value>Zuerst eine Datei wählen.</value>
+  </data>
+  <data name="RNP_NW_SPERRE_KEINE" xml:space="preserve">
+    <value>Kein Profil trägt eingelesene Werte.</value>
+  </data>
+  <data name="RNP_NW_FRAGE_ENTFERNEN" xml:space="preserve">
+    <value>Die eingelesenen Werte von {0} Profil(en) entfernen? Die Profile stehen danach wieder ohne Werte.</value>
+  </data>
+  <data name="RNP_NW_BTN_JA" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="RNP_NW_BTN_NEIN" xml:space="preserve">
+    <value>Nicht entfernen</value>
+  </data>
+  <data name="RNP_NW_DLG_CSV" xml:space="preserve">
+    <value>CSV-Datei mit Normwerten wählen</value>
+  </data>
+  <data name="RNP_NW_DLG_VORLAGE" xml:space="preserve">
+    <value>Vorlage der Normwerte speichern</value>
+  </data>
+  <data name="RNP_NW_MSG_VORLAGE" xml:space="preserve">
+    <value>Vorlage gespeichert: {0}</value>
+  </data>
+  <data name="RNP_TXT_HINWEIS_BELEGUNG" xml:space="preserve">
+    <value>Außenluft je Person ohne Fläche je Person im Profil: die Lüftung wird nicht gesetzt.</value>
+  </data>
+  <data name="RNP_LBL_LUFT_PERSON" xml:space="preserve">
+    <value>Außenluft je Person</value>
+  </data>
+  <data name="RNP_TXT_EINGELESEN" xml:space="preserve">
+    <value>eingelesen</value>
+  </data>
+  <data name="RNP_TXT_EINGELESEN_AUS" xml:space="preserve">
+    <value>Werte eingelesen aus {0} am {1}</value>
   </data>
 </root>
 
