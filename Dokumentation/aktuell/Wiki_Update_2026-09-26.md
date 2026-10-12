@@ -175,6 +175,12 @@ Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
+### Version 1.2.0.9 (laut Auftrag; die Version ist schon veröffentlicht, beim Anwender bestätigen) — Übersicht unter Berichte & Kosten (Entwurf, Upload ausstehend)
+
+Die Wiki-Quelle (Programm Dokumentation/Varianten) ist fortgeschrieben, ins Wiki geladen ist noch nichts.
+
+- Seit 12.10.2026: Der Reiter „Übersicht“ unter „Berichte & Kosten“ stellt die Komponenten je Gewerk mit ihren Kennwerten nebeneinander, hebt Abweichungen zum Stammprojekt hervor und blendet mit „nur Unterschiede“ gleiche Gewerke aus.
+
 ### Version ‹Version› — Kältemittel als Stammdatum (Entwurf, Upload ausstehend)
 
 Version beim Anwender zu erfragen; die Wiki-Quellen (Gerätekataloge, Kälteerzeugung, Wärmepumpe, Kurzanleitung) sind fortgeschrieben, ins Wiki geladen ist noch nichts.
