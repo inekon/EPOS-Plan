@@ -52447,6 +52447,78 @@ Chart</value>
   <data name="KMA_SP_WAHL" xml:space="preserve">
     <value>Wahl</value>
   </data>
+  <data name="KMA_ART_KAELTEMASCHINE" xml:space="preserve">
+    <value>Kältemaschine</value>
+  </data>
+  <data name="KMA_ART_WAERMEPUMPE" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="KMA_SP_ART" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="KMA_SP_RANG" xml:space="preserve">
+    <value>Rang</value>
+  </data>
+  <data name="KMA_MSG_WP_FEHLER" xml:space="preserve">
+    <value>Die Wärmepumpe konnte nicht ins Projekt übernommen werden.</value>
+  </data>
+  <data name="KMA_MSG_WP_UEBERNOMMEN" xml:space="preserve">
+    <value>„{0}“ steht im Projekt, Kühlbetrieb eingeschaltet — Rang {1} in der Kältefolge.</value>
+  </data>
+  <data name="KMA_MSG_WP_SCHON_IM_PROJEKT" xml:space="preserve">
+    <value>„{0}“ steht bereits im Projekt — Kühlbetrieb eingeschaltet, Rang {1} in der Kältefolge.</value>
+  </data>
+  <data name="KMA_MSG_WP_ABGELEHNT" xml:space="preserve">
+    <value>„{0}“ steht im Projekt, der Kühlbetrieb bleibt aus: {1}</value>
+  </data>
+  <data name="KMA_MSG_WP_ENTFERNT" xml:space="preserve">
+    <value>Der Kühlbetrieb von „{0}“ wird mit OK ausgeschaltet — Gerät, Anlage und Wärmekaskade bleiben im Projekt.</value>
+  </data>
+  <data name="KMA_HINWEIS_NEU_ART" xml:space="preserve">
+    <value>Legt eine Kältemaschine an — eine Wärmepumpe entsteht im Wärmepumpendialog.</value>
+  </data>
+  <data name="KMA_VERGLEICH_EINE_ART" xml:space="preserve">
+    <value>Nur Sätze einer Art vergleichen</value>
+  </data>
+  <data name="KMA_BEZUG_HINWEIS" xml:space="preserve">
+    <value>Kühlleistung und EER bei {0} °C Kaltwasser und {1} °C Quelle (EN 14511).</value>
+  </data>
+  <data name="KMA_BEZUG_RUECKFALL" xml:space="preserve">
+    <value>{0} kW bei {1} °C</value>
+  </data>
+  <data name="KMA_LBL_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="KMA_LBL_KUEHLLEISTUNG" xml:space="preserve">
+    <value>Kühlleistung</value>
+  </data>
+  <data name="KMA_LBL_KUEHLVORLAUF" xml:space="preserve">
+    <value>Kühlvorlauf</value>
+  </data>
+  <data name="KMA_LBL_ZULAESSIGKEIT" xml:space="preserve">
+    <value>Zulässigkeit</value>
+  </data>
+  <data name="KMA_LBL_RANG" xml:space="preserve">
+    <value>Rang in der Kältefolge</value>
+  </data>
+  <data name="KMA_ZULAESSIGKEIT_NICHT_GEPRUEFT" xml:space="preserve">
+    <value>nicht geprüft (Katalogsatz ohne Inbetriebnahmejahr)</value>
+  </data>
+  <data name="KMA_RANG_KEINER" xml:space="preserve">
+    <value>ohne Rang (Vorgabefolge)</value>
+  </data>
+  <data name="KMA_WP_BEARBEITEN_GESPERRT" xml:space="preserve">
+    <value>Wärmepumpen bearbeitet der Wärmepumpendialog</value>
+  </data>
+  <data name="KMA_GRUPPE_STECKBRIEF" xml:space="preserve">
+    <value>Gerät</value>
+  </data>
+  <data name="KMA_LBL_INVEST_BETRIEB" xml:space="preserve">
+    <value>Investition / Betrieb</value>
+  </data>
+  <data name="KMA_LBL_KALTWASSER" xml:space="preserve">
+    <value>Kaltwasser-Vorlauf min.</value>
+  </data>
   <data name="GANGL_UEBERSPRUNGEN_ZUGEORDNET" xml:space="preserve">
     <value>Übersprungen (im Projekt zugeordnet): {0}</value>
   </data>

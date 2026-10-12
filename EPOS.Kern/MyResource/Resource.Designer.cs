@@ -79426,6 +79426,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine ähnelt.
+        /// </summary>
+        public static string KMA_ART_KAELTEMASCHINE {
+            get {
+                return ResourceManager.GetString("KMA_ART_KAELTEMASCHINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe ähnelt.
+        /// </summary>
+        public static string KMA_ART_WAERMEPUMPE {
+            get {
+                return ResourceManager.GetString("KMA_ART_WAERMEPUMPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlleistung und EER bei {0} °C Kaltwasser und {1} °C Quelle (EN 14511). ähnelt.
+        /// </summary>
+        public static string KMA_BEZUG_HINWEIS {
+            get {
+                return ResourceManager.GetString("KMA_BEZUG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kW bei {1} °C ähnelt.
+        /// </summary>
+        public static string KMA_BEZUG_RUECKFALL {
+            get {
+                return ResourceManager.GetString("KMA_BEZUG_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Hinzufügen… ähnelt.
         /// </summary>
         public static string KMA_BTN_HINZU {
@@ -79507,6 +79543,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät ähnelt.
+        /// </summary>
+        public static string KMA_GRUPPE_STECKBRIEF {
+            get {
+                return ResourceManager.GetString("KMA_GRUPPE_STECKBRIEF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen im Kühlbetrieb ähnelt.
         /// </summary>
         public static string KMA_GRUPPE_WP {
@@ -79548,6 +79593,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KMA_HINWEIS_NEU {
             get {
                 return ResourceManager.GetString("KMA_HINWEIS_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Legt eine Kältemaschine an — eine Wärmepumpe entsteht im Wärmepumpendialog. ähnelt.
+        /// </summary>
+        public static string KMA_HINWEIS_NEU_ART {
+            get {
+                return ResourceManager.GetString("KMA_HINWEIS_NEU_ART", resourceCulture);
             }
         }
         
@@ -79651,11 +79705,65 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition / Betrieb ähnelt.
+        /// </summary>
+        public static string KMA_LBL_INVEST_BETRIEB {
+            get {
+                return ResourceManager.GetString("KMA_LBL_INVEST_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwasser-Vorlauf min. ähnelt.
+        /// </summary>
+        public static string KMA_LBL_KALTWASSER {
+            get {
+                return ResourceManager.GetString("KMA_LBL_KALTWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlleistung ähnelt.
+        /// </summary>
+        public static string KMA_LBL_KUEHLLEISTUNG {
+            get {
+                return ResourceManager.GetString("KMA_LBL_KUEHLLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlvorlauf ähnelt.
+        /// </summary>
+        public static string KMA_LBL_KUEHLVORLAUF {
+            get {
+                return ResourceManager.GetString("KMA_LBL_KUEHLVORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Name der Anlage ähnelt.
         /// </summary>
         public static string KMA_LBL_NAME {
             get {
                 return ResourceManager.GetString("KMA_LBL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string KMA_LBL_QUELLE {
+            get {
+                return ResourceManager.GetString("KMA_LBL_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang in der Kältefolge ähnelt.
+        /// </summary>
+        public static string KMA_LBL_RANG {
+            get {
+                return ResourceManager.GetString("KMA_LBL_RANG", resourceCulture);
             }
         }
         
@@ -79683,6 +79791,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KMA_LBL_ZAEHLER {
             get {
                 return ResourceManager.GetString("KMA_LBL_ZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässigkeit ähnelt.
+        /// </summary>
+        public static string KMA_LBL_ZULAESSIGKEIT {
+            get {
+                return ResourceManager.GetString("KMA_LBL_ZULAESSIGKEIT", resourceCulture);
             }
         }
         
@@ -79732,6 +79849,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ steht im Projekt, der Kühlbetrieb bleibt aus: {1} ähnelt.
+        /// </summary>
+        public static string KMA_MSG_WP_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("KMA_MSG_WP_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlbetrieb von „{0}“ wird mit OK ausgeschaltet — Gerät, Anlage und Wärmekaskade bleiben im Projekt. ähnelt.
+        /// </summary>
+        public static string KMA_MSG_WP_ENTFERNT {
+            get {
+                return ResourceManager.GetString("KMA_MSG_WP_ENTFERNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmepumpe konnte nicht ins Projekt übernommen werden. ähnelt.
+        /// </summary>
+        public static string KMA_MSG_WP_FEHLER {
+            get {
+                return ResourceManager.GetString("KMA_MSG_WP_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ steht bereits im Projekt — Kühlbetrieb eingeschaltet, Rang {1} in der Kältefolge. ähnelt.
+        /// </summary>
+        public static string KMA_MSG_WP_SCHON_IM_PROJEKT {
+            get {
+                return ResourceManager.GetString("KMA_MSG_WP_SCHON_IM_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ steht im Projekt, Kühlbetrieb eingeschaltet — Rang {1} in der Kältefolge. ähnelt.
+        /// </summary>
+        public static string KMA_MSG_WP_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("KMA_MSG_WP_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stromträger des Projekts ähnelt.
         /// </summary>
         public static string KMA_PLATZHALTER_TRAEGER {
@@ -79750,11 +79912,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Rang (Vorgabefolge) ähnelt.
+        /// </summary>
+        public static string KMA_RANG_KEINER {
+            get {
+                return ResourceManager.GetString("KMA_RANG_KEINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl ähnelt.
         /// </summary>
         public static string KMA_SP_ANZAHL {
             get {
                 return ResourceManager.GetString("KMA_SP_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
+        /// </summary>
+        public static string KMA_SP_ART {
+            get {
+                return ResourceManager.GetString("KMA_SP_ART", resourceCulture);
             }
         }
         
@@ -79782,6 +79962,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KMA_SP_NAME {
             get {
                 return ResourceManager.GetString("KMA_SP_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang ähnelt.
+        /// </summary>
+        public static string KMA_SP_RANG {
+            get {
+                return ResourceManager.GetString("KMA_SP_RANG", resourceCulture);
             }
         }
         
@@ -79831,6 +80020,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Sätze einer Art vergleichen ähnelt.
+        /// </summary>
+        public static string KMA_VERGLEICH_EINE_ART {
+            get {
+                return ResourceManager.GetString("KMA_VERGLEICH_EINE_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen bearbeitet der Wärmepumpendialog ähnelt.
+        /// </summary>
+        public static string KMA_WP_BEARBEITEN_GESPERRT {
+            get {
+                return ResourceManager.GetString("KMA_WP_BEARBEITEN_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlbetrieb der Wärmepumpe konnte nicht gespeichert werden. ähnelt.
         /// </summary>
         public static string KMA_WP_FEHLER {
@@ -79863,6 +80070,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KMA_WP_LEER {
             get {
                 return ResourceManager.GetString("KMA_WP_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht geprüft (Katalogsatz ohne Inbetriebnahmejahr) ähnelt.
+        /// </summary>
+        public static string KMA_ZULAESSIGKEIT_NICHT_GEPRUEFT {
+            get {
+                return ResourceManager.GetString("KMA_ZULAESSIGKEIT_NICHT_GEPRUEFT", resourceCulture);
             }
         }
         

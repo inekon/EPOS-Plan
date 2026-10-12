@@ -52440,6 +52440,78 @@ chart</value>
   <data name="KMA_SP_WAHL" xml:space="preserve">
     <value>Select</value>
   </data>
+  <data name="KMA_ART_KAELTEMASCHINE" xml:space="preserve">
+    <value>Chiller</value>
+  </data>
+  <data name="KMA_ART_WAERMEPUMPE" xml:space="preserve">
+    <value>Heat pump</value>
+  </data>
+  <data name="KMA_SP_ART" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="KMA_SP_RANG" xml:space="preserve">
+    <value>Rank</value>
+  </data>
+  <data name="KMA_MSG_WP_FEHLER" xml:space="preserve">
+    <value>The heat pump could not be added to the project.</value>
+  </data>
+  <data name="KMA_MSG_WP_UEBERNOMMEN" xml:space="preserve">
+    <value>“{0}” is in the project, cooling mode switched on — rank {1} in the cooling sequence.</value>
+  </data>
+  <data name="KMA_MSG_WP_SCHON_IM_PROJEKT" xml:space="preserve">
+    <value>“{0}” is already in the project — cooling mode switched on, rank {1} in the cooling sequence.</value>
+  </data>
+  <data name="KMA_MSG_WP_ABGELEHNT" xml:space="preserve">
+    <value>“{0}” is in the project, cooling mode stays off: {1}</value>
+  </data>
+  <data name="KMA_MSG_WP_ENTFERNT" xml:space="preserve">
+    <value>Cooling mode of “{0}” is switched off with OK — unit, plant and heating cascade stay in the project.</value>
+  </data>
+  <data name="KMA_HINWEIS_NEU_ART" xml:space="preserve">
+    <value>Creates a chiller — a heat pump is created in the heat pump dialog.</value>
+  </data>
+  <data name="KMA_VERGLEICH_EINE_ART" xml:space="preserve">
+    <value>Compare records of one type only</value>
+  </data>
+  <data name="KMA_BEZUG_HINWEIS" xml:space="preserve">
+    <value>Cooling capacity and EER at {0} °C chilled water and {1} °C source (EN 14511).</value>
+  </data>
+  <data name="KMA_BEZUG_RUECKFALL" xml:space="preserve">
+    <value>{0} kW at {1} °C</value>
+  </data>
+  <data name="KMA_LBL_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="KMA_LBL_KUEHLLEISTUNG" xml:space="preserve">
+    <value>Cooling capacity</value>
+  </data>
+  <data name="KMA_LBL_KUEHLVORLAUF" xml:space="preserve">
+    <value>Cooling flow</value>
+  </data>
+  <data name="KMA_LBL_ZULAESSIGKEIT" xml:space="preserve">
+    <value>Admissibility</value>
+  </data>
+  <data name="KMA_LBL_RANG" xml:space="preserve">
+    <value>Rank in the cooling sequence</value>
+  </data>
+  <data name="KMA_ZULAESSIGKEIT_NICHT_GEPRUEFT" xml:space="preserve">
+    <value>not checked (catalogue record without commissioning year)</value>
+  </data>
+  <data name="KMA_RANG_KEINER" xml:space="preserve">
+    <value>no rank (default sequence)</value>
+  </data>
+  <data name="KMA_WP_BEARBEITEN_GESPERRT" xml:space="preserve">
+    <value>Heat pumps are edited in the heat pump dialog</value>
+  </data>
+  <data name="KMA_GRUPPE_STECKBRIEF" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="KMA_LBL_INVEST_BETRIEB" xml:space="preserve">
+    <value>Investment / operation</value>
+  </data>
+  <data name="KMA_LBL_KALTWASSER" xml:space="preserve">
+    <value>Chilled water flow min.</value>
+  </data>
   <data name="GANGL_UEBERSPRUNGEN_ZUGEORDNET" xml:space="preserve">
     <value>Skipped (assigned in the project): {0}</value>
   </data>
