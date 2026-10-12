@@ -445,6 +445,70 @@ async function satz(seite, offen) {
   return true;
 }
 
+/**
+ * VG1 (KA-E-24): die Vergleichsueberlagerung ueber beide Listen - offen, Herkunft je Satzspalte im Kopf,
+ * die Ueberlagerung ganz im Fenster, und in ihr kein Rollbereich in einem anderen (die Tabelle rollt allein).
+ */
+function vergleichMessen() {
+  const u = [...document.querySelectorAll('.epos-ueberlagerung')].find(e => e.querySelector('.epos-vergleich'));
+  if (!u) return { offen: false };
+  const rollt = e => /^(auto|scroll)$/.test(getComputedStyle(e).overflowY) || /^(auto|scroll)$/.test(getComputedStyle(e).overflowX);
+  const roller = [u, ...u.querySelectorAll('*')].filter(rollt);
+  const paare = roller.filter(e => roller.some(a => a !== e && a.contains(e))).length;
+  const b = u.getBoundingClientRect();
+  const koepfe = [...u.querySelectorAll('.epos-vergleich thead th')].slice(1);
+  return {
+    offen: true, spalten: koepfe.length,
+    herkunft: koepfe.filter(th => (th.querySelector('.epos-vergleich-herkunft')?.textContent || '').trim().length > 0).length,
+    verschachtelt: paare, imFenster: b.top >= -1 && b.left >= -1 && b.bottom <= innerHeight + 1 && b.right <= innerWidth + 1,
+  };
+}
+
+function pruefeVergleich(kennung, v) {
+  const fehler = [];
+  if (!v.offen) fehler.push('Vergleich nicht offen');
+  else {
+    if (v.spalten < 2) fehler.push(`Vergleich mit ${v.spalten} Satzspalte(n)`);
+    if (v.herkunft !== v.spalten) fehler.push(`Herkunft nur in ${v.herkunft} von ${v.spalten} Spaltenkoepfen`);
+    if (v.verschachtelt) fehler.push(`Vergleich: ${v.verschachtelt} Rollbereich(e) im Rollbereich`);
+    if (!v.imFenster) fehler.push('Vergleich ragt aus dem Fenster');
+  }
+  for (const f of fehler) { verstoesse.push(`${kennung}: ${f} (VG1)`); console.log('  VERSTOSS ' + verstoesse.at(-1)); }
+  return fehler.length === 0;
+}
+
+/** VG1: kreuzt die erste Projektzeile und den ersten Katalogsatz an (vorher alle Kreuze weg) und oeffnet „Vergleichen…". */
+async function vergleichOeffnen(seite, kennung, foto) {
+  const katalog = seite.locator('.epos-zweispalten-bereich--katalog td .epos-kaestchenzelle input');
+  for (let i = 0; i < await katalog.count(); i++) if (await katalog.nth(i).isChecked()) await katalog.nth(i).uncheck();
+  const projekt = seite.locator('.epos-zweispalten-bereich--projekt td .epos-wahlkaestchen');
+  for (let i = 0; i < await projekt.count(); i++)
+    if (await projekt.nth(i).evaluate(e => e.checked === true || e.getAttribute('aria-checked') === 'true')) await projekt.nth(i).click();
+  await ruhe(seite);
+  await projekt.first().click();
+  await ruhe(seite);
+  const knopf = seite.locator('.epos-zweispalten-satzknoepfe .epos-knopf--vergleichen');
+  if (await knopf.getAttribute('aria-disabled') !== 'true' || !(await knopf.getAttribute('title')))
+    { verstoesse.push(`${kennung}: ein Kreuz allein - Vergleichen nicht weich gesperrt mit Grund (VG1)`); console.log('  VERSTOSS ' + verstoesse.at(-1)); }
+  if (foto) {
+    // Headless zeichnet keinen Tooltip: fuer das Foto steht der Grund (title) als Schild ueber dem Knopf.
+    await knopf.evaluate(k => { const r = k.getBoundingClientRect(), d = document.createElement('div');
+      d.id = 'vg1-schild'; d.textContent = k.title;
+      d.style.cssText = `position:fixed;left:${Math.max(4, r.right - 420)}px;top:${r.top - 34}px;max-width:420px;padding:4px 8px;`
+        + 'background:#222;color:#fff;font:12px sans-serif;border-radius:4px;z-index:99999';
+      document.body.appendChild(d); });
+    await seite.screenshot({ path: foto + '_gesperrt.png' });
+    await seite.evaluate(() => document.getElementById('vg1-schild')?.remove());
+  }
+  await katalog.first().check();
+  await ruhe(seite);
+  if (await knopf.getAttribute('aria-disabled') === 'true')
+    { verstoesse.push(`${kennung}: Projektzeile und Katalogsatz angekreuzt - Vergleichen gesperrt (VG1)`); console.log('  VERSTOSS ' + verstoesse.at(-1)); }
+  await knopf.click();
+  await seite.waitForSelector('.epos-vergleich', { timeout: 5000 }).catch(() => {});
+  await ruhe(seite);
+}
+
 function pruefen(fall, fenster, zustand, m, konsole, istWirt, frei) {
   const kennung = `${fall} ${fenster.breite}x${fenster.hoehe} ${zustand}`;
   const fehler = [];
@@ -701,6 +765,21 @@ try {
           await ruhe(seite);
           if (await seite.locator('.epos-rueckweg').count())
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Esc schliesst die Rueckfrage nicht`);
+        }
+        // VG1 (KA-E-24): „Vergleichen…" ueber beide Listen - eine Projektzeile und ein Katalogsatz angekreuzt; die
+        // Vergleichsueberlagerung steht im Fenster, traegt die Herkunft je Spalte und keinen Rollbereich im Rollbereich.
+        if (['heizkessel', 'waermepumpen'].includes(fall)) {
+          const kennVg = `${fall} ${fenster.breite}x${fenster.hoehe}`;
+          const foto = FOTOS && fenster.breite === 1280 && fenster.hoehe === 800 && !fenster.neu && !fenster.ipad
+            ? `${FOTOS}/${fall}_vergleich_${fenster.breite}x${fenster.hoehe}` : null;
+          await vergleichOeffnen(seite, kennVg, foto);
+          await mess('Vergleich offen');
+          pruefeVergleich(kennVg, await seite.evaluate(vergleichMessen));
+          if (foto) await seite.screenshot({ path: foto + '.png' });
+          await seite.keyboard.press('Escape');
+          await ruhe(seite);
+          if (await seite.locator('.epos-vergleich').count())
+            { verstoesse.push(`${kennVg}: Esc schliesst den Vergleich nicht (VG1)`); console.log('  VERSTOSS ' + verstoesse.at(-1)); }
         }
         // AW3a: BHKW, Puffer- und Stromspeicher, Solarkollektoren und Photovoltaik nach dem Schema des
         // Heizkessels (AW1) - die Knopfleiste steht am gewaehlten Satz, keine Fussleiste unter dem Katalog,
@@ -1037,6 +1116,28 @@ try {
       console.log(`Gegenprobe Satz-Ueberlagerung: Rollbereich im Koerper - ${rot1 ? 'rot' : 'gruen'}; rollt als Ganzes, Fussleiste weggerollt - ${rot2 ? 'rot' : 'gruen'}`);
       if (!rot1 || !rot2) { console.log('  GEGENPROBE GRUEN - die Probe sieht die Satz-Ueberlagerung nicht'); rueckgabe = 1; }
       await k6.close();
+    }
+
+    // VG1: die Vergleichsueberlagerung - ein Rollbereich um die Tabelle (verschachtelt) und ein Spaltenkopf ohne
+    // Herkunft muessen rot werden.
+    {
+      const k9 = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+      const s9 = await k9.newPage();
+      await s9.goto(WURZEL + '/fensterprobe?fall=heizkessel', { waitUntil: 'networkidle' });
+      await s9.waitForSelector('.epos-zweispalten');
+      await vergleichOeffnen(s9, 'gegenprobe-vergleich', null);
+      const vor = verstoesse.length;
+      const gruen = pruefeVergleich('gegenprobe-vergleich', await s9.evaluate(vergleichMessen));
+      await s9.addStyleTag({ content: '.epos-ueberlagerung-inhalt, .epos-vergleich { display: block; overflow: auto !important; max-height: 300px; }'
+        + ' .epos-vergleich thead th:nth-child(2) .epos-vergleich-herkunft { display: none; }' });
+      await s9.evaluate(() => { const e = document.querySelector('.epos-vergleich thead th:nth-child(2) .epos-vergleich-herkunft'); if (e) e.textContent = ''; });
+      await ruhe(s9);
+      const neu9 = (pruefeVergleich('gegenprobe-vergleich', await s9.evaluate(vergleichMessen)), verstoesse.slice(vor));
+      const rot = gruen && neu9.some(v => v.includes('Rollbereich')) && neu9.some(v => v.includes('Herkunft'));
+      verstoesse.splice(vor);
+      console.log(`Gegenprobe Vergleich: offen und gruen ${gruen ? 'ja' : 'nein'}; verschachtelt und ohne Herkunft - ${rot ? 'rot' : 'gruen'}`);
+      if (!rot) { console.log('  GEGENPROBE GRUEN - die Probe sieht den Vergleich nicht'); rueckgabe = 1; }
+      await k9.close();
     }
 
     // geb3: Ueberlagerung „Simulation..." des Gebaeudes - eine Tabelle mit eigener Hoehe (Rollbereich im Rollkoerper)

@@ -3,7 +3,8 @@
    ("stimmig"/"abweichend"), und die Kennzeichnung traegt WORTE, nicht nur Farbe. Breit, weil drei
    Satzspalten plus Parameterspalte in die Regelbreite von 900 px nicht passen
    (epos-ueberlagerung--breit, W7-E-2). Traegt ein Kopf eine Herkunft (Projekt / Katalog), steht sie
-   vor dem Namen - der Vergleich ueber beide Listen der Katalogauswahl (Zweispaltenauswahl). *@
+   vor dem Namen - der Vergleich ueber beide Listen der Katalogauswahl (Zweispaltenauswahl).
+   EIN Rollbereich: Es rollt die Ueberlagerung, die Huelle der Tabelle nicht (epos-vergleich-huelle). *@
 @namespace EPOS.UI.Bausteine
 
 <Ueberlagerung Offen="@Offen" Titel="@Titel"
@@ -13,7 +14,7 @@
     <KindInhalt>
         @if (Offen)
         {
-            <div class="epos-raster-huelle">
+            <div class="epos-raster-huelle epos-raster-huelle--frei epos-vergleich-huelle">
                 <table class="epos-raster epos-vergleich">
                     <thead>
                         <tr>

@@ -10538,6 +10538,17 @@ table.epos-simerg-tabelle {
     color: var(--epos-text-leise);
 }
 
+/* VG1: im Vergleich rollt allein die Ueberlagerung - die Huelle der Tabelle rollt nicht mit (kein Rollbereich
+   im Rollbereich); lange Werte brechen in der Zelle um, statt die Ueberlagerung zu verbreitern. */
+.epos-raster-huelle.epos-vergleich-huelle {
+    overflow: visible;
+}
+
+.epos-vergleich-huelle .epos-vergleich th,
+.epos-vergleich-huelle .epos-vergleich td {
+    overflow-wrap: anywhere;
+}
+
 .epos-vergleich--stimmig {
     color: var(--epos-text-leise);
 }
