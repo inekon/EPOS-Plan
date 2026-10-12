@@ -77,8 +77,9 @@ nur Struktur und Zählungen, keine Werte.
   3. Typaufbau nach Bauart und Baualtersklasse.
 
   Die Wärmekapazität kommt dabei immer aus den Schichten. Für große Lücken gibt es baujahrestypische Vorgaben **aus dem
-  Bestand** (Baualtersklasse, Katalogbauten, Typaufbauten). Normtabellen kommen nicht ins Repositorium (E131).
-- **Profile:** Die Vorschlagsregel je Zone lautet **DIN-Nummer → Raumtyp der Quelle → Gebäudeart → EPOS-Muster**. Quelle sind
+  Bestand** (Baualtersklasse, Katalogbauten, Typaufbauten). Normtabellen kommen nicht ins Repositorium (E131; ausgenommen die
+  DIN/TS-18599-10-Profile nach E135).
+- **Profile:** Die Vorschlagsregel je Zone lautet **DIN-Nummer → Raumtyp der Quelle → Gebäudeart → EPOS-Muster**, DIN-Profile mit Werten (E135). Quelle sind
   der ganze Katalog der Nutzungsprofile (DIN, EPOS-Muster, eigene) und die Zuordnung. Ferien und Heizperiode kommen aus dem
   Projekt. Alle Zonen stehen auf **einem Blatt**, mit Mehrfachwahl.
 - **Ansicht:** Ein Klick auf eine Ampel stellt die Gebäudeansicht auf den passenden Farbmodus und hebt die betroffenen Körper
@@ -259,7 +260,7 @@ höchstens als Eingabe des Anwenders in dessen Datenbank (Regel E131/NP7), nie i
 4. **EPOS-Muster** der Nutzungsklasse „Sonstige“ bzw. „Wohnen“ als letzter Rückfall, damit keine beheizte Zone ohne Profil
    bleibt.
 
-**Quelle der Profile** ist der ganze Katalog: DIN-Profile (mit vom Anwender eingelesenen Normwerten), EPOS-Muster und eigene
+**Quelle der Profile** ist der ganze Katalog: DIN-Profile mit Werten (E135; bis zur Saat mit vom Anwender eingelesenen Normwerten), EPOS-Muster und eigene
 Profile. Die Zuordnung (`Tab_Raumnutzungszuordnung`) bestimmt das Profil. Wer eine DIN-Nummer auf sein eigenes Profil umstellt,
 bekommt es auch hier (NP-F19). Eine Größe ohne Kennwert im Profil erbt sichtbar vom Gebäude und erscheint in Gruppe 3 als
 „rechnet mit Vorgaben“.
@@ -354,7 +355,8 @@ Jede Empfehlung ist am Leitziel gemessen: an der Zeit bis zum ersten Lauf und an
 5. **F5 Ferien und Saison:** (a) je Projekt (Ferien, Heizperiode), Zone nur bei Abweichung; (b) je Zone. **Empfehlung: (a)**.
    Einmal je Projekt eingeben statt je Zone, und der Generator setzt sie in jeden Zonenkalender.
 6. **F6 Zone ohne eigenes Profil:** (a) Profil nach der Regel 2.4 bis zum EPOS-Muster, Status „rechnet mit Vorgaben“ (gelb);
-   (b) Zone erbt die Gebäudekalender wie heute, Status gelb; (c) Status rot, bis ein Profil gewählt ist. **Empfehlung: (a)**. Keine
+   (b) Zone erbt die Gebäudekalender wie heute, Status gelb; (c) Status rot, bis ein Profil gewählt ist. **Empfehlung: (a)**,
+   mit DIN-Profilen mit Werten (E135). Keine
    Pflichteingabe, und die Zone rechnet mit einer zur Nutzung passenden Woche statt mit der des Gebäudes.
 7. **F7 Wiederimport:** (a) Ergänzungen des Anwenders bewahren (Zusammenführung über Quellkennung und Herkunft, Vorschau der
    Unterschiede); (b) ersetzen wie heute (GD-4), mit Warnung vor dem Verlust. **Empfehlung: (a)**. Sonst kostet jede
@@ -362,7 +364,7 @@ Jede Empfehlung ist am Leitziel gemessen: an der Zeit bis zum ersten Lauf und an
 8. **F8 Export:** (a) Empfehlung je Zweck (IFC zurück ans CAD, gbXML an Simulationswerkzeuge) und gbXML um `Schedule` sowie IFC
    um die Standardsätze erweitern; (b) nur die Empfehlung, Formate wie heute; (c) nur IFC mit `EPOS_*`-Sätzen. **Empfehlung:
    (a)**. Die ergänzten Kalender gehen sonst bei jeder Übergabe an ein anderes Werkzeug verloren. Die Erweiterung liegt aber
-   hinter dem schnellen Weg (MA-8).
+   hinter dem schnellen Weg (MA-8). **Entschieden (a), E136, vorgezogen — siehe [Konzept Datenaustausch](2026-10-12_Konzept_Datenaustausch_Simulationsdaten.md).**
 
 ## 4 Wellenplan
 
@@ -375,14 +377,14 @@ Jede Empfehlung ist am Leitziel gemessen: an der Zeit bis zum ersten Lauf und an
 | **MA-5** Ansicht als Werkzeug | Sprung Ampel → Farbmodus mit Hervorhebung, Übernehmen/Verwerfen an der Legende, Modus „Nutzung“ | 2–3 PT | Kontrolle am Körper statt in Listen | `diagrammprobe`/Rasterprobe nach LIESMICH; bunit; nach AB4 |
 | **MA-6** Wiederimport bewahrt | Zusammenführung in `MehrzonenuebernahmeCtrl` über Quellkennung und Herkunft, Vorschau der Unterschiede | 2–3 PT | Ergänzungen überleben die CAD-Änderung | Kern-Test: Hand-Profil, Hand-Aufbau und Hand-Zone überstehen den Wiederimport; Rückweg bei Fehler; ggf. Schemaschritt (vor dem Bau anmelden) |
 | **MA-7** Einzonen-Vorgaben | „Vorgaben der Baualtersklasse übernehmen“ im Gebäudeeditor (U der sechs Gruppen, Bauweise), Profil der Gebäudeart | 1,5–2 PT | Einzonenmodell in einer Minute | Hülltests; Referenzlauf byte-gleich (bestehende Gebäude werden nie beschrieben) |
-| **MA-8** Export ergänzter Daten | gbXML `Schedule`, IFC Standardsätze schreiben und lesen, Empfehlung im Exportdialog, Verweis auf Gruppe 2 | 3–4 PT | nach dem ersten Lauf, für die Weitergabe | Rundlaufproben gbXML und IFC (Kalender, Lasten); Schemaprobe gbXML 6.01; Verlustliste nachgeführt |
+| **MA-8** Export ergänzter Daten — **geht in DA-Wellen des [Konzept Datenaustausch](2026-10-12_Konzept_Datenaustausch_Simulationsdaten.md) auf** (E136) | gbXML `Schedule`, IFC Standardsätze schreiben und lesen, Empfehlung im Exportdialog, Verweis auf Gruppe 2 | 3–4 PT | nach dem ersten Lauf, für die Weitergabe | Rundlaufproben gbXML und IFC (Kalender, Lasten); Schemaprobe gbXML 6.01; Verlustliste nachgeführt |
 | Wiki/Logbuch | Seiten „Gebäudeimport“, „Gebäude“, „Nutzungsprofile“; Logbuch-Entwurf | 0,5 PT | — | Gegenlesemuster der Wurzel-`CLAUDE.md` ohne Treffer |
 
 Summe rund 18,5–26,5 PT, davon MA-1 bis MA-3 (der schnelle Weg samt Nachbesserung) 7–10,5 PT.
 
 **Reihenfolge nach dem Leitziel:** MA-1 sofort. Es hängt nur am Bestand und an GD-5 und berührt den Importdialog nach GD-4.
-Danach MA-2 und MA-3 parallel (verschiedene Dateien), MA-7 jederzeit. MA-4 nach BK-3b, MA-5 nach AB4, MA-6 nach F7, MA-8 nach
-F8. Jede Welle läuft in einem eigenen Zweig, baut den Kern-Filter und testet mit `--filter` auf die betroffenen Klassen. Das
+Danach MA-2 und MA-3 parallel (verschiedene Dateien), MA-7 jederzeit. MA-4 nach BK-3b, MA-5 nach AB4, MA-6 nach F7, MA-8 geht in
+den DA-Wellen auf (E136). Jede Welle läuft in einem eigenen Zweig, baut den Kern-Filter und testet mit `--filter` auf die betroffenen Klassen. Das
 Gate fährt die Orchestrierung nach dem Merge.
 
 **Rechenweg, Basis, Schema:** Keine Welle ändert eine Leseregel des Rechenwegs. Die Prüfung ruft, die Vorschläge schreiben Daten
@@ -392,7 +394,8 @@ R52. Ein Schemaschritt ist höchstens in MA-6 möglich (Herkunft der Zonenkalend
 ## 5 Abgrenzung
 
 - **Keine Normtabellen** (U-Werte, Profile, Aufbauten nach Baujahr aus Normen) im Repositorium oder in der Auslieferung. Normwerte
-  kommen nur als Eingabe des Anwenders in dessen Datenbank (E131, NP7).
+  kommen nur als Eingabe des Anwenders in dessen Datenbank (E131, NP7); ausgenommen die DIN/TS-18599-10-Profile, die nach
+  E135 mit Werten aus der Lieferung des Anwenders ausgeliefert werden.
 - **Kein Klimaimport** (E80). Die Klimaregion kommt aus dem Projekt.
 - **Keine Geometriebearbeitung** in der Ansicht (keine Flächen zeichnen oder verschieben). Ergänzt werden nur Bauteile auf
   vorhandenen Körperflächen. Kein Geometriekernel (E3).

@@ -18,7 +18,7 @@ nach `Dokumentation/ueberholt/`, sobald die Fortsetzung den ersten Importlauf, B
 | Referenzbasis | **R52** `Referenzlaeufe/2026-10-11_R52_Vorheizen`, dreißig Projekte; CI-Auswahl 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065. Nächste freie Basis **R53** (vorgesehen für SA4) |
 | Testdatenbank | Schemastand **220** (Git LFS) |
 | Schemakette | 218 `KaelteArtSchema` (Sitzung Kälteanlagen), 219 `RaumnutzungNormkategorienSchema` (NP6), 220 `RaumnutzungNormwerteSchema` (NP7); 221 `BauteilkatalogSchema` (BK-2); **222 frei** |
-| Statuszeilen | höchste vergebene #1032; vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E134**, **E135 frei** |
+| Statuszeilen | höchste vergebene #1032; vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E136**, **E137 frei** |
 | Parallele Sitzungen | „Kälteanlagen“, „Dialoge und Korrekturen“ (Konto 3), „Administration und Support“; alle pushen auf denselben Zweig. Statuskonflikte zeilenweise lösen, Nummernkollisionen über die nächste freie Nummer |
 
 ## 2. Was die Sitzung seit dem 08.10.2026 gebaut hat
@@ -90,7 +90,8 @@ Auftrag in Abschnitt 4 neu beauftragt. Die Routinen des alten Kontos sind gelös
    gekennzeichnet); 15|0 und 16|0 → Wand; λ > 10 nur bei ρ ≥ 2 500 kg/m³; Nichtmetalle mit λ > 60 und λ/1 000 im Band 0,02–0,5
    durch 1 000 teilen und im Protokoll nennen, übrige ablehnen. Danach **erneuter Lauf beim Anwender** („Bauteilkatalog
    einlesen…“ ordnet per Quellkennung um, keine Dubletten) und Zahlen ins Protokoll.
-3b. **MA-1 Geführter Modellaufbau** nach dem [Entwurf Geführter Modellaufbau](2026-10-12_Entwurf_Gefuehrter_Modellaufbau.md) (Anwenderwunsch 12.10.2026, Leitziel: in wenig Zeit vom Import zum vollständigen Modell; Fragen F1–F8 in Abschnitt 5, Entscheid E135 frei): Modellprüfung in fünf Gruppen mit Rechenstatus, „Alle Vorschläge übernehmen“, Profilregel, Sprung in die Ansicht; danach MA-2 bis MA-8 nach Wellenplan des Entwurfs (MA-4 nach BK-3b, MA-5 nach AB4). Auftrag an `opus-umsetzung`.
+3b. **MA-1 Geführter Modellaufbau** nach dem [Entwurf Geführter Modellaufbau](2026-10-12_Entwurf_Gefuehrter_Modellaufbau.md) (Anwenderwunsch 12.10.2026, Leitziel: in wenig Zeit vom Import zum vollständigen Modell; Fragen F1–F8 in Abschnitt 5; F8 mit E136 entschieden): Modellprüfung in fünf Gruppen mit Rechenstatus, „Alle Vorschläge übernehmen“, Profilregel, Sprung in die Ansicht; danach MA-2 bis MA-8 nach Wellenplan des Entwurfs (MA-4 nach BK-3b, MA-5 nach AB4). Auftrag an `opus-umsetzung`.
+3c. **DA-1 gbXML-Import Lasten und Zeitpläne**, danach DA-2 bis DA-9 nach dem [Konzept Datenaustausch Simulationsdaten](2026-10-12_Konzept_Datenaustausch_Simulationsdaten.md) (E136; MA-8 geht darin auf; Fragen F1–F8 in Abschnitt 5); **DIN-Saat (DA-6) nach Lieferung der Werte (E135)**, Schemaschritt erst bei Baubeginn anmelden (heute 222 frei). Auftrag an `opus-umsetzung`.
 4. **GD-Nachzüge** (offene Punkte von GD-4, #1026): gespeicherten Zonenplan eines früheren Imports vorlegen; beim Weg
    „Gebäudedatei + Projektdatei“ auch die Projektdatei prüfen; Sprung zur Kühlung auf das zuletzt gewählte Gebäude; eigener
    Maskenschlüssel für `Sprungziele.Kuehlung`; Zeile Jahreswärmebedarf nach Anwenderentscheid (Abschnitt 5).
@@ -104,7 +105,9 @@ Auftrag in Abschnitt 4 neu beauftragt. Die Routinen des alten Kontos sind gelös
 
 ## 5. Offen beim Anwender
 
-- **Entwurf Geführter Modellaufbau, F1–F8** (Ampel je Prüfgruppe, „Alle Vorschläge übernehmen“, Rangfolge der Aufbauvorschläge, Baualtersvorgaben aus dem Bestand, Ferien/Saison je Projekt, Zone ohne Profil nach Regel, Wiederimport bewahrt Ergänzungen, Export mit Erweiterung gbXML/IFC): Empfehlung durchweg (a); vorgelegt 12.10.2026, Antwort offen.
+- **Entwurf Geführter Modellaufbau, F1–F8** (Ampel je Prüfgruppe, „Alle Vorschläge übernehmen“, Rangfolge der Aufbauvorschläge, Baualtersvorgaben aus dem Bestand, Ferien/Saison je Projekt, Zone ohne Profil nach Regel, Wiederimport bewahrt Ergänzungen, Export mit Erweiterung gbXML/IFC): Empfehlung durchweg (a); vorgelegt 12.10.2026, F8 mit E136 entschieden (a), F1–F7 offen.
+- **Quelle und Fassung der DIN/TS-18599-10-Werte (E135):** Lieferung als CSV im NP7-Format oder Projektdatei-Export; Fassung 2025-10 wie die Kategorie (der Auftrag nannte 2018-09) bestätigen. Ohne Lieferung ruht DA-6.
+- **Konzept Datenaustausch Simulationsdaten, F1–F8** (Quelle der DIN-Werte, Datei vor Profil, nicht abbildbare Zeitpläne, DA-1/DA-2 direkt nach MA-1, Round-Trip-Test Pflicht, IFC-Zeitprofile nur `EPOS_*`, Ergebnisexport wie heute, Absorptions- und Emissionsgrad nur durchreichen): vorgelegt 12.10.2026, Antwort offen.
 - **BK-1, Katalogprobe:** `Proben/Rasterprobe` Katalogprobe meldet 8 von 66 Fällen mit Überlagerung (Kessel, BHKW, Wärmepumpe,
   Klimadaten) — gegen den Stand vor BK-1 prüfen, ob vorbestehend (kein Baustofffall betroffen).
 - **NP7, Nummern 70/71 der Projektdatei:** beim Einlesen der Normwerte auf „Wohngebäude – Einfamilienhaus“ bzw.
@@ -122,7 +125,8 @@ Auftrag in Abschnitt 4 neu beauftragt. Die Routinen des alten Kontos sind gelös
 
 - **Anwenderdateien** (`Quellen/*.sqproj`, Hottgenroth-Katalog `.mdf`) liegen nie im Repositorium; Namen und Werte daraus nie in
   Code, Tests, Protokollen oder Nachrichten — nur Struktur, Zählungen, Anteile. Katalogwerte eines Herstellers nur in die
-  Datenbank des Anwenders, nie in die Auslieferung. Google-Drive-Freigaben des Anwenders lassen sich mit
+  Datenbank des Anwenders, nie in die Auslieferung. **Normwerte:** allein die DIN/TS-18599-10-Profile nach E135 kommen ins
+  Repositorium und in die Auslieferung, und nur aus der Lieferung des Anwenders; alle anderen Normwerte bleiben tabu. Google-Drive-Freigaben des Anwenders lassen sich mit
   `curl -L "https://drive.usercontent.google.com/download?id=<ID>&export=download&confirm=t"` laden (`drive.google.com` selbst
   ist gesperrt); große Dateien (> 5 GB) sprengen das Plattenkontingent des Containers.
 - **Agenten** mit ausdrücklichem Modell (`opus-umsetzung` für Fachcode, `sonnet-mechanik`, `haiku-pruefung`), je Welle ein
@@ -163,7 +167,8 @@ der eigene Sitzungszweig wird bei jedem Push mitgezogen.
    ios_migration_september und den Sitzungszweig; doppelten Kern-Lauf des Sitzungszweigs abbrechen; reine Papier-Pushes mit
    [skip ci], damit ein laufender CI-Lauf nicht abbricht. Übergabepapier bei jedem Push nachführen.
 5. Grenzen: keine macOS-, iOS- oder Setup-Läufe, kein Wiki-Upload, keine Pull Requests, kein Force-Push ohne Rückfrage.
-   Anwenderdateien (.sqproj, .mdf, CSV-Export) und Normwerte nie ins Repositorium; aus ihnen nur Struktur und Zählungen.
+   Anwenderdateien (.sqproj, .mdf, CSV-Export) nie ins Repositorium; Normwerte nur die DIN/TS-18599-10-Profile nach E135
+   (aus der Lieferung des Anwenders), alles andere bleibt tabu; aus Anwenderdateien nur Struktur und Zählungen.
    Die lokale Sitzung „iOS migration merge conflicts“ auf dem Rechner des Anwenders kann den Hottgenroth-Export auswerten
    (nur Kategorien und Zählungen zurückmelden lassen).
 6. Offene Anwenderfragen (Abschnitt 5) gesammelt mit Empfehlung vorlegen; kurze Antworten in Stichpunkten, Tabellen für
