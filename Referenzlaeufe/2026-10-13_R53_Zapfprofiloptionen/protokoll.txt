@@ -1,4 +1,4 @@
-﻿# Referenzlauf (Kern) vom 13.10.2026 16:48
+﻿# Referenzlauf (Kern) vom 13.10.2026 17:59
 
 Quelle:        /home/user/EPOS-Plan/.claude/worktrees/agent-a3a8c2c790f640f78/Referenzlaeufe/Kenndaten_Test.sqlite
 Arbeitskopie:  /home/user/EPOS-Plan/.claude/worktrees/agent-a3a8c2c790f640f78/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
@@ -268,7 +268,7 @@ Simulation startet fuer Projekt 1061 ...
 Simulation beendet, Ergebnis-Kopf-ID 238.
 Projekt 1061: waermebedarf_kuehlung.csv - Sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber.
 Projekt 1061: 41 CSV-Dateien, 288 Skalare.
-  OK - 41 Dateien in 00:00
+  OK - 41 Dateien in 00:01
 Projekt 1062 "Referenzprojekt KK Zonen" wird gerechnet ...
 Simulation startet fuer Projekt 1062 ...
 Simulation beendet, Ergebnis-Kopf-ID 239.

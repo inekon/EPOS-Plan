@@ -19,7 +19,8 @@
 //                      (120 m, 10 W/m, Laufzeit 18 h), aufgeteilt auf die drei Zonen mit Zirkulation.
 //   1067 Kalender      Zone Schule (200 Personen) mit dem Kalender ihrer Nutzungsart (Schulferien) und fuenf eigenen
 //                      Ferienzeitraeumen, einer davon ueber den Jahreswechsel; Zone Buero (30 Beschaeftigte) an das
-//                      Gebaeude gebunden, das Gebaeude mit Feiertagsland "BY" und Wochenmaske Sa + So (Bitmaske 96).
+//                      Gebaeude gebunden, das Gebaeude mit Feiertagsland "BY" und Wochenmaske nur Sonntag (Bitmaske 64; der Wochengang
+//                      der Nutzungsart Buero laesst den Samstag ohne Zapfung, die Feiertage Bayerns fallen aus).
 //   1068 Stochastisch  Zone Wohnen wie 1045, die Jahresreihe stochastisch mit Seed 1068 und 10 Realisierungen.
 //   1069 Typtage       Zone Wohnen wie 1045, der Jahresgang ueber die eingespielten Typtage (Klimazone 4, Gebaeudeart
 //                      "referenzhaus"). Der Typtagsatz ist ERFUNDEN (Quelle "Referenztyptage (fiktiv)", runde Werte, kein
@@ -338,7 +339,7 @@ foreach (var p in projekte)
                                    new DbParam("?", DATUM), new DbParam("?", id));
     if (id == 1067)
         DataRepository.ExecuteNonQuery("UPDATE Tab_Gebaeude SET Feiertagsland = ?, Wochenendtage = ? WHERE ID = ?",
-                                       new DbParam("?", "BY"), new DbParam("?", 96L), new DbParam("?", gebaeude));
+                                       new DbParam("?", "BY"), new DbParam("?", 64L), new DbParam("?", gebaeude));
 }
 
 // --- 5. Rechnen und pruefen -------------------------------------------------------------------------------------------

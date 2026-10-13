@@ -239,7 +239,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Der Kalender von 1067: die Schulzone mit fünf eigenen Ferienzeiträumen (Weihnachten über den Jahreswechsel), die
-        /// Bürozone am Gebäude mit Feiertagsland Bayern und Wochenmaske Sa + So; kein anderes Projekt der sechs trägt Ferien.
+        /// Bürozone am Gebäude mit Feiertagsland Bayern und der Wochenmaske nur Sonntag (64); kein anderes Projekt der sechs trägt Ferien.
         /// </summary>
         [Fact]
         public void Die_Ferien_und_der_Gebaeudekalender_von_1067_stehen_wie_gesaet()
@@ -256,7 +256,7 @@ namespace EPOS.Kern.Tests
 
             DataRow g = EineZeile("SELECT Feiertagsland, Wochenendtage FROM Tab_Gebaeude WHERE ID_Projekt = ?", 1067);
             Assert.Equal("BY", Convert.ToString(g["Feiertagsland"], CultureInfo.InvariantCulture));
-            Assert.Equal(96L, Ganz(g, "Wochenendtage"));
+            Assert.Equal(64L, Ganz(g, "Wochenendtage"));
             foreach (int p in Projekte.Keys.Where(p => p != 1067))
             {
                 DataRow a = EineZeile("SELECT Feiertagsland, Wochenendtage FROM Tab_Gebaeude WHERE ID_Projekt = ?", p);
