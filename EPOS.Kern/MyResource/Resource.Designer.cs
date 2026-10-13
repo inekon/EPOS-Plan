@@ -82621,6 +82621,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl Maschinen ähnelt.
+        /// </summary>
+        public static string KM_LBL_ANLAGE_ANZAHL {
+            get {
+                return ResourceManager.GetString("KM_LBL_ANLAGE_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
         /// </summary>
         public static string KM_LBL_BESCHREIBUNG {

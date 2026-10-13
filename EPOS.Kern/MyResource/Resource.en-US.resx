@@ -45925,6 +45925,9 @@ chart</value>
   <data name="KM_ANLAGE_NAME_LEER" xml:space="preserve">
     <value>Please give the plant a name.</value>
   </data>
+  <data name="KM_LBL_ANLAGE_ANZAHL" xml:space="preserve">
+    <value>Number of machines</value>
+  </data>
   <data name="KM_ANLAGE_ANZAHL_UNGUELTIG" xml:space="preserve">
     <value>The number must be at least 1.</value>
   </data>
