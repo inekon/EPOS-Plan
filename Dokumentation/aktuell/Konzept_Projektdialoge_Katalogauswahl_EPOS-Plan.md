@@ -302,7 +302,8 @@ Dialogkopf nach dem Titel steht —, als Sinnbilder mit Tooltipp; bei offener Sa
   Berührungsgröße (44 px, in der Kompaktstufe 37 px) mit ☐, hell mit grauem Rand, angekreuzt marineblau mit weißem ☑
   und beim Überfahren blau wie der Primärknopf. Die Zeile wächst dabei nicht (53 bzw. 46 px), die Spalte ist in jedem
   Wirt so breit wie der Kreis mit der Polsterung des Hauses. Das Kopfhäkchen bleibt klein und eckig (☐/▣/☑) und steht
-  über der Mitte des Kreises, die Katalogliste führt ihr natives Kästchen.
+  über der Mitte des Kreises, die Katalogliste führt ihr natives Kästchen. Ankreuzen wählt die Zeile nicht (KA‑E‑17) —
+  in allen Wirten der Katalogauswahl.
 - **Bereichsaktionen wirken auf die Auswahl:** Übernehmen, Entfernen, Bearbeiten…, In die Datenbank
   übernehmen…, Schloss, Löschen. Die Rückfrage nennt die Zahl und bei Löschen und Schloss die Namen.
 - **Sammelübernahme** (KA‑E‑6): Doppelklick und Enter übernehmen die Zeile bzw. die Auswahl. Die
