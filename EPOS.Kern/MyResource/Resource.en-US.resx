@@ -56102,5 +56102,23 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="IMP_IFC_PROT_OPTIK_ABWEICHUNG" xml:space="preserve">
     <value>Material "{0}", {1}: the file gives {2}, EPOS-Plan calculates with {3} — the file value is not taken over.</value>
   </data>
+  <data name="GIMP_FELD_ERDREICH_U_WIRKSAM" xml:space="preserve">
+    <value>Effective U-value to ground</value>
+  </data>
+  <data name="GIMP_FELD_KELLERTEMPERATUR" xml:space="preserve">
+    <value>Basement temperature</value>
+  </data>
+  <data name="GIMP_BELEG_EPOS_RESTDATEN" xml:space="preserve">
+    <value>from the EPOS remainder data of the file ({0})</value>
+  </data>
+  <data name="IMP_GBXML_PROT_RESTDATEN_UEBERSPRUNGEN" xml:space="preserve">
+    <value>{0}: {1} value(s) in the "EPOS:" block of the description cannot be read or are out of range and are skipped: {2}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_RESTDATEN_UEBERSPRUNGEN" xml:space="preserve">
+    <value>{0}: {1} remainder value(s) in EPOS_Zone or EPOS_Gebaeude cannot be read or are out of range and are skipped: {2}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_LUFTSTROM_PARTNER" xml:space="preserve">
+    <value>Zone {0}: the air flow to zone {1} is skipped — the file does not contain this zone, it is the zone itself, or the pair already exists.</value>
+  </data>
 </root>
 

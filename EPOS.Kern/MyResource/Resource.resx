@@ -56109,5 +56109,23 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="IMP_IFC_PROT_OPTIK_ABWEICHUNG" xml:space="preserve">
     <value>Baustoff „{0}“, {1}: Die Datei gibt {2}, EPOS-Plan rechnet mit {3} — der Wert der Datei wird nicht übernommen.</value>
   </data>
+  <data name="GIMP_FELD_ERDREICH_U_WIRKSAM" xml:space="preserve">
+    <value>Wirksamer U-Wert am Erdreich</value>
+  </data>
+  <data name="GIMP_FELD_KELLERTEMPERATUR" xml:space="preserve">
+    <value>Kellertemperatur</value>
+  </data>
+  <data name="GIMP_BELEG_EPOS_RESTDATEN" xml:space="preserve">
+    <value>aus den EPOS-Restdaten der Datei ({0})</value>
+  </data>
+  <data name="IMP_GBXML_PROT_RESTDATEN_UEBERSPRUNGEN" xml:space="preserve">
+    <value>{0}: {1} Wert(e) im Block „EPOS:“ der Beschreibung sind nicht lesbar oder liegen außerhalb des Bereichs und werden übergangen: {2}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_RESTDATEN_UEBERSPRUNGEN" xml:space="preserve">
+    <value>{0}: {1} Restdatenwert(e) in EPOS_Zone bzw. EPOS_Gebaeude sind nicht lesbar oder liegen außerhalb des Bereichs und werden übergangen: {2}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_LUFTSTROM_PARTNER" xml:space="preserve">
+    <value>Zone {0}: Der Luftstrom zur Zone {1} wird übergangen — die Datei führt diese Zone nicht, es ist die Zone selbst, oder das Paar steht schon.</value>
+  </data>
 </root>
 

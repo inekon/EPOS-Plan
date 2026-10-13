@@ -65,6 +65,16 @@ namespace WindowsFormsApplication1
         /// <summary>Die Gebäudeart aus <c>EPOS_Gebaeude.Gebaeudeart</c>, wenn das Gebäude keine trägt.</summary>
         private void EposGebaeudeLesen(IIfcBuilding b, AbbildGebaeude g)
         {
+            // Welle DA-4: das Erdreich (G3, G4) aus den Text-Werten von EPOS_Gebaeude.
+            var werte = new List<(string, string)>();
+            foreach (string name in new[] { GebaeudeRestdaten.ERDREICH_UMFANG, GebaeudeRestdaten.ERDREICH_U_WIRKSAM, GebaeudeRestdaten.KELLERTEMPERATUR })
+                if (IfcEigenschaften.Finden(_bezuege, b, IfcSchreiber.EPOS_GEBAEUDE, name) is IfcFund fund && Textwert(fund) is string t)
+                    werte.Add((name, t));
+            var uebersprungen = new List<string>();
+            g.Erdreich = GebaeudeRestdaten.ErdreichLesen(werte, uebersprungen);
+            if (uebersprungen.Count > 0)
+                g.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "RESTDATEN_UEBERSPRUNGEN", g.Anzeigename,
+                    Ganz(uebersprungen.Count), string.Join(", ", uebersprungen)));
             if (!string.IsNullOrWhiteSpace(g.Art)) return;
             IfcFund f = IfcEigenschaften.Finden(_bezuege, b, IfcSchreiber.EPOS_GEBAEUDE, S.EPOS_GEBAEUDEART);
             string art = f == null ? null : Textwert(f)?.Trim();

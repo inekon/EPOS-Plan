@@ -41,27 +41,27 @@ namespace WindowsFormsApplication1
             ["Nutzflaeche"] = R, ["Volumen"] = R, ["Raumhoehe"] = R, ["IstBeheizt"] = R,
             ["Raumsolltemperatur_Tag"] = R, ["Luftwechsel_Infiltration"] = R,
             ["Raumsolltemperatur_Nachtabsenkung"] = V, ["Raumsolltemperatur_Wochenende"] = V, ["Raumsolltemperatur_Ferien"] = V,
-            ["Maximaleraumtemperatur"] = V, ["Heizung_Strahlungsanteil"] = V, ["Heizleistung_Max"] = V,
+            ["Maximaleraumtemperatur"] = V, ["Heizung_Strahlungsanteil"] = V,
+            // DA-4: Höchstleistungen, Übergabe und Kühlübergabe je Zone und die Vorheizzeit reisen als Restdaten (gbXML-Block
+            // EPOS: der Zone/Description, IFC EPOS_Zone) und kommen über den Import wieder an die Zone (GebaeudeRestdaten.Setzen).
+            ["Heizleistung_Max"] = R,
             ["Luftwechsel_Nutzer"] = V,
             // Innere Gewinne: der Import setzt die Vorgabe E43 (5 W/m²), nicht den Mittelwert der Datei.
             ["Interne_Waermegewinne"] = V,
             // Bewohner kommen als Fläche je Nutzer des Gebäudes zurück.
             ["Bewohner"] = V,
-            ["Kuehl_Sollwert"] = V, ["Kuehlleistung_Max"] = V, ["Kuehlung_Aktiv"] = V, ["Kuehl_Sollwert_Nacht"] = V,
-            ["Uebergabe_Art"] = V, ["Uebergabe_Exponent"] = V, ["Uebergabe_Leistung_Nenn"] = V,
-            ["Kuehl_Uebergabe_Art"] = V, ["Kuehl_Uebergabe_Exponent"] = V, ["Kuehl_Uebergabe_Leistung_Nenn"] = V,
+            ["Kuehl_Sollwert"] = V, ["Kuehlleistung_Max"] = R, ["Kuehlung_Aktiv"] = V, ["Kuehl_Sollwert_Nacht"] = V,
+            ["Uebergabe_Art"] = R, ["Uebergabe_Exponent"] = R, ["Uebergabe_Leistung_Nenn"] = R,
+            ["Kuehl_Uebergabe_Art"] = R, ["Kuehl_Uebergabe_Exponent"] = R, ["Kuehl_Uebergabe_Leistung_Nenn"] = R,
             // Schritt 181 (E63, AK1z): der Auslegungspunkt und das Proportionalband der Zone.
-            ["Auslegung_Vorlauf"] = V, ["Auslegung_Ruecklauf"] = V, ["Auslegung_Raumtemperatur"] = V,
-            ["Regler_Proportionalband"] = V,
-            // AH-V4 (Schritt 215): die Vorheizzeit der Zone. Weder gbXML noch IFC tragen sie; der Import setzt
-            // sie leer (erbt vom Gebäude bzw. Projekt).
-            ["Vorheizzeit_H"] = V,
+            ["Auslegung_Vorlauf"] = R, ["Auslegung_Ruecklauf"] = R, ["Auslegung_Raumtemperatur"] = R,
+            ["Regler_Proportionalband"] = R,
+            // AH-V4 (Schritt 215), DA-4: die Vorheizzeit der Zone reist als Restdatum.
+            ["Vorheizzeit_H"] = R,
             // NP1 (Schritt 189, Q41): die Textkopie des Profilnamens an der Zone. Der Export nimmt sie nicht mit;
             // die Nutzung der Zone führt der IFC-Export als Zelle Nutzung von EPOS_Zone aus den Kalenderkopien
             // (RaumnutzungCtrl.ProfilUebernehmen schreibt beides zugleich), und der Import setzt sie dort wieder.
             ["Nutzungsprofil"] = N,
-            // AH-V4/V6 (Schritt 215): die Vorheizzeit der Zone - die Datei trägt sie nicht, der Import schreibt NULL (erbt).
-            ["Vorheizzeit_H"] = V,
             // DA-2 (ZonenLastfelderSchema): die Lastfelder der Zone - gbXML trägt sie (OAFlowPerPerson, LightPowerPerArea,
             // PeopleHeatGain), der Import setzt sie wieder (GbxmlKonditionierung.Lastfelder).
             ["Aussenluft_Person"] = R, ["Licht_W_m2"] = R, ["Personen_Waerme_W"] = R,
@@ -94,12 +94,15 @@ namespace WindowsFormsApplication1
             ["Raumsolltemperatur_Nachtabsenkung"] = V, ["Raumsolltemperatur_Wochenende"] = V, ["Raumsolltemperatur_Ferien"] = V,
             ["Maximaleraumtemperatur"] = V, ["Luftwechselrate"] = V, ["Luftwechsel_Nutzer"] = V,
             ["Baualtersklasse"] = V, ["Baujahr"] = V, ["Energiestandard"] = V, ["Gebaeudeart"] = V, ["Wohngebaeude_Nicht_Wohngebaeude"] = V,
-            ["Rahmenanteil"] = V, ["Verschattungsfaktor"] = V, ["Kellertemperatur"] = V, ["Grundflaeche_Randbedingung"] = V,
+            ["Rahmenanteil"] = V, ["Verschattungsfaktor"] = V, ["Grundflaeche_Randbedingung"] = V,
+            // DA-4: das Erdreich (Inventar G3, G4) reist als Restdatum (gbXML-Block EPOS: der Building/Description, IFC
+            // EPOS_Gebaeude) und kommt über die Zielfelder LAENGE_AUSSENWAND_KELLER, ERDREICH_U_WIRKSAM, KELLERTEMPERATUR zurück.
+            ["Kellertemperatur"] = R,
             ["Heizung_Strahlungsanteil"] = V, ["Heizleistung_Max"] = V, ["Aussenbauteile_Strahlung"] = V, ["Sommerlueftung"] = V,
             ["Kuehl_Sollwert"] = V, ["Kuehlleistung_Max"] = V, ["Kuehlung_Aktiv"] = V, ["Kuehl_Sollwert_Nacht"] = V,
             ["Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand"] = V, ["Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach"] = V,
             ["Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke"] = V, ["Abmessung_Anschluß_Fenster_Wand"] = V,
-            ["Abmessung_Anschluß_Wand_Dach"] = V, ["Abmessung_Anschluß_Außenwand_Kellerdecke"] = V,
+            ["Abmessung_Anschluß_Wand_Dach"] = V, ["Abmessung_Anschluß_Außenwand_Kellerdecke"] = R,
             ["Heizkreis_Aktiv"] = V, ["Uebergabe_Art"] = V, ["Uebergabe_Exponent"] = V, ["Uebergabe_Leistung_Nenn"] = V,
             ["Auslegung_Vorlauf"] = V, ["Auslegung_Ruecklauf"] = V, ["Auslegung_Raumtemperatur"] = V, ["Auslegung_Aussentemperatur"] = V,
             ["Heizkurve_Aktiv"] = V, ["Heizkurve_Niveau"] = V, ["Heizkurve_Steilheit"] = V, ["Regler_Proportionalband"] = V,
@@ -109,8 +112,8 @@ namespace WindowsFormsApplication1
             ["Nachtabsenkung_Beginn"] = V, ["Nachtabsenkung_Ende"] = V, ["Wochenende"] = V, ["Ferien"] = V,
             // E59 (Festlegung 38): die manuelle Aufheizzeit - die Datei traegt sie nicht, der Import schreibt NULL.
             ["Aufheizzeit_Manuell_H"] = V,
-            // E65: der wirksame U-Wert der Bodenplatte als Vorgabe - die Datei traegt ihn nicht, der Import schreibt NULL.
-            ["Erdreich_U_Wirksam"] = V,
+            // E65, DA-4: der wirksame U-Wert der Bodenplatte als Vorgabe reist als Restdatum (siehe Kellertemperatur).
+            ["Erdreich_U_Wirksam"] = R,
             // AK3 (Festlegung 23): der Raumeinfluss der Heizkurve - die Datei traegt ihn nicht, der Import schreibt NULL.
             ["Heizkurve_Raumeinfluss"] = V,
             // KK (KuehlkurveSchema.SCHRITT): die Kuehlkurve - die Datei traegt sie nicht, der Import schreibt NULL; gesetzt
@@ -161,7 +164,6 @@ namespace WindowsFormsApplication1
                 if (g.Verschattungsfaktor.HasValue) namen.Add("Verschattungsfaktor");
                 if (!string.IsNullOrWhiteSpace(g.Uebergabe_Art)) namen.Add("Uebergabe_Art");
                 if (g.Aufheizzeit_Manuell_H.HasValue) namen.Add("Aufheizzeit_Manuell_H");
-                if (g.Erdreich_U_Wirksam.HasValue) namen.Add("Erdreich_U_Wirksam");
                 if (g.Heizkurve_Raumeinfluss.HasValue) namen.Add("Heizkurve_Raumeinfluss");
                 if (g.Kuehlkurve_Aktiv) namen.Add("Kuehlkurve_Aktiv");
                 if (g.Kuehlkurve_Fusspunkt.HasValue) namen.Add("Kuehlkurve_Fusspunkt");
@@ -175,13 +177,8 @@ namespace WindowsFormsApplication1
             {
                 if (z == null) continue;
                 if (z.Luftwechsel_Nutzer.HasValue) namen.Add("Luftwechsel_Nutzer");
-                if (z.Heizleistung_Max.HasValue) namen.Add("Heizleistung_Max");
-                if (z.Kuehlleistung_Max.HasValue) namen.Add("Kuehlleistung_Max");
                 if (z.Interne_Waermegewinne.HasValue) namen.Add("Interne_Waermegewinne");
                 if (z.Bewohner.HasValue) namen.Add("Bewohner");
-                if (!string.IsNullOrWhiteSpace(z.Uebergabe_Art)) namen.Add("Uebergabe_Art");
-                if (!string.IsNullOrWhiteSpace(z.Kuehl_Uebergabe_Art)) namen.Add("Kuehl_Uebergabe_Art");
-                if (z.Vorheizzeit_H.HasValue) namen.Add("Vorheizzeit_H");
                 foreach (BauteilModel b in z.Bauteile ?? new List<BauteilModel>())
                 {
                     if (b == null) continue;

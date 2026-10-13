@@ -407,7 +407,10 @@ namespace WindowsFormsApplication1
                     new XAttribute("id", Kennung(g.Kennung, "Building")),
                     new XAttribute("buildingType", art));
                 Text(building, "Name", g.Name);
-                if (_koerper != null) Text(building, "Description", T(_koerper.Schematisch ? "GEXP_DATEI_SCHEMATISCH" : "GEXP_DATEI_DATEIKOERPER"));
+                // Welle DA-4: das Erdreich (G3, G4) im Block EPOS: der Beschreibung (Konzept 3.3, Weg 2).
+                Text(building, "Description", GebaeudeRestdaten.MitBlock(
+                    _koerper != null ? T(_koerper.Schematisch ? "GEXP_DATEI_SCHEMATISCH" : "GEXP_DATEI_DATEIKOERPER") : null,
+                    GebaeudeRestdaten.Werte(g.Erdreich)));
                 double flaeche = g.Raeume.Where(r => r.FlaecheM2.HasValue).Sum(r => r.FlaecheM2.Value);
                 building.Add(new XElement(NS + "Area", Zahl(flaeche)));
 
@@ -474,7 +477,8 @@ namespace WindowsFormsApplication1
             {
                 var zone = new XElement(NS + "Zone", new XAttribute("id", Kennung(r.ZonenKennung, "Zone")));
                 Text(zone, "Name", r.Name);
-                Text(zone, "Description", r.ZonenBeschreibung);
+                // Welle DA-4: die Restdaten der Zone im Block EPOS: der Beschreibung (Konzept 3.3, Weg 2).
+                Text(zone, "Description", GebaeudeRestdaten.MitBlock(r.ZonenBeschreibung, GebaeudeRestdaten.Werte(r.Rest)));
                 Groesse(zone, "DesignHeatT", r.SollHeizenC, null);
                 Groesse(zone, "DesignCoolT", r.SollKuehlenC, null);
                 // Welle DA-2: der Nutzerluftwechsel der Zone (Nennwert des Lüftungsplans) und die Verweise auf die Pläne.

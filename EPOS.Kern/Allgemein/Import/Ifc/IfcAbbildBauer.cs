@@ -1841,6 +1841,12 @@ namespace WindowsFormsApplication1
                 k.HeizsollNachtC = W(IfcKonditionierungssatz.HEIZSOLL_NACHT)?.Zahl;
                 k.KuehlsollC = W(IfcKonditionierungssatz.KUEHLSOLL)?.Zahl;
                 k.LuftwechselNutzerJeH = W(IfcKonditionierungssatz.LUFTWECHSEL_NUTZER)?.Zahl;
+                // Welle DA-4: die Restdaten der Zone (Text-Werte von EPOS_Zone).
+                var rest = new List<string>();
+                r.Rest = GebaeudeRestdaten.ZoneLesen(zone.Where(w => w.Text != null).Select(w => (w.Name, w.Text)), rest);
+                if (rest.Count > 0)
+                    g.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "RESTDATEN_UEBERSPRUNGEN", r.Name ?? r.Kennung,
+                        Ganz(rest.Count), string.Join(", ", rest)));
             }
             var uebersprungen = new List<string>();
             foreach (Konditionierungsgroesse groesse in Konditionierungsgroessen.Alle)
