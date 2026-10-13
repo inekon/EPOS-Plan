@@ -66505,15 +66505,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Preis eines Moduls; die Anlagenkosten entstehen daraus über die Modulzahl. ähnelt.
-        /// </summary>
-        public static string KI_DLG_MODK_PV_KOSTEN_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_MODK_PV_KOSTEN_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Verlust des Speicherinhalts je Monat in Prozent, 0 bis 20; leer heißt keine Selbstentladung. Die Simulation zehrt ihn je Viertelstunde vom Inhalt, höchstens bis zur unteren Ladegrenze. ähnelt.
         /// </summary>
         public static string KI_DLG_MODK_SELBSTENTLADUNG_ERL {
@@ -72148,15 +72139,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gerätekosten in Euro — Anzeige; gepflegt werden sie in der Kostenverwaltung, nicht auf dieser Maske. ähnelt.
-        /// </summary>
-        public static string KI_DLG_WPA_MODULKOSTEN_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_WPA_MODULKOSTEN_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Liegt ein Nachhaltigkeitsnachweis für die eingesetzte Biomasse vor? Ohne ihn gilt der Nullansatz nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_NACHWEIS_ERL {
@@ -72562,24 +72544,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Anschaffungskosten der Wärmepumpe in Euro — Anzeige; die Maske zeigt sie mit ihrer Herleitung, gepflegt werden sie in der Kostenverwaltung. ähnelt.
-        /// </summary>
-        public static string KI_DLG_WP_MODULKOSTEN_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_WP_MODULKOSTEN_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Modulkosten ähnelt.
-        /// </summary>
-        public static string KI_DLG_WP_MODULKOSTEN_NAME {
-            get {
-                return ResourceManager.GetString("KI_DLG_WP_MODULKOSTEN_NAME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Name der Wärmepumpe im Katalog. ähnelt.
         /// </summary>
         public static string KI_DLG_WP_NAME_ERL {
@@ -72783,15 +72747,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WRK_I_SC_MAX_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WRK_I_SC_MAX_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Preis eines Geräts; er geht in die Investition der Anlage ein. ähnelt.
-        /// </summary>
-        public static string KI_DLG_WRK_KOSTEN_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_WRK_KOSTEN_ERL", resourceCulture);
             }
         }
         
@@ -91409,6 +91364,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus der Satzvorlage; Gerätekosten werden in der Kostenverwaltung gepflegt ähnelt.
+        /// </summary>
+        public static string MODK_HERL_KOSTENSATZ {
+            get {
+                return ResourceManager.GetString("MODK_HERL_KOSTENSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung: ähnelt.
         /// </summary>
         public static string MODK_LBL_BESCHREIBUNG {
@@ -91481,6 +91445,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostensatz ähnelt.
+        /// </summary>
+        public static string MODK_LBL_KOSTENSATZ {
+            get {
+                return ResourceManager.GetString("MODK_LBL_KOSTENSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand ähnelt.
         /// </summary>
         public static string MODK_LBL_LADEZUSTAND {
@@ -91513,15 +91486,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MODK_LBL_MODULKOSTEN {
             get {
                 return ResourceManager.GetString("MODK_LBL_MODULKOSTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Modulkosten: ähnelt.
-        /// </summary>
-        public static string MODK_LBL_MODULKOSTEN_PV {
-            get {
-                return ResourceManager.GetString("MODK_LBL_MODULKOSTEN_PV", resourceCulture);
             }
         }
         
@@ -143758,11 +143722,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die aus dem Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus der Satzvorlage; Gerätekosten werden in der Kostenverwaltung gepflegt ähnelt.
         /// </summary>
-        public static string WPS_HERL_MODULKOSTEN {
+        public static string WPS_HERL_KOSTENSATZ {
             get {
-                return ResourceManager.GetString("WPS_HERL_MODULKOSTEN", resourceCulture);
+                return ResourceManager.GetString("WPS_HERL_KOSTENSATZ", resourceCulture);
             }
         }
         
@@ -143812,11 +143776,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die kein Planwert im Datenbestand ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Kostensatz in der Kostenverwaltung ähnelt.
         /// </summary>
-        public static string WPS_HINWEIS_MODULKOSTEN_LEER {
+        public static string WPS_HINWEIS_KOSTENSATZ_LEER {
             get {
-                return ResourceManager.GetString("WPS_HINWEIS_MODULKOSTEN_LEER", resourceCulture);
+                return ResourceManager.GetString("WPS_HINWEIS_KOSTENSATZ_LEER", resourceCulture);
             }
         }
         
@@ -144312,15 +144276,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPV_MSG_ANLAGE_PRUEFEN {
             get {
                 return ResourceManager.GetString("WPV_MSG_ANLAGE_PRUEFEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Modulkosten dürfen nicht negativ sein. ähnelt.
-        /// </summary>
-        public static string WPV_MSG_MODULKOSTEN_NEGATIV {
-            get {
-                return ResourceManager.GetString("WPV_MSG_MODULKOSTEN_NEGATIV", resourceCulture);
             }
         }
         
@@ -145009,15 +144964,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätepreis: ähnelt.
-        /// </summary>
-        public static string WRK_LBL_KOSTEN {
-            get {
-                return ResourceManager.GetString("WRK_LBL_KOSTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die AC-Nennleistung: ähnelt.
         /// </summary>
         public static string WRK_LBL_P_AC_NENN {
@@ -145293,15 +145239,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WRK_PLAUSI_KOPF_HINWEIS {
             get {
                 return ResourceManager.GetString("WRK_PLAUSI_KOPF_HINWEIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gerätepreis ist negativ ({0} €). ähnelt.
-        /// </summary>
-        public static string WRK_PLAUSI_KOSTEN_NEGATIV {
-            get {
-                return ResourceManager.GetString("WRK_PLAUSI_KOSTEN_NEGATIV", resourceCulture);
             }
         }
         

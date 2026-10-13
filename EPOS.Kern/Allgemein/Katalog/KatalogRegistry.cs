@@ -159,7 +159,6 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = "WP",
                 Tabelle = WPStammCtrl.TABLE,                       // Tab_WP_STAMM
-                AusschlussSpalten = new[] { "Modulkosten" },
                 Datenbloecke = new[]
                 {
                     new KatalogDatenblock
@@ -214,7 +213,6 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = "PV",
                 Tabelle = SchemaKatalog.TAB_PV_STAMM,
-                AusschlussSpalten = new[] { "Modulkosten" },
                 // "Technologie" (Migrationsschritt 63, Stufe E2.3) gehoert in die
                 // Import-Schnittmenge: Beide Importe liefern sie (CEC "Technology",
                 // PAN "Technol"), und das erweiterte Rechenmodell waehlt daran den
@@ -228,11 +226,6 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = "WECHSELRICHTER",
                 Tabelle = SchemaKatalog.TAB_WECHSELRICHTER_STAMM,
-                // "Kosten" ist ein ANWENDERFELD - wie "Modulkosten" bei der
-                // Photovoltaik und aus demselben Grund ausgeschlossen: Der Import
-                // liefert keinen Preis, und zwei Saetze, die sich nur im Preis
-                // unterscheiden, sind derselbe Wechselrichter (Konzept 5.4).
-                AusschlussSpalten = new[] { "Kosten" },
                 // Die Sandia-Spalten stehen bewusst NICHT hier: Zwei Katalogsaetze,
                 // die sich nur in C3 unterscheiden, rechnen in EPOS-Plan identisch
                 // (Konzept 3.3.2) - sie als verschieden zu melden waere falscher

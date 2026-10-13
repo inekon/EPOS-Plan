@@ -369,7 +369,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Import-Überschreiben (Dublettenkonzept 4.2): aktualisiert GENAU die Felder,
         /// die der Import liefert, adressiert per Id. Vom Anwender gepflegte Felder
-        /// (<c>Bezeichner</c>, <c>Beschreibung</c>, <c>Kosten</c>, <c>ReadOnly</c>)
+        /// (<c>Bezeichner</c>, <c>Beschreibung</c>, <c>ReadOnly</c>)
         /// bleiben unangetastet.
         /// </summary>
         /// <remarks>
@@ -392,16 +392,15 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Fachspalten, die der Import schreibt — alle außer <c>Kosten</c>: Das ist
-        /// ein Anwenderfeld, genau wie <c>Modulkosten</c> beim PV-Modul, und steht aus
-        /// demselben Grund in <c>AusschlussSpalten</c> der Dublettenprüfung
-        /// (Konzept 5.4).
+        /// Die Fachspalten, die der Import schreibt — seit Welle KB-4 ALLE: Die Kostenspalte
+        /// des Geräts ist mit Schemaschritt 228 entfallen (der Satz steht in der
+        /// Kostenverwaltung), und keine der übrigen Spalten ist ein Anwenderfeld.
         /// </summary>
         internal static string[] Importspalten()
         {
             var liste = new List<string>();
             foreach (string s in WechselrichterSchema.Fachspalten)
-                if (s != WechselrichterSchema.SPALTE_KOSTEN) liste.Add(s);
+                liste.Add(s);
             return liste.ToArray();
         }
 
@@ -586,7 +585,6 @@ namespace WindowsFormsApplication1
                 case WechselrichterSchema.SPALTE_ETA_MAX: return m_Eta_Max;
                 case WechselrichterSchema.SPALTE_P_STANDBY: return m_P_Standby;
                 case WechselrichterSchema.SPALTE_P_NACHT: return m_P_Nacht;
-                case WechselrichterSchema.SPALTE_KOSTEN: return m_Kosten;
                 case WechselrichterSchema.SPALTE_SANDIA_PDCO: return m_Sandia_Pdco;
                 case WechselrichterSchema.SPALTE_SANDIA_VDCO: return m_Sandia_Vdco;
                 case WechselrichterSchema.SPALTE_SANDIA_PSO: return m_Sandia_Pso;
@@ -665,7 +663,12 @@ namespace WindowsFormsApplication1
             m.m_Eta_Max = Zahl(row, WechselrichterSchema.SPALTE_ETA_MAX);
             m.m_P_Standby = Zahl(row, WechselrichterSchema.SPALTE_P_STANDBY);
             m.m_P_Nacht = Zahl(row, WechselrichterSchema.SPALTE_P_NACHT);
-            m.m_Kosten = Zahl(row, WechselrichterSchema.SPALTE_KOSTEN);
+            // Welle KB-4: der VERWEIS auf die Satzvorlage statt der entfallenen Kostenspalte.
+            m.IdKostenVorlageInvestition = row.Table.Columns.Contains(
+                    KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION)
+                    && row[KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION] != DBNull.Value
+                ? Convert.ToInt32(row[KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION])
+                : 0;
             m.m_Sandia_Pdco = Zahl(row, WechselrichterSchema.SPALTE_SANDIA_PDCO);
             m.m_Sandia_Vdco = Zahl(row, WechselrichterSchema.SPALTE_SANDIA_VDCO);
             m.m_Sandia_Pso = Zahl(row, WechselrichterSchema.SPALTE_SANDIA_PSO);

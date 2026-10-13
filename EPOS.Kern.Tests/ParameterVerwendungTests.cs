@@ -279,9 +279,7 @@ namespace EPOS.Kern.Tests
         [InlineData(Anlagenart.Heizkessel, "Wartungskosten")]
         [InlineData(Anlagenart.Bhkw, "Kosten_Modul")]
         [InlineData(Anlagenart.Bhkw, "Wartungskosten_kwhel")]
-        [InlineData(Anlagenart.Waermepumpe, "Modulkosten")]
         [InlineData(Anlagenart.Solarkollektoren, "Investitionskosten")]
-        [InlineData(Anlagenart.Photovoltaik, "Modulkosten")]
         [InlineData(Anlagenart.Stromspeicher, "Leistungskosten")]
         [InlineData(Anlagenart.Pufferspeicher, "Investitionskosten")]
         public void Die_Kostenseite_ist_als_Wirtschaftlichkeit_gekennzeichnet(Anlagenart art, string spalte)
@@ -368,20 +366,21 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Die Luecke, die Teil 3 des Anwenderwunsches gefunden hat</b>:
-        /// <c>Tab_WP_STAMM.Modulkosten</c> geht in die Kostenplanung
-        /// (<c>TechnikPlanwertCtrl.cs:345</c>), steht aber in der Verwaltung nicht zur
-        /// Pflege (Entscheid Ä19 der Welle 7). Der Anwender hat das am 06.09.2026
-        /// entschieden (W14a-O-1): Der Wert wird im Stammdialog wieder GEZEIGT, nur
-        /// lesend und mit Herleitungszeile; eingegeben wird er weiterhin nicht. Der
-        /// Fall haelt die Einstufung fest, damit sie nicht still verschwindet.
+        /// <b>Die Luecke aus Teil 3 des Anwenderwunsches ist geschlossen</b>: Die
+        /// Kostenspalte der Waermepumpe ist mit Schemaschritt 228 entfallen (Welle KB-4,
+        /// Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung"). Der
+        /// Katalog fuehrt sie nicht mehr; was die Kostenplanung liest, ist der VERWEIS auf
+        /// die Satzvorlage, und gepflegt wird der Satz in der Kostenverwaltung.
         /// </summary>
         [Fact]
-        public void Die_Modulkosten_der_Waermepumpe_sind_gerechnet()
+        public void Die_Waermepumpe_fuehrt_keine_Kostenspalte_mehr_sondern_den_Verweis()
         {
-            ParameterEintrag e = Eintrag(Anlagenart.Waermepumpe, "Modulkosten");
-            Assert.True(e.Gerechnet);
-            Assert.Contains("TechnikPlanwertCtrl", e.Fundstelle);
+            Assert.DoesNotContain(ParameterVerwendung.Katalog(Anlagenart.Waermepumpe),
+                                  e => string.Equals(e.Spalte, "Modulkosten", StringComparison.OrdinalIgnoreCase));
+
+            ParameterEintrag verweis = Eintrag(Anlagenart.Waermepumpe,
+                KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION);
+            Assert.True(verweis.Hat(Verwendung.Wirtschaftlichkeit));
         }
 
         /// <summary>
@@ -417,8 +416,10 @@ namespace EPOS.Kern.Tests
         /// <para><b>Zehn Spalten in der Simulation:</b> die sechs Stuetzstellen
         /// <c>Eta05…Eta100</c> (<c>PvStrangModell.Kennlinie</c>), <c>P_AC_Nenn</c>
         /// (Auslastung und Clipping), <c>P_Standby</c> (Einschaltschwelle) und
-        /// <c>P_Nacht</c> (Nachtverbrauch). <b>Eine in der Wirtschaftlichkeit:</b>
-        /// <c>Kosten</c> (<c>TechnikPlanwertCtrl</c>, Entscheidungsfrage Q8).</para>
+        /// <c>P_Nacht</c> (Nachtverbrauch). <b>Die Kostenseite</b> steht seit Welle KB-4
+        /// nicht mehr am Geraet: Die Spalte <c>Kosten</c> ist mit Schemaschritt 228
+        /// entfallen, der Satz steht in der Satzvorlage (Verweis
+        /// <c>ID_KostenVorlageInvestition</c>).</para>
         ///
         /// <para><b>Was NICHT rechnet, und warum das so bleibt:</b> Die MPPT-Spalten
         /// (Q7 — der Tracker ist reine Pruefgroesse) und die Spannungs-/Stromgrenzen
@@ -441,9 +442,11 @@ namespace EPOS.Kern.Tests
                         "P_AC_Nenn", "P_Nacht", "P_Standby" },
                 simulation);
 
-            ParameterEintrag kosten = Eintrag(Anlagenart.Wechselrichter, "Kosten");
-            Assert.True(kosten.Hat(Verwendung.Wirtschaftlichkeit));
-            Assert.Contains("TechnikPlanwertCtrl", kosten.Fundstelle);
+            // Welle KB-4: keine Kostenspalte am Geraet, dafuer der Verweis auf die Satzvorlage.
+            Assert.DoesNotContain(katalog, e => string.Equals(e.Spalte, "Kosten", StringComparison.OrdinalIgnoreCase));
+            Assert.True(Eintrag(Anlagenart.Wechselrichter,
+                KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION)
+                .Hat(Verwendung.Wirtschaftlichkeit));
 
             // Jede gerechnete Spalte nennt ihren Rechner in der Fundstelle - ohne sie
             // waere die Einstufung eine Behauptung.
@@ -541,12 +544,12 @@ namespace EPOS.Kern.Tests
                                    "Ruecklauf_Max" };
 
                 case Anlagenart.Waermepumpe:
-                    // ELF von achtzehn Fachspalten. maxPtherm laeuft verborgen mit,
-                    // Kuehlleistung und - seit dem Anwenderentscheid W14a-O-1 vom
-                    // 06.09.2026 - Modulkosten stehen NUR LESEND da (Entscheid AE19
-                    // bleibt: keine Eingabe, kein Schreibweg aus dem Dialog), die fuenf
-                    // Masse zeigt die Maske gar nicht. Diese Liste fuehrt, was die
-                    // Verwaltung ZURUECKSCHREIBT - ein Lesewert gehoert nicht hinein.
+                    // maxPtherm laeuft verborgen mit, Kuehlleistung und - seit dem
+                    // Anwenderentscheid W14a-O-1 vom 06.09.2026 - der Kostensatz der
+                    // Satzvorlage stehen NUR LESEND da (Entscheid AE19 bleibt: keine
+                    // Eingabe, kein Schreibweg aus dem Dialog), die fuenf Masse zeigt die
+                    // Maske gar nicht. Diese Liste fuehrt, was die Verwaltung
+                    // ZURUECKSCHREIBT - ein Lesewert gehoert nicht hinein.
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Typ", "Baujahr",
                                    "Aufstellung", "Nennleistung", "Heizung", "Regelung", "Bauart",
                                    // Welle M4 (WP1): Mindestleistung und C_d schreibt die
@@ -570,7 +573,7 @@ namespace EPOS.Kern.Tests
                     // alpha_SC und beta_OC fehlen - sie kommen nur aus dem CEC-/PAN-Import.
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Leistung", "Wirkungsgrad",
                                    "U_Mpp", "U_Leerlauf", "I_Mpp", "I_Kurzschluss", "gamma_PMP",
-                                   "T_NOCT", "Laenge", "Breite", "Modulkosten", "Technologie" };
+                                   "T_NOCT", "Laenge", "Breite", "Technologie" };
 
                 case Anlagenart.Stromspeicher:
                     return new[] { "Bezeichner", "Typ", "Energie", "Leistung", "Ladezustand",
@@ -587,7 +590,7 @@ namespace EPOS.Kern.Tests
                     // mitgeschriebenes Katalogwissen des Imports und von Hand nicht
                     // pflegbar (Konzept 3.3.3).
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "P_AC_Nenn",
-                                   "S_AC_Max", "P_DC_Max", "Kosten", "Herkunft",
+                                   "S_AC_Max", "P_DC_Max", "Herkunft",
                                    "U_Mpp_Min", "U_Mpp_Max", "U_Dc_Max", "U_Start",
                                    "I_Dc_Max", "Anzahl_Mppt", "Straenge_Je_Mppt",
                                    "Eta05", "Eta10", "Eta20", "Eta30", "Eta50", "Eta100",
@@ -629,27 +632,20 @@ namespace EPOS.Kern.Tests
         /// Anwender jeden GERECHNETEN Parameter irgendwo eingeben — im Katalogeditor
         /// oder, seit dem 15.09.2026, im Aufklapper „Alle Daten" des Projektdialogs?
         ///
-        /// <para><b>Der Befund vom 06.09.2026: genau EINE Luecke</b> —
-        /// <c>Tab_WP_STAMM.Modulkosten</c>. Der Wert geht in die Kostenplanung
-        /// (<c>TechnikPlanwertCtrl.cs:345</c>), die Waermepumpenverwaltung nimmt ihn
-        /// aber nicht entgegen (Entscheid AE19 der Welle 7: „Geraetekosten laufen ueber
-        /// die Kostenverwaltung"). <b>Befund W14a-O-2:</b> Auch der VDI-3805-Import
-        /// fuellt ihn nicht — <c>KatalogImportSatz.NachStamm</c> setzt die Spalte nie,
-        /// <c>WPStammCtrl.UpdateImport</c> laesst sie beim Ueberschreiben stehen; ein
-        /// Wert &gt; 0 stammt aus dem Bestand.</para>
+        /// <para><b>Seit Welle KB-4 KEINE Luecke mehr</b> (Anwenderentscheid 13.10.2026
+        /// „eine Kostenbasis, keine Doppelhaltung"): Die einzige war
+        /// <c>Tab_WP_STAMM.Modulkosten</c> — ein gerechneter Wert, den die
+        /// Waermepumpenverwaltung nach Entscheid AE19 nicht entgegennahm. Mit
+        /// Schemaschritt 228 ist die Spalte entfallen; gerechnet wird der Satz der
+        /// Satzvorlage, und der ist in der Kostenverwaltung pflegbar. Die Verweisspalten
+        /// selbst zaehlen als Verwaltungsspalten (<see cref="Verwaltungsspalte"/>).</para>
         ///
-        /// <para><b>Der Anwender hat am 06.09.2026 entschieden (W14a-O-1):</b> Der Wert
-        /// wird im Stammdialog wieder GEZEIGT — nur lesend, mit Herleitungszeile.
-        /// Diese Luecke bleibt damit bestehen, denn sie zaehlt die Spalten, die das
-        /// Formular ZURUECKSCHREIBT: Ein Lesewert ist keine Pflege, und genau das ist
-        /// der Kern von AE19. Der Fall steht also unveraendert.</para>
-        ///
-        /// <para>Kommt eine zweite Luecke dazu, faellt dieser Fall rot aus, und das ist
+        /// <para>Kommt eine neue Luecke dazu, faellt dieser Fall rot aus, und das ist
         /// der Zweck: Ein gerechneter Wert, den niemand eingeben kann, ist kein
         /// Schoenheitsfehler.</para>
         /// </summary>
         [Fact]
-        public void Genau_eine_gerechnete_Spalte_fehlt_im_Bearbeiten_Formular()
+        public void Keine_gerechnete_Spalte_fehlt_im_Bearbeiten_Formular()
         {
             var luecken = new List<string>();
 
@@ -664,7 +660,7 @@ namespace EPOS.Kern.Tests
                 }
             }
 
-            Assert.Equal(new[] { "Waermepumpe.Modulkosten" }, luecken);
+            Assert.Empty(luecken);
         }
 
         /// <summary>
