@@ -197,6 +197,53 @@ public sealed record GebaeudeAnsichtDaten
     /// <summary>Der Steckbrief je Bauteilkennung — geöffnet beim Klick auf Bauteilkörper oder Raumfläche; leer = keiner.</summary>
     public IReadOnlyDictionary<string, BauteilsteckbriefDaten> Steckbriefe { get; init; } = new Dictionary<string, BauteilsteckbriefDaten>(StringComparer.Ordinal);
 
+    // ------------------------------------------------------------------
+    //  Bauteilgruppen der Körperansicht (Auftrag AB4) — Ein- und Ausblenden je Bauteilart
+    // ------------------------------------------------------------------
+
+    /// <summary>
+    /// Die Bauteilart je Bauteilkennung der Datei als sprachneutraler Schlüssel (Namen der Bauteilart des Kerns, etwa
+    /// <c>Aussenwand</c>); leer = keine Klassifikation. Die Körperansicht ordnet darüber Bauteilkörper und Raumdreiecke einer
+    /// <see cref="Bauteilartgruppe"/> zu.
+    /// </summary>
+    public IReadOnlyDictionary<string, string> Bauteilarten { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
+
+    /// <summary>Die Gruppe eines Bauteils nach seiner Art; ohne Kennung oder unbekannt <c>null</c>.</summary>
+    public Bauteilartgruppe? BauteilartgruppeVon(string? bauteil)
+        => bauteil is not null && Bauteilarten.TryGetValue(bauteil, out string? art) ? GebaeudeAnsichtBauteilartgruppen.Von(art) : null;
+
+    /// <summary>
+    /// Die Bauteilgruppen des Modells mit ihrer Zahl, in der Reihenfolge der Gruppen, nur vorkommende: mit Bauteilarten je
+    /// Kennung die Zahl der Bauteile, sonst die Zahl der Platten des Exportmodells (je Kante, Boden und Decke mit bekannter Art).
+    /// </summary>
+    public IReadOnlyList<(Bauteilartgruppe Gruppe, int Zahl)> Bauteilgruppenzahlen()
+    {
+        var zahl = new int[GebaeudeAnsichtBauteilartgruppen.ZAHL];
+        if (Bauteilarten.Count > 0)
+        {
+            foreach (string art in Bauteilarten.Values) zahl[(int)GebaeudeAnsichtBauteilartgruppen.Von(art)]++;
+        }
+        else
+        {
+            foreach (GebaeudeAnsichtKoerperraum k in Koerperraeume)
+            {
+                foreach (IReadOnlyList<string?> polygon in k.Kanten)
+                    foreach (string? art in polygon)
+                        if (art is not null) zahl[(int)GebaeudeAnsichtBauteilartgruppen.Von(art)]++;
+                if (k.Boden is not null) zahl[(int)GebaeudeAnsichtBauteilartgruppen.Von(k.Boden)]++;
+                if (k.Decke is not null) zahl[(int)GebaeudeAnsichtBauteilartgruppen.Von(k.Decke)]++;
+            }
+        }
+        return Enumerable.Range(0, zahl.Length).Where(i => zahl[i] > 0).Select(i => ((Bauteilartgruppe)i, zahl[i])).ToList();
+    }
+
+    /// <summary>
+    /// Das Gruppenbyte eines Raumdreiecks nach dem Bauteil, das die Fläche bestimmt (<see cref="Bauteilartgruppe"/>);
+    /// ohne Bauteil oder Art <see cref="GebaeudeAnsichtBauteilartgruppen.KEINE"/> — ein solches Dreieck bleibt immer sichtbar.
+    /// </summary>
+    public byte Bauteilartbyte(string? bauteil)
+        => BauteilartgruppeVon(bauteil) is Bauteilartgruppe g ? (byte)g : GebaeudeAnsichtBauteilartgruppen.KEINE;
+
     /// <summary>
     /// Der Grund, warum kein Bauteilvorschlag vorliegt (Auftrag AB), etwa nicht zugeordnete Räume des Zonenplans; leer = kein
     /// besonderer Grund. Die Ansicht nennt ihn am gesperrten Farbmodus „Aufbau" und „Befund".
@@ -308,7 +355,8 @@ public sealed record GebaeudeAnsichtDaten
             if (k.Dateikoerper is { } d)
                 laenge += 4L * (d.Punkte.Count + d.Dreiecke.Count + d.Randkanten.Count) + (d.Gruppen?.Count ?? 0)
                           + (HatAufbaustufen && d.Gruppen is not null && k.Dreiecksbauteile is not null ? d.Gruppen.Count : 0)
-                          + (HatBefunde && d.Gruppen is not null && k.Dreiecksbauteile is not null ? d.Gruppen.Count : 0);
+                          + (HatBefunde && d.Gruppen is not null && k.Dreiecksbauteile is not null ? d.Gruppen.Count : 0)
+                          + (Bauteilarten.Count > 0 && k.Dreiecksbauteile is not null ? d.Dreiecke.Count / 3 : 0);
         foreach (GebaeudeAnsichtBauteilkoerper b in Bauteilkoerper)
             laenge += 4L * (b.Koerper.Punkte.Count + b.Koerper.Dreiecke.Count + b.Koerper.Randkanten.Count);
         laenge = (laenge + 3) / 4 * 4;
@@ -355,6 +403,17 @@ public sealed record GebaeudeAnsichtDaten
                 if (raeume[i].Gruppen is not { } gruppen || mitKoerper[i].Dreiecksbauteile is not { } je) continue;
                 verzeichnis[i] = verzeichnis[i] with { BefundAb = stelle };
                 for (int t = 0; t < gruppen.Count; t++) bytes[stelle++] = Befundbyte(gruppen[t], t < je.Count ? je[t] : null);
+            }
+        }
+        // Teil 6 (AB4): je Raum mit Bauteil je Dreieck das Bauteilgruppenbyte — nur mit Bauteilarten.
+        if (Bauteilarten.Count > 0)
+        {
+            var mitKoerper = Koerperraeume.Where(k => k.Dateikoerper is not null).ToList();
+            for (int i = 0; i < raeume.Count; i++)
+            {
+                if (mitKoerper[i].Dreiecksbauteile is not { } je) continue;
+                verzeichnis[i] = verzeichnis[i] with { BauteilgruppenAb = stelle };
+                for (int t = 0; t < verzeichnis[i].DreieckZahl; t++) bytes[stelle++] = Bauteilartbyte(t < je.Count ? je[t] : null);
             }
         }
         return new GebaeudeAnsichtKoerperfeld(bytes, verzeichnis) { Bauteile = bauteile };
@@ -724,6 +783,70 @@ public sealed record GebaeudeAnsichtKoerperfeldEintrag(
 
     /// <summary>G5-3: der Befund des Bauteilkörpers (<see cref="Bauteilbefundstufe"/>); −1 = ohne Befunde bzw. bei Räumen.</summary>
     public int Befund { get; init; } = -1;
+
+    /// <summary>AB4: Byte-Offset der Bauteilgruppenbytes eines Raums (ein Byte je Dreieck, <see cref="Bauteilartgruppe"/>); −1 = keine.</summary>
+    public int BauteilgruppenAb { get; init; } = -1;
+}
+
+/// <summary>
+/// Die Bauteilgruppen der Körperansicht (Auftrag AB4): nach der Bauteilart, Boden und Bodenplatte zusammen; Unbekanntes ist
+/// „Sonstiges". Die Zahl ist die Stelle im Schalterfeld der Szene.
+/// </summary>
+public enum Bauteilartgruppe : byte
+{
+    /// <summary>Außenwand.</summary>
+    Aussenwand,
+
+    /// <summary>Innenwand.</summary>
+    Innenwand,
+
+    /// <summary>Dach.</summary>
+    Dach,
+
+    /// <summary>Decke.</summary>
+    Decke,
+
+    /// <summary>Boden bzw. Bodenplatte.</summary>
+    Boden,
+
+    /// <summary>Fenster.</summary>
+    Fenster,
+
+    /// <summary>Tür.</summary>
+    Tuer,
+
+    /// <summary>Vorhangfassade.</summary>
+    Vorhangfassade,
+
+    /// <summary>Alles Übrige.</summary>
+    Sonstiges,
+}
+
+/// <summary>Zahl, Schlüssel und Zuordnung der <see cref="Bauteilartgruppe"/> (Auftrag AB4).</summary>
+public static class GebaeudeAnsichtBauteilartgruppen
+{
+    /// <summary>Die Zahl der Gruppen.</summary>
+    public const int ZAHL = 9;
+
+    /// <summary>Das Byte eines Dreiecks ohne Bauteil (immer sichtbar).</summary>
+    public const byte KEINE = 255;
+
+    /// <summary>Die Gruppe einer Bauteilart (sprachneutraler Schlüssel wie in den Platten des Exportmodells).</summary>
+    public static Bauteilartgruppe Von(string? art) => art switch
+    {
+        "Aussenwand" => Bauteilartgruppe.Aussenwand,
+        "Innenwand" => Bauteilartgruppe.Innenwand,
+        "Dach" => Bauteilartgruppe.Dach,
+        "Decke" => Bauteilartgruppe.Decke,
+        "Bodenplatte" or "Boden" => Bauteilartgruppe.Boden,
+        "Fenster" => Bauteilartgruppe.Fenster,
+        "Tuer" => Bauteilartgruppe.Tuer,
+        "Vorhangfassade" => Bauteilartgruppe.Vorhangfassade,
+        _ => Bauteilartgruppe.Sonstiges,
+    };
+
+    /// <summary>Der sprachneutrale Schlüssel einer Gruppe für das Markup (klein geschrieben).</summary>
+    public static string Schluessel(Bauteilartgruppe g) => g.ToString().ToLowerInvariant();
 }
 
 /// <summary>Die Höhenlage eines Geschosses für die Körper; <c>null</c> = unbekannt (dann gestapelt).</summary>
@@ -969,6 +1092,41 @@ public sealed class GebaeudeAnsichtTexte
 
     /// <summary>GANS_RAND_BAUTEILKOERPER — Name des Legendenschalters für die Bauteilkörper (Körperansicht).</summary>
     public string RandBauteilkoerper { get; set; } = Resource.GANS_RAND_BAUTEILKOERPER;
+
+    /// <summary>GANS_WERKZEUG — Beschriftung der Werkzeugwahl an der Legende (AB4).</summary>
+    public string Werkzeug { get; set; } = Resource.GANS_WERKZEUG;
+
+    /// <summary>GANS_WERKZEUG_ZUORDNEN — Werkzeug „Zuordnen" (die Legende wählt das Ziel).</summary>
+    public string WerkzeugZuordnen { get; set; } = Resource.GANS_WERKZEUG_ZUORDNEN;
+
+    /// <summary>GANS_WERKZEUG_AUSBLENDEN — Werkzeug „Ein-/Ausblenden" (die Legende schaltet die Sichtbarkeit).</summary>
+    public string WerkzeugAusblenden { get; set; } = Resource.GANS_WERKZEUG_AUSBLENDEN;
+
+    /// <summary>GANS_ALLE_ZEIGEN — der Knopf, der alle ausgeblendeten Körper wieder zeigt.</summary>
+    public string AlleZeigen { get; set; } = Resource.GANS_ALLE_ZEIGEN;
+
+    /// <summary>GANS_EINBLENDEN — Kurztext eines ausgeblendeten Legendeneintrags, {0} = Name.</summary>
+    public string Einblenden { get; set; } = Resource.GANS_EINBLENDEN;
+
+    /// <summary>GANS_AUSBLENDEN — Kurztext eines sichtbaren Legendeneintrags, {0} = Name.</summary>
+    public string Ausblenden { get; set; } = Resource.GANS_AUSBLENDEN;
+
+    /// <summary>GANS_BAUTEILGRUPPEN — Überschrift der Kästchenliste der Bauteilgruppen.</summary>
+    public string Bauteilgruppen { get; set; } = Resource.GANS_BAUTEILGRUPPEN;
+
+    /// <summary>GANS_BAUTEILGRUPPE_ZAHL — ein Eintrag der Kästchenliste, {0} = Gruppe, {1} = Zahl.</summary>
+    public string BauteilgruppeZahl { get; set; } = Resource.GANS_BAUTEILGRUPPE_ZAHL;
+
+    /// <summary>Die Namen der Bauteilgruppen nach <see cref="Bauteilartgruppe"/> (<c>BTA_ART_*</c>).</summary>
+    public IReadOnlyList<string> Bauteilartgruppen { get; set; } = new[]
+    {
+        Resource.BTA_ART_AUSSENWAND, Resource.BTA_ART_INNENWAND, Resource.BTA_ART_DACH, Resource.BTA_ART_DECKE,
+        Resource.BTA_ART_BODENPLATTE, Resource.BTA_ART_FENSTER, Resource.BTA_ART_TUER, Resource.BTA_ART_VORHANGFASSADE,
+        Resource.BTA_ART_SONSTIGES,
+    };
+
+    /// <summary>Der Name einer Bauteilgruppe.</summary>
+    public string Bauteilartgruppenname(Bauteilartgruppe g) => (int)g < Bauteilartgruppen.Count ? Bauteilartgruppen[(int)g] : g.ToString();
 
     /// <summary>GANS_RAND_KEINE — ein getroffenes Dreieck ohne Gruppe (entartet).</summary>
     public string RandKeine { get; set; } = Resource.GANS_RAND_KEINE;

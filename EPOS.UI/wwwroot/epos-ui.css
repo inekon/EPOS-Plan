@@ -7407,6 +7407,69 @@ table.epos-simerg-tabelle {
     font-size: 0.9em;
 }
 
+/* Ein- und Ausblenden in der Koerperansicht (Auftrag AB4): Werkzeugwahl ueber der Legende, ausgeblendete Eintraege
+   gedimmt und durchgestrichen, daneben die Kaestchenliste der Bauteilgruppen. */
+.epos-gebansicht-werkzeug {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 6px 0 0;
+}
+
+.epos-gebansicht-werkzeugknopf[aria-pressed="true"] {
+    background: var(--epos-karte-flaeche-hover);
+    border-color: var(--epos-karte-rahmen-hover);
+}
+
+.epos-gebansicht-legendenblock {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 6px 24px;
+}
+
+/* Sichtbar ist der Normalfall: kein Zielrahmen wie bei der Zielwahl. */
+.epos-gebansicht-sichtknopf[aria-pressed="true"] {
+    background: transparent;
+    border: 1px solid var(--epos-grundriss-rand);
+    padding: 4px 10px;
+}
+
+.epos-gebansicht-legendeneintrag--aus .epos-gebansicht-zielknopf {
+    opacity: 0.55;
+}
+
+.epos-gebansicht-legendeneintrag--aus .epos-gebansicht-zonenname {
+    text-decoration: line-through;
+}
+
+.epos-gebansicht-legendeneintrag--aus .epos-gebansicht-farbfeld {
+    background: transparent;
+}
+
+.epos-gebansicht-bauteilgruppen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 12px;
+    margin: 6px 0 0;
+    padding: 4px 8px;
+    border: 1px solid var(--epos-grundriss-rand);
+    border-radius: 4px;
+}
+
+.epos-gebansicht-bauteilgruppen > legend {
+    padding: 0 4px;
+    color: var(--epos-text-leise);
+}
+
+.epos-gebansicht-bauteilgruppe {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: var(--epos-touchziel);
+    cursor: pointer;
+}
+
 .epos-gebansicht-farbfeld--neu {
     background: transparent;
     border-style: dotted;
@@ -7647,6 +7710,8 @@ table.epos-simerg-tabelle {
     .epos-gebansicht-farbfeld { background: Canvas; border-color: CanvasText; }
     .epos-gebansicht-zielknopf { border-color: ButtonText; }
     .epos-gebansicht-zielknopf[aria-pressed="true"] { border-color: Highlight; outline: 2px solid Highlight; }
+    .epos-gebansicht-sichtknopf[aria-pressed="true"] { outline: none; border-color: ButtonText; }
+    .epos-gebansicht-legendeneintrag--aus .epos-gebansicht-zielknopf { opacity: 1; border-style: dashed; }
     .epos-gebansicht-raum--hervor polygon { stroke: Highlight; }
     .epos-gebansicht-kante, .epos-gebansicht-oeffnung { stroke: CanvasText; }
     /* Befund ueber den Stufenschluessel: ohne Befund leer bzw. duenn, Koerper unlesbar gestrichelt, ohne

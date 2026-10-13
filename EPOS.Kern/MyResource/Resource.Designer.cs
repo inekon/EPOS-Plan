@@ -31274,6 +31274,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle zeigen ähnelt.
+        /// </summary>
+        public static string GANS_ALLE_ZEIGEN {
+            get {
+                return ResourceManager.GetString("GANS_ALLE_ZEIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Außen ähnelt.
         /// </summary>
         public static string GANS_AUFBAU_AUSSEN {
@@ -31346,6 +31355,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ausblenden ähnelt.
+        /// </summary>
+        public static string GANS_AUSBLENDEN {
+            get {
+                return ResourceManager.GetString("GANS_AUSBLENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilgruppen ähnelt.
+        /// </summary>
+        public static string GANS_BAUTEILGRUPPEN {
+            get {
+                return ResourceManager.GetString("GANS_BAUTEILGRUPPEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1}) ähnelt.
+        /// </summary>
+        public static string GANS_BAUTEILGRUPPE_ZAHL {
+            get {
+                return ResourceManager.GetString("GANS_BAUTEILGRUPPE_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bauteile ähnelt.
         /// </summary>
         public static string GANS_BEFUND_BAUTEILE {
@@ -31396,6 +31432,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GANS_DATEIKOERPER {
             get {
                 return ResourceManager.GetString("GANS_DATEIKOERPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} einblenden ähnelt.
+        /// </summary>
+        public static string GANS_EINBLENDEN {
+            get {
+                return ResourceManager.GetString("GANS_EINBLENDEN", resourceCulture);
             }
         }
         
@@ -31909,6 +31954,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GANS_VERMERK_VORGABEDICKE {
             get {
                 return ResourceManager.GetString("GANS_VERMERK_VORGABEDICKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werkzeug der Legende ähnelt.
+        /// </summary>
+        public static string GANS_WERKZEUG {
+            get {
+                return ResourceManager.GetString("GANS_WERKZEUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein-/Ausblenden ähnelt.
+        /// </summary>
+        public static string GANS_WERKZEUG_AUSBLENDEN {
+            get {
+                return ResourceManager.GetString("GANS_WERKZEUG_AUSBLENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnen ähnelt.
+        /// </summary>
+        public static string GANS_WERKZEUG_ZUORDNEN {
+            get {
+                return ResourceManager.GetString("GANS_WERKZEUG_ZUORDNEN", resourceCulture);
             }
         }
         
