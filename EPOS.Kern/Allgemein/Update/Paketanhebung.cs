@@ -455,6 +455,9 @@ namespace WindowsFormsApplication1
             // Schnittmenge des Imports.
             new Stufe(TwwZonenferienSchema.SCHRITT, Art.Umformung,
                       "eigene Ferien der Zonen als Liste (Tab_TwwZonenferien) statt vier Spaltenpaaren", SchrittZonenferien),
+            // Ein älteres Paket bringt seine Zonen ohne die Lastfelder; der Schritt legt die Spalten am Ziel leer an.
+            new Stufe(ZonenLastfelderSchema.SCHRITT, Art.Ddl,
+                      "Außenluft je Person, Lichtleistung und Wärme je Person an der Zone (DA-2, E138)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

@@ -1058,7 +1058,10 @@ namespace WindowsFormsApplication1
         /// die Tabelle <c>Tab_TwwZonenferien</c> (beliebig viele eigene Ferienzeiträume je Zone), in die der Schritt die vier
         /// Spaltenpaare von <c>Tab_TwwZone</c> überträgt und sie danach abbaut (<see cref="TwwZonenferienSchema"/>).
         /// <b>Ergebnisneutral:</b> Der Zapfkalender rechnet über die Liste dieselben Fenster.
-        public const int Zielversion = TwwZonenferienSchema.SCHRITT;
+        /// Danach, mit den LASTFELDERN DER ZONE (DA-2, E138 F5), steht das Ziel auf <see cref="ZonenLastfelderSchema.SCHRITT"/>:
+        /// <c>Aussenluft_Person</c>, <c>Licht_W_m2</c> und <c>Personen_Waerme_W</c> an <c>Tab_Zone</c> und <c>Tab_Zone_STAMM</c>
+        /// (<see cref="ZonenLastfelderSchema"/>). <b>Ergebnisneutral:</b> Der Rechenweg liest keine der drei Spalten.
+        public const int Zielversion = ZonenLastfelderSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

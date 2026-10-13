@@ -584,6 +584,9 @@ namespace WindowsFormsApplication1
                                   Temperatur("SpaceTemperatureSummerMax", r.SollKuehlenC),
                                   r.Nachtabsenkung.HasValue ? Wert("DiscontinuedHeating", new IfcBoolean(r.Nachtabsenkung.Value)) : null,
                                   r.LuftwechselNutzerJeH.HasValue ? Wert("NaturalVentilationRate", new IfcNumericMeasure(Endlich(r.LuftwechselNutzerJeH.Value))) : null);
+                    // Welle DA-3: Belegung, Lasten, Auslegung und Licht als Standardsätze — ergänzt, eine vorhandene Eigenschaft ersetzt.
+                    foreach ((string satz, List<IfcSatzwert> werte) in IfcStandardsaetze.Raumsaetze(r))
+                        Ergaenzen(s, satz, werte.Select(Satzwert).ToArray());
                 }
                 var zone = new List<Angabe>
                 {
@@ -593,6 +596,8 @@ namespace WindowsFormsApplication1
                     Zahl("Personen", r.Personen, null),
                     Zahl("GeraeteWm2", r.GeraeteWm2, null),
                     Zahl("LichtWm2", r.LichtWm2, null),
+                    Zahl(IfcStandardsaetze.EPOS_AUSSENLUFT_PERSON, r.GbxmlLasten?.AussenluftJePersonM3h, null),
+                    Zahl(IfcStandardsaetze.EPOS_WAERME_PERSON, r.GbxmlLasten?.WaermeJePersonW, null),
                 };
                 zone.AddRange(IfcKonditionierungssatz.Zonenwerte(r.Konditionierung).Select(Satzwert));
                 Eigen(o, IfcSchreiber.EPOS_ZONE, zone.ToArray());
@@ -620,7 +625,9 @@ namespace WindowsFormsApplication1
                 if (klasse != null)
                     Ergaenzen(e, "Pset_" + klasse + "Common",
                               u.HasValue ? Wert("ThermalTransmittance", new IfcThermalTransmittanceMeasure(u.Value)) : null,
-                              Neben("IsExternal", new IfcBoolean(aussen)));
+                              Neben("IsExternal", new IfcBoolean(aussen)),
+                              klasse == "Window" && IfcStandardsaetze.Glasanteil(b) is double glas
+                                  ? Wert(IfcStandardsaetze.FENSTER_GLASANTEIL, new IfcNormalisedRatioMeasure(glas)) : null);
                 if ((klasse == "Window" || klasse == "Door") && b.GWert.HasValue)
                     Ergaenzen(e, "Pset_DoorWindowGlazingType",
                               Wert("SolarHeatGainTransmittance", new IfcNormalisedRatioMeasure(Endlich(b.GWert.Value))));
@@ -788,6 +795,10 @@ namespace WindowsFormsApplication1
                           s.RhoKgM3 > 0.0 ? Neu<IfcPropertySingleValue>(p => { p.Name = "MassDensity"; p.NominalValue = new IfcMassDensityMeasure(Endlich(s.RhoKgM3.Value)); }) : null);
                 Stoffsatz(m, IfcSchreiber.EPOS_BAUSTOFF,
                           s.RWertM2KW > 0.0 ? Neu<IfcPropertySingleValue>(p => { p.Name = "Waermedurchlasswiderstand"; p.NominalValue = new IfcThermalResistanceMeasure(Endlich(s.RWertM2KW.Value)); }) : null);
+                // Welle DA-3 (E138 F8 b): die Konstanten des Rechenwegs als optische Werte — durchgereicht, ohne Feld.
+                Stoffsatz(m, IfcStandardsaetze.OPTIK, IfcStandardsaetze.Optikwerte()
+                    .Select(w => Neu<IfcPropertySingleValue>(p => { p.Name = w.Name; p.NominalValue = new IfcNormalisedRatioMeasure(w.Zahl.Value); }))
+                    .ToArray());
                 return m;
             }
 

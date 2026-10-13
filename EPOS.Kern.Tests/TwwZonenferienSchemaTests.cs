@@ -34,7 +34,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(KaeltebedarfSplitAbrechnungSchema.SCHRITT + 1, TwwZonenferienSchema.SCHRITT);
             Assert.Equal(224, TwwZonenferienSchema.SCHRITT);
-            Assert.Equal(TwwZonenferienSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= TwwZonenferienSchema.SCHRITT);   // Ziel „mindestens“: spätere Schritte hängen an
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == TwwZonenferienSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Umformung, s.Wirkung);
         }

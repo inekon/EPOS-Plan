@@ -638,3 +638,16 @@ Monatsachse der Vollansicht bleiben ohne Datum, ebenso Wochen- und Tagesprofile 
 Keine Probe kommt hinzu; **29 Bilder ändern sich bewusst** — alle mit Stundenachse oder Ausschnitt einer
 Jahresreihe: `erzeugerstapel_fenster`, `erzeugerstapel_fenster_a`, `erzeugerstapel_fenster_b`, `erzeugerstapel_solar_zwei_linien`, `ganglinie_normiert_fenster`, `ganglinie_normiert_fenster_a`, `ganglinie_normiert_fenster_b`, `jahresgang_fenster_b`, `jahresverlauf_tag`, `jahresverlauf_tag_fenster_a`, `jahresverlauf_tag_fenster_b`, `jahresverlauf_woche`, `jahresverlauf_woche_fenster_b`, `klimadaten_temperatur_fenster`, `kuehlvorlauf_auslegung_wirkt_a`, `kuehlvorlauf_auslegung_wirkt_b`, `kuehlvorlauf_luecke_wirkt_a`, `kuehlvorlauf_luecke_wirkt_b`, `kuehlvorlauf_ruecklauf_gebaeude`, `raumtemperatur_gebaeude`, `raumtemperatur_sollband_wirkt_a`, `raumtemperatur_sollband_wirkt_b`, `temperaturverlauf_ein_speicher`, `temperaturverlauf_zwei_speicher`, `vorlauf_auslegung_wirkt_a`, `vorlauf_auslegung_wirkt_b`, `vorlauf_luecke_wirkt_a`, `vorlauf_luecke_wirkt_b`, `vorlauf_ruecklauf_gebaeude`. Die übrigen 193 Zeilen von `Messlatte_2026-10-09.sha256` stehen unverändert in
 `Messlatte_2026-10-10.sha256`. Die Windows-Messliste des Gates ist auf Windows neu zu ziehen: genau diese Zeilen ändern sich.
+
+---
+
+## Oberflächenmodus (Oberflächenregel) — kein Bild ändert sich
+
+Die Oberfläche (`DiagrammSvg`) zeigt jedes Modell nach der **Oberflächenregel** (`Zeichnung/Oberflaechenregel.cs`,
+`Zeichenmodell.Darstellung = Interaktiv`): Bedarf als Linie über den Flächen, Erzeugung als durchscheinende Fläche
+(die größere hinten), Stapel bleibt Stapel, dichte Jahresreihen als Tagesband (`Pfadregel.Tagesband`, `SvgSchreiber.Bandpfad`).
+Die Regel wirkt **allein auf die `Datenreihe`n** eines neuen Modells; die Befehlsliste — das, was `SkiaMaler.Png` und das
+Druck-SVG zeichnen — ist dieselbe Instanz wie im Berichtsmodell. Deshalb ändert sich **kein Bild dieser Probe**, und die
+Messlatte bleibt unberührt; der Nachweis ist ein leerer Diff der Hashlisten vor und nach dem Umbau auf demselben
+Rechner (`--hashes` zweimal, Windows wie Linux), dazu `EPOS.Kern.Tests/OberflaechenregelTests.Der_Berichtsweg_bleibt_unberuehrt`
+(Befehle referenzgleich, Drucktext byte-gleich). Keine Probe kommt hinzu.

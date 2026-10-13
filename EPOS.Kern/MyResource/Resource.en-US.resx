@@ -51708,6 +51708,9 @@ chart</value>
   <data name="DIAGRAMM_TIP_CSV" xml:space="preserve">
     <value>Save annual load curve as CSV</value>
   </data>
+  <data name="DIAGRAMM_TIP_EINHEIT" xml:space="preserve">
+    <value>Time axis: date or hour of year</value>
+  </data>
   <data name="SIMQ_ERDREICH_LAUF_KENNWERTE_ZEILE" xml:space="preserve">
     <value>annual mean {0} °C  ·  minimum {1} °C on {2}  ·  maximum {3} °C on {4}</value>
   </data>
@@ -55244,8 +55247,11 @@ chart</value>
   <data name="IMP_GBXML_PROT_WAERME_LATENT" xml:space="preserve">
     <value>Zone "{0}", space "{1}": latent heat gain per person ({2} W) discarded — the sensible heat is used.</value>
   </data>
+  <data name="IMP_GBXML_PROT_ABSORPTION_ABWEICHUNG" xml:space="preserve">
+    <value>Construction "{0}": the {1} value of the file ({2}) differs from the constant of the calculation ({3}) — the constant applies.</value>
+  </data>
   <data name="IMP_GBXML_PROT_AUSSENLUFT_PERSON" xml:space="preserve">
-    <value>Zone "{0}": outdoor air per person converted into the user air change ({1} 1/h) — the zone has no per-person field.</value>
+    <value>Zone "{0}": outdoor air per person converted into the user air change ({1} 1/h); the per-person value is also kept at the zone.</value>
   </data>
   <data name="IMP_GBXML_PROT_VERDICHTET_RAEUME" xml:space="preserve">
     <value>Zone "{0}", {1}: the spaces carry different schedules ({2}) — condensed to the weighted mean.</value>
@@ -56092,6 +56098,45 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="GEBWI_AUSSTEHEND_BEHALTEN" xml:space="preserve">
     <value>keep</value>
+  </data>
+  <data name="IMP_IFC_STANDARD_HERKUNFT" xml:space="preserve">
+    <value>from IFC file (standard property sets)</value>
+  </data>
+  <data name="IMP_IFC_PROT_STANDARDSAETZE" xml:space="preserve">
+    <value>Standard property sets read in {0} spaces ({1} values, file before profile); {2} values without target field passed through: {3}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_HERSTELLER_VORSCHLAG" xml:space="preserve">
+    <value>{0} spaces: air change rate {2} … {3} 1/h suggested by the vendor-specific property "{1}" — not a standard value, not taken over; the usage profile applies ({4}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_OPTIK_ABWEICHUNG" xml:space="preserve">
+    <value>Material "{0}", {1}: the file gives {2}, EPOS-Plan calculates with {3} — the file value is not taken over.</value>
+  </data>
+  <data name="CHART_ACHSE_DATUM" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="CHART_ACHSE_DATUM_ZIFFERN" xml:space="preserve">
+    <value>{1}/{0}</value>
+  </data>
+  <data name="CHART_ACHSE_STUNDE_IM_JAHR" xml:space="preserve">
+    <value>Hour of year [h]</value>
+  </data>
+  <data name="DIAGRAMM_BTN_DATUM" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="DIAGRAMM_BTN_STUNDE_IM_JAHR" xml:space="preserve">
+    <value>Hour of year</value>
+  </data>
+  <data name="CHART_LEGENDE_PV_EIGENVERBRAUCH" xml:space="preserve">
+    <value>PV self-consumption</value>
+  </data>
+  <data name="CHART_LEGENDE_PV_EINSPEISUNG" xml:space="preserve">
+    <value>PV feed-in (surplus)</value>
+  </data>
+  <data name="CHART_LEGENDE_PV_ABREGELUNG" xml:space="preserve">
+    <value>PV curtailment</value>
+  </data>
+  <data name="SIM_CHK_PV_AUFTEILEN" xml:space="preserve">
+    <value>Split PV (self-consumption + surplus)</value>
   </data>
 </root>
 

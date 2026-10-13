@@ -86,6 +86,9 @@ namespace WindowsFormsApplication1
         /// <summary>Stammt die Konditionierung aus den Lasten und Zeitplänen einer gbXML-Datei (<see cref="Konditionierungsherkunft.GbxmlDatei"/>)?</summary>
         internal bool AusGbxml => Groessen.Any(g => g.Herkunft == Konditionierungsherkunft.GbxmlDatei);
 
+        /// <summary>Stammt die Konditionierung aus den IFC-Standardsätzen der Räume (Welle DA-3; Herkunft <see cref="Konditionierungsherkunft.IfcDatei"/>)?</summary>
+        internal bool AusIfcStandard { get; init; }
+
         /// <summary>Liefert die Projektdatei für mindestens eine Größe etwas?</summary>
         internal bool Liefert => Groessen.Any(g => g.Herkunft != Konditionierungsherkunft.Vorlage);
 

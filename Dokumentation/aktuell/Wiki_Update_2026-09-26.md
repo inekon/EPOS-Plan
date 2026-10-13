@@ -228,12 +228,16 @@ Die Wiki-Quelle (Programm Dokumentation/Varianten) ist fortgeschrieben, ins Wiki
 
 - Seit 13.10.2026: Der Reiter „Übersicht“ unter „Berichte & Kosten“ stellt die Komponenten je Gewerk mit ihren Kennwerten nebeneinander, hebt Abweichungen zum Stammprojekt hervor und blendet mit „nur Unterschiede“ gleiche Gewerke aus.
 - Seit 13.10.2026: Die Tafel „Komponenten im Vergleich“ im Reiter „Übersicht“ führt die Kältemaschine als eigenes Gewerk mit Anzahl und Kälteleistung.
-- Im Reiter Übersicht von Berichte & Kosten enthält die Liste ‚Detail-Unterschiede für Variante‘ nur noch Varianten; ohne Auswahl zeigt die Übersicht den Komponentenvergleich.
-- Varianten werden über die Dialoge ‚Variante anlegen…‘, ‚Umbenennen…‘ und ‚Löschen…‘ verwaltet; eine neue Variante entsteht aus dem Stammprojekt oder aus einer vorhandenen Variante.
-- Das Umbenennen einer Variante legt keine Kopie mehr an.
-- Die Übersicht vergleicht die Energie-Ergebnisse der Versionen (Bedarf, Erzeugung, Strom, Endenergie, Deckung, Effizienz; Kälte, Gebäude und Emissionen zum Aufklappen).
-- Über ‚Anzeige anpassen…‘ legt jeder Benutzer fest, welche Gruppen und Kennzahlen die Übersicht zeigt.
-- Die Ergebnisse der Übersicht lassen sich als Tabelle oder als Balkengrafik anzeigen.
+- Seit 13.10.2026: Im Reiter Übersicht von Berichte & Kosten enthält die Liste ‚Detail-Unterschiede für Variante‘ nur noch Varianten; ohne Auswahl zeigt die Übersicht den Komponentenvergleich.
+- Seit 13.10.2026: Varianten werden über die Dialoge ‚Variante anlegen…‘, ‚Umbenennen…‘ und ‚Löschen…‘ verwaltet; eine neue Variante entsteht aus dem Stammprojekt oder aus einer vorhandenen Variante.
+- Seit 13.10.2026: Das Umbenennen einer Variante legt keine Kopie mehr an.
+- Seit 13.10.2026: Die Übersicht vergleicht die Energie-Ergebnisse der Versionen (Bedarf, Erzeugung, Strom, Endenergie, Deckung, Effizienz; Kälte, Gebäude und Emissionen zum Aufklappen).
+- Seit 13.10.2026: Über ‚Anzeige anpassen…‘ legt jeder Benutzer fest, welche Gruppen und Kennzahlen die Übersicht zeigt.
+- Seit 13.10.2026: Die Ergebnisse der Übersicht lassen sich als Tabelle oder als Balkengrafik anzeigen.
+- Seit 13.10.2026: In den Zeitreihendiagrammen stehen Bedarfe als Linie über den Erzeugungsflächen; die Jahresansicht zeigt je Reihe ein Tagesband mit Tagesmittel.
+- Seit 13.10.2026: Die Zeitachse aller Jahresdiagramme ist zwischen Datum und Stunde im Jahr umschaltbar.
+- Seit 13.10.2026: Im Reiter Photovoltaik zeigt der Schalter ‚PV aufteilen‘ die Erzeugung als Stapel aus Eigenverbrauch, Einspeisung und Abregelung.
+- Seit 13.10.2026: Der Arbeitspreis eines Energieträgers wird bei neuer Auswahl in €/kWh angezeigt und mit dem Heizwert umgerechnet; gespeicherte Einheiten bleiben erhalten.
 
 ### Version ‹Version› — Kältemittel als Stammdatum (Entwurf, Upload ausstehend)
 

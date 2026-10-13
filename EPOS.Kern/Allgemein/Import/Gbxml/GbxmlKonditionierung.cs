@@ -65,7 +65,16 @@ namespace WindowsFormsApplication1
             int werte = mit.Sum(r => r.GbxmlLasten.Werte + new[] { r.Personen ?? r.FlaecheJePersonM2, r.GeraeteWm2, r.LichtWm2 }.Count(w => w.HasValue));
             int plaene = mit.SelectMany(r => r.GbxmlLasten.Plaene).Distinct().Count();
             foreach (GbxmlZeitplan p in mit.SelectMany(r => r.GbxmlLasten.Plaene).Where(p => p.Verworfen != null)) z.Verworfen.Add(p);
-            var k = new Zonenkonditionierung { Zone = name, Groessen = groessen };
+            // Welle DA-3: Lasten aus den IFC-Standardsätzen tragen die Herkunft der IFC-Datei (Bemerkung „Standardsätze“).
+            bool ifc = mit.All(r => r.GbxmlLasten.AusIfc);
+            if (ifc)
+                groessen = groessen.Select(x => x.Herkunft != Konditionierungsherkunft.GbxmlDatei ? x : new Groessenkonditionierung
+                {
+                    Groesse = x.Groesse, Herkunft = Konditionierungsherkunft.IfcDatei, Kalender = x.Kalender, KalenderBeleg = x.KalenderBeleg,
+                    Vorgaben = x.Vorgaben, Begrenzt = x.Begrenzt, NennwertDatei = x.NennwertDatei,
+                    BemerkungText = MyResource.Resource.IMP_IFC_STANDARD_HERKUNFT,
+                }).ToList();
+            var k = new Zonenkonditionierung { Zone = name, Groessen = groessen, AusIfcStandard = ifc };
             k.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "ZONE_LASTEN", name, Ganz(werte), Ganz(plaene), Ganz(z.Verdichtet), Ganz(z.Verworfen.Count)));
             k.Meldungen.AddRange(meldungen);
             return k;
@@ -399,6 +408,41 @@ namespace WindowsFormsApplication1
         private static string Schluessel(double[] w) => string.Join(";", w.Select(v => v.ToString("R", CultureInfo.InvariantCulture)));
 
         // ==================================================================
+        //  Lastfelder der Zone (Welle DA-2, ZonenLastfelderSchema)
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Setzt die Lastfelder der Zone</b> aus den Räumen mit gbXML-Lasten — zusätzlich zu Kalender und Nennwerten, die der
+        /// Lauf liest: Lichtleistung je Fläche (Σ Licht × Fläche ÷ Fläche der Zone), Wärme je Person und Außenluft je Person
+        /// (personengewichtet, ohne Umrechnung). Latente Wärme bleibt außen vor (wie beim Nennwert). Räume ohne Wert zählen nicht.
+        /// </summary>
+        internal static void Lastfelder(ZoneModel zone, IEnumerable<AbbildRaum> raeume, double? flaecheM2)
+        {
+            if (zone == null) return;
+            List<AbbildRaum> mit = (raeume ?? Enumerable.Empty<AbbildRaum>()).Where(r => r.GbxmlLasten != null).ToList();
+            if (mit.Count == 0) return;
+            double flaeche = flaecheM2 > 0.0 ? flaecheM2.Value : mit.Sum(r => r.FlaecheM2 > 0.0 ? r.FlaecheM2.Value : 0.0);
+            List<AbbildRaum> licht = mit.Where(r => r.LichtWm2 >= 0.0 && r.FlaecheM2 > 0.0).ToList();
+            if (licht.Count > 0 && flaeche > 0.0)
+                zone.Licht_W_m2 = Math.Round(licht.Sum(r => r.LichtWm2.Value * r.FlaecheM2.Value) / flaeche, 3);
+            zone.Personen_Waerme_W = JePerson(mit, r => string.Equals(r.GbxmlLasten.WaermeArt, "Latent", StringComparison.OrdinalIgnoreCase)
+                                                        ? null : r.GbxmlLasten.WaermeJePersonW);
+            zone.Aussenluft_Person = JePerson(mit, r => r.GbxmlLasten.AussenluftJePersonM3h);
+        }
+
+        /// <summary>Das personengewichtete Mittel eines Werts je Person (ohne Personenzahl gleich gewichtet); <c>null</c> = kein Raum trägt ihn.</summary>
+        private static double? JePerson(List<AbbildRaum> raeume, Func<AbbildRaum, double?> wert)
+        {
+            var teile = raeume.Where(r => wert(r) >= 0.0)
+                              .Select(r => (Wert: wert(r).Value,
+                                            Gewicht: r.Personen ?? (r.FlaecheJePersonM2 > 0.0 && r.FlaecheM2 > 0.0 ? r.FlaecheM2 / r.FlaecheJePersonM2 : null) ?? 0.0))
+                              .ToList();
+            if (teile.Count == 0) return null;
+            double summe = teile.Sum(t => t.Gewicht);
+            return Math.Round(summe > 0.0 ? teile.Sum(t => t.Wert * t.Gewicht) / summe : teile.Average(t => t.Wert), 3);
+        }
+
+        // ==================================================================
         //  Abgleich mit dem Nutzungsprofil (E138 F2: Hinweis, es gilt die Datei)
         // ==================================================================
 
@@ -409,10 +453,11 @@ namespace WindowsFormsApplication1
         internal static List<PruefMeldung> Profilabgleich(Zonenkonditionierung k, Raumnutzungsprofil profil, double? flaecheM2)
         {
             var aus = new List<PruefMeldung>();
-            if (k == null || profil == null || !(flaecheM2 > 0.0) || !k.AusGbxml) return aus;
+            if (k == null || profil == null || !(flaecheM2 > 0.0) || !(k.AusGbxml || k.AusIfcStandard)) return aus;
             void Vergleich(Konditionierungsgroesse g, double? profilwert)
             {
-                Groessenkonditionierung d = k.Groessen.FirstOrDefault(x => x.Groesse == g && x.Herkunft == Konditionierungsherkunft.GbxmlDatei);
+                Groessenkonditionierung d = k.Groessen.FirstOrDefault(x => x.Groesse == g && (x.Herkunft == Konditionierungsherkunft.GbxmlDatei
+                                                                                   || x.Herkunft == Konditionierungsherkunft.IfcDatei));
                 double? datei = d?.Kalender?.Nennwert ?? d?.NennwertDatei;
                 if (!(datei > 0.0) || !(profilwert > 0.0)) return;
                 if (Math.Abs(datei.Value - profilwert.Value) > ABWEICHUNG_HINWEIS * profilwert.Value)

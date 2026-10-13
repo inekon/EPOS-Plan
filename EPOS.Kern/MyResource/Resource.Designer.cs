@@ -22064,11 +22064,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datum ähnelt.
+        /// </summary>
+        public static string CHART_ACHSE_DATUM {
+            get {
+                return ResourceManager.GetString("CHART_ACHSE_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}. {1} ähnelt.
         /// </summary>
         public static string CHART_ACHSE_DATUM_MUSTER {
             get {
                 return ResourceManager.GetString("CHART_ACHSE_DATUM_MUSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}.{1}. ähnelt.
+        /// </summary>
+        public static string CHART_ACHSE_DATUM_ZIFFERN {
+            get {
+                return ResourceManager.GetString("CHART_ACHSE_DATUM_ZIFFERN", resourceCulture);
             }
         }
         
@@ -22195,6 +22213,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_ACHSE_STROMBEDARF {
             get {
                 return ResourceManager.GetString("CHART_ACHSE_STROMBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde im Jahr [h] ähnelt.
+        /// </summary>
+        public static string CHART_ACHSE_STUNDE_IM_JAHR {
+            get {
+                return ResourceManager.GetString("CHART_ACHSE_STUNDE_IM_JAHR", resourceCulture);
             }
         }
         
@@ -22636,6 +22663,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_LEGENDE_PUFFER_ANDERE {
             get {
                 return ResourceManager.GetString("CHART_LEGENDE_PUFFER_ANDERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Abregelung ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_PV_ABREGELUNG {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_PV_ABREGELUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Eigenverbrauch ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_PV_EIGENVERBRAUCH {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_PV_EIGENVERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Einspeisung (Überschuss) ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_PV_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_PV_EINSPEISUNG", resourceCulture);
             }
         }
         
@@ -23846,11 +23900,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datum ähnelt.
+        /// </summary>
+        public static string DIAGRAMM_BTN_DATUM {
+            get {
+                return ResourceManager.GetString("DIAGRAMM_BTN_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde im Jahr ähnelt.
+        /// </summary>
+        public static string DIAGRAMM_BTN_STUNDE_IM_JAHR {
+            get {
+                return ResourceManager.GetString("DIAGRAMM_BTN_STUNDE_IM_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jahresganglinie als CSV speichern ähnelt.
         /// </summary>
         public static string DIAGRAMM_TIP_CSV {
             get {
                 return ResourceManager.GetString("DIAGRAMM_TIP_CSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitachse: Datum oder Stunde im Jahr ähnelt.
+        /// </summary>
+        public static string DIAGRAMM_TIP_EINHEIT {
+            get {
+                return ResourceManager.GetString("DIAGRAMM_TIP_EINHEIT", resourceCulture);
             }
         }
         
@@ -49686,6 +49767,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau „{0}“: Der Grad {1} der Datei ({2}) weicht von der Konstante des Rechenwegs ({3}) ab — es gilt die Konstante. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_ABSORPTION_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_ABSORPTION_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Konstruktion {0}: mindestens eine Schicht nur mit R-Wert — U-Wert aus der Schichtung, keine Speichermasse. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_AUFBAU_MASSELOS {
@@ -49704,7 +49794,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Außenluft je Person in den Luftwechsel der Nutzer umgerechnet ({1} 1/h) — die Zone führt kein Feld je Person. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Außenluft je Person in den Luftwechsel der Nutzer umgerechnet ({1} 1/h); der Wert je Person steht zusätzlich an der Zone. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_AUSSENLUFT_PERSON {
             get {
@@ -51396,6 +51486,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume: Luftwechsel {2} … {3} 1/h aus der herstellereigenen Eigenschaft „{1}“ als Vorschlag genannt — kein Normwert, nicht übernommen; es gilt das Nutzungsprofil ({4}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_HERSTELLER_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_HERSTELLER_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Innenwände ohne Nachbarraum (innen nach IsExternal oder Angrenzung) zählen einseitig als innere Masse: {1} m² Bruttofläche. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_INNEN_EINSEITIG {
@@ -51918,6 +52017,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoff „{0}“, {1}: Die Datei gibt {2}, EPOS-Plan rechnet mit {3} — der Wert der Datei wird nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OPTIK_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OPTIK_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Orientierung der Datei: Azimut bzw. Dachneigung bei Mengensatz aus den Raumgrenzen ({1}) bzw. aus dem Bauteilkörper ({2}), die Fläche bleibt die des Mengensatzes; Fenster und Türen, deren Wand bzw. Dach keine Richtung hat, aus dem eigenen Körper ({4}) ({3}). ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_ORIENTIERUNG_ERGAENZT {
@@ -52148,6 +52256,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_SOLLWERT_CAD_SPANNE {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_SOLLWERT_CAD_SPANNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standard-Eigenschaftssätze in {0} Räumen gelesen ({1} Werte, Datei vor Profil); {2} Werte ohne Zielfeld durchgereicht: {3}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_STANDARDSAETZE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_STANDARDSAETZE", resourceCulture);
             }
         }
         
@@ -52463,6 +52580,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_ZU_VIELE_ZONEN_VORSCHLAG {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_ZU_VIELE_ZONEN_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus IFC-Datei (Standardsätze) ähnelt.
+        /// </summary>
+        public static string IMP_IFC_STANDARD_HERKUNFT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_STANDARD_HERKUNFT", resourceCulture);
             }
         }
         
@@ -122662,6 +122788,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_CHK_LADEGRENZE2 {
             get {
                 return ResourceManager.GetString("SIM_CHK_LADEGRENZE2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV aufteilen (Eigenverbrauch + Überschuss) ähnelt.
+        /// </summary>
+        public static string SIM_CHK_PV_AUFTEILEN {
+            get {
+                return ResourceManager.GetString("SIM_CHK_PV_AUFTEILEN", resourceCulture);
             }
         }
         
