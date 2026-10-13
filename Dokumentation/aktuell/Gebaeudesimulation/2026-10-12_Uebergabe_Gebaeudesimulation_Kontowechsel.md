@@ -13,12 +13,12 @@ nach `Dokumentation/ueberholt/`, sobald die Fortsetzung den ersten Importlauf, B
 | Was | Wert |
 |---|---|
 | Arbeitszweig | `ios_migration_september` (Remote `origin`). Der Sitzungszweig des alten Kontos `claude/magical-bohr-ff5ufj` wurde bei jedem Push mitgezogen; die neue Sitzung nimmt ihren eigenen Sitzungszweig |
-| Letzte Wellen | #1037 AB4 (Ein- und Ausblenden in der Körperansicht), #1036 BK-3b/3c, #1035 GD-6a, #1032 BK-2b Oberfläche und Bänder, #1031 BK-3 Import, #1030 BK-2 (Schritt 221), #1026 GD-4, #1023 BK-1, #1020 GD-5, #1022 NP7/NP7b (Schritt 220); davor #1011 NP6, #1012 Quick Assist (Admin-Zweig), #1013 AB2, #1014 AB3, #1015 GD-1, #1016 GD-2, #1017 Entwurf BK — gepusht `f40fe2fa1`; danach Anmeldung Schritt 220 (`6870f7169`) und GD-3 mit diesem Papier (#1019) |
+| Letzte Wellen | #1038 DA-1 (gbXML-Import Lasten und Zeitpläne), #1037 AB4 (Ein- und Ausblenden in der Körperansicht), #1036 BK-3b/3c, #1035 GD-6a, #1032 BK-2b Oberfläche und Bänder, #1031 BK-3 Import, #1030 BK-2 (Schritt 221), #1026 GD-4, #1023 BK-1, #1020 GD-5, #1022 NP7/NP7b (Schritt 220); davor #1011 NP6, #1012 Quick Assist (Admin-Zweig), #1013 AB2, #1014 AB3, #1015 GD-1, #1016 GD-2, #1017 Entwurf BK — gepusht `f40fe2fa1`; danach Anmeldung Schritt 220 (`6870f7169`) und GD-3 mit diesem Papier (#1019) |
 | CI | Kern-Lauf 38206954119 grün auf `02d4ddfe0` (enthält alles bis #1022); #1010 grün mit 38188012085 auf `228a10287`; vermerkt in #1010, #1011, #1013–#1017, #1019, #1020, #1022. #1023 (BK-1) und die Papiere danach sind mit [skip ci] gepusht und laufen mit dem nächsten Push ohne [skip ci] durch die CI |
 | Referenzbasis | **R52** `Referenzlaeufe/2026-10-11_R52_Vorheizen`, dreißig Projekte; CI-Auswahl 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065. R53 hat die Sitzung Kälteanlagen für die Projekte 1066–1071 angemeldet (13.10.2026); SA4 nimmt die nächste freie Basis danach |
 | Testdatenbank | Schemastand **222** (Git LFS) |
 | Schemakette | 218 `KaelteArtSchema` (Sitzung Kälteanlagen), 219 `RaumnutzungNormkategorienSchema` (NP6), 220 `RaumnutzungNormwerteSchema` (NP7); 221 `BauteilkatalogSchema` (BK-2); 222 `BauteilkatalogHaustechnikSchema` (BK-3c); **223 frei** |
-| Statuszeilen | höchste vergebene #1037 (#1034 KM-K2 gehört der Sitzung Kälteanlagen; #1033 gehört einer anderen Sitzung); vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E138**, **E139 frei** |
+| Statuszeilen | höchste vergebene #1038 (#1034 KM-K2 gehört der Sitzung Kälteanlagen; #1033 gehört einer anderen Sitzung); vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E138**, **E139 frei** |
 | Parallele Sitzungen | „Kälteanlagen“, „Dialoge und Korrekturen“ (Konto 3), „Administration und Support“; alle pushen auf denselben Zweig. Statuskonflikte zeilenweise lösen, Nummernkollisionen über die nächste freie Nummer |
 
 ## 2. Was die Sitzung seit dem 08.10.2026 gebaut hat
@@ -55,24 +55,25 @@ Auftrag in Abschnitt 4 neu beauftragt. Die Routinen des alten Kontos sind gelös
 - **Bauteilkatalog** (BK-2): Gruppe und Klasse sind Code-Spalten mit CHECK (Texte zweisprachig), Abschnitte stehen in
   `Tab_Bauteilabschnitt(_STAMM)`, das Kennzeichen `Simulation_Ungeeignet` setzt nur der Kern; importierte Sätze tragen
   Herkunft IMPORT, Quelle und Quellkennung und bleiben in der Auslieferung.
+- **gbXML-Konditionierung (DA-1):** Herkunft `GbxmlDatei` in `SqprojKonditionierung` mit `NennwertDatei`/`AusGbxml`; Rangfolge Profil, dann je Größe die Datei; Schemabedarf für den Rundlauf (DA-2): `Tab_Zone.Aussenluft_Person`, Licht je Zone, optional `Personen_Waerme` — Nummer vor DA-2 anmelden (224 ist frei, 223 hat die Sitzung Zapfprofilgenerator).
 - **Haustechnik:** Klasse `HAUSTECHNIK` (Schritt 222) ist die letzte Klasse der Gruppe Sonstige an Baustoff und Bauteilaufbau; der Import setzt sie für Basis-Codes 14, 19, 29, 30.
 
 ## 4. Nächste Arbeit (Reihenfolge)
 
-Erledigt am 13.10.: CI-Vermerk, GD-6a (#1035), BK-3b/3c (#1036), AB4 (#1037).
+Erledigt am 13.10.: CI-Vermerk, GD-6a (#1035), BK-3b/3c (#1036), AB4 (#1037), DA-1 (#1038).
 
 1. **Erneuter Importlauf beim Anwender** nach BK-3b/3c („Bauteilkatalog einlesen…“ ordnet per Quellkennung um, keine Dubletten);
    Zählungen laut Statuszeile #1036 ins Protokoll.
 2. **MA-1 Geführter Modellaufbau** nach dem [Entwurf Geführter Modellaufbau](2026-10-12_Entwurf_Gefuehrter_Modellaufbau.md)
    (E137, F1–F8 nach Empfehlung entschieden): Modellprüfung in fünf Gruppen mit Rechenstatus, „Alle Vorschläge übernehmen“,
-   Profilregel, Sprung in die Ansicht. Auftrag an `opus-umsetzung`.
-3. **DA-1, DA-2, DA-3** (gbXML-Import Lasten und Zeitpläne, gbXML-Export, weiter nach Abschnitt 7 des
+   Profilregel, Sprung in die Ansicht. Auftrag an `opus-umsetzung`. MA-1a Kern (Modellprüfung, Rechenstatus) und MA-1b Oberfläche; MA-1a in Arbeit.
+3. **DA-2 (gbXML-Export, mit Schemaschritt für den Rundlauf), DA-3** (weiter nach Abschnitt 7 des
    [Konzepts Datenaustausch Simulationsdaten](2026-10-12_Konzept_Datenaustausch_Simulationsdaten.md)) direkt nach MA-1 (E138 F4).
-4. **NP7-Nachzug:** Nummern 70/71 der Projektdatei auf die Wohnprofile, nur beim Einlesen (entschieden 13.10. nach Empfehlung).
+4. **NP7-Nachzug:** Nummern 70/71 der Projektdatei auf die Wohnprofile, nur beim Einlesen (entschieden 13.10. nach Empfehlung); in Arbeit (Welle GD-N).
 5. **GD-Nachzüge:** gespeicherten Zonenplan eines früheren Imports vorlegen; beim Weg „Gebäudedatei + Projektdatei“ auch die
    Projektdatei prüfen; Sprung zur Kühlung auf das zuletzt gewählte Gebäude; eigener Maskenschlüssel für `Sprungziele.Kuehlung`;
    Jahreswärmebedarf in der Zusammenfassung = Wert des letzten Laufs mit Datum, ohne Lauf „noch nicht gerechnet“ (entschieden
-   13.10. nach Empfehlung).
+   13.10. nach Empfehlung); in Arbeit (Welle GD-N).
 6. **MA-2 bis MA-7** nach Wellenplan des Entwurfs (MA-5 setzt an der Sichtlegende von AB4 an).
 7. **DA-4 bis DA-7**; DA-6 (DIN-Saat) erst nach Lieferung der DIN-Werte (E135); DA-8 bleibt offen; Schemaschritt erst bei
    Baubeginn anmelden (heute 223 frei).
@@ -132,10 +133,10 @@ der eigene Sitzungszweig wird bei jedem Push mitgezogen.
 
 1. Lies CLAUDE.md und das Übergabepapier
    Dokumentation/aktuell/Gebaeudesimulation/2026-10-12_Uebergabe_Gebaeudesimulation_Kontowechsel.md ganz; aus
-   Dokumentation/aktuell/Status_iOS_Migration.md nur den Kopf (Schemaanmeldung) und die Zeilen ab #1035; aus
+   Dokumentation/aktuell/Status_iOS_Migration.md nur den Kopf (Schemaanmeldung) und die Zeilen ab #1035 (#1034 gehört der Sitzung Kälteanlagen); aus
    Dokumentation/aktuell/Status_Gebaeudesimulation_VDI6007.md die Entscheide E135–E138. Weitere Papiere nur gezielt.
 2. Prüfe mit git log --format='%h %<(72,trunc)%s' -n 20 origin/ios_migration_september, was seit dem Papier hinzukam.
-3. Arbeite Abschnitt 4 der Reihe nach ab: Importlauf beim Anwender, MA-1, DA-1 bis DA-3, NP7-Nachzug, GD-Nachzüge,
+3. Arbeite Abschnitt 4 der Reihe nach ab: Importlauf beim Anwender, MA-1, DA-2 und DA-3, NP7-Nachzug, GD-Nachzüge,
    MA-2 bis MA-7, DA-4 bis DA-7 (DA-6 nach Lieferung der DIN-Werte), Wiki, BK-5 ff., SA4.
 4. Arbeitsweise: Orchestrierung mit Agenten (opus-umsetzung für Fachcode, sonnet-mechanik für Status/Protokolle, Modell immer
    ausdrücklich setzen), je Welle ein Worktree; Merge im Integrations-Worktree, Gate nach Abschnitt 6, Statuszeile (nächste
