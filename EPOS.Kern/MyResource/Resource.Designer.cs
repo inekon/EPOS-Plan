@@ -15778,7 +15778,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die c_p [J/(kgK)] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die c_p [J/(kg·K)] ähnelt.
         /// </summary>
         public static string BTA_SP_CP {
             get {
@@ -15796,7 +15796,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die λ [W/(mK)] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die λ [W/(m·K)] ähnelt.
         /// </summary>
         public static string BTA_SP_LAMBDA {
             get {
@@ -26945,7 +26945,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität [kWh] ähnelt.
         /// </summary>
         public static string FLOTTE_ED_ANLAGE_SPALTE_KAPAZITAET {
             get {
@@ -26954,7 +26954,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung [kW] ähnelt.
         /// </summary>
         public static string FLOTTE_ED_ANLAGE_SPALTE_LEISTUNG {
             get {
@@ -32300,7 +32300,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kappung (h) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kappung [h] ähnelt.
         /// </summary>
         public static string GEBB_AUFH_SP_KAPPUNG {
             get {
@@ -32309,7 +32309,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die längste Rampe (h) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Längste Rampe [h] ähnelt.
         /// </summary>
         public static string GEBB_AUFH_SP_LAENGSTE {
             get {
@@ -32318,7 +32318,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die P_auf (kW) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die P_auf [kW] ähnelt.
         /// </summary>
         public static string GEBB_AUFH_SP_LEISTUNG {
             get {
@@ -32345,7 +32345,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die t_auf,max (h) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die t_auf,max [h] ähnelt.
         /// </summary>
         public static string GEBB_AUFH_SP_ZEIT {
             get {
@@ -40659,7 +40659,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die C₁,korr [kJ/(m²K)] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die C₁,korr [kJ/(m²·K)] ähnelt.
         /// </summary>
         public static string GIMP_AB_SP_C1 {
             get {
@@ -40704,7 +40704,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die U Datei [W/(m²K)] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die U Datei [W/(m²·K)] ähnelt.
         /// </summary>
         public static string GIMP_AB_SP_UDATEI {
             get {
@@ -40713,7 +40713,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die U Schichten [W/(m²K)] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die U Schichten [W/(m²·K)] ähnelt.
         /// </summary>
         public static string GIMP_AB_SP_USCHICHTEN {
             get {
@@ -42081,7 +42081,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die U IFC [W/(m²K)] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die U IFC [W/(m²·K)] ähnelt.
         /// </summary>
         public static string GIMP_DLG_AQ_SPALTE_DATEI {
             get {
@@ -42099,7 +42099,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die U Projektdatei [W/(m²K)] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die U Projektdatei [W/(m²·K)] ähnelt.
         /// </summary>
         public static string GIMP_DLG_AQ_SPALTE_PROJEKTDATEI {
             get {
@@ -51540,7 +51540,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die kWh ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität [kWh] ähnelt.
         /// </summary>
         public static string IMP_KAT_SP_ENERGIE {
             get {
@@ -51576,7 +51576,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die kW ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung [kW] ähnelt.
         /// </summary>
         public static string IMP_KAT_SP_LEISTUNG {
             get {
@@ -80425,7 +80425,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Latitude ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Latitude [°] ähnelt.
         /// </summary>
         public static string KLIMA_SP_LATITUDE {
             get {
@@ -80434,7 +80434,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Longitude ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Longitude [°] ähnelt.
         /// </summary>
         public static string KLIMA_SP_LONGITUDE {
             get {
@@ -92073,7 +92073,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer n ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer n [a] ähnelt.
         /// </summary>
         public static string ND_TAFEL_SP_DAUER {
             get {
@@ -92109,7 +92109,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert Jahr {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert Jahr {0} [€] ähnelt.
         /// </summary>
         public static string ND_TAFEL_SP_RESTWERT {
             get {
@@ -95056,7 +95056,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Verlust kWh/a ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlust [kWh/a] ähnelt.
         /// </summary>
         public static string PAUS_NA_SPALTE_VERLUST {
             get {
@@ -103787,7 +103787,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Effizienz (%) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Effizienz [%] ähnelt.
         /// </summary>
         public static string PVIMP_SP_EFFIZIENZ {
             get {
@@ -103832,7 +103832,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Pmp (W) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pmp [W] ähnelt.
         /// </summary>
         public static string PVIMP_SP_PMP {
             get {
@@ -146402,7 +146402,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die U [W/(m²K)] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die U [W/(m²·K)] ähnelt.
         /// </summary>
         public static string ZONDLG_SP_U {
             get {
@@ -151541,7 +151541,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Volumen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volumen [l] ähnelt.
         /// </summary>
         public static string ZPG_AUS_SP_VOLUMEN {
             get {

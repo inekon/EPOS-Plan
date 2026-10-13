@@ -353,7 +353,7 @@ public sealed class ZapfprofilAuslegungTexte
     public string SpalteVerfahren { get; set; } = "Verfahren";
 
     /// <summary><c>ZPG_AUS_SP_VOLUMEN</c></summary>
-    public string SpalteVolumen { get; set; } = "Volumen";
+    public string SpalteVolumen { get; set; } = "Volumen [l]";
 
     /// <summary><c>ZPG_AUS_SP_KENNWERT</c></summary>
     public string SpalteKennwert { get; set; } = "Kennwert";

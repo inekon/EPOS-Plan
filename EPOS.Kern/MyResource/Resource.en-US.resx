@@ -1520,7 +1520,7 @@ with a small tank the figure becomes large without any additional ageing.</value
     <value>Bifacial</value>
   </data>
   <data name="PVIMP_SP_EFFIZIENZ" xml:space="preserve">
-    <value>Efficiency (%)</value>
+    <value>Efficiency [%]</value>
   </data>
   <data name="PVIMP_SP_HERSTELLER" xml:space="preserve">
     <value>Manufacturer</value>
@@ -1535,7 +1535,7 @@ with a small tank the figure becomes large without any additional ageing.</value
     <value>Module name</value>
   </data>
   <data name="PVIMP_SP_PMP" xml:space="preserve">
-    <value>Pmp (W)</value>
+    <value>Pmp [W]</value>
   </data>
   <data name="PVIMP_SP_QUELLE" xml:space="preserve">
     <value>Source</value>
@@ -9168,13 +9168,13 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
     <value>Thickness [mm]</value>
   </data>
   <data name="BTA_SP_LAMBDA" xml:space="preserve">
-    <value>λ [W/(mK)]</value>
+    <value>λ [W/(m·K)]</value>
   </data>
   <data name="BTA_SP_RHO" xml:space="preserve">
     <value>ρ [kg/m³]</value>
   </data>
   <data name="BTA_SP_CP" xml:space="preserve">
-    <value>c_p [J/(kgK)]</value>
+    <value>c_p [J/(kg·K)]</value>
   </data>
   <data name="BTA_LBL_SCHICHT" xml:space="preserve">
     <value>Layer {0}</value>
@@ -15391,10 +15391,10 @@ The CHP unit never generates more electricity than the current own demand. The u
     <value>Location</value>
   </data>
   <data name="KLIMA_SP_LONGITUDE" xml:space="preserve">
-    <value>Longitude</value>
+    <value>Longitude [°]</value>
   </data>
   <data name="KLIMA_SP_LATITUDE" xml:space="preserve">
-    <value>Latitude</value>
+    <value>Latitude [°]</value>
   </data>
   <data name="KLIMA_SP_IMPORTDATUM" xml:space="preserve">
     <value>Import date</value>
@@ -17914,10 +17914,10 @@ Please go through the project page again so that the data of the selected projec
     <value>Source</value>
   </data>
   <data name="IMP_KAT_SP_ENERGIE" xml:space="preserve">
-    <value>kWh</value>
+    <value>Capacity [kWh]</value>
   </data>
   <data name="IMP_KAT_SP_LEISTUNG" xml:space="preserve">
-    <value>kW</value>
+    <value>Power [kW]</value>
   </data>
   <data name="IMP_KAT_SP_ETA" xml:space="preserve">
     <value>η_RT</value>
@@ -21283,10 +21283,10 @@ Do you want to allow this?</value>
     <value>System</value>
   </data>
   <data name="FLOTTE_ED_ANLAGE_SPALTE_KAPAZITAET" xml:space="preserve">
-    <value>Capacity</value>
+    <value>Capacity [kWh]</value>
   </data>
   <data name="FLOTTE_ED_ANLAGE_SPALTE_LEISTUNG" xml:space="preserve">
-    <value>Power</value>
+    <value>Power [kW]</value>
   </data>
   <data name="FLOTTE_ED_ANLAGE_VERTRETEN" xml:space="preserve">
     <value>already in the fleet</value>
@@ -21733,13 +21733,13 @@ Do you want to allow this?</value>
     <value>Amount [€]</value>
   </data>
   <data name="ND_TAFEL_SP_DAUER" xml:space="preserve">
-    <value>Service life n</value>
+    <value>Service life n [a]</value>
   </data>
   <data name="ND_TAFEL_SP_ERSATZ" xml:space="preserve">
     <value>Replacement</value>
   </data>
   <data name="ND_TAFEL_SP_RESTWERT" xml:space="preserve">
-    <value>Residual value year {0}</value>
+    <value>Residual value year {0} [€]</value>
   </data>
   <data name="ND_TAFEL_SP_HERKUNFT" xml:space="preserve">
     <value>Origin of the service life</value>
@@ -27202,7 +27202,7 @@ Do you want to allow this?</value>
     <value>Method</value>
   </data>
   <data name="ZPG_AUS_SP_VOLUMEN" xml:space="preserve">
-    <value>Volume</value>
+    <value>Volume [l]</value>
   </data>
   <data name="ZPG_AUS_SP_KENNWERT" xml:space="preserve">
     <value>Characteristic</value>
@@ -35272,7 +35272,7 @@ Do you want to allow this?</value>
     <value>A [m²]</value>
   </data>
   <data name="ZONDLG_SP_U" xml:space="preserve">
-    <value>U [W/(m²K)]</value>
+    <value>U [W/(m²·K)]</value>
   </data>
   <data name="ZONDLG_SP_AZIMUT" xml:space="preserve">
     <value>Azimuth</value>
@@ -45305,7 +45305,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Starts per day</value>
   </data>
   <data name="PAUS_NA_SPALTE_VERLUST" xml:space="preserve">
-    <value>Loss kWh/a</value>
+    <value>Loss [kWh/a]</value>
   </data>
   <data name="PAUS_NA_SPALTE_JAZ" xml:space="preserve">
     <value>Effect</value>
@@ -47972,10 +47972,10 @@ chart</value>
     <value>Status</value>
   </data>
   <data name="GEBB_AUFH_SP_ZEIT" xml:space="preserve">
-    <value>t_auf,max (h)</value>
+    <value>t_auf,max [h]</value>
   </data>
   <data name="GEBB_AUFH_SP_LEISTUNG" xml:space="preserve">
-    <value>P_auf (kW)</value>
+    <value>P_auf [kW]</value>
   </data>
   <data name="GEBB_AUFH_SP_QUELLE" xml:space="preserve">
     <value>Source</value>
@@ -47984,10 +47984,10 @@ chart</value>
     <value>Ramp days</value>
   </data>
   <data name="GEBB_AUFH_SP_LAENGSTE" xml:space="preserve">
-    <value>Longest ramp (h)</value>
+    <value>Longest ramp [h]</value>
   </data>
   <data name="GEBB_AUFH_SP_KAPPUNG" xml:space="preserve">
-    <value>Capping (h)</value>
+    <value>Capping [h]</value>
   </data>
   <data name="GEBB_AUFH_HRL_ZONEN" xml:space="preserve">
     <value>Each zone has its own design; the building shows t_auf,max and the longest ramp as maximum, P_auf as sum, days and hours as union of the heated zones.</value>
@@ -48560,13 +48560,13 @@ chart</value>
     <value>Area [m²]</value>
   </data>
   <data name="GIMP_AB_SP_UDATEI" xml:space="preserve">
-    <value>U file [W/(m²K)]</value>
+    <value>U file [W/(m²·K)]</value>
   </data>
   <data name="GIMP_AB_SP_USCHICHTEN" xml:space="preserve">
-    <value>U layers [W/(m²K)]</value>
+    <value>U layers [W/(m²·K)]</value>
   </data>
   <data name="GIMP_AB_SP_C1" xml:space="preserve">
-    <value>C₁,corr [kJ/(m²K)]</value>
+    <value>C₁,corr [kJ/(m²·K)]</value>
   </data>
   <data name="GIMP_AB_SP_STUFE" xml:space="preserve">
     <value>Level</value>
@@ -49543,10 +49543,10 @@ chart</value>
     <value>Differing</value>
   </data>
   <data name="GIMP_DLG_AQ_SPALTE_DATEI" xml:space="preserve">
-    <value>U IFC [W/(m²K)]</value>
+    <value>U IFC [W/(m²·K)]</value>
   </data>
   <data name="GIMP_DLG_AQ_SPALTE_PROJEKTDATEI" xml:space="preserve">
-    <value>U project file [W/(m²K)]</value>
+    <value>U project file [W/(m²·K)]</value>
   </data>
   <data name="GIMP_DLG_AQ_TABELLE" xml:space="preserve">
     <value>Typical U-values per component type (median)</value>
