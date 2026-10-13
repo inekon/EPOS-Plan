@@ -55523,5 +55523,122 @@ chart</value>
   <data name="MP_BAUTEIL_ERGAENZT" xml:space="preserve">
     <value>{0} (added)</value>
   </data>
+  <data name="GEBWI_FELD_BEZEICHNER" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="GEBWI_FELD_FLAECHE" xml:space="preserve">
+    <value>Area</value>
+  </data>
+  <data name="GEBWI_FELD_HOEHE" xml:space="preserve">
+    <value>Room height</value>
+  </data>
+  <data name="GEBWI_FELD_VOLUMEN" xml:space="preserve">
+    <value>Volume</value>
+  </data>
+  <data name="GEBWI_FELD_U" xml:space="preserve">
+    <value>U-value</value>
+  </data>
+  <data name="GEBWI_FELD_NEIGUNG" xml:space="preserve">
+    <value>Tilt</value>
+  </data>
+  <data name="GEBWI_FELD_AZIMUT" xml:space="preserve">
+    <value>Azimuth</value>
+  </data>
+  <data name="GEBWI_FELD_ART" xml:space="preserve">
+    <value>Component type</value>
+  </data>
+  <data name="GEBWI_FELD_RANDBEDINGUNG" xml:space="preserve">
+    <value>Boundary condition</value>
+  </data>
+  <data name="GEBWI_FELD_PROFIL" xml:space="preserve">
+    <value>Usage and calendars</value>
+  </data>
+  <data name="GEBWI_FELD_UEBERGABE" xml:space="preserve">
+    <value>Heat emission</value>
+  </data>
+  <data name="GEBWI_FELD_AUFBAU" xml:space="preserve">
+    <value>Construction and U-value</value>
+  </data>
+  <data name="GEBWI_FELD_EINGABEN" xml:space="preserve">
+    <value>Component inputs</value>
+  </data>
+  <data name="GEBWI_STAND_NEU" xml:space="preserve">
+    <value>new</value>
+  </data>
+  <data name="GEBWI_STAND_GEAENDERT" xml:space="preserve">
+    <value>changed</value>
+  </data>
+  <data name="GEBWI_STAND_UNVERAENDERT" xml:space="preserve">
+    <value>unchanged</value>
+  </data>
+  <data name="GEBWI_STAND_ENTFAELLT" xml:space="preserve">
+    <value>dropped</value>
+  </data>
+  <data name="GEBWI_STAND_BLEIBT" xml:space="preserve">
+    <value>kept (manual)</value>
+  </data>
+  <data name="GEBWI_TITEL" xml:space="preserve">
+    <value>Re-import: differences to the current model</value>
+  </data>
+  <data name="GEBWI_HINWEIS" xml:space="preserve">
+    <value>Zones and components are matched by their source identifier. Geometry and values from the file are updated; what you added after the import is kept. OK marks the merge for saving.</value>
+  </data>
+  <data name="GEBWI_FASSUNG" xml:space="preserve">
+    <value>The file is a changed version of the stored source.</value>
+  </data>
+  <data name="GEBWI_ZAHLEN" xml:space="preserve">
+    <value>{0}: {1} new · {2} changed · {3} unchanged · {4} dropped · {5} kept (manual)</value>
+  </data>
+  <data name="GEBWI_ZONEN" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="GEBWI_BAUTEILE" xml:space="preserve">
+    <value>Components</value>
+  </data>
+  <data name="GEBWI_SPALTE_ART" xml:space="preserve">
+    <value>Kind</value>
+  </data>
+  <data name="GEBWI_SPALTE_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="GEBWI_SPALTE_NAME" xml:space="preserve">
+    <value>Element</value>
+  </data>
+  <data name="GEBWI_SPALTE_STAND" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="GEBWI_SPALTE_FELDER" xml:space="preserve">
+    <value>Fields from the file</value>
+  </data>
+  <data name="GEBWI_SPALTE_HAND" xml:space="preserve">
+    <value>kept from manual input</value>
+  </data>
+  <data name="GEBWI_ART_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="GEBWI_ART_BAUTEIL" xml:space="preserve">
+    <value>Component</value>
+  </data>
+  <data name="GEBWI_ENTFERNEN" xml:space="preserve">
+    <value>Remove dropped zones and components</value>
+  </data>
+  <data name="GEBWI_ENTFERNEN_HINWEIS" xml:space="preserve">
+    <value>Unticked, they are kept and count as manual additions afterwards.</value>
+  </data>
+  <data name="GEBWI_OHNE_ENTFALLENDE" xml:space="preserve">
+    <value>Nothing is dropped.</value>
+  </data>
+  <data name="GEBWI_MSG_VORSCHAU_FEHLER" xml:space="preserve">
+    <value>The re-import preview is not possible: {0}</value>
+  </data>
+  <data name="GEBWI_AUSSTEHEND" xml:space="preserve">
+    <value>Merge with “{0}” marked ({1} zones; dropped elements: {2}).</value>
+  </data>
+  <data name="GEBWI_AUSSTEHEND_ENTFERNEN" xml:space="preserve">
+    <value>remove</value>
+  </data>
+  <data name="GEBWI_AUSSTEHEND_BEHALTEN" xml:space="preserve">
+    <value>keep</value>
+  </data>
 </root>
 

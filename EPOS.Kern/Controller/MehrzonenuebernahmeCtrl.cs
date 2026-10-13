@@ -54,7 +54,7 @@ namespace WindowsFormsApplication1
     /// rollt der Vorgang zurück: Der alte Stand bleibt. Die Felder des Gebäudes außerhalb der Zonen und seine eigenen
     /// Kalender (ohne Zone) bleiben unberührt.</para>
     /// </summary>
-    internal static class MehrzonenuebernahmeCtrl
+    internal static partial class MehrzonenuebernahmeCtrl
     {
         /// <summary>Zeichen einer gekürzten Prüfsumme in der Meldung.</summary>
         internal const int HASH_KURZ = 12;

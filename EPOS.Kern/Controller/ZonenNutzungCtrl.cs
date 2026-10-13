@@ -90,7 +90,7 @@ namespace WindowsFormsApplication1
             DbWerte.KOND_GROESSE_GERAETE, DbWerte.KOND_GROESSE_PERSONEN,
         };
 
-        private const string SPALTEN_ZONE = "\"Nutzungsprofil\", \"Raumsolltemperatur_Tag\", \"Raumsolltemperatur_Nachtabsenkung\"";
+        private const string SPALTEN_ZONE = "\"Nutzungsprofil\", \"Raumsolltemperatur_Tag\", \"Raumsolltemperatur_Nachtabsenkung\", \"Herkunft\"";
         private const string TAB_WOCHE = KalenderbedienungSchema.TAB_WOCHE;
 
         private Abbild _letztes;
@@ -241,6 +241,7 @@ namespace WindowsFormsApplication1
                     }
                     string grund = ZonenplanCtrl.NutzungUebernehmen(IdGebaeude, z.ID, p, z.Nutzflaeche, z.Raumhoehe);
                     if (grund != null) throw new InvalidOperationException(grund.Length > 0 ? grund : Modellpruefung.Ressource("ZN_MSG_PROFIL_ABGELEHNT", z.Bezeichner));
+                    HandMarkieren(v, z.ID);
                     n++;
                 }
                 return n;
@@ -268,7 +269,11 @@ namespace WindowsFormsApplication1
                 foreach (int idz in zonenListe)
                     if (v.Ausfuehren("DELETE FROM \"" + KonditionierungSchema.TAB_VORGABE + "\" WHERE \"ID_Zone\" = ? AND \"Zeile\" IN (?, ?)",
                                      new DbParam("@z", idz), new DbParam("@f", DbWerte.KOND_ZEILE_FERIEN),
-                                     new DbParam("@s", DbWerte.KOND_ZEILE_SAISON)) > 0) n++;
+                                     new DbParam("@s", DbWerte.KOND_ZEILE_SAISON)) > 0)
+                    {
+                        HandMarkieren(v, idz);
+                        n++;
+                    }
                 return n;
             });
         }
@@ -296,6 +301,7 @@ namespace WindowsFormsApplication1
                         Konditionierungskopie.Auswahl.Ersetzend);
                     if (!b.Ok) throw new InvalidOperationException(b.Meldung);
                     v.Ausfuehren("UPDATE \"Tab_Zone\" SET \"Nutzungsprofil\" = ? WHERE \"ID\" = ?", new DbParam("@n", profil), new DbParam("@z", idz));
+                    HandMarkieren(v, idz);
                     n++;
                 }
                 return n;
@@ -323,6 +329,7 @@ namespace WindowsFormsApplication1
                         v.Ausfuehren("UPDATE \"Tab_Zone\" SET \"Raumsolltemperatur_Tag\" = ? WHERE \"ID\" = ?", new DbParam("@t", tag.Value), new DbParam("@z", idz));
                     if (nacht.HasValue)
                         v.Ausfuehren("UPDATE \"Tab_Zone\" SET \"Raumsolltemperatur_Nachtabsenkung\" = ? WHERE \"ID\" = ?", new DbParam("@n", nacht.Value), new DbParam("@z", idz));
+                    HandMarkieren(v, idz);
                     n++;
                 }
                 return n;
@@ -391,6 +398,15 @@ namespace WindowsFormsApplication1
             if (n > 0) _letztes = abbild;
             return new ZonenNutzungsergebnis(true, Modellpruefung.Ressource("ZN_MSG_GEAENDERT", n), n, Lesen());
         }
+
+        /// <summary>
+        /// MA-6: Eine Handlung dieses Blatts macht Nutzung und Kalender der Zone zur Ergänzung von Hand — Herkunft
+        /// <c>MANUELL</c> am Satz. Der Wiederimport (<see cref="MehrzonenuebernahmeCtrl.Zusammenfuehren"/>) behält dann Profil,
+        /// Kalender und Sollwerte der Zone und aktualisiert nur ihre Geometrie. Die Rücknahme stellt die alte Herkunft her.
+        /// </summary>
+        private static void HandMarkieren(DbVorgang v, int idZone)
+            => v.Ausfuehren("UPDATE \"Tab_Zone\" SET \"Herkunft\" = ? WHERE \"ID\" = ?",
+                            new DbParam("@h", DbWerte.HERKUNFT_MANUELL), new DbParam("@z", idZone));
 
         private void GebaeudezeilenKopieren(DbVorgang v, int quelle, string zeile)
             => v.Ausfuehren(
@@ -467,9 +483,9 @@ namespace WindowsFormsApplication1
                     }
                 }
                 foreach (DataRow r in _zonenspalten.Rows)
-                    v.Ausfuehren("UPDATE \"Tab_Zone\" SET \"Nutzungsprofil\" = ?, \"Raumsolltemperatur_Tag\" = ?, \"Raumsolltemperatur_Nachtabsenkung\" = ? WHERE \"ID\" = ?",
+                    v.Ausfuehren("UPDATE \"Tab_Zone\" SET \"Nutzungsprofil\" = ?, \"Raumsolltemperatur_Tag\" = ?, \"Raumsolltemperatur_Nachtabsenkung\" = ?, \"Herkunft\" = ? WHERE \"ID\" = ?",
                                  new DbParam("@n", r["Nutzungsprofil"]), new DbParam("@t", r["Raumsolltemperatur_Tag"]),
-                                 new DbParam("@a", r["Raumsolltemperatur_Nachtabsenkung"]), new DbParam("@z", r["ID"]));
+                                 new DbParam("@a", r["Raumsolltemperatur_Nachtabsenkung"]), new DbParam("@h", r["Herkunft"]), new DbParam("@z", r["ID"]));
             }
         }
     }
