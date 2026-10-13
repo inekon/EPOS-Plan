@@ -67,4 +67,49 @@ Geschrieben wird der Aufbau erst mit ''Speichern'' – Kopf und Schichten zusamm
 
 Ein Aufbau des Katalogs ist eine Vorlage: Übernimmt ein Projekt ihn, arbeitet es mit einer Kopie samt seinen Stoffen. Eine spätere Änderung im Katalog verschiebt kein gerechnetes Projekt.
 
+== Gruppe, Klasse und Herkunft ==
+{{Anker|gruppe-klasse}}
+
+Beide Kataloge gliedern ihre Sätze nach '''Gruppe''' und '''Klasse''' und nennen die '''Herkunft'''; Gruppe, Klasse und Herkunft sind Spalten der Liste mit Filter.
+
+* '''Baustoffe''' – die Klasse ist eine zweite Auswahl unter der Gruppe; ihre Einträge folgen der Gruppe, ein Gruppenwechsel nimmt eine fremde Klasse weg. Gruppen sind Mauerwerk, Beton, Estriche, Putze und Mörtel, Dämmstoffe, Holz und Holzwerkstoffe, Platten, Bodenbeläge, Abdichtungen, Metalle und Glas, Erdreich und Sonstige; die Klassen darunter nennen den Stoff genauer, etwa Ziegel, Porenbeton oder Mineralwolle.
+* {{Anker|haustechnik}}'''Klasse Haustechnik''' – Werkstoffe der Haustechnik und Luftdurchlässe stehen in der Gruppe ''Sonstige'' in der Klasse ''Haustechnik'', bei Baustoffen wie bei Aufbauten. Sie gehören nicht in die Hülle; der Klassenfilter blendet sie mit der Verneinung <code>!Haustechnik</code> aus.
+* '''Bauteilaufbauten''' – Gruppe und Klasse gliedern nach Bauteilart. Ohne Gruppe setzt EPOS-Plan beim Speichern die Gliederung der Bauteilart. Gruppen sind Wände, Decken, Dächer, Öffnungen und Sonstige; die Klassen unterscheiden Außenwand, Außenwand am Erdreich, Innenwand, Geschossdecke, oberste Geschossdecke, Decke nach unten, Bodenplatte, Flachdach, Steildach, Fenster, Dachfenster, Vorhangfassade, Tür und Sonstiges.
+* '''Herkunft''' – ''Vorgabe'' (ausgeliefert, mit Schloss), ''eigen'' oder ''Eingelesen'' (aus dem [[#bauteilkatalog-einlesen|Bauteilkatalog einlesen]]). Ein eingelesener Satz trägt im Kopf des Stammblatts die Marke, die Quelle steht als Lesewert.
+* {{Anker|eignung}}'''Gebäudesimulation''' – ein Lesewert am Aufbau: „geeignet“ oder „für die Gebäudesimulation meist nicht geeignet“ mit dem Grund (ein Aufbau ohne Schicht, eine Schicht ohne Wärmeleitfähigkeit, eine Öffnung ohne Schicht und ohne U-Wert, Stoffwerte außerhalb der zulässigen Bänder). Er lässt sich nicht von Hand setzen; ein Luftdurchlass ist immer gekennzeichnet. Der Schalter '''nur geeignete''' blendet die gekennzeichneten Aufbauten vor der Liste aus; er steht bei jedem Öffnen an. Im Bauteildialog erscheinen gekennzeichnete Aufbauten erst nach ''auch ungeeignete zeigen'', die laufende Wahl bleibt immer sichtbar.
+
+== Aufbauvorschläge und Zuordnungsstufen ==
+{{Anker|aufbauvorschlaege}}
+
+Jedes Bauteil eines Gebäudes steht in einer von drei '''Zuordnungsstufen''', die die Gebäudeansicht im Farbmodus ''Aufbau'' färbt und die Bauteilliste in der Spalte ''Aufbau'' nennt:
+
+{| class="wikitable"
+! Stufe !! Farbe !! Bedeutung
+|-
+| '''A''' || grün || vollständiger Aufbau mit Schichten
+|-
+| '''B''' || gelb || nur der U-Wert; der Aufbau ist ein Ersatzaufbau
+|-
+| '''C''' || orange || nur Geometrie, der U-Wert kommt aus der Vorgabe
+|}
+
+Für Bauteile der Stufen B und C schlägt die [[Programm Dokumentation/Gebäude#modell-pruefen|Modellprüfung]] einen Aufbau vor, der Reihe nach aus dem Projekt, dem Katalog und den Typaufbauten. Im Katalog entscheiden der Name des Bauteils (er trifft eine Typgruppe), die Aufbauklasse und die Nähe zum Ziel-U-Wert, bei der Stufe C ist das Ziel-U der Wert der Baualtersklasse des Gebäudes. Einzelheiten stehen unter [[Programm Dokumentation/Gebäude#aufbauvorschlaege|Gebäude: Vorschläge]].
+
+== Bauteilkatalog einlesen ==
+{{Anker|bauteilkatalog-einlesen}}
+
+Menü '''Administration''' › ''Gebäude'' › ''Bauteilkatalog einlesen…'' liest einen Bauteilkatalog aus den CSV-Dateien eines Exports in beide Kataloge ein. Der Dialog arbeitet in zwei Schritten:
+
+# '''Datei wählen.''' Wählen Sie ''Baustoffe.csv'' des Exports; ''Aufbauten.csv'', ''Schichten.csv'', ''Schichten_Abschnitte.csv'', ''Fenster.csv'' und ''Basis_Auszug.csv'' müssen daneben liegen.
+# '''Vorschau prüfen.''' Die Vorschau zählt je Satzart (Baustoffe, Aufbauten, Schichten, Abschnitte), was neu ist, mit dem Katalog oder in der Quelle zusammengeführt, wiedererkannt oder abgelehnt wird. Dazu stehen: die Zahl der Aufbauten, die für die Gebäudesimulation meist nicht geeignet sind und gekennzeichnet werden, die Schichten, die über den Namen einen Baustoff derselben Gruppe treffen, die Zahl der Haustechnik-Sätze und Luftdurchlässe, die Sätze je Gruppe und Klasse, die Codes ohne Deutung (sie fallen auf ''Sonstige''), die Ablehnungsgründe und eine Plausibilitätszeile zur Richtung innen–außen und zum U-Wert aus den Schichten gegen den U-Wert der Quelle. ''Übernehmen'' steht erst nach einer Vorschau ohne Ablehnung bereit und schreibt alles in einem Vorgang; bei einem Fehler bleibt der Katalog unverändert. Die Meldung nennt die Zahlen der übernommenen Sätze und die Dauer.
+
+Beim Einlesen gilt:
+
+* Die Sätze tragen die Herkunft ''Eingelesen'', sind nicht schreibgeschützt, und die Quelle nennt den Datenstand des Katalogs. Der Hersteller bleibt leer – die Stoffe sind herstellerneutral.
+* '''Stoffgruppe''' aus dem Code der Quelle, ersatzweise aus den Basiszeilen; die Bauteilart eines Aufbaus aus den Basiszeilen, ohne sie ''Sonstiges''.
+* '''Wärmekapazität''' bis 10 gilt als kJ/(kgK) und wird mit 1 000 multipliziert, darüber als J/(kgK); 0 heißt kein Wert. '''Wärmeleitfähigkeit''' bis 0 heißt kein Wert; über 10 ist sie nur für Metalle (Rohdichte ab 2 500 kg/m³) zulässig. Bei anderen Stoffen mit über 60, deren Tausendstel zwischen 0,02 und 0,5 liegt, nimmt EPOS-Plan einen Skalenfehler an, teilt durch 1 000 und nennt jede Korrektur im Protokoll; jedes übrige Übermaß lehnt den Baustoff ab bzw. verwirft den Wert an der Schicht.
+* '''Zusammenführen.''' Sätze mit gleichem aufbereiteten Namen und gleicher Gruppe gelten als einer, wenn Wärmeleitfähigkeit (±2 %), Rohdichte (±5 %) und Wärmekapazität (±10 %) übereinstimmen; leere Felder füllt der spätere Satz.
+* '''Schichten''' werden je Aufbau und Abschnitt in der Reihenfolge der Quelle von 1 bis n neu nummeriert. Eine Schicht ohne Dicke bekommt 0 m und behält den Widerstand der Quelle.
+* '''Wiederimport.''' Sätze mit derselben Kennung der Quelle werden aktualisiert (ein Aufbau samt Schichten ersetzt), ohne Dubletten; andere Sätze des Katalogs bekommen nur leere Felder ergänzt, ein ausgelieferter Satz wird nie überschrieben.
+
 [[Kategorie:Programm Dokumentation]]

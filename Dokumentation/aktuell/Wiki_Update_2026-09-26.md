@@ -175,6 +175,28 @@ Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
+### Version 1.2.0.12 — Entwurf, Versionsnummer beim Anwender zu bestätigen
+
+Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1, MA-1 bis MA-5, MA-7; Statuszeilen #1002 bis #1057). Die Wiki-Quellen (Gebäude, Gebäudeimport, Nutzungsprofile, Baustoffe und Bauteilaufbauten, Index der Hilfeschlüssel) sind fortgeschrieben, ins Wiki geladen ist noch nichts. Nach dem Anwenderentscheid vom 13.10.2026 gilt die Nummer bis zum 16.10.2026 nur als Vorschlag; es gibt keinen Upload.
+
+- Seit 13.10.2026: Der Gebäudedialog prüft ein Gebäude mit „Modell prüfen…“ auf Rechenfähigkeit, zeigt je Prüfgruppe eine Ampel und übernimmt die Vorschläge mit einem Klick; nach einem Import öffnet die Prüfung von selbst.
+- Seit 13.10.2026: Die Modellprüfung meldet je Zone eine nicht geschlossene Hülle und schlägt das fehlende Dach, die fehlende Bodenplatte oder Geschossdecke mit passender Fläche vor.
+- Seit 13.10.2026: Die Modellprüfung schlägt Aufbauten nach Namen und Baualtersklasse vor; Bauteile ohne U-Wert erhalten U-Wert und Aufbau in einem Schritt.
+- Seit 13.10.2026: Das neue Blatt „Nutzung und Kalender“ zeigt Nutzungsprofil, Kalender, Sollwerte, Ferien und Heizperiode aller Zonen eines Gebäudes und weist sie mehreren Zonen in einem Schritt zu.
+- Seit 13.10.2026: Im Gebäudeeditor übernimmt „Vorgaben der Baualtersklasse übernehmen…“ U-Werte, Wärmebrücken, Fensterdurchlassgrad, Bauart und das Nutzungsprofil der Gebäudeart nach Vorschau mit einem Klick.
+- Seit 13.10.2026: Aus „Modell prüfen“ öffnet „Ansicht…“ die Gebäudeansicht mit den betroffenen Flächen und Zonen hervorgehoben, Vorschläge lassen sich an der Legende übernehmen oder verwerfen, und der neue Farbmodus „Nutzung“ zeigt die Nutzungsprofile der Zonen.
+- Seit 13.10.2026: In der Gebäudeansicht lassen sich Zonen, Legendeneinträge und Bauteilgruppen ein- und ausblenden.
+- Seit 13.10.2026: Der gbXML-Import liest je Raum Lasten, Sollwerte und Zeitpläne und legt daraus die Konditionierungskalender der Zonen an; Werte der Datei gehen dem Nutzungsprofil vor.
+- Seit 13.10.2026: Im Gebäudedialog lassen sich alle oder die gewählten Gebäude des Projekts aus der Kopfleiste simulieren; die Baustoff-Zuordnungen stehen im Gebäudeimport und im Gebäudeeditor.
+- Seit 13.10.2026: Beim erneuten Mehrzonenimport wird der gespeicherte Zonenplan vorgelegt und die Projektdatei mitgeprüft, die Zusammenfassung des Gebäudedialogs zeigt den Jahreswärmebedarf des letzten Laufs, und die Kachel Gebäudekühlung springt auf das zuletzt gewählte Gebäude.
+- Seit 13.10.2026: Der Bauteilkatalog-Import ordnet Stoffgruppen nach der Code-Tafel zu, führt Haustechnik-Werkstoffe und Luftdurchlässe in einer eigenen Klasse und korrigiert Skalenfehler der Wärmeleitfähigkeit.
+- Seit 12.10.2026: „Administration › Gebäude › Bauteilkatalog einlesen…“ liest einen Bauteilkatalog aus CSV-Dateien in Baustoff- und Aufbaukatalog ein; Gruppe, Klasse und Herkunft gliedern die Sätze, und für die Gebäudesimulation meist ungeeignete Aufbauten sind gekennzeichnet.
+- Seit 12.10.2026: Der Gebäudeeditor trennt „Beschreibung und Einordnung“ von den „Rechengrößen“ und kennzeichnet an jedem Wert, woher er kommt oder dass der Rechenweg ihn nicht liest.
+- Seit 12.10.2026: Der Import aus einer Projektdatei übernimmt Verwendung, Gebäudeart, Energiestandard und Bauweise, platziert Räume ohne Zone selbst und belegt die Zonen mit dem Profil der DIN-Nummer oder der Gebäudeart vor.
+- Seit 12.10.2026: „Normwerte einlesen…“ füllt die Profile der DIN/TS 18599-10 aus Ihrer eigenen CSV-Datei oder Projektdatei; neu ist die Außenluft je Person.
+- Seit 12.10.2026: Die leeren Kategorien SIA 2024 und VDI 2078 sind aus dem Katalog der Nutzungsprofile entfernt; vorhandene Profile bleiben in einer eigenen Kategorie.
+- Seit 11.10.2026: Saison, Ferien, Zeiträume und Einzeltage der Kalender nehmen Tag und Monat als „TT.MM.“ an und prüfen die Eingabe erst beim Verlassen des Feldes.
+
 ### Version ‹Version› — Kältebedarf dezentral (Split) (Entwurf, Upload ausstehend)
 
 Version beim Anwender zu erfragen (Empfehlung: Sammelversion mit K4/K5); Wiki-Quelle „Programm Dokumentation - Kältebedarf“ fortgeschrieben, Upload ausstehend.

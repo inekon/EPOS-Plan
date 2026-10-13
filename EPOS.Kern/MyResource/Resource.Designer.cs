@@ -36783,6 +36783,357 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil ähnelt.
+        /// </summary>
+        public static string GEBWI_ART_BAUTEIL {
+            get {
+                return ResourceManager.GetString("GEBWI_ART_BAUTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone ähnelt.
+        /// </summary>
+        public static string GEBWI_ART_ZONE {
+            get {
+                return ResourceManager.GetString("GEBWI_ART_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zusammenführung mit „{0}“ vorgemerkt ({1} Zonen; entfallende Elemente: {2}). ähnelt.
+        /// </summary>
+        public static string GEBWI_AUSSTEHEND {
+            get {
+                return ResourceManager.GetString("GEBWI_AUSSTEHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die behalten ähnelt.
+        /// </summary>
+        public static string GEBWI_AUSSTEHEND_BEHALTEN {
+            get {
+                return ResourceManager.GetString("GEBWI_AUSSTEHEND_BEHALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die entfernen ähnelt.
+        /// </summary>
+        public static string GEBWI_AUSSTEHEND_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("GEBWI_AUSSTEHEND_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteile ähnelt.
+        /// </summary>
+        public static string GEBWI_BAUTEILE {
+            get {
+                return ResourceManager.GetString("GEBWI_BAUTEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entfallende Zonen und Bauteile entfernen ähnelt.
+        /// </summary>
+        public static string GEBWI_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("GEBWI_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Haken bleiben sie stehen und gelten danach als Ergänzung von Hand. ähnelt.
+        /// </summary>
+        public static string GEBWI_ENTFERNEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEBWI_ENTFERNEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei ist eine geänderte Fassung der gespeicherten Quelle. ähnelt.
+        /// </summary>
+        public static string GEBWI_FASSUNG {
+            get {
+                return ResourceManager.GetString("GEBWI_FASSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilart ähnelt.
+        /// </summary>
+        public static string GEBWI_FELD_ART {
+            get {
+                return ResourceManager.GetString("GEBWI_FELD_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau und U-Wert ähnelt.
+        /// </summary>
+        public static string GEBWI_FELD_AUFBAU {
+            get {
+                return ResourceManager.GetString("GEBWI_FELD_AUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Azimut ähnelt.
+        /// </summary>
+        public static string GEBWI_FELD_AZIMUT {
+            get {
+                return ResourceManager.GetString("GEBWI_FELD_AZIMUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name ähnelt.
+        /// </summary>
+        public static string GEBWI_FELD_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("GEBWI_FELD_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingaben des Bauteils ähnelt.
+        /// </summary>
+        public static string GEBWI_FELD_EINGABEN {
+            get {
+                return ResourceManager.GetString("GEBWI_FELD_EINGABEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche ähnelt.
+        /// </summary>
+        public static string GEBWI_FELD_FLAECHE {
+            get {
+                return ResourceManager.GetString("GEBWI_FELD_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumhöhe ähnelt.
+        /// </summary>
+        public static string GEBWI_FELD_HOEHE {
+            get {
+                return ResourceManager.GetString("GEBWI_FELD_HOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neigung ähnelt.
+        /// </summary>
+        public static string GEBWI_FELD_NEIGUNG {
+            get {
+                return ResourceManager.GetString("GEBWI_FELD_NEIGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung und Kalender ähnelt.
+        /// </summary>
+        public static string GEBWI_FELD_PROFIL {
+            get {
+                return ResourceManager.GetString("GEBWI_FELD_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Randbedingung ähnelt.
+        /// </summary>
+        public static string GEBWI_FELD_RANDBEDINGUNG {
+            get {
+                return ResourceManager.GetString("GEBWI_FELD_RANDBEDINGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U-Wert ähnelt.
+        /// </summary>
+        public static string GEBWI_FELD_U {
+            get {
+                return ResourceManager.GetString("GEBWI_FELD_U", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabe ähnelt.
+        /// </summary>
+        public static string GEBWI_FELD_UEBERGABE {
+            get {
+                return ResourceManager.GetString("GEBWI_FELD_UEBERGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volumen ähnelt.
+        /// </summary>
+        public static string GEBWI_FELD_VOLUMEN {
+            get {
+                return ResourceManager.GetString("GEBWI_FELD_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen und Bauteile werden über ihre Quellkennung wiedergefunden. Geometrie und Werte der Datei werden aktualisiert; was Sie nach dem Import ergänzt haben, bleibt. Mit OK wird die Zusammenführung vorgemerkt. ähnelt.
+        /// </summary>
+        public static string GEBWI_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEBWI_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorschau des Wiederimports ist nicht möglich: {0} ähnelt.
+        /// </summary>
+        public static string GEBWI_MSG_VORSCHAU_FEHLER {
+            get {
+                return ResourceManager.GetString("GEBWI_MSG_VORSCHAU_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nichts entfällt. ähnelt.
+        /// </summary>
+        public static string GEBWI_OHNE_ENTFALLENDE {
+            get {
+                return ResourceManager.GetString("GEBWI_OHNE_ENTFALLENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
+        /// </summary>
+        public static string GEBWI_SPALTE_ART {
+            get {
+                return ResourceManager.GetString("GEBWI_SPALTE_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Felder der Datei ähnelt.
+        /// </summary>
+        public static string GEBWI_SPALTE_FELDER {
+            get {
+                return ResourceManager.GetString("GEBWI_SPALTE_FELDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bleibt von Hand ähnelt.
+        /// </summary>
+        public static string GEBWI_SPALTE_HAND {
+            get {
+                return ResourceManager.GetString("GEBWI_SPALTE_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Element ähnelt.
+        /// </summary>
+        public static string GEBWI_SPALTE_NAME {
+            get {
+                return ResourceManager.GetString("GEBWI_SPALTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand ähnelt.
+        /// </summary>
+        public static string GEBWI_SPALTE_STAND {
+            get {
+                return ResourceManager.GetString("GEBWI_SPALTE_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone ähnelt.
+        /// </summary>
+        public static string GEBWI_SPALTE_ZONE {
+            get {
+                return ResourceManager.GetString("GEBWI_SPALTE_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bleibt (Hand) ähnelt.
+        /// </summary>
+        public static string GEBWI_STAND_BLEIBT {
+            get {
+                return ResourceManager.GetString("GEBWI_STAND_BLEIBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die entfällt ähnelt.
+        /// </summary>
+        public static string GEBWI_STAND_ENTFAELLT {
+            get {
+                return ResourceManager.GetString("GEBWI_STAND_ENTFAELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die geändert ähnelt.
+        /// </summary>
+        public static string GEBWI_STAND_GEAENDERT {
+            get {
+                return ResourceManager.GetString("GEBWI_STAND_GEAENDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die neu ähnelt.
+        /// </summary>
+        public static string GEBWI_STAND_NEU {
+            get {
+                return ResourceManager.GetString("GEBWI_STAND_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unverändert ähnelt.
+        /// </summary>
+        public static string GEBWI_STAND_UNVERAENDERT {
+            get {
+                return ResourceManager.GetString("GEBWI_STAND_UNVERAENDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wiederimport: Unterschiede zum Bestand ähnelt.
+        /// </summary>
+        public static string GEBWI_TITEL {
+            get {
+                return ResourceManager.GetString("GEBWI_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} neu · {2} geändert · {3} unverändert · {4} entfällt · {5} bleibt (Hand) ähnelt.
+        /// </summary>
+        public static string GEBWI_ZAHLEN {
+            get {
+                return ResourceManager.GetString("GEBWI_ZAHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen ähnelt.
+        /// </summary>
+        public static string GEBWI_ZONEN {
+            get {
+                return ResourceManager.GetString("GEBWI_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe für das ausgewählte Gebäude ähnelt.
         /// </summary>
         public static string GEBW_GRP_EINGABE {
@@ -148283,6 +148634,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1}, {2} Zeiträume, {3} Ferienwerte) ähnelt.
+        /// </summary>
+        public static string ZNB_FERIEN_ANGABE {
+            get {
+                return ResourceManager.GetString("ZNB_FERIEN_ANGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die fehlt ähnelt.
         /// </summary>
         public static string ZNB_FERIEN_FEHLT {
@@ -148715,11 +149075,68 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigen ähnelt.
+        /// </summary>
+        public static string ZN_FERIEN_HERKUNFT_EIGEN {
+            get {
+                return ResourceManager.GetString("ZN_FERIEN_HERKUNFT_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profilgenerator ähnelt.
+        /// </summary>
+        public static string ZN_FERIEN_HERKUNFT_PROFIL {
+            get {
+                return ResourceManager.GetString("ZN_FERIEN_HERKUNFT_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} der gewählten Zonen tragen eigene Ferien, die von der Projektvorgabe abweichen:
+        ///{1}
+        ///
+        ///Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ bleiben diese Zonen unverändert; die übrigen gewählten Zonen übernehmen die Projektvorgabe. ähnelt.
+        /// </summary>
+        public static string ZN_FRAGE_FERIEN {
+            get {
+                return ResourceManager.GetString("ZN_FRAGE_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektvorgabe Ferien/Heizperiode übernehmen ähnelt.
+        /// </summary>
+        public static string ZN_FRAGE_FERIEN_TITEL {
+            get {
+                return ResourceManager.GetString("ZN_FRAGE_FERIEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — {1}, {2} Zeiträume, {3} Ferienwerte ähnelt.
+        /// </summary>
+        public static string ZN_FRAGE_FERIEN_ZONE {
+            get {
+                return ResourceManager.GetString("ZN_FRAGE_FERIEN_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Änderung ist nicht geschrieben: {0} ähnelt.
         /// </summary>
         public static string ZN_MSG_FEHLER {
             get {
                 return ResourceManager.GetString("ZN_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zonen mit eigenen Ferien bleiben unverändert. ähnelt.
+        /// </summary>
+        public static string ZN_MSG_FERIEN_BEHALTEN {
+            get {
+                return ResourceManager.GetString("ZN_MSG_FERIEN_BEHALTEN", resourceCulture);
             }
         }
         

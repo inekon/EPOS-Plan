@@ -18633,6 +18633,19 @@ td.epos-vorlage-katalogbeschreibung {
 .epos-gebk-vorgaben-gleich td { opacity: 0.7; }
 .epos-gebk-vorgaben-leiste { display: flex; gap: 0.5em; flex-wrap: wrap; }
 
+/* MA-6: die Vorschau des Wiederimports im Importdialog (WiederimportVorschau.razor). */
+.epos-wiederimport { display: flex; flex-direction: column; gap: 0.4em; margin: 0.6em 0; padding: 0.5em;
+    border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke); }
+.epos-wiederimport-titel { margin: 0; font-size: 1em; }
+.epos-wiederimport-fassung { margin: 0; font-weight: 600; }
+.epos-wiederimport-zahlen { margin: 0; }
+.epos-wiederimport-rahmen { max-height: 18em; overflow: auto; }
+.epos-wiederimport-tabelle { border-collapse: collapse; width: 100%; }
+.epos-wiederimport-tabelle th, .epos-wiederimport-tabelle td { padding: 0.2em 0.4em; text-align: left; border-bottom: 1px solid var(--epos-rahmen-leise); }
+.epos-wiederimport-zeile[data-stand="Entfaellt"] .epos-wiederimport-stand { font-weight: 600; }
+.epos-wiederimport-zeile[data-stand="Unveraendert"] td { color: var(--epos-text-leise); }
+.epos-wiederimport-entfernen { display: flex; gap: 0.4em; align-items: center; min-height: var(--epos-touchziel); }
+
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */

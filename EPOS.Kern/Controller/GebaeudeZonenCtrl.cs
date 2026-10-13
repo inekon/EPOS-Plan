@@ -1073,7 +1073,10 @@ namespace WindowsFormsApplication1
         /// <param name="idGebaeude">Die Projektkopie (<c>Tab_Gebaeude.ID</c>).</param>
         /// <param name="vorschlag">Der Vorschlag.</param>
         /// <param name="vorgang">Der Vorgang des Aufrufers; <c>null</c> = ein eigener.</param>
-        internal Vorschlagsergebnis VorschlagSchreiben(int idGebaeude, GebaeudeBauteilvorschlag vorschlag, DbVorgang vorgang = null)
+        /// <param name="bestandZulassen">MA-6: <c>true</c> schreibt neben die vorhandenen Zonen (die Zusammenführung des
+        /// Wiederimports, <see cref="MehrzonenuebernahmeCtrl.Zusammenfuehren"/>); <c>false</c> lehnt ein Gebäude mit Zonen ab.</param>
+        internal Vorschlagsergebnis VorschlagSchreiben(int idGebaeude, GebaeudeBauteilvorschlag vorschlag, DbVorgang vorgang = null,
+                                                       bool bestandZulassen = false)
         {
             if (vorschlag == null) throw new ArgumentNullException(nameof(vorschlag));
             if (vorschlag.Abgelehnt)
@@ -1119,7 +1122,7 @@ namespace WindowsFormsApplication1
                     long vorhanden = Convert.ToInt64(v.Skalar(
                         "SELECT COUNT(*) FROM \"" + ZonenSchema.TAB_ZONE + "\" WHERE \"ID_Gebaeude\" = ?", new DbParam("@g", idGebaeude)),
                         CultureInfo.InvariantCulture);
-                    if (vorhanden > 0)
+                    if (vorhanden > 0 && !bestandZulassen)
                     {
                         v.Rollback();
                         return Vorschlagsergebnis.Fehler(GebaeudeBauteilvorschlag.ZONE_VORHANDEN, id,
@@ -1388,6 +1391,35 @@ namespace WindowsFormsApplication1
                                     ") VALUES (" + BaustoffCtrl.Fragezeichen(spalten.Count) + ")",
                                     Bauteilwerte(b, MitKopplung(spalten), MitFlaechenherkunft(spalten)).ToArray());
             return b.ID;
+        }
+
+        /// <summary>
+        /// <b>Schreibt ein vorhandenes Bauteil</b> mit allen Spalten des Speicherns zurück (Projektebene, im Vorgang
+        /// <paramref name="v"/>) — für die Zusammenführung des Wiederimports (MA-6).
+        /// </summary>
+        internal static void BauteilAktualisieren(DbVorgang v, BauteilModel b)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            if (b == null) throw new ArgumentNullException(nameof(b));
+            IReadOnlyList<string> spalten = Bauteilspalten();
+            v.Ausfuehren("UPDATE \"" + ZonenSchema.TAB_BAUTEIL + "\" SET " + string.Join(", ", spalten.Select(s => "\"" + s + "\" = ?")) +
+                         " WHERE \"ID\" = ?",
+                         Bauteilwerte(b, MitKopplung(spalten), MitFlaechenherkunft(spalten)).Append(new DbParam("@id", b.ID)).ToArray());
+        }
+
+        /// <summary>
+        /// <b>Schreibt eine vorhandene Zone</b> mit allen Spalten des Speicherns zurück (Projektebene, im Vorgang
+        /// <paramref name="v"/>) — für die Zusammenführung des Wiederimports (MA-6). Die Bauteile bleiben unberührt.
+        /// </summary>
+        internal static void ZoneAktualisieren(DbVorgang v, ZoneModel z)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            if (z == null) throw new ArgumentNullException(nameof(z));
+            IReadOnlyList<string> zusatz = Zusatzspalten();
+            List<string> spalten = ZonenSchema.Zonenspalten.Concat(zusatz).ToList();
+            v.Ausfuehren("UPDATE \"" + ZonenSchema.TAB_ZONE + "\" SET " + string.Join(", ", spalten.Select(s => "\"" + s + "\" = ?")) +
+                         " WHERE \"ID\" = ?",
+                         Zonenwerte(z).Concat(Zusatzwerte(z, zusatz)).Append(new DbParam("@id", z.ID)).ToArray());
         }
 
         /// <summary>Die Werte eines Bauteils in der Reihenfolge von <see cref="ZonenSchema.Bauteilspalten"/>; NULL bleibt NULL.</summary>

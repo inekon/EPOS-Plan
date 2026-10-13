@@ -54,7 +54,7 @@ public class GebaeudeDialogImportTests : EposBunitContext
     };
 
     /// <summary>Der Weg eines Imports, wie ihn die Hülle baut — mit Probedaten.</summary>
-    private static GebaeudeImportweg Weg(Protokoll p)
+    private static GebaeudeImportweg Weg(Protokoll p, GebaeudeWiederimportDaten? wiederimport = null)
     {
         var gaben = new Dictionary<string, object>
         {
@@ -89,6 +89,9 @@ public class GebaeudeDialogImportTests : EposBunitContext
                 return Task.FromResult<string?>(null);
             }),
         };
+        // MA-6: die Vorschau des Wiederimports (Gabe der Mehrzonenhülle).
+        if (wiederimport is not null)
+            gaben["Wiederimport"] = new Func<GebaeudeImportErgebnis, GebaeudeWiederimportDaten?>(_ => wiederimport);
 
         return new GebaeudeImportweg(
             gaben,
@@ -265,6 +268,36 @@ public class GebaeudeDialogImportTests : EposBunitContext
         Assert.Equal(0, p.Aufgenommen);
         Assert.Single(zeilen);
         Assert.Equal(0, p.Geaendert);
+    }
+
+    [Fact]
+    public void MA6_Wiederimport_zeigt_nach_dem_ersten_OK_die_Vorschau_und_merkt_erst_beim_zweiten_vor()
+    {
+        var p = new Protokoll();
+        bool? wahl = null;
+        var daten = new GebaeudeWiederimportDaten
+        {
+            GeaenderteFassung = true,
+            Zeilen = new[]
+            {
+                new WiederimportZeile(true, "Halle", "Halle", WindowsFormsApplication1.Wiederimportstand.Geaendert, new[] { "Fläche" }, new[] { "Nutzung und Kalender" }),
+                new WiederimportZeile(false, "Halle", "Dach 1", WindowsFormsApplication1.Wiederimportstand.Entfaellt, Array.Empty<string>(), Array.Empty<string>()),
+            },
+            EntfernenSetzen = w => wahl = w
+        };
+        var cut = Aufbauen(p, EineZeile(), weg: () => Weg(p, daten));
+        IRenderedComponent<GebaeudeImportDialog> imp = ImportEinlesen(cut);
+        Assert.Empty(imp.FindAll(".epos-wiederimport"));
+
+        imp.Find(".epos-leiste button.epos-knopf--primaer").Click();
+        Assert.Empty(p.Uebernommen);
+        Assert.Same(daten, imp.Instance.Wiederimportvorschau);
+        Assert.Equal(2, imp.FindAll(".epos-wiederimport-zeile").Count);
+
+        imp.Find(".epos-wiederimport-entfernen input").Change(true);
+        Assert.True(wahl);
+        imp.Find(".epos-leiste button.epos-knopf--primaer").Click();
+        Assert.Single(p.Uebernommen);
     }
 
     [Fact]

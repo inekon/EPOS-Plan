@@ -128,6 +128,98 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Ferienkennung.Abweichung, Zone(r.Stand, "Gästezimmer").Heizperiode);
         }
 
+        /// <summary>
+        /// E139: Die Ferienwerte, die der Profilgenerator an der Zone schreibt, und eigene Ferienzeiträume der Zonenkalender
+        /// gelten als Abweichung (Herkunft Profilgenerator); eine Zone ohne eigene Ferien steht auf „Projekt“ (Gegenprobe).
+        /// </summary>
+        [Fact]
+        public void Generatorferien_gelten_als_Abweichung_mit_Herkunft()
+        {
+            if (!_db.Vorhanden) return;
+            int g = Gebaeude(1054);
+            var ctrl = new ZonenNutzungCtrl(g);
+            ZonenNutzungsstand s0 = ctrl.Lesen();
+            int gast = Zone(s0, "Gästezimmer").IdZone;
+            DataRepository.ExecuteNonQuery("INSERT INTO \"Tab_Konditionierungsvorgabe\" (\"ID_Gebaeude\", \"Groesse\", \"Zeile\", \"Wert\") VALUES (?, 'HEIZSOLL', 'FERIEN', 16)",
+                                           new DbParam("@g", g));
+            Assert.Equal(Ferienkennung.Projekt, Zone(ctrl.Lesen(), "Gästezimmer").Ferien);
+            Assert.True(ctrl.ProfilZuweisen(new[] { gast }, ProfilId("Büro")).Ok);
+            Assert.True(Zahl("SELECT COUNT(*) FROM \"Tab_Konditionierungsvorgabe\" WHERE \"ID_Zone\" = ? AND \"Zeile\" = 'FERIEN'", gast) > 0);
+
+            ZonenNutzungsstand s = ctrl.Lesen();
+            ZonenNutzungszeile z = Zone(s, "Gästezimmer");
+            Assert.Equal(Ferienkennung.Abweichung, z.Ferien);
+            Assert.True(z.FerienAngaben.Abweichend);
+            Assert.Equal(Ferienherkunft.Profilgenerator, z.FerienAngaben.Herkunft);
+            Assert.True(z.FerienAngaben.Werte > 0);
+            ZonenNutzungszeile gastro = Zone(s, "Gastronomie und Verwaltung");
+            Assert.Equal(Ferienkennung.Projekt, gastro.Ferien);
+            Assert.False(gastro.FerienAngaben.Abweichend);
+            Assert.Null(ctrl.FerienRueckfrage(new[] { gastro.IdZone }));
+            string frage = ctrl.FerienRueckfrage(new[] { gast, gastro.IdZone });
+            Assert.NotNull(frage);
+            Assert.Contains("Gästezimmer", frage);
+            Assert.DoesNotContain("Gastronomie", frage);
+        }
+
+        /// <summary>
+        /// E139: „Projektvorgabe übernehmen“ ersetzt eigene Ferien nur mit Zustimmung — ohne sie bleibt die Zone unverändert und
+        /// die übrigen übernehmen; mit ihr fallen Ferienwerte und abweichende Ferienzeiträume; die Rücknahme stellt sie wieder her.
+        /// </summary>
+        [Fact]
+        public void Projektvorgabe_ersetzt_eigene_Ferien_nur_mit_Zustimmung()
+        {
+            if (!_db.Vorhanden) return;
+            int g = Gebaeude(1054);
+            var ctrl = new ZonenNutzungCtrl(g);
+            ZonenNutzungsstand s0 = ctrl.Lesen();
+            int gast = Zone(s0, "Gästezimmer").IdZone, gastro = Zone(s0, "Gastronomie und Verwaltung").IdZone;
+            DataRepository.ExecuteNonQuery("INSERT INTO \"Tab_Konditionierungsvorgabe\" (\"ID_Gebaeude\", \"Groesse\", \"Zeile\", \"Wert\") VALUES (?, 'HEIZSOLL', 'FERIEN', 16)",
+                                           new DbParam("@g", g));
+            DataRepository.ExecuteNonQuery("INSERT INTO \"Tab_Konditionierungsvorgabe\" (\"ID_Gebaeude\", \"Groesse\", \"Zeile\", \"Von\", \"Bis\") VALUES (?, 'HEIZSOLL', 'SAISON', 274, 120)",
+                                           new DbParam("@g", g));
+            Assert.True(ctrl.ProfilZuweisen(new[] { gast }, ProfilId("Büro")).Ok);
+            // Ein eigener Ferienzeitraum im Heizkalender der Zone, den das Projekt nicht kennt.
+            int kalender = Zahl("SELECT \"ID\" FROM \"Tab_Konditionierungskalender\" WHERE \"ID_Zone\" = ? AND \"Groesse\" = 'HEIZSOLL'", gast);
+            DataRepository.ExecuteNonQuery("INSERT INTO \"Tab_Konditionierungsperiode\" (\"ID_Kalender\", \"Rang\", \"Art\", \"Bezeichner\", \"Beginn\", \"Ende\", \"Aus\") " +
+                                           "VALUES (?, 290, 'FERIEN', 'Betriebsferien', 100, 110, 1)", new DbParam("@k", kalender));
+            DataRepository.ExecuteNonQuery("INSERT INTO \"Tab_Konditionierungsvorgabe\" (\"ID_Gebaeude\", \"ID_Zone\", \"Groesse\", \"Zeile\", \"Von\", \"Bis\") VALUES (?, ?, 'HEIZSOLL', 'SAISON', 260, 140)",
+                                           new DbParam("@g", g), new DbParam("@z", gastro));
+            const string WERTE = "SELECT COUNT(*) FROM \"Tab_Konditionierungsvorgabe\" WHERE \"ID_Zone\" = ? AND \"Zeile\" = 'FERIEN'";
+            const string EIGENER = "SELECT COUNT(*) FROM \"Tab_Konditionierungsperiode\" WHERE \"ID_Kalender\" = ? AND \"Rang\" = 290";
+            int werte = Zahl(WERTE, gast);
+            ZonenNutzungszeile vorher = Zone(ctrl.Lesen(), "Gästezimmer");
+            Assert.True(vorher.FerienAngaben.ZeitraeumeAbweichend);
+            Assert.True(vorher.FerienAngaben.Zeitraeume >= 1);
+
+            // Ohne Zustimmung: Gästezimmer bleibt, Gastronomie übernimmt.
+            ZonenNutzungsergebnis ohne = ctrl.ProjektvorgabeUebernehmen(new[] { gast, gastro }, false);
+            Assert.True(ohne.Ok, ohne.Meldung);
+            Assert.Equal(1, ohne.Zonen);
+            Assert.Equal(Ferienkennung.Abweichung, Zone(ohne.Stand, "Gästezimmer").Ferien);
+            Assert.Equal(werte, Zahl(WERTE, gast));
+            Assert.Equal(1, Zahl(EIGENER, kalender));
+            Assert.Equal(Ferienkennung.Projekt, Zone(ohne.Stand, "Gastronomie und Verwaltung").Heizperiode);
+            Assert.True(ctrl.Zuruecknehmen().Ok);
+            Assert.Equal(Ferienkennung.Abweichung, Zone(ctrl.Lesen(), "Gastronomie und Verwaltung").Heizperiode);
+
+            // Mit Zustimmung: Ferienwerte und der eigene Zeitraum fallen, die Marke steht auf „Projekt“.
+            ZonenNutzungsergebnis mit = ctrl.ProjektvorgabeUebernehmen(new[] { gast, gastro }, true);
+            Assert.True(mit.Ok, mit.Meldung);
+            Assert.Equal(2, mit.Zonen);
+            Assert.Equal(Ferienkennung.Projekt, Zone(mit.Stand, "Gästezimmer").Ferien);
+            Assert.Equal(0, Zahl(WERTE, gast));
+            Assert.Equal(0, Zahl(EIGENER, kalender));
+            Assert.Null(ctrl.FerienRueckfrage(new[] { gast }));
+
+            // Rücknahme über das Abbild.
+            ZonenNutzungsergebnis r = ctrl.Zuruecknehmen();
+            Assert.True(r.Ok, r.Meldung);
+            Assert.Equal(Ferienkennung.Abweichung, Zone(r.Stand, "Gästezimmer").Ferien);
+            Assert.Equal(werte, Zahl(WERTE, gast));
+            Assert.Equal(1, Zahl(EIGENER, kalender));
+        }
+
         [Fact]
         public void Kalender_kopieren_ersetzt_die_Kalender_der_Zielzonen()
         {

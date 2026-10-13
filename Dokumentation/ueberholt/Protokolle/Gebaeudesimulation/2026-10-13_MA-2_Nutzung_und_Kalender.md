@@ -92,3 +92,37 @@ eigene Tabelle), Kopf und Schlussleiste der Dialoge sind unverändert.
 
 „Das neue Blatt „Nutzung und Kalender“ zeigt Nutzungsprofil, Kalender, Sollwerte, Ferien und Heizperiode aller Zonen eines
 Gebäudes und weist sie mehreren Zonen in einem Schritt zu.“
+
+## Nachzug E139 (13.10.2026)
+
+Entscheid E139 (Anwender, nach Empfehlung): Die Ferienwerte, die der Profilgenerator je Zone schreibt, gelten als Abweichung
+von der Projektvorgabe und bleiben erhalten; „Projektvorgabe übernehmen“ fragt vorher und ersetzt sie nur mit Zustimmung.
+
+- **Befund:** Die Marke F las nur die Vorgabezeilen `FERIEN` an der Zone; die Ferienperioden der Zonenkalender (Art `FERIEN`)
+  zählten nicht, und „Projektvorgabe übernehmen“ löschte die vom Generator geschriebenen Zeilen ohne Rückfrage.
+- **Regel Lesen:** Je Zone `Zonenferien` (Ferienwerte = Zahl der Zeilen `FERIEN` der Zone, Ferienzeiträume = verschiedene Paare
+  Beginn–Ende der Ferienperioden ihrer Kalender, abweichend, wenn diese Menge nicht die der Gebäudekalender ist; eine Zone ohne
+  Ferienperioden weicht darin nicht ab). Die Marke heißt „Abweichung“ bei eigenen Ferienwerten oder abweichenden Zeiträumen,
+  sonst „Projekt“ (Gebäudezeile, `Tab_Gebaeude.Ferien` oder Ferienperioden der Gebäudekalender) oder „fehlt“. Herkunft
+  „Profilgenerator“, wenn ein Kalender der Zone die Nutzung eines Profils trägt, sonst „eigen“ (Hand und Datei sind nicht zu
+  unterscheiden). Der Titel der Marke nennt Herkunft, Zeiträume und Ferienwerte. Die Heizperiode liest unverändert `SAISON`.
+- **Regel Schreiben:** `ZonenNutzungCtrl.FerienRueckfrage(zonen)` nennt die gewählten Zonen mit eigenen Ferien samt Herkunft und
+  Zahlen (`null` ohne solche Zone); das Blatt fragt über `Dienste.Dialog.FrageAsync` (warnend, Vorgabe „Nein“).
+  `ProjektvorgabeUebernehmen(zonen, ferienErsetzen)`: ohne Zustimmung bleiben diese Zonen ganz unverändert (Meldung nennt ihre
+  Zahl), die übrigen übernehmen; mit Zustimmung fallen dazu die Ferienperioden der Zone — je Kalender treten die Ferienperioden
+  des Gebäudekalenders derselben Größe an ihre Stelle, ohne solchen Kalender bleiben nur die Perioden mit Zeiträumen des
+  Projekts. Rücknahme über das gemerkte Abbild (Kalender, Perioden, Vorgabezeilen).
+- **Dateien:** `EPOS.Kern/Controller/ZonenNutzungCtrl.cs` (`Ferienherkunft`, `Zonenferien`, Feld `FerienAngaben` der Zeile,
+  `FerienRueckfrage`, `Herkunftstext`), `EPOS.UI/Dialoge/Bedarf/ZonenNutzungDaten.cs` (`ProjektvorgabeUebernehmen` mit Zustimmung,
+  `FerienRueckfrage`, `Fragen`), `ZonenNutzungsblatt.razor`, `EPOS.UI.Daten/Bedarf/ZonenNutzungHuelle.cs`, `Resource.resx` und
+  `Resource.en-US.resx` (je 7 Schlüssel `ZN_FERIEN_HERKUNFT_*`, `ZN_FRAGE_FERIEN*`, `ZN_MSG_FERIEN_BEHALTEN`,
+  `ZNB_FERIEN_ANGABE`), `Resource.Designer.cs`; Tests `EPOS.Kern.Tests/ZonenNutzungCtrlTests.cs` (+2),
+  `EPOS.UI.Tests/Dialoge/ZonenNutzungsblattTests.cs` (+3 Fälle). Keine neue Eingabestelle (Eingabebilanz 7 unverändert), kein
+  CSS, kein Schemaschritt, keine Leseregel des Rechenwegs; Referenzprojekte unberührt, Basis R52 unberührt.
+- **Tests:** `dotnet build WP-Plan.Kern.slnf -c Release` 0 Fehler; Windows-Schale mit `EnableWindowsTargeting=true` 0 Fehler.
+  `EPOS.Kern.Tests` Filter `ZonenNutzung|Konditionierung|Dokumentation|Repository|Resource`: 391 bestanden, 0 rot (neu: Marke
+  „Abweichung“ bei Generator-Ferien mit Gegenprobe „Projekt“; Übernahme ohne und mit Zustimmung samt Rücknahme).
+  `EPOS.UI.Tests` Filter `ZonenNutzung|MA2|KiMaskenabdeckung|VorlagenfeldStilblatt`: 39 bestanden, 0 rot. `SqlDialektPruefer`:
+  0 Fundstellen. `designer_neu.py`: zweiter Lauf +0.
+- **Logbuch-Satz:** „„Projektvorgabe übernehmen“ im Blatt „Nutzung und Kalender“ fragt nach, bevor eigene Ferien einer Zone —
+  auch die eines Nutzungsprofils — ersetzt werden.“

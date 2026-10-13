@@ -17,6 +17,11 @@ internal sealed class ZonenNutzungProbeweg
 {
     public readonly List<(string Weg, int[] Zonen, long? Profil)> Aufrufe = new();
     public bool Geaendert;
+    /// <summary>Der Text der Ferien-Rückfrage (E139); <c>null</c> = keine Zone mit eigenen Ferien.</summary>
+    public string? Rueckfrage;
+    /// <summary>Die Antwort des Dialogdiensts auf die Rückfrage.</summary>
+    public bool Zustimmung;
+    public readonly List<string> Gefragt = new();
 
     private static IReadOnlyDictionary<string, Kalenderkennung> Kennungen(Kalenderkennung k, bool beheizt)
         => ZonenNutzungCtrl.GROESSEN.ToDictionary(g => g, g => !beheizt && (g == DbWerte.KOND_GROESSE_HEIZSOLL || g == DbWerte.KOND_GROESSE_KUEHLSOLL)
@@ -48,7 +53,9 @@ internal sealed class ZonenNutzungProbeweg
         Lesen = Stand,
         Profile = () => new[] { new ZonenNutzungsprofil(11, "Hotelzimmer", "DIN V 18599-10"), new ZonenNutzungsprofil(12, "Restaurant", "DIN V 18599-10") },
         ProfilZuweisen = (z, p) => Merken("Profil", z, p),
-        ProjektvorgabeUebernehmen = z => Merken("Projekt", z),
+        ProjektvorgabeUebernehmen = (z, ersetzen) => Merken(ersetzen ? "Projekt+Ferien" : "Projekt", z),
+        FerienRueckfrage = _ => Rueckfrage,
+        Fragen = text => { Gefragt.Add(text); return Task.FromResult(Zustimmung); },
         KalenderKopieren = (q, z) => Merken("Kopieren" + q, z),
         SollwerteSetzen = (z, t, n) => Merken("Soll" + t + "/" + n, z),
         Zuruecknehmen = () => { Aufrufe.Add(("Zurueck", Array.Empty<int>(), null)); Geaendert = false; return new ZonenNutzungsergebnis(true, "zurück", 2, Stand()); },
@@ -139,6 +146,32 @@ public sealed class ZonenNutzungsblattTests : EposBunitContext
         Knopf(cut, "epos-zonennutzung-zurueck").Click();
         Assert.Equal("Zurueck", p.Aufrufe[^1].Weg);
         Assert.Empty(cut.FindAll(".epos-zonennutzung-werkzeuge button.epos-zonennutzung-zurueck"));
+    }
+
+    /// <summary>E139: Tragen gewählte Zonen eigene Ferien, fragt das Blatt über den Dialogdienst; die Antwort geht an den Weg.</summary>
+    [Theory]
+    [InlineData(false, "Projekt")]
+    [InlineData(true, "Projekt+Ferien")]
+    public void Projektvorgabe_fragt_bei_eigenen_Ferien_vorher(bool zustimmung, string erwartet)
+    {
+        var p = new ZonenNutzungProbeweg { Rueckfrage = "Gästezimmer trägt eigene Ferien.", Zustimmung = zustimmung };
+        var cut = Blatt(p);
+        cut.Find("input.epos-zonennutzung-alle").Change(true);
+        Knopf(cut, "epos-zonennutzung-projekt").Click();
+        Assert.Equal(new[] { "Gästezimmer trägt eigene Ferien." }, p.Gefragt);
+        Assert.Equal(new[] { erwartet }, p.Aufrufe.Select(a => a.Weg));
+    }
+
+    /// <summary>Ohne Zone mit eigenen Ferien fragt das Blatt nicht.</summary>
+    [Fact]
+    public void Projektvorgabe_ohne_eigene_Ferien_fragt_nicht()
+    {
+        var p = new ZonenNutzungProbeweg { Zustimmung = true };
+        var cut = Blatt(p);
+        cut.Find("input.epos-zonennutzung-alle").Change(true);
+        Knopf(cut, "epos-zonennutzung-projekt").Click();
+        Assert.Empty(p.Gefragt);
+        Assert.Equal(new[] { "Projekt" }, p.Aufrufe.Select(a => a.Weg));
     }
 
     [Fact]
