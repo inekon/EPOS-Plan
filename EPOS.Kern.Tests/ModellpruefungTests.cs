@@ -169,11 +169,14 @@ namespace EPOS.Kern.Tests
             Assert.True(u.Ok, u.Meldung);
             Assert.DoesNotContain(u.Neu.Befunde, x => x.Code == "ZONE_OHNE_PROFIL");
             const string KAL = "SELECT COUNT(*) FROM \"Tab_Konditionierungskalender\" WHERE \"ID_Zone\" = ?";
-            Assert.True(Zahl(KAL, new DbParam("@z", zone)) > 0);
+            const string PROFIL = "SELECT COUNT(*) FROM \"Tab_Zone\" WHERE \"ID\" = ? AND \"Nutzungsprofil\" IS NOT NULL";
+            // Die Zone trägt das Profil (Kalender nur für Größen mit Kennwert, NP-F13).
+            Assert.Equal(1, Zahl(PROFIL, new DbParam("@z", zone)));
 
             Uebernahmeergebnis r = ctrl.Zuruecknehmen(Pruefgruppe.NutzungKonditionierung);
             Assert.True(r.Ok, r.Meldung);
             Assert.Equal(0, Zahl(KAL, new DbParam("@z", zone)));
+            Assert.Equal(0, Zahl(PROFIL, new DbParam("@z", zone)));
             Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"Tab_Konditionierungsvorgabe\" WHERE \"ID_Zone\" = ?", new DbParam("@z", zone)));
             Assert.Single(r.Neu.Befunde, x => x.Code == "ZONE_OHNE_PROFIL");
         }
@@ -258,8 +261,9 @@ namespace EPOS.Kern.Tests
             Modellbefund nurU = Assert.Single(e.Gruppe(Pruefgruppe.AufbautenStoffwerte).Befunde);
             Assert.Equal(Modellpruefung.NUR_U_WERT, nurU.Code);
             Assert.Equal(Pruefampel.Gelb, nurU.Ampel);
-            Assert.Equal(Vorschlagsherkunft.Projektaufbau, nurU.Vorschlag.Herkunft);
-            Assert.Equal(8, nurU.Vorschlag.IdAufbau);
+            // Kein anderes Dach trägt einen Projektaufbau, der Katalog keinen Dachaufbau → Typaufbau, auf U 0,2 abgeglichen.
+            Assert.Equal(Vorschlagsherkunft.Typaufbau, nurU.Vorschlag.Herkunft);
+            Assert.Equal(0.2, nurU.Vorschlag.U);
             Assert.Contains(e.Gruppe(Pruefgruppe.NutzungKonditionierung).Befunde, b => b.Code == Modellpruefung.HEIZPERIODE_FEHLT);
             Assert.Equal(Pruefampel.Rot, e.Gruppe(Pruefgruppe.OrtLage).Ampel);
             Assert.Contains(e.Gruppe(Pruefgruppe.Rechenfaehigkeit).Befunde, b => b.Code == Modellpruefung.PFLICHTGROESSE_FEHLT);
@@ -308,13 +312,13 @@ namespace EPOS.Kern.Tests
         {
             CultureInfo c = CultureInfo.GetCultureInfo(kultur);
             foreach (string code in Modellpruefung.CODES.Values.SelectMany(x => x))
-                Assert.False(string.IsNullOrEmpty(MyResource.Resource.ResourceManager.GetString("MP_BEFUND_" + code, c)), code);
+                Assert.False(string.IsNullOrEmpty(WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString("MP_BEFUND_" + code, c)), code);
             foreach (Vorschlagsherkunft h in new[] { Vorschlagsherkunft.DinNummer, Vorschlagsherkunft.Raumtyp, Vorschlagsherkunft.Gebaeudeart, Vorschlagsherkunft.EposMuster })
-                Assert.NotNull(MyResource.Resource.ResourceManager.GetString("MP_VORSCHLAG_PROFIL_" + h.ToString().ToUpperInvariant(), c));
+                Assert.NotNull(WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString("MP_VORSCHLAG_PROFIL_" + h.ToString().ToUpperInvariant(), c));
             foreach (Pruefgruppe g in Enum.GetValues(typeof(Pruefgruppe)))
-                Assert.NotNull(MyResource.Resource.ResourceManager.GetString("MP_GRUPPE_" + g.ToString().ToUpperInvariant(), c));
+                Assert.NotNull(WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString("MP_GRUPPE_" + g.ToString().ToUpperInvariant(), c));
             foreach (Rechenstatus st in Enum.GetValues(typeof(Rechenstatus)))
-                Assert.NotNull(MyResource.Resource.ResourceManager.GetString("MP_STATUS_" + st.ToString().ToUpperInvariant(), c));
+                Assert.NotNull(WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString("MP_STATUS_" + st.ToString().ToUpperInvariant(), c));
         }
     }
 }
