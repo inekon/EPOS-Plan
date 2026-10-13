@@ -3,25 +3,26 @@
    WAS ER ZEIGT. Die Energie-Kennzahlen von Stamm und Varianten nebeneinander -
    dieselben Versionen und dieselbe Reihenfolge wie die Gegenueberstellung der
    Komponenten (Stamm und die Varianten "Im Vergleich"), im Spaltenkopf der
-   Simulationsstand. Die Zeilen sind gruppiert (Bedarf, Waermeerzeugung, Strom,
-   Endenergie, Deckung, Kaelte, Effizienz, Gebaeude), die Einheit steht im
-   Zeilenkopf. Was vom Stamm abweicht, ist hinterlegt wie in der
-   Komponententabelle, darunter leise die Abweichung in Prozent. Kosten gehoeren
-   nicht hierher, sie stehen in der Wirtschaftlichkeit.
+   Simulationsstand. Die Einheit steht im Zeilenkopf. Was vom Stamm abweicht, ist
+   hinterlegt wie in der Komponententabelle, darunter leise die Abweichung in
+   Prozent. Kosten gehoeren nicht hierher, sie stehen in der Wirtschaftlichkeit.
 
-   WOHER. Die Zahlen und die Entscheidung "weicht ab" kommen fertig aus dem Kern
-   (Energievergleich, aus dem KennzahlenKatalog des Berichts, ueber die Huelle
-   UebersichtErgebnisGaben). Die Komponente zeigt nur; sie laedt neu, sobald die
-   Seite einen neuen Stand reicht (Stammwahl, Vergleichswahl, Simulation).
+   GRUPPEN ALS ZUSTAND. Jede Gruppe traegt einen stabilen Schluessel und einen
+   Zustand (Offen, Zugeklappt, Ausgeblendet). Die Vorgabe setzt der Kern
+   (Energievergleich.GRUPPEN_DATEN, ueber die Huelle); die Komponente zeichnet allein
+   ueber den Zustand: offene Gruppen in der Tafel, zugeklappte je als Klappgruppe des
+   Hauses (Baustein Klappgruppe) darunter, im Kopf die Zahl der Kennzahlen und der
+   Hinweis auf eine Abweichung. Ob eine Klappgruppe aufgeklappt ist, gilt je Gruppe
+   und Sitzung (Ablage der Huelle). "nur Unterschiede" der Seite blendet in allen
+   Gruppen Gruppen ohne Abweichung aus.
 
-   EMISSIONEN ALS OPTION. Die Gruppe "Emissionen" (CO2 wie im Katalog) steht unter der
-   Tafel als Klappgruppe des Hauses (Baustein Klappgruppe), beim Oeffnen zugeklappt; ihr
-   Kopf nennt die Zahl der Kennzahlen und zeigt eine Abweichung an. Die Stellung haelt die
-   Huelle je Sitzung. "nur Unterschiede" der Seite blendet Gruppen ohne Abweichung aus.
+   WOHER. Die Zahlen, das Format je Zeile und die Entscheidung "weicht ab" kommen
+   fertig aus dem Kern (Energievergleich, ueber die Huelle UebersichtErgebnisGaben).
+   Die Komponente zeigt nur; sie laedt neu, sobald die Seite einen neuen Stand reicht.
 
-   LEERE FAELLE. Eine nicht simulierte Version zeigt "—" mit Kurztext; ist keine
-   Version simuliert, steht ein Hinweis statt der Tabelle. Ohne Gaben zeichnet
-   der Abschnitt nichts. *@
+   LEERE FAELLE. Eine nicht simulierte Version zeigt leise "—", ihr Spaltenkopf sagt
+   deutlich "nicht simuliert"; ist keine Version simuliert, steht ein Hinweis statt
+   der Tabelle. Ohne Gaben zeichnet der Abschnitt nichts. *@
 
 @if (_ergebnis is not null && _ergebnis.Versionsspalten.Count > 0)
 {
@@ -48,12 +49,10 @@
             }
             @foreach (ErgebnisVergleichGruppe g in Klappgruppen)
             {
-                @* Die Emissionen als Option (Anwenderwunsch 13.10.2026): die Klappgruppe des Hauses,
-                   beim Oeffnen zugeklappt, im Kopf die Zahl der Kennzahlen und der Hinweis auf eine
-                   Abweichung; die Stellung gilt je Sitzung (Huelle). *@
-                <Klappgruppe Titel="@g.Titel" Zusatz="@Anzahl(g.Zeilen.Count)" Ebene="3"
-                             Klasse="epos-ergebnis-klappgruppe"
-                             Offen="@EmissionenOffen" OffenChanged="BeiEmissionen">
+                <Klappgruppe @key="g.Schluessel" Titel="@g.Titel" Zusatz="@Anzahl(g.Zeilen.Count)" Ebene="3"
+                             Klasse="@("epos-ergebnis-klappgruppe epos-ergebnis-klappgruppe--" + g.Schluessel)"
+                             Offen="@KlappgruppeOffen(g.Schluessel)"
+                             OffenChanged="@(an => BeiKlappgruppe(g.Schluessel, an))">
                     <Kopfhandlungen>
                         @if (g.WeichtAb)
                         {
@@ -105,7 +104,7 @@
     /// <summary>Der Text der Sprachausgabe an einer abweichenden Zelle (<c>BK_LBL_WEICHT_AB</c>).</summary>
     [Parameter] public string WeichtAbText { get; set; } = "weicht vom Stammprojekt ab";
 
-    /// <summary>Ein Wert unter „nur Unterschiede“ der Seite: Gruppen ohne Abweichung entfallen.</summary>
+    /// <summary>Ein Wert unter „nur Unterschiede“ der Seite: Gruppen ohne Abweichung entfallen, in der Tafel wie zugeklappt.</summary>
     [Parameter] public bool NurUnterschiede { get; set; }
 
     /// <summary>Der Hinweis, wenn „nur Unterschiede“ alles ausblendet (<c>BK_ERG_KEINE_UNTERSCHIEDE</c>).</summary>
@@ -118,35 +117,43 @@
     /// <summary>Die Einzahl im Kopf der Klappgruppe (<c>BK_ERG_ANZAHL_KENNZAHL_EINS</c>).</summary>
     [Parameter] public string AnzahlEins { get; set; } = "1 Kennzahl";
 
-    /// <summary>Liest die Stellung der Klappgruppe „Emissionen“ aus der Merkablage der Hülle (je Sitzung).</summary>
-    [Parameter] public Func<bool>? EmissionenOffenLesen { get; set; }
+    /// <summary>Liest aus der Merkablage der Hülle, ob die Klappgruppe mit diesem Gruppenschlüssel aufgeklappt ist (je Sitzung).</summary>
+    [Parameter] public Func<string, bool>? KlappgruppeOffenLesen { get; set; }
 
-    /// <summary>Meldet die neue Stellung der Klappgruppe an die Hülle.</summary>
-    [Parameter] public Action<bool>? EmissionenOffenGewechselt { get; set; }
+    /// <summary>Meldet die neue Stellung einer Klappgruppe (Gruppenschlüssel, aufgeklappt) an die Hülle.</summary>
+    [Parameter] public Action<string, bool>? KlappgruppeOffenGewechselt { get; set; }
 
-    /// <summary>Die Stellung, solange die Hülle sie nicht führt.</summary>
-    private bool _emissionenOffen;
+    /// <summary>Die aufgeklappten Klappgruppen, solange die Hülle die Stellung nicht führt.</summary>
+    private readonly HashSet<string> _offen = new();
 
-    /// <summary>Steht die Klappgruppe „Emissionen“ offen? (auch Prüfhilfe)</summary>
-    public bool EmissionenOffen => EmissionenOffenLesen?.Invoke() ?? _emissionenOffen;
+    /// <summary>Ist die Klappgruppe mit diesem Gruppenschlüssel aufgeklappt? (auch Prüfhilfe)</summary>
+    public bool KlappgruppeOffen(string schluessel)
+        => KlappgruppeOffenLesen?.Invoke(schluessel) ?? _offen.Contains(schluessel);
 
-    private void BeiEmissionen(bool an)
+    private void BeiKlappgruppe(string schluessel, bool an)
     {
-        _emissionenOffen = an;
-        EmissionenOffenGewechselt?.Invoke(an);
+        if (an) _offen.Add(schluessel);
+        else _offen.Remove(schluessel);
+        KlappgruppeOffenGewechselt?.Invoke(schluessel, an);
     }
 
     private string Anzahl(int n) => n == 1 ? AnzahlEins : string.Format(AnzahlFormat, n);
 
-    private bool Sichtbar(ErgebnisVergleichGruppe g) => !NurUnterschiede || g.WeichtAb;
+    private bool Sichtbar(ErgebnisVergleichGruppe g)
+        => g.Zustand != ErgebnisGruppenZustand.Ausgeblendet && (!NurUnterschiede || g.WeichtAb);
 
-    /// <summary>Die Gruppen der Tafel (ohne die Klappgruppen), unter „nur Unterschiede“ nur die abweichenden.</summary>
+    /// <summary>Die offenen Gruppen der Tafel, unter „nur Unterschiede“ nur die abweichenden.</summary>
     private IReadOnlyList<ErgebnisVergleichGruppe> Tafelgruppen
-        => _ergebnis?.Gruppen.Where(g => !g.Klappbar && Sichtbar(g)).ToList() ?? new List<ErgebnisVergleichGruppe>();
+        => _ergebnis?.Gruppen.Where(g => g.Zustand == ErgebnisGruppenZustand.Offen && Sichtbar(g)).ToList()
+           ?? new List<ErgebnisVergleichGruppe>();
 
-    /// <summary>Die Klappgruppen unter der Tafel (die Emissionen).</summary>
+    /// <summary>Die zugeklappten Gruppen unter der Tafel, je als Klappgruppe.</summary>
     private IReadOnlyList<ErgebnisVergleichGruppe> Klappgruppen
-        => _ergebnis?.Gruppen.Where(g => g.Klappbar && Sichtbar(g)).ToList() ?? new List<ErgebnisVergleichGruppe>();
+        => _ergebnis?.Gruppen.Where(g => g.Zustand == ErgebnisGruppenZustand.Zugeklappt && Sichtbar(g)).ToList()
+           ?? new List<ErgebnisVergleichGruppe>();
+
+    /// <summary>Ist die Version an Stelle <paramref name="i"/> simuliert? Ohne Angabe ja.</summary>
+    private bool VersionSimuliert(int i) => i >= _ergebnis!.Simuliert.Count || _ergebnis.Simuliert[i];
 
     /// <summary>Die Tafel über die Gruppen; mit Gruppenkopf je Gruppe oder (in der Klappgruppe) ohne.</summary>
     private RenderFragment Tafel(IEnumerable<ErgebnisVergleichGruppe> gruppen, bool mitGruppenkopf) => __builder =>
@@ -155,10 +162,11 @@
             <table class="epos-raster epos-uebersicht-tabelle epos-komponentenvergleich epos-ergebnisvergleich">
                 <thead>
                     <tr>
-                        <th scope="col" class="epos-komponenten-gewerk">@SpalteKennzahl</th>
-                        @foreach (VersionsSpalte v in _ergebnis!.Versionsspalten)
+                        <th scope="col" class="epos-komponenten-gewerk epos-ergebnis-kennzahlkopf">@SpalteKennzahl</th>
+                        @for (int i = 0; i < _ergebnis!.Versionsspalten.Count; i++)
                         {
-                            <th scope="col" class="epos-komponenten-versionkopf">
+                            VersionsSpalte v = _ergebnis.Versionsspalten[i];
+                            <th scope="col" class="@(VersionSimuliert(i) ? "epos-komponenten-versionkopf epos-ergebnis-versionkopf" : "epos-komponenten-versionkopf epos-ergebnis-versionkopf epos-ergebnis-versionkopf--ohne")">
                                 <span class="epos-komponenten-version">@v.Name</span>
                                 @if (!string.IsNullOrEmpty(v.Stand))
                                 {
@@ -173,7 +181,7 @@
                     {
                         @if (mitGruppenkopf)
                         {
-                            <tr class="epos-ergebnis-gruppe">
+                            <tr class="epos-ergebnis-gruppe" data-gruppe="@g.Schluessel">
                                 <th scope="rowgroup" class="epos-komponenten-gewerk">@g.Titel</th>
                                 @for (int i = 0; i < _ergebnis.Versionsspalten.Count; i++)
                                 {
@@ -183,7 +191,7 @@
                         }
                         @foreach (ErgebnisVergleichZeile z in g.Zeilen)
                         {
-                            <tr>
+                            <tr data-kennzahl="@z.Schluessel">
                                 <th scope="row" class="epos-komponenten-gewerk epos-ergebnis-kennzahl">@z.Bezeichnung</th>
                                 @foreach (ErgebnisVergleichZelle c in z.Zellen)
                                 {
@@ -223,10 +231,13 @@
     }
 
     private static string ZellKlasse(ErgebnisVergleichZelle c)
-        => c.WeichtAb ? "epos-zahl epos-komponenten-zelle epos-komponenten-zelle--abweichend" : "epos-zahl epos-komponenten-zelle";
+        => c.WeichtAb ? "epos-zahl epos-komponenten-zelle epos-komponenten-zelle--abweichend"
+         : c.NichtSimuliert ? "epos-zahl epos-komponenten-zelle epos-ergebnis-zelle--ohne"
+         : "epos-zahl epos-komponenten-zelle";
 
     /// <summary>
-    /// Die Tabelle als Text für den Assistenten: je Zeile „Gruppe · Kennzahl: Version = Wert (Abweichung); …“; leer ohne
+    /// Die Tabelle als Text für den Assistenten: alle Gruppen, auch die zugeklappten, je Gruppe eine Kopfzeile
+    /// „[Gruppenschlüssel] Titel“, darunter je Zeile „Gruppe · Kennzahl: Version = Wert (Abweichung); …“; leer ohne
     /// Tabelle, der Hinweis, wenn keine Version simuliert ist.
     /// </summary>
     public string Text()
@@ -235,6 +246,8 @@
         if (_ergebnis.KeineSimulation || _ergebnis.Gruppen.Count == 0) return KeineSimulationText;
         var zeilen = new List<string>();
         foreach (ErgebnisVergleichGruppe g in _ergebnis.Gruppen)
+        {
+            zeilen.Add("[" + g.Schluessel + "] " + g.Titel);
             foreach (ErgebnisVergleichZeile z in g.Zeilen)
             {
                 var teile = new List<string>();
@@ -249,6 +262,7 @@
                 }
                 zeilen.Add(g.Titel + " · " + z.Bezeichnung + ": " + string.Join("; ", teile));
             }
+        }
         return string.Join("\n", zeilen);
     }
 }

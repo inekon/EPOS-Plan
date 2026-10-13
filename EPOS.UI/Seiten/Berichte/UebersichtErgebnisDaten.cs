@@ -22,6 +22,9 @@ public sealed class ErgebnisVergleichZelle
 /// <summary>Eine Zeile des Energievergleichs: eine Kennzahl, je Version eine Zelle.</summary>
 public sealed class ErgebnisVergleichZeile
 {
+    /// <summary>Der stabile Schlüssel der Kennzahl (Katalogschlüssel, „endenergie:&lt;CarrierId&gt;“); nie der Anzeigetext.</summary>
+    public string Schluessel { get; set; } = "";
+
     /// <summary>Die Beschriftung samt Einheit („Wärmebedarf gesamt [MWh/a]“).</summary>
     public string Bezeichnung { get; set; } = "";
 
@@ -40,9 +43,25 @@ public sealed class ErgebnisVergleichZeile
     }
 }
 
+/// <summary>Wie eine Gruppe des Energievergleichs steht.</summary>
+public enum ErgebnisGruppenZustand
+{
+    /// <summary>Offen in der Tafel.</summary>
+    Offen,
+
+    /// <summary>Als Klappgruppe unter der Tafel, beim Öffnen zugeklappt.</summary>
+    Zugeklappt,
+
+    /// <summary>Nicht gezeigt (für einen späteren Benutzerzustand).</summary>
+    Ausgeblendet
+}
+
 /// <summary>Eine Gruppe des Energievergleichs („Bedarf“, „Strom“ …) mit ihren Zeilen.</summary>
 public sealed class ErgebnisVergleichGruppe
 {
+    /// <summary>Der stabile Gruppenschlüssel des Kerns („bedarf“, „kaelte“ …).</summary>
+    public string Schluessel { get; set; } = "";
+
     /// <summary>Der Gruppentitel.</summary>
     public string Titel { get; set; } = "";
 
@@ -50,10 +69,10 @@ public sealed class ErgebnisVergleichGruppe
     public IReadOnlyList<ErgebnisVergleichZeile> Zeilen { get; set; } = Array.Empty<ErgebnisVergleichZeile>();
 
     /// <summary>
-    /// Steht die Gruppe als Klappgruppe unter der Tafel (die Emissionen, Anwenderwunsch 13.10.2026: als Option, damit
-    /// die Übersicht nicht zu voll wird)?
+    /// Wie die Gruppe steht: offen in der Tafel, zugeklappt als Klappgruppe darunter oder ausgeblendet. Die Hülle setzt
+    /// die Vorgabe des Kerns; ein Benutzerzustand überschreibt allein dieses Feld.
     /// </summary>
-    public bool Klappbar { get; set; }
+    public ErgebnisGruppenZustand Zustand { get; set; } = ErgebnisGruppenZustand.Offen;
 
     /// <summary>Weicht in der Gruppe wenigstens eine Zelle vom Stamm ab?</summary>
     public bool WeichtAb
@@ -75,6 +94,9 @@ public sealed class UebersichtErgebnisStand
 {
     /// <summary>Die Spaltenköpfe der Versionen, der Stamm zuerst.</summary>
     public IReadOnlyList<VersionsSpalte> Versionsspalten { get; set; } = Array.Empty<VersionsSpalte>();
+
+    /// <summary>Je Version: liegt ein Simulationsergebnis vor? Der Stamm zuerst; fehlt ein Eintrag, gilt die Version als simuliert.</summary>
+    public IReadOnlyList<bool> Simuliert { get; set; } = Array.Empty<bool>();
 
     /// <summary>Die Gruppen mit ihren Zeilen; leer, wenn keine Version simuliert ist.</summary>
     public IReadOnlyList<ErgebnisVergleichGruppe> Gruppen { get; set; } = Array.Empty<ErgebnisVergleichGruppe>();

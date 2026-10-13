@@ -35,12 +35,20 @@ public class UebersichtErgebnisseTests : EposBunitContext
         return new VariantenDaten
         {
             IdProjekt = id, IstStamm = stamm, CO2Gesamt = s_waerme[id] / 5,
+            // Erdgas überall gleich, der Netzstrom ist der Netzbezug (keine eigene Zeile).
+            EnergiekostenJeTraeger = new List<EnergieTraegerNachweis>
+            {
+                new() { CarrierId = 1, Traeger = "Erdgas", MengeMWh = 30, WaermeMengeMWh = 30 },
+                new() { CarrierId = 2, Traeger = "Strom", Netzstrom = true, MengeMWh = 50, Einheit = "kWh" }
+            },
             Ergebnis = new ErgebnisModel
             {
                 Energiebedarf = new ErgebnisEnergiebedarfModel
                 {
                     Waermebedarf_Gesamt = s_waerme[id], Strombedarf_Gesamt = 50, Stromrestbedarf = 50
-                }
+                },
+                // Kältestrom überall gleich: die zugeklappte Gruppe „Kälte“ ohne Abweichung.
+                Waermepumpe = new ErgebnisWaermepumpeModel { Stromverbrauch_Kuehlung = 3 }
             }
         };
     });
@@ -92,6 +100,9 @@ public class UebersichtErgebnisseTests : EposBunitContext
         Assert.DoesNotContain(cut.FindAll("th.epos-ergebnis-kennzahl"), t => t.TextContent.EndsWith("[t/a]"));
         Assert.Contains(cut.FindAll("th.epos-ergebnis-kennzahl"), t => t.TextContent == "Wärmebedarf gesamt [MWh/a]");
         Assert.Contains(cut.FindAll("th.epos-ergebnis-kennzahl"), t => t.TextContent == "Netzbezug Strom [MWh/a]");
+        // Die Trägerzeile unter der Endenergie, der Netzstrom ohne zweite Zeile; der stabile Schlüssel am Element.
+        Assert.Equal("Endenergie Erdgas [MWh/a]", cut.Find("tr[data-kennzahl='endenergie:1'] th").TextContent);
+        Assert.Empty(cut.FindAll("tr[data-kennzahl='endenergie:2']"));
 
         // Spaltenköpfe: Name und Simulationsstand wie die Gegenüberstellung.
         var koepfe = cut.FindAll("thead th.epos-komponenten-versionkopf");
@@ -128,6 +139,9 @@ public class UebersichtErgebnisseTests : EposBunitContext
         Assert.Equal("—", zelle.QuerySelector(".epos-ergebnis-wert")!.TextContent);
         Assert.Equal("nicht simuliert", zelle.GetAttribute("title"));
         Assert.DoesNotContain("epos-komponenten-zelle--abweichend", zelle.ClassName);
+        Assert.Contains("epos-ergebnis-zelle--ohne", zelle.ClassName);
+        Assert.Contains("epos-ergebnis-versionkopf--ohne", cut.FindAll("thead th.epos-ergebnis-versionkopf")[1].ClassName);
+        Assert.DoesNotContain("epos-ergebnis-versionkopf--ohne", cut.FindAll("thead th.epos-ergebnis-versionkopf")[0].ClassName);
         Assert.Equal(1, _geladen);   // die nicht simulierte Version wird gar nicht geladen
     }
 
@@ -161,55 +175,108 @@ public class UebersichtErgebnisseTests : EposBunitContext
         Assert.Equal(2, cut.FindAll("thead th.epos-komponenten-versionkopf").Count);
     }
 
-    private IRenderedComponent<UebersichtErgebnisse> ZeigeMitAblage(UebersichtStand stand, Func<bool> lesen,
-                                                                     Action<bool> melden, bool nurUnterschiede = false)
+    private IRenderedComponent<UebersichtErgebnisse> ZeigeMitAblage(UebersichtStand stand, HashSet<string> ablage,
+                                                                     bool nurUnterschiede = false)
         => Render<UebersichtErgebnisse>(p => p
             .Add(x => x.Stand, stand)
             .Add(x => x.Laden, Huelle().Laden)
-            .Add(x => x.EmissionenOffenLesen, lesen)
-            .Add(x => x.EmissionenOffenGewechselt, melden)
+            .Add(x => x.KlappgruppeOffenLesen, g => ablage.Contains(g))
+            .Add(x => x.KlappgruppeOffenGewechselt, (g, an) => { if (an) ablage.Add(g); else ablage.Remove(g); })
             .Add(x => x.NurUnterschiede, nurUnterschiede));
 
+    private static IElement Klappgruppe(IRenderedComponent<UebersichtErgebnisse> cut, string schluessel)
+        => cut.Find("section.epos-ergebnis-klappgruppe--" + schluessel);
+
     [Fact]
-    public void Die_Emissionen_sind_eine_zugeklappte_Gruppe_mit_Zahl_und_Hinweis()
+    public void Offene_Gruppen_in_der_Tafel_zugeklappte_darunter()
     {
         var cut = Zeige(Stand());
 
-        IElement gruppe = cut.Find("section.epos-ergebnis-klappgruppe");
-        Assert.Equal("Emissionen", gruppe.QuerySelector(".epos-klappgruppe-text")!.TextContent);
-        Assert.Equal("false", gruppe.QuerySelector(".epos-klappgruppe-knopf")!.GetAttribute("aria-expanded"));
-        Assert.Null(gruppe.QuerySelector("table"));
-        // Nur CO₂ gesamt trägt einen Wert (spezifisch fehlt) - die Zahl steht im Kopf.
-        Assert.Equal("1 Kennzahl", gruppe.QuerySelector(".epos-klappgruppe-zusatz")!.TextContent);
-        // 20 gegen 22 t/a: Der Kopf zeigt die Abweichung auch zugeklappt.
-        Assert.Contains("weicht vom Stammprojekt ab", gruppe.QuerySelector(".epos-ergebnis-klapphinweis")!.TextContent);
+        string[] tafel = cut.FindAll("tr.epos-ergebnis-gruppe").Select(t => t.GetAttribute("data-gruppe")!).ToArray();
+        Assert.Contains("bedarf", tafel);
+        Assert.Contains("endenergie", tafel);
+        Assert.All(tafel, g => Assert.True(Energievergleich.VorgabeOffen(g)));
+        Assert.DoesNotContain("kaelte", tafel);
+        Assert.DoesNotContain("emissionen", tafel);
+
+        // Kälte und Emissionen zugeklappt, in der Reihenfolge des Kerns, ohne Tafel im Rumpf.
+        var klapp = cut.FindAll("section.epos-ergebnis-klappgruppe");
+        Assert.Equal(new[] { "Kälte", "Emissionen" },
+                     klapp.Select(k => k.QuerySelector(".epos-klappgruppe-text")!.TextContent).ToArray());
+        Assert.All(klapp, k =>
+        {
+            Assert.Equal("false", k.QuerySelector(".epos-klappgruppe-knopf")!.GetAttribute("aria-expanded"));
+            Assert.Null(k.QuerySelector("table"));
+        });
     }
 
     [Fact]
-    public void Aufklappen_zeigt_die_Zeilen_und_die_Stellung_geht_in_die_Ablage()
+    public void Der_Kopf_der_Klappgruppe_zeigt_Zahl_und_Abweichung()
     {
-        bool offen = false;
-        var cut = ZeigeMitAblage(Stand(), () => offen, an => offen = an);
+        var cut = Zeige(Stand());
 
-        cut.Find("section.epos-ergebnis-klappgruppe .epos-klappgruppe-knopf").Click();
+        IElement em = Klappgruppe(cut, "emissionen");
+        // Nur CO₂ gesamt trägt einen Wert (spezifisch fehlt) - die Zahl steht im Kopf.
+        Assert.Equal("1 Kennzahl", em.QuerySelector(".epos-klappgruppe-zusatz")!.TextContent);
+        // 20 gegen 22 t/a: Der Kopf zeigt die Abweichung auch zugeklappt.
+        Assert.Contains("weicht vom Stammprojekt ab", em.QuerySelector(".epos-ergebnis-klapphinweis")!.TextContent);
+        // Die Kälte rechnet überall gleich: kein Hinweis.
+        Assert.Null(Klappgruppe(cut, "kaelte").QuerySelector(".epos-ergebnis-klapphinweis"));
+    }
 
-        Assert.True(offen);
-        IElement gruppe = cut.Find("section.epos-ergebnis-klappgruppe");
-        var zeilen = gruppe.QuerySelectorAll("th.epos-ergebnis-kennzahl");
-        Assert.Contains(zeilen, z => z.TextContent.EndsWith("[t/a]"));
-        var zellen = gruppe.QuerySelectorAll("tbody td");
+    [Fact]
+    public void Aufklappen_je_Gruppe_und_die_Stellung_geht_in_die_Ablage()
+    {
+        var ablage = new HashSet<string>();
+        var cut = ZeigeMitAblage(Stand(), ablage);
+
+        Klappgruppe(cut, "emissionen").QuerySelector(".epos-klappgruppe-knopf")!.Click();
+
+        Assert.Equal(new[] { "emissionen" }, ablage);
+        IElement em = Klappgruppe(cut, "emissionen");
+        Assert.Contains(em.QuerySelectorAll("th.epos-ergebnis-kennzahl"), z => z.TextContent.EndsWith("[t/a]"));
+        var zellen = em.QuerySelectorAll("tbody td");
         Assert.Equal("22,0", zellen[1].QuerySelector(".epos-ergebnis-wert")!.TextContent);
         Assert.Contains("epos-komponenten-zelle--abweichend", zellen[1].ClassName);
+        Assert.Null(Klappgruppe(cut, "kaelte").QuerySelector("table"));   // die Nachbargruppe bleibt zu
 
-        // Ein neuer Abschnitt in derselben Sitzung liest die Stellung aus der Ablage.
-        var zweiter = ZeigeMitAblage(Stand(), () => offen, an => offen = an);
-        Assert.NotNull(zweiter.Find("section.epos-ergebnis-klappgruppe table"));
+        // Ein neuer Abschnitt in derselben Sitzung liest die Stellung je Gruppe aus der Ablage.
+        var zweiter = ZeigeMitAblage(Stand(), ablage);
+        Assert.NotNull(Klappgruppe(zweiter, "emissionen").QuerySelector("table"));
+        Assert.Null(Klappgruppe(zweiter, "kaelte").QuerySelector("table"));
+
+        Klappgruppe(zweiter, "emissionen").QuerySelector(".epos-klappgruppe-knopf")!.Click();
+        Assert.Empty(ablage);
     }
 
     [Fact]
-    public void Nur_Unterschiede_blendet_Gruppen_ohne_Abweichung_aus()
+    public void Der_Zustand_der_Gruppe_steuert_die_Darstellung()
     {
-        var cut = ZeigeMitAblage(Stand(gewaehlt: new[] { 1030, 1032 }), () => false, _ => { }, nurUnterschiede: true);
+        // Ein späterer Benutzerzustand überschreibt allein den Zustand: Die Seite folgt ihm.
+        UebersichtErgebnisGaben huelle = Huelle();
+        Func<UebersichtStand, UebersichtErgebnisStand> laden = s =>
+        {
+            UebersichtErgebnisStand e = huelle.Laden(s);
+            foreach (ErgebnisVergleichGruppe g in e.Gruppen)
+            {
+                if (g.Schluessel == "kaelte") g.Zustand = ErgebnisGruppenZustand.Offen;
+                if (g.Schluessel == "endenergie") g.Zustand = ErgebnisGruppenZustand.Ausgeblendet;
+            }
+            return e;
+        };
+        var cut = Render<UebersichtErgebnisse>(p => p.Add(x => x.Stand, Stand()).Add(x => x.Laden, laden));
+
+        string[] tafel = cut.FindAll("tr.epos-ergebnis-gruppe").Select(t => t.GetAttribute("data-gruppe")!).ToArray();
+        Assert.Contains("kaelte", tafel);
+        Assert.DoesNotContain("endenergie", tafel);
+        Assert.Empty(cut.FindAll("tr[data-kennzahl='endenergie:1']"));
+        Assert.Single(cut.FindAll("section.epos-ergebnis-klappgruppe"));
+    }
+
+    [Fact]
+    public void Nur_Unterschiede_wirkt_in_allen_Gruppen()
+    {
+        var cut = ZeigeMitAblage(Stand(gewaehlt: new[] { 1030, 1032 }), new HashSet<string>(), nurUnterschiede: true);
 
         // 1032 rechnet wie der Stamm: keine Gruppe weicht ab, der Hinweis steht.
         Assert.Empty(cut.FindAll("table"));
@@ -219,8 +286,10 @@ public class UebersichtErgebnisseTests : EposBunitContext
 
         cut.Render(p => p.Add(x => x.Stand, Stand()));
         string[] gruppen = cut.FindAll("tr.epos-ergebnis-gruppe th").Select(t => t.TextContent).ToArray();
-        Assert.Equal(new[] { "Bedarf" }, gruppen);   // nur der Wärmebedarf weicht ab
-        Assert.Single(cut.FindAll("section.epos-ergebnis-klappgruppe"));
+        Assert.Equal(new[] { "Bedarf" }, gruppen);   // nur der Wärmebedarf weicht ab, die Endenergie nicht
+        // Von den zugeklappten bleibt allein die abweichende Gruppe, die Kälte entfällt.
+        Assert.Equal(new[] { "Emissionen" }, cut.FindAll("section.epos-ergebnis-klappgruppe .epos-klappgruppe-text")
+                                                 .Select(t => t.TextContent).ToArray());
     }
 
     [Fact]
@@ -254,5 +323,10 @@ public class UebersichtErgebnisseTests : EposBunitContext
         string text = (string)feld.Lesen();
         Assert.Contains("Bedarf · Wärmebedarf gesamt [MWh/a]: Stamm = 100; WP klein = 110 (+10,0 %)"
                         + " — weicht vom Stammprojekt ab", text);
+        // Alle Gruppen als Text, auch die zugeklappten, mit Gruppenkennung.
+        Assert.Contains("[bedarf] Bedarf", text);
+        Assert.Contains("[kaelte] Kälte", text);
+        Assert.Contains("[emissionen] Emissionen", text);
+        Assert.Contains("Endenergie · Endenergie Erdgas [MWh/a]: Stamm = 30; WP klein = 30", text);
     }
 }

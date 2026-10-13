@@ -16,8 +16,9 @@
 
     Darunter der Abschnitt "Ergebnisse — Energie" (Anwenderauftrag 13.10.2026) aus der echten
     Huelle UebersichtErgebnisGaben mit synthetischen Ergebnissen: Variante 1 ist simuliert und
-    weicht ab, weitere Varianten sind nicht simuliert. ?emissionen=1 klappt die Gruppe
-    "Emissionen" auf. *@
+    weicht ab, weitere Varianten sind nicht simuliert. ?offen=alle klappt alle zugeklappten
+    Gruppen auf, ?offen=<schluessel,...> die genannten (Gruppenschluessel des Kerns, etwa
+    emissionen). *@
 
 <div class="epos-startseite uep-rahmen">
     <Reiter Aktiv="BERICHTE_KOSTEN" Bezeichnung="Hauptreiter">
@@ -49,7 +50,7 @@
     private static int s_varianten = 1;
     private static bool s_nurUnterschiede;
     private static int s_markiert = 1;
-    private static bool s_emissionenOffen;
+    private static readonly HashSet<string> s_offen = new();
 
     protected override void OnInitialized()
     {
@@ -58,7 +59,14 @@
         s_nurUnterschiede = abfrage.TryGetValue("nurunterschiede", out var u) && u.ToString() == "1";
         s_markiert = abfrage.TryGetValue("variante", out var w) && int.TryParse(w, out int i) && i >= 1 && i <= s_varianten
             ? 1 + i : 1;
-        s_emissionenOffen = abfrage.TryGetValue("emissionen", out var e) && e.ToString() == "1";
+        s_offen.Clear();
+        if (abfrage.TryGetValue("offen", out var o))
+        {
+            IEnumerable<string> gruppen = o.ToString() == "alle"
+                ? WindowsFormsApplication1.Energievergleich.GRUPPEN
+                : o.ToString().Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            foreach (string g in gruppen) s_offen.Add(g);
+        }
     }
 
     /// <summary>Synthetische Ergebnisse je Version: der Stamm (Id 1) und Variante 1 (Id 2, mit Puffer) sind simuliert.</summary>
@@ -75,6 +83,11 @@
         return new WindowsFormsApplication1.VariantenDaten
         {
             IdProjekt = id, IstStamm = stamm, CO2Gesamt = puffer ? 31.8 : 34.6, CO2Spezifisch = puffer ? 174 : 190,
+            EnergiekostenJeTraeger = new List<WindowsFormsApplication1.EnergieTraegerNachweis>
+            {
+                new() { CarrierId = 1, Traeger = "Erdgas", MengeMWh = puffer ? 24.6 : 37.2, WaermeMengeMWh = puffer ? 24.6 : 37.2 },
+                new() { CarrierId = 2, Traeger = "Strom", Netzstrom = true, MengeMWh = puffer ? 70.9 : 75.6, Einheit = "kWh" }
+            },
             Ergebnis = new WindowsFormsApplication1.ErgebnisModel
             {
                 Energiebedarf = bedarf,
@@ -102,8 +115,12 @@
     {
         var satz = new Dictionary<string, object>(s_ergebnisHuelle.Gaben())
         {
-            ["EmissionenOffenLesen"] = new Func<bool>(() => s_emissionenOffen),
-            ["EmissionenOffenGewechselt"] = new Action<bool>(an => s_emissionenOffen = an)
+            ["KlappgruppeOffenLesen"] = new Func<string, bool>(g => s_offen.Contains(g)),
+            ["KlappgruppeOffenGewechselt"] = new Action<string, bool>((g, an) =>
+            {
+                if (an) s_offen.Add(g);
+                else s_offen.Remove(g);
+            })
         };
         return satz;
     }

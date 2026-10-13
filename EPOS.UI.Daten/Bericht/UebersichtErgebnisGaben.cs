@@ -17,8 +17,11 @@ namespace WindowsFormsApplication1
         /// <summary>Höchstens so viele Variantenspalten wie die Gegenüberstellung der Komponenten.</summary>
         internal const int MAX_VARIANTENSPALTEN = 8;
 
-        /// <summary>Die Stellung der Klappgruppe „Emissionen“ — ein Stand je Sitzung, wie „nur Unterschiede“.</summary>
-        private static bool s_emissionenOffen;
+        /// <summary>
+        /// Die aufgeklappten Klappgruppen (Gruppenschlüssel des Kerns) — ein Stand je Gruppe und Sitzung, wie „nur
+        /// Unterschiede“.
+        /// </summary>
+        private static readonly HashSet<string> s_offeneKlappgruppen = new HashSet<string>();
 
         private readonly Func<int, bool, VariantenDaten> _lade;
         private readonly Dictionary<int, (string Stand, VariantenDaten Daten)> _puffer =
@@ -50,8 +53,12 @@ namespace WindowsFormsApplication1
                 ["KeineUnterschiedeText"] = MyResource.Resource.BK_ERG_KEINE_UNTERSCHIEDE,
                 ["AnzahlFormat"] = MyResource.Resource.BK_ERG_ANZAHL_KENNZAHLEN,
                 ["AnzahlEins"] = MyResource.Resource.BK_ERG_ANZAHL_KENNZAHL_EINS,
-                ["EmissionenOffenLesen"] = new Func<bool>(() => s_emissionenOffen),
-                ["EmissionenOffenGewechselt"] = new Action<bool>(an => s_emissionenOffen = an)
+                ["KlappgruppeOffenLesen"] = new Func<string, bool>(g => s_offeneKlappgruppen.Contains(g)),
+                ["KlappgruppeOffenGewechselt"] = new Action<string, bool>((g, an) =>
+                {
+                    if (an) s_offeneKlappgruppen.Add(g);
+                    else s_offeneKlappgruppen.Remove(g);
+                })
             };
         }
 
@@ -82,6 +89,7 @@ namespace WindowsFormsApplication1
             List<VariantenDaten> daten = versionen.Select(Daten).ToList();
             EnergievergleichErgebnis vergleich = Energievergleich.Vergleiche(daten, Sprache.Englisch, CultureInfo.CurrentCulture);
             erg.KeineSimulation = vergleich.KeineSimuliert;
+            erg.Simuliert = vergleich.Simuliert.ToList();
             erg.Gruppen = Abbilden(vergleich);
             return erg;
         }
@@ -106,6 +114,7 @@ namespace WindowsFormsApplication1
                 List<ErgebnisVergleichZeile> zeilen = vergleich.Zeilen.Where(z => z.Gruppe == g).Select(z =>
                     new ErgebnisVergleichZeile
                     {
+                        Schluessel = z.Schluessel,
                         Bezeichnung = z.Einheit.Length == 0 ? z.Bezeichnung : z.Bezeichnung + " [" + z.Einheit + "]",
                         Zellen = z.Texte.Select((t, i) => new ErgebnisVergleichZelle
                         {
@@ -118,7 +127,12 @@ namespace WindowsFormsApplication1
                 if (zeilen.Count > 0)
                     gruppen.Add(new ErgebnisVergleichGruppe
                     {
-                        Titel = Gruppentitel(g), Zeilen = zeilen, Klappbar = g == Energievergleich.GRUPPE_EMISSIONEN
+                        Schluessel = g,
+                        Titel = Gruppentitel(g),
+                        Zeilen = zeilen,
+                        // Die Vorgabe des Kerns; ein Benutzerzustand überschreibt später allein dieses Feld.
+                        Zustand = Energievergleich.VorgabeOffen(g) ? ErgebnisGruppenZustand.Offen
+                                                                   : ErgebnisGruppenZustand.Zugeklappt
                     });
             }
             return gruppen;
@@ -136,6 +150,7 @@ namespace WindowsFormsApplication1
                 case Energievergleich.GRUPPE_DECKUNG: return MyResource.Resource.BK_ERG_GR_DECKUNG;
                 case Energievergleich.GRUPPE_KAELTE: return MyResource.Resource.BK_ERG_GR_KAELTE;
                 case Energievergleich.GRUPPE_EFFIZIENZ: return MyResource.Resource.BK_ERG_GR_EFFIZIENZ;
+                case Energievergleich.GRUPPE_EFFIZIENZ_WEITERE: return MyResource.Resource.BK_ERG_GR_EFFIZIENZ_WEITERE;
                 case Energievergleich.GRUPPE_GEBAEUDE: return MyResource.Resource.BK_ERG_GR_GEBAEUDE;
                 case Energievergleich.GRUPPE_EMISSIONEN: return MyResource.Resource.BK_ERG_GR_EMISSIONEN;
                 default: return gruppe;

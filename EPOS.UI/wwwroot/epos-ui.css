@@ -5530,17 +5530,53 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 
 /* Der Energievergleich nimmt die Tafel der Gegenueberstellung (haftende erste
    Spalte, Querrollen in der Huelle, Markierung der Abweichung); die Werte stehen
-   rechtsbuendig, die Kennzahl darf umbrechen, die Gruppen tragen einen Kopf. */
+   rechtsbuendig, die Kennzahl darf umbrechen, die Gruppen tragen einen Kopf.
+   Die Kennzahlspalte hat in allen Tafeln (offen und in jeder Klappgruppe) dieselbe
+   feste Breite - so fluchten die Tafeln untereinander, der Blick springt nicht
+   weit, und die Versionsspalten teilen sich den Rest. Kopf, Wert, Prozentangabe
+   und Markierung einer Versionsspalte stehen rechtsbuendig uebereinander. */
 .epos-ergebnisvergleich td {
     text-align: right;
     min-width: 8rem;
 }
 
+.epos-ergebnisvergleich th.epos-ergebnis-kennzahlkopf,
+.epos-ergebnisvergleich th.epos-ergebnis-kennzahl,
+.epos-ergebnisvergleich tr.epos-ergebnis-gruppe th {
+    width: 20rem;
+    min-width: 20rem;
+    max-width: 20rem;
+    white-space: normal;
+}
+
 .epos-ergebnisvergleich th.epos-ergebnis-kennzahl {
     font-weight: 400;
-    white-space: normal;
-    min-width: 14rem;
-    max-width: 22rem;
+}
+
+.epos-ergebnisvergleich thead th.epos-ergebnis-versionkopf {
+    text-align: right;
+    min-width: 8rem;
+}
+
+/* Eine nicht simulierte Version: leise Striche in den Zellen, der Spaltenkopf sagt es
+   deutlich. */
+.epos-ergebnisvergleich td.epos-ergebnis-zelle--ohne .epos-ergebnis-wert {
+    color: var(--epos-text-sehr-leise);
+}
+
+.epos-ergebnisvergleich thead th.epos-ergebnis-versionkopf--ohne .epos-komponenten-stand {
+    color: var(--epos-text);
+    font-weight: 700;
+}
+
+@media (max-width: 760px) {
+    .epos-ergebnisvergleich th.epos-ergebnis-kennzahlkopf,
+    .epos-ergebnisvergleich th.epos-ergebnis-kennzahl,
+    .epos-ergebnisvergleich tr.epos-ergebnis-gruppe th {
+        width: 12rem;
+        min-width: 12rem;
+        max-width: 12rem;
+    }
 }
 
 .epos-ergebnisvergleich tr.epos-ergebnis-gruppe th,
@@ -5560,7 +5596,7 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     color: var(--epos-text-leise);
 }
 
-/* Die Emissionen als Klappgruppe unter der Tafel; der Hinweis auf eine Abweichung steht
+/* Die zugeklappten Gruppen je als Klappgruppe unter der Tafel; der Hinweis auf eine Abweichung steht
    in ihrer Kopfzeile, auch zugeklappt. */
 .epos-ergebnis-klappgruppe {
     margin-top: 10px;
