@@ -55373,5 +55373,35 @@ chart</value>
   <data name="MPB_BTN_BEARBEITEN_HINWEIS" xml:space="preserve">
     <value>Opens the sheet "Use and calendars" with all zones.</value>
   </data>
+  <data name="MP_BEFUND_HUELLE_OFFEN" xml:space="preserve">
+    <value>Zone '{0}': The envelope is not closed – {1} m² face upwards, {2} m² downwards (deviation {3} %).</value>
+  </data>
+  <data name="MP_BEFUND_HUELLE_OBEN_FEHLT" xml:space="preserve">
+    <value>Zone '{0}': The envelope is open at the top – no roof, no ceiling (upwards {1} m², downwards {2} m²).</value>
+  </data>
+  <data name="MP_BEFUND_HUELLE_UNTEN_FEHLT" xml:space="preserve">
+    <value>Zone '{0}': The envelope is open at the bottom – no ground slab, no floor (upwards {1} m², downwards {2} m²).</value>
+  </data>
+  <data name="MP_BEFUND_HUELLE_GESPIEGELT" xml:space="preserve">
+    <value>Element '{0}' (zone '{1}') faces against its position with tilt {2}° – a ground slab faces downwards (180°), a roof upwards (0°).</value>
+  </data>
+  <data name="MP_VORSCHLAG_HUELLBAUTEIL_PROJEKT" xml:space="preserve">
+    <value>Add {0}: {1} m², tilt {2}°, {3}, U {4} W/(m²K) as the same elements of the building</value>
+  </data>
+  <data name="MP_VORSCHLAG_HUELLBAUTEIL_TYP" xml:space="preserve">
+    <value>Add {0}: {1} m², tilt {2}°, {3}, U {4} W/(m²K) of the type construction</value>
+  </data>
+  <data name="MP_RAND_AUSSENLUFT" xml:space="preserve">
+    <value>to outdoor air</value>
+  </data>
+  <data name="MP_RAND_ERDREICH" xml:space="preserve">
+    <value>against ground</value>
+  </data>
+  <data name="MP_RAND_ZONE" xml:space="preserve">
+    <value>to zone '{0}'</value>
+  </data>
+  <data name="MP_BAUTEIL_ERGAENZT" xml:space="preserve">
+    <value>{0} (added)</value>
+  </data>
 </root>
 

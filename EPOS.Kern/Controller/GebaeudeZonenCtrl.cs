@@ -1373,6 +1373,23 @@ namespace WindowsFormsApplication1
             if (flaechenherkunft) yield return BaustoffCtrl.Text("@fh", b.Flaechenherkunft);
         }
 
+        /// <summary>
+        /// <b>Legt ein einzelnes Bauteil an</b> (Projektebene, im Vorgang <paramref name="v"/>) — für die Übernahme eines
+        /// Vorschlags der Modellprüfung (MA-3, fehlendes Hüllbauteil); dieselben Spalten und Werte wie das Speichern der Zone.
+        /// Liefert die neue Id.
+        /// </summary>
+        internal static int BauteilEinfuegen(DbVorgang v, BauteilModel b)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            if (b == null) throw new ArgumentNullException(nameof(b));
+            IReadOnlyList<string> spalten = Bauteilspalten();
+            b.ID = v.EinfuegenUndId("INSERT INTO \"" + ZonenSchema.TAB_BAUTEIL + "\" (" +
+                                    string.Join(", ", spalten.Select(s => "\"" + s + "\"")) +
+                                    ") VALUES (" + BaustoffCtrl.Fragezeichen(spalten.Count) + ")",
+                                    Bauteilwerte(b, MitKopplung(spalten), MitFlaechenherkunft(spalten)).ToArray());
+            return b.ID;
+        }
+
         /// <summary>Die Werte eines Bauteils in der Reihenfolge von <see cref="ZonenSchema.Bauteilspalten"/>; NULL bleibt NULL.</summary>
         private static IEnumerable<DbParam> Bauteilwerte(BauteilModel b)
         {

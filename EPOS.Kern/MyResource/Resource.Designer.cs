@@ -92415,6 +92415,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (ergänzt) ähnelt.
+        /// </summary>
+        public static string MP_BAUTEIL_ERGAENZT {
+            get {
+                return ResourceManager.GetString("MP_BAUTEIL_ERGAENZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: Aufbau „{1}“ ist für die Simulation meist nicht geeignet. ähnelt.
         /// </summary>
         public static string MP_BEFUND_AUFBAU_UNGEEIGNET {
@@ -92514,6 +92523,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“ (Zone „{1}“) weist mit Neigung {2}° gegen seine Lage – eine Bodenplatte weist nach unten (180°), ein Dach nach oben (0°). ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_HUELLE_GESPIEGELT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_HUELLE_GESPIEGELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Nach oben ist die Hülle nicht geschlossen – kein Dach, keine Decke (nach oben {1} m², nach unten {2} m²). ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_HUELLE_OBEN_FEHLT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_HUELLE_OBEN_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die Hülle schließt nicht – nach oben weisen {1} m², nach unten {2} m² (Abweichung {3} %). ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_HUELLE_OFFEN {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_HUELLE_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Hülle des Gebäudes hat keine Außenwand. ähnelt.
         /// </summary>
         public static string MP_BEFUND_HUELLE_OHNE_AUSSENWAND {
@@ -92537,6 +92573,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MP_BEFUND_HUELLE_OHNE_DACH {
             get {
                 return ResourceManager.GetString("MP_BEFUND_HUELLE_OHNE_DACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Nach unten ist die Hülle nicht geschlossen – keine Bodenplatte, keine Decke (nach oben {1} m², nach unten {2} m²). ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_HUELLE_UNTEN_FEHLT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_HUELLE_UNTEN_FEHLT", resourceCulture);
             }
         }
         
@@ -92883,6 +92928,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die an Außenluft ähnelt.
+        /// </summary>
+        public static string MP_RAND_AUSSENLUFT {
+            get {
+                return ResourceManager.GetString("MP_RAND_AUSSENLUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gegen Erdreich ähnelt.
+        /// </summary>
+        public static string MP_RAND_ERDREICH {
+            get {
+                return ResourceManager.GetString("MP_RAND_ERDREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die an Zone „{0}“ ähnelt.
+        /// </summary>
+        public static string MP_RAND_ZONE {
+            get {
+                return ResourceManager.GetString("MP_RAND_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nicht rechenfähig ähnelt.
         /// </summary>
         public static string MP_STATUS_NICHTRECHENFAEHIG {
@@ -92924,6 +92996,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MP_VORSCHLAG_FERIEN_PROJEKT {
             get {
                 return ResourceManager.GetString("MP_VORSCHLAG_FERIEN_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ergänzen: {1} m², Neigung {2}°, {3}, U {4} W/(m²K) wie die gleichen Bauteile des Gebäudes ähnelt.
+        /// </summary>
+        public static string MP_VORSCHLAG_HUELLBAUTEIL_PROJEKT {
+            get {
+                return ResourceManager.GetString("MP_VORSCHLAG_HUELLBAUTEIL_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ergänzen: {1} m², Neigung {2}°, {3}, U {4} W/(m²K) des Typaufbaus ähnelt.
+        /// </summary>
+        public static string MP_VORSCHLAG_HUELLBAUTEIL_TYP {
+            get {
+                return ResourceManager.GetString("MP_VORSCHLAG_HUELLBAUTEIL_TYP", resourceCulture);
             }
         }
         
