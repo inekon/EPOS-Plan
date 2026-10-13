@@ -5842,6 +5842,15 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_ERG_GR_EFFIZIENZ" xml:space="preserve">
     <value>Efficiency</value>
   </data>
+  <data name="BK_ERG_GR_EFFIZIENZ_WEITERE" xml:space="preserve">
+    <value>Further efficiency values</value>
+  </data>
+  <data name="BK_ERG_ENDENERGIE_TRAEGER" xml:space="preserve">
+    <value>Final energy {0}</value>
+  </data>
+  <data name="BK_ERG_ENDENERGIE_KAELTESTROM" xml:space="preserve">
+    <value>Final energy {0} (cooling electricity)</value>
+  </data>
   <data name="BK_ERG_GR_GEBAEUDE" xml:space="preserve">
     <value>Building</value>
   </data>

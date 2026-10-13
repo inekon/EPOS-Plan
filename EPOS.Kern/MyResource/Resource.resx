@@ -5858,6 +5858,15 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_ERG_GR_EFFIZIENZ" xml:space="preserve">
     <value>Effizienz</value>
   </data>
+  <data name="BK_ERG_GR_EFFIZIENZ_WEITERE" xml:space="preserve">
+    <value>Weitere Effizienzwerte</value>
+  </data>
+  <data name="BK_ERG_ENDENERGIE_TRAEGER" xml:space="preserve">
+    <value>Endenergie {0}</value>
+  </data>
+  <data name="BK_ERG_ENDENERGIE_KAELTESTROM" xml:space="preserve">
+    <value>Endenergie {0} (Kältestrom)</value>
+  </data>
   <data name="BK_ERG_GR_GEBAEUDE" xml:space="preserve">
     <value>Gebäude</value>
   </data>

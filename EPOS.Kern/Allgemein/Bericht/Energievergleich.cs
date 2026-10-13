@@ -14,7 +14,11 @@ namespace WindowsFormsApplication1
         /// <summary>Der sprachneutrale Gruppenschlüssel (<see cref="Energievergleich.GRUPPE_BEDARF"/> …).</summary>
         public string Gruppe = "";
 
-        /// <summary>Der Katalogschlüssel der Kennzahl.</summary>
+        /// <summary>
+        /// Der stabile Schlüssel der Zeile: der Katalogschlüssel der Kennzahl, bei einer Trägerzeile der Endenergie
+        /// <c>endenergie:&lt;CarrierId&gt;</c> bzw. <c>endenergie:kaeltestrom:&lt;CarrierId&gt;</c>
+        /// (<see cref="Energievergleich.SchluesselTraeger"/>). Nie der Anzeigetext.
+        /// </summary>
         public string Schluessel = "";
 
         /// <summary>Die Beschriftung der Kennzahl in der Anzeigesprache.</summary>
@@ -40,6 +44,25 @@ namespace WindowsFormsApplication1
 
         /// <summary>Weicht wenigstens eine Version vom Stamm ab?</summary>
         public bool IrgendeineAbweichung => WeichtAb.Any(w => w);
+    }
+
+    /// <summary>
+    /// Eine Gruppe des Energievergleichs als Daten: stabiler Schlüssel und Vorgabezustand. Ein späterer Benutzerzustand
+    /// (offen, zugeklappt, ausgeblendet) überschreibt allein <see cref="VorgabeOffen"/>.
+    /// </summary>
+    public sealed class EnergievergleichGruppe
+    {
+        /// <summary>Der sprachneutrale, stabile Gruppenschlüssel („bedarf“ …).</summary>
+        public string Schluessel { get; }
+
+        /// <summary>Steht die Gruppe beim Öffnen offen (in der Tafel) oder zugeklappt (als Klappgruppe darunter)?</summary>
+        public bool VorgabeOffen { get; }
+
+        public EnergievergleichGruppe(string schluessel, bool vorgabeOffen)
+        {
+            Schluessel = schluessel;
+            VorgabeOffen = vorgabeOffen;
+        }
     }
 
     /// <summary>Das Ergebnis des Energievergleichs: je Version, ob sie simuliert ist, und die Zeilen.</summary>
@@ -83,8 +106,11 @@ namespace WindowsFormsApplication1
         /// <summary>Die Erzeugerkennzahlen der Kälte ohne Kosten und CO₂.</summary>
         public const string GRUPPE_KAELTE = "kaelte";
 
-        /// <summary>Jahresarbeitszahl, Vollbenutzungsstunden und die übrigen Effizienzkennzahlen.</summary>
+        /// <summary>Die schlanke Effizienzgruppe: Jahresarbeitszahlen (Wärmepumpe, Kälte) und Vollbenutzungsstunden.</summary>
         public const string GRUPPE_EFFIZIENZ = "effizienz";
+
+        /// <summary>Die übrigen Effizienzkennzahlen: Bivalenz, Kennlinienstunden, Speichertemperaturen, Takt und Teillast.</summary>
+        public const string GRUPPE_EFFIZIENZ_WEITERE = "effizienz_weitere";
 
         /// <summary>Die Gebäudekennzahlen (Lüftung, Aufheizen, Vorheizen).</summary>
         public const string GRUPPE_GEBAEUDE = "gebaeude";
@@ -92,12 +118,41 @@ namespace WindowsFormsApplication1
         /// <summary>Die CO₂-Kennzahlen des Katalogs (gesamt, spezifisch, Kältestrom) — am Ende des Abschnitts.</summary>
         public const string GRUPPE_EMISSIONEN = "emissionen";
 
-        /// <summary>Die Gruppen in Anzeigereihenfolge.</summary>
-        public static readonly IReadOnlyList<string> GRUPPEN = new[]
+        /// <summary>
+        /// Die Gruppen in Anzeigereihenfolge mit ihrem Vorgabezustand (Anwenderentscheid 13.10.2026): offen Bedarf,
+        /// Wärmeerzeugung, Strom, Endenergie, Deckung und Effizienz; zugeklappt Kälte, weitere Effizienzwerte, Gebäude
+        /// und am Ende die Emissionen. Die einzige Stelle der Vorgabe.
+        /// </summary>
+        public static readonly IReadOnlyList<EnergievergleichGruppe> GRUPPEN_DATEN = new[]
         {
-            GRUPPE_BEDARF, GRUPPE_ERZEUGUNG, GRUPPE_STROM, GRUPPE_ENDENERGIE,
-            GRUPPE_DECKUNG, GRUPPE_KAELTE, GRUPPE_EFFIZIENZ, GRUPPE_GEBAEUDE, GRUPPE_EMISSIONEN
+            new EnergievergleichGruppe(GRUPPE_BEDARF, true),
+            new EnergievergleichGruppe(GRUPPE_ERZEUGUNG, true),
+            new EnergievergleichGruppe(GRUPPE_STROM, true),
+            new EnergievergleichGruppe(GRUPPE_ENDENERGIE, true),
+            new EnergievergleichGruppe(GRUPPE_DECKUNG, true),
+            new EnergievergleichGruppe(GRUPPE_EFFIZIENZ, true),
+            new EnergievergleichGruppe(GRUPPE_KAELTE, false),
+            new EnergievergleichGruppe(GRUPPE_EFFIZIENZ_WEITERE, false),
+            new EnergievergleichGruppe(GRUPPE_GEBAEUDE, false),
+            new EnergievergleichGruppe(GRUPPE_EMISSIONEN, false)
         };
+
+        /// <summary>Die Gruppenschlüssel in Anzeigereihenfolge.</summary>
+        public static readonly IReadOnlyList<string> GRUPPEN = GRUPPEN_DATEN.Select(g => g.Schluessel).ToArray();
+
+        /// <summary>Der Vorgabezustand einer Gruppe: offen beim Öffnen? Unbekannte Gruppen stehen offen.</summary>
+        public static bool VorgabeOffen(string gruppe)
+            => GRUPPEN_DATEN.FirstOrDefault(g => g.Schluessel == gruppe)?.VorgabeOffen ?? true;
+
+        /// <summary>Der Schlüsselanfang der Trägerzeilen der Endenergie.</summary>
+        public const string PRAEFIX_TRAEGER = "endenergie:";
+
+        /// <summary>Der Schlüsselanfang der Trägerzeilen des Kältestroms mit abweichendem Kühlträger.</summary>
+        public const string PRAEFIX_KAELTESTROM = "endenergie:kaeltestrom:";
+
+        /// <summary>Der stabile Schlüssel einer Trägerzeile.</summary>
+        public static string SchluesselTraeger(int carrierId, bool kaeltestrom)
+            => (kaeltestrom ? PRAEFIX_KAELTESTROM : PRAEFIX_TRAEGER) + carrierId.ToString(CultureInfo.InvariantCulture);
 
         /// <summary>Die Zuordnung der Energiebilanz-Kennzahlen zu den Gruppen der Übersicht; was fehlt, steht unter Erzeugung.</summary>
         private static readonly Dictionary<string, string> s_zuordnung = new Dictionary<string, string>
@@ -134,6 +189,12 @@ namespace WindowsFormsApplication1
             ["energie.deckung_prozess"] = GRUPPE_DECKUNG,
             [KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD] = GRUPPE_DECKUNG,
 
+            ["eff.jaz"] = GRUPPE_EFFIZIENZ,
+            [KennzahlenKatalog.SCHLUESSEL_KAELTE_JAZ] = GRUPPE_EFFIZIENZ,
+            ["eff.wp_vbh"] = GRUPPE_EFFIZIENZ,
+            ["eff.bhkw_bh"] = GRUPPE_EFFIZIENZ,
+            ["eff.bhkw_vbh_el"] = GRUPPE_EFFIZIENZ,
+
             [KennzahlenKatalog.SCHLUESSEL_KAELTE_CO2] = GRUPPE_EMISSIONEN,
         };
 
@@ -160,7 +221,7 @@ namespace WindowsFormsApplication1
         {
             if (s_zuordnung.TryGetValue(k.Schluessel, out string g)) return g;
             if (k.Gruppe == KennzahlenKatalog.GR_KAELTE) return GRUPPE_KAELTE;
-            if (k.Gruppe == KennzahlenKatalog.GR_EFFIZIENZ) return GRUPPE_EFFIZIENZ;
+            if (k.Gruppe == KennzahlenKatalog.GR_EFFIZIENZ) return GRUPPE_EFFIZIENZ_WEITERE;
             if (k.Gruppe == KennzahlenKatalog.GR_GEBAEUDE) return GRUPPE_GEBAEUDE;
             if (k.Gruppe == KennzahlenKatalog.GR_EMISSION) return GRUPPE_EMISSIONEN;
             return GRUPPE_ERZEUGUNG;
@@ -208,9 +269,81 @@ namespace WindowsFormsApplication1
                 }
                 jeGruppe[z.Gruppe].Add(z);
             }
+            // Die Trägerzeilen stehen am Ende der Endenergie, unter Brennstoffeinsatz und Netzbezug.
+            jeGruppe[GRUPPE_ENDENERGIE].AddRange(Traegerzeilen(versionen, erg.Simuliert, englisch, kultur));
             foreach (string g in GRUPPEN) erg.Zeilen.AddRange(jeGruppe[g]);
             return erg;
         }
+
+        /// <summary>
+        /// Die Trägerzeilen der Endenergie (Anwenderentscheid 13.10.2026): je Energieträger des Kostennachweises
+        /// (<see cref="VariantenDaten.EnergiekostenJeTraeger"/>) die Menge in MWh/a, ohne Euro, in der Reihenfolge des
+        /// ersten Auftretens. Der Eintrag des Netzstroms entfällt: Er ist der Netzbezug der Zeile „Netzbezug Strom“
+        /// (ohne abweichenden Kühlträger Zahl für Zahl derselbe, sonst derselbe ohne den Kältestrom). Kältestrom eines
+        /// abweichenden Kühlträgers steht als eigene, ausdrücklich benannte Zeile. Ein Träger, den eine Version nicht
+        /// führt, zeigt dort „—“.
+        /// </summary>
+        private static List<EnergievergleichZeile> Traegerzeilen(IReadOnlyList<VariantenDaten> versionen, List<bool> simuliert,
+                                                                 bool englisch, CultureInfo kultur)
+        {
+            const string FORMAT = "N0";   // MWh ganzzahlig wie Brennstoffeinsatz und Netzbezug des Katalogs
+            var schluessel = new List<string>();
+            var namen = new Dictionary<string, string>();
+            var mengen = new List<Dictionary<string, double>>();
+            for (int i = 0; i < versionen.Count; i++)
+            {
+                var je = new Dictionary<string, double>();
+                mengen.Add(je);
+                if (!simuliert[i] || versionen[i].EnergiekostenJeTraeger == null) continue;
+                foreach (EnergieTraegerNachweis t in versionen[i].EnergiekostenJeTraeger)
+                {
+                    if (t == null || t.Netzstrom) continue;
+                    string s = SchluesselTraeger(t.CarrierId, IstKaeltestrom(t));
+                    if (!namen.ContainsKey(s))
+                    {
+                        schluessel.Add(s);
+                        namen[s] = string.IsNullOrWhiteSpace(t.Traeger)
+                            ? t.CarrierId.ToString(CultureInfo.InvariantCulture) : t.Traeger.Trim();
+                    }
+                    je[s] = (je.TryGetValue(s, out double m) ? m : 0.0) + t.MengeMWh;
+                }
+            }
+
+            CultureInfo sprache = CultureInfo.GetCultureInfo(englisch ? "en-US" : "de-DE");
+            var zeilen = new List<EnergievergleichZeile>();
+            foreach (string s in schluessel)
+            {
+                bool kaelte = s.StartsWith(PRAEFIX_KAELTESTROM, StringComparison.Ordinal);
+                string format = MyResource.Resource.ResourceManager.GetString(
+                    kaelte ? "BK_ERG_ENDENERGIE_KAELTESTROM" : "BK_ERG_ENDENERGIE_TRAEGER", sprache) ?? "{0}";
+                var z = new EnergievergleichZeile
+                {
+                    Gruppe = GRUPPE_ENDENERGIE, Schluessel = s, Bezeichnung = string.Format(format, namen[s]), Einheit = "MWh/a"
+                };
+                for (int i = 0; i < versionen.Count; i++)
+                {
+                    double? w = simuliert[i] && mengen[i].TryGetValue(s, out double m) && !double.IsNaN(m) && !double.IsInfinity(m)
+                        ? m : (double?)null;
+                    z.Werte.Add(w);
+                    z.Texte.Add(Tabellenformat.FW(w, FORMAT, kultur));
+                }
+                if (z.Werte.All(w => !w.HasValue)) continue;
+                for (int i = 0; i < versionen.Count; i++)
+                {
+                    bool ab = i > 0 && simuliert[0] && simuliert[i] && z.Texte[i] != z.Texte[0];
+                    z.WeichtAb.Add(ab);
+                    z.Abweichung.Add(ab ? Prozent(z.Werte[0], z.Werte[i], kultur) : "");
+                }
+                zeilen.Add(z);
+            }
+            return zeilen;
+        }
+
+        /// <summary>
+        /// Ist ein Trägereintrag Kältestrom eines abweichenden Kühlträgers? So legt ihn der Kostenrechner an: kein
+        /// Netzstrom, keine Wärmemenge eines Erzeugers.
+        /// </summary>
+        private static bool IstKaeltestrom(EnergieTraegerNachweis t) => !t.Netzstrom && t.WaermeMengeMWh == 0.0;
 
         /// <summary>Der Wert einer Kennzahl: aus dem berechneten Satz, sonst frisch; nicht endlich = <c>null</c>.</summary>
         private static double? Wert(VariantenDaten v, Kennzahl k)

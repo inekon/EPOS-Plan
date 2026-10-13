@@ -128,6 +128,90 @@ namespace EPOS.Kern.Tests
             Assert.Same(co2, e.Zeilen.Last());
         }
 
+        private static EnergieTraegerNachweis Brennstoff(int id, string name, double mwh)
+            => new EnergieTraegerNachweis { CarrierId = id, Traeger = name, MengeMWh = mwh, WaermeMengeMWh = mwh, Einheit = "m³" };
+
+        private static EnergieTraegerNachweis Netzstrom(double mwh)
+            => new EnergieTraegerNachweis { CarrierId = 2, Traeger = "Strom", Netzstrom = true, MengeMWh = mwh, Einheit = "kWh" };
+
+        [Fact]
+        public void Endenergie_je_Traeger_mit_Menge_Abweichung_und_ohne_zweite_Stromzeile()
+        {
+            VariantenDaten stamm = Version(100, 50, true), variante = Version(100, 50);
+            stamm.EnergiekostenJeTraeger = new List<EnergieTraegerNachweis> { Brennstoff(1, "Erdgas", 30), Netzstrom(50) };
+            variante.EnergiekostenJeTraeger = new List<EnergieTraegerNachweis>
+            {
+                Brennstoff(1, "Erdgas", 33), Brennstoff(3, "Heizöl", 5.4), Netzstrom(50)
+            };
+            var e = Energievergleich.Vergleiche(new[] { stamm, variante }, false, DE);
+
+            EnergievergleichZeile gas = Zeile(e, Energievergleich.SchluesselTraeger(1, false));
+            Assert.Equal("endenergie:1", gas.Schluessel);
+            Assert.Equal(Energievergleich.GRUPPE_ENDENERGIE, gas.Gruppe);
+            Assert.Equal("Endenergie Erdgas", gas.Bezeichnung);
+            Assert.Equal("MWh/a", gas.Einheit);
+            Assert.Equal(new[] { "30", "33" }, gas.Texte);
+            Assert.Equal(new[] { false, true }, gas.WeichtAb);
+            Assert.Equal(new[] { "", "+10,0 %" }, gas.Abweichung);
+
+            // Ein Träger, den nur die Variante führt: beim Stamm „—“, ganzzahlig wie die übrigen MWh-Zeilen.
+            EnergievergleichZeile oel = Zeile(e, "endenergie:3");
+            Assert.Equal(new[] { "—", "5" }, oel.Texte);
+
+            // Der Netzstrom des Kostennachweises ist der Netzbezug: keine zweite Stromzeile.
+            Assert.DoesNotContain(e.Zeilen, z => z.Schluessel == "endenergie:2");
+            Assert.Single(e.Zeilen, z => z.Gruppe == Energievergleich.GRUPPE_ENDENERGIE && z.Bezeichnung.Contains("Strom"));
+
+            // Reihenfolge: Netzbezug Strom, darunter die Träger.
+            List<string> endenergie = e.Zeilen.Where(z => z.Gruppe == Energievergleich.GRUPPE_ENDENERGIE)
+                                              .Select(z => z.Schluessel).ToList();
+            Assert.Equal(new[] { "energie.netzbezug", "endenergie:1", "endenergie:3" }, endenergie);
+        }
+
+        [Fact]
+        public void Kaeltestrom_eines_eigenen_Kuehltraegers_ist_ausdruecklich_benannt()
+        {
+            VariantenDaten stamm = Version(100, 50, true);
+            stamm.EnergiekostenJeTraeger = new List<EnergieTraegerNachweis>
+            {
+                Netzstrom(45), new EnergieTraegerNachweis { CarrierId = 4, Traeger = "Ökostrom", MengeMWh = 5, Einheit = "kWh" }
+            };
+            var e = Energievergleich.Vergleiche(new[] { stamm }, false, DE);
+
+            EnergievergleichZeile k = Zeile(e, "endenergie:kaeltestrom:4");
+            Assert.Equal("Endenergie Ökostrom (Kältestrom)", k.Bezeichnung);
+            Assert.Equal(new[] { "5" }, k.Texte);
+            Assert.Equal("Final energy Ökostrom (cooling electricity)",
+                         Zeile(Energievergleich.Vergleiche(new[] { stamm }, true, DE), "endenergie:kaeltestrom:4").Bezeichnung);
+        }
+
+        [Fact]
+        public void Gruppen_als_Daten_offen_und_zugeklappt()
+        {
+            Assert.Equal(Energievergleich.GRUPPEN, Energievergleich.GRUPPEN_DATEN.Select(g => g.Schluessel));
+            string[] offen = Energievergleich.GRUPPEN_DATEN.Where(g => g.VorgabeOffen).Select(g => g.Schluessel).ToArray();
+            Assert.Equal(new[]
+            {
+                Energievergleich.GRUPPE_BEDARF, Energievergleich.GRUPPE_ERZEUGUNG, Energievergleich.GRUPPE_STROM,
+                Energievergleich.GRUPPE_ENDENERGIE, Energievergleich.GRUPPE_DECKUNG, Energievergleich.GRUPPE_EFFIZIENZ
+            }, offen);
+            Assert.Equal(new[]
+            {
+                Energievergleich.GRUPPE_KAELTE, Energievergleich.GRUPPE_EFFIZIENZ_WEITERE,
+                Energievergleich.GRUPPE_GEBAEUDE, Energievergleich.GRUPPE_EMISSIONEN
+            }, Energievergleich.GRUPPEN_DATEN.Where(g => !g.VorgabeOffen).Select(g => g.Schluessel));
+            Assert.False(Energievergleich.VorgabeOffen(Energievergleich.GRUPPE_EMISSIONEN));
+
+            // Schlanke Effizienz: JAZ (auch Kälte) und Vollbenutzungsstunden; der Rest unter „Weitere Effizienzwerte“.
+            Dictionary<string, Kennzahl> k = Energievergleich.Kennzahlen().ToDictionary(x => x.Schluessel);
+            foreach (string s in new[] { "eff.jaz", KennzahlenKatalog.SCHLUESSEL_KAELTE_JAZ, "eff.wp_vbh", "eff.bhkw_bh", "eff.bhkw_vbh_el" })
+                Assert.Equal(Energievergleich.GRUPPE_EFFIZIENZ, Energievergleich.Gruppe(k[s]));
+            foreach (string s in new[] { "eff.t_oben_mittel", "eff.t_oben_min", KennzahlenKatalog.SCHLUESSEL_WP_VORLAUF_DARUNTER })
+                Assert.Equal(Energievergleich.GRUPPE_EFFIZIENZ_WEITERE, Energievergleich.Gruppe(k[s]));
+            Assert.Equal(Energievergleich.GRUPPE_KAELTE, Energievergleich.Gruppe(k[KennzahlenKatalog.SCHLUESSEL_KAELTE_STROM]));
+            Assert.Equal(Energievergleich.GRUPPE_GEBAEUDE, Energievergleich.Gruppe(k[KennzahlenKatalog.SCHLUESSEL_GEB_AUFHEIZZEIT]));
+        }
+
         [Fact]
         public void Englische_Beschriftung_aus_dem_Katalog()
         {
@@ -155,6 +239,17 @@ namespace EPOS.Kern.Tests
             Assert.False(w.WeichtAb[2]);
             Assert.Contains(e.Zeilen, z => z.Gruppe == Energievergleich.GRUPPE_ERZEUGUNG);
             Assert.DoesNotContain(e.Zeilen, z => z.Schluessel.StartsWith("ko."));
+
+            // Die Trägerzeilen sind die Mengen des Kostennachweises; der Netzstrom steht nur als „Netzbezug Strom“.
+            VariantenDaten v = EnergievergleichCtrl.Lade(1024, true);
+            foreach (EnergieTraegerNachweis t in v.EnergiekostenJeTraeger.Where(t => !t.Netzstrom && t.WaermeMengeMWh > 0))
+                Assert.Equal(t.MengeMWh.ToString("N0", DE), Zeile(e, Energievergleich.SchluesselTraeger(t.CarrierId, false)).Texte[0]);
+            EnergieTraegerNachweis netz = v.EnergiekostenJeTraeger.FirstOrDefault(t => t.Netzstrom);
+            if (netz != null)
+            {
+                Assert.DoesNotContain(e.Zeilen, z => z.Schluessel == Energievergleich.SchluesselTraeger(netz.CarrierId, false));
+                Assert.Equal(netz.MengeMWh.ToString("N0", DE), Zeile(e, "energie.netzbezug").Texte[0]);
+            }
         }
     }
 }

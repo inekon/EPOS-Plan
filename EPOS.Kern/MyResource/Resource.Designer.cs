@@ -12023,6 +12023,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Endenergie {0} (Kältestrom) ähnelt.
+        /// </summary>
+        public static string BK_ERG_ENDENERGIE_KAELTESTROM {
+            get {
+                return ResourceManager.GetString("BK_ERG_ENDENERGIE_KAELTESTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Endenergie {0} ähnelt.
+        /// </summary>
+        public static string BK_ERG_ENDENERGIE_TRAEGER {
+            get {
+                return ResourceManager.GetString("BK_ERG_ENDENERGIE_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf ähnelt.
         /// </summary>
         public static string BK_ERG_GR_BEDARF {
@@ -12046,6 +12064,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_ERG_GR_EFFIZIENZ {
             get {
                 return ResourceManager.GetString("BK_ERG_GR_EFFIZIENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Effizienzwerte ähnelt.
+        /// </summary>
+        public static string BK_ERG_GR_EFFIZIENZ_WEITERE {
+            get {
+                return ResourceManager.GetString("BK_ERG_GR_EFFIZIENZ_WEITERE", resourceCulture);
             }
         }
         
