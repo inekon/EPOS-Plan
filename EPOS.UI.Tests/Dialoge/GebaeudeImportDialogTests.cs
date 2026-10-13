@@ -1317,4 +1317,32 @@ public class GebaeudeImportDialogTests : EposBunitContext
         Assert.Equal("Keine Aufbauten im Vorschlag.", cut.Find(".epos-gebimport-aufbauten-leer").TextContent.Trim());
         Assert.Empty(cut.FindAll(".epos-gebimport-aufbauten"));
     }
+
+    /// <summary>
+    /// GD-6a: „Baustoff-Zuordnungen…" steht an der Liste „Bauteilaufbauten" — mit dem durchgereichten Parametersatz;
+    /// ohne ihn (Katalogverwaltung, Assistent) kein Knopf. Der Klick öffnet die Ansicht als Überlagerung.
+    /// </summary>
+    [Fact]
+    public void GD6a_Baustoff_Zuordnungen_stehen_an_der_Liste_Bauteilaufbauten()
+    {
+        var ohne = Bauen(new Protokoll(), zuordnen: a => MitBaustoffen(a));
+        Einlesen(ohne);
+        Assert.NotEmpty(ohne.FindAll(".epos-gebimport-aufbauten"));
+        Assert.Empty(ohne.FindAll("button.epos-gebaeude-baustoffzuordnungen"));
+
+        int gelesen = 0;
+        var cut = Bauen(new Protokoll(), zuordnen: a => MitBaustoffen(a));
+        cut.Render(p => p.Add(x => x.BaustoffzuordnungenGaben,
+                              () => { gelesen++; return new Dictionary<string, object>(); }));
+        Einlesen(cut);
+
+        IElement knopf = cut.Find(".epos-gebimport-baustoffzuordnungen-leiste button.epos-gebaeude-baustoffzuordnungen");
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.GEB_BTN_BAUSTOFFZUORDNUNGEN, knopf.TextContent.Trim());
+        string markup = cut.Markup;
+        Assert.True(markup.IndexOf("epos-gebimport-baustoffzuordnungen-leiste", StringComparison.Ordinal)
+                    < markup.IndexOf("epos-gebimport-aufbauten\"", StringComparison.Ordinal));
+        knopf.Click();
+        Assert.Equal(1, gelesen);
+        Assert.True(cut.Instance.BaustoffzuordnungenOffen);
+    }
 }

@@ -36063,6 +36063,123 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gerechnet ähnelt.
+        /// </summary>
+        public static string GEBSIM_BEFUND_GERECHNET {
+            get {
+                return ResourceManager.GetString("GEBSIM_BEFUND_GERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation… (alle {0} Gebäude) ähnelt.
+        /// </summary>
+        public static string GEBSIM_BTN_ALLE {
+            get {
+                return ResourceManager.GetString("GEBSIM_BTN_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation… ({0} gewählt) ähnelt.
+        /// </summary>
+        public static string GEBSIM_BTN_GEWAEHLT {
+            get {
+                return ResourceManager.GetString("GEBSIM_BTN_GEWAEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Wärmebedarf der Gebäude im Projekt berechnen – ohne Kästchen alle, sonst die angekreuzten ähnelt.
+        /// </summary>
+        public static string GEBSIM_BTN_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEBSIM_BTN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf… ähnelt.
+        /// </summary>
+        public static string GEBSIM_BTN_OEFFNEN {
+            get {
+                return ResourceManager.GetString("GEBSIM_BTN_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Wärmebedarf dieses Gebäudes im Einzelnen zeigen ähnelt.
+        /// </summary>
+        public static string GEBSIM_BTN_OEFFNEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEBSIM_BTN_OEFFNEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt steht kein Gebäude. ähnelt.
+        /// </summary>
+        public static string GEBSIM_SPERRE_LEER {
+            get {
+                return ResourceManager.GetString("GEBSIM_SPERRE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Befund ähnelt.
+        /// </summary>
+        public static string GEBSIM_SP_BEFUND {
+            get {
+                return ResourceManager.GetString("GEBSIM_SP_BEFUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude ähnelt.
+        /// </summary>
+        public static string GEBSIM_SP_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("GEBSIM_SP_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizwärme ähnelt.
+        /// </summary>
+        public static string GEBSIM_SP_HEIZWAERME {
+            get {
+                return ResourceManager.GetString("GEBSIM_SP_HEIZWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchstlast [kW] ähnelt.
+        /// </summary>
+        public static string GEBSIM_SP_HOECHSTLAST {
+            get {
+                return ResourceManager.GetString("GEBSIM_SP_HOECHSTLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf der Gebäude im Projekt ähnelt.
+        /// </summary>
+        public static string GEBSIM_TITEL {
+            get {
+                return ResourceManager.GetString("GEBSIM_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe ähnelt.
+        /// </summary>
+        public static string GEBSIM_ZEILE_SUMME {
+            get {
+                return ResourceManager.GetString("GEBSIM_ZEILE_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe für das ausgewählte Gebäude ähnelt.
         /// </summary>
         public static string GEBW_GRP_EINGABE {

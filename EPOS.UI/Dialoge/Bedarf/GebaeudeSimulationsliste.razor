@@ -1,0 +1,76 @@
+﻿@* DER WAERMEBEDARF MEHRERER GEBAEUDE IM PROJEKT (GD-6a, Anwenderwunsch 12.10.2026) - eine schlichte Liste je
+   Gebaeude: Name, Heizwaerme, Hoechstlast, Befund, dazu je gerechneter Zeile der Sprung in den Einzelbedarf
+   (GebaeudeBedarfDialog). Steht als Ueberlagerung im Gebaeudedialog hinter "Simulation..." der Kopfleiste
+   IM PROJEKT. Keine Datenbank: die Zahlen kommen aus den Parametersaetzen der Huelle (BedarfGaben je Zeile). *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using WindowsFormsApplication1
+@using WindowsFormsApplication1.MyResource
+
+<div class="epos-gebaeude-simulationsliste">
+    <div class="epos-raster-huelle epos-raster-huelle--frei">
+        <table class="epos-raster">
+            <thead>
+                <tr>
+                    <th>@Resource.GEBSIM_SP_GEBAEUDE</th>
+                    <th class="epos-zahl">@(Resource.GEBSIM_SP_HEIZWAERME + " [" + _einheit.Text + "]")</th>
+                    <th class="epos-zahl">@Resource.GEBSIM_SP_HOECHSTLAST</th>
+                    <th>@Resource.GEBSIM_SP_BEFUND</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (GebaeudeSimulationseintrag eintrag in Eintraege)
+                {
+                    GebaeudeSimulationseintrag e = eintrag;
+                    <tr class="@(e.Gerechnet ? null : "epos-gebaeude-simulationsliste--ohne")">
+                        <td>@e.Name</td>
+                        <td class="epos-zahl">@Energie(e.HeizwaermeMwh)</td>
+                        <td class="epos-zahl">@Leistung(e.MaxLastKw)</td>
+                        <td>@(e.Gerechnet ? Resource.GEBSIM_BEFUND_GERECHNET : e.Befund)</td>
+                        <td>
+                            @if (e.Gerechnet)
+                            {
+                                <button type="button" class="epos-knopf epos-gebaeude-simulationsliste-oeffnen"
+                                        title="@Resource.GEBSIM_BTN_OEFFNEN_HINWEIS"
+                                        @onclick="() => Oeffnen.InvokeAsync(e)">@Resource.GEBSIM_BTN_OEFFNEN</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            @if (Eintraege.Count(e => e.Gerechnet) > 1)
+            {
+                <tfoot>
+                    <tr>
+                        <td>@Resource.GEBSIM_ZEILE_SUMME</td>
+                        <td class="epos-zahl">@Energie(Eintraege.Where(e => e.HeizwaermeMwh.HasValue).Sum(e => e.HeizwaermeMwh!.Value))</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            }
+        </table>
+    </div>
+</div>
+
+@code {
+    /// <summary>Die Zeilen der Liste, je Gebäude eine.</summary>
+    [Parameter] public IReadOnlyList<GebaeudeSimulationseintrag> Eintraege { get; set; } = Array.Empty<GebaeudeSimulationseintrag>();
+
+    /// <summary>Der Sprung in den Einzelbedarf einer gerechneten Zeile.</summary>
+    [Parameter] public EventCallback<GebaeudeSimulationseintrag> Oeffnen { get; set; }
+
+    /// <summary>Die Anzeigeeinheit der Energiemengen (Vorgabe MWh), wie im Einzelbedarf.</summary>
+    [Parameter] public Energieeinheit? Einheit { get; set; }
+
+    private Energieeinheit _einheit = Energieeinheit.Vorgabe;
+
+    protected override void OnParametersSet() => _einheit = Einheit ?? Energieeinheit.Vorgabe;
+
+    private string Energie(double? mwh) => mwh is double w ? _einheit.Formatiere(_einheit.AusMWh(w)) : "—";
+
+    private static string Leistung(double? kw)
+        => kw is double w ? w.ToString("N1", System.Globalization.CultureInfo.CurrentCulture) : "—";
+}
