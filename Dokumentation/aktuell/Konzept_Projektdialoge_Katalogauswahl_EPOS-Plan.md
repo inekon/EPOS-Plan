@@ -1145,7 +1145,11 @@ nach ÜS1/ÜS2; einen Rückweg gibt es nicht (4.9). Hier steht nur, was abweicht
   (`BedarfStammCtrl.CopyFromStamm`, die drei Kopierer setzen jetzt `ID_Stamm` wie der Kältebedarf); die Zeile zeigt auf
   sie, `WizardCtrl` findet sie über die ID wieder. Eine neue Kopie merkt die `Projektkopievormerkung`; Abbrechen räumt sie
   ab (`BedarfStammCtrl.ProjektkopieEntfernen`, nur ohne Zuordnung, samt Typprofil, eine Transaktion), OK räumt die ab,
-  auf die keine Zeile mehr zeigt. Im Assistenten (ohne Projekt) entsteht die Kopie weiter beim Speichern. Kein Schemaschritt;
+  auf die keine Zeile mehr zeigt. **Erst die Zuordnungen, dann der Abschluss:** Weil der Löschweg eine Kopie nur ohne
+  Zuordnung in der Datenbank abräumt, schreibt das Brauchwasser im OK des Dialogs, und Stromverbraucher, Prozesswärme und
+  Kältebedarf reichen den Schreibweg ihres Kachelwegs in die Hülle, die ihn beim OK vor dem Bestandsabgleich ruft
+  (`Projektkopievormerkung.Schliessen`); sonst hielte die alte Zuordnung die Kopie einer entfernten Zeile als Waise im
+  Projekt. Im Assistenten (ohne Projekt) entsteht die Kopie weiter beim Speichern. Kein Schemaschritt;
   die Zuordnungen und Kopien der Referenzprojekte bleiben unverändert.
 - **Gemessen** (Rollbereichprobe, Fall `bedarfsprofile` als Prozesswärme, zehn Fenster): 110 Zustände ohne Verstoß —
   Kopfleiste, Fußleiste, Zusammenfassung, Satz-Überlagerung über „Bearbeiten…", „Bearbeiten" der Detailzeile und den Stift;
