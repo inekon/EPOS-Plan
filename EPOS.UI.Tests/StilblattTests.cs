@@ -1132,46 +1132,47 @@ public sealed class StilblattTests
     }
 
     /// <summary>
-    /// <b>Das Kästchen der Projektliste im Schema des runden Wahlknopfs</b> (KA‑E‑28): ein Kreis von
-    /// Berührungsgröße mit Rand, angekreuzt in den Farben des Primärknopfs, Schwebe und Fokus eigen, im
-    /// Hochkontrast die Systemfarben der Wahl. Das Kopfhäkchen bleibt klein und ohne Kreis — jede Regel außer
-    /// der Grundregel schließt es aus.
+    /// <b>Kästchen und Kopfhäkchen der Projektliste im Schema des runden Wahlknopfs</b> (KA‑E‑28): ein Kreis mit
+    /// Rand, angekreuzt — auch ▣, eine Teilwahl — in den Farben des Primärknopfs, Schwebe und Fokus eigen, im
+    /// Hochkontrast die Systemfarben der Wahl. Die Zeile trägt die Berührungsgröße, das Kopfhäkchen ist kleiner
+    /// (32 px) in einer Kopfzelle mit 2 px Polsterung oben und unten, die ihre Höhe behält; die Spalte fasst
+    /// den Kreis mit der Polsterung des Hauses, die Zeilenhöhe misst die Rollbereichprobe.
     /// </summary>
     [Fact]
-    public void KR1_Das_Kaestchen_der_Zeile_ist_rund_und_das_Kopfhaekchen_klein()
+    public void KR1_Das_Kaestchen_der_Zeile_ist_rund_und_das_Kopfhaekchen_rund()
     {
-        const string zeile = ".epos-wahlkaestchen:not(.epos-wahlkaestchen--kopf)";
-        string kreis = Regelblock(zeile + " {");
+        string kreis = Regelblock(".epos-wahlkaestchen {");
         foreach (string wert in new[] { "border-radius: 50%", "width: var(--epos-touchziel)", "height: var(--epos-touchziel)",
                                         "border: 1px solid var(--epos-rahmen)", "background: var(--epos-flaeche)" })
             Assert.Contains(wert, kreis, StringComparison.Ordinal);
+        string kopf = Regelblock(".epos-wahlkaestchen--kopf {");
+        Assert.Contains("height: 32px", kopf, StringComparison.Ordinal);
+        Assert.Contains("font-size: 16px", kopf, StringComparison.Ordinal);
+        Assert.DoesNotContain("border-radius", kopf, StringComparison.Ordinal);
+        Assert.DoesNotContain("transparent", kopf, StringComparison.Ordinal);
 
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        Assert.Contains(".epos-wahlkaestchen[aria-checked=\"true\"],\n.epos-wahlkaestchen[aria-checked=\"mixed\"] {", css, StringComparison.Ordinal);
         string primaer = Regelblock(".epos-knopf--primaer {");
-        string gewaehlt = Regelblock(zeile + "[aria-checked=\"true\"] {");
+        string gewaehlt = Regelblock(".epos-wahlkaestchen[aria-checked=\"true\"],");
         foreach (string wert in new[] { "color: var(--epos-gruppenkopf-text)", "background: var(--epos-karte-titel)", "border-color: var(--epos-karte-titel)" })
         {
             Assert.Contains(wert, primaer, StringComparison.Ordinal);
             Assert.Contains(wert, gewaehlt, StringComparison.Ordinal);
         }
-        Assert.Contains("background: var(--epos-quelle-text)", Regelblock(zeile + "[aria-checked=\"true\"]:hover {"), StringComparison.Ordinal);
-        Assert.Contains("outline: 2px solid", Regelblock(zeile + ":focus-visible {"), StringComparison.Ordinal);
+        Assert.Contains("background: var(--epos-quelle-text)", Regelblock(".epos-wahlkaestchen[aria-checked=\"true\"]:hover,"), StringComparison.Ordinal);
+        Assert.Contains("outline: 2px solid", Regelblock(".epos-wahlkaestchen:focus-visible {"), StringComparison.Ordinal);
 
-        string kopf = Regelblock(".epos-wahlkaestchen {");
-        Assert.DoesNotContain("border-radius", kopf, StringComparison.Ordinal);
-        Assert.Contains("background: transparent", kopf, StringComparison.Ordinal);
-        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
-        foreach (Match m in Regex.Matches(css, @"^\s*\.epos-wahlkaestchen\S*", RegexOptions.Multiline))
-            Assert.True(m.Value.Trim() == ".epos-wahlkaestchen" || m.Value.Trim().StartsWith(zeile, StringComparison.Ordinal),
-                        "Diese Regel trifft auch das Kopfhäkchen: " + m.Value.Trim());
-
-        string hoch = Abfrageblock(css.Substring(css.IndexOf("\n" + zeile + " {", StringComparison.Ordinal)), "@media (forced-colors: active) {");
+        string hoch = Abfrageblock(css.Substring(css.IndexOf("\n.epos-wahlkaestchen {", StringComparison.Ordinal)), "@media (forced-colors: active) {");
         Assert.Contains("background: Highlight;", hoch, StringComparison.Ordinal);
         Assert.Contains("color: HighlightText;", hoch, StringComparison.Ordinal);
 
-        // Die Spalte fasst den Kreis ohne Breitenzugabe; die Zeilenhoehe misst die Rollbereichprobe.
         string spalte = Regelblock(".epos-zweispalten-inhalt--zeilenwahl table.epos-raster > thead > tr > th.epos-spalte-kaestchen,");
         Assert.Contains("width: calc(var(--epos-touchziel) + 16px)", spalte, StringComparison.Ordinal);
         Assert.DoesNotContain("padding-top", spalte, StringComparison.Ordinal);
+        string kopfzelle = Regelblock(".epos-zweispalten-inhalt--zeilenwahl table.epos-raster > thead > tr > th.epos-spalte-kaestchen {");
+        Assert.Contains("padding-top: 2px", kopfzelle, StringComparison.Ordinal);
+        Assert.Contains("padding-bottom: 2px", kopfzelle, StringComparison.Ordinal);
     }
 
     /// <summary>
