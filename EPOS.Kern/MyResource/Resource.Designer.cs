@@ -11942,11 +11942,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante anlegen… ähnelt.
+        /// </summary>
+        public static string BK_BTN_ANLEGEN_DLG {
+            get {
+                return ResourceManager.GetString("BK_BTN_ANLEGEN_DLG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Variante löschen ähnelt.
         /// </summary>
         public static string BK_BTN_LOESCHEN {
             get {
                 return ResourceManager.GetString("BK_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen… ähnelt.
+        /// </summary>
+        public static string BK_BTN_LOESCHEN_DLG {
+            get {
+                return ResourceManager.GetString("BK_BTN_LOESCHEN_DLG", resourceCulture);
             }
         }
         
@@ -11969,6 +11987,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umbenennen… ähnelt.
+        /// </summary>
+        public static string BK_BTN_UMBENENNEN_DLG {
+            get {
+                return ResourceManager.GetString("BK_BTN_UMBENENNEN_DLG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ◀ Zurück ähnelt.
         /// </summary>
         public static string BK_BTN_ZURUECK {
@@ -11983,6 +12010,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_CHK_NURSTAEMME {
             get {
                 return ResourceManager.GetString("BK_CHK_NURSTAEMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die neue Variante gehört zur Gruppe des Stammprojekts „{0}“ und erhält die Daten der gewählten Quelle. ähnelt.
+        /// </summary>
+        public static string BK_DLG_ANLEGEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("BK_DLG_ANLEGEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Variante wird nach einer Rückfrage mit allen Projektdaten unwiderruflich gelöscht. ähnelt.
+        /// </summary>
+        public static string BK_DLG_LOESCHEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("BK_DLG_LOESCHEN_HINWEIS", resourceCulture);
             }
         }
         
@@ -13051,6 +13096,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante: ähnelt.
+        /// </summary>
+        public static string BK_LBL_VARIANTE_WAHL {
+            get {
+                return ResourceManager.GetString("BK_LBL_VARIANTE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Im Vergleich: ähnelt.
         /// </summary>
         public static string BK_LBL_VERGLEICHSWAHL {
@@ -13753,11 +13807,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zum Anlegen einer Variante zuerst ein Stammprojekt wählen. ähnelt.
+        /// </summary>
+        public static string BK_TIP_ANLEGEN_KEIN_STAMM {
+            get {
+                return ResourceManager.GetString("BK_TIP_ANLEGEN_KEIN_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Gruppe hat noch keine Variante; gezeigt wird der Komponentenvergleich. ähnelt.
         /// </summary>
         public static string BK_TIP_DETAILVARIANTE_LEER {
             get {
                 return ResourceManager.GetString("BK_TIP_DETAILVARIANTE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gruppe hat noch keine Variante. ähnelt.
+        /// </summary>
+        public static string BK_TIP_KEINE_VARIANTE {
+            get {
+                return ResourceManager.GetString("BK_TIP_KEINE_VARIANTE", resourceCulture);
             }
         }
         
@@ -13794,6 +13866,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_TIP_UEBERNEHMEN_KOMP {
             get {
                 return ResourceManager.GetString("BK_TIP_UEBERNEHMEN_KOMP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Während eines Laufs sind die Aktionen der Variantenverwaltung gesperrt. ähnelt.
+        /// </summary>
+        public static string BK_TIP_VERWALTUNG_LAEUFT {
+            get {
+                return ResourceManager.GetString("BK_TIP_VERWALTUNG_LAEUFT", resourceCulture);
             }
         }
         

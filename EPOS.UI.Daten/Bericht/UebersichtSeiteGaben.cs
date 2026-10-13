@@ -63,35 +63,28 @@ namespace WindowsFormsApplication1
         private readonly UebersichtErgebnisGaben _ergebnisGaben = new UebersichtErgebnisGaben();
 
         /// <summary>
-        /// Der WEG in den Variantendialog (Auftrag <b>#240</b>, seit E3/8 eine
-        /// benannte Naht): Stammprojekt und Stammname hinein, <c>true</c> heraus,
-        /// wenn eine Variante entstanden ist. <c>null</c> heißt: kein Öffner, also
-        /// kein Knopf.
-        ///
-        /// <para><b>Warum ein Delegat und kein Fensterbesitzer.</b> Unter Windows
-        /// ist der Dialog ein zweites Fenster und muss deshalb über
-        /// <c>Blazorsprung</c> laufen (Regel (b) der Hüllenschicht); das weiß nur
-        /// die Schale. Auf iOS gibt es den Weg nicht — dort führt die Wurzel den
-        /// Variantendialog als eigene Ansicht, und die Seite zeigt den Knopf gar
-        /// nicht erst (benannt abgelehnt statt still übergangen).</para>
+        /// Der NACHLAUF der Schale nach dem Umbenennen einer Variante: Id und neuer
+        /// Projektname hinein — der Projektkontext der Startseite hängt am Namen, und
+        /// ihre Variantenanzeige zieht nach. <c>null</c> = kein Nachlauf (iOS). Geschrieben
+        /// wird in jedem Fall plattformfrei über <see cref="VariantenCtrl.Umbenennen"/>.
         /// </summary>
-        private readonly Func<int, string, Task<bool>> _varianteAnlegen;
+        private readonly Action<int, string> _umbenanntNachziehen;
 
         /// <summary>
-        /// Das UMBENENNEN mit Nachlauf der Schale (Projektkontext und
-        /// Variantenanzeige der Startseite): Id, neuer Bezeichner, bisheriger
-        /// Name hinein, Meldung heraus. <c>null</c> = der plattformfreie Weg über
-        /// <c>VariantenCtrl.Umbenennen</c>; er schreibt dasselbe, frischt nur die
-        /// Startseite nicht mit auf.
+        /// Der NACHLAUF der Schale nach dem Anlegen oder Löschen einer Variante (die
+        /// Variantenanzeige der Startseite kennt die Gruppe sonst nicht mehr). <c>null</c> =
+        /// kein Nachlauf. Die drei Dialoge der Übersicht sind Überlagerungen im selben
+        /// Fenster und brauchen keinen Öffner der Schale mehr — der Weg steht auf jeder
+        /// Plattform.
         /// </summary>
-        private readonly Func<int, string, string, string> _umbenennen;
+        private readonly Action _gruppeGeaendert;
 
-        internal UebersichtSeiteGaben(Func<int, string, Task<bool>> varianteAnlegen = null,
-                                      Berichtsgruppe stand = null,
-                                      Func<int, string, string, string> umbenennen = null)
+        internal UebersichtSeiteGaben(Berichtsgruppe stand = null,
+                                      Action<int, string> umbenanntNachziehen = null,
+                                      Action gruppeGeaendert = null)
         {
-            _varianteAnlegen = varianteAnlegen;
-            _umbenennen = umbenennen;
+            _umbenanntNachziehen = umbenanntNachziehen;
+            _gruppeGeaendert = gruppeGeaendert;
             _stand = stand ?? new Berichtsgruppe();
         }
 
@@ -187,10 +180,34 @@ namespace WindowsFormsApplication1
                 ["VergleichGewaehlt"] = new Action<IReadOnlyList<int>>(VergleichSetzen),
                 ["LabelVergleich"] = MyResource.Resource.BK_LBL_VERGLEICHSWAHL,
                 ["StammFestTipp"] = MyResource.Resource.BK_BER_MSG_STAMM_REFERENZ,
-                ["VarianteUmbenennen"] = new Func<string, string>(VarianteUmbenennen),
-                ["UmbenennenText"] = MyResource.Resource.VAR_BTN_UMBENENNEN,
-                ["LoeschFrage"] = new Func<string>(LoeschFrage),
-                ["VarianteLoeschen"] = new Func<bool, string>(VarianteLoeschen),
+                // Die drei Dialoge der Gruppe "Variante verwalten" (Anwenderauftrag 13.10.2026):
+                // Anlegen aus einer Quelle der Gruppe, Umbenennen und Loeschen der GEWAEHLTEN
+                // Variante - jeder Weg nennt die Projekt-Id, nichts wirkt mehr stumm auf die
+                // Markierung. Der Zielname kommt aus der Kernregel.
+                ["VarianteAnlegen"] = new Func<int, string, VariantenAktionErgebnis>(VarianteAnlegen),
+                ["Zielname"] = new Func<int, string, string>(Zielname),
+                ["VarianteUmbenennen"] = new Func<int, string, VariantenAktionErgebnis>(VarianteUmbenennen),
+                ["UmbenennenText"] = MyResource.Resource.BK_BTN_UMBENENNEN_DLG,
+                ["LoeschFrage"] = new Func<int, string>(LoeschFrage),
+                ["VarianteLoeschen"] = new Func<int, bool, string>(VarianteLoeschen),
+                ["AnlegenTitel"] = MyResource.Resource.BK_BTN_ANLEGEN,
+                ["AnlegenOkText"] = MyResource.Resource.BK_BTN_ANLEGEN,
+                ["AnlegenHinweisFormat"] = MyResource.Resource.BK_DLG_ANLEGEN_HINWEIS,
+                ["LabelQuelle"] = MyResource.Resource.BK_UEB_LBL_QUELLE,
+                ["QuelleStammFormat"] = MyResource.Resource.BK_UEB_QUELLE_STAMM,
+                ["QuelleVarianteFormat"] = MyResource.Resource.BK_UEB_QUELLE_VARIANTE,
+                ["UmbenennenTitel"] = MyResource.Resource.VAR_DLG_UMBENENNEN_TITEL,
+                ["UmbenennenOkText"] = MyResource.Resource.VAR_BTN_UMBENENNEN,
+                ["UmbenennenHinweisFormat"] = MyResource.Resource.VAR_DLG_UMBENENNEN_HINWEIS,
+                ["LabelVarianteWahl"] = MyResource.Resource.BK_LBL_VARIANTE_WAHL,
+                ["ZielnameFormat"] = MyResource.Resource.VAR_DLG_ZIELNAME,
+                ["LoeschenTitel"] = MyResource.Resource.BK_BTN_LOESCHEN,
+                ["LoeschenOkText"] = MyResource.Resource.BK_BTN_LOESCHEN,
+                ["LoeschenHinweis"] = MyResource.Resource.BK_DLG_LOESCHEN_HINWEIS,
+                ["AbbrechenText"] = MyResource.Resource.SIM_BTN_ABBRECHEN,
+                ["SperrgrundKeinStamm"] = MyResource.Resource.BK_TIP_ANLEGEN_KEIN_STAMM,
+                ["SperrgrundLaeuft"] = MyResource.Resource.BK_TIP_VERWALTUNG_LAEUFT,
+                ["SperrgrundKeineVariante"] = MyResource.Resource.BK_TIP_KEINE_VARIANTE,
 
                 // Entscheid O-4 vom 04.09.2026: Trifft der Projektname MEHRERE Projekte,
                 // wird gefragt, statt still beide zu loeschen. Die Zaehlung ist DIESELBE,
@@ -233,8 +250,8 @@ namespace WindowsFormsApplication1
                 ["SimGrundVeraltet"] = T("BKS_SIM_GRUND_VERALTET",
                     "Das Simulationsergebnis ist älter als die letzte Änderung am Projekt."),
                 ["SpalteAktion"] = MyResource.Resource.BK_SP_AKTION,
-                ["AnlegenText"] = T("BKS_BTN_ANLEGEN", "Variante anlegen"),
-                ["LoeschenText"] = MyResource.Resource.BK_BTN_LOESCHEN,
+                ["AnlegenText"] = MyResource.Resource.BK_BTN_ANLEGEN_DLG,
+                ["LoeschenText"] = MyResource.Resource.BK_BTN_LOESCHEN_DLG,
                 ["SimulierenText"] = T("BKS_BTN_SIMULIEREN", "Simulation starten"),
                 ["UebernehmenText"] = MyResource.Resource.BK_BTN_UEBERNEHMEN,
                 ["WahlKurztext"] = T("BKS_WAHL_VERSION", "Variante für die Detail-Unterschiede wählen"),
@@ -260,13 +277,6 @@ namespace WindowsFormsApplication1
                 ["LabelAbschnittKomponenten"] = MyResource.Resource.BK_ERG_ABSCHNITT_KOMPONENTEN,
                 ["ErgebnisGaben"] = _ergebnisGaben.Gaben()
             };
-
-            // E3/8 — kein Delegat, kein Knopf: Der Variantendialog ist ein
-            // ZWEITES Fenster und gehoert damit der Schale. Wo sie ihn nicht
-            // stellt (iOS), zeichnet die Seite "Variante anlegen" nicht; der Weg
-            // dorthin ist die eigene Ansicht der Wurzel (PROJEKT_ALS_VARIANTE).
-            if (_varianteAnlegen != null)
-                satz["VarianteAnlegenOeffnen"] = new Func<Task<bool>>(VarianteAnlegenOeffnen);
 
             return satz;
         }
@@ -365,7 +375,6 @@ namespace WindowsFormsApplication1
                 VarianteZeile m = zeilen.First(z => z.IdProjekt == markiert);
                 _stand.Markieren(markiert, m.Projektname);
                 stand.MarkierteId = markiert;
-                stand.Loeschbar = !m.IstStamm;
                 stand.SimulierenMoeglich = true;
             }
             stand.AnlegenMoeglich = _stand.IdStamm > 0;
@@ -716,92 +725,103 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
-        // Variante anlegen und löschen
+        // Variante anlegen, umbenennen und löschen (Anwenderauftrag 13.10.2026)
         // =====================================================================
 
         /// <summary>
-        /// ÖFFNET den Variantendialog und meldet, ob eine Variante entstanden ist
-        /// (Auftrag <b>#240</b>).
-        ///
-        /// <para><b>Hier steht kein Anlegeweg mehr.</b> Bis #240 rief diese Hülle
-        /// <c>VariantenCtrl.AnlegenAusStamm</c> unmittelbar — mit dem Bezeichner aus dem
-        /// Feld der Seite und OHNE Quellprojekt, während Kopfband und Menüpunkt seit
-        /// #237 den <c>ProjektVarianteDialog</c> zeigen. Jetzt ruft sie denselben
-        /// Ablauf wie der Menüpunkt (<c>AlsVarianteHuelle.Zeige</c>) — nicht
-        /// nachgebaut, gerufen —, nur mit dem STAMM, den die Seite gewählt hat: Der
-        /// muss nicht das geöffnete Projekt sein. Meldungskasten, Wartezeiger und das
-        /// Nachziehen der Startseite bringt der Ablauf selbst mit.</para>
-        ///
-        /// <para><b>E3/8: Der Weg ist eine benannte NAHT.</b> Wie das zweite
-        /// Fenster unter Windows hochzufahren ist — eine Nachricht später über
-        /// <c>Blazorsprung</c>, samt Rückfall für den verworfenen Sprung —, weiß
-        /// allein die Schale; sie reicht den fertigen Weg herein. Auf iOS gibt es
-        /// ihn nicht: Dort führt die Wurzel den Variantendialog als eigene
-        /// Ansicht, und ohne Delegat zeichnet die Seite den Knopf gar nicht
-        /// erst.</para>
+        /// Legt eine Variante aus einer QUELLE DER GRUPPE an — der Kern prüft die Gruppe
+        /// und kopiert (<see cref="VariantenCtrl.AnlegenAusQuelle"/>: Gruppe und Name vom
+        /// Stamm, Inhalt von der Quelle); danach zieht die Schale nach, soweit sie einen
+        /// Weg hereingereicht hat. Die Markierung der Seite bleibt, wie sie war.
         /// </summary>
-        private async Task<bool> VarianteAnlegenOeffnen()
+        private VariantenAktionErgebnis VarianteAnlegen(int idQuelle, string bezeichner)
         {
-            if (_stand.IdStamm <= 0 || _varianteAnlegen == null) return false;
-
-            bool angelegt = await _varianteAnlegen(_stand.IdStamm, _stand.StammName);
-            if (angelegt) VerwirfDetails();
-            return angelegt;
-        }
-
-        /// <summary>
-        /// Umbenennen der markierten Variante (08.09.2026): der Bezeichner aus dem Feld; der
-        /// gemeinsame Weg liegt in der Startseitenhuelle, weil dort der Projektkontext haengt.
-        /// </summary>
-        private string VarianteUmbenennen(string bezeichner)
-        {
-            if (_stand.IdMarkiert <= 0) return MyResource.Resource.BK_MSG_KEIN_STAMM;
+            if (_stand.IdStamm <= 0) return VariantenAktionErgebnis.Fehler(MyResource.Resource.BK_MSG_KEIN_STAMM);
             bezeichner = (bezeichner ?? "").Trim();
-            if (bezeichner.Length == 0) return MyResource.Resource.VAR_MSG_BEZEICHNER_LEER;
-            string bisher = "";
-            foreach (VariantenCtrl.VarianteInfo vi in _ctrl.LadeGruppe(_stand.IdStamm, _stand.StammName))
-                if (vi.IdProjekt == _stand.IdMarkiert) { bisher = vi.Variantenname ?? ""; break; }
+            if (bezeichner.Length == 0) return VariantenAktionErgebnis.Fehler(MyResource.Resource.VAR_MSG_BEZEICHNER_LEER);
+
             try
             {
-                // E3/8: Der Weg mit Nachlauf (Projektkontext und Variantenanzeige
-                // der Startseite) kommt als benannte Naht herein; ohne ihn steht
-                // der plattformfreie Weg, der dasselbe SCHREIBT.
-                string meldung = _umbenennen != null
-                    ? _umbenennen(_stand.IdMarkiert, bezeichner, bisher)
-                    : UmbenennenOhneStartseite(bezeichner, bisher);
-                VerwirfDetails();
-                return meldung;
+                string fehler;
+                int neu = _ctrl.AnlegenAusQuelle(_stand.IdStamm, _stand.StammName, idQuelle, bezeichner, out fehler);
+                if (neu <= 0)
+                    return VariantenAktionErgebnis.Fehler(string.IsNullOrEmpty(fehler)
+                        ? MyResource.Resource.BK_MSG_ANLEGEN_FEHLGESCHLAGEN : fehler);
+
+                VerwirfDetails();          // die Gruppe hat eine Spalte mehr
+                _gruppeGeaendert?.Invoke();
+                return VariantenAktionErgebnis.Ok(
+                    string.Format(MyResource.Resource.BK_MSG_VARIANTE_ANGELEGT, bezeichner));
             }
             catch (Exception ex)
             {
-                return string.Format(MyResource.Resource.BK_MSG_ANLEGEFEHLER, ex.Message);
+                return VariantenAktionErgebnis.Fehler(string.Format(MyResource.Resource.BK_MSG_ANLEGEFEHLER, ex.Message));
             }
         }
 
-        private string UmbenennenOhneStartseite(string bezeichner, string bisher)
+        /// <summary>
+        /// Der Zielname „&lt;Stamm&gt; - &lt;Bezeichner&gt;" aus der Kernregel —
+        /// <paramref name="idAusgenommen"/> ist beim Umbenennen die Variante selbst, beim
+        /// Anlegen 0. Eine Datenbank, die nicht antwortet, lässt die Vorschau leer.
+        /// </summary>
+        private string Zielname(int idAusgenommen, string bezeichner)
         {
-            string fehler, neuerName;
-            if (!_ctrl.Umbenennen(_stand.IdMarkiert, bezeichner, out fehler, out neuerName)) return fehler ?? "";
-            return string.Format(MyResource.Resource.VAR_MSG_UMBENANNT, bisher, bezeichner);
+            try { return _ctrl.Zielname(_stand.StammName, bezeichner, idAusgenommen); }
+            catch { return ""; }
         }
 
-        private string LoeschFrage()
+        /// <summary>
+        /// Benennt die GEWÄHLTE Variante um: drei <c>UPDATE</c>s über die Id im Kern
+        /// (<see cref="VariantenCtrl.Umbenennen"/>) — es entsteht kein Projekt und keine
+        /// Kopie —, danach der Nachlauf der Schale (Projektkontext, Variantenanzeige der
+        /// Startseite), soweit sie ihn hereingereicht hat.
+        /// </summary>
+        private VariantenAktionErgebnis VarianteUmbenennen(int idVariante, string bezeichner)
         {
-            VarianteZeile z = MarkierteZeile();
+            if (idVariante <= 0) return VariantenAktionErgebnis.Fehler(MyResource.Resource.BK_MSG_NUR_VARIANTE);
+            bezeichner = (bezeichner ?? "").Trim();
+            if (bezeichner.Length == 0) return VariantenAktionErgebnis.Fehler(MyResource.Resource.VAR_MSG_BEZEICHNER_LEER);
+
+            string bisher = "";
+            foreach (VariantenCtrl.VarianteInfo vi in _ctrl.LadeGruppe(_stand.IdStamm, _stand.StammName))
+                if (vi.IdProjekt == idVariante) { bisher = vi.Variantenname ?? ""; break; }
+
+            try
+            {
+                string fehler, neuerName;
+                if (!_ctrl.Umbenennen(idVariante, bezeichner, out fehler, out neuerName))
+                    return VariantenAktionErgebnis.Fehler(fehler ?? "");
+
+                VerwirfDetails();
+                _umbenanntNachziehen?.Invoke(idVariante, neuerName);
+                return VariantenAktionErgebnis.Ok(
+                    string.Format(MyResource.Resource.VAR_MSG_UMBENANNT, bisher, bezeichner));
+            }
+            catch (Exception ex)
+            {
+                return VariantenAktionErgebnis.Fehler(string.Format(MyResource.Resource.BK_MSG_ANLEGEFEHLER, ex.Message));
+            }
+        }
+
+        private string LoeschFrage(int idVariante)
+        {
+            VarianteZeile z = ZeileZu(idVariante);
             if (z == null || z.IstStamm) return "";
             return string.Format(MyResource.Resource.BK_MSG_LOESCHEN_FRAGE, z.Bezeichner);
         }
 
         /// <summary>
-        /// Löscht die markierte Variante (iU9-W15a, Entscheid O-4 vom 04.09.2026).
+        /// Löscht die GEWÄHLTE Variante (iU9-W15a, Entscheid O-4 vom 04.09.2026) —
+        /// die Projekt-Id kommt aus dem Löschdialog, nicht aus der Markierung.
         /// </summary>
+        /// <param name="idVariante">Die zu löschende Variante.</param>
         /// <param name="alleGleichenNamens">
         /// Die Antwort auf die Mehrdeutigkeits-Rückfrage der Seite: <c>true</c> = der
         /// Anwender hat dem Löschen ALLER Projekte dieses Namens ausdrücklich zugestimmt.
         /// </param>
-        private string VarianteLoeschen(bool alleGleichenNamens)
+        private string VarianteLoeschen(int idVariante, bool alleGleichenNamens)
         {
-            VarianteZeile z = MarkierteZeile();
+            VarianteZeile z = ZeileZu(idVariante);
             if (z == null || z.IstStamm) return MyResource.Resource.BK_MSG_NUR_VARIANTE;
 
             try
@@ -825,7 +845,8 @@ namespace WindowsFormsApplication1
                         : befund.Fehlertext;
 
                 VerwirfDetails();          // die Gruppe hat eine Spalte weniger
-                _stand.MarkierungVerwerfen();
+                if (_stand.IdMarkiert == z.IdProjekt) _stand.MarkierungVerwerfen();
+                _gruppeGeaendert?.Invoke();
                 return string.Format(MyResource.Resource.BK_MSG_VARIANTE_GELOESCHT, z.Bezeichner);
             }
             catch (Exception ex)
@@ -834,11 +855,14 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private VarianteZeile MarkierteZeile()
+        /// <summary>Die Zeile der Gruppe zu einer Projekt-Id (frisch geladen); <c>null</c> = keine.</summary>
+        private VarianteZeile ZeileZu(int idProjekt)
         {
-            try { return Laden().Zeilen.FirstOrDefault(z => z.IdProjekt == _stand.IdMarkiert); }
+            try { return Laden().Zeilen.FirstOrDefault(z => z.IdProjekt == idProjekt); }
             catch { return null; }
         }
+
+        private VarianteZeile MarkierteZeile() => ZeileZu(_stand.IdMarkiert);
 
         // =====================================================================
         // Simulation (Vorbild btnSimulieren_Click)

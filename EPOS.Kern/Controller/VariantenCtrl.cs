@@ -94,10 +94,34 @@ namespace WindowsFormsApplication1
 
         public bool ProjektnameExistiert(string name)
         {
+            return ProjektnameExistiert(name, 0);
+        }
+
+        /// <summary>
+        /// Trägt ein ANDERES Projekt diesen Namen? <paramref name="ausserId"/> ist das
+        /// Projekt, das den Namen behalten darf — beim Umbenennen das umzubenennende selbst,
+        /// sonst 0. Ohne die Ausnahme bekäme eine Variante, die ihren eigenen Bezeichner
+        /// noch einmal bestätigt, einen Zähler angehängt.
+        /// </summary>
+        public bool ProjektnameExistiert(string name, int ausserId)
+        {
             object o = DataRepository.ExecuteScalar(
-                "SELECT COUNT(*) FROM Tab_Projekt WHERE Projektname = ?",
-                new DbParam("@name", name));
+                "SELECT COUNT(*) FROM Tab_Projekt WHERE Projektname = ? AND ID <> ?",
+                new DbParam("@name", name),
+                new DbParam("@id", ausserId));
             return o != null && Convert.ToInt32(o) > 0;
+        }
+
+        /// <summary>
+        /// Gehört <paramref name="idProjekt"/> zur Vergleichsgruppe des Stamms
+        /// <paramref name="idStamm"/> — ist es der Stamm selbst oder eine seiner
+        /// Varianten (<c>Tab_Variante.ID_ProjektRef</c>)?
+        /// </summary>
+        public bool GehoertZurGruppe(int idStamm, int idProjekt)
+        {
+            if (idStamm <= 0 || idProjekt <= 0) return false;
+            if (idProjekt == idStamm) return true;
+            return StammRefDerVariante(idProjekt) == idStamm;
         }
 
         // ------------------------------------------------------------- Anlegen
@@ -116,11 +140,48 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string Zielname(string stammName, string bezeichner)
         {
+            return Zielname(stammName, bezeichner, 0);
+        }
+
+        /// <summary>
+        /// Dieselbe Regel für das UMBENENNEN: <paramref name="ausserId"/> ist die Variante,
+        /// die den Namen bekommt — ihr eigener bisheriger Name zählt nicht als Kollision.
+        /// <see cref="Umbenennen"/> und die Vorschau des Umbenenn-Dialogs fragen beide hier,
+        /// damit der Dialog genau den Namen zeigt, der danach geschrieben wird.
+        /// </summary>
+        public string Zielname(string stammName, string bezeichner, int ausserId)
+        {
             string basisName = (stammName ?? "") + " - " + (bezeichner ?? "").Trim();
             string neuerName = basisName;
             int n = 2;
-            while (ProjektnameExistiert(neuerName)) { neuerName = basisName + " (" + n + ")"; n++; }
+            while (ProjektnameExistiert(neuerName, ausserId)) { neuerName = basisName + " (" + n + ")"; n++; }
             return neuerName;
+        }
+
+        /// <summary>
+        /// Legt eine Variante aus einer QUELLE DER GRUPPE an (Anwenderauftrag 13.10.2026,
+        /// Dialog „Variante anlegen" der Übersicht): Die Quelle ist das Stammprojekt oder eine
+        /// seiner Varianten; ihr Inhalt wird kopiert. <b>Die Gruppenzugehörigkeit bleibt beim
+        /// Stamm</b> — <c>Tab_Variante.ID_ProjektRef</c> zeigt auf <paramref name="idStamm"/>,
+        /// der Projektname ist „&lt;Stamm&gt; - &lt;Bezeichner&gt;" —, auch wenn die Quelle eine
+        /// Variante ist; eine Variante hängt nie an einer anderen Variante, sonst wäre die
+        /// Vergleichsgruppe eine Kette.
+        ///
+        /// <para>Der Kopierweg ist derselbe wie bei <see cref="AnlegenAusStamm(int, string, string, int, out string)"/>;
+        /// hier kommt allein die GRUPPENREGEL hinzu: Ein Projekt außerhalb der Gruppe wird
+        /// benannt abgelehnt, und es entsteht nichts.</para>
+        /// </summary>
+        /// <returns>Die Id der neuen Variante, -1 bei Fehler (<paramref name="fehler"/> nennt ihn).</returns>
+        public int AnlegenAusQuelle(int idStamm, string stammName, int idQuelle, string bezeichner, out string fehler)
+        {
+            fehler = null;
+            if (idStamm <= 0 || string.IsNullOrWhiteSpace(stammName)) { fehler = "Kein Stammprojekt angegeben."; return -1; }
+            if (!GehoertZurGruppe(idStamm, idQuelle))
+            {
+                fehler = "Die Quelle gehört nicht zur Vergleichsgruppe dieses Stammprojekts.";
+                return -1;
+            }
+            return AnlegenAusStamm(idStamm, stammName, bezeichner, idQuelle, out fehler);
         }
 
         /// <summary>
@@ -183,6 +244,17 @@ namespace WindowsFormsApplication1
             {
                 int neueId = new ProjektDuplizierenCtrl().Duplizieren(quellName, neuerName);
                 if (neueId <= 0) { fehler = "Variante konnte nicht angelegt werden (Duplizieren fehlgeschlagen)."; return -1; }
+
+                // DIE KOPIE EINER VARIANTE BRINGT DEREN VARIANTENZEILE MIT: Der generische
+                // Kopierlauf nimmt Tab_Variante ueber ID_Projekt mit (die Kopie bleibt Variante
+                // desselben Stamms, ID_ProjektRef unversetzt) - samt dem BEZEICHNER DER QUELLE.
+                // Ohne diese Zeile zu raeumen stuende die neue Variante zweimal in der Gruppe
+                // (einmal unter dem Namen der Quelle), oder der INSERT unten scheiterte an
+                // UQ_VarProj, und das schon duplizierte Projekt bliebe als Variante mit fremdem
+                // Bezeichner stehen - der Eindruck einer "Kopie" (Anwenderbefund 13.10.2026).
+                // Wache: EPOS.Kern.Tests/VariantenVerwaltungTests.
+                DataRepository.ExecuteSQL("DELETE FROM " + TAB_VARIANTE + " WHERE ID_Projekt = ?",
+                    new DbParam("@proj", neueId));
 
                 int vid = DataRepository.GetMaxID(TAB_VARIANTE, "ID") + 1;
                 string ins = "INSERT INTO " + TAB_VARIANTE + " (ID, ID_Projekt, ID_ProjektRef, Variantenname) VALUES (?, ?, ?, ?)";
@@ -252,14 +324,11 @@ namespace WindowsFormsApplication1
             string alterName = StartseiteCtrl.Projektname(idProjekt);
             if (string.IsNullOrWhiteSpace(stammName)) { fehler = "Das Stammprojekt der Variante wurde nicht gefunden."; return false; }
 
-            string basisName = stammName + " - " + neuerBezeichner;
-            string neuerName = basisName;
-            int n = 2;
-            while (!string.Equals(neuerName, alterName, StringComparison.Ordinal) && ProjektnameExistiert(neuerName))
-            {
-                neuerName = basisName + " (" + n + ")";
-                n++;
-            }
+            // DIESELBE Namensregel wie beim Anlegen, nur ohne Kollision mit dem eigenen
+            // bisherigen Namen (Zielname mit Ausnahme). Umbenannt wird ÜBER DIE ID in drei
+            // UPDATEs - es entsteht kein Projekt und keine zweite Variantenzeile; Wache:
+            // EPOS.Kern.Tests/VariantenVerwaltungTests.
+            string neuerName = Zielname(stammName, neuerBezeichner, idProjekt);
 
             try
             {

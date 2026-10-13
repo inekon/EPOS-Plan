@@ -6,12 +6,17 @@ namespace EPOS.UI.Seiten.Berichte;
 /// Das FLACHE Abbild des Reiterblatts „Übersicht" für den Hilfe-Assistenten
 /// (Welle KI‑F6).
 ///
-/// <para><b>Diese Seite führt VIER Einstellwerte</b>: das Stammprojekt der
-/// Vergleichsgruppe, den Filter „nur Stammprojekte", die Variante der
-/// Detail-Unterschiede und
-/// den Bezeichner, mit dem sie umbenannt wird. Alles andere darauf ist
-/// gerechnete ANZEIGE — die Gegenüberstellung, die Unterschiedstabelle, der
+/// <para><b>Diese Seite führt DREI Einstellwerte und einen Schalter</b>: das
+/// Stammprojekt der Vergleichsgruppe, den Filter „nur Stammprojekte", die Variante
+/// der Detail-Unterschiede und den Schalter „nur Unterschiede". Alles andere darauf
+/// ist gerechnete ANZEIGE — die Gegenüberstellung, die Unterschiedstabelle, der
 /// Simulations- und der Speicherstand.</para>
+///
+/// <para><b>Die Gruppe „Variante verwalten" bleibt draußen.</b> Anlegen, Umbenennen
+/// und Löschen sind datenbankwirksame Handlungen mit eigenem Dialog und eigener
+/// Rückfrage; ihre Felder (Quelle, Variante, Bezeichner) sind Angaben der jeweiligen
+/// Handlung und kein Einstellwert der Seite — sie gehören in das Aktionsregister,
+/// nicht in die Feldkarte.</para>
 ///
 /// <para><b>Warum eine Sichtklasse und nicht <c>UebersichtStand</c>.</b> Die
 /// Seite SCHREIBT nicht in ihren Stand: Sie meldet jede Wahl über einen Rückruf
@@ -50,12 +55,6 @@ public sealed class UebersichtSeiteKiSicht
     /// <summary>Die Einträge der Klappliste: die Vorgabe „— keine —“ und die Varianten.</summary>
     public Func<IReadOnlyList<KiWahleintrag>>? VarianteEintraege { get; init; }
 
-    /// <summary>Liest den Bezeichner des Umbenennfeldes.</summary>
-    public Func<string>? BezeichnerLesen { get; init; }
-
-    /// <summary>Schreibt den Bezeichner des Umbenennfeldes.</summary>
-    public Action<string>? BezeichnerSetzen { get; init; }
-
     /// <summary>Liest die Simulationszeile der markierten Version.</summary>
     public Func<string>? SimulationLesen { get; init; }
 
@@ -87,23 +86,13 @@ public sealed class UebersichtSeiteKiSicht
     /// <summary>
     /// Die Variante der Detail-Unterschiede — die Vorgabe „— keine —“ (Id des
     /// Stamms) zeigt den Komponentenvergleich, eine Variante ihre Unterschiede zum
-    /// Stammprojekt; Löschen und Umbenennen treffen nur eine gewählte Variante,
-    /// Simulieren die gewählte Variante oder sonst das Stammprojekt.
+    /// Stammprojekt; die Dialoge „Umbenennen…“ und „Löschen…“ legen diese Variante
+    /// vor, Simulieren rechnet die gewählte Variante oder sonst das Stammprojekt.
     /// </summary>
     public int? Variante
     {
         get => VarianteLesen?.Invoke();
         set => VarianteSetzen?.Invoke(value);
-    }
-
-    /// <summary>
-    /// Der Bezeichner des Umbenennfeldes — er wirkt erst mit dem Knopf
-    /// „Umbenennen".
-    /// </summary>
-    public string Bezeichner
-    {
-        get => BezeichnerLesen?.Invoke() ?? "";
-        set => BezeichnerSetzen?.Invoke(value ?? "");
     }
 
     /// <summary>Der Simulationsstand der markierten Version — Anzeige.</summary>

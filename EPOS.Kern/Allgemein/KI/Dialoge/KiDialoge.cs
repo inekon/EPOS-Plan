@@ -1308,9 +1308,10 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("variante", "UebersichtSeiteKiSicht.Variante",
                                      KiDialogTexte.BkuVarianteName, KiParameterTyp.Wahl,
                                      KiDialogTexte.BkuVarianteErl, leerErlaubt: true),
-                    new KiDialogFeld("bezeichner", "UebersichtSeiteKiSicht.Bezeichner",
-                                     KiDialogTexte.BkuBezeichnerName, KiParameterTyp.Text,
-                                     KiDialogTexte.BkuBezeichnerErl, leerErlaubt: true),
+                    // Kein Feld "bezeichner" mehr: Der Bezeichner einer neuen oder umbenannten
+                    // Variante ist eine Angabe der Dialoge "Variante anlegen" und "Umbenennen"
+                    // der Gruppe "Variante verwalten" (Anwenderauftrag 13.10.2026), kein
+                    // Einstellwert der Seite.
                     new KiDialogFeld("nur_unterschiede", "UebersichtSeiteKiSicht.NurUnterschiede",
                                      KiDialogTexte.BkuNurUnterschiedeName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.BkuNurUnterschiedeErl),

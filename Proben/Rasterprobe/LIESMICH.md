@@ -1869,7 +1869,9 @@ Varianten, ein Gewerk weicht ab. Synthetische Stände ohne Datenbank, neutrale N
 Adressgaben: `?varianten=<n>` (Vorgabe 1, höchstens 8), `?nurunterschiede=1` und `?variante=<i>`
 (wählt unter „Detail-Unterschiede für Variante“ die i-te Variante und zeigt die Unterschiedstabelle;
 ohne die Gabe steht die Vorgabe „— keine —“, der Komponentenvergleich; die Wahl im Feld wirkt auch
-von Hand). Zu prüfen
+von Hand). Die drei Knöpfe der Gruppe „Variante verwalten“ öffnen ihre Dialoge als Überlagerung
+(Anlegen mit Quelle und Bezeichner, Umbenennen und Löschen mit der Variantenwahl); sie wirken auf
+die synthetische Gruppe der Seite, ohne Datenbank. Zu prüfen
 bei 1 800, 940 und 700 px: Kopf- und Rumpfzellen der Tabelle stehen an denselben linken
 Kanten, die Tabelle füllt die Hülle, die Seite rollt nie quer (mit sechs Varianten rollt
 allein die Hülle, die Gewerkspalte haftet), kein Feld des Kopfes ragt über das Fenster.

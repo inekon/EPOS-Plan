@@ -3565,8 +3565,6 @@
         internal static string BkuNurStaemmeErl => MyResource.Resource.KI_DLG_BKU_NURSTAEMME_ERL;
         internal static string BkuVarianteName => MyResource.Resource.BKS_LBL_VARIANTE;
         internal static string BkuVarianteErl => MyResource.Resource.KI_DLG_BKU_VARIANTE_ERL;
-        internal static string BkuBezeichnerName => MyResource.Resource.BKS_LBL_BEZEICHNER;
-        internal static string BkuBezeichnerErl => MyResource.Resource.KI_DLG_BKU_BEZEICHNER_ERL;
         internal static string BkuErgebnisseName => MyResource.Resource.KI_DLG_BKU_ERG_NAME;
         internal static string BkuErgebnisseErl => MyResource.Resource.KI_DLG_BKU_ERG_ERL;
         internal static string BkuSimName => MyResource.Resource.KI_DLG_BKU_SIM_NAME;

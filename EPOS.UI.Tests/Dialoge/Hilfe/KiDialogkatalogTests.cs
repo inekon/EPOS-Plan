@@ -1025,9 +1025,9 @@ public class KiDialogkatalogTests : IDisposable
     /// <b>Die vier Masken der Welle KI‑F6, Schritt 2, führen 8, 9, 5 und 4 Felder.</b>
     /// </summary>
     /// <remarks>
-    /// <para>Das Reiterblatt „Übersicht" führt fünf Einstellwerte (Stammprojekt,
-    /// Filter, markierte Version, Bezeichner, „nur Unterschiede") und drei Anzeigen
-    /// (Simulationsstand, Gegenüberstellung je Gewerk, Statuszeile); „Bericht" fünf
+    /// <para>Das Reiterblatt „Übersicht" führt vier Einstellwerte (Stammprojekt,
+    /// Filter, markierte Version, „nur Unterschiede") und vier Anzeigen
+    /// (Simulationsstand, Gegenüberstellung je Gewerk, Statuszeile, Energievergleich); „Bericht" fünf
     /// Einstellwerte (Ausgabe, Zielordner, das Szenario des Wirtschaftlichkeitsberichts — Fachvorgabe E31 — und —
     /// Berichtsvorlagen BV-E1 und BV-E7 — die Word- und die Excel-Vorlage, jeweils als Wahl, sowie die Suche des
     /// Platzhalterkatalogs) und drei Anzeigen — die zwei Mengen stehen als Aufstellung.</para>
@@ -1035,14 +1035,18 @@ public class KiDialogkatalogTests : IDisposable
     /// speichern" drei Einstellwerte und den gerechneten Zielnamen.</para>
     /// </remarks>
     [Fact]
-    public void Die_vier_Berichts_und_Projektmasken_fuehren_6_8_5_und_4_Felder()
+    public void Die_vier_Berichts_und_Projektmasken_fuehren_8_9_5_und_4_Felder()
     {
         KiDialog ueb = KiDialoge.Katalog.Finde(KiMaskennamen.BERICHTE_UEBERSICHT)!;
         KiDialog ber = KiDialoge.Katalog.Finde(KiMaskennamen.BERICHTSEITE)!;
         KiDialog kop = KiDialoge.Katalog.Finde(KiMaskennamen.PROJEKT_KOPIE)!;
         KiDialog var = KiDialoge.Katalog.Finde(KiMaskennamen.PROJEKT_VARIANTE)!;
 
-        Assert.Equal(9, ueb.Felder.Count);   // mit dem Energievergleich „ergebnisse“
+        // Anwenderauftrag 13.10.2026: kein Feld "bezeichner" mehr - der Bezeichner ist eine
+        // Angabe der Dialoge "Variante anlegen" und "Umbenennen" (8 -> 7); dazu der Energievergleich
+        // "ergebnisse" (7 -> 8).
+        Assert.Equal(8, ueb.Felder.Count);
+        Assert.Null(ueb.FindeFeld("bezeichner"));
         Assert.Equal(9, ber.Felder.Count);
         Assert.Equal(KiParameterTyp.Wahl, ber.FindeFeld("szenario")!.Typ);
         Assert.Equal("BerichtSeiteKiSicht.Szenario", ber.FindeFeld("szenario")!.Eigenschaftspfad);
@@ -1975,7 +1979,7 @@ public class KiDialogkatalogTests : IDisposable
 
         // Welle KI-F6, Schritt 2
         [KiMaskennamen.BERICHTE_UEBERSICHT] =
-            "bindet über die Sichtklasse UebersichtSeiteKiSicht auf die vier Wahlwege " +
+            "bindet über die Sichtklasse UebersichtSeiteKiSicht auf die drei Wahlwege " +
             "der Seite und den Schalter „nur Unterschiede“; sie schreibt nicht in ihren Stand, " +
             "sondern meldet an die Hülle. Zeuge ist UebersichtSeiteTests",
         [KiMaskennamen.BERICHTSEITE] =

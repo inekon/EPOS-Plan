@@ -5971,6 +5971,33 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_LBL_VARIANTE_VERWALTEN" xml:space="preserve">
     <value>Manage variant</value>
   </data>
+  <data name="BK_BTN_ANLEGEN_DLG" xml:space="preserve">
+    <value>Create variant…</value>
+  </data>
+  <data name="BK_BTN_UMBENENNEN_DLG" xml:space="preserve">
+    <value>Rename…</value>
+  </data>
+  <data name="BK_BTN_LOESCHEN_DLG" xml:space="preserve">
+    <value>Delete…</value>
+  </data>
+  <data name="BK_LBL_VARIANTE_WAHL" xml:space="preserve">
+    <value>Variant:</value>
+  </data>
+  <data name="BK_TIP_ANLEGEN_KEIN_STAMM" xml:space="preserve">
+    <value>Select a base project first to create a variant.</value>
+  </data>
+  <data name="BK_TIP_VERWALTUNG_LAEUFT" xml:space="preserve">
+    <value>While a run is in progress, the variant actions are locked.</value>
+  </data>
+  <data name="BK_TIP_KEINE_VARIANTE" xml:space="preserve">
+    <value>The group has no variant yet.</value>
+  </data>
+  <data name="BK_DLG_ANLEGEN_HINWEIS" xml:space="preserve">
+    <value>The new variant belongs to the group of the base project “{0}” and receives the data of the selected source.</value>
+  </data>
+  <data name="BK_DLG_LOESCHEN_HINWEIS" xml:space="preserve">
+    <value>After a confirmation, the selected variant is deleted irrevocably with all its project data.</value>
+  </data>
   <data name="BK_LBL_NUR_UNTERSCHIEDE" xml:space="preserve">
     <value>differences only</value>
   </data>
