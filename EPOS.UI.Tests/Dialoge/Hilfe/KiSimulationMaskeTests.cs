@@ -232,9 +232,10 @@ public class KiSimulationMaskeTests : IDisposable
     /// <para>AH‑V5: vierundachtzig — die sieben Felder des Vorheizens (Verfahren, Vorheizzeit, Toleranz mit Art,
     /// Regelgenauigkeit, Geltung, Heizkreis).</para>
     /// <para>SA3a: sechsundachtzig — Schalter und Überhöhung der Schnellaufheizung.</para>
+    /// <para>K6b-N: siebenundachtzig — die Gruppe „Dezentrale Kältedeckung“ des Bereichs „Kälte“ (nur lesend).</para>
     /// </summary>
     [Fact]
-    public void Die_Ansicht_meldet_sechsundachtzig_Felder_an()
+    public void Die_Ansicht_meldet_siebenundachtzig_Felder_an()
     {
         var probe = new Schreibprobe();
         using var anmeldung = KiMaskenanmeldung.Fuer(
@@ -246,8 +247,8 @@ public class KiSimulationMaskeTests : IDisposable
         // 63 und die fünf der thermischen Desinfektion (Welle M7, BW5), dazu die zwei des Aufschlags (O1b)
         // und die Betriebsbereiche der Wärmepumpe (UB-E4), dazu Teillast und Takten der Kältemaschinen (KM3-E3-b)
         // und die Folge der Kälteerzeuger mit ihrem Schalter (KB-D) und die drei des Bereichs „Kälte“ (KB-B).
-        // AH-V5: die sieben Felder des Vorheizens; SA3a: die zwei der Schnellaufheizung.
-        Assert.Equal(86, felder.Count);
+        // AH-V5: die sieben Felder des Vorheizens; SA3a: die zwei der Schnellaufheizung; K6b-N: die dezentrale Kältedeckung.
+        Assert.Equal(87, felder.Count);
     }
 
     /// <summary>

@@ -115,12 +115,21 @@ public class BedarfsprofilVormerkungWacheTests
         Assert.Equal(2, a.Zuordnungen.Count);
     }
 
-    /// <summary>Kachelweg der Startseite und der Aufruf, mit dem er seine Zuordnungen schreibt.</summary>
-    public static TheoryData<string, string> Kachelwege() => new()
+    private const string OEFFNEN_KONTEXT = "BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste, () =>";
+
+    /// <summary>
+    /// Kachelweg der Startseite (Signatur der Methode, die den Dialog öffnet), sein Öffnen und der Aufruf, mit dem er seine
+    /// Zuordnungen schreibt. K6b-N: Der Weg der Kältebedarfsprofile steht als statische Methode, weil ihn auch
+    /// „Bearbeiten…“ der Gruppe „Dezentrale Kältedeckung“ der Simulationskonfiguration geht (<c>SimulationHuelle</c>).
+    /// </summary>
+    public static TheoryData<string, string, string> Kachelwege() => new()
     {
-        { "Prozesswaerme", "wizctrl.Add_Projekt_Prozess(_kontext.Id, liste);" },
-        { "Standardlastprofil", "wizctrl.Add_Projekt_Stromverbraucher(_kontext.Id, liste);" },
-        { "Kaeltebedarfsprofile", "KaeltebedarfsprofilAbbildung.Speichern(_kontext.Id, liste)" },
+        { "private void Prozesswaerme(IWin32Window wirt)", OEFFNEN_KONTEXT, "wizctrl.Add_Projekt_Prozess(_kontext.Id, liste);" },
+        { "private void Standardlastprofil(IWin32Window wirt)", OEFFNEN_KONTEXT,
+          "wizctrl.Add_Projekt_Stromverbraucher(_kontext.Id, liste);" },
+        { "internal static string KaeltebedarfsprofileOeffnen(IWin32Window wirt, int idProjekt, string projektName)",
+          "BedarfsProfileHuelle.Oeffnen(wirt, idProjekt, projektName, liste,",
+          "KaeltebedarfsprofilAbbildung.Speichern(idProjekt, liste)" },
     };
 
     /// <summary>
@@ -129,15 +138,15 @@ public class BedarfsprofilVormerkungWacheTests
     /// </summary>
     [Theory]
     [MemberData(nameof(Kachelwege))]
-    public void Die_drei_Kachelwege_reichen_ihren_Schreibweg_in_die_Huelle(string weg, string schreibaufruf)
+    public void Die_drei_Kachelwege_reichen_ihren_Schreibweg_in_die_Huelle(string signatur, string oeffnenaufruf,
+                                                                          string schreibaufruf)
     {
-        string rumpf = Methodenrumpf(Pfad("WindowsFormsApplication1/Views/Hauptformular/StartseiteHuelle.cs"),
-                                     "private void " + weg + "(IWin32Window wirt)");
+        string rumpf = Methodenrumpf(Pfad("WindowsFormsApplication1/Views/Hauptformular/StartseiteHuelle.cs"), signatur);
+        string weg = signatur;
 
         Assert.DoesNotContain("if (BedarfsProfileHuelle.Oeffnen", rumpf);
         Assert.DoesNotContain("if (!BedarfsProfileHuelle.Oeffnen", rumpf);
-        int oeffnen = rumpf.IndexOf("BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste, () =>",
-                                    StringComparison.Ordinal);
+        int oeffnen = rumpf.IndexOf(oeffnenaufruf, StringComparison.Ordinal);
         Assert.True(oeffnen >= 0, weg + ": reicht seinen Schreibweg nicht in die Hülle.");
         int schreiben = rumpf.IndexOf(schreibaufruf, StringComparison.Ordinal);
         Assert.True(schreiben > oeffnen, weg + ": schreibt die Zuordnungen außerhalb des hereingereichten Wegs.");

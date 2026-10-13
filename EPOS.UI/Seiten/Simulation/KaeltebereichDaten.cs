@@ -103,6 +103,13 @@ public sealed class KaelteerzeugerZeile
 public sealed record FreieKuehlungZeile(KaelteStufe Art, int IdAnlage, string Bezeichner, bool VorAllenErzeugern);
 
 /// <summary>
+/// K6b (Konzept Kältebedarf 6): eine dezentral (Split) gedeckte Kältebedarfszeile in der Gruppe „Dezentrale Kältedeckung“
+/// des Bereichs „Kälte“ — nur Anzeige, die Texte fertig von der Hülle. <paramref name="SummeMwh"/> ist nur am Profil gepflegt.
+/// </summary>
+public sealed record KaelteDezentralAnzeige(bool Profil, int IdZuordnung, string Bezeichner, string Quelle, double? SummeMwh,
+                                           string Eer, string Traeger, string Zaehler);
+
+/// <summary>
 /// <b>Der Bereich „Kälte“ der Simulationskonfiguration</b> (Entwurf Kältebereich 3, Welle KB-A): der Stand, den die
 /// Hülle aus dem Kernleser der Kältefolge baut. Der Projektschalter schreibt über
 /// <see cref="SimulationParameterDienste.KuehlbetriebSchreiben"/>, der Kühlbetrieb einer Wärmepumpe über
@@ -137,4 +144,13 @@ public sealed class KaeltebereichDaten
 
     /// <summary>true = weder Kälteerzeuger noch Kältespeicher — die Leerzeile sagt, wo man sie anlegt.</summary>
     public bool Leer => Erzeuger.Count == 0 && Kaeltespeicher.Count == 0;
+
+    /// <summary>K6b: die dezentral (Split) gedeckten Zeilen des Projekts; leer = keine Gruppe „Dezentrale Kältedeckung“.</summary>
+    public IReadOnlyList<KaelteDezentralAnzeige> Dezentral = new List<KaelteDezentralAnzeige>();
+
+    /// <summary>K6b: die Summenzeile der Gruppe (Jahressummen der Profile).</summary>
+    public string DezentralSumme = "";
+
+    /// <summary>K6b: die Zeile „Kältebedarf zentral“ mit Gebäude, Lastgängen und Profilen der Kältefolge.</summary>
+    public string ZentralZeile = "";
 }
