@@ -745,11 +745,32 @@ empfohlener Typnamen (nur Namen) stehen in ihrer `LIESMICH.md`; die **gefüllte*
 ins Repositorium. Zwei Fälle in `EPOS.Kern.Tests/TwwKatalogimportTests` halten die Vorlage: Sie
 spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 
+## Paketvorlage der DIN-4708-Katalogwerte (`Katalogpaket_Vorlage_DIN4708/`)
+
+Belegung je Raumzahl, Ausstattungsklassen und Parameter der Kennzahl nach DIN 4708 kommen ebenso
+**nicht** aus dem Repositorium, sondern über den Katalogimport aus einem eigenen Paket des Anwenders
+(ZB7). Im Repositorium liegt allein die Vorlage
+[`Katalogpaket_Vorlage_DIN4708/`](Katalogpaket_Vorlage_DIN4708/LIESMICH.md):
+`Tab_TwwDin4708Wert_STAMM.csv` und `Tab_TwwParameter_STAMM.csv` mit vollständigen Kopfzeilen und
+Beispielzeilen, deren Spalte `Wert` leer ist — keine Normzahl. Unverändert lehnt der Import jede
+Zeile benannt ab und schreibt nichts; `EPOS.Kern.Tests/TwwKatalogimportDin4708Tests` hält das und
+die Platzhalter.
+
+## Paketvorlage der Typtage nach VDI 4655 (`Typtagpaket_Vorlage_VDI4655/`)
+
+Die Typtage nach VDI 4655 kommen allein aus dem lizenzierten Exemplar des Anwenders (ZU22). Im
+Repositorium liegt nur die Vorlage
+[`Typtagpaket_Vorlage_VDI4655/`](Typtagpaket_Vorlage_VDI4655/LIESMICH.md): die sechs CSV-Dateien
+des Typtag-Paketlesers mit vollständigen Kopfzeilen und Platzhaltern (alle Werte leer), dazu die
+Fundstellen der Richtlinie je Datei — keine Zahl der Richtlinie, kein abgeleiteter Wert. Unverändert
+lehnt die Prüfung sie benannt ab; `EPOS.Kern.Tests/TwwTyptagVorlageTests` hält das.
+
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
 Basen aufräumt, lässt `2026-10-11_R52_Vorheizen`, `Kenndaten_Test.sqlite`,
-`Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
+`Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Katalogpaket_Vorlage_DIN4708`,
+`Typtagpaket_Vorlage_VDI4655`, `Skripte` und `LIESMICH.md`
 stehen.**
 
 Außer der aktuellen liegt hier keine Basis mehr: Die 24 historischen Referenzbasen (7 731
