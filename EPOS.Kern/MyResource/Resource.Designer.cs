@@ -56698,6 +56698,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Intervalle je Stunde ähnelt.
+        /// </summary>
+        public static string KFLT_EH_INTERVALLE_JE_STUNDE {
+            get {
+                return ResourceManager.GetString("KFLT_EH_INTERVALLE_JE_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Filter löschen ähnelt.
         /// </summary>
         public static string KFLT_FILTER_LOESCHEN {
