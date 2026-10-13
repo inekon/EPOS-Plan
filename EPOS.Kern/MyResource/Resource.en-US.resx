@@ -44868,15 +44868,6 @@ This folder holds the standard template, the short report, the detailed template
   <data name="PBRS_SP_PE" xml:space="preserve">
     <value>Primary energy factor</value>
   </data>
-  <data name="PBRS_SP_GRUNDPREIS" xml:space="preserve">
-    <value>Base price [€/a]</value>
-  </data>
-  <data name="PBRS_SP_ARBEITSPREIS" xml:space="preserve">
-    <value>Energy price [€/unit]</value>
-  </data>
-  <data name="PBRS_SP_LEISTUNGSPREIS" xml:space="preserve">
-    <value>Demand price [€/(kW·a)]</value>
-  </data>
   <data name="PBRS_SP_STAND" xml:space="preserve">
     <value>Status</value>
   </data>

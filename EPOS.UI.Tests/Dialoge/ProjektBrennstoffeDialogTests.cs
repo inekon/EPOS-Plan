@@ -26,9 +26,6 @@ public class ProjektBrennstoffeDialogTests : EposBunitContext
         [ProjektBrennstoffFelder.Nox] = 0,
         [ProjektBrennstoffFelder.Staub] = null,
         [ProjektBrennstoffFelder.Pe] = 1.1,
-        [ProjektBrennstoffFelder.Grundpreis] = 0,
-        [ProjektBrennstoffFelder.Arbeitspreis] = 0,
-        [ProjektBrennstoffFelder.Leistungspreis] = 0,
     };
 
     private static readonly ProjektBrennstoffZeile ERDGAS =

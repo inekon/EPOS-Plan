@@ -44875,15 +44875,6 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="PBRS_SP_PE" xml:space="preserve">
     <value>Primärenergiefaktor</value>
   </data>
-  <data name="PBRS_SP_GRUNDPREIS" xml:space="preserve">
-    <value>Grundpreis [€/a]</value>
-  </data>
-  <data name="PBRS_SP_ARBEITSPREIS" xml:space="preserve">
-    <value>Arbeitspreis [€/Einheit]</value>
-  </data>
-  <data name="PBRS_SP_LEISTUNGSPREIS" xml:space="preserve">
-    <value>Leistungspreis [€/(kW·a)]</value>
-  </data>
   <data name="PBRS_SP_STAND" xml:space="preserve">
     <value>Stand</value>
   </data>
