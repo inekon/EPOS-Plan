@@ -13045,77 +13045,11 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="PSPD_MSG_NICHT_GEFUNDEN" xml:space="preserve">
     <value>The selected buffer storage was not found in the master data.</value>
   </data>
-  <data name="WPK_LBL_HERSTELLER" xml:space="preserve">
-    <value>Manufacturer</value>
-  </data>
-  <data name="WPK_LBL_AUSLEGUNG" xml:space="preserve">
-    <value>Design</value>
-  </data>
-  <data name="WPK_LBL_PRINZIP" xml:space="preserve">
-    <value>Operating principle</value>
-  </data>
-  <data name="WPK_LBL_REGELUNG" xml:space="preserve">
-    <value>Control</value>
-  </data>
   <data name="WPK_LBL_BAUART" xml:space="preserve">
     <value>Design type</value>
   </data>
-  <data name="WPK_LBL_AUFSTELLUNG" xml:space="preserve">
-    <value>Lineup</value>
-  </data>
-  <data name="WPK_LBL_ZUHEIZUNG" xml:space="preserve">
-    <value>Auxiliary heating</value>
-  </data>
-  <data name="WPK_LBL_VLT_MIN" xml:space="preserve">
-    <value>Flow temp. min [°C]</value>
-  </data>
-  <data name="WPK_LBL_VLT_MAX" xml:space="preserve">
-    <value>Flow temp. max [°C]</value>
-  </data>
-  <data name="WPK_LBL_LEISTUNG_MIN" xml:space="preserve">
-    <value>Power min [kW]</value>
-  </data>
-  <data name="WPK_LBL_LEISTUNG_MAX" xml:space="preserve">
-    <value>Power max [kW]</value>
-  </data>
-  <data name="WPK_LBL_SUCHE" xml:space="preserve">
-    <value>Filter model (e.g. CS*7*)</value>
-  </data>
-  <data name="WPK_PLATZHALTER_SUCHE" xml:space="preserve">
-    <value>🔍  Search…</value>
-  </data>
-  <data name="WPK_TEXT_ALLE" xml:space="preserve">
-    <value>All</value>
-  </data>
-  <data name="WPK_BTN_FILTERN" xml:space="preserve">
-    <value>Filter data</value>
-  </data>
-  <data name="WPK_BTN_RESET" xml:space="preserve">
-    <value>Reset filter</value>
-  </data>
   <data name="WPK_CHK_NUR_KUEHLUNG" xml:space="preserve">
     <value>cooling function only</value>
-  </data>
-  <data name="WPK_SP_MODELL" xml:space="preserve">
-    <value>Model</value>
-  </data>
-  <data name="WPK_SP_VLT_MAX" xml:space="preserve">
-    <value>Flow temp. max [°C]</value>
-  </data>
-  <data name="WPK_SP_VLT_MIN" xml:space="preserve">
-    <value>Flow temp. min [°C]</value>
-  </data>
-  <data name="WPK_SP_LEISTUNG" xml:space="preserve">
-    <value>Power [kW]</value>
-  </data>
-  <data name="WPK_SP_ZUHEIZER" xml:space="preserve">
-    <value>Auxiliary heater [kW]</value>
-  </data>
-  <data name="WPK_SP_BAUART" xml:space="preserve">
-    <value>Design type</value>
-  </data>
-  <data name="WPK_TREFFER" xml:space="preserve">
-    <value>{0} heat pumps found</value>
   </data>
   <data name="WPKL_TITEL" xml:space="preserve">
     <value>Characteristics</value>
