@@ -21,6 +21,7 @@ für die hier genannten Gegenstände ab.
 - Kältemaschinen-Dialog (KA‑E‑26/27, #1029) gebaut: Wärmepumpen mit Kühlfunktion im Katalog, Layout.
 - Basis R52 `2026-10-11_R52_Vorheizen`; Schemaschritt: es gilt allein die Kopfzeile „Schemaschritt angemeldet“ der Statusdatei (zuletzt 222 frei); von dieser Sitzung ist keiner belegt.
 - Abgestimmt mit der Sitzung Gebäudesimulation (11.10.): Gebäudedialog/Mehrzonen-Import (ihr Entwurf GD, #1004) und DIN‑18599‑10‑Normprofile liegen dort; Kalenderprobe-Reparatur (`de5043b0a`) und Konditionierungsprobe-Prüfzeile (`516199024`) von uns, mit ihnen abgestimmt.
+- Übersicht in Berichte & Kosten (Statuszeile #1033, 13.10.2026, Sitzung `session_01Mt7MsJGzcGr77yqBsxwpLj`): Vergleichstabelle je Gewerk mit Kennwerten und markierten Abweichungen, Kopf in drei Teilen, KI-Sicht erweitert. Sichtabnahme unter Windows und die Version des Logbuchsatzes sind offen.
 - Es laufen keine Agenten, keine offenen Worktrees.
 
 ## 2 Geltende Entscheide (Auswahl)
@@ -44,7 +45,7 @@ für die hier genannten Gegenstände ab.
 
 ## 4 Offene Punkte (mit Empfehlung)
 
-1. Sichtabnahme unter Windows: AW1–AW3 (alle Wirte), die zwei „Vergrößern“, Kältebedarf-Reiter samt zwei abgeleiteten Kachelbildern (`PKaelteMessdaten.jpg`, `PKaelteProfil.jpg`), KAL1-Klappgruppe, Wärmepumpen-Überlagerung; dazu vom 12.10.: Kältebedarf extern und Kältebedarfsprofile mit Deckung (K5), Vergleich Projekt/Katalog (VG1), Gerätesteckbrief in allen Überlagerungen und Betriebszeiten-Klappgruppe (WP1), Kältemaschinen-Dialog mit Wärmepumpen und Layout (KM‑K1). Rückmeldungen dazu sind die erste Welle der neuen Sitzung.
+1. Sichtabnahme unter Windows: AW1–AW3 (alle Wirte), die zwei „Vergrößern“, Kältebedarf-Reiter samt zwei abgeleiteten Kachelbildern (`PKaelteMessdaten.jpg`, `PKaelteProfil.jpg`), KAL1-Klappgruppe, Wärmepumpen-Überlagerung; dazu vom 12.10.: Kältebedarf extern und Kältebedarfsprofile mit Deckung (K5), Vergleich Projekt/Katalog (VG1), Gerätesteckbrief in allen Überlagerungen und Betriebszeiten-Klappgruppe (WP1), Kältemaschinen-Dialog mit Wärmepumpen und Layout (KM‑K1), Übersicht in Berichte & Kosten (#1033). Rückmeldungen dazu sind die erste Welle der neuen Sitzung.
 2. Kältebedarf K6 (Konzept Abschnitt 7): Fläche „dezentral (Split)“ in `KaelteProduktionBild`, Kältegang, Bedarfsreiter, Posten „Kühlung dezentral“ in der Strombilanz (Reihe `Kaeltestrom_Dezentral_stuendlich`), `ProjektDetails`, Deckungsgrad mit/ohne dezentralen Anteil, Gruppe „Dezentrale Kältedeckung“, Schemaschritt für die Abrechnung des Split-Stroms je Träger, Wiki-Seite Kältebedarf, ggf. Referenzprojekt mit Basis (Nummer mit Gebäudesimulation abstimmen).
 3. Nachzüge der Katalogauswahl, Rest: Vormerkung beim OK für Stromverbraucher, Prozesswärme und Kälte (Zuordnungen in `StartseiteHuelle` nach dem Schließen — Vormerkung erst danach abschließen); tote Regel `.epos-dialog--eingebettet` samt Probenfall `warnband` in `fensterprobe.mjs` (mit Fensterprobe); `WaermepumpenKatalogDialog` ohne Wirt (Aufräumkandidat); danach Konzept Katalogauswahl nach `ueberholt/` (nach K5).
 4. Wiki: Repo-Quellen aller elf Wirte, Startseite Kältebedarf, Gebäude (Einzeltage) fortgeschrieben; Bilder neu ziehen (`wikibilder.mjs`); Sammel-Upload nur nach Rückfrage mit Versionsnummer; 33 Logbuchsätze unter 1.2.0.9.
