@@ -405,12 +405,21 @@ namespace WindowsFormsApplication1
                     case "bedingt": if (!Lesen(w, null, out double? b)) return false; v.BedingtK = b; break;
                     case "von":
                     case "bis":
-                        if (!int.TryParse(w, NumberStyles.Integer, CultureInfo.InvariantCulture, out int h) || h < 0 || h > 24) return false;
+                        if (!int.TryParse(w, NumberStyles.Integer, CultureInfo.InvariantCulture, out int h)) return false;
                         if (n == "von") v.Von = h; else v.Bis = h;
                         break;
                     default: return false;
                 }
             }
+            // Zeiten: die Nachtzeile Stunden 0 bis 23, die Saison Tage 1 bis 365, beide oder keine; jede andere Zeile keine.
+            if (v.Von.HasValue != v.Bis.HasValue) return false;
+            if (v.Von.HasValue)
+            {
+                (int min, int max) = v.Zeile == DbWerte.KOND_ZEILE_NACHT ? (0, 23) : v.Zeile == DbWerte.KOND_ZEILE_SAISON ? (1, 365) : (1, 0);
+                if (v.Von < min || v.Von > max || v.Bis < min || v.Bis > max) return false;
+            }
+            // ΔT gehört allein zur Nachtzeile der Lüftung (Regel der Vorgabematrix); sonst übergangen, nicht abgelehnt.
+            if (v.BedingtK.HasValue && !(v.Groesse == DbWerte.KOND_GROESSE_LUEFTUNG && v.Zeile == DbWerte.KOND_ZEILE_NACHT)) return false;
             if (r.Zeilenbild.Any(x => x.Groesse == v.Groesse && x.Zeile == v.Zeile)) return false;
             r.Zeilenbild.Add(v);
             return true;

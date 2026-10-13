@@ -16,8 +16,17 @@ namespace EPOS.Kern.Tests
     /// ohne Restdaten kein Block, ein unlesbarer Wert benannt übergangen, ein fremder Partner eines Luftstroms benannt, der Import
     /// setzt die Felder der Zone. Alle Werte sind runde Phantasiewerte (synthetische Probe).
     /// </summary>
-    public class RestdatenRundlaufTests
+    public class RestdatenRundlaufTests : IDisposable
     {
+        private readonly TestDatenbank _db = new TestDatenbank();
+        private readonly Kulturvorrichtung _kultur = new Kulturvorrichtung();
+
+        public void Dispose()
+        {
+            _kultur.Dispose();
+            _db.Dispose();
+        }
+
         private const int ZONE1 = GbxmlExportProbe.ZONE, ZONE2 = 12;
 
         private static double[] Woche(double tag, double nacht)
@@ -41,7 +50,8 @@ namespace EPOS.Kern.Tests
             r1.Rest.Luftstroeme.Add(new AbbildLuftstrom(GebaeudeExportKennung.Zone(ZONE2), 100.0));
             r1.Rest.Zeilenbild.Add(new Vorgabezeile { Groesse = DbWerte.KOND_GROESSE_HEIZSOLL, Zeile = DbWerte.KOND_ZEILE_NACHT, Wert = 16.0, Von = 22, Bis = 6 });
             r1.Rest.Zeilenbild.Add(new Vorgabezeile { Groesse = DbWerte.KOND_GROESSE_LUEFTUNG, Zeile = DbWerte.KOND_ZEILE_WOCHENENDE, Aus = true });
-            r1.Rest.Zeilenbild.Add(new Vorgabezeile { Groesse = DbWerte.KOND_GROESSE_KUEHLSOLL, Zeile = DbWerte.KOND_ZEILE_TAG, Wert = 26.0, BedingtK = 2.0 });
+            r1.Rest.Zeilenbild.Add(new Vorgabezeile { Groesse = DbWerte.KOND_GROESSE_KUEHLSOLL, Zeile = DbWerte.KOND_ZEILE_TAG, Wert = 26.0 });
+            r1.Rest.Zeilenbild.Add(new Vorgabezeile { Groesse = DbWerte.KOND_GROESSE_LUEFTUNG, Zeile = DbWerte.KOND_ZEILE_NACHT, Wert = 0.5, BedingtK = 2.0 });
             r1.Rest.Wochen.Add(new BenannteWoche(0, Konditionierungsgroesse.Heizsoll, "Messewoche", Woche(21.0, 17.0)));
             r1.Rest.Wochen.Add(new BenannteWoche(0, Konditionierungsgroesse.Lueftung, "Umbau", Woche(1.5, 0.5)));
             r2.Rest = new AbbildZonenrest { Zone = GebaeudeExportKennung.Zone(ZONE2), VorheizzeitH = 0, HeizleistungMax = 2000.0 };
@@ -114,8 +124,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(datei, GbxmlExportProbe.Schreiben(Abbild()));
             GbxmlAbbild gelesen = GbxmlExportProbe.Lesen(datei);
             int felder = Vergleichen(quelle, gelesen, q => gelesen.Gebaeude[0].Raeume.Single(r => r.Kennung == q.Kennung));
-            // Erdreich 3; Zone 1: 14 Felder, 1 Luftstrom (2), 3 Zeilen (21), 2 Wochen (2 × 170); Zone 2: 14 Felder.
-            Assert.Equal(3 + 14 + 2 + 21 + 340 + 14, felder);
+            // Erdreich 3; Zone 1: 14 Felder, 1 Luftstrom (2), 4 Zeilen (28), 2 Wochen (2 × 170); Zone 2: 14 Felder.
+            Assert.Equal(3 + 14 + 2 + 28 + 340 + 14, felder);
         }
 
         [Fact]
@@ -129,7 +139,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(datei, IfcExportProbe.Schreiben(Abbild()));
             GebaeudeAbbild gelesen = IfcExportProbe.Lesen(datei);
             int felder = Vergleichen(quelle, gelesen, q => gelesen.Gebaeude[0].Raeume.Single(r => r.Name == q.Name));
-            Assert.Equal(3 + 14 + 2 + 21 + 340 + 14, felder);
+            Assert.Equal(3 + 14 + 2 + 28 + 340 + 14, felder);
         }
 
         [Fact]
@@ -210,6 +220,64 @@ namespace EPOS.Kern.Tests
             // Gegenprobe: was weiter kein Format trägt, bleibt benannt.
             Assert.Equal(Exporteinstufung.BenannterVerlust, GebaeudeExportVerluste.Zone["Maximaleraumtemperatur"]);
             Assert.Contains("Maximaleraumtemperatur", getragen);
+        }
+
+        [Fact]
+        public void Der_Mehrzonenvorschlag_schreibt_Zonenfelder_Luftstrom_Zeilenbild_und_Wochen_in_die_Datenbank()
+        {
+            if (!_db.Vorhanden) return;
+            var ctrl = new ProjektGebaeudeCtrl();
+            ctrl.ReadAll(1045);
+            ProjektGebaeudeModel g = ctrl.items[0];
+            Assert.True(g.Zonen == null || g.Zonen.Count == 0, "Das Probengebäude trägt schon eine Zone.");
+            GebaeudeImportAblauf ablauf = BauteilvorschlagProbe.Lesen("ifc4_haus.ifc");
+            GebaeudeAbbild a = Abbild();
+            AbbildZonenrest quelle = a.Gebaeude[0].Raeume.Single(x => x.Kennung == GebaeudeExportKennung.Raum(ZONE1)).Rest;
+            // Die Restdaten an die Räume des Erd- und Obergeschosses; das Erdgeschoss trägt den Luftstrom zum Obergeschoss.
+            var eg = new AbbildZonenrest
+            {
+                Zone = "EG", VorheizzeitH = quelle.VorheizzeitH, HeizleistungMax = quelle.HeizleistungMax, UebergabeArt = quelle.UebergabeArt,
+                UebergabeExponent = quelle.UebergabeExponent, KuehlUebergabeArt = quelle.KuehlUebergabeArt,
+            };
+            eg.Luftstroeme.Add(new AbbildLuftstrom("OG", 100.0));
+            eg.Zeilenbild.AddRange(quelle.Zeilenbild);
+            eg.Wochen.AddRange(quelle.Wochen);
+            var og = new AbbildZonenrest { Zone = "OG", KuehlleistungMax = 3000.0 };
+            foreach (AbbildRaum r in ablauf.Abbild.Gebaeude[0].Raeume.Where(r => r.Beheizt))
+                r.Rest = r.Name == "Schlafen" || r.Name == "Bad" ? og : eg;
+            GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.BildenMitZonen(ablauf, 0, null);
+            Assert.False(v.Abgelehnt, string.Join(" | ", v.Meldungen.Where(m => m.Stufe == PruefStufe.Fehler)));
+            Assert.Single(v.Luftstroeme);
+            Assert.DoesNotContain(v.Meldungen, m => m.Schluessel == GebaeudeBauteilvorschlag.LUFTSTROM_PARTNER);
+            GebaeudeZonenCtrl.Vorschlagsergebnis e = new GebaeudeZonenCtrl().VorschlagSchreiben(g.ID_Gebaeude, v);
+            Assert.True(e.Ok, e.Meldung);
+
+            List<ZoneModel> zonen = new GebaeudeZonenCtrl().LesenJeGebaeude(g.ID_Gebaeude).ToList();
+            ZoneModel zeg = zonen.Single(z => z.Bezeichner == "Erdgeschoss"), zog = zonen.Single(z => z.Bezeichner == "Obergeschoss");
+            Assert.Equal((3, 5000.0, DbWerte.UEBERGABE_RADIATOR, 1.3, Waermeuebergabevorgaben.KuehlArten[0]),
+                         (zeg.Vorheizzeit_H, zeg.Heizleistung_Max, zeg.Uebergabe_Art, zeg.Uebergabe_Exponent, zeg.Kuehl_Uebergabe_Art));
+            Assert.Equal(3000.0, zog.Kuehlleistung_Max);
+            ZonenluftstromModel l = Assert.Single(new GebaeudeZonenCtrl().LuftstroemeJeGebaeude(g.ID_Gebaeude));
+            Assert.Equal((Math.Min(zeg.ID, zog.ID), Math.Max(zeg.ID, zog.ID), 100.0), (l.ID_ZoneA, l.ID_ZoneB, l.Volumenstrom));
+
+            Konditionierungsstand stand = new KonditionierungCtrl().StandLesen(KonditionierungCtrl.Eigner.Zone(g.ID_Gebaeude, zeg.ID), out string meldung);
+            Assert.NotNull(stand);
+            foreach (Vorgabezeile q in quelle.Zeilenbild)
+            {
+                Assert.True(Konditionierungsgroessen.AusKennwort(q.Groesse, out Konditionierungsgroesse gr));
+                Matrixzelle c = stand.Vorgabe(gr, q.Zeile);
+                // Sollwerte der Zeilen stehen teils in den Bestandsspalten der Zone (etwa Raumsolltemperatur_Nachtabsenkung,
+                // Kuehl_Sollwert): der Wert wird an der gebildeten Matrix gemessen, Zeiten, ΔT und „aus“ an der Zelle.
+                Matrixzelle m = stand.Matrix().Spalte(gr).Zeile(q.Zeile);
+                double? ist = m.Belegt && !m.Aus ? m.Wert : null;
+                Assert.Equal((q.Aus, q.Wert, q.Von, q.Bis, q.BedingtK), (c.Aus, ist, c.Von, c.Bis, c.BedingtK));
+            }
+            foreach (BenannteWoche q in quelle.Wochen)
+            {
+                BenannteWoche w = Assert.Single(stand.Wochen, x => x.Name == q.Name && x.Groesse == q.Groesse);
+                Assert.True(w.Id > 0);
+                Assert.True(q.Werte.Zip(w.Werte, (x, y) => double.IsNaN(x) ? double.IsNaN(y) : x == y).All(x => x));
+            }
         }
     }
 }
