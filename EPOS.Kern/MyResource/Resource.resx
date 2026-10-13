@@ -13052,77 +13052,11 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="PSPD_MSG_NICHT_GEFUNDEN" xml:space="preserve">
     <value>Der ausgewählte Pufferspeicher wurde in den Stammdaten nicht gefunden.</value>
   </data>
-  <data name="WPK_LBL_HERSTELLER" xml:space="preserve">
-    <value>Hersteller</value>
-  </data>
-  <data name="WPK_LBL_AUSLEGUNG" xml:space="preserve">
-    <value>Auslegung</value>
-  </data>
-  <data name="WPK_LBL_PRINZIP" xml:space="preserve">
-    <value>Funktionsprinzip</value>
-  </data>
-  <data name="WPK_LBL_REGELUNG" xml:space="preserve">
-    <value>Regelung</value>
-  </data>
   <data name="WPK_LBL_BAUART" xml:space="preserve">
     <value>Bauart</value>
   </data>
-  <data name="WPK_LBL_AUFSTELLUNG" xml:space="preserve">
-    <value>Aufstellung</value>
-  </data>
-  <data name="WPK_LBL_ZUHEIZUNG" xml:space="preserve">
-    <value>Zuheizung</value>
-  </data>
-  <data name="WPK_LBL_VLT_MIN" xml:space="preserve">
-    <value>VLT Min [°C]</value>
-  </data>
-  <data name="WPK_LBL_VLT_MAX" xml:space="preserve">
-    <value>VLT Max [°C]</value>
-  </data>
-  <data name="WPK_LBL_LEISTUNG_MIN" xml:space="preserve">
-    <value>Leist. Min [kW]</value>
-  </data>
-  <data name="WPK_LBL_LEISTUNG_MAX" xml:space="preserve">
-    <value>Leist. Max [kW]</value>
-  </data>
-  <data name="WPK_LBL_SUCHE" xml:space="preserve">
-    <value>Modell filtern (z.B. CS*7*)</value>
-  </data>
-  <data name="WPK_PLATZHALTER_SUCHE" xml:space="preserve">
-    <value>🔍  Suchen…</value>
-  </data>
-  <data name="WPK_TEXT_ALLE" xml:space="preserve">
-    <value>Alle</value>
-  </data>
-  <data name="WPK_BTN_FILTERN" xml:space="preserve">
-    <value>Daten filtern</value>
-  </data>
-  <data name="WPK_BTN_RESET" xml:space="preserve">
-    <value>Filter Reset</value>
-  </data>
   <data name="WPK_CHK_NUR_KUEHLUNG" xml:space="preserve">
     <value>nur mit Kühlfunktion</value>
-  </data>
-  <data name="WPK_SP_MODELL" xml:space="preserve">
-    <value>Modell</value>
-  </data>
-  <data name="WPK_SP_VLT_MAX" xml:space="preserve">
-    <value>VLT max [°C]</value>
-  </data>
-  <data name="WPK_SP_VLT_MIN" xml:space="preserve">
-    <value>VLT min [°C]</value>
-  </data>
-  <data name="WPK_SP_LEISTUNG" xml:space="preserve">
-    <value>Leistung [kW]</value>
-  </data>
-  <data name="WPK_SP_ZUHEIZER" xml:space="preserve">
-    <value>Zuheizer [kW]</value>
-  </data>
-  <data name="WPK_SP_BAUART" xml:space="preserve">
-    <value>Bauart</value>
-  </data>
-  <data name="WPK_TREFFER" xml:space="preserve">
-    <value>{0} Wärmepumpen gefunden</value>
   </data>
   <data name="WPKL_TITEL" xml:space="preserve">
     <value>Kenndaten</value>
