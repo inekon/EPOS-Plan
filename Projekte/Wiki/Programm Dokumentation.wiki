@@ -128,6 +128,10 @@ Die Dialoge, die eine Technik projektieren oder ihren Katalog pflegen, tragen ne
 |-
 | Ansicht ''Baustoff-Zuordnungen…'' des Gebäudedialogs || <code>Baustoffzuordnungen.btn_Help</code> || [[Programm Dokumentation/Gebäudeimport#baustoffzuordnungen|Gebäudeimport]]
 |-
+| Blatt ''Modell prüfen'' des Gebäudedialogs || <code>Modellpruefung.btn_Help</code> || [[Programm Dokumentation/Gebäude#modell-pruefen|Gebäude]]
+|-
+| Blatt ''Nutzung und Kalender'' || <code>ZonenNutzung.btn_Help</code> || [[Programm Dokumentation/Gebäude#nutzung-und-kalender|Gebäude]]
+|-
 | Gruppe ''Kühlung'' im Gebäudedialog (Katalogeditor und Verwaltung) || <code>Form_Gebaeude_Kuehlung.btn_Help</code> || [[Programm Dokumentation/Kühlung#eingaben|Kühlung]]
 |-
 | Dialog ''Simulation Konfiguration'', Gruppe ''Kühlung'' || <code>Form_Simulation_Config_Kuehlung.btn_Help</code> || [[Programm Dokumentation/Kühlung#einschalten|Kühlung]]
