@@ -555,18 +555,22 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Zeilenzahlen ohne das Referenzprojekt des Generators (1045, ZU7): Seine gesäte
-        /// Projektzeile und Zone stehen dauerhaft und sind kein Schreibweg dieser Klasse.
+        /// Zeilenzahlen ohne die Referenzprojekte des Generators (1045, ZU7; 1066 bis 1071, ZB12): Ihre gesäten
+        /// Projektzeilen, Zonen und Wohnungstypen stehen dauerhaft und sind kein Schreibweg dieser Klasse.
         /// </summary>
-        private static (long Zonen, long Wohnungen, long Projekte) Zeilen() =>
-            (Convert.ToInt64(DataRepository.ExecuteScalar(
-                 "SELECT COUNT(*) FROM Tab_TwwZone WHERE ID_Projekt <> ?",
-                 new DbParam("@p", ZapfprofilReferenzprojektWacheTests.PROJEKT))),
-             Convert.ToInt64(DataRepository.ExecuteScalar(
-                 "SELECT COUNT(*) FROM Tab_TwwWohnungstyp w JOIN Tab_TwwZone z ON z.ID = w.ID_Zone WHERE z.ID_Projekt <> ?",
-                 new DbParam("@p", ZapfprofilReferenzprojektWacheTests.PROJEKT))),
-             Convert.ToInt64(DataRepository.ExecuteScalar(
-                 "SELECT COUNT(*) FROM Tab_TwwProjekt WHERE ID_Projekt <> ?",
-                 new DbParam("@p", ZapfprofilReferenzprojektWacheTests.PROJEKT))));
+        private static (long Zonen, long Wohnungen, long Projekte) Zeilen()
+        {
+            DbParam[] ohne() => new[]
+            {
+                new DbParam("@p", ZapfprofilReferenzprojektWacheTests.PROJEKT),
+                new DbParam("@von", ZapfprofilOptionenReferenzprojekteWacheTests.PROJEKTE.First()),
+                new DbParam("@bis", ZapfprofilOptionenReferenzprojekteWacheTests.PROJEKTE.Last())
+            };
+            const string fremd = "ID_Projekt <> ? AND ID_Projekt NOT BETWEEN ? AND ?";
+            return (Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_TwwZone WHERE " + fremd, ohne())),
+                    Convert.ToInt64(DataRepository.ExecuteScalar(
+                        "SELECT COUNT(*) FROM Tab_TwwWohnungstyp w JOIN Tab_TwwZone z ON z.ID = w.ID_Zone WHERE z." + fremd, ohne())),
+                    Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_TwwProjekt WHERE " + fremd, ohne())));
+        }
     }
 }
