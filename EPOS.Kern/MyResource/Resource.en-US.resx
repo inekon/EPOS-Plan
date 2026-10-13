@@ -54374,6 +54374,15 @@ chart</value>
   <data name="BKI_MIT_BAUSTOFF" xml:space="preserve">
     <value>{0} layers match a material of the same group by name.</value>
   </data>
+  <data name="BKI_LAMBDA_SKALIERT" xml:space="preserve">
+    <value>{0} materials with a scale error of the thermal conductivity in the source corrected (λ ÷ 1,000); each row is listed in the log.</value>
+  </data>
+  <data name="BKI_HAUSTECHNIK" xml:space="preserve">
+    <value>Building services: {0} materials and {1} constructions in the group “Other”, including {2} air passages (flagged).</value>
+  </data>
+  <data name="BKI_GLIEDERUNG" xml:space="preserve">
+    <value>Records per group and class</value>
+  </data>
   <data name="BKI_CODES" xml:space="preserve">
     <value>Codes without interpretation (they fall back to “Other”)</value>
   </data>
@@ -54520,6 +54529,9 @@ chart</value>
   </data>
   <data name="BKAT_BTA_KLASSE_SONSTIGES" xml:space="preserve">
     <value>Other</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_HAUSTECHNIK" xml:space="preserve">
+    <value>Building services</value>
   </data>
   <data name="BKAT_BST_KLASSE_ZIEGEL" xml:space="preserve">
     <value>Clay brick</value>
@@ -54703,6 +54715,9 @@ chart</value>
   </data>
   <data name="GEBSIM_ZEILE_SUMME" xml:space="preserve">
     <value>Total</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_HAUSTECHNIK" xml:space="preserve">
+    <value>Building services</value>
   </data>
 </root>
 

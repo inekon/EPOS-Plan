@@ -78,6 +78,28 @@ public class BauteilkatalogImportDialogTests : BauteilkatalogImportProbe
     }
 
     [Fact]
+    public void Die_Vorschau_zeigt_Skalenfehler_Haustechnik_und_Gliederung_nur_wenn_vorhanden()
+    {
+        var z = new Zaehler();
+        IRenderedComponent<BauteilkatalogImportDialog> ohne = Dialog(z);
+        Knopf(ohne, "Vorschau").Click();
+        Assert.Empty(ohne.FindAll("p.epos-bki-skaliert"));
+        Assert.Empty(ohne.FindAll("p.epos-bki-haustechnik"));
+        Assert.Empty(ohne.FindAll("details.epos-bki-gliederung"));
+
+        BauteilkatalogVorschauDaten mit = Probe() with
+        {
+            LambdaSkaliert = 2, Haustechnik = "Haustechnik: 3 Baustoffe", Gliederung = new[] { "Baustoffe: Sonstige (3)" }
+        };
+        IRenderedComponent<BauteilkatalogImportDialog> cut = Dialog(z, mit);
+        Knopf(cut, "Vorschau").Click();
+        Assert.Contains("2 Baustoffe mit einem Skalenfehler", cut.Find("p.epos-bki-skaliert").TextContent);
+        Assert.Contains("Haustechnik: 3 Baustoffe", cut.Find("p.epos-bki-haustechnik").TextContent);
+        Assert.Contains("Sätze je Gruppe und Klasse", cut.Find("details.epos-bki-gliederung summary").TextContent);
+        Assert.Single(cut.FindAll("details.epos-bki-gliederung li"));
+    }
+
+    [Fact]
     public void Uebernehmen_ist_ohne_Vorschau_weich_gesperrt_und_schreibt_danach_genau_einmal()
     {
         var z = new Zaehler();

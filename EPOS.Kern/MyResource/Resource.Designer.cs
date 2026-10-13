@@ -9447,6 +9447,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Haustechnik ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_HAUSTECHNIK {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_HAUSTECHNIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Holzfaser ähnelt.
         /// </summary>
         public static string BKAT_BST_KLASSE_HOLZFASER {
@@ -9897,6 +9906,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Haustechnik ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_HAUSTECHNIK {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_HAUSTECHNIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Innenwand ähnelt.
         /// </summary>
         public static string BKAT_BTA_KLASSE_INNENWAND {
@@ -10194,11 +10212,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sätze je Gruppe und Klasse ähnelt.
+        /// </summary>
+        public static string BKI_GLIEDERUNG {
+            get {
+                return ResourceManager.GetString("BKI_GLIEDERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ablehnungsgründe ähnelt.
         /// </summary>
         public static string BKI_GRUENDE {
             get {
                 return ResourceManager.GetString("BKI_GRUENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Haustechnik: {0} Baustoffe und {1} Aufbauten in der Gruppe „Sonstige“, davon {2} Luftdurchlässe (gekennzeichnet). ähnelt.
+        /// </summary>
+        public static string BKI_HAUSTECHNIK {
+            get {
+                return ResourceManager.GetString("BKI_HAUSTECHNIK", resourceCulture);
             }
         }
         
@@ -10217,6 +10253,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BKI_KEINE_ANSICHT {
             get {
                 return ResourceManager.GetString("BKI_KEINE_ANSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Baustoffe mit einem Skalenfehler der Wärmeleitfähigkeit in der Quelle (λ ÷ 1 000) korrigiert; jede Zeile steht im Protokoll. ähnelt.
+        /// </summary>
+        public static string BKI_LAMBDA_SKALIERT {
+            get {
+                return ResourceManager.GetString("BKI_LAMBDA_SKALIERT", resourceCulture);
             }
         }
         

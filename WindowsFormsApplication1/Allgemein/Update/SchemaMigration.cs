@@ -5482,6 +5482,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_BAUTEILKATALOG = BauteilkatalogSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="BauteilkatalogHaustechnikSchema.SCHRITT"/> — <b>Klasse Haustechnik am Bauteilkatalog</b> (BK-3c, E134):
+        /// die Klasse <c>HAUSTECHNIK</c> in der Prüfklausel von <c>Klasse_Code</c> (Neubau der vier Kopftabellen mit Erhalt der IDs).
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Bauteilweg liest keine Gliederung.</para>
+        /// </summary>
+        public const int SCHRITT_BAUTEILKATALOG_HAUSTECHNIK = BauteilkatalogHaustechnikSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -8041,6 +8049,12 @@ namespace WindowsFormsApplication1
                         "Ein eingelesener Katalogsatz waere nicht als solcher erkennbar, Baustoffe und Aufbauten nicht gegliedert, und die " +
                         "Felder der Quelle haetten keinen Platz. KEIN Rechenergebnis aendert sich - der Bauteilweg liest keine neue Spalte.",
                         Schritt_Bauteilkatalog),
+            // BK-3c: Klasse Haustechnik am Bauteilkatalog. Quelle ist BauteilkatalogHaustechnikSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_BAUTEILKATALOG_HAUSTECHNIK,
+                        "Tab_Baustoff(_STAMM), Tab_Bauteilaufbau(_STAMM): Klasse HAUSTECHNIK in der Pruefklausel von Klasse_Code",
+                        "Werkstoffe und Zubehoer der Haustechnik liessen sich im Katalog nicht als eigene Klasse fuehren und nicht " +
+                        "ausblenden. KEIN Rechenergebnis aendert sich - der Bauteilweg liest keine Gliederung.",
+                        Schritt_BauteilkatalogHaustechnik),
         };
 
         /// <summary>
@@ -15592,6 +15606,59 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Bauteilkatalog - " + (handgriffe == 0 ? "stand bereits." : handgriffe + " Handgriff(e).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Klasse Haustechnik" — Anlass und Wirkung stehen bei <see cref="SCHRITT_BAUTEILKATALOG_HAUSTECHNIK"/>, die
+        /// Anweisungen bei <see cref="BauteilkatalogHaustechnikSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_BauteilkatalogHaustechnik(Lauf l)
+        {
+            string nr = BauteilkatalogHaustechnikSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in BauteilkatalogHaustechnikSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = BauteilkatalogHaustechnikSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!BauteilkatalogHaustechnikSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Klasse Haustechnik am Bauteilkatalog steht nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Klasse Haustechnik - " + (handgriffe == 0 ? "stand bereits." : handgriffe + " Tabelle(n) neu gebaut.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }
