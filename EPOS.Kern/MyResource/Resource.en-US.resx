@@ -992,6 +992,9 @@
   <data name="KFLT_SP_VOLUMEN" xml:space="preserve">
     <value>V</value>
   </data>
+  <data name="KFLT_EH_INTERVALLE_JE_STUNDE" xml:space="preserve">
+    <value>intervals per hour</value>
+  </data>
   <data name="KFLT_SP_ZEITINTERVALL" xml:space="preserve">
     <value>Time interval</value>
   </data>

@@ -1024,7 +1024,8 @@ namespace WindowsFormsApplication1
             };
 
             if (art == Zeitreihenart.Stromganglinie || art == Zeitreihenart.PvGanglinie)
-                spalten.Add(new Katalogspalte(SpZeitintervall, t("KFLT_SP_ZEITINTERVALL"), "",
+                spalten.Add(new Katalogspalte(SpZeitintervall, t("KFLT_SP_ZEITINTERVALL"),
+                                              art == Zeitreihenart.PvGanglinie ? "min" : t("KFLT_EH_INTERVALLE_JE_STUNDE"),
                                               Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz));
 
             if (art == Zeitreihenart.Solarganglinie || art == Zeitreihenart.PvGanglinie)
