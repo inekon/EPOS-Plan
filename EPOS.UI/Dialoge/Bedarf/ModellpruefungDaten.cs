@@ -4,9 +4,26 @@ namespace EPOS.UI.Dialoge.Bedarf;
 
 /// <summary>
 /// <b>Ein Befund im Blatt „Modell prüfen“</b> (MA-1b, Entwurf Geführter Modellaufbau 2): Text des Kerns, Ampel, das benannte
-/// Ziel (Zone, Bauteil) und der Vorschlag als Text; leer ohne Vorschlag.
+/// Ziel (Zone, Bauteil) und der Vorschlag als Text; leer ohne Vorschlag. <see cref="IdZone"/> und <see cref="IdBauteil"/> sind die
+/// Kennungen des Zielobjekts (<c>Tab_Zone.ID</c>, <c>Tab_Bauteil.ID</c>) — die Gebäudeansicht hebt damit hervor (MA-5).
 /// </summary>
-public sealed record ModellpruefungBefundzeile(string Text, Pruefampel Ampel, string Ziel, string Vorschlag);
+public sealed record ModellpruefungBefundzeile(string Text, Pruefampel Ampel, string Ziel, string Vorschlag,
+                                               int? IdZone = null, int? IdBauteil = null)
+{
+    /// <summary>Trägt der Befund einen Vorschlag?</summary>
+    public bool HatVorschlag => !string.IsNullOrEmpty(Vorschlag);
+}
+
+/// <summary>
+/// <b>Eine Auswahl von Befunden einer Prüfgruppe</b> (MA-5): die Befunde, deren Bauteil in <see cref="Bauteile"/> oder deren Zone
+/// (ohne Bauteil) in <see cref="Zonen"/> steht — eine Legendenzeile der Gebäudeansicht.
+/// </summary>
+public sealed record ModellpruefungAuswahl(Pruefgruppe Gruppe, IReadOnlyCollection<int> Bauteile, IReadOnlyCollection<int> Zonen)
+{
+    /// <summary>Gehört ein Befund mit diesen Kennungen zur Auswahl?</summary>
+    public bool Enthaelt(int? idZone, int? idBauteil)
+        => idBauteil is int b ? Bauteile.Contains(b) : idZone is int z && Zonen.Contains(z);
+}
 
 /// <summary>
 /// <b>Eine Prüfgruppe des Blatts</b>: Ampel, Name, Zählung, Sprungziel in die Gebäudeansicht und die Befunde (erst auf Klick
@@ -58,4 +75,10 @@ public sealed class ModellpruefungWeg
     /// nennt dann den Hinweis). Liefert die Meldung und ob es gelang.
     /// </summary>
     public Func<ModellpruefungAusgang>? NordrichtungBestaetigen { get; init; }
+
+    /// <summary>MA-5: übernimmt die Vorschläge einer Auswahl (Legendenzeile der Ansicht) mit Rücknahme der Gruppe; <c>null</c> = kein Weg.</summary>
+    public Func<ModellpruefungAuswahl, ModellpruefungAusgang>? UebernehmenAuswahl { get; init; }
+
+    /// <summary>MA-5: verwirft die Vorschläge einer Auswahl für die Sitzung (schreibt nichts); <c>null</c> = kein Weg.</summary>
+    public Func<ModellpruefungAuswahl, ModellpruefungAusgang>? VerwerfenAuswahl { get; init; }
 }

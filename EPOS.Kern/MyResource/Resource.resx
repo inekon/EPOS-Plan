@@ -49390,6 +49390,45 @@ Chart</value>
   <data name="GANS_FARBMODUS_BEFUND" xml:space="preserve">
     <value>Befund</value>
   </data>
+  <data name="GANS_FARBMODUS_NUTZUNG" xml:space="preserve">
+    <value>Nutzung</value>
+  </data>
+  <data name="GANS_NUTZUNG_LEGENDE" xml:space="preserve">
+    <value>Nutzungsprofile</value>
+  </data>
+  <data name="GANS_NUTZUNG_ZONEN" xml:space="preserve">
+    <value>{0} Zonen</value>
+  </data>
+  <data name="GANS_NUTZUNG_ZONEN_KOPF" xml:space="preserve">
+    <value>Zonen</value>
+  </data>
+  <data name="GANS_NUTZUNG_FEHLT" xml:space="preserve">
+    <value>ohne Profil</value>
+  </data>
+  <data name="GANS_PRUEF_HERVOR" xml:space="preserve">
+    <value>Hervorgehoben: {0} — {1} Bauteile, {2} Zonen</value>
+  </data>
+  <data name="GANS_PRUEF_OHNE" xml:space="preserve">
+    <value>{0}: Kein Befund dieser Gruppe liegt auf einer Fläche oder Zone der Ansicht.</value>
+  </data>
+  <data name="GANS_PRUEF_VORSCHLAEGE" xml:space="preserve">
+    <value>Vorschläge</value>
+  </data>
+  <data name="GANS_PRUEF_ZAHL" xml:space="preserve">
+    <value>{0} Vorschläge</value>
+  </data>
+  <data name="GANS_PRUEF_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="GANS_PRUEF_VERWERFEN" xml:space="preserve">
+    <value>Verwerfen</value>
+  </data>
+  <data name="GANS_PRUEF_UEBERNEHMEN_HINWEIS" xml:space="preserve">
+    <value>{0}: die Vorschläge übernehmen — zurücknehmen im Blatt „Modell prüfen“</value>
+  </data>
+  <data name="GANS_PRUEF_VERWERFEN_HINWEIS" xml:space="preserve">
+    <value>{0}: die Vorschläge verwerfen — die Befunde bleiben</value>
+  </data>
   <data name="GANS_BEFUND_OHNE" xml:space="preserve">
     <value>„Befund“ ist gesperrt: Es liegen keine Befunde der Bauteile vor (kein Bauteilvorschlag).</value>
   </data>
@@ -55255,13 +55294,19 @@ Chart</value>
     <value>Gebäude</value>
   </data>
   <data name="MP_VORSCHLAG_PROJEKTAUFBAU" xml:space="preserve">
-    <value>Projektaufbau „{0}“ übernehmen</value>
+    <value>Stufe 1, Projektaufbau: „{0}“ übernehmen</value>
   </data>
   <data name="MP_VORSCHLAG_KATALOGAUFBAU" xml:space="preserve">
-    <value>Katalogaufbau „{0}“ (U {1} W/(m²K)) übernehmen</value>
+    <value>Stufe 2, Katalogaufbau: „{0}“ (U {1} W/(m²K)) übernehmen</value>
   </data>
   <data name="MP_VORSCHLAG_TYPAUFBAU" xml:space="preserve">
-    <value>Typaufbau „{0}“, abgeglichen auf U {1} W/(m²K)</value>
+    <value>Stufe 3, Typaufbau: „{0}“, abgeglichen auf U {1} W/(m²K)</value>
+  </data>
+  <data name="MP_VORSCHLAG_ZUSATZ_NAME" xml:space="preserve">
+    <value>; der Name „{0}“ trifft die Gruppe {1}</value>
+  </data>
+  <data name="MP_VORSCHLAG_ZUSATZ_KLASSE" xml:space="preserve">
+    <value>; mit U {0} W/(m²K) aus der Baualtersklasse {1}</value>
   </data>
   <data name="MP_VORSCHLAG_PROFIL_DINNUMMER" xml:space="preserve">
     <value>Profil „{0}“ aus der DIN-Nummer</value>
@@ -55298,6 +55343,12 @@ Chart</value>
   </data>
   <data name="MP_MSG_KEINE_RUECKNAHME" xml:space="preserve">
     <value>Für diese Gruppe gibt es keine Übernahme zum Zurücknehmen.</value>
+  </data>
+  <data name="MP_MSG_VORSCHLAG_VERWORFEN" xml:space="preserve">
+    <value>Vorschlag verworfen: {0}</value>
+  </data>
+  <data name="MP_MSG_VERWORFEN_ZAHL" xml:space="preserve">
+    <value>{0} Vorschläge verworfen — die Befunde bleiben.</value>
   </data>
   <data name="MP_MSG_UNBEKANNT" xml:space="preserve">
     <value>Unbekannte Vorschlagsart.</value>
