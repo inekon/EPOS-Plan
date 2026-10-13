@@ -160,7 +160,8 @@ namespace EPOS.Kern.Tests
                 }
             }
             Assert.DoesNotContain(gelesen.Meldungen, m => m.Schluessel.EndsWith("OPTIK_ABWEICHUNG", StringComparison.Ordinal));
-            Assert.True(felder > 2 * 8760, "Felder: " + felder);
+            // 5 Kalender × (8760 Stunden + Nennwert) = 43 805, dazu 186 Einzelfelder (Lage, Gebäude, Räume, Bauteile, Schichten).
+            Assert.Equal(43991, felder);
         }
 
         [Fact]
