@@ -55449,5 +55449,35 @@ Chart</value>
   <data name="GEBV_MELDUNG_ZURUECK" xml:space="preserve">
     <value>Vorgaben zurückgenommen.</value>
   </data>
+  <data name="MP_BEFUND_HUELLE_OFFEN" xml:space="preserve">
+    <value>Zone „{0}“: Die Hülle schließt nicht – nach oben weisen {1} m², nach unten {2} m² (Abweichung {3} %).</value>
+  </data>
+  <data name="MP_BEFUND_HUELLE_OBEN_FEHLT" xml:space="preserve">
+    <value>Zone „{0}“: Nach oben ist die Hülle nicht geschlossen – kein Dach, keine Decke (nach oben {1} m², nach unten {2} m²).</value>
+  </data>
+  <data name="MP_BEFUND_HUELLE_UNTEN_FEHLT" xml:space="preserve">
+    <value>Zone „{0}“: Nach unten ist die Hülle nicht geschlossen – keine Bodenplatte, keine Decke (nach oben {1} m², nach unten {2} m²).</value>
+  </data>
+  <data name="MP_BEFUND_HUELLE_GESPIEGELT" xml:space="preserve">
+    <value>Bauteil „{0}“ (Zone „{1}“) weist mit Neigung {2}° gegen seine Lage – eine Bodenplatte weist nach unten (180°), ein Dach nach oben (0°).</value>
+  </data>
+  <data name="MP_VORSCHLAG_HUELLBAUTEIL_PROJEKT" xml:space="preserve">
+    <value>{0} ergänzen: {1} m², Neigung {2}°, {3}, U {4} W/(m²K) wie die gleichen Bauteile des Gebäudes</value>
+  </data>
+  <data name="MP_VORSCHLAG_HUELLBAUTEIL_TYP" xml:space="preserve">
+    <value>{0} ergänzen: {1} m², Neigung {2}°, {3}, U {4} W/(m²K) des Typaufbaus</value>
+  </data>
+  <data name="MP_RAND_AUSSENLUFT" xml:space="preserve">
+    <value>an Außenluft</value>
+  </data>
+  <data name="MP_RAND_ERDREICH" xml:space="preserve">
+    <value>gegen Erdreich</value>
+  </data>
+  <data name="MP_RAND_ZONE" xml:space="preserve">
+    <value>an Zone „{0}“</value>
+  </data>
+  <data name="MP_BAUTEIL_ERGAENZT" xml:space="preserve">
+    <value>{0} (ergänzt)</value>
+  </data>
 </root>
 

@@ -259,6 +259,12 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Schließt die Hülle senkrecht nicht — weicht Σ oben von Σ unten um <see cref="HUELLE_ABWEICHUNG_HINWEIS"/> oder mehr
+        /// ab? Dieselbe Schwelle für den Hinweis im Reiter „Zonen“ und die Modellprüfung (MA-3).
+        /// </summary>
+        public static bool SenkrechtOffen(Huellbilanz h) => h.AbweichungSenkrecht >= HUELLE_ABWEICHUNG_HINWEIS - 1e-12;
+
+        /// <summary>
         /// <b>Die Hinweise zur geschlossenen Hülle</b> (Klassenkopf) — ab zwei Zonen, je Zone höchstens
         /// zwei (senkrecht, waagerecht). Ohne Datenbank; leer = nichts zu sagen.
         /// </summary>
@@ -271,7 +277,7 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < liste.Count; i++)
             {
                 Huellbilanz h = Bilanz(liste, i);
-                if (h.AbweichungSenkrecht >= HUELLE_ABWEICHUNG_HINWEIS - 1e-12)
+                if (SenkrechtOffen(h))
                     hinweise.Add(F(MyResource.Resource.ZONE_HINWEIS_HUELLE_SENKRECHT, Name(liste[i]),
                                    h.Oben.ToString("0.#", k), h.Unten.ToString("0.#", k),
                                    (100.0 * h.AbweichungSenkrecht).ToString("0", k)));

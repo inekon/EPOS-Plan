@@ -89,6 +89,10 @@ namespace WindowsFormsApplication1
         internal const string AZIMUT_FEHLT = "AZIMUT_FEHLT";
         internal const string EINZONE_FLAECHE_FEHLT = "EINZONE_FLAECHE_FEHLT";
         internal const string EINZONE_U_FEHLT = "EINZONE_U_FEHLT";
+        internal const string HUELLE_OFFEN = "HUELLE_OFFEN";
+        internal const string HUELLE_OBEN_FEHLT = "HUELLE_OBEN_FEHLT";
+        internal const string HUELLE_UNTEN_FEHLT = "HUELLE_UNTEN_FEHLT";
+        internal const string HUELLE_GESPIEGELT = "HUELLE_GESPIEGELT";
 
         internal const string NUR_U_WERT = "NUR_U_WERT";
         internal const string OHNE_U_OHNE_AUFBAU = "OHNE_U_OHNE_AUFBAU";
@@ -117,7 +121,8 @@ namespace WindowsFormsApplication1
         {
             [Pruefgruppe.GeometrieBauteile] = new[] { ZONE_OHNE_BAUTEILE, ZONE_OHNE_AUSSENBAUTEIL, HUELLE_OHNE_AUSSENWAND, HUELLE_OHNE_DACH,
                                                      HUELLE_OHNE_BODEN, BAUTEILART_UNBEKANNT, FLAECHE_FEHLT, RANDBEDINGUNG_FEHLT, AZIMUT_FEHLT,
-                                                     EINZONE_FLAECHE_FEHLT, EINZONE_U_FEHLT },
+                                                     EINZONE_FLAECHE_FEHLT, EINZONE_U_FEHLT, HUELLE_OFFEN, HUELLE_OBEN_FEHLT,
+                                                     HUELLE_UNTEN_FEHLT, HUELLE_GESPIEGELT },
             [Pruefgruppe.AufbautenStoffwerte] = new[] { NUR_U_WERT, OHNE_U_OHNE_AUFBAU, AUFBAU_UNGEEIGNET, SCHICHT_OHNE_STOFFWERT, KAPAZITAET_FEHLT,
                                                        EINZONE_BAUWEISE_FEHLT },
             [Pruefgruppe.NutzungKonditionierung] = new[] { ZONE_OHNE_PROFIL, HEIZKALENDER_GEERBT, UNBEHEIZT_MIT_HEIZKALENDER, KUEHLKALENDER_FEHLT,
@@ -230,9 +235,96 @@ namespace WindowsFormsApplication1
                         f.Add(new Modellbefund(G, AZIMUT_FEHLT, Pruefampel.Rot, Text(AZIMUT_FEHLT, b.Bezeichner, z.Bezeichner), z.ID, b.ID, b.Flaeche));
                 }
             }
+            HuelleJeZone(s, f);
             if (!wand) f.Add(new Modellbefund(G, HUELLE_OHNE_AUSSENWAND, Pruefampel.Gelb, Text(HUELLE_OHNE_AUSSENWAND)));
             if (!dach) f.Add(new Modellbefund(G, HUELLE_OHNE_DACH, Pruefampel.Gelb, Text(HUELLE_OHNE_DACH)));
             if (!boden) f.Add(new Modellbefund(G, HUELLE_OHNE_BODEN, Pruefampel.Gelb, Text(HUELLE_OHNE_BODEN)));
+        }
+
+        /// <summary>Unter dieser Fläche [m²] gilt eine Richtung als leer.</summary>
+        private const double FLAECHE_LEER = 1e-6;
+
+        /// <summary>
+        /// <b>Die geschlossene Hülle je Zone</b> (MA-3; Mehrzonenkonzept 5.3) — die Flächenbilanz Σ A·n über die Neigung aus
+        /// <see cref="Zonenkopplungsregeln.Bilanz"/> (dieselbe Rechnung wie der Hinweis im Reiter „Zonen“) und die Verankerung
+        /// oben/unten:
+        /// <list type="bullet">
+        /// <item><see cref="HUELLE_OBEN_FEHLT"/> bzw. <see cref="HUELLE_UNTEN_FEHLT"/> (rot): Die Zone trägt nach oben bzw. unten
+        /// keine Fläche — sie ist dort nicht verankert. Trägt sie in keiner Richtung eine, gilt die Nutzfläche als Körperfläche.</item>
+        /// <item><see cref="HUELLE_OFFEN"/> (gelb, erst ab zwei Zonen wie der Hinweis): Beide Richtungen tragen Fläche, weichen
+        /// aber um <see cref="Zonenkopplungsregeln.HUELLE_ABWEICHUNG_HINWEIS"/> oder mehr voneinander ab.</item>
+        /// <item><see cref="HUELLE_GESPIEGELT"/> (gelb): eine Bodenplatte, die nach oben, oder ein Dach, das nach unten weist —
+        /// Σ oben ≈ Σ unten ist gegen eine Spiegelung blind, die Verankerung nicht.</item>
+        /// </list>
+        /// Der Vorschlag (<see cref="Modellvorschlagsregeln.Huellbauteil"/>) ergänzt die Lücke. Die Zonen laufen der Reihe nach über
+        /// eine Arbeitskopie, in der die schon vorgeschlagenen Bauteile mitzählen: Eine vorgeschlagene Trennfläche schließt auch
+        /// die Nachbarzone, die damit keinen zweiten Vorschlag bekommt.
+        /// </summary>
+        private static void HuelleJeZone(Modellpruefstand s, List<Modellbefund> f)
+        {
+            const Pruefgruppe G = Pruefgruppe.GeometrieBauteile;
+            List<ZoneModel> arbeit = s.Zonen.Select(z => new ZoneModel
+            {
+                ID = z.ID, ID_Gebaeude = z.ID_Gebaeude, Bezeichner = z.Bezeichner, Nutzflaeche = z.Nutzflaeche,
+                Bauteile = (z.Bauteile ?? new List<BauteilModel>()).Where(b => b != null).ToList(),
+            }).ToList();
+            CultureInfo k = CultureInfo.CurrentCulture;
+            for (int i = 0; i < s.Zonen.Count; i++)
+            {
+                ZoneModel z = s.Zonen[i];
+                List<BauteilModel> bt = (z.Bauteile ?? new List<BauteilModel>()).Where(b => b != null).ToList();
+                if (bt.Count == 0) continue;
+                foreach (BauteilModel b in bt)
+                    if (Gespiegelt(b))
+                        f.Add(new Modellbefund(G, HUELLE_GESPIEGELT, Pruefampel.Gelb,
+                                               Text(HUELLE_GESPIEGELT, b.Bezeichner, z.Bezeichner, Zahl(b.Neigung ?? GebaeudeZonenCtrl.NeigungVorgabe(b.Bauteilart))),
+                                               z.ID, b.ID, b.Flaeche));
+
+                Zonenkopplungsregeln.Huellbilanz h = Zonenkopplungsregeln.Bilanz(s.Zonen, i);
+                bool obenLeer = h.Oben <= FLAECHE_LEER, untenLeer = h.Unten <= FLAECHE_LEER;
+                var fehlend = new List<(bool Oben, string Code, Pruefampel Ampel, string Text)>();
+                string oben = h.Oben.ToString("0.#", k), unten = h.Unten.ToString("0.#", k);
+                if (obenLeer && untenLeer)
+                {
+                    if (h.Waagerecht <= FLAECHE_LEER) continue;      // nur Innenbauteile: ZONE_OHNE_AUSSENBAUTEIL sagt es schon
+                    fehlend.Add((true, HUELLE_OBEN_FEHLT, Pruefampel.Rot, Text(HUELLE_OBEN_FEHLT, z.Bezeichner, oben, unten)));
+                    fehlend.Add((false, HUELLE_UNTEN_FEHLT, Pruefampel.Rot, Text(HUELLE_UNTEN_FEHLT, z.Bezeichner, oben, unten)));
+                }
+                else if (obenLeer)
+                    fehlend.Add((true, HUELLE_OBEN_FEHLT, Pruefampel.Rot, Text(HUELLE_OBEN_FEHLT, z.Bezeichner, oben, unten)));
+                else if (untenLeer)
+                    fehlend.Add((false, HUELLE_UNTEN_FEHLT, Pruefampel.Rot, Text(HUELLE_UNTEN_FEHLT, z.Bezeichner, oben, unten)));
+                else if (s.Zonen.Count >= 2 && Zonenkopplungsregeln.SenkrechtOffen(h))
+                    fehlend.Add((h.Oben < h.Unten, HUELLE_OFFEN, Pruefampel.Gelb,
+                                 Text(HUELLE_OFFEN, z.Bezeichner, oben, unten, (100.0 * h.AbweichungSenkrecht).ToString("0", k))));
+
+                foreach ((bool richtungOben, string code, Pruefampel ampel, string text) in fehlend)
+                {
+                    // Die Lücke in der Arbeitskopie: Gegenrichtung minus Richtung; ohne Gegenrichtung die Nutzfläche als Körperfläche.
+                    Zonenkopplungsregeln.Huellbilanz w = Zonenkopplungsregeln.Bilanz(arbeit, i);
+                    double hier = richtungOben ? w.Oben : w.Unten, gegen = richtungOben ? w.Unten : w.Oben;
+                    double basis = gegen > FLAECHE_LEER ? gegen : (z.Nutzflaeche ?? 0.0);
+                    double luecke = basis - hier;
+                    Pruefvorschlag v = null;
+                    if (basis > FLAECHE_LEER && luecke / basis >= Zonenkopplungsregeln.HUELLE_ABWEICHUNG_HINWEIS - 1e-12)
+                    {
+                        v = Modellvorschlagsregeln.Huellbauteil(s, arbeit, i, richtungOben, luecke);
+                        if (v != null) arbeit[i].Bauteile.Add(Modellvorschlagsregeln.AlsBauteil(v, z.ID));
+                    }
+                    f.Add(new Modellbefund(G, code, ampel, text, z.ID, null, null, v));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Weist das Bauteil gegen seine Lage — eine Bodenplatte nach oben (Neigung unter 60°) oder ein Dach nach unten (über 120°)?
+        /// Eine Decke kann beides sein und zählt nicht.
+        /// </summary>
+        internal static bool Gespiegelt(BauteilModel b)
+        {
+            double n = b.Neigung ?? GebaeudeZonenCtrl.NeigungVorgabe(b.Bauteilart);
+            double c = Math.Cos(n * Math.PI / 180.0);
+            return (b.Bauteilart == DbWerte.BAUTEILART_BODENPLATTE && c > 0.5) || (b.Bauteilart == DbWerte.BAUTEILART_DACH && c < -0.5);
         }
 
         private static void GeometrieEinzone(Modellpruefstand s, List<Modellbefund> f)
