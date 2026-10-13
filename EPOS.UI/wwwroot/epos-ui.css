@@ -15376,6 +15376,44 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
     padding-inline: 0;
 }
 
+/* DIE WOHNUNGSTABELLE BLEIBT IN IHRER ZELLE (Konzept Zapfprofil-Benutzerfuehrung ZB6,
+   Befund N13 (u)): Sie traegt Eingabefelder und steht im schmalen Eingabeblock - nach
+   der Hausregel "Tabelle im Stammblatt" fuellt sie dessen Breite mit festen
+   Spaltenanteilen, und jedes Feld nimmt die Breite seiner Zelle statt seiner
+   Eigenbreite. Mit 5.5em je Zahlenfeld, der Klappliste der Ausstattung und der
+   Spaltenluft rollte sie im 534 px breiten Block 162 px quer. */
+.epos-zapfprofil-wohnungen table.quickgrid {
+    --col-gap: 0px;
+    table-layout: fixed;
+    width: 100%;
+}
+
+.epos-zapfprofil-wohnungen .epos-raster input.epos-eingabe,
+.epos-zapfprofil-wohnungen .epos-raster select.epos-eingabe {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+}
+
+/* Die Koepfe tragen Einheit und Hilfe (HeaderTemplate, ohne .col-title-text) und
+   brechen in ihrer festen Spalte um, statt abgeschnitten zu werden. */
+.epos-zapfprofil-wohnungen .epos-raster th .col-header-content {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+/* Die Aktionsspalte ist so breit wie ihr Knopf „Entfernen"; die Eingabespalten teilen
+   sich den Rest. */
+.epos-zapfprofil-wohnungen table.quickgrid th:last-child {
+    width: 6.5em;
+}
+
+.epos-zapfprofil-wohnungen .epos-zapfprofil-wohnung-entfernen {
+    min-width: 0;
+    max-width: 100%;
+    padding-inline: 4px;
+}
+
 .epos-zapfprofil-wohnungen .epos-raster th .col-title-text,
 .epos-zapfprofil-kategorienraster .epos-raster th .col-title-text,
 .epos-zapfprofil-kategorienraster .epos-raster--bearbeitbar td {

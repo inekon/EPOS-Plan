@@ -1027,6 +1027,23 @@ public sealed class StilblattTests
                         + "    .epos-optionsgruppe-zeile .epos-option--gewaehlt {\n        border: 2px solid Highlight;", css, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// Zapfprofil ZB6 / N13 (u): Die Wohnungstabelle fuellt ihre Zelle mit festen Spaltenanteilen, jedes
+    /// Feld nimmt die Breite seiner Zelle — sie rollt im Eingabeblock nicht quer (Sichtprobe bei 1 500
+    /// und 900 px: 0 px).
+    /// </summary>
+    [Fact]
+    public void ZB6_Die_Wohnungstabelle_fuellt_ihre_Zelle_statt_quer_zu_rollen()
+    {
+        string tabelle = Regelblock(".epos-zapfprofil-wohnungen table.quickgrid {");
+        Assert.Contains("table-layout: fixed", tabelle, StringComparison.Ordinal);
+        Assert.Contains("width: 100%", tabelle, StringComparison.Ordinal);
+        string feld = Regelblock(".epos-zapfprofil-wohnungen .epos-raster input.epos-eingabe,\n.epos-zapfprofil-wohnungen .epos-raster select.epos-eingabe {");
+        Assert.Contains("min-width: 0", feld, StringComparison.Ordinal);
+        Assert.Contains("width: 100%", feld, StringComparison.Ordinal);
+        Assert.Contains("white-space: normal", Regelblock(".epos-zapfprofil-wohnungen .epos-raster th .col-header-content {"), StringComparison.Ordinal);
+    }
+
     [Fact]
     public void K1b_Die_Kalenderbedienung_haelt_das_Beruehrungsmass_und_rollt_im_eigenen_Kasten()
     {
