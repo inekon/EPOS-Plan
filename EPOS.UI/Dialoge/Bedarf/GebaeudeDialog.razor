@@ -1006,7 +1006,7 @@
         }
         // GD-N: das zuletzt gewählte Gebäude des Projekts (über das Öffnen hinaus gemerkt), sonst das erste.
         GebaeudeProjektZeile? zuletzt = ZuletztGewaehlt?.Invoke() is int idZ ? Zeilen.FirstOrDefault(x => x.IdZ == idZ) : null;
-        GebaeudeProjektZeile z = _gewaehlt ?? zuletzt ?? Zeilen[0];
+        GebaeudeProjektZeile z = zuletzt ?? _gewaehlt ?? Zeilen[0];
         if (!ReferenceEquals(_gewaehlt, z)) ProjektzeileWaehlen(z);
         if (ProjektGaben is null || !z.HatProjektkopie) return;
         IReadOnlyDictionary<string, object>? gaben = ProjektGaben(z);
@@ -1477,7 +1477,7 @@
         // Der Anwender steht im Katalog - seine Wahl wird nicht ueberschrieben.
         if (_katalogzeile is not null) return;
 
-        if (Zeilen.Count > 0) ProjektzeileWaehlen(Zeilen[0]);
+        if (Zeilen.Count > 0) ProjektzeileWaehlen(Zeilen[0], merken: false);
     }
 
     /// <summary>
@@ -1559,10 +1559,11 @@
     /// <summary>Name des gewählten Satzes in der zugeklappten Detailzeile.</summary>
     private string? SatzName => SatzArt == Satzmarke.Keiner ? null : _detailName;
 
-    private void ProjektzeileWaehlen(GebaeudeProjektZeile z)
+    private void ProjektzeileWaehlen(GebaeudeProjektZeile z, bool merken = true)
     {
         _gewaehlt = z;
-        GewaehltMerken?.Invoke(z.IdZ);
+        // GD-N: nur eine Wahl merken, nicht die Vorauswahl der ersten Zeile beim Öffnen.
+        if (merken) GewaehltMerken?.Invoke(z.IdZ);
         _katalogzeile = null;
         _katalogGewaehlt = "";
         _loeschsperre = "";
@@ -1684,7 +1685,7 @@
         foreach (GebaeudeProjektZeile z in ziele) Zeilen.Remove(z);
         _projektWahl.Setzen(Array.Empty<string>());
         _gewaehlt = null;
-        if (Zeilen.Count > 0) ProjektzeileWaehlen(Zeilen[0]);
+        if (Zeilen.Count > 0) ProjektzeileWaehlen(Zeilen[0], merken: false);
         else
         {
             IReadOnlyList<Katalogfilterzeile> sichtbar = Sichtbar;
