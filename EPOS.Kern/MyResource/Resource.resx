@@ -54612,5 +54612,44 @@ Chart</value>
   <data name="BKAT_BST_KLASSE_STOFF_SONSTIGE" xml:space="preserve">
     <value>Sonstiger Stoff</value>
   </data>
+  <data name="GEBSIM_BTN_ALLE" xml:space="preserve">
+    <value>Simulation… (alle {0} Gebäude)</value>
+  </data>
+  <data name="GEBSIM_BTN_GEWAEHLT" xml:space="preserve">
+    <value>Simulation… ({0} gewählt)</value>
+  </data>
+  <data name="GEBSIM_BTN_HINWEIS" xml:space="preserve">
+    <value>Den Wärmebedarf der Gebäude im Projekt berechnen – ohne Kästchen alle, sonst die angekreuzten</value>
+  </data>
+  <data name="GEBSIM_SPERRE_LEER" xml:space="preserve">
+    <value>Im Projekt steht kein Gebäude.</value>
+  </data>
+  <data name="GEBSIM_TITEL" xml:space="preserve">
+    <value>Wärmebedarf der Gebäude im Projekt</value>
+  </data>
+  <data name="GEBSIM_SP_GEBAEUDE" xml:space="preserve">
+    <value>Gebäude</value>
+  </data>
+  <data name="GEBSIM_SP_HEIZWAERME" xml:space="preserve">
+    <value>Heizwärme</value>
+  </data>
+  <data name="GEBSIM_SP_HOECHSTLAST" xml:space="preserve">
+    <value>Höchstlast [kW]</value>
+  </data>
+  <data name="GEBSIM_SP_BEFUND" xml:space="preserve">
+    <value>Befund</value>
+  </data>
+  <data name="GEBSIM_BEFUND_GERECHNET" xml:space="preserve">
+    <value>gerechnet</value>
+  </data>
+  <data name="GEBSIM_BTN_OEFFNEN" xml:space="preserve">
+    <value>Bedarf…</value>
+  </data>
+  <data name="GEBSIM_BTN_OEFFNEN_HINWEIS" xml:space="preserve">
+    <value>Den Wärmebedarf dieses Gebäudes im Einzelnen zeigen</value>
+  </data>
+  <data name="GEBSIM_ZEILE_SUMME" xml:space="preserve">
+    <value>Summe</value>
+  </data>
 </root>
 

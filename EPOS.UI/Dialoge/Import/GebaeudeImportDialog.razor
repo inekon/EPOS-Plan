@@ -949,6 +949,18 @@
 </div>
 
 
+@* GD-6a: die Baustoff-Zuordnungen des Projekts als Überlagerung - geschrieben mit deren OK. *@
+<Ueberlagerung Offen="@(_baustoffzuordnungenGaben is not null)" Titel="@Resource.BSZU_TITEL"
+               Geschlossen="() => BaustoffzuordnungenFertig(null)">
+    <KindInhalt>
+        @if (_baustoffzuordnungenGaben is not null)
+        {
+            <EPOS.UI.Dialoge.Bedarf.BaustoffzuordnungenDialog @attributes="_baustoffzuordnungenGaben" TitelAnzeigen="false"
+                                                             Geschlossen="BaustoffzuordnungenFertig" />
+        }
+    </KindInhalt>
+</Ueberlagerung>
+
 @* Stufe NP3b: der Katalog der Nutzungsprofile als Überlagerung des Zonenbaums. *@
 <Ueberlagerung Offen="@_nutzungsblatt" Titel="@RaumnutzungTexte.Blatt" Zusatzklasse="epos-gebimport-nutzungsblatt"
                Geschlossen="NutzungsprofileGeschlossen">
@@ -1082,6 +1094,35 @@
     {
         _nutzungsblatt = false;
         NeuZuordnen();
+    }
+
+    /// <summary>
+    /// „Baustoff-Zuordnungen…" an der Liste „Bauteilaufbauten" (GD-6a): der Parametersatz der Ansicht der gemerkten
+    /// Zuordnungen des Projekts — vom Gebäudedialog durchgereicht, je Klick neu gelesen. Kein Delegat = kein Knopf
+    /// (Katalogverwaltung, Assistent).
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? BaustoffzuordnungenGaben { get; set; }
+
+    private IReadOnlyDictionary<string, object>? _baustoffzuordnungenGaben;
+
+    /// <summary>Steht die Ansicht der Baustoff-Zuordnungen? Prüfhilfe für die Tests.</summary>
+    public bool BaustoffzuordnungenOffen => _baustoffzuordnungenGaben is not null;
+
+    private void BeiBaustoffzuordnungen()
+    {
+        if (BaustoffzuordnungenGaben is null) return;
+        _baustoffzuordnungenGaben = BaustoffzuordnungenGaben();
+    }
+
+    /// <summary>Die Ansicht ist zu: nach OK mit der Zahl der entfernten Zuordnungen, sonst <c>null</c>.</summary>
+    private void BaustoffzuordnungenFertig(int? entfernt)
+    {
+        _baustoffzuordnungenGaben = null;
+        if (entfernt is > 0)
+        {
+            _meldung = string.Format(CultureInfo.CurrentCulture, Resource.GEB_MSG_BAUSTOFFZUORDNUNGEN_ENTFERNT, entfernt.Value);
+            _meldungStufe = WarnStufe.Hinweis;
+        }
     }
 
     /// <summary>
@@ -2567,7 +2608,7 @@
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_nutzungsblatt) return Task.CompletedTask;   // die Überlagerung der Nutzungsprofile schließt selbst
+        if (_nutzungsblatt || _baustoffzuordnungenGaben is not null) return Task.CompletedTask;   // die Überlagerung der Nutzungsprofile schließt selbst
         if (_regelFrage is not null || _aufhebenFrage || _neuExportFrage) return Task.CompletedTask;   // die Rückfrage antwortet „Nein"
         if (_laeuft) { _abbruch?.Cancel(); return Task.CompletedTask; }
         if (_schreibt) return Task.CompletedTask;
@@ -2783,6 +2824,15 @@
         IReadOnlyList<GebaeudeAufbaulistenzeileDaten> zeilen = stand.Aufbauten;
         <Gruppenkopf Titel="@Texte.GruppeAufbauten" />
         <p class="epos-leisezeile epos-gebimport-verwaltungshinweis">@Texte.AbVerwaltungHinweis</p>
+        @* GD-6a: die gemerkten Baustoff-Zuordnungen des Projekts an der Liste, an der sie entstehen. *@
+        @if (BaustoffzuordnungenGaben is not null)
+        {
+            <div class="epos-leiste epos-gebimport-baustoffzuordnungen-leiste">
+                <button type="button" class="epos-knopf epos-gebaeude-baustoffzuordnungen"
+                        title="@Resource.GEB_BTN_BAUSTOFFZUORDNUNGEN_HINWEIS"
+                        @onclick="BeiBaustoffzuordnungen">@Resource.GEB_BTN_BAUSTOFFZUORDNUNGEN</button>
+            </div>
+        }
         @if (zeilen.Count == 0)
         {
             <p class="epos-leisezeile epos-gebimport-aufbauten-leer">@Texte.AbLeer</p>

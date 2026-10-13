@@ -760,6 +760,15 @@
                                 @Uebernahmeblock
                             }
                             @Neuezonenblock
+                            @* GD-6a: die gemerkten Baustoff-Zuordnungen des Projekts bei Bauteilen und Aufbauten der Zonen. *@
+                            @if (BaustoffzuordnungenGaben is not null)
+                            {
+                                <div class="epos-leiste epos-gebaeude-baustoffzuordnungen-leiste">
+                                    <button type="button" class="epos-knopf epos-gebaeude-baustoffzuordnungen"
+                                            title="@Resource.GEB_BTN_BAUSTOFFZUORDNUNGEN_HINWEIS"
+                                            @onclick="BeiBaustoffzuordnungen">@Resource.GEB_BTN_BAUSTOFFZUORDNUNGEN</button>
+                                </div>
+                            }
                         </KindInhalt>
                     </Gruppenkopf>
                 </KindInhalt>
@@ -767,6 +776,18 @@
 
         </KindInhalt>
     </Reiter>
+
+    @* --- Ueberlagerung: die Baustoff-Zuordnungen des Projekts (GD-6a) - geschrieben mit deren OK ---- *@
+    <Ueberlagerung Offen="@(_baustoffzuordnungenGaben is not null)" Titel="@Resource.BSZU_TITEL"
+                   Geschlossen="() => BaustoffzuordnungenFertig(null)">
+        <KindInhalt>
+            @if (_baustoffzuordnungenGaben is not null)
+            {
+                <BaustoffzuordnungenDialog @attributes="_baustoffzuordnungenGaben" TitelAnzeigen="false"
+                                           Geschlossen="BaustoffzuordnungenFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 
     @* --- Ueberlagerung: die Brauchwasser-Profilliste des Projekts (W9.5) ---- *@
     <Ueberlagerung Offen="@(_brauchwasserGaben is not null)"
@@ -2579,7 +2600,8 @@
         // Die Ueberlagerungen und Rueckfragen werten Esc zuerst fuer sich aus (Esc kaskadiert).
         if (e.Key != "Escape" || _brauchwasserGaben is not null || _zoneOffen is not null || _vorschlag is not null
             || _entfernId is not null || _speichernUnterFrage || _nachFrage is not null || _luftOffen
-            || _kond.OffeneFrage is not null || _vorlagenBlatt is not null || _nutzungsblatt) return Task.CompletedTask;
+            || _kond.OffeneFrage is not null || _vorlagenBlatt is not null || _nutzungsblatt
+            || _baustoffzuordnungenGaben is not null) return Task.CompletedTask;
         return Abbrechen();
     }
 
@@ -2618,6 +2640,33 @@
         _kondVorn = KonditionierungGroesse.Heizen;
         _kondAufgeklappt = KonditionierungGroesse.Heizen;
         _reiter = REITER_KONDITIONIERUNG;
+    }
+
+    /// <summary>
+    /// „Baustoff-Zuordnungen…" im Reiter „Zonen" (GD-6a): der Parametersatz der Ansicht der gemerkten Zuordnungen des
+    /// Projekts — vom Gebäudedialog durchgereicht, je Klick neu gelesen. Kein Delegat = kein Knopf
+    /// (Katalogverwaltung, Assistent).
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? BaustoffzuordnungenGaben { get; set; }
+
+    private IReadOnlyDictionary<string, object>? _baustoffzuordnungenGaben;
+
+    /// <summary>Steht die Ansicht der Baustoff-Zuordnungen? Prüfhilfe für die Tests.</summary>
+    public bool BaustoffzuordnungenOffen => _baustoffzuordnungenGaben is not null;
+
+    private void BeiBaustoffzuordnungen()
+    {
+        if (BaustoffzuordnungenGaben is null) return;
+        _baustoffzuordnungenGaben = BaustoffzuordnungenGaben();
+    }
+
+    /// <summary>Die Ansicht ist zu: nach OK mit der Zahl der entfernten Zuordnungen, sonst <c>null</c>.</summary>
+    private void BaustoffzuordnungenFertig(int? entfernt)
+    {
+        _baustoffzuordnungenGaben = null;
+        if (entfernt is > 0)
+            Melden(string.Format(CultureInfo.CurrentCulture, Resource.GEB_MSG_BAUSTOFFZUORDNUNGEN_ENTFERNT, entfernt.Value),
+                   WarnStufe.Hinweis);
     }
 
     /// <summary>Steht der Nutzungsprofilkatalog als Blatt (Stufe NP3a)?</summary>
