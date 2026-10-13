@@ -57,6 +57,65 @@ namespace WindowsFormsApplication1
             return monat ? "€/(kW·Monat)" : "€/(kW·a)";
         }
 
+        /// <summary>
+        /// Obergrenze eines Heizwerts je Abrechnungseinheit [kWh] für die kleinen Mengen-
+        /// einheiten (kg, l, Nm³, m³). Kein gebräuchlicher Brennstoff liegt darüber
+        /// (Wasserstoff 33,3 kWh/kg); ein größerer Wert steht erkennbar in einer anderen
+        /// Einheit (kWh/t, kWh/1000 l, MJ) und taugt nicht als Faktor nach €/kWh.
+        /// </summary>
+        public const double HEIZWERT_JE_EINHEIT_MAX = 50.0;
+
+        /// <summary>
+        /// Die VORGABE der Preisbasis am Arbeitspreis: Eine gemerkte Einheit bleibt —
+        /// ein bestehender Eintrag wird nie umgestellt. Nur wo keine gemerkt ist (neue
+        /// Auswahl, leerer Wert), steht der Arbeitspreis in €/kWh.
+        ///
+        /// <para><b>Umrechnung mit dem Heizwert.</b> Die Preisbasis kWh trägt den
+        /// Heizwert je Abrechnungseinheit als Faktor (<see cref="AnzeigeArbeitspreis"/>):
+        /// Erdgas 0,10 €/Nm³ bei 10 kWh/Nm³ zeigt 0,01 €/kWh, gespeichert bleibt der
+        /// Wert je Abrechnungseinheit. Ohne Heizwert (fehlt, 0, Träger ohne Heizwert im
+        /// Preismodell) gibt es keinen Faktor — dann bleibt die Abrechnungseinheit des
+        /// Katalogs, statt einen Preis je Mengeneinheit als €/kWh auszugeben. Dasselbe
+        /// gilt, wenn der Heizwert nicht in kWh je Abrechnungseinheit stehen kann
+        /// (<see cref="HeizwertPasstZurEinheit"/>).</para>
+        /// </summary>
+        /// <param name="gemerkt">Die gespeicherte Preisbasis; leer = keine.</param>
+        /// <param name="abrechnungseinheit">Die Mengeneinheit des Trägers (<c>billing_unit</c>).</param>
+        /// <param name="mitHeizwert">Führt das Preismodell einen Heizwert?</param>
+        /// <param name="heizwert">Heizwert je Abrechnungseinheit [kWh].</param>
+        public static string VorgabePreisbasis(string gemerkt, string abrechnungseinheit,
+                                               bool mitHeizwert, double heizwert)
+        {
+            string g = (gemerkt ?? "").Trim();
+            if (g.Length > 0) return g;
+
+            string einheit = (abrechnungseinheit ?? "").Trim();
+            if (!mitHeizwert || IstKwh(einheit) || !HeizwertPasstZurEinheit(einheit, heizwert))
+                return einheit;
+            return DbWerte.EINHEIT_KWH;
+        }
+
+        /// <summary>
+        /// Prüft die Einheit des Heizwerts: Er muss positiv sein und in kWh je
+        /// Abrechnungseinheit stehen können (<see cref="HeizwertEinheit"/>). Für kg, l,
+        /// Nm³ und m³ heißt das höchstens <see cref="HEIZWERT_JE_EINHEIT_MAX"/>; andere
+        /// Einheiten (t, MWh …) prüft nur das Vorzeichen.
+        /// </summary>
+        public static bool HeizwertPasstZurEinheit(string abrechnungseinheit, double heizwert)
+        {
+            if (!(heizwert > 0.0) || double.IsInfinity(heizwert)) return false;
+            switch (EnergietraegerPreisCtrl.EinheitSchluessel(abrechnungseinheit))
+            {
+                case "KG":
+                case "L":
+                case "NM3":
+                case "M3":
+                    return heizwert <= HEIZWERT_JE_EINHEIT_MAX;
+                default:
+                    return true;
+            }
+        }
+
         /// <summary>Ist diese Einheit die Kilowattstunde? (Schreibweise egal.)</summary>
         public static bool IstKwh(string einheit)
         {
