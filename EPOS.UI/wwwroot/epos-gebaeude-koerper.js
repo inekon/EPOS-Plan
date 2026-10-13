@@ -441,7 +441,8 @@ function bauen(daten, feld) {
         if (rand && daten.bauteilesichtbar !== false) {
             for (const b of daten.bauteile ?? []) {
                 if (!gruppeSichtbar(daten, bauteilwert(daten, b)) || !(b.dreieckZahl > 0)) continue;
-                dateinetz({ ...b, raum: null, zone: null }, feld, bezug, ziel, box, daten);
+                dateinetz({ ...b, raum: null, zone: null, hervor: Array.isArray(daten.hervorBauteile) && daten.hervorBauteile.includes(b.bauteil) },
+                    feld, bezug, ziel, box, daten);
             }
         }
     }

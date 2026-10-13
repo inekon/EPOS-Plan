@@ -1636,8 +1636,6 @@
         koerper = daten.Koerper().Where(k => Zoneneingeblendet(daten, k.Raum.Zone, zonenAus))
                        .Select(k => Prisma(daten, k, bauteilgruppensichtbar, farbmodus, hervorhebung)).ToList(),
         farbmodus,
-        // MA-5: die Hervorhebung der Prüfgruppe — je Körper hervor; ohne Hervorhebung zeichnet das Modul wie bisher.
-        hervorhebung = hervorhebung is not null,
         randfarben = GebaeudeAnsichtRandgruppen.FARBEN,
         randsichtbar = Sichtbar(sichtbar),
         bauteilesichtbar,
@@ -1646,6 +1644,8 @@
         befundfarben = GebaeudeAnsichtBefundstufen.FARBEN,
         befundsichtbar = Befundsichtbar(befundsichtbar),
         bauteilgruppensichtbar = Bauteilgruppensichtbar(bauteilgruppensichtbar),
+        // MA-5: die Hervorhebung der Prüfgruppe — je Körper hervor; ohne Hervorhebung zeichnet das Modul wie bisher.
+        hervorhebung = hervorhebung is not null,
     };
 
     /// <summary>AB4: ist die Zone eines Raums eingeblendet? Ohne Menge alle.</summary>
@@ -1705,7 +1705,6 @@
                     raum = r.Raum.Kennung,
                     zone = r.Raum.Zone,
                     stelle = Farbstelle(daten, r.Raum.Zone, farbmodus),
-                    hervor = hervorhebung?.Raeume.Contains(r.Raum.Kennung) ?? false,
                     punkteAb = e.PunkteAb, punktZahl = e.PunktZahl,
                     dreieckeAb = e.DreieckeAb, dreieckZahl = e.DreieckZahl,
                     kantenAb = e.KantenAb, kantenZahl = e.KantenZahl,
@@ -1713,10 +1712,10 @@
                     stufenAb = e.StufenAb,
                     befundAb = e.BefundAb,
                     bauteilgruppenAb = e.BauteilgruppenAb,
+                    hervor = hervorhebung?.Raeume.Contains(r.Raum.Kennung) ?? false,
                 };
             }).ToList(),
             farbmodus,
-            hervorhebung = hervorhebung is not null,
             randfarben = GebaeudeAnsichtRandgruppen.FARBEN,
             randsichtbar = Sichtbar(sichtbar),
             bauteilesichtbar,
@@ -1735,8 +1734,10 @@
                 kantenAb = e.KantenAb, kantenZahl = e.KantenZahl,
                 stufe = e.Stufe,
                 befund = e.Befund,
-                hervor = e.Bauteil is not null && (hervorhebung?.Bauteile.Contains(e.Bauteil) ?? false),
             }).ToList(),
+            hervorhebung = hervorhebung is not null,
+            // MA-5: die hervorgehobenen Bauteilkörper (Kennungen); das Modul zieht ihre Kanten dunkel und dimmt die übrigen.
+            hervorBauteile = hervorhebung?.Bauteile.OrderBy(b => b, StringComparer.Ordinal).ToArray() ?? Array.Empty<string>(),
         };
     }
 
@@ -1759,7 +1760,6 @@
             raum = k.Raum.Kennung,
             zone = k.Raum.Zone,
             stelle = Farbstelle(daten, k.Raum.Zone, farbmodus),
-            hervor = hervorhebung?.Raeume.Contains(k.Raum.Kennung) ?? false,
             unterkante = k.UnterkanteM,
             hoehe = k.HoeheM,
             schematisch = k.Schematisch,
@@ -1768,6 +1768,7 @@
                 : k.Angaben?.Kanten.Select(p => (IReadOnlyList<string?>)p.Select(a => Plattenart(a, gruppensichtbar)).ToList()).ToList(),
             boden = Plattenart(k.Angaben?.Boden, gruppensichtbar),
             decke = Plattenart(k.Angaben?.Decke, gruppensichtbar),
+            hervor = hervorhebung?.Raeume.Contains(k.Raum.Kennung) ?? false,
         };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
