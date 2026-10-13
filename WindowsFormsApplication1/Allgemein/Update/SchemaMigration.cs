@@ -5528,6 +5528,19 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KATALOGKOSTEN_SAAT = KatalogkostenSaatSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="BrennstoffpreiseTraegerkarteSchema.SCHRITT"/> — <b>Brennstoffpreise in die
+        /// Trägerkarte</b> (KB-2, Anwenderentscheid 13.10.2026): <c>Standard_Arbeitspreis</c>,
+        /// <c>Standard_Grundpreis</c> und <c>Standard_Leistungspreis</c> gehen je Träger mit Brennstoffverweis an
+        /// <c>energy_carrier.price_work</c>/<c>price_base</c>/<c>price_power</c> über (nur wo der Trägerpreis leer
+        /// ist) und fallen danach an <c>Tab_Brennstoff_Stamm</c> und <c>Tab_Brennstoff</c> weg.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Rechenweg liest die drei Spalten — sie waren allein
+        /// die Saat der Energieträger-Variante. <b>Neue Katalogfassung:</b> Die Prüfsumme jedes Brennstoffs
+        /// ändert sich; der Schritt bildet sie für jeden Satz neu, dessen Summe vorher stimmte.</para>
+        /// </summary>
+        public const int SCHRITT_BRENNSTOFFPREISE_TRAEGERKARTE = BrennstoffpreiseTraegerkarteSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -8120,6 +8133,16 @@ namespace WindowsFormsApplication1
                         "Kostenkatalog nicht abgleichbar. KEIN Rechenergebnis aendert sich - gerechnet wird aus " +
                         "Tab_ProjektWerte, eine Satzvorlage wirkt erst beim Uebernehmen oder Abgleichen.",
                         Schritt_KatalogkostenSaat),
+            // KB-2: Brennstoffpreise in die Traegerkarte. Quelle ist BrennstoffpreiseTraegerkarteSchema, die Nummer
+            // steht allein dort.
+            new Schritt(SCHRITT_BRENNSTOFFPREISE_TRAEGERKARTE,
+                        "energy_carrier: price_work, price_base, price_power (und price_power_modus) aus dem " +
+                        "Brennstoffkatalog; Tab_Brennstoff_Stamm und Tab_Brennstoff: Standard_Arbeitspreis, " +
+                        "Standard_Grundpreis, Standard_Leistungspreis entfallen",
+                        "Die Preise eines Brennstoffs stuenden weiter neben der Karte des Energietraegers und " +
+                        "saeten eine zweite Kostenbasis. KEIN Rechenergebnis aendert sich - gerechnet wird aus der " +
+                        "Traegerwelt; die drei Spalten waren allein Saat der Energietraeger-Variante.",
+                        Schritt_BrennstoffpreiseTraegerkarte),
         };
 
         /// <summary>
@@ -15938,6 +15961,64 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Saat der Katalogkosten - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Handgriff(e).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Brennstoffpreise in die Trägerkarte" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_BRENNSTOFFPREISE_TRAEGERKARTE"/>, die Anweisungen bei
+        /// <see cref="BrennstoffpreiseTraegerkarteSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_BrennstoffpreiseTraegerkarte(Lauf l)
+        {
+            string nr = BrennstoffpreiseTraegerkarteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in BrennstoffpreiseTraegerkarteSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            BrennstoffpreiseTraegerkarteSchema.Laufergebnis ergebnis;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    ergebnis = BrennstoffpreiseTraegerkarteSchema.Lauf(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!BrennstoffpreiseTraegerkarteSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die drei Preisspalten des Brennstoffs stehen nach dem Schritt noch.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Brennstoffpreise in die Traegerkarte - " +
+                    (ergebnis.Handgriffe == 0
+                        ? "stand bereits."
+                        : ergebnis.Uebertragen + " Preis(e) uebertragen, " + ergebnis.Entfernt + " Spalte(n) entfernt, " +
+                          ergebnis.PruefsummenNeu + " Pruefsumme(n) neu.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

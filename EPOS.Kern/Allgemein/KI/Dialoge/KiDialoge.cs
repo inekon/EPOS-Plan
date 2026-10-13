@@ -2076,13 +2076,10 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
                     new KiDialogFeld("staub", SICHT + "Staub", KiDialogTexte.PbrsStaubName, KiParameterTyp.Zahl,
                                      KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
+                    // Welle KB-2: Arbeits-, Grund- und Leistungspreis fuehrt dieser Dialog nicht mehr - sie stehen
+                    // in der Karte des Energietraegers (Maske Form_EnergietraegerVariante, Felder arbeitspreis,
+                    // grundpreis, leistungspreis).
                     new KiDialogFeld("pe_faktor", SICHT + "PeFaktor", KiDialogTexte.PbrsPeName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
-                    new KiDialogFeld("grundpreis", SICHT + "Grundpreis", KiDialogTexte.PbrsGrundpreisName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
-                    new KiDialogFeld("arbeitspreis", SICHT + "Arbeitspreis", KiDialogTexte.PbrsArbeitspreisName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
-                    new KiDialogFeld("leistungspreis", SICHT + "Leistungspreis", KiDialogTexte.PbrsLeistungspreisName, KiParameterTyp.Zahl,
                                      KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true)
                 });
         }

@@ -2777,18 +2777,27 @@ namespace WindowsFormsApplication1
             if (oBrennstoff == null) return true;   // Katalogzeile fehlt -> nichts anzulegen
             int idBrennstoff = Convert.ToInt32(oBrennstoff);
 
-            // Default-Werte aus dem Brennstoff-Stamm (nur noch PREISE — zu den
-            // Emissionen siehe den Block vor dem INSERT der Projekt-Einstellungen)
-            // Die Vorgaben des Brennstoffs in der Sicht des Projekts (Projektkopie, ProjektBrennstoffe.Sicht).
+            // Heizwerte und Mengeneinheit aus dem Brennstoff in der Sicht des Projekts (Projektkopie,
+            // ProjektBrennstoffe.Sicht); zu den Emissionen siehe den Block vor dem INSERT der
+            // Projekt-Einstellungen.
             string quelle = ProjektBrennstoffe.Sicht(projektID, out DbParam[] sicht);
             DataTable dtBs = DataRepository.GetDataTable(
-                "SELECT bs.Standard_Arbeitspreis, bs.Standard_Grundpreis, bs.Standard_Leistungspreis, bs.Hi, bs.Hs, bs.Einheit " +
-                "FROM " + quelle + " AS bs WHERE bs.ID = ?",
+                "SELECT bs.Hi, bs.Hs, bs.Einheit FROM " + quelle + " AS bs WHERE bs.ID = ?",
                 ProjektBrennstoffe.Mit(sicht, new DbParam("@bs", idBrennstoff)));
             DataRow rBs = dtBs != null && dtBs.Rows.Count > 0 ? dtBs.Rows[0] : null;
-            double default_arbeitspreis = ToDouble(rBs?["Standard_Arbeitspreis"]);
-            double default_grundpreis = ToDouble(rBs?["Standard_Grundpreis"]);
-            double default_leistungspreis = ToDouble(rBs?["Standard_Leistungspreis"]);
+
+            // DIE PREISE KOMMEN AUS DER KARTE DES TRAEGERS (Welle KB-2, Anwenderentscheid 13.10.2026
+            // "eine Kostenbasis, keine Doppelhaltung"): energy_carrier.price_work/price_base/price_power
+            // ist die EINE Quelle - der Brennstoff fuehrt keine Preisspalten mehr (Schemaschritt
+            // BrennstoffpreiseTraegerkarteSchema.SCHRITT). Der Zeitbezug des Leistungspreises haengt an der
+            // Karte (price_power_modus); die Projektzeile fuehrt die Zahl in derselben Einheit.
+            DataTable dtPreis = DataRepository.GetDataTable(
+                "SELECT price_work, price_base, price_power FROM energy_carrier WHERE id = ?",
+                new DbParam[] { new DbParam("@cid", carrierId) });
+            DataRow rPreis = dtPreis != null && dtPreis.Rows.Count > 0 ? dtPreis.Rows[0] : null;
+            double default_arbeitspreis = ToDouble(rPreis?["price_work"]);
+            double default_grundpreis = ToDouble(rPreis?["price_base"]);
+            double default_leistungspreis = ToDouble(rPreis?["price_power"]);
 
             // Hi, Hs und Abrechnungseinheit - im Kosten-Dialog die Felder
             // SelectedHi / SelectedHs / SelectedBillingUnit aus derselben Zeile

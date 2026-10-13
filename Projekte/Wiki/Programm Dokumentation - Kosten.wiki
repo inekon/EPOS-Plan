@@ -80,6 +80,8 @@ Der Dialog '''Energieträgerverwaltung''' führt die Energieträger eines Projek
 
 Auch die Anlagendialoge führen hinein: In der Verwaltung von Heizkessel, BHKW, Photovoltaik, Stromspeicher und Wärmepumpe steht eine Knopfzeile mit ''Investitionskosten…'', ''Betriebskosten…'' und ''Energiekosten…''. Die ersten beiden öffnen die [[#investitionspositionen|Investitions-]] bzw. [[#betriebspositionen|Betriebskosten]] des Projekts, ''Energiekosten…'' die Energieträgerverwaltung – alle drei mit Bezug auf die gewählte Anlage. Pufferspeicher und Solarthermie tragen nur die ersten beiden Knöpfe, denn sie beziehen keinen Energieträger. Die Knöpfe stehen nur im Projektkontext; im Assistenten und in der Katalogpflege gibt es sie nicht. Bei der Wärmepumpe hängen Kosten und Träger an der einzelnen Anlage: Solange sie noch nicht mit ''OK'' angelegt und gespeichert ist, steht die Knopfzeile nicht da, und eine Zeile unter der Summenanzeige nennt den Grund.
 
+Legt die Verwaltung eine '''Energieträger-Variante''' an, übernimmt sie Arbeits-, Grund- und Leistungspreis aus der Karte des Energieträgers; ein neu angelegter Träger beginnt ohne Preise, sie werden an ihm gepflegt.
+
 Ist in der Tabelle ''Investitionskosten je Anlage'' eine Zeile gewählt, öffnet der Knopf den Dialog mit Bezug auf diese Komponente: Er springt auf ihren Energieträger und zeigt nur die Träger, die zu ihr passen. Ohne gewählte Zeile führt die Liste alle Energieträger des Projekts; die Übernahme aus dem Katalog richtet sich dann nach den Anlagen des Projekts.
 
 * '''Trägerliste''' – im Projektkontext stehen sowohl die dem Projekt zugeordneten als auch die tatsächlich verwendeten Träger. Zu jedem Eintrag nennt ein Kurztext, wer ihn verwendet, etwa ''verwendet von: Wärmepumpe „Anlage A", Photovoltaik „Modul B"''.
@@ -142,7 +144,7 @@ Ist in der Tabelle ''Investitionskosten je Anlage'' eine Zeile gewählt, öffnet
 == Brennstoffe des Projekts ==
 {{Anker|brennstoffe-des-projekts|brennstoffe}}
 
-Jedes Projekt rechnet mit '''eigenen Kopien der Brennstoffe''': Heizwerte, Emissionsfaktoren (CO₂, SO₂, NOₓ, Staub), Primärenergiefaktor und Preisvorgaben. Die Kopien entstehen mit dem Projekt aus dem Brennstoffkatalog. Ein Katalog-Update ändert nur den Katalog; das Projekt rechnet mit seinen Kopien unverändert weiter.
+Jedes Projekt rechnet mit '''eigenen Kopien der Brennstoffe''': Heizwerte, Emissionsfaktoren (CO₂, SO₂, NOₓ, Staub) und Primärenergiefaktor. Die Kopien entstehen mit dem Projekt aus dem Brennstoffkatalog. Ein Katalog-Update ändert nur den Katalog; das Projekt rechnet mit seinen Kopien unverändert weiter. Die '''Energiepreise''' – Arbeits-, Grund- und Leistungspreis – gehören zum Energieträger und werden in der [[#energietraegerverwaltung|Energieträgerverwaltung]] gepflegt; der Brennstoff führt sie nicht.
 
 Der Dialog öffnet sich über {{Menü|Administration|Kosten|Brennstoffe des Projekts…}} für das geöffnete Projekt. Die Liste zeigt je Brennstoff seine Werte und in der Spalte ''Stand'', ob die Kopie dem heutigen Katalog entspricht (''wie Katalog''), von ihm abweicht (''abweichend'') oder der Brennstoff nicht mehr im Katalog steht. Eine abweichende Zelle ist hervorgehoben; ihr Tooltip nennt den Katalogwert.
 

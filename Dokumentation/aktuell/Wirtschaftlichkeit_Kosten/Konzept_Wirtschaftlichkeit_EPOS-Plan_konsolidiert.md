@@ -1562,6 +1562,41 @@ Speicherrechnung liest aber noch die Gerätespalten (KB-5). Kältemaschine und R
 ihre Satzvorlage, führen aber keinen Ursprung an der Anlage — für sie ist der Abgleich erst möglich,
 wenn der Rückweg sie aufnimmt. `Tab_Wechselrichter` hat keine Verweisspalte und bleibt außen vor.
 
+**Wie gebaut (KB-2) — die Preise des Brennstoffs wandern in die Trägerkarte.** Derselbe Entscheid
+gilt den Energiepreisen: `Tab_Brennstoff_Stamm` und seine Projektkopie `Tab_Brennstoff` führten je
+einen `Standard_Arbeitspreis`, `Standard_Grundpreis` und `Standard_Leistungspreis`. **Kein
+Rechenweg las sie.** Ihr einziger Weg in die Welt war die **Saat** einer Energieträger-Variante
+(`EnergietraegerVarianteCtrl.Anlegen`, `WizardCtrl.TraegerSatzAnlegen`); gerechnet wird allein aus
+der Trägerwelt — Projektwert `custom_price_*` vor Katalogwert `energy_carrier.price_*` (§ 2.14).
+Ein Preis am Stoff war damit eine zweite, stumme Kostenbasis neben der Karte des Trägers.
+
+- **Die Saat hat eine Quelle.** Arbeits-, Grund- und Leistungspreis der Projektzeilen
+  (`energy_price`, `energy_project_settings`) kommen aus `energy_carrier.price_work`,
+  `price_base` und `price_power` — der Karte des Trägers, auf dem die Zuordnung sitzt. Der
+  **Zeitbezug** des Leistungspreises bleibt, wo er hingehört: an `price_power_modus` der Karte
+  (`JAHR` = €/(kW·a), Vorgabe; `MONAT` = €/(kW·Monat) × 12). Die Projektzeile führt die Zahl in
+  derselben Einheit und braucht ihn nicht zu wiederholen. Ein **neu angelegter** Träger entsteht
+  ohne Preise; sie werden in seiner Karte gepflegt.
+- **Der Schemaschritt** `BrennstoffpreiseTraegerkarteSchema` überträgt zuerst und entfernt dann:
+  Je Träger mit `ID_Brennstoff` und noch **leerem** Preis übernimmt die Karte den Standardwert des
+  verknüpften Katalogbrennstoffs, wenn dieser größer als 0 ist; mit einem übertragenen
+  Leistungspreis bekommt ein leerer Modus den Zeitbezug `JAHR`. Ein **gepflegter** Trägerwert wird
+  nie überschrieben, der Schritt ist wiederholbar. Danach fallen die drei Spalten an Katalog und
+  Projektkopie (`DROP COLUMN`, kein Tabellenneubau).
+- **Nur Katalog zu Katalog.** `energy_carrier` ist ein Katalog ohne Projektbezug; die Projektebene
+  des Trägers ist `energy_project_settings`. Die Werte der **Projektkopien** gehen deshalb
+  nirgends hin: `custom_price_*` ist die oberste Ebene der Lesekette, ein Übertrag dorthin würde
+  die Kosten jedes Projekts mit abweichender Kopie verschieben — eine Saat darf kein Ergebnis
+  bewegen (dieselbe Regel wie beim Emissionsentscheid vom 30.08.2026).
+- **Neue Katalogfassung.** Die drei Spalten standen in der Prüfsumme des Brennstoffkatalogs und
+  trugen auch mit dem Wert 0 je eine Zeile bei; mit ihrem Entfall ändert sich die Prüfsumme jedes
+  ausgelieferten Brennstoffs. Der Schritt bildet sie für jeden Satz neu, dessen gespeicherte Summe
+  vorher stimmte — ein vom Anwender geänderter Satz bleibt als geändert erkennbar. Die nächste
+  Auslieferung trägt damit eine neue Fassung (`--katalogfassung`, Setup-Kette).
+- **Im Dialog** „Brennstoffe des Projekts" entfallen die drei Preisspalten; `PreisEinheit` bleibt,
+  sie ist Katalogtext (die Abrechnungseinheit zeigt die Anzeige aus `energy_carrier.billing_unit`).
+  Gepflegt werden die Preise in der **Energieträgerverwaltung**.
+
 ## 2.15 Vergleichssicht der Ergebnisansicht — alle Varianten gegen die Referenz oder zwei Stände
 
 > **Stand: umgesetzt.** Sicht, A und B liegen als Sitzungswahl in `Vergleichsauswahl.Sicht`

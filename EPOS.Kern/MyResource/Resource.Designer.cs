@@ -100413,15 +100413,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitspreis [€/Einheit] ähnelt.
-        /// </summary>
-        public static string PBRS_SP_ARBEITSPREIS {
-            get {
-                return ResourceManager.GetString("PBRS_SP_ARBEITSPREIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff ähnelt.
         /// </summary>
         public static string PBRS_SP_BRENNSTOFF {
@@ -100449,15 +100440,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Grundpreis [€/a] ähnelt.
-        /// </summary>
-        public static string PBRS_SP_GRUNDPREIS {
-            get {
-                return ResourceManager.GetString("PBRS_SP_GRUNDPREIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Hi [kWh/Einheit] ähnelt.
         /// </summary>
         public static string PBRS_SP_HI {
@@ -100472,15 +100454,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PBRS_SP_HS {
             get {
                 return ResourceManager.GetString("PBRS_SP_HS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis [€/(kW·a)] ähnelt.
-        /// </summary>
-        public static string PBRS_SP_LEISTUNGSPREIS {
-            get {
-                return ResourceManager.GetString("PBRS_SP_LEISTUNGSPREIS", resourceCulture);
             }
         }
         

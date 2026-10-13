@@ -1067,7 +1067,15 @@ namespace WindowsFormsApplication1
         /// Katalogsatz mit Kosten genau eine Satzvorlage je Art (<see cref="KatalogkostenSaatSchema"/>).
         /// <b>Ergebnisneutral:</b> Gerechnet wird aus <c>Tab_ProjektWerte</c>; eine Satzvorlage wirkt erst beim
         /// Übernehmen oder Abgleichen.
-        public const int Zielversion = KatalogkostenSaatSchema.SCHRITT;
+        /// Danach, mit den BRENNSTOFFPREISEN IN DER TRÄGERKARTE (KB-2), steht das Ziel auf
+        /// <see cref="BrennstoffpreiseTraegerkarteSchema.SCHRITT"/>: <c>Standard_Arbeitspreis</c>,
+        /// <c>Standard_Grundpreis</c> und <c>Standard_Leistungspreis</c> gehen an
+        /// <c>energy_carrier.price_work</c>/<c>price_base</c>/<c>price_power</c> über und fallen an
+        /// <c>Tab_Brennstoff_Stamm</c> und <c>Tab_Brennstoff</c> weg
+        /// (<see cref="BrennstoffpreiseTraegerkarteSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg liest die
+        /// drei Spalten; sie waren allein Saat der Energieträger-Variante. <b>Neue Katalogfassung:</b> Die
+        /// Prüfsumme jedes Brennstoffs ändert sich, der Schritt bildet sie für unveränderte Sätze neu.
+        public const int Zielversion = BrennstoffpreiseTraegerkarteSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

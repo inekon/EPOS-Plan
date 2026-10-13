@@ -462,6 +462,10 @@ namespace WindowsFormsApplication1
             // Katalogsatzes reist in keinem Paket (Metaspalte), und der Schritt sät sie an der Zieldatenbank.
             new Stufe(KatalogkostenSaatSchema.SCHRITT, Art.Ddl,
                       "Verweise auf die Satzvorlagen an den Projektkopien mit Kosten, Saat der Katalogkosten (KB-3)"),
+            // KB-2: Ein älteres Paket bringt seine Brennstoffe samt Projektkopien noch mit den drei Preisspalten; der
+            // Schritt überträgt sie an der Zieldatenbank in die Trägerkarte und entfernt sie danach.
+            new Stufe(BrennstoffpreiseTraegerkarteSchema.SCHRITT, Art.Ddl,
+                      "Brennstoffpreise in die Trägerkarte, Entfall der drei Standardpreise am Brennstoff (KB-2)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
