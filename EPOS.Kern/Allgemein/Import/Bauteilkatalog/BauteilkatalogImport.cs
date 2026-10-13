@@ -595,15 +595,18 @@ namespace WindowsFormsApplication1
             }
 
             // ---- Aufbauten ----
-            var fenster = new Dictionary<string, (double? Ug, double? G)>(StringComparer.Ordinal);
+            // BK-6: dazu psi des Glasrands (EdgePsiValue), wenn die Quelle ihn fuehrt.
+            var fenster = new Dictionary<string, (double? Ug, double? G, double? Psi)>(StringComparer.Ordinal);
             if (tf != null)
                 foreach (string[] z in tf.Zeilen)
                 {
                     string d = tf.Kennung(z, "DimensionUId");
                     if (d == null) continue;
-                    fenster.TryGetValue(d, out (double? Ug, double? G) alt);
-                    fenster[d] = (alt.Ug ?? tf.Zahl(z, "GlazingUValue"), alt.G ?? tf.Zahl(z, "GlazingGValue"));
+                    fenster.TryGetValue(d, out (double? Ug, double? G, double? Psi) alt);
+                    fenster[d] = (alt.Ug ?? tf.Zahl(z, "GlazingUValue"), alt.G ?? tf.Zahl(z, "GlazingGValue"),
+                                  alt.Psi ?? tf.Zahl(z, "EdgePsiValue"));
                 }
+            bool mitGlasrand = BauteilkatalogAbschnittSchema.Lesbar();
             Dictionary<string, BauteilkatalogBestand> aufbauNachKennung = NachKennung(stand.Aufbauten);
             var aufbauten = new Dictionary<string, Satz>(StringComparer.Ordinal);
             gesehen.Clear();
@@ -639,10 +642,14 @@ namespace WindowsFormsApplication1
                 s.Werte[BauteilkatalogSchema.SPALTE_GRUPPE] = gruppe;
                 s.Werte[BauteilkatalogSchema.SPALTE_KLASSE] = klasse;
                 Felder(s, ta, z, AUFBAU_FELDER, BauteilkatalogSchema.TAB_AUFBAU_STAMM, Zaehle);
-                if (fenster.TryGetValue(k, out (double? Ug, double? G) fl))
+                if (mitGlasrand) s.Werte[BauteilkatalogAbschnittSchema.SPALTE_PSI_GLASRAND] = null;
+                if (fenster.TryGetValue(k, out (double? Ug, double? G, double? Psi) fl))
                 {
                     if (s.Werte["Ug"] == null) s.Werte["Ug"] = Bereinigen(BauteilkatalogSchema.TAB_AUFBAU_STAMM, "Ug", fl.Ug, Zaehle);
                     if (s.Werte["g_Wert"] == null) s.Werte["g_Wert"] = Bereinigen(BauteilkatalogSchema.TAB_AUFBAU_STAMM, "g_Wert", fl.G, Zaehle);
+                    if (mitGlasrand)
+                        s.Werte[BauteilkatalogAbschnittSchema.SPALTE_PSI_GLASRAND] =
+                            Bereinigen(BauteilkatalogSchema.TAB_AUFBAU_STAMM, BauteilkatalogAbschnittSchema.SPALTE_PSI_GLASRAND, fl.Psi, Zaehle);
                 }
                 DateTime? von = ta.Datum(z, "ValidStartDate"), bis = ta.Datum(z, "ValidEndDate");
                 s.Werte["Gueltigkeit"] = von.HasValue || bis.HasValue
@@ -782,6 +789,7 @@ namespace WindowsFormsApplication1
                 }
             }
             if (luecken > 0) v.Protokoll.Add("Schichtgruppen neu nummeriert: " + Zahl(luecken));
+            AbschnittePruefen(p, v);
 
             // ---- Kennzeichen (allein der Kern) ----
             foreach (Satz a in p.Aufbauten)
@@ -827,6 +835,41 @@ namespace WindowsFormsApplication1
             string schl = (s.Werte.TryGetValue(BauteilkatalogSchema.SPALTE_GRUPPE, out object g) ? g as string : null) + "/" +
                           ((s.Werte.TryGetValue(BauteilkatalogSchema.SPALTE_KLASSE, out object k) ? k as string : null) ?? "-");
             ziel[schl] = ziel.TryGetValue(schl, out int n) ? n + 1 : 1;
+        }
+
+        /// <summary>
+        /// <b>BK-5: Aufbauten mit Abschnitten</b> werden übernommen, wenn sie sich als Ebenen lesen lassen: jede Schicht liegt in
+        /// einem Abschnitt (ein Abschnitt ist ein Streifen mit eigener Schichtfolge, nummeriert je Abschnitt), alle Abschnitte
+        /// führen gleich viele Schichten — die k-te Schicht jedes Abschnitts bildet die Ebene k —, und die Flächenanteile der
+        /// Abschnitte ergeben 1 ± 0,01. Sonst wird der Aufbau samt Abschnitten und Schichten benannt verworfen.
+        /// </summary>
+        private static void AbschnittePruefen(Plan p, BauteilkatalogVorschau v)
+        {
+            foreach (Satz a in p.Aufbauten.ToList())
+            {
+                if (a.Aktion == ERGAENZEN || !a.Schichten.Any(s => s.Abschnitt != null)) continue;
+                string grund = null;
+                List<Satz> streifen = a.Schichten.Where(s => s.Abschnitt != null).Select(s => s.Abschnitt).Distinct().ToList();
+                if (a.Schichten.Any(s => s.Abschnitt == null))
+                    grund = "inhomogen: durchgehende Schicht neben Abschnitten, Lage unbestimmt";
+                else if (streifen.Select(x => a.Schichten.Count(s => s.Abschnitt == x)).Distinct().Count() > 1)
+                    grund = "inhomogen: Abschnitte mit verschiedener Schichtzahl";
+                else
+                {
+                    double summe = streifen.Sum(x => x.W("Flaechenanteil") ?? double.NaN);
+                    if (double.IsNaN(summe) || streifen.Any(x => !(x.W("Flaechenanteil") > 0)))
+                        grund = "inhomogen: Abschnitt ohne Flächenanteil";
+                    else if (Math.Abs(summe - 1.0) > InhomogeneSchichten.ANTEIL_TOLERANZ + 1e-12)
+                        grund = "inhomogen: Flächenanteile ergeben nicht 1 ± 0,01";
+                }
+                if (grund == null) continue;
+                v.Aufbauten.Ablehnen(grund);
+                if (a.Aktion == NEU) v.Aufbauten.Neu--; else v.Aufbauten.Wiedererkannt--;
+                p.Aufbauten.Remove(a);
+                p.Abschnitte.RemoveAll(x => x.Vertreter == a);
+                p.Schichten.RemoveAll(x => x.Vertreter == a);
+                v.Protokoll.Add("Aufbau verworfen (" + grund + "): " + a.Kennung);
+            }
         }
 
         /// <summary>Regel 7: Dämmlage hinter tragender Schicht (Außenwände) und U aus Schichten gegen U der Quelle.</summary>
@@ -912,7 +955,7 @@ namespace WindowsFormsApplication1
         internal static object Bereinigen(string tabelle, string spalte, object w, Action<string> zaehle)
         {
             if (w == null) return null;
-            BauteilkatalogSchema.Spalte sp = BauteilkatalogSchema.SpaltenVon(tabelle).FirstOrDefault(x => x.Name == spalte);
+            BauteilkatalogSchema.Spalte sp = Bauteilkatalog.Spalten(tabelle).FirstOrDefault(x => x.Name == spalte);
             if (sp == null) return w;
             string typ = sp.Typ;
             bool verworfen = false;
@@ -1031,7 +1074,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Spalten eines Kopfsatzes in Schreibreihenfolge (ohne Herkunft, ReadOnly).</summary>
         private static List<string> Spalten(string[] kopf, string tabelle) =>
-            kopf.Concat(BauteilkatalogSchema.SpaltenVon(tabelle).Where(s => s.Art != BauteilkatalogSchema.Spaltenart.Verweis &&
+            kopf.Concat(Bauteilkatalog.Spalten(tabelle).Where(s => s.Art != BauteilkatalogSchema.Spaltenart.Verweis &&
                                                                             !kopf.Contains(s.Name)).Select(s => s.Name)).ToList();
 
         /// <summary>Schreibt den Plan im Vorgang <paramref name="v"/> (vorbereitete Anweisungen, Parameter mit „?“).</summary>
