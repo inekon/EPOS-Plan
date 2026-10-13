@@ -124,10 +124,10 @@ public class UebersichtSeiteTests : EposBunitContext
         => cut.Find(".epos-simstand");
 
     private static IReadOnlyList<IElement> Vergleichszeilen(IRenderedComponent<UebersichtSeite> cut)
-        => cut.Find(".epos-vergleichstabelle tbody").QuerySelectorAll("tr");
+        => cut.Find(".epos-uebersicht-tabelle tbody").QuerySelectorAll("tr");
 
     private static IReadOnlyList<IElement> Pflegeknoepfe(IRenderedComponent<UebersichtSeite> cut)
-        => cut.Find(".epos-variantenzeile").QuerySelectorAll("button");
+        => cut.Find(".epos-uebersicht-kopf").QuerySelectorAll("button");
 
     /// <summary>
     /// Ein Pflegeknopf über seine BESCHRIFTUNG (Auftrag #240). Bis dahin zählten die
@@ -165,7 +165,7 @@ public class UebersichtSeiteTests : EposBunitContext
 
         // Seit #240: Das Bezeichnerfeld gehoert dem UMBENENNEN, und "Variante anlegen"
         // erscheint nur mit Oeffner - ohne beide Delegaten bleiben zwei Knoepfe.
-        Assert.Empty(cut.FindAll(".epos-variantenzeile input[type=text]"));
+        Assert.Empty(cut.FindAll(".epos-uebersicht-verwaltung input[type=text]"));
         Assert.Equal(2, Pflegeknoepfe(cut).Count);                      // Löschen, Simulieren
         Assert.Contains("im Vergleich", cut.Find(".epos-untergruppe").TextContent);
         Assert.Contains("2 Zeile(n)", cut.Find(".epos-status").TextContent);
@@ -192,8 +192,8 @@ public class UebersichtSeiteTests : EposBunitContext
         var cut = Zeige();
 
         Assert.False(cut.Instance.MitAktionsspalte);
-        Assert.Equal(4, cut.FindAll(".epos-vergleichstabelle thead th").Count);
-        Assert.Empty(cut.FindAll(".epos-vergleichstabelle .epos-zellenaktionen"));
+        Assert.Equal(4, cut.FindAll(".epos-uebersicht-tabelle thead th").Count);
+        Assert.Empty(cut.FindAll(".epos-uebersicht-tabelle .epos-zellenaktionen"));
     }
 
     [Fact]
@@ -203,8 +203,8 @@ public class UebersichtSeiteTests : EposBunitContext
                         stand: Unterschiedsansicht());
 
         Assert.True(cut.Instance.MitAktionsspalte);
-        Assert.Equal(5, cut.FindAll(".epos-vergleichstabelle thead th").Count);
-        Assert.Equal(2, cut.FindAll(".epos-vergleichstabelle .epos-zellenaktionen").Count);
+        Assert.Equal(5, cut.FindAll(".epos-uebersicht-tabelle thead th").Count);
+        Assert.Equal(2, cut.FindAll(".epos-uebersicht-tabelle .epos-zellenaktionen").Count);
     }
 
     /// <summary>
@@ -307,7 +307,7 @@ public class UebersichtSeiteTests : EposBunitContext
         Assert.Equal(new[] { "Wärmepumpe", "Spitzenkessel", "Pufferspeicher" }, gewerke);
 
         // Kein Anlagenparameter steht mehr in der Merkmalspalte.
-        string tabelle = cut.Find(".epos-vergleichstabelle").TextContent;
+        string tabelle = cut.Find(".epos-uebersicht-tabelle").TextContent;
         foreach (string parameter in new[] { "Anlage", "Vorlauftemperatur", "Rücklauftemperatur",
                                              "Abschaltpunkt", "Neigung", "Azimut", "Solaranteil" })
             Assert.DoesNotContain(parameter, tabelle);
@@ -315,7 +315,7 @@ public class UebersichtSeiteTests : EposBunitContext
         // Die Gegenüberstellung trägt keine Aktionsspalte (die gehört den
         // Unterschieden), also vier Spalten wie im Bildschirmfoto.
         Assert.False(cut.Instance.MitAktionsspalte);
-        Assert.Equal(4, cut.Find(".epos-vergleichstabelle thead tr").QuerySelectorAll("th").Count);
+        Assert.Equal(4, cut.Find(".epos-uebersicht-tabelle thead tr").QuerySelectorAll("th").Count);
     }
 
     // =====================================================================
@@ -573,7 +573,7 @@ public class UebersichtSeiteTests : EposBunitContext
     {
         var cut = Zeige();
 
-        string klasse = cut.Find(".epos-vergleichstabelle").ParentElement!.ClassName ?? "";
+        string klasse = cut.Find(".epos-uebersicht-tabelle").ParentElement!.ClassName ?? "";
         Assert.Contains("epos-raster-huelle", klasse);
         Assert.Contains("epos-raster-huelle--vergleich", klasse);
         Assert.DoesNotContain("epos-raster-huelle--frei", klasse);
@@ -667,7 +667,7 @@ public class UebersichtSeiteTests : EposBunitContext
             return "Die Variante „V2“ heißt jetzt „Kessel klein“.";
         }));
 
-        cut.Find(".epos-variantenzeile input[type=text]").Input("Kessel klein");
+        cut.Find(".epos-uebersicht-verwaltung input[type=text]").Input("Kessel klein");
         Assert.Equal(3, Pflegeknoepfe(cut).Count);      // Löschen, Simulieren, Umbenennen
         Umbenennknopf(cut).Click();
 
@@ -1095,5 +1095,253 @@ public class UebersichtSeiteTests : EposBunitContext
             KiMaskennamen.BERICHTE_UEBERSICHT, "simulationsstand");
         Assert.NotNull(sim);
         Assert.False(sim.Setzbar);
+    }
+
+    // =====================================================================
+    //  Die Gegenüberstellung je Gewerk und der Kopf in drei Teilen
+    //  (Anwenderauftrag 12.10.2026)
+    // =====================================================================
+
+    /// <summary>Stamm und eine Variante: gleiche Wärmepumpe, nur die Variante hat einen Puffer.</summary>
+    private static UebersichtStand Gewerkansicht(bool mitPuffer = true) => new UebersichtStand
+    {
+        Staemme = new[] { (1030, "Musterhaus") },
+        StammId = 1030,
+        Zeilen = Zeilen(),
+        MarkierteId = 1030,
+        GewaehlteVarianten = new[] { 1030, 1031 },
+        KomponentenTitel = "Komponenten im Vergleich — Stammprojekt und Varianten",
+        Versionsspalten = new[]
+        {
+            new VersionsSpalte { Name = "Stamm", Stand = "simuliert 12.10.26 23:05" },
+            new VersionsSpalte { Name = "mit Puffer", Stand = "nicht simuliert" }
+        },
+        Gewerke = mitPuffer
+            ? new[] { WpZeile(), PufferZeile() }
+            : new[] { WpZeile() },
+        Statuszeile = mitPuffer ? "2 Gewerke · Stamm und 1 Variante · 1 Unterschied"
+                                : "1 Gewerk · Stamm und 1 Variante · keine Unterschiede",
+        Loeschbar = false,
+        AnlegenMoeglich = true,
+        SimulierenMoeglich = true
+    };
+
+    private static GewerkVergleichZeile WpZeile() => new GewerkVergleichZeile
+    {
+        Gewerk = "Wärmepumpe",
+        Zellen = new[]
+        {
+            new GewerkVergleichZelle { Eintraege = new[] { new GewerkVergleichEintrag
+                { Anzahl = 1, Bezeichner = "WP A", Kennwerte = "16 kW", Kurztext = "Hersteller: A" } } },
+            new GewerkVergleichZelle { Eintraege = new[] { new GewerkVergleichEintrag
+                { Anzahl = 1, Bezeichner = "WP A", Kennwerte = "16 kW", Kurztext = "Hersteller: A" } } }
+        }
+    };
+
+    private static GewerkVergleichZeile PufferZeile() => new GewerkVergleichZeile
+    {
+        Gewerk = "Pufferspeicher",
+        Zellen = new[]
+        {
+            new GewerkVergleichZelle(),
+            new GewerkVergleichZelle { WeichtAb = true, Eintraege = new[] { new GewerkVergleichEintrag
+                { Anzahl = 1, Bezeichner = "Speicher 1", Kennwerte = "1.000 l" } } }
+        }
+    };
+
+    private static IReadOnlyList<IElement> Gewerkzeilen(IRenderedComponent<UebersichtSeite> cut)
+        => cut.Find(".epos-komponentenvergleich tbody").QuerySelectorAll("tr");
+
+    [Fact]
+    public void Je_Gewerk_eine_Zeile_mit_n_mal_Komponente_und_Kennwert()
+    {
+        var cut = Zeige(stand: Gewerkansicht());
+
+        var zeilen = Gewerkzeilen(cut);
+        Assert.Equal(2, zeilen.Count);
+        Assert.StartsWith("Wärmepumpe", zeilen[0].QuerySelector("th")!.TextContent.Trim());
+
+        var zellen = zeilen[0].QuerySelectorAll("td");
+        Assert.Equal(2, zellen.Length);
+        Assert.Equal("1 × WP A", zellen[0].QuerySelector(".epos-komponenten-name")!.TextContent);
+        Assert.Equal("16 kW", zellen[0].QuerySelector(".epos-komponenten-kennwerte")!.TextContent);
+        Assert.Equal("Hersteller: A", zellen[0].QuerySelector(".epos-komponenten-eintrag")!.GetAttribute("title"));
+
+        // Kopf: Gewerk, dann je Version Name und Simulationsstand; keine Spalte „Merkmal".
+        var koepfe = cut.FindAll(".epos-komponentenvergleich thead th");
+        Assert.Equal(3, koepfe.Count);
+        Assert.Equal("Gewerk", koepfe[0].TextContent.Trim());
+        Assert.Equal("Stamm", koepfe[1].QuerySelector(".epos-komponenten-version")!.TextContent);
+        Assert.Equal("simuliert 12.10.26 23:05", koepfe[1].QuerySelector(".epos-komponenten-stand")!.TextContent);
+        Assert.Equal("nicht simuliert", koepfe[2].QuerySelector(".epos-komponenten-stand")!.TextContent);
+        Assert.DoesNotContain("Merkmal", cut.Find(".epos-komponentenvergleich thead").TextContent);
+        Assert.Empty(cut.FindAll(".epos-zellenaktionen"));
+    }
+
+    [Fact]
+    public void Eine_fehlende_Komponente_ist_ein_leiser_Strich_mit_Namen()
+    {
+        var cut = Zeige(stand: Gewerkansicht());
+
+        IElement zelle = Gewerkzeilen(cut)[1].QuerySelectorAll("td")[0];
+        IElement strich = zelle.QuerySelector(".epos-komponenten-fehlt")!;
+        Assert.Equal("—", strich.TextContent);
+        Assert.Equal("nicht vorhanden", strich.GetAttribute("title"));
+        Assert.Equal("nicht vorhanden", strich.GetAttribute("aria-label"));
+        Assert.Equal("—", zelle.TextContent.Trim());               // kein lautes „nicht vorhanden"
+    }
+
+    [Fact]
+    public void Eine_Abweichung_ist_markiert_lesbar_und_am_Gewerk_erkennbar()
+    {
+        var cut = Zeige(stand: Gewerkansicht());
+
+        var zeilen = Gewerkzeilen(cut);
+        IElement abweichend = zeilen[1].QuerySelectorAll("td")[1];
+        Assert.Contains("epos-komponenten-zelle--abweichend", abweichend.ClassName);
+        Assert.Equal("weicht vom Stammprojekt ab",
+                     abweichend.QuerySelector(".epos-komponenten-sprachausgabe")!.TextContent);
+        Assert.Contains("epos-komponenten--abweichend", zeilen[1].ClassName);
+        Assert.NotNull(zeilen[1].QuerySelector("th .epos-komponenten-gewerkmarke"));
+
+        // Die gleiche Wärmepumpe trägt keine Marke, die Stammzelle nie.
+        Assert.Null(zeilen[0].QuerySelector(".epos-komponenten-zelle--abweichend"));
+        Assert.Null(zeilen[0].QuerySelector(".epos-komponenten-gewerkmarke"));
+        Assert.DoesNotContain("--abweichend", zeilen[1].QuerySelectorAll("td")[0].ClassName);
+
+        Assert.Contains("markiert: weicht vom Stammprojekt ab",
+                        cut.Find(".epos-komponenten-legende").TextContent);
+    }
+
+    [Fact]
+    public void Nur_Unterschiede_blendet_Gewerke_ohne_Abweichung_aus_und_meldet_die_Huelle()
+    {
+        bool merkwert = false;
+        var gemeldet = new List<bool>();
+        var cut = Zeige(p =>
+        {
+            p.Add(x => x.NurUnterschiedeLesen, () => merkwert);
+            p.Add(x => x.NurUnterschiedeGewechselt, (bool an) => { merkwert = an; gemeldet.Add(an); });
+        }, stand: Gewerkansicht());
+
+        Assert.Equal(2, Gewerkzeilen(cut).Count);
+        cut.Find(".epos-komponenten-werkzeug input[type=checkbox]").Change(true);
+
+        Assert.Equal(new[] { true }, gemeldet);
+        var zeilen = Gewerkzeilen(cut);
+        Assert.Single(zeilen);
+        Assert.StartsWith("Pufferspeicher", zeilen[0].QuerySelector("th")!.TextContent.Trim());
+        Assert.True(cut.Instance.NurUnterschiede);
+    }
+
+    [Fact]
+    public void Ohne_Unterschiede_steht_mit_dem_Schalter_ein_Satz_statt_der_Tabelle()
+    {
+        var cut = Zeige(stand: Gewerkansicht(mitPuffer: false));
+
+        cut.Find(".epos-komponenten-werkzeug input[type=checkbox]").Change(true);
+
+        Assert.Empty(cut.FindAll(".epos-komponentenvergleich"));
+        Assert.Contains("dieselben Komponenten", cut.Find(".epos-komponenten-leer").TextContent);
+    }
+
+    /// <summary>Die Fußzeile der Hülle: knapp, Ein- und Mehrzahl über eigene Schlüssel.</summary>
+    [Fact]
+    public void Die_Fusszeile_steht_in_Ein_und_Mehrzahl()
+    {
+        Assert.Equal("4 Gewerke · Stamm und 1 Variante · 1 Unterschied",
+                     WindowsFormsApplication1.UebersichtSeiteGaben.Fusszeile(4, 1, 1));
+        Assert.Equal("1 Gewerk · Stamm und 2 Varianten · keine Unterschiede",
+                     WindowsFormsApplication1.UebersichtSeiteGaben.Fusszeile(1, 2, 0));
+        Assert.Equal("2 Gewerke · Stamm und 3 Varianten · 3 Unterschiede",
+                     WindowsFormsApplication1.UebersichtSeiteGaben.Fusszeile(2, 3, 3));
+        Assert.Equal("3 Gewerke · nur Stammprojekt",
+                     WindowsFormsApplication1.UebersichtSeiteGaben.Fusszeile(3, 0, 0));
+
+        var cut = Zeige(stand: Gewerkansicht());
+        Assert.Equal("2 Gewerke · Stamm und 1 Variante · 1 Unterschied", cut.Find(".epos-status").TextContent);
+    }
+
+    /// <summary>
+    /// Der Kopf in drei Teilen: Projektwahl, die umrandete Verwaltung (Bezeichner,
+    /// Anlegen, Umbenennen, Löschen zuletzt) und der Hauptknopf neben dem
+    /// Simulationsstand. Die Sperren bleiben, wie sie waren.
+    /// </summary>
+    [Fact]
+    public void Der_Kopf_gliedert_Projektwahl_Verwaltung_und_Lauf_mit_den_bisherigen_Sperren()
+    {
+        var cut = Zeige(p =>
+        {
+            p.Add(x => x.VarianteUmbenennen, (string _) => "");
+            p.Add(x => x.VarianteAnlegenOeffnen, () => Task.FromResult(false));
+        }, stand: Gewerkansicht());
+
+        IElement wahl = cut.Find(".epos-uebersicht-projektwahl");
+        Assert.Equal("group", wahl.GetAttribute("role"));
+        Assert.Equal(2, wahl.QuerySelectorAll("select").Length);
+        Assert.Single(wahl.QuerySelectorAll("input[type=checkbox]"));
+
+        IElement verwaltung = cut.Find("fieldset.epos-uebersicht-verwaltung");
+        Assert.Equal("Variante verwalten", verwaltung.QuerySelector("legend")!.TextContent);
+        Assert.Single(verwaltung.QuerySelectorAll("input[type=text]"));
+        string[] knoepfe = verwaltung.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "Variante anlegen", "Umbenennen", "Variante löschen" }, knoepfe);
+
+        IElement lauf = cut.Find(".epos-uebersicht-lauf");
+        IElement simuliere = lauf.QuerySelector("button")!;
+        Assert.Equal("Simulation starten", simuliere.TextContent.Trim());
+        Assert.Contains("epos-knopf--primaer", simuliere.ClassName);
+        Assert.NotNull(lauf.QuerySelector(".epos-simstand"));
+
+        // Sperren wie bisher: die Stammzeile ist weder umbenenn- noch löschbar.
+        Assert.False(Anlegenknopf(cut).HasAttribute("disabled"));
+        Assert.True(Umbenennknopf(cut).HasAttribute("disabled"));
+        Assert.True(Loeschknopf(cut).HasAttribute("disabled"));
+        Assert.False(Simulierknopf(cut).HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// Die Ursache des Versatzes von Kopf und Rumpf: Die Tabelle trug den Klassennamen
+    /// des Bausteins Vergleichstabelle, dessen Regel sie zur Flexspalte machte. Die Tabelle
+    /// heißt jetzt anders; die Gewerkspalte haftet beim Querrollen. Geprüft als REGEL —
+    /// bunit misst keine Breite.
+    /// </summary>
+    [Fact]
+    public void Die_Tabelle_bleibt_eine_Tabelle_und_die_Gewerkspalte_haftet()
+    {
+        var cut = Zeige(stand: Gewerkansicht());
+
+        Assert.Empty(cut.FindAll(".epos-vergleichstabelle"));
+        Assert.Contains("epos-raster-huelle", cut.Find(".epos-komponentenvergleich").ParentElement!.ClassName);
+
+        string tabelle = Stilblock(".epos-uebersicht-tabelle {");
+        Assert.Contains("width: 100%", tabelle);
+        Assert.DoesNotContain("display", tabelle);
+
+        string haftend = Stilblock(".epos-komponentenvergleich .epos-komponenten-gewerk {");
+        Assert.Contains("position: sticky", haftend);
+        Assert.Contains("left: 0", haftend);
+    }
+
+    /// <summary>Der Assistent liest die Gegenüberstellung so, wie der Anwender sie sieht.</summary>
+    [Fact]
+    public void Der_Assistent_liest_die_Gegenueberstellung_und_setzt_den_Schalter()
+    {
+        var cut = Zeige(stand: Gewerkansicht());
+
+        KiFeldzugang komponenten = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.BERICHTE_UEBERSICHT, "komponenten");
+        Assert.NotNull(komponenten);
+        Assert.False(komponenten.Setzbar);
+        string text = (string)komponenten.Lesen();
+        Assert.Contains("Wärmepumpe: Stamm = 1 × WP A (16 kW); mit Puffer = 1 × WP A (16 kW)", text);
+        Assert.Contains("Pufferspeicher: Stamm = nicht vorhanden; mit Puffer = 1 × Speicher 1 (1.000 l)"
+                        + " — weicht vom Stammprojekt ab", text);
+
+        KiFeldzugang schalter = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.BERICHTE_UEBERSICHT, "nur_unterschiede");
+        Assert.True(schalter.Setzbar);
+        schalter.Setzen(true);
+        cut.WaitForAssertion(() => Assert.Single(Gewerkzeilen(cut)));
     }
 }

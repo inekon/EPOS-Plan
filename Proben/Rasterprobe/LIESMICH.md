@@ -1865,6 +1865,16 @@ P_th, σ, η und Motortyp, bei 1 280 × 800 am BHKW neben Motortyp, am Heizkesse
 
 ---
 
+## Übersichtsprobe (Berichte & Kosten, Reiter „Übersicht“) — Seite `/uebersichtprobe`
+
+Der echte Rahmen `BerichteKostenSeite` mit der Seite „Übersicht“: Kopf in drei Teilen
+(Projektwahl, Variantenverwaltung, Lauf) und die Gegenüberstellung je Gewerk mit Stamm und
+Varianten, ein Gewerk weicht ab. Synthetische Stände ohne Datenbank, neutrale Namen.
+Adressgaben: `?varianten=<n>` (Vorgabe 1, höchstens 8) und `?nurunterschiede=1`. Zu prüfen
+bei 1 800, 940 und 700 px: Kopf- und Rumpfzellen der Tabelle stehen an denselben linken
+Kanten, die Tabelle füllt die Hülle, die Seite rollt nie quer (mit sechs Varianten rollt
+allein die Hülle, die Gewerkspalte haftet), kein Feld des Kopfes ragt über das Fenster.
+
 ## Bildschirmfotos fürs Wiki: Seite `/wikibild` und `wikibilder.mjs`
 
 Keine Messprobe, sondern die Quelle der Bildschirmfotos der Wiki-Seiten (Regel: Konzept

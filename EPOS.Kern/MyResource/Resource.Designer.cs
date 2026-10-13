@@ -12673,6 +12673,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Versionen im Vergleich führen dieselben Komponenten. ähnelt.
+        /// </summary>
+        public static string BK_LBL_KEINE_UNTERSCHIEDE {
+            get {
+                return ResourceManager.GetString("BK_LBL_KEINE_UNTERSCHIEDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Unterschiede zum Stammprojekt — Variante „{0}“ ähnelt.
         /// </summary>
         public static string BK_LBL_KOMPONENTEN_DIFF {
@@ -12696,6 +12705,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_LBL_KOMPONENTEN_VERGLEICH {
             get {
                 return ResourceManager.GetString("BK_LBL_KOMPONENTEN_VERGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die markiert: weicht vom Stammprojekt ab ähnelt.
+        /// </summary>
+        public static string BK_LBL_LEGENDE_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("BK_LBL_LEGENDE_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht simuliert ähnelt.
+        /// </summary>
+        public static string BK_LBL_NICHT_SIMULIERT {
+            get {
+                return ResourceManager.GetString("BK_LBL_NICHT_SIMULIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Unterschiede ähnelt.
+        /// </summary>
+        public static string BK_LBL_NUR_UNTERSCHIEDE {
+            get {
+                return ResourceManager.GetString("BK_LBL_NUR_UNTERSCHIEDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektwahl ähnelt.
+        /// </summary>
+        public static string BK_LBL_PROJEKTWAHL {
+            get {
+                return ResourceManager.GetString("BK_LBL_PROJEKTWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die simuliert {0} ähnelt.
+        /// </summary>
+        public static string BK_LBL_SIMULIERT_AM {
+            get {
+                return ResourceManager.GetString("BK_LBL_SIMULIERT_AM", resourceCulture);
             }
         }
         
@@ -12727,11 +12781,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante verwalten ähnelt.
+        /// </summary>
+        public static string BK_LBL_VARIANTE_VERWALTEN {
+            get {
+                return ResourceManager.GetString("BK_LBL_VARIANTE_VERWALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Im Vergleich: ähnelt.
         /// </summary>
         public static string BK_LBL_VERGLEICHSWAHL {
             get {
                 return ResourceManager.GetString("BK_LBL_VERGLEICHSWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die weicht vom Stammprojekt ab ähnelt.
+        /// </summary>
+        public static string BK_LBL_WEICHT_AB {
+            get {
+                return ResourceManager.GetString("BK_LBL_WEICHT_AB", resourceCulture);
             }
         }
         
@@ -12768,6 +12840,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_MSG_BITTE_WAEHLEN {
             get {
                 return ResourceManager.GetString("BK_MSG_BITTE_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Gewerk ähnelt.
+        /// </summary>
+        public static string BK_MSG_GEWERKE_EINS {
+            get {
+                return ResourceManager.GetString("BK_MSG_GEWERKE_EINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Gewerke ähnelt.
+        /// </summary>
+        public static string BK_MSG_GEWERKE_N {
+            get {
+                return ResourceManager.GetString("BK_MSG_GEWERKE_N", resourceCulture);
             }
         }
         
@@ -13015,6 +13105,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Stammprojekt ähnelt.
+        /// </summary>
+        public static string BK_MSG_UMFANG_NUR_STAMM {
+            get {
+                return ResourceManager.GetString("BK_MSG_UMFANG_NUR_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stamm und 1 Variante ähnelt.
+        /// </summary>
+        public static string BK_MSG_UMFANG_VARIANTE_EINS {
+            get {
+                return ResourceManager.GetString("BK_MSG_UMFANG_VARIANTE_EINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stamm und {0} Varianten ähnelt.
+        /// </summary>
+        public static string BK_MSG_UMFANG_VARIANTE_N {
+            get {
+                return ResourceManager.GetString("BK_MSG_UMFANG_VARIANTE_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Unterschied ähnelt.
+        /// </summary>
+        public static string BK_MSG_UNTERSCHIEDE_EINS {
+            get {
+                return ResourceManager.GetString("BK_MSG_UNTERSCHIEDE_EINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Unterschiede ähnelt.
+        /// </summary>
+        public static string BK_MSG_UNTERSCHIEDE_KEINE {
+            get {
+                return ResourceManager.GetString("BK_MSG_UNTERSCHIEDE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Unterschiede ähnelt.
+        /// </summary>
+        public static string BK_MSG_UNTERSCHIEDE_N {
+            get {
+                return ResourceManager.GetString("BK_MSG_UNTERSCHIEDE_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Variante „{0}“ angelegt. ähnelt.
         /// </summary>
         public static string BK_MSG_VARIANTE_ANGELEGT {
@@ -13029,15 +13173,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_MSG_VARIANTE_GELOESCHT {
             get {
                 return ResourceManager.GetString("BK_MSG_VARIANTE_GELOESCHT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Komponentenzeile(n) für das Stammprojekt und {1} Variante(n). ähnelt.
-        /// </summary>
-        public static string BK_MSG_VERGLEICH_UMFANG {
-            get {
-                return ResourceManager.GetString("BK_MSG_VERGLEICH_UMFANG", resourceCulture);
             }
         }
         
@@ -60203,11 +60338,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gegenüberstellung je Gewerk: je Version „n × Komponente“ mit Kennwerten, Abweichungen zum Stammprojekt markiert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKU_KOMP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKU_KOMP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten im Vergleich ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKU_KOMP_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKU_KOMP_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt die Liste nur Stammprojekte oder auch deren Varianten? ähnelt.
         /// </summary>
         public static string KI_DLG_BKU_NURSTAEMME_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_BKU_NURSTAEMME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blendet in der Gegenüberstellung die Gewerke aus, in denen keine Version vom Stammprojekt abweicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKU_NURUNT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKU_NURUNT_ERL", resourceCulture);
             }
         }
         
@@ -121810,7 +121972,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gerechnet mit Speicherflotte: {0} · {1} Einheiten ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerechnet mit Speicherflotte: {0} · {1} ähnelt.
         /// </summary>
         public static string SIM_SP_HERKUNFT {
             get {
@@ -123356,6 +123518,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Einheiten ähnelt.
+        /// </summary>
+        public static string SP_EINHEITEN_N {
+            get {
+                return ResourceManager.GetString("SP_EINHEITEN_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Einheit ähnelt.
+        /// </summary>
+        public static string SP_EINHEIT_EINS {
+            get {
+                return ResourceManager.GetString("SP_EINHEIT_EINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die €/(kWh·Zyklus) ähnelt.
         /// </summary>
         public static string SP_EINHEIT_ZYKLUSKOSTEN {
@@ -124184,7 +124364,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die mit Speicherflotte: {0} · {1} Einheiten ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die mit Speicherflotte: {0} · {1} ähnelt.
         /// </summary>
         public static string SP_KONTEXT_FLOTTE {
             get {
