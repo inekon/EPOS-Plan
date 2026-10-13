@@ -11034,10 +11034,13 @@ Effective only with a STRATIFIED target storage (layers &gt; 1): from the inlet 
     <value>Decentralised (split) cooling demand: The annual EER {0} is below {1}. Please check the EER values of the split rows against device data.</value>
   </data>
   <data name="SIMENG_KAELTE_DEZENTRAL_KUEHLTRAEGER" xml:space="preserve">
-    <value>Decentralised (split) cooling demand "{0}": The electricity ({1} MWh/a) enters the electricity balance and billing with the project's electricity carrier; separate billing via the cooling carrier {2} is not yet available for decentralised rows.</value>
+    <value>Decentralised (split) cooling demand "{0}": {1} MWh/a of grid supply of the split electricity (electricity {2} MWh/a) carry the electricity carrier "{3}".</value>
   </data>
   <data name="SIMWARN_KAELTE_SPLIT_OHNE_EER" xml:space="preserve">
     <value>Cooling demand "{0}" is supplied decentrally (split) but has no valid EER ({1}) — the run aborts. Please maintain the supply of the row.</value>
+  </data>
+  <data name="SIMWARN_KAELTE_SPLIT_ZAEHLER_OHNE_TRAEGER" xml:space="preserve">
+    <value>Cooling demand "{0}" is supplied decentrally (split) and set to "separate meter", but has no differing cooling carrier — the meter has no effect, the electricity runs with the project's electricity carrier. Please choose another electricity carrier of the project as cooling carrier or deselect the meter.</value>
   </data>
   <data name="SIMENG_KAELTE_HEIZEN_UND_KUEHLEN" xml:space="preserve">
     <value>Hours with simultaneous heating and cooling: {0} h (building "{1}") — switch-over hours in the transition season or zoning that requires both. Heating and cooling demand are not offset against each other.</value>
@@ -54776,6 +54779,138 @@ chart</value>
   <data name="BKAT_BST_KLASSE_STOFF_SONSTIGE" xml:space="preserve">
     <value>Other material</value>
   </data>
+  <data name="DGF_ROLLE_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Cooling, decentralised (split)</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>decentralised (split)</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_GEBAEUDE" xml:space="preserve">
+    <value>Buildings</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_LASTGANG" xml:space="preserve">
+    <value>Load profiles</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_PROFIL" xml:space="preserve">
+    <value>Cooling demand profiles</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_DAVON_GEBAEUDE" xml:space="preserve">
+    <value>of which buildings</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_DAVON_LASTGANG" xml:space="preserve">
+    <value>of which load profiles</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_DAVON_PROFIL" xml:space="preserve">
+    <value>of which cooling demand profiles</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_DAVON_DEZENTRAL" xml:space="preserve">
+    <value>of which decentralised (split)</value>
+  </data>
+  <data name="SIMERG_GRP_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Decentralised cooling (split)</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Decentralised cooling</value>
+  </data>
+  <data name="SIMERG_LBL_STROM_DEZENTRAL" xml:space="preserve">
+    <value>Decentralised electricity</value>
+  </data>
+  <data name="SIMERG_LBL_EER_DEZENTRAL" xml:space="preserve">
+    <value>Decentralised seasonal EER</value>
+  </data>
+  <data name="SIMERG_LBL_NETZ_DEZENTRAL" xml:space="preserve">
+    <value>Decentralised grid purchase</value>
+  </data>
+  <data name="SIMERG_HRL_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Covered decentrally (split): {0} MWh/a of the cooling demand ({1} %) with {2} MWh/a electricity.</value>
+  </data>
+  <data name="SIMUEB_LBL_KUEHLUNG_DEZENTRAL" xml:space="preserve">
+    <value>Decentralised cooling</value>
+  </data>
+  <data name="SIMUEB_KUEHLUNG_DEZENTRAL_ZAEHLER" xml:space="preserve">
+    <value>of which {0} MWh/a decentralised cooling via own meter (outside the electricity balance)</value>
+  </data>
+  <data name="SIMUEB_KAELTE_DAVON_KAELTEFOLGE" xml:space="preserve">
+    <value>of which cooling sequence: {0} % of the centrally supplied cooling demand</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Decentralised cooling</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_ZEILE" xml:space="preserve">
+    <value>Row</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_SUMME" xml:space="preserve">
+    <value>Annual total</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_EER" xml:space="preserve">
+    <value>EER</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_TRAEGER" xml:space="preserve">
+    <value>Cooling carrier</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_ZAEHLER" xml:space="preserve">
+    <value>Meter</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_QUELLE_PROFIL" xml:space="preserve">
+    <value>Cooling demand profile</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_QUELLE_LASTGANG" xml:space="preserve">
+    <value>Load profile</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_EER_FEST" xml:space="preserve">
+    <value>fixed {0}</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_EER_LINEAR" xml:space="preserve">
+    <value>linear {0} at {1} °C / {2} at {3} °C</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_ZAEHLER_EIGEN" xml:space="preserve">
+    <value>own meter</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_ZAEHLER_ANTEILIG" xml:space="preserve">
+    <value>share of grid purchase</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SUMME" xml:space="preserve">
+    <value>Total decentralised (profiles): {0} MWh/a</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_ZENTRAL" xml:space="preserve">
+    <value>Central cooling demand (cooling sequence): buildings with cooling, load profiles {0}, cooling demand profiles {1}</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_HRL" xml:space="preserve">
+    <value>Decentrally supplied rows run alongside the cooling sequence with their own EER; they are maintained under “External cooling demand” and “Cooling demand profiles”.</value>
+  </data>
+  <data name="SIM_SCHEMA_ABNEHMER_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Decentral (split)</value>
+  </data>
+  <data name="KONF_KS_DEZENTRAL_ZEILE" xml:space="preserve">
+    <value>{0}: EER {1}</value>
+  </data>
+  <data name="KONF_KS_DEZENTRAL_TRAEGER" xml:space="preserve">
+    <value>Cooling carrier: {0}</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_TIP_BEARBEITEN" xml:space="preserve">
+    <value>Edit the row in the dialog of its source: cooling demand profiles or external cooling demand</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_MSG_FEHLER" xml:space="preserve">
+    <value>“{0}” cannot be edited here: {1}</value>
+  </data>
+  <data name="KONF_KS_DAVON_LASTGANG" xml:space="preserve">
+    <value>of which load curve: {0}</value>
+  </data>
+  <data name="KONF_KS_DAVON_PROFIL" xml:space="preserve">
+    <value>of which profile: {0}</value>
+  </data>
+  <data name="KI_DLG_SIM_KAELTE_DEZENTRAL_ERL" xml:space="preserve">
+    <value>The cooling demand rows covered decentrally (split) with source, annual total, EER, cooling carrier and meter; read-only. They are maintained in the dialogs “External cooling demand” and “Cooling demand profiles”.</value>
+  </data>
+  <data name="KONF_KS_DEZENTRAL_STROM_PROJEKT" xml:space="preserve">
+    <value>Power: project carrier</value>
+  </data>
+  <data name="KONF_KS_DEZENTRAL_STROM_TRAEGER" xml:space="preserve">
+    <value>Power: {0} carriers</value>
+  </data>
   <data name="GEBSIM_BTN_ALLE" xml:space="preserve">
     <value>Simulation… (all {0} buildings)</value>
   </data>
@@ -55237,6 +55372,348 @@ chart</value>
   </data>
   <data name="MPB_HILFE_KURZ" xml:space="preserve">
     <value>Help on the model check</value>
+  </data>
+  <data name="ZN_MSG_PROFIL_FEHLT" xml:space="preserve">
+    <value>The selected profile is not in the catalogue.</value>
+  </data>
+  <data name="ZN_MSG_PROFIL_ABGELEHNT" xml:space="preserve">
+    <value>The profile could not be assigned to zone "{0}".</value>
+  </data>
+  <data name="ZN_MSG_OHNE_KALENDER" xml:space="preserve">
+    <value>This database has no conditioning calendars yet.</value>
+  </data>
+  <data name="ZN_MSG_QUELLE_FEHLT" xml:space="preserve">
+    <value>The source zone does not belong to this building.</value>
+  </data>
+  <data name="ZN_MSG_SOLLWERT_BEREICH" xml:space="preserve">
+    <value>Set points lie between 5 and 30 °C, night not above day.</value>
+  </data>
+  <data name="ZN_MSG_KEINE_RUECKNAHME" xml:space="preserve">
+    <value>There is no change to undo.</value>
+  </data>
+  <data name="ZN_MSG_FEHLER" xml:space="preserve">
+    <value>The change was not written: {0}</value>
+  </data>
+  <data name="ZN_MSG_ZURUECKGENOMMEN" xml:space="preserve">
+    <value>The last change has been undone ({0} zones).</value>
+  </data>
+  <data name="ZN_MSG_KEINE_WAHL" xml:space="preserve">
+    <value>No selected zone to change.</value>
+  </data>
+  <data name="ZN_MSG_GEAENDERT" xml:space="preserve">
+    <value>{0} zones changed.</value>
+  </data>
+  <data name="ZNB_TITEL" xml:space="preserve">
+    <value>Use and calendars</value>
+  </data>
+  <data name="ZNB_HILFE_KURZ" xml:space="preserve">
+    <value>Use profile, calendars, set points, holidays and heating period of all zones on one sheet; an action applies to all selected zones.</value>
+  </data>
+  <data name="ZNB_ALLE_WAEHLEN" xml:space="preserve">
+    <value>Select all zones</value>
+  </data>
+  <data name="ZNB_ZONE_WAEHLEN" xml:space="preserve">
+    <value>Select zone {0}</value>
+  </data>
+  <data name="ZNB_SPALTE_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="ZNB_SPALTE_FLAECHE" xml:space="preserve">
+    <value>Area</value>
+  </data>
+  <data name="ZNB_SPALTE_PROFIL" xml:space="preserve">
+    <value>Use profile</value>
+  </data>
+  <data name="ZNB_SPALTE_KALENDER" xml:space="preserve">
+    <value>Calendars</value>
+  </data>
+  <data name="ZNB_SPALTE_SOLL" xml:space="preserve">
+    <value>Set point day / night</value>
+  </data>
+  <data name="ZNB_SPALTE_FERIEN" xml:space="preserve">
+    <value>Holidays / heating period</value>
+  </data>
+  <data name="ZNB_SPALTE_BEFUND" xml:space="preserve">
+    <value>Finding</value>
+  </data>
+  <data name="ZNB_SPALTE_AKTION" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="ZNB_KURZ_HEIZSOLL" xml:space="preserve">
+    <value>H</value>
+  </data>
+  <data name="ZNB_KURZ_KUEHLSOLL" xml:space="preserve">
+    <value>C</value>
+  </data>
+  <data name="ZNB_KURZ_LUEFTUNG" xml:space="preserve">
+    <value>V</value>
+  </data>
+  <data name="ZNB_KURZ_GERAETE" xml:space="preserve">
+    <value>E</value>
+  </data>
+  <data name="ZNB_KURZ_PERSONEN" xml:space="preserve">
+    <value>P</value>
+  </data>
+  <data name="ZNB_NAME_HEIZSOLL" xml:space="preserve">
+    <value>Heating</value>
+  </data>
+  <data name="ZNB_NAME_KUEHLSOLL" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="ZNB_NAME_LUEFTUNG" xml:space="preserve">
+    <value>Ventilation</value>
+  </data>
+  <data name="ZNB_NAME_GERAETE" xml:space="preserve">
+    <value>Internal loads</value>
+  </data>
+  <data name="ZNB_NAME_PERSONEN" xml:space="preserve">
+    <value>Occupants</value>
+  </data>
+  <data name="ZNB_KENNUNG_EIGEN" xml:space="preserve">
+    <value>own calendar</value>
+  </data>
+  <data name="ZNB_KENNUNG_PROFIL" xml:space="preserve">
+    <value>generated from the profile</value>
+  </data>
+  <data name="ZNB_KENNUNG_GEERBT" xml:space="preserve">
+    <value>inherited from the building</value>
+  </data>
+  <data name="ZNB_KENNUNG_FEHLT" xml:space="preserve">
+    <value>missing</value>
+  </data>
+  <data name="ZNB_KENNUNG_ENTFAELLT" xml:space="preserve">
+    <value>not applicable (unheated)</value>
+  </data>
+  <data name="ZNB_MARKE_TITEL" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="ZNB_HERKUNFT_PROFIL" xml:space="preserve">
+    <value>profile</value>
+  </data>
+  <data name="ZNB_HERKUNFT_DATEI" xml:space="preserve">
+    <value>file</value>
+  </data>
+  <data name="ZNB_HERKUNFT_VORGABE" xml:space="preserve">
+    <value>default</value>
+  </data>
+  <data name="ZNB_VORSCHLAG" xml:space="preserve">
+    <value>Suggestion: {0}</value>
+  </data>
+  <data name="ZNB_OHNE_PROFIL" xml:space="preserve">
+    <value>no profile</value>
+  </data>
+  <data name="ZNB_FERIEN_PROJEKT" xml:space="preserve">
+    <value>project</value>
+  </data>
+  <data name="ZNB_FERIEN_ABWEICHUNG" xml:space="preserve">
+    <value>deviation</value>
+  </data>
+  <data name="ZNB_FERIEN_FEHLT" xml:space="preserve">
+    <value>missing</value>
+  </data>
+  <data name="ZNB_KURZ_FERIEN" xml:space="preserve">
+    <value>H</value>
+  </data>
+  <data name="ZNB_KURZ_SAISON" xml:space="preserve">
+    <value>HP</value>
+  </data>
+  <data name="ZNB_NAME_FERIEN" xml:space="preserve">
+    <value>Holidays</value>
+  </data>
+  <data name="ZNB_NAME_SAISON" xml:space="preserve">
+    <value>Heating period</value>
+  </data>
+  <data name="ZNB_GEWAEHLT" xml:space="preserve">
+    <value>{0} of {1} zones selected</value>
+  </data>
+  <data name="ZNB_SPERRE_WAHL" xml:space="preserve">
+    <value>Select zones first.</value>
+  </data>
+  <data name="ZNB_BTN_PROFIL" xml:space="preserve">
+    <value>Assign profile…</value>
+  </data>
+  <data name="ZNB_BTN_PROFIL_HINWEIS" xml:space="preserve">
+    <value>Gives the selected zones a catalogue profile; the generator creates the calendars.</value>
+  </data>
+  <data name="ZNB_BTN_VORSCHLAG" xml:space="preserve">
+    <value>Apply suggestion</value>
+  </data>
+  <data name="ZNB_BTN_VORSCHLAG_HINWEIS" xml:space="preserve">
+    <value>Gives each selected zone the profile according to the profile rule.</value>
+  </data>
+  <data name="ZNB_BTN_PROJEKT" xml:space="preserve">
+    <value>Apply project holidays/heating period</value>
+  </data>
+  <data name="ZNB_BTN_PROJEKT_HINWEIS" xml:space="preserve">
+    <value>The selected zones follow the project holidays and heating period; their deviation is removed.</value>
+  </data>
+  <data name="ZNB_BTN_KOPIEREN" xml:space="preserve">
+    <value>Copy calendars from…</value>
+  </data>
+  <data name="ZNB_BTN_KOPIEREN_HINWEIS" xml:space="preserve">
+    <value>Copies all calendars of one zone to the selected zones and replaces theirs.</value>
+  </data>
+  <data name="ZNB_BTN_SOLL" xml:space="preserve">
+    <value>Set set points…</value>
+  </data>
+  <data name="ZNB_BTN_SOLL_HINWEIS" xml:space="preserve">
+    <value>Sets the day and night set point of the selected zones.</value>
+  </data>
+  <data name="ZNB_BTN_ZURUECK" xml:space="preserve">
+    <value>Undo</value>
+  </data>
+  <data name="ZNB_BTN_ZURUECK_HINWEIS" xml:space="preserve">
+    <value>Restores the state before the last change.</value>
+  </data>
+  <data name="ZNB_BTN_ANWENDEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="ZNB_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ZNB_BTN_ZONE" xml:space="preserve">
+    <value>Zone…</value>
+  </data>
+  <data name="ZNB_BTN_ZONE_HINWEIS" xml:space="preserve">
+    <value>Opens the zone in the zone dialogue (calendars in detail).</value>
+  </data>
+  <data name="ZNB_LABEL_PROFIL" xml:space="preserve">
+    <value>Profile:</value>
+  </data>
+  <data name="ZNB_LABEL_QUELLE" xml:space="preserve">
+    <value>From zone:</value>
+  </data>
+  <data name="ZNB_LABEL_TAG" xml:space="preserve">
+    <value>Day [°C]:</value>
+  </data>
+  <data name="ZNB_LABEL_NACHT" xml:space="preserve">
+    <value>Night [°C]:</value>
+  </data>
+  <data name="ZNB_MSG_NICHT_GELESEN" xml:space="preserve">
+    <value>The zones of this building cannot be read.</value>
+  </data>
+  <data name="ZNB_MSG_KEINE_ZONEN" xml:space="preserve">
+    <value>The building has no zones.</value>
+  </data>
+  <data name="ZNB_MSG_ZAHL" xml:space="preserve">
+    <value>Please enter a number.</value>
+  </data>
+  <data name="ZNB_MSG_PROJEKT_OHNE" xml:space="preserve">
+    <value>The project defines neither holidays nor a heating period.</value>
+  </data>
+  <data name="GEB_BTN_ZONENNUTZUNG" xml:space="preserve">
+    <value>Use and calendars…</value>
+  </data>
+  <data name="GEB_BTN_ZONENNUTZUNG_HINWEIS" xml:space="preserve">
+    <value>Use profile, calendars, set points, holidays and heating period of all zones on one sheet.</value>
+  </data>
+  <data name="GEB_SPERRE_ZONENNUTZUNG" xml:space="preserve">
+    <value>Save the changed zones with OK first.</value>
+  </data>
+  <data name="MPB_BTN_BEARBEITEN" xml:space="preserve">
+    <value>Edit…</value>
+  </data>
+  <data name="MPB_BTN_BEARBEITEN_HINWEIS" xml:space="preserve">
+    <value>Opens the sheet "Use and calendars" with all zones.</value>
+  </data>
+  <data name="GEBV_BTN_OEFFNEN" xml:space="preserve">
+    <value>Apply construction-period defaults…</value>
+  </data>
+  <data name="GEBV_BTN_ZURUECKNEHMEN" xml:space="preserve">
+    <value>Undo defaults</value>
+  </data>
+  <data name="GEBV_TITEL" xml:space="preserve">
+    <value>Construction-period defaults</value>
+  </data>
+  <data name="GEBV_GRUND_ZONEN" xml:space="preserve">
+    <value>The building has zones – the zone path applies (tab “Zones”).</value>
+  </data>
+  <data name="GEBV_GRUND_KLASSE" xml:space="preserve">
+    <value>No construction period set – choose a construction period or year of construction first.</value>
+  </data>
+  <data name="GEBV_GRUND_WERTE" xml:space="preserve">
+    <value>The construction period provides no values.</value>
+  </data>
+  <data name="GEBV_HERKUNFT_KLASSE" xml:space="preserve">
+    <value>Default of class {0}: median of {1} catalogue buildings of the class.</value>
+  </data>
+  <data name="GEBV_HERKUNFT_STANDARD" xml:space="preserve">
+    <value>Default of energy standard {0}: median of {1} catalogue buildings of this standard.</value>
+  </data>
+  <data name="GEBV_HERKUNFT_FREI" xml:space="preserve">
+    <value>Default of class {0}: open value (type building after Stein/Loga 2025), no catalogue building of the class.</value>
+  </data>
+  <data name="GEBV_SP_FELD" xml:space="preserve">
+    <value>Field</value>
+  </data>
+  <data name="GEBV_SP_JETZT" xml:space="preserve">
+    <value>Current</value>
+  </data>
+  <data name="GEBV_SP_NEU" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="GEBV_TXT_GLEICH" xml:space="preserve">
+    <value>unchanged</value>
+  </data>
+  <data name="GEBV_TXT_HINWEIS" xml:space="preserve">
+    <value>Values go into the working state and are saved with OK. Areas, set points and calendars remain.</value>
+  </data>
+  <data name="GEBV_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="GEBV_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="GEBV_GRUPPE_PROFIL" xml:space="preserve">
+    <value>Profile of the building type</value>
+  </data>
+  <data name="GEBV_TXT_PROFIL" xml:space="preserve">
+    <value>The building type “{0}” suggests the usage profile “{1}” (set points, gains, ventilation).</value>
+  </data>
+  <data name="GEBV_BTN_PROFIL" xml:space="preserve">
+    <value>Apply profile…</value>
+  </data>
+  <data name="GEBV_GRUND_PROFIL_KEINS" xml:space="preserve">
+    <value>The building type “{0}” suggests no usage profile.</value>
+  </data>
+  <data name="GEBV_GRUND_PROFIL_WEG" xml:space="preserve">
+    <value>Usage profiles are not available here.</value>
+  </data>
+  <data name="GEBV_MELDUNG_UEBERNOMMEN" xml:space="preserve">
+    <value>Defaults {0} applied ({1} fields changed) – save with OK.</value>
+  </data>
+  <data name="GEBV_MELDUNG_ZURUECK" xml:space="preserve">
+    <value>Defaults undone.</value>
+  </data>
+  <data name="MP_BEFUND_HUELLE_OFFEN" xml:space="preserve">
+    <value>Zone '{0}': The envelope is not closed – {1} m² face upwards, {2} m² downwards (deviation {3} %).</value>
+  </data>
+  <data name="MP_BEFUND_HUELLE_OBEN_FEHLT" xml:space="preserve">
+    <value>Zone '{0}': The envelope is open at the top – no roof, no ceiling (upwards {1} m², downwards {2} m²).</value>
+  </data>
+  <data name="MP_BEFUND_HUELLE_UNTEN_FEHLT" xml:space="preserve">
+    <value>Zone '{0}': The envelope is open at the bottom – no ground slab, no floor (upwards {1} m², downwards {2} m²).</value>
+  </data>
+  <data name="MP_BEFUND_HUELLE_GESPIEGELT" xml:space="preserve">
+    <value>Element '{0}' (zone '{1}') faces against its position with tilt {2}° – a ground slab faces downwards (180°), a roof upwards (0°).</value>
+  </data>
+  <data name="MP_VORSCHLAG_HUELLBAUTEIL_PROJEKT" xml:space="preserve">
+    <value>Add {0}: {1} m², tilt {2}°, {3}, U {4} W/(m²K) as the same elements of the building</value>
+  </data>
+  <data name="MP_VORSCHLAG_HUELLBAUTEIL_TYP" xml:space="preserve">
+    <value>Add {0}: {1} m², tilt {2}°, {3}, U {4} W/(m²K) of the type construction</value>
+  </data>
+  <data name="MP_RAND_AUSSENLUFT" xml:space="preserve">
+    <value>to outdoor air</value>
+  </data>
+  <data name="MP_RAND_ERDREICH" xml:space="preserve">
+    <value>against ground</value>
+  </data>
+  <data name="MP_RAND_ZONE" xml:space="preserve">
+    <value>to zone '{0}'</value>
+  </data>
+  <data name="MP_BAUTEIL_ERGAENZT" xml:space="preserve">
+    <value>{0} (added)</value>
   </data>
 </root>
 

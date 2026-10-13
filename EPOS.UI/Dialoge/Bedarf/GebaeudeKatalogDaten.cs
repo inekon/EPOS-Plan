@@ -55,7 +55,20 @@ public sealed class GebaeudeKatalogDaten
     /// Index der Baualtersklasse (0 = 'A' … 12 = 'M', Entscheid E47). Das Baujahr SCHLÄGT sie VOR
     /// (<see cref="BaujahrUebernehmen"/>, <see cref="KlasseVorschlag"/>); gespeichert wird immer diese Wahl.
     /// </summary>
-    public int Baualtersklasse { get; set; }
+    public int Baualtersklasse
+    {
+        get => _baualtersklasse;
+        set { _baualtersklasse = value; KlasseGesetzt = true; }
+    }
+
+    private int _baualtersklasse;
+
+    /// <summary>
+    /// Trägt der Satz eine Baualtersklasse? <c>false</c> nur für einen Satz, dessen Spalte beim Laden leer war und dessen
+    /// Klasse seither niemand gewählt hat (die Klappliste zeigt dann „A“); jede Wahl der Klasse und jedes Baujahr mit Klasse
+    /// setzt es (MA-7: „Vorgaben der Baualtersklasse übernehmen…“ ist ohne Klasse gesperrt).
+    /// </summary>
+    public bool KlasseGesetzt { get; set; } = true;
 
     /// <summary>
     /// Das Baujahr (<c>Baujahr</c>, Schemaschritt <c>BaujahrSchema.SCHRITT</c>) — eine Jahreszahl

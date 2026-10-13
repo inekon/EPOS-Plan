@@ -475,9 +475,12 @@ namespace WindowsFormsApplication1
                 k.BedarfFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_JAHRESBEDARF);
                 k.LastFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_SPITZE);
                 k.RestFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_REST);
+                // K6b: mit Split-Zeile ist die Deckungszahl die Hauptzahl samt Split - für sie gibt es (noch) keinen
+                // Platzhalter, die Zahl trägt deshalb keine Marke.
                 if (k.Erzeuger.Count > 0)
                 {
-                    k.DeckungFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD);
+                    if (!k.MitDezentral)
+                        k.DeckungFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD);
                     k.StromFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_STROM);
                     k.JazFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_JAZ);
                     // Der Katalog bildet Deckungsgrad und EER-Jahreswert aus den gespeicherten Summen

@@ -60,6 +60,92 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        /// <summary>
+        /// K6b: eine Kältebedarfszeile des Projekts, wie Konfiguration, Anlagenschema und Bericht sie zeigen — ein
+        /// Kältebedarfsprofil oder ein Lastgang im Kanal Kühlung, samt Deckungsart. Nur lesend.
+        /// </summary>
+        public sealed class Uebersichtszeile
+        {
+            /// <summary><c>true</c> = Kältebedarfsprofil (<c>Z_Projekt_Kaeltebedarf</c>), <c>false</c> = Lastgang (<c>Z_ProjektWaermebedarf</c>).</summary>
+            public bool Profil;
+
+            /// <summary>Die ID der Zuordnungszeile.</summary>
+            public int IdZuordnung;
+
+            /// <summary>Bezeichner der Zeile.</summary>
+            public string Bezeichner = "";
+
+            /// <summary>Jahressumme [MWh] — nur am Profil gepflegt; <c>null</c> beim Lastgang.</summary>
+            public double? SummeMwh;
+
+            /// <summary>Dezentral (Split) gedeckt?</summary>
+            public bool Split;
+
+            /// <summary>EER-Weg (<see cref="KaeltebedarfSchema.EER_FEST"/> / <see cref="KaeltebedarfSchema.EER_LINEAR"/>); <c>null</c> zentral.</summary>
+            public string EerWeg;
+
+            /// <summary>EER und Außentemperatur der zwei Punkte (der zweite nur linear).</summary>
+            public double? Eer1, Taussen1, Eer2, Taussen2;
+
+            /// <summary>Kühlträger, wie an der Zeile gepflegt; <c>null</c> = Stromträger des Projekts.</summary>
+            public int? KuehlIdCarrier;
+
+            /// <summary>Eigener Zähler, wie an der Zeile gepflegt.</summary>
+            public bool EigenerZaehler;
+        }
+
+        /// <summary>
+        /// K6b: alle Kältebedarfszeilen eines Projekts in der Buchungsfolge des Laufs — erst die Lastgänge im Kanal Kühlung,
+        /// dann die Kältebedarfsprofile. Still und spaltentolerant: vor Schritt 213 liest jeder Weg leer, ein Lesefehler
+        /// ergibt die leere Liste.
+        /// </summary>
+        public static List<Uebersichtszeile> ZeilenDesProjekts(int idProjekt)
+        {
+            var liste = new List<Uebersichtszeile>();
+            if (idProjekt <= 0) return liste;
+            try
+            {
+                foreach (Z_ProjWaermebedarfModel w in Z_ProjektGebGanglinieCtrl.LiesProjekt(idProjekt))
+                {
+                    if (!IstKuehlkanal(w)) continue;
+                    liste.Add(new Uebersichtszeile
+                    {
+                        Profil = false, IdZuordnung = w.m_ID_Z, Bezeichner = w.m_szBezeichner ?? "",
+                        Split = w.Deckung == KaeltebedarfSchema.DECKUNG_SPLIT, EerWeg = w.EerWeg,
+                        Eer1 = w.Eer1, Taussen1 = w.Taussen1, Eer2 = w.Eer2, Taussen2 = w.Taussen2,
+                        KuehlIdCarrier = w.KuehlIdCarrier, EigenerZaehler = w.KuehlEigenerZaehler,
+                    });
+                }
+                foreach (Z_ProjektKaeltebedarfModel z in LiesProjekt(idProjekt))
+                    liste.Add(new Uebersichtszeile
+                    {
+                        Profil = true, IdZuordnung = z.ID_Z, Bezeichner = z.Bezeichner ?? "", SummeMwh = z.Summe,
+                        Split = z.Deckung == KaeltebedarfSchema.DECKUNG_SPLIT, EerWeg = z.EerWeg,
+                        Eer1 = z.Eer1, Taussen1 = z.Taussen1, Eer2 = z.Eer2, Taussen2 = z.Taussen2,
+                        KuehlIdCarrier = z.KuehlIdCarrier, EigenerZaehler = z.KuehlEigenerZaehler,
+                    });
+            }
+            catch
+            {
+                return new List<Uebersichtszeile>();
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// K6b: der EER-Weg einer Split-Zeile als Text — „fest 3,0“ bzw. „linear 3,0 bei 35 °C / 4,0 bei 25 °C“; leer zentral.
+        /// </summary>
+        public static string EerText(Uebersichtszeile z, IFormatProvider kultur = null)
+        {
+            if (z == null || !z.Split) return "";
+            kultur ??= CultureInfo.CurrentCulture;
+            string E(double? w) => (w ?? 0.0).ToString("0.0#", kultur);
+            string T(double? w) => (w ?? 0.0).ToString("0", kultur);
+            return z.EerWeg == KaeltebedarfSchema.EER_LINEAR
+                ? string.Format(kultur, MyResource.Resource.SIMKONF_KAELTE_DEZ_EER_LINEAR, E(z.Eer1), T(z.Taussen1), E(z.Eer2), T(z.Taussen2))
+                : string.Format(kultur, MyResource.Resource.SIMKONF_KAELTE_DEZ_EER_FEST, E(z.Eer1));
+        }
+
         /// <summary>Schreibt die Jahressumme der Zeilen mit diesem Bezeichner und markiert das Projekt als geändert.</summary>
         public static bool UpdateSumme(double summe, string bezeichner, int idProjekt)
         {

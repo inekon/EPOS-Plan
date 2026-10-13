@@ -892,6 +892,12 @@ namespace WindowsFormsApplication1
         /// der Kältekaskade); der Anzeigetext ist der Bezeichner der Wärmepumpe (<see cref="Beschriftungen"/>).</summary>
         public const string KAELTE_PRAEFIX = "KAELTE_";
 
+        /// <summary>
+        /// K6b: die <b>dezentral (Split) gedeckte Kälte</b> je Stunde [kWh] (<c>SimulationKaeltebedarf.Kaeltebedarf_Dezentral</c>).
+        /// Steht nur im Satz, wenn der Lauf eine Split-Zeile gerechnet hat; ohne sie fehlt der Schlüssel.
+        /// </summary>
+        public const string KAELTE_DEZENTRAL = "KaelteDezentral";
+
         /// <summary>Die Schlüssel der Kältedeckung je Erzeuger in der Folge der Kältekaskade (Katalog v12).</summary>
         public List<string> Kaeltereihen = new List<string>();
 

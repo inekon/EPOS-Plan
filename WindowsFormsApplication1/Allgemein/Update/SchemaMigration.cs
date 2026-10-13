@@ -5490,6 +5490,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_BAUTEILKATALOG_HAUSTECHNIK = BauteilkatalogHaustechnikSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="KaeltebedarfSplitAbrechnungSchema.SCHRITT"/> — <b>Abrechnung des Split-Stroms</b> (K6, Konzept
+        /// Kältebedarf 4.2/4.3, E34/E35): die Ergebnistabelle <c>Tab_ErgebnisKaelteDezentral</c> je dezentral (Split) gedeckter
+        /// Kältebedarfszeile eines Laufs — Kälte, Strom, Spitzen, Jahres-EER, Netzbezug, abweichender Kühlträger samt Zähler.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Referenzprojekt führt eine Split-Zeile; die Tabelle bleibt leer.</para>
+        /// </summary>
+        public const int SCHRITT_KAELTEBEDARF_SPLIT_ABRECHNUNG = KaeltebedarfSplitAbrechnungSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -8055,6 +8064,12 @@ namespace WindowsFormsApplication1
                         "Werkstoffe und Zubehoer der Haustechnik liessen sich im Katalog nicht als eigene Klasse fuehren und nicht " +
                         "ausblenden. KEIN Rechenergebnis aendert sich - der Bauteilweg liest keine Gliederung.",
                         Schritt_BauteilkatalogHaustechnik),
+            // K6: Abrechnung des Split-Stroms. Quelle ist KaeltebedarfSplitAbrechnungSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KAELTEBEDARF_SPLIT_ABRECHNUNG,
+                        "Tab_ErgebnisKaelteDezentral: Ergebnis je dezentral (Split) gedeckter Kaeltebedarfszeile (leer)",
+                        "Der Strom der Split-Zeilen liesse sich nicht je Kuehltraeger und Zaehler abrechnen, und Bericht und " +
+                        "Kostenrechnung saehen ohne frischen Lauf keine Split-Zeile. KEIN Rechenergebnis aendert sich - die Tabelle bleibt leer.",
+                        Schritt_KaeltebedarfSplitAbrechnung),
         };
 
         /// <summary>
@@ -15659,6 +15674,59 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Klasse Haustechnik - " + (handgriffe == 0 ? "stand bereits." : handgriffe + " Tabelle(n) neu gebaut.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Abrechnung des Split-Stroms" — Anlass und Wirkung stehen bei <see cref="SCHRITT_KAELTEBEDARF_SPLIT_ABRECHNUNG"/>,
+        /// die Anweisungen bei <see cref="KaeltebedarfSplitAbrechnungSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_KaeltebedarfSplitAbrechnung(Lauf l)
+        {
+            string nr = KaeltebedarfSplitAbrechnungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KaeltebedarfSplitAbrechnungSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = KaeltebedarfSplitAbrechnungSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KaeltebedarfSplitAbrechnungSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Ergebnistabelle je Split-Zeile steht nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Ergebnis je Split-Zeile - " + (handgriffe == 0 ? "stand bereits." : "Tabelle angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

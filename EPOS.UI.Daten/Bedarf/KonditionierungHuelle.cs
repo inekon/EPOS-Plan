@@ -641,8 +641,17 @@ namespace WindowsFormsApplication1
                     a, GebaeudeStammCtrl.KatalogebeneDerKopie(idGebaeude, out _)))
                 : null;
             return Bauen(art, bezug, projekt, projekt ? idGebaeude : 0, new KonditionierungsvorlageCtrl(), katalog,
-                         RaumnutzungCtrl.Lesbar() ? id => new RaumnutzungCtrl().ProfilLesen(id) : null);
+                         RaumnutzungCtrl.Lesbar() ? id => new RaumnutzungCtrl().ProfilLesen(id) : null,
+                         profilDerArt: RaumnutzungCtrl.Lesbar() ? ProfilDerGebaeudeart : null);
         }
+
+        /// <summary>
+        /// MA-7: die Kennung des Profils der Gebäudeart (Profilregel 2.4 Stufe 3, <see cref="Zonenvorbesetzung.AusGebaeudeart"/>);
+        /// <c>null</c> = keins oder nicht im Katalog.
+        /// </summary>
+        private static long? ProfilDerGebaeudeart(string gebaeudeart)
+            => Zonenvorbesetzung.KennungAusGebaeudeart(gebaeudeart) == null ? null
+               : Zonenvorbesetzung.AusGebaeudeart(Raumnutzungsvorbelegung.Lesen(), gebaeudeart)?.Id;
 
         /// <summary>
         /// <b>Der Weg ohne Datenbank</b> — allein die reinen Schritte über dem Arbeitsstand: Zellen,
@@ -659,13 +668,16 @@ namespace WindowsFormsApplication1
         /// <param name="katalogErneut">„Aus dem Katalog erneut übernehmen…" des Prüfstands; <c>null</c> = keiner.</param>
         /// <param name="vorlagen">Die Vorlagen des Prüfstands (etwa <see cref="Konditionierungsvorlagenablage.AusSaat"/>); <c>null</c> = keine.</param>
         /// <param name="profile">Die Nutzungsprofile des Prüfstands samt Kategorie (Stufe NP3b); <c>null</c> = ohne „Nutzungsprofil übernehmen…".</param>
+        /// <param name="profilDerArt">Die Profilregel der Gebäudeart des Prüfstands (MA-7); <c>null</c> = keine.</param>
         internal static KonditionierungWeg ReinerWeg(Kalendereigentuemer art, bool projekt, Bezug bezug = null,
                                                      Func<KonditionierungStand, KonditionierungErgebnis> katalogErneut = null,
                                                      IKonditionierungsvorlagen vorlagen = null,
-                                                     IReadOnlyList<(string Kategorie, Raumnutzungsprofil Profil)> profile = null)
+                                                     IReadOnlyList<(string Kategorie, Raumnutzungsprofil Profil)> profile = null,
+                                                     Func<string, long?> profilDerArt = null)
             => Bauen(art, bezug ?? Bezug.Katalog, projekt, 0, vorlagen, katalogErneut,
                      profile == null ? null : id => profile.Select(x => x.Profil).FirstOrDefault(p => p.Id == id),
-                     profile == null ? null : () => profile.Select(x => RaumnutzungHuelle.Wahl(x.Kategorie, x.Profil, RaumnutzungHuelle.Texte())).ToList());
+                     profile == null ? null : () => profile.Select(x => RaumnutzungHuelle.Wahl(x.Kategorie, x.Profil, RaumnutzungHuelle.Texte())).ToList(),
+                     profilDerArt);
 
         /// <summary>
         /// Baut das Bündel: je Handlung ein Delegat über den reinen Schritt. <paramref name="vorlagen"/>
@@ -676,7 +688,8 @@ namespace WindowsFormsApplication1
                                                 IKonditionierungsvorlagen vorlagen,
                                                 Func<KonditionierungStand, KonditionierungErgebnis> katalogErneut,
                                                 Func<long, Raumnutzungsprofil> profile = null,
-                                                Func<IReadOnlyList<KonditionierungProfilwahl>> profilliste = null)
+                                                Func<IReadOnlyList<KonditionierungProfilwahl>> profilliste = null,
+                                                Func<string, long?> profilDerArt = null)
         {
             return new KonditionierungWeg
             {
@@ -695,6 +708,7 @@ namespace WindowsFormsApplication1
                 // Stufe NP3b (Konzept Nutzungsprofile 6.2): „Nutzungsprofil übernehmen…" in den Arbeitsstand.
                 Nutzungsprofile = profile == null ? null : profilliste ?? RaumnutzungHuelle.Profilwahl,
                 ProfilUebernehmen = profile == null ? null : (s, anfrage) => Profilschritt(s, art, bezug, anfrage, profile),
+                ProfilDerGebaeudeart = profile == null ? null : profilDerArt,
 
                 Vorlagen = vorlagen == null ? null : g => vorlagen.Liste(Kern(g)).Select(VorlageDaten).ToList(),
                 VorlageUebernehmen = vorlagen == null ? null : (s, o, id) => Schritt(s, art, bezug, a =>

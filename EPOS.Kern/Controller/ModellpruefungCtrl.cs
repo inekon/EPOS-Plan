@@ -158,8 +158,25 @@ namespace WindowsFormsApplication1
                                                 new DbParam("@f", (object)alt ?? DBNull.Value), new DbParam("@g", g)));
                     return null;
                 }
+                case Vorschlagsart.Huellbauteil: return HuellbauteilAnwenden(v, s, b, rueck);
                 default: return Modellpruefung.Ressource("MP_MSG_UNBEKANNT");
             }
+        }
+
+        /// <summary>
+        /// Legt das fehlende Hüllbauteil an (MA-3): an der Zone des Befunds, nach ihrem letzten Bauteil, nur mit U-Wert (Stufe C).
+        /// Die Rücknahme löscht es wieder.
+        /// </summary>
+        private static string HuellbauteilAnwenden(DbVorgang v, Modellpruefstand s, Modellbefund b, List<Action<DbVorgang>> rueck)
+        {
+            ZoneModel zone = s.Zonen.FirstOrDefault(z => z.ID == b.IdZone);
+            if (zone == null) return Modellpruefung.Ressource("MP_MSG_UNBEKANNT");
+            BauteilModel neu = Modellvorschlagsregeln.AlsBauteil(b.Vorschlag, zone.ID);
+            neu.Rang = (zone.Bauteile ?? new List<BauteilModel>()).Select(x => x.Rang).DefaultIfEmpty(0).Max() + 1;
+            int id = GebaeudeZonenCtrl.BauteilEinfuegen(v, neu);
+            (zone.Bauteile ??= new List<BauteilModel>()).Add(neu);
+            rueck.Add(x => x.Ausfuehren("DELETE FROM \"" + ZonenSchema.TAB_BAUTEIL + "\" WHERE \"ID\" = ?", new DbParam("@b", id)));
+            return null;
         }
 
         private static string AufbauAnwenden(DbVorgang v, Modellpruefstand s, Modellbefund b, List<Action<DbVorgang>> rueck, Dictionary<string, int> typcache)

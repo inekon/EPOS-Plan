@@ -80,8 +80,33 @@ namespace WindowsFormsApplication1
                 WaermepumpeKonfigLesen = KonfigurationLesen,
                 WaermepumpeKonfigSchreiben = KonfigurationSchreiben,
                 WaermepumpeTraegerkatalog =
-                    () => ErzeugerTraegerHuelle.Katalog(DbWerte.ERZEUGER_WAERMEPUMPE)
+                    () => ErzeugerTraegerHuelle.Katalog(DbWerte.ERZEUGER_WAERMEPUMPE),
+
+                // K6b-N: „Bearbeiten…“ der Gruppe „Dezentrale Kältedeckung“ - dieselben Wege wie die Kacheln
+                // „Kältebedarfsprofile“ und „Kältebedarf extern“ der Startseite.
+                KaelteDezentralBearbeiten = (idProjekt, profil, idZuordnung, nachher) =>
+                    KaelteDezentralBearbeiten(besitzer, idProjekt, profil, nachher)
             });
+        }
+
+        /// <summary>
+        /// K6b-N: öffnet den Dialog der Quelle einer Split-Zeile — eine Nachricht später (<see cref="Blazorsprung"/>):
+        /// Der Klick kommt aus dem Rückruf der WebView2, und ein <c>ShowDialog</c> darin öffnete seine Nachrichtenschleife
+        /// mitten im Rückruf (Befund W16b-B-1). Die Zuordnungs-ID wählt nichts vor; der Dialog zeigt alle Zeilen seiner
+        /// Quelle. Nach dem Schließen ruft der Weg den Nachzug mit dem Grund eines gescheiterten Speicherns.
+        /// </summary>
+        private string KaelteDezentralBearbeiten(Func<Form> besitzer, int idProjekt, bool profil, Action<string> nachher)
+        {
+            string name = _kontext.Id == idProjekt ? _kontext.Name : "";
+            Blazorsprung.Verzoegert(besitzer(), () =>
+            {
+                IWin32Window wirt = besitzer();
+                string grund = profil
+                    ? StartseiteHuelle.KaeltebedarfsprofileOeffnen(wirt, idProjekt, name)
+                    : StartseiteHuelle.KaeltebedarfExternOeffnen(wirt, idProjekt, name);
+                nachher?.Invoke(grund);
+            });
+            return null;
         }
 
         /// <summary>

@@ -273,7 +273,7 @@
             {
                 <WaermebedarfExternFelder Zeile="@_gewaehlt" Bezeichner="@(SatzName ?? "")" NurLesen="@SatzNurLesen"
                                           Modus="@Modus" Kanaele="@Kanaele" KaelteArten="@KaelteArten"
-                                          Stromtraeger="@Stromtraeger" KanalBezeichnung="@KanalBezeichnung"
+                                          Stromtraeger="@Stromtraeger" ProjektStromtraeger="@ProjektStromtraeger" KanalBezeichnung="@KanalBezeichnung"
                                           KaelteArtBezeichnung="@KaelteArtBezeichnung" HinweisKaelteArt="@HinweisKaelteArt"
                                           HinweisKanalKuehlung="@HinweisKanalKuehlung" HinweisKaelteExtern="@HinweisKaelteExtern"
                                           Ganglinienknoepfe="@Ganglinienknoepfe" Ganglinie="@Ganglinienbild"
@@ -585,6 +585,9 @@
 
     /// <summary>Die Stromträger des Projekts (Id, Anzeigetext) — die Auswahl des Kühlträgers der Feldgruppe „Deckung“.</summary>
     [Parameter] public IReadOnlyList<(int Id, string Text)> Stromtraeger { get; set; } = Array.Empty<(int, string)>();
+
+    /// <summary>K6b: der Stromträger des Projekts — der eigene Zähler wirkt nur bei abweichendem Kühlträger (E34).</summary>
+    [Parameter] public int ProjektStromtraeger { get; set; }
 
     /// <summary>OP-2: die Infozeile im Modus „Alle“ bei Kanal Kühlung (<c>WBX_HRL_KAELTE_EXTERN</c>).</summary>
     [Parameter] public string HinweisKaelteExtern { get; set; } = Resource.WBX_HRL_KAELTE_EXTERN;

@@ -351,6 +351,16 @@ public sealed class SimulationKonfigDienste
     /// (<c>KaeltemaschineAnlageCtrl.Speichern</c>). Rückgabe <c>null</c> oder leer = geschrieben, sonst der Grund.
     /// </summary>
     public Func<EPOS.UI.Dialoge.Erzeuger.KaeltemaschineAnlageDaten, string?>? KaeltemaschineKonfigurationSpeichern;
+
+    /// <summary>
+    /// K6b-N (Konzept Kältebedarf 6): „Bearbeiten…“ an einer Zeile der Gruppe „Dezentrale Kältedeckung“ — öffnet den Dialog
+    /// ihrer Quelle (Kältebedarfsprofil → Bedarfsprofile mit der Bedarfsart Kälte, Lastgang → „Wärmebedarf extern“ im Modus
+    /// „nur Kühlung“). Parameter: Quelle (<c>true</c> = Profil, <see cref="KaelteDezentralAnzeige.Profil"/>), ID der
+    /// Zuordnungszeile (<see cref="KaelteDezentralAnzeige.IdZuordnung"/>) und der Nachzug nach dem Schließen (mit dem Grund
+    /// eines gescheiterten Speicherns, sonst <c>null</c>; er kann von einem fremden Faden kommen). Rückgabe <c>null</c> = der
+    /// Dialog geht auf, sonst der Grund, aus dem er nicht aufgeht. <c>null</c> als Delegat = kein Knopf.
+    /// </summary>
+    public Func<bool, int, Action<string?>, string?>? KaelteDezentralBearbeiten;
 }
 
 /// <summary>Ein waehlbarer Quellentyp: Steuerwert und Anzeigetext.</summary>

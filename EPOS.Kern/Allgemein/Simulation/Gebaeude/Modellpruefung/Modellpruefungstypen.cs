@@ -84,6 +84,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Das Feiertagsland eines anderen Gebäudes des Projekts übernehmen.</summary>
         Feiertagsland = 3,
+
+        /// <summary>
+        /// Ein fehlendes Hüllbauteil aus der Körperfläche ergänzen (MA-3): Dach, Decke oder Bodenplatte mit der Fläche der
+        /// Lücke, waagerecht, nur mit U-Wert (Stufe C).
+        /// </summary>
+        Huellbauteil = 4,
     }
 
     /// <summary>Woher ein Vorschlag kommt (Rangfolge E137 F3 und F6).</summary>
@@ -119,11 +125,15 @@ namespace WindowsFormsApplication1
     /// <c>ModellpruefungCtrl</c> ausführbar. Die Felder je Art: <see cref="Vorschlagsart.Aufbau"/> trägt
     /// <see cref="IdAufbau"/> (Projekt- bzw. Katalogaufbau) oder <see cref="Typaufbau"/>; <see cref="Vorschlagsart.Profil"/>
     /// trägt <see cref="IdProfil"/> und <see cref="Name"/>; <see cref="Vorschlagsart.FerienSaison"/> trägt in
-    /// <see cref="IdQuelle"/> das Quellgebäude; <see cref="Vorschlagsart.Feiertagsland"/> den Wert in <see cref="Name"/>.
+    /// <see cref="IdQuelle"/> das Quellgebäude; <see cref="Vorschlagsart.Feiertagsland"/> den Wert in <see cref="Name"/>;
+    /// <see cref="Vorschlagsart.Huellbauteil"/> die Bauteilart in <see cref="Name"/>, dazu <see cref="Randbedingung"/>,
+    /// <see cref="Neigung"/>, <see cref="Flaeche"/>, <see cref="U"/> und an einer Trennfläche <see cref="IdNachbarzone"/>.
     /// </summary>
     public sealed record Pruefvorschlag(Vorschlagsart Art, Vorschlagsherkunft Herkunft, string Text,
                                         int? IdAufbau = null, string Typaufbau = null, long? IdProfil = null,
-                                        string Name = null, int? IdQuelle = null, double? U = null);
+                                        string Name = null, int? IdQuelle = null, double? U = null,
+                                        string Randbedingung = null, double? Neigung = null, double? Flaeche = null,
+                                        int? IdNachbarzone = null);
 
     /// <summary>
     /// <b>Ein Befund</b> — Code (sprachneutral, stabil), Ampel, Zielobjekt und Text; dazu der Vorschlag oder <c>null</c>,

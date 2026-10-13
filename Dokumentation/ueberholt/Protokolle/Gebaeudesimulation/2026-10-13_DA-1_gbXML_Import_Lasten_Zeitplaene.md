@@ -147,3 +147,16 @@ bleibt unverändert. Weicht der Nennwert der Personen oder Geräte um mehr als 5
   Schreiben bildet.
 - **Matrixprofil ohne Kalender:** Ein Nennwert ohne Plan bekommt dort den Kalender „immer 1“, nicht die Zeilen des Profils.
 - **Der Rundlauf Export → Import** folgt mit DA-2 (F5). Das Abbild hält dafür Abschnitte, Tagtypen und Stundenwerte.
+
+## Nachzug: schwankender UI-Test
+
+`GebaeudeDialogImportTests.Mit_der_echten_Huelle_schliesst_der_vorbelegte_Editor_mit_OK` lief auf demselben Stand
+einmal rot (`Assert.Single()` auf `p.Uebernommen` leer) und einmal grün. **Ursache:** Die echte Hülle liest im
+Arbeitsfaden; nach dem Lesegang arbeitet der Verteiler der Komponente noch an Nachläufen (eingereihte
+Fortschrittsmeldungen mit `InvokeAsync(StateHasChanged)`, Zeichenlauf). Ein synchrones `Click()` wird dann nur
+eingereiht und kehrt zurück, bevor das OK gewirkt hat — der Sofort-Assert las den Stand davor. Der Baustein ist in
+Ordnung: OK ist während des Lesens gesperrt, `BeiLeiste` prüft `Beschaeftigt`. **Änderung:** Die Klicks auf OK im
+Zuordnungsdialog und im vorbelegten Editor der beiden Tests mit echter Hülle (auch
+`Ohne_Quelle_haelt_der_Zuordnungsdialog_an_statt_den_Editor_zu_oeffnen`) laufen über `KlickAbgewartet()` aus
+`EPOS.UI.Tests/AbgewarteteHandlungen.cs`; die Prüfungen bleiben unverändert. **Nachweis:** 10 von 10 Einzelläufen
+der Theorie grün (je 5 Fälle), die Klasse `GebaeudeDialogImportTests` grün (18 Tests).

@@ -164,6 +164,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // NP3a (Konzept Nutzungsprofile 6.1, NP-F22): das Blatt „Nutzungsprofile" im Katalogeditor - der
         // Katalog ist projektübergreifend (NP-F3) und schreibt sofort; der WIRT meldet an, nicht das Blatt.
         new("RaumnutzungBlatt",                  "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
+        // MA-2: das Blatt „Nutzung und Kalender“ (Mehrfachwahl der Zonen) oeffnet aus dem Reiter "Zonen"
+        // desselben Editors; seine Felder (Profil, Sollwerte, Quelle der Kopie) gehoeren zur Maske des Wirts.
+        new("ZonenNutzungsblatt",                "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
         // NP4a (Konzept Nutzungsprofile 6.1, 6.4): CSV-Import und -Export im Kopf des Blatts — ein Baustein darin.
         new("RaumnutzungCsvAustausch",           "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
         // NP7b (Konzept Nutzungsprofile 6.5): der Dialog „Normwerte einlesen" als Überlagerung im Blatt.
@@ -295,6 +298,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung): 19 → 22.
         // AH-V5: die Vorheizzeit der Zone - Katalogfeld vorheizzeit (22 → 23).
         new("ZonenDialog", 23),
+        // MA-2: Blatt "Nutzung und Kalender" - Profilwahl, Quellzone, Kalendergroesse (select) und Sollwerte, Filter (input).
+        new("ZonenNutzungsblatt", 7),
         // BK-2b: der Schalter „auch ungeeignete zeigen“ filtert nur die Aufbauwahl (15 → 16).
         new("BauteilDialog", 16, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“; der Schalter „auch ungeeignete zeigen“ filtert nur die Wahl"),
         // Stufe G6b (W2): der Luftaustausch zwischen den Zonen - ein Raster, je Zeile Zone A, Zone B
