@@ -1,0 +1,12 @@
+Schluessel;Wert;Einheit;Quelle;Ausgabe;Version;Herkunftsart
+DIN4708.a1;;1/h;DIN 4708, Abschnitt …;;Vorlage;IMPORT
+DIN4708.a2;;1/h;DIN 4708, Abschnitt …;;Vorlage;IMPORT
+DIN4708.z;;h;DIN 4708, Abschnitt …;;Vorlage;IMPORT
+DIN4708.p_b;;P;DIN 4708, Abschnitt …;;Vorlage;IMPORT
+DIN4708.w_b;;Wh;DIN 4708, Abschnitt …;;Vorlage;IMPORT
+DIN4708.W_b;;Wh;DIN 4708, Abschnitt …;;Vorlage;IMPORT
+DIN4708.Kappung;;-;DIN 4708, Abschnitt …;;Vorlage;IMPORT
+DIN4708.Profil.Bloecke;;-;DIN 4708, Abschnitt …;;Vorlage;IMPORT
+DIN4708.Profil.Block.1.Beginn;;min;DIN 4708, Abschnitt …;;Vorlage;IMPORT
+DIN4708.Profil.Block.1.Dauer;;min;DIN 4708, Abschnitt …;;Vorlage;IMPORT
+DIN4708.Profil.Block.1.Anteil;;-;DIN 4708, Abschnitt …;;Vorlage;IMPORT

@@ -106,6 +106,18 @@
   #error Der Ordner Referenzlaeufe\Katalogpaket_Vorlage_A100 fehlt. Er ist versioniert und gehoert zur Auslieferung (Folgeposten ZU24).
 #endif
 
+; Paketvorlage der DIN-4708-Katalogwerte (ZB7): zwei CSV-Dateien des Importformats
+; (Belegung je Raumzahl und Ausstattungsklassen, Parameter des Verfahrens) mit
+; vollstaendigen Kopfzeilen, Beispielzeilen aus Platzhaltern (Spalte Wert leer)
+; und einer Anleitung. Sie traegt KEINE Normwerte - der Anwender kopiert sie,
+; traegt die Werte seines eigenen Normexemplars ein und spielt den Ordner ueber den
+; Katalog-Import ein; unveraendert lehnt der Import jede Zeile benannt ab. Muster
+; und Ort wie die A100-Vorlage.
+#define KatalogVorlageDin4708  RepoDir + "Referenzlaeufe\Katalogpaket_Vorlage_DIN4708"
+#if !DirExists(KatalogVorlageDin4708)
+  #error Der Ordner Referenzlaeufe\Katalogpaket_Vorlage_DIN4708 fehlt. Er ist versioniert und gehoert zur Auslieferung (ZB7).
+#endif
+
 ; Freier Paketteil des Zapfprofilgenerators (Anwenderentscheid 29.09.2026): die
 ; CSV-Dateien der Katalogdaten, die frei ausgeliefert werden duerfen (Parameter der
 ; Stochastik und der Speicherauslegung, Ecodesign-Zapfprofile, Zapfkategorien, die
@@ -407,6 +419,13 @@ Source: "{#HerstellerdatenDir}\*"; DestDir: "{app}\VDI-3805-Daten"; \
 ; ueber den Katalog-Import ein. Ein Update ersetzt den Bestand (ignoreversion),
 ; die Deinstallation nimmt ihn mit {app}\Vorlage.
 Source: "{#KatalogVorlageA100}\*"; DestDir: "{app}\Vorlage\Katalogpaket_A100"; \
+    Flags: ignoreversion; \
+    Components: programm
+
+; Paketvorlage der DIN-4708-Katalogwerte (ZB7) neben die Vorlagendatenbank: zwei
+; CSV-Dateien und eine Anleitung, zusammen wenige Kilobyte. Ein Update ersetzt den
+; Bestand (ignoreversion), die Deinstallation nimmt ihn mit {app}\Vorlage.
+Source: "{#KatalogVorlageDin4708}\*"; DestDir: "{app}\Vorlage\Katalogpaket_DIN4708"; \
     Flags: ignoreversion; \
     Components: programm
 
