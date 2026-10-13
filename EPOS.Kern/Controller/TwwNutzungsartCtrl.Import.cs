@@ -27,15 +27,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die vorhandene Zeile trägt jetzt die Werte des Pakets (Bedarfstag, Parameter — ZU30,
-        /// ZU31): dieselbe <c>ID</c>, Stand <c>IMPORT</c>, <c>ReadOnly</c> 0. Nutzungsarten werden
-        /// nie ersetzt.
+        /// ZU31 —, DIN-4708-Katalogwert — ZB7): dieselbe <c>ID</c>, Stand <c>IMPORT</c>,
+        /// <c>ReadOnly</c> 0. Nutzungsarten werden nie ersetzt.
         /// </summary>
         Ersetzt = 3
     }
 
     /// <summary>
     /// Zu welcher Tabelle eine Zeile des Importberichts gehört (ZU32): Der Bericht führt je Tabelle
-    /// eigene Zeilen, in der Reihenfolge Bedarfstage, Parameter, Nutzungsarten.
+    /// eigene Zeilen, in der Reihenfolge Bedarfstage, Parameter, DIN-4708-Katalogwerte, Nutzungsarten.
     /// </summary>
     internal enum TwwImportbereich
     {
@@ -46,7 +46,10 @@ namespace WindowsFormsApplication1
         Bedarfstag = 1,
 
         /// <summary><c>Tab_TwwParameter_STAMM</c>.</summary>
-        Parameter = 2
+        Parameter = 2,
+
+        /// <summary><c>Tab_TwwDin4708Wert_STAMM</c>: Belegung je Raumzahl und Ausstattungsklassen (ZB7).</summary>
+        Din4708 = 3
     }
 
     /// <summary>
@@ -77,7 +80,7 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// Je Eintrag des Pakets eine Zeile, in der Reihenfolge Bedarfstage, Parameter,
-        /// Nutzungsarten und darin in der Reihenfolge der Paketdatei (ZU32).
+        /// DIN-4708-Katalogwerte, Nutzungsarten und darin in der Reihenfolge der Paketdatei (ZU32).
         /// </summary>
         internal List<TwwImportzeile> Zeilen { get; } = new List<TwwImportzeile>();
 
@@ -166,6 +169,13 @@ namespace WindowsFormsApplication1
     /// Ersetzung, und ein Hinweis nennt die betroffenen Auslieferungszeilen. Eine Versionsbildung
     /// „(Import n)" gibt es hier nicht — ein Parameter ist ein Wert, keine Version.</para>
     ///
+    /// <para><b>DIN-4708-Katalogwerte (ZB7).</b> Wahlfrei dazu <c>Tab_TwwDin4708Wert_STAMM.csv</c> —
+    /// Belegung je Raumzahl und Ausstattungsklassen; dieselbe Ersetzungsregel wie beim Parameter,
+    /// Einzelheiten in <c>TwwNutzungsartCtrl.ImportDin4708.cs</c>. Ein Paket, das diese Datei und
+    /// keine Datei der Nutzungsarten-Kette (Tagesgangsatz, Tagesgang, Zapfkategorie) führt, ist ein
+    /// <b>Kennwertpaket</b> und braucht <c>Tab_TwwNutzungsart_STAMM.csv</c> nicht — so die Paketvorlage
+    /// <c>Referenzlaeufe/Katalogpaket_Vorlage_DIN4708</c>.</para>
+    ///
     /// <para><b>Die Katalogversion ist wahlfrei.</b> Ein Paket darf die Spalte
     /// <c>Katalogversion</c> führen — dann bestimmt sie, wie bisher, mit dem Bezeichner bzw. dem
     /// Schlüssel die Zeile des Katalogs. Führt es sie in KEINER seiner Kopfdateien (so der freie
@@ -194,6 +204,7 @@ namespace WindowsFormsApplication1
             TwwSchema.TAB_TWW_BEDARFSTAG_STAMM,
             TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM,
             TwwSchema.TAB_TWW_PARAMETER_STAMM,
+            TwwSchema.TAB_TWW_DIN4708_WERT_STAMM,
             TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM,
             TwwSchema.TAB_TWW_TAGESGANG_STAMM,
             TwwSchema.TAB_TWW_NUTZUNGSART_STAMM,
@@ -201,7 +212,7 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
-        /// <b>Die Tabellen, die eine Spalte <c>Katalogversion</c> führen</b> — die vier Köpfe des
+        /// <b>Die Tabellen, die eine Spalte <c>Katalogversion</c> führen</b> — die fünf Köpfe des
         /// Katalogs. Tagesgänge, Ereignisse und Kategorien hängen an ihrem Kopf und führen keine
         /// eigene. Ein Paket führt die Spalte in ALLEN vorhandenen dieser Dateien oder in KEINER
         /// (<see cref="Zielversion"/>).
@@ -210,6 +221,7 @@ namespace WindowsFormsApplication1
         {
             TwwSchema.TAB_TWW_BEDARFSTAG_STAMM,
             TwwSchema.TAB_TWW_PARAMETER_STAMM,
+            TwwSchema.TAB_TWW_DIN4708_WERT_STAMM,
             TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM,
             TwwSchema.TAB_TWW_NUTZUNGSART_STAMM
         };
@@ -508,7 +520,7 @@ namespace WindowsFormsApplication1
                     var satzZiel = new Dictionary<long, int>();
                     var zeilen = new List<TwwImportzeile>();
                     var ersetzteAuslieferung = new List<string>();
-                    // Die Reihenfolge des Berichts (ZU32): Bedarfstage, Parameter, Nutzungsarten.
+                    // Die Reihenfolge des Berichts (ZU32): Bedarfstage, Parameter, DIN-4708-Werte, Nutzungsarten.
                     foreach (PaketBedarfstag b in paket.Bedarfstage)
                         zeilen.Add(BedarfstagEinspielen(v, b, paket, ersetzteAuslieferung));
                     int ersetzteParameter = 0;
@@ -518,6 +530,8 @@ namespace WindowsFormsApplication1
                         if (z.Ausgang == TwwImportausgang.Ersetzt) ersetzteParameter++;
                         zeilen.Add(z);
                     }
+                    foreach (PaketDin4708Zeile d in paket.Din4708)
+                        zeilen.Add(Din4708Einspielen(v, d, ersetzteAuslieferung));
                     foreach (PaketNutzungsart p in paket.Nutzungsarten)
                         zeilen.Add(Einspielen(v, p, paket, satzZiel));
 
@@ -733,6 +747,7 @@ namespace WindowsFormsApplication1
             internal List<PaketNutzungsart> Nutzungsarten { get; } = new List<PaketNutzungsart>();
             internal List<PaketBedarfstag> Bedarfstage { get; } = new List<PaketBedarfstag>();
             internal List<PaketParameterzeile> Parameter { get; } = new List<PaketParameterzeile>();
+            internal List<PaketDin4708Zeile> Din4708 { get; } = new List<PaketDin4708Zeile>();
             internal bool MitKategorien { get; set; }
 
             /// <summary>Führt <c>Tab_TwwBedarfstag_STAMM</c> die Spalte <c>Bezugsart</c> (Schritt 124)?</summary>
@@ -834,6 +849,7 @@ namespace WindowsFormsApplication1
             bool bedarfstageDa = DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM)
                                  && DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM);
             bool parameterDa = DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_PARAMETER_STAMM);
+            bool din4708Da = DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_DIN4708_WERT_STAMM);
             bool bedarfstageGemeldet = false;
             foreach (TwwPaketdatei d in dateien)
             {
@@ -861,10 +877,16 @@ namespace WindowsFormsApplication1
                     bericht.Hinweise.Add(ZapfSatz.Neu("KATALOGIMPORT_PARAMETER_OHNE_TABELLE"));
                     continue;
                 }
+                if (tabelle == TwwSchema.TAB_TWW_DIN4708_WERT_STAMM && !din4708Da)
+                {
+                    bericht.Hinweise.Add(ZapfSatz.Neu("KATALOGIMPORT_DIN4708_OHNE_TABELLE"));
+                    continue;
+                }
                 if (tabellen.ContainsKey(tabelle)) throw new PaketFehler(ZapfSatz.Neu("KATALOGIMPORT_DATEI_DOPPELT", d.Name));
                 tabellen[tabelle] = Tabelle(d, tabelle);
             }
-            if (!tabellen.TryGetValue(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, out PaketTabelle tn))
+            if (!tabellen.TryGetValue(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, out PaketTabelle tn)
+                && !Kennwertpaket(dateien))
                 throw new PaketFehler(ZapfSatz.Neu("KATALOGIMPORT_KEINE_DATEI", TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv"));
 
             var paket = new Paket
@@ -876,6 +898,10 @@ namespace WindowsFormsApplication1
             };
             paket.Bedarfstage.AddRange(Bedarfstage(tabellen, paket, bericht));
             paket.Parameter.AddRange(Parameterzeilen(tabellen, paket, bericht));
+            paket.Din4708.AddRange(Din4708Zeilen(tabellen, paket));
+            // Ein Kennwertpaket ohne Nutzungsarten: Es bleibt bei Bedarfstagen, Parametern und
+            // DIN-4708-Werten — die Kette der Nutzungsarten ist leer.
+            if (tn == null) return paket;
             Dictionary<long, PaketSatz> saetze = Saetze(tabellen, paket, bericht);
             List<PaketKategorie> kategorien =
                 tabellen.TryGetValue(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, out PaketTabelle tk) ? Kategorien(tk) : new List<PaketKategorie>();

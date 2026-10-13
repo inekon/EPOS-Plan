@@ -32617,7 +32617,7 @@ Do you want to allow this?</value>
     <value>Import catalogue</value>
   </data>
   <data name="ZPGK_IMPORT_HINWEIS" xml:space="preserve">
-    <value>A package consists of the files Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv and Tab_TwwZapfkategorie_STAMM.csv, optionally also Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv and Tab_TwwParameter_STAMM.csv — one CSV file per table with a header line, semicolon or comma as separator, numbers with a decimal point. Select a ZIP archive or one file of the package folder. The column Katalogversion is optional: if none of the files carries it, all rows join the catalogue version of this catalogue and the report names it; if only some of the files carry it, the package is rejected.</value>
+    <value>A package consists of the files Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv and Tab_TwwZapfkategorie_STAMM.csv, optionally also Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv, Tab_TwwParameter_STAMM.csv and Tab_TwwDin4708Wert_STAMM.csv (occupancy per number of rooms and equipment classes according to DIN 4708; a package with characteristic values only does not need the usage types) — one CSV file per table with a header line, semicolon or comma as separator, numbers with a decimal point. Select a ZIP archive or one file of the package folder. The column Katalogversion is optional: if none of the files carries it, all rows join the catalogue version of this catalogue and the report names it; if only some of the files carry it, the package is rejected.</value>
   </data>
   <data name="ZPGK_IMPORT_HERKUNFT" xml:space="preserve">
     <value>Imported rows carry the status “import” and the origin “import”; freely available and fictitious values keep their origin. An existing usage type remains unchanged: identical content is skipped, differing content is added as an own version “(Import n)”. A demand day and a parameter are replaced instead — a delivery row as well; the report names every replacement.</value>
@@ -37783,6 +37783,21 @@ This folder holds the standard template, the short report, the detailed template
   <data name="ZPG_SATZ_KATALOGIMPORT_PARAMETER_ERSETZT" xml:space="preserve">
     <value>Parameter “{0}” now carries {2:0.#######} instead of {1:0.#######} [{3}].</value>
   </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DIN4708_OHNE_TABELLE" xml:space="preserve">
+    <value>The package carries DIN 4708 catalogue values; the database does not carry their table — they are skipped.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DIN4708_ART" xml:space="preserve">
+    <value>The type “{0}” does not exist; permitted are {1} and {2}.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DIN4708_RAUMZAHL" xml:space="preserve">
+    <value>The key “{0}” is not a number of rooms above 0 in half steps (such as 2 or 2.5).</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DIN4708_WERT" xml:space="preserve">
+    <value>The value {1:0.#######} of “{0}” is not greater than 0.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DIN4708_ERSETZT" xml:space="preserve">
+    <value>“{0}” now carries {2:0.#######} instead of {1:0.#######}.</value>
+  </data>
   <data name="ZPG_SATZ_KATALOGIMPORT_PARAMETER_WIRKUNG" xml:space="preserve">
     <value>{0} parameter(s) have been replaced; they apply to every future sizing and every validation of this catalogue version.</value>
   </data>
@@ -37833,6 +37848,12 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="ZPGK_IMPORT_SP_PARAMETER" xml:space="preserve">
     <value>Key</value>
+  </data>
+  <data name="ZPGK_IMPORT_GRP_DIN4708" xml:space="preserve">
+    <value>DIN 4708 catalogue values</value>
+  </data>
+  <data name="ZPGK_IMPORT_SP_DIN4708" xml:space="preserve">
+    <value>Type and key</value>
   </data>
   <data name="ZPGK_IMPORT_PRUEFEN" xml:space="preserve">
     <value>Check only, write nothing</value>

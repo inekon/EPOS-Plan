@@ -731,11 +731,12 @@
         _importOffen = true;
     }
 
-    /// <summary>Die drei Gruppen des Berichts in ihrer Reihenfolge: Bedarfstage, Parameter, Nutzungsarten.</summary>
+    /// <summary>Die vier Gruppen des Berichts in ihrer Reihenfolge: Bedarfstage, Parameter, DIN-4708-Katalogwerte, Nutzungsarten.</summary>
     private (TwwImportbereichDaten bereich, string titel, string spalte)[] Berichtsgruppen() => new[]
     {
         (TwwImportbereichDaten.Bedarfstag, Texte.ImportGruppeBedarfstage, Texte.ImportSpalteBedarfstag),
         (TwwImportbereichDaten.Parameter, Texte.ImportGruppeParameter, Texte.ImportSpalteParameter),
+        (TwwImportbereichDaten.Din4708, Texte.ImportGruppeDin4708, Texte.ImportSpalteDin4708),
         (TwwImportbereichDaten.Nutzungsart, Texte.ImportGruppeNutzungsarten, Texte.ImportSpalteNutzungsart)
     };
 

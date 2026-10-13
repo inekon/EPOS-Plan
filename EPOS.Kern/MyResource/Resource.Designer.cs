@@ -147635,6 +147635,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DIN-4708-Katalogwerte ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_GRP_DIN4708 {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_GRP_DIN4708", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsarten ähnelt.
         /// </summary>
         public static string ZPGK_IMPORT_GRP_NUTZUNGSARTEN {
@@ -147662,7 +147671,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Paket besteht aus den Dateien Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv und Tab_TwwZapfkategorie_STAMM.csv, wahlfrei dazu Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv und Tab_TwwParameter_STAMM.csv — je Tabelle eine CSV-Datei mit Kopfzeile, Trenner Semikolon oder Komma, Zahlen mit Punkt. Gewählt wird ein ZIP-Archiv oder eine Datei des Paketordners. Die Spalte Katalogversion ist wahlfrei: Führt keine der Dateien sie, treten alle Zeilen de [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Paket besteht aus den Dateien Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv und Tab_TwwZapfkategorie_STAMM.csv, wahlfrei dazu Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv, Tab_TwwParameter_STAMM.csv und Tab_TwwDin4708Wert_STAMM.csv (Belegung je Raumzahl und Ausstattungsklassen nach DIN 4708; ein Paket nur mit Kennwerten braucht die Nutzungsarten nicht) — je Tabelle eine CSV-Datei mit Kopfzeile, Trenner Semikolon oder Komma, Zahlen mit Punkt. [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string ZPGK_IMPORT_HINWEIS {
             get {
@@ -147721,6 +147730,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPGK_IMPORT_SP_BEDARFSTAG {
             get {
                 return ResourceManager.GetString("ZPGK_IMPORT_SP_BEDARFSTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art und Schlüssel ähnelt.
+        /// </summary>
+        public static string ZPGK_IMPORT_SP_DIN4708 {
+            get {
+                return ResourceManager.GetString("ZPGK_IMPORT_SP_DIN4708", resourceCulture);
             }
         }
         
@@ -159547,6 +159565,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_KATALOGIMPORT_DATEI_ZU_GROSS {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_DATEI_ZU_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Art „{0}“ gibt es nicht; zulässig sind {1} und {2}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_DIN4708_ART {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_DIN4708_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ trägt jetzt {2:0.#######} statt {1:0.#######}. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_DIN4708_ERSETZT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_DIN4708_ERSETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket führt DIN-4708-Katalogwerte; die Datenbank führt deren Tabelle nicht — sie sind übergangen. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_DIN4708_OHNE_TABELLE {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_DIN4708_OHNE_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Schlüssel „{0}“ ist keine Raumzahl über 0 in halben Schritten (etwa 2 oder 2.5). ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_DIN4708_RAUMZAHL {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_DIN4708_RAUMZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert {1:0.#######} von „{0}“ ist nicht größer als 0. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_KATALOGIMPORT_DIN4708_WERT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_KATALOGIMPORT_DIN4708_WERT", resourceCulture);
             }
         }
         
