@@ -459,99 +459,13 @@ namespace WindowsFormsApplication1
         // Abbildungen
         // =================================================================================
 
-        /// <summary>Aus der Anlagenzeile in den Feldsatz — <c>SetControls</c>:151.</summary>
+        /// <summary>
+        /// Aus der Anlagenzeile in den Feldsatz — <c>SetControls</c>:151. Die Abbildung selbst liegt
+        /// plattformfrei in <see cref="WaermepumpeAnlagenaht.AusModell"/> (KM‑K2): Der Kältemaschinen-Dialog
+        /// bearbeitet dieselbe Anlagenzeile, und zwei Wahrheiten über dieselben Felder gibt es nicht.
+        /// </summary>
         internal static WaermepumpeAnlageDaten AusModell(WErzeugerModel m)
-        {
-            // KU2 Welle 3: die drei Geraetefelder des Kuehlbetriebs, falls der Aufrufer die
-            // Zeile ohne GeraetedatenFuellen hereinreicht - sonst zeigte der Dialog "aus",
-            // und der Speicherweg liesse den gespeicherten Stand ohnehin stehen.
-            WaermepumpeGeraeteCtrl.KuehlfelderFuellen(m);
-
-            var d = new WaermepumpeAnlageDaten
-            {
-                Bezeichner = m.Bezeichner ?? "",
-                IdWp = m.ID_WP,
-                Vorlauf = m.Vorlauf,
-                Ruecklauf = m.Ruecklauf,
-                Heizstab = m.Heizstab,
-                HeizstabLeistung = (int)m.Heizung,
-                Sperrung = m.Sperrung,
-                SperrzeitVon = m.Sperrzeit_von,
-                SperrzeitBis = m.Sperrzeit_bis,
-                // V14: die Sperrfenster samt aktivem Altfenster als erste Zeile.
-                Sperrfenster = SperrfensterAbbildung.Lesen(m.ID, m.Sperrung, m.Sperrzeit_von, m.Sperrzeit_bis),
-                // Die Nutzungsdauer (Tab_Energieanlagen.Nutzungszeit) fuehrt der Feldsatz
-                // nicht mehr (Anwenderauftrag 30.09.2026) - der Wert bleibt am Modell, wie
-                // er gelesen wurde, und reist mit Loeschen + Neuanlegen unveraendert mit.
-                BivalenterBetrieb = m.Bivalenter_Betrieb,
-                CarrierId = m.ID_Carrier,
-
-                // W7-B-2 (Windows-Abnahme 06.09.2026): TOLERANT lesen. Der
-                // Vorlaeufer Wizard_WPItem hatte eine frei beschreibbare ComboBox
-                // und schrieb ihren Text ungeprueft in die Spalte (Befund L0-1);
-                // ein <select> kann einen nicht zeichengleichen Wert gar nicht
-                // zeigen - die Klappliste stand leer und der OK-Knopf meldete
-                // "Bitte Betriebsart auswaehlen!". Geschrieben wird der
-                // berichtigte Wert erst beim OK; die Engine vergleicht
-                // unveraendert zeichengleich, der Referenzlauf bleibt unberuehrt.
-                Betriebsart = DbWerte.BetriebsartOderDefault(m.Betriebsart),
-                Abschaltpunkt = m.Abschaltpunkt,
-                Beschreibung = m.Beschreibung ?? "",
-                Baujahr = m.Baujahr,
-                Regelung = m.Regelung ?? "",
-                Typ = m.Typ ?? "",
-
-                // 16.09.2026: Die Aufstellungsart gehoert seit dem Anwenderentscheid zum
-                // Feldsatz - die Stammfelder des Dialogs bearbeiten die Projektkopie, und
-                // Tab_WP.Aufstellung ist eine ihrer Spalten.
-                Aufstellung = m.Aufstellung ?? "",
-                Firma = m.Firma ?? "",
-                Nennleistung = m.Nennleistung,
-
-                // 16.09.2026: Die Kuehlleistung der PROJEKTKOPIE steht seither im
-                // Feldsatz und ist im Stammfeldblock bearbeitbar - wie die
-                // Nennleistung daneben. Sie ist eine Kommazahl (Tab_WP.Kuehlleistung
-                // ist REAL); ein int schnitte 5,5 kW still auf 5 kW.
-                Kuehlleistung = m.Kuehlleistung,
-
-                // KU2 Welle 3 (Kuehlkonzept 8.2; E15, E33, E34): der Kuehlbetrieb - drei Felder
-                // der Projektkopie, zwei der Anlagenzeile.
-                Kuehlbetrieb = m.Kuehlbetrieb,
-                KuehlVorlauf = m.KuehlVorlauf,
-                KuehlHilfsstromanteil = m.KuehlHilfsstromanteil,
-                KuehlCarrierId = m.Kuehl_ID_Carrier,
-                KuehlEigenerZaehler = m.Kuehl_EigenerZaehler,
-
-                // KU3-6 (F1): die freie Kuehlung ueber die Waermequelle - drei Felder der Anlagenzeile.
-                KuehlFrei = m.Kuehl_Frei,
-                KuehlFreiGraedigkeitK = m.Kuehl_Frei_Graedigkeit_K,
-                KuehlFreiLeistungKw = m.Kuehl_Frei_Leistung_kW,
-
-                Modulkosten = m.Modulkosten,
-                Volumen = m.Volumen,
-                Solaranteil = m.Solaranteil,
-                RendeMix = m.rendeMix
-            };
-
-            // Welle M4 (WP1): Mindestleistung und C_d der Projektkopie - nur zur Anzeige; sie reisen
-            // mit der Übernahme aus dem Katalog und werden hier nicht zurückgeschrieben.
-            WPModel geraet = m.ID_WP > 0 ? WaermepumpeGeraeteCtrl.Geraetedaten(m.ID_WP) : null;
-            if (geraet != null)
-            {
-                d.MindestleistungKw = geraet.MindestleistungKw;
-                d.TaktverlustfaktorCd = geraet.TaktverlustfaktorCd;
-            }
-
-            // Anwenderauftrag 30.09.2026: ein Ruecklauf 0/leer wird aus dem Vorlauf
-            // vorbelegt (Kern-Regel ueber TemperaturVorbelegung) - im FELDSATZ; ins Modell
-            // kommt er erst mit dem OK (NachModell).
-            // Anlagenkopplung AK2 (9.3): Zeitprogramm und hoechster Vorlauf, NULL-erhaltend.
-            BetriebszeitenAbbildung.Lesen(m, d);
-            // Uebergabegrenze UB-E2: Einbindung und Vorwaermbetrieb, leer bleibt leer (U-1).
-            BivalenzAbbildung.AnlageLesen(m, d);
-            TemperaturVorbelegung.Waermepumpe(d);
-            return d;
-        }
+            => WaermepumpeAnlagenaht.AusModell(m);
 
         /// <summary>
         /// Zurück in die Anlagenzeile — <c>btn_Beenden_Click</c>:238-268, mit denselben
