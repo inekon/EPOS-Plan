@@ -37,7 +37,7 @@
    Zeile unter der Gruppe, die der uebrigen im title ihres Eintrags. Tastatur
    und Sprachausgabe bleiben dieselbe Radiogruppe. *@
 
-<fieldset class="@Klasse" role="@Rolle" aria-label="@Bezeichnung">
+<fieldset class="@Klasse" role="@Rolle" aria-label="@Bezeichnung" title="@(string.IsNullOrEmpty(Titel) ? null : Titel)">
     @if (NurEintrag is null && TitelSichtbar && !string.IsNullOrEmpty(Bezeichnung))
     {
         <legend class="epos-optionsgruppe-titel">@Bezeichnung</legend>
@@ -101,6 +101,13 @@
     /// <c>aria-label</c> fuer die Sprachausgabe.
     /// </summary>
     [Parameter] public bool TitelSichtbar { get; set; } = true;
+
+    /// <summary>
+    /// Ein Hinweis zur ganzen Gruppe als <c>title</c> (Vorgabe, Wirkung) — wie <c>Titel</c> am
+    /// <c>Zahlenfeld</c>; leer = keiner. Er ersetzt eine Erklaerzeile, die sonst dauerhaft unter
+    /// der Gruppe stuende.
+    /// </summary>
+    [Parameter] public string Titel { get; set; } = "";
 
     /// <summary>Die Optionen in Anzeigereihenfolge.</summary>
     [Parameter] public IReadOnlyList<(int Id, string Text)> Eintraege { get; set; }

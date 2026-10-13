@@ -74,6 +74,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
             Assert.True(TwwSchema.T3TyptageVollstaendig(), "Die Kopie steht nicht auf Schritt 131.");
 
             ZapfprofilCtrl.Speichern(PROJEKT, Stand(typtage: true));
@@ -99,6 +100,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
 
             var ex = Assert.Throws<ZapfprofilSpeicherException>(() =>
                 ZapfprofilCtrl.Speichern(PROJEKT, Stand(typtage: true, klimazone: 0)));
@@ -145,6 +147,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
             Assert.True(ZapfprofilCtrl.KalenderLesen(PROJEKT, out int jan1, out bool[] we));
 
             // Ohne Wahl: null — der Jahresgang rechnet über den Formvektor wie im Bestand.
@@ -181,6 +184,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
             Assert.True(ZapfprofilCtrl.KalenderLesen(PROJEKT, out int jan1, out bool[] we));
             Einspielen();
 
@@ -213,6 +217,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
             Assert.True(ZapfprofilCtrl.KalenderLesen(PROJEKT, out int jan1, out bool[] we));
 
             ZapfprofilErgebnis ohne = ZapfprofilCtrl.Rechnen(PROJEKT, Stand(typtage: true), jan1, we);

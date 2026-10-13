@@ -342,6 +342,71 @@ namespace WindowsFormsApplication1
         /// <summary>Mischstunden der Teil-Freikühlung in Reihe [h/a] (K-F3, Katalog v22).</summary>
         public const string SCHLUESSEL_RK_TEILFREI_STUNDEN = "kaelte.rk.teilfrei_stunden";
 
+        // ------------------------------------------------------------------
+        // K6d (Konzept Kältebedarf 4.3; Frage 1 des Plans K6, Katalog v23) — Kältebedarf ohne Gebäudemodell
+        // und dezentrale (Split-)Deckung. Jede Zahl nur mit Profil- bzw. Split-Zeile; ohne sie null, und
+        // jede Tafel, jeder Vergleich und jeder Bericht bleibt, wie er war.
+        // ------------------------------------------------------------------
+
+        /// <summary>Kältebedarf aus Kältebedarfsprofilen [MWh/a] (<c>Kaeltebedarf_Profil_MWh</c>); null ohne Profilzeile.</summary>
+        public const string SCHLUESSEL_KAELTE_PROFIL = "kaelte.profil";
+
+        /// <summary>Dezentral (Split) gedeckte Kälte [MWh/a] (<c>Kaeltebedarf_Dezentral_MWh</c>); null ohne Split-Zeile.</summary>
+        public const string SCHLUESSEL_KAELTE_DEZENTRAL = "kaelte.dezentral";
+
+        /// <summary>Strom der dezentralen Deckung [MWh/a] (<c>Strom_Dezentral_MWh</c>); null ohne Split-Zeile.</summary>
+        public const string SCHLUESSEL_KAELTE_DEZENTRAL_STROM = "kaelte.dezentral_strom";
+
+        /// <summary>Jahres-EER der dezentralen Deckung [–] (<c>Jahres_EER_Dezentral</c>); null ohne Split-Strom.</summary>
+        public const string SCHLUESSEL_KAELTE_DEZENTRAL_EER = "kaelte.dezentral_eer";
+
+        /// <summary>
+        /// Deckungsgrad Kälte samt dezentraler Deckung [%] = (Kältefolge + dezentral) / Kältebedarf gesamt
+        /// (<see cref="KaelteDeckungsgrad.Hauptzahl"/>); null ohne Split-Zeile.
+        /// </summary>
+        public const string SCHLUESSEL_KAELTE_DECKUNGSGRAD_GESAMT = "kaelte.deckungsgrad_gesamt";
+
+        /// <summary>
+        /// „davon Kältefolge“ [%] = Kältefolge / (Kältebedarf gesamt − dezentral)
+        /// (<see cref="KaelteDeckungsgrad.DavonKaeltefolge"/>); null ohne Split-Zeile oder ohne Kälteerzeuger.
+        /// </summary>
+        public const string SCHLUESSEL_KAELTE_DECKUNGSGRAD_KAELTEFOLGE = "kaelte.deckungsgrad_kaeltefolge";
+
+        /// <summary>
+        /// Die Kältefolge [MWh/a] aus dem gespeicherten Deckungsgrad des Kühlkanals (Kältefolge / Gesamtbedarf,
+        /// <see cref="DeckungKanalKaelte"/>); 0 ohne Kälteerzeugung. Dieselbe Herleitung wie der Bericht vor K6d.
+        /// </summary>
+        private static double KaeltefolgeMwh(VariantenDaten v, double gesamtMwh)
+        {
+            double? dg = MitKaelteerzeugung(v) ? DeckungKanalKaelte(v) : null;
+            return dg.HasValue ? dg.Value * gesamtMwh / 100.0 : 0.0;
+        }
+
+        /// <summary>
+        /// <c>kaelte.deckungsgrad_gesamt</c> [%]: die Hauptzahl nach <see cref="KaelteDeckungsgrad.Hauptzahl"/> mit der
+        /// Kältefolge aus <see cref="KaeltefolgeMwh"/>; null ohne Split-Zeile oder ohne erhobene Kälte.
+        /// </summary>
+        public static double? DeckungsgradKaelteGesamt(VariantenDaten v)
+        {
+            var e = E(v);
+            if (e?.KaeltebedarfDezentralMwh is not double dezentral || !e.Kaeltebedarf_Gesamt.HasValue) return null;
+            double gesamt = e.Kaeltebedarf_Gesamt.Value;
+            return KaelteDeckungsgrad.Hauptzahl(KaeltefolgeMwh(v, gesamt), dezentral, gesamt);
+        }
+
+        /// <summary>
+        /// <c>kaelte.deckungsgrad_kaeltefolge</c> [%]: „davon Kältefolge“ nach <see cref="KaelteDeckungsgrad.DavonKaeltefolge"/>;
+        /// null ohne Split-Zeile, ohne erhobene Kälte oder ohne Kälteerzeuger (wie die Zeile im Bericht).
+        /// </summary>
+        public static double? DeckungsgradKaelteKaeltefolge(VariantenDaten v)
+        {
+            var e = E(v);
+            if (e?.KaeltebedarfDezentralMwh is not double dezentral || !e.Kaeltebedarf_Gesamt.HasValue) return null;
+            if (!MitKaelteerzeugung(v)) return null;
+            double gesamt = e.Kaeltebedarf_Gesamt.Value;
+            return KaelteDeckungsgrad.DavonKaeltefolge(KaeltefolgeMwh(v, gesamt), dezentral, gesamt);
+        }
+
         /// <summary>Summe einer Größe über die Kältemaschinen mit Rückkühlwerk; <c>null</c> ohne solche.</summary>
         private static double? RkSumme(VariantenDaten v, Func<ErgebnisKaeltemaschineModel, double?> wert)
         {
@@ -819,6 +884,29 @@ namespace WindowsFormsApplication1
                 l.Add(F(new Kennzahl(SCHLUESSEL_RK_TEILFREI_STUNDEN, "Stunden Teil-Freikühlung Rückkühlwerke (sensibel)",
                     "Partial free cooling hours via heat rejection (sensible)", "h/a", GR_KAELTE, "N0", true,
                     v => RkSumme(v, k => k.TeilFreikuehlung_Stunden.HasValue ? (double?)k.TeilFreikuehlung_Stunden.Value : null))));
+            }
+            // K6d (Konzept Kältebedarf 4.3, Frage 1 des Plans K6, Katalog v23): Kältebedarf aus Profilen und die dezentrale
+            // (Split-)Deckung — nur mit Profil- bzw. Split-Zeile; ohne sie null (keine Zeile, kein „—“).
+            {
+                Kennzahl D(Kennzahl k) { k.Seit = Vorlagenfeldkatalog.FASSUNG_KAELTE_DEZENTRAL; return k; }
+                l.Add(D(new Kennzahl(SCHLUESSEL_KAELTE_PROFIL, "Kältebedarf aus Profilen (sensibel)",
+                    "Cooling demand from profiles (sensible)", "MWh/a", GR_KAELTE, "N1", true,
+                    v => E(v)?.KaeltebedarfProfilMwh)));
+                l.Add(D(new Kennzahl(SCHLUESSEL_KAELTE_DEZENTRAL, "Kälte dezentral gedeckt, Split (sensibel)",
+                    "Cooling covered locally, split (sensible)", "MWh/a", GR_KAELTE, "N1", true,
+                    v => E(v)?.KaeltebedarfDezentralMwh)));
+                l.Add(D(new Kennzahl(SCHLUESSEL_KAELTE_DEZENTRAL_STROM, "Strom dezentrale Kälte, Split (sensibel)",
+                    "Electricity local cooling, split (sensible)", "MWh/a", GR_KAELTE, "N2", true,
+                    v => E(v)?.StromDezentralMwh)));
+                l.Add(D(new Kennzahl(SCHLUESSEL_KAELTE_DEZENTRAL_EER, "Jahres-EER dezentrale Kälte, Split (sensibel)",
+                    "Seasonal EER local cooling, split (sensible)", "–", GR_KAELTE, "N2", true,
+                    v => E(v)?.JahresEerDezentral)));
+                l.Add(D(new Kennzahl(SCHLUESSEL_KAELTE_DECKUNGSGRAD_GESAMT, "Deckungsgrad Kälte samt dezentraler Deckung (sensibel)",
+                    "Cooling coverage incl. local cooling (sensible)", "%", GR_KAELTE, "N1", false,
+                    DeckungsgradKaelteGesamt)));
+                l.Add(D(new Kennzahl(SCHLUESSEL_KAELTE_DECKUNGSGRAD_KAELTEFOLGE, "davon Kältefolge am zentralen Bedarf (sensibel)",
+                    "of which cooling cascade on central demand (sensible)", "%", GR_KAELTE, "N1", false,
+                    DeckungsgradKaelteKaeltefolge)));
             }
             l.Add(new Kennzahl(SCHLUESSEL_KAELTE_REST, "Kältebedarf ungedeckt (sensibel)",
                 "Uncovered cooling demand (sensible)", "MWh/a", GR_KAELTE, "N1", true,

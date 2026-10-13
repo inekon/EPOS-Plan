@@ -475,8 +475,14 @@ namespace WindowsFormsApplication1
                 k.BedarfFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_JAHRESBEDARF);
                 k.LastFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_SPITZE);
                 k.RestFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_REST);
-                // K6b: mit Split-Zeile ist die Deckungszahl die Hauptzahl samt Split - für sie gibt es (noch) keinen
-                // Platzhalter, die Zahl trägt deshalb keine Marke.
+                // K6d (Katalog v23): mit Split-Zeile ist die Deckungszahl die Hauptzahl samt Split — ihr Platzhalter ist
+                // kaelte.deckungsgrad_gesamt; sie steht auch ohne Kälteerzeuger. Ohne Split bleibt alles, wie es war.
+                if (k.MitDezentral)
+                {
+                    k.DeckungFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD_GESAMT);
+                    k.DeckungStufe = Vorlagenfeldstufe.Aehnlich;
+                    k.KennzahlHinweis = MyResource.Resource.VF_ORT_KENNZAHL_RECHENWEG;
+                }
                 if (k.Erzeuger.Count > 0)
                 {
                     if (!k.MitDezentral)

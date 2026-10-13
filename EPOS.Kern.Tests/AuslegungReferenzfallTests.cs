@@ -211,7 +211,7 @@ namespace EPOS.Kern.Tests
                     Id = zonen.Count + 1, Reihenfolge = zonen.Count + 1, Name = z.GetProperty("name").GetString(),
                     IdNutzungsart = z.GetProperty("nutzungsart").GetInt32(), Bezugsmenge = z.GetProperty("bezugsmenge").GetDouble(),
                     Niveau = (ZapfNiveau)z.GetProperty("niveau").GetInt32(), Zirkulation = z.GetProperty("zirkulation").GetBoolean(),
-                    Topologie = ZapfTopologie.Durchfluss, Ferienbeginn = beginn, Ferienende = ende
+                    Topologie = ZapfTopologie.Durchfluss, Ferien = Zonenferienprobe.Liste(beginn, ende)
                 });
             }
 

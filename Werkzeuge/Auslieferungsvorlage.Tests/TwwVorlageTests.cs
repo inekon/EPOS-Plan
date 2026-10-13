@@ -47,13 +47,15 @@ namespace Auslieferungsvorlage.Tests
                 long nutzung = NutzungAnlegen("Probe Nutzung", TwwSchema.STATUS_AUSLIEFERUNG, satz, readOnly: 0);
                 NutzungAnlegen("Probe Import", TwwSchema.STATUS_IMPORT, satz, readOnly: 0);
 
-                // Eine Zone samt Wohnungstyp in einem Projekt: Projektdaten, fallen in Schritt 2.
+                // Eine Zone samt Wohnungstyp und Ferienzeitraum in einem Projekt: Projektdaten, fallen in Schritt 2.
                 long projekt = Convert.ToInt64(DataRepository.ExecuteScalar("SELECT MIN(ID) FROM Tab_Projekt"));
                 long zone = DataRepository.ExecuteInsertAndGetId(
                     "INSERT INTO Tab_TwwZone (ID_Projekt, ID_Nutzungsart, Reihenfolge, Name, Bezugsmenge) VALUES (?, ?, 1, 'Z', 10.0)",
                     new[] { new DbParam("?", projekt), new DbParam("?", nutzung) });
                 Assert.True(DataRepository.ExecuteSQL(
                     "INSERT INTO Tab_TwwWohnungstyp (ID_Zone, Anzahl, Reihenfolge) VALUES (?, 2, 1)", new DbParam("?", zone)));
+                Assert.True(DataRepository.ExecuteSQL(
+                    "INSERT INTO Tab_TwwZonenferien (ID_Zone, Reihenfolge, Beginn, Ende) VALUES (?, 1, 200, 210)", new DbParam("?", zone)));
             });
 
             Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
@@ -88,7 +90,8 @@ namespace Auslieferungsvorlage.Tests
                 foreach (string t in new[]
                          {
                              TwwSchema.TAB_TWW_DIN4708_WERT_STAMM,
-                             TwwSchema.TAB_TWW_ZONE, TwwSchema.TAB_TWW_WOHNUNGSTYP, TwwSchema.TAB_TWW_PROJEKT
+                             TwwSchema.TAB_TWW_ZONE, TwwSchema.TAB_TWW_WOHNUNGSTYP, TwwSchema.TAB_TWW_PROJEKT,
+                             TwwZonenferienSchema.TAB_ZONENFERIEN
                          })
                     Assert.True(Zahl(t) == 0, t + " ist nicht leer.");
                 // Bedarfstage, Ereignisse und Parameter: nur der freie Paketteil.
@@ -442,6 +445,10 @@ namespace Auslieferungsvorlage.Tests
             {
                 long satz = SatzAnlegen("Probe Satz", TwwSchema.STATUS_AUSLIEFERUNG);
                 NutzungAnlegen("Probe Nutzung", TwwSchema.STATUS_AUSLIEFERUNG, satz, readOnly: 1);
+
+                // Die Testdatenbank traegt den erfundenen Typtagsatz des Referenzprojekts 1069 (ZB12); der Fall beginnt
+                // ohne Typtage, damit allein seine drei Zeilen zaehlen.
+                DataRepository.ExecuteSQL("DELETE FROM " + TwwSchema.TAB_TWW_TYPTAG_IMPORT);
 
                 // Drei erfundene Zeilen der eingespielten Typtage: Systematik, Anzahl, Kennwert.
                 Assert.True(DataRepository.ExecuteSQL(

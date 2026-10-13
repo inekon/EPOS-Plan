@@ -26,7 +26,7 @@
    Der Wert bleibt trotzdem am <select>: Er ist der Weg, den Blazor beim
    ERSTEN Zeichnen geht, und er kostet nichts. *@
 
-<label class="epos-feld">
+<label class="epos-feld" title="@(string.IsNullOrEmpty(Titel) ? null : Titel)">
     @if (!string.IsNullOrEmpty(Bezeichnung))
     {
         <span class="epos-feld-text">@Bezeichnung</span>
@@ -59,6 +59,12 @@
 
     /// <summary>Beschriftung links bzw. ueber dem Feld.</summary>
     [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>
+    /// Ein Hinweis zum Feld als <c>title</c> (Vorgabe, Herkunft) — wie <c>Titel</c> am
+    /// <c>Zahlenfeld</c>; leer = keiner.
+    /// </summary>
+    [Parameter] public string Titel { get; set; } = "";
 
     /// <summary>Die Auswahlmoeglichkeiten in Anzeigereihenfolge.</summary>
     [Parameter] public IReadOnlyList<(int Id, string Text)> Eintraege { get; set; } = Array.Empty<(int, string)>();

@@ -118,7 +118,7 @@ dotnet build WP-Plan.sln -c Debug -p:Platform=x64          # Windows-Anwendung s
 dotnet build WP-Plan.Kern.slnf -c Release                  # nur die plattformfreien Projekte
 dotnet test  WP-Plan.Kern.slnf -c Release --no-build -- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2
 dotnet run --project Proben/ChartProben -c Release          # Diagramm-Renderer ohne Windows
-dotnet run --project EPOS.Referenzlauf -c Release -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017,1045,1046,1047,1049,1051 --ziel <ordner>
+dotnet run --project EPOS.Referenzlauf -c Release -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017,1045,1046,1047,1049,1051,1058,1060,1063,1065,1066,1067,1068,1069,1070,1071 --ziel <ordner>
 dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis> <neu>
 ```
 
@@ -175,7 +175,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-10-11_R52_Vorheizen`, dreißig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Feiertage liegen im Gemeinjahr ohne Jahresdatum — Ostern ist der Sonntag des Wochentagsrasters am nächsten zum 8. April, Buß- und Bettag der letzte Mittwoch vor dem 23. November, nur eine Preisreihe mit Jahr setzt die echten Daten —, alle Leser — Gebäudelauf, Zapfkalender, Bedarfsprofile — rechnen mit dem Wochentagsraster der Klimaregion (in der Testdatenbank ist der 1. Januar ein Donnerstag), eine Preisreihe mit Jahr setzt für alle Raster und Feiertage dieses Jahres, die Gebäude rechnen nach VDI 6007 und laufen
+`2026-10-13_R53_Zapfprofiloptionen`, sechsunddreißig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Feiertage liegen im Gemeinjahr ohne Jahresdatum — Ostern ist der Sonntag des Wochentagsrasters am nächsten zum 8. April, Buß- und Bettag der letzte Mittwoch vor dem 23. November, nur eine Preisreihe mit Jahr setzt die echten Daten —, alle Leser — Gebäudelauf, Zapfkalender, Bedarfsprofile — rechnen mit dem Wochentagsraster der Klimaregion (in der Testdatenbank ist der 1. Januar ein Donnerstag), eine Preisreihe mit Jahr setzt für alle Raster und Feiertage dieses Jahres, die Gebäude rechnen nach VDI 6007 und laufen
 ohne wirksame Kühlung frei, die Gebäude heizen und kühlen eine Zone nie am selben Tag — die Tagesbetriebsart je Zone wählt innerhalb der Kalenderfreigabe (Heiz- und Kühlsollwertkalender, Heiz- und Kühlperiode) nach den Tagessummen des unbegrenzten Probetags, die Gegenseite steht den Tag über auf „aus“ —, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
 Kühlübergabe gekoppelt —, beide rechnen ihren Strombedarf mit der gepflegten Jahressumme ihrer
@@ -208,13 +208,14 @@ Projekt 1062 rechnet als Kopie von 1061 das Gebäude in zwei Zonen mit Kühlübe
 Projekt 1063 rechnet als Kopie von 1055 seine Kältemaschine mit Teillastkurve, Takten unter der Mindestteillast von 30 % mit dem Vorgabe-Taktverlustfaktor und Gütegrad-Extrapolation an den Kennfeldrändern, gehalten von `EPOS.Kern.Tests/KaeltemaschineTeillastReferenzprojektWacheTests`,
 Projekt 1064 rechnet als Kopie von 1017 seine Kälte mit freier Kühlung über die Erdsonde der Wärmepumpe — Grädigkeit 4 K, Leistungsgrenze 4 kW, den Rest deckt der Verdichter —, gehalten von `EPOS.Kern.Tests/FreieKuehlungReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
 Projekt 1065 rechnet als Kopie von 1051 sein Gebäude mit berechneter Vorheizzeit — Deckel aus dem Jahresmaximum der Heizlast am Kalendersprung mit 20 % Toleranz, Vorheizzeit als 95-%-Quantil des Bedarfs, Ankunft innerhalb 1 K —, gehalten von `EPOS.Kern.Tests/VorheizReferenzprojektWacheTests`,
+die Projekte 1066 bis 1071 rechnen als Kopien von 1045 je eine Option des Zapfprofils — 1066 Mischnutzung in vier Zonen mit Wohnungstabelle (Belegung nach Raumzahl) und Zirkulation nach Leitungslänge, 1067 der Kalender der Nutzungsart mit fünf eigenen Ferienzeiträumen der Zone und ein Gebäudekalender mit Feiertagsland, 1068 die stochastische Jahresreihe, 1069 die Typtage eines erfundenen Typtagsatzes, 1070 die Kalibrierung auf einen Jahresmesswert mit manuellem Tagesbedarf, manueller Zirkulation und eigenen Fachwerten, 1071 die vier Topologien mit einer Auslegung über den Ecodesign-Bedarfstag, die nicht auf die Simulation wirkt —, gehalten samt den eingefrorenen Auslegungswerten von 1071 von `EPOS.Kern.Tests/ZapfprofilOptionenReferenzprojekteWacheTests`,
 die Sole-Wärmepumpen der Referenzprojekte rechnen mit Erdreichquelle (Erdsonde), deren Entzug ohne Taktstrom
 und deren Prüfung je Anlage mit Erdreichquelle, die Wärmepumpen rechnen ihre Kennlinie über den Vorlauf interpoliert,
 1047 und 1056 weisen die Vorlaufwahl ihrer Wärmepumpe aus, 1051 und 1052 weisen ihre Auslegungsheizlast aus,
 allein Projekt 1040 dauerhaft auf dem Tagesbilanz-Weg (der Altweg bleibt wählbar), gehalten von `EPOS.Kern.Tests/GebaeudeRueckwegTests`;
 Aufbau, Herleitung und Schemastand in
 [`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md)). Die CI rechnet die Projekte
-1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063 und 1065; Toleranz: Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01;
+1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065 und 1066 bis 1071 (achtzehn); Toleranz: Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01;
 der Byte-Vergleich ist nur Information.
 
 **Einfrierregeln** — wer eines davon ändert, friert im selben Schritt die Basis neu ein und
@@ -256,9 +257,12 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
 - die Freigabe der Konditionierung eines Referenzprojekts mit Kühlung: je Gebäude und Zone das „aus“ der Heiz- und
   Kühlsollwertkalender und die Heiz- und Kühlperiode;
 - gesäte Zapfprofil-Eingaben eines Referenzprojekts: `Tab_TwwProjekt` (`Weg`, Seed,
-  Realisierungen, Temperaturen, Bilanzgrenze), seine Zonen (`Tab_TwwZone`) und Wohnungstypen,
-  die Katalogzeilen (`Tab_Tww*_STAMM`), die sie benutzen, die Feiertagsregeln des Kerns und das
-  Feiertagsland der Gebäude der Referenzprojekte mit Zapfprofilgenerator, und das Umstellen eines
+  Realisierungen, Temperaturen, Bilanzgrenze, Zirkulation, Typtagwahl, Bedarfstag und Laufangaben der
+  Auslegung), seine Zonen (`Tab_TwwZone`), Wohnungstypen und die eigenen Ferienzeiträume der Zonen
+  (`Tab_TwwZonenferien`), die Katalogzeilen (`Tab_Tww*_STAMM`), die sie benutzen, der eingespielte
+  Typtagsatz `Tab_TwwTyptag_IMPORT` (in der Testdatenbank ein erfundener Satz, Herkunft fiktiv), die
+  Feiertagsregeln des Kerns, Feiertagsland und Wochenmaske der Gebäude der Referenzprojekte mit
+  Zapfprofilgenerator, das Anlegen oder Entfernen eines solchen Referenzprojekts und das Umstellen eines
   Referenzprojekts auf den Generator;
 - gesäte Solardaten des Referenzprojekts 1049: das Kollektorfeld (Kollektorsatz in
   `Tab_Solarkollektoren` samt `Kdfu` und `Bezugsflaeche`, Modulanzahl, Neigung, Azimut, Senken in
@@ -346,7 +350,7 @@ Gerechnet wird ausschließlich gegen die aktuelle Basis.
 
 | Workflow | Läuft von selbst | Nur auf Zuruf (*Actions → Run workflow*) |
 |---|---|---|
-| [`kern.yml`](.github/workflows/kern.yml) | bei jedem Push und Pull Request auf **ubuntu**: Bau und Tests des Filters, Werkzeugtests, SQL-Dialekt-Prüfer, ChartProben mit Hash-Messlatte (jede Zeile der jüngsten `Proben/ChartProben/Messlatte_*.sha256` muss unverändert in der Liste des Laufs stehen; Vergleich nur auf ubuntu, Liste als Artefakt), Referenzlauf der zwölf Projekte der CI-Auswahl gegen die Basis. Ein neuer Lauf desselben Zweigs bricht den überholten ab; Änderungen nur unter `Projekte/Wiki/`, `Dokumentation/aktuell/Mockups/`, `Quellen/`, `Lizenzserver/` lösen keinen Lauf aus | Häkchen „macos“: zusätzlich auf macOS (**zählt zehnfach**) |
+| [`kern.yml`](.github/workflows/kern.yml) | bei jedem Push und Pull Request auf **ubuntu**: Bau und Tests des Filters, Werkzeugtests, SQL-Dialekt-Prüfer, ChartProben mit Hash-Messlatte (jede Zeile der jüngsten `Proben/ChartProben/Messlatte_*.sha256` muss unverändert in der Liste des Laufs stehen; Vergleich nur auf ubuntu, Liste als Artefakt), Referenzlauf der achtzehn Projekte der CI-Auswahl gegen die Basis. Ein neuer Lauf desselben Zweigs bricht den überholten ab; Änderungen nur unter `Projekte/Wiki/`, `Dokumentation/aktuell/Mockups/`, `Quellen/`, `Lizenzserver/` lösen keinen Lauf aus | Häkchen „macos“: zusätzlich auf macOS (**zählt zehnfach**) |
 | [`windows.yml`](.github/workflows/windows.yml) | Job `build-test` bei Push auf `main` und nächtlich 03:00 UTC auf dem Arbeitszweig `ios_migration_september` (der geplante Lauf nimmt den Workflow von `main` und checkt den Arbeitszweig aus; **zählt doppelt**); Pushes auf Arbeitszweige lösen ihn nicht aus, der Kern-Lauf auf ubuntu prüft sie | Häkchen „setup“: Job `installer` baut das Installationsprogramm (rund 4 Minuten, Installer als Artefakt) |
 | [`ios.yml`](.github/workflows/ios.yml) | nie | baut die iOS-Hülle auf `macos-26`, startet sie im Simulator und rechnet Projekt 1030 gegen die Basis; 15–20 Minuten, **zählt zehnfach** |
 

@@ -276,13 +276,37 @@ namespace WindowsFormsApplication1
                     });
                 }
 
+            // Die Ferienzeiträume aller Zonen des Projekts in EINER Abfrage (Tab_TwwZonenferien); ohne die
+            // Tabelle (Stand vor dem Schemaschritt) trägt keine Zone eigene Ferien.
+            var ferien = new Dictionary<int, List<ZonenferienStand>>();
+            if (DataRepository.TabelleVorhanden(TwwZonenferienSchema.TAB_ZONENFERIEN))
+            {
+                DataTable df = DataRepository.GetDataTable(
+                    "SELECT f.* FROM " + TwwZonenferienSchema.TAB_ZONENFERIEN + " AS f INNER JOIN " + TwwSchema.TAB_TWW_ZONE +
+                    " AS z ON z.ID = f.ID_Zone WHERE z.ID_Projekt = ? ORDER BY f.ID_Zone, f.Reihenfolge, f.ID",
+                    new DbParam("@projekt", idProjekt));
+                if (df != null)
+                    foreach (DataRow r in df.Rows)
+                    {
+                        int zone = Ganz(r, "ID_Zone");
+                        if (!ferien.TryGetValue(zone, out List<ZonenferienStand> l))
+                            ferien[zone] = l = new List<ZonenferienStand>();
+                        l.Add(new ZonenferienStand
+                        {
+                            Name = TextOderNull(r, "Name"),
+                            Beginn = GanzOderNull(r, "Beginn"),
+                            Ende = GanzOderNull(r, "Ende")
+                        });
+                    }
+            }
+
             var zonen = new List<ZonenStand>();
             DataTable dz = DataRepository.GetDataTable(
                 "SELECT * FROM " + TwwSchema.TAB_TWW_ZONE + " WHERE ID_Projekt = ? ORDER BY Reihenfolge, ID",
                 new DbParam("@projekt", idProjekt));
             if (dz != null)
                 foreach (DataRow r in dz.Rows)
-                    zonen.Add(ZoneAus(r, wohnungen));
+                    zonen.Add(ZoneAus(r, wohnungen, ferien));
 
             ProjektStand projekt = null;
             DataTable dp = DataRepository.GetDataTable(
@@ -482,17 +506,9 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        private static ZonenStand ZoneAus(DataRow r, Dictionary<int, List<WohnungstypStand>> wohnungen)
+        private static ZonenStand ZoneAus(DataRow r, Dictionary<int, List<WohnungstypStand>> wohnungen,
+                                          Dictionary<int, List<ZonenferienStand>> ferien)
         {
-            var beginn = new int?[4];
-            var ende = new int?[4];
-            for (int i = 0; i < 4; i++)
-            {
-                string n = (i + 1).ToString(CultureInfo.InvariantCulture);
-                beginn[i] = GanzOderNull(r, "Ferienbeginn_" + n);
-                ende[i] = GanzOderNull(r, "Ferienende_" + n);
-            }
-
             var auslastung = new double?[NutzungsartRaster.MONATE];
             for (int m = 0; m < NutzungsartRaster.MONATE; m++)
                 auslastung[m] = ZahlOderNull(r, "Auslastung_" + (m + 1).ToString("00", CultureInfo.InvariantCulture));
@@ -515,8 +531,8 @@ namespace WindowsFormsApplication1
                 WohnflaecheJeWeM2 = ZahlOderNull(r, "Wohnflaeche_je_WE"),
                 Topologie = (ZapfTopologie)Ganz(r, "Topologie"),
                 Zirkulation = Wahr(r, "Zirkulation"),
-                Ferienbeginn = beginn,
-                Ferienende = ende,
+                Ferien = ferien.TryGetValue(id, out List<ZonenferienStand> f)
+                    ? f : (IReadOnlyList<ZonenferienStand>)new ZonenferienStand[0],
                 Jahresmesswert = ZahlOderNull(r, "Jahresmesswert"),
                 JahresmesswertEinheit = einheit.HasValue ? (ZapfMesswerteinheit)einheit.Value : (ZapfMesswerteinheit?)null,
                 JahresmesswertBilanzgrenze = grenze.HasValue ? (ZapfBilanzgrenze)grenze.Value : (ZapfBilanzgrenze?)null,

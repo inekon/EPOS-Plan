@@ -143,9 +143,11 @@ VERSION = "TEST-1"
 HERKUNFT = "FIKTIV"
 STATUS = "EIGEN"
 
-# Das einzige Referenzprojekt auf dem Zapfprofilgenerator (ZU7, referenzprojekt_zapfprofil.py):
+# Das erste Referenzprojekt auf dem Zapfprofilgenerator (ZU7, referenzprojekt_zapfprofil.py):
 # seine Projektzeile und seine eine Zone sind gesaet und erwartet, keine fremde Zeile.
 REFERENZPROJEKT_GENERATOR = 1045
+# Die Referenzprojekte der Zapfprofil-Optionen (ZB12, referenzprojekte_zapfprofil_optionen.cs): Kopien von 1045.
+REFERENZPROJEKTE_OPTIONEN = (1066, 1067, 1068, 1069, 1070, 1071)
 
 # Die Provenienz-Version (Spalte Version) der Zeilen des freien Paketteils - der Stand des
 # Paketteils, nicht die Katalogversion (Regel 2 der LIESMICH.md des Paketteils).
@@ -715,11 +717,12 @@ ERWARTET = {
     "Tab_TwwBedarfstagEreignis_STAMM": sum(len(t[3]) for t in BEDARFSTAGE) + len(PAKET[T_EREIGNIS]),
     "Tab_TwwParameter_STAMM": len(PARAMETER) + len(PAKET[T_PARAMETER]),
     "Tab_TwwDin4708Wert_STAMM": len(DIN4708_WERTE),
-    # Seit ZU7 traegt genau das eine Referenzprojekt 1045 eine Zeile in Tab_TwwZone/-Projekt
-    # (referenzprojekt_zapfprofil.py); keine Wohnungstypen.
-    "Tab_TwwZone": 1,
-    "Tab_TwwWohnungstyp": 0,
-    "Tab_TwwProjekt": 1,
+    # Die Referenzprojekte auf dem Generator: 1045 mit einer Zone ohne Wohnungstypen
+    # (referenzprojekt_zapfprofil.py) und 1066 bis 1071 mit 14 Zonen und 8 Wohnungstypen
+    # (referenzprojekte_zapfprofil_optionen.cs).
+    "Tab_TwwZone": 15,
+    "Tab_TwwWohnungstyp": 8,
+    "Tab_TwwProjekt": 7,
     # Je Nutzungsart der Vorgabesatz IHRER Gruppe (Stufe Z5).
     TABELLE_KATEGORIEN: sum(len(vorgabesatz(PAKET[TABELLE_KATEGORIEN], gruppe(n["kalender"])))
                             for n in ALLE_NUTZUNGSARTEN),
@@ -853,11 +856,15 @@ def main():
         fremd += zahl(con, f'SELECT COUNT(*) FROM "{TABELLE_KATEGORIEN}" WHERE "Status" <> ? OR "ReadOnly" <> 0 '
                            'OR "ID_Nutzungsart" NOT IN (SELECT "ID" FROM "Tab_TwwNutzungsart_STAMM" '
                            'WHERE "Katalogversion" = ?)', STATUS, VERSION)
-        # Tab_TwwZone/-Projekt tragen seit ZU7 genau die eine gesaete Zeile des Referenzprojekts
-        # 1045 (referenzprojekt_zapfprofil.py); jede andere Zeile bleibt fremd.
+        # Tab_TwwZone/-Projekt tragen die gesaeten Zeilen der Referenzprojekte auf dem Generator: 1045
+        # (referenzprojekt_zapfprofil.py) und 1066 bis 1071 (referenzprojekte_zapfprofil_optionen.cs), ebenso
+        # Tab_TwwWohnungstyp die Wohnungstypen ihrer Zonen; jede andere Zeile bleibt fremd.
+        generator = (REFERENZPROJEKT_GENERATOR,) + REFERENZPROJEKTE_OPTIONEN
+        marken = ", ".join("?" for _ in generator)
         for t in ("Tab_TwwZone", "Tab_TwwProjekt"):
-            fremd += zahl(con, f'SELECT COUNT(*) FROM "{t}" WHERE "ID_Projekt" <> ?', REFERENZPROJEKT_GENERATOR)
-        fremd += zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwWohnungstyp"')
+            fremd += zahl(con, f'SELECT COUNT(*) FROM "{t}" WHERE "ID_Projekt" NOT IN ({marken})', *generator)
+        fremd += zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwWohnungstyp" WHERE "ID_Zone" NOT IN '
+                           f'(SELECT "ID" FROM "Tab_TwwZone" WHERE "ID_Projekt" IN ({marken}))', *generator)
         if fremd:
             print(f"{fremd} Zeile(n) gehoeren nicht zum fiktiven Testkatalog - Abbruch ohne Schreiben.")
             return 2

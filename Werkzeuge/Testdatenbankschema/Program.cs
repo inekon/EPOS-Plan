@@ -3592,6 +3592,25 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt TwwZonenferienSchema.SCHRITT (ZB5, ZB-Q3 B): Zonenferien als Liste - Tab_TwwZonenferien anlegen,
+            //      die vier Spaltenpaare von Tab_TwwZone uebertragen und abbauen (Neubau mit Erhalt der IDs). Aus DERSELBEN
+            //      Quelle wie SchemaMigration.Schritt_TwwZonenferien. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: der Zapfkalender rechnet ueber die Liste dieselben Fenster.
+            string nrZf = TwwZonenferienSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrZf + " - Zonenferien als Liste: " +
+                              (TwwZonenferienSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtZf = new List<string>();
+                tabellen += TwwZonenferienSchema.Ausfuehren(berichtZf);
+                foreach (string zeile in berichtZf)
+                    Console.WriteLine("Schritt " + nrZf + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrZf + " - vollstaendig: " + TwwZonenferienSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             // ---- Schritt ZonenLastfelderSchema.SCHRITT (DA-2, E138 F5): Aussenluft je Person, Licht und Waerme je Person an
             //      Tab_Zone und Tab_Zone_STAMM. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_ZonenLastfelder.
             //      Wiederholbar. REFERENZLAUF UNVERAENDERT: der Rechenweg liest die Spalten nicht, alle stehen leer.

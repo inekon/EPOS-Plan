@@ -119,6 +119,7 @@ namespace EPOS.Kern.Tests
             // Die Arbeitskopie führt die Tabelle, aber keine Zeile: der Leersatz des Bündels.
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
             Assert.True(TwwTyptagCtrl.TabelleVorhanden());
             TwwTyptagStandDaten leer = ZapfprofilHuelle.TyptagStand();
             Assert.False(leer.Vorhanden);
@@ -134,6 +135,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
             string zip = Paket(out string ordner);
             try
             {
@@ -167,6 +169,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
             string gut = Paket(out string ordner);
             try
             {
@@ -195,6 +198,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
             string zip = Paket(out string ordner);
             try
             {
@@ -234,6 +238,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
             string zip = Paket(out string ordner, b =>
             {
                 foreach (var k in b.Kategorien) b.Gaenge.Add((ART, k.Code, 720, new[] { 0.25, 0.75 }));
@@ -260,6 +265,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
             string zip = Paket(out string ordner);
             IDateiDienst dateiVorher = Dienste.Datei;
             IEinstellungen ablageVorher = Dienste.Einstellungen;
@@ -322,6 +328,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
             ProjektStand basis = ZapfprofilCtrl.ProjektVorgabe();
 
             // 1. Ohne Abweichung bleibt die Basis DIESELBE Instanz.
@@ -369,6 +376,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
             string zip = Paket(out string ordner);
             try
             {
