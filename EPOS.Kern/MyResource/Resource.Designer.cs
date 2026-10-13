@@ -36414,6 +36414,213 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string GEBV_BTN_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("GEBV_BTN_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgaben der Baualtersklasse übernehmen… ähnelt.
+        /// </summary>
+        public static string GEBV_BTN_OEFFNEN {
+            get {
+                return ResourceManager.GetString("GEBV_BTN_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil übernehmen… ähnelt.
+        /// </summary>
+        public static string GEBV_BTN_PROFIL {
+            get {
+                return ResourceManager.GetString("GEBV_BTN_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string GEBV_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("GEBV_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgaben zurücknehmen ähnelt.
+        /// </summary>
+        public static string GEBV_BTN_ZURUECKNEHMEN {
+            get {
+                return ResourceManager.GetString("GEBV_BTN_ZURUECKNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Baualtersklasse gesetzt – zuerst Baualtersklasse oder Baujahr wählen. ähnelt.
+        /// </summary>
+        public static string GEBV_GRUND_KLASSE {
+            get {
+                return ResourceManager.GetString("GEBV_GRUND_KLASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart „{0}“ gibt kein Nutzungsprofil vor. ähnelt.
+        /// </summary>
+        public static string GEBV_GRUND_PROFIL_KEINS {
+            get {
+                return ResourceManager.GetString("GEBV_GRUND_PROFIL_KEINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile stehen hier nicht bereit. ähnelt.
+        /// </summary>
+        public static string GEBV_GRUND_PROFIL_WEG {
+            get {
+                return ResourceManager.GetString("GEBV_GRUND_PROFIL_WEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Baualtersklasse gibt keine Werte vor. ähnelt.
+        /// </summary>
+        public static string GEBV_GRUND_WERTE {
+            get {
+                return ResourceManager.GetString("GEBV_GRUND_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude trägt Zonen – es gilt der Zonenweg (Reiter „Zonen“). ähnelt.
+        /// </summary>
+        public static string GEBV_GRUND_ZONEN {
+            get {
+                return ResourceManager.GetString("GEBV_GRUND_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil der Gebäudeart ähnelt.
+        /// </summary>
+        public static string GEBV_GRUPPE_PROFIL {
+            get {
+                return ResourceManager.GetString("GEBV_GRUPPE_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe Klasse {0}: freier Wert (Typgebäude nach Stein/Loga 2025), kein Katalogbau der Klasse. ähnelt.
+        /// </summary>
+        public static string GEBV_HERKUNFT_FREI {
+            get {
+                return ResourceManager.GetString("GEBV_HERKUNFT_FREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe Klasse {0}: Median von {1} Katalogbauten der Klasse. ähnelt.
+        /// </summary>
+        public static string GEBV_HERKUNFT_KLASSE {
+            get {
+                return ResourceManager.GetString("GEBV_HERKUNFT_KLASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe Energiestandard {0}: Median von {1} Katalogbauten dieses Standards. ähnelt.
+        /// </summary>
+        public static string GEBV_HERKUNFT_STANDARD {
+            get {
+                return ResourceManager.GetString("GEBV_HERKUNFT_STANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgaben {0} übernommen ({1} Felder geändert) – mit OK speichern. ähnelt.
+        /// </summary>
+        public static string GEBV_MELDUNG_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("GEBV_MELDUNG_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgaben zurückgenommen. ähnelt.
+        /// </summary>
+        public static string GEBV_MELDUNG_ZURUECK {
+            get {
+                return ResourceManager.GetString("GEBV_MELDUNG_ZURUECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feld ähnelt.
+        /// </summary>
+        public static string GEBV_SP_FELD {
+            get {
+                return ResourceManager.GetString("GEBV_SP_FELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jetzt ähnelt.
+        /// </summary>
+        public static string GEBV_SP_JETZT {
+            get {
+                return ResourceManager.GetString("GEBV_SP_JETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe ähnelt.
+        /// </summary>
+        public static string GEBV_SP_NEU {
+            get {
+                return ResourceManager.GetString("GEBV_SP_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgaben der Baualtersklasse ähnelt.
+        /// </summary>
+        public static string GEBV_TITEL {
+            get {
+                return ResourceManager.GetString("GEBV_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unverändert ähnelt.
+        /// </summary>
+        public static string GEBV_TXT_GLEICH {
+            get {
+                return ResourceManager.GetString("GEBV_TXT_GLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernommen wird in den Arbeitsstand, gespeichert mit OK. Flächen, Sollwerte und Kalender bleiben. ähnelt.
+        /// </summary>
+        public static string GEBV_TXT_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEBV_TXT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart „{0}“ gibt das Nutzungsprofil „{1}“ vor (Sollwerte, Gewinne, Lüftung). ähnelt.
+        /// </summary>
+        public static string GEBV_TXT_PROFIL {
+            get {
+                return ResourceManager.GetString("GEBV_TXT_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe für das ausgewählte Gebäude ähnelt.
         /// </summary>
         public static string GEBW_GRP_EINGABE {
