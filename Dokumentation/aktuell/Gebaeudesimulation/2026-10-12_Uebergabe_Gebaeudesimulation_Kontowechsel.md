@@ -76,7 +76,7 @@ Erledigt am 13.10.: CI-Vermerk, GD-6a (#1035), BK-3b/3c (#1036), AB4 (#1037), DA
    13.10. nach Empfehlung); in Arbeit (Welle GD-N).
 6. **MA-2 bis MA-7** nach Wellenplan des Entwurfs (MA-5 setzt an der Sichtlegende von AB4 an).
 7. **DA-4 bis DA-7**; DA-6 (DIN-Saat) erst nach Lieferung der DIN-Werte (E135); DA-8 bleibt offen; Schemaschritt erst bei
-   Baubeginn anmelden (heute 223 frei).
+   Baubeginn anmelden (224 frei; 223 hat die Sitzung Zapfprofilgenerator).
 8. **Wiki und Logbuch** der Wellen GD, AB, NP6/NP7, KS, BK (Seiten „Gebäude“, „Gebäudeimport“, „Nutzungsprofile“, „Baustoffe“,
    „Bauteilaufbauten“, „Bauteilkatalog einlesen“); Upload nur gebündelt und auf Zuruf, Versionsnummer beim Anwender erfragen.
 9. **BK-5 bis BK-7** (Entwurf Abschnitte 6a und 7): inhomogene Schichten nach DIN EN ISO 6946 (Abschnitte in Editor,
