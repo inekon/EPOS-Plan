@@ -126,7 +126,8 @@
                 },
                 Heizkessel = new WindowsFormsApplication1.ErgebnisHeizkesselModel
                 {
-                    Waermebedarf = 182.4, Waermeproduktion = puffer ? 22.1 : 33.5
+                    // Der Gasverbrauch des Kessels ist der Brennstoffeinsatz; er gleicht die Trägerzeile „Endenergie Erdgas“.
+                    Waermebedarf = 182.4, Waermeproduktion = puffer ? 22.1 : 33.5, Gasverbrauch = puffer ? 24.6 : 37.2
                 },
                 Photovoltaik = new WindowsFormsApplication1.ErgebnisPhotovoltaikModel
                 {
