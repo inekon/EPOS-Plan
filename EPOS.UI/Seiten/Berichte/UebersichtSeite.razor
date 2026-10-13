@@ -82,10 +82,15 @@
                 <Schalter Bezeichnung="@LabelNurStaemme" Wert="@_stand.NurStaemme"
                           WertChanged="BeiFilter" />
             </div>
-            <div class="epos-seite-zeile epos-variantenzeile">
+            @* DETAIL-UNTERSCHIEDE (Anwenderauftrag 13.10.2026): erster Eintrag ist die
+               Vorgabe "— keine (Komponentenvergleich) —" - sie steht fuer die markierte
+               Stammzeile -, danach nur die Varianten. Ohne Variante ist die Wahl gesperrt,
+               der Grund steht als Kurztext an der Zeile. *@
+            <div class="epos-seite-zeile epos-variantenzeile"
+                 title="@(HatVarianten ? null : KeineVarianteGrund)">
                 <Auswahlfeld Bezeichnung="@LabelVariante" Kurzname="@WahlKurztext"
-                             Eintraege="@Versionen" Auswahl="@Markierung"
-                             AuswahlChanged="BeiVersion" />
+                             Eintraege="@Versionen" Auswahl="@(Markierung ?? VorgabeId)"
+                             Aktiv="@HatVarianten" AuswahlChanged="BeiVersion" />
             </div>
         </div>
 
@@ -153,6 +158,11 @@
     }
 
     @* --------------------------------------------- Komponentenbereich *@
+    @* Auf einer Variante steht ueber dem Titel der Unterschiede leise der Rueckweg. *@
+    @if (VarianteGewaehlt)
+    {
+        <p class="epos-leisezeile epos-uebersicht-rueckweg">@ZurueckHinweis</p>
+    }
     @if (_stand.Vergleich.Count > 0 || _stand.Gewerke.Count > 0)
     {
         @* BV-E6 (Konzept Berichtsvorlagen 9.4): EINE Marke am Kopf der Gegenueberstellung,
@@ -432,7 +442,21 @@
     [Parameter] public string LabelNurStaemme { get; set; } = "nur Stammprojekte";
 
     /// <summary>Beschriftung der Versionswahl (Anwenderwunsch 05.09.2026, W5‑E‑1).</summary>
-    [Parameter] public string LabelVariante { get; set; } = "Variante:";
+    [Parameter] public string LabelVariante { get; set; } = "Detail-Unterschiede für Variante:";
+
+    /// <summary>
+    /// Der erste Eintrag der Variantenwahl (Ressource <c>BK_LBL_DETAILVARIANTE_KEINE</c>):
+    /// die Vorgabe, die für die markierte Stammzeile steht — der Komponentenvergleich.
+    /// </summary>
+    [Parameter] public string VorgabeText { get; set; } = "— keine (Komponentenvergleich) —";
+
+    /// <summary>Sperrgrund der Variantenwahl, wenn die Gruppe keine Variante hat (<c>BK_TIP_DETAILVARIANTE_LEER</c>).</summary>
+    [Parameter] public string KeineVarianteGrund { get; set; } =
+        "Die Gruppe hat noch keine Variante; gezeigt wird der Komponentenvergleich.";
+
+    /// <summary>Die leise Zeile über den Unterschieden (<c>BK_LBL_DETAILVARIANTE_ZURUECK</c>).</summary>
+    [Parameter] public string ZurueckHinweis { get; set; } =
+        "„— keine —“ führt zum Komponentenvergleich zurück.";
 
     /// <summary>Beschriftung der Vergleichswahl (W5‑B‑5).</summary>
     [Parameter] public string LabelVergleich { get; set; } = "Im Vergleich:";
@@ -463,7 +487,7 @@
     [Parameter] public string UebernehmenText { get; set; } = "Übernehmen";
 
     /// <summary>Name der Versionswahl für die Sprachausgabe (<c>aria-label</c>).</summary>
-    [Parameter] public string WahlKurztext { get; set; } = "Version wählen";
+    [Parameter] public string WahlKurztext { get; set; } = "Variante für die Detail-Unterschiede wählen";
 
     /// <summary>Statuszeile, wenn die gewählte Version nie gerechnet wurde.</summary>
     [Parameter] public string SimNieText { get; set; } = "noch nicht simuliert";
@@ -753,16 +777,55 @@
     /// auferlegt. Dubletten kann es nicht geben: <c>Tab_Projekt.ID</c> ist der
     /// Schlüssel.</para>
     /// </summary>
+    ///
+    /// <para><b>Anwenderauftrag 13.10.2026 — Detail-Unterschiede:</b> Der erste Eintrag
+    /// ist die Vorgabe „— keine (Komponentenvergleich) —“. Sie trägt die Id der
+    /// Stammzeile; wer sie wählt, markiert also wie bisher den Stamm, und alle Wege,
+    /// die an der Markierung hängen (Rückruf <c>ZeileMarkiert</c>, Simulationsstand und
+    /// „Simulation starten“, Sperren von Umbenennen und Löschen, KI-Sicht), bleiben
+    /// unverändert. Danach folgen nur die Varianten; den Stamm gibt es nicht als
+    /// eigenen Eintrag mit seinem Namen.</para>
+    /// </summary>
     private IReadOnlyList<(int Id, string Text)> Versionen
     {
         get
         {
-            var liste = new List<(int, string)>(_stand.Zeilen.Count);
+            var liste = new List<(int, string)>(_stand.Zeilen.Count + 1);
+            int? vorgabe = VorgabeId;
+            if (vorgabe is not null) liste.Add((vorgabe.Value, VorgabeText));
             foreach (VarianteZeile z in _stand.Zeilen)
-                liste.Add((z.IdProjekt, Eintragstext(z)));
+                if (!z.IstStamm) liste.Add((z.IdProjekt, Eintragstext(z)));
             return liste;
         }
     }
+
+    /// <summary>
+    /// Die Id der Vorgabe „— keine —“: die der Stammzeile, sonst (Gruppe noch nicht
+    /// geladen) das gewählte Stammprojekt; <c>null</c> = es gibt keine Gruppe.
+    /// </summary>
+    private int? VorgabeId
+    {
+        get
+        {
+            foreach (VarianteZeile z in _stand.Zeilen)
+                if (z.IstStamm) return z.IdProjekt;
+            return _stand.StammId is > 0 ? _stand.StammId : null;
+        }
+    }
+
+    /// <summary>Hat die Gruppe mindestens eine Variante? Sonst ist die Wahl gesperrt.</summary>
+    private bool HatVarianten
+    {
+        get
+        {
+            foreach (VarianteZeile z in _stand.Zeilen)
+                if (!z.IstStamm) return true;
+            return false;
+        }
+    }
+
+    /// <summary>Ist eine Variante gewählt (Detail-Unterschiede statt Komponentenvergleich)?</summary>
+    private bool VarianteGewaehlt => Markierte is { IstStamm: false };
 
     /// <summary>
     /// Der Projektname (Rückfall: der Bezeichner, wenn er fehlt) — siehe

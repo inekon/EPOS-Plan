@@ -7,7 +7,8 @@ namespace EPOS.UI.Seiten.Berichte;
 /// (Welle KI‑F6).
 ///
 /// <para><b>Diese Seite führt VIER Einstellwerte</b>: das Stammprojekt der
-/// Vergleichsgruppe, den Filter „nur Stammprojekte", die markierte Variante und
+/// Vergleichsgruppe, den Filter „nur Stammprojekte", die Variante der
+/// Detail-Unterschiede und
 /// den Bezeichner, mit dem sie umbenannt wird. Alles andere darauf ist
 /// gerechnete ANZEIGE — die Gegenüberstellung, die Unterschiedstabelle, der
 /// Simulations- und der Speicherstand.</para>
@@ -40,13 +41,13 @@ public sealed class UebersichtSeiteKiSicht
     /// <summary>Setzt den Filter und lädt die Liste neu.</summary>
     public Action<bool>? FilterSetzen { get; init; }
 
-    /// <summary>Liest die markierte Version der Gruppe.</summary>
+    /// <summary>Liest die Wahl „Detail-Unterschiede für Variante“ (die Vorgabe trägt die Id des Stamms).</summary>
     public Func<int?>? VarianteLesen { get; init; }
 
-    /// <summary>Markiert eine Version — derselbe Weg wie die Klappliste.</summary>
+    /// <summary>Wählt eine Variante oder die Vorgabe — derselbe Weg wie die Klappliste.</summary>
     public Action<int?>? VarianteSetzen { get; init; }
 
-    /// <summary>Die Versionen der Vergleichsgruppe.</summary>
+    /// <summary>Die Einträge der Klappliste: die Vorgabe „— keine —“ und die Varianten.</summary>
     public Func<IReadOnlyList<KiWahleintrag>>? VarianteEintraege { get; init; }
 
     /// <summary>Liest den Bezeichner des Umbenennfeldes.</summary>
@@ -79,13 +80,15 @@ public sealed class UebersichtSeiteKiSicht
         set => FilterSetzen?.Invoke(value);
     }
 
-    /// <summary>Die Versionen der Gruppe.</summary>
+    /// <summary>Die Vorgabe „— keine (Komponentenvergleich) —“ und die Varianten der Gruppe.</summary>
     public IReadOnlyList<KiWahleintrag> VarianteWahl
         => VarianteEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
     /// <summary>
-    /// Die markierte Version — sie entscheidet, welche Unterschiede die Tabelle
-    /// zeigt und was Löschen, Umbenennen und Simulieren treffen.
+    /// Die Variante der Detail-Unterschiede — die Vorgabe „— keine —“ (Id des
+    /// Stamms) zeigt den Komponentenvergleich, eine Variante ihre Unterschiede zum
+    /// Stammprojekt; Löschen und Umbenennen treffen nur eine gewählte Variante,
+    /// Simulieren die gewählte Variante oder sonst das Stammprojekt.
     /// </summary>
     public int? Variante
     {

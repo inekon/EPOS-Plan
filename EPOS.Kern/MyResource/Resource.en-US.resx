@@ -5962,6 +5962,15 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_LBL_KOMPONENTEN_DIFF" xml:space="preserve">
     <value>Differences from the base project — variant “{0}”</value>
   </data>
+  <data name="BK_LBL_DETAILVARIANTE_KEINE" xml:space="preserve">
+    <value>— none (component comparison) —</value>
+  </data>
+  <data name="BK_LBL_DETAILVARIANTE_ZURUECK" xml:space="preserve">
+    <value>“— none —” returns to the component comparison.</value>
+  </data>
+  <data name="BK_TIP_DETAILVARIANTE_LEER" xml:space="preserve">
+    <value>The group has no variant yet; the component comparison is shown.</value>
+  </data>
   <data name="BK_SP_GEWERK" xml:space="preserve">
     <value>Trade</value>
   </data>
@@ -5992,8 +6001,11 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_MSG_KEINE_KOMPONENTEN" xml:space="preserve">
     <value>No components are stored for this project.</value>
   </data>
-  <data name="BK_MSG_ANZAHL_UNTERSCHIEDE" xml:space="preserve">
-    <value>{0} difference(s) compared to the base project.</value>
+  <data name="BK_MSG_ANZAHL_UNTERSCHIEDE_EINS" xml:space="preserve">
+    <value>1 difference compared to the base project.</value>
+  </data>
+  <data name="BK_MSG_ANZAHL_UNTERSCHIEDE_N" xml:space="preserve">
+    <value>{0} differences compared to the base project.</value>
   </data>
   <data name="BK_MSG_KEIN_STAMM" xml:space="preserve">
     <value>No base project selected.</value>
@@ -12761,10 +12773,10 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>Run simulation</value>
   </data>
   <data name="BKS_WAHL_VERSION" xml:space="preserve">
-    <value>Select version</value>
+    <value>Select variant for the detailed differences</value>
   </data>
   <data name="BKS_LBL_VARIANTE" xml:space="preserve">
-    <value>Variant:</value>
+    <value>Detailed differences for variant:</value>
   </data>
   <data name="BKS_SIM_NIE" xml:space="preserve">
     <value>not yet simulated</value>
@@ -25582,7 +25594,7 @@ Do you want to allow this?</value>
     <value>Does the list show only master projects, or their variants as well?</value>
   </data>
   <data name="KI_DLG_BKU_VARIANTE_ERL" xml:space="preserve">
-    <value>The selected version; it decides which differences the table shows and what delete, rename and simulate act on.</value>
+    <value>The variant whose detailed differences from the base project the table shows; the default “— none —” shows the component comparison of all checked versions. Delete and rename only act on a selected variant, simulate acts on the selected variant or otherwise on the base project.</value>
   </data>
   <data name="KI_DLG_BKU_BEZEICHNER_ERL" xml:space="preserve">
     <value>The identifier used to rename the selected version; it takes effect only with the 'Rename' button.</value>

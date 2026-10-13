@@ -10473,7 +10473,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Variante: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Detail-Unterschiede für Variante: ähnelt.
         /// </summary>
         public static string BKS_LBL_VARIANTE {
             get {
@@ -10518,7 +10518,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Version wählen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante für die Detail-Unterschiede wählen ähnelt.
         /// </summary>
         public static string BKS_WAHL_VERSION {
             get {
@@ -12727,6 +12727,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — keine (Komponentenvergleich) — ähnelt.
+        /// </summary>
+        public static string BK_LBL_DETAILVARIANTE_KEINE {
+            get {
+                return ResourceManager.GetString("BK_LBL_DETAILVARIANTE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „— keine —“ führt zum Komponentenvergleich zurück. ähnelt.
+        /// </summary>
+        public static string BK_LBL_DETAILVARIANTE_ZURUECK {
+            get {
+                return ResourceManager.GetString("BK_LBL_DETAILVARIANTE_ZURUECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Alle Versionen im Vergleich führen dieselben Komponenten. ähnelt.
         /// </summary>
         public static string BK_LBL_KEINE_UNTERSCHIEDE {
@@ -12880,11 +12898,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Unterschied(e) gegenüber dem Stammprojekt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Unterschied gegenüber dem Stammprojekt. ähnelt.
         /// </summary>
-        public static string BK_MSG_ANZAHL_UNTERSCHIEDE {
+        public static string BK_MSG_ANZAHL_UNTERSCHIEDE_EINS {
             get {
-                return ResourceManager.GetString("BK_MSG_ANZAHL_UNTERSCHIEDE", resourceCulture);
+                return ResourceManager.GetString("BK_MSG_ANZAHL_UNTERSCHIEDE_EINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Unterschiede gegenüber dem Stammprojekt. ähnelt.
+        /// </summary>
+        public static string BK_MSG_ANZAHL_UNTERSCHIEDE_N {
+            get {
+                return ResourceManager.GetString("BK_MSG_ANZAHL_UNTERSCHIEDE_N", resourceCulture);
             }
         }
         
@@ -13533,6 +13560,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_STATUS_WARNUNGEN {
             get {
                 return ResourceManager.GetString("BK_STATUS_WARNUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gruppe hat noch keine Variante; gezeigt wird der Komponentenvergleich. ähnelt.
+        /// </summary>
+        public static string BK_TIP_DETAILVARIANTE_LEER {
+            get {
+                return ResourceManager.GetString("BK_TIP_DETAILVARIANTE_LEER", resourceCulture);
             }
         }
         
@@ -60977,7 +61013,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die markierte Version; sie entscheidet, welche Unterschiede die Tabelle zeigt und was Löschen, Umbenennen und Simulieren treffen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Variante, deren Detail-Unterschiede zum Stammprojekt die Tabelle zeigt; die Vorgabe „— keine —“ zeigt den Komponentenvergleich aller angehakten Versionen. Löschen und Umbenennen treffen nur eine gewählte Variante, Simulieren die gewählte Variante oder sonst das Stammprojekt. ähnelt.
         /// </summary>
         public static string KI_DLG_BKU_VARIANTE_ERL {
             get {

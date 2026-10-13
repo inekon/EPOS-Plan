@@ -215,7 +215,13 @@ namespace WindowsFormsApplication1
                 // sind damit weg - der Eintragstext traegt Bezeichner und
                 // Projektname, die Art sagt die Reihenfolge. Geblieben ist der
                 // Kopf "Simulation": er beschriftet jetzt die Statuszeile.
-                ["LabelVariante"] = T("BKS_LBL_VARIANTE", "Variante:"),
+                ["LabelVariante"] = T("BKS_LBL_VARIANTE", "Detail-Unterschiede für Variante:"),
+                // Anwenderauftrag 13.10.2026: Die Auswahl fuehrt als ERSTEN Eintrag die
+                // Vorgabe "— keine —" (sie steht fuer die markierte Stammzeile, also den
+                // Komponentenvergleich), danach nur die Varianten der Gruppe.
+                ["VorgabeText"] = MyResource.Resource.BK_LBL_DETAILVARIANTE_KEINE,
+                ["KeineVarianteGrund"] = MyResource.Resource.BK_TIP_DETAILVARIANTE_LEER,
+                ["ZurueckHinweis"] = MyResource.Resource.BK_LBL_DETAILVARIANTE_ZURUECK,
                 ["SpalteSimulation"] = MyResource.Resource.BK_BER_SP_SIMULATION,
                 ["SpalteSpeicher"] = MyResource.Resource.WIRT_ZEILE_SPEICHER,
                 ["SimNieText"] = T("BKS_SIM_NIE", "noch nicht simuliert"),
@@ -228,7 +234,7 @@ namespace WindowsFormsApplication1
                 ["LoeschenText"] = MyResource.Resource.BK_BTN_LOESCHEN,
                 ["SimulierenText"] = T("BKS_BTN_SIMULIEREN", "Simulation starten"),
                 ["UebernehmenText"] = MyResource.Resource.BK_BTN_UEBERNEHMEN,
-                ["WahlKurztext"] = T("BKS_WAHL_VERSION", "Version wählen"),
+                ["WahlKurztext"] = T("BKS_WAHL_VERSION", "Variante für die Detail-Unterschiede wählen"),
                 ["JaText"] = T("BKS_BTN_JA", "Ja"),
                 ["NeinText"] = T("BKS_BTN_NEIN", "Nein"),
                 ["StatusAbgebrochen"] = MyResource.Resource.BK_BER_STATUS_ABGEBROCHEN,
@@ -575,7 +581,19 @@ namespace WindowsFormsApplication1
                 schluessel++;
             }
             stand.Vergleich = zeilen;
-            stand.Statuszeile = string.Format(MyResource.Resource.BK_MSG_ANZAHL_UNTERSCHIEDE, liste.Count);
+            stand.Statuszeile = Unterschiedszeile(liste.Count);
+        }
+
+        /// <summary>
+        /// Die Fußzeile der Unterschiedstabelle: „1 Unterschied gegenüber dem
+        /// Stammprojekt.“ bzw. „3 Unterschiede …“ — Ein- und Mehrzahl über eigene
+        /// Schlüssel wie bei der <see cref="Fusszeile"/> der Gegenüberstellung.
+        /// </summary>
+        internal static string Unterschiedszeile(int anzahl)
+        {
+            return anzahl == 1
+                ? MyResource.Resource.BK_MSG_ANZAHL_UNTERSCHIEDE_EINS
+                : string.Format(MyResource.Resource.BK_MSG_ANZAHL_UNTERSCHIEDE_N, anzahl);
         }
 
         /// <summary>Grund, warum diese Zeile nicht übernommen werden kann (null = sie kann).</summary>

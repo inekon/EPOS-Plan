@@ -5978,6 +5978,15 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_LBL_KOMPONENTEN_DIFF" xml:space="preserve">
     <value>Unterschiede zum Stammprojekt — Variante „{0}“</value>
   </data>
+  <data name="BK_LBL_DETAILVARIANTE_KEINE" xml:space="preserve">
+    <value>— keine (Komponentenvergleich) —</value>
+  </data>
+  <data name="BK_LBL_DETAILVARIANTE_ZURUECK" xml:space="preserve">
+    <value>„— keine —“ führt zum Komponentenvergleich zurück.</value>
+  </data>
+  <data name="BK_TIP_DETAILVARIANTE_LEER" xml:space="preserve">
+    <value>Die Gruppe hat noch keine Variante; gezeigt wird der Komponentenvergleich.</value>
+  </data>
   <data name="BK_SP_GEWERK" xml:space="preserve">
     <value>Gewerk</value>
   </data>
@@ -6008,8 +6017,11 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_MSG_KEINE_KOMPONENTEN" xml:space="preserve">
     <value>Für dieses Projekt sind keine Komponenten hinterlegt.</value>
   </data>
-  <data name="BK_MSG_ANZAHL_UNTERSCHIEDE" xml:space="preserve">
-    <value>{0} Unterschied(e) gegenüber dem Stammprojekt.</value>
+  <data name="BK_MSG_ANZAHL_UNTERSCHIEDE_EINS" xml:space="preserve">
+    <value>1 Unterschied gegenüber dem Stammprojekt.</value>
+  </data>
+  <data name="BK_MSG_ANZAHL_UNTERSCHIEDE_N" xml:space="preserve">
+    <value>{0} Unterschiede gegenüber dem Stammprojekt.</value>
   </data>
   <data name="BK_MSG_KEIN_STAMM" xml:space="preserve">
     <value>Kein Stammprojekt gewählt.</value>
@@ -12768,10 +12780,10 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>Simulation starten</value>
   </data>
   <data name="BKS_WAHL_VERSION" xml:space="preserve">
-    <value>Version wählen</value>
+    <value>Variante für die Detail-Unterschiede wählen</value>
   </data>
   <data name="BKS_LBL_VARIANTE" xml:space="preserve">
-    <value>Variante:</value>
+    <value>Detail-Unterschiede für Variante:</value>
   </data>
   <data name="BKS_SIM_NIE" xml:space="preserve">
     <value>noch nicht simuliert</value>
@@ -25589,7 +25601,7 @@ Möchten Sie das zulassen?</value>
     <value>Zeigt die Liste nur Stammprojekte oder auch deren Varianten?</value>
   </data>
   <data name="KI_DLG_BKU_VARIANTE_ERL" xml:space="preserve">
-    <value>Die markierte Version; sie entscheidet, welche Unterschiede die Tabelle zeigt und was Löschen, Umbenennen und Simulieren treffen.</value>
+    <value>Die Variante, deren Detail-Unterschiede zum Stammprojekt die Tabelle zeigt; die Vorgabe „— keine —“ zeigt den Komponentenvergleich aller angehakten Versionen. Löschen und Umbenennen treffen nur eine gewählte Variante, Simulieren die gewählte Variante oder sonst das Stammprojekt.</value>
   </data>
   <data name="KI_DLG_BKU_BEZEICHNER_ERL" xml:space="preserve">
     <value>Der Bezeichner für das Umbenennen der markierten Version; er wirkt erst mit dem Knopf „Umbenennen“.</value>

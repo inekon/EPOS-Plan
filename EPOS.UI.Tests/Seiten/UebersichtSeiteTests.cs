@@ -332,8 +332,12 @@ public class UebersichtSeiteTests : EposBunitContext
     /// Die Ids sind die Projekt-Ids (stabil über einen Neuaufbau, dublettenfrei —
     /// die Bedingung der Hausregel für den Wirt eines <c>Auswahlfeld</c>).
     /// </summary>
+    ///
+    /// <para><b>Anwenderauftrag 13.10.2026 — Detail-Unterschiede:</b> Der erste Eintrag
+    /// ist die Vorgabe „— keine (Komponentenvergleich) —“ mit der Id des Stamms, danach
+    /// nur die Varianten; den Stamm gibt es nicht als eigenen Eintrag mit seinem Namen.</para>
     [Fact]
-    public void Das_Auswahlfeld_fuehrt_Stamm_und_Varianten_in_der_Reihenfolge_der_Gruppe()
+    public void Das_Auswahlfeld_fuehrt_die_Vorgabe_und_nur_die_Varianten()
     {
         var cut = Zeige();
 
@@ -341,7 +345,8 @@ public class UebersichtSeiteTests : EposBunitContext
         Assert.Equal(2, eintraege.Count);
 
         Assert.Equal("1030", eintraege[0].GetAttribute("value"));
-        Assert.Equal("Musterhaus", eintraege[0].TextContent);
+        Assert.Equal("— keine (Komponentenvergleich) —", eintraege[0].TextContent);
+        Assert.DoesNotContain(eintraege, e => e.TextContent == "Musterhaus");
 
         Assert.Equal("1031", eintraege[1].GetAttribute("value"));
         Assert.Equal("Musterhaus - WP klein", eintraege[1].TextContent);
@@ -377,7 +382,8 @@ public class UebersichtSeiteTests : EposBunitContext
 
         IReadOnlyList<IElement> eintraege = Versionseintraege(Zeige(stand: stand));
 
-        Assert.Equal("Stromspeicher Optimierung", eintraege[0].TextContent);
+        Assert.Equal(3, eintraege.Count);
+        Assert.Equal("— keine (Komponentenvergleich) —", eintraege[0].TextContent);
         Assert.Equal("Stromspeicher Optimierung - ein Speicher", eintraege[1].TextContent);
         Assert.Equal("Stromspeicher Optimierung - Stromspeicher mit Wärmepumpe", eintraege[2].TextContent);
     }
@@ -393,13 +399,15 @@ public class UebersichtSeiteTests : EposBunitContext
         {
             Zeilen = new[]
             {
-                new VarianteZeile { IdProjekt = 3000, Bezeichner = "Ohne Projektname",
-                                     Projektname = "", IstStamm = true }
+                new VarianteZeile { IdProjekt = 3000, Bezeichner = "(Stammprojekt)",
+                                     Projektname = "Stamm", IstStamm = true },
+                new VarianteZeile { IdProjekt = 3001, Bezeichner = "Ohne Projektname",
+                                     Projektname = "" }
             },
             MarkierteId = 3000
         };
 
-        Assert.Equal("Ohne Projektname", Versionseintraege(Zeige(stand: stand))[0].TextContent);
+        Assert.Equal("Ohne Projektname", Versionseintraege(Zeige(stand: stand))[1].TextContent);
     }
 
     /// <summary>Gewählt ist, was der Stand als markiert meldet.</summary>
@@ -456,8 +464,101 @@ public class UebersichtSeiteTests : EposBunitContext
     {
         var cut = Zeige();
 
-        Assert.Equal("Version wählen", Versionswahl(cut).GetAttribute("aria-label"));
-        Assert.Contains("Variante:", cut.Find(".epos-variantenzeile .epos-feld-text").TextContent);
+        Assert.Equal("Variante für die Detail-Unterschiede wählen", Versionswahl(cut).GetAttribute("aria-label"));
+        Assert.Equal("Detail-Unterschiede für Variante:", cut.Find(".epos-variantenzeile .epos-feld-text").TextContent);
+    }
+
+    // =====================================================================
+    //  Detail-Unterschiede (Anwenderauftrag 13.10.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Vorgabe zeigt den Komponentenvergleich (ohne Aktionsspalte, ohne leise
+    /// Rückwegzeile); eine Variante zeigt ihre Unterschiede samt der leisen Zeile, und
+    /// die Wahl der Vorgabe meldet wie bisher die Id des Stamms.
+    /// </summary>
+    [Fact]
+    public void Die_Vorgabe_zeigt_den_Komponentenvergleich_eine_Variante_die_Unterschiede()
+    {
+        var gemeldet = new List<int>();
+        var cut = Zeige(p => p
+            .Add(x => x.ZeileMarkiert, (int id) =>
+            {
+                gemeldet.Add(id);
+                _stand = id == 1031 ? Unterschiedsansicht() : Vergleichsansicht();
+            })
+            .Add(x => x.UebernahmeGaben, (VergleichZeile _) => LeererSatz()));
+
+        Assert.Equal("1030", Versionswahl(cut).GetAttribute("value"));
+        Assert.False(cut.Instance.MitAktionsspalte);
+        Assert.Empty(cut.FindAll(".epos-uebersicht-rueckweg"));
+
+        Versionswahl(cut).Change("1031");
+
+        Assert.True(cut.Instance.MitAktionsspalte);
+        Assert.Equal("„— keine —“ führt zum Komponentenvergleich zurück.",
+                     cut.Find(".epos-uebersicht-rueckweg").TextContent);
+        Assert.Contains("WP klein", cut.Find(".epos-untergruppe").TextContent);
+
+        Versionswahl(cut).Change("1030");
+
+        Assert.Equal(new[] { 1031, 1030 }, gemeldet);
+        Assert.Equal(1030, cut.Instance.MarkierteId);
+        Assert.False(cut.Instance.MitAktionsspalte);
+        Assert.Empty(cut.FindAll(".epos-uebersicht-rueckweg"));
+    }
+
+    /// <summary>
+    /// Ohne Variante ist die Wahl gesperrt und zeigt nur die Vorgabe; der Grund steht
+    /// als Kurztext an der Zeile. GEGENPROBE: mit Variante ist sie frei und ohne Grund.
+    /// </summary>
+    [Fact]
+    public void Ohne_Varianten_ist_die_Wahl_gesperrt_und_zeigt_nur_die_Vorgabe()
+    {
+        var stand = Vergleichsansicht();
+        stand.Zeilen = new[] { Zeilen()[0] };
+        var cut = Zeige(stand: stand);
+
+        IReadOnlyList<IElement> eintraege = Versionseintraege(cut);
+        Assert.Single(eintraege);
+        Assert.Equal("— keine (Komponentenvergleich) —", eintraege[0].TextContent);
+        Assert.True(Versionswahl(cut).HasAttribute("disabled"));
+        Assert.Equal("Die Gruppe hat noch keine Variante; gezeigt wird der Komponentenvergleich.",
+                     cut.Find(".epos-variantenzeile").GetAttribute("title"));
+
+        var frei = Zeige();
+        Assert.False(Versionswahl(frei).HasAttribute("disabled"));
+        Assert.False(frei.Find(".epos-variantenzeile").HasAttribute("title"));
+    }
+
+    /// <summary>
+    /// Umbenennen und Löschen sind bei der Vorgabe „— keine —“ gesperrt wie bisher beim
+    /// Stamm; auf einer Variante sind sie frei.
+    /// </summary>
+    [Fact]
+    public void Umbenennen_und_Loeschen_sind_bei_der_Vorgabe_gesperrt()
+    {
+        var cut = Zeige(p => p.Add(x => x.VarianteUmbenennen, (string _) => ""));
+
+        Assert.Equal("— keine (Komponentenvergleich) —",
+                     Versionswahl(cut).QuerySelector("option[selected]")!.TextContent);
+        Assert.True(Umbenennknopf(cut).HasAttribute("disabled"));
+        Assert.True(Loeschknopf(cut).HasAttribute("disabled"));
+
+        var variante = Zeige(p => p.Add(x => x.VarianteUmbenennen, (string _) => ""),
+                             Unterschiedsansicht());
+        Assert.False(Umbenennknopf(variante).HasAttribute("disabled"));
+        Assert.False(Loeschknopf(variante).HasAttribute("disabled"));
+    }
+
+    /// <summary>Die Fußzeile der Unterschiedstabelle: Ein- und Mehrzahl über eigene Schlüssel.</summary>
+    [Fact]
+    public void Die_Fusszeile_der_Unterschiede_steht_in_Ein_und_Mehrzahl()
+    {
+        Assert.Equal("1 Unterschied gegenüber dem Stammprojekt.",
+                     WindowsFormsApplication1.UebersichtSeiteGaben.Unterschiedszeile(1));
+        Assert.Equal("3 Unterschiede gegenüber dem Stammprojekt.",
+                     WindowsFormsApplication1.UebersichtSeiteGaben.Unterschiedszeile(3));
     }
 
     // =====================================================================
