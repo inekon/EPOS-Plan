@@ -32,9 +32,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Kette_Zielstand_und_Paketanhebung_kennen_den_Schritt()
         {
-            // VORLÄUFIG hängt der Schritt an 221; nach dem Umhängen an 223 (KaeltebedarfSplitAbrechnungSchema) lautet
-            // die Kette dort + 1 = 224.
-            Assert.Equal(BauteilkatalogSchema.SCHRITT + 1, TwwZonenferienSchema.SCHRITT);
+            Assert.Equal(KaeltebedarfSplitAbrechnungSchema.SCHRITT + 1, TwwZonenferienSchema.SCHRITT);
+            Assert.Equal(224, TwwZonenferienSchema.SCHRITT);
             Assert.Equal(TwwZonenferienSchema.SCHRITT, SchemaStand.Zielversion);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == TwwZonenferienSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Umformung, s.Wirkung);
@@ -48,17 +47,18 @@ namespace EPOS.Kern.Tests
 
             string werkzeug = File.ReadAllText(Path.Combine(wurzel, "Werkzeuge", "Testdatenbankschema", "Program.cs"));
             int w = werkzeug.IndexOf("TwwZonenferienSchema.Ausfuehren(", StringComparison.Ordinal);
-            Assert.True(w > 0 && w > werkzeug.IndexOf("BauteilkatalogSchema.Ausfuehren(", StringComparison.Ordinal));
+            Assert.True(w > 0 && w > werkzeug.IndexOf("KaeltebedarfSplitAbrechnungSchema.Ausfuehren(", StringComparison.Ordinal));
 
             string migration = File.ReadAllText(Path.Combine(wurzel, "WindowsFormsApplication1", "Allgemein", "Update", "SchemaMigration.cs"));
             Assert.Contains("SCHRITT_TWW_ZONENFERIEN = TwwZonenferienSchema.SCHRITT", migration, StringComparison.Ordinal);
-            int vorher = migration.IndexOf("new Schritt(SCHRITT_BAUTEILKATALOG", StringComparison.Ordinal);
+            int vorher = migration.IndexOf("new Schritt(SCHRITT_KAELTEBEDARF_SPLIT_ABRECHNUNG", StringComparison.Ordinal);
             int ort = migration.IndexOf("new Schritt(SCHRITT_TWW_ZONENFERIEN", StringComparison.Ordinal);
             Assert.True(vorher > 0 && ort > vorher);
             Assert.Contains("TwwZonenferienSchema.Ausfuehren(bericht)", migration, StringComparison.Ordinal);
 
             string testkopie = File.ReadAllText(Path.Combine(wurzel, "EPOS.Kern.Tests", "TestDatenbank.cs"));
-            Assert.Contains("TwwZonenferienSchema.Ausfuehren(null)", testkopie, StringComparison.Ordinal);
+            int k6 = testkopie.IndexOf("KaeltebedarfSplitAbrechnungSchema.Ausfuehren(null)", StringComparison.Ordinal);
+            Assert.True(k6 > 0 && testkopie.IndexOf("TwwZonenferienSchema.Ausfuehren(null)", StringComparison.Ordinal) > k6);
         }
 
         // =================================================================================

@@ -22100,6 +22100,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die dezentral (Split) ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_KAELTE_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_KAELTE_DEZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_KAELTE_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_KAELTE_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgänge ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_KAELTE_LASTGANG {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_KAELTE_LASTGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarfsprofile ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_KAELTE_PROFIL {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_KAELTE_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ungedeckte Kälte ähnelt.
         /// </summary>
         public static string CHART_LEGENDE_KAELTE_UNGEDECKT {
@@ -22915,6 +22951,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string DGF_ROLLE_HINTERGRUND {
             get {
                 return ResourceManager.GetString("DGF_ROLLE_HINTERGRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte dezentral (Split) ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_KAELTE_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_KAELTE_DEZENTRAL", resourceCulture);
             }
         }
         
@@ -36414,6 +36459,213 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string GEBV_BTN_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("GEBV_BTN_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgaben der Baualtersklasse übernehmen… ähnelt.
+        /// </summary>
+        public static string GEBV_BTN_OEFFNEN {
+            get {
+                return ResourceManager.GetString("GEBV_BTN_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil übernehmen… ähnelt.
+        /// </summary>
+        public static string GEBV_BTN_PROFIL {
+            get {
+                return ResourceManager.GetString("GEBV_BTN_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string GEBV_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("GEBV_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgaben zurücknehmen ähnelt.
+        /// </summary>
+        public static string GEBV_BTN_ZURUECKNEHMEN {
+            get {
+                return ResourceManager.GetString("GEBV_BTN_ZURUECKNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Baualtersklasse gesetzt – zuerst Baualtersklasse oder Baujahr wählen. ähnelt.
+        /// </summary>
+        public static string GEBV_GRUND_KLASSE {
+            get {
+                return ResourceManager.GetString("GEBV_GRUND_KLASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart „{0}“ gibt kein Nutzungsprofil vor. ähnelt.
+        /// </summary>
+        public static string GEBV_GRUND_PROFIL_KEINS {
+            get {
+                return ResourceManager.GetString("GEBV_GRUND_PROFIL_KEINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile stehen hier nicht bereit. ähnelt.
+        /// </summary>
+        public static string GEBV_GRUND_PROFIL_WEG {
+            get {
+                return ResourceManager.GetString("GEBV_GRUND_PROFIL_WEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Baualtersklasse gibt keine Werte vor. ähnelt.
+        /// </summary>
+        public static string GEBV_GRUND_WERTE {
+            get {
+                return ResourceManager.GetString("GEBV_GRUND_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude trägt Zonen – es gilt der Zonenweg (Reiter „Zonen“). ähnelt.
+        /// </summary>
+        public static string GEBV_GRUND_ZONEN {
+            get {
+                return ResourceManager.GetString("GEBV_GRUND_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil der Gebäudeart ähnelt.
+        /// </summary>
+        public static string GEBV_GRUPPE_PROFIL {
+            get {
+                return ResourceManager.GetString("GEBV_GRUPPE_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe Klasse {0}: freier Wert (Typgebäude nach Stein/Loga 2025), kein Katalogbau der Klasse. ähnelt.
+        /// </summary>
+        public static string GEBV_HERKUNFT_FREI {
+            get {
+                return ResourceManager.GetString("GEBV_HERKUNFT_FREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe Klasse {0}: Median von {1} Katalogbauten der Klasse. ähnelt.
+        /// </summary>
+        public static string GEBV_HERKUNFT_KLASSE {
+            get {
+                return ResourceManager.GetString("GEBV_HERKUNFT_KLASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe Energiestandard {0}: Median von {1} Katalogbauten dieses Standards. ähnelt.
+        /// </summary>
+        public static string GEBV_HERKUNFT_STANDARD {
+            get {
+                return ResourceManager.GetString("GEBV_HERKUNFT_STANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgaben {0} übernommen ({1} Felder geändert) – mit OK speichern. ähnelt.
+        /// </summary>
+        public static string GEBV_MELDUNG_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("GEBV_MELDUNG_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgaben zurückgenommen. ähnelt.
+        /// </summary>
+        public static string GEBV_MELDUNG_ZURUECK {
+            get {
+                return ResourceManager.GetString("GEBV_MELDUNG_ZURUECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feld ähnelt.
+        /// </summary>
+        public static string GEBV_SP_FELD {
+            get {
+                return ResourceManager.GetString("GEBV_SP_FELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jetzt ähnelt.
+        /// </summary>
+        public static string GEBV_SP_JETZT {
+            get {
+                return ResourceManager.GetString("GEBV_SP_JETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe ähnelt.
+        /// </summary>
+        public static string GEBV_SP_NEU {
+            get {
+                return ResourceManager.GetString("GEBV_SP_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgaben der Baualtersklasse ähnelt.
+        /// </summary>
+        public static string GEBV_TITEL {
+            get {
+                return ResourceManager.GetString("GEBV_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unverändert ähnelt.
+        /// </summary>
+        public static string GEBV_TXT_GLEICH {
+            get {
+                return ResourceManager.GetString("GEBV_TXT_GLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernommen wird in den Arbeitsstand, gespeichert mit OK. Flächen, Sollwerte und Kalender bleiben. ähnelt.
+        /// </summary>
+        public static string GEBV_TXT_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEBV_TXT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart „{0}“ gibt das Nutzungsprofil „{1}“ vor (Sollwerte, Gewinne, Lüftung). ähnelt.
+        /// </summary>
+        public static string GEBV_TXT_PROFIL {
+            get {
+                return ResourceManager.GetString("GEBV_TXT_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe für das ausgewählte Gebäude ähnelt.
         /// </summary>
         public static string GEBW_GRP_EINGABE {
@@ -37980,6 +38232,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung und Kalender… ähnelt.
+        /// </summary>
+        public static string GEB_BTN_ZONENNUTZUNG {
+            get {
+                return ResourceManager.GetString("GEB_BTN_ZONENNUTZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofil, Kalender, Sollwerte, Ferien und Heizperiode aller Zonen auf einem Blatt. ähnelt.
+        /// </summary>
+        public static string GEB_BTN_ZONENNUTZUNG_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEB_BTN_ZONENNUTZUNG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Effizienzhaus/-gebäude Denkmal ähnelt.
         /// </summary>
         public static string GEB_ES_DENKMAL {
@@ -38786,6 +39056,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_SPERRE_WAHL_SIMULATION {
             get {
                 return ResourceManager.GetString("GEB_SPERRE_WAHL_SIMULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst die geänderten Zonen mit OK speichern. ähnelt.
+        /// </summary>
+        public static string GEB_SPERRE_ZONENNUTZUNG {
+            get {
+                return ResourceManager.GetString("GEB_SPERRE_ZONENNUTZUNG", resourceCulture);
             }
         }
         
@@ -69491,6 +69770,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die dezentral (Split) gedeckten Kältebedarfszeilen mit Quelle, Jahressumme, EER, Kühlträger und Zähler; nur lesend. Gepflegt werden sie in den Dialogen „Kältebedarf extern“ und „Kältebedarfsprofile“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KAELTE_DEZENTRAL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KAELTE_DEZENTRAL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die aufgenommenen Erzeuger in der Reihenfolge, in der die Simulation sie einsetzt — je Gruppe eine Aufzählung. Der Rang entscheidet, welcher Erzeuger den Bedarf zuerst deckt. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_KASKADE_ERL {
@@ -89277,6 +89565,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Lastgang: {0} ähnelt.
+        /// </summary>
+        public static string KONF_KS_DAVON_LASTGANG {
+            get {
+                return ResourceManager.GetString("KONF_KS_DAVON_LASTGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Profil: {0} ähnelt.
+        /// </summary>
+        public static string KONF_KS_DAVON_PROFIL {
+            get {
+                return ResourceManager.GetString("KONF_KS_DAVON_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom: Projektträger ähnelt.
+        /// </summary>
+        public static string KONF_KS_DEZENTRAL_STROM_PROJEKT {
+            get {
+                return ResourceManager.GetString("KONF_KS_DEZENTRAL_STROM_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom: {0} Träger ähnelt.
+        /// </summary>
+        public static string KONF_KS_DEZENTRAL_STROM_TRAEGER {
+            get {
+                return ResourceManager.GetString("KONF_KS_DEZENTRAL_STROM_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlträger: {0} ähnelt.
+        /// </summary>
+        public static string KONF_KS_DEZENTRAL_TRAEGER {
+            get {
+                return ResourceManager.GetString("KONF_KS_DEZENTRAL_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: EER {1} ähnelt.
+        /// </summary>
+        public static string KONF_KS_DEZENTRAL_ZEILE {
+            get {
+                return ResourceManager.GetString("KONF_KS_DEZENTRAL_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kälte ähnelt.
         /// </summary>
         public static string KONF_KS_KAELTE {
@@ -92145,6 +92487,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten… ähnelt.
+        /// </summary>
+        public static string MPB_BTN_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("MPB_BTN_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Öffnet das Blatt „Nutzung und Kalender“ mit allen Zonen. ähnelt.
+        /// </summary>
+        public static string MPB_BTN_BEARBEITEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("MPB_BTN_BEARBEITEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Befunde dieser Prüfgruppe zeigen oder verbergen ähnelt.
         /// </summary>
         public static string MPB_BTN_BEFUNDE_HINWEIS {
@@ -92370,6 +92730,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (ergänzt) ähnelt.
+        /// </summary>
+        public static string MP_BAUTEIL_ERGAENZT {
+            get {
+                return ResourceManager.GetString("MP_BAUTEIL_ERGAENZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: Aufbau „{1}“ ist für die Simulation meist nicht geeignet. ähnelt.
         /// </summary>
         public static string MP_BEFUND_AUFBAU_UNGEEIGNET {
@@ -92469,6 +92838,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“ (Zone „{1}“) weist mit Neigung {2}° gegen seine Lage – eine Bodenplatte weist nach unten (180°), ein Dach nach oben (0°). ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_HUELLE_GESPIEGELT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_HUELLE_GESPIEGELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Nach oben ist die Hülle nicht geschlossen – kein Dach, keine Decke (nach oben {1} m², nach unten {2} m²). ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_HUELLE_OBEN_FEHLT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_HUELLE_OBEN_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die Hülle schließt nicht – nach oben weisen {1} m², nach unten {2} m² (Abweichung {3} %). ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_HUELLE_OFFEN {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_HUELLE_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Hülle des Gebäudes hat keine Außenwand. ähnelt.
         /// </summary>
         public static string MP_BEFUND_HUELLE_OHNE_AUSSENWAND {
@@ -92492,6 +92888,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MP_BEFUND_HUELLE_OHNE_DACH {
             get {
                 return ResourceManager.GetString("MP_BEFUND_HUELLE_OHNE_DACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Nach unten ist die Hülle nicht geschlossen – keine Bodenplatte, keine Decke (nach oben {1} m², nach unten {2} m²). ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_HUELLE_UNTEN_FEHLT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_HUELLE_UNTEN_FEHLT", resourceCulture);
             }
         }
         
@@ -92838,6 +93243,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die an Außenluft ähnelt.
+        /// </summary>
+        public static string MP_RAND_AUSSENLUFT {
+            get {
+                return ResourceManager.GetString("MP_RAND_AUSSENLUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gegen Erdreich ähnelt.
+        /// </summary>
+        public static string MP_RAND_ERDREICH {
+            get {
+                return ResourceManager.GetString("MP_RAND_ERDREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die an Zone „{0}“ ähnelt.
+        /// </summary>
+        public static string MP_RAND_ZONE {
+            get {
+                return ResourceManager.GetString("MP_RAND_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nicht rechenfähig ähnelt.
         /// </summary>
         public static string MP_STATUS_NICHTRECHENFAEHIG {
@@ -92879,6 +93311,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MP_VORSCHLAG_FERIEN_PROJEKT {
             get {
                 return ResourceManager.GetString("MP_VORSCHLAG_FERIEN_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ergänzen: {1} m², Neigung {2}°, {3}, U {4} W/(m²K) wie die gleichen Bauteile des Gebäudes ähnelt.
+        /// </summary>
+        public static string MP_VORSCHLAG_HUELLBAUTEIL_PROJEKT {
+            get {
+                return ResourceManager.GetString("MP_VORSCHLAG_HUELLBAUTEIL_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ergänzen: {1} m², Neigung {2}°, {3}, U {4} W/(m²K) des Typaufbaus ähnelt.
+        /// </summary>
+        public static string MP_VORSCHLAG_HUELLBAUTEIL_TYP {
+            get {
+                return ResourceManager.GetString("MP_VORSCHLAG_HUELLBAUTEIL_TYP", resourceCulture);
             }
         }
         
@@ -112862,7 +113312,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf dezentral (Split) „{0}&quot;: Der Strom ({1} MWh/a) geht mit dem Stromträger des Projekts in Strombilanz und Abrechnung; eine gesonderte Abrechnung über den Kühlträger {2} ist für dezentrale Zeilen noch nicht verfügbar. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf dezentral (Split) „{0}“: {1} MWh/a Netzbezug des Split-Stroms (Strom {2} MWh/a) tragen den Stromträger „{3}“. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_DEZENTRAL_KUEHLTRAEGER {
             get {
@@ -115031,6 +115481,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezentrale Kältedeckung (Split) ähnelt.
+        /// </summary>
+        public static string SIMERG_GRP_KAELTE_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMERG_GRP_KAELTE_DEZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeproduktion der einzelnen Spitzenkessel ähnelt.
         /// </summary>
         public static string SIMERG_GRP_MODULE_SPK {
@@ -115063,6 +115522,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER {
             get {
                 return ResourceManager.GetString("SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezentral (Split) gedeckt: {0} MWh/a des Kältebedarfs ({1} %) mit {2} MWh/a Strom. ähnelt.
+        /// </summary>
+        public static string SIMERG_HRL_KAELTE_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMERG_HRL_KAELTE_DEZENTRAL", resourceCulture);
             }
         }
         
@@ -115272,6 +115740,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahres-EER dezentral ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_EER_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_EER_DEZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energiebedarf ähnelt.
         /// </summary>
         public static string SIMERG_LBL_ENERGIEBEDARF {
@@ -115371,6 +115848,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon dezentral (Split) ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_KAELTE_DAVON_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_KAELTE_DAVON_DEZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Gebäude ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_KAELTE_DAVON_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_KAELTE_DAVON_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Lastgänge ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_KAELTE_DAVON_LASTGANG {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_KAELTE_DAVON_LASTGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Kältebedarfsprofile ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_KAELTE_DAVON_PROFIL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_KAELTE_DAVON_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte dezentral ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_KAELTE_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_KAELTE_DEZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf je Bedarfsart ähnelt.
         /// </summary>
         public static string SIMERG_LBL_KAELTE_JE_KANAL {
@@ -115448,6 +115970,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_NETZVERLUSTE {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_NETZVERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug dezentral ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_NETZ_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_NETZ_DEZENTRAL", resourceCulture);
             }
         }
         
@@ -115736,6 +116267,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_STROMVERBRAUCH_WP {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_STROMVERBRAUCH_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom dezentral ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_STROM_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_STROM_DEZENTRAL", resourceCulture);
             }
         }
         
@@ -117257,6 +117797,168 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_KAELTE_BTN_VORGABE {
             get {
                 return ResourceManager.GetString("SIMKONF_KAELTE_BTN_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezentrale Kältedeckung ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fest {0} ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_EER_FEST {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_EER_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die linear {0} bei {1} °C / {2} bei {3} °C ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_EER_LINEAR {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_EER_LINEAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezentral gedeckte Zeilen laufen neben der Kältefolge mit eigenem EER; gepflegt werden sie unter „Kältebedarf extern“ und „Kältebedarfsprofile“. ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_HRL {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_HRL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ lässt sich hier nicht bearbeiten: {1} ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgang ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_QUELLE_LASTGANG {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_QUELLE_LASTGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarfsprofil ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_QUELLE_PROFIL {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_QUELLE_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_SP_EER {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_SP_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahressumme ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_SP_SUMME {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_SP_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlträger ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_SP_TRAEGER {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_SP_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zähler ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_SP_ZAEHLER {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_SP_ZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_SP_ZEILE {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_SP_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe dezentral (Profile): {0} MWh/a ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_SUMME {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeile im Dialog ihrer Quelle bearbeiten: Kältebedarfsprofile oder Kältebedarf extern ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_TIP_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_TIP_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die anteilig am Netzbezug ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_ZAEHLER_ANTEILIG {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_ZAEHLER_ANTEILIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigener Zähler ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_ZAEHLER_EIGEN {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_ZAEHLER_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf zentral (Kältefolge): Gebäude mit Kühlung, Lastgänge {0}, Kältebedarfsprofile {1} ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_ZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_ZENTRAL", resourceCulture);
             }
         }
         
@@ -119796,6 +120498,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Kältefolge: {0} % des zentral zu deckenden Kältebedarfs ähnelt.
+        /// </summary>
+        public static string SIMUEB_KAELTE_DAVON_KAELTEFOLGE {
+            get {
+                return ResourceManager.GetString("SIMUEB_KAELTE_DAVON_KAELTEFOLGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kälteerzeuger ähnelt.
         /// </summary>
         public static string SIMUEB_KAELTE_SP_ANLAGE {
@@ -119859,6 +120570,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon {0} MWh/a Kühlung dezentral über eigenen Zähler (neben der Strombilanz) ähnelt.
+        /// </summary>
+        public static string SIMUEB_KUEHLUNG_DEZENTRAL_ZAEHLER {
+            get {
+                return ResourceManager.GetString("SIMUEB_KUEHLUNG_DEZENTRAL_ZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Deckung durch Erzeuger ähnelt.
         /// </summary>
         public static string SIMUEB_LBL_DECKUNG {
@@ -119909,6 +120629,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMUEB_LBL_KAELTE_UNGEDECKT {
             get {
                 return ResourceManager.GetString("SIMUEB_LBL_KAELTE_UNGEDECKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung dezentral ähnelt.
+        /// </summary>
+        public static string SIMUEB_LBL_KUEHLUNG_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMUEB_LBL_KUEHLUNG_DEZENTRAL", resourceCulture);
             }
         }
         
@@ -120215,6 +120944,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMWARN_KAELTE_SPLIT_OHNE_EER {
             get {
                 return ResourceManager.GetString("SIMWARN_KAELTE_SPLIT_OHNE_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf „{0}“ ist dezentral (Split) gedeckt und auf „eigener Zähler“ gestellt, aber ohne abweichenden Kühlträger — der Zähler wirkt nicht, der Strom läuft mit dem Stromträger des Projekts. Bitte einen anderen Stromträger des Projekts als Kühlträger wählen oder den Zähler abwählen. ähnelt.
+        /// </summary>
+        public static string SIMWARN_KAELTE_SPLIT_ZAEHLER_OHNE_TRAEGER {
+            get {
+                return ResourceManager.GetString("SIMWARN_KAELTE_SPLIT_ZAEHLER_OHNE_TRAEGER", resourceCulture);
             }
         }
         
@@ -122823,6 +123561,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_ROLLE_ZWEITSENKE {
             get {
                 return ResourceManager.GetString("SIM_ROLLE_ZWEITSENKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezentral (Split) ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_ABNEHMER_KAELTE_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_ABNEHMER_KAELTE_DEZENTRAL", resourceCulture);
             }
         }
         
@@ -147217,6 +147964,690 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZLUFT_ZONE_WAHL {
             get {
                 return ResourceManager.GetString("ZLUFT_ZONE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Zonen wählen ähnelt.
+        /// </summary>
+        public static string ZNB_ALLE_WAEHLEN {
+            get {
+                return ResourceManager.GetString("ZNB_ALLE_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string ZNB_BTN_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("ZNB_BTN_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anwenden ähnelt.
+        /// </summary>
+        public static string ZNB_BTN_ANWENDEN {
+            get {
+                return ResourceManager.GetString("ZNB_BTN_ANWENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender kopieren von… ähnelt.
+        /// </summary>
+        public static string ZNB_BTN_KOPIEREN {
+            get {
+                return ResourceManager.GetString("ZNB_BTN_KOPIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kopiert alle Kalender einer Zone auf die gewählten Zonen und ersetzt deren Kalender. ähnelt.
+        /// </summary>
+        public static string ZNB_BTN_KOPIEREN_HINWEIS {
+            get {
+                return ResourceManager.GetString("ZNB_BTN_KOPIEREN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil zuweisen… ähnelt.
+        /// </summary>
+        public static string ZNB_BTN_PROFIL {
+            get {
+                return ResourceManager.GetString("ZNB_BTN_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gibt den gewählten Zonen ein Profil des Katalogs; die Kalender erzeugt der Generator. ähnelt.
+        /// </summary>
+        public static string ZNB_BTN_PROFIL_HINWEIS {
+            get {
+                return ResourceManager.GetString("ZNB_BTN_PROFIL_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektvorgabe Ferien/Heizperiode übernehmen ähnelt.
+        /// </summary>
+        public static string ZNB_BTN_PROJEKT {
+            get {
+                return ResourceManager.GetString("ZNB_BTN_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählten Zonen folgen Ferien und Heizperiode des Projekts; ihre Abweichung fällt. ähnelt.
+        /// </summary>
+        public static string ZNB_BTN_PROJEKT_HINWEIS {
+            get {
+                return ResourceManager.GetString("ZNB_BTN_PROJEKT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sollwerte setzen… ähnelt.
+        /// </summary>
+        public static string ZNB_BTN_SOLL {
+            get {
+                return ResourceManager.GetString("ZNB_BTN_SOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Setzt Tag- und Nachtsollwert der gewählten Zonen. ähnelt.
+        /// </summary>
+        public static string ZNB_BTN_SOLL_HINWEIS {
+            get {
+                return ResourceManager.GetString("ZNB_BTN_SOLL_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag übernehmen ähnelt.
+        /// </summary>
+        public static string ZNB_BTN_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("ZNB_BTN_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gibt jeder gewählten Zone das Profil nach der Profilregel. ähnelt.
+        /// </summary>
+        public static string ZNB_BTN_VORSCHLAG_HINWEIS {
+            get {
+                return ResourceManager.GetString("ZNB_BTN_VORSCHLAG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone… ähnelt.
+        /// </summary>
+        public static string ZNB_BTN_ZONE {
+            get {
+                return ResourceManager.GetString("ZNB_BTN_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Öffnet die Zone im Zonendialog (Kalender im Einzelnen). ähnelt.
+        /// </summary>
+        public static string ZNB_BTN_ZONE_HINWEIS {
+            get {
+                return ResourceManager.GetString("ZNB_BTN_ZONE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zurücknehmen ähnelt.
+        /// </summary>
+        public static string ZNB_BTN_ZURUECK {
+            get {
+                return ResourceManager.GetString("ZNB_BTN_ZURUECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stellt den Stand vor der letzten Änderung wieder her. ähnelt.
+        /// </summary>
+        public static string ZNB_BTN_ZURUECK_HINWEIS {
+            get {
+                return ResourceManager.GetString("ZNB_BTN_ZURUECK_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abweichung ähnelt.
+        /// </summary>
+        public static string ZNB_FERIEN_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("ZNB_FERIEN_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fehlt ähnelt.
+        /// </summary>
+        public static string ZNB_FERIEN_FEHLT {
+            get {
+                return ResourceManager.GetString("ZNB_FERIEN_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt ähnelt.
+        /// </summary>
+        public static string ZNB_FERIEN_PROJEKT {
+            get {
+                return ResourceManager.GetString("ZNB_FERIEN_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Zonen gewählt ähnelt.
+        /// </summary>
+        public static string ZNB_GEWAEHLT {
+            get {
+                return ResourceManager.GetString("ZNB_GEWAEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei ähnelt.
+        /// </summary>
+        public static string ZNB_HERKUNFT_DATEI {
+            get {
+                return ResourceManager.GetString("ZNB_HERKUNFT_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil ähnelt.
+        /// </summary>
+        public static string ZNB_HERKUNFT_PROFIL {
+            get {
+                return ResourceManager.GetString("ZNB_HERKUNFT_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe ähnelt.
+        /// </summary>
+        public static string ZNB_HERKUNFT_VORGABE {
+            get {
+                return ResourceManager.GetString("ZNB_HERKUNFT_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofil, Kalender, Sollwerte, Ferien und Heizperiode aller Zonen auf einem Blatt; eine Handlung gilt für alle gewählten Zonen. ähnelt.
+        /// </summary>
+        public static string ZNB_HILFE_KURZ {
+            get {
+                return ResourceManager.GetString("ZNB_HILFE_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigener Kalender ähnelt.
+        /// </summary>
+        public static string ZNB_KENNUNG_EIGEN {
+            get {
+                return ResourceManager.GetString("ZNB_KENNUNG_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die entfällt (unbeheizt) ähnelt.
+        /// </summary>
+        public static string ZNB_KENNUNG_ENTFAELLT {
+            get {
+                return ResourceManager.GetString("ZNB_KENNUNG_ENTFAELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fehlt ähnelt.
+        /// </summary>
+        public static string ZNB_KENNUNG_FEHLT {
+            get {
+                return ResourceManager.GetString("ZNB_KENNUNG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die geerbt vom Gebäude ähnelt.
+        /// </summary>
+        public static string ZNB_KENNUNG_GEERBT {
+            get {
+                return ResourceManager.GetString("ZNB_KENNUNG_GEERBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vom Profil erzeugt ähnelt.
+        /// </summary>
+        public static string ZNB_KENNUNG_PROFIL {
+            get {
+                return ResourceManager.GetString("ZNB_KENNUNG_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die F ähnelt.
+        /// </summary>
+        public static string ZNB_KURZ_FERIEN {
+            get {
+                return ResourceManager.GetString("ZNB_KURZ_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die G ähnelt.
+        /// </summary>
+        public static string ZNB_KURZ_GERAETE {
+            get {
+                return ResourceManager.GetString("ZNB_KURZ_GERAETE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die H ähnelt.
+        /// </summary>
+        public static string ZNB_KURZ_HEIZSOLL {
+            get {
+                return ResourceManager.GetString("ZNB_KURZ_HEIZSOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die K ähnelt.
+        /// </summary>
+        public static string ZNB_KURZ_KUEHLSOLL {
+            get {
+                return ResourceManager.GetString("ZNB_KURZ_KUEHLSOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die L ähnelt.
+        /// </summary>
+        public static string ZNB_KURZ_LUEFTUNG {
+            get {
+                return ResourceManager.GetString("ZNB_KURZ_LUEFTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die P ähnelt.
+        /// </summary>
+        public static string ZNB_KURZ_PERSONEN {
+            get {
+                return ResourceManager.GetString("ZNB_KURZ_PERSONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die HP ähnelt.
+        /// </summary>
+        public static string ZNB_KURZ_SAISON {
+            get {
+                return ResourceManager.GetString("ZNB_KURZ_SAISON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nacht [°C]: ähnelt.
+        /// </summary>
+        public static string ZNB_LABEL_NACHT {
+            get {
+                return ResourceManager.GetString("ZNB_LABEL_NACHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil: ähnelt.
+        /// </summary>
+        public static string ZNB_LABEL_PROFIL {
+            get {
+                return ResourceManager.GetString("ZNB_LABEL_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Von Zone: ähnelt.
+        /// </summary>
+        public static string ZNB_LABEL_QUELLE {
+            get {
+                return ResourceManager.GetString("ZNB_LABEL_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tag [°C]: ähnelt.
+        /// </summary>
+        public static string ZNB_LABEL_TAG {
+            get {
+                return ResourceManager.GetString("ZNB_LABEL_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} ähnelt.
+        /// </summary>
+        public static string ZNB_MARKE_TITEL {
+            get {
+                return ResourceManager.GetString("ZNB_MARKE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude hat keine Zonen. ähnelt.
+        /// </summary>
+        public static string ZNB_MSG_KEINE_ZONEN {
+            get {
+                return ResourceManager.GetString("ZNB_MSG_KEINE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen dieses Gebäudes lassen sich nicht lesen. ähnelt.
+        /// </summary>
+        public static string ZNB_MSG_NICHT_GELESEN {
+            get {
+                return ResourceManager.GetString("ZNB_MSG_NICHT_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt gibt weder Ferien noch Heizperiode vor. ähnelt.
+        /// </summary>
+        public static string ZNB_MSG_PROJEKT_OHNE {
+            get {
+                return ResourceManager.GetString("ZNB_MSG_PROJEKT_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte eine Zahl eingeben. ähnelt.
+        /// </summary>
+        public static string ZNB_MSG_ZAHL {
+            get {
+                return ResourceManager.GetString("ZNB_MSG_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien ähnelt.
+        /// </summary>
+        public static string ZNB_NAME_FERIEN {
+            get {
+                return ResourceManager.GetString("ZNB_NAME_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Innere Lasten ähnelt.
+        /// </summary>
+        public static string ZNB_NAME_GERAETE {
+            get {
+                return ResourceManager.GetString("ZNB_NAME_GERAETE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizung ähnelt.
+        /// </summary>
+        public static string ZNB_NAME_HEIZSOLL {
+            get {
+                return ResourceManager.GetString("ZNB_NAME_HEIZSOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung ähnelt.
+        /// </summary>
+        public static string ZNB_NAME_KUEHLSOLL {
+            get {
+                return ResourceManager.GetString("ZNB_NAME_KUEHLSOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lüftung ähnelt.
+        /// </summary>
+        public static string ZNB_NAME_LUEFTUNG {
+            get {
+                return ResourceManager.GetString("ZNB_NAME_LUEFTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Personen ähnelt.
+        /// </summary>
+        public static string ZNB_NAME_PERSONEN {
+            get {
+                return ResourceManager.GetString("ZNB_NAME_PERSONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizperiode ähnelt.
+        /// </summary>
+        public static string ZNB_NAME_SAISON {
+            get {
+                return ResourceManager.GetString("ZNB_NAME_SAISON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Profil ähnelt.
+        /// </summary>
+        public static string ZNB_OHNE_PROFIL {
+            get {
+                return ResourceManager.GetString("ZNB_OHNE_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einzelheiten ähnelt.
+        /// </summary>
+        public static string ZNB_SPALTE_AKTION {
+            get {
+                return ResourceManager.GetString("ZNB_SPALTE_AKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Befund ähnelt.
+        /// </summary>
+        public static string ZNB_SPALTE_BEFUND {
+            get {
+                return ResourceManager.GetString("ZNB_SPALTE_BEFUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien / Heizperiode ähnelt.
+        /// </summary>
+        public static string ZNB_SPALTE_FERIEN {
+            get {
+                return ResourceManager.GetString("ZNB_SPALTE_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche ähnelt.
+        /// </summary>
+        public static string ZNB_SPALTE_FLAECHE {
+            get {
+                return ResourceManager.GetString("ZNB_SPALTE_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender ähnelt.
+        /// </summary>
+        public static string ZNB_SPALTE_KALENDER {
+            get {
+                return ResourceManager.GetString("ZNB_SPALTE_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofil ähnelt.
+        /// </summary>
+        public static string ZNB_SPALTE_PROFIL {
+            get {
+                return ResourceManager.GetString("ZNB_SPALTE_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll Tag / Nacht ähnelt.
+        /// </summary>
+        public static string ZNB_SPALTE_SOLL {
+            get {
+                return ResourceManager.GetString("ZNB_SPALTE_SOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone ähnelt.
+        /// </summary>
+        public static string ZNB_SPALTE_ZONE {
+            get {
+                return ResourceManager.GetString("ZNB_SPALTE_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst Zonen wählen. ähnelt.
+        /// </summary>
+        public static string ZNB_SPERRE_WAHL {
+            get {
+                return ResourceManager.GetString("ZNB_SPERRE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung und Kalender ähnelt.
+        /// </summary>
+        public static string ZNB_TITEL {
+            get {
+                return ResourceManager.GetString("ZNB_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag: {0} ähnelt.
+        /// </summary>
+        public static string ZNB_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("ZNB_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone {0} wählen ähnelt.
+        /// </summary>
+        public static string ZNB_ZONE_WAEHLEN {
+            get {
+                return ResourceManager.GetString("ZNB_ZONE_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Änderung ist nicht geschrieben: {0} ähnelt.
+        /// </summary>
+        public static string ZN_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("ZN_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zonen geändert. ähnelt.
+        /// </summary>
+        public static string ZN_MSG_GEAENDERT {
+            get {
+                return ResourceManager.GetString("ZN_MSG_GEAENDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt keine Änderung zum Zurücknehmen. ähnelt.
+        /// </summary>
+        public static string ZN_MSG_KEINE_RUECKNAHME {
+            get {
+                return ResourceManager.GetString("ZN_MSG_KEINE_RUECKNAHME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine gewählte Zone, an der sich etwas ändert. ähnelt.
+        /// </summary>
+        public static string ZN_MSG_KEINE_WAHL {
+            get {
+                return ResourceManager.GetString("ZN_MSG_KEINE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Datenbank kennt noch keine Konditionierungskalender. ähnelt.
+        /// </summary>
+        public static string ZN_MSG_OHNE_KALENDER {
+            get {
+                return ResourceManager.GetString("ZN_MSG_OHNE_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Profil ließ sich der Zone „{0}“ nicht zuweisen. ähnelt.
+        /// </summary>
+        public static string ZN_MSG_PROFIL_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("ZN_MSG_PROFIL_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das gewählte Profil steht nicht im Katalog. ähnelt.
+        /// </summary>
+        public static string ZN_MSG_PROFIL_FEHLT {
+            get {
+                return ResourceManager.GetString("ZN_MSG_PROFIL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quellzone gehört nicht zu diesem Gebäude. ähnelt.
+        /// </summary>
+        public static string ZN_MSG_QUELLE_FEHLT {
+            get {
+                return ResourceManager.GetString("ZN_MSG_QUELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sollwerte liegen zwischen 5 und 30 °C, die Nacht nicht über dem Tag. ähnelt.
+        /// </summary>
+        public static string ZN_MSG_SOLLWERT_BEREICH {
+            get {
+                return ResourceManager.GetString("ZN_MSG_SOLLWERT_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die letzte Änderung ist zurückgenommen ({0} Zonen). ähnelt.
+        /// </summary>
+        public static string ZN_MSG_ZURUECKGENOMMEN {
+            get {
+                return ResourceManager.GetString("ZN_MSG_ZURUECKGENOMMEN", resourceCulture);
             }
         }
         

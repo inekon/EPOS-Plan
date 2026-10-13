@@ -1,0 +1,96 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Kältebedarf
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Kältebedarf.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Der Reiter '''Kältebedarf''' der Startseite sammelt alle Wege, Kältebedarf in ein Projekt zu bringen: die '''Kühlung der Projektgebäude''', einen '''Kältelastgang''' aus einer CSV-Datei und '''Kältebedarfsprofile''' aus Typprofil, Jahressumme und Kalender. Jede Kälteposition lässt sich '''zentral''' über die Kältefolge der Kälteerzeuger oder '''dezentral''' über Split-Geräte decken. Die Kälteerzeuger selbst beschreibt die Seite [[Programm Dokumentation/Kälteerzeugung|Kälteerzeugung]], die Kühlung eines Gebäudes die Seite [[Programm Dokumentation/Kühlung|Kühlung]].
+
+== Reiter Kältebedarf ==
+{{Anker|reiter}}
+
+Der Reiter steht hinter ''Wärmebedarf''. Er hat drei Kacheln:
+
+{| class="wikitable"
+! Kachel !! Wirkung
+|-
+| ''Kältebedarf extern'' || öffnet den Dialog zum Einlesen und Zuordnen eines Kältelastgangs ([[#extern|Kältebedarf extern]])
+|-
+| ''Kältebedarfsprofile'' || öffnet den Dialog für Kältebedarf aus Typprofil, Jahressumme und Kalender ([[#profile|Kältebedarfsprofile]])
+|-
+| ''Gebäudekühlung'' || öffnet den Gebäudedialog des Projekts an der Gruppe ''Kühlung''; die Kachel zeigt, wie viele Gebäude gekühlt werden ([[Programm Dokumentation/Kühlung#einschalten|Kühlung einschalten]])
+|}
+
+Der Statuspunkt einer Kachel ist grün, sobald das Projekt mindestens eine Zeile dieser Art enthält. Rechnet das Projekt keine Kälte (Projektschalter ''Kühlung rechnen'' in der ''Simulation Konfiguration'' aus), steht über den Kacheln ein Hinweis mit Sprung in die Konfiguration; die Kälteseite der Simulation bleibt dann leer.
+
+== Kältebedarf extern ==
+{{Anker|extern}}
+
+Der Dialog liest einen Kältelastgang als CSV-Datei ein und ordnet ihn dem Projekt zu. Er zeigt nur Zeilen mit dem Kanal ''Kühlung''; die Kanalwahl ist fest. Wärmelastgänge des Projekts bleiben beim Speichern unberührt. Der Katalog, die Knopfleiste (''Vergleichen…'', ''Schloss setzen…'', ''Löschen'', ''Bearbeiten…'', ''Neu…'') und die Bearbeiten-Überlagerung mit Bezeichner, Ganglinie in kW und Kennzahlen arbeiten wie im Dialog der Wärmelastgänge. Bei einer Projektzeile gehört die Feldgruppe [[#deckung|Deckung]] dazu.
+
+== Kältebedarfsprofile ==
+{{Anker|profile}}
+
+Der Dialog bildet Kältebedarf aus einem Typprofil mit 168 Wochenstunden, den Monatsanteilen, einer Jahressumme in MWh und einem Betriebskalender (Feiertage, Ferien). Der Katalog liefert Sätze wie ''Raumkühlung Büro'' oder ''Serverraum''. Vorlauf und Rücklauf eines Katalogsatzes sind eine Angabe ohne Wirkung auf die Erzeuger. Die Vorschau zeigt Wochenbild, Monatsbalken und Jahresreihe in der Kältefarbe. Die Feldgruppe [[#deckung|Deckung]] steht an der Projektzeile.
+
+== Deckung ==
+{{Anker|deckung}}
+
+Jede Zeile eines Lastgangs oder Profils trägt die Feldgruppe ''Deckung'':
+
+{| class="wikitable"
+! Feld !! Werte !! Sichtbar
+|-
+| ''Deckungsart'' || ''zentral (Kältefolge)'' oder ''dezentral (Split)''; Vorgabe zentral || immer
+|-
+| ''EER-Weg'' || ''fest'' oder ''linear über der Außentemperatur'' || bei dezentral
+|-
+| ''EER'' (fest) bzw. ''EER am Punkt 1'' und ''Außentemperatur Punkt 1'' || EER größer 0; Außentemperatur −20 bis 50 °C; Vorgabe 3,0 bei 35 °C || bei dezentral
+|-
+| ''EER am Punkt 2'' und ''Außentemperatur Punkt 2'' || Außentemperatur verschieden von Punkt 1; Vorgabe 4,0 bei 25 °C || bei linearem Weg
+|-
+| ''Kühlträger'' || ein Stromträger des Projekts; leer heißt der Stromträger des Projekts || bei dezentral
+|-
+| ''Eigener Zähler'' || Haken; nur bei einem vom Projekt abweichenden Träger wählbar || bei dezentral
+|}
+
+Die Vorgaben sind runde Ordnungswerte; sie sind mit den Daten der Geräte zu ersetzen. ''Dezentral'' meint eigene Geräte ohne Kaltwasser und ohne Leistungsgrenze; eine dezentrale Zeile ohne EER lässt sich nicht speichern. Bei ''zentral'' sind die Split-Felder leer.
+
+'''Beispiel:''' Eine Zeile ''Raumkühlung Büro'' mit 40 MWh im Jahr, dezentral, EER fest 3,0. Die Simulation deckt die 40 MWh Kälte ohne die Kälteerzeuger des Projekts und rechnet dafür rund 13,3 MWh Strom.
+
+== Was die Simulation daraus macht ==
+{{Anker|simulation}}
+
+* '''Zentral:''' Die Kälte der Zeile geht zusammen mit dem Gebäudebedarf in die Kältefolge der Kälteerzeuger ([[Programm Dokumentation/Kälteerzeugung#deckung|Deckung und Reihenfolge]]).
+* '''Dezentral:''' Die Zeile deckt sich selbst. Der Strom je Stunde ist die Kälte geteilt durch den EER, beim linearen Weg den EER bei der Außentemperatur der Stunde. Er läuft über den Kühlträger der Zeile, ohne Angabe über den Stromträger des Projekts. Mit eigenem Zähler wird er getrennt von den übrigen Strombezügen abgerechnet.
+* Die Kälte nimmt nur den sensiblen Anteil; Latentlast, Teillast und Takten rechnet die dezentrale Deckung nicht, und sie wirkt nicht auf die Raumtemperatur.
+* Ohne eingeschalteten Kühlbetrieb entstehen weder Kältekanal noch Split-Strom; der Lauf nennt die Zahl der nicht genutzten Kältezeilen, getrennt nach Lastgängen und Profilen.
+
+== Wo die Ergebnisse stehen ==
+{{Anker|ergebnisse}}
+
+{| class="wikitable"
+! Stelle !! Inhalt
+|-
+| Kältegang || Fläche ''dezentral (Split)'' im Deckungsbild nach den Erzeugern; darunter Kälte, Strom und Jahres-EER der dezentralen Deckung; Kachel im Reiter
+|-
+| Bedarfsreiter || die Zeilen ''davon Gebäude'', ''davon Lastgänge'', ''davon Profile'' und ''davon dezentral (Split)''; das Kältelastbild stapelt nach Gebäude, Lastgang und Profil
+|-
+| Strombilanz (Übersicht) || eigener Posten ''Kühlung dezentral'' neben ''Kältestrom''; mit eigenem Zähler der Zusatz ''über eigenen Zähler''
+|-
+| Deckungsgrad Kälte || die Hauptzahl ''Deckungsgrad Kälte'' ist (Kältefolge + dezentral) geteilt durch den Gesamtbedarf; darunter steht ''davon Kältefolge'' als Kältefolge geteilt durch (Gesamtbedarf − dezentral). Ohne dezentrale Zeile ändert sich nichts
+|-
+| Anlagenschema || Knoten ''Dezentral (Split)'' in der Kältebahn mit Hinweisen zu Träger und Zähler
+|-
+| Simulation Konfiguration || Bereich ''Kälte'', Gruppe ''Dezentrale Kältedeckung'': je Zeile Bezeichner, Quelle, Jahressumme, EER-Weg, Kühlträger und Zähler, dazu die Summe und ''Bearbeiten…'' in den Dialog der Zeile; daneben die Zeile ''Kältebedarf zentral'' mit Gebäude, Lastgang und Profil
+|-
+| Bericht || Bedarfstafel mit ''Kältebedarf aus Profilen'', ''davon dezentral (Split)'', ''Strom dezentral'' und ''Jahres-EER dezentral''; Kälteerzeugertafel mit einer Zeile je dezentraler Deckung samt Netzbezug und Träger; Kältebild mit der Fläche ''dezentral (Split)''
+|}
+
+Die Ergebnisse stehen auch im Export und im Variantenvergleich.
+
+== Siehe auch ==
+
+* [[Programm Dokumentation/Kälteerzeugung]] – Wärmepumpe im Kühlbetrieb, Kältemaschine und Kältespeicher
+* [[Programm Dokumentation/Kühlung]] – Kühlung der Gebäude einschalten und einstellen
+* [[Grundlagen/Kühlung]] – EER und Kälteerzeugung fachlich
+* [[Programm Dokumentation/Simulationsergebnisse]] – Reiter der Ergebnisse
+
+[[Kategorie:Programm Dokumentation]]

@@ -3571,6 +3571,27 @@ namespace Testdatenbankschema
                 foreach (string zeile in berichtBk3c)
                     Console.WriteLine("Schritt " + nrBk3c + " - " + zeile + ".");
                 Console.WriteLine("Schritt " + nrBk3c + " - vollstaendig: " + BauteilkatalogHaustechnikSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt KaeltebedarfSplitAbrechnungSchema.SCHRITT (K6): Tab_ErgebnisKaelteDezentral, die Ergebnistabelle je
+            //      dezentral (Split) gedeckter Kaeltebedarfszeile. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_KaeltebedarfSplitAbrechnung. Wiederholbar.
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt fuehrt eine Split-Zeile, die Tabelle bleibt leer.
+            string nrK6 = KaeltebedarfSplitAbrechnungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrK6 + " - Ergebnis je Split-Zeile (Abrechnung des Split-Stroms): " +
+                              (KaeltebedarfSplitAbrechnungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtK6 = new List<string>();
+                tabellen += KaeltebedarfSplitAbrechnungSchema.Ausfuehren(berichtK6);
+                foreach (string zeile in berichtK6)
+                    Console.WriteLine("Schritt " + nrK6 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrK6 + " - vollstaendig: " + KaeltebedarfSplitAbrechnungSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             // ---- Schritt TwwZonenferienSchema.SCHRITT (ZB5, ZB-Q3 B): Zonenferien als Liste - Tab_TwwZonenferien anlegen,
             //      die vier Spaltenpaare von Tab_TwwZone uebertragen und abbauen (Neubau mit Erhalt der IDs). Aus DERSELBEN
             //      Quelle wie SchemaMigration.Schritt_TwwZonenferien. Wiederholbar.

@@ -1050,6 +1050,9 @@ namespace EPOS.Kern.Tests
                 // Schritt BauteilkatalogHaustechnikSchema.SCHRITT (BK-3c, E134): Klasse Haustechnik in der Pruefklausel von
                 // Klasse_Code (Neubau der vier Kopftabellen). Wiederholbar, ergebnisneutral.
                 BauteilkatalogHaustechnikSchema.Ausfuehren(null);
+                // Schritt KaeltebedarfSplitAbrechnungSchema.SCHRITT (K6): Tab_ErgebnisKaelteDezentral, leer, reines DDL.
+                // Wiederholbar, ergebnisneutral.
+                KaeltebedarfSplitAbrechnungSchema.Ausfuehren(null);
                 // Schritt TwwZonenferienSchema.SCHRITT (ZB5, ZB-Q3 B): Zonenferien als Liste - Tab_TwwZonenferien, die vier
                 // Spaltenpaare von Tab_TwwZone uebertragen und abgebaut. Wiederholbar, ergebnisneutral.
                 TwwZonenferienSchema.Ausfuehren(null);

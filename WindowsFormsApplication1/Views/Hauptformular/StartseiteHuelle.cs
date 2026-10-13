@@ -940,12 +940,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void KaeltebedarfExtern(IWin32Window wirt)
         {
-            List<Z_ProjWaermebedarfModel> liste = WaermebedarfExternAbbildung.Modelle(
-                Z_ProjektGebGanglinieCtrl.LiesProjekt(_kontext.Id), WaermebedarfExternModus.NurKuehlung);
+            string grund = KaeltebedarfExternOeffnen(wirt, _kontext.Id, _kontext.Name);
+            if (grund != null) _fehlerhinweis = grund;
+        }
 
-            if (WaermebedarfExternHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste,
-                                                 WaermebedarfExternModus.NurKuehlung))
-                Speichern(liste, WaermebedarfExternModus.NurKuehlung);
+        /// <summary>
+        /// Der Weg der Kachel „Kältebedarf extern“ ohne Startseite — auch „Bearbeiten…“ einer Lastgangzeile der Gruppe
+        /// „Dezentrale Kältedeckung“ der Simulationskonfiguration (K6b-N, <c>SimulationHuelle</c>). Rückgabe: der Grund
+        /// eines gescheiterten Speicherns, sonst <c>null</c> (auch nach Abbrechen).
+        /// </summary>
+        internal static string KaeltebedarfExternOeffnen(IWin32Window wirt, int idProjekt, string projektName)
+        {
+            List<Z_ProjWaermebedarfModel> liste = WaermebedarfExternAbbildung.Modelle(
+                Z_ProjektGebGanglinieCtrl.LiesProjekt(idProjekt), WaermebedarfExternModus.NurKuehlung);
+
+            if (!WaermebedarfExternHuelle.Oeffnen(wirt, idProjekt, projektName, liste, WaermebedarfExternModus.NurKuehlung))
+                return null;
+            return WaermebedarfExternAbbildung.Speichern(idProjekt, liste, WaermebedarfExternModus.NurKuehlung);
         }
 
         /// <summary>
@@ -958,14 +969,24 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void Kaeltebedarfsprofile(IWin32Window wirt)
         {
-            List<Z_ProjektKaeltebedarfModel> liste = Z_ProjektKaeltebedarfCtrl.LiesProjekt(_kontext.Id);
+            string grund = KaeltebedarfsprofileOeffnen(wirt, _kontext.Id, _kontext.Name);
+            if (grund != null) _fehlerhinweis = grund;
+        }
+
+        /// <summary>
+        /// Der Weg der Kachel „Kältebedarfsprofile“ ohne Startseite — auch „Bearbeiten…“ einer Profilzeile der Gruppe
+        /// „Dezentrale Kältedeckung“ der Simulationskonfiguration (K6b-N, <c>SimulationHuelle</c>). Rückgabe: der Grund
+        /// eines gescheiterten Speicherns, sonst <c>null</c> (auch nach Abbrechen).
+        /// </summary>
+        internal static string KaeltebedarfsprofileOeffnen(IWin32Window wirt, int idProjekt, string projektName)
+        {
+            List<Z_ProjektKaeltebedarfModel> liste = Z_ProjektKaeltebedarfCtrl.LiesProjekt(idProjekt);
 
             // K5b: Speichern ueber die Abbildung - „Split ohne EER" lehnt sie benannt ab (Grund im Fehlerbanner).
-            BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste, () =>
-            {
-                string grund = KaeltebedarfsprofilAbbildung.Speichern(_kontext.Id, liste);
-                if (grund != null) _fehlerhinweis = grund;
-            });
+            string grund = null;
+            BedarfsProfileHuelle.Oeffnen(wirt, idProjekt, projektName, liste,
+                                         () => grund = KaeltebedarfsprofilAbbildung.Speichern(idProjekt, liste));
+            return grund;
         }
 
         /// <summary>

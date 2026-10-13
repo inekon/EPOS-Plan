@@ -447,6 +447,9 @@ namespace WindowsFormsApplication1
             // die Prüfklausel am Ziel.
             new Stufe(BauteilkatalogHaustechnikSchema.SCHRITT, Art.Ddl,
                       "Klasse Haustechnik in Baustoff- und Aufbaukatalog (E134)"),
+            // Ein älteres Paket führt keine Ergebniszeilen je Split-Zeile; der Schritt legt die Tabelle leer an, ein Lauf füllt sie.
+            new Stufe(KaeltebedarfSplitAbrechnungSchema.SCHRITT, Art.Ddl,
+                      "Ergebnis je dezentral (Split) gedeckter Kältebedarfszeile: Strom je Kühlträger und Zähler (K6)"),
             // Ein älteres Paket bringt die eigenen Ferien einer Zone in den vier Spaltenpaaren von Tab_TwwZone; die Stufe bildet
             // daraus die Zeilen von Tab_TwwZonenferien (dieselbe Regel wie der Schritt), die Spalten fallen am Ziel mit der
             // Schnittmenge des Imports.

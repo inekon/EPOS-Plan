@@ -46,6 +46,10 @@ public class SimulationKonfigKaeltebereichTests : EposBunitContext
     private string? _kmAntwort;
     private readonly List<(int Anlage, WaermepumpeAnlageDaten Daten)> _wpKonfigGeschrieben = new();
     private bool _wpKuehlbetrieb;
+    private IReadOnlyList<KaelteDezentralAnzeige> _dezentral = new List<KaelteDezentralAnzeige>();
+    private bool _mitDezentralWeg;
+    private string? _dezentralAntwort;
+    private readonly List<(bool Profil, int Zuordnung, Action<string?> Nachher)> _dezentralGerufen = new();
     private string? _wpSperrgrund;
     private bool _wpInKaskade = true;
     private int _anlagenJeKopie = 1;
@@ -53,6 +57,7 @@ public class SimulationKonfigKaeltebereichTests : EposBunitContext
 
     private KaeltebereichDaten Bereich() => new KaeltebereichDaten
     {
+        Dezentral = _dezentral, DezentralSumme = "Summe dezentral: 12,00 MWh/a", ZentralZeile = "Kältebedarf zentral: …",
         Kuehlbetrieb = _projektKuehlung,
         Folge = new[] { KaelteStufe.FreieKuehlung, KaelteStufe.Kaeltespeicher, KaelteStufe.Waermepumpe, KaelteStufe.Kaeltemaschine },
         Erzeuger = new List<KaelteerzeugerZeile>
@@ -130,6 +135,9 @@ public class SimulationKonfigKaeltebereichTests : EposBunitContext
             : null,
         KaeltemaschineKonfigurationSpeichern = mitKonfiguration
             ? d => { _kmGeschrieben.Add(d.Kopie()); return _kmAntwort; }
+            : null,
+        KaelteDezentralBearbeiten = _mitDezentralWeg
+            ? (profil, zuordnung, nachher) => { _dezentralGerufen.Add((profil, zuordnung, nachher)); return _dezentralAntwort; }
             : null
     };
 
@@ -445,5 +453,108 @@ public class SimulationKonfigKaeltebereichTests : EposBunitContext
             () => cut.InvokeAsync(() => sicht.KuehlbetriebWaermepumpen = "Kältemaschine 1"));
         Assert.Equal(string.Format(Resource.KI_DLG_SIM_KUEHL_WP_UNBEKANNT, "Kältemaschine 1"), ex.Message);
         Assert.Single(_wpGeschrieben);
+    }
+
+    /// <summary>
+    /// K6b (Konzept Kältebedarf 6): die Gruppe „Dezentrale Kältedeckung“ im Bereich „Kälte“ — nur lesend, je Split-Zeile
+    /// Bezeichner, Quelle, Jahressumme, EER-Weg, Kühlträger und Zähler; ohne Split-Zeile keine Gruppe, bei „aus“ keine.
+    /// </summary>
+    [Fact]
+    public void K6b_Gruppe_Dezentrale_Kaeltedeckung_nur_mit_Split_Zeile()
+    {
+        var ohne = Seite();
+        Assert.Empty(ohne.FindAll("section.epos-simkonfig-kaelte-dezentral"));
+
+        _dezentral = new List<KaelteDezentralAnzeige>
+        {
+            new KaelteDezentralAnzeige(true, 7, "Kühlraum", "Kältebedarfsprofil", 12.0, "fest 3,0", "Strom B", "eigener Zähler"),
+            new KaelteDezentralAnzeige(false, 8, "Server", "Lastgang", null, "linear 3,0 bei 35 °C / 4,0 bei 25 °C",
+                                       "Stromträger des Projekts", "anteilig am Netzbezug"),
+        };
+        var mit = Seite();
+        var gruppe = mit.Find("section.epos-simkonfig-kaelte-dezentral");
+        Assert.Equal(2, gruppe.QuerySelectorAll("tbody tr").Length);
+        Assert.Contains("Kühlraum", gruppe.TextContent);
+        Assert.Contains("eigener Zähler", gruppe.TextContent);
+        Assert.Empty(gruppe.QuerySelectorAll("input, button"));   // nur lesend
+
+        _projektKuehlung = false;
+        var aus = Seite(mitParameter: false);
+        Assert.Empty(aus.FindAll("section.epos-simkonfig-kaelte-dezentral"));
+    }
+
+    private List<KaelteDezentralAnzeige> ZweiSplitZeilen() => new()
+    {
+        new KaelteDezentralAnzeige(true, 7, "Kühlraum", "Kältebedarfsprofil", 12.0, "fest 3,0", "Strom B", "eigener Zähler"),
+        new KaelteDezentralAnzeige(false, 8, "Server", "Lastgang", null, "fest 3,5", "Stromträger des Projekts", "anteilig am Netzbezug"),
+    };
+
+    /// <summary>
+    /// K6b-N (Konzept Kältebedarf 6): „Bearbeiten…“ je Split-Zeile ruft den Weg der Hülle mit Quelle und Zuordnungs-ID; schließt
+    /// der Dialog, liest der Bereich frisch, und ein gescheitertes Speichern steht im Banner. Ohne Weg kein Knopf.
+    /// </summary>
+    [Fact]
+    public void K6bN_Bearbeiten_ruft_den_Weg_mit_Zuordnung_und_Quelle()
+    {
+        _dezentral = ZweiSplitZeilen();
+        Assert.Empty(Seite().FindAll("button.epos-simkonfig-kaelte-dezentral-bearbeiten"));   // ohne Weg kein Knopf
+
+        _mitDezentralWeg = true;
+        var cut = Seite();
+        IElement gruppe = cut.Find("section.epos-simkonfig-kaelte-dezentral");
+        Assert.Empty(gruppe.QuerySelectorAll("input"));
+        Assert.Equal(2, gruppe.QuerySelectorAll("button.epos-simkonfig-kaelte-dezentral-bearbeiten").Length);
+        IElement knopf = cut.Find("tr[data-zuordnung='8'] button.epos-simkonfig-kaelte-dezentral-bearbeiten");
+        Assert.Equal(Resource.SIMKONF_KAELTE_DEZ_TIP_BEARBEITEN, knopf.GetAttribute("title"));
+
+        knopf.Click();
+        cut.Find("tr[data-zuordnung='7'] button.epos-simkonfig-kaelte-dezentral-bearbeiten").Click();
+        Assert.Equal(new[] { (false, 8), (true, 7) }, _dezentralGerufen.Select(g => (g.Profil, g.Zuordnung)).ToArray());
+
+        // Der Dialog schließt: frisch lesen; ein Speichergrund steht im Banner.
+        int vorher = _ladungen;
+        _dezentralGerufen[1].Nachher("Split ohne EER.");
+        cut.WaitForAssertion(() => Assert.Contains("Split ohne EER.", cut.Find("div.epos-simkonfig-fuss").TextContent));
+        Assert.True(_ladungen > vorher);
+    }
+
+    /// <summary>K6b-N: Lehnt der Weg ab (eine Schale ohne die Dialoge), steht der Grund benannt im Banner.</summary>
+    [Fact]
+    public void K6bN_Ein_abgelehnter_Weg_steht_benannt_im_Banner()
+    {
+        _dezentral = ZweiSplitZeilen();
+        _mitDezentralWeg = true;
+        _dezentralAntwort = Resource.SIM_MSG_WEG_NICHT_HIER;
+        var cut = Seite();
+
+        cut.Find("tr[data-zuordnung='7'] button.epos-simkonfig-kaelte-dezentral-bearbeiten").Click();
+
+        Assert.Single(_dezentralGerufen);
+        Assert.Contains(string.Format(Resource.SIMKONF_KAELTE_DEZ_MSG_FEHLER, "Kühlraum", Resource.SIM_MSG_WEG_NICHT_HIER),
+                        cut.Find("div.epos-simkonfig-fuss").TextContent);
+    }
+
+    /// <summary>
+    /// K6b-N: der Assistent liest die Gruppe „Dezentrale Kältedeckung“ wie die Tafel — je Split-Zeile Bezeichner, Quelle,
+    /// Jahressumme, EER, Kühlträger und Zähler; ohne Split-Zeile leer. Ein Setzer fehlt: gepflegt wird im Dialog der Zeile.
+    /// </summary>
+    [Fact]
+    public void K6bN_Der_Assistent_liest_die_dezentrale_Kaeltedeckung_nur()
+    {
+        var ohne = Seite();
+        var sichtOhne = new SimulationKiSicht(() => ohne.Instance.Stand, () => null, () => null, () => null, () => "", () => "",
+                                              konfigseite: () => ohne.Instance);
+        Assert.Equal("", sichtOhne.KaelteDezentral);
+
+        _dezentral = ZweiSplitZeilen();
+        var cut = Seite();
+        var sicht = new SimulationKiSicht(() => cut.Instance.Stand, () => null, () => null, () => null, () => "", () => "",
+                                          konfigseite: () => cut.Instance);
+
+        Assert.Equal("Kühlraum (Kältebedarfsprofil, " + 12.0.ToString("N2", System.Globalization.CultureInfo.CurrentCulture)
+                     + " MWh/a, " + Resource.SIMKONF_KAELTE_DEZ_SP_EER + " fest 3,0, Strom B, eigener Zähler); "
+                     + "Server (Lastgang, " + Resource.SIMKONF_KAELTE_DEZ_SP_EER + " fest 3,5, Stromträger des Projekts, anteilig am Netzbezug)",
+                     sicht.KaelteDezentral);
+        Assert.Null(typeof(SimulationKiSicht).GetProperty(nameof(SimulationKiSicht.KaelteDezentral))!.SetMethod);
     }
 }

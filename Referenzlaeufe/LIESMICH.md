@@ -810,9 +810,9 @@ danach im Wegweiser desselben Ordners.
 **`2026-10-13_R53_Zapfprofiloptionen/`** — **sechsunddreißig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065, 1066, 1067, 1068, 1069, 1070, 1071), **1 171 CSV**, **7 983 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 13.10.2026, Stand `bf13fbc67`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **222**, 108 408 832 Byte, mit den Projekten 1053 bis 1071 und dem
-erfundenen Typtagsatz; die Nachträge der Schemaschritte unten sind darin enthalten; Kette, Größe und Prüfsumme des
-eingecheckten Stands setzt die Zusammenführung mit dem Schritt der Zonenferien). Gegen diese Basis hält
+gegen `Kenndaten_Test.sqlite` (Schemastand **224**, ‹BYTE› Byte, LFS-SHA-256 `‹SHA8›…`, mit den Projekten 1053 bis 1071
+und dem erfundenen Typtagsatz; die Nachträge der Schemaschritte unten sind darin enthalten; auf dem Schemastand 224 neu
+gesät und gerechnet, byte-gleich zur Fassung auf dem vorläufigen Stand). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065 und 1066 bis 1071) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -1309,14 +1309,24 @@ sechsunddreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Testdatenbank steht auf **222** (`integrity_check` ok, `foreign_key_check` leer): **96 604 160 Byte, LFS-SHA-256
 > `03ba8220…`**, Katalog 132 Baustoffe und 9 Aufbauten; kein Rechenweg liest die Klasse
 > ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-12_BK-3_Import.md)).
-> **Nachtrag — Schema 224 (Zonenferien als Liste, ZB5/ZB‑Q3 B, hängt an 223 `KaeltebedarfSplitAbrechnungSchema`), Basis R52
-> unberührt.** `TwwZonenferienSchema` legt `Tab_TwwZonenferien` an (STRICT; `ID_Zone` mit Kaskade, `Reihenfolge` ≥ 1,
-> `Name`, `Beginn` 1 … 365 oder leer, `Ende` 1 … 365; eindeutig je Zone und Reihenfolge), überträgt die vier Spaltenpaare
-> `Ferienbeginn_n`/`Ferienende_n` von `Tab_TwwZone` und baut sie über das Neubau-Rezept ab (IDs bleiben). Die
-> Testdatenbank führt eine Zone (Projekt 1045) ohne eigene Ferien: 0 Zeiträume übertragen; der Vergleich gegen die
-> Fassung davor zeigt nur `Tab_TwwZone` (ohne die acht Spalten) und die neue, leere Tabelle. Gehoben mit
-> `Werkzeuge/Testdatenbankschema`; `integrity_check` ok, `foreign_key_check` leer, 195 Tabellen, davon 194 STRICT.
-> Die Kette, Größe und Prüfsumme dieses Stands setzt die Zusammenführung, sobald 222 und 223 vorliegen.
+> **Nachtrag — Schema 223 (Abrechnung des Split-Stroms, K6, 13.10.2026, hängt an 222 `BauteilkatalogHaustechnikSchema`), Basis R52
+> unverändert.** `KaeltebedarfSplitAbrechnungSchema` (223 = `BauteilkatalogHaustechnikSchema.SCHRITT + 1`) legt
+> `Tab_ErgebnisKaelteDezentral` an (STRICT, eine Ergebniszeile je dezentral gedeckter Kältebedarfszeile eines Laufs; Prüfklauseln
+> an `Quelle` und `Kuehl_EigenerZaehler`, Verweis allein am Lauf). Gehoben aus der Fassung 222 (`03ba8220…`) mit
+> `Werkzeuge/Testdatenbankschema`; der Inhaltsvergleich aller Tabellen zeigt nur `Tab_Applikation.SchemaVersion`, die neue
+> Tabelle ist leer (kein Referenzprojekt führt eine Split-Zeile). Die Testdatenbank steht auf **223** (`integrity_check` ok,
+> `foreign_key_check` leer): **96 608 256 Byte, LFS-SHA-256 `05b14e070bea540996ffdaa2a96c67369bc924a562c5069e6f2c16d7e8658ad6`**.
+> Die zwölf Projekte der CI-Auswahl rechnen gegen R52 GESAMT PASS und byte-gleich.
+> **Nachtrag — Schema 224 (Zonenferien als Liste, ZB5/ZB‑Q3 B, 13.10.2026, hängt an 223 `KaeltebedarfSplitAbrechnungSchema`),
+> ergebnisneutral.** `TwwZonenferienSchema` (224 = `KaeltebedarfSplitAbrechnungSchema.SCHRITT + 1`) legt `Tab_TwwZonenferien` an
+> (STRICT; `ID_Zone` mit Kaskade, `Reihenfolge` ≥ 1, `Name`, `Beginn` 1 … 365 oder leer, `Ende` 1 … 365; eindeutig je Zone und
+> Reihenfolge), überträgt die vier Spaltenpaare `Ferienbeginn_n`/`Ferienende_n` von `Tab_TwwZone` und baut sie über das
+> Neubau-Rezept ab (IDs bleiben). Gehoben aus der Fassung 223 (`05b14e07…`) mit `Werkzeuge/Testdatenbankschema`: die eine Zone
+> der Fassung davor (Projekt 1045) trägt keine eigenen Ferien, 0 Zeiträume übertragen; der Inhaltsvergleich zeigt nur
+> `Tab_TwwZone` ohne die acht Spalten, die neue leere Tabelle und `Tab_Applikation.SchemaVersion`. Danach säte
+> [`Skripte/referenzprojekte_zapfprofil_optionen.cs`](Skripte/referenzprojekte_zapfprofil_optionen.cs) die Projekte 1066 bis
+> 1071 (Basis R53, Abschnitt „Die Referenzprojekte 1066 bis 1071“). Die Testdatenbank steht auf **224** (`integrity_check` ok,
+> `foreign_key_check` leer): **‹BYTE› Byte, LFS-SHA-256 `‹SHA›`**.
 
 ### Die Vorgängerbasis R52 (Vorheizen)
 

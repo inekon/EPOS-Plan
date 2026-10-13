@@ -386,6 +386,22 @@ public sealed class SimulationKiSicht
                .Select(s => string.Join(" · ", new[] { s.Bezeichner, s.Volumen, s.Temperaturpaar }.Where(t => !string.IsNullOrEmpty(t)))));
 
     /// <summary>
+    /// K6b-N (Konzept Kältebedarf 6): die Gruppe „Dezentrale Kältedeckung“ des Bereichs „Kälte“ (nur lesend) — je Split-Zeile
+    /// „Bezeichner (Quelle, Jahressumme, EER, Kühlträger, Zähler)“, wie die Tafel der Gruppe; leer ohne Split-Zeile. Gepflegt
+    /// wird im Dialog der Zeile („Bearbeiten…“).
+    /// </summary>
+    public string KaelteDezentral
+        => string.Join("; ", (_konfiguration()?.Kaeltebereich.Dezentral ?? Array.Empty<KaelteDezentralAnzeige>())
+               .Select(z => z.Bezeichner + " (" + string.Join(", ", new[]
+               {
+                   z.Quelle,
+                   z.SummeMwh is double s ? s.ToString("N2", System.Globalization.CultureInfo.CurrentCulture) + " MWh/a" : "",
+                   string.IsNullOrEmpty(z.Eer) ? "" : Resource.SIMKONF_KAELTE_DEZ_SP_EER + " " + z.Eer,
+                   z.Traeger,
+                   z.Zaehler
+               }.Where(t => !string.IsNullOrEmpty(t))) + ")"));
+
+    /// <summary>
     /// Die Wärmepumpen im Kühlbetrieb, durch Komma getrennt — setzbar: Jede genannte Wärmepumpe des Bereichs schaltet
     /// den Kühlbetrieb an, jede ungenannte aus, über denselben Weg wie die Kachel (<c>KuehlbetriebWpSchreiben</c>),
     /// sofort. Ein unbekannter Name oder ein Sperrgrund lehnt benannt ab.

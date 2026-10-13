@@ -1241,6 +1241,8 @@ namespace WindowsFormsApplication1
                 Verwendung = string.IsNullOrEmpty(m.Wohngebaeude_Nicht_Wohngebaeude)
                     ? VERWENDUNGSWERTE[0] : m.Wohngebaeude_Nicht_Wohngebaeude,
                 Baualtersklasse = GebaeudeStammCtrl.KlassenIndex(m.Baualtersklasse),
+                // MA-7: eine leere Spalte heißt „keine Klasse“ - die Vorgaben der Klasse sind dann gesperrt.
+                KlasseGesetzt = !string.IsNullOrWhiteSpace(m.Baualtersklasse),
                 // G4a: das Baujahr neben der Klasse - NULL bleibt null (unbekannt); die gespeicherte
                 // Klasse gilt, das Baujahr schlaegt beim Aendern nur vor.
                 Baujahr = m.Baujahr,

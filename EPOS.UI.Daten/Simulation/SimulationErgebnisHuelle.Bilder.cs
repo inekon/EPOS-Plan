@@ -76,6 +76,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static readonly SKColor R_REST_GRAU = SKColor.Parse("#D9DEE5");
 
+        // K6b: das Segment „dezentral (Split)“ des Kälterings - der Ton der Hausfarbe der Rolle KAELTE_DEZENTRAL.
+        private static readonly SKColor R_KAELTE_DEZENTRAL = SKColor.Parse("#4BACC6");
+
         // =================================================================
         // Ein Bild
         // =================================================================
@@ -222,6 +225,7 @@ namespace WindowsFormsApplication1
         {
             SimulationErgebnisCtrl.KaelteErgebnis k = SimulationErgebnisCtrl.Kaelte(_waermebedarf);
             if (k == null) return null;
+            if (k.MitDezentral) return ModellBedarfKaelteHerkunft(k, a);
 
             var reihen = new List<ChartRenderer.Reihe>
             {
@@ -233,6 +237,37 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.CHART_ACHSE_KAELTELAST,
                 a.Sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
                 a.Sortiert);
+        }
+
+        /// <summary>
+        /// K6b (Konzept Kältebedarf 4.3): die Kältelast MIT Split-Zeile — die Herkunft als gestapelte Flächen (Gebäude,
+        /// Lastgänge, Kältebedarfsprofile; je nur mit Bedarf), die Summe als Linie darüber und die dezentral (Split)
+        /// gedeckte Kälte als eigene Linie. 100 % ist der Jahreshöchstwert der Summe, wie im Wärmebild. Ohne Split-Zeile
+        /// zeichnet <see cref="ModellBedarfKaelte"/> das Bild, wie es war.
+        /// </summary>
+        private static Zeichenmodell ModellBedarfKaelteHerkunft(SimulationErgebnisCtrl.KaelteErgebnis k, Bildauftrag a)
+        {
+            var reihen = new List<ChartRenderer.Reihe>
+            {
+                Reihe(MyResource.Resource.CHART_ACHSE_KAELTELAST, k.KaeltebedarfKwh, Farbrolle.BEDARF, breite: 3f)
+            };
+            void Flaeche(string name, double[] werte, Farbrolle rolle)
+            {
+                if (werte != null && werte.Sum() > 0)
+                    reihen.Add(Reihe(name, werte, rolle, ChartRenderer.Stapelart.Flaeche));
+            }
+            Flaeche(MyResource.Resource.CHART_LEGENDE_KAELTE_GEBAEUDE, k.GebaeudeKwh, Farbrolle.SERIE_3);
+            Flaeche(MyResource.Resource.CHART_LEGENDE_KAELTE_LASTGANG, k.ExternKwh, Farbrolle.SERIE_6);
+            Flaeche(MyResource.Resource.CHART_LEGENDE_KAELTE_PROFIL, k.ProfilKwh, Farbrolle.SERIE_5);
+            reihen.Add(Reihe(MyResource.Resource.CHART_LEGENDE_KAELTE_DEZENTRAL, k.DezentralKwh, Farbrolle.KAELTE_DEZENTRAL,
+                             breite: 2f));
+
+            double bezug = k.KaeltebedarfKwh != null && k.KaeltebedarfKwh.Length > 0 ? k.KaeltebedarfKwh.Max() : 0;
+            return ChartRenderer.GanglinieNormiertModell(
+                MyResource.Resource.CHART_TITEL_KAELTELAST_JAHRESGANGLINIE, reihen,
+                MyResource.Resource.CHART_ACHSE_KAELTELAST,
+                a.Sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
+                a.Sortiert, null, bezug);
         }
 
         private Zeichenmodell ModellBedarfStrom(Bildauftrag a)
@@ -322,6 +357,10 @@ namespace WindowsFormsApplication1
                     string.IsNullOrEmpty(z.Bezeichner) ? MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE : z.Bezeichner,
                     z.KaelteMwh, farben[i % farben.Length]));
             }
+            // K6b: die dezentral (Split) gedeckte Kälte - ein eigenes Segment, nur mit Split-Zeile.
+            if (k.MitDezentral)
+                segmente.Add(new ChartRenderer.Ringsegment(
+                    MyResource.Resource.CHART_LEGENDE_KAELTE_DEZENTRAL, k.DezentralMwh, R_KAELTE_DEZENTRAL));
             segmente.Add(new ChartRenderer.Ringsegment(
                 MyResource.Resource.SIMUEB_LEGENDE_REST, k.KaelterestbedarfMwh, R_REST_GRAU));
             return segmente;
@@ -334,10 +373,11 @@ namespace WindowsFormsApplication1
         private Zeichenmodell ModellRingKaelte()
         {
             SimulationErgebnisCtrl.KaelteErgebnis k = SimulationErgebnisCtrl.Kaelte(_waermebedarf);
-            if (k == null || k.Erzeuger.Count == 0 || !(k.KaeltebedarfMwh > 0)) return null;
+            // K6b: mit Split-Zeile auch ohne Kälteerzeuger, in der Mitte die Hauptzahl nach KaelteDeckungsgrad.
+            if (k == null || (k.Erzeuger.Count == 0 && !k.MitDezentral) || !(k.KaeltebedarfMwh > 0)) return null;
 
             return ChartRenderer.RingModell(MyResource.Resource.SIMUEB_RING_KAELTE_TITEL,
-                                            SegmenteKaelte(k), k.DeckungsgradProzent ?? 0.0, "%",
+                                            SegmenteKaelte(k), (k.MitDezentral ? k.DeckungsgradGesamtProzent : k.DeckungsgradProzent) ?? 0.0, "%",
                                             MyResource.Resource.SIMUEB_RING_GEDECKT, false);
         }
 
@@ -1039,7 +1079,8 @@ namespace WindowsFormsApplication1
                 Achse = MyResource.Resource.CHART_ACHSE_LEISTUNG,
                 Bedarf = MyResource.Resource.CHART_LEGENDE_KAELTEBEDARF,
                 Rest = MyResource.Resource.CHART_LEGENDE_KAELTE_UNGEDECKT,
-                Erzeuger = MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE
+                Erzeuger = MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE,
+                Dezentral = MyResource.Resource.CHART_LEGENDE_KAELTE_DEZENTRAL
             }, a.Sortiert);
         }
 
@@ -1054,6 +1095,9 @@ namespace WindowsFormsApplication1
         /// Strom-Stufeneingang des Kessels, der Rest aller Verbraucher davor (1030: 4.790 MWh
         /// statt 0, 1017: 635,2 statt 20,12). Bild, Summenlinie und CSV lesen diese eine Stelle.
         /// </summary>
+        /// <summary>K6b: der Reihenschlüssel des Postens „Kühlung dezentral“ im Stromgang (Bild und CSV).</summary>
+        internal const string REIHE_KUEHLUNG_DEZENTRAL = "KUEHLUNG_DEZENTRAL";
+
         internal static double[] StromverbrauchKessel(SimulationControl sim)
             => sim.simulation_spk.Stromverbrauch_stuendlich;
 
@@ -1079,6 +1123,11 @@ namespace WindowsFormsApplication1
                    Viertel(sim.simulation_wp.Heizstab_stuendlich), Farbrolle.HEIZSTAB);
             Stapel("HEIZKESSEL", MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL,
                    Viertel(StromverbrauchKessel(sim)), Farbrolle.WAERME_KESSEL);
+            // K6b: der Posten „Kühlung dezentral“ - die ganze Split-Reihe; ohne Split-Zeile ist sie null.
+            double[] dezentral = sim.Kaeltestrom_Dezentral_stuendlich;
+            if (dezentral != null)
+                Stapel(REIHE_KUEHLUNG_DEZENTRAL, MyResource.Resource.SIMUEB_LBL_KUEHLUNG_DEZENTRAL,
+                       Viertel(dezentral), Farbrolle.KAELTE_DEZENTRAL);
 
             var linien = new List<ChartRenderer.Reihe>();
             if (wahl.Contains("BHKW_STROM"))
@@ -1100,6 +1149,8 @@ namespace WindowsFormsApplication1
                                             Viertel(sim.simulation_wp.WP_Strombedarf_stuendlich)),
                     _strombedarf.AddVectors(Viertel(sim.simulation_wp.Heizstab_stuendlich),
                                             Viertel(StromverbrauchKessel(sim))));   // E29 (#536, N9)
+                // K6b: mit Split-Zeile gehört ihr Strom zur Summe des Verbrauchs - ohne sie bleibt die Linie, wie sie war.
+                if (dezentral != null) gesamt = _strombedarf.AddVectors(gesamt, Viertel(dezentral));
 
                 kontur = new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_SUMME_STROMVERBRAUCH,
                                                  Kopie(gesamt), Farbrolle.VERBRAUCH_GESAMT,

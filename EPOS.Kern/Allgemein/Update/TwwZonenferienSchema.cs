@@ -63,18 +63,11 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class TwwZonenferienSchema
     {
-        // ================================================================================
-        // VORLÄUFIG: vor dem Push an 223 `KaeltebedarfSplitAbrechnungSchema` hängen (224).
-        // Angemeldet ist der Schritt als 224 (hängt an 223 `KaeltebedarfSplitAbrechnungSchema` der Sitzung
-        // Anlagendialog, das an 222 `BauteilkatalogHaustechnikSchema` hängt); beide liegen noch nicht auf
-        // origin. Bis dahin hängt er an 221.
-        // ================================================================================
-
         /// <summary>
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht; Migration, Werkzeug, Zielstand,
         /// Paketanhebung und Tests verweisen hierher.
         /// </summary>
-        public const int SCHRITT = BauteilkatalogSchema.SCHRITT + 1;   // VORLÄUFIG, siehe oben
+        public const int SCHRITT = KaeltebedarfSplitAbrechnungSchema.SCHRITT + 1;
 
         /// <summary>Die neue Tabelle der eigenen Ferienzeiträume einer Zone.</summary>
         public const string TAB_ZONENFERIEN = "Tab_TwwZonenferien";
