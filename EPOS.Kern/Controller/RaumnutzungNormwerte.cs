@@ -11,7 +11,8 @@ namespace WindowsFormsApplication1
     /// leeren Profile der Kategorie DIN/TS 18599-10 in der Datenbank des Anwenders aus einer Quelle des Anwenders — einer CSV
     /// im Format 6.4 (<see cref="RaumnutzungCsv"/>) oder einer Projektdatei mit Nutzungsprofilen
     /// (<see cref="Projektdateiprofile"/>). Zugeordnet wird über die DIN-Nummer, die zwei Wohnprofile ohne Nummer über ihren
-    /// Namen (<see cref="RaumnutzungNormkategorienSchema.WOHNPROFILE"/>).
+    /// Namen (<see cref="RaumnutzungNormkategorienSchema.WOHNPROFILE"/>) oder über die Nummern 70 und 71 der Projektdatei
+    /// (<see cref="WohnprofilAusNummer"/>).
     ///
     /// <para><b>Was geschrieben wird:</b> allein die Kennwerte und die Außenluft je Person der ausgelieferten DIN-Profile samt
     /// Herkunft (<see cref="RaumnutzungNormwerteSchema.HERKUNFT_EINGELESEN"/>, Quelle, Tag). Nummer, Name, Beschreibung,
@@ -297,13 +298,38 @@ namespace WindowsFormsApplication1
         {
             string nr = Nummernschluessel(q.Nummer);
             if (nr != null)
-                return din.FirstOrDefault(p => string.Equals(Nummernschluessel(p.Nummer), nr, StringComparison.OrdinalIgnoreCase));
+            {
+                Raumnutzungsprofil ueberNummer = din.FirstOrDefault(p => string.Equals(Nummernschluessel(p.Nummer), nr, StringComparison.OrdinalIgnoreCase));
+                if (ueberNummer != null) return ueberNummer;
+                // Nur beim Einlesen: die Wohnzeilen der Projektdatei (Nummern 70/71) treffen die Wohnprofile ohne Nummer.
+                string wohnprofil = WohnprofilAusNummer(nr);
+                return wohnprofil == null ? null : din.FirstOrDefault(p => p.Nummer == null &&
+                                                                           string.Equals(p.Bezeichner, wohnprofil, StringComparison.OrdinalIgnoreCase));
+            }
             string name = q.Bezeichner?.Trim();
             if (string.IsNullOrEmpty(name)) return null;
             return din.FirstOrDefault(p => p.Nummer == null &&
                                            RaumnutzungNormkategorienSchema.WOHNPROFILE.Contains(p.Bezeichner, StringComparer.OrdinalIgnoreCase) &&
                                            string.Equals(p.Bezeichner, name, StringComparison.OrdinalIgnoreCase));
         }
+
+        /// <summary>Nummer der Projektdatei der Wohnzeile Einfamilienhaus (nur für das Einlesen der Normwerte).</summary>
+        public const string NUMMER_WOHNEN_EFH = "70";
+
+        /// <summary>Nummer der Projektdatei der Wohnzeile Mehrfamilienhaus (nur für das Einlesen der Normwerte).</summary>
+        public const string NUMMER_WOHNEN_MFH = "71";
+
+        /// <summary>
+        /// Das Wohnprofil zu einer Nummer der Projektdatei: 70 = „Wohngebäude – Einfamilienhaus“, 71 = „– Mehrfamilienhaus“,
+        /// sonst <c>null</c>. Gilt allein für das Einlesen der Normwerte; die Raumzuordnung auf das Muster Wohnen bleibt.
+        /// </summary>
+        public static string WohnprofilAusNummer(string nummer)
+            => Nummernschluessel(nummer) switch
+            {
+                NUMMER_WOHNEN_EFH => RaumnutzungNormkategorienSchema.WOHNEN_EFH,
+                NUMMER_WOHNEN_MFH => RaumnutzungNormkategorienSchema.WOHNEN_MFH,
+                _ => null,
+            };
 
         /// <summary>Kopf des DIN-Profils mit den Werten der Quelle (ohne Zeilenbild und Stunden, ohne Herkunft).</summary>
         internal static Raumnutzungsprofil MitWerten(Raumnutzungsprofil ziel, Raumnutzungsprofil q)

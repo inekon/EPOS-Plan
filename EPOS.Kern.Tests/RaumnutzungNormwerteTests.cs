@@ -176,11 +176,32 @@ namespace EPOS.Kern.Tests
             };
             RaumnutzungNormwerte.Vorschau v = RaumnutzungNormwerte.AusProjektdatei(satz);
             Assert.True(v.Ok, v.Meldung);
-            Assert.Equal("2", v.Treffer.Single().Nummer);
-            Assert.Single(v.Unbekannt);
-            Assert.Equal(1, RaumnutzungNormwerte.Einlesen(v, false, TAG).Geschrieben);
+            Assert.Equal(2, v.Treffer.Count);
+            Assert.Contains(v.Treffer, t => t.Nummer == "2");
+            Assert.Contains(v.Treffer, t => t.Bezeichner == RaumnutzungNormkategorienSchema.WOHNEN_EFH);
+            Assert.Empty(v.Unbekannt);
+            Assert.Equal(2, RaumnutzungNormwerte.Einlesen(v, false, TAG).Geschrieben);
             Assert.Equal(25.0, Din("2").Aussenluft_Person);
             Assert.Equal("probe.sqproj", Din("2").Werte_Quelle);
+            Assert.Equal(20.0, Wohnen().Heiz_Soll);
+        }
+
+        [Fact]
+        public void Die_Nummern_70_und_71_der_Projektdatei_treffen_die_Wohnprofile()
+        {
+            Assert.Equal(RaumnutzungNormkategorienSchema.WOHNEN_EFH, RaumnutzungNormwerte.WohnprofilAusNummer("70"));
+            Assert.Equal(RaumnutzungNormkategorienSchema.WOHNEN_MFH, RaumnutzungNormwerte.WohnprofilAusNummer(" 071 "));
+            Assert.Null(RaumnutzungNormwerte.WohnprofilAusNummer("72"));
+            Assert.Null(RaumnutzungNormwerte.WohnprofilAusNummer(null));
+            // Die Raumzuordnung auf das Muster Wohnen bleibt unberührt.
+            Assert.True(Gebaeudeverwendung.WohnenAusDinNummer(70));
+            Assert.True(Gebaeudeverwendung.WohnenAusDinNummer(71));
+            if (!_db.Vorhanden) return;
+            RaumnutzungNormwerte.Vorschau v = RaumnutzungNormwerte.AusCsv(Csv("71;Mehrfamilienhaus der Datei;21;"), "probe.csv");
+            Assert.True(v.Ok, v.Meldung);
+            RaumnutzungNormwerte.Treffer t = v.Treffer.Single();
+            Assert.Null(t.Nummer);
+            Assert.Equal(RaumnutzungNormkategorienSchema.WOHNEN_MFH, t.Bezeichner);
         }
 
         [Fact]
