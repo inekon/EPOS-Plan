@@ -36,6 +36,26 @@ Steht ''Detail-Unterschiede für Variante'' auf der Vorgabe ''— keine —'', z
 
 Weicht eine Version vom Stamm ab – andere Komponente, andere Anzahl, andere Kennwerte oder ein Gewerk, das nur eine Seite führt –, ist ihre Zelle hinterlegt und links markiert, und das Gewerk trägt einen Punkt; die Legende über der Tafel erklärt die Markierung. '''nur Unterschiede''' blendet die Gewerke ohne Abweichung aus; die Wahl bleibt bis zum Ende der Sitzung erhalten. Viele Varianten rollen innerhalb der Tafel zur Seite, die Spalte ''Gewerk'' bleibt dabei stehen. Die Zeile darunter fasst zusammen, etwa ''4 Gewerke · Stamm und 1 Variante · 1 Unterschied''.
 
+Die Seite gliedert sich unter dem Kopf in zwei Abschnitte: '''Komponenten und Einstellungen''' mit den Tafeln ''Komponenten im Vergleich'' bzw. ''Unterschiede zum Stammprojekt'' und darunter '''Ergebnisse — Energie'''.
+
+=== Ergebnisse — Energie ===
+Der Abschnitt stellt die Energie-Ergebnisse von Stammprojekt und Varianten gegenüber – dieselben Versionen in derselben Reihenfolge wie ''Komponenten im Vergleich'', also das Stammprojekt und die unter ''Im Vergleich:'' gewählten Varianten. Der Spaltenkopf nennt die Version und ihren Simulationsstand. Die Werte stammen aus dem letzten gespeicherten Simulationslauf jeder Version und sind dieselben Kennzahlen wie in der Kennzahlentafel des Berichts.
+
+Die Zeilen sind in Gruppen geordnet, die Einheit steht im Zeilenkopf:
+* '''Bedarf''' – Wärmebedarf gesamt und davon Heizung, Brauchwasser und Prozesswärme, Wärmelast, Kältebedarf und Kältelast, Strombedarf und Stromlast.
+* '''Wärmeerzeugung''' – die Wärme je Erzeuger: Wärmepumpe, BHKW, Spitzenkessel, Solarthermie.
+* '''Strom''' – Stromerzeugung von BHKW und Photovoltaik, Netzeinspeisung, PV-Eigenverbrauchsquote und Autarkiegrad.
+* '''Endenergie''' – Brennstoffeinsatz und Netzbezug Strom.
+* '''Deckung''' – Wärmedeckung der Wärmepumpe, ungedeckter Wärmebedarf und die Deckungsgrade je Bedarfsart.
+* '''Kälte''', '''Effizienz''' und '''Gebäude''' – Kälteerzeugung und Jahresarbeitszahl Kälte, Jahresarbeitszahl und Vollbenutzungsstunden der Erzeuger, Lüftungs- und Aufheizwerte der Gebäude.
+Eine Zeile erscheint nur, wenn wenigstens eine Version einen Wert führt. Kosten zeigt der Abschnitt nicht; sie stehen unter ''Wirtschaftlichkeit''.
+
+Weicht ein Wert vom Stammprojekt ab, ist die Zelle hinterlegt und links markiert wie in ''Komponenten im Vergleich''; darunter steht leise die Abweichung zum Stamm in Prozent. Eine Version ohne Simulationsergebnis zeigt einen Gedankenstrich mit dem Kurztext ''nicht simuliert''. Ist keine Version im Vergleich simuliert, steht statt der Tafel ein Hinweis. Viele Varianten rollen innerhalb der Tafel zur Seite, die Spalte ''Kennzahl'' bleibt dabei stehen.
+
+Unter der Tafel steht die Klappgruppe '''Emissionen''' mit CO₂ gesamt in t/a, CO₂ spezifisch in g/kWh und dem CO₂ des Kältestroms in t/a. Sie ist beim Öffnen der Seite zugeklappt; ihr Kopf nennt die Zahl der Kennzahlen und zeigt ''weicht vom Stammprojekt ab'', sobald eine Zelle darin abweicht. Ein Klick auf den Kopf klappt sie auf und zu; die Stellung bleibt bis zum Ende der Sitzung erhalten.
+
+Ist '''nur Unterschiede''' eingeschaltet, blendet der Abschnitt auch hier die Gruppen aus, in denen keine Version vom Stammprojekt abweicht.
+
 == Unterschiede übernehmen ==
 {{Anker|uebernahme|komponentenuebernahme}}
 
