@@ -632,7 +632,7 @@ namespace EPOS.Kern.Tests
             DataRepository.ExecuteSQL(
                 "INSERT INTO Tab_WP (ID, Bezeichner, ID_Projekt, Firma, Beschreibung, Typ, " +
                 "Baujahr, Aufstellung, Nennleistung, maxPtherm, Heizung, Regelung, " +
-                "Kuehlleistung, Bauart) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "Kuehlleistung, Bauart) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 new DbParam("@id", idWp),
                 new DbParam("@bez", bezeichner),
                 new DbParam("@proj", idProjekt),
@@ -645,7 +645,6 @@ namespace EPOS.Kern.Tests
                 new DbParam("@max", 40),
                 new DbParam("@hei", 4),
                 new DbParam("@reg", "stetig"),
-                new DbParam("@mod", 1000),
                 new DbParam("@kue", 0.0),
                 new DbParam("@bart", "Prüfbauart"));
         }

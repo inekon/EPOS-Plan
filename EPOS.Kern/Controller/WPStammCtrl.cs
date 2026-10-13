@@ -1057,7 +1057,7 @@ namespace WindowsFormsApplication1
 
                             katalogId = v.EinfuegenUndId(
                                 "INSERT INTO " + TABLE + " (Bezeichner, " + UEBERNAHME_SPALTEN +
-                                ", ReadOnly) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                ", ReadOnly) VALUES (" + string.Join(", ", System.Linq.Enumerable.Repeat("?", p.Count)) + ")",
                                 p.ToArray());
                             if (katalogId <= 0) throw new InvalidOperationException(
                                 "Der Katalogsatz konnte nicht angelegt werden.");
@@ -1182,9 +1182,11 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Werte der zwanzig Fachspalten in der Reihenfolge von
+        /// Die Werte der neunzehn Fachspalten in der Reihenfolge von
         /// <see cref="UEBERNAHME_SPALTEN"/> — EINE Stelle fuer INSERT und UPDATE, damit
-        /// Spaltenliste und Werte nicht auseinanderlaufen koennen.
+        /// Spaltenliste und Werte nicht auseinanderlaufen koennen. Die Platzhalter des INSERT
+        /// zaehlt der Aufrufer aus der Parameterliste ab — eine entfallene Spalte (Welle KB-4:
+        /// <c>Modulkosten</c>) laesst damit keinen ueberzaehligen Platzhalter zurueck.
         /// </summary>
         private static DbParam[] Uebernahmewerte(DataRow satz)
         {
