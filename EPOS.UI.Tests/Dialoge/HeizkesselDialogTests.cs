@@ -1241,7 +1241,7 @@ public class HeizkesselDialogTests : EposBunitContext
         Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
 
         var block = cut.Find(".epos-modulparameter");
-        Assert.Equal(3, block.QuerySelectorAll(".epos-feld, .epos-schalter").Length);
+        Assert.Equal(4, block.QuerySelectorAll(".epos-feld, .epos-schalter").Length);
         Assert.NotEmpty(block.QuerySelectorAll("input[type=text]"));
         Assert.NotEmpty(block.QuerySelectorAll("input[inputmode=decimal]"));
         Assert.NotEmpty(block.QuerySelectorAll("input[type=checkbox]"));
@@ -1265,7 +1265,9 @@ public class HeizkesselDialogTests : EposBunitContext
         Assert.Equal("true", cut.Find(".epos-modulparameter-knopf").GetAttribute("aria-expanded"));
         Assert.Equal("Alle Daten anzeigen",
                      cut.Find(".epos-modulparameter-knopf").QuerySelectorAll("span")[1].TextContent);
-        Assert.Equal(3, cut.Find(".epos-modulparameter")
+        // Vier Felder: Hersteller (Text), Raumbedarf (Zahl), Geraetekosten (Lesewert der
+        // Satzvorlage, Welle KB-4) und der Schalter „Brennwertkessel".
+        Assert.Equal(4, cut.Find(".epos-modulparameter")
                            .QuerySelectorAll(".epos-feld, .epos-schalter").Length);
     }
 
@@ -1841,15 +1843,17 @@ public class HeizkesselDialogTests : EposBunitContext
         KatalogsatzWaehlen(cut);
         Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
 
-        KiFeldzugang invest = KiMaskenbruecke.Feldzugang(KiMaskennamen.HEIZKESSEL_PROJEKT,
-                                                         "katalog_investitionskosten");
-        Assert.NotNull(invest);
-        Assert.Equal(12000.0, invest.Lesen());
-        Assert.True(invest.Setzbar);
+        // Welle KB-4: Das Kostenfeld des Aufklappers ist entfallen; gesetzt wird ein
+        // Gerätefeld, das der Aufklapper noch schreibt (Raumbedarf).
+        KiFeldzugang raum = KiMaskenbruecke.Feldzugang(KiMaskennamen.HEIZKESSEL_PROJEKT,
+                                                       "katalog_raumbedarf");
+        Assert.NotNull(raum);
+        Assert.Equal(12.0, raum.Lesen());
+        Assert.True(raum.Setzbar);
 
-        KiFeldumsetzung u = KiFeldwandler.Wandle(invest, "15000");
+        KiFeldumsetzung u = KiFeldwandler.Wandle(raum, "15000");
         Assert.True(u.Ok, u.Grund);
-        invest.Setzen(u.Wert);
+        raum.Setzen(u.Wert);
         cut.Render();
 
         Assert.Equal("15000", cut.Find(".epos-modulparameter input[inputmode=decimal]")

@@ -339,10 +339,13 @@ namespace EPOS.Kern.Tests
         {
             var erwartet = new Dictionary<KatalogBrowserArt, int>
             {
-                // Heizkessel: mit der Einheit des Bereitschaftsverlusts (02.10.2026) 27.
-                [KatalogBrowserArt.Heizkessel] = 27,
-                // BHKW: mit der Gruppe Teillast und Takten (Welle M4: BH1, BH2) und der Ruecklaufgrenze (UB-E3) 32.
-                [KatalogBrowserArt.Bhkw] = 32,
+                // Heizkessel: mit der Einheit des Bereitschaftsverlusts (02.10.2026) 27, mit
+                // Welle KB-4 ohne Investition, Wartung und Zeitbezug, dafuer mit dem Lesewert
+                // der Satzvorlage 25.
+                [KatalogBrowserArt.Heizkessel] = 25,
+                // BHKW: mit der Gruppe Teillast und Takten (Welle M4: BH1, BH2) und der Ruecklaufgrenze
+                // (UB-E3) 32, mit Welle KB-4 ohne die sieben Kostenfelder, dafuer mit dem Lesewert 26.
+                [KatalogBrowserArt.Bhkw] = 26,
                 // Solarkollektoren: mit der Bezugsfläche der Kennwerte (Welle M2, ST6) 13.
                 [KatalogBrowserArt.Solarkollektoren] = 13,
                 [KatalogBrowserArt.Pufferspeicher] = 6
@@ -392,15 +395,14 @@ namespace EPOS.Kern.Tests
             Assert.True(solar.HatSpeicherweg);
             Assert.True(puffer.HatSpeicherweg);
 
-            // Alles ausser dem Bezeichner — beim BHKW zusaetzlich ohne die zwei
-            // ABGELEITETEN Groessen: die Investition je kWel (W14a-E-8-B3) und den
-            // GESAMTwirkungsgrad, die Summe der zwei Anteile (Anwenderentscheid
-            // 20.09.2026): 26 / 24 / 11 / 5 - beim Heizkessel mit den fuenf Feldern der
-            // Kennlinie (Konzept Kesselkennlinie, Etappe E1) und der Einheit des
+            // Alles ausser dem Bezeichner, dem LESEWERT der Satzvorlage (Geraetekosten,
+            // Welle KB-4) und — beim BHKW — dem GESAMTwirkungsgrad, der Summe der zwei
+            // Anteile (Anwenderentscheid 20.09.2026): beim Heizkessel mit den fuenf Feldern
+            // der Kennlinie (Konzept Kesselkennlinie, Etappe E1) und der Einheit des
             // Bereitschaftsverlusts (Anwenderentscheid 02.10.2026), beim BHKW mit den vier
-            // Feldern von Teillast und Takten (Welle M4: BH1, BH2) und der Ruecklaufgrenze (UB-E3) 29.
-            Assert.Equal(26, heiz.Detailfelder.Count(f => f.Editierbar));
-            Assert.Equal(29, bhkw.Detailfelder.Count(f => f.Editierbar));
+            // Feldern von Teillast und Takten (Welle M4: BH1, BH2) und der Ruecklaufgrenze (UB-E3).
+            Assert.Equal(23, heiz.Detailfelder.Count(f => f.Editierbar));
+            Assert.Equal(24, bhkw.Detailfelder.Count(f => f.Editierbar));
             Assert.Equal(12, solar.Detailfelder.Count(f => f.Editierbar));   // mit der Bezugsfläche (Welle M2)
             Assert.Equal(5, puffer.Detailfelder.Count(f => f.Editierbar));
 
