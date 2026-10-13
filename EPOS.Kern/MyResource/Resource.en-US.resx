@@ -54470,6 +54470,9 @@ chart</value>
   <data name="BKAT_BTA_KLASSE_SONSTIGES" xml:space="preserve">
     <value>Other</value>
   </data>
+  <data name="BKAT_BTA_KLASSE_HAUSTECHNIK" xml:space="preserve">
+    <value>Building services</value>
+  </data>
   <data name="BKAT_BST_KLASSE_ZIEGEL" xml:space="preserve">
     <value>Clay brick</value>
   </data>
@@ -54613,6 +54616,9 @@ chart</value>
   </data>
   <data name="BKAT_BST_KLASSE_STOFF_SONSTIGE" xml:space="preserve">
     <value>Other material</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_HAUSTECHNIK" xml:space="preserve">
+    <value>Building services</value>
   </data>
 </root>
 

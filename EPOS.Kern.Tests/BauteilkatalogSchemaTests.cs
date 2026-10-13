@@ -30,7 +30,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(221, BauteilkatalogSchema.SCHRITT);
             Assert.Equal(RaumnutzungNormwerteSchema.SCHRITT + 1, BauteilkatalogSchema.SCHRITT);
-            Assert.Equal(BauteilkatalogSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= BauteilkatalogSchema.SCHRITT);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == BauteilkatalogSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);
         }

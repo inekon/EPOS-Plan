@@ -54477,6 +54477,9 @@ Chart</value>
   <data name="BKAT_BTA_KLASSE_SONSTIGES" xml:space="preserve">
     <value>Sonstiges</value>
   </data>
+  <data name="BKAT_BTA_KLASSE_HAUSTECHNIK" xml:space="preserve">
+    <value>Haustechnik</value>
+  </data>
   <data name="BKAT_BST_KLASSE_ZIEGEL" xml:space="preserve">
     <value>Ziegel</value>
   </data>
@@ -54620,6 +54623,9 @@ Chart</value>
   </data>
   <data name="BKAT_BST_KLASSE_STOFF_SONSTIGE" xml:space="preserve">
     <value>Sonstiger Stoff</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_HAUSTECHNIK" xml:space="preserve">
+    <value>Haustechnik</value>
   </data>
 </root>
 

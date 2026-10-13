@@ -210,19 +210,14 @@ namespace WindowsFormsApplication1
         /// <summary>Basis-Code der Luftdurchlässe: an Aufbauten gekennzeichnet (E134).</summary>
         public const int CODE_LUFTDURCHLASS = 19;
 
-        /// <summary>Die Klasse „Haustechnik“, sobald das Schema sie führt.</summary>
-        public const string KLASSE_HAUSTECHNIK = "HAUSTECHNIK";
+        /// <summary>Die Klasse „Haustechnik“ (Schritt 222, <see cref="BauteilkatalogHaustechnikSchema"/>).</summary>
+        public const string KLASSE_HAUSTECHNIK = BauteilkatalogHaustechnikSchema.KLASSE;
 
         /// <summary>
-        /// Die Klasse eines Haustechnik-Satzes in der Gruppe „Sonstige“: <see cref="KLASSE_HAUSTECHNIK"/>, sobald die Liste des
-        /// Schemas sie führt (Prüfklausel der Spalte <c>Klasse_Code</c>), bis dahin die sonstige Klasse der Gruppe.
+        /// Die Klasse eines Haustechnik-Satzes in der Gruppe „Sonstige“ — für Baustoff und Aufbau dieselbe
+        /// (<see cref="KLASSE_HAUSTECHNIK"/>); über den Klassenfilter der Kataloge ausblendbar.
         /// </summary>
-        public static string KlasseHaustechnik(bool baustoff)
-        {
-            IReadOnlyList<(string Gruppe, string Klasse)> liste = baustoff ? BauteilkatalogSchema.BAUSTOFF_KLASSEN : BauteilkatalogSchema.AUFBAU_KLASSEN;
-            if (liste.Any(k => k.Klasse == KLASSE_HAUSTECHNIK)) return KLASSE_HAUSTECHNIK;
-            return baustoff ? "STOFF_SONSTIGE" : "SONSTIGES";
-        }
+        public static string KlasseHaustechnik(bool baustoff) => KLASSE_HAUSTECHNIK;
 
         /// <summary>
         /// <b>Gruppe und Klasse eines Baustoffs aus Code und Name</b> (Regel 5, E134). Ein Haustechnik-Code → „Sonstige“ mit

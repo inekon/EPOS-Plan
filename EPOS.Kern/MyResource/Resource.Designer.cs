@@ -9447,6 +9447,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Haustechnik ähnelt.
+        /// </summary>
+        public static string BKAT_BST_KLASSE_HAUSTECHNIK {
+            get {
+                return ResourceManager.GetString("BKAT_BST_KLASSE_HAUSTECHNIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Holzfaser ähnelt.
         /// </summary>
         public static string BKAT_BST_KLASSE_HOLZFASER {
@@ -9893,6 +9902,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BKAT_BTA_KLASSE_GESCHOSSDECKE {
             get {
                 return ResourceManager.GetString("BKAT_BTA_KLASSE_GESCHOSSDECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Haustechnik ähnelt.
+        /// </summary>
+        public static string BKAT_BTA_KLASSE_HAUSTECHNIK {
+            get {
+                return ResourceManager.GetString("BKAT_BTA_KLASSE_HAUSTECHNIK", resourceCulture);
             }
         }
         
