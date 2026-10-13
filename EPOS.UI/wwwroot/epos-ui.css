@@ -18347,7 +18347,7 @@ td.epos-vorlage-katalogbeschreibung {
 .epos-gebk-vorgaben-grund { font-size: 0.9em; }
 .epos-gebk-vorgabenblatt { display: flex; flex-direction: column; gap: 0.5em; min-width: min(36em, 100%); }
 .epos-gebk-vorgaben-tabelle { border-collapse: collapse; width: 100%; }
-.epos-gebk-vorgaben-tabelle th, .epos-gebk-vorgaben-tabelle td { padding: 0.2em 0.4em; text-align: left; border-bottom: 1px solid var(--epos-rahmen, #ccc); }
+.epos-gebk-vorgaben-tabelle th, .epos-gebk-vorgaben-tabelle td { padding: 0.2em 0.4em; text-align: left; border-bottom: 1px solid var(--epos-rahmen); }
 .epos-gebk-vorgaben-tabelle .epos-zahl { text-align: right; white-space: nowrap; }
 .epos-gebk-vorgaben-aendert td:last-child { font-weight: 600; }
 .epos-gebk-vorgaben-gleich td { opacity: 0.7; }
