@@ -69,7 +69,7 @@ Die Kühlung hat zwei Seiten: den '''Kältebedarf''' eines Gebäudes und den '''
 |-
 | Nennleistung der Kühlübergabe || 80 kW || leer käme sie aus dem Auslegungstag
 |-
-| Wärmepumpen-Katalog || nur mit Kühlfunktion || an || ein Gerät mit Kühlkennlinie wählen
+| Wärmepumpen-Stammdaten (Administration, Wärme- und Kälteerzeugung, Wärmepumpen), Katalogliste || nur mit Kühlfunktion || an || die Liste zeigt nur Geräte mit Kühlkennlinie; im Projekt filtert der Trichter der Spalte ''Kühlleistung [kW]'' ebenso
 |-
 | rowspan="3" | ''Konfiguration…'', Gruppe ''Kühlbetrieb'' || Maschine auch zum Kühlen benutzen || an || Wärmepumpe A wird Kälteerzeuger
 |-
