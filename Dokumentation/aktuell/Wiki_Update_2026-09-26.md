@@ -197,6 +197,12 @@ Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1, MA-1 bis MA-5, MA-7; S
 - Seit 12.10.2026: Die leeren Kategorien SIA 2024 und VDI 2078 sind aus dem Katalog der Nutzungsprofile entfernt; vorhandene Profile bleiben in einer eigenen Kategorie.
 - Seit 11.10.2026: Saison, Ferien, Zeiträume und Einzeltage der Kalender nehmen Tag und Monat als „TT.MM.“ an und prüfen die Eingabe erst beim Verlassen des Feldes.
 
+### Version ‹Version› — Kältebedarf dezentral (Split) (Entwurf, Upload ausstehend)
+
+Version beim Anwender zu erfragen (Empfehlung: Sammelversion mit K4/K5); Wiki-Quelle „Programm Dokumentation - Kältebedarf“ fortgeschrieben, Upload ausstehend.
+
+- Seit 13.10.2026: Kältebedarf, der dezentral über Split-Geräte gedeckt wird, erscheint im Kältegang, in der Kältelast, in der Strombilanz als „Kühlung dezentral“, im Deckungsgrad Kälte, im Anlagenschema, in der Simulationskonfiguration und im Bericht; der Strom wird je Kühlträger und Zähler abgerechnet.
+
 ### Version ‹Version› — Dialoge mit Katalogauswahl (Entwurf, Upload ausstehend)
 
 Version beim Anwender zu erfragen; keine Wiki-Quelle geändert (die Quellen beschreiben nur die Funktion, sie stimmt).

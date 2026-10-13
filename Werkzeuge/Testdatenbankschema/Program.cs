@@ -3573,6 +3573,24 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrBk3c + " - vollstaendig: " + BauteilkatalogHaustechnikSchema.Vollstaendig() +
                                   " (erwartet True).");
             }
+
+            // ---- Schritt KaeltebedarfSplitAbrechnungSchema.SCHRITT (K6): Tab_ErgebnisKaelteDezentral, die Ergebnistabelle je
+            //      dezentral (Split) gedeckter Kaeltebedarfszeile. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_KaeltebedarfSplitAbrechnung. Wiederholbar.
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt fuehrt eine Split-Zeile, die Tabelle bleibt leer.
+            string nrK6 = KaeltebedarfSplitAbrechnungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrK6 + " - Ergebnis je Split-Zeile (Abrechnung des Split-Stroms): " +
+                              (KaeltebedarfSplitAbrechnungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtK6 = new List<string>();
+                tabellen += KaeltebedarfSplitAbrechnungSchema.Ausfuehren(berichtK6);
+                foreach (string zeile in berichtK6)
+                    Console.WriteLine("Schritt " + nrK6 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrK6 + " - vollstaendig: " + KaeltebedarfSplitAbrechnungSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

@@ -60,7 +60,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void JedeAenderbareRolleHatEineHausfarbe()
         {
-            Assert.Equal(54, Diagrammfarben.Rollen.Count);
+            // K6b: die Rolle KAELTE_DEZENTRAL ist die 55.
+            Assert.Equal(55, Diagrammfarben.Rollen.Count);
             foreach (Farbrolle rolle in Diagrammfarben.Rollen)
                 Assert.True(Farbpalette.Vorgabe.Kennt(rolle), "ohne Hausfarbe: " + rolle.Name);
         }

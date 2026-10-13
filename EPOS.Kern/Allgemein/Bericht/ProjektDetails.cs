@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
@@ -77,6 +78,30 @@ namespace WindowsFormsApplication1
 
         /// <summary>Zahl der zugeordneten Prozesswärmesätze mit Temperaturpaar.</summary>
         public int ProzessMitTemperatur;
+
+        /// <summary>K6b: Zahl der Kältebedarfsprofilzeilen des Projekts (<c>Z_Projekt_Kaeltebedarf</c>); 0 vor Schritt 213.</summary>
+        public int KaelteProfilZeilen;
+
+        /// <summary>K6b: Summe der gepflegten Jahressummen der Kältebedarfsprofile [MWh/a].</summary>
+        public double KaelteProfilSummeMwh;
+
+        /// <summary>
+        /// K6b: die dezentral (Split) gedeckten Kältebedarfszeilen (Lastgänge und Profile) mit EER-Weg, Kühlträger und Zähler
+        /// als fertige Texte — der Bericht schreibt sie ohne Datenbank; leer ohne Split-Zeile (dann keine Zeile).
+        /// </summary>
+        public List<KaelteDezentralEingabe> KaelteDezentral = new List<KaelteDezentralEingabe>();
+
+        /// <summary>K6b: eine Split-Zeile der Eingabeseite.</summary>
+        public sealed class KaelteDezentralEingabe
+        {
+            public string Bezeichner = "";
+            /// <summary><c>true</c> = Kältebedarfsprofil, <c>false</c> = Lastgang.</summary>
+            public bool Profil;
+            /// <summary>EER-Weg als Text („fest 3,0“, „linear …“).</summary>
+            public string Eer = "";
+            /// <summary>Der Stromträger, der den Split-Strom bepreist, samt Abrechnungsart (E34).</summary>
+            public string Traeger = "";
+        }
 
         /// <summary>
         /// Netzverluste je Kanal und Zirkulation im Bestandsweg (Entscheidungsvorlage BW4); leer, wenn
@@ -315,6 +340,9 @@ namespace WindowsFormsApplication1
             // PW1 Stufe 1: das Temperaturniveau des Prozesskanals.
             LadeProzesstemperatur(d);
 
+            // K6b: die Kältebedarfsprofile und die dezentral gedeckten Zeilen.
+            LadeKaeltebedarf(d);
+
             // KP3 Welle O3a (B19): der Konditionierungsstand je Gebaeude fuer die Kurzform im Bericht.
             LadeKonditionierung(d);
 
@@ -380,6 +408,46 @@ namespace WindowsFormsApplication1
             d.ProzessMitTemperatur = n;
             d.ProzessVorlaufMax = D(dt.Rows[0], "VL");
             d.ProzessRuecklaufMin = D(dt.Rows[0], "RL");
+        }
+
+        /// <summary>
+        /// K6b (Konzept Kältebedarf 4.3): die Eingabeseite des Kältebedarfs ohne Gebäudemodell — Zahl und Summe der
+        /// Kältebedarfsprofile, dazu je dezentral gedeckter Zeile EER-Weg, Kühlträger und Zähler. Still: vor Schritt 213
+        /// bleibt alles leer (dann keine Zeile).
+        /// </summary>
+        private static void LadeKaeltebedarf(ProjektDetails d)
+        {
+            List<Z_ProjektKaeltebedarfCtrl.Uebersichtszeile> zeilen = Z_ProjektKaeltebedarfCtrl.ZeilenDesProjekts(d.IdProjekt);
+            if (zeilen.Count == 0) return;
+            int projekttraeger = -1;
+            foreach (Z_ProjektKaeltebedarfCtrl.Uebersichtszeile z in zeilen)
+            {
+                if (z.Profil)
+                {
+                    d.KaelteProfilZeilen++;
+                    d.KaelteProfilSummeMwh += z.SummeMwh ?? 0.0;
+                }
+                if (!z.Split) continue;
+                if (projekttraeger < 0) projekttraeger = Kaeltestromabrechnung.Projekttraeger(d.IdProjekt);
+                d.KaelteDezentral.Add(new KaelteDezentralEingabe
+                {
+                    Bezeichner = z.Bezeichner,
+                    Profil = z.Profil,
+                    Eer = Z_ProjektKaeltebedarfCtrl.EerText(z, CultureInfo.CurrentCulture),
+                    Traeger = TraegerText(z, projekttraeger),
+                });
+            }
+        }
+
+        /// <summary>K6b: der Stromträger einer Split-Zeile samt Abrechnungsart — dieselben Texte wie die Kälteerzeugertafel.</summary>
+        internal static string TraegerText(Z_ProjektKaeltebedarfCtrl.Uebersichtszeile z, int projekttraeger)
+        {
+            if (z == null || !Kaeltestromabrechnung.Abweichend(z.KuehlIdCarrier, projekttraeger))
+                return MyResource.Resource.BER_KAELTE_TRAEGER_PROJEKT;
+            return string.Format(CultureInfo.CurrentCulture,
+                                 z.EigenerZaehler ? MyResource.Resource.BER_KAELTE_TRAEGER_ZAEHLER
+                                                  : MyResource.Resource.BER_KAELTE_TRAEGER_ANTEILIG,
+                                 Emissionsquelle.TraegerName(z.KuehlIdCarrier.Value));
         }
 
         private static DataTable LadeTabelle(string tabelle, int idProjekt)

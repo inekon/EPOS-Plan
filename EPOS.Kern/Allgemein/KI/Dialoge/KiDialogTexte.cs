@@ -850,6 +850,9 @@
         internal static string SimKaelteerzeugerErl => MyResource.Resource.KI_DLG_SIM_KAELTEERZEUGER_ERL;
         internal static string SimKaeltespeicherName => MyResource.Resource.SIMKONF_KAELTE_SPEICHER;
         internal static string SimKaeltespeicherErl => MyResource.Resource.KI_DLG_SIM_KAELTESPEICHER_ERL;
+        // K6b-N: die Gruppe „Dezentrale Kaeltedeckung" (nur lesend).
+        internal static string SimKaelteDezentralName => MyResource.Resource.SIMKONF_KAELTE_DEZENTRAL;
+        internal static string SimKaelteDezentralErl => MyResource.Resource.KI_DLG_SIM_KAELTE_DEZENTRAL_ERL;
         internal static string SimKuehlWpName => MyResource.Resource.KMA_GRUPPE_WP;
         internal static string SimKuehlWpErl => MyResource.Resource.KI_DLG_SIM_KUEHL_WP_ERL;
         internal static string SimAnlagenkopplungName => MyResource.Resource.SIMKONF_LBL_ANLAGENKOPPLUNG;

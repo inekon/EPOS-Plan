@@ -1050,7 +1050,11 @@ namespace WindowsFormsApplication1
         /// die Klasse <c>HAUSTECHNIK</c> in der Prüfklausel von <c>Klasse_Code</c> an Baustoff- und Aufbaukatalog samt
         /// Projektkopien (<see cref="BauteilkatalogHaustechnikSchema"/>). <b>Ergebnisneutral:</b> Der Bauteilweg liest keine
         /// Gliederung.
-        public const int Zielversion = BauteilkatalogHaustechnikSchema.SCHRITT;
+        /// Danach, mit der ABRECHNUNG DES SPLIT-STROMS (K6, Konzept Kältebedarf 4.2/4.3, E34/E35), steht das Ziel auf
+        /// <see cref="KaeltebedarfSplitAbrechnungSchema.SCHRITT"/>: die Ergebnistabelle <c>Tab_ErgebnisKaelteDezentral</c> je
+        /// dezentral (Split) gedeckter Kältebedarfszeile eines Laufs (<see cref="KaeltebedarfSplitAbrechnungSchema"/>).
+        /// <b>Ergebnisneutral:</b> Kein Referenzprojekt führt eine Split-Zeile; die Tabelle bleibt leer.
+        public const int Zielversion = KaeltebedarfSplitAbrechnungSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

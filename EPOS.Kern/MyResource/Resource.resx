@@ -10939,10 +10939,13 @@ Wirksam nur bei einem GESCHICHTETEN Zielspeicher (Schichten &gt; 1): Von der Ein
     <value>Kältebedarf dezentral (Split): Der Jahres-EER {0} liegt unter {1}. Bitte die EER-Angaben der Split-Zeilen mit Gerätedaten prüfen.</value>
   </data>
   <data name="SIMENG_KAELTE_DEZENTRAL_KUEHLTRAEGER" xml:space="preserve">
-    <value>Kältebedarf dezentral (Split) „{0}": Der Strom ({1} MWh/a) geht mit dem Stromträger des Projekts in Strombilanz und Abrechnung; eine gesonderte Abrechnung über den Kühlträger {2} ist für dezentrale Zeilen noch nicht verfügbar.</value>
+    <value>Kältebedarf dezentral (Split) „{0}“: {1} MWh/a Netzbezug des Split-Stroms (Strom {2} MWh/a) tragen den Stromträger „{3}“.</value>
   </data>
   <data name="SIMWARN_KAELTE_SPLIT_OHNE_EER" xml:space="preserve">
     <value>Kältebedarf „{0}" ist dezentral (Split) gedeckt, aber ohne gültigen EER ({1}) — der Lauf bricht ab. Bitte die Deckung der Zeile pflegen.</value>
+  </data>
+  <data name="SIMWARN_KAELTE_SPLIT_ZAEHLER_OHNE_TRAEGER" xml:space="preserve">
+    <value>Kältebedarf „{0}“ ist dezentral (Split) gedeckt und auf „eigener Zähler“ gestellt, aber ohne abweichenden Kühlträger — der Zähler wirkt nicht, der Strom läuft mit dem Stromträger des Projekts. Bitte einen anderen Stromträger des Projekts als Kühlträger wählen oder den Zähler abwählen.</value>
   </data>
   <data name="SIMENG_KAELTE_HEIZEN_UND_KUEHLEN" xml:space="preserve">
     <value>Stunden mit gleichzeitigem Heizen und Kühlen: {0} h (Gebäude „{1}") — Umschaltstunden der Übergangszeit oder eine Zonierung, die beides verlangt. Heiz- und Kältebedarf werden nicht gegeneinander verrechnet.</value>
@@ -54713,6 +54716,138 @@ Chart</value>
   </data>
   <data name="BKAT_BST_KLASSE_STOFF_SONSTIGE" xml:space="preserve">
     <value>Sonstiger Stoff</value>
+  </data>
+  <data name="DGF_ROLLE_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Kälte dezentral (Split)</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>dezentral (Split)</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_GEBAEUDE" xml:space="preserve">
+    <value>Gebäude</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_LASTGANG" xml:space="preserve">
+    <value>Lastgänge</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_PROFIL" xml:space="preserve">
+    <value>Kältebedarfsprofile</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_DAVON_GEBAEUDE" xml:space="preserve">
+    <value>davon Gebäude</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_DAVON_LASTGANG" xml:space="preserve">
+    <value>davon Lastgänge</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_DAVON_PROFIL" xml:space="preserve">
+    <value>davon Kältebedarfsprofile</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_DAVON_DEZENTRAL" xml:space="preserve">
+    <value>davon dezentral (Split)</value>
+  </data>
+  <data name="SIMERG_GRP_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Dezentrale Kältedeckung (Split)</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Kälte dezentral</value>
+  </data>
+  <data name="SIMERG_LBL_STROM_DEZENTRAL" xml:space="preserve">
+    <value>Strom dezentral</value>
+  </data>
+  <data name="SIMERG_LBL_EER_DEZENTRAL" xml:space="preserve">
+    <value>Jahres-EER dezentral</value>
+  </data>
+  <data name="SIMERG_LBL_NETZ_DEZENTRAL" xml:space="preserve">
+    <value>Netzbezug dezentral</value>
+  </data>
+  <data name="SIMERG_HRL_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Dezentral (Split) gedeckt: {0} MWh/a des Kältebedarfs ({1} %) mit {2} MWh/a Strom.</value>
+  </data>
+  <data name="SIMUEB_LBL_KUEHLUNG_DEZENTRAL" xml:space="preserve">
+    <value>Kühlung dezentral</value>
+  </data>
+  <data name="SIMUEB_KUEHLUNG_DEZENTRAL_ZAEHLER" xml:space="preserve">
+    <value>davon {0} MWh/a Kühlung dezentral über eigenen Zähler (neben der Strombilanz)</value>
+  </data>
+  <data name="SIMUEB_KAELTE_DAVON_KAELTEFOLGE" xml:space="preserve">
+    <value>davon Kältefolge: {0} % des zentral zu deckenden Kältebedarfs</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Dezentrale Kältedeckung</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_ZEILE" xml:space="preserve">
+    <value>Zeile</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_SUMME" xml:space="preserve">
+    <value>Jahressumme</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_EER" xml:space="preserve">
+    <value>EER</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_TRAEGER" xml:space="preserve">
+    <value>Kühlträger</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_ZAEHLER" xml:space="preserve">
+    <value>Zähler</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_QUELLE_PROFIL" xml:space="preserve">
+    <value>Kältebedarfsprofil</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_QUELLE_LASTGANG" xml:space="preserve">
+    <value>Lastgang</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_EER_FEST" xml:space="preserve">
+    <value>fest {0}</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_EER_LINEAR" xml:space="preserve">
+    <value>linear {0} bei {1} °C / {2} bei {3} °C</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_ZAEHLER_EIGEN" xml:space="preserve">
+    <value>eigener Zähler</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_ZAEHLER_ANTEILIG" xml:space="preserve">
+    <value>anteilig am Netzbezug</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SUMME" xml:space="preserve">
+    <value>Summe dezentral (Profile): {0} MWh/a</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_ZENTRAL" xml:space="preserve">
+    <value>Kältebedarf zentral (Kältefolge): Gebäude mit Kühlung, Lastgänge {0}, Kältebedarfsprofile {1}</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_HRL" xml:space="preserve">
+    <value>Dezentral gedeckte Zeilen laufen neben der Kältefolge mit eigenem EER; gepflegt werden sie unter „Kältebedarf extern“ und „Kältebedarfsprofile“.</value>
+  </data>
+  <data name="SIM_SCHEMA_ABNEHMER_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Dezentral (Split)</value>
+  </data>
+  <data name="KONF_KS_DEZENTRAL_ZEILE" xml:space="preserve">
+    <value>{0}: EER {1}</value>
+  </data>
+  <data name="KONF_KS_DEZENTRAL_TRAEGER" xml:space="preserve">
+    <value>Kühlträger: {0}</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_TIP_BEARBEITEN" xml:space="preserve">
+    <value>Die Zeile im Dialog ihrer Quelle bearbeiten: Kältebedarfsprofile oder Kältebedarf extern</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_MSG_FEHLER" xml:space="preserve">
+    <value>„{0}“ lässt sich hier nicht bearbeiten: {1}</value>
+  </data>
+  <data name="KONF_KS_DAVON_LASTGANG" xml:space="preserve">
+    <value>davon Lastgang: {0}</value>
+  </data>
+  <data name="KONF_KS_DAVON_PROFIL" xml:space="preserve">
+    <value>davon Profil: {0}</value>
+  </data>
+  <data name="KI_DLG_SIM_KAELTE_DEZENTRAL_ERL" xml:space="preserve">
+    <value>Die dezentral (Split) gedeckten Kältebedarfszeilen mit Quelle, Jahressumme, EER, Kühlträger und Zähler; nur lesend. Gepflegt werden sie in den Dialogen „Kältebedarf extern“ und „Kältebedarfsprofile“.</value>
+  </data>
+  <data name="KONF_KS_DEZENTRAL_STROM_PROJEKT" xml:space="preserve">
+    <value>Strom: Projektträger</value>
+  </data>
+  <data name="KONF_KS_DEZENTRAL_STROM_TRAEGER" xml:space="preserve">
+    <value>Strom: {0} Träger</value>
   </data>
   <data name="GEBSIM_BTN_ALLE" xml:space="preserve">
     <value>Simulation… (alle {0} Gebäude)</value>

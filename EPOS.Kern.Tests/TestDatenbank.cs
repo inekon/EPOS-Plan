@@ -1050,6 +1050,9 @@ namespace EPOS.Kern.Tests
                 // Schritt BauteilkatalogHaustechnikSchema.SCHRITT (BK-3c, E134): Klasse Haustechnik in der Pruefklausel von
                 // Klasse_Code (Neubau der vier Kopftabellen). Wiederholbar, ergebnisneutral.
                 BauteilkatalogHaustechnikSchema.Ausfuehren(null);
+                // Schritt KaeltebedarfSplitAbrechnungSchema.SCHRITT (K6): Tab_ErgebnisKaelteDezentral, leer, reines DDL.
+                // Wiederholbar, ergebnisneutral.
+                KaeltebedarfSplitAbrechnungSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

@@ -9547,6 +9547,10 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kaeltespeicher", "SimulationKiSicht.Kaeltespeicher",
                                      KiDialogTexte.SimKaeltespeicherName, KiParameterTyp.Text,
                                      KiDialogTexte.SimKaeltespeicherErl, leerErlaubt: true, nurLesen: true),
+                    // K6b-N: die Gruppe „Dezentrale Kaeltedeckung" nur lesend - gepflegt wird im Dialog der Zeile.
+                    new KiDialogFeld("kaelte_dezentral", "SimulationKiSicht.KaelteDezentral",
+                                     KiDialogTexte.SimKaelteDezentralName, KiParameterTyp.Text,
+                                     KiDialogTexte.SimKaelteDezentralErl, leerErlaubt: true, nurLesen: true),
                     new KiDialogFeld("kuehlbetrieb_waermepumpen", "SimulationKiSicht.KuehlbetriebWaermepumpen",
                                      KiDialogTexte.SimKuehlWpName, KiParameterTyp.Text,
                                      KiDialogTexte.SimKuehlWpErl, leerErlaubt: true),

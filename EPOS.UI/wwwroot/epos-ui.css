@@ -6230,6 +6230,31 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     padding: 6px 8px;
 }
 
+/* K6b: die Gruppe „Dezentrale Kaeltedeckung" - dieselbe Flaeche wie die zwei Spalten darueber; die Tafel rollt im
+   schmalen Fenster quer in ihrer Huelle, statt Spalten abzuschneiden. */
+.epos-simkonfig-kaelte-dezentral {
+    margin-top: 6px;
+    background: var(--epos-flaeche);
+    padding: 8px;
+    border-radius: var(--epos-ecke);
+    min-width: 0;
+}
+
+.epos-simkonfig-kaelte-dezentral-huelle {
+    overflow-x: auto;
+}
+
+/* K6b-N: „Bearbeiten…" je Zeile - der Knopf bricht nicht um. Die Tafel ist ein Hausraster (.epos-raster); die
+   Jahressumme steht rechtsbuendig wie die Zahlen der Ergebnistafeln. */
+.epos-simkonfig-kaelte-dezentral-bearbeiten {
+    white-space: nowrap;
+}
+
+.epos-simkonfig-kaelte-dezentral-tabelle th.epos-zahl,
+.epos-simkonfig-kaelte-dezentral-tabelle td.epos-zahl {
+    text-align: right;
+}
+
 .epos-simkonfig-kaelte-parameter {
     display: flex;
     flex-direction: column;

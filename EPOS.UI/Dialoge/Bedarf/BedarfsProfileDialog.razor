@@ -367,7 +367,7 @@
        Abbrechen verwirft. *@
     @if (DeckungSichtbar && _deckungArbeit is not null)
     {
-        <DeckungsartFelder Daten="@_deckungArbeit" Stromtraeger="@Stromtraeger" Klappbar="true" />
+        <DeckungsartFelder Daten="@_deckungArbeit" Stromtraeger="@Stromtraeger" ProjektStromtraeger="@ProjektStromtraeger" Klappbar="true" />
     }
     }
     </div>
@@ -550,6 +550,9 @@
 
     /// <summary>Die Stromträger des Projekts (Id, Anzeigetext) — der Kühlträger der Feldgruppe „Deckung“ (K5b).</summary>
     [Parameter] public IReadOnlyList<(int Id, string Text)> Stromtraeger { get; set; } = Array.Empty<(int, string)>();
+
+    /// <summary>K6b: der Stromträger des Projekts — der eigene Zähler wirkt nur bei abweichendem Kühlträger (E34).</summary>
+    [Parameter] public int ProjektStromtraeger { get; set; }
 
     /// <summary>Die Ablehnung „Split ohne EER“ (<c>DECK_MSG_OHNE_EER</c>); der Bezeichner der Zeile folgt in Klammern.</summary>
     [Parameter] public string MeldungDeckungOhneEer { get; set; } = Resource.DECK_MSG_OHNE_EER;
