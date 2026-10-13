@@ -1050,6 +1050,9 @@ namespace EPOS.Kern.Tests
                 // Schritt BauteilkatalogHaustechnikSchema.SCHRITT (BK-3c, E134): Klasse Haustechnik in der Pruefklausel von
                 // Klasse_Code (Neubau der vier Kopftabellen). Wiederholbar, ergebnisneutral.
                 BauteilkatalogHaustechnikSchema.Ausfuehren(null);
+                // Schritt ZonenLastfelderSchema.SCHRITT (DA-2, E138 F5): Aussenluft je Person, Licht und Waerme je Person an
+                // Tab_Zone und Tab_Zone_STAMM, leer, reines DDL. Wiederholbar, ergebnisneutral.
+                ZonenLastfelderSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

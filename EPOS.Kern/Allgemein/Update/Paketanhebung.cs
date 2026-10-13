@@ -447,6 +447,9 @@ namespace WindowsFormsApplication1
             // die Prüfklausel am Ziel.
             new Stufe(BauteilkatalogHaustechnikSchema.SCHRITT, Art.Ddl,
                       "Klasse Haustechnik in Baustoff- und Aufbaukatalog (E134)"),
+            // Ein älteres Paket bringt seine Zonen ohne die Lastfelder; der Schritt legt die Spalten am Ziel leer an.
+            new Stufe(ZonenLastfelderSchema.SCHRITT, Art.Ddl,
+                      "Außenluft je Person, Lichtleistung und Wärme je Person an der Zone (DA-2, E138)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

@@ -5490,6 +5490,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_BAUTEILKATALOG_HAUSTECHNIK = BauteilkatalogHaustechnikSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="ZonenLastfelderSchema.SCHRITT"/> — <b>Lastfelder der Zone</b> (DA-2, E138 F5): <c>Aussenluft_Person</c>,
+        /// <c>Licht_W_m2</c> und <c>Personen_Waerme_W</c> an <c>Tab_Zone</c> und <c>Tab_Zone_STAMM</c>, leer.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Rechenweg liest keine der drei Spalten.</para>
+        /// </summary>
+        public const int SCHRITT_ZONEN_LASTFELDER = ZonenLastfelderSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -8055,6 +8063,12 @@ namespace WindowsFormsApplication1
                         "Werkstoffe und Zubehoer der Haustechnik liessen sich im Katalog nicht als eigene Klasse fuehren und nicht " +
                         "ausblenden. KEIN Rechenergebnis aendert sich - der Bauteilweg liest keine Gliederung.",
                         Schritt_BauteilkatalogHaustechnik),
+            // DA-2: Lastfelder der Zone. Quelle ist ZonenLastfelderSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_ZONEN_LASTFELDER,
+                        "Tab_Zone, Tab_Zone_STAMM: Aussenluft_Person, Licht_W_m2, Personen_Waerme_W (leer)",
+                        "Aussenluft je Person, Lichtleistung und Waerme je Person einer Zone haetten beim Datenaustausch keinen " +
+                        "Platz und gingen im Rundlauf verloren. KEIN Rechenergebnis aendert sich - alle Spalten stehen leer.",
+                        Schritt_ZonenLastfelder),
         };
 
         /// <summary>
@@ -15659,6 +15673,59 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Klasse Haustechnik - " + (handgriffe == 0 ? "stand bereits." : handgriffe + " Tabelle(n) neu gebaut.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Lastfelder der Zone" — Anlass und Wirkung stehen bei <see cref="SCHRITT_ZONEN_LASTFELDER"/>, die
+        /// Anweisungen bei <see cref="ZonenLastfelderSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_ZonenLastfelder(Lauf l)
+        {
+            string nr = ZonenLastfelderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ZonenLastfelderSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = ZonenLastfelderSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!ZonenLastfelderSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Lastfelder der Zone stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Lastfelder der Zone - " + (handgriffe == 0 ? "standen bereits." : handgriffe + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

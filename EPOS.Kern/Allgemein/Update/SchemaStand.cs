@@ -1050,7 +1050,10 @@ namespace WindowsFormsApplication1
         /// die Klasse <c>HAUSTECHNIK</c> in der Prüfklausel von <c>Klasse_Code</c> an Baustoff- und Aufbaukatalog samt
         /// Projektkopien (<see cref="BauteilkatalogHaustechnikSchema"/>). <b>Ergebnisneutral:</b> Der Bauteilweg liest keine
         /// Gliederung.
-        public const int Zielversion = BauteilkatalogHaustechnikSchema.SCHRITT;
+        /// Danach, mit den LASTFELDERN DER ZONE (DA-2, E138 F5), steht das Ziel auf <see cref="ZonenLastfelderSchema.SCHRITT"/>:
+        /// <c>Aussenluft_Person</c>, <c>Licht_W_m2</c> und <c>Personen_Waerme_W</c> an <c>Tab_Zone</c> und <c>Tab_Zone_STAMM</c>
+        /// (<see cref="ZonenLastfelderSchema"/>). <b>Ergebnisneutral:</b> Der Rechenweg liest keine der drei Spalten.
+        public const int Zielversion = ZonenLastfelderSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
