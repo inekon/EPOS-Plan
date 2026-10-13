@@ -57,8 +57,7 @@ namespace EPOS.Kern.Tests
             PersonenJeWe = 2.5,
             Topologie = ZapfTopologie.Frischwasserstation,
             Zirkulation = false,
-            Ferienbeginn = new int?[] { 200, null, null, null },
-            Ferienende = new int?[] { 220, null, null, null },
+            Ferien = Zonenferienprobe.Liste(new int?[] { 200, null, null, null }, new int?[] { 220, null, null, null }),
             Jahresmesswert = 30000.0,
             JahresmesswertEinheit = ZapfMesswerteinheit.KwhJeJahr,
             JahresmesswertBilanzgrenze = ZapfBilanzgrenze.Zapfstelle,
@@ -102,9 +101,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(8.0, kopie.Bezugsmenge);
             Assert.Equal(ZapfNiveau.Mittel, kopie.Niveau);
             Assert.Equal(2.5, kopie.PersonenJeWe);
-            Assert.Equal(200, kopie.Ferienbeginn[0]);
+            Assert.Equal(200, kopie.Ferien[0].Beginn);
             Assert.All(kopie.Wohnungen, w => Assert.Equal(0, w.Id));
-            Assert.NotSame(stand.Zonen[0].Ferienbeginn, kopie.Ferienbeginn);
+            Assert.NotSame(stand.Zonen[0].Ferien, kopie.Ferien);
 
             // Die bestehende Zone: Id und alles Übrige bleiben, die vier Felder und die
             // Reihenfolge sind neu, der Name ist getrimmt.

@@ -35,7 +35,7 @@ namespace EPOS.Kern.Tests
         {
             Nutzungsart n = Art(monate: new[] { 1.5, 1.5, 1.2, 1.0, 0.8, 0.6, 0.6, 0.6, 0.8, 1.0, 1.2, 1.2 },
                                 ferienfaktor: 0.5);
-            ZonenStand z = Zone() with { Ferienbeginn = new int?[] { 200, null, null, null }, Ferienende = new int?[] { 220, null, null, null } };
+            ZonenStand z = Zone() with { Ferien = Zonenferienprobe.Liste(new int?[] { 200, null, null, null }, new int?[] { 220, null, null, null }) };
             var (s, k, kw) = Aufbau(n, z);
             double[] tage = Formvektor.Tagesmengen(12345.0, s, k, 0, kw);
             Assert.True(Relativ(tage.Sum(), 12345.0) < 1e-12);
@@ -94,7 +94,7 @@ namespace EPOS.Kern.Tests
         {
             Tagesgangsatz satz = Satz(6, Gang((7, 1.0)), Gang((9, 1.0)), Gang((10, 1.0)), new double[24]);
             Nutzungsart n = Art(satz: satz);
-            ZonenStand z = Zone() with { Ferienbeginn = new int?[] { 100, null, null, null }, Ferienende = new int?[] { 110, null, null, null } };
+            ZonenStand z = Zone() with { Ferien = Zonenferienprobe.Liste(new int?[] { 100, null, null, null }, new int?[] { 110, null, null, null }) };
             var h = new List<ZapfHinweis>();
             var (s, k, kw) = Aufbau(n, z, h);
             Assert.Contains(h, x => x.Code == "TAGESGANG_LEER");
@@ -107,7 +107,7 @@ namespace EPOS.Kern.Tests
         public void Der_Ruhetag_traegt_Ferienfaktor_mal_Wochenmittel_sonst_die_Sonntagsmenge()
         {
             // Monate und Kaltwasser flach, damit nur das Tagesgewicht zählt.
-            ZonenStand z = Zone() with { Ferienbeginn = new int?[] { 15, null, null, null }, Ferienende = new int?[] { 15, null, null, null } };
+            ZonenStand z = Zone() with { Ferien = Zonenferienprobe.Liste(new int?[] { 15, null, null, null }, new int?[] { 15, null, null, null }) };
             double[] woche = { 0.2, 0.2, 0.2, 0.1, 0.1, 0.1, 0.1 };
             ZapfTagtyp[] k = Zapfkalender.Bilden(0, We(0), Zapfkalender.FensterDerZone(z));
 
@@ -160,7 +160,7 @@ namespace EPOS.Kern.Tests
 
             // Nur Werktage gewichtet, aber alle Tage Ferien -> nichts zu verteilen.
             Nutzungsart werktags = Art(woche: new[] { 0.2, 0.2, 0.2, 0.2, 0.2, 0.0, 0.0 }, ferienfaktor: 0.0);
-            ZonenStand ferien = Zone() with { Ferienbeginn = new int?[] { 1, null, null, null }, Ferienende = new int?[] { 365, null, null, null } };
+            ZonenStand ferien = Zone() with { Ferien = Zonenferienprobe.Liste(new int?[] { 1, null, null, null }, new int?[] { 365, null, null, null }) };
             var (s, k, kw) = Aufbau(werktags, ferien);
             Assert.Equal(ZapfEingabefehler.KeineVerteilung,
                 Assert.Throws<ZapfprofilEingabeException>(() => Formvektor.Tagesmengen(10.0, s, k, 0, kw)).Fehler);

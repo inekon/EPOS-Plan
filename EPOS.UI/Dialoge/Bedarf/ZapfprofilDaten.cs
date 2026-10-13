@@ -147,7 +147,15 @@ public enum ZapfprofilVorschauZustand
 /// allgemeinen Meldungen, nie an zwei Zonen.
 /// </param>
 public sealed record ZapfprofilMeldung(string Kennung, string Zone, string Text, ZapfprofilMeldungsart Art,
-                                       string Klartext = "", int? Position = null);
+                                       string Klartext = "", int? Position = null)
+{
+    /// <summary>
+    /// Steht der Hinweis erst ab der Stufe Erweitert (ZB8)? Die Hülle setzt es nach EINER Regel
+    /// (<c>ZapfprofilHuelle.ErstAbErweitert</c>): In der Stufe Einfach stehen nur Hinweise, die der
+    /// Anwender dort beheben kann. Eine Ablehnung steht immer; ohne Angabe steht der Hinweis in jeder Stufe.
+    /// </summary>
+    public bool AbErweitert { get; init; }
+}
 
 /// <summary>
 /// Eine Nutzungsart des Katalogs, wie die Auswahl sie zeigt (5.3): Name, Bezugsart samt
@@ -285,22 +293,50 @@ public sealed class ZapfprofilWohnungDaten
 }
 
 /// <summary>
-/// Ein Ferienzeitraum einer Zone (5.3 „Kalender / Ferien", vier Zeiträume) als Tag und Monat —
-/// die Hülle rechnet ihn in den Jahrestag des Kerns um (Rechenjahr ohne Schaltjahr). Leer =
-/// keine Angabe; ein Beginn ohne Ende gilt nicht.
+/// Ein eigener Ferienzeitraum einer Zone (Karte „Kalender", ZB5; beliebig viele Zeiträume) — Beginn und Ende als
+/// Jahrestag 1 … 365 des Gemeinjahrs, wie der Baustein <c>Gemeinjahrdatum</c> sie führt und der Kern sie speichert.
+/// Leer = keine Angabe; ohne Beginn läuft der Zeitraum vom 1. Januar an, ohne Ende gilt er nicht (die Prüfung am OK
+/// nennt ihn), ein Beginn nach dem Ende läuft über den Jahreswechsel.
 /// </summary>
 public sealed class ZapfprofilFerienDaten
 {
-    public int? BeginnTag { get; set; }
-    public int? BeginnMonat { get; set; }
-    public int? EndeTag { get; set; }
-    public int? EndeMonat { get; set; }
+    /// <summary>Der wahlfreie Name des Zeitraums (<c>Tab_TwwZonenferien.Name</c>); <c>null</c> = keiner. Kein Belegt-Merkmal.</summary>
+    public string? Name { get; set; }
+
+    /// <summary>Der Jahrestag des Beginns (1 … 365); <c>null</c> = vom 1. Januar an.</summary>
+    public int? Von { get; set; }
+
+    /// <summary>Der Jahrestag des Endes (1 … 365); <c>null</c> = keine Angabe.</summary>
+    public int? Bis { get; set; }
 
     /// <summary>Trägt der Zeitraum irgendeine Angabe?</summary>
-    public bool Belegt => BeginnTag.HasValue || BeginnMonat.HasValue || EndeTag.HasValue || EndeMonat.HasValue;
+    public bool Belegt => Von.HasValue || Bis.HasValue;
 
     /// <summary>Eine unabhängige Kopie.</summary>
     public ZapfprofilFerienDaten Kopie() => (ZapfprofilFerienDaten)MemberwiseClone();
+}
+
+/// <summary>
+/// <b>Der Kalender eines Gebäudes des Projekts, wie eine gebundene Zone ihn liest</b> (Karte „Kalender", ZB5) — fertige
+/// Texte zum Anzeigen; die Hülle liest sie beim Öffnen einmal für alle Gebäude des Projekts aus dem Kern
+/// (<c>ZapfprofilCtrl.GebaeudekalenderDesProjekts</c>), keine Abfrage je Tastendruck.
+/// </summary>
+public sealed class ZapfprofilGebaeudekalenderDaten
+{
+    /// <summary>Die Id des Gebäudes (<c>Tab_Gebaeude.ID</c>) — dieselbe wie in <see cref="ZapfprofilDaten.Gebaeude"/>.</summary>
+    public int Id { get; set; }
+
+    /// <summary>Der Name des Gebäudes.</summary>
+    public string Name { get; set; } = "";
+
+    /// <summary>Das Wochenende als Text („Sa + So").</summary>
+    public string Wochenende { get; set; } = "";
+
+    /// <summary>Das Feiertagsland als Name („Baden-Württemberg"); leer = nur die bundeseinheitlichen Feiertage.</summary>
+    public string Feiertagsland { get; set; } = "";
+
+    /// <summary>Die Ferienzeiträume, die eine Zone ohne eigene Ferien übernimmt, je als Text („Sommer: 01.07. – 14.08.").</summary>
+    public List<string> Ferien { get; set; } = new();
 }
 
 /// <summary>
@@ -310,9 +346,6 @@ public sealed class ZapfprofilFerienDaten
 /// </summary>
 public sealed class ZapfprofilZonenangabenDaten
 {
-    /// <summary>Anzahl der Ferienzeiträume je Zone.</summary>
-    public const int FERIENZEITRAEUME = 4;
-
     /// <summary>Anzahl der Monate des Auslastungsgangs.</summary>
     public const int MONATE = 12;
 
@@ -329,8 +362,8 @@ public sealed class ZapfprofilZonenangabenDaten
     /// <summary>Zirkulation vorhanden? <c>false</c> nimmt die Zone aus dem Zirkulationsanteil (4.3).</summary>
     public bool Zirkulation { get; set; } = true;
 
-    /// <summary>Die vier Ferienzeiträume der Zone.</summary>
-    public List<ZapfprofilFerienDaten> Ferien { get; set; } = NeueFerien();
+    /// <summary>Die eigenen Ferienzeiträume der Zone in ihrer Reihenfolge, beliebig viele; leer = keine.</summary>
+    public List<ZapfprofilFerienDaten> Ferien { get; set; } = new();
 
     public double? Jahresmesswert { get; set; }
     public ZapfprofilMesswerteinheit? JahresmesswertEinheit { get; set; }
@@ -355,10 +388,6 @@ public sealed class ZapfprofilZonenangabenDaten
 
     /// <summary>Die Wohnungstabelle (nur Wohnen); leer = keine.</summary>
     public List<ZapfprofilWohnungDaten> Wohnungen { get; set; } = new();
-
-    /// <summary>Vier leere Ferienzeiträume.</summary>
-    public static List<ZapfprofilFerienDaten> NeueFerien()
-        => Enumerable.Range(0, FERIENZEITRAEUME).Select(_ => new ZapfprofilFerienDaten()).ToList();
 
     /// <summary>
     /// Wie viele Größen die Zone überschreibt (Zähler „n Werte überschrieben") — jede nullbare
@@ -400,7 +429,7 @@ public sealed class ZapfprofilZonenangabenDaten
     public ZapfprofilZonenangabenDaten Kopie()
     {
         var k = (ZapfprofilZonenangabenDaten)MemberwiseClone();
-        k.Ferien = (Ferien ?? NeueFerien()).Select(f => f?.Kopie() ?? new ZapfprofilFerienDaten()).ToList();
+        k.Ferien = (Ferien ?? new List<ZapfprofilFerienDaten>()).Select(f => f?.Kopie() ?? new ZapfprofilFerienDaten()).ToList();
         k.Auslastung = (double?[])(Auslastung ?? new double?[MONATE]).Clone();
         k.Wohnungen = (Wohnungen ?? new List<ZapfprofilWohnungDaten>()).Select(w => w.Kopie()).ToList();
         return k;
@@ -776,6 +805,13 @@ public sealed class ZapfprofilAnsichtDaten
     /// <summary>Zwölf Monatssummen der Zirkulation [kWh].</summary>
     public double[] MonateZirkulationKwh { get; set; } = new double[12];
 
+    /// <summary>
+    /// Der Tagtyp je Kalendertag (365 Werte: 1 Werktag, 2 Samstag, 3 Sonn- und Feiertag, 4 Ferien) — der wirksame
+    /// Kalender des Rechenwegs (Zapfkalender der Zone samt Ferien); <c>null</c> = keiner. Das Jahresraster der Karte
+    /// „Kalender" zeichnet ihn, eine zweite Regel in der Oberfläche gibt es nicht.
+    /// </summary>
+    public int[]? Tagtypen { get; set; }
+
     /// <summary>Die Kennzahlen der Ansicht.</summary>
     public ZapfprofilKennzahlenDaten Kennzahlen { get; set; } = new();
 
@@ -1068,6 +1104,9 @@ public sealed class ZapfprofilDaten
 
     /// <summary>Die Gebäude des Projekts, an die eine Zone ihren Kalender binden kann (A8).</summary>
     public List<ZapfprofilKatalogeintragDaten> Gebaeude { get; set; } = new();
+
+    /// <summary>Die Kalender dieser Gebäude (Wochenende, Feiertagsland, Ferien) für die Karte „Kalender" der Zone (ZB5).</summary>
+    public List<ZapfprofilGebaeudekalenderDaten> Gebaeudekalender { get; set; } = new();
 
     /// <summary>Die zwölf Monatsnamen in der Oberflächensprache (Auslastungsgang); leer = die Nummern.</summary>
     public List<string> Monatsnamen { get; set; } = new();
@@ -1657,7 +1696,14 @@ public sealed record ZapfprofilKategorienErgebnis(bool Ok, int IdNutzungsart, bo
 /// Hinweis einer eindeutig benannten Zone — deren Position in der Eingabe (sonst <c>null</c>).
 /// </summary>
 public sealed record ZapfprofilWarnDaten(string Kennung, string Titel, string Text, ZapfprofilWarnstufe Stufe,
-                                         int? Position = null);
+                                         int? Position = null)
+{
+    /// <summary>
+    /// Steht der Eintrag erst ab der Stufe Erweitert (ZB8)? Dieselbe Regel wie
+    /// <see cref="ZapfprofilMeldung.AbErweitert"/>; ohne Angabe steht er in jeder Stufe.
+    /// </summary>
+    public bool AbErweitert { get; init; }
+}
 
 /// <summary>
 /// <b>Eine Zeile der Karte „Herkunft"</b> (Herkunftsprotokoll des Kerns, N19): welche Größe

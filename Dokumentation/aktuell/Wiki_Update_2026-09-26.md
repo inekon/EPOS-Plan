@@ -204,6 +204,18 @@ Version beim Anwender zu erfragen (Empfehlung: Sammelversion mit K4/K5); Wiki-Qu
 - Seit 13.10.2026: Kältebedarf, der dezentral über Split-Geräte gedeckt wird, erscheint im Kältegang, in der Kältelast, in der Strombilanz als „Kühlung dezentral“, im Deckungsgrad Kälte, im Anlagenschema, in der Simulationskonfiguration und im Bericht; der Strom wird je Kühlträger und Zähler abgerechnet.
 - Seit 13.10.2026: Die Berichtsvorlagen bieten Platzhalter für den Kältebedarf aus Profilen und die dezentrale Kühlung mit Split-Geräten (Kälte, Strom, Jahres-EER, Deckungsgrad gesamt und Anteil der Kälteerzeuger).
 
+### Version 1.2.0.11 — Brauchwasser-Zapfprofil (Entwurf, Upload am 20.10.2026)
+
+Version laut Anwender (13.10.2026); die Wiki-Quellen (Programm Dokumentation/Brauchwasser-Zapfprofil, Brauchwasser) sind fortgeschrieben, ins Wiki (wiki.epos-plan.de) wird am 20.10.2026 geladen.
+
+- Seit 13.10.2026: Im Dialog Brauchwasser-Zapfprofil führt „Zone hinzufügen“ ohne Abbruch zur Wahl der Nutzungsart; eine Zone mit fehlender Angabe steht in der Liste als „unvollständig“ und nennt den nächsten Schritt.
+- Seit 13.10.2026: Der Dialog Brauchwasser-Zapfprofil gliedert die Eingaben in aufklappbare Karten, die zugeklappt ihre Werte nennen, und in die Gruppe „Gebäude und Anlage“; die Vorschau bleibt beim Rollen stehen.
+- Seit 13.10.2026: Die Karte „Kalender“ einer Zone nimmt beliebig viele eigene Ferienzeiträume auf und zeigt das Jahresraster der Zone mit den Tagtypen.
+- Seit 13.10.2026: Tagesbedarf, Ladeleistung, Zirkulationsleistung und Leitungsinhalt haben je ein Feld; leer rechnet das Programm mit seinem Vorschlag.
+- Seit 13.10.2026: Temperatur der Literanzeige und Schwelle der Stundenzählung stehen nur noch in den Einstellungen, Rubrik „Zapfprofil“.
+- Seit 13.10.2026: Der Katalogimport der Brauchwasser-Nutzungsarten spielt auch die Kennwerte nach DIN 4708 ein (Belegung je Raumzahl, Ausstattungsklassen); eine Paketvorlage liegt im Ordner „Vorlage\Katalogpaket_DIN4708“ bei.
+- Seit 13.10.2026: Für die Typtage nach VDI 4655 liegt eine Paketvorlage im Ordner „Vorlage\Typtagpaket_VDI4655“ bei.
+
 ### Version ‹Version› — Dialoge mit Katalogauswahl (Entwurf, Upload ausstehend)
 
 Version beim Anwender zu erfragen; keine Wiki-Quelle geändert (die Quellen beschreiben nur die Funktion, sie stimmt).

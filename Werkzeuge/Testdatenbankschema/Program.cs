@@ -3591,6 +3591,25 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrK6 + " - vollstaendig: " + KaeltebedarfSplitAbrechnungSchema.Vollstaendig() +
                                   " (erwartet True).");
             }
+
+            // ---- Schritt TwwZonenferienSchema.SCHRITT (ZB5, ZB-Q3 B): Zonenferien als Liste - Tab_TwwZonenferien anlegen,
+            //      die vier Spaltenpaare von Tab_TwwZone uebertragen und abbauen (Neubau mit Erhalt der IDs). Aus DERSELBEN
+            //      Quelle wie SchemaMigration.Schritt_TwwZonenferien. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: der Zapfkalender rechnet ueber die Liste dieselben Fenster.
+            string nrZf = TwwZonenferienSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrZf + " - Zonenferien als Liste: " +
+                              (TwwZonenferienSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtZf = new List<string>();
+                tabellen += TwwZonenferienSchema.Ausfuehren(berichtZf);
+                foreach (string zeile in berichtZf)
+                    Console.WriteLine("Schritt " + nrZf + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrZf + " - vollstaendig: " + TwwZonenferienSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

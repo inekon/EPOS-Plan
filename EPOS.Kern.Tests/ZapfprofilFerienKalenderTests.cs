@@ -49,8 +49,7 @@ namespace EPOS.Kern.Tests
                                        Kalenderangabe.AlsWochentag(7)))).Ok);
 
             Zapfprofileingang e = Eingang(gebaeude);
-            Assert.Equal(new int?[] { 90, 355, null, null }, e.Zonen[0].Ferienbeginn);
-            Assert.Equal(new int?[] { 100, 6, null, null }, e.Zonen[0].Ferienende);
+            Assert.Equal(Zonenferienprobe.Paare(new int?[] { 90, 355, null, null }, new int?[] { 100, 6, null, null }), Zonenferienprobe.Paare(e.Zonen[0]));
             Assert.Empty(e.Vorhinweise);
 
             // Im Rechenweg: drei Fenster, die Winterferien über den Jahreswechsel geteilt.
@@ -70,8 +69,7 @@ namespace EPOS.Kern.Tests
             Assert.True(new KonditionierungCtrl().Schreiben(KonditionierungCtrl.Eigner.Gebaeude(gebaeude), SechsFerien()).Ok);
 
             Zapfprofileingang e = Eingang(gebaeude);
-            Assert.Equal(new int?[] { 250, 240, 300, 200, 80, 350 }, e.Zonen[0].Ferienbeginn);
-            Assert.Equal(new int?[] { 255, 245, 305, 210, 90, 5 }, e.Zonen[0].Ferienende);
+            Assert.Equal(Zonenferienprobe.Paare(new int?[] { 250, 240, 300, 200, 80, 350 }, new int?[] { 255, 245, 305, 210, 90, 5 }), Zonenferienprobe.Paare(e.Zonen[0]));
             Assert.Empty(e.Vorhinweise);
         }
 
@@ -103,8 +101,7 @@ namespace EPOS.Kern.Tests
 
             Zapfprofileingang e = Eingang(gebaeude);
             ZonenStand z = e.Zonen[0];
-            Assert.Equal(ferien.Select(f => (int?)f.Item1), z.Ferienbeginn);
-            Assert.Equal(ferien.Select(f => (int?)f.Item2), z.Ferienende);
+            Assert.Equal(ferien.Select(f => ((int?)f.Item1, (int?)f.Item2)), Zonenferienprobe.Paare(z));
             Assert.Equal(3, z.Wochenendtage);
 
             ZapfTagtyp[] k = Zapfkalender.Bilden(0, Zapfkalender.KennzeichenDerZone(0, new bool[365], z), Zapfkalender.FensterDerZone(z));
@@ -204,7 +201,7 @@ namespace EPOS.Kern.Tests
             var frei = new ZonenStand
             {
                 IdNutzungsart = Nutzung("Testnutzung B (fiktiv)"), Name = "Freie Zone", Bezugsmenge = 20.0,
-                Ferienbeginn = new int?[4], Ferienende = new int?[4],
+                Ferien = Zonenferienprobe.Liste(new int?[4], new int?[4]),
             };
             Zapfprofileingang e = ZapfprofilCtrl.Eingang(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { frei }, null),
                                                          0, new bool[365]);
@@ -262,8 +259,7 @@ namespace EPOS.Kern.Tests
             Assert.True(new KonditionierungCtrl().Schreiben(KonditionierungCtrl.Eigner.Gebaeude(gebaeude), Heizkalender()).Ok);
 
             Zapfprofileingang e = Eingang(gebaeude);
-            Assert.Equal(new int?[4], e.Zonen[0].Ferienbeginn);
-            Assert.Equal(new int?[4], e.Zonen[0].Ferienende);
+            Assert.Equal(Zonenferienprobe.Paare(new int?[4], new int?[4]), Zonenferienprobe.Paare(e.Zonen[0]));
             Assert.Empty(e.Vorhinweise);
         }
 
@@ -276,8 +272,7 @@ namespace EPOS.Kern.Tests
             Assert.True(new KonditionierungCtrl().Schreiben(KonditionierungCtrl.Eigner.Gebaeude(gebaeude), SechsFerien()).Ok);
 
             Zapfprofileingang e = Eingang(gebaeude, new int?[] { 100, null, null, null }, new int?[] { 110, null, null, null });
-            Assert.Equal(new int?[] { 100, null, null, null }, e.Zonen[0].Ferienbeginn);
-            Assert.Equal(new int?[] { 110, null, null, null }, e.Zonen[0].Ferienende);
+            Assert.Equal(Zonenferienprobe.Paare(new int?[] { 100, null, null, null }, new int?[] { 110, null, null, null }), Zonenferienprobe.Paare(e.Zonen[0]));
             Assert.Empty(e.Vorhinweise);
         }
 
@@ -295,11 +290,10 @@ namespace EPOS.Kern.Tests
             Assert.True(new KonditionierungCtrl().Schreiben(KonditionierungCtrl.Eigner.Gebaeude(gebaeude), kuehlen).Ok);
 
             Zapfprofileingang e = Eingang(gebaeude);
-            Assert.Equal(new int?[] { 200, 0, 0, 0 }, e.Zonen[0].Ferienbeginn);
-            Assert.Equal(new int?[] { 210, 0, 0, 0 }, e.Zonen[0].Ferienende);
+            Assert.Equal(Zonenferienprobe.Paare(new int?[] { 200 }, new int?[] { 210 }), Zonenferienprobe.Paare(e.Zonen[0]));
 
             Assert.True(DataRepository.ExecuteSQL("UPDATE Tab_Gebaeude SET Ferien = 0.0 WHERE ID = ?", new DbParam("@id", gebaeude)));
-            Assert.Equal(new int?[4], Eingang(gebaeude).Zonen[0].Ferienbeginn);
+            Assert.Empty(Eingang(gebaeude).Zonen[0].Ferien);
         }
 
         // =================================================================================
@@ -342,8 +336,7 @@ namespace EPOS.Kern.Tests
                 IdGebaeude = gebaeude,
                 Name = "Ferienzone",
                 Bezugsmenge = 20.0,
-                Ferienbeginn = eigeneBeginne ?? new int?[4],
-                Ferienende = eigeneEnden ?? new int?[4],
+                Ferien = Zonenferienprobe.Liste(eigeneBeginne ?? new int?[4], eigeneEnden ?? new int?[4]),
             };
             return ZapfprofilCtrl.Eingang(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { zone }, null),
                                           0, new bool[365]);

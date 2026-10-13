@@ -165,6 +165,20 @@ namespace EPOS.Kern.Tests
             => Kategorien.Sum(k => Anzahl.TryGetValue((zone, art, k.Code), out int n) ? n : 0);
 
         // =================================================================================
+        //  Der Ausgangszustand ohne Typtage
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Leert die eingespielten Typtage der Arbeitskopie.</b> Die Testdatenbank trägt den erfundenen Typtagsatz des
+        /// Referenzprojekts 1069 (ZB12, <c>Referenzlaeufe/Skripte/referenzprojekte_zapfprofil_optionen.cs</c>); ein Fall,
+        /// der ohne eingespielte Typtage beginnt, stellt diesen Zustand hiermit selbst her. Ohne Tabelle geschieht nichts.
+        /// </summary>
+        internal static void OhneTyptage()
+        {
+            if (TwwTyptagCtrl.TabelleVorhanden()) TwwTyptagCtrl.Loeschen();
+        }
+
+        // =================================================================================
         //  Das Paket aus der abgeleiteten JSON-Datei (ZU19)
         // =================================================================================
 

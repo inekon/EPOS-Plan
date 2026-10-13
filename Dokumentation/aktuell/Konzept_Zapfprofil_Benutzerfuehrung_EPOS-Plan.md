@@ -9,11 +9,12 @@ Empfehlung (keine Vorbelegung). Dazu kamen am selben Tag ZB11, die Paketvorlage 
 und ZB12, je ein Referenzprojekt für sechs Optionen des Zapfprofils, alle in der CI (`kern.yml`). Die Logbuch-Einträge
 dieser Überarbeitung tragen die Version 1.2.0.11; ins Wiki (wiki.epos-plan.de) wird am 20.10.2026 hochgeladen.
 
-**Umsetzungsstand:** umgesetzt sind ZB1 (W1), ZB2, ZB4 (a), ZB6 und ZB10 (W2) sowie ZB7 und ZB11 (W5) — Statuszeilen und
-Protokolle unter `Dokumentation/ueberholt/Protokolle/Zapfprofilgenerator/2026-10-13_*`. Gebaut, aber noch nicht auf dem
-Arbeitszweig: W3a (Schemaschritt der Zonenferien, nach dem Tausch mit der Sitzung K6 **Nummer 224**, hängt an 223) und W3b
-(Kalenderkarte); sie folgen, sobald die Schritte 222 und 223 der Nachbarsitzungen auf origin liegen. W4 ist in Arbeit, W7 folgt
-auf W3a.
+**Umsetzungsstand:** umgesetzt sind ZB1 (W1), ZB2, ZB4 (a), ZB6 und ZB10 (W2), ZB7 und ZB11 (W5), ZB5 mit dem
+Schemaschritt 224 der Zonenferien (W3a) und der Kalenderkarte (W3b), ZB3, ZB4 (b), ZB8 und ZB9 (W4) sowie ZB12 mit den
+Referenzprojekten 1066 bis 1071 und der Basis R53 (W7) — Statuszeilen und Protokolle unter
+`Dokumentation/ueberholt/Protokolle/Zapfprofilgenerator/2026-10-13_*`. Offen ist W6: Die Wiki-Quellen sind fortgeschrieben,
+der Logbuch-Abschnitt 1.2.0.11 steht als Entwurf in [`Wiki_Update_2026-09-26.md`](Wiki_Update_2026-09-26.md); hochgeladen
+wird am 20.10.2026, danach wandert dieses Konzept nach `ueberholt/`.
 
 **Anlass:** Anwenderauftrag vom 13.10.2026 mit Bildschirmfoto aus Visual Studio
 (`ZapfprofilEingabeException` „Die Nutzungsart der Zone „Zone 1“ steht nicht (mehr) im Katalog — bitte
@@ -155,7 +156,7 @@ gleich, solange eine Zone nicht mehr als vier Zeiträume trägt.
 |---|---|---|
 | W1 | ZB1 | Kern-Filter grün, Wache ohne Wurf, Referenzlauf PASS ohne neue Basis |
 | W2 | ZB2, ZB4 (a), ZB6, ZB8, ZB10 — Führung, waagerechte Wahl, Texte | bunit je Zustand, `StilblattTests`, Rasterprobe für die Wohnungstabelle (N13 (u): sie rollt im Block noch quer) |
-| W3a | ZB5, Datenteil: Schemaschritt 223 Zonenferien (ZB‑Q3 B), Lesen, Speichern, Projektkopie und -transfer, Zapfkalender über die Liste; die Maske bleibt bis W3b, wie sie ist | Schemakette und Testdatenbank über das Schemawerkzeug (vorher den Nachbarsitzungen gemeldet), Referenzlauf PASS ohne neue Basis; parallel zu W2 |
+| W3a | ZB5, Datenteil: Schemaschritt 224 Zonenferien (ZB‑Q3 B), Lesen, Speichern, Projektkopie und -transfer, Zapfkalender über die Liste; die Maske bleibt bis W3b, wie sie ist | Schemakette und Testdatenbank über das Schemawerkzeug (vorher den Nachbarsitzungen gemeldet), Referenzlauf PASS ohne neue Basis; parallel zu W2 |
 | W7 | ZB12 Referenzprojekte 1066–1071 und Basis R53; die sechs Projekte in die Projektliste des Referenzlaufs in `kern.yml` | Saatskript wiederholbar, Testdatenbank auf dem Stand nach W3a (vorher den Nachbarsitzungen gemeldet), Wache je Projekt, Referenzlauf der vollen Suite PASS gegen R52 für die alten Projekte, Basis R53 eingefroren und in `Referenzlaeufe/LIESMICH.md` begründet |
 | W3b | ZB5, Maske: Karte „Kalender“ mit Ferienliste (Datumsfelder wie im Gebäudedialog) und Jahresraster | bunit, Kalenderprobe im Browser |
 | W4 | ZB3, ZB4 (b), ZB9 — Aufbau in Karten und Gebäudegruppe, haftende Vorschau, ein Feld je Wert | bunit, Fensterprobe, Sichtprobe der drei Stufen; Höhe der Stufe Erweitert unter der Hälfte von heute |

@@ -25961,7 +25961,64 @@ Möchten Sie das zulassen?</value>
     <value>{0} MWh/a Zapfung</value>
   </data>
   <data name="ZPG_GRP_ZONE" xml:space="preserve">
-    <value>{0} · Nutzung</value>
+    <value>Zone „{0}“</value>
+  </data>
+  <data name="ZPG_GRP_GEBAEUDE_ANLAGE" xml:space="preserve">
+    <value>Gebäude und Anlage</value>
+  </data>
+  <data name="ZPG_KARTE_NUTZUNG" xml:space="preserve">
+    <value>Nutzung</value>
+  </data>
+  <data name="ZPG_KARTE_MESSWERT" xml:space="preserve">
+    <value>Messwert</value>
+  </data>
+  <data name="ZPG_SUMME_WOHNUNGEN" xml:space="preserve">
+    <value>{0} WE aus der Wohnungstabelle</value>
+  </data>
+  <data name="ZPG_SUMME_PERSONEN_JE_WE" xml:space="preserve">
+    <value>{0} Personen je WE</value>
+  </data>
+  <data name="ZPG_SUMME_ZIRK_JA" xml:space="preserve">
+    <value>Zirkulation ja</value>
+  </data>
+  <data name="ZPG_SUMME_ZIRK_NEIN" xml:space="preserve">
+    <value>Zirkulation nein</value>
+  </data>
+  <data name="ZPG_SUMME_KEINER" xml:space="preserve">
+    <value>keiner</value>
+  </data>
+  <data name="ZPG_SUMME_KEINE_ANGABE" xml:space="preserve">
+    <value>keine Angabe</value>
+  </data>
+  <data name="ZPG_SUMME_EIGENE_WERTE" xml:space="preserve">
+    <value>{0} eigene Werte</value>
+  </data>
+  <data name="ZPG_SUMME_EIGENER_WERT" xml:space="preserve">
+    <value>1 eigener Wert</value>
+  </data>
+  <data name="ZPG_SUMME_VORGABEN" xml:space="preserve">
+    <value>Vorgaben</value>
+  </data>
+  <data name="ZPG_SUMME_ANGESETZT" xml:space="preserve">
+    <value>{0} {1} ({2})</value>
+  </data>
+  <data name="ZPG_SUMME_LADEFENSTER" xml:space="preserve">
+    <value>Ladefenster {0} h ab {1} Uhr</value>
+  </data>
+  <data name="ZPG_SUMME_SEED" xml:space="preserve">
+    <value>Seed {0}</value>
+  </data>
+  <data name="ZPG_SUMME_TYPTAGE" xml:space="preserve">
+    <value>Typtage</value>
+  </data>
+  <data name="ZPG_HINW_EINWERT" xml:space="preserve">
+    <value>Leer = Vorschlag (grau im Feld); ein eingetragener Wert gilt als manueller Wert.</value>
+  </data>
+  <data name="ZPG_BTN_KATALOG" xml:space="preserve">
+    <value>Katalog…</value>
+  </data>
+  <data name="ZPG_KATALOG_BLATT_HINWEIS" xml:space="preserve">
+    <value>Eine Zeile wählen setzt die Nutzungsart der Zone „{0}“.</value>
   </data>
   <data name="ZPG_SP_ZONE" xml:space="preserve">
     <value>Zone</value>
@@ -31310,7 +31367,7 @@ Möchten Sie das zulassen?</value>
     <value>Zone „{0}“: Wohnungstyp {1} braucht eine Anzahl größer 0.</value>
   </data>
   <data name="ZPG_MSG_FERIEN_UNGUELTIG" xml:space="preserve">
-    <value>Zone „{0}“: Ferienzeitraum {1} braucht ein Ende und für Beginn und Ende je einen gültigen Tag und Monat.</value>
+    <value>Zone „{0}“: Ferienzeitraum {1} braucht ein Ende („bis“); Beginn und Ende sind Tage des Jahres ohne Schalttag.</value>
   </data>
   <data name="ZPG_MSG_MESSWERT_NICHT_POSITIV" xml:space="preserve">
     <value>Zone „{0}“: Der Jahresmesswert muss größer 0 sein.</value>
@@ -31379,7 +31436,7 @@ Möchten Sie das zulassen?</value>
     <value>Wirksam aus der Wohnungstabelle: {0} {1} — OK übernimmt sie als Bezugsgröße.</value>
   </data>
   <data name="ZPG_GRP_BELEGUNG" xml:space="preserve">
-    <value>Belegung und Anlage</value>
+    <value>Belegung</value>
   </data>
   <data name="ZPG_LBL_WOHNUNGSTABELLE" xml:space="preserve">
     <value>Wohnungen (wahlweise)</value>
@@ -31478,37 +31535,127 @@ Möchten Sie das zulassen?</value>
     <value>Kalender der Nutzungsart · {0}</value>
   </data>
   <data name="ZPG_KALENDER_GEBAEUDE" xml:space="preserve">
-    <value>Ferien des Gebäudes {0}</value>
+    <value>Gebäude „{0}“</value>
   </data>
   <data name="ZPG_HINW_KALENDER" xml:space="preserve">
-    <value>Vorgabe · Kalender der Nutzungsart; ein Gebäude belegt Ferien und Fläche nur vor — eigene Ferien der Zone gehen vor.</value>
+    <value>Die Quelle bestimmt Wochenende, Feiertage und Ferien der Zone: der Kalender der Nutzungsart oder ein Gebäude des Projekts. Ein Gebäude belegt Ferien und Fläche nur vor.</value>
   </data>
   <data name="ZPG_LBL_FERIEN" xml:space="preserve">
-    <value>Ferienzeitraum {0}</value>
-  </data>
-  <data name="ZPG_LBL_BEGINN_TAG" xml:space="preserve">
-    <value>Beginn Tag</value>
-  </data>
-  <data name="ZPG_LBL_BEGINN_MONAT" xml:space="preserve">
-    <value>Beginn Monat</value>
-  </data>
-  <data name="ZPG_LBL_ENDE_TAG" xml:space="preserve">
-    <value>Ende Tag</value>
-  </data>
-  <data name="ZPG_LBL_ENDE_MONAT" xml:space="preserve">
-    <value>Ende Monat</value>
+    <value>Ferien {0}</value>
   </data>
   <data name="ZPG_HINW_FERIEN" xml:space="preserve">
-    <value>Leer = keine Ferien. Ein Zeitraum über den Jahreswechsel beginnt im Dezember; ohne Beginn läuft er vom 1. Januar an. Gerechnet wird im Jahr ohne Schalttag.</value>
+    <value>Eigene Ferien der Zone gehen vor: Trägt die Zone einen Zeitraum, gelten die Ferien des Gebäudes nicht. Ein Zeitraum zählt, sobald er ein Ende hat; über den Jahreswechsel beginnt er im Dezember, ohne Beginn läuft er vom 1. Januar an. Gerechnet wird im Jahr ohne Schalttag.</value>
   </data>
-  <data name="ZPG_LBL_BUNDESLAND" xml:space="preserve">
-    <value>Bundesland</value>
+  <data name="ZPG_LBL_KAL_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
   </data>
-  <data name="ZPG_BUNDESLAND_KLIMAREGION" xml:space="preserve">
-    <value>wie Klimaregion</value>
+  <data name="ZPG_KAL_AUS_GEBAEUDE" xml:space="preserve">
+    <value>aus dem Gebäude „{0}“</value>
   </data>
-  <data name="ZPG_GRUND_BUNDESLAND" xml:space="preserve">
-    <value>Wirkt erst mit einer Kalendertabelle je Bundesland; bis dahin gelten Wochenende und Feiertage der Klimaregion.</value>
+  <data name="ZPG_KAL_WOCHENENDE" xml:space="preserve">
+    <value>Wochenende</value>
+  </data>
+  <data name="ZPG_KAL_FEIERTAGE" xml:space="preserve">
+    <value>Feiertage</value>
+  </data>
+  <data name="ZPG_KAL_FERIEN" xml:space="preserve">
+    <value>Ferien</value>
+  </data>
+  <data name="ZPG_KAL_BUNDESEINHEITLICH" xml:space="preserve">
+    <value>nur bundeseinheitliche</value>
+  </data>
+  <data name="ZPG_KAL_KEINE_FERIEN" xml:space="preserve">
+    <value>keine</value>
+  </data>
+  <data name="ZPG_KAL_FERIEN_ZONE_VOR" xml:space="preserve">
+    <value>Die Zone trägt eigene Ferien; die Ferien des Gebäudes gelten nicht.</value>
+  </data>
+  <data name="ZPG_KAL_FERIENTEXT" xml:space="preserve">
+    <value>{0}: {1} – {2}</value>
+  </data>
+  <data name="ZPG_KAL_SUM_GEBAEUDE" xml:space="preserve">
+    <value>wie Gebäude „{0}“</value>
+  </data>
+  <data name="ZPG_KAL_SUM_NUTZUNGSART" xml:space="preserve">
+    <value>Kalender der Nutzungsart</value>
+  </data>
+  <data name="ZPG_KAL_SUM_FERIEN" xml:space="preserve">
+    <value>{0} Ferienzeiträume</value>
+  </data>
+  <data name="ZPG_KAL_SUM_FERIEN_EINS" xml:space="preserve">
+    <value>1 Ferienzeitraum</value>
+  </data>
+  <data name="ZPG_KAL_SUM_EIGENE" xml:space="preserve">
+    <value>{0} eigene Ferienzeiträume</value>
+  </data>
+  <data name="ZPG_KAL_SUM_EIGENE_EINS" xml:space="preserve">
+    <value>1 eigener Ferienzeitraum</value>
+  </data>
+  <data name="ZPG_KAL_SUM_KEINE_EIGENEN" xml:space="preserve">
+    <value>keine eigenen Ferien</value>
+  </data>
+  <data name="ZPG_KAL_SUM_KEINE" xml:space="preserve">
+    <value>keine Ferien</value>
+  </data>
+  <data name="ZPG_KAL_SUM_FEIERTAGE" xml:space="preserve">
+    <value>Feiertage {0}</value>
+  </data>
+  <data name="ZPG_KAL_SUM_BUNDESEINHEITLICH" xml:space="preserve">
+    <value>bundeseinheitliche Feiertage</value>
+  </data>
+  <data name="ZPG_LBL_KAL_EIGENE_FERIEN" xml:space="preserve">
+    <value>Eigene Ferien der Zone</value>
+  </data>
+  <data name="ZPG_LBL_FERIEN_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ZPG_LBL_FERIEN_VON" xml:space="preserve">
+    <value>von</value>
+  </data>
+  <data name="ZPG_LBL_FERIEN_BIS" xml:space="preserve">
+    <value>bis</value>
+  </data>
+  <data name="ZPG_KNOPF_FERIEN_NEU" xml:space="preserve">
+    <value>+ Ferien</value>
+  </data>
+  <data name="ZPG_KNOPF_FERIEN_ENTFERNEN" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="ZPG_LBL_JAHRESRASTER" xml:space="preserve">
+    <value>Jahresraster der Zone</value>
+  </data>
+  <data name="ZPG_TAGTYP_FERIEN" xml:space="preserve">
+    <value>Ferien</value>
+  </data>
+  <data name="ZPG_HINW_JAHRESRASTER" xml:space="preserve">
+    <value>Je Tag der Tagtyp, mit dem die Zone rechnet — aus Wochenende, Feiertagen und Ferien, wie die Vorschau sie liest.</value>
+  </data>
+  <data name="ZPG_HINW_JAHRESRASTER_OHNE" xml:space="preserve">
+    <value>Das Jahresraster erscheint mit der Vorschau.</value>
+  </data>
+  <data name="ZPG_PLATZHALTER_FERIEN_VON" xml:space="preserve">
+    <value>von TT.MM.</value>
+  </data>
+  <data name="ZPG_PLATZHALTER_FERIEN_BIS" xml:space="preserve">
+    <value>bis TT.MM.</value>
+  </data>
+  <data name="ZPG_HINW_DATUM_FORMAT" xml:space="preserve">
+    <value>Format TT.MM., ohne Jahr (Gemeinjahr), etwa 01.07. bis 14.08.</value>
+  </data>
+  <data name="ZPG_HINW_DATUM_JAHR" xml:space="preserve">
+    <value>Ohne Jahr: Das Jahr wurde verworfen, es gilt das Gemeinjahr.</value>
+  </data>
+  <data name="ZPG_MSG_GEMEINJAHR" xml:space="preserve">
+    <value>Ungültiges Datum: TT.MM. im Gemeinjahr; den 29.02. gibt es nicht.</value>
+  </data>
+  <data name="KI_DLG_ZPG_FERIEN_NAME_NAME" xml:space="preserve">
+    <value>Ferien · Name</value>
+  </data>
+  <data name="KI_DLG_ZPG_FERIEN_VON_NAME" xml:space="preserve">
+    <value>Ferien · von</value>
+  </data>
+  <data name="KI_DLG_ZPG_FERIEN_BIS_NAME" xml:space="preserve">
+    <value>Ferien · bis</value>
   </data>
   <data name="ZPG_LBL_JAHRESMESSWERT" xml:space="preserve">
     <value>Jahresmesswert</value>
@@ -31546,32 +31693,20 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_HINW_JAHRESMESSWERT" xml:space="preserve">
     <value>Leer = kein Messwert. Ein Messwert skaliert die Zone mit einem ausgewiesenen Faktor; ein Volumen gilt an der Zapfstelle und wird über Zapf- und Kaltwassertemperatur umgerechnet.</value>
   </data>
-  <data name="ZPG_GRP_SCHAETZHILFEN" xml:space="preserve">
-    <value>Tagesbedarf, Ladeleistung, Zirkulation</value>
-  </data>
-  <data name="ZPG_HINW_SCHAETZHILFEN" xml:space="preserve">
-    <value>Muster auto/manuell: Vorschlag, manueller Wert und der angesetzte Wert, der weiterverwendet wird. Der angesetzte Wert folgt aus dem Umschalter.</value>
-  </data>
   <data name="ZPG_LBL_TAGESBEDARF" xml:space="preserve">
     <value>Tagesbedarf</value>
-  </data>
-  <data name="ZPG_LBL_TAGESBEDARF_MANUELL" xml:space="preserve">
-    <value>Tagesbedarf manuell</value>
   </data>
   <data name="ZPG_LBL_VORSCHLAG" xml:space="preserve">
     <value>Vorschlag: {0} {1}</value>
   </data>
   <data name="ZPG_BTN_VORSCHLAG" xml:space="preserve">
-    <value>Als manuellen Wert übernehmen</value>
+    <value>Vorschlag übernehmen</value>
   </data>
   <data name="ZPG_HINW_VORSCHLAG_OHNE" xml:space="preserve">
     <value>Das Verfahren liefert keinen Vorschlag — der Rechenweg nennt den Grund.</value>
   </data>
   <data name="ZPG_HINW_OHNE_VORSCHLAG" xml:space="preserve">
     <value>Einen Vorschlag gibt es erst mit einer gerechneten Vorschau.</value>
-  </data>
-  <data name="ZPG_HINW_MANUELL" xml:space="preserve">
-    <value>Wirkt nur bei „manuell“.</value>
   </data>
   <data name="ZPG_LBL_ANGESETZT" xml:space="preserve">
     <value>Angesetzt: {0} {1} ({2})</value>
@@ -31583,10 +31718,10 @@ Möchten Sie das zulassen?</value>
     <value>Rechenweg: {0}</value>
   </data>
   <data name="ZPG_LBL_LADELEISTUNG" xml:space="preserve">
-    <value>Ladeleistung (Gebäude)</value>
+    <value>Ladeleistung und Ladefenster</value>
   </data>
   <data name="ZPG_LBL_LADELEISTUNG_MANUELL" xml:space="preserve">
-    <value>Ladeleistung manuell</value>
+    <value>Ladeleistung</value>
   </data>
   <data name="ZPG_LBL_LADEFENSTER" xml:space="preserve">
     <value>Ladezeitfenster</value>
@@ -31607,10 +31742,10 @@ Möchten Sie das zulassen?</value>
     <value>Angesetzt: {0} kW (manuell)</value>
   </data>
   <data name="ZPG_LBL_ZIRKULATION" xml:space="preserve">
-    <value>Zirkulation (Gebäude)</value>
+    <value>Zirkulation</value>
   </data>
   <data name="ZPG_LBL_ZIRK_MANUELL" xml:space="preserve">
-    <value>Zirkulation manuell</value>
+    <value>Zirkulationsleistung</value>
   </data>
   <data name="ZPG_LBL_ZIRK_METHODE" xml:space="preserve">
     <value>Methode der Zirkulation</value>
@@ -31655,7 +31790,7 @@ Möchten Sie das zulassen?</value>
     <value>Wasserinhalt der Leitungen zwischen Erwärmer und entferntester Zapfstelle; er entscheidet mit über die Großanlage nach DVGW W 551.</value>
   </data>
   <data name="ZPG_GRP_FACHWERTE" xml:space="preserve">
-    <value>Fachwerte · {0}</value>
+    <value>Fachwerte der Zone</value>
   </data>
   <data name="ZPG_LBL_BEDARF_SPEZ" xml:space="preserve">
     <value>Spezifischer Bedarf</value>
@@ -31799,7 +31934,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Kalender der gewählten Zone: der der Nutzungsart oder die Ferien eines Gebäudes des Projekts, die nur vorbelegen.</value>
   </data>
   <data name="KI_DLG_ZPG_FERIEN_ERL" xml:space="preserve">
-    <value>Ein Ferienzeitraum der gewählten Zone als Beginn Tag, Beginn Monat, Ende Tag und Ende Monat; leer = keine Ferien.</value>
+    <value>Ein eigener Ferienzeitraum der gewählten Zone: Name, von und bis als TT.MM. im Jahr ohne Schalttag; leer = keine Angabe. Die Zeile hinter dem letzten Zeitraum legt einen neuen an. Eigene Ferien gehen den Ferien eines Gebäudes vor.</value>
   </data>
   <data name="KI_DLG_ZPG_JAHRESMESSWERT_ERL" xml:space="preserve">
     <value>Ein gemessener Jahresverbrauch der gewählten Zone; er skaliert die Zone mit einem ausgewiesenen Faktor, leer = kein Messwert.</value>
@@ -31819,26 +31954,17 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_ZPG_MESSWERT_ZEITRAUM_ERL" xml:space="preserve">
     <value>Der Zeitraum des Messwerts — nur Vermerk.</value>
   </data>
-  <data name="KI_DLG_ZPG_TAGESBEDARF_MODUS_ERL" xml:space="preserve">
-    <value>Der Tagesbedarf der gewählten Zone aus dem Katalog (auto) oder als manueller Wert.</value>
-  </data>
   <data name="KI_DLG_ZPG_TAGESBEDARF_MANUELL_ERL" xml:space="preserve">
-    <value>Der manuelle Tagesbedarf der gewählten Zone; er gilt nur bei „manuell“.</value>
-  </data>
-  <data name="KI_DLG_ZPG_LADELEISTUNG_MODUS_ERL" xml:space="preserve">
-    <value>Die Ladeleistung des Gebäudes als Vorschlag der Auslegung (auto) oder als manueller Wert — wirkt nur auf die Auslegung.</value>
+    <value>Der Tagesbedarf der gewählten Zone; leer = Vorschlag aus dem Katalog (auto), ein Wert gilt als manueller Tagesbedarf.</value>
   </data>
   <data name="KI_DLG_ZPG_LADELEISTUNG_MANUELL_ERL" xml:space="preserve">
-    <value>Die manuelle Ladeleistung; sie gilt nur bei „manuell“.</value>
+    <value>Die Ladeleistung des Gebäudes; leer = Vorschlag der Auslegung (auto), ein Wert gilt als manuelle Ladeleistung — wirkt nur auf die Auslegung.</value>
   </data>
   <data name="KI_DLG_ZPG_LADEFENSTER_ERL" xml:space="preserve">
     <value>Die effektive Ladezeit je Tag; leer = Vorgabe des Katalogs.</value>
   </data>
   <data name="KI_DLG_ZPG_LADEFENSTER_BEGINN_ERL" xml:space="preserve">
     <value>Die Stunde, zu der das Ladefenster beginnt; leer = Vorgabe.</value>
-  </data>
-  <data name="KI_DLG_ZPG_ZIRKULATION_MODUS_ERL" xml:space="preserve">
-    <value>Die Zirkulation des Gebäudes nach der gewählten Methode (auto) oder als manuelle Leistung.</value>
   </data>
   <data name="KI_DLG_ZPG_ZIRK_METHODE_ERL" xml:space="preserve">
     <value>Wie die Zirkulation geschätzt wird: Leitungslänge × Verlust, Anteil am Tagesbedarf oder Flächenkennwert.</value>
@@ -31856,7 +31982,7 @@ Möchten Sie das zulassen?</value>
     <value>Die Lage der Leitung zur thermischen Hülle (Methode Flächenkennwert); leer = Vorgabe.</value>
   </data>
   <data name="KI_DLG_ZPG_ZIRK_MANUELL_ERL" xml:space="preserve">
-    <value>Die manuelle Leistung der Zirkulation; sie gilt nur bei „manuell“.</value>
+    <value>Die Leistung der Zirkulation des Gebäudes; leer = nach der gewählten Methode (auto), ein Wert gilt als manuelle Leistung.</value>
   </data>
   <data name="KI_DLG_ZPG_LEITUNGSINHALT_ERL" xml:space="preserve">
     <value>Der Wasserinhalt der Leitungen; er entscheidet mit über die Großanlage.</value>
@@ -41800,6 +41926,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="TRANSFER_ANHEBUNG_KESSEL_BRENNWERT" xml:space="preserve">
     <value>Projektkessel als Brennwertkessel gekennzeichnet (nach Katalogsatz oder Beschreibung)</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_ZONENFERIEN" xml:space="preserve">
+    <value>Ferienzeitraum/-räume der Zonen in die Liste der Zonenferien übertragen</value>
   </data>
   <data name="SIMENG_KESSEL_BRENNWERTKENNLINIE" xml:space="preserve">
     <value>Brennwertkennlinie „{0}“: Taupunkt {1} °C, Kondensationsgewinn bei 30 °C Rücklauf {2}, η₃₀ trocken {3}, Obergrenze Hs/Hi {4}. Der Rücklauf kommt aus dem Heizkreis der Anlagenkopplung, sonst aus dem Senkenspeicher, sonst gilt {5} °C.</value>

@@ -120,6 +120,10 @@
          (GebaeudeStammCtrl) und die Gebaeudeliste eines Projekts (WizardCtrl) sind internal. Der
          Name ist der des dateibasierten Programms (Referenzlaeufe/Skripte/referenzprojekt_1051_konditionierung.cs). -->
     <InternalsVisibleTo Include="referenzprojekt_1051_konditionierung" />
+    <!-- Und fuer das Saatskript der sechs Referenzprojekte der Zapfprofil-Optionen (ZB12): Arbeitsstand, Schreibweg,
+         Typtagimport und Auslegung des Zapfprofils (ZapfprofilCtrl, TwwTyptagCtrl) sind internal. Der Name ist der des
+         dateibasierten Programms (Referenzlaeufe/Skripte/referenzprojekte_zapfprofil_optionen.cs). -->
+    <InternalsVisibleTo Include="referenzprojekte_zapfprofil_optionen" />
     <!-- Und fuer den plattformfreien Referenzlauf: Der Lauf mit der Stoerung "ulp" setzt den
          AppContext-Schalter Plattformrundung.SCHALTER_ULP und prueft danach
          Plattformrundung.UlpStoerung - die Naht ist internal, weil ausser dem Referenzlauf

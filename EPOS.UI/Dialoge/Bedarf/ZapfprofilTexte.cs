@@ -67,7 +67,64 @@ public sealed class ZapfprofilTexte
     public string GruppeZonenSumme { get; set; } = "{0} MWh/a Zapfung";
 
     /// <summary><c>ZPG_GRP_ZONE</c></summary>
-    public string GruppeZone { get; set; } = "{0} · Nutzung";
+    public string GruppeZone { get; set; } = "Zone „{0}“";
+
+    /// <summary><c>ZPG_GRP_GEBAEUDE_ANLAGE</c></summary>
+    public string GruppeGebaeudeAnlage { get; set; } = "Gebäude und Anlage";
+
+    /// <summary><c>ZPG_KARTE_NUTZUNG</c></summary>
+    public string KarteNutzung { get; set; } = "Nutzung";
+
+    /// <summary><c>ZPG_KARTE_MESSWERT</c></summary>
+    public string KarteMesswert { get; set; } = "Messwert";
+
+    /// <summary><c>ZPG_SUMME_WOHNUNGEN</c></summary>
+    public string SummeWohnungen { get; set; } = "{0} WE aus der Wohnungstabelle";
+
+    /// <summary><c>ZPG_SUMME_PERSONEN_JE_WE</c></summary>
+    public string SummePersonenJeWe { get; set; } = "{0} Personen je WE";
+
+    /// <summary><c>ZPG_SUMME_ZIRK_JA</c></summary>
+    public string SummeZirkJa { get; set; } = "Zirkulation ja";
+
+    /// <summary><c>ZPG_SUMME_ZIRK_NEIN</c></summary>
+    public string SummeZirkNein { get; set; } = "Zirkulation nein";
+
+    /// <summary><c>ZPG_SUMME_KEINER</c></summary>
+    public string SummeKeiner { get; set; } = "keiner";
+
+    /// <summary><c>ZPG_SUMME_KEINE_ANGABE</c></summary>
+    public string SummeKeineAngabe { get; set; } = "keine Angabe";
+
+    /// <summary><c>ZPG_SUMME_EIGENE_WERTE</c></summary>
+    public string SummeEigeneWerte { get; set; } = "{0} eigene Werte";
+
+    /// <summary><c>ZPG_SUMME_EIGENER_WERT</c></summary>
+    public string SummeEigenerWert { get; set; } = "1 eigener Wert";
+
+    /// <summary><c>ZPG_SUMME_VORGABEN</c></summary>
+    public string SummeVorgaben { get; set; } = "Vorgaben";
+
+    /// <summary><c>ZPG_SUMME_ANGESETZT</c></summary>
+    public string SummeAngesetzt { get; set; } = "{0} {1} ({2})";
+
+    /// <summary><c>ZPG_SUMME_LADEFENSTER</c></summary>
+    public string SummeLadefenster { get; set; } = "Ladefenster {0} h ab {1} Uhr";
+
+    /// <summary><c>ZPG_SUMME_SEED</c></summary>
+    public string SummeSeed { get; set; } = "Seed {0}";
+
+    /// <summary><c>ZPG_SUMME_TYPTAGE</c></summary>
+    public string SummeTyptage { get; set; } = "Typtage";
+
+    /// <summary><c>ZPG_HINW_EINWERT</c></summary>
+    public string HinweisEinwert { get; set; } = "Leer = Vorschlag (grau im Feld); ein eingetragener Wert gilt als manueller Wert.";
+
+    /// <summary><c>ZPG_BTN_KATALOG</c></summary>
+    public string KnopfKatalog { get; set; } = "Katalog…";
+
+    /// <summary><c>ZPG_KATALOG_BLATT_HINWEIS</c></summary>
+    public string KatalogBlattHinweis { get; set; } = "Eine Zeile wählen setzt die Nutzungsart der Zone „{0}“.";
 
     /// <summary><c>ZPG_SP_ZONE</c></summary>
     public string SpalteZone { get; set; } = "Zone";
@@ -445,7 +502,7 @@ public sealed class ZapfprofilTexte
     // ------------------------------------------------------------ Belegung und Anlage (Erweitert)
 
     /// <summary><c>ZPG_GRP_BELEGUNG</c></summary>
-    public string GruppeBelegung { get; set; } = "Belegung und Anlage";
+    public string GruppeBelegung { get; set; } = "Belegung";
 
     /// <summary><c>ZPG_LBL_WOHNUNGSTABELLE</c></summary>
     public string LabelWohnungstabelle { get; set; } = "Wohnungen (wahlweise)";
@@ -548,37 +605,115 @@ public sealed class ZapfprofilTexte
     public string KalenderNutzungsart { get; set; } = "Kalender der Nutzungsart · {0}";
 
     /// <summary><c>ZPG_KALENDER_GEBAEUDE</c></summary>
-    public string KalenderGebaeude { get; set; } = "Ferien des Gebäudes {0}";
+    public string KalenderGebaeude { get; set; } = "Gebäude „{0}“";
 
     /// <summary><c>ZPG_HINW_KALENDER</c></summary>
-    public string HinweisKalender { get; set; } = "Vorgabe · Kalender der Nutzungsart; ein Gebäude belegt Ferien und Fläche nur vor — eigene Ferien der Zone gehen vor.";
+    public string HinweisKalender { get; set; } = "Die Quelle bestimmt Wochenende, Feiertage und Ferien der Zone: der Kalender der Nutzungsart oder ein Gebäude des Projekts. Ein Gebäude belegt Ferien und Fläche nur vor.";
+
+    /// <summary><c>ZPG_LBL_KAL_QUELLE</c></summary>
+    public string LabelKalenderQuelle { get; set; } = "Quelle";
+
+    /// <summary><c>ZPG_KAL_AUS_GEBAEUDE</c></summary>
+    public string KalenderAusGebaeude { get; set; } = "aus dem Gebäude „{0}“";
+
+    /// <summary><c>ZPG_KAL_WOCHENENDE</c></summary>
+    public string KalenderWochenende { get; set; } = "Wochenende";
+
+    /// <summary><c>ZPG_KAL_FEIERTAGE</c></summary>
+    public string KalenderFeiertage { get; set; } = "Feiertage";
+
+    /// <summary><c>ZPG_KAL_FERIEN</c></summary>
+    public string KalenderFerien { get; set; } = "Ferien";
+
+    /// <summary><c>ZPG_KAL_BUNDESEINHEITLICH</c></summary>
+    public string KalenderBundeseinheitlich { get; set; } = "nur bundeseinheitliche";
+
+    /// <summary><c>ZPG_KAL_KEINE_FERIEN</c></summary>
+    public string KalenderKeineFerien { get; set; } = "keine";
+
+    /// <summary><c>ZPG_KAL_FERIEN_ZONE_VOR</c></summary>
+    public string KalenderFerienZoneVor { get; set; } = "Die Zone trägt eigene Ferien; die Ferien des Gebäudes gelten nicht.";
+
+    /// <summary><c>ZPG_KAL_SUM_GEBAEUDE</c></summary>
+    public string SummeGebaeude { get; set; } = "wie Gebäude „{0}“";
+
+    /// <summary><c>ZPG_KAL_SUM_NUTZUNGSART</c></summary>
+    public string SummeNutzungsart { get; set; } = "Kalender der Nutzungsart";
+
+    /// <summary><c>ZPG_KAL_SUM_FERIEN</c></summary>
+    public string SummeFerien { get; set; } = "{0} Ferienzeiträume";
+
+    /// <summary><c>ZPG_KAL_SUM_FERIEN_EINS</c></summary>
+    public string SummeFerienEins { get; set; } = "1 Ferienzeitraum";
+
+    /// <summary><c>ZPG_KAL_SUM_EIGENE</c></summary>
+    public string SummeEigene { get; set; } = "{0} eigene Ferienzeiträume";
+
+    /// <summary><c>ZPG_KAL_SUM_EIGENE_EINS</c></summary>
+    public string SummeEigeneEins { get; set; } = "1 eigener Ferienzeitraum";
+
+    /// <summary><c>ZPG_KAL_SUM_KEINE_EIGENEN</c></summary>
+    public string SummeKeineEigenen { get; set; } = "keine eigenen Ferien";
+
+    /// <summary><c>ZPG_KAL_SUM_KEINE</c></summary>
+    public string SummeKeineFerien { get; set; } = "keine Ferien";
+
+    /// <summary><c>ZPG_KAL_SUM_FEIERTAGE</c></summary>
+    public string SummeFeiertage { get; set; } = "Feiertage {0}";
+
+    /// <summary><c>ZPG_KAL_SUM_BUNDESEINHEITLICH</c></summary>
+    public string SummeBundeseinheitlich { get; set; } = "bundeseinheitliche Feiertage";
+
+    /// <summary><c>ZPG_LBL_KAL_EIGENE_FERIEN</c></summary>
+    public string LabelEigeneFerien { get; set; } = "Eigene Ferien der Zone";
 
     /// <summary><c>ZPG_LBL_FERIEN</c></summary>
-    public string LabelFerien { get; set; } = "Ferienzeitraum {0}";
+    public string LabelFerien { get; set; } = "Ferien {0}";
 
-    /// <summary><c>ZPG_LBL_BEGINN_TAG</c></summary>
-    public string LabelBeginnTag { get; set; } = "Beginn Tag";
+    /// <summary><c>ZPG_LBL_FERIEN_NAME</c></summary>
+    public string LabelFerienName { get; set; } = "Name";
 
-    /// <summary><c>ZPG_LBL_BEGINN_MONAT</c></summary>
-    public string LabelBeginnMonat { get; set; } = "Beginn Monat";
+    /// <summary><c>ZPG_LBL_FERIEN_VON</c></summary>
+    public string LabelFerienVon { get; set; } = "von";
 
-    /// <summary><c>ZPG_LBL_ENDE_TAG</c></summary>
-    public string LabelEndeTag { get; set; } = "Ende Tag";
+    /// <summary><c>ZPG_LBL_FERIEN_BIS</c></summary>
+    public string LabelFerienBis { get; set; } = "bis";
 
-    /// <summary><c>ZPG_LBL_ENDE_MONAT</c></summary>
-    public string LabelEndeMonat { get; set; } = "Ende Monat";
+    /// <summary><c>ZPG_KNOPF_FERIEN_NEU</c></summary>
+    public string KnopfFerienNeu { get; set; } = "+ Ferien";
+
+    /// <summary><c>ZPG_KNOPF_FERIEN_ENTFERNEN</c></summary>
+    public string KnopfFerienEntfernen { get; set; } = "Entfernen";
 
     /// <summary><c>ZPG_HINW_FERIEN</c></summary>
-    public string HinweisFerien { get; set; } = "Leer = keine Ferien. Ein Zeitraum über den Jahreswechsel beginnt im Dezember; ohne Beginn läuft er vom 1. Januar an. Gerechnet wird im Jahr ohne Schalttag.";
+    public string HinweisFerien { get; set; } = "Eigene Ferien der Zone gehen vor: Trägt die Zone einen Zeitraum, gelten die Ferien des Gebäudes nicht. Ein Zeitraum zählt, sobald er ein Ende hat; über den Jahreswechsel beginnt er im Dezember, ohne Beginn läuft er vom 1. Januar an. Gerechnet wird im Jahr ohne Schalttag.";
 
-    /// <summary><c>ZPG_LBL_BUNDESLAND</c></summary>
-    public string LabelBundesland { get; set; } = "Bundesland";
+    /// <summary><c>ZPG_LBL_JAHRESRASTER</c></summary>
+    public string LabelJahresraster { get; set; } = "Jahresraster der Zone";
 
-    /// <summary><c>ZPG_BUNDESLAND_KLIMAREGION</c></summary>
-    public string BundeslandKlimaregion { get; set; } = "wie Klimaregion";
+    /// <summary><c>ZPG_TAGTYP_FERIEN</c></summary>
+    public string TagtypFerien { get; set; } = "Ferien";
 
-    /// <summary><c>ZPG_GRUND_BUNDESLAND</c></summary>
-    public string GrundBundesland { get; set; } = "Wirkt erst mit einer Kalendertabelle je Bundesland; bis dahin gelten Wochenende und Feiertage der Klimaregion.";
+    /// <summary><c>ZPG_HINW_JAHRESRASTER</c></summary>
+    public string HinweisJahresraster { get; set; } = "Je Tag der Tagtyp, mit dem die Zone rechnet — aus Wochenende, Feiertagen und Ferien, wie die Vorschau sie liest.";
+
+    /// <summary><c>ZPG_HINW_JAHRESRASTER_OHNE</c></summary>
+    public string HinweisJahresrasterOhne { get; set; } = "Das Jahresraster erscheint mit der Vorschau.";
+
+    /// <summary><c>ZPG_PLATZHALTER_FERIEN_VON</c></summary>
+    public string PlatzhalterFerienVon { get; set; } = "von TT.MM.";
+
+    /// <summary><c>ZPG_PLATZHALTER_FERIEN_BIS</c></summary>
+    public string PlatzhalterFerienBis { get; set; } = "bis TT.MM.";
+
+    /// <summary><c>ZPG_HINW_DATUM_FORMAT</c></summary>
+    public string HinweisDatumFormat { get; set; } = "Format TT.MM., ohne Jahr (Gemeinjahr), etwa 01.07. bis 14.08.";
+
+    /// <summary><c>ZPG_HINW_DATUM_JAHR</c></summary>
+    public string HinweisDatumJahr { get; set; } = "Ohne Jahr: Das Jahr wurde verworfen, es gilt das Gemeinjahr.";
+
+    /// <summary><c>ZPG_MSG_GEMEINJAHR</c></summary>
+    public string MeldungGemeinjahr { get; set; } = "Ungültiges Datum: TT.MM. im Gemeinjahr; den 29.02. gibt es nicht.";
 
     /// <summary><c>ZPG_LBL_JAHRESMESSWERT</c></summary>
     public string LabelJahresmesswert { get; set; } = "Jahresmesswert";
@@ -618,32 +753,20 @@ public sealed class ZapfprofilTexte
 
     // ------------------------------------------------------------ Tagesbedarf, Ladeleistung, Zirkulation (Erweitert)
 
-    /// <summary><c>ZPG_GRP_SCHAETZHILFEN</c></summary>
-    public string GruppeSchaetzhilfen { get; set; } = "Tagesbedarf, Ladeleistung, Zirkulation";
-
-    /// <summary><c>ZPG_HINW_SCHAETZHILFEN</c></summary>
-    public string HinweisSchaetzhilfen { get; set; } = "Muster auto/manuell: Vorschlag, manueller Wert und der angesetzte Wert, der weiterverwendet wird. Der angesetzte Wert folgt aus dem Umschalter.";
-
     /// <summary><c>ZPG_LBL_TAGESBEDARF</c></summary>
     public string LabelTagesbedarf { get; set; } = "Tagesbedarf";
-
-    /// <summary><c>ZPG_LBL_TAGESBEDARF_MANUELL</c></summary>
-    public string LabelTagesbedarfManuell { get; set; } = "Tagesbedarf manuell";
 
     /// <summary><c>ZPG_LBL_VORSCHLAG</c></summary>
     public string LabelVorschlag { get; set; } = "Vorschlag: {0} {1}";
 
     /// <summary><c>ZPG_BTN_VORSCHLAG</c></summary>
-    public string KnopfVorschlag { get; set; } = "Als manuellen Wert übernehmen";
+    public string KnopfVorschlag { get; set; } = "Vorschlag übernehmen";
 
     /// <summary><c>ZPG_HINW_VORSCHLAG_OHNE</c></summary>
     public string HinweisVorschlagOhne { get; set; } = "Das Verfahren liefert keinen Vorschlag — der Rechenweg nennt den Grund.";
 
     /// <summary><c>ZPG_HINW_OHNE_VORSCHLAG</c></summary>
     public string HinweisOhneVorschlag { get; set; } = "Einen Vorschlag gibt es erst mit einer gerechneten Vorschau.";
-
-    /// <summary><c>ZPG_HINW_MANUELL</c></summary>
-    public string HinweisManuell { get; set; } = "Wirkt nur bei „manuell“.";
 
     /// <summary><c>ZPG_LBL_ANGESETZT</c></summary>
     public string LabelAngesetzt { get; set; } = "Angesetzt: {0} {1} ({2})";
@@ -655,10 +778,10 @@ public sealed class ZapfprofilTexte
     public string LabelRechenweg { get; set; } = "Rechenweg: {0}";
 
     /// <summary><c>ZPG_LBL_LADELEISTUNG</c></summary>
-    public string LabelLadeleistung { get; set; } = "Ladeleistung (Gebäude)";
+    public string LabelLadeleistung { get; set; } = "Ladeleistung und Ladefenster";
 
     /// <summary><c>ZPG_LBL_LADELEISTUNG_MANUELL</c></summary>
-    public string LabelLadeleistungManuell { get; set; } = "Ladeleistung manuell";
+    public string LabelLadeleistungManuell { get; set; } = "Ladeleistung";
 
     /// <summary><c>ZPG_LBL_LADEFENSTER</c></summary>
     public string LabelLadefenster { get; set; } = "Ladezeitfenster";
@@ -679,10 +802,10 @@ public sealed class ZapfprofilTexte
     public string LadeAngesetztManuell { get; set; } = "Angesetzt: {0} kW (manuell)";
 
     /// <summary><c>ZPG_LBL_ZIRKULATION</c></summary>
-    public string LabelZirkulation { get; set; } = "Zirkulation (Gebäude)";
+    public string LabelZirkulation { get; set; } = "Zirkulation";
 
     /// <summary><c>ZPG_LBL_ZIRK_MANUELL</c></summary>
-    public string LabelZirkManuell { get; set; } = "Zirkulation manuell";
+    public string LabelZirkManuell { get; set; } = "Zirkulationsleistung";
 
     /// <summary><c>ZPG_LBL_ZIRK_METHODE</c></summary>
     public string LabelZirkMethode { get; set; } = "Methode der Zirkulation";
@@ -729,7 +852,7 @@ public sealed class ZapfprofilTexte
     // ------------------------------------------------------------ Fachwerte (Experte)
 
     /// <summary><c>ZPG_GRP_FACHWERTE</c></summary>
-    public string GruppeFachwerte { get; set; } = "Fachwerte · {0}";
+    public string GruppeFachwerte { get; set; } = "Fachwerte der Zone";
 
     /// <summary><c>ZPG_LBL_BEDARF_SPEZ</c></summary>
     public string LabelBedarfSpez { get; set; } = "Spezifischer Bedarf";

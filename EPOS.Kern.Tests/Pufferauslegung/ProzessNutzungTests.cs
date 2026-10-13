@@ -112,6 +112,9 @@ namespace EPOS.Kern.Tests.Pufferauslegung
             DataRepository.ExecuteNonQuery("DROP TABLE Z_Nutzungsprofil");
             DataRepository.ExecuteNonQuery("DROP TABLE Tab_Nutzungsprofil_STAMM");
             DataRepository.ExecuteNonQuery("CREATE TEMP TABLE alt_saetze AS SELECT ID_Tagesgangsatz AS ID FROM Tab_TwwNutzungsart_STAMM WHERE ID IN (" + neue + ")");
+            // Die Zonen der Referenzprojekte, die diese Nutzungsarten benutzen (1066, 1067, 1070, ZB12), gab es im Stand davor
+            // nicht; ihre Wohnungstypen und Ferien fallen mit ihnen (ON DELETE CASCADE).
+            DataRepository.ExecuteNonQuery("DELETE FROM Tab_TwwZone WHERE ID_Nutzungsart IN (" + neue + ")");
             DataRepository.ExecuteNonQuery("DELETE FROM Tab_TwwZapfkategorie_STAMM WHERE ID_Nutzungsart IN (" + neue + ")");
             DataRepository.ExecuteNonQuery("DELETE FROM Tab_TwwNutzungsart_STAMM WHERE ID IN (" + neue + ")");
             DataRepository.ExecuteNonQuery("DELETE FROM Tab_TwwTagesgang_STAMM WHERE ID_Tagesgangsatz IN (SELECT ID FROM alt_saetze)");
