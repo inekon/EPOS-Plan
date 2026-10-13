@@ -32,14 +32,23 @@ public class KaeltemaschineAnlageWpBearbeitenTests : EposBunitContext
         new(ID_WP, 40, "WP Bestand", "Neutral", "Luft-Wasser", 1, 1, 38, 3.4, 7, "Strom", false, "zulässig")
     };
 
-    /// <summary>Der Feldsatz, in den die Anlagenfelder schreiben — die Naht liefert ihn mit den Gaben.</summary>
+    /// <summary>
+    /// Der Feldsatz, in den die Anlagenfelder schreiben — die Naht liefert ihn mit den Gaben. <b>Vollständig</b> wie
+    /// aus der Naht (<c>WaermepumpeAnlagenaht.AusModell</c> liest sie aus der Anlagenzeile): Heizstableistung und
+    /// Sperrzeiten sind Pflichtfelder der Anlagenfelder — fehlen sie, lehnt deren <c>Pruefen()</c> schon vor dem
+    /// Schreibweg ab, genau wie im Wärmepumpendialog.
+    /// </summary>
     private readonly WaermepumpeAnlageDaten _felder = new()
     {
-        Bezeichner = "WP Bestand", IdWp = ID_WP, Vorlauf = 55, Ruecklauf = 45
+        Bezeichner = "WP Bestand", IdWp = ID_WP, Vorlauf = 55, Ruecklauf = 45,
+        Heizstab = false, HeizstabLeistung = 6, Sperrung = false, SperrzeitVon = 0, SperrzeitBis = 0
     };
 
     private int _geschrieben;
     private string? _ablehnungSchreiben;
+
+    /// <summary>Die Ablehnung der ANLAGENFELDER (Temperaturprüfung der Gaben); <c>null</c> = die Felder stehen.</summary>
+    private string? _ablehnungFelder;
     private string? _hinweis;
     private bool _nahtLiefert = true;
 
@@ -54,7 +63,7 @@ public class KaeltemaschineAnlageWpBearbeitenTests : EposBunitContext
         var gaben = new Dictionary<string, object>
         {
             ["Daten"] = _felder,
-            ["TemperaturenPruefen"] = new Func<int?, int?, string?>((_, _) => null)
+            ["TemperaturenPruefen"] = new Func<int?, int?, string?>((_, _) => _ablehnungFelder)
         };
         return new WaermepumpeAnlagegaben(ID_ANLAGE, "WP Bestand", gaben, () =>
         {
@@ -128,6 +137,15 @@ public class KaeltemaschineAnlageWpBearbeitenTests : EposBunitContext
         Projektzeile(cut, 0);
         Bearbeiten(cut);
 
+        // Lehnen schon die FELDER ab, bleibt die Überlagerung mit dem Wortlaut stehen — und der Schreibweg
+        // der Naht wird gar nicht erst gegangen (keine stille Ablehnung).
+        _ablehnungFelder = "Rücklauf über Vorlauf";
+        Ueberlagerungsknopf(cut, new KaeltemaschineAnlageTexte().Ok);
+        Assert.True(cut.Instance.WpUeberlagerungOffen);
+        Assert.Equal(0, _geschrieben);
+        Assert.Contains("Rücklauf über Vorlauf", cut.Markup);
+
+        _ablehnungFelder = null;
         _ablehnungSchreiben = "Vorlauf zu hoch";
         Ueberlagerungsknopf(cut, new KaeltemaschineAnlageTexte().Ok);
         Assert.True(cut.Instance.WpUeberlagerungOffen);
