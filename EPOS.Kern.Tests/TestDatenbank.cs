@@ -1050,6 +1050,9 @@ namespace EPOS.Kern.Tests
                 // Schritt KatalogkostenSaatSchema.SCHRITT (KB-3): die zwei Verweise an den acht Projektkopien mit
                 // Kosten, dazu je Satz mit Kosten genau eine Satzvorlage je Art. Wiederholbar, ergebnisneutral.
                 KatalogkostenSaatSchema.Ausfuehren(null);
+                // Schritt BrennstoffpreiseTraegerkarteSchema.SCHRITT (KB-2): die drei Standardpreise des Brennstoffs
+                // gehen in die Traegerkarte und fallen an Katalog und Projektkopie weg. Wiederholbar, ergebnisneutral.
+                BrennstoffpreiseTraegerkarteSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

@@ -3576,6 +3576,29 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrKb3 + " - vollstaendig: " + KatalogkostenSaatSchema.Vollstaendig() +
                                   " (erwartet True).");
             }
+            // ---- Schritt BrennstoffpreiseTraegerkarteSchema.SCHRITT (KB-2): die drei Standardpreise des Brennstoffs
+            //      gehen in energy_carrier.price_work/price_base/price_power und fallen danach an
+            //      Tab_Brennstoff_Stamm und Tab_Brennstoff weg. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_BrennstoffpreiseTraegerkarte. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: kein Rechenweg liest die drei Spalten (Saat der Energietraeger-Variante);
+            //      in der Testdatenbank stehen sie durchweg auf 0, der Uebertrag ist leer.
+            //      NEUE KATALOGFASSUNG: Die Pruefsumme jedes Brennstoffs aendert sich; der Schritt bildet sie fuer jeden
+            //      Satz neu, dessen Summe vorher stimmte.
+            string nrKb2 = BrennstoffpreiseTraegerkarteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKb2 + " - Brennstoffpreise in die Traegerkarte: " +
+                              (BrennstoffpreiseTraegerkarteSchema.Vollstaendig() ? "steht bereits" : "offen") +
+                              " (" + BrennstoffpreiseTraegerkarteSchema.Uebertragbar() + " Preis(e) zu uebertragen).");
+            if (!trocken)
+            {
+                var berichtKb2 = new List<string>();
+                angelegt += BrennstoffpreiseTraegerkarteSchema.Ausfuehren(berichtKb2);
+                foreach (string zeile in berichtKb2)
+                    Console.WriteLine("Schritt " + nrKb2 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKb2 + " - vollstaendig: " + BrennstoffpreiseTraegerkarteSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
 
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
