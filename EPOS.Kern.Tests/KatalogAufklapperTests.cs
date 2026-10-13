@@ -69,7 +69,7 @@ namespace EPOS.Kern.Tests
                 KatalogBrowserArt.Heizkessel,
                 new[]
                 {
-                    "BEZEICHNER", "BESCHREIBUNG", "BRENNSTOFF", "PTHERM", "INVESTITIONSKOSTEN",
+                    "BEZEICHNER", "BESCHREIBUNG", "BRENNSTOFF", "PTHERM",
                     "BRENNWERT", "VORLAUF", "RUECKLAUF",
                     "FIRMA", "WIRKUNGSGRAD_GAS", "WIRKUNGSGRAD_OEL", "BBVERLUST",
                     // Die Einheit des Bereitschaftsverlusts (Anwenderentscheid 02.10.2026).
@@ -78,7 +78,9 @@ namespace EPOS.Kern.Tests
                     "WIRKUNGSGRAD_TEILLAST30", "KENNLINIE_BRENNWERT", "MINDESTLEISTUNG",
                     "ANFAHRVERLUST", "MINDESTLAUFZEIT",
                     "RAUMBEDARF",
-                    "WARTUNGSKOSTEN", "WARTUNG_EINHEIT", "NUTZUNGSDAUER",
+                    // Welle KB-4: der Lesewert der Satzvorlage an der Stelle von Investition,
+                    // Wartung und Zeitbezug.
+                    "GERAETEKOSTEN", "NUTZUNGSDAUER",
                     "CO2", "SO2", "NOX", "CO", "STAUB"
                 }
             };
@@ -96,9 +98,9 @@ namespace EPOS.Kern.Tests
                     "WIRKUNGSGRAD_EL_TEILLAST50", "WIRKUNGSGRAD_TH_TEILLAST50",
                     "ANFAHRVERLUST", "MINDESTLAUFZEIT",
                     "MOTORTYP", "RAUMBEDARF",
-                    "KOSTEN_MODUL", "KOSTEN_MONTAGE", "KOSTEN_LIEFERUNG",
-                    "KOSTEN_SCHALLSCHUTZ", "KOSTEN_ABGASREINIGUNG",
-                    "INVESTITION_KWEL", "WARTUNG_KWHEL", "NUTZUNGSDAUER",
+                    // Welle KB-4: der Lesewert der Satzvorlage an der Stelle der sieben
+                    // Kostenfelder.
+                    "GERAETEKOSTEN", "NUTZUNGSDAUER",
                     "NOX", "SO2", "CO", "CO2", "STAUB"
                 }
             };

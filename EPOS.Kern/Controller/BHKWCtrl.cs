@@ -301,7 +301,7 @@ namespace WindowsFormsApplication1
                      Wirkungsgrad, Wirkungsgrad_el, Wirkungsgrad_th,
                      Raumbedarf, Nutzungsdauer,
                      NOx, SO2, CO, CO2, Staub, Motortyp, Grenzleistung, Vorlauf, Ruecklauf)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
       
                 DbParam[] ps = {
                     new DbParam("@id", neueId),

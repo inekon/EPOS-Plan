@@ -204,7 +204,7 @@ namespace WindowsFormsApplication1
                      Wirkungsgrad_Teillast30, Kennlinie_Brennwert, Mindestleistung, Anfahrverlust_kWh,
                      Mindestlaufzeit_min)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                            ?, ?, ?, ?, ?)";
+                            ?, ?, ?, ?, ?, ?)";
 
                 // Die fuenf Kennlinienfelder gehen wie die uebrigen Kesselspalten mit in die
                 // Projektkopie (Konzept Kesselkennlinie 3.1) - ueber das Modell, damit dieselbe

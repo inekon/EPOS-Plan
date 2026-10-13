@@ -402,7 +402,7 @@ namespace EPOS.Kern.Tests
             // Bereitschaftsverlusts (Anwenderentscheid 02.10.2026), beim BHKW mit den vier
             // Feldern von Teillast und Takten (Welle M4: BH1, BH2) und der Ruecklaufgrenze (UB-E3).
             Assert.Equal(23, heiz.Detailfelder.Count(f => f.Editierbar));
-            Assert.Equal(24, bhkw.Detailfelder.Count(f => f.Editierbar));
+            Assert.Equal(23, bhkw.Detailfelder.Count(f => f.Editierbar));
             Assert.Equal(12, solar.Detailfelder.Count(f => f.Editierbar));   // mit der Bezugsfläche (Welle M2)
             Assert.Equal(5, puffer.Detailfelder.Count(f => f.Editierbar));
 
@@ -573,7 +573,9 @@ namespace EPOS.Kern.Tests
             var satz = ctrl.KatalogsatzAnzeige("GC7000F 22 23 - MX25");
 
             Assert.NotNull(satz);
-            Assert.Equal(27, satz.Count);
+            // Welle KB-4: ohne Investition, Wartung und Zeitbezug, dafuer mit dem Lesewert
+            // der Satzvorlage - 25 Felder.
+            Assert.Equal(25, satz.Count);
             Assert.Equal("GC7000F 22 23 - MX25", satz[KatalogBrowserProfil.FeldBezeichner]);
             Assert.Equal("kW", satz[KatalogBrowserProfil.FeldBBEinheit]);
             Assert.Equal("Brennwert-Kessel", satz[KatalogBrowserProfil.FeldBeschreibung]);
