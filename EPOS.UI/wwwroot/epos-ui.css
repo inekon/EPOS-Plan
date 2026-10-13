@@ -5514,6 +5514,62 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     color: var(--epos-text-leise);
 }
 
+/* --------------------------------------------------------------------------
+   Die zwei Abschnitte der Uebersicht (Anwenderauftrag 13.10.2026): "Komponenten
+   und Einstellungen" und "Ergebnisse — Energie". Ein Abschnittskopf ueber den
+   Untergruppen, mit einer leisen Linie abgesetzt.
+   -------------------------------------------------------------------------- */
+.epos-uebersicht-abschnitt {
+    margin: 18px 0 6px 0;
+    padding-bottom: 4px;
+    font-size: 1.15em;
+    font-weight: 700;
+    color: var(--epos-text);
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+/* Der Energievergleich nimmt die Tafel der Gegenueberstellung (haftende erste
+   Spalte, Querrollen in der Huelle, Markierung der Abweichung); die Werte stehen
+   rechtsbuendig, die Kennzahl darf umbrechen, die Gruppen tragen einen Kopf. */
+.epos-ergebnisvergleich td {
+    text-align: right;
+    min-width: 8rem;
+}
+
+.epos-ergebnisvergleich th.epos-ergebnis-kennzahl {
+    font-weight: 400;
+    white-space: normal;
+    min-width: 14rem;
+    max-width: 22rem;
+}
+
+.epos-ergebnisvergleich tr.epos-ergebnis-gruppe th,
+.epos-ergebnisvergleich tr.epos-ergebnis-gruppe td {
+    background: var(--epos-flaeche);
+    border-top: 2px solid var(--epos-rahmen-leise);
+    font-weight: 700;
+}
+
+.epos-ergebnis-wert {
+    display: block;
+}
+
+.epos-ergebnis-prozent {
+    display: block;
+    font-size: 0.9em;
+    color: var(--epos-text-leise);
+}
+
+/* Die Emissionen als Klappgruppe unter der Tafel; der Hinweis auf eine Abweichung steht
+   in ihrer Kopfzeile, auch zugeklappt. */
+.epos-ergebnis-klappgruppe {
+    margin-top: 10px;
+}
+
+.epos-ergebnis-klapphinweis {
+    color: var(--epos-text-leise);
+}
+
 /* Wo die Uebernahme nicht traegt, steht statt des Knopfes ein grauer Strich
    mit Begruendung im Kurztext. */
 .epos-gesperrt {

@@ -137,4 +137,10 @@ public sealed class UebersichtSeiteKiSicht
     /// „weicht vom Stammprojekt ab“ — dasselbe, was der Anwender sieht.
     /// </summary>
     public string Komponentenvergleich => KomponentenLesen?.Invoke() ?? "";
+
+    /// <summary>Liest die Tabelle „Ergebnisse — Energie“ als Text (Anwenderauftrag 13.10.2026).</summary>
+    public Func<string>? ErgebnisseLesen { get; init; }
+
+    /// <summary>Der Energievergleich der Versionen als Text — nur lesend.</summary>
+    public string Ergebnisvergleich => ErgebnisseLesen?.Invoke() ?? "";
 }

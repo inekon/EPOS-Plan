@@ -158,6 +158,9 @@
     }
 
     @* --------------------------------------------- Komponentenbereich *@
+    @* Zwei Abschnitte (Anwenderauftrag 13.10.2026): "Komponenten und Einstellungen",
+       darunter "Ergebnisse — Energie" (UebersichtErgebnisse). *@
+    <h2 class="epos-uebersicht-abschnitt">@LabelAbschnittKomponenten</h2>
     @* Auf einer Variante steht ueber dem Titel der Unterschiede leise der Rueckweg. *@
     @if (VarianteGewaehlt)
     {
@@ -318,6 +321,11 @@
     {
         <p class="epos-status">@_status</p>
     }
+
+    @* ------------------------------------------- Ergebnisse — Energie *@
+    @* "nur Unterschiede" wirkt auch hier, solange die Gegenueberstellung ihn zeigt. *@
+    <UebersichtErgebnisse @ref="_ergebnisse" @attributes="ErgebnisGabenSatz" Stand="@_stand"
+                          NurUnterschiede="@(NurUnterschiede && _stand.Gewerke.Count > 0)" />
 
     @* ---------------------------------------------------- Unterdialoge *@
     <Ueberlagerung Offen="@(_gaben is not null)"
@@ -555,6 +563,16 @@
     /// <summary>Meldet einen Wechsel des Schalters „nur Unterschiede" an die Hülle.</summary>
     [Parameter] public Action<bool>? NurUnterschiedeGewechselt { get; set; }
 
+    /// <summary>Die Überschrift des ersten Abschnitts (<c>BK_ERG_ABSCHNITT_KOMPONENTEN</c>).</summary>
+    [Parameter] public string LabelAbschnittKomponenten { get; set; } = "Komponenten und Einstellungen";
+
+    /// <summary>Der Parametersatz des Abschnitts „Ergebnisse — Energie“ (Hülle <c>UebersichtErgebnisGaben</c>); ohne ihn entfällt er.</summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? ErgebnisGaben { get; set; }
+
+    private static readonly IReadOnlyDictionary<string, object> s_keineGaben = new Dictionary<string, object>();
+    private IReadOnlyDictionary<string, object> ErgebnisGabenSatz => ErgebnisGaben ?? s_keineGaben;
+    private UebersichtErgebnisse? _ergebnisse;
+
     // =====================================================================
     // Zustand
     // =====================================================================
@@ -677,7 +695,8 @@
 
             NurUnterschiedeLesen = () => NurUnterschiede,
             NurUnterschiedeSetzen = an => _ = InvokeAsync(() => { BeiNurUnterschiede(an); StateHasChanged(); }),
-            KomponentenLesen = () => KomponentenText()
+            KomponentenLesen = () => KomponentenText(),
+            ErgebnisseLesen = () => _ergebnisse?.Text() ?? ""
         };
     }
 

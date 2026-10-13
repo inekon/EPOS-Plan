@@ -59,6 +59,9 @@ namespace WindowsFormsApplication1
 
         private readonly VariantenCtrl _ctrl = new VariantenCtrl();
 
+        /// <summary>Die Hülle des Abschnitts „Ergebnisse — Energie“ (Anwenderauftrag 13.10.2026).</summary>
+        private readonly UebersichtErgebnisGaben _ergebnisGaben = new UebersichtErgebnisGaben();
+
         /// <summary>
         /// Der WEG in den Variantendialog (Auftrag <b>#240</b>, seit E3/8 eine
         /// benannte Naht): Stammprojekt und Stammname hinein, <c>true</c> heraus,
@@ -250,7 +253,12 @@ namespace WindowsFormsApplication1
                 ["NichtVorhandenText"] = AbweichungsErmittler.BestandFehlt,
                 ["KeineUnterschiedeText"] = MyResource.Resource.BK_LBL_KEINE_UNTERSCHIEDE,
                 ["NurUnterschiedeLesen"] = new Func<bool>(() => s_nurUnterschiede),
-                ["NurUnterschiedeGewechselt"] = new Action<bool>(an => s_nurUnterschiede = an)
+                ["NurUnterschiedeGewechselt"] = new Action<bool>(an => s_nurUnterschiede = an),
+
+                // Die zwei Abschnitte der Uebersicht (Anwenderauftrag 13.10.2026): Komponenten und
+                // Einstellungen, darunter die Energie-Ergebnisse mit eigener Huelle.
+                ["LabelAbschnittKomponenten"] = MyResource.Resource.BK_ERG_ABSCHNITT_KOMPONENTEN,
+                ["ErgebnisGaben"] = _ergebnisGaben.Gaben()
             };
 
             // E3/8 — kein Delegat, kein Knopf: Der Variantendialog ist ein

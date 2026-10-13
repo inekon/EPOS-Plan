@@ -1325,6 +1325,11 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("statuszeile", "UebersichtSeiteKiSicht.Statuszeile",
                                      KiDialogTexte.KseStatusName, KiParameterTyp.Text,
                                      KiDialogTexte.KseStatusErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    // Der Energievergleich (Anwenderauftrag 13.10.2026): die Ergebnistabelle als Text.
+                    new KiDialogFeld("ergebnisse", "UebersichtSeiteKiSicht.Ergebnisvergleich",
+                                     KiDialogTexte.BkuErgebnisseName, KiParameterTyp.Text,
+                                     KiDialogTexte.BkuErgebnisseErl,
                                      leerErlaubt: true, nurLesen: true)
                 });
         }

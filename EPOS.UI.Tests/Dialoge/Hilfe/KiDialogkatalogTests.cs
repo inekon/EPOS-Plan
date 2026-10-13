@@ -1042,7 +1042,7 @@ public class KiDialogkatalogTests : IDisposable
         KiDialog kop = KiDialoge.Katalog.Finde(KiMaskennamen.PROJEKT_KOPIE)!;
         KiDialog var = KiDialoge.Katalog.Finde(KiMaskennamen.PROJEKT_VARIANTE)!;
 
-        Assert.Equal(8, ueb.Felder.Count);
+        Assert.Equal(9, ueb.Felder.Count);   // mit dem Energievergleich „ergebnisse“
         Assert.Equal(9, ber.Felder.Count);
         Assert.Equal(KiParameterTyp.Wahl, ber.FindeFeld("szenario")!.Typ);
         Assert.Equal("BerichtSeiteKiSicht.Szenario", ber.FindeFeld("szenario")!.Eigenschaftspfad);
@@ -1056,7 +1056,7 @@ public class KiDialogkatalogTests : IDisposable
         Assert.Equal(5, kop.Felder.Count);
         Assert.Equal(4, var.Felder.Count);
 
-        Assert.Equal(3, ueb.Felder.Count(f => f.NurLesen));
+        Assert.Equal(4, ueb.Felder.Count(f => f.NurLesen));
         Assert.Equal(3, ber.Felder.Count(f => f.NurLesen));
         Assert.Empty(kop.Felder.Where(f => f.NurLesen));
         Assert.Single(var.Felder.Where(f => f.NurLesen));
