@@ -148220,6 +148220,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1}, {2} Zeiträume, {3} Ferienwerte) ähnelt.
+        /// </summary>
+        public static string ZNB_FERIEN_ANGABE {
+            get {
+                return ResourceManager.GetString("ZNB_FERIEN_ANGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die fehlt ähnelt.
         /// </summary>
         public static string ZNB_FERIEN_FEHLT {
@@ -148652,11 +148661,68 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigen ähnelt.
+        /// </summary>
+        public static string ZN_FERIEN_HERKUNFT_EIGEN {
+            get {
+                return ResourceManager.GetString("ZN_FERIEN_HERKUNFT_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profilgenerator ähnelt.
+        /// </summary>
+        public static string ZN_FERIEN_HERKUNFT_PROFIL {
+            get {
+                return ResourceManager.GetString("ZN_FERIEN_HERKUNFT_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} der gewählten Zonen tragen eigene Ferien, die von der Projektvorgabe abweichen:
+        ///{1}
+        ///
+        ///Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ bleiben diese Zonen unverändert; die übrigen gewählten Zonen übernehmen die Projektvorgabe. ähnelt.
+        /// </summary>
+        public static string ZN_FRAGE_FERIEN {
+            get {
+                return ResourceManager.GetString("ZN_FRAGE_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektvorgabe Ferien/Heizperiode übernehmen ähnelt.
+        /// </summary>
+        public static string ZN_FRAGE_FERIEN_TITEL {
+            get {
+                return ResourceManager.GetString("ZN_FRAGE_FERIEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — {1}, {2} Zeiträume, {3} Ferienwerte ähnelt.
+        /// </summary>
+        public static string ZN_FRAGE_FERIEN_ZONE {
+            get {
+                return ResourceManager.GetString("ZN_FRAGE_FERIEN_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Änderung ist nicht geschrieben: {0} ähnelt.
         /// </summary>
         public static string ZN_MSG_FEHLER {
             get {
                 return ResourceManager.GetString("ZN_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zonen mit eigenen Ferien bleiben unverändert. ähnelt.
+        /// </summary>
+        public static string ZN_MSG_FERIEN_BEHALTEN {
+            get {
+                return ResourceManager.GetString("ZN_MSG_FERIEN_BEHALTEN", resourceCulture);
             }
         }
         
