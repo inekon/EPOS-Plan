@@ -274,17 +274,20 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Seit Welle KB-4 schreibt der Import JEDE Fachspalte</b>: Die Kostenspalte des
-        /// Geräts ist mit Schemaschritt 228 entfallen (der Satz steht in der
-        /// Kostenverwaltung), und kein Anwenderfeld bleibt übrig, das auszulassen wäre.
-        /// Die Fachspaltenliste führt die Kostenspalte selbst nicht mehr.
+        /// <b>Der Import schreibt jede Fachspalte außer dem Verweis auf die Satzvorlage</b>:
+        /// Die Kostenspalte des Geräts ist mit Schemaschritt 228 entfallen (der Satz steht
+        /// in der Kostenverwaltung), und den Verweis pflegt die Kostenverwaltung — ein
+        /// Import-Überschreiben darf ihn nicht leeren.
         /// </summary>
         [Fact]
         public void Die_Importspalten_sind_die_Fachspalten_und_fuehren_keine_Kosten()
         {
             string[] importspalten = WechselrichterStammCtrl.Importspalten();
 
-            Assert.Equal(WechselrichterSchema.Fachspalten.Length, importspalten.Length);
+            Assert.Equal(WechselrichterSchema.Fachspalten
+                             .Where(s => s != KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION),
+                         importspalten);
+            Assert.DoesNotContain(KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION, importspalten);
             Assert.DoesNotContain(WechselrichterSchema.SPALTE_KOSTEN, importspalten);
             Assert.DoesNotContain(WechselrichterSchema.SPALTE_KOSTEN, WechselrichterSchema.Fachspalten);
         }

@@ -320,6 +320,14 @@ namespace WindowsFormsApplication1
               "KostenVorlagenUebernahmeCtrl.PflichtpositionenSicherstellen (Vorrang vor der Standardvorlage)"),
         };
 
+        /// <summary>
+        /// Schemaschritt 228 (<see cref="GeraetekostenEntfallSchema"/>, Welle KB-4): am Wechselrichter
+        /// allein die Investitionsvorlage — er fuehrt genau einen Kostenwert, den Stueckpreis, und keine
+        /// Betriebsvorlage. Hinter den Katalogspalten, weil der Schritt die Spalte per ADD COLUMN anhaengt.
+        /// </summary>
+        private static IEnumerable<ParameterEintrag> KostenvorlageInvestition(Func<string, string> t) =>
+            Kostenvorlage(t).Where(e => e.Spalte == KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION);
+
         private static ParameterEintrag E(string spalte, string anzeige, string einheit,
                                           Verwendung[] verwendung, string fundstelle = "")
         {
@@ -1156,7 +1164,7 @@ namespace WindowsFormsApplication1
                   "ModulKatalogProfil (Gruppe Eingang) - JE MPPT, Handpflege; " +
                   "StrangPlausibilitaet.MpptPruefen (P4 rot); " +
                   "StrangAuslegung.ParallelJeMppt (Grenze)")
-            }.Concat(Katalogspalten(t)).ToList();
+            }.Concat(Katalogspalten(t)).Concat(KostenvorlageInvestition(t)).ToList();
         }
     }
 }

@@ -299,7 +299,11 @@ namespace WindowsFormsApplication1
             SPALTE_HERKUNFT,
             // Schritt 70 (W6-B-10) - als LETZTE, weil ADD COLUMN im Bestand hinten
             // anhaengt und diese Liste die SCHEMAREIHENFOLGE beider Wege nennt.
-            SPALTE_I_SC_MAX
+            SPALTE_I_SC_MAX,
+            // Schritt 228 (Welle KB-4): der Verweis auf die Satzvorlage der Investition - wie an den
+            // acht Gewerken von KB-3 hinter allen Fachspalten (ADD COLUMN). Die Projektkopie zieht ihn
+            // mit (CopyFromStamm); der Import schreibt ihn nicht (WechselrichterStammCtrl.Importspalten).
+            KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION
         };
     }
 }

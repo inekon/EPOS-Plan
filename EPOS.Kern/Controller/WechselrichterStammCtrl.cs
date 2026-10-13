@@ -392,15 +392,18 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Fachspalten, die der Import schreibt — seit Welle KB-4 ALLE: Die Kostenspalte
-        /// des Geräts ist mit Schemaschritt 228 entfallen (der Satz steht in der
-        /// Kostenverwaltung), und keine der übrigen Spalten ist ein Anwenderfeld.
+        /// Die Fachspalten, die der Import schreibt — alle bis auf den Verweis auf die
+        /// Satzvorlage der Investition: Die Kostenspalte des Geräts ist mit Schemaschritt 228
+        /// entfallen (der Satz steht in der Kostenverwaltung), und der Verweis gehört der
+        /// Kostenverwaltung — ein Import-Überschreiben ließe ihn sonst leer zurück.
         /// </summary>
         internal static string[] Importspalten()
         {
             var liste = new List<string>();
             foreach (string s in WechselrichterSchema.Fachspalten)
-                liste.Add(s);
+                if (!string.Equals(s, KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION,
+                                   StringComparison.OrdinalIgnoreCase))
+                    liste.Add(s);
             return liste.ToArray();
         }
 
@@ -594,6 +597,8 @@ namespace WindowsFormsApplication1
                 case WechselrichterSchema.SPALTE_SANDIA_C3: return m_Sandia_C3;
                 case WechselrichterSchema.SPALTE_HERKUNFT:
                     return string.IsNullOrWhiteSpace(m_Herkunft) ? null : m_Herkunft;
+                case KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION:
+                    return IdKostenVorlageInvestition > 0 ? IdKostenVorlageInvestition : null;
             }
             return null;
         }
