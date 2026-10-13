@@ -55380,5 +55380,74 @@ Chart</value>
   <data name="MPB_BTN_BEARBEITEN_HINWEIS" xml:space="preserve">
     <value>Öffnet das Blatt „Nutzung und Kalender“ mit allen Zonen.</value>
   </data>
+  <data name="GEBV_BTN_OEFFNEN" xml:space="preserve">
+    <value>Vorgaben der Baualtersklasse übernehmen…</value>
+  </data>
+  <data name="GEBV_BTN_ZURUECKNEHMEN" xml:space="preserve">
+    <value>Vorgaben zurücknehmen</value>
+  </data>
+  <data name="GEBV_TITEL" xml:space="preserve">
+    <value>Vorgaben der Baualtersklasse</value>
+  </data>
+  <data name="GEBV_GRUND_ZONEN" xml:space="preserve">
+    <value>Das Gebäude trägt Zonen – es gilt der Zonenweg (Reiter „Zonen“).</value>
+  </data>
+  <data name="GEBV_GRUND_KLASSE" xml:space="preserve">
+    <value>Keine Baualtersklasse gesetzt – zuerst Baualtersklasse oder Baujahr wählen.</value>
+  </data>
+  <data name="GEBV_GRUND_WERTE" xml:space="preserve">
+    <value>Die Baualtersklasse gibt keine Werte vor.</value>
+  </data>
+  <data name="GEBV_HERKUNFT_KLASSE" xml:space="preserve">
+    <value>Vorgabe Klasse {0}: Median von {1} Katalogbauten der Klasse.</value>
+  </data>
+  <data name="GEBV_HERKUNFT_STANDARD" xml:space="preserve">
+    <value>Vorgabe Energiestandard {0}: Median von {1} Katalogbauten dieses Standards.</value>
+  </data>
+  <data name="GEBV_HERKUNFT_FREI" xml:space="preserve">
+    <value>Vorgabe Klasse {0}: freier Wert (Typgebäude nach Stein/Loga 2025), kein Katalogbau der Klasse.</value>
+  </data>
+  <data name="GEBV_SP_FELD" xml:space="preserve">
+    <value>Feld</value>
+  </data>
+  <data name="GEBV_SP_JETZT" xml:space="preserve">
+    <value>Jetzt</value>
+  </data>
+  <data name="GEBV_SP_NEU" xml:space="preserve">
+    <value>Vorgabe</value>
+  </data>
+  <data name="GEBV_TXT_GLEICH" xml:space="preserve">
+    <value>unverändert</value>
+  </data>
+  <data name="GEBV_TXT_HINWEIS" xml:space="preserve">
+    <value>Übernommen wird in den Arbeitsstand, gespeichert mit OK. Flächen, Sollwerte und Kalender bleiben.</value>
+  </data>
+  <data name="GEBV_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="GEBV_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="GEBV_GRUPPE_PROFIL" xml:space="preserve">
+    <value>Profil der Gebäudeart</value>
+  </data>
+  <data name="GEBV_TXT_PROFIL" xml:space="preserve">
+    <value>Die Gebäudeart „{0}“ gibt das Nutzungsprofil „{1}“ vor (Sollwerte, Gewinne, Lüftung).</value>
+  </data>
+  <data name="GEBV_BTN_PROFIL" xml:space="preserve">
+    <value>Profil übernehmen…</value>
+  </data>
+  <data name="GEBV_GRUND_PROFIL_KEINS" xml:space="preserve">
+    <value>Die Gebäudeart „{0}“ gibt kein Nutzungsprofil vor.</value>
+  </data>
+  <data name="GEBV_GRUND_PROFIL_WEG" xml:space="preserve">
+    <value>Nutzungsprofile stehen hier nicht bereit.</value>
+  </data>
+  <data name="GEBV_MELDUNG_UEBERNOMMEN" xml:space="preserve">
+    <value>Vorgaben {0} übernommen ({1} Felder geändert) – mit OK speichern.</value>
+  </data>
+  <data name="GEBV_MELDUNG_ZURUECK" xml:space="preserve">
+    <value>Vorgaben zurückgenommen.</value>
+  </data>
 </root>
 
