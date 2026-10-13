@@ -2958,6 +2958,9 @@
         /// <summary>Einheit der leistungsbezogenen Kosten.</summary>
         internal const string EINHEIT_EURO_KW = "€/kW";
 
+        /// <summary>Einheit der Kosten je installierter Modulleistung.</summary>
+        internal const string EINHEIT_EURO_KWP = "€/kWp";
+
         /// <summary>Einheit einer elektrischen Spannung.</summary>
         internal const string EINHEIT_VOLT = "V";
 
@@ -3137,6 +3140,10 @@
         internal static string WrkPDcMaxName => MyResource.Resource.WRK_LBL_P_DC_MAX;
         internal static string WrkPDcMaxErl => MyResource.Resource.KI_DLG_WRK_P_DC_MAX_ERL;
         internal static string WrkHerkunftName => MyResource.Resource.WRK_LBL_HERKUNFT;
+        // Welle KB-4: der Kostensatz der Satzvorlage an PV-Modul- und Wechselrichterkatalog -
+        // dieselbe Beschriftung und dieselbe Herleitungszeile wie an der Maske.
+        internal static string ModkKostensatzName => MyResource.Resource.MODK_LBL_KOSTENSATZ;
+        internal static string ModkKostensatzErl => MyResource.Resource.MODK_HERL_KOSTENSATZ;
         internal static string WrkHerkunftErl => MyResource.Resource.KI_DLG_WRK_HERKUNFT_ERL;
         internal static string WrkUMppMinName => MyResource.Resource.WRK_LBL_U_MPP_MIN;
         internal static string WrkUMppMinErl => MyResource.Resource.KI_DLG_WRK_U_MPP_MIN_ERL;

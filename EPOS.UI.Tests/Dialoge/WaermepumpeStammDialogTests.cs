@@ -877,7 +877,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         // Ein Wert ist da: nur die Herkunft, kein zweiter Hinweis.
         Assert.Equal(new[]
         {
-            "aus dem Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt"
+            "aus der Satzvorlage; Gerätekosten werden in der Kostenverwaltung gepflegt"
         }, zeilen);
     }
 
