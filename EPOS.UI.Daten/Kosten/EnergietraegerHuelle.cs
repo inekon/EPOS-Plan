@@ -915,12 +915,24 @@ namespace WindowsFormsApplication1
                 stand.AltSO2 = _gewaehlt.SO2;
                 stand.AltNOx = _gewaehlt.NOx;
 
-                gemerkteBasis = _gewaehlt.BillingUnit;
+                // Ohne Projektzeile ist nichts gemerkt: Die Vorgabe (unten) gilt.
+                gemerkteBasis = null;
 
                 // ETAPPE E9b: ohne Projektzeile gibt es keine Szenariopreise.
                 _baseSzArbeitBest = null;
                 _baseSzArbeitWorst = null;
             }
+
+            // Vorgabe €/kWh: Eine gemerkte Preisbasis bleibt; nur eine neue Auswahl
+            // oder ein leerer Wert steht in €/kWh — umgerechnet mit dem Heizwert
+            // (Faktor, AnzeigeAusBasis). Ohne Heizwert bleibt die Abrechnungseinheit,
+            // ebenso ohne Spalte (Schemastand vor 112): Dort sagt die Herleitungszeile
+            // ausdrücklich, dass die Karte die Abrechnungseinheit zeigt.
+            if (projekt != null && projekt.PreisbasisSpalteFehlt)
+                gemerkteBasis = _gewaehlt.BillingUnit;
+            else
+                gemerkteBasis = EnergietraegerPreiskarte.VorgabePreisbasis(
+                    gemerkteBasis, _gewaehlt.BillingUnit, _gewaehlt.HasHi, stand.Heizwert);
 
             // UR-1: Die Preisbasis „kWh" traegt den HEIZWERT als Faktor, nicht den
             // Faktor einer Umrechnungsregel. Die Liste kann deshalb erst stehen,
