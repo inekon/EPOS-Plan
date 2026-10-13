@@ -54961,13 +54961,19 @@ Chart</value>
     <value>Gebäude</value>
   </data>
   <data name="MP_VORSCHLAG_PROJEKTAUFBAU" xml:space="preserve">
-    <value>Projektaufbau „{0}“ übernehmen</value>
+    <value>Stufe 1, Projektaufbau: „{0}“ übernehmen</value>
   </data>
   <data name="MP_VORSCHLAG_KATALOGAUFBAU" xml:space="preserve">
-    <value>Katalogaufbau „{0}“ (U {1} W/(m²K)) übernehmen</value>
+    <value>Stufe 2, Katalogaufbau: „{0}“ (U {1} W/(m²K)) übernehmen</value>
   </data>
   <data name="MP_VORSCHLAG_TYPAUFBAU" xml:space="preserve">
-    <value>Typaufbau „{0}“, abgeglichen auf U {1} W/(m²K)</value>
+    <value>Stufe 3, Typaufbau: „{0}“, abgeglichen auf U {1} W/(m²K)</value>
+  </data>
+  <data name="MP_VORSCHLAG_ZUSATZ_NAME" xml:space="preserve">
+    <value>; der Name „{0}“ trifft die Gruppe {1}</value>
+  </data>
+  <data name="MP_VORSCHLAG_ZUSATZ_KLASSE" xml:space="preserve">
+    <value>; mit U {0} W/(m²K) aus der Baualtersklasse {1}</value>
   </data>
   <data name="MP_VORSCHLAG_PROFIL_DINNUMMER" xml:space="preserve">
     <value>Profil „{0}“ aus der DIN-Nummer</value>

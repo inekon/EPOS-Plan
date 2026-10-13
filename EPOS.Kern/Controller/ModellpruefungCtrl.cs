@@ -220,7 +220,18 @@ namespace WindowsFormsApplication1
                 }
             }
             int? alt = bt.ID_Aufbau;
+            double? altU = bt.U_Wert;
             int idb = bt.ID;
+            if (p.UBauteil is double uNeu)
+            {
+                // Stufe C mit Baualtersklasse (MA-4): U und Aufbau in einem Schritt, eine Rücknahme stellt beide zurück.
+                v.Ausfuehren("UPDATE \"Tab_Bauteil\" SET \"ID_Aufbau\" = ?, \"U_Wert\" = ? WHERE \"ID\" = ?",
+                             new DbParam("@a", idAufbau), new DbParam("@u", uNeu), new DbParam("@b", idb));
+                rueck.Add(x => x.Ausfuehren("UPDATE \"Tab_Bauteil\" SET \"ID_Aufbau\" = ?, \"U_Wert\" = ? WHERE \"ID\" = ?",
+                                            new DbParam("@a", (object)alt ?? DBNull.Value), new DbParam("@u", (object)altU ?? DBNull.Value),
+                                            new DbParam("@b", idb)));
+                return null;
+            }
             v.Ausfuehren("UPDATE \"Tab_Bauteil\" SET \"ID_Aufbau\" = ? WHERE \"ID\" = ?", new DbParam("@a", idAufbau), new DbParam("@b", idb));
             rueck.Add(x => x.Ausfuehren("UPDATE \"Tab_Bauteil\" SET \"ID_Aufbau\" = ? WHERE \"ID\" = ?",
                                         new DbParam("@a", (object)alt ?? DBNull.Value), new DbParam("@b", idb)));
@@ -312,6 +323,7 @@ namespace WindowsFormsApplication1
                 Gebaeudeart = S(r, "Gebaeudeart"),
                 Wohngebaeude = S(r, "Wohngebaeude_Nicht_Wohngebaeude"),
                 Baualtersklasse = S(r, "Baualtersklasse"),
+                Energiestandard = S(r, GebaeudeSchema.SPALTE_ENERGIESTANDARD),
                 Feiertagsland = S(r, "Feiertagsland"),
                 Nutzflaeche = D(r, "Nutzflaeche"),
                 Raumhoehe = D(r, "Raumhoehe"),
@@ -387,10 +399,31 @@ namespace WindowsFormsApplication1
                 foreach (BauteilaufbauModel a in aufbau.LesenJeProjekt(s.IdProjekt))
                     s.Projektaufbauten[a.ID] = Kennung(a, 0);
                 int folge = 0;
-                s.Katalogaufbauten = aufbau.LesenKatalog().Select(a => Kennung(a, folge++)).ToList();
+                Dictionary<int, string> stoffgruppe = Stoffgruppen();
+                s.Katalogaufbauten = aufbau.LesenKatalog().Select(a => Kennung(a, folge++, stoffgruppe)).ToList();
                 s.Vorbelegung = Raumnutzungsvorbelegung.Lesen();
             }
             return s;
+        }
+
+        /// <summary>
+        /// Die Kennwerte eines Aufbaus für die Regel: U, Kapazität, Kennzeichen, Schicht ohne Stoffwert; mit
+        /// <paramref name="stoffgruppe"/> (Katalogbaustoff → Gruppencode) dazu Aufbauklasse und Typgruppen (MA-4).
+        /// </summary>
+        internal static Aufbaukennung Kennung(BauteilaufbauModel a, int folge, IReadOnlyDictionary<int, string> stoffgruppe)
+        {
+            Aufbaukennung k = Kennung(a, folge);
+            var gruppen = a.Schichten.Select(x => x.ID_Baustoff is int id && stoffgruppe != null && stoffgruppe.TryGetValue(id, out string g) ? g : null);
+            return k with { Klasse = a.KlasseCode, Typgruppen = Aufbaugruppenabgleich.Typgruppen(a.Bezeichner, gruppen) };
+        }
+
+        /// <summary>Der Gruppencode je Katalogbaustoff (Code, sonst aus der Stoffgruppe des Katalogs).</summary>
+        private static Dictionary<int, string> Stoffgruppen()
+        {
+            var d = new Dictionary<int, string>();
+            foreach (BaustoffModel m in new BaustoffCtrl().LesenKatalog())
+                d[m.ID] = m.GruppeCode ?? Bauteilkatalog.GruppeAusStoffgruppe(m.Gruppe);
+            return d;
         }
 
         /// <summary>Die Kennwerte eines Aufbaus für die Regel: U, Kapazität, Kennzeichen, Schicht ohne Stoffwert.</summary>
