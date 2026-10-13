@@ -2017,6 +2017,9 @@ Ohne Quellpuffer steht hier 0,00.</value>
   <data name="CHART_ACHSE_JAHRESSTUNDEN_DATUM" xml:space="preserve">
     <value>Jahresstunden [h] · Datum</value>
   </data>
+  <data name="CHART_ACHSE_TAG_DATUM" xml:space="preserve">
+    <value>Tag des Jahres · Datum</value>
+  </data>
   <data name="CHART_ACHSE_MONATSKUERZEL" xml:space="preserve">
     <value>Jan.|Feb.|März|Apr.|Mai|Juni|Juli|Aug.|Sep.|Okt.|Nov.|Dez.</value>
   </data>
@@ -51522,6 +51525,18 @@ Chart</value>
   </data>
   <data name="DIAGRAMM_TIP_CSV" xml:space="preserve">
     <value>Jahresganglinie als CSV speichern</value>
+  </data>
+  <data name="DIAGRAMM_BTN_MONAT" xml:space="preserve">
+    <value>Monat</value>
+  </data>
+  <data name="DIAGRAMM_BTN_TAG" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="DIAGRAMM_BTN_STUNDE" xml:space="preserve">
+    <value>Stunde</value>
+  </data>
+  <data name="DIAGRAMM_TIP_EINHEIT" xml:space="preserve">
+    <value>Teilung der Zeitachse: Monat, Tag oder Stunde</value>
   </data>
   <data name="SIMQ_ERDREICH_LAUF_KENNWERTE_ZEILE" xml:space="preserve">
     <value>Jahresmittel {0} °C  ·  Tiefstwert {1} °C am {2}  ·  Höchstwert {3} °C am {4}</value>

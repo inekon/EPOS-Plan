@@ -22001,6 +22001,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tag des Jahres · Datum ähnelt.
+        /// </summary>
+        public static string CHART_ACHSE_TAG_DATUM {
+            get {
+                return ResourceManager.GetString("CHART_ACHSE_TAG_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Temperatur [°C] ähnelt.
         /// </summary>
         public static string CHART_ACHSE_TEMPERATUR {
@@ -23648,11 +23657,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monat ähnelt.
+        /// </summary>
+        public static string DIAGRAMM_BTN_MONAT {
+            get {
+                return ResourceManager.GetString("DIAGRAMM_BTN_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde ähnelt.
+        /// </summary>
+        public static string DIAGRAMM_BTN_STUNDE {
+            get {
+                return ResourceManager.GetString("DIAGRAMM_BTN_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tag ähnelt.
+        /// </summary>
+        public static string DIAGRAMM_BTN_TAG {
+            get {
+                return ResourceManager.GetString("DIAGRAMM_BTN_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jahresganglinie als CSV speichern ähnelt.
         /// </summary>
         public static string DIAGRAMM_TIP_CSV {
             get {
                 return ResourceManager.GetString("DIAGRAMM_TIP_CSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teilung der Zeitachse: Monat, Tag oder Stunde ähnelt.
+        /// </summary>
+        public static string DIAGRAMM_TIP_EINHEIT {
+            get {
+                return ResourceManager.GetString("DIAGRAMM_TIP_EINHEIT", resourceCulture);
             }
         }
         

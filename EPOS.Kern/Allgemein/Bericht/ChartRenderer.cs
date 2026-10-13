@@ -225,6 +225,17 @@ namespace WindowsFormsApplication1
             /// </summary>
             public bool Luecken;
 
+            /// <summary>
+            /// <b>Was die Reihe fachlich ist</b> (Oberflächenregel, Anwenderrückmeldung 13.10.2026):
+            /// Bedarf oder Erzeugung. Die Hülle nennt es, wo es nicht aus der Farbrolle folgt;
+            /// der Renderer reicht es in die <see cref="Datenreihe"/> des Modells durch. Nur der
+            /// Oberflächenmodus wertet es aus — das Bild des Berichts bleibt byte-gleich.
+            /// </summary>
+            public Reihenrolle Reihenrolle = Reihenrolle.Unbestimmt;
+
+            /// <summary>Dieselbe Reihe mit ihrer fachlichen Rolle — die Schreibweise der Hüllen.</summary>
+            public Reihe MitRolle(Reihenrolle rolle) { Reihenrolle = rolle; return this; }
+
             public Reihe(string n, double[] w, SKColor f) { Name = n; Werte = w; Farbe = f; }
 
             public Reihe(string n, double[] w, SKColor f, Stapelart gruppe,
@@ -3243,7 +3254,8 @@ namespace WindowsFormsApplication1
                 // Fenster - eine kuerzere Reihe zeichnet das Bild ueber die volle
                 // Breite, nicht bis zur Haelfte.
                 z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, r.Werte,
-                                            Reihenfenster(z.Flaeche.Daten, r.Werte.Length)));
+                                            Reihenfenster(z.Flaeche.Daten, r.Werte.Length),
+                                            Reihenrolle: r.Reihenrolle));
             }
 
             return z;
@@ -4777,7 +4789,7 @@ namespace WindowsFormsApplication1
             z.Flaeche = new Zeichenflaeche(
                 rc.Modellrahmen(),
                 new Datenfenster(xVon, xVon + gueltig[0].Werte.Length - 1, 0, Y_PROZENT_MAX),
-                Zeitachsenart(sortiert));
+                Zeitachsenart(sortiert), Teilung: Zeitteilung(achse));
 
             // DIE LINIEN ZUERST, DER STAPEL DARÜBER (siehe Kopf) — dieselbe Zeichenlage
             // wie die Kontur im Erzeugerstapel: Die Summenlinie ist die Oberkante des
@@ -4835,7 +4847,8 @@ namespace WindowsFormsApplication1
                 z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, prozent,
                                             new Datenfenster(xVon, xVon + prozent.Length - 1,
                                                              0, Y_PROZENT_MAX),
-                                            Huelle: stapeln, Bezug: stapeln ? stapelbezug : null));
+                                            Huelle: stapeln, Bezug: stapeln ? stapelbezug : null,
+                                            Reihenrolle: r.Reihenrolle));
             }
 
             if (stapeln)
@@ -5075,7 +5088,7 @@ namespace WindowsFormsApplication1
             double xVon = fenster == null ? 0.0 : Math.Max(0, Math.Min(gesamt, fenster.Von));
             var fensterLinks = new Datenfenster(xVon, xVon + n - 1, 0, max);
             z.Flaeche = new Zeichenflaeche(rc.Modellrahmen(), fensterLinks,
-                                           Zeitachsenart(sortiert));
+                                           Zeitachsenart(sortiert), Teilung: Zeitteilung(achse));
 
             // Steht ein Stapel im Bild, begleiten ihn Kontur und Linien: Bei dichten
             // Reihen zeichnen sie die Treppe ihrer Werte in den Spitzenstunden (Huelle),
@@ -5118,7 +5131,8 @@ namespace WindowsFormsApplication1
                 z.FuegeReihe(new Datenreihe(kontur.Name ?? "", Ton(kontur), konturstaerke,
                                             null, konturwerte,
                                             Reihenfenster(fensterLinks, konturwerte.Length),
-                                            Huelle: mitStapel, Bezug: stapelbezug));
+                                            Huelle: mitStapel, Bezug: stapelbezug,
+                                            Reihenrolle: kontur.Reihenrolle));
             }
 
             // (2) Der Stapel.
@@ -5132,7 +5146,8 @@ namespace WindowsFormsApplication1
                     z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                         ZeichneLinie(zr, rc, werte, 0, max, Ton(r), staerke));
                     z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, werte,
-                                                Reihenfenster(fensterLinks, werte.Length)));
+                                                Reihenfenster(fensterLinks, werte.Length),
+                                                Reihenrolle: r.Reihenrolle));
                 }
             }
             else
@@ -5189,7 +5204,8 @@ namespace WindowsFormsApplication1
                 });
                 z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, werte,
                                             Reihenfenster(fensterLinks, werte.Length),
-                                            Huelle: mitStapel, Bezug: stapelbezug));
+                                            Huelle: mitStapel, Bezug: stapelbezug,
+                                            Reihenrolle: r.Reihenrolle));
             }
 
             // (4) B3 — die zweite y-Achse mit EIGENER, GEMEINSAMER Skala.
@@ -6321,7 +6337,8 @@ namespace WindowsFormsApplication1
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                     VerlaufLinie(zr, rc, werte, min, max, Ton(r), staerke, r.Strichart, r.Luecken && !sortiert));
                 z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, muster, werte,
-                                            Reihenfenster(fensterLinks, werte.Length)));
+                                            Reihenfenster(fensterLinks, werte.Length),
+                                            Reihenrolle: r.Reihenrolle));
             }
 
             // W11b-B-26: die zweite Achse mit EIGENER Skala, von null bis zum
@@ -6789,6 +6806,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static Achsenart Zeitachsenart(bool sortiert)
             => sortiert ? Achsenart.Index : Achsenart.Stunden;
+
+        /// <summary>
+        /// Die Teilung der Zeitachse in der Vollansicht des Bildes — die Vorgabe der Wahl
+        /// „Monat | Tag | Stunde“ am Bild: Monatsgrenzen bei <see cref="Achse.Monate"/>, sonst
+        /// Jahresstunden.
+        /// </summary>
+        private static Zeitachseneinheit Zeitteilung(Achse achse)
+            => achse == Achse.Monate ? Zeitachseneinheit.Monat : Zeitachseneinheit.Stunde;
 
         /// <summary>
         /// Der Werttext an der Stelle <paramref name="i"/>; <c>null</c>, wo es keinen

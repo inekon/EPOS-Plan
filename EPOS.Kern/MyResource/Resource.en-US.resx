@@ -2010,6 +2010,9 @@ Without a source buffer this reads 0.00.</value>
   <data name="CHART_ACHSE_JAHRESSTUNDEN_DATUM" xml:space="preserve">
     <value>Hours of the year [h] · date</value>
   </data>
+  <data name="CHART_ACHSE_TAG_DATUM" xml:space="preserve">
+    <value>Day of year · date</value>
+  </data>
   <data name="CHART_ACHSE_MONATSKUERZEL" xml:space="preserve">
     <value>Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec</value>
   </data>
@@ -51515,6 +51518,18 @@ chart</value>
   </data>
   <data name="DIAGRAMM_TIP_CSV" xml:space="preserve">
     <value>Save annual load curve as CSV</value>
+  </data>
+  <data name="DIAGRAMM_BTN_MONAT" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="DIAGRAMM_BTN_TAG" xml:space="preserve">
+    <value>Day</value>
+  </data>
+  <data name="DIAGRAMM_BTN_STUNDE" xml:space="preserve">
+    <value>Hour</value>
+  </data>
+  <data name="DIAGRAMM_TIP_EINHEIT" xml:space="preserve">
+    <value>Division of the time axis: month, day or hour</value>
   </data>
   <data name="SIMQ_ERDREICH_LAUF_KENNWERTE_ZEILE" xml:space="preserve">
     <value>annual mean {0} °C  ·  minimum {1} °C on {2}  ·  maximum {3} °C on {4}</value>

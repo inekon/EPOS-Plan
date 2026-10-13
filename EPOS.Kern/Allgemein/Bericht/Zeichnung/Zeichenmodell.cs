@@ -248,9 +248,16 @@ namespace WindowsFormsApplication1.Zeichnung
     /// „kWh", „a"; <c>null</c> = keine (eine Stunden- oder Indexachse braucht keine,
     /// und ein Bild, dessen x-Größe je Aufruf wechselt, nennt sie nicht).
     /// </param>
+    /// <param name="Teilung">
+    /// <b>Wie das Bild seine Zeitachse in der Vollansicht teilt</b> — die Vorgabe der Wahl
+    /// „Monat | Tag | Stunde“ am Bild: <see cref="Zeitachseneinheit.Monat"/> bei einer
+    /// Monatsachse 0…12 (die Vorgabe), <see cref="Zeitachseneinheit.Stunde"/> bei einer
+    /// Jahresstundenachse. Nur eine Stundenachse eines Jahresrasters wertet sie aus.
+    /// </param>
     public sealed record Zeichenflaeche(Rahmen Bild, Datenfenster Daten,
                                         Achsenart X = Achsenart.Stunden,
-                                        string XEinheit = null);
+                                        string XEinheit = null,
+                                        Zeitachseneinheit Teilung = Zeitachseneinheit.Monat);
 
     /// <summary>
     /// <b>Auf WELCHER y-Achse eine Reihe steht (Entscheid DG-E3-12).</b>
@@ -302,6 +309,57 @@ namespace WindowsFormsApplication1.Zeichnung
         /// ist, und 8 760 Punkte sind EIN Knoten.</para>
         /// </summary>
         Punkte = 2
+    }
+
+    /// <summary>
+    /// <b>Was eine Reihe FACHLICH ist</b> — die Rolle, nach der die Oberflächenregel
+    /// (<see cref="Oberflaechenregel"/>) ihre Darstellung wählt: Ein Bedarf ist eine LINIE
+    /// über allem, eine Erzeugung eine FLÄCHE. Die Rolle steht an der Reihe, nicht im
+    /// Dialog; wo die Hülle keine nennt, folgt sie aus der Farbrolle
+    /// (<see cref="Oberflaechenregel.Aus"/>).
+    /// </summary>
+    public enum Reihenrolle
+    {
+        /// <summary>Keine Aussage — die Reihe bleibt, wie das Bild sie zeichnet (Vorgabe).</summary>
+        Unbestimmt = 0,
+
+        /// <summary>Ein Bedarf oder eine Last (Wärme-, Strom-, Kältebedarf, Rest): Linie über den Flächen.</summary>
+        Bedarf = 1,
+
+        /// <summary>Eine Erzeugung oder Deckung (Produktion, Photovoltaik, Überschuss): Fläche ab der Achsennull.</summary>
+        Erzeugung = 2
+    }
+
+    /// <summary>
+    /// <b>Für welchen Weg ein Modell gezeichnet wird.</b> <see cref="Bericht"/> ist der
+    /// Bestand — PNG und Druck-SVG, byte-gleich wie bisher. <see cref="Interaktiv"/> setzt
+    /// die Oberfläche: Dort gilt die <see cref="Oberflaechenregel"/> (Bedarf als Linie,
+    /// Erzeugung als Fläche, Tagesband). Der Maler übergeht den Modus.
+    /// </summary>
+    public enum Darstellung
+    {
+        /// <summary>Der Berichtsweg — die Vorgabe jedes Modells aus dem Renderer.</summary>
+        Bericht = 0,
+
+        /// <summary>Der Oberflächenweg (<c>DiagrammSvg</c>): Oberflächenregel angewandt.</summary>
+        Interaktiv = 1
+    }
+
+    /// <summary>
+    /// <b>Die Einheit, in der die Zeitachse eines Jahresbildes geteilt wird</b> (Wahl
+    /// „Monat | Tag | Stunde“ am Bild): Monatsgrenzen mit Monatsnamen, Tage des Gemeinjahres
+    /// mit Datum, Jahresstunden mit Datum (<c>Zeitachse.Teilung</c>).
+    /// </summary>
+    public enum Zeitachseneinheit
+    {
+        /// <summary>Monatsgrenzen — die Teilung der Vollansicht jedes Monatsbildes.</summary>
+        Monat = 0,
+
+        /// <summary>Tage des Gemeinjahres (Tag 1 = 1. Januar), beschriftet mit Tag und Datum.</summary>
+        Tag = 1,
+
+        /// <summary>Jahresstunden, beschriftet mit Stunde und Datum.</summary>
+        Stunde = 2
     }
 
     /// <summary>
@@ -388,6 +446,20 @@ namespace WindowsFormsApplication1.Zeichnung
     /// der Spitzenstunde. <c>null</c> (oder eine andere Länge als <c>Werte</c>) = die eigenen
     /// Werte.
     /// </param>
+    /// <param name="Reihenrolle">
+    /// <b>Was die Reihe fachlich ist</b> (Bedarf, Erzeugung): Danach wählt die
+    /// <see cref="Oberflaechenregel"/> im Oberflächenmodus Art und Reihenfolge. Vorgabe
+    /// <see cref="Reihenrolle.Unbestimmt"/> — dann folgt die Rolle aus der Farbrolle des
+    /// Tons. Der Berichtsweg übergeht sie.
+    /// </param>
+    /// <param name="Tagesband">
+    /// <b>Die Reihe wird in der Jahresansicht zum TAGESBAND verdichtet</b> (Oberflächenregel):
+    /// je Tag Minimum bis Maximum als durchscheinendes Band, dazu das Tagesmittel als Kern
+    /// (Linie oder Fläche). Gesetzt von <see cref="Oberflaechenregel.Anwenden"/> für dichte
+    /// Jahresreihen ohne Stapel; beim Heranzoomen kommen die Stundenwerte zurück, sobald ein
+    /// Tag breiter als <see cref="Pfadregel.TAG_MIN_SPALTEN"/> Bildpunkte ist. Vorgabe
+    /// <c>false</c>: der Pfad des Bestands.
+    /// </param>
     public sealed record Datenreihe(string Name, Farbton Ton, float Staerke,
                                     Strichmuster Muster, double[] Werte,
                                     Datenfenster Fenster = null,
@@ -398,7 +470,9 @@ namespace WindowsFormsApplication1.Zeichnung
                                     string Einheit = null,
                                     Achsenseite Achsenseite = Zeichnung.Achsenseite.Links,
                                     bool Huelle = false,
-                                    double[] Bezug = null)
+                                    double[] Bezug = null,
+                                    Reihenrolle Reihenrolle = Zeichnung.Reihenrolle.Unbestimmt,
+                                    bool Tagesband = false)
     {
         /// <summary>
         /// Wertgleichheit samt Werten. Ein Record vergliche <see cref="Werte"/> über
@@ -420,6 +494,7 @@ namespace WindowsFormsApplication1.Zeichnung
             if (!string.Equals(Einheit, andere.Einheit, StringComparison.Ordinal)) return false;
             if (Achsenseite != andere.Achsenseite) return false;
             if (Huelle != andere.Huelle) return false;
+            if (Reihenrolle != andere.Reihenrolle || Tagesband != andere.Tagesband) return false;
             if (!Werteliste(Werte, andere.Werte)) return false;
             if (!Werteliste(XWerte, andere.XWerte)) return false;
             if (!Werteliste(Bezug, andere.Bezug)) return false;
@@ -862,6 +937,95 @@ namespace WindowsFormsApplication1.Zeichnung
             // 2001 ist kein Schaltjahr - wie das Jahresraster des Rechenkerns.
             return new DateTime(2001, 1, 1).AddMinutes((double)index * (24 * 60 / jeTag));
         }
+
+        // =================================================================
+        // DAS TAGESBAND (Oberflaechenregel)
+        //
+        // Eine dichte Jahresreihe ohne Stapel - der Strombedarf, die
+        // Photovoltaik, eine Temperatur - fuellt in der Jahresansicht je
+        // Bildpunktspalte die ganze Spanne ihres Tag-Nacht-Zickzacks und deckt
+        // jede Reihe darunter zu. Verdichtet wird deshalb JE TAG des festen
+        // Jahresrasters: das Band vom Tagestief zur Tagesspitze (durchscheinend)
+        // und das Tagesmittel als Kern. Beim Heranzoomen kommen die Stundenwerte
+        // zurueck, sobald ein Tag breiter als TAG_MIN_SPALTEN Bildpunkte ist -
+        // dieselbe Schwelle wie die Stufenregel des Stapels (TagesStufen).
+        //
+        // Ein nicht endlicher Wert zaehlt nicht mit; ein Tag ohne endlichen Wert
+        // ist eine LUECKE (NaN) und bricht Band und Kern dort ab.
+        // =================================================================
+
+        /// <summary>
+        /// <b>Ein Tag des Tagesbands</b>: die Stützstellen <paramref name="Von"/> bis
+        /// <paramref name="Bis"/> (Index in der GANZEN Reihe, einschließlich) mit Tagestief,
+        /// Tagesspitze und Tagesmittel der endlichen Werte; ohne endlichen Wert alle drei
+        /// <see cref="double.NaN"/>.
+        /// </summary>
+        public readonly record struct Tagesstufe(int Von, int Bis, double Min, double Max, double Mittel)
+        {
+            /// <summary>Trägt der Tag einen endlichen Wert?</summary>
+            public bool Belegt => !double.IsNaN(Mittel);
+
+            /// <summary>Die Mitte des Tages als Index (für die x-Stelle des Kerns).</summary>
+            public double Mitte => (Von + Bis) / 2.0;
+        }
+
+        /// <summary>
+        /// <b>Das Tagesband eines Ausschnitts</b>: je Tag des festen Jahresrasters (die Tage
+        /// stehen auf dem Jahresanfang, nicht auf dem Ausschnitt) Minimum, Maximum und
+        /// Mittel der Werte <paramref name="ab"/> … <paramref name="ab"/> + <paramref name="laenge"/> − 1.
+        /// Ein angeschnittener Tag am Rand nimmt nur seinen sichtbaren Teil. Leer für eine
+        /// Reihe ohne Tagesraster (<see cref="WerteJeTag"/> = 0).
+        /// </summary>
+        /// <param name="werte">Die GANZE Reihe (8 760 oder 35 040 Werte).</param>
+        /// <param name="ab">Der erste Index des Ausschnitts.</param>
+        /// <param name="laenge">Die Zahl der Werte des Ausschnitts.</param>
+        public static IReadOnlyList<Tagesstufe> Tagesband(double[] werte, int ab, int laenge)
+        {
+            var tage = new List<Tagesstufe>();
+            if (werte == null) return tage;
+            int jeTag = WerteJeTag(werte.Length);
+            if (jeTag == 0 || laenge <= 0) return tage;
+            if (ab < 0) { laenge += ab; ab = 0; }
+            int letzter = Math.Min(werte.Length - 1, ab + laenge - 1);
+            if (letzter < ab) return tage;
+
+            for (int tag = ab / jeTag; (long)tag * jeTag <= letzter; tag++)
+            {
+                int von = Math.Max(ab, tag * jeTag);
+                int bis = Math.Min(letzter, (tag + 1) * jeTag - 1);
+                double min = double.NaN, max = double.NaN, summe = 0.0;
+                int zahl = 0;
+                for (int i = von; i <= bis; i++)
+                {
+                    double w = werte[i];
+                    if (double.IsNaN(w) || double.IsInfinity(w)) continue;
+                    if (zahl == 0 || w < min) min = w;
+                    if (zahl == 0 || w > max) max = w;
+                    summe += w;
+                    zahl++;
+                }
+                tage.Add(new Tagesstufe(von, bis, min, max, zahl == 0 ? double.NaN : summe / zahl));
+            }
+            return tage;
+        }
+
+        /// <summary>Das Tagesband der ganzen Reihe (365 Tage bei einem vollen Jahresraster).</summary>
+        public static IReadOnlyList<Tagesstufe> Tagesband(double[] werte)
+            => Tagesband(werte, 0, werte == null ? 0 : werte.Length);
+
+        /// <summary>
+        /// <b>Steht die Reihe im Ausschnitt als Tagesband?</b> Nur eine Reihe, die das Band
+        /// trägt (<see cref="Datenreihe.Tagesband"/>), und nur solange ein Tag schmaler als
+        /// <see cref="TAG_MIN_SPALTEN"/> Bildpunktspalten ist (<see cref="TagesStufen"/>) —
+        /// darüber zeigt der Pfad wieder jede Stunde.
+        /// </summary>
+        /// <param name="reihe">Die Reihe.</param>
+        /// <param name="laenge">Die Werte des Ausschnitts.</param>
+        /// <param name="spalten">Die Bildpunktspalten, über die der Ausschnitt reicht.</param>
+        public static bool AlsTagesband(Datenreihe reihe, int laenge, int spalten)
+            => reihe != null && reihe.Tagesband && reihe.Werte != null && reihe.XWerte == null
+               && reihe.Art != Reihenart.Punkte
+               && TagesStufen(reihe.Werte.Length, laenge, spalten);
     }
 
     // ------------------------------------------------------------------ Ziele
@@ -951,6 +1115,14 @@ namespace WindowsFormsApplication1.Zeichnung
 
         /// <summary>Die Reihen des Bildes in Datenwerten, in Zeichenreihenfolge.</summary>
         public IReadOnlyList<Datenreihe> Reihen => _reihen;
+
+        /// <summary>
+        /// Für welchen Weg das Modell steht: <see cref="Darstellung.Bericht"/> aus dem
+        /// Renderer (Vorgabe), <see cref="Darstellung.Interaktiv"/> nach
+        /// <see cref="Oberflaechenregel.Anwenden"/>. Maler und Druck übergehen es; der
+        /// <see cref="SvgSchreiber"/> nennt es als <c>data-darstellung</c> am Bild.
+        /// </summary>
+        public Darstellung Darstellung { get; set; } = Darstellung.Bericht;
 
         /// <summary>
         /// Die Tafel eines Teppichbilds (365 Tage × 24 Stunden) für den CSV-Export; <c>null</c> bei
