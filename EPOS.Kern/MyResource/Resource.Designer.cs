@@ -57238,6 +57238,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Intervalle je Stunde ähnelt.
+        /// </summary>
+        public static string KFLT_EH_INTERVALLE_JE_STUNDE {
+            get {
+                return ResourceManager.GetString("KFLT_EH_INTERVALLE_JE_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Filter löschen ähnelt.
         /// </summary>
         public static string KFLT_FILTER_LOESCHEN {
@@ -144638,24 +144647,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Daten filtern ähnelt.
-        /// </summary>
-        public static string WPK_BTN_FILTERN {
-            get {
-                return ResourceManager.GetString("WPK_BTN_FILTERN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Filter Reset ähnelt.
-        /// </summary>
-        public static string WPK_BTN_RESET {
-            get {
-                return ResourceManager.GetString("WPK_BTN_RESET", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Maschine auch zum Kühlen benutzen ähnelt.
         /// </summary>
         public static string WPK_CHK_KUEHLBETRIEB {
@@ -144800,38 +144791,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aufstellung ähnelt.
-        /// </summary>
-        public static string WPK_LBL_AUFSTELLUNG {
-            get {
-                return ResourceManager.GetString("WPK_LBL_AUFSTELLUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung ähnelt.
-        /// </summary>
-        public static string WPK_LBL_AUSLEGUNG {
-            get {
-                return ResourceManager.GetString("WPK_LBL_AUSLEGUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bauart ähnelt.
         /// </summary>
         public static string WPK_LBL_BAUART {
             get {
                 return ResourceManager.GetString("WPK_LBL_BAUART", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller ähnelt.
-        /// </summary>
-        public static string WPK_LBL_HERSTELLER {
-            get {
-                return ResourceManager.GetString("WPK_LBL_HERSTELLER", resourceCulture);
             }
         }
         
@@ -144877,78 +144841,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPK_LBL_KUEHL_VORLAUF {
             get {
                 return ResourceManager.GetString("WPK_LBL_KUEHL_VORLAUF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Leist. Max [kW] ähnelt.
-        /// </summary>
-        public static string WPK_LBL_LEISTUNG_MAX {
-            get {
-                return ResourceManager.GetString("WPK_LBL_LEISTUNG_MAX", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Leist. Min [kW] ähnelt.
-        /// </summary>
-        public static string WPK_LBL_LEISTUNG_MIN {
-            get {
-                return ResourceManager.GetString("WPK_LBL_LEISTUNG_MIN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Funktionsprinzip ähnelt.
-        /// </summary>
-        public static string WPK_LBL_PRINZIP {
-            get {
-                return ResourceManager.GetString("WPK_LBL_PRINZIP", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Regelung ähnelt.
-        /// </summary>
-        public static string WPK_LBL_REGELUNG {
-            get {
-                return ResourceManager.GetString("WPK_LBL_REGELUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Modell filtern (z.B. CS*7*) ähnelt.
-        /// </summary>
-        public static string WPK_LBL_SUCHE {
-            get {
-                return ResourceManager.GetString("WPK_LBL_SUCHE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die VLT Max [°C] ähnelt.
-        /// </summary>
-        public static string WPK_LBL_VLT_MAX {
-            get {
-                return ResourceManager.GetString("WPK_LBL_VLT_MAX", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die VLT Min [°C] ähnelt.
-        /// </summary>
-        public static string WPK_LBL_VLT_MIN {
-            get {
-                return ResourceManager.GetString("WPK_LBL_VLT_MIN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zuheizung ähnelt.
-        /// </summary>
-        public static string WPK_LBL_ZUHEIZUNG {
-            get {
-                return ResourceManager.GetString("WPK_LBL_ZUHEIZUNG", resourceCulture);
             }
         }
         
@@ -145039,87 +144931,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPK_PH_KUEHL_VORLAUF {
             get {
                 return ResourceManager.GetString("WPK_PH_KUEHL_VORLAUF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 🔍  Suchen… ähnelt.
-        /// </summary>
-        public static string WPK_PLATZHALTER_SUCHE {
-            get {
-                return ResourceManager.GetString("WPK_PLATZHALTER_SUCHE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bauart ähnelt.
-        /// </summary>
-        public static string WPK_SP_BAUART {
-            get {
-                return ResourceManager.GetString("WPK_SP_BAUART", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung [kW] ähnelt.
-        /// </summary>
-        public static string WPK_SP_LEISTUNG {
-            get {
-                return ResourceManager.GetString("WPK_SP_LEISTUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Modell ähnelt.
-        /// </summary>
-        public static string WPK_SP_MODELL {
-            get {
-                return ResourceManager.GetString("WPK_SP_MODELL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die VLT max [°C] ähnelt.
-        /// </summary>
-        public static string WPK_SP_VLT_MAX {
-            get {
-                return ResourceManager.GetString("WPK_SP_VLT_MAX", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die VLT min [°C] ähnelt.
-        /// </summary>
-        public static string WPK_SP_VLT_MIN {
-            get {
-                return ResourceManager.GetString("WPK_SP_VLT_MIN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zuheizer [kW] ähnelt.
-        /// </summary>
-        public static string WPK_SP_ZUHEIZER {
-            get {
-                return ResourceManager.GetString("WPK_SP_ZUHEIZER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Alle ähnelt.
-        /// </summary>
-        public static string WPK_TEXT_ALLE {
-            get {
-                return ResourceManager.GetString("WPK_TEXT_ALLE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Wärmepumpen gefunden ähnelt.
-        /// </summary>
-        public static string WPK_TREFFER {
-            get {
-                return ResourceManager.GetString("WPK_TREFFER", resourceCulture);
             }
         }
         

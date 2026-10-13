@@ -109,7 +109,7 @@ namespace EPOS.Kern.Tests
             Assert.All(plan.Zonen, z => Assert.True(z.AusProjektdatei));
             Assert.Equal(new[] { null, DbWerte.KOND_NUTZUNG_WOHNEN, DbWerte.KOND_NUTZUNG_BUERO }, plan.Zonen.Select(z => z.Nutzung));
             Assert.Equal("Nutzungsprofil 71 nach DIN/TS 18599-10", plan.Zonen[1].Profiltext);
-            Assert.Equal("20", plan.Zonen[1].Sollwert); // Einheit steht seit #1036 im Spaltenkopf
+            Assert.Equal("20", plan.Zonen[1].Sollwert);
             Assert.Equal("21", plan.Zonen[2].Sollwert);
             Assert.Empty(plan.NichtZugeordnet);
             Assert.Equal(3, stand.Projektdatei!.Uebernommen);

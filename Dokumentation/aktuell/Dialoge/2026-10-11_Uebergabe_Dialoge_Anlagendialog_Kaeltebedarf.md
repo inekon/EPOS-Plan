@@ -53,7 +53,7 @@ für die hier genannten Gegenstände ab.
 5. Fremde Befunde, nur gemeldet: Katalogprobe 8 Querroll-Verstöße in Verwaltungen N13b–N22a (Stammblatt 4–27 px); Fensterprobe `dubletten 1194x834`.
 6. Bei der Gebäudesimulation: Gebäudedialog/Mehrzonen-Import (GD), Normprofile DIN 18599‑10 (Außenluft je Person, KI-Anweisungsweg), Jahreswärmebedarf in der Zusammenfassung des Gebäudedialogs (übergeben, Konzept Katalogauswahl Abschnitt 5).
 7. (erledigt mit Statuszeile #1034) Nachzug KM‑K2: Naht für eine Wärmepumpen-Anlagenzeile (`WaermepumpeAnlageGaben`), dann öffnet Bearbeiten… im Kältemaschinen-Dialog die Wärmepumpen-Überlagerung; Wärmekaskade bei erster Wärmepumpe aus dem Kältedialog; Verwendungsmarke je Projektkopie; drei unbenutzte Textfelder/Ressourcen der entfallenen Zeile „Wärmepumpen im Kühlbetrieb" entfernen.
-8. Offen beim Anwender aus der Übersicht und den Einheiten: Versionsnummer der zwei Logbuchsätze, Einheit des Zeitintervalls (Strom-/PV-Ganglinie), Zeitbezug des Leistungspreises der Projekt-Brennstoffe; Nachzüge Kältemaschine: Übernahme als Ganzes, Vorlagenplatzhalter.
+8. Offen beim Anwender aus der Übersicht und den Einheiten: Versionsnummer der zwei Logbuchsätze, Einheit des Zeitintervalls (Strom-/PV-Ganglinie) (entschieden 13.10.2026: je Liste die eigene Einheit, Statuszeile #1040), Zeitbezug des Leistungspreises der Projekt-Brennstoffe; Nachzüge Kältemaschine: Übernahme als Ganzes, Vorlagenplatzhalter.
 
 ## 5 Einstiegs-Prompt für die neue Sitzung
 
