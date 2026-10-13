@@ -31,7 +31,13 @@ namespace WindowsFormsApplication1
                     catch (Exception ex) when (ex is not OutOfMemoryException) { return Array.Empty<ZonenNutzungsprofil>(); }
                 },
                 ProfilZuweisen = (zonen, profil) => Sicher(ctrl, () => ctrl.ProfilZuweisen(zonen, profil)),
-                ProjektvorgabeUebernehmen = zonen => Sicher(ctrl, () => ctrl.ProjektvorgabeUebernehmen(zonen)),
+                ProjektvorgabeUebernehmen = (zonen, ersetzen) => Sicher(ctrl, () => ctrl.ProjektvorgabeUebernehmen(zonen, ersetzen)),
+                FerienRueckfrage = zonen =>
+                {
+                    try { return ctrl.FerienRueckfrage(zonen); }
+                    catch (Exception ex) when (ex is not OutOfMemoryException) { return null; }
+                },
+                Fragen = text => Dienste.Dialog.FrageAsync(text, MyResource.Resource.ZN_FRAGE_FERIEN_TITEL, warnend: true, vorgabeNein: true),
                 KalenderKopieren = (quelle, zonen) => Sicher(ctrl, () => ctrl.KalenderKopieren(quelle, zonen)),
                 SollwerteSetzen = (zonen, tag, nacht) => Sicher(ctrl, () => ctrl.SollwerteSetzen(zonen, tag, nacht)),
                 Zuruecknehmen = () => Sicher(ctrl, ctrl.Zuruecknehmen),

@@ -55218,6 +55218,30 @@ Chart</value>
   <data name="ZN_MSG_GEAENDERT" xml:space="preserve">
     <value>{0} Zonen geändert.</value>
   </data>
+  <data name="ZN_FERIEN_HERKUNFT_PROFIL" xml:space="preserve">
+    <value>Profilgenerator</value>
+  </data>
+  <data name="ZN_FERIEN_HERKUNFT_EIGEN" xml:space="preserve">
+    <value>eigen</value>
+  </data>
+  <data name="ZN_FRAGE_FERIEN_ZONE" xml:space="preserve">
+    <value>{0} — {1}, {2} Zeiträume, {3} Ferienwerte</value>
+  </data>
+  <data name="ZN_FRAGE_FERIEN" xml:space="preserve">
+    <value>{0} der gewählten Zonen tragen eigene Ferien, die von der Projektvorgabe abweichen:
+{1}
+
+Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ bleiben diese Zonen unverändert; die übrigen gewählten Zonen übernehmen die Projektvorgabe.</value>
+  </data>
+  <data name="ZN_FRAGE_FERIEN_TITEL" xml:space="preserve">
+    <value>Projektvorgabe Ferien/Heizperiode übernehmen</value>
+  </data>
+  <data name="ZN_MSG_FERIEN_BEHALTEN" xml:space="preserve">
+    <value>{0} Zonen mit eigenen Ferien bleiben unverändert.</value>
+  </data>
+  <data name="ZNB_FERIEN_ANGABE" xml:space="preserve">
+    <value>{0} ({1}, {2} Zeiträume, {3} Ferienwerte)</value>
+  </data>
   <data name="ZNB_TITEL" xml:space="preserve">
     <value>Nutzung und Kalender</value>
   </data>

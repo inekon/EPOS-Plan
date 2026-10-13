@@ -147,7 +147,7 @@
                                 <td class="epos-zahl">@(Grad(z.SollTag) + " / " + Grad(z.SollNacht))</td>
                                 <td class="epos-zonennutzung-ferien">
                                     <span class="epos-zonennutzung-marke epos-zonennutzung-marke--@Ferienklasse(z.Ferien)" data-zeile="FERIEN"
-                                          title="@string.Format(CultureInfo.CurrentCulture, Resource.ZNB_MARKE_TITEL, Resource.ZNB_NAME_FERIEN, Ferientext(z.Ferien))">@Resource.ZNB_KURZ_FERIEN</span>
+                                          title="@string.Format(CultureInfo.CurrentCulture, Resource.ZNB_MARKE_TITEL, Resource.ZNB_NAME_FERIEN, Ferienangabe(z))">@Resource.ZNB_KURZ_FERIEN</span>
                                     <span class="epos-zonennutzung-marke epos-zonennutzung-marke--@Ferienklasse(z.Heizperiode)" data-zeile="SAISON"
                                           title="@string.Format(CultureInfo.CurrentCulture, Resource.ZNB_MARKE_TITEL, Resource.ZNB_NAME_SAISON, Ferientext(z.Heizperiode))">@Resource.ZNB_KURZ_SAISON</span>
                                 </td>
@@ -256,7 +256,15 @@
 
     private Task VorschlagUebernehmen() => Ausfuehren(() => Weg.ProfilZuweisen(_wahl.ToList(), null));
 
-    private Task ProjektvorgabeUebernehmen() => Ausfuehren(() => Weg.ProjektvorgabeUebernehmen(_wahl.ToList()));
+    /// <summary>„Projektvorgabe übernehmen“: tragen gewählte Zonen eigene Ferien, fragt der Dialogdienst vorher (E139).</summary>
+    private async Task ProjektvorgabeUebernehmen()
+    {
+        if (_laeuft) return;
+        List<int> wahl = _wahl.ToList();
+        string? frage = Weg.FerienRueckfrage(wahl);
+        bool ersetzen = frage is not null && await Weg.Fragen(frage);
+        await Ausfuehren(() => Weg.ProjektvorgabeUebernehmen(wahl, ersetzen));
+    }
 
     private Task Zuruecknehmen() => Ausfuehren(Weg.Zuruecknehmen);
 
@@ -353,6 +361,13 @@
         Ferienkennung.Abweichung => Resource.ZNB_FERIEN_ABWEICHUNG,
         _ => Resource.ZNB_FERIEN_FEHLT
     };
+
+    /// <summary>Der Text der Ferienmarke; bei einer Abweichung mit Herkunft und Zahl der Zeiträume und Ferienwerte (E139).</summary>
+    private static string Ferienangabe(ZonenNutzungszeile z)
+        => z.Ferien == Ferienkennung.Abweichung && z.FerienAngaben is { Abweichend: true } f
+            ? string.Format(CultureInfo.CurrentCulture, Resource.ZNB_FERIEN_ANGABE, Ferientext(z.Ferien),
+                            ZonenNutzungCtrl.Herkunftstext(f.Herkunft), f.Zeitraeume, f.Werte)
+            : Ferientext(z.Ferien);
 
     private static string AmpelText(Pruefampel a) => a switch
     {

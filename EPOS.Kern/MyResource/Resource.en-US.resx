@@ -55211,6 +55211,30 @@ chart</value>
   <data name="ZN_MSG_GEAENDERT" xml:space="preserve">
     <value>{0} zones changed.</value>
   </data>
+  <data name="ZN_FERIEN_HERKUNFT_PROFIL" xml:space="preserve">
+    <value>profile generator</value>
+  </data>
+  <data name="ZN_FERIEN_HERKUNFT_EIGEN" xml:space="preserve">
+    <value>own</value>
+  </data>
+  <data name="ZN_FRAGE_FERIEN_ZONE" xml:space="preserve">
+    <value>{0} — {1}, {2} periods, {3} holiday values</value>
+  </data>
+  <data name="ZN_FRAGE_FERIEN" xml:space="preserve">
+    <value>{0} of the selected zones carry their own holidays that deviate from the project default:
+{1}
+
+Replace these holidays with the project default? With “No” these zones remain unchanged; the other selected zones take over the project default.</value>
+  </data>
+  <data name="ZN_FRAGE_FERIEN_TITEL" xml:space="preserve">
+    <value>Apply project default for holidays/heating period</value>
+  </data>
+  <data name="ZN_MSG_FERIEN_BEHALTEN" xml:space="preserve">
+    <value>{0} zones with their own holidays remain unchanged.</value>
+  </data>
+  <data name="ZNB_FERIEN_ANGABE" xml:space="preserve">
+    <value>{0} ({1}, {2} periods, {3} holiday values)</value>
+  </data>
   <data name="ZNB_TITEL" xml:space="preserve">
     <value>Use and calendars</value>
   </data>
