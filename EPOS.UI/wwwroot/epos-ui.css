@@ -7516,6 +7516,60 @@ table.epos-simerg-tabelle {
     stroke-width: 3px;
 }
 
+/* MA-5 "Ansicht als Werkzeug": die Befunde einer Pruefgruppe am Koerper. Getroffene Raeume und Kanten tragen den Rand in der
+   Farbe der bestehenden Hervorhebung, die uebrigen Raeume treten zurueck; die Farbtafeln der Modi bleiben unberuehrt. */
+.epos-gebansicht-raum--geprueft polygon {
+    stroke: var(--epos-grundriss-hervor);
+    stroke-width: 3px;
+}
+
+.epos-gebansicht-raum--gedimmt {
+    opacity: 0.35;
+}
+
+.epos-gebansicht-kante--geprueft {
+    stroke-width: 7px;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 1px var(--epos-grundriss-hervor));
+}
+
+.epos-gebansicht-pruefzeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    margin: 4px 0;
+}
+
+.epos-gebansicht-pruefmarke {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 3px solid var(--epos-grundriss-hervor);
+    border-radius: 3px;
+}
+
+.epos-gebansicht-vorschlag {
+    white-space: nowrap;
+}
+
+.epos-gebansicht-vorschlag .epos-knopf,
+.epos-gebansicht-pruefzeile .epos-knopf {
+    min-height: var(--epos-touchziel);
+    margin-left: 4px;
+}
+
+.epos-gebansicht-vorschlagszahl {
+    color: var(--epos-text-leise);
+}
+
+@media (forced-colors: active) {
+    .epos-gebansicht-raum--geprueft polygon { stroke: Highlight; }
+    .epos-gebansicht-kante.epos-gebansicht-kante--geprueft { stroke: Highlight; filter: none; }
+    .epos-gebansicht-pruefmarke { border-color: Highlight; }
+    .epos-gebansicht-raum--gedimmt { opacity: 1; }
+}
+
 .epos-gebansicht-hinweise {
     margin: 0;
     padding-left: 1.2em;

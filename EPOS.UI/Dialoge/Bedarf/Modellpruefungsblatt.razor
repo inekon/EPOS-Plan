@@ -47,7 +47,7 @@
                             @if (AnsichtSperre is null)
                             {
                                 <button type="button" class="epos-knopf epos-modellpruefung-ansicht" title="@Resource.MPB_BTN_ANSICHT_HINWEIS"
-                                        @onclick="() => Ansicht.InvokeAsync(g.Sprungziel)">@Resource.MPB_BTN_ANSICHT</button>
+                                        @onclick="() => AnsichtOeffnen(g)">@Resource.MPB_BTN_ANSICHT</button>
                             }
                             else
                             {
@@ -119,6 +119,16 @@
 
     /// <summary>„Ansicht…“ — die Gebäudeansicht im Farbmodus des Sprungziels der Gruppe.</summary>
     [Parameter] public EventCallback<Pruefsprungziel> Ansicht { get; set; }
+
+    /// <summary>
+    /// MA-5: „Ansicht…“ mit der Prüfgruppe — der Wirt öffnet die Ansicht im Farbmodus der Gruppe und hebt ihre Befunde hervor. Mit
+    /// Delegat geht der Knopf hierhin statt an <see cref="Ansicht"/>.
+    /// </summary>
+    [Parameter] public EventCallback<Pruefgruppe> AnsichtGruppe { get; set; }
+
+    /// <summary>„Ansicht…“ einer Gruppe: mit Prüfgruppe an den Wirt (MA-5), sonst das Sprungziel wie bisher.</summary>
+    private Task AnsichtOeffnen(ModellpruefungGruppenzeile g)
+        => AnsichtGruppe.HasDelegate ? AnsichtGruppe.InvokeAsync(g.Gruppe) : Ansicht.InvokeAsync(g.Sprungziel);
 
     /// <summary>Warum „Ansicht…“ gesperrt ist (etwa: keine Importdatei); <c>null</c> = frei.</summary>
     [Parameter] public string? AnsichtSperre { get; set; }

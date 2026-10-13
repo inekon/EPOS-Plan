@@ -318,6 +318,49 @@ public sealed record GebaeudeAnsichtDaten
            : gruppe == (byte)Randgruppe.R0 ? GebaeudeAnsichtBefundstufen.INNEN_NEUTRAL
            : (byte)BefundVon(bauteil);
 
+    // ------------------------------------------------------------------
+    //  MA-5: Bezug zum gespeicherten Gebäude und Farbmodus „Nutzung"
+    // ------------------------------------------------------------------
+
+    /// <summary>
+    /// Das gespeicherte Bauteil je Bauteilkennung der Datei (<c>Tab_Bauteil.ID</c>, über <c>Tab_Importzuordnung</c>); leer = kein
+    /// gespeichertes Gebäude. Darüber findet die Hervorhebung die Flächen eines Befunds der Modellprüfung.
+    /// </summary>
+    public IReadOnlyDictionary<string, int> BauteilIds { get; init; } = new Dictionary<string, int>(StringComparer.Ordinal);
+
+    /// <summary>Die gespeicherte Zone je Zonenschlüssel der Ansicht (<c>Tab_Zone.ID</c>, über den Zonennamen); leer = keine.</summary>
+    public IReadOnlyDictionary<string, int> ZonenIds { get; init; } = new Dictionary<string, int>(StringComparer.Ordinal);
+
+    /// <summary>Das Nutzungsprofil je Zonenschlüssel der Ansicht (aus dem Kern, <c>ZonenNutzungCtrl.Lesen</c>); leer = unbekannt.</summary>
+    public IReadOnlyDictionary<string, GebaeudeAnsichtNutzung> Nutzungen { get; init; } = new Dictionary<string, GebaeudeAnsichtNutzung>(StringComparer.Ordinal);
+
+    /// <summary>Ist der Farbmodus „Nutzung" wählbar? Nur, wenn die Zonen des gespeicherten Gebäudes gelesen sind.</summary>
+    public bool NutzungWaehlbar => Nutzungen.Count > 0;
+
+    /// <summary>
+    /// Die Legende des Farbmodus „Nutzung": je Profil (nach Kategorie und Name) seine Farbstelle und die Zahl der Zonen; Zonen
+    /// ohne Profil stehen nicht darin (<see cref="ZonenOhneProfil"/>).
+    /// </summary>
+    public IReadOnlyList<GebaeudeAnsichtNutzungssumme> Nutzungssummen()
+        => Nutzungen.Values.Where(n => n.Profil.Length > 0)
+                    .GroupBy(n => (n.Kategorie, n.Profil))
+                    .OrderBy(g => g.Key.Kategorie, StringComparer.CurrentCulture).ThenBy(g => g.Key.Profil, StringComparer.CurrentCulture)
+                    .Select((g, i) => new GebaeudeAnsichtNutzungssumme(g.Key.Profil, g.Key.Kategorie, i, g.Count()))
+                    .ToList();
+
+    /// <summary>Die Zahl der Zonen ohne Profil (Farbe „fehlt").</summary>
+    public int ZonenOhneProfil => Nutzungen.Values.Count(n => n.Profil.Length == 0);
+
+    /// <summary>Die Farbstelle der Nutzung einer Zone (Stelle ihres Profils in <see cref="Nutzungssummen"/>); −1 = ohne Profil.</summary>
+    public int Nutzungsstelle(string? zone)
+    {
+        if (zone is null || !Nutzungen.TryGetValue(zone, out GebaeudeAnsichtNutzung? n) || n.Profil.Length == 0) return -1;
+        foreach (GebaeudeAnsichtNutzungssumme s in Nutzungssummen())
+            if (string.Equals(s.Profil, n.Profil, StringComparison.Ordinal) && string.Equals(s.Kategorie, n.Kategorie, StringComparison.Ordinal))
+                return s.Stelle;
+        return -1;
+    }
+
     /// <summary>
     /// <b>Die Dateikörper als Bytefeld</b> für das Modul (15.4): je Raum mit Dateikörper, in der Reihenfolge von
     /// <see cref="Koerperraeume"/>, erst die Punkte (float32, je Punkt x, y, z relativ zum <see cref="Bezugspunkt"/>),
@@ -1185,6 +1228,47 @@ public sealed class GebaeudeAnsichtTexte
 
     /// <summary>Der Knopf des Farbmodus „Befund" (<c>GANS_FARBMODUS_BEFUND</c>).</summary>
     public string FarbmodusBefund { get; set; } = Resource.GANS_FARBMODUS_BEFUND;
+
+    // MA-5: Farbmodus „Nutzung", Hervorhebung und Vorschläge der Modellprüfung an der Legende.
+
+    /// <summary>Der Knopf des Farbmodus „Nutzung" (<c>GANS_FARBMODUS_NUTZUNG</c>).</summary>
+    public string FarbmodusNutzung { get; set; } = Resource.GANS_FARBMODUS_NUTZUNG;
+
+    /// <summary>Titel der Legende „Nutzung" (<c>GANS_NUTZUNG_LEGENDE</c>).</summary>
+    public string NutzungLegende { get; set; } = Resource.GANS_NUTZUNG_LEGENDE;
+
+    /// <summary>GANS_NUTZUNG_ZONEN — {0} Zahl der Zonen eines Profils.</summary>
+    public string NutzungZonen { get; set; } = Resource.GANS_NUTZUNG_ZONEN;
+
+    /// <summary>Spaltenkopf „Zonen" der Legende „Nutzung" (<c>GANS_NUTZUNG_ZONEN_KOPF</c>).</summary>
+    public string NutzungZonenKopf { get; set; } = Resource.GANS_NUTZUNG_ZONEN_KOPF;
+
+    /// <summary>Die Legendenzeile der Zonen ohne Profil (<c>GANS_NUTZUNG_FEHLT</c>).</summary>
+    public string NutzungFehlt { get; set; } = Resource.GANS_NUTZUNG_FEHLT;
+
+    /// <summary>GANS_PRUEF_HERVOR — {0} Prüfgruppe, {1} Zahl der Bauteile, {2} Zahl der Zonen.</summary>
+    public string PruefHervor { get; set; } = Resource.GANS_PRUEF_HERVOR;
+
+    /// <summary>GANS_PRUEF_OHNE — {0} Prüfgruppe: kein Befund der Gruppe liegt in der Ansicht.</summary>
+    public string PruefOhne { get; set; } = Resource.GANS_PRUEF_OHNE;
+
+    /// <summary>Spaltenkopf „Vorschläge" der Legenden (<c>GANS_PRUEF_VORSCHLAEGE</c>).</summary>
+    public string PruefVorschlaege { get; set; } = Resource.GANS_PRUEF_VORSCHLAEGE;
+
+    /// <summary>GANS_PRUEF_ZAHL — {0} Zahl der Vorschläge.</summary>
+    public string PruefZahl { get; set; } = Resource.GANS_PRUEF_ZAHL;
+
+    /// <summary>Knopf „Übernehmen" an der Legende (<c>GANS_PRUEF_UEBERNEHMEN</c>).</summary>
+    public string PruefUebernehmen { get; set; } = Resource.GANS_PRUEF_UEBERNEHMEN;
+
+    /// <summary>Knopf „Verwerfen" an der Legende (<c>GANS_PRUEF_VERWERFEN</c>).</summary>
+    public string PruefVerwerfen { get; set; } = Resource.GANS_PRUEF_VERWERFEN;
+
+    /// <summary>GANS_PRUEF_UEBERNEHMEN_HINWEIS — {0} Legendenzeile.</summary>
+    public string PruefUebernehmenHinweis { get; set; } = Resource.GANS_PRUEF_UEBERNEHMEN_HINWEIS;
+
+    /// <summary>GANS_PRUEF_VERWERFEN_HINWEIS — {0} Legendenzeile.</summary>
+    public string PruefVerwerfenHinweis { get; set; } = Resource.GANS_PRUEF_VERWERFEN_HINWEIS;
 
     /// <summary>Warum „Befund" gesperrt ist: keine Befunde (<c>GANS_BEFUND_OHNE</c>).</summary>
     public string BefundOhne { get; set; } = Resource.GANS_BEFUND_OHNE;
