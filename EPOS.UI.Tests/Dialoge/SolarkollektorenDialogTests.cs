@@ -99,8 +99,10 @@ public class SolarkollektorenDialogTests : EposBunitContext
         },
         new BrowserFeldwert
         {
-            Schluessel = KatalogBrowserProfil.FeldInvestitionskosten,
-            Bezeichnung = "Investitionskosten:", Einheit = "€",
+            // Welle KB-4: die Investitionskosten sind als Spalte entfallen - das Zahlenfeld der Probe
+            // ist die Aperturflaeche.
+            Schluessel = KatalogBrowserProfil.FeldAperturflaeche,
+            Bezeichnung = "Aperturfläche:", Einheit = "m²",
             Art = BrowserFeldArt.Zahl, Editierbar = true, Wert = "850"
         }
     };
@@ -1053,7 +1055,7 @@ public class SolarkollektorenDialogTests : EposBunitContext
         Assert.Equal("Vitosol 200", name);
         Assert.NotNull(gesehen);
         Assert.Equal("900",
-            gesehen!.First(f => f.Schluessel == KatalogBrowserProfil.FeldInvestitionskosten).Wert);
+            gesehen!.First(f => f.Schluessel == KatalogBrowserProfil.FeldAperturflaeche).Wert);
         // Der Erfolg schliesst die Ueberlagerung - kein Band im Dialogkopf.
         Assert.Empty(cut.FindAll(".epos-warnbanner"));
         Assert.False(cut.Instance.SatzUeberlagerungOffen);

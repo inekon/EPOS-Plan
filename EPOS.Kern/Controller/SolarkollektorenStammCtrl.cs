@@ -9,7 +9,8 @@ namespace WindowsFormsApplication1
     // Controller fuer die Stammdaten-Tabelle Tab_Solarkollektoren_STAMM (globaler Kollektor-Katalog).
     // Analog zu HeizkesselStammCtrl / PhotovoltaikStammCtrl:
     //   - Tabelle = Tab_Solarkollektoren_STAMM
-    //   - DB-Spalte Bezeichner wird auf m_szKollektorname abgebildet, Investitionskosten auf m_Kosten
+    //   - DB-Spalte Bezeichner wird auf m_szKollektorname abgebildet (die Investitionskosten
+    //     sind mit Welle KB-4 entfallen; die Geraetekosten traegt die Satzvorlage)
     //   - liest/schreibt das Feld ReadOnly
     //   - InsertFrom() vergibt eine explizite ID (MAX+1) und setzt ReadOnly = false
     //   - Update()/Delete() verweigern schreibgeschuetzte Datensaetze
@@ -139,8 +140,8 @@ namespace WindowsFormsApplication1
 
                     string sql = @"INSERT INTO [" + TABLE + @"]
                             (ID, Bezeichner, Firma, Beschreibung, Kollektortyp, Modulflaeche, Aperturflaeche,
-                             h0, k1, k2, Kdir, Kdfu, Investitionskosten, ReadOnly, Bezugsflaeche)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                             h0, k1, k2, Kdir, Kdfu, ReadOnly, Bezugsflaeche)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                     DbParam[] ps = {
                         new DbParam("@id", neueId),
@@ -155,7 +156,6 @@ namespace WindowsFormsApplication1
                         new DbParam("@k2", model.m_k2),
                         new DbParam("@kdir", model.m_Kdir),
                         new DbParam("@kdfu", model.m_Kdfu),
-                        new DbParam("@inv", model.m_Kosten),
                         new DbParam("@ro", false),
                         new DbParam("@bezug", Solarkreis.Bezugsflaeche(model.m_Bezugsflaeche))
                     };
@@ -181,8 +181,8 @@ namespace WindowsFormsApplication1
 
             string sql = @"INSERT INTO [" + TABLE + @"]
                             (ID, Bezeichner, Firma, Beschreibung, Kollektortyp, Modulflaeche, Aperturflaeche,
-                             h0, k1, k2, Kdir, Kdfu, Investitionskosten, ReadOnly, Bezugsflaeche)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                             h0, k1, k2, Kdir, Kdfu, ReadOnly, Bezugsflaeche)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             DbParam[] ps = {
                 new DbParam("@id", neueId),
@@ -197,7 +197,6 @@ namespace WindowsFormsApplication1
                 new DbParam("@k2", this.m_k2),
                 new DbParam("@kdir", this.m_Kdir),
                 new DbParam("@kdfu", this.m_Kdfu),
-                new DbParam("@inv", this.m_Kosten),
                 new DbParam("@ro", false),
                 new DbParam("@bezug", Solarkreis.Bezugsflaeche(this.m_Bezugsflaeche))
             };
@@ -223,7 +222,7 @@ namespace WindowsFormsApplication1
 
             string sql = @"UPDATE [" + TABLE + @"] SET
                             Firma = ?, Beschreibung = ?, Kollektortyp = ?, Modulflaeche = ?, Aperturflaeche = ?,
-                            h0 = ?, k1 = ?, k2 = ?, Kdir = ?, Kdfu = ?, Investitionskosten = ?, Bezugsflaeche = ?
+                            h0 = ?, k1 = ?, k2 = ?, Kdir = ?, Kdfu = ?, Bezugsflaeche = ?
                           WHERE Bezeichner = ?";
 
             DbParam[] ps = {
@@ -237,7 +236,6 @@ namespace WindowsFormsApplication1
                 new DbParam("@k2", this.m_k2),
                 new DbParam("@kdir", this.m_Kdir),
                 new DbParam("@kdfu", this.m_Kdfu),
-                new DbParam("@inv", this.m_Kosten),
                 new DbParam("@bezug", Solarkreis.Bezugsflaeche(this.m_Bezugsflaeche)),
                 new DbParam("@bez", this.m_szKollektorname ?? "")
             };
@@ -248,7 +246,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Import-Ueberschreiben (Dublettenkonzept 4.2): aktualisiert GENAU die Felder,
         /// die der VDI-Import liefert, adressiert per ID. Vom Anwender gepflegte Felder
-        /// (Bezeichner, Beschreibung, Investitionskosten, ReadOnly) bleiben unangetastet.
+        /// (Bezeichner, Beschreibung, ReadOnly) bleiben unangetastet.
         /// </summary>
         /// <remarks>
         /// Bewusst OHNE ReadOnly-Sperre: Das Ueberschreiben eines ReadOnly-Satzes ist
@@ -313,7 +311,6 @@ namespace WindowsFormsApplication1
             this.m_k2 = m.m_k2;
             this.m_Kdir = m.m_Kdir;
             this.m_Kdfu = m.m_Kdfu;
-            this.m_Kosten = m.m_Kosten;
             this.m_Bezugsflaeche = Solarkreis.Bezugsflaeche(m.m_Bezugsflaeche);
         }
 
@@ -346,7 +343,6 @@ namespace WindowsFormsApplication1
             m.m_k2 = D(row, "k2");
             m.m_Kdir = D(row, "Kdir");
             m.m_Kdfu = D(row, "Kdfu");
-            m.m_Kosten = D(row, "Investitionskosten");
             m.m_Bezugsflaeche = SolarkollektorenCtrl.Bezugsflaeche(row);
         }
 
@@ -508,14 +504,14 @@ namespace WindowsFormsApplication1
                 "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID",
                 new DbParam("@bez", szName ?? ""));
             if (dt == null || dt.Rows.Count == 0) return null;
-            return AnzeigeAusZeile(dt.Rows[0]);
+            return AnzeigeAusZeile(dt.Rows[0], TABLE);
         }
 
         /// <summary>
         /// <b>Die Anzeigefelder eines Satzes nach seiner ID</b> (Katalogauswahl V1, Stufe 3, „Bearbeiten…" je
         /// Bereich, KA‑E‑8): <paramref name="projektkopie"/> = <c>true</c> liest die Projektkopie aus
         /// <see cref="TABELLE_PROJEKT"/>, sonst den Katalogsatz. Dieselben Schlüssel wie
-        /// <see cref="KatalogsatzAnzeige"/> samt Investitionskosten; <c>null</c>, wenn es die ID nicht gibt.
+        /// <see cref="KatalogsatzAnzeige"/> samt dem Lesewert der Gerätekosten; <c>null</c>, wenn es die ID nicht gibt.
         /// </summary>
         public static IReadOnlyDictionary<string, string> SatzAnzeige(bool projektkopie, int id)
         {
@@ -523,7 +519,7 @@ namespace WindowsFormsApplication1
                 "SELECT * FROM [" + Tabelle(projektkopie) + "] WHERE ID = ?",
                 new DbParam("@id", id));
             if (dt == null || dt.Rows.Count == 0) return null;
-            return AnzeigeAusZeile(dt.Rows[0]);
+            return AnzeigeAusZeile(dt.Rows[0], Tabelle(projektkopie));
         }
 
         /// <summary>Die Projektkopien der Kollektoren (alle Projekte, Spalte <c>ID_Projekt</c>).</summary>
@@ -532,7 +528,7 @@ namespace WindowsFormsApplication1
         private static string Tabelle(bool projektkopie) => projektkopie ? TABELLE_PROJEKT : TABLE;
 
         /// <summary>Die Anzeigefelder einer Zeile aus Katalog oder Projektkopie (gleiche Fachspalten).</summary>
-        private static IReadOnlyDictionary<string, string> AnzeigeAusZeile(DataRow r)
+        private static IReadOnlyDictionary<string, string> AnzeigeAusZeile(DataRow r, string tabelle)
         {
             var werte = new Dictionary<string, string>(StringComparer.Ordinal);
 
@@ -554,7 +550,9 @@ namespace WindowsFormsApplication1
             werte[KatalogBrowserProfil.FeldK2] = Feld(r, "k2");
             werte[KatalogBrowserProfil.FeldKdir] = Feld(r, "Kdir");
             werte[KatalogBrowserProfil.FeldKdiff] = Feld(r, "Kdfu");
-            werte[KatalogBrowserProfil.FeldInvestitionskosten] = Feld(r, "Investitionskosten");
+            // DIE EINE KOSTENBASIS (Welle KB-4): An der Stelle der Investitionskosten steht
+            // EIN Lesewert - die Investitionssumme der Satzvorlage; gepflegt in der Kostenverwaltung.
+            werte[KatalogBrowserProfil.FeldGeraetekosten] = Katalogkostenanzeige.Investitionstext(tabelle, r);
 
             // ST6: die Bezugsfläche der Kennwerte; ohne Spalte und bei NULL apertur.
             werte[KatalogBrowserProfil.FeldBezugsflaeche] = SolarkollektorenCtrl.Bezugsflaeche(r);
@@ -595,7 +593,6 @@ namespace WindowsFormsApplication1
                                                          double Aperturflaeche,
                                                          double H0, double K1, double K2,
                                                          double Kdir, double Kdiff,
-                                                         double Investitionskosten,
                                                          string Bezugsflaeche = null);
 
         /// <summary>
@@ -676,8 +673,6 @@ namespace WindowsFormsApplication1
                                                  f.Modulflaeche),
                 KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldAperturflaeche,
                                                  f.Aperturflaeche),
-                KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldInvestitionskosten,
-                                                 f.Investitionskosten),
 
                 // h0 ist der KONVERSIONSFAKTOR und liegt zwischen 0 und 1 - wer dort
                 // 76,1 eintraegt, meint Prozent und soll es hoeren
@@ -712,7 +707,6 @@ namespace WindowsFormsApplication1
             satz.m_k2 = f.K2;
             satz.m_Kdir = f.Kdir;
             satz.m_Kdfu = f.Kdiff;
-            satz.m_Kosten = f.Investitionskosten;
 
             return null;
         }
@@ -773,7 +767,7 @@ namespace WindowsFormsApplication1
                         }
                         v.Ausfuehren("UPDATE [" + tabelle + @"] SET
                             Firma = ?, Beschreibung = ?, Kollektortyp = ?, Modulflaeche = ?, Aperturflaeche = ?,
-                            h0 = ?, k1 = ?, k2 = ?, Kdir = ?, Kdfu = ?, Investitionskosten = ?, Bezugsflaeche = ?
+                            h0 = ?, k1 = ?, k2 = ?, Kdir = ?, Kdfu = ?, Bezugsflaeche = ?
                           WHERE ID = ?",
                             new DbParam("@fir", (object)(satz.m_szFirma ?? "")),
                             new DbParam("@bes", (object)(satz.m_szBeschreibung ?? "")),
@@ -785,7 +779,6 @@ namespace WindowsFormsApplication1
                             new DbParam("@k2", satz.m_k2),
                             new DbParam("@kdir", satz.m_Kdir),
                             new DbParam("@kdfu", satz.m_Kdfu),
-                            new DbParam("@inv", satz.m_Kosten),
                             new DbParam("@bezug", Solarkreis.Bezugsflaeche(satz.m_Bezugsflaeche)),
                             new DbParam("@id", s.Id));
                     }
@@ -811,10 +804,10 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Das Gewerk des Rückwegs „In die Datenbank übernehmen…"</b> (Konzept Katalogauswahl 5.2, KA‑E‑9): Kopie
         /// <see cref="TABELLE_PROJEKT"/>, Katalog <see cref="TABLE"/>, Anlage über <c>ID_Solar</c>, Kostenkomponente 4.
-        /// <b>Keine Kindtabellen</b> — Kennwerte (h0, k1, k2, Kdir, Kdfu), Flächen, Bezugsfläche und Investitionskosten
+        /// <b>Keine Kindtabellen</b> — Kennwerte (h0, k1, k2, Kdir, Kdfu), Flächen und Bezugsfläche
         /// stehen als Spalten am Satz und gehen mit der Schnittmenge. Anlagenbezogen und damit im Projekt bleiben
         /// Modulanzahl, Neigung, Azimut, Albedo, der Solarkreis (Pumpe, Verluste, Arbeitstemperatur-Weg, Grädigkeit,
-        /// Spreizung) und die Senken. Prüfregel wie beim Speichern (Flächen und Kosten nicht negativ, h0 zwischen 0 und 1,
+        /// Spreizung) und die Senken. Prüfregel wie beim Speichern (Flächen nicht negativ, h0 zwischen 0 und 1,
         /// Kdir und Kdiff nicht negativ, Bezugsfläche aus der Liste).
         /// </summary>
         public static Rueckweggewerk Rueckweg() => new Rueckweggewerk
@@ -829,7 +822,7 @@ namespace WindowsFormsApplication1
                 FillFromRow(m, zeile);
                 return FelderUebernehmen(new SolarkollektorenStammCtrl(), new AnzeigefelderSolarkollektor(
                     m.m_szKollektortyp, m.m_szFirma, m.m_szBeschreibung, m.m_Modulfläche, m.m_Aperturfläche,
-                    m.m_h0, m.m_k1, m.m_k2, m.m_Kdir, m.m_Kdfu, m.m_Kosten, m.m_Bezugsflaeche));
+                    m.m_h0, m.m_k1, m.m_k2, m.m_Kdir, m.m_Kdfu, m.m_Bezugsflaeche));
             },
         };
 
@@ -839,7 +832,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>„In die Datenbank übernehmen…"</b> — die Projektkopien als neue Katalogsätze oder als Ersatz ihres Ursprungs,
-        /// alles oder nichts (<see cref="Katalogrueckweg.Uebernehmen"/>): Kennwerte, Flächen und Investitionskosten,
+        /// alles oder nichts (<see cref="Katalogrueckweg.Uebernehmen"/>): Kennwerte und Flächen,
         /// Betriebs- und Investitionspositionen der Anlage als Satzvorlagen. Der Name der Kopie bleibt (KA‑E‑15).
         /// </summary>
         public static Rueckwegergebnis AusProjektUebernehmen(IReadOnlyList<Rueckwegauftrag> auftraege)

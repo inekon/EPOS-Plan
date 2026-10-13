@@ -70,7 +70,6 @@ namespace WindowsFormsApplication1
                     if (row.Table.Columns.Contains("k2") && row["k2"] != DBNull.Value) item.m_k2 = Convert.ToDouble(row["k2"]);
                     if (row.Table.Columns.Contains("Kdir") && row["Kdir"] != DBNull.Value) item.m_Kdir = Convert.ToDouble(row["Kdir"]);
                     if (row.Table.Columns.Contains("Kdfu") && row["Kdfu"] != DBNull.Value) item.m_Kdfu = Convert.ToDouble(row["Kdfu"]);
-                    if (row.Table.Columns.Contains("Investitionskosten") && row["Investitionskosten"] != DBNull.Value) item.m_Kosten = Convert.ToDouble(row["Investitionskosten"]);
                     item.m_Bezugsflaeche = Bezugsflaeche(row);
 
                     items[rows] = item;
@@ -103,7 +102,6 @@ namespace WindowsFormsApplication1
                 if (row.Table.Columns.Contains("k2") && row["k2"] != DBNull.Value) m_k2 = Convert.ToDouble(row["k2"]);
                 if (row.Table.Columns.Contains("Kdir") && row["Kdir"] != DBNull.Value) m_Kdir = Convert.ToDouble(row["Kdir"]);
                 if (row.Table.Columns.Contains("Kdfu") && row["Kdfu"] != DBNull.Value) m_Kdfu = Convert.ToDouble(row["Kdfu"]);
-                if (row.Table.Columns.Contains("Investitionskosten") && row["Investitionskosten"] != DBNull.Value) m_Kosten = Convert.ToDouble(row["Investitionskosten"]);
                 m_Bezugsflaeche = Bezugsflaeche(row);
 
                 rows = 1;
@@ -173,8 +171,8 @@ namespace WindowsFormsApplication1
                 // SolarkollektorTemperaturen.SCHRITT) - sie hatten keinen Rechenweg.
                 string sql = @"INSERT INTO Tab_Solarkollektoren
                     (ID, ID_Projekt, Bezeichner, Firma, Beschreibung, Kollektortyp, Modulflaeche, Aperturflaeche,
-                     h0, k1, k2, Kdir, Kdfu, Investitionskosten, Bezugsflaeche)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                     h0, k1, k2, Kdir, Kdfu, Bezugsflaeche)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 DbParam[] ps = {
                     new DbParam("@id", neueId),
@@ -190,7 +188,6 @@ namespace WindowsFormsApplication1
                     P("@k2", ColOrNull(s, "k2")),
                     P("@kdir", ColOrNull(s, "Kdir")),
                     P("@kdfu", ColOrNull(s, "Kdfu")),
-                    P("@inv", ColOrNull(s, "Investitionskosten")),
                     // ST6: die Bezugsfläche reist mit dem Satz - die Spalte ist NOT NULL, ein
                     // Katalog ohne sie gibt die Vorgabe apertur.
                     new DbParam("@bezug", Bezugsflaeche(s))
