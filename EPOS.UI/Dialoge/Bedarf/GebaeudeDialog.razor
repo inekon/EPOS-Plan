@@ -2486,7 +2486,7 @@
     }
 
     /// <summary>Der Schlüssel des Farbmodus der Gebäudeansicht zu einem Sprungziel der Prüfung.</summary>
-    internal static string Farbmodusschluessel(Pruefsprungziel ziel) => ziel switch
+    public static string Farbmodusschluessel(Pruefsprungziel ziel) => ziel switch
     {
         Pruefsprungziel.Randbedingung => GebaeudeAnsicht.FARBMODUS_RAND,
         Pruefsprungziel.Aufbau => GebaeudeAnsicht.FARBMODUS_AUFBAU,
