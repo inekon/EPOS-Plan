@@ -477,7 +477,6 @@ neutraler Name der Ausstattungsklasse), `Wert` REAL NOT NULL (Belegung p bzw. Σ
 | `Personen_je_WE`, `Wohnflaeche_je_WE` | REAL | NULL = Vorgabe bzw. aus der Wohnungstabelle |
 | `Topologie` | INTEGER NOT NULL DEFAULT 1 CHECK (`Topologie` IN (1,2,3,4)) | Speicher, Frischwasserstation, Durchfluss, Wohnungsstation — wirkt in der Auslegung (4.5) |
 | `Zirkulation` | INTEGER NOT NULL DEFAULT 1 CHECK (`Zirkulation` IN (0,1)) | 0 nimmt die Zone aus dem Zirkulationsanteil (4.3) |
-| `Ferienbeginn_1`, `Ferienende_1` … `_4` | INTEGER | Jahrestag 1–365 wie `Tab_Gebaeude`; NULL, 0 und 366 = keine Angabe (4.2) |
 | `Jahresmesswert` | REAL | S6 |
 | `Jahresmesswert_Einheit` | INTEGER CHECK (`Jahresmesswert_Einheit` IN (1,2)) | 1 kWh/a, 2 m³/a (Umrechnung 4.1); ein Messwert ohne Einheit wird benannt abgelehnt (N7) |
 | `Jahresmesswert_Bilanzgrenze` | INTEGER CHECK (`Jahresmesswert_Bilanzgrenze` IN (1,2,3)) | Kodierung wie im Katalog; ein Volumenmesswert ist immer 1; ein Messwert in kWh/a ohne Grenze wird benannt abgelehnt (N7) |
@@ -495,6 +494,13 @@ nach Raumzahl aus `Tab_TwwDin4708Wert_STAMM`), `ID_Ausstattung` INTEGER NULL REF
 `Tab_TwwDin4708Wert_STAMM(ID)` (Art AUSSTATTUNG; NULL = Vorgabeklasse), `Reihenfolge` INTEGER NOT NULL.
 Ist die Tabelle belegt, bildet sie Bezugsmenge (WE bzw. Personen) und `Personen_je_WE` der Zone —
 Mengengerüst, DIN 4708 und Gleichzeitigkeit lesen dieselben Zahlen.
+
+**`Tab_TwwZonenferien`** — die eigenen Ferienzeiträume einer Zone, beliebig viele (STRICT):
+`ID` INTEGER PRIMARY KEY AUTOINCREMENT, `ID_Zone` INTEGER NOT NULL REFERENCES `Tab_TwwZone(ID)` ON DELETE CASCADE,
+`Reihenfolge` INTEGER NOT NULL (≥ 1), `Name` TEXT NULL, `Beginn` INTEGER NULL (Jahrestag 1–365 des Gemeinjahrs;
+NULL = vom 1. Januar an), `Ende` INTEGER NOT NULL (1–365); eindeutig je (`ID_Zone`, `Reihenfolge`). Ein Beginn nach dem
+Ende läuft über den Jahreswechsel (4.2). Gespeichert wird nur ein Zeitraum mit Ende; eine an ein Gebäude gebundene Zone
+ohne eigene Zeiträume übernimmt die Ferien des Gebäudes.
 
 **`Tab_TwwProjekt`** — Weiche und gebäudeweite Größen, höchstens eine Zeile je Projekt:
 
@@ -1608,8 +1614,8 @@ Anwenders; die neuen Fragen ZU16–ZU18 stehen mit Empfehlung in Kapitel 9 und s
   `Katalogversion`) mit Status `IMPORT` mitgenommen, ein Tagesgangsatz nur, wenn eine mitgenommene
   Nutzungsart ihn braucht; Tagesgänge und Ereignisse reisen im Paketordner `catalogchildren/`,
   `Beleg` und `Freigabe` reisen nicht mit. Fehlt eine benötigte Zeile im Paket, lehnt der Import
-  benannt ab und ändert nichts. Die Projektkopie nimmt `Tab_TwwProjekt`, `Tab_TwwZone` und
-  `Tab_TwwWohnungstyp` mit.
+  benannt ab und ändert nichts. Die Projektkopie nimmt `Tab_TwwProjekt`, `Tab_TwwZone`,
+  `Tab_TwwWohnungstyp` und `Tab_TwwZonenferien` mit.
 - **(j) Auslieferungsvorlage, Schritt 3c.** Die Tww-Regel gilt unabhängig von `--kataloge`: Es bleibt
   nur `Status = 'AUSLIEFERUNG'` ohne Herkunftsart `FIKTIV` oder `IMPORT`, auch `EIGEN` fällt;
   Fremdschlüssel eingeschaltet; verbleibende Auslieferungszeilen bekommen `ReadOnly = 1`. Prüfposten:
