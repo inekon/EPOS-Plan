@@ -54786,7 +54786,7 @@ chart</value>
     <value>of which load curve: {0}</value>
   </data>
   <data name="KONF_KS_DAVON_PROFIL" xml:space="preserve">
-    <value>of which profile: {0} ({1} MWh/a)</value>
+    <value>of which profile: {0}</value>
   </data>
   <data name="KI_DLG_SIM_KAELTE_DEZENTRAL_ERL" xml:space="preserve">
     <value>The cooling demand rows covered decentrally (split) with source, annual total, EER, cooling carrier and meter; read-only. They are maintained in the dialogs “External cooling demand” and “Cooling demand profiles”.</value>

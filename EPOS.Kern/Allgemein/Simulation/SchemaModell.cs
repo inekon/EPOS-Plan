@@ -912,8 +912,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// K6b-N (Plan K6, Abschnitt 4): die Herkunft des zentral gedeckten Kältebedarfs am Kältekreis — „davon Lastgang“ mit
-        /// der Zahl der Lastgangzeilen im Kanal Kühlung und „davon Profil“ mit Zahl und Jahressumme der Kältebedarfsprofile,
-        /// je nur, wenn es solche Zuordnungen gibt. Dezentral (Split) gedeckte Zeilen zählen nicht: Sie stehen am eigenen Knoten.
+        /// der Zahl der Lastgangzeilen im Kanal Kühlung und „davon Profil“ mit der Zahl der Kältebedarfsprofile, je nur, wenn
+        /// es solche Zuordnungen gibt. Nur Zahlen: Die Abnehmerspalte ist 132 px breit, eine Jahressumme schnitte der Knoten ab
+        /// (sie steht in der Gruppe der Konfiguration). Dezentral (Split) gedeckte Zeilen zählen nicht: Sie stehen am eigenen Knoten.
         /// </summary>
         private static void KaelteHerkunftZeilen(int idProjekt, List<string> zeilen)
         {
@@ -925,10 +926,9 @@ namespace WindowsFormsApplication1
             if (lastgaenge > 0)
                 zeilen.Add(string.Format(kultur, MyResource.Resource.KONF_KS_DAVON_LASTGANG, lastgaenge));
 
-            List<Z_ProjektKaeltebedarfCtrl.Uebersichtszeile> profile = zentral.Where(z => z.Profil).ToList();
-            if (profile.Count > 0)
-                zeilen.Add(string.Format(kultur, MyResource.Resource.KONF_KS_DAVON_PROFIL, profile.Count,
-                                         profile.Sum(z => z.SummeMwh ?? 0.0).ToString("N2", kultur)));
+            int profile = zentral.Count(z => z.Profil);
+            if (profile > 0)
+                zeilen.Add(string.Format(kultur, MyResource.Resource.KONF_KS_DAVON_PROFIL, profile));
         }
 
         /// <summary>

@@ -88773,7 +88773,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die davon Profil: {0} ({1} MWh/a) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Profil: {0} ähnelt.
         /// </summary>
         public static string KONF_KS_DAVON_PROFIL {
             get {

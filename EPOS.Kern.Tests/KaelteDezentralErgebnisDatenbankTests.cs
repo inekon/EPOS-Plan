@@ -85,7 +85,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// K6b-N (Plan K6, Abschnitt 4): am Kältekreis die Herkunft des zentralen Kältebedarfs — „davon Lastgang“ (Zahl der
-        /// Lastgangzeilen im Kanal Kühlung) und „davon Profil“ (Zahl und Jahressumme der Profile); Split-Zeilen zählen nicht.
+        /// Lastgangzeilen im Kanal Kühlung) und „davon Profil“ (Zahl der Profile); Split-Zeilen zählen nicht.
         /// </summary>
         [Fact]
         public void K6bN_Der_Kaeltekreis_nennt_davon_Lastgang_und_davon_Profil()
@@ -112,8 +112,8 @@ namespace EPOS.Kern.Tests
             SchemaModell schema = SchemaModell.Aufbauen(PROJEKT, null);
             SchemaModell.Knoten kreis = Assert.Single(schema.Knotenliste, x => x.Schluessel == SchemaModell.ABNEHMER_KAELTEKREIS);
             Assert.Contains(string.Format(CultureInfo.CurrentCulture, WindowsFormsApplication1.MyResource.Resource.KONF_KS_DAVON_LASTGANG, 1), kreis.Zeilen);
-            Assert.Contains(string.Format(CultureInfo.CurrentCulture, WindowsFormsApplication1.MyResource.Resource.KONF_KS_DAVON_PROFIL, 2,
-                                          15.5.ToString("N2", CultureInfo.CurrentCulture)), kreis.Zeilen);
+            Assert.Contains(string.Format(CultureInfo.CurrentCulture, WindowsFormsApplication1.MyResource.Resource.KONF_KS_DAVON_PROFIL, 2),
+                            kreis.Zeilen);
             Assert.Contains(string.Format(CultureInfo.CurrentCulture, WindowsFormsApplication1.MyResource.Resource.KONF_KS_DAVON_LASTGANG, 1), kreis.Hinweis);
         }
 
