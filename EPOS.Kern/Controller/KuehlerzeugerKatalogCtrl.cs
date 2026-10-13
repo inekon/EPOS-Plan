@@ -226,7 +226,7 @@ namespace WindowsFormsApplication1
         /// Anlagenzeilen, ob das Gerät schon im Projekt stand, und die Meldung (Ablehnung des Kühlbetriebs oder Fehler).
         /// </summary>
         public sealed record Uebernahme(bool Ok, int IdWp, string Bezeichner, bool KopieNeu, IReadOnlyList<int> NeueAnlagen,
-                                        bool SchonImProjekt, string Meldung);
+                                        bool SchonImProjekt, string Meldung, string Hinweis = null);
 
         /// <summary>
         /// <b>Eine Katalog-Wärmepumpe ins Projekt übernehmen und kühlen lassen</b> (KA‑E‑26): Die Projektkopie entsteht
@@ -270,7 +270,45 @@ namespace WindowsFormsApplication1
                 neu = AnlagenDerKopie(idProjekt, kopie);
             }
             string grund = KuehlbetriebSetzen(idProjekt, kopie, true, neueKopie: !kopieDa);
-            return new Uebernahme(grund == null, kopie, name, !kopieDa, neu, schonDa, grund);
+            return new Uebernahme(grund == null, kopie, name, !kopieDa, neu, schonDa, grund,
+                                  grund == null ? WaermekaskadeHinweis(idProjekt) : null);
+        }
+
+        /// <summary>
+        /// <b>Der Hinweis zur Wärmekaskade</b> (KM‑K2): Eine Wärmepumpe kühlt nur, wenn die Erzeugerart auf einem
+        /// Platz der Wärmekaskade steht (<c>Tab_Einstellungen.Tool_1…4</c>, <see cref="Kaeltefolge"/>:
+        /// <c>InWaermekaskade</c>). Die Übernahme einer Wärmepumpe legt — aus dem Kältemaschinen-Dialog wie aus dem
+        /// Wärmepumpendialog — KEINEN Kaskadenplatz an: Den Platz vergibt allein die Simulationskonfiguration
+        /// (nachgezogen wird nur der Heizkessel, <c>KonfigurationCtrl</c>). Statt das still zu übergehen, nennt dieser
+        /// Weg es; den Platz setzt der Anwender dort, wo die Kaskade gepflegt wird.
+        /// <c>null</c> = die Kaskade führt einen Platz für Wärmepumpen (oder es gibt kein Projekt).
+        /// </summary>
+        public static string WaermekaskadeHinweis(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+            try
+            {
+                if (KonfigurationCtrl.KaskadeLesen(idProjekt).Contains(DbWerte.ERZEUGER_WAERMEPUMPE)) return null;
+            }
+            catch { return null; }
+            return MyResource.Resource.KMA_MSG_WP_OHNE_KASKADE;
+        }
+
+        /// <summary>
+        /// <b>Die Namen der Wärmepumpen-Projektkopien</b> (KM‑K2) — die Verwendungsmarke „im Projekt verwendet" steht
+        /// je Projektkopie (<c>Tab_WP</c>), nicht erst nach eingeschaltetem Kühlbetrieb; dasselbe Maß nimmt die
+        /// Projektliste des Wärmepumpendialogs. Leer bei jedem Fehler.
+        /// </summary>
+        public static IReadOnlyList<string> ProjektkopienNamen(int idProjekt)
+        {
+            var namen = new List<string>();
+            if (idProjekt <= 0) return namen;
+            DataTable dt = StilleDb.Tabelle("SELECT Bezeichner FROM Tab_WP WHERE ID_Projekt = ?",
+                                            StilleDb.Par("@p", DbParamTyp.Integer, idProjekt));
+            if (dt == null) return namen;
+            foreach (DataRow r in dt.Rows)
+                if (StilleDb.Feld(r, "Bezeichner") is string n && n.Length > 0) namen.Add(n);
+            return namen;
         }
 
         /// <summary>Die Wärmepumpen-Anlagen des Projekts mit dieser Projektkopie.</summary>
