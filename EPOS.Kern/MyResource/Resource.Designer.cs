@@ -31535,6 +31535,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung ähnelt.
+        /// </summary>
+        public static string GANS_FARBMODUS_NUTZUNG {
+            get {
+                return ResourceManager.GetString("GANS_FARBMODUS_NUTZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Randbedingung ähnelt.
         /// </summary>
         public static string GANS_FARBMODUS_RAND {
@@ -31697,11 +31706,119 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Profil ähnelt.
+        /// </summary>
+        public static string GANS_NUTZUNG_FEHLT {
+            get {
+                return ResourceManager.GetString("GANS_NUTZUNG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile ähnelt.
+        /// </summary>
+        public static string GANS_NUTZUNG_LEGENDE {
+            get {
+                return ResourceManager.GetString("GANS_NUTZUNG_LEGENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zonen ähnelt.
+        /// </summary>
+        public static string GANS_NUTZUNG_ZONEN {
+            get {
+                return ResourceManager.GetString("GANS_NUTZUNG_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen ähnelt.
+        /// </summary>
+        public static string GANS_NUTZUNG_ZONEN_KOPF {
+            get {
+                return ResourceManager.GetString("GANS_NUTZUNG_ZONEN_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ohne Bauteilbezug ({0}) ähnelt.
         /// </summary>
         public static string GANS_OHNE_BAUTEILBEZUG {
             get {
                 return ResourceManager.GetString("GANS_OHNE_BAUTEILBEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hervorgehoben: {0} — {1} Bauteile, {2} Zonen ähnelt.
+        /// </summary>
+        public static string GANS_PRUEF_HERVOR {
+            get {
+                return ResourceManager.GetString("GANS_PRUEF_HERVOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Kein Befund dieser Gruppe liegt auf einer Fläche oder Zone der Ansicht. ähnelt.
+        /// </summary>
+        public static string GANS_PRUEF_OHNE {
+            get {
+                return ResourceManager.GetString("GANS_PRUEF_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string GANS_PRUEF_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("GANS_PRUEF_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: die Vorschläge übernehmen — zurücknehmen im Blatt „Modell prüfen“ ähnelt.
+        /// </summary>
+        public static string GANS_PRUEF_UEBERNEHMEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("GANS_PRUEF_UEBERNEHMEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwerfen ähnelt.
+        /// </summary>
+        public static string GANS_PRUEF_VERWERFEN {
+            get {
+                return ResourceManager.GetString("GANS_PRUEF_VERWERFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: die Vorschläge verwerfen — die Befunde bleiben ähnelt.
+        /// </summary>
+        public static string GANS_PRUEF_VERWERFEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("GANS_PRUEF_VERWERFEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschläge ähnelt.
+        /// </summary>
+        public static string GANS_PRUEF_VORSCHLAEGE {
+            get {
+                return ResourceManager.GetString("GANS_PRUEF_VORSCHLAEGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Vorschläge ähnelt.
+        /// </summary>
+        public static string GANS_PRUEF_ZAHL {
+            get {
+                return ResourceManager.GetString("GANS_PRUEF_ZAHL", resourceCulture);
             }
         }
         
@@ -93243,6 +93360,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Vorschläge verworfen — die Befunde bleiben. ähnelt.
+        /// </summary>
+        public static string MP_MSG_VERWORFEN_ZAHL {
+            get {
+                return ResourceManager.GetString("MP_MSG_VERWORFEN_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag verworfen: {0} ähnelt.
+        /// </summary>
+        public static string MP_MSG_VORSCHLAG_VERWORFEN {
+            get {
+                return ResourceManager.GetString("MP_MSG_VORSCHLAG_VERWORFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die an Außenluft ähnelt.
         /// </summary>
         public static string MP_RAND_AUSSENLUFT {
@@ -93333,7 +93468,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogaufbau „{0}“ (U {1} W/(m²K)) übernehmen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 2, Katalogaufbau: „{0}“ (U {1} W/(m²K)) übernehmen ähnelt.
         /// </summary>
         public static string MP_VORSCHLAG_KATALOGAUFBAU {
             get {
@@ -93378,7 +93513,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Projektaufbau „{0}“ übernehmen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 1, Projektaufbau: „{0}“ übernehmen ähnelt.
         /// </summary>
         public static string MP_VORSCHLAG_PROJEKTAUFBAU {
             get {
@@ -93396,11 +93531,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Typaufbau „{0}“, abgeglichen auf U {1} W/(m²K) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 3, Typaufbau: „{0}“, abgeglichen auf U {1} W/(m²K) ähnelt.
         /// </summary>
         public static string MP_VORSCHLAG_TYPAUFBAU {
             get {
                 return ResourceManager.GetString("MP_VORSCHLAG_TYPAUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ; mit U {0} W/(m²K) aus der Baualtersklasse {1} ähnelt.
+        /// </summary>
+        public static string MP_VORSCHLAG_ZUSATZ_KLASSE {
+            get {
+                return ResourceManager.GetString("MP_VORSCHLAG_ZUSATZ_KLASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ; der Name „{0}“ trifft die Gruppe {1} ähnelt.
+        /// </summary>
+        public static string MP_VORSCHLAG_ZUSATZ_NAME {
+            get {
+                return ResourceManager.GetString("MP_VORSCHLAG_ZUSATZ_NAME", resourceCulture);
             }
         }
         

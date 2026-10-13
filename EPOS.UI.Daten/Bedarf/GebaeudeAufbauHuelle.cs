@@ -420,10 +420,15 @@ namespace WindowsFormsApplication1
                 BauteilaufbauModel a = b.ID_Aufbau is int id && aufbauten != null && aufbauten.TryGetValue(id, out BauteilaufbauModel x) ? x : null;
                 steckbriefe[kennung] = Steckbrief(b, kennung, stufe, a, baustoffnamen);
             }
+            var ids = new Dictionary<string, int>(StringComparer.Ordinal);
+            foreach ((string kennung, BauteilModel b) in bauteile)
+                if (!string.IsNullOrEmpty(kennung) && b != null && b.ID > 0) ids.TryAdd(kennung, b.ID);
             return daten with
             {
                 Bauteilstufen = stufen,
                 Steckbriefe = steckbriefe,
+                // MA-5: die gespeicherte Kennung je Fläche — die Hervorhebung der Modellprüfung findet darüber ihre Bauteile.
+                BauteilIds = ids,
                 Aufbausummen = Summen(bauteile.Where(p => p.Bauteil != null)
                     .Select(p => (Stufe(Bauteilzuordnung.Stufe(p.Bauteil, aufbauten)), IstInnen(p.Bauteil), p.Bauteil.Flaeche))),
                 // G5-3: gespeicherte Bauteile tragen nur den Befund ihrer Spalten — den Körperbefund gibt es allein beim Import.

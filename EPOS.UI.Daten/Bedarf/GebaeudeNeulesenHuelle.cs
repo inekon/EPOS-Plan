@@ -115,12 +115,14 @@ namespace WindowsFormsApplication1
             {
                 case NeulesenZustand.Passend:
                     string regel = GebaeudeZuordnungsModell.ZonenregelText(e.Zonenregel);
+                    GebaeudeAnsichtDaten roh = GebaeudeImportAnsicht.AnsichtDaten(e.Geometrie, false, null, e.Gebaeude);
                     return new GebaeudeNeulesestand
                     {
                         Zustand = GebaeudeNeulesezustand.Passend,
                         Hinweis = Formatieren(MyResource.Resource.GEB_NL_PASSEND, name),
                         Zonenhinweis = Formatieren(e.Hottcad ? MyResource.Resource.GEB_NL_NUR_GEOMETRIE : MyResource.Resource.GEB_NL_ZONENREGEL, regel),
-                        Ansicht = AufbauAusProjekt(GebaeudeImportAnsicht.AnsichtDaten(e.Geometrie, false, null, e.Gebaeude), q),
+                        Ansicht = AufbauAusProjekt(roh, q),
+                        AnsichtNeuLesen = () => AufbauAusProjekt(roh, q),
                         GrundrissRaeume = Nachtragbar(e, q) ? e.Raumgrundrisse.Count(GebaeudeImportCtrl.Speicherbar) : 0,
                         GrundrissNachtragen = Nachtragbar(e, q) ? () => GrundrissNachtragenAsync(e, q) : null,
                     };
@@ -162,14 +164,52 @@ namespace WindowsFormsApplication1
                 List<BauteilModel> bauteile = new GebaeudeZonenCtrl().LesenJeGebaeude(q.ID_Gebaeude).SelectMany(z => z.Bauteile).ToList();
                 var aufbauCtrl = new BauteilaufbauCtrl();
                 var baustoffCtrl = new BaustoffCtrl();
-                return AufbauAusBauteilen(ansicht, bauteile, kurz, id => aufbauCtrl.LesenProjektsatz(id),
-                                          id => baustoffCtrl.LesenProjektsatz(id)?.Bezeichner);
+                GebaeudeAnsichtDaten mitAufbau = AufbauAusBauteilen(ansicht, bauteile, kurz, id => aufbauCtrl.LesenProjektsatz(id),
+                                                                    id => baustoffCtrl.LesenProjektsatz(id)?.Bezeichner);
+                return MitNutzung(mitAufbau, q.ID_Gebaeude);
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
                 // Ohne lesbare Projektdaten bleibt die Ansicht ohne Stufen — „Aufbau" ist dann benannt gesperrt.
                 return ansicht;
             }
+        }
+
+        /// <summary>
+        /// MA-5: Zonen und Nutzung des gespeicherten Gebäudes in die Ansicht — je Zone der Ansicht die gespeicherte Zone gleichen
+        /// Namens und ihr Nutzungsprofil (<see cref="ZonenNutzungCtrl.Lesen"/>). Liest nur; ohne lesbaren Stand bleibt die Ansicht.
+        /// </summary>
+        internal static GebaeudeAnsichtDaten MitNutzung(GebaeudeAnsichtDaten ansicht, int idGebaeude)
+        {
+            if (ansicht == null || idGebaeude <= 0) return ansicht;
+            try
+            {
+                ZonenNutzungsstand stand = new ZonenNutzungCtrl(idGebaeude).Lesen();
+                return MitNutzung(ansicht, stand?.Zonen);
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                // Ohne lesbare Zonen bleibt „Nutzung" benannt gesperrt.
+                return ansicht;
+            }
+        }
+
+        /// <summary>Der datenbankfreie Teil von <see cref="MitNutzung(GebaeudeAnsichtDaten, int)"/>: Zuordnung über den Zonennamen.</summary>
+        internal static GebaeudeAnsichtDaten MitNutzung(GebaeudeAnsichtDaten ansicht, IReadOnlyList<ZonenNutzungszeile> zonen)
+        {
+            if (ansicht == null || zonen == null || zonen.Count == 0) return ansicht;
+            var jeName = new Dictionary<string, ZonenNutzungszeile>(StringComparer.Ordinal);
+            foreach (ZonenNutzungszeile z in zonen)
+                if (!string.IsNullOrWhiteSpace(z.Zone)) jeName.TryAdd(z.Zone.Trim(), z);
+            var ids = new Dictionary<string, int>(StringComparer.Ordinal);
+            var nutzung = new Dictionary<string, GebaeudeAnsichtNutzung>(StringComparer.Ordinal);
+            foreach (GebaeudeAnsichtZone a in ansicht.Zonen)
+            {
+                if (string.IsNullOrWhiteSpace(a.Name) || !jeName.TryGetValue(a.Name.Trim(), out ZonenNutzungszeile z)) continue;
+                ids[a.Schluessel] = z.IdZone;
+                nutzung[a.Schluessel] = new GebaeudeAnsichtNutzung(z.Profil ?? "", z.Kategorie ?? "");
+            }
+            return ids.Count == 0 ? ansicht : ansicht with { ZonenIds = ids, Nutzungen = nutzung };
         }
 
         /// <summary>

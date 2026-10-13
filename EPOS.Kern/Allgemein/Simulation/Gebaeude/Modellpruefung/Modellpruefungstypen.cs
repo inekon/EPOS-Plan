@@ -128,12 +128,14 @@ namespace WindowsFormsApplication1
     /// <see cref="IdQuelle"/> das Quellgebäude; <see cref="Vorschlagsart.Feiertagsland"/> den Wert in <see cref="Name"/>;
     /// <see cref="Vorschlagsart.Huellbauteil"/> die Bauteilart in <see cref="Name"/>, dazu <see cref="Randbedingung"/>,
     /// <see cref="Neigung"/>, <see cref="Flaeche"/>, <see cref="U"/> und an einer Trennfläche <see cref="IdNachbarzone"/>.
+    /// <see cref="UBauteil"/> (MA-4): der U-Wert, den die Übernahme eines Aufbauvorschlags der Stufe C zugleich an das Bauteil
+    /// schreibt — die Vorgabe der Baualtersklasse; <c>null</c> = das Bauteil behält sein U (bzw. bleibt ohne).
     /// </summary>
     public sealed record Pruefvorschlag(Vorschlagsart Art, Vorschlagsherkunft Herkunft, string Text,
                                         int? IdAufbau = null, string Typaufbau = null, long? IdProfil = null,
                                         string Name = null, int? IdQuelle = null, double? U = null,
                                         string Randbedingung = null, double? Neigung = null, double? Flaeche = null,
-                                        int? IdNachbarzone = null);
+                                        int? IdNachbarzone = null, double? UBauteil = null);
 
     /// <summary>
     /// <b>Ein Befund</b> — Code (sprachneutral, stabil), Ampel, Zielobjekt und Text; dazu der Vorschlag oder <c>null</c>,

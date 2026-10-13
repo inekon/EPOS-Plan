@@ -17,6 +17,8 @@ namespace WindowsFormsApplication1
         internal string Gebaeudeart;
         internal string Wohngebaeude;
         internal string Baualtersklasse;
+        /// <summary>Der Energiestandard des Gebäudes (Vorrang vor der Baualtersklasse bei der U-Vorgabe der Stufe C, E47).</summary>
+        internal string Energiestandard;
         internal string Feiertagsland;
         internal double? Nutzflaeche, Raumhoehe, FlaecheNutzer, Luftwechselrate, Bauweise, SollTag;
         internal bool KuehlungAktiv;
@@ -62,9 +64,13 @@ namespace WindowsFormsApplication1
                : Kalendernutzung.TryGetValue(z.ID, out string n) ? n : null;
     }
 
-    /// <summary>Ein Aufbau mit den Kennwerten, die die Regel braucht.</summary>
+    /// <summary>
+    /// Ein Aufbau mit den Kennwerten, die die Regel braucht; beim Katalogaufbau dazu die Aufbauklasse des Katalogs
+    /// (<c>Klasse_Code</c>, BK-2) und die Typgruppen seiner Schichten und seines Namens (<see cref="Aufbaugruppenabgleich"/>, MA-4).
+    /// </summary>
     internal sealed record Aufbaukennung(int Id, string Bezeichner, string Bauteilart, bool Ungeeignet, double? U,
-                                         double? Kapazitaet, bool SchichtOhneStoffwert, int Folge);
+                                         double? Kapazitaet, bool SchichtOhneStoffwert, int Folge, string Klasse = null,
+                                         IReadOnlyCollection<string> Typgruppen = null);
 
     /// <summary>Die Hinweise der Quelle zu einer Zone (Profilregel 2.4 Stufe 1 und 2).</summary>
     internal sealed record Zonenquelle(int? DinNummer, string Raumtyp, string Nutzungsklasse);
