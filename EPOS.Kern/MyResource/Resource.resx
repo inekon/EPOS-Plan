@@ -52555,12 +52555,6 @@ Chart</value>
   <data name="KMA_VERGLEICH_EINE_ART" xml:space="preserve">
     <value>Nur Sätze einer Art vergleichen</value>
   </data>
-  <data name="KMA_BEZUG_HINWEIS" xml:space="preserve">
-    <value>Kühlleistung und EER bei {0} °C Kaltwasser und {1} °C Quelle (EN 14511).</value>
-  </data>
-  <data name="KMA_BEZUG_RUECKFALL" xml:space="preserve">
-    <value>{0} kW bei {1} °C</value>
-  </data>
   <data name="KMA_LBL_QUELLE" xml:space="preserve">
     <value>Quelle</value>
   </data>
@@ -52585,14 +52579,17 @@ Chart</value>
   <data name="KMA_WP_BEARBEITEN_GESPERRT" xml:space="preserve">
     <value>Wärmepumpen bearbeitet der Wärmepumpendialog</value>
   </data>
+  <data name="KMA_WP_TITEL_BEARBEITEN" xml:space="preserve">
+    <value>Wärmepumpe bearbeiten</value>
+  </data>
+  <data name="KMA_MSG_WP_OHNE_KASKADE" xml:space="preserve">
+    <value>Die Wärmepumpe kühlt erst, wenn die Wärmekaskade einen Platz für Wärmepumpen führt (Simulation, Konfiguration).</value>
+  </data>
   <data name="KMA_GRUPPE_STECKBRIEF" xml:space="preserve">
     <value>Gerät</value>
   </data>
   <data name="KMA_LBL_INVEST_BETRIEB" xml:space="preserve">
     <value>Investition / Betrieb</value>
-  </data>
-  <data name="KMA_LBL_KALTWASSER" xml:space="preserve">
-    <value>Kaltwasser-Vorlauf min.</value>
   </data>
   <data name="GANGL_UEBERSPRUNGEN_ZUGEORDNET" xml:space="preserve">
     <value>Übersprungen (im Projekt zugeordnet): {0}</value>

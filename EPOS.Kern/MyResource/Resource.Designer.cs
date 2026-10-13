@@ -80812,24 +80812,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlleistung und EER bei {0} °C Kaltwasser und {1} °C Quelle (EN 14511). ähnelt.
-        /// </summary>
-        public static string KMA_BEZUG_HINWEIS {
-            get {
-                return ResourceManager.GetString("KMA_BEZUG_HINWEIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kW bei {1} °C ähnelt.
-        /// </summary>
-        public static string KMA_BEZUG_RUECKFALL {
-            get {
-                return ResourceManager.GetString("KMA_BEZUG_RUECKFALL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Hinzufügen… ähnelt.
         /// </summary>
         public static string KMA_BTN_HINZU {
@@ -81082,15 +81064,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwasser-Vorlauf min. ähnelt.
-        /// </summary>
-        public static string KMA_LBL_KALTWASSER {
-            get {
-                return ResourceManager.GetString("KMA_LBL_KALTWASSER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kühlleistung ähnelt.
         /// </summary>
         public static string KMA_LBL_KUEHLLEISTUNG {
@@ -81240,6 +81213,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KMA_MSG_WP_FEHLER {
             get {
                 return ResourceManager.GetString("KMA_MSG_WP_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmepumpe kühlt erst, wenn die Wärmekaskade einen Platz für Wärmepumpen führt (Simulation, Konfiguration). ähnelt.
+        /// </summary>
+        public static string KMA_MSG_WP_OHNE_KASKADE {
+            get {
+                return ResourceManager.GetString("KMA_MSG_WP_OHNE_KASKADE", resourceCulture);
             }
         }
         
@@ -81438,6 +81420,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KMA_WP_LEER {
             get {
                 return ResourceManager.GetString("KMA_WP_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe bearbeiten ähnelt.
+        /// </summary>
+        public static string KMA_WP_TITEL_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("KMA_WP_TITEL_BEARBEITEN", resourceCulture);
             }
         }
         
