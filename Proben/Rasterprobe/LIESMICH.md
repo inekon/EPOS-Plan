@@ -1744,8 +1744,9 @@ größter Abstand **0,50 px**, Zeile mit Datum **41/41**, 3 Pfade, **0 Mutatione
 13 von 41 Schritten über 1 px (verfehlt, richtig).
 
 **Die Seite trägt die Oberflächenregel** (Bedarf als Linie, Erzeugung als Fläche, Tagesband, Wahl
-„Monat | Tag | Stunde“): `?bild=photovoltaik` stellt Strombedarf, Photovoltaik und Überschuss als drei dichte
-Viertelstundenlinien samt Speicherfüllstand — den Fall der Anwenderrückmeldung —, `?darstellung=bericht` zeigt
+„Datum | Stunde im Jahr“): `?bild=photovoltaik` stellt Strombedarf, Photovoltaik und Überschuss als drei dichte
+Viertelstundenlinien samt Speicherfüllstand — den Fall der Anwenderrückmeldung —, `&aufteilen=1` dazu die Erzeugung als
+Stapel aus Eigenverbrauch, Einspeisung (Grenze 4 kW) und Abregelung (der Schalter „PV aufteilen“), `?darstellung=bericht` zeigt
 dasselbe Modell ohne die Regel (das Bild des Berichts). Die Probe misst den Zeigerbalken weiter am Jahresgang; mit
 der Regel zählt sie je Reihe zwei Pfade (Band und Kern), und auch die Bänder bleiben über die Bewegung dieselben
 Elemente.

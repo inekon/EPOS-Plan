@@ -261,11 +261,13 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
     folgt; **eine Hülle nennt die Rolle nur dort, wo die Farbrolle sie nicht sagt**
     (`Reihe.MitRolle`). Kein Einzelfall-Code je Dialog, kein Umbau im Renderer: Die
     Befehlsliste des Berichts bleibt dieselbe Instanz, jedes PNG byte-gleich.
-  - **Die Zeitachse eines Jahresbildes ist umschaltbar** — die Wahl „Monat | Tag | Stunde“ in
-    der Leiste (`Zeitachse.Teilung`, `Zeichenflaeche.Teilung` als Vorgabe): Sie gilt je
-    Baustein und Sitzung und zeichnet die Teilung in der Vollansicht wie im Ausschnitt nach;
-    ohne Wahl zeigt die Vollansicht die Achse des Bildes und der Ausschnitt Jahresstunden mit
-    Datum.
+  - **Die Zeitachse eines Jahresbildes hat zwei Skalen** — die Wahl „Datum | Stunde im Jahr“
+    in der Leiste (`Zeitachse.Teilung`), Vorgabe Datum: Sie gilt je Baustein und Sitzung und
+    zeichnet die Achse in der Vollansicht wie im Ausschnitt selbst (die Achse des Bildes bleibt
+    dem Bericht). „Datum“ beschriftet `TT.MM.` ohne Jahr (`Zeitachse.DatumKurz`), im ganzen Jahr
+    an den Monatsanfängen, im Ausschnitt an Tagen und innerhalb eines Tages mit Uhrzeit
+    (`TT.MM. hh:00`); „Stunde im Jahr“ zählt die Jahresstunden in runden Schritten. Zwei Marken
+    liegen mindestens `Zeitachse.MARKE_MIN_PX` (72 px) auseinander, mit Uhrzeit 144 px.
 - **Eine Summenlinie heißt nach dem, was sie summiert, und ist abschaltbar wie ihre
   Summanden.** Der Name folgt der Summenbildung im Code, nicht der Gewohnheit: Ein
   Schlüssel „Gesamt" für drei verschiedene Summen benennt keine davon — je Diagramm ein

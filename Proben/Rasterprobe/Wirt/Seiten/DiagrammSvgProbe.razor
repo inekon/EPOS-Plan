@@ -75,9 +75,12 @@
                     kapitalwert | photovoltaik (Strombedarf, Photovoltaik, Ueberschuss
                     als drei dichte Linien samt Speicherfuellstand - der Fall der
                     Oberflaechenregel)
+      ?aufteilen=1  nur photovoltaik: die Erzeugung als Stapel aus Eigenverbrauch,
+                    Einspeisung (Grenze 4 kW) und Abregelung - der Schalter
+                    "PV aufteilen" des Reiters Photovoltaik
       ?darstellung=bericht  das Modell wie der Bericht, ohne Oberflaechenregel (Vorgabe:
                     interaktiv - Bedarf als Linie, Erzeugung als Flaeche, Tagesband,
-                    Wahl "Monat | Tag | Stunde" in der Leiste)
+                    Wahl "Datum | Stunde im Jahr" in der Leiste)
       ?reihen=3     Anzahl der Reihen des Jahresgangs (1…3)
       ?zoom=0       ohne Leiste und ohne JS-Anbindung (OhneZoom)
       ?farben=0     ohne Farbwaehler (nur der Legendenschalter bleibt)
@@ -157,20 +160,43 @@
         var linien = new List<ChartRenderer.Reihe>
         {
             new ChartRenderer.Reihe("Überschuss", ueberschuss, Farbrolle.UEBERSCHUSS),
-            new ChartRenderer.Reihe("Strombedarf", bedarf, Farbrolle.BEDARF),
-            new ChartRenderer.Reihe("Photovoltaik", pv, Farbrolle.STROM_PV)
+            new ChartRenderer.Reihe("Strombedarf", bedarf, Farbrolle.BEDARF)
         };
+        var stapel = new List<ChartRenderer.Reihe>();
+        if (_aufteilen)
+        {
+            // Wie SimulationControl.PvErzeugungAufteilen: Einspeisung bis zur Grenze,
+            // darueber Abregelung, der Rest der Erzeugung ist Eigenverbrauch.
+            var eigen = new double[VIERTELSTUNDEN];
+            var ein = new double[VIERTELSTUNDEN];
+            var abr = new double[VIERTELSTUNDEN];
+            for (int i = 0; i < VIERTELSTUNDEN; i++)
+            {
+                ein[i] = Math.Min(ueberschuss[i], 4.0);
+                abr[i] = ueberschuss[i] - ein[i];
+                eigen[i] = pv[i] - ein[i] - abr[i];
+            }
+            stapel.Add(new ChartRenderer.Reihe("PV-Eigenverbrauch", eigen, Farbrolle.STROM_PV, ChartRenderer.Stapelart.Flaeche));
+            stapel.Add(new ChartRenderer.Reihe("PV-Einspeisung (Überschuss)", ein, Farbrolle.UEBERSCHUSS, ChartRenderer.Stapelart.Flaeche));
+            stapel.Add(new ChartRenderer.Reihe("PV-Abregelung", abr, Farbrolle.REST, ChartRenderer.Stapelart.Flaeche));
+        }
+        else
+            linien.Add(new ChartRenderer.Reihe("Photovoltaik", pv, Farbrolle.STROM_PV));
         var zweite = new List<ChartRenderer.Reihe>
         {
             new ChartRenderer.Reihe("Speicherfüllstand", Speicherreihe(), Farbrolle.SPEICHERFUELLSTAND)
         };
 
         _modell = ChartRenderer.ErzeugerStapelModell(
-            "Strombedarf, Photovoltaik Jahresganglinie", new List<ChartRenderer.Reihe>(), linien, null,
-            "Leistung [kW]", ChartRenderer.Achse.Monate, false, zweite, "Speicherinhalt [kWh]");
+            "Strombedarf, Photovoltaik Jahresganglinie", stapel, linien, null,
+            "Leistung [kW]", ChartRenderer.Achse.Monate, false, zweite, "Speicherinhalt [kWh]",
+            stufenNachStapel: _aufteilen);
     }
 
     private string _bezeichnung = "Jahresgang der Probe";
+
+    /// <summary>?aufteilen=1: die PV-Erzeugung als Stapel (Schalter „PV aufteilen“).</summary>
+    private bool _aufteilen;
     private string _einheit = "kW";
     private string _einheitRechts = "";
 
@@ -218,6 +244,7 @@
     {
         var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
         if (abfrage.TryGetValue("bild", out var b)) _bild = b.ToString().ToLowerInvariant();
+        if (abfrage.TryGetValue("aufteilen", out var a)) _aufteilen = a.ToString() == "1";
         if (abfrage.TryGetValue("reihen", out var r) && int.TryParse(r, out int n))
             _reihen = Math.Clamp(n, 1, 3);
         if (abfrage.TryGetValue("zoom", out var z)) _mitZoom = z.ToString() != "0";
