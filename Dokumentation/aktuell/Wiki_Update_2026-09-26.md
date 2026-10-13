@@ -180,6 +180,7 @@ ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 Die Wiki-Quelle (Programm Dokumentation/Varianten) ist fortgeschrieben, ins Wiki geladen ist noch nichts.
 
 - Seit 13.10.2026: Der Reiter „Übersicht“ unter „Berichte & Kosten“ stellt die Komponenten je Gewerk mit ihren Kennwerten nebeneinander, hebt Abweichungen zum Stammprojekt hervor und blendet mit „nur Unterschiede“ gleiche Gewerke aus.
+- Seit 13.10.2026: Die Tafel „Komponenten im Vergleich“ im Reiter „Übersicht“ führt die Kältemaschine als eigenes Gewerk mit Anzahl und Kälteleistung.
 
 ### Version ‹Version› — Kältemittel als Stammdatum (Entwurf, Upload ausstehend)
 
