@@ -1176,6 +1176,33 @@ public sealed class StilblattTests
     }
 
     /// <summary>
+    /// <b>Der Primärknopf behält beim Überfahren seine Füllung</b> (KR1b): Seine Schwebe-Regel wiegt mehr als die
+    /// aller Knöpfe (<c>.epos-knopf:hover</c> mit zwei <c>:not</c>) — sonst gewänne deren helle Fläche, und die weiße
+    /// Schrift verschwände darauf. Gezählt wird das Gewicht der Klassenstufe (Klassen, Attribute, Pseudoklassen ohne
+    /// <c>:not</c> selbst).
+    /// </summary>
+    [Fact]
+    public void KR1b_Der_Primaerknopf_behaelt_beim_Ueberfahren_seine_Fuellung()
+    {
+        const string allgemein = ".epos-knopf:hover:not(:disabled):not([aria-disabled=\"true\"])";
+        const string primaer = ".epos-knopf.epos-knopf--primaer:hover:not(:disabled):not([aria-disabled=\"true\"])";
+        Assert.Contains("background: var(--epos-karte-flaeche-hover)", Regelblock(allgemein + " {"), StringComparison.Ordinal);
+        string regel = Regelblock(primaer + " {");
+        Assert.Contains("background: var(--epos-quelle-text)", regel, StringComparison.Ordinal);
+        Assert.Contains("border-color: var(--epos-quelle-text)", regel, StringComparison.Ordinal);
+        Assert.True(Klassengewicht(primaer) > Klassengewicht(allgemein),
+                    Klassengewicht(primaer) + " gegen " + Klassengewicht(allgemein));
+
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        Assert.DoesNotContain("\n.epos-knopf--primaer:hover", css, StringComparison.Ordinal);
+    }
+
+    /// <summary>Gewicht der Klassenstufe eines einfachen Selektors: Klassen, Attribute und Pseudoklassen, <c>:not</c> selbst zählt nicht.</summary>
+    private static int Klassengewicht(string selektor)
+        => selektor.Count(c => c == '.') + selektor.Count(c => c == '[')
+           + Regex.Matches(selektor, @"(?<!:):(?!:)").Count - Regex.Matches(selektor, @":not\(").Count;
+
+    /// <summary>
     /// Der Rumpf einer At-Regel (<c>@container …</c>, <c>@media …</c>) samt ihrer Regeln — bis zur
     /// Klammer, die sie schließt.
     /// </summary>

@@ -990,7 +990,11 @@ body {
     border-color: var(--epos-karte-titel);
 }
 
-.epos-knopf--primaer:hover:not(:disabled) {
+/* Der Primaerknopf behaelt beim Ueberfahren seine Fuellung, eine Stufe heller. Die
+   Regel muss mehr wiegen als die Schwebe aller Knoepfe (.epos-knopf:hover mit zwei
+   :not, 0-4-0): Sonst gewaenne deren helle Flaeche, und die weisse Schrift
+   verschwaende darauf. Deshalb beide Klassen und dieselben Ausschluesse (0-5-0). */
+.epos-knopf.epos-knopf--primaer:hover:not(:disabled):not([aria-disabled="true"]) {
     background: var(--epos-quelle-text);
     border-color: var(--epos-quelle-text);
 }
