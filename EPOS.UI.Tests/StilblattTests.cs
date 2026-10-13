@@ -1010,6 +1010,23 @@ public sealed class StilblattTests
     /// über Tokens und sichert Warnung und Wahl für erzwungene Farben. Ihr Block steht VOR dem Reiterblock, damit
     /// zwischen .epos-kond und dem Formularraster keine Medienabfrage steht.
     /// </summary>
+    /// <summary>
+    /// Zapfprofil ZB4 (a): Die waagerechte Optionsgruppe bricht um, haelt das Beruehrungsmass je
+    /// Eintrag, kennzeichnet die Wahl mit dem Marken-Token und unter forced-colors mit Highlight.
+    /// </summary>
+    [Fact]
+    public void ZB4_Die_waagerechte_Optionsgruppe_bricht_um_und_kennzeichnet_die_Wahl()
+    {
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        string zeile = Regelblock(".epos-optionsgruppe-zeile {");
+        Assert.Contains("flex-direction: row", zeile, StringComparison.Ordinal);
+        Assert.Contains("flex-wrap: wrap", zeile, StringComparison.Ordinal);
+        Assert.Contains("min-height: var(--epos-touchziel)", Regelblock(".epos-optionsgruppe-zeile .epos-option {"), StringComparison.Ordinal);
+        Assert.Contains("var(--epos-marke)", Regelblock(".epos-optionsgruppe-zeile .epos-option--gewaehlt {"), StringComparison.Ordinal);
+        Assert.Contains("@media (forced-colors: active) {\n    .epos-optionsgruppe-zeile .epos-option {\n        border-color: CanvasText;\n    }\n\n"
+                        + "    .epos-optionsgruppe-zeile .epos-option--gewaehlt {\n        border: 2px solid Highlight;", css, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void K1b_Die_Kalenderbedienung_haelt_das_Beruehrungsmass_und_rollt_im_eigenen_Kasten()
     {

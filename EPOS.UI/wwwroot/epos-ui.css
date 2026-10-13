@@ -1631,6 +1631,52 @@ body {
     line-height: 1.4;
 }
 
+/* WAAGERECHTE OPTIONSGRUPPE (Optionsgruppe Waagerecht="true", Zapfprofil ZB4 (a)):
+   eine Wahl aus zwei bis drei kurzen Werten nebeneinander statt in drei Zeilen
+   untereinander - Muster .epos-mehrfachauswahl--zeile. Die Eintraege brechen bei
+   Platzmangel um; jeder bleibt ein Beruehrungsziel (min-height 44 px), kompakt wird
+   die Gruppe aus der Anordnung, nicht aus kleineren Knoepfen. Die gewaehlte Option
+   traegt einen Rahmen in der Markenfarbe (Zustandsklasse epos-option--gewaehlt),
+   unter forced-colors in Highlight - der Wahlknopf allein waere die einzige Kennung. */
+.epos-optionsgruppe-zeile {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.epos-optionsgruppe-zeile .epos-option {
+    flex: 0 0 auto;
+    min-height: var(--epos-touchziel);
+    padding: 0 12px 0 8px;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.epos-optionsgruppe-zeile .epos-option--gewaehlt {
+    border-color: var(--epos-marke);
+    box-shadow: inset 0 0 0 1px var(--epos-marke);
+}
+
+/* Die leise Zeile unter der waagerechten Gruppe: Erlaeuterung und Wirkung der
+   gewaehlten Option - ohne Einzug, sie gehoert zur ganzen Gruppe. */
+.epos-optionsgruppe-unterzeile {
+    margin: 2px 0 4px 0;
+}
+
+@media (forced-colors: active) {
+    .epos-optionsgruppe-zeile .epos-option {
+        border-color: CanvasText;
+    }
+
+    .epos-optionsgruppe-zeile .epos-option--gewaehlt {
+        border: 2px solid Highlight;
+        box-shadow: none;
+    }
+}
+
 /* ==========================================================================
    Standards: Raster und Chartbild
    ========================================================================== */
