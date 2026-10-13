@@ -904,6 +904,12 @@ namespace WindowsFormsApplication1
             if (grund != null) _fehlerhinweis = grund;
         }
 
+        /// <summary>
+        /// Kachel „Prozesswärme“ — der Bedarfsprofile-Dialog. Die Zuordnungen schreibt die Hülle beim OK über
+        /// den hereingereichten Weg, BEVOR sie die Projektkopievormerkung abschließt: Sonst hielte die noch
+        /// stehende alte Zuordnung die Projektkopie einer entfernten Zeile fest, und sie bliebe als Waise im
+        /// Projekt (<c>Projektkopievormerkung.Schliessen</c>).
+        /// </summary>
         private void Prozesswaerme(IWin32Window wirt)
         {
             // Woertlich pBox_Prozess_Click (:213-237).
@@ -911,11 +917,11 @@ namespace WindowsFormsApplication1
 
             List<Z_ProjektProzesswaermeModel> liste = Z_ProjektProzesswaermeCtrl.LiesProjekt(_kontext.Id);
 
-            if (BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste))
+            BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste, () =>
             {
                 wizctrl.Del_Projekt_Prozess(_kontext.Id);
                 wizctrl.Add_Projekt_Prozess(_kontext.Id, liste);
-            }
+            });
         }
 
         private void Brauchwasser(IWin32Window wirt)
@@ -951,16 +957,20 @@ namespace WindowsFormsApplication1
         /// Kachel „Kältebedarfsprofile“ — der Bedarfsprofile-Dialog mit <c>BedarfsArt.Kaelte</c>
         /// (<see cref="BedarfsProfileHuelle"/>). Löschen und Neuschreiben der Zuordnungen laufen in EINEM
         /// Vorgang (<see cref="KaeltebedarfsprofilAbbildung.Speichern"/>): Scheitert ein Schritt oder steht eine Zeile
-        /// auf „Split ohne EER“, nennt der Fehlerbanner den Grund und die alten Zeilen bleiben stehen.
+        /// auf „Split ohne EER“, nennt der Fehlerbanner den Grund und die alten Zeilen bleiben stehen. Geschrieben
+        /// wird beim OK, BEVOR die Hülle die Projektkopievormerkung abschließt — sonst hielte die noch stehende
+        /// alte Zuordnung die Projektkopie einer entfernten Zeile fest (<c>Projektkopievormerkung.Schliessen</c>).
         /// </summary>
         private void Kaeltebedarfsprofile(IWin32Window wirt)
         {
             List<Z_ProjektKaeltebedarfModel> liste = Z_ProjektKaeltebedarfCtrl.LiesProjekt(_kontext.Id);
 
             // K5b: Speichern ueber die Abbildung - „Split ohne EER" lehnt sie benannt ab (Grund im Fehlerbanner).
-            if (!BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste)) return;
-            string grund = KaeltebedarfsprofilAbbildung.Speichern(_kontext.Id, liste);
-            if (grund != null) _fehlerhinweis = grund;
+            BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste, () =>
+            {
+                string grund = KaeltebedarfsprofilAbbildung.Speichern(_kontext.Id, liste);
+                if (grund != null) _fehlerhinweis = grund;
+            });
         }
 
         /// <summary>
@@ -971,6 +981,11 @@ namespace WindowsFormsApplication1
 
         // ---- Reiter 3: Strombedarf -----------------------------------------
 
+        /// <summary>
+        /// Kachel „Standardlastprofil“ — der Bedarfsprofile-Dialog mit den Stromverbrauchern. Die Zuordnungen
+        /// schreibt die Hülle beim OK über den hereingereichten Weg, BEVOR sie die Projektkopievormerkung
+        /// abschließt (wie die Prozesswärme).
+        /// </summary>
         private void Standardlastprofil(IWin32Window wirt)
         {
             // Woertlich pBox_StdLastProfil_Click (:414-439).
@@ -979,11 +994,11 @@ namespace WindowsFormsApplication1
             List<Z_ProjektStromverbraucherModel> liste =
                 Z_ProjektStromverbraucherCtrl.LiesProjekt(_kontext.Id);
 
-            if (BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste))
+            BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste, () =>
             {
                 wizctrl.Del_Projekt_Stromverbraucher(_kontext.Id);
                 wizctrl.Add_Projekt_Stromverbraucher(_kontext.Id, liste);
-            }
+            });
         }
 
         private void Stromganglinie(IWin32Window wirt)

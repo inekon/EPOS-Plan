@@ -36,7 +36,8 @@ namespace WindowsFormsApplication1
     /// <para><b>Auch die Bedarfsprofile</b> (Projektkopien der Stromverbraucher, Prozesswärme, Brauchwasser und
     /// Kälte) legen ihre Kopie beim Übernehmen an; ihr Dialog entfernt Zeilen selbst, die Hülle gleicht deshalb
     /// beim Schließen den Bestand ab (<see cref="EntferntGegenueber"/>). Gelöscht wird dort nur eine Kopie ohne
-    /// Zuordnung in der Datenbank.</para>
+    /// Zuordnung in der Datenbank — deshalb geht ihr Abschluss über <see cref="Schliessen"/>, das die
+    /// Zuordnungen des Aufrufers VOR dem Abgleich schreiben lässt.</para>
     ///
     /// <para>Plattformfrei und ohne Datenbank: Gelöscht wird über den Delegaten der Hülle
     /// (<c>…Ctrl.DeleteFromProjekt(bezeichner, projekt)</c>).</para>
@@ -103,6 +104,29 @@ namespace WindowsFormsApplication1
             if (bestand == null) return;
             foreach ((string bezeichner, int kopieId) in bestand)
                 if (nochReferenziert == null || !nochReferenziert(kopieId)) Entfernt(bezeichner, kopieId);
+        }
+
+        /// <summary>
+        /// <b>Der Abschluss eines Dialogs, dessen ZUORDNUNGEN erst der Aufrufer nach dem Schließen
+        /// schreibt</b> (Stromverbraucher, Prozesswärme, Kältebedarf): erst
+        /// <paramref name="zuordnungenSchreiben"/>, dann der Bestandsabgleich
+        /// (<see cref="EntferntGegenueber"/>), dann <see cref="Abschliessen"/>.
+        ///
+        /// <para>Die Reihenfolge entscheidet: Der Löschweg räumt eine Projektkopie nur ab, wenn in der
+        /// DATENBANK keine Zuordnung mehr auf sie zeigt. Würde die Vormerkung vor dem Schreiben
+        /// abgeschlossen, hielte die noch stehende alte Zuordnung die Kopie einer entfernten Zeile fest —
+        /// sie bliebe als Waise im Projekt.</para>
+        ///
+        /// <para><c>null</c> = der Dialog schreibt seine Zuordnungen selbst, bevor er schließt
+        /// (Brauchwasser mit Zapfprofil); dann bleibt es beim Abgleich und Abschluss.</para>
+        /// </summary>
+        internal void Schliessen(bool ok, Action zuordnungenSchreiben,
+                                 IEnumerable<(string Bezeichner, int KopieId)> bestand,
+                                 Func<int, bool> nochReferenziert)
+        {
+            if (ok) zuordnungenSchreiben?.Invoke();
+            EntferntGegenueber(bestand, nochReferenziert);
+            Abschliessen(ok, nochReferenziert);
         }
 
         /// <summary>

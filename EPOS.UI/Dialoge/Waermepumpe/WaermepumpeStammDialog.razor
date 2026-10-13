@@ -5,10 +5,10 @@
    Stammsaetze, rechts ihre Felder, darunter zwei Kennlinienbilder in zwei
    Reiterblaettern und der Umschalter Waerme/Kuehlung.
 
-   ZWEI UEBERLAGERUNGEN. "Kennliniendaten Ansicht/Bearbeiten..." zeigt den
-   KennlinienEditorDialog (W7.2), "Modul-Katalog..." den
-   WaermepumpenKatalogDialog (W7.1) - beide IM selben Fenster (Risiko R2),
-   nicht als zweites Fenster wie im Vorlaeufer.
+   EINE UEBERLAGERUNG. "Kennliniendaten Ansicht/Bearbeiten..." zeigt den
+   KennlinienEditorDialog (W7.2) - IM selben Fenster (Risiko R2), nicht als
+   zweites Fenster wie im Vorlaeufer. Der Katalog steht in der Liste dieses
+   Dialogs selbst (Katalogfilter S2.2), ein "Modul-Katalog..." gibt es nicht.
 
    DIE BILDER KOMMEN FERTIG. Der Vorlaeufer baute zwei WinForms-Charts aus
    einer DataTable auf (InitChart:243-331); hier baut
@@ -136,10 +136,10 @@
                           Zeigeanlass="@_auswahl.Uebernahmen">
                 <Werkzeug>
                     @* "NUR MIT KUEHLFUNKTION" (Konzept Administrationsdialoge 3.1, Zone 2;
-                       Stufe 4): derselbe Schalter wie in der Katalogauswahl des
-                       Anlagendialogs (WaermepumpenKatalogDialog). Er fuehrt keinen eigenen
-                       Zustand, er setzt den Trichter ">0" auf die Spalte Kuehlleistung -
-                       nie ein zweiter Filterweg; "Filter zuruecksetzen" nimmt ihn mit. *@
+                       Stufe 4): der Schnellfilter ueber der Katalogliste. Er fuehrt keinen
+                       eigenen Zustand, er setzt den Trichter ">0" auf die Spalte
+                       Kuehlleistung - nie ein zweiter Filterweg; "Filter zuruecksetzen"
+                       nimmt ihn mit. *@
                     <Schalter Bezeichnung="@SchalterNurKuehlung" Wert="@NurMitKuehlung"
                               WertChanged="NurMitKuehlungGesetzt" />
                 </Werkzeug>
@@ -605,8 +605,8 @@
 
     /// <summary>
     /// Steht „nur mit Kühlfunktion"? <b>Der Schalter führt keinen eigenen Zustand</b> —
-    /// er LIEST den Filterstand (Muster <c>WaermepumpenKatalogDialog</c>): „Filter
-    /// zurücksetzen" und der Trichter der Spalte ändern denselben Stand.
+    /// er LIEST den Filterstand: „Filter zurücksetzen" und der Trichter der Spalte
+    /// ändern denselben Stand.
     /// </summary>
     public bool NurMitKuehlung
         => _filterstand.Ausdruck(Katalogfilterprofil.SpKuehlleistung) ==

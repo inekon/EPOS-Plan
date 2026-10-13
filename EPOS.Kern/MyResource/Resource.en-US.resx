@@ -13045,9 +13045,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="PSPD_MSG_NICHT_GEFUNDEN" xml:space="preserve">
     <value>The selected buffer storage was not found in the master data.</value>
   </data>
-  <data name="WPK_TITEL" xml:space="preserve">
-    <value>Heat pump catalogue</value>
-  </data>
   <data name="WPK_LBL_HERSTELLER" xml:space="preserve">
     <value>Manufacturer</value>
   </data>
@@ -13095,9 +13092,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="WPK_BTN_RESET" xml:space="preserve">
     <value>Reset filter</value>
-  </data>
-  <data name="WPK_BTN_UEBERNEHMEN" xml:space="preserve">
-    <value>✔ Accept selection</value>
   </data>
   <data name="WPK_CHK_NUR_KUEHLUNG" xml:space="preserve">
     <value>cooling function only</value>
