@@ -54010,6 +54010,12 @@ chart</value>
   <data name="VF_HAT__SCHNELLAUFHEIZUNG" xml:space="preserve">
     <value>Data switch: Has a building of the state (or of any state) been calculated with effective rapid heat-up?</value>
   </data>
+  <data name="VF_HAT__KAELTE__DEZENTRAL" xml:space="preserve">
+    <value>Data switch: does the case (or any case) cover cooling demand locally through at least one split row with a result?</value>
+  </data>
+  <data name="VF_HAT__KAELTE__KAELTEFOLGE" xml:space="preserve">
+    <value>Data switch: does a cooling generator in the case (or in any case) cover via the cooling sequence beside a split row (value “of which cooling sequence” present)?</value>
+  </data>
   <data name="ABW_MERKMAL_VORH_SCHNELLAUF" xml:space="preserve">
     <value>Rapid heat-up</value>
   </data>

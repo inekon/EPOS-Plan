@@ -727,6 +727,16 @@ namespace WindowsFormsApplication1
                 // Katalog v21 (SA3b): ein Gebäude des Stands hat mit wirksamer Schnellaufheizung gerechnet.
                 new Vorlagenfeld("hat.schnellaufheizung", Vorlagenfeldart.Schalter, G, w => Hat(w, Aufheizbericht.HatSchnellaufheizung))
                     { Seit = FASSUNG_SCHNELLAUFHEIZUNG },
+                // Katalog v23 (K6d-N): ein Stand hat mindestens eine Split-Zeile mit Ergebnis — die Hauptzahl
+                // kaelte.deckungsgrad_gesamt hat einen Wert; der Kurzbericht nennt dann sie und „davon Kältefolge“.
+                new Vorlagenfeld("hat.kaelte.dezentral", Vorlagenfeldart.Schalter, G,
+                        w => Hat(w, v => KennzahlenKatalog.DeckungsgradKaelteGesamt(v).HasValue))
+                    { Seit = FASSUNG_KAELTE_DEZENTRAL },
+                // Katalog v23 (K6d-N): neben der Split-Zeile deckt ein Kälteerzeuger über die Kältefolge — „davon
+                // Kältefolge“ (kaelte.deckungsgrad_kaeltefolge) hat einen Wert; ohne ihn nennt der Kurzbericht nur die Split-Geräte.
+                new Vorlagenfeld("hat.kaelte.kaeltefolge", Vorlagenfeldart.Schalter, G,
+                        w => Hat(w, v => KennzahlenKatalog.DeckungsgradKaelteKaeltefolge(v).HasValue))
+                    { Seit = FASSUNG_KAELTE_DEZENTRAL },
             };
         }
 
