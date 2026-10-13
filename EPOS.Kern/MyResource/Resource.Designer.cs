@@ -11942,6 +11942,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht zum Gewerk Kältemaschine gehören und bleiben unverändert: die Kaskade des Projekts, ein Kältespeicher und die Kältefolge der übrigen Kälteerzeuger — der Rang der übernommenen Maschinen kommt aus der Quelle. Bitte die Kältefolge im Bereich Kälte prüfen. ähnelt.
+        /// </summary>
+        public static string BK_KOMP_HINW_KAELTESEITE {
+            get {
+                return ResourceManager.GetString("BK_KOMP_HINW_KAELTESEITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anlage „{0}&quot;: Bezüge ohne eindeutige gleichnamige Gegenstelle im Zielprojekt wurden weggelassen: {1}. ähnelt.
         /// </summary>
         public static string BK_KOMP_HINW_KINDBEZUG {
@@ -82590,6 +82599,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_KMT_OHNE_ZUORDNUNG {
             get {
                 return ResourceManager.GetString("KM_KMT_OHNE_ZUORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl Maschinen ähnelt.
+        /// </summary>
+        public static string KM_LBL_ANLAGE_ANZAHL {
+            get {
+                return ResourceManager.GetString("KM_LBL_ANLAGE_ANZAHL", resourceCulture);
             }
         }
         
