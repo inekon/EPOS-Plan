@@ -209,6 +209,12 @@ namespace WindowsFormsApplication1
                     }),
                 // Stufe G6a: der benannte Grund des letzten Aufrufs ohne Zahl (etwa mehrere Zonen).
                 ["BedarfBefund"] = new Func<string>(() => bedarfBefund),
+                // GD-N: der Jahreswärmebedarf des letzten Laufs je Gebäude (sonst der Projektwert mit Hinweis) für die
+                // Zusammenfassung; eine Zeile ohne Projektkopie hat keinen Lauf.
+                ["Jahreswaermebedarf"] = new Func<GebaeudeProjektZeile, GebaeudeJahreswaermebedarf>(z => Jahreswaermebedarf(z, projektId)),
+                // GD-N: das zuletzt gewählte Gebäude je Projekt über das Öffnen hinaus (Sprung „Kühlung“).
+                ["ZuletztGewaehlt"] = new Func<int?>(() => ZuletztGewaehlt(projektId)),
+                ["GewaehltMerken"] = new Action<int>(idZ => GewaehltMerken(projektId, idZ)),
                 ["MeldungKeinBedarfGrund"] = Text_("GEB_MSG_KEIN_BEDARF_GRUND",
                     "Für dieses Gebäude lässt sich kein Wärmebedarf berechnen: {0}"),
                 // Stufe G6a (Anwenderentscheid A2): „Aus dem Projekt entfernen" fragt bei Zonen nach.
@@ -674,6 +680,36 @@ namespace WindowsFormsApplication1
                 Jahresnutzungsgrad = m.Jahresnutzungsgrad,
                 DezentralWarmwasser = m.DezentralWarmwasser
             };
+        }
+
+        /// <summary>Der Schlüssel der Einstellung „zuletzt gewähltes Projektgebäude“ je Projekt (GD-N).</summary>
+        internal static string SchluesselZuletzt(int projektId)
+            => "Gebaeudedialog_Zuletzt_" + projektId.ToString(CultureInfo.InvariantCulture);
+
+        /// <summary>Das zuletzt gewählte Projektgebäude (Zuordnungsschlüssel); <c>null</c> = keins gemerkt.</summary>
+        internal static int? ZuletztGewaehlt(int projektId)
+        {
+            if (projektId <= 0) return null;
+            int id = Dienste.Einstellungen.LiesZahl(SchluesselZuletzt(projektId), 0);
+            return id > 0 ? id : null;
+        }
+
+        /// <summary>Merkt das gewählte Projektgebäude; eine geratene Id einer ungespeicherten Zeile wird nicht gemerkt.</summary>
+        internal static void GewaehltMerken(int projektId, int idZ)
+        {
+            if (projektId <= 0 || idZ <= 0 || idZ >= STARTINDEX) return;
+            Dienste.Einstellungen.SchreibZahl(SchluesselZuletzt(projektId), idZ);
+        }
+
+        /// <summary>
+        /// Der Jahreswärmebedarf des letzten Laufs für die Zusammenfassung (<see cref="GebaeudeJahresbedarfCtrl.Letzter"/>);
+        /// <c>null</c> = noch nicht gerechnet.
+        /// </summary>
+        internal static GebaeudeJahreswaermebedarf Jahreswaermebedarf(GebaeudeProjektZeile z, int projektId)
+        {
+            if (z == null) return null;
+            GebaeudeJahresbedarf b = GebaeudeJahresbedarfCtrl.Letzter(projektId, z.HatProjektkopie ? z.IdGebaeude : 0);
+            return b == null ? null : new GebaeudeJahreswaermebedarf(b.HeizwaermeMwh, b.Zeitpunkt, b.Projektwert);
         }
 
         /// <summary>

@@ -1,6 +1,15 @@
 ﻿namespace EPOS.UI.Dialoge.Bedarf;
 
 /// <summary>
+/// Der Jahreswärmebedarf eines Projektgebäudes aus dem letzten Rechenlauf des Projekts (GD-N; Zusammenfassung des
+/// Gebäudedialogs).
+/// </summary>
+/// <param name="Mwh">Der Wert [MWh/a].</param>
+/// <param name="Zeitpunkt">Der Zeitpunkt des Laufs; <c>null</c> = unbekannt.</param>
+/// <param name="Projektwert">Der Lauf führt keinen Wert je Gebäude — es ist der Heizwärmebedarf des Projekts.</param>
+public sealed record GebaeudeJahreswaermebedarf(double Mwh, DateTime? Zeitpunkt, bool Projektwert);
+
+/// <summary>
 /// EINE Zeile der Projektliste des Gebäudedialogs (iU9-W9.2) — das plattformfreie Abbild
 /// von <c>Z_ProjGebModel</c>.
 ///
