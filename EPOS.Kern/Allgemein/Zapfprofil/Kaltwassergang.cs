@@ -39,24 +39,37 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static double[] Monatsfaktoren(double zapfC, double[] monatswerteC, double mittelC, string zone = "")
         {
-            if (monatswerteC == null || monatswerteC.Length != Zapfkalender.MONATE)
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.RasterUngueltig, zone,
-                    ZapfSatz.Neu("EINGABE_KALTWASSERGANG_RASTER"));
+            ZapfAblehnung befund = Befund(zapfC, monatswerteC, mittelC, zone);
+            if (befund != null) throw befund.Ausnahme();
             double mitte = zapfC - mittelC;
-            if (!(mitte > 0))
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.TemperaturUngueltig, zone,
-                    ZapfSatz.Neu("EINGABE_ZAPFTEMPERATUR_UNTER_KALTWASSER", zone));
             var f = new double[Zapfkalender.MONATE];
-            for (int m = 0; m < Zapfkalender.MONATE; m++)
-            {
-                double delta = zapfC - monatswerteC[m];
-                if (!(delta > 0))
-                    throw new ZapfprofilEingabeException(ZapfEingabefehler.TemperaturUngueltig, zone,
-                        ZapfSatz.Neu("EINGABE_KALTWASSER_MONAT_UEBER_ZAPF", m + 1, zone));
-                f[m] = delta / mitte;
-            }
+            for (int m = 0; m < Zapfkalender.MONATE; m++) f[m] = (zapfC - monatswerteC[m]) / mitte;
             return f;
         }
+
+        /// <summary>
+        /// Die Regel der <see cref="Monatsfaktoren(double, double[], double, string)"/> ohne Wurf: <c>null</c>,
+        /// wenn die Zapftemperatur über dem Kaltwassermittel und über dem Kaltwasser jedes Monats liegt;
+        /// sonst die Ablehnung.
+        /// </summary>
+        internal static ZapfAblehnung Befund(double zapfC, double[] monatswerteC, double mittelC, string zone = "")
+        {
+            if (monatswerteC == null || monatswerteC.Length != Zapfkalender.MONATE)
+                return new ZapfAblehnung(zone ?? "", ZapfEingabefehler.RasterUngueltig, ZapfSatz.Neu("EINGABE_KALTWASSERGANG_RASTER"));
+            if (!(zapfC - mittelC > 0))
+                return new ZapfAblehnung(zone ?? "", ZapfEingabefehler.TemperaturUngueltig,
+                    ZapfSatz.Neu("EINGABE_ZAPFTEMPERATUR_UNTER_KALTWASSER", zone));
+            for (int m = 0; m < Zapfkalender.MONATE; m++)
+                if (!(zapfC - monatswerteC[m] > 0))
+                    return new ZapfAblehnung(zone ?? "", ZapfEingabefehler.TemperaturUngueltig,
+                        ZapfSatz.Neu("EINGABE_KALTWASSER_MONAT_UEBER_ZAPF", m + 1, zone));
+            return null;
+        }
+
+        /// <summary>Die Regel der Kaltwasserfaktoren einer Zone aus ihren Temperaturen, ohne Wurf.</summary>
+        internal static ZapfAblehnung Befund(Zonentemperaturen t, string zone = "")
+            => Befund(t.ZapfC, Monatswerte(t.KaltwasserMittelC, t.KaltwasserAmplitudeK, t.KaltwasserMonatMaximum),
+                      t.KaltwasserMittelC, zone);
 
         /// <summary>Die Kaltwasserfaktoren einer Zone aus ihren Temperaturen.</summary>
         internal static double[] Monatsfaktoren(Zonentemperaturen t, string zone = "")

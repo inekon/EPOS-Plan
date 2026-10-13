@@ -244,9 +244,15 @@ namespace WindowsFormsApplication1
                 foreach (ZonenStand z in gueltige)
                 {
                     IReadOnlyList<Din4708Zeile> eigene = Zeilen(z, katalog, ps);
+                    // Eine Wohnzone ohne Wohnungstabelle ist ein gewöhnlicher Stand (die Bezugsmenge trägt
+                    // die Zone): „nicht rechenbar" benannt, ohne Ausnahme.
                     if (eigene.Count == 0)
-                        throw new ZapfAuslegungException(ZapfAuslegungsfehler.WohnungstabelleFehlt,
-                            ZapfSatz.Neu("AUSLEGUNG_DIN_OHNE_WOHNUNGSTABELLE", z.Name ?? ""));
+                        return new Din4708Ergebnis
+                        {
+                            Gueltig = false, Fehler = ZapfAuslegungsfehler.WohnungstabelleFehlt,
+                            Grund = ZapfSatz.Neu("AUSLEGUNG_DIN_OHNE_WOHNUNGSTABELLE", z.Name ?? ""),
+                            ZonenAusserhalb = ausserhalb.AsReadOnly()
+                        };
                     zeilen.AddRange(eigene);
                 }
             }
