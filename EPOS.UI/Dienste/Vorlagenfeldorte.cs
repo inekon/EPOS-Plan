@@ -214,6 +214,8 @@ public static class Vorlagenfeldorte
             O(Kennzahl(stamm, "kaelte.spitze"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.kaeltelast");
             O(Kennzahl(stamm, "kaelte.rest"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.kaelte_ungedeckt");
             O(Kennzahl(stamm, "kaelte.deckungsgrad"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.kaelte_deckung");
+            // K6d (Katalog v23): mit Split-Zeile steht an derselben Stelle die Hauptzahl samt dezentraler Deckung.
+            O(Kennzahl(stamm, "kaelte.deckungsgrad_gesamt"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.kaelte_deckung");
             O(Kennzahl(stamm, "kaelte.strom"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.kaeltestrom");
             O(Kennzahl(stamm, "kaelte.jaz"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.jaz_kaelte");
         }

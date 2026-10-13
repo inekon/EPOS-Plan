@@ -70,6 +70,8 @@ namespace EPOS.Kern.Tests
             // Schemaschritt T5 (ZU25): die Zeilen des Bedarfstag-Konstruktors am Auslegungssatz.
             foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT5Konstruktor)
                 DataRepository.ExecuteNonQuery(a.Value);
+            // Schemaschritt TwwZonenferienSchema (ZB-Q3 B): die Zonenferien als Liste, die Spaltenpaare der Zone abgebaut.
+            TwwZonenferienSchema.Ausfuehren(null);
         }
 
         public void Dispose()

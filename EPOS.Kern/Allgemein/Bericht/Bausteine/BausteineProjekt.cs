@@ -462,18 +462,14 @@ namespace WindowsFormsApplication1
             bool mitSplit = e.KaeltebedarfDezentralMwh > 0;
             if (mitSplit)
             {
-                // Die Kältefolge aus dem Deckungsgrad des Kühlkanals (gespeichert: Kältefolge / Gesamtbedarf); die zwei
-                // Zahlen bildet KaelteDeckungsgrad - dieselbe Stelle wie Reiter und Ring.
-                double dezentral = e.KaeltebedarfDezentralMwh.Value;
-                double folge = mitErzeugung
-                               && stamm.Kennzahlen.TryGetValue(KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD, out double? dg)
-                               && dg.HasValue ? dg.Value * jahr / 100.0 : 0.0;
+                // K6d (Katalog v23): die zwei Zahlen aus dem Kennzahlenkatalog — kaelte.deckungsgrad_gesamt und
+                // kaelte.deckungsgrad_kaeltefolge; beide bildet KaelteDeckungsgrad, dieselbe Stelle wie Reiter und Ring.
                 paare.Add("Deckungsgrad Kälte");
-                paare.Add(Wert(k, KaelteDeckungsgrad.Hauptzahl(folge, dezentral, jahr), 1, "%"));
+                paare.Add(KennzahlWert(k, stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD_GESAMT, 1, "%"));
                 if (mitErzeugung)
                 {
                     paare.Add("davon Kältefolge");
-                    paare.Add(Wert(k, KaelteDeckungsgrad.DavonKaeltefolge(folge, dezentral, jahr), 1, "%"));
+                    paare.Add(KennzahlWert(k, stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD_KAELTEFOLGE, 1, "%"));
                 }
             }
             else if (mitErzeugung)

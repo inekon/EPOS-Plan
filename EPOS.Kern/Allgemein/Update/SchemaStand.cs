@@ -1054,7 +1054,11 @@ namespace WindowsFormsApplication1
         /// <see cref="KaeltebedarfSplitAbrechnungSchema.SCHRITT"/>: die Ergebnistabelle <c>Tab_ErgebnisKaelteDezentral</c> je
         /// dezentral (Split) gedeckter Kältebedarfszeile eines Laufs (<see cref="KaeltebedarfSplitAbrechnungSchema"/>).
         /// <b>Ergebnisneutral:</b> Kein Referenzprojekt führt eine Split-Zeile; die Tabelle bleibt leer.
-        public const int Zielversion = KaeltebedarfSplitAbrechnungSchema.SCHRITT;
+        /// Danach, mit den ZONENFERIEN ALS LISTE (ZB5, ZB‑Q3 B), steht das Ziel auf <see cref="TwwZonenferienSchema.SCHRITT"/>:
+        /// die Tabelle <c>Tab_TwwZonenferien</c> (beliebig viele eigene Ferienzeiträume je Zone), in die der Schritt die vier
+        /// Spaltenpaare von <c>Tab_TwwZone</c> überträgt und sie danach abbaut (<see cref="TwwZonenferienSchema"/>).
+        /// <b>Ergebnisneutral:</b> Der Zapfkalender rechnet über die Liste dieselben Fenster.
+        public const int Zielversion = TwwZonenferienSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

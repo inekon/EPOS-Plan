@@ -258,7 +258,10 @@ namespace Auslieferungsvorlage.Tests
             // 194 seit dem Schemaschritt 223 (KaeltebedarfSplitAbrechnungSchema, K6): Tab_ErgebnisKaelteDezentral, STRICT von ihrer
             // ersten Zeile an und in der Vorlage LEER.
             //
-            Assert.Equal(194, befund.Strict);
+            // 195 seit dem Schemaschritt 224 (TwwZonenferienSchema, ZB5): Tab_TwwZonenferien, STRICT von ihrer ersten
+            // Zeile an und in der Vorlage LEER (Projektdaten).
+            //
+            Assert.Equal(195, befund.Strict);
         }
 
         // =============================================================================

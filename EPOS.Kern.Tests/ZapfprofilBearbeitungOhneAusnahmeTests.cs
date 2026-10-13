@@ -93,7 +93,7 @@ namespace EPOS.Kern.Tests
                     return (z with { Wohnungen = new[] { new WohnungstypStand { Id = 1, Anzahl = 2, Raumzahl = 9.0 } } },
                             ZapfEingabefehler.BelegungFehlt, "EINGABE_BELEGUNG_FEHLT");
                 case "ferien_nur_beginn":
-                    return (z with { Ferienbeginn = new int?[] { 100, null, null, null } }, null, null);
+                    return (z with { Ferien = Zonenferienprobe.Liste((100, null)) }, null, null);
                 case "messwert_ohne_einheit":
                     return (z with { Jahresmesswert = 1000.0 }, ZapfEingabefehler.MesswertUngueltig, "EINGABE_MESSWERT_OHNE_EINHEIT");
                 case "messwert_kwh_ohne_grenze":
@@ -319,10 +319,7 @@ namespace EPOS.Kern.Tests
                     z.Angaben.Wohnungen.Add(new ZapfprofilWohnungDaten { Anzahl = 2, Raumzahl = 99.0 });
                     return z;
                 case "ferien_nur_beginn":
-                    z.Angaben.Ferien[0].BeginnTag = 1;
-                    z.Angaben.Ferien[0].BeginnMonat = 8;
-                    z.Angaben.Ferien[0].EndeTag = null;
-                    z.Angaben.Ferien[0].EndeMonat = null;
+                    z.Angaben.Ferien.Add(new ZapfprofilFerienDaten { Von = 213 });   // 01.08. ohne Ende
                     return z;
                 case "messwert_ohne_einheit":
                     z.Angaben.Jahresmesswert = 5000.0;

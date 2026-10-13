@@ -1053,6 +1053,9 @@ namespace EPOS.Kern.Tests
                 // Schritt KaeltebedarfSplitAbrechnungSchema.SCHRITT (K6): Tab_ErgebnisKaelteDezentral, leer, reines DDL.
                 // Wiederholbar, ergebnisneutral.
                 KaeltebedarfSplitAbrechnungSchema.Ausfuehren(null);
+                // Schritt TwwZonenferienSchema.SCHRITT (ZB5, ZB-Q3 B): Zonenferien als Liste - Tab_TwwZonenferien, die vier
+                // Spaltenpaare von Tab_TwwZone uebertragen und abgebaut. Wiederholbar, ergebnisneutral.
+                TwwZonenferienSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

@@ -142,19 +142,20 @@ namespace EPOS.Kern.Tests
             var zeilen = new List<string>();
             KesselBrennwertNachzug.Bericht b = KesselBrennwertNachzug.Ausfuehren(zeilen);
             Assert.Equal(kopien, b.Geprueft);
-            Assert.Equal(28, b.AusKatalog.Count);   // 23 + die Kopie des Kessels von 1007 im Referenzprojekt 1051 (KP3, RP1)
+            Assert.Equal(34, b.AusKatalog.Count);   // 23 + die Kopie des Kessels von 1007 im Referenzprojekt 1051 (KP3, RP1)
                                                     // + deren Kopie im Referenzprojekt Vorheizen 1065
                                                     // + die Kopie des Kessels von 1018 im Prüfprojekt 1053
                                                     // + die Kopie des Kessels von 1029 im Referenzprojekt Erdsonde 1057
                                                     // + die Kopie im Referenzprojekt 1054 (AK1z, Kopie von 1052)
+                                                    // + die sechs Kopien des Kessels von 1045 in 1066 bis 1071 (ZB12)
             // Ohne Katalogsatz gleichen Namens: der Prüfkessel und der neutrale Brennwertkessel des Referenzprojekts
             // Übergabegrenze 1060 (UB-E2-d).
             Assert.Equal(2, b.AusBeschreibung.Count);
             Assert.Contains(b.AusBeschreibung, z => z.Contains("Kessel " + OHNE_KATALOG));
             Assert.Empty(b.OhneZuordnung);
             Assert.Empty(b.Mehrdeutig);
-            Assert.Equal(30, b.Gesetzt);   // 24 + 1051 (KP3, RP1) + 1053 + 1054 (AK1z) + 1057 + 1060 (UB-E2-d) + 1065
-            Assert.StartsWith("30 von " + kopien, zeilen[0]);
+            Assert.Equal(36, b.Gesetzt);   // 24 + 1051 (KP3, RP1) + 1053 + 1054 (AK1z) + 1057 + 1060 (UB-E2-d) + 1065 + 1066 bis 1071 (ZB12)
+            Assert.StartsWith("36 von " + kopien, zeilen[0]);
             Assert.Contains(zeilen, z => z.Contains(OHNE_KATALOG.ToString(CultureInfo.InvariantCulture)));
 
             Assert.Equal(kopien - ELEKTROKESSEL.Length, Zahl("SELECT COUNT(*) FROM Tab_Heizkessel WHERE Brennwert = 1"));

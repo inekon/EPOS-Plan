@@ -13,9 +13,11 @@ namespace EPOS.Kern.Tests
     /// Testdatenbank: Einspielen, Stand, Zurücklesen, ein zweites Paket ersetzt das erste,
     /// Löschen, Rollback — und die Tabelle wandert in keine Projektkopie.
     ///
-    /// <para><b>Die Testdatenbank bleibt ohne Typtage.</b> Jede Zeile dieser Klasse entsteht in
-    /// der Kopie aus einem ERFUNDENEN Paket (<see cref="Typtagpaketbauer"/>); das Repositorium
-    /// trägt keinen Wert einer Richtlinie (Konzept Kapitel 6).</para>
+    /// <para><b>Jeder Fall beginnt ohne Typtage.</b> Die Testdatenbank trägt den erfundenen Typtagsatz des
+    /// Referenzprojekts 1069 (ZB12); jeder Fall leert ihn in seiner Kopie zuerst
+    /// (<see cref="Typtagpaketbauer.OhneTyptage"/>). Jede Zeile dieser Klasse entsteht in der Kopie aus einem
+    /// ERFUNDENEN Paket (<see cref="Typtagpaketbauer"/>); das Repositorium trägt keinen Wert einer Richtlinie
+    /// (Konzept Kapitel 6).</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public sealed class TwwTyptagCtrlTests : IDisposable
@@ -40,6 +42,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
 
             Assert.True(TwwTyptagCtrl.TabelleVorhanden(), "Die Kopie steht nicht auf Schritt 131.");
             TwwTyptagstand stand = TwwTyptagCtrl.Stand();
@@ -54,6 +57,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
 
             Typtagpaketbauer b = Typtagpaketbauer.Erfunden(ZONE, ART);
             foreach (var k in b.Kategorien) b.Gaenge.Add((ART, k.Code, 720, new[] { 0.25, 0.75 }));
@@ -103,6 +107,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
 
             Typtagpaketbauer b = Typtagpaketbauer.MitBewoelkung(ZONE, ART);
             string ordner = Path.Combine(Path.GetTempPath(), "epos-typtagstrom-" + Guid.NewGuid().ToString("N"));
@@ -129,6 +134,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
 
             TwwTyptagimportBericht erst = TwwTyptagCtrl.Importieren(Typtagpaketbauer.Erfunden(ZONE, ART).Dateien());
             Assert.Null(erst.Abbruch);
@@ -154,6 +160,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
 
             TwwTyptagimportBericht bericht = TwwTyptagCtrl.Importieren(Typtagpaketbauer.Erfunden(ZONE, ART).Dateien());
             Assert.Null(bericht.Abbruch);
@@ -173,6 +180,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
 
             TwwTyptagimportBericht erst = TwwTyptagCtrl.Importieren(Typtagpaketbauer.Erfunden(ZONE, ART).Dateien());
             Assert.Null(erst.Abbruch);
@@ -205,6 +213,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
 
             TwwTyptagCtrl.Importieren(Typtagpaketbauer.Erfunden(ZONE, ART).Dateien());
             TwwTyptagstand vorher = TwwTyptagCtrl.Stand();
@@ -232,6 +241,7 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            Typtagpaketbauer.OhneTyptage();
             TwwTyptagCtrl.Importieren(Typtagpaketbauer.Erfunden(ZONE, ART).Dateien());
 
             var dup = new ProjektDuplizierenCtrl();

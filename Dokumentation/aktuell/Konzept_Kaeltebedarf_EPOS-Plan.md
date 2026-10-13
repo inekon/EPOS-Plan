@@ -253,6 +253,8 @@ Profilzeilen (der Lastgangweg `GanglinieBuchen` wird ihm vorgeschaltet):
 
 Jede Kältezahl trägt die Grenze „nur sensible Kälte“ (`KAELTE_GRENZE_FEUCHTE`).
 
+Kennzahlenkatalog (Fassung 23): `kaelte.profil` [MWh/a], `kaelte.dezentral` [MWh/a], `kaelte.dezentral_strom` [MWh/a], `kaelte.dezentral_eer` [–], `kaelte.deckungsgrad_gesamt` [%] = (Kältefolge + dezentral) / Kältebedarf gesamt und `kaelte.deckungsgrad_kaeltefolge` [%] = Kältefolge / (gesamt − dezentral); belegt nur mit Profil- bzw. Split-Zeile, sonst leer. Bericht und Übersicht nehmen die Deckungszahlen aus dem Katalog; die Übersicht trägt mit Split-Zeile die Vorlagenmarke `kennzahl.kaelte.deckungsgrad_gesamt`. Die Platzhalter stehen als Schnellbausteine in den Bausteinvorlagen; der Kurzbericht nennt im Kühlsatz weiterhin `kaelte.deckungsgrad`.
+
 ### 4.4 Grenzen und Verhalten ohne Kühlbetrieb
 
 - Keine Gerätegrenze, keine Teillast, kein Takten, keine Latentlast, keine Rückwirkung auf Raumtemperatur oder

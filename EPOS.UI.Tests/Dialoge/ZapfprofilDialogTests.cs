@@ -179,7 +179,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.NotNull(Knopf(cut, "Entfernen"));
 
         // Der Eingabeblock der gewählten Zone: Zonenname, Nutzungsart, Bezugsgröße, Niveau.
-        Assert.Contains("Zone 1 · Nutzung", cut.Markup);
+        Assert.Contains("Zone „Zone 1“", cut.Markup);
         Assert.Single(cut.FindAll("input[inputmode=decimal]"));
         Assert.Contains("Zonenname", cut.Markup);
         Assert.Contains("Nutzungsart", cut.Markup);
@@ -331,6 +331,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Equal("", cut.Instance.Hinweis);
 
         Option(cut, "Experte").Change("2");
+        ZapfprofilKarten.AlleAuf(cut);
         Assert.Equal(ZapfprofilStufe.Experte, cut.Instance.Stufe);
         Assert.True(Option(cut, "Experte").HasAttribute("checked"));
 
@@ -379,6 +380,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.False(HatFeld(cut, "Zufallssaat (Seed)"));
 
         Option(cut, "Experte").Change("2");
+        ZapfprofilKarten.AlleAuf(cut);
         Assert.Contains("Stochastik · Jahresreihe", cut.Markup);
         Assert.Equal(new[] { "deterministisch", "stochastisch" },
                      cut.FindAll("fieldset[aria-label='Rechenweg der Jahresreihe'] .epos-feld-text").Select(x => x.TextContent).ToArray());
@@ -418,6 +420,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         ZapfprofilErgebnisDaten? ergebnis = null;
         var cut = Aufbauen(vorschau: e => { gesehen.Add(e); return Vorschau(e); }, geschlossen: x => ergebnis = x);
         Option(cut, "Experte").Change("2");
+        ZapfprofilKarten.AlleAuf(cut);
         Option(cut, "stochastisch").Change("1");
 
         Feld(cut, "Zufallssaat (Seed)").Input("7");
@@ -446,6 +449,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         ZapfprofilErgebnisDaten? ergebnis = null;
         var cut = Aufbauen(geschlossen: x => ergebnis = x);
         Option(cut, "Experte").Change("2");
+        ZapfprofilKarten.AlleAuf(cut);
         Option(cut, "stochastisch").Change("1");
 
         Feld(cut, "Realisierungen").Input("5000");                        // über der Obergrenze des Kerns
@@ -472,6 +476,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         ZapfprofilErgebnisDaten? ergebnis = null;
         var cut = Aufbauen(geschlossen: x => ergebnis = x);
         Option(cut, "Experte").Change("2");
+        ZapfprofilKarten.AlleAuf(cut);
         Option(cut, "stochastisch").Change("1");
         Feld(cut, "Zufallssaat (Seed)").Input("-1");
         Feld(cut, "Realisierungen").Input("5000");
@@ -499,6 +504,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         ZapfprofilErgebnisDaten? ergebnis = null;
         var cut = Aufbauen(geschlossen: x => ergebnis = x);
         Option(cut, "Experte").Change("2");
+        ZapfprofilKarten.AlleAuf(cut);
         Option(cut, "stochastisch").Change("1");
         Feld(cut, "Zufallssaat (Seed)").Input("9");
         Feld(cut, "Zufallssaat (Seed)").Input("-1");
@@ -565,6 +571,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll("tr.epos-zapfprofil-konsistenz"));      // Einfach: keine Einzelwerte
 
         Option(cut, "Experte").Change("2");
+        ZapfprofilKarten.AlleAuf(cut);
         IElement[] zeilen = cut.FindAll("tr.epos-zapfprofil-konsistenz").ToArray();
         Assert.Equal(2, zeilen.Length);
         Assert.Equal("Konsistenzprobe Energie · Zone 1", zeilen[0].QuerySelector("th")!.TextContent);
@@ -615,6 +622,7 @@ public class ZapfprofilDialogTests : EposBunitContext
             .Add(x => x.EntprellungMs, 0));
 
         Option(cut, "Experte").Change("2");
+        ZapfprofilKarten.AlleAuf(cut);
         cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Kennzahlen").Click();
         Knopf(cut, "Stochastisch rechnen").Click();
         cut.WaitForAssertion(() => Assert.Single(cut.FindAll("tr.epos-zapfprofil-konsistenz")));
@@ -643,6 +651,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-warnbanner"));
 
         Option(cut, "Experte").Change("2");
+        ZapfprofilKarten.AlleAuf(cut);
         Option(cut, "stochastisch").Change("1");
         Assert.Empty(cut.FindAll(".epos-warnbanner"));                     // die Vorschau zieht nichts
         Knopf(cut, "Stochastisch rechnen").Click();
@@ -1103,7 +1112,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Knopf(cut, "Zone hinzufügen").Click();
         Assert.Equal(3, cut.Instance.Eingabe.Zonen.Count);
         Assert.Equal("Zone 3", cut.Instance.Eingabe.Zonen[2].Name);
-        Assert.Contains("Zone 3 · Nutzung", cut.Markup);
+        Assert.Contains("Zone „Zone 3“", cut.Markup);
 
         cut.FindAll("table.epos-zapfprofil-zonen tbody button")[0].Click();
         Knopf(cut, "Duplizieren").Click();

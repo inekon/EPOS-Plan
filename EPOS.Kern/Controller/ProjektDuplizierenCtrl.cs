@@ -318,6 +318,12 @@ namespace WindowsFormsApplication1
             // Projektkopie mit Zonen, aber ohne Wohnungstypen.
             {"Tab_TwwWohnungstyp",     "ID_Zone IN (SELECT ID FROM Tab_TwwZone WHERE ID_Projekt = {0})"},
 
+            // Zapfprofilgenerator (Schemaschritt TwwZonenferienSchema, ZB-Q3 B): Die eigenen Ferienzeitraeume
+            // haengen an der ZONE und fuehren kein eigenes ID_Projekt - dasselbe Muster wie die Wohnungstabelle;
+            // ohne den Eintrag fuehre eine Projektkopie mit Zonen, aber ohne ihre Ferien. Der Versatz der Zone
+            // kommt ueber "ID_Zone" -> Tab_TwwZone (FK_MAP).
+            {"Tab_TwwZonenferien",     "ID_Zone IN (SELECT ID FROM Tab_TwwZone WHERE ID_Projekt = {0})"},
+
             // Zapfprofilgenerator (Schemaschritt T5, Anwenderentscheid ZU25): Die Zeilen des
             // Bedarfstag-Konstruktors haengen am AUSLEGUNGSSATZ Tab_TwwProjekt (eine Zeile je
             // Projekt) und fuehren kein eigenes ID_Projekt. Ausdruecklich statt ueber die

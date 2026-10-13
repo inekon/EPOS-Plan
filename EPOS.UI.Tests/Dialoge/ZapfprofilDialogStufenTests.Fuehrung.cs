@@ -147,13 +147,14 @@ public partial class ZapfprofilDialogStufenTests
     {
         var cut = AufbauenGefuehrt();
         Stufe(cut, "Experte");
-        Option(cut, "Tagesbedarf", "manuell", "1");
 
         IElement[] gruppen = cut.FindAll("fieldset.epos-optionsgruppe[role=radiogroup]").ToArray();
-        Assert.True(gruppen.Length >= 7, "Nur " + gruppen.Length + " Optionsgruppen");
+        Assert.True(gruppen.Length >= 5, "Nur " + gruppen.Length + " Optionsgruppen");
         Assert.All(gruppen, g => Assert.NotNull(g.QuerySelector(":scope > .epos-optionsgruppe-zeile")));
-        foreach (string name in new[] { "Stufe", "Bedarfsniveau", "Tagesbedarf", "Ladeleistung (Gebäude)" })
+        foreach (string name in new[] { "Stufe", "Bedarfsniveau", "Zirkulation vorhanden", "Rechenweg der Jahresreihe" })
             Assert.Contains(gruppen, g => g.GetAttribute("aria-label") == name);
+        // ZB4 (b): Tagesbedarf, Ladeleistung und Zirkulation tragen keinen Umschalter auto/manuell mehr.
+        Assert.DoesNotContain(gruppen, g => g.GetAttribute("aria-label") is "Tagesbedarf" or "Ladeleistung (Gebäude)" or "Zirkulation (Gebäude)");
 
         // Die Wahl trägt die Zustandsklasse; die Stufe folgt dem Klick.
         Assert.Equal("Experte", cut.Find("fieldset[aria-label='Stufe'] .epos-option--gewaehlt").TextContent.Trim());
