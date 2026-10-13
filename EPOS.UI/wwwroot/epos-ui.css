@@ -5684,7 +5684,8 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 /* Die Grafik: die Legende der Versionen einmal oben (je Version dieselbe Farbe in
    allen Diagrammen, eine nicht simulierte grau und schraffiert), darunter je Gruppe
    ein Raster der Diagramme. Die Diagramme teilen sich die Breite ab 440 px je Spalte
-   und fallen darunter auf eine Spalte; nichts rollt quer. Die Wertetabelle je
+   und fallen darunter auf eine Spalte (hoechstens 680 px breit, damit die Schrift im
+   Bild nicht ueber die der Seite waechst); nichts rollt quer. Die Wertetabelle je
    Diagramm ist Sprachausgabe (position: absolute in der figure). */
 .epos-ergebnis-grafik-legende {
     display: flex;
@@ -5751,6 +5752,7 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 .epos-ergebnis-diagramm {
     position: relative;
     min-width: 0;
+    max-width: 680px;
     margin: 0;
 }
 

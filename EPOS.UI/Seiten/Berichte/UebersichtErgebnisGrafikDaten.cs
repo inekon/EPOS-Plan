@@ -104,13 +104,16 @@ public static class UebersichtErgebnisGrafikBau
     /// <param name="versionen">Die Versionen samt Farbe (<see cref="Versionen"/>).</param>
     public static IReadOnlyList<ErgebnisDiagramm> Diagramme(ErgebnisVergleichGruppe gruppe, IReadOnlyList<ErgebnisGrafikVersion> versionen)
     {
-        var serien = versionen.Select(v => new Versionsbalkenserie { Name = v.Name, Rolle = v.Rolle }).ToList();
+        // Eine nicht simulierte Version hat nirgends einen Balken; sie belegt deshalb auch keinen Platz im Block (die
+        // Legende nennt sie grau). Die übrigen behalten Rolle und Reihenfolge.
+        var simuliert = Enumerable.Range(0, versionen.Count).Where(i => versionen[i].Simuliert).ToList();
+        var serien = simuliert.Select(i => new Versionsbalkenserie { Name = versionen[i].Name, Rolle = versionen[i].Rolle }).ToList();
         var liste = new List<ErgebnisDiagramm>();
         int n = 0;
         foreach (IReadOnlyList<ErgebnisVergleichZeile> teil in NachEinheit(gruppe.Zeilen))
         {
             string einheit = teil[0].Einheit ?? "";
-            var zeilen = teil.Select(z => Zeile(z, versionen)).ToList();
+            var zeilen = teil.Select(z => Zeile(z, versionen, simuliert)).ToList();
             liste.Add(new ErgebnisDiagramm
             {
                 Kennung = "uebersicht-erg-" + gruppe.Schluessel + "-" + n++,
@@ -127,14 +130,15 @@ public static class UebersichtErgebnisGrafikBau
     public static string Name(ErgebnisVergleichZeile z) => string.IsNullOrEmpty(z.Kennzahl) ? z.Bezeichnung : z.Kennzahl;
 
     /// <summary>Eine Zeile der Tabelle als Kennzahl der Versionsbalken — Texte wörtlich aus den Zellen.</summary>
-    private static Versionsbalkenzeile Zeile(ErgebnisVergleichZeile z, IReadOnlyList<ErgebnisGrafikVersion> versionen)
+    private static Versionsbalkenzeile Zeile(ErgebnisVergleichZeile z, IReadOnlyList<ErgebnisGrafikVersion> versionen,
+                                             IReadOnlyList<int> stellen)
     {
         var werte = new List<double?>();
         var texte = new List<string>();
         var zeiger = new List<string>();
         var ab = new List<bool>();
         string einheit = string.IsNullOrEmpty(z.Einheit) ? "" : " " + z.Einheit;
-        for (int i = 0; i < versionen.Count; i++)
+        foreach (int i in stellen)
         {
             ErgebnisVergleichZelle? c = i < z.Zellen.Count ? z.Zellen[i] : null;
             bool mit = c is not null && !c.NichtSimuliert && versionen[i].Simuliert && c.Wert.HasValue;

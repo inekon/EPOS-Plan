@@ -50,7 +50,7 @@ namespace WindowsFormsApplication1
         private const float VB_LUECKE = 4f;
 
         /// <summary>Höhe der Kennzahlbeschriftung über einem Block [px].</summary>
-        private const float VB_KOPF = 24f;
+        private const float VB_KOPF = 28f;
 
         /// <summary>Abstand zweier Blöcke [px].</summary>
         private const float VB_BLOCKABSTAND = 12f;
@@ -152,7 +152,7 @@ namespace WindowsFormsApplication1
                             float xr = w.Value < 0 ? xa : xa + Math.Max(laenge, 1f);
                             if (ab) zb.Linie(xr, y - 2f, xr, y + VB_BALKEN + 2f, strich);
                             float xt = Math.Max(xa + Math.Max(laenge, 1f), null0) + 6f;
-                            Text(zb, text, wf, Farbrolle.TEXT, xt, y + 1f);
+                            Text(zb, text, wf, Farbrolle.TEXT, xt, y - 2f);
                         });
                     }
                 }

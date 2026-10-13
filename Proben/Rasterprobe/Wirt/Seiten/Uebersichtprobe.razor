@@ -51,6 +51,7 @@
     private static bool s_nurUnterschiede;
     private static int s_markiert = 1;
     private static readonly HashSet<string> s_offen = new();
+    private static string s_ansicht = "tabelle";
 
     protected override void OnInitialized()
     {
@@ -59,6 +60,7 @@
         s_nurUnterschiede = abfrage.TryGetValue("nurunterschiede", out var u) && u.ToString() == "1";
         s_markiert = abfrage.TryGetValue("variante", out var w) && int.TryParse(w, out int i) && i >= 1 && i <= s_varianten
             ? 1 + i : 1;
+        s_ansicht = abfrage.TryGetValue("ansicht", out var a) && a.ToString() == "grafik" ? "grafik" : "tabelle";
         s_offen.Clear();
         if (abfrage.TryGetValue("offen", out var o))
         {
@@ -115,6 +117,9 @@
     {
         var satz = new Dictionary<string, object>(s_ergebnisHuelle.Gaben())
         {
+            // ?ansicht=grafik zeigt die Grafik; die Wahl gilt im Wirt je Sitzung statt in der Einstellungsnaht.
+            ["AnsichtLesen"] = new Func<string>(() => s_ansicht),
+            ["AnsichtGewechselt"] = new Action<string>(a => s_ansicht = a),
             ["KlappgruppeOffenLesen"] = new Func<string, bool>(g => s_offen.Contains(g)),
             ["KlappgruppeOffenGewechselt"] = new Action<string, bool>((g, an) =>
             {
