@@ -54665,5 +54665,116 @@ chart</value>
   <data name="BKAT_BST_KLASSE_STOFF_SONSTIGE" xml:space="preserve">
     <value>Other material</value>
   </data>
+  <data name="DGF_ROLLE_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Cooling, decentralised (split)</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>decentralised (split)</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_GEBAEUDE" xml:space="preserve">
+    <value>Buildings</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_LASTGANG" xml:space="preserve">
+    <value>Load profiles</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_PROFIL" xml:space="preserve">
+    <value>Cooling demand profiles</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_DAVON_GEBAEUDE" xml:space="preserve">
+    <value>of which buildings</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_DAVON_LASTGANG" xml:space="preserve">
+    <value>of which load profiles</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_DAVON_PROFIL" xml:space="preserve">
+    <value>of which cooling demand profiles</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_DAVON_DEZENTRAL" xml:space="preserve">
+    <value>of which decentralised (split)</value>
+  </data>
+  <data name="SIMERG_GRP_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Decentralised cooling (split)</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Decentralised cooling</value>
+  </data>
+  <data name="SIMERG_LBL_STROM_DEZENTRAL" xml:space="preserve">
+    <value>Decentralised electricity</value>
+  </data>
+  <data name="SIMERG_LBL_EER_DEZENTRAL" xml:space="preserve">
+    <value>Decentralised seasonal EER</value>
+  </data>
+  <data name="SIMERG_LBL_NETZ_DEZENTRAL" xml:space="preserve">
+    <value>Decentralised grid purchase</value>
+  </data>
+  <data name="SIMERG_HRL_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Covered decentrally (split): {0} MWh/a of the cooling demand ({1} %) with {2} MWh/a electricity.</value>
+  </data>
+  <data name="SIMUEB_LBL_KUEHLUNG_DEZENTRAL" xml:space="preserve">
+    <value>Decentralised cooling</value>
+  </data>
+  <data name="SIMUEB_KUEHLUNG_DEZENTRAL_ZAEHLER" xml:space="preserve">
+    <value>of which {0} MWh/a decentralised cooling via own meter (outside the electricity balance)</value>
+  </data>
+  <data name="SIMUEB_KAELTE_DAVON_KAELTEFOLGE" xml:space="preserve">
+    <value>of which cooling sequence: {0} % of the centrally supplied cooling demand</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Decentralised cooling</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_ZEILE" xml:space="preserve">
+    <value>Row</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_SUMME" xml:space="preserve">
+    <value>Annual total</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_EER" xml:space="preserve">
+    <value>EER</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_TRAEGER" xml:space="preserve">
+    <value>Cooling carrier</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_ZAEHLER" xml:space="preserve">
+    <value>Meter</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_QUELLE_PROFIL" xml:space="preserve">
+    <value>Cooling demand profile</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_QUELLE_LASTGANG" xml:space="preserve">
+    <value>Load profile</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_EER_FEST" xml:space="preserve">
+    <value>fixed {0}</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_EER_LINEAR" xml:space="preserve">
+    <value>linear {0} at {1} °C / {2} at {3} °C</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_ZAEHLER_EIGEN" xml:space="preserve">
+    <value>own meter</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_ZAEHLER_ANTEILIG" xml:space="preserve">
+    <value>share of grid purchase</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SUMME" xml:space="preserve">
+    <value>Total decentralised (profiles): {0} MWh/a</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_ZENTRAL" xml:space="preserve">
+    <value>Central cooling demand (cooling sequence): buildings with cooling, load profiles {0}, cooling demand profiles {1}</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_HRL" xml:space="preserve">
+    <value>Decentrally supplied rows run alongside the cooling sequence with their own EER; they are maintained under “External cooling demand” and “Cooling demand profiles”.</value>
+  </data>
+  <data name="SIM_SCHEMA_ABNEHMER_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Cooling demand, decentralised (split)</value>
+  </data>
+  <data name="KONF_KS_DEZENTRAL_ZEILE" xml:space="preserve">
+    <value>{0}: EER {1}</value>
+  </data>
+  <data name="KONF_KS_DEZENTRAL_TRAEGER" xml:space="preserve">
+    <value>Cooling carrier: {0}</value>
+  </data>
 </root>
 

@@ -54672,5 +54672,116 @@ Chart</value>
   <data name="BKAT_BST_KLASSE_STOFF_SONSTIGE" xml:space="preserve">
     <value>Sonstiger Stoff</value>
   </data>
+  <data name="DGF_ROLLE_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Kälte dezentral (Split)</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>dezentral (Split)</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_GEBAEUDE" xml:space="preserve">
+    <value>Gebäude</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_LASTGANG" xml:space="preserve">
+    <value>Lastgänge</value>
+  </data>
+  <data name="CHART_LEGENDE_KAELTE_PROFIL" xml:space="preserve">
+    <value>Kältebedarfsprofile</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_DAVON_GEBAEUDE" xml:space="preserve">
+    <value>davon Gebäude</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_DAVON_LASTGANG" xml:space="preserve">
+    <value>davon Lastgänge</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_DAVON_PROFIL" xml:space="preserve">
+    <value>davon Kältebedarfsprofile</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_DAVON_DEZENTRAL" xml:space="preserve">
+    <value>davon dezentral (Split)</value>
+  </data>
+  <data name="SIMERG_GRP_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Dezentrale Kältedeckung (Split)</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Kälte dezentral</value>
+  </data>
+  <data name="SIMERG_LBL_STROM_DEZENTRAL" xml:space="preserve">
+    <value>Strom dezentral</value>
+  </data>
+  <data name="SIMERG_LBL_EER_DEZENTRAL" xml:space="preserve">
+    <value>Jahres-EER dezentral</value>
+  </data>
+  <data name="SIMERG_LBL_NETZ_DEZENTRAL" xml:space="preserve">
+    <value>Netzbezug dezentral</value>
+  </data>
+  <data name="SIMERG_HRL_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Dezentral (Split) gedeckt: {0} MWh/a des Kältebedarfs ({1} %) mit {2} MWh/a Strom.</value>
+  </data>
+  <data name="SIMUEB_LBL_KUEHLUNG_DEZENTRAL" xml:space="preserve">
+    <value>Kühlung dezentral</value>
+  </data>
+  <data name="SIMUEB_KUEHLUNG_DEZENTRAL_ZAEHLER" xml:space="preserve">
+    <value>davon {0} MWh/a Kühlung dezentral über eigenen Zähler (neben der Strombilanz)</value>
+  </data>
+  <data name="SIMUEB_KAELTE_DAVON_KAELTEFOLGE" xml:space="preserve">
+    <value>davon Kältefolge: {0} % des zentral zu deckenden Kältebedarfs</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Dezentrale Kältedeckung</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_ZEILE" xml:space="preserve">
+    <value>Zeile</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_SUMME" xml:space="preserve">
+    <value>Jahressumme</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_EER" xml:space="preserve">
+    <value>EER</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_TRAEGER" xml:space="preserve">
+    <value>Kühlträger</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SP_ZAEHLER" xml:space="preserve">
+    <value>Zähler</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_QUELLE_PROFIL" xml:space="preserve">
+    <value>Kältebedarfsprofil</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_QUELLE_LASTGANG" xml:space="preserve">
+    <value>Lastgang</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_EER_FEST" xml:space="preserve">
+    <value>fest {0}</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_EER_LINEAR" xml:space="preserve">
+    <value>linear {0} bei {1} °C / {2} bei {3} °C</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_ZAEHLER_EIGEN" xml:space="preserve">
+    <value>eigener Zähler</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_ZAEHLER_ANTEILIG" xml:space="preserve">
+    <value>anteilig am Netzbezug</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_SUMME" xml:space="preserve">
+    <value>Summe dezentral (Profile): {0} MWh/a</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_ZENTRAL" xml:space="preserve">
+    <value>Kältebedarf zentral (Kältefolge): Gebäude mit Kühlung, Lastgänge {0}, Kältebedarfsprofile {1}</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_HRL" xml:space="preserve">
+    <value>Dezentral gedeckte Zeilen laufen neben der Kältefolge mit eigenem EER; gepflegt werden sie unter „Kältebedarf extern“ und „Kältebedarfsprofile“.</value>
+  </data>
+  <data name="SIM_SCHEMA_ABNEHMER_KAELTE_DEZENTRAL" xml:space="preserve">
+    <value>Kältebedarf dezentral (Split)</value>
+  </data>
+  <data name="KONF_KS_DEZENTRAL_ZEILE" xml:space="preserve">
+    <value>{0}: EER {1}</value>
+  </data>
+  <data name="KONF_KS_DEZENTRAL_TRAEGER" xml:space="preserve">
+    <value>Kühlträger: {0}</value>
+  </data>
 </root>
 

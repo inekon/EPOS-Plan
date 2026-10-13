@@ -348,6 +348,8 @@ namespace WindowsFormsApplication1
                 z.Kaeltereihen.Add(schluessel);
             }
             z.Reihen[ZeitreihenSatz.KAELTEREST] = r.Rest;
+            // K6b: die Split-Deckung - nur mit Split-Zeile; ohne sie bleibt der Satz, wie er war.
+            if (r.Dezentral.Length > 0) z.Reihen[ZeitreihenSatz.KAELTE_DEZENTRAL] = r.Dezentral;
         }
 
         /// <summary>Eine Deckungsreihe eintragen — nur, wenn sie überhaupt Werte trägt.</summary>

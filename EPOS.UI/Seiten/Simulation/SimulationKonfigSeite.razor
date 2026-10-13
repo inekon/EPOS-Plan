@@ -371,6 +371,47 @@
                                 }
                             </div>
                         </div>
+
+                        @* K6b (Konzept Kaeltebedarf 6): die Gruppe „Dezentrale Kaeltedeckung" - je Split-Zeile Bezeichner,
+                           Quelle, Jahressumme, EER-Weg, Kuehltraeger und Zaehler, nur lesend (gepflegt wird in den Dialogen
+                           der Zeilen), dazu die Summe und die Zeile „Kaeltebedarf zentral". Ohne Split-Zeile keine Gruppe;
+                           bei „aus" klappt sie mit dem Bereich zusammen. *@
+                        @if (_daten.Kaeltebereich.Dezentral.Count > 0)
+                        {
+                            <section class="epos-simkonfig-kaelte-dezentral" aria-label="@Resource.SIMKONF_KAELTE_DEZENTRAL">
+                                <h3 class="epos-simkonfig-gruppe">@Resource.SIMKONF_KAELTE_DEZENTRAL</h3>
+                                <div class="epos-simkonfig-kaelte-dezentral-huelle">
+                                    <table class="epos-tabelle epos-simkonfig-kaelte-dezentral-tabelle">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">@Resource.SIMKONF_KAELTE_DEZ_SP_ZEILE</th>
+                                                <th scope="col">@Resource.SIMKONF_KAELTE_DEZ_SP_QUELLE</th>
+                                                <th scope="col" class="epos-zahl">@Resource.SIMKONF_KAELTE_DEZ_SP_SUMME [MWh/a]</th>
+                                                <th scope="col">@Resource.SIMKONF_KAELTE_DEZ_SP_EER</th>
+                                                <th scope="col">@Resource.SIMKONF_KAELTE_DEZ_SP_TRAEGER</th>
+                                                <th scope="col">@Resource.SIMKONF_KAELTE_DEZ_SP_ZAEHLER</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (KaelteDezentralAnzeige z in _daten.Kaeltebereich.Dezentral)
+                                            {
+                                                <tr data-zuordnung="@z.IdZuordnung">
+                                                    <td>@z.Bezeichner</td>
+                                                    <td>@z.Quelle</td>
+                                                    <td class="epos-zahl">@(z.SummeMwh is double s ? s.ToString("N2", System.Globalization.CultureInfo.CurrentCulture) : "—")</td>
+                                                    <td>@z.Eer</td>
+                                                    <td>@z.Traeger</td>
+                                                    <td>@z.Zaehler</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <p class="epos-simkonfig-hinweis">@_daten.Kaeltebereich.DezentralSumme</p>
+                                <Herleitungszeile Text="@_daten.Kaeltebereich.ZentralZeile" />
+                                <Herleitungszeile Text="@Resource.SIMKONF_KAELTE_DEZ_HRL" />
+                            </section>
+                        }
                     }
                 </section>
             }

@@ -149,10 +149,11 @@ public class UebersichtReiterTests : EposBunitContext
 
     private IRenderedComponent<UebersichtReiter> Zeichnen(UebersichtDaten daten,
                                                           Action? details = null,
-                                                          Action? strom = null)
+                                                          Action? strom = null,
+                                                          SimulationErgebnisCtrl.UebersichtKennzahlen? zahlen = null)
         => Render<UebersichtReiter>(p =>
         {
-            p.Add(x => x.Kennzahlen, Zahlen());
+            p.Add(x => x.Kennzahlen, zahlen ?? Zahlen());
             p.Add(x => x.Daten, daten);
             p.Add(x => x.RingWaerme, _ring);
             p.Add(x => x.RingStrom, _ring);
@@ -1127,5 +1128,30 @@ public class UebersichtReiterTests : EposBunitContext
         Assert.DoesNotContain("text-overflow", block, StringComparison.Ordinal);
         Assert.DoesNotContain("overflow: hidden", block, StringComparison.Ordinal);
         Assert.DoesNotContain("@media", block, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// K6b: mit Split-Zeile steht in der Strombilanz der Posten „Kühlung dezentral“ (die ganze Split-Reihe), der Kältestrom
+    /// ohne ihren Anteil in der Stufe, und die Notiz zum eigenen Zähler; ohne Split-Zeile bleibt die Zeile, wie sie war.
+    /// </summary>
+    [Fact]
+    public void K6b_Strombilanz_fuehrt_Kuehlung_dezentral_ohne_Doppelzaehlung()
+    {
+        string posten = WindowsFormsApplication1.MyResource.Resource.SIMUEB_LBL_KUEHLUNG_DEZENTRAL;
+        SimulationErgebnisCtrl.UebersichtKennzahlen ohneSplit = Zahlen();
+        ohneSplit.KaeltestromStufeMwh = 5.0;
+        var ohne = Zeichnen(Daten(), zahlen: ohneSplit);
+        Assert.DoesNotContain(posten, ohne.Markup);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMUEB_LBL_KAELTESTROM + " " + 5.0.ToString("N2"), ohne.Markup);
+
+        SimulationErgebnisCtrl.UebersichtKennzahlen mitSplit = Zahlen();
+        mitSplit.KaeltestromStufeMwh = 5.0;
+        mitSplit.KaeltestromDezentralMwh = 3.0;
+        mitSplit.KaeltestromDezentralStufeMwh = 1.0;
+        var mit = Zeichnen(Daten(), zahlen: mitSplit);
+        Assert.Contains(posten + " " + 3.0.ToString("N2"), mit.Markup);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMUEB_LBL_KAELTESTROM + " " + 4.0.ToString("N2"), mit.Markup);
+        Assert.Single(mit.FindAll("p.epos-simueb-dezentral-zaehler"));
+        Assert.Empty(ohne.FindAll("p.epos-simueb-dezentral-zaehler"));
     }
 }

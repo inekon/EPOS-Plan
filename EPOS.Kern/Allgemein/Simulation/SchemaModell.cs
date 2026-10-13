@@ -56,6 +56,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string ABNEHMER_KAELTEKREIS = "ABNEHMER_KAELTEKREIS";
 
+        /// <summary>
+        /// K6b (Konzept Kältebedarf 4.3, Frage 2 des Plans K6): der Abnehmer „Kältebedarf dezentral (Split)“ in der
+        /// Kältebahn — die dezentral gedeckten Kältebedarfszeilen. Er steht OHNE Kante da (die Split-Geräte hängen an keinem
+        /// Kältekreis), Träger und Zähler stehen als Hinweiszeilen; eine Stromlinie zum Kühlträger kennt das Schema nicht.
+        /// Nur, wenn das Projekt Kälte rechnet und mindestens eine Split-Zeile führt.
+        /// </summary>
+        public const string ABNEHMER_KAELTE_DEZENTRAL = "ABNEHMER_KAELTE_DEZENTRAL";
+
         // --- Auftrag KS: die KÄLTEBAHN unter der Wärmebahn ------------------------------
         //
         // Eigene Schlüsselpräfixe, weil eine Wärmepumpe im Kühlbetrieb in BEIDEN Bahnen
@@ -866,6 +874,9 @@ namespace WindowsFormsApplication1
                 if (ohne != null) ohne.Bahn = Bahn.Kaelte;
             }
 
+            // 4a. K6b: die dezentral (Split) gedeckten Zeilen - ein Abnehmer ohne Kante, nur mit Split-Zeile.
+            if (projektKaelte) KaelteDezentralAnlegen(idProjekt);
+
             // 5. Kanten - dieselbe Sprache wie in der Wärmebahn.
             for (int i = 0; i < erzeuger.Count; i++)
             {
@@ -890,6 +901,38 @@ namespace WindowsFormsApplication1
             if (erzeuger.Count > 1)
                 for (int i = 0; i < erzeuger.Count; i++)
                     Finden(erzeuger[i]).Rang = (i + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// K6b: der Knoten „Kältebedarf dezentral (Split)“ (<see cref="ABNEHMER_KAELTE_DEZENTRAL"/>) — je Split-Zeile eine
+        /// Zeile mit Bezeichner und EER-Weg, darunter der Kühlträger samt Abrechnungsart als Hinweiszeile. Ohne Split-Zeile
+        /// entsteht kein Knoten, und das Schema bleibt, wie es war.
+        /// </summary>
+        private void KaelteDezentralAnlegen(int idProjekt)
+        {
+            List<Z_ProjektKaeltebedarfCtrl.Uebersichtszeile> zeilen =
+                Z_ProjektKaeltebedarfCtrl.ZeilenDesProjekts(idProjekt).Where(z => z.Split).ToList();
+            if (zeilen.Count == 0) return;
+
+            int projekttraeger = Kaeltestromabrechnung.Projekttraeger(idProjekt);
+            Knoten k = new Knoten
+            {
+                Schluessel = ABNEHMER_KAELTE_DEZENTRAL,
+                Art = Knotenart.Abnehmer,
+                Bahn = Bahn.Kaelte,
+                Titel = MyResource.Resource.SIM_SCHEMA_ABNEHMER_KAELTE_DEZENTRAL,
+                Hinweis = MyResource.Resource.SIM_SCHEMA_TIP_ABNEHMER
+            };
+            foreach (Z_ProjektKaeltebedarfCtrl.Uebersichtszeile z in zeilen)
+            {
+                k.Zeilen.Add(string.Format(MyResource.Resource.KONF_KS_DEZENTRAL_ZEILE, z.Bezeichner,
+                                           Z_ProjektKaeltebedarfCtrl.EerText(z)));
+                // Frage 2: Träger und Zähler als Hinweiszeile statt einer Stromlinie.
+                k.Zeilen.Add(string.Format(MyResource.Resource.KONF_KS_DEZENTRAL_TRAEGER,
+                                           ProjektDetails.TraegerText(z, projekttraeger)));
+            }
+            k.Hinweis = k.Hinweis + Environment.NewLine + string.Join(Environment.NewLine, k.Zeilen.ToArray());
+            Knotenliste.Add(k);
         }
 
         /// <summary>Kühlvorlauf des Projektgeräts einer Wärmepumpen-Anlage [°C]; <c>null</c> = nicht gepflegt.</summary>

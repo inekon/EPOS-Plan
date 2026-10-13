@@ -400,6 +400,30 @@ public sealed class KaelteDaten
 
     /// <summary>BV-E6: der Hinweis der Marken der Stufe „ähnlich“; sonst leer.</summary>
     public string KennzahlHinweis = "";
+
+    // ---- K6b (Konzept Kältebedarf 4.3): Herkunft und dezentrale (Split-)Deckung ---------------------------------
+    // Nur mit Split-Zeile belegt; ohne sie bleibt jede Zeile, jede Gruppe und jedes Bild, wie es war.
+
+    /// <summary>Hat der Lauf eine dezentral (Split) gedeckte Zeile gerechnet?</summary>
+    public bool MitDezentral;
+
+    /// <summary>Kältebedarf der Gebäude, der Lastgänge und der Kältebedarfsprofile [MWh/a] (je zentral und dezentral).</summary>
+    public double GebaeudeMwh, ExternMwh, ProfilMwh;
+
+    /// <summary>Dezentral (Split) gedeckte Kälte, ihr Strom und dessen Netzbezug [MWh/a].</summary>
+    public double DezentralMwh, DezentralStromMwh, DezentralNetzbezugMwh;
+
+    /// <summary>Jahres-EER der dezentralen Deckung; <c>null</c> ohne Strom.</summary>
+    public double? JahresEerDezentral;
+
+    /// <summary>„davon Kältefolge“ [%] unter der Hauptzahl <see cref="DeckungsgradProzent"/>; <c>null</c> ohne Split oder ohne Kälteerzeuger.</summary>
+    public double? DeckungsgradKaeltefolgeProzent;
+
+    /// <summary>Die Split-Zeilen als Zeilen der Kältetabelle der Übersicht (ohne Vorlauf).</summary>
+    public IReadOnlyList<KaelteerzeugerAnzeige> Dezentral = Array.Empty<KaelteerzeugerAnzeige>();
+
+    /// <summary>Der Satz zur dezentralen Deckung; leer ohne Split.</summary>
+    public string DezentralHinweis = "";
 }
 
 /// <summary>

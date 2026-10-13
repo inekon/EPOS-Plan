@@ -64,7 +64,7 @@
                 <section class="epos-wbx-abschnitt epos-wbx-abschnitt--deckung">
                     <Gruppenkopf Titel="@Resource.DECK_GRUPPE">
                         <KindInhalt>
-                            <DeckungsartFelder Daten="@d.Deckung" Stromtraeger="@Stromtraeger" Gesperrt="@NurLesen"
+                            <DeckungsartFelder Daten="@d.Deckung" Stromtraeger="@Stromtraeger" ProjektStromtraeger="@ProjektStromtraeger" Gesperrt="@NurLesen"
                                                TitelAnzeigen="false" Geaendert="BeiGeaendert" />
                         </KindInhalt>
                     </Gruppenkopf>
@@ -117,6 +117,9 @@
 
     /// <summary>Die Stromträger des Projekts — der Kühlträger der Feldgruppe „Deckung“.</summary>
     [Parameter] public IReadOnlyList<(int Id, string Text)> Stromtraeger { get; set; } = Array.Empty<(int, string)>();
+
+    /// <summary>K6b: der Stromträger des Projekts — der eigene Zähler wirkt nur bei abweichendem Kühlträger (E34).</summary>
+    [Parameter] public int ProjektStromtraeger { get; set; }
 
     [Parameter] public string KanalBezeichnung { get; set; } = Resource.KANAL_LABEL;
     [Parameter] public string KaelteArtBezeichnung { get; set; } = Resource.KAELTE_ART_LABEL;

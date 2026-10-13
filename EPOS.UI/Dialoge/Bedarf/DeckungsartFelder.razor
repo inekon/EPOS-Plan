@@ -43,6 +43,15 @@ else
     /// <summary>Die Stromträger des Projekts (Id, Anzeigetext) — die Auswahl des Kühlträgers; leer = Stromträger des Projekts.</summary>
     [Parameter] public IReadOnlyList<(int Id, string Text)> Stromtraeger { get; set; } = Array.Empty<(int, string)>();
 
+    /// <summary>
+    /// K6b: der Stromträger, der den Netzbezug des Projekts bepreist (<c>Kaeltestromabrechnung.Projekttraeger</c>); 0 =
+    /// unbekannt. Nur ein abweichender Kühlträger lässt den eigenen Zähler wirken (E34).
+    /// </summary>
+    [Parameter] public int ProjektStromtraeger { get; set; }
+
+    /// <summary>Weicht der Kühlträger vom Stromträger des Projekts ab? Nur dann wirkt der eigene Zähler.</summary>
+    internal bool TraegerAbweichend => Daten.KuehlIdCarrier is int id && id > 0 && id != ProjektStromtraeger;
+
     /// <summary>Jede Eingabe meldet sich; geschrieben wird erst im OK-Weg des Wirts.</summary>
     [Parameter] public EventCallback Geaendert { get; set; }
 
@@ -130,6 +139,12 @@ else
             }
           </KindInhalt>
         </Formularraster>
+        @* K6b (E34, Muster Kaeltemaschinen-Konfiguration): der eigene Zaehler ist weich gesperrt, solange kein
+           abweichender Kuehltraeger gewaehlt ist - die Herleitungszeile sagt, dass er dann nicht wirkt. *@
+        @if (Daten.IstSplit && !TraegerAbweichend)
+        {
+            <Herleitungszeile Text="@Resource.KMA_HINWEIS_ZAEHLER" />
+        }
         @if (Daten.PunktEinsIstVorgabe)
         {
             <Herleitungszeile Text="@Vorgabezeile(Daten.Eer1, Daten.Taussen1)" />

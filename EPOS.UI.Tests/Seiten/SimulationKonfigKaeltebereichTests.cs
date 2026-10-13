@@ -46,6 +46,7 @@ public class SimulationKonfigKaeltebereichTests : EposBunitContext
     private string? _kmAntwort;
     private readonly List<(int Anlage, WaermepumpeAnlageDaten Daten)> _wpKonfigGeschrieben = new();
     private bool _wpKuehlbetrieb;
+    private IReadOnlyList<KaelteDezentralAnzeige> _dezentral = new List<KaelteDezentralAnzeige>();
     private string? _wpSperrgrund;
     private bool _wpInKaskade = true;
     private int _anlagenJeKopie = 1;
@@ -53,6 +54,7 @@ public class SimulationKonfigKaeltebereichTests : EposBunitContext
 
     private KaeltebereichDaten Bereich() => new KaeltebereichDaten
     {
+        Dezentral = _dezentral, DezentralSumme = "Summe dezentral: 12,00 MWh/a", ZentralZeile = "Kältebedarf zentral: …",
         Kuehlbetrieb = _projektKuehlung,
         Folge = new[] { KaelteStufe.FreieKuehlung, KaelteStufe.Kaeltespeicher, KaelteStufe.Waermepumpe, KaelteStufe.Kaeltemaschine },
         Erzeuger = new List<KaelteerzeugerZeile>
@@ -445,5 +447,33 @@ public class SimulationKonfigKaeltebereichTests : EposBunitContext
             () => cut.InvokeAsync(() => sicht.KuehlbetriebWaermepumpen = "Kältemaschine 1"));
         Assert.Equal(string.Format(Resource.KI_DLG_SIM_KUEHL_WP_UNBEKANNT, "Kältemaschine 1"), ex.Message);
         Assert.Single(_wpGeschrieben);
+    }
+
+    /// <summary>
+    /// K6b (Konzept Kältebedarf 6): die Gruppe „Dezentrale Kältedeckung“ im Bereich „Kälte“ — nur lesend, je Split-Zeile
+    /// Bezeichner, Quelle, Jahressumme, EER-Weg, Kühlträger und Zähler; ohne Split-Zeile keine Gruppe, bei „aus“ keine.
+    /// </summary>
+    [Fact]
+    public void K6b_Gruppe_Dezentrale_Kaeltedeckung_nur_mit_Split_Zeile()
+    {
+        var ohne = Seite();
+        Assert.Empty(ohne.FindAll("section.epos-simkonfig-kaelte-dezentral"));
+
+        _dezentral = new List<KaelteDezentralAnzeige>
+        {
+            new KaelteDezentralAnzeige(true, 7, "Kühlraum", "Kältebedarfsprofil", 12.0, "fest 3,0", "Strom B", "eigener Zähler"),
+            new KaelteDezentralAnzeige(false, 8, "Server", "Lastgang", null, "linear 3,0 bei 35 °C / 4,0 bei 25 °C",
+                                       "Stromträger des Projekts", "anteilig am Netzbezug"),
+        };
+        var mit = Seite();
+        var gruppe = mit.Find("section.epos-simkonfig-kaelte-dezentral");
+        Assert.Equal(2, gruppe.QuerySelectorAll("tbody tr").Length);
+        Assert.Contains("Kühlraum", gruppe.TextContent);
+        Assert.Contains("eigener Zähler", gruppe.TextContent);
+        Assert.Empty(gruppe.QuerySelectorAll("input, button"));   // nur lesend
+
+        _projektKuehlung = false;
+        var aus = Seite(mitParameter: false);
+        Assert.Empty(aus.FindAll("section.epos-simkonfig-kaelte-dezentral"));
     }
 }

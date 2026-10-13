@@ -22046,6 +22046,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die dezentral (Split) ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_KAELTE_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_KAELTE_DEZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_KAELTE_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_KAELTE_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgänge ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_KAELTE_LASTGANG {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_KAELTE_LASTGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarfsprofile ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_KAELTE_PROFIL {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_KAELTE_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ungedeckte Kälte ähnelt.
         /// </summary>
         public static string CHART_LEGENDE_KAELTE_UNGEDECKT {
@@ -22861,6 +22897,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string DGF_ROLLE_HINTERGRUND {
             get {
                 return ResourceManager.GetString("DGF_ROLLE_HINTERGRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte dezentral (Split) ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_KAELTE_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_KAELTE_DEZENTRAL", resourceCulture);
             }
         }
         
@@ -88710,6 +88755,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlträger: {0} ähnelt.
+        /// </summary>
+        public static string KONF_KS_DEZENTRAL_TRAEGER {
+            get {
+                return ResourceManager.GetString("KONF_KS_DEZENTRAL_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: EER {1} ähnelt.
+        /// </summary>
+        public static string KONF_KS_DEZENTRAL_ZEILE {
+            get {
+                return ResourceManager.GetString("KONF_KS_DEZENTRAL_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kälte ähnelt.
         /// </summary>
         public static string KONF_KS_KAELTE {
@@ -113591,6 +113654,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezentrale Kältedeckung (Split) ähnelt.
+        /// </summary>
+        public static string SIMERG_GRP_KAELTE_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMERG_GRP_KAELTE_DEZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeproduktion der einzelnen Spitzenkessel ähnelt.
         /// </summary>
         public static string SIMERG_GRP_MODULE_SPK {
@@ -113623,6 +113695,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER {
             get {
                 return ResourceManager.GetString("SIMERG_HINWEIS_KESSEL_NUTZUNGSGRAD_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezentral (Split) gedeckt: {0} MWh/a des Kältebedarfs ({1} %) mit {2} MWh/a Strom. ähnelt.
+        /// </summary>
+        public static string SIMERG_HRL_KAELTE_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMERG_HRL_KAELTE_DEZENTRAL", resourceCulture);
             }
         }
         
@@ -113832,6 +113913,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahres-EER dezentral ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_EER_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_EER_DEZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energiebedarf ähnelt.
         /// </summary>
         public static string SIMERG_LBL_ENERGIEBEDARF {
@@ -113931,6 +114021,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon dezentral (Split) ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_KAELTE_DAVON_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_KAELTE_DAVON_DEZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Gebäude ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_KAELTE_DAVON_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_KAELTE_DAVON_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Lastgänge ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_KAELTE_DAVON_LASTGANG {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_KAELTE_DAVON_LASTGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Kältebedarfsprofile ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_KAELTE_DAVON_PROFIL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_KAELTE_DAVON_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte dezentral ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_KAELTE_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_KAELTE_DEZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf je Bedarfsart ähnelt.
         /// </summary>
         public static string SIMERG_LBL_KAELTE_JE_KANAL {
@@ -114008,6 +114143,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_NETZVERLUSTE {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_NETZVERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug dezentral ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_NETZ_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_NETZ_DEZENTRAL", resourceCulture);
             }
         }
         
@@ -114296,6 +114440,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_STROMVERBRAUCH_WP {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_STROMVERBRAUCH_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom dezentral ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_STROM_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_STROM_DEZENTRAL", resourceCulture);
             }
         }
         
@@ -115817,6 +115970,150 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_KAELTE_BTN_VORGABE {
             get {
                 return ResourceManager.GetString("SIMKONF_KAELTE_BTN_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezentrale Kältedeckung ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fest {0} ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_EER_FEST {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_EER_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die linear {0} bei {1} °C / {2} bei {3} °C ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_EER_LINEAR {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_EER_LINEAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezentral gedeckte Zeilen laufen neben der Kältefolge mit eigenem EER; gepflegt werden sie unter „Kältebedarf extern“ und „Kältebedarfsprofile“. ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_HRL {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_HRL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgang ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_QUELLE_LASTGANG {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_QUELLE_LASTGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarfsprofil ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_QUELLE_PROFIL {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_QUELLE_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_SP_EER {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_SP_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahressumme ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_SP_SUMME {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_SP_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlträger ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_SP_TRAEGER {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_SP_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zähler ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_SP_ZAEHLER {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_SP_ZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_SP_ZEILE {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_SP_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe dezentral (Profile): {0} MWh/a ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_SUMME {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die anteilig am Netzbezug ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_ZAEHLER_ANTEILIG {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_ZAEHLER_ANTEILIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigener Zähler ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_ZAEHLER_EIGEN {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_ZAEHLER_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf zentral (Kältefolge): Gebäude mit Kühlung, Lastgänge {0}, Kältebedarfsprofile {1} ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_ZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_ZENTRAL", resourceCulture);
             }
         }
         
@@ -118356,6 +118653,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Kältefolge: {0} % des zentral zu deckenden Kältebedarfs ähnelt.
+        /// </summary>
+        public static string SIMUEB_KAELTE_DAVON_KAELTEFOLGE {
+            get {
+                return ResourceManager.GetString("SIMUEB_KAELTE_DAVON_KAELTEFOLGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kälteerzeuger ähnelt.
         /// </summary>
         public static string SIMUEB_KAELTE_SP_ANLAGE {
@@ -118419,6 +118725,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon {0} MWh/a Kühlung dezentral über eigenen Zähler (neben der Strombilanz) ähnelt.
+        /// </summary>
+        public static string SIMUEB_KUEHLUNG_DEZENTRAL_ZAEHLER {
+            get {
+                return ResourceManager.GetString("SIMUEB_KUEHLUNG_DEZENTRAL_ZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Deckung durch Erzeuger ähnelt.
         /// </summary>
         public static string SIMUEB_LBL_DECKUNG {
@@ -118469,6 +118784,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMUEB_LBL_KAELTE_UNGEDECKT {
             get {
                 return ResourceManager.GetString("SIMUEB_LBL_KAELTE_UNGEDECKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung dezentral ähnelt.
+        /// </summary>
+        public static string SIMUEB_LBL_KUEHLUNG_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMUEB_LBL_KUEHLUNG_DEZENTRAL", resourceCulture);
             }
         }
         
@@ -121392,6 +121716,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_ROLLE_ZWEITSENKE {
             get {
                 return ResourceManager.GetString("SIM_ROLLE_ZWEITSENKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf dezentral (Split) ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_ABNEHMER_KAELTE_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_ABNEHMER_KAELTE_DEZENTRAL", resourceCulture);
             }
         }
         
