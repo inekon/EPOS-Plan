@@ -1,0 +1,210 @@
+﻿@* DAS BLATT „MODELL PRUEFEN“ (MA-1b, Entwurf Gefuehrter Modellaufbau 2, E137 F1/F2): der schnelle Weg vom Import zum
+   rechenfaehigen Modell. Kopf mit dem Rechenstatus (drei Stufen), je Pruefgruppe eine Zeile mit Ampel, Name, Zaehlung,
+   „Vorschlag uebernehmen“, „Zuruecknehmen“ (nur wenn moeglich), „Ansicht…“ (Sprung in den passenden Farbmodus der
+   Gebaeudeansicht) und dem Aufklappen der Befunde (erst auf Klick). Hauptknopf „Alle Vorschlaege uebernehmen“, danach neu
+   geprueft. Gruppe 4 traegt „Klimaregion waehlen…“ und „Nordrichtung bestaetigen“. Steht als Ueberlagerung im Gebaeudedialog.
+   Keine Datenbank: alles kommt ueber den Weg der Huelle (ModellpruefungHuelle). *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using WindowsFormsApplication1
+@using WindowsFormsApplication1.MyResource
+
+<div class="epos-modellpruefung">
+    @if (_stand is null)
+    {
+        <p class="epos-kond-feldmeldung epos-modellpruefung-ohne" role="alert">@Resource.MPB_MSG_NICHT_GELESEN</p>
+    }
+    else
+    {
+        <div class="epos-modellpruefung-kopf">
+            <span class="epos-modellpruefung-gebaeude">@Weg.Gebaeudename</span>
+            <span class="epos-modellpruefung-status epos-ampel-@AmpelKlasse(Stufe(_stand.Status))" role="status">@_stand.Statustext</span>
+            <InfoKnopf Schluessel="Modellpruefung.btn_Help" StandardKurztext="@Resource.MPB_HILFE_KURZ" MitAssistent="false" />
+        </div>
+        <ul class="epos-modellpruefung-gruppen">
+            @foreach (ModellpruefungGruppenzeile gruppe in _stand.Gruppen)
+            {
+                ModellpruefungGruppenzeile g = gruppe;
+                bool offen = _offen.Contains(g.Gruppe);
+                <li class="epos-modellpruefung-gruppe" data-gruppe="@((int)g.Gruppe)">
+                    <div class="epos-modellpruefung-zeile">
+                        <span class="epos-ampel epos-ampel-@AmpelKlasse(g.Ampel)" aria-label="@AmpelText(g.Ampel)" title="@AmpelText(g.Ampel)"></span>
+                        <button type="button" class="epos-modellpruefung-aufklappen" aria-expanded="@(offen ? "true" : "false")"
+                                disabled="@(g.Anzahl == 0)" title="@Resource.MPB_BTN_BEFUNDE_HINWEIS" @onclick="() => Umschalten(g.Gruppe)">
+                            @((offen ? "▾ " : "▸ ") + g.Name)
+                        </button>
+                        <span class="epos-modellpruefung-zaehlung">@Zaehlung(g)</span>
+                        <span class="epos-modellpruefung-knoepfe">
+                            <button type="button" class="epos-knopf epos-modellpruefung-uebernehmen" disabled="@(g.Vorschlaege == 0 || _laeuft)"
+                                    title="@(g.Vorschlaege == 0 ? Resource.MPB_SPERRE_KEIN_VORSCHLAG : Resource.MPB_BTN_UEBERNEHMEN_HINWEIS)"
+                                    @onclick="() => Uebernehmen(g.Gruppe)">@Resource.MPB_BTN_UEBERNEHMEN</button>
+                            @if (g.KannZuruecknehmen)
+                            {
+                                <button type="button" class="epos-knopf epos-modellpruefung-zuruecknehmen" disabled="@_laeuft"
+                                        title="@Resource.MPB_BTN_ZURUECKNEHMEN_HINWEIS"
+                                        @onclick="() => Zuruecknehmen(g.Gruppe)">@Resource.MPB_BTN_ZURUECKNEHMEN</button>
+                            }
+                            @if (AnsichtSperre is null)
+                            {
+                                <button type="button" class="epos-knopf epos-modellpruefung-ansicht" title="@Resource.MPB_BTN_ANSICHT_HINWEIS"
+                                        @onclick="() => Ansicht.InvokeAsync(g.Sprungziel)">@Resource.MPB_BTN_ANSICHT</button>
+                            }
+                            else
+                            {
+                                <button type="button" class="epos-knopf epos-modellpruefung-ansicht" aria-disabled="true" title="@AnsichtSperre"
+                                        @onclick="() => Hinweisen(AnsichtSperre)">@Resource.MPB_BTN_ANSICHT</button>
+                            }
+                            @if (g.Gruppe == Pruefgruppe.OrtLage)
+                            {
+                                <button type="button" class="epos-knopf epos-modellpruefung-klima" title="@Resource.MPB_BTN_KLIMA_HINWEIS"
+                                        @onclick="BeiKlimaregion">@Resource.MPB_BTN_KLIMA</button>
+                                <button type="button" class="epos-knopf epos-modellpruefung-nord" disabled="@_laeuft"
+                                        title="@Resource.MPB_BTN_NORD_HINWEIS" @onclick="BeiNordrichtung">@Resource.MPB_BTN_NORD</button>
+                            }
+                        </span>
+                    </div>
+                    @if (offen)
+                    {
+                        <ul class="epos-modellpruefung-befunde">
+                            @foreach (ModellpruefungBefundzeile b in g.Befunde)
+                            {
+                                <li class="epos-modellpruefung-befund">
+                                    <span class="epos-ampel epos-ampel-@AmpelKlasse(b.Ampel)" aria-label="@AmpelText(b.Ampel)"></span>
+                                    @if (b.Ziel.Length > 0)
+                                    {
+                                        <span class="epos-modellpruefung-ziel">@b.Ziel:</span>
+                                    }
+                                    <span>@b.Text</span>
+                                    @if (b.Vorschlag.Length > 0)
+                                    {
+                                        <span class="epos-leisezeile epos-modellpruefung-vorschlag">→ @b.Vorschlag</span>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    }
+                </li>
+            }
+        </ul>
+        @if (_meldung.Length > 0)
+        {
+            <p class="epos-leisezeile epos-modellpruefung-meldung" role="status">@_meldung</p>
+        }
+        <div class="epos-leiste epos-modellpruefung-fuss">
+            <button type="button" class="epos-knopf epos-knopf--primaer epos-modellpruefung-alle" disabled="@(_stand.Vorschlaege == 0 || _laeuft)"
+                    title="@(_stand.Vorschlaege == 0 ? Resource.MPB_SPERRE_KEIN_VORSCHLAG : Resource.MPB_BTN_ALLE_HINWEIS)"
+                    @onclick="AlleUebernehmen">@Resource.MPB_BTN_ALLE</button>
+            @if (Simulation.HasDelegate)
+            {
+                <button type="button" class="epos-knopf epos-modellpruefung-simulation" title="@Resource.MPB_BTN_SIMULATION_HINWEIS"
+                        @onclick="() => Simulation.InvokeAsync()">@Resource.MPB_BTN_SIMULATION</button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>Der Weg der Hülle (Prüfen, Übernehmen, Zurücknehmen, Nordrichtung).</summary>
+    [Parameter, EditorRequired] public ModellpruefungWeg Weg { get; set; } = new();
+
+    /// <summary>„Simulation…“ — der bestehende Weg des Gebäudedialogs für dieses Gebäude; ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback Simulation { get; set; }
+
+    /// <summary>„Ansicht…“ — die Gebäudeansicht im Farbmodus des Sprungziels der Gruppe.</summary>
+    [Parameter] public EventCallback<Pruefsprungziel> Ansicht { get; set; }
+
+    /// <summary>Warum „Ansicht…“ gesperrt ist (etwa: keine Importdatei); <c>null</c> = frei.</summary>
+    [Parameter] public string? AnsichtSperre { get; set; }
+
+    /// <summary>„Klimaregion wählen…“ — der Weg des Wirts; ohne Delegat nennt der Knopf, wo die Klimaregion gewählt wird.</summary>
+    [Parameter] public EventCallback Klimaregion { get; set; }
+
+    /// <summary>Meldet eine Übernahme oder Rücknahme an den Wirt (etwa um die Zeile aufzufrischen).</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    private ModellpruefungWeg? _gezeigterWeg;
+    private ModellpruefungStand? _stand;
+    private string _meldung = "";
+    private bool _laeuft;
+    private readonly HashSet<Pruefgruppe> _offen = new();
+
+    /// <summary>Der gezeigte Stand (Prüfhilfe für Tests).</summary>
+    public ModellpruefungStand? Stand => _stand;
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_gezeigterWeg, Weg)) return;
+        _gezeigterWeg = Weg;
+        _offen.Clear();
+        _meldung = "";
+        _stand = Weg.Pruefen();
+    }
+
+    private void Umschalten(Pruefgruppe g)
+    {
+        if (!_offen.Remove(g)) _offen.Add(g);
+    }
+
+    private Task Uebernehmen(Pruefgruppe g) => Ausfuehren(() => Weg.Uebernehmen(g));
+
+    private Task Zuruecknehmen(Pruefgruppe g) => Ausfuehren(() => Weg.Zuruecknehmen(g));
+
+    private Task AlleUebernehmen() => Ausfuehren(Weg.AlleUebernehmen);
+
+    private async Task BeiNordrichtung()
+    {
+        if (Weg.NordrichtungBestaetigen is null) { Hinweisen(Resource.MPB_HINWEIS_NORD); return; }
+        await Ausfuehren(Weg.NordrichtungBestaetigen);
+    }
+
+    private async Task BeiKlimaregion()
+    {
+        if (Klimaregion.HasDelegate) await Klimaregion.InvokeAsync();
+        else Hinweisen(Resource.MPB_HINWEIS_KLIMA);
+    }
+
+    private void Hinweisen(string text) => _meldung = text ?? "";
+
+    /// <summary>Führt eine Übernahme aus und zeigt danach den neu geprüften Stand samt Meldung.</summary>
+    private async Task Ausfuehren(Func<ModellpruefungAusgang> weg)
+    {
+        if (_laeuft) return;
+        _laeuft = true;
+        try
+        {
+            ModellpruefungAusgang a = weg();
+            _stand = a.Stand ?? Weg.Pruefen();
+            _meldung = a.Meldung ?? "";
+            if (a.Ok && Geaendert.HasDelegate) await Geaendert.InvokeAsync();
+        }
+        finally
+        {
+            _laeuft = false;
+        }
+    }
+
+    private static string Zaehlung(ModellpruefungGruppenzeile g)
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.MPB_ZAEHLUNG, g.Anzahl, g.Vorschlaege);
+
+    private static Pruefampel Stufe(Rechenstatus s) => s switch
+    {
+        Rechenstatus.Vollstaendig => Pruefampel.Gruen,
+        Rechenstatus.RechnetMitVorgaben => Pruefampel.Gelb,
+        _ => Pruefampel.Rot
+    };
+
+    /// <summary>Die Klasse der Ampel: <c>gruen</c>, <c>gelb</c>, <c>rot</c>.</summary>
+    internal static string AmpelKlasse(Pruefampel a) => a switch
+    {
+        Pruefampel.Gruen => "gruen",
+        Pruefampel.Gelb => "gelb",
+        _ => "rot"
+    };
+
+    private static string AmpelText(Pruefampel a) => a switch
+    {
+        Pruefampel.Gruen => Resource.MPB_AMPEL_GRUEN,
+        Pruefampel.Gelb => Resource.MPB_AMPEL_GELB,
+        _ => Resource.MPB_AMPEL_ROT
+    };
+}

@@ -55040,5 +55040,101 @@ chart</value>
   <data name="MP_GRUPPE_RECHENFAEHIGKEIT" xml:space="preserve">
     <value>Calculability</value>
   </data>
+  <data name="MPB_TITEL" xml:space="preserve">
+    <value>Check model</value>
+  </data>
+  <data name="MPB_BTN_KOPF" xml:space="preserve">
+    <value>Check model…</value>
+  </data>
+  <data name="MPB_BTN_KOPF_HINWEIS" xml:space="preserve">
+    <value>Check the selected building (without a selection the first one) for computability: traffic light per check group, apply suggestions</value>
+  </data>
+  <data name="MPB_SPERRE_LEER" xml:space="preserve">
+    <value>No building in the project – add or import a building first.</value>
+  </data>
+  <data name="MPB_SPERRE_OHNE_KOPIE" xml:space="preserve">
+    <value>The building “{0}” has not been saved yet – the model can be checked after confirming this dialog with OK.</value>
+  </data>
+  <data name="MPB_MSG_NICHT_GELESEN" xml:space="preserve">
+    <value>The building could not be read.</value>
+  </data>
+  <data name="MPB_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>{0} suggestions applied, {1} findings need an input.</value>
+  </data>
+  <data name="MPB_MSG_NORD_BESTAETIGT" xml:space="preserve">
+    <value>The north direction is confirmed.</value>
+  </data>
+  <data name="MPB_HINWEIS_NORD" xml:space="preserve">
+    <value>The north direction can only be confirmed for an imported building (section Orientation of the building record).</value>
+  </data>
+  <data name="MPB_HINWEIS_KLIMA" xml:space="preserve">
+    <value>The climate region applies to the project: it is selected in the project data.</value>
+  </data>
+  <data name="MPB_ZAEHLUNG" xml:space="preserve">
+    <value>{0} findings, {1} suggestions</value>
+  </data>
+  <data name="MPB_AMPEL_GRUEN" xml:space="preserve">
+    <value>green – no finding</value>
+  </data>
+  <data name="MPB_AMPEL_GELB" xml:space="preserve">
+    <value>yellow – computes with defaults</value>
+  </data>
+  <data name="MPB_AMPEL_ROT" xml:space="preserve">
+    <value>red – not computable</value>
+  </data>
+  <data name="MPB_BTN_BEFUNDE_HINWEIS" xml:space="preserve">
+    <value>Show or hide the findings of this check group</value>
+  </data>
+  <data name="MPB_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply suggestion</value>
+  </data>
+  <data name="MPB_BTN_UEBERNEHMEN_HINWEIS" xml:space="preserve">
+    <value>Apply all suggestions of this check group in one step and check again</value>
+  </data>
+  <data name="MPB_SPERRE_KEIN_VORSCHLAG" xml:space="preserve">
+    <value>No suggestion – the findings need an input.</value>
+  </data>
+  <data name="MPB_BTN_ZURUECKNEHMEN" xml:space="preserve">
+    <value>Undo</value>
+  </data>
+  <data name="MPB_BTN_ZURUECKNEHMEN_HINWEIS" xml:space="preserve">
+    <value>Undo the last application of this check group</value>
+  </data>
+  <data name="MPB_BTN_ANSICHT" xml:space="preserve">
+    <value>View…</value>
+  </data>
+  <data name="MPB_BTN_ANSICHT_HINWEIS" xml:space="preserve">
+    <value>Open the building view in the matching colour mode (the import file is read)</value>
+  </data>
+  <data name="MPB_SPERRE_ANSICHT" xml:space="preserve">
+    <value>The building view needs the import file – this building was not imported.</value>
+  </data>
+  <data name="MPB_BTN_KLIMA" xml:space="preserve">
+    <value>Select climate region…</value>
+  </data>
+  <data name="MPB_BTN_KLIMA_HINWEIS" xml:space="preserve">
+    <value>Select the climate region of the project</value>
+  </data>
+  <data name="MPB_BTN_NORD" xml:space="preserve">
+    <value>Confirm north direction</value>
+  </data>
+  <data name="MPB_BTN_NORD_HINWEIS" xml:space="preserve">
+    <value>Confirm the assumed north direction of the import as input</value>
+  </data>
+  <data name="MPB_BTN_ALLE" xml:space="preserve">
+    <value>Apply all suggestions</value>
+  </data>
+  <data name="MPB_BTN_ALLE_HINWEIS" xml:space="preserve">
+    <value>Apply all suggestions of all check groups – undoable per group – and check again</value>
+  </data>
+  <data name="MPB_BTN_SIMULATION" xml:space="preserve">
+    <value>Simulation…</value>
+  </data>
+  <data name="MPB_BTN_SIMULATION_HINWEIS" xml:space="preserve">
+    <value>Compute the heat demand of this building</value>
+  </data>
+  <data name="MPB_HILFE_KURZ" xml:space="preserve">
+    <value>Help on the model check</value>
+  </data>
 </root>
 

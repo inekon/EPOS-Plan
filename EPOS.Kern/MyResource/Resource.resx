@@ -55047,5 +55047,101 @@ Chart</value>
   <data name="MP_GRUPPE_RECHENFAEHIGKEIT" xml:space="preserve">
     <value>Rechenfähigkeit</value>
   </data>
+  <data name="MPB_TITEL" xml:space="preserve">
+    <value>Modell prüfen</value>
+  </data>
+  <data name="MPB_BTN_KOPF" xml:space="preserve">
+    <value>Modell prüfen…</value>
+  </data>
+  <data name="MPB_BTN_KOPF_HINWEIS" xml:space="preserve">
+    <value>Das gewählte Gebäude (ohne Wahl das erste) auf Rechenfähigkeit prüfen: Ampel je Prüfgruppe, Vorschläge übernehmen</value>
+  </data>
+  <data name="MPB_SPERRE_LEER" xml:space="preserve">
+    <value>Kein Gebäude im Projekt – zuerst ein Gebäude aufnehmen oder importieren.</value>
+  </data>
+  <data name="MPB_SPERRE_OHNE_KOPIE" xml:space="preserve">
+    <value>Das Gebäude „{0}“ ist noch nicht gespeichert – erst nach dem OK dieses Dialogs lässt sich das Modell prüfen.</value>
+  </data>
+  <data name="MPB_MSG_NICHT_GELESEN" xml:space="preserve">
+    <value>Das Gebäude ließ sich nicht lesen.</value>
+  </data>
+  <data name="MPB_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>{0} Vorschläge übernommen, {1} Befunde brauchen eine Eingabe.</value>
+  </data>
+  <data name="MPB_MSG_NORD_BESTAETIGT" xml:space="preserve">
+    <value>Die Nordrichtung ist bestätigt.</value>
+  </data>
+  <data name="MPB_HINWEIS_NORD" xml:space="preserve">
+    <value>Die Nordrichtung lässt sich nur an einem importierten Gebäude bestätigen (Abschnitt Ausrichtung des Gebäudesatzes).</value>
+  </data>
+  <data name="MPB_HINWEIS_KLIMA" xml:space="preserve">
+    <value>Die Klimaregion gilt für das Projekt: Sie wird in den Projektdaten gewählt.</value>
+  </data>
+  <data name="MPB_ZAEHLUNG" xml:space="preserve">
+    <value>{0} Befunde, {1} Vorschläge</value>
+  </data>
+  <data name="MPB_AMPEL_GRUEN" xml:space="preserve">
+    <value>grün – ohne Befund</value>
+  </data>
+  <data name="MPB_AMPEL_GELB" xml:space="preserve">
+    <value>gelb – rechnet mit Vorgaben</value>
+  </data>
+  <data name="MPB_AMPEL_ROT" xml:space="preserve">
+    <value>rot – nicht rechenfähig</value>
+  </data>
+  <data name="MPB_BTN_BEFUNDE_HINWEIS" xml:space="preserve">
+    <value>Die Befunde dieser Prüfgruppe zeigen oder verbergen</value>
+  </data>
+  <data name="MPB_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Vorschlag übernehmen</value>
+  </data>
+  <data name="MPB_BTN_UEBERNEHMEN_HINWEIS" xml:space="preserve">
+    <value>Alle Vorschläge dieser Prüfgruppe in einem Schritt übernehmen und neu prüfen</value>
+  </data>
+  <data name="MPB_SPERRE_KEIN_VORSCHLAG" xml:space="preserve">
+    <value>Kein Vorschlag – die Befunde brauchen eine Eingabe.</value>
+  </data>
+  <data name="MPB_BTN_ZURUECKNEHMEN" xml:space="preserve">
+    <value>Zurücknehmen</value>
+  </data>
+  <data name="MPB_BTN_ZURUECKNEHMEN_HINWEIS" xml:space="preserve">
+    <value>Die letzte Übernahme dieser Prüfgruppe zurücknehmen</value>
+  </data>
+  <data name="MPB_BTN_ANSICHT" xml:space="preserve">
+    <value>Ansicht…</value>
+  </data>
+  <data name="MPB_BTN_ANSICHT_HINWEIS" xml:space="preserve">
+    <value>Die Gebäudeansicht im passenden Farbmodus öffnen (die Importdatei wird gelesen)</value>
+  </data>
+  <data name="MPB_SPERRE_ANSICHT" xml:space="preserve">
+    <value>Die Gebäudeansicht braucht die Importdatei – dieses Gebäude ist nicht importiert.</value>
+  </data>
+  <data name="MPB_BTN_KLIMA" xml:space="preserve">
+    <value>Klimaregion wählen…</value>
+  </data>
+  <data name="MPB_BTN_KLIMA_HINWEIS" xml:space="preserve">
+    <value>Die Klimaregion des Projekts wählen</value>
+  </data>
+  <data name="MPB_BTN_NORD" xml:space="preserve">
+    <value>Nordrichtung bestätigen</value>
+  </data>
+  <data name="MPB_BTN_NORD_HINWEIS" xml:space="preserve">
+    <value>Die angenommene Nordrichtung des Imports als Eingabe bestätigen</value>
+  </data>
+  <data name="MPB_BTN_ALLE" xml:space="preserve">
+    <value>Alle Vorschläge übernehmen</value>
+  </data>
+  <data name="MPB_BTN_ALLE_HINWEIS" xml:space="preserve">
+    <value>Alle Vorschläge aller Prüfgruppen übernehmen – je Gruppe zurücknehmbar – und neu prüfen</value>
+  </data>
+  <data name="MPB_BTN_SIMULATION" xml:space="preserve">
+    <value>Simulation…</value>
+  </data>
+  <data name="MPB_BTN_SIMULATION_HINWEIS" xml:space="preserve">
+    <value>Den Wärmebedarf dieses Gebäudes rechnen</value>
+  </data>
+  <data name="MPB_HILFE_KURZ" xml:space="preserve">
+    <value>Hilfe zur Modellprüfung</value>
+  </data>
 </root>
 
