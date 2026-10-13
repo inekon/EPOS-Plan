@@ -93756,6 +93756,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“ trägt die DIN-Nummer {1}, zu der der Katalog kein Profil führt. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_DIN_OHNE_KATALOGTREFFER {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_DIN_OHNE_KATALOGTREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauweise (Wärmekapazität) des Gebäudes fehlt; es gilt die Vorgabe. ähnelt.
         /// </summary>
         public static string MP_BEFUND_EINZONE_BAUWEISE_FEHLT {
@@ -93959,6 +93968,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MP_BEFUND_PFLICHTGROESSE_FEHLT {
             get {
                 return ResourceManager.GetString("MP_BEFUND_PFLICHTGROESSE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Profil „{1}“ stammt aus einer Regel, nicht aus der Datei; bitte prüfen. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_PROFIL_AUS_REGEL {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_PROFIL_AUS_REGEL", resourceCulture);
             }
         }
         
@@ -94346,6 +94364,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MP_VORSCHLAG_KATALOGAUFBAU {
             get {
                 return ResourceManager.GetString("MP_VORSCHLAG_KATALOGAUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil „{0}“ — das nächstliegende der DIN-Kategorie zur Nummer {1} ähnelt.
+        /// </summary>
+        public static string MP_VORSCHLAG_PROFIL_DINNAECHSTES {
+            get {
+                return ResourceManager.GetString("MP_VORSCHLAG_PROFIL_DINNAECHSTES", resourceCulture);
             }
         }
         

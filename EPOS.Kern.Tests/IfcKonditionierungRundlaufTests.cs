@@ -171,6 +171,7 @@ namespace EPOS.Kern.Tests
             var k = new AbbildKonditionierung
             {
                 Nutzung = DbWerte.KOND_NUTZUNG_BUERO, HeizsollTagC = 21.5, HeizsollNachtC = 17.25, KuehlsollC = 26.0, LuftwechselNutzerJeH = 0.45,
+                DinNummer = 7,      // Welle DA-5: EPOS_Zone.DinNummer läuft rund
             };
             k.Kalender.Add(new AbbildKalender(heiz, "aus Vorlage Büro · Zeitfenster"));
             k.Kalender.Add(new AbbildKalender(lueftung, null));
@@ -183,6 +184,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.NotNull(b);
             Assert.Equal(a.Nutzung, b.Nutzung);
+            Assert.Equal(a.DinNummer, b.DinNummer);
             Assert.Equal(a.HeizsollTagC, b.HeizsollTagC);
             Assert.Equal(a.HeizsollNachtC, b.HeizsollNachtC);
             Assert.Equal(a.KuehlsollC, b.KuehlsollC);

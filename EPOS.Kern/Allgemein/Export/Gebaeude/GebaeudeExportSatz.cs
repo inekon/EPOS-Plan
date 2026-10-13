@@ -108,6 +108,12 @@ namespace WindowsFormsApplication1
         internal IReadOnlyDictionary<int, string> Zonennutzungen { get; init; } = new Dictionary<int, string>();
 
         /// <summary>
+        /// Die DIN-Nummer des Profils je Zonen-Id (Welle DA-5): nur Zonen, deren Profil zur Kategorie DIN/TS 18599-10 gehört und
+        /// eine Nummer trägt (<see cref="Raumnutzungsvorbelegung.DinNummer"/>); der IFC-Export schreibt sie als <c>EPOS_Zone.DinNummer</c>.
+        /// </summary>
+        internal IReadOnlyDictionary<int, int> Zonendinnummern { get; init; } = new Dictionary<int, int>();
+
+        /// <summary>
         /// Die gespeicherten Grundrisse je Zonen-Id (HC-5, F10; <see cref="GebaeudeImportCtrl.LesenRaumgrundrisse"/>, jüngste Quelle):
         /// Gestalt und Lage des Exportmodells. Zeilen ohne Zone fehlen; leer = keine (Export wie ohne Grundriss).
         /// </summary>
@@ -123,6 +129,7 @@ namespace WindowsFormsApplication1
             var k = new AbbildKonditionierung();
             if (zone == null) return k;
             if (Zonennutzungen != null && Zonennutzungen.TryGetValue(zone.ID, out string nutzung)) k.Nutzung = nutzung;
+            if (Zonendinnummern != null && Zonendinnummern.TryGetValue(zone.ID, out int din)) k.DinNummer = din;
             if (Zonenkalender == null || !Zonenkalender.TryGetValue(zone.ID, out IReadOnlyDictionary<Konditionierungsgroesse, Konditionierungskalender> eigen)
                 || eigen == null) return k;
             IReadOnlyDictionary<Konditionierungsgroesse, string> vermerke = null;
@@ -192,6 +199,7 @@ namespace WindowsFormsApplication1
             Zonenkalender = Zonenkalender,
             Zonenvermerke = Zonenvermerke,
             Zonennutzungen = Zonennutzungen,
+            Zonendinnummern = Zonendinnummern,
             Zonengrundrisse = Zonengrundrisse,
             Ergebnis = Ergebnis,
             Rechenzeitpunkt = Rechenzeitpunkt,
@@ -222,6 +230,7 @@ namespace WindowsFormsApplication1
             Zonenkalender = Zonenkalender,
             Zonenvermerke = Zonenvermerke,
             Zonennutzungen = Zonennutzungen,
+            Zonendinnummern = Zonendinnummern,
             Zonengrundrisse = Zonengrundrisse,
             Ergebnis = ergebnis,
             Rechenzeitpunkt = ergebnis != null ? rechenzeitpunkt : null,
@@ -287,6 +296,18 @@ namespace WindowsFormsApplication1
                 }
                 if (ZonenplanCtrl.Zonennutzung(z.ID) is string nutzung) nutzungen[z.ID] = nutzung;
             }
+            // Welle DA-5: die DIN-Nummer des Profils je Zone (Profil der Zone, sonst die Nutzung ihrer Kalender); den Katalog nur
+            // lesen, wenn eine Zone ein Profil trägt.
+            var dinnummern = new Dictionary<int, int>();
+            Raumnutzungsvorbelegung katalog = null;
+            foreach (ZoneModel z in zonen)
+            {
+                string profil = !string.IsNullOrWhiteSpace(z.Nutzungsprofil) ? z.Nutzungsprofil
+                                : nutzungen.TryGetValue(z.ID, out string n) ? n : null;
+                if (string.IsNullOrWhiteSpace(profil)) continue;
+                katalog ??= Raumnutzungsvorbelegung.Lesen();
+                if (katalog.DinNummer(profil) is int din) dinnummern[z.ID] = din;
+            }
 
             // Die Ergebnisse des letzten Laufs (G7c, Teil 2) über den Leser der Ergebnisseite.
             ErgebnisModel lauf = new ErgebnisCtrl().Load(idProjekt);
@@ -332,6 +353,7 @@ namespace WindowsFormsApplication1
                 Zonenkalender = zonenkalender,
                 Zonenvermerke = vermerke,
                 Zonennutzungen = nutzungen,
+                Zonendinnummern = dinnummern,
                 Zonengrundrisse = GrundrisseJeZone(new GebaeudeImportCtrl().LesenRaumgrundrisse(g.ID_Gebaeude)),
             };
         }

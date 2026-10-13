@@ -1841,6 +1841,8 @@ namespace WindowsFormsApplication1
                 k.HeizsollNachtC = W(IfcKonditionierungssatz.HEIZSOLL_NACHT)?.Zahl;
                 k.KuehlsollC = W(IfcKonditionierungssatz.KUEHLSOLL)?.Zahl;
                 k.LuftwechselNutzerJeH = W(IfcKonditionierungssatz.LUFTWECHSEL_NUTZER)?.Zahl;
+                // Welle DA-5: die DIN-Nummer des Profils (Rangstufe 1 der Profilzuordnung, Konzept DA 4.3).
+                k.DinNummer = IfcKonditionierungssatz.DinNummerLesen(W(IfcKonditionierungssatz.DIN_NUMMER));
             }
             var uebersprungen = new List<string>();
             foreach (Konditionierungsgroesse groesse in Konditionierungsgroessen.Alle)

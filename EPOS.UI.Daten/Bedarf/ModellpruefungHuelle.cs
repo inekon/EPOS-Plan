@@ -12,7 +12,7 @@ namespace WindowsFormsApplication1
     /// Ein Hinweis der Importquelle zu einer Zone (MA-1b): Name der Zone, DIN-Nummer, Raumtyp und Nutzungsklasse — Stufen 1 und 2
     /// der Profilregel (F6). Der Zonenplan des Imports kennt sie, die Datenbank nicht.
     /// </summary>
-    internal sealed record Zonenquellhinweis(string Zone, int? DinNummer, string Raumtyp, string Nutzungsklasse);
+    internal sealed record Zonenquellhinweis(string Zone, int? DinNummer, string Raumtyp, string Nutzungsklasse, bool ProfilAusRegel = false);
 
     /// <summary>
     /// <b>Die Hülle des Blatts „Modell prüfen“</b> (MA-1b, Entwurf Geführter Modellaufbau 2, E137 F1/F2): baut aus
@@ -51,7 +51,7 @@ namespace WindowsFormsApplication1
                 if (h == null) continue;
                 foreach (KeyValuePair<int, string> z in _zonen)
                     if (string.Equals(z.Value, h.Zone, StringComparison.OrdinalIgnoreCase))
-                        _ctrl.QuelleSetzen(z.Key, h.DinNummer, h.Raumtyp ?? "", h.Nutzungsklasse ?? "");
+                        _ctrl.QuelleSetzen(z.Key, h.DinNummer, h.Raumtyp ?? "", h.Nutzungsklasse ?? "", h.ProfilAusRegel);
             }
         }
 
@@ -107,12 +107,17 @@ namespace WindowsFormsApplication1
                 if (q == null || string.IsNullOrEmpty(z.Name)) continue;
                 int? din = null;
                 string raumtyp = "", klasse = "";
-                if (string.Equals(q.Art, RaumnutzungSchema.ZUORDNUNG_DIN, StringComparison.Ordinal)
+                bool regel = false;
+                // Welle DA-5: DIN-Nummer der Datei (Zuordnung oder Vorgabe der Projektdatei) = Profil aus der Datei; Raumtyp,
+                // Nutzungsklasse und Gebäudeart = Profil aus einer Regel (Ampel gelb in Prüfgruppe 3).
+                if ((string.Equals(q.Art, RaumnutzungSchema.ZUORDNUNG_DIN, StringComparison.Ordinal)
+                     || string.Equals(q.Art, Zonenvorbesetzung.VORGABE_DIN, StringComparison.Ordinal))
                     && int.TryParse(q.Schluessel, NumberStyles.Integer, CultureInfo.InvariantCulture, out int n)) din = n;
-                else if (string.Equals(q.Art, RaumnutzungSchema.ZUORDNUNG_HOTTCAD, StringComparison.Ordinal)) raumtyp = q.Schluessel ?? "";
-                else if (string.Equals(q.Art, RaumnutzungSchema.ZUORDNUNG_IFC, StringComparison.Ordinal)) klasse = q.Schluessel ?? "";
+                else if (string.Equals(q.Art, RaumnutzungSchema.ZUORDNUNG_HOTTCAD, StringComparison.Ordinal)) { raumtyp = q.Schluessel ?? ""; regel = true; }
+                else if (string.Equals(q.Art, RaumnutzungSchema.ZUORDNUNG_IFC, StringComparison.Ordinal)) { klasse = q.Schluessel ?? ""; regel = true; }
+                else if (string.Equals(q.Art, Zonenvorbesetzung.VORGABE_GEBAEUDEART, StringComparison.Ordinal)) regel = true;
                 else continue;
-                liste.Add(new Zonenquellhinweis(z.Name, din, raumtyp, klasse));
+                liste.Add(new Zonenquellhinweis(z.Name, din, raumtyp, klasse, regel));
             }
             return liste;
         }
