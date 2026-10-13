@@ -446,6 +446,10 @@ namespace Auslieferungsvorlage.Tests
                 long satz = SatzAnlegen("Probe Satz", TwwSchema.STATUS_AUSLIEFERUNG);
                 NutzungAnlegen("Probe Nutzung", TwwSchema.STATUS_AUSLIEFERUNG, satz, readOnly: 1);
 
+                // Die Testdatenbank traegt den erfundenen Typtagsatz des Referenzprojekts 1069 (ZB12); der Fall beginnt
+                // ohne Typtage, damit allein seine drei Zeilen zaehlen.
+                DataRepository.ExecuteSQL("DELETE FROM " + TwwSchema.TAB_TWW_TYPTAG_IMPORT);
+
                 // Drei erfundene Zeilen der eingespielten Typtage: Systematik, Anzahl, Kennwert.
                 Assert.True(DataRepository.ExecuteSQL(
                     "INSERT INTO Tab_TwwTyptag_IMPORT (Art, Klimazone, Gebaeudeart, Typtag, Zeilenindex, Wert, " +
