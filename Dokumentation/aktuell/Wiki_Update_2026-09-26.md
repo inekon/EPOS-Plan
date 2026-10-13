@@ -175,6 +175,12 @@ Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
+### Version ‹Version› — Kältebedarf dezentral (Split) (Entwurf, Upload ausstehend)
+
+Version beim Anwender zu erfragen (Empfehlung: Sammelversion mit K4/K5); Wiki-Quelle „Programm Dokumentation - Kältebedarf“ fortgeschrieben, Upload ausstehend.
+
+- Seit 13.10.2026: Kältebedarf, der dezentral über Split-Geräte gedeckt wird, erscheint im Kältegang, in der Kältelast, in der Strombilanz als „Kühlung dezentral“, im Deckungsgrad Kälte, im Anlagenschema, in der Simulationskonfiguration und im Bericht; der Strom wird je Kühlträger und Zähler abgerechnet.
+
 ### Version ‹Version› — Dialoge mit Katalogauswahl (Entwurf, Upload ausstehend)
 
 Version beim Anwender zu erfragen; keine Wiki-Quelle geändert (die Quellen beschreiben nur die Funktion, sie stimmt).
