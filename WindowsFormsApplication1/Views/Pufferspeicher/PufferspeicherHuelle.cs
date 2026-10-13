@@ -435,11 +435,9 @@ namespace WindowsFormsApplication1
             // Anzeige der Investitionskosten an dieser Stelle hat keine Funktion."
             // Gepflegt wird der Preis im Aufklapper „Alle Daten anzeigen" desselben
             // Dialogs: Der Katalogbrowser zeigt ihn dort editierbar und schreibt ihn
-            // zurück (KatalogBrowserProfil.FeldInvestitionskosten). Die Anzeige hier war
-            // damit eine Dublette ohne Funktion.
-            //
-            // DER WERT BLEIBT IM DATENSATZ. PufferSpStammCtrl.SpeicherDetail führt
-            // Investitionskosten weiter — nur die zweite Anzeige ist weg.
+            // zurück. Die Anzeige hier war damit eine Dublette ohne Funktion. Mit Welle
+            // KB-4 ist die Spalte selbst entfallen; der Aufklapper zeigt die Gerätekosten
+            // als Lesewert der Satzvorlage (KatalogBrowserProfil.FeldGeraetekosten).
             var felder = new List<(string, string)>
             {
                 (Text_("PSPD_LBL_HERSTELLER", "Hersteller:"), d.Hersteller),

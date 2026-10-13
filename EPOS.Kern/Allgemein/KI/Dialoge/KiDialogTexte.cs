@@ -1581,8 +1581,6 @@
         internal static string KmHilfsstromErl => MyResource.Resource.KI_DLG_KM_HILFSSTROM_ERL;
         internal static string KmKaltwasserMinName => MyResource.Resource.KM_LBL_KALTWASSER_MIN;
         internal static string KmKaltwasserMinErl => MyResource.Resource.KI_DLG_KM_KALTWASSER_MIN_ERL;
-        internal static string KmModulkostenName => MyResource.Resource.KM_LBL_MODULKOSTEN;
-        internal static string KmModulkostenErl => MyResource.Resource.KI_DLG_KM_MODULKOSTEN_ERL;
         // K-A: Katalogfelder der Kaelteerzeuger.
         internal static string KmGeraeteartName => MyResource.Resource.KM_LBL_GERAETEART;
         internal static string KmGeraeteartErl => MyResource.Resource.KI_DLG_KM_GERAETEART_ERL;
@@ -3768,8 +3766,6 @@
                     return MyResource.Resource.KI_DLG_KBROW_BEZEICHNER_ERL;
                 case KatalogBrowserProfil.FeldBeschreibung:
                     return HkBeschreibungErl;
-                case KatalogBrowserProfil.FeldInvestitionskosten:
-                    return MyResource.Resource.KI_DLG_KBROW_INVEST_ERL;
                 // Welle KB-4: der Lesewert aus der Satzvorlage - gepflegt in der Kostenverwaltung.
                 case KatalogBrowserProfil.FeldGeraetekosten:
                     return MyResource.Resource.KI_DLG_KBROW_GERAETEKOSTEN_ERL;

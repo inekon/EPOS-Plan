@@ -61,7 +61,7 @@ namespace EPOS.Kern.Tests
             // Dahinter folgen die fuenf Katalogfelder (KaelteKatalogfelderSchema, Schritt 211).
             // KB-4: Modulkosten ist aus den Grundspalten gefallen, es sind elf plus die acht Eingabespalten.
             Assert.Equal(KaeltemaschineSchema.Grundspalten.Concat(EINGABE), KaeltemaschineSchema.Fachspalten.Take(19));
-            Assert.Equal(EINGABE, Katalogfassung.Tabelle(KaeltemaschineSchema.TAB_STAMM).Fachspalten.Skip(12).Take(8));
+            Assert.Equal(EINGABE, Katalogfassung.Tabelle(KaeltemaschineSchema.TAB_STAMM).Fachspalten.Skip(11).Take(8));
         }
 
         /// <summary>Die Prüfklauseln an einer STRICT-Tabelle: ein Wert außerhalb wird abgewiesen, NULL angenommen.</summary>

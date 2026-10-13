@@ -403,8 +403,9 @@ namespace EPOS.Kern.Tests
             // Feldern von Teillast und Takten (Welle M4: BH1, BH2) und der Ruecklaufgrenze (UB-E3).
             Assert.Equal(23, heiz.Detailfelder.Count(f => f.Editierbar));
             Assert.Equal(23, bhkw.Detailfelder.Count(f => f.Editierbar));
-            Assert.Equal(12, solar.Detailfelder.Count(f => f.Editierbar));   // mit der Bezugsfläche (Welle M2)
-            Assert.Equal(5, puffer.Detailfelder.Count(f => f.Editierbar));
+            // Solarkollektor und Pufferspeicher ohne die Investitionskosten (Welle KB-4).
+            Assert.Equal(11, solar.Detailfelder.Count(f => f.Editierbar));   // mit der Bezugsfläche (Welle M2)
+            Assert.Equal(4, puffer.Detailfelder.Count(f => f.Editierbar));
 
             foreach (var art in KatalogBrowserProfil.AlleArten)
             {
@@ -482,7 +483,6 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Kostenfelder_des_Stammblatts_stehen_im_Profil()
         {
-            Assert.True(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldInvestitionskosten));
             Assert.True(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldNutzungsdauer));
             Assert.True(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldGeraetekosten));
 
@@ -724,7 +724,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Pufferspeicher", satz[KatalogBrowserProfil.FeldSpeichertyp]);
             Assert.Equal("3,34", satz[KatalogBrowserProfil.FeldVerluste]);
             Assert.Equal("3000", satz[KatalogBrowserProfil.FeldVolumen]);
-            Assert.Equal("0", satz[KatalogBrowserProfil.FeldInvestitionskosten]);
+            // Welle KB-4: an der Stelle der Investitionskosten der Lesewert der Satzvorlage - ohne Betrag LEER.
+            Assert.Equal("", satz[KatalogBrowserProfil.FeldGeraetekosten]);
 
             // Der Projektdialog formatiert dieselben Werte mit einer Nachkommastelle.
             var detail = PufferSpStammCtrl.Detail("Puffer 3000Ltr");
@@ -1219,8 +1220,8 @@ namespace EPOS.Kern.Tests
                 "PSPK_LBL_VOLUMEN", "PSPK_LBL_INVEST",
                 "PSPK_FELD_VOLUMEN", "PSPK_FELD_VERLUSTE",
                 // PSPK_GRP_KOSTEN und PSPK_FELD_INVEST sind mit der Kostengruppe des
-                // Editors gefallen (15.09.2026); PSPK_LBL_INVEST bleibt, weil
-                // ParameterVerwendung die Investitionskosten weiterhin damit beschriftet.
+                // Editors gefallen (15.09.2026); PSPK_LBL_INVEST bleibt als Bestandsschluessel,
+                // obwohl die Spalte mit Welle KB-4 entfallen ist.
                 "PSPK_TYP_SOLAR", "PSPK_TYP_PUFFER", "PSPK_TYP_KOMBI", "PSPK_MSG_SCHUTZ",
                 "BHKWK_MSG_SCHUTZ", "MODK_MSG_SCHUTZ", "MODK_MSG_TYP_FEHLT",
                 // KBROW_BTN_BEARBEITEN ist mit AD-Q6 ("Bearbeiten..." entfaellt) verwaist

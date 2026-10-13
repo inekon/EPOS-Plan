@@ -48,8 +48,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(FELDER, KaelteKatalogfelderSchema.SPALTEN.Where(x => x.Tabelle == "Tab_Kaeltemaschine").Select(x => x.Spalte));
             Assert.All(KaelteKatalogfelderSchema.SPALTEN, x => Assert.DoesNotContain("NOT NULL", x.Typ, StringComparison.Ordinal));
             Assert.All(KaelteKatalogfelderSchema.SPALTEN, x => Assert.DoesNotContain("DEFAULT", x.Typ, StringComparison.Ordinal));
-            Assert.Equal(FELDER, KaeltemaschineSchema.Fachspalten.Skip(20).Take(FELDER.Length));
-            Assert.Equal(FELDER, Katalogfassung.Tabelle(KaeltemaschineSchema.TAB_STAMM).Fachspalten.Skip(20).Take(FELDER.Length));
+            // KB-4: Modulkosten ist aus den Grundspalten gefallen - elf Grund-, acht Teillastspalten davor.
+            Assert.Equal(FELDER, KaeltemaschineSchema.Fachspalten.Skip(19).Take(FELDER.Length));
+            Assert.Equal(FELDER, Katalogfassung.Tabelle(KaeltemaschineSchema.TAB_STAMM).Fachspalten.Skip(19).Take(FELDER.Length));
         }
 
         /// <summary>Die Geräteart kennt die Folgestufen schon: Split, Multisplit und VRF (K-D, K-E) und Absorption (K-G).</summary>

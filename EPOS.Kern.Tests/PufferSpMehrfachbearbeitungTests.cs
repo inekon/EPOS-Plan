@@ -9,8 +9,9 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Mehrfach-Bearbeiten der Pufferspeicher in EINER Transaktion</b> (Konzept Projektdialoge mit
     /// Katalogauswahl 4.6, Entscheid KA‑E‑8, Stufe 3): <see cref="PufferSpStammCtrl.AnzeigefelderSchreibenAlle"/>
-    /// schreibt alle geänderten Sätze — Projektkopien oder Katalogsätze — oder keinen; die Investitionskosten gehen
-    /// mit, der Speichertyp läuft durch die Bestandsabbildung.
+    /// schreibt alle geänderten Sätze — Projektkopien oder Katalogsätze — oder keinen; die Gerätewerte gehen
+    /// mit (die Investitionskosten sind mit Welle KB-4 als Spalte entfallen), der Speichertyp läuft durch die
+    /// Bestandsabbildung.
     /// </summary>
     [Collection("Testdatenbank")]
     public class PufferSpMehrfachbearbeitungTests : IDisposable
@@ -19,9 +20,9 @@ namespace EPOS.Kern.Tests
         public void Dispose() => _db.Dispose();
 
         private static PufferSpStammCtrl.AnzeigefelderPufferspeicher Satz(string firma, int volumen = 800,
-                                                                           double verluste = 2.5, double invest = 1900,
+                                                                           double verluste = 2.5,
                                                                            string typ = DbWerte.PSP_SPEICHERTYP_PUFFER)
-            => new PufferSpStammCtrl.AnzeigefelderPufferspeicher(firma, typ, verluste, volumen, invest);
+            => new PufferSpStammCtrl.AnzeigefelderPufferspeicher(firma, typ, verluste, volumen);
 
         private static List<int> Ids(string tabelle, int anzahl)
         {
@@ -52,7 +53,7 @@ namespace EPOS.Kern.Tests
             var anzeige = PufferSpStammCtrl.SatzAnzeige(true, p);
             foreach (string f in new[] { KatalogBrowserProfil.FeldFirma, KatalogBrowserProfil.FeldSpeichertyp,
                                          KatalogBrowserProfil.FeldVerluste, KatalogBrowserProfil.FeldVolumen,
-                                         KatalogBrowserProfil.FeldInvestitionskosten })
+                                         KatalogBrowserProfil.FeldGeraetekosten })
                 Assert.True(anzeige.ContainsKey(f), f);
             Assert.Null(PufferSpStammCtrl.SatzAnzeige(true, 987654));
         }
@@ -68,14 +69,14 @@ namespace EPOS.Kern.Tests
 
             var e = PufferSpStammCtrl.AnzeigefelderSchreibenAlle(true, new[]
             {
-                new PufferSpStammCtrl.Satzaenderung(ids[0], Satz("Neuwerk A", volumen: 1000, invest: 2100)),
-                new PufferSpStammCtrl.Satzaenderung(ids[1], Satz("Neuwerk B", volumen: 1500, invest: 2600)),
+                new PufferSpStammCtrl.Satzaenderung(ids[0], Satz("Neuwerk A", volumen: 1000, verluste: 2.1)),
+                new PufferSpStammCtrl.Satzaenderung(ids[1], Satz("Neuwerk B", volumen: 1500, verluste: 2.6)),
             });
 
             Assert.True(e.Ok, e.Meldung);
             Assert.Equal("Neuwerk A", Feld(true, ids[0], KatalogBrowserProfil.FeldFirma));
             Assert.Equal("1000", Feld(true, ids[0], KatalogBrowserProfil.FeldVolumen));
-            Assert.Equal("2600", Feld(true, ids[1], KatalogBrowserProfil.FeldInvestitionskosten));
+            Assert.Equal(2.6, double.Parse(Feld(true, ids[1], KatalogBrowserProfil.FeldVerluste), CultureInfo.CurrentCulture), 9);
             Assert.Equal(katalogVorher, Feld(false, katalog, KatalogBrowserProfil.FeldFirma));
         }
 

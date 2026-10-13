@@ -122,9 +122,9 @@ public class KatalogSchreibenWirftTests : EposBunitContext
     {
         new BrowserFeldwert
         {
-            Schluessel = KatalogBrowserProfil.FeldInvestitionskosten,
-            Bezeichnung = "Investitionskosten:",
-            Einheit = "€",
+            Schluessel = KatalogBrowserProfil.FeldPtherm,
+            Bezeichnung = "Leistung:",
+            Einheit = "kW",
             Art = BrowserFeldArt.Zahl,
             Editierbar = true,
             Wert = "12000"

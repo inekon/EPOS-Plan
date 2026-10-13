@@ -275,13 +275,11 @@ namespace EPOS.Kern.Tests
         /// Wirtschaftlichkeit liest, steht als <c>Wirtschaftlichkeit</c> im Katalog.
         /// </summary>
         [Theory]
-        // Welle KB-4: Heizkessel und BHKW fuehren keine Kostenspalte mehr - ihre Kosten
-        // stehen in der Satzvorlage des Katalogsatzes.
+        // Welle KB-4: Heizkessel, BHKW, Solarkollektor, Pufferspeicher und Kaeltemaschine fuehren
+        // keine Kostenspalte mehr - ihre Kosten stehen in der Satzvorlage des Katalogsatzes.
         [InlineData(Anlagenart.Waermepumpe, "Modulkosten")]
-        [InlineData(Anlagenart.Solarkollektoren, "Investitionskosten")]
         [InlineData(Anlagenart.Photovoltaik, "Modulkosten")]
         [InlineData(Anlagenart.Stromspeicher, "Leistungskosten")]
-        [InlineData(Anlagenart.Pufferspeicher, "Investitionskosten")]
         public void Die_Kostenseite_ist_als_Wirtschaftlichkeit_gekennzeichnet(Anlagenart art, string spalte)
         {
             Assert.True(Eintrag(art, spalte).Hat(Verwendung.Wirtschaftlichkeit),
@@ -557,7 +555,7 @@ namespace EPOS.Kern.Tests
                 case Anlagenart.Solarkollektoren:
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Kollektortyp",
                                    "Modulflaeche", "Aperturflaeche", "h0", "k1", "k2", "Kdir",
-                                   "Kdfu", "Investitionskosten",
+                                   "Kdfu",
                                    // Welle M2 (ST6): die Bezugsfläche, Auswahl im Katalogeditor und
                                    // Feld im Aufklapper (SolarkollektorAdminHuelle.Schreiben).
                                    "Bezugsflaeche" };
@@ -601,7 +599,7 @@ namespace EPOS.Kern.Tests
 
                 default:
                     return new[] { "Bezeichner", "Hersteller", "Speichertyp",
-                                   "Bereitschaftsverluste", "Gesamtvolumen", "Investitionskosten" };
+                                   "Bereitschaftsverluste", "Gesamtvolumen" };
             }
         }
 

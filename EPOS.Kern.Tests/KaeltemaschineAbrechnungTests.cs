@@ -423,7 +423,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             Maschine();
-            int id = PufferSpCtrl.ProjektPufferAnlegen(PROJEKT, "Kaltwasserspeicher Test", "", "", 20000, 2.0, 0,
+            int id = PufferSpCtrl.ProjektPufferAnlegen(PROJEKT, "Kaltwasserspeicher Test", "", "", 20000, 2.0,
                                                        DbWerte.PSP_VERWENDUNG_KAELTE, 6, 12, 10, 95, null, 0);
             Assert.True(id > 0);
             SimulationRunner lauf = new SimulationRunner();

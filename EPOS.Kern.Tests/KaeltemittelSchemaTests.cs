@@ -64,7 +64,7 @@ namespace EPOS.Kern.Tests
             Katalogverweis v = Assert.Single(m.Verweise);
             Assert.Equal(("ID_Kaeltemittel", "Tab_Kaeltemittel_STAMM", "Code"), (v.Spalte, v.Zieltabelle, v.Zielspalte));
             Assert.Equal("ID_Kaeltemittel", KaeltemaschineSchema.Fachspalten.Last());
-            Assert.Equal(26, KaeltemaschineSchema.Fachspalten.Length);
+            Assert.Equal(25, KaeltemaschineSchema.Fachspalten.Length);   // KB-4: ohne Modulkosten
 
             KatalogDefinition d = KatalogRegistry.FindeTabelle(KaeltemittelSchema.TAB_STAMM);
             Assert.NotNull(d);

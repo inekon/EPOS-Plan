@@ -293,7 +293,6 @@ namespace WindowsFormsApplication1
         public const string FeldPtherm = "PTHERM";
         public const string FeldPel = "PEL";
         public const string FeldGrenzleistung = "GRENZLEISTUNG";
-        public const string FeldInvestitionskosten = "INVESTITIONSKOSTEN";
         public const string FeldBrennwert = "BRENNWERT";
         public const string FeldVorlauf = "VORLAUF";
         public const string FeldRuecklauf = "RUECKLAUF";
@@ -362,7 +361,8 @@ namespace WindowsFormsApplication1
         /// Investitionssumme der Satzvorlage des Satzes
         /// (<see cref="Katalogkostenanzeige.Investitionstext"/>). An seiner Stelle standen am
         /// BHKW die fünf Kostenposten samt Investition je kWel und Wartung je kWhel, am
-        /// Heizkessel Investition und Wartung mit ihrem Zeitbezug — alle als Spalten entfallen.
+        /// Heizkessel Investition und Wartung mit ihrem Zeitbezug, an Solarkollektor und
+        /// Pufferspeicher die Investitionskosten — alle als Spalten entfallen.
         /// Gepflegt wird der Wert in der Kostenverwaltung, deshalb ist das Feld nicht
         /// editierbar; der Speicherweg schreibt es nie.
         /// </summary>
@@ -390,7 +390,7 @@ namespace WindowsFormsApplication1
 
         private static readonly HashSet<string> KOSTENFELDER = new HashSet<string>(StringComparer.Ordinal)
         {
-            FeldInvestitionskosten, FeldNutzungsdauer, FeldGeraetekosten
+            FeldNutzungsdauer, FeldGeraetekosten
         };
 
         /// <summary>
@@ -687,7 +687,7 @@ namespace WindowsFormsApplication1
                                                   BrowserFeldArt.Text, editierbar: true,
                                                   hinweis: t("KBROW_HINT_BEZUGSFLAECHE")),
 
-                            // Der volle Satz (15.09.2026): die Kennlinie und der Preis.
+                            // Der volle Satz (15.09.2026): die Kennlinie; der Preis ist der Lesewert der Satzvorlage.
                             // Kdfu heisst im Editor „Kdiff" und korrigiert die Diffus- und
                             // Bodenreflexstrahlung (Welle M2 ST5); 0 = Faktor der Direktstrahlung.
                             new BrowserDetailfeld(FeldH0,   "h0:",   "",
@@ -700,8 +700,12 @@ namespace WindowsFormsApplication1
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldKdiff, "Kdiff:", "",
                                                   BrowserFeldArt.Zahl, editierbar: true),
-                            new BrowserDetailfeld(FeldInvestitionskosten, t("KBROW_LBL_INVEST"), "€",
-                                                  BrowserFeldArt.Zahl, editierbar: true)
+                            // DIE EINE KOSTENBASIS (Welle KB-4, Anwenderentscheid 13.10.2026):
+                            // Die Investitionskosten sind als Spalte entfallen; geblieben ist
+                            // EIN Lesewert - die Investitionssumme der Satzvorlage.
+                            new BrowserDetailfeld(FeldGeraetekosten, t("KBROW_LBL_GERAETEKOSTEN"), "€",
+                                                  BrowserFeldArt.Zahl, editierbar: false,
+                                                  hinweis: t("KBROW_HINT_KOSTENVERWALTUNG"))
                         }
                     };
 
@@ -739,8 +743,12 @@ namespace WindowsFormsApplication1
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldVolumen,    t("KBROW_LBL_VOLUMEN"), "l",
                                                   BrowserFeldArt.Ganzzahl, editierbar: true),
-                            new BrowserDetailfeld(FeldInvestitionskosten, t("KBROW_LBL_INVEST"), "€",
-                                                  BrowserFeldArt.Zahl, editierbar: true)
+                            // DIE EINE KOSTENBASIS (Welle KB-4, Anwenderentscheid 13.10.2026):
+                            // Die Investitionskosten sind als Spalte entfallen; geblieben ist
+                            // EIN Lesewert - die Investitionssumme der Satzvorlage.
+                            new BrowserDetailfeld(FeldGeraetekosten, t("KBROW_LBL_GERAETEKOSTEN"), "€",
+                                                  BrowserFeldArt.Zahl, editierbar: false,
+                                                  hinweis: t("KBROW_HINT_KOSTENVERWALTUNG"))
                         }
                     };
             }
