@@ -484,11 +484,11 @@
                     <PropertyColumn TGridItem="PreishistorieZeile" TProp="string"
                                     Property="@(z => z.Basiseinheit)" Title="@SpalteBasisEinheit" />
                     <PropertyColumn TGridItem="PreishistorieZeile" TProp="string"
-                                    Property="@(z => z.Arbeitspreis)" Title="@SpalteArbeitspreis" />
+                                    Property="@(z => z.Arbeitspreis)" Title="@SpalteArbeitspreisMitEinheit" />
                     <PropertyColumn TGridItem="PreishistorieZeile" TProp="string"
                                     Property="@(z => z.Grundpreis)" Title="@SpalteGrundpreis" />
                     <PropertyColumn TGridItem="PreishistorieZeile" TProp="string"
-                                    Property="@(z => z.Leistungspreis)" Title="@SpalteLeistungspreis" />
+                                    Property="@(z => z.Leistungspreis)" Title="@SpalteLeistungspreisMitEinheit" />
                     @* Die Aktionsspalte steht HINTEN und traegt einen Kopf mit
                        Beschriftung; der Knopf ist immer sichtbar (Hausregel). *@
                     <TemplateColumn TGridItem="PreishistorieZeile" Title="@HistorieLoeschenText">
@@ -828,6 +828,18 @@
         => Stand.MitHeizwert && !string.IsNullOrEmpty(Stand.EinheitHeizwert)
             ? string.Format(SpalteHeizwertVorlage, Stand.EinheitHeizwert)
             : SpalteHeizwert;
+
+    /// <summary>Kopf der Arbeitspreisspalte mit der Einheit des Trägers (<c>[€/Einheit]</c>, <c>[€/kWh]</c>).</summary>
+    private string SpalteArbeitspreisMitEinheit
+        => string.IsNullOrEmpty(Stand.EinheitArbeitspreis)
+            ? SpalteArbeitspreis
+            : SpalteArbeitspreis + " [" + Stand.EinheitArbeitspreis + "]";
+
+    /// <summary>Kopf der Leistungspreisspalte mit der Einheit des gewählten Modus (<c>[€/(kW·a)]</c> bzw. <c>[€/(kW·Monat)]</c>).</summary>
+    private string SpalteLeistungspreisMitEinheit
+        => string.IsNullOrEmpty(Stand.EinheitLeistungspreis)
+            ? SpalteLeistungspreis
+            : SpalteLeistungspreis + " [" + Stand.EinheitLeistungspreis + "]";
 
     private (int Id, string Text)[] LEISTUNGSMODI
         => new[] { (0, ModusJahrText), (1, ModusMonatText) };

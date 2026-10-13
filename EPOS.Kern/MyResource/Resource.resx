@@ -1520,7 +1520,7 @@ bei einem kleinen Speicher wird die Zahl groß, ohne dass er stärker altert.</v
     <value>Bifazial</value>
   </data>
   <data name="PVIMP_SP_EFFIZIENZ" xml:space="preserve">
-    <value>Effizienz (%)</value>
+    <value>Effizienz [%]</value>
   </data>
   <data name="PVIMP_SP_HERSTELLER" xml:space="preserve">
     <value>Hersteller</value>
@@ -1535,7 +1535,7 @@ bei einem kleinen Speicher wird die Zahl groß, ohne dass er stärker altert.</v
     <value>Modulname</value>
   </data>
   <data name="PVIMP_SP_PMP" xml:space="preserve">
-    <value>Pmp (W)</value>
+    <value>Pmp [W]</value>
   </data>
   <data name="PVIMP_SP_QUELLE" xml:space="preserve">
     <value>Quelle</value>
@@ -9175,13 +9175,13 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
     <value>Dicke [mm]</value>
   </data>
   <data name="BTA_SP_LAMBDA" xml:space="preserve">
-    <value>λ [W/(mK)]</value>
+    <value>λ [W/(m·K)]</value>
   </data>
   <data name="BTA_SP_RHO" xml:space="preserve">
     <value>ρ [kg/m³]</value>
   </data>
   <data name="BTA_SP_CP" xml:space="preserve">
-    <value>c_p [J/(kgK)]</value>
+    <value>c_p [J/(kg·K)]</value>
   </data>
   <data name="BTA_LBL_SCHICHT" xml:space="preserve">
     <value>Schicht {0}</value>
@@ -15398,10 +15398,10 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>Standort</value>
   </data>
   <data name="KLIMA_SP_LONGITUDE" xml:space="preserve">
-    <value>Longitude</value>
+    <value>Longitude [°]</value>
   </data>
   <data name="KLIMA_SP_LATITUDE" xml:space="preserve">
-    <value>Latitude</value>
+    <value>Latitude [°]</value>
   </data>
   <data name="KLIMA_SP_IMPORTDATUM" xml:space="preserve">
     <value>Importdatum</value>
@@ -17903,10 +17903,10 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>Quelle</value>
   </data>
   <data name="IMP_KAT_SP_ENERGIE" xml:space="preserve">
-    <value>kWh</value>
+    <value>Kapazität [kWh]</value>
   </data>
   <data name="IMP_KAT_SP_LEISTUNG" xml:space="preserve">
-    <value>kW</value>
+    <value>Leistung [kW]</value>
   </data>
   <data name="IMP_KAT_SP_ETA" xml:space="preserve">
     <value>η_RT</value>
@@ -21290,10 +21290,10 @@ Möchten Sie das zulassen?</value>
     <value>Anlage</value>
   </data>
   <data name="FLOTTE_ED_ANLAGE_SPALTE_KAPAZITAET" xml:space="preserve">
-    <value>Kapazität</value>
+    <value>Kapazität [kWh]</value>
   </data>
   <data name="FLOTTE_ED_ANLAGE_SPALTE_LEISTUNG" xml:space="preserve">
-    <value>Leistung</value>
+    <value>Leistung [kW]</value>
   </data>
   <data name="FLOTTE_ED_ANLAGE_VERTRETEN" xml:space="preserve">
     <value>bereits in der Flotte</value>
@@ -21740,13 +21740,13 @@ Möchten Sie das zulassen?</value>
     <value>Betrag [€]</value>
   </data>
   <data name="ND_TAFEL_SP_DAUER" xml:space="preserve">
-    <value>Nutzungsdauer n</value>
+    <value>Nutzungsdauer n [a]</value>
   </data>
   <data name="ND_TAFEL_SP_ERSATZ" xml:space="preserve">
     <value>Ersatzbeschaffung</value>
   </data>
   <data name="ND_TAFEL_SP_RESTWERT" xml:space="preserve">
-    <value>Restwert Jahr {0}</value>
+    <value>Restwert Jahr {0} [€]</value>
   </data>
   <data name="ND_TAFEL_SP_HERKUNFT" xml:space="preserve">
     <value>Herkunft der Dauer</value>
@@ -27209,7 +27209,7 @@ Möchten Sie das zulassen?</value>
     <value>Verfahren</value>
   </data>
   <data name="ZPG_AUS_SP_VOLUMEN" xml:space="preserve">
-    <value>Volumen</value>
+    <value>Volumen [l]</value>
   </data>
   <data name="ZPG_AUS_SP_KENNWERT" xml:space="preserve">
     <value>Kennwert</value>
@@ -35279,7 +35279,7 @@ Möchten Sie das zulassen?</value>
     <value>A [m²]</value>
   </data>
   <data name="ZONDLG_SP_U" xml:space="preserve">
-    <value>U [W/(m²K)]</value>
+    <value>U [W/(m²·K)]</value>
   </data>
   <data name="ZONDLG_SP_AZIMUT" xml:space="preserve">
     <value>Azimut</value>
@@ -45312,7 +45312,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Starts je Tag</value>
   </data>
   <data name="PAUS_NA_SPALTE_VERLUST" xml:space="preserve">
-    <value>Verlust kWh/a</value>
+    <value>Verlust [kWh/a]</value>
   </data>
   <data name="PAUS_NA_SPALTE_JAZ" xml:space="preserve">
     <value>Wirkung</value>
@@ -47979,10 +47979,10 @@ Chart</value>
     <value>Zustand</value>
   </data>
   <data name="GEBB_AUFH_SP_ZEIT" xml:space="preserve">
-    <value>t_auf,max (h)</value>
+    <value>t_auf,max [h]</value>
   </data>
   <data name="GEBB_AUFH_SP_LEISTUNG" xml:space="preserve">
-    <value>P_auf (kW)</value>
+    <value>P_auf [kW]</value>
   </data>
   <data name="GEBB_AUFH_SP_QUELLE" xml:space="preserve">
     <value>Quelle</value>
@@ -47991,10 +47991,10 @@ Chart</value>
     <value>Rampentage</value>
   </data>
   <data name="GEBB_AUFH_SP_LAENGSTE" xml:space="preserve">
-    <value>längste Rampe (h)</value>
+    <value>Längste Rampe [h]</value>
   </data>
   <data name="GEBB_AUFH_SP_KAPPUNG" xml:space="preserve">
-    <value>Kappung (h)</value>
+    <value>Kappung [h]</value>
   </data>
   <data name="GEBB_AUFH_HRL_ZONEN" xml:space="preserve">
     <value>Je Zone eine eigene Bemessung; das Gebäude zeigt t_auf,max und die längste Rampe als Maximum, P_auf als Summe, Tage und Stunden als Vereinigung der beheizten Zonen.</value>
@@ -48567,13 +48567,13 @@ Chart</value>
     <value>Fläche [m²]</value>
   </data>
   <data name="GIMP_AB_SP_UDATEI" xml:space="preserve">
-    <value>U Datei [W/(m²K)]</value>
+    <value>U Datei [W/(m²·K)]</value>
   </data>
   <data name="GIMP_AB_SP_USCHICHTEN" xml:space="preserve">
-    <value>U Schichten [W/(m²K)]</value>
+    <value>U Schichten [W/(m²·K)]</value>
   </data>
   <data name="GIMP_AB_SP_C1" xml:space="preserve">
-    <value>C₁,korr [kJ/(m²K)]</value>
+    <value>C₁,korr [kJ/(m²·K)]</value>
   </data>
   <data name="GIMP_AB_SP_STUFE" xml:space="preserve">
     <value>Stufe</value>
@@ -48858,6 +48858,12 @@ Chart</value>
   </data>
   <data name="BV_A1D_GEWERK_PUFFERSPEICHER" xml:space="preserve">
     <value>Pufferspeicher</value>
+  </data>
+  <data name="BV_A1D_GEWERK_KAELTEMASCHINE" xml:space="preserve">
+    <value>Kältemaschine</value>
+  </data>
+  <data name="BV_A1D_EINHEIT_KW_KAELTE" xml:space="preserve">
+    <value>kW Kälte</value>
   </data>
   <data name="BV_A1D_GEWERK_GEBAEUDE" xml:space="preserve">
     <value>Gebäude</value>
@@ -49544,10 +49550,10 @@ Chart</value>
     <value>Abweichend</value>
   </data>
   <data name="GIMP_DLG_AQ_SPALTE_DATEI" xml:space="preserve">
-    <value>U IFC [W/(m²K)]</value>
+    <value>U IFC [W/(m²·K)]</value>
   </data>
   <data name="GIMP_DLG_AQ_SPALTE_PROJEKTDATEI" xml:space="preserve">
-    <value>U Projektdatei [W/(m²K)]</value>
+    <value>U Projektdatei [W/(m²·K)]</value>
   </data>
   <data name="GIMP_DLG_AQ_TABELLE" xml:space="preserve">
     <value>Mittlere U-Werte je Bauteilart (Median)</value>

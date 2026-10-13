@@ -460,7 +460,7 @@
                                                         <span class="epos-zapfausl-marke">@Texte.NurNachrichtlich</span>
                                                     }
                                                 </th>
-                                                <td class="epos-zahl">@(z.VolumenL is double vol ? Zahl(vol, "N0") + " l" : "–")</td>
+                                                <td class="epos-zahl">@(z.VolumenL is double vol ? Zahl(vol, "N0") : "–")</td>
                                                 <td>@z.Kennwert</td>
                                                 <td>@z.Rechenweg</td>
                                             </tr>

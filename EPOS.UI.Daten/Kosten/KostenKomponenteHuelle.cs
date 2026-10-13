@@ -232,7 +232,7 @@ namespace WindowsFormsApplication1
                 ["GruppeErsatzTitel"] = T("ND_TAFEL_TITEL", "Ersatz und Restwert"),
                 ["SpalteErsatzPosition"] = T("ND_TAFEL_SP_POSITION", "Komponente / Position"),
                 ["SpalteErsatzBetrag"] = T("ND_TAFEL_SP_BETRAG", "Betrag [€]"),
-                ["SpalteErsatzDauer"] = T("ND_TAFEL_SP_DAUER", "Nutzungsdauer n"),
+                ["SpalteErsatzDauer"] = T("ND_TAFEL_SP_DAUER", "Nutzungsdauer n [a]"),
                 ["SpalteErsatzErsatz"] = T("ND_TAFEL_SP_ERSATZ", "Ersatzbeschaffung"),
                 ["SpalteErsatzHerkunft"] = T("ND_TAFEL_SP_HERKUNFT", "Herkunft der Dauer"),
                 ["VorbelegenText"] = T("ND_VORBELEGEN_BTN", "Nutzungsdauern vorbelegen…"),
@@ -548,7 +548,7 @@ namespace WindowsFormsApplication1
             if (eingaben.Count == 0) return;
 
             stand.SpalteRestwert = string.Format(CultureInfo.CurrentCulture,
-                T("ND_TAFEL_SP_RESTWERT", "Restwert Jahr {0}"), p.Betrachtungszeitraum);
+                T("ND_TAFEL_SP_RESTWERT", "Restwert Jahr {0} [€]"), p.Betrachtungszeitraum);
 
             var zeilen = new List<ErsatzRestwertZeile>();
             foreach (ErsatzRestwertTafel.Zeile z in ErsatzRestwertTafel.Zeilen(

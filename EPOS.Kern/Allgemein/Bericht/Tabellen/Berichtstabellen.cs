@@ -52,12 +52,17 @@ namespace WindowsFormsApplication1
             (KennzahlenKatalog.GR_KOSTEN, "kosten"),
         };
 
-        /// <summary>Die Gewerke der Kenndatentafeln (<see cref="ProjektDetails.GewerkTabellen"/>) und ihre Schlüssel im Katalog.</summary>
+        /// <summary>
+        /// Die Gewerke der Kenndatentafeln (<see cref="ProjektDetails.GewerkTabellen"/>) und ihre Schlüssel im Katalog.
+        /// Ohne die Kältemaschine: Ein neuer Platzhalter gehört in eine neue Katalogfassung samt Vorlagen; der
+        /// Bericht zeigt ihre Kenndatentafel über den Baustein.
+        /// </summary>
         public static IReadOnlyList<(string Gewerk, string Schluessel)> Gewerke
         {
             get
             {
                 return ProjektDetails.GewerkTabellen
+                    .Where(g => !ProjektDetails.NurWennVerbaut(g.Key))
                     .Select(g => (g.Key, Platzhaltersyntax.NormiereSchluessel(g.Key)))
                     .ToList();
             }
@@ -216,6 +221,9 @@ namespace WindowsFormsApplication1
 
             foreach (KeyValuePair<string, string> g in ProjektDetails.GewerkTabellen)
             {
+                // Die Kältemaschine steht nur in der Tafel, wenn ein Stand sie verbaut.
+                if (ProjektDetails.NurWennVerbaut(g.Key) && !spalten.Any(v => v.Details != null && v.Details.HatGewerk(g.Key)))
+                    continue;
                 var zellen = new List<Tabellenzelle> { Zellen.Text(g.Key) };
                 foreach (VariantenDaten v in spalten)
                 {

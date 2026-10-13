@@ -182,7 +182,7 @@
                               @onclick="() => ProjektZeileKlick(context)">@context.Name</span>
                     </TemplateColumn>
                     <PropertyColumn TGridItem="BedarfsProfilZeile" TProp="string"
-                                    Property="@(z => SummeText(z.Summe))" Title="@Resource.BPF_ZF_JAHRESSUMME" />
+                                    Property="@(z => SummeText(z.Summe))" Title="@(Resource.BPF_ZF_JAHRESSUMME + " [" + _einheit.Text + "]")" />
                     @* UeS2: der Stift je Projektzeile - die Zuordnung in der Satz-Ueberlagerung. *@
                     <TemplateColumn TGridItem="BedarfsProfilZeile" Class="epos-spalte-stift">
                         <HeaderTemplate>
