@@ -11987,6 +11987,168 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnisse — Energie ähnelt.
+        /// </summary>
+        public static string BK_ERG_ABSCHNITT_ERGEBNISSE {
+            get {
+                return ResourceManager.GetString("BK_ERG_ABSCHNITT_ERGEBNISSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten und Einstellungen ähnelt.
+        /// </summary>
+        public static string BK_ERG_ABSCHNITT_KOMPONENTEN {
+            get {
+                return ResourceManager.GetString("BK_ERG_ABSCHNITT_KOMPONENTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kennzahlen ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANZAHL_KENNZAHLEN {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANZAHL_KENNZAHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Kennzahl ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANZAHL_KENNZAHL_EINS {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANZAHL_KENNZAHL_EINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf ähnelt.
+        /// </summary>
+        public static string BK_ERG_GR_BEDARF {
+            get {
+                return ResourceManager.GetString("BK_ERG_GR_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung ähnelt.
+        /// </summary>
+        public static string BK_ERG_GR_DECKUNG {
+            get {
+                return ResourceManager.GetString("BK_ERG_GR_DECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Effizienz ähnelt.
+        /// </summary>
+        public static string BK_ERG_GR_EFFIZIENZ {
+            get {
+                return ResourceManager.GetString("BK_ERG_GR_EFFIZIENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionen ähnelt.
+        /// </summary>
+        public static string BK_ERG_GR_EMISSIONEN {
+            get {
+                return ResourceManager.GetString("BK_ERG_GR_EMISSIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Endenergie ähnelt.
+        /// </summary>
+        public static string BK_ERG_GR_ENDENERGIE {
+            get {
+                return ResourceManager.GetString("BK_ERG_GR_ENDENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeerzeugung ähnelt.
+        /// </summary>
+        public static string BK_ERG_GR_ERZEUGUNG {
+            get {
+                return ResourceManager.GetString("BK_ERG_GR_ERZEUGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude ähnelt.
+        /// </summary>
+        public static string BK_ERG_GR_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("BK_ERG_GR_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte ähnelt.
+        /// </summary>
+        public static string BK_ERG_GR_KAELTE {
+            get {
+                return ResourceManager.GetString("BK_ERG_GR_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom ähnelt.
+        /// </summary>
+        public static string BK_ERG_GR_STROM {
+            get {
+                return ResourceManager.GetString("BK_ERG_GR_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte aus dem letzten gespeicherten Simulationslauf je Version. Kosten stehen unter Wirtschaftlichkeit. ähnelt.
+        /// </summary>
+        public static string BK_ERG_HINWEIS_QUELLE {
+            get {
+                return ResourceManager.GetString("BK_ERG_HINWEIS_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für keine Version im Vergleich liegt ein Simulationsergebnis vor. Starten Sie die Simulation, um die Energie-Ergebnisse gegenüberzustellen. ähnelt.
+        /// </summary>
+        public static string BK_ERG_KEINE_SIMULATION {
+            get {
+                return ResourceManager.GetString("BK_ERG_KEINE_SIMULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Version im Vergleich weicht in den Energie-Ergebnissen vom Stammprojekt ab. ähnelt.
+        /// </summary>
+        public static string BK_ERG_KEINE_UNTERSCHIEDE {
+            get {
+                return ResourceManager.GetString("BK_ERG_KEINE_UNTERSCHIEDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die darunter die Abweichung zum Stammprojekt in Prozent ähnelt.
+        /// </summary>
+        public static string BK_ERG_LEGENDE_PROZENT {
+            get {
+                return ResourceManager.GetString("BK_ERG_LEGENDE_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahl ähnelt.
+        /// </summary>
+        public static string BK_ERG_SP_KENNZAHL {
+            get {
+                return ResourceManager.GetString("BK_ERG_SP_KENNZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nicht zum Gewerk Kältemaschine gehören und bleiben unverändert: die Kaskade des Projekts, ein Kältespeicher und die Kältefolge der übrigen Kälteerzeuger — der Rang der übernommenen Maschinen kommt aus der Quelle. Bitte die Kältefolge im Bereich Kälte prüfen. ähnelt.
         /// </summary>
         public static string BK_KOMP_HINW_KAELTESEITE {
@@ -60946,6 +61108,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BKU_BEZEICHNER_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_BKU_BEZEICHNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Energie-Kennzahlen je Version (Bedarf, Erzeugung, Strom, Endenergie, Deckung, Effizienz, CO₂) aus dem letzten Simulationslauf, Abweichungen zum Stammprojekt markiert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKU_ERG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKU_ERG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energie-Ergebnisse im Vergleich ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKU_ERG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKU_ERG_NAME", resourceCulture);
             }
         }
         

@@ -5828,6 +5828,60 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_STATUS_VERSIONEN" xml:space="preserve">
     <value>{0} Versionen</value>
   </data>
+  <data name="BK_ERG_ABSCHNITT_KOMPONENTEN" xml:space="preserve">
+    <value>Komponenten und Einstellungen</value>
+  </data>
+  <data name="BK_ERG_ABSCHNITT_ERGEBNISSE" xml:space="preserve">
+    <value>Ergebnisse — Energie</value>
+  </data>
+  <data name="BK_ERG_SP_KENNZAHL" xml:space="preserve">
+    <value>Kennzahl</value>
+  </data>
+  <data name="BK_ERG_GR_BEDARF" xml:space="preserve">
+    <value>Bedarf</value>
+  </data>
+  <data name="BK_ERG_GR_ERZEUGUNG" xml:space="preserve">
+    <value>Wärmeerzeugung</value>
+  </data>
+  <data name="BK_ERG_GR_STROM" xml:space="preserve">
+    <value>Strom</value>
+  </data>
+  <data name="BK_ERG_GR_ENDENERGIE" xml:space="preserve">
+    <value>Endenergie</value>
+  </data>
+  <data name="BK_ERG_GR_DECKUNG" xml:space="preserve">
+    <value>Deckung</value>
+  </data>
+  <data name="BK_ERG_GR_KAELTE" xml:space="preserve">
+    <value>Kälte</value>
+  </data>
+  <data name="BK_ERG_GR_EFFIZIENZ" xml:space="preserve">
+    <value>Effizienz</value>
+  </data>
+  <data name="BK_ERG_GR_GEBAEUDE" xml:space="preserve">
+    <value>Gebäude</value>
+  </data>
+  <data name="BK_ERG_GR_EMISSIONEN" xml:space="preserve">
+    <value>Emissionen</value>
+  </data>
+  <data name="BK_ERG_ANZAHL_KENNZAHLEN" xml:space="preserve">
+    <value>{0} Kennzahlen</value>
+  </data>
+  <data name="BK_ERG_ANZAHL_KENNZAHL_EINS" xml:space="preserve">
+    <value>1 Kennzahl</value>
+  </data>
+  <data name="BK_ERG_KEINE_UNTERSCHIEDE" xml:space="preserve">
+    <value>Keine Version im Vergleich weicht in den Energie-Ergebnissen vom Stammprojekt ab.</value>
+  </data>
+  <data name="BK_ERG_LEGENDE_PROZENT" xml:space="preserve">
+    <value>darunter die Abweichung zum Stammprojekt in Prozent</value>
+  </data>
+  <data name="BK_ERG_HINWEIS_QUELLE" xml:space="preserve">
+    <value>Werte aus dem letzten gespeicherten Simulationslauf je Version. Kosten stehen unter Wirtschaftlichkeit.</value>
+  </data>
+  <data name="BK_ERG_KEINE_SIMULATION" xml:space="preserve">
+    <value>Für keine Version im Vergleich liegt ein Simulationsergebnis vor. Starten Sie die Simulation, um die Energie-Ergebnisse gegenüberzustellen.</value>
+  </data>
   <data name="BK_STATUS_SIMULIERT" xml:space="preserve">
     <value>{0} · simuliert</value>
   </data>
@@ -25593,6 +25647,12 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_MASKE_PRV" xml:space="preserve">
     <value>Als Variante speichern</value>
+  </data>
+  <data name="KI_DLG_BKU_ERG_NAME" xml:space="preserve">
+    <value>Energie-Ergebnisse im Vergleich</value>
+  </data>
+  <data name="KI_DLG_BKU_ERG_ERL" xml:space="preserve">
+    <value>Die Energie-Kennzahlen je Version (Bedarf, Erzeugung, Strom, Endenergie, Deckung, Effizienz, CO₂) aus dem letzten Simulationslauf, Abweichungen zum Stammprojekt markiert.</value>
   </data>
   <data name="KI_DLG_BKU_STAMM_ERL" xml:space="preserve">
     <value>Das Stammprojekt, dessen Vergleichsgruppe die Seite zeigt; ein Wechsel lädt die ganze Gruppe neu.</value>

@@ -102,19 +102,30 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Keine_Kosten_und_keine_Emissionen()
+        public void Keine_Kosten_aber_CO2_als_letzte_Gruppe()
         {
             List<Kennzahl> k = Energievergleich.Kennzahlen();
             Assert.NotEmpty(k);
-            Assert.DoesNotContain(k, x => x.Gruppe == KennzahlenKatalog.GR_KOSTEN || x.Gruppe == KennzahlenKatalog.GR_EMISSION);
-            Assert.DoesNotContain(k, x => x.Einheit.Contains('€') || x.Einheit == "t/a");
-            Assert.DoesNotContain(k, x => x.Schluessel == KennzahlenKatalog.SCHLUESSEL_KAELTE_CO2);
-            // Die Energie- und Effizienzkennzahlen sind vollständig dabei.
+            Assert.DoesNotContain(k, x => x.Gruppe == KennzahlenKatalog.GR_KOSTEN || x.Einheit.Contains('€'));
+            Assert.DoesNotContain(k, x => x.Schluessel == KennzahlenKatalog.SCHLUESSEL_KAELTE_KOSTEN);
+            // Die Energie- und Effizienzkennzahlen sind vollständig dabei, CO₂ steht in der Gruppe Emissionen.
             Assert.Contains(k, x => x.Schluessel == "eff.jaz");
-            Assert.Contains(k, x => x.Schluessel == "eff.autarkie");
             Assert.Contains(k, x => x.Schluessel == "energie.pv_strom");
             Assert.Equal(Energievergleich.GRUPPE_STROM, Energievergleich.Gruppe(k.Single(x => x.Schluessel == "eff.autarkie")));
             Assert.Equal(Energievergleich.GRUPPE_EFFIZIENZ, Energievergleich.Gruppe(k.Single(x => x.Schluessel == "eff.jaz")));
+            Assert.Equal(Energievergleich.GRUPPE_EMISSIONEN, Energievergleich.Gruppe(k.Single(x => x.Schluessel == "em.co2")));
+            Assert.Equal(Energievergleich.GRUPPE_EMISSIONEN,
+                         Energievergleich.Gruppe(k.Single(x => x.Schluessel == KennzahlenKatalog.SCHLUESSEL_KAELTE_CO2)));
+            Assert.Equal(Energievergleich.GRUPPE_EMISSIONEN, Energievergleich.GRUPPEN.Last());
+
+            VariantenDaten stamm = Version(100, 50, true), variante = Version(100, 50);
+            stamm.CO2Gesamt = 20; variante.CO2Gesamt = 15;
+            var e = Energievergleich.Vergleiche(new[] { stamm, variante }, false, DE);
+            EnergievergleichZeile co2 = Zeile(e, "em.co2");
+            Assert.Equal("t/a", co2.Einheit);
+            Assert.Equal(new[] { "20,0", "15,0" }, co2.Texte);
+            Assert.Equal(new[] { "", "−25,0 %" }, co2.Abweichung);
+            Assert.Same(co2, e.Zeilen.Last());
         }
 
         [Fact]
@@ -143,7 +154,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal("—", w.Texte[2]);
             Assert.False(w.WeichtAb[2]);
             Assert.Contains(e.Zeilen, z => z.Gruppe == Energievergleich.GRUPPE_ERZEUGUNG);
-            Assert.DoesNotContain(e.Zeilen, z => z.Schluessel.StartsWith("ko.") || z.Schluessel.StartsWith("em."));
+            Assert.DoesNotContain(e.Zeilen, z => z.Schluessel.StartsWith("ko."));
         }
     }
 }

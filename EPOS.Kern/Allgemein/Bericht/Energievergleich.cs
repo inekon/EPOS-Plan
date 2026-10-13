@@ -58,8 +58,9 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// Der Energievergleich der Übersicht (Anwenderauftrag 13.10.2026): die ENERGIE-Kennzahlen des
     /// <see cref="KennzahlenKatalog"/> — dieselben Zeilen und Werte wie die Kennzahlentafel des Berichts — je Version
-    /// nebeneinander, gegliedert in Bedarf, Erzeugung, Strom, Endenergie, Deckung, Kälte, Effizienz und Gebäude.
-    /// Kosten und Emissionen gehören nicht hinein (sie stehen in der Wirtschaftlichkeit). Ohne Datenbank: Die Versionen
+    /// nebeneinander, gegliedert in Bedarf, Erzeugung, Strom, Endenergie, Deckung, Kälte, Effizienz, Gebäude und
+    /// Emissionen (CO₂ wie im Katalog, Ergänzung des Anwenders vom 13.10.2026). Kosten gehören nicht hinein (sie stehen
+    /// in der Wirtschaftlichkeit). Ohne Datenbank: Die Versionen
     /// kommen gesammelt herein (<see cref="EnergievergleichCtrl"/>).
     /// </summary>
     public static class Energievergleich
@@ -88,11 +89,14 @@ namespace WindowsFormsApplication1
         /// <summary>Die Gebäudekennzahlen (Lüftung, Aufheizen, Vorheizen).</summary>
         public const string GRUPPE_GEBAEUDE = "gebaeude";
 
+        /// <summary>Die CO₂-Kennzahlen des Katalogs (gesamt, spezifisch, Kältestrom) — am Ende des Abschnitts.</summary>
+        public const string GRUPPE_EMISSIONEN = "emissionen";
+
         /// <summary>Die Gruppen in Anzeigereihenfolge.</summary>
         public static readonly IReadOnlyList<string> GRUPPEN = new[]
         {
             GRUPPE_BEDARF, GRUPPE_ERZEUGUNG, GRUPPE_STROM, GRUPPE_ENDENERGIE,
-            GRUPPE_DECKUNG, GRUPPE_KAELTE, GRUPPE_EFFIZIENZ, GRUPPE_GEBAEUDE
+            GRUPPE_DECKUNG, GRUPPE_KAELTE, GRUPPE_EFFIZIENZ, GRUPPE_GEBAEUDE, GRUPPE_EMISSIONEN
         };
 
         /// <summary>Die Zuordnung der Energiebilanz-Kennzahlen zu den Gruppen der Übersicht; was fehlt, steht unter Erzeugung.</summary>
@@ -129,24 +133,25 @@ namespace WindowsFormsApplication1
             ["energie.deckung_brauchwasser"] = GRUPPE_DECKUNG,
             ["energie.deckung_prozess"] = GRUPPE_DECKUNG,
             [KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD] = GRUPPE_DECKUNG,
+
+            [KennzahlenKatalog.SCHLUESSEL_KAELTE_CO2] = GRUPPE_EMISSIONEN,
         };
 
         /// <summary>
-        /// Die Kennzahlen des Vergleichs: der Katalog ohne die Gruppen Emissionen und Kosten und ohne die Kosten- und
-        /// CO₂-Zeilen der Kälte.
+        /// Die Kennzahlen des Vergleichs: der Katalog ohne die Gruppe Kosten und ohne die Kostenzeile der Kälte; die
+        /// CO₂-Beschriftung im Modus <paramref name="modus"/> (<see cref="EmissionsAusweis.ModusAusVarianten"/>).
         /// </summary>
-        public static List<Kennzahl> Kennzahlen()
+        public static List<Kennzahl> Kennzahlen(string modus = DbWerte.EMISSION_MODUS_CO2)
         {
-            return KennzahlenKatalog.Alle().Where(IstEnergie).ToList();
+            return KennzahlenKatalog.Alle(modus).Where(GehoertDazu).ToList();
         }
 
-        /// <summary>Gehört die Kennzahl in den Energievergleich?</summary>
-        public static bool IstEnergie(Kennzahl k)
+        /// <summary>Gehört die Kennzahl in den Vergleich? Energie und Emissionen ja, Kosten nein.</summary>
+        public static bool GehoertDazu(Kennzahl k)
         {
             if (k == null) return false;
-            if (k.Gruppe == KennzahlenKatalog.GR_KOSTEN || k.Gruppe == KennzahlenKatalog.GR_EMISSION) return false;
-            if (k.Schluessel == KennzahlenKatalog.SCHLUESSEL_KAELTE_KOSTEN
-                || k.Schluessel == KennzahlenKatalog.SCHLUESSEL_KAELTE_CO2) return false;
+            if (k.Gruppe == KennzahlenKatalog.GR_KOSTEN) return false;
+            if (k.Schluessel == KennzahlenKatalog.SCHLUESSEL_KAELTE_KOSTEN) return false;
             return (k.Einheit ?? "").IndexOf('€') < 0;
         }
 
@@ -157,6 +162,7 @@ namespace WindowsFormsApplication1
             if (k.Gruppe == KennzahlenKatalog.GR_KAELTE) return GRUPPE_KAELTE;
             if (k.Gruppe == KennzahlenKatalog.GR_EFFIZIENZ) return GRUPPE_EFFIZIENZ;
             if (k.Gruppe == KennzahlenKatalog.GR_GEBAEUDE) return GRUPPE_GEBAEUDE;
+            if (k.Gruppe == KennzahlenKatalog.GR_EMISSION) return GRUPPE_EMISSIONEN;
             return GRUPPE_ERZEUGUNG;
         }
 
@@ -176,7 +182,8 @@ namespace WindowsFormsApplication1
             foreach (VariantenDaten v in versionen) erg.Simuliert.Add(v != null && v.Ergebnis != null);
 
             var jeGruppe = GRUPPEN.ToDictionary(g => g, g => new List<EnergievergleichZeile>());
-            foreach (Kennzahl k in Kennzahlen())
+            string modus = EmissionsAusweis.ModusAusVarianten(versionen.Where(v => v != null && v.Ergebnis != null));
+            foreach (Kennzahl k in Kennzahlen(modus))
             {
                 var z = new EnergievergleichZeile
                 {
