@@ -1089,7 +1089,7 @@ Datenbank. bunit misst weder Lage noch Rollstand; die Voraussetzungen der Regel 
 |---|---|
 | `/fensterprobe?fall=heizkessel` | `HeizkesselDialog`, zwei Projektzeilen, 40 Katalogzeilen, Kostenknöpfe (eine Knopfzeile mitten im Inhalt) |
 | `…?fall=bhkw` | `BhkwDialog`, ebenso |
-| `…?fall=waermepumpen` | `WaermepumpenDialog` mit eingebetteter Detailansicht; die Temperaturprüfung schlägt an (Warnband im Fußblock der Detailansicht) |
+| `…?fall=waermepumpen` | `WaermepumpenDialog`, Katalogauswahl wie Heizkessel und BHKW |
 | `…?fall=gebaeude` | `GebaeudeDialog`; „Simulation…" öffnet den Wärmebedarf als Überlagerung |
 | `…?fall=dubletten` | `KatalogDublettenDialog` — das Protokoll steht **unter** der Schlussleiste |
 | `…?fall=katalog` | `BedarfAdminDialog` (Katalogdialog, `.epos-katalog-dialog`) |
@@ -1107,9 +1107,7 @@ Je Fensterdialog: die Marke steht in `#app` hinter dem Dialog, der Dialog ist h�
 Mitte und Ende steht der Kopf bei `top 0` und die Schlussleiste mit `bottom` = Fensterhöhe (± 1 px), beide
 über die volle Breite der Wurzel; am Ende steht alles, was im Markup vor der Leiste kommt, über ihr; keine
 andere Leiste haftet, genau ein haftender Kopf; der Tabulator durch den ganzen Dialog legt kein Feld unter
-Kopf oder Fuß und rollt nicht, wenn er in Kopf oder Fuß landet. Wärmepumpen: OK bei Rollstand 0 — das Band
-des Wirts steht oben im Bild, das Band der Detailansicht über der Schlussleiste und unverdeckt
-(`elementFromPoint`). Dublettenprüfung: oben haftet der Fuß, am Ende steht er ganz im Bild und das Protokoll
+Kopf oder Fuß und rollt nicht, wenn er in Kopf oder Fuß landet. Dublettenprüfung: oben haftet der Fuß, am Ende steht er ganz im Bild und das Protokoll
 frei darunter. Überlagerung (Gebäude → „Simulation…"): sie rollt nicht als Ganzes, nur ihr Rollkörper
 (`.epos-dialog-rollkoerper`) rollt, ihr Fuß steht oben wie nach dem Rollen an ihrem Boden, der Kopf des
 Unterdialogs haftet nicht, Kopf und Fuß des Fensters liegen unter der Abdunkelung, das Dokument rollt nicht —
@@ -1158,14 +1156,12 @@ grün, `2` = Aufbaufehler. Die Probe steht in keiner CI.
 | Gebäude | 520 × 624 | 71 / **125** px (zweizeilig) | 1 665 / 1 041 px | Inhalt bis 464 px, Leiste 499–624 px | 65, 0, 0 |
 | Dublettenprüfung | 520 × 624 | 71 / 125 px | 883 / 259 px | Leiste 292–417 px, Protokoll 427–608 px | 8, 0, 0 |
 
-Wärmepumpen, Band der Detailansicht: 515–555 px bei 1 088 px (Leiste ab 555), 497–555 px bei 520 px;
-das Band des Wirts steht bei Rollstand 0 unter dem Kopf (109–149 px). Überlagerung: 31–593 px hoch, ihr Fuß
+Überlagerung: 31–593 px hoch, ihr Fuß
 523–592 px oben wie unten gerollt (Boden der Überlagerung 592 px), Kopf des Unterdialogs `static`, Fenster-
 kopf und -fuß unter der Abdunkelung; mit und ohne Marke dieselben Zahlen. Katalogdialog: Kopf 16–62 px,
 Fuß 564–608 px, Dokument 624 px, beide `static`; mit und ohne Marke dieselben Zahlen. Gegenprobe: ohne Marke
 12 Haft-Verstöße je Fensterdialog (Dublettenprüfung 7 bzw. 8), ohne `scroll-padding` 5 bis 10 verdeckte
-Felder je Dialog, eingebettetes Band mit `bottom: 0` verdeckt, Dublettenfuß mit negativem Rand über dem
-Protokoll.
+Felder je Dialog, Dublettenfuß mit negativem Rand über dem Protokoll.
 
 **Grenzen.** Einen **schreibgeschützten** Textbereich rollt Chromium beim Fokus nicht ins Bild (ein
 bearbeitbarer rollt) — mit und ohne die Regel; die Probe misst dort nur, ob Kopf oder Fuß verdecken, was von
