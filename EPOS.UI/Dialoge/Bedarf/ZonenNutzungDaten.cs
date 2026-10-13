@@ -21,8 +21,17 @@ public sealed class ZonenNutzungWeg
     /// <summary>„Profil zuweisen…“ (Profil-Id) bzw. „Vorschlag übernehmen“ (<c>null</c>) für die gewählten Zonen.</summary>
     public Func<IReadOnlyCollection<int>, long?, ZonenNutzungsergebnis> ProfilZuweisen { get; init; } = (_, _) => Leer;
 
-    /// <summary>„Projektvorgabe Ferien/Heizperiode übernehmen“ für die gewählten Zonen.</summary>
-    public Func<IReadOnlyCollection<int>, ZonenNutzungsergebnis> ProjektvorgabeUebernehmen { get; init; } = _ => Leer;
+    /// <summary>
+    /// „Projektvorgabe Ferien/Heizperiode übernehmen“ für die gewählten Zonen; der zweite Wert sagt, ob eigene Ferien einer
+    /// Zone ersetzt werden dürfen (Zustimmung zur Rückfrage, E139) — ohne sie bleiben diese Zonen unverändert.
+    /// </summary>
+    public Func<IReadOnlyCollection<int>, bool, ZonenNutzungsergebnis> ProjektvorgabeUebernehmen { get; init; } = (_, _) => Leer;
+
+    /// <summary>Der Text der Rückfrage vor „Projektvorgabe übernehmen“ (E139); <c>null</c>, wenn keine gewählte Zone eigene Ferien trägt.</summary>
+    public Func<IReadOnlyCollection<int>, string?> FerienRueckfrage { get; init; } = _ => null;
+
+    /// <summary>Stellt eine Ja/Nein-Frage über den Dialogdienst der Plattform; ohne Wirt „Nein“.</summary>
+    public Func<string, Task<bool>> Fragen { get; init; } = _ => Task.FromResult(false);
 
     /// <summary>„Kalender kopieren von…“: Quellzone, gewählte Zonen.</summary>
     public Func<int, IReadOnlyCollection<int>, ZonenNutzungsergebnis> KalenderKopieren { get; init; } = (_, _) => Leer;

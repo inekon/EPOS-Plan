@@ -34,7 +34,7 @@ Rechts steht das gewählte Profil: Kategorie, Nummer, Name, Beschreibung und Que
 
 * '''Nutzungszeit und Woche''' – ''Nutzung von'' und ''bis'', ''Betrieb von'' und ''bis'', die ''Nutzungstage der Woche'' und ''Feiertage wie Sonntag''.
 * '''Sollwerte Heizen und Kühlen''' – ''Heizen im Betrieb'' und ''Heizen außerhalb'' (oder ''Heizen außerhalb aus''), ebenso für das Kühlen.
-* '''Außenluft''' – ''Außenluft im Betrieb'' und ''außerhalb'' mit der ''Einheit der Außenluft'': Luftwechsel in 1/h oder Volumenstrom je Fläche in m³/(h·m²); diese braucht die lichte Höhe des Ziels. Dazu ''Außenluft je Person'' in m³/(h·Person); sie gilt nur, wenn keine Außenluft im Betrieb angegeben ist, und wird mit der Fläche je Person und der lichten Höhe in einen Luftwechsel umgerechnet.
+* '''Außenluft''' – ''Außenluft im Betrieb'' und ''außerhalb'' mit der ''Einheit der Außenluft'': Luftwechsel in 1/h oder Volumenstrom je Fläche in m³/(h·m²); diese braucht die lichte Höhe des Ziels. Dazu ''Außenluft je Person'' in m³/(h·Person); sie gilt nur, wenn keine Außenluft im Betrieb angegeben ist, und wird mit der Fläche je Person und der lichten Höhe in einen Luftwechsel umgerechnet. Fehlt die Fläche je Person, lässt sie sich nicht umrechnen, und die Übernahme meldet es, statt etwas anzunehmen.
 * '''Personen, Geräte und Beleuchtung''' – ''Fläche je Person'', ''Wärme je Person'', ''Gerätelast'', je der Anteil ''im Betrieb'' und ''außerhalb'', dazu ''Beleuchtung'' und ''Gleichzeitigkeit der Beleuchtung''. Die Beleuchtung zählt zu den Geräten: Deren Nennwert am Ziel ist Gerätelast plus Beleuchtung mal Gleichzeitigkeit, mal Fläche.
 
 ''Speichern'' schreibt den Entwurf des Profils in den Katalog, ''Abbrechen'' verwirft den Entwurf, ''Vorschau'' rechnet die Vorschau neu.
@@ -75,6 +75,16 @@ Die Profile der Kategorie ''DIN/TS 18599-10'' werden ohne Werte ausgeliefert. ''
 
 Die eingelesenen Profile tragen die Marke ''eingelesen'' mit Datei und Tag; sie bleiben schreibgeschützt. ''Eingelesene Werte entfernen…'' stellt nach einer Rückfrage alle eingelesenen Profile wieder ohne Werte.
 
+=== Profil je Zone ===
+{{Anker|profil-je-zone}}
+
+Eine Zone bekommt ihr Profil an drei Stellen: im Zonenbaum des [[Programm Dokumentation/Gebäudeimport|Gebäudeimports]], mit ''Nutzungsprofil übernehmen…'' im Reiter ''Konditionierung'' und für alle Zonen eines Gebäudes zugleich im Blatt [[Programm Dokumentation/Gebäude#nutzung-und-kalender|Nutzung und Kalender]] (''Profil zuweisen…'' oder ''Vorschlag übernehmen''). In jedem Fall erzeugt der Generator die Kalender der Zone aus dem Profil, mit Fläche und lichter Höhe der Zone. Eine Zone ohne eigenes Profil rechnet mit dem Profil der Regel.
+
+=== Vorschlag der Profilregel ===
+{{Anker|profilregel}}
+
+Die Profilregel schlägt einer Zone ein Profil in dieser Reihenfolge vor: (1) das Profil der DIN-Nummer, die die Importdatei der Zone oder ihren Räumen gibt; (2) das Profil zum Raumtyp bzw. zur Nutzungsklasse der Datei, wie die Tabelle im Reiter ''Zuordnung'' sie führt; (3) das Profil der Gebäudeart (Wohnbauten: Wohnen, Schule: Schule, Verwaltung: Büro); (4) das EPOS-Muster ''Wohnen'' bei Wohngebäuden, sonst ''Sonstige''. Die Modellprüfung zeigt den Vorschlag als Herkunft („Profil … aus der DIN-Nummer“, „… aus dem Raumtyp der Quelle“, „… aus der Gebäudeart“, „EPOS-Muster …“) und übernimmt ihn auf Wunsch, siehe [[Programm Dokumentation/Gebäude#modell-pruefen|Modell prüfen]].
+
 === CSV importieren und exportieren ===
 
 Im Kopf des Blatts stehen ''CSV importieren…'' und ''CSV exportieren…''. Beim Import wählen Sie die Datei und eine eigene Zielkategorie; eine Vorschau zeigt je Zeile, was übernommen wird und was nicht, und geschrieben wird erst mit ''Übernehmen''. Der Export schreibt dasselbe Format; die Datei lässt sich wieder einlesen.
@@ -101,7 +111,7 @@ Nummer;Bezeichner;Beschreibung;Stunden_PERSONEN_WERKTAG;Zeile_HEIZSOLL_TAG
 * Die Jahresprofile von Strom, Warmwasser und Prozesswärme eines Projekts wählt der Dialog der Bedarfsprofile mit Projektliste, Katalog und Zusammenfassung des gewählten Satzes ([[Strombedarf erfassen#dialog-strombedarf|Strombedarf]], [[Wärmebedarf erfassen#dialog-bedarfsprofile|Warmwasser und Prozesswärme]]).
 * Ausgelieferte Profile sind schreibgeschützt; ändern lässt sich nur eine Kopie.
 * Ein Profil ohne Werte, etwa ein DIN-Profil, überträgt nichts. Die Vorschau zeigt das an.
-* Im Gebäudeimport mit nur einer Zone setzt das Programm kein Profil von selbst; es nennt den Vorschlag, den Sie im Gebäudeeditor zuweisen.
+* Im Gebäudeimport mit nur einer Zone setzt das Programm kein Profil von selbst, außer beim Import aus einer Projektdatei mit dem Haken ''Profil als Vorgabe setzen''; sonst nennt es den Vorschlag, den Sie im Gebäudeeditor oder im Blatt ''Nutzung und Kalender'' zuweisen.
 
 == Siehe auch ==
 {{Anker|siehe-auch}}

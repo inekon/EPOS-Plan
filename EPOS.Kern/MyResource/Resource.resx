@@ -55353,6 +55353,30 @@ Chart</value>
   <data name="ZN_MSG_GEAENDERT" xml:space="preserve">
     <value>{0} Zonen geändert.</value>
   </data>
+  <data name="ZN_FERIEN_HERKUNFT_PROFIL" xml:space="preserve">
+    <value>Profilgenerator</value>
+  </data>
+  <data name="ZN_FERIEN_HERKUNFT_EIGEN" xml:space="preserve">
+    <value>eigen</value>
+  </data>
+  <data name="ZN_FRAGE_FERIEN_ZONE" xml:space="preserve">
+    <value>{0} — {1}, {2} Zeiträume, {3} Ferienwerte</value>
+  </data>
+  <data name="ZN_FRAGE_FERIEN" xml:space="preserve">
+    <value>{0} der gewählten Zonen tragen eigene Ferien, die von der Projektvorgabe abweichen:
+{1}
+
+Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ bleiben diese Zonen unverändert; die übrigen gewählten Zonen übernehmen die Projektvorgabe.</value>
+  </data>
+  <data name="ZN_FRAGE_FERIEN_TITEL" xml:space="preserve">
+    <value>Projektvorgabe Ferien/Heizperiode übernehmen</value>
+  </data>
+  <data name="ZN_MSG_FERIEN_BEHALTEN" xml:space="preserve">
+    <value>{0} Zonen mit eigenen Ferien bleiben unverändert.</value>
+  </data>
+  <data name="ZNB_FERIEN_ANGABE" xml:space="preserve">
+    <value>{0} ({1}, {2} Zeiträume, {3} Ferienwerte)</value>
+  </data>
   <data name="ZNB_TITEL" xml:space="preserve">
     <value>Nutzung und Kalender</value>
   </data>
@@ -55664,6 +55688,123 @@ Chart</value>
   </data>
   <data name="MP_BAUTEIL_ERGAENZT" xml:space="preserve">
     <value>{0} (ergänzt)</value>
+  </data>
+  <data name="GEBWI_FELD_BEZEICHNER" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="GEBWI_FELD_FLAECHE" xml:space="preserve">
+    <value>Fläche</value>
+  </data>
+  <data name="GEBWI_FELD_HOEHE" xml:space="preserve">
+    <value>Raumhöhe</value>
+  </data>
+  <data name="GEBWI_FELD_VOLUMEN" xml:space="preserve">
+    <value>Volumen</value>
+  </data>
+  <data name="GEBWI_FELD_U" xml:space="preserve">
+    <value>U-Wert</value>
+  </data>
+  <data name="GEBWI_FELD_NEIGUNG" xml:space="preserve">
+    <value>Neigung</value>
+  </data>
+  <data name="GEBWI_FELD_AZIMUT" xml:space="preserve">
+    <value>Azimut</value>
+  </data>
+  <data name="GEBWI_FELD_ART" xml:space="preserve">
+    <value>Bauteilart</value>
+  </data>
+  <data name="GEBWI_FELD_RANDBEDINGUNG" xml:space="preserve">
+    <value>Randbedingung</value>
+  </data>
+  <data name="GEBWI_FELD_PROFIL" xml:space="preserve">
+    <value>Nutzung und Kalender</value>
+  </data>
+  <data name="GEBWI_FELD_UEBERGABE" xml:space="preserve">
+    <value>Übergabe</value>
+  </data>
+  <data name="GEBWI_FELD_AUFBAU" xml:space="preserve">
+    <value>Aufbau und U-Wert</value>
+  </data>
+  <data name="GEBWI_FELD_EINGABEN" xml:space="preserve">
+    <value>Eingaben des Bauteils</value>
+  </data>
+  <data name="GEBWI_STAND_NEU" xml:space="preserve">
+    <value>neu</value>
+  </data>
+  <data name="GEBWI_STAND_GEAENDERT" xml:space="preserve">
+    <value>geändert</value>
+  </data>
+  <data name="GEBWI_STAND_UNVERAENDERT" xml:space="preserve">
+    <value>unverändert</value>
+  </data>
+  <data name="GEBWI_STAND_ENTFAELLT" xml:space="preserve">
+    <value>entfällt</value>
+  </data>
+  <data name="GEBWI_STAND_BLEIBT" xml:space="preserve">
+    <value>bleibt (Hand)</value>
+  </data>
+  <data name="GEBWI_TITEL" xml:space="preserve">
+    <value>Wiederimport: Unterschiede zum Bestand</value>
+  </data>
+  <data name="GEBWI_HINWEIS" xml:space="preserve">
+    <value>Zonen und Bauteile werden über ihre Quellkennung wiedergefunden. Geometrie und Werte der Datei werden aktualisiert; was Sie nach dem Import ergänzt haben, bleibt. Mit OK wird die Zusammenführung vorgemerkt.</value>
+  </data>
+  <data name="GEBWI_FASSUNG" xml:space="preserve">
+    <value>Die Datei ist eine geänderte Fassung der gespeicherten Quelle.</value>
+  </data>
+  <data name="GEBWI_ZAHLEN" xml:space="preserve">
+    <value>{0}: {1} neu · {2} geändert · {3} unverändert · {4} entfällt · {5} bleibt (Hand)</value>
+  </data>
+  <data name="GEBWI_ZONEN" xml:space="preserve">
+    <value>Zonen</value>
+  </data>
+  <data name="GEBWI_BAUTEILE" xml:space="preserve">
+    <value>Bauteile</value>
+  </data>
+  <data name="GEBWI_SPALTE_ART" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="GEBWI_SPALTE_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="GEBWI_SPALTE_NAME" xml:space="preserve">
+    <value>Element</value>
+  </data>
+  <data name="GEBWI_SPALTE_STAND" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="GEBWI_SPALTE_FELDER" xml:space="preserve">
+    <value>Felder der Datei</value>
+  </data>
+  <data name="GEBWI_SPALTE_HAND" xml:space="preserve">
+    <value>bleibt von Hand</value>
+  </data>
+  <data name="GEBWI_ART_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="GEBWI_ART_BAUTEIL" xml:space="preserve">
+    <value>Bauteil</value>
+  </data>
+  <data name="GEBWI_ENTFERNEN" xml:space="preserve">
+    <value>Entfallende Zonen und Bauteile entfernen</value>
+  </data>
+  <data name="GEBWI_ENTFERNEN_HINWEIS" xml:space="preserve">
+    <value>Ohne Haken bleiben sie stehen und gelten danach als Ergänzung von Hand.</value>
+  </data>
+  <data name="GEBWI_OHNE_ENTFALLENDE" xml:space="preserve">
+    <value>Nichts entfällt.</value>
+  </data>
+  <data name="GEBWI_MSG_VORSCHAU_FEHLER" xml:space="preserve">
+    <value>Die Vorschau des Wiederimports ist nicht möglich: {0}</value>
+  </data>
+  <data name="GEBWI_AUSSTEHEND" xml:space="preserve">
+    <value>Zusammenführung mit „{0}“ vorgemerkt ({1} Zonen; entfallende Elemente: {2}).</value>
+  </data>
+  <data name="GEBWI_AUSSTEHEND_ENTFERNEN" xml:space="preserve">
+    <value>entfernen</value>
+  </data>
+  <data name="GEBWI_AUSSTEHEND_BEHALTEN" xml:space="preserve">
+    <value>behalten</value>
   </data>
 </root>
 

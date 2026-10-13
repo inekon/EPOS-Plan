@@ -43,19 +43,45 @@ namespace WindowsFormsApplication1
         Fehlt
     }
 
+    /// <summary>Woher die eigenen Ferien einer Zone kommen (E139): vom Generator eines Nutzungsprofils oder eigen.</summary>
+    public enum Ferienherkunft
+    {
+        /// <summary>Die Zone trägt keine eigenen Ferien.</summary>
+        Keine,
+        /// <summary>Der Generator eines Nutzungsprofils hat sie geschrieben (ein Kalender der Zone trägt <c>Nutzung</c>).</summary>
+        Profilgenerator,
+        /// <summary>Eigen — von Hand oder aus einer Projektdatei; die Herkunft ist nicht erkennbar.</summary>
+        Eigen
+    }
+
+    /// <summary>
+    /// <b>Die eigenen Ferien einer Zone</b> (MA-2, E139): die Zahl der Vorgabezeilen <c>FERIEN</c> der Zone (Ferienwerte je
+    /// Größe), die Zahl der Ferienzeiträume ihrer Kalender (verschiedene Paare Beginn–Ende der Perioden der Art
+    /// <c>FERIEN</c>), ob diese Zeiträume von den Ferienzeiträumen des Projekts abweichen, und die Herkunft.
+    /// </summary>
+    public sealed record Zonenferien(int Werte, int Zeitraeume, bool ZeitraeumeAbweichend, Ferienherkunft Herkunft)
+    {
+        /// <summary>Weichen die Ferien der Zone von der Projektvorgabe ab (eigene Ferienwerte oder andere Zeiträume)?</summary>
+        public bool Abweichend => Werte > 0 || ZeitraeumeAbweichend;
+
+        /// <summary>Keine eigenen Ferien.</summary>
+        public static readonly Zonenferien Ohne = new Zonenferien(0, 0, false, Ferienherkunft.Keine);
+    }
+
     /// <summary>Ein Profil des Katalogs für die Auswahl „Profil zuweisen…“ (Id, Name, Kategorie).</summary>
     public sealed record ZonenNutzungsprofil(long Id, string Name, string Kategorie);
 
     /// <summary>
     /// <b>Eine Zone im Blatt „Nutzung und Kalender“</b> (MA-2): Fläche, Profil samt Kategorie und Herkunft, der Vorschlag
     /// der Profilregel, je Größe die Kalenderkennung (Schlüssel <see cref="DbWerte.KOND_GROESSE_HEIZSOLL"/> usw.),
-    /// Sollwerte Tag und Nacht, Ferien und Heizperiode, die Ampel und die Befunde der Prüfgruppe 3.
+    /// Sollwerte Tag und Nacht, Ferien und Heizperiode, die Ampel und die Befunde der Prüfgruppe 3, dazu die eigenen
+    /// Ferien der Zone (<see cref="Zonenferien"/>, E139; <c>null</c> = ohne Angabe).
     /// </summary>
     public sealed record ZonenNutzungszeile(int IdZone, string Zone, double? Flaeche, bool Beheizt, string Profil, long? IdProfil,
                                            string Kategorie, Profilherkunft Herkunft, string Vorschlag,
                                            IReadOnlyDictionary<string, Kalenderkennung> Kalender, double? SollTag, double? SollNacht,
                                            Ferienkennung Ferien, Ferienkennung Heizperiode, Pruefampel Ampel,
-                                           IReadOnlyList<string> Befunde);
+                                           IReadOnlyList<string> Befunde, Zonenferien FerienAngaben = null);
 
     /// <summary>
     /// <b>Der Stand des Blatts</b>: die Zonen, ob das Projekt Ferien und Heizperiode vorgibt (am Gebäude oder an einem anderen
@@ -90,7 +116,7 @@ namespace WindowsFormsApplication1
             DbWerte.KOND_GROESSE_GERAETE, DbWerte.KOND_GROESSE_PERSONEN,
         };
 
-        private const string SPALTEN_ZONE = "\"Nutzungsprofil\", \"Raumsolltemperatur_Tag\", \"Raumsolltemperatur_Nachtabsenkung\"";
+        private const string SPALTEN_ZONE = "\"Nutzungsprofil\", \"Raumsolltemperatur_Tag\", \"Raumsolltemperatur_Nachtabsenkung\", \"Herkunft\"";
         private const string TAB_WOCHE = KalenderbedienungSchema.TAB_WOCHE;
 
         private Abbild _letztes;
@@ -153,7 +179,8 @@ namespace WindowsFormsApplication1
                     z.Add(Convert.ToString(r["Zeile"], CultureInfo.InvariantCulture));
                 }
             }
-            bool gebFerien = s.FerienBestand || Hat(vorgaben, 0, DbWerte.KOND_ZEILE_FERIEN);
+            Dictionary<int, Zonenferien> ferien = FerienJeZone(kalender, out bool projektZeitraeume);
+            bool gebFerien = s.FerienBestand || Hat(vorgaben, 0, DbWerte.KOND_ZEILE_FERIEN) || projektZeitraeume;
             bool gebSaison = Hat(vorgaben, 0, DbWerte.KOND_ZEILE_SAISON);
 
             List<ZonenNutzungsprofil> katalog = Profile().ToList();
@@ -181,15 +208,68 @@ namespace WindowsFormsApplication1
                     vorschlag = pv.Name ?? "";
                 List<Modellbefund> jeZone = befunde.Where(b => b.IdZone == z.ID).ToList();
                 Pruefampel ampel = jeZone.Count == 0 ? Pruefampel.Gruen : jeZone.Max(b => b.Ampel);
+                if (!ferien.TryGetValue(z.ID, out Zonenferien zf)) zf = Zonenferien.Ohne;
                 zeilen.Add(new ZonenNutzungszeile(
                     z.ID, z.Bezeichner ?? "", z.Nutzflaeche, z.IstBeheizt, profil ?? "", treffer?.Id, treffer?.Kategorie ?? "",
                     herkunft, vorschlag, kennungen, z.Raumsolltemperatur_Tag, z.Raumsolltemperatur_Nachtabsenkung,
-                    Hat(vorgaben, z.ID, DbWerte.KOND_ZEILE_FERIEN) ? Ferienkennung.Abweichung : gebFerien ? Ferienkennung.Projekt : Ferienkennung.Fehlt,
+                    zf.Abweichend ? Ferienkennung.Abweichung : gebFerien ? Ferienkennung.Projekt : Ferienkennung.Fehlt,
                     Hat(vorgaben, z.ID, DbWerte.KOND_ZEILE_SAISON) ? Ferienkennung.Abweichung : gebSaison ? Ferienkennung.Projekt : Ferienkennung.Fehlt,
-                    ampel, jeZone.Select(b => b.Text ?? "").ToList()));
+                    ampel, jeZone.Select(b => b.Text ?? "").ToList(), zf));
             }
             return new ZonenNutzungsstand(IdGebaeude, zeilen, gebFerien || s.FerienQuelle.HasValue, gebSaison || s.SaisonQuelle.HasValue,
                                           befunde.Where(b => b.IdZone == null).Select(b => b.Text ?? "").ToList(), KannZuruecknehmen);
+        }
+
+        /// <summary>
+        /// <b>Die eigenen Ferien je Zone</b> (E139): Ferienwerte (Vorgabezeilen <c>FERIEN</c> der Zone) und Ferienzeiträume
+        /// (Perioden der Art <c>FERIEN</c> in den Kalendern der Zone). Die Zeiträume weichen ab, wenn ihre Menge (Beginn–Ende)
+        /// nicht die der Kalender des Gebäudes ist; eine Zone ohne Ferienperioden weicht darin nicht ab. Die Herkunft ist
+        /// „Profilgenerator“, wenn ein Kalender der Zone die Nutzung eines Profils trägt, sonst „eigen“.
+        /// <paramref name="projektZeitraeume"/> sagt, ob die Kalender des Gebäudes Ferienzeiträume tragen.
+        /// </summary>
+        private Dictionary<int, Zonenferien> FerienJeZone(Dictionary<int, Dictionary<string, string>> kalender, out bool projektZeitraeume)
+        {
+            var ergebnis = new Dictionary<int, Zonenferien>();
+            projektZeitraeume = false;
+            if (!KonditionierungSchema.Lesbar()) return ergebnis;
+            var werte = new Dictionary<int, int>();
+            foreach (DataRow r in DataRepository.GetDataTable(
+                         "SELECT \"ID_Zone\", COUNT(*) AS \"Zahl\" FROM \"" + KonditionierungSchema.TAB_VORGABE +
+                         "\" WHERE \"ID_Gebaeude\" = ? AND \"ID_Zone\" IS NOT NULL AND \"Zeile\" = ? GROUP BY \"ID_Zone\"",
+                         new DbParam("@g", IdGebaeude), new DbParam("@f", DbWerte.KOND_ZEILE_FERIEN)).Rows)
+                werte[Convert.ToInt32(r["ID_Zone"], CultureInfo.InvariantCulture)] = Convert.ToInt32(r["Zahl"], CultureInfo.InvariantCulture);
+            Dictionary<int, HashSet<(int, int)>> zeitraeume = Ferienzeitraeume();
+            HashSet<(int, int)> projekt = zeitraeume.TryGetValue(0, out HashSet<(int, int)> p) ? p : new HashSet<(int, int)>();
+            projektZeitraeume = projekt.Count > 0;
+            foreach (int zone in werte.Keys.Concat(zeitraeume.Keys).Where(k => k != 0).Distinct())
+            {
+                werte.TryGetValue(zone, out int n);
+                zeitraeume.TryGetValue(zone, out HashSet<(int, int)> eigen);
+                int zr = eigen?.Count ?? 0;
+                bool abweichend = zr > 0 && !eigen.SetEquals(projekt);
+                if (n == 0 && zr == 0) continue;
+                bool profil = kalender.TryGetValue(zone, out Dictionary<string, string> je) && je.Values.Any(x => x.Length > 0);
+                ergebnis[zone] = new Zonenferien(n, zr, abweichend,
+                                                 n > 0 || abweichend ? (profil ? Ferienherkunft.Profilgenerator : Ferienherkunft.Eigen) : Ferienherkunft.Keine);
+            }
+            return ergebnis;
+        }
+
+        /// <summary>Die Ferienzeiträume (Beginn, Ende) der Kalender je Eigner des Gebäudes (Schlüssel 0 = Gebäude).</summary>
+        private Dictionary<int, HashSet<(int, int)>> Ferienzeitraeume()
+        {
+            var je = new Dictionary<int, HashSet<(int, int)>>();
+            foreach (DataRow r in DataRepository.GetDataTable(
+                         "SELECT k.\"ID_Zone\", p.\"Beginn\", p.\"Ende\" FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" p INNER JOIN \"" +
+                         KonditionierungSchema.TAB_KALENDER + "\" k ON k.\"ID\" = p.\"ID_Kalender\" WHERE k.\"ID_Gebaeude\" = ? AND p.\"Art\" = ? " +
+                         "AND p.\"Beginn\" IS NOT NULL AND p.\"Ende\" IS NOT NULL",
+                         new DbParam("@g", IdGebaeude), new DbParam("@a", DbWerte.KOND_ART_FERIEN)).Rows)
+            {
+                int eigner = r["ID_Zone"] is DBNull ? 0 : Convert.ToInt32(r["ID_Zone"], CultureInfo.InvariantCulture);
+                if (!je.TryGetValue(eigner, out HashSet<(int, int)> menge)) je[eigner] = menge = new HashSet<(int, int)>();
+                menge.Add((Convert.ToInt32(r["Beginn"], CultureInfo.InvariantCulture), Convert.ToInt32(r["Ende"], CultureInfo.InvariantCulture)));
+            }
+            return je;
         }
 
         private static bool Hat(Dictionary<int, HashSet<string>> v, int eigner, string zeile)
@@ -241,6 +321,7 @@ namespace WindowsFormsApplication1
                     }
                     string grund = ZonenplanCtrl.NutzungUebernehmen(IdGebaeude, z.ID, p, z.Nutzflaeche, z.Raumhoehe);
                     if (grund != null) throw new InvalidOperationException(grund.Length > 0 ? grund : Modellpruefung.Ressource("ZN_MSG_PROFIL_ABGELEHNT", z.Bezeichner));
+                    HandMarkieren(v, z.ID);
                     n++;
                 }
                 return n;
@@ -248,29 +329,121 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Übernimmt die Projektvorgabe für Ferien und Heizperiode</b> an den gewählten Zonen (E137 F5 (a)): ihre eigenen
-        /// Zeilen <c>FERIEN</c> und <c>SAISON</c> fallen. Fehlt die Zeile am Gebäude, kommt sie zuvor von einem anderen Gebäude
-        /// des Projekts (wie der Vorschlag der Modellprüfung).
+        /// <b>Die Rückfrage vor „Projektvorgabe übernehmen“</b> (E139): nennt die gewählten Zonen mit eigenen Ferien
+        /// (Ferienwerte oder abweichende Zeiträume, auch die vom Profilgenerator geschriebenen) samt Herkunft und Zahl der
+        /// Zeiträume; <c>null</c>, wenn keine gewählte Zone eigene Ferien trägt.
         /// </summary>
-        public ZonenNutzungsergebnis ProjektvorgabeUebernehmen(IReadOnlyCollection<int> zonen)
+        public string FerienRueckfrage(IReadOnlyCollection<int> zonen)
+        {
+            List<int> ids = Gewaehlt(zonen);
+            if (ids.Count == 0) return null;
+            ZonenNutzungsstand s = Lesen();
+            if (s == null) return null;
+            List<ZonenNutzungszeile> eigen = s.Zonen.Where(z => ids.Contains(z.IdZone) && z.FerienAngaben?.Abweichend == true).ToList();
+            if (eigen.Count == 0) return null;
+            string liste = string.Join(Environment.NewLine, eigen.Select(z => Modellpruefung.Ressource(
+                "ZN_FRAGE_FERIEN_ZONE", z.Zone, Herkunftstext(z.FerienAngaben.Herkunft), z.FerienAngaben.Zeitraeume, z.FerienAngaben.Werte)));
+            return Modellpruefung.Ressource("ZN_FRAGE_FERIEN", eigen.Count, liste);
+        }
+
+        /// <summary>Der Text einer Ferienherkunft (Profilgenerator, eigen).</summary>
+        public static string Herkunftstext(Ferienherkunft h)
+            => h == Ferienherkunft.Profilgenerator ? Modellpruefung.Ressource("ZN_FERIEN_HERKUNFT_PROFIL") : Modellpruefung.Ressource("ZN_FERIEN_HERKUNFT_EIGEN");
+
+        /// <summary>
+        /// <b>Übernimmt die Projektvorgabe für Ferien und Heizperiode</b> an den gewählten Zonen (E137 F5 (a), E139): ihre
+        /// eigenen Zeilen <c>FERIEN</c> und <c>SAISON</c> fallen. Fehlt die Zeile am Gebäude, kommt sie zuvor von einem anderen
+        /// Gebäude des Projekts (wie der Vorschlag der Modellprüfung). Trägt eine Zone eigene Ferien
+        /// (<see cref="Zonenferien.Abweichend"/>), wird sie nur mit <paramref name="ferienErsetzen"/> übernommen — dann fallen
+        /// auch ihre Ferienperioden: je Kalender der Zone treten die Ferienperioden des Gebäudekalenders derselben Größe an
+        /// ihre Stelle; ohne solchen Kalender bleiben nur die Perioden mit den Zeiträumen des Projekts. Ohne Zustimmung bleiben
+        /// diese Zonen unverändert, die übrigen übernehmen.
+        /// </summary>
+        public ZonenNutzungsergebnis ProjektvorgabeUebernehmen(IReadOnlyCollection<int> zonen, bool ferienErsetzen = false)
         {
             List<int> ids = Gewaehlt(zonen);
             if (ids.Count == 0) return Ohne();
             Modellpruefstand s = new ModellpruefungCtrl(IdGebaeude).Lesen();
             if (s == null) return Fehlt();
-            return Schreiben(ids, true, (v, zonenListe) =>
+            ZonenNutzungsstand stand = Lesen();
+            var eigen = new HashSet<int>(stand.Zonen.Where(z => ids.Contains(z.IdZone) && z.FerienAngaben?.Abweichend == true).Select(z => z.IdZone));
+            List<int> behalten = ferienErsetzen ? new List<int>() : ids.Where(eigen.Contains).ToList();
+            ids = ids.Where(z => !behalten.Contains(z)).ToList();
+            if (ids.Count == 0)
+                return new ZonenNutzungsergebnis(true, Modellpruefung.Ressource("ZN_MSG_FERIEN_BEHALTEN", behalten.Count), 0, stand);
+            ZonenNutzungsergebnis e = Schreiben(ids, true, (v, zonenListe) =>
             {
                 if (!s.FerienBestand && !s.Gebaeudevorgaben.Contains(DbWerte.KOND_ZEILE_FERIEN) && s.FerienQuelle is int qf)
                     GebaeudezeilenKopieren(v, qf, DbWerte.KOND_ZEILE_FERIEN);
                 if (!s.Gebaeudevorgaben.Contains(DbWerte.KOND_ZEILE_SAISON) && s.SaisonQuelle is int qs)
                     GebaeudezeilenKopieren(v, qs, DbWerte.KOND_ZEILE_SAISON);
+                HashSet<(int, int)> projekt = Ferienzeitraeume().TryGetValue(0, out HashSet<(int, int)> p) ? p : new HashSet<(int, int)>();
                 int n = 0;
                 foreach (int idz in zonenListe)
-                    if (v.Ausfuehren("DELETE FROM \"" + KonditionierungSchema.TAB_VORGABE + "\" WHERE \"ID_Zone\" = ? AND \"Zeile\" IN (?, ?)",
-                                     new DbParam("@z", idz), new DbParam("@f", DbWerte.KOND_ZEILE_FERIEN),
-                                     new DbParam("@s", DbWerte.KOND_ZEILE_SAISON)) > 0) n++;
+                {
+                    bool geaendert = v.Ausfuehren("DELETE FROM \"" + KonditionierungSchema.TAB_VORGABE + "\" WHERE \"ID_Zone\" = ? AND \"Zeile\" IN (?, ?)",
+                                                  new DbParam("@z", idz), new DbParam("@f", DbWerte.KOND_ZEILE_FERIEN),
+                                                  new DbParam("@s", DbWerte.KOND_ZEILE_SAISON)) > 0;
+                    if (eigen.Contains(idz) && FerienperiodenErsetzen(v, idz, projekt)) geaendert = true;
+                    if (geaendert)
+                    {
+                        HandMarkieren(v, idz);
+                        n++;
+                    }
+                }
                 return n;
             });
+            if (!e.Ok || behalten.Count == 0) return e;
+            return e with { Meldung = e.Meldung + " " + Modellpruefung.Ressource("ZN_MSG_FERIEN_BEHALTEN", behalten.Count) };
+        }
+
+        /// <summary>
+        /// Ersetzt die Ferienperioden der Kalender einer Zone durch die des Gebäudekalenders derselben Größe; ohne solchen
+        /// Kalender fallen nur die Perioden, deren Zeitraum keiner des Projekts ist. <c>true</c>, wenn sich etwas geändert hat.
+        /// </summary>
+        private bool FerienperiodenErsetzen(DbVorgang v, int idZone, HashSet<(int, int)> projekt)
+        {
+            bool geaendert = false;
+            DataTable leer = v.Lese("SELECT * FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" WHERE 0");
+            List<string> spalten = leer.Columns.Cast<DataColumn>().Select(c => c.ColumnName)
+                                       .Where(c => c != "ID" && c != "ID_Kalender").ToList();
+            bool mitWoche = spalten.Contains("ID_Woche");
+            string liste = string.Join(", ", spalten.Select(c => "\"" + c + "\""));
+            string listeP = string.Join(", ", spalten.Select(c => "p.\"" + c + "\""));
+            foreach (DataRow k in v.Lese(
+                         "SELECT DISTINCT k.\"ID\", k.\"Groesse\" FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" k INNER JOIN \"" +
+                         KonditionierungSchema.TAB_PERIODE + "\" p ON p.\"ID_Kalender\" = k.\"ID\" WHERE k.\"ID_Zone\" = ? AND p.\"Art\" = ?",
+                         new DbParam("@z", idZone), new DbParam("@a", DbWerte.KOND_ART_FERIEN)).Rows)
+            {
+                long idKalender = Convert.ToInt64(k["ID"], CultureInfo.InvariantCulture);
+                object gk = v.Skalar("SELECT \"ID\" FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE \"ID_Gebaeude\" = ? AND " +
+                                     "\"ID_Zone\" IS NULL AND \"Groesse\" = ? ORDER BY \"ID\" LIMIT 1",
+                                     new DbParam("@g", IdGebaeude), new DbParam("@gr", k["Groesse"]));
+                if (gk != null && gk is not DBNull)
+                {
+                    v.Ausfuehren("DELETE FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" WHERE \"ID_Kalender\" = ? AND \"Art\" = ?",
+                                 new DbParam("@k", idKalender), new DbParam("@a", DbWerte.KOND_ART_FERIEN));
+                    v.Ausfuehren("INSERT INTO \"" + KonditionierungSchema.TAB_PERIODE + "\" (\"ID_Kalender\", " + liste + ") SELECT ?, " + listeP +
+                                 " FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" p WHERE p.\"ID_Kalender\" = ? AND p.\"Art\" = ?" +
+                                 (mitWoche ? " AND p.\"ID_Woche\" IS NULL" : "") +
+                                 " AND NOT EXISTS (SELECT 1 FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" x WHERE x.\"ID_Kalender\" = ? AND x.\"Rang\" = p.\"Rang\")",
+                                 new DbParam("@k", idKalender), new DbParam("@q", gk), new DbParam("@a", DbWerte.KOND_ART_FERIEN),
+                                 new DbParam("@k2", idKalender));
+                    geaendert = true;
+                    continue;
+                }
+                foreach (DataRow p in v.Lese("SELECT \"ID\", \"Beginn\", \"Ende\" FROM \"" + KonditionierungSchema.TAB_PERIODE +
+                                             "\" WHERE \"ID_Kalender\" = ? AND \"Art\" = ?",
+                                             new DbParam("@k", idKalender), new DbParam("@a", DbWerte.KOND_ART_FERIEN)).Rows)
+                {
+                    bool imProjekt = p["Beginn"] is not DBNull && p["Ende"] is not DBNull &&
+                                     projekt.Contains((Convert.ToInt32(p["Beginn"], CultureInfo.InvariantCulture), Convert.ToInt32(p["Ende"], CultureInfo.InvariantCulture)));
+                    if (imProjekt) continue;
+                    v.Ausfuehren("DELETE FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" WHERE \"ID\" = ?", new DbParam("@p", p["ID"]));
+                    geaendert = true;
+                }
+            }
+            return geaendert;
         }
 
         /// <summary>
@@ -296,6 +469,7 @@ namespace WindowsFormsApplication1
                         Konditionierungskopie.Auswahl.Ersetzend);
                     if (!b.Ok) throw new InvalidOperationException(b.Meldung);
                     v.Ausfuehren("UPDATE \"Tab_Zone\" SET \"Nutzungsprofil\" = ? WHERE \"ID\" = ?", new DbParam("@n", profil), new DbParam("@z", idz));
+                    HandMarkieren(v, idz);
                     n++;
                 }
                 return n;
@@ -323,6 +497,7 @@ namespace WindowsFormsApplication1
                         v.Ausfuehren("UPDATE \"Tab_Zone\" SET \"Raumsolltemperatur_Tag\" = ? WHERE \"ID\" = ?", new DbParam("@t", tag.Value), new DbParam("@z", idz));
                     if (nacht.HasValue)
                         v.Ausfuehren("UPDATE \"Tab_Zone\" SET \"Raumsolltemperatur_Nachtabsenkung\" = ? WHERE \"ID\" = ?", new DbParam("@n", nacht.Value), new DbParam("@z", idz));
+                    HandMarkieren(v, idz);
                     n++;
                 }
                 return n;
@@ -391,6 +566,15 @@ namespace WindowsFormsApplication1
             if (n > 0) _letztes = abbild;
             return new ZonenNutzungsergebnis(true, Modellpruefung.Ressource("ZN_MSG_GEAENDERT", n), n, Lesen());
         }
+
+        /// <summary>
+        /// MA-6: Eine Handlung dieses Blatts macht Nutzung und Kalender der Zone zur Ergänzung von Hand — Herkunft
+        /// <c>MANUELL</c> am Satz. Der Wiederimport (<see cref="MehrzonenuebernahmeCtrl.Zusammenfuehren"/>) behält dann Profil,
+        /// Kalender und Sollwerte der Zone und aktualisiert nur ihre Geometrie. Die Rücknahme stellt die alte Herkunft her.
+        /// </summary>
+        private static void HandMarkieren(DbVorgang v, int idZone)
+            => v.Ausfuehren("UPDATE \"Tab_Zone\" SET \"Herkunft\" = ? WHERE \"ID\" = ?",
+                            new DbParam("@h", DbWerte.HERKUNFT_MANUELL), new DbParam("@z", idZone));
 
         private void GebaeudezeilenKopieren(DbVorgang v, int quelle, string zeile)
             => v.Ausfuehren(
@@ -467,9 +651,9 @@ namespace WindowsFormsApplication1
                     }
                 }
                 foreach (DataRow r in _zonenspalten.Rows)
-                    v.Ausfuehren("UPDATE \"Tab_Zone\" SET \"Nutzungsprofil\" = ?, \"Raumsolltemperatur_Tag\" = ?, \"Raumsolltemperatur_Nachtabsenkung\" = ? WHERE \"ID\" = ?",
+                    v.Ausfuehren("UPDATE \"Tab_Zone\" SET \"Nutzungsprofil\" = ?, \"Raumsolltemperatur_Tag\" = ?, \"Raumsolltemperatur_Nachtabsenkung\" = ?, \"Herkunft\" = ? WHERE \"ID\" = ?",
                                  new DbParam("@n", r["Nutzungsprofil"]), new DbParam("@t", r["Raumsolltemperatur_Tag"]),
-                                 new DbParam("@a", r["Raumsolltemperatur_Nachtabsenkung"]), new DbParam("@z", r["ID"]));
+                                 new DbParam("@a", r["Raumsolltemperatur_Nachtabsenkung"]), new DbParam("@h", r["Herkunft"]), new DbParam("@z", r["ID"]));
             }
         }
     }
