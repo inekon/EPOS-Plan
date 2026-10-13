@@ -1405,6 +1405,14 @@ namespace WindowsFormsApplication1
                     _v._zonen.Add(m);
                     _v._profile.Add(iz.Profil);
                     _v._projektdatei.Add(iz.Projektdatei);
+                    if (iz.Projektdatei?.AusGbxml == true)
+                    {
+                        // Welle DA-1: Zähler, Verdichtungen und Verwürfe je Zone, dazu die Abweichungen vom Profil (E138 F2).
+                        _v._meldungen.AddRange(iz.Projektdatei.Meldungen);
+                        if (iz.Profil?.Id is long idProfil)
+                            _v._meldungen.AddRange(GbxmlKonditionierung.Profilabgleich(iz.Projektdatei,
+                                Raumnutzungsvorbelegung.Lesen().Profil(idProfil), m.Nutzflaeche));
+                    }
                     foreach (AbbildRaum r in iz.Raeume)
                         _v._raeume.Add(new GebaeudeQuellzuordnung(r.Quelltyp, r.Kennung, ImportZiel.Zone, m.ID));
                     if (!(m.Nutzflaeche > 0.0)) Fehler(ZONE_OHNE_NUTZFLAECHE, m.Bezeichner);

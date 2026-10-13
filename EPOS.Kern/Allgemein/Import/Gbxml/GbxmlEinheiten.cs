@@ -157,6 +157,57 @@
             }
         }
 
+        /// <summary>
+        /// Eine Leistung [W] (<c>PeopleHeatGain</c>, Welle DA-1); <c>null</c> = unbekannte Einheit. Die Einheiten der
+        /// <c>powerUnitEnum</c> sind ohne Schemakopie angenommen (Protokoll DA-1).
+        /// </summary>
+        public static double? Leistung(double wert, string einheit)
+        {
+            switch (einheit)
+            {
+                case "W": return wert;
+                case "KW": return wert * 1000.0;
+                case "BtuPerHour": return wert * BTU_J / 3600.0;
+                default: return null;
+            }
+        }
+
+        /// <summary>
+        /// Ein Volumenstrom [m³/h] (<c>OAFlowPerPerson</c>, Welle DA-1); <c>null</c> = unbekannte Einheit. Die Einheiten der
+        /// <c>flowUnitEnum</c> sind ohne Schemakopie angenommen (Protokoll DA-1).
+        /// </summary>
+        public static double? Volumenstrom(double wert, string einheit)
+        {
+            switch (einheit)
+            {
+                case "CubicMPerHr": return wert;
+                case "CubicMPerMin": return wert * 60.0;
+                case "CubicMPerSec": return wert * 3600.0;
+                case "LPerSec": return wert * 3.6;
+                case "LPerMin": return wert * 0.06;
+                case "CFM": return wert * FUSS_M * FUSS_M * FUSS_M * 60.0;
+                default: return null;
+            }
+        }
+
+        /// <summary>
+        /// Ein Volumenstrom je Fläche [m³/(h·m²)] (<c>OAFlowPerArea</c>, Welle DA-1); <c>null</c> = unbekannte Einheit.
+        /// Die Schreibweisen sind ohne Schemakopie angenommen (Protokoll DA-1).
+        /// </summary>
+        public static double? VolumenstromJeFlaeche(double wert, string einheit)
+        {
+            switch (einheit)
+            {
+                case "CubicMPerHrSquareM":
+                case "CubicMPerHrPerSquareM": return wert;
+                case "LPerSecPerSquareM":
+                case "LPerSecSquareM": return wert * 3.6;
+                case "CFMPerSquareFoot":
+                case "CFMPerSquareFt": return wert * FUSS_M * 60.0;
+                default: return null;
+            }
+        }
+
         /// <summary>Ist die Einheit einer Personenangabe eine der drei bekannten?</summary>
         public static bool PersonenEinheitBekannt(string einheit)
             => einheit == PERSONEN_ANZAHL || einheit == GbxmlVokabular.SquareMPerPerson || einheit == "SquareFtPerPerson";

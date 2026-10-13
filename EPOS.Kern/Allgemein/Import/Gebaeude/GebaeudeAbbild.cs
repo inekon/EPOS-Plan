@@ -469,6 +469,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public AbbildKonditionierung Konditionierung { get; set; }
 
+        /// <summary>
+        /// Lasten, Außenluft und Zeitpläne des Raums aus einer gbXML-Datei (Welle DA-1); <c>null</c> = keine. Der Zonenplan bildet
+        /// daraus je Zone die Konditionierung (<see cref="GbxmlKonditionierung.Bilden"/>, Datei vor Profil).
+        /// </summary>
+        public GbxmlRaumlasten GbxmlLasten { get; set; }
+
         /// <summary>Kennung des Geschosses; <c>null</c> = keine.</summary>
         public string GeschossKennung { get; set; }
 

@@ -54726,5 +54726,65 @@ Chart</value>
   <data name="BKAT_BST_KLASSE_HAUSTECHNIK" xml:space="preserve">
     <value>Haustechnik</value>
   </data>
+  <data name="IMP_GBXML_KOND_HERKUNFT" xml:space="preserve">
+    <value>aus gbXML-Datei</value>
+  </data>
+  <data name="IMP_GBXML_KOND_ABSCHNITT" xml:space="preserve">
+    <value>Abschnitt</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_LASTEN" xml:space="preserve">
+    <value>Zone „{0}“: {1} Lastwerte und {2} Zeitpläne aus der Datei übernommen (Datei vor Profil), {3} verdichtet, {4} verworfen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_DATUM" xml:space="preserve">
+    <value>Zeitplan „{0}“ verworfen: Beginn „{1}“ oder Ende „{2}“ eines Jahresabschnitts ist kein Datum.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_WOCHE_LUECKE" xml:space="preserve">
+    <value>Zeitplan „{0}“ verworfen: Der Wochenplan „{1}“ fehlt oder hat nicht für jeden Wochentag ein Tagesbild.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_TYP" xml:space="preserve">
+    <value>Zeitplan „{0}“ verworfen: Der Typ „{1}“ ist nicht abbildbar (abgebildet werden Temp, Fraction und OnOff).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_TAGTYP" xml:space="preserve">
+    <value>Zeitplan „{0}“: Tagtyp „{1}“ übergangen (Auslegungstag oder unbekannt).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_STUNDEN" xml:space="preserve">
+    <value>Zeitplan „{0}“: Tagesplan „{1}“ mit {2} Werten übergangen — abgebildet werden 24 Stundenwerte oder ein Vielfaches davon.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_ZEITSCHRITT" xml:space="preserve">
+    <value>Zeitplan „{0}“: {1} Tagesbilder mit feinerem Zeitschritt auf Stundenmittel verdichtet.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_ART" xml:space="preserve">
+    <value>Zone „{0}“: Zeitplan „{1}“ vom Typ „{2}“ passt nicht zu {3} — verworfen, es gilt das Nutzungsprofil.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_PERIODEN" xml:space="preserve">
+    <value>Zone „{0}“, {1}: {2} kurze Jahresabschnitte verworfen — der Kalender trägt hier höchstens {3} Perioden; an ihren Tagen gilt die Standardwoche.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_TEILWEISE" xml:space="preserve">
+    <value>Zone „{0}“, {1}: Nicht jeder Raum hat einen Zeitplan — Räume ohne Plan zählen mit dem vollen Nennwert.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_NENNWERT_OHNE_PLAN" xml:space="preserve">
+    <value>Zone „{0}“, {1}: Nennwert {2} aus der Datei ohne Zeitplan — der Zeitplan des Nutzungsprofils bleibt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_WAERME_LATENT" xml:space="preserve">
+    <value>Zone „{0}“, Raum „{1}“: latente Wärmeabgabe je Person ({2} W) verworfen — gerechnet wird die sensible Wärme.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_AUSSENLUFT_PERSON" xml:space="preserve">
+    <value>Zone „{0}“: Außenluft je Person in den Luftwechsel der Nutzer umgerechnet ({1} 1/h) — die Zone führt kein Feld je Person.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_VERDICHTET_RAEUME" xml:space="preserve">
+    <value>Zone „{0}“, {1}: Die Räume tragen verschiedene Zeitpläne ({2}) — zum gewichteten Mittel verdichtet.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_TAGE_OHNE_ABSCHNITT" xml:space="preserve">
+    <value>Zone „{0}“, {1}: {2} Tage liegen in keinem Jahresabschnitt — dort gilt die Standardwoche.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_WERTE_BEGRENZT" xml:space="preserve">
+    <value>Zone „{0}“, {1}: {2} Werte außerhalb der Grenzen der Größe begrenzt bzw. auf „aus“ gesetzt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_FEIERTAG_SONNTAG" xml:space="preserve">
+    <value>Zone „{0}“, {1}: Nicht jeder Zeitplan hat ein Tagesbild für Feiertage — dort gilt sein Sonntag.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PROFIL_ABWEICHUNG" xml:space="preserve">
+    <value>Zone „{0}“, {1}: Die Datei gibt {2} W, das Nutzungsprofil „{3}“ {4} W — es gilt die Datei.</value>
+  </data>
 </root>
 
