@@ -58,5 +58,6 @@ sie nennen; maßgeblich ist das Gate auf dem Merge-Stand (Statuszeile).
 
 ## 5 Offen
 
-Die Maske (Ferienliste, Jahresraster) folgt mit W3b. Die Testdatenbank wird auf dem Integrationsstand über das
-Schemawerkzeug auf Schritt 224 gehoben; die Basis ändert sich dadurch nicht.
+Nichts. Die Maske (Ferienliste, Jahresraster) kam mit W3b. Auf dem Integrationsstand ist der Schritt an 223
+`KaeltebedarfSplitAbrechnungSchema` gehängt (224) und die Testdatenbank aus der Fassung 223 über das Schemawerkzeug
+gehoben: eine Zone ohne eigene Ferien, 0 Zeiträume übertragen; ergebnisneutral.

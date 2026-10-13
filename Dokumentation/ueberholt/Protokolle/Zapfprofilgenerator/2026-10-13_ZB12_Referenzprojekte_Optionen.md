@@ -68,11 +68,22 @@ und 1065; `Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py` nimmt die sechs Pro
 
 ## 6 Tests und Abnahme
 
-Ergebnisse im Worktree, soweit die Commit-Botschaften sie nennen; maßgeblich ist das Gate auf dem Merge-Stand
-(Statuszeile).
+Im Worktree: Kern-Filter 0 Fehler, `SqlDialektPruefer` ohne Fundstelle, `EPOS.UI.Tests` 9 352 grün, die neue Wache
+23 Fälle grün; `EPOS.Kern.Tests` in Buchstabenblöcken (`Werkzeuge/Gate/kern_bloecke.sh`) grün bis auf je einen Fall in
+den Blöcken AB (Baualtersklassen) und K (Kesselnachzug), beide als Zählung der sechs Kopien nachgezogen und gezielt
+nachgeprüft. Zwei frische Läufe aus zwei getrennten Saatläufen sind byte-gleich; der gestörte Lauf (`--stoerung ulp`)
+ist GESAMT PASS, keine der neuen Projekte weicht dort ab. Maßgeblich ist das Gate auf dem Merge-Stand (Statuszeile).
 
-## 7 Offen
+## 7 Integration
 
-Die Testdatenbank ist auf dem Zweig **nicht committet**. Die Saat läuft auf dem Integrationsstand nach
-Schemaschritt 224 erneut; dort wird die Basis R53 bestätigt (Referenzlauf der vollen Suite gegen R52 für die
-alten Projekte, Vergleich der sechs neuen gegen die Basis).
+Die Testdatenbank war auf dem Zweig nicht committet. Auf dem Integrationsstand ist sie aus der Fassung 223
+(`05b14e07…`) mit dem Schemawerkzeug auf 224 gehoben und mit dem Saatskript neu gesät (`integrity_check` ok,
+`foreign_key_check` leer, 108 412 928 Byte, `6ef7aa68…`); der Lauf der 36 Projekte rechnet gegen R53 GESAMT PASS und
+in allen CSV byte-gleich — R53 bleibt, wie eingefroren.
+
+## 8 Offen
+
+Die Sitzung K6 legt mit R55 das Projekt 1072 an; dann sind die festen Listen in `Ak3KReferenzprojektWacheTests`,
+`ZonenKuehlkurveReferenzprojektWacheTests` und den Zählungstests um 1072 zu erweitern, und das Saatskript dieser
+Welle setzt 1065 als höchste Projekt-ID voraus (auf einer Datenbank mit 1072 läuft es nicht mehr). In
+`Referenzlaeufe/LIESMICH.md` endet die Liste „Entfernte Basen“ bei R47.
