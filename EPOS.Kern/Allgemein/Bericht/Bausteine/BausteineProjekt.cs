@@ -481,7 +481,7 @@ namespace WindowsFormsApplication1
                 paare.Add("Deckungsgrad Kühlung");
                 paare.Add(KennzahlWert(k, stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD, 1, "%"));
             }
-            // Schritt 224: die Split-Zeilen des Laufs - der Kältestromblock steht mit ihnen auch ohne Kälteerzeuger.
+            // Schritt 223: die Split-Zeilen des Laufs - der Kältestromblock steht mit ihnen auch ohne Kälteerzeuger.
             List<ErgebnisKaelteDezentralModel> split = stamm.Ergebnis.KaelteDezentral ?? new List<ErgebnisKaelteDezentralModel>();
             bool mitKaeltestrom = mitErzeugung || split.Count > 0;
             if (mitWp)
@@ -532,7 +532,7 @@ namespace WindowsFormsApplication1
 
             k.Ueberschrift2(UEBERSCHRIFT_KAELTE);
             k.Eigenschaften(paare.ToArray());
-            // Schritt 224: die Split-Zeilen stehen in derselben Tafel - auch ohne Kälteerzeuger.
+            // Schritt 223: die Split-Zeilen stehen in derselben Tafel - auch ohne Kälteerzeuger.
             if (mitKaeltestrom) KaelteerzeugerSchreiben(k, wp, traegername, km, stamm?.Kaeltemittel, split);
             k.HinweisRoh(!(jahr > 0) ? MyResource.Resource.SIMERG_HRL_KAELTE_LEER
                          : mitErzeugung ? string.Format(k.Kultur, MyResource.Resource.SIMERG_HRL_KAELTE_GEDECKT,
@@ -611,7 +611,7 @@ namespace WindowsFormsApplication1
                                                     IReadOnlyList<ErgebnisKaelteDezentralModel> dezentral = null)
         {
             // BV-E5: dieselbe Tafel wie {{tabelle.kaelteerzeuger}} - KU3-4 samt Kältemaschinen, KM4-E2 samt Kältemittel,
-            // Schritt 224 samt Split-Zeilen.
+            // Schritt 223 samt Split-Zeilen.
             Berichtstabelle t = Berichtstabellen.Kaelteerzeuger(wp, traegername, BerichtTexte.Englisch, k.Kultur, maschinen, kaeltemittel,
                                                                 dezentral);
             if (t.IstLeer) return;

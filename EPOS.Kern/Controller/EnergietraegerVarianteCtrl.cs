@@ -453,7 +453,7 @@ namespace WindowsFormsApplication1
         {
             if (carrierId <= 0 || (!zuordnungNeu && !katalogNeu)) return Ruecknahme.Nichts;
 
-            // Schritte 213 und 224: Auch der Kühlträger einer Kältebedarfszeile (Profil oder Lastgang) und einer Split-
+            // Schritte 213 und 223: Auch der Kühlträger einer Kältebedarfszeile (Profil oder Lastgang) und einer Split-
             // Ergebniszeile hält den Träger. Die Auskunft VOR dem Vorgang - sie arbeitet auf einer eigenen Verbindung; einer
             // Datenbank vor dem Schritt fehlen die Spalten bzw. die Tabelle, dann zählen sie nicht.
             bool kaelteProfil = KaeltebedarfSchema.TabellenVorhanden() &&

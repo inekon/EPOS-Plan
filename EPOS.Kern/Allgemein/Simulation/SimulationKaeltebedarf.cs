@@ -1101,7 +1101,7 @@ namespace WindowsFormsApplication1
                 s.Add(new KeyValuePair<string, double>("Kaelte.DezentralSpitzeKw", kaelte.Kaelte_Dezentral_Max));
                 s.Add(new KeyValuePair<string, double>("Kaelte.DezentralStromMwh", kaelte.Strom_Dezentral_Gesamt));
                 s.Add(new KeyValuePair<string, double>("Kaelte.DezentralJahresEer", kaelte.Jahres_EER_Dezentral));
-                // Schritt 224: je Split-Zeile Strom, Netzbezug, abweichender Kühlträger (0 = Projektträger) und Zähler.
+                // Schritt 223: je Split-Zeile Strom, Netzbezug, abweichender Kühlträger (0 = Projektträger) und Zähler.
                 for (int i = 0; i < kaelte.DezentraleZeilen.Count; i++)
                 {
                     SimulationKaeltebedarf.DezentraleZeile z = kaelte.DezentraleZeilen[i];

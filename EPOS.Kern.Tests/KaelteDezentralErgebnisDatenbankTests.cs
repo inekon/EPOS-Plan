@@ -154,13 +154,36 @@ namespace EPOS.Kern.Tests
         public void Split_Zeilen_stehen_in_Kaelteseite_Strombilanz_Bild_Schema_und_Bericht()
         {
             if (!_db.Vorhanden) return;
-            Assert.Equal(1, KaeltebedarfSplitAbrechnungSchema.Ausfuehren(null));
+            // Die Testdatenbank steht auf Schritt 223: die Tabelle ist da, ohne dass der Test sie anlegt.
+            Assert.True(KaeltebedarfSplitAbrechnungSchema.TabelleVorhanden(), "Die Testdatenbank steht auf Schritt 223.");
             int kuehl = Kuehltraeger(Kaeltestromabrechnung.Projekttraeger(PROJEKT));
             ZeilenAnlegen(kuehl);
 
             SimulationRunner lauf = Rechnen();
             SimulationKaeltebedarf k = lauf.simulation_Kaeltebedarf;
             Assert.True(k.MitDezentral);
+            // Rundweg über ErgebnisCtrl mit der echten Tabelle: je Split-Zeile eine gespeicherte Zeile am Lauf, gelesen in
+            // derselben Folge (gerundet gespeichert wie jede Ergebnisspalte).
+            Assert.Equal(2L, Convert.ToInt64(DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM " + KaeltebedarfSplitAbrechnungSchema.TAB_ERGEBNIS + " d JOIN Tab_Ergebnis e ON e.ID = d.ID_Ergebnis " +
+                "WHERE e.ID_Projekt = ?", new DbParam("@p", PROJEKT)), CultureInfo.InvariantCulture));
+            ErgebnisModel erg = new ErgebnisCtrl().Load(PROJEKT);
+            Assert.Equal(2, erg.KaelteDezentral.Count);
+            for (int i = 0; i < 2; i++)
+            {
+                ErgebnisKaelteDezentralModel gespeichert = erg.KaelteDezentral[i];
+                SimulationKaeltebedarf.DezentraleZeile gerechnet = k.DezentraleZeilen[i];
+                Assert.Equal(gerechnet.Profil ? KaeltebedarfSplitAbrechnungSchema.QUELLE_PROFIL : KaeltebedarfSplitAbrechnungSchema.QUELLE_LASTGANG,
+                             gespeichert.Quelle);
+                Assert.Equal(gerechnet.IdZuordnung, gespeichert.ID_Zuordnung);
+                Assert.Equal(gerechnet.Bezeichner, gespeichert.Bezeichner);
+                Assert.Equal(Math.Round(gerechnet.KaelteKwh / 1000.0, 2), gespeichert.Kaelte_MWh, 9);
+                Assert.Equal(Math.Round(gerechnet.StromKwh / 1000.0, 2), gespeichert.Strom_MWh, 9);
+                Assert.Equal(kuehl, gespeichert.Kuehl_CarrierId);
+                Assert.Equal(gerechnet.EigenerZaehler, gespeichert.Kuehl_EigenerZaehler);
+            }
+            Assert.Equal(KaeltebedarfSplitAbrechnungSchema.QUELLE_LASTGANG, erg.KaelteDezentral[0].Quelle);
+            Assert.True(erg.KaelteDezentral[1].Kuehl_EigenerZaehler == true);
 
             // Kälteseite: Herkunft, Split-Zeilen und die zwei Deckungsgrade (Frage 1).
             SimulationErgebnisCtrl.KaelteErgebnis e = SimulationErgebnisCtrl.Kaelte(lauf.simulation_Waermebedarf);

@@ -54,7 +54,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die ID der Zuordnungszeile (<c>Z_Projekt_Kaeltebedarf.ID</c> bzw. <c>Z_ProjektWaermebedarf.ID</c>) — die Ergebniszeile
-        /// je Split-Zeile nennt sie (Schemaschritt 224); <c>null</c> ohne Zeile.
+        /// je Split-Zeile nennt sie (Schemaschritt 223); <c>null</c> ohne Zeile.
         /// </summary>
         public int? IdZuordnung;
 

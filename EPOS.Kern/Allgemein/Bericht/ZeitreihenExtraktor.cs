@@ -177,7 +177,7 @@ namespace WindowsFormsApplication1
                     }
                 }
 
-                // Schritt 224: die Split-Zeilen mit eigenem Zähler unter ihrem Schlüssel - der Platz in der Ergebnisliste
+                // Schritt 223: die Split-Zeilen mit eigenem Zähler unter ihrem Schlüssel - der Platz in der Ergebnisliste
                 // KaelteDezentral (dieselbe Folge wie im SimulationRunner). Ohne Split-Zeile kein Eintrag.
                 SimulationKaeltebedarf kaelteseite = runner.simulation_Kaeltebedarf;
                 if (kaelteseite != null && kaelteseite.Gerechnet && kaelteseite.MitDezentral)

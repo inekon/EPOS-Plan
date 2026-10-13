@@ -9,7 +9,7 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>Schritt 224 — die Abrechnung des Split-Stroms ohne Datenbank</b> (Konzept Kältebedarf 4.2; E34/E35): Kühlträger
+    /// <b>Schritt 223 — die Abrechnung des Split-Stroms ohne Datenbank</b> (Konzept Kältebedarf 4.2; E34/E35): Kühlträger
     /// nur abweichend, eigener Zähler neben der Stufenrechnung, die Split-Zeilen in der Abrechnung nach den Kältemaschinen
     /// mit eigenem Schlüsselbereich, die Szenariokopie samt der Spalten aus 213 und die Zeile der Kälteerzeugertafel.
     /// </summary>
@@ -219,7 +219,7 @@ namespace EPOS.Kern.Tests
         }
     }
     /// <summary>
-    /// <b>Schritt 224 im Lauf</b> auf einer Kopie der Testdatenbank (Projekt 1017 mit Kühlbetrieb, Tabelle 224 angelegt):
+    /// <b>Schritt 223 im Lauf</b> auf einer Kopie der Testdatenbank (Projekt 1017 mit Kühlbetrieb, Tabelle 223 der Testdatenbank):
     /// eine Profilzeile mit abweichendem Kühlträger und eigenem Zähler läuft neben der Stufenrechnung, eine Lastgangzeile mit
     /// abweichendem Träger anteilig; Ergebniszeilen je Split-Zeile im Rundweg, Mengenmeldung, Kosten mit Grund- und
     /// Leistungspreis, Szenario, Bericht und Export — und der Projektträger als Vorgabe samt Warnkriterium.
@@ -307,7 +307,8 @@ namespace EPOS.Kern.Tests
         public void Split_Strom_je_Traeger_und_Zaehler_von_Lauf_bis_Bericht()
         {
             if (!_db.Vorhanden) return;
-            Assert.Equal(1, KaeltebedarfSplitAbrechnungSchema.Ausfuehren(null));
+            Assert.True(KaeltebedarfSplitAbrechnungSchema.TabelleVorhanden(), "Die Testdatenbank steht auf Schritt 223.");
+            Assert.Equal(0, KaeltebedarfSplitAbrechnungSchema.Ausfuehren(null));
             int projekttraeger = Kaeltestromabrechnung.Projekttraeger(PROJEKT);
             int kuehl = Kuehltraeger(projekttraeger);
             bool leistungVorher = KostenEmissionRechner.StromLeistungspreisGepflegt(PROJEKT);
@@ -439,10 +440,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal(lauf.sim.Kaeltestrom_Dezentral_stuendlich, lauf.sim.Kaeltestrom_Stufenrechnung_stuendlich);
             Assert.DoesNotContain(lauf.Protokoll.Hinweise, Mengenmeldung);           // Projektträger: keine Mengenmeldung
 
-            // Ohne Tabelle 224 (Testdatenbank vor dem Schritt) bleibt das Ergebnis ohne Zeile je Split-Zeile.
+            // Die Testdatenbank trägt Tabelle 223: die Split-Zeile wird gespeichert und gelesen, auch ohne Kälteerzeuger.
             ErgebnisModel erg = new ErgebnisCtrl().Load(OHNE);
-            if (KaeltebedarfSplitAbrechnungSchema.TabelleVorhanden()) Assert.Single(erg.KaelteDezentral);
-            else Assert.Empty(erg.KaelteDezentral);
+            ErgebnisKaelteDezentralModel d = Assert.Single(erg.KaelteDezentral);
+            Assert.Equal(KaeltebedarfSplitAbrechnungSchema.QUELLE_PROFIL, d.Quelle);
+            Assert.Equal(4.0, d.Strom_MWh, 9);
         }
     }
 }

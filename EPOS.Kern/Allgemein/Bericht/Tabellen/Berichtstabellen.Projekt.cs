@@ -14,7 +14,7 @@ namespace WindowsFormsApplication1
         /// Netzbezug und der Stromträger (Kühlkonzept 8.4) aus den Modulzeilen des Ergebnisses des Stamms. Die Namen der
         /// Träger kommen aus dem Wertesatz (<paramref name="traegername"/>). KM4-E2 (Konzept Kältemittel als Stammdatum 5.3):
         /// Führt ein Erzeuger einen Kältemittel-Code (<paramref name="kaeltemittel"/>), steht die Spalte „Kältemittel“ dabei;
-        /// ein Erzeuger der Ergebnisklasse 2 trägt einen Stern, die Fußnote steht unter der Tafel. Schritt 224: Nach den
+        /// ein Erzeuger der Ergebnisklasse 2 trägt einen Stern, die Fußnote steht unter der Tafel. Schritt 223: Nach den
         /// Erzeugern steht je dezentral (Split) gedeckter Kältebedarfszeile (<paramref name="dezentral"/>) eine Zeile mit Kälte,
         /// Strom, Jahres-EER, Netzbezug und Träger — ohne Kältemittel, die Geräte sind nicht erfasst.
         /// </summary>
@@ -29,7 +29,7 @@ namespace WindowsFormsApplication1
             // KU3-4: die Kältemaschinen nach den Wärmepumpen - Netzbezug und Träger seit Schritt 184 (KU3-4d).
             var km = (maschinen ?? Array.Empty<ErgebnisKaeltemaschineModel>())
                 .Where(k => k != null && k.Kaelteproduktion_MWh > 0).ToList();
-            // Schritt 224: die Split-Zeilen nach den Kältemaschinen; ein Lauf ohne Split-Zeile bringt keine.
+            // Schritt 223: die Split-Zeilen nach den Kältemaschinen; ein Lauf ohne Split-Zeile bringt keine.
             var split = (dezentral ?? Array.Empty<ErgebnisKaelteDezentralModel>())
                 .Where(d => d != null && d.Kaelte_MWh > 0).ToList();
             if (zeilen.Count == 0 && km.Count == 0 && split.Count == 0) return Leer(nameof(RR.BV_GRUND_TABELLE_LEER), kultur);

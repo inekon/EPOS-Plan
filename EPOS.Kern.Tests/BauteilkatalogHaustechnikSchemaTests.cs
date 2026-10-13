@@ -46,7 +46,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(222, BauteilkatalogHaustechnikSchema.SCHRITT);
             Assert.Equal(BauteilkatalogSchema.SCHRITT + 1, BauteilkatalogHaustechnikSchema.SCHRITT);
-            Assert.Equal(BauteilkatalogHaustechnikSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(BauteilkatalogHaustechnikSchema.SCHRITT <= SchemaStand.Zielversion);   // 223 hängt an (K6)
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == BauteilkatalogHaustechnikSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);
         }

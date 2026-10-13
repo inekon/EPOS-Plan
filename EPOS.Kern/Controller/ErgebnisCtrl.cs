@@ -134,7 +134,7 @@ namespace WindowsFormsApplication1
             // K3 (KaeltebedarfSchema, Schritt 213): die fünf Spalten des Kältebedarfs ohne Gebäudemodell - ebenso.
             bool kaeltebedarfEnergie = KaeltebedarfSchema.ERGEBNISSPALTEN.All(
                 s => DataRepository.SpalteVorhanden(KaeltebedarfSchema.TAB_ERGEBNIS, s));
-            // Schritt 224 (KaeltebedarfSplitAbrechnungSchema): die Ergebnistabelle je Split-Zeile - ebenso vor der Transaktion
+            // Schritt 223 (KaeltebedarfSplitAbrechnungSchema): die Ergebnistabelle je Split-Zeile - ebenso vor der Transaktion
             // gefragt; auf einer Datenbank davor schreibt der Lauf keine Zeile je Split-Zeile.
             bool kaelteDezentral = KaeltebedarfSplitAbrechnungSchema.TabelleVorhanden();
             // KU3-6a (Schritt 187): die Zaehler der freien Kuehlung an beiden Ergebnistabellen der Waermepumpe -
@@ -207,7 +207,7 @@ namespace WindowsFormsApplication1
                     DetailzeilenLoeschen(v, TAB_GEB, m.ID_Projekt);
                     // KU3-4: das Ergebnis je Kaeltemaschine - derselbe Vorablauf (Loeschweitergabe am Kopf).
                     DetailzeilenLoeschen(v, KaeltemaschineAnlageSchema.TAB_ERGEBNIS, m.ID_Projekt);
-                    // Schritt 224: das Ergebnis je Split-Zeile - ebenso (vor dem Schritt fehlt die Tabelle, still).
+                    // Schritt 223: das Ergebnis je Split-Zeile - ebenso (vor dem Schritt fehlt die Tabelle, still).
                     if (kaelteDezentral) DetailzeilenLoeschen(v, KaeltebedarfSplitAbrechnungSchema.TAB_ERGEBNIS, m.ID_Projekt);
 
                     //    Zusaetzlich alle Waisen abraeumen, deren Kopf nicht mehr existiert.
@@ -445,7 +445,7 @@ namespace WindowsFormsApplication1
                         }
                     }
 
-                    // 4b. Schritt 224: das Ergebnis je Split-Zeile. Ohne Split-Zeile (jedes Bestandsprojekt) keine Zeile.
+                    // 4b. Schritt 223: das Ergebnis je Split-Zeile. Ohne Split-Zeile (jedes Bestandsprojekt) keine Zeile.
                     if (kaelteDezentral && m.KaelteDezentral != null && m.KaelteDezentral.Count > 0)
                     {
                         // Spaltenfolge wie KaeltebedarfSplitAbrechnungSchema.SPALTEN.
@@ -1315,7 +1315,7 @@ namespace WindowsFormsApplication1
                     }
             }
 
-            // Schritt 224: das Ergebnis je Split-Zeile; vor dem Schritt fehlt die Tabelle, die Liste bleibt leer.
+            // Schritt 223: das Ergebnis je Split-Zeile; vor dem Schritt fehlt die Tabelle, die Liste bleibt leer.
             if (KaeltebedarfSplitAbrechnungSchema.TabelleVorhanden())
             {
                 DataTable dd = DataRepository.GetDataTable(

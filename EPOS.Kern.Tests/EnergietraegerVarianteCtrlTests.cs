@@ -329,7 +329,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(EnergietraegerVarianteCtrl.Ruecknahme.Verwiesen,
                 EnergietraegerVarianteCtrl.AnlageZuruecknehmen(PROJEKT, e.CarrierId, true, e.KatalogNeu));
 
-            // Schritt 224: eine gespeicherte Split-Ergebniszeile hält den Katalogträger.
+            // Schritt 223: eine gespeicherte Split-Ergebniszeile hält den Katalogträger.
             DataRepository.ExecuteNonQuery("UPDATE Z_ProjektWaermebedarf SET Kuehl_ID_Carrier = NULL WHERE ID_Projekt = ?",
                 new DbParam("@p", PROJEKT));
             KaeltebedarfSplitAbrechnungSchema.Ausfuehren(null);

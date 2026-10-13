@@ -1027,7 +1027,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Der Strom der dezentralen (Split-)Deckung</b> (K3, Konzept Kältebedarf 4.2; Schritt 224) — neben der Kaskade, aber
+        /// <b>Der Strom der dezentralen (Split-)Deckung</b> (K3, Konzept Kältebedarf 4.2; Schritt 223) — neben der Kaskade, aber
         /// an derselben Stelle in die Stufenrechnung wie der Kältestrom der Kaskade: Jahressumme in <see cref="ReststromMwh"/>,
         /// Viertelstundenverlauf in den Rest, die Reihe in <see cref="Kaeltestrom_Stufenrechnung_stuendlich"/> (Lastreihe des
         /// Stromspeichers, Strombilanz). Gerufen nach der Kältekaskade und vor dem Abschluss der Kälteseite, auch ohne
@@ -1076,7 +1076,7 @@ namespace WindowsFormsApplication1
         /// gemeinsam, ohne Vorrang (E34, Wahl 1).
         ///
         /// <para><b>Nur eine Aufteilung, kein zweiter Rechenweg:</b> Rest, Netzbezug und
-        /// <see cref="ReststromMwh"/> bleiben, wie sie sind. Die Split-Zeilen (Schritt 224) teilt dieselbe Regel auf, auch
+        /// <see cref="ReststromMwh"/> bleiben, wie sie sind. Die Split-Zeilen (Schritt 223) teilt dieselbe Regel auf, auch
         /// ohne Kälteerzeuger; ohne Kältekaskade und ohne Split-Zeile ein sofortiger Rücksprung. Bepreist und bewertet wird
         /// die Menge einmal, im <c>KostenEmissionRechner</c> — mit dem Kühlträger, wo er abweicht, sonst mit dem Stromträger
         /// des Projekts.</para>
@@ -1086,7 +1086,7 @@ namespace WindowsFormsApplication1
             if (m_bError) return;
             SimulationKaeltebedarf kaelte = simulation_Waermebedarf != null ? simulation_Waermebedarf.Kaelteseite : null;
             double[] last = null;
-            // Schritt 224: die Split-Zeilen nach derselben Regel - auch ohne Kälteerzeuger; ohne Split-Zeile ein Rücksprung.
+            // Schritt 223: die Split-Zeilen nach derselben Regel - auch ohne Kälteerzeuger; ohne Split-Zeile ein Rücksprung.
             if (kaelte != null && kaelte.Gerechnet && kaelte.MitDezentral) DezentralenNetzbezugAufteilen(kaelte, ref last);
             if (_kaelteerzeuger == null || _kaelteerzeuger.Count == 0) return;
             if (kaelte == null || kaelte.Kaskade == null) return;
@@ -1108,7 +1108,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der Netzbezug je Split-Zeile (Schritt 224; E34): mit eigenem Zähler der ganze Strom, sonst anteilig über die
+        /// Der Netzbezug je Split-Zeile (Schritt 223; E34): mit eigenem Zähler der ganze Strom, sonst anteilig über die
         /// Stufenrechnung (<see cref="Kaeltekaskade.NetzbezugAnteilKwh"/>, dieselbe Lastreihe wie bei den Kälteerzeugern). Eine
         /// Zeile mit abweichendem Kühlträger nennt ihre Menge.
         /// </summary>

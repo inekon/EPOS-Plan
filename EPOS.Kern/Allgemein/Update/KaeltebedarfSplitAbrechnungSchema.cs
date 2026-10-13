@@ -6,8 +6,8 @@ using System.Linq;
 namespace WindowsFormsApplication1
 {
     // ====================================================================================
-    // SCHRITT 224 - DIE ABRECHNUNG DES SPLIT-STROMS (Konzept Kaeltebedarf 4.2, 4.3; Entscheide E34/E35;
-    // Plan K6 Abschnitt 1).
+    // SCHRITT 223 - DIE ABRECHNUNG DES SPLIT-STROMS (Konzept Kaeltebedarf 4.2, 4.3; Entscheide E34/E35;
+    // Plan K6 Abschnitt 1). Vorgaenger: Schritt 222 BauteilkatalogHaustechnikSchema.
     //
     // WAS.
     //   Tab_ErgebnisKaelteDezentral  eine Ergebniszeile je dezentral (Split) gedeckter Kaeltebedarfszeile eines Laufs:
@@ -38,10 +38,10 @@ namespace WindowsFormsApplication1
     public static class KaeltebedarfSplitAbrechnungSchema
     {
         /// <summary>
-        /// Die Nummer des Schritts. Sie hängt an <c>TwwZonenferienSchema</c> (Schritt 223) und wird beim Einhängen in die
-        /// Kette als <c>TwwZonenferienSchema.SCHRITT + 1</c> geschrieben.
+        /// Die Nummer des Schritts: 223, angehängt an <see cref="BauteilkatalogHaustechnikSchema"/> (Schritt 222). Die Kette
+        /// hängt über <c>+ 1</c> an der Vorgängerklasse; die Nummer steht allein hier.
         /// </summary>
-        public const int SCHRITT = 224;
+        public const int SCHRITT = BauteilkatalogHaustechnikSchema.SCHRITT + 1;
 
         /// <summary>Die Ergebnistabelle je Split-Zeile.</summary>
         public const string TAB_ERGEBNIS = "Tab_ErgebnisKaelteDezentral";

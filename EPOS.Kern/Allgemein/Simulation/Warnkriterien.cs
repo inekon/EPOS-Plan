@@ -333,7 +333,7 @@ namespace WindowsFormsApplication1
         public const string DEZENTRALE_KAELTE_OHNE_EER = "DEZENTRALE_KAELTE_OHNE_EER";
 
         /// <summary>
-        /// Schritt 224 (Konzept Kältebedarf 4.2; E34): Eine dezentral (Split) gedeckte Kältebedarfszeile steht auf „eigener
+        /// Schritt 223 (Konzept Kältebedarf 4.2; E34): Eine dezentral (Split) gedeckte Kältebedarfszeile steht auf „eigener
         /// Zähler“, trägt aber keinen vom Stromträger des Projekts abweichenden Kühlträger — der Zähler wirkt dann nicht, der
         /// Strom läuft anteilig mit dem Projektträger. WEICH (die Meldung bringt die Aussage vor den Lauf; Muster der
         /// Kälteerzeuger, deren Zähler ohne abweichenden Träger ebenso wirkungslos ist).
@@ -555,7 +555,7 @@ namespace WindowsFormsApplication1
         {
             if (idProjekt <= 0 || befunde == null || !KaeltebedarfSchema.TabellenVorhanden()) return;
             var gruende = new List<KeyValuePair<string, string>>();
-            // Schritt 224: Split-Zeilen mit eigenem Zähler - ob ihr Träger abweicht, entscheidet der Projektträger (unten).
+            // Schritt 223: Split-Zeilen mit eigenem Zähler - ob ihr Träger abweicht, entscheidet der Projektträger (unten).
             var zaehler = new List<KeyValuePair<string, int?>>();
             foreach (Z_ProjektKaeltebedarfModel z in Z_ProjektKaeltebedarfCtrl.LiesProjekt(idProjekt))
             {

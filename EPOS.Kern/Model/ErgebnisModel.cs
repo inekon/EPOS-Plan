@@ -39,7 +39,7 @@ namespace WindowsFormsApplication1
         // KU3-4 (Schemaschritt 183): eine Zeile je Kaeltemaschine (Tab_ErgebnisKaeltemaschine); leer = keine gerechnet.
         public List<ErgebnisKaeltemaschineModel> Kaeltemaschinen = new List<ErgebnisKaeltemaschineModel>();
 
-        // Schemaschritt 224 (Konzept Kältebedarf 4.2): eine Zeile je dezentral (Split) gedeckter Kältebedarfszeile
+        // Schemaschritt 223 (Konzept Kältebedarf 4.2): eine Zeile je dezentral (Split) gedeckter Kältebedarfszeile
         // (Tab_ErgebnisKaelteDezentral); leer = keine Split-Zeile gerechnet oder ein Lauf vor dem Schritt.
         public List<ErgebnisKaelteDezentralModel> KaelteDezentral = new List<ErgebnisKaelteDezentralModel>();
 
@@ -776,7 +776,7 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// <b>Das Ergebnis einer dezentral (Split) gedeckten Kältebedarfszeile</b> (Schemaschritt 224,
+    /// <b>Das Ergebnis einer dezentral (Split) gedeckten Kältebedarfszeile</b> (Schemaschritt 223,
     /// <c>Tab_ErgebnisKaelteDezentral</c>; Konzept Kältebedarf 4.2, Entscheide E34/E35): Mengen in MWh/a, Spitzen in kW. Die
     /// Abrechnung liest die Zeile wie die einer Kältemaschine (<see cref="Kaeltestromabrechnung"/>).
     /// </summary>

@@ -801,7 +801,7 @@ namespace WindowsFormsApplication1
                             });
             }
 
-            // Schritt 224 (Konzept Kältebedarf 4.2): das Ergebnis je Split-Zeile - nur mit dezentral gedeckter Zeile; ohne sie
+            // Schritt 223 (Konzept Kältebedarf 4.2): das Ergebnis je Split-Zeile - nur mit dezentral gedeckter Zeile; ohne sie
             // (jedes Bestandsprojekt) bleibt die Liste leer und der Lauf schreibt keine Zeile.
             {
                 SimulationKaeltebedarf kk = sim.simulation_Waermebedarf != null ? sim.simulation_Waermebedarf.Kaelteseite : null;

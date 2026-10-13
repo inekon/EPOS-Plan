@@ -1754,7 +1754,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Kühlträger mit eigenem Zähler (E34, E35) — Wärmepumpen im Kühlbetrieb, Kältemaschinen (KU3-4d) und dezentral
-        /// (Split) gedeckte Kältebedarfszeilen (Schritt 224, Profil- und Lastgangzeilen), je nur mit einem vom Projektträger
+        /// (Split) gedeckte Kältebedarfszeilen (Schritt 223, Profil- und Lastgangzeilen), je nur mit einem vom Projektträger
         /// abweichenden Träger (sonst wirkt die Abrechnungsart nicht). Eine Datenbank ohne die Spalten eines Schritts liefert
         /// dessen Anlagen nicht.
         /// </summary>

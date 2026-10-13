@@ -38,7 +38,7 @@ namespace WindowsFormsApplication1
     /// <c>Kaeltestromspitzen</c> ist <see cref="SchluesselKaeltemaschine"/> (negativ — die Modulplätze der Wärmepumpe
     /// sind es nie).</para>
     ///
-    /// <para><b>Die dezentrale (Split-)Deckung rechnet ebenso</b> (Schemaschritt 224, Konzept Kältebedarf 4.2): Ihre Zeilen
+    /// <para><b>Die dezentrale (Split-)Deckung rechnet ebenso</b> (Schemaschritt 223, Konzept Kältebedarf 4.2): Ihre Zeilen
     /// (<c>Tab_ErgebnisKaelteDezentral</c>) tragen dieselben vier Größen und kommen NACH den Kältemaschinen; ihr Schlüssel
     /// ist <see cref="SchluesselDezentral"/> in einem eigenen negativen Bereich.</para>
     /// </summary>
@@ -179,7 +179,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Anlagen mit Kältestrom: erst die Module der Wärmepumpe, dann die Kältemaschinen (KU3-4d), dann die
-        /// Split-Zeilen (Schritt 224).</summary>
+        /// Split-Zeilen (Schritt 223).</summary>
         private static IEnumerable<Quelle> Quellen(ErgebnisModel m)
         {
             if (m == null) yield break;

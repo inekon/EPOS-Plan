@@ -203,7 +203,7 @@ namespace WindowsFormsApplication1
                         TeilFreikuehlung_Stunden = km.TeilFreikuehlung_Stunden,
                     });
 
-            // Schritt 224: die Split-Zeilen skalieren wie die Kältemaschinen - Kälte, Strom, Netzbezug und Spitze des Stroms;
+            // Schritt 223: die Split-Zeilen skalieren wie die Kältemaschinen - Kälte, Strom, Netzbezug und Spitze des Stroms;
             // Quelle, Zuordnung, Kühlträger, Abrechnungsart, Kältespitze und Jahres-EER bleiben.
             if (m.KaelteDezentral != null)
                 foreach (ErgebnisKaelteDezentralModel d in m.KaelteDezentral)
