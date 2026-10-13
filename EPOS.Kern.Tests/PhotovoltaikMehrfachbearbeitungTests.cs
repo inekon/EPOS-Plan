@@ -9,7 +9,7 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Mehrfach-Bearbeiten der PV-Module in EINER Transaktion</b> (Konzept Projektdialoge mit Katalogauswahl 4.6,
     /// Entscheid KA‑E‑8, Stufe 3): <see cref="PhotovoltaikStammCtrl.SchreibenAlle"/> schreibt alle geänderten Sätze —
-    /// Projektkopien oder Katalogsätze — oder keinen; die Modulkosten gehen mit, der Name bleibt, die Koeffizienten
+    /// Projektkopien oder Katalogsätze — oder keinen; der Name bleibt, die Koeffizienten
     /// <c>alpha_SC</c> und <c>beta_OC</c> bleiben unberührt, eine leere Spalte bleibt leer. Geschrieben wird in der
     /// Kopie der Testdatenbank (<see cref="TestDatenbank"/>); die Module der Referenzprojekte bleiben, wie sie sind.
     /// </summary>
@@ -31,12 +31,11 @@ namespace EPOS.Kern.Tests
             return ids;
         }
 
-        private static PhotovoltaikModel Daten(bool projektkopie, int id, string firma, double modulkosten = 120,
+        private static PhotovoltaikModel Daten(bool projektkopie, int id, string firma,
                                                double leistung = 400)
         {
             PhotovoltaikModel m = PhotovoltaikStammCtrl.Satz(projektkopie, id);
             m.m_szFirma = firma;
-            m.m_Modulkosten = modulkosten;
             m.m_Leistung = leistung;
             m.m_alpha_SC = 9.9;                 // fuehrt die Feldliste nicht - wird nie geschrieben
             m.m_szName = "Umbenannt";           // wird nie geschrieben
@@ -67,7 +66,9 @@ namespace EPOS.Kern.Tests
                          Feld(true, KOPIE_1046, ModulKatalogProfil.FeldBezeichner));
             Assert.Equal(Convert.ToString(Roh("Tab_PV_STAMM", k, "Bezeichner"), CultureInfo.InvariantCulture),
                          Feld(false, k, ModulKatalogProfil.FeldBezeichner));
-            Assert.True(PhotovoltaikStammCtrl.SatzAnzeige(true, KOPIE_1046).ContainsKey(ModulKatalogProfil.FeldModulkosten));
+            // Welle KB-4: Das Satzbild fuehrt den KOSTENSATZ der Satzvorlage, keine Kostenspalte.
+            Assert.True(PhotovoltaikStammCtrl.SatzAnzeige(true, KOPIE_1046).ContainsKey(ModulKatalogProfil.FeldKostensatz));
+            Assert.False(PhotovoltaikStammCtrl.SatzAnzeige(true, KOPIE_1046).ContainsKey(ModulKatalogProfil.FeldModulkosten));
             PhotovoltaikStammCtrl.ModulDetail d = PhotovoltaikStammCtrl.SatzDetail(true, KOPIE_1046);
             Assert.Equal(Zahl("Tab_PV", KOPIE_1046, "alpha_SC"), d.AlphaSc!.Value, 12);
             Assert.Null(PhotovoltaikStammCtrl.SatzAnzeige(true, 987654));
@@ -88,15 +89,15 @@ namespace EPOS.Kern.Tests
 
             var e = PhotovoltaikStammCtrl.SchreibenAlle(true, new[]
             {
-                new PhotovoltaikStammCtrl.Satzaenderung(ids[0], Daten(true, ids[0], "Sammel 1", modulkosten: 333)),
+                new PhotovoltaikStammCtrl.Satzaenderung(ids[0], Daten(true, ids[0], "Sammel 1", leistung: 333)),
                 new PhotovoltaikStammCtrl.Satzaenderung(ids[1], Daten(true, ids[1], "Sammel 2"))
             });
 
             Assert.True(e.Ok, e.Meldung);
             Assert.Equal("Sammel 1", Feld(true, ids[0], ModulKatalogProfil.FeldFirma));
             Assert.Equal("Sammel 2", Feld(true, ids[1], ModulKatalogProfil.FeldFirma));
-            Assert.Equal(333, Zahl("Tab_PV", ids[0], "Modulkosten"));
-            Assert.Equal(400, Zahl("Tab_PV", ids[0], "Leistung"));
+            Assert.Equal(333, Zahl("Tab_PV", ids[0], "Leistung"));
+            Assert.Equal(400, Zahl("Tab_PV", ids[1], "Leistung"));
             Assert.Equal(name0, Feld(true, ids[0], ModulKatalogProfil.FeldBezeichner));
             Assert.Equal(alpha, Zahl("Tab_PV", ids[0], "alpha_SC"), 12);
             Assert.Equal(beta, Zahl("Tab_PV", ids[0], "beta_OC"), 12);
