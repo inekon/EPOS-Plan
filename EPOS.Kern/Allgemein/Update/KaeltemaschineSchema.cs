@@ -125,7 +125,7 @@ namespace WindowsFormsApplication1
         public static readonly string[] Fachspalten;
 
         /// <summary>
-        /// Die zwölf Grundspalten des Kopfs, die seit diesem Schritt stehen — der Kopf, den die Schreibwege in EINER
+        /// Die elf Grundspalten des Kopfs, die seit diesem Schritt stehen — der Kopf, den die Schreibwege in EINER
         /// Anweisung schreiben. Die acht Spalten von Teillast und Takten (<see cref="KaeltemaschineTeillastSchema"/>,
         /// Schritt 210) schreiben sie in einem eigenen Schritt, nur wenn die Spalten stehen.
         /// </summary>
@@ -133,8 +133,7 @@ namespace WindowsFormsApplication1
         {
             "Bezeichner", "Firma", "Typ", "Beschreibung",
             SPALTE_NENNKAELTELEISTUNG, SPALTE_NENN_EER, SPALTE_KAELTEMITTEL, SPALTE_RUECKKUEHLART,
-            SPALTE_MINDESTTEILLAST, SPALTE_HILFSSTROM_RUECKKUEHLUNG, SPALTE_KALTWASSER_VORLAUF_MIN,
-            SPALTE_MODULKOSTEN
+            SPALTE_MINDESTTEILLAST, SPALTE_HILFSSTROM_RUECKKUEHLUNG, SPALTE_KALTWASSER_VORLAUF_MIN
         };
 
         static KaeltemaschineSchema()

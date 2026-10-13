@@ -1060,7 +1060,14 @@ namespace WindowsFormsApplication1
         /// (<see cref="BrennstoffpreiseTraegerkarteSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg liest die
         /// drei Spalten; sie waren allein Saat der Energieträger-Variante. <b>Neue Katalogfassung:</b> Die
         /// Prüfsumme jedes Brennstoffs ändert sich, der Schritt bildet sie für unveränderte Sätze neu.
-        public const int Zielversion = BrennstoffpreiseTraegerkarteSchema.SCHRITT;
+        /// Danach, mit dem ENTFALL DER GERÄTEKOSTENSPALTEN (KB-4), steht das Ziel auf
+        /// <see cref="GeraetekostenEntfallSchema.SCHRITT"/>: der Investitionsverweis und die Saat am
+        /// Wechselrichter, dann der Entfall der 32 Kostenspalten an den acht Investitionsgewerken und ihren
+        /// Projektkopien (<see cref="GeraetekostenEntfallSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg
+        /// dieser Gewerke liest eine der Spalten; Planwert, Dialoge und Berichte lesen die Satzvorlage.
+        /// <b>Neue Katalogfassung:</b> Die Prüfsumme jedes Satzes der acht Kataloge ändert sich, der Schritt
+        /// bildet sie für unveränderte Sätze neu.
+        public const int Zielversion = GeraetekostenEntfallSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

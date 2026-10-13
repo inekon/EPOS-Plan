@@ -79,9 +79,9 @@ namespace WindowsFormsApplication1
     /// <summary>Eine Kostenspalte eines Geraetekatalogs und die Position, die aus ihr entsteht.</summary>
     public sealed class Katalogkostenfeld
     {
-        internal Katalogkostenfeld(string spalte, int kategorie, string bemessung, string bezeichnung,
-                                   string kostenart, int sortierung, string bezugsspalte = null,
-                                   double bezugsteiler = 1.0, string einheitspalte = null)
+        public Katalogkostenfeld(string spalte, int kategorie, string bemessung, string bezeichnung,
+                                 string kostenart, int sortierung, string bezugsspalte = null,
+                                 double bezugsteiler = 1.0, string einheitspalte = null)
         {
             Spalte = spalte;
             Kategorie = kategorie;
@@ -126,8 +126,8 @@ namespace WindowsFormsApplication1
     /// <summary>Ein Gewerk der Saat: Katalog, Projektkopie, Kostenkomponente und seine Kostenspalten.</summary>
     public sealed class Katalogkostengewerk
     {
-        internal Katalogkostengewerk(string katalog, string kopie, int komponentenId,
-                                     IReadOnlyList<Katalogkostenfeld> felder)
+        public Katalogkostengewerk(string katalog, string kopie, int komponentenId,
+                                   IReadOnlyList<Katalogkostenfeld> felder)
         {
             Katalog = katalog;
             Kopie = kopie;
@@ -278,10 +278,16 @@ namespace WindowsFormsApplication1
         /// Die Zahl der Zeilen, die eine Satzvorlage tragen müssten und keinen Verweis haben —
         /// die Messlatte der Wache und der Vollständigkeitsprüfung.
         /// </summary>
-        public static int Offen()
+        public static int Offen() => Offen(GEWERKE);
+
+        /// <summary>
+        /// <see cref="Offen()"/> für eine Auswahl der Gewerke — der Weg, auf dem eine spätere Welle
+        /// dieselbe Maschinerie für ihr eigenes Gewerk fährt (<see cref="GeraetekostenEntfallSchema"/>).
+        /// </summary>
+        public static int Offen(IReadOnlyList<Katalogkostengewerk> gewerke)
         {
             int offen = 0;
-            foreach (Katalogkostengewerk g in GEWERKE)
+            foreach (Katalogkostengewerk g in gewerke ?? GEWERKE)
                 foreach (string tabelle in new[] { g.Katalog, g.Kopie })
                     foreach (Satzbefund b in Befunde(g, tabelle))
                         if (b.Verweis == 0 && b.Positionen.Count > 0) offen++;
@@ -299,7 +305,7 @@ namespace WindowsFormsApplication1
                     throw new InvalidOperationException("Schemaschritt " + Nr + ": Die Tabelle " + t +
                                                         " fehlt; ein frueherer Schritt ist nicht gelaufen.");
             int handgriffe = SpaltenAnlegen(bericht);
-            handgriffe += Saeen(bericht);
+            handgriffe += Saeen(bericht, GEWERKE);
             bericht?.Add("Rechenweg unberuehrt: Investition und Betrieb kommen aus Tab_ProjektWerte; " +
                          "der Referenzlauf bleibt byte-gleich");
             return handgriffe;
@@ -358,13 +364,18 @@ namespace WindowsFormsApplication1
             internal List<string> OhneBezug = new List<string>();
         }
 
-        private static int Saeen(IList<string> bericht)
+        /// <summary>
+        /// Sät die fehlenden Satzvorlagen der übergebenen Gewerke — <b>wiederholbar</b>; ein zweiter Lauf
+        /// ändert nichts. Eine spätere Welle fährt damit dieselbe Maschinerie für ihr eigenes Gewerk,
+        /// statt die Saat ein zweites Mal zu bauen (<see cref="GeraetekostenEntfallSchema"/>).
+        /// </summary>
+        public static int Saeen(IList<string> bericht, IReadOnlyList<Katalogkostengewerk> gewerke)
         {
             int vorlagen = 0, positionen = 0;
             string heute = DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
             var zielspalten = new HashSet<string>(DataRepository.SpaltenVonTabelle(TAB_KOSTENVORLAGEPOSITION),
                                                   StringComparer.OrdinalIgnoreCase);
-            foreach (Katalogkostengewerk g in GEWERKE)
+            foreach (Katalogkostengewerk g in gewerke ?? GEWERKE)
                 foreach (string tabelle in new[] { g.Katalog, g.Kopie })
                 {
                     var offen = Befunde(g, tabelle)

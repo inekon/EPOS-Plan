@@ -243,7 +243,7 @@ namespace WindowsFormsApplication1
                 new[]
                 {
                     "Bezeichner", "Firma", "Beschreibung", "Typ", "Baujahr", "Aufstellung", "Nennleistung",
-                    "maxPtherm", "Heizung", "Regelung", "Modulkosten", "Laenge", "Breite", "Hoehe", "Gewicht",
+                    "maxPtherm", "Heizung", "Regelung", "Laenge", "Breite", "Hoehe", "Gewicht",
                     "Raum", "Kuehlleistung", "Bauart", "Kuehlbetrieb", "Kuehl_Vorlauf", "Kuehl_Hilfsstromanteil",
                     "Mindestleistung_kW", "Taktverlustfaktor_Cd",
                     // UebergabegrenzeSchema (Schritt 205): die acht Geraetespalten; leer tragen sie nichts zur Pruefsumme bei.
@@ -258,9 +258,9 @@ namespace WindowsFormsApplication1
                 new[]
                 {
                     "Bezeichner", "Firma", "Beschreibung", "Ptherm", "Brennstoff", "Wirkungsgrad_Gas",
-                    "Wirkungsgrad_Öl", "Investitionskosten", "Raumbedarf", "Wartungskosten", "Nutzungsdauer",
+                    "Wirkungsgrad_Öl", "Raumbedarf", "Nutzungsdauer",
                     "CO2", "SO2", "NOx", "CO", "Staub", "Betriebsbereitschaftverlust", "Brennwert", "Vorlauf",
-                    "Ruecklauf", "Wartungskosten_Einheit", "Wirkungsgrad_Teillast30", "Kennlinie_Brennwert",
+                    "Ruecklauf", "Wirkungsgrad_Teillast30", "Kennlinie_Brennwert",
                     "Mindestleistung", "Anfahrverlust_kWh", "Mindestlaufzeit_min", "Bereitschaft_Einheit"
                 })
             { Anzeigeschluessel = "KABG_KATALOG_KESSEL" },
@@ -268,9 +268,8 @@ namespace WindowsFormsApplication1
                 new[]
                 {
                     "Bezeichner", "Firma", "Beschreibung", "Ptherm", "Pel", "Brennstoff", "Wirkungsgrad",
-                    "Investition_kwel", "Raumbedarf", "Wartungskosten_kwhel", "Nutzungsdauer", "NOX", "SO2", "CO",
-                    "CO2", "Staub", "Motortyp", "Grenzleistung", "Kosten_Modul", "Kosten_Montage",
-                    "Kosten_Lieferung", "Kosten_Schallschutzhaube", "Kosten_Abgasreinigung", "Vorlauf",
+                    "Raumbedarf", "Nutzungsdauer", "NOX", "SO2", "CO",
+                    "CO2", "Staub", "Motortyp", "Grenzleistung", "Vorlauf",
                     "Ruecklauf", "Wirkungsgrad_el", "Wirkungsgrad_th", "Wirkungsgrad_el_Teillast50",
                     "Wirkungsgrad_th_Teillast50", "Anfahrverlust_kWh", "Mindestlaufzeit_min",
                     // UebergabegrenzeSchema (Schritt 205): die Ruecklaufgrenze; leer traegt sie nichts zur Pruefsumme bei.
@@ -282,7 +281,7 @@ namespace WindowsFormsApplication1
                 {
                     "Bezeichner", "Firma", "Beschreibung", "Leistung", "Wirkungsgrad", "U_Mpp", "U_Leerlauf",
                     "I_Mpp", "I_Kurzschluss", "alpha_SC", "beta_OC", "gamma_PMP", "T_NOCT", "Laenge", "Breite",
-                    "Modulkosten", "Technologie"
+                    "Technologie"
                 })
             { Anzeigeschluessel = "KABG_KATALOG_PV" },
             new Katalogtabelle("Tab_Brauchwasser_STAMM", "BW",
@@ -411,7 +410,7 @@ namespace WindowsFormsApplication1
                 Konditionierung("ID_Vorlage", "ID_Gebaeude_Stamm"))
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_KONDITIONIERUNGSVORLAGE", Namensspalten = new[] { "Groesse", "Bezeichner" } },
             new Katalogtabelle("Tab_Pufferspeicher_STAMM", "PS",
-                new[] { "Bezeichner", "Hersteller", "Speichertyp", "Bereitschaftsverluste", "Gesamtvolumen", "Investitionskosten" })
+                new[] { "Bezeichner", "Hersteller", "Speichertyp", "Bereitschaftsverluste", "Gesamtvolumen" })
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_PUFFER" },
             new Katalogtabelle("Tab_PufferAuslegungParameter_STAMM", "PAP",
                 new[] { "Schluessel", "Wert", "Einheit", "Quelle", "Herkunftsart" })
@@ -420,7 +419,7 @@ namespace WindowsFormsApplication1
                 new[]
                 {
                     "Bezeichner", "Firma", "Beschreibung", "Kollektortyp", "Modulflaeche", "Aperturflaeche", "h0",
-                    "k1", "k2", "Kdir", "Kdfu", "Investitionskosten", "Bezugsflaeche"
+                    "k1", "k2", "Kdir", "Kdfu", "Bezugsflaeche"
                 })
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_SOLARKOLLEKTOR" },
             new Katalogtabelle("Tab_Solarganglinie_STAMM", "SOLGL",
@@ -459,7 +458,7 @@ namespace WindowsFormsApplication1
                     "Bezeichner", "Firma", "Beschreibung", "P_AC_Nenn", "S_AC_Max", "P_DC_Max", "U_Mpp_Min",
                     "U_Mpp_Max", "U_Dc_Max", "U_Start", "I_Dc_Max", "Anzahl_Mppt", "Straenge_Je_Mppt", "Eta05",
                     "Eta10", "Eta20", "Eta30", "Eta50", "Eta100", "Eta_Euro", "Eta_Max", "P_Standby", "P_Nacht",
-                    "Kosten", "Sandia_Pdco", "Sandia_Vdco", "Sandia_Pso", "Sandia_C0", "Sandia_C1", "Sandia_C2",
+                    "Sandia_Pdco", "Sandia_Vdco", "Sandia_Pso", "Sandia_C0", "Sandia_C1", "Sandia_C2",
                     "Sandia_C3", "Herkunft", "I_Sc_Max"
                 })
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_WECHSELRICHTER" },

@@ -5506,6 +5506,22 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_BRENNSTOFFPREISE_TRAEGERKARTE = BrennstoffpreiseTraegerkarteSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="GeraetekostenEntfallSchema.SCHRITT"/> — <b>die Kostenspalten der
+        /// Investitionsgewerke entfallen</b> (KB-4, Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine
+        /// Doppelhaltung"): der Investitionsverweis und die Satzvorlage am Wechselrichter, ein Sicherheitslauf
+        /// der Saat aller acht Gewerke dieser Welle, dann der Entfall ihrer 32 Kostenspalten an Katalog und
+        /// Projektkopie.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Rechenweg dieser Gewerke liest eine der Spalten —
+        /// gerechnet wird aus <c>Tab_ProjektWerte</c>; Planwert, Dialoge, Steckbriefe und Berichte lesen die
+        /// Satzvorlage. <b>Die Wache bricht benannt ab</b>, wenn nach der Saat noch ein Kostenwert ohne
+        /// Satzvorlage steht; die Spalten bleiben dann stehen. <b>Neue Katalogfassung:</b> Die Prüfsumme jedes
+        /// Satzes der acht Kataloge ändert sich; der Schritt bildet sie für jeden Satz neu, dessen Summe
+        /// vorher stimmte.</para>
+        /// </summary>
+        public const int SCHRITT_GERAETEKOSTEN_ENTFALL = GeraetekostenEntfallSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -8084,6 +8100,18 @@ namespace WindowsFormsApplication1
                         "saeten eine zweite Kostenbasis. KEIN Rechenergebnis aendert sich - gerechnet wird aus der " +
                         "Traegerwelt; die drei Spalten waren allein Saat der Energietraeger-Variante.",
                         Schritt_BrennstoffpreiseTraegerkarte),
+            // KB-4: Entfall der Gerätekostenspalten. Quelle ist GeraetekostenEntfallSchema, die Nummer steht
+            // allein dort.
+            new Schritt(SCHRITT_GERAETEKOSTEN_ENTFALL,
+                        "Tab_Wechselrichter(_STAMM): ID_KostenVorlageInvestition und die Satzvorlage aus " +
+                        "Kosten; Tab_BHKW, Tab_Heizkessel, Tab_WP, Tab_PV, Tab_Wechselrichter, " +
+                        "Tab_Solarkollektoren, Tab_Pufferspeicher, Tab_Kaeltemaschine (je samt _STAMM): die " +
+                        "32 Kostenspalten entfallen",
+                        "Derselbe Kostensatz stuende weiter am Geraet UND in der Position der Anlage, ohne " +
+                        "dass ein Mechanismus beide zusammenhaelt. KEIN Rechenergebnis aendert sich - " +
+                        "gerechnet wird aus Tab_ProjektWerte; die eine Basis ist die Satzvorlage des " +
+                        "zentralen Kostenkatalogs.",
+                        Schritt_GeraetekostenEntfall),
         };
 
         /// <summary>
@@ -15748,6 +15776,64 @@ namespace WindowsFormsApplication1
                         ? "stand bereits."
                         : ergebnis.Uebertragen + " Preis(e) uebertragen, " + ergebnis.Entfernt + " Spalte(n) entfernt, " +
                           ergebnis.PruefsummenNeu + " Pruefsumme(n) neu.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Die Kostenspalten der Investitionsgewerke entfallen" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_GERAETEKOSTEN_ENTFALL"/>, die Anweisungen bei
+        /// <see cref="GeraetekostenEntfallSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_GeraetekostenEntfall(Lauf l)
+        {
+            string nr = GeraetekostenEntfallSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in GeraetekostenEntfallSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            GeraetekostenEntfallSchema.Laufergebnis ergebnis;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    ergebnis = GeraetekostenEntfallSchema.Lauf(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!GeraetekostenEntfallSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Kostenspalten der Investitionsgewerke stehen nach dem Schritt noch.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Gerätekostenspalten entfallen - " +
+                    (ergebnis.Handgriffe == 0
+                        ? "stand bereits."
+                        : ergebnis.Verweisspalten + " Verweisspalte(n), " + ergebnis.Gesaet + " Satzvorlage(n) gesaet, " +
+                          ergebnis.Entfernt + " Spalte(n) entfernt, " + ergebnis.PruefsummenNeu + " Pruefsumme(n) neu.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

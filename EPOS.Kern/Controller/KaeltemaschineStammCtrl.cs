@@ -494,7 +494,6 @@ namespace WindowsFormsApplication1
             new DbParam("?", Wert(m.Nenn_EER)), new DbParam("?", Wert(m.Kaeltemittel)),
             new DbParam("?", Wert(m.Rueckkuehlart)), new DbParam("?", Wert(m.Mindestteillast_Prozent)),
             new DbParam("?", Wert(m.Hilfsstrom_Rueckkuehlung_kW)), new DbParam("?", Wert(m.Kaltwasser_Vorlauf_Min)),
-            new DbParam("?", Wert(m.Modulkosten)),
         };
 
         /// <summary>Schreibt den Kopf; <paramref name="projekt"/> ≠ <c>null</c> schreibt eine Projektkopie (ID_Projekt, ID_Stamm).</summary>

@@ -3600,6 +3600,31 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt GeraetekostenEntfallSchema.SCHRITT (KB-4): der Investitionsverweis und die Satzvorlage am
+            //      Wechselrichter, ein Sicherheitslauf der Saat aller acht Gewerke dieser Welle, dann der Entfall ihrer
+            //      32 Kostenspalten an Katalog und Projektkopie. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_GeraetekostenEntfall. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: kein Rechenweg dieser Gewerke liest eine der Spalten (gerechnet wird aus
+            //      Tab_ProjektWerte); Planwert, Dialoge und Berichte lesen die Satzvorlage.
+            //      NEUE KATALOGFASSUNG: Die Pruefsumme jedes Satzes der acht Kataloge aendert sich; der Schritt bildet
+            //      sie fuer jeden Satz neu, dessen Summe vorher stimmte.
+            string nrKb4 = GeraetekostenEntfallSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKb4 + " - Entfall der Geraetekostenspalten: " +
+                              (GeraetekostenEntfallSchema.Vollstaendig() ? "steht bereits" : "offen") +
+                              " (" + GeraetekostenEntfallSchema.Offen() + " Kostenspalte(n) noch da, " +
+                              GeraetekostenEntfallSchema.OhneVerweis().Count + " Zeile(n) ohne Satzvorlage).");
+            if (!trocken)
+            {
+                var berichtKb4 = new List<string>();
+                angelegt += GeraetekostenEntfallSchema.Ausfuehren(berichtKb4);
+                foreach (string zeile in berichtKb4)
+                    Console.WriteLine("Schritt " + nrKb4 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKb4 + " - vollstaendig: " + GeraetekostenEntfallSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
