@@ -7,6 +7,20 @@ using System.Linq;
 namespace WindowsFormsApplication1
 {
     /// <summary>
+    /// Der zuletzt gespeicherte Zonenplan eines Projektgebäudes (<see cref="ZonenplanCtrl.GespeichertJeGebaeude"/>).
+    /// </summary>
+    /// <param name="Plan">Der Plan: Zonen des Gebäudes, Räume über ihre gespeicherte Paarung.</param>
+    /// <param name="Dateiname">Der Dateiname der Quelle, aus der der Plan stammt.</param>
+    /// <param name="Zeitpunkt">Der Zeitpunkt jenes Imports (<c>Tab_Importquelle.Zeitpunkt</c>).</param>
+    /// <param name="HashGespeichert">SHA-256 jener Quelle.</param>
+    /// <param name="HashDatei">SHA-256 der gewählten Datei.</param>
+    /// <param name="PruefsummeAbweichend">Weicht die Prüfsumme der gewählten Datei ab?</param>
+    /// <param name="Raeume">Räume der Datei, die ihre gespeicherte Zone wiederfinden.</param>
+    /// <param name="Verloren">Gespeicherte Paarungen, deren Raum die Datei nicht mehr führt oder deren Zone fehlt.</param>
+    internal sealed record Zonenplanvorlage(Zonenplan Plan, string Dateiname, string Zeitpunkt, string HashGespeichert,
+                                            string HashDatei, bool PruefsummeAbweichend, int Raeume, int Verloren);
+
+    /// <summary>
     /// <b>Der Datenbankweg des Zonenplans</b> (Mehrzonenkonzept 6.4, Konzept Nutzungsprofile NP-F16, NP-F23): das
     /// Nutzungsprofil einer gespeicherten Zone über den Generator (<see cref="NutzungUebernehmen"/>), die Konditionierung der
     /// Projektdatei davor (<see cref="ProjektdateiUebernehmen"/>, Datei vor Profil) und der gespeicherte Plan eines früheren
@@ -227,6 +241,49 @@ namespace WindowsFormsApplication1
             List<(int Id, string Name, string Nutzung)> zonen = new GebaeudeZonenCtrl().LesenJeGebaeude(treffer.IdGebaeude)
                 .Select(z => (z.ID, z.Bezeichner, Zonennutzung(z.ID))).ToList();
             return Zonenplan.AusGespeichert(abbild, index, quelle.Zonenregel, haken, zonen, paarungen);
+        }
+
+        /// <summary>
+        /// <b>Der zuletzt gespeicherte Zonenplan eines Projektgebäudes</b> (GD-N, Nachzug aus GD-4) — die Vorbelegung von „Als
+        /// Mehrzonenmodell übernehmen…“: die jüngste Importquelle des Gebäudes, deren Raumpaarungen auf Zonen zeigen, die Zonen
+        /// des Gebäudes in ihrer Reihenfolge mit Bezeichner und Nutzung und die Regel der Quelle
+        /// (<see cref="Zonenplan.AusGespeichert"/>). Weicht die Prüfsumme der gewählten Datei von der dieser Quelle ab, ist der
+        /// Plan trotzdem vorgelegt — über die Raumkennungen, die die Datei noch führt — und die Abweichung benannt
+        /// (<see cref="Zonenplanvorlage.PruefsummeAbweichend"/>). <c>null</c> ohne Gebäude, ohne Quelle mit Paarung oder ohne
+        /// eine Paarung, die einen Raum der Datei trifft.
+        /// </summary>
+        /// <param name="idGebaeude">Das Projektgebäude (<c>Tab_Gebaeude.ID</c>).</param>
+        /// <param name="hashDatei">SHA-256 der gewählten Datei (Kleinbuchstaben; leer = unbekannt, gilt als abweichend).</param>
+        internal static Zonenplanvorlage GespeichertJeGebaeude(int idGebaeude, string hashDatei, GebaeudeAbbild abbild, int index,
+                                                               IReadOnlyDictionary<string, bool> haken = null)
+        {
+            if (idGebaeude <= 0 || abbild == null || index < 0 || index >= abbild.Gebaeude.Count) return null;
+            if (!ImportzuordnungSchema.Vollstaendig()) return null;
+            var import = new GebaeudeImportCtrl();
+            var jeKurz = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (AbbildRaum r in abbild.Gebaeude[index].Raeume)
+                jeKurz.TryAdd(Quellkennung.Kuerzen(r.Kennung), r.Kennung);
+            foreach (ImportquelleModel quelle in import.LesenQuellen(idGebaeude))
+            {
+                var alle = import.LesenZuordnungen(quelle.ID).Where(p => p.ID_Zone.HasValue).ToList();
+                if (alle.Count == 0) continue;   // eine Quelle ohne Zonenplan (etwa der Einzonenweg) - die nächst ältere
+                List<(string Raum, int IdZone)> paarungen = alle.Where(p => jeKurz.ContainsKey(p.Quellkennung))
+                                                                .Select(p => (jeKurz[p.Quellkennung], p.ID_Zone.Value)).ToList();
+                if (paarungen.Count == 0) return null;
+                List<(int Id, string Name, string Nutzung)> zonen = new GebaeudeZonenCtrl().LesenJeGebaeude(idGebaeude)
+                    .Select(z => (z.ID, z.Bezeichner, Zonennutzung(z.ID))).ToList();
+                var bekannte = new HashSet<int>(zonen.Select(z => z.Id));
+                int getroffen = paarungen.Count(p => bekannte.Contains(p.IdZone));
+                if (getroffen == 0) return null;
+                Zonenplan plan = Zonenplan.AusGespeichert(abbild, index, quelle.Zonenregel, haken, zonen, paarungen);
+                if (plan == null) return null;
+                string gespeichert = (quelle.Hash ?? "").Trim().ToLowerInvariant();
+                string datei = (hashDatei ?? "").Trim().ToLowerInvariant();
+                return new Zonenplanvorlage(plan, quelle.Dateiname ?? "", quelle.Zeitpunkt ?? "", gespeichert, datei,
+                                            !string.Equals(gespeichert, datei, StringComparison.Ordinal) || datei.Length == 0,
+                                            getroffen, alle.Count - getroffen);
+            }
+            return null;
         }
 
         /// <summary>

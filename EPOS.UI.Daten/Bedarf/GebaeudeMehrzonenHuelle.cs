@@ -78,7 +78,12 @@ namespace WindowsFormsApplication1
             Mehrzonenquellpruefung p = await Kulturweitergabe.Starten(() => MehrzonenuebernahmeCtrl.QuellePruefen(pfad, q));
             if (!p.Passend) return new GebaeudeMehrzonenstart(p.Meldung, null, pfad ?? "");
 
-            var import = new GebaeudeImportHuelle(_idProjekt, _ios);
+            var import = new GebaeudeImportHuelle(_idProjekt, _ios)
+            {
+                // GD-N: der zuletzt gespeicherte Zonenplan dieses Gebäudes als Vorbelegung des Zonenbaums.
+                Planvorlage = (abbild, index, haken) => ZonenplanCtrl.GespeichertJeGebaeude(_gebaeudeId(), p.HashDatei, abbild, index, haken),
+                ProjektdateiPruefen = true,
+            };
             string datei = q.Dateiname ?? "";
             Func<GebaeudeImportErgebnis, Task<string>> uebernehmen = ergebnis =>
             {
