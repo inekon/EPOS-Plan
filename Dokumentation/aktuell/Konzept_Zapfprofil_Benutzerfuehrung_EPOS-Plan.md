@@ -5,7 +5,8 @@ das Zielbild, Abschnitt 3 die Vorschläge ZB1 bis ZB10, Abschnitt 4 die Entschei
 Abschnitt 5 die Wellen. Der Anwender hat am 13.10.2026 entschieden: Karten mit Zusammenfassung (ZB‑Q1 A),
 Kalender aufklappbar im Zonenblock (ZB‑Q2 A), **beliebig viele** eigene Ferienzeiträume je Zone (ZB‑Q3 B,
 mit Schemaschritt) und Katalogimport mit Paketvorlage für die DIN‑4708‑Werte (ZB‑Q4 A); ZB‑Q5 folgt der
-Empfehlung (keine Vorbelegung). ZB1 (Abbrüche) und ZB7 sind in Arbeit.
+Empfehlung (keine Vorbelegung). Dazu kam am selben Tag ZB11, die Paketvorlage für die VDI-4655-Typtage.
+ZB1 (Abbrüche) und ZB7 sind in Arbeit.
 
 **Anlass:** Anwenderauftrag vom 13.10.2026 mit Bildschirmfoto aus Visual Studio
 (`ZapfprofilEingabeException` „Die Nutzungsart der Zone „Zone 1“ steht nicht (mehr) im Katalog — bitte
@@ -117,6 +118,7 @@ sieht seine Wirkung nicht.
 | **ZB8** | **Texte und Hinweise.** Die Zeilen „Vorgabe · …“ wandern in den Platzhalter des Felds und in die Hilfepille; Formeln nur im Aufklapper Rechenweg; der überholte `ZPG_GRUND_BUNDESLAND` entfällt mit ZB5; in der Stufe Einfach stehen nur Hinweise, die der Anwender dort beheben kann, die übrigen ab Erweitert. Alle Sätze bleiben `ZapfSatz` bzw. Ressource in beiden Sprachen. | B9 | klein bis mittel |
 | **ZB9** | **Katalogtabelle aus dem Zonenblock nehmen.** Die Klappliste bleibt (mit Bezugsart im Eintrag); die Tabelle des Katalogs öffnet ein Knopf „Katalog…“ als Blatt, nur lesend, mit „Wählen“. | B10 | klein |
 | **ZB10** | **Anzeigeeinstellungen aus dem Fachblock.** Literanzeige und Stundenschwelle stehen nur noch im Einstellungsdialog (Rubrik „Zapfprofil“); im Fachblock ein Verweis. | B11 | klein |
+| **ZB11** | **Paketvorlage „Typtage VDI 4655“** (Rückfrage des Anwenders „Typtage nach VDI 4655: Woher kommen die Daten?“, 13.10.2026; vom Anwender angenommen): Die Werte kommen allein aus dem lizenzierten Exemplar der Richtlinie (Entscheid ZU22, keine Auslieferung). Bisher nennt der Dialog „Typtage nach VDI 4655“ nur die sechs Dateien. Neu: eine Vorlage mit den sechs CSV-Dateien, vollständigen Kopfzeilen und Platzhaltern statt Werten samt Anleitung, im Installationsprogramm unter `{app}\Vorlage\Typtagpaket_VDI4655`, und der Dialog nennt sie. | Lücke der Führung | klein |
 
 **Was bleibt, wie es ist:** der Rechenweg und seine Ablehnungen, Schreibweg und OK-Prüfung,
 Blattwechsel aus dem Bedarfsprofil-Dialog (N35/N36), die Überlagerungen Auslegung, Messdaten und die
@@ -147,7 +149,7 @@ gleich, solange eine Zone nicht mehr als vier Zeiträume trägt.
 | W2 | ZB2, ZB4 (a), ZB6, ZB8, ZB10 — Führung, waagerechte Wahl, Texte | bunit je Zustand, `StilblattTests`, Rasterprobe für die Wohnungstabelle (N13 (u): sie rollt im Block noch quer) |
 | W3 | ZB5 Kalender der Zone: Schemaschritt Zonenferien (ZB‑Q3 B), Lesen, Speichern, Projektkopie und -transfer, Zapfkalender über die Liste; Karte mit Ferienliste und Jahresraster | Schemakette und Testdatenbank über das Schemawerkzeug (vorher den Nachbarsitzungen gemeldet), bunit, Kalenderprobe im Browser, Referenzlauf PASS ohne neue Basis |
 | W4 | ZB3, ZB4 (b), ZB9 — Aufbau in Karten und Gebäudegruppe, haftende Vorschau, ein Feld je Wert | bunit, Fensterprobe, Sichtprobe der drei Stufen; Höhe der Stufe Erweitert unter der Hälfte von heute |
-| W5 | ZB7 Pflegeweg DIN 4708 | Importtests mit erfundenen Werten, Bericht je Tabelle, „Nur prüfen“ |
+| W5 | ZB7 Pflegeweg DIN 4708, danach ZB11 Paketvorlage Typtage VDI 4655 | Importtests mit erfundenen Werten, Bericht je Tabelle, „Nur prüfen“; die unveränderten Vorlagen spielen nichts ein; Wache der Auslieferung beider Vorlagen |
 | W6 | Wiki-Seite „Brauchwasser-Zapfprofil“ und Logbuch | Wache `WikiProduktdatenWacheTests`, Gegenlesen nach Konzept Hilfesystem 13 |
 
 Jede Welle endet mit Statuszeile, Protokoll unter `Dokumentation/ueberholt/Protokolle/Zapfprofilgenerator/`
