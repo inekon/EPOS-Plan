@@ -2029,6 +2029,30 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     border-color: var(--epos-karte-rahmen-hover);
 }
 
+/* Die Wahl "Monat | Tag | Stunde" der Zeitachse: drei Knoepfe als eine Gruppe, aneinander
+   gesetzt, der gewaehlte gedrueckt wie "Bereich". */
+.epos-diagramm-einheiten {
+    display: inline-flex;
+    gap: 0;
+}
+
+.epos-diagramm-einheiten > .epos-diagramm-knopf:not(:first-child) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    margin-left: -1px;
+}
+
+.epos-diagramm-einheiten > .epos-diagramm-knopf:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+/* Das Tagesband einer Reihe (Oberflaechenregel) liegt VOR ihrem Kern und faengt keinen
+   Zeiger - der Balken und die Zeile gehoeren der Flaeche. */
+.epos-band {
+    pointer-events: none;
+}
+
 /* Ein gesperrter Umschalter (Farbmodus der Gebaeudeansicht) sieht gesperrt aus: hart (disabled) wie weich
    (aria-disabled, anklickbar, damit sein title den Grund nennt) in EINER Regel - sonst wirkt er aktiv und tut nichts. */
 .epos-diagramm-knopf:disabled,

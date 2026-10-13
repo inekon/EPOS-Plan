@@ -225,6 +225,17 @@ namespace WindowsFormsApplication1
             /// </summary>
             public bool Luecken;
 
+            /// <summary>
+            /// <b>Was die Reihe fachlich ist</b> (Oberflächenregel, Anwenderrückmeldung 13.10.2026):
+            /// Bedarf oder Erzeugung. Die Hülle nennt es, wo es nicht aus der Farbrolle folgt;
+            /// der Renderer reicht es in die <see cref="Datenreihe"/> des Modells durch. Nur der
+            /// Oberflächenmodus wertet es aus — das Bild des Berichts bleibt byte-gleich.
+            /// </summary>
+            public Reihenrolle Reihenrolle = Reihenrolle.Unbestimmt;
+
+            /// <summary>Dieselbe Reihe mit ihrer fachlichen Rolle — die Schreibweise der Hüllen.</summary>
+            public Reihe MitRolle(Reihenrolle rolle) { Reihenrolle = rolle; return this; }
+
             public Reihe(string n, double[] w, SKColor f) { Name = n; Werte = w; Farbe = f; }
 
             public Reihe(string n, double[] w, SKColor f, Stapelart gruppe,
@@ -2953,11 +2964,13 @@ namespace WindowsFormsApplication1
             }
 
             // DIE ZEICHENFLAECHE SAMT DATENFENSTER (Etappe E3). x zaehlt den INDEX
-            // der Reihe (0 … n-1), y ist die fertige Skala.
+            // der Reihe (0 … n-1), y ist die fertige Skala. Ein Jahresprofil (8 760 Stunden)
+            // zaehlt Jahresstunden - damit traegt die Oberflaeche die Wahl "Datum | Stunde im
+            // Jahr" (Anwenderentscheid 13.10.2026); die Befehlsliste bleibt dieselbe.
             z.Flaeche = new Zeichenflaeche(
                 rc.Modellrahmen(),
                 new Datenfenster(0, stundenwerte.Length - 1, min, max),
-                Achsenart.Index);
+                stundenwerte.Length == Zeitachse.STUNDEN_JAHR ? Achsenart.Stunden : Achsenart.Index);
 
             // Die Linie. 8 760 Punkte auf 1 146 Bildpunkte: jeder n-te Wert
             // genügt — mehr Punkte als Pixel zeichnen dasselbe Bild langsamer.
@@ -3243,7 +3256,8 @@ namespace WindowsFormsApplication1
                 // Fenster - eine kuerzere Reihe zeichnet das Bild ueber die volle
                 // Breite, nicht bis zur Haelfte.
                 z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, r.Werte,
-                                            Reihenfenster(z.Flaeche.Daten, r.Werte.Length)));
+                                            Reihenfenster(z.Flaeche.Daten, r.Werte.Length),
+                                            Reihenrolle: r.Reihenrolle));
             }
 
             return z;
@@ -4835,7 +4849,8 @@ namespace WindowsFormsApplication1
                 z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, prozent,
                                             new Datenfenster(xVon, xVon + prozent.Length - 1,
                                                              0, Y_PROZENT_MAX),
-                                            Huelle: stapeln, Bezug: stapeln ? stapelbezug : null));
+                                            Huelle: stapeln, Bezug: stapeln ? stapelbezug : null,
+                                            Reihenrolle: r.Reihenrolle));
             }
 
             if (stapeln)
@@ -4977,7 +4992,8 @@ namespace WindowsFormsApplication1
                                                          string yTitel, Achse achse, bool sortiert,
                                                          IReadOnlyList<Reihe> zweiteAchsen = null,
                                                          string y2Titel = null,
-                                                         Achsenfenster fenster = null)
+                                                         Achsenfenster fenster = null,
+                                                         bool stufenNachStapel = false)
         {
             int W = 1240, H = 560;
 
@@ -5099,7 +5115,11 @@ namespace WindowsFormsApplication1
                 Stapelart bezugsgruppe = stapelG.Any(r => r.Stapelgruppe == Stapelart.Flaeche) ? Stapelart.Flaeche
                                        : stapelG.Any(r => r.Stapelgruppe == Stapelart.Saeule) ? Stapelart.Saeule
                                        : Stapelart.Keine;
-                stapelbezug = bedarfslinie != null ? bedarfslinie.Werte
+                // stufenNachStapel: Der Stapel IST die Groesse des Bildes (die aufgeteilte
+                // PV-Erzeugung) - seine Oberkante waehlt die Stunde, nicht der Bedarf, sonst
+                // zeigte ein Tag mit abendlicher Bedarfsspitze keine Erzeugung.
+                stapelbezug = stufenNachStapel ? Stapeloberkante(stapelG, bezugsgruppe, n)
+                            : bedarfslinie != null ? bedarfslinie.Werte
                             : mitKontur ? kontur.Werte
                             : Stapeloberkante(stapelG, bezugsgruppe, n);
             }
@@ -5118,7 +5138,8 @@ namespace WindowsFormsApplication1
                 z.FuegeReihe(new Datenreihe(kontur.Name ?? "", Ton(kontur), konturstaerke,
                                             null, konturwerte,
                                             Reihenfenster(fensterLinks, konturwerte.Length),
-                                            Huelle: mitStapel, Bezug: stapelbezug));
+                                            Huelle: mitStapel, Bezug: stapelbezug,
+                                            Reihenrolle: kontur.Reihenrolle));
             }
 
             // (2) Der Stapel.
@@ -5132,7 +5153,8 @@ namespace WindowsFormsApplication1
                     z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                         ZeichneLinie(zr, rc, werte, 0, max, Ton(r), staerke));
                     z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, werte,
-                                                Reihenfenster(fensterLinks, werte.Length)));
+                                                Reihenfenster(fensterLinks, werte.Length),
+                                                Reihenrolle: r.Reihenrolle));
                 }
             }
             else
@@ -5189,7 +5211,8 @@ namespace WindowsFormsApplication1
                 });
                 z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, werte,
                                             Reihenfenster(fensterLinks, werte.Length),
-                                            Huelle: mitStapel, Bezug: stapelbezug));
+                                            Huelle: mitStapel, Bezug: stapelbezug,
+                                            Reihenrolle: r.Reihenrolle));
             }
 
             // (4) B3 — die zweite y-Achse mit EIGENER, GEMEINSAMER Skala.
@@ -6321,7 +6344,8 @@ namespace WindowsFormsApplication1
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                     VerlaufLinie(zr, rc, werte, min, max, Ton(r), staerke, r.Strichart, r.Luecken && !sortiert));
                 z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, muster, werte,
-                                            Reihenfenster(fensterLinks, werte.Length)));
+                                            Reihenfenster(fensterLinks, werte.Length),
+                                            Reihenrolle: r.Reihenrolle));
             }
 
             // W11b-B-26: die zweite Achse mit EIGENER Skala, von null bis zum
