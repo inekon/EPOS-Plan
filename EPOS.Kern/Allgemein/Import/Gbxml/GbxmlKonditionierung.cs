@@ -399,6 +399,41 @@ namespace WindowsFormsApplication1
         private static string Schluessel(double[] w) => string.Join(";", w.Select(v => v.ToString("R", CultureInfo.InvariantCulture)));
 
         // ==================================================================
+        //  Lastfelder der Zone (Welle DA-2, ZonenLastfelderSchema)
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Setzt die Lastfelder der Zone</b> aus den Räumen mit gbXML-Lasten — zusätzlich zu Kalender und Nennwerten, die der
+        /// Lauf liest: Lichtleistung je Fläche (Σ Licht × Fläche ÷ Fläche der Zone), Wärme je Person und Außenluft je Person
+        /// (personengewichtet, ohne Umrechnung). Latente Wärme bleibt außen vor (wie beim Nennwert). Räume ohne Wert zählen nicht.
+        /// </summary>
+        internal static void Lastfelder(ZoneModel zone, IEnumerable<AbbildRaum> raeume, double? flaecheM2)
+        {
+            if (zone == null) return;
+            List<AbbildRaum> mit = (raeume ?? Enumerable.Empty<AbbildRaum>()).Where(r => r.GbxmlLasten != null).ToList();
+            if (mit.Count == 0) return;
+            double flaeche = flaecheM2 > 0.0 ? flaecheM2.Value : mit.Sum(r => r.FlaecheM2 > 0.0 ? r.FlaecheM2.Value : 0.0);
+            List<AbbildRaum> licht = mit.Where(r => r.LichtWm2 >= 0.0 && r.FlaecheM2 > 0.0).ToList();
+            if (licht.Count > 0 && flaeche > 0.0)
+                zone.Licht_W_m2 = Math.Round(licht.Sum(r => r.LichtWm2.Value * r.FlaecheM2.Value) / flaeche, 3);
+            zone.Personen_Waerme_W = JePerson(mit, r => string.Equals(r.GbxmlLasten.WaermeArt, "Latent", StringComparison.OrdinalIgnoreCase)
+                                                        ? null : r.GbxmlLasten.WaermeJePersonW);
+            zone.Aussenluft_Person = JePerson(mit, r => r.GbxmlLasten.AussenluftJePersonM3h);
+        }
+
+        /// <summary>Das personengewichtete Mittel eines Werts je Person (ohne Personenzahl gleich gewichtet); <c>null</c> = kein Raum trägt ihn.</summary>
+        private static double? JePerson(List<AbbildRaum> raeume, Func<AbbildRaum, double?> wert)
+        {
+            var teile = raeume.Where(r => wert(r) >= 0.0)
+                              .Select(r => (Wert: wert(r).Value,
+                                            Gewicht: r.Personen ?? (r.FlaecheJePersonM2 > 0.0 && r.FlaecheM2 > 0.0 ? r.FlaecheM2 / r.FlaecheJePersonM2 : null) ?? 0.0))
+                              .ToList();
+            if (teile.Count == 0) return null;
+            double summe = teile.Sum(t => t.Gewicht);
+            return Math.Round(summe > 0.0 ? teile.Sum(t => t.Wert * t.Gewicht) / summe : teile.Average(t => t.Wert), 3);
+        }
+
+        // ==================================================================
         //  Abgleich mit dem Nutzungsprofil (E138 F2: Hinweis, es gilt die Datei)
         // ==================================================================
 

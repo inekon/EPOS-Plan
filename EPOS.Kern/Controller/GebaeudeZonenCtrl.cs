@@ -92,9 +92,18 @@ namespace WindowsFormsApplication1
                 ? new[] { VorheizenSchema.SPALTE_ZONE_VORHEIZZEIT }
                 : (IReadOnlyList<string>)Array.Empty<string>();
 
-        /// <summary>Alle Spalten der Zone hinter <see cref="ZonenSchema.Zonenspalten"/>: Kühlübergabe, Übergabe je Zone, Nutzungsprofil, Vorheizzeit.</summary>
+        /// <summary>
+        /// Die Lastfelder der Zone (DA-2, <see cref="ZonenLastfelderSchema"/>) — Datenaustausch, vom Lauf nicht gelesen; leer, solange
+        /// die Datenbank den Schritt nicht trägt. NULL bleibt NULL.
+        /// </summary>
+        private static IReadOnlyList<string> Lastspalten()
+            => GebaeudeZonenanschluss.LastfelderVorhanden()
+                ? ZonenLastfelderSchema.SPALTEN.Select(s => s.Spalte).ToList()
+                : (IReadOnlyList<string>)Array.Empty<string>();
+
+        /// <summary>Alle Spalten der Zone hinter <see cref="ZonenSchema.Zonenspalten"/>: Kühlübergabe, Übergabe je Zone, Nutzungsprofil, Vorheizzeit, Lastfelder.</summary>
         private static IReadOnlyList<string> Zusatzspalten()
-            => Kuehlspalten().Concat(Uebergabespalten()).Concat(Nutzungsprofilspalten()).Concat(Vorheizspalten()).ToList();
+            => Kuehlspalten().Concat(Uebergabespalten()).Concat(Nutzungsprofilspalten()).Concat(Vorheizspalten()).Concat(Lastspalten()).ToList();
 
         /// <summary>Die Werte zu <paramref name="zusatz"/> (aus <see cref="Zusatzspalten"/>) in derselben Reihenfolge.</summary>
         private static IEnumerable<DbParam> Zusatzwerte(ZoneModel z, IReadOnlyList<string> zusatz)
@@ -109,6 +118,10 @@ namespace WindowsFormsApplication1
                 {
                     Wert = z.Vorheizzeit_H.HasValue ? (object)z.Vorheizzeit_H.Value : DBNull.Value
                 });
+            if (zusatz.Contains(ZonenLastfelderSchema.SPALTE_LICHT))
+                werte = werte.Append(BaustoffCtrl.Zahl("@al", z.Aussenluft_Person))
+                             .Append(BaustoffCtrl.Zahl("@lw", z.Licht_W_m2))
+                             .Append(BaustoffCtrl.Zahl("@pw", z.Personen_Waerme_W));
             return werte;
         }
 
@@ -1440,7 +1453,10 @@ namespace WindowsFormsApplication1
                     Herkunft = BaustoffCtrl.TextAus(r, "Herkunft"),
                     Quellkennung = BaustoffCtrl.TextAus(r, "Quellkennung"),
                     Nutzungsprofil = BaustoffCtrl.TextAus(r, RaumnutzungSchema.SPALTE_ZONE_NUTZUNGSPROFIL),
-                    Vorheizzeit_H = BaustoffCtrl.GanzAus(r, VorheizenSchema.SPALTE_ZONE_VORHEIZZEIT)
+                    Vorheizzeit_H = BaustoffCtrl.GanzAus(r, VorheizenSchema.SPALTE_ZONE_VORHEIZZEIT),
+                    Aussenluft_Person = BaustoffCtrl.ZahlAus(r, ZonenLastfelderSchema.SPALTE_AUSSENLUFT_PERSON),
+                    Licht_W_m2 = BaustoffCtrl.ZahlAus(r, ZonenLastfelderSchema.SPALTE_LICHT),
+                    Personen_Waerme_W = BaustoffCtrl.ZahlAus(r, ZonenLastfelderSchema.SPALTE_PERSONEN_WAERME),
                 };
                 liste.Add(z);
                 jeId[z.ID] = z;
