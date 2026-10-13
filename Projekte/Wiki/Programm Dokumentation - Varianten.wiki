@@ -41,20 +41,21 @@ Die Seite gliedert sich unter dem Kopf in zwei Abschnitte: '''Komponenten und Ei
 === Ergebnisse — Energie ===
 Der Abschnitt stellt die Energie-Ergebnisse von Stammprojekt und Varianten gegenüber – dieselben Versionen in derselben Reihenfolge wie ''Komponenten im Vergleich'', also das Stammprojekt und die unter ''Im Vergleich:'' gewählten Varianten. Der Spaltenkopf nennt die Version und ihren Simulationsstand. Die Werte stammen aus dem letzten gespeicherten Simulationslauf jeder Version und sind dieselben Kennzahlen wie in der Kennzahlentafel des Berichts.
 
-Die Zeilen sind in Gruppen geordnet, die Einheit steht im Zeilenkopf:
+Die Zeilen sind in Gruppen geordnet, die Einheit steht im Zeilenkopf. Offen in der Tafel stehen:
 * '''Bedarf''' – Wärmebedarf gesamt und davon Heizung, Brauchwasser und Prozesswärme, Wärmelast, Kältebedarf und Kältelast, Strombedarf und Stromlast.
 * '''Wärmeerzeugung''' – die Wärme je Erzeuger: Wärmepumpe, BHKW, Spitzenkessel, Solarthermie.
 * '''Strom''' – Stromerzeugung von BHKW und Photovoltaik, Netzeinspeisung, PV-Eigenverbrauchsquote und Autarkiegrad.
-* '''Endenergie''' – Brennstoffeinsatz und Netzbezug Strom.
+* '''Endenergie''' – Brennstoffeinsatz und Netzbezug Strom, darunter je Energieträger eine Zeile ''Endenergie <Träger>'' mit der Menge in MWh/a aus dem Kostennachweis, ohne Kosten. Der Strom aus dem Netz steht nur als ''Netzbezug Strom''. Rechnet eine Kälteerzeugung ihren Strom mit einem eigenen Energieträger ab, steht diese Menge als ''Endenergie <Träger> (Kältestrom)''. Führt nur eine Version einen Träger, zeigen die übrigen einen Gedankenstrich.
 * '''Deckung''' – Wärmedeckung der Wärmepumpe, ungedeckter Wärmebedarf und die Deckungsgrade je Bedarfsart.
-* '''Kälte''', '''Effizienz''' und '''Gebäude''' – Kälteerzeugung und Jahresarbeitszahl Kälte, Jahresarbeitszahl und Vollbenutzungsstunden der Erzeuger, Lüftungs- und Aufheizwerte der Gebäude.
+* '''Effizienz''' – die Jahresarbeitszahl der Wärmepumpe, die Jahresarbeitszahl Kälte und die Vollbenutzungsstunden der Erzeuger.
+Darunter stehen zugeklappt die Gruppen '''Kälte''' (Kälteerzeugung, Kältestrom, Takt- und Teillastwerte der Kältemaschinen), '''Weitere Effizienzwerte''' (Bivalenz, Stunden außerhalb der Kennlinie, Speichertemperaturen), '''Gebäude''' (Lüftungs-, Aufheiz- und Vorheizwerte) und am Ende '''Emissionen''' (CO₂ gesamt in t/a, CO₂ spezifisch in g/kWh und das CO₂ des Kältestroms in t/a).
 Eine Zeile erscheint nur, wenn wenigstens eine Version einen Wert führt. Kosten zeigt der Abschnitt nicht; sie stehen unter ''Wirtschaftlichkeit''.
 
-Weicht ein Wert vom Stammprojekt ab, ist die Zelle hinterlegt und links markiert wie in ''Komponenten im Vergleich''; darunter steht leise die Abweichung zum Stamm in Prozent. Eine Version ohne Simulationsergebnis zeigt einen Gedankenstrich mit dem Kurztext ''nicht simuliert''. Ist keine Version im Vergleich simuliert, steht statt der Tafel ein Hinweis. Viele Varianten rollen innerhalb der Tafel zur Seite, die Spalte ''Kennzahl'' bleibt dabei stehen.
+Weicht ein Wert vom Stammprojekt ab, ist die Zelle hinterlegt und links markiert wie in ''Komponenten im Vergleich''; darunter steht leise die Abweichung zum Stamm in Prozent. Die Werte einer Zeile tragen in allen Versionen dieselben Nachkommastellen. Eine Version ohne Simulationsergebnis zeigt leise Gedankenstriche, ihr Spaltenkopf nennt ''nicht simuliert''. Ist keine Version im Vergleich simuliert, steht statt der Tafel ein Hinweis. Viele Varianten rollen innerhalb der Tafel zur Seite, die Spalte ''Kennzahl'' bleibt dabei stehen.
 
-Unter der Tafel steht die Klappgruppe '''Emissionen''' mit CO₂ gesamt in t/a, CO₂ spezifisch in g/kWh und dem CO₂ des Kältestroms in t/a. Sie ist beim Öffnen der Seite zugeklappt; ihr Kopf nennt die Zahl der Kennzahlen und zeigt ''weicht vom Stammprojekt ab'', sobald eine Zelle darin abweicht. Ein Klick auf den Kopf klappt sie auf und zu; die Stellung bleibt bis zum Ende der Sitzung erhalten.
+Jede zugeklappte Gruppe ist beim Öffnen der Seite zu; ihr Kopf nennt die Zahl der Kennzahlen und zeigt ''weicht vom Stammprojekt ab'', sobald eine Zelle darin abweicht. Ein Klick auf den Kopf klappt sie auf und zu; die Stellung gilt je Gruppe und bleibt bis zum Ende der Sitzung erhalten.
 
-Ist '''nur Unterschiede''' eingeschaltet, blendet der Abschnitt auch hier die Gruppen aus, in denen keine Version vom Stammprojekt abweicht.
+Ist '''nur Unterschiede''' eingeschaltet, blendet der Abschnitt auch hier die Gruppen aus, in denen keine Version vom Stammprojekt abweicht – offene wie zugeklappte.
 
 == Unterschiede übernehmen ==
 {{Anker|uebernahme|komponentenuebernahme}}
