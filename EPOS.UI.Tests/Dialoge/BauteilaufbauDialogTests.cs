@@ -175,7 +175,7 @@ public class BauteilaufbauDialogTests : EposBunitContext
         Assert.Equal(new[] { "für jede Bauteilart", "Außenwand", "Dach", "Bodenplatte" },
                      Feld(blatt, "Bauteilart").QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToArray());
 
-        Assert.Equal(new[] { "Dicke [mm]", "λ [W/(mK)]", "ρ [kg/m³]", "c_p [J/(kgK)]" },
+        Assert.Equal(new[] { "Dicke [mm]", "λ [W/(m·K)]", "ρ [kg/m³]", "c_p [J/(kg·K)]" },
                      blatt.QuerySelectorAll(".epos-zr-kopfzelle").Select(e => e.TextContent.Trim()).ToArray());
         Assert.Equal(3, Schichtzeilen(blatt).Count);
         Assert.Equal(new[] { "1", "2", "3" },

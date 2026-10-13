@@ -21,14 +21,14 @@ für die hier genannten Gegenstände ab.
 - Kältemaschinen-Dialog (KA‑E‑26/27, #1029) gebaut: Wärmepumpen mit Kühlfunktion im Katalog, Layout.
 - Basis R52 `2026-10-11_R52_Vorheizen`; Schemaschritt: es gilt allein die Kopfzeile „Schemaschritt angemeldet“ der Statusdatei (zuletzt 222 frei); von dieser Sitzung ist keiner belegt.
 - Abgestimmt mit der Sitzung Gebäudesimulation (11.10.): Gebäudedialog/Mehrzonen-Import (ihr Entwurf GD, #1004) und DIN‑18599‑10‑Normprofile liegen dort; Kalenderprobe-Reparatur (`de5043b0a`) und Konditionierungsprobe-Prüfzeile (`516199024`) von uns, mit ihnen abgestimmt.
-- Übersicht in Berichte & Kosten (Statuszeile #1033, 13.10.2026, Sitzung `session_01Mt7MsJGzcGr77yqBsxwpLj`): Vergleichstabelle je Gewerk mit Kennwerten und markierten Abweichungen, Kopf in drei Teilen, KI-Sicht erweitert. Sichtabnahme unter Windows und die Version des Logbuchsatzes sind offen.
+- Übersicht in Berichte & Kosten (Statuszeile #1033, 13.10.2026, Sitzung `session_01Mt7MsJGzcGr77yqBsxwpLj`): Vergleichstabelle je Gewerk mit Kennwerten und markierten Abweichungen, Kopf in drei Teilen, KI-Sicht erweitert. Sichtabnahme unter Windows und die Version des Logbuchsatzes sind offen. Dazu zwei Nachzüge am selben Tag: Statuszeile #1035 (Kältemaschine als Gewerk im Komponentenvergleich) und #1036 (Einheiten in den Spaltenköpfen der Auswahllisten, rund 45 Dialoge).
 - Es laufen keine Agenten, keine offenen Worktrees.
 
 ## 2 Geltende Entscheide (Auswahl)
 
 - Kältebedarf (11.10.): K2–K4 als nächste Welle; K3 hier gebaut, abgestimmt mit Kälteanlagen — Abzugsstelle `SimulationKaeltebedarf.AbzugVorDerKaskade(h)`/`BedarfDerKaskade(…)` ist der Andockpunkt für K‑D; Split-Strom je Kühlträger und Zähler erst mit K6 als Schemaschritt (bis dahin Stromträger des Projekts mit Hinweis); Statusbit „Wärmebedarfsdaten“ (16) zählt weiterhin Kühlzeilen.
 - Anlagendialog (11.10., KA‑E‑17 bis 22): nur Kästchen, gewählte Projektzeile durch Hervorhebung, Klick wählt, Ankreuzen wählt nicht; Katalog-Knopfleiste in der Zeile „gewählter Satz“, Stift dort entfällt, Stifte je Listenzeile bleiben = Bearbeiten…; Schloss setzen… und Löschen beim Projektsatz weich gesperrt „Katalogsatz wählen“, Neu… immer Katalogsatz, Vergleichen… je Bereich; Bearbeiten… im Projektkopf entfällt; Geltung alle Wirte. Wärmepumpe: Bearbeiten… öffnet für Projekt- und Katalogsatz dieselbe Überlagerung aus Satz und Anlage, Auswahlliste „Wärmepumpen Auswahl“ mit „Modul-Katalog…“ entfällt, je Aufruf eine Anlage mit ihrer Kennlinie, Abschnitte ohne Daten beim Katalogsatz weich gesperrt „nur im Projekt“; Knopfleiste und Schlussleiste der Wärmepumpe wie die anderen Dialoge.
-- Zur Entscheidung vorgelegt, Empfehlung „so lassen“, Antwort offen: „Vergrößern“ am Projektsatz des Gebäudes (Satz des Projektgebäudes: Ausrichtung, Fläche, Export, Simulation) und „Vergrößern“ neben Bearbeiten… bei Wärmebedarf extern und Stromganglinie.
+- Anwenderentscheid 13.10.: Die zwei „Vergrößern“ bleiben, wie sie sind — am Projektsatz des Gebäudes (Satz des Projektgebäudes: Ausrichtung, Fläche, Export, Simulation) und neben Bearbeiten… bei Wärmebedarf extern und Stromganglinie (Empfehlung „so lassen“ angenommen).
 - KAL1 (11.10.): Abschnitt „Einzeltage (Feiertage, Ausnahmen)“ als Klappgruppe, zugeklappt beim Öffnen, Anzahl im Kopf, „+ Einzeltag“ und „Feiertage laden“ in der Kopfzeile.
 - Arbeitsweise: Push am Ende jeder Welle freigegeben; kein Wiki-Upload ohne Rückfrage; Modellregel des Anwenders: Fable 5.1 orchestriert, Opus 5.5 setzt um, Sonnet/Haiku für Mechanik und Zählungen.
 - Dialoge 12.10. (KA‑E‑23 bis KA‑E‑27, Konzept Katalogauswahl Abschnitt 3): Wärme-/Kältebedarf extern folgt dem Gerüst des Wärmepumpendialogs (Satzzeile mit Kurzangaben und Knopfleiste, eine Bearbeiten-Überlagerung für Projekt- und Katalogsatz); Vergleichen… vergleicht Projektzeilen und Katalogsätze gemeinsam (zwei bis drei, Herkunft im Spaltenkopf, sonst weich gesperrt); jede Bearbeiten-Überlagerung zeigt links einen Gerätesteckbrief (Wärmepumpe mit Arbeitspunkt am eingestellten Vorlauf); Wärmepumpen mit Kühlkennlinie stehen in der Katalogauswahl des Kältemaschinen-Dialogs (Übernehmen = Projektwärmepumpe mit Kühlbetrieb über `WPCtrl.KuehlkonfigurationSchreiben`, Rang in der Kältefolge anhängen, Entfernen schaltet nur den Kühlbetrieb aus und entfernt den Rang, Bezugspunkt 7 °C Kaltwasser mit Rückfall, Vergleich nur innerhalb einer Art, Zulässigkeit je Art, eine Zeile je Projektkopie); Knopfleiste bricht um und bleibt in der Dialogbreite, Katalogfunktionen im Katalogkopf, Infoknöpfe im Satzkopf (zunächst Kältemaschine). Bearbeiten… einer Wärmepumpe im Kältemaschinen-Dialog ist bis KM‑K2 weich gesperrt.
@@ -42,6 +42,7 @@ für die hier genannten Gegenstände ab.
 - Nach jedem Merge mit origin die ChartProben-Messlatte beachten: Auf einem Container mit anderer Schriftkette (Carlito) weichen alle 222 Hashes ab; der Nachweis ist dann der Vergleichslauf derselben Maschine auf dem origin-Stand (ChartProben-LIESMICH), die CI hält die Messlatte.
 - `git lfs install --local` im Container, sonst liegt nach einem Merge ein Zeiger.
 - Browserproben: eigener Port, nur die eigene PID beenden; ein fremder Wirt lief auf 5371.
+- Fehlt im Container das .NET-SDK und sperrt der Proxy `builds.dotnet.microsoft.com` und `download.visualstudio.microsoft.com`: das Ubuntu-Paket `dotnet-sdk-10.0` samt Abhängigkeiten mit `apt-get download` holen, mit `dpkg-deb -x` benutzerlokal entpacken, `~/.dotnet` auf `usr/lib/dotnet` des Entpackordners verweisen und im SDK-Ordner den Alias `sdk/10.0.400` auf `10.0.112` legen. Dauerhaft gehört die SDK-Installation ins Setup-Skript der Cloud-Umgebung.
 
 ## 4 Offene Punkte (mit Empfehlung)
 
@@ -51,7 +52,8 @@ für die hier genannten Gegenstände ab.
 4. Wiki: Repo-Quellen aller elf Wirte, Startseite Kältebedarf, Gebäude (Einzeltage) fortgeschrieben; Bilder neu ziehen (`wikibilder.mjs`); Sammel-Upload nur nach Rückfrage mit Versionsnummer; 33 Logbuchsätze unter 1.2.0.9.
 5. Fremde Befunde, nur gemeldet: Katalogprobe 8 Querroll-Verstöße in Verwaltungen N13b–N22a (Stammblatt 4–27 px); Fensterprobe `dubletten 1194x834`.
 6. Bei der Gebäudesimulation: Gebäudedialog/Mehrzonen-Import (GD), Normprofile DIN 18599‑10 (Außenluft je Person, KI-Anweisungsweg), Jahreswärmebedarf in der Zusammenfassung des Gebäudedialogs (übergeben, Konzept Katalogauswahl Abschnitt 5).
-7. Nachzug KM‑K2: Naht für eine Wärmepumpen-Anlagenzeile (`WaermepumpeAnlageGaben`), dann öffnet Bearbeiten… im Kältemaschinen-Dialog die Wärmepumpen-Überlagerung; Wärmekaskade bei erster Wärmepumpe aus dem Kältedialog; Verwendungsmarke je Projektkopie; drei unbenutzte Textfelder/Ressourcen der entfallenen Zeile „Wärmepumpen im Kühlbetrieb" entfernen.
+7. (erledigt mit Statuszeile #1034) Nachzug KM‑K2: Naht für eine Wärmepumpen-Anlagenzeile (`WaermepumpeAnlageGaben`), dann öffnet Bearbeiten… im Kältemaschinen-Dialog die Wärmepumpen-Überlagerung; Wärmekaskade bei erster Wärmepumpe aus dem Kältedialog; Verwendungsmarke je Projektkopie; drei unbenutzte Textfelder/Ressourcen der entfallenen Zeile „Wärmepumpen im Kühlbetrieb" entfernen.
+8. Offen beim Anwender aus der Übersicht und den Einheiten: Versionsnummer der zwei Logbuchsätze, Einheit des Zeitintervalls (Strom-/PV-Ganglinie), Zeitbezug des Leistungspreises der Projekt-Brennstoffe; Nachzüge Kältemaschine: Übernahme als Ganzes, Vorlagenplatzhalter.
 
 ## 5 Einstiegs-Prompt für die neue Sitzung
 
@@ -107,8 +109,8 @@ anfassen, Reihenfolge abstimmen), Konto 3 „Dialoge und Korrekturen“ (KT-Well
 Support, Berichterstellung, Wiki. Statusnummern, Basen und Schemaschritte werden schnell vergeben;
 Abstimmung über send_message an die Sitzungen (list_sessions), nicht über Dateien.
 
-Offen beim Anwender: Sichtabnahme unter Windows (Papier Abschnitt 4, Punkt 1) und der Entscheid zu den
-zwei „Vergrößern“-Knöpfen (Empfehlung: so lassen).
+Offen beim Anwender: Sichtabnahme unter Windows (Papier Abschnitt 4, Punkt 1). Der Entscheid zu den
+zwei „Vergrößern“-Knöpfen ist gefallen (13.10.: so lassen).
 
 Erste Schritte: (1) Stand prüfen: `git status` sauber, keine Konfliktmarker, keine liegen gebliebene
 AGENT_LAEUFT, Testdatenbank kein LFS-Zeiger, Ressourcen-XML gültig. (2) Stand in höchstens fünf Zeilen

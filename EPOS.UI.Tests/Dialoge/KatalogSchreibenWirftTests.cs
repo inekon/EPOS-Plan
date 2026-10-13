@@ -1201,7 +1201,7 @@ public class KatalogSchreibenWirftTests : EposBunitContext
     public void PvGanglinie_wirft_das_Erneuern_bleibt_die_Rueckfrage_offen_und_die_Projektkopie_unveraendert()
     {
         var cut = PvGanglinie(erneuern: _ => Wirft<Task<PvGanglinieErneuerung>>(), mitProjektzeile: true);
-        cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr button")[0].Click();
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr .epos-projektzeile")[0].Click();
         cut.Find(".epos-pvg-erneuernknopf").Click();
         cut.Find(".epos-pvg-erneuern").QuerySelectorAll("button").First(b => b.TextContent.Trim() == "OK").Click();
         Assert.True(cut.Instance.ErneuernOffen);
@@ -1216,7 +1216,7 @@ public class KatalogSchreibenWirftTests : EposBunitContext
     public void PvGanglinie_ohne_Ausnahme_erneuert()
     {
         var cut = PvGanglinie(mitProjektzeile: true);
-        cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr button")[0].Click();
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr .epos-projektzeile")[0].Click();
         cut.Find(".epos-pvg-erneuernknopf").Click();
         cut.Find(".epos-pvg-erneuern").QuerySelectorAll("button").First(b => b.TextContent.Trim() == "OK").Click();
         Assert.False(cut.Instance.ErneuernOffen);

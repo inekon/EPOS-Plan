@@ -36,6 +36,7 @@
 @using System.Globalization
 @using WindowsFormsApplication1
 @using EPOS.UI.Seiten.Start
+@using EPOS.UI.Dialoge.Waermepumpe
 @implements IDisposable
 
 <div class="epos-dialog epos-kaeltemaschine-anlage" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
@@ -204,10 +205,21 @@
             }
             @if (SatzIstWaermepumpe)
             {
-                @* KM-K1: Waermepumpen bearbeitet der Waermepumpendialog (Anlagenfelder, Kuehlbetriebsgruppe, Steckbrief). *@
-                <button type="button" class="epos-knopf epos-knopf--bearbeiten-wp" aria-disabled="true"
-                        title="@Resource.KMA_WP_BEARBEITEN_GESPERRT"
-                        @onclick="() => BeiSchlossAbgelehnt(Resource.KMA_WP_BEARBEITEN_GESPERRT)">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
+                @* KM-K2: Mit der Naht WaermepumpeAnlageGaben oeffnet „Bearbeiten…" die Waermepumpen-Ueberlagerung
+                   (Anlagenfelder samt Geraetesteckbrief und Klappgruppe „Kuehlbetrieb"), sonst bleibt die benannte
+                   Sperre - der Katalogsatz bearbeitet weiterhin der Waermepumpendialog. *@
+                @if (WpBearbeitbar)
+                {
+                    <button type="button" class="epos-knopf epos-knopf--bearbeiten-wp"
+                            title="@Resource.AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS"
+                            @onclick="BeiWpBearbeiten">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
+                }
+                else
+                {
+                    <button type="button" class="epos-knopf epos-knopf--bearbeiten-wp" aria-disabled="true"
+                            title="@Resource.KMA_WP_BEARBEITEN_GESPERRT"
+                            @onclick="() => BeiSchlossAbgelehnt(Resource.KMA_WP_BEARBEITEN_GESPERRT)">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
+                }
             }
             else if (SatzArt == Satzmarke.Projektsatz)
             {
@@ -342,6 +354,23 @@
         </KindInhalt>
     </Ueberlagerung>
 
+    @* --- KM-K2: die Waermepumpen-Ueberlagerung („Bearbeiten…" einer Projektwaermepumpe) --- *@
+    <Ueberlagerung Offen="@(_wpGaben is not null)" Titel="@Resource.KMA_WP_TITEL_BEARBEITEN"
+                   Kopfzusatz="@MarkeProjektsatz" Geschlossen="BeiWpVerworfen">
+        <KindInhalt>
+            @if (_wpGaben is not null)
+            {
+                @if (!string.IsNullOrEmpty(_wpFehler))
+                {
+                    <Warnbanner Stufe="WarnStufe.Warnung" Text="@_wpFehler" />
+                }
+                <WaermepumpeAnlageFelder @ref="_wpFelder" @key="_wpGaben.IdAnlage" @attributes="_wpGaben.Gaben"
+                                         KostenleisteAnzeigen="false" />
+                <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" Ergebnis="BeiWpUebernommen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
     <Rueckfrage Offen="@_loeschfrage" TitelText="@Texte.KnopfLoeschen" Frage="@_loeschfrageText"
                 JaText="@Texte.Ja" NeinText="@Texte.Nein" Beantwortet="BeiLoeschfrage" />
 </div>
@@ -392,6 +421,21 @@
 
     /// <summary>KM-K1: die Projektwärmepumpen im Kühlbetrieb (eine Zeile je Projektkopie); <c>null</c> = keine.</summary>
     [Parameter] public Func<IReadOnlyList<KuehlWaermepumpeZeile>>? KuehlWaermepumpen { get; set; }
+
+    /// <summary>
+    /// KM-K2: der Bearbeitungsweg einer Wärmepumpen-Anlagenzeile über ihre Projektkopie (<c>Tab_WP.ID</c>) — die Naht,
+    /// mit der „Bearbeiten…" einer Wärmepumpe die Wärmepumpen-Überlagerung öffnet (<c>WaermepumpeAnlageFelder</c> samt
+    /// Gerätesteckbrief und Klappgruppe „Kühlbetrieb"). <c>null</c> oder ein <c>null</c>-Ergebnis = der Dialog bleibt bei
+    /// seiner benannten Sperre „Wärmepumpen bearbeitet der Wärmepumpendialog".
+    /// </summary>
+    [Parameter] public Func<int, WaermepumpeAnlagegaben?>? WaermepumpeAnlageGaben { get; set; }
+
+    /// <summary>
+    /// KM-K2: die Namen ALLER Wärmepumpen-Projektkopien des Projekts — die Verwendungsmarke „im Projekt verwendet"
+    /// steht je Projektkopie, nicht erst nach eingeschaltetem Kühlbetrieb. <c>null</c> = nur die Wärmepumpen der
+    /// Projektliste zählen.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<string>>? WaermepumpeKopien { get; set; }
 
     /// <summary>KM-K1: eine Katalog-Wärmepumpe (Stamm-ID) übernehmen und ihren Kühlbetrieb einschalten — sofort.</summary>
     [Parameter] public Func<int, KuehlWpUebernahme>? WaermepumpeUebernehmen { get; set; }
@@ -515,6 +559,11 @@
     private string? _satzUeberlagerungFehler;
     private KaeltemaschineAnlageDaten? _anlagenmerker;
     private (double Invest, double Betrieb)? _kosten;
+
+    /// <summary>KM-K2: die offene Wärmepumpen-Überlagerung (Gaben, Anlagenzeile und Schreibweg); <c>null</c> = zu.</summary>
+    private WaermepumpeAnlagegaben? _wpGaben;
+    private WaermepumpeAnlageFelder? _wpFelder;
+    private string? _wpFehler;
 
     private IReadOnlyDictionary<string, object>? _editorGaben;
     private int _editorVorwahl;
@@ -662,10 +711,23 @@
         _bilder.Clear();
     }
 
-    /// <summary>Die Verwendungsmarke „im Projekt": über den Gerätenamen der Projektkopie.</summary>
+    /// <summary>
+    /// Die Verwendungsmarke „im Projekt": über den Gerätenamen der Projektkopie. KM-K2: Bei der Wärmepumpe zählt JEDE
+    /// Projektkopie des Projekts (Gabe <see cref="WaermepumpeKopien"/>) — wie in der Projektliste des
+    /// Wärmepumpendialogs; ohne die Gabe bleiben es die Wärmepumpen dieser Projektliste.
+    /// </summary>
     private void VerwendungStempeln()
         => Katalogverwendung.Stempeln(_katalog, Sichtbare.Select(z => z.Arbeit.Geraet?.Bezeichner ?? z.Arbeit.Bezeichner)
-                                                .Concat(SichtbareWp.Select(w => w.Daten.Bezeichner)));
+                                                .Concat(SichtbareWp.Select(w => w.Daten.Bezeichner))
+                                                .Concat(Kopienamen()));
+
+    /// <summary>Die Namen der Wärmepumpen-Projektkopien; leer ohne die Gabe oder wenn sie wirft.</summary>
+    private IReadOnlyList<string> Kopienamen()
+    {
+        if (WaermepumpeKopien is null) return Array.Empty<string>();
+        try { return WaermepumpeKopien() ?? Array.Empty<string>(); }
+        catch { return Array.Empty<string>(); }
+    }
 
     /// <summary>
     /// KM-K1: liest die Projektwärmepumpen im Kühlbetrieb neu; vorgemerkte Ausschaltungen bleiben stehen, eine wieder
@@ -759,12 +821,11 @@
     /// </summary>
     private string? KatalogSperrgrund => SatzArt == Satzmarke.Projektsatz ? Resource.AUSWAHL_SPERRE_KATALOGSATZ : null;
 
-    private void BeiWahlGeaendert(Auswahlbereich bereich)
-    {
-        if (bereich != Auswahlbereich.Projekt || _projektWahl.Zuletzt is not string s) return;
-        if (!_projektWahl.IstGewaehlt(s)) return;
-        if (s != _gewaehlt) Waehlen(s);
-    }
+    /// <summary>
+    /// Ein Kästchen hat geschaltet: Der Wirt zeichnet neu, die Sperren seiner Bereichsknöpfe folgen der Wahl. Die
+    /// gewählte Zeile bleibt — Ankreuzen wählt nicht (KA‑E‑17), die Zeile wählt allein der Klick in die Zeile.
+    /// </summary>
+    private void BeiWahlGeaendert(Auswahlbereich bereich) { }
 
     private void BeiKatalogKaestchen(IReadOnlyList<string> gewaehlt)
     {
@@ -846,6 +907,8 @@
     }
 
     private RenderFragment MarkeKatalogsatz => @<span class="epos-zweispalten-marke epos-zweispalten-marke--satz">@Resource.AUSWAHL_MARKE_KATALOGSATZ</span>;
+
+    private RenderFragment MarkeProjektsatz => @<span class="epos-zweispalten-marke epos-zweispalten-marke--satz">@Resource.AUSWAHL_MARKE_PROJEKTSATZ</span>;
 
     /// <summary>
     /// <b>Die Zusammenfassung des gewählten Satzes</b> (UeS2): beim Projektsatz Nennkälteleistung, EER, Rückkühlart,
@@ -1077,10 +1140,76 @@
         }
         WpEintrag? neu = _wp.FirstOrDefault(w => w.Daten.IdWp == u.IdWp);
         string rang = RangText(neu?.Daten.Rang);
-        Melden(string.Format(CultureInfo.CurrentCulture,
-                             u.SchonImProjekt || warAn ? Resource.KMA_MSG_WP_SCHON_IM_PROJEKT : Resource.KMA_MSG_WP_UEBERNOMMEN,
-                             u.Bezeichner, rang.Length > 0 ? rang : Resource.KMA_RANG_KEINER), false);
+        string text = string.Format(CultureInfo.CurrentCulture,
+                                    u.SchonImProjekt || warAn ? Resource.KMA_MSG_WP_SCHON_IM_PROJEKT : Resource.KMA_MSG_WP_UEBERNOMMEN,
+                                    u.Bezeichner, rang.Length > 0 ? rang : Resource.KMA_RANG_KEINER);
+        // KM-K2: Die Wärmekaskade bleibt wie im Wärmepumpendialog unberührt - ohne Platz für Wärmepumpen kühlt die
+        // Anlage nicht. Der Kern nennt das (WaermekaskadeHinweis), der Dialog übergeht es nicht still.
+        bool hinweis = !string.IsNullOrEmpty(u.Hinweis);
+        Melden(hinweis ? text + " " + u.Hinweis : text, hinweis);
         if (neu is not null) { _projektWahl.Leeren(); WpZeileWaehlen(neu); }
+    }
+
+    // =====================================================================
+    // KM-K2: „Bearbeiten…" einer Projektwärmepumpe — die Wärmepumpen-Überlagerung
+    // =====================================================================
+
+    /// <summary>Trägt der Wirt den Bearbeitungsweg der gewählten Wärmepumpen-Anlagenzeile?</summary>
+    private bool WpBearbeitbar => WaermepumpeAnlageGaben is not null && AktuellWp is not null;
+
+    /// <summary>Steht die Wärmepumpen-Überlagerung offen? (Prüfhilfe)</summary>
+    public bool WpUeberlagerungOffen => _wpGaben is not null;
+
+    /// <summary>Die Anlagenzeile, mit der die Wärmepumpen-Überlagerung geöffnet wurde (Prüfhilfe).</summary>
+    public int WpUeberlagerungAnlage => _wpGaben?.IdAnlage ?? 0;
+
+    /// <summary>
+    /// Öffnet die Wärmepumpen-Überlagerung für die gewählte Projektwärmepumpe. Liefert die Naht keinen Satz (die Kopie
+    /// führt im Projekt keine Anlagenzeile) oder wirft sie, bleibt es bei der benannten Sperre im Banner.
+    /// </summary>
+    private void BeiWpBearbeiten()
+    {
+        if (AktuellWp is not WpEintrag w || WaermepumpeAnlageGaben is null) return;
+        WaermepumpeAnlagegaben? gaben;
+        try { gaben = WaermepumpeAnlageGaben(w.Daten.IdWp); }
+        catch (Exception ex) { Melden(ex.Message, true); return; }
+        if (gaben is null) { BeiSchlossAbgelehnt(Resource.KMA_WP_BEARBEITEN_GESPERRT); return; }
+        _meldung = "";
+        _wpFehler = null;
+        _wpGaben = gaben;
+    }
+
+    /// <summary>
+    /// OK der Wärmepumpen-Überlagerung: erst die Prüfung der Anlagenfelder, dann der Schreibweg der Naht. Eine
+    /// Ablehnung bleibt in der Überlagerung stehen; geschrieben wird die Projektliste neu gelesen.
+    /// </summary>
+    private void BeiWpUebernommen(bool ok)
+    {
+        if (_wpGaben is not WaermepumpeAnlagegaben gaben) return;
+        if (!ok) { BeiWpVerworfen(); return; }
+        if (_wpFelder?.Pruefen() is string mangel) { _wpFehler = mangel; return; }
+        string? grund;
+        try { grund = gaben.Schreiben(); }
+        catch (Exception ex) { _wpFehler = ex.Message; return; }
+        if (!string.IsNullOrEmpty(grund)) { _wpFehler = grund; return; }
+        WpUeberlagerungZu();
+        try
+        {
+            WpNeuLesen();
+            _raenge = KaelteRaenge?.Invoke() ?? _raenge;
+        }
+        catch (Exception ex) { Melden(ex.Message, true); return; }
+        VerwendungStempeln();
+    }
+
+    /// <summary>Abbrechen, ✕ und Esc: der geschriebene Stand bleibt, der Feldsatz wird verworfen (er ist eine Lesung).</summary>
+    private void BeiWpVerworfen() => WpUeberlagerungZu();
+
+    private void WpUeberlagerungZu()
+    {
+        _wpGaben = null;
+        _wpFelder = null;
+        _wpFehler = null;
     }
 
     private KaeltemaschineAnlageDaten? AnlageLesen(int anlagenId)
@@ -1207,7 +1336,13 @@
     {
         if (_zweispalten is null) return;
         if (schluessel != _gewaehlt) Waehlen(schluessel);
-        if (AktuellWp is not null) { BeiSchlossAbgelehnt(Resource.KMA_WP_BEARBEITEN_GESPERRT); return; }
+        if (AktuellWp is not null)
+        {
+            // KM-K2: mit der Naht die Waermepumpen-Ueberlagerung, ohne sie die benannte Sperre.
+            if (WpBearbeitbar) { BeiWpBearbeiten(); return; }
+            BeiSchlossAbgelehnt(Resource.KMA_WP_BEARBEITEN_GESPERRT);
+            return;
+        }
         await _zweispalten.SatzUeberlagerungOeffnen();
     }
 

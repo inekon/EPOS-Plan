@@ -1174,7 +1174,7 @@ public class KlimadatenDialogTests : EposBunitContext
                         .Select(e => e.TextContent.Trim()).ToList();
         // Der Schreibschutz ist keine Spalte mehr, sondern das Schloss hinter dem
         // Namen (Konzept Administrationsdialoge, V10) - ohne "Duplizieren" im Kurztext.
-        Assert.Equal(new[] { "Klimaregion", "Quelle", "Standort", "Longitude", "Latitude",
+        Assert.Equal(new[] { "Klimaregion", "Quelle", "Standort", "Longitude [°]", "Latitude [°]",
                              "Importdatum" }, koepfe);
         var schloss = cut.FindAll(".epos-katalogliste .epos-schloss");
         Assert.Single(schloss);
@@ -1418,7 +1418,7 @@ public class KlimadatenDialogTests : EposBunitContext
         var herkunft = cut.FindAll(".epos-stammblattgruppe").Single(g => g.GetAttribute("aria-label") == "Herkunft");
         Assert.Empty(herkunft.QuerySelectorAll("input, textarea, select"));
         var namen = herkunft.QuerySelectorAll(".epos-stammblattwert dt").Select(e => e.TextContent).ToList();
-        Assert.Equal(new[] { "Quelle", "Importdatum", "Standort", "Longitude", "Latitude", "Herkunftsvermerk" }, namen);
+        Assert.Equal(new[] { "Quelle", "Importdatum", "Standort", "Longitude [°]", "Latitude [°]", "Herkunftsvermerk" }, namen);
         var werte = herkunft.QuerySelectorAll(".epos-stammblattwert dd").Select(e => e.TextContent).ToList();
         Assert.Equal("PVGIS-Testreferenzjahr (weltweit)", werte[0]);
         Assert.Equal("2026-09-18", werte[1]);

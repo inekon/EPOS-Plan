@@ -164,10 +164,10 @@ public class GebaeudeImportProjektdateiDialogTests : EposBunitContext
         Assert.Equal("WOHNEN", eg.QuerySelector("select.epos-gebimport-nutzung")!.GetAttribute("value"));
         Assert.Equal("Nutzungsprofil 71 nach DIN/TS 18599-10", eg.QuerySelector(".epos-gebimport-sqherkunft")!.GetAttribute("title"));
         Assert.Equal("aus Projektdatei (DIN-Zonen)", eg.QuerySelector(".epos-gebimport-sqherkunft")!.TextContent);
-        Assert.Equal("20 °C", eg.QuerySelector(".epos-gebimport-zonensollwert")!.TextContent.Trim());
+        Assert.Equal("20", eg.QuerySelector(".epos-gebimport-zonensollwert")!.TextContent.Trim());
         IElement og = Zone(cut, "Nutzung OG");
         Assert.Equal("BUERO", og.QuerySelector("select.epos-gebimport-nutzung")!.GetAttribute("value"));
-        Assert.Equal("21 °C", og.QuerySelector(".epos-gebimport-zonensollwert")!.TextContent.Trim());
+        Assert.Equal("21", og.QuerySelector(".epos-gebimport-zonensollwert")!.TextContent.Trim());
 
         Assert.Contains("Obergeschoss/Galerie", cut.Find(".epos-gebimport-offenspalte .epos-gebimport-sqohnetreffer").TextContent);
         Assert.Contains("(1)", cut.FindAll(".epos-gebimport-offenspalte .epos-gebimport-offentitel").Last().TextContent);
