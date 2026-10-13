@@ -92055,6 +92055,591 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: Aufbau „{1}“ ist für die Simulation meist nicht geeignet. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_AUFBAU_UNGEEIGNET {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_AUFBAU_UNGEEIGNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“ in Zone „{1}“: Ausrichtung (Azimut) fehlt. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_AZIMUT_FEHLT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_AZIMUT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“ in Zone „{1}“: Bauteilart nicht erkannt. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_BAUTEILART_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_BAUTEILART_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauweise (Wärmekapazität) des Gebäudes fehlt; es gilt die Vorgabe. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_EINZONE_BAUWEISE_FEHLT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_EINZONE_BAUWEISE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: keine Fläche angegeben. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_EINZONE_FLAECHE_FEHLT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_EINZONE_FLAECHE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Fläche ohne U-Wert. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_EINZONE_U_FEHLT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_EINZONE_U_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude hat kein Feiertagsland; es gelten die bundesweiten Feiertage. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_FEIERTAGSLAND_FEHLT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_FEIERTAGSLAND_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude hat keine Ferien; die Kalender rechnen ohne Ferien. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_FERIEN_FEHLEN {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_FERIEN_FEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“ in Zone „{1}“ hat keine Fläche. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_FLAECHE_FEHLT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_FLAECHE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“ hat keinen Heizkalender; sie erbt den Heizsollwert vom Gebäude. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_HEIZKALENDER_GEERBT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_HEIZKALENDER_GEERBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude hat keine Heizperiode; geheizt wird ganzjährig nach Kalender. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_HEIZPERIODE_FEHLT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_HEIZPERIODE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Hülle des Gebäudes hat keine Außenwand. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_HUELLE_OHNE_AUSSENWAND {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_HUELLE_OHNE_AUSSENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Hülle des Gebäudes hat keine Bodenplatte und keine Decke nach unten. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_HUELLE_OHNE_BODEN {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_HUELLE_OHNE_BODEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Hülle des Gebäudes hat kein Dach und keine Decke nach oben. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_HUELLE_OHNE_DACH {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_HUELLE_OHNE_DACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: Aufbau „{1}“ liefert keine Wärmekapazität. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_KAPAZITAET_FEHLT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_KAPAZITAET_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt hat keine Klimaregion. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_KLIMAREGION_FEHLT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_KLIMAREGION_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ kühlt, hat aber keinen Kühlkalender und keinen Kühlsollwert. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_KUEHLKALENDER_FEHLT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_KUEHLKALENDER_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“ hat weder Lüftungskalender noch Luftwechsel; sie erbt die Luftwechselrate des Gebäudes. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_LUEFTUNG_GEERBT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_LUEFTUNG_GEERBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nordrichtung des Imports ist angenommen, nicht bestätigt. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_NORDRICHTUNG_ANGENOMMEN {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_NORDRICHTUNG_ANGENOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“ in Zone „{1}“ hat nur einen U-Wert ({2} W/(m²K)), keinen Aufbau; die Wärmekapazität kommt aus der Vorgabe. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_NUR_U_WERT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_NUR_U_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“ in Zone „{1}“ hat weder Aufbau noch U-Wert. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_OHNE_U_OHNE_AUFBAU {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_OHNE_U_OHNE_AUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pflichtgröße fehlt oder ist nicht größer null: {0}. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_PFLICHTGROESSE_FEHLT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_PFLICHTGROESSE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“ in Zone „{1}“: Randbedingung fehlt, es gilt Außenluft. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_RANDBEDINGUNG_FEHLT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_RANDBEDINGUNG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prüfung des Rechenwegs lehnt ab: {0} ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_RECHENWEG_ABGELEHNT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_RECHENWEG_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: Aufbau „{1}“ hat eine Schicht ohne λ, ρ oder c. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_SCHICHT_OHNE_STOFFWERT {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_SCHICHT_OHNE_STOFFWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unbeheizte Zone „{0}“ trägt einen Heizkalender. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_UNBEHEIZT_MIT_HEIZKALENDER {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_UNBEHEIZT_MIT_HEIZKALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beheizte Zone „{0}“ hat kein Bauteil an Außenluft, Erdreich oder unbeheiztem Raum. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_ZONE_OHNE_AUSSENBAUTEIL {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_ZONE_OHNE_AUSSENBAUTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“ hat keine Bauteile. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_ZONE_OHNE_BAUTEILE {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_ZONE_OHNE_BAUTEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“ hat kein Nutzungsprofil und keine Kalender; sie erbt vom Gebäude. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_ZONE_OHNE_PROFIL {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_ZONE_OHNE_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenwand ähnelt.
+        /// </summary>
+        public static string MP_FELD_AUSSENWAND {
+            get {
+                return ResourceManager.GetString("MP_FELD_AUSSENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dach ähnelt.
+        /// </summary>
+        public static string MP_FELD_DACH {
+            get {
+                return ResourceManager.GetString("MP_FELD_DACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fenster ähnelt.
+        /// </summary>
+        public static string MP_FELD_FENSTER {
+            get {
+                return ResourceManager.GetString("MP_FELD_FENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche je Nutzer ähnelt.
+        /// </summary>
+        public static string MP_FELD_FLAECHE_NUTZER {
+            get {
+                return ResourceManager.GetString("MP_FELD_FLAECHE_NUTZER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundfläche ähnelt.
+        /// </summary>
+        public static string MP_FELD_GRUND {
+            get {
+                return ResourceManager.GetString("MP_FELD_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftwechselrate ähnelt.
+        /// </summary>
+        public static string MP_FELD_LUFTWECHSEL {
+            get {
+                return ResourceManager.GetString("MP_FELD_LUFTWECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzfläche ähnelt.
+        /// </summary>
+        public static string MP_FELD_NUTZFLAECHE {
+            get {
+                return ResourceManager.GetString("MP_FELD_NUTZFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumhöhe ähnelt.
+        /// </summary>
+        public static string MP_FELD_RAUMHOEHE {
+            get {
+                return ResourceManager.GetString("MP_FELD_RAUMHOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude ähnelt.
+        /// </summary>
+        public static string MP_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("MP_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbauten und Stoffwerte ähnelt.
+        /// </summary>
+        public static string MP_GRUPPE_AUFBAUTENSTOFFWERTE {
+            get {
+                return ResourceManager.GetString("MP_GRUPPE_AUFBAUTENSTOFFWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geometrie und Bauteile ähnelt.
+        /// </summary>
+        public static string MP_GRUPPE_GEOMETRIEBAUTEILE {
+            get {
+                return ResourceManager.GetString("MP_GRUPPE_GEOMETRIEBAUTEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzung und Konditionierung ähnelt.
+        /// </summary>
+        public static string MP_GRUPPE_NUTZUNGKONDITIONIERUNG {
+            get {
+                return ResourceManager.GetString("MP_GRUPPE_NUTZUNGKONDITIONIERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ort und Lage ähnelt.
+        /// </summary>
+        public static string MP_GRUPPE_ORTLAGE {
+            get {
+                return ResourceManager.GetString("MP_GRUPPE_ORTLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenfähigkeit ähnelt.
+        /// </summary>
+        public static string MP_GRUPPE_RECHENFAEHIGKEIT {
+            get {
+                return ResourceManager.GetString("MP_GRUPPE_RECHENFAEHIGKEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Übernahme ist fehlgeschlagen: {0} ähnelt.
+        /// </summary>
+        public static string MP_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("MP_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude {0} nicht gefunden. ähnelt.
+        /// </summary>
+        public static string MP_MSG_GEBAEUDE_FEHLT {
+            get {
+                return ResourceManager.GetString("MP_MSG_GEBAEUDE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogaufbau ließ sich nicht ins Projekt kopieren. ähnelt.
+        /// </summary>
+        public static string MP_MSG_KATALOGKOPIE {
+            get {
+                return ResourceManager.GetString("MP_MSG_KATALOGKOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diese Gruppe gibt es keine Übernahme zum Zurücknehmen. ähnelt.
+        /// </summary>
+        public static string MP_MSG_KEINE_RUECKNAHME {
+            get {
+                return ResourceManager.GetString("MP_MSG_KEINE_RUECKNAHME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Vorschlag (Eingabe nötig): {0} ähnelt.
+        /// </summary>
+        public static string MP_MSG_OHNE_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("MP_MSG_OHNE_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Quellgebäude trägt die Zeile nicht mehr. ähnelt.
+        /// </summary>
+        public static string MP_MSG_QUELLE_LEER {
+            get {
+                return ResourceManager.GetString("MP_MSG_QUELLE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Bauteil gibt es keinen Typaufbau. ähnelt.
+        /// </summary>
+        public static string MP_MSG_TYPAUFBAU {
+            get {
+                return ResourceManager.GetString("MP_MSG_TYPAUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unbekannte Vorschlagsart. ähnelt.
+        /// </summary>
+        public static string MP_MSG_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("MP_MSG_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht übernommen: {0} — {1} ähnelt.
+        /// </summary>
+        public static string MP_MSG_VERWORFEN {
+            get {
+                return ResourceManager.GetString("MP_MSG_VERWORFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht rechenfähig ähnelt.
+        /// </summary>
+        public static string MP_STATUS_NICHTRECHENFAEHIG {
+            get {
+                return ResourceManager.GetString("MP_STATUS_NICHTRECHENFAEHIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die rechnet mit Vorgaben ähnelt.
+        /// </summary>
+        public static string MP_STATUS_RECHNETMITVORGABEN {
+            get {
+                return ResourceManager.GetString("MP_STATUS_RECHNETMITVORGABEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vollständig ähnelt.
+        /// </summary>
+        public static string MP_STATUS_VOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("MP_STATUS_VOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertagsland „{0}“ des Projekts übernehmen ähnelt.
+        /// </summary>
+        public static string MP_VORSCHLAG_FEIERTAGSLAND {
+            get {
+                return ResourceManager.GetString("MP_VORSCHLAG_FEIERTAGSLAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien eines anderen Gebäudes des Projekts übernehmen ähnelt.
+        /// </summary>
+        public static string MP_VORSCHLAG_FERIEN_PROJEKT {
+            get {
+                return ResourceManager.GetString("MP_VORSCHLAG_FERIEN_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogaufbau „{0}“ (U {1} W/(m²K)) übernehmen ähnelt.
+        /// </summary>
+        public static string MP_VORSCHLAG_KATALOGAUFBAU {
+            get {
+                return ResourceManager.GetString("MP_VORSCHLAG_KATALOGAUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil „{0}“ aus der DIN-Nummer ähnelt.
+        /// </summary>
+        public static string MP_VORSCHLAG_PROFIL_DINNUMMER {
+            get {
+                return ResourceManager.GetString("MP_VORSCHLAG_PROFIL_DINNUMMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Muster „{0}“ ähnelt.
+        /// </summary>
+        public static string MP_VORSCHLAG_PROFIL_EPOSMUSTER {
+            get {
+                return ResourceManager.GetString("MP_VORSCHLAG_PROFIL_EPOSMUSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil „{0}“ aus der Gebäudeart ähnelt.
+        /// </summary>
+        public static string MP_VORSCHLAG_PROFIL_GEBAEUDEART {
+            get {
+                return ResourceManager.GetString("MP_VORSCHLAG_PROFIL_GEBAEUDEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil „{0}“ aus dem Raumtyp der Quelle ähnelt.
+        /// </summary>
+        public static string MP_VORSCHLAG_PROFIL_RAUMTYP {
+            get {
+                return ResourceManager.GetString("MP_VORSCHLAG_PROFIL_RAUMTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektaufbau „{0}“ übernehmen ähnelt.
+        /// </summary>
+        public static string MP_VORSCHLAG_PROJEKTAUFBAU {
+            get {
+                return ResourceManager.GetString("MP_VORSCHLAG_PROJEKTAUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizperiode eines anderen Gebäudes des Projekts übernehmen ähnelt.
+        /// </summary>
+        public static string MP_VORSCHLAG_SAISON_PROJEKT {
+            get {
+                return ResourceManager.GetString("MP_VORSCHLAG_SAISON_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typaufbau „{0}“, abgeglichen auf U {1} W/(m²K) ähnelt.
+        /// </summary>
+        public static string MP_VORSCHLAG_TYPAUFBAU {
+            get {
+                return ResourceManager.GetString("MP_VORSCHLAG_TYPAUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Dauernutzung (Vergleich) ähnelt.
         /// </summary>
         public static string NACHT_ERG_SPALTE_VERGLEICH {
