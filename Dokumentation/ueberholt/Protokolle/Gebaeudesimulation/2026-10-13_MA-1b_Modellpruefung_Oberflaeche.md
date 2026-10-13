@@ -67,6 +67,21 @@ Kein Schemaschritt, kein Rechenwegbaustein, kein SQL angefasst; Basis R52 unber�
   und benannten Zielen an 1054, Alle übernehmen mit Rücknahme, kein Weg ohne Gebäude, Quellhinweise, Nordrichtung ohne Quelle).
 - `designer_neu.py`: wiederholbar (zweiter Lauf +0).
 
+## Nachzug Wachen
+
+Im Nachgate des Integrationsstands waren zwei UI-Wachen rot:
+
+- `FormularrasterTests.Ausserhalb_des_Rasters_bleibt_ein_Feld_unveraendert` liest `epos-ui.css` vom Kommentar „FORMULARRASTER“
+  bis zum Dateiende; die angehängten Regeln `epos-ampel*` und `epos-modellpruefung-*` standen darin. Sie stehen jetzt als eigener
+  Abschnitt mit Kommentarkopf vor dem Formularraster, inhaltlich unverändert.
+- `InfoknopfSchluesselWacheTests.Es_gibt_keine_fuenfte_Ausnahme`: Der Hilfeknopf des Blatts setzt `MitAssistent="false"`. Das Blatt
+  steht nur als Überlagerung im Gebäudedialog, dessen Kopfpille den Assistenten führt — das ist der vorgesehene Fall einer
+  eingebetteten Seite, keine fünfte Ausnahme. Das Blatt steht deshalb mit Begründung in `KiKnopfEinmalWacheTests.OHNE_ASSISTENT`;
+  der Hilfeknopf (Seite „Gebäude“) bleibt, der Assistent bleibt über die Kopfpille erreichbar und erscheint nicht zweimal.
+
+Nachweis: Kern-Filter 0 Fehler; `EPOS.UI.Tests` mit Filter `Formularraster|InfoknopfSchluessel|Modellpruefung|GebaeudeDialog|KiKnopfEinmal`
+250 bestanden, 0 rot.
+
 ## Offen
 
 - Windows-Sichtabnahme: Breite der Kopfleiste mit „Simulation…“ und „Modell prüfen…“, Zeilenumbruch der Gruppenzeilen, Ampel-

@@ -48,6 +48,10 @@ public sealed class KiKnopfEinmalWacheTests
                 "steht nur in BerichteKostenSeite; deren Pille oder die des Kopfbands führt den Assistenten",
             // Felder der Technikdokumentation (Hilfeknöpfe Kühlung und Grundlagen): Sie stehen in
             // Dialogen, deren Kopfpille den Assistenten führt.
+            // MA-1b: das Blatt „Modell prüfen“ steht nur als Überlagerung im GebaeudeDialog; sein Hilfeknopf führt die Seite,
+            // die Kopfpille des Gebäudedialogs den Assistenten.
+            ["EPOS.UI/Dialoge/Bedarf/Modellpruefungsblatt.razor"] =
+                "steht nur in der Überlagerung des GebaeudeDialog; dessen Kopfpille führt den Assistenten",
             ["EPOS.UI/Dialoge/Bedarf/GebaeudeStammblattFelder.razor"] =
                 "steht nur in GebaeudeAdminDialog; dessen Kopfpille führt den Assistenten",
             ["EPOS.UI/Dialoge/Bedarf/GebaeudeKuehluebergabeFelder.razor"] =
