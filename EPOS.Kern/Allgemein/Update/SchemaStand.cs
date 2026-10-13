@@ -1054,7 +1054,10 @@ namespace WindowsFormsApplication1
         /// <see cref="KaeltebedarfSplitAbrechnungSchema.SCHRITT"/>: die Ergebnistabelle <c>Tab_ErgebnisKaelteDezentral</c> je
         /// dezentral (Split) gedeckter Kältebedarfszeile eines Laufs (<see cref="KaeltebedarfSplitAbrechnungSchema"/>).
         /// <b>Ergebnisneutral:</b> Kein Referenzprojekt führt eine Split-Zeile; die Tabelle bleibt leer.
-        public const int Zielversion = KaeltebedarfSplitAbrechnungSchema.SCHRITT;
+        /// Danach, mit der INHOMOGENEN SCHICHT UND DEN FENSTERN IM AUFBAUKATALOG (BK-5/BK-6), steht das Ziel auf
+        /// <see cref="BauteilkatalogAbschnittSchema.SCHRITT"/>: ψ des Glasrands am Aufbau (<see cref="BauteilkatalogAbschnittSchema"/>).
+        /// </summary>
+        public const int Zielversion = BauteilkatalogAbschnittSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

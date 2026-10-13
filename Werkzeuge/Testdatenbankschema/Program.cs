@@ -3591,6 +3591,23 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrK6 + " - vollstaendig: " + KaeltebedarfSplitAbrechnungSchema.Vollstaendig() +
                                   " (erwartet True).");
             }
+
+            // ---- Schritt BauteilkatalogAbschnittSchema.SCHRITT (BK-5/BK-6): Psi_Glasrand an Tab_Bauteilaufbau(_STAMM). Aus
+            //      DERSELBEN Quelle wie SchemaMigration.Schritt_BauteilkatalogAbschnitt. Wiederholbar.
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt fuehrt einen Aufbau, die Spalte bleibt leer.
+            string nrBk5 = BauteilkatalogAbschnittSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBk5 + " - Inhomogene Schicht und Fenster im Aufbaukatalog: " +
+                              (BauteilkatalogAbschnittSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBk5 = new List<string>();
+                angelegt += BauteilkatalogAbschnittSchema.Ausfuehren(berichtBk5);
+                foreach (string zeile in berichtBk5)
+                    Console.WriteLine("Schritt " + nrBk5 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBk5 + " - vollstaendig: " + BauteilkatalogAbschnittSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

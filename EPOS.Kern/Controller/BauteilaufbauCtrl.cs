@@ -45,6 +45,28 @@ namespace WindowsFormsApplication1
                 ? SCHICHTSPALTEN_GRUND + ", " + string.Join(", ", Bauteilkatalog.Zusatzspalten(BauteilaufbauSchema.TAB_SCHICHT).Select(s => "\"" + s.Name + "\""))
                 : SCHICHTSPALTEN_GRUND;
 
+        /// <summary>
+        /// Der Kopf der Schichtabfrage einer Seite mit dem Alias <c>s</c> — steht Schritt 221, dazu der Abschnitt (BK-5) über
+        /// einen LEFT JOIN in DERSELBEN Abfrage (Nummer, Flächenanteil, Text, Quellkennung; der Leser des Bauteilwegs fragt je
+        /// Projekt eine feste Zahl Abfragen).
+        /// </summary>
+        private static string SchichtSelect(Seite seite)
+        {
+            string tab = SchichtTabelle(seite);
+            if (!BauteilkatalogSchema.Lesbar())
+                return "SELECT " + Praefix("s", SCHICHTSPALTEN_SQL) + " FROM \"" + tab + "\" s";
+            string ab = seite == Seite.Katalog ? BauteilkatalogSchema.TAB_ABSCHNITT_STAMM : BauteilkatalogSchema.TAB_ABSCHNITT;
+            return "SELECT " + Praefix("s", SCHICHTSPALTEN_SQL) + ", s.\"" + BauteilkatalogSchema.SPALTE_ID_ABSCHNITT + "\", " +
+                   "ab.\"Nummer\" AS \"" + AB_NUMMER + "\", ab.\"Flaechenanteil\" AS \"" + AB_ANTEIL + "\", " +
+                   "ab.\"Text\" AS \"" + AB_TEXT + "\", ab.\"Quellkennung\" AS \"" + AB_QUELLKENNUNG + "\" " +
+                   "FROM \"" + tab + "\" s LEFT JOIN \"" + ab + "\" ab ON ab.\"ID\" = s.\"" + BauteilkatalogSchema.SPALTE_ID_ABSCHNITT + "\"";
+        }
+
+        private const string AB_NUMMER = "Abschnitt_Nummer";
+        private const string AB_ANTEIL = "Abschnitt_Flaechenanteil";
+        private const string AB_TEXT = "Abschnitt_Text";
+        private const string AB_QUELLKENNUNG = "Abschnitt_Quellkennung";
+
         // =================================================================
         //  Lesen
         // =================================================================
@@ -67,7 +89,7 @@ namespace WindowsFormsApplication1
                 "SELECT a.* FROM \"" + BauteilaufbauSchema.TAB_AUFBAU_STAMM + "\" a" + bedingung +
                 " ORDER BY a.\"Bezeichner\", a.\"ID\"", p);
             DataTable schichten = DataRepository.GetDataTable(
-                "SELECT " + Praefix("s", SCHICHTSPALTEN_SQL) + " FROM \"" + BauteilaufbauSchema.TAB_SCHICHT_STAMM + "\" s " +
+                SchichtSelect(Seite.Katalog) + " " +
                 "INNER JOIN \"" + BauteilaufbauSchema.TAB_AUFBAU_STAMM + "\" a ON a.\"ID\" = s.\"ID_Aufbau\"" + bedingung +
                 " ORDER BY s.\"ID_Aufbau\", s.\"Reihenfolge\", s.\"ID\"", p);
             return Zusammenfuehren(kopf, schichten);
@@ -83,7 +105,7 @@ namespace WindowsFormsApplication1
                 "SELECT * FROM \"" + BauteilaufbauSchema.TAB_AUFBAU + "\" WHERE \"ID_Projekt\" = ? ORDER BY \"Bezeichner\", \"ID\"",
                 new DbParam("@p", idProjekt));
             DataTable schichten = DataRepository.GetDataTable(
-                "SELECT " + Praefix("s", SCHICHTSPALTEN_SQL) + " FROM \"" + BauteilaufbauSchema.TAB_SCHICHT + "\" s " +
+                SchichtSelect(Seite.Projekt) + " " +
                 "INNER JOIN \"" + BauteilaufbauSchema.TAB_AUFBAU + "\" a ON a.\"ID\" = s.\"ID_Aufbau\" " +
                 "WHERE a.\"ID_Projekt\" = ? ORDER BY s.\"ID_Aufbau\", s.\"Reihenfolge\", s.\"ID\"",
                 new DbParam("@p", idProjekt));
@@ -107,8 +129,7 @@ namespace WindowsFormsApplication1
                 "SELECT * FROM \"" + BauteilaufbauSchema.TAB_AUFBAU_STAMM + "\" ORDER BY \"Bezeichner\", \"ID\"");
             if (kopf == null) return liste;
             DataTable schichten = StilleDb.Tabelle(
-                "SELECT " + SCHICHTSPALTEN_SQL + " FROM \"" + BauteilaufbauSchema.TAB_SCHICHT_STAMM + "\" " +
-                "ORDER BY \"ID_Aufbau\", \"Reihenfolge\", \"ID\"");
+                SchichtSelect(Seite.Katalog) + " ORDER BY s.\"ID_Aufbau\", s.\"Reihenfolge\", s.\"ID\"");
 
             foreach (BauteilaufbauModel a in Zusammenfuehren(kopf, schichten))
             {
@@ -219,6 +240,25 @@ namespace WindowsFormsApplication1
             if (grund != null) return basis with { Grund = grund };
             if (Bauteilreduktion.PruefenOhneAusnahme(schichten, wer) is string befund) return basis with { Grund = befund };
 
+            // BK-5: Ein Aufbau mit Abschnitten rechnet R_T als Mittel der Grenzwerte (DIN EN ISO 6946, 6.7) und reicht der
+            // Reduktion die Ersatzschichten weiter; ein Aufbau ohne Abschnitt nimmt den Weg wie zuvor.
+            Abschnittsgrenzen grenzen = null;
+            if (InhomogeneSchichten.Inhomogen(m))
+            {
+                if (InhomogeneSchichten.Pruefen(m, wer) is string abschnittsbefund) return basis with { Grund = abschnittsbefund };
+                try
+                {
+                    (Abschnittsgrenzen g, IReadOnlyList<Schicht> ersatz) = InhomogeneSchichten.Rechnen(m, schichten, richtung, rSi, rSe, wer);
+                    grenzen = g;
+                    schichten = ersatz.ToList();
+                }
+                catch (GebaeudeModellException ex)
+                {
+                    return basis with { Grund = ex.Message };
+                }
+                if (Bauteilreduktion.PruefenOhneAusnahme(schichten, wer) is string ersatzbefund) return basis with { Grund = ersatzbefund };
+            }
+
             Schichtkennwerte k;
             try
             {
@@ -229,12 +269,21 @@ namespace WindowsFormsApplication1
                 return basis with { Grund = ex.Message };
             }
 
-            var ergebnis = basis with
-            {
-                R_M2KW = k.R_M2KW,
-                U_WM2K = k.U_WM2K,
-                Kapazitaet_KJM2K = k.Kapazitaet_JM2K / JE_KILO
-            };
+            var ergebnis = grenzen == null
+                ? basis with
+                {
+                    R_M2KW = k.R_M2KW,
+                    U_WM2K = k.U_WM2K,
+                    Kapazitaet_KJM2K = k.Kapazitaet_JM2K / JE_KILO
+                }
+                : basis with
+                {
+                    R_M2KW = grenzen.RT_M2KW - rSi - rSe,
+                    U_WM2K = 1.0 / grenzen.RT_M2KW,
+                    RT_Oben_M2KW = grenzen.RT_Oben_M2KW,
+                    RT_Unten_M2KW = grenzen.RT_Unten_M2KW,
+                    Kapazitaet_KJM2K = k.Kapazitaet_JM2K / JE_KILO
+                };
             if (!mitBezugsperiode) return ergebnis;
 
             try
@@ -506,13 +555,27 @@ namespace WindowsFormsApplication1
                     Bauteilkatalog.Uebertragen(v, BauteilaufbauSchema.TAB_AUFBAU_STAMM, stammId, BauteilaufbauSchema.TAB_AUFBAU, neu, lesbar);
 
                     DataTable schichten = v.Lese(
-                        "SELECT " + SCHICHTSPALTEN_SQL + " FROM \"" + BauteilaufbauSchema.TAB_SCHICHT_STAMM + "\" " +
-                        "WHERE \"ID_Aufbau\" = ? ORDER BY \"Reihenfolge\", \"ID\"", new DbParam("@a", stammId));
+                        SchichtSelect(Seite.Katalog) + " WHERE s.\"ID_Aufbau\" = ? ORDER BY s.\"Reihenfolge\", s.\"ID\"",
+                        new DbParam("@a", stammId));
+                    // BK-5: die Abschnitte reisen mit (Nummer → neue ID), die Reihenfolge ist die Ebene.
+                    var kopf = new DataTable();
+                    kopf.Columns.Add("ID", typeof(long));
+                    kopf.Columns.Add("Bezeichner", typeof(string));
+                    kopf.Rows.Add((long)stammId, bezeichner);
+                    BauteilaufbauModel stamm = Zusammenfuehren(kopf, schichten).First();
+                    var abschnittIds = new Dictionary<int, int>();
+                    foreach (BauteilabschnittModel ab in stamm.Abschnitte)
+                        abschnittIds[ab.Nummer] = v.EinfuegenUndId(
+                            "INSERT INTO \"" + BauteilkatalogSchema.TAB_ABSCHNITT + "\" (\"ID_Aufbau\", \"Nummer\", \"Flaechenanteil\", " +
+                            "\"Text\", \"Quellkennung\") VALUES (?, ?, ?, ?, ?)",
+                            new[] { new DbParam("@a", neu), new DbParam("@n", ab.Nummer), BaustoffCtrl.Zahl("@f", ab.Flaechenanteil),
+                                    BaustoffCtrl.Text("@t", ab.Text), BaustoffCtrl.Text("@q", ab.Quellkennung) });
+                    List<List<int>> ebenen = InhomogeneSchichten.Ebenen(stamm.Schichten);
+                    var ebeneJe = new Dictionary<BauteilschichtModel, int>();
+                    for (int j = 0; j < ebenen.Count; j++) foreach (int i in ebenen[j]) ebeneJe[stamm.Schichten[i]] = j + 1;
                     var stoffe = new Dictionary<int, int>();
-                    int rang = 0;
-                    foreach (DataRow r in schichten.Rows)
+                    foreach (BauteilschichtModel sch in stamm.Schichten)
                     {
-                        BauteilschichtModel sch = SchichtAus(r);
                         if (sch.ID_Baustoff.HasValue)
                         {
                             if (!stoffe.TryGetValue(sch.ID_Baustoff.Value, out int projektStoff))
@@ -524,7 +587,8 @@ namespace WindowsFormsApplication1
                             sch.ID_Baustoff = projektStoff;
                         }
                         int quelle = sch.ID;
-                        int ziel = SchichtEinfuegen(v, BauteilaufbauSchema.TAB_SCHICHT, neu, ++rang, sch);
+                        int ziel = SchichtEinfuegen(v, BauteilaufbauSchema.TAB_SCHICHT, neu, ebeneJe[sch], sch,
+                                                    sch.Abschnitt.HasValue ? abschnittIds[sch.Abschnitt.Value] : (int?)null);
                         Bauteilkatalog.Uebertragen(v, BauteilaufbauSchema.TAB_SCHICHT_STAMM, quelle, BauteilaufbauSchema.TAB_SCHICHT, ziel, lesbar);
                     }
 
@@ -632,13 +696,12 @@ namespace WindowsFormsApplication1
                         v.Ausfuehren("UPDATE \"" + tab + "\" SET \"Bezeichner\" = ?, \"Beschreibung\" = ?, \"Bauteilart\" = ?, " +
                                      "\"Quelle\" = ?, \"Herkunft\" = ?, \"Quellkennung\" = ? WHERE \"ID\" = ?", kp.ToArray());
                         v.Ausfuehren("DELETE FROM \"" + SchichtTabelle(seite) + "\" WHERE \"ID_Aufbau\" = ?", new DbParam("@a", m.ID));
+                        if (BauteilkatalogSchema.Lesbar())
+                            v.Ausfuehren("DELETE FROM \"" + AbschnittTabelle(seite) + "\" WHERE \"ID_Aufbau\" = ?", new DbParam("@a", m.ID));
                     }
                     if (seite == Seite.Projekt) m.ID_Projekt = idProjekt;
 
-                    int rang = 0;
-                    foreach (BauteilschichtModel s in m.Schichten.Where(x => x != null))
-                        s.ID = SchichtEinfuegen(v, SchichtTabelle(seite), m.ID, ++rang, s);
-                    m.Schichten = m.Schichten.Where(x => x != null).ToList();
+                    SchichtenSchreiben(v, seite, m);
                     KatalogfelderSchreiben(v, seite, m, BauteilkatalogSchema.Lesbar());
 
                     v.Commit();
@@ -686,10 +749,7 @@ namespace WindowsFormsApplication1
             m.ID = id;
             m.ID_Projekt = idProjekt;
             m.Bezeichner = m.Bezeichner.Trim();
-            m.Schichten = (m.Schichten ?? new List<BauteilschichtModel>()).Where(x => x != null).ToList();
-            int rang = 0;
-            foreach (BauteilschichtModel s in m.Schichten)
-                s.ID = SchichtEinfuegen(v, BauteilaufbauSchema.TAB_SCHICHT, id, ++rang, s);
+            SchichtenSchreiben(v, Seite.Projekt, m);
             KatalogfelderSchreiben(v, Seite.Projekt, m, BauteilkatalogSchema.Lesbar());
             return id;
         }
@@ -737,15 +797,53 @@ namespace WindowsFormsApplication1
             return text.Substring(0, n);
         }
 
+        private static string AbschnittTabelle(Seite s) =>
+            s == Seite.Katalog ? BauteilkatalogSchema.TAB_ABSCHNITT_STAMM : BauteilkatalogSchema.TAB_ABSCHNITT;
+
+        /// <summary>
+        /// <b>Abschnitte und Schichten eines Aufbaus</b> im Vorgang des Aufrufers (BK-5): erst die Abschnitte, auf die eine Schicht
+        /// zeigt (Nummer → neue ID), dann die Schichten mit der Reihenfolge ihrer Ebene (<see cref="InhomogeneSchichten.Ebenen"/>)
+        /// — für einen homogenen Aufbau 1, 2, 3 … wie zuvor. Entfernt <c>null</c>-Schichten aus dem Modell.
+        /// </summary>
+        private static void SchichtenSchreiben(DbVorgang v, Seite seite, BauteilaufbauModel m)
+        {
+            m.Schichten = (m.Schichten ?? new List<BauteilschichtModel>()).Where(x => x != null).ToList();
+            var ids = new Dictionary<int, int>();
+            if (InhomogeneSchichten.Inhomogen(m))
+            {
+                if (!BauteilkatalogSchema.Lesbar())
+                    throw new InvalidOperationException("Abschnitte brauchen den Schemaschritt " +
+                                                        BauteilkatalogSchema.SCHRITT.ToString(CultureInfo.InvariantCulture) + ".");
+                foreach (int nr in m.Schichten.Where(s => s.Abschnitt.HasValue).Select(s => s.Abschnitt.Value).Distinct().OrderBy(x => x))
+                {
+                    BauteilabschnittModel a = (m.Abschnitte ?? new List<BauteilabschnittModel>()).FirstOrDefault(x => x != null && x.Nummer == nr)
+                                              ?? new BauteilabschnittModel { Nummer = nr };
+                    a.ID = v.EinfuegenUndId(
+                        "INSERT INTO \"" + AbschnittTabelle(seite) + "\" (\"ID_Aufbau\", \"Nummer\", \"Flaechenanteil\", \"Text\", " +
+                        "\"Quellkennung\") VALUES (?, ?, ?, ?, ?)",
+                        new[] { new DbParam("@a", m.ID), new DbParam("@n", nr), BaustoffCtrl.Zahl("@f", a.Flaechenanteil),
+                                BaustoffCtrl.Text("@t", a.Text), BaustoffCtrl.Text("@q", a.Quellkennung) });
+                    ids[nr] = a.ID;
+                }
+            }
+            List<List<int>> ebenen = InhomogeneSchichten.Ebenen(m.Schichten);
+            for (int j = 0; j < ebenen.Count; j++)
+                foreach (int i in ebenen[j])
+                {
+                    BauteilschichtModel s = m.Schichten[i];
+                    s.ID = SchichtEinfuegen(v, SchichtTabelle(seite), m.ID, j + 1, s,
+                                            s.Abschnitt.HasValue ? ids[s.Abschnitt.Value] : (int?)null);
+                }
+        }
+
         /// <summary>Legt eine Schicht an; setzt Aufbau und Reihenfolge am Modell und liefert die neue Id.</summary>
-        private static int SchichtEinfuegen(DbVorgang v, string tabelle, int idAufbau, int reihenfolge, BauteilschichtModel s)
+        private static int SchichtEinfuegen(DbVorgang v, string tabelle, int idAufbau, int reihenfolge, BauteilschichtModel s,
+                                            int? idAbschnitt = null)
         {
             s.ID_Aufbau = idAufbau;
             s.Reihenfolge = reihenfolge;
-            return v.EinfuegenUndId(
-                "INSERT INTO \"" + tabelle + "\" (\"ID_Aufbau\", \"Reihenfolge\", \"ID_Baustoff\", \"Dicke\", \"IstLuftschicht\", " +
-                "\"Lambda\", \"Rho\", \"cp\") VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                new[]
+            string ab = idAbschnitt.HasValue ? ", \"" + BauteilkatalogSchema.SPALTE_ID_ABSCHNITT + "\"" : "";
+            var p = new List<DbParam>
                 {
                     new DbParam("@a", idAufbau),
                     new DbParam("@r", reihenfolge),
@@ -755,7 +853,12 @@ namespace WindowsFormsApplication1
                     BaustoffCtrl.Zahl("@la", s.Lambda),
                     BaustoffCtrl.Zahl("@rh", s.Rho),
                     BaustoffCtrl.Zahl("@cp", s.Cp)
-                });
+                };
+            if (idAbschnitt.HasValue) p.Add(new DbParam("@ab", idAbschnitt.Value));
+            return v.EinfuegenUndId(
+                "INSERT INTO \"" + tabelle + "\" (\"ID_Aufbau\", \"Reihenfolge\", \"ID_Baustoff\", \"Dicke\", \"IstLuftschicht\", " +
+                "\"Lambda\", \"Rho\", \"cp\"" + ab + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?" + (idAbschnitt.HasValue ? ", ?" : "") + ")",
+                p.ToArray());
         }
 
         private BauteilaufbauModel LesenEinen(Seite seite, int id)
@@ -763,8 +866,7 @@ namespace WindowsFormsApplication1
             DataTable kopf = DataRepository.GetDataTable(
                 "SELECT * FROM \"" + AufbauTabelle(seite) + "\" WHERE \"ID\" = ?", new DbParam("@id", id));
             DataTable schichten = DataRepository.GetDataTable(
-                "SELECT " + SCHICHTSPALTEN_SQL + " FROM \"" + SchichtTabelle(seite) + "\" WHERE \"ID_Aufbau\" = ? " +
-                "ORDER BY \"Reihenfolge\", \"ID\"", new DbParam("@id", id));
+                SchichtSelect(seite) + " WHERE s.\"ID_Aufbau\" = ? ORDER BY s.\"Reihenfolge\", s.\"ID\"", new DbParam("@id", id));
             return Zusammenfuehren(kopf, schichten).FirstOrDefault();
         }
 
@@ -801,8 +903,25 @@ namespace WindowsFormsApplication1
                 foreach (DataRow r in schichten.Rows)
                 {
                     BauteilschichtModel s = SchichtAus(r);
-                    if (jeId.TryGetValue(s.ID_Aufbau, out BauteilaufbauModel a)) a.Schichten.Add(s);
+                    if (!jeId.TryGetValue(s.ID_Aufbau, out BauteilaufbauModel a)) continue;
+                    a.Schichten.Add(s);
+                    if (s.Abschnitt.HasValue && !a.Abschnitte.Any(x => x.Nummer == s.Abschnitt.Value))
+                        a.Abschnitte.Add(new BauteilabschnittModel
+                        {
+                            ID = BaustoffCtrl.GanzAus(r, BauteilkatalogSchema.SPALTE_ID_ABSCHNITT) ?? 0,
+                            Nummer = s.Abschnitt.Value,
+                            Flaechenanteil = BaustoffCtrl.ZahlAus(r, AB_ANTEIL),
+                            Text = BaustoffCtrl.TextAus(r, AB_TEXT),
+                            Quellkennung = BaustoffCtrl.TextAus(r, AB_QUELLKENNUNG)
+                        });
                 }
+            // BK-5: In einer Ebene (gleiche Reihenfolge) stehen die Abschnitte aufsteigend nebeneinander; ein homogener
+            // Aufbau behält seine Folge (die Reihenfolge ist je Schicht eine andere, die Sortierung ist stabil).
+            foreach (BauteilaufbauModel a in liste.Where(InhomogeneSchichten.Inhomogen))
+            {
+                a.Schichten = a.Schichten.OrderBy(s => s.Reihenfolge).ThenBy(s => s.Abschnitt ?? 0).ToList();
+                a.Abschnitte = a.Abschnitte.OrderBy(x => x.Nummer).ToList();
+            }
             return liste;
         }
 
@@ -819,6 +938,7 @@ namespace WindowsFormsApplication1
                 Lambda = BaustoffCtrl.ZahlAus(r, "Lambda"),
                 Rho = BaustoffCtrl.ZahlAus(r, "Rho"),
                 Cp = BaustoffCtrl.ZahlAus(r, "cp"),
+                Abschnitt = r.Table.Columns.Contains(AB_NUMMER) ? BaustoffCtrl.GanzAus(r, AB_NUMMER) : null,
                 Zusatz = Bauteilkatalog.ZusatzLesen(r, BauteilaufbauSchema.TAB_SCHICHT_STAMM)
             };
         }

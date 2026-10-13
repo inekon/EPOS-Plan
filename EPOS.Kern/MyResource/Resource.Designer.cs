@@ -15382,6 +15382,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abschnitt daneben anlegen (inhomogene Schicht) ähnelt.
+        /// </summary>
+        public static string BTA_ABSCHNITT_NEU {
+            get {
+                return ResourceManager.GetString("BTA_ABSCHNITT_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Der Abschnitt {1} hat keinen Flächenanteil größer null. ähnelt.
+        /// </summary>
+        public static string BTA_ABS_MSG_ANTEIL {
+            get {
+                return ResourceManager.GetString("BTA_ABS_MSG_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Schichtebene {1} führt die Abschnitte {2}, die übrigen inhomogenen Ebenen {3} – jede inhomogene Ebene braucht dieselben Abschnitte. ähnelt.
+        /// </summary>
+        public static string BTA_ABS_MSG_EBENE {
+            get {
+                return ResourceManager.GetString("BTA_ABS_MSG_EBENE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Flächenanteile der Abschnitte ergeben zusammen {1:0.###} statt 1 (zulässig 0,99 bis 1,01). ähnelt.
+        /// </summary>
+        public static string BTA_ABS_MSG_SUMME {
+            get {
+                return ResourceManager.GetString("BTA_ABS_MSG_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Außenwand ähnelt.
         /// </summary>
         public static string BTA_ART_AUSSENWAND {
@@ -15553,6 +15589,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beim Zuweisen an ein Fenster übernimmt das Bauteil g-Wert und Rahmenanteil; sein U-Wert wird U_w = (1 − f)·U_g + f·U_f + l_g·ψ_g / A mit dem Rahmenanteil f und der Glasrandlänge l_g ≈ 4·√((1 − f)·A). ähnelt.
+        /// </summary>
+        public static string BTA_FENSTER_HINWEIS {
+            get {
+                return ResourceManager.GetString("BTA_FENSTER_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Soll der Bauteilaufbau „{0}“ samt seinen Schichten gelöscht werden? ähnelt.
         /// </summary>
         public static string BTA_FRAGE_LOESCHEN {
@@ -15576,6 +15621,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BTA_GRP_SCHICHTEN {
             get {
                 return ResourceManager.GetString("BTA_GRP_SCHICHTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fenster ähnelt.
+        /// </summary>
+        public static string BTA_GRUPPE_FENSTER {
+            get {
+                return ResourceManager.GetString("BTA_GRUPPE_FENSTER", resourceCulture);
             }
         }
         
@@ -15679,6 +15733,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die g-Wert ähnelt.
+        /// </summary>
+        public static string BTA_LBL_GWERT {
+            get {
+                return ResourceManager.GetString("BTA_LBL_GWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
         /// </summary>
         public static string BTA_LBL_HERKUNFT {
@@ -15693,6 +15756,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BTA_LBL_LUFTSCHICHT {
             get {
                 return ResourceManager.GetString("BTA_LBL_LUFTSCHICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ψ_g Glasrand ähnelt.
+        /// </summary>
+        public static string BTA_LBL_PSI_GLASRAND {
+            get {
+                return ResourceManager.GetString("BTA_LBL_PSI_GLASRAND", resourceCulture);
             }
         }
         
@@ -15715,11 +15787,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rahmenanteil ähnelt.
+        /// </summary>
+        public static string BTA_LBL_RAHMENANTEIL {
+            get {
+                return ResourceManager.GetString("BTA_LBL_RAHMENANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schicht {0} ähnelt.
         /// </summary>
         public static string BTA_LBL_SCHICHT {
             get {
                 return ResourceManager.GetString("BTA_LBL_SCHICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U_f Rahmen ähnelt.
+        /// </summary>
+        public static string BTA_LBL_UF {
+            get {
+                return ResourceManager.GetString("BTA_LBL_UF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U_g Verglasung ähnelt.
+        /// </summary>
+        public static string BTA_LBL_UG {
+            get {
+                return ResourceManager.GetString("BTA_LBL_UG", resourceCulture);
             }
         }
         
@@ -15832,6 +15931,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abschnitt ähnelt.
+        /// </summary>
+        public static string BTA_SP_ABSCHNITT {
+            get {
+                return ResourceManager.GetString("BTA_SP_ABSCHNITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die c_p [J/(kg·K)] ähnelt.
         /// </summary>
         public static string BTA_SP_CP {
@@ -15846,6 +15954,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BTA_SP_DICKE {
             get {
                 return ResourceManager.GetString("BTA_SP_DICKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flächenanteil ähnelt.
+        /// </summary>
+        public static string BTA_SP_FLAECHENANTEIL {
+            get {
+                return ResourceManager.GetString("BTA_SP_FLAECHENANTEIL", resourceCulture);
             }
         }
         
@@ -15922,6 +16039,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R_T = (R'_T + R''_T) / 2 = {0} m²K/W ähnelt.
+        /// </summary>
+        public static string BTA_SUMME_RT_MITTEL {
+            get {
+                return ResourceManager.GetString("BTA_SUMME_RT_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R'_T oberer Grenzwert = {0} m²K/W ähnelt.
+        /// </summary>
+        public static string BTA_SUMME_RT_OBEN {
+            get {
+                return ResourceManager.GetString("BTA_SUMME_RT_OBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R''_T unterer Grenzwert = {0} m²K/W ähnelt.
+        /// </summary>
+        public static string BTA_SUMME_RT_UNTEN {
+            get {
+                return ResourceManager.GetString("BTA_SUMME_RT_UNTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die T_BT = {0} d · C₁ = {1} kJ/(m²K) (VDI 6007, Gl. (10a)–(10d)) ähnelt.
         /// </summary>
         public static string BTA_SUMME_TBT {
@@ -15990,6 +16134,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BTDLG_BTN_AUFBAU_UEBERNEHMEN {
             get {
                 return ResourceManager.GetString("BTDLG_BTN_AUFBAU_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Fensteraufbau übernommen: g-Wert, Rahmenanteil und U_w = {0} W/(m²K). ähnelt.
+        /// </summary>
+        public static string BTDLG_FENSTER_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("BTDLG_FENSTER_UEBERNOMMEN", resourceCulture);
             }
         }
         

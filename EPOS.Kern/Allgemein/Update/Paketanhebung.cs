@@ -450,6 +450,9 @@ namespace WindowsFormsApplication1
             // Ein älteres Paket führt keine Ergebniszeilen je Split-Zeile; der Schritt legt die Tabelle leer an, ein Lauf füllt sie.
             new Stufe(KaeltebedarfSplitAbrechnungSchema.SCHRITT, Art.Ddl,
                       "Ergebnis je dezentral (Split) gedeckter Kältebedarfszeile: Strom je Kühlträger und Zähler (K6)"),
+            // Ein älteres Paket bringt seine Fensteraufbauten ohne ψ des Glasrands; der Schritt legt die Spalte leer an.
+            new Stufe(BauteilkatalogAbschnittSchema.SCHRITT, Art.Ddl,
+                      "ψ des Glasrands am Aufbaukatalog (BK-6)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

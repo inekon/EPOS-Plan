@@ -1053,6 +1053,9 @@ namespace EPOS.Kern.Tests
                 // Schritt KaeltebedarfSplitAbrechnungSchema.SCHRITT (K6): Tab_ErgebnisKaelteDezentral, leer, reines DDL.
                 // Wiederholbar, ergebnisneutral.
                 KaeltebedarfSplitAbrechnungSchema.Ausfuehren(null);
+                // Schritt BauteilkatalogAbschnittSchema.SCHRITT (BK-5/BK-6): Psi_Glasrand am Aufbaukatalog, leer, reines DDL.
+                // Wiederholbar, ergebnisneutral.
+                BauteilkatalogAbschnittSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

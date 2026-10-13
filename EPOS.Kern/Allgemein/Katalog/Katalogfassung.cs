@@ -344,7 +344,8 @@ namespace WindowsFormsApplication1
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_BAUSTOFF" },
             new Katalogtabelle("Tab_Bauteilaufbau_STAMM", "BTA",
                 new[] { "Bezeichner", "Beschreibung", "Bauteilart", "Quelle", "Herkunft", "Quellkennung", "Typaufbau" }
-                    .Concat(BauteilkatalogSchema.AUFBAU_SPALTEN.Select(s => s.Name)).ToArray(),
+                    .Concat(BauteilkatalogSchema.AUFBAU_SPALTEN.Select(s => s.Name))
+                    .Concat(BauteilkatalogAbschnittSchema.AUFBAU_SPALTEN.Select(s => s.Name)).ToArray(),
                 new Katalogkind("Tab_Bauteilschicht_STAMM", "ID_Aufbau",
                     new[] { "Reihenfolge", "ID_Baustoff", "Dicke", "IstLuftschicht", "Lambda", "Rho", "cp" }
                         .Concat(BauteilkatalogSchema.SCHICHT_SPALTEN.Select(s => s.Name)).ToArray())
