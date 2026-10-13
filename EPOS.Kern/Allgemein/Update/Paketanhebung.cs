@@ -443,6 +443,10 @@ namespace WindowsFormsApplication1
             // der Kern beim nächsten Schreiben, gelesen leitet er die Gruppe aus Stoffgruppe bzw. Bauteilart ab.
             new Stufe(BauteilkatalogSchema.SCHRITT, Art.Ddl,
                       "Herkunft EIGEN/IMPORT, Gruppe und Klasse, Kennzeichen und Felder der Quelle am Bauteilkatalog (E132)"),
+            // KB-3: Ein älteres Paket bringt seine Projektkopien ohne die zwei Verweise; die Satzvorlage eines
+            // Katalogsatzes reist in keinem Paket (Metaspalte), und der Schritt sät sie an der Zieldatenbank.
+            new Stufe(KatalogkostenSaatSchema.SCHRITT, Art.Ddl,
+                      "Verweise auf die Satzvorlagen an den Projektkopien mit Kosten, Saat der Katalogkosten (KB-3)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

@@ -1047,6 +1047,9 @@ namespace EPOS.Kern.Tests
                 // Schritt BauteilkatalogSchema.SCHRITT (BK-2, E132): Herkunft, Gliederung, Kennzeichen und Felder der Quelle am
                 // Baustoff- und Bauteilkatalog, Abschnittstabellen. Wiederholbar, ergebnisneutral.
                 BauteilkatalogSchema.Ausfuehren(null);
+                // Schritt KatalogkostenSaatSchema.SCHRITT (KB-3): die zwei Verweise an den acht Projektkopien mit
+                // Kosten, dazu je Satz mit Kosten genau eine Satzvorlage je Art. Wiederholbar, ergebnisneutral.
+                KatalogkostenSaatSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

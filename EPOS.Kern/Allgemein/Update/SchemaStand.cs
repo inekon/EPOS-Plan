@@ -1046,7 +1046,13 @@ namespace WindowsFormsApplication1
         /// <see cref="BauteilkatalogSchema.SCHRITT"/>: Herkunft EIGEN/IMPORT, Gruppe und Klasse, das Kennzeichen „für die
         /// Gebäudesimulation meist nicht geeignet“, die Felder der Quelle und die Abschnittstabellen
         /// (<see cref="BauteilkatalogSchema"/>). <b>Ergebnisneutral:</b> Der Bauteilweg liest keine neue Spalte.
-        public const int Zielversion = BauteilkatalogSchema.SCHRITT;
+        /// Danach, mit der SAAT DER KATALOGKOSTEN-SATZVORLAGEN (KB-3), steht das Ziel auf
+        /// <see cref="KatalogkostenSaatSchema.SCHRITT"/>: die zwei Verweise
+        /// <c>ID_KostenVorlage</c>/<c>ID_KostenVorlageInvestition</c> an den acht Projektkopien mit Kosten und je
+        /// Katalogsatz mit Kosten genau eine Satzvorlage je Art (<see cref="KatalogkostenSaatSchema"/>).
+        /// <b>Ergebnisneutral:</b> Gerechnet wird aus <c>Tab_ProjektWerte</c>; eine Satzvorlage wirkt erst beim
+        /// Übernehmen oder Abgleichen.
+        public const int Zielversion = KatalogkostenSaatSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
