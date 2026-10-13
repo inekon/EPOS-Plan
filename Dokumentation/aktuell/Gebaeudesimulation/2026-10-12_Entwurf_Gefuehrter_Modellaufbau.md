@@ -49,6 +49,8 @@ nur Struktur und Zählungen, keine Werte.
 
 ## 0 Das Ergebnis in Punkten
 
+Fragen F1–F8 am 13.10.2026 nach Empfehlung entschieden (E137).
+
 - **Leitziel:** Aus einer importierten Datei soll in möglichst wenig Zeit ein vollständiges, rechenfähiges Modell werden, und
   Details sollen sich danach einfach ändern lassen. Daraus folgt der Kern dieses Entwurfs: **eine Prüfung mit fünf Gruppen und
   einem Rechenstatus** („vollständig“, „rechnet mit Vorgaben“, „nicht rechenfähig“), dazu **ein Knopf „Alle Vorschläge
@@ -335,32 +337,32 @@ Bedienung. Gespeichert wird nur, was die Übernahme schreibt (HC-4: keine Persis
 - **`EPOS_*`-Sätze** sind die Rückfallebene für alles, was kein Standard trägt (Nacht- und Wochenendsollwerte, Übergabe,
   Vorheizzeit). Ihr Präfix bleibt.
 
-## 3 Fragen an den Anwender
+## 3 Fragen an den Anwender — entschieden (E137, 13.10.2026)
 
 Jede Empfehlung ist am Leitziel gemessen: an der Zeit bis zum ersten Lauf und an der Zahl der Pflichteingaben.
 
 1. **F1 Darstellung der Prüfung:** (a) eine Ampel je Prüfgruppe (fünf Gruppen) mit Zählung und Rechenstatus oben,
    Einzelheiten auf Klick; (b) eine Liste aller Befunde. **Empfehlung: (a)**. Fünf Zeilen mit Zählung sind in Sekunden gelesen,
-   und Einzelheiten zeigt die Ansicht am Körper.
+   und Einzelheiten zeigt die Ansicht am Körper. **Entschieden: (a)**
 2. **F2 Übernahme der Vorschläge:** (a) „Alle Vorschläge übernehmen“ als Hauptknopf und zusätzlich je Gruppe, jede Übernahme
    mit Rücknahme; (b) nur je Gruppe; (c) nur einzeln. **Empfehlung: (a)**. Ein Klick führt vom Import zum rechenfähigen Modell,
-   und die Rücknahme je Gruppe hält Details offen.
+   und die Rücknahme je Gruppe hält Details offen. **Entschieden: (a)**
 3. **F3 Quelle der Aufbauvorschläge:** (a) Rangfolge Projektaufbau gleicher Bauteilart → Katalogaufbau (BK, geeignet, Stoffgruppe
    und U-Nähe) → Typaufbau; (b) nur Katalog; (c) nur Typaufbau wie heute. **Empfehlung: (a)**. Ein Aufbau, den das Projekt schon
-   trägt, ist der wahrscheinlichste und braucht keine Rückfrage.
+   trägt, ist der wahrscheinlichste und braucht keine Rückfrage. **Entschieden: (a)**
 4. **F4 Baujahrestypische Vorgaben:** (a) aus dem Bestand: Baualtersklasse und Bauart setzen U-Vorgabe (Katalogmedian) und
    Typaufbau, als Wahl in Prüfgruppe 2 und als „Vorgaben der Baualtersklasse übernehmen“ im Einzonenweg; (b) ein eigener Katalog
    baujahrestypischer Aufbauten mit Schemaschritt; (c) nur als Sitzungseingabe ohne Speicherung. **Empfehlung: (a)**. Sie kommt
-   ohne Schemaschritt und ohne Normtabellen aus (E131) und braucht nur eine Eingabe (die Klasse).
+   ohne Schemaschritt und ohne Normtabellen aus (E131) und braucht nur eine Eingabe (die Klasse). **Entschieden: (a)**
 5. **F5 Ferien und Saison:** (a) je Projekt (Ferien, Heizperiode), Zone nur bei Abweichung; (b) je Zone. **Empfehlung: (a)**.
-   Einmal je Projekt eingeben statt je Zone, und der Generator setzt sie in jeden Zonenkalender.
+   Einmal je Projekt eingeben statt je Zone, und der Generator setzt sie in jeden Zonenkalender. **Entschieden: (a)**
 6. **F6 Zone ohne eigenes Profil:** (a) Profil nach der Regel 2.4 bis zum EPOS-Muster, Status „rechnet mit Vorgaben“ (gelb);
    (b) Zone erbt die Gebäudekalender wie heute, Status gelb; (c) Status rot, bis ein Profil gewählt ist. **Empfehlung: (a)**,
    mit DIN-Profilen mit Werten (E135). Keine
-   Pflichteingabe, und die Zone rechnet mit einer zur Nutzung passenden Woche statt mit der des Gebäudes.
+   Pflichteingabe, und die Zone rechnet mit einer zur Nutzung passenden Woche statt mit der des Gebäudes. **Entschieden: (a)**
 7. **F7 Wiederimport:** (a) Ergänzungen des Anwenders bewahren (Zusammenführung über Quellkennung und Herkunft, Vorschau der
    Unterschiede); (b) ersetzen wie heute (GD-4), mit Warnung vor dem Verlust. **Empfehlung: (a)**. Sonst kostet jede
-   Planänderung im CAD die ganze Nacharbeit erneut.
+   Planänderung im CAD die ganze Nacharbeit erneut. **Entschieden: (a)**
 8. **F8 Export:** (a) Empfehlung je Zweck (IFC zurück ans CAD, gbXML an Simulationswerkzeuge) und gbXML um `Schedule` sowie IFC
    um die Standardsätze erweitern; (b) nur die Empfehlung, Formate wie heute; (c) nur IFC mit `EPOS_*`-Sätzen. **Empfehlung:
    (a)**. Die ergänzten Kalender gehen sonst bei jeder Übergabe an ein anderes Werkzeug verloren. Die Erweiterung liegt aber
