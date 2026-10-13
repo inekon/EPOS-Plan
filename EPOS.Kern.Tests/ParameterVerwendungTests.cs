@@ -275,10 +275,8 @@ namespace EPOS.Kern.Tests
         /// Wirtschaftlichkeit liest, steht als <c>Wirtschaftlichkeit</c> im Katalog.
         /// </summary>
         [Theory]
-        [InlineData(Anlagenart.Heizkessel, "Investitionskosten")]
-        [InlineData(Anlagenart.Heizkessel, "Wartungskosten")]
-        [InlineData(Anlagenart.Bhkw, "Kosten_Modul")]
-        [InlineData(Anlagenart.Bhkw, "Wartungskosten_kwhel")]
+        // Welle KB-4: Heizkessel und BHKW fuehren keine Kostenspalte mehr - ihre Kosten
+        // stehen in der Satzvorlage des Katalogsatzes.
         [InlineData(Anlagenart.Waermepumpe, "Modulkosten")]
         [InlineData(Anlagenart.Solarkollektoren, "Investitionskosten")]
         [InlineData(Anlagenart.Photovoltaik, "Modulkosten")]
@@ -510,8 +508,8 @@ namespace EPOS.Kern.Tests
             {
                 case Anlagenart.Heizkessel:
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Ptherm", "Brennstoff",
-                                   "Wirkungsgrad_Gas", "Wirkungsgrad_Öl", "Investitionskosten",
-                                   "Raumbedarf", "Wartungskosten", "Wartungskosten_Einheit",
+                                   "Wirkungsgrad_Gas", "Wirkungsgrad_Öl",
+                                   "Raumbedarf",
                                    "Nutzungsdauer", "CO2", "SO2", "NOx", "CO", "Staub",
                                    "Betriebsbereitschaftverlust", "Brennwert", "Vorlauf", "Ruecklauf",
                                    // Anwenderentscheid 02.10.2026: die Einheit des Bereitschaftsverlusts.
@@ -528,9 +526,7 @@ namespace EPOS.Kern.Tests
                                    // Katalogeditor, der Gesamtwert daneben ist dort
                                    // Anzeige und bleibt im Aufklapper eingebbar.
                                    "Wirkungsgrad_el", "Wirkungsgrad_th",
-                                   "Grenzleistung", "Kosten_Modul",
-                                   "Kosten_Montage", "Kosten_Lieferung", "Kosten_Schallschutzhaube",
-                                   "Kosten_Abgasreinigung", "Raumbedarf", "Wartungskosten_kwhel",
+                                   "Grenzleistung", "Raumbedarf",
                                    "Nutzungsdauer", "NOX", "SO2", "CO", "CO2", "Staub",
                                    "Vorlauf", "Ruecklauf",
                                    // Welle M4 (BH1, BH2): die Gruppe „Teillast und Takten" des
