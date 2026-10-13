@@ -6432,6 +6432,9 @@ Depending on the project size this takes several minutes. Continue?</value>
   <data name="BK_KOMP_HINW_KINDZEILEN" xml:space="preserve">
     <value>The assignments "{1}" of unit "{0}" could not be transferred.</value>
   </data>
+  <data name="BK_KOMP_HINW_KAELTESEITE" xml:space="preserve">
+    <value>Not part of the chiller trade and left unchanged: the cascade of the project, a cold storage tank and the cooling sequence of the other cooling generators — the rank of the transferred machines comes from the source. Please check the cooling sequence in the cooling section.</value>
+  </data>
   <data name="KOSTEN_PLANWERT_BASIS_MODUL" xml:space="preserve">
     <value>Module price</value>
   </data>

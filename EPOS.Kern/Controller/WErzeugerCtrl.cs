@@ -664,6 +664,10 @@ namespace WindowsFormsApplication1
             if (Belegt(dt, row, "Neigung")) item.m_Neigung = Convert.ToInt32(row["Neigung"]);
             if (Belegt(dt, row, "Azimut")) item.m_Azimut = Convert.ToInt32(row["Azimut"]);
             if (Belegt(dt, row, "ID_PUFFER")) item.ID_PUFFER = Convert.ToInt32(row["ID_PUFFER"]);
+            // Der Geraeteverweis der Kaeltemaschine (Fachspalte, KN1): ausdruecklich auch mit
+            // null, damit die Bestandsuebernahme eine Anlage ohne Geraet nicht als Verweis 0
+            // sieht; eine fehlende Spalte gilt wie NULL.
+            item.ID_Kaeltemaschine = Zahl(dt, row, KaeltemaschineAnlageSchema.SPALTE_ID_KAELTEMASCHINE);
             // Ohne diese Zeile verliert der Bearbeiten-Zweig des Wizards den Energietraeger:
             // WizardParent.LoadWEFromDB uebernimmt ID_Carrier aus diesen Modellen, und
             // Del_Projekt_Waermeerzeuger + Add_WP_Waermeerzeuger schrieben die Anlagen
