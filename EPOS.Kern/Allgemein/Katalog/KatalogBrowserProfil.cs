@@ -69,9 +69,9 @@ namespace WindowsFormsApplication1
     /// <c>true</c> schreibt <c>…StammCtrl.AnzeigefelderSchreiben</c> zurueck. Seit dem
     /// Anwenderentscheid vom 15.09.2026 ist das JEDE fachliche Spalte ausser dem
     /// Bezeichner — er ist der Schluessel des <c>UPDATE</c> und wird im Aufklapper nicht
-    /// umbenannt. Eine begruendete Ausnahme: Die Investition je kWel des BHKW ist
-    /// abgeleitet (<c>BHKWKosten.JeKWel</c> aus den fuenf Posten, W14a-E-8-B3) und
-    /// bleibt Lesewert.</para>
+    /// umbenannt. Eine begruendete Ausnahme: <see cref="FeldGeraetekosten"/> ist der
+    /// Lesewert der Satzvorlage (Welle KB-4) — gepflegt wird er in der Kostenverwaltung,
+    /// nicht hier.</para>
     /// </remarks>
     public sealed class BrowserDetailfeld
     {
@@ -326,13 +326,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Einheit des Bereitschaftsverlusts (Anwenderentscheid 02.10.2026): „kW" oder „%"
-        /// der Nennleistung, sprachneutral und deshalb als Textfeld bedient wie
-        /// <see cref="FeldWartungEinheit"/>.
+        /// der Nennleistung, sprachneutral und deshalb als Textfeld bedient.
         /// </summary>
         public const string FeldBBEinheit = "BBVERLUST_EINHEIT";
         public const string FeldRaumbedarf = "RAUMBEDARF";
-        public const string FeldWartungskosten = "WARTUNGSKOSTEN";
-        public const string FeldWartungEinheit = "WARTUNG_EINHEIT";
         public const string FeldNutzungsdauer = "NUTZUNGSDAUER";
         public const string FeldCo2 = "CO2";
         public const string FeldSo2 = "SO2";
@@ -359,13 +356,17 @@ namespace WindowsFormsApplication1
         public const string FeldWirkungsgradEl = "WIRKUNGSGRAD_EL";
         public const string FeldWirkungsgradTh = "WIRKUNGSGRAD_TH";
         public const string FeldMotortyp = "MOTORTYP";
-        public const string FeldInvestitionJeKwel = "INVESTITION_KWEL";
-        public const string FeldKostenModul = "KOSTEN_MODUL";
-        public const string FeldKostenMontage = "KOSTEN_MONTAGE";
-        public const string FeldKostenLieferung = "KOSTEN_LIEFERUNG";
-        public const string FeldKostenSchallschutz = "KOSTEN_SCHALLSCHUTZ";
-        public const string FeldKostenAbgasreinigung = "KOSTEN_ABGASREINIGUNG";
-        public const string FeldWartungJeKwhel = "WARTUNG_KWHEL";
+
+        /// <summary>
+        /// <b>Die Gerätekosten als LESEWERT</b> (Welle KB-4, Anwenderentscheid 13.10.2026): die
+        /// Investitionssumme der Satzvorlage des Satzes
+        /// (<see cref="Katalogkostenanzeige.Investitionstext"/>). An seiner Stelle standen am
+        /// BHKW die fünf Kostenposten samt Investition je kWel und Wartung je kWhel, am
+        /// Heizkessel Investition und Wartung mit ihrem Zeitbezug — alle als Spalten entfallen.
+        /// Gepflegt wird der Wert in der Kostenverwaltung, deshalb ist das Feld nicht
+        /// editierbar; der Speicherweg schreibt es nie.
+        /// </summary>
+        public const string FeldGeraetekosten = "GERAETEKOSTEN";
 
         public const string FeldH0 = "H0";
         public const string FeldK1 = "K1";
@@ -389,9 +390,7 @@ namespace WindowsFormsApplication1
 
         private static readonly HashSet<string> KOSTENFELDER = new HashSet<string>(StringComparer.Ordinal)
         {
-            FeldInvestitionskosten, FeldWartungskosten, FeldWartungEinheit, FeldNutzungsdauer,
-            FeldInvestitionJeKwel, FeldKostenModul, FeldKostenMontage, FeldKostenLieferung,
-            FeldKostenSchallschutz, FeldKostenAbgasreinigung, FeldWartungJeKwhel
+            FeldInvestitionskosten, FeldNutzungsdauer, FeldGeraetekosten
         };
 
         /// <summary>
@@ -446,8 +445,6 @@ namespace WindowsFormsApplication1
                                                   BrowserFeldArt.Text, editierbar: true),
                             new BrowserDetailfeld(FeldPtherm,       t("KBROW_LBL_LEISTUNG"), "kW",
                                                   BrowserFeldArt.Zahl, editierbar: true),
-                            new BrowserDetailfeld(FeldInvestitionskosten, t("KBROW_LBL_INVEST"), "€",
-                                                  BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldBrennwert,    t("KBROW_LBL_BRENNWERT"), "",
                                                   BrowserFeldArt.Schalter, editierbar: true),
                             new BrowserDetailfeld(FeldVorlauf,      t("KBROW_LBL_VORLAUF"), "°C",
@@ -491,10 +488,13 @@ namespace WindowsFormsApplication1
 
                             new BrowserDetailfeld(FeldRaumbedarf,   t("HZKK_LBL_RAUMBEDARF"), "m³",
                                                   BrowserFeldArt.Zahl, editierbar: true),
-                            new BrowserDetailfeld(FeldWartungskosten, t("KESSEL_WARTUNG_LBL") + ":", "",
-                                                  BrowserFeldArt.Zahl, editierbar: true),
-                            new BrowserDetailfeld(FeldWartungEinheit, t("KESSEL_WARTUNG_EINHEIT_LBL") + ":", "",
-                                                  BrowserFeldArt.Text, editierbar: true),
+                            // DIE EINE KOSTENBASIS (Welle KB-4, Anwenderentscheid 13.10.2026):
+                            // Investition, Wartung und ihr Zeitbezug sind als Spalten entfallen.
+                            // Geblieben ist EIN Lesewert - die Investitionssumme der Satzvorlage
+                            // dieses Satzes; gepflegt wird sie in der Kostenverwaltung.
+                            new BrowserDetailfeld(FeldGeraetekosten, t("KBROW_LBL_GERAETEKOSTEN"), "€",
+                                                  BrowserFeldArt.Zahl, editierbar: false,
+                                                  hinweis: t("KBROW_HINT_KOSTENVERWALTUNG")),
                             // ETAPPE E10 (Kennzeichnung A8, Empfehlung E10-Q4 a): Geraetedaten,
                             // nicht rechenwirksam - der Rechenweg nimmt die Nutzungsdauer-
                             // tabelle. Pflegbar bleibt die Spalte; Beschriftung und Vermerk
@@ -607,27 +607,14 @@ namespace WindowsFormsApplication1
                             new BrowserDetailfeld(FeldRaumbedarf,   t("BHKWK_LBL_RAUMBEDARF"), "m³",
                                                   BrowserFeldArt.Zahl, editierbar: true),
 
-                            // Die fuenf Kostenposten sind das, was gespeichert wird und
-                            // was die Kostenplanung liest (TechnikPlanwertCtrl:317-325).
-                            new BrowserDetailfeld(FeldKostenModul,  t("BHKWK_LBL_MODUL"), "€",
-                                                  BrowserFeldArt.Zahl, editierbar: true),
-                            new BrowserDetailfeld(FeldKostenMontage, t("BHKWK_LBL_MONTAGE"), "€",
-                                                  BrowserFeldArt.Zahl, editierbar: true),
-                            new BrowserDetailfeld(FeldKostenLieferung, t("BHKWK_LBL_LIEFERUNG"), "€",
-                                                  BrowserFeldArt.Zahl, editierbar: true),
-                            new BrowserDetailfeld(FeldKostenSchallschutz, t("BHKWK_LBL_SCHALLSCHUTZ"), "€",
-                                                  BrowserFeldArt.Zahl, editierbar: true),
-                            new BrowserDetailfeld(FeldKostenAbgasreinigung, t("BHKWK_LBL_ABGASREINIGUNG"), "€",
-                                                  BrowserFeldArt.Zahl, editierbar: true),
-
-                            // ABGELEITET und deshalb nicht editierbar (W14a-E-8-B3):
-                            // BHKWKosten.JeKWel aus den fuenf Posten. Zwei Eingabewege
-                            // fuer dasselbe Geld liessen sich widersprechen; die Posten
-                            // sind die Wahrheit, diese Zeile rechnet sie nur um.
-                            new BrowserDetailfeld(FeldInvestitionJeKwel, t("BHKWK_LBL_INVEST"), "€ / kWel",
-                                                  BrowserFeldArt.Zahl),
-                            new BrowserDetailfeld(FeldWartungJeKwhel, t("BHKWK_LBL_WARTUNG"), "€ / kWhel",
-                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            // DIE EINE KOSTENBASIS (Welle KB-4, Anwenderentscheid 13.10.2026):
+                            // Die fuenf Kostenposten, die abgeleitete Investition je kWel und die
+                            // Wartung je kWhel sind als Spalten entfallen. Geblieben ist EIN
+                            // Lesewert - die Investitionssumme der Satzvorlage dieses Satzes;
+                            // gepflegt wird sie in der Kostenverwaltung (Muster Waermepumpe).
+                            new BrowserDetailfeld(FeldGeraetekosten, t("KBROW_LBL_GERAETEKOSTEN"), "€",
+                                                  BrowserFeldArt.Zahl, editierbar: false,
+                                                  hinweis: t("KBROW_HINT_KOSTENVERWALTUNG")),
                             // ETAPPE E10 (Kennzeichnung A8): wie beim Heizkessel.
                             new BrowserDetailfeld(FeldNutzungsdauer, t("BHKWK_LBL_NUTZUNGSDAUER"),
                                                   t("HZKK_EINHEIT_JAHRE"),

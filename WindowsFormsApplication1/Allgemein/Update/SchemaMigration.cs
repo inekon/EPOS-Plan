@@ -1342,7 +1342,8 @@ namespace WindowsFormsApplication1
         ///
         /// <para>
         /// <b>Anlass.</b> Seit dem Nutzerentscheid vom 22.08.2026 fuehren die fuenf
-        /// Einzelposten (<see cref="BHKWKosten"/>), und <c>Investition_kwel</c> ist daraus
+        /// Einzelposten (<c>BHKWKosten</c>, mit Welle KB-4 entfallen), und
+        /// <c>Investition_kwel</c> ist daraus
         /// abgeleitet. Am 23.08.2026 ist deshalb in <c>TechnikPlanwertCtrl.BasenFuellen</c>
         /// die zweite Kostenbasis <c>BASIS_SPEZIFISCH</c> (= <c>Investition_kwel</c> *
         /// <c>Pel</c>) fuer das BHKW entfallen: Sie war seither eine Dublette des
@@ -1368,7 +1369,7 @@ namespace WindowsFormsApplication1
         ///     wird NIE auf 0 gesetzt, sonst ginge der einzige Nachweis der Investition
         ///     verloren.</description></item>
         ///   <item><description><b><c>Pel</c> = 0/NULL:</b> Der Wert je kWel ist nicht
-        ///     bestimmbar (<see cref="BHKWKosten.JeKWelBestimmbar"/>) - jede Zahl mal 0
+        ///     bestimmbar (<c>BHKWKosten.JeKWelBestimmbar</c>) - jede Zahl mal 0
         ///     ergaebe wieder 0 und verschwiege den erfassten Betrag. Die Zeile bleibt
         ///     UNVERAENDERT und wird als offen protokolliert.</description></item>
         ///   <item><description><b>Beides leer:</b> nichts zu tun.</description></item>
@@ -1379,7 +1380,7 @@ namespace WindowsFormsApplication1
         ///
         /// <para>
         /// <b>Rundungsregel: KEINE - und genau das ist die Regel.</b>
-        /// <see cref="BHKWKosten.JeKWel"/> (<c>Model\BHKWKosten.cs</c>, Zeile 58:
+        /// <c>BHKWKosten.JeKWel</c> (<c>Model\BHKWKosten.cs</c>, Zeile 58:
         /// <c>return JeKWelBestimmbar(pel) ? summe / pel : 0.0;</c>) rundet nicht, und
         /// <c>BHKWCtrl.Update</c> wie <c>BHKWStammCtrl.Update</c> schreiben genau diesen
         /// ungerundeten Quotienten in die <c>Double</c>-Spalte; gerundet wird allein die

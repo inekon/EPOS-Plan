@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using WindowsFormsApplication1;
 using Xunit;
@@ -68,7 +69,7 @@ namespace EPOS.Kern.Tests
                 KatalogBrowserArt.Heizkessel,
                 new[]
                 {
-                    "BEZEICHNER", "BESCHREIBUNG", "BRENNSTOFF", "PTHERM", "INVESTITIONSKOSTEN",
+                    "BEZEICHNER", "BESCHREIBUNG", "BRENNSTOFF", "PTHERM",
                     "BRENNWERT", "VORLAUF", "RUECKLAUF",
                     "FIRMA", "WIRKUNGSGRAD_GAS", "WIRKUNGSGRAD_OEL", "BBVERLUST",
                     // Die Einheit des Bereitschaftsverlusts (Anwenderentscheid 02.10.2026).
@@ -77,7 +78,9 @@ namespace EPOS.Kern.Tests
                     "WIRKUNGSGRAD_TEILLAST30", "KENNLINIE_BRENNWERT", "MINDESTLEISTUNG",
                     "ANFAHRVERLUST", "MINDESTLAUFZEIT",
                     "RAUMBEDARF",
-                    "WARTUNGSKOSTEN", "WARTUNG_EINHEIT", "NUTZUNGSDAUER",
+                    // Welle KB-4: der Lesewert der Satzvorlage an der Stelle von Investition,
+                    // Wartung und Zeitbezug.
+                    "GERAETEKOSTEN", "NUTZUNGSDAUER",
                     "CO2", "SO2", "NOX", "CO", "STAUB"
                 }
             };
@@ -95,9 +98,9 @@ namespace EPOS.Kern.Tests
                     "WIRKUNGSGRAD_EL_TEILLAST50", "WIRKUNGSGRAD_TH_TEILLAST50",
                     "ANFAHRVERLUST", "MINDESTLAUFZEIT",
                     "MOTORTYP", "RAUMBEDARF",
-                    "KOSTEN_MODUL", "KOSTEN_MONTAGE", "KOSTEN_LIEFERUNG",
-                    "KOSTEN_SCHALLSCHUTZ", "KOSTEN_ABGASREINIGUNG",
-                    "INVESTITION_KWEL", "WARTUNG_KWHEL", "NUTZUNGSDAUER",
+                    // Welle KB-4: der Lesewert der Satzvorlage an der Stelle der sieben
+                    // Kostenfelder.
+                    "GERAETEKOSTEN", "NUTZUNGSDAUER",
                     "NOX", "SO2", "CO", "CO2", "STAUB"
                 }
             };
@@ -188,11 +191,10 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(vorher);
 
             var felder = new HeizkesselStammCtrl.AnzeigefelderHeizkessel(
-                "Probe Aufklapper", 33.5, 4444.25, false, 78, 58,
+                "Probe Aufklapper", 33.5, false, 78, 58,
                 Brennstoff: "Heizöl EL", Firma: "Probe GmbH",
                 WirkungsgradGas: 0.925, WirkungsgradOel: 0.88,
                 Betriebsbereitschaftverlust: 1.5, Raumbedarf: 2.25,
-                Wartungskosten: 180.5, WartungskostenEinheit: "%/a",
                 Nutzungsdauer: 22, CO2: 11.5, SO2: 1.25, NOx: 21.75, CO: 3.5, Staub: 0.75);
 
             var ergebnis = HeizkesselStammCtrl.AnzeigefelderSchreiben(KESSEL, felder);
@@ -206,7 +208,6 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Probe Aufklapper", nachher[KatalogBrowserProfil.FeldBeschreibung]);
             Assert.Equal("Heizöl EL", nachher[KatalogBrowserProfil.FeldBrennstoff]);
             Assert.Equal("33,50", nachher[KatalogBrowserProfil.FeldPtherm]);
-            Assert.Equal("4444,25", nachher[KatalogBrowserProfil.FeldInvestitionskosten]);
             Assert.Equal("0", nachher[KatalogBrowserProfil.FeldBrennwert]);
             Assert.Equal("78", nachher[KatalogBrowserProfil.FeldVorlauf]);
             Assert.Equal("58", nachher[KatalogBrowserProfil.FeldRuecklauf]);
@@ -216,8 +217,6 @@ namespace EPOS.Kern.Tests
             Assert.Equal("0,88", nachher[KatalogBrowserProfil.FeldWirkungsgradOel]);
             Assert.Equal("1,5", nachher[KatalogBrowserProfil.FeldBBVerlust]);
             Assert.Equal("2,25", nachher[KatalogBrowserProfil.FeldRaumbedarf]);
-            Assert.Equal("180,5", nachher[KatalogBrowserProfil.FeldWartungskosten]);
-            Assert.Equal("%/a", nachher[KatalogBrowserProfil.FeldWartungEinheit]);
             Assert.Equal("22", nachher[KatalogBrowserProfil.FeldNutzungsdauer]);
             Assert.Equal("11,5", nachher[KatalogBrowserProfil.FeldCo2]);
             Assert.Equal("1,25", nachher[KatalogBrowserProfil.FeldSo2]);
@@ -241,7 +240,7 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(vorher);
 
             var nur_sechs = new HeizkesselStammCtrl.AnzeigefelderHeizkessel(
-                "nur die sechs", 12.0, 99.0, true, 70, 50);
+                "nur die fuenf", 12.0, true, 70, 50);
 
             Assert.True(HeizkesselStammCtrl.AnzeigefelderSchreiben(KESSEL, nur_sechs).Ok);
 
@@ -252,7 +251,6 @@ namespace EPOS.Kern.Tests
                          KatalogBrowserProfil.FeldWirkungsgradGas, KatalogBrowserProfil.FeldWirkungsgradOel,
                          KatalogBrowserProfil.FeldBBVerlust, KatalogBrowserProfil.FeldBBEinheit,
                          KatalogBrowserProfil.FeldRaumbedarf,
-                         KatalogBrowserProfil.FeldWartungskosten, KatalogBrowserProfil.FeldWartungEinheit,
                          KatalogBrowserProfil.FeldNutzungsdauer, KatalogBrowserProfil.FeldCo2,
                          KatalogBrowserProfil.FeldSo2, KatalogBrowserProfil.FeldNox,
                          KatalogBrowserProfil.FeldCo, KatalogBrowserProfil.FeldStaub
@@ -260,35 +258,10 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(vorher[feld], nachher[feld]);
         }
 
-        /// <summary>
-        /// Eine Bezugsgroesse ausserhalb der drei zulaessigen wird BENANNT abgelehnt —
-        /// und es wird nichts geschrieben.
-        /// </summary>
-        [Fact]
-        public void Heizkessel_unbekannte_Wartungseinheit_wird_benannt_abgelehnt()
-        {
-            if (!_db.Vorhanden) return;
-            using var _ = new Kulturvorrichtung();
-
-            var vorher = new HeizkesselStammCtrl().KatalogsatzAnzeige(KESSEL);
-
-            var felder = new HeizkesselStammCtrl.AnzeigefelderHeizkessel(
-                "x", 10, 20, false, 70, 50, WartungskostenEinheit: "€/Monat");
-
-            var ergebnis = HeizkesselStammCtrl.AnzeigefelderSchreiben(KESSEL, felder);
-
-            Assert.False(ergebnis.Ok);
-            Assert.Contains("€/Monat", ergebnis.Meldung);
-            Assert.Contains("€/a", ergebnis.Meldung);          // die Liste steht in der Meldung
-            Assert.Equal("", ergebnis.Name);
-
-            // Und der Satz steht unveraendert da - auch in den sechs alten Feldern.
-            var nachher = new HeizkesselStammCtrl().KatalogsatzAnzeige(KESSEL);
-            Assert.Equal(vorher[KatalogBrowserProfil.FeldBeschreibung],
-                         nachher[KatalogBrowserProfil.FeldBeschreibung]);
-            Assert.Equal(vorher[KatalogBrowserProfil.FeldPtherm],
-                         nachher[KatalogBrowserProfil.FeldPtherm]);
-        }
+        // HIER STAND die Probe „eine Bezugsgroesse ausserhalb der drei zulaessigen wird
+        // benannt abgelehnt". Die Spalte Wartungskosten_Einheit ist mit Welle KB-4 entfallen
+        // (GeraetekostenEntfallSchema); den Zeitbezug traegt die BEMESSUNG der
+        // Betriebsposition der Satzvorlage, und die prueft die Kostenverwaltung.
 
         /// <summary>
         /// Ein Energietraeger, den der Katalog nicht kennt, wird benannt abgelehnt; ein
@@ -303,7 +276,7 @@ namespace EPOS.Kern.Tests
             var vorher = new HeizkesselStammCtrl().KatalogsatzAnzeige(KESSEL);
 
             var falsch = new HeizkesselStammCtrl.AnzeigefelderHeizkessel(
-                "x", 10, 20, false, 70, 50, Brennstoff: "Bratkartoffelfett");
+                "x", 10, false, 70, 50, Brennstoff: "Bratkartoffelfett");
             var abgelehnt = HeizkesselStammCtrl.AnzeigefelderSchreiben(KESSEL, falsch);
 
             Assert.False(abgelehnt.Ok);
@@ -311,7 +284,7 @@ namespace EPOS.Kern.Tests
 
             // Leeres Feld = unveraendert lassen (und der Rest wird geschrieben).
             var leer = new HeizkesselStammCtrl.AnzeigefelderHeizkessel(
-                "leerer Traeger", 10, 20, false, 70, 50, Brennstoff: "");
+                "leerer Traeger", 10, false, 70, 50, Brennstoff: "");
             Assert.True(HeizkesselStammCtrl.AnzeigefelderSchreiben(KESSEL, leer).Ok);
 
             var nachher = new HeizkesselStammCtrl().KatalogsatzAnzeige(KESSEL);
@@ -328,7 +301,7 @@ namespace EPOS.Kern.Tests
             using var _ = new Kulturvorrichtung();
 
             var felder = new HeizkesselStammCtrl.AnzeigefelderHeizkessel(
-                "x", -1, 20, false, 70, 50);
+                "x", -1, false, 70, 50);
             var ergebnis = HeizkesselStammCtrl.AnzeigefelderSchreiben(KESSEL, felder);
 
             // Die Meldung nennt das Feld so, wie es auf dem Schirm steht - uebersetzt
@@ -355,7 +328,7 @@ namespace EPOS.Kern.Tests
                 bool brennwert, string eta30 = null, bool? kennlinie = null, string pmin = null,
                 string anfahr = null, string laufzeit = null)
                 => new HeizkesselStammCtrl.AnzeigefelderHeizkessel(
-                    "Kennlinie", 22, 5000, brennwert, 70, 50,
+                    "Kennlinie", 22, brennwert, 70, 50,
                     Teillast30: eta30, KennlinieBrennwert: kennlinie, Mindestleistung: pmin,
                     Anfahrverlust: anfahr, Mindestlaufzeit: laufzeit);
             static string Wert(string feld) => new HeizkesselStammCtrl().KatalogsatzAnzeige(KESSEL)[feld];
@@ -425,9 +398,7 @@ namespace EPOS.Kern.Tests
                 "Probe GmbH", 260, 240, 25, 88, 62,
                 Beschreibung: "Probe Aufklapper", Brennstoff: "Biogas",
                 Motortyp: "Zuendstrahlmotor", Raumbedarf: 12.5,
-                KostenModul: 20000, KostenMontage: 1000, KostenLieferung: 500,
-                KostenSchallschutzhaube: 2000, KostenAbgasreinigung: 500,
-                WartungskostenJeKWhel: 0.025, Nutzungsdauer: 12,
+                Nutzungsdauer: 12,
                 NOx: 90, SO2: 2, CO: 210, CO2: 199000, Staub: 1,
                 WirkungsgradEl: 0.30, WirkungsgradTh: 0.56);
 
@@ -449,12 +420,6 @@ namespace EPOS.Kern.Tests
             Assert.Equal("0,86", nachher[KatalogBrowserProfil.FeldWirkungsgrad]);
             Assert.Equal("Zuendstrahlmotor", nachher[KatalogBrowserProfil.FeldMotortyp]);
             Assert.Equal("12,5", nachher[KatalogBrowserProfil.FeldRaumbedarf]);
-            Assert.Equal("20000", nachher[KatalogBrowserProfil.FeldKostenModul]);
-            Assert.Equal("1000", nachher[KatalogBrowserProfil.FeldKostenMontage]);
-            Assert.Equal("500", nachher[KatalogBrowserProfil.FeldKostenLieferung]);
-            Assert.Equal("2000", nachher[KatalogBrowserProfil.FeldKostenSchallschutz]);
-            Assert.Equal("500", nachher[KatalogBrowserProfil.FeldKostenAbgasreinigung]);
-            Assert.Equal("0,025", nachher[KatalogBrowserProfil.FeldWartungJeKwhel]);
             Assert.Equal("12", nachher[KatalogBrowserProfil.FeldNutzungsdauer]);
             Assert.Equal("90", nachher[KatalogBrowserProfil.FeldNox]);
             Assert.Equal("2", nachher[KatalogBrowserProfil.FeldSo2]);
@@ -527,24 +492,57 @@ namespace EPOS.Kern.Tests
         /// (W14a-E-8-B3): 24 000 EUR aus fuenf Posten bei 240 kWel sind 100 EUR/kWel —
         /// in der Anzeige und in der Spalte.
         /// </summary>
+        /// <summary>
+        /// <b>Die Gerätekosten des Aufklappers kommen aus der SATZVORLAGE</b> (Welle KB-4,
+        /// Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung"): Der Satz führt
+        /// keine Kostenspalte mehr; gezeigt wird die Summe der Investitionsvorlage, auf die er
+        /// verweist — ohne Verweis bleibt das Feld LEER und nennt keine geratene Zahl.
+        /// </summary>
         [Fact]
-        public void Bhkw_Investition_je_kWel_folgt_den_fuenf_Posten()
+        public void Bhkw_Geraetekosten_kommen_aus_der_Satzvorlage()
         {
             if (!_db.Vorhanden) return;
             using var _ = new Kulturvorrichtung();
 
-            var felder = new BHKWStammCtrl.AnzeigefelderBhkw(
-                "Probe GmbH", 260, 240, 25, 88, 62,
-                KostenModul: 20000, KostenMontage: 1000, KostenLieferung: 500,
-                KostenSchallschutzhaube: 2000, KostenAbgasreinigung: 500);
+            int id = Convert.ToInt32(DataRepository.ExecuteScalar(
+                "SELECT ID FROM Tab_BHKW_STAMM WHERE Bezeichner = ?", new DbParam("@n", BHKW)),
+                CultureInfo.InvariantCulture);
+            Assert.True(id > 0);
 
-            Assert.True(EntsperrtSchreiben(BHKW, felder).Ok);
+            int komponente = GeraetekostenEntfallSchema.GEWERKE
+                .First(g => g.Katalog == "Tab_BHKW_STAMM").KomponentenId;
+            int vorlage = KostenVorlagenCtrl.VorlageNeu(komponente,
+                                                        DbWerte.KOSTEN_KATEGORIE_INVESTITION,
+                                                        "Probe Satzvorlage KB-4a");
+            Assert.True(vorlage > 0);
+            int position = KostenVorlagenCtrl.PositionNeu(vorlage, "Modul", DbWerte.KOSTENART_KAPITALGEBUNDEN,
+                                                          DbWerte.BEMESSUNG_BETRAG);
+            Assert.True(position > 0);
+            var p = KostenVorlagenCtrl.Positionen(vorlage).First(x => x.Id == position);
+            p.Satz = 24000;
+            Assert.True(KostenVorlagenCtrl.PositionSpeichern(p));
 
-            var satz = BHKWStammCtrl.KatalogsatzAnzeige(BHKW);
-            Assert.Equal("100", satz[KatalogBrowserProfil.FeldInvestitionJeKwel]);
+            try
+            {
+                DataRepository.ExecuteSQL(
+                    "UPDATE Tab_BHKW_STAMM SET " +
+                    KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION + " = ? WHERE ID = ?",
+                    new DbParam("@v", vorlage), new DbParam("@id", id));
 
-            var m = new BHKWStammCtrl().ReadModel(BHKW);
-            Assert.Equal(100.0, m.m_Investition_KWel, 6);
+                var satz = BHKWStammCtrl.KatalogsatzAnzeige(BHKW);
+                Assert.Equal("24000", satz[KatalogBrowserProfil.FeldGeraetekosten]);
+
+                // Ohne Verweis keine Zahl - der Vermerk der Maske nennt die Kostenverwaltung.
+                DataRepository.ExecuteSQL(
+                    "UPDATE Tab_BHKW_STAMM SET " +
+                    KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION + " = NULL WHERE ID = ?",
+                    new DbParam("@id", id));
+                Assert.Equal("", BHKWStammCtrl.KatalogsatzAnzeige(BHKW)[KatalogBrowserProfil.FeldGeraetekosten]);
+            }
+            finally
+            {
+                KostenVorlagenCtrl.VorlageLoeschen(vorlage);
+            }
         }
 
         /// <summary>

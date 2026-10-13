@@ -184,8 +184,9 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = "HEIZKESSEL",
                 Tabelle = SchemaKatalog.TAB_HEIZKESSEL_STAMM,
-                AusschlussSpalten = new[] { "Investitionskosten", "Wartungskosten",
-                    "Wartungskosten_Einheit", "Nutzungsdauer" },
+                // Die Kostenspalten sind mit Welle KB-4 entfallen; geblieben ist das eine
+                // Anwenderfeld, das der Import nicht ueberschreiben darf.
+                AusschlussSpalten = new[] { "Nutzungsdauer" },
                 // Konzept Kesselkennlinie 3.4 (Etappe E1): Brennwert aus der Bauart, eta30 und
                 // Mindestleistung aus Satz 710.01 - HeizkesselImportSatz.Vergleichswerte.
                 ImportSpalten = new[] { "Firma", "Ptherm", "Brennstoff", "Wirkungsgrad_Gas",
@@ -297,9 +298,9 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = "BHKW",
                 Tabelle = "Tab_BHKW_STAMM",
-                AusschlussSpalten = new[] { "Investition_kwel", "Wartungskosten_kwhel",
-                    "Nutzungsdauer", "Kosten_Modul", "Kosten_Montage", "Kosten_Lieferung",
-                    "Kosten_Schallschutzhaube", "Kosten_Abgasreinigung" }
+                // Die Kostenspalten sind mit Welle KB-4 entfallen; geblieben ist das eine
+                // Anwenderfeld, das der Import nicht ueberschreiben darf.
+                AusschlussSpalten = new[] { "Nutzungsdauer" }
             },
             new KatalogDefinition
             {

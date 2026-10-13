@@ -327,7 +327,7 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        // 1. Heizkessel — Tab_Heizkessel_STAMM (29 Spalten)
+        // 1. Heizkessel — Tab_Heizkessel_STAMM (26 Spalten)
         // =================================================================
 
         /// <remarks>
@@ -370,12 +370,8 @@ namespace WindowsFormsApplication1
                   "SimulationSPK.Kesseldaten_Einlesen; WirtschaftlichkeitCtrl.LiesReferenzkessel; AbweichungsErmittler.Felder (Tab_Heizkessel.Wirkungsgrad_Gas)"),
                 E("Wirkungsgrad_Öl", t("HZKK_LBL_WG_OEL"), "", SIM_WIRT_BER,
                   "SimulationSPK.Kesseldaten_Einlesen; WirtschaftlichkeitCtrl.LiesReferenzkessel; AbweichungsErmittler.Felder (Tab_Heizkessel.Wirkungsgrad_Öl)"),
-                E("Investitionskosten", t("HZKK_LBL_INVEST"), "€", WIRT,
-                  "TechnikPlanwertCtrl.BasenFuellen (ERZEUGER_HEIZKESSEL)"),
                 E("Raumbedarf", t("HZKK_LBL_RAUMBEDARF"), "m³", DLG,
                   "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ des HeizkesselDialog"),
-                E("Wartungskosten", t("KESSEL_WARTUNG_LBL"), "", WIRT,
-                  "TechnikPlanwertCtrl.KesselPlanwert (Betriebskosten-Planwert)"),
                 E("Nutzungsdauer", t("HZKK_LBL_NUTZUNGSDAUER"), t("HZKK_EINHEIT_JAHRE"), DLG,
                   "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ des HeizkesselDialog" +
                   " — Geraetedaten, nicht rechenwirksam; massgeblich ist die Nutzungsdauertabelle (A8, E10)"),
@@ -401,8 +397,6 @@ namespace WindowsFormsApplication1
                   "SimulationControl.KesselTemperaturpaarGepflegt; Warnkriterien.KesselVorlauf"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "HeizkesselStammCtrl.Ueberschreiben (Schreibschutz der Auslieferung)"),
-                E("Wartungskosten_Einheit", t("KESSEL_WARTUNG_EINHEIT_LBL"), "", WIRT,
-                  "TechnikPlanwertCtrl.KesselPlanwert (Bezugsgroesse der Wartungskosten)"),
 
                 // Die Kennlinie (Konzept Kesselkennlinie 3.1): gepflegt in Editor und Aufklapper,
                 // gelesen vom Import (Satz 710.01). eta30 rechnet mit der Teillastkennlinie (E2), der
@@ -434,21 +428,19 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        // 2. BHKW — Tab_BHKW_STAMM (33 Spalten)
+        // 2. BHKW — Tab_BHKW_STAMM (26 Spalten)
         // =================================================================
 
         /// <remarks>
-        /// <b>Der Befund dieser Tabelle:</b> <c>Investition_kwel</c> ist seit dem
-        /// Nutzerentscheid vom 22.08.2026 ABGELEITET (<c>BHKWKosten.JeKWel</c> aus den
-        /// fuenf Einzelposten) und hat im Rechenweg keinen Leser — die Kostenplanung
-        /// rechnet mit <c>Kosten_Modul</c> und den vier Nebenposten
-        /// (<c>TechnikPlanwertCtrl.BasenFuellen</c>). Seit dem Anwenderentscheid
-        /// <b>W14a-E-8-B3</b> vom 07.09.2026 ist er aber keine Dublette mehr, sondern
-        /// die AUSGERECHNETE ANZEIGE der fuenf Posten; gespeichert wird immer nur, was
-        /// in den Posten steht. Seit dem Anwenderentscheid vom 15.09.2026 steht er im
-        /// AUFKLAPPER „Alle Daten" und ist dort ausdruecklich NICHT editierbar — zwei
-        /// Eingabewege fuer dasselbe Geld liessen sich widersprechen. Er bleibt
-        /// <c>Dialog</c>.
+        /// <b>Der Befund dieser Tabelle:</b> Diese Tabelle fuehrt KEINE Kostenspalte mehr.
+        /// <c>Kosten_Modul</c> samt den vier Nebenposten, <c>Wartungskosten_kwhel</c> und die
+        /// daraus abgeleitete <c>Investition_kwel</c> sind mit Welle KB-4 entfallen
+        /// (Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung",
+        /// Schemaschritt <c>GeraetekostenEntfallSchema</c>). Die eine Basis ist die Satzvorlage
+        /// des Katalogsatzes; der Planwert einer Anlage kommt aus ihr
+        /// (<c>TechnikPlanwertCtrl.Satzvorlagenbasis</c>), die Anzeige des Satzes aus
+        /// <c>Katalogkostenanzeige.Investitionstext</c> — beide lesen dieselbe Vorlage, keine
+        /// Spalte.
         ///
         /// <para><b>Die Pflegestelle ist seit dem 15.09.2026 der AUFKLAPPER</b> „Alle
         /// Daten" im Modulbereich des <c>BhkwDialog</c>: Aus dem Katalogeditor sind die
@@ -487,14 +479,8 @@ namespace WindowsFormsApplication1
                   "SimulationBHKW.Moduldaten_Einlesen; WirtschaftlichkeitCtrl.AnlagenTabelle"),
                 E("Wirkungsgrad", t("BHKWK_LBL_WIRKUNGSGRAD"), "", SIM_WIRT_BER,
                   "SimulationBHKW.Moduldaten_Einlesen; KostenEmissionRechner.AnschlussleistungKW; AbweichungsErmittler.Felder (Tab_BHKW.Wirkungsgrad)"),
-                E("Investition_kwel", t("BHKWK_LBL_INVEST"), "€ / kWel", DLG,
-                  "KatalogBrowserProfil (BHKW) - Aufklapper „Alle Daten“ — nur Anzeige " +
-                  "(W14a-E-8-B3): abgeleitet aus den fuenf Posten (BHKWKosten.JeKWel) und " +
-                  "beim Schreiben nachgerechnet; kein Leser im Rechenweg"),
                 E("Raumbedarf", t("BHKWK_LBL_RAUMBEDARF"), "m³", DLG,
                   "KatalogBrowserProfil (BHKW) - Aufklapper „Alle Daten“ des BhkwDialog"),
-                E("Wartungskosten_kwhel", t("BHKWK_LBL_WARTUNG"), "€ / kWhel", WIRT,
-                  "TechnikPlanwertCtrl.LiesBetriebsplanwert (Betriebskosten-Planwert)"),
                 E("Nutzungsdauer", t("BHKWK_LBL_NUTZUNGSDAUER"), t("HZKK_EINHEIT_JAHRE"), DLG,
                   "KatalogBrowserProfil (BHKW) - Aufklapper „Alle Daten“ des BhkwDialog" +
                   " — Geraetedaten, nicht rechenwirksam; massgeblich ist die Nutzungsdauertabelle (A8, E10)"),
@@ -512,16 +498,6 @@ namespace WindowsFormsApplication1
                   "AbweichungsErmittler.Felder (Tab_BHKW.Motortyp)"),
                 E("Grenzleistung", t("BHKWK_LBL_GRENZLEISTUNG"), "%", SIM,
                   "SimulationBHKW.Moduldaten_Einlesen (Teillastgrenze, Prozent → Faktor)"),
-                E("Kosten_Modul", t("BHKWK_LBL_MODUL"), "€", WIRT,
-                  "TechnikPlanwertCtrl.BasenFuellen"),
-                E("Kosten_Montage", t("BHKWK_LBL_MONTAGE"), "€", WIRT,
-                  "TechnikPlanwertCtrl.BasenFuellen"),
-                E("Kosten_Lieferung", t("BHKWK_LBL_LIEFERUNG"), "€", WIRT,
-                  "TechnikPlanwertCtrl.BasenFuellen"),
-                E("Kosten_Schallschutzhaube", t("BHKWK_LBL_SCHALLSCHUTZ"), "€", WIRT,
-                  "TechnikPlanwertCtrl.BasenFuellen"),
-                E("Kosten_Abgasreinigung", t("BHKWK_LBL_ABGASREINIGUNG"), "€", WIRT,
-                  "TechnikPlanwertCtrl.BasenFuellen"),
                 E("Vorlauf", t("BHKWK_LBL_VORLAUF"), "°C", BER,
                   "AbweichungsErmittler.Felder (Tab_BHKW.Vorlauf) — der Lauf nimmt Tab_Energieanlagen.Vorlauf"),
                 E("Ruecklauf", t("BHKWK_LBL_RUECKLAUF"), "°C", BER,

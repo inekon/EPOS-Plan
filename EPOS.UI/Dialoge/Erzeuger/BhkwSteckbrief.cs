@@ -30,8 +30,9 @@ public static class BhkwSteckbrief
         (KatalogBrowserProfil.FeldGrenzleistung, "grenzleistung"),
         (KatalogBrowserProfil.FeldMindestlaufzeit, "mindestlaufzeit"),
         (KatalogBrowserProfil.FeldRuecklaufMax, "ruecklauf_max"),
-        (KatalogBrowserProfil.FeldWartungJeKwhel, "wartung"),
-        (KatalogBrowserProfil.FeldInvestitionJeKwel, "invest"),
+        // Welle KB-4: an der Stelle von Wartung je kWhel und Investition je kWel steht der
+        // Lesewert der Satzvorlage - die eine Kostenbasis des Satzes.
+        (KatalogBrowserProfil.FeldGeraetekosten, "geraetekosten"),
     };
 
     /// <summary>Die Zeilen aus Feldsatz bzw. Detailblock, am Projektsatz mit den Kostensummen der Anlage.</summary>

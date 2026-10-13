@@ -3700,10 +3700,6 @@
                         case KatalogBrowserProfil.FeldMindestleistung: return HkMindestleistungErl;
                         case KatalogBrowserProfil.FeldAnfahrverlust: return HkAnfahrverlustErl;
                         case KatalogBrowserProfil.FeldMindestlaufzeit: return HkMindestlaufzeitErl;
-                        case KatalogBrowserProfil.FeldWartungskosten:
-                            return MyResource.Resource.KI_DLG_KBROW_WARTUNG_ERL;
-                        case KatalogBrowserProfil.FeldWartungEinheit:
-                            return MyResource.Resource.KI_DLG_KBROW_WARTUNG_EINHEIT_ERL;
                     }
                     return null;
 
@@ -3727,10 +3723,6 @@
                         case KatalogBrowserProfil.FeldTeillastTh50: return BhkkEtaTh50Erl;
                         case KatalogBrowserProfil.FeldAnfahrverlust: return BhkkAnfahrverlustErl;
                         case KatalogBrowserProfil.FeldMindestlaufzeit: return BhkkMindestlaufzeitErl;
-                        case KatalogBrowserProfil.FeldInvestitionJeKwel:
-                            return MyResource.Resource.KI_DLG_KBROW_INVEST_KWEL_ERL;
-                        case KatalogBrowserProfil.FeldWartungJeKwhel:
-                            return MyResource.Resource.KI_DLG_KBROW_WARTUNG_KWHEL_ERL;
                     }
                     return null;
 
@@ -3778,6 +3770,9 @@
                     return HkBeschreibungErl;
                 case KatalogBrowserProfil.FeldInvestitionskosten:
                     return MyResource.Resource.KI_DLG_KBROW_INVEST_ERL;
+                // Welle KB-4: der Lesewert aus der Satzvorlage - gepflegt in der Kostenverwaltung.
+                case KatalogBrowserProfil.FeldGeraetekosten:
+                    return MyResource.Resource.KI_DLG_KBROW_GERAETEKOSTEN_ERL;
                 case KatalogBrowserProfil.FeldRaumbedarf:
                     return MyResource.Resource.KI_DLG_KBROW_RAUMBEDARF_ERL;
                 case KatalogBrowserProfil.FeldNutzungsdauer:
@@ -3791,13 +3786,6 @@
                     return string.Format(System.Globalization.CultureInfo.CurrentCulture,
                                          MyResource.Resource.KI_DLG_KBROW_EMISSION_ERL, feldname ?? "");
 
-                case KatalogBrowserProfil.FeldKostenModul:
-                case KatalogBrowserProfil.FeldKostenMontage:
-                case KatalogBrowserProfil.FeldKostenLieferung:
-                case KatalogBrowserProfil.FeldKostenSchallschutz:
-                case KatalogBrowserProfil.FeldKostenAbgasreinigung:
-                    return string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                                         MyResource.Resource.KI_DLG_KBROW_KOSTENPOSTEN_ERL, feldname ?? "");
             }
 
             return null;

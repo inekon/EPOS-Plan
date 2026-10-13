@@ -273,7 +273,8 @@ namespace EPOS.Kern.Tests
             foreach (string aus in new[] { "ID", "ID_Projekt", "ID_Stamm", "ReadOnly", "ID_KostenVorlage", "ID_KostenVorlageInvestition", "Bezeichner",
                                            "Katalog_Schluessel", "Katalog_Pruefsumme", "Katalog_Ausgelaufen" })
                 Assert.DoesNotContain(aus, spalten);
-            foreach (string mit in new[] { "Ptherm", "Investitionskosten", "Wartungskosten", "Wartungskosten_Einheit",
+            // Welle KB-4: Investitionskosten, Wartungskosten und ihr Zeitbezug sind entfallen.
+            foreach (string mit in new[] { "Ptherm", "Raumbedarf",
                                            "Nutzungsdauer", "Wirkungsgrad_Teillast30", "Mindestlaufzeit_min", "Bereitschaft_Einheit" })
                 Assert.Contains(mit, spalten);
             Assert.Empty(HeizkesselStammCtrl.Rueckweg().Kinder);

@@ -97,8 +97,6 @@ namespace WindowsFormsApplication1
                 daten.Wirkungsgrad_Gas = 0.94;
                 daten.Wirkungsgrad_Oel = 0;
                 daten.Betriebsbereitschaftverlust = 0;
-                daten.Investitionskosten = 0;
-                daten.Wartungskosten = 0;
                 daten.Nutzungsdauer = 0;
                 daten.Raumbedarf = 0;
                 daten.NOx = 0; daten.CO2 = 0; daten.CO = 0; daten.SO2 = 0; daten.Staub = 0;
@@ -237,9 +235,6 @@ namespace WindowsFormsApplication1
             d.Wirkungsgrad_Oel = m.Wirkungsgrad_Oel;
             d.Betriebsbereitschaftverlust = m.Betriebsbereitschaftverlust;
             d.BereitschaftProzent = KesselBereitschaft.IstProzent(m.Bereitschaft_Einheit);
-            d.Investitionskosten = m.Investitionskosten;
-            d.Wartungskosten = m.Wartungskosten;
-            d.WartungEinheit = EinheitIndex(m.Wartungskosten_Einheit);
             d.Nutzungsdauer = m.Nutzungsdauer;
             d.Raumbedarf = m.Raumbedarf;
             d.NOx = m.NOx;
@@ -286,9 +281,6 @@ namespace WindowsFormsApplication1
                 Bereitschaft_Einheit = d.BereitschaftProzent
                     ? DbWerte.KESSEL_BEREITSCHAFT_EINHEIT_PROZENT
                     : DbWerte.KESSEL_BEREITSCHAFT_EINHEIT_KW,
-                Investitionskosten = d.Investitionskosten ?? 0,
-                Wartungskosten = d.Wartungskosten ?? 0,
-                Wartungskosten_Einheit = EinheitWert(d.WartungEinheit),
                 Nutzungsdauer = d.Nutzungsdauer ?? 0,
                 Raumbedarf = d.Raumbedarf ?? 0,
                 NOx = d.NOx ?? 0,
@@ -360,12 +352,11 @@ namespace WindowsFormsApplication1
         }
 
         // HIER STAND WartungEinheiten() — die drei Wartungseinheiten als Auswahlliste
-        // für die Maske. Mit der Gruppe „Kosten" ist die Auswahl gefallen
-        // (15.09.2026). Die BEIDEN Übersetzer darunter bleiben: Die Spalte
-        // Wartungskosten_Einheit steht weiter in der Datenbank, wird beim Laden nach
-        // HeizkesselKatalogDaten.WartungEinheit gelesen und beim Speichern
-        // unverändert zurückgeschrieben — gepflegt wird sie im Aufklapper
-        // „Alle Daten" des Projektdialogs.
+        // für die Maske. Mit der Gruppe „Kosten" ist die Auswahl gefallen (15.09.2026),
+        // mit Welle KB-4 auch die Spalte Wartungskosten_Einheit selbst
+        // (GeraetekostenEntfallSchema): Den Zeitbezug trägt jetzt die BEMESSUNG der
+        // Betriebsposition der Satzvorlage. Die zwei Übersetzer darunter bedienen allein
+        // noch die Anzeige des Planwerts (TechnikPlanwertCtrl.KesselEinheit).
 
         /// <summary>Persistenzwert → Listenindex (Vorbild <c>EinheitWaehlen</c>).</summary>
         private static int EinheitIndex(string dbWert)
@@ -877,14 +868,13 @@ namespace WindowsFormsApplication1
             // HIER STAND DAS FELD „Investitionskosten [€]:" (HZK_LBL_INVEST, mit F2
             // formatiert) — nur lesbar, neben „Leistung [kW]". Anwenderentscheid
             // 21.09.2026: „Die Anzeige der Investitionskosten an dieser Stelle hat keine
-            // Funktion." Gepflegt wird der Preis im Aufklapper „Alle Daten anzeigen"
-            // desselben Dialogs: Der Katalogbrowser zeigt ihn dort editierbar und
-            // schreibt ihn zurück (KatalogBrowserProfil.FeldInvestitionskosten). Die
-            // Anzeige hier war damit eine Dublette ohne Funktion.
+            // Funktion."
             //
-            // DER WERT BLEIBT IM DATENSATZ. HeizkesselCtrl.KesselDetail führt
-            // Investitionskosten weiter, und der Katalogsatz geht unverändert durch
-            // AusModell/NachModell — nur die zweite Anzeige ist weg.
+            // MIT WELLE KB-4 IST AUCH DER WERT FORT: Die Spalte Investitionskosten ist
+            // entfallen (GeraetekostenEntfallSchema), KesselDetail führt sie nicht mehr.
+            // Die Gerätekosten stehen in der Satzvorlage des Katalogsatzes; der Aufklapper
+            // „Alle Daten anzeigen" zeigt ihre Summe als Lesewert, gepflegt werden sie in
+            // der Kostenverwaltung.
             var felder = new List<(string, string)>
             {
                 (Text_("HZK_LBL_BRENNSTOFFTYP", "Brennstoff Typ:"), d.Brennstoff),
