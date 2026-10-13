@@ -158,7 +158,7 @@ public class GebaeudeImportCadSollwertDialogTests : EposBunitContext
 
         Eingabe(cut).Change(true);
         Assert.Equal(19.3, Tag());
-        Assert.Equal(new[] { "20,1 °C", "15 °C" }, cut.FindAll(".epos-gebimport-zonensollwert").Select(z => z.TextContent.Trim()));
+        Assert.Equal(new[] { "20,1", "15" }, cut.FindAll(".epos-gebimport-zonensollwert").Select(z => z.TextContent.Trim()));
     }
 
     private static string Wurzel()

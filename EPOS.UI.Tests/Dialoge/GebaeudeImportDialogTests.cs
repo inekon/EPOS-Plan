@@ -1272,8 +1272,8 @@ public class GebaeudeImportDialogTests : EposBunitContext
         Assert.Contains(cut.FindAll("h2, h3, .epos-gruppenkopf"), k => k.TextContent.Trim() == "Bauteilaufbauten");
         IReadOnlyList<IElement> zeilen = cut.FindAll(".epos-gebimport-aufbauten tr.epos-gebimport-aufbauzeile").ToList();
         Assert.Equal(new[] { "b", "c", "a" }, zeilen.Select(z => z.GetAttribute("data-stufe")));
-        Assert.Equal(new[] { "Stufe", "Aufbau", "Bauteilart", "Bauteile", "Fläche [m²]", "U Datei [W/(m²K)]", "U Schichten [W/(m²K)]",
-                             "C₁,korr [kJ/(m²K)]", "Es fehlt", "Handlung" },
+        Assert.Equal(new[] { "Stufe", "Aufbau", "Bauteilart", "Bauteile", "Fläche [m²]", "U Datei [W/(m²·K)]", "U Schichten [W/(m²·K)]",
+                             "C₁,korr [kJ/(m²·K)]", "Es fehlt", "Handlung" },
                      cut.FindAll(".epos-gebimport-aufbauten thead th").Select(t => t.TextContent.Trim()));
         List<string> a = zeilen[2].QuerySelectorAll("td").Select(t => t.TextContent.Trim()).ToList();
         Assert.Equal(("AW massiv", "4", "120", "0,28", "0,3", "61,2"), (a[1], a[3], a[4], a[5], a[6], a[7]));
