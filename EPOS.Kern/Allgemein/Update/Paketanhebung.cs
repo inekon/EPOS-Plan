@@ -443,6 +443,11 @@ namespace WindowsFormsApplication1
             // der Kern beim nächsten Schreiben, gelesen leitet er die Gruppe aus Stoffgruppe bzw. Bauteilart ab.
             new Stufe(BauteilkatalogSchema.SCHRITT, Art.Ddl,
                       "Herkunft EIGEN/IMPORT, Gruppe und Klasse, Kennzeichen und Felder der Quelle am Bauteilkatalog (E132)"),
+            // Ein älteres Paket bringt die eigenen Ferien einer Zone in den vier Spaltenpaaren von Tab_TwwZone; die Stufe bildet
+            // daraus die Zeilen von Tab_TwwZonenferien (dieselbe Regel wie der Schritt), die Spalten fallen am Ziel mit der
+            // Schnittmenge des Imports.
+            new Stufe(TwwZonenferienSchema.SCHRITT, Art.Umformung,
+                      "eigene Ferien der Zonen als Liste (Tab_TwwZonenferien) statt vier Spaltenpaaren", SchrittZonenferien),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
@@ -925,6 +930,25 @@ namespace WindowsFormsApplication1
             if (b.Gesetzt == 0) return null;
             return Zeilen(b.Gesetzt, Text("TRANSFER_ANHEBUNG_KESSEL_BRENNWERT",
                 "Projektkessel als Brennwertkessel gekennzeichnet (nach Katalogsatz oder Beschreibung)"));
+        }
+
+        /// <summary>
+        /// <see cref="TwwZonenferienSchema.SCHRITT"/> — <see cref="TwwZonenferienSchema.Uebertragen"/> an den Zonen des
+        /// Pakets: je Paar mit gültigem Ende eine Zeile der neuen Pakettabelle <c>Tab_TwwZonenferien</c> (sie reist als
+        /// neue Tabelle weiter, die ID vergibt die Stufe). Ohne Zone oder ohne die alten Spalten nichts.
+        /// </summary>
+        private static string SchrittZonenferien(Paketarbeitsdatenbank db)
+        {
+            if (!Hat(db, TwwSchema.TAB_TWW_ZONE, "ID")) return null;
+            if (!TwwZonenferienSchema.Altspalten().Any(s => db.SpalteVorhanden(TwwSchema.TAB_TWW_ZONE, s))) return null;
+            string t = TwwZonenferienSchema.TAB_ZONENFERIEN;
+            if (!db.TabelleVorhanden(t))
+                db.Ausfuehren("CREATE TABLE \"" + t + "\" (\"ID\", \"ID_Zone\", \"Reihenfolge\", \"Name\", \"Beginn\", \"Ende\")");
+            foreach (string s in new[] { "ID", "ID_Zone", "Reihenfolge", "Name", "Beginn", "Ende" })
+                db.SpalteSicherstellen(t, s);
+            int n = TwwZonenferienSchema.Uebertragen(db.Zugriff, true);
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_ZONENFERIEN",
+                "Ferienzeitraum/-räume der Zonen in die Liste der Zonenferien übertragen")) : null;
         }
 
         // =================================================================

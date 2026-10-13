@@ -41795,6 +41795,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="TRANSFER_ANHEBUNG_KESSEL_BRENNWERT" xml:space="preserve">
     <value>Projektkessel als Brennwertkessel gekennzeichnet (nach Katalogsatz oder Beschreibung)</value>
   </data>
+  <data name="TRANSFER_ANHEBUNG_ZONENFERIEN" xml:space="preserve">
+    <value>Ferienzeitraum/-räume der Zonen in die Liste der Zonenferien übertragen</value>
+  </data>
   <data name="SIMENG_KESSEL_BRENNWERTKENNLINIE" xml:space="preserve">
     <value>Brennwertkennlinie „{0}“: Taupunkt {1} °C, Kondensationsgewinn bei 30 °C Rücklauf {2}, η₃₀ trocken {3}, Obergrenze Hs/Hi {4}. Der Rücklauf kommt aus dem Heizkreis der Anlagenkopplung, sonst aus dem Senkenspeicher, sonst gilt {5} °C.</value>
   </data>

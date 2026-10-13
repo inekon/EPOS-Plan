@@ -173,8 +173,7 @@ namespace EPOS.Kern.Tests
                                                     woche: new[] { 0.2, 0.2, 0.2, 0.2, 0.2, 0.0, 0.0 });
             ZonenStand zone = ZapfprofilTestbau.Zone("Zone F", 2, 10.0) with
             {
-                Ferienbeginn = new int?[] { 10, null, null, null },
-                Ferienende = new int?[] { 20, null, null, null }
+                Ferien = Zonenferienprobe.Liste(new int?[] { 10, null, null, null }, new int?[] { 20, null, null, null })
             };
             ZapfprofilErgebnis e = ZapfprofilRechner.Rechnen(
                 ZapfprofilTestbau.Eingang(ZapfprofilTestbau.Projekt(), ZapfprofilTestbau.Parameter(), zone), new[] { art });

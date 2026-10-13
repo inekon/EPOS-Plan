@@ -41,8 +41,7 @@ namespace EPOS.Kern.Tests
             WohnflaecheJeWeM2 = 70.0,
             Topologie = ZapfTopologie.Wohnungsstation,
             Zirkulation = false,
-            Ferienbeginn = new int?[] { 335, null, 182, 0 },
-            Ferienende = new int?[] { 31, null, 243, 366 },
+            Ferien = Zonenferienprobe.Liste(new int?[] { 335, null, 182, 0 }, new int?[] { 31, null, 243, 366 }),
             Jahresmesswert = 30000.0,
             JahresmesswertEinheit = ZapfMesswerteinheit.KwhJeJahr,
             JahresmesswertBilanzgrenze = ZapfBilanzgrenze.MitSpeicher,
@@ -106,11 +105,13 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ZapfprofilBilanzgrenze.MitSpeicher, a.JahresmesswertBilanzgrenze);
             Assert.Equal("Wärmemengenzähler", a.JahresmesswertQuelle);
             Assert.False(a.TagesbedarfAuto);
-            // Ferien als Tag und Monat: 335 = 1. Dezember, 31 = 31. Januar; 0 und 366 = keine Angabe.
+            // Ferien als Tag und Monat, je Zeitraum der Liste eine Zeile: 335 = 1. Dezember, 31 = 31. Januar;
+            // 0 und 366 = keine Angabe (der dritte Zeitraum bleibt leer), aufgefüllt auf die vier Zeilen der Maske.
+            Assert.Equal(4, a.Ferien.Count);
             Assert.Equal((1, 12), (a.Ferien[0].BeginnTag.Value, a.Ferien[0].BeginnMonat.Value));
             Assert.Equal((31, 1), (a.Ferien[0].EndeTag.Value, a.Ferien[0].EndeMonat.Value));
-            Assert.False(a.Ferien[1].Belegt);
-            Assert.Equal((1, 7), (a.Ferien[2].BeginnTag.Value, a.Ferien[2].BeginnMonat.Value));
+            Assert.Equal((1, 7), (a.Ferien[1].BeginnTag.Value, a.Ferien[1].BeginnMonat.Value));
+            Assert.False(a.Ferien[2].Belegt);
             Assert.False(a.Ferien[3].Belegt);
             // Die Wohnungstabelle in ihrer Reihenfolge.
             Assert.Equal(new[] { 30, 31 }, a.Wohnungen.Select(w => w.Id).ToArray());
@@ -139,8 +140,7 @@ namespace EPOS.Kern.Tests
             ZonenStand r = Reich();
             Assert.Equal(r.IdGebaeude, z.IdGebaeude);
             Assert.Equal(r.Topologie, z.Topologie);
-            Assert.Equal(new int?[] { 335, null, 182, null }, z.Ferienbeginn);
-            Assert.Equal(new int?[] { 31, null, 243, null }, z.Ferienende);
+            Assert.Equal(Zonenferienprobe.Paare(new int?[] { 335, null, 182, null }, new int?[] { 31, null, 243, null }), Zonenferienprobe.Paare(z));
             Assert.Equal(r.Jahresmesswert, z.Jahresmesswert);
             Assert.Equal(r.JahresmesswertBilanzgrenze, z.JahresmesswertBilanzgrenze);
             Assert.Equal(r.SpeicherverlustKwhJeJahr, z.SpeicherverlustKwhJeJahr);
@@ -224,8 +224,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(p.Seed, zurueck.Projekt.Seed);
             ZonenStand z = zurueck.Zonen[0];
             Assert.Equal(ZapfTopologie.Speicher, z.Topologie);
-            Assert.Equal(91, z.Ferienbeginn[1]);   // 1. April im Rechenjahr ohne Schaltjahr
-            Assert.Equal(104, z.Ferienende[1]);
+            Assert.Equal(91, z.Ferien[1].Beginn);   // 1. April im Rechenjahr ohne Schaltjahr
+            Assert.Equal(104, z.Ferien[1].Ende);
             Assert.Null(z.JahresmesswertQuelle);
             Assert.Equal(new[] { 31, 0 }, z.Wohnungen.Select(w => w.Id).ToArray());
             Assert.Equal(new[] { 1, 2 }, z.Wohnungen.Select(w => w.Reihenfolge).ToArray());

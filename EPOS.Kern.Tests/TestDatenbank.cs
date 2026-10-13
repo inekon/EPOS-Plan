@@ -1047,6 +1047,9 @@ namespace EPOS.Kern.Tests
                 // Schritt BauteilkatalogSchema.SCHRITT (BK-2, E132): Herkunft, Gliederung, Kennzeichen und Felder der Quelle am
                 // Baustoff- und Bauteilkatalog, Abschnittstabellen. Wiederholbar, ergebnisneutral.
                 BauteilkatalogSchema.Ausfuehren(null);
+                // Schritt TwwZonenferienSchema.SCHRITT (ZB5, ZB-Q3 B): Zonenferien als Liste - Tab_TwwZonenferien, die vier
+                // Spaltenpaare von Tab_TwwZone uebertragen und abgebaut. Wiederholbar, ergebnisneutral.
+                TwwZonenferienSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

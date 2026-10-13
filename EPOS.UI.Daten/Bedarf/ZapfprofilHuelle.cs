@@ -377,8 +377,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Angaben der Stufen Erweitert und Experte einer Zone des Kerns (5.3): Jahrestage der
-        /// Ferien als Tag und Monat des Rechenjahrs (0, 366 und leer = keine Angabe), Wohnungstabelle
-        /// in ihrer Reihenfolge, Texte leer statt <c>null</c>.
+        /// Ferien als Tag und Monat des Rechenjahrs (0, 366 und leer = keine Angabe) — JEDER Zeitraum der
+        /// Liste 1:1 als Zeile samt Name, aufgefüllt auf die Zeilen der Maske —, Wohnungstabelle in ihrer
+        /// Reihenfolge, Texte leer statt <c>null</c>.
         /// </summary>
         internal static ZapfprofilZonenangabenDaten AlsAngaben(ZonenStand z)
         {
@@ -406,14 +407,18 @@ namespace WindowsFormsApplication1
                 KaltwasserMittelC = z.KaltwasserMittelC,
                 KaltwasserAmplitudeK = z.KaltwasserAmplitudeK
             };
-            for (int i = 0; i < ZapfprofilZonenangabenDaten.FERIENZEITRAEUME; i++)
+            a.Ferien = new List<ZapfprofilFerienDaten>();
+            foreach (ZonenferienStand f in z.Ferien ?? new ZonenferienStand[0])
             {
-                int? b = z.Ferienbeginn != null && i < z.Ferienbeginn.Length ? z.Ferienbeginn[i] : null;
-                int? e = z.Ferienende != null && i < z.Ferienende.Length ? z.Ferienende[i] : null;
-                (int? bt, int? bm) = AlsDatum(b);
-                (int? et, int? em) = AlsDatum(e);
-                a.Ferien[i] = new ZapfprofilFerienDaten { BeginnTag = bt, BeginnMonat = bm, EndeTag = et, EndeMonat = em };
+                if (f == null) continue;
+                (int? bt, int? bm) = AlsDatum(f.Beginn);
+                (int? et, int? em) = AlsDatum(f.Ende);
+                a.Ferien.Add(new ZapfprofilFerienDaten
+                {
+                    Name = f.Name, BeginnTag = bt, BeginnMonat = bm, EndeTag = et, EndeMonat = em
+                });
             }
+            while (a.Ferien.Count < ZapfprofilZonenangabenDaten.FERIENZEITRAEUME) a.Ferien.Add(new ZapfprofilFerienDaten());
             for (int m = 0; m < ZapfprofilZonenangabenDaten.MONATE; m++)
                 a.Auslastung[m] = z.Auslastung != null && m < z.Auslastung.Length ? z.Auslastung[m] : null;
             foreach (WohnungstypStand w in (z.Wohnungen ?? new WohnungstypStand[0]).OrderBy(w => w.Reihenfolge))
@@ -430,20 +435,25 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Zone des Kerns mit den Angaben des Dialogs: jede Größe der höheren Stufen aus dem DTO
-        /// (Ferien als Jahrestag des Rechenjahrs, unvollständig = keine Angabe; Wohnungstabelle in
+        /// (Ferien als Jahrestag des Rechenjahrs, JEDE Zeile des DTO mit Ende als Zeitraum der Liste in ihrer
+        /// Reihenfolge samt Name, eine Zeile ohne gültiges Ende = keine Angabe; Wohnungstabelle in
         /// der Reihenfolge des Dialogs, eine Zeile ohne Anzahl trägt 0 — der Schreibweg lehnt sie
         /// benannt ab). Was das DTO nicht führt (die Fläche des gebundenen Gebäudes), bleibt.
         /// </summary>
         internal static ZonenStand MitAngaben(ZonenStand z, ZapfprofilZonenangabenDaten a)
         {
             if (z == null || a == null) return z;
-            var beginn = new int?[ZapfprofilZonenangabenDaten.FERIENZEITRAEUME];
-            var ende = new int?[ZapfprofilZonenangabenDaten.FERIENZEITRAEUME];
-            for (int i = 0; i < ZapfprofilZonenangabenDaten.FERIENZEITRAEUME; i++)
+            var ferien = new List<ZonenferienStand>();
+            foreach (ZapfprofilFerienDaten f in a.Ferien ?? new List<ZapfprofilFerienDaten>())
             {
-                ZapfprofilFerienDaten f = a.Ferien != null && i < a.Ferien.Count ? a.Ferien[i] : null;
-                beginn[i] = Jahrestag(f?.BeginnTag, f?.BeginnMonat);
-                ende[i] = Jahrestag(f?.EndeTag, f?.EndeMonat);
+                int? ende = Jahrestag(f?.EndeTag, f?.EndeMonat);
+                if (f == null || !ende.HasValue) continue;
+                ferien.Add(new ZonenferienStand
+                {
+                    Name = string.IsNullOrWhiteSpace(f.Name) ? null : f.Name,
+                    Beginn = Jahrestag(f.BeginnTag, f.BeginnMonat),
+                    Ende = ende
+                });
             }
             var auslastung = new double?[ZapfprofilZonenangabenDaten.MONATE];
             for (int m = 0; m < auslastung.Length; m++)
@@ -471,8 +481,7 @@ namespace WindowsFormsApplication1
                 WohnflaecheJeWeM2 = a.WohnflaecheJeWeM2,
                 Topologie = (ZapfTopologie)(int)a.Topologie,
                 Zirkulation = a.Zirkulation,
-                Ferienbeginn = beginn,
-                Ferienende = ende,
+                Ferien = ferien,
                 Jahresmesswert = a.Jahresmesswert,
                 JahresmesswertEinheit = a.JahresmesswertEinheit.HasValue
                     ? (ZapfMesswerteinheit)(int)a.JahresmesswertEinheit.Value : (ZapfMesswerteinheit?)null,
@@ -609,8 +618,7 @@ namespace WindowsFormsApplication1
                         grund = vorlage with
                         {
                             Id = 0,
-                            Ferienbeginn = (int?[])vorlage.Ferienbeginn?.Clone() ?? new int?[4],
-                            Ferienende = (int?[])vorlage.Ferienende?.Clone() ?? new int?[4],
+                            Ferien = (vorlage.Ferien ?? new ZonenferienStand[0]).Select(f => f with { }).ToArray(),
                             Auslastung = (double?[])vorlage.Auslastung?.Clone() ?? new double?[12],
                             Wohnungen = (vorlage.Wohnungen ?? new WohnungstypStand[0])
                                         .Select(w => w with { Id = 0 }).ToArray()

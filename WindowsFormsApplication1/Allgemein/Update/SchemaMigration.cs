@@ -5482,6 +5482,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_BAUTEILKATALOG = BauteilkatalogSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="TwwZonenferienSchema.SCHRITT"/> — <b>Zonenferien als Liste</b> (ZB5, ZB‑Q3 B): die Tabelle
+        /// <c>Tab_TwwZonenferien</c> mit beliebig vielen eigenen Ferienzeiträumen je Zone; die vier Spaltenpaare
+        /// <c>Ferienbeginn_1…4</c>/<c>Ferienende_1…4</c> von <c>Tab_TwwZone</c> werden übertragen und danach abgebaut
+        /// (Neubau mit Erhalt der IDs).
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Zapfkalender rechnet über die Liste dieselben Fenster.</para>
+        /// </summary>
+        public const int SCHRITT_TWW_ZONENFERIEN = TwwZonenferienSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -8041,6 +8051,12 @@ namespace WindowsFormsApplication1
                         "Ein eingelesener Katalogsatz waere nicht als solcher erkennbar, Baustoffe und Aufbauten nicht gegliedert, und die " +
                         "Felder der Quelle haetten keinen Platz. KEIN Rechenergebnis aendert sich - der Bauteilweg liest keine neue Spalte.",
                         Schritt_Bauteilkatalog),
+            // ZB5 (ZB-Q3 B): Zonenferien als Liste. Quelle ist TwwZonenferienSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_TWW_ZONENFERIEN,
+                        "Tab_TwwZonenferien (neu); Tab_TwwZone: die vier Spaltenpaare Ferienbeginn/Ferienende uebertragen und entfernt",
+                        "Eine Zone des Zapfprofils koennte nicht mehr als vier eigene Ferienzeitraeume tragen. KEIN Rechenergebnis " +
+                        "aendert sich - der Zapfkalender rechnet ueber die Liste dieselben Fenster.",
+                        Schritt_TwwZonenferien),
         };
 
         /// <summary>
@@ -15539,6 +15555,59 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Art der Kaeltebedarfszeilen - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Zonenferien als Liste" — Anlass und Wirkung stehen bei <see cref="SCHRITT_TWW_ZONENFERIEN"/>, die
+        /// Anweisungen bei <see cref="TwwZonenferienSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_TwwZonenferien(Lauf l)
+        {
+            string nr = TwwZonenferienSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in TwwZonenferienSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = TwwZonenferienSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!TwwZonenferienSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Zonenferien stehen nach dem Schritt nicht vollstaendig (Tabelle oder Spaltenabbau).";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Zonenferien - " + (handgriffe == 0 ? "stand bereits." : handgriffe + " Handgriff(e).") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }
