@@ -16,13 +16,13 @@ der Knöpfe zu den Bereichen Projekt und Datenbank und Eignung für alle ähnlic
 `SolarkollektorenDialog`, `WaermepumpenDialog`, `GebaeudeDialog`, `BedarfsProfileDialog`,
 `WaermebedarfExternDialog`, `StromganglinieDialog`, `SolarganglinieDialog` — und die Katalogauswahl des
 `KaeltemaschineAnlageDialog`. Damit schließt dieses Papier die Lücke, die
-[`Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md`](Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md)
+[`Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md`](../aktuell/Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md)
 in Abschnitt 8 offen lässt (AD-Q12: Projektdialoge außerhalb des Schemas der Verwaltungen); die dort
 ruhenden Entscheide AD-Q3, AD-Q4, AD-Q5 und AD-Q10 sind mit KA‑E‑5 bis KA‑E‑8 beantwortet.
 
-**Mockups:** maßgeblich ist [`Mockups/Projektdialog_Katalogauswahl_V1.html`](Mockups/Projektdialog_Katalogauswahl_V1.html)
+**Mockups:** maßgeblich ist [`Mockups/Projektdialog_Katalogauswahl_V1.html`](../aktuell/Mockups/Projektdialog_Katalogauswahl_V1.html)
 (spielbar, mit ziehbarer Trennlinie) samt `…_V1.png` (1 280 × 800) und `…_V1_klein.png` (1 280 × 720). Die
-Mockups V2 bis [`Mockups/Projektdialog_Katalogauswahl_V5.html`](Mockups/Projektdialog_Katalogauswahl_V5.html)
+Mockups V2 bis [`Mockups/Projektdialog_Katalogauswahl_V5.html`](../aktuell/Mockups/Projektdialog_Katalogauswahl_V5.html)
 bleiben als Belege der Abwägung liegen. Der Knopf „Randnotiz“ oben rechts zeigt, wie die dialogeigenen
 Teile hineinpassen.
 

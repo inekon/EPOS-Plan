@@ -1278,7 +1278,7 @@ Polster oben rechnet eine Bannerzeile; ein mehrzeiliges Banner lässt dem angesp
 ## Rollbereichprobe „kein Rollbereich im Rollbereich" — Seiten `/rollbereichprobe`, `/fensterprobe`
 
 **Zweck.** Die Projektdialoge mit Katalogauswahl (Baustein `Zweispaltenauswahl`, Variante V1 „Gerahmt und
-gestapelt", [Konzept](../../Dokumentation/aktuell/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md)
+gestapelt", [Konzept](../../Dokumentation/ueberholt/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md)
 Abschnitt 4 und 8) füllen ihr Fenster; es rollen allein Projektliste, Katalogliste und die aufgeklappte
 Detailzeile, keine in der anderen. bunit sieht weder Lage noch Rollbereich — die Probe misst es im echten
 Chromium. Die Seite `/rollbereichprobe?fall=…` trägt ohne Datenbank Pufferspeicher, Stromspeicher,

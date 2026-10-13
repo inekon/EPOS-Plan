@@ -44,7 +44,7 @@ bleibt `CLAUDE.md`. Es löst das Papier vom 08.10.2026
 ## 2 Geltende Entscheide (Auswahl)
 
 **Katalogauswahl** (Konzept
-[`Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md`](../aktuell/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md))
+[`Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md`](Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md))
 
 - **V1 „Gerahmt und gestapelt“** (08.10.): oben „Im Projekt“, darunter „Katalog (Datenbank)“, unten
   die Zeile „gewählter Satz“; der Dialogkörper rollt nicht, nur die Listen. Katalogpflege bleibt im
