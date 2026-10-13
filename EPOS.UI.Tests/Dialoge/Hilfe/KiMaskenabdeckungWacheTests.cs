@@ -193,6 +193,10 @@ public sealed class KiMaskenabdeckungWacheTests
         new("VarianteAnlegenDialog",          "UebersichtSeite",             KiMaskennamen.BERICHTE_UEBERSICHT),
         new("VarianteUmbenennenDialog",       "UebersichtSeite",             KiMaskennamen.BERICHTE_UEBERSICHT),
         new("VarianteLoeschenDialog",         "UebersichtSeite",             KiMaskennamen.BERICHTE_UEBERSICHT),
+        // Anwenderentscheid 13.10.2026: „Anzeige anpassen…“ des Abschnitts „Ergebnisse — Energie“ steht als
+        // Überlagerung in UebersichtErgebnisse auf der Übersichtsseite; seine Felder sind eine Benutzereinstellung der
+        // Ansicht (für alle Projekte), kein Einstellwert der Seite (EINGABESTELLEN).
+        new("ErgebnisAnpassenDialog",         "UebersichtSeite",             KiMaskennamen.BERICHTE_UEBERSICHT),
 
         // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): der Umschalter der Platzhalteranzeige in der
         // Kopfzeile von „Berichte & Kosten" - als Reiterblatt steht die Seite in der Startseite, die
@@ -598,6 +602,10 @@ public sealed class KiMaskenabdeckungWacheTests
         new("VarianteAnlegenDialog", 2, "Quelle und Bezeichner sind Angaben der Handlung „Variante anlegen“, kein Einstellwert der Seite"),
         new("VarianteLoeschenDialog", 1, "die Wahl der zu löschenden Variante ist eine Angabe der Handlung „Löschen“, kein Einstellwert der Seite"),
         new("VarianteUmbenennenDialog", 2, "Variante und Bezeichner sind Angaben der Handlung „Umbenennen“, kein Einstellwert der Seite"),
+        // Anwenderentscheid 13.10.2026: der Dialog „Anzeige anpassen…“ - Zustand je Gruppe, Haken je Kennzahl und
+        // „Zeilen ohne Wert ausblenden“ sind eine Benutzereinstellung der Ansicht (je Benutzer, für alle Projekte über
+        // die Einstellungsnaht), kein Einstellwert der Seite und kein Katalogfeld.
+        new("ErgebnisAnpassenDialog", 3, "Gruppenzustände, Kennzahlenhaken und „ohne Wert“ sind eine Benutzereinstellung der Ansicht, kein Einstellwert der Seite"),
         // ETAPPE E16 (V-G3): das Ganzzahlfeld „Zahlung alle … Jahre" der Betriebsseite; die
         // Feldkarte (KiDialoge, Maske Form_VorlagenPosition) führt es als wiederholperiode (8 -> 9).
         new("VorlagenPositionDialog", 9),

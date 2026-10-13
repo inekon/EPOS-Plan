@@ -41,7 +41,7 @@ Die Seite gliedert sich unter dem Kopf in zwei Abschnitte: '''Komponenten und Ei
 === Ergebnisse — Energie ===
 Der Abschnitt stellt die Energie-Ergebnisse von Stammprojekt und Varianten gegenüber – dieselben Versionen in derselben Reihenfolge wie ''Komponenten im Vergleich'', also das Stammprojekt und die unter ''Im Vergleich:'' gewählten Varianten. Der Spaltenkopf nennt die Version und ihren Simulationsstand. Die Werte stammen aus dem letzten gespeicherten Simulationslauf jeder Version und sind dieselben Kennzahlen wie in der Kennzahlentafel des Berichts.
 
-Die Zeilen sind in Gruppen geordnet, die Einheit steht im Zeilenkopf. Offen in der Tafel stehen:
+Die Zeilen sind in Gruppen geordnet, die Einheit steht im Zeilenkopf. In der Vorgabe stehen offen in der Tafel:
 * '''Bedarf''' – Wärmebedarf gesamt und davon Heizung, Brauchwasser und Prozesswärme, Wärmelast, Kältebedarf und Kältelast, Strombedarf und Stromlast.
 * '''Wärmeerzeugung''' – die Wärme je Erzeuger: Wärmepumpe, BHKW, Spitzenkessel, Solarthermie.
 * '''Strom''' – Stromerzeugung von BHKW und Photovoltaik, Netzeinspeisung, PV-Eigenverbrauchsquote und Autarkiegrad.
@@ -56,6 +56,11 @@ Weicht ein Wert vom Stammprojekt ab, ist die Zelle hinterlegt und links markiert
 Jede zugeklappte Gruppe ist beim Öffnen der Seite zu; ihr Kopf nennt die Zahl der Kennzahlen und zeigt ''weicht vom Stammprojekt ab'', sobald eine Zelle darin abweicht. Ein Klick auf den Kopf klappt sie auf und zu; die Stellung gilt je Gruppe und bleibt bis zum Ende der Sitzung erhalten.
 
 Ist '''nur Unterschiede''' eingeschaltet, blendet der Abschnitt auch hier die Gruppen aus, in denen keine Version vom Stammprojekt abweicht – offene wie zugeklappte.
+
+==== Anzeige anpassen ====
+Der Knopf ''Anzeige anpassen…'' rechts im Kopf des Abschnitts öffnet einen kleinen Dialog. Darin bekommt jede Gruppe einen der Zustände ''offen'' (in der Tafel), ''zugeklappt'' (darunter, zum Aufklappen) oder ''ausgeblendet''. Unter ''Kennzahlen'' klappt je Gruppe die Liste ihrer Kennzahlen auf, auch der Zeilen je Energieträger; ein Haken entscheidet, ob die Kennzahl in der Tafel steht. Der Schalter ''Zeilen ohne Wert ausblenden'' ist in der Vorgabe eingeschaltet und nimmt die Zeilen heraus, deren Wert in allen gezeigten Versionen 0 oder leer ist; unter der Tafel steht dann leise, wie viele Kennzahlen das betrifft. ''Standard wiederherstellen'' setzt die oben beschriebene Gliederung, alle Kennzahlen und den Schalter auf die Vorgabe zurück.
+
+''OK'' übernimmt die Einstellung sofort und merkt sie für den angemeldeten Benutzer; sie gilt für alle Projekte und wirkt auf jede Darstellung des Abschnitts. ''Abbrechen'', das Kreuz und Esc lassen alles, wie es war; Enter bestätigt. Ob eine zugeklappte Gruppe gerade aufgeklappt ist, bleibt davon unberührt und gilt bis zum Ende der Sitzung.
 
 == Unterschiede übernehmen ==
 {{Anker|uebernahme|komponentenuebernahme}}

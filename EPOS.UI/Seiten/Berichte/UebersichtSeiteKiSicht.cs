@@ -18,6 +18,13 @@ namespace EPOS.UI.Seiten.Berichte;
 /// Handlung und kein Einstellwert der Seite — sie gehören in das Aktionsregister,
 /// nicht in die Feldkarte.</para>
 ///
+/// <para><b>Der Dialog „Anzeige anpassen…“ bleibt draußen.</b> Er steht als
+/// Überlagerung im Abschnitt „Ergebnisse — Energie“ (gehosteter Baustein, Wirt
+/// dieser Seite) und legt fest, welche Gruppen und Kennzahlen der Abschnitt zeigt —
+/// eine Benutzereinstellung der Ansicht für alle Projekte, kein Einstellwert der
+/// Seite. Was der Abschnitt danach zeigt, liest der Assistent wie bisher über
+/// <c>ErgebnisseLesen</c>.</para>
+///
 /// <para><b>Warum eine Sichtklasse und nicht <c>UebersichtStand</c>.</b> Die
 /// Seite SCHREIBT nicht in ihren Stand: Sie meldet jede Wahl über einen Rückruf
 /// an die Hülle und lädt danach neu (<c>StammGewechselt</c>,
