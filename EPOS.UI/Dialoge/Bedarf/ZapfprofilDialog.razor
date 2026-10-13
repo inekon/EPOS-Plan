@@ -257,7 +257,7 @@
                 @* ZB3: der Block der markierten Zone in zwei Ebenen - die Karte „Nutzung" steht immer offen, die
                    übrigen Karten klappen auf und nennen zugeklappt ihre wirksamen Werte. Welche Karte offen steht,
                    hält der Dialog (_karten), nicht die Karte: Der Stand bleibt beim Zonenwechsel. *@
-                <Gruppenkopf Titel="@Format(Texte.GruppeZone, zone.Name)" Summe="@Zonenwert(_wahl)">
+                <Gruppenkopf Titel="@Format(Texte.GruppeZone, zone.Name)" Summe="@ZonenKopfSumme">
                     <KindInhalt>
                         <div class="epos-zapfprofil-zonenblock" @key="_wahl">
                         <section class="epos-zapfprofil-karte epos-zapfprofil-karte--nutzung" aria-label="@Texte.KarteNutzung">
@@ -1982,6 +1982,11 @@
 
     /// <summary>Steht die Karte <paramref name="karte"/> offen? Prüfhilfe für die Tests.</summary>
     public bool KarteIstOffen(string karte) => KarteOffen(karte);
+
+    /// <summary>Die Summe im Kopf des Zonenblocks: „5,0 MWh/a Zapfung", „unvollständig" oder der Wert samt Ablehnung.</summary>
+    private string ZonenKopfSumme
+        => !IstUnvollstaendig(_wahl) && Zonenwertdaten(_wahl) is { Abgelehnt: false } w
+            ? Format(Texte.GruppeZonenSumme, Mwh(w.JahresbedarfZapfungKwh)) : Zonenwert(_wahl);
 
     /// <summary>Der Name der gewählten Stufe (Summe im Kopf der Gruppe „Gebäude und Anlage").</summary>
     private string Stufenname => _stufe switch

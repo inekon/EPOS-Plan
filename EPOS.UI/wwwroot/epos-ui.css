@@ -15530,6 +15530,11 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
 
 /* Das Blatt „Katalog der Nutzungsarten" (ZB9): Die Tabelle nimmt die Breite des Blattes und rollt nur in
    ihrer Huelle. */
+/* Der Titel des Typtagwegs steht links, seine Hilfepille rechts. */
+.epos-zapfprofil-typtage .epos-zapfprofil-gruppenhilfe > h5 {
+    margin-inline-end: auto;
+}
+
 .epos-zapfprofil-katalogblatt .epos-zapfprofil-katalog {
     max-height: none;
 }
