@@ -3,7 +3,7 @@
 Welle GD-N der Sitzung „Gebäudesimulation“: die offenen Punkte der Welle GD-4 (Statuszeile #1026, [Protokoll
 GD-4](2026-10-12_GD-4_Mehrzonenuebernahme.md)) und der Nachzug aus NP7 (Statuszeile #1022, [Protokoll
 NP7](2026-10-12_NP7_Normwerte_einlesen.md)), dazu der Jahreswärmebedarf in der Zusammenfassung des Gebäudedialogs aus dem
-[Konzept Projektdialoge](../../../aktuell/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md). Grundlage sind die
+[Konzept Projektdialoge](../../Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md). Grundlage sind die
 Anwenderentscheide vom 13.10.2026 („nach Empfehlung“).
 
 ## Befund

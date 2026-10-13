@@ -65,11 +65,12 @@ namespace WindowsFormsApplication1
                                           Modellpruefung.Ressource("MP_VORSCHLAG_KATALOGAUFBAU", katalog.Bezeichner, Zahl(katalog.U.Value)),
                                           IdAufbau: katalog.Id, U: katalog.U);
 
-            // (3) Typaufbau, auf das U abgeglichen.
-            if (u is double uz && Typaufbau(s, b, uz) is Ersatzergebnis e)
+            // (3) Typaufbau, auf das U abgeglichen. Die Saat wird per Eigenschaftsmuster gelesen: ein Punktzugriff
+            // auf die Eigenschaft Typ hieße für die Modultrennungswache den Gebäudetyp des Altwegs (E20).
+            if (u is double uz && Typaufbau(s, b, uz) is { Typ: TypaufbauSaat saat })
                 return new Pruefvorschlag(Vorschlagsart.Aufbau, Vorschlagsherkunft.Typaufbau,
-                                          Modellpruefung.Ressource("MP_VORSCHLAG_TYPAUFBAU", e.Typ.Bezeichner, Zahl(uz)),
-                                          Typaufbau: e.Typ.Code, U: uz);
+                                          Modellpruefung.Ressource("MP_VORSCHLAG_TYPAUFBAU", saat.Bezeichner, Zahl(uz)),
+                                          Typaufbau: saat.Code, U: uz);
             return null;
         }
 

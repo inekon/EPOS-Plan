@@ -234,7 +234,7 @@ public sealed class TwwNutzungsartAdminTexte
     public string ImportTitel { get; set; } = "Katalog importieren";
 
     /// <summary><c>ZPGK_IMPORT_HINWEIS</c></summary>
-    public string ImportHinweis { get; set; } = "Ein Paket besteht aus den Dateien Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv und Tab_TwwZapfkategorie_STAMM.csv, wahlfrei dazu Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv und Tab_TwwParameter_STAMM.csv — je Tabelle eine CSV-Datei mit Kopfzeile, Trenner Semikolon oder Komma, Zahlen mit Punkt. Gewählt wird ein ZIP-Archiv oder eine Datei des Paketordners. Die Spalte Katalogversion ist wahlfrei: Führt keine der Dateien sie, treten alle Zeilen der Katalogversion dieses Katalogs bei, und der Bericht nennt sie; führt nur ein Teil der Dateien sie, wird das Paket abgelehnt.";
+    public string ImportHinweis { get; set; } = "Ein Paket besteht aus den Dateien Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv und Tab_TwwZapfkategorie_STAMM.csv, wahlfrei dazu Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv, Tab_TwwParameter_STAMM.csv und Tab_TwwDin4708Wert_STAMM.csv (Belegung je Raumzahl und Ausstattungsklassen nach DIN 4708; ein Paket nur mit Kennwerten braucht die Nutzungsarten nicht) — je Tabelle eine CSV-Datei mit Kopfzeile, Trenner Semikolon oder Komma, Zahlen mit Punkt. Gewählt wird ein ZIP-Archiv oder eine Datei des Paketordners. Die Spalte Katalogversion ist wahlfrei: Führt keine der Dateien sie, treten alle Zeilen der Katalogversion dieses Katalogs bei, und der Bericht nennt sie; führt nur ein Teil der Dateien sie, wird das Paket abgelehnt.";
 
     /// <summary><c>ZPGK_IMPORT_HERKUNFT</c></summary>
     public string ImportHerkunft { get; set; } = "Eingespielte Zeilen tragen den Stand „Import“ und die Herkunftsart „Import“; frei verfügbare und fiktive Werte behalten ihre Herkunftsart. Eine vorhandene Nutzungsart bleibt unverändert: Gleicher Inhalt wird übersprungen, abweichender kommt als eigene Version „(Import n)“. Ein Bedarfstag und ein Parameter werden dagegen ersetzt — auch eine Zeile der Auslieferung; der Bericht nennt jede Ersetzung.";
@@ -317,6 +317,9 @@ public sealed class TwwNutzungsartAdminTexte
     /// <summary><c>ZPGK_IMPORT_GRP_PARAMETER</c></summary>
     public string ImportGruppeParameter { get; set; } = "Parameter";
 
+    /// <summary><c>ZPGK_IMPORT_GRP_DIN4708</c></summary>
+    public string ImportGruppeDin4708 { get; set; } = "DIN-4708-Katalogwerte";
+
     /// <summary><c>ZPGK_IMPORT_GRP_NUTZUNGSARTEN</c></summary>
     public string ImportGruppeNutzungsarten { get; set; } = "Nutzungsarten";
 
@@ -325,6 +328,9 @@ public sealed class TwwNutzungsartAdminTexte
 
     /// <summary><c>ZPGK_IMPORT_SP_PARAMETER</c></summary>
     public string ImportSpalteParameter { get; set; } = "Schlüssel";
+
+    /// <summary><c>ZPGK_IMPORT_SP_DIN4708</c></summary>
+    public string ImportSpalteDin4708 { get; set; } = "Art und Schlüssel";
 
     /// <summary><c>ZPGK_IMPORT_PRUEFEN</c></summary>
     public string ImportPruefen { get; set; } = "Nur prüfen, nichts schreiben";

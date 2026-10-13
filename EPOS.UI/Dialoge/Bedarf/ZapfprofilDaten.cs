@@ -1652,8 +1652,12 @@ public sealed class ZapfprofilKategorienDaten
 /// <summary>Das Ergebnis des Speicherns der Kategorien: die Nutzungsart, die sie jetzt trägt, ob sie neu ist, und die Meldung einer Ablehnung.</summary>
 public sealed record ZapfprofilKategorienErgebnis(bool Ok, int IdNutzungsart, bool NeueZeile, ZapfprofilMeldung? Meldung);
 
-/// <summary>Ein Eintrag der Warnliste: Kennung (Ressourcenschlüssel), Titel, Satz des Kerns, Stufe.</summary>
-public sealed record ZapfprofilWarnDaten(string Kennung, string Titel, string Text, ZapfprofilWarnstufe Stufe);
+/// <summary>
+/// Ein Eintrag der Warnliste: Kennung (Ressourcenschlüssel), Titel, Satz des Kerns, Stufe und — beim
+/// Hinweis einer eindeutig benannten Zone — deren Position in der Eingabe (sonst <c>null</c>).
+/// </summary>
+public sealed record ZapfprofilWarnDaten(string Kennung, string Titel, string Text, ZapfprofilWarnstufe Stufe,
+                                         int? Position = null);
 
 /// <summary>
 /// <b>Eine Zeile der Karte „Herkunft"</b> (Herkunftsprotokoll des Kerns, N19): welche Größe

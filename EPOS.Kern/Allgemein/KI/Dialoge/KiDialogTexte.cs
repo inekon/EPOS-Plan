@@ -2039,10 +2039,6 @@
         internal static string ZpgZirkFlaecheErl => MyResource.Resource.KI_DLG_ZPG_ZIRK_FLAECHE_ERL;
         internal static string ZpgZirkLaufzeitName => MyResource.Resource.ZPG_LBL_ZIRK_LAUFZEIT;
         internal static string ZpgZirkLaufzeitErl => MyResource.Resource.KI_DLG_ZPG_ZIRK_LAUFZEIT_ERL;
-        internal static string ZpgAnzeigetemperaturName => MyResource.Resource.ZPG_LBL_ANZEIGETEMPERATUR;
-        internal static string ZpgAnzeigetemperaturErl => MyResource.Resource.KI_DLG_ZPG_ANZEIGETEMPERATUR_ERL;
-        internal static string ZpgStundenschwelleName => MyResource.Resource.ZPG_LBL_STUNDENSCHWELLE;
-        internal static string ZpgStundenschwelleErl => MyResource.Resource.KI_DLG_ZPG_STUNDENSCHWELLE_ERL;
 
         internal static string ZpgaBedarfstagName => MyResource.Resource.ZPG_AUS_LBL_BEDARFSTAG;
         internal static string ZpgaBedarfstagErl => MyResource.Resource.KI_DLG_ZPGA_BEDARFSTAG_ERL;

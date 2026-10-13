@@ -169,7 +169,7 @@ Brauchwasser-Zapfprofil, Berichtsvorlagen, Mehrzonenmodell und Projekttransfer.
 ## 2 Logbuch-Einträge für die Wiki-Seite „Update-Logbuch“
 
 Die Abschnitte 1.2.6 und 1.2.0.5 stehen seit dem 29.09.2026 im Wiki (Revision 723). Die Blöcke 1.2.0.6 bis 1.2.0.9 und "Version offen" sind am 10.10.2026 (#889, Revision 827) veröffentlicht, zusammengefasst nach Regel 13.4 (70 Sätze) und unter den Versionsnummern laut Anwenderentscheid 10.10.2026 "letzte Stelle um eins erhöhen": 1.2.0.10 (29 Sätze aus den Blöcken 1.2.0.9 und „Version offen“), 1.2.0.9 (1 Satz: BDEW-Standardlastprofile Strom 2025), 1.2.0.8 (4 Sätze: Berichtsseite mit vier Karten, Wirtschaftlichkeitsbericht mit drei Szenarien, Pufferspeicher-Auslegung, Sperrfenster der Wärmepumpe), 1.2.0.7 (36 Sätze: Block 1.2.0.6 und die nie veröffentlichten Sätze aus 1.2.0.5). Die Entwürfe unten bleiben als Geschichte stehen. Ein neuer Satz gehört in einen
-neuen Abschnitt; seine Version erfragt die Sitzung beim Anwender.
+neuen Abschnitt; seine Version erfragt die Sitzung beim Anwender. **Anwenderentscheid 13.10.2026:** Bis zum 16.10.2026 wird keine neue Versionsnummer vergeben; neue Sätze bleiben bis dahin ohne Version im Entwurf, und es gibt keinen Upload.
 
 Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung, ohne
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
@@ -339,6 +339,8 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 12.10.2026: Die Knopfleiste am gewählten Satz bricht in schmalen Fenstern um; Katalogfunktionen stehen im Katalogkopf. (#1029)
 - Seit 13.10.2026: Im Dialog „Kältemaschinen im Projekt“ öffnet „Bearbeiten…“ bei einer Wärmepumpe ihre Anlagenfelder mit Gerätesteckbrief und der Gruppe „Kühlbetrieb“. (#1034)
 - Seit 13.10.2026: Im Dialog „Kältemaschinen im Projekt“ führt der Knopf „Energiekosten…“ zur Trägerkarte des Kühlträgers der gewählten Anlage. (#1041)
+- Seit 13.10.2026: Der Komponentenbestand des Gewerks Kältemaschine lässt sich im Reiter Übersicht als Ganzes aus einer anderen Version übernehmen. (#1042)
+- Seit 13.10.2026: Eine abweichende Anzahl gleicher Kältemaschinen erscheint in den Unterschieden zum Stammprojekt und lässt sich einzeln übernehmen. (#1042)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 

@@ -96,16 +96,25 @@ namespace WindowsFormsApplication1
                     ablehnungen.Add(new ZapfAblehnung("", ZapfEingabefehler.BezugsmengeFehlt, ZapfSatz.Neu("EINGABE_ZONE_OHNE_ANGABEN")));
                     continue;
                 }
+                // Vorprüfung ohne Ausnahme (2.2): Ein Zwischenstand des Dialogs trägt 0 mit derselben
+                // benannten Ablehnung, die der Rechenweg sonst geworfen hätte.
+                ZapfAblehnung vorab = Zonenvorpruefung.Pruefen(z, e, katalog);
+                if (vorab != null)
+                {
+                    // Der Kalender steht im Rechenweg vor dem Messwert: Eine Zone, die erst an ihrem
+                    // Messwert scheitert, trägt ihn in ihrer Ansicht wie bisher.
+                    if (vorab.Grund == ZapfEingabefehler.MesswertUngueltig)
+                        a.Kalender = Zapfkalender.Bilden(e.WochentagJan1, Zapfkalender.KennzeichenDerZone(e.WochentagJan1, e.We, z),
+                                                         Zapfkalender.FensterDerZone(z), z.Wochenendtage, z.Feiertage);
+                    Ablehnen(a, vorab, ablehnungen);
+                    continue;
+                }
                 try
                 {
-                    a.Art = Suchen(katalog, z.IdNutzungsart)
-                            ?? throw new ZapfprofilEingabeException(ZapfEingabefehler.NutzungsartFehlt, a.Name,
-                                   ZapfSatz.Neu("EINGABE_NUTZUNGSART_FEHLT", a.Name));
-                    Tagesgangsatz satz = a.Art.Tagesgaenge;
-                    if (z.IdTagesgangsatz.HasValue)
-                        satz = SuchenSatz(e.Tagesgangsaetze, z.IdTagesgangsatz.Value)
-                               ?? throw new ZapfprofilEingabeException(ZapfEingabefehler.TagesgangsatzFehlt, a.Name,
-                                      ZapfSatz.Neu("EINGABE_TAGESGANGSATZ_FEHLT", z.IdTagesgangsatz.Value, a.Name));
+                    ZapfAblehnung grund = Zonenvorpruefung.NutzungsartBefund(z, katalog, out a.Art);
+                    if (grund != null) throw grund.Ausnahme();
+                    grund = Zonenvorpruefung.TagesgangsatzBefund(z, a.Art, e.Tagesgangsaetze, out Tagesgangsatz satz);
+                    if (grund != null) throw grund.Ausnahme();
                     a.Temperaturen = Mengengeruest.Temperaturen(z, a.Art, e.Parameter, prot);
                     a.Menge = Mengengeruest.JahresenergieKwh(z, a.Art, a.Temperaturen, e.Parameter,
                                                              e.BelegungJeRaumzahl, prot, hinweise);
@@ -141,7 +150,9 @@ namespace WindowsFormsApplication1
             }
             Zirkulationsansatz ansatz = null;
             Schaetzhilfe zirkulationshilfe = null;
-            try
+            ZapfAblehnung zirkulationsgrund = Zirkulationskanal.Befund(e.Projekt, anteile, e.Parameter);
+            if (zirkulationsgrund != null) ablehnungen.Add(zirkulationsgrund);
+            else try
             {
                 ansatz = Zirkulationskanal.Ansetzen(e.Projekt, anteile, e.Parameter, prot, hinweise);
                 for (int i = 0; i < anteilIndex.Count; i++) anteilIndex[i].ZirkulationKwh = ansatz.AnteilJeZoneKwh[i];
@@ -168,6 +179,14 @@ namespace WindowsFormsApplication1
             foreach (Zonenarbeit a in arbeit)
             {
                 if (a.Abgelehnt) continue;
+                // Die Kalibrierung prüft mit den Mengen vor ihr — ohne Ausnahme (2.2).
+                ZapfAblehnung kalibriergrund = a.Messwert != null
+                    ? Mengengeruest.KalibrierBefund(a.Messwert, a.ZapfungKwh, a.ZirkulationKwh, a.Name) : null;
+                if (kalibriergrund != null)
+                {
+                    Ablehnen(a, kalibriergrund, ablehnungen);
+                    continue;
+                }
                 try
                 {
                     if (a.Messwert != null)
@@ -563,20 +582,6 @@ namespace WindowsFormsApplication1
             a.ZapfungKwh = 0.0;
             a.ZirkulationKwh = 0.0;
             liste.Add(ablehnung);
-        }
-
-        private static Nutzungsart Suchen(IReadOnlyList<Nutzungsart> katalog, int id)
-        {
-            if (katalog == null) return null;
-            foreach (Nutzungsart n in katalog) if (n != null && n.Id == id) return n;
-            return null;
-        }
-
-        private static Tagesgangsatz SuchenSatz(IReadOnlyList<Tagesgangsatz> saetze, int id)
-        {
-            if (saetze == null) return null;
-            foreach (Tagesgangsatz s in saetze) if (s != null && s.Id == id) return s;
-            return null;
         }
     }
 }

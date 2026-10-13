@@ -271,4 +271,122 @@ public class OptionsgruppeTests : BunitContext
         cut.Find("input[type=radio]").Change("2");
         cut.WaitForAssertion(() => Assert.Equal(2, gewaehlt));
     }
+
+    // ---- Waagerecht (Zapfprofil ZB4 (a)) ------------------------------------------------
+
+    private static readonly (int Id, string Text)[] Stufen =
+    {
+        (0, "Einfach"), (1, "Erweitert"), (2, "Experte")
+    };
+
+    /// <summary>Waagerecht: dieselben Eintraege in EINER Zeile, die Gruppe bleibt eine Radiogruppe.</summary>
+    [Fact]
+    public void Waagerecht_stehen_alle_Eintraege_in_einer_Zeile_derselben_Radiogruppe()
+    {
+        var cut = Render<Optionsgruppe>(p => p
+            .Add(x => x.Bezeichnung, "Stufe")
+            .Add(x => x.Eintraege, Stufen)
+            .Add(x => x.Auswahl, 1)
+            .Add(x => x.Waagerecht, true));
+
+        Assert.Equal("radiogroup", cut.Find("fieldset").GetAttribute("role"));
+        Assert.Equal("Stufe", cut.Find(".epos-optionsgruppe-titel").TextContent);
+        var zeile = cut.Find(".epos-optionsgruppe-zeile");
+        var knoepfe = zeile.QuerySelectorAll("input[type=radio]");
+        Assert.Equal(3, knoepfe.Length);
+        Assert.Single(knoepfe.Select(k => k.GetAttribute("name")).Distinct());
+        Assert.Equal(new[] { "Einfach", "Erweitert", "Experte" },
+                     zeile.QuerySelectorAll(".epos-feld-text").Select(t => t.TextContent).ToArray());
+    }
+
+    /// <summary>Die gewaehlte Option traegt die Zustandsklasse — sie macht die Wahl auch unter forced-colors sichtbar.</summary>
+    [Fact]
+    public void Waagerecht_traegt_genau_die_gewaehlte_Option_die_Zustandsklasse()
+    {
+        var cut = Render<Optionsgruppe>(p => p
+            .Add(x => x.Eintraege, Stufen)
+            .Add(x => x.Auswahl, 2)
+            .Add(x => x.Waagerecht, true));
+
+        var gewaehlt = cut.FindAll(".epos-option--gewaehlt");
+        Assert.Single(gewaehlt);
+        Assert.Equal("Experte", gewaehlt[0].QuerySelector(".epos-feld-text")!.TextContent);
+        Assert.True(gewaehlt[0].QuerySelector("input")!.HasAttribute("checked"));
+    }
+
+    /// <summary>Der Rueckweg: eine Wahl meldet ihre Id, und die Zustandsklasse folgt.</summary>
+    [Fact]
+    public void Waagerecht_meldet_die_Wahl_und_die_Zustandsklasse_folgt()
+    {
+        int? erhalten = null;
+        var cut = Render<Optionsgruppe>(p => p
+            .Add(x => x.Eintraege, Stufen)
+            .Add(x => x.Auswahl, 0)
+            .Add(x => x.Waagerecht, true)
+            .Add(x => x.AuswahlChanged, (int? id) => erhalten = id));
+
+        cut.FindAll("input[type=radio]")[1].Change("1");
+        cut.WaitForAssertion(() => Assert.Equal(1, erhalten));
+        Assert.Equal("Erweitert", cut.Find(".epos-option--gewaehlt .epos-feld-text").TextContent);
+    }
+
+    /// <summary>
+    /// Beschreibungen und Wirkungen stehen nicht zwischen den Eintraegen: die der gewaehlten Option als
+    /// leise Zeile unter der Gruppe, jede im title ihres Eintrags.
+    /// </summary>
+    [Fact]
+    public void Waagerecht_steht_die_Erlaeuterung_unter_der_Gruppe_und_im_title()
+    {
+        var cut = Render<Optionsgruppe>(p => p
+            .Add(x => x.Eintraege, Stufen)
+            .Add(x => x.Auswahl, 1)
+            .Add(x => x.Waagerecht, true)
+            .Add(x => x.Beschreibungen, new Dictionary<int, string> { [1] = "Belegung und Kalender", [2] = "alle Fachwerte" }));
+
+        Assert.Empty(cut.Find(".epos-optionsgruppe-zeile").QuerySelectorAll(".epos-option-beschreibung, .epos-option-wirkung"));
+        Assert.Equal("Belegung und Kalender", cut.Find(".epos-optionsgruppe-unterzeile").TextContent);
+        var labels = cut.FindAll("label.epos-option");
+        Assert.Null(labels[0].GetAttribute("title"));
+        Assert.Equal("Belegung und Kalender", labels[1].GetAttribute("title"));
+        Assert.Equal("alle Fachwerte", labels[2].GetAttribute("title"));
+    }
+
+    /// <summary>Ohne Wahl und ohne Text keine leere Unterzeile; senkrecht gibt es die Zeile nicht.</summary>
+    [Fact]
+    public void Ohne_Waagerecht_und_ohne_Text_gibt_es_weder_Zeile_noch_Unterzeile()
+    {
+        var waagerecht = Render<Optionsgruppe>(p => p
+            .Add(x => x.Eintraege, Stufen)
+            .Add(x => x.Waagerecht, true));
+        Assert.Empty(waagerecht.FindAll(".epos-optionsgruppe-unterzeile"));
+        Assert.Empty(waagerecht.FindAll(".epos-option--gewaehlt"));
+
+        var senkrecht = Render<Optionsgruppe>(p => p
+            .Add(x => x.Eintraege, Stufen)
+            .Add(x => x.Auswahl, 1));
+        Assert.Empty(senkrecht.FindAll(".epos-optionsgruppe-zeile"));
+        Assert.Empty(senkrecht.FindAll(".epos-option--gewaehlt"));
+    }
+
+    /// <summary>Eine weich gesperrte Option bleibt auch waagerecht anklickbar und meldet den Versuch.</summary>
+    [Fact]
+    public void Waagerecht_meldet_eine_weich_gesperrte_Option_als_Versuch()
+    {
+        int? verweigert = null;
+        int? gewaehlt = null;
+        var cut = Render<Optionsgruppe>(p => p
+            .Add(x => x.Eintraege, Stufen)
+            .Add(x => x.Auswahl, 0)
+            .Add(x => x.Waagerecht, true)
+            .Add(x => x.WeichGesperrt, new Dictionary<int, string> { [2] = "nur mit Lizenz" })
+            .Add(x => x.Verweigert, (int id) => verweigert = id)
+            .Add(x => x.AuswahlChanged, (int? id) => gewaehlt = id));
+
+        var knopf = cut.FindAll("input[type=radio]")[2];
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Equal("nur mit Lizenz", knopf.GetAttribute("title"));
+        knopf.Change("2");
+        cut.WaitForAssertion(() => Assert.Equal(2, verweigert));
+        Assert.Null(gewaehlt);
+    }
 }

@@ -1234,6 +1234,19 @@ Wege führen einen Katalogsatz in ein Projekt, und alle drei führen die Kühlke
 | **Katalogsatz übernehmen** | `WPCtrl.CopyFromStamm` (`:509` über den Namen, `:520` über die Stamm-ID), Kühlblock `:608-626` | kopiert `Tab_Kenndaten_Kuehlung_STAMM` → `Tab_Kenndaten_Kuehlung` und bildet `ID_WP` auf die neue Projekt-ID ab; der Nachzug für fehlende Kennlinien prüft Wärme **und** Kühlung getrennt (`:696`: `kuehlFehlt`, Kopierweg `:704-759`) |
 | **Gewerkübernahme** | `KomponentenUebernahmeCtrl.cs:128` | der Plan „Wärmepumpe" führt `Tab_Kenndaten` **und** `Tab_Kenndaten_Kuehlung` als Kindtabellen über `ID_WP` |
 | **Projekt duplizieren** | `ProjektDuplizierenCtrl.cs:165` | `Tab_Kenndaten_Kuehlung` steht in der Kinderliste mit demselben Elternfilter wie `Tab_Kenndaten` |
+| **Gewerkübernahme Kältemaschine** | `KomponentenUebernahmeCtrl.Plaene` | der Plan „Kältemaschine“ führt `Tab_Kaeltemaschine` mit `Tab_Kenndaten_Kaeltemaschine` über `ID_Kaeltemaschine` |
+
+**Wie gebaut (KN1).** Die Kältemaschine ist ein Gewerk der Übernahme wie jedes andere: Die
+Anlagenzeile kommt samt Stückzahl (`Kaeltemaschine_Anzahl`), Kühlträger und Abrechnungsart, das
+Gerät als eigene Projektkopie samt Kennfeld. Ihr Geräteverweis `ID_Kaeltemaschine` steht nicht im
+Modell der einen Einfügeanweisung, sondern in den Fachspalten; der Austausch nimmt ihn deshalb aus
+der Fachspaltenübertragung heraus und setzt ihn nach dem Einfügen über die Abbildung nach ID — über
+den Bezeichner wären zwei gleichnamige Maschinen nicht zu trennen. Was nicht zum Gewerk gehört,
+wird benannt statt geraten (`BK_KOMP_HINW_KAELTESEITE`): die Kaskade des Projekts, ein
+Kältespeicher und die Kältefolge der übrigen Kälteerzeuger. Die Stückzahl zählt zum BESTAND —
+sie entscheidet über „nichts zu tun“ und steht als eigenes Merkmal in der Unterschiedsliste,
+gelesen und geschrieben an der ersten Anlagenzeile dieses Gewerks, bei mehreren abgelehnt.
+Nachweis `EPOS.Kern.Tests/KaeltemaschineUebernahmeTests`.
 
 **Folge für KU2:** Die Kühlkennlinie ist im Projekt vorhanden, sobald die Maschine es ist. Was
 fehlt, ist allein der **Leser** (5.1) und die **Einstellung** (5.0.5). Ein Datenbankfall hält

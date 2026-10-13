@@ -103,6 +103,17 @@ leere Datenbank ein und prüft, dass nichts abgelehnt ist und die Summenregeln h
 Fall mit benanntem Grund übersprungen, so in der CI. Test und Meldungen nennen Kennungen, Ids und
 Zählungen, nie einen Wert oder Namen des Pakets.
 
+**Das gefüllte DIN-4708-Paket (ZB7).** Die gefüllte Kopie der Paketvorlage
+[`Referenzlaeufe/Katalogpaket_Vorlage_DIN4708/`](../Katalogpaket_Vorlage_DIN4708/LIESMICH.md) —
+Belegung je Raumzahl, Ausstattungsklassen und Parameter aus dem eigenen Exemplar der DIN 4708 —
+kommt zum Prüfen nach `Katalogpaket_DIN4708/` hierher und **bleibt lokal**, nach denselben Regeln
+wie das A100-Paket (`RepositoryOrdnungWacheTests` hält den Ausschluss).
+
+**Das gefüllte Typtagpaket VDI 4655 (ZB11).** Die gefüllte Kopie der Paketvorlage
+[`Referenzlaeufe/Typtagpaket_Vorlage_VDI4655/`](../Typtagpaket_Vorlage_VDI4655/LIESMICH.md) — die
+sechs CSV-Dateien mit den Werten des eigenen Exemplars der VDI 4655 — kommt nach
+`Typtagpaket_VDI4655/` hierher und **bleibt lokal**, nach denselben Regeln.
+
 ## Nie committen
 
 `git status` zeigt unter `Referenzlaeufe/Normzahlen/` nur diese Datei. Wer dort etwas anderes

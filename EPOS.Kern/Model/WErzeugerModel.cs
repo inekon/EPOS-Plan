@@ -33,6 +33,23 @@
         public int ID_PUFFER;
 
         /// <summary>
+        /// <c>ID_Kaeltemaschine</c> der Anlagenzeile (Verweis auf die Projektkopie
+        /// <c>Tab_Kaeltemaschine</c>); <c>null</c> = kein Gerät.
+        ///
+        /// <para>
+        /// NUR GELESEN. Die Spalte steht nicht in <see cref="AnlagenSql.SQL_ANLAGE_INSERT"/> und
+        /// gehört damit zu den FACHSPALTEN (<see cref="AnlagenFachspalten"/>) — geschrieben wird sie
+        /// über den Kältemaschinenweg (<see cref="KaeltemaschineAnlageCtrl"/>) bzw. beim
+        /// Bestandsaustausch über die Nachsetzung des Geräteverweises
+        /// (<see cref="KomponentenUebernahmeCtrl"/>), nie über dieses Feld. Das Modell führt den
+        /// Wert, damit die Übernahme die Gerätezeile der Quelle über ihre ID auf die neue
+        /// Projektkopie abbilden kann — über den Bezeichner wären zwei gleichnamige Maschinen
+        /// nicht zu trennen.
+        /// </para>
+        /// </summary>
+        public int? ID_Kaeltemaschine;
+
+        /// <summary>
         /// NICHT PERSISTENT. Der Anwender hat in der Oberfläche bestätigt, dass dieses
         /// Gerät ein ZWEITES MAL ins Projekt soll (Rückfrage aus
         /// <see cref="AnlagenEindeutigkeit"/>) - der Schreibweg legt dafür eine eigene
@@ -451,6 +468,9 @@
             m_Neigung = 0;
             m_Azimut = 0;
             ID_PUFFER = 0;
+            // NULL wie in der Datenbank: Die Spalte steht unter einer Beziehung auf
+            // Tab_Kaeltemaschine.ID und kennt keine 0 (siehe Feldbeschreibung).
+            ID_Kaeltemaschine = null;
             // 0 wie bisher: eine frisch angelegte Anlage bekommt denselben Wert wie vor
             // der Umstellung auf ID_CarrierRoh. NULL entsteht nur dort, wo die Leseseite
             // ein NULL aus der Datenbank durchreicht.

@@ -27,7 +27,10 @@ namespace WindowsFormsApplication1
     /// (<see cref="KomponentenUebernahmeCtrl"/>). Für <c>Tab_Energieanlagen</c> und
     /// <c>Tab_Gebaeude</c> ist „erste Zeile" dagegen die ausdrücklich erklärte Konvention
     /// der Feldliste (Anlagen-Anker bzw. „erstes Gebäude"); dort wird die betroffene Zeile
-    /// im Dialog benannt statt die Übernahme zu verweigern.
+    /// im Dialog benannt statt die Übernahme zu verweigern. Eine Anlagenspalte, die einem
+    /// GEWERK gehört (KN1: die Stückzahl der Kältemaschine), zählt wie eine Gerätetabelle: Sie
+    /// wird an der ersten Anlagenzeile dieses Gewerks geschrieben und bei mehreren abgelehnt
+    /// (<see cref="AbweichungsErmittler.IstGewerkanlage"/>).
     /// </para>
     ///
     /// <para>
@@ -119,7 +122,7 @@ namespace WindowsFormsApplication1
             // „Erste Zeile nach ID" trägt nur, solange es genau eine gibt. Bei den
             // Gerätetabellen der Gewerke ist die Zahl selbst ein gemeldeter Unterschied —
             // dort wird nicht geraten (Anlage/Gebäude: erklärte Konvention, siehe Klassenkopf).
-            if (IstGewerkTabelle(f.Tabelle))
+            if (IstGewerkTabelle(f.Tabelle) || AbweichungsErmittler.IstGewerkanlage(f))
             {
                 if (b.Quelle.Anzahl > 1 || b.Ziel.Anzahl > 1)
                 {
@@ -255,6 +258,11 @@ namespace WindowsFormsApplication1
 
         private static int Zeilenzahl(ProjektDetails d, AbweichungsErmittler.Merkmal f)
         {
+            // Eine Anlagenspalte, die zu einem GEWERK gehört (KN1: die Stückzahl der
+            // Kältemaschine), zählt die Anlagenzeilen DIESES Gewerks: Geschrieben wird in die
+            // erste von ihnen, und mehr als eine ist keine belastbare Auswahl (Klassenkopf).
+            if (AbweichungsErmittler.IstGewerkanlage(f))
+                return d != null && d.KomponentenAnzahl.ContainsKey(f.Gewerk) ? d.KomponentenAnzahl[f.Gewerk] : 0;
             if (string.Equals(f.Tabelle, TAB_ANLAGEN, StringComparison.OrdinalIgnoreCase))
                 return d.Anlagen != null ? d.Anlagen.Rows.Count : 0;
             if (string.Equals(f.Tabelle, TAB_GEBAEUDE, StringComparison.OrdinalIgnoreCase))

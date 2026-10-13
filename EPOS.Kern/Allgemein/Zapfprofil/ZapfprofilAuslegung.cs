@@ -127,16 +127,19 @@ namespace WindowsFormsApplication1
                     Ablehnen(w, ZapfSatz.Neu("EINGABE_ZONE_OHNE_ANGABEN"), ablehnungen);
                     continue;
                 }
+                // Vorprüfung ohne Ausnahme (2.2): Ein Zwischenstand fällt mit benanntem Grund aus seiner Gruppe.
+                ZapfAblehnung vorab = Zonenvorpruefung.Pruefen(z, katalog, e.Tagesgangsaetze, ps, belegung);
+                if (vorab != null)
+                {
+                    Ablehnen(w, vorab.Satz, ablehnungen);
+                    continue;
+                }
                 try
                 {
-                    w.Art = Suchen(katalog, z.IdNutzungsart)
-                            ?? throw new ZapfprofilEingabeException(ZapfEingabefehler.NutzungsartFehlt, w.Name,
-                                   ZapfSatz.Neu("EINGABE_NUTZUNGSART_FEHLT", w.Name));
-                    Tagesgangsatz satz = w.Art.Tagesgaenge;
-                    if (z.IdTagesgangsatz.HasValue)
-                        satz = SuchenSatz(e.Tagesgangsaetze, z.IdTagesgangsatz.Value)
-                               ?? throw new ZapfprofilEingabeException(ZapfEingabefehler.TagesgangsatzFehlt, w.Name,
-                                      ZapfSatz.Neu("EINGABE_TAGESGANGSATZ_FEHLT", z.IdTagesgangsatz.Value, w.Name));
+                    ZapfAblehnung grund = Zonenvorpruefung.NutzungsartBefund(z, katalog, out w.Art);
+                    if (grund != null) throw grund.Ausnahme();
+                    grund = Zonenvorpruefung.TagesgangsatzBefund(z, w.Art, e.Tagesgangsaetze, out Tagesgangsatz satz);
+                    if (grund != null) throw grund.Ausnahme();
                     w.Temperaturen = Mengengeruest.Temperaturen(z, w.Art, ps, prot);
                     w.Menge = Mengengeruest.JahresenergieKwh(z, w.Art, w.Temperaturen, ps, belegung, prot, zapfHinweise);
                     w.Struktur = Formvektor.Bilden(z, w.Art, satz, ps, prot, zapfHinweise);
@@ -162,19 +165,18 @@ namespace WindowsFormsApplication1
             }
             Zirkulationsansatz ansatz = null;
             double zirkVorschlagKw = 0.0;
-            try
+            ZapfAblehnung zirkulationsgrund = Zirkulationskanal.Befund(p, anteile, ps);
+            if (zirkulationsgrund != null) hinweise.Add(new Auslegungshinweis("ZIRKULATION_NICHT_RECHENBAR", zirkulationsgrund.Satz, true));
+            else try
             {
                 ansatz = Zirkulationskanal.Ansetzen(p, anteile, ps, prot, zapfHinweise);
                 for (int i = 0; i < anteilIndex.Count; i++) anteilIndex[i].ZirkulationKwh = ansatz.AnteilJeZoneKwh[i];
                 zirkVorschlagKw = ansatz.LeistungKw;
                 if (!p.ZirkAuto)
                 {
-                    try
-                    {
-                        zirkVorschlagKw = Zirkulationskanal.Ansetzen(p with { ZirkAuto = true }, anteile, ps, null, null).LeistungKw;
-                    }
-                    catch (ZapfprofilEingabeException) { }
-                    catch (ParametersatzException) { }
+                    // Der Vorschlag der Methode — ohne Wurf, wenn sie (noch) nicht rechnet.
+                    Zirkulationsansatz vorschlag = Zirkulationskanal.Vorschlag(p, anteile, ps);
+                    if (vorschlag != null) zirkVorschlagKw = vorschlag.LeistungKw;
                 }
             }
             catch (ZapfprofilEingabeException ex) { hinweise.Add(new Auslegungshinweis("ZIRKULATION_NICHT_RECHENBAR", ex.Satz, true)); }
@@ -184,6 +186,12 @@ namespace WindowsFormsApplication1
             foreach (Zonenarbeit w in arbeit)
             {
                 if (w.Abgelehnt || w.Messwert == null) continue;
+                ZapfAblehnung kalibriergrund = Mengengeruest.KalibrierBefund(w.Messwert, w.ZapfungKwh, w.ZirkulationKwh, w.Name);
+                if (kalibriergrund != null)
+                {
+                    Ablehnen(w, kalibriergrund.Satz, ablehnungen);
+                    continue;
+                }
                 try
                 {
                     Kalibrierergebnis k = Mengengeruest.Kalibrieren(w.Messwert, w.ZapfungKwh, w.ZirkulationKwh, w.Name);
@@ -937,19 +945,5 @@ namespace WindowsFormsApplication1
                     ps, prot, ZapfFeld.AUSLEGUNG_LADEFENSTER_BEGINN, "h", ZapfSatz.Neu("BEGRIFF_LADEFENSTER_BEGINN")),
                 ZapfAuslegungParameter.ProjektOderParameter(p.LadefensterH, ZapfAuslegungParameter.LADEFENSTER_LAENGE,
                     ps, prot, ZapfFeld.AUSLEGUNG_LADEFENSTER, "h", ZapfSatz.Neu("BEGRIFF_LADEFENSTER_LAENGE")));
-
-        private static Nutzungsart Suchen(IReadOnlyList<Nutzungsart> katalog, int id)
-        {
-            if (katalog == null) return null;
-            foreach (Nutzungsart n in katalog) if (n != null && n.Id == id) return n;
-            return null;
-        }
-
-        private static Tagesgangsatz SuchenSatz(IReadOnlyList<Tagesgangsatz> saetze, int id)
-        {
-            if (saetze == null) return null;
-            foreach (Tagesgangsatz s in saetze) if (s != null && s.Id == id) return s;
-            return null;
-        }
     }
 }

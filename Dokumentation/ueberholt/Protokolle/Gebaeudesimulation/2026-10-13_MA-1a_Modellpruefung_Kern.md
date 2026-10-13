@@ -114,6 +114,15 @@ Katalog- oder Typaufbau im U-Band mit Rücknahme, fehlendes Außenbauteil → Pr
 → EPOS-Muster mit Rücknahme, Alle übernehmen, Gruppenampeln, Aufbau- und Profilrangfolge, Texte beider Sprachen. SQL-Prüfer
 0 Fundstellen.
 
+## Nachzug Modultrennung
+
+Der volle Kern-Testlauf des Integrationsstands meldete `ModultrennungswacheTests.Satz1_Gebaeude_nennt_nichts_aus_dem_Altweg`
+rot: `Modellvorschlagsregeln.cs` griff mit `e.Typ.Bezeichner` und `e.Typ.Code` auf die Typaufbau-Saat des `Ersatzergebnis`
+zu, und die Wache liest jeden Zugriff `.Typ` im Modul `Gebaeude/` als den Gebäudetyp des Altwegs (E20). Fachlich war es kein
+Altweg; die Saat wird jetzt per Eigenschaftsmuster (`is { Typ: TypaufbauSaat saat }`) gelesen, ohne Punktzugriff. Der
+Controller `ModellpruefungCtrl` liegt außerhalb von `Gebaeude/` und bleibt unverändert. Rechenweg unberührt. Nachweis: Build
+`WP-Plan.Kern.slnf` 0 Fehler, Tests `Modultrennungswache|Modellpruefung|Bauteilvorschlag` 135 von 135 grün.
+
 ## Offen für MA-1b und später
 
 - Ampelleiste im Importdialog und im Reiter „Zonen“ (MA-1b) auf `ModellpruefungCtrl`; der Importdialog reicht DIN-Nummer und

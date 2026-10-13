@@ -6432,6 +6432,9 @@ Depending on the project size this takes several minutes. Continue?</value>
   <data name="BK_KOMP_HINW_KINDZEILEN" xml:space="preserve">
     <value>The assignments "{1}" of unit "{0}" could not be transferred.</value>
   </data>
+  <data name="BK_KOMP_HINW_KAELTESEITE" xml:space="preserve">
+    <value>Not part of the chiller trade and left unchanged: the cascade of the project, a cold storage tank and the cooling sequence of the other cooling generators — the rank of the transferred machines comes from the source. Please check the cooling sequence in the cooling section.</value>
+  </data>
   <data name="KOSTEN_PLANWERT_BASIS_MODUL" xml:space="preserve">
     <value>Module price</value>
   </data>
@@ -25969,7 +25972,7 @@ Do you want to allow this?</value>
     <value>Total of {0} zones</value>
   </data>
   <data name="ZPG_BTN_ZONE_NEU" xml:space="preserve">
-    <value>Add zone…</value>
+    <value>Add zone</value>
   </data>
   <data name="ZPG_BTN_ZONE_DUPLIZIEREN" xml:space="preserve">
     <value>Duplicate</value>
@@ -26246,6 +26249,9 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_KZ_ABGELEHNT" xml:space="preserve">
     <value>contributes 0</value>
+  </data>
+  <data name="ZPG_ZONE_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>incomplete</value>
   </data>
   <data name="ZPG_BTN_STOCHASTIK" xml:space="preserve">
     <value>Calculate stochastically</value>
@@ -29323,7 +29329,10 @@ Do you want to allow this?</value>
     <value>A zone without data.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_NUTZUNGSART_FEHLT" xml:space="preserve">
-    <value>The type of use of zone “{0}” is not (or no longer) in the catalogue — please choose a type of use.</value>
+    <value>Type of use no. {1} of zone “{0}” is not (or no longer) in the catalogue — please choose a type of use.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_NUTZUNGSART_NICHT_GEWAEHLT" xml:space="preserve">
+    <value>No type of use has been chosen for zone “{0}” yet.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_TAGESGANGSATZ_FEHLT" xml:space="preserve">
     <value>Daily profile set {0} of zone “{1}” is missing.</value>
@@ -30874,7 +30883,7 @@ Do you want to allow this?</value>
     <value>The program ships no values of the guideline. The licensed user imports the type days from his own package; they stay in this database and go neither into the delivery template nor into a project transfer.</value>
   </data>
   <data name="ZPGT_HINWEIS_FORMAT" xml:space="preserve">
-    <value>A package is a ZIP archive or a folder holding six CSV files: type days, climate zones, calendar days per zone, factors of the daily energy, characteristic values of the method and, optionally, daily profiles — header row with column names, separator semicolon or comma, numbers with a point.</value>
+    <value>A package is a ZIP archive or a folder holding six CSV files: type days, climate zones, calendar days per zone, factors of the daily energy, characteristic values of the method and, optionally, daily profiles — header row with column names, separator semicolon or comma, numbers with a point. A template with complete header rows and placeholders is in the program folder under Vorlage\Typtagpaket_VDI4655; it names the place in the guideline for each file, and unchanged the check rejects it.</value>
   </data>
   <data name="ZPGT_GRP_STAND" xml:space="preserve">
     <value>Imported state</value>
@@ -31366,7 +31375,40 @@ Do you want to allow this?</value>
     <value>Occupancy and system</value>
   </data>
   <data name="ZPG_LBL_WOHNUNGSTABELLE" xml:space="preserve">
-    <value>Dwelling table</value>
+    <value>Dwellings (optional)</value>
+  </data>
+  <data name="ZPG_HINW_WOHNUNGEN" xml:space="preserve">
+    <value>Instead of a reference quantity, enter the dwellings by type: the zone then uses their total, and the sizing derives the demand index according to DIN 4708 from it.</value>
+  </data>
+  <data name="ZPG_SP_WOHNUNG_ANZAHL" xml:space="preserve">
+    <value>Number [DU]</value>
+  </data>
+  <data name="ZPG_SP_WOHNUNG_RAUMZAHL" xml:space="preserve">
+    <value>Rooms [rooms/DU]</value>
+  </data>
+  <data name="ZPG_SP_WOHNUNG_PERSONEN" xml:space="preserve">
+    <value>Persons [P/DU]</value>
+  </data>
+  <data name="ZPG_TIP_WOHNUNG_ANZAHL" xml:space="preserve">
+    <value>Number of dwellings of this type (dwelling units)</value>
+  </data>
+  <data name="ZPG_TIP_WOHNUNG_RAUMZAHL" xml:space="preserve">
+    <value>Number of rooms — living rooms and bedrooms; kitchen, bathroom and hall do not count</value>
+  </data>
+  <data name="ZPG_TIP_WOHNUNG_PERSONEN" xml:space="preserve">
+    <value>Persons per dwelling — empty: occupancy by number of rooms from the catalogue</value>
+  </data>
+  <data name="ZPG_TIP_WOHNUNG_AUSSTATTUNG" xml:space="preserve">
+    <value>Equipment class according to DIN 4708 — empty: default class</value>
+  </data>
+  <data name="ZPG_WOHNUNGEN_SUMME" xml:space="preserve">
+    <value>gives {0} dwelling units · {1} persons</value>
+  </data>
+  <data name="ZPG_WOHNUNGEN_SUMME_WE" xml:space="preserve">
+    <value>gives {0} dwelling units</value>
+  </data>
+  <data name="ZPG_HINW_AUSSTATTUNG_OHNE_KATALOG" xml:space="preserve">
+    <value>Equipment classes are not maintained in the catalogue. They can be loaded with the package template “Katalogpaket_DIN4708” via “Import…” in the catalogue of hot water usage types.</value>
   </data>
   <data name="ZPG_LBL_ANZAHL" xml:space="preserve">
     <value>Number</value>
@@ -31392,11 +31434,8 @@ Do you want to allow this?</value>
   <data name="ZPG_AUSSTATTUNG_VORGABE" xml:space="preserve">
     <value>Default class</value>
   </data>
-  <data name="ZPG_HINW_WOHNUNGSTABELLE" xml:space="preserve">
-    <value>Persons empty = occupancy by number of rooms from the catalogue, otherwise persons per dwelling unit; equipment empty = default class. With a table its quantity is the reference quantity.</value>
-  </data>
   <data name="ZPG_HINW_WOHNUNGSTABELLE_LEER" xml:space="preserve">
-    <value>No dwelling table — the reference quantity applies.</value>
+    <value>No dwellings entered — the zone uses the reference quantity.</value>
   </data>
   <data name="ZPG_LBL_PERSONEN_JE_WE" xml:space="preserve">
     <value>Persons per dwelling unit</value>
@@ -31677,6 +31716,9 @@ Do you want to allow this?</value>
   <data name="ZPG_GRP_FACHWERTE_GEBAEUDE" xml:space="preserve">
     <value>Technical values · building</value>
   </data>
+  <data name="ZPG_HINW_ANZEIGE_EINSTELLUNG" xml:space="preserve">
+    <value>The temperature of the litre display and the threshold of the hour count are set in the global application settings, section “Draw-off profile”.</value>
+  </data>
   <data name="ZPG_LBL_KALTWASSER_AUSLEGUNG" xml:space="preserve">
     <value>Cold water of the design</value>
   </data>
@@ -31700,15 +31742,6 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_HINW_ZIRK_EXPERTE" xml:space="preserve">
     <value>Empty = value by position ({0} or {1} kWh/(m²·a), method of DIN V 4701-10), area from living area per dwelling unit or building, running time {2} h/d according to DVGW W 551.</value>
-  </data>
-  <data name="ZPG_LBL_ANZEIGETEMPERATUR" xml:space="preserve">
-    <value>Temperature of the litre display</value>
-  </data>
-  <data name="ZPG_LBL_STUNDENSCHWELLE" xml:space="preserve">
-    <value>Threshold of the hour count</value>
-  </data>
-  <data name="ZPG_HINW_ANZEIGE" xml:space="preserve">
-    <value>Only for the key figures, not saved; empty = setting, otherwise {0} °C or {1} kW.</value>
   </data>
   <data name="ZPG_UNTERSCHRIFT_DAUERLINIE" xml:space="preserve">
     <value>Sorted hourly values of the balance series (draw-off and circulation) — balance values, not a design quantity.</value>
@@ -31853,12 +31886,6 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_ZPG_ZIRK_LAUFZEIT_ERL" xml:space="preserve">
     <value>The running time of the circulation per day; empty = default.</value>
-  </data>
-  <data name="KI_DLG_ZPG_ANZEIGETEMPERATUR_ERL" xml:space="preserve">
-    <value>The temperature to which the litre display of the key figures converts — not saved.</value>
-  </data>
-  <data name="KI_DLG_ZPG_STUNDENSCHWELLE_ERL" xml:space="preserve">
-    <value>The threshold from which the key figures count hours — not saved.</value>
   </data>
   <data name="ZPG_GRUND_OHNE_NUTZUNGSART" xml:space="preserve">
     <value>Select a type of use first.</value>
@@ -32551,7 +32578,7 @@ Do you want to allow this?</value>
     <value>Import catalogue</value>
   </data>
   <data name="ZPGK_IMPORT_HINWEIS" xml:space="preserve">
-    <value>A package consists of the files Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv and Tab_TwwZapfkategorie_STAMM.csv, optionally also Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv and Tab_TwwParameter_STAMM.csv — one CSV file per table with a header line, semicolon or comma as separator, numbers with a decimal point. Select a ZIP archive or one file of the package folder. The column Katalogversion is optional: if none of the files carries it, all rows join the catalogue version of this catalogue and the report names it; if only some of the files carry it, the package is rejected.</value>
+    <value>A package consists of the files Tab_TwwTagesgangsatz_STAMM.csv, Tab_TwwTagesgang_STAMM.csv, Tab_TwwNutzungsart_STAMM.csv and Tab_TwwZapfkategorie_STAMM.csv, optionally also Tab_TwwBedarfstag_STAMM.csv, Tab_TwwBedarfstagEreignis_STAMM.csv, Tab_TwwParameter_STAMM.csv and Tab_TwwDin4708Wert_STAMM.csv (occupancy per number of rooms and equipment classes according to DIN 4708; a package with characteristic values only does not need the usage types) — one CSV file per table with a header line, semicolon or comma as separator, numbers with a decimal point. Select a ZIP archive or one file of the package folder. The column Katalogversion is optional: if none of the files carries it, all rows join the catalogue version of this catalogue and the report names it; if only some of the files carry it, the package is rejected.</value>
   </data>
   <data name="ZPGK_IMPORT_HERKUNFT" xml:space="preserve">
     <value>Imported rows carry the status “import” and the origin “import”; freely available and fictitious values keep their origin. An existing usage type remains unchanged: identical content is skipped, differing content is added as an own version “(Import n)”. A demand day and a parameter are replaced instead — a delivery row as well; the report names every replacement.</value>
@@ -37717,6 +37744,21 @@ This folder holds the standard template, the short report, the detailed template
   <data name="ZPG_SATZ_KATALOGIMPORT_PARAMETER_ERSETZT" xml:space="preserve">
     <value>Parameter “{0}” now carries {2:0.#######} instead of {1:0.#######} [{3}].</value>
   </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DIN4708_OHNE_TABELLE" xml:space="preserve">
+    <value>The package carries DIN 4708 catalogue values; the database does not carry their table — they are skipped.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DIN4708_ART" xml:space="preserve">
+    <value>The type “{0}” does not exist; permitted are {1} and {2}.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DIN4708_RAUMZAHL" xml:space="preserve">
+    <value>The key “{0}” is not a number of rooms above 0 in half steps (such as 2 or 2.5).</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DIN4708_WERT" xml:space="preserve">
+    <value>The value {1:0.#######} of “{0}” is not greater than 0.</value>
+  </data>
+  <data name="ZPG_SATZ_KATALOGIMPORT_DIN4708_ERSETZT" xml:space="preserve">
+    <value>“{0}” now carries {2:0.#######} instead of {1:0.#######}.</value>
+  </data>
   <data name="ZPG_SATZ_KATALOGIMPORT_PARAMETER_WIRKUNG" xml:space="preserve">
     <value>{0} parameter(s) have been replaced; they apply to every future sizing and every validation of this catalogue version.</value>
   </data>
@@ -37767,6 +37809,12 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="ZPGK_IMPORT_SP_PARAMETER" xml:space="preserve">
     <value>Key</value>
+  </data>
+  <data name="ZPGK_IMPORT_GRP_DIN4708" xml:space="preserve">
+    <value>DIN 4708 catalogue values</value>
+  </data>
+  <data name="ZPGK_IMPORT_SP_DIN4708" xml:space="preserve">
+    <value>Type and key</value>
   </data>
   <data name="ZPGK_IMPORT_PRUEFEN" xml:space="preserve">
     <value>Check only, write nothing</value>
@@ -45924,6 +45972,9 @@ chart</value>
   </data>
   <data name="KM_ANLAGE_NAME_LEER" xml:space="preserve">
     <value>Please give the plant a name.</value>
+  </data>
+  <data name="KM_LBL_ANLAGE_ANZAHL" xml:space="preserve">
+    <value>Number of machines</value>
   </data>
   <data name="KM_ANLAGE_ANZAHL_UNGUELTIG" xml:space="preserve">
     <value>The number must be at least 1.</value>
