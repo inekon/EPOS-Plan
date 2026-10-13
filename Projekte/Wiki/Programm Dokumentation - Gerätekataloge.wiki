@@ -1,7 +1,7 @@
 <!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Gerätekataloge
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Gerätekataloge.wiki
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
-Die '''Gerätekataloge''' führen die technischen Daten der Anlagenkomponenten, mit denen EPOS-Plan rechnet: Heizkessel, BHKW, Solarkollektoren, Pufferspeicher, Wärmepumpen, PV-Module, Wechselrichter und Stromspeicher. Jeder Katalog trägt zwei Arten von Sätzen: die schreibgeschützten Sätze der Auslieferung und eigene, frei bearbeitbare Sätze. Ein Katalogsatz wird nie unmittelbar im Projekt verwendet — die Übernahme in ein Projekt legt eine eigene Kopie an, die sich unabhängig vom Katalog ändern lässt.
+Die '''Gerätekataloge''' führen die technischen Daten der Anlagenkomponenten, mit denen EPOS-Plan rechnet: Heizkessel, BHKW, Solarkollektoren, Pufferspeicher, Wärmepumpen, PV-Module, Wechselrichter und Stromspeicher. Jeder Katalog trägt zwei Arten von Sätzen: die schreibgeschützten Sätze der Auslieferung und eigene, frei bearbeitbare Sätze. Ein Katalogsatz wird nie unmittelbar im Projekt verwendet — die Übernahme in ein Projekt legt eine eigene Kopie an, die sich unabhängig vom Katalog ändern lässt. Die '''Kosten''' eines Katalogsatzes stehen nicht im Katalog, sondern im Kostenkatalog: Jeder Satz führt dort eine Satzvorlage mit seinen Investitions- und Betriebskosten, und die Anlage im Projekt gleicht ihre Kostenpositionen damit ab (siehe [[Programm Dokumentation/Kosten|Kosten]]).
 
 == Aufruf ==
 {{Anker|aufruf}}
