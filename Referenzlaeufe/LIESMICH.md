@@ -810,7 +810,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-10-13_R53_Zapfprofiloptionen/`** — **sechsunddreißig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065, 1066, 1067, 1068, 1069, 1070, 1071), **1 171 CSV**, **7 983 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 13.10.2026, Stand `bf13fbc67`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **224**, ‹BYTE› Byte, LFS-SHA-256 `‹SHA8›…`, mit den Projekten 1053 bis 1071
+gegen `Kenndaten_Test.sqlite` (Schemastand **224**, 108 412 928 Byte, LFS-SHA-256 `6ef7aa68…`, mit den Projekten 1053 bis 1071
 und dem erfundenen Typtagsatz; die Nachträge der Schemaschritte unten sind darin enthalten; auf dem Schemastand 224 neu
 gesät und gerechnet, byte-gleich zur Fassung auf dem vorläufigen Stand). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065 und 1066 bis 1071) jeden Push und rechnet dieselben Projekte
@@ -1326,7 +1326,7 @@ sechsunddreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `Tab_TwwZone` ohne die acht Spalten, die neue leere Tabelle und `Tab_Applikation.SchemaVersion`. Danach säte
 > [`Skripte/referenzprojekte_zapfprofil_optionen.cs`](Skripte/referenzprojekte_zapfprofil_optionen.cs) die Projekte 1066 bis
 > 1071 (Basis R53, Abschnitt „Die Referenzprojekte 1066 bis 1071“). Die Testdatenbank steht auf **224** (`integrity_check` ok,
-> `foreign_key_check` leer): **‹BYTE› Byte, LFS-SHA-256 `‹SHA›`**.
+> `foreign_key_check` leer): **108 412 928 Byte, LFS-SHA-256 `6ef7aa68317c37e1dd34e726b5ee7cce3debc8edd9061686ccb0a8993fc4260f`**.
 
 ### Die Vorgängerbasis R52 (Vorheizen)
 
