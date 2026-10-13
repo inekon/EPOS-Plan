@@ -166,8 +166,7 @@ namespace WindowsFormsApplication1
                 return MyResource.Resource.KM_MSG_NENNWERT_UNGUELTIG;
             if (m.Mindestteillast_Prozent.HasValue && (m.Mindestteillast_Prozent.Value < 0 || m.Mindestteillast_Prozent.Value > 100))
                 return MyResource.Resource.KM_MSG_TEILLAST_UNGUELTIG;
-            if ((m.Hilfsstrom_Rueckkuehlung_kW.HasValue && m.Hilfsstrom_Rueckkuehlung_kW.Value < 0) ||
-                (m.Modulkosten.HasValue && m.Modulkosten.Value < 0))
+            if (m.Hilfsstrom_Rueckkuehlung_kW.HasValue && m.Hilfsstrom_Rueckkuehlung_kW.Value < 0)
                 return MyResource.Resource.KM_MSG_NENNWERT_UNGUELTIG;
             var punkte = new HashSet<(double, double)>();
             foreach (KaeltemaschineKenndatenModel k in m.Kennlinie ?? new List<KaeltemaschineKenndatenModel>())
@@ -429,8 +428,11 @@ namespace WindowsFormsApplication1
                 Mindestteillast_Prozent = Zahl(r[KaeltemaschineSchema.SPALTE_MINDESTTEILLAST]),
                 Hilfsstrom_Rueckkuehlung_kW = Zahl(r[KaeltemaschineSchema.SPALTE_HILFSSTROM_RUECKKUEHLUNG]),
                 Kaltwasser_Vorlauf_Min = Zahl(r[KaeltemaschineSchema.SPALTE_KALTWASSER_VORLAUF_MIN]),
-                Modulkosten = Zahl(r[KaeltemaschineSchema.SPALTE_MODULKOSTEN]),
             };
+            // DIE EINE KOSTENBASIS (Welle KB-4): An der Stelle der Modulkosten steht der
+            // Lesewert der Satzvorlage; gepflegt in der Kostenverwaltung.
+            double geraetekosten = Katalogkostenanzeige.Investition(tabelle, r);
+            m.Geraetekosten = geraetekosten > 0 ? geraetekosten : (double?)null;
             // Schritt 210: Teillast und Takten - vor dem Schritt fehlen die Spalten, dann null.
             if (r.Table.Columns.Contains(KaeltemaschineTeillastSchema.SPALTE_TEILLAST_WEG))
             {

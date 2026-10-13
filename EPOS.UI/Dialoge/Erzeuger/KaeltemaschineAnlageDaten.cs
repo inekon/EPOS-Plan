@@ -97,4 +97,10 @@ public sealed class KaeltemaschineGeraetwerte
 
     /// <summary>GWP des Kältemittels [—]; beschreibend.</summary>
     public double? Gwp { get; init; }
+
+    /// <summary>
+    /// Welle KB-4: die Gerätekosten als Lesewert der Satzvorlage [€] (<c>KaeltemaschineModel.Geraetekosten</c>);
+    /// <c>null</c> ohne Vorlage. Gepflegt werden sie in der Kostenverwaltung.
+    /// </summary>
+    public double? Geraetekosten { get; init; }
 }

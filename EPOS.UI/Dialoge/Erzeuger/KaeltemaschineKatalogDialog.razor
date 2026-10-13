@@ -814,9 +814,10 @@
                 <Zahlenfeld Bezeichnung="@Texte.LabelKaltwasserMin" Einheit="@Texte.EinheitGradC"
                             Feldname="@Texte.LabelKaltwasserMin"
                             Wert="@d.KaltwasserMin" WertChanged="w => Feld(d, () => d.KaltwasserMin = w)" />
-                <Zahlenfeld Bezeichnung="@Texte.LabelModulkosten" Einheit="@Texte.EinheitEuro"
-                            Feldname="@Texte.LabelModulkosten"
-                            Wert="@d.Modulkosten" WertChanged="w => Feld(d, () => d.Modulkosten = w)" />
+                @* HIER STAND DAS FELD "Modulkosten" - die Spalte ist mit Welle KB-4 entfallen
+                   (Anwenderentscheid 13.10.2026 "eine Kostenbasis, keine Doppelhaltung"). Die
+                   Geraetekosten pflegt die Kostenverwaltung; das Stammblatt zeigt sie als
+                   Lesewert der Satzvorlage. *@
                 @* K-A: die fuenf Katalogfelder hinter den zwoelf Grundfeldern - Geraeteart, Kaeltemittel, saisonale Kennzahl. *@
                 <Auswahlfeld Bezeichnung="@Texte.LabelGeraeteart" Eintraege="@Eintraege(Texte.Geraetearten)"
                              Platzhalter="@Texte.GeraeteartAusRueckkuehlung"
@@ -1258,7 +1259,10 @@
         new Stammblattwert(Texte.LabelHilfsstrom, d.Hilfsstrom.HasValue ? Zahl(d.Hilfsstrom, "0.###", "") : Texte.HilfsstromLeer,
                            d.Hilfsstrom.HasValue ? Texte.EinheitKw : ""),
         new Stammblattwert(Texte.LabelKaltwasserMin, Zahl(d.KaltwasserMin, "0.#", ""), d.KaltwasserMin.HasValue ? Texte.EinheitGradC : ""),
-        new Stammblattwert(Texte.LabelModulkosten, Zahl(d.Modulkosten, "#,##0.##", ""), d.Modulkosten.HasValue ? Texte.EinheitEuro : ""),
+        // Welle KB-4: der Lesewert der Satzvorlage; ohne Vorlage der Vermerk auf die Kostenverwaltung.
+        new Stammblattwert(Texte.LabelGeraetekosten,
+                           d.Geraetekosten.HasValue ? Zahl(d.Geraetekosten, "#,##0.##", "") : Texte.HinweisKostenverwaltung,
+                           d.Geraetekosten.HasValue ? Texte.EinheitEuro : ""),
         new Stammblattwert(Texte.LabelGeraeteart, Text(Texte.Geraetearten, d.GeraeteartIndex, Texte.GeraeteartAusRueckkuehlung)),
         new Stammblattwert(Texte.LabelGwp, Zahl(d.Gwp, "#,##0.#", "")),
         new Stammblattwert(Texte.LabelFuellmenge, Zahl(d.Fuellmenge, "0.0##", ""), d.Fuellmenge.HasValue ? Texte.EinheitKg : ""),

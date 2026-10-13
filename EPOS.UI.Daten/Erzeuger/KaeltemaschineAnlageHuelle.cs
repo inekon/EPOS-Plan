@@ -264,6 +264,7 @@ namespace WindowsFormsApplication1
                 Geraeteart = string.IsNullOrEmpty(m.Geraeteart) ? "" : KaeltemaschineStammCtrl.GeraeteartText(m.Geraeteart),
                 Kaeltemittel = m.Kaeltemittel ?? "",
                 Gwp = m.Kaeltemittel_GWP,
+                Geraetekosten = m.Geraetekosten,
                 Kaltwasserstuetzstellen = (m.Kennlinie ?? new List<KaeltemaschineKenndatenModel>())
                     .Select(k => k.Kaltwassertemperatur).Distinct().OrderBy(t => t).ToList()
             };
