@@ -54726,5 +54726,200 @@ Chart</value>
   <data name="BKAT_BST_KLASSE_HAUSTECHNIK" xml:space="preserve">
     <value>Haustechnik</value>
   </data>
+  <data name="MP_BEFUND_ZONE_OHNE_BAUTEILE" xml:space="preserve">
+    <value>Zone „{0}“ hat keine Bauteile.</value>
+  </data>
+  <data name="MP_BEFUND_ZONE_OHNE_AUSSENBAUTEIL" xml:space="preserve">
+    <value>Beheizte Zone „{0}“ hat kein Bauteil an Außenluft, Erdreich oder unbeheiztem Raum.</value>
+  </data>
+  <data name="MP_BEFUND_HUELLE_OHNE_AUSSENWAND" xml:space="preserve">
+    <value>Die Hülle des Gebäudes hat keine Außenwand.</value>
+  </data>
+  <data name="MP_BEFUND_HUELLE_OHNE_DACH" xml:space="preserve">
+    <value>Die Hülle des Gebäudes hat kein Dach und keine Decke nach oben.</value>
+  </data>
+  <data name="MP_BEFUND_HUELLE_OHNE_BODEN" xml:space="preserve">
+    <value>Die Hülle des Gebäudes hat keine Bodenplatte und keine Decke nach unten.</value>
+  </data>
+  <data name="MP_BEFUND_BAUTEILART_UNBEKANNT" xml:space="preserve">
+    <value>Bauteil „{0}“ in Zone „{1}“: Bauteilart nicht erkannt.</value>
+  </data>
+  <data name="MP_BEFUND_FLAECHE_FEHLT" xml:space="preserve">
+    <value>Bauteil „{0}“ in Zone „{1}“ hat keine Fläche.</value>
+  </data>
+  <data name="MP_BEFUND_RANDBEDINGUNG_FEHLT" xml:space="preserve">
+    <value>Bauteil „{0}“ in Zone „{1}“: Randbedingung fehlt, es gilt Außenluft.</value>
+  </data>
+  <data name="MP_BEFUND_AZIMUT_FEHLT" xml:space="preserve">
+    <value>Bauteil „{0}“ in Zone „{1}“: Ausrichtung (Azimut) fehlt.</value>
+  </data>
+  <data name="MP_BEFUND_EINZONE_FLAECHE_FEHLT" xml:space="preserve">
+    <value>{0}: keine Fläche angegeben.</value>
+  </data>
+  <data name="MP_BEFUND_EINZONE_U_FEHLT" xml:space="preserve">
+    <value>{0}: Fläche ohne U-Wert.</value>
+  </data>
+  <data name="MP_BEFUND_NUR_U_WERT" xml:space="preserve">
+    <value>Bauteil „{0}“ in Zone „{1}“ hat nur einen U-Wert ({2} W/(m²K)), keinen Aufbau; die Wärmekapazität kommt aus der Vorgabe.</value>
+  </data>
+  <data name="MP_BEFUND_OHNE_U_OHNE_AUFBAU" xml:space="preserve">
+    <value>Bauteil „{0}“ in Zone „{1}“ hat weder Aufbau noch U-Wert.</value>
+  </data>
+  <data name="MP_BEFUND_AUFBAU_UNGEEIGNET" xml:space="preserve">
+    <value>Bauteil „{0}“: Aufbau „{1}“ ist für die Simulation meist nicht geeignet.</value>
+  </data>
+  <data name="MP_BEFUND_SCHICHT_OHNE_STOFFWERT" xml:space="preserve">
+    <value>Bauteil „{0}“: Aufbau „{1}“ hat eine Schicht ohne λ, ρ oder c.</value>
+  </data>
+  <data name="MP_BEFUND_KAPAZITAET_FEHLT" xml:space="preserve">
+    <value>Bauteil „{0}“: Aufbau „{1}“ liefert keine Wärmekapazität.</value>
+  </data>
+  <data name="MP_BEFUND_EINZONE_BAUWEISE_FEHLT" xml:space="preserve">
+    <value>Die Bauweise (Wärmekapazität) des Gebäudes fehlt; es gilt die Vorgabe.</value>
+  </data>
+  <data name="MP_BEFUND_ZONE_OHNE_PROFIL" xml:space="preserve">
+    <value>Zone „{0}“ hat kein Nutzungsprofil und keine Kalender; sie erbt vom Gebäude.</value>
+  </data>
+  <data name="MP_BEFUND_HEIZKALENDER_GEERBT" xml:space="preserve">
+    <value>Zone „{0}“ hat keinen Heizkalender; sie erbt den Heizsollwert vom Gebäude.</value>
+  </data>
+  <data name="MP_BEFUND_UNBEHEIZT_MIT_HEIZKALENDER" xml:space="preserve">
+    <value>Unbeheizte Zone „{0}“ trägt einen Heizkalender.</value>
+  </data>
+  <data name="MP_BEFUND_KUEHLKALENDER_FEHLT" xml:space="preserve">
+    <value>„{0}“ kühlt, hat aber keinen Kühlkalender und keinen Kühlsollwert.</value>
+  </data>
+  <data name="MP_BEFUND_LUEFTUNG_GEERBT" xml:space="preserve">
+    <value>Zone „{0}“ hat weder Lüftungskalender noch Luftwechsel; sie erbt die Luftwechselrate des Gebäudes.</value>
+  </data>
+  <data name="MP_BEFUND_FERIEN_FEHLEN" xml:space="preserve">
+    <value>Das Gebäude hat keine Ferien; die Kalender rechnen ohne Ferien.</value>
+  </data>
+  <data name="MP_BEFUND_HEIZPERIODE_FEHLT" xml:space="preserve">
+    <value>Das Gebäude hat keine Heizperiode; geheizt wird ganzjährig nach Kalender.</value>
+  </data>
+  <data name="MP_BEFUND_KLIMAREGION_FEHLT" xml:space="preserve">
+    <value>Das Projekt hat keine Klimaregion.</value>
+  </data>
+  <data name="MP_BEFUND_NORDRICHTUNG_ANGENOMMEN" xml:space="preserve">
+    <value>Die Nordrichtung des Imports ist angenommen, nicht bestätigt.</value>
+  </data>
+  <data name="MP_BEFUND_FEIERTAGSLAND_FEHLT" xml:space="preserve">
+    <value>Das Gebäude hat kein Feiertagsland; es gelten die bundesweiten Feiertage.</value>
+  </data>
+  <data name="MP_BEFUND_PFLICHTGROESSE_FEHLT" xml:space="preserve">
+    <value>Pflichtgröße fehlt oder ist nicht größer null: {0}.</value>
+  </data>
+  <data name="MP_BEFUND_RECHENWEG_ABGELEHNT" xml:space="preserve">
+    <value>Die Prüfung des Rechenwegs lehnt ab: {0}</value>
+  </data>
+  <data name="MP_FELD_AUSSENWAND" xml:space="preserve">
+    <value>Außenwand</value>
+  </data>
+  <data name="MP_FELD_FENSTER" xml:space="preserve">
+    <value>Fenster</value>
+  </data>
+  <data name="MP_FELD_DACH" xml:space="preserve">
+    <value>Dach</value>
+  </data>
+  <data name="MP_FELD_GRUND" xml:space="preserve">
+    <value>Grundfläche</value>
+  </data>
+  <data name="MP_FELD_NUTZFLAECHE" xml:space="preserve">
+    <value>Nutzfläche</value>
+  </data>
+  <data name="MP_FELD_RAUMHOEHE" xml:space="preserve">
+    <value>Raumhöhe</value>
+  </data>
+  <data name="MP_FELD_FLAECHE_NUTZER" xml:space="preserve">
+    <value>Fläche je Nutzer</value>
+  </data>
+  <data name="MP_FELD_LUFTWECHSEL" xml:space="preserve">
+    <value>Luftwechselrate</value>
+  </data>
+  <data name="MP_GEBAEUDE" xml:space="preserve">
+    <value>Gebäude</value>
+  </data>
+  <data name="MP_VORSCHLAG_PROJEKTAUFBAU" xml:space="preserve">
+    <value>Projektaufbau „{0}“ übernehmen</value>
+  </data>
+  <data name="MP_VORSCHLAG_KATALOGAUFBAU" xml:space="preserve">
+    <value>Katalogaufbau „{0}“ (U {1} W/(m²K)) übernehmen</value>
+  </data>
+  <data name="MP_VORSCHLAG_TYPAUFBAU" xml:space="preserve">
+    <value>Typaufbau „{0}“, abgeglichen auf U {1} W/(m²K)</value>
+  </data>
+  <data name="MP_VORSCHLAG_PROFIL_DINNUMMER" xml:space="preserve">
+    <value>Profil „{0}“ aus der DIN-Nummer</value>
+  </data>
+  <data name="MP_VORSCHLAG_PROFIL_RAUMTYP" xml:space="preserve">
+    <value>Profil „{0}“ aus dem Raumtyp der Quelle</value>
+  </data>
+  <data name="MP_VORSCHLAG_PROFIL_GEBAEUDEART" xml:space="preserve">
+    <value>Profil „{0}“ aus der Gebäudeart</value>
+  </data>
+  <data name="MP_VORSCHLAG_PROFIL_EPOSMUSTER" xml:space="preserve">
+    <value>EPOS-Muster „{0}“</value>
+  </data>
+  <data name="MP_VORSCHLAG_FERIEN_PROJEKT" xml:space="preserve">
+    <value>Ferien eines anderen Gebäudes des Projekts übernehmen</value>
+  </data>
+  <data name="MP_VORSCHLAG_SAISON_PROJEKT" xml:space="preserve">
+    <value>Heizperiode eines anderen Gebäudes des Projekts übernehmen</value>
+  </data>
+  <data name="MP_VORSCHLAG_FEIERTAGSLAND" xml:space="preserve">
+    <value>Feiertagsland „{0}“ des Projekts übernehmen</value>
+  </data>
+  <data name="MP_MSG_GEBAEUDE_FEHLT" xml:space="preserve">
+    <value>Gebäude {0} nicht gefunden.</value>
+  </data>
+  <data name="MP_MSG_OHNE_VORSCHLAG" xml:space="preserve">
+    <value>Kein Vorschlag (Eingabe nötig): {0}</value>
+  </data>
+  <data name="MP_MSG_VERWORFEN" xml:space="preserve">
+    <value>Nicht übernommen: {0} — {1}</value>
+  </data>
+  <data name="MP_MSG_FEHLER" xml:space="preserve">
+    <value>Die Übernahme ist fehlgeschlagen: {0}</value>
+  </data>
+  <data name="MP_MSG_KEINE_RUECKNAHME" xml:space="preserve">
+    <value>Für diese Gruppe gibt es keine Übernahme zum Zurücknehmen.</value>
+  </data>
+  <data name="MP_MSG_UNBEKANNT" xml:space="preserve">
+    <value>Unbekannte Vorschlagsart.</value>
+  </data>
+  <data name="MP_MSG_KATALOGKOPIE" xml:space="preserve">
+    <value>Der Katalogaufbau ließ sich nicht ins Projekt kopieren.</value>
+  </data>
+  <data name="MP_MSG_TYPAUFBAU" xml:space="preserve">
+    <value>Für dieses Bauteil gibt es keinen Typaufbau.</value>
+  </data>
+  <data name="MP_MSG_QUELLE_LEER" xml:space="preserve">
+    <value>Das Quellgebäude trägt die Zeile nicht mehr.</value>
+  </data>
+  <data name="MP_STATUS_VOLLSTAENDIG" xml:space="preserve">
+    <value>vollständig</value>
+  </data>
+  <data name="MP_STATUS_RECHNETMITVORGABEN" xml:space="preserve">
+    <value>rechnet mit Vorgaben</value>
+  </data>
+  <data name="MP_STATUS_NICHTRECHENFAEHIG" xml:space="preserve">
+    <value>nicht rechenfähig</value>
+  </data>
+  <data name="MP_GRUPPE_GEOMETRIEBAUTEILE" xml:space="preserve">
+    <value>Geometrie und Bauteile</value>
+  </data>
+  <data name="MP_GRUPPE_AUFBAUTENSTOFFWERTE" xml:space="preserve">
+    <value>Aufbauten und Stoffwerte</value>
+  </data>
+  <data name="MP_GRUPPE_NUTZUNGKONDITIONIERUNG" xml:space="preserve">
+    <value>Nutzung und Konditionierung</value>
+  </data>
+  <data name="MP_GRUPPE_ORTLAGE" xml:space="preserve">
+    <value>Ort und Lage</value>
+  </data>
+  <data name="MP_GRUPPE_RECHENFAEHIGKEIT" xml:space="preserve">
+    <value>Rechenfähigkeit</value>
+  </data>
 </root>
 
