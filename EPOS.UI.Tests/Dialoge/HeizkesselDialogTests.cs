@@ -75,7 +75,8 @@ public class HeizkesselDialogTests : EposBunitContext
     /// <summary>
     /// Der Detailblock, wie ihn <c>HeizkesselHuelle.DetailZu</c> baut: Brennstoff Typ,
     /// Leistung und der Schalter „Brennwertkessel". Ein Feld „Investitionskosten" steht
-    /// nicht darin — gepflegt wird der Preis im Aufklapper „Alle Daten anzeigen".
+    /// nicht darin — die Spalte ist mit Welle KB-4 entfallen, gepflegt werden die
+    /// Gerätekosten in der Kostenverwaltung.
     /// </summary>
     private static ErzeugerDetail Detail(string name) => new(
         name, "Beschreibung",
@@ -148,7 +149,8 @@ public class HeizkesselDialogTests : EposBunitContext
 
     /// <summary>
     /// Die Felder des Aufklappers — ein Ausschnitt des Heizkesselprofils: ein Text,
-    /// eine Zahl und der Schalter „Brennwertkessel".
+    /// eine Zahl, der LESEWERT der Gerätekosten aus der Satzvorlage (Welle KB-4) und der
+    /// Schalter „Brennwertkessel".
     /// </summary>
     private static List<BrowserFeldwert> Felder() => new()
     {
@@ -162,11 +164,20 @@ public class HeizkesselDialogTests : EposBunitContext
         },
         new BrowserFeldwert
         {
-            Schluessel = KatalogBrowserProfil.FeldInvestitionskosten,
-            Bezeichnung = "Investitionskosten:",
-            Einheit = "€",
+            Schluessel = KatalogBrowserProfil.FeldRaumbedarf,
+            Bezeichnung = "Raumbedarf:",
+            Einheit = "m³",
             Art = BrowserFeldArt.Zahl,
             Editierbar = true,
+            Wert = "12"
+        },
+        new BrowserFeldwert
+        {
+            Schluessel = KatalogBrowserProfil.FeldGeraetekosten,
+            Bezeichnung = "Gerätekosten:",
+            Einheit = "€",
+            Art = BrowserFeldArt.Zahl,
+            Editierbar = false,
             Wert = "12000"
         },
         new BrowserFeldwert
@@ -253,7 +264,8 @@ public class HeizkesselDialogTests : EposBunitContext
         // Name, Brennstoff Typ, Leistung, Beschreibung (mehrzeilig), Brennwertkessel
         // (Schalter), Brennstoff Variante (Auswahl). Ein nur lesbares Feld
         // „Investitionskosten" steht nicht mehr darunter (Anwenderentscheid
-        // 21.09.2026) — gepflegt wird der Preis im Aufklapper „Alle Daten anzeigen".
+        // 21.09.2026); mit Welle KB-4 fuehrt der Satz die Spalte gar nicht mehr -
+        // die Geraetekosten stehen als Lesewert der Satzvorlage im Aufklapper.
         // Katalogauswahl V1, Stufe 2: Die Felder stehen in der Satzflaeche der Detailzeile;
         // ihre Marke sagt „Projektsatz" (die erste Projektzeile ist beim Oeffnen gewaehlt).
         var gruppe = Satz(cut);
@@ -1105,7 +1117,7 @@ public class HeizkesselDialogTests : EposBunitContext
         Assert.Equal("Kessel A", name);
         Assert.NotNull(geschrieben);
         Assert.Equal("15000",
-            geschrieben!.First(f => f.Schluessel == KatalogBrowserProfil.FeldInvestitionskosten).Wert);
+            geschrieben!.First(f => f.Schluessel == KatalogBrowserProfil.FeldRaumbedarf).Wert);
         Assert.Equal("", cut.Instance.Meldung);
         Assert.False(cut.Instance.SatzUeberlagerungOffen);
     }
@@ -1848,7 +1860,7 @@ public class HeizkesselDialogTests : EposBunitContext
         Assert.True(ergebnis.Erfolg, ergebnis.Text);
         Assert.Equal("Kessel A", name);
         Assert.Equal("15000",
-            geschrieben!.First(f => f.Schluessel == KatalogBrowserProfil.FeldInvestitionskosten).Wert);
+            geschrieben!.First(f => f.Schluessel == KatalogBrowserProfil.FeldRaumbedarf).Wert);
     }
 
     /// <summary>

@@ -106,26 +106,18 @@ public sealed class HeizkesselKatalogDaten
     /// <summary>Mindestlaufzeit je Start [min], ganzzahlig. Leer = Vorgabe.</summary>
     public int? Mindestlaufzeit_min { get; set; }
 
-    // --- Gruppe 3: Kosten ------------------------------------------------------
-
-    /// <summary>Investitionskosten [€].</summary>
-    public double? Investitionskosten { get; set; }
+    // --- Gruppe 3: Gerätedaten ohne Kosten -------------------------------------
+    //
+    // Investitionskosten, Wartungskosten und die Wartungseinheit sind mit Welle KB-4
+    // entfallen (Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung"):
+    // Der Satz führt keine Kostenspalte mehr, also reist auch keine durch diesen Feldsatz.
+    // Gepflegt werden die Gerätekosten in der Kostenverwaltung.
 
     /// <summary>Raumbedarf [m³].</summary>
     public double? Raumbedarf { get; set; }
 
     /// <summary>Nutzungsdauer [Jahre].</summary>
     public double? Nutzungsdauer { get; set; }
-
-    /// <summary>Wartungskosten — Betrag zur gewählten Einheit.</summary>
-    public double? Wartungskosten { get; set; }
-
-    /// <summary>
-    /// Index der Wartungseinheit in der Liste, die die Hülle mitliefert. Der
-    /// Persistenzwert (<c>EUR_JAHR</c> …) bleibt in der Hülle: Er ist Datenbankinhalt
-    /// und gehört nicht in die Oberfläche (Drei-Schichten-Regel).
-    /// </summary>
-    public int WartungEinheit { get; set; }
 
     // --- Gruppe 4: Emissionsfaktoren -------------------------------------------
 

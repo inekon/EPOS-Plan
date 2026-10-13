@@ -246,7 +246,7 @@ namespace EPOS.Kern.Tests
 
             HeizkesselStammCtrl.AnzeigefelderHeizkessel Satz(double? bb, string einheit)
                 => new HeizkesselStammCtrl.AnzeigefelderHeizkessel(
-                    "Probe", 30, 100, false, 70, 50, Betriebsbereitschaftverlust: bb, BereitschaftEinheit: einheit);
+                    "Probe", 30, false, 70, 50, Betriebsbereitschaftverlust: bb, BereitschaftEinheit: einheit);
 
             var ok = HeizkesselStammCtrl.AnzeigefelderSchreiben(kessel, Satz(0.4, "%"));
             Assert.True(ok.Ok, ok.Meldung);
