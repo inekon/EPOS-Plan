@@ -146,7 +146,8 @@ namespace WindowsFormsApplication1
             ("ABDICHTUNGEN", "BITUMEN"), ("ABDICHTUNGEN", "KUNSTSTOFFBAHN"), ("ABDICHTUNGEN", "DAMPFBREMSE"),
             ("METALLE", "STAHL"), ("METALLE", "ALUMINIUM"), ("METALLE", "KUPFER"), ("METALLE", "GLAS"),
             ("ERDREICH", "BINDIG"), ("ERDREICH", "NICHTBINDIG"), ("ERDREICH", "FELS"),
-            ("SONSTIGE", "LUFT"), ("SONSTIGE", "STOFF_SONSTIGE")
+            ("SONSTIGE", "LUFT"), ("SONSTIGE", "STOFF_SONSTIGE"),
+            ("SONSTIGE", BauteilkatalogHaustechnikSchema.KLASSE)        // Schritt 222 (E134): stets die letzte der Liste
         };
 
         /// <summary>Die Gruppen der Bauteilaufbauten.</summary>
@@ -162,7 +163,8 @@ namespace WindowsFormsApplication1
             ("DECKEN", "GESCHOSSDECKE"), ("DECKEN", "DECKE_OBEN"), ("DECKEN", "DECKE_UNTEN"), ("DECKEN", "BODENPLATTE"),
             ("DAECHER", "FLACHDACH"), ("DAECHER", "STEILDACH"),
             ("OEFFNUNGEN", "FENSTER"), ("OEFFNUNGEN", "DACHFENSTER"), ("OEFFNUNGEN", "VORHANGFASSADE"), ("OEFFNUNGEN", "TUER"),
-            ("SONSTIGE", "SONSTIGES")
+            ("SONSTIGE", "SONSTIGES"),
+            ("SONSTIGE", BauteilkatalogHaustechnikSchema.KLASSE)        // Schritt 222 (E134): stets die letzte der Liste
         };
 
         // ---- Spalten ---------------------------------------------------------------------
@@ -214,7 +216,11 @@ namespace WindowsFormsApplication1
                                            max.ToString(CultureInfo.InvariantCulture) + ")");
 
         private static Spalte Gliederung(string n, IEnumerable<string> werte) =>
-            new Spalte(n, Spaltenart.Code, "TEXT CHECK (" + Q(n) + " IS NULL OR " + Q(n) + " IN (" + Liste(werte) + "))");
+            new Spalte(n, Spaltenart.Code, "TEXT " + GliederungKlausel(n, werte));
+
+        /// <summary>Die Prüfklausel einer Gliederungsspalte, wie sie in <c>sqlite_master</c> steht.</summary>
+        internal static string GliederungKlausel(string n, IEnumerable<string> werte) =>
+            "CHECK (" + Q(n) + " IS NULL OR " + Q(n) + " IN (" + Liste(werte) + "))";
 
         /// <summary>Die Höchstlänge eines Infotexts.</summary>
         public const int INFOTEXT_MAX_ZEICHEN = 4000;

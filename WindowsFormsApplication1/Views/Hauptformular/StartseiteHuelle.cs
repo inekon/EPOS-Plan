@@ -873,17 +873,12 @@ namespace WindowsFormsApplication1
 
         private void Gebaeude(IWin32Window wirt, string sprungziel)
         {
-            List<Z_ProjGebModel> liste = Z_ProjGebCtrl.LiesProjekt(_kontext.Id);
-
-            if (!GebaeudeFenster.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste, sprungziel)) return;
-
-            // Abgleich in EINEM Vorgang (Konzept Administrationsdialoge 7.1 (a)):
-            // unveraenderte Zuordnungen behalten ihre Projektkopie, ein Fehlschlag rollt
-            // alles zurueck. Der Grund kommt als Fehlerbanner auf die Seite; das
+            // Derselbe Weg wie der Maskenschluessel Masken.Projektgebaeude (GD-N): Fenster mit Sprungziel, danach der
+            // Abgleich in EINEM Vorgang (Konzept Administrationsdialoge 7.1 (a)); unveraenderte Zuordnungen behalten ihre
+            // Projektkopie, ein Fehlschlag rollt alles zurueck. Der Grund kommt als Fehlerbanner auf die Seite; das
             // Auffrischen am Ende von KachelwegJetzt holt ihn ab.
-            (bool gelungen, string meldung) =
-                new WizardCtrl().Speichere_Projekt_Gebaeudeliste(_kontext.Id, liste);
-            if (!gelungen) _fehlerhinweis = meldung ?? "";
+            (bool ok, string meldung) = GebaeudeFenster.ProjektOeffnen(wirt, _kontext.Id, _kontext.Name, sprungziel);
+            if (ok && !string.IsNullOrEmpty(meldung)) _fehlerhinweis = meldung;
         }
 
         private void WaermebedarfDaten(IWin32Window wirt)

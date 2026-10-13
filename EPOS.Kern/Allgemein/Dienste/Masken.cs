@@ -28,6 +28,12 @@
         /// <c>Form_Gebaeude.btn_Help</c>.</para>
         /// </summary>
         public const string GebaeudeAdmin = "Form_Gebaeude_Admin";
+        /// <summary>
+        /// Die Gebäude des offenen Projekts (<c>GebaeudeDialog</c>; unter Windows <c>GebaeudeFenster.ProjektOeffnen</c>).
+        /// Argument: ein Sprungziel aus <see cref="Sprungziele"/> (etwa <see cref="Sprungziele.Kuehlung"/>), sonst keins.
+        /// Auf iOS lehnt die Wurzel den Schlüssel benannt ab — dort pflegt der Assistent die Gebäude.
+        /// </summary>
+        public const string Projektgebaeude = "Form_Projektgebaeude";
         /// <summary>Stammdaten Gebäudetypen.</summary>
         public const string GebaeudetypenAdmin = "Form_EingGebTyp";
         /// <summary>Stammdaten eingelesener Wärmebedarf.</summary>

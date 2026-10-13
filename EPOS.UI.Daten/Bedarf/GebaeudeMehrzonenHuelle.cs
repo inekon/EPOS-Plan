@@ -29,6 +29,7 @@ namespace WindowsFormsApplication1
         private readonly bool _ios;
         private GebaeudeImportHerkunft _ausstehend;
         private string _ausstehendDatei = "";
+        private IReadOnlyList<Zonenquellhinweis> _hinweise;
 
         internal GebaeudeMehrzonenHuelle(Func<int> gebaeudeId, int idProjekt, bool? ios = null)
         {
@@ -78,7 +79,12 @@ namespace WindowsFormsApplication1
             Mehrzonenquellpruefung p = await Kulturweitergabe.Starten(() => MehrzonenuebernahmeCtrl.QuellePruefen(pfad, q));
             if (!p.Passend) return new GebaeudeMehrzonenstart(p.Meldung, null, pfad ?? "");
 
-            var import = new GebaeudeImportHuelle(_idProjekt, _ios);
+            var import = new GebaeudeImportHuelle(_idProjekt, _ios)
+            {
+                // GD-N: der zuletzt gespeicherte Zonenplan dieses Gebäudes als Vorbelegung des Zonenbaums.
+                Planvorlage = (abbild, index, haken) => ZonenplanCtrl.GespeichertJeGebaeude(_gebaeudeId(), p.HashDatei, abbild, index, haken),
+                ProjektdateiPruefen = true,
+            };
             string datei = q.Dateiname ?? "";
             Func<GebaeudeImportErgebnis, Task<string>> uebernehmen = ergebnis =>
             {
@@ -92,6 +98,7 @@ namespace WindowsFormsApplication1
                 if (h?.Vorschlag == null) return Task.FromResult(MyResource.Resource.GEBMZ_MSG_OHNE_ZONEN);
                 _ausstehend = h;
                 _ausstehendDatei = datei;
+                _hinweise = ModellpruefungHuelle.HinweiseAus(import.Plan);
                 return Task.FromResult<string>(null);
             };
             return new GebaeudeMehrzonenstart(null, import.Gaben(uebernehmen), pfad);
@@ -111,6 +118,8 @@ namespace WindowsFormsApplication1
             if (_ausstehend == null) return null;
             Mehrzonenersetzung e = MehrzonenuebernahmeCtrl.Ersetzen(_gebaeudeId(), _ausstehend);
             if (!e.Ok) return e.Meldung;
+            // MA-1b: DIN-Nummer und Raumtyp je Zone für das Blatt „Modell prüfen", das der Gebäudedialog danach öffnet.
+            ModellpruefungHuelle.HinweiseMerken(_gebaeudeId(), _hinweise);
             _ausstehend = null;
             return null;
         }

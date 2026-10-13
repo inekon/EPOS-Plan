@@ -443,6 +443,10 @@ namespace WindowsFormsApplication1
             // der Kern beim nächsten Schreiben, gelesen leitet er die Gruppe aus Stoffgruppe bzw. Bauteilart ab.
             new Stufe(BauteilkatalogSchema.SCHRITT, Art.Ddl,
                       "Herkunft EIGEN/IMPORT, Gruppe und Klasse, Kennzeichen und Felder der Quelle am Bauteilkatalog (E132)"),
+            // Ein älteres Paket bringt seine Baustoffe und Aufbauten ohne die Klasse Haustechnik; der Schritt erweitert nur
+            // die Prüfklausel am Ziel.
+            new Stufe(BauteilkatalogHaustechnikSchema.SCHRITT, Art.Ddl,
+                      "Klasse Haustechnik in Baustoff- und Aufbaukatalog (E134)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

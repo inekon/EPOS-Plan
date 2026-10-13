@@ -54317,6 +54317,15 @@ chart</value>
   <data name="BKI_MIT_BAUSTOFF" xml:space="preserve">
     <value>{0} layers match a material of the same group by name.</value>
   </data>
+  <data name="BKI_LAMBDA_SKALIERT" xml:space="preserve">
+    <value>{0} materials with a scale error of the thermal conductivity in the source corrected (λ ÷ 1,000); each row is listed in the log.</value>
+  </data>
+  <data name="BKI_HAUSTECHNIK" xml:space="preserve">
+    <value>Building services: {0} materials and {1} constructions in the group “Other”, including {2} air passages (flagged).</value>
+  </data>
+  <data name="BKI_GLIEDERUNG" xml:space="preserve">
+    <value>Records per group and class</value>
+  </data>
   <data name="BKI_CODES" xml:space="preserve">
     <value>Codes without interpretation (they fall back to “Other”)</value>
   </data>
@@ -54463,6 +54472,9 @@ chart</value>
   </data>
   <data name="BKAT_BTA_KLASSE_SONSTIGES" xml:space="preserve">
     <value>Other</value>
+  </data>
+  <data name="BKAT_BTA_KLASSE_HAUSTECHNIK" xml:space="preserve">
+    <value>Building services</value>
   </data>
   <data name="BKAT_BST_KLASSE_ZIEGEL" xml:space="preserve">
     <value>Clay brick</value>
@@ -54739,6 +54751,468 @@ chart</value>
   </data>
   <data name="KONF_KS_DEZENTRAL_STROM_TRAEGER" xml:space="preserve">
     <value>Power: {0} carriers</value>
+  </data>
+  <data name="GEBSIM_BTN_ALLE" xml:space="preserve">
+    <value>Simulation… (all {0} buildings)</value>
+  </data>
+  <data name="GEBSIM_BTN_GEWAEHLT" xml:space="preserve">
+    <value>Simulation… ({0} selected)</value>
+  </data>
+  <data name="GEBSIM_BTN_HINWEIS" xml:space="preserve">
+    <value>Calculate the heat demand of the buildings in the project – all without a tick, otherwise the ticked ones</value>
+  </data>
+  <data name="GEBSIM_SPERRE_LEER" xml:space="preserve">
+    <value>There is no building in the project.</value>
+  </data>
+  <data name="GEBSIM_TITEL" xml:space="preserve">
+    <value>Heat demand of the buildings in the project</value>
+  </data>
+  <data name="GEBSIM_SP_GEBAEUDE" xml:space="preserve">
+    <value>Building</value>
+  </data>
+  <data name="GEBSIM_SP_HEIZWAERME" xml:space="preserve">
+    <value>Space heating</value>
+  </data>
+  <data name="GEBSIM_SP_HOECHSTLAST" xml:space="preserve">
+    <value>Peak load [kW]</value>
+  </data>
+  <data name="GEBSIM_SP_BEFUND" xml:space="preserve">
+    <value>Finding</value>
+  </data>
+  <data name="GEBSIM_BEFUND_GERECHNET" xml:space="preserve">
+    <value>calculated</value>
+  </data>
+  <data name="GEBSIM_BTN_OEFFNEN" xml:space="preserve">
+    <value>Demand…</value>
+  </data>
+  <data name="GEBSIM_BTN_OEFFNEN_HINWEIS" xml:space="preserve">
+    <value>Show the heat demand of this building in detail</value>
+  </data>
+  <data name="GEBSIM_ZEILE_SUMME" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="BKAT_BST_KLASSE_HAUSTECHNIK" xml:space="preserve">
+    <value>Building services</value>
+  </data>
+  <data name="GANS_WERKZEUG" xml:space="preserve">
+    <value>Legend tool</value>
+  </data>
+  <data name="GANS_WERKZEUG_ZUORDNEN" xml:space="preserve">
+    <value>Assign</value>
+  </data>
+  <data name="GANS_WERKZEUG_AUSBLENDEN" xml:space="preserve">
+    <value>Show/hide</value>
+  </data>
+  <data name="GANS_ALLE_ZEIGEN" xml:space="preserve">
+    <value>Show all</value>
+  </data>
+  <data name="GANS_EINBLENDEN" xml:space="preserve">
+    <value>Show {0}</value>
+  </data>
+  <data name="GANS_AUSBLENDEN" xml:space="preserve">
+    <value>Hide {0}</value>
+  </data>
+  <data name="GANS_BAUTEILGRUPPEN" xml:space="preserve">
+    <value>Component groups</value>
+  </data>
+  <data name="GANS_BAUTEILGRUPPE_ZAHL" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="IMP_GBXML_KOND_HERKUNFT" xml:space="preserve">
+    <value>from gbXML file</value>
+  </data>
+  <data name="IMP_GBXML_KOND_ABSCHNITT" xml:space="preserve">
+    <value>Section</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_LASTEN" xml:space="preserve">
+    <value>Zone "{0}": {1} load values and {2} schedules taken from the file (file before profile), {3} condensed, {4} discarded.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_DATUM" xml:space="preserve">
+    <value>Schedule "{0}" discarded: begin "{1}" or end "{2}" of a year section is not a date.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_WOCHE_LUECKE" xml:space="preserve">
+    <value>Schedule "{0}" discarded: week schedule "{1}" is missing or lacks a day profile for some weekday.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_TYP" xml:space="preserve">
+    <value>Schedule "{0}" discarded: type "{1}" cannot be mapped (mapped are Temp, Fraction and OnOff).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_TAGTYP" xml:space="preserve">
+    <value>Schedule "{0}": day type "{1}" skipped (design day or unknown).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_STUNDEN" xml:space="preserve">
+    <value>Schedule "{0}": day schedule "{1}" with {2} values skipped — mapped are 24 hourly values or a multiple thereof.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_ZEITSCHRITT" xml:space="preserve">
+    <value>Schedule "{0}": {1} day profiles with a finer time step condensed to hourly means.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_ART" xml:space="preserve">
+    <value>Zone "{0}": schedule "{1}" of type "{2}" does not fit {3} — discarded, the usage profile applies.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_PERIODEN" xml:space="preserve">
+    <value>Zone "{0}", {1}: {2} short year sections discarded — the calendar holds at most {3} periods here; the standard week applies on their days.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_TEILWEISE" xml:space="preserve">
+    <value>Zone "{0}", {1}: not every space has a schedule — spaces without one count with the full nominal value.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_NENNWERT_OHNE_PLAN" xml:space="preserve">
+    <value>Zone "{0}", {1}: nominal value {2} from the file without a schedule — the schedule of the usage profile is kept.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_WAERME_LATENT" xml:space="preserve">
+    <value>Zone "{0}", space "{1}": latent heat gain per person ({2} W) discarded — the sensible heat is used.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_AUSSENLUFT_PERSON" xml:space="preserve">
+    <value>Zone "{0}": outdoor air per person converted into the user air change ({1} 1/h) — the zone has no per-person field.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_VERDICHTET_RAEUME" xml:space="preserve">
+    <value>Zone "{0}", {1}: the spaces carry different schedules ({2}) — condensed to the weighted mean.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_TAGE_OHNE_ABSCHNITT" xml:space="preserve">
+    <value>Zone "{0}", {1}: {2} days lie in no year section — the standard week applies there.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_WERTE_BEGRENZT" xml:space="preserve">
+    <value>Zone "{0}", {1}: {2} values outside the limits of the quantity clamped or set to "off".</value>
+  </data>
+  <data name="IMP_GBXML_PROT_FEIERTAG_SONNTAG" xml:space="preserve">
+    <value>Zone "{0}", {1}: not every schedule has a holiday day profile — its Sunday applies there.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PROFIL_ABWEICHUNG" xml:space="preserve">
+    <value>Zone "{0}", {1}: the file gives {2} W, the usage profile "{3}" {4} W — the file applies.</value>
+  </data>
+  <data name="GEBMZ_PLAN_VORLAGE" xml:space="preserve">
+    <value>Pre-filled with the stored zone plan from “{0}” ({1}): {2} rooms in {3} zones.</value>
+  </data>
+  <data name="GEBMZ_PLAN_VERLOREN" xml:space="preserve">
+    <value>{0} stored room assignments no longer find a room or a zone.</value>
+  </data>
+  <data name="GEBMZ_PLAN_PRUEFSUMME" xml:space="preserve">
+    <value>The selected file differs from the stored zone plan (checksum {0} instead of {1}). Only rooms whose identifier the file still contains are pre-filled.</value>
+  </data>
+  <data name="GEBMZ_SQ_VORHANDEN" xml:space="preserve">
+    <value>Project file “{0}”: present.</value>
+  </data>
+  <data name="GEBMZ_SQ_FEHLT" xml:space="preserve">
+    <value>Project file “{0}”: cannot be opened ({1}).</value>
+  </data>
+  <data name="GEBMZ_SQ_LESBAR" xml:space="preserve">
+    <value>Readable (version {0}).</value>
+  </data>
+  <data name="GEBMZ_SQ_NICHT_LESBAR" xml:space="preserve">
+    <value>Not readable: {0}</value>
+  </data>
+  <data name="GEBMZ_SQ_ZUORDNUNG" xml:space="preserve">
+    <value>Against the building file: {0} rooms matched, {1} without a match, {2} rooms of the building file without a counterpart.</value>
+  </data>
+  <data name="GEBMZ_SQ_ZUORDNUNG_KEINE" xml:space="preserve">
+    <value>Against the building file: no room matched — the project file does not belong to this building file.</value>
+  </data>
+  <data name="GEBMZ_SQ_PRUEFSUMME" xml:space="preserve">
+    <value>Checksum {0} — the import does not store it; please compare with the project file of the first import.</value>
+  </data>
+  <data name="WURZEL_PROJEKTGEBAEUDE_NICHT" xml:space="preserve">
+    <value>On this device the project buildings open in the assistant, not as a separate view.</value>
+  </data>
+  <data name="GEB_ZF_JAHRESWAERME" xml:space="preserve">
+    <value>Annual heat demand</value>
+  </data>
+  <data name="GEB_ZF_JWB_WERT" xml:space="preserve">
+    <value>{0} MWh/a (run of {1})</value>
+  </data>
+  <data name="GEB_ZF_JWB_PROJEKT" xml:space="preserve">
+    <value>{0} MWh/a, whole project (run of {1}; the run has no value per building)</value>
+  </data>
+  <data name="GEB_ZF_JWB_OFFEN" xml:space="preserve">
+    <value>not calculated yet</value>
+  </data>
+  <data name="MP_BEFUND_ZONE_OHNE_BAUTEILE" xml:space="preserve">
+    <value>Zone '{0}' has no building elements.</value>
+  </data>
+  <data name="MP_BEFUND_ZONE_OHNE_AUSSENBAUTEIL" xml:space="preserve">
+    <value>Heated zone '{0}' has no element facing outdoor air, ground or an unheated space.</value>
+  </data>
+  <data name="MP_BEFUND_HUELLE_OHNE_AUSSENWAND" xml:space="preserve">
+    <value>The building envelope has no exterior wall.</value>
+  </data>
+  <data name="MP_BEFUND_HUELLE_OHNE_DACH" xml:space="preserve">
+    <value>The building envelope has no roof and no upward ceiling.</value>
+  </data>
+  <data name="MP_BEFUND_HUELLE_OHNE_BODEN" xml:space="preserve">
+    <value>The building envelope has no floor slab and no downward ceiling.</value>
+  </data>
+  <data name="MP_BEFUND_BAUTEILART_UNBEKANNT" xml:space="preserve">
+    <value>Element '{0}' in zone '{1}': element type not recognised.</value>
+  </data>
+  <data name="MP_BEFUND_FLAECHE_FEHLT" xml:space="preserve">
+    <value>Element '{0}' in zone '{1}' has no area.</value>
+  </data>
+  <data name="MP_BEFUND_RANDBEDINGUNG_FEHLT" xml:space="preserve">
+    <value>Element '{0}' in zone '{1}': boundary condition missing, outdoor air is assumed.</value>
+  </data>
+  <data name="MP_BEFUND_AZIMUT_FEHLT" xml:space="preserve">
+    <value>Element '{0}' in zone '{1}': orientation (azimuth) missing.</value>
+  </data>
+  <data name="MP_BEFUND_EINZONE_FLAECHE_FEHLT" xml:space="preserve">
+    <value>{0}: no area given.</value>
+  </data>
+  <data name="MP_BEFUND_EINZONE_U_FEHLT" xml:space="preserve">
+    <value>{0}: area without U-value.</value>
+  </data>
+  <data name="MP_BEFUND_NUR_U_WERT" xml:space="preserve">
+    <value>Element '{0}' in zone '{1}' has only a U-value ({2} W/(m²K)) and no construction; heat capacity comes from the default.</value>
+  </data>
+  <data name="MP_BEFUND_OHNE_U_OHNE_AUFBAU" xml:space="preserve">
+    <value>Element '{0}' in zone '{1}' has neither construction nor U-value.</value>
+  </data>
+  <data name="MP_BEFUND_AUFBAU_UNGEEIGNET" xml:space="preserve">
+    <value>Element '{0}': construction '{1}' is mostly unsuitable for simulation.</value>
+  </data>
+  <data name="MP_BEFUND_SCHICHT_OHNE_STOFFWERT" xml:space="preserve">
+    <value>Element '{0}': construction '{1}' has a layer without λ, ρ or c.</value>
+  </data>
+  <data name="MP_BEFUND_KAPAZITAET_FEHLT" xml:space="preserve">
+    <value>Element '{0}': construction '{1}' yields no heat capacity.</value>
+  </data>
+  <data name="MP_BEFUND_EINZONE_BAUWEISE_FEHLT" xml:space="preserve">
+    <value>The building's construction type (heat capacity) is missing; the default applies.</value>
+  </data>
+  <data name="MP_BEFUND_ZONE_OHNE_PROFIL" xml:space="preserve">
+    <value>Zone '{0}' has no usage profile and no calendars; it inherits from the building.</value>
+  </data>
+  <data name="MP_BEFUND_HEIZKALENDER_GEERBT" xml:space="preserve">
+    <value>Zone '{0}' has no heating calendar; it inherits the heating set point from the building.</value>
+  </data>
+  <data name="MP_BEFUND_UNBEHEIZT_MIT_HEIZKALENDER" xml:space="preserve">
+    <value>Unheated zone '{0}' carries a heating calendar.</value>
+  </data>
+  <data name="MP_BEFUND_KUEHLKALENDER_FEHLT" xml:space="preserve">
+    <value>'{0}' is cooled but has no cooling calendar and no cooling set point.</value>
+  </data>
+  <data name="MP_BEFUND_LUEFTUNG_GEERBT" xml:space="preserve">
+    <value>Zone '{0}' has neither ventilation calendar nor air change; it inherits the building's air change rate.</value>
+  </data>
+  <data name="MP_BEFUND_FERIEN_FEHLEN" xml:space="preserve">
+    <value>The building has no holidays; the calendars run without holidays.</value>
+  </data>
+  <data name="MP_BEFUND_HEIZPERIODE_FEHLT" xml:space="preserve">
+    <value>The building has no heating period; heating follows the calendar all year.</value>
+  </data>
+  <data name="MP_BEFUND_KLIMAREGION_FEHLT" xml:space="preserve">
+    <value>The project has no climate region.</value>
+  </data>
+  <data name="MP_BEFUND_NORDRICHTUNG_ANGENOMMEN" xml:space="preserve">
+    <value>The north direction of the import is assumed, not confirmed.</value>
+  </data>
+  <data name="MP_BEFUND_FEIERTAGSLAND_FEHLT" xml:space="preserve">
+    <value>The building has no holiday state; nationwide holidays apply.</value>
+  </data>
+  <data name="MP_BEFUND_PFLICHTGROESSE_FEHLT" xml:space="preserve">
+    <value>Mandatory value missing or not greater than zero: {0}.</value>
+  </data>
+  <data name="MP_BEFUND_RECHENWEG_ABGELEHNT" xml:space="preserve">
+    <value>The calculation check rejects: {0}</value>
+  </data>
+  <data name="MP_FELD_AUSSENWAND" xml:space="preserve">
+    <value>Exterior wall</value>
+  </data>
+  <data name="MP_FELD_FENSTER" xml:space="preserve">
+    <value>Windows</value>
+  </data>
+  <data name="MP_FELD_DACH" xml:space="preserve">
+    <value>Roof</value>
+  </data>
+  <data name="MP_FELD_GRUND" xml:space="preserve">
+    <value>Ground floor area</value>
+  </data>
+  <data name="MP_FELD_NUTZFLAECHE" xml:space="preserve">
+    <value>Usable floor area</value>
+  </data>
+  <data name="MP_FELD_RAUMHOEHE" xml:space="preserve">
+    <value>Room height</value>
+  </data>
+  <data name="MP_FELD_FLAECHE_NUTZER" xml:space="preserve">
+    <value>Area per occupant</value>
+  </data>
+  <data name="MP_FELD_LUFTWECHSEL" xml:space="preserve">
+    <value>Air change rate</value>
+  </data>
+  <data name="MP_GEBAEUDE" xml:space="preserve">
+    <value>Building</value>
+  </data>
+  <data name="MP_VORSCHLAG_PROJEKTAUFBAU" xml:space="preserve">
+    <value>Apply project construction '{0}'</value>
+  </data>
+  <data name="MP_VORSCHLAG_KATALOGAUFBAU" xml:space="preserve">
+    <value>Apply catalogue construction '{0}' (U {1} W/(m²K))</value>
+  </data>
+  <data name="MP_VORSCHLAG_TYPAUFBAU" xml:space="preserve">
+    <value>Type construction '{0}', matched to U {1} W/(m²K)</value>
+  </data>
+  <data name="MP_VORSCHLAG_PROFIL_DINNUMMER" xml:space="preserve">
+    <value>Profile '{0}' from the DIN number</value>
+  </data>
+  <data name="MP_VORSCHLAG_PROFIL_RAUMTYP" xml:space="preserve">
+    <value>Profile '{0}' from the source room type</value>
+  </data>
+  <data name="MP_VORSCHLAG_PROFIL_GEBAEUDEART" xml:space="preserve">
+    <value>Profile '{0}' from the building type</value>
+  </data>
+  <data name="MP_VORSCHLAG_PROFIL_EPOSMUSTER" xml:space="preserve">
+    <value>EPOS template '{0}'</value>
+  </data>
+  <data name="MP_VORSCHLAG_FERIEN_PROJEKT" xml:space="preserve">
+    <value>Apply the holidays of another building of the project</value>
+  </data>
+  <data name="MP_VORSCHLAG_SAISON_PROJEKT" xml:space="preserve">
+    <value>Apply the heating period of another building of the project</value>
+  </data>
+  <data name="MP_VORSCHLAG_FEIERTAGSLAND" xml:space="preserve">
+    <value>Apply the project's holiday state '{0}'</value>
+  </data>
+  <data name="MP_MSG_GEBAEUDE_FEHLT" xml:space="preserve">
+    <value>Building {0} not found.</value>
+  </data>
+  <data name="MP_MSG_OHNE_VORSCHLAG" xml:space="preserve">
+    <value>No proposal (input required): {0}</value>
+  </data>
+  <data name="MP_MSG_VERWORFEN" xml:space="preserve">
+    <value>Not applied: {0} — {1}</value>
+  </data>
+  <data name="MP_MSG_FEHLER" xml:space="preserve">
+    <value>Applying the proposals failed: {0}</value>
+  </data>
+  <data name="MP_MSG_KEINE_RUECKNAHME" xml:space="preserve">
+    <value>There is nothing to undo for this group.</value>
+  </data>
+  <data name="MP_MSG_UNBEKANNT" xml:space="preserve">
+    <value>Unknown kind of proposal.</value>
+  </data>
+  <data name="MP_MSG_KATALOGKOPIE" xml:space="preserve">
+    <value>The catalogue construction could not be copied into the project.</value>
+  </data>
+  <data name="MP_MSG_TYPAUFBAU" xml:space="preserve">
+    <value>There is no type construction for this element.</value>
+  </data>
+  <data name="MP_MSG_QUELLE_LEER" xml:space="preserve">
+    <value>The source building no longer carries the row.</value>
+  </data>
+  <data name="MP_STATUS_VOLLSTAENDIG" xml:space="preserve">
+    <value>complete</value>
+  </data>
+  <data name="MP_STATUS_RECHNETMITVORGABEN" xml:space="preserve">
+    <value>calculates with defaults</value>
+  </data>
+  <data name="MP_STATUS_NICHTRECHENFAEHIG" xml:space="preserve">
+    <value>not calculable</value>
+  </data>
+  <data name="MP_GRUPPE_GEOMETRIEBAUTEILE" xml:space="preserve">
+    <value>Geometry and elements</value>
+  </data>
+  <data name="MP_GRUPPE_AUFBAUTENSTOFFWERTE" xml:space="preserve">
+    <value>Constructions and material values</value>
+  </data>
+  <data name="MP_GRUPPE_NUTZUNGKONDITIONIERUNG" xml:space="preserve">
+    <value>Usage and conditioning</value>
+  </data>
+  <data name="MP_GRUPPE_ORTLAGE" xml:space="preserve">
+    <value>Location and orientation</value>
+  </data>
+  <data name="MP_GRUPPE_RECHENFAEHIGKEIT" xml:space="preserve">
+    <value>Calculability</value>
+  </data>
+  <data name="MPB_TITEL" xml:space="preserve">
+    <value>Check model</value>
+  </data>
+  <data name="MPB_BTN_KOPF" xml:space="preserve">
+    <value>Check model…</value>
+  </data>
+  <data name="MPB_BTN_KOPF_HINWEIS" xml:space="preserve">
+    <value>Check the selected building (without a selection the first one) for computability: traffic light per check group, apply suggestions</value>
+  </data>
+  <data name="MPB_SPERRE_LEER" xml:space="preserve">
+    <value>No building in the project – add or import a building first.</value>
+  </data>
+  <data name="MPB_SPERRE_OHNE_KOPIE" xml:space="preserve">
+    <value>The building “{0}” has not been saved yet – the model can be checked after confirming this dialog with OK.</value>
+  </data>
+  <data name="MPB_MSG_NICHT_GELESEN" xml:space="preserve">
+    <value>The building could not be read.</value>
+  </data>
+  <data name="MPB_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>{0} suggestions applied, {1} findings need an input.</value>
+  </data>
+  <data name="MPB_MSG_NORD_BESTAETIGT" xml:space="preserve">
+    <value>The north direction is confirmed.</value>
+  </data>
+  <data name="MPB_HINWEIS_NORD" xml:space="preserve">
+    <value>The north direction can only be confirmed for an imported building (section Orientation of the building record).</value>
+  </data>
+  <data name="MPB_HINWEIS_KLIMA" xml:space="preserve">
+    <value>The climate region applies to the project: it is selected in the project data.</value>
+  </data>
+  <data name="MPB_ZAEHLUNG" xml:space="preserve">
+    <value>{0} findings, {1} suggestions</value>
+  </data>
+  <data name="MPB_AMPEL_GRUEN" xml:space="preserve">
+    <value>green – no finding</value>
+  </data>
+  <data name="MPB_AMPEL_GELB" xml:space="preserve">
+    <value>yellow – computes with defaults</value>
+  </data>
+  <data name="MPB_AMPEL_ROT" xml:space="preserve">
+    <value>red – not computable</value>
+  </data>
+  <data name="MPB_BTN_BEFUNDE_HINWEIS" xml:space="preserve">
+    <value>Show or hide the findings of this check group</value>
+  </data>
+  <data name="MPB_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply suggestion</value>
+  </data>
+  <data name="MPB_BTN_UEBERNEHMEN_HINWEIS" xml:space="preserve">
+    <value>Apply all suggestions of this check group in one step and check again</value>
+  </data>
+  <data name="MPB_SPERRE_KEIN_VORSCHLAG" xml:space="preserve">
+    <value>No suggestion – the findings need an input.</value>
+  </data>
+  <data name="MPB_BTN_ZURUECKNEHMEN" xml:space="preserve">
+    <value>Undo</value>
+  </data>
+  <data name="MPB_BTN_ZURUECKNEHMEN_HINWEIS" xml:space="preserve">
+    <value>Undo the last application of this check group</value>
+  </data>
+  <data name="MPB_BTN_ANSICHT" xml:space="preserve">
+    <value>View…</value>
+  </data>
+  <data name="MPB_BTN_ANSICHT_HINWEIS" xml:space="preserve">
+    <value>Open the building view in the matching colour mode (the import file is read)</value>
+  </data>
+  <data name="MPB_SPERRE_ANSICHT" xml:space="preserve">
+    <value>The building view needs the import file – this building was not imported.</value>
+  </data>
+  <data name="MPB_BTN_KLIMA" xml:space="preserve">
+    <value>Select climate region…</value>
+  </data>
+  <data name="MPB_BTN_KLIMA_HINWEIS" xml:space="preserve">
+    <value>Select the climate region of the project</value>
+  </data>
+  <data name="MPB_BTN_NORD" xml:space="preserve">
+    <value>Confirm north direction</value>
+  </data>
+  <data name="MPB_BTN_NORD_HINWEIS" xml:space="preserve">
+    <value>Confirm the assumed north direction of the import as input</value>
+  </data>
+  <data name="MPB_BTN_ALLE" xml:space="preserve">
+    <value>Apply all suggestions</value>
+  </data>
+  <data name="MPB_BTN_ALLE_HINWEIS" xml:space="preserve">
+    <value>Apply all suggestions of all check groups – undoable per group – and check again</value>
+  </data>
+  <data name="MPB_BTN_SIMULATION" xml:space="preserve">
+    <value>Simulation…</value>
+  </data>
+  <data name="MPB_BTN_SIMULATION_HINWEIS" xml:space="preserve">
+    <value>Compute the heat demand of this building</value>
+  </data>
+  <data name="MPB_HILFE_KURZ" xml:space="preserve">
+    <value>Help on the model check</value>
   </data>
 </root>
 

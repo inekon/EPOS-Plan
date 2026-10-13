@@ -1047,6 +1047,9 @@ namespace EPOS.Kern.Tests
                 // Schritt BauteilkatalogSchema.SCHRITT (BK-2, E132): Herkunft, Gliederung, Kennzeichen und Felder der Quelle am
                 // Baustoff- und Bauteilkatalog, Abschnittstabellen. Wiederholbar, ergebnisneutral.
                 BauteilkatalogSchema.Ausfuehren(null);
+                // Schritt BauteilkatalogHaustechnikSchema.SCHRITT (BK-3c, E134): Klasse Haustechnik in der Pruefklausel von
+                // Klasse_Code (Neubau der vier Kopftabellen). Wiederholbar, ergebnisneutral.
+                BauteilkatalogHaustechnikSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

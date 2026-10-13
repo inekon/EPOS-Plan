@@ -222,6 +222,13 @@ public static class Seitenschluessel
     /// <summary>Lastspitzenkappung; Argument: Projekt-Id (Razor seit W12.6).</summary>
     public const string PeakShaving = WindowsFormsApplication1.Masken.PeakShaving;
 
+    /// <summary>
+    /// Die Gebaeude des offenen Projekts (<c>GebaeudeDialog</c>) mit einem Sprungziel als Argument
+    /// (<c>Sprungziele.Kuehlung</c>). Unter Windows faengt die Schale den Schluessel ab und oeffnet ihr Fenster; die
+    /// Wurzel (iOS) lehnt ihn benannt ab.
+    /// </summary>
+    public const string Projektgebaeude = WindowsFormsApplication1.Masken.Projektgebaeude;
+
     /// <summary>Stammdaten Gebaeude (Razor seit W9.2).</summary>
     public const string GebaeudeAdmin = WindowsFormsApplication1.Masken.GebaeudeAdmin;
 
@@ -534,7 +541,7 @@ public static class Seitenschluessel
         SimulationKonfiguration, SimulationErgebnis, Simulation,
         KiAssistent, Assistent,
         Startseite, BerichteKosten, Varianten, StromspeicherAuslegung, PufferAuslegung,
-        WpAdministration, StromspeicherAdmin, PeakShaving, GebaeudeAdmin,
+        WpAdministration, StromspeicherAdmin, PeakShaving, GebaeudeAdmin, Projektgebaeude,
         GebaeudetypenAdmin, WaermebedarfExternAdmin, ProzesswaermeAdmin, KaeltebedarfAdmin,
         StromverbraucherAdmin, StromganglinieAdmin, SolarganglinieAdmin, PvGanglinieAdmin,
         WpImport, WpKaelteImport, KaeltemaschineImport, HeizkesselAdmin, BhkwAdmin, SolarkollektorenAdmin, PvAdmin,

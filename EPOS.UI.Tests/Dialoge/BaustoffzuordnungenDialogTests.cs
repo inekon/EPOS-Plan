@@ -181,67 +181,14 @@ public class BaustoffzuordnungenDialogTests : EposBunitContext
         => Assert.Null(Knopf(Gebaeudedialog(null)));
 
     /// <summary>
-    /// <b>Der Knopf steht beim Import</b> (Anwenderentscheid 06.10.2026): in der Leiste mit dem Import (mit AW3b die Knopfleiste am Satz)
-    /// gleich nach „Importieren (gbXML, IFC)…", nicht mehr in der Fußleiste neben OK. Im Assistenten
-    /// steht er nicht.
+    /// <b>GD-6a</b> (Anwenderwunsch 12.10.2026): Der Gebäudedialog trägt den Knopf nicht mehr — weder neben dem Import
+    /// noch in der Knopfleiste am Satz oder der Fußleiste; er steht an der Liste „Bauteilaufbauten" des Imports und im
+    /// Reiter „Zonen" des Gebäudeeditors (Tests dort).
     /// </summary>
     [Fact]
-    public void Der_Knopf_steht_neben_dem_Import_und_nicht_in_der_Fussleiste()
+    public void GD6a_Der_Gebaeudedialog_traegt_den_Knopf_nicht_mehr()
     {
-        IRenderedComponent<GebaeudeDialog> cut = Gebaeudedialog(() => new Dictionary<string, object>(), mitImport: true);
-        IElement knopf = Knopf(cut)!;
-        IElement leiste = knopf.ParentElement!;
-        // AW3b: Knopfleiste am Satz - die Katalog-Fussleiste entfaellt, Import und Zuordnungen stehen in der Leiste am Satz.
-        Assert.Equal("epos-zweispalten-satzknoepfe", leiste.ClassName);
-        Assert.Contains(leiste.Children, b => b.TextContent.Trim() == "Gebäude in DB neu...");
-        Assert.DoesNotContain(leiste.Children, b => b.ClassList.Contains("epos-knopf--primaer"));
-        Assert.Contains("epos-importknopf", knopf.PreviousElementSibling!.ClassName);
-
-        IElement ok = cut.FindAll("button.epos-knopf--primaer").Single();
-        Assert.DoesNotContain(ok.ParentElement!.Children, b => b.TextContent.Trim() == KNOPF);
-
+        Assert.Null(Knopf(Gebaeudedialog(() => new Dictionary<string, object>(), mitImport: true)));
         Assert.Null(Knopf(Gebaeudedialog(() => new Dictionary<string, object>(), wizard: true)));
-    }
-
-    [Fact]
-    public void Der_Knopf_oeffnet_die_Ansicht_und_nach_OK_steht_die_Zahl_im_Banner()
-    {
-        var geschrieben = new List<IReadOnlyList<string>>();
-        int gelesen = 0;
-        var geschlossen = new List<bool>();
-        IRenderedComponent<GebaeudeDialog> cut = Gebaeudedialog(() =>
-        {
-            gelesen++;
-            return new Dictionary<string, object>
-            {
-                ["Zeilen"] = Drei,
-                ["Entfernen"] = new Func<IReadOnlyList<string>, string>(namen => { geschrieben.Add(namen); return null!; }),
-            };
-        }, geschlossen);
-
-        IElement knopf = Knopf(cut)!;
-        Assert.Equal("Die Zuordnungen von Materialnamen zu Baustoffen ansehen, die sich dieses Projekt beim Gebäudeimport gemerkt hat, und einzelne entfernen",
-                     knopf.GetAttribute("title"));
-        knopf.Click();
-        Assert.Equal(1, gelesen);
-        IRenderedComponent<BaustoffzuordnungenDialog> ansicht = cut.FindComponent<BaustoffzuordnungenDialog>();
-        Assert.Empty(ansicht.FindAll("h1.epos-dialog-titel"));   // den Titel trägt die Überlagerung
-        Assert.Contains("Baustoff-Zuordnungen des Projekts", cut.Markup);
-
-        // Esc in der Ansicht schließt nur die Ansicht, nicht den Gebäudedialog.
-        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
-        Assert.Empty(geschlossen);
-
-        cut.FindComponent<BaustoffzuordnungenDialog>().Find("tr[data-schluessel=\"estrich\"] button").Click();
-        cut.FindComponent<BaustoffzuordnungenDialog>().Find(".epos-leiste button.epos-knopf--primaer").Click();
-
-        Assert.Equal(new[] { "estrich" }, Assert.Single(geschrieben));
-        Assert.Empty(cut.FindComponents<BaustoffzuordnungenDialog>());
-        Assert.Contains("Baustoff-Zuordnungen entfernt: 1.", cut.Find(".epos-katalogmeldung").TextContent);
-        Assert.Empty(geschlossen);
-
-        // Ein zweiter Klick liest neu.
-        Knopf(cut)!.Click();
-        Assert.Equal(2, gelesen);
     }
 }

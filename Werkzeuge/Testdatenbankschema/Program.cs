@@ -3556,6 +3556,23 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrBk2 + " - vollstaendig: " + BauteilkatalogSchema.Vollstaendig() +
                                   " (erwartet True).");
             }
+
+            // ---- Schritt BauteilkatalogHaustechnikSchema.SCHRITT (BK-3c, E134): Klasse Haustechnik in der Pruefklausel von
+            //      Klasse_Code (Neubau der vier Kopftabellen). Aus DERSELBEN Quelle wie SchemaMigration.Schritt_BauteilkatalogHaustechnik.
+            //      Wiederholbar. REFERENZLAUF UNVERAENDERT: der Bauteilweg liest keine Gliederung.
+            string nrBk3c = BauteilkatalogHaustechnikSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBk3c + " - Klasse Haustechnik am Bauteilkatalog: " +
+                              (BauteilkatalogHaustechnikSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBk3c = new List<string>();
+                angelegt += BauteilkatalogHaustechnikSchema.Ausfuehren(berichtBk3c);
+                foreach (string zeile in berichtBk3c)
+                    Console.WriteLine("Schritt " + nrBk3c + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBk3c + " - vollstaendig: " + BauteilkatalogHaustechnikSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

@@ -1046,7 +1046,11 @@ namespace WindowsFormsApplication1
         /// <see cref="BauteilkatalogSchema.SCHRITT"/>: Herkunft EIGEN/IMPORT, Gruppe und Klasse, das Kennzeichen „für die
         /// Gebäudesimulation meist nicht geeignet“, die Felder der Quelle und die Abschnittstabellen
         /// (<see cref="BauteilkatalogSchema"/>). <b>Ergebnisneutral:</b> Der Bauteilweg liest keine neue Spalte.
-        public const int Zielversion = BauteilkatalogSchema.SCHRITT;
+        /// Danach, mit der KLASSE HAUSTECHNIK (BK-3c, E134), steht das Ziel auf <see cref="BauteilkatalogHaustechnikSchema.SCHRITT"/>:
+        /// die Klasse <c>HAUSTECHNIK</c> in der Prüfklausel von <c>Klasse_Code</c> an Baustoff- und Aufbaukatalog samt
+        /// Projektkopien (<see cref="BauteilkatalogHaustechnikSchema"/>). <b>Ergebnisneutral:</b> Der Bauteilweg liest keine
+        /// Gliederung.
+        public const int Zielversion = BauteilkatalogHaustechnikSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

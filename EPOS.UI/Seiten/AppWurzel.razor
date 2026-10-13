@@ -1288,6 +1288,14 @@ else
             return true;
         }
 
+        if (maske == Seitenschluessel.Projektgebaeude)
+        {
+            // GD-N: Die Gebaeude des Projekts oeffnet die Windows-Schale als Fenster (GebaeudeFenster.ProjektOeffnen);
+            // auf iOS pflegt sie der Assistent. Kein stiller Rueckfall - der Grund steht im Banner.
+            _statuszeile = Resource.WURZEL_PROJEKTGEBAEUDE_NICHT;
+            return false;
+        }
+
         if (maske == Seitenschluessel.PeakShaving)
         {
             _peakShaving = Quelle.PeakShavingGaben(_projekt?.Id ?? 0);
@@ -2036,7 +2044,11 @@ else
            // faengt die Schale den Schluessel vorher ab und oeffnet ihr
            // Fenster; hier landet er auf dem iPad und aus dem
            // Hilfe-Assistenten (KiMaskenziele.BRAUCHWASSER_NUTZUNGSARTEN).
-           || maske == Seitenschluessel.BrauchwasserNutzungsarten;
+           || maske == Seitenschluessel.BrauchwasserNutzungsarten
+
+           // Die Gebaeude des Projekts mit Sprungziel (GD-N): unter Windows faengt die Schale den
+           // Schluessel ab; hier fuehrt die Wurzel ihn, um ihn benannt abzulehnen.
+           || maske == Seitenschluessel.Projektgebaeude;
 
     /// <summary>
     /// Das offene Projekt: das in der Projektliste gewählte (iOS), sonst das des Projektkontexts im

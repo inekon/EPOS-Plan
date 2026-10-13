@@ -22,6 +22,8 @@ Was davon noch an der Schemakopie gbXML 6.01 oder an der IFC4-Spezifikation zu p
 
 ## 0 Das Ergebnis in Punkten
 
+Fragen F1–F8 am 13.10.2026 nach Empfehlung entschieden (E138).
+
 - **Der Bestand trägt Geometrie, Bauteile und Schichten in beiden Formaten fast vollständig.** Er trägt aber **keine Zeitpläne**
   im Standardformat. gbXML verliert die Konditionierungskalender ganz (benannter Verlust „Kalender“). IFC trägt sie nur in den
   eigenen Sätzen `EPOS_Kalender_*`, die allein EPOS-Plan liest. Lasten liest gbXML heute nur als Gebäudemittel, nicht je Zone.
@@ -466,34 +468,34 @@ Vorschlag mit Rücknahme („Alle Vorschläge übernehmen“).
 | Wachen | Zählung der DIN-Profile mit Werten gegen eine Konstante der Saat; keine Hersteller- und Produktdaten (`WikiProduktdatenWacheTests` unberührt); Kennzeichnung der Fassung in `Quellenhinweis` und Saatkopf; Testdatenbank trägt die Saat über `Werkzeuge/Testdatenbankschema` |
 | Basis | kein Referenzprojekt nutzt ein Nutzungsprofil (`Tab_Zone.Nutzungsprofil` überall leer, Testdatenbank 12.10.2026). Kein Rechenweg liest eine Kategorie; die Saat ist ergebnisneutral, der Referenzlauf bleibt byte-gleich. Einfrieren erst, wenn ein Referenzprojekt ein DIN-Profil zugewiesen bekommt |
 
-## 6 Fragen an den Anwender
+## 6 Fragen an den Anwender — entschieden (E138, 13.10.2026)
 
 1. **F1 Quelle und Fassung der DIN-Werte:** (a) CSV im NP7-Format, ausgefüllt aus der Normausgabe des Anwenders, Fassung
    DIN/TS 18599-10:2025-10; (b) Export einer HottCAD-Projektdatei, deren Profile die Werte tragen; (c) beides, CSV als Saat und
    Projektdatei als Gegenprobe. **Empfehlung: (c)**. Die CSV ist vollständig und prüfbar, die Gegenprobe findet Übertragungsfehler.
-   Die Fassung bleibt 2025-10, weil Kategorie und Nummern so gesät sind.
+   Die Fassung bleibt 2025-10, weil Kategorie und Nummern so gesät sind. **Entschieden: (c)**
 2. **F2 Zeitplan der Datei gegen Profil:** (a) Datei vor Profil; das Profil füllt nur fehlende Größen, Abweichungen als Hinweis;
    (b) Profil vor Datei. **Empfehlung: (a)**. Es entspricht der Rangfolge des Bestands (GD-5), und die Planung des Fachplaners
-   bleibt erhalten.
+   bleibt erhalten. **Entschieden: (a)**
 3. **F3 Nicht abbildbare Zeitpläne:** (a) auf Woche und Perioden verdichten, den Rest benannt verwerfen und im Protokoll nennen;
-   (b) die ganze Datei ablehnen. **Empfehlung: (a)**. Ein Import mit benannten Verlusten ist schneller am Ziel (Leitziel MA).
+   (b) die ganze Datei ablehnen. **Empfehlung: (a)**. Ein Import mit benannten Verlusten ist schneller am Ziel (Leitziel MA). **Entschieden: (a)**
 4. **F4 Umfang und Reihenfolge der ersten Welle:** (a) DA-1 und DA-2 (gbXML Import und Export) direkt nach MA-1, vor MA-2 bis
    MA-7; (b) erst alle MA-Wellen, dann DA; (c) nur DA-1. **Empfehlung: (a)**. Der Anwender hat gbXML mit Lasten und Zeitplänen
-   ausdrücklich zuerst genannt, und MA-1 liefert die Ampel, in die DA-5 schreibt.
+   ausdrücklich zuerst genannt, und MA-1 liefert die Ampel, in die DA-5 schreibt. **Entschieden: (a)**
 5. **F5 Round-Trip-Test als Pflicht:** (a) jede DA-Welle mit Rundlauftest im eigenen Format über das Inventar und einer Wache
    „jedes Inventardatum eingestuft“; (b) nur Stichproben. **Empfehlung: (a)**. Nur so bleibt der Anspruch „ohne Verlust“
-   prüfbar.
+   prüfbar. **Entschieden: (a)**
 6. **F6 IFC-Zeitprofile:** (a) Standardsätze für Nennwerte, Zeitpläne weiter in `EPOS_Kalender_*`; (b) zusätzlich
    `IfcRegularTimeSeries` bzw. `IfcWorkCalendar`/`IfcRecurrencePattern` für die Kalender. **Empfehlung: (a)**. Zielwerkzeuge
-   lesen die Zeitreihen kaum. (b) erst, wenn ein Werkzeug sie nachweislich liest.
+   lesen die Zeitreihen kaum. (b) erst, wenn ein Werkzeug sie nachweislich liest. **Entschieden: (a)**
 7. **F7 Export der Ergebnisse:** (a) wie heute (`Results` je Zone in gbXML, `EPOS_Ergebnis` in IFC), der Import liest keine
    Ergebnisse; (b) erweitern um Monatswerte und Heizlast je Zone in beiden Formaten. **Empfehlung: (a)**. Die Ergebnisse
-   gehören nicht zum Modell, und Konzept Datenaustausch 5.6 nennt `Results` „praktisch fragwürdig“.
+   gehören nicht zum Modell, und Konzept Datenaustausch 5.6 nennt `Results` „praktisch fragwürdig“. **Entschieden: (a)**
 8. **F8 Absorptions- und Emissionsgrad, Fensterdetails:** (a) als optionale Felder je Aufbau mit Schemaschritt und Anschluss im
    Rechenweg (DA-8), Vorgabe = heutige Konstanten; (b) nur durchreichen: Der Export schreibt die Konstanten und die Fensterwerte,
    der Import liest sie und meldet Abweichungen, ohne Feld; (c) weglassen. **Empfehlung: (b) jetzt, (a) als eigene Entscheidung**.
    Fremdwerkzeuge rechnen dann mit den Werten von EPOS statt mit eigenen Vorgaben. (a) ändert den Rechenweg und braucht eine
-   Prüfung gegen die Basis.
+   Prüfung gegen die Basis. **Entschieden: (b) jetzt, (a) als eigene Entscheidung**
 
 ## 7 Wellenplan
 

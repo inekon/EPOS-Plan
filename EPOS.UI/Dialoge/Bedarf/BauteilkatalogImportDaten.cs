@@ -19,7 +19,10 @@ public sealed record BauteilkatalogVorschauDaten(
     IReadOnlyList<string> Gruende,
     IReadOnlyList<string> CodesOhneDeutung,
     string Richtung,
-    IReadOnlyList<string> Protokoll);
+    IReadOnlyList<string> Protokoll,
+    int LambdaSkaliert = 0,
+    string? Haustechnik = null,
+    IReadOnlyList<string>? Gliederung = null);
 
 /// <summary>Das Ergebnis von „Übernehmen“: geschrieben oder nicht, und die Meldung mit Zahlen.</summary>
 public sealed record BauteilkatalogImportErgebnis(bool Erfolg, string Meldung);
@@ -58,6 +61,10 @@ public sealed class BauteilkatalogImportTexte
     public string Gekennzeichnet { get; set; } = Resource.BKI_GEKENNZEICHNET;
     /// <summary><c>BKI_MIT_BAUSTOFF</c> mit {0} = Zahl.</summary>
     public string MitBaustoff { get; set; } = Resource.BKI_MIT_BAUSTOFF;
+    /// <summary><c>BKI_LAMBDA_SKALIERT</c> mit {0} = Zahl.</summary>
+    public string LambdaSkaliert { get; set; } = Resource.BKI_LAMBDA_SKALIERT;
+    /// <summary><c>BKI_GLIEDERUNG</c></summary>
+    public string Gliederung { get; set; } = Resource.BKI_GLIEDERUNG;
     /// <summary><c>BKI_CODES</c></summary>
     public string Codes { get; set; } = Resource.BKI_CODES;
     /// <summary><c>BKI_GRUENDE</c></summary>

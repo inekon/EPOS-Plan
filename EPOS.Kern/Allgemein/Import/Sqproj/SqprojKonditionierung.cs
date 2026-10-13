@@ -17,6 +17,8 @@ namespace WindowsFormsApplication1
         Ganglinie,
         /// <summary>Aus einer IFC-Datei von EPOS-Plan (<c>EPOS_Zone</c>, <c>EPOS_Kalender_*</c>, Datenaustauschkonzept 6.3).</summary>
         IfcDatei,
+        /// <summary>Aus den Lasten und Zeitplänen einer gbXML-Datei (<see cref="GbxmlKonditionierung"/>, Welle DA-1).</summary>
+        GbxmlDatei,
     }
 
     /// <summary>Der Beleg einer Zelle: Tabelle und Spalte der Projektdatei, Profilnummer (Nutzungsprofil) bzw. Profilname.</summary>
@@ -41,6 +43,12 @@ namespace WindowsFormsApplication1
         internal Zellbeleg KalenderBeleg { get; init; }
         internal IReadOnlyList<Vorgabebeleg> Vorgaben { get; init; } = Array.Empty<Vorgabebeleg>();
         internal int Begrenzt { get; init; }
+
+        /// <summary>
+        /// Der Nennwert [W] der Datei ohne eigenen Zeitplan (gbXML, E138 F2); <c>null</c> = keiner. Der Schreibweg setzt ihn auf
+        /// den Kalender, den das Profil angelegt hat (dessen Zeitplan bleibt), sonst auf einen Kalender „immer 1“.
+        /// </summary>
+        internal double? NennwertDatei { get; init; }
 
         /// <summary>Eine fertige Bemerkung (Herkunft „aus IFC-Datei (EPOS)“); <c>null</c> = der Beleg der Ganglinie.</summary>
         internal string BemerkungText { get; init; }
@@ -74,6 +82,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Stammt die Konditionierung aus einer IFC-Datei von EPOS-Plan (<see cref="Konditionierungsherkunft.IfcDatei"/>)?</summary>
         internal bool AusIfc => Groessen.Any(g => g.Herkunft == Konditionierungsherkunft.IfcDatei);
+
+        /// <summary>Stammt die Konditionierung aus den Lasten und Zeitplänen einer gbXML-Datei (<see cref="Konditionierungsherkunft.GbxmlDatei"/>)?</summary>
+        internal bool AusGbxml => Groessen.Any(g => g.Herkunft == Konditionierungsherkunft.GbxmlDatei);
 
         /// <summary>Liefert die Projektdatei für mindestens eine Größe etwas?</summary>
         internal bool Liefert => Groessen.Any(g => g.Herkunft != Konditionierungsherkunft.Vorlage);
