@@ -51708,6 +51708,9 @@ chart</value>
   <data name="DIAGRAMM_TIP_CSV" xml:space="preserve">
     <value>Save annual load curve as CSV</value>
   </data>
+  <data name="DIAGRAMM_TIP_EINHEIT" xml:space="preserve">
+    <value>Time axis: date or hour of year</value>
+  </data>
   <data name="SIMQ_ERDREICH_LAUF_KENNWERTE_ZEILE" xml:space="preserve">
     <value>annual mean {0} °C  ·  minimum {1} °C on {2}  ·  maximum {3} °C on {4}</value>
   </data>
@@ -56101,6 +56104,33 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="IMP_IFC_PROT_OPTIK_ABWEICHUNG" xml:space="preserve">
     <value>Material "{0}", {1}: the file gives {2}, EPOS-Plan calculates with {3} — the file value is not taken over.</value>
+  </data>
+  <data name="CHART_ACHSE_DATUM" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="CHART_ACHSE_DATUM_ZIFFERN" xml:space="preserve">
+    <value>{1}/{0}</value>
+  </data>
+  <data name="CHART_ACHSE_STUNDE_IM_JAHR" xml:space="preserve">
+    <value>Hour of year [h]</value>
+  </data>
+  <data name="DIAGRAMM_BTN_DATUM" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="DIAGRAMM_BTN_STUNDE_IM_JAHR" xml:space="preserve">
+    <value>Hour of year</value>
+  </data>
+  <data name="CHART_LEGENDE_PV_EIGENVERBRAUCH" xml:space="preserve">
+    <value>PV self-consumption</value>
+  </data>
+  <data name="CHART_LEGENDE_PV_EINSPEISUNG" xml:space="preserve">
+    <value>PV feed-in (surplus)</value>
+  </data>
+  <data name="CHART_LEGENDE_PV_ABREGELUNG" xml:space="preserve">
+    <value>PV curtailment</value>
+  </data>
+  <data name="SIM_CHK_PV_AUFTEILEN" xml:space="preserve">
+    <value>Split PV (self-consumption + surplus)</value>
   </data>
 </root>
 

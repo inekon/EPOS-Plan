@@ -781,7 +781,14 @@ namespace WindowsFormsApplication1
             // die Tabelle darunter wies 13 MWh aus. Der Vorlaeufer (:4574) zeichnete
             // dieselbe genutzte Reihe; das war seine Schwaeche, nicht die des Ports.
             // SB1 (a): die glatte Viertelstundenreihe, mit der die Bilanz rechnet.
-            if (Gewaehlt(a, alle, "PHOTOVOLTAIK"))
+            // Schalter „PV aufteilen" (Anwenderentscheid 13.10.2026): die Erzeugung als STAPEL
+            // aus Eigenverbrauch, Einspeisung und - wo die Einspeisegrenze greift - Abregelung.
+            // Die Schichten rechnet der Kern (SimulationControl.PvErzeugungAufteilen); ihre
+            // Summe ist je Viertelstunde die Erzeugung.
+            var stapel = new List<ChartRenderer.Reihe>();
+            if (Gewaehlt(a, alle, "PHOTOVOLTAIK") && a != null && a.PvAufgeteilt)
+                stapel.AddRange(PvSchichten());
+            else if (Gewaehlt(a, alle, "PHOTOVOLTAIK"))
                 linien.Add(Reihe(MyResource.Resource.SIM_PHOTOVOLTAIK,
                                  sim.simulation_pv.Stromproduktion_Theoretisch_viertelstunde, Farbrolle.STROM_PV));
 
@@ -795,11 +802,33 @@ namespace WindowsFormsApplication1
 
             return ChartRenderer.ErzeugerStapelModell(
                 MyResource.Resource.CHART_TITEL_STROMBEDARF_PV_JAHRESGANGLINIE,
-                new List<ChartRenderer.Reihe>(), linien, null,
+                stapel, linien, null,
                 MyResource.Resource.CHART_ACHSE_LEISTUNG,
                 sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
                 sortiert,
-                zweite, MyResource.Resource.CHART_ACHSE_SPEICHER_KWH);
+                zweite, MyResource.Resource.CHART_ACHSE_SPEICHER_KWH,
+                stufenNachStapel: stapel.Count > 0);
+        }
+
+        /// <summary>
+        /// Die Schichten der aufgeteilten PV-Erzeugung von unten nach oben: Eigenverbrauch
+        /// (direkt genutzt und Speicherladung), Einspeisung (Überschuss) und — nur wenn die
+        /// Einspeisegrenze im Jahr greift — Abregelung. Gestapelte Flächen.
+        /// </summary>
+        internal IReadOnlyList<ChartRenderer.Reihe> PvSchichten()
+        {
+            sim.PvErzeugungAufteilen(out double[] eigen, out double[] einspeisung, out double[] abregelung);
+            var schichten = new List<ChartRenderer.Reihe>
+            {
+                Reihe(MyResource.Resource.CHART_LEGENDE_PV_EIGENVERBRAUCH, eigen, Farbrolle.STROM_PV,
+                      ChartRenderer.Stapelart.Flaeche),
+                Reihe(MyResource.Resource.CHART_LEGENDE_PV_EINSPEISUNG, einspeisung, Farbrolle.UEBERSCHUSS,
+                      ChartRenderer.Stapelart.Flaeche)
+            };
+            if (abregelung.Any(w => w > 0.0))
+                schichten.Add(Reihe(MyResource.Resource.CHART_LEGENDE_PV_ABREGELUNG, abregelung, Farbrolle.REST,
+                                    ChartRenderer.Stapelart.Flaeche));
+            return schichten;
         }
 
         /// <summary>

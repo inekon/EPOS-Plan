@@ -170,6 +170,36 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Die aufgeteilte PV-Erzeugung</b> (Schalter „PV aufteilen“ im Reiter Photovoltaik):
+        /// Eigenverbrauch + Einspeisung + Abregelung ist in JEDER Viertelstunde genau die
+        /// Erzeugung; der Eigenverbrauch umfasst den Direktverbrauch und, was aus dem Überschuss
+        /// ins Speichersystem geht (hier der Standby aus PV).
+        /// </summary>
+        [Fact]
+        public void Die_aufgeteilte_PV_Erzeugung_summiert_sich_zur_Erzeugung()
+        {
+            var sim = new SimulationControl();
+            SimulationPV pv = sim.simulation_pv;
+            pv.Strombedarf = new double[VIERTEL];
+            for (int h = 0; h < 24; h++) pv.pvPotentialGesamt_stuendlich[h] = 2.0 + h % 7;
+            for (int q = 0; q < 96; q++) pv.Strombedarf[q] = 3.0 + (q % 5);
+            pv.Bilanzieren(null, 2.5);
+            sim.SpeichersystemStandbyAusPvKw = new double[VIERTEL];
+            sim.SpeichersystemStandbyAusPvKw[40] = 0.5;
+
+            sim.PvErzeugungAufteilen(out double[] eigen, out double[] ein, out double[] abr);
+
+            Assert.Equal(VIERTEL, eigen.Length);
+            for (int q = 0; q < VIERTEL; q++)
+            {
+                Assert.Equal(pv.Stromproduktion_Theoretisch_viertelstunde[q], eigen[q] + ein[q] + abr[q], 12);
+                Assert.True(eigen[q] >= pv.Stromproduktion_viertelstunde[q] - 1e-12);
+            }
+            Assert.True(abr.Any(w => w > 0.0));
+            Assert.Equal(pv.Stromproduktion_viertelstunde[40] + 0.5, eigen[40], 12);
+        }
+
+        /// <summary>
         /// Ohne Grenze ist die Aufteilung der Überschuss selbst und die Abregelung null — der Vorgabefall.
         /// </summary>
         [Fact]

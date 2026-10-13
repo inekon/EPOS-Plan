@@ -22064,11 +22064,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datum ähnelt.
+        /// </summary>
+        public static string CHART_ACHSE_DATUM {
+            get {
+                return ResourceManager.GetString("CHART_ACHSE_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}. {1} ähnelt.
         /// </summary>
         public static string CHART_ACHSE_DATUM_MUSTER {
             get {
                 return ResourceManager.GetString("CHART_ACHSE_DATUM_MUSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}.{1}. ähnelt.
+        /// </summary>
+        public static string CHART_ACHSE_DATUM_ZIFFERN {
+            get {
+                return ResourceManager.GetString("CHART_ACHSE_DATUM_ZIFFERN", resourceCulture);
             }
         }
         
@@ -22195,6 +22213,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_ACHSE_STROMBEDARF {
             get {
                 return ResourceManager.GetString("CHART_ACHSE_STROMBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde im Jahr [h] ähnelt.
+        /// </summary>
+        public static string CHART_ACHSE_STUNDE_IM_JAHR {
+            get {
+                return ResourceManager.GetString("CHART_ACHSE_STUNDE_IM_JAHR", resourceCulture);
             }
         }
         
@@ -22636,6 +22663,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_LEGENDE_PUFFER_ANDERE {
             get {
                 return ResourceManager.GetString("CHART_LEGENDE_PUFFER_ANDERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Abregelung ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_PV_ABREGELUNG {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_PV_ABREGELUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Eigenverbrauch ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_PV_EIGENVERBRAUCH {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_PV_EIGENVERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Einspeisung (Überschuss) ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_PV_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_PV_EINSPEISUNG", resourceCulture);
             }
         }
         
@@ -23846,11 +23900,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datum ähnelt.
+        /// </summary>
+        public static string DIAGRAMM_BTN_DATUM {
+            get {
+                return ResourceManager.GetString("DIAGRAMM_BTN_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde im Jahr ähnelt.
+        /// </summary>
+        public static string DIAGRAMM_BTN_STUNDE_IM_JAHR {
+            get {
+                return ResourceManager.GetString("DIAGRAMM_BTN_STUNDE_IM_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jahresganglinie als CSV speichern ähnelt.
         /// </summary>
         public static string DIAGRAMM_TIP_CSV {
             get {
                 return ResourceManager.GetString("DIAGRAMM_TIP_CSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitachse: Datum oder Stunde im Jahr ähnelt.
+        /// </summary>
+        public static string DIAGRAMM_TIP_EINHEIT {
+            get {
+                return ResourceManager.GetString("DIAGRAMM_TIP_EINHEIT", resourceCulture);
             }
         }
         
@@ -122707,6 +122788,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_CHK_LADEGRENZE2 {
             get {
                 return ResourceManager.GetString("SIM_CHK_LADEGRENZE2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV aufteilen (Eigenverbrauch + Überschuss) ähnelt.
+        /// </summary>
+        public static string SIM_CHK_PV_AUFTEILEN {
+            get {
+                return ResourceManager.GetString("SIM_CHK_PV_AUFTEILEN", resourceCulture);
             }
         }
         

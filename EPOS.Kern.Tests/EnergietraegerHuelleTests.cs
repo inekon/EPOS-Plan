@@ -439,6 +439,48 @@ namespace EPOS.Kern.Tests
             => EnergietraegerPreisCtrl.ProjektpreisLesen(PROJEKT_STADTGAS, STADTGAS);
 
         /// <summary>
+        /// Vorgabe €/kWh: Eine NEU zugeordnete Zeile (keine gemerkte Preisbasis) öffnet
+        /// in €/kWh, der Preis je Nm³ mit dem Heizwert umgerechnet — 0,10 €/Nm³ bei
+        /// 10 kWh/Nm³ zeigt 0,01 €/kWh. Gespeichert bleibt der Wert je Nm³. Die
+        /// bestehende Zeile in Projekt 1024 (gemerkt Nm³) bleibt unverändert.
+        /// </summary>
+        [Fact]
+        public void Eine_neue_Zuordnung_oeffnet_in_EUR_je_kWh_und_die_bestehende_bleibt()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Assert.True(EnergietraegerKatalogCtrl.InsProjekt(PROJEKT, STADTGAS));
+            DataRepository.ExecuteSQL(
+                "UPDATE energy_Project_settings SET custom_price_work = ?, custom_hi = ? " +
+                "WHERE ID_Projekt = ? AND ID_Energieträger = ?",
+                new DbParam("@ap", 0.10), new DbParam("@hi", 10.0),
+                new DbParam("@pid", PROJEKT), new DbParam("@eid", STADTGAS));
+
+            EnergietraegerStand stand;
+            IReadOnlyDictionary<string, object> gaben =
+                Geladen(new EnergietraegerHuelle(PROJEKT), STADTGAS, out stand);
+
+            Assert.Equal(IndexDerEinheit(stand, "kWh"), stand.PreisbasisId);
+            Assert.Equal("€/kWh", stand.EinheitArbeitspreis);
+            Assert.Equal(0.01, stand.Arbeitspreis, 9);
+            Assert.Equal("kWh/Nm³", stand.EinheitHeizwert);
+
+            Assert.True(Speichern(gaben));
+            EnergietraegerPreisCtrl.Projektpreis neu =
+                EnergietraegerPreisCtrl.ProjektpreisLesen(PROJEKT, STADTGAS);
+            Assert.Equal(0.10, neu.Arbeitspreis.Value, 9);
+            Assert.Equal("kWh", neu.Preisbasis);
+
+            // Die bestehende Zeile: Preisbasis Nm³ bleibt, auch nach dem Öffnen.
+            EnergietraegerStand alt = Karte(new EnergietraegerHuelle(PROJEKT_STADTGAS), STADTGAS);
+            Assert.Equal(0, alt.PreisbasisId);
+            Assert.Equal(0.35, alt.Arbeitspreis, 9);
+            Assert.Equal("€/Nm³", alt.EinheitArbeitspreis);
+        }
+
+        /// <summary>
         /// Die Klappliste nennt die Einheit des Arbeitspreises; der Wechsel auf
         /// „€/kWh" rechnet nur die ANZEIGE über Hi um, gespeichert wird je Nm³ — hin
         /// und zurück, und auch nach einer Eingabe in €/kWh.
@@ -727,6 +769,8 @@ namespace EPOS.Kern.Tests
             Assert.Contains("je Projekt", stand.HistorieHinweis);
 
             stand.GueltigAb = new DateOnly(2026, 9, 14);
+            // Der Katalog öffnet in der Vorgabe €/kWh; der Preis hier ist je Nm³.
+            PreisbasisSetzen(gaben, 0).GetAwaiter().GetResult();
             Feld(gaben, () => stand.Arbeitspreis = 0.77);
             Assert.True(Speichern(gaben));
 
