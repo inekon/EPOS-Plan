@@ -5288,8 +5288,9 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     flex: 1 1 100%;
 }
 
-/* Die Verwaltung ist eine erkennbare Gruppe: ein leiser Rahmen mit Titel um
-   Bezeichner, Anlegen, Umbenennen und Loeschen. */
+/* Die Verwaltung ist eine erkennbare Gruppe: ein leiser Rahmen mit Titel um die
+   drei Knoepfe "Variante anlegen...", "Umbenennen..." und "Loeschen...", die je einen
+   kleinen Dialog oeffnen. */
 .epos-uebersicht-verwaltung {
     flex: 1 1 24rem;
     display: flex;
@@ -5306,10 +5307,6 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 .epos-uebersicht-verwaltung > legend {
     padding: 0 4px;
     color: var(--epos-text-leise);
-}
-
-.epos-uebersicht-verwaltung > .epos-feld {
-    flex: 1 1 12rem;
 }
 
 .epos-uebersicht-knoepfe {

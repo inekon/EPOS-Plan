@@ -5924,6 +5924,33 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_LBL_VARIANTE_VERWALTEN" xml:space="preserve">
     <value>Variante verwalten</value>
   </data>
+  <data name="BK_BTN_ANLEGEN_DLG" xml:space="preserve">
+    <value>Variante anlegen…</value>
+  </data>
+  <data name="BK_BTN_UMBENENNEN_DLG" xml:space="preserve">
+    <value>Umbenennen…</value>
+  </data>
+  <data name="BK_BTN_LOESCHEN_DLG" xml:space="preserve">
+    <value>Löschen…</value>
+  </data>
+  <data name="BK_LBL_VARIANTE_WAHL" xml:space="preserve">
+    <value>Variante:</value>
+  </data>
+  <data name="BK_TIP_ANLEGEN_KEIN_STAMM" xml:space="preserve">
+    <value>Zum Anlegen einer Variante zuerst ein Stammprojekt wählen.</value>
+  </data>
+  <data name="BK_TIP_VERWALTUNG_LAEUFT" xml:space="preserve">
+    <value>Während eines Laufs sind die Aktionen der Variantenverwaltung gesperrt.</value>
+  </data>
+  <data name="BK_TIP_KEINE_VARIANTE" xml:space="preserve">
+    <value>Die Gruppe hat noch keine Variante.</value>
+  </data>
+  <data name="BK_DLG_ANLEGEN_HINWEIS" xml:space="preserve">
+    <value>Die neue Variante gehört zur Gruppe des Stammprojekts „{0}“ und erhält die Daten der gewählten Quelle.</value>
+  </data>
+  <data name="BK_DLG_LOESCHEN_HINWEIS" xml:space="preserve">
+    <value>Die gewählte Variante wird nach einer Rückfrage mit allen Projektdaten unwiderruflich gelöscht.</value>
+  </data>
   <data name="BK_LBL_NUR_UNTERSCHIEDE" xml:space="preserve">
     <value>nur Unterschiede</value>
   </data>

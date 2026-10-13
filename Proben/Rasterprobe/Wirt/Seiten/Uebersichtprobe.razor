@@ -12,7 +12,11 @@
     Gaben aus der Adresse: ?varianten=<n> (Vorgabe 1) - so viele Varianten im Vergleich;
     ?nurunterschiede=1 setzt den Schalter; ?variante=<i> waehlt unter "Detail-Unterschiede
     fuer Variante" die i-te Variante (Unterschiedstabelle), die Vorgabe ist der
-    Komponentenvergleich. Die Wahl im Feld wirkt auch von Hand. *@
+    Komponentenvergleich. Die Wahl im Feld wirkt auch von Hand.
+
+    Die drei Knoepfe der Gruppe "Variante verwalten" oeffnen ihre Dialoge (Anwenderauftrag
+    13.10.2026); Anlegen, Umbenennen und Loeschen wirken auf die synthetische Gruppe der
+    Seite - ohne Datenbank, nur fuer die Sichtprobe. *@
 
 <div class="epos-startseite uep-rahmen">
     <Reiter Aktiv="BERICHTE_KOSTEN" Bezeichnung="Hauptreiter">
@@ -41,14 +45,18 @@
 
 @code {
     private const string STAMM = "Referenzprojekt Mehrfamilienhaus";
-    private static int s_varianten = 1;
+
+    /// <summary>Die Bezeichner der Varianten (Variante i hat die Projekt-Id 1 + i); die Dialoge der Verwaltung aendern die Liste.</summary>
+    private static List<string> s_namen = new() { Vorgabename(1) };
+    private static int s_varianten => s_namen.Count;
     private static bool s_nurUnterschiede;
     private static int s_markiert = 1;
 
     protected override void OnInitialized()
     {
         var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
-        s_varianten = abfrage.TryGetValue("varianten", out var v) && int.TryParse(v, out int n) ? Math.Clamp(n, 0, 8) : 1;
+        int anzahl = abfrage.TryGetValue("varianten", out var v) && int.TryParse(v, out int n) ? Math.Clamp(n, 0, 8) : 1;
+        s_namen = Enumerable.Range(1, anzahl).Select(Vorgabename).ToList();
         s_nurUnterschiede = abfrage.TryGetValue("nurunterschiede", out var u) && u.ToString() == "1";
         s_markiert = abfrage.TryGetValue("variante", out var w) && int.TryParse(w, out int i) && i >= 1 && i <= s_varianten
             ? 1 + i : 1;
@@ -73,7 +81,9 @@
         return l.ToArray();
     }
 
-    private static string Variantenname(int i) => i == 1 ? "mit Pufferspeicher Heizung" : "Variante " + i;
+    private static string Vorgabename(int i) => i == 1 ? "mit Pufferspeicher Heizung" : "Variante " + i;
+
+    private static string Variantenname(int i) => s_namen[i - 1];
 
     private static GewerkVergleichZelle Zelle(string name, string kennwert, int anzahl = 1, bool ab = false)
         => new GewerkVergleichZelle
@@ -148,7 +158,6 @@
                                      Zellen = new[] { "—", "Speicher 1" }, MitAktion = true,
                                      Sperrgrund = "Der Bezeichner ist der Schlüssel der Zuordnung." }
             },
-            Loeschbar = true,
             AnlegenMoeglich = true,
             SimulierenMoeglich = true,
             Statuszeile = "3 Unterschiede gegenüber dem Stammprojekt."
@@ -162,8 +171,28 @@
             ["VergleichGewaehlt"] = new Action<IReadOnlyList<int>>(_ => { }),
             ["ZeileMarkiert"] = new Action<int>(id => s_markiert = id),
             ["UebernahmeGaben"] = new Func<VergleichZeile, IReadOnlyDictionary<string, object>>(_ => new Dictionary<string, object>()),
-            ["VarianteUmbenennen"] = new Func<string, string>(_ => ""),
-            ["VarianteAnlegenOeffnen"] = new Func<Task<bool>>(() => Task.FromResult(false)),
+            // Die drei Dialoge der Verwaltung wirken auf die synthetische Gruppe (Variante i = Id 1 + i).
+            ["VarianteAnlegen"] = new Func<int, string, VariantenAktionErgebnis>((_, b) =>
+            {
+                s_namen.Add(b);
+                return VariantenAktionErgebnis.Ok("Variante „" + b + "“ angelegt.");
+            }),
+            ["Zielname"] = new Func<int, string, string>((_, b) => STAMM + " - " + b),
+            ["VarianteUmbenennen"] = new Func<int, string, VariantenAktionErgebnis>((id, b) =>
+            {
+                string bisher = s_namen[id - 2];
+                s_namen[id - 2] = b;
+                return VariantenAktionErgebnis.Ok("Die Variante „" + bisher + "“ heißt jetzt „" + b + "“.");
+            }),
+            ["LoeschFrage"] = new Func<int, string>(id =>
+                "Variante „" + s_namen[id - 2] + "“ und alle zugehörigen Projektdaten unwiderruflich löschen?"),
+            ["VarianteLoeschen"] = new Func<int, bool, string>((id, _) =>
+            {
+                string name = s_namen[id - 2];
+                s_namen.RemoveAt(id - 2);
+                if (s_markiert == id) s_markiert = 1;
+                return "Variante „" + name + "“ gelöscht.";
+            }),
             ["NurUnterschiedeLesen"] = new Func<bool>(() => s_nurUnterschiede),
             ["NurUnterschiedeGewechselt"] = new Action<bool>(an => s_nurUnterschiede = an)
         }

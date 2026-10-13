@@ -1035,14 +1035,17 @@ public class KiDialogkatalogTests : IDisposable
     /// speichern" drei Einstellwerte und den gerechneten Zielnamen.</para>
     /// </remarks>
     [Fact]
-    public void Die_vier_Berichts_und_Projektmasken_fuehren_6_8_5_und_4_Felder()
+    public void Die_vier_Berichts_und_Projektmasken_fuehren_7_9_5_und_4_Felder()
     {
         KiDialog ueb = KiDialoge.Katalog.Finde(KiMaskennamen.BERICHTE_UEBERSICHT)!;
         KiDialog ber = KiDialoge.Katalog.Finde(KiMaskennamen.BERICHTSEITE)!;
         KiDialog kop = KiDialoge.Katalog.Finde(KiMaskennamen.PROJEKT_KOPIE)!;
         KiDialog var = KiDialoge.Katalog.Finde(KiMaskennamen.PROJEKT_VARIANTE)!;
 
-        Assert.Equal(8, ueb.Felder.Count);
+        // Anwenderauftrag 13.10.2026: kein Feld "bezeichner" mehr - der Bezeichner ist eine
+        // Angabe der Dialoge "Variante anlegen" und "Umbenennen" (8 -> 7).
+        Assert.Equal(7, ueb.Felder.Count);
+        Assert.Null(ueb.FindeFeld("bezeichner"));
         Assert.Equal(9, ber.Felder.Count);
         Assert.Equal(KiParameterTyp.Wahl, ber.FindeFeld("szenario")!.Typ);
         Assert.Equal("BerichtSeiteKiSicht.Szenario", ber.FindeFeld("szenario")!.Eigenschaftspfad);
@@ -1975,7 +1978,7 @@ public class KiDialogkatalogTests : IDisposable
 
         // Welle KI-F6, Schritt 2
         [KiMaskennamen.BERICHTE_UEBERSICHT] =
-            "bindet über die Sichtklasse UebersichtSeiteKiSicht auf die vier Wahlwege " +
+            "bindet über die Sichtklasse UebersichtSeiteKiSicht auf die drei Wahlwege " +
             "der Seite und den Schalter „nur Unterschiede“; sie schreibt nicht in ihren Stand, " +
             "sondern meldet an die Hülle. Zeuge ist UebersichtSeiteTests",
         [KiMaskennamen.BERICHTSEITE] =
