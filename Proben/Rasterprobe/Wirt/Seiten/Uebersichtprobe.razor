@@ -18,7 +18,10 @@
     Huelle UebersichtErgebnisGaben mit synthetischen Ergebnissen: Variante 1 ist simuliert und
     weicht ab, weitere Varianten sind nicht simuliert. ?offen=alle klappt alle zugeklappten
     Gruppen auf, ?offen=<schluessel,...> die genannten (Gruppenschluessel des Kerns, etwa
-    emissionen).
+    emissionen). ?anpassen=1 oeffnet den Dialog "Anzeige anpassen..." beim Laden;
+    ?anzeige=beispiel legt eine angepasste Anzeige in die Einstellungsablage der Probe
+    (Deckung ausgeblendet, Stromlast abgewaehlt, Kaelte offen). Die Ablage ist eine
+    Attrappe der Naht und wird je Seitenaufruf geleert.
 
     Die drei Knoepfe der Gruppe "Variante verwalten" oeffnen ihre Dialoge (Anwenderauftrag
     13.10.2026); Anlegen, Umbenennen und Loeschen wirken auf die synthetische Gruppe der
@@ -58,6 +61,10 @@
     private static bool s_nurUnterschiede;
     private static int s_markiert = 1;
     private static readonly HashSet<string> s_offen = new();
+    private static bool s_anpassen;
+
+    /// <summary>Die Einstellungsablage der Probe (Attrappe der Naht, je Seitenaufruf geleert).</summary>
+    private static readonly WindowsFormsApplication1.FluechtigeEinstellungen s_ablage = new();
 
     protected override void OnInitialized()
     {
@@ -68,6 +75,16 @@
         s_markiert = abfrage.TryGetValue("variante", out var w) && int.TryParse(w, out int i) && i >= 1 && i <= s_varianten
             ? 1 + i : 1;
         s_offen.Clear();
+        s_anpassen = abfrage.TryGetValue("anpassen", out var a) && a.ToString() == "1";
+        s_ablage.Loesche(EPOS.UI.Seiten.Berichte.UebersichtErgebnisAnzeige.SCHLUESSEL_GRUPPEN);
+        s_ablage.Loesche(EPOS.UI.Seiten.Berichte.UebersichtErgebnisAnzeige.SCHLUESSEL_KENNZAHLEN_AUS);
+        s_ablage.Loesche(EPOS.UI.Seiten.Berichte.UebersichtErgebnisAnzeige.SCHLUESSEL_OHNE_WERT_AUS);
+        if (abfrage.TryGetValue("anzeige", out var z) && z.ToString() == "beispiel")
+        {
+            // Eine angepasste Anzeige: Deckung ausgeblendet, die Stromlast abgewählt, Kälte offen in der Tafel.
+            s_ablage.Schreib(EPOS.UI.Seiten.Berichte.UebersichtErgebnisAnzeige.SCHLUESSEL_GRUPPEN, "deckung=ausgeblendet;kaelte=offen");
+            s_ablage.Schreib(EPOS.UI.Seiten.Berichte.UebersichtErgebnisAnzeige.SCHLUESSEL_KENNZAHLEN_AUS, "energie.strommax");
+        }
         if (abfrage.TryGetValue("offen", out var o))
         {
             IEnumerable<string> gruppen = o.ToString() == "alle"
@@ -117,12 +134,13 @@
         };
     }
 
-    private static readonly WindowsFormsApplication1.UebersichtErgebnisGaben s_ergebnisHuelle = new(Ergebnis);
+    private static readonly WindowsFormsApplication1.UebersichtErgebnisGaben s_ergebnisHuelle = new(Ergebnis, s_ablage);
 
     private static IReadOnlyDictionary<string, object> ErgebnisSatz()
     {
         var satz = new Dictionary<string, object>(s_ergebnisHuelle.Gaben())
         {
+            ["AnpassenOffen"] = s_anpassen,
             ["KlappgruppeOffenLesen"] = new Func<string, bool>(g => s_offen.Contains(g)),
             ["KlappgruppeOffenGewechselt"] = new Action<string, bool>((g, an) =>
             {
