@@ -512,12 +512,12 @@
                                                           Platzhalter="@Format(Texte.LabelFerien, n + 1)"
                                                           WertChanged="t => FerienSetzen(zone, n, x => x.Name = string.IsNullOrWhiteSpace(t) ? null : t.Trim(), auslegung: false)" />
                                                 <Gemeinjahrdatum Bezeichnung="@Texte.LabelFerienVon" Wert="@f.Von" Feldname="@FerienFeld(Texte.LabelFerienVon, n)"
-                                                                 Platzhalter="@Texte.PlatzhalterFerienVon" Hinweis="@Texte.HinweisDatumFormat"
+                                                                 Platzhalter="@Texte.PlatzhalterFerienVon" Titel="@Texte.HinweisDatumFormat"
                                                                  JahrHinweis="@Texte.HinweisDatumJahr" Meldung="@Texte.MeldungGemeinjahr"
                                                                  WertChanged="t => FerienSetzen(zone, n, x => x.Von = t)"
                                                                  FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert)" />
                                                 <Gemeinjahrdatum Bezeichnung="@Texte.LabelFerienBis" Wert="@f.Bis" Feldname="@FerienFeld(Texte.LabelFerienBis, n)"
-                                                                 Platzhalter="@Texte.PlatzhalterFerienBis" Hinweis="@Texte.HinweisDatumFormat"
+                                                                 Platzhalter="@Texte.PlatzhalterFerienBis" Titel="@Texte.HinweisDatumFormat"
                                                                  JahrHinweis="@Texte.HinweisDatumJahr" Meldung="@Texte.MeldungGemeinjahr"
                                                                  WertChanged="t => FerienSetzen(zone, n, x => x.Bis = t)"
                                                                  FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert)" />
@@ -531,14 +531,14 @@
                                         <button type="button" class="epos-knopf epos-zapfprofil-ferien-neu"
                                                 @onclick="() => FerienHinzufuegen(zone)">@Texte.KnopfFerienNeu</button>
                                     </div>
-                                    <Herleitungszeile Text="@Texte.HinweisFerien" />
+                                    <Herleitungszeile Text="@(Texte.HinweisDatumFormat + " " + Texte.HinweisFerien)" />
 
                                     <section class="epos-zapfprofil-jahresraster" aria-label="@Texte.LabelJahresraster">
                                         <h5 class="epos-zapfprofil-kalender-titel">@Texte.LabelJahresraster</h5>
                                         @if (TagtypenDerZone() is { } tagtypen)
                                         {
                                             <Jahresraster Bezeichnung="@Texte.LabelJahresraster" Tage="@tagtypen" Legende="@Tagtyplegende"
-                                                          Monatsnamen="@Daten.Monatsnamen" />
+                                                          Monatsnamen="@Monatskurznamen" />
                                             <p class="epos-leisezeile">@Texte.HinweisJahresraster</p>
                                         }
                                         else
@@ -2095,6 +2095,10 @@
             ? Texte.SummeBundeseinheitlich : Format(Texte.SummeFeiertage, gk!.Feiertagsland);
         return Format(Texte.SummeGebaeude, Gebaeudename(id)) + " · " + ferien + " · " + feiertage;
     }
+
+    /// <summary>Die Monatsnamen des Jahresrasters, gekürzt auf drei Zeichen — die Monatsspalte ist schmal.</summary>
+    private IReadOnlyList<string> Monatskurznamen
+        => Daten.Monatsnamen.Select(m => m.Length > 3 ? m[..3] : m).ToList();
 
     /// <summary>Die Legende des Jahresrasters: die vier Tagtypen des Zapfkalenders mit der Farbe ihrer Tagesart.</summary>
     private IReadOnlyList<(int Art, string Name)> Tagtyplegende => new[]

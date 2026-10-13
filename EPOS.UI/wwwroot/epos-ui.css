@@ -15424,6 +15424,19 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
    Zonenblock. Die Werte eines gebundenen Gebaeudes stehen als Liste aus Begriff und Wert, die
    eigenen Ferien wie im Gebaeudedialog je Zeile Name, von, bis und „Entfernen", umbrechend statt
    quer rollend; das Jahresraster rollt in seinem eigenen Kasten (.epos-kalb-rolle). */
+/* Die Zusammenfassung im Kopf der zugeklappten Karte ist ein Satz: Sie bricht um, der Titel nicht. */
+.epos-zapfprofil-kalender .epos-klappgruppe-text {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.epos-zapfprofil-kalender .epos-klappgruppe-zusatz {
+    flex: 1 1 auto;
+    min-width: 0;
+    white-space: normal;
+    text-align: start;
+}
+
 .epos-zapfprofil-kalender-titel {
     margin: var(--epos-abstand) 0 4px 0;
     font-weight: 600;
