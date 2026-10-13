@@ -1887,6 +1887,11 @@ Unter der Tafel steht leise „n Kennzahlen ohne Wert ausgeblendet“. Zu prüfe
 Tafeln gleich breit (20rem, unter 760 px 12rem), die Versionsspalten sind gleich breit, Spaltenkopf und
 Wert stehen rechtsbündig an derselben Kante, die nicht simulierte Version zeigt leise Striche und
 „nicht simuliert“ fett im Kopf, die Seite rollt nie quer.
+`?ansicht=grafik` stellt den Abschnitt auf die Grafik (Umschalter „Tabelle | Grafik“, im Wirt je Sitzung):
+je Gruppe und Einheit ein Balkendiagramm, eine Serie je Version, die Legende der Versionen einmal oben, die nicht
+simulierte Version grau mit „nicht simuliert“ und ohne Balken. Zu prüfen bei 1 800, 1 280, 940 und 700 px: die
+Diagramme teilen sich die Breite (ab 440 px je Spalte, darunter eine Spalte), nichts rollt quer, Legende und
+Beschriftungen überlappen nicht, die Farben bleiben unterscheidbar; mit `?varianten=6` bleiben die Balken lesbar.
 
 ## Sichtprobe „Dezentrale Kälte“ (K6b) — Seite `/kaeltedezentralprobe`
 

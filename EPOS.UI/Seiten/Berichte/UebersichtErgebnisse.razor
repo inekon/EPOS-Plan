@@ -25,6 +25,11 @@
    abgewaehlte Kennzahlen, "Zeilen ohne Wert ausblenden") wirkt in der Huelle auf die
    Gruppenliste; die Komponente reicht sie bei OK an AnzeigeSpeichern und laedt neu. Was
    "ohne Wert" ausblendet, nennt eine leise Zeile unter der Tabelle. Kein Delegat, kein Knopf.
+   TABELLE ODER GRAFIK. Im Kopf des Abschnitts steht der Umschalter "Tabelle |
+   Grafik" (Vorgabe Tabelle); die Wahl gilt je Benutzer ueber die Einstellungsnaht
+   des Kerns (Schluessel Uebersicht.Ergebnisse.Ansicht, Lesen und Schreiben reicht
+   die Huelle durch). Die Grafik (UebersichtErgebnisGrafik) bekommt dieselben
+   Gruppen wie die Tafel, gefiltert nach Zustand und "nur Unterschiede".
 
    LEERE FAELLE. Eine nicht simulierte Version zeigt leise "—", ihr Spaltenkopf sagt
    deutlich "nicht simuliert"; ist keine Version simuliert, steht ein Hinweis statt
@@ -35,17 +40,51 @@
 @if (_ergebnis is not null && _ergebnis.Versionsspalten.Count > 0)
 {
     <section class="epos-uebersicht-ergebnisse" aria-label="@Titel">
+        @{ bool mitDaten = !(_ergebnis.KeineSimulation || (_ergebnis.Gruppen.Count == 0 && _ergebnis.Anpassbar.Count == 0)); }
         <div class="epos-ergebnis-kopf">
             <h2 class="epos-uebersicht-abschnitt">@Titel</h2>
+            @if (mitDaten)
+            {
+                <span class="epos-ergebnis-ansicht" role="radiogroup" aria-label="@AnsichtText" title="@AnsichtText"
+                      @onkeydown="BeiAnsichtTaste">
+                    @for (int i = 0; i < 2; i++)
+                    {
+                        int k = i;
+                        bool an = (k == 1) == IstGrafik;
+                        <button type="button" role="radio" aria-checked="@(an ? "true" : "false")" tabindex="@(an ? 0 : -1)"
+                                class="@(an ? "epos-ergebnis-ansicht-stellung epos-ergebnis-ansicht-stellung--an" : "epos-ergebnis-ansicht-stellung")"
+                                data-ansicht="@(k == 1 ? ANSICHT_GRAFIK : ANSICHT_TABELLE)"
+                                @ref="_ansichtKnoepfe[k]"
+                                @onclick="() => AnsichtSetzen(k == 1 ? ANSICHT_GRAFIK : ANSICHT_TABELLE)">@(k == 1 ? AnsichtGrafikText : AnsichtTabelleText)</button>
+                    }
+                </span>
+            }
             @if (AnpassenMoeglich)
             {
                 <button type="button" class="epos-knopf epos-ergebnis-anpassen-knopf"
                         @onclick="AnpassenOeffnen">@AnpassenTexte.Knopf</button>
             }
         </div>
-        @if (_ergebnis.KeineSimulation || (_ergebnis.Gruppen.Count == 0 && _ergebnis.Anpassbar.Count == 0))
+        @if (!mitDaten)
         {
             <p class="epos-komponenten-leer epos-ergebnis-leer">@KeineSimulationText</p>
+        }
+        else if (IstGrafik)
+        {
+            @if (Tafelgruppen.Count == 0 && Klappgruppen.Count == 0)
+            {
+                <p class="epos-komponenten-leer epos-ergebnis-gleich">@KeineUnterschiedeText</p>
+            }
+            <UebersichtErgebnisGrafik Ergebnis="@_ergebnis" Tafelgruppen="@Tafelgruppen" Klappgruppen="@Klappgruppen"
+                                      KlappgruppeOffen="@KlappgruppeOffen" KlappgruppeGewechselt="@BeiKlappgruppe"
+                                      SpalteKennzahl="@SpalteKennzahl" LegendeText="@GrafikLegendeText"
+                                      HinweisText="@GrafikHinweisText" NichtSimuliertText="@NichtSimuliertText"
+                                      WeichtAbText="@WeichtAbText" ZusatzText="@(g => Anzahl(g.Zeilen.Count))" />
+            @if (_ergebnis.OhneWertAusgeblendet > 0)
+            {
+                <p class="epos-leisezeile epos-ergebnis-ohnewert">@OhneWertHinweis</p>
+            }
+            <p class="epos-leisezeile epos-ergebnis-quelle">@HinweisQuelle</p>
         }
         else
         {
@@ -194,6 +233,72 @@
         if (einstellung is null) return;
         AnzeigeSpeichern?.Invoke(einstellung);
         _ergebnis = Stand is not null && Laden is not null ? Laden(Stand) : _ergebnis;
+    }
+
+    /// <summary>Der Ablagewert der Tabellenansicht (Vorgabe).</summary>
+    public const string ANSICHT_TABELLE = "tabelle";
+
+    /// <summary>Der Ablagewert der Grafikansicht.</summary>
+    public const string ANSICHT_GRAFIK = "grafik";
+
+    /// <summary>Liest die gewählte Ansicht („tabelle“, „grafik“) aus der Einstellungsnaht der Hülle; ohne Leseweg gilt die Tabelle.</summary>
+    [Parameter] public Func<string>? AnsichtLesen { get; set; }
+
+    /// <summary>Meldet die neue Ansicht an die Hülle, die sie je Benutzer ablegt.</summary>
+    [Parameter] public Action<string>? AnsichtGewechselt { get; set; }
+
+    /// <summary>Die Sprachausgabe des Umschalters (<c>BK_ERG_ANSICHT</c>).</summary>
+    [Parameter] public string AnsichtText { get; set; } = "Darstellung";
+
+    /// <summary>Die Stellung „Tabelle“ (<c>BK_ERG_ANSICHT_TABELLE</c>).</summary>
+    [Parameter] public string AnsichtTabelleText { get; set; } = "Tabelle";
+
+    /// <summary>Die Stellung „Grafik“ (<c>BK_ERG_ANSICHT_GRAFIK</c>).</summary>
+    [Parameter] public string AnsichtGrafikText { get; set; } = "Grafik";
+
+    /// <summary>Die Sprachausgabe der Versionslegende der Grafik (<c>BK_ERG_GRAFIK_LEGENDE</c>).</summary>
+    [Parameter] public string GrafikLegendeText { get; set; } = "Versionen";
+
+    /// <summary>Die Legende des Randstrichs der Grafik (<c>BK_ERG_GRAFIK_HINWEIS</c>).</summary>
+    [Parameter] public string GrafikHinweisText { get; set; } =
+        "Randstrich: weicht vom Stammprojekt ab; am Balken Wert und Abweichung zum Stammprojekt in Prozent";
+
+    private string? _ansicht;
+    private readonly ElementReference[] _ansichtKnoepfe = new ElementReference[2];
+    private bool _ansichtFokus;
+
+    /// <summary>Die gezeigte Ansicht („tabelle“ oder „grafik“; Prüfhilfe).</summary>
+    public string Ansicht => _ansicht ??= AnsichtLesen?.Invoke() == ANSICHT_GRAFIK ? ANSICHT_GRAFIK : ANSICHT_TABELLE;
+
+    private bool IstGrafik => Ansicht == ANSICHT_GRAFIK;
+
+    private void AnsichtSetzen(string ansicht)
+    {
+        if (Ansicht == ansicht) return;
+        _ansicht = ansicht;
+        AnsichtGewechselt?.Invoke(ansicht);
+    }
+
+    private void BeiAnsichtTaste(KeyboardEventArgs e)
+    {
+        string? neu = e.Key switch
+        {
+            "ArrowRight" or "ArrowDown" or "ArrowLeft" or "ArrowUp" => IstGrafik ? ANSICHT_TABELLE : ANSICHT_GRAFIK,
+            "Home" => ANSICHT_TABELLE,
+            "End" => ANSICHT_GRAFIK,
+            _ => null
+        };
+        if (neu is null || neu == Ansicht) return;
+        AnsichtSetzen(neu);
+        _ansichtFokus = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_ansichtFokus) return;
+        _ansichtFokus = false;
+        try { await _ansichtKnoepfe[IstGrafik ? 1 : 0].FocusAsync(preventScroll: true); }
+        catch (Exception) { /* Ohne Browser (Prüfstand) gibt es keinen Fokus. */ }
     }
 
     /// <summary>Die aufgeklappten Klappgruppen, solange die Hülle die Stellung nicht führt.</summary>

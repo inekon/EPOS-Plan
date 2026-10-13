@@ -65,6 +65,7 @@
 
     /// <summary>Die Einstellungsablage der Probe (Attrappe der Naht, je Seitenaufruf geleert).</summary>
     private static readonly WindowsFormsApplication1.FluechtigeEinstellungen s_ablage = new();
+    private static string s_ansicht = "tabelle";
 
     protected override void OnInitialized()
     {
@@ -74,8 +75,9 @@
         s_nurUnterschiede = abfrage.TryGetValue("nurunterschiede", out var u) && u.ToString() == "1";
         s_markiert = abfrage.TryGetValue("variante", out var w) && int.TryParse(w, out int i) && i >= 1 && i <= s_varianten
             ? 1 + i : 1;
+        s_ansicht = abfrage.TryGetValue("ansicht", out var a) && a.ToString() == "grafik" ? "grafik" : "tabelle";
         s_offen.Clear();
-        s_anpassen = abfrage.TryGetValue("anpassen", out var a) && a.ToString() == "1";
+        s_anpassen = abfrage.TryGetValue("anpassen", out var anp) && anp.ToString() == "1";
         s_ablage.Loesche(EPOS.UI.Seiten.Berichte.UebersichtErgebnisAnzeige.SCHLUESSEL_GRUPPEN);
         s_ablage.Loesche(EPOS.UI.Seiten.Berichte.UebersichtErgebnisAnzeige.SCHLUESSEL_KENNZAHLEN_AUS);
         s_ablage.Loesche(EPOS.UI.Seiten.Berichte.UebersichtErgebnisAnzeige.SCHLUESSEL_OHNE_WERT_AUS);
@@ -141,6 +143,9 @@
         var satz = new Dictionary<string, object>(s_ergebnisHuelle.Gaben())
         {
             ["AnpassenOffen"] = s_anpassen,
+            // ?ansicht=grafik zeigt die Grafik; die Wahl gilt im Wirt je Sitzung statt in der Einstellungsnaht.
+            ["AnsichtLesen"] = new Func<string>(() => s_ansicht),
+            ["AnsichtGewechselt"] = new Action<string>(a => s_ansicht = a),
             ["KlappgruppeOffenLesen"] = new Func<string, bool>(g => s_offen.Contains(g)),
             ["KlappgruppeOffenGewechselt"] = new Action<string, bool>((g, an) =>
             {

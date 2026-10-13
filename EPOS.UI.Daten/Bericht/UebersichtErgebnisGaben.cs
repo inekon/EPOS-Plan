@@ -34,6 +34,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static readonly HashSet<string> s_offeneKlappgruppen = new HashSet<string>();
 
+        /// <summary>Der Einstellungsschlüssel der Ansicht „Tabelle | Grafik“ — je Benutzer über die Naht des Kerns.</summary>
+        internal const string EINSTELLUNG_ANSICHT = "Uebersicht.Ergebnisse.Ansicht";
+
         private readonly Func<int, bool, VariantenDaten> _lade;
         private readonly Dictionary<int, (string Stand, VariantenDaten Daten)> _puffer =
             new Dictionary<int, (string, VariantenDaten)>();
@@ -76,6 +79,13 @@ namespace WindowsFormsApplication1
                 ["AnzeigeSpeichern"] = new Action<ErgebnisAnzeigeEinstellung>(AnzeigeSpeichern),
                 ["AnpassenTexte"] = AnpassenTexte(),
                 ["HilfeSchluessel"] = "UcBkUebersicht.btn_Help",
+                ["AnsichtText"] = MyResource.Resource.BK_ERG_ANSICHT,
+                ["AnsichtTabelleText"] = MyResource.Resource.BK_ERG_ANSICHT_TABELLE,
+                ["AnsichtGrafikText"] = MyResource.Resource.BK_ERG_ANSICHT_GRAFIK,
+                ["GrafikLegendeText"] = MyResource.Resource.BK_ERG_GRAFIK_LEGENDE,
+                ["GrafikHinweisText"] = MyResource.Resource.BK_ERG_GRAFIK_HINWEIS,
+                ["AnsichtLesen"] = new Func<string>(() => AnsichtLesen(Ablage)),
+                ["AnsichtGewechselt"] = new Action<string>(a => AnsichtSchreiben(a, Ablage)),
                 ["KlappgruppeOffenLesen"] = new Func<string, bool>(g => s_offeneKlappgruppen.Contains(g)),
                 ["KlappgruppeOffenGewechselt"] = new Action<string, bool>((g, an) =>
                 {
@@ -83,6 +93,23 @@ namespace WindowsFormsApplication1
                     else s_offeneKlappgruppen.Remove(g);
                 })
             };
+        }
+
+        /// <summary>
+        /// Die gewählte Ansicht aus derselben Ablage wie die Anzeigeeinstellung (<paramref name="ablage"/>, sonst
+        /// <c>Dienste.Einstellungen</c>); ohne Ablage oder bei einem Fehler die Tabelle.
+        /// </summary>
+        internal static string AnsichtLesen(IEinstellungen ablage = null)
+        {
+            try { return (ablage ?? Dienste.Einstellungen).Lies(EINSTELLUNG_ANSICHT, UebersichtErgebnisse.ANSICHT_TABELLE) ?? UebersichtErgebnisse.ANSICHT_TABELLE; }
+            catch (Exception) { return UebersichtErgebnisse.ANSICHT_TABELLE; }
+        }
+
+        /// <summary>Legt die gewählte Ansicht je Benutzer ab; ein Fehler der Ablage lässt die Anzeige stehen.</summary>
+        internal static void AnsichtSchreiben(string ansicht, IEinstellungen ablage = null)
+        {
+            try { (ablage ?? Dienste.Einstellungen).Schreib(EINSTELLUNG_ANSICHT, ansicht ?? UebersichtErgebnisse.ANSICHT_TABELLE); }
+            catch (Exception) { /* Die Wahl gilt dann nur für diese Sitzung. */ }
         }
 
         /// <summary>
@@ -250,12 +277,15 @@ namespace WindowsFormsApplication1
                         Schluessel = z.Schluessel,
                         Bezeichnung = z.Einheit.Length == 0 ? z.Bezeichnung : z.Bezeichnung + " [" + z.Einheit + "]",
                         OhneWert = UebersichtErgebnisAnzeige.OhneWert(z.Werte),
+                        Kennzahl = z.Bezeichnung,
+                        Einheit = z.Einheit,
                         Zellen = z.Texte.Select((t, i) => new ErgebnisVergleichZelle
                         {
                             Text = t,
                             WeichtAb = z.WeichtAb[i],
                             Abweichung = z.Abweichung[i],
-                            NichtSimuliert = !vergleich.Simuliert[i]
+                            NichtSimuliert = !vergleich.Simuliert[i],
+                            Wert = z.Werte[i]
                         }).ToList()
                     }).ToList();
                 if (zeilen.Count > 0)

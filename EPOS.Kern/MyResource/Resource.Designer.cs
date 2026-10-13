@@ -12167,6 +12167,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Darstellung ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANSICHT {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grafik ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANSICHT_GRAFIK {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANSICHT_GRAFIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tabelle ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANSICHT_TABELLE {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANSICHT_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kennzahlen ähnelt.
         /// </summary>
         public static string BK_ERG_ANZAHL_KENNZAHLEN {
@@ -12199,6 +12226,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_ERG_ENDENERGIE_TRAEGER {
             get {
                 return ResourceManager.GetString("BK_ERG_ENDENERGIE_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Randstrich: weicht vom Stammprojekt ab; am Balken Wert und Abweichung zum Stammprojekt in Prozent ähnelt.
+        /// </summary>
+        public static string BK_ERG_GRAFIK_HINWEIS {
+            get {
+                return ResourceManager.GetString("BK_ERG_GRAFIK_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Versionen ähnelt.
+        /// </summary>
+        public static string BK_ERG_GRAFIK_LEGENDE {
+            get {
+                return ResourceManager.GetString("BK_ERG_GRAFIK_LEGENDE", resourceCulture);
             }
         }
         

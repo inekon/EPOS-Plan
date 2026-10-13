@@ -5930,6 +5930,21 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_ERG_ANP_OHNE_WERT_HINWEIS_EINS" xml:space="preserve">
     <value>1 Kennzahl ohne Wert ausgeblendet</value>
   </data>
+  <data name="BK_ERG_ANSICHT" xml:space="preserve">
+    <value>Darstellung</value>
+  </data>
+  <data name="BK_ERG_ANSICHT_TABELLE" xml:space="preserve">
+    <value>Tabelle</value>
+  </data>
+  <data name="BK_ERG_ANSICHT_GRAFIK" xml:space="preserve">
+    <value>Grafik</value>
+  </data>
+  <data name="BK_ERG_GRAFIK_LEGENDE" xml:space="preserve">
+    <value>Versionen</value>
+  </data>
+  <data name="BK_ERG_GRAFIK_HINWEIS" xml:space="preserve">
+    <value>Randstrich: weicht vom Stammprojekt ab; am Balken Wert und Abweichung zum Stammprojekt in Prozent</value>
+  </data>
   <data name="BK_STATUS_SIMULIERT" xml:space="preserve">
     <value>{0} · simuliert</value>
   </data>

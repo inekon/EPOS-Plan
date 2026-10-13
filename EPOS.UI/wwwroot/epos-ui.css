@@ -5613,9 +5613,11 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     max-height: none;
 }
 
-/* "Anzeige anpassen" (Anwenderentscheid 13.10.2026): Der Abschnittskopf traegt rechts den
-   Knopf; die leise Linie wandert vom Titel an den Kopf. Unter der Tabelle nennt eine leise
-   Zeile, wie viele Kennzahlen ohne Wert ausgeblendet sind. */
+/* Der Kopf des Abschnitts: links die Ueberschrift, daneben der Umschalter "Tabelle | Grafik"
+   (Segmentschalter des Hauses), rechts der Knopf "Anzeige anpassen..."; alles mittig auf einer
+   Linie, die leise Linie liegt am Kopf. Wo es eng wird, bricht erst der Knopf, dann der
+   Umschalter unter die Ueberschrift. Unter der Tabelle nennt eine leise Zeile, wie viele
+   Kennzahlen ohne Wert ausgeblendet sind. */
 .epos-ergebnis-kopf {
     display: flex;
     flex-wrap: wrap;
@@ -5627,7 +5629,7 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 }
 
 .epos-ergebnis-kopf .epos-uebersicht-abschnitt {
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     margin: 0;
     padding-bottom: 0;
     border-bottom: 0;
@@ -5635,6 +5637,7 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 
 .epos-ergebnis-anpassen-knopf {
     flex: 0 0 auto;
+    margin-left: auto;
     white-space: nowrap;
 }
 
@@ -5678,6 +5681,141 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 
 .epos-ergebnis-anpassen-ohnewert .epos-leisezeile {
     margin: 0 0 var(--epos-abstand) 0;
+}
+
+.epos-ergebnis-ansicht {
+    display: inline-flex;
+    align-items: stretch;
+    flex: 0 0 auto;
+    overflow: hidden;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+    color: var(--epos-text);
+}
+
+.epos-ergebnis-ansicht-stellung {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--epos-touchziel);
+    min-height: var(--epos-touchziel);
+    margin: 0;
+    padding: 0 10px;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    color: var(--epos-text);
+    cursor: pointer;
+}
+
+.epos-ergebnis-ansicht-stellung + .epos-ergebnis-ansicht-stellung {
+    border-left: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-ergebnis-ansicht-stellung:hover:not(.epos-ergebnis-ansicht-stellung--an) {
+    background: var(--epos-karte-flaeche-hover);
+}
+
+.epos-ergebnis-ansicht-stellung--an {
+    background: var(--epos-marke);
+    color: var(--epos-gruppenkopf-text);
+}
+
+.epos-ergebnis-ansicht-stellung:focus-visible {
+    outline: 2px solid var(--epos-karte-rahmen-hover);
+    outline-offset: -4px;
+}
+
+/* Die Grafik: die Legende der Versionen einmal oben (je Version dieselbe Farbe in
+   allen Diagrammen, eine nicht simulierte grau und schraffiert), darunter je Gruppe
+   ein Raster der Diagramme. Die Diagramme teilen sich die Breite ab 440 px je Spalte
+   und fallen darunter auf eine Spalte (hoechstens 680 px breit, damit die Schrift im
+   Bild nicht ueber die der Seite waechst); nichts rollt quer. Die Wertetabelle je
+   Diagramm ist Sprachausgabe (position: absolute in der figure). */
+.epos-ergebnis-grafik-legende {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 18px;
+    margin: 0 0 8px 0;
+}
+
+.epos-ergebnis-grafik-version {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--epos-text);
+}
+
+.epos-ergebnis-grafik-farbe {
+    display: inline-block;
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--epos-text);
+    border-radius: 2px;
+}
+
+.epos-ergebnis-grafik-version--ohne {
+    color: var(--epos-text-leise);
+}
+
+.epos-ergebnis-grafik-version--ohne .epos-ergebnis-grafik-farbe {
+    border-color: var(--epos-text-leise);
+    background: repeating-linear-gradient(45deg, var(--epos-rahmen-leise) 0 2px, transparent 2px 5px);
+}
+
+.epos-ergebnis-grafik-hinweis {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--epos-text-leise);
+}
+
+.epos-ergebnis-grafik-strich {
+    display: inline-block;
+    flex: 0 0 auto;
+    width: 3px;
+    height: 16px;
+    background: var(--epos-text);
+}
+
+.epos-ergebnis-grafik-titel {
+    margin: 14px 0 6px 0;
+    font-size: 1em;
+    font-weight: 600;
+    color: var(--epos-text);
+}
+
+.epos-ergebnis-grafik-feld {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr));
+    gap: 12px;
+    align-items: start;
+}
+
+.epos-ergebnis-diagramm {
+    position: relative;
+    min-width: 0;
+    max-width: 680px;
+    margin: 0;
+}
+
+@media (forced-colors: active) {
+    .epos-ergebnis-grafik-farbe {
+        forced-color-adjust: none;
+    }
+
+    .epos-ergebnis-ansicht {
+        border-color: CanvasText;
+    }
+
+    .epos-ergebnis-ansicht-stellung--an {
+        forced-color-adjust: none;
+        background: Highlight;
+        color: HighlightText;
+    }
 }
 
 /* Wo die Uebernahme nicht traegt, steht statt des Knopfes ein grauer Strich
