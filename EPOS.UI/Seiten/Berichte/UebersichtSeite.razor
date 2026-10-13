@@ -2,11 +2,10 @@
 
    Vorbild: Views/BerichteKosten/UcBkUebersicht.cs (1 552 Z., K4).
 
-   AUFBAU. Oben die Verwaltung der Vergleichsgruppe: Stammprojekt-Auswahl und
-   Filter "nur Stammprojekte", darunter in EINER Zeile die Variantenwahl,
-   das Bezeichnerfeld des UMBENENNENS und die Knoepfe (Variante anlegen,
-   loeschen, Simulation starten, umbenennen), darunter die leise Statuszeile
-   des Simulationsstands.
+   AUFBAU. Oben der Kopf in drei Teilen: die Projektwahl (Stammprojekt, Filter
+   "nur Stammprojekte", Variante), die Variantenverwaltung als eigene Gruppe
+   (Bezeichnerfeld des UMBENENNENS, Anlegen, Umbenennen, Loeschen) und der
+   Hauptknopf "Simulation starten" neben der leisen Zeile des Simulationsstands.
 
    VARIANTE ANLEGEN OEFFNET DEN DIALOG (Auftrag #240). Bis dahin legte diese
    Seite mit dem Bezeichner aus ihrem eigenen Feld an - ohne Quellprojekt,
@@ -69,77 +68,79 @@
         <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_meldung" Hinweise="@_hinweise" />
     }
 
-    @* ------------------------------------------------ Stamm und Filter *@
-    <div class="epos-seite-zeile epos-stammzeile">
-        <Auswahlfeld Bezeichnung="@LabelStamm" Eintraege="@_stand.Staemme"
-                     Auswahl="@_stand.StammId" AuswahlChanged="BeiStamm" />
-        <Schalter Bezeichnung="@LabelNurStaemme" Wert="@_stand.NurStaemme"
-                  WertChanged="BeiFilter" />
-    </div>
+    @* DER KOPF IN DREI TEILEN (Anwenderauftrag 12.10.2026): die PROJEKTWAHL
+       (Stammprojekt, "nur Stammprojekte", Variante), die VARIANTENVERWALTUNG als
+       eigene, umrandete Gruppe (Bezeichner, Anlegen, Umbenennen, Loeschen - Loeschen
+       zuletzt) und darunter der Hauptknopf "Simulation starten" neben dem
+       Simulationsstand. Jeder Teil bricht fuer sich um; kein Feld haelt die Zeile
+       breiter als das Fenster (Stilregeln .epos-uebersicht-*). *@
+    <div class="epos-uebersicht-kopf">
+        <div class="epos-uebersicht-projektwahl" role="group" aria-label="@LabelProjektwahl">
+            <div class="epos-seite-zeile epos-stammzeile">
+                <Auswahlfeld Bezeichnung="@LabelStamm" Eintraege="@_stand.Staemme"
+                             Auswahl="@_stand.StammId" AuswahlChanged="BeiStamm" />
+                <Schalter Bezeichnung="@LabelNurStaemme" Wert="@_stand.NurStaemme"
+                          WertChanged="BeiFilter" />
+            </div>
+            <div class="epos-seite-zeile epos-variantenzeile">
+                <Auswahlfeld Bezeichnung="@LabelVariante" Kurzname="@WahlKurztext"
+                             Eintraege="@Versionen" Auswahl="@Markierung"
+                             AuswahlChanged="BeiVersion" />
+            </div>
+        </div>
 
-    @* ------------------------- Die Version, der Bezeichner, die Knoepfe *@
-    <div class="epos-seite-zeile epos-variantenzeile">
-        <Auswahlfeld Bezeichnung="@LabelVariante" Kurzname="@WahlKurztext"
-                     Eintraege="@Versionen" Auswahl="@Markierung"
-                     AuswahlChanged="BeiVersion" />
-        @* DAS BEZEICHNERFELD GEHOERT SEIT #240 ZUM UMBENENNEN - und nur dazu.
-           Bis dahin fuellte es BEIDE Wege: Anlegen und Umbenennen. Der Anlegeweg
-           oeffnet jetzt denselben Dialog wie Kopfband und Menuepunkt (ProjektVarianteDialog,
-           mit dem Kaestchen "Inhalt aus einem bestehenden Projekt uebernehmen"), und der
-           fragt den Bezeichner selbst - ein zweites Feld daneben waere eine zweite
-           Fassung derselben Eingabe. Ohne Umbenennweg steht das Feld deshalb nicht. *@
-        @if (VarianteUmbenennen is not null)
-        {
-            <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
-                      WertChanged="@(w => _bezeichner = w)" />
-        }
-        @* EIN DIALOG, DREI EINSTIEGE (Auftrag #240): Der Knopf OEFFNET nur - was er
-           oeffnet, weiss die Huelle; danach laedt die Seite ihre Liste neu. Ohne
-           Oeffner gibt es den Knopf nicht (Hausregel A-18). *@
-        @if (VarianteAnlegenOeffnen is not null)
-        {
-            <button type="button" class="epos-knopf" disabled="@(!_stand.AnlegenMoeglich || _laeuft)"
-                    @onclick="Anlegen">@AnlegenText</button>
-        }
-        <button type="button" class="epos-knopf" disabled="@(!_stand.Loeschbar)"
-                @onclick="LoeschenFragen">@LoeschenText</button>
-        <button type="button" class="epos-knopf epos-knopf--primaer"
-                disabled="@(!_stand.SimulierenMoeglich || _laeuft)"
-                @onclick="Simulieren">@SimulierenText</button>
-        @* UMBENENNEN (08.09.2026): der Bezeichner im Feld wird der neue Name der
-           gewaehlten Variante. Hinter den Bestandsknoepfen, damit deren Reihenfolge
-           (Anlegen, Loeschen, Simulieren) fuer Anwender und Proben dieselbe bleibt. *@
-        @if (VarianteUmbenennen is not null)
-        {
-            <button type="button" class="epos-knopf" disabled="@(!_stand.Loeschbar || _laeuft)"
-                    @onclick="Umbenennen">@UmbenennenText</button>
-        }
-    </div>
-
-    @* Der Simulationsstand der gewaehlten Version - das, was die
-       Simulationsspalte der Tabelle sagte. aria-live, weil er sich beim
-       Wechsel der Version aendert, ohne dass der Anwender hinsieht. *@
-    <p class="epos-simstand" aria-live="polite">
-        @if (_stand.MarkierteId > 0)
-        {
-            <span>@Simulationszeile</span>
-            @if (Markierte is not null && Markierte.Auffaellig)
+        @* DIE VERWALTUNG: Das Bezeichnerfeld gehoert dem UMBENENNEN (#240) - der
+           Anlegeweg oeffnet denselben Dialog wie Kopfband und Menuepunkt und fragt den
+           Bezeichner selbst. Ohne Umbenennweg steht das Feld nicht, ohne Oeffner nicht
+           der Anlegeknopf (Hausregel A-18). Loeschen steht zuletzt. *@
+        <fieldset class="epos-uebersicht-verwaltung">
+            <legend>@LabelVerwaltung</legend>
+            @if (VarianteUmbenennen is not null)
             {
-                <span class="epos-veraltet" title="@Simulationsgrund">@WarnZeichen</span>
+                <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
+                          WertChanged="@(w => _bezeichner = w)" />
             }
-            @* AUFTRAG US-2: Womit rechnet DIESE Version ihren Stromspeicher? Die
-               Wirtschaftlichkeit sagt es seit #320 in einer Spalte der
-               Vergleichsgruppentabelle; diese Seite hat keine Tabelle mehr (W5-E-1,
-               Auswahlfeld statt Tabelle), und was die Tabelle sonst noch sagte, steht
-               seither genau hier - deshalb auch das. Leer = nicht lesbar; dann bleibt
-               der Satz weg, statt etwas zu behaupten. *@
-            @if (!string.IsNullOrEmpty(Speicherzeile))
-            {
-                <span class="epos-simstand-speicher">@Speicherzeile</span>
-            }
-        }
-    </p>
+            <div class="epos-uebersicht-knoepfe">
+                @if (VarianteAnlegenOeffnen is not null)
+                {
+                    <button type="button" class="epos-knopf" disabled="@(!_stand.AnlegenMoeglich || _laeuft)"
+                            @onclick="Anlegen">@AnlegenText</button>
+                }
+                @if (VarianteUmbenennen is not null)
+                {
+                    <button type="button" class="epos-knopf" disabled="@(!_stand.Loeschbar || _laeuft)"
+                            @onclick="Umbenennen">@UmbenennenText</button>
+                }
+                <button type="button" class="epos-knopf" disabled="@(!_stand.Loeschbar)"
+                        @onclick="LoeschenFragen">@LoeschenText</button>
+            </div>
+        </fieldset>
 
+        @* DER LAUF: der Hauptknopf neben dem Simulationsstand der gewaehlten Version.
+           Der Stand ist aria-live, weil er beim Wechsel der Version wechselt, ohne
+           dass der Anwender hinsieht. *@
+        <div class="epos-uebersicht-lauf">
+            <button type="button" class="epos-knopf epos-knopf--primaer"
+                    disabled="@(!_stand.SimulierenMoeglich || _laeuft)"
+                    @onclick="Simulieren">@SimulierenText</button>
+            <p class="epos-simstand" aria-live="polite">
+                @if (_stand.MarkierteId > 0)
+                {
+                    <span>@Simulationszeile</span>
+                    @if (Markierte is not null && Markierte.Auffaellig)
+                    {
+                        <span class="epos-veraltet" title="@Simulationsgrund">@WarnZeichen</span>
+                    }
+                    @* AUFTRAG US-2: Womit rechnet DIESE Version ihren Stromspeicher? Leer =
+                       nicht lesbar; dann bleibt der Satz weg, statt etwas zu behaupten. *@
+                    @if (!string.IsNullOrEmpty(Speicherzeile))
+                    {
+                        <span class="epos-simstand-speicher">@Speicherzeile</span>
+                    }
+                }
+            </p>
+        </div>
+    </div>
     @* DIE VERGLEICHSWAHL (Anwenderwunsch 08.09.2026, W5-B-5): welche Versionen in
        der Gegenueberstellung - und auf den Seiten Kosten und Wirtschaftlichkeit -
        nebeneinander stehen. EINE Auswahl fuer alle drei Seiten; sie lebt in der
@@ -152,7 +153,7 @@
     }
 
     @* --------------------------------------------- Komponentenbereich *@
-    @if (_stand.Vergleich.Count > 0)
+    @if (_stand.Vergleich.Count > 0 || _stand.Gewerke.Count > 0)
     {
         @* BV-E6 (Konzept Berichtsvorlagen 9.4): EINE Marke am Kopf der Gegenueberstellung,
            keine Zeilenmarken - die Zeilen tragen Aktionsknoepfe. *@
@@ -168,14 +169,95 @@
         <p class="epos-untergruppe">@_stand.KomponentenTitel</p>
     }
 
-    @if (_stand.Vergleich.Count > 0)
+    @if (_stand.Gewerke.Count > 0)
     {
-        @* Die Unterschiedstabelle bekommt die Hoehe, die die Variantentabelle
-           frei gemacht hat: dieselbe Hausregel W9-B-2 (fester Rahmen, innerer
-           Rollbalken, stehender Spaltenkopf), nur mit einer groesseren
-           Hoechsthoehe - sie ist das, worum es auf dieser Seite geht. *@
+        @* DIE GEGENUEBERSTELLUNG JE GEWERK (Anwenderauftrag 12.10.2026): eine Zeile je
+           Gewerk, je Version eine Zelle mit "n x Komponente" und darunter leise die
+           Kennwerte; was vom Stamm abweicht, ist hinterlegt und sagt es der
+           Sprachausgabe. Die Zellen kommen fertig aus dem Kern
+           (KomponentenVergleich.JeGewerk) - die Seite vergleicht nicht selbst.
+           Viele Varianten rollen quer IN der Huelle, die Gewerkspalte haftet. *@
+        <div class="epos-komponenten-werkzeug">
+            <Schalter Bezeichnung="@LabelNurUnterschiede" Wert="@NurUnterschiede"
+                      WertChanged="BeiNurUnterschiede" />
+            <span class="epos-komponenten-legende">
+                <span class="epos-komponenten-legende-marke" aria-hidden="true"></span>@LegendeAbweichung
+            </span>
+        </div>
+        @if (SichtbareGewerke.Count == 0)
+        {
+            <p class="epos-komponenten-leer">@KeineUnterschiedeText</p>
+        }
+        else
+        {
+            <div class="epos-raster-huelle epos-raster-huelle--vergleich epos-komponenten-huelle">
+                <table class="epos-raster epos-uebersicht-tabelle epos-komponentenvergleich">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="epos-komponenten-gewerk">@SpalteGewerk</th>
+                            @foreach (VersionsSpalte v in _stand.Versionsspalten)
+                            {
+                                <th scope="col" class="epos-komponenten-versionkopf">
+                                    <span class="epos-komponenten-version">@v.Name</span>
+                                    @if (!string.IsNullOrEmpty(v.Stand))
+                                    {
+                                        <span class="epos-komponenten-stand">@v.Stand</span>
+                                    }
+                                </th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (GewerkVergleichZeile g in SichtbareGewerke)
+                        {
+                            <tr @key="g.Gewerk" class="@(g.WeichtAb ? "epos-komponenten--abweichend" : null)">
+                                <th scope="row" class="epos-komponenten-gewerk">
+                                    @g.Gewerk
+                                    @if (g.WeichtAb)
+                                    {
+                                        <span class="epos-komponenten-gewerkmarke" title="@WeichtAbText"
+                                              aria-hidden="true">●</span>
+                                        <span class="epos-komponenten-sprachausgabe">@WeichtAbText</span>
+                                    }
+                                </th>
+                                @foreach (GewerkVergleichZelle z in g.Zellen)
+                                {
+                                    <td class="@ZellKlasse(z)">
+                                        @if (z.Eintraege.Count == 0)
+                                        {
+                                            <span class="epos-komponenten-fehlt" role="img"
+                                                  title="@NichtVorhandenText" aria-label="@NichtVorhandenText">—</span>
+                                        }
+                                        @foreach (GewerkVergleichEintrag e in z.Eintraege)
+                                        {
+                                            <span class="epos-komponenten-eintrag" title="@e.Kurztext">
+                                                <span class="epos-komponenten-name">@e.Anzahl × @e.Bezeichner</span>
+                                                @if (!string.IsNullOrEmpty(e.Kennwerte))
+                                                {
+                                                    <span class="epos-komponenten-kennwerte">@e.Kennwerte</span>
+                                                }
+                                            </span>
+                                        }
+                                        @if (z.WeichtAb)
+                                        {
+                                            <span class="epos-komponenten-sprachausgabe">@WeichtAbText</span>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+    else if (_stand.Vergleich.Count > 0)
+    {
+        @* Die UNTERSCHIEDE einer Variante samt Aktionsspalte. Die Hausregel W9-B-2
+           (fester Rahmen, innerer Rollbalken, stehender Spaltenkopf) mit einer
+           groesseren Hoechsthoehe - sie ist das, worum es auf dieser Seite geht. *@
         <div class="epos-raster-huelle epos-raster-huelle--vergleich">
-            <table class="epos-raster epos-vergleichstabelle">
+            <table class="epos-raster epos-uebersicht-tabelle">
                 <thead>
                     <tr>
                         @foreach (string kopf in _stand.Spalten)
@@ -222,7 +304,6 @@
             </table>
         </div>
     }
-
     @if (!string.IsNullOrEmpty(_status))
     {
         <p class="epos-status">@_status</p>
@@ -414,6 +495,42 @@
     /// <summary>Meldung „abgebrochen".</summary>
     [Parameter] public string StatusAbgebrochen { get; set; } = "Vorgang abgebrochen.";
 
+    // ---- Texte und Merkwert der Gegenüberstellung je Gewerk ---------------
+
+    /// <summary>Name der Gruppe „Projektwahl" für die Sprachausgabe (<c>BK_LBL_PROJEKTWAHL</c>).</summary>
+    [Parameter] public string LabelProjektwahl { get; set; } = "Projektwahl";
+
+    /// <summary>Titel der Gruppe „Variante verwalten" (<c>BK_LBL_VARIANTE_VERWALTEN</c>).</summary>
+    [Parameter] public string LabelVerwaltung { get; set; } = "Variante verwalten";
+
+    /// <summary>Kopf der Gewerkspalte (<c>BK_SP_GEWERK</c>).</summary>
+    [Parameter] public string SpalteGewerk { get; set; } = "Gewerk";
+
+    /// <summary>Der Schalter, der Gewerke ohne Abweichung ausblendet (<c>BK_LBL_NUR_UNTERSCHIEDE</c>).</summary>
+    [Parameter] public string LabelNurUnterschiede { get; set; } = "nur Unterschiede";
+
+    /// <summary>Die Legende der Markierung (<c>BK_LBL_LEGENDE_ABWEICHUNG</c>).</summary>
+    [Parameter] public string LegendeAbweichung { get; set; } = "markiert: weicht vom Stammprojekt ab";
+
+    /// <summary>Was die Sprachausgabe an einer markierten Zelle liest (<c>BK_LBL_WEICHT_AB</c>).</summary>
+    [Parameter] public string WeichtAbText { get; set; } = "weicht vom Stammprojekt ab";
+
+    /// <summary>Kurztext am leisen Strich einer fehlenden Komponente (<c>BV_A1D_BESTAND_FEHLT</c>).</summary>
+    [Parameter] public string NichtVorhandenText { get; set; } = "nicht vorhanden";
+
+    /// <summary>Statt der Tabelle, wenn „nur Unterschiede" nichts übrig lässt (<c>BK_LBL_KEINE_UNTERSCHIEDE</c>).</summary>
+    [Parameter] public string KeineUnterschiedeText { get; set; }
+        = "Alle Versionen im Vergleich führen dieselben Komponenten.";
+
+    /// <summary>
+    /// Liest den Merkwert „nur Unterschiede" (ein Stand je Sitzung, er lebt in der Hülle);
+    /// <c>null</c> = die Seite führt ihn selbst, solange sie steht.
+    /// </summary>
+    [Parameter] public Func<bool>? NurUnterschiedeLesen { get; set; }
+
+    /// <summary>Meldet einen Wechsel des Schalters „nur Unterschiede" an die Hülle.</summary>
+    [Parameter] public Action<bool>? NurUnterschiedeGewechselt { get; set; }
+
     // =====================================================================
     // Zustand
     // =====================================================================
@@ -456,6 +573,34 @@
     public bool Laeuft => _laeuft;
 
     private bool _mitAktionsspalte;
+
+    /// <summary>Der Schalter „nur Unterschiede", solange die Hülle ihn nicht führt.</summary>
+    private bool _nurUnterschiede;
+
+    /// <summary>Steht der Schalter „nur Unterschiede"? (auch Prüfhilfe)</summary>
+    public bool NurUnterschiede => NurUnterschiedeLesen?.Invoke() ?? _nurUnterschiede;
+
+    /// <summary>Die Gewerke, die die Tabelle zeigt — mit „nur Unterschiede" allein die abweichenden.</summary>
+    private IReadOnlyList<GewerkVergleichZeile> SichtbareGewerke
+    {
+        get
+        {
+            if (!NurUnterschiede) return _stand.Gewerke;
+            var liste = new List<GewerkVergleichZeile>();
+            foreach (GewerkVergleichZeile g in _stand.Gewerke)
+                if (g.WeichtAb) liste.Add(g);
+            return liste;
+        }
+    }
+
+    private void BeiNurUnterschiede(bool an)
+    {
+        _nurUnterschiede = an;
+        NurUnterschiedeGewechselt?.Invoke(an);
+    }
+
+    private static string ZellKlasse(GewerkVergleichZelle z)
+        => z.WeichtAb ? "epos-komponenten-zelle epos-komponenten-zelle--abweichend" : "epos-komponenten-zelle";
 
     protected override void OnInitialized()
     {
@@ -504,8 +649,37 @@
             BezeichnerSetzen = w => _bezeichner = w ?? "",
 
             SimulationLesen = () => Simulationszeile,
-            StatusLesen = () => _status
+            StatusLesen = () => _status,
+
+            NurUnterschiedeLesen = () => NurUnterschiede,
+            NurUnterschiedeSetzen = an => _ = InvokeAsync(() => { BeiNurUnterschiede(an); StateHasChanged(); }),
+            KomponentenLesen = () => KomponentenText()
         };
+    }
+
+    /// <summary>
+    /// Die sichtbare Gegenüberstellung als Text für den Assistenten — Zeile für Zeile,
+    /// was die Tabelle zeigt; leer, wenn die Seite die Unterschiede einer Variante zeigt.
+    /// </summary>
+    private string KomponentenText()
+    {
+        var zeilen = new List<string>();
+        foreach (GewerkVergleichZeile g in SichtbareGewerke)
+        {
+            var teile = new List<string>();
+            for (int i = 0; i < g.Zellen.Count; i++)
+            {
+                GewerkVergleichZelle z = g.Zellen[i];
+                string name = i < _stand.Versionsspalten.Count ? _stand.Versionsspalten[i].Name : "";
+                string inhalt = z.Eintraege.Count == 0
+                    ? NichtVorhandenText
+                    : string.Join(", ", z.Eintraege.Select(e => e.Anzahl + " × " + e.Bezeichner
+                        + (string.IsNullOrEmpty(e.Kennwerte) ? "" : " (" + e.Kennwerte + ")")));
+                teile.Add(name + " = " + inhalt + (z.WeichtAb ? " — " + WeichtAbText : ""));
+            }
+            zeilen.Add(g.Gewerk + ": " + string.Join("; ", teile));
+        }
+        return string.Join("\n", zeilen);
     }
 
     /// <summary>

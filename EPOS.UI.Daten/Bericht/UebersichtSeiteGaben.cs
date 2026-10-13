@@ -50,6 +50,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         private const int MAX_VARIANTENSPALTEN = 8;
 
+        /// <summary>
+        /// Der Schalter „nur Unterschiede" der Gegenüberstellung — ein Stand je Sitzung
+        /// (Anwenderauftrag 12.10.2026): Er überdauert den Wechsel der Reiter und der
+        /// Gruppe, nicht den Neustart.
+        /// </summary>
+        private static bool s_nurUnterschiede;
+
         private readonly VariantenCtrl _ctrl = new VariantenCtrl();
 
         /// <summary>
@@ -225,7 +232,19 @@ namespace WindowsFormsApplication1
                 ["JaText"] = T("BKS_BTN_JA", "Ja"),
                 ["NeinText"] = T("BKS_BTN_NEIN", "Nein"),
                 ["StatusAbgebrochen"] = MyResource.Resource.BK_BER_STATUS_ABGEBROCHEN,
-                ["HilfeSchluessel"] = "UcBkUebersicht.btn_Help"
+                ["HilfeSchluessel"] = "UcBkUebersicht.btn_Help",
+
+                // Die Gegenueberstellung je Gewerk (Anwenderauftrag 12.10.2026).
+                ["LabelProjektwahl"] = MyResource.Resource.BK_LBL_PROJEKTWAHL,
+                ["LabelVerwaltung"] = MyResource.Resource.BK_LBL_VARIANTE_VERWALTEN,
+                ["SpalteGewerk"] = MyResource.Resource.BK_SP_GEWERK,
+                ["LabelNurUnterschiede"] = MyResource.Resource.BK_LBL_NUR_UNTERSCHIEDE,
+                ["LegendeAbweichung"] = MyResource.Resource.BK_LBL_LEGENDE_ABWEICHUNG,
+                ["WeichtAbText"] = MyResource.Resource.BK_LBL_WEICHT_AB,
+                ["NichtVorhandenText"] = AbweichungsErmittler.BestandFehlt,
+                ["KeineUnterschiedeText"] = MyResource.Resource.BK_LBL_KEINE_UNTERSCHIEDE,
+                ["NurUnterschiedeLesen"] = new Func<bool>(() => s_nurUnterschiede),
+                ["NurUnterschiedeGewechselt"] = new Action<bool>(an => s_nurUnterschiede = an)
             };
 
             // E3/8 — kein Delegat, kein Knopf: Der Variantendialog ist ein
@@ -408,8 +427,12 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Gegenüberstellung Stamm ↔ Varianten: Gewerk · Merkmal · Stamm · je
-        /// Variante eine Spalte, in der Reihenfolge der oberen Liste.
+        /// Gegenüberstellung Stamm ↔ Varianten JE GEWERK (Anwenderauftrag 12.10.2026):
+        /// eine Zeile je Gewerk, je Version der Vergleichswahl eine Zelle mit
+        /// „n × Komponente“ und Kennwerten, die Abweichung zum Stamm markiert. Zeilen,
+        /// Kennwerte und Abweichung kommen fertig aus dem Kern
+        /// (<see cref="KomponentenVergleich.JeGewerk"/>); hier bleiben die Abbildung auf
+        /// die Typen der Razor-Seite, die Spaltenköpfe und die Fußzeile.
         /// </summary>
         private void Gegenueberstellung(UebersichtStand stand, ProjektDetails ds)
         {
@@ -426,26 +449,24 @@ namespace WindowsFormsApplication1
             stand.KomponentenTitel = MyResource.Resource.BK_LBL_KOMPONENTEN_VERGLEICH +
                                      (gekappt.Length == 0 ? "" : " — " + gekappt);
 
-            var spalten = new List<string>
+            VarianteZeile stamm = stand.Zeilen.FirstOrDefault(z => z.IstStamm);
+            var spalten = new List<VersionsSpalte>
             {
-                MyResource.Resource.BK_SP_GEWERK,
-                MyResource.Resource.BK_SP_MERKMAL,
-                MyResource.Resource.BK_SP_WERT_STAMM
+                new VersionsSpalte { Name = MyResource.Resource.BK_SP_WERT_STAMM, Stand = Simulationsstand(stamm) }
             };
-            foreach (VarianteZeile v in varianten) spalten.Add(SpaltenKopf(v));
-            stand.Spalten = spalten;
+            foreach (VarianteZeile v in varianten)
+                spalten.Add(new VersionsSpalte { Name = SpaltenKopf(v), Stand = Simulationsstand(v) });
+            stand.Versionsspalten = spalten;
 
             var versionen = new List<ProjektDetails> { ds };
             foreach (VarianteZeile v in varianten) versionen.Add(Details(_stand.IdStamm, v.IdProjekt));
 
-            var zeilen = new List<VergleichZeile>();
-            FuelleVergleich(versionen, zeilen);
-            stand.Vergleich = zeilen;
+            List<KomponentenVergleichGewerk> gewerke = KomponentenVergleich.JeGewerk(versionen);
+            stand.Gewerke = gewerke.Select(Abbilden).ToList();
 
-            if (zeilen.Count == 0) { stand.Statuszeile = MyResource.Resource.BK_MSG_KEINE_KOMPONENTEN; return; }
+            if (gewerke.Count == 0) { stand.Statuszeile = MyResource.Resource.BK_MSG_KEINE_KOMPONENTEN; return; }
 
-            string status = string.Format(MyResource.Resource.BK_MSG_VERGLEICH_UMFANG,
-                                          zeilen.Count, varianten.Count);
+            string status = Fusszeile(gewerke.Count, varianten.Count, gewerke.Count(g => g.WeichtAb));
             stand.Statuszeile = gekappt.Length == 0 ? status : status + "  " + gekappt;
         }
 
@@ -454,33 +475,53 @@ namespace WindowsFormsApplication1
             return string.IsNullOrEmpty(z.Bezeichner) ? z.Projektname : z.Bezeichner;
         }
 
-        /// <summary>
-        /// Die Zeilen der Gegenüberstellung — sie kommen seit dem Anwenderbefund
-        /// W5‑E‑2 (05.09.2026) fertig aus dem Kern
-        /// (<see cref="KomponentenVergleich.Gegenueberstellung"/>); hier bleibt
-        /// allein die Abbildung auf den Zeilentyp der Razor-Seite.
-        ///
-        /// <para><b>Was sich geändert hat.</b> Gezeigt werden nur noch die
-        /// tatsächlich VERWENDETEN Erzeugerkomponenten — je Gewerk die Stückzahl
-        /// und darunter eine Zeile je Komponente. Die Parameterblöcke „Anlage"
-        /// und „Gebäude" der Feldliste sind aus dieser Ansicht heraus: „Gewerk
-        /// Anlage gibt es nicht. Dort stehen Parameter." Die Parameter werden
-        /// weiterhin verglichen — in der UNTERSCHIEDSansicht einer Variante, wo
-        /// eine Zeile eine Änderung zeigt und die Übernahme trägt.</para>
-        /// </summary>
-        private static void FuelleVergleich(List<ProjektDetails> versionen, List<VergleichZeile> ziel)
+        /// <summary>„simuliert 12.10.26 23:05“ bzw. „nicht simuliert“ — der Stand aus der Liste der Gruppe.</summary>
+        private static string Simulationsstand(VarianteZeile z)
         {
-            foreach (KomponentenVergleichZeile z in KomponentenVergleich.Gegenueberstellung(versionen))
-                ziel.Add(new VergleichZeile
-                {
-                    Gewerk = AbweichungsErmittler.Gewerkname(z.Gewerk),
-                    Merkmal = z.Merkmal,
-                    Zellen = z.Zellen,
-                    Kurztexte = z.Kurztexte
-                });
+            if (z == null) return "";
+            return string.IsNullOrEmpty(z.SimZeitpunkt)
+                ? MyResource.Resource.BK_LBL_NICHT_SIMULIERT
+                : string.Format(MyResource.Resource.BK_LBL_SIMULIERT_AM, z.SimZeitpunkt);
         }
 
-        /// <summary>Unterschiede der Variante gegenüber dem Stamm samt Aktionsspalte.</summary>
+        /// <summary>
+        /// Die Fußzeile der Gegenüberstellung: „4 Gewerke · Stamm und 1 Variante ·
+        /// 1 Unterschied“ — Ein- und Mehrzahl über eigene Schlüssel.
+        /// </summary>
+        internal static string Fusszeile(int gewerke, int varianten, int unterschiede)
+        {
+            string g = gewerke == 1
+                ? MyResource.Resource.BK_MSG_GEWERKE_EINS
+                : string.Format(MyResource.Resource.BK_MSG_GEWERKE_N, gewerke);
+            string v = varianten == 0 ? MyResource.Resource.BK_MSG_UMFANG_NUR_STAMM
+                     : varianten == 1 ? MyResource.Resource.BK_MSG_UMFANG_VARIANTE_EINS
+                     : string.Format(MyResource.Resource.BK_MSG_UMFANG_VARIANTE_N, varianten);
+            string u = unterschiede == 0 ? MyResource.Resource.BK_MSG_UNTERSCHIEDE_KEINE
+                     : unterschiede == 1 ? MyResource.Resource.BK_MSG_UNTERSCHIEDE_EINS
+                     : string.Format(MyResource.Resource.BK_MSG_UNTERSCHIEDE_N, unterschiede);
+            return varianten == 0 ? g + " · " + v : g + " · " + v + " · " + u;
+        }
+
+        /// <summary>Ein Gewerk des Kerns als Zeile der Razor-Seite.</summary>
+        private static GewerkVergleichZeile Abbilden(KomponentenVergleichGewerk g)
+        {
+            return new GewerkVergleichZeile
+            {
+                Gewerk = AbweichungsErmittler.Gewerkname(g.Gewerk),
+                Zellen = g.Zellen.Select(z => new GewerkVergleichZelle
+                {
+                    WeichtAb = z.WeichtAb,
+                    Eintraege = z.Eintraege.Select(e => new GewerkVergleichEintrag
+                    {
+                        Anzahl = e.Anzahl,
+                        Bezeichner = e.Bezeichner,
+                        Kennwerte = e.Kennwerte,
+                        Kurztext = e.Kurztext
+                    }).ToList()
+                }).ToList()
+            };
+        }
+
         private void Unterschiede(UebersichtStand stand, VarianteZeile z, ProjektDetails ds)
         {
             stand.KomponentenTitel = string.Format(MyResource.Resource.BK_LBL_KOMPONENTEN_DIFF,

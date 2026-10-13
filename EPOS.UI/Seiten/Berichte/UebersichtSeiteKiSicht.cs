@@ -108,4 +108,30 @@ public sealed class UebersichtSeiteKiSicht
 
     /// <summary>Die Fußzeile mit den Befunden der Seite — Anzeige.</summary>
     public string Statuszeile => StatusLesen?.Invoke() ?? "";
+
+    /// <summary>Liest den Schalter „nur Unterschiede" der Gegenüberstellung.</summary>
+    public Func<bool>? NurUnterschiedeLesen { get; init; }
+
+    /// <summary>Setzt den Schalter „nur Unterschiede" — derselbe Weg wie der Schalter der Seite.</summary>
+    public Action<bool>? NurUnterschiedeSetzen { get; init; }
+
+    /// <summary>Liest die Gegenüberstellung je Gewerk als Text, so wie die Tabelle sie zeigt.</summary>
+    public Func<string>? KomponentenLesen { get; init; }
+
+    /// <summary>
+    /// Der Schalter „nur Unterschiede": blendet die Gewerke aus, in denen keine Version
+    /// vom Stammprojekt abweicht.
+    /// </summary>
+    public bool NurUnterschiede
+    {
+        get => NurUnterschiedeLesen?.Invoke() ?? false;
+        set => NurUnterschiedeSetzen?.Invoke(value);
+    }
+
+    /// <summary>
+    /// Die Gegenüberstellung je Gewerk (nur Anzeige): je sichtbarem Gewerk eine Zeile
+    /// „Gewerk: Version = n × Komponente (Kennwerte); …“, Abweichungen zum Stamm mit
+    /// „weicht vom Stammprojekt ab“ — dasselbe, was der Anwender sieht.
+    /// </summary>
+    public string Komponentenvergleich => KomponentenLesen?.Invoke() ?? "";
 }

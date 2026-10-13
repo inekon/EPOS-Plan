@@ -5915,6 +5915,54 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_LBL_KOMPONENTEN_VERGLEICH" xml:space="preserve">
     <value>Komponenten im Vergleich — Stammprojekt und Varianten</value>
   </data>
+  <data name="BK_LBL_PROJEKTWAHL" xml:space="preserve">
+    <value>Projektwahl</value>
+  </data>
+  <data name="BK_LBL_VARIANTE_VERWALTEN" xml:space="preserve">
+    <value>Variante verwalten</value>
+  </data>
+  <data name="BK_LBL_NUR_UNTERSCHIEDE" xml:space="preserve">
+    <value>nur Unterschiede</value>
+  </data>
+  <data name="BK_LBL_LEGENDE_ABWEICHUNG" xml:space="preserve">
+    <value>markiert: weicht vom Stammprojekt ab</value>
+  </data>
+  <data name="BK_LBL_WEICHT_AB" xml:space="preserve">
+    <value>weicht vom Stammprojekt ab</value>
+  </data>
+  <data name="BK_LBL_SIMULIERT_AM" xml:space="preserve">
+    <value>simuliert {0}</value>
+  </data>
+  <data name="BK_LBL_NICHT_SIMULIERT" xml:space="preserve">
+    <value>nicht simuliert</value>
+  </data>
+  <data name="BK_LBL_KEINE_UNTERSCHIEDE" xml:space="preserve">
+    <value>Alle Versionen im Vergleich führen dieselben Komponenten.</value>
+  </data>
+  <data name="BK_MSG_GEWERKE_EINS" xml:space="preserve">
+    <value>1 Gewerk</value>
+  </data>
+  <data name="BK_MSG_GEWERKE_N" xml:space="preserve">
+    <value>{0} Gewerke</value>
+  </data>
+  <data name="BK_MSG_UMFANG_NUR_STAMM" xml:space="preserve">
+    <value>nur Stammprojekt</value>
+  </data>
+  <data name="BK_MSG_UMFANG_VARIANTE_EINS" xml:space="preserve">
+    <value>Stamm und 1 Variante</value>
+  </data>
+  <data name="BK_MSG_UMFANG_VARIANTE_N" xml:space="preserve">
+    <value>Stamm und {0} Varianten</value>
+  </data>
+  <data name="BK_MSG_UNTERSCHIEDE_KEINE" xml:space="preserve">
+    <value>keine Unterschiede</value>
+  </data>
+  <data name="BK_MSG_UNTERSCHIEDE_EINS" xml:space="preserve">
+    <value>1 Unterschied</value>
+  </data>
+  <data name="BK_MSG_UNTERSCHIEDE_N" xml:space="preserve">
+    <value>{0} Unterschiede</value>
+  </data>
   <data name="BK_LBL_VARIANTEN_GEKAPPT" xml:space="preserve">
     <value>nur die ersten {0} Varianten dargestellt, {1} weitere ausgeblendet</value>
   </data>
@@ -5923,9 +5971,6 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   </data>
   <data name="BK_LBL_VERGLEICHSWAHL" xml:space="preserve">
     <value>Im Vergleich:</value>
-  </data>
-  <data name="BK_MSG_VERGLEICH_UMFANG" xml:space="preserve">
-    <value>{0} Komponentenzeile(n) für das Stammprojekt und {1} Variante(n).</value>
   </data>
   <data name="BK_LBL_KOMPONENTEN_DIFF" xml:space="preserve">
     <value>Unterschiede zum Stammprojekt — Variante „{0}“</value>
@@ -21503,7 +21548,7 @@ Möchten Sie das zulassen?</value>
     <value>{0} · {1} Einheiten</value>
   </data>
   <data name="SIM_SP_HERKUNFT" xml:space="preserve">
-    <value>Gerechnet mit Speicherflotte: {0} · {1} Einheiten</value>
+    <value>Gerechnet mit Speicherflotte: {0} · {1}</value>
   </data>
   <data name="SIM_SP_HERKUNFT_PEAK" xml:space="preserve">
     <value>Peak-Ziel {0} kW ({1})</value>
@@ -21512,7 +21557,13 @@ Möchten Sie das zulassen?</value>
     <value>Konfiguration ändern → ①</value>
   </data>
   <data name="SP_KONTEXT_FLOTTE" xml:space="preserve">
-    <value>mit Speicherflotte: {0} · {1} Einheiten</value>
+    <value>mit Speicherflotte: {0} · {1}</value>
+  </data>
+  <data name="SP_EINHEIT_EINS" xml:space="preserve">
+    <value>1 Einheit</value>
+  </data>
+  <data name="SP_EINHEITEN_N" xml:space="preserve">
+    <value>{0} Einheiten</value>
   </data>
   <data name="SP_KONTEXT_EINZEL" xml:space="preserve">
     <value>Einzelspeicher: {0}</value>
@@ -25614,6 +25665,15 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_BKU_SIM_ERL" xml:space="preserve">
     <value>Wann die markierte Version zuletzt simuliert wurde, oder dass sie es noch nicht ist.</value>
+  </data>
+  <data name="KI_DLG_BKU_NURUNT_ERL" xml:space="preserve">
+    <value>Blendet in der Gegenüberstellung die Gewerke aus, in denen keine Version vom Stammprojekt abweicht.</value>
+  </data>
+  <data name="KI_DLG_BKU_KOMP_NAME" xml:space="preserve">
+    <value>Komponenten im Vergleich</value>
+  </data>
+  <data name="KI_DLG_BKU_KOMP_ERL" xml:space="preserve">
+    <value>Die Gegenüberstellung je Gewerk: je Version „n × Komponente“ mit Kennwerten, Abweichungen zum Stammprojekt markiert.</value>
   </data>
   <data name="KI_DLG_BKB_AUSGABE_ERL" xml:space="preserve">
     <value>In welchem Format der Bericht entsteht: Word, Excel oder beides.</value>

@@ -49,6 +49,11 @@
     --epos-warn-flaeche: rgb(255, 246, 224);/* WARN_FLAECHE                 */
     --epos-warn-text: rgb(138, 91, 0);      /* WARN_TEXT                    */
 
+    /* ---- Abweichung zum Stamm (Uebersicht, Gegenueberstellung je Gewerk) --
+       --epos-text und --epos-text-leise halten auf der Flaeche mehr als 4,5:1. */
+    --epos-abweichung-flaeche: #e6f0fa;
+    --epos-abweichung-marke: var(--epos-quelle-text);
+
     /* ---- Kalenderbedienung der Konditionierung (Konzept 7.8, K1b) -------
        Die Flaechen der Tagesarten im Jahresband und Jahresraster; Schrift
        --epos-text haelt auf jeder mehr als 4,5:1. */
@@ -5118,46 +5123,106 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 /* --------------------------------------------------------------------------
    Die Uebersichtsseite (iU9-W5.5).
    -------------------------------------------------------------------------- */
-.epos-vergleichstabelle {
+/* DIE TABELLEN DER UEBERSICHT HEISSEN .epos-uebersicht-tabelle (Anwenderauftrag
+   12.10.2026, "Kopfzeile schmaler als die Zeilen, die Spalten fluchten nicht").
+   Bis dahin trug die Tabelle die Klasse .epos-vergleichstabelle - denselben Namen
+   wie der Baustein Vergleichstabelle (V12), dessen Regel ihn zur Flexspalte macht
+   (display: flex). Eine <table> mit display: flex ist keine Tabelle mehr: thead und
+   tbody werden zwei Flexkinder in je einer eigenen anonymen Tabelle, jede so breit
+   wie ihr Inhalt - der Kopf schmaler als der Rumpf, beide nur ein Drittel des
+   Rahmens. Mit eigenem Namen bleibt die Tabelle eine Tabelle. */
+.epos-uebersicht-tabelle {
     width: 100%;
     border-collapse: collapse;
 }
 
 /* --------------------------------------------------------------------------
-   Anwenderwunsch 05.09.2026 (W5-E-1): "Variantenprojekte-Auswahl als Dropdown,
-   damit weniger Platz verwendet wird."
-
-   Vorher stand die Gruppe als Tabelle da - Wahlknopf, Art, Bezeichner,
-   Projektname, Simulation - und daneben in einer zweiten Spalte das
-   Bezeichnerfeld mit den drei Knoepfen. Fuer eine Angabe, die in eine Zeile
-   passt, kostete das vier bis fuenf Zeilen Hoehe, und zwar genau die Hoehe,
-   die der Unterschiedstabelle darunter fehlte. Jetzt: EINE Zeile aus
-   Auswahlfeld, Bezeichnerfeld und den drei Knoepfen, darunter der
-   Simulationsstand als leiser Satz.
+   Der Kopf der Uebersicht in drei Teilen (Anwenderauftrag 12.10.2026):
+   Projektwahl, Variantenverwaltung, Lauf. Jeder Teil bricht fuer sich um; ein
+   langer Projektname im <select> haelt die Zeile nicht breiter als das Fenster
+   (min-width: 0 bis hinunter zum Feld - ein <select> ist sonst so breit wie
+   sein laengster Eintrag).
    -------------------------------------------------------------------------- */
-
-/* Das Auswahlfeld darf wachsen (es traegt den Projektnamen, seit Auftrag #238
-   OHNE den Bezeichner davor - "Stromspeicher Optimierung - ein Speicher" ist
-   laenger als der fruehere Text), das Bezeichnerfeld bleibt schmal, die
-   Knoepfe stehen rechts daneben. Umbrochen wird ueber das flex-wrap von
-   .epos-seite-zeile - auf schmalem Schirm rutschen die Knoepfe unter die
-   Felder.
-
-   KEIN max-width AM AUSWAHLFELD (Anwenderbefund 12.09.2026, Auftrag #238,
-   "korrigiere dabei auch die Ueberlappung"): Mit fester Obergrenze 34rem
-   (~550 px) schnitt das Feld einen laengeren Eintrag ab, UND die aufgeklappte
-   Liste eines <select> ist so breit wie ihr laengster Eintrag - sie ragte
-   damit ueber das Bezeichnerfeld daneben hinweg. Das Feld waechst jetzt frei
-   mit seinem Inhalt; das Bezeichnerfeld bekommt eine eigene Mindestbreite,
-   damit es nicht unter eine sinnvolle Eingabelaenge schrumpft, bevor die
-   Zeile umbricht. */
-.epos-variantenzeile > .epos-feld {
-    flex: 0 1 14rem;
-    min-width: 10rem;
+.epos-uebersicht-kopf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--epos-rand);
+    min-width: 0;
 }
 
+.epos-uebersicht-projektwahl {
+    flex: 1 1 26rem;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.epos-uebersicht-kopf .epos-feld,
+.epos-uebersicht-kopf select.epos-eingabe,
+.epos-uebersicht-kopf input.epos-eingabe {
+    min-width: 0;
+    max-width: 100%;
+}
+
+/* Das Stammprojekt waechst, der Schalter steht daneben und rutscht bei
+   Platzmangel darunter. */
+.epos-stammzeile > .epos-feld {
+    flex: 1 1 18rem;
+}
+
+/* Die Variante nimmt die ganze Breite ihres Teils. KEIN max-width (Auftrag
+   #238): Mit fester Obergrenze schnitt das Feld einen laengeren Eintrag ab. */
 .epos-variantenzeile > .epos-feld:first-child {
+    flex: 1 1 100%;
+}
+
+/* Die Verwaltung ist eine erkennbare Gruppe: ein leiser Rahmen mit Titel um
+   Bezeichner, Anlegen, Umbenennen und Loeschen. */
+.epos-uebersicht-verwaltung {
     flex: 1 1 24rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px var(--epos-rand);
+    min-width: 0;
+    margin: 0;
+    padding: 4px 12px 12px 12px;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+}
+
+.epos-uebersicht-verwaltung > legend {
+    padding: 0 4px;
+    color: var(--epos-text-leise);
+}
+
+.epos-uebersicht-verwaltung > .epos-feld {
+    flex: 1 1 12rem;
+}
+
+.epos-uebersicht-knoepfe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Der Lauf: der Hauptknopf links, der Simulationsstand daneben; auf schmalem
+   Schirm rutscht der Satz unter den Knopf. */
+.epos-uebersicht-lauf {
+    flex: 1 1 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px var(--epos-rand);
+    min-width: 0;
+}
+
+.epos-uebersicht-lauf > .epos-simstand {
+    flex: 1 1 16rem;
+    margin: 0;
+    min-width: 0;
 }
 
 /* Der Simulationsstand der gewaehlten Version - das, was die Spalte
@@ -5216,6 +5281,127 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     text-align: left;
     font-weight: 700;
     white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   Die Gegenueberstellung je Gewerk (Anwenderauftrag 12.10.2026): eine Zeile je
+   Gewerk, je Version eine Zelle "n x Komponente", darunter leise die Kennwerte.
+   Viele Varianten rollen quer IN der Huelle (sie rollt ohnehin, Hausregel
+   W9-B-2), die Gewerkspalte haftet links; die Seite rollt nie quer.
+   -------------------------------------------------------------------------- */
+.epos-komponenten-werkzeug {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 20px;
+    margin: 0 0 6px 0;
+}
+
+.epos-komponenten-legende {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--epos-text-leise);
+}
+
+.epos-komponenten-legende-marke {
+    display: inline-block;
+    width: 18px;
+    height: 14px;
+    background: var(--epos-abweichung-flaeche);
+    border-left: 3px solid var(--epos-abweichung-marke);
+}
+
+/* Die Huelle ist der Bezugskasten der Sprachausgabe-Texte (position: absolute):
+   Ohne ihn hingen sie am Dokument und zoegen beim Querrollen der Tabelle die
+   ganze Seite mit in die Breite. */
+.epos-komponenten-huelle {
+    position: relative;
+}
+
+.epos-komponentenvergleich th,
+.epos-komponentenvergleich td {
+    vertical-align: top;
+}
+
+.epos-komponentenvergleich td,
+.epos-komponentenvergleich thead th.epos-komponenten-versionkopf {
+    min-width: 11rem;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+/* Die erste Spalte haftet beim Querrollen; ihre Flaeche deckt, was darunter
+   durchrollt. Die Kopfzelle haftet in beide Richtungen und liegt deshalb oben. */
+.epos-komponentenvergleich .epos-komponenten-gewerk {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--epos-flaeche);
+    font-weight: 700;
+    white-space: nowrap;
+    border-right: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-raster-huelle .epos-komponentenvergleich thead th.epos-komponenten-gewerk {
+    z-index: 2;
+}
+
+.epos-komponenten-version,
+.epos-komponenten-stand {
+    display: block;
+}
+
+.epos-komponenten-stand {
+    font-weight: 400;
+    color: var(--epos-text-leise);
+}
+
+.epos-komponenten-eintrag {
+    display: block;
+}
+
+.epos-komponenten-eintrag + .epos-komponenten-eintrag {
+    margin-top: 4px;
+}
+
+.epos-komponenten-name {
+    display: block;
+}
+
+.epos-komponenten-kennwerte {
+    display: block;
+    color: var(--epos-text-leise);
+}
+
+.epos-komponenten-fehlt {
+    color: var(--epos-text-sehr-leise);
+}
+
+/* Was vom Stamm abweicht, ist hinterlegt und traegt eine Randmarke; das Gewerk
+   der Zeile einen Punkt. Die Sprachausgabe liest es als Text mit. */
+.epos-komponenten-zelle--abweichend {
+    background: var(--epos-abweichung-flaeche);
+    border-left: 3px solid var(--epos-abweichung-marke);
+}
+
+.epos-komponenten-gewerkmarke {
+    margin-left: 6px;
+    color: var(--epos-abweichung-marke);
+}
+
+.epos-komponenten-sprachausgabe {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.epos-komponenten-leer {
+    margin: 0;
+    color: var(--epos-text-leise);
 }
 
 /* Wo die Uebernahme nicht traegt, steht statt des Knopfes ein grauer Strich
