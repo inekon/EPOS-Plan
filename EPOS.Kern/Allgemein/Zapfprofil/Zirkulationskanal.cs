@@ -121,9 +121,7 @@ namespace WindowsFormsApplication1
 
             double laufzeit = ProjektOderParameter(p.ZirkLaufzeitH, ZapfParameter.ZIRKULATION_LAUFZEIT, ps, prot,
                                                    ZapfFeld.ZIRKULATION_LAUFZEIT, "h/d");
-            if (double.IsNaN(laufzeit) || !(laufzeit > 0) || laufzeit > Zapfkalender.STUNDEN_TAG)
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.ZirkulationUngueltig, "",
-                    ZapfSatz.Neu("EINGABE_ZIRKULATION_LAUFZEIT"));
+            if (!LaufzeitGueltig(laufzeit)) throw Ungueltig(ZapfSatz.Neu("EINGABE_ZIRKULATION_LAUFZEIT")).Ausnahme();
 
             ZapfZirkulationsmethode? methode;
             double leistung;
@@ -131,9 +129,7 @@ namespace WindowsFormsApplication1
             if (!p.ZirkAuto)
             {
                 methode = null;
-                if (!ManuellGueltig(p.ZirkManuellKw))
-                    throw new ZapfprofilEingabeException(ZapfEingabefehler.ZirkulationUngueltig, "",
-                        ZapfSatz.Neu("EINGABE_ZIRKULATION_MANUELL"));
+                if (!ManuellGueltig(p.ZirkManuellKw)) throw Ungueltig(ZapfSatz.Neu("EINGABE_ZIRKULATION_MANUELL")).Ausnahme();
                 leistung = p.ZirkManuellKw.Value;
                 prot?.Vermerken("", ZapfFeld.ZIRKULATION_METHODE, null, "", Wertstatus.Ueberschrieben, null,
                                 ZapfSatz.Neu("HERKUNFT_ZIRK_MANUELL"));
@@ -178,9 +174,7 @@ namespace WindowsFormsApplication1
                 {
                     case ZapfZirkulationsmethode.Leitungslaenge:
                     {
-                        if (!p.ZirkLaengeM.HasValue)
-                            throw new ZapfprofilEingabeException(ZapfEingabefehler.ZirkulationUngueltig, "",
-                                ZapfSatz.Neu("EINGABE_ZIRKULATION_LAENGE_FEHLT"));
+                        if (!p.ZirkLaengeM.HasValue) throw Ungueltig(ZapfSatz.Neu("EINGABE_ZIRKULATION_LAENGE_FEHLT")).Ausnahme();
                         double laenge = NichtNegativ(p.ZirkLaengeM.Value, ZapfSatz.Neu("BEGRIFF_ZIRK_LAENGE"));
                         prot?.Vermerken("", ZapfFeld.ZIRKULATION_LAENGE, laenge, "m", Wertstatus.Ueberschrieben, null);
                         double qStrich = ProjektOderParameter(p.ZirkVerlustWJeM, ZapfParameter.ZIRKULATION_VERLUST_JE_METER,
@@ -213,8 +207,7 @@ namespace WindowsFormsApplication1
                         break;
                     }
                     default:
-                        throw new ZapfprofilEingabeException(ZapfEingabefehler.ZirkulationUngueltig, "",
-                            ZapfSatz.Neu("EINGABE_ZIRKULATION_METHODE"));
+                        throw Ungueltig(ZapfSatz.Neu("EINGABE_ZIRKULATION_METHODE")).Ausnahme();
                 }
             }
 
@@ -261,7 +254,9 @@ namespace WindowsFormsApplication1
         internal static Zirkulationsansatz Vorschlag(ProjektStand p, IReadOnlyList<Zonenanteil> zonen, Parametersatz ps)
         {
             if (p == null) return null;
-            try { return Ansetzen(p with { ZirkAuto = true }, zonen, ps, null, null); }
+            ProjektStand auto = p with { ZirkAuto = true };
+            if (Befund(auto, zonen, ps) != null) return null;
+            try { return Ansetzen(auto, zonen, ps, null, null); }
             catch (ZapfprofilEingabeException) { return null; }
             catch (ParametersatzException) { return null; }
         }
@@ -307,9 +302,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static double[] Laufzeitfenster(double laufzeitH, double tagesmitteH)
         {
-            if (double.IsNaN(laufzeitH) || !(laufzeitH > 0) || laufzeitH > Zapfkalender.STUNDEN_TAG)
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.ZirkulationUngueltig, "",
-                    ZapfSatz.Neu("EINGABE_ZIRKULATION_LAUFZEIT"));
+            if (!LaufzeitGueltig(laufzeitH)) throw Ungueltig(ZapfSatz.Neu("EINGABE_ZIRKULATION_LAUFZEIT")).Ausnahme();
             double beginn = Laufzeitbeginn(laufzeitH, tagesmitteH);
             double ende = beginn + laufzeitH;
             var fenster = new double[Zapfkalender.STUNDEN_TAG];
@@ -363,9 +356,7 @@ namespace WindowsFormsApplication1
                 return (int)lage.Value;
             }
             ZapfParameterwert pw = ps.Lies(ZapfParameter.ZIRKULATION_LAGE);
-            if (pw.Wert != (int)ZapfLeitungslage.InnerhalbHuelle && pw.Wert != (int)ZapfLeitungslage.AusserhalbHuelle)
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.ZirkulationUngueltig, "",
-                    ZapfSatz.Neu("EINGABE_ZIRKULATION_LAGE"));
+            if (!LageGueltig(pw.Wert)) throw Ungueltig(ZapfSatz.Neu("EINGABE_ZIRKULATION_LAGE")).Ausnahme();
             prot?.Vermerken("", ZapfFeld.ZIRKULATION_LAGE, pw.Wert, "", Wertstatus.Vorgabe, pw.Herkunft,
                             ZapfSatz.Neu("HERKUNFT_PARAMETER", ZapfParameter.ZIRKULATION_LAGE));
             return (int)pw.Wert;
@@ -403,10 +394,101 @@ namespace WindowsFormsApplication1
 
         private static double NichtNegativ(double w, ZapfSatz was)
         {
-            if (double.IsNaN(w) || double.IsInfinity(w) || w < 0)
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.ZirkulationUngueltig, "",
-                    ZapfSatz.Neu("EINGABE_ZIRKULATION_WERT", was, w.ToString(CultureInfo.InvariantCulture)));
+            ZapfAblehnung befund = NichtNegativBefund(w, was);
+            if (befund != null) throw befund.Ausnahme();
             return w;
+        }
+
+        private static ZapfAblehnung NichtNegativBefund(double w, ZapfSatz was)
+            => double.IsNaN(w) || double.IsInfinity(w) || w < 0
+               ? Ungueltig(ZapfSatz.Neu("EINGABE_ZIRKULATION_WERT", was, w.ToString(CultureInfo.InvariantCulture)))
+               : null;
+
+        private static ZapfAblehnung Ungueltig(ZapfSatz satz) => new ZapfAblehnung("", ZapfEingabefehler.ZirkulationUngueltig, satz);
+
+        /// <summary>Die tägliche Laufzeit liegt in (0; 24] h.</summary>
+        private static bool LaufzeitGueltig(double laufzeitH)
+            => !double.IsNaN(laufzeitH) && laufzeitH > 0 && !(laufzeitH > Zapfkalender.STUNDEN_TAG);
+
+        private static bool LageGueltig(double lage)
+            => lage == (int)ZapfLeitungslage.InnerhalbHuelle || lage == (int)ZapfLeitungslage.AusserhalbHuelle;
+
+        /// <summary>Ein Projektwert, sonst der Parameter — ohne Wurf; fehlt der Parameter, die Ablehnung „Parameter fehlt" (Projekt).</summary>
+        private static ZapfAblehnung ProjektOderParameterBefund(double? projektwert, string schluessel, Parametersatz ps, out double wert)
+        {
+            wert = projektwert ?? double.NaN;
+            if (projektwert.HasValue) return null;
+            ZapfSatz fehlt = ps.FehltSatz(schluessel);
+            if (fehlt != null) return new ZapfAblehnung("", ZapfEingabefehler.ParameterFehlt, fehlt);
+            wert = ps.Wert(schluessel);
+            return null;
+        }
+
+        /// <summary>
+        /// <b>Die Regeln von <see cref="Ansetzen"/> ohne Wurf</b> (Vorprüfung der Zirkulation, Konzept 2.2):
+        /// <c>null</c>, wenn der Ansatz mit den Projektgrößen, den Zonenanteilen und dem Parametersatz
+        /// rechenbar ist; sonst die erste Ablehnung in der Reihenfolge von <see cref="Ansetzen"/> — Laufzeit,
+        /// manuelle Leistung, Fläche, Leitungslänge, Verlust je Meter, Anteil, Leitungslage, Kennwert,
+        /// Methode, auch „Parameter fehlt". Zone der Ablehnung ist das Projekt (leer).
+        /// </summary>
+        internal static ZapfAblehnung Befund(ProjektStand p, IReadOnlyList<Zonenanteil> zonen, Parametersatz ps)
+        {
+            if (p == null)
+                return new ZapfAblehnung("", ZapfEingabefehler.ProjektFehlt, ZapfSatz.Neu("EINGABE_ZIRKULATION_PROJEKT_FEHLT"));
+            if (ps == null) return null;   // ohne Parametersatz rechnet der Rechenweg nicht — er nennt das selbst
+            ZapfAblehnung befund = ProjektOderParameterBefund(p.ZirkLaufzeitH, ZapfParameter.ZIRKULATION_LAUFZEIT, ps, out double laufzeit);
+            if (befund != null) return befund;
+            if (!LaufzeitGueltig(laufzeit)) return Ungueltig(ZapfSatz.Neu("EINGABE_ZIRKULATION_LAUFZEIT"));
+            if (!p.ZirkAuto) return ManuellGueltig(p.ZirkManuellKw) ? null : Ungueltig(ZapfSatz.Neu("EINGABE_ZIRKULATION_MANUELL"));
+
+            ZapfZirkulationsmethode methode = p.ZirkMethode;
+            if (methode == ZapfZirkulationsmethode.Flaechenkennwert)
+            {
+                double flaecheN = 0.0;
+                if (p.ZirkFlaecheM2.HasValue)
+                {
+                    befund = NichtNegativBefund(p.ZirkFlaecheM2.Value, ZapfSatz.Neu("BEGRIFF_ZIRK_FLAECHE"));
+                    if (befund != null) return befund;
+                    flaecheN = p.ZirkFlaecheM2.Value;
+                }
+                else
+                {
+                    foreach (Zonenanteil z in zonen ?? new Zonenanteil[0])
+                        if (z.InZ1 && z.FlaecheM2.HasValue && z.FlaecheM2.Value > 0) flaecheN += z.FlaecheM2.Value;
+                }
+                if (!(flaecheN > 0)) methode = ZapfZirkulationsmethode.Anteil;
+            }
+
+            switch (methode)
+            {
+                case ZapfZirkulationsmethode.Leitungslaenge:
+                    if (!p.ZirkLaengeM.HasValue) return Ungueltig(ZapfSatz.Neu("EINGABE_ZIRKULATION_LAENGE_FEHLT"));
+                    befund = NichtNegativBefund(p.ZirkLaengeM.Value, ZapfSatz.Neu("BEGRIFF_ZIRK_LAENGE"));
+                    if (befund != null) return befund;
+                    befund = ProjektOderParameterBefund(p.ZirkVerlustWJeM, ZapfParameter.ZIRKULATION_VERLUST_JE_METER, ps, out double qStrich);
+                    return befund ?? NichtNegativBefund(qStrich, ZapfSatz.Neu("BEGRIFF_ZIRK_VERLUST_JE_METER"));
+                case ZapfZirkulationsmethode.Anteil:
+                    befund = ProjektOderParameterBefund(p.ZirkAnteil, ZapfParameter.ZIRKULATION_ANTEIL, ps, out double a);
+                    return befund ?? NichtNegativBefund(a, ZapfSatz.Neu("BEGRIFF_ZIRK_ANTEIL"));
+                case ZapfZirkulationsmethode.Flaechenkennwert:
+                {
+                    int lage;
+                    if (p.ZirkLage.HasValue) lage = (int)p.ZirkLage.Value;
+                    else
+                    {
+                        befund = ProjektOderParameterBefund(null, ZapfParameter.ZIRKULATION_LAGE, ps, out double l);
+                        if (befund != null) return befund;
+                        if (!LageGueltig(l)) return Ungueltig(ZapfSatz.Neu("EINGABE_ZIRKULATION_LAGE"));
+                        lage = (int)l;
+                    }
+                    string schluessel = lage == (int)ZapfLeitungslage.InnerhalbHuelle
+                                        ? ZapfParameter.ZIRKULATION_KENNWERT_LAGE1 : ZapfParameter.ZIRKULATION_KENNWERT_LAGE2;
+                    befund = ProjektOderParameterBefund(p.ZirkKennwert, schluessel, ps, out double k);
+                    return befund ?? NichtNegativBefund(k, ZapfSatz.Neu("BEGRIFF_ZIRK_KENNWERT"));
+                }
+                default:
+                    return Ungueltig(ZapfSatz.Neu("EINGABE_ZIRKULATION_METHODE"));
+            }
         }
     }
 }

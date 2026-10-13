@@ -158084,11 +158084,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsart der Zone „{0}“ steht nicht (mehr) im Katalog — bitte eine Nutzungsart wählen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsart Nr. {1} der Zone „{0}“ steht nicht (mehr) im Katalog — bitte eine Nutzungsart wählen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_NUTZUNGSART_FEHLT {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_EINGABE_NUTZUNGSART_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Zone „{0}“ ist noch keine Nutzungsart gewählt. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_EINGABE_NUTZUNGSART_NICHT_GEWAEHLT {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_EINGABE_NUTZUNGSART_NICHT_GEWAEHLT", resourceCulture);
             }
         }
         

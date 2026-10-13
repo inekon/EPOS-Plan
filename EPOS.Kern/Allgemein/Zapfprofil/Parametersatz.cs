@@ -133,8 +133,16 @@ namespace WindowsFormsApplication1
         {
             if (schluessel != null && _werte.TryGetValue(schluessel, out ZapfParameterwert p)) return p;
             throw new ParametersatzException(ParametersatzFehler.ParameterFehlt, Katalogversion, schluessel,
-                ZapfSatz.Neu("PARAMETER_SCHLUESSEL_FEHLT", schluessel ?? "", Katalogversion));
+                FehltSatz(schluessel));
         }
+
+        /// <summary>
+        /// Der Satz „Parameter fehlt" zu einem Schlüssel, der nicht im Satz steht; <c>null</c>, wenn er
+        /// steht. Dieselbe Regel wie <see cref="Lies"/> — ohne Wurf, für die Vorprüfung einer Zone
+        /// (<see cref="Zonenvorpruefung"/>).
+        /// </summary>
+        internal ZapfSatz FehltSatz(string schluessel)
+            => Enthaelt(schluessel) ? null : ZapfSatz.Neu("PARAMETER_SCHLUESSEL_FEHLT", schluessel ?? "", Katalogversion);
 
         /// <summary>Der Zahlenwert zu einem Schlüssel; fehlt er, die benannte Ablehnung.</summary>
         internal double Wert(string schluessel) => Lies(schluessel).Wert;

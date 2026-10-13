@@ -255,12 +255,13 @@ namespace EPOS.Kern.Tests
                 ZapfSatz.Neu("EINGABE_ZIRKULATION_METHODE")));
             Assert.Equal("Die Zirkulation trägt 0: Unbekannte Methode der Zirkulation.", z.Text);
 
-            // Ein Begriff am Satzanfang beginnt groß — in beiden Sprachen; die Nutzungsart steht mit Namen, nie als Id.
+            // Ein Begriff am Satzanfang beginnt groß — in beiden Sprachen; die Zone steht mit Namen, die
+            // fehlende Nutzungsart mit ihrer Nummer (es gibt zu ihr keinen Namen mehr).
             Assert.Equal("Die Speichertemperatur ist negativ.",
                          ZapfSatz.Neu("AUSLEGUNG_NEGATIV", ZapfSatz.Neu("BEGRIFF_SPEICHERTEMPERATUR")).Klartext);
-            Assert.Equal("Die Nutzungsart der Zone „Büro“ steht nicht (mehr) im Katalog — bitte eine Nutzungsart wählen.",
+            Assert.Equal("Die Nutzungsart Nr. 17 der Zone „Büro“ steht nicht (mehr) im Katalog — bitte eine Nutzungsart wählen.",
                          ZapfprofilHuelle.Meldung(new ZapfAblehnung("Büro", ZapfEingabefehler.NutzungsartFehlt,
-                             ZapfSatz.Neu("EINGABE_NUTZUNGSART_FEHLT", "Büro"))).Text);
+                             ZapfSatz.Neu("EINGABE_NUTZUNGSART_FEHLT", "Büro", 17))).Text);
 
             var hinweis = new ZapfHinweis("Wohnen", Mengengeruest.HINWEIS_BANDBREITE,
                 ZapfSatz.Neu("HINWEIS_BEDARF_AUSSERHALB_BANDBREITE", "Wohnen", 1.5, 0.25, "–"));

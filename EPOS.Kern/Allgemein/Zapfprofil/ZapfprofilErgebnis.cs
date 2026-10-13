@@ -25,6 +25,13 @@ namespace WindowsFormsApplication1
         /// <summary>Die Ablehnung einer Zone aus einem fehlenden Parameter — samt Satz.</summary>
         internal static ZapfAblehnung Aus(string zone, ParametersatzException ex)
             => new ZapfAblehnung(zone, ZapfEingabefehler.ParameterFehlt, ex.Satz);
+
+        /// <summary>
+        /// Die benannte Ausnahme zu dieser Ablehnung — für die Wurfstellen, die als Netz für
+        /// Unerwartetes bleiben: Sie werfen aus DERSELBEN Regel, die die Vorprüfung ohne Wurf liest
+        /// (<see cref="Zonenvorpruefung"/>).
+        /// </summary>
+        internal ZapfprofilEingabeException Ausnahme() => new ZapfprofilEingabeException(Grund, Zone, Satz);
     }
 
     /// <summary>

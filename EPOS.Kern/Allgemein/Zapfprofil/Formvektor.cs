@@ -67,9 +67,7 @@ namespace WindowsFormsApplication1
             double[] woche = Raster(n.Wochenfaktoren, Zapfkalender.WOCHENTAGE, zone, ZapfSatz.Neu("BEGRIFF_WOCHENFAKTOREN"));
             double summeWoche = 0.0;
             for (int i = 0; i < Zapfkalender.WOCHENTAGE; i++) summeWoche += woche[i];
-            if (!(summeWoche > 0))
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.KeineVerteilung, zone,
-                    ZapfSatz.Neu("EINGABE_WOCHENFAKTOREN_NULL", n.Name ?? ""));
+            if (!(summeWoche > 0)) throw WochensummeNull(n, zone).Ausnahme();
             SummeWarnen(summeWoche, warnschwelle, zone, "WOCHENFAKTOREN_SUMME", ZapfSatz.Neu("BEGRIFF_WOCHENFAKTOREN"), hinweise);
             var wocheNormiert = new double[Zapfkalender.WOCHENTAGE];
             for (int i = 0; i < Zapfkalender.WOCHENTAGE; i++) wocheNormiert[i] = woche[i] / summeWoche;
@@ -83,10 +81,8 @@ namespace WindowsFormsApplication1
                          ferien.HasValue ? null : ZapfSatz.Neu("HERKUNFT_FERIEN_WIE_SONNTAG"));
 
             // --- Tagesgänge: je Σ 1 ---------------------------------------------------------
-            if (satz == null || !satz.Vollstaendig || satz.Anteile == null
-                || satz.Anteile.GetLength(0) != Tagesgangsatz.TAGTYPEN || satz.Anteile.GetLength(1) != Tagesgangsatz.STUNDEN)
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.TagesgangsatzFehlt, zone,
-                    ZapfSatz.Neu("EINGABE_TAGESGANGSATZ_UNVOLLSTAENDIG", zone));
+            ZapfAblehnung unvollstaendig = SatzBefund(satz, zone);
+            if (unvollstaendig != null) throw unvollstaendig.Ausnahme();
             var gaenge = new double[Tagesgangsatz.TAGTYPEN, Tagesgangsatz.STUNDEN];
             var leer = new bool[Tagesgangsatz.TAGTYPEN];
             for (int t = 0; t < Tagesgangsatz.TAGTYPEN; t++)
@@ -230,19 +226,81 @@ namespace WindowsFormsApplication1
 
         private static double[] Raster(double[] werte, int laenge, string zone, ZapfSatz was)
         {
-            if (werte == null || werte.Length != laenge)
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.RasterUngueltig, zone,
-                    ZapfSatz.Neu("EINGABE_RASTER_LAENGE", was, laenge, zone));
-            foreach (double w in werte) NichtNegativ(w, zone, was);
+            ZapfAblehnung befund = RasterBefund(werte, laenge, zone, was);
+            if (befund != null) throw befund.Ausnahme();
             return werte;
         }
 
         private static double NichtNegativ(double w, string zone, ZapfSatz was)
         {
-            if (double.IsNaN(w) || double.IsInfinity(w) || w < 0)
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.RasterUngueltig, zone,
-                    ZapfSatz.Neu("EINGABE_RASTER_NEGATIV", was, zone));
+            ZapfAblehnung befund = NichtNegativBefund(w, zone, was);
+            if (befund != null) throw befund.Ausnahme();
             return w;
+        }
+
+        private static ZapfAblehnung RasterBefund(double[] werte, int laenge, string zone, ZapfSatz was)
+        {
+            if (werte == null || werte.Length != laenge)
+                return new ZapfAblehnung(zone, ZapfEingabefehler.RasterUngueltig, ZapfSatz.Neu("EINGABE_RASTER_LAENGE", was, laenge, zone));
+            foreach (double w in werte)
+            {
+                ZapfAblehnung befund = NichtNegativBefund(w, zone, was);
+                if (befund != null) return befund;
+            }
+            return null;
+        }
+
+        private static ZapfAblehnung NichtNegativBefund(double w, string zone, ZapfSatz was)
+            => double.IsNaN(w) || double.IsInfinity(w) || w < 0
+               ? new ZapfAblehnung(zone, ZapfEingabefehler.RasterUngueltig, ZapfSatz.Neu("EINGABE_RASTER_NEGATIV", was, zone))
+               : null;
+
+        private static ZapfAblehnung WochensummeNull(Nutzungsart n, string zone)
+            => new ZapfAblehnung(zone, ZapfEingabefehler.KeineVerteilung, ZapfSatz.Neu("EINGABE_WOCHENFAKTOREN_NULL", n.Name ?? ""));
+
+        private static ZapfAblehnung SatzBefund(Tagesgangsatz satz, string zone)
+            => satz == null || !satz.Vollstaendig || satz.Anteile == null
+               || satz.Anteile.GetLength(0) != Tagesgangsatz.TAGTYPEN || satz.Anteile.GetLength(1) != Tagesgangsatz.STUNDEN
+               ? new ZapfAblehnung(zone, ZapfEingabefehler.TagesgangsatzFehlt, ZapfSatz.Neu("EINGABE_TAGESGANGSATZ_UNVOLLSTAENDIG", zone))
+               : null;
+
+        /// <summary>
+        /// <b>Die Regeln von <see cref="Bilden"/> ohne Wurf</b> (Vorprüfung, <see cref="Zonenvorpruefung"/>):
+        /// <c>null</c>, wenn die Zeitstruktur der Zone bildbar ist, sonst die erste Ablehnung in der
+        /// Reihenfolge von <see cref="Bilden"/> — Monatsfaktoren, Auslastungsgang der Zone,
+        /// Wochenfaktoren und ihre Summe, Ferienfaktor, Tagesgangsatz und seine Anteile.
+        /// </summary>
+        internal static ZapfAblehnung Befund(ZonenStand z, Nutzungsart n, Tagesgangsatz satz)
+        {
+            string zone = z?.Name ?? "";
+            ZapfAblehnung befund = RasterBefund(n.Monatsfaktoren, Zapfkalender.MONATE, zone, ZapfSatz.Neu("BEGRIFF_MONATSFAKTOREN"));
+            if (befund != null) return befund;
+            for (int m = 0; m < Zapfkalender.MONATE; m++)
+            {
+                double? a = z?.Auslastung != null && m < z.Auslastung.Length ? z.Auslastung[m] : null;
+                if (!a.HasValue) continue;
+                befund = NichtNegativBefund(a.Value, zone, ZapfSatz.Neu("BEGRIFF_AUSLASTUNGSGANG"));
+                if (befund != null) return befund;
+            }
+            befund = RasterBefund(n.Wochenfaktoren, Zapfkalender.WOCHENTAGE, zone, ZapfSatz.Neu("BEGRIFF_WOCHENFAKTOREN"));
+            if (befund != null) return befund;
+            double summeWoche = 0.0;
+            for (int i = 0; i < Zapfkalender.WOCHENTAGE; i++) summeWoche += n.Wochenfaktoren[i];
+            if (!(summeWoche > 0)) return WochensummeNull(n, zone);
+            if (n.Ferienfaktor.HasValue)
+            {
+                befund = NichtNegativBefund(n.Ferienfaktor.Value, zone, ZapfSatz.Neu("BEGRIFF_FERIENFAKTOR"));
+                if (befund != null) return befund;
+            }
+            befund = SatzBefund(satz, zone);
+            if (befund != null) return befund;
+            for (int t = 0; t < Tagesgangsatz.TAGTYPEN; t++)
+                for (int h = 0; h < Tagesgangsatz.STUNDEN; h++)
+                {
+                    befund = NichtNegativBefund(satz.Anteile[t, h], zone, ZapfSatz.Neu("BEGRIFF_TAGESGANG"));
+                    if (befund != null) return befund;
+                }
+            return null;
         }
 
         /// <summary>Der Tagtyp als Begriff (<c>BEGRIFF_TAGTYP_…</c>) — sprachfrei für die Sätze des Kerns.</summary>

@@ -29329,7 +29329,10 @@ Do you want to allow this?</value>
     <value>A zone without data.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_NUTZUNGSART_FEHLT" xml:space="preserve">
-    <value>The type of use of zone “{0}” is not (or no longer) in the catalogue — please choose a type of use.</value>
+    <value>Type of use no. {1} of zone “{0}” is not (or no longer) in the catalogue — please choose a type of use.</value>
+  </data>
+  <data name="ZPG_SATZ_EINGABE_NUTZUNGSART_NICHT_GEWAEHLT" xml:space="preserve">
+    <value>No type of use has been chosen for zone “{0}” yet.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_TAGESGANGSATZ_FEHLT" xml:space="preserve">
     <value>Daily profile set {0} of zone “{1}” is missing.</value>
