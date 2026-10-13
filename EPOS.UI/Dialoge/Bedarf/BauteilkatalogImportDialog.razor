@@ -75,7 +75,24 @@
                     </table>
                     <p class="epos-bki-gekennzeichnet">@string.Format(CultureInfo.CurrentCulture, Texte.Gekennzeichnet, Z(_vorschau.Gekennzeichnet))</p>
                     <p>@string.Format(CultureInfo.CurrentCulture, Texte.MitBaustoff, Z(_vorschau.SchichtenMitBaustoff))</p>
+                    @if (_vorschau.LambdaSkaliert > 0)
+                    {
+                        <p class="epos-bki-skaliert">@string.Format(CultureInfo.CurrentCulture, Texte.LambdaSkaliert, Z(_vorschau.LambdaSkaliert))</p>
+                    }
+                    @if (!string.IsNullOrEmpty(_vorschau.Haustechnik))
+                    {
+                        <p class="epos-bki-haustechnik">@_vorschau.Haustechnik</p>
+                    }
                     <p class="epos-bki-richtung">@_vorschau.Richtung</p>
+                    @if (_vorschau.Gliederung is { Count: > 0 } gliederung)
+                    {
+                        <details class="epos-bki-gliederung">
+                            <summary>@Texte.Gliederung</summary>
+                            <ul>
+                                @foreach (string g in gliederung) { <li>@g</li> }
+                            </ul>
+                        </details>
+                    }
                     @if (_vorschau.Gruende.Count > 0)
                     {
                         <h2 class="epos-abschnitt-titel">@Texte.Gruende</h2>

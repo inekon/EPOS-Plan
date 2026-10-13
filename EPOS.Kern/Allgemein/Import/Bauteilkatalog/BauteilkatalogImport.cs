@@ -83,6 +83,18 @@ namespace WindowsFormsApplication1
         public int Gekennzeichnet { get; internal set; }
         /// <summary>Schichten, die über den Namen (N1–N3) einen Baustoff derselben Gruppe treffen.</summary>
         public int SchichtenMitBaustoff { get; internal set; }
+        /// <summary>Baustoffe, deren λ als Skalenfehler der Quelle durch 1 000 geteilt wurde (E134; je Zeile im Protokoll).</summary>
+        public int LambdaSkaliert { get; internal set; }
+        /// <summary>Baustoffe der Klasse Haustechnik (Basis-Codes 14, 19, 29, 30).</summary>
+        public int HaustechnikBaustoffe { get; internal set; }
+        /// <summary>Aufbauten der Klasse Haustechnik (Basis-Codes 14, 19, 29, 30).</summary>
+        public int HaustechnikAufbauten { get; internal set; }
+        /// <summary>Luftdurchlässe (Basis-Code 19) unter den Aufbauten — immer gekennzeichnet.</summary>
+        public int Luftdurchlaesse { get; internal set; }
+        /// <summary>Geplante Baustoffe je „Gruppe/Klasse“ (Codes; Klasse leer = „-“).</summary>
+        public SortedDictionary<string, int> BaustoffGliederung { get; } = new SortedDictionary<string, int>(StringComparer.Ordinal);
+        /// <summary>Geplante Aufbauten je „Gruppe/Klasse“ (Codes; Klasse leer = „-“).</summary>
+        public SortedDictionary<string, int> AufbauGliederung { get; } = new SortedDictionary<string, int>(StringComparer.Ordinal);
         /// <summary>Codes ohne Deutung („Datei Spalte Code“ → Anzahl); sie fallen auf „Sonstige“.</summary>
         public SortedDictionary<string, int> CodesOhneDeutung { get; } = new SortedDictionary<string, int>(StringComparer.Ordinal);
         /// <summary>Die Stichprobe der Richtung (Regel 7).</summary>
@@ -147,30 +159,120 @@ namespace WindowsFormsApplication1
         /// <summary>c bis zu diesem Wert steht in kJ/(kg·K) und wird mit 1 000 multipliziert (Regel 2).</summary>
         public const double CP_KJ_GRENZE = 10.0;
 
-        /// <summary>λ darüber nur bei Metallen (Regel 3).</summary>
+        /// <summary>λ darüber nur bei Metallen (Regel 3, E134: erkannt an der Rohdichte).</summary>
         public const double LAMBDA_METALL_GRENZE = 10.0;
+
+        /// <summary>Rohdichte [kg/m³], ab der ein Stoff mit λ &gt; 10 als Metall gilt (E134).</summary>
+        public const double RHO_METALL_MIN = 2500.0;
+
+        /// <summary>λ darüber kann bei einem Nichtmetall ein Skalenfehler der Quelle sein (Faktor 1 000, E134).</summary>
+        public const double LAMBDA_SKALENFEHLER_MIN = 60.0;
+
+        /// <summary>Der Faktor des Skalenfehlers.</summary>
+        public const double LAMBDA_SKALENFAKTOR = 1000.0;
+
+        /// <summary>Band, in dem λ/1 000 liegen muss, damit der Skalenfehler als erkannt gilt [W/(m·K)].</summary>
+        public const double LAMBDA_SKALIERT_MIN = 0.02, LAMBDA_SKALIERT_MAX = 0.5;
+
+        /// <summary>Ablehnungsgrund eines Baustoffs mit λ &gt; 10, der weder Metall noch erkannter Skalenfehler ist.</summary>
+        public const string GRUND_LAMBDA = "λ > 10 ohne Metall (ρ < 2 500 kg/m³) und ohne erkennbaren Skalenfehler";
 
         /// <summary>Rsi und Rse, wenn die Quelle sie am Aufbau nicht nennt (DIN EN ISO 6946, horizontal).</summary>
         public const double RSI_VORGABE = 0.13, RSE_VORGABE = 0.04;
 
         /// <summary>
-        /// <b>Stoffgruppencode der Quelle → Gruppe</b> (Regel 5; Deutung nach DIN 4108-4 Tabelle 1, Vermutung des
-        /// Feldinventars): 0 gemischt, 1 Putze/Mörtel/Estriche, 2 Beton, 3 Bauplatten, 4 Mauerwerk, 5 Dämmstoffe,
-        /// 6 Holz, 7 Beläge und Abdichtungen, 8 sonstige Stoffe (Metalle, Glas, Erdreich).
+        /// <b>Stoffgruppencode der Quelle → Gruppe</b> (Regel 5, Code-Tafel nach E134): 1 Putze, Mörtel, Estriche, 2 Beton,
+        /// 3 Dämmstoffe mit Bauplatten (Bauplatten), 4 Mauerwerk, 5 Dämmstoffe, 6 Holz, 7 Beläge und Abdichtungen, 8 Sonstige;
+        /// 0 und leer gehören nicht zur Tafel — sie werden über <c>Basis_Auszug</c> (TcBasis) nachgetragen, sonst „Sonstige“.
         /// </summary>
         public static readonly IReadOnlyDictionary<int, string> STOFFGRUPPE_AUS_CODE = new Dictionary<int, string>
         {
-            [0] = "SONSTIGE", [1] = "PUTZE", [2] = "BETON", [3] = "PLATTEN", [4] = "MAUERWERK",
+            [1] = "PUTZE", [2] = "BETON", [3] = "PLATTEN", [4] = "MAUERWERK",
             [5] = "DAEMMSTOFFE", [6] = "HOLZ", [7] = "ABDICHTUNGEN", [8] = "SONSTIGE"
         };
 
-        /// <summary>Der Stoffgruppencode, unter dem λ &gt; 10 zulässig ist (sonstige Stoffe: Metalle).</summary>
-        public const int CODE_SONSTIGE_STOFFE = 8;
+        /// <summary>
+        /// <b>Nachbargruppen eines Stoffgruppencodes</b>: die Tafel fasst zusammen, was der Katalog trennt (Putz und Estrich,
+        /// Dämmstoff und Bauplatte, Belag und Abdichtung, sonstige Stoffe mit Metallen und Erdreich). Trifft die Klasse aus dem
+        /// Namen eine dieser Gruppen, gilt sie; sonst die Gruppe der Tafel.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<int, string[]> NACHBARGRUPPEN_AUS_CODE = new Dictionary<int, string[]>
+        {
+            [1] = new[] { "ESTRICHE" },
+            [3] = new[] { "DAEMMSTOFFE" },
+            [7] = new[] { "BODENBELAEGE" },
+            [8] = new[] { "METALLE", "ERDREICH" }
+        };
+
+        /// <summary>Basis-Codes (<c>Basis_Auszug</c> GroupType) der Haustechnik-Werkstoffe und ihres Zubehörs (E134).</summary>
+        public static readonly IReadOnlyCollection<int> HAUSTECHNIK_CODES = new HashSet<int> { 14, 19, 29, 30 };
+
+        /// <summary>Basis-Code der Luftdurchlässe: an Aufbauten gekennzeichnet (E134).</summary>
+        public const int CODE_LUFTDURCHLASS = 19;
+
+        /// <summary>Die Klasse „Haustechnik“, sobald das Schema sie führt.</summary>
+        public const string KLASSE_HAUSTECHNIK = "HAUSTECHNIK";
 
         /// <summary>
-        /// <b>Bauteilart aus <c>Basis_Auszug</c> GroupType/SubType</b> (Regel 6): 1 Wände (Untertyp 2 Innenwand,
-        /// sonst Außenwand), 2 Türen, 3 Fenster, 4 Decken und Böden, 5 Dächer; 17 Wärmebrücken und 19 Luftdurchlässe
-        /// sind gedeutet, aber kein Aufbau der Hülle → Sonstiges; alles Übrige ist ungedeutet → Sonstiges mit Protokoll.
+        /// Die Klasse eines Haustechnik-Satzes in der Gruppe „Sonstige“: <see cref="KLASSE_HAUSTECHNIK"/>, sobald die Liste des
+        /// Schemas sie führt (Prüfklausel der Spalte <c>Klasse_Code</c>), bis dahin die sonstige Klasse der Gruppe.
+        /// </summary>
+        public static string KlasseHaustechnik(bool baustoff)
+        {
+            IReadOnlyList<(string Gruppe, string Klasse)> liste = baustoff ? BauteilkatalogSchema.BAUSTOFF_KLASSEN : BauteilkatalogSchema.AUFBAU_KLASSEN;
+            if (liste.Any(k => k.Klasse == KLASSE_HAUSTECHNIK)) return KLASSE_HAUSTECHNIK;
+            return baustoff ? "STOFF_SONSTIGE" : "SONSTIGES";
+        }
+
+        /// <summary>
+        /// <b>Gruppe und Klasse eines Baustoffs aus Code und Name</b> (Regel 5, E134). Ein Haustechnik-Code → „Sonstige“ mit
+        /// Klasse Haustechnik; ein Code der Tafel → seine Gruppe, die Klasse aus dem Namen auch in einer Nachbargruppe;
+        /// leer, 0 oder unbekannt → „Sonstige“ (<paramref name="gedeutet"/> = <c>false</c> nur für einen unbekannten Code).
+        /// </summary>
+        public static (string Gruppe, string Klasse, bool Haustechnik) GliederungAusCode(int? code, string schluessel, out bool gedeutet)
+        {
+            gedeutet = true;
+            if (code.HasValue && HAUSTECHNIK_CODES.Contains(code.Value))
+                return (Bauteilkatalog.GRUPPE_SONSTIGE, KlasseHaustechnik(true), true);
+            string gruppe = Bauteilkatalog.GRUPPE_SONSTIGE;
+            if (code.HasValue && code.Value != 0)
+            {
+                if (STOFFGRUPPE_AUS_CODE.TryGetValue(code.Value, out string g)) gruppe = g;
+                else gedeutet = false;
+            }
+            string klasse = KlasseAusName(schluessel, gruppe);
+            if (klasse == null && code.HasValue && NACHBARGRUPPEN_AUS_CODE.TryGetValue(code.Value, out string[] nachbarn))
+                foreach (string n in nachbarn)
+                {
+                    klasse = KlasseAusName(schluessel, n);
+                    if (klasse != null) { gruppe = n; break; }
+                }
+            return (gruppe, klasse, false);
+        }
+
+        /// <summary>Befund der λ-Plausibilität (E134).</summary>
+        public enum LambdaBefund { Gueltig, Metall, Skaliert, Abgelehnt }
+
+        /// <summary>
+        /// <b>λ-Plausibilität</b> (Regel 3, E134): λ ≤ 10 gilt; λ &gt; 10 nur bei ρ ≥ 2 500 kg/m³ (Metall); ein Nichtmetall mit
+        /// λ &gt; 60, dessen λ/1 000 im Band 0,02–0,5 liegt, ist ein Skalenfehler der Quelle und wird durch 1 000 geteilt;
+        /// jedes übrige λ &gt; 10 wird abgelehnt (Rückgabe <c>null</c>). λ ≤ 0 oder leer bleibt „kein Wert“ des Aufrufers.
+        /// </summary>
+        public static (double? Lambda, LambdaBefund Befund) LambdaPruefen(double? lambda, double? rho)
+        {
+            if (!(lambda > LAMBDA_METALL_GRENZE)) return (lambda, LambdaBefund.Gueltig);
+            if (rho >= RHO_METALL_MIN) return (lambda, LambdaBefund.Metall);
+            double skaliert = lambda.Value / LAMBDA_SKALENFAKTOR;
+            if (lambda.Value > LAMBDA_SKALENFEHLER_MIN && skaliert >= LAMBDA_SKALIERT_MIN && skaliert <= LAMBDA_SKALIERT_MAX)
+                return (skaliert, LambdaBefund.Skaliert);
+            return (null, LambdaBefund.Abgelehnt);
+        }
+
+        /// <summary>
+        /// <b>Bauteilart aus <c>Basis_Auszug</c> GroupType/SubType</b> (Regel 6, E134): 1 Wände (Untertyp 2 Innenwand,
+        /// sonst Außenwand), 2 Türen, 3 Fenster, 4 Decken und Böden, 5 Dächer, 15|0 und 16|0 Wände (Außenwand); 17 Wärmebrücken
+        /// und die Haustechnik-Codes 14, 19 (Luftdurchlässe), 29, 30 sind gedeutet, aber kein Aufbau der Hülle → Sonstiges;
+        /// alles Übrige ist ungedeutet → Sonstiges mit Protokoll.
         /// </summary>
         public static (string Bauteilart, bool Gedeutet) BauteilartAusBasis(int? gruppe, int? untertyp)
         {
@@ -181,8 +283,15 @@ namespace WindowsFormsApplication1
                 case 3: return (DbWerte.BAUTEILART_FENSTER, true);
                 case 4: return (DbWerte.BAUTEILART_DECKE, true);
                 case 5: return (DbWerte.BAUTEILART_DACH, true);
+                case 15:
+                case 16:
+                    if (untertyp.GetValueOrDefault() == 0) return (DbWerte.BAUTEILART_AUSSENWAND, true);
+                    return (DbWerte.BAUTEILART_SONSTIGES, false);
+                case 14:
                 case 17:
-                case 19: return (DbWerte.BAUTEILART_SONSTIGES, true);
+                case 19:
+                case 29:
+                case 30: return (DbWerte.BAUTEILART_SONSTIGES, true);
                 default: return (DbWerte.BAUTEILART_SONSTIGES, false);
             }
         }
@@ -275,6 +384,8 @@ namespace WindowsFormsApplication1
             internal string Schluessel;
             internal string Gruppe;
             internal int? Quellcode;
+            internal bool Haustechnik;
+            internal bool Luftdurchlass;
             internal Dictionary<string, object> Werte = new Dictionary<string, object>(StringComparer.Ordinal);
             internal string Aktion; // NEU, AKTUALISIEREN, ERGAENZEN, AUS (übergangen)
             internal long ZielId;
@@ -395,41 +506,46 @@ namespace WindowsFormsApplication1
 
                 int? code = tb.Ganz(z, "MaterialGroupType");
                 string wo = "Baustoffe.csv MaterialGroupType";
-                if (!code.HasValue && basisStoff.TryGetValue(k, out Dictionary<int, int> codes))
+                // 0 und leer gehören nicht zur Tafel: über die Basiszeilen (TcBasis) nachtragen (E134).
+                if (code.GetValueOrDefault() == 0 && basisStoff.TryGetValue(k, out Dictionary<int, int> codes))
                 {
                     if (codes.Count > 1) widerspruch++;
                     code = codes.OrderByDescending(c => c.Value).ThenBy(c => c.Key).First().Key;
                     wo = "Basis_Auszug.csv GroupType";
                 }
-                string gruppe = Bauteilkatalog.GRUPPE_SONSTIGE;
-                if (code.HasValue)
-                {
-                    if (STOFFGRUPPE_AUS_CODE.TryGetValue(code.Value, out string g)) gruppe = g;
-                    else v.Code(wo, code.Value.ToString(CultureInfo.InvariantCulture));
-                }
+                string schluessel = Baustoffabgleich.Schluessel(name);
+                (string gruppe, string klasse, bool haustechnik) = GliederungAusCode(code, schluessel, out bool gedeutet);
+                if (!gedeutet) v.Code(wo, code.Value.ToString(CultureInfo.InvariantCulture));
 
                 double? lambda = tb.Zahl(z, "HeatConductivity");
                 if (lambda.HasValue && lambda.Value <= 0) { lambda = null; Zaehle("Baustoff: λ ≤ 0 als kein Wert gelesen"); }
-                if (lambda > LAMBDA_METALL_GRENZE && gruppe != "METALLE" && code != CODE_SONSTIGE_STOFFE)
-                {
-                    v.Baustoffe.Ablehnen("λ > 10 außerhalb der Metalle");
-                    continue;
-                }
                 double? rho = tb.Zahl(z, "Density");
                 if (rho <= 0) rho = null;
+                (double? lambdaGeprueft, LambdaBefund befund) = LambdaPruefen(lambda, rho);
+                if (befund == LambdaBefund.Abgelehnt)
+                {
+                    v.Baustoffe.Ablehnen(GRUND_LAMBDA);
+                    continue;
+                }
+                if (befund == LambdaBefund.Skaliert)
+                {
+                    v.LambdaSkaliert++;
+                    v.Protokoll.Add("λ als Skalenfehler ÷ 1 000 (" + Zahl3(lambda.Value) + " → " + Zahl3(lambdaGeprueft.Value) +
+                                    " W/(m·K)): Baustoff " + k + " „" + Kuerzen(name, 80) + "“");
+                }
+                lambda = lambdaGeprueft;
                 double? cRoh = tb.Zahl(z, "HeatCapacity");
                 double? cp = CpNormieren(cRoh);
                 if (cRoh > 0 && cRoh <= CP_KJ_GRENZE) Zaehle("Baustoff: c in kJ/(kg·K) gelesen, × 1 000");
 
-                string schluessel = Baustoffabgleich.Schluessel(name);
-                var s = new Satz { Kennung = k, Schluessel = schluessel, Gruppe = gruppe, Quellcode = code };
+                var s = new Satz { Kennung = k, Schluessel = schluessel, Gruppe = gruppe, Quellcode = code, Haustechnik = haustechnik };
                 s.Werte["Bezeichner"] = Kuerzen(name, 80);
                 s.Werte["Gruppe"] = Bauteilkatalog.StoffgruppeAusGruppe(gruppe);
                 s.Werte["Lambda"] = lambda;
                 s.Werte["Rho"] = rho;
                 s.Werte["cp"] = cp;
                 s.Werte[BauteilkatalogSchema.SPALTE_GRUPPE] = gruppe;
-                s.Werte[BauteilkatalogSchema.SPALTE_KLASSE] = KlasseAusName(schluessel, gruppe);
+                s.Werte[BauteilkatalogSchema.SPALTE_KLASSE] = klasse;
                 Felder(s, tb, z, BAUSTOFF_FELDER, BauteilkatalogSchema.TAB_BAUSTOFF_STAMM, Zaehle);
                 s.Werte["Quelle"] = v.Quelle;
                 s.Werte["Quellkennung"] = k;
@@ -505,18 +621,23 @@ namespace WindowsFormsApplication1
                 if (name == null) { v.Aufbauten.Ablehnen("ohne Namen"); continue; }
                 string basis = ta.Kennung(z, "BasisUId");
                 string art = DbWerte.BAUTEILART_SONSTIGES;
+                bool haustechnik = false, luftdurchlass = false;
                 if (basis != null && basisAufbau.TryGetValue(basis, out (int? G, int? U) bt))
                 {
                     (string a, bool gedeutet) = BauteilartAusBasis(bt.G, bt.U);
                     art = a;
+                    haustechnik = bt.G.HasValue && HAUSTECHNIK_CODES.Contains(bt.G.Value);
+                    luftdurchlass = bt.G == CODE_LUFTDURCHLASS;
                     if (!gedeutet)
                         v.Code("Basis_Auszug.csv GroupType|SubType", (bt.G?.ToString(CultureInfo.InvariantCulture) ?? "") + "|" +
                                                                      (bt.U?.ToString(CultureInfo.InvariantCulture) ?? ""));
                 }
                 else Zaehle("Aufbau ohne Basiszeile, Bauteilart Sonstiges");
 
-                var s = new Satz { Kennung = k };
-                (string gruppe, string klasse) = Bauteilkatalog.GliederungAusBauteilart(art, null);
+                var s = new Satz { Kennung = k, Haustechnik = haustechnik, Luftdurchlass = luftdurchlass };
+                (string gruppe, string klasse) = haustechnik
+                    ? (Bauteilkatalog.GRUPPE_SONSTIGE, KlasseHaustechnik(false))
+                    : Bauteilkatalog.GliederungAusBauteilart(art, null);
                 s.Werte["Bezeichner"] = Kuerzen(name, 80);
                 s.Werte["Beschreibung"] = Kuerzen(ta.Text(z, "LongDesc"), 250);
                 s.Werte["Bauteilart"] = art;
@@ -594,26 +715,26 @@ namespace WindowsFormsApplication1
 
                 string name = ts.Text(z, "ShortDesc") ?? ts.Text(z, "LongDesc") ?? "";
                 int? code = ts.Ganz(z, "MaterialGroupType");
-                string gruppe = Bauteilkatalog.GRUPPE_SONSTIGE;
-                if (code.HasValue)
-                {
-                    if (STOFFGRUPPE_AUS_CODE.TryGetValue(code.Value, out string g)) gruppe = g;
-                    else v.Code("Schichten.csv MaterialGroupType", code.Value.ToString(CultureInfo.InvariantCulture));
-                }
+                string schluessel = Baustoffabgleich.Schluessel(name);
+                (string gruppe, _, _) = GliederungAusCode(code, schluessel, out bool gedeutet);
+                if (!gedeutet) v.Code("Schichten.csv MaterialGroupType", code.Value.ToString(CultureInfo.InvariantCulture));
                 double? lambda = ts.Zahl(z, "ThermalConductivity");
                 if (lambda <= 0) lambda = null;
-                if (lambda > LAMBDA_METALL_GRENZE && gruppe != "METALLE" && code != CODE_SONSTIGE_STOFFE)
-                {
-                    lambda = null;
-                    Zaehle("Schicht: λ > 10 außerhalb der Metalle verworfen");
-                }
                 double? rho = ts.Zahl(z, "Density");
                 if (rho <= 0) rho = null;
+                (double? lambdaGeprueft, LambdaBefund befund) = LambdaPruefen(lambda, rho);
+                if (befund == LambdaBefund.Abgelehnt) Zaehle("Schicht: λ > 10 ohne Metall und ohne Skalenfehler verworfen");
+                if (befund == LambdaBefund.Skaliert)
+                {
+                    Zaehle("Schicht: λ als Skalenfehler ÷ 1 000");
+                    v.Protokoll.Add("λ als Skalenfehler ÷ 1 000 (" + Zahl3(lambda.Value) + " → " + Zahl3(lambdaGeprueft.Value) +
+                                    " W/(m·K)): Schicht " + k);
+                }
+                lambda = lambdaGeprueft;
                 double? cRoh = ts.Zahl(z, "HeatCapacity");
                 if (cRoh > 0 && cRoh <= CP_KJ_GRENZE) Zaehle("Schicht: c in kJ/(kg·K) gelesen, × 1 000");
                 double? dicke = ts.Zahl(z, "Thickness");
                 if (!dicke.HasValue || dicke.Value < 0) { dicke = 0; Zaehle("Schicht ohne Dicke (0 m, R der Quelle bleibt)"); }
-                string schluessel = Baustoffabgleich.Schluessel(name);
 
                 var s = new Satz { Kennung = k, Schluessel = schluessel, Gruppe = gruppe, Vertreter = auf, Abschnitt = abschnitt };
                 s.Werte["Dicke"] = dicke.Value;
@@ -680,9 +801,23 @@ namespace WindowsFormsApplication1
                         IstLuftschicht = (int)s.Werte["IstLuftschicht"] == 1, Lambda = s.Lambda,
                         Dicke = s.W("Dicke") ?? 0.0, Rho = s.W("Rho"), Cp = s.W("cp")
                     });
-                bool ungeeignet = Bauteilkatalog.MeistUngeeignet(m);
+                // E134: ein Luftdurchlass trägt keine Bauphysik der Hülle - gekennzeichnet auch mit Schichten.
+                bool ungeeignet = Bauteilkatalog.MeistUngeeignet(m) || a.Luftdurchlass;
                 a.Werte[BauteilkatalogSchema.SPALTE_UNGEEIGNET] = ungeeignet ? 1 : 0;
                 if (ungeeignet) v.Gekennzeichnet++;
+            }
+
+            // ---- Gliederung der geplanten Sätze (Zählungen für die Vorschau) ----
+            foreach (Satz b in p.Baustoffe)
+            {
+                Gliederung(v.BaustoffGliederung, b);
+                if (b.Haustechnik) v.HaustechnikBaustoffe++;
+            }
+            foreach (Satz a in p.Aufbauten)
+            {
+                Gliederung(v.AufbauGliederung, a);
+                if (a.Haustechnik) v.HaustechnikAufbauten++;
+                if (a.Luftdurchlass) v.Luftdurchlaesse++;
             }
 
             Richtungsprobe(p);
@@ -690,6 +825,13 @@ namespace WindowsFormsApplication1
                 v.Protokoll.Add(z.Key + ": " + Zahl(z.Value));
             v.Protokoll.Add("Einheiten wie Quelle: Feuchtegehalt, Rauheit, Elastizität, Längenausdehnung, OI3 (unverändert übernommen)");
             return p;
+        }
+
+        private static void Gliederung(SortedDictionary<string, int> ziel, Satz s)
+        {
+            string schl = (s.Werte.TryGetValue(BauteilkatalogSchema.SPALTE_GRUPPE, out object g) ? g as string : null) + "/" +
+                          ((s.Werte.TryGetValue(BauteilkatalogSchema.SPALTE_KLASSE, out object k) ? k as string : null) ?? "-");
+            ziel[schl] = ziel.TryGetValue(schl, out int n) ? n + 1 : 1;
         }
 
         /// <summary>Regel 7: Dämmlage hinter tragender Schicht (Außenwände) und U aus Schichten gegen U der Quelle.</summary>
@@ -803,6 +945,8 @@ namespace WindowsFormsApplication1
         private static string Kuerzen(string s, int max) => s == null ? null : (s.Length <= max ? s : s.Substring(0, max).TrimEnd());
 
         private static string Zahl(int n) => n.ToString("N0", CultureInfo.InvariantCulture);
+
+        private static string Zahl3(double d) => d.ToString("0.####", CultureInfo.InvariantCulture);
 
         // ---- Datenbank ---------------------------------------------------------------------
 

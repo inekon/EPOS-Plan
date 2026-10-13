@@ -50,7 +50,12 @@ namespace WindowsFormsApplication1
                                             Zahl(r.UGeprueft));
             return new BauteilkatalogVorschauDaten(v.Abgelehnt, v.Quelle ?? "", zeilen, v.Gekennzeichnet, v.SchichtenMitBaustoff, gruende,
                                                    v.CodesOhneDeutung.Select(c => c.Key + " (" + Zahl(c.Value) + ")").ToList(),
-                                                   richtung, v.Protokoll.ToList());
+                                                   richtung, v.Protokoll.ToList(), v.LambdaSkaliert,
+                                                   v.HaustechnikBaustoffe + v.HaustechnikAufbauten > 0
+                                                       ? string.Format(CultureInfo.CurrentCulture, R.BKI_HAUSTECHNIK, Zahl(v.HaustechnikBaustoffe),
+                                                                       Zahl(v.HaustechnikAufbauten), Zahl(v.Luftdurchlaesse))
+                                                       : null,
+                                                   Gliederung(v));
         }
 
         /// <summary>Das Ergebnis des Übernehmens als Meldung mit Zahlen.</summary>
@@ -62,6 +67,22 @@ namespace WindowsFormsApplication1
                 Zahl(v.Baustoffe.Neu), Zahl(v.Baustoffe.MitKatalog + v.Baustoffe.InQuelle), Zahl(v.Baustoffe.Wiedererkannt),
                 Zahl(v.Aufbauten.Neu), Zahl(v.Aufbauten.Wiedererkannt), Zahl(v.Schichten.Neu + v.Schichten.Wiedererkannt),
                 Zahl(v.Gekennzeichnet), TimeSpan.FromMilliseconds(v.DauerMs).TotalSeconds.ToString("0.0", CultureInfo.CurrentCulture)));
+        }
+
+        /// <summary>Die geplanten Sätze je Gruppe und Klasse als Anzeigezeilen (Codes übersetzt).</summary>
+        private static List<string> Gliederung(BauteilkatalogVorschau v)
+        {
+            var zeilen = new List<string>();
+            foreach ((string art, bool baustoff, SortedDictionary<string, int> d) in new[]
+                     { (R.BKI_ART_BAUSTOFFE, true, v.BaustoffGliederung), (R.BKI_ART_AUFBAUTEN, false, v.AufbauGliederung) })
+                foreach (KeyValuePair<string, int> e in d)
+                {
+                    string[] teile = e.Key.Split('/');
+                    string gruppe = Bauteilkatalog.GruppeText(baustoff, teile[0]);
+                    string klasse = teile.Length > 1 && teile[1] != "-" ? " / " + Bauteilkatalog.KlasseText(baustoff, teile[1]) : "";
+                    zeilen.Add(art + ": " + gruppe + klasse + " (" + Zahl(e.Value) + ")");
+                }
+            return zeilen;
         }
 
         private static BauteilkatalogVorschauZeile Zeile(string art, BauteilkatalogZaehlung z) =>

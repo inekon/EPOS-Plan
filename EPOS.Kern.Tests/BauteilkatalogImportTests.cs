@@ -209,7 +209,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1, v.Baustoffe.MitKatalog);     // B8 trifft den Bestand
             Assert.Equal(2, v.Baustoffe.Abgelehnt);
             Assert.Equal(1, v.Baustoffe.Gruende["ohne Kennung"]);
-            Assert.Equal(1, v.Baustoffe.Gruende["λ > 10 außerhalb der Metalle"]);
+            Assert.Equal(1, v.Baustoffe.Gruende[BauteilkatalogImport.GRUND_LAMBDA]);
 
             BauteilkatalogImport.Satz b1 = p.Baustoffe.Single(s => s.Kennung == G(1));
             Assert.Equal(1000.0, b1.Cp);
@@ -224,7 +224,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal("PLATTEN", b4.Gruppe);
             Assert.Contains(v.Protokoll, z => z.StartsWith("Baustoffe mit widersprüchlicher Stoffgruppe", StringComparison.Ordinal));
             Assert.Equal(1, v.CodesOhneDeutung["Baustoffe.csv MaterialGroupType 12"]);
-            Assert.Equal(1, v.CodesOhneDeutung["Basis_Auszug.csv GroupType|SubType 14|0"]);
+            Assert.False(v.CodesOhneDeutung.ContainsKey("Basis_Auszug.csv GroupType|SubType 14|0"));   // E134: Haustechnik
+            Assert.Equal(1, v.HaustechnikAufbauten);
 
             Assert.Equal(5, v.Aufbauten.Neu);
             Assert.Equal(2, v.Abschnitte.Neu);
@@ -246,7 +247,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, a2.Werte["Simulation_Ungeeignet"]);
             Assert.Equal("OEFFNUNGEN", a2.Werte["Gruppe_Code"]);
             Assert.Equal(1, p.Aufbauten.Single(s => s.Kennung == G(103)).Werte["Simulation_Ungeeignet"]);
-            Assert.Equal("SONSTIGES", p.Aufbauten.Single(s => s.Kennung == G(104)).Werte["Bauteilart"]);
+            BauteilkatalogImport.Satz a4 = p.Aufbauten.Single(s => s.Kennung == G(104));
+            Assert.Equal("SONSTIGES", a4.Werte["Bauteilart"]);
+            Assert.Equal("SONSTIGE", a4.Werte["Gruppe_Code"]);
+            Assert.Equal(BauteilkatalogImport.KlasseHaustechnik(false), a4.Werte["Klasse_Code"]);
             BauteilkatalogImport.Satz x1 = p.Abschnitte.Single(s => s.Kennung == G(401));
             Assert.Equal(0.8, (double)x1.Werte["Flaechenanteil"], 12);
             Assert.Equal(1000.0 * 1.6, p.Schichten.Single(s => s.Kennung == G(206)).Cp.Value, 9);
@@ -338,6 +342,213 @@ namespace EPOS.Kern.Tests
             Assert.Equal(aufbauten, Zahl("SELECT COUNT(*) FROM \"Tab_Bauteilaufbau_STAMM\""));
             Assert.Equal(schichten, Zahl("SELECT COUNT(*) FROM \"Tab_Bauteilschicht_STAMM\""));
             Assert.Equal(quelle, DataRepository.ExecuteScalar("SELECT \"Quelle\" FROM \"Tab_Baustoff_STAMM\" WHERE \"ID\" = ?", new DbParam("@id", k.Id)));
+        }
+
+        // ---- Nachzug E134 (BK-3b) -----------------------------------------------------------
+
+        [Fact]
+        public void Die_Code_Tafel_E134_ordnet_Stoffgruppen_Nachbargruppen_und_Haustechnik()
+        {
+            string[] erwartet = { null, "PUTZE", "BETON", "PLATTEN", "MAUERWERK", "DAEMMSTOFFE", "HOLZ", "ABDICHTUNGEN", "SONSTIGE" };
+            for (int c = 1; c <= 8; c++)
+            {
+                (string g, _, bool h) = BauteilkatalogImport.GliederungAusCode(c, "probe", out bool ok);
+                Assert.Equal(erwartet[c], g);
+                Assert.True(ok);
+                Assert.False(h);
+            }
+            foreach (int? leer in new int?[] { null, 0 })
+            {
+                (string g, string k, bool h) = BauteilkatalogImport.GliederungAusCode(leer, "probe", out bool ok);
+                Assert.Equal("SONSTIGE", g);
+                Assert.Null(k);
+                Assert.True(ok);
+                Assert.False(h);
+            }
+            foreach (int c in new[] { 14, 19, 29, 30 })
+            {
+                (string g, string k, bool h) = BauteilkatalogImport.GliederungAusCode(c, "probe", out bool ok);
+                Assert.Equal("SONSTIGE", g);
+                Assert.Equal(BauteilkatalogImport.KlasseHaustechnik(true), k);
+                Assert.True(h);
+                Assert.True(ok);
+            }
+            BauteilkatalogImport.GliederungAusCode(12, "probe", out bool gedeutet);
+            Assert.False(gedeutet);
+
+            // Nachbargruppen: die Klasse aus dem Namen zieht in die Gruppe des Katalogs.
+            Assert.Equal(("ESTRICHE", "ZEMENTESTRICH", false), BauteilkatalogImport.GliederungAusCode(1, "probezementestrich", out _));
+            Assert.Equal(("METALLE", "STAHL", false), BauteilkatalogImport.GliederungAusCode(8, "probestahl", out _));
+            Assert.Equal(("BODENBELAEGE", "PARKETT", false), BauteilkatalogImport.GliederungAusCode(7, "probeparkett", out _));
+            Assert.Equal(("PUTZE", "KALKPUTZ", false), BauteilkatalogImport.GliederungAusCode(1, "probekalkputz", out _));
+
+            // Klasse Haustechnik: solange das Schema sie nicht führt, die sonstige Klasse der Gruppe (Prüfklausel).
+            string kb = BauteilkatalogImport.KlasseHaustechnik(true), ka = BauteilkatalogImport.KlasseHaustechnik(false);
+            Assert.Null(Bauteilkatalog.GliederungPruefen(true, "SONSTIGE", kb));
+            Assert.Null(Bauteilkatalog.GliederungPruefen(false, "SONSTIGE", ka));
+
+            // Bauteilart: 15|0 und 16|0 sind Wände, die Haustechnik-Codes gedeutet als Sonstiges.
+            Assert.Equal(("AUSSENWAND", true), BauteilkatalogImport.BauteilartAusBasis(15, 0));
+            Assert.Equal(("AUSSENWAND", true), BauteilkatalogImport.BauteilartAusBasis(16, 0));
+            Assert.Equal(("AUSSENWAND", true), BauteilkatalogImport.BauteilartAusBasis(16, null));
+            Assert.False(BauteilkatalogImport.BauteilartAusBasis(15, 3).Gedeutet);
+            foreach (int c in new[] { 14, 19, 29, 30 })
+                Assert.Equal(("SONSTIGES", true), BauteilkatalogImport.BauteilartAusBasis(c, 0));
+        }
+
+        [Theory]
+        [InlineData(0.5, 1400.0, 0.5, BauteilkatalogImport.LambdaBefund.Gueltig)]
+        [InlineData(10.0, null, 10.0, BauteilkatalogImport.LambdaBefund.Gueltig)]
+        [InlineData(50.0, 7800.0, 50.0, BauteilkatalogImport.LambdaBefund.Metall)]
+        [InlineData(20.0, 2500.0, 20.0, BauteilkatalogImport.LambdaBefund.Metall)]
+        [InlineData(130.0, 600.0, 0.13, BauteilkatalogImport.LambdaBefund.Skaliert)]
+        [InlineData(500.0, 2499.0, 0.5, BauteilkatalogImport.LambdaBefund.Skaliert)]
+        [InlineData(61.0, null, 0.061, BauteilkatalogImport.LambdaBefund.Skaliert)]
+        [InlineData(60.0, 600.0, null, BauteilkatalogImport.LambdaBefund.Abgelehnt)]      // Band 10–60: kein Skalenfehler
+        [InlineData(45.0, 2000.0, null, BauteilkatalogImport.LambdaBefund.Abgelehnt)]
+        [InlineData(900.0, 500.0, null, BauteilkatalogImport.LambdaBefund.Abgelehnt)]     // λ/1 000 über dem Band
+        [InlineData(15.0, null, null, BauteilkatalogImport.LambdaBefund.Abgelehnt)]
+        public void Die_Lambda_Plausibilitaet_haelt_Metall_Skalenfehler_und_Ablehnung(double lambda, double? rho, double? erwartet,
+                                                                                   BauteilkatalogImport.LambdaBefund befund)
+        {
+            (double? l, BauteilkatalogImport.LambdaBefund b) = BauteilkatalogImport.LambdaPruefen(lambda, rho);
+            Assert.Equal(befund, b);
+            if (erwartet.HasValue) Assert.Equal(erwartet.Value, l.Value, 12);
+            else Assert.Null(l);
+        }
+
+        /// <summary>Die Probe des Nachzugs E134 — synthetisch, Kennungen ab 500.</summary>
+        private static Probe ProbeE134()
+        {
+            var p = new Probe();
+            // N1: Code 0, Basis 4 → Mauerwerk.
+            p.B.Add(new[] { G(501), "Probestein N", "", "", "0.6", "1500", "1", "0", "", "", "", ST });
+            p.Z.Add(new[] { G(951), "4", "0", G(501) });
+            // N2: Code leer, Basis 14 → Sonstige, Haustechnik.
+            p.B.Add(new[] { G(502), "Probearmatur N", "", "", "0.3", "900", "1", "", "", "", "", ST });
+            p.Z.Add(new[] { G(952), "14", "0", G(502) });
+            // N3: Nichtmetall mit Skalenfehler → λ ÷ 1 000.
+            p.B.Add(new[] { G(503), "Probeholzplatte N", "", "", "130", "600", "1.6", "6", "", "", "", ST });
+            // N4: Metall (ρ ≥ 2 500) unter Code 8 → Metalle/Stahl, λ bleibt.
+            p.B.Add(new[] { G(504), "Probestahl N", "", "", "50", "7800", "0.45", "8", "", "", "", ST });
+            // N5: λ/1 000 außerhalb des Bandes → abgelehnt.
+            p.B.Add(new[] { G(505), "Probeplatte N", "", "", "900", "500", "1", "3", "", "", "", ST });
+            // N6: Code 0 ohne Basis → Sonstige, kein Code ohne Deutung.
+            p.B.Add(new[] { G(506), "Probestoff N", "", "", "0.2", "800", "1", "0", "", "", "", ST });
+
+            // Luftdurchlass (19) mit einer bauphysikalisch vollständigen Schicht → trotzdem gekennzeichnet.
+            p.Z.Add(new[] { G(961), "19", "0", "" });
+            p.A.Add(new[] { G(601), G(961), "Probedurchlass N", "", "", "", "", "", "", "", "", "", ST });
+            p.S.Add(new[] { G(701), G(601), "", "1", "Probestahl N", "", "0.002", "50", "7800", "0.45", "8", "" });
+            // 15|0 und 16|0 → Wand; Schicht mit Skalenfehler (λ 200, ρ 800 → 0,2).
+            p.Z.Add(new[] { G(962), "15", "0", "" });
+            p.A.Add(new[] { G(602), G(962), "Probewand N15", "", "", "", "0.5", "", "", "", "", "", ST });
+            p.Z.Add(new[] { G(963), "16", "0", "" });
+            p.A.Add(new[] { G(603), G(963), "Probewand N16", "", "", "0.3", "", "", "", "", "", "", ST });
+            p.S.Add(new[] { G(702), G(603), "", "1", "Probeschicht N", "", "0.3", "200", "800", "1", "4", "" });
+            return p;
+        }
+
+        [Fact]
+        public void Der_Nachzug_E134_gliedert_skaliert_und_kennzeichnet_in_der_Vorschau()
+        {
+            BauteilkatalogImport.Plan p = BauteilkatalogImport.Planen(BauteilkatalogQuelle.Lesen(Schreiben(ProbeE134())), new BauteilkatalogStand());
+            BauteilkatalogVorschau v = p.Vorschau;
+            Assert.Null(v.Abgelehnt);
+            Assert.Equal(5, v.Baustoffe.Neu);
+            Assert.Equal(1, v.Baustoffe.Abgelehnt);
+            Assert.Equal(1, v.Baustoffe.Gruende[BauteilkatalogImport.GRUND_LAMBDA]);
+            Assert.Empty(v.CodesOhneDeutung);
+
+            Assert.Equal("MAUERWERK", p.Baustoffe.Single(s => s.Kennung == G(501)).Gruppe);
+            BauteilkatalogImport.Satz n2 = p.Baustoffe.Single(s => s.Kennung == G(502));
+            Assert.Equal("SONSTIGE", n2.Gruppe);
+            Assert.Equal(BauteilkatalogImport.KlasseHaustechnik(true), n2.Werte["Klasse_Code"]);
+            Assert.Equal(0.13, p.Baustoffe.Single(s => s.Kennung == G(503)).Lambda.Value, 12);
+            BauteilkatalogImport.Satz n4 = p.Baustoffe.Single(s => s.Kennung == G(504));
+            Assert.Equal(50.0, n4.Lambda);
+            Assert.Equal("METALLE", n4.Werte["Gruppe_Code"]);
+            Assert.Equal("STAHL", n4.Werte["Klasse_Code"]);
+            Assert.Equal("SONSTIGE", p.Baustoffe.Single(s => s.Kennung == G(506)).Gruppe);
+
+            Assert.Equal(1, v.LambdaSkaliert);
+            Assert.Contains(v.Protokoll, z => z.Contains(G(503)) && z.Contains("÷ 1 000") && z.Contains("130 → 0.13"));
+            Assert.Contains(v.Protokoll, z => z.Contains(G(702)) && z.Contains("÷ 1 000"));
+            Assert.Equal(0.2, p.Schichten.Single(s => s.Kennung == G(702)).Lambda.Value, 12);
+            Assert.Equal(50.0, p.Schichten.Single(s => s.Kennung == G(701)).Lambda);
+            Assert.Equal(1, v.HaustechnikBaustoffe);
+            Assert.Equal(1, v.HaustechnikAufbauten);
+            Assert.Equal(1, v.Luftdurchlaesse);
+
+            BauteilkatalogImport.Satz durchlass = p.Aufbauten.Single(s => s.Kennung == G(601));
+            Assert.Equal("SONSTIGES", durchlass.Werte["Bauteilart"]);
+            Assert.Equal(1, durchlass.Werte["Simulation_Ungeeignet"]);
+            foreach (string k in new[] { G(602), G(603) })
+            {
+                BauteilkatalogImport.Satz w = p.Aufbauten.Single(s => s.Kennung == k);
+                Assert.Equal("AUSSENWAND", w.Werte["Bauteilart"]);
+                Assert.Equal("WAENDE", w.Werte["Gruppe_Code"]);
+            }
+            Assert.Equal(0, p.Aufbauten.Single(s => s.Kennung == G(603)).Werte["Simulation_Ungeeignet"]);
+
+            Assert.Equal(1, v.BaustoffGliederung["METALLE/STAHL"]);
+            Assert.Equal(1, v.BaustoffGliederung["MAUERWERK/-"]);
+            Assert.Equal(2, v.AufbauGliederung["WAENDE/AUSSENWAND"]);
+            Assert.Equal(5, v.BaustoffGliederung.Values.Sum());
+            Assert.Equal(3, v.AufbauGliederung.Values.Sum());
+
+            // Die Hülle trägt die neuen Zähler in die Vorschau der Oberfläche.
+            EPOS.UI.Dialoge.Bedarf.BauteilkatalogVorschauDaten d = BauteilkatalogImportHuelle.AlsDaten(v);
+            Assert.Equal(1, d.LambdaSkaliert);
+            Assert.False(string.IsNullOrEmpty(d.Haustechnik));
+            Assert.Equal(v.BaustoffGliederung.Count + v.AufbauGliederung.Count, d.Gliederung.Count);
+        }
+
+        [Fact]
+        public void Der_Wiederimport_mit_den_Regeln_E134_zieht_Gruppe_Klasse_Kennzeichen_und_Lambda_nach_ohne_Dubletten()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            string o = Schreiben(ProbeE134());
+            BauteilkatalogVorschau eins = BauteilkatalogImport.Uebernehmen(o);
+            Assert.True(eins.Geschrieben, eins.Fehler);
+            const string IMP = " WHERE \"Herkunft\" = 'IMPORT'";
+            long baustoffe = Zahl("SELECT COUNT(*) FROM \"Tab_Baustoff_STAMM\"" + IMP);
+            long aufbauten = Zahl("SELECT COUNT(*) FROM \"Tab_Bauteilaufbau_STAMM\"" + IMP);
+            long schichten = Zahl("SELECT COUNT(*) FROM \"Tab_Bauteilschicht_STAMM\"");
+            Assert.Equal(5, baustoffe);
+            Assert.Equal(3, aufbauten);
+
+            // Stand der Regeln vor E134 nachstellen: Sonstige ohne Klasse, kein Kennzeichen am Durchlass, λ ungeteilt.
+            DataRepository.ExecuteNonQuery("UPDATE \"Tab_Baustoff_STAMM\" SET \"Gruppe_Code\" = 'SONSTIGE', \"Klasse_Code\" = NULL" + IMP);
+            DataRepository.ExecuteNonQuery("UPDATE \"Tab_Baustoff_STAMM\" SET \"Lambda\" = 130 WHERE \"Quellkennung\" = ?", new DbParam("@k", G(503)));
+            DataRepository.ExecuteNonQuery("UPDATE \"Tab_Bauteilaufbau_STAMM\" SET \"Bauteilart\" = 'SONSTIGES', \"Gruppe_Code\" = 'SONSTIGE', " +
+                                           "\"Klasse_Code\" = 'SONSTIGES', \"Simulation_Ungeeignet\" = 0" + IMP);
+
+            BauteilkatalogVorschau zwei = BauteilkatalogImport.Uebernehmen(o);
+            Assert.True(zwei.Geschrieben, zwei.Fehler);
+            Assert.Equal(0, zwei.Baustoffe.Neu);
+            Assert.Equal(5, zwei.Baustoffe.Wiedererkannt);
+            Assert.Equal(0, zwei.Aufbauten.Neu);
+            Assert.Equal(3, zwei.Aufbauten.Wiedererkannt);
+            Assert.Equal(baustoffe, Zahl("SELECT COUNT(*) FROM \"Tab_Baustoff_STAMM\"" + IMP));
+            Assert.Equal(aufbauten, Zahl("SELECT COUNT(*) FROM \"Tab_Bauteilaufbau_STAMM\"" + IMP));
+            Assert.Equal(schichten, Zahl("SELECT COUNT(*) FROM \"Tab_Bauteilschicht_STAMM\""));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM (SELECT \"Quellkennung\" FROM \"Tab_Baustoff_STAMM\"" + IMP +
+                                 " GROUP BY \"Quellkennung\" HAVING COUNT(*) > 1)"));
+
+            string Feld(string tab, string spalte, string k) =>
+                DataRepository.ExecuteScalar("SELECT \"" + spalte + "\" FROM \"" + tab + "\" WHERE \"Quellkennung\" = ?", new DbParam("@k", k)) as string;
+            Assert.Equal("MAUERWERK", Feld("Tab_Baustoff_STAMM", "Gruppe_Code", G(501)));
+            Assert.Equal("METALLE", Feld("Tab_Baustoff_STAMM", "Gruppe_Code", G(504)));
+            Assert.Equal("STAHL", Feld("Tab_Baustoff_STAMM", "Klasse_Code", G(504)));
+            Assert.Equal(BauteilkatalogImport.KlasseHaustechnik(true), Feld("Tab_Baustoff_STAMM", "Klasse_Code", G(502)));
+            Assert.Equal(0.13, Convert.ToDouble(DataRepository.ExecuteScalar(
+                "SELECT \"Lambda\" FROM \"Tab_Baustoff_STAMM\" WHERE \"Quellkennung\" = ?", new DbParam("@k", G(503))), CultureInfo.InvariantCulture), 12);
+            Assert.Equal("AUSSENWAND", Feld("Tab_Bauteilaufbau_STAMM", "Bauteilart", G(602)));
+            Assert.Equal("WAENDE", Feld("Tab_Bauteilaufbau_STAMM", "Gruppe_Code", G(603)));
+            Assert.Equal(1L, Zahl("SELECT \"Simulation_Ungeeignet\" FROM \"Tab_Bauteilaufbau_STAMM\" WHERE \"Quellkennung\" = ?", new DbParam("@k", G(601))));
+            Assert.Equal(BauteilkatalogImport.KlasseHaustechnik(false), Feld("Tab_Bauteilaufbau_STAMM", "Klasse_Code", G(601)));
         }
 
         [Fact]

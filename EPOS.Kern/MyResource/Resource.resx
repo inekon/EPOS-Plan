@@ -54321,6 +54321,15 @@ Chart</value>
   <data name="BKI_MIT_BAUSTOFF" xml:space="preserve">
     <value>{0} Schichten treffen über den Namen einen Baustoff derselben Gruppe.</value>
   </data>
+  <data name="BKI_LAMBDA_SKALIERT" xml:space="preserve">
+    <value>{0} Baustoffe mit einem Skalenfehler der Wärmeleitfähigkeit in der Quelle (λ ÷ 1 000) korrigiert; jede Zeile steht im Protokoll.</value>
+  </data>
+  <data name="BKI_HAUSTECHNIK" xml:space="preserve">
+    <value>Haustechnik: {0} Baustoffe und {1} Aufbauten in der Gruppe „Sonstige“, davon {2} Luftdurchlässe (gekennzeichnet).</value>
+  </data>
+  <data name="BKI_GLIEDERUNG" xml:space="preserve">
+    <value>Sätze je Gruppe und Klasse</value>
+  </data>
   <data name="BKI_CODES" xml:space="preserve">
     <value>Codes ohne Deutung (sie fallen auf „Sonstige“)</value>
   </data>
