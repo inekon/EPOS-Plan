@@ -73991,15 +73991,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Temperatur, auf die die Literanzeige der Kennzahlen umrechnet — nicht gespeichert. ähnelt.
-        /// </summary>
-        public static string KI_DLG_ZPG_ANZEIGETEMPERATUR_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_ZPG_ANZEIGETEMPERATUR_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zwölf Monatsfaktoren der gewählten Zone; leer je Monat = Faktor des Katalogs. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_AUSLASTUNGSGANG_ERL {
@@ -74275,15 +74266,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_ZPG_STUFE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_ZPG_STUFE_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Schwelle, ab der die Kennzahlen Stunden zählen — nicht gespeichert. ähnelt.
-        /// </summary>
-        public static string KI_DLG_ZPG_STUNDENSCHWELLE_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_ZPG_STUNDENSCHWELLE_ERL", resourceCulture);
             }
         }
         
@@ -152135,7 +152117,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone hinzufügen… ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone hinzufügen ähnelt.
         /// </summary>
         public static string ZPG_BTN_ZONE_NEU {
             get {
@@ -153125,11 +153107,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nur für die Kennzahlen, nicht gespeichert; leer = Einstellung, sonst {0} °C bzw. {1} kW. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Temperatur der Literanzeige und die Schwelle der Stundenzählung stehen in den globalen Anwendungseinstellungen, Rubrik „Zapfprofil“. ähnelt.
         /// </summary>
-        public static string ZPG_HINW_ANZEIGE {
+        public static string ZPG_HINW_ANZEIGE_EINSTELLUNG {
             get {
-                return ResourceManager.GetString("ZPG_HINW_ANZEIGE", resourceCulture);
+                return ResourceManager.GetString("ZPG_HINW_ANZEIGE_EINSTELLUNG", resourceCulture);
             }
         }
         
@@ -153139,6 +153121,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_HINW_AUSLASTUNGSGANG {
             get {
                 return ResourceManager.GetString("ZPG_HINW_AUSLASTUNGSGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausstattungsklassen sind im Katalog nicht gepflegt. Sie lassen sich mit der Paketvorlage „Katalogpaket_DIN4708“ über „Import…“ im Katalog der Brauchwasser-Nutzungsarten einspielen. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_AUSSTATTUNG_OHNE_KATALOG {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_AUSSTATTUNG_OHNE_KATALOG", resourceCulture);
             }
         }
         
@@ -153485,16 +153476,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Personen leer = Belegung nach Raumzahl aus dem Katalog, sonst Personen je Wohneinheit; Ausstattung leer = Vorgabeklasse. Mit Tabelle gilt ihre Menge als Bezugsgröße. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Statt einer Bezugsgröße die Wohnungen nach Typ angeben: Die Zone rechnet dann mit ihrer Summe, und die Auslegung bildet daraus die Bedarfskennzahl nach DIN 4708. ähnelt.
         /// </summary>
-        public static string ZPG_HINW_WOHNUNGSTABELLE {
+        public static string ZPG_HINW_WOHNUNGEN {
             get {
-                return ResourceManager.GetString("ZPG_HINW_WOHNUNGSTABELLE", resourceCulture);
+                return ResourceManager.GetString("ZPG_HINW_WOHNUNGEN", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Wohnungstabelle — es gilt die Bezugsgröße. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Wohnungen angegeben — die Zone rechnet mit der Bezugsgröße. ähnelt.
         /// </summary>
         public static string ZPG_HINW_WOHNUNGSTABELLE_LEER {
             get {
@@ -154457,15 +154448,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Temperatur der Literanzeige ähnelt.
-        /// </summary>
-        public static string ZPG_LBL_ANZEIGETEMPERATUR {
-            get {
-                return ResourceManager.GetString("ZPG_LBL_ANZEIGETEMPERATUR", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Auslastungsgang ähnelt.
         /// </summary>
         public static string ZPG_LBL_AUSLASTUNGSGANG {
@@ -154808,15 +154790,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schwelle der Stundenzählung ähnelt.
-        /// </summary>
-        public static string ZPG_LBL_STUNDENSCHWELLE {
-            get {
-                return ResourceManager.GetString("ZPG_LBL_STUNDENSCHWELLE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Tagesbedarf ähnelt.
         /// </summary>
         public static string ZPG_LBL_TAGESBEDARF {
@@ -154898,7 +154871,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wohnungstabelle ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohnungen (wahlweise) ähnelt.
         /// </summary>
         public static string ZPG_LBL_WOHNUNGSTABELLE {
             get {
@@ -161603,6 +161576,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl [WE] ähnelt.
+        /// </summary>
+        public static string ZPG_SP_WOHNUNG_ANZAHL {
+            get {
+                return ResourceManager.GetString("ZPG_SP_WOHNUNG_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Personen [P/WE] ähnelt.
+        /// </summary>
+        public static string ZPG_SP_WOHNUNG_PERSONEN {
+            get {
+                return ResourceManager.GetString("ZPG_SP_WOHNUNG_PERSONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumzahl [Räume/WE] ähnelt.
+        /// </summary>
+        public static string ZPG_SP_WOHNUNG_RAUMZAHL {
+            get {
+                return ResourceManager.GetString("ZPG_SP_WOHNUNG_RAUMZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zone ähnelt.
         /// </summary>
         public static string ZPG_SP_ZONE {
@@ -162094,6 +162094,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_TGE_VORSCHAU_NORMIERT {
             get {
                 return ResourceManager.GetString("ZPG_TGE_VORSCHAU_NORMIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl der Wohnungen dieses Typs (Wohneinheiten) ähnelt.
+        /// </summary>
+        public static string ZPG_TIP_WOHNUNG_ANZAHL {
+            get {
+                return ResourceManager.GetString("ZPG_TIP_WOHNUNG_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausstattungsklasse nach DIN 4708 — leer: Vorgabeklasse ähnelt.
+        /// </summary>
+        public static string ZPG_TIP_WOHNUNG_AUSSTATTUNG {
+            get {
+                return ResourceManager.GetString("ZPG_TIP_WOHNUNG_AUSSTATTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Personen je Wohnung — leer: Belegung nach Raumzahl aus dem Katalog ähnelt.
+        /// </summary>
+        public static string ZPG_TIP_WOHNUNG_PERSONEN {
+            get {
+                return ResourceManager.GetString("ZPG_TIP_WOHNUNG_PERSONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumzahl — Wohn- und Schlafräume; Küche, Bad und Flur zählen nicht ähnelt.
+        /// </summary>
+        public static string ZPG_TIP_WOHNUNG_RAUMZAHL {
+            get {
+                return ResourceManager.GetString("ZPG_TIP_WOHNUNG_RAUMZAHL", resourceCulture);
             }
         }
         
@@ -162989,6 +163025,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ergibt {0} Wohneinheiten · {1} Personen ähnelt.
+        /// </summary>
+        public static string ZPG_WOHNUNGEN_SUMME {
+            get {
+                return ResourceManager.GetString("ZPG_WOHNUNGEN_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ergibt {0} Wohneinheiten ähnelt.
+        /// </summary>
+        public static string ZPG_WOHNUNGEN_SUMME_WE {
+            get {
+                return ResourceManager.GetString("ZPG_WOHNUNGEN_SUMME_WE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anteil am Tagesbedarf ähnelt.
         /// </summary>
         public static string ZPG_ZIRK_METHODE_ANTEIL {
@@ -163030,6 +163084,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_ZONE_NAME_VORGABE {
             get {
                 return ResourceManager.GetString("ZPG_ZONE_NAME_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unvollständig ähnelt.
+        /// </summary>
+        public static string ZPG_ZONE_UNVOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("ZPG_ZONE_UNVOLLSTAENDIG", resourceCulture);
             }
         }
     }

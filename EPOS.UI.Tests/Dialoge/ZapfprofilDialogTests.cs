@@ -174,7 +174,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Contains("70,0", tabelle.QuerySelector("tfoot")!.TextContent);   // 20 + 50 MWh/a aus der Prüfvorschau
         Assert.Contains("Wohnen A", tabelle.TextContent);
         Assert.Contains("20 Wohneinheiten", tabelle.TextContent);
-        Assert.NotNull(Knopf(cut, "Zone hinzufügen…"));
+        Assert.NotNull(Knopf(cut, "Zone hinzufügen"));
         Assert.NotNull(Knopf(cut, "Duplizieren"));
         Assert.NotNull(Knopf(cut, "Entfernen"));
 
@@ -935,7 +935,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-zapfprofil-punktueberholt"));
 
         // Eine neue Zone macht ihn wieder überholt; das OK trägt die Marke zum Wirt.
-        Knopf(cut, "Zone hinzufügen…").Click();
+        Knopf(cut, "Zone hinzufügen").Click();
         Assert.True(cut.Instance.Eingabe.PunktUeberholt);
         Feld(cut, "Bezugsgröße").Input("10");
         Option(cut, "hoch").Change("3");
@@ -1100,7 +1100,7 @@ public class ZapfprofilDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        Knopf(cut, "Zone hinzufügen…").Click();
+        Knopf(cut, "Zone hinzufügen").Click();
         Assert.Equal(3, cut.Instance.Eingabe.Zonen.Count);
         Assert.Equal("Zone 3", cut.Instance.Eingabe.Zonen[2].Name);
         Assert.Contains("Zone 3 · Nutzung", cut.Markup);
@@ -1193,7 +1193,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Contains("Brauchwasser-Zapfprofil", cut.Markup);
         Assert.Empty(cut.FindAll("table.epos-zapfprofil-zonen tbody tr"));
         Assert.NotNull(cut.Find(".epos-zapfprofil-ohnevorschau"));
-        Assert.NotNull(Knopf(cut, "Zone hinzufügen…"));
+        Assert.NotNull(Knopf(cut, "Zone hinzufügen"));
     }
 
     // =================================================================================
