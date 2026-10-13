@@ -37,11 +37,10 @@ namespace WindowsFormsApplication1
     public static class ZonenLastfelderSchema
     {
         /// <summary>
-        /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht. Angemeldet als 225, hängt vorläufig an 223
-        /// (<see cref="KaeltebedarfSplitAbrechnungSchema"/>); beim Push wird an 224 <c>TwwZonenferienSchema</c> (Zapfprofil)
-        /// umgehängt. Die Kette hängt über <c>+ 1</c> an der Vorgängerklasse.
+        /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht: 225. Die Kette hängt über <c>+ 1</c> an der
+        /// Vorgängerklasse <see cref="TwwZonenferienSchema"/> (Schritt 224).
         /// </summary>
-        public const int SCHRITT = KaeltebedarfSplitAbrechnungSchema.SCHRITT + 1;
+        public const int SCHRITT = TwwZonenferienSchema.SCHRITT + 1;
 
         /// <summary>Die Zonen des Projekts.</summary>
         public const string TAB_ZONE = SchemaKatalog.TAB_ZONE;

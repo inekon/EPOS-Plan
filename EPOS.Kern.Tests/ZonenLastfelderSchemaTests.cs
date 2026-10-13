@@ -22,7 +22,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Nummer_haengt_an_der_Kette_ist_das_Ziel_und_die_Paketanhebung_fuehrt_Ddl()
         {
-            Assert.Equal(BauteilkatalogHaustechnikSchema.SCHRITT + 1, ZonenLastfelderSchema.SCHRITT);
+            Assert.Equal(TwwZonenferienSchema.SCHRITT + 1, ZonenLastfelderSchema.SCHRITT);
             Assert.Equal(ZonenLastfelderSchema.SCHRITT, SchemaStand.Zielversion);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == ZonenLastfelderSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);

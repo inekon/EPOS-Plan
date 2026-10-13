@@ -21,7 +21,7 @@ Inventardatum eingestuft“; F7 Ergebnisse im Export wie heute; F8 (b) Absorptio
 - **Kette:** `SCHRITT = BauteilkatalogHaustechnikSchema.SCHRITT + 1`. Im Worktree liegen die angemeldeten Schritte 223 (Sitzung
   Zapfprofilgenerator) und 224 (`KaeltebedarfSplitAbrechnungSchema`, Sitzung Anlagendialog) nicht vor, deshalb trägt der Schritt
   hier die Nummer 223. **Beim Zusammenführen hängt er an die Klasse des Schritts 224 und trägt die angemeldete Nummer 225.**
-  Zusammenführung auf den Stand mit K6: angemeldet als 225, hängt vorläufig an 223 (`SCHRITT = KaeltebedarfSplitAbrechnungSchema.SCHRITT + 1`, Nummer 224); beim Push wird an 224 `TwwZonenferienSchema` (Zapfprofil) umgehängt.
+  Zusammengeführt auf den Stand mit K6 (223) und Zonenferien (224): `SCHRITT = TwwZonenferienSchema.SCHRITT + 1`, der Schritt hängt an 224 und trägt die Nummer 225.
   `SchemaStand.Zielversion` = `ZonenLastfelderSchema.SCHRITT`.
 - **Eingehängt** wie Schritt 222: `SchemaMigration` der Windows-Schale (`SCHRITT_ZONEN_LASTFELDER`, `Schritt_ZonenLastfelder`),
   `Werkzeuge/Testdatenbankschema`, Testvorrichtung `EPOS.Kern.Tests/TestDatenbank.cs`, `Paketanhebung` (Art `Ddl`), Zielversion.
