@@ -1871,7 +1871,8 @@ Adressgaben: `?varianten=<n>` (Vorgabe 1, höchstens 8), `?nurunterschiede=1` un
 ohne die Gabe steht die Vorgabe „— keine —“, der Komponentenvergleich; die Wahl im Feld wirkt auch
 von Hand). Die drei Knöpfe der Gruppe „Variante verwalten“ öffnen ihre Dialoge als Überlagerung
 (Anlegen mit Quelle und Bezeichner, Umbenennen und Löschen mit der Variantenwahl); sie wirken auf
-die synthetische Gruppe der Seite, ohne Datenbank. Zu prüfen
+die synthetische Gruppe der Seite, ohne Datenbank. Der Schalter „nur Unterschiede“ steht in der Zeile „Im Vergleich“.
+Die Probe führt den Brennstoffeinsatz des Kessels passend zur Trägerzeile Erdgas (37,2 bzw. 24,6 MWh/a). Zu prüfen
 bei 1 800, 940 und 700 px: Kopf- und Rumpfzellen der Tabelle stehen an denselben linken
 Kanten, die Tabelle füllt die Hülle, die Seite rollt nie quer (mit sechs Varianten rollt
 allein die Hülle, die Gewerkspalte haftet), kein Feld des Kopfes ragt über das Fenster.
