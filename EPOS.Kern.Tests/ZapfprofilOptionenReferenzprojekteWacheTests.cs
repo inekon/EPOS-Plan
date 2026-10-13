@@ -43,6 +43,9 @@ namespace EPOS.Kern.Tests
         private const string SCHULE = "Schule (Setzung)";
         private const string GEWERBE = "Gewerbe Schichtbetrieb (Setzung)";
 
+        /// <summary>Die sechs Projekte, aufsteigend.</summary>
+        public static readonly int[] PROJEKTE = { 1066, 1067, 1068, 1069, 1070, 1071 };
+
         /// <summary>Die sechs Projekte mit ihren Namen.</summary>
         private static readonly Dictionary<int, string> Projekte = new Dictionary<int, string>
         {
