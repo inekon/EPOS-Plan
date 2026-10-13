@@ -1201,8 +1201,8 @@ public const string AUSDRUCK_MIT_KUEHLUNG = ">0";
 new Katalogspalte(SpKuehlleistung, t("KFLT_SP_KUEHLLEISTUNG"), "kW", Katalogspaltenart.Zahl),
 ```
 
-Das schnelle „nur mit Kühlfunktion" trägt ein **Schalter** des `WaermepumpenKatalogDialog`
-(Schalter `:95-96`, Lesen `:224-226`, Setzen `:235-237`), der genau diese Spalte auf
+Das schnelle „nur mit Kühlfunktion" trägt ein **Schalter** des `WaermepumpeStammDialog`
+(Schalter `:143-144`, Lesen `:611-613`, Setzen `:616-618`), der genau diese Spalte auf
 `AUSDRUCK_MIT_KUEHLUNG` setzt — dieselbe
 Zeichenkette, die ein Anwender von Hand in den Trichter schriebe.
 
@@ -2777,8 +2777,8 @@ Dieser Abschnitt setzt **E15** in Bedienung um; die Begründung und die Messzahl
 **Schritt 1 — im Katalog finden: gebaut.** Die Katalogliste der Wärmepumpe führt die Zahlenspalte
 **„Kühlleistung [kW]"** mit Trichter (`Katalogfilterprofil.cs:353`, Spaltendefinition `:593`;
 Bindung `WPStammCtrl.cs:245`) und darüber den Schalter **„nur mit Kühlfunktion"**
-(`WaermepumpenKatalogDialog.razor:95-96`), der in genau diese Spalte den Ausdruck
-`AUSDRUCK_MIT_KUEHLUNG` (`>0`, `:360`) schreibt (`:224-226`, `:235-237`). Die Regel
+(`WaermepumpeStammDialog.razor:143-144`), der in genau diese Spalte den Ausdruck
+`AUSDRUCK_MIT_KUEHLUNG` (`>0`, `:360`) schreibt (`:611-613`, `:616-618`). Die Regel
 „Kennzeichenspalten sind nicht filterbar" (`Katalogfilterprofil.cs:79`) steht unverändert — sie
 ist hier nicht berührt, weil die Ja/Nein-Spalte „Kühlen" durch die Zahl ersetzt ist. **K20 ist
 damit durch die Umsetzung erledigt** (5.0.3, 12.1); an diesem Schritt ist für KU2 nichts zu bauen.
@@ -2827,13 +2827,13 @@ beiden Masken (`Form_WP_Anlage` und die Konfiguration der Simulation) über dies
 
 **So gebaut (KU3-4c, 04.10.2026, #717).** Die Kältemaschine hat einen eigenen Erzeugerdialog (`KaeltemaschineAnlageDialog.razor`): links die Anlagen des Projekts (Name, Anzahl, Nennkälteleistung × Anzahl), rechts die Gruppe „Gerät“ (Kennwerte der Projektkopie nur lesend, Pflege in der Verwaltung „Kältemaschinen“) und die Gruppe „Betrieb“ (Name, Anzahl, Kaltwasservorlauf mit der kleinsten Stützstelle als Platzhalter, Hilfsstrom in %, Kühlträger über die Id mit dem Stromträger des Projekts als Platzhalter, Schalter eigener Zähler, Hinweis auf die Rangfolge nach den Wärmepumpen im Kühlbetrieb). „Hinzufügen…“ öffnet die `Katalogliste` im Profil `Anlagenart.Kaeltemaschine` mit den Knöpfen „Typkennfelder laden…“ (lädt die eingebauten Typkennfelder und liest die Liste neu) und „Katalogverwaltung…“ (öffnet die Verwaltung über `Dienste.Navigation`; bei ungespeicherten Änderungen hält der Knopf an, der nächste Klick auf „Hinzufügen…“ liest den Katalog neu) — bei leerem Katalog unter dem Leertext, sonst unter der Liste —, „Löschen“ fragt zurück; geschrieben wird erst mit OK, nach `KaeltemaschineAnlageCtrl.Pruefen` für jede Anlage (`Anlegen` für Neue, Speichern je Anlage in einem Vorgang). Der Einstieg ist eine freie Ansicht (`Seitenschluessel.KaeltemaschineAnlage`) für das offene Projekt über den Knopf „Kältemaschinen…“ im Reiter „Energieerzeuger“ der Startseite; zusätzlich steht die Kachel „Kälteanlagen“ in der Konfiguration, deren Kachel-Dialog auch bei leerem Katalog öffnet und die Wege „Typkennfelder laden…“ und „Katalogverwaltung…“ anbietet. Eine Typweiche im Assistenten gibt es nicht (offene Frage Q27 im Plan der Wellen, Abschnitt 7). Tests `KaeltemaschineAnlageDialogTests`, `KaeltemaschineAnlageHuelleTests`.
 
-**So gebaut (KM‑K1, 12.10.2026).** Der Kältemaschinen-Dialog nimmt die Wärmepumpen mit Kühlfunktion in seine Katalogauswahl auf; Regeln und Kernwege stehen im [Konzept Projektdialoge mit Katalogauswahl](Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md), Abschnitt 5.10a (KA‑E‑26). Drei Kernpunkte:
+**So gebaut (KM‑K1, 12.10.2026).** Der Kältemaschinen-Dialog nimmt die Wärmepumpen mit Kühlfunktion in seine Katalogauswahl auf; Regeln und Kernwege stehen im [Konzept Projektdialoge mit Katalogauswahl](../ueberholt/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md), Abschnitt 5.10a (KA‑E‑26). Drei Kernpunkte:
 
 - **Gemeinsame Katalogliste:** Kältemaschinen (`Tab_Kaeltemaschine_STAMM`) und Katalog-Wärmepumpen mit Kühlkennlinie (`Tab_WP_STAMM` mit `Tab_Kenndaten_Kuehlung_STAMM`) stehen in einer Liste mit Spalte „Art“ (`KuehlerzeugerKatalogCtrl`), ebenso Kältemaschinen und Wärmepumpen im Kühlbetrieb in der Liste „Im Projekt“ mit Spalte „Rang“; die Zeile „Wärmepumpen im Kühlbetrieb“ entfällt. Kühlleistung und EER einer Katalog-Wärmepumpe stehen am Bezugspunkt 7 °C Kaltwasser mit der Quelle nach EN 14511 (Luft 35 °C, Sole und Wasser 30 °C), sonst an der kleinsten Kaltwasser-Stützstelle (K21).
 - **Kühlbetrieb nur über den Kernweg:** Eine übernommene Wärmepumpe wird Projektwärmepumpe (`WPCtrl.CopyFromStamm`, Anlagenzeile über `WizardCtrl.Add_WP_Waermeerzeuger`), ihr Kühlbetrieb entsteht allein über `WPCtrl.KuehlkonfigurationSchreiben`; ohne Kühlkennlinie im Projekt oder mit Quellspeicher lehnt der Kern benannt ab (`WPCtrl.KuehlbetriebSperrgrund`), der Dialog zeigt den Grund im Banner. Entfernen schaltet bei einer Wärmepumpe nur den Kühlbetrieb aus.
 - **Kältefolge-Platz:** Eine neu in den Kühlbetrieb gesetzte Wärmepumpe bekommt den nächsten `Kaelte_Rang` hinter den Erzeugern mit Rang (`KaeltefolgeCtrl.RangAnhaengen`, Schritt 212); beim Ausschalten wird ihr Rang entfernt und die Folge geschlossen (`KaeltefolgeCtrl.RangEntfernen`). Gepflegt wird die Folge weiter im Bereich „Kälte“.
 
-**So gebaut (KM‑K2, 13.10.2026).** „Bearbeiten…“ einer Wärmepumpe im Kältemaschinen-Dialog öffnet die Wärmepumpen-Überlagerung — dieselben Anlagenfelder mit Gerätesteckbrief und Klappgruppe „Kühlbetrieb“ wie im Wärmepumpendialog. Die Naht `WaermepumpeAnlageGaben` reicht Gaben, Anlagenzeile und Schreibweg herein; Lesen und Schreiben liegen plattformfrei in `WaermepumpeAnlagenaht` (`EPOS.UI.Daten`) und gehen über `WErzeugerCtrl.KonfigurationSchreiben` samt `WaermepumpeGeraeteCtrl.KuehlkonfigurationNachziehen` — Kühlbetrieb, Kühlvorlauf und Hilfsstromanteil der Kopie bleiben damit auf dem einen Schreibweg des Kühlbetriebs. Ohne die Naht bleibt die benannte Sperre. Die Verwendungsmarke der Wärmepumpe zählt jede Projektkopie des Projekts, nicht erst die mit Kühlbetrieb. Die Wärmekaskade bleibt unberührt wie im Wärmepumpendialog; führt `Tool_1…4` keinen Platz für Wärmepumpen, nennt die Übernahme das im Banner (ohne Platz kühlt die Anlage nicht, 8.2 und `Kaeltefolge.InWaermekaskade`). Regeln in [Konzept Projektdialoge mit Katalogauswahl](Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md), Abschnitt 5.10a. Tests `KaeltemaschineAnlageWpBearbeitenTests`, `KuehlerzeugerKatalogCtrlTests`.
+**So gebaut (KM‑K2, 13.10.2026).** „Bearbeiten…“ einer Wärmepumpe im Kältemaschinen-Dialog öffnet die Wärmepumpen-Überlagerung — dieselben Anlagenfelder mit Gerätesteckbrief und Klappgruppe „Kühlbetrieb“ wie im Wärmepumpendialog. Die Naht `WaermepumpeAnlageGaben` reicht Gaben, Anlagenzeile und Schreibweg herein; Lesen und Schreiben liegen plattformfrei in `WaermepumpeAnlagenaht` (`EPOS.UI.Daten`) und gehen über `WErzeugerCtrl.KonfigurationSchreiben` samt `WaermepumpeGeraeteCtrl.KuehlkonfigurationNachziehen` — Kühlbetrieb, Kühlvorlauf und Hilfsstromanteil der Kopie bleiben damit auf dem einen Schreibweg des Kühlbetriebs. Ohne die Naht bleibt die benannte Sperre. Die Verwendungsmarke der Wärmepumpe zählt jede Projektkopie des Projekts, nicht erst die mit Kühlbetrieb. Die Wärmekaskade bleibt unberührt wie im Wärmepumpendialog; führt `Tool_1…4` keinen Platz für Wärmepumpen, nennt die Übernahme das im Banner (ohne Platz kühlt die Anlage nicht, 8.2 und `Kaeltefolge.InWaermekaskade`). Regeln in [Konzept Projektdialoge mit Katalogauswahl](../ueberholt/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md), Abschnitt 5.10a. Tests `KaeltemaschineAnlageWpBearbeitenTests`, `KuehlerzeugerKatalogCtrlTests`.
 
 ### 8.3 Projekteinstellung
 
@@ -3841,8 +3841,8 @@ Leseweg `:775`, `KanalParameter` `:1558-1565`, `KanalLesen`/`DeckungLesen` `:156
 `EPOS.Kern/Controller/PufferSpCtrl.cs` (`KlassenSet` `:685-696`);
 `EPOS.Kern/Model/WaermepumpenKatalogZeile.cs` (`:22`, `:56`, `:59`), `WPModel.cs` (`:21`, `:44`).
 
-`EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammDialog.razor` (`:156-159`),
-`WaermepumpenKatalogDialog.razor` (Schalter `:95-96`, `NurMitKuehlung` `:224-226`, `:235-237`);
+`EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammDialog.razor` (`:156-159`, Schalter `:143-144`,
+`NurMitKuehlung` `:611-613`, `:616-618`);
 `EPOS.UI.Daten/Simulation/SimulationErgebnisHuelle.Anzeige.cs` (Kanalkacheln `:30-31`,
 `KANALNAMEN` `:46-50`, Erzeugertabelle `:186`, `:190-232`, Ganglinien `:859-863`).
 

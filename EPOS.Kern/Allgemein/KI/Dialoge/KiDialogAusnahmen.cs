@@ -170,9 +170,6 @@ namespace WindowsFormsApplication1
             new KiAusnahme("BkUebernahmeDialog", KiAusnahmegrund.Aktion,
                            "Die Übernahme in die Kostenaufstellung ist eine Aktion, keine Einstellung.",
                            hilfeschluessel: "Form_BkUebernahme.btn_Help"),
-            new KiAusnahme("WaermepumpenKatalogDialog", KiAusnahmegrund.Aktion,
-                           "Die Katalogauswahl übernimmt ein Gerät; ihr Schalter filtert nur die Liste.",
-                           hilfeschluessel: "Form_WPFilterAuswahl.btn_Help"),
             new KiAusnahme("WertAbfrage", KiAusnahmegrund.Rueckfrage,
                            "Die Zahlabfrage ist eine Rückfrage ihres Wirts; die Simulationsansicht führt " +
                            "Priorität und Quelltemperatur als eigene Felder."),

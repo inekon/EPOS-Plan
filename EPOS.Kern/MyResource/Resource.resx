@@ -13052,9 +13052,6 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="PSPD_MSG_NICHT_GEFUNDEN" xml:space="preserve">
     <value>Der ausgewählte Pufferspeicher wurde in den Stammdaten nicht gefunden.</value>
   </data>
-  <data name="WPK_TITEL" xml:space="preserve">
-    <value>Wärmepumpen-Katalog</value>
-  </data>
   <data name="WPK_LBL_HERSTELLER" xml:space="preserve">
     <value>Hersteller</value>
   </data>
@@ -13102,9 +13099,6 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   </data>
   <data name="WPK_BTN_RESET" xml:space="preserve">
     <value>Filter Reset</value>
-  </data>
-  <data name="WPK_BTN_UEBERNEHMEN" xml:space="preserve">
-    <value>✔ Auswahl übernehmen</value>
   </data>
   <data name="WPK_CHK_NUR_KUEHLUNG" xml:space="preserve">
     <value>nur mit Kühlfunktion</value>

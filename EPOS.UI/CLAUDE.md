@@ -112,7 +112,7 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   `max-height: var(--epos-listenhoehe)`, `overflow: auto` und einen stehenden Spaltenkopf — eine
   Höchsthöhe, Rückweg `Begrenzt="false"`; im `Katalograhmen` (siehe unten) fällt die Höchsthöhe.
 - **Projekt ↔ Datenbank immer über `Zweispaltenauswahl`** (Katalogauswahl V1 „Gerahmt und
-  gestapelt", [Konzept](../Dokumentation/aktuell/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md)):
+  gestapelt", [Konzept](../Dokumentation/ueberholt/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md)):
   drei gerahmte Bereiche mit Kopfleiste und Kennfarbe — „Im Projekt" (mit „▼ Aus dem Projekt
   entfernen"), darunter die ziehbare Trennlinie (Höhe je Dialog über `Dienste.Einstellungen`,
   Schlüssel `Katalogauswahl.Trenner.<Dialogname>`), „Katalog (Datenbank)" (mit „▲ In das Projekt

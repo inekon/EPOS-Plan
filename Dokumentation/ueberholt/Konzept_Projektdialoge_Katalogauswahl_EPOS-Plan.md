@@ -16,13 +16,13 @@ der Knöpfe zu den Bereichen Projekt und Datenbank und Eignung für alle ähnlic
 `SolarkollektorenDialog`, `WaermepumpenDialog`, `GebaeudeDialog`, `BedarfsProfileDialog`,
 `WaermebedarfExternDialog`, `StromganglinieDialog`, `SolarganglinieDialog` — und die Katalogauswahl des
 `KaeltemaschineAnlageDialog`. Damit schließt dieses Papier die Lücke, die
-[`Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md`](Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md)
+[`Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md`](../aktuell/Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md)
 in Abschnitt 8 offen lässt (AD-Q12: Projektdialoge außerhalb des Schemas der Verwaltungen); die dort
 ruhenden Entscheide AD-Q3, AD-Q4, AD-Q5 und AD-Q10 sind mit KA‑E‑5 bis KA‑E‑8 beantwortet.
 
-**Mockups:** maßgeblich ist [`Mockups/Projektdialog_Katalogauswahl_V1.html`](Mockups/Projektdialog_Katalogauswahl_V1.html)
+**Mockups:** maßgeblich ist [`Mockups/Projektdialog_Katalogauswahl_V1.html`](../aktuell/Mockups/Projektdialog_Katalogauswahl_V1.html)
 (spielbar, mit ziehbarer Trennlinie) samt `…_V1.png` (1 280 × 800) und `…_V1_klein.png` (1 280 × 720). Die
-Mockups V2 bis [`Mockups/Projektdialog_Katalogauswahl_V5.html`](Mockups/Projektdialog_Katalogauswahl_V5.html)
+Mockups V2 bis [`Mockups/Projektdialog_Katalogauswahl_V5.html`](../aktuell/Mockups/Projektdialog_Katalogauswahl_V5.html)
 bleiben als Belege der Abwägung liegen. Der Knopf „Randnotiz“ oben rechts zeigt, wie die dialogeigenen
 Teile hineinpassen.
 
@@ -1152,7 +1152,11 @@ nach ÜS1/ÜS2; einen Rückweg gibt es nicht (4.9). Hier steht nur, was abweicht
   (`BedarfStammCtrl.CopyFromStamm`, die drei Kopierer setzen jetzt `ID_Stamm` wie der Kältebedarf); die Zeile zeigt auf
   sie, `WizardCtrl` findet sie über die ID wieder. Eine neue Kopie merkt die `Projektkopievormerkung`; Abbrechen räumt sie
   ab (`BedarfStammCtrl.ProjektkopieEntfernen`, nur ohne Zuordnung, samt Typprofil, eine Transaktion), OK räumt die ab,
-  auf die keine Zeile mehr zeigt. Im Assistenten (ohne Projekt) entsteht die Kopie weiter beim Speichern. Kein Schemaschritt;
+  auf die keine Zeile mehr zeigt. **Erst die Zuordnungen, dann der Abschluss:** Weil der Löschweg eine Kopie nur ohne
+  Zuordnung in der Datenbank abräumt, schreibt das Brauchwasser im OK des Dialogs, und Stromverbraucher, Prozesswärme und
+  Kältebedarf reichen den Schreibweg ihres Kachelwegs in die Hülle, die ihn beim OK vor dem Bestandsabgleich ruft
+  (`Projektkopievormerkung.Schliessen`); sonst hielte die alte Zuordnung die Kopie einer entfernten Zeile als Waise im
+  Projekt. Im Assistenten (ohne Projekt) entsteht die Kopie weiter beim Speichern. Kein Schemaschritt;
   die Zuordnungen und Kopien der Referenzprojekte bleiben unverändert.
 - **Gemessen** (Rollbereichprobe, Fall `bedarfsprofile` als Prozesswärme, zehn Fenster): 110 Zustände ohne Verstoß —
   Kopfleiste, Fußleiste, Zusammenfassung, Satz-Überlagerung über „Bearbeiten…", „Bearbeiten" der Detailzeile und den Stift;

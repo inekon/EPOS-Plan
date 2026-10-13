@@ -9,7 +9,7 @@ fort; Vorlage zur Entscheidung, kein Code geändert.
 Geprüft wurden die Recherche vom 08.10.2026, die [Umsetzung KM1](2026-10-09_Umsetzung_KM1_Typkennfelder.md),
 das [Kühlkonzept](../Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) (5.0, 5.1, 5.3, 12, 14), das
 [Fachkonzept KM3](../../ueberholt/Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md), Stufe 5 des
-[Konzepts Katalogauswahl](../Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md) und die Entscheide E15, E33,
+[Konzepts Katalogauswahl](../../ueberholt/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md) und die Entscheide E15, E33,
 E68, E74 und E116 im [Status Gebäudesimulation](../Status_Gebaeudesimulation_VDI6007.md). Externe Angaben sind
 Recherchestand, teils nur aus Suchauszügen; sie sind **kein Rechtsrat**. Das Papier nennt keine Normwerte und
 keine Kennwerte konkreter Produkte.

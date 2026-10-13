@@ -2755,16 +2755,6 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     scroll-padding: 0;
 }
 
-/* DAS WARNBAND EINES EINGEBETTETEN DIALOGS STEHT UEBER DEM FUSS DES FENSTERS.
-   Die Waermepumpenverwaltung bettet die Detailansicht der Anlage ein
-   (.epos-dialog--eingebettet, W7-B-3); deren Fussblock traegt dann nur noch
-   das Warnband, OK und Abbrechen gehoeren dem Wirt. Mit bottom: 0 haftete das
-   Band HINTER dessen Schlussleiste und waere verdeckt - es haftet deshalb um
-   die Fusshoehe hoeher, und Band und Leiste stehen zusammen im Bild. */
-#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) .epos-dialog--eingebettet > .epos-dialog-fuss {
-    bottom: var(--epos-fenster-fuss);
-}
-
 /* Die beiden Fokusfallen sind unsichtbar, aber erreichbar - sie duerfen
    deshalb NICHT display:none tragen (das nimmt ihnen den Tabulator). */
 .epos-fokusfalle {
@@ -13470,8 +13460,6 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
     max-height: min(94vh, calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten)));
 }
 
-/* W7-B-3: ein eingebetteter Dialog (.epos-dialog--eingebettet, unten) traegt keinen
-   zweiten Dialograhmen. */
 /* W10b-B-3 (08.09.2026): der Extrapolationsschalter bei den Kennlinien der Waermepumpe. */
 .epos-wp-extrapolation {
     margin: 2px 0 10px;
@@ -13483,11 +13471,6 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
 .epos-wp-umstellen {
     justify-content: flex-end;
 }
-.epos-dialog--eingebettet {
-    padding: 0;
-    max-width: none;
-}
-
 /* Ohne Titel steht im Kopf nur der Hilfeknopf - er gehoert nach rechts, */
 /* dorthin, wo er auch neben einem Titel steht.                          */
 .epos-dialog-kopf--ohnetitel {

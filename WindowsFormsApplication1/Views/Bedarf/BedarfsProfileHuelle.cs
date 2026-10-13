@@ -59,20 +59,30 @@ namespace WindowsFormsApplication1
         // Einstiege
         // =================================================================================
 
-        /// <summary>Die PROZESSWÄRME eines Projekts.</summary>
+        /// <summary>
+        /// Die PROZESSWÄRME eines Projekts. <paramref name="zuordnungenSchreiben"/> schreibt die Zuordnungen
+        /// des Projekts; die Hülle ruft es beim OK, BEVOR sie die Projektkopievormerkung abschließt
+        /// (<see cref="Projektkopievormerkung.Schliessen"/>).
+        /// </summary>
         internal static bool Oeffnen(IWin32Window besitzer, int projektId, string projektName,
-                                     List<Z_ProjektProzesswaermeModel> modelle)
+                                     List<Z_ProjektProzesswaermeModel> modelle,
+                                     Action zuordnungenSchreiben)
         {
             List<BedarfsProfilZeile> zeilen = ProzessZeilen(modelle);
             Action geaendert = ProzessRueckweg(projektId, zeilen, modelle);
 
             return Zeigen(besitzer, BedarfsArt.Prozesswaerme, projektId, zeilen, geaendert,
-                          wizard: false);
+                          wizard: false, zuordnungenSchreiben: zuordnungenSchreiben);
         }
 
-        /// <summary>Die STROMVERBRAUCHER eines Projekts.</summary>
+        /// <summary>
+        /// Die STROMVERBRAUCHER eines Projekts. <paramref name="zuordnungenSchreiben"/> schreibt die
+        /// Zuordnungen des Projekts; die Hülle ruft es beim OK, BEVOR sie die Projektkopievormerkung
+        /// abschließt (<see cref="Projektkopievormerkung.Schliessen"/>).
+        /// </summary>
         internal static bool Oeffnen(IWin32Window besitzer, int projektId, string projektName,
-                                     List<Z_ProjektStromverbraucherModel> modelle)
+                                     List<Z_ProjektStromverbraucherModel> modelle,
+                                     Action zuordnungenSchreiben)
         {
             var zeilen = new List<BedarfsProfilZeile>();
             foreach (Z_ProjektStromverbraucherModel m in modelle)
@@ -96,7 +106,7 @@ namespace WindowsFormsApplication1
             };
 
             return Zeigen(besitzer, BedarfsArt.Stromverbraucher, projektId, zeilen, geaendert,
-                          wizard: false);
+                          wizard: false, zuordnungenSchreiben: zuordnungenSchreiben);
         }
 
         /// <summary>
@@ -139,15 +149,19 @@ namespace WindowsFormsApplication1
         /// <c>BedarfsArt.Kaelte</c>, Temperaturpaar wie die Prozesswärme (als Angabe). Die Feldgruppe
         /// „Deckung“ (Konzept 3.4) bearbeitet der Dialog in der Überlagerung „Deckung…“; der Rückweg schreibt
         /// sie mit Name, Kopie, Summe, Temperaturpaar, Kalender und Kälte-Art in die Modelle des Aufrufers zurück.
+        /// <paramref name="zuordnungenSchreiben"/> schreibt die Zuordnungen des Projekts; die Hülle ruft es beim
+        /// OK, BEVOR sie die Projektkopievormerkung abschließt (<see cref="Projektkopievormerkung.Schliessen"/>).
         /// </summary>
         internal static bool Oeffnen(IWin32Window besitzer, int projektId, string projektName,
-                                     List<Z_ProjektKaeltebedarfModel> modelle)
+                                     List<Z_ProjektKaeltebedarfModel> modelle,
+                                     Action zuordnungenSchreiben)
         {
             // K5b: Abbildung samt den acht Deckungsfeldern plattformfrei (KaeltebedarfsprofilAbbildung).
             List<BedarfsProfilZeile> zeilen = KaeltebedarfsprofilAbbildung.Zeilen(modelle);
             Action geaendert = KaeltebedarfsprofilAbbildung.Rueckweg(zeilen, modelle, projektId);
 
-            return Zeigen(besitzer, BedarfsArt.Kaelte, projektId, zeilen, geaendert, wizard: false);
+            return Zeigen(besitzer, BedarfsArt.Kaelte, projektId, zeilen, geaendert, wizard: false,
+                          zuordnungenSchreiben: zuordnungenSchreiben);
         }
 
         /// <summary>
@@ -242,9 +256,13 @@ namespace WindowsFormsApplication1
 
         // =================================================================================
 
+        /// <param name="zuordnungenSchreiben">Schreibt die Zuordnungen des Projekts (Stromverbraucher,
+        /// Prozesswärme, Kältebedarf) — gerufen beim OK, VOR dem Abschluss der Vormerkung;
+        /// <c>null</c> beim Brauchwasser, das im OK des Dialogs schreibt.</param>
         private static bool Zeigen(IWin32Window besitzer, BedarfsArt art, int projektId,
                                    List<BedarfsProfilZeile> zeilen, Action geaendert, bool wizard,
-                                   ZapfprofilBehaelter behaelter = null)
+                                   ZapfprofilBehaelter behaelter = null,
+                                   Action zuordnungenSchreiben = null)
         {
             bool ok = false;
             BlazorDialogForm<BedarfsProfileDialog> dlg = null;
@@ -255,9 +273,9 @@ namespace WindowsFormsApplication1
             // „Aus dem Projekt entfernen" nimmt der Dialog selbst aus der Zeilenliste; der Bestand beim Öffnen
             // zeigt nach dem Schließen, welche Kopien keine Zeile mehr hat (Muster HeizkesselHuelle.Entfernen:
             // nur VORMERKEN, geloescht wird beim OK). Im Assistenten zeigt IdStamm auf den Katalog. Geloescht
-            // wird nur eine Kopie ohne Zuordnung in der Datenbank (ProjektkopieEntfernen): Das Brauchwasser
-            // schreibt seine Zuordnungen im OK des Dialogs, die uebrigen Arten schreibt der Aufrufer erst nach
-            // dem Schliessen - dort bleibt die Kopie einer entfernten Zeile stehen.
+            // wird nur eine Kopie ohne Zuordnung in der Datenbank (ProjektkopieEntfernen) - deshalb schreibt
+            // „zuordnungenSchreiben" die Zuordnungen VOR dem Abschluss (Vormerkung.Schliessen): Das Brauchwasser
+            // schreibt sie im OK des Dialogs (Delegat null), die drei uebrigen Arten reicht der Aufrufer herein.
             List<(string Bezeichner, int KopieId)> bestand = !wizard && projektId > 0
                 ? zeilen.Select(z => (z.Name ?? "", z.IdStamm)).ToList()
                 : null;
@@ -285,8 +303,8 @@ namespace WindowsFormsApplication1
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
             }
-            vormerkung.EntferntGegenueber(bestand, id => zeilen.Exists(z => z.IdStamm == id));
-            vormerkung.Abschliessen(ok, id => zeilen.Exists(z => z.IdStamm == id));
+            vormerkung.Schliessen(ok, zuordnungenSchreiben, bestand,
+                                  id => zeilen.Exists(z => z.IdStamm == id));
             return ok;
         }
 

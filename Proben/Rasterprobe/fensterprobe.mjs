@@ -304,48 +304,6 @@ async function tabulator(seite) {
   return erg;
 }
 
-/**
- * Waermepumpen: OK bei Rollstand 0 mit anschlagender Temperaturpruefung. Das Band des Wirts
- * steht oben im Bild; das Band im Fussblock der eingebetteten Detailansicht steht, solange
- * die Detailansicht im Bild ist, UEBER der Schlussleiste des Fensters und frei (nicht verdeckt).
- */
-async function warnband(seite, name, melden = true) {
-  let n = 0;
-  const melde_ = t => { n++; if (melden) melde(name, t); };
-  await rollen(seite, 0);
-  await seite.evaluate(() => {
-    const d = document.querySelector('body > #app > .epos-dialog');
-    const fuss = [...d.children].find(e => e.querySelector(':scope > .epos-knopf--primaer'));
-    fuss.querySelector(':scope > .epos-knopf--primaer').click();
-  });
-  const ok = await seite.waitForSelector('.epos-dialog--eingebettet > .epos-dialog-fuss .epos-warnbanner', { timeout: 5000 })
-    .then(() => true, () => false);
-  if (!ok) { melde_('nach OK steht kein Warnband im Fussblock der Detailansicht'); return n; }
-  const band = (auswahl) => seite.evaluate((auswahl) => {
-    const e = document.querySelector(auswahl);
-    if (!e) return null;
-    const d = document.querySelector('body > #app > .epos-dialog');
-    const fuss = [...d.children].find(x => x.querySelector(':scope > .epos-knopf--primaer'));
-    const b = e.getBoundingClientRect(), f = fuss.getBoundingClientRect(), k = d.firstElementChild.getBoundingClientRect();
-    const oben = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
-    return { top: b.top, bottom: b.bottom, fussDecke: f.top, kopfBoden: k.bottom, frei: e.contains(oben), y: scrollY };
-  }, auswahl);
-  const pruefe = (was, m) => {
-    if (!m) { melde_(was + ' fehlt'); return; }
-    const text = `${was} bei Rollstand ${zahl(m.y)}: ${zahl(m.top)}..${zahl(m.bottom)} px, Kopf bis ${zahl(m.kopfBoden)}, Leiste ab ${zahl(m.fussDecke)} px`;
-    if (m.bottom > m.fussDecke + 0.5 || m.top < m.kopfBoden - 0.5 || !m.frei) melde_(text + ', frei ' + m.frei);
-    else if (melden) console.log('    ' + text + ' - sichtbar');
-  };
-  pruefe('Band des Wirts', await band('body > #app > .epos-dialog > .epos-warnbanner'));
-  // Die Detailansicht oben im Bild (ihre Oberkante 150 px unter dem Fensterrand), dann das Ende.
-  const y = await seite.evaluate(() => scrollY + document.querySelector('.epos-wp-eingebettet').getBoundingClientRect().top - 150);
-  await rollen(seite, y);
-  pruefe('Band der Detailansicht', await band('.epos-dialog--eingebettet > .epos-dialog-fuss .epos-warnbanner'));
-  await rollen(seite, 1e6);
-  pruefe('Band der Detailansicht', await band('.epos-dialog--eingebettet > .epos-dialog-fuss .epos-warnbanner'));
-  return n;
-}
-
 /** Die Ueberlagerung "Simulation..." des Gebaeudedialogs - Zahlen fuer den Vergleich mit/ohne Marke. */
 async function ueberlagerung(browser, f, marke) {
   const seite = await oeffnen(browser, 'gebaeude', f, marke ? '' : '&marke=0');
@@ -839,7 +797,6 @@ try {
       tab.verdeckt.forEach(v => melde(name, 'Fokus verdeckt: ' + v));
       tab.spruenge.forEach(v => melde(name, 'Fokus in Kopf/Fuss rollt: ' + v));
       if (FOTOS) { await rollen(seite, 1e6); await seite.screenshot({ path: `${FOTOS}/${fall}_${f.breite}_ende.png` }); }
-      if (fall === 'waermepumpen') await warnband(seite, name);
       await seite.close();
     }
 
@@ -990,15 +947,6 @@ try {
       console.log(`    ohne scroll-padding ${fall} ${f.breite}x${f.hoehe}: verdeckt ${tab.verdeckt.length}`);
       fokusRot += tab.verdeckt.length;
       await s2.close();
-      if (fall === 'waermepumpen') {
-        // Das eingebettete Band mit bottom: 0 (ohne die Regel fuer .epos-dialog--eingebettet).
-        const s3 = await oeffnen(browser, fall, f);
-        await s3.addStyleTag({ content: '.epos-dialog--eingebettet > .epos-dialog-fuss { bottom: 0 !important; }' });
-        const n = await warnband(s3, '', false);
-        console.log(`    Warnband mit bottom 0 ${f.breite}x${f.hoehe}: ${n} Verstoesse`);
-        if (n === 0) gegenGruen++;
-        await s3.close();
-      }
     }
     for (const f of FENSTER) for (const fall of KATALOGAUSWAHL) {
       if (NUR && NUR !== fall) continue;
