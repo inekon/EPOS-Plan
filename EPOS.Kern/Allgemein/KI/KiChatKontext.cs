@@ -274,6 +274,7 @@ namespace WindowsFormsApplication1
             { "Form_PufferAuslegung",          B_PUFFERSPEICHER },
             { "GebaeudeExport",                B_GEBAEUDE },
             { "GebaeudeProjekt",               B_GEBAEUDE },
+            { "Modellpruefung",                B_GEBAEUDE }, // MA-1b: Ampelblatt der Modellpruefung im Gebaeudedialog
             { "Hauptfenster",                  B_HAUPTFENSTER },
             { "Kenndaten",                     B_WAERMEPUMPE },
             { "KiWerkzeugliste",               B_HILFE },
