@@ -42,6 +42,7 @@ für die hier genannten Gegenstände ab.
 - Nach jedem Merge mit origin die ChartProben-Messlatte beachten: Auf einem Container mit anderer Schriftkette (Carlito) weichen alle 222 Hashes ab; der Nachweis ist dann der Vergleichslauf derselben Maschine auf dem origin-Stand (ChartProben-LIESMICH), die CI hält die Messlatte.
 - `git lfs install --local` im Container, sonst liegt nach einem Merge ein Zeiger.
 - Browserproben: eigener Port, nur die eigene PID beenden; ein fremder Wirt lief auf 5371.
+- Fehlt im Container das .NET-SDK und sperrt der Proxy `builds.dotnet.microsoft.com` und `download.visualstudio.microsoft.com`: das Ubuntu-Paket `dotnet-sdk-10.0` samt Abhängigkeiten mit `apt-get download` holen, mit `dpkg-deb -x` benutzerlokal entpacken, `~/.dotnet` auf `usr/lib/dotnet` des Entpackordners verweisen und im SDK-Ordner den Alias `sdk/10.0.400` auf `10.0.112` legen. Dauerhaft gehört die SDK-Installation ins Setup-Skript der Cloud-Umgebung.
 
 ## 4 Offene Punkte (mit Empfehlung)
 
@@ -51,7 +52,7 @@ für die hier genannten Gegenstände ab.
 4. Wiki: Repo-Quellen aller elf Wirte, Startseite Kältebedarf, Gebäude (Einzeltage) fortgeschrieben; Bilder neu ziehen (`wikibilder.mjs`); Sammel-Upload nur nach Rückfrage mit Versionsnummer; 33 Logbuchsätze unter 1.2.0.9.
 5. Fremde Befunde, nur gemeldet: Katalogprobe 8 Querroll-Verstöße in Verwaltungen N13b–N22a (Stammblatt 4–27 px); Fensterprobe `dubletten 1194x834`.
 6. Bei der Gebäudesimulation: Gebäudedialog/Mehrzonen-Import (GD), Normprofile DIN 18599‑10 (Außenluft je Person, KI-Anweisungsweg), Jahreswärmebedarf in der Zusammenfassung des Gebäudedialogs (übergeben, Konzept Katalogauswahl Abschnitt 5).
-7. Nachzug KM‑K2: Naht für eine Wärmepumpen-Anlagenzeile (`WaermepumpeAnlageGaben`), dann öffnet Bearbeiten… im Kältemaschinen-Dialog die Wärmepumpen-Überlagerung; Wärmekaskade bei erster Wärmepumpe aus dem Kältedialog; Verwendungsmarke je Projektkopie; drei unbenutzte Textfelder/Ressourcen der entfallenen Zeile „Wärmepumpen im Kühlbetrieb" entfernen.
+7. (erledigt mit Statuszeile #1034) Nachzug KM‑K2: Naht für eine Wärmepumpen-Anlagenzeile (`WaermepumpeAnlageGaben`), dann öffnet Bearbeiten… im Kältemaschinen-Dialog die Wärmepumpen-Überlagerung; Wärmekaskade bei erster Wärmepumpe aus dem Kältedialog; Verwendungsmarke je Projektkopie; drei unbenutzte Textfelder/Ressourcen der entfallenen Zeile „Wärmepumpen im Kühlbetrieb" entfernen.
 
 ## 5 Einstiegs-Prompt für die neue Sitzung
 
