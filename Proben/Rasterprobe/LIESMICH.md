@@ -1871,6 +1871,15 @@ bei 1 800, 940 und 700 px: Kopf- und Rumpfzellen der Tabelle stehen an denselben
 Kanten, die Tabelle füllt die Hülle, die Seite rollt nie quer (mit sechs Varianten rollt
 allein die Hülle, die Gewerkspalte haftet), kein Feld des Kopfes ragt über das Fenster.
 
+## Sichtprobe „Dezentrale Kälte“ (K6b) — Seite `/kaeltedezentralprobe`
+
+Ein synthetischer Lauf mit Split-Zeile, ohne Datenbank, mit neutralen Namen; gemessen wird nichts, die Seite dient den
+Bildschirmfotos. Sie zeigt die Übersicht (Posten „Kühlung dezentral“ in der Strombilanz, Deckungsgrad Kälte samt
+„davon Kältefolge“), die echte Konfigurationsseite mit der Gruppe „Dezentrale Kältedeckung“ samt „Bearbeiten…“ (der Weg
+schreibt nur Quelle und Zuordnung unter die Seite), das Anlagenschema aus einem Modell im Speicher, angeordnet von
+`SchemaLayout` (Kältekreis mit „davon Lastgang/Profil“, Knoten „Kältebedarf dezentral (Split)“), dann Kältegang,
+Kältegruppe des Bedarfsreiters und Stromgang.
+
 ## Bildschirmfotos fürs Wiki: Seite `/wikibild` und `wikibilder.mjs`
 
 Keine Messprobe, sondern die Quelle der Bildschirmfotos der Wiki-Seiten (Regel: Konzept

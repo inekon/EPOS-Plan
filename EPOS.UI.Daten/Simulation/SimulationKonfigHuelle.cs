@@ -1932,9 +1932,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Bildet das angeordnete Layout des Kerns auf den Satz ab, den der Baustein
-        /// <c>Schema</c> zeichnet — eine Zuordnung ohne Rechnung.
+        /// <c>Schema</c> zeichnet — eine Zuordnung ohne Rechnung. <c>internal</c> für die
+        /// Sichtprobe des Probenwirts (K6b-N), die ein Modell im Speicher anordnet.
         /// </summary>
-        private static SchemaBild SchemaAbbilden(SchemaLayout l)
+        internal static SchemaBild SchemaAbbilden(SchemaLayout l)
         {
             if (l == null || l.IstLeer) return SchemaBild.Leer;
 

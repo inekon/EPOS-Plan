@@ -2,14 +2,31 @@
 @using EPOS.UI.Seiten.Simulation
 @using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
+@using EPOS.UI.Bausteine
+@using Resource = WindowsFormsApplication1.MyResource.Resource
 
 @*  DIE SICHTPROBE „DEZENTRALE KAELTE" (Welle K6b, Konzept Kaeltebedarf 4.3): die echten Reiter der Ergebnisseite
     mit einem synthetischen Lauf mit Split-Zeile - Kaeltegang mit Split-Flaeche und der Kachel darunter, die
     Kaeltegruppe des Bedarfsreiters mit Herkunft und „davon dezentral (Split)" samt Kaeltelastbild, und der
     Stromgang mit dem Posten „Kuehlung dezentral". Keine Datenbank, neutrale Namen; gemessen wird nichts,
-    die Seite dient den Bildschirmfotos. *@
+    die Seite dient den Bildschirmfotos.
+    K6b-N: dazu die Uebersicht (Posten „Kuehlung dezentral", Deckungsgrad samt „davon Kaeltefolge"), die echte
+    Konfigurationsseite mit der Gruppe „Dezentrale Kaeltedeckung" samt „Bearbeiten..." (der Weg meldet nur, was er
+    oeffnen wuerde) und das Anlagenschema aus einem Modell im Speicher, angeordnet vom Kern (SchemaLayout) - mit dem
+    Kaeltekreis („davon Lastgang/Profil") und dem Knoten „Kaeltebedarf dezentral (Split)". *@
 
 <div class="epos-startseite" style="padding: 12px">
+    <section data-probe="uebersicht">
+        <UebersichtReiter Kennzahlen="@ZAHLEN" Daten="@UEBERSICHT" Bedarf="@BEDARF" />
+    </section>
+    <section data-probe="konfiguration">
+        <SimulationKonfigSeite Dienste="@KONFIG" Parameter="@PARAMETER" StartProjekt="1" />
+        <p data-probe="bearbeiten-weg">@_bearbeitet</p>
+    </section>
+    <section data-probe="schema" style="max-width: 980px">
+        <EPOS.UI.Bausteine.Schema Layout="@SCHEMA" Gewaehlt="" LeerText="leer" WarnungText="" AbnehmerWarnungText="Kein Versorger"
+                                  KetteKopfText="Kaskadenkette" KeineKetteText="" />
+    </section>
     <section data-probe="kaeltegang">
         <KaeltegangReiter Modell="@(a => KaelteProduktionBild.Modell(GANG, new KaelteProduktionBild.Texte(), a.Sortiert))"
                           Kaelte="@KAELTE" />
@@ -23,6 +40,124 @@
 </div>
 
 @code {
+    // ---- K6b-N: Uebersicht, Konfiguration und Schema ----
+
+    private string _bearbeitet = "";
+
+    private static SimulationErgebnisCtrl.UebersichtKennzahlen ZAHLEN => new SimulationErgebnisCtrl.UebersichtKennzahlen
+    {
+        StrombedarfGesamtMwh = 90.0, WaermebedarfGesamtMwh = 210.0, RestwaermeMwh = 1.2, ReststromMwh = 60.0,
+        WpWaermeproduktionMwh = 208.8, WpStromverbrauchMwh = 55.0,
+        KaeltestromStufeMwh = 9.0, KaeltestromDezentralMwh = SPLIT.Sum() / 3000.0, KaeltestromDezentralStufeMwh = SPLIT.Sum() / 4500.0
+    };
+
+    private static readonly UebersichtDaten UEBERSICHT = new UebersichtDaten
+    {
+        Waermepumpe = true, WaermedeckungProzent = 99.4, StromdeckungProzent = 0.0, WaermebedarfVorhanden = true,
+        StrombedarfVorhanden = true, WaermebedarfMwh = 210.0, StrombedarfMwh = 90.0 + 55.0, ReststromMwh = 60.0,
+        RestwaermeMwh = 1.2, Kaskade = "Wärmepumpe 1"
+    };
+
+    private SimulationKonfigDienste KONFIG => new SimulationKonfigDienste
+    {
+        Laden = _ => new SimulationKonfigDaten { IdProjekt = 1, Kaeltebereich = KAELTEBEREICH },
+        SchemaLaden = _ => SchemaBild.Leer,
+        KaelteDezentralBearbeiten = (profil, id, nachher) =>
+        {
+            _bearbeitet = (profil ? "Kältebedarfsprofile" : "Kältebedarf extern") + " · Zuordnung " + id;
+            StateHasChanged();
+            return null;
+        }
+    };
+
+    private static readonly SimulationParameterDienste PARAMETER = new SimulationParameterDienste
+    {
+        Laden = () => new ParameterDaten { Kuehlbetrieb = true }
+    };
+
+    private static readonly KaeltebereichDaten KAELTEBEREICH = new KaeltebereichDaten
+    {
+        Kuehlbetrieb = true,
+        Folge = new[] { KaelteStufe.FreieKuehlung, KaelteStufe.Kaeltespeicher, KaelteStufe.Waermepumpe, KaelteStufe.Kaeltemaschine },
+        Erzeuger = new List<KaelteerzeugerZeile>
+        {
+            new KaelteerzeugerZeile
+            {
+                Kachel = new EPOS.UI.Bausteine.ErzeugerKachelDaten
+                {
+                    Schluessel = "kaelte-wp-1", Rang = "1", Titel = "Wärmepumpe 1",
+                    Chips = new List<EPOS.UI.Bausteine.ChipDaten> { new EPOS.UI.Bausteine.ChipDaten("Wärmepumpe im Kühlbetrieb") },
+                    Zustand = EPOS.UI.Bausteine.Kachelzustand.Aufgenommen, Umschaltbar = true, Editierbar = true
+                },
+                Art = KaelteStufe.Waermepumpe, Nummer = 1, IdAnlage = 1, IdGeraet = 1, Bezeichner = "Wärmepumpe 1",
+                Kuehlbetrieb = true, InWaermekaskade = true
+            }
+        },
+        Dezentral = new List<KaelteDezentralAnzeige>
+        {
+            new KaelteDezentralAnzeige(true, 7, "Raumkühlung Büro", "Kältebedarfsprofil", 4.0, "fest 3,0",
+                                       "Stromträger des Projekts", "anteilig am Netzbezug"),
+            new KaelteDezentralAnzeige(false, 8, "Serverraum", "Lastgang", null, "linear 3,0 bei 35 °C / 4,0 bei 25 °C",
+                                       "Strom 2", "eigener Zähler"),
+        },
+        DezentralSumme = "Summe dezentral (Profile): 4,00 MWh/a",
+        ZentralZeile = "Kältebedarf zentral (Kältefolge): Gebäude mit Kühlung, Lastgänge 1, Kältebedarfsprofile 2"
+    };
+
+    private static readonly SchemaBild SCHEMA = Schemabild();
+
+    private static SchemaBild Schemabild()
+    {
+        var m = new SchemaModell();
+        m.Knotenliste.Add(new SchemaModell.Knoten
+        {
+            Schluessel = SchemaModell.PRAEFIX_ERZEUGER + 1, Art = SchemaModell.Knotenart.Erzeuger, ID = 1, Rang = "1",
+            Titel = "Wärmepumpe 1", Kaskade = true
+        });
+        m.Knotenliste.Add(new SchemaModell.Knoten
+        {
+            Schluessel = "ABNEHMER_HEIZKREIS", Art = SchemaModell.Knotenart.Abnehmer, Titel = "Heizkreis"
+        });
+        m.Kantenliste.Add(new SchemaModell.Kante
+        {
+            Von = SchemaModell.PRAEFIX_ERZEUGER + 1, Nach = "ABNEHMER_HEIZKREIS", Art = SchemaModell.Kantenart.Versorgung
+        });
+        m.Knotenliste.Add(new SchemaModell.Knoten
+        {
+            Schluessel = SchemaModell.PRAEFIX_KAELTE_ERZEUGER + 1, Art = SchemaModell.Knotenart.Erzeuger, ID = 1, Rang = "1",
+            Titel = "Wärmepumpe 1", Bahn = SchemaModell.Bahn.Kaelte, Zeilen = { "Wärmepumpe im Kühlbetrieb", "Kühlvorlauf 18 °C" }
+        });
+        var kreis = new SchemaModell.Knoten
+        {
+            Schluessel = SchemaModell.ABNEHMER_KAELTEKREIS, Art = SchemaModell.Knotenart.Abnehmer, Bahn = SchemaModell.Bahn.Kaelte,
+            Titel = Resource.SIM_ZIEL_KAELTEKREIS,
+            Zeilen =
+            {
+                string.Format(Resource.KONF_KS_DAVON_LASTGANG, 1),
+                string.Format(Resource.KONF_KS_DAVON_PROFIL, 2)
+            }
+        };
+        m.Knotenliste.Add(kreis);
+        m.Kantenliste.Add(new SchemaModell.Kante
+        {
+            Von = SchemaModell.PRAEFIX_KAELTE_ERZEUGER + 1, Nach = SchemaModell.ABNEHMER_KAELTEKREIS, Art = SchemaModell.Kantenart.Versorgung
+        });
+        m.Knotenliste.Add(new SchemaModell.Knoten
+        {
+            Schluessel = SchemaModell.ABNEHMER_KAELTE_DEZENTRAL, Art = SchemaModell.Knotenart.Abnehmer, Bahn = SchemaModell.Bahn.Kaelte,
+            Titel = Resource.SIM_SCHEMA_ABNEHMER_KAELTE_DEZENTRAL,
+            Zeilen =
+            {
+                string.Format(Resource.KONF_KS_DEZENTRAL_ZEILE, "Raumkühlung Büro", "fest 3,0"),
+                string.Format(Resource.KONF_KS_DEZENTRAL_TRAEGER, "Stromträger des Projekts, anteilig"),
+                string.Format(Resource.KONF_KS_DEZENTRAL_ZEILE, "Serverraum", "linear 3,0 / 4,0"),
+                string.Format(Resource.KONF_KS_DEZENTRAL_TRAEGER, "Strom 2, eigener Zähler")
+            }
+        });
+        m.KaelteKette.Add("Wärmepumpe 1");
+        return SimulationKonfigHuelle.SchemaAbbilden(SchemaLayout.Anordnen(m, 0));
+    }
+
     private static double[] Reihe(Func<int, double> f) => Enumerable.Range(0, 8760).Select(f).ToArray();
     private static double Sommer(int h) => Math.Max(0.0, Math.Sin(Math.PI * h / 8760.0));
 
@@ -50,6 +185,9 @@
         GebaeudeMwh = GEBAEUDE.Sum() / 1000.0, ExternMwh = LASTGANG.Sum() / 1000.0, ProfilMwh = PROFIL.Sum() / 1000.0,
         DezentralMwh = SPLIT.Sum() / 1000.0, DezentralStromMwh = SPLIT.Sum() / 3000.0, JahresEerDezentral = 3.0,
         DezentralNetzbezugMwh = SPLIT.Sum() / 4500.0, GrenzeFeuchte = SimulationKaeltebedarf.GrenzeFeuchte,
+        // K6b-N: die Hauptzahl samt Split und darunter „davon Kaeltefolge" (Uebersicht).
+        DeckungsgradProzent = 100.0 * (1.0 - GANG.Rest.Sum() / BEDARF_K.Sum()),
+        DeckungsgradKaeltefolgeProzent = 100.0 * (1.0 - GANG.Rest.Sum() / (BEDARF_K.Sum() - SPLIT.Sum())),
         Hinweise = new[] { "Dezentral (Split) gedeckt: Probe." }
     };
 
