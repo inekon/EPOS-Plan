@@ -324,6 +324,9 @@ namespace EPOS.Kern.Tests
             // Die gefüllte Kopie der Paketvorlage DIN 4708 (ZB7): ebenso lokal, nie versioniert.
             NormzahlenOrdner + "/Katalogpaket_DIN4708/Tab_TwwDin4708Wert_STAMM.csv",
             NormzahlenOrdner + "/Katalogpaket_DIN4708/Tab_TwwParameter_STAMM.csv",
+            // Die gefüllte Kopie der Typtag-Vorlage VDI 4655 (ZB11): ebenso lokal, nie versioniert.
+            NormzahlenOrdner + "/Typtagpaket_VDI4655/typtage_je_zone.csv",
+            NormzahlenOrdner + "/Typtagpaket_VDI4655/f_twe_tt.csv",
         };
 
         /// <summary>Alle Pfade unter dem Normzahlenordner außer dem <c>LIESMICH.md</c>.</summary>

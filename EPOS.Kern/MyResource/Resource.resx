@@ -30947,7 +30947,7 @@ Möchten Sie das zulassen?</value>
     <value>Das Programm bringt keine Werte der Richtlinie mit. Die Typtage spielt der lizenzierte Anwender aus seinem eigenen Paket ein; sie bleiben in dieser Datenbank und gehen weder in die Auslieferung noch in einen Projekttransfer.</value>
   </data>
   <data name="ZPGT_HINWEIS_FORMAT" xml:space="preserve">
-    <value>Ein Paket ist ein ZIP-Archiv oder ein Ordner mit sechs CSV-Dateien: Typtage, Klimazonen, Kalendertage je Zone, Faktoren der Tagesenergie, Kennwerte des Verfahrens und wahlfrei Tagesgänge — Kopfzeile mit Spaltennamen, Trenner Semikolon oder Komma, Zahlen mit Punkt.</value>
+    <value>Ein Paket ist ein ZIP-Archiv oder ein Ordner mit sechs CSV-Dateien: Typtage, Klimazonen, Kalendertage je Zone, Faktoren der Tagesenergie, Kennwerte des Verfahrens und wahlfrei Tagesgänge — Kopfzeile mit Spaltennamen, Trenner Semikolon oder Komma, Zahlen mit Punkt. Eine Vorlage mit vollständigen Kopfzeilen und Platzhaltern liegt im Programmordner unter Vorlage\Typtagpaket_VDI4655; sie nennt je Datei die Fundstelle in der Richtlinie, unverändert lehnt die Prüfung sie ab.</value>
   </data>
   <data name="ZPGT_GRP_STAND" xml:space="preserve">
     <value>Eingespielter Stand</value>

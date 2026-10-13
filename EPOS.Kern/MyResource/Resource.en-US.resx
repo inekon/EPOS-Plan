@@ -30940,7 +30940,7 @@ Do you want to allow this?</value>
     <value>The program ships no values of the guideline. The licensed user imports the type days from his own package; they stay in this database and go neither into the delivery template nor into a project transfer.</value>
   </data>
   <data name="ZPGT_HINWEIS_FORMAT" xml:space="preserve">
-    <value>A package is a ZIP archive or a folder holding six CSV files: type days, climate zones, calendar days per zone, factors of the daily energy, characteristic values of the method and, optionally, daily profiles — header row with column names, separator semicolon or comma, numbers with a point.</value>
+    <value>A package is a ZIP archive or a folder holding six CSV files: type days, climate zones, calendar days per zone, factors of the daily energy, characteristic values of the method and, optionally, daily profiles — header row with column names, separator semicolon or comma, numbers with a point. A template with complete header rows and placeholders is in the program folder under Vorlage\Typtagpaket_VDI4655; it names the place in the guideline for each file, and unchanged the check rejects it.</value>
   </data>
   <data name="ZPGT_GRP_STAND" xml:space="preserve">
     <value>Imported state</value>

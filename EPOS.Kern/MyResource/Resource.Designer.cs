@@ -148850,7 +148850,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Paket ist ein ZIP-Archiv oder ein Ordner mit sechs CSV-Dateien: Typtage, Klimazonen, Kalendertage je Zone, Faktoren der Tagesenergie, Kennwerte des Verfahrens und wahlfrei Tagesgänge — Kopfzeile mit Spaltennamen, Trenner Semikolon oder Komma, Zahlen mit Punkt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Paket ist ein ZIP-Archiv oder ein Ordner mit sechs CSV-Dateien: Typtage, Klimazonen, Kalendertage je Zone, Faktoren der Tagesenergie, Kennwerte des Verfahrens und wahlfrei Tagesgänge — Kopfzeile mit Spaltennamen, Trenner Semikolon oder Komma, Zahlen mit Punkt. Eine Vorlage mit vollständigen Kopfzeilen und Platzhaltern liegt im Programmordner unter Vorlage\Typtagpaket_VDI4655; sie nennt je Datei die Fundstelle in der Richtlinie, unverändert lehnt die Prüfung sie ab. ähnelt.
         /// </summary>
         public static string ZPGT_HINWEIS_FORMAT {
             get {

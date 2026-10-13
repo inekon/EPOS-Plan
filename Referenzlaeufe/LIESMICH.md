@@ -756,12 +756,21 @@ Beispielzeilen, deren Spalte `Wert` leer ist — keine Normzahl. Unverändert le
 Zeile benannt ab und schreibt nichts; `EPOS.Kern.Tests/TwwKatalogimportDin4708Tests` hält das und
 die Platzhalter.
 
+## Paketvorlage der Typtage nach VDI 4655 (`Typtagpaket_Vorlage_VDI4655/`)
+
+Die Typtage nach VDI 4655 kommen allein aus dem lizenzierten Exemplar des Anwenders (ZU22). Im
+Repositorium liegt nur die Vorlage
+[`Typtagpaket_Vorlage_VDI4655/`](Typtagpaket_Vorlage_VDI4655/LIESMICH.md): die sechs CSV-Dateien
+des Typtag-Paketlesers mit vollständigen Kopfzeilen und Platzhaltern (alle Werte leer), dazu die
+Fundstellen der Richtlinie je Datei — keine Zahl der Richtlinie, kein abgeleiteter Wert. Unverändert
+lehnt die Prüfung sie benannt ab; `EPOS.Kern.Tests/TwwTyptagVorlageTests` hält das.
+
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
 Basen aufräumt, lässt `2026-10-11_R52_Vorheizen`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Katalogpaket_Vorlage_DIN4708`,
-`Skripte` und `LIESMICH.md`
+`Typtagpaket_Vorlage_VDI4655`, `Skripte` und `LIESMICH.md`
 stehen.**
 
 Außer der aktuellen liegt hier keine Basis mehr: Die 24 historischen Referenzbasen (7 731

@@ -109,6 +109,11 @@ Belegung je Raumzahl, Ausstattungsklassen und Parameter aus dem eigenen Exemplar
 kommt zum Prüfen nach `Katalogpaket_DIN4708/` hierher und **bleibt lokal**, nach denselben Regeln
 wie das A100-Paket (`RepositoryOrdnungWacheTests` hält den Ausschluss).
 
+**Das gefüllte Typtagpaket VDI 4655 (ZB11).** Die gefüllte Kopie der Paketvorlage
+[`Referenzlaeufe/Typtagpaket_Vorlage_VDI4655/`](../Typtagpaket_Vorlage_VDI4655/LIESMICH.md) — die
+sechs CSV-Dateien mit den Werten des eigenen Exemplars der VDI 4655 — kommt nach
+`Typtagpaket_VDI4655/` hierher und **bleibt lokal**, nach denselben Regeln.
+
 ## Nie committen
 
 `git status` zeigt unter `Referenzlaeufe/Normzahlen/` nur diese Datei. Wer dort etwas anderes

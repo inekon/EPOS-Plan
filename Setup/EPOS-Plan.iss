@@ -118,6 +118,17 @@
   #error Der Ordner Referenzlaeufe\Katalogpaket_Vorlage_DIN4708 fehlt. Er ist versioniert und gehoert zur Auslieferung (ZB7).
 #endif
 
+; Paketvorlage der Typtage nach VDI 4655 (ZB11): die sechs CSV-Dateien des
+; Typtag-Paketlesers mit vollstaendigen Kopfzeilen, Beispielzeilen aus Platzhaltern
+; (Werte leer) und einer Anleitung mit den Fundstellen der Richtlinie. Sie traegt
+; KEINE Werte der Richtlinie (ZU22) - der lizenzierte Anwender fuellt eine Kopie aus
+; seinem eigenen Exemplar und spielt sie im Dialog "Typtage nach VDI 4655" ein;
+; unveraendert lehnt die Pruefung sie benannt ab. Muster wie die A100-Vorlage.
+#define TyptagVorlageVdi4655  RepoDir + "Referenzlaeufe\Typtagpaket_Vorlage_VDI4655"
+#if !DirExists(TyptagVorlageVdi4655)
+  #error Der Ordner Referenzlaeufe\Typtagpaket_Vorlage_VDI4655 fehlt. Er ist versioniert und gehoert zur Auslieferung (ZB11).
+#endif
+
 ; Freier Paketteil des Zapfprofilgenerators (Anwenderentscheid 29.09.2026): die
 ; CSV-Dateien der Katalogdaten, die frei ausgeliefert werden duerfen (Parameter der
 ; Stochastik und der Speicherauslegung, Ecodesign-Zapfprofile, Zapfkategorien, die
@@ -426,6 +437,13 @@ Source: "{#KatalogVorlageA100}\*"; DestDir: "{app}\Vorlage\Katalogpaket_A100"; \
 ; CSV-Dateien und eine Anleitung, zusammen wenige Kilobyte. Ein Update ersetzt den
 ; Bestand (ignoreversion), die Deinstallation nimmt ihn mit {app}\Vorlage.
 Source: "{#KatalogVorlageDin4708}\*"; DestDir: "{app}\Vorlage\Katalogpaket_DIN4708"; \
+    Flags: ignoreversion; \
+    Components: programm
+
+; Paketvorlage der Typtage nach VDI 4655 (ZB11) neben die Vorlagendatenbank: sechs
+; CSV-Dateien und eine Anleitung, zusammen wenige Kilobyte. Ein Update ersetzt den
+; Bestand (ignoreversion), die Deinstallation nimmt ihn mit {app}\Vorlage.
+Source: "{#TyptagVorlageVdi4655}\*"; DestDir: "{app}\Vorlage\Typtagpaket_VDI4655"; \
     Flags: ignoreversion; \
     Components: programm
 
