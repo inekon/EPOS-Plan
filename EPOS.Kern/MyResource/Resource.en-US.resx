@@ -6441,6 +6441,9 @@ Depending on the project size this takes several minutes. Continue?</value>
   <data name="KOSTEN_PLANWERT_BASIS_KEINE" xml:space="preserve">
     <value>do not apply</value>
   </data>
+  <data name="KOSTEN_PLANWERT_HERL_VORLAGE" xml:space="preserve">
+    <value>Rate template {0}</value>
+  </data>
   <data name="KOSTEN_PLANWERT_HERL_FELD" xml:space="preserve">
     <value>field {0}</value>
   </data>

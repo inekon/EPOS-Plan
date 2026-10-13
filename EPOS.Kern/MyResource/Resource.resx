@@ -6457,6 +6457,9 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
   <data name="KOSTEN_PLANWERT_BASIS_KEINE" xml:space="preserve">
     <value>nicht ansetzen</value>
   </data>
+  <data name="KOSTEN_PLANWERT_HERL_VORLAGE" xml:space="preserve">
+    <value>Satzvorlage {0}</value>
+  </data>
   <data name="KOSTEN_PLANWERT_HERL_FELD" xml:space="preserve">
     <value>Feld {0}</value>
   </data>

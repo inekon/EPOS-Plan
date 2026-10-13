@@ -89297,6 +89297,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satzvorlage {0} ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_HERL_VORLAGE {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_HERL_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} €/Gerät × {1} Gerät(e) ähnelt.
         /// </summary>
         public static string KOSTEN_PLANWERT_HERL_WECHSELRICHTER {
