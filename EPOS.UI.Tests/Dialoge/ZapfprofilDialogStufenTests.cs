@@ -265,9 +265,12 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         Assert.Contains("Fachwerte · Gebäude", gruppen);
         foreach (string feld in new[] { "Spezifischer Bedarf", "Zapftemperatur", "Kaltwasser Jahresmittel", "Kaltwasser Amplitude",
                                         "Tagesgangsatz", "Kaltwasser der Auslegung", "Speichertemperatur", "Zirkulationsverlust (Kennwert)",
-                                        "Zirkulationsfläche", "Laufzeit der Zirkulation", "Temperatur der Literanzeige",
-                                        "Schwelle der Stundenzählung", "Zufallssaat (Seed)", "Januar", "Dezember" })
+                                        "Zirkulationsfläche", "Laufzeit der Zirkulation", "Zufallssaat (Seed)", "Januar", "Dezember" })
             Assert.True(HatFeld(cut, feld), feld);
+        // ZB10: Literanzeige und Stundenschwelle stehen nur in den Einstellungen; der Fachblock verweist dorthin.
+        Assert.False(HatFeld(cut, "Temperatur der Literanzeige"));
+        Assert.False(HatFeld(cut, "Schwelle der Stundenzählung"));
+        Assert.Contains("Rubrik „Zapfprofil“", cut.Find(".epos-zapfprofil-anzeigeeinstellung").TextContent);
 
         Assert.Equal("(50)", Feld(cut, "Zapftemperatur").GetAttribute("placeholder"));
         Assert.Equal("(2)", Feld(cut, "Spezifischer Bedarf").GetAttribute("placeholder"));   // Katalogwert Niveau mittel
@@ -334,7 +337,7 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         Assert.Contains("Summe 2 Zonen", tabelle.QuerySelector("tfoot")!.TextContent);
 
         // Zone hinzufügen und entfernen: die Summe zählt mit.
-        Knopf(cut, "Zone hinzufügen…").Click();
+        Knopf(cut, "Zone hinzufügen").Click();
         Assert.Contains("Summe 3 Zonen", cut.Find("table.epos-zapfprofil-zonen tfoot").TextContent);
         Assert.NotNull(cut.Instance.Eingabe.Zonen[2].Angaben);
         Knopf(cut, "Entfernen").Click();
@@ -358,8 +361,9 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         var cut = Aufbauen(geschlossen: e => ergebnis = e);
         Stufe(cut, "Erweitert");
 
-        Assert.Contains("Wohnungstabelle", cut.Find(".epos-zapfprofil-untertitel").TextContent);
-        Assert.Contains("Keine Wohnungstabelle", cut.Markup);
+        Assert.Contains("Wohnungen (wahlweise)", cut.Find(".epos-zapfprofil-untertitel").TextContent);
+        Assert.Contains("Bedarfskennzahl nach DIN 4708", cut.Find(".epos-zapfprofil-wohnungen-erklaerung").TextContent);
+        Assert.Contains("Keine Wohnungen angegeben", cut.Markup);
         Knopf(cut, "Wohnungstyp hinzufügen").Click();
         Knopf(cut, "Wohnungstyp hinzufügen").Click();
         Assert.Equal(2, cut.FindAll(".epos-zapfprofil-wohnungen tbody tr").Count);

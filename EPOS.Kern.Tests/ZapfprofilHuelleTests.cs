@@ -171,6 +171,8 @@ namespace EPOS.Kern.Tests
                          m.Select(x => x.Kennung).ToArray());
             Assert.All(m, x => Assert.Equal(ZapfprofilMeldungsart.Fehler, x.Art));
             Assert.Equal("Zone „Büro“: Bitte eine Nutzungsart wählen.", m[1].Text);
+            // ZB2: Jede Meldung einer Zone trägt deren Position — der Dialog nennt sie dort als nächsten Schritt.
+            Assert.Equal(new int?[] { 0, 1, 1 }, m.Select(x => x.Position).ToArray());
 
             e.Zonen.RemoveRange(0, 2);
             Assert.Empty(ZapfprofilHuelle.Pruefen(e));
@@ -182,6 +184,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal("ZPG_MSG_ZONE_NAME_DOPPELT", doppelt.Kennung);
             Assert.Equal("Wohnen", doppelt.Zone);
             Assert.StartsWith("Zone „Wohnen“: Der Name ist mehrfach vergeben", doppelt.Text);
+            Assert.Null(doppelt.Position);   // der doppelte Name betrifft mehrere Zonen
         }
 
         // =================================================================================

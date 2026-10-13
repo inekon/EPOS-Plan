@@ -983,7 +983,13 @@ namespace WindowsFormsApplication1
             foreach (ZapfAblehnung a in e.Ablehnungen) vorschau.Meldungen.Add(MitPosition(Meldung(a), position));
             foreach (ZapfHinweis h in e.Hinweise) vorschau.Meldungen.Add(MitPosition(Meldung(h), position));
             // Die Warnliste der Bilanz (Warnlogik Z4, N9 (g)): jeder Hinweis mit Titel und Stufe.
-            foreach (ZapfHinweis h in e.Hinweise) vorschau.Warnliste.Add(Warnung(h));
+            // Ein Hinweis einer Zone trägt deren Position — der Dialog lässt die Hinweise einer
+            // unvollständigen Zone weg (ZB2).
+            foreach (ZapfHinweis h in e.Hinweise)
+            {
+                ZapfprofilWarnDaten w = Warnung(h);
+                vorschau.Warnliste.Add(!string.IsNullOrEmpty(h.Zone) && position.TryGetValue(h.Zone, out int p) ? w with { Position = p } : w);
+            }
             // Das Herkunftsprotokoll (Karte "Herkunft", N19) in der Reihenfolge des Rechenwegs.
             vorschau.Herkunft.AddRange(Herkunftszeilen(e.Herkunft));
             return vorschau;
@@ -1227,6 +1233,11 @@ namespace WindowsFormsApplication1
         /// Bezugsmenge größer 0, und kein Name doppelt — das Laufprotokoll nennt die Zonen beim
         /// Namen. Leer = in Ordnung. Dieselbe Prüfung für jeden Weg, der übernimmt.
         ///
+        /// <para>Jede Meldung einer Zone trägt deren <see cref="ZapfprofilMeldung.Position"/>: Der Dialog
+        /// stellt eine Zone, die hier nicht besteht, als „unvollständig“ dar und nennt am Zonenblock ihren
+        /// ersten Satz als nächsten Schritt (ZB2) — aus DIESER Prüfung, keine zweite Regelsammlung. Der
+        /// doppelte Name betrifft mehrere Zonen und bleibt ohne Position.</para>
+        ///
         /// <para><paramref name="katalog"/> ist der beim Öffnen geladene Katalog (<see cref="Gaben"/>
         /// reicht ihn als Abschluss durch, KEIN neuer Datenbankzugriff je Tastendruck): Er entscheidet
         /// je Zone, ob ihre Wohnungstabelle wirksam ist (<see cref="Mengengeruest.WohnungstabelleWirksam(ZapfBezugsart)"/>,
@@ -1246,9 +1257,11 @@ namespace WindowsFormsApplication1
             // Kalenderart „Wohnen" kommt dabei keine Rolle zu.
             Dictionary<int, ZapfBezugsart> bezugJeNutzungsart = (katalog ?? Array.Empty<ZapfprofilNutzungsartDaten>())
                 .ToDictionary(n => n.Id, n => (ZapfBezugsart)n.Bezugsart);
-            foreach (ZapfprofilZoneDaten z in eingabe.Zonen)
+            for (int position = 0; position < eingabe.Zonen.Count; position++)
             {
+                ZapfprofilZoneDaten z = eingabe.Zonen[position];
                 string name = (z.Name ?? "").Trim();
+                int anfang = m.Count;
                 if (name.Length == 0)
                     m.Add(Fehler("ZPG_MSG_ZONE_OHNE_NAME", "", Text_("ZPG_MSG_ZONE_OHNE_NAME", "Eine Zone hat keinen Namen.")));
                 if (z.IdNutzungsart <= 0)
@@ -1260,6 +1273,8 @@ namespace WindowsFormsApplication1
                 bool wohnungstabelleWirksam = bezugJeNutzungsart.TryGetValue(z.IdNutzungsart, out ZapfBezugsart bezug)
                                               && Mengengeruest.WohnungstabelleWirksam(bezug);
                 if (z.Angaben != null) AngabenPruefen(z.Angaben, name, wohnungstabelleWirksam, m);
+                // Die Meldungen dieser Zone tragen ihre Position (ZB2).
+                for (int i = anfang; i < m.Count; i++) m[i] = m[i] with { Position = position };
             }
             foreach (string doppelt in eingabe.Zonen.Select(z => (z.Name ?? "").Trim())
                                                     .Where(n => n.Length > 0)
@@ -1827,6 +1842,7 @@ namespace WindowsFormsApplication1
             t.KennzahlGleichzeitigkeit = Text_("ZPG_KZ_GLEICHZEITIGKEIT", t.KennzahlGleichzeitigkeit);
             t.KennzahlGleichzeitigkeitVermerk = Text_("ZPG_KZ_GLEICHZEITIGKEIT_VERMERK", t.KennzahlGleichzeitigkeitVermerk);
             t.KennzahlAbgelehnt = Text_("ZPG_KZ_ABGELEHNT", t.KennzahlAbgelehnt);
+            t.ZoneUnvollstaendig = Text_("ZPG_ZONE_UNVOLLSTAENDIG", t.ZoneUnvollstaendig);
 
             t.GruppeStochastik = Text_("ZPG_GRP_STOCHASTIK", t.GruppeStochastik);
             t.LabelRechenwegJahresreihe = Text_("ZPG_LBL_RECHENWEG_JAHRESREIHE", t.LabelRechenwegJahresreihe);
@@ -1946,6 +1962,17 @@ namespace WindowsFormsApplication1
             t.HinweisBezugsmengeWohnungstabelle = Text_("ZPG_HINW_BEZUGSMENGE_WOHNUNGSTABELLE", t.HinweisBezugsmengeWohnungstabelle);
             t.GruppeBelegung = Text_("ZPG_GRP_BELEGUNG", t.GruppeBelegung);
             t.LabelWohnungstabelle = Text_("ZPG_LBL_WOHNUNGSTABELLE", t.LabelWohnungstabelle);
+            t.HinweisWohnungen = Text_("ZPG_HINW_WOHNUNGEN", t.HinweisWohnungen);
+            t.SpalteWohnungAnzahl = Text_("ZPG_SP_WOHNUNG_ANZAHL", t.SpalteWohnungAnzahl);
+            t.SpalteWohnungRaumzahl = Text_("ZPG_SP_WOHNUNG_RAUMZAHL", t.SpalteWohnungRaumzahl);
+            t.SpalteWohnungPersonen = Text_("ZPG_SP_WOHNUNG_PERSONEN", t.SpalteWohnungPersonen);
+            t.HilfeWohnungAnzahl = Text_("ZPG_TIP_WOHNUNG_ANZAHL", t.HilfeWohnungAnzahl);
+            t.HilfeWohnungRaumzahl = Text_("ZPG_TIP_WOHNUNG_RAUMZAHL", t.HilfeWohnungRaumzahl);
+            t.HilfeWohnungPersonen = Text_("ZPG_TIP_WOHNUNG_PERSONEN", t.HilfeWohnungPersonen);
+            t.HilfeWohnungAusstattung = Text_("ZPG_TIP_WOHNUNG_AUSSTATTUNG", t.HilfeWohnungAusstattung);
+            t.WohnungenSumme = Text_("ZPG_WOHNUNGEN_SUMME", t.WohnungenSumme);
+            t.WohnungenSummeWe = Text_("ZPG_WOHNUNGEN_SUMME_WE", t.WohnungenSummeWe);
+            t.HinweisAusstattungOhneKatalog = Text_("ZPG_HINW_AUSSTATTUNG_OHNE_KATALOG", t.HinweisAusstattungOhneKatalog);
             t.LabelAnzahl = Text_("ZPG_LBL_ANZAHL", t.LabelAnzahl);
             t.LabelRaumzahl = Text_("ZPG_LBL_RAUMZAHL", t.LabelRaumzahl);
             t.LabelPersonen = Text_("ZPG_LBL_PERSONEN", t.LabelPersonen);
@@ -1954,7 +1981,6 @@ namespace WindowsFormsApplication1
             t.KnopfWohnungNeu = Text_("ZPG_BTN_WOHNUNG_NEU", t.KnopfWohnungNeu);
             t.KnopfWohnungEntfernen = Text_("ZPG_BTN_WOHNUNG_ENTFERNEN", t.KnopfWohnungEntfernen);
             t.AusstattungVorgabe = Text_("ZPG_AUSSTATTUNG_VORGABE", t.AusstattungVorgabe);
-            t.HinweisWohnungstabelle = Text_("ZPG_HINW_WOHNUNGSTABELLE", t.HinweisWohnungstabelle);
             t.HinweisWohnungstabelleLeer = Text_("ZPG_HINW_WOHNUNGSTABELLE_LEER", t.HinweisWohnungstabelleLeer);
             t.LabelPersonenJeWe = Text_("ZPG_LBL_PERSONEN_JE_WE", t.LabelPersonenJeWe);
             t.EinheitPersonenJeWe = Text_("ZPG_EINHEIT_PERSONEN_JE_WE", t.EinheitPersonenJeWe);
@@ -2057,9 +2083,7 @@ namespace WindowsFormsApplication1
             t.LabelZirkFlaeche = Text_("ZPG_LBL_ZIRK_FLAECHE", t.LabelZirkFlaeche);
             t.LabelZirkLaufzeit = Text_("ZPG_LBL_ZIRK_LAUFZEIT", t.LabelZirkLaufzeit);
             t.HinweisZirkExperte = Text_("ZPG_HINW_ZIRK_EXPERTE", t.HinweisZirkExperte);
-            t.LabelAnzeigetemperatur = Text_("ZPG_LBL_ANZEIGETEMPERATUR", t.LabelAnzeigetemperatur);
-            t.LabelStundenschwelle = Text_("ZPG_LBL_STUNDENSCHWELLE", t.LabelStundenschwelle);
-            t.HinweisAnzeige = Text_("ZPG_HINW_ANZEIGE", t.HinweisAnzeige);
+            t.HinweisAnzeigeEinstellung = Text_("ZPG_HINW_ANZEIGE_EINSTELLUNG", t.HinweisAnzeigeEinstellung);
             t.UnterschriftDauerlinie = Text_("ZPG_UNTERSCHRIFT_DAUERLINIE", t.UnterschriftDauerlinie);
             t.DauerlinieMarke = Text_("ZPG_DAUERLINIE_MARKE", t.DauerlinieMarke);
             t.DauerlinieSchwelle = Text_("ZPG_DAUERLINIE_SCHWELLE", t.DauerlinieSchwelle);

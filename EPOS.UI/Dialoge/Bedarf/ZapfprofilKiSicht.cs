@@ -297,8 +297,6 @@ public sealed class ZapfprofilKiSicht
     public double? ZirkKennwert { get => Zahl(nameof(ZirkKennwert)); set => Setze(nameof(ZirkKennwert), value); }
     public double? ZirkFlaeche { get => Zahl(nameof(ZirkFlaeche)); set => Setze(nameof(ZirkFlaeche), value); }
     public double? ZirkLaufzeit { get => Zahl(nameof(ZirkLaufzeit)); set => Setze(nameof(ZirkLaufzeit), value); }
-    public double? Anzeigetemperatur { get => Zahl(nameof(Anzeigetemperatur)); set => Setze(nameof(Anzeigetemperatur), value); }
-    public double? Stundenschwelle { get => Zahl(nameof(Stundenschwelle)); set => Setze(nameof(Stundenschwelle), value); }
 
     private double? Zahl(string feld) => AngabeLesen?.Invoke(feld) as double?;
     private int? Ganz(string feld) => AngabeLesen?.Invoke(feld) as int?;

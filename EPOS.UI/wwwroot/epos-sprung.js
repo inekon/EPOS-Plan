@@ -12,3 +12,14 @@ export function inSicht(element) {
         "input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]):not([aria-disabled='true'])");
     if (feld) feld.focus({ preventScroll: true });
 }
+
+/**
+ * Fokussiert das erste bedienbare Feld nach `selektor` im Element, OHNE zu rollen (Hausregel
+ * "Ein Erstfokus rollt nicht"): der naechste Schritt nach einer Aktion, etwa die Nutzungsart nach
+ * "Zone hinzufuegen" im Zapfprofil.
+ */
+export function feldFokus(element, selektor) {
+    if (!element) return;
+    const feld = element.querySelector(selektor);
+    if (feld) feld.focus({ preventScroll: true });
+}

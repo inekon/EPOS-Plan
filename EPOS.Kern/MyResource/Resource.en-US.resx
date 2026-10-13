@@ -26029,7 +26029,7 @@ Do you want to allow this?</value>
     <value>Total of {0} zones</value>
   </data>
   <data name="ZPG_BTN_ZONE_NEU" xml:space="preserve">
-    <value>Add zone…</value>
+    <value>Add zone</value>
   </data>
   <data name="ZPG_BTN_ZONE_DUPLIZIEREN" xml:space="preserve">
     <value>Duplicate</value>
@@ -26306,6 +26306,9 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_KZ_ABGELEHNT" xml:space="preserve">
     <value>contributes 0</value>
+  </data>
+  <data name="ZPG_ZONE_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>incomplete</value>
   </data>
   <data name="ZPG_BTN_STOCHASTIK" xml:space="preserve">
     <value>Calculate stochastically</value>
@@ -31429,7 +31432,40 @@ Do you want to allow this?</value>
     <value>Occupancy and system</value>
   </data>
   <data name="ZPG_LBL_WOHNUNGSTABELLE" xml:space="preserve">
-    <value>Dwelling table</value>
+    <value>Dwellings (optional)</value>
+  </data>
+  <data name="ZPG_HINW_WOHNUNGEN" xml:space="preserve">
+    <value>Instead of a reference quantity, enter the dwellings by type: the zone then uses their total, and the sizing derives the demand index according to DIN 4708 from it.</value>
+  </data>
+  <data name="ZPG_SP_WOHNUNG_ANZAHL" xml:space="preserve">
+    <value>Number [DU]</value>
+  </data>
+  <data name="ZPG_SP_WOHNUNG_RAUMZAHL" xml:space="preserve">
+    <value>Rooms [rooms/DU]</value>
+  </data>
+  <data name="ZPG_SP_WOHNUNG_PERSONEN" xml:space="preserve">
+    <value>Persons [P/DU]</value>
+  </data>
+  <data name="ZPG_TIP_WOHNUNG_ANZAHL" xml:space="preserve">
+    <value>Number of dwellings of this type (dwelling units)</value>
+  </data>
+  <data name="ZPG_TIP_WOHNUNG_RAUMZAHL" xml:space="preserve">
+    <value>Number of rooms — living rooms and bedrooms; kitchen, bathroom and hall do not count</value>
+  </data>
+  <data name="ZPG_TIP_WOHNUNG_PERSONEN" xml:space="preserve">
+    <value>Persons per dwelling — empty: occupancy by number of rooms from the catalogue</value>
+  </data>
+  <data name="ZPG_TIP_WOHNUNG_AUSSTATTUNG" xml:space="preserve">
+    <value>Equipment class according to DIN 4708 — empty: default class</value>
+  </data>
+  <data name="ZPG_WOHNUNGEN_SUMME" xml:space="preserve">
+    <value>gives {0} dwelling units · {1} persons</value>
+  </data>
+  <data name="ZPG_WOHNUNGEN_SUMME_WE" xml:space="preserve">
+    <value>gives {0} dwelling units</value>
+  </data>
+  <data name="ZPG_HINW_AUSSTATTUNG_OHNE_KATALOG" xml:space="preserve">
+    <value>Equipment classes are not maintained in the catalogue. They can be loaded with the package template “Katalogpaket_DIN4708” via “Import…” in the catalogue of hot water usage types.</value>
   </data>
   <data name="ZPG_LBL_ANZAHL" xml:space="preserve">
     <value>Number</value>
@@ -31455,11 +31491,8 @@ Do you want to allow this?</value>
   <data name="ZPG_AUSSTATTUNG_VORGABE" xml:space="preserve">
     <value>Default class</value>
   </data>
-  <data name="ZPG_HINW_WOHNUNGSTABELLE" xml:space="preserve">
-    <value>Persons empty = occupancy by number of rooms from the catalogue, otherwise persons per dwelling unit; equipment empty = default class. With a table its quantity is the reference quantity.</value>
-  </data>
   <data name="ZPG_HINW_WOHNUNGSTABELLE_LEER" xml:space="preserve">
-    <value>No dwelling table — the reference quantity applies.</value>
+    <value>No dwellings entered — the zone uses the reference quantity.</value>
   </data>
   <data name="ZPG_LBL_PERSONEN_JE_WE" xml:space="preserve">
     <value>Persons per dwelling unit</value>
@@ -31740,6 +31773,9 @@ Do you want to allow this?</value>
   <data name="ZPG_GRP_FACHWERTE_GEBAEUDE" xml:space="preserve">
     <value>Technical values · building</value>
   </data>
+  <data name="ZPG_HINW_ANZEIGE_EINSTELLUNG" xml:space="preserve">
+    <value>The temperature of the litre display and the threshold of the hour count are set in the global application settings, section “Draw-off profile”.</value>
+  </data>
   <data name="ZPG_LBL_KALTWASSER_AUSLEGUNG" xml:space="preserve">
     <value>Cold water of the design</value>
   </data>
@@ -31763,15 +31799,6 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_HINW_ZIRK_EXPERTE" xml:space="preserve">
     <value>Empty = value by position ({0} or {1} kWh/(m²·a), method of DIN V 4701-10), area from living area per dwelling unit or building, running time {2} h/d according to DVGW W 551.</value>
-  </data>
-  <data name="ZPG_LBL_ANZEIGETEMPERATUR" xml:space="preserve">
-    <value>Temperature of the litre display</value>
-  </data>
-  <data name="ZPG_LBL_STUNDENSCHWELLE" xml:space="preserve">
-    <value>Threshold of the hour count</value>
-  </data>
-  <data name="ZPG_HINW_ANZEIGE" xml:space="preserve">
-    <value>Only for the key figures, not saved; empty = setting, otherwise {0} °C or {1} kW.</value>
   </data>
   <data name="ZPG_UNTERSCHRIFT_DAUERLINIE" xml:space="preserve">
     <value>Sorted hourly values of the balance series (draw-off and circulation) — balance values, not a design quantity.</value>
@@ -31916,12 +31943,6 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_ZPG_ZIRK_LAUFZEIT_ERL" xml:space="preserve">
     <value>The running time of the circulation per day; empty = default.</value>
-  </data>
-  <data name="KI_DLG_ZPG_ANZEIGETEMPERATUR_ERL" xml:space="preserve">
-    <value>The temperature to which the litre display of the key figures converts — not saved.</value>
-  </data>
-  <data name="KI_DLG_ZPG_STUNDENSCHWELLE_ERL" xml:space="preserve">
-    <value>The threshold from which the key figures count hours — not saved.</value>
   </data>
   <data name="ZPG_GRUND_OHNE_NUTZUNGSART" xml:space="preserve">
     <value>Select a type of use first.</value>

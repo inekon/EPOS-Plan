@@ -26036,7 +26036,7 @@ Möchten Sie das zulassen?</value>
     <value>Summe {0} Zonen</value>
   </data>
   <data name="ZPG_BTN_ZONE_NEU" xml:space="preserve">
-    <value>Zone hinzufügen…</value>
+    <value>Zone hinzufügen</value>
   </data>
   <data name="ZPG_BTN_ZONE_DUPLIZIEREN" xml:space="preserve">
     <value>Duplizieren</value>
@@ -26313,6 +26313,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_KZ_ABGELEHNT" xml:space="preserve">
     <value>trägt 0</value>
+  </data>
+  <data name="ZPG_ZONE_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>unvollständig</value>
   </data>
   <data name="ZPG_BTN_STOCHASTIK" xml:space="preserve">
     <value>Stochastisch rechnen</value>
@@ -31436,7 +31439,40 @@ Möchten Sie das zulassen?</value>
     <value>Belegung und Anlage</value>
   </data>
   <data name="ZPG_LBL_WOHNUNGSTABELLE" xml:space="preserve">
-    <value>Wohnungstabelle</value>
+    <value>Wohnungen (wahlweise)</value>
+  </data>
+  <data name="ZPG_HINW_WOHNUNGEN" xml:space="preserve">
+    <value>Statt einer Bezugsgröße die Wohnungen nach Typ angeben: Die Zone rechnet dann mit ihrer Summe, und die Auslegung bildet daraus die Bedarfskennzahl nach DIN 4708.</value>
+  </data>
+  <data name="ZPG_SP_WOHNUNG_ANZAHL" xml:space="preserve">
+    <value>Anzahl [WE]</value>
+  </data>
+  <data name="ZPG_SP_WOHNUNG_RAUMZAHL" xml:space="preserve">
+    <value>Raumzahl [Räume/WE]</value>
+  </data>
+  <data name="ZPG_SP_WOHNUNG_PERSONEN" xml:space="preserve">
+    <value>Personen [P/WE]</value>
+  </data>
+  <data name="ZPG_TIP_WOHNUNG_ANZAHL" xml:space="preserve">
+    <value>Anzahl der Wohnungen dieses Typs (Wohneinheiten)</value>
+  </data>
+  <data name="ZPG_TIP_WOHNUNG_RAUMZAHL" xml:space="preserve">
+    <value>Raumzahl — Wohn- und Schlafräume; Küche, Bad und Flur zählen nicht</value>
+  </data>
+  <data name="ZPG_TIP_WOHNUNG_PERSONEN" xml:space="preserve">
+    <value>Personen je Wohnung — leer: Belegung nach Raumzahl aus dem Katalog</value>
+  </data>
+  <data name="ZPG_TIP_WOHNUNG_AUSSTATTUNG" xml:space="preserve">
+    <value>Ausstattungsklasse nach DIN 4708 — leer: Vorgabeklasse</value>
+  </data>
+  <data name="ZPG_WOHNUNGEN_SUMME" xml:space="preserve">
+    <value>ergibt {0} Wohneinheiten · {1} Personen</value>
+  </data>
+  <data name="ZPG_WOHNUNGEN_SUMME_WE" xml:space="preserve">
+    <value>ergibt {0} Wohneinheiten</value>
+  </data>
+  <data name="ZPG_HINW_AUSSTATTUNG_OHNE_KATALOG" xml:space="preserve">
+    <value>Ausstattungsklassen sind im Katalog nicht gepflegt. Sie lassen sich mit der Paketvorlage „Katalogpaket_DIN4708“ über „Import…“ im Katalog der Brauchwasser-Nutzungsarten einspielen.</value>
   </data>
   <data name="ZPG_LBL_ANZAHL" xml:space="preserve">
     <value>Anzahl</value>
@@ -31462,11 +31498,8 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_AUSSTATTUNG_VORGABE" xml:space="preserve">
     <value>Vorgabeklasse</value>
   </data>
-  <data name="ZPG_HINW_WOHNUNGSTABELLE" xml:space="preserve">
-    <value>Personen leer = Belegung nach Raumzahl aus dem Katalog, sonst Personen je Wohneinheit; Ausstattung leer = Vorgabeklasse. Mit Tabelle gilt ihre Menge als Bezugsgröße.</value>
-  </data>
   <data name="ZPG_HINW_WOHNUNGSTABELLE_LEER" xml:space="preserve">
-    <value>Keine Wohnungstabelle — es gilt die Bezugsgröße.</value>
+    <value>Keine Wohnungen angegeben — die Zone rechnet mit der Bezugsgröße.</value>
   </data>
   <data name="ZPG_LBL_PERSONEN_JE_WE" xml:space="preserve">
     <value>Personen je Wohneinheit</value>
@@ -31747,6 +31780,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_GRP_FACHWERTE_GEBAEUDE" xml:space="preserve">
     <value>Fachwerte · Gebäude</value>
   </data>
+  <data name="ZPG_HINW_ANZEIGE_EINSTELLUNG" xml:space="preserve">
+    <value>Die Temperatur der Literanzeige und die Schwelle der Stundenzählung stehen in den globalen Anwendungseinstellungen, Rubrik „Zapfprofil“.</value>
+  </data>
   <data name="ZPG_LBL_KALTWASSER_AUSLEGUNG" xml:space="preserve">
     <value>Kaltwasser der Auslegung</value>
   </data>
@@ -31770,15 +31806,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_HINW_ZIRK_EXPERTE" xml:space="preserve">
     <value>Leer = Kennwert nach der Lage ({0} bzw. {1} kWh/(m²·a), Verfahren nach DIN V 4701-10), Fläche aus Wohnfläche je Wohneinheit bzw. Gebäude, Laufzeit {2} h/d nach DVGW W 551.</value>
-  </data>
-  <data name="ZPG_LBL_ANZEIGETEMPERATUR" xml:space="preserve">
-    <value>Temperatur der Literanzeige</value>
-  </data>
-  <data name="ZPG_LBL_STUNDENSCHWELLE" xml:space="preserve">
-    <value>Schwelle der Stundenzählung</value>
-  </data>
-  <data name="ZPG_HINW_ANZEIGE" xml:space="preserve">
-    <value>Nur für die Kennzahlen, nicht gespeichert; leer = Einstellung, sonst {0} °C bzw. {1} kW.</value>
   </data>
   <data name="ZPG_UNTERSCHRIFT_DAUERLINIE" xml:space="preserve">
     <value>Sortierte Stundenwerte der Bilanzreihe (Zapfung und Zirkulation) — Bilanzwerte, keine Auslegungsgröße.</value>
@@ -31923,12 +31950,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_ZPG_ZIRK_LAUFZEIT_ERL" xml:space="preserve">
     <value>Die Laufzeit der Zirkulation je Tag; leer = Vorgabe.</value>
-  </data>
-  <data name="KI_DLG_ZPG_ANZEIGETEMPERATUR_ERL" xml:space="preserve">
-    <value>Die Temperatur, auf die die Literanzeige der Kennzahlen umrechnet — nicht gespeichert.</value>
-  </data>
-  <data name="KI_DLG_ZPG_STUNDENSCHWELLE_ERL" xml:space="preserve">
-    <value>Die Schwelle, ab der die Kennzahlen Stunden zählen — nicht gespeichert.</value>
   </data>
   <data name="ZPG_GRUND_OHNE_NUTZUNGSART" xml:space="preserve">
     <value>Zuerst eine Nutzungsart wählen.</value>

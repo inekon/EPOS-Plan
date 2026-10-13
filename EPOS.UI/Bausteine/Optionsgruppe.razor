@@ -25,33 +25,68 @@
    Eintrag; die Instanzen teilen sich ueber Gruppenname den HTML-Namen und
    bleiben damit fuer Browser, Tastatur und Sprachausgabe EINE Wahl. Der Rahmen
    traegt dann kein role="radiogroup" - die Gruppe waere sonst je Rubrik eine
-   eigene; das aria-label bleibt und nennt in jeder Rubrik dieselbe Wahl. *@
+   eigene; das aria-label bleibt und nennt in jeder Rubrik dieselbe Wahl.
+
+   WAAGERECHT. Eine Wahl aus zwei bis drei kurzen Werten (Stufe, ja/nein,
+   Einheit) steht nebeneinander statt in drei Zeilen untereinander: Die
+   Eintraege stehen in einer Zeile und brechen bei Platzmangel um; jeder
+   Eintrag bleibt ein Beruehrungsziel von 44 px, die gewaehlte Option traegt
+   die Zustandsklasse epos-option--gewaehlt (Rahmen, auch unter forced-colors).
+   Erlaeuterungen und Wirkungen stehen dann NICHT zwischen den Eintraegen -
+   dort zerrissen sie die Zeile -, sondern die der gewaehlten Option als leise
+   Zeile unter der Gruppe, die der uebrigen im title ihres Eintrags. Tastatur
+   und Sprachausgabe bleiben dieselbe Radiogruppe. *@
 
 <fieldset class="@Klasse" role="@Rolle" aria-label="@Bezeichnung">
     @if (NurEintrag is null && TitelSichtbar && !string.IsNullOrEmpty(Bezeichnung))
     {
         <legend class="epos-optionsgruppe-titel">@Bezeichnung</legend>
     }
-    @foreach (var eintrag in Eintraege)
+    @if (IstWaagerecht)
     {
-        int id = eintrag.Id;
-        if (NurEintrag is not null && id != NurEintrag.Value) continue;
-        <label class="epos-option">
-            <input class="epos-option-kasten" type="radio" name="@Gruppe"
-                   value="@id" checked="@(Auswahl == id)"
-                   disabled="@HartGesperrt(id)"
-                   aria-disabled="@AriaGesperrt(id)"
-                   title="@Sperrtipp(id)"
-                   @onchange="@(() => BeiWahl(id))" />
-            <span class="epos-feld-text">@eintrag.Text</span>
-            @if (Wirkung(id) is { Length: > 0 } wirkung)
+        <div class="epos-optionsgruppe-zeile">
+            @foreach (var eintrag in Eintraege)
             {
-                <span class="epos-option-wirkung">@wirkung</span>
+                int id = eintrag.Id;
+                <label class="@OptionKlasse(id)" title="@Zeilentipp(id)">
+                    <input class="epos-option-kasten" type="radio" name="@Gruppe"
+                           value="@id" checked="@(Auswahl == id)"
+                           disabled="@HartGesperrt(id)"
+                           aria-disabled="@AriaGesperrt(id)"
+                           title="@Sperrtipp(id)"
+                           @onchange="@(() => BeiWahl(id))" />
+                    <span class="epos-feld-text">@eintrag.Text</span>
+                </label>
             }
-        </label>
-        @if (Beschreibung(id) is { Length: > 0 } erlaeuterung)
+        </div>
+        @if (Unterzeile is { Length: > 0 } unterzeile)
         {
-            <p class="epos-option-beschreibung">@erlaeuterung</p>
+            <p class="epos-option-beschreibung epos-optionsgruppe-unterzeile">@unterzeile</p>
+        }
+    }
+    else
+    {
+        @foreach (var eintrag in Eintraege)
+        {
+            int id = eintrag.Id;
+            if (NurEintrag is not null && id != NurEintrag.Value) continue;
+            <label class="epos-option">
+                <input class="epos-option-kasten" type="radio" name="@Gruppe"
+                       value="@id" checked="@(Auswahl == id)"
+                       disabled="@HartGesperrt(id)"
+                       aria-disabled="@AriaGesperrt(id)"
+                       title="@Sperrtipp(id)"
+                       @onchange="@(() => BeiWahl(id))" />
+                <span class="epos-feld-text">@eintrag.Text</span>
+                @if (Wirkung(id) is { Length: > 0 } wirkung)
+                {
+                    <span class="epos-option-wirkung">@wirkung</span>
+                }
+            </label>
+            @if (Beschreibung(id) is { Length: > 0 } erlaeuterung)
+            {
+                <p class="epos-option-beschreibung">@erlaeuterung</p>
+            }
         }
     }
 </fieldset>
@@ -169,6 +204,37 @@
     /// Anzeigeliste.</para>
     /// </summary>
     [Parameter] public int? NurEintrag { get; set; }
+
+    /// <summary>
+    /// Die Eintraege NEBENEINANDER statt untereinander (siehe Kopf, „Waagerecht"; Muster
+    /// <c>Mehrfachauswahl.Waagerecht</c>): fuer eine Wahl aus zwei bis drei kurzen Werten.
+    /// Mit <see cref="NurEintrag"/> ohne Wirkung — ein einzelner Eintrag hat keine Zeile.
+    /// </summary>
+    [Parameter] public bool Waagerecht { get; set; }
+
+    /// <summary>Waagerecht gezeichnet? Nur der vollstaendige Aufruf; die Einzelzeile bleibt, wie sie ist.</summary>
+    private bool IstWaagerecht => Waagerecht && NurEintrag is null;
+
+    /// <summary>Der Eintrag waagerecht: die Zustandsklasse der gewaehlten Option macht die Wahl am Rahmen sichtbar.</summary>
+    private string OptionKlasse(int id)
+        => Auswahl == id ? "epos-option epos-option--gewaehlt" : "epos-option";
+
+    /// <summary>
+    /// Der Tooltip eines waagerechten Eintrags: Erlaeuterung und Wirkung, die senkrecht unter
+    /// bzw. in der Zeile stuenden — der Sperrgrund steht am Wahlknopf selbst.
+    /// </summary>
+    private string? Zeilentipp(int id)
+    {
+        string text = string.Join(" · ", new[] { Wirkung(id), Beschreibung(id) }.Where(t => t.Length > 0));
+        return text.Length == 0 ? null : text;
+    }
+
+    /// <summary>
+    /// Die leise Zeile unter einer waagerechten Gruppe: Wirkung und Erlaeuterung der GEWAEHLTEN
+    /// Option; ohne Wahl oder ohne Text keine.
+    /// </summary>
+    private string Unterzeile
+        => Auswahl is int gewaehlt ? (Zeilentipp(gewaehlt) ?? "") : "";
 
     /// <summary>Je Instanz eindeutiger Gruppenname (siehe Kopf).</summary>
     private readonly string _name = "og" + Guid.NewGuid().ToString("N");

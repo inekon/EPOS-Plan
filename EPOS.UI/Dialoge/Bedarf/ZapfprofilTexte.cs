@@ -85,7 +85,7 @@ public sealed class ZapfprofilTexte
     public string SummeZonen { get; set; } = "Summe {0} Zonen";
 
     /// <summary><c>ZPG_BTN_ZONE_NEU</c></summary>
-    public string KnopfZoneNeu { get; set; } = "Zone hinzufügen…";
+    public string KnopfZoneNeu { get; set; } = "Zone hinzufügen";
 
     /// <summary><c>ZPG_BTN_ZONE_DUPLIZIEREN</c></summary>
     public string KnopfZoneDuplizieren { get; set; } = "Duplizieren";
@@ -266,6 +266,10 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_KZ_ABGELEHNT</c></summary>
     public string KennzahlAbgelehnt { get; set; } = "trägt 0";
 
+    // eine Zone, die die Pflichtprüfung des OK nicht besteht (ZB2).
+    /// <summary><c>ZPG_ZONE_UNVOLLSTAENDIG</c></summary>
+    public string ZoneUnvollstaendig { get; set; } = "unvollständig";
+
     // ------------------------------------------------------------ Stochastik (Stufe Experte, Z3)
 
     /// <summary><c>ZPG_GRP_STOCHASTIK</c></summary>
@@ -444,7 +448,44 @@ public sealed class ZapfprofilTexte
     public string GruppeBelegung { get; set; } = "Belegung und Anlage";
 
     /// <summary><c>ZPG_LBL_WOHNUNGSTABELLE</c></summary>
-    public string LabelWohnungstabelle { get; set; } = "Wohnungstabelle";
+    public string LabelWohnungstabelle { get; set; } = "Wohnungen (wahlweise)";
+
+    // was die Wohnungstabelle bewirkt (ZB6).
+    /// <summary><c>ZPG_HINW_WOHNUNGEN</c></summary>
+    public string HinweisWohnungen { get; set; } = "Statt einer Bezugsgröße die Wohnungen nach Typ angeben: Die Zone rechnet dann mit ihrer Summe, und die Auslegung bildet daraus die Bedarfskennzahl nach DIN 4708.";
+
+    /// <summary><c>ZPG_SP_WOHNUNG_ANZAHL</c></summary>
+    public string SpalteWohnungAnzahl { get; set; } = "Anzahl [WE]";
+
+    /// <summary><c>ZPG_SP_WOHNUNG_RAUMZAHL</c></summary>
+    public string SpalteWohnungRaumzahl { get; set; } = "Raumzahl [Räume/WE]";
+
+    /// <summary><c>ZPG_SP_WOHNUNG_PERSONEN</c></summary>
+    public string SpalteWohnungPersonen { get; set; } = "Personen [P/WE]";
+
+    /// <summary><c>ZPG_TIP_WOHNUNG_ANZAHL</c></summary>
+    public string HilfeWohnungAnzahl { get; set; } = "Anzahl der Wohnungen dieses Typs (Wohneinheiten)";
+
+    /// <summary><c>ZPG_TIP_WOHNUNG_RAUMZAHL</c></summary>
+    public string HilfeWohnungRaumzahl { get; set; } = "Raumzahl — Wohn- und Schlafräume; Küche, Bad und Flur zählen nicht";
+
+    /// <summary><c>ZPG_TIP_WOHNUNG_PERSONEN</c></summary>
+    public string HilfeWohnungPersonen { get; set; } = "Personen je Wohnung — leer: Belegung nach Raumzahl aus dem Katalog";
+
+    /// <summary><c>ZPG_TIP_WOHNUNG_AUSSTATTUNG</c></summary>
+    public string HilfeWohnungAusstattung { get; set; } = "Ausstattungsklasse nach DIN 4708 — leer: Vorgabeklasse";
+
+    // {0} Wohneinheiten, {1} Personen.
+    /// <summary><c>ZPG_WOHNUNGEN_SUMME</c></summary>
+    public string WohnungenSumme { get; set; } = "ergibt {0} Wohneinheiten · {1} Personen";
+
+    // {0} Wohneinheiten (ohne Personenzahl des Kerns).
+    /// <summary><c>ZPG_WOHNUNGEN_SUMME_WE</c></summary>
+    public string WohnungenSummeWe { get; set; } = "ergibt {0} Wohneinheiten";
+
+    // statt der Spalte, solange der Katalog keine Klassen führt.
+    /// <summary><c>ZPG_HINW_AUSSTATTUNG_OHNE_KATALOG</c></summary>
+    public string HinweisAusstattungOhneKatalog { get; set; } = "Ausstattungsklassen sind im Katalog nicht gepflegt. Sie lassen sich mit der Paketvorlage „Katalogpaket_DIN4708“ über „Import…“ im Katalog der Brauchwasser-Nutzungsarten einspielen.";
 
     /// <summary><c>ZPG_LBL_ANZAHL</c></summary>
     public string LabelAnzahl { get; set; } = "Anzahl";
@@ -470,11 +511,8 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_AUSSTATTUNG_VORGABE</c></summary>
     public string AusstattungVorgabe { get; set; } = "Vorgabeklasse";
 
-    /// <summary><c>ZPG_HINW_WOHNUNGSTABELLE</c></summary>
-    public string HinweisWohnungstabelle { get; set; } = "Personen leer = Belegung nach Raumzahl aus dem Katalog, sonst Personen je Wohneinheit; Ausstattung leer = Vorgabeklasse. Mit Tabelle gilt ihre Menge als Bezugsgröße.";
-
     /// <summary><c>ZPG_HINW_WOHNUNGSTABELLE_LEER</c></summary>
-    public string HinweisWohnungstabelleLeer { get; set; } = "Keine Wohnungstabelle — es gilt die Bezugsgröße.";
+    public string HinweisWohnungstabelleLeer { get; set; } = "Keine Wohnungen angegeben — die Zone rechnet mit der Bezugsgröße.";
 
     /// <summary><c>ZPG_LBL_PERSONEN_JE_WE</c></summary>
     public string LabelPersonenJeWe { get; set; } = "Personen je Wohneinheit";
@@ -783,14 +821,9 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_HINW_ZIRK_EXPERTE</c></summary>
     public string HinweisZirkExperte { get; set; } = "Leer = Kennwert nach der Lage ({0} bzw. {1} kWh/(m²·a), Verfahren nach DIN V 4701-10), Fläche aus Wohnfläche je Wohneinheit bzw. Gebäude, Laufzeit {2} h/d nach DVGW W 551.";
 
-    /// <summary><c>ZPG_LBL_ANZEIGETEMPERATUR</c></summary>
-    public string LabelAnzeigetemperatur { get; set; } = "Temperatur der Literanzeige";
-
-    /// <summary><c>ZPG_LBL_STUNDENSCHWELLE</c></summary>
-    public string LabelStundenschwelle { get; set; } = "Schwelle der Stundenzählung";
-
-    /// <summary><c>ZPG_HINW_ANZEIGE</c></summary>
-    public string HinweisAnzeige { get; set; } = "Nur für die Kennzahlen, nicht gespeichert; leer = Einstellung, sonst {0} °C bzw. {1} kW.";
+    // Literanzeige und Stundenschwelle stehen in der Einstellung (ZB10).
+    /// <summary><c>ZPG_HINW_ANZEIGE_EINSTELLUNG</c></summary>
+    public string HinweisAnzeigeEinstellung { get; set; } = "Die Temperatur der Literanzeige und die Schwelle der Stundenzählung stehen in den globalen Anwendungseinstellungen, Rubrik „Zapfprofil“.";
 
     // ------------------------------------------------------------ Vorschau: Dauerlinie und Warnliste (Z4)
 
