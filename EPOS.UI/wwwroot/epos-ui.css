@@ -130,7 +130,7 @@
     --epos-gruppenkopf-symbolbreite: 30px;
 
     /* ---- Masse (KartenStil) ------------------------------------------ */
-    --epos-rand: 10px;                      /* RAND                         */
+    --epos-rand: 20px;                      /* RAND                         */
     --epos-ecke: 6px;                       /* ECKE                         */
     --epos-karte-rand: 16px;                /* KARTE_RAND                   */
     --epos-karte-statuspunkt: 14px;         /* KARTE_STATUSPUNKT            */
@@ -15199,7 +15199,7 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
 /* ==================================================================== */
 .epos-transfer-liste {
     max-height: var(--epos-transfer-listenhoehe);
-    overflow: auto;
+    /*overflow: auto;*/
 }
 
 /* Die Haekchenbloecke: je Stammgruppe einer, nebeneinander, solange
