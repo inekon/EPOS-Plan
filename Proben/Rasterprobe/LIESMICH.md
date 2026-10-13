@@ -1873,6 +1873,10 @@ von Hand). Zu prüfen
 bei 1 800, 940 und 700 px: Kopf- und Rumpfzellen der Tabelle stehen an denselben linken
 Kanten, die Tabelle füllt die Hülle, die Seite rollt nie quer (mit sechs Varianten rollt
 allein die Hülle, die Gewerkspalte haftet), kein Feld des Kopfes ragt über das Fenster.
+Darunter steht der Abschnitt „Ergebnisse — Energie“ aus der echten Hülle `UebersichtErgebnisGaben`
+mit synthetischen Ergebnissen (Variante 1 simuliert und abweichend, weitere Varianten nicht
+simuliert); `?emissionen=1` klappt die Gruppe „Emissionen“ auf. Zu prüfen: die Kennzahlspalte
+haftet, die Werte stehen rechtsbündig unter ihrem Spaltenkopf, die Seite rollt nie quer.
 
 ## Bildschirmfotos fürs Wiki: Seite `/wikibild` und `wikibilder.mjs`
 

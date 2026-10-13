@@ -5570,6 +5570,16 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     color: var(--epos-text-leise);
 }
 
+.epos-ergebnis-klapphinweis .epos-komponenten-gewerkmarke {
+    margin: 0 6px 0 0;
+}
+
+/* Die Tafel der Ergebnisse ist der Inhalt des Abschnitts, keine Liste: Sie rollt nur quer
+   in ihrer Huelle, in der Hoehe waechst sie mit, die Seite rollt. */
+.epos-raster-huelle.epos-ergebnis-huelle {
+    max-height: none;
+}
+
 /* Wo die Uebernahme nicht traegt, steht statt des Knopfes ein grauer Strich
    mit Begruendung im Kurztext. */
 .epos-gesperrt {

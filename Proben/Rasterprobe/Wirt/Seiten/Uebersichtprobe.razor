@@ -12,7 +12,12 @@
     Gaben aus der Adresse: ?varianten=<n> (Vorgabe 1) - so viele Varianten im Vergleich;
     ?nurunterschiede=1 setzt den Schalter; ?variante=<i> waehlt unter "Detail-Unterschiede
     fuer Variante" die i-te Variante (Unterschiedstabelle), die Vorgabe ist der
-    Komponentenvergleich. Die Wahl im Feld wirkt auch von Hand. *@
+    Komponentenvergleich. Die Wahl im Feld wirkt auch von Hand.
+
+    Darunter der Abschnitt "Ergebnisse — Energie" (Anwenderauftrag 13.10.2026) aus der echten
+    Huelle UebersichtErgebnisGaben mit synthetischen Ergebnissen: Variante 1 ist simuliert und
+    weicht ab, weitere Varianten sind nicht simuliert. ?emissionen=1 klappt die Gruppe
+    "Emissionen" auf. *@
 
 <div class="epos-startseite uep-rahmen">
     <Reiter Aktiv="BERICHTE_KOSTEN" Bezeichnung="Hauptreiter">
@@ -44,6 +49,7 @@
     private static int s_varianten = 1;
     private static bool s_nurUnterschiede;
     private static int s_markiert = 1;
+    private static bool s_emissionenOffen;
 
     protected override void OnInitialized()
     {
@@ -52,6 +58,54 @@
         s_nurUnterschiede = abfrage.TryGetValue("nurunterschiede", out var u) && u.ToString() == "1";
         s_markiert = abfrage.TryGetValue("variante", out var w) && int.TryParse(w, out int i) && i >= 1 && i <= s_varianten
             ? 1 + i : 1;
+        s_emissionenOffen = abfrage.TryGetValue("emissionen", out var e) && e.ToString() == "1";
+    }
+
+    /// <summary>Synthetische Ergebnisse je Version: der Stamm (Id 1) und Variante 1 (Id 2, mit Puffer) sind simuliert.</summary>
+    private static WindowsFormsApplication1.VariantenDaten Ergebnis(int id, bool stamm)
+    {
+        bool puffer = id == 2;
+        var bedarf = new WindowsFormsApplication1.ErgebnisEnergiebedarfModel
+        {
+            Waermebedarf_Gesamt = 182.4, Waermelast_Max = 96, Strombedarf_Gesamt = 64.2, Strombedarf_Max = 31,
+            Stromrestbedarf = puffer ? 70.9 : 75.6, Waermerestbedarf = 0
+        };
+        bedarf.Waermebedarf_Kanal[0] = 151.0;
+        bedarf.Waermebedarf_Kanal[1] = 31.4;
+        return new WindowsFormsApplication1.VariantenDaten
+        {
+            IdProjekt = id, IstStamm = stamm, CO2Gesamt = puffer ? 31.8 : 34.6, CO2Spezifisch = puffer ? 174 : 190,
+            Ergebnis = new WindowsFormsApplication1.ErgebnisModel
+            {
+                Energiebedarf = bedarf,
+                Waermepumpe = new WindowsFormsApplication1.ErgebnisWaermepumpeModel
+                {
+                    Waermebedarf = 182.4, Waermeproduktion_WP = puffer ? 160.3 : 148.9,
+                    Stromverbrauch_WP = puffer ? 44.1 : 42.5, Waermebedarfsdeckung = puffer ? 87.9 : 81.6,
+                    Vollbenutzungsstunden = puffer ? 3420 : 3180
+                },
+                Heizkessel = new WindowsFormsApplication1.ErgebnisHeizkesselModel
+                {
+                    Waermebedarf = 182.4, Waermeproduktion = puffer ? 22.1 : 33.5
+                },
+                Photovoltaik = new WindowsFormsApplication1.ErgebnisPhotovoltaikModel
+                {
+                    Strombedarf = 64.2, Stromproduktion = 24.0, Ueberschuss = puffer ? 6.4 : 8.1
+                }
+            }
+        };
+    }
+
+    private static readonly WindowsFormsApplication1.UebersichtErgebnisGaben s_ergebnisHuelle = new(Ergebnis);
+
+    private static IReadOnlyDictionary<string, object> ErgebnisSatz()
+    {
+        var satz = new Dictionary<string, object>(s_ergebnisHuelle.Gaben())
+        {
+            ["EmissionenOffenLesen"] = new Func<bool>(() => s_emissionenOffen),
+            ["EmissionenOffenGewechselt"] = new Action<bool>(an => s_emissionenOffen = an)
+        };
+        return satz;
     }
 
     private static Reiterstatus? Kurzstand(string seite) => seite == BerichteKostenSeite.SEITE_UEBERSICHT
@@ -165,7 +219,9 @@
             ["VarianteUmbenennen"] = new Func<string, string>(_ => ""),
             ["VarianteAnlegenOeffnen"] = new Func<Task<bool>>(() => Task.FromResult(false)),
             ["NurUnterschiedeLesen"] = new Func<bool>(() => s_nurUnterschiede),
-            ["NurUnterschiedeGewechselt"] = new Action<bool>(an => s_nurUnterschiede = an)
+            ["NurUnterschiedeGewechselt"] = new Action<bool>(an => s_nurUnterschiede = an),
+            ["LabelAbschnittKomponenten"] = "Komponenten und Einstellungen",
+            ["ErgebnisGaben"] = ErgebnisSatz()
         }
         : null;
 }
