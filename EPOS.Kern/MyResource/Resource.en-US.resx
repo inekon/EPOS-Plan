@@ -54782,8 +54782,11 @@ chart</value>
   <data name="IMP_GBXML_PROT_WAERME_LATENT" xml:space="preserve">
     <value>Zone "{0}", space "{1}": latent heat gain per person ({2} W) discarded — the sensible heat is used.</value>
   </data>
+  <data name="IMP_GBXML_PROT_ABSORPTION_ABWEICHUNG" xml:space="preserve">
+    <value>Construction "{0}": the {1} value of the file ({2}) differs from the constant of the calculation ({3}) — the constant applies.</value>
+  </data>
   <data name="IMP_GBXML_PROT_AUSSENLUFT_PERSON" xml:space="preserve">
-    <value>Zone "{0}": outdoor air per person converted into the user air change ({1} 1/h) — the zone has no per-person field.</value>
+    <value>Zone "{0}": outdoor air per person converted into the user air change ({1} 1/h); the per-person value is also kept at the zone.</value>
   </data>
   <data name="IMP_GBXML_PROT_VERDICHTET_RAEUME" xml:space="preserve">
     <value>Zone "{0}", {1}: the spaces carry different schedules ({2}) — condensed to the weighted mean.</value>
