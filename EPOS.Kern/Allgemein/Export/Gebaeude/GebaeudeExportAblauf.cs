@@ -619,7 +619,13 @@ namespace WindowsFormsApplication1
                     Zustandsangabe = !z.IstBeheizt ? GbxmlVokabular.Unconditioned : gekuehlt ? GbxmlVokabular.HeatedAndCooled : GbxmlVokabular.Heated,
                     LuftwechselJeH = z.Luftwechsel_Infiltration ?? _geb.Luftwechsel_Infiltration ?? GebaeudeFestwerte.VORGABE_LUFTWECHSEL_INFILTRATION,
                     Personen = personen > 0.0 ? personen : null,
-                    GeraeteWm2 = a > 0.0 ? gewinne / a : (double?)null,
+                    // DA-2: die Lichtleistung ist ein Teil der inneren Gewinne; die Geräte sind der Rest (nie unter null).
+                    GeraeteWm2 = a > 0.0 ? Math.Max(0.0, gewinne / a - (z.Licht_W_m2 ?? 0.0)) : (double?)null,
+                    LichtWm2 = z.Licht_W_m2,
+                    // DA-2: Wärme und Außenluft je Person der Zone (Lastfelder, ZonenLastfelderSchema) - nur Datenaustausch.
+                    GbxmlLasten = z.Personen_Waerme_W.HasValue || z.Aussenluft_Person.HasValue
+                        ? new GbxmlRaumlasten { WaermeJePersonW = z.Personen_Waerme_W, AussenluftJePersonM3h = z.Aussenluft_Person }
+                        : null,
                     SollHeizenC = Heizsollwert(z),
                     SollKuehlenC = gekuehlt ? z.Kuehl_Sollwert ?? _geb.Kuehl_Sollwert : null,
                     HoeheM = Hoehe(z) > 0.0 ? Hoehe(z) : (double?)null,

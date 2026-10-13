@@ -1054,7 +1054,10 @@ namespace WindowsFormsApplication1
         /// <see cref="KaeltebedarfSplitAbrechnungSchema.SCHRITT"/>: die Ergebnistabelle <c>Tab_ErgebnisKaelteDezentral</c> je
         /// dezentral (Split) gedeckter Kältebedarfszeile eines Laufs (<see cref="KaeltebedarfSplitAbrechnungSchema"/>).
         /// <b>Ergebnisneutral:</b> Kein Referenzprojekt führt eine Split-Zeile; die Tabelle bleibt leer.
-        public const int Zielversion = KaeltebedarfSplitAbrechnungSchema.SCHRITT;
+        /// Danach, mit den LASTFELDERN DER ZONE (DA-2, E138 F5), steht das Ziel auf <see cref="ZonenLastfelderSchema.SCHRITT"/>:
+        /// <c>Aussenluft_Person</c>, <c>Licht_W_m2</c> und <c>Personen_Waerme_W</c> an <c>Tab_Zone</c> und <c>Tab_Zone_STAMM</c>
+        /// (<see cref="ZonenLastfelderSchema"/>). <b>Ergebnisneutral:</b> Der Rechenweg liest keine der drei Spalten.
+        public const int Zielversion = ZonenLastfelderSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

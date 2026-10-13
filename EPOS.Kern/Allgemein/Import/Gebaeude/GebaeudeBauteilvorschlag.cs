@@ -1075,6 +1075,8 @@ namespace WindowsFormsApplication1
                 _v.HerkunftNutzflaeche = nf.Wert > 0.0 ? nf.Herkunft : Importherkunft.Leer;
                 _v.HerkunftVolumen = vol.Wert > 0.0 ? vol.Herkunft : Importherkunft.Leer;
                 _v.HerkunftRaumhoehe = rh.Wert > 0.0 ? rh.Herkunft : Importherkunft.Leer;
+                // Welle DA-2: die Lastfelder der einen Zone aus den beheizten Räumen der Datei (gbXML; ohne Lasten bleiben sie leer).
+                GbxmlKonditionierung.Lastfelder(_v.Zone, _g.Raeume.Where(IstBeheizt), _v.Zone.Nutzflaeche);
             }
 
             /// <summary>
@@ -1402,10 +1404,12 @@ namespace WindowsFormsApplication1
                         Quellkennung = string.IsNullOrEmpty(iz.Quellkennung) ? null : WindowsFormsApplication1.Quellkennung.Kuerzen(iz.Quellkennung),
                     };
                     if (satz.CadSollwertAktiv && iz.IstBeheizt) ZonensollwertAusDatei(m, iz);
+                    // Welle DA-2: Licht, Wärme und Außenluft je Person der Datei in die Lastfelder der Zone (zusätzlich zum Kalender).
+                    GbxmlKonditionierung.Lastfelder(m, iz.Raeume, m.Nutzflaeche);
                     _v._zonen.Add(m);
                     _v._profile.Add(iz.Profil);
                     _v._projektdatei.Add(iz.Projektdatei);
-                    if (iz.Projektdatei?.AusGbxml == true)
+                    if (iz.Projektdatei?.AusGbxml == true || iz.Projektdatei?.AusIfcStandard == true)
                     {
                         // Welle DA-1: Zähler, Verdichtungen und Verwürfe je Zone, dazu die Abweichungen vom Profil (E138 F2).
                         _v._meldungen.AddRange(iz.Projektdatei.Meldungen);

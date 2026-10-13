@@ -450,6 +450,9 @@ namespace WindowsFormsApplication1
             // Ein älteres Paket führt keine Ergebniszeilen je Split-Zeile; der Schritt legt die Tabelle leer an, ein Lauf füllt sie.
             new Stufe(KaeltebedarfSplitAbrechnungSchema.SCHRITT, Art.Ddl,
                       "Ergebnis je dezentral (Split) gedeckter Kältebedarfszeile: Strom je Kühlträger und Zähler (K6)"),
+            // Ein älteres Paket bringt seine Zonen ohne die Lastfelder; der Schritt legt die Spalten am Ziel leer an.
+            new Stufe(ZonenLastfelderSchema.SCHRITT, Art.Ddl,
+                      "Außenluft je Person, Lichtleistung und Wärme je Person an der Zone (DA-2, E138)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

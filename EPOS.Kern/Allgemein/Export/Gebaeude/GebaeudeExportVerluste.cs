@@ -62,6 +62,9 @@ namespace WindowsFormsApplication1
             ["Nutzungsprofil"] = N,
             // AH-V4/V6 (Schritt 215): die Vorheizzeit der Zone - die Datei trägt sie nicht, der Import schreibt NULL (erbt).
             ["Vorheizzeit_H"] = V,
+            // DA-2 (ZonenLastfelderSchema): die Lastfelder der Zone - gbXML trägt sie (OAFlowPerPerson, LightPowerPerArea,
+            // PeopleHeatGain), der Import setzt sie wieder (GbxmlKonditionierung.Lastfelder).
+            ["Aussenluft_Person"] = R, ["Licht_W_m2"] = R, ["Personen_Waerme_W"] = R,
         };
 
         /// <summary>Die Felder eines Bauteils.</summary>

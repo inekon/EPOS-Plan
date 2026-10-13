@@ -54957,8 +54957,11 @@ Chart</value>
   <data name="IMP_GBXML_PROT_WAERME_LATENT" xml:space="preserve">
     <value>Zone „{0}“, Raum „{1}“: latente Wärmeabgabe je Person ({2} W) verworfen — gerechnet wird die sensible Wärme.</value>
   </data>
+  <data name="IMP_GBXML_PROT_ABSORPTION_ABWEICHUNG" xml:space="preserve">
+    <value>Aufbau „{0}“: Der Grad {1} der Datei ({2}) weicht von der Konstante des Rechenwegs ({3}) ab — es gilt die Konstante.</value>
+  </data>
   <data name="IMP_GBXML_PROT_AUSSENLUFT_PERSON" xml:space="preserve">
-    <value>Zone „{0}“: Außenluft je Person in den Luftwechsel der Nutzer umgerechnet ({1} 1/h) — die Zone führt kein Feld je Person.</value>
+    <value>Zone „{0}“: Außenluft je Person in den Luftwechsel der Nutzer umgerechnet ({1} 1/h); der Wert je Person steht zusätzlich an der Zone.</value>
   </data>
   <data name="IMP_GBXML_PROT_VERDICHTET_RAEUME" xml:space="preserve">
     <value>Zone „{0}“, {1}: Die Räume tragen verschiedene Zeitpläne ({2}) — zum gewichteten Mittel verdichtet.</value>
@@ -55805,6 +55808,18 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="GEBWI_AUSSTEHEND_BEHALTEN" xml:space="preserve">
     <value>behalten</value>
+  </data>
+  <data name="IMP_IFC_STANDARD_HERKUNFT" xml:space="preserve">
+    <value>aus IFC-Datei (Standardsätze)</value>
+  </data>
+  <data name="IMP_IFC_PROT_STANDARDSAETZE" xml:space="preserve">
+    <value>Standard-Eigenschaftssätze in {0} Räumen gelesen ({1} Werte, Datei vor Profil); {2} Werte ohne Zielfeld durchgereicht: {3}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_HERSTELLER_VORSCHLAG" xml:space="preserve">
+    <value>{0} Räume: Luftwechsel {2} … {3} 1/h aus der herstellereigenen Eigenschaft „{1}“ als Vorschlag genannt — kein Normwert, nicht übernommen; es gilt das Nutzungsprofil ({4}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_OPTIK_ABWEICHUNG" xml:space="preserve">
+    <value>Baustoff „{0}“, {1}: Die Datei gibt {2}, EPOS-Plan rechnet mit {3} — der Wert der Datei wird nicht übernommen.</value>
   </data>
 </root>
 

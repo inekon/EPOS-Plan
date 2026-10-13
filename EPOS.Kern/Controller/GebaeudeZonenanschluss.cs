@@ -50,6 +50,8 @@ namespace WindowsFormsApplication1
         private static bool? _nordherkunftVorhanden;
         private static string _pfadVorheizzeit;
         private static bool? _vorheizzeitVorhanden;
+        private static string _pfadLastfelder;
+        private static bool? _lastfelderVorhanden;
 
         /// <summary>
         /// Gibt es <c>Tab_Zone</c> in der Datenbank des aktuellen Pfads? <c>false</c> heißt
@@ -101,6 +103,8 @@ namespace WindowsFormsApplication1
                 _nordherkunftVorhanden = null;
                 _pfadVorheizzeit = null;
                 _vorheizzeitVorhanden = null;
+                _pfadLastfelder = null;
+                _lastfelderVorhanden = null;
             }
         }
 
@@ -218,6 +222,28 @@ namespace WindowsFormsApplication1
             {
                 _pfadVorheizzeit = pfad;
                 _vorheizzeitVorhanden = da;
+            }
+            return da;
+        }
+
+        /// <summary>
+        /// Trägt <c>Tab_Zone</c> die Lastfelder (Schritt <see cref="ZonenLastfelderSchema.SCHRITT"/>, DA-2)?
+        /// Gemerkt je Datenbankpfad wie <see cref="NutzungsprofilVorhanden"/>; <see cref="ProbeVerwerfen"/> verwirft auch diese Probe.
+        /// </summary>
+        internal static bool LastfelderVorhanden()
+        {
+            string pfad = Pfad();
+            lock (_sperre)
+            {
+                if (_lastfelderVorhanden.HasValue && string.Equals(pfad, _pfadLastfelder, StringComparison.OrdinalIgnoreCase))
+                    return _lastfelderVorhanden.Value;
+            }
+
+            bool da = ZonenLastfelderSchema.Lesbar();
+            lock (_sperre)
+            {
+                _pfadLastfelder = pfad;
+                _lastfelderVorhanden = da;
             }
             return da;
         }

@@ -1053,6 +1053,9 @@ namespace EPOS.Kern.Tests
                 // Schritt KaeltebedarfSplitAbrechnungSchema.SCHRITT (K6): Tab_ErgebnisKaelteDezentral, leer, reines DDL.
                 // Wiederholbar, ergebnisneutral.
                 KaeltebedarfSplitAbrechnungSchema.Ausfuehren(null);
+                // Schritt ZonenLastfelderSchema.SCHRITT (DA-2, E138 F5): Aussenluft je Person, Licht und Waerme je Person an
+                // Tab_Zone und Tab_Zone_STAMM, leer, reines DDL. Wiederholbar, ergebnisneutral.
+                ZonenLastfelderSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
