@@ -546,6 +546,7 @@
             {
                 <GebaeudeKatalogDialog @attributes="_projektGaben" TitelAnzeigen="false"
                                        BaustoffzuordnungenGaben="@BaustoffzuordnungenWirt"
+                                       ZonenNutzungGaben="@ZonenNutzungEditorWirt"
                                        MehrzonenGeschrieben="() => _mehrzonenGeschrieben = true"
                                        Geschlossen="ProjekteditorFertig" />
             }
@@ -609,9 +610,21 @@
         <KindInhalt>
             @if (_modellpruefung is not null && _modellpruefungZeile is not null)
             {
-                <Modellpruefungsblatt Weg="@_modellpruefung" AnsichtSperre="@ModellpruefungAnsichtSperre()"
+                <Modellpruefungsblatt @ref="_modellpruefungsblatt" Weg="@_modellpruefung" AnsichtSperre="@ModellpruefungAnsichtSperre()"
                                       Simulation="ModellpruefungSimulation" Ansicht="ModellpruefungAnsicht"
-                                      Geaendert="ModellpruefungGeaendert" />
+                                      Bearbeiten="@ModellpruefungBearbeitenWirt" Geaendert="ModellpruefungGeaendert" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- MA-2: das Blatt „Nutzung und Kalender" aus Gruppe 3 der Modellpruefung - steht ueber dem Ampelblatt; beim Schliessen
+       prueft das Ampelblatt neu. --- *@
+    <Ueberlagerung Offen="@(_zonenNutzung is not null)" Titel="@Resource.ZNB_TITEL" Zusatzklasse="epos-ueberlagerung--breit"
+                   Geschlossen="ZonenNutzungFertig">
+        <KindInhalt>
+            @if (_zonenNutzung is not null)
+            {
+                <ZonenNutzungsblatt Weg="@_zonenNutzung" Geaendert="ZonenNutzungGeaendert" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -869,6 +882,13 @@
     [Parameter] public Func<GebaeudeProjektZeile, ModellpruefungWeg?>? ModellpruefungGaben { get; set; }
 
     /// <summary>
+    /// MA-2: der Weg des Blatts „Nutzung und Kalender" für eine Projektzeile (Hülle <c>ZonenNutzungHuelle</c>); <c>null</c> als
+    /// Ergebnis = kein Projektgebäude. Einstiege: „Bearbeiten…" an Gruppe 3 des Blatts „Modell prüfen" und „Nutzung und
+    /// Kalender…" im Reiter „Zonen" des Editors. Ohne Delegat kein Knopf; im Assistenten nie.
+    /// </summary>
+    [Parameter] public Func<GebaeudeProjektZeile, ZonenNutzungWeg?>? ZonenNutzungGaben { get; set; }
+
+    /// <summary>
     /// <b>„Hülle und Zonen…"</b> (Gebäudesimulation G3, Welle D2): der Parametersatz des
     /// Gebäudeeditors in der Betriebsart Projekt für eine Projektzeile — bearbeitet wird die
     /// Projektkopie samt Zonen. Kein Delegat = kein Knopf; <c>null</c> als Rückgabe heißt „diese Zeile
@@ -1052,6 +1072,7 @@
         IReadOnlyDictionary<string, object>? gaben = ProjektGaben(z);
         if (gaben is null) return;
         _projektGaben = new Dictionary<string, object>(gaben) { ["Sprungziel"] = Sprungziel };
+        _projektZeile = z;
     }
 
     /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
@@ -2223,12 +2244,14 @@
         if (!z.HatProjektkopie && !VorherSpeichern(z, SperreNeueZeile)) return;
         _meldung = "";
         _projektGaben = ProjektGaben(z);
+        _projektZeile = _projektGaben is null ? null : z;
         if (_projektGaben is null) Melden(MeldungProjektkopieFehlt, WarnStufe.Warnung);
     }
 
     private void ProjekteditorFertig(bool gespeichert)
     {
         _projektGaben = null;
+        _projektZeile = null;
         bool mehrzonen = _mehrzonenGeschrieben;
         _mehrzonenGeschrieben = false;
         if (gespeichert && mehrzonen && _gewaehlt is not null && !Wizard) _modellpruefungNachEditor = _gewaehlt;
@@ -2456,6 +2479,47 @@
         _modellpruefung = null;
         _modellpruefungZeile = null;
     }
+
+    // =====================================================================
+    //  MA-2: Blatt „Nutzung und Kalender"
+    // =====================================================================
+
+    private Modellpruefungsblatt? _modellpruefungsblatt;
+    private ZonenNutzungWeg? _zonenNutzung;
+    private GebaeudeProjektZeile? _projektZeile;
+
+    /// <summary>Steht das Blatt „Nutzung und Kalender"? Prüfhilfe für die Tests.</summary>
+    public bool ZonenNutzungOffen => _zonenNutzung is not null;
+
+    /// <summary>„Bearbeiten…" an Gruppe 3 — nur mit Delegat und außerhalb des Assistenten.</summary>
+    private EventCallback<Pruefgruppe> ModellpruefungBearbeitenWirt
+        => ZonenNutzungGaben is null || Wizard ? default : EventCallback.Factory.Create<Pruefgruppe>(this, ModellpruefungBearbeiten);
+
+    private void ModellpruefungBearbeiten(Pruefgruppe gruppe)
+    {
+        if (_modellpruefungZeile is not { } z || ZonenNutzungGaben is null) return;
+        ZonenNutzungWeg? weg;
+        try { weg = ZonenNutzungGaben(z); }
+        catch (Exception ex) when (ex is not OutOfMemoryException) { Melden(ex.Message, WarnStufe.Warnung); return; }
+        if (weg is null) { Melden(Format(Resource.MPB_SPERRE_OHNE_KOPIE, z.Name), WarnStufe.Hinweis); return; }
+        _zonenNutzung = weg;
+    }
+
+    /// <summary>Das Blatt ist zu: das Ampelblatt prüft neu.</summary>
+    private void ZonenNutzungFertig()
+    {
+        _zonenNutzung = null;
+        _modellpruefungsblatt?.Auffrischen();
+    }
+
+    private void ZonenNutzungGeaendert()
+    {
+        if (_modellpruefungZeile is { } z) ZeileAuffrischen?.Invoke(z);
+    }
+
+    /// <summary>„Nutzung und Kalender…" im Reiter „Zonen" des Editors für die Projektzeile des offenen Editors.</summary>
+    private Func<ZonenNutzungWeg?>? ZonenNutzungEditorWirt
+        => Wizard || ZonenNutzungGaben is null || _projektZeile is null ? null : () => ZonenNutzungGaben(_projektZeile);
 
     /// <summary>Eine Übernahme oder Rücknahme hat geschrieben: die Kennwerte der Zeile neu lesen.</summary>
     private void ModellpruefungGeaendert()

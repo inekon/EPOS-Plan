@@ -18347,6 +18347,37 @@ td.epos-vorlage-katalogbeschreibung {
 .epos-modellpruefung-knoepfe { display: inline-flex; gap: 0.3em; flex-wrap: wrap; margin-left: auto; }
 .epos-modellpruefung-ziel { font-weight: 600; }
 
+/* MA-2: Blatt „Nutzung und Kalender“ - alle Zonen mit Mehrfachwahl, Kalendermarken je Groesse, Ferien/Heizperiode. */
+.epos-zonennutzung-kopf { display: flex; gap: 1em; align-items: center; margin-bottom: 0.5em; }
+.epos-zonennutzung-gebaeude { font-weight: 600; }
+.epos-zonennutzung-werkzeuge, .epos-zonennutzung-eingabe { display: flex; gap: 0.4em; flex-wrap: wrap; align-items: center; margin-bottom: 0.5em; }
+.epos-zonennutzung-huelle { overflow-x: auto; }
+.epos-zonennutzung-tabelle { border-collapse: collapse; width: 100%; }
+.epos-zonennutzung-tabelle th, .epos-zonennutzung-tabelle td { padding: 0.2em 0.4em; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--epos-rahmen); }
+.epos-zonennutzung-tabelle .epos-zahl { text-align: right; white-space: nowrap; }
+.epos-zonennutzung-gewaehlt-zeile { background: var(--epos-ampel-gruen-flaeche); }
+.epos-zonennutzung-wahl { width: 2em; }
+.epos-zonennutzung-profilzelle { display: flex; gap: 0.4em; align-items: center; flex-wrap: wrap; }
+.epos-zonennutzung-herkunft { font-size: 0.85em; padding: 0 0.3em; border-radius: 0.3em; border: 1px solid currentColor; }
+.epos-zonennutzung-herkunft--vorgabe { color: var(--epos-ampel-gelb); }
+.epos-zonennutzung-marke { display: inline-block; min-width: 1.4em; margin-right: 0.15em; padding: 0 0.2em; text-align: center; font-size: 0.85em; border-radius: 0.3em; border: 1px solid var(--epos-rahmen); }
+.epos-zonennutzung-marke--profil, .epos-zonennutzung-marke--projekt { color: var(--epos-ampel-gruen); background: var(--epos-ampel-gruen-flaeche); }
+.epos-zonennutzung-marke--eigen, .epos-zonennutzung-marke--abweichung { font-weight: 600; }
+.epos-zonennutzung-marke--geerbt { color: var(--epos-ampel-gelb); background: var(--epos-ampel-gelb-flaeche); }
+.epos-zonennutzung-marke--fehlt { color: var(--epos-ampel-rot); background: var(--epos-ampel-rot-flaeche); }
+.epos-zonennutzung-marke--entfaellt { opacity: 0.5; }
+
+/* MA-7: „Vorgaben der Baualtersklasse übernehmen…“ im Gebäudeeditor - Knopfzeile mit Grund, Blatt mit Vorschau alt -> neu. */
+.epos-gebk-vorgaben { display: flex; gap: 0.5em; align-items: center; flex-wrap: wrap; margin: 0.4em 0 0.6em; }
+.epos-gebk-vorgaben-grund { font-size: 0.9em; }
+.epos-gebk-vorgabenblatt { display: flex; flex-direction: column; gap: 0.5em; min-width: min(36em, 100%); }
+.epos-gebk-vorgaben-tabelle { border-collapse: collapse; width: 100%; }
+.epos-gebk-vorgaben-tabelle th, .epos-gebk-vorgaben-tabelle td { padding: 0.2em 0.4em; text-align: left; border-bottom: 1px solid var(--epos-rahmen); }
+.epos-gebk-vorgaben-tabelle .epos-zahl { text-align: right; white-space: nowrap; }
+.epos-gebk-vorgaben-aendert td:last-child { font-weight: 600; }
+.epos-gebk-vorgaben-gleich td { opacity: 0.7; }
+.epos-gebk-vorgaben-leiste { display: flex; gap: 0.5em; flex-wrap: wrap; }
+
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */

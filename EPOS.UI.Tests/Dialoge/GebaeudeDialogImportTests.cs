@@ -396,7 +396,9 @@ public class GebaeudeDialogImportTests : EposBunitContext
         // Die Hülle liest im Arbeitsfaden: OK ist erst nach dem Lesen frei.
         IRenderedComponent<GebaeudeImportDialog> imp = ImportEinlesen(cut);
         imp.WaitForAssertion(() => Assert.False(imp.Find(".epos-leiste button.epos-knopf--primaer").HasAttribute("disabled")));
-        imp.Find(".epos-leiste button.epos-knopf--primaer").Click();
+        // Abgewartet: Nach dem Lesegang arbeitet der Verteiler noch an Nachläufen (Fortschritt, Zeichenlauf); ein
+        // synchroner Klick würde dann nur eingereiht, und der Assert läse den Stand vor dem OK.
+        imp.Find(".epos-leiste button.epos-knopf--primaer").KlickAbgewartet();
         GebaeudeImportErgebnis ergebnis = Assert.Single(p.Uebernommen);
         Assert.Equal(klasse, ergebnis.Baualtersklasse);
         Assert.True(cut.Instance.KatalogeditorOffen);
@@ -405,7 +407,7 @@ public class GebaeudeDialogImportTests : EposBunitContext
         Assert.Contains(editor.FindAll(".epos-herleitung-text").Select(e => e.TextContent),
                         t => t.StartsWith("Vorbelegt aus dem Import: Datei " + probe, StringComparison.Ordinal)
                              && t.Contains("Luftwechselrate 0,7 1/h", StringComparison.Ordinal));
-        editor.Find(".epos-leiste button.epos-knopf--primaer").Click();
+        editor.Find(".epos-leiste button.epos-knopf--primaer").KlickAbgewartet();
 
         // Kein Befund des Editors: angelegt, geschlossen, die neue Zeile markiert in der Liste.
         Assert.False(cut.Instance.KatalogeditorOffen, cut.Instance.KatalogeditorOffen ? editor.Instance.Meldung : "");
@@ -433,7 +435,9 @@ public class GebaeudeDialogImportTests : EposBunitContext
 
         IRenderedComponent<GebaeudeImportDialog> imp = ImportEinlesen(cut);
         imp.WaitForAssertion(() => Assert.False(imp.Find(".epos-leiste button.epos-knopf--primaer").HasAttribute("disabled")));
-        imp.Find(".epos-leiste button.epos-knopf--primaer").Click();
+        // Abgewartet: Nach dem Lesegang arbeitet der Verteiler noch an Nachläufen (Fortschritt, Zeichenlauf); ein
+        // synchroner Klick würde dann nur eingereiht, und der Assert läse den Stand vor dem OK.
+        imp.Find(".epos-leiste button.epos-knopf--primaer").KlickAbgewartet();
 
         Assert.Empty(p.Uebernommen);
         Assert.True(cut.Instance.ImportOffen);

@@ -55272,5 +55272,347 @@ Chart</value>
   <data name="MPB_HILFE_KURZ" xml:space="preserve">
     <value>Hilfe zur Modellprüfung</value>
   </data>
+  <data name="ZN_MSG_PROFIL_FEHLT" xml:space="preserve">
+    <value>Das gewählte Profil steht nicht im Katalog.</value>
+  </data>
+  <data name="ZN_MSG_PROFIL_ABGELEHNT" xml:space="preserve">
+    <value>Das Profil ließ sich der Zone „{0}“ nicht zuweisen.</value>
+  </data>
+  <data name="ZN_MSG_OHNE_KALENDER" xml:space="preserve">
+    <value>Diese Datenbank kennt noch keine Konditionierungskalender.</value>
+  </data>
+  <data name="ZN_MSG_QUELLE_FEHLT" xml:space="preserve">
+    <value>Die Quellzone gehört nicht zu diesem Gebäude.</value>
+  </data>
+  <data name="ZN_MSG_SOLLWERT_BEREICH" xml:space="preserve">
+    <value>Sollwerte liegen zwischen 5 und 30 °C, die Nacht nicht über dem Tag.</value>
+  </data>
+  <data name="ZN_MSG_KEINE_RUECKNAHME" xml:space="preserve">
+    <value>Es gibt keine Änderung zum Zurücknehmen.</value>
+  </data>
+  <data name="ZN_MSG_FEHLER" xml:space="preserve">
+    <value>Die Änderung ist nicht geschrieben: {0}</value>
+  </data>
+  <data name="ZN_MSG_ZURUECKGENOMMEN" xml:space="preserve">
+    <value>Die letzte Änderung ist zurückgenommen ({0} Zonen).</value>
+  </data>
+  <data name="ZN_MSG_KEINE_WAHL" xml:space="preserve">
+    <value>Keine gewählte Zone, an der sich etwas ändert.</value>
+  </data>
+  <data name="ZN_MSG_GEAENDERT" xml:space="preserve">
+    <value>{0} Zonen geändert.</value>
+  </data>
+  <data name="ZNB_TITEL" xml:space="preserve">
+    <value>Nutzung und Kalender</value>
+  </data>
+  <data name="ZNB_HILFE_KURZ" xml:space="preserve">
+    <value>Nutzungsprofil, Kalender, Sollwerte, Ferien und Heizperiode aller Zonen auf einem Blatt; eine Handlung gilt für alle gewählten Zonen.</value>
+  </data>
+  <data name="ZNB_ALLE_WAEHLEN" xml:space="preserve">
+    <value>Alle Zonen wählen</value>
+  </data>
+  <data name="ZNB_ZONE_WAEHLEN" xml:space="preserve">
+    <value>Zone {0} wählen</value>
+  </data>
+  <data name="ZNB_SPALTE_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="ZNB_SPALTE_FLAECHE" xml:space="preserve">
+    <value>Fläche</value>
+  </data>
+  <data name="ZNB_SPALTE_PROFIL" xml:space="preserve">
+    <value>Nutzungsprofil</value>
+  </data>
+  <data name="ZNB_SPALTE_KALENDER" xml:space="preserve">
+    <value>Kalender</value>
+  </data>
+  <data name="ZNB_SPALTE_SOLL" xml:space="preserve">
+    <value>Soll Tag / Nacht</value>
+  </data>
+  <data name="ZNB_SPALTE_FERIEN" xml:space="preserve">
+    <value>Ferien / Heizperiode</value>
+  </data>
+  <data name="ZNB_SPALTE_BEFUND" xml:space="preserve">
+    <value>Befund</value>
+  </data>
+  <data name="ZNB_SPALTE_AKTION" xml:space="preserve">
+    <value>Einzelheiten</value>
+  </data>
+  <data name="ZNB_KURZ_HEIZSOLL" xml:space="preserve">
+    <value>H</value>
+  </data>
+  <data name="ZNB_KURZ_KUEHLSOLL" xml:space="preserve">
+    <value>K</value>
+  </data>
+  <data name="ZNB_KURZ_LUEFTUNG" xml:space="preserve">
+    <value>L</value>
+  </data>
+  <data name="ZNB_KURZ_GERAETE" xml:space="preserve">
+    <value>G</value>
+  </data>
+  <data name="ZNB_KURZ_PERSONEN" xml:space="preserve">
+    <value>P</value>
+  </data>
+  <data name="ZNB_NAME_HEIZSOLL" xml:space="preserve">
+    <value>Heizung</value>
+  </data>
+  <data name="ZNB_NAME_KUEHLSOLL" xml:space="preserve">
+    <value>Kühlung</value>
+  </data>
+  <data name="ZNB_NAME_LUEFTUNG" xml:space="preserve">
+    <value>Lüftung</value>
+  </data>
+  <data name="ZNB_NAME_GERAETE" xml:space="preserve">
+    <value>Innere Lasten</value>
+  </data>
+  <data name="ZNB_NAME_PERSONEN" xml:space="preserve">
+    <value>Personen</value>
+  </data>
+  <data name="ZNB_KENNUNG_EIGEN" xml:space="preserve">
+    <value>eigener Kalender</value>
+  </data>
+  <data name="ZNB_KENNUNG_PROFIL" xml:space="preserve">
+    <value>vom Profil erzeugt</value>
+  </data>
+  <data name="ZNB_KENNUNG_GEERBT" xml:space="preserve">
+    <value>geerbt vom Gebäude</value>
+  </data>
+  <data name="ZNB_KENNUNG_FEHLT" xml:space="preserve">
+    <value>fehlt</value>
+  </data>
+  <data name="ZNB_KENNUNG_ENTFAELLT" xml:space="preserve">
+    <value>entfällt (unbeheizt)</value>
+  </data>
+  <data name="ZNB_MARKE_TITEL" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="ZNB_HERKUNFT_PROFIL" xml:space="preserve">
+    <value>Profil</value>
+  </data>
+  <data name="ZNB_HERKUNFT_DATEI" xml:space="preserve">
+    <value>Datei</value>
+  </data>
+  <data name="ZNB_HERKUNFT_VORGABE" xml:space="preserve">
+    <value>Vorgabe</value>
+  </data>
+  <data name="ZNB_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag: {0}</value>
+  </data>
+  <data name="ZNB_OHNE_PROFIL" xml:space="preserve">
+    <value>ohne Profil</value>
+  </data>
+  <data name="ZNB_FERIEN_PROJEKT" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="ZNB_FERIEN_ABWEICHUNG" xml:space="preserve">
+    <value>Abweichung</value>
+  </data>
+  <data name="ZNB_FERIEN_FEHLT" xml:space="preserve">
+    <value>fehlt</value>
+  </data>
+  <data name="ZNB_KURZ_FERIEN" xml:space="preserve">
+    <value>F</value>
+  </data>
+  <data name="ZNB_KURZ_SAISON" xml:space="preserve">
+    <value>HP</value>
+  </data>
+  <data name="ZNB_NAME_FERIEN" xml:space="preserve">
+    <value>Ferien</value>
+  </data>
+  <data name="ZNB_NAME_SAISON" xml:space="preserve">
+    <value>Heizperiode</value>
+  </data>
+  <data name="ZNB_GEWAEHLT" xml:space="preserve">
+    <value>{0} von {1} Zonen gewählt</value>
+  </data>
+  <data name="ZNB_SPERRE_WAHL" xml:space="preserve">
+    <value>Erst Zonen wählen.</value>
+  </data>
+  <data name="ZNB_BTN_PROFIL" xml:space="preserve">
+    <value>Profil zuweisen…</value>
+  </data>
+  <data name="ZNB_BTN_PROFIL_HINWEIS" xml:space="preserve">
+    <value>Gibt den gewählten Zonen ein Profil des Katalogs; die Kalender erzeugt der Generator.</value>
+  </data>
+  <data name="ZNB_BTN_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag übernehmen</value>
+  </data>
+  <data name="ZNB_BTN_VORSCHLAG_HINWEIS" xml:space="preserve">
+    <value>Gibt jeder gewählten Zone das Profil nach der Profilregel.</value>
+  </data>
+  <data name="ZNB_BTN_PROJEKT" xml:space="preserve">
+    <value>Projektvorgabe Ferien/Heizperiode übernehmen</value>
+  </data>
+  <data name="ZNB_BTN_PROJEKT_HINWEIS" xml:space="preserve">
+    <value>Die gewählten Zonen folgen Ferien und Heizperiode des Projekts; ihre Abweichung fällt.</value>
+  </data>
+  <data name="ZNB_BTN_KOPIEREN" xml:space="preserve">
+    <value>Kalender kopieren von…</value>
+  </data>
+  <data name="ZNB_BTN_KOPIEREN_HINWEIS" xml:space="preserve">
+    <value>Kopiert alle Kalender einer Zone auf die gewählten Zonen und ersetzt deren Kalender.</value>
+  </data>
+  <data name="ZNB_BTN_SOLL" xml:space="preserve">
+    <value>Sollwerte setzen…</value>
+  </data>
+  <data name="ZNB_BTN_SOLL_HINWEIS" xml:space="preserve">
+    <value>Setzt Tag- und Nachtsollwert der gewählten Zonen.</value>
+  </data>
+  <data name="ZNB_BTN_ZURUECK" xml:space="preserve">
+    <value>Zurücknehmen</value>
+  </data>
+  <data name="ZNB_BTN_ZURUECK_HINWEIS" xml:space="preserve">
+    <value>Stellt den Stand vor der letzten Änderung wieder her.</value>
+  </data>
+  <data name="ZNB_BTN_ANWENDEN" xml:space="preserve">
+    <value>Anwenden</value>
+  </data>
+  <data name="ZNB_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="ZNB_BTN_ZONE" xml:space="preserve">
+    <value>Zone…</value>
+  </data>
+  <data name="ZNB_BTN_ZONE_HINWEIS" xml:space="preserve">
+    <value>Öffnet die Zone im Zonendialog (Kalender im Einzelnen).</value>
+  </data>
+  <data name="ZNB_LABEL_PROFIL" xml:space="preserve">
+    <value>Profil:</value>
+  </data>
+  <data name="ZNB_LABEL_QUELLE" xml:space="preserve">
+    <value>Von Zone:</value>
+  </data>
+  <data name="ZNB_LABEL_TAG" xml:space="preserve">
+    <value>Tag [°C]:</value>
+  </data>
+  <data name="ZNB_LABEL_NACHT" xml:space="preserve">
+    <value>Nacht [°C]:</value>
+  </data>
+  <data name="ZNB_MSG_NICHT_GELESEN" xml:space="preserve">
+    <value>Die Zonen dieses Gebäudes lassen sich nicht lesen.</value>
+  </data>
+  <data name="ZNB_MSG_KEINE_ZONEN" xml:space="preserve">
+    <value>Das Gebäude hat keine Zonen.</value>
+  </data>
+  <data name="ZNB_MSG_ZAHL" xml:space="preserve">
+    <value>Bitte eine Zahl eingeben.</value>
+  </data>
+  <data name="ZNB_MSG_PROJEKT_OHNE" xml:space="preserve">
+    <value>Das Projekt gibt weder Ferien noch Heizperiode vor.</value>
+  </data>
+  <data name="GEB_BTN_ZONENNUTZUNG" xml:space="preserve">
+    <value>Nutzung und Kalender…</value>
+  </data>
+  <data name="GEB_BTN_ZONENNUTZUNG_HINWEIS" xml:space="preserve">
+    <value>Nutzungsprofil, Kalender, Sollwerte, Ferien und Heizperiode aller Zonen auf einem Blatt.</value>
+  </data>
+  <data name="GEB_SPERRE_ZONENNUTZUNG" xml:space="preserve">
+    <value>Erst die geänderten Zonen mit OK speichern.</value>
+  </data>
+  <data name="MPB_BTN_BEARBEITEN" xml:space="preserve">
+    <value>Bearbeiten…</value>
+  </data>
+  <data name="MPB_BTN_BEARBEITEN_HINWEIS" xml:space="preserve">
+    <value>Öffnet das Blatt „Nutzung und Kalender“ mit allen Zonen.</value>
+  </data>
+  <data name="GEBV_BTN_OEFFNEN" xml:space="preserve">
+    <value>Vorgaben der Baualtersklasse übernehmen…</value>
+  </data>
+  <data name="GEBV_BTN_ZURUECKNEHMEN" xml:space="preserve">
+    <value>Vorgaben zurücknehmen</value>
+  </data>
+  <data name="GEBV_TITEL" xml:space="preserve">
+    <value>Vorgaben der Baualtersklasse</value>
+  </data>
+  <data name="GEBV_GRUND_ZONEN" xml:space="preserve">
+    <value>Das Gebäude trägt Zonen – es gilt der Zonenweg (Reiter „Zonen“).</value>
+  </data>
+  <data name="GEBV_GRUND_KLASSE" xml:space="preserve">
+    <value>Keine Baualtersklasse gesetzt – zuerst Baualtersklasse oder Baujahr wählen.</value>
+  </data>
+  <data name="GEBV_GRUND_WERTE" xml:space="preserve">
+    <value>Die Baualtersklasse gibt keine Werte vor.</value>
+  </data>
+  <data name="GEBV_HERKUNFT_KLASSE" xml:space="preserve">
+    <value>Vorgabe Klasse {0}: Median von {1} Katalogbauten der Klasse.</value>
+  </data>
+  <data name="GEBV_HERKUNFT_STANDARD" xml:space="preserve">
+    <value>Vorgabe Energiestandard {0}: Median von {1} Katalogbauten dieses Standards.</value>
+  </data>
+  <data name="GEBV_HERKUNFT_FREI" xml:space="preserve">
+    <value>Vorgabe Klasse {0}: freier Wert (Typgebäude nach Stein/Loga 2025), kein Katalogbau der Klasse.</value>
+  </data>
+  <data name="GEBV_SP_FELD" xml:space="preserve">
+    <value>Feld</value>
+  </data>
+  <data name="GEBV_SP_JETZT" xml:space="preserve">
+    <value>Jetzt</value>
+  </data>
+  <data name="GEBV_SP_NEU" xml:space="preserve">
+    <value>Vorgabe</value>
+  </data>
+  <data name="GEBV_TXT_GLEICH" xml:space="preserve">
+    <value>unverändert</value>
+  </data>
+  <data name="GEBV_TXT_HINWEIS" xml:space="preserve">
+    <value>Übernommen wird in den Arbeitsstand, gespeichert mit OK. Flächen, Sollwerte und Kalender bleiben.</value>
+  </data>
+  <data name="GEBV_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="GEBV_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="GEBV_GRUPPE_PROFIL" xml:space="preserve">
+    <value>Profil der Gebäudeart</value>
+  </data>
+  <data name="GEBV_TXT_PROFIL" xml:space="preserve">
+    <value>Die Gebäudeart „{0}“ gibt das Nutzungsprofil „{1}“ vor (Sollwerte, Gewinne, Lüftung).</value>
+  </data>
+  <data name="GEBV_BTN_PROFIL" xml:space="preserve">
+    <value>Profil übernehmen…</value>
+  </data>
+  <data name="GEBV_GRUND_PROFIL_KEINS" xml:space="preserve">
+    <value>Die Gebäudeart „{0}“ gibt kein Nutzungsprofil vor.</value>
+  </data>
+  <data name="GEBV_GRUND_PROFIL_WEG" xml:space="preserve">
+    <value>Nutzungsprofile stehen hier nicht bereit.</value>
+  </data>
+  <data name="GEBV_MELDUNG_UEBERNOMMEN" xml:space="preserve">
+    <value>Vorgaben {0} übernommen ({1} Felder geändert) – mit OK speichern.</value>
+  </data>
+  <data name="GEBV_MELDUNG_ZURUECK" xml:space="preserve">
+    <value>Vorgaben zurückgenommen.</value>
+  </data>
+  <data name="MP_BEFUND_HUELLE_OFFEN" xml:space="preserve">
+    <value>Zone „{0}“: Die Hülle schließt nicht – nach oben weisen {1} m², nach unten {2} m² (Abweichung {3} %).</value>
+  </data>
+  <data name="MP_BEFUND_HUELLE_OBEN_FEHLT" xml:space="preserve">
+    <value>Zone „{0}“: Nach oben ist die Hülle nicht geschlossen – kein Dach, keine Decke (nach oben {1} m², nach unten {2} m²).</value>
+  </data>
+  <data name="MP_BEFUND_HUELLE_UNTEN_FEHLT" xml:space="preserve">
+    <value>Zone „{0}“: Nach unten ist die Hülle nicht geschlossen – keine Bodenplatte, keine Decke (nach oben {1} m², nach unten {2} m²).</value>
+  </data>
+  <data name="MP_BEFUND_HUELLE_GESPIEGELT" xml:space="preserve">
+    <value>Bauteil „{0}“ (Zone „{1}“) weist mit Neigung {2}° gegen seine Lage – eine Bodenplatte weist nach unten (180°), ein Dach nach oben (0°).</value>
+  </data>
+  <data name="MP_VORSCHLAG_HUELLBAUTEIL_PROJEKT" xml:space="preserve">
+    <value>{0} ergänzen: {1} m², Neigung {2}°, {3}, U {4} W/(m²K) wie die gleichen Bauteile des Gebäudes</value>
+  </data>
+  <data name="MP_VORSCHLAG_HUELLBAUTEIL_TYP" xml:space="preserve">
+    <value>{0} ergänzen: {1} m², Neigung {2}°, {3}, U {4} W/(m²K) des Typaufbaus</value>
+  </data>
+  <data name="MP_RAND_AUSSENLUFT" xml:space="preserve">
+    <value>an Außenluft</value>
+  </data>
+  <data name="MP_RAND_ERDREICH" xml:space="preserve">
+    <value>gegen Erdreich</value>
+  </data>
+  <data name="MP_RAND_ZONE" xml:space="preserve">
+    <value>an Zone „{0}“</value>
+  </data>
+  <data name="MP_BAUTEIL_ERGAENZT" xml:space="preserve">
+    <value>{0} (ergänzt)</value>
+  </data>
 </root>
 
