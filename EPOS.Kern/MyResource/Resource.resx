@@ -54789,5 +54789,11 @@ Chart</value>
   <data name="SIMKONF_KAELTE_DEZ_MSG_FEHLER" xml:space="preserve">
     <value>„{0}“ lässt sich hier nicht bearbeiten: {1}</value>
   </data>
+  <data name="KONF_KS_DAVON_LASTGANG" xml:space="preserve">
+    <value>davon Lastgang: {0}</value>
+  </data>
+  <data name="KONF_KS_DAVON_PROFIL" xml:space="preserve">
+    <value>davon Profil: {0} ({1} MWh/a)</value>
+  </data>
 </root>
 

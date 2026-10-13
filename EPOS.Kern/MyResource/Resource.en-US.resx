@@ -54782,5 +54782,11 @@ chart</value>
   <data name="SIMKONF_KAELTE_DEZ_MSG_FEHLER" xml:space="preserve">
     <value>“{0}” cannot be edited here: {1}</value>
   </data>
+  <data name="KONF_KS_DAVON_LASTGANG" xml:space="preserve">
+    <value>of which load curve: {0}</value>
+  </data>
+  <data name="KONF_KS_DAVON_PROFIL" xml:space="preserve">
+    <value>of which profile: {0} ({1} MWh/a)</value>
+  </data>
 </root>
 

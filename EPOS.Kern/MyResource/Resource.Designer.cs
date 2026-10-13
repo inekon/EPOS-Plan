@@ -88755,6 +88755,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Lastgang: {0} ähnelt.
+        /// </summary>
+        public static string KONF_KS_DAVON_LASTGANG {
+            get {
+                return ResourceManager.GetString("KONF_KS_DAVON_LASTGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Profil: {0} ({1} MWh/a) ähnelt.
+        /// </summary>
+        public static string KONF_KS_DAVON_PROFIL {
+            get {
+                return ResourceManager.GetString("KONF_KS_DAVON_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kühlträger: {0} ähnelt.
         /// </summary>
         public static string KONF_KS_DEZENTRAL_TRAEGER {

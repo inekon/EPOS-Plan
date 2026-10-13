@@ -862,6 +862,7 @@ namespace WindowsFormsApplication1
                 };
                 KuehluebergabeZeilen(idProjekt, k.Zeilen);
                 if (!projektKaelte) k.Zeilen.Add(MyResource.Resource.KONF_KS_PROJEKT_AUS);
+                else KaelteHerkunftZeilen(idProjekt, k.Zeilen);
                 if (k.Zeilen.Count > 0)
                     k.Hinweis = k.Hinweis + Environment.NewLine + string.Join(Environment.NewLine, k.Zeilen.ToArray());
                 Knotenliste.Add(k);
@@ -871,7 +872,13 @@ namespace WindowsFormsApplication1
                 OhneVersorgerAnlegen(ABNEHMER_KAELTEKREIS, MyResource.Resource.SIM_ZIEL_KAELTEKREIS,
                                      Kanal.KUEHLUNG, false, kanalBedarfMwh);
                 Knoten ohne = Finden(ABNEHMER_KAELTEKREIS);
-                if (ohne != null) ohne.Bahn = Bahn.Kaelte;
+                if (ohne != null)
+                {
+                    ohne.Bahn = Bahn.Kaelte;
+                    if (projektKaelte) KaelteHerkunftZeilen(idProjekt, ohne.Zeilen);
+                    if (ohne.Zeilen.Count > 0)
+                        ohne.Hinweis = ohne.Hinweis + Environment.NewLine + string.Join(Environment.NewLine, ohne.Zeilen.ToArray());
+                }
             }
 
             // 4a. K6b: die dezentral (Split) gedeckten Zeilen - ein Abnehmer ohne Kante, nur mit Split-Zeile.
@@ -901,6 +908,27 @@ namespace WindowsFormsApplication1
             if (erzeuger.Count > 1)
                 for (int i = 0; i < erzeuger.Count; i++)
                     Finden(erzeuger[i]).Rang = (i + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// K6b-N (Plan K6, Abschnitt 4): die Herkunft des zentral gedeckten Kältebedarfs am Kältekreis — „davon Lastgang“ mit
+        /// der Zahl der Lastgangzeilen im Kanal Kühlung und „davon Profil“ mit Zahl und Jahressumme der Kältebedarfsprofile,
+        /// je nur, wenn es solche Zuordnungen gibt. Dezentral (Split) gedeckte Zeilen zählen nicht: Sie stehen am eigenen Knoten.
+        /// </summary>
+        private static void KaelteHerkunftZeilen(int idProjekt, List<string> zeilen)
+        {
+            List<Z_ProjektKaeltebedarfCtrl.Uebersichtszeile> zentral =
+                Z_ProjektKaeltebedarfCtrl.ZeilenDesProjekts(idProjekt).Where(z => !z.Split).ToList();
+            System.Globalization.CultureInfo kultur = System.Globalization.CultureInfo.CurrentCulture;
+
+            int lastgaenge = zentral.Count(z => !z.Profil);
+            if (lastgaenge > 0)
+                zeilen.Add(string.Format(kultur, MyResource.Resource.KONF_KS_DAVON_LASTGANG, lastgaenge));
+
+            List<Z_ProjektKaeltebedarfCtrl.Uebersichtszeile> profile = zentral.Where(z => z.Profil).ToList();
+            if (profile.Count > 0)
+                zeilen.Add(string.Format(kultur, MyResource.Resource.KONF_KS_DAVON_PROFIL, profile.Count,
+                                         profile.Sum(z => z.SummeMwh ?? 0.0).ToString("N2", kultur)));
         }
 
         /// <summary>

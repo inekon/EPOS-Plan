@@ -74,6 +74,47 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain(schema.Knotenliste, k => k.Schluessel == SchemaModell.ABNEHMER_KAELTE_DEZENTRAL);
             ProjektDetails d = ProjektDetails.Lade(PROJEKT);
             Assert.Empty(d.KaelteDezentral);
+            // K6b-N: ohne Lastgang- und Profilzuordnung keine Herkunftszeilen am Kältekreis.
+            SchemaModell.Knoten kreis = Assert.Single(SchemaModell.Aufbauen(PROJEKT, null).Knotenliste,
+                                                      x => x.Schluessel == SchemaModell.ABNEHMER_KAELTEKREIS);
+            Assert.DoesNotContain(kreis.Zeilen, x => x.StartsWith(Davon(WindowsFormsApplication1.MyResource.Resource.KONF_KS_DAVON_LASTGANG), StringComparison.Ordinal)
+                                                  || x.StartsWith(Davon(WindowsFormsApplication1.MyResource.Resource.KONF_KS_DAVON_PROFIL), StringComparison.Ordinal));
+        }
+
+        private static string Davon(string format) => format.Substring(0, format.IndexOf('{'));
+
+        /// <summary>
+        /// K6b-N (Plan K6, Abschnitt 4): am Kältekreis die Herkunft des zentralen Kältebedarfs — „davon Lastgang“ (Zahl der
+        /// Lastgangzeilen im Kanal Kühlung) und „davon Profil“ (Zahl und Jahressumme der Profile); Split-Zeilen zählen nicht.
+        /// </summary>
+        [Fact]
+        public void K6bN_Der_Kaeltekreis_nennt_davon_Lastgang_und_davon_Profil()
+        {
+            if (!_db.Vorhanden) return;
+            int stamm = Convert.ToInt32(DataRepository.ExecuteScalar(
+                "SELECT ID FROM Tab_Kaeltebedarf_STAMM WHERE Bezeichner = ?", new DbParam("@b", KUEHLRAUM)), CultureInfo.InvariantCulture);
+            Assert.True(new WizardCtrl().Add_Projekt_Kaelte(PROJEKT, new List<Z_ProjektKaeltebedarfModel>
+            {
+                new Z_ProjektKaeltebedarfModel { ID_Kaeltebedarf = stamm, Bezeichner = KUEHLRAUM, Summe = 12 },
+                new Z_ProjektKaeltebedarfModel { ID_Kaeltebedarf = stamm, Bezeichner = KUEHLRAUM, Summe = 3.5 },
+                new Z_ProjektKaeltebedarfModel
+                {
+                    ID_Kaeltebedarf = stamm, Bezeichner = KUEHLRAUM, Summe = 100, Deckung = KaeltebedarfSchema.DECKUNG_SPLIT,
+                    EerWeg = KaeltebedarfSchema.EER_FEST, Eer1 = 3.0, Taussen1 = 35,
+                },
+            }));
+            Assert.True(new WaermebedarfStammCtrl().ImportGanglinie(LASTGANG, Enumerable.Repeat(0.5, 8760).ToList()));
+            List<Z_ProjWaermebedarfModel> zeilen = Z_ProjektGebGanglinieCtrl.LiesProjekt(PROJEKT);
+            zeilen.Add(new Z_ProjWaermebedarfModel { m_szBezeichner = LASTGANG, Kanal = DbWerte.KANAL_KUEHLUNG });
+            Assert.True(new WizardCtrl().Del_WaermebedarfExtern(PROJEKT));
+            Assert.True(new WizardCtrl().Add_WaermebedarfExtern(PROJEKT, zeilen));
+
+            SchemaModell schema = SchemaModell.Aufbauen(PROJEKT, null);
+            SchemaModell.Knoten kreis = Assert.Single(schema.Knotenliste, x => x.Schluessel == SchemaModell.ABNEHMER_KAELTEKREIS);
+            Assert.Contains(string.Format(CultureInfo.CurrentCulture, WindowsFormsApplication1.MyResource.Resource.KONF_KS_DAVON_LASTGANG, 1), kreis.Zeilen);
+            Assert.Contains(string.Format(CultureInfo.CurrentCulture, WindowsFormsApplication1.MyResource.Resource.KONF_KS_DAVON_PROFIL, 2,
+                                          15.5.ToString("N2", CultureInfo.CurrentCulture)), kreis.Zeilen);
+            Assert.Contains(string.Format(CultureInfo.CurrentCulture, WindowsFormsApplication1.MyResource.Resource.KONF_KS_DAVON_LASTGANG, 1), kreis.Hinweis);
         }
 
         [Fact]
