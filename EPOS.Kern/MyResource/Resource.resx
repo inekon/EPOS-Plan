@@ -54612,5 +54612,29 @@ Chart</value>
   <data name="BKAT_BST_KLASSE_STOFF_SONSTIGE" xml:space="preserve">
     <value>Sonstiger Stoff</value>
   </data>
+  <data name="GANS_WERKZEUG" xml:space="preserve">
+    <value>Werkzeug der Legende</value>
+  </data>
+  <data name="GANS_WERKZEUG_ZUORDNEN" xml:space="preserve">
+    <value>Zuordnen</value>
+  </data>
+  <data name="GANS_WERKZEUG_AUSBLENDEN" xml:space="preserve">
+    <value>Ein-/Ausblenden</value>
+  </data>
+  <data name="GANS_ALLE_ZEIGEN" xml:space="preserve">
+    <value>Alle zeigen</value>
+  </data>
+  <data name="GANS_EINBLENDEN" xml:space="preserve">
+    <value>{0} einblenden</value>
+  </data>
+  <data name="GANS_AUSBLENDEN" xml:space="preserve">
+    <value>{0} ausblenden</value>
+  </data>
+  <data name="GANS_BAUTEILGRUPPEN" xml:space="preserve">
+    <value>Bauteilgruppen</value>
+  </data>
+  <data name="GANS_BAUTEILGRUPPE_ZAHL" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
 </root>
 
