@@ -4132,7 +4132,9 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
    eigenen Kasten. */
 .epos-zweispalten-satzblock { display: contents; }
 
-/* Das Wahlkaestchen der Mehrfachwahl (4.5) - Kopfhaekchen und Zeile. */
+/* Das Wahlkaestchen der Mehrfachwahl (4.5) - Kopfhaekchen und Zeile. Das
+   Kopfhaekchen bleibt klein, eckig und ohne Flaeche: Die Kopfzeile der Liste ist
+   niedriger als eine Listenzeile (rund 37 px), ein Kreis von 44 px passte dort nicht. */
 .epos-wahlkaestchen {
     min-width: 28px;
     min-height: 28px;
@@ -4142,6 +4144,67 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     font-size: 18px;
     line-height: 1;
     cursor: pointer;
+}
+
+/* DAS KAESTCHEN DER ZEILE IM SCHEMA DES RUNDEN WAHLKNOPFS (KA-E-28, Wunsch des
+   Anwenders): ein Kreis von Beruehrungsgroesse mit Rand, angekreuzt marineblau
+   mit weissem Zeichen - die Farben von .epos-knopf--primaer. Es bleibt die
+   Mehrfachwahl; die Zeile waehlt der Klick in die Zeile (KA-E-17, eine Wahl je
+   Zeile), deshalb steht ☐/☑ im Kreis und nicht ○/●. Schwebe und Fokus stehen
+   hier selbst: Das Kaestchen ist kein .epos-knopf, und dessen Schwebefarbe
+   wiegt mehr als die des Primaerknopfs - sie hellte die Marinefuellung auf.
+   Die Zeile waechst nicht: Kreis plus Polsterung (4 px oben und unten) ist die
+   Hoehe der Klickflaeche daneben, 53 px Zeilenmass, 46 px in der Kompaktstufe
+   (dort --epos-touchziel 37 px). Die Katalogliste fuehrt ihr natives Kaestchen
+   weiter (.epos-kaestchenzelle). */
+.epos-wahlkaestchen:not(.epos-wahlkaestchen--kopf) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: var(--epos-touchziel);
+    min-width: var(--epos-touchziel);
+    height: var(--epos-touchziel);
+    margin: 0;
+    color: var(--epos-text);
+    background: var(--epos-flaeche);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: 50%;
+    vertical-align: middle;
+}
+
+.epos-wahlkaestchen:not(.epos-wahlkaestchen--kopf):hover {
+    border-color: var(--epos-karte-rahmen-hover);
+    background: var(--epos-karte-flaeche-hover);
+}
+
+.epos-wahlkaestchen:not(.epos-wahlkaestchen--kopf)[aria-checked="true"] {
+    color: var(--epos-gruppenkopf-text);
+    background: var(--epos-karte-titel);
+    border-color: var(--epos-karte-titel);
+}
+
+.epos-wahlkaestchen:not(.epos-wahlkaestchen--kopf)[aria-checked="true"]:hover {
+    background: var(--epos-quelle-text);
+    border-color: var(--epos-quelle-text);
+}
+
+.epos-wahlkaestchen:not(.epos-wahlkaestchen--kopf):focus-visible {
+    outline: 2px solid var(--epos-karte-rahmen-hover);
+    outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+    .epos-wahlkaestchen:not(.epos-wahlkaestchen--kopf) {
+        border-color: ButtonText;
+    }
+
+    .epos-wahlkaestchen:not(.epos-wahlkaestchen--kopf)[aria-checked="true"] {
+        forced-color-adjust: none;
+        color: HighlightText;
+        background: Highlight;
+        border-color: Highlight;
+    }
 }
 
 /* ---- MIT FESTER HOEHE: eigenes Fenster und Ueberlagerung ------------- */
@@ -11311,6 +11374,26 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
     padding-right: 2px;
     text-align: center;
     white-space: nowrap;
+}
+
+/* Die Kaestchenspalte der Projektliste in jedem Wirt (KA-E-28), auch in der Zuordnungsliste: so breit wie der
+   Kreis mit der Polsterung des Hauses (8 px) - sie haelt ihn vom Balken der gewaehlten Zeile (4 px) frei. Ohne
+   festes Mass gaebe eine Tabelle ohne Namensspalte von 100 % (Waermepumpe) dem Kaestchen einen Teil ihrer
+   Breite. Die Hoehe bleibt: oben und unten die Polsterung des Hauses (4 px). */
+.epos-zweispalten-inhalt--zeilenwahl table.epos-raster > thead > tr > th.epos-spalte-kaestchen,
+.epos-zweispalten-inhalt--zeilenwahl table.epos-raster > tbody > tr > td.epos-spalte-kaestchen {
+    width: calc(var(--epos-touchziel) + 16px);
+    padding-left: 8px;
+    padding-right: 8px;
+    text-align: center;
+}
+
+/* Im QuickGrid steht das Kopfhaekchen in einem Flexkasten mit Platz fuer die Sortiermarke rechts
+   (col-header-content). Die Kaestchenspalte sortiert nicht: ohne den Platz misst die Spalte auch hier
+   nur den Kreis, und das Haekchen steht ueber seiner Mitte wie in den von Hand gebauten Listen. */
+.epos-zweispalten-inhalt--zeilenwahl table.epos-raster > thead > tr > th.epos-spalte-kaestchen > .col-header-content {
+    justify-content: center;
+    padding-right: 0;
 }
 
 .epos-zeilenstift {
