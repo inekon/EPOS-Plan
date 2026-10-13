@@ -132511,6 +132511,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenschalter: Deckt der Stand (bzw. irgendein Stand) Kältebedarf dezentral über mindestens eine Split-Zeile mit Ergebnis? ähnelt.
+        /// </summary>
+        public static string VF_HAT__KAELTE__DEZENTRAL {
+            get {
+                return ResourceManager.GetString("VF_HAT__KAELTE__DEZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Datenschalter: Hat ein Gebäude des Stands (bzw. irgendeines Stands) mit wirksamer Schnellaufheizung gerechnet? ähnelt.
         /// </summary>
         public static string VF_HAT__SCHNELLAUFHEIZUNG {

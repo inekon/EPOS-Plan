@@ -53858,6 +53858,9 @@ Chart</value>
   <data name="VF_HAT__SCHNELLAUFHEIZUNG" xml:space="preserve">
     <value>Datenschalter: Hat ein Gebäude des Stands (bzw. irgendeines Stands) mit wirksamer Schnellaufheizung gerechnet?</value>
   </data>
+  <data name="VF_HAT__KAELTE__DEZENTRAL" xml:space="preserve">
+    <value>Datenschalter: Deckt der Stand (bzw. irgendein Stand) Kältebedarf dezentral über mindestens eine Split-Zeile mit Ergebnis?</value>
+  </data>
   <data name="ABW_MERKMAL_VORH_SCHNELLAUF" xml:space="preserve">
     <value>Schnellaufheizung</value>
   </data>

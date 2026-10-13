@@ -480,7 +480,11 @@ namespace EPOS.Kern.Tests
             "{{bericht.warnungen}}",
             "{{wirtschaft.beste.anzeige}}", "{{wirtschaft.beste.kapitalwert_diff}}", "{{wirtschaft.vorschlag}}",
             "{{#wenn hat.bild.wirtschaft.spanne}}", "{{/wenn}}", "{{tabelle.wirtschaft.szenarien}}", "{{wirtschaft.warnungen}}",
-            "{{#wenn hat.kaelte}}", "{{stamm.kennzahl.kaelte.jahresbedarf}}", "{{stamm.kennzahl.kaelte.deckungsgrad}}", "{{/wenn}}",
+            // K6d-N (Katalog v23): der Kühlsatz ohne Split-Zeile wie zuvor, mit ihr die Hauptzahl samt „davon Kältefolge“.
+            "{{#wenn hat.kaelte}}", "{{#wenn nicht hat.kaelte.dezentral}}", "{{stamm.kennzahl.kaelte.jahresbedarf}}",
+            "{{stamm.kennzahl.kaelte.deckungsgrad}}", "{{/wenn}}", "{{#wenn hat.kaelte.dezentral}}",
+            "{{stamm.kennzahl.kaelte.jahresbedarf}}", "{{stamm.kennzahl.kaelte.deckungsgrad_gesamt}}",
+            "{{stamm.kennzahl.kaelte.deckungsgrad_kaeltefolge}}", "{{/wenn}}", "{{/wenn}}",
             // KP3 Welle O3a (E58 F4 (b)): der Aufheizabsatz je Gebäude aus Einzelfeldern, nur mit Aufheizoptimierung.
             "{{#wenn hat.aufheizung}}", "{{#je gebaeude}}", "{{gebaeude.name}}", "{{gebaeude.ergebnis.aufheizzeit}}",
             "{{gebaeude.ergebnis.aufheiz_aussentemperatur}}", "{{gebaeude.ergebnis.aufheizleistung}}",
