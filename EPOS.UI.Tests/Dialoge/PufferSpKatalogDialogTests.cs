@@ -42,8 +42,7 @@ public class PufferSpKatalogDialogTests : EposBunitContext
         Firma = "Bosch",
         SpeichertypIndex = 1,
         Bereitschaftsverluste = 3.34,
-        Gesamtvolumen = 3000,
-        Investitionskosten = 1250.5
+        Gesamtvolumen = 3000
     };
 
     private IRenderedComponent<PufferSpKatalogDialog> Aufbauen(
@@ -433,13 +432,13 @@ public class PufferSpKatalogDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Der Preis überlebt das „Überschreiben"</b> (Anwenderentscheid 15.09.2026): Der
-    /// Dialog zeigt die Investitionskosten nicht mehr — geschrieben wird der GELADENE
-    /// Wert, nicht eine Null. Ohne diesen Durchgriff nullte jedes Speichern in dieser
-    /// Maske die Katalogspalte, die nur noch der Aufklapper führt.
+    /// <b>Der Speicherweg trägt keinen Preis</b> (Welle KB-4, Anwenderentscheid 13.10.2026 „eine
+    /// Kostenbasis, keine Doppelhaltung"): Die Spalte ist entfallen, der Feldsatz führt kein
+    /// Kostenfeld mehr — die Gerätekosten pflegt die Kostenverwaltung. Das „Überschreiben"
+    /// reicht die geladenen Gerätewerte unverändert durch.
     /// </summary>
     [Fact]
-    public void Der_ungezeigte_Preis_geht_unveraendert_in_den_Speicherweg()
+    public void Der_Speicherweg_traegt_keinen_Preis()
     {
         PufferSpKatalogDaten? gesehen = null;
         var cut = Aufbauen(ueberschreiben: d =>
@@ -452,7 +451,10 @@ public class PufferSpKatalogDialogTests : EposBunitContext
         cut.FindAll(".epos-leiste .epos-knopf")[0].Click();
 
         Assert.NotNull(gesehen);
-        Assert.Equal(1250.5, gesehen!.Investitionskosten);
+        Assert.Equal("Bosch", gesehen!.Firma);
+        Assert.Equal(3000, gesehen.Gesamtvolumen);
+        Assert.DoesNotContain(typeof(PufferSpKatalogDaten).GetProperties(),
+                              p => p.Name.Contains("Kosten") || p.Name.Contains("Invest"));
     }
 
     // =================================================================================

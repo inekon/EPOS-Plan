@@ -51489,7 +51489,7 @@ chart</value>
     <value>The catalogue entry "{0}" will be deleted for ALL projects. Continue?</value>
   </data>
   <data name="SKV_RUECK_BLEIBT" xml:space="preserve">
-    <value>Remaining in the project: number of modules, tilt, azimuth, albedo, the solar circuit (pump, losses, working temperature, approach, spread) and the sinks of the plant. Coefficients, areas and investment costs are transferred.</value>
+    <value>Remaining in the project: number of modules, tilt, azimuth, albedo, the solar circuit (pump, losses, working temperature, approach, spread) and the sinks of the plant. Coefficients and areas are transferred.</value>
   </data>
   <data name="WPV_TIP_UMSTELLEN_EINER" xml:space="preserve">
     <value>Switching needs exactly one heat pump in the project and exactly one catalogue entry.</value>

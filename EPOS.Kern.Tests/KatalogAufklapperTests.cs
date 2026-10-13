@@ -111,7 +111,8 @@ namespace EPOS.Kern.Tests
                 {
                     "BEZEICHNER", "KOLLEKTORTYP", "FIRMA", "BESCHREIBUNG",
                     "MODULFLAECHE", "APERTURFLAECHE", "BEZUGSFLAECHE",
-                    "H0", "K1", "K2", "KDIR", "KDIFF", "INVESTITIONSKOSTEN"
+                    // Welle KB-4: der Lesewert der Satzvorlage an der Stelle der Investitionskosten.
+                    "H0", "K1", "K2", "KDIR", "KDIFF", "GERAETEKOSTEN"
                 }
             };
             yield return new object[]
@@ -120,7 +121,8 @@ namespace EPOS.Kern.Tests
                 new[]
                 {
                     "BEZEICHNER", "FIRMA", "SPEICHERTYP", "VERLUSTE", "VOLUMEN",
-                    "INVESTITIONSKOSTEN"
+                    // Welle KB-4: der Lesewert der Satzvorlage an der Stelle der Investitionskosten.
+                    "GERAETEKOSTEN"
                 }
             };
         }
@@ -600,8 +602,7 @@ namespace EPOS.Kern.Tests
             var felder = new SolarkollektorenStammCtrl.AnzeigefelderSolarkollektor(
                 "Vakuumröhrenkollektor", "Probe GmbH", "Probe Aufklapper",
                 Modulflaeche: 2.4, Aperturflaeche: 2.1,
-                H0: 0.78, K1: 3.5, K2: 0.014, Kdir: 1.27, Kdiff: 0.9,
-                Investitionskosten: 1250.5);
+                H0: 0.78, K1: 3.5, K2: 0.014, Kdir: 1.27, Kdiff: 0.9);
 
             var ergebnis = SolarkollektorenStammCtrl.AnzeigefelderSchreiben(KOLLEKTOR, felder);
             Assert.True(ergebnis.Ok, ergebnis.Meldung);
@@ -623,7 +624,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal("0,014", nachher[KatalogBrowserProfil.FeldK2]);
             Assert.Equal("1,27", nachher[KatalogBrowserProfil.FeldKdir]);
             Assert.Equal("0,9", nachher[KatalogBrowserProfil.FeldKdiff]);
-            Assert.Equal("1250,5", nachher[KatalogBrowserProfil.FeldInvestitionskosten]);
+            // Welle KB-4: Gerätekosten sind ein Lesewert der Satzvorlage, kein Feld des Speicherwegs.
+            Assert.True(nachher.ContainsKey(KatalogBrowserProfil.FeldGeraetekosten));
         }
 
         /// <summary>
@@ -638,14 +640,14 @@ namespace EPOS.Kern.Tests
             using var _ = new Kulturvorrichtung();
 
             var zuGross = new SolarkollektorenStammCtrl.AnzeigefelderSolarkollektor(
-                "Flachkollektor", "x", "", 2, 2, 76.1, 3.5, 0.014, 0.94, 0, 0);
+                "Flachkollektor", "x", "", 2, 2, 76.1, 3.5, 0.014, 0.94, 0);
             var abgelehnt = SolarkollektorenStammCtrl.AnzeigefelderSchreiben(KOLLEKTOR, zuGross);
 
             Assert.False(abgelehnt.Ok);
             Assert.Contains("h0", abgelehnt.Meldung);
 
             var mitKdir = new SolarkollektorenStammCtrl.AnzeigefelderSolarkollektor(
-                "Flachkollektor", "x", "", 2, 2, 0.761, 3.5, 0.014, 1.27, 0, 0);
+                "Flachkollektor", "x", "", 2, 2, 0.761, 3.5, 0.014, 1.27, 0);
             Assert.True(SolarkollektorenStammCtrl.AnzeigefelderSchreiben(KOLLEKTOR, mitKdir).Ok);
         }
 
@@ -657,7 +659,7 @@ namespace EPOS.Kern.Tests
             using var _ = new Kulturvorrichtung();
 
             var felder = new SolarkollektorenStammCtrl.AnzeigefelderSolarkollektor(
-                "x", "y", "z", 1, 1, 0.8, 3, 0.01, 0.9, 0.9, 100);
+                "x", "y", "z", 1, 1, 0.8, 3, 0.01, 0.9, 0.9);
 
             var ergebnis = SolarkollektorenStammCtrl.AnzeigefelderSchreiben("gibt-es-nicht", felder);
 
@@ -670,7 +672,7 @@ namespace EPOS.Kern.Tests
         // 5 - Pufferspeicher: der neue Schreibweg
         // =================================================================================
 
-        /// <summary>Lesen, aendern, schreiben, wieder lesen — fuenf Felder.</summary>
+        /// <summary>Lesen, aendern, schreiben, wieder lesen — vier Felder (die Investitionskosten sind mit Welle KB-4 entfallen).</summary>
         [Fact]
         public void Pufferspeicher_Rundlauf_schreibt_alle_Felder_zurueck()
         {
@@ -678,7 +680,7 @@ namespace EPOS.Kern.Tests
             using var _ = new Kulturvorrichtung();
 
             var felder = new PufferSpStammCtrl.AnzeigefelderPufferspeicher(
-                "Probe GmbH", "Kombispeicher", 4.25, 2500, 3300.75);
+                "Probe GmbH", "Kombispeicher", 4.25, 2500);
 
             var ergebnis = PufferSpStammCtrl.AnzeigefelderSchreiben(PUFFER, felder);
             Assert.True(ergebnis.Ok, ergebnis.Meldung);
@@ -692,7 +694,121 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Kombispeicher", nachher[KatalogBrowserProfil.FeldSpeichertyp]);
             Assert.Equal("4,25", nachher[KatalogBrowserProfil.FeldVerluste]);
             Assert.Equal("2500", nachher[KatalogBrowserProfil.FeldVolumen]);
-            Assert.Equal("3300,75", nachher[KatalogBrowserProfil.FeldInvestitionskosten]);
+            Assert.True(nachher.ContainsKey(KatalogBrowserProfil.FeldGeraetekosten));
+        }
+
+        /// <summary>
+        /// <b>Die Gerätekosten von Pufferspeicher und Solarkollektor kommen aus der SATZVORLAGE</b> (Welle KB-4):
+        /// Katalogsatz und Satz nach ID zeigen die Summe der Investitionsvorlage, auf die der Satz verweist — ohne
+        /// Verweis bleibt das Feld LEER. Der Kollektor rechnet eine spezifische Position mit seiner Aperturfläche.
+        /// </summary>
+        [Fact]
+        public void Puffer_und_Kollektor_Geraetekosten_kommen_aus_der_Satzvorlage()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new Kulturvorrichtung();
+
+            GeraetekostenProbe("Tab_Pufferspeicher_STAMM", PUFFER, DbWerte.BEMESSUNG_BETRAG, 1800, "1800",
+                () => PufferSpStammCtrl.KatalogsatzAnzeige(PUFFER),
+                id => PufferSpStammCtrl.SatzAnzeige(false, id));
+
+            double apertur = Convert.ToDouble(DataRepository.ExecuteScalar(
+                "SELECT Aperturflaeche FROM Tab_Solarkollektoren_STAMM WHERE Bezeichner = ?", new DbParam("@n", KOLLEKTOR)),
+                CultureInfo.InvariantCulture);
+            Assert.True(apertur > 0);
+            GeraetekostenProbe("Tab_Solarkollektoren_STAMM", KOLLEKTOR, DbWerte.BEMESSUNG_EUR_PRO_M2_KOLLEKTOR, 400,
+                (400 * apertur).ToString("0.##", CultureInfo.CurrentCulture),
+                () => SolarkollektorenStammCtrl.KatalogsatzAnzeige(KOLLEKTOR),
+                id => SolarkollektorenStammCtrl.SatzAnzeige(false, id));
+        }
+
+        /// <summary>
+        /// <b>Die Gerätekosten der Kältemaschine kommen aus der SATZVORLAGE</b> (Welle KB-4): Das Modell führt
+        /// statt der entfallenen Modulkosten den Lesewert <see cref="KaeltemaschineModel.Geraetekosten"/> — die
+        /// Summe der Investitionsvorlage; ohne Verweis <c>null</c>.
+        /// </summary>
+        [Fact]
+        public void Kaeltemaschine_Geraetekosten_kommen_aus_der_Satzvorlage()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new Kulturvorrichtung();
+
+            object roh = DataRepository.ExecuteScalar(
+                "SELECT MIN(ID) FROM [" + KaeltemaschineSchema.TAB_STAMM + "]");
+            if (roh == null || roh == DBNull.Value) return;
+            int id = Convert.ToInt32(roh, CultureInfo.InvariantCulture);
+
+            int komponente = GeraetekostenEntfallSchema.GEWERKE
+                .First(g => g.Katalog == KaeltemaschineSchema.TAB_STAMM).KomponentenId;
+            int vorlage = KostenVorlagenCtrl.VorlageNeu(komponente, DbWerte.KOSTEN_KATEGORIE_INVESTITION,
+                                                        "Probe Satzvorlage KB-4c Kaelte");
+            Assert.True(vorlage > 0);
+            int position = KostenVorlagenCtrl.PositionNeu(vorlage, "Geraet", DbWerte.KOSTENART_KAPITALGEBUNDEN,
+                                                          DbWerte.BEMESSUNG_BETRAG);
+            var p = KostenVorlagenCtrl.Positionen(vorlage).First(x => x.Id == position);
+            p.Satz = 31000;
+            Assert.True(KostenVorlagenCtrl.PositionSpeichern(p));
+
+            try
+            {
+                DataRepository.ExecuteSQL(
+                    "UPDATE [" + KaeltemaschineSchema.TAB_STAMM + "] SET " +
+                    KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION + " = ? WHERE ID = ?",
+                    new DbParam("@v", vorlage), new DbParam("@id", id));
+                Assert.Equal(31000.0, KaeltemaschineStammCtrl.Laden(id).Geraetekosten);
+
+                DataRepository.ExecuteSQL(
+                    "UPDATE [" + KaeltemaschineSchema.TAB_STAMM + "] SET " +
+                    KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION + " = NULL WHERE ID = ?",
+                    new DbParam("@id", id));
+                Assert.Null(KaeltemaschineStammCtrl.Laden(id).Geraetekosten);
+            }
+            finally
+            {
+                KostenVorlagenCtrl.VorlageLoeschen(vorlage);
+            }
+        }
+
+        /// <summary>
+        /// Legt eine Investitionsvorlage mit EINER Position an, verweist den Satz darauf, prüft den Lesewert in
+        /// beiden Anzeigen und danach ohne Verweis das leere Feld; räumt die Vorlage wieder ab.
+        /// </summary>
+        private static void GeraetekostenProbe(string tabelle, string name, string bemessung, double satz, string erwartet,
+                                               Func<IReadOnlyDictionary<string, string>> anzeige,
+                                               Func<int, IReadOnlyDictionary<string, string>> nachId)
+        {
+            int id = Convert.ToInt32(DataRepository.ExecuteScalar(
+                "SELECT ID FROM [" + tabelle + "] WHERE Bezeichner = ? ORDER BY ID", new DbParam("@n", name)),
+                CultureInfo.InvariantCulture);
+            Assert.True(id > 0);
+
+            int komponente = GeraetekostenEntfallSchema.GEWERKE.First(g => g.Katalog == tabelle).KomponentenId;
+            int vorlage = KostenVorlagenCtrl.VorlageNeu(komponente, DbWerte.KOSTEN_KATEGORIE_INVESTITION,
+                                                        "Probe Satzvorlage KB-4c");
+            Assert.True(vorlage > 0);
+            int position = KostenVorlagenCtrl.PositionNeu(vorlage, "Geraet", DbWerte.KOSTENART_KAPITALGEBUNDEN, bemessung);
+            Assert.True(position > 0);
+            var p = KostenVorlagenCtrl.Positionen(vorlage).First(x => x.Id == position);
+            p.Satz = satz;
+            Assert.True(KostenVorlagenCtrl.PositionSpeichern(p));
+
+            try
+            {
+                DataRepository.ExecuteSQL(
+                    "UPDATE [" + tabelle + "] SET " + KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION +
+                    " = ? WHERE ID = ?", new DbParam("@v", vorlage), new DbParam("@id", id));
+                Assert.Equal(erwartet, anzeige()[KatalogBrowserProfil.FeldGeraetekosten]);
+                Assert.Equal(erwartet, nachId(id)[KatalogBrowserProfil.FeldGeraetekosten]);
+
+                DataRepository.ExecuteSQL(
+                    "UPDATE [" + tabelle + "] SET " + KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION +
+                    " = NULL WHERE ID = ?", new DbParam("@id", id));
+                Assert.Equal("", anzeige()[KatalogBrowserProfil.FeldGeraetekosten]);
+            }
+            finally
+            {
+                KostenVorlagenCtrl.VorlageLoeschen(vorlage);
+            }
         }
 
         /// <summary>
@@ -708,13 +824,13 @@ namespace EPOS.Kern.Tests
 
             Assert.True(PufferSpStammCtrl.AnzeigefelderSchreiben(PUFFER,
                 new PufferSpStammCtrl.AnzeigefelderPufferspeicher(
-                    "x", "Buffer storage", 1, 100, 0)).Ok);
+                    "x", "Buffer storage", 1, 100)).Ok);
             Assert.Equal("Pufferspeicher",
                          PufferSpStammCtrl.KatalogsatzAnzeige(PUFFER)[KatalogBrowserProfil.FeldSpeichertyp]);
 
             Assert.True(PufferSpStammCtrl.AnzeigefelderSchreiben(PUFFER,
                 new PufferSpStammCtrl.AnzeigefelderPufferspeicher(
-                    "x", "Eiswürfelspeicher", 1, 100, 0)).Ok);
+                    "x", "Eiswürfelspeicher", 1, 100)).Ok);
             Assert.Equal("Eiswürfelspeicher",
                          PufferSpStammCtrl.KatalogsatzAnzeige(PUFFER)[KatalogBrowserProfil.FeldSpeichertyp]);
         }
@@ -732,7 +848,7 @@ namespace EPOS.Kern.Tests
             var vorher = PufferSpStammCtrl.KatalogsatzAnzeige(PUFFER);
 
             var ergebnis = PufferSpStammCtrl.AnzeigefelderSchreiben(PUFFER,
-                new PufferSpStammCtrl.AnzeigefelderPufferspeicher("x", "Pufferspeicher", 1, -5, 0));
+                new PufferSpStammCtrl.AnzeigefelderPufferspeicher("x", "Pufferspeicher", 1, -5));
 
             Assert.False(ergebnis.Ok);
             Assert.Contains("Gesamtvolumen", ergebnis.Meldung);
@@ -751,7 +867,7 @@ namespace EPOS.Kern.Tests
             using var _ = new Kulturvorrichtung();
 
             var ergebnis = PufferSpStammCtrl.AnzeigefelderSchreiben("gibt-es-nicht",
-                new PufferSpStammCtrl.AnzeigefelderPufferspeicher("x", "Pufferspeicher", 1, 100, 0));
+                new PufferSpStammCtrl.AnzeigefelderPufferspeicher("x", "Pufferspeicher", 1, 100));
 
             Assert.False(ergebnis.Ok);
             Assert.False(string.IsNullOrEmpty(ergebnis.Meldung));

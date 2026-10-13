@@ -198,7 +198,8 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = "PUFFERSPEICHER",
                 Tabelle = "Tab_Pufferspeicher_STAMM",
-                AusschlussSpalten = new[] { "Investitionskosten" },
+                // Die Kostenspalte ist mit Welle KB-4 entfallen; kein Anwenderfeld bleibt.
+                AusschlussSpalten = new string[0],
                 ImportSpalten = new[] { "Hersteller", "Speichertyp", "Bereitschaftsverluste",
                     "Gesamtvolumen" }
             },
@@ -206,7 +207,8 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = "SOLARKOLLEKTOREN",
                 Tabelle = "Tab_Solarkollektoren_STAMM",
-                AusschlussSpalten = new[] { "Investitionskosten" },
+                // Die Kostenspalte ist mit Welle KB-4 entfallen; kein Anwenderfeld bleibt.
+                AusschlussSpalten = new string[0],
                 // ST6 (Welle M2): die Bezugsflaeche der Kennwerte setzt der Import, wo die Quelle sie nennt.
                 ImportSpalten = new[] { "Firma", "Kollektortyp", "Modulflaeche", "Aperturflaeche",
                     "h0", "k1", "k2", "Kdir", "Kdfu", SolarthermieFelderSchema.SPALTE_BEZUGSFLAECHE }
@@ -251,10 +253,11 @@ namespace WindowsFormsApplication1
             },
             new KatalogDefinition
             {
-                // KU3-1: die Kaeltemaschine. "Modulkosten" ist ein Anwenderfeld wie bei der Waermepumpe.
+                // KU3-1: die Kaeltemaschine. Die Kostenspalte ist mit Welle KB-4 entfallen;
+                // kein Anwenderfeld bleibt.
                 Schluessel = "KAELTEMASCHINE",
                 Tabelle = KaeltemaschineSchema.TAB_STAMM,
-                AusschlussSpalten = new[] { KaeltemaschineSchema.SPALTE_MODULKOSTEN },
+                AusschlussSpalten = new string[0],
                 Datenbloecke = new[]
                 {
                     new KatalogDatenblock

@@ -489,15 +489,13 @@ namespace WindowsFormsApplication1
         private static int Anlegen(int idProjekt, PspEingaben e)
         {
             string hersteller = "", speichertyp = ProjektPuffer.SPEICHERTYP_PUFFER;
-            double investition = 0;
-            KatalogfelderLesen(e.Katalogzeile, 0, idProjekt, ref hersteller, ref speichertyp,
-                               ref investition);
+            KatalogfelderLesen(e.Katalogzeile, 0, idProjekt, ref hersteller, ref speichertyp);
 
             var set = new PufferSpCtrl.KlassenSet(e.Heizung, e.Brauchwasser, e.Prozess, e.Kaelte);
 
             return PufferSpCtrl.ProjektPufferAnlegen(
                 idProjekt, e.Bezeichner, hersteller, speichertyp, e.Volumen, e.Verluste,
-                investition, set.Verwendung, e.Vorlauf, e.Ruecklauf,
+                set.Verwendung, e.Vorlauf, e.Ruecklauf,
                 e.SchwelleEin, e.SchwelleAus, e.SchwelleNachrang, e.Entladeprio,
                 e.SchwelleReserve, set.Heizung, set.Brauchwasser, set.Prozess,
                 Schichtdaten(e.Schicht));
@@ -506,27 +504,26 @@ namespace WindowsFormsApplication1
         private static bool Aendern(int idProjekt, int idPuffer, PspEingaben e)
         {
             string hersteller = "", speichertyp = ProjektPuffer.SPEICHERTYP_PUFFER;
-            double investition = 0;
             KatalogfelderLesen(e.Katalogzeile, idPuffer, idProjekt, ref hersteller,
-                               ref speichertyp, ref investition);
+                               ref speichertyp);
 
             var set = new PufferSpCtrl.KlassenSet(e.Heizung, e.Brauchwasser, e.Prozess, e.Kaelte);
 
             return PufferSpCtrl.ProjektPufferAendern(
                 idPuffer, idProjekt, e.Bezeichner, hersteller, speichertyp, e.Volumen,
-                e.Verluste, investition, set.Verwendung, e.Vorlauf, e.Ruecklauf,
+                e.Verluste, set.Verwendung, e.Vorlauf, e.Ruecklauf,
                 e.SchwelleEin, e.SchwelleAus, e.SchwelleNachrang, e.Entladeprio,
                 e.SchwelleReserve, set.Heizung, set.Brauchwasser, set.Prozess,
                 Schichtdaten(e.Schicht));
         }
 
         /// <summary>
-        /// Hersteller, Speichertyp und Investitionskosten — aus der gewählten
-        /// Katalogzeile oder aus dem Bestand (<c>KatalogfelderLesen</c>:1882-1913).
+        /// Hersteller und Speichertyp — aus der gewählten Katalogzeile oder aus dem
+        /// Bestand (<c>KatalogfelderLesen</c>:1882-1913). Eine Investition übernimmt der
+        /// Puffer nicht mehr (Welle KB-4): Die Kosten trägt die Kostenverwaltung.
         /// </summary>
         private static void KatalogfelderLesen(int katalogzeile, int idPuffer, int idProjekt,
-                                               ref string hersteller, ref string speichertyp,
-                                               ref double investition)
+                                               ref string hersteller, ref string speichertyp)
         {
             if (katalogzeile >= 0)
             {
@@ -537,7 +534,6 @@ namespace WindowsFormsApplication1
                     PufferSpStammCtrl.Katalogzeile z = katalog[katalogzeile];
                     hersteller = z.Hersteller;
                     if (z.Speichertyp.Length > 0) speichertyp = z.Speichertyp;
-                    investition = z.Investitionskosten;
                     return;
                 }
             }
@@ -549,8 +545,6 @@ namespace WindowsFormsApplication1
 
             hersteller = d.Hersteller;
             if (!string.IsNullOrEmpty(d.Typ)) speichertyp = d.Typ;
-            double.TryParse(d.Investitionskosten, NumberStyles.Float, CultureInfo.CurrentCulture,
-                            out investition);
         }
 
         /// <summary>

@@ -655,7 +655,7 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        // 4. Solarkollektoren — Tab_Solarkollektoren_STAMM (15 Spalten)
+        // 4. Solarkollektoren — Tab_Solarkollektoren_STAMM (14 Spalten)
         // =================================================================
 
         /// <remarks>
@@ -666,12 +666,12 @@ namespace WindowsFormsApplication1
         /// bezogen sind (<c>Bezugsflaeche</c>: Apertur als Vorgabe oder Brutto, Welle M2 ST6), mal
         /// <c>Tab_Energieanlagen.Kollektormodulanzahl</c>.
         ///
-        /// <para><b>Die Investitionskosten pflegt seit dem 15.09.2026 der AUFKLAPPER</b>
-        /// „Alle Daten" im Modulbereich des <c>SolarkollektorenDialog</c>: Aus dem
-        /// Katalogeditor ist das Feld gefallen (Pflichtfelder 8 → 7), der Aufklapper
-        /// zeigt dafuer ALLE editierbaren Spalten des
-        /// <see cref="KatalogBrowserProfil"/>. Die Fundstelle bleibt die des RECHNERS —
-        /// sie belegt die Einstufung, nicht die Eingabe.</para>
+        /// <para><b>Diese Tabelle fuehrt KEINE Kostenspalte mehr.</b> <c>Investitionskosten</c>
+        /// ist mit Welle KB-4 entfallen (Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine
+        /// Doppelhaltung", Schemaschritt <c>GeraetekostenEntfallSchema</c>). Die eine Basis ist
+        /// die Satzvorlage des Katalogsatzes; der Planwert einer Anlage kommt aus ihr
+        /// (<c>TechnikPlanwertCtrl.Satzvorlagenbasis</c>), die Anzeige des Satzes aus
+        /// <c>Katalogkostenanzeige.Investitionstext</c>.</para>
         /// </remarks>
         private static IReadOnlyList<ParameterEintrag> Solarkollektoren(Func<string, string> t)
         {
@@ -700,8 +700,6 @@ namespace WindowsFormsApplication1
                 E("Kdfu", "Kdiff:", "", SIM,
                   "Solarkreis.LeistungJeQm (K_d der Diffus- und Bodenreflexstrahlung, ST5; 0 = K_b(θ)); " +
                   "SolarkollektorKatalogDialog.razor (Feld Kdiff)"),
-                E("Investitionskosten", t("SKK_LBL_KOSTEN"), "€", WIRT,
-                  "TechnikPlanwertCtrl.BasenFuellen (Stueckpreis, ERZEUGER_SOLARTHERMIE)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "SolarkollektorenStammCtrl (Auslieferungssatz)"),
 
@@ -836,7 +834,7 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        // 7. Pufferspeicher — Tab_Pufferspeicher_STAMM (8 Spalten)
+        // 7. Pufferspeicher — Tab_Pufferspeicher_STAMM (7 Spalten)
         // =================================================================
 
         /// <remarks>
@@ -847,11 +845,12 @@ namespace WindowsFormsApplication1
         /// traegt nur die sechs Geraetewerte — deshalb ist dies die kuerzeste der
         /// sieben Tabellen.
         ///
-        /// <para><b>Die Investitionskosten pflegt seit dem 15.09.2026 der AUFKLAPPER</b>
-        /// „Alle Daten" im Modulbereich des <c>PufferspeicherDialog</c>: Aus dem
-        /// Katalogeditor ist die Kostengruppe gefallen, der Aufklapper zeigt dafuer ALLE
-        /// editierbaren Spalten des <see cref="KatalogBrowserProfil"/>. Die Fundstelle
-        /// bleibt die des RECHNERS — sie belegt die Einstufung, nicht die Eingabe.</para>
+        /// <para><b>Diese Tabelle fuehrt KEINE Kostenspalte mehr.</b> <c>Investitionskosten</c>
+        /// ist mit Welle KB-4 entfallen (Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine
+        /// Doppelhaltung", Schemaschritt <c>GeraetekostenEntfallSchema</c>). Die eine Basis ist
+        /// die Satzvorlage des Katalogsatzes; der Planwert einer Anlage kommt aus ihr
+        /// (<c>TechnikPlanwertCtrl.Satzvorlagenbasis</c>), die Anzeige des Satzes aus
+        /// <c>Katalogkostenanzeige.Investitionstext</c>.</para>
         /// </remarks>
         private static IReadOnlyList<ParameterEintrag> Pufferspeicher(Func<string, string> t)
         {
@@ -869,8 +868,6 @@ namespace WindowsFormsApplication1
                   "SimulationControl.SpeicherRegistryAufbauen (SimulationPufferspeicher.Init); WaermequelleClass.Quellspeicher"),
                 E("Gesamtvolumen", t("PSPK_LBL_VOLUMEN"), "l", SIM_BER,
                   "SimulationControl.SpeicherRegistryAufbauen; WaermequelleClass.Quellspeicher; AbweichungsErmittler.Felder (Tab_Pufferspeicher.Gesamtvolumen)"),
-                E("Investitionskosten", t("PSPK_LBL_INVEST"), "€", WIRT,
-                  "TechnikPlanwertCtrl.BasenFuellen (KOSTEN_KOMPONENTE_PUFFERSPEICHER)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "PufferSpStammCtrl.Ueberschreiben (Auslieferungssatz)")
             }.Concat(Katalogspalten(t)).Concat(Kostenvorlage(t)).ToList();
@@ -918,7 +915,9 @@ namespace WindowsFormsApplication1
         /// Rückkühlart, Mindestteillast, Hilfsstrom der Rückkühlung und den kleinsten Kaltwasservorlauf;
         /// Leistung und EER der Stunde kommen aus der Kennlinie. Der Nenn-EER ist eine Angabe des
         /// Datenblatts, das Kältemittel ein Code mit Verweis auf die Kältemitteltabelle für die Zulässigkeitsprüfung (seine
-        /// Treibhauswirkung rechnet EPOS-Plan nicht, Kühlkonzept 6.3); die Modulkosten liest die Wirtschaftlichkeit (KU3-4, Gerätepreis × Anzahl der Anlagenzeile).
+        /// Treibhauswirkung rechnet EPOS-Plan nicht, Kühlkonzept 6.3). Eine Kostenspalte führt die Tabelle nicht mehr: <c>Modulkosten</c>
+        /// ist mit Welle KB-4 entfallen (<c>GeraetekostenEntfallSchema</c>); der Planwert kommt aus der Satzvorlage
+        /// (<c>TechnikPlanwertCtrl.Satzvorlagenbasis</c>), die Anzeige aus <c>Katalogkostenanzeige.Investition</c>.
         /// </summary>
         private static IReadOnlyList<ParameterEintrag> Kaeltemaschine(Func<string, string> t)
         {
@@ -949,8 +948,6 @@ namespace WindowsFormsApplication1
                   "Kaeltemaschine.Stunde (Hilfsstrom der Rueckkuehlung x Laufanteil)"),
                 E(KaeltemaschineSchema.SPALTE_KALTWASSER_VORLAUF_MIN, t("KM_LBL_KALTWASSER_MIN"), "°C", SIM,
                   "Kaeltemaschine.AusModell (untere Grenze der Kaltwassertemperatur)"),
-                E(KaeltemaschineSchema.SPALTE_MODULKOSTEN, t("KM_LBL_MODULKOSTEN"), "€", WIRT,
-                  "TechnikPlanwertCtrl.BasenFuellen (ERZEUGER_KAELTEMASCHINE: Geraetepreis x Anzahl der Anlagenzeile)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "KaeltemaschineStammCtrl.Speichern (Auslieferungssatz)"),
             }.Concat(Katalogspalten(t)).Concat(Kostenvorlage(t)).Concat(KaeltemaschineTeillast(t)).Concat(KaelteKatalogfelder(t))

@@ -270,7 +270,7 @@ namespace WindowsFormsApplication1
         internal const string SQL_ZEILE_UMHAENGEN =
             "UPDATE " + PufferAuslegungSchema.TAB + " SET ID_Pufferspeicher = ? WHERE ID_Projekt = ? AND ID_Pufferspeicher IS NULL";
         internal const string SQL_PUFFER_STAMMWERTE =
-            "SELECT Bezeichner, Hersteller, Speichertyp, Investitionskosten, Vorlauf, Ruecklauf, Schwelle_Ein, " +
+            "SELECT Bezeichner, Hersteller, Speichertyp, Vorlauf, Ruecklauf, Schwelle_Ein, " +
             "Schwelle_Aus, Schwelle_Aus_Nachrang, Entladeprio, Schwelle_Reserve FROM Tab_Pufferspeicher WHERE ID = ? AND ID_Projekt = ?";
 
         // =================================================================================
@@ -1483,9 +1483,12 @@ namespace WindowsFormsApplication1
                 string name = string.IsNullOrWhiteSpace(bezeichner) ? Text(r, "Bezeichner") : bezeichner;
                 double? vl = ZahlOderNull(r, "Vorlauf"), rl = ZahlOderNull(r, "Ruecklauf");
                 double? sEin = ZahlOderNull(r, "Schwelle_Ein"), sAus = ZahlOderNull(r, "Schwelle_Aus");
+                // DIE EINE KOSTENBASIS (Welle KB-4): Der Puffer fuehrt keine Investition mehr.
+                // Was er kostet, steht in der Kostenverwaltung - Satzvorlage des Katalogsatzes
+                // oder Investitionsposition der Anlage; die Auslegung schreibt keinen Betrag.
                 bool ok = PufferSpCtrl.ProjektPufferAendern(
                     idPuffer.Value, idProjekt, name, Text(r, "Hersteller"), Text(r, "Speichertyp"), volumen, verluste,
-                    ZahlOderNull(r, "Investitionskosten") ?? 0, verwendung,
+                    verwendung,
                     vl.HasValue ? (int?)(int)vl.Value : null, rl.HasValue ? (int?)(int)rl.Value : null,
                     sEin > 0 ? sEin.Value : ProjektPuffer.SCHWELLE_EIN_DEFAULT,
                     sAus > 0 ? sAus.Value : ProjektPuffer.SCHWELLE_AUS_DEFAULT,
@@ -1498,7 +1501,7 @@ namespace WindowsFormsApplication1
             string neuName = string.IsNullOrWhiteSpace(bezeichner) ? "Pufferspeicher " + volumen + " l" : bezeichner;
             int neu = PufferSpCtrl.ProjektPufferAnlegen(
                 idProjekt, neuName, "", anteilH.HasValue ? DbWerte.PSP_SPEICHERTYP_KOMBI : DbWerte.PSP_SPEICHERTYP_PUFFER,
-                volumen, verluste, 0, verwendung, PufferSpCtrl.SystemVorlauf(idProjekt), PufferSpCtrl.SystemRuecklauf(idProjekt),
+                volumen, verluste, verwendung, PufferSpCtrl.SystemVorlauf(idProjekt), PufferSpCtrl.SystemRuecklauf(idProjekt),
                 ProjektPuffer.SCHWELLE_EIN_DEFAULT, ProjektPuffer.SCHWELLE_AUS_DEFAULT, null, 0,
                 ProjektPuffer.SCHWELLE_RESERVE_DEFAULT, h, b, p, Schicht(null));
             // Die Auslegungszeile „neu anlegen“ gehört ab jetzt zum angelegten Puffer.

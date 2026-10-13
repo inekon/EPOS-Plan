@@ -5748,9 +5748,10 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kaltwasser_min", SICHT + "KaltwasserMin", KiDialogTexte.KmKaltwasserMinName,
                                      KiParameterTyp.Zahl, KiDialogTexte.KmKaltwasserMinErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
-                    new KiDialogFeld("modulkosten", SICHT + "Modulkosten", KiDialogTexte.KmModulkostenName,
-                                     KiParameterTyp.Zahl, KiDialogTexte.KmModulkostenErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: true, min: 0),
+                    // HIER STAND "modulkosten" - die Spalte ist mit Welle KB-4 entfallen
+                    // (Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung");
+                    // die Geraetekosten laufen ueber die Kostenverwaltung, der Dialog zeigt
+                    // sie nur noch als Lesewert der Satzvorlage.
                     // K-A: die fünf Katalogfelder (Geräteart, GWP, Füllmenge, saisonale Kennzahl).
                     new KiDialogFeld("geraeteart", SICHT + "Geraeteart", KiDialogTexte.KmGeraeteartName,
                                      KiParameterTyp.Wahl, KiDialogTexte.KmGeraeteartErl, leerErlaubt: true),
