@@ -1201,8 +1201,8 @@ public const string AUSDRUCK_MIT_KUEHLUNG = ">0";
 new Katalogspalte(SpKuehlleistung, t("KFLT_SP_KUEHLLEISTUNG"), "kW", Katalogspaltenart.Zahl),
 ```
 
-Das schnelle „nur mit Kühlfunktion" trägt ein **Schalter** des `WaermepumpenKatalogDialog`
-(Schalter `:95-96`, Lesen `:224-226`, Setzen `:235-237`), der genau diese Spalte auf
+Das schnelle „nur mit Kühlfunktion" trägt ein **Schalter** des `WaermepumpeStammDialog`
+(Schalter `:143-144`, Lesen `:611-613`, Setzen `:616-618`), der genau diese Spalte auf
 `AUSDRUCK_MIT_KUEHLUNG` setzt — dieselbe
 Zeichenkette, die ein Anwender von Hand in den Trichter schriebe.
 
@@ -2777,8 +2777,8 @@ Dieser Abschnitt setzt **E15** in Bedienung um; die Begründung und die Messzahl
 **Schritt 1 — im Katalog finden: gebaut.** Die Katalogliste der Wärmepumpe führt die Zahlenspalte
 **„Kühlleistung [kW]"** mit Trichter (`Katalogfilterprofil.cs:353`, Spaltendefinition `:593`;
 Bindung `WPStammCtrl.cs:245`) und darüber den Schalter **„nur mit Kühlfunktion"**
-(`WaermepumpenKatalogDialog.razor:95-96`), der in genau diese Spalte den Ausdruck
-`AUSDRUCK_MIT_KUEHLUNG` (`>0`, `:360`) schreibt (`:224-226`, `:235-237`). Die Regel
+(`WaermepumpeStammDialog.razor:143-144`), der in genau diese Spalte den Ausdruck
+`AUSDRUCK_MIT_KUEHLUNG` (`>0`, `:360`) schreibt (`:611-613`, `:616-618`). Die Regel
 „Kennzeichenspalten sind nicht filterbar" (`Katalogfilterprofil.cs:79`) steht unverändert — sie
 ist hier nicht berührt, weil die Ja/Nein-Spalte „Kühlen" durch die Zahl ersetzt ist. **K20 ist
 damit durch die Umsetzung erledigt** (5.0.3, 12.1); an diesem Schritt ist für KU2 nichts zu bauen.
@@ -3841,8 +3841,8 @@ Leseweg `:775`, `KanalParameter` `:1558-1565`, `KanalLesen`/`DeckungLesen` `:156
 `EPOS.Kern/Controller/PufferSpCtrl.cs` (`KlassenSet` `:685-696`);
 `EPOS.Kern/Model/WaermepumpenKatalogZeile.cs` (`:22`, `:56`, `:59`), `WPModel.cs` (`:21`, `:44`).
 
-`EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammDialog.razor` (`:156-159`),
-`WaermepumpenKatalogDialog.razor` (Schalter `:95-96`, `NurMitKuehlung` `:224-226`, `:235-237`);
+`EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammDialog.razor` (`:156-159`, Schalter `:143-144`,
+`NurMitKuehlung` `:611-613`, `:616-618`);
 `EPOS.UI.Daten/Simulation/SimulationErgebnisHuelle.Anzeige.cs` (Kanalkacheln `:30-31`,
 `KANALNAMEN` `:46-50`, Erzeugertabelle `:186`, `:190-232`, Ganglinien `:859-863`).
 

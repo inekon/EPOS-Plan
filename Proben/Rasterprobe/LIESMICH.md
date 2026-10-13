@@ -333,9 +333,9 @@ Kinder des Rasterpaares bekommen ihre selbsttätige Mindestgröße zurück
 (`min-height: auto`), damit jede Reihe ihre Inhaltshöhe behält; und der Rahmen rollt in
 sich (`overflow: auto`), statt die Maske länger zu machen — sonst stünde „Beenden" 850 px
 unter dem Fensterrand und wäre so unerreichbar wie vorher. Keine Positionierung, keine
-feste Pixelhöhe. Die zwei Masken, die `epos-katalog-fuellend` auf eine bloße Liste setzen
-(`GesetzeskatalogDialog`, `WaermepumpenKatalogDialog`), haben keine zweite Reihe und
-bleiben unberührt; die neun Fälle von `rasterprobe.mjs` bleiben grün.
+feste Pixelhöhe. Die Maske, die `epos-katalog-fuellend` auf eine bloße Liste setzt
+(`GesetzeskatalogDialog`), hat keine zweite Reihe und bleibt unberührt; die neun Fälle
+von `rasterprobe.mjs` bleiben grün.
 
 ### Der Wirt trägt auch die SVG-Probe (DG-1)
 

@@ -143225,15 +143225,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ✔ Auswahl übernehmen ähnelt.
-        /// </summary>
-        public static string WPK_BTN_UEBERNEHMEN {
-            get {
-                return ResourceManager.GetString("WPK_BTN_UEBERNEHMEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Maschine auch zum Kühlen benutzen ähnelt.
         /// </summary>
         public static string WPK_CHK_KUEHLBETRIEB {
@@ -143689,15 +143680,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPK_TEXT_ALLE {
             get {
                 return ResourceManager.GetString("WPK_TEXT_ALLE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen-Katalog ähnelt.
-        /// </summary>
-        public static string WPK_TITEL {
-            get {
-                return ResourceManager.GetString("WPK_TITEL", resourceCulture);
             }
         }
         

@@ -420,7 +420,7 @@ namespace WindowsFormsApplication1
         /// (Konzept_Katalogfilter 4.3) — deshalb ERSETZT die Zahlenspalte das Kennzeichen,
         /// statt neben es zu treten; die Waermepumpe behaelt ihre neun Spalten. Das
         /// schnelle „nur mit Kuehlfunktion" traegt der Schalter des
-        /// <c>WaermepumpenKatalogDialog</c>, der genau diese Spalte auf <c>&gt;0</c> setzt.</para>
+        /// <c>WaermepumpeStammDialog</c>, der genau diese Spalte auf <c>&gt;0</c> setzt.</para>
         /// </summary>
         public const string SpKuehlleistung = "KUEHLLEISTUNG";
 
