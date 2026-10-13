@@ -469,7 +469,7 @@ public class GebaeudeDialogImportTests : EposBunitContext
     };
 
     private static void Zeile(IRenderedComponent<GebaeudeDialog> cut, int index)
-        => cut.FindAll(".epos-raster-huelle table.epos-raster tbody tr")[index].QuerySelector("button")!.Click();
+        => cut.FindAll(".epos-raster-huelle table.epos-raster tbody tr")[index].QuerySelector(".epos-projektzeile")!.Click();
 
     [Fact]
     public void HC4_Der_Knopf_steht_nur_bei_einem_importierten_Gebaeude()

@@ -1132,6 +1132,77 @@ public sealed class StilblattTests
     }
 
     /// <summary>
+    /// <b>Kästchen und Kopfhäkchen der Projektliste im Schema des runden Wahlknopfs</b> (KA‑E‑28): ein Kreis mit
+    /// Rand, angekreuzt — auch ▣, eine Teilwahl — in den Farben des Primärknopfs, Schwebe und Fokus eigen, im
+    /// Hochkontrast die Systemfarben der Wahl. Die Zeile trägt die Berührungsgröße, das Kopfhäkchen ist kleiner
+    /// (32 px) in einer Kopfzelle mit 2 px Polsterung oben und unten, die ihre Höhe behält; die Spalte fasst
+    /// den Kreis mit der Polsterung des Hauses, die Zeilenhöhe misst die Rollbereichprobe.
+    /// </summary>
+    [Fact]
+    public void KR1_Das_Kaestchen_der_Zeile_ist_rund_und_das_Kopfhaekchen_rund()
+    {
+        string kreis = Regelblock(".epos-wahlkaestchen {");
+        foreach (string wert in new[] { "border-radius: 50%", "width: var(--epos-touchziel)", "height: var(--epos-touchziel)",
+                                        "border: 1px solid var(--epos-rahmen)", "background: var(--epos-flaeche)" })
+            Assert.Contains(wert, kreis, StringComparison.Ordinal);
+        string kopf = Regelblock(".epos-wahlkaestchen--kopf {");
+        Assert.Contains("height: 32px", kopf, StringComparison.Ordinal);
+        Assert.Contains("font-size: 16px", kopf, StringComparison.Ordinal);
+        Assert.DoesNotContain("border-radius", kopf, StringComparison.Ordinal);
+        Assert.DoesNotContain("transparent", kopf, StringComparison.Ordinal);
+
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        Assert.Contains(".epos-wahlkaestchen[aria-checked=\"true\"],\n.epos-wahlkaestchen[aria-checked=\"mixed\"] {", css, StringComparison.Ordinal);
+        string primaer = Regelblock(".epos-knopf--primaer {");
+        string gewaehlt = Regelblock(".epos-wahlkaestchen[aria-checked=\"true\"],");
+        foreach (string wert in new[] { "color: var(--epos-gruppenkopf-text)", "background: var(--epos-karte-titel)", "border-color: var(--epos-karte-titel)" })
+        {
+            Assert.Contains(wert, primaer, StringComparison.Ordinal);
+            Assert.Contains(wert, gewaehlt, StringComparison.Ordinal);
+        }
+        Assert.Contains("background: var(--epos-quelle-text)", Regelblock(".epos-wahlkaestchen[aria-checked=\"true\"]:hover,"), StringComparison.Ordinal);
+        Assert.Contains("outline: 2px solid", Regelblock(".epos-wahlkaestchen:focus-visible {"), StringComparison.Ordinal);
+
+        string hoch = Abfrageblock(css.Substring(css.IndexOf("\n.epos-wahlkaestchen {", StringComparison.Ordinal)), "@media (forced-colors: active) {");
+        Assert.Contains("background: Highlight;", hoch, StringComparison.Ordinal);
+        Assert.Contains("color: HighlightText;", hoch, StringComparison.Ordinal);
+
+        string spalte = Regelblock(".epos-zweispalten-inhalt--zeilenwahl table.epos-raster > thead > tr > th.epos-spalte-kaestchen,");
+        Assert.Contains("width: calc(var(--epos-touchziel) + 16px)", spalte, StringComparison.Ordinal);
+        Assert.DoesNotContain("padding-top", spalte, StringComparison.Ordinal);
+        string kopfzelle = Regelblock(".epos-zweispalten-inhalt--zeilenwahl table.epos-raster > thead > tr > th.epos-spalte-kaestchen {");
+        Assert.Contains("padding-top: 2px", kopfzelle, StringComparison.Ordinal);
+        Assert.Contains("padding-bottom: 2px", kopfzelle, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Der Primärknopf behält beim Überfahren seine Füllung</b> (KR1b): Seine Schwebe-Regel wiegt mehr als die
+    /// aller Knöpfe (<c>.epos-knopf:hover</c> mit zwei <c>:not</c>) — sonst gewänne deren helle Fläche, und die weiße
+    /// Schrift verschwände darauf. Gezählt wird das Gewicht der Klassenstufe (Klassen, Attribute, Pseudoklassen ohne
+    /// <c>:not</c> selbst).
+    /// </summary>
+    [Fact]
+    public void KR1b_Der_Primaerknopf_behaelt_beim_Ueberfahren_seine_Fuellung()
+    {
+        const string allgemein = ".epos-knopf:hover:not(:disabled):not([aria-disabled=\"true\"])";
+        const string primaer = ".epos-knopf.epos-knopf--primaer:hover:not(:disabled):not([aria-disabled=\"true\"])";
+        Assert.Contains("background: var(--epos-karte-flaeche-hover)", Regelblock(allgemein + " {"), StringComparison.Ordinal);
+        string regel = Regelblock(primaer + " {");
+        Assert.Contains("background: var(--epos-quelle-text)", regel, StringComparison.Ordinal);
+        Assert.Contains("border-color: var(--epos-quelle-text)", regel, StringComparison.Ordinal);
+        Assert.True(Klassengewicht(primaer) > Klassengewicht(allgemein),
+                    Klassengewicht(primaer) + " gegen " + Klassengewicht(allgemein));
+
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        Assert.DoesNotContain("\n.epos-knopf--primaer:hover", css, StringComparison.Ordinal);
+    }
+
+    /// <summary>Gewicht der Klassenstufe eines einfachen Selektors: Klassen, Attribute und Pseudoklassen, <c>:not</c> selbst zählt nicht.</summary>
+    private static int Klassengewicht(string selektor)
+        => selektor.Count(c => c == '.') + selektor.Count(c => c == '[')
+           + Regex.Matches(selektor, @"(?<!:):(?!:)").Count - Regex.Matches(selektor, @":not\(").Count;
+
+    /// <summary>
     /// Der Rumpf einer At-Regel (<c>@container …</c>, <c>@media …</c>) samt ihrer Regeln — bis zur
     /// Klammer, die sie schließt.
     /// </summary>

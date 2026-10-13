@@ -671,6 +671,28 @@ public class WaermepumpenDialogTests : EposBunitContext
         Assert.Equal(0, cut.Instance.ProjektWahl.Anzahl);
     }
 
+    /// <summary>
+    /// KA‑E‑17: Ankreuzen wählt nicht — ist Zeile 1 gewählt, setzt das Kästchen von Zeile 2 nur ihr Kreuz;
+    /// Hervorhebung, <c>aria-current</c> und Detailzeile bleiben bei Zeile 1.
+    /// </summary>
+    [Fact]
+    public void KA_E_17_Ankreuzen_waehlt_nicht()
+    {
+        var cut = Aufbauen(DreiPumpen());
+        Projektwahl(cut, 0).Click();
+
+        ProjektAnkreuzen(cut, 1);
+
+        var zeilen = cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr").ToList();
+        Assert.Equal("true", zeilen[1].QuerySelector(".epos-wahlkaestchen")!.GetAttribute("aria-checked"));
+        Assert.Equal(1, cut.Instance.ProjektWahl.Anzahl);
+        Assert.Single(zeilen, tr => tr.ClassList.Contains("epos-zeile--gewaehlt"));
+        Assert.Contains("epos-zeile--gewaehlt", zeilen[0].ClassList);
+        Assert.Equal("true", zeilen[0].QuerySelector(".epos-zeilenzelle")!.GetAttribute("aria-current"));
+        Assert.Null(zeilen[1].QuerySelector(".epos-zeilenzelle")!.GetAttribute("aria-current"));
+        Assert.Equal("WP A", cut.Find(".epos-zweispalten-satzname").TextContent);
+    }
+
     /// <summary>AW1: Die Projektliste ist ein Tabulatorhalt; ↑ ↓ Pos1 Ende bewegen die Wahl.</summary>
     [Fact]
     public void AW1_Die_Pfeiltasten_bewegen_die_Wahl()

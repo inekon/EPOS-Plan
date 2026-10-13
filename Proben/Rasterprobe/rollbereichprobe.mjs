@@ -1432,7 +1432,7 @@ try {
       await s4.goto(WURZEL + '/rollbereichprobe?fall=solarganglinie&zeilen=40', { waitUntil: 'networkidle' });
       await s4.waitForSelector('.epos-zweispalten');
       await s4.addStyleTag({ content: stil });
-      await s4.locator('.epos-zweispalten-bereich--projekt tbody tr button').first().click();
+      await s4.locator('.epos-zweispalten-bereich--projekt tbody tr .epos-projektzeile').first().click();
       await ruhe(s4);
       await satz(s4, true);
       await ruhe(s4); await massAbwarten(s4);

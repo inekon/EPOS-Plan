@@ -132,6 +132,7 @@ KA‑Q1 bis KA‑Q9 des Entwurfs (Zuordnung in der letzten Spalte).
 | **KA‑E‑25** | Jede Bearbeiten-Überlagerung zeigt links einen Gerätesteckbrief mit den wichtigsten Daten des gewählten Satzes; Wärmepumpe zuerst (WP1a), die übrigen Wirte folgen (WP1b). | 12.10.2026 | WP1 |
 | **KA‑E‑26** | **Wärmepumpen mit Kühlfunktion in der Katalogauswahl der Kältemaschine:** Katalog und „Im Projekt“ führen Kältemaschinen und Wärmepumpen mit Kühlkennlinie in je einer Liste mit Spalte „Art“ (Kältemaschine / Wärmepumpe); Suche, Spaltenwahl und Filter gelten über beide Arten. Eine übernommene Wärmepumpe wird Projektwärmepumpe mit Kühlbetrieb — Projektkopie über den Weg des Wärmepumpendialogs, Kühlbetrieb allein über `WPCtrl.KuehlkonfigurationSchreiben`; ohne Kühlkennlinie im Projekt oder mit Quellspeicher lehnt der Kern benannt ab, der Dialog zeigt den Grund im Banner. Steht die Wärmepumpe schon im Projekt, wird nur ihr Kühlbetrieb eingeschaltet. „Aus dem Projekt entfernen“ schaltet bei einer Wärmepumpe nur den Kühlbetrieb aus. Bearbeiten… öffnet je Art ihre Überlagerung, das Rückkühlwerk gibt es nur bei Kältemaschinen, Vergleichen… vergleicht nur innerhalb einer Art; die Zeile „Wärmepumpen im Kühlbetrieb“ unter dem Dialog entfällt. Beim Einschalten bekommt die Wärmepumpe einen Rang hinter den Erzeugern mit Rang in der Kältefolge, beim Ausschalten wird er entfernt und die Folge geschlossen; Kühlleistung und EER einer Katalog-Wärmepumpe stehen am Bezugspunkt 7 °C Kaltwasser mit der Quelle nach EN 14511 (sonst an der kleinsten Kaltwasser-Stützstelle). | 12.10.2026 | KM‑K1 |
 | **KA‑E‑27** | **Knopfleiste und Breite:** Die Knopfleiste am gewählten Satz bricht um und bleibt in der Dialogbreite, der Dialog folgt der Bildschirmbreite — für alle Wirte der Katalogauswahl. Katalogfunktionen ohne Satzbezug (bei der Kältemaschine „Typkennfelder laden…“ und „Katalogverwaltung…“) stehen in der Kopfzeile des Katalogs neben „Spalten…“; die Infoknöpfe der Satzzeile stehen im Kopf der Satzzeile neben dem Satznamen. | 12.10.2026 | KM‑L1 |
+| **KA‑E‑28** | **Kästchen und Kopfhäkchen der Projektliste im Schema des runden Wahlknopfs (Kopf kleiner), Katalogliste unverändert:** Das Kästchen jeder Zeile der Projektliste ist ein runder Knopf von Berührungsgröße, das Kopfhäkchen ein kleinerer Kreis in der unveränderten Kopfzeile — hell mit grauem Rand, angekreuzt marineblau mit weißem Haken, eine Teilwahl (▣) gefüllt wie ☑. Die Kästchen der Katalogliste bleiben unverändert. | 13.10.2026 | Anwenderwunsch 12.10.2026, Anwenderentscheid 13.10.2026 (KR1) |
 
 ## 4 Zielbild V1
 
@@ -297,6 +298,12 @@ Dialogkopf nach dem Titel steht —, als Sinnbilder mit Tooltipp; bei offener Sa
 - Beide Listen tragen eine Kästchenspalte; Klick wählt eine Zeile, Strg+Klick schaltet, Umschalt+Klick
   wählt einen Bereich (KA‑E‑5). Das Kopfhäkchen wählt alle Zeilen der **gefilterten** Liste; ein Filter
   hebt die Wahl verborgener Zeilen nicht stillschweigend auf, die Fußleiste nennt „3 gewählt, 1 verborgen“.
+- **Kästchen und Kopfhäkchen der Projektliste** stehen im Schema des runden Wahlknopfs (KA‑E‑28): ein Kreis mit ☐,
+  hell mit grauem Rand, angekreuzt marineblau mit weißem ☑ und beim Überfahren blau wie der Primärknopf. Das Kästchen
+  der Zeile hat Berührungsgröße (44 px, in der Kompaktstufe 37 px), die Zeile wächst dabei nicht (53 bzw. 46 px); die
+  Spalte ist in jedem Wirt so breit wie der Kreis mit der Polsterung des Hauses. Das Kopfhäkchen ist ein kleinerer Kreis
+  (32 px, die Kopfzeile bleibt 36,5 px hoch) mittig über den Kreisen der Zeilen, ▣ (Teilwahl) gefüllt wie ☑. Die Katalogliste führt ihr
+  natives Kästchen. Ankreuzen wählt die Zeile nicht (KA‑E‑17) — in allen Wirten der Katalogauswahl.
 - **Bereichsaktionen wirken auf die Auswahl:** Übernehmen, Entfernen, Bearbeiten…, In die Datenbank
   übernehmen…, Schloss, Löschen. Die Rückfrage nennt die Zahl und bei Löschen und Schloss die Namen.
 - **Sammelübernahme** (KA‑E‑6): Doppelklick und Enter übernehmen die Zeile bzw. die Auswahl. Die
