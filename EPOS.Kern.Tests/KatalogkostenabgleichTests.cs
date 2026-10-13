@@ -32,7 +32,9 @@ namespace EPOS.Kern.Tests
             Assert.True(Katalogrueckweg.Gewerkbekannt(WizardItemClass.WP_TYP));
 
             // Eine Anlage, deren Projektkopie ihren Katalogsatz nicht kennt (ID_Stamm leer, Schritt 208).
-            DataRow a = AnlageOhneUrsprung();
+            // Gesucht wird sie mit DIESER Bedingung, nicht nach Reihenfolge: Die Arbeitskopie der
+            // Sammlung kann einen Ursprung tragen, den ein anderer Fall gesetzt hat.
+            DataRow a = AnlageOhneUrsprung(ohneStamm: true);
             if (a == null) return;
             Assert.Equal(Abgleichabsage.KeineZuordnung,
                          Katalogkostenabgleich.Vorschau(Ganz(a, "ID_Projekt"), Ganz(a, "ID"),
@@ -115,11 +117,16 @@ namespace EPOS.Kern.Tests
             Assert.False(Katalogkostenabgleich.Absolut(DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET));
         }
 
-        private static DataRow AnlageOhneUrsprung()
+        /// <summary>
+        /// Eine Waermepumpen-Anlage der Arbeitskopie; mit <paramref name="ohneStamm"/> nur eine, deren
+        /// Projektkopie ihren Ursprung (noch) nicht kennt.
+        /// </summary>
+        private static DataRow AnlageOhneUrsprung(bool ohneStamm = false)
         {
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT e.\"ID\", e.\"ID_Projekt\", e.\"ID_WP\" FROM \"Tab_Energieanlagen\" e " +
-                "JOIN \"Tab_WP\" w ON w.\"ID\" = e.\"ID_WP\" WHERE e.\"ID_Type\" = ? ORDER BY e.\"ID\"",
+                "JOIN \"Tab_WP\" w ON w.\"ID\" = e.\"ID_WP\" WHERE e.\"ID_Type\" = ?" +
+                (ohneStamm ? " AND w.\"ID_Stamm\" IS NULL" : "") + " ORDER BY e.\"ID\"",
                 new DbParam("@t", WizardItemClass.WP_TYP));
             return dt == null || dt.Rows.Count == 0 ? null : dt.Rows[0];
         }
