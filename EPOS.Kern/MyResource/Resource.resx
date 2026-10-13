@@ -54783,5 +54783,11 @@ Chart</value>
   <data name="KONF_KS_DEZENTRAL_TRAEGER" xml:space="preserve">
     <value>Kühlträger: {0}</value>
   </data>
+  <data name="SIMKONF_KAELTE_DEZ_TIP_BEARBEITEN" xml:space="preserve">
+    <value>Die Zeile im Dialog ihrer Quelle bearbeiten: Kältebedarfsprofile oder Kältebedarf extern</value>
+  </data>
+  <data name="SIMKONF_KAELTE_DEZ_MSG_FEHLER" xml:space="preserve">
+    <value>„{0}“ lässt sich hier nicht bearbeiten: {1}</value>
+  </data>
 </root>
 

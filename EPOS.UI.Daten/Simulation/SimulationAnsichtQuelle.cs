@@ -142,6 +142,10 @@ namespace WindowsFormsApplication1
             // Dasselbe fuer den KANALBEDARF des Schemas (Abnehmer ohne Versorger): Nur die
             // Ergebnishuelle kennt den gerechneten Lauf und weiss, ob er noch gilt.
             _konfig.KanalbedarfQuelleSetzen(_ergebnis.AktuellerKanalbedarf);
+
+            // K6b-N: „Bearbeiten…“ der dezentralen Kaeltedeckung geht ueber die Naht der Schale -
+            // ohne sie lehnt die Konfigurationshuelle benannt ab.
+            _konfig.KaelteDezentralWegSetzen(_wege.KaelteDezentralBearbeiten, _wege.KaelteDezentralSperrgrund);
         }
 
         /// <summary>„Projekt „…"" — die Kopfzeile der Ansicht; leer ohne Namen.</summary>

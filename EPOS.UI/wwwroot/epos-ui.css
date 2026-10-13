@@ -6198,6 +6198,11 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     overflow-x: auto;
 }
 
+/* K6b-N: „Bearbeiten…" je Zeile - der Knopf bricht nicht um. */
+.epos-simkonfig-kaelte-dezentral-bearbeiten {
+    white-space: nowrap;
+}
+
 .epos-simkonfig-kaelte-parameter {
     display: flex;
     flex-direction: column;

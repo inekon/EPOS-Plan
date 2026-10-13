@@ -116010,6 +116010,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ lässt sich hier nicht bearbeiten: {1} ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Lastgang ähnelt.
         /// </summary>
         public static string SIMKONF_KAELTE_DEZ_QUELLE_LASTGANG {
@@ -116087,6 +116096,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_KAELTE_DEZ_SUMME {
             get {
                 return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeile im Dialog ihrer Quelle bearbeiten: Kältebedarfsprofile oder Kältebedarf extern ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_DEZ_TIP_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_DEZ_TIP_BEARBEITEN", resourceCulture);
             }
         }
         

@@ -47,6 +47,9 @@ public class SimulationKonfigKaeltebereichTests : EposBunitContext
     private readonly List<(int Anlage, WaermepumpeAnlageDaten Daten)> _wpKonfigGeschrieben = new();
     private bool _wpKuehlbetrieb;
     private IReadOnlyList<KaelteDezentralAnzeige> _dezentral = new List<KaelteDezentralAnzeige>();
+    private bool _mitDezentralWeg;
+    private string? _dezentralAntwort;
+    private readonly List<(bool Profil, int Zuordnung, Action<string?> Nachher)> _dezentralGerufen = new();
     private string? _wpSperrgrund;
     private bool _wpInKaskade = true;
     private int _anlagenJeKopie = 1;
@@ -132,6 +135,9 @@ public class SimulationKonfigKaeltebereichTests : EposBunitContext
             : null,
         KaeltemaschineKonfigurationSpeichern = mitKonfiguration
             ? d => { _kmGeschrieben.Add(d.Kopie()); return _kmAntwort; }
+            : null,
+        KaelteDezentralBearbeiten = _mitDezentralWeg
+            ? (profil, zuordnung, nachher) => { _dezentralGerufen.Add((profil, zuordnung, nachher)); return _dezentralAntwort; }
             : null
     };
 
@@ -475,5 +481,56 @@ public class SimulationKonfigKaeltebereichTests : EposBunitContext
         _projektKuehlung = false;
         var aus = Seite(mitParameter: false);
         Assert.Empty(aus.FindAll("section.epos-simkonfig-kaelte-dezentral"));
+    }
+
+    private List<KaelteDezentralAnzeige> ZweiSplitZeilen() => new()
+    {
+        new KaelteDezentralAnzeige(true, 7, "Kühlraum", "Kältebedarfsprofil", 12.0, "fest 3,0", "Strom B", "eigener Zähler"),
+        new KaelteDezentralAnzeige(false, 8, "Server", "Lastgang", null, "fest 3,5", "Stromträger des Projekts", "anteilig am Netzbezug"),
+    };
+
+    /// <summary>
+    /// K6b-N (Konzept Kältebedarf 6): „Bearbeiten…“ je Split-Zeile ruft den Weg der Hülle mit Quelle und Zuordnungs-ID; schließt
+    /// der Dialog, liest der Bereich frisch, und ein gescheitertes Speichern steht im Banner. Ohne Weg kein Knopf.
+    /// </summary>
+    [Fact]
+    public void K6bN_Bearbeiten_ruft_den_Weg_mit_Zuordnung_und_Quelle()
+    {
+        _dezentral = ZweiSplitZeilen();
+        Assert.Empty(Seite().FindAll("button.epos-simkonfig-kaelte-dezentral-bearbeiten"));   // ohne Weg kein Knopf
+
+        _mitDezentralWeg = true;
+        var cut = Seite();
+        IElement gruppe = cut.Find("section.epos-simkonfig-kaelte-dezentral");
+        Assert.Empty(gruppe.QuerySelectorAll("input"));
+        Assert.Equal(2, gruppe.QuerySelectorAll("button.epos-simkonfig-kaelte-dezentral-bearbeiten").Length);
+        IElement knopf = cut.Find("tr[data-zuordnung='8'] button.epos-simkonfig-kaelte-dezentral-bearbeiten");
+        Assert.Equal(Resource.SIMKONF_KAELTE_DEZ_TIP_BEARBEITEN, knopf.GetAttribute("title"));
+
+        knopf.Click();
+        cut.Find("tr[data-zuordnung='7'] button.epos-simkonfig-kaelte-dezentral-bearbeiten").Click();
+        Assert.Equal(new[] { (false, 8), (true, 7) }, _dezentralGerufen.Select(g => (g.Profil, g.Zuordnung)).ToArray());
+
+        // Der Dialog schließt: frisch lesen; ein Speichergrund steht im Banner.
+        int vorher = _ladungen;
+        _dezentralGerufen[1].Nachher("Split ohne EER.");
+        cut.WaitForAssertion(() => Assert.Contains("Split ohne EER.", cut.Find("div.epos-simkonfig-fuss").TextContent));
+        Assert.True(_ladungen > vorher);
+    }
+
+    /// <summary>K6b-N: Lehnt der Weg ab (eine Schale ohne die Dialoge), steht der Grund benannt im Banner.</summary>
+    [Fact]
+    public void K6bN_Ein_abgelehnter_Weg_steht_benannt_im_Banner()
+    {
+        _dezentral = ZweiSplitZeilen();
+        _mitDezentralWeg = true;
+        _dezentralAntwort = Resource.SIM_MSG_WEG_NICHT_HIER;
+        var cut = Seite();
+
+        cut.Find("tr[data-zuordnung='7'] button.epos-simkonfig-kaelte-dezentral-bearbeiten").Click();
+
+        Assert.Single(_dezentralGerufen);
+        Assert.Contains(string.Format(Resource.SIMKONF_KAELTE_DEZ_MSG_FEHLER, "Kühlraum", Resource.SIM_MSG_WEG_NICHT_HIER),
+                        cut.Find("div.epos-simkonfig-fuss").TextContent);
     }
 }
