@@ -54,6 +54,13 @@
                                 <button type="button" class="epos-knopf epos-modellpruefung-ansicht" aria-disabled="true" title="@AnsichtSperre"
                                         @onclick="() => Hinweisen(AnsichtSperre)">@Resource.MPB_BTN_ANSICHT</button>
                             }
+                            @if (g.Gruppe == Pruefgruppe.NutzungKonditionierung && Bearbeiten.HasDelegate)
+                            {
+                                @* MA-2: das Blatt „Nutzung und Kalender“ fuer alle Zonen des Gebaeudes. *@
+                                <button type="button" class="epos-knopf epos-modellpruefung-bearbeiten" disabled="@_laeuft"
+                                        title="@Resource.MPB_BTN_BEARBEITEN_HINWEIS"
+                                        @onclick="() => Bearbeiten.InvokeAsync(g.Gruppe)">@Resource.MPB_BTN_BEARBEITEN</button>
+                            }
                             @if (g.Gruppe == Pruefgruppe.OrtLage)
                             {
                                 <button type="button" class="epos-knopf epos-modellpruefung-klima" title="@Resource.MPB_BTN_KLIMA_HINWEIS"
@@ -118,6 +125,19 @@
 
     /// <summary>„Klimaregion wählen…“ — der Weg des Wirts; ohne Delegat nennt der Knopf, wo die Klimaregion gewählt wird.</summary>
     [Parameter] public EventCallback Klimaregion { get; set; }
+
+    /// <summary>
+    /// „Bearbeiten…“ an Gruppe 3 (MA-2): öffnet beim Wirt das Blatt „Nutzung und Kalender“ für das Gebäude; ohne Delegat kein
+    /// Knopf.
+    /// </summary>
+    [Parameter] public EventCallback<Pruefgruppe> Bearbeiten { get; set; }
+
+    /// <summary>Prüft neu und zeigt den Stand (etwa nach dem Blatt „Nutzung und Kalender“).</summary>
+    public void Auffrischen()
+    {
+        _stand = Weg.Pruefen();
+        StateHasChanged();
+    }
 
     /// <summary>Meldet eine Übernahme oder Rücknahme an den Wirt (etwa um die Zeile aufzufrischen).</summary>
     [Parameter] public EventCallback Geaendert { get; set; }

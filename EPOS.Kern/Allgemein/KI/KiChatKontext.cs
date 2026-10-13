@@ -275,6 +275,7 @@ namespace WindowsFormsApplication1
             { "GebaeudeExport",                B_GEBAEUDE },
             { "GebaeudeProjekt",               B_GEBAEUDE },
             { "Modellpruefung",                B_GEBAEUDE }, // MA-1b: Ampelblatt der Modellpruefung im Gebaeudedialog
+            { "ZonenNutzung",                  B_GEBAEUDE }, // MA-2: Blatt „Nutzung und Kalender" aller Zonen
             { "Hauptfenster",                  B_HAUPTFENSTER },
             { "Kenndaten",                     B_WAERMEPUMPE },
             { "KiWerkzeugliste",               B_HILFE },
