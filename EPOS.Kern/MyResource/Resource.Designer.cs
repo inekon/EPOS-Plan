@@ -17182,6 +17182,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kW Kälte ähnelt.
+        /// </summary>
+        public static string BV_A1D_EINHEIT_KW_KAELTE {
+            get {
+                return ResourceManager.GetString("BV_A1D_EINHEIT_KW_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anlage ähnelt.
         /// </summary>
         public static string BV_A1D_GEWERK_ANLAGE {
@@ -17196,6 +17205,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_A1D_GEWERK_GEBAEUDE {
             get {
                 return ResourceManager.GetString("BV_A1D_GEWERK_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine ähnelt.
+        /// </summary>
+        public static string BV_A1D_GEWERK_KAELTEMASCHINE {
+            get {
+                return ResourceManager.GetString("BV_A1D_GEWERK_KAELTEMASCHINE", resourceCulture);
             }
         }
         

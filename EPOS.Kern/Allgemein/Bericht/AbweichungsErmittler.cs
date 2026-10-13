@@ -108,6 +108,7 @@ namespace WindowsFormsApplication1
                 case "Photovoltaik": return Text("KONFIG_PHOTOVOLTAIK", gewerk);
                 case "Pufferspeicher": return Text("BV_A1D_GEWERK_PUFFERSPEICHER", gewerk);
                 case "Stromspeicher": return Text("KONFIG_STROMSPEICHER", gewerk);
+                case ProjektDetails.GEWERK_KAELTEMASCHINE: return Text("BV_A1D_GEWERK_KAELTEMASCHINE", gewerk);
                 case "Gebäude": return Text("BV_A1D_GEWERK_GEBAEUDE", gewerk);
                 default: return gewerk ?? "";
             }
@@ -217,6 +218,15 @@ namespace WindowsFormsApplication1
             new Merkmal("Stromspeicher", "Tab_Stromspeicher", "Typ",        "Typ", "", TEXT, "BV_A1D_MERKMAL_TYP"),
             new Merkmal("Stromspeicher", "Tab_Stromspeicher", "Leistung",   "Leistung", "kW", 1, "BV_A1D_MERKMAL_LEISTUNG"),
             new Merkmal("Stromspeicher", "Tab_Stromspeicher", "Energie",    "Kapazität", "kWh", 1, "BV_A1D_MERKMAL_KAPAZITAET"),
+
+            // Kältemaschine (Tab_Kaeltemaschine, Projektkopie) - gelesen und verglichen, der Bestand
+            // wird nicht übernommen (KomponentenUebernahmeCtrl.Leseplan).
+            new Merkmal(ProjektDetails.GEWERK_KAELTEMASCHINE, "Tab_Kaeltemaschine", "Bezeichner", "Komponente", "", TEXT, "BV_A1D_MERKMAL_KOMPONENTE"),
+            new Merkmal(ProjektDetails.GEWERK_KAELTEMASCHINE, "Tab_Kaeltemaschine", "Firma",      "Hersteller", "", TEXT, "BV_A1D_MERKMAL_HERSTELLER"),
+            new Merkmal(ProjektDetails.GEWERK_KAELTEMASCHINE, "Tab_Kaeltemaschine", "Typ",        "Typ", "", TEXT, "BV_A1D_MERKMAL_TYP"),
+            new Merkmal(ProjektDetails.GEWERK_KAELTEMASCHINE, "Tab_Kaeltemaschine", "Nennkaelteleistung_kW", "Nennkälteleistung", "kW", 1, "KM_LBL_NENNKAELTELEISTUNG"),
+            new Merkmal(ProjektDetails.GEWERK_KAELTEMASCHINE, "Tab_Kaeltemaschine", "Nenn_EER",   "Nenn-EER", "", 2, "KM_LBL_NENN_EER"),
+            new Merkmal(ProjektDetails.GEWERK_KAELTEMASCHINE, "Tab_Kaeltemaschine", "Kaeltemittel", "Kältemittel", "", TEXT, "KM_LBL_KAELTEMITTEL"),
 
             // Gebäude (Tab_Gebaeude — erstes Gebäude)
             new Merkmal("Gebäude", "Tab_Gebaeude", "Waermebedarf",       "Wärmebedarf", "kWh/a", 0, "BV_A1D_MERKMAL_WAERMEBEDARF"),
