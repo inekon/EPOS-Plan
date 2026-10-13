@@ -1084,6 +1084,12 @@
     /// </summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
+    /// <summary>
+    /// MA-1b: meldet dem Wirt, dass „Als Mehrzonenmodell übernehmen…“ im OK-Weg geschrieben hat — der Gebäudedialog öffnet danach
+    /// das Blatt „Modell prüfen“ für dieses Gebäude. <c>null</c> = kein Wirt hört zu.
+    /// </summary>
+    [Parameter] public Action? MehrzonenGeschrieben { get; set; }
+
     // --- Texte -----------------------------------------------------------------
 
     /// <summary>Die Texte der VDI-6007-Struktur (Bündel).</summary>
@@ -1747,6 +1753,7 @@
             ZonenNeulesung? n = Katalogladung.Satz(() => Zonen.Neulesen(), _ursprungsname, out string fehler);
             if (n is not null) _arbeit.ZonenLaden(n.Zonen, true, n.Luftstroeme, katalog: false);
         }
+        MehrzonenGeschrieben?.Invoke();
         return true;
     }
 

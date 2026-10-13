@@ -340,6 +340,15 @@
     /// <summary>Der Sprung des Steckbriefs in den Bauteildialog (Id des gespeicherten Bauteils); ohne Delegat kein Knopf.</summary>
     [Parameter] public EventCallback<int> ZumBauteil { get; set; }
 
+    /// <summary>
+    /// MA-1b: der Farbmodus, mit dem die Ansicht öffnet (<see cref="FARBMODUS_ZONEN"/>, <see cref="FARBMODUS_RAND"/>,
+    /// <see cref="FARBMODUS_AUFBAU"/>, <see cref="FARBMODUS_BEFUND"/>) — der Sprung aus dem Blatt „Modell prüfen“; <c>null</c> = die
+    /// Wahl des Anwenders.
+    /// </summary>
+    [Parameter] public string? FarbmodusVorgabe { get; set; }
+
+    private string? _gezeigteVorgabe;
+
     /// <summary>Ist der Farbmodus „Randbedingung" gezeigt?</summary>
     private bool ImRandmodus => string.Equals(Farbmodus, FARBMODUS_RAND, StringComparison.Ordinal);
 
@@ -488,6 +497,18 @@
 
     protected override void OnParametersSet()
     {
+        // MA-1b: der Sprung aus dem Blatt „Modell prüfen“ setzt den Farbmodus der Prüfgruppe — je neuer Vorgabe einmal; die
+        // Wahl des Anwenders danach bleibt. Ein nicht wählbarer Modus fällt wie gewählt auf „Zonen“ zurück.
+        if (!string.Equals(FarbmodusVorgabe, _gezeigteVorgabe, StringComparison.Ordinal))
+        {
+            _gezeigteVorgabe = FarbmodusVorgabe;
+            if (FarbmodusVorgabe is { Length: > 0 } v && !string.Equals(_farbmodus, v, StringComparison.Ordinal))
+            {
+                _treffer = null;
+                LegendeZuruecksetzen();
+                _farbmodus = v;
+            }
+        }
         if (!string.Equals(Geschoss, _geschossParameter, StringComparison.Ordinal))
         {
             _geschossParameter = Geschoss;

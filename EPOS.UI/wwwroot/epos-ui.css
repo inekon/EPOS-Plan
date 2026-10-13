@@ -18489,3 +18489,28 @@ td.epos-vorlage-katalogbeschreibung {
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+/* MA-1b: Blatt „Modell pruefen“ - Ampel je Pruefgruppe, Zaehlung, Befunde erst auf Klick. */
+.epos-ampel {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    border-radius: 50%;
+    flex: 0 0 auto;
+}
+.epos-ampel.epos-ampel-gruen { background: var(--epos-ampel-gruen); }
+.epos-ampel.epos-ampel-gelb { background: var(--epos-ampel-gelb); }
+.epos-ampel.epos-ampel-rot { background: var(--epos-ampel-rot); }
+.epos-modellpruefung-status { font-weight: 600; padding: 0.1em 0.5em; border-radius: 0.3em; }
+.epos-modellpruefung-status.epos-ampel-gruen { color: var(--epos-ampel-gruen); background: var(--epos-ampel-gruen-flaeche); }
+.epos-modellpruefung-status.epos-ampel-gelb { color: var(--epos-ampel-gelb); background: var(--epos-ampel-gelb-flaeche); }
+.epos-modellpruefung-status.epos-ampel-rot { color: var(--epos-ampel-rot); background: var(--epos-ampel-rot-flaeche); }
+.epos-modellpruefung-kopf { display: flex; gap: 1em; align-items: center; margin-bottom: 0.5em; }
+.epos-modellpruefung-gebaeude { font-weight: 600; }
+.epos-modellpruefung-gruppen, .epos-modellpruefung-befunde { list-style: none; margin: 0; padding: 0; }
+.epos-modellpruefung-befunde { padding-left: 1.8em; }
+.epos-modellpruefung-zeile, .epos-modellpruefung-befund { display: flex; gap: 0.5em; align-items: center; flex-wrap: wrap; padding: 0.2em 0; }
+.epos-modellpruefung-aufklappen { background: none; border: none; padding: 0; font: inherit; cursor: pointer; text-align: left; min-width: 16em; }
+.epos-modellpruefung-zaehlung { color: var(--epos-text-leise); min-width: 12em; }
+.epos-modellpruefung-knoepfe { display: inline-flex; gap: 0.3em; flex-wrap: wrap; margin-left: auto; }
+.epos-modellpruefung-ziel { font-weight: 600; }

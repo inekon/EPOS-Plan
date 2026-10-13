@@ -92055,6 +92055,294 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gelb – rechnet mit Vorgaben ähnelt.
+        /// </summary>
+        public static string MPB_AMPEL_GELB {
+            get {
+                return ResourceManager.GetString("MPB_AMPEL_GELB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die grün – ohne Befund ähnelt.
+        /// </summary>
+        public static string MPB_AMPEL_GRUEN {
+            get {
+                return ResourceManager.GetString("MPB_AMPEL_GRUEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die rot – nicht rechenfähig ähnelt.
+        /// </summary>
+        public static string MPB_AMPEL_ROT {
+            get {
+                return ResourceManager.GetString("MPB_AMPEL_ROT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Vorschläge übernehmen ähnelt.
+        /// </summary>
+        public static string MPB_BTN_ALLE {
+            get {
+                return ResourceManager.GetString("MPB_BTN_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Vorschläge aller Prüfgruppen übernehmen – je Gruppe zurücknehmbar – und neu prüfen ähnelt.
+        /// </summary>
+        public static string MPB_BTN_ALLE_HINWEIS {
+            get {
+                return ResourceManager.GetString("MPB_BTN_ALLE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ansicht… ähnelt.
+        /// </summary>
+        public static string MPB_BTN_ANSICHT {
+            get {
+                return ResourceManager.GetString("MPB_BTN_ANSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeansicht im passenden Farbmodus öffnen (die Importdatei wird gelesen) ähnelt.
+        /// </summary>
+        public static string MPB_BTN_ANSICHT_HINWEIS {
+            get {
+                return ResourceManager.GetString("MPB_BTN_ANSICHT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Befunde dieser Prüfgruppe zeigen oder verbergen ähnelt.
+        /// </summary>
+        public static string MPB_BTN_BEFUNDE_HINWEIS {
+            get {
+                return ResourceManager.GetString("MPB_BTN_BEFUNDE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimaregion wählen… ähnelt.
+        /// </summary>
+        public static string MPB_BTN_KLIMA {
+            get {
+                return ResourceManager.GetString("MPB_BTN_KLIMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimaregion des Projekts wählen ähnelt.
+        /// </summary>
+        public static string MPB_BTN_KLIMA_HINWEIS {
+            get {
+                return ResourceManager.GetString("MPB_BTN_KLIMA_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modell prüfen… ähnelt.
+        /// </summary>
+        public static string MPB_BTN_KOPF {
+            get {
+                return ResourceManager.GetString("MPB_BTN_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das gewählte Gebäude (ohne Wahl das erste) auf Rechenfähigkeit prüfen: Ampel je Prüfgruppe, Vorschläge übernehmen ähnelt.
+        /// </summary>
+        public static string MPB_BTN_KOPF_HINWEIS {
+            get {
+                return ResourceManager.GetString("MPB_BTN_KOPF_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nordrichtung bestätigen ähnelt.
+        /// </summary>
+        public static string MPB_BTN_NORD {
+            get {
+                return ResourceManager.GetString("MPB_BTN_NORD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die angenommene Nordrichtung des Imports als Eingabe bestätigen ähnelt.
+        /// </summary>
+        public static string MPB_BTN_NORD_HINWEIS {
+            get {
+                return ResourceManager.GetString("MPB_BTN_NORD_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation… ähnelt.
+        /// </summary>
+        public static string MPB_BTN_SIMULATION {
+            get {
+                return ResourceManager.GetString("MPB_BTN_SIMULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Wärmebedarf dieses Gebäudes rechnen ähnelt.
+        /// </summary>
+        public static string MPB_BTN_SIMULATION_HINWEIS {
+            get {
+                return ResourceManager.GetString("MPB_BTN_SIMULATION_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag übernehmen ähnelt.
+        /// </summary>
+        public static string MPB_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("MPB_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Vorschläge dieser Prüfgruppe in einem Schritt übernehmen und neu prüfen ähnelt.
+        /// </summary>
+        public static string MPB_BTN_UEBERNEHMEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("MPB_BTN_UEBERNEHMEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zurücknehmen ähnelt.
+        /// </summary>
+        public static string MPB_BTN_ZURUECKNEHMEN {
+            get {
+                return ResourceManager.GetString("MPB_BTN_ZURUECKNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die letzte Übernahme dieser Prüfgruppe zurücknehmen ähnelt.
+        /// </summary>
+        public static string MPB_BTN_ZURUECKNEHMEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("MPB_BTN_ZURUECKNEHMEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfe zur Modellprüfung ähnelt.
+        /// </summary>
+        public static string MPB_HILFE_KURZ {
+            get {
+                return ResourceManager.GetString("MPB_HILFE_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimaregion gilt für das Projekt: Sie wird in den Projektdaten gewählt. ähnelt.
+        /// </summary>
+        public static string MPB_HINWEIS_KLIMA {
+            get {
+                return ResourceManager.GetString("MPB_HINWEIS_KLIMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nordrichtung lässt sich nur an einem importierten Gebäude bestätigen (Abschnitt Ausrichtung des Gebäudesatzes). ähnelt.
+        /// </summary>
+        public static string MPB_HINWEIS_NORD {
+            get {
+                return ResourceManager.GetString("MPB_HINWEIS_NORD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude ließ sich nicht lesen. ähnelt.
+        /// </summary>
+        public static string MPB_MSG_NICHT_GELESEN {
+            get {
+                return ResourceManager.GetString("MPB_MSG_NICHT_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nordrichtung ist bestätigt. ähnelt.
+        /// </summary>
+        public static string MPB_MSG_NORD_BESTAETIGT {
+            get {
+                return ResourceManager.GetString("MPB_MSG_NORD_BESTAETIGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Vorschläge übernommen, {1} Befunde brauchen eine Eingabe. ähnelt.
+        /// </summary>
+        public static string MPB_MSG_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("MPB_MSG_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeansicht braucht die Importdatei – dieses Gebäude ist nicht importiert. ähnelt.
+        /// </summary>
+        public static string MPB_SPERRE_ANSICHT {
+            get {
+                return ResourceManager.GetString("MPB_SPERRE_ANSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Vorschlag – die Befunde brauchen eine Eingabe. ähnelt.
+        /// </summary>
+        public static string MPB_SPERRE_KEIN_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("MPB_SPERRE_KEIN_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Gebäude im Projekt – zuerst ein Gebäude aufnehmen oder importieren. ähnelt.
+        /// </summary>
+        public static string MPB_SPERRE_LEER {
+            get {
+                return ResourceManager.GetString("MPB_SPERRE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ ist noch nicht gespeichert – erst nach dem OK dieses Dialogs lässt sich das Modell prüfen. ähnelt.
+        /// </summary>
+        public static string MPB_SPERRE_OHNE_KOPIE {
+            get {
+                return ResourceManager.GetString("MPB_SPERRE_OHNE_KOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modell prüfen ähnelt.
+        /// </summary>
+        public static string MPB_TITEL {
+            get {
+                return ResourceManager.GetString("MPB_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Befunde, {1} Vorschläge ähnelt.
+        /// </summary>
+        public static string MPB_ZAEHLUNG {
+            get {
+                return ResourceManager.GetString("MPB_ZAEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil „{0}“: Aufbau „{1}“ ist für die Simulation meist nicht geeignet. ähnelt.
         /// </summary>
         public static string MP_BEFUND_AUFBAU_UNGEEIGNET {

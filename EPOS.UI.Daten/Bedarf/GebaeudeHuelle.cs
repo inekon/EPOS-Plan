@@ -207,6 +207,10 @@ namespace WindowsFormsApplication1
                                               && h?.Vorschlag != null;
                         return GebaeudeBedarfHuelle.Gaben(z, projektId, out bedarfBefund, zoneAusstehend);
                     }),
+                // MA-1b: das Blatt „Modell prüfen" für das Projektgebäude der Zeile (Ampel je Prüfgruppe, Vorschläge mit
+                // Rücknahme); eine Zeile ohne gespeicherte Projektkopie hat keinen Weg.
+                ["ModellpruefungGaben"] = new Func<GebaeudeProjektZeile, ModellpruefungWeg>(
+                    z => { idsNachziehen(); return ModellpruefungHuelle.Weg(z, AusrichtungsGebaeude(z)); }),
                 // Stufe G6a: der benannte Grund des letzten Aufrufs ohne Zahl (etwa mehrere Zonen).
                 ["BedarfBefund"] = new Func<string>(() => bedarfBefund),
                 // GD-N: der Jahreswärmebedarf des letzten Laufs je Gebäude (sonst der Projektwert mit Hinweis) für die
@@ -507,6 +511,7 @@ namespace WindowsFormsApplication1
             GebaeudeVorbelegung vorbelegung = null;
             GebaeudeImportHerkunft herkunft = null;
             string angelegt = null;
+            IReadOnlyList<Zonenquellhinweis> hinweise = null;
 
             Func<GebaeudeImportErgebnis, Task<string>> uebernehmen = ergebnis =>
             {
@@ -523,6 +528,7 @@ namespace WindowsFormsApplication1
 
                 vorbelegung = import.Vorbelegung(ergebnis);
                 herkunft = import.Herkunft;
+                hinweise = ModellpruefungHuelle.HinweiseAus(import.Plan);
                 return Task.FromResult<string>(null);
             };
 
@@ -552,6 +558,8 @@ namespace WindowsFormsApplication1
                 GebaeudeProjektZeile zeile = Aufnehmen(angelegt, projektId, naechsteId);
                 if (zeile == null) return null;
                 zeile.Herkunftsschluessel = Vormerken(ausstehend, herkunft);
+                // MA-1b: DIN-Nummer und Raumtyp je Zone für die Profilregel des Blatts „Modell prüfen".
+                ModellpruefungHuelle.HinweiseMerken(zeile, hinweise);
                 herkunft = null;
                 angelegt = null;
                 return zeile;
