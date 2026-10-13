@@ -96,6 +96,7 @@ kann, ohne die Installation zu wiederholen.
 | `…\EPOS-Plan\Vorlage\Kenndaten.accdb` | Auslieferungsdatenbank, unverändert | Standard | nur das Setup |
 | `…\EPOS-Plan\Vorlage\Katalogpaket.json` | **Katalogpaket der Programmfassung** (KU1 Stufe 1): alle ausgelieferten Sätze der laufend gepflegten Kataloge mit Schlüssel und Prüfsumme; die Anwendung gleicht damit beim ersten Start einer neuen Fassung ab | Standard (Benutzer: nur lesen) | nur das Setup |
 | `…\EPOS-Plan\Vorlage\Katalogpaket_A100` | **Paketvorlage der A100-Nutzungsarten**: vier CSV-Dateien des Importformats mit Platzhalterzeile und `LIESMICH.md`, wenige Kilobyte, ohne Normwerte | Standard (Benutzer: nur lesen) | nur das Setup |
+| `…\EPOS-Plan\Vorlage\Katalogpaket_DIN4708` | **Paketvorlage der DIN-4708-Katalogwerte**: zwei CSV-Dateien des Importformats (Belegung und Ausstattungsklassen, Parameter des Verfahrens) mit leerer Spalte `Wert` und `LIESMICH.md`, wenige Kilobyte, ohne Normwerte | Standard (Benutzer: nur lesen) | nur das Setup |
 | `…\EPOS-Plan\VDI-3805-Daten` | **Herstellerdaten** (VDI 3805, CEC-Modul- und Wechselrichterliste), rund 186 MB — abwählbare Komponente (E10) | Standard (Benutzer: nur lesen) | nur das Setup |
 | `%LOCALAPPDATA%\EPOS_PLAN` | **Arbeitsdatenbank des Kontos**, Protokolle | Konto hat Vollzugriff | die Anwendung |
 | `%LOCALAPPDATA%\EPOS-Plan\…\user.config` | Einstellungen (`DBPath`, `WordPressUrl` …) | Konto | .NET-Einstellungssystem |
@@ -224,7 +225,7 @@ Architekturbezeichner `x64compatible` noch UTF-8 ohne BOM).
 | `[Types]` / `[Components]` | Zwei Typen (`voll`, `custom`) und zwei Bestandteile: `programm` (`Flags: fixed`) und `herstellerdaten` — vorgewählt, abwählbar (E10) |
 | `[Tasks]` | Desktopsymbol |
 | `[Dirs]` | `%ProgramData%\EPOS_PLAN` mit `Permissions: users-modify` |
-| `[Files]` | Veröffentlichungsordner rekursiv (ohne `*.pdb`, `*.xml`), Vorlagendatenbank, Katalogpaket `Setup\Vorlage\Katalogpaket.json` nach `{app}\Vorlage` (geprüft mit `#if !FileExists(Katalogpaket)`), Paketvorlage `Referenzlaeufe\Katalogpaket_Vorlage_A100` nach `{app}\Vorlage\Katalogpaket_A100`, Herstellerdatenordner `VDI-3805-Daten` rekursiv (`Components: herstellerdaten`), ACE- und WebView2-Installer nach `{tmp}` — letztere nur, wenn sie gebraucht werden |
+| `[Files]` | Veröffentlichungsordner rekursiv (ohne `*.pdb`, `*.xml`), Vorlagendatenbank, Katalogpaket `Setup\Vorlage\Katalogpaket.json` nach `{app}\Vorlage` (geprüft mit `#if !FileExists(Katalogpaket)`), Paketvorlagen `Referenzlaeufe\Katalogpaket_Vorlage_A100` und `…_DIN4708` nach `{app}\Vorlage\Katalogpaket_A100` bzw. `…\Katalogpaket_DIN4708`, Herstellerdatenordner `VDI-3805-Daten` rekursiv (`Components: herstellerdaten`), ACE- und WebView2-Installer nach `{tmp}` — letztere nur, wenn sie gebraucht werden |
 | `[Icons]` | Startmenü, Web-Verknüpfung, Deinstallation, optional Desktop |
 | `[Registry]` | `HKLM\SOFTWARE\INEKON\EPOS-Plan` (64-Bit-Sicht): `InstallDir`, `Version` |
 | `[Run]` | ACE-Installation mit Gegenprüfung, `icacls` bei Altbestand, Programmstart anbieten |
@@ -712,7 +713,7 @@ und in [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md), Abschnitt 8a. Hier geht es nur 
   - `EPOS.Kern.Tests/KatalogabgleichTests` und `EPOS.UI.Tests/Dialoge/KatalogabgleichDialogTests`
     halten den Abgleich.
   - `EPOS.Kern.Tests/KatalogpaketAuslieferungWacheTests` hält die Ordner der Zapfprofilpakete
-    im `.iss` (`Katalogpaket_frei`, `Katalogpaket_A100`).
+    im `.iss` (`Katalogpaket_frei`, `Katalogpaket_A100`, `Katalogpaket_DIN4708`).
   - `EPOS.Kern.Tests/KatalogpaketSetupWacheTests` hält den Lieferweg von `Katalogpaket.json`:
     Define, `#error` und `[Files]`-Eintrag im `.iss`, Löschen, Durchreichen und Prüfen in
     `build-setup.ps1`, die `.gitignore`-Zeile, das Freigaberegister samt Regel und Schalter
@@ -1034,6 +1035,10 @@ Setup\
                                       Paketvorlage der A100-Nutzungsarten
                                       (versioniert), vier CSV-Dateien und
                                       LIESMICH.md nach {app}\Vorlage\Katalogpaket_A100
+<Repo>\Referenzlaeufe\Katalogpaket_Vorlage_DIN4708\
+                                      Paketvorlage der DIN-4708-Katalogwerte
+                                      (versioniert), zwei CSV-Dateien und
+                                      LIESMICH.md nach {app}\Vorlage\Katalogpaket_DIN4708
 ```
 
 Nach `.gitignore`: `Setup/Ausgabe/`, `Setup/Vorlage/*.accdb`,
