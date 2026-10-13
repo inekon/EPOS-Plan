@@ -447,6 +447,9 @@ namespace WindowsFormsApplication1
             // die Prüfklausel am Ziel.
             new Stufe(BauteilkatalogHaustechnikSchema.SCHRITT, Art.Ddl,
                       "Klasse Haustechnik in Baustoff- und Aufbaukatalog (E134)"),
+            // Ein älteres Paket führt keine Ergebniszeilen je Split-Zeile; der Schritt legt die Tabelle leer an, ein Lauf füllt sie.
+            new Stufe(KaeltebedarfSplitAbrechnungSchema.SCHRITT, Art.Ddl,
+                      "Ergebnis je dezentral (Split) gedeckter Kältebedarfszeile: Strom je Kühlträger und Zähler (K6)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

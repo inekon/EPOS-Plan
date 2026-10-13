@@ -126,6 +126,8 @@ namespace WindowsFormsApplication1
                 Uebernehmen = g => Ausgang(Sicher(() => _ctrl.Uebernehmen(g))),
                 AlleUebernehmen = () => Ausgang(Sicher(_ctrl.AlleUebernehmen)),
                 Zuruecknehmen = g => Ausgang(Sicher(() => _ctrl.Zuruecknehmen(g))),
+                UebernehmenAuswahl = a => Ausgang(Sicher(() => _ctrl.Uebernehmen(a.Gruppe, b => a.Enthaelt(b.IdZone, b.IdBauteil)))),
+                VerwerfenAuswahl = a => Ausgang(Sicher(() => _ctrl.Verwerfen(a.Gruppe, b => a.Enthaelt(b.IdZone, b.IdBauteil)))),
                 NordrichtungBestaetigen = () =>
                 {
                     string grund = _nordrichtung(_ctrl.IdGebaeude);
@@ -152,7 +154,8 @@ namespace WindowsFormsApplication1
             var gruppen = e.Gruppen.OrderBy(g => (int)g.Gruppe).Select(g => new ModellpruefungGruppenzeile(
                 g.Gruppe, ModellpruefungCtrl.Gruppenname(g.Gruppe), g.Ampel, g.Anzahl, g.Vorschlaege, g.Sprungziel,
                 _ctrl.KannZuruecknehmen(g.Gruppe),
-                g.Befunde.Select(b => new ModellpruefungBefundzeile(b.Text ?? "", b.Ampel, Ziel(b), b.Vorschlag?.Text ?? "")).ToList()))
+                g.Befunde.Select(b => new ModellpruefungBefundzeile(b.Text ?? "", b.Ampel, Ziel(b), b.Vorschlag?.Text ?? "",
+                                                                    b.IdZone, b.IdBauteil)).ToList()))
                 .ToList();
             return new ModellpruefungStand(e.Status, ModellpruefungCtrl.Statusname(e.Status), gruppen);
         }

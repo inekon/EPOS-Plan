@@ -16,6 +16,11 @@ namespace WindowsFormsApplication1
     /// <see cref="SimulationKaeltebedarf.Kaeltebedarf"/>, <see cref="Kaelteerzeuger.Kaelte_stuendlich"/>
     /// und <see cref="Kaeltekaskade.Rest_stuendlich"/>. Ohne Kälteerzeuger ist der ganze Bedarf
     /// ungedeckt; rechnet das Projekt keine Kälte, gibt es kein Bild.</para>
+    ///
+    /// <para><b>Dezentral (Split) gedeckte Kälte</b> (K6b; Konzept Kältebedarf 4.2, 4.3): Sie steht im Kältebedarf, läuft
+    /// aber neben der Kaskade — ihre Säule „dezentral (Split)“ steht nach den Erzeugern und vor der ungedeckten Kälte, in
+    /// der Rolle <see cref="Farbrolle.KAELTE_DEZENTRAL"/>. Ohne Split-Zeile ist <see cref="Reihen.Dezentral"/> leer, und
+    /// das Bild bleibt Zeichen für Zeichen, wie es war.</para>
     /// </summary>
     public static class KaelteProduktionBild
     {
@@ -27,6 +32,7 @@ namespace WindowsFormsApplication1
             public string Bedarf { get; set; } = "Kältebedarf";
             public string Rest { get; set; } = "Ungedeckte Kälte";
             public string Erzeuger { get; set; } = "Wärmepumpe";
+            public string Dezentral { get; set; } = "dezentral (Split)";
         }
 
         /// <summary>Eine Erzeugerreihe: Bezeichner und gedeckte Kälte je Stunde [kWh].</summary>
@@ -47,6 +53,12 @@ namespace WindowsFormsApplication1
 
             /// <summary>Ungedeckte Kälte je Stunde [kWh].</summary>
             public double[] Rest = new double[0];
+
+            /// <summary>
+            /// Dezentral (Split) gedeckte Kälte je Stunde [kWh] (K6b) — <see cref="SimulationKaeltebedarf.Kaeltebedarf_Dezentral"/>;
+            /// leer ohne Split-Zeile (die Vorgabe, mit der jedes Bestandsbild byte-gleich bleibt).
+            /// </summary>
+            public double[] Dezentral = new double[0];
         }
 
         /// <summary>Die Farbrollen der Erzeuger in der Folge der Kaskade.</summary>
@@ -65,10 +77,13 @@ namespace WindowsFormsApplication1
             if (k == null || !k.Gerechnet) return null;
 
             var r = new Reihen { Bedarf = Kopie(k.Kaeltebedarf) };
+            // K6b: die Split-Deckung steht nur mit Split-Zeile im Bild; sie läuft neben der Kaskade.
+            if (k.MitDezentral) r.Dezentral = Kopie(k.Kaeltebedarf_Dezentral);
             Kaeltekaskade kaskade = k.Kaskade;
             if (kaskade == null || kaskade.Erzeuger.Count == 0)
             {
-                r.Rest = Kopie(k.Kaeltebedarf);
+                // Ohne Kälteerzeuger ist ungedeckt, was nicht dezentral gedeckt ist - ohne Split der ganze Bedarf.
+                r.Rest = k.MitDezentral ? k.BedarfDerKaskade() : Kopie(k.Kaeltebedarf);
                 return r;
             }
 
@@ -80,7 +95,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Stapel- und Linienreihen des Bildes: je Erzeuger eine Säule (leerer Bezeichner →
-        /// <see cref="Texte.Erzeuger"/>), danach die ungedeckte Kälte — nur, wenn sie im Jahr etwas
+        /// <see cref="Texte.Erzeuger"/>), danach die dezentral (Split) gedeckte Kälte — nur, wenn sie im
+        /// Jahr etwas trägt (K6b) —, danach die ungedeckte Kälte — nur, wenn sie im Jahr etwas
         /// trägt oder kein Erzeuger rechnet —, und als Linie der Kältebedarf.
         /// </summary>
         public static (List<ChartRenderer.Reihe> Stapel, List<ChartRenderer.Reihe> Linien) Reihenbilden(
@@ -100,6 +116,12 @@ namespace WindowsFormsApplication1
                                                    ChartRenderer.Stapelart.Saeule, ChartRenderer.Strichart.Durchgezogen,
                                                    breite));
             }
+
+            // K6b: die Split-Deckung nach den Erzeugern, vor der ungedeckten Kälte - nur mit Split-Zeile.
+            if (Summe(r.Dezentral) > 0)
+                stapel.Add(new ChartRenderer.Reihe(texte.Dezentral, Kopie(r.Dezentral), Farbrolle.KAELTE_DEZENTRAL,
+                                                   ChartRenderer.Stapelart.Saeule, ChartRenderer.Strichart.Durchgezogen,
+                                                   breite));
 
             if (r.Erzeuger.Count == 0 || Summe(r.Rest) > 0)
                 stapel.Add(new ChartRenderer.Reihe(texte.Rest, Kopie(r.Rest), Farbrolle.REST,

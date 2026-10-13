@@ -6488,6 +6488,31 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     padding: 6px 8px;
 }
 
+/* K6b: die Gruppe „Dezentrale Kaeltedeckung" - dieselbe Flaeche wie die zwei Spalten darueber; die Tafel rollt im
+   schmalen Fenster quer in ihrer Huelle, statt Spalten abzuschneiden. */
+.epos-simkonfig-kaelte-dezentral {
+    margin-top: 6px;
+    background: var(--epos-flaeche);
+    padding: 8px;
+    border-radius: var(--epos-ecke);
+    min-width: 0;
+}
+
+.epos-simkonfig-kaelte-dezentral-huelle {
+    overflow-x: auto;
+}
+
+/* K6b-N: „Bearbeiten…" je Zeile - der Knopf bricht nicht um. Die Tafel ist ein Hausraster (.epos-raster); die
+   Jahressumme steht rechtsbuendig wie die Zahlen der Ergebnistafeln. */
+.epos-simkonfig-kaelte-dezentral-bearbeiten {
+    white-space: nowrap;
+}
+
+.epos-simkonfig-kaelte-dezentral-tabelle th.epos-zahl,
+.epos-simkonfig-kaelte-dezentral-tabelle td.epos-zahl {
+    text-align: right;
+}
+
 .epos-simkonfig-kaelte-parameter {
     display: flex;
     flex-direction: column;
@@ -7772,6 +7797,60 @@ table.epos-simerg-tabelle {
 .epos-gebansicht-raum--hervor polygon {
     stroke: var(--epos-grundriss-hervor);
     stroke-width: 3px;
+}
+
+/* MA-5 "Ansicht als Werkzeug": die Befunde einer Pruefgruppe am Koerper. Getroffene Raeume und Kanten tragen den Rand in der
+   Farbe der bestehenden Hervorhebung, die uebrigen Raeume treten zurueck; die Farbtafeln der Modi bleiben unberuehrt. */
+.epos-gebansicht-raum--geprueft polygon {
+    stroke: var(--epos-grundriss-hervor);
+    stroke-width: 3px;
+}
+
+.epos-gebansicht-raum--gedimmt {
+    opacity: 0.35;
+}
+
+.epos-gebansicht-kante--geprueft {
+    stroke-width: 7px;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 1px var(--epos-grundriss-hervor));
+}
+
+.epos-gebansicht-pruefzeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    margin: 4px 0;
+}
+
+.epos-gebansicht-pruefmarke {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 3px solid var(--epos-grundriss-hervor);
+    border-radius: 3px;
+}
+
+.epos-gebansicht-vorschlag {
+    white-space: nowrap;
+}
+
+.epos-gebansicht-vorschlag .epos-knopf,
+.epos-gebansicht-pruefzeile .epos-knopf {
+    min-height: var(--epos-touchziel);
+    margin-left: 4px;
+}
+
+.epos-gebansicht-vorschlagszahl {
+    color: var(--epos-text-leise);
+}
+
+@media (forced-colors: active) {
+    .epos-gebansicht-raum--geprueft polygon { stroke: Highlight; }
+    .epos-gebansicht-kante.epos-gebansicht-kante--geprueft { stroke: Highlight; filter: none; }
+    .epos-gebansicht-pruefmarke { border-color: Highlight; }
+    .epos-gebansicht-raum--gedimmt { opacity: 1; }
 }
 
 .epos-gebansicht-hinweise {
@@ -18579,6 +18658,37 @@ td.epos-vorlage-katalogbeschreibung {
 .epos-modellpruefung-zaehlung { color: var(--epos-text-leise); min-width: 12em; }
 .epos-modellpruefung-knoepfe { display: inline-flex; gap: 0.3em; flex-wrap: wrap; margin-left: auto; }
 .epos-modellpruefung-ziel { font-weight: 600; }
+
+/* MA-2: Blatt „Nutzung und Kalender“ - alle Zonen mit Mehrfachwahl, Kalendermarken je Groesse, Ferien/Heizperiode. */
+.epos-zonennutzung-kopf { display: flex; gap: 1em; align-items: center; margin-bottom: 0.5em; }
+.epos-zonennutzung-gebaeude { font-weight: 600; }
+.epos-zonennutzung-werkzeuge, .epos-zonennutzung-eingabe { display: flex; gap: 0.4em; flex-wrap: wrap; align-items: center; margin-bottom: 0.5em; }
+.epos-zonennutzung-huelle { overflow-x: auto; }
+.epos-zonennutzung-tabelle { border-collapse: collapse; width: 100%; }
+.epos-zonennutzung-tabelle th, .epos-zonennutzung-tabelle td { padding: 0.2em 0.4em; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--epos-rahmen); }
+.epos-zonennutzung-tabelle .epos-zahl { text-align: right; white-space: nowrap; }
+.epos-zonennutzung-gewaehlt-zeile { background: var(--epos-ampel-gruen-flaeche); }
+.epos-zonennutzung-wahl { width: 2em; }
+.epos-zonennutzung-profilzelle { display: flex; gap: 0.4em; align-items: center; flex-wrap: wrap; }
+.epos-zonennutzung-herkunft { font-size: 0.85em; padding: 0 0.3em; border-radius: 0.3em; border: 1px solid currentColor; }
+.epos-zonennutzung-herkunft--vorgabe { color: var(--epos-ampel-gelb); }
+.epos-zonennutzung-marke { display: inline-block; min-width: 1.4em; margin-right: 0.15em; padding: 0 0.2em; text-align: center; font-size: 0.85em; border-radius: 0.3em; border: 1px solid var(--epos-rahmen); }
+.epos-zonennutzung-marke--profil, .epos-zonennutzung-marke--projekt { color: var(--epos-ampel-gruen); background: var(--epos-ampel-gruen-flaeche); }
+.epos-zonennutzung-marke--eigen, .epos-zonennutzung-marke--abweichung { font-weight: 600; }
+.epos-zonennutzung-marke--geerbt { color: var(--epos-ampel-gelb); background: var(--epos-ampel-gelb-flaeche); }
+.epos-zonennutzung-marke--fehlt { color: var(--epos-ampel-rot); background: var(--epos-ampel-rot-flaeche); }
+.epos-zonennutzung-marke--entfaellt { opacity: 0.5; }
+
+/* MA-7: „Vorgaben der Baualtersklasse übernehmen…“ im Gebäudeeditor - Knopfzeile mit Grund, Blatt mit Vorschau alt -> neu. */
+.epos-gebk-vorgaben { display: flex; gap: 0.5em; align-items: center; flex-wrap: wrap; margin: 0.4em 0 0.6em; }
+.epos-gebk-vorgaben-grund { font-size: 0.9em; }
+.epos-gebk-vorgabenblatt { display: flex; flex-direction: column; gap: 0.5em; min-width: min(36em, 100%); }
+.epos-gebk-vorgaben-tabelle { border-collapse: collapse; width: 100%; }
+.epos-gebk-vorgaben-tabelle th, .epos-gebk-vorgaben-tabelle td { padding: 0.2em 0.4em; text-align: left; border-bottom: 1px solid var(--epos-rahmen); }
+.epos-gebk-vorgaben-tabelle .epos-zahl { text-align: right; white-space: nowrap; }
+.epos-gebk-vorgaben-aendert td:last-child { font-weight: 600; }
+.epos-gebk-vorgaben-gleich td { opacity: 0.7; }
+.epos-gebk-vorgaben-leiste { display: flex; gap: 0.5em; flex-wrap: wrap; }
 
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */

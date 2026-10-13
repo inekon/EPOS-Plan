@@ -78,6 +78,11 @@ namespace WindowsFormsApplication1.Zeichnung
         public static readonly Farbrolle ERZEUGUNG_GESAMT = new Farbrolle("ERZEUGUNG_GESAMT");
         public static readonly Farbrolle VERBRAUCH_GESAMT = new Farbrolle("VERBRAUCH_GESAMT");
 
+        // K6b (Konzept Kältebedarf 4.3): die dezentral (Split) gedeckte Kälte — eine Fläche des Kältegangs, ein Segment
+        // des Kälterings, eine Reihe des Kältelastbilds und der Posten „Kühlung dezentral“ des Stromgangs.
+
+        public static readonly Farbrolle KAELTE_DEZENTRAL = new Farbrolle("KAELTE_DEZENTRAL");
+
         // -------------------------------------------------------- Variantenreihen
 
         public static readonly Farbrolle SERIE_1 = new Farbrolle("SERIE_1");
@@ -258,6 +263,8 @@ namespace WindowsFormsApplication1.Zeichnung
                 { Farbrolle.UEBERSCHUSS,     new Farbe(0xFF, 0xD5, 0x4F) },  // Bernstein
                 { Farbrolle.ERZEUGUNG_GESAMT, new Farbe(0x00, 0x80, 0x00) }, // Green
                 { Farbrolle.VERBRAUCH_GESAMT, new Farbe(0x2E, 0x8B, 0x57) }, // SeaGreen
+                // K6b: ein eigenes Aquablau, das keine andere Rolle trägt (Rückwärtssuche).
+                { Farbrolle.KAELTE_DEZENTRAL, new Farbe(0x4B, 0xAC, 0xC6) },
 
                 { Farbrolle.SERIE_1,         new Farbe(0xED, 0x7D, 0x31) },  // Orange
                 { Farbrolle.SERIE_2,         new Farbe(0x70, 0xAD, 0x47) },  // Grün

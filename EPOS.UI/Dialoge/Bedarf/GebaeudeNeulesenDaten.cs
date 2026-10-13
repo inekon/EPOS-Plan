@@ -54,8 +54,17 @@ public sealed class GebaeudeNeulesestand
     /// <summary>Woher die Zonen der Ansicht stammen (Regel der Datei, ohne Projektdatei und Handzuordnung); leer = nichts zu sagen.</summary>
     public string Zonenhinweis { get; init; } = "";
 
-    /// <summary>Die Ansicht; allein bei <see cref="GebaeudeNeulesezustand.Passend"/>, sonst <c>null</c>.</summary>
-    public GebaeudeAnsichtDaten? Ansicht { get; init; }
+    /// <summary>
+    /// Die Ansicht; allein bei <see cref="GebaeudeNeulesezustand.Passend"/>, sonst <c>null</c>. Nach einer Übernahme an der Legende
+    /// (MA-5) setzt der Dialog sie über <see cref="AnsichtNeuLesen"/> neu.
+    /// </summary>
+    public GebaeudeAnsichtDaten? Ansicht { get; set; }
+
+    /// <summary>
+    /// MA-5: liest Stufen, Befunde, Zonen und Nutzung des gespeicherten Gebäudes neu in dieselbe Geometrie (ohne die Datei erneut zu
+    /// lesen); <c>null</c> = kein Weg.
+    /// </summary>
+    public Func<GebaeudeAnsichtDaten?>? AnsichtNeuLesen { get; init; }
 
     /// <summary>
     /// HC-5 (F7): „Grundriss übernehmen“ — nur bei passender Prüfsumme und nur, wenn für die Quelle noch keine oder ältere

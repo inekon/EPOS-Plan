@@ -164,6 +164,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // NP3a (Konzept Nutzungsprofile 6.1, NP-F22): das Blatt „Nutzungsprofile" im Katalogeditor - der
         // Katalog ist projektübergreifend (NP-F3) und schreibt sofort; der WIRT meldet an, nicht das Blatt.
         new("RaumnutzungBlatt",                  "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
+        // MA-2 (Entwurf Geführter Modellaufbau 2.4): das Blatt „Nutzung und Kalender" — im Reiter „Zonen" des Katalogeditors
+        // und als Überlagerung über dem Ampelblatt des Gebäudedialogs; jede Handlung schreibt mit eigenem Knopf. Die Tabelle
+        // führt je Kind EINEN Wirt: den Editor, der als Form_Gebaeude1 anmeldet.
+        new("ZonenNutzungsblatt",                "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
         // NP4a (Konzept Nutzungsprofile 6.1, 6.4): CSV-Import und -Export im Kopf des Blatts — ein Baustein darin.
         new("RaumnutzungCsvAustausch",           "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
         // NP7b (Konzept Nutzungsprofile 6.5): der Dialog „Normwerte einlesen" als Überlagerung im Blatt.
@@ -419,6 +423,10 @@ public sealed class KiMaskenabdeckungWacheTests
         new("KonditionierungReiter", 6),
         // KP3 O2 (E59): das Feld „Aufheizzeit manuell (h)" (Katalogfeld aufheizzeit_manuell); „Übernehmen" setzt
         // denselben Wert aus dem Vorschlag und ist keine eigene Eingabestelle.
+        // MA-2: das Blatt „Nutzung und Kalender" — Profilwahl, Kalenderquelle, Sollwerte Tag und Nacht und die Zonenwahl sind
+        // Handlungen über mehrere Zonen, die mit eigenem Knopf sofort schreiben, kein Einstellwert der Maske.
+        new("ZonenNutzungsblatt", 7, "Profilwahl, Kalenderquelle und Sollwerte des Blatts sind Handlungen über mehrere Zonen " +
+            "mit eigenem Knopf (Profil zuweisen…, Kalender kopieren…, Sollwerte setzen); jede schreibt sofort über den Kern"),
         new("AufheizzeitManuellFeld", 1),
         // KP2 U2: die Auswahlliste der Vorlagen je Kalenderkarte - die Feldkarte führt sie als
         // kond_<größe>_vorlage mit der Aktion des Knopfs „Übernehmen“ (Entwurf KP2 D9); dazu Name,

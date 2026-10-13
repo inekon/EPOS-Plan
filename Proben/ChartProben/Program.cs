@@ -758,6 +758,26 @@ namespace ChartProben
                    new[] { Rollenfarbe(Farbrolle.REST), Rollenfarbe(Farbrolle.BEDARF) },
                    () => KaelteProduktionBild.Png(KaelteProduktionSatz(false)));
 
+            // K6b (Konzept Kaeltebedarf 4.3): der Kaeltegang mit Split-Flaeche - die dezentral gedeckte Kaelte als
+            // Saeule nach dem Erzeuger und vor dem Rest, in der Rolle KAELTE_DEZENTRAL. Die Gegenprobe zeigt, dass die
+            // Flaeche wirkt; die Bytegleichheit, dass ein Satz ohne Split (leer oder lauter Nullen) das Bestandsbild
+            // „kaelte_produktion" Zeichen fuer Zeichen zeichnet.
+            Pruefe(ziel, "kaelte_produktion_dezentral", 1240, 560,
+                   new[] { Rollenfarbe(Farbrolle.WAERME_WP), Rollenfarbe(Farbrolle.KAELTE_DEZENTRAL),
+                           Rollenfarbe(Farbrolle.REST), Rollenfarbe(Farbrolle.BEDARF) },
+                   () => KaelteProduktionBild.Png(KaelteProduktionSplitSatz()));
+            Unterschiedlich("kaelte_produktion_split",
+                () => KaelteProduktionBild.Png(KaelteProduktionSatz(true)),
+                () => KaelteProduktionBild.Png(KaelteProduktionSplitSatz()));
+            Bytegleich("kaelte_produktion_ohne_split",
+                () => KaelteProduktionBild.Png(KaelteProduktionSatz(true)),
+                () =>
+                {
+                    KaelteProduktionBild.Reihen r = KaelteProduktionSatz(true);
+                    r.Dezentral = new double[r.Bedarf.Length];
+                    return KaelteProduktionBild.Png(r);
+                });
+
             // --- B7: Temperaturverlauf ------------------------------------------------
             Pruefe(ziel, "temperaturverlauf_zwei_speicher", 1240, 560,
                    new[] { TEMP_ROT, TEMP_BLAU, TEMP_QUELLE },
@@ -2583,6 +2603,41 @@ namespace ChartProben
             r.Erzeuger.Add(new KaelteProduktionBild.Erzeugerreihe { Name = "Waermepumpe 1", Werte = wp });
             r.Rest = rest;
             return r;
+        }
+
+        /// <summary>
+        /// K6b: derselbe Satz wie <see cref="KaelteProduktionSatz"/> mit Erzeuger, dazu eine dezentral (Split) gedeckte
+        /// Kaelte mit eigener Sommerspitze, die im Bedarf steht und neben der Kaskade laeuft.
+        /// </summary>
+        private static KaelteProduktionBild.Reihen KaelteProduktionSplitSatz()
+        {
+            KaelteProduktionBild.Reihen r = KaelteProduktionSatz(true);
+            double[] split = Jahresreihe(2, 6, 12, 0, -Math.PI / 2);
+            r.Dezentral = split;
+            for (int i = 0; i < r.Bedarf.Length; i++) r.Bedarf[i] += split[i];
+            return r;
+        }
+
+        /// <summary>
+        /// K6b: die Gegenprobe der Bytegleichheit — beide Bilder muessen Zeichen fuer Zeichen gleich sein; ohne Ablage und
+        /// ohne Messlatte (das erste Bild steht dort schon unter seinem Bestandsnamen).
+        /// </summary>
+        private static void Bytegleich(string name, Func<byte[]> bestand, Func<byte[]> neu)
+        {
+            _bilder++;
+            var maengel = new List<string>();
+            byte[] a, b;
+            try { a = bestand(); b = neu(); }
+            catch (Exception ex)
+            {
+                Melde(name + " (gleich)", "-", "-", "-", "-",
+                      new List<string> { "Ausnahme: " + ex.GetType().Name + " - " + ex.Message });
+                return;
+            }
+            if (a == null || b == null) maengel.Add("Renderer liefert null");
+            else if (!a.SequenceEqual(b)) maengel.Add("Bild weicht vom Bestand ab");
+            Melde(name + " (gleich)", "-", b == null ? "-" : b.Length.ToString("N0", CultureInfo.InvariantCulture),
+                  "-", "-", maengel);
         }
 
         private static SolarWaermeMonate WaermeAutarkieSatz()

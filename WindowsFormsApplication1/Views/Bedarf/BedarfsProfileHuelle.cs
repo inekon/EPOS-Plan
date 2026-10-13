@@ -485,6 +485,8 @@ namespace WindowsFormsApplication1
                 // K5b (Konzept 3.4): die Stromtraeger des Projekts fuer den Kuehltraeger der Feldgruppe „Deckung".
                 gaben["Stromtraeger"] = (IReadOnlyList<(int Id, string Text)>)Kaeltestromabrechnung
                     .StromtraegerDesProjekts(projektId).Select(t => (t.Key, t.Value)).ToList();
+                // K6b (E34): der Stromtraeger des Projekts - der eigene Zaehler wirkt nur bei abweichendem Kuehltraeger.
+                gaben["ProjektStromtraeger"] = Kaeltestromabrechnung.Projekttraeger(projektId);
             }
 
             // Brauchwasser (5.2): Das OK schreibt Zuordnungen und Zapfprofil in EINEM Vorgang,

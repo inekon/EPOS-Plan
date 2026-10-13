@@ -388,6 +388,12 @@ namespace WindowsFormsApplication1
                         spalten.Add(new CsvSpalte(MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
                                                   sim.simulation_wp.Heizstab_stuendlich));
                         break;
+                    case REIHE_KUEHLUNG_DEZENTRAL:
+                        // K6b: die ganze Split-Reihe - dieselbe wie im Bild; ohne Split-Zeile gibt es die Wahl nicht.
+                        if (sim.Kaeltestrom_Dezentral_stuendlich != null)
+                            spalten.Add(new CsvSpalte(MyResource.Resource.SIMUEB_LBL_KUEHLUNG_DEZENTRAL,
+                                                      sim.Kaeltestrom_Dezentral_stuendlich));
+                        break;
                     case "HEIZKESSEL":
                         // E29 (#536, N9): der Stromverbrauch des Kessels, nicht sein
                         // Strom-Stufeneingang - dieselbe Reihe wie im Bild.

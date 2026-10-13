@@ -202,6 +202,15 @@
                 <h3 class="epos-untergruppe">@Resource.SIMERG_LBL_KAELTE_JE_KANAL</h3>
                 <dl class="epos-simerg-werte">
                     @Wertzeile(kaelte.Kanalname, kaelte.KaeltebedarfMwh, MWH)
+                    @* K6b (Konzept Kaeltebedarf 4.3): mit Split-Zeile die Herkunft und die dezentrale Deckung -
+                       ohne sie bleibt die Gruppe, wie sie war. *@
+                    @if (kaelte.MitDezentral)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_KAELTE_DAVON_GEBAEUDE, kaelte.GebaeudeMwh, MWH)
+                        @Wertzeile(Resource.SIMERG_LBL_KAELTE_DAVON_LASTGANG, kaelte.ExternMwh, MWH)
+                        @Wertzeile(Resource.SIMERG_LBL_KAELTE_DAVON_PROFIL, kaelte.ProfilMwh, MWH)
+                        @Wertzeile(Resource.SIMERG_LBL_KAELTE_DAVON_DEZENTRAL, kaelte.DezentralMwh, MWH)
+                    }
                 </dl>
 
                 @foreach (string hinweis in kaelte.Hinweise)

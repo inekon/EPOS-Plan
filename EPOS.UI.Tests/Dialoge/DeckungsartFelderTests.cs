@@ -147,4 +147,29 @@ public class DeckungsartFelderTests : EposBunitContext
         Assert.DoesNotContain("3.0", cut.Markup);
         Assert.Contains("3,00", d.Zusammenfassung());
     }
+
+    /// <summary>
+    /// K6b (E34, Muster Kältemaschinen-Konfiguration): Der eigene Zähler ist weich gesperrt, solange kein abweichender
+    /// Kühlträger gewählt ist — die Herleitungszeile sagt es; mit abweichendem Träger fällt sie weg.
+    /// </summary>
+    [Fact]
+    public void K6b_Eigener_Zaehler_ist_ohne_abweichenden_Traeger_weich_gesperrt()
+    {
+        string hinweis = WindowsFormsApplication1.MyResource.Resource.KMA_HINWEIS_ZAEHLER;
+        var d = new DeckungsartDaten();
+        d.DeckungSetzen(KaeltebedarfSchema.DECKUNG_SPLIT);
+        var ohne = Render<DeckungsartFelder>(p => p.Add(x => x.Daten, d).Add(x => x.Stromtraeger, TRAEGER)
+                                                   .Add(x => x.ProjektStromtraeger, 1));
+        Assert.Contains(hinweis, ohne.Markup);
+
+        d.KuehlIdCarrier = 1;   // der Projektträger - weicht nicht ab
+        var gleich = Render<DeckungsartFelder>(p => p.Add(x => x.Daten, d).Add(x => x.Stromtraeger, TRAEGER)
+                                                     .Add(x => x.ProjektStromtraeger, 1));
+        Assert.Contains(hinweis, gleich.Markup);
+
+        d.KuehlIdCarrier = 2;
+        var mit = Render<DeckungsartFelder>(p => p.Add(x => x.Daten, d).Add(x => x.Stromtraeger, TRAEGER)
+                                                  .Add(x => x.ProjektStromtraeger, 1));
+        Assert.DoesNotContain(hinweis, mit.Markup);
+    }
 }

@@ -184,6 +184,24 @@
                         </KindInhalt>
                     </Gruppenkopf>
 
+                    @* MA-7: „Vorgaben der Baualtersklasse übernehmen…“ - der Einzonenweg in einer Minute (Entwurf Geführter
+                       Modellaufbau 2.1). Mit Zonen oder ohne Klasse gesperrt, der Grund steht daneben; die Übernahme trägt
+                       in den Arbeitsstand, das OK schreibt. *@
+                    <div class="epos-gebk-vorgaben" data-teil="vorgaben">
+                        <button type="button" class="epos-knopf epos-gebk-vorgaben-knopf"
+                                disabled="@(VorgabenGrund is not null || IstGesperrt)" title="@(VorgabenGrund ?? "")"
+                                @onclick="VorgabenOeffnen">@Resource.GEBV_BTN_OEFFNEN</button>
+                        @if (_arbeit.KannEinzonenvorgabenZuruecknehmen)
+                        {
+                            <button type="button" class="epos-knopf epos-gebk-vorgaben-zurueck"
+                                    @onclick="VorgabenZuruecknehmen">@Resource.GEBV_BTN_ZURUECKNEHMEN</button>
+                        }
+                        @if (VorgabenGrund is string grund)
+                        {
+                            <span class="epos-herleitung-text epos-gebk-vorgaben-grund">@grund</span>
+                        }
+                    </div>
+
                     <Gruppenkopf Titel="@GruppeKopf">
                         <KindInhalt>
                             <Formularraster>
@@ -760,6 +778,17 @@
                                 @Uebernahmeblock
                             }
                             @Neuezonenblock
+                            @* MA-2: Nutzung und Kalender aller Zonen auf einem Blatt (Mehrfachwahl); mit ungespeicherten Zonen
+                               gesperrt, damit das Blatt und der Arbeitsstand nicht gegeneinander schreiben. *@
+                            @if (ZonenNutzungGaben is not null && _arbeit.Zonen.Count > 0)
+                            {
+                                <div class="epos-leiste epos-gebaeude-zonennutzung-leiste">
+                                    <button type="button" class="epos-knopf epos-gebaeude-zonennutzung"
+                                            aria-disabled="@(_arbeit.ZonenGeaendert ? "true" : null)"
+                                            title="@(_arbeit.ZonenGeaendert ? Resource.GEB_SPERRE_ZONENNUTZUNG : Resource.GEB_BTN_ZONENNUTZUNG_HINWEIS)"
+                                            @onclick="BeiZonenNutzung">@Resource.GEB_BTN_ZONENNUTZUNG</button>
+                                </div>
+                            }
                             @* GD-6a: die gemerkten Baustoff-Zuordnungen des Projekts bei Bauteilen und Aufbauten der Zonen. *@
                             @if (BaustoffzuordnungenGaben is not null)
                             {
@@ -776,6 +805,70 @@
 
         </KindInhalt>
     </Reiter>
+
+    @* --- Ueberlagerung: Nutzung und Kalender aller Zonen (MA-2) - schreibt je Handlung; danach liest der Reiter die Zonen neu --- *@
+    <Ueberlagerung Offen="@(_zonenNutzung is not null)" Titel="@Resource.ZNB_TITEL" Zusatzklasse="epos-ueberlagerung--breit"
+                   Geschlossen="ZonenNutzungFertig">
+        <KindInhalt>
+            @if (_zonenNutzung is not null)
+            {
+                <ZonenNutzungsblatt Weg="@_zonenNutzung" ZoneOeffnen="ZonenNutzungZone" Geaendert="() => _zonenNutzungGeschrieben = true" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung: Vorgaben der Baualtersklasse (MA-7) - Vorschau alt -> neu je Feld, Uebernahme nur auf Klick,
+           dazu das Profil der Gebaeudeart ueber den Generator der Konditionierung ("Nutzungsprofil übernehmen…") --- *@
+    <Ueberlagerung Offen="@_vorgabenOffen" Titel="@Resource.GEBV_TITEL" Geschlossen="() => _vorgabenOffen = false">
+        <KindInhalt>
+            @if (_vorgabenOffen)
+            {
+                <div class="epos-gebk-vorgabenblatt" data-teil="vorgabenblatt">
+                    <p class="epos-herleitung"><span class="epos-herleitung-text epos-gebk-vorgaben-herkunft">@VorgabenHerkunft</span></p>
+                    <table class="epos-raster epos-gebk-vorgaben-tabelle">
+                        <thead>
+                            <tr>
+                                <th>@Resource.GEBV_SP_FELD</th>
+                                <th class="epos-zahl">@Resource.GEBV_SP_JETZT</th>
+                                <th class="epos-zahl">@Resource.GEBV_SP_NEU</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (Einzonenposten p in _arbeit.Einzonenvorschau())
+                            {
+                                <tr data-feld="@p.Feld" class="@(p.Aendert ? "epos-gebk-vorgaben-aendert" : "epos-gebk-vorgaben-gleich")">
+                                    <th scope="row">@Vorgabenfeldtext(p.Feld)</th>
+                                    <td class="epos-zahl">@Vorgabenwert(p.Feld, p.Alt)</td>
+                                    <td class="epos-zahl">@(p.Aendert ? Vorgabenwert(p.Feld, p.Neu) : Resource.GEBV_TXT_GLEICH)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <Herleitungszeile Text="@Resource.GEBV_TXT_HINWEIS" />
+                    <div class="epos-gebk-vorgaben-leiste">
+                        <button type="button" class="epos-knopf epos-knopf--primaer epos-gebk-vorgaben-uebernehmen"
+                                @onclick="VorgabenUebernehmen">@Resource.GEBV_BTN_UEBERNEHMEN</button>
+                        <button type="button" class="epos-knopf" @onclick="() => _vorgabenOffen = false">@Resource.GEBV_BTN_ABBRECHEN</button>
+                    </div>
+
+                    <Gruppenkopf Titel="@Resource.GEBV_GRUPPE_PROFIL">
+                        <KindInhalt>
+                            @if (_vorgabenProfil is KonditionierungProfilwahl profil)
+                            {
+                                <p class="epos-herleitung"><span class="epos-herleitung-text epos-gebk-vorgaben-profil">@string.Format(CultureInfo.CurrentCulture, Resource.GEBV_TXT_PROFIL, _stand.Gebaeudeart, profil.Anzeige)</span></p>
+                                <button type="button" class="epos-knopf epos-gebk-vorgaben-profilknopf"
+                                        @onclick="VorgabenProfilUebernehmen">@Resource.GEBV_BTN_PROFIL</button>
+                            }
+                            else
+                            {
+                                <p class="epos-herleitung"><span class="epos-herleitung-text epos-gebk-vorgaben-profilgrund">@VorgabenProfilGrund</span></p>
+                            }
+                        </KindInhalt>
+                    </Gruppenkopf>
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 
     @* --- Ueberlagerung: die Baustoff-Zuordnungen des Projekts (GD-6a) - geschrieben mit deren OK ---- *@
     <Ueberlagerung Offen="@(_baustoffzuordnungenGaben is not null)" Titel="@Resource.BSZU_TITEL"
@@ -2596,6 +2689,114 @@
         Melden(string.Format(CultureInfo.CurrentCulture, Texte.MeldungSpeichernUnterAngelegt, neu), WarnStufe.Erfolg);
     }
 
+    // =================================================================================
+    // Vorgaben der Baualtersklasse im Einzonenweg (MA-7)
+    // =================================================================================
+
+    private bool _vorgabenOffen;
+    private KonditionierungProfilwahl? _vorgabenProfil;
+
+    /// <summary>Steht das Blatt „Vorgaben der Baualtersklasse“? Prüfhilfe für die Tests.</summary>
+    public bool VorgabenOffen => _vorgabenOffen;
+
+    /// <summary>Warum „Vorgaben der Baualtersklasse übernehmen…“ nicht geht; <c>null</c> = es geht.</summary>
+    public string? VorgabenGrund => _arbeit.Einzonensperre switch
+    {
+        Einzonensperre.Zonen => Resource.GEBV_GRUND_ZONEN,
+        Einzonensperre.OhneKlasse => Resource.GEBV_GRUND_KLASSE,
+        Einzonensperre.OhneWerte => Resource.GEBV_GRUND_WERTE,
+        _ => null
+    };
+
+    /// <summary>Die Herkunftszeile der Vorgabe: Klasse bzw. Energiestandard, Katalogmedian oder freier Wert.</summary>
+    private string VorgabenHerkunft
+    {
+        get
+        {
+            if (_arbeit.Einzonenvorgabe is not Einzonenvorgabe v) return "";
+            CultureInfo c = CultureInfo.CurrentCulture;
+            if (v.Frei) return string.Format(c, Resource.GEBV_HERKUNFT_FREI, v.Kennung);
+            return v.AusStandard
+                ? string.Format(c, Resource.GEBV_HERKUNFT_STANDARD, Energiestandard.Text(v.Kennung), v.Katalogsaetze)
+                : string.Format(c, Resource.GEBV_HERKUNFT_KLASSE, v.Kennung, v.Katalogsaetze);
+        }
+    }
+
+    /// <summary>Warum das Profil der Gebäudeart nicht angeboten wird.</summary>
+    private string VorgabenProfilGrund
+        => _kond.Weg.ProfilDerGebaeudeart is null || !_kond.MitProfilen
+            ? Resource.GEBV_GRUND_PROFIL_WEG
+            : string.Format(CultureInfo.CurrentCulture, Resource.GEBV_GRUND_PROFIL_KEINS, _stand.Gebaeudeart);
+
+    /// <summary>Die Bezeichnung eines Feldes der Vorschau: die Zeile der Hülle, sonst die Beschriftung des Feldes.</summary>
+    private string Vorgabenfeldtext(Einzonenfeld f) => f switch
+    {
+        Einzonenfeld.UAussenwand => Zeilentext(Huellbauteil.Aussenwand),
+        Einzonenfeld.UFenster => Zeilentext(Huellbauteil.Fenster),
+        Einzonenfeld.UDach => Zeilentext(Huellbauteil.Dach),
+        Einzonenfeld.UGrund => Zeilentext(Huellbauteil.Bodenplatte),
+        Einzonenfeld.USonstige => Zeilentext(Huellbauteil.Sonstiges),
+        Einzonenfeld.PsiFensterWand => Zeilentext(Huellbauteil.WaermebrueckeFensterWand),
+        Einzonenfeld.PsiAussenwandKeller => Zeilentext(Huellbauteil.WaermebrueckeAussenwandKeller),
+        Einzonenfeld.PsiWandDach => Zeilentext(Huellbauteil.WaermebrueckeWandDach),
+        Einzonenfeld.Fensterdurchlassgrad => LabelFensterdurchlassgrad.TrimEnd(' ', ':'),
+        _ => LabelBauart.TrimEnd(' ', ':')
+    };
+
+    /// <summary>Ein Wert der Vorschau mit Einheit; die Bauart als Text der Klappliste; leer als „—“.</summary>
+    private string Vorgabenwert(Einzonenfeld f, double? w)
+    {
+        if (w is not double x) return "—";
+        return f switch
+        {
+            Einzonenfeld.Bauart => Bauarteintraege.FirstOrDefault(e => e.Id == (int)Math.Round(x)).Text ?? "—",
+            Einzonenfeld.Fensterdurchlassgrad => Zahl(x, 2),
+            Einzonenfeld.PsiFensterWand or Einzonenfeld.PsiAussenwandKeller or Einzonenfeld.PsiWandDach => Zahl(x, 3) + " W/(mK)",
+            _ => Zahl(x, 2) + " W/(m²K)"
+        };
+    }
+
+    /// <summary>Öffnet das Blatt; das Profil der Gebäudeart wird einmal gelesen.</summary>
+    private void VorgabenOeffnen()
+    {
+        if (VorgabenGrund is string grund)
+        {
+            Melden(grund, WarnStufe.Hinweis);
+            return;
+        }
+        _vorgabenProfil = null;
+        if (_kond.MitProfilen && _kond.Weg.ProfilDerGebaeudeart is Func<string, long?> regel && regel(_stand.Gebaeudeart) is long id)
+            _vorgabenProfil = _kond.Profile().FirstOrDefault(p => p.Id == id);
+        _vorgabenOffen = true;
+    }
+
+    /// <summary>„Übernehmen“: die Vorgabe in den Arbeitsstand; die Meldung nennt die Zahl der geänderten Felder.</summary>
+    private void VorgabenUebernehmen()
+    {
+        int geaendert = _arbeit.Einzonenvorschau().Count(p => p.Aendert);
+        string kennung = _arbeit.Einzonenvorgabe?.Kennung ?? "";
+        if (!_arbeit.EinzonenvorgabenUebernehmen()) return;
+        _vorgabenOffen = false;
+        Melden(string.Format(CultureInfo.CurrentCulture, Resource.GEBV_MELDUNG_UEBERNOMMEN, kennung, geaendert), WarnStufe.Erfolg);
+    }
+
+    /// <summary>„Vorgaben zurücknehmen“ (eine Stufe).</summary>
+    private void VorgabenZuruecknehmen()
+    {
+        if (_arbeit.EinzonenvorgabenZuruecknehmen()) Melden(Resource.GEBV_MELDUNG_ZURUECK, WarnStufe.Hinweis);
+    }
+
+    /// <summary>
+    /// „Profil übernehmen…“: wählt das Profil der Gebäudeart und stellt die Rückfrage der Konditionierung (derselbe Generator
+    /// wie „Nutzungsprofil übernehmen…“, mit deren Rücknahme); der Reiter „Konditionierung“ zeigt sie.
+    /// </summary>
+    private void VorgabenProfilUebernehmen()
+    {
+        if (_vorgabenProfil is not KonditionierungProfilwahl p || !_kond.ProfilWaehlen(p.Id)) return;
+        _vorgabenOffen = false;
+        if (_kond.ProfilUebernehmenFragen(RaumnutzungTexte)) _reiter = REITER_KONDITIONIERUNG;
+    }
+
     private void Melden(string text, WarnStufe stufe)
     {
         _meldung = text ?? "";
@@ -2608,7 +2809,7 @@
         if (e.Key != "Escape" || _brauchwasserGaben is not null || _zoneOffen is not null || _vorschlag is not null
             || _entfernId is not null || _speichernUnterFrage || _nachFrage is not null || _luftOffen
             || _kond.OffeneFrage is not null || _vorlagenBlatt is not null || _nutzungsblatt
-            || _baustoffzuordnungenGaben is not null) return Task.CompletedTask;
+            || _baustoffzuordnungenGaben is not null || _vorgabenOffen) return Task.CompletedTask;
         return Abbrechen();
     }
 
@@ -2674,6 +2875,48 @@
         if (entfernt is > 0)
             Melden(string.Format(CultureInfo.CurrentCulture, Resource.GEB_MSG_BAUSTOFFZUORDNUNGEN_ENTFERNT, entfernt.Value),
                    WarnStufe.Hinweis);
+    }
+
+    /// <summary>
+    /// „Nutzung und Kalender…" im Reiter „Zonen" (MA-2): der Weg des Blatts für das Projektgebäude — vom Gebäudedialog
+    /// durchgereicht. Kein Delegat = kein Knopf (Katalogverwaltung, Assistent).
+    /// </summary>
+    [Parameter] public Func<ZonenNutzungWeg?>? ZonenNutzungGaben { get; set; }
+
+    private ZonenNutzungWeg? _zonenNutzung;
+    private bool _zonenNutzungGeschrieben;
+
+    /// <summary>Steht das Blatt „Nutzung und Kalender"? Prüfhilfe für die Tests.</summary>
+    public bool ZonenNutzungOffen => _zonenNutzung is not null;
+
+    private void BeiZonenNutzung()
+    {
+        if (ZonenNutzungGaben is null) return;
+        if (_arbeit.ZonenGeaendert) { Melden(Resource.GEB_SPERRE_ZONENNUTZUNG, WarnStufe.Hinweis); return; }
+        ZonenNutzungWeg? weg;
+        try { weg = ZonenNutzungGaben(); }
+        catch (Exception ex) when (ex is not OutOfMemoryException) { Melden(ex.Message, WarnStufe.Warnung); return; }
+        if (weg is null) { Melden(Resource.GEB_SPERRE_ZONENNUTZUNG, WarnStufe.Hinweis); return; }
+        _zonenNutzungGeschrieben = false;
+        _zonenNutzung = weg;
+    }
+
+    /// <summary>Das Blatt ist zu: hat es geschrieben, liest der Reiter die Zonen neu (Profil, Sollwerte).</summary>
+    private void ZonenNutzungFertig()
+    {
+        _zonenNutzung = null;
+        if (!_zonenNutzungGeschrieben || Zonen?.Neulesen is null) return;
+        _zonenNutzungGeschrieben = false;
+        ZonenNeulesung? n = Katalogladung.Satz(() => Zonen.Neulesen(), _ursprungsname, out string fehler);
+        if (n is not null) _arbeit.ZonenLaden(n.Zonen, true, n.Luftstroeme, katalog: false);
+        else if (fehler.Length > 0) Melden(fehler, WarnStufe.Warnung);
+    }
+
+    /// <summary>„Zone…" im Blatt: das Blatt schließt, der Zonendialog öffnet die Zone.</summary>
+    private void ZonenNutzungZone(int id)
+    {
+        ZonenNutzungFertig();
+        ZoneOeffnen(id);
     }
 
     /// <summary>Steht der Nutzungsprofilkatalog als Blatt (Stufe NP3a)?</summary>

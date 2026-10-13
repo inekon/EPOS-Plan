@@ -1300,6 +1300,14 @@ dreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Testdatenbank steht auf **222** (`integrity_check` ok, `foreign_key_check` leer): **96 604 160 Byte, LFS-SHA-256
 > `03ba8220…`**, Katalog 132 Baustoffe und 9 Aufbauten; kein Rechenweg liest die Klasse
 > ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-12_BK-3_Import.md)).
+> **Nachtrag — Schema 223 (Abrechnung des Split-Stroms, K6, 13.10.2026, hängt an 222 `BauteilkatalogHaustechnikSchema`), Basis R52
+> unverändert.** `KaeltebedarfSplitAbrechnungSchema` (223 = `BauteilkatalogHaustechnikSchema.SCHRITT + 1`) legt
+> `Tab_ErgebnisKaelteDezentral` an (STRICT, eine Ergebniszeile je dezentral gedeckter Kältebedarfszeile eines Laufs; Prüfklauseln
+> an `Quelle` und `Kuehl_EigenerZaehler`, Verweis allein am Lauf). Gehoben aus der Fassung 222 (`03ba8220…`) mit
+> `Werkzeuge/Testdatenbankschema`; der Inhaltsvergleich aller Tabellen zeigt nur `Tab_Applikation.SchemaVersion`, die neue
+> Tabelle ist leer (kein Referenzprojekt führt eine Split-Zeile). Die Testdatenbank steht auf **223** (`integrity_check` ok,
+> `foreign_key_check` leer): **96 608 256 Byte, LFS-SHA-256 `05b14e070bea540996ffdaa2a96c67369bc924a562c5069e6f2c16d7e8658ad6`**.
+> Die zwölf Projekte der CI-Auswahl rechnen gegen R52 GESAMT PASS und byte-gleich.
 
 ### Die Vorgängerbasis R51 (freie Kühlung)
 

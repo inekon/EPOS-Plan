@@ -546,6 +546,7 @@
             {
                 <GebaeudeKatalogDialog @attributes="_projektGaben" TitelAnzeigen="false"
                                        BaustoffzuordnungenGaben="@BaustoffzuordnungenWirt"
+                                       ZonenNutzungGaben="@ZonenNutzungEditorWirt"
                                        MehrzonenGeschrieben="() => _mehrzonenGeschrieben = true"
                                        Geschlossen="ProjekteditorFertig" />
             }
@@ -609,9 +610,22 @@
         <KindInhalt>
             @if (_modellpruefung is not null && _modellpruefungZeile is not null)
             {
-                <Modellpruefungsblatt Weg="@_modellpruefung" AnsichtSperre="@ModellpruefungAnsichtSperre()"
+                <Modellpruefungsblatt @ref="_modellpruefungsblatt" Weg="@_modellpruefung" AnsichtSperre="@ModellpruefungAnsichtSperre()"
                                       Simulation="ModellpruefungSimulation" Ansicht="ModellpruefungAnsicht"
-                                      Geaendert="ModellpruefungGeaendert" />
+                                      AnsichtGruppe="ModellpruefungAnsichtGruppe"
+                                      Bearbeiten="@ModellpruefungBearbeitenWirt" Geaendert="ModellpruefungGeaendert" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- MA-2: das Blatt „Nutzung und Kalender" aus Gruppe 3 der Modellpruefung - steht ueber dem Ampelblatt; beim Schliessen
+       prueft das Ampelblatt neu. --- *@
+    <Ueberlagerung Offen="@(_zonenNutzung is not null)" Titel="@Resource.ZNB_TITEL" Zusatzklasse="epos-ueberlagerung--breit"
+                   Geschlossen="ZonenNutzungFertig">
+        <KindInhalt>
+            @if (_zonenNutzung is not null)
+            {
+                <ZonenNutzungsblatt Weg="@_zonenNutzung" Geaendert="ZonenNutzungGeaendert" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -683,7 +697,8 @@
                         }
                         <GebaeudeAnsicht Daten="@stand.Ansicht" Geschoss="@_neulesenGeschoss"
                                          GeschossChanged="g => _neulesenGeschoss = g" Texte="@_ansichtTexte"
-                                         FarbmodusVorgabe="@_neulesenFarbmodus" />
+                                         FarbmodusVorgabe="@_neulesenFarbmodus" Pruefung="@_neulesenPruefung"
+                                         PruefungUebernehmen="@AnsichtUebernehmenWirt" PruefungVerwerfen="@AnsichtVerwerfenWirt" />
                     }
                     @if (stand.AndereDateiAnbieten)
                     {
@@ -869,6 +884,13 @@
     [Parameter] public Func<GebaeudeProjektZeile, ModellpruefungWeg?>? ModellpruefungGaben { get; set; }
 
     /// <summary>
+    /// MA-2: der Weg des Blatts „Nutzung und Kalender" für eine Projektzeile (Hülle <c>ZonenNutzungHuelle</c>); <c>null</c> als
+    /// Ergebnis = kein Projektgebäude. Einstiege: „Bearbeiten…" an Gruppe 3 des Blatts „Modell prüfen" und „Nutzung und
+    /// Kalender…" im Reiter „Zonen" des Editors. Ohne Delegat kein Knopf; im Assistenten nie.
+    /// </summary>
+    [Parameter] public Func<GebaeudeProjektZeile, ZonenNutzungWeg?>? ZonenNutzungGaben { get; set; }
+
+    /// <summary>
     /// <b>„Hülle und Zonen…"</b> (Gebäudesimulation G3, Welle D2): der Parametersatz des
     /// Gebäudeeditors in der Betriebsart Projekt für eine Projektzeile — bearbeitet wird die
     /// Projektkopie samt Zonen. Kein Delegat = kein Knopf; <c>null</c> als Rückgabe heißt „diese Zeile
@@ -1052,6 +1074,7 @@
         IReadOnlyDictionary<string, object>? gaben = ProjektGaben(z);
         if (gaben is null) return;
         _projektGaben = new Dictionary<string, object>(gaben) { ["Sprungziel"] = Sprungziel };
+        _projektZeile = z;
     }
 
     /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
@@ -2223,12 +2246,14 @@
         if (!z.HatProjektkopie && !VorherSpeichern(z, SperreNeueZeile)) return;
         _meldung = "";
         _projektGaben = ProjektGaben(z);
+        _projektZeile = _projektGaben is null ? null : z;
         if (_projektGaben is null) Melden(MeldungProjektkopieFehlt, WarnStufe.Warnung);
     }
 
     private void ProjekteditorFertig(bool gespeichert)
     {
         _projektGaben = null;
+        _projektZeile = null;
         bool mehrzonen = _mehrzonenGeschrieben;
         _mehrzonenGeschrieben = false;
         if (gespeichert && mehrzonen && _gewaehlt is not null && !Wizard) _modellpruefungNachEditor = _gewaehlt;
@@ -2457,6 +2482,47 @@
         _modellpruefungZeile = null;
     }
 
+    // =====================================================================
+    //  MA-2: Blatt „Nutzung und Kalender"
+    // =====================================================================
+
+    private Modellpruefungsblatt? _modellpruefungsblatt;
+    private ZonenNutzungWeg? _zonenNutzung;
+    private GebaeudeProjektZeile? _projektZeile;
+
+    /// <summary>Steht das Blatt „Nutzung und Kalender"? Prüfhilfe für die Tests.</summary>
+    public bool ZonenNutzungOffen => _zonenNutzung is not null;
+
+    /// <summary>„Bearbeiten…" an Gruppe 3 — nur mit Delegat und außerhalb des Assistenten.</summary>
+    private EventCallback<Pruefgruppe> ModellpruefungBearbeitenWirt
+        => ZonenNutzungGaben is null || Wizard ? default : EventCallback.Factory.Create<Pruefgruppe>(this, ModellpruefungBearbeiten);
+
+    private void ModellpruefungBearbeiten(Pruefgruppe gruppe)
+    {
+        if (_modellpruefungZeile is not { } z || ZonenNutzungGaben is null) return;
+        ZonenNutzungWeg? weg;
+        try { weg = ZonenNutzungGaben(z); }
+        catch (Exception ex) when (ex is not OutOfMemoryException) { Melden(ex.Message, WarnStufe.Warnung); return; }
+        if (weg is null) { Melden(Format(Resource.MPB_SPERRE_OHNE_KOPIE, z.Name), WarnStufe.Hinweis); return; }
+        _zonenNutzung = weg;
+    }
+
+    /// <summary>Das Blatt ist zu: das Ampelblatt prüft neu.</summary>
+    private void ZonenNutzungFertig()
+    {
+        _zonenNutzung = null;
+        _modellpruefungsblatt?.Auffrischen();
+    }
+
+    private void ZonenNutzungGeaendert()
+    {
+        if (_modellpruefungZeile is { } z) ZeileAuffrischen?.Invoke(z);
+    }
+
+    /// <summary>„Nutzung und Kalender…" im Reiter „Zonen" des Editors für die Projektzeile des offenen Editors.</summary>
+    private Func<ZonenNutzungWeg?>? ZonenNutzungEditorWirt
+        => Wizard || ZonenNutzungGaben is null || _projektZeile is null ? null : () => ZonenNutzungGaben(_projektZeile);
+
     /// <summary>Eine Übernahme oder Rücknahme hat geschrieben: die Kennwerte der Zeile neu lesen.</summary>
     private void ModellpruefungGeaendert()
     {
@@ -2482,6 +2548,8 @@
         if (_modellpruefungZeile is not { } z || ModellpruefungAnsichtSperre() is not null) return;
         if (!ReferenceEquals(_gewaehlt, z)) ProjektzeileWaehlen(z);
         _neulesenFarbmodus = Farbmodusschluessel(ziel);
+        _neulesenGruppe = null;
+        _neulesenPruefung = null;
         await BeiNeuLesen();
     }
 
@@ -2498,7 +2566,76 @@
     private Task BeiNeuLesenAmSatz()
     {
         _neulesenFarbmodus = null;
+        _neulesenGruppe = null;
+        _neulesenPruefung = null;
         return BeiNeuLesen();
+    }
+
+    // =====================================================================
+    //  MA-5: Ansicht als Werkzeug — Sprung mit Hervorhebung, Vorschläge an der Legende
+    // =====================================================================
+
+    /// <summary>Die Prüfgruppe, aus der die Ansicht geöffnet ist; <c>null</c> = ohne Prüfung.</summary>
+    private Pruefgruppe? _neulesenGruppe;
+
+    /// <summary>Die Prüfung der Ansicht (Befunde der Gruppe mit ihren Kennungen); <c>null</c> = keine Hervorhebung.</summary>
+    private GebaeudeAnsichtPruefung? _neulesenPruefung;
+
+    /// <summary>Die Prüfung der Ansicht (Prüfhilfe für Tests).</summary>
+    public GebaeudeAnsichtPruefung? AnsichtPruefung => _neulesenPruefung;
+
+    /// <summary>
+    /// „Ansicht…" einer Prüfgruppe (MA-5): wie <see cref="ModellpruefungAnsicht"/>, dazu die Hervorhebung ihrer Befunde; Gruppe 3
+    /// öffnet im Farbmodus „Nutzung" (ohne gelesene Zonen fällt die Ansicht auf „Zonen" zurück).
+    /// </summary>
+    private async Task ModellpruefungAnsichtGruppe(Pruefgruppe gruppe)
+    {
+        if (_modellpruefungZeile is not { } z || ModellpruefungAnsichtSperre() is not null) return;
+        if (!ReferenceEquals(_gewaehlt, z)) ProjektzeileWaehlen(z);
+        ModellpruefungStand? stand = _modellpruefung?.Pruefen();
+        ModellpruefungGruppenzeile? zeile = stand?.Gruppen.FirstOrDefault(g => g.Gruppe == gruppe);
+        _neulesenFarbmodus = gruppe == Pruefgruppe.NutzungKonditionierung
+            ? GebaeudeAnsicht.FARBMODUS_NUTZUNG
+            : Farbmodusschluessel(zeile?.Sprungziel ?? Pruefsprungziel.Zonen);
+        _neulesenGruppe = gruppe;
+        _neulesenPruefung = PruefungAus(zeile);
+        await BeiNeuLesen();
+    }
+
+    /// <summary>Die Prüfung der Ansicht aus einer Gruppenzeile des Blatts; <c>null</c> ohne Zeile.</summary>
+    internal static GebaeudeAnsichtPruefung? PruefungAus(ModellpruefungGruppenzeile? zeile)
+        => zeile is null ? null : new GebaeudeAnsichtPruefung(zeile.Gruppe, zeile.Name, zeile.Befunde);
+
+    /// <summary>„Übernehmen" an der Legende — nur mit Weg des Blatts.</summary>
+    private EventCallback<ModellpruefungAuswahl> AnsichtUebernehmenWirt
+        => _modellpruefung?.UebernehmenAuswahl is null || _neulesenPruefung is null ? default
+           : EventCallback.Factory.Create<ModellpruefungAuswahl>(this, a => AnsichtVorschlaege(_modellpruefung.UebernehmenAuswahl, a));
+
+    /// <summary>„Verwerfen" an der Legende — nur mit Weg des Blatts.</summary>
+    private EventCallback<ModellpruefungAuswahl> AnsichtVerwerfenWirt
+        => _modellpruefung?.VerwerfenAuswahl is null || _neulesenPruefung is null ? default
+           : EventCallback.Factory.Create<ModellpruefungAuswahl>(this, a => AnsichtVorschlaege(_modellpruefung.VerwerfenAuswahl, a));
+
+    /// <summary>
+    /// Führt eine Auswahl über den Weg des Blatts aus (Kern, mit Rücknahme der Gruppe), meldet das Ergebnis, liest Stufen, Zonen und
+    /// Nutzung der Ansicht neu (die Ansicht zeichnet neu), setzt die neue Prüfung und frischt Ampelblatt und Zeile auf.
+    /// </summary>
+    private void AnsichtVorschlaege(Func<ModellpruefungAuswahl, ModellpruefungAusgang>? weg, ModellpruefungAuswahl auswahl)
+    {
+        if (weg is null || _neulesenGruppe is not { } gruppe) return;
+        ModellpruefungAusgang ausgang;
+        try { ausgang = weg(auswahl); }
+        catch (Exception ex) when (ex is not OutOfMemoryException) { Melden(ex.Message, WarnStufe.Warnung); return; }
+        if (ausgang.Meldung.Length > 0) Melden(ausgang.Meldung, ausgang.Ok ? WarnStufe.Hinweis : WarnStufe.Warnung);
+        if (_neulesenStand is { AnsichtNeuLesen: { } neu } stand)
+        {
+            try { if (neu() is { } daten) stand.Ansicht = daten; }
+            catch (Exception ex) when (ex is not OutOfMemoryException) { Melden(ex.Message, WarnStufe.Warnung); }
+        }
+        ModellpruefungStand? neuStand = ausgang.Stand ?? _modellpruefung?.Pruefen();
+        _neulesenPruefung = PruefungAus(neuStand?.Gruppen.FirstOrDefault(g => g.Gruppe == gruppe));
+        _modellpruefungsblatt?.Auffrischen();
+        ModellpruefungGeaendert();
     }
 
     private void BedarfFertig() => _bedarfGaben = null;
