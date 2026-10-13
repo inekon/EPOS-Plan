@@ -437,7 +437,7 @@ die Rollbereichprobe mit einer Messung „kein Knopf außerhalb des Dialogrands,
 | Bedarfsprofile | Jahressumme | Neu, Typ ändern, DB ändern, Schloss, Löschen | Verbrauch, Temperatur, Kalender | — |
 | Wärmebedarf/Kältebedarf extern (KA‑E‑23) | Kanal, Art | Vergleichen, Schloss, Löschen, Bearbeiten, Neu (Importkette) | Kanal und Art, Jahresarbeit, Vollbenutzungsstunden, Deckung; Überlagerung: Stammdaten, Ganglinie (Import, Speichern unter), Deckung | — |
 | Strom-, Solarthermie-, PV-Ganglinie | — | Speichern unter, Schloss, Löschen, Bearbeiten (Solarthermie und PV: Vergleichen, Schloss, Löschen, Import) | Ganglinie mit Kennzahlen; Solarthermie und PV davor Name, Beschreibung (PV: Raster, Jahresarbeit, Nennleistung) | — |
-| Kältemaschine (KA‑E‑26, KA‑E‑27; gebaut 5.10 und 5.10a) | Summe kW Kälte über Kältemaschinen und Wärmepumpen im Kühlbetrieb; Spalte „Art“; Entfernen schaltet bei einer Wärmepumpe nur den Kühlbetrieb aus | Katalogkopf: Spalten, Typkennfelder laden, Katalogverwaltung, In das Projekt übernehmen; Satzzeile: Vergleichen (nur eine Art), Schloss, Löschen, Bearbeiten, Neu (legt eine Kältemaschine an); Liste mit Kältemaschinen und Wärmepumpen mit Kühlkennlinie, Spalte „Art“ | je Art Kurzangaben und Zeile „Zulässigkeit“; Infoknöpfe im Kopf neben dem Satznamen | Kältemaschine: Anlagenfelder, Rückkühlwerk, Kosten, Kenndaten (Kennlinie, Teillast); Wärmepumpe: Bearbeiten… weich gesperrt (bearbeitet im Wärmepumpendialog), keine Rückkühlgruppe; Spalte „Rang“ in „Im Projekt“ |
+| Kältemaschine (KA‑E‑26, KA‑E‑27; gebaut 5.10 und 5.10a) | Summe kW Kälte über Kältemaschinen und Wärmepumpen im Kühlbetrieb; Spalte „Art“; Entfernen schaltet bei einer Wärmepumpe nur den Kühlbetrieb aus | Katalogkopf: Spalten, Typkennfelder laden, Katalogverwaltung, In das Projekt übernehmen; Satzzeile: Vergleichen (nur eine Art), Schloss, Löschen, Bearbeiten, Neu (legt eine Kältemaschine an); Liste mit Kältemaschinen und Wärmepumpen mit Kühlkennlinie, Spalte „Art“ | je Art Kurzangaben und Zeile „Zulässigkeit“; Infoknöpfe im Kopf neben dem Satznamen | Kältemaschine: Anlagenfelder, Rückkühlwerk, Kosten, Kenndaten (Kennlinie, Teillast); Wärmepumpe: Bearbeiten… öffnet die Wärmepumpen-Überlagerung (Naht `WaermepumpeAnlageGaben`), keine Rückkühlgruppe; Spalte „Rang“ in „Im Projekt“ |
 
 **Präzisiert in DZ1 (Anwenderentscheid 10.10.2026: „Alle Dialoge mit CSV-Import … sollen unter ‚Gewählter
 Satz‘ analog zum Dialog Wärmebedarf extern den Lastgang darstellen“):** Alle vier Ganglinien-Dialoge übergeben der
@@ -952,7 +952,8 @@ am festen Bezugspunkt 7 °C Kaltwasser bei der Quelle nach EN 14511 (35 °C bei 
 über `Kuehlkennlinie` interpoliert; deckt die Kennlinie 7 °C nicht ab, gilt der Wert an der kleinsten Kaltwasser-Stützstelle
 (`Bezugswert.Rueckfall`). Spalten, die eine Art nicht kennt (Rückkühlart, Geräteart bei der Wärmepumpe; Quelle bei der
 Kältemaschine), bleiben leer. Suche, Spaltenwahl, Spaltenfilter, Schloss- und Verwendungsmarke gelten über beide Arten; die
-Verwendungsmarke einer Wärmepumpe folgt den Wärmepumpen im Kühlbetrieb.
+Verwendungsmarke einer Wärmepumpe zählt jede Projektkopie des Projekts (`KuehlerzeugerKatalogCtrl.ProjektkopienNamen`) —
+nicht erst die mit eingeschaltetem Kühlbetrieb, dasselbe Maß nimmt die Projektliste des Wärmepumpendialogs.
 
 **Übernehmen.** Eine Kältemaschine wie in 5.10. Eine Wärmepumpe wird Projektwärmepumpe mit Kühlbetrieb — dasselbe Gerät wie
 im Wärmepumpendialog: `KuehlerzeugerKatalogCtrl.WaermepumpeUebernehmen` legt die Projektkopie über `WPCtrl.CopyFromStamm`
@@ -990,9 +991,10 @@ aus demselben Weg mit dem Kältemittel der Kopie und dem Inbetriebnahmejahr ihre
 Inbetriebnahmejahr und zeigt „nicht geprüft“. Bearbeiten… öffnet bei einer Kältemaschine die Überlagerung aus 5.10, links mit
 dem Gerätesteckbrief (`KaeltemaschineSteckbrief`: Name, Hersteller, Geräteart und Rückkühlart, Nennkälteleistung, EER/SEER,
 Kältemittel und GWP, Mindestteillast, Verdichterregelung, Kaltwasser-Vorlauf, Investition und Betrieb; Baustein
-`Geraetesteckbrief`, KA‑E‑25). Bei einer Wärmepumpe ist Bearbeiten… weich gesperrt mit dem Grund „Wärmepumpen bearbeitet der
-Wärmepumpendialog“ — die Überlagerung `WaermepumpeAnlageFelder` mit Kühlbetriebsgruppe braucht einen Schreibweg für EINE
-Anlagenzeile, den es plattformfrei noch nicht gibt. Das Rückkühlwerk steht nur bei einer Kältemaschine. Vergleichen…
+`Geraetesteckbrief`, KA‑E‑25). Bei einer Wärmepumpe öffnet Bearbeiten… die Wärmepumpen-Überlagerung
+(`WaermepumpeAnlageFelder` mit Gerätesteckbrief und Klappgruppe „Kühlbetrieb“, dieselbe Komponente wie im
+Wärmepumpendialog) — über die Naht `WaermepumpeAnlageGaben`, die der Wirt beisteuert; ohne sie bleibt die weiche Sperre mit
+dem Grund „Wärmepumpen bearbeitet der Wärmepumpendialog“. Das Rückkühlwerk steht nur bei einer Kältemaschine. Vergleichen…
 (KA‑E‑24) vergleicht nur Sätze einer Art; eine gemischte Auswahl sperrt weich mit dem Grund „Nur Sätze einer Art vergleichen“.
 Schloss setzen… und Löschen wirken auf den Katalog der Art des gewählten Satzes (Kältemaschine: Wege aus 5.10; Wärmepumpe:
 `WPStammCtrl.SchlossSetzen` und `WPStammCtrl.KatalogsatzLoeschen`). Neu… legt eine Kältemaschine an; der Tooltipp sagt, dass
@@ -1016,6 +1018,23 @@ Neu…. Umbruch und Breite nach 4.4a und 4.8, gemessen mit der Rollbereichprobe 
 | 4 | Kühlleistung und EER eines Katalogsatzes der Wärmepumpe | fester Bezugspunkt 7 °C Kaltwasser, Quelle nach EN 14511; sonst kleinste Kaltwasser-Stützstelle mit Vermerk; Projektkopie am Kühlvorlauf |
 | 5 | Eine Wärmepumpe mit mehreren Anlagenzeilen | eine Listenzeile je Projektkopie, die Summe zählt jede Anlage; Entfernen schaltet den Kühlbetrieb des Geräts aus |
 | 6 | Infoknöpfe im Kopf der Satzzeile bei den übrigen Wirten | nur die Kältemaschine; die übrigen Wirte ziehen mit dem Gerätesteckbrief (WP1b) nach |
+
+**So gebaut (KM‑K2): Bearbeiten… einer Wärmepumpe.** Die Anlagenzeile einer Wärmepumpe wird an drei Stellen bearbeitet —
+Wärmepumpendialog, Erzeugerkarte der Simulationskonfiguration und Kältemaschinen-Dialog. Lese- und Schreibweg stehen deshalb
+einmal und plattformfrei in `WaermepumpeAnlagenaht` (`EPOS.UI.Daten`): Lesen füllt den Feldsatz (Gerätestand nachziehen,
+`AusModell`), Schreiben geht über den schmalen Kernweg `WErzeugerCtrl.KonfigurationSchreiben` samt Sperrfenstern,
+Kältemittel und `WaermepumpeGeraeteCtrl.KuehlkonfigurationNachziehen` — die Anlagen-Ids bleiben stehen. Die Naht
+`WaermepumpeAnlageGaben` (eine Gabe des Dialogs, Schlüssel ist die Projektkopie `Tab_WP.ID`) liefert Gaben, Anlagenzeile und
+Schreibweg; bearbeitet wird die erste Anlagenzeile der Kopie — dieselbe Reihenfolge, in der die Projektliste ihre Anlagen
+zählt. Die Überlagerung trägt OK und Abbrechen: OK prüft erst die Anlagenfelder, dann schreibt die Naht; eine Ablehnung
+bleibt mit ihrem Grund in der Überlagerung stehen, Abbrechen verwirft den Feldsatz (er ist eine Lesung). Was die Naht nicht
+tragen kann, fehlt benannt und nicht still: Kennlinienbilder, Kennlinieneditor, Farbwahl, Kostenfenster und „In Stamm
+übernehmen…“ hängen an Wegen der Windows-Schale — die Knöpfe bleiben weg, Kennlinien bearbeitet weiter der
+Wärmepumpendialog. **Wärmekaskade:** Die Übernahme vergibt keinen Kaskadenplatz — wie der Anlegeweg des Wärmepumpendialogs;
+den Platz pflegt allein die Simulationskonfiguration. Ohne Platz für Wärmepumpen in `Tool_1…4` kühlt die Anlage nicht, und
+genau das nennt `KuehlerzeugerKatalogCtrl.WaermekaskadeHinweis` im Banner der Übernahme. Nachweis:
+`KaeltemaschineAnlageWpBearbeitenTests` (Naht vorhanden und fehlend, OK und Ablehnung, Verwendungsmarke, Kaskadenhinweis)
+und `KuehlerzeugerKatalogCtrlTests`.
 
 ### 5.11 Wie gebaut (Stufe 4, Wärmebedarf extern und Stromganglinie)
 
@@ -1267,7 +1286,7 @@ aus; breite Projektsätze, für die V1 keine Fläche hat, öffnen als Überlager
 | **4 Bedarf und Zeitreihen** (Wärmebedarf extern, Stromganglinie, Solar-/PV-Ganglinie, Bedarfsprofile, Gebäude (Rückweg, Dialog, Überlagerung Simulation…) umgesetzt 11.10.2026 (#961 bis #964)) | Gebäude (Überlagerung, Rückweg auf die neue Regel gezogen, Verwaltungsbetriebsart ohne Projektbereich), Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie | Dialogtests, Proben, Gebäude-Rückwegtests |
 | **5 Kältemaschine und Abschluss** (Kältemaschine umgesetzt 11.10.2026, Statuszeile #960) | Katalogauswahl der Kältemaschine; Wiki-Quellen der Dialoge, Logbuch-Entwurf; Papier nach `ueberholt/` | Dokumentationswachen, Wiki-Gegenlese |
 | **KM‑L1 Knopfleiste und Breite** (KA‑E‑27, gebaut 12.10.2026) | Baustein `Zweispaltenauswahl`: Knopfleiste am gewählten Satz bricht um und bleibt in der Dialogbreite (alle Wirte); Dialograhmen folgt der Fensterbreite (4.8); Gabe für Katalogfunktionen in der Kopfzeile des Katalogs neben „Spalten…“; Infoknöpfe im Kopf der Satzzeile neben dem Satznamen; bei der Kältemaschine „Typkennfelder laden…“ und „Katalogverwaltung…“ in den Katalogkopf. Aufwand rund 1 bis 1,5 PT | bunit-Tests des Bausteins (Umbruchklasse, Ort der Katalogfunktionen und Infoknöpfe) und `KaeltemaschineAnlageDialogTests`; Rollbereichprobe mit der Messung „kein Knopf außerhalb des Dialogrands, keine Überdeckung“ samt Gegenprobe in den sechs Fenstern und den iPad-Fenstern; `fensterprobe.mjs` und `rasterprobe.mjs` grün |
-| **KM‑K1 Wärmepumpen mit Kühlfunktion in der Katalogauswahl der Kältemaschine** (KA‑E‑26, gebaut 12.10.2026; Bearbeiten… einer Wärmepumpe noch weich gesperrt) | gemeinsame Katalog- und Projektliste mit Spalte „Art“, Übernehmen und Entfernen je Art, Satzzeile und Bearbeiten… je Art, Vergleichen… nur innerhalb einer Art, Zeile „Wärmepumpen im Kühlbetrieb“ entfällt (5.10a); kein Schemaschritt, kein neuer Rechenweg. Aufwand rund 3 bis 4 PT | Hüllentests (`KaeltemaschineAnlageHuelleTests`: Katalog beider Arten, EER und Kühlleistung der Wärmepumpe, Ablehnungen durchgereicht, keine zweite Projektkopie), Dialogtests (Übernehmen, Entfernen, Banner, Vergleich gesperrt, Bearbeiten je Art), Kern-Tests des Kühlbetriebswegs unverändert grün; `katalogprobe.mjs` mit beiden Arten, Rollbereich- und Fensterprobe; Referenzlauf unverändert |
+| **KM‑K1 Wärmepumpen mit Kühlfunktion in der Katalogauswahl der Kältemaschine** (KA‑E‑26, gebaut 12.10.2026, Bearbeiten… einer Wärmepumpe mit KM‑K2 nachgezogen) | gemeinsame Katalog- und Projektliste mit Spalte „Art“, Übernehmen und Entfernen je Art, Satzzeile und Bearbeiten… je Art, Vergleichen… nur innerhalb einer Art, Zeile „Wärmepumpen im Kühlbetrieb“ entfällt (5.10a); kein Schemaschritt, kein neuer Rechenweg. Aufwand rund 3 bis 4 PT | Hüllentests (`KaeltemaschineAnlageHuelleTests`: Katalog beider Arten, EER und Kühlleistung der Wärmepumpe, Ablehnungen durchgereicht, keine zweite Projektkopie), Dialogtests (Übernehmen, Entfernen, Banner, Vergleich gesperrt, Bearbeiten je Art), Kern-Tests des Kühlbetriebswegs unverändert grün; `katalogprobe.mjs` mit beiden Arten, Rollbereich- und Fensterprobe; Referenzlauf unverändert |
 
 **Proben sind Pflicht in jeder Stufe:** die Rasterprobe (virtualisierte `Katalogliste` mit fester Höhe aus
 dem Raster statt `max-height`), `fensterprobe.mjs` (Kopf und Fuß im eigenen Fenster; sie misst für diese

@@ -32,13 +32,75 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
+    /// Ein Eintrag einer Zelle der Gegenüberstellung JE GEWERK: gleiche Komponenten
+    /// einer Version zusammengefasst zu „n × Bezeichner“ samt ihren Kennwerten.
+    /// </summary>
+    public sealed class KomponentenVergleichEintrag
+    {
+        /// <summary>Wie oft die Version diese Komponente führt (≥ 1).</summary>
+        public int Anzahl;
+
+        /// <summary>Der Bezeichner der Komponente (<see cref="KomponentenVergleich.OHNE_WERT"/>, wenn er fehlt).</summary>
+        public string Bezeichner = "";
+
+        /// <summary>
+        /// Die wichtigsten Kennwerte einer Komponente, fertig formatiert („16 kW“,
+        /// „5,5 kW el · 12,5 kW th“, „1.000 l“); leer, wo die Daten keinen hergeben.
+        /// </summary>
+        public string Kennwerte = "";
+
+        /// <summary>Die Merkmale der Komponente als Kurztext (<see cref="AbweichungsErmittler.MerkmaleText"/>).</summary>
+        public string Kurztext = "";
+    }
+
+    /// <summary>Die Zelle einer Version in der Gegenüberstellung je Gewerk.</summary>
+    public sealed class KomponentenVergleichZelle
+    {
+        /// <summary>Die Einträge in der Reihenfolge der Anlagenzeilen; leer = Gewerk nicht vorhanden.</summary>
+        public IReadOnlyList<KomponentenVergleichEintrag> Eintraege = Array.Empty<KomponentenVergleichEintrag>();
+
+        /// <summary>Führt die Version das Gewerk?</summary>
+        public bool Vorhanden => Eintraege.Count > 0;
+
+        /// <summary>
+        /// Weicht die Zelle vom Stammprojekt ab (Bestand, Bezeichner, Anzahl oder
+        /// Kennwerte)? Die Stammzelle selbst weicht nie ab.
+        /// </summary>
+        public bool WeichtAb;
+    }
+
+    /// <summary>
+    /// Eine Zeile der Gegenüberstellung JE GEWERK — die Seite „Übersicht“ zeigt je
+    /// Gewerk eine Zeile, je Version eine Zelle.
+    /// </summary>
+    public sealed class KomponentenVergleichGewerk
+    {
+        /// <summary>Das Gewerk als SCHLÜSSEL (<see cref="ProjektDetails.GewerkTabellen"/>).</summary>
+        public string Gewerk = "";
+
+        /// <summary>Je Version eine Zelle (Stamm zuerst).</summary>
+        public IReadOnlyList<KomponentenVergleichZelle> Zellen = Array.Empty<KomponentenVergleichZelle>();
+
+        /// <summary>Weicht wenigstens eine Version in diesem Gewerk vom Stamm ab?</summary>
+        public bool WeichtAb
+        {
+            get
+            {
+                foreach (KomponentenVergleichZelle z in Zellen)
+                    if (z.WeichtAb) return true;
+                return false;
+            }
+        }
+    }
+
+    /// <summary>
     /// Die ZEILENBILDUNG der Gegenüberstellung Stamm ↔ Varianten (Anwenderbefund
     /// W5‑E‑2 vom 05.09.2026).
     ///
     /// <para><b>Was gezeigt wird.</b> Ausschließlich die im Projekt bzw. in der
-    /// Variante tatsächlich VERWENDETEN Erzeugerkomponenten — die sieben Gewerke aus
+    /// Variante tatsächlich VERWENDETEN Erzeugerkomponenten — die acht Gewerke aus
     /// <see cref="ProjektDetails.GewerkTabellen"/> (Wärmepumpe, BHKW, Spitzenkessel,
-    /// Solarthermie, Photovoltaik, Pufferspeicher, Stromspeicher), je Gewerk die
+    /// Solarthermie, Photovoltaik, Pufferspeicher, Stromspeicher, Kältemaschine), je Gewerk die
     /// Stückzahl und darunter eine Zeile je Komponente mit ihrem Bezeichner. Ein
     /// Gewerk, das keine der Versionen führt, erscheint gar nicht.</para>
     ///
@@ -151,6 +213,212 @@ namespace WindowsFormsApplication1
             }
 
             return ziel;
+        }
+
+        /// <summary>
+        /// Die Gegenüberstellung JE GEWERK: eine Zeile je verwendetem Erzeugergewerk,
+        /// je Version eine Zelle mit „n × Komponente“ und ihren Kennwerten, dazu, ob
+        /// die Zelle vom Stammprojekt abweicht. Dieselbe Auswahl wie
+        /// <see cref="Gegenueberstellung"/>: ein Gewerk, das keine Version führt,
+        /// erscheint nicht.
+        /// </summary>
+        /// <param name="versionen">Die Versionen in Spaltenreihenfolge, das Stammprojekt zuerst.</param>
+        /// <param name="kurztextTrenner">Trenner der Merkmale im Kurztext eines Eintrags.</param>
+        public static List<KomponentenVergleichGewerk> JeGewerk(
+            IReadOnlyList<ProjektDetails> versionen, string kurztextTrenner = KURZTEXT_TRENNER)
+        {
+            var ziel = new List<KomponentenVergleichGewerk>();
+            if (versionen == null || versionen.Count == 0) return ziel;
+
+            foreach (KeyValuePair<string, string> g in ProjektDetails.GewerkTabellen)
+            {
+                string gewerk = g.Key;
+                bool verwendet = false;
+                foreach (ProjektDetails d in versionen)
+                    if (AbweichungsErmittler.Anzahl(d, gewerk) > 0) { verwendet = true; break; }
+                if (!verwendet) continue;
+
+                var zellen = new List<KomponentenVergleichZelle>(versionen.Count);
+                foreach (ProjektDetails d in versionen)
+                    zellen.Add(new KomponentenVergleichZelle { Eintraege = Eintraege(d, gewerk, kurztextTrenner) });
+
+                // Verglichen wird, was die Zelle ZEIGT: Anzahl, Bezeichner und Kennwerte
+                // je Eintrag. Die Stammzelle ist die Referenz und weicht nie ab.
+                for (int i = 1; i < zellen.Count; i++)
+                    zellen[i].WeichtAb = !GleicherInhalt(zellen[0], zellen[i]);
+
+                ziel.Add(new KomponentenVergleichGewerk { Gewerk = gewerk, Zellen = zellen });
+            }
+            return ziel;
+        }
+
+        /// <summary>
+        /// Die Einträge einer Version in einem Gewerk: gleiche Komponenten (gleicher
+        /// Bezeichner, gleiche Kennwerte) zusammengefasst, in der Reihenfolge ihres
+        /// ersten Auftretens.
+        /// </summary>
+        private static List<KomponentenVergleichEintrag> Eintraege(ProjektDetails d, string gewerk, string trenner)
+        {
+            var liste = new List<KomponentenVergleichEintrag>();
+            int n = AbweichungsErmittler.Anzahl(d, gewerk);
+            AbweichungsErmittler.Merkmal bez = AbweichungsErmittler.BezeichnerMerkmal(gewerk);
+            for (int k = 0; k < n; k++)
+            {
+                DataRow rk = AbweichungsErmittler.KomponenteZeile(d, gewerk, k);
+                if (rk == null) continue;
+                string name = bez == null ? OHNE_WERT : AbweichungsErmittler.Formatiere(rk, bez);
+                string kennwerte = Kennwerte(d, gewerk, k);
+
+                KomponentenVergleichEintrag vorhanden = null;
+                foreach (KomponentenVergleichEintrag e in liste)
+                    if (e.Bezeichner == name && e.Kennwerte == kennwerte) { vorhanden = e; break; }
+                // Die Kältemaschine trägt ihre Stückzahl an der Anlagenzeile
+                // (Kaeltemaschine_Anzahl): „2 × Kältemaschine“, Kennwert je Maschine.
+                int stueck = Stueckzahl(d, gewerk, k);
+                if (vorhanden != null) { vorhanden.Anzahl += stueck; continue; }
+
+                liste.Add(new KomponentenVergleichEintrag
+                {
+                    Anzahl = stueck,
+                    Bezeichner = name,
+                    Kennwerte = kennwerte,
+                    Kurztext = AbweichungsErmittler.MerkmaleText(rk, gewerk, trenner)
+                });
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// Die Stückzahl der n-ten Komponente: 1, bei der Kältemaschine die
+        /// <c>Kaeltemaschine_Anzahl</c> ihrer Anlagenzeile (leer oder kleiner 1 zählt als 1 —
+        /// dieselbe Regel wie der Lauf).
+        /// </summary>
+        private static int Stueckzahl(ProjektDetails d, string gewerk, int index)
+        {
+            if (!string.Equals(gewerk, ProjektDetails.GEWERK_KAELTEMASCHINE, StringComparison.Ordinal)) return 1;
+            double? n = ProjektDetails.D(AnlageZu(d, gewerk, index), "Kaeltemaschine_Anzahl");
+            return n.HasValue && n.Value >= 1 ? (int)Math.Round(n.Value) : 1;
+        }
+
+        private static bool GleicherInhalt(KomponentenVergleichZelle a, KomponentenVergleichZelle b)
+        {
+            if (a.Eintraege.Count != b.Eintraege.Count) return false;
+            for (int i = 0; i < a.Eintraege.Count; i++)
+            {
+                KomponentenVergleichEintrag x = a.Eintraege[i], y = b.Eintraege[i];
+                if (x.Anzahl != y.Anzahl
+                    || !string.Equals(x.Bezeichner, y.Bezeichner, StringComparison.Ordinal)
+                    || !string.Equals(x.Kennwerte, y.Kennwerte, StringComparison.Ordinal))
+                    return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Die wichtigsten Kennwerte der n-ten Komponente eines Gewerks, fertig
+        /// formatiert in der Anzeigesprache — leer, wo die Daten keinen hergeben:
+        ///
+        /// <list type="bullet">
+        /// <item>Wärmepumpe: Nennleistung in kW (<c>Tab_WP.Nennleistung</c>), im Kühlbetrieb
+        /// (<c>Kuehlbetrieb</c>) dazu die gepflegte Kühlleistung in kW Kälte (<c>Kuehlleistung</c>),</item>
+        /// <item>Kältemaschine: Nennkälteleistung je Maschine in kW Kälte
+        /// (<c>Tab_Kaeltemaschine.Nennkaelteleistung_kW</c>),</item>
+        /// <item>Spitzenkessel: Leistung in kW (<c>Tab_Heizkessel.Ptherm</c>),</item>
+        /// <item>BHKW: kW el und kW th (<c>Tab_BHKW.Pel</c>, <c>Ptherm</c>),</item>
+        /// <item>Pufferspeicher: Volumen in l (<c>Tab_Pufferspeicher.Gesamtvolumen</c>, sonst
+        /// <c>Volumen</c> der Anlagenzeile),</item>
+        /// <item>Stromspeicher: Kapazität in kWh (<c>Tab_Stromspeicher.Energie</c>),</item>
+        /// <item>Photovoltaik: Leistung in kWp (<c>PV_Leistung</c> der Anlagenzeile),</item>
+        /// <item>Solarthermie: Aperturfläche in m² (<c>Tab_Solarkollektoren.Aperturflaeche</c>
+        /// × <c>Kollektormodulanzahl</c> der Anlagenzeile).</item>
+        /// </list>
+        ///
+        /// <para>Die Anlagenzeile ist die, aus der die Komponente stammt: Die
+        /// Komponentenzeilen kommen in der Reihenfolge der Anlagenzeilen
+        /// (<see cref="KomponentenUebernahmeCtrl.GeraeteJeAnlagenzeile"/>); zeigen zwei
+        /// Anlagenzeilen auf dasselbe Gerät, zählt das Auftreten.</para>
+        /// </summary>
+        public static string Kennwerte(ProjektDetails d, string gewerk, int index)
+        {
+            DataRow rk = AbweichungsErmittler.KomponenteZeile(d, gewerk, index);
+            if (rk == null) return "";
+            DataRow anlage = AnlageZu(d, gewerk, index);
+            var teile = new List<string>(2);
+            switch (gewerk)
+            {
+                case "Wärmepumpe":
+                    Kennwert(teile, ProjektDetails.D(rk, "Nennleistung"), "kW");
+                    if (ProjektDetails.B(rk, "Kuehlbetrieb") == true)
+                        Kennwert(teile, ProjektDetails.D(rk, "Kuehlleistung"), EinheitKwKaelte);
+                    break;
+                case ProjektDetails.GEWERK_KAELTEMASCHINE:
+                    Kennwert(teile, ProjektDetails.D(rk, "Nennkaelteleistung_kW"), EinheitKwKaelte);
+                    break;
+                case "Spitzenkessel":
+                    Kennwert(teile, ProjektDetails.D(rk, "Ptherm"), "kW");
+                    break;
+                case "BHKW":
+                    Kennwert(teile, ProjektDetails.D(rk, "Pel"), "kW el");
+                    Kennwert(teile, ProjektDetails.D(rk, "Ptherm"), "kW th");
+                    break;
+                case "Pufferspeicher":
+                    Kennwert(teile, ProjektDetails.D(rk, "Gesamtvolumen") ?? ProjektDetails.D(anlage, "Volumen"), "l");
+                    break;
+                case "Stromspeicher":
+                    Kennwert(teile, ProjektDetails.D(rk, "Energie"), "kWh");
+                    break;
+                case "Photovoltaik":
+                    Kennwert(teile, ProjektDetails.D(anlage, "PV_Leistung"), "kWp");
+                    break;
+                case "Solarthermie":
+                    double? apertur = ProjektDetails.D(rk, "Aperturflaeche");
+                    double? module = ProjektDetails.D(anlage, "Kollektormodulanzahl");
+                    Kennwert(teile, apertur.HasValue && module.HasValue && module.Value > 0
+                                    ? apertur.Value * module.Value : apertur, "m²");
+                    break;
+            }
+            return string.Join(" · ", teile);
+        }
+
+        /// <summary>Die Einheit einer Kälteleistung in der Anzeigesprache: „kW Kälte“.</summary>
+        private static string EinheitKwKaelte => AbweichungsErmittler.Text("BV_A1D_EINHEIT_KW_KAELTE", "kW Kälte");
+
+        /// <summary>Ein Kennwert, sofern er belegt und größer null ist: „16 kW“, „1.000 l“, „12,8 kWh“.</summary>
+        private static void Kennwert(List<string> teile, double? wert, string einheit)
+        {
+            if (!wert.HasValue || double.IsNaN(wert.Value) || wert.Value <= 0) return;
+            teile.Add(wert.Value.ToString("#,0.#", BerichtTexte.Kultur) + " " + einheit);
+        }
+
+        /// <summary>
+        /// Die Anlagenzeile (<c>Tab_Energieanlagen</c>), aus der die n-te Komponente
+        /// eines Gewerks stammt; null, wo keine zuzuordnen ist.
+        /// </summary>
+        private static DataRow AnlageZu(ProjektDetails d, string gewerk, int index)
+        {
+            KomponentenUebernahmeCtrl.GewerkPlan plan = KomponentenUebernahmeCtrl.Leseplan(gewerk);
+            if (d == null || d.Anlagen == null || plan == null) return null;
+            DataTable geraete;
+            if (!d.KomponentenAlle.TryGetValue(gewerk, out geraete) || geraete == null
+                || index >= geraete.Rows.Count || !geraete.Columns.Contains("ID")
+                || !d.Anlagen.Columns.Contains("ID_Type") || !d.Anlagen.Columns.Contains(plan.AnlagenFk))
+                return null;
+
+            object id = geraete.Rows[index]["ID"];
+            if (id == null || id == DBNull.Value) return null;
+            int vorher = 0;
+            for (int j = 0; j < index; j++)
+                if (Equals(Convert.ToString(geraete.Rows[j]["ID"]), Convert.ToString(id))) vorher++;
+
+            foreach (DataRow a in d.Anlagen.Rows)
+            {
+                int typ = (int)(ProjektDetails.D(a, "ID_Type") ?? 0);
+                if (Array.IndexOf(plan.AnlagenTypen, typ) < 0) continue;
+                if (!string.Equals(ProjektDetails.S(a, plan.AnlagenFk), Convert.ToString(id), StringComparison.Ordinal))
+                    continue;
+                if (vorher-- == 0) return a;
+            }
+            return null;
         }
     }
 }

@@ -3573,6 +3573,10 @@
         internal static string BkuBezeichnerErl => MyResource.Resource.KI_DLG_BKU_BEZEICHNER_ERL;
         internal static string BkuSimName => MyResource.Resource.KI_DLG_BKU_SIM_NAME;
         internal static string BkuSimErl => MyResource.Resource.KI_DLG_BKU_SIM_ERL;
+        internal static string BkuNurUnterschiedeName => MyResource.Resource.BK_LBL_NUR_UNTERSCHIEDE;
+        internal static string BkuNurUnterschiedeErl => MyResource.Resource.KI_DLG_BKU_NURUNT_ERL;
+        internal static string BkuKomponentenName => MyResource.Resource.KI_DLG_BKU_KOMP_NAME;
+        internal static string BkuKomponentenErl => MyResource.Resource.KI_DLG_BKU_KOMP_ERL;
 
         // ---- Reiterblatt „Bericht"
         internal static string BkbAusgabeName => MyResource.Resource.BK_BER_LBL_AUSGABE;

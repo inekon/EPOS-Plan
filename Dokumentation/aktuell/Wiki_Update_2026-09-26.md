@@ -175,6 +175,13 @@ Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
+### Version 1.2.0.9 (laut Auftrag; die Version ist schon veröffentlicht, beim Anwender bestätigen) — Übersicht unter Berichte & Kosten (Entwurf, Upload ausstehend)
+
+Die Wiki-Quelle (Programm Dokumentation/Varianten) ist fortgeschrieben, ins Wiki geladen ist noch nichts.
+
+- Seit 13.10.2026: Der Reiter „Übersicht“ unter „Berichte & Kosten“ stellt die Komponenten je Gewerk mit ihren Kennwerten nebeneinander, hebt Abweichungen zum Stammprojekt hervor und blendet mit „nur Unterschiede“ gleiche Gewerke aus.
+- Seit 13.10.2026: Die Tafel „Komponenten im Vergleich“ im Reiter „Übersicht“ führt die Kältemaschine als eigenes Gewerk mit Anzahl und Kälteleistung.
+
 ### Version ‹Version› — Kältemittel als Stammdatum (Entwurf, Upload ausstehend)
 
 Version beim Anwender zu erfragen; die Wiki-Quellen (Gerätekataloge, Kälteerzeugung, Wärmepumpe, Kurzanleitung) sind fortgeschrieben, ins Wiki geladen ist noch nichts.
@@ -318,6 +325,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 12.10.2026: Im Konfigurationsdialog der Wärmepumpe sind die Betriebszeiten ein- und ausklappbar. (#1027)
 - Seit 12.10.2026: Der Kältemaschinen-Dialog führt Wärmepumpen mit Kühlfunktion in Katalog und Projekt; Übernehmen schaltet den Kühlbetrieb ein und reiht die Wärmepumpe in die Kältefolge ein. (#1029)
 - Seit 12.10.2026: Die Knopfleiste am gewählten Satz bricht in schmalen Fenstern um; Katalogfunktionen stehen im Katalogkopf. (#1029)
+- Seit 13.10.2026: Im Dialog „Kältemaschinen im Projekt“ öffnet „Bearbeiten…“ bei einer Wärmepumpe ihre Anlagenfelder mit Gerätesteckbrief und der Gruppe „Kühlbetrieb“. (#1034)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 

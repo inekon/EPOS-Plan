@@ -52,6 +52,12 @@ namespace WindowsFormsApplication1
                 ["KaelteRaenge"] = new Func<IReadOnlyDictionary<int, int>>(() => KuehlerzeugerKatalogCtrl.Raenge(projektId)),
                 ["KaelteRaengeWiederherstellen"] = new Func<IReadOnlyDictionary<int, int>, string>(
                     r => KaeltefolgeCtrl.RaengeWiederherstellen(projektId, r)),
+                // KM-K2: der Bearbeitungsweg einer Wärmepumpen-Anlagenzeile (Naht WaermepumpeAnlageGaben) -
+                // plattformfrei über WaermepumpeAnlagenaht; ohne Anlagenzeile null, dann bleibt die Sperre.
+                // KM-K2: die Verwendungsmarke der Wärmepumpe je Projektkopie (nicht erst nach Kühlbetrieb).
+                ["WaermepumpeKopien"] = new Func<IReadOnlyList<string>>(() => KuehlerzeugerKatalogCtrl.ProjektkopienNamen(projektId)),
+                ["WaermepumpeAnlageGaben"] = new Func<int, WaermepumpeAnlagegaben>(
+                    idWp => WaermepumpeAnlagenaht.Gaben(projektId, idWp)),
                 ["SchlossWaermepumpe"] = Schlosswege.Aus(WPStammCtrl.SchlossSetzen),
                 ["WpKatalogLoeschen"] = new Func<int, string>(WpKatalogLoeschen),
                 ["VergleichsparameterWp"] = new Func<string, IReadOnlyList<Parameterwert>>(
@@ -107,7 +113,8 @@ namespace WindowsFormsApplication1
         {
             KuehlerzeugerKatalogCtrl.Uebernahme u = KuehlerzeugerKatalogCtrl.WaermepumpeUebernehmen(projektId, stammId, BivalenzAbbildung.Vorbelegen);
             bool angelegt = u.KopieNeu || u.NeueAnlagen.Count > 0;
-            return new KuehlWpUebernahme(u.Ok, u.IdWp, u.Bezeichner ?? "", u.SchonImProjekt, u.Meldung, angelegt ? u : null);
+            return new KuehlWpUebernahme(u.Ok, u.IdWp, u.Bezeichner ?? "", u.SchonImProjekt, u.Meldung, angelegt ? u : null,
+                                         u.Hinweis);
         }
 
         /// <summary>KM-K1: löscht einen Katalogsatz der Wärmepumpe (Katalogweg des Wärmepumpendialogs); "" = gelöscht.</summary>

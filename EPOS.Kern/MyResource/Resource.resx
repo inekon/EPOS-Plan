@@ -1520,7 +1520,7 @@ bei einem kleinen Speicher wird die Zahl groß, ohne dass er stärker altert.</v
     <value>Bifazial</value>
   </data>
   <data name="PVIMP_SP_EFFIZIENZ" xml:space="preserve">
-    <value>Effizienz (%)</value>
+    <value>Effizienz [%]</value>
   </data>
   <data name="PVIMP_SP_HERSTELLER" xml:space="preserve">
     <value>Hersteller</value>
@@ -1535,7 +1535,7 @@ bei einem kleinen Speicher wird die Zahl groß, ohne dass er stärker altert.</v
     <value>Modulname</value>
   </data>
   <data name="PVIMP_SP_PMP" xml:space="preserve">
-    <value>Pmp (W)</value>
+    <value>Pmp [W]</value>
   </data>
   <data name="PVIMP_SP_QUELLE" xml:space="preserve">
     <value>Quelle</value>
@@ -5915,6 +5915,54 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_LBL_KOMPONENTEN_VERGLEICH" xml:space="preserve">
     <value>Komponenten im Vergleich — Stammprojekt und Varianten</value>
   </data>
+  <data name="BK_LBL_PROJEKTWAHL" xml:space="preserve">
+    <value>Projektwahl</value>
+  </data>
+  <data name="BK_LBL_VARIANTE_VERWALTEN" xml:space="preserve">
+    <value>Variante verwalten</value>
+  </data>
+  <data name="BK_LBL_NUR_UNTERSCHIEDE" xml:space="preserve">
+    <value>nur Unterschiede</value>
+  </data>
+  <data name="BK_LBL_LEGENDE_ABWEICHUNG" xml:space="preserve">
+    <value>markiert: weicht vom Stammprojekt ab</value>
+  </data>
+  <data name="BK_LBL_WEICHT_AB" xml:space="preserve">
+    <value>weicht vom Stammprojekt ab</value>
+  </data>
+  <data name="BK_LBL_SIMULIERT_AM" xml:space="preserve">
+    <value>simuliert {0}</value>
+  </data>
+  <data name="BK_LBL_NICHT_SIMULIERT" xml:space="preserve">
+    <value>nicht simuliert</value>
+  </data>
+  <data name="BK_LBL_KEINE_UNTERSCHIEDE" xml:space="preserve">
+    <value>Alle Versionen im Vergleich führen dieselben Komponenten.</value>
+  </data>
+  <data name="BK_MSG_GEWERKE_EINS" xml:space="preserve">
+    <value>1 Gewerk</value>
+  </data>
+  <data name="BK_MSG_GEWERKE_N" xml:space="preserve">
+    <value>{0} Gewerke</value>
+  </data>
+  <data name="BK_MSG_UMFANG_NUR_STAMM" xml:space="preserve">
+    <value>nur Stammprojekt</value>
+  </data>
+  <data name="BK_MSG_UMFANG_VARIANTE_EINS" xml:space="preserve">
+    <value>Stamm und 1 Variante</value>
+  </data>
+  <data name="BK_MSG_UMFANG_VARIANTE_N" xml:space="preserve">
+    <value>Stamm und {0} Varianten</value>
+  </data>
+  <data name="BK_MSG_UNTERSCHIEDE_KEINE" xml:space="preserve">
+    <value>keine Unterschiede</value>
+  </data>
+  <data name="BK_MSG_UNTERSCHIEDE_EINS" xml:space="preserve">
+    <value>1 Unterschied</value>
+  </data>
+  <data name="BK_MSG_UNTERSCHIEDE_N" xml:space="preserve">
+    <value>{0} Unterschiede</value>
+  </data>
   <data name="BK_LBL_VARIANTEN_GEKAPPT" xml:space="preserve">
     <value>nur die ersten {0} Varianten dargestellt, {1} weitere ausgeblendet</value>
   </data>
@@ -5923,9 +5971,6 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   </data>
   <data name="BK_LBL_VERGLEICHSWAHL" xml:space="preserve">
     <value>Im Vergleich:</value>
-  </data>
-  <data name="BK_MSG_VERGLEICH_UMFANG" xml:space="preserve">
-    <value>{0} Komponentenzeile(n) für das Stammprojekt und {1} Variante(n).</value>
   </data>
   <data name="BK_LBL_KOMPONENTEN_DIFF" xml:space="preserve">
     <value>Unterschiede zum Stammprojekt — Variante „{0}“</value>
@@ -9130,13 +9175,13 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
     <value>Dicke [mm]</value>
   </data>
   <data name="BTA_SP_LAMBDA" xml:space="preserve">
-    <value>λ [W/(mK)]</value>
+    <value>λ [W/(m·K)]</value>
   </data>
   <data name="BTA_SP_RHO" xml:space="preserve">
     <value>ρ [kg/m³]</value>
   </data>
   <data name="BTA_SP_CP" xml:space="preserve">
-    <value>c_p [J/(kgK)]</value>
+    <value>c_p [J/(kg·K)]</value>
   </data>
   <data name="BTA_LBL_SCHICHT" xml:space="preserve">
     <value>Schicht {0}</value>
@@ -15353,10 +15398,10 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
     <value>Standort</value>
   </data>
   <data name="KLIMA_SP_LONGITUDE" xml:space="preserve">
-    <value>Longitude</value>
+    <value>Longitude [°]</value>
   </data>
   <data name="KLIMA_SP_LATITUDE" xml:space="preserve">
-    <value>Latitude</value>
+    <value>Latitude [°]</value>
   </data>
   <data name="KLIMA_SP_IMPORTDATUM" xml:space="preserve">
     <value>Importdatum</value>
@@ -17858,10 +17903,10 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>Quelle</value>
   </data>
   <data name="IMP_KAT_SP_ENERGIE" xml:space="preserve">
-    <value>kWh</value>
+    <value>Kapazität [kWh]</value>
   </data>
   <data name="IMP_KAT_SP_LEISTUNG" xml:space="preserve">
-    <value>kW</value>
+    <value>Leistung [kW]</value>
   </data>
   <data name="IMP_KAT_SP_ETA" xml:space="preserve">
     <value>η_RT</value>
@@ -21245,10 +21290,10 @@ Möchten Sie das zulassen?</value>
     <value>Anlage</value>
   </data>
   <data name="FLOTTE_ED_ANLAGE_SPALTE_KAPAZITAET" xml:space="preserve">
-    <value>Kapazität</value>
+    <value>Kapazität [kWh]</value>
   </data>
   <data name="FLOTTE_ED_ANLAGE_SPALTE_LEISTUNG" xml:space="preserve">
-    <value>Leistung</value>
+    <value>Leistung [kW]</value>
   </data>
   <data name="FLOTTE_ED_ANLAGE_VERTRETEN" xml:space="preserve">
     <value>bereits in der Flotte</value>
@@ -21503,7 +21548,7 @@ Möchten Sie das zulassen?</value>
     <value>{0} · {1} Einheiten</value>
   </data>
   <data name="SIM_SP_HERKUNFT" xml:space="preserve">
-    <value>Gerechnet mit Speicherflotte: {0} · {1} Einheiten</value>
+    <value>Gerechnet mit Speicherflotte: {0} · {1}</value>
   </data>
   <data name="SIM_SP_HERKUNFT_PEAK" xml:space="preserve">
     <value>Peak-Ziel {0} kW ({1})</value>
@@ -21512,7 +21557,13 @@ Möchten Sie das zulassen?</value>
     <value>Konfiguration ändern → ①</value>
   </data>
   <data name="SP_KONTEXT_FLOTTE" xml:space="preserve">
-    <value>mit Speicherflotte: {0} · {1} Einheiten</value>
+    <value>mit Speicherflotte: {0} · {1}</value>
+  </data>
+  <data name="SP_EINHEIT_EINS" xml:space="preserve">
+    <value>1 Einheit</value>
+  </data>
+  <data name="SP_EINHEITEN_N" xml:space="preserve">
+    <value>{0} Einheiten</value>
   </data>
   <data name="SP_KONTEXT_EINZEL" xml:space="preserve">
     <value>Einzelspeicher: {0}</value>
@@ -21689,13 +21740,13 @@ Möchten Sie das zulassen?</value>
     <value>Betrag [€]</value>
   </data>
   <data name="ND_TAFEL_SP_DAUER" xml:space="preserve">
-    <value>Nutzungsdauer n</value>
+    <value>Nutzungsdauer n [a]</value>
   </data>
   <data name="ND_TAFEL_SP_ERSATZ" xml:space="preserve">
     <value>Ersatzbeschaffung</value>
   </data>
   <data name="ND_TAFEL_SP_RESTWERT" xml:space="preserve">
-    <value>Restwert Jahr {0}</value>
+    <value>Restwert Jahr {0} [€]</value>
   </data>
   <data name="ND_TAFEL_SP_HERKUNFT" xml:space="preserve">
     <value>Herkunft der Dauer</value>
@@ -25615,6 +25666,15 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_BKU_SIM_ERL" xml:space="preserve">
     <value>Wann die markierte Version zuletzt simuliert wurde, oder dass sie es noch nicht ist.</value>
   </data>
+  <data name="KI_DLG_BKU_NURUNT_ERL" xml:space="preserve">
+    <value>Blendet in der Gegenüberstellung die Gewerke aus, in denen keine Version vom Stammprojekt abweicht.</value>
+  </data>
+  <data name="KI_DLG_BKU_KOMP_NAME" xml:space="preserve">
+    <value>Komponenten im Vergleich</value>
+  </data>
+  <data name="KI_DLG_BKU_KOMP_ERL" xml:space="preserve">
+    <value>Die Gegenüberstellung je Gewerk: je Version „n × Komponente“ mit Kennwerten, Abweichungen zum Stammprojekt markiert.</value>
+  </data>
   <data name="KI_DLG_BKB_AUSGABE_ERL" xml:space="preserve">
     <value>In welchem Format der Bericht entsteht: Word, Excel oder beides.</value>
   </data>
@@ -27149,7 +27209,7 @@ Möchten Sie das zulassen?</value>
     <value>Verfahren</value>
   </data>
   <data name="ZPG_AUS_SP_VOLUMEN" xml:space="preserve">
-    <value>Volumen</value>
+    <value>Volumen [l]</value>
   </data>
   <data name="ZPG_AUS_SP_KENNWERT" xml:space="preserve">
     <value>Kennwert</value>
@@ -35219,7 +35279,7 @@ Möchten Sie das zulassen?</value>
     <value>A [m²]</value>
   </data>
   <data name="ZONDLG_SP_U" xml:space="preserve">
-    <value>U [W/(m²K)]</value>
+    <value>U [W/(m²·K)]</value>
   </data>
   <data name="ZONDLG_SP_AZIMUT" xml:space="preserve">
     <value>Azimut</value>
@@ -45252,7 +45312,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Starts je Tag</value>
   </data>
   <data name="PAUS_NA_SPALTE_VERLUST" xml:space="preserve">
-    <value>Verlust kWh/a</value>
+    <value>Verlust [kWh/a]</value>
   </data>
   <data name="PAUS_NA_SPALTE_JAZ" xml:space="preserve">
     <value>Wirkung</value>
@@ -47919,10 +47979,10 @@ Chart</value>
     <value>Zustand</value>
   </data>
   <data name="GEBB_AUFH_SP_ZEIT" xml:space="preserve">
-    <value>t_auf,max (h)</value>
+    <value>t_auf,max [h]</value>
   </data>
   <data name="GEBB_AUFH_SP_LEISTUNG" xml:space="preserve">
-    <value>P_auf (kW)</value>
+    <value>P_auf [kW]</value>
   </data>
   <data name="GEBB_AUFH_SP_QUELLE" xml:space="preserve">
     <value>Quelle</value>
@@ -47931,10 +47991,10 @@ Chart</value>
     <value>Rampentage</value>
   </data>
   <data name="GEBB_AUFH_SP_LAENGSTE" xml:space="preserve">
-    <value>längste Rampe (h)</value>
+    <value>Längste Rampe [h]</value>
   </data>
   <data name="GEBB_AUFH_SP_KAPPUNG" xml:space="preserve">
-    <value>Kappung (h)</value>
+    <value>Kappung [h]</value>
   </data>
   <data name="GEBB_AUFH_HRL_ZONEN" xml:space="preserve">
     <value>Je Zone eine eigene Bemessung; das Gebäude zeigt t_auf,max und die längste Rampe als Maximum, P_auf als Summe, Tage und Stunden als Vereinigung der beheizten Zonen.</value>
@@ -48507,13 +48567,13 @@ Chart</value>
     <value>Fläche [m²]</value>
   </data>
   <data name="GIMP_AB_SP_UDATEI" xml:space="preserve">
-    <value>U Datei [W/(m²K)]</value>
+    <value>U Datei [W/(m²·K)]</value>
   </data>
   <data name="GIMP_AB_SP_USCHICHTEN" xml:space="preserve">
-    <value>U Schichten [W/(m²K)]</value>
+    <value>U Schichten [W/(m²·K)]</value>
   </data>
   <data name="GIMP_AB_SP_C1" xml:space="preserve">
-    <value>C₁,korr [kJ/(m²K)]</value>
+    <value>C₁,korr [kJ/(m²·K)]</value>
   </data>
   <data name="GIMP_AB_SP_STUFE" xml:space="preserve">
     <value>Stufe</value>
@@ -48798,6 +48858,12 @@ Chart</value>
   </data>
   <data name="BV_A1D_GEWERK_PUFFERSPEICHER" xml:space="preserve">
     <value>Pufferspeicher</value>
+  </data>
+  <data name="BV_A1D_GEWERK_KAELTEMASCHINE" xml:space="preserve">
+    <value>Kältemaschine</value>
+  </data>
+  <data name="BV_A1D_EINHEIT_KW_KAELTE" xml:space="preserve">
+    <value>kW Kälte</value>
   </data>
   <data name="BV_A1D_GEWERK_GEBAEUDE" xml:space="preserve">
     <value>Gebäude</value>
@@ -49484,10 +49550,10 @@ Chart</value>
     <value>Abweichend</value>
   </data>
   <data name="GIMP_DLG_AQ_SPALTE_DATEI" xml:space="preserve">
-    <value>U IFC [W/(m²K)]</value>
+    <value>U IFC [W/(m²·K)]</value>
   </data>
   <data name="GIMP_DLG_AQ_SPALTE_PROJEKTDATEI" xml:space="preserve">
-    <value>U Projektdatei [W/(m²K)]</value>
+    <value>U Projektdatei [W/(m²·K)]</value>
   </data>
   <data name="GIMP_DLG_AQ_TABELLE" xml:space="preserve">
     <value>Mittlere U-Werte je Bauteilart (Median)</value>
@@ -52495,12 +52561,6 @@ Chart</value>
   <data name="KMA_VERGLEICH_EINE_ART" xml:space="preserve">
     <value>Nur Sätze einer Art vergleichen</value>
   </data>
-  <data name="KMA_BEZUG_HINWEIS" xml:space="preserve">
-    <value>Kühlleistung und EER bei {0} °C Kaltwasser und {1} °C Quelle (EN 14511).</value>
-  </data>
-  <data name="KMA_BEZUG_RUECKFALL" xml:space="preserve">
-    <value>{0} kW bei {1} °C</value>
-  </data>
   <data name="KMA_LBL_QUELLE" xml:space="preserve">
     <value>Quelle</value>
   </data>
@@ -52525,14 +52585,17 @@ Chart</value>
   <data name="KMA_WP_BEARBEITEN_GESPERRT" xml:space="preserve">
     <value>Wärmepumpen bearbeitet der Wärmepumpendialog</value>
   </data>
+  <data name="KMA_WP_TITEL_BEARBEITEN" xml:space="preserve">
+    <value>Wärmepumpe bearbeiten</value>
+  </data>
+  <data name="KMA_MSG_WP_OHNE_KASKADE" xml:space="preserve">
+    <value>Die Wärmepumpe kühlt erst, wenn die Wärmekaskade einen Platz für Wärmepumpen führt (Simulation, Konfiguration).</value>
+  </data>
   <data name="KMA_GRUPPE_STECKBRIEF" xml:space="preserve">
     <value>Gerät</value>
   </data>
   <data name="KMA_LBL_INVEST_BETRIEB" xml:space="preserve">
     <value>Investition / Betrieb</value>
-  </data>
-  <data name="KMA_LBL_KALTWASSER" xml:space="preserve">
-    <value>Kaltwasser-Vorlauf min.</value>
   </data>
   <data name="GANGL_UEBERSPRUNGEN_ZUGEORDNET" xml:space="preserve">
     <value>Übersprungen (im Projekt zugeordnet): {0}</value>

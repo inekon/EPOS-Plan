@@ -118,7 +118,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Unterstützte Gewerke. Was hier nicht steht, ist auf der Oberfläche gesperrt
         /// (ehrlicher Hinweis statt halber Kette) — die Liste deckt alle Gewerke ab, die
-        /// <see cref="ProjektDetails.GewerkTabellen"/> führt.
+        /// <see cref="ProjektDetails.GewerkTabellen"/> führt, außer der Kältemaschine: Sie wird
+        /// gelesen und verglichen (<see cref="Leseplan"/>), aber nicht übernommen, weil der
+        /// Kopierweg über <c>WErzeugerCtrl</c> ihren Verweis <c>ID_Kaeltemaschine</c> nicht trägt.
         /// </summary>
         public static readonly Dictionary<string, GewerkPlan> Plaene =
             new Dictionary<string, GewerkPlan>(StringComparer.OrdinalIgnoreCase)
@@ -158,6 +160,30 @@ namespace WindowsFormsApplication1
                 AnlagenTypen = new[] { WizardItemClass.SP_TYP, WizardItemClass.REF_SP_TYP },
                 Kindtabellen = new string[0], KindFk = null } }
         };
+
+        /// <summary>
+        /// Die Kette der Kältemaschine — nur zum LESEN des verbauten Bestands
+        /// (<see cref="Leseplan"/>), nicht in <see cref="Plaene"/> und damit nicht übernehmbar.
+        /// </summary>
+        private static readonly GewerkPlan KAELTEMASCHINE_LESEPLAN = new GewerkPlan
+        {
+            Gewerk = ProjektDetails.GEWERK_KAELTEMASCHINE, Geraetetabelle = "Tab_Kaeltemaschine",
+            AnlagenFk = "ID_Kaeltemaschine", AnlagenTypen = new[] { WizardItemClass.KM_TYP },
+            Kindtabellen = new[] { "Tab_Kenndaten_Kaeltemaschine" }, KindFk = "ID_Kaeltemaschine"
+        };
+
+        /// <summary>
+        /// Die Kette, über die der VERBAUTE Bestand eines Gewerks gelesen wird: die der
+        /// Übernahme (<see cref="Plaene"/>), für die Kältemaschine die Lesekette; null für ein
+        /// unbekanntes Gewerk.
+        /// </summary>
+        public static GewerkPlan Leseplan(string gewerk)
+        {
+            GewerkPlan plan;
+            if (!string.IsNullOrEmpty(gewerk) && Plaene.TryGetValue(gewerk, out plan)) return plan;
+            return string.Equals(gewerk, ProjektDetails.GEWERK_KAELTEMASCHINE, StringComparison.OrdinalIgnoreCase)
+                ? KAELTEMASCHINE_LESEPLAN : null;
+        }
 
         /// <summary>Ist die Komponenten-Übernahme für dieses Gewerk umgesetzt?</summary>
         public static bool Unterstuetzt(string gewerk)

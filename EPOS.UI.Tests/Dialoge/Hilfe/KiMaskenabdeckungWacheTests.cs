@@ -578,7 +578,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("TwwMessreihenDialog", 5, "Angaben zur gewählten Datei, kein Einstellwert der Maske "
             + "(Grund je Bindung in BewusstDraussen)"),
         new("TypProfilDialog", 2),
-        new("UebersichtSeite", 4),
+        new("UebersichtSeite", 5),
         // ETAPPE E16 (V-G3): das Ganzzahlfeld „Zahlung alle … Jahre" der Betriebsseite; die
         // Feldkarte (KiDialoge, Maske Form_VorlagenPosition) führt es als wiederholperiode (8 -> 9).
         new("VorlagenPositionDialog", 9),

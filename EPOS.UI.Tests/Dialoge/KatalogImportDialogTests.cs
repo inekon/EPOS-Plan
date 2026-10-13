@@ -1042,7 +1042,7 @@ public class KatalogImportDialogTests : EposBunitContext
                                            ?? t).TextContent.Trim()).ToArray();
 
         Assert.Equal(new[] { "Wahl", "Eintrag", "Quelle", "Hersteller", "Modell",
-                             "kWh", "kW", "η_RT", "Zellchemie" }, koepfe);
+                             "Kapazität [kWh]", "Leistung [kW]", "η_RT", "Zellchemie" }, koepfe);
 
         // Und die WERTE stehen darin - die Zeile aus bslib traegt ihren
         // gemessenen Wirkungsgrad, die aus der CEC-Liste ohne Angabe nichts.

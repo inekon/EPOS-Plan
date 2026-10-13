@@ -1352,7 +1352,7 @@ namespace WindowsFormsApplication1
                 new Katalogspalte(Katalogfilterprofil.SpBezeichner, MyResource.Resource.GIMP_DLG_SP_BAUTEIL),
                 new Katalogspalte(GebaeudeImportZonen.SP_ART, MyResource.Resource.GIMP_DLG_SP_ART, rang: Katalogspaltenrang.BeiPlatz),
                 new Katalogspalte(GebaeudeImportZonen.SP_FLAECHE, MyResource.Resource.GIMP_DLG_SP_FLAECHE, "m²", Katalogspaltenart.Zahl),
-                new Katalogspalte(GebaeudeImportZonen.SP_UWERT, MyResource.Resource.GIMP_DLG_SP_UWERT, "W/(m²K)", Katalogspaltenart.Zahl),
+                new Katalogspalte(GebaeudeImportZonen.SP_UWERT, MyResource.Resource.GIMP_DLG_SP_UWERT, "W/(m²·K)", Katalogspaltenart.Zahl),
                 new Katalogspalte(GebaeudeImportZonen.SP_AZIMUT, MyResource.Resource.GIMP_DLG_SP_AZIMUT, "°", Katalogspaltenart.Zahl,
                                   rang: Katalogspaltenrang.BeiPlatz),
                 new Katalogspalte(GebaeudeImportZonen.SP_NEIGUNG, MyResource.Resource.GIMP_DLG_SP_NEIGUNG, "°", Katalogspaltenart.Zahl,
