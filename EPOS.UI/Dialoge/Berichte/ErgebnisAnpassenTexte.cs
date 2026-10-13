@@ -14,7 +14,7 @@ public sealed class ErgebnisAnpassenTexte
 
     /// <summary>Der Satz über den Gruppen (<c>BK_ERG_ANP_HINWEIS</c>).</summary>
     public string Hinweis { get; init; } =
-        "Legen Sie fest, welche Gruppen offen, zugeklappt oder ausgeblendet erscheinen und welche Kennzahlen die Tabelle zeigt. Die Einstellung gilt für alle Projekte.";
+        "Legen Sie fest, welche Gruppen offen, zugeklappt oder ausgeblendet erscheinen und welche Kennzahlen Tabelle und Grafik zeigen. Die Einstellung gilt für alle Projekte.";
 
     /// <summary>Der Zustand „offen“ (<c>BK_ERG_ANP_OFFEN</c>).</summary>
     public string Offen { get; init; } = "offen";

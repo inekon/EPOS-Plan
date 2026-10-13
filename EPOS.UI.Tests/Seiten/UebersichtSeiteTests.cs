@@ -1468,7 +1468,7 @@ public class UebersichtSeiteTests : EposBunitContext
         }, stand: Gewerkansicht());
 
         Assert.Equal(2, Gewerkzeilen(cut).Count);
-        cut.Find(".epos-komponenten-werkzeug input[type=checkbox]").Change(true);
+        cut.Find(".epos-uebersicht-vergleichszeile .epos-uebersicht-unterschiede input[type=checkbox]").Change(true);
 
         Assert.Equal(new[] { true }, gemeldet);
         var zeilen = Gewerkzeilen(cut);
@@ -1482,7 +1482,7 @@ public class UebersichtSeiteTests : EposBunitContext
     {
         var cut = Zeige(stand: Gewerkansicht(mitPuffer: false));
 
-        cut.Find(".epos-komponenten-werkzeug input[type=checkbox]").Change(true);
+        cut.Find(".epos-uebersicht-vergleichszeile .epos-uebersicht-unterschiede input[type=checkbox]").Change(true);
 
         Assert.Empty(cut.FindAll(".epos-komponentenvergleich"));
         Assert.Contains("dieselben Komponenten", cut.Find(".epos-komponenten-leer").TextContent);

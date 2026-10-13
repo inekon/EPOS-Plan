@@ -5882,7 +5882,7 @@ It then feeds the overview and the overall simulation. The existing simulation r
     <value>Customize display</value>
   </data>
   <data name="BK_ERG_ANP_HINWEIS" xml:space="preserve">
-    <value>Choose which groups appear open, collapsed or hidden and which key figures the table shows. The setting applies to all projects.</value>
+    <value>Choose which groups appear open, collapsed or hidden and which key figures the table and the chart show. The setting applies to all projects.</value>
   </data>
   <data name="BK_ERG_ANP_OFFEN" xml:space="preserve">
     <value>open</value>

@@ -5454,6 +5454,54 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     z-index: 2;
 }
 
+/* Die Gewerkspalte ist so breit wie die Kennzahlspalte der Ergebnistabelle darunter
+   (20rem, unter 760 px 12rem), damit beide Tabellen untereinander fluchten. */
+.epos-komponentenvergleich th.epos-komponenten-gewerk {
+    width: 20rem;
+    min-width: 20rem;
+    max-width: 20rem;
+    white-space: normal;
+}
+
+@media (max-width: 760px) {
+    .epos-komponentenvergleich th.epos-komponenten-gewerk {
+        width: 12rem;
+        min-width: 12rem;
+        max-width: 12rem;
+    }
+}
+
+/* Die Zeile der Vergleichswahl traegt rechts daneben den Schalter "nur Unterschiede",
+   der auf beide Abschnitte darunter wirkt; wo es eng wird, bricht er unter die Wahl. */
+.epos-uebersicht-vergleichszeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 32px;
+    margin: 0 0 var(--epos-rand) 0;
+}
+
+.epos-uebersicht-vergleichszeile .epos-vergleichswahl {
+    margin: 0;
+}
+
+.epos-uebersicht-unterschiede {
+    display: inline-flex;
+}
+
+/* Im Komponentenvergleich ist der Titel der Tabelle keine zweite Ueberschrift unter
+   "Komponenten und Einstellungen", sondern eine leise Beschriftung ohne Einzug. */
+.epos-vorlagenfeld-zeile.epos-uebersicht-titelzeile {
+    padding: 0;
+    margin: 0 0 4px 0;
+}
+
+.epos-untergruppe.epos-uebersicht-tabellentitel {
+    margin: 0;
+    font-weight: 400;
+    color: var(--epos-text-leise);
+}
+
 .epos-komponenten-version,
 .epos-komponenten-stand {
     display: block;

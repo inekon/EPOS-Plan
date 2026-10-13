@@ -5898,7 +5898,7 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
     <value>Anzeige anpassen</value>
   </data>
   <data name="BK_ERG_ANP_HINWEIS" xml:space="preserve">
-    <value>Legen Sie fest, welche Gruppen offen, zugeklappt oder ausgeblendet erscheinen und welche Kennzahlen die Tabelle zeigt. Die Einstellung gilt für alle Projekte.</value>
+    <value>Legen Sie fest, welche Gruppen offen, zugeklappt oder ausgeblendet erscheinen und welche Kennzahlen Tabelle und Grafik zeigen. Die Einstellung gilt für alle Projekte.</value>
   </data>
   <data name="BK_ERG_ANP_OFFEN" xml:space="preserve">
     <value>offen</value>

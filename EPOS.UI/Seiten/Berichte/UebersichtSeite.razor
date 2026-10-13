@@ -161,11 +161,26 @@
        der Gegenueberstellung - und auf den Seiten Kosten und Wirtschaftlichkeit -
        nebeneinander stehen. EINE Auswahl fuer alle drei Seiten; sie lebt in der
        Huelle. Ohne Delegat und ohne Varianten steht sie nicht. *@
-    @if (VergleichGewaehlt is not null && _stand.Zeilen.Count > 1)
+    @* Der Schalter "nur Unterschiede" wirkt auf beide Abschnitte darunter (Komponenten und
+       Ergebnisse); er steht deshalb in der Zeile der Vergleichswahl, nicht in einem Abschnitt. *@
+    @{ bool vergleichswahl = VergleichGewaehlt is not null && _stand.Zeilen.Count > 1; }
+    @if (vergleichswahl || _stand.Gewerke.Count > 0)
     {
-        <Vergleichswahl Bezeichnung="@LabelVergleich" Eintraege="@Vergleichseintraege"
-                        Gewaehlt="@_stand.GewaehlteVarianten" FestTipp="@StammFestTipp"
-                        GewaehltChanged="BeiVergleich" />
+        <div class="epos-uebersicht-vergleichszeile">
+            @if (vergleichswahl)
+            {
+                <Vergleichswahl Bezeichnung="@LabelVergleich" Eintraege="@Vergleichseintraege"
+                                Gewaehlt="@_stand.GewaehlteVarianten" FestTipp="@StammFestTipp"
+                                GewaehltChanged="BeiVergleich" />
+            }
+            @if (_stand.Gewerke.Count > 0)
+            {
+                <span class="epos-uebersicht-unterschiede">
+                    <Schalter Bezeichnung="@LabelNurUnterschiede" Wert="@NurUnterschiede"
+                              WertChanged="BeiNurUnterschiede" />
+                </span>
+            }
+        </div>
     }
 
     @* --------------------------------------------- Komponentenbereich *@
@@ -181,8 +196,8 @@
     {
         @* BV-E6 (Konzept Berichtsvorlagen 9.4): EINE Marke am Kopf der Gegenueberstellung,
            keine Zeilenmarken - die Zeilen tragen Aktionsknoepfe. *@
-        <div class="epos-vorlagenfeld-zeile">
-            <p class="epos-untergruppe">@_stand.KomponentenTitel</p>
+        <div class="epos-vorlagenfeld-zeile epos-uebersicht-titelzeile">
+            <p class="@(VarianteGewaehlt ? "epos-untergruppe" : "epos-untergruppe epos-uebersicht-tabellentitel")">@_stand.KomponentenTitel</p>
             <Vorlagenfeldknopf Vorlagenfeld="tabelle.komponenten.matrix" Stufe="Vorlagenfeldstufe.Aehnlich"
                                StufenHinweis="@Resource.VF_ORT_KOMPONENTEN"
                                Zusatz="@("tabelle.komponenten.kenndaten.<gewerk>")" />
@@ -202,8 +217,6 @@
            (KomponentenVergleich.JeGewerk) - die Seite vergleicht nicht selbst.
            Viele Varianten rollen quer IN der Huelle, die Gewerkspalte haftet. *@
         <div class="epos-komponenten-werkzeug">
-            <Schalter Bezeichnung="@LabelNurUnterschiede" Wert="@NurUnterschiede"
-                      WertChanged="BeiNurUnterschiede" />
             <span class="epos-komponenten-legende">
                 <span class="epos-komponenten-legende-marke" aria-hidden="true"></span>@LegendeAbweichung
             </span>
