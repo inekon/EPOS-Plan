@@ -54746,5 +54746,65 @@ chart</value>
   <data name="GANS_BAUTEILGRUPPE_ZAHL" xml:space="preserve">
     <value>{0} ({1})</value>
   </data>
+  <data name="IMP_GBXML_KOND_HERKUNFT" xml:space="preserve">
+    <value>from gbXML file</value>
+  </data>
+  <data name="IMP_GBXML_KOND_ABSCHNITT" xml:space="preserve">
+    <value>Section</value>
+  </data>
+  <data name="IMP_GBXML_PROT_ZONE_LASTEN" xml:space="preserve">
+    <value>Zone "{0}": {1} load values and {2} schedules taken from the file (file before profile), {3} condensed, {4} discarded.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_DATUM" xml:space="preserve">
+    <value>Schedule "{0}" discarded: begin "{1}" or end "{2}" of a year section is not a date.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_WOCHE_LUECKE" xml:space="preserve">
+    <value>Schedule "{0}" discarded: week schedule "{1}" is missing or lacks a day profile for some weekday.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_TYP" xml:space="preserve">
+    <value>Schedule "{0}" discarded: type "{1}" cannot be mapped (mapped are Temp, Fraction and OnOff).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_TAGTYP" xml:space="preserve">
+    <value>Schedule "{0}": day type "{1}" skipped (design day or unknown).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_STUNDEN" xml:space="preserve">
+    <value>Schedule "{0}": day schedule "{1}" with {2} values skipped — mapped are 24 hourly values or a multiple thereof.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_ZEITSCHRITT" xml:space="preserve">
+    <value>Schedule "{0}": {1} day profiles with a finer time step condensed to hourly means.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_ART" xml:space="preserve">
+    <value>Zone "{0}": schedule "{1}" of type "{2}" does not fit {3} — discarded, the usage profile applies.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_PERIODEN" xml:space="preserve">
+    <value>Zone "{0}", {1}: {2} short year sections discarded — the calendar holds at most {3} periods here; the standard week applies on their days.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_TEILWEISE" xml:space="preserve">
+    <value>Zone "{0}", {1}: not every space has a schedule — spaces without one count with the full nominal value.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_NENNWERT_OHNE_PLAN" xml:space="preserve">
+    <value>Zone "{0}", {1}: nominal value {2} from the file without a schedule — the schedule of the usage profile is kept.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_WAERME_LATENT" xml:space="preserve">
+    <value>Zone "{0}", space "{1}": latent heat gain per person ({2} W) discarded — the sensible heat is used.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_AUSSENLUFT_PERSON" xml:space="preserve">
+    <value>Zone "{0}": outdoor air per person converted into the user air change ({1} 1/h) — the zone has no per-person field.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_VERDICHTET_RAEUME" xml:space="preserve">
+    <value>Zone "{0}", {1}: the spaces carry different schedules ({2}) — condensed to the weighted mean.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_TAGE_OHNE_ABSCHNITT" xml:space="preserve">
+    <value>Zone "{0}", {1}: {2} days lie in no year section — the standard week applies there.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_WERTE_BEGRENZT" xml:space="preserve">
+    <value>Zone "{0}", {1}: {2} values outside the limits of the quantity clamped or set to "off".</value>
+  </data>
+  <data name="IMP_GBXML_PROT_FEIERTAG_SONNTAG" xml:space="preserve">
+    <value>Zone "{0}", {1}: not every schedule has a holiday day profile — its Sunday applies there.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PROFIL_ABWEICHUNG" xml:space="preserve">
+    <value>Zone "{0}", {1}: the file gives {2} W, the usage profile "{3}" {4} W — the file applies.</value>
+  </data>
 </root>
 

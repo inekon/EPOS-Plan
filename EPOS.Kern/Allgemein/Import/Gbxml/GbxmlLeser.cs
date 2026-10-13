@@ -150,6 +150,7 @@ namespace WindowsFormsApplication1
 
             private string _laenge, _flaeche, _volumen, _temperatur;
             private bool _laengeGilt, _flaecheGilt, _volumenGilt, _temperaturGilt;
+            private Dictionary<string, GbxmlZeitplan> _plaene = new Dictionary<string, GbxmlZeitplan>(StringComparer.Ordinal);
 
             internal Lesung(GbxmlAbbild abbild, IProgress<ImportFortschritt> melder, CancellationToken abbruch)
             {
@@ -170,6 +171,10 @@ namespace WindowsFormsApplication1
                 Version(wurzel);
                 Einheiten(wurzel);
                 Kataloge(wurzel);
+                // Welle DA-1: die Zeitplankette vollständig; Temperaturpläne in der globalen Temperatureinheit (Annahme).
+                _plaene = GbxmlZeitplanleser.Lesen(wurzel,
+                    t => _temperaturGilt ? GbxmlEinheiten.Temperatur(t, _temperatur) : null,
+                    (stufe, name, werte) => Datei(stufe, name, werte));
 
                 List<XElement> campusse = Kinder(wurzel, "Campus").ToList();
                 if (!campusse.SelectMany(c => Kinder(c, "Building")).Any())
@@ -332,6 +337,18 @@ namespace WindowsFormsApplication1
                 r.LichtWm2 = PflichtEinheit(Kind(space, "LightPowerPerArea"), GbxmlEinheiten.LeistungJeFlaeche, id);
                 r.GeraeteWm2 = PflichtEinheit(Kind(space, "EquipPowerPerArea"), GbxmlEinheiten.LeistungJeFlaeche, id);
                 Personen(Kind(space, "PeopleNumber"), r);
+                var lasten = new GbxmlRaumlasten
+                {
+                    AussenluftJePersonM3h = PflichtEinheit(Kind(space, "OAFlowPerPerson"), GbxmlEinheiten.Volumenstrom, id),
+                    AussenluftJeFlaecheM3hM2 = PflichtEinheit(Kind(space, "OAFlowPerArea"), GbxmlEinheiten.VolumenstromJeFlaeche, id),
+                    PersonenPlan = Plan(space, "peopleScheduleIdRef", id),
+                    GeraetePlan = Plan(space, "equipmentScheduleIdRef", id),
+                    LichtPlan = Plan(space, "lightScheduleIdRef", id),
+                };
+                XElement waerme = Kind(space, "PeopleHeatGain");
+                double? jePerson = PflichtEinheit(waerme, GbxmlEinheiten.Leistung, id);
+                lasten.WaermeJePersonW = jePerson > 0.0 ? jePerson : null;
+                lasten.WaermeArt = Attr(waerme, "heatGainType");
 
                 // Beheizt (3.3): Unconditioned, Vented, NaturallyVentedOnly → unbeheizt, alles andere
                 // beheizt; ohne Attribut entscheidet der Name (Musterliste des IFC-Wegs).
@@ -367,10 +384,30 @@ namespace WindowsFormsApplication1
                         r.ZonenName = Text(Kind(zone, "Name"));
                         r.SollHeizenC = MitEinheit(Kind(zone, "DesignHeatT"), _temperatur, _temperaturGilt, GbxmlEinheiten.Temperatur, r.ZonenKennung);
                         r.SollKuehlenC = MitEinheit(Kind(zone, "DesignCoolT"), _temperatur, _temperaturGilt, GbxmlEinheiten.Temperatur, r.ZonenKennung);
+                        // Welle DA-1: Lüftung und Pläne der Zone; Außenluft der Zone nur, wo der Raum keine trägt.
+                        lasten.ZonenLuftwechselJeH = Zahl(Kind(zone, "AirChangesPerHour"), r.ZonenKennung);
+                        lasten.AussenluftJePersonM3h ??= PflichtEinheit(Kind(zone, "OAFlowPerPerson"), GbxmlEinheiten.Volumenstrom, r.ZonenKennung);
+                        lasten.AussenluftJeFlaecheM3hM2 ??= PflichtEinheit(Kind(zone, "OAFlowPerArea"), GbxmlEinheiten.VolumenstromJeFlaeche, r.ZonenKennung);
+                        lasten.HeizPlan = Plan(zone, "heatSchedIdRef", r.ZonenKennung);
+                        lasten.KuehlPlan = Plan(zone, "coolSchedIdRef", r.ZonenKennung);
+                        lasten.LueftungPlan = Plan(zone, "airChangesSchedIdRef", r.ZonenKennung);
                     }
                     else VerweisLeer("zoneIdRef", r.ZonenKennung, id);
                 }
+                // Der Satz der Lasten (DA-1): wo die Datei Lasten oder Pläne trägt — auch nur Personen, Geräte, Licht des Bestands.
+                if (lasten.Traegt || r.Personen.HasValue || r.FlaecheJePersonM2.HasValue || r.GeraeteWm2.HasValue || r.LichtWm2.HasValue)
+                    r.GbxmlLasten = lasten;
                 return r;
+            }
+
+            /// <summary>Der Zeitplan eines Verweisattributs; ein Verweis ohne <c>Schedule</c> wird benannt (<c>VERWEIS_LEER</c>).</summary>
+            private GbxmlZeitplan Plan(XElement e, string attribut, string wo)
+            {
+                string kennung = Attr(e, attribut);
+                if (kennung == null) return null;
+                if (_plaene.TryGetValue(kennung, out GbxmlZeitplan p)) return p;
+                VerweisLeer(attribut, kennung, wo);
+                return null;
             }
 
             /// <summary><c>PeopleNumber</c> in drei Einheiten (Befund R 5.1): umrechnen, nicht raten.</summary>

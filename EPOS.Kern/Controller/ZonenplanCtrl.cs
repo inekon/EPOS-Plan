@@ -154,7 +154,8 @@ namespace WindowsFormsApplication1
                 if (g.Herkunft == Konditionierungsherkunft.Vorlage) continue;
                 if (zone != null && !zone.IstBeheizt && (g.Groesse == Konditionierungsgroesse.Heizsoll || g.Groesse == Konditionierungsgroesse.Kuehlsoll)) continue;
                 var ort = new Konditionierungsort(g.Groesse, idZone);
-                if (Ebene(stand).Kalender(g.Groesse) != null)
+                Konditionierungskalender bisher = Ebene(stand).Kalender(g.Groesse);
+                if (bisher != null)
                 {
                     Konditionierungsschritt weg = Konditionierungsarbeit.Verwerfen(stand, ort);
                     if (!weg.Ok) return weg.Meldung ?? "";
@@ -172,10 +173,17 @@ namespace WindowsFormsApplication1
                     if (!schritt.Ok || schritt.Rueckfrage) return schritt.Meldung ?? "";
                     stand = schritt.Stand;
                 }
-                if (g.Kalender != null)
+                // Ein Nennwert der Datei ohne Zeitplan (gbXML, E138 F2): der Zeitplan der Profilkopie bleibt, sonst „immer 1“.
+                Konditionierungskalender neu = g.Kalender;
+                if (neu == null && g.NennwertDatei is double nennwert && Konditionierungsgroessen.HatNennwert(g.Groesse))
+                    neu = bisher != null
+                        ? new Konditionierungskalender(g.Groesse, bisher.Grundangabe, nennwert, bisher.Perioden)
+                        : new Konditionierungskalender(g.Groesse, Kalenderangabe.AusWert(1.0), nennwert, null);
+                if (neu != null)
                 {
                     Konditionierungsstand ebene = Ebene(stand);
-                    stand = stand.MitEbene(idZone, ebene.MitKalender(g.Groesse, g.Kalender, new Kalenderherkunft(null, g.Bemerkung)));
+                    string bemerkung = g.Kalender != null ? g.Bemerkung : g.BemerkungText;
+                    stand = stand.MitEbene(idZone, ebene.MitKalender(g.Groesse, neu, new Kalenderherkunft(null, bemerkung)));
                     kalender.Add(g.Groesse);
                 }
                 geschrieben++;

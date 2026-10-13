@@ -48318,6 +48318,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abschnitt ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_KOND_ABSCHNITT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_KOND_ABSCHNITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus gbXML-Datei ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_KOND_HERKUNFT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_KOND_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Konstruktion {0}: mindestens eine Schicht nur mit R-Wert — U-Wert aus der Schichtung, keine Speichermasse. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_AUFBAU_MASSELOS {
@@ -48336,11 +48354,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Außenluft je Person in den Luftwechsel der Nutzer umgerechnet ({1} 1/h) — die Zone führt kein Feld je Person. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_AUSSENLUFT_PERSON {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_AUSSENLUFT_PERSON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit „{1}“ der Größe {0} ist unbekannt oder fehlt — der Wert bleibt leer. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_EINHEIT_UNBEKANNT {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_EINHEIT_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“, {1}: Nicht jeder Zeitplan hat ein Tagesbild für Feiertage — dort gilt sein Sonntag. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_FEIERTAG_SONNTAG {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_FEIERTAG_SONNTAG", resourceCulture);
             }
         }
         
@@ -48489,6 +48525,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“, {1}: Nennwert {2} aus der Datei ohne Zeitplan — der Zeitplan des Nutzungsprofils bleibt. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_NENNWERT_OHNE_PLAN {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_NENNWERT_OHNE_PLAN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Fläche {0}: Fenster und Türen ({2} m²) sind größer als die Wand ({1} m²) — die Nettofläche wird 0. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_NETTOFLAECHE_NEGATIV {
@@ -48570,6 +48615,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Zeitplan „{1}“ vom Typ „{2}“ passt nicht zu {3} — verworfen, es gilt das Nutzungsprofil. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_ART {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ und Zone „{1}“ sind nicht gleich beheizt — nicht zugeordnet; zuerst den Haken „beheizt“ des Raums umstellen. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_PLAN_BEHEIZUNG {
@@ -48593,6 +48647,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GBXML_PROT_PLAN_BEHEIZUNG_TEIL {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_BEHEIZUNG_TEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitplan „{0}“ verworfen: Beginn „{1}“ oder Ende „{2}“ eines Jahresabschnitts ist kein Datum. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_DATUM {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_DATUM", resourceCulture);
             }
         }
         
@@ -48633,6 +48696,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“, {1}: {2} kurze Jahresabschnitte verworfen — der Kalender trägt hier höchstens {3} Perioden; an ihren Tagen gilt die Standardwoche. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_PERIODEN {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_PERIODEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Raum {0} gehört nicht zu diesem Gebäude. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_PLAN_RAUM_UNBEKANNT {
@@ -48669,6 +48741,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitplan „{0}“: Tagesplan „{1}“ mit {2} Werten übergangen — abgebildet werden 24 Stundenwerte oder ein Vielfaches davon. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_STUNDEN {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitplan „{0}“: Tagtyp „{1}“ übergangen (Auslegungstag oder unbekannt). ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_TAGTYP {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_TAGTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“, {1}: Nicht jeder Raum hat einen Zeitplan — Räume ohne Plan zählen mit dem vollen Nennwert. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_TEILWEISE {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_TEILWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitplan „{0}“ verworfen: Der Typ „{1}“ ist nicht abbildbar (abgebildet werden Temp, Fraction und OnOff). ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_TYP {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_TYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitplan „{0}“ verworfen: Der Wochenplan „{1}“ fehlt oder hat nicht für jeden Wochentag ein Tagesbild. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_WOCHE_LUECKE {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_WOCHE_LUECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitplan „{0}“: {1} Tagesbilder mit feinerem Zeitschritt auf Stundenmittel verdichtet. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_ZEITSCHRITT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_ZEITSCHRITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone {0} gibt es nicht. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_PLAN_ZONE_UNBEKANNT {
@@ -48683,6 +48809,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GBXML_PROT_PLAN_ZU_VIELE_ZONEN {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_ZU_VIELE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“, {1}: Die Datei gibt {2} W, das Nutzungsprofil „{3}“ {4} W — es gilt die Datei. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PROFIL_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PROFIL_ABWEICHUNG", resourceCulture);
             }
         }
         
@@ -48728,6 +48863,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GBXML_PROT_STOFFWERT_FEHLSTELLE {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_STOFFWERT_FEHLSTELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“, {1}: {2} Tage liegen in keinem Jahresabschnitt — dort gilt die Standardwoche. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_TAGE_OHNE_ABSCHNITT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_TAGE_OHNE_ABSCHNITT", resourceCulture);
             }
         }
         
@@ -48813,6 +48957,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“, {1}: Die Räume tragen verschiedene Zeitpläne ({2}) — zum gewichteten Mittel verdichtet. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_VERDICHTET_RAEUME {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_VERDICHTET_RAEUME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Versionswert „{0}“ steht nicht in der Versionsliste von gbXML — nur vermerkt, gelesen wird trotzdem. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_VERSION_UNBEKANNT {
@@ -48827,6 +48980,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GBXML_PROT_VERWEIS_LEER {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_VERWEIS_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“, Raum „{1}“: latente Wärmeabgabe je Person ({2} W) verworfen — gerechnet wird die sensible Wärme. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_WAERME_LATENT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_WAERME_LATENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“, {1}: {2} Werte außerhalb der Grenzen der Größe begrenzt bzw. auf „aus“ gesetzt. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_WERTE_BEGRENZT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_WERTE_BEGRENZT", resourceCulture);
             }
         }
         
@@ -48872,6 +49043,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GBXML_PROT_ZONE_ENTFALLEN {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_ZONE_ENTFALLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: {1} Lastwerte und {2} Zeitpläne aus der Datei übernommen (Datei vor Profil), {3} verdichtet, {4} verworfen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_ZONE_LASTEN {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_ZONE_LASTEN", resourceCulture);
             }
         }
         
