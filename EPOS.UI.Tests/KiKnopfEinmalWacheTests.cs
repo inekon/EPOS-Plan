@@ -52,6 +52,10 @@ public sealed class KiKnopfEinmalWacheTests
             // die Kopfpille des Gebäudedialogs den Assistenten.
             ["EPOS.UI/Dialoge/Bedarf/Modellpruefungsblatt.razor"] =
                 "steht nur in der Überlagerung des GebaeudeDialog; dessen Kopfpille führt den Assistenten",
+            // MA-2: das Blatt „Nutzung und Kalender“ steht nur als Überlagerung im GebaeudeDialog und im GebaeudeKatalogDialog;
+            // sein Hilfeknopf führt die Seite, die Kopfpille des Wirts den Assistenten.
+            ["EPOS.UI/Dialoge/Bedarf/ZonenNutzungsblatt.razor"] =
+                "steht nur in Überlagerungen des GebaeudeDialog und des GebaeudeKatalogDialog; deren Kopfpille führt den Assistenten",
             ["EPOS.UI/Dialoge/Bedarf/GebaeudeStammblattFelder.razor"] =
                 "steht nur in GebaeudeAdminDialog; dessen Kopfpille führt den Assistenten",
             ["EPOS.UI/Dialoge/Bedarf/GebaeudeKuehluebergabeFelder.razor"] =

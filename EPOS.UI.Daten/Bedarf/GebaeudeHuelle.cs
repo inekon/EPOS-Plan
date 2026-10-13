@@ -211,6 +211,10 @@ namespace WindowsFormsApplication1
                 // Rücknahme); eine Zeile ohne gespeicherte Projektkopie hat keinen Weg.
                 ["ModellpruefungGaben"] = new Func<GebaeudeProjektZeile, ModellpruefungWeg>(
                     z => { idsNachziehen(); return ModellpruefungHuelle.Weg(z, AusrichtungsGebaeude(z)); }),
+                // MA-2: das Blatt „Nutzung und Kalender" für alle Zonen des Projektgebäudes der Zeile (Mehrfachwahl, Rücknahme);
+                // eine Zeile ohne gespeicherte Projektkopie hat keinen Weg.
+                ["ZonenNutzungGaben"] = new Func<GebaeudeProjektZeile, ZonenNutzungWeg>(
+                    z => { idsNachziehen(); return ZonenNutzungHuelle.Weg(AusrichtungsGebaeude(z), z?.Name ?? ""); }),
                 // Stufe G6a: der benannte Grund des letzten Aufrufs ohne Zahl (etwa mehrere Zonen).
                 ["BedarfBefund"] = new Func<string>(() => bedarfBefund),
                 // GD-N: der Jahreswärmebedarf des letzten Laufs je Gebäude (sonst der Projektwert mit Hinweis) für die
