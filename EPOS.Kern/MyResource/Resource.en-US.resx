@@ -52512,6 +52512,12 @@ chart</value>
   <data name="KMA_WP_TITEL_BEARBEITEN" xml:space="preserve">
     <value>Edit heat pump</value>
   </data>
+  <data name="KMA_ENERGIEKOSTEN_WP" xml:space="preserve">
+    <value>Energy costs of the heat pump via the heat pump dialogue</value>
+  </data>
+  <data name="KMA_ENERGIEKOSTEN_OHNE_TRAEGER" xml:space="preserve">
+    <value>Energy costs require an energy carrier: the unit holds no cooling carrier, and the project no electricity carrier.</value>
+  </data>
   <data name="KMA_MSG_WP_OHNE_KASKADE" xml:space="preserve">
     <value>The heat pump only cools once the heat cascade holds a slot for heat pumps (Simulation, configuration).</value>
   </data>

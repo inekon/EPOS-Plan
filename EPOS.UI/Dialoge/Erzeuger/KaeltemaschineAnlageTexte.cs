@@ -131,6 +131,10 @@ public sealed class KaeltemaschineAnlageTexte
     public string KostenInvest { get; set; } = Resource.KDLG_KNOPF_INVEST;
     /// <summary>Kostenknopf Betrieb (KDLG_KNOPF_BETRIEB).</summary>
     public string KostenBetrieb { get; set; } = Resource.KDLG_KNOPF_BETRIEB;
+    /// <summary>Kostenknopf Energie (KDLG_KNOPF_ENERGIE) — KD1, derselbe Schlüssel wie bei Wärmepumpe und BHKW.</summary>
+    public string KostenEnergie { get; set; } = Resource.KDLG_KNOPF_ENERGIE;
+    /// <summary>Titel der Trägerkarte in der Überlagerung (KDLG_ET_TITEL).</summary>
+    public string TitelEnergietraeger { get; set; } = Resource.KDLG_ET_TITEL;
 
     // ------------------------------------------------------------ Einheiten (Symbole)
     public string EinheitKw { get; set; } = "kW";
