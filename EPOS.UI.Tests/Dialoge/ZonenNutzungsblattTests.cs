@@ -130,7 +130,9 @@ public sealed class ZonenNutzungsblattTests : EposBunitContext
         cut.Find("select.epos-zonennutzung-profilwahl").Change("12");
         cut.Find("button.epos-zonennutzung-anwenden").Click();
         Assert.Single(p.Aufrufe);
-        Assert.Equal(("Profil", new[] { 1, 2 }, (long?)12), (p.Aufrufe[0].Weg, p.Aufrufe[0].Zonen, p.Aufrufe[0].Profil));
+        Assert.Equal("Profil", p.Aufrufe[0].Weg);
+        Assert.Equal(new[] { 1, 2 }, p.Aufrufe[0].Zonen);
+        Assert.Equal(12L, p.Aufrufe[0].Profil);
         Assert.Equal(1, geaendert);
         Assert.Equal("2 Zonen geändert.", cut.Find(".epos-zonennutzung-meldung").TextContent);
         // Nach der Änderung steht „Zurücknehmen“ und ruft den Weg.
@@ -169,7 +171,9 @@ public sealed class ZonenNutzungsblattTests : EposBunitContext
         var geoeffnet = new List<int>();
         var cut = Blatt(p, geoeffnet);
         Zeilen(cut)[1].QuerySelector("select.epos-zonennutzung-zeilenprofil")!.Change("12");
-        Assert.Equal(("Profil", new[] { 2 }, (long?)12), (p.Aufrufe[0].Weg, p.Aufrufe[0].Zonen, p.Aufrufe[0].Profil));
+        Assert.Equal("Profil", p.Aufrufe[0].Weg);
+        Assert.Equal(new[] { 2 }, p.Aufrufe[0].Zonen);
+        Assert.Equal(12L, p.Aufrufe[0].Profil);
         Zeilen(cut)[2].QuerySelector("button.epos-zonennutzung-zone")!.Click();
         Assert.Equal(new[] { 3 }, geoeffnet);
     }
