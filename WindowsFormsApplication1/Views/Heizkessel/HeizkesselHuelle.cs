@@ -80,8 +80,6 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static IReadOnlyDictionary<string, object> Gaben(string name, string beschreibung, bool neu)
         {
-            HeizkesselStammCtrl.StelleSpaltenSicher();   // Vorsorge wie im Konstruktor der Maske
-
             var ctrl = new HeizkesselStammCtrl();
             var daten = new HeizkesselKatalogDaten();
             string hinweis = "";
