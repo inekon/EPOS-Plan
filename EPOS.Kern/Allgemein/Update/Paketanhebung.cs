@@ -458,6 +458,10 @@ namespace WindowsFormsApplication1
             // Ein älteres Paket bringt seine Zonen ohne die Lastfelder; der Schritt legt die Spalten am Ziel leer an.
             new Stufe(ZonenLastfelderSchema.SCHRITT, Art.Ddl,
                       "Außenluft je Person, Lichtleistung und Wärme je Person an der Zone (DA-2, E138)"),
+            // KB-3: Ein älteres Paket bringt seine Projektkopien ohne die zwei Verweise; die Satzvorlage eines
+            // Katalogsatzes reist in keinem Paket (Metaspalte), und der Schritt sät sie an der Zieldatenbank.
+            new Stufe(KatalogkostenSaatSchema.SCHRITT, Art.Ddl,
+                      "Verweise auf die Satzvorlagen an den Projektkopien mit Kosten, Saat der Katalogkosten (KB-3)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

@@ -591,6 +591,29 @@ namespace WindowsFormsApplication1
         public static KostenVorlageKopf SatzvorlageDerAnlage(int idAnlage, int idType, int komponentenId)
             => SatzvorlagenDerAnlage(idAnlage, idType, komponentenId).FirstOrDefault();
 
+        /// <summary>
+        /// Trägt eine Anlage dieser Art (<c>Tab_Energieanlagen.ID_Type</c>) einen Ursprung und damit eine Satzvorlage?
+        /// Die Liste steht in <see cref="ANLAGEN"/> — sie ist die EINE Landkarte Anlage → Projektkopie → Katalog
+        /// (KB-3: der Abgleich fragt sie, statt eine zweite zu führen).
+        /// </summary>
+        public static bool Gewerkbekannt(int idType) => ANLAGEN.ContainsKey(idType);
+
+        /// <summary>
+        /// Die ID des Katalogsatzes, aus dem das Gerät der Anlage <paramref name="idAnlage"/> stammt; <b>0</b> = kein
+        /// Ursprung (<c>ID_Stamm</c> leer, der Satz ist gelöscht, oder die Spalte fehlt).
+        /// </summary>
+        public static int UrsprungsSatz(int idAnlage, int idType)
+        {
+            if (idAnlage <= 0 || !ANLAGEN.TryGetValue(idType, out var a)) return 0;
+            if (!KatalogkostenUrsprungSchema.UrsprungLesbar(a.Kopietabelle)) return 0;
+            object o = DataRepository.ExecuteScalar(
+                "SELECT s.\"ID\" FROM \"Tab_Energieanlagen\" e " +
+                "JOIN \"" + a.Kopietabelle + "\" k ON k.\"ID\" = e.\"" + a.Verweis + "\" " +
+                "JOIN \"" + a.Katalogtabelle + "\" s ON s.\"ID\" = k.\"ID_Stamm\" WHERE e.\"ID\" = ?",
+                new DbParam("@a", idAnlage));
+            return o == null || o == DBNull.Value ? 0 : Convert.ToInt32(o, CultureInfo.InvariantCulture);
+        }
+
         // ---------------------------------------------------------------- Hilfen ---
 
         private static DataRow Zeile(string tabelle, int id)

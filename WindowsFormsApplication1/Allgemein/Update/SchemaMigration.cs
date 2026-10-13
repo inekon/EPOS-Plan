@@ -5517,6 +5517,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_ZONEN_LASTFELDER = ZonenLastfelderSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="KatalogkostenSaatSchema.SCHRITT"/> — <b>Saat der Katalogkosten-Satzvorlagen</b> (KB-3,
+        /// Anwenderentscheid 13.10.2026): die zwei Verweise <c>ID_KostenVorlage</c> und
+        /// <c>ID_KostenVorlageInvestition</c> an den acht Projektkopien mit Kosten, dazu je Satz mit mindestens einem
+        /// Kostenwert &gt; 0 und ohne Verweis genau eine Satzvorlage je Art samt Positionen.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Ein zweiter Lauf findet jeden Verweis gesetzt; gerechnet wird
+        /// aus <c>Tab_ProjektWerte</c>, eine Satzvorlage wirkt erst beim Übernehmen oder Abgleichen.</para>
+        /// </summary>
+        public const int SCHRITT_KATALOGKOSTEN_SAAT = KatalogkostenSaatSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -8100,6 +8111,15 @@ namespace WindowsFormsApplication1
                         "Aussenluft je Person, Lichtleistung und Waerme je Person einer Zone haetten beim Datenaustausch keinen " +
                         "Platz und gingen im Rundlauf verloren. KEIN Rechenergebnis aendert sich - alle Spalten stehen leer.",
                         Schritt_ZonenLastfelder),
+            // KB-3: Saat der Katalogkosten-Satzvorlagen. Quelle ist KatalogkostenSaatSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KATALOGKOSTEN_SAAT,
+                        "Tab_BHKW, Tab_Heizkessel, Tab_WP, Tab_PV, Tab_Solarkollektoren, Tab_Pufferspeicher, " +
+                        "Tab_Kaeltemaschine, Tab_Stromspeicher: ID_KostenVorlage und ID_KostenVorlageInvestition; " +
+                        "je Satz mit Kosten eine Satzvorlage je Art samt Positionen",
+                        "Die Kosten eines Katalogsatzes stuenden weiter nur am Geraet und waeren mit dem zentralen " +
+                        "Kostenkatalog nicht abgleichbar. KEIN Rechenergebnis aendert sich - gerechnet wird aus " +
+                        "Tab_ProjektWerte, eine Satzvorlage wirkt erst beim Uebernehmen oder Abgleichen.",
+                        Schritt_KatalogkostenSaat),
         };
 
         /// <summary>
@@ -15863,6 +15883,61 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Lastfelder der Zone - " + (handgriffe == 0 ? "standen bereits." : handgriffe + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Saat der Katalogkosten-Satzvorlagen" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KATALOGKOSTEN_SAAT"/>, die Anweisungen bei <see cref="KatalogkostenSaatSchema"/>.
+        /// <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_KatalogkostenSaat(Lauf l)
+        {
+            string nr = KatalogkostenSaatSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KatalogkostenSaatSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = KatalogkostenSaatSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KatalogkostenSaatSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Saat der Katalogkosten steht nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Saat der Katalogkosten - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Handgriff(e).") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

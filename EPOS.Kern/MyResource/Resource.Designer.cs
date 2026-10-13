@@ -12536,6 +12536,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit dem Kostenkatalog abgleichen… ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_ABGLEICH_KURZTEXT {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_ABGLEICH_KURZTEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diese Anlage führt keine eigenen Positionen — „Investitionskosten…“ und „Betriebskosten…“ im Anlagendialog oder die Kostenverwaltung pflegt sie je Anlage. ähnelt.
         /// </summary>
         public static string BK_KOSTEN_ANLAGE_OHNE_POSITIONEN {
@@ -12730,6 +12739,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_KOSTEN_JE_KOMPONENTE {
             get {
                 return ResourceManager.GetString("BK_KOSTEN_JE_KOMPONENTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogkosten vorhanden ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_KATALOGKOSTEN {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_KATALOGKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}&quot; führt keine Kostenposition, der Katalogsatz des Geräts aber Kosten — über „Mit dem Kostenkatalog abgleichen…&quot; entstehen daraus Positionen. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_KATALOGKOSTEN_HINT {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_KATALOGKOSTEN_HINT", resourceCulture);
             }
         }
         
@@ -55721,6 +55748,98 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KATRUECK_WAHL_UEBERSCHREIBEN {
             get {
                 return ResourceManager.GetString("KATRUECK_WAHL_UEBERSCHREIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit dem Kostenkatalog abgleichen… ähnelt.
+        /// </summary>
+        public static string KAT_ABGLEICH_BTN {
+            get {
+                return ResourceManager.GetString("KAT_ABGLEICH_BTN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestens eine Position konnte nicht geschrieben werden; der Abgleich ist unvollständig. ähnelt.
+        /// </summary>
+        public static string KAT_ABGLEICH_FEHLER {
+            get {
+                return ResourceManager.GetString("KAT_ABGLEICH_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abgleich mit dem Kostenkatalog — {0} Position(en) fehlen, {1} weichen ab:
+        ///{2}
+        ///Fehlende anlegen und abweichende auf den Katalogwert setzen? ähnelt.
+        /// </summary>
+        public static string KAT_ABGLEICH_FRAGE {
+            get {
+                return ResourceManager.GetString("KAT_ABGLEICH_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kostenpositionen dieser Anlage stimmen mit dem Kostenkatalog überein. ähnelt.
+        /// </summary>
+        public static string KAT_ABGLEICH_KEINE {
+            get {
+                return ResourceManager.GetString("KAT_ABGLEICH_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Gewerk führt der Katalog keine Satzvorlage; ein Abgleich ist nicht möglich. ähnelt.
+        /// </summary>
+        public static string KAT_ABGLEICH_OHNE_GEWERK {
+            get {
+                return ResourceManager.GetString("KAT_ABGLEICH_OHNE_GEWERK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogsatz dieser Anlage führt keine Kosten und damit keine Satzvorlage. ähnelt.
+        /// </summary>
+        public static string KAT_ABGLEICH_OHNE_VORLAGE {
+            get {
+                return ResourceManager.GetString("KAT_ABGLEICH_OHNE_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Anlage kennt ihren Katalogsatz nicht — ohne Zuordnung zum Katalog gibt es nichts abzugleichen. ähnelt.
+        /// </summary>
+        public static string KAT_ABGLEICH_OHNE_ZUORDNUNG {
+            get {
+                return ResourceManager.GetString("KAT_ABGLEICH_OHNE_ZUORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abgleich: {0} Position(en) angelegt, {1} auf den Katalogwert gesetzt. ähnelt.
+        /// </summary>
+        public static string KAT_ABGLEICH_STATUS {
+            get {
+                return ResourceManager.GetString("KAT_ABGLEICH_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die weicht ab: {0} ({1}) — Projekt {2}, Katalog {3} ähnelt.
+        /// </summary>
+        public static string KAT_ABGLEICH_ZEILE_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("KAT_ABGLEICH_ZEILE_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fehlt: {0} ({1}) — Katalog {2} ähnelt.
+        /// </summary>
+        public static string KAT_ABGLEICH_ZEILE_FEHLT {
+            get {
+                return ResourceManager.GetString("KAT_ABGLEICH_ZEILE_FEHLT", resourceCulture);
             }
         }
         

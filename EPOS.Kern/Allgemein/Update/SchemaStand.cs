@@ -1061,7 +1061,13 @@ namespace WindowsFormsApplication1
         /// Danach, mit den LASTFELDERN DER ZONE (DA-2, E138 F5), steht das Ziel auf <see cref="ZonenLastfelderSchema.SCHRITT"/>:
         /// <c>Aussenluft_Person</c>, <c>Licht_W_m2</c> und <c>Personen_Waerme_W</c> an <c>Tab_Zone</c> und <c>Tab_Zone_STAMM</c>
         /// (<see cref="ZonenLastfelderSchema"/>). <b>Ergebnisneutral:</b> Der Rechenweg liest keine der drei Spalten.
-        public const int Zielversion = ZonenLastfelderSchema.SCHRITT;
+        /// Danach, mit der SAAT DER KATALOGKOSTEN-SATZVORLAGEN (KB-3), steht das Ziel auf
+        /// <see cref="KatalogkostenSaatSchema.SCHRITT"/>: die zwei Verweise
+        /// <c>ID_KostenVorlage</c>/<c>ID_KostenVorlageInvestition</c> an den acht Projektkopien mit Kosten und je
+        /// Katalogsatz mit Kosten genau eine Satzvorlage je Art (<see cref="KatalogkostenSaatSchema"/>).
+        /// <b>Ergebnisneutral:</b> Gerechnet wird aus <c>Tab_ProjektWerte</c>; eine Satzvorlage wirkt erst beim
+        /// Übernehmen oder Abgleichen.
+        public const int Zielversion = KatalogkostenSaatSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

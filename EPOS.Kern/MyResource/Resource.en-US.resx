@@ -6807,6 +6807,47 @@ After that the value will be missing from every calculation concerning that year
   <data name="BK_KOSTEN_OHNE_POSITION_HINT" xml:space="preserve">
     <value>“{0}” is installed in this project but carries no investment item — the “Investment” tile therefore does not include it.</value>
   </data>
+  <data name="KAT_ABGLEICH_BTN" xml:space="preserve">
+    <value>Reconcile with the cost catalogue…</value>
+  </data>
+  <data name="KAT_ABGLEICH_KEINE" xml:space="preserve">
+    <value>The cost items of this unit match the cost catalogue.</value>
+  </data>
+  <data name="KAT_ABGLEICH_FRAGE" xml:space="preserve">
+    <value>Reconcile with the cost catalogue — {0} item(s) missing, {1} differing:
+{2}
+Add the missing ones and set the differing ones to the catalogue value?</value>
+  </data>
+  <data name="KAT_ABGLEICH_STATUS" xml:space="preserve">
+    <value>Reconciliation: {0} item(s) added, {1} set to the catalogue value.</value>
+  </data>
+  <data name="KAT_ABGLEICH_ZEILE_FEHLT" xml:space="preserve">
+    <value>missing: {0} ({1}) — catalogue {2}</value>
+  </data>
+  <data name="KAT_ABGLEICH_ZEILE_ABWEICHUNG" xml:space="preserve">
+    <value>differs: {0} ({1}) — project {2}, catalogue {3}</value>
+  </data>
+  <data name="KAT_ABGLEICH_OHNE_GEWERK" xml:space="preserve">
+    <value>The catalogue carries no item template for this trade; reconciliation is not possible.</value>
+  </data>
+  <data name="KAT_ABGLEICH_OHNE_ZUORDNUNG" xml:space="preserve">
+    <value>This unit does not know its catalogue record — without a link to the catalogue there is nothing to reconcile.</value>
+  </data>
+  <data name="KAT_ABGLEICH_OHNE_VORLAGE" xml:space="preserve">
+    <value>The catalogue record of this unit carries no costs and therefore no item template.</value>
+  </data>
+  <data name="KAT_ABGLEICH_FEHLER" xml:space="preserve">
+    <value>At least one item could not be written; the reconciliation is incomplete.</value>
+  </data>
+  <data name="BK_KOSTEN_KATALOGKOSTEN" xml:space="preserve">
+    <value>catalogue costs available</value>
+  </data>
+  <data name="BK_KOSTEN_KATALOGKOSTEN_HINT" xml:space="preserve">
+    <value>“{0}” carries no cost item, but the catalogue record of the device does carry costs — “Reconcile with the cost catalogue…” turns them into items.</value>
+  </data>
+  <data name="BK_KOSTEN_ABGLEICH_KURZTEXT" xml:space="preserve">
+    <value>Reconcile with the cost catalogue…</value>
+  </data>
   <data name="BK_KOSTEN_ENERGIE_PREIS0" xml:space="preserve">
     <value>⚠ Unit price 0.00 for: {0} — without a price no energy costs can arise; enter it on the “Energy costs” tab of cost management.</value>
   </data>
