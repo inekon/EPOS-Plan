@@ -7,7 +7,13 @@ Kalender aufklappbar im Zonenblock (ZB‑Q2 A), **beliebig viele** eigene Ferien
 mit Schemaschritt) und Katalogimport mit Paketvorlage für die DIN‑4708‑Werte (ZB‑Q4 A); ZB‑Q5 folgt der
 Empfehlung (keine Vorbelegung). Dazu kamen am selben Tag ZB11, die Paketvorlage für die VDI-4655-Typtage,
 und ZB12, je ein Referenzprojekt für sechs Optionen des Zapfprofils, alle in der CI (`kern.yml`). Die Logbuch-Einträge
-dieser Überarbeitung tragen die Version 1.2.0.8. ZB1 (Abbrüche) und ZB7 sind in Arbeit.
+dieser Überarbeitung tragen die Version 1.2.0.8; ins Wiki (wiki.epos-plan.de) wird am 20.10.2026 hochgeladen.
+
+**Umsetzungsstand:** umgesetzt sind ZB1 (W1), ZB2, ZB4 (a), ZB6 und ZB10 (W2) sowie ZB7 und ZB11 (W5) — Statuszeilen und
+Protokolle unter `Dokumentation/ueberholt/Protokolle/Zapfprofilgenerator/2026-10-13_*`. Gebaut, aber noch nicht auf dem
+Arbeitszweig: W3a (Schemaschritt der Zonenferien, nach dem Tausch mit der Sitzung K6 **Nummer 224**, hängt an 223) und W3b
+(Kalenderkarte); sie folgen, sobald die Schritte 222 und 223 der Nachbarsitzungen auf origin liegen. W4 ist in Arbeit, W7 folgt
+auf W3a.
 
 **Anlass:** Anwenderauftrag vom 13.10.2026 mit Bildschirmfoto aus Visual Studio
 (`ZapfprofilEingabeException` „Die Nutzungsart der Zone „Zone 1“ steht nicht (mehr) im Katalog — bitte

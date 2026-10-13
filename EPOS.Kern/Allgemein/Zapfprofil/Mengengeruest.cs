@@ -100,14 +100,23 @@ namespace WindowsFormsApplication1
         internal static double Temperaturfaktor(double zapfC, double kaltwasserMittelC, Temperaturbezug bezug,
                                                 string zone = "")
         {
+            ZapfAblehnung befund = TemperaturfaktorBefund(zapfC, kaltwasserMittelC, bezug, zone);
+            if (befund != null) throw befund.Ausnahme();
+            return (zapfC - kaltwasserMittelC) / (bezug.ZapftemperaturC - bezug.KaltwasserC);
+        }
+
+        /// <summary>
+        /// Die Regel des <see cref="Temperaturfaktor"/> ohne Wurf: <c>null</c>, wenn er definiert ist,
+        /// sonst die benannte Ablehnung (kein Bezug, Spreizung des Katalogs oder des Projekts nicht positiv).
+        /// </summary>
+        internal static ZapfAblehnung TemperaturfaktorBefund(double zapfC, double kaltwasserMittelC, Temperaturbezug bezug,
+                                                             string zone = "")
+        {
             if (bezug == null)
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.TemperaturUngueltig, zone,
+                return new ZapfAblehnung(zone ?? "", ZapfEingabefehler.TemperaturUngueltig,
                     ZapfSatz.Neu("EINGABE_KENNWERT_OHNE_BEZUGSTEMPERATUREN", zone));
-            double deltaBezug = bezug.ZapftemperaturC - bezug.KaltwasserC;
-            double deltaProjekt = zapfC - kaltwasserMittelC;
-            DeltaPruefen(deltaBezug, zone, ZapfSatz.Neu("BEGRIFF_BEZUGSTEMPERATUREN_KATALOG"));
-            DeltaPruefen(deltaProjekt, zone, ZapfSatz.Neu("BEGRIFF_PROJEKTTEMPERATUREN"));
-            return deltaProjekt / deltaBezug;
+            return DeltaBefund(bezug.ZapftemperaturC - bezug.KaltwasserC, zone, ZapfSatz.Neu("BEGRIFF_BEZUGSTEMPERATUREN_KATALOG"))
+                   ?? DeltaBefund(zapfC - kaltwasserMittelC, zone, ZapfSatz.Neu("BEGRIFF_PROJEKTTEMPERATUREN"));
         }
 
         /// <summary>
@@ -142,9 +151,8 @@ namespace WindowsFormsApplication1
                                                        Herkunftsprotokoll p)
         {
             string zone = z.Name ?? "";
-            if (n.Bezugstemperaturen == null)
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.TemperaturUngueltig, zone,
-                    ZapfSatz.Neu("EINGABE_NUTZUNGSART_OHNE_BEZUGSTEMPERATUREN", n.Name ?? ""));
+            ZapfAblehnung befund = OhneBezugstemperaturenBefund(n, zone);
+            if (befund != null) throw befund.Ausnahme();
 
             double zapf;
             if (z.ZapftemperaturC.HasValue)
@@ -163,23 +171,83 @@ namespace WindowsFormsApplication1
                                               ZapfFeld.KALTWASSER_MITTEL, "°C", ZapfSatz.Neu("BEGRIFF_KALTWASSER_MITTEL"));
             double amplitude = ZoneOderParameter(z.KaltwasserAmplitudeK, ZapfParameter.KALTWASSER_AMPLITUDE, ps, p, zone,
                                                  ZapfFeld.KALTWASSER_AMPLITUDE, "K", ZapfSatz.Neu("BEGRIFF_KALTWASSER_AMPLITUDE"));
-            if (amplitude < 0)
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.TemperaturUngueltig, zone,
-                    ZapfSatz.Neu("EINGABE_KALTWASSER_AMPLITUDE_NEGATIV", zone));
+            befund = AmplitudeBefund(amplitude, zone);
+            if (befund != null) throw befund.Ausnahme();
 
             int monatMaximum = 1;
             if (amplitude != 0)
             {
                 ZapfParameterwert pm = ps.Lies(ZapfParameter.KALTWASSER_MONAT_MAXIMUM);
                 double m = pm.Wert;
-                if (double.IsNaN(m) || m < 1 || m > 12 || m != Math.Floor(m))
-                    throw new ZapfprofilEingabeException(ZapfEingabefehler.RasterUngueltig, zone,
-                        ZapfSatz.Neu("EINGABE_KALTWASSER_MONAT_UNGUELTIG"));
+                befund = MonatMaximumBefund(m, zone);
+                if (befund != null) throw befund.Ausnahme();
                 monatMaximum = (int)m;
                 p?.Vermerken(zone, ZapfFeld.KALTWASSER_MONAT_MAXIMUM, m, "Monat", Wertstatus.Vorgabe, pm.Herkunft);
             }
 
             return new Zonentemperaturen(zapf, mittel, amplitude, monatMaximum);
+        }
+
+        /// <summary>
+        /// <b>Die Regeln von <see cref="Temperaturen"/> ohne Wurf</b> (Vorprüfung, <see cref="Zonenvorpruefung"/>):
+        /// <c>null</c> und die Temperaturen, wenn sie bestimmbar sind; sonst die erste Ablehnung in der
+        /// Reihenfolge des Rechenwegs — auch „Parameter fehlt" — und <paramref name="t"/> <c>null</c>.
+        /// </summary>
+        internal static ZapfAblehnung TemperaturenBefund(ZonenStand z, Nutzungsart n, Parametersatz ps, out Zonentemperaturen t)
+        {
+            t = null;
+            string zone = z.Name ?? "";
+            ZapfAblehnung befund = OhneBezugstemperaturenBefund(n, zone);
+            if (befund != null) return befund;
+            double zapf = n.Bezugstemperaturen.ZapftemperaturC;
+            if (z.ZapftemperaturC.HasValue)
+            {
+                befund = EndlichBefund(z.ZapftemperaturC.Value, zone, ZapfSatz.Neu("BEGRIFF_ZAPFTEMPERATUR"),
+                                       ZapfEingabefehler.TemperaturUngueltig);
+                if (befund != null) return befund;
+                zapf = z.ZapftemperaturC.Value;
+            }
+            befund = ZoneOderParameterBefund(z.KaltwasserMittelC, ZapfParameter.KALTWASSER_MITTEL, ps, zone,
+                                             ZapfSatz.Neu("BEGRIFF_KALTWASSER_MITTEL"), out double mittel);
+            if (befund != null) return befund;
+            befund = ZoneOderParameterBefund(z.KaltwasserAmplitudeK, ZapfParameter.KALTWASSER_AMPLITUDE, ps, zone,
+                                             ZapfSatz.Neu("BEGRIFF_KALTWASSER_AMPLITUDE"), out double amplitude);
+            if (befund != null) return befund;
+            befund = AmplitudeBefund(amplitude, zone);
+            if (befund != null) return befund;
+            int monatMaximum = 1;
+            if (amplitude != 0)
+            {
+                befund = ParameterBefund(ps, ZapfParameter.KALTWASSER_MONAT_MAXIMUM, zone);
+                if (befund != null) return befund;
+                double m = ps.Wert(ZapfParameter.KALTWASSER_MONAT_MAXIMUM);
+                befund = MonatMaximumBefund(m, zone);
+                if (befund != null) return befund;
+                monatMaximum = (int)m;
+            }
+            t = new Zonentemperaturen(zapf, mittel, amplitude, monatMaximum);
+            return null;
+        }
+
+        private static ZapfAblehnung OhneBezugstemperaturenBefund(Nutzungsart n, string zone)
+            => n.Bezugstemperaturen != null ? null
+               : new ZapfAblehnung(zone, ZapfEingabefehler.TemperaturUngueltig,
+                     ZapfSatz.Neu("EINGABE_NUTZUNGSART_OHNE_BEZUGSTEMPERATUREN", n.Name ?? ""));
+
+        private static ZapfAblehnung AmplitudeBefund(double amplitude, string zone)
+            => !(amplitude < 0) ? null
+               : new ZapfAblehnung(zone, ZapfEingabefehler.TemperaturUngueltig,
+                     ZapfSatz.Neu("EINGABE_KALTWASSER_AMPLITUDE_NEGATIV", zone));
+
+        private static ZapfAblehnung MonatMaximumBefund(double m, string zone)
+            => !(double.IsNaN(m) || m < 1 || m > 12 || m != Math.Floor(m)) ? null
+               : new ZapfAblehnung(zone, ZapfEingabefehler.RasterUngueltig, ZapfSatz.Neu("EINGABE_KALTWASSER_MONAT_UNGUELTIG"));
+
+        /// <summary>„Parameter fehlt" als Ablehnung der Zone, wenn der Satz den Schlüssel nicht führt (dieselbe Regel wie <see cref="Parametersatz.Lies"/>).</summary>
+        internal static ZapfAblehnung ParameterBefund(Parametersatz ps, string schluessel, string zone)
+        {
+            ZapfSatz fehlt = ps.FehltSatz(schluessel);
+            return fehlt == null ? null : new ZapfAblehnung(zone, ZapfEingabefehler.ParameterFehlt, fehlt);
         }
 
         // =================================================================================
@@ -218,10 +286,27 @@ namespace WindowsFormsApplication1
                                                   IReadOnlyDictionary<string, double> belegungJeRaumzahl,
                                                   Herkunftsprotokoll p)
         {
+            double menge = BezugsmengeOderBefund(z, n, belegungJeRaumzahl, out ZapfAblehnung befund, out ZapfSatz vermerk);
+            if (befund != null) throw befund.Ausnahme();
+            p?.Vermerken(z.Name ?? "", ZapfFeld.BEZUGSMENGE, menge, n.Bezug.ToString(), Wertstatus.Ueberschrieben, null, vermerk);
+            return menge;
+        }
+
+        /// <summary>
+        /// <b>Die Regel der wirksamen Bezugsmenge ohne Wurf</b> — die EINE Stelle für
+        /// <see cref="BezugsmengeWirksam"/> und die Vorprüfung (<see cref="Zonenvorpruefung"/>): die Menge
+        /// und ihr Herkunftsvermerk, oder 0 und die Ablehnung (Wohnungstyp ohne Anzahl, Belegung nicht
+        /// bestimmbar, keine positive Bezugsmenge).
+        /// </summary>
+        internal static double BezugsmengeOderBefund(ZonenStand z, Nutzungsart n,
+                                                     IReadOnlyDictionary<string, double> belegungJeRaumzahl,
+                                                     out ZapfAblehnung befund, out ZapfSatz vermerk)
+        {
             string zone = z.Name ?? "";
             IReadOnlyList<WohnungstypStand> wohnungen = z.Wohnungen ?? new WohnungstypStand[0];
             double menge;
-            ZapfSatz vermerk;
+            befund = null;
+            vermerk = null;
 
             if (wohnungen.Count > 0 && WohnungstabelleWirksam(n))
             {
@@ -229,16 +314,24 @@ namespace WindowsFormsApplication1
                 foreach (WohnungstypStand w in wohnungen)
                 {
                     if (w.Anzahl <= 0)
-                        throw new ZapfprofilEingabeException(ZapfEingabefehler.BezugsmengeFehlt, zone,
+                    {
+                        befund = new ZapfAblehnung(zone, ZapfEingabefehler.BezugsmengeFehlt,
                             ZapfSatz.Neu("EINGABE_WOHNUNGSTYP_ANZAHL", zone));
+                        return 0.0;
+                    }
                     if (n.Bezug == ZapfBezugsart.Wohneinheiten)
                     {
                         menge += w.Anzahl;
                     }
                     else
                     {
-                        double personen = Belegung(w, z, belegungJeRaumzahl, zone);
-                        menge += w.Anzahl * personen;
+                        double? personen = BelegungOderNull(w, z, belegungJeRaumzahl);
+                        if (!personen.HasValue)
+                        {
+                            befund = BelegungFehlt(zone);
+                            return 0.0;
+                        }
+                        menge += w.Anzahl * personen.Value;
                     }
                 }
                 vermerk = ZapfSatz.Neu("HERKUNFT_AUS_WOHNUNGSTABELLE");
@@ -246,14 +339,15 @@ namespace WindowsFormsApplication1
             else
             {
                 menge = z.Bezugsmenge;
-                vermerk = null;
             }
 
             if (double.IsNaN(menge) || double.IsInfinity(menge) || menge <= 0)
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.BezugsmengeFehlt, zone,
+            {
+                befund = new ZapfAblehnung(zone, ZapfEingabefehler.BezugsmengeFehlt,
                     ZapfSatz.Neu("EINGABE_BEZUGSMENGE_NICHT_POSITIV", zone));
-
-            p?.Vermerken(zone, ZapfFeld.BEZUGSMENGE, menge, n.Bezug.ToString(), Wertstatus.Ueberschrieben, null, vermerk);
+                vermerk = null;
+                return 0.0;
+            }
             return menge;
         }
 
@@ -276,9 +370,7 @@ namespace WindowsFormsApplication1
             // Tagesbedarf manuell — bei den Projekttemperaturen, ohne Umrechnung.
             if (!z.TagesbedarfAuto)
             {
-                if (!TagesbedarfManuellGueltig(z.TagesbedarfManuellKwh))
-                    throw new ZapfprofilEingabeException(ZapfEingabefehler.TagesbedarfUngueltig, zone,
-                        ZapfSatz.Neu("EINGABE_TAGESBEDARF_MANUELL_UNGUELTIG", zone));
+                if (!TagesbedarfManuellGueltig(z.TagesbedarfManuellKwh)) throw TagesbedarfUngueltig(zone).Ausnahme();
                 double qd = z.TagesbedarfManuellKwh.Value;
                 double qaManuell = qd * tage;
                 // Plausibilitätsband auch für den manuellen Wert: auf die Bezugstemperaturen des
@@ -302,11 +394,9 @@ namespace WindowsFormsApplication1
             Wertstatus status;
             if (z.BedarfSpezKwhJeEinheitTag.HasValue)
             {
-                double q = Endlich(z.BedarfSpezKwhJeEinheitTag.Value, zone, ZapfSatz.Neu("BEGRIFF_BEDARFSUEBERSCHREIBUNG"),
-                                   ZapfEingabefehler.RasterUngueltig);
-                if (q < 0)
-                    throw new ZapfprofilEingabeException(ZapfEingabefehler.RasterUngueltig, zone,
-                        ZapfSatz.Neu("EINGABE_BEDARF_SPEZ_NEGATIV", zone));
+                ZapfAblehnung befund = BedarfSpezBefund(z.BedarfSpezKwhJeEinheitTag.Value, zone);
+                if (befund != null) throw befund.Ausnahme();
+                double q = z.BedarfSpezKwhJeEinheitTag.Value;
                 p?.Vermerken(zone, ZapfFeld.BEDARF_SPEZ, q, "kWh/(Einheit·d)", Wertstatus.Ueberschrieben, null);
                 BandbreitePruefen(q, z, n, hinweise);
                 qa = bezugsmenge * q * tage * fTheta;
@@ -316,9 +406,8 @@ namespace WindowsFormsApplication1
             {
                 double aWe = ZoneOderParameter(z.WohnflaecheJeWeM2, ZapfParameter.WOHNEN_FLAECHE_JE_WE, ps, p, zone,
                                                ZapfFeld.WOHNFLAECHE_JE_WE, "m²", ZapfSatz.Neu("BEGRIFF_WOHNFLAECHE_JE_WE"));
-                if (aWe <= 0)
-                    throw new ZapfprofilEingabeException(ZapfEingabefehler.BezugsmengeFehlt, zone,
-                        ZapfSatz.Neu("EINGABE_WOHNFLAECHE_NICHT_POSITIV", zone));
+                ZapfAblehnung befund = WohnflaecheBefund(aWe, zone);
+                if (befund != null) throw befund.Ausnahme();
                 ZapfParameterwert pa = ps.Lies(ZapfParameter.WOHNEN_FORMEL_A);
                 ZapfParameterwert pb = ps.Lies(ZapfParameter.WOHNEN_FORMEL_B);
                 ZapfParameterwert pc = ps.Lies(ZapfParameter.WOHNEN_FORMEL_C);
@@ -330,18 +419,9 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                double[] bedarf = n.BedarfJeNiveauKwhJeEinheitTag;
-                if (bedarf == null || bedarf.Length != NutzungsartRaster.NIVEAUS)
-                    throw new ZapfprofilEingabeException(ZapfEingabefehler.RasterUngueltig, zone,
-                        ZapfSatz.Neu("EINGABE_NUTZUNGSART_OHNE_NIVEAUS", n.Name ?? ""));
-                int i = (int)z.Niveau - 1;
-                if (i < 0 || i >= NutzungsartRaster.NIVEAUS)
-                    throw new ZapfprofilEingabeException(ZapfEingabefehler.RasterUngueltig, zone,
-                        ZapfSatz.Neu("EINGABE_NIVEAU_UNBEKANNT", zone));
-                double q = Endlich(bedarf[i], zone, ZapfSatz.Neu("BEGRIFF_KATALOGBEDARF"), ZapfEingabefehler.RasterUngueltig);
-                if (q < 0)
-                    throw new ZapfprofilEingabeException(ZapfEingabefehler.RasterUngueltig, zone,
-                        ZapfSatz.Neu("EINGABE_KATALOGBEDARF_NEGATIV", n.Name ?? ""));
+                ZapfAblehnung befund = NiveauBefund(z, n, zone);
+                if (befund != null) throw befund.Ausnahme();
+                double q = n.BedarfJeNiveauKwhJeEinheitTag[(int)z.Niveau - 1];
                 p?.Vermerken(zone, ZapfFeld.BEDARF_SPEZ, q, "kWh/(Einheit·d)", Wertstatus.Vorgabe, n.Herkunft?.Bedarf,
                              Niveaubegriff(z.Niveau));
                 qa = bezugsmenge * q * tage * fTheta;
@@ -352,6 +432,68 @@ namespace WindowsFormsApplication1
                          status == Wertstatus.Umgerechnet
                              ? ZapfSatz.Neu("HERKUNFT_TEMPERATURFAKTOR_ANGEWANDT", fTheta) : null);
             return new Mengenergebnis(qa, bezugsmenge, fTheta, flaeche);
+        }
+
+        /// <summary>
+        /// <b>Die Regeln von <see cref="JahresenergieKwh"/> ohne Wurf</b> (Vorprüfung,
+        /// <see cref="Zonenvorpruefung"/>; Vorschlag des Katalogs): <c>null</c>, wenn das Mengengerüst
+        /// der Zone bei den Temperaturen <paramref name="t"/> rechenbar ist, sonst die erste Ablehnung in
+        /// der Reihenfolge des Rechenwegs — Bezugsmenge, Tagesbedarf manuell, Temperaturfaktor,
+        /// Bedarfsüberschreibung, Flächenformel Wohnen oder Katalogbedarf des Niveaus.
+        /// </summary>
+        internal static ZapfAblehnung JahresenergieBefund(ZonenStand z, Nutzungsart n, Zonentemperaturen t, Parametersatz ps,
+                                                          IReadOnlyDictionary<string, double> belegungJeRaumzahl)
+        {
+            string zone = z.Name ?? "";
+            BezugsmengeOderBefund(z, n, belegungJeRaumzahl, out ZapfAblehnung befund, out _);
+            if (befund != null) return befund;
+            if (!z.TagesbedarfAuto)
+                return TagesbedarfManuellGueltig(z.TagesbedarfManuellKwh) ? null : TagesbedarfUngueltig(zone);
+            befund = TemperaturfaktorBefund(t.ZapfC, t.KaltwasserMittelC, n.Bezugstemperaturen, zone);
+            if (befund != null) return befund;
+            if (z.BedarfSpezKwhJeEinheitTag.HasValue) return BedarfSpezBefund(z.BedarfSpezKwhJeEinheitTag.Value, zone);
+            if (n.Bezug == ZapfBezugsart.Flaeche && n.Kalender == ZapfKalenderart.Wohnen)
+            {
+                befund = ZoneOderParameterBefund(z.WohnflaecheJeWeM2, ZapfParameter.WOHNEN_FLAECHE_JE_WE, ps, zone,
+                                                 ZapfSatz.Neu("BEGRIFF_WOHNFLAECHE_JE_WE"), out double aWe)
+                         ?? WohnflaecheBefund(aWe, zone)
+                         ?? ParameterBefund(ps, ZapfParameter.WOHNEN_FORMEL_A, zone)
+                         ?? ParameterBefund(ps, ZapfParameter.WOHNEN_FORMEL_B, zone)
+                         ?? ParameterBefund(ps, ZapfParameter.WOHNEN_FORMEL_C, zone);
+                return befund;
+            }
+            return NiveauBefund(z, n, zone);
+        }
+
+        private static ZapfAblehnung TagesbedarfUngueltig(string zone)
+            => new ZapfAblehnung(zone, ZapfEingabefehler.TagesbedarfUngueltig,
+                   ZapfSatz.Neu("EINGABE_TAGESBEDARF_MANUELL_UNGUELTIG", zone));
+
+        private static ZapfAblehnung BedarfSpezBefund(double q, string zone)
+            => EndlichBefund(q, zone, ZapfSatz.Neu("BEGRIFF_BEDARFSUEBERSCHREIBUNG"), ZapfEingabefehler.RasterUngueltig)
+               ?? (q < 0 ? new ZapfAblehnung(zone, ZapfEingabefehler.RasterUngueltig, ZapfSatz.Neu("EINGABE_BEDARF_SPEZ_NEGATIV", zone))
+                         : null);
+
+        private static ZapfAblehnung WohnflaecheBefund(double aWe, string zone)
+            => aWe <= 0 ? new ZapfAblehnung(zone, ZapfEingabefehler.BezugsmengeFehlt,
+                              ZapfSatz.Neu("EINGABE_WOHNFLAECHE_NICHT_POSITIV", zone))
+                        : null;
+
+        /// <summary>Der Katalogbedarf des Niveaus der Zone: drei Niveaus, ein bekanntes Niveau, endlich und nicht negativ.</summary>
+        private static ZapfAblehnung NiveauBefund(ZonenStand z, Nutzungsart n, string zone)
+        {
+            double[] bedarf = n.BedarfJeNiveauKwhJeEinheitTag;
+            if (bedarf == null || bedarf.Length != NutzungsartRaster.NIVEAUS)
+                return new ZapfAblehnung(zone, ZapfEingabefehler.RasterUngueltig,
+                    ZapfSatz.Neu("EINGABE_NUTZUNGSART_OHNE_NIVEAUS", n.Name ?? ""));
+            int i = (int)z.Niveau - 1;
+            if (i < 0 || i >= NutzungsartRaster.NIVEAUS)
+                return new ZapfAblehnung(zone, ZapfEingabefehler.RasterUngueltig, ZapfSatz.Neu("EINGABE_NIVEAU_UNBEKANNT", zone));
+            return EndlichBefund(bedarf[i], zone, ZapfSatz.Neu("BEGRIFF_KATALOGBEDARF"), ZapfEingabefehler.RasterUngueltig)
+                   ?? (bedarf[i] < 0
+                       ? new ZapfAblehnung(zone, ZapfEingabefehler.RasterUngueltig,
+                             ZapfSatz.Neu("EINGABE_KATALOGBEDARF_NEGATIV", n.Name ?? ""))
+                       : null);
         }
 
         /// <summary>
@@ -475,30 +617,20 @@ namespace WindowsFormsApplication1
         {
             if (!z.Jahresmesswert.HasValue) return null;
             string zone = z.Name ?? "";
+            ZapfAblehnung befund = MesswertBefund(z, t);
+            if (befund != null) throw befund.Ausnahme();
             double wert = z.Jahresmesswert.Value;
-            if (double.IsNaN(wert) || double.IsInfinity(wert) || wert <= 0)
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.MesswertUngueltig, zone,
-                    ZapfSatz.Neu("EINGABE_MESSWERT_NICHT_POSITIV", zone));
-            if (!z.JahresmesswertEinheit.HasValue)
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.MesswertUngueltig, zone,
-                    ZapfSatz.Neu("EINGABE_MESSWERT_OHNE_EINHEIT", zone));
 
             ZapfMesswerteinheit einheit = z.JahresmesswertEinheit.Value;
             ZapfBilanzgrenze grenze;
             double kwh;
             if (einheit == ZapfMesswerteinheit.KubikmeterJeJahr)
             {
-                if (z.JahresmesswertBilanzgrenze.HasValue && z.JahresmesswertBilanzgrenze.Value != ZapfBilanzgrenze.Zapfstelle)
-                    throw new ZapfprofilEingabeException(ZapfEingabefehler.MesswertUngueltig, zone,
-                        ZapfSatz.Neu("EINGABE_MESSWERT_VOLUMEN_GRENZE", zone));
                 grenze = ZapfBilanzgrenze.Zapfstelle;
                 kwh = EnergieKwh(wert * LITER_JE_M3, t.ZapfC - t.KaltwasserMittelC, zone);
             }
             else
             {
-                if (!z.JahresmesswertBilanzgrenze.HasValue)
-                    throw new ZapfprofilEingabeException(ZapfEingabefehler.MesswertUngueltig, zone,
-                        ZapfSatz.Neu("EINGABE_MESSWERT_OHNE_GRENZE", zone));
                 grenze = z.JahresmesswertBilanzgrenze.Value;
                 kwh = wert;
             }
@@ -507,6 +639,32 @@ namespace WindowsFormsApplication1
                              ? ZapfSatz.Neu("HERKUNFT_MESSWERT_VOLUMEN", wert, (int)grenze)
                              : ZapfSatz.Neu("HERKUNFT_MESSWERT_ENERGIE", (int)grenze));
             return new Messwert(kwh, grenze, z.SpeicherverlustKwhJeJahr, z.JahresmesswertQuelle, z.JahresmesswertZeitraum);
+        }
+
+        /// <summary>
+        /// Die Regeln von <see cref="MesswertAus"/> ohne Wurf: <c>null</c> ohne Messwert oder mit einem
+        /// verrechenbaren, sonst die Ablehnung (Wert nicht positiv, keine Einheit, Volumen mit anderer
+        /// Grenze als 1, kWh/a ohne Grenze, Volumen bei nicht positiver Spreizung).
+        /// </summary>
+        internal static ZapfAblehnung MesswertBefund(ZonenStand z, Zonentemperaturen t)
+        {
+            if (!z.Jahresmesswert.HasValue) return null;
+            string zone = z.Name ?? "";
+            double wert = z.Jahresmesswert.Value;
+            if (double.IsNaN(wert) || double.IsInfinity(wert) || wert <= 0)
+                return new ZapfAblehnung(zone, ZapfEingabefehler.MesswertUngueltig, ZapfSatz.Neu("EINGABE_MESSWERT_NICHT_POSITIV", zone));
+            if (!z.JahresmesswertEinheit.HasValue)
+                return new ZapfAblehnung(zone, ZapfEingabefehler.MesswertUngueltig, ZapfSatz.Neu("EINGABE_MESSWERT_OHNE_EINHEIT", zone));
+            if (z.JahresmesswertEinheit.Value == ZapfMesswerteinheit.KubikmeterJeJahr)
+            {
+                if (z.JahresmesswertBilanzgrenze.HasValue && z.JahresmesswertBilanzgrenze.Value != ZapfBilanzgrenze.Zapfstelle)
+                    return new ZapfAblehnung(zone, ZapfEingabefehler.MesswertUngueltig,
+                        ZapfSatz.Neu("EINGABE_MESSWERT_VOLUMEN_GRENZE", zone));
+                return DeltaBefund(t.ZapfC - t.KaltwasserMittelC, zone, ZapfSatz.Neu("BEGRIFF_ENERGIEUMRECHNUNG"));
+            }
+            if (!z.JahresmesswertBilanzgrenze.HasValue)
+                return new ZapfAblehnung(zone, ZapfEingabefehler.MesswertUngueltig, ZapfSatz.Neu("EINGABE_MESSWERT_OHNE_GRENZE", zone));
+            return null;
         }
 
         /// <summary>
@@ -519,27 +677,38 @@ namespace WindowsFormsApplication1
                                                       string zone = "")
         {
             if (m == null) throw new ArgumentNullException(nameof(m));
-            double netto = m.WertKwh;
-            if (m.Grenze == ZapfBilanzgrenze.MitSpeicher)
-            {
-                if (!m.SpeicherverlustKwhJeJahr.HasValue || m.SpeicherverlustKwhJeJahr.Value < 0)
-                    throw new ZapfprofilEingabeException(ZapfEingabefehler.MesswertUngueltig, zone,
-                        ZapfSatz.Neu("EINGABE_MESSWERT_SPEICHERVERLUST_FEHLT", zone));
-                netto = m.WertKwh - m.SpeicherverlustKwhJeJahr.Value;
-                if (netto <= 0)
-                    throw new ZapfprofilEingabeException(ZapfEingabefehler.MesswertUngueltig, zone,
-                        ZapfSatz.Neu("EINGABE_MESSWERT_SPEICHERVERLUST_ZU_GROSS", zone));
-            }
-
+            ZapfAblehnung befund = KalibrierBefund(m, zapfungKwh, zirkulationKwh, zone);
+            if (befund != null) throw befund.Ausnahme();
+            double netto = m.Grenze == ZapfBilanzgrenze.MitSpeicher ? m.WertKwh - m.SpeicherverlustKwhJeJahr.Value : m.WertKwh;
             double bezug = m.Grenze == ZapfBilanzgrenze.Zapfstelle ? zapfungKwh : zapfungKwh + zirkulationKwh;
-            if (!(bezug > 0))
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.MesswertUngueltig, zone,
-                    ZapfSatz.Neu("EINGABE_MESSWERT_KATALOGWERT_NULL", zone));
 
             double f = netto / bezug;
             if (m.Grenze == ZapfBilanzgrenze.Zapfstelle)
                 return new Kalibrierergebnis(f, netto, zirkulationKwh, netto);
             return new Kalibrierergebnis(f, f * zapfungKwh, f * zirkulationKwh, netto);
+        }
+
+        /// <summary>
+        /// Die Regeln von <see cref="Kalibrieren"/> ohne Wurf — geprüft mit den Mengen vor der
+        /// Kalibrierung (Phase 3 des Rechenwegs, die Zone trug da schon zur Zirkulation bei):
+        /// Speicherverlust fehlt oder ist nicht kleiner als der Messwert (Grenze 3), Katalogwert 0.
+        /// </summary>
+        internal static ZapfAblehnung KalibrierBefund(Messwert m, double zapfungKwh, double zirkulationKwh, string zone = "")
+        {
+            if (m.Grenze == ZapfBilanzgrenze.MitSpeicher)
+            {
+                if (!m.SpeicherverlustKwhJeJahr.HasValue || m.SpeicherverlustKwhJeJahr.Value < 0)
+                    return new ZapfAblehnung(zone ?? "", ZapfEingabefehler.MesswertUngueltig,
+                        ZapfSatz.Neu("EINGABE_MESSWERT_SPEICHERVERLUST_FEHLT", zone));
+                if (m.WertKwh - m.SpeicherverlustKwhJeJahr.Value <= 0)
+                    return new ZapfAblehnung(zone ?? "", ZapfEingabefehler.MesswertUngueltig,
+                        ZapfSatz.Neu("EINGABE_MESSWERT_SPEICHERVERLUST_ZU_GROSS", zone));
+            }
+            double bezug = m.Grenze == ZapfBilanzgrenze.Zapfstelle ? zapfungKwh : zapfungKwh + zirkulationKwh;
+            if (!(bezug > 0))
+                return new ZapfAblehnung(zone ?? "", ZapfEingabefehler.MesswertUngueltig,
+                    ZapfSatz.Neu("EINGABE_MESSWERT_KATALOGWERT_NULL", zone));
+            return null;
         }
 
         // =================================================================================
@@ -554,15 +723,25 @@ namespace WindowsFormsApplication1
         internal static double Belegung(WohnungstypStand w, ZonenStand z,
                                        IReadOnlyDictionary<string, double> belegungJeRaumzahl, string zone)
         {
+            double? personen = BelegungOderNull(w, z, belegungJeRaumzahl);
+            if (personen.HasValue) return personen.Value;
+            throw BelegungFehlt(zone).Ausnahme();
+        }
+
+        /// <summary>Die Regel der <see cref="Belegung"/> ohne Wurf: <c>null</c>, wenn sie nicht bestimmbar ist.</summary>
+        internal static double? BelegungOderNull(WohnungstypStand w, ZonenStand z, IReadOnlyDictionary<string, double> belegungJeRaumzahl)
+        {
             if (w.Personen.HasValue && w.Personen.Value > 0) return w.Personen.Value;
             if (w.Raumzahl.HasValue && belegungJeRaumzahl != null
                 && belegungJeRaumzahl.TryGetValue(w.Raumzahl.Value.ToString(CultureInfo.InvariantCulture), out double p)
                 && p > 0)
                 return p;
             if (z.PersonenJeWe.HasValue && z.PersonenJeWe.Value > 0) return z.PersonenJeWe.Value;
-            throw new ZapfprofilEingabeException(ZapfEingabefehler.BelegungFehlt, zone,
-                ZapfSatz.Neu("EINGABE_BELEGUNG_FEHLT", zone));
+            return null;
         }
+
+        private static ZapfAblehnung BelegungFehlt(string zone)
+            => new ZapfAblehnung(zone, ZapfEingabefehler.BelegungFehlt, ZapfSatz.Neu("EINGABE_BELEGUNG_FEHLT", zone));
 
         /// <summary>Kennung des Hinweises: ein spezifischer Bedarf außerhalb der Bandbreite des Niveaus (Warnliste, 4.1).</summary>
         internal const string HINWEIS_BANDBREITE = "BEDARF_AUSSERHALB_BANDBREITE";
@@ -594,15 +773,17 @@ namespace WindowsFormsApplication1
                                                  IReadOnlyDictionary<string, double> belegungJeRaumzahl, Mengenergebnis angesetzt)
         {
             if (z.TagesbedarfAuto) return angesetzt;
-            try { return JahresenergieKwh(z with { TagesbedarfAuto = true }, n, t, ps, belegungJeRaumzahl, null, null); }
+            ZonenStand auto = z with { TagesbedarfAuto = true };
+            if (JahresenergieBefund(auto, n, t, ps, belegungJeRaumzahl) != null) return null;
+            try { return JahresenergieKwh(auto, n, t, ps, belegungJeRaumzahl, null, null); }
             catch (ZapfprofilEingabeException) { return null; }
             catch (ParametersatzException) { return null; }
         }
 
         private static double? TemperaturfaktorOderNull(Zonentemperaturen t, Nutzungsart n, string zone)
         {
-            try { return Temperaturfaktor(t.ZapfC, t.KaltwasserMittelC, n.Bezugstemperaturen, zone); }
-            catch (ZapfprofilEingabeException) { return null; }
+            if (TemperaturfaktorBefund(t.ZapfC, t.KaltwasserMittelC, n.Bezugstemperaturen, zone) != null) return null;
+            return Temperaturfaktor(t.ZapfC, t.KaltwasserMittelC, n.Bezugstemperaturen, zone);
         }
 
         /// <summary>
@@ -638,20 +819,46 @@ namespace WindowsFormsApplication1
             return pw.Wert;
         }
 
+        /// <summary>Ein Zonenwert, sonst der Parameter — ohne Wurf: Zonenwert nicht endlich oder Parameter fehlt ergibt die Ablehnung.</summary>
+        private static ZapfAblehnung ZoneOderParameterBefund(double? zonenwert, string schluessel, Parametersatz ps, string zone,
+                                                             ZapfSatz was, out double wert)
+        {
+            wert = double.NaN;
+            if (zonenwert.HasValue)
+            {
+                wert = zonenwert.Value;
+                return EndlichBefund(wert, zone, was, ZapfEingabefehler.RasterUngueltig);
+            }
+            ZapfAblehnung befund = ParameterBefund(ps, schluessel, zone);
+            if (befund == null) wert = ps.Wert(schluessel);
+            return befund;
+        }
+
         private static double Endlich(double wert, string zone, ZapfSatz was, ZapfEingabefehler fehler)
         {
-            if (double.IsNaN(wert) || double.IsInfinity(wert))
-                throw new ZapfprofilEingabeException(fehler, zone, ZapfSatz.Neu("EINGABE_NICHT_ENDLICH", was, zone));
+            ZapfAblehnung befund = EndlichBefund(wert, zone, was, fehler);
+            if (befund != null) throw befund.Ausnahme();
             return wert;
         }
 
+        private static ZapfAblehnung EndlichBefund(double wert, string zone, ZapfSatz was, ZapfEingabefehler fehler)
+            => double.IsNaN(wert) || double.IsInfinity(wert)
+               ? new ZapfAblehnung(zone ?? "", fehler, ZapfSatz.Neu("EINGABE_NICHT_ENDLICH", was, zone))
+               : null;
+
         private static void DeltaPruefen(double deltaK, string zone, ZapfSatz was)
         {
-            if (double.IsNaN(deltaK) || double.IsInfinity(deltaK) || deltaK <= 0)
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.TemperaturUngueltig, zone,
-                    string.IsNullOrEmpty(zone) ? ZapfSatz.Neu("EINGABE_SPREIZUNG_NICHT_POSITIV", was)
-                                               : ZapfSatz.Neu("EINGABE_SPREIZUNG_NICHT_POSITIV_ZONE", was, zone));
+            ZapfAblehnung befund = DeltaBefund(deltaK, zone, was);
+            if (befund != null) throw befund.Ausnahme();
         }
+
+        /// <summary>Die Regel einer Temperaturspreizung: endlich und positiv, sonst die Ablehnung.</summary>
+        internal static ZapfAblehnung DeltaBefund(double deltaK, string zone, ZapfSatz was)
+            => double.IsNaN(deltaK) || double.IsInfinity(deltaK) || deltaK <= 0
+               ? new ZapfAblehnung(zone ?? "", ZapfEingabefehler.TemperaturUngueltig,
+                     string.IsNullOrEmpty(zone) ? ZapfSatz.Neu("EINGABE_SPREIZUNG_NICHT_POSITIV", was)
+                                                : ZapfSatz.Neu("EINGABE_SPREIZUNG_NICHT_POSITIV_ZONE", was, zone))
+               : null;
 
         /// <summary>Der Vermerk zum gewählten Bedarfsniveau der Zone — je Niveau eine eigene Kennung.</summary>
         private static ZapfSatz Niveaubegriff(ZapfNiveau niveau) => niveau switch

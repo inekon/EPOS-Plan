@@ -33,9 +33,10 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
-        /// Gewerk-Schlüssel der Kältemaschine. Sie wird gelesen und verglichen, aber nicht
-        /// übernommen (<see cref="KomponentenUebernahmeCtrl.Leseplan"/>); Tafeln, die jedes Gewerk
-        /// zeigen, führen sie nur, wenn ein Stand sie verbaut (<see cref="NurWennVerbaut"/>).
+        /// Gewerk-Schlüssel der Kältemaschine. Sie wird gelesen, verglichen und wie jedes andere
+        /// Gewerk übernommen (<see cref="KomponentenUebernahmeCtrl.Plaene"/>); Tafeln, die jedes
+        /// Gewerk zeigen, führen sie nur, wenn ein Stand sie verbaut
+        /// (<see cref="NurWennVerbaut"/>).
         /// </summary>
         public const string GEWERK_KAELTEMASCHINE = "Kältemaschine";
 
