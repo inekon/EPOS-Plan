@@ -56574,6 +56574,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — Katalogsätze — ähnelt.
+        /// </summary>
+        public static string KDLG_VARIANTEN_GRUPPE_KATALOG {
+            get {
+                return ResourceManager.GetString("KDLG_VARIANTEN_GRUPPE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die übernehmen ähnelt.
         /// </summary>
         public static string KDLG_VORLAGE_UEBERNEHMEN {

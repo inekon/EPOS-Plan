@@ -9908,6 +9908,9 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   <data name="KDLG_KAT_BETRIEB" xml:space="preserve">
     <value>Betriebskosten</value>
   </data>
+  <data name="KDLG_VARIANTEN_GRUPPE_KATALOG" xml:space="preserve">
+    <value>— Katalogsätze —</value>
+  </data>
   <data name="KDLG_LBL_VARIANTE" xml:space="preserve">
     <value>Variante:</value>
   </data>

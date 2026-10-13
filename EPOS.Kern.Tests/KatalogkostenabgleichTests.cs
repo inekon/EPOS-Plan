@@ -59,9 +59,16 @@ namespace EPOS.Kern.Tests
                                       new DbParam("@s", idSatz), new DbParam("@k", idKopie));
             Assert.Equal(idSatz, Katalogrueckweg.UrsprungsSatz(idAnlage, WizardItemClass.WP_TYP));
 
-            double katalogwert = Convert.ToDouble(DataRepository.ExecuteScalar(
-                "SELECT \"Modulkosten\" FROM \"Tab_WP_STAMM\" WHERE \"ID\" = ?", new DbParam("@s", idSatz)),
+            // KB-4: Der Katalogwert steht in der Satzvorlage, nicht mehr in Tab_WP_STAMM.Modulkosten
+            // (Schemaschritt GeraetekostenEntfallSchema.SCHRITT).
+            int idVorlage = Convert.ToInt32(DataRepository.ExecuteScalar(
+                "SELECT \"" + KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION +
+                "\" FROM \"Tab_WP_STAMM\" WHERE \"ID\" = ?", new DbParam("@s", idSatz)),
                 CultureInfo.InvariantCulture);
+            System.Collections.Generic.IList<KostenVorlagenPosition> vorlage = KostenVorlagenCtrl.Positionen(idVorlage);
+            Assert.NotEmpty(vorlage);
+            Assert.True(vorlage[0].Satz.HasValue);
+            double katalogwert = vorlage[0].Satz.Value;
             Assert.True(katalogwert > 0);
 
             // (1) Vorschau: die Position der Satzvorlage fehlt an der Anlage - und die Vorschau schreibt nichts.

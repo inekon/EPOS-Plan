@@ -49,6 +49,34 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, Katalogrueckweg.SatzvorlagenAbraeumen());
         }
 
+        [Fact]
+        public void Die_Satzvorlagen_der_Katalogsaetze_stehen_als_Gruppe_hinter_den_Varianten()
+        {
+            if (!_db.Vorhanden) return;
+            Assert.True(KostenVorlagenCtrl.KATALOGSAETZE_GRUPPIEREN,
+                        "Die Gruppierung ist abgeschaltet — die Umkehr ist eine Zeile.");
+
+            // Die Saat hat jedem Katalogsatz mit Kosten eine Satzvorlage gegeben; sie gehören damit
+            // zur Gruppe „Katalogsätze". Eine frei angelegte Variante gehört nicht dazu.
+            int frei = Vorlage("KB4 Freie Variante", standard: false);
+            ISet<int> katalogsaetze = KostenVorlagenCtrl.SatzvorlagenDerKataloge();
+            Assert.NotEmpty(katalogsaetze);
+            Assert.DoesNotContain(frei, katalogsaetze);
+
+            // Die Wärmepumpe (Komponente 1) führt gesäte Satzvorlagen der Investition.
+            IList<KostenVorlageKopf> liste =
+                KostenVorlagenCtrl.Vorlagen(1, DbWerte.KOSTEN_KATEGORIE_INVESTITION);
+            Assert.Contains(liste, k => k.IstKatalogsatz);
+
+            // NICHT VERMISCHT: Hinter dem ersten Katalogsatz folgt keine freie Variante mehr.
+            bool imKatalogteil = false;
+            foreach (KostenVorlageKopf k in liste)
+            {
+                if (k.IstKatalogsatz) { imKatalogteil = true; continue; }
+                Assert.False(imKatalogteil, "Die Variante „" + k.Name + "\" steht hinter einem Katalogsatz.");
+            }
+        }
+
         private static int Vorlage(string name, bool standard)
         {
             DataRepository.ExecuteNonQuery(

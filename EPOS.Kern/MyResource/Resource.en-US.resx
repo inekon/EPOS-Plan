@@ -9901,6 +9901,9 @@ The seat becomes available for another device; a new activation is required to c
   <data name="KDLG_KAT_BETRIEB" xml:space="preserve">
     <value>Operating costs</value>
   </data>
+  <data name="KDLG_VARIANTEN_GRUPPE_KATALOG" xml:space="preserve">
+    <value>— Catalogue entries —</value>
+  </data>
   <data name="KDLG_LBL_VARIANTE" xml:space="preserve">
     <value>Variant:</value>
   </data>
