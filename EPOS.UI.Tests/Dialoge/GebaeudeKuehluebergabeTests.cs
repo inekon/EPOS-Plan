@@ -488,4 +488,31 @@ public class GebaeudeKuehluebergabeTests : EposBunitContext
 
         Assert.True(geschrieben);
     }
+
+    /// <summary>
+    /// GD-6a: Der Gebäudeeditor trägt „Baustoff-Zuordnungen…" im Reiter „Zonen" (Bauteile und Aufbauten) — nur mit dem
+    /// vom Gebäudedialog durchgereichten Parametersatz; der Klick öffnet die Ansicht als Überlagerung.
+    /// </summary>
+    [Fact]
+    public void GD6a_Der_Editor_bietet_Baustoff_Zuordnungen_im_Reiter_Zonen()
+    {
+        IRenderedComponent<GebaeudeKatalogDialog> Mit(Func<IReadOnlyDictionary<string, object>>? gaben)
+            => Render<GebaeudeKatalogDialog>(p => p
+                .Add(x => x.Daten, Satz())
+                .Add(x => x.Modus, GebaeudeKatalogModus.Bearbeiten)
+                .Add(x => x.Gebaeudetypen, () => new[] { "Einfamilienhaus" })
+                .Add(x => x.Gebaeudearten, () => new[] { "Hotel" })
+                .Add(x => x.Baualtersklassen, new[] { "bis 1859", "1860 bis 1918", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968" })
+                .Add(x => x.Speichern, (_, _, _) => new GebaeudeKatalogErgebnis(true, ""))
+                .Add(x => x.StartReiter, GebaeudeKatalogDialog.REITER_ZONEN)
+                .Add(x => x.BaustoffzuordnungenGaben, gaben));
+
+        Assert.Empty(Mit(null).FindAll("button.epos-gebaeude-baustoffzuordnungen"));
+
+        int gelesen = 0;
+        var cut = Mit(() => { gelesen++; return new Dictionary<string, object>(); });
+        cut.Find(".epos-gebaeude-baustoffzuordnungen-leiste button.epos-gebaeude-baustoffzuordnungen").Click();
+        Assert.Equal(1, gelesen);
+        Assert.True(cut.Instance.BaustoffzuordnungenOffen);
+    }
 }

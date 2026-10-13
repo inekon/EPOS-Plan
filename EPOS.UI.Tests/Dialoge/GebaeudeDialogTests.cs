@@ -26,7 +26,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <para>Die Kultur ist auf de-DE gepinnt — die Erwartungswerte sind deutsche
 /// Beschriftungen.</para>
 /// </summary>
-public class GebaeudeDialogTests : EposBunitContext
+public partial class GebaeudeDialogTests : EposBunitContext
 {
     /// <summary>Das Profil, wie die Hülle es reicht — mit den Texten aus <c>MyResource</c>.</summary>
     private static Katalogfilterprofil Profil()
