@@ -1273,14 +1273,14 @@ dreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `615aec8f6f42b63ed00084dcdcd0b4c66a370de023d75d95a7cd51149123cf5b`**. Alle dreißig Projekte rechnen gegen R52
 > GESAMT PASS und byte-gleich
 > ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-11_SA2_Schema217.md)).
-> **Nachtrag — Schema 223 (Zonenferien als Liste, ZB5/ZB‑Q3 B, hängt an 222 `BauteilkatalogHaustechnikSchema`), Basis R52
+> **Nachtrag — Schema 224 (Zonenferien als Liste, ZB5/ZB‑Q3 B, hängt an 223 `KaeltebedarfSplitAbrechnungSchema`), Basis R52
 > unberührt.** `TwwZonenferienSchema` legt `Tab_TwwZonenferien` an (STRICT; `ID_Zone` mit Kaskade, `Reihenfolge` ≥ 1,
 > `Name`, `Beginn` 1 … 365 oder leer, `Ende` 1 … 365; eindeutig je Zone und Reihenfolge), überträgt die vier Spaltenpaare
 > `Ferienbeginn_n`/`Ferienende_n` von `Tab_TwwZone` und baut sie über das Neubau-Rezept ab (IDs bleiben). Die
 > Testdatenbank führt eine Zone (Projekt 1045) ohne eigene Ferien: 0 Zeiträume übertragen; der Vergleich gegen die
 > Fassung davor zeigt nur `Tab_TwwZone` (ohne die acht Spalten) und die neue, leere Tabelle. Gehoben mit
 > `Werkzeuge/Testdatenbankschema`; `integrity_check` ok, `foreign_key_check` leer, 195 Tabellen, davon 194 STRICT.
-> Die Kette, Größe und Prüfsumme dieses Stands setzt die Zusammenführung, sobald 222 vorliegt.
+> Die Kette, Größe und Prüfsumme dieses Stands setzt die Zusammenführung, sobald 222 und 223 vorliegen.
 
 ### Die Vorgängerbasis R51 (freie Kühlung)
 

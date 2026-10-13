@@ -32,8 +32,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Kette_Zielstand_und_Paketanhebung_kennen_den_Schritt()
         {
-            // VORLÄUFIG hängt der Schritt an 221; nach dem Umhängen an 222 (BauteilkatalogHaustechnikSchema) lautet
-            // die Kette dort + 1 = 223.
+            // VORLÄUFIG hängt der Schritt an 221; nach dem Umhängen an 223 (KaeltebedarfSplitAbrechnungSchema) lautet
+            // die Kette dort + 1 = 224.
             Assert.Equal(BauteilkatalogSchema.SCHRITT + 1, TwwZonenferienSchema.SCHRITT);
             Assert.Equal(TwwZonenferienSchema.SCHRITT, SchemaStand.Zielversion);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == TwwZonenferienSchema.SCHRITT);

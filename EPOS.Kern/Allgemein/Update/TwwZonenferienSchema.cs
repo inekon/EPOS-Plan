@@ -64,9 +64,10 @@ namespace WindowsFormsApplication1
     public static class TwwZonenferienSchema
     {
         // ================================================================================
-        // VORLÄUFIG: vor dem Push an 222 `BauteilkatalogHaustechnikSchema` hängen (223).
-        // Angemeldet ist der Schritt als 223 hinter 222 BauteilkatalogHaustechnikSchema (Sitzung
-        // Gebäudesimulation), der noch nicht auf origin liegt. Bis dahin hängt er an 221.
+        // VORLÄUFIG: vor dem Push an 223 `KaeltebedarfSplitAbrechnungSchema` hängen (224).
+        // Angemeldet ist der Schritt als 224 (hängt an 223 `KaeltebedarfSplitAbrechnungSchema` der Sitzung
+        // Anlagendialog, das an 222 `BauteilkatalogHaustechnikSchema` hängt); beide liegen noch nicht auf
+        // origin. Bis dahin hängt er an 221.
         // ================================================================================
 
         /// <summary>
