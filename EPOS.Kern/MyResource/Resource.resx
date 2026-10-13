@@ -54795,5 +54795,8 @@ Chart</value>
   <data name="KONF_KS_DAVON_PROFIL" xml:space="preserve">
     <value>davon Profil: {0} ({1} MWh/a)</value>
   </data>
+  <data name="KI_DLG_SIM_KAELTE_DEZENTRAL_ERL" xml:space="preserve">
+    <value>Die dezentral (Split) gedeckten Kältebedarfszeilen mit Quelle, Jahressumme, EER, Kühlträger und Zähler; nur lesend. Gepflegt werden sie in den Dialogen „Kältebedarf extern“ und „Kältebedarfsprofile“.</value>
+  </data>
 </root>
 

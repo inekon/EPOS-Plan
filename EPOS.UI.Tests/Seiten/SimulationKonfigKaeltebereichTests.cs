@@ -533,4 +533,28 @@ public class SimulationKonfigKaeltebereichTests : EposBunitContext
         Assert.Contains(string.Format(Resource.SIMKONF_KAELTE_DEZ_MSG_FEHLER, "Kühlraum", Resource.SIM_MSG_WEG_NICHT_HIER),
                         cut.Find("div.epos-simkonfig-fuss").TextContent);
     }
+
+    /// <summary>
+    /// K6b-N: der Assistent liest die Gruppe „Dezentrale Kältedeckung“ wie die Tafel — je Split-Zeile Bezeichner, Quelle,
+    /// Jahressumme, EER, Kühlträger und Zähler; ohne Split-Zeile leer. Ein Setzer fehlt: gepflegt wird im Dialog der Zeile.
+    /// </summary>
+    [Fact]
+    public void K6bN_Der_Assistent_liest_die_dezentrale_Kaeltedeckung_nur()
+    {
+        var ohne = Seite();
+        var sichtOhne = new SimulationKiSicht(() => ohne.Instance.Stand, () => null, () => null, () => null, () => "", () => "",
+                                              konfigseite: () => ohne.Instance);
+        Assert.Equal("", sichtOhne.KaelteDezentral);
+
+        _dezentral = ZweiSplitZeilen();
+        var cut = Seite();
+        var sicht = new SimulationKiSicht(() => cut.Instance.Stand, () => null, () => null, () => null, () => "", () => "",
+                                          konfigseite: () => cut.Instance);
+
+        Assert.Equal("Kühlraum (Kältebedarfsprofil, " + 12.0.ToString("N2", System.Globalization.CultureInfo.CurrentCulture)
+                     + " MWh/a, " + Resource.SIMKONF_KAELTE_DEZ_SP_EER + " fest 3,0, Strom B, eigener Zähler); "
+                     + "Server (Lastgang, " + Resource.SIMKONF_KAELTE_DEZ_SP_EER + " fest 3,5, Stromträger des Projekts, anteilig am Netzbezug)",
+                     sicht.KaelteDezentral);
+        Assert.Null(typeof(SimulationKiSicht).GetProperty(nameof(SimulationKiSicht.KaelteDezentral))!.SetMethod);
+    }
 }
