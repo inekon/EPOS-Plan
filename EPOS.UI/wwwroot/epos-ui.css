@@ -5288,8 +5288,9 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     flex: 1 1 100%;
 }
 
-/* Die Verwaltung ist eine erkennbare Gruppe: ein leiser Rahmen mit Titel um
-   Bezeichner, Anlegen, Umbenennen und Loeschen. */
+/* Die Verwaltung ist eine erkennbare Gruppe: ein leiser Rahmen mit Titel um die
+   drei Knoepfe "Variante anlegen...", "Umbenennen..." und "Loeschen...", die je einen
+   kleinen Dialog oeffnen. */
 .epos-uebersicht-verwaltung {
     flex: 1 1 24rem;
     display: flex;
@@ -5306,10 +5307,6 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 .epos-uebersicht-verwaltung > legend {
     padding: 0 4px;
     color: var(--epos-text-leise);
-}
-
-.epos-uebersicht-verwaltung > .epos-feld {
-    flex: 1 1 12rem;
 }
 
 .epos-uebersicht-knoepfe {
@@ -5457,6 +5454,54 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     z-index: 2;
 }
 
+/* Die Gewerkspalte ist so breit wie die Kennzahlspalte der Ergebnistabelle darunter
+   (20rem, unter 760 px 12rem), damit beide Tabellen untereinander fluchten. */
+.epos-komponentenvergleich th.epos-komponenten-gewerk {
+    width: 20rem;
+    min-width: 20rem;
+    max-width: 20rem;
+    white-space: normal;
+}
+
+@media (max-width: 760px) {
+    .epos-komponentenvergleich th.epos-komponenten-gewerk {
+        width: 12rem;
+        min-width: 12rem;
+        max-width: 12rem;
+    }
+}
+
+/* Die Zeile der Vergleichswahl traegt rechts daneben den Schalter "nur Unterschiede",
+   der auf beide Abschnitte darunter wirkt; wo es eng wird, bricht er unter die Wahl. */
+.epos-uebersicht-vergleichszeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 32px;
+    margin: 0 0 var(--epos-rand) 0;
+}
+
+.epos-uebersicht-vergleichszeile .epos-vergleichswahl {
+    margin: 0;
+}
+
+.epos-uebersicht-unterschiede {
+    display: inline-flex;
+}
+
+/* Im Komponentenvergleich ist der Titel der Tabelle keine zweite Ueberschrift unter
+   "Komponenten und Einstellungen", sondern eine leise Beschriftung ohne Einzug. */
+.epos-vorlagenfeld-zeile.epos-uebersicht-titelzeile {
+    padding: 0;
+    margin: 0 0 4px 0;
+}
+
+.epos-untergruppe.epos-uebersicht-tabellentitel {
+    margin: 0;
+    font-weight: 400;
+    color: var(--epos-text-leise);
+}
+
 .epos-komponenten-version,
 .epos-komponenten-stand {
     display: block;
@@ -5512,6 +5557,313 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 .epos-komponenten-leer {
     margin: 0;
     color: var(--epos-text-leise);
+}
+
+/* --------------------------------------------------------------------------
+   Die zwei Abschnitte der Uebersicht (Anwenderauftrag 13.10.2026): "Komponenten
+   und Einstellungen" und "Ergebnisse — Energie". Ein Abschnittskopf ueber den
+   Untergruppen, mit einer leisen Linie abgesetzt.
+   -------------------------------------------------------------------------- */
+.epos-uebersicht-abschnitt {
+    margin: 18px 0 6px 0;
+    padding-bottom: 4px;
+    font-size: 1.15em;
+    font-weight: 700;
+    color: var(--epos-text);
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+/* Der Energievergleich nimmt die Tafel der Gegenueberstellung (haftende erste
+   Spalte, Querrollen in der Huelle, Markierung der Abweichung); die Werte stehen
+   rechtsbuendig, die Kennzahl darf umbrechen, die Gruppen tragen einen Kopf.
+   Die Kennzahlspalte hat in allen Tafeln (offen und in jeder Klappgruppe) dieselbe
+   feste Breite - so fluchten die Tafeln untereinander, der Blick springt nicht
+   weit, und die Versionsspalten teilen sich den Rest. Kopf, Wert, Prozentangabe
+   und Markierung einer Versionsspalte stehen rechtsbuendig uebereinander. */
+.epos-ergebnisvergleich td {
+    text-align: right;
+    min-width: 8rem;
+}
+
+.epos-ergebnisvergleich th.epos-ergebnis-kennzahlkopf,
+.epos-ergebnisvergleich th.epos-ergebnis-kennzahl,
+.epos-ergebnisvergleich tr.epos-ergebnis-gruppe th {
+    width: 20rem;
+    min-width: 20rem;
+    max-width: 20rem;
+    white-space: normal;
+}
+
+.epos-ergebnisvergleich th.epos-ergebnis-kennzahl {
+    font-weight: 400;
+}
+
+.epos-ergebnisvergleich thead th.epos-ergebnis-versionkopf {
+    text-align: right;
+    min-width: 8rem;
+}
+
+/* Eine nicht simulierte Version: leise Striche in den Zellen, der Spaltenkopf sagt es
+   deutlich. */
+.epos-ergebnisvergleich td.epos-ergebnis-zelle--ohne .epos-ergebnis-wert {
+    color: var(--epos-text-sehr-leise);
+}
+
+.epos-ergebnisvergleich thead th.epos-ergebnis-versionkopf--ohne .epos-komponenten-stand {
+    color: var(--epos-text);
+    font-weight: 700;
+}
+
+@media (max-width: 760px) {
+    .epos-ergebnisvergleich th.epos-ergebnis-kennzahlkopf,
+    .epos-ergebnisvergleich th.epos-ergebnis-kennzahl,
+    .epos-ergebnisvergleich tr.epos-ergebnis-gruppe th {
+        width: 12rem;
+        min-width: 12rem;
+        max-width: 12rem;
+    }
+}
+
+.epos-ergebnisvergleich tr.epos-ergebnis-gruppe th,
+.epos-ergebnisvergleich tr.epos-ergebnis-gruppe td {
+    background: var(--epos-flaeche);
+    border-top: 2px solid var(--epos-rahmen-leise);
+    font-weight: 700;
+}
+
+.epos-ergebnis-wert {
+    display: block;
+}
+
+.epos-ergebnis-prozent {
+    display: block;
+    font-size: 0.9em;
+    color: var(--epos-text-leise);
+}
+
+/* Die zugeklappten Gruppen je als Klappgruppe unter der Tafel; der Hinweis auf eine Abweichung steht
+   in ihrer Kopfzeile, auch zugeklappt. */
+.epos-ergebnis-klappgruppe {
+    margin-top: 10px;
+}
+
+.epos-ergebnis-klapphinweis {
+    color: var(--epos-text-leise);
+}
+
+.epos-ergebnis-klapphinweis .epos-komponenten-gewerkmarke {
+    margin: 0 6px 0 0;
+}
+
+/* Die Tafel der Ergebnisse ist der Inhalt des Abschnitts, keine Liste: Sie rollt nur quer
+   in ihrer Huelle, in der Hoehe waechst sie mit, die Seite rollt. */
+.epos-raster-huelle.epos-ergebnis-huelle {
+    max-height: none;
+}
+
+/* Der Kopf des Abschnitts: links die Ueberschrift, daneben der Umschalter "Tabelle | Grafik"
+   (Segmentschalter des Hauses), rechts der Knopf "Anzeige anpassen..."; alles mittig auf einer
+   Linie, die leise Linie liegt am Kopf. Wo es eng wird, bricht erst der Knopf, dann der
+   Umschalter unter die Ueberschrift. Unter der Tabelle nennt eine leise Zeile, wie viele
+   Kennzahlen ohne Wert ausgeblendet sind. */
+.epos-ergebnis-kopf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px var(--epos-abstand);
+    margin: 18px 0 6px 0;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-ergebnis-kopf .epos-uebersicht-abschnitt {
+    flex: 0 1 auto;
+    margin: 0;
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.epos-ergebnis-anpassen-knopf {
+    flex: 0 0 auto;
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+/* Der Dialog: je Gruppe eine Zeile mit Titel und den drei Zustaenden, darunter die
+   aufklappbare Kennzahlenliste in Spalten, die bei schmalem Fenster auf eine fallen. */
+.epos-ergebnis-anpassen {
+    min-width: min(640px, 100%);
+}
+
+.epos-ergebnis-anpassen-liste {
+    margin: 6px 0 var(--epos-abstand) 0;
+}
+
+.epos-ergebnis-anpassen-gruppe {
+    padding: 4px 0;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-ergebnis-anpassen-kopf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 var(--epos-abstand);
+}
+
+.epos-ergebnis-anpassen-titel {
+    flex: 1 1 12rem;
+    font-weight: 600;
+}
+
+.epos-ergebnis-anpassen-kopf .epos-optionsgruppe {
+    flex: 0 1 auto;
+    margin: 0;
+}
+
+.epos-ergebnis-anpassen-kennzahlliste {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr));
+    gap: 0 var(--epos-abstand);
+}
+
+.epos-ergebnis-anpassen-ohnewert .epos-leisezeile {
+    margin: 0 0 var(--epos-abstand) 0;
+}
+
+.epos-ergebnis-ansicht {
+    display: inline-flex;
+    align-items: stretch;
+    flex: 0 0 auto;
+    overflow: hidden;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+    color: var(--epos-text);
+}
+
+.epos-ergebnis-ansicht-stellung {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--epos-touchziel);
+    min-height: var(--epos-touchziel);
+    margin: 0;
+    padding: 0 10px;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    color: var(--epos-text);
+    cursor: pointer;
+}
+
+.epos-ergebnis-ansicht-stellung + .epos-ergebnis-ansicht-stellung {
+    border-left: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-ergebnis-ansicht-stellung:hover:not(.epos-ergebnis-ansicht-stellung--an) {
+    background: var(--epos-karte-flaeche-hover);
+}
+
+.epos-ergebnis-ansicht-stellung--an {
+    background: var(--epos-marke);
+    color: var(--epos-gruppenkopf-text);
+}
+
+.epos-ergebnis-ansicht-stellung:focus-visible {
+    outline: 2px solid var(--epos-karte-rahmen-hover);
+    outline-offset: -4px;
+}
+
+/* Die Grafik: die Legende der Versionen einmal oben (je Version dieselbe Farbe in
+   allen Diagrammen, eine nicht simulierte grau und schraffiert), darunter je Gruppe
+   ein Raster der Diagramme. Die Diagramme teilen sich die Breite ab 440 px je Spalte
+   und fallen darunter auf eine Spalte (hoechstens 680 px breit, damit die Schrift im
+   Bild nicht ueber die der Seite waechst); nichts rollt quer. Die Wertetabelle je
+   Diagramm ist Sprachausgabe (position: absolute in der figure). */
+.epos-ergebnis-grafik-legende {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 18px;
+    margin: 0 0 8px 0;
+}
+
+.epos-ergebnis-grafik-version {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--epos-text);
+}
+
+.epos-ergebnis-grafik-farbe {
+    display: inline-block;
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--epos-text);
+    border-radius: 2px;
+}
+
+.epos-ergebnis-grafik-version--ohne {
+    color: var(--epos-text-leise);
+}
+
+.epos-ergebnis-grafik-version--ohne .epos-ergebnis-grafik-farbe {
+    border-color: var(--epos-text-leise);
+    background: repeating-linear-gradient(45deg, var(--epos-rahmen-leise) 0 2px, transparent 2px 5px);
+}
+
+.epos-ergebnis-grafik-hinweis {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--epos-text-leise);
+}
+
+.epos-ergebnis-grafik-strich {
+    display: inline-block;
+    flex: 0 0 auto;
+    width: 3px;
+    height: 16px;
+    background: var(--epos-text);
+}
+
+.epos-ergebnis-grafik-titel {
+    margin: 14px 0 6px 0;
+    font-size: 1em;
+    font-weight: 600;
+    color: var(--epos-text);
+}
+
+.epos-ergebnis-grafik-feld {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr));
+    gap: 12px;
+    align-items: start;
+}
+
+.epos-ergebnis-diagramm {
+    position: relative;
+    min-width: 0;
+    max-width: 680px;
+    margin: 0;
+}
+
+@media (forced-colors: active) {
+    .epos-ergebnis-grafik-farbe {
+        forced-color-adjust: none;
+    }
+
+    .epos-ergebnis-ansicht {
+        border-color: CanvasText;
+    }
+
+    .epos-ergebnis-ansicht-stellung--an {
+        forced-color-adjust: none;
+        background: Highlight;
+        color: HighlightText;
+    }
 }
 
 /* Wo die Uebernahme nicht traegt, steht statt des Knopfes ein grauer Strich

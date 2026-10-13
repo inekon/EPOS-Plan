@@ -6,11 +6,24 @@ namespace EPOS.UI.Seiten.Berichte;
 /// Das FLACHE Abbild des Reiterblatts „Übersicht" für den Hilfe-Assistenten
 /// (Welle KI‑F6).
 ///
-/// <para><b>Diese Seite führt VIER Einstellwerte</b>: das Stammprojekt der
-/// Vergleichsgruppe, den Filter „nur Stammprojekte", die markierte Variante und
-/// den Bezeichner, mit dem sie umbenannt wird. Alles andere darauf ist
-/// gerechnete ANZEIGE — die Gegenüberstellung, die Unterschiedstabelle, der
+/// <para><b>Diese Seite führt DREI Einstellwerte und einen Schalter</b>: das
+/// Stammprojekt der Vergleichsgruppe, den Filter „nur Stammprojekte", die Variante
+/// der Detail-Unterschiede und den Schalter „nur Unterschiede". Alles andere darauf
+/// ist gerechnete ANZEIGE — die Gegenüberstellung, die Unterschiedstabelle, der
 /// Simulations- und der Speicherstand.</para>
+///
+/// <para><b>Die Gruppe „Variante verwalten" bleibt draußen.</b> Anlegen, Umbenennen
+/// und Löschen sind datenbankwirksame Handlungen mit eigenem Dialog und eigener
+/// Rückfrage; ihre Felder (Quelle, Variante, Bezeichner) sind Angaben der jeweiligen
+/// Handlung und kein Einstellwert der Seite — sie gehören in das Aktionsregister,
+/// nicht in die Feldkarte.</para>
+///
+/// <para><b>Der Dialog „Anzeige anpassen…“ bleibt draußen.</b> Er steht als
+/// Überlagerung im Abschnitt „Ergebnisse — Energie“ (gehosteter Baustein, Wirt
+/// dieser Seite) und legt fest, welche Gruppen und Kennzahlen der Abschnitt zeigt —
+/// eine Benutzereinstellung der Ansicht für alle Projekte, kein Einstellwert der
+/// Seite. Was der Abschnitt danach zeigt, liest der Assistent wie bisher über
+/// <c>ErgebnisseLesen</c>.</para>
 ///
 /// <para><b>Warum eine Sichtklasse und nicht <c>UebersichtStand</c>.</b> Die
 /// Seite SCHREIBT nicht in ihren Stand: Sie meldet jede Wahl über einen Rückruf
@@ -40,20 +53,14 @@ public sealed class UebersichtSeiteKiSicht
     /// <summary>Setzt den Filter und lädt die Liste neu.</summary>
     public Action<bool>? FilterSetzen { get; init; }
 
-    /// <summary>Liest die markierte Version der Gruppe.</summary>
+    /// <summary>Liest die Wahl „Detail-Unterschiede für Variante“ (die Vorgabe trägt die Id des Stamms).</summary>
     public Func<int?>? VarianteLesen { get; init; }
 
-    /// <summary>Markiert eine Version — derselbe Weg wie die Klappliste.</summary>
+    /// <summary>Wählt eine Variante oder die Vorgabe — derselbe Weg wie die Klappliste.</summary>
     public Action<int?>? VarianteSetzen { get; init; }
 
-    /// <summary>Die Versionen der Vergleichsgruppe.</summary>
+    /// <summary>Die Einträge der Klappliste: die Vorgabe „— keine —“ und die Varianten.</summary>
     public Func<IReadOnlyList<KiWahleintrag>>? VarianteEintraege { get; init; }
-
-    /// <summary>Liest den Bezeichner des Umbenennfeldes.</summary>
-    public Func<string>? BezeichnerLesen { get; init; }
-
-    /// <summary>Schreibt den Bezeichner des Umbenennfeldes.</summary>
-    public Action<string>? BezeichnerSetzen { get; init; }
 
     /// <summary>Liest die Simulationszeile der markierten Version.</summary>
     public Func<string>? SimulationLesen { get; init; }
@@ -79,28 +86,20 @@ public sealed class UebersichtSeiteKiSicht
         set => FilterSetzen?.Invoke(value);
     }
 
-    /// <summary>Die Versionen der Gruppe.</summary>
+    /// <summary>Die Vorgabe „— keine (Komponentenvergleich) —“ und die Varianten der Gruppe.</summary>
     public IReadOnlyList<KiWahleintrag> VarianteWahl
         => VarianteEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
     /// <summary>
-    /// Die markierte Version — sie entscheidet, welche Unterschiede die Tabelle
-    /// zeigt und was Löschen, Umbenennen und Simulieren treffen.
+    /// Die Variante der Detail-Unterschiede — die Vorgabe „— keine —“ (Id des
+    /// Stamms) zeigt den Komponentenvergleich, eine Variante ihre Unterschiede zum
+    /// Stammprojekt; die Dialoge „Umbenennen…“ und „Löschen…“ legen diese Variante
+    /// vor, Simulieren rechnet die gewählte Variante oder sonst das Stammprojekt.
     /// </summary>
     public int? Variante
     {
         get => VarianteLesen?.Invoke();
         set => VarianteSetzen?.Invoke(value);
-    }
-
-    /// <summary>
-    /// Der Bezeichner des Umbenennfeldes — er wirkt erst mit dem Knopf
-    /// „Umbenennen".
-    /// </summary>
-    public string Bezeichner
-    {
-        get => BezeichnerLesen?.Invoke() ?? "";
-        set => BezeichnerSetzen?.Invoke(value ?? "");
     }
 
     /// <summary>Der Simulationsstand der markierten Version — Anzeige.</summary>
@@ -134,4 +133,10 @@ public sealed class UebersichtSeiteKiSicht
     /// „weicht vom Stammprojekt ab“ — dasselbe, was der Anwender sieht.
     /// </summary>
     public string Komponentenvergleich => KomponentenLesen?.Invoke() ?? "";
+
+    /// <summary>Liest die Tabelle „Ergebnisse — Energie“ als Text (Anwenderauftrag 13.10.2026).</summary>
+    public Func<string>? ErgebnisseLesen { get; init; }
+
+    /// <summary>Der Energievergleich der Versionen als Text — nur lesend.</summary>
+    public string Ergebnisvergleich => ErgebnisseLesen?.Invoke() ?? "";
 }

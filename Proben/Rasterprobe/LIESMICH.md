@@ -1866,10 +1866,33 @@ P_th, σ, η und Motortyp, bei 1 280 × 800 am BHKW neben Motortyp, am Heizkesse
 Der echte Rahmen `BerichteKostenSeite` mit der Seite „Übersicht“: Kopf in drei Teilen
 (Projektwahl, Variantenverwaltung, Lauf) und die Gegenüberstellung je Gewerk mit Stamm und
 Varianten, ein Gewerk weicht ab. Synthetische Stände ohne Datenbank, neutrale Namen.
-Adressgaben: `?varianten=<n>` (Vorgabe 1, höchstens 8) und `?nurunterschiede=1`. Zu prüfen
+Adressgaben: `?varianten=<n>` (Vorgabe 1, höchstens 8), `?nurunterschiede=1` und `?variante=<i>`
+(wählt unter „Detail-Unterschiede für Variante“ die i-te Variante und zeigt die Unterschiedstabelle;
+ohne die Gabe steht die Vorgabe „— keine —“, der Komponentenvergleich; die Wahl im Feld wirkt auch
+von Hand). Die drei Knöpfe der Gruppe „Variante verwalten“ öffnen ihre Dialoge als Überlagerung
+(Anlegen mit Quelle und Bezeichner, Umbenennen und Löschen mit der Variantenwahl); sie wirken auf
+die synthetische Gruppe der Seite, ohne Datenbank. Der Schalter „nur Unterschiede“ steht in der Zeile „Im Vergleich“.
+Die Probe führt den Brennstoffeinsatz des Kessels passend zur Trägerzeile Erdgas (37,2 bzw. 24,6 MWh/a). Zu prüfen
 bei 1 800, 940 und 700 px: Kopf- und Rumpfzellen der Tabelle stehen an denselben linken
 Kanten, die Tabelle füllt die Hülle, die Seite rollt nie quer (mit sechs Varianten rollt
 allein die Hülle, die Gewerkspalte haftet), kein Feld des Kopfes ragt über das Fenster.
+Darunter steht der Abschnitt „Ergebnisse — Energie“ aus der echten Hülle `UebersichtErgebnisGaben`
+mit synthetischen Ergebnissen (Variante 1 simuliert und abweichend, weitere Varianten nicht
+simuliert, mit einer Trägerzeile „Endenergie Erdgas“ und der Gruppe „Kälte“); `?offen=alle` klappt alle
+zugeklappten Gruppen auf, `?offen=<schluessel,…>` die genannten (Gruppenschlüssel des Kerns, etwa
+`kaelte,emissionen`). `?anpassen=1` öffnet beim Laden den Dialog „Anzeige anpassen…“ (Zustand je Gruppe,
+Kennzahlen je Haken, „Zeilen ohne Wert ausblenden“, „Standard wiederherstellen“); `?anzeige=beispiel` legt eine
+angepasste Anzeige in die Einstellungsablage der Probe (Deckung ausgeblendet, Stromlast abgewählt, Kälte offen) —
+die Ablage ist eine Attrappe der Naht und wird je Seitenaufruf geleert, OK im Dialog wirkt bis zum nächsten Aufruf.
+Unter der Tafel steht leise „n Kennzahlen ohne Wert ausgeblendet“. Zu prüfen bei 1 800, 940 und 700 px: die Kennzahlspalte haftet und ist in allen
+Tafeln gleich breit (20rem, unter 760 px 12rem), die Versionsspalten sind gleich breit, Spaltenkopf und
+Wert stehen rechtsbündig an derselben Kante, die nicht simulierte Version zeigt leise Striche und
+„nicht simuliert“ fett im Kopf, die Seite rollt nie quer.
+`?ansicht=grafik` stellt den Abschnitt auf die Grafik (Umschalter „Tabelle | Grafik“, im Wirt je Sitzung):
+je Gruppe und Einheit ein Balkendiagramm, eine Serie je Version, die Legende der Versionen einmal oben, die nicht
+simulierte Version grau mit „nicht simuliert“ und ohne Balken. Zu prüfen bei 1 800, 1 280, 940 und 700 px: die
+Diagramme teilen sich die Breite (ab 440 px je Spalte, darunter eine Spalte), nichts rollt quer, Legende und
+Beschriftungen überlappen nicht, die Farben bleiben unterscheidbar; mit `?varianten=6` bleiben die Balken lesbar.
 
 ## Sichtprobe „Dezentrale Kälte“ (K6b) — Seite `/kaeltedezentralprobe`
 

@@ -48,14 +48,14 @@ namespace WindowsFormsApplication1
         private readonly SeitenZustand _zustand = new SeitenZustand();
 
         /// <summary>
-        /// Die zwei Wege, die nur die SCHALE kennt (E3/8): der Variantendialog
-        /// als zweites Fenster und das Umbenennen mit Nachlauf der Startseite.
-        /// Beide sind <c>null</c>, wo es sie nicht gibt — dann zeichnet die
-        /// Übersicht den Anlegeknopf nicht und benennt über den plattformfreien
-        /// Weg um.
+        /// Die zwei NACHLÄUFE, die nur die SCHALE kennt: nach dem Umbenennen einer
+        /// Variante (Id und neuer Projektname — der Projektkontext der Startseite hängt
+        /// am Namen) und nach dem Anlegen oder Löschen (die Variantenanzeige der
+        /// Startseite). Beide sind <c>null</c>, wo es sie nicht gibt; geschrieben wird
+        /// plattformfrei im Kern, die Dialoge der Übersicht stehen auf jeder Plattform.
         /// </summary>
-        private readonly Func<int, string, Task<bool>> _varianteAnlegen;
-        private readonly Func<int, string, string, string> _umbenennen;
+        private readonly Action<int, string> _umbenanntNachziehen;
+        private readonly Action _gruppeGeaendert;
 
         private UebersichtSeiteGaben _uebersicht;
         private KostenSeiteGaben _kosten;
@@ -86,14 +86,14 @@ namespace WindowsFormsApplication1
         private readonly Vergleichsauswahl _vergleich = new Vergleichsauswahl();
 
         /// <summary>
-        /// Baut die Hülle. Beide Wege sind freiwillig: Wo eine Schale sie nicht
-        /// stellt, fällt der Knopf weg bzw. der plattformfreie Weg ein.
+        /// Baut die Hülle. Beide Nachläufe sind freiwillig: Wo eine Schale sie nicht
+        /// stellt, bleibt es beim plattformfreien Schreiben im Kern.
         /// </summary>
-        internal BerichteKostenHuelle(Func<int, string, Task<bool>> varianteAnlegen = null,
-                                      Func<int, string, string, string> umbenennen = null)
+        internal BerichteKostenHuelle(Action<int, string> umbenanntNachziehen = null,
+                                      Action gruppeGeaendert = null)
         {
-            _varianteAnlegen = varianteAnlegen;
-            _umbenennen = umbenennen;
+            _umbenanntNachziehen = umbenanntNachziehen;
+            _gruppeGeaendert = gruppeGeaendert;
         }
 
         /// <summary>Der Parametersatz der Reiterkomponente.</summary>
@@ -158,7 +158,7 @@ namespace WindowsFormsApplication1
             {
                 if (_uebersicht == null)
                 {
-                    _uebersicht = new UebersichtSeiteGaben(_varianteAnlegen, _stand, _umbenennen)
+                    _uebersicht = new UebersichtSeiteGaben(_stand, _umbenanntNachziehen, _gruppeGeaendert)
                     {
                         Vergleich = _vergleich
                     };

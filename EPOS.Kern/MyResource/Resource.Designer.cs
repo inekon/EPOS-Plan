@@ -10473,7 +10473,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Variante: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Detail-Unterschiede für Variante: ähnelt.
         /// </summary>
         public static string BKS_LBL_VARIANTE {
             get {
@@ -10518,7 +10518,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Version wählen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante für die Detail-Unterschiede wählen ähnelt.
         /// </summary>
         public static string BKS_WAHL_VERSION {
             get {
@@ -11942,11 +11942,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante anlegen… ähnelt.
+        /// </summary>
+        public static string BK_BTN_ANLEGEN_DLG {
+            get {
+                return ResourceManager.GetString("BK_BTN_ANLEGEN_DLG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Variante löschen ähnelt.
         /// </summary>
         public static string BK_BTN_LOESCHEN {
             get {
                 return ResourceManager.GetString("BK_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen… ähnelt.
+        /// </summary>
+        public static string BK_BTN_LOESCHEN_DLG {
+            get {
+                return ResourceManager.GetString("BK_BTN_LOESCHEN_DLG", resourceCulture);
             }
         }
         
@@ -11969,6 +11987,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umbenennen… ähnelt.
+        /// </summary>
+        public static string BK_BTN_UMBENENNEN_DLG {
+            get {
+                return ResourceManager.GetString("BK_BTN_UMBENENNEN_DLG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ◀ Zurück ähnelt.
         /// </summary>
         public static string BK_BTN_ZURUECK {
@@ -11983,6 +12010,375 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_CHK_NURSTAEMME {
             get {
                 return ResourceManager.GetString("BK_CHK_NURSTAEMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die neue Variante gehört zur Gruppe des Stammprojekts „{0}“ und erhält die Daten der gewählten Quelle. ähnelt.
+        /// </summary>
+        public static string BK_DLG_ANLEGEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("BK_DLG_ANLEGEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Variante wird nach einer Rückfrage mit allen Projektdaten unwiderruflich gelöscht. ähnelt.
+        /// </summary>
+        public static string BK_DLG_LOESCHEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("BK_DLG_LOESCHEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnisse — Energie ähnelt.
+        /// </summary>
+        public static string BK_ERG_ABSCHNITT_ERGEBNISSE {
+            get {
+                return ResourceManager.GetString("BK_ERG_ABSCHNITT_ERGEBNISSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten und Einstellungen ähnelt.
+        /// </summary>
+        public static string BK_ERG_ABSCHNITT_KOMPONENTEN {
+            get {
+                return ResourceManager.GetString("BK_ERG_ABSCHNITT_KOMPONENTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ausgeblendet ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_AUSGEBLENDET {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_AUSGEBLENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Legen Sie fest, welche Gruppen offen, zugeklappt oder ausgeblendet erscheinen und welche Kennzahlen Tabelle und Grafik zeigen. Die Einstellung gilt für alle Projekte. ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_HINWEIS {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahlen ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_KENNZAHLEN {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_KENNZAHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} gezeigt ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_KENNZAHLEN_ANZAHL {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_KENNZAHLEN_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzeige anpassen… ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_KNOPF {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die offen ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_OFFEN {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeilen ohne Wert ausblenden ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_OHNE_WERT {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_OHNE_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gemeint sind Zeilen, deren Wert in allen gezeigten Versionen 0 oder leer ist. ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_OHNE_WERT_ERKL {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_OHNE_WERT_ERKL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kennzahlen ohne Wert ausgeblendet ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_OHNE_WERT_HINWEIS {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_OHNE_WERT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Kennzahl ohne Wert ausgeblendet ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_OHNE_WERT_HINWEIS_EINS {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_OHNE_WERT_HINWEIS_EINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standard wiederherstellen ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_STANDARD {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_STANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzeige anpassen ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_TITEL {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die zugeklappt ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_ZUGEKLAPPT {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_ZUGEKLAPPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Darstellung ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANSICHT {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grafik ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANSICHT_GRAFIK {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANSICHT_GRAFIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tabelle ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANSICHT_TABELLE {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANSICHT_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kennzahlen ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANZAHL_KENNZAHLEN {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANZAHL_KENNZAHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Kennzahl ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANZAHL_KENNZAHL_EINS {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANZAHL_KENNZAHL_EINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Endenergie {0} (Kältestrom) ähnelt.
+        /// </summary>
+        public static string BK_ERG_ENDENERGIE_KAELTESTROM {
+            get {
+                return ResourceManager.GetString("BK_ERG_ENDENERGIE_KAELTESTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Endenergie {0} ähnelt.
+        /// </summary>
+        public static string BK_ERG_ENDENERGIE_TRAEGER {
+            get {
+                return ResourceManager.GetString("BK_ERG_ENDENERGIE_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Randstrich: weicht vom Stammprojekt ab; am Balken Wert und Abweichung zum Stammprojekt in Prozent ähnelt.
+        /// </summary>
+        public static string BK_ERG_GRAFIK_HINWEIS {
+            get {
+                return ResourceManager.GetString("BK_ERG_GRAFIK_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Versionen ähnelt.
+        /// </summary>
+        public static string BK_ERG_GRAFIK_LEGENDE {
+            get {
+                return ResourceManager.GetString("BK_ERG_GRAFIK_LEGENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf ähnelt.
+        /// </summary>
+        public static string BK_ERG_GR_BEDARF {
+            get {
+                return ResourceManager.GetString("BK_ERG_GR_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung ähnelt.
+        /// </summary>
+        public static string BK_ERG_GR_DECKUNG {
+            get {
+                return ResourceManager.GetString("BK_ERG_GR_DECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Effizienz ähnelt.
+        /// </summary>
+        public static string BK_ERG_GR_EFFIZIENZ {
+            get {
+                return ResourceManager.GetString("BK_ERG_GR_EFFIZIENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Effizienzwerte ähnelt.
+        /// </summary>
+        public static string BK_ERG_GR_EFFIZIENZ_WEITERE {
+            get {
+                return ResourceManager.GetString("BK_ERG_GR_EFFIZIENZ_WEITERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionen ähnelt.
+        /// </summary>
+        public static string BK_ERG_GR_EMISSIONEN {
+            get {
+                return ResourceManager.GetString("BK_ERG_GR_EMISSIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Endenergie ähnelt.
+        /// </summary>
+        public static string BK_ERG_GR_ENDENERGIE {
+            get {
+                return ResourceManager.GetString("BK_ERG_GR_ENDENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeerzeugung ähnelt.
+        /// </summary>
+        public static string BK_ERG_GR_ERZEUGUNG {
+            get {
+                return ResourceManager.GetString("BK_ERG_GR_ERZEUGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude ähnelt.
+        /// </summary>
+        public static string BK_ERG_GR_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("BK_ERG_GR_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte ähnelt.
+        /// </summary>
+        public static string BK_ERG_GR_KAELTE {
+            get {
+                return ResourceManager.GetString("BK_ERG_GR_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom ähnelt.
+        /// </summary>
+        public static string BK_ERG_GR_STROM {
+            get {
+                return ResourceManager.GetString("BK_ERG_GR_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte aus dem letzten gespeicherten Simulationslauf je Version. Kosten stehen unter Wirtschaftlichkeit. ähnelt.
+        /// </summary>
+        public static string BK_ERG_HINWEIS_QUELLE {
+            get {
+                return ResourceManager.GetString("BK_ERG_HINWEIS_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für keine Version im Vergleich liegt ein Simulationsergebnis vor. Starten Sie die Simulation, um die Energie-Ergebnisse gegenüberzustellen. ähnelt.
+        /// </summary>
+        public static string BK_ERG_KEINE_SIMULATION {
+            get {
+                return ResourceManager.GetString("BK_ERG_KEINE_SIMULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Version im Vergleich weicht in den Energie-Ergebnissen vom Stammprojekt ab. ähnelt.
+        /// </summary>
+        public static string BK_ERG_KEINE_UNTERSCHIEDE {
+            get {
+                return ResourceManager.GetString("BK_ERG_KEINE_UNTERSCHIEDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die darunter die Abweichung zum Stammprojekt in Prozent ähnelt.
+        /// </summary>
+        public static string BK_ERG_LEGENDE_PROZENT {
+            get {
+                return ResourceManager.GetString("BK_ERG_LEGENDE_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahl ähnelt.
+        /// </summary>
+        public static string BK_ERG_SP_KENNZAHL {
+            get {
+                return ResourceManager.GetString("BK_ERG_SP_KENNZAHL", resourceCulture);
             }
         }
         
@@ -12727,6 +13123,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — keine (Komponentenvergleich) — ähnelt.
+        /// </summary>
+        public static string BK_LBL_DETAILVARIANTE_KEINE {
+            get {
+                return ResourceManager.GetString("BK_LBL_DETAILVARIANTE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „— keine —“ führt zum Komponentenvergleich zurück. ähnelt.
+        /// </summary>
+        public static string BK_LBL_DETAILVARIANTE_ZURUECK {
+            get {
+                return ResourceManager.GetString("BK_LBL_DETAILVARIANTE_ZURUECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Alle Versionen im Vergleich führen dieselben Komponenten. ähnelt.
         /// </summary>
         public static string BK_LBL_KEINE_UNTERSCHIEDE {
@@ -12844,6 +13258,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante: ähnelt.
+        /// </summary>
+        public static string BK_LBL_VARIANTE_WAHL {
+            get {
+                return ResourceManager.GetString("BK_LBL_VARIANTE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Im Vergleich: ähnelt.
         /// </summary>
         public static string BK_LBL_VERGLEICHSWAHL {
@@ -12880,11 +13303,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Unterschied(e) gegenüber dem Stammprojekt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Unterschied gegenüber dem Stammprojekt. ähnelt.
         /// </summary>
-        public static string BK_MSG_ANZAHL_UNTERSCHIEDE {
+        public static string BK_MSG_ANZAHL_UNTERSCHIEDE_EINS {
             get {
-                return ResourceManager.GetString("BK_MSG_ANZAHL_UNTERSCHIEDE", resourceCulture);
+                return ResourceManager.GetString("BK_MSG_ANZAHL_UNTERSCHIEDE_EINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Unterschiede gegenüber dem Stammprojekt. ähnelt.
+        /// </summary>
+        public static string BK_MSG_ANZAHL_UNTERSCHIEDE_N {
+            get {
+                return ResourceManager.GetString("BK_MSG_ANZAHL_UNTERSCHIEDE_N", resourceCulture);
             }
         }
         
@@ -13537,6 +13969,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zum Anlegen einer Variante zuerst ein Stammprojekt wählen. ähnelt.
+        /// </summary>
+        public static string BK_TIP_ANLEGEN_KEIN_STAMM {
+            get {
+                return ResourceManager.GetString("BK_TIP_ANLEGEN_KEIN_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gruppe hat noch keine Variante; gezeigt wird der Komponentenvergleich. ähnelt.
+        /// </summary>
+        public static string BK_TIP_DETAILVARIANTE_LEER {
+            get {
+                return ResourceManager.GetString("BK_TIP_DETAILVARIANTE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gruppe hat noch keine Variante. ähnelt.
+        /// </summary>
+        public static string BK_TIP_KEINE_VARIANTE {
+            get {
+                return ResourceManager.GetString("BK_TIP_KEINE_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme einzelner Merkmale folgt im nächsten Paket. ähnelt.
         /// </summary>
         public static string BK_TIP_UEBERNEHMEN {
@@ -13569,6 +14028,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_TIP_UEBERNEHMEN_KOMP {
             get {
                 return ResourceManager.GetString("BK_TIP_UEBERNEHMEN_KOMP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Während eines Laufs sind die Aktionen der Variantenverwaltung gesperrt. ähnelt.
+        /// </summary>
+        public static string BK_TIP_VERWALTUNG_LAEUFT {
+            get {
+                return ResourceManager.GetString("BK_TIP_VERWALTUNG_LAEUFT", resourceCulture);
             }
         }
         
@@ -61697,11 +62165,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner für das Umbenennen der markierten Version; er wirkt erst mit dem Knopf „Umbenennen“. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Energie-Kennzahlen je Version (Bedarf, Erzeugung, Strom, Endenergie, Deckung, Effizienz, CO₂) aus dem letzten Simulationslauf, Abweichungen zum Stammprojekt markiert. ähnelt.
         /// </summary>
-        public static string KI_DLG_BKU_BEZEICHNER_ERL {
+        public static string KI_DLG_BKU_ERG_ERL {
             get {
-                return ResourceManager.GetString("KI_DLG_BKU_BEZEICHNER_ERL", resourceCulture);
+                return ResourceManager.GetString("KI_DLG_BKU_ERG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energie-Ergebnisse im Vergleich ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKU_ERG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKU_ERG_NAME", resourceCulture);
             }
         }
         
@@ -61769,7 +62246,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die markierte Version; sie entscheidet, welche Unterschiede die Tabelle zeigt und was Löschen, Umbenennen und Simulieren treffen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Variante, deren Detail-Unterschiede zum Stammprojekt die Tabelle zeigt; die Vorgabe „— keine —“ zeigt den Komponentenvergleich aller angehakten Versionen. Löschen und Umbenennen treffen nur eine gewählte Variante, Simulieren die gewählte Variante oder sonst das Stammprojekt. ähnelt.
         /// </summary>
         public static string KI_DLG_BKU_VARIANTE_ERL {
             get {
