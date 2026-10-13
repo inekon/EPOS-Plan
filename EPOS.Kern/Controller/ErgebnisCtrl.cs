@@ -448,8 +448,10 @@ namespace WindowsFormsApplication1
                     // 4b. Schritt 224: das Ergebnis je Split-Zeile. Ohne Split-Zeile (jedes Bestandsprojekt) keine Zeile.
                     if (kaelteDezentral && m.KaelteDezentral != null && m.KaelteDezentral.Count > 0)
                     {
-                        string sqlKd = "INSERT INTO " + KaeltebedarfSplitAbrechnungSchema.TAB_ERGEBNIS + " (ID_Ergebnis, " +
-                            string.Join(", ", KaeltebedarfSplitAbrechnungSchema.SPALTEN) + ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+                        // Spaltenfolge wie KaeltebedarfSplitAbrechnungSchema.SPALTEN.
+                        string sqlKd = "INSERT INTO " + KaeltebedarfSplitAbrechnungSchema.TAB_ERGEBNIS + " (ID_Ergebnis, Quelle, " +
+                            "ID_Zuordnung, Bezeichner, Kaelte_MWh, Strom_MWh, Kaelte_Spitze_kW, Jahres_EER, Kaeltestrom_Netzbezug_MWh, " +
+                            "Kuehl_ID_Carrier, Kuehl_EigenerZaehler, Stromspitze_kW) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
                         foreach (ErgebnisKaelteDezentralModel kd in m.KaelteDezentral)
                         {
                             if (kd == null) continue;

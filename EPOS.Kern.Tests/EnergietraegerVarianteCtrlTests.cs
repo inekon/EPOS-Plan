@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -290,6 +291,61 @@ namespace EPOS.Kern.Tests
             Assert.Equal(EnergietraegerVarianteCtrl.Ruecknahme.Nichts,
                 EnergietraegerVarianteCtrl.AnlageZuruecknehmen(PROJEKT, TRAEGER_1017, false, false));
             Assert.Equal(1, Anzahl("SELECT COUNT(*) FROM energy_carrier WHERE id = ?", new DbParam("@c", TRAEGER_1017)));
+        }
+            [Fact]
+        public void Eine_von_einer_Kaeltebedarfszeile_oder_einer_Split_Ergebniszeile_verwiesene_Variante_bleibt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            // Schritt 213: der Kühlträger einer Profilzeile hält Zuordnung und Katalogträger.
+            var e = EnergietraegerVarianteCtrl.Anlegen(PROJEKT, false, ERDGAS_E, "Erdgas E", Name());
+            int stamm = Anzahl("SELECT ID FROM Tab_Kaeltebedarf_STAMM WHERE Bezeichner = ?", new DbParam("@b", "Kühlraum"));
+            Assert.True(new WizardCtrl().Add_Projekt_Kaelte(PROJEKT, new List<Z_ProjektKaeltebedarfModel>
+            {
+                new Z_ProjektKaeltebedarfModel
+                {
+                    ID_Kaeltebedarf = stamm, Bezeichner = "Kühlraum", Summe = 5, Deckung = KaeltebedarfSchema.DECKUNG_SPLIT,
+                    EerWeg = KaeltebedarfSchema.EER_FEST, Eer1 = 3.0, Taussen1 = 35, KuehlIdCarrier = e.CarrierId,
+                },
+            }));
+            Assert.Equal(EnergietraegerVarianteCtrl.Ruecknahme.Verwiesen,
+                EnergietraegerVarianteCtrl.AnlageZuruecknehmen(PROJEKT, e.CarrierId, true, e.KatalogNeu));
+            Assert.Equal(1, Anzahl("SELECT COUNT(*) FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_Energieträger = ?",
+                new DbParam("@p", PROJEKT), new DbParam("@c", e.CarrierId)));
+
+            // Ebenso an einer Lastgangzeile (Z_ProjektWaermebedarf) - hier ohne Projektzuordnung nur der Katalogträger.
+            DataRepository.ExecuteNonQuery("UPDATE Z_Projekt_Kaeltebedarf SET Kuehl_ID_Carrier = NULL WHERE ID_Projekt = ?",
+                new DbParam("@p", PROJEKT));
+            Assert.True(new WaermebedarfStammCtrl().ImportGanglinie("K6a_Variante", Enumerable.Repeat(0.1, 8760).ToList()));
+            List<Z_ProjWaermebedarfModel> zeilen = Z_ProjektGebGanglinieCtrl.LiesProjekt(PROJEKT);
+            zeilen.Add(new Z_ProjWaermebedarfModel
+            {
+                m_szBezeichner = "K6a_Variante", Kanal = DbWerte.KANAL_KUEHLUNG, Deckung = KaeltebedarfSchema.DECKUNG_SPLIT,
+                EerWeg = KaeltebedarfSchema.EER_FEST, Eer1 = 3, Taussen1 = 35, KuehlIdCarrier = e.CarrierId,
+            });
+            Assert.True(new WizardCtrl().Del_WaermebedarfExtern(PROJEKT));
+            Assert.True(new WizardCtrl().Add_WaermebedarfExtern(PROJEKT, zeilen));
+            Assert.Equal(EnergietraegerVarianteCtrl.Ruecknahme.Verwiesen,
+                EnergietraegerVarianteCtrl.AnlageZuruecknehmen(PROJEKT, e.CarrierId, true, e.KatalogNeu));
+
+            // Schritt 224: eine gespeicherte Split-Ergebniszeile hält den Katalogträger.
+            DataRepository.ExecuteNonQuery("UPDATE Z_ProjektWaermebedarf SET Kuehl_ID_Carrier = NULL WHERE ID_Projekt = ?",
+                new DbParam("@p", PROJEKT));
+            KaeltebedarfSplitAbrechnungSchema.Ausfuehren(null);
+            Assert.Equal(1, DataRepository.ExecuteNonQuery(
+                "INSERT INTO " + KaeltebedarfSplitAbrechnungSchema.TAB_ERGEBNIS + " (ID_Ergebnis, Quelle, Kuehl_ID_Carrier) VALUES (?, ?, ?)",
+                new DbParam("@e", Anzahl("SELECT MIN(ID) FROM Tab_Ergebnis")),
+                new DbParam("@q", KaeltebedarfSplitAbrechnungSchema.QUELLE_PROFIL), new DbParam("@c", e.CarrierId)));
+            Assert.Equal(EnergietraegerVarianteCtrl.Ruecknahme.Verwiesen,
+                EnergietraegerVarianteCtrl.AnlageZuruecknehmen(PROJEKT, e.CarrierId, false, true));
+            Assert.Equal(1, Anzahl("SELECT COUNT(*) FROM energy_carrier WHERE id = ?", new DbParam("@c", e.CarrierId)));
+
+            // Ohne jeden Verweis geht der Träger ganz.
+            DataRepository.ExecuteNonQuery("DELETE FROM " + KaeltebedarfSplitAbrechnungSchema.TAB_ERGEBNIS + " WHERE Kuehl_ID_Carrier = ?",
+                new DbParam("@c", e.CarrierId));
+            Assert.Equal(EnergietraegerVarianteCtrl.Ruecknahme.TraegerEntfernt,
+                EnergietraegerVarianteCtrl.AnlageZuruecknehmen(PROJEKT, e.CarrierId, true, e.KatalogNeu));
         }
     }
 }
