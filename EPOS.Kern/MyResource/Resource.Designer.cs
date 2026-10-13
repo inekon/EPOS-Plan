@@ -111422,7 +111422,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf dezentral (Split) „{0}&quot;: Der Strom ({1} MWh/a) geht mit dem Stromträger des Projekts in Strombilanz und Abrechnung; eine gesonderte Abrechnung über den Kühlträger {2} ist für dezentrale Zeilen noch nicht verfügbar. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf dezentral (Split) „{0}“: {1} MWh/a Netzbezug des Split-Stroms (Strom {2} MWh/a) tragen den Stromträger „{3}“. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_DEZENTRAL_KUEHLTRAEGER {
             get {
@@ -118775,6 +118775,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMWARN_KAELTE_SPLIT_OHNE_EER {
             get {
                 return ResourceManager.GetString("SIMWARN_KAELTE_SPLIT_OHNE_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf „{0}“ ist dezentral (Split) gedeckt und auf „eigener Zähler“ gestellt, aber ohne abweichenden Kühlträger — der Zähler wirkt nicht, der Strom läuft mit dem Stromträger des Projekts. Bitte einen anderen Stromträger des Projekts als Kühlträger wählen oder den Zähler abwählen. ähnelt.
+        /// </summary>
+        public static string SIMWARN_KAELTE_SPLIT_ZAEHLER_OHNE_TRAEGER {
+            get {
+                return ResourceManager.GetString("SIMWARN_KAELTE_SPLIT_ZAEHLER_OHNE_TRAEGER", resourceCulture);
             }
         }
         

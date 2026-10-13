@@ -1753,25 +1753,50 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Kühlträger der Anlagen mit eigenem Zähler (E34, E35) — nur Wärmepumpen im Kühlbetrieb
-        /// und nur ein vom Projektträger abweichender Träger (sonst wirkt die Abrechnungsart nicht).
+        /// Die Kühlträger mit eigenem Zähler (E34, E35) — Wärmepumpen im Kühlbetrieb, Kältemaschinen (KU3-4d) und dezentral
+        /// (Split) gedeckte Kältebedarfszeilen (Schritt 224, Profil- und Lastgangzeilen), je nur mit einem vom Projektträger
+        /// abweichenden Träger (sonst wirkt die Abrechnungsart nicht). Eine Datenbank ohne die Spalten eines Schritts liefert
+        /// dessen Anlagen nicht.
         /// </summary>
         private static List<int> KuehltraegerEigenerZaehler(int idProjekt, int projekttraeger)
         {
             var liste = new List<int>();
-            DataTable dt = DataRepository.GetDataTable(
+            void Lesen(DataTable dt)
+            {
+                if (dt == null) return;
+                foreach (DataRow r in dt.Rows)
+                {
+                    if (r["traeger"] == DBNull.Value) continue;
+                    int k = Convert.ToInt32(r["traeger"], System.Globalization.CultureInfo.InvariantCulture);
+                    if (Kaeltestromabrechnung.Abweichend(k, projekttraeger) && !liste.Contains(k)) liste.Add(k);
+                }
+            }
+
+            Lesen(DataRepository.GetDataTable(
                 "SELECT DISTINCT ea.Kuehl_ID_Carrier AS traeger FROM Tab_Energieanlagen AS ea " +
                 "INNER JOIN Tab_WP AS wp ON wp.ID = ea.ID_WP " +
                 "WHERE ea.ID_Projekt = ? AND ea.Kuehl_EigenerZaehler = 1 AND wp.Kuehlbetrieb = 1 " +
                 "AND ea.Kuehl_ID_Carrier IS NOT NULL ORDER BY ea.Kuehl_ID_Carrier",
-                new DbParam("@p", idProjekt));
-            if (dt == null) return liste;
-            foreach (DataRow r in dt.Rows)
-            {
-                if (r["traeger"] == DBNull.Value) continue;
-                int k = Convert.ToInt32(r["traeger"], System.Globalization.CultureInfo.InvariantCulture);
-                if (Kaeltestromabrechnung.Abweichend(k, projekttraeger)) liste.Add(k);
-            }
+                new DbParam("@p", idProjekt)));
+            if (DataRepository.SpalteVorhanden(KaeltemaschineAnlageSchema.TAB_ANLAGEN, KaeltemaschineAnlageSchema.SPALTE_ID_KAELTEMASCHINE))
+                Lesen(DataRepository.GetDataTable(
+                    "SELECT DISTINCT Kuehl_ID_Carrier AS traeger FROM Tab_Energieanlagen " +
+                    "WHERE ID_Projekt = ? AND Kuehl_EigenerZaehler = 1 AND ID_Kaeltemaschine IS NOT NULL " +
+                    "AND Kuehl_ID_Carrier IS NOT NULL ORDER BY Kuehl_ID_Carrier",
+                    new DbParam("@p", idProjekt)));
+            if (KaeltebedarfSchema.TabellenVorhanden() &&
+                DataRepository.SpalteVorhanden(KaeltebedarfSchema.TAB_ZUORDNUNG, KaeltebedarfSchema.SPALTE_KUEHL_ID_CARRIER))
+                Lesen(DataRepository.GetDataTable(
+                    "SELECT DISTINCT Kuehl_ID_Carrier AS traeger FROM Z_Projekt_Kaeltebedarf " +
+                    "WHERE ID_Projekt = ? AND Deckung = 'split' AND Kuehl_EigenerZaehler = 1 " +
+                    "AND Kuehl_ID_Carrier IS NOT NULL ORDER BY Kuehl_ID_Carrier",
+                    new DbParam("@p", idProjekt)));
+            if (DataRepository.SpalteVorhanden(KaeltebedarfSchema.TAB_LASTGANG, KaeltebedarfSchema.SPALTE_KUEHL_ID_CARRIER))
+                Lesen(DataRepository.GetDataTable(
+                    "SELECT DISTINCT Kuehl_ID_Carrier AS traeger FROM Z_ProjektWaermebedarf " +
+                    "WHERE ID_Projekt = ? AND Kanal = ? AND Deckung = 'split' AND Kuehl_EigenerZaehler = 1 " +
+                    "AND Kuehl_ID_Carrier IS NOT NULL ORDER BY Kuehl_ID_Carrier",
+                    new DbParam("@p", idProjekt), new DbParam("@k", DbWerte.KANAL_KUEHLUNG)));
             return liste;
         }
 

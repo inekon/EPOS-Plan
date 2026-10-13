@@ -53,6 +53,12 @@ namespace WindowsFormsApplication1
         public bool EigenerZaehler;
 
         /// <summary>
+        /// Die ID der Zuordnungszeile (<c>Z_Projekt_Kaeltebedarf.ID</c> bzw. <c>Z_ProjektWaermebedarf.ID</c>) — die Ergebniszeile
+        /// je Split-Zeile nennt sie (Schemaschritt 224); <c>null</c> ohne Zeile.
+        /// </summary>
+        public int? IdZuordnung;
+
+        /// <summary>
         /// <c>true</c> = die Zeile ist Prozesskälte (KWN-0, <c>Kaelte_Art = PROZESS</c>): Sie bleibt im Kühlkanal und geht
         /// zusätzlich in den Unterposten <c>Kaeltebedarf_Prozess</c>. Unabhängig von der Deckungsart.
         /// </summary>
@@ -76,6 +82,7 @@ namespace WindowsFormsApplication1
                 Linear = z.EerWeg == KaeltebedarfSchema.EER_LINEAR,
                 Eer1 = z.Eer1, Taussen1 = z.Taussen1, Eer2 = z.Eer2, Taussen2 = z.Taussen2,
                 KuehlIdCarrier = z.KuehlIdCarrier, EigenerZaehler = z.KuehlEigenerZaehler,
+                IdZuordnung = z.ID_Z > 0 ? z.ID_Z : (int?)null,
                 Pruefgrund = Z_ProjektKaeltebedarfCtrl.Deckungspruefung(z),
             };
         }
@@ -95,6 +102,7 @@ namespace WindowsFormsApplication1
                 Linear = w.EerWeg == KaeltebedarfSchema.EER_LINEAR,
                 Eer1 = w.Eer1, Taussen1 = w.Taussen1, Eer2 = w.Eer2, Taussen2 = w.Taussen2,
                 KuehlIdCarrier = w.KuehlIdCarrier, EigenerZaehler = w.KuehlEigenerZaehler,
+                IdZuordnung = w.m_ID_Z > 0 ? w.m_ID_Z : (int?)null,
                 Pruefgrund = Z_ProjektKaeltebedarfCtrl.Deckungspruefung(w),
             };
         }

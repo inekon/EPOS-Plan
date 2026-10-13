@@ -444,13 +444,22 @@ namespace WindowsFormsApplication1
         /// <paramref name="katalogNeu"/> (<see cref="VariantenErgebnis.KatalogNeu"/>) zusaetzlich den Katalogtraeger.
         /// Ein wiederverwendeter Traeger oder eine schon bestehende Zuordnung bleibt immer.</para>
         /// <para><b>Nur ohne Verweis.</b> Die Zuordnung bleibt, solange eine Anlagenzeile des Projekts
-        /// (<c>ID_Carrier</c>, <c>Kuehl_ID_Carrier</c>) oder eine Preisreihe des Projekts auf den Traeger zeigt;
-        /// der Katalogtraeger bleibt, solange irgendeine Anlagenzeile, Projektzuordnung, Preiszeile, Preisreihe,
-        /// Emissionszeile oder Ergebniszeile ihn nennt. Eine Transaktion.</para>
+        /// (<c>ID_Carrier</c>, <c>Kuehl_ID_Carrier</c>), eine Kältebedarfszeile des Projekts (<c>Kuehl_ID_Carrier</c> an
+        /// <c>Z_Projekt_Kaeltebedarf</c> und <c>Z_ProjektWaermebedarf</c>) oder eine Preisreihe des Projekts auf den Traeger zeigt;
+        /// der Katalogtraeger bleibt, solange irgendeine Anlagenzeile, Kältebedarfszeile, Projektzuordnung, Preiszeile,
+        /// Preisreihe, Emissionszeile oder Ergebniszeile (auch je Split-Zeile) ihn nennt. Eine Transaktion.</para>
         /// </remarks>
         public static Ruecknahme AnlageZuruecknehmen(int projektId, int carrierId, bool zuordnungNeu, bool katalogNeu)
         {
             if (carrierId <= 0 || (!zuordnungNeu && !katalogNeu)) return Ruecknahme.Nichts;
+
+            // Schritte 213 und 224: Auch der Kühlträger einer Kältebedarfszeile (Profil oder Lastgang) und einer Split-
+            // Ergebniszeile hält den Träger. Die Auskunft VOR dem Vorgang - sie arbeitet auf einer eigenen Verbindung; einer
+            // Datenbank vor dem Schritt fehlen die Spalten bzw. die Tabelle, dann zählen sie nicht.
+            bool kaelteProfil = KaeltebedarfSchema.TabellenVorhanden() &&
+                DataRepository.SpalteVorhanden(KaeltebedarfSchema.TAB_ZUORDNUNG, KaeltebedarfSchema.SPALTE_KUEHL_ID_CARRIER);
+            bool kaelteLastgang = DataRepository.SpalteVorhanden(KaeltebedarfSchema.TAB_LASTGANG, KaeltebedarfSchema.SPALTE_KUEHL_ID_CARRIER);
+            bool splitErgebnis = KaeltebedarfSplitAbrechnungSchema.TabelleVorhanden();
 
             using (DbVorgang v = DataRepository.Vorgang())
             {
@@ -464,6 +473,12 @@ namespace WindowsFormsApplication1
                             "+ (SELECT COUNT(*) FROM Tab_Preisreihe WHERE ID_Projekt = ? AND ID_Energietraeger = ?)",
                             new DbParam("@p1", projektId), new DbParam("@c1", carrierId), new DbParam("@c2", carrierId),
                             new DbParam("@p2", projektId), new DbParam("@c3", carrierId));
+                        if (kaelteProfil)
+                            verweise += Zahl(v, "SELECT COUNT(*) FROM Z_Projekt_Kaeltebedarf WHERE ID_Projekt = ? AND Kuehl_ID_Carrier = ?",
+                                new DbParam("@p", projektId), new DbParam("@c", carrierId));
+                        if (kaelteLastgang)
+                            verweise += Zahl(v, "SELECT COUNT(*) FROM Z_ProjektWaermebedarf WHERE ID_Projekt = ? AND Kuehl_ID_Carrier = ?",
+                                new DbParam("@p", projektId), new DbParam("@c", carrierId));
                         if (verweise > 0)
                         {
                             v.Rollback();
@@ -492,6 +507,15 @@ namespace WindowsFormsApplication1
                             new DbParam("@c4", carrierId), new DbParam("@c5", carrierId), new DbParam("@c6", carrierId),
                             new DbParam("@c7", carrierId), new DbParam("@c8", carrierId), new DbParam("@c9", carrierId),
                             new DbParam("@c10", carrierId));
+                        if (kaelteProfil)
+                            verweise += Zahl(v, "SELECT COUNT(*) FROM Z_Projekt_Kaeltebedarf WHERE Kuehl_ID_Carrier = ?",
+                                new DbParam("@c", carrierId));
+                        if (kaelteLastgang)
+                            verweise += Zahl(v, "SELECT COUNT(*) FROM Z_ProjektWaermebedarf WHERE Kuehl_ID_Carrier = ?",
+                                new DbParam("@c", carrierId));
+                        if (splitErgebnis)
+                            verweise += Zahl(v, "SELECT COUNT(*) FROM " + KaeltebedarfSplitAbrechnungSchema.TAB_ERGEBNIS +
+                                                " WHERE Kuehl_ID_Carrier = ?", new DbParam("@c", carrierId));
                         if (verweise == 0)
                         {
                             v.Ausfuehren("DELETE FROM energy_carrier WHERE id = ?", new DbParam("@c", carrierId));

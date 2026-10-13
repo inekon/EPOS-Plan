@@ -333,6 +333,14 @@ namespace WindowsFormsApplication1
         public const string DEZENTRALE_KAELTE_OHNE_EER = "DEZENTRALE_KAELTE_OHNE_EER";
 
         /// <summary>
+        /// Schritt 224 (Konzept Kältebedarf 4.2; E34): Eine dezentral (Split) gedeckte Kältebedarfszeile steht auf „eigener
+        /// Zähler“, trägt aber keinen vom Stromträger des Projekts abweichenden Kühlträger — der Zähler wirkt dann nicht, der
+        /// Strom läuft anteilig mit dem Projektträger. WEICH (die Meldung bringt die Aussage vor den Lauf; Muster der
+        /// Kälteerzeuger, deren Zähler ohne abweichenden Träger ebenso wirkungslos ist).
+        /// </summary>
+        public const string DEZENTRALE_KAELTE_ZAEHLER_OHNE_TRAEGER = "DEZENTRALE_KAELTE_ZAEHLER_OHNE_TRAEGER";
+
+        /// <summary>
         /// KM4-E2 (Konzept Kältemittel als Stammdatum 3.3, 5.2; E123): Das Kältemittel einer Kältemaschine oder einer
         /// Wärmepumpe mit Code fällt im geplanten Inbetriebnahmejahr unter eine Regel nach Anhang IV der Verordnung (EU)
         /// 2024/573 — ab dem Stichtag nur Restbestand oder Ausnahme. WEICH: Die Prüfung warnt und sperrt nie. Ohne
@@ -539,17 +547,22 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <see cref="DEZENTRALE_KAELTE_OHNE_EER"/> — je Split-Zeile ohne rechnenden EER (K3), nur in einem Projekt mit
         /// Kühlbetrieb (sonst rechnet die Zeile nicht). Dieselbe Regel wie beim Speichern
-        /// (<see cref="Z_ProjektKaeltebedarfCtrl.Deckungspruefung(Z_ProjektKaeltebedarfModel)"/>). Ohne Split-Zeile kein Befund.
+        /// (<see cref="Z_ProjektKaeltebedarfCtrl.Deckungspruefung(Z_ProjektKaeltebedarfModel)"/>). Dazu
+        /// <see cref="DEZENTRALE_KAELTE_ZAEHLER_OHNE_TRAEGER"/> je Split-Zeile mit eigenem Zähler ohne abweichenden Kühlträger
+        /// (<see cref="Kaeltestromabrechnung.Abweichend"/>). Ohne Split-Zeile kein Befund.
         /// </summary>
         public static void DezentraleKaeltePruefen(int idProjekt, List<Warnbefund> befunde)
         {
             if (idProjekt <= 0 || befunde == null || !KaeltebedarfSchema.TabellenVorhanden()) return;
             var gruende = new List<KeyValuePair<string, string>>();
+            // Schritt 224: Split-Zeilen mit eigenem Zähler - ob ihr Träger abweicht, entscheidet der Projektträger (unten).
+            var zaehler = new List<KeyValuePair<string, int?>>();
             foreach (Z_ProjektKaeltebedarfModel z in Z_ProjektKaeltebedarfCtrl.LiesProjekt(idProjekt))
             {
                 if (z.Deckung != KaeltebedarfSchema.DECKUNG_SPLIT) continue;
                 string grund = Z_ProjektKaeltebedarfCtrl.Deckungspruefung(z);
                 if (grund != null) gruende.Add(new KeyValuePair<string, string>(z.Bezeichner, grund));
+                if (z.KuehlEigenerZaehler) zaehler.Add(new KeyValuePair<string, int?>(z.Bezeichner, z.KuehlIdCarrier));
             }
             if (Z_ProjektKaeltebedarfCtrl.LastgangDeckungLesbar())
             {
@@ -570,12 +583,19 @@ namespace WindowsFormsApplication1
                         if (!Z_ProjektKaeltebedarfCtrl.IstKuehlkanal(w)) continue;
                         string grund = Z_ProjektKaeltebedarfCtrl.Deckungspruefung(w);
                         if (grund != null) gruende.Add(new KeyValuePair<string, string>(w.m_szBezeichner, grund));
+                        if (w.KuehlEigenerZaehler) zaehler.Add(new KeyValuePair<string, int?>(w.m_szBezeichner, w.KuehlIdCarrier));
                     }
             }
-            if (gruende.Count == 0 || !KonfigurationCtrl.KuehlbetriebLesen(idProjekt)) return;
+            if ((gruende.Count == 0 && zaehler.Count == 0) || !KonfigurationCtrl.KuehlbetriebLesen(idProjekt)) return;
             foreach (KeyValuePair<string, string> g in gruende)
                 befunde.Add(Befund(DEZENTRALE_KAELTE_OHNE_EER, false, 0, 0,
                     string.Format(MyResource.Resource.SIMWARN_KAELTE_SPLIT_OHNE_EER, g.Key, g.Value)));
+            if (zaehler.Count == 0) return;
+            int projekttraeger = Kaeltestromabrechnung.Projekttraeger(idProjekt);
+            foreach (KeyValuePair<string, int?> z in zaehler)
+                if (!Kaeltestromabrechnung.Abweichend(z.Value, projekttraeger))
+                    befunde.Add(Befund(DEZENTRALE_KAELTE_ZAEHLER_OHNE_TRAEGER, false, 0, 0,
+                        string.Format(MyResource.Resource.SIMWARN_KAELTE_SPLIT_ZAEHLER_OHNE_TRAEGER, z.Key)));
         }
 
         /// <summary>

@@ -101,7 +101,14 @@ namespace WindowsFormsApplication1
                     Waermebedarf_Kanal = Mal(e.Waermebedarf_Kanal, f),
                     Kaeltebedarf_Gesamt = e.Kaeltebedarf_Gesamt * f,
                     Kaeltelast_Max = e.Kaeltelast_Max,
-                    Kaelterestbedarf = e.Kaelterestbedarf * f
+                    Kaelterestbedarf = e.Kaelterestbedarf * f,
+                    // K3 (Schritt 213): die Mengen des Kältebedarfs ohne Gebäudemodell skalieren, Spitze und Jahres-EER bleiben
+                    // wie Kaeltelast_Max; null („nicht erhoben") bleibt null.
+                    KaeltebedarfProfilMwh = Mal(e.KaeltebedarfProfilMwh, f),
+                    KaeltebedarfDezentralMwh = Mal(e.KaeltebedarfDezentralMwh, f),
+                    KaelteDezentralSpitzeKw = e.KaelteDezentralSpitzeKw,
+                    StromDezentralMwh = Mal(e.StromDezentralMwh, f),
+                    JahresEerDezentral = e.JahresEerDezentral
                 };
             }
 
@@ -194,6 +201,25 @@ namespace WindowsFormsApplication1
                         // K-F3: die Kälte der Teil-Freikühlung skaliert als Menge, die Stunden bleiben.
                         TeilFreikuehlung_MWh = Mal(km.TeilFreikuehlung_MWh, f),
                         TeilFreikuehlung_Stunden = km.TeilFreikuehlung_Stunden,
+                    });
+
+            // Schritt 224: die Split-Zeilen skalieren wie die Kältemaschinen - Kälte, Strom, Netzbezug und Spitze des Stroms;
+            // Quelle, Zuordnung, Kühlträger, Abrechnungsart, Kältespitze und Jahres-EER bleiben.
+            if (m.KaelteDezentral != null)
+                foreach (ErgebnisKaelteDezentralModel d in m.KaelteDezentral)
+                    k.KaelteDezentral.Add(d == null ? null : new ErgebnisKaelteDezentralModel
+                    {
+                        Quelle = d.Quelle,
+                        ID_Zuordnung = d.ID_Zuordnung,
+                        Bezeichner = d.Bezeichner,
+                        Kaelte_MWh = d.Kaelte_MWh * f,
+                        Strom_MWh = d.Strom_MWh * f,
+                        Kaelte_Spitze_kW = d.Kaelte_Spitze_kW,
+                        Jahres_EER = d.Jahres_EER,
+                        Kaeltestrom_Netzbezug_MWh = Mal(d.Kaeltestrom_Netzbezug_MWh, f),
+                        Kuehl_CarrierId = d.Kuehl_CarrierId,
+                        Kuehl_EigenerZaehler = d.Kuehl_EigenerZaehler,
+                        Stromspitze_kW = Mal(d.Stromspitze_kW, f),
                     });
 
             if (m.BHKW != null)

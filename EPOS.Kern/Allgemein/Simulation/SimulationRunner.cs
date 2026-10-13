@@ -801,6 +801,28 @@ namespace WindowsFormsApplication1
                             });
             }
 
+            // Schritt 224 (Konzept Kältebedarf 4.2): das Ergebnis je Split-Zeile - nur mit dezentral gedeckter Zeile; ohne sie
+            // (jedes Bestandsprojekt) bleibt die Liste leer und der Lauf schreibt keine Zeile.
+            {
+                SimulationKaeltebedarf kk = sim.simulation_Waermebedarf != null ? sim.simulation_Waermebedarf.Kaelteseite : null;
+                if (kk != null && kk.Gerechnet && kk.MitDezentral)
+                    foreach (SimulationKaeltebedarf.DezentraleZeile z in kk.DezentraleZeilen)
+                        m.KaelteDezentral.Add(new ErgebnisKaelteDezentralModel
+                        {
+                            Quelle = z.Profil ? KaeltebedarfSplitAbrechnungSchema.QUELLE_PROFIL : KaeltebedarfSplitAbrechnungSchema.QUELLE_LASTGANG,
+                            ID_Zuordnung = z.IdZuordnung,
+                            Bezeichner = z.Bezeichner ?? "",
+                            Kaelte_MWh = z.KaelteKwh / 1000.0,
+                            Strom_MWh = z.StromKwh / 1000.0,
+                            Kaelte_Spitze_kW = z.KaelteMaxKw,
+                            Jahres_EER = z.StromKwh > 0 ? z.JahresEer : (double?)null,
+                            Kaeltestrom_Netzbezug_MWh = z.NetzbezugKwh / 1000.0,
+                            Kuehl_CarrierId = z.Kuehltraeger > 0 ? (int?)z.Kuehltraeger : null,
+                            Kuehl_EigenerZaehler = z.Kuehltraeger > 0 ? (bool?)z.EigenerZaehler : null,
+                            Stromspitze_kW = Kaeltestromabrechnung.Stundenspitze(z.Strom_stuendlich),
+                        });
+            }
+
             // Detail: BHKW (nur wenn gerechnet). Werte wie in der BHKW-Ergebnisansicht (MWh/a).
             if (sim.bSimulationBHKW && sim.simulation_bhkw != null)
             {

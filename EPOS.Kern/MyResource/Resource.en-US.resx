@@ -10926,10 +10926,13 @@ Effective only with a STRATIFIED target storage (layers &gt; 1): from the inlet 
     <value>Decentralised (split) cooling demand: The annual EER {0} is below {1}. Please check the EER values of the split rows against device data.</value>
   </data>
   <data name="SIMENG_KAELTE_DEZENTRAL_KUEHLTRAEGER" xml:space="preserve">
-    <value>Decentralised (split) cooling demand "{0}": The electricity ({1} MWh/a) enters the electricity balance and billing with the project's electricity carrier; separate billing via the cooling carrier {2} is not yet available for decentralised rows.</value>
+    <value>Decentralised (split) cooling demand "{0}": {1} MWh/a of grid supply of the split electricity (electricity {2} MWh/a) carry the electricity carrier "{3}".</value>
   </data>
   <data name="SIMWARN_KAELTE_SPLIT_OHNE_EER" xml:space="preserve">
     <value>Cooling demand "{0}" is supplied decentrally (split) but has no valid EER ({1}) — the run aborts. Please maintain the supply of the row.</value>
+  </data>
+  <data name="SIMWARN_KAELTE_SPLIT_ZAEHLER_OHNE_TRAEGER" xml:space="preserve">
+    <value>Cooling demand "{0}" is supplied decentrally (split) and set to "separate meter", but has no differing cooling carrier — the meter has no effect, the electricity runs with the project's electricity carrier. Please choose another electricity carrier of the project as cooling carrier or deselect the meter.</value>
   </data>
   <data name="SIMENG_KAELTE_HEIZEN_UND_KUEHLEN" xml:space="preserve">
     <value>Hours with simultaneous heating and cooling: {0} h (building "{1}") — switch-over hours in the transition season or zoning that requires both. Heating and cooling demand are not offset against each other.</value>

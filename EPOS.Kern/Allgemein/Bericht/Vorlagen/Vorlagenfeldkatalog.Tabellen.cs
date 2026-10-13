@@ -165,7 +165,8 @@ namespace WindowsFormsApplication1
                 yield return q;
             }
             yield return Q("tabelle.kaelteerzeuger", ST, w => Berichtstabellen.Kaelteerzeuger(w.Stamm?.Ergebnis?.Waermepumpe,
-                id => w.Wirtschaft.Traegername(id), w.Englisch, w.Kultur, w.Stamm?.Ergebnis?.Kaeltemaschinen, w.Stamm?.Kaeltemittel));
+                id => w.Wirtschaft.Traegername(id), w.Englisch, w.Kultur, w.Stamm?.Ergebnis?.Kaeltemaschinen, w.Stamm?.Kaeltemittel,
+                w.Stamm?.Ergebnis?.KaelteDezentral));
             yield return Q("tabelle.speichertemperaturen", ST, w => Berichtstabellen.Speichertemperaturen(w.Stamm, w.Englisch, w.Kultur));
             yield return Q("tabelle.gebaeude.ergebnis", ST, w => Berichtstabellen.Gebaeudeergebnisse(w.Stamm, w.Englisch, w.Kultur));
             // Katalog v12 (Welle P4c): die gespeicherten Pufferauslegungen - dieselbe Tafel wie der Baustein.

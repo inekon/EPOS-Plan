@@ -500,7 +500,9 @@ namespace WindowsFormsApplication1
 
             k.Ueberschrift2(UEBERSCHRIFT_KAELTE);
             k.Eigenschaften(paare.ToArray());
-            if (mitErzeugung) KaelteerzeugerSchreiben(k, wp, traegername, km, stamm?.Kaeltemittel);
+            // Schritt 224: die Split-Zeilen stehen in derselben Tafel - auch ohne Kälteerzeuger.
+            List<ErgebnisKaelteDezentralModel> split = stamm.Ergebnis.KaelteDezentral ?? new List<ErgebnisKaelteDezentralModel>();
+            if (mitErzeugung || split.Count > 0) KaelteerzeugerSchreiben(k, wp, traegername, km, stamm?.Kaeltemittel, split);
             k.HinweisRoh(!(jahr > 0) ? MyResource.Resource.SIMERG_HRL_KAELTE_LEER
                          : mitErzeugung ? string.Format(k.Kultur, MyResource.Resource.SIMERG_HRL_KAELTE_GEDECKT,
                                                         k.F(wp.Kaelteproduktion_WP.Value, 2),
@@ -519,10 +521,13 @@ namespace WindowsFormsApplication1
         private static void KaelteerzeugerSchreiben(WordKontext k, ErgebnisWaermepumpeModel wp,
                                                     Func<int, string> traegername,
                                                     IReadOnlyList<ErgebnisKaeltemaschineModel> maschinen = null,
-                                                    IReadOnlyList<KaeltemittelBerichtszeile> kaeltemittel = null)
+                                                    IReadOnlyList<KaeltemittelBerichtszeile> kaeltemittel = null,
+                                                    IReadOnlyList<ErgebnisKaelteDezentralModel> dezentral = null)
         {
-            // BV-E5: dieselbe Tafel wie {{tabelle.kaelteerzeuger}} - KU3-4 samt Kältemaschinen, KM4-E2 samt Kältemittel.
-            Berichtstabelle t = Berichtstabellen.Kaelteerzeuger(wp, traegername, BerichtTexte.Englisch, k.Kultur, maschinen, kaeltemittel);
+            // BV-E5: dieselbe Tafel wie {{tabelle.kaelteerzeuger}} - KU3-4 samt Kältemaschinen, KM4-E2 samt Kältemittel,
+            // Schritt 224 samt Split-Zeilen.
+            Berichtstabelle t = Berichtstabellen.Kaelteerzeuger(wp, traegername, BerichtTexte.Englisch, k.Kultur, maschinen, kaeltemittel,
+                                                                dezentral);
             if (t.IstLeer) return;
 
             k.Ueberschrift3(UEBERSCHRIFT_KAELTEERZEUGER);

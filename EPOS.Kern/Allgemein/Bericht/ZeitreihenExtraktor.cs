@@ -177,6 +177,18 @@ namespace WindowsFormsApplication1
                     }
                 }
 
+                // Schritt 224: die Split-Zeilen mit eigenem Zähler unter ihrem Schlüssel - der Platz in der Ergebnisliste
+                // KaelteDezentral (dieselbe Folge wie im SimulationRunner). Ohne Split-Zeile kein Eintrag.
+                SimulationKaeltebedarf kaelteseite = runner.simulation_Kaeltebedarf;
+                if (kaelteseite != null && kaelteseite.Gerechnet && kaelteseite.MitDezentral)
+                    for (int i = 0; i < kaelteseite.DezentraleZeilen.Count; i++)
+                    {
+                        SimulationKaeltebedarf.DezentraleZeile d = kaelteseite.DezentraleZeilen[i];
+                        if (!d.NebenDerStufenrechnung) continue;
+                        Netzbezugsspitze s = Netzbezugsspitze.AusReihe(d.Strom_stuendlich);
+                        if (s != null) z.Kaeltestromspitzen[Kaeltestromabrechnung.SchluesselDezentral(i)] = s;
+                    }
+
                 // Katalog v12: die Kälteproduktion des Kältereiters — je Kälteerzeuger die gedeckte Kälte, dazu die
                 // ungedeckte Kälte; dieselben Reihen wie das Bild der Seite (KaelteProduktionBild.AusLauf). Nur,
                 // wenn das Projekt Kälte rechnet; der Kältebedarf steht als Kanalreihe BEDARF_KUEHLUNG im Satz.

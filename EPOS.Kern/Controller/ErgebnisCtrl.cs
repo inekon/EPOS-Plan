@@ -134,6 +134,9 @@ namespace WindowsFormsApplication1
             // K3 (KaeltebedarfSchema, Schritt 213): die fünf Spalten des Kältebedarfs ohne Gebäudemodell - ebenso.
             bool kaeltebedarfEnergie = KaeltebedarfSchema.ERGEBNISSPALTEN.All(
                 s => DataRepository.SpalteVorhanden(KaeltebedarfSchema.TAB_ERGEBNIS, s));
+            // Schritt 224 (KaeltebedarfSplitAbrechnungSchema): die Ergebnistabelle je Split-Zeile - ebenso vor der Transaktion
+            // gefragt; auf einer Datenbank davor schreibt der Lauf keine Zeile je Split-Zeile.
+            bool kaelteDezentral = KaeltebedarfSplitAbrechnungSchema.TabelleVorhanden();
             // KU3-6a (Schritt 187): die Zaehler der freien Kuehlung an beiden Ergebnistabellen der Waermepumpe -
             // ebenso vor der Transaktion gefragt; auf einer Datenbank davor bleiben die Zeilen, wie sie waren.
             bool freieKuehlungWp = FreieKuehlungSoleSchema.ErgebnisspaltenVorhanden();
@@ -204,6 +207,8 @@ namespace WindowsFormsApplication1
                     DetailzeilenLoeschen(v, TAB_GEB, m.ID_Projekt);
                     // KU3-4: das Ergebnis je Kaeltemaschine - derselbe Vorablauf (Loeschweitergabe am Kopf).
                     DetailzeilenLoeschen(v, KaeltemaschineAnlageSchema.TAB_ERGEBNIS, m.ID_Projekt);
+                    // Schritt 224: das Ergebnis je Split-Zeile - ebenso (vor dem Schritt fehlt die Tabelle, still).
+                    if (kaelteDezentral) DetailzeilenLoeschen(v, KaeltebedarfSplitAbrechnungSchema.TAB_ERGEBNIS, m.ID_Projekt);
 
                     //    Zusaetzlich alle Waisen abraeumen, deren Kopf nicht mehr existiert.
                     //    Notwendig, weil ein frueherer Kopf-Delete OHNE Loeschweitergabe
@@ -437,6 +442,32 @@ namespace WindowsFormsApplication1
                                 pk.Add(new DbParam("@rs", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.TeilFreikuehlung_Stunden) });
                             }
                             v.Ausfuehren(sqlKm, pk.ToArray());
+                        }
+                    }
+
+                    // 4b. Schritt 224: das Ergebnis je Split-Zeile. Ohne Split-Zeile (jedes Bestandsprojekt) keine Zeile.
+                    if (kaelteDezentral && m.KaelteDezentral != null && m.KaelteDezentral.Count > 0)
+                    {
+                        string sqlKd = "INSERT INTO " + KaeltebedarfSplitAbrechnungSchema.TAB_ERGEBNIS + " (ID_Ergebnis, " +
+                            string.Join(", ", KaeltebedarfSplitAbrechnungSchema.SPALTEN) + ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+                        foreach (ErgebnisKaelteDezentralModel kd in m.KaelteDezentral)
+                        {
+                            if (kd == null) continue;
+                            bool traeger = kd.Kuehl_CarrierId.HasValue && kd.Kuehl_CarrierId.Value > 0;
+                            v.Ausfuehren(sqlKd,
+                                new DbParam("@erg", DbParamTyp.Integer) { Wert = kopfId },
+                                new DbParam("@q", DbParamTyp.VarWChar) { Wert = (object)(kd.Quelle == KaeltebedarfSplitAbrechnungSchema.QUELLE_LASTGANG
+                                    ? KaeltebedarfSplitAbrechnungSchema.QUELLE_LASTGANG : KaeltebedarfSplitAbrechnungSchema.QUELLE_PROFIL) },
+                                new DbParam("@z", DbParamTyp.Integer) { Wert = kd.ID_Zuordnung.HasValue ? (object)kd.ID_Zuordnung.Value : DBNull.Value },
+                                new DbParam("@b", DbParamTyp.VarWChar) { Wert = (object)(kd.Bezeichner ?? "") },
+                                new DbParam("@k", DbParamTyp.Double) { Wert = R(kd.Kaelte_MWh) },
+                                new DbParam("@s", DbParamTyp.Double) { Wert = R(kd.Strom_MWh) },
+                                new DbParam("@ks", DbParamTyp.Double) { Wert = kd.Kaelte_Spitze_kW.HasValue ? (object)R(kd.Kaelte_Spitze_kW.Value) : DBNull.Value },
+                                new DbParam("@j", DbParamTyp.Double) { Wert = WertOderNull(kd.Jahres_EER) },
+                                new DbParam("@nb", DbParamTyp.Double) { Wert = kd.Kaeltestrom_Netzbezug_MWh.HasValue ? (object)R(kd.Kaeltestrom_Netzbezug_MWh.Value) : DBNull.Value },
+                                new DbParam("@kc", DbParamTyp.Integer) { Wert = traeger ? (object)kd.Kuehl_CarrierId.Value : DBNull.Value },
+                                new DbParam("@kz", DbParamTyp.Integer) { Wert = traeger && kd.Kuehl_EigenerZaehler.HasValue ? (object)(kd.Kuehl_EigenerZaehler.Value ? 1 : 0) : DBNull.Value },
+                                new DbParam("@sp", DbParamTyp.Double) { Wert = kd.Stromspitze_kW.HasValue ? (object)R(kd.Stromspitze_kW.Value) : DBNull.Value });
                         }
                     }
 
@@ -1278,6 +1309,34 @@ namespace WindowsFormsApplication1
                             // K-F3; vor dem Schritt bzw. ohne Rueckkuehlwerk in Reihe NULL.
                             TeilFreikuehlung_MWh = DN(rk, RueckkuehlwerkSchema.SPALTE_TEILFREIKUEHLUNG),
                             TeilFreikuehlung_Stunden = GanzOderNull(rk, RueckkuehlwerkSchema.SPALTE_TEILFREIKUEHLUNG_STUNDEN),
+                        });
+                    }
+            }
+
+            // Schritt 224: das Ergebnis je Split-Zeile; vor dem Schritt fehlt die Tabelle, die Liste bleibt leer.
+            if (KaeltebedarfSplitAbrechnungSchema.TabelleVorhanden())
+            {
+                DataTable dd = DataRepository.GetDataTable(
+                    "SELECT * FROM " + KaeltebedarfSplitAbrechnungSchema.TAB_ERGEBNIS + " WHERE ID_Ergebnis = ? ORDER BY ID",
+                    new DbParam("@e", m.ID));
+                if (dd != null)
+                    foreach (DataRow rd in dd.Rows)
+                    {
+                        double? idZ = DN(rd, KaeltebedarfSplitAbrechnungSchema.SPALTE_ID_ZUORDNUNG);
+                        m.KaelteDezentral.Add(new ErgebnisKaelteDezentralModel
+                        {
+                            Quelle = S(rd, KaeltebedarfSplitAbrechnungSchema.SPALTE_QUELLE),
+                            ID_Zuordnung = idZ.HasValue ? (int?)Convert.ToInt32(idZ.Value) : null,
+                            Bezeichner = S(rd, "Bezeichner"),
+                            Kaelte_MWh = D(rd, KaeltebedarfSplitAbrechnungSchema.SPALTE_KAELTE),
+                            Strom_MWh = D(rd, KaeltebedarfSplitAbrechnungSchema.SPALTE_STROM),
+                            Kaelte_Spitze_kW = DN(rd, KaeltebedarfSplitAbrechnungSchema.SPALTE_KAELTE_SPITZE),
+                            Jahres_EER = DN(rd, KaeltebedarfSplitAbrechnungSchema.SPALTE_JAHRES_EER),
+                            Kaeltestrom_Netzbezug_MWh = DN(rd, KaeltebedarfSplitAbrechnungSchema.SPALTE_NETZBEZUG),
+                            Kuehl_CarrierId = KmTraeger(DN(rd, KaeltebedarfSplitAbrechnungSchema.SPALTE_KUEHL_ID_CARRIER)),
+                            Kuehl_EigenerZaehler = DN(rd, KaeltebedarfSplitAbrechnungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER) is double z
+                                ? (bool?)(z != 0) : null,
+                            Stromspitze_kW = DN(rd, KaeltebedarfSplitAbrechnungSchema.SPALTE_STROMSPITZE),
                         });
                     }
             }

@@ -39,6 +39,10 @@ namespace WindowsFormsApplication1
         // KU3-4 (Schemaschritt 183): eine Zeile je Kaeltemaschine (Tab_ErgebnisKaeltemaschine); leer = keine gerechnet.
         public List<ErgebnisKaeltemaschineModel> Kaeltemaschinen = new List<ErgebnisKaeltemaschineModel>();
 
+        // Schemaschritt 224 (Konzept Kältebedarf 4.2): eine Zeile je dezentral (Split) gedeckter Kältebedarfszeile
+        // (Tab_ErgebnisKaelteDezentral); leer = keine Split-Zeile gerechnet oder ein Lauf vor dem Schritt.
+        public List<ErgebnisKaelteDezentralModel> KaelteDezentral = new List<ErgebnisKaelteDezentralModel>();
+
         // Pufferspeicher des Laufs (Tab_ErgebnisPufferspeicher, Konzept 6.6):
         // eine Zeile je beteiligtem Speicher - Senkenspeicher UND Quellspeicher.
         // Leere Liste = dieser Lauf hatte keinen Speicher.
@@ -769,6 +773,36 @@ namespace WindowsFormsApplication1
         public double? TeilFreikuehlung_MWh;
         /// <summary>K-F3: Mischstunden der Teil-Freikühlung in Reihe [h/a]; nur mit <c>REIHE</c>.</summary>
         public int? TeilFreikuehlung_Stunden;
+    }
+
+    /// <summary>
+    /// <b>Das Ergebnis einer dezentral (Split) gedeckten Kältebedarfszeile</b> (Schemaschritt 224,
+    /// <c>Tab_ErgebnisKaelteDezentral</c>; Konzept Kältebedarf 4.2, Entscheide E34/E35): Mengen in MWh/a, Spitzen in kW. Die
+    /// Abrechnung liest die Zeile wie die einer Kältemaschine (<see cref="Kaeltestromabrechnung"/>).
+    /// </summary>
+    public class ErgebnisKaelteDezentralModel
+    {
+        /// <summary>Art der Zuordnung: <see cref="KaeltebedarfSplitAbrechnungSchema.QUELLE_LASTGANG"/> oder <see cref="KaeltebedarfSplitAbrechnungSchema.QUELLE_PROFIL"/>.</summary>
+        public string Quelle = KaeltebedarfSplitAbrechnungSchema.QUELLE_PROFIL;
+        /// <summary>ID der Zuordnungszeile (<c>Z_ProjektWaermebedarf</c> bzw. <c>Z_Projekt_Kaeltebedarf</c>); ohne Verweis gespeichert.</summary>
+        public int? ID_Zuordnung;
+        public string Bezeichner = "";
+        /// <summary>Kälte der Zeile [MWh/a].</summary>
+        public double Kaelte_MWh;
+        /// <summary>Strom der Zeile [MWh/a].</summary>
+        public double Strom_MWh;
+        /// <summary>Spitze der Kälte der Zeile [kW].</summary>
+        public double? Kaelte_Spitze_kW;
+        /// <summary>Jahres-EER der Zeile = Kälte / Strom; <c>null</c> ohne Strom.</summary>
+        public double? Jahres_EER;
+        /// <summary>Der Netzbezug ihres Stroms [MWh/a] — anteilig ein Teil von <c>Stromrestbedarf</c>, mit eigenem Zähler daneben.</summary>
+        public double? Kaeltestrom_Netzbezug_MWh;
+        /// <summary>Der ABWEICHENDE Kühlträger (<c>energy_carrier.id</c>); <c>null</c> = Stromträger des Projekts.</summary>
+        public int? Kuehl_CarrierId;
+        /// <summary>Abrechnung über einen eigenen Zähler; nur mit abweichendem Kühlträger belegt.</summary>
+        public bool? Kuehl_EigenerZaehler;
+        /// <summary>Die Spitze ihres Stroms je Stunde [kW] — der Leistungspreis eines eigenen Zählers.</summary>
+        public double? Stromspitze_kW;
     }
 
     // Detail: Waermepumpe-Aggregat (Tab_ErgebnisWaermepumpe) + Modulliste.

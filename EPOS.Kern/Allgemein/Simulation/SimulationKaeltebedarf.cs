@@ -149,20 +149,86 @@ namespace WindowsFormsApplication1
             /// <summary><c>true</c> = Profilzeile, <c>false</c> = Lastgangzeile.</summary>
             public bool Profil;
 
-            /// <summary>Kühlträger; <c>null</c> = Stromträger des Projekts.</summary>
+            /// <summary>Die ID der Zuordnungszeile (<c>Z_Projekt_Kaeltebedarf</c> bzw. <c>Z_ProjektWaermebedarf</c>); <c>null</c> ohne Zeile.</summary>
+            public int? IdZuordnung;
+
+            /// <summary>Kühlträger, wie an der Zeile gepflegt; <c>null</c> = Stromträger des Projekts.</summary>
             public int? KuehlIdCarrier;
 
-            /// <summary>Eigener Zähler.</summary>
+            /// <summary>Eigener Zähler, wie an der Zeile gepflegt.</summary>
             public bool EigenerZaehler;
+
+            /// <summary>
+            /// Der Kühlträger, WENN er vom Stromträger des Projekts abweicht (<c>energy_carrier.id</c>); <b>0 = der Strom der
+            /// Zeile trägt den Stromträger des Projekts</b> — dieselbe Regel wie <see cref="Kaelteerzeuger.Kuehltraeger"/> (E34).
+            /// Gesetzt von <see cref="KuehltraegerFestlegen"/>, bevor der Strom in die Stufenrechnung geht.
+            /// </summary>
+            public int Kuehltraeger;
+
+            /// <summary>
+            /// Läuft der Strom der Zeile NEBEN der Stufenrechnung (abweichender Kühlträger mit eigenem Zähler, E34 Wahl 2)?
+            /// Dann geht er nicht in den Viertelstundenrest und wird weder aus Photovoltaik noch aus dem Stromspeicher gedeckt.
+            /// </summary>
+            public bool NebenDerStufenrechnung => Kuehltraeger > 0 && EigenerZaehler;
+
+            /// <summary>
+            /// Der Netzbezug, der dem Strom der Zeile zukommt [kWh/a]: über die Stufenrechnung anteilig am Netzbezug, mit
+            /// eigenem Zähler der ganze Strom — dieselbe Aufteilung wie <see cref="Kaelteerzeuger.NetzbezugKwh"/>. Gesetzt am
+            /// Laufende (<c>SimulationControl.KaeltestromNetzbezugAufteilen</c>).
+            /// </summary>
+            public double NetzbezugKwh;
 
             /// <summary>Kälte der Zeile [kWh/a].</summary>
             public double KaelteKwh;
+
+            /// <summary>Spitze der Kälte der Zeile [kW].</summary>
+            public double KaelteMaxKw;
 
             /// <summary>Strom der Zeile [kWh/a].</summary>
             public double StromKwh;
 
             /// <summary>Strom der Zeile je Stunde [kWh].</summary>
             public double[] Strom_stuendlich = new double[STUNDEN];
+
+            /// <summary>Jahres-EER der Zeile = Kälte / Strom; 0 ohne Strom.</summary>
+            public double JahresEer => StromKwh > 0 ? KaelteKwh / StromKwh : 0.0;
+        }
+
+        /// <summary>
+        /// Legt je Split-Zeile fest, ob ihr Kühlträger vom Stromträger des Projekts abweicht (<see cref="DezentraleZeile.Kuehltraeger"/>;
+        /// <see cref="Kaeltestromabrechnung.Abweichend"/>) — nur dann wirken Träger und Zähler (E34). Ohne Split-Zeile wirkungslos.
+        /// </summary>
+        /// <param name="projekttraeger">Der Stromträger, der den Netzbezug des Projekts bepreist (<see cref="Kaeltestromabrechnung.Projekttraeger"/>).</param>
+        internal void KuehltraegerFestlegen(int projekttraeger)
+        {
+            foreach (DezentraleZeile z in DezentraleZeilen)
+                z.Kuehltraeger = Kaeltestromabrechnung.Abweichend(z.KuehlIdCarrier, projekttraeger) ? z.KuehlIdCarrier.Value : 0;
+        }
+
+        /// <summary>
+        /// <b>Der Split-Strom, der durch die Stufenrechnung läuft</b> [kWh je Stunde] — die Zeilen OHNE eigenen Zähler. Läuft
+        /// keine Zeile daneben, ist es Zeichen für Zeichen <see cref="Strom_Dezentral"/> (als Kopie) samt seiner Jahressumme;
+        /// sonst die Summe der übrigen Zeilen. Muster <c>SimulationControl.KaeltestromDerStufenrechnung</c>.
+        /// </summary>
+        /// <param name="summeKwh">Die Jahressumme der Reihe [kWh].</param>
+        internal double[] StromDerStufenrechnung(out double summeKwh)
+        {
+            summeKwh = 0.0;
+            if (!DezentraleZeilen.Exists(z => z.NebenDerStufenrechnung))
+            {
+                double[] alle = (double[])Strom_Dezentral.Clone();
+                for (int h = 0; h < STUNDEN; h++) summeKwh += alle[h];
+                return alle;
+            }
+
+            var reihe = new double[STUNDEN];
+            foreach (DezentraleZeile z in DezentraleZeilen)
+            {
+                if (z.NebenDerStufenrechnung) continue;
+                for (int h = 0; h < STUNDEN; h++) reihe[h] += z.Strom_stuendlich[h];
+            }
+            for (int h = 0; h < STUNDEN; h++) summeKwh += reihe[h];
+            return reihe;
         }
 
         /// <summary>Die dezentral gedeckten Zeilen des Laufs in Buchungsfolge (Lastgänge, dann Profile).</summary>
@@ -475,7 +541,7 @@ namespace WindowsFormsApplication1
 
             var zeile = new DezentraleZeile
             {
-                Bezeichner = deckung.Bezeichner, Profil = profil,
+                Bezeichner = deckung.Bezeichner, Profil = profil, IdZuordnung = deckung.IdZuordnung,
                 KuehlIdCarrier = deckung.KuehlIdCarrier, EigenerZaehler = deckung.EigenerZaehler,
             };
             for (int h = 0; h < STUNDEN; h++)
@@ -488,6 +554,7 @@ namespace WindowsFormsApplication1
                 Strom_Dezentral[h] += p;
                 zeile.Strom_stuendlich[h] = p;
                 zeile.KaelteKwh += q;
+                if (q > zeile.KaelteMaxKw) zeile.KaelteMaxKw = q;
                 zeile.StromKwh += p;
             }
             DezentraleZeilen.Add(zeile);
@@ -1034,6 +1101,16 @@ namespace WindowsFormsApplication1
                 s.Add(new KeyValuePair<string, double>("Kaelte.DezentralSpitzeKw", kaelte.Kaelte_Dezentral_Max));
                 s.Add(new KeyValuePair<string, double>("Kaelte.DezentralStromMwh", kaelte.Strom_Dezentral_Gesamt));
                 s.Add(new KeyValuePair<string, double>("Kaelte.DezentralJahresEer", kaelte.Jahres_EER_Dezentral));
+                // Schritt 224: je Split-Zeile Strom, Netzbezug, abweichender Kühlträger (0 = Projektträger) und Zähler.
+                for (int i = 0; i < kaelte.DezentraleZeilen.Count; i++)
+                {
+                    SimulationKaeltebedarf.DezentraleZeile z = kaelte.DezentraleZeilen[i];
+                    string p = "KaelteDezentral[" + i.ToString(CultureInfo.InvariantCulture) + "].";
+                    s.Add(new KeyValuePair<string, double>(p + "StromMwh", z.StromKwh / 1000.0));
+                    s.Add(new KeyValuePair<string, double>(p + "NetzbezugMwh", z.NetzbezugKwh / 1000.0));
+                    s.Add(new KeyValuePair<string, double>(p + "Kuehltraeger", z.Kuehltraeger));
+                    s.Add(new KeyValuePair<string, double>(p + "EigenerZaehler", z.NebenDerStufenrechnung ? 1.0 : 0.0));
+                }
             }
             return s;
         }

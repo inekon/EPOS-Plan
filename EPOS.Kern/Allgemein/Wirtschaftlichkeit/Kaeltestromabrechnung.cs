@@ -37,6 +37,10 @@ namespace WindowsFormsApplication1
     /// ihres Kältestroms; jede Frage dieser Klasse nimmt sie NACH den Modulen der Wärmepumpe mit. Ihr Schlüssel in
     /// <c>Kaeltestromspitzen</c> ist <see cref="SchluesselKaeltemaschine"/> (negativ — die Modulplätze der Wärmepumpe
     /// sind es nie).</para>
+    ///
+    /// <para><b>Die dezentrale (Split-)Deckung rechnet ebenso</b> (Schemaschritt 224, Konzept Kältebedarf 4.2): Ihre Zeilen
+    /// (<c>Tab_ErgebnisKaelteDezentral</c>) tragen dieselben vier Größen und kommen NACH den Kältemaschinen; ihr Schlüssel
+    /// ist <see cref="SchluesselDezentral"/> in einem eigenen negativen Bereich.</para>
     /// </summary>
     public static class Kaeltestromabrechnung
     {
@@ -146,6 +150,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static int SchluesselKaeltemaschine(int i) => -1 - i;
 
+        /// <summary>
+        /// Der Schlüssel einer Split-Zeile in <c>ZeitreihenSatz.Kaeltestromspitzen</c> und <see cref="Zaehler.Modulindex"/>:
+        /// <c>-1 000 001 - i</c> für die <paramref name="i"/>-te Zeile von <see cref="ErgebnisModel.KaelteDezentral"/> — ein
+        /// eigener negativer Bereich, den weder ein Modulplatz noch eine Kältemaschine (<see cref="SchluesselKaeltemaschine"/>)
+        /// je erreicht.
+        /// </summary>
+        public static int SchluesselDezentral(int i) => -1_000_001 - i;
+
         /// <summary>Die Spitze einer Stundenreihe des Kältestroms [kW] (kWh je Stunde = kW); <c>null</c> ohne Reihe.</summary>
         public static double? Stundenspitze(double[] stunden)
         {
@@ -166,7 +178,8 @@ namespace WindowsFormsApplication1
             public double? StromspitzeKw;
         }
 
-        /// <summary>Die Anlagen mit Kältestrom: erst die Module der Wärmepumpe, dann die Kältemaschinen (KU3-4d).</summary>
+        /// <summary>Die Anlagen mit Kältestrom: erst die Module der Wärmepumpe, dann die Kältemaschinen (KU3-4d), dann die
+        /// Split-Zeilen (Schritt 224).</summary>
         private static IEnumerable<Quelle> Quellen(ErgebnisModel m)
         {
             if (m == null) yield break;
@@ -197,6 +210,21 @@ namespace WindowsFormsApplication1
                         EigenerZaehler = k.Kuehl_EigenerZaehler,
                         NetzbezugMwh = k.Kaeltestrom_Netzbezug_MWh,
                         StromspitzeKw = k.Stromspitze_kW,
+                    };
+                }
+            if (m.KaelteDezentral != null)
+                for (int i = 0; i < m.KaelteDezentral.Count; i++)
+                {
+                    ErgebnisKaelteDezentralModel d = m.KaelteDezentral[i];
+                    if (d == null) continue;
+                    yield return new Quelle
+                    {
+                        Schluessel = SchluesselDezentral(i),
+                        Anlage = string.IsNullOrEmpty(d.Bezeichner) ? "?" : d.Bezeichner,
+                        Traeger = d.Kuehl_CarrierId,
+                        EigenerZaehler = d.Kuehl_EigenerZaehler,
+                        NetzbezugMwh = d.Kaeltestrom_Netzbezug_MWh,
+                        StromspitzeKw = d.Stromspitze_kW,
                     };
                 }
         }
@@ -277,8 +305,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Netzbezug des Kältestroms aller Anlagen [MWh/a] — die Summe der Modulspalte
-        /// <c>Kaeltestrom_Netzbezug</c> und der Spalte <c>Kaeltestrom_Netzbezug_MWh</c> der Kältemaschinen, gleich welcher Träger ihn bepreist; <c>null</c>, wenn der Lauf
-        /// keinen Kältestrom gerechnet hat.
+        /// <c>Kaeltestrom_Netzbezug</c> und der Spalte <c>Kaeltestrom_Netzbezug_MWh</c> der Kältemaschinen und der Split-Zeilen,
+        /// gleich welcher Träger ihn bepreist; <c>null</c>, wenn der Lauf keinen Kältestrom gerechnet hat.
         /// </summary>
         public static double? NetzbezugKaeltestromMwh(ErgebnisModel m)
         {

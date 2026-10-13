@@ -14,19 +14,25 @@ namespace WindowsFormsApplication1
         /// Netzbezug und der Stromträger (Kühlkonzept 8.4) aus den Modulzeilen des Ergebnisses des Stamms. Die Namen der
         /// Träger kommen aus dem Wertesatz (<paramref name="traegername"/>). KM4-E2 (Konzept Kältemittel als Stammdatum 5.3):
         /// Führt ein Erzeuger einen Kältemittel-Code (<paramref name="kaeltemittel"/>), steht die Spalte „Kältemittel“ dabei;
-        /// ein Erzeuger der Ergebnisklasse 2 trägt einen Stern, die Fußnote steht unter der Tafel.
+        /// ein Erzeuger der Ergebnisklasse 2 trägt einen Stern, die Fußnote steht unter der Tafel. Schritt 224: Nach den
+        /// Erzeugern steht je dezentral (Split) gedeckter Kältebedarfszeile (<paramref name="dezentral"/>) eine Zeile mit Kälte,
+        /// Strom, Jahres-EER, Netzbezug und Träger — ohne Kältemittel, die Geräte sind nicht erfasst.
         /// </summary>
         public static Berichtstabelle Kaelteerzeuger(ErgebnisWaermepumpeModel wp, Func<int, string> traegername,
                                                      bool englisch, CultureInfo kultur,
                                                      IReadOnlyList<ErgebnisKaeltemaschineModel> maschinen = null,
-                                                     IReadOnlyList<KaeltemittelBerichtszeile> kaeltemittel = null)
+                                                     IReadOnlyList<KaeltemittelBerichtszeile> kaeltemittel = null,
+                                                     IReadOnlyList<ErgebnisKaelteDezentralModel> dezentral = null)
         {
             var zeilen = (wp?.Module ?? new List<ErgebnisWaermepumpeModulModel>())
                 .Where(m => m != null && m.Kaelteproduktion.HasValue && m.Kaelteproduktion.Value > 0).ToList();
             // KU3-4: die Kältemaschinen nach den Wärmepumpen - Netzbezug und Träger seit Schritt 184 (KU3-4d).
             var km = (maschinen ?? Array.Empty<ErgebnisKaeltemaschineModel>())
                 .Where(k => k != null && k.Kaelteproduktion_MWh > 0).ToList();
-            if (zeilen.Count == 0 && km.Count == 0) return Leer(nameof(RR.BV_GRUND_TABELLE_LEER), kultur);
+            // Schritt 224: die Split-Zeilen nach den Kältemaschinen; ein Lauf ohne Split-Zeile bringt keine.
+            var split = (dezentral ?? Array.Empty<ErgebnisKaelteDezentralModel>())
+                .Where(d => d != null && d.Kaelte_MWh > 0).ToList();
+            if (zeilen.Count == 0 && km.Count == 0 && split.Count == 0) return Leer(nameof(RR.BV_GRUND_TABELLE_LEER), kultur);
 
             // KM4-E2: Code je Zeile - die Wärmepumpe über den Anlagennamen der Modulzeile, die Kältemaschine über ihr Gerät.
             Func<ErgebnisWaermepumpeModulModel, KaeltemittelBerichtszeile> kmWp = m => kaeltemittel?.FirstOrDefault(
@@ -89,6 +95,19 @@ namespace WindowsFormsApplication1
                     Zellen.Text(k.Kaeltestrom_Netzbezug_MWh.HasValue
                         ? ProjektbeschreibungBaustein.KuehltraegerText(k.Kuehl_CarrierId, k.Kuehl_EigenerZaehler, traegername)
                         : Tabellenzelle.STRICH),
+                }));
+            }
+            foreach (ErgebnisKaelteDezentralModel d in split)
+            {
+                string name = (string.IsNullOrEmpty(d.Bezeichner) ? Tabellenzelle.STRICH : d.Bezeichner) + " (Split)";
+                t.Zeile(MitKaeltemittel(mitKaeltemittel, Zellen.Text(Tabellenzelle.STRICH), new[]
+                {
+                    Zellen.Text(name),
+                    zahl(d.Kaelte_MWh, "MWh/a"),
+                    zahl(d.Strom_MWh, "MWh/a"),
+                    zahl(d.Strom_MWh > 0 ? d.Kaelte_MWh / d.Strom_MWh : (double?)null, null),
+                    zahl(d.Kaeltestrom_Netzbezug_MWh, "MWh/a"),
+                    Zellen.Text(ProjektbeschreibungBaustein.KuehltraegerText(d.Kuehl_CarrierId, d.Kuehl_EigenerZaehler, traegername)),
                 }));
             }
             if (stern) t.Hinweis(BerichtTexte.T(FUSSNOTE_KAELTEMITTEL, englisch));
