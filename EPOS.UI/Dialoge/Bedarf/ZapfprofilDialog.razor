@@ -98,6 +98,8 @@
 @using System.Globalization
 @using WindowsFormsApplication1
 @implements IDisposable
+@using Microsoft.JSInterop
+@inject IJSRuntime Js
 
 <div class="epos-dialog epos-zapfprofil" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -233,11 +235,13 @@
                 ZapfprofilNutzungsartDaten? art = Nutzungsart(zone.IdNutzungsart);
                 <Gruppenkopf Titel="@Format(Texte.GruppeZone, zone.Name)" Summe="@Texte.StufeEinfach">
                     <KindInhalt>
+                        @* Die Felder der Zone; ihre erste Klappliste ist die Nutzungsart — Fokusziel nach „Zone hinzufügen" (ZB2). *@
+                        <div class="epos-zapfprofil-zonenfelder" @ref="_zonenfelder">
                         <Formularraster>
                             <KindInhalt>
                                 <Textfeld Bezeichnung="@Texte.LabelZonenname" Wert="@zone.Name"
                                           WertChanged="NameSetzen" />
-                                <Auswahlfeld @ref="_nutzungsartFeld" Bezeichnung="@Texte.LabelNutzungsart" Eintraege="@Nutzungsarten"
+                                <Auswahlfeld Bezeichnung="@Texte.LabelNutzungsart" Eintraege="@Nutzungsarten"
                                              Auswahl="@(zone.IdNutzungsart > 0 ? zone.IdNutzungsart : (int?)null)"
                                              AuswahlChanged="NutzungsartSetzen"
                                              Platzhalter="@Texte.KatalogKeineAuswahl"
@@ -263,6 +267,7 @@
                                 }
                             </KindInhalt>
                         </Formularraster>
+                        </div>
 
                         @* Die aufgeklappte Katalogauswahl (5.3, Stufe Erweitert): Bezugsart, Kalender, Herkunft,
                            Status und Katalogversion je Eintrag; die Zeile waehlt die Nutzungsart. *@
@@ -1493,8 +1498,8 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
 
-    /// <summary>Die Klappliste „Nutzungsart" des Zonenblocks — Fokusziel nach „Zone hinzufügen" (ZB2).</summary>
-    private Auswahlfeld? _nutzungsartFeld;
+    /// <summary>Die Felder des Zonenblocks; ihre erste Klappliste (Nutzungsart) ist das Fokusziel nach „Zone hinzufügen" (ZB2).</summary>
+    private ElementReference _zonenfelder;
 
     /// <summary>Nach dem nächsten Zeichnen den Fokus auf die Nutzungsart setzen (ZB2)?</summary>
     private bool _fokusNutzungsart;
@@ -1654,14 +1659,32 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         StatusNachziehen();
-        if (_fokusNutzungsart && _nutzungsartFeld is not null)
+        if (_fokusNutzungsart)
         {
             _fokusNutzungsart = false;
-            await _nutzungsartFeld.FokussierenAsync();
+            await NutzungsartFokussieren();
         }
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
         await _wurzel.FocusAsync(preventScroll: true);
+    }
+
+    /// <summary>
+    /// Der Fokus auf die Klappliste Nutzungsart — ohne zu rollen, über das kleine Modul
+    /// <c>epos-sprung.js</c>. Ohne das Modul (Prüfstand) bleibt der Fokus, wo er ist: ein
+    /// Schönheitsfehler, kein Fehlschlag.
+    /// </summary>
+    private async Task NutzungsartFokussieren()
+    {
+        try
+        {
+            IJSObjectReference modul = await Js.InvokeAsync<IJSObjectReference>("import", "./_content/EPOS.UI/epos-sprung.js");
+            if (modul is not null) await modul.InvokeVoidAsync("feldFokus", _zonenfelder, "select:not([disabled])");
+        }
+        catch (Exception)
+        {
+            // Kein Modul, kein Fokus — der nächste Schritt steht trotzdem als Zeile im Block.
+        }
     }
 
     /// <inheritdoc/>

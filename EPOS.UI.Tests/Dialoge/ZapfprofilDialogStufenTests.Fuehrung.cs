@@ -64,8 +64,10 @@ public partial class ZapfprofilDialogStufenTests
             .Add(x => x.EntprellungMs, 0)
             .Add(x => x.Geschlossen, _ => { }));
 
+    /// <summary>Die Ladeaufrufe des Fokusmoduls <c>epos-sprung.js</c> (im Prüfstand ohne Modul).</summary>
     private int Fokusaufrufe()
-        => JSInterop.Invocations.Count(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase));
+        => JSInterop.Invocations.Count(i => i.Identifier == "import"
+                                            && i.Arguments.Any(a => a is string t && t.EndsWith("epos-sprung.js", StringComparison.Ordinal)));
 
     // ---- ZB2 -------------------------------------------------------------------------------
 

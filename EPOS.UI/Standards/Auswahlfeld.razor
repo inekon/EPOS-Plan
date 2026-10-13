@@ -32,7 +32,7 @@
         <span class="epos-feld-text">@Bezeichnung</span>
     }
     <span class="epos-feld-zeile">
-        <select class="epos-eingabe" value="@(Auswahl?.ToString() ?? "")" @ref="_feld"
+        <select class="epos-eingabe" value="@(Auswahl?.ToString() ?? "")"
                 aria-label="@(string.IsNullOrEmpty(Kurzname) ? null : Kurzname)"
                 disabled="@(!Aktiv)" @onchange="BeiAuswahl">
             @if (Platzhalter is not null)
@@ -56,16 +56,6 @@
     /// Eintrags-Id verschieden sein; <c>int.MinValue</c> kommt als Katalog-Id nicht vor.
     /// </summary>
     private const int PLATZHALTERSCHLUESSEL = int.MinValue;
-
-    /// <summary>Die Klappliste selbst — nur fuer <see cref="FokussierenAsync"/>.</summary>
-    private ElementReference _feld;
-
-    /// <summary>
-    /// Setzt den Fokus auf die Klappliste, ohne zu rollen (Hausregel „Ein Erstfokus rollt nicht"):
-    /// fuer einen Wirt, der nach einer Aktion den naechsten Schritt anbietet (Zapfprofil, „Zone
-    /// hinzufuegen" → Nutzungsart).
-    /// </summary>
-    public ValueTask FokussierenAsync() => _feld.FocusAsync(preventScroll: true);
 
     /// <summary>Beschriftung links bzw. ueber dem Feld.</summary>
     [Parameter] public string Bezeichnung { get; set; } = "";
