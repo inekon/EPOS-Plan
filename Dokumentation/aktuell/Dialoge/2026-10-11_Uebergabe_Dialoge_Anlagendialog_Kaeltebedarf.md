@@ -21,7 +21,7 @@ für die hier genannten Gegenstände ab.
 - Kältemaschinen-Dialog (KA‑E‑26/27, #1029) gebaut: Wärmepumpen mit Kühlfunktion im Katalog, Layout.
 - Basis R52 `2026-10-11_R52_Vorheizen`; Schemaschritt: es gilt allein die Kopfzeile „Schemaschritt angemeldet“ der Statusdatei (zuletzt 222 frei); von dieser Sitzung ist keiner belegt.
 - Abgestimmt mit der Sitzung Gebäudesimulation (11.10.): Gebäudedialog/Mehrzonen-Import (ihr Entwurf GD, #1004) und DIN‑18599‑10‑Normprofile liegen dort; Kalenderprobe-Reparatur (`de5043b0a`) und Konditionierungsprobe-Prüfzeile (`516199024`) von uns, mit ihnen abgestimmt.
-- Übersicht in Berichte & Kosten (Statuszeile #1033, 13.10.2026, Sitzung `session_01Mt7MsJGzcGr77yqBsxwpLj`): Vergleichstabelle je Gewerk mit Kennwerten und markierten Abweichungen, Kopf in drei Teilen, KI-Sicht erweitert. Sichtabnahme unter Windows und die Version des Logbuchsatzes sind offen.
+- Übersicht in Berichte & Kosten (Statuszeile #1033, 13.10.2026, Sitzung `session_01Mt7MsJGzcGr77yqBsxwpLj`): Vergleichstabelle je Gewerk mit Kennwerten und markierten Abweichungen, Kopf in drei Teilen, KI-Sicht erweitert. Sichtabnahme unter Windows und die Version des Logbuchsatzes sind offen. Dazu zwei Nachzüge am selben Tag: Statuszeile #1035 (Kältemaschine als Gewerk im Komponentenvergleich) und #1036 (Einheiten in den Spaltenköpfen der Auswahllisten, rund 45 Dialoge).
 - Es laufen keine Agenten, keine offenen Worktrees.
 
 ## 2 Geltende Entscheide (Auswahl)
@@ -53,6 +53,7 @@ für die hier genannten Gegenstände ab.
 5. Fremde Befunde, nur gemeldet: Katalogprobe 8 Querroll-Verstöße in Verwaltungen N13b–N22a (Stammblatt 4–27 px); Fensterprobe `dubletten 1194x834`.
 6. Bei der Gebäudesimulation: Gebäudedialog/Mehrzonen-Import (GD), Normprofile DIN 18599‑10 (Außenluft je Person, KI-Anweisungsweg), Jahreswärmebedarf in der Zusammenfassung des Gebäudedialogs (übergeben, Konzept Katalogauswahl Abschnitt 5).
 7. (erledigt mit Statuszeile #1034) Nachzug KM‑K2: Naht für eine Wärmepumpen-Anlagenzeile (`WaermepumpeAnlageGaben`), dann öffnet Bearbeiten… im Kältemaschinen-Dialog die Wärmepumpen-Überlagerung; Wärmekaskade bei erster Wärmepumpe aus dem Kältedialog; Verwendungsmarke je Projektkopie; drei unbenutzte Textfelder/Ressourcen der entfallenen Zeile „Wärmepumpen im Kühlbetrieb" entfernen.
+8. Offen beim Anwender aus der Übersicht und den Einheiten: Versionsnummer der zwei Logbuchsätze, Einheit des Zeitintervalls (Strom-/PV-Ganglinie), Zeitbezug des Leistungspreises der Projekt-Brennstoffe; Nachzüge Kältemaschine: Übernahme als Ganzes, Vorlagenplatzhalter.
 
 ## 5 Einstiegs-Prompt für die neue Sitzung
 
