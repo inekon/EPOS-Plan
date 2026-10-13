@@ -54152,6 +54152,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätekosten laufen über die Kostenverwaltung ähnelt.
+        /// </summary>
+        public static string KBROW_HINT_KOSTENVERWALTUNG {
+            get {
+                return ResourceManager.GetString("KBROW_HINT_KOSTENVERWALTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die leer = Vorgabe ähnelt.
         /// </summary>
         public static string KBROW_HINT_LEER_VORGABE {
@@ -54202,6 +54211,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KBROW_LBL_BRENNWERT {
             get {
                 return ResourceManager.GetString("KBROW_LBL_BRENNWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätekosten: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_GERAETEKOSTEN {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_GERAETEKOSTEN", resourceCulture);
             }
         }
         
@@ -64233,6 +64251,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_KBROW_FELD_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_KBROW_FELD_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gerätekosten in Euro aus der Satzvorlage dieses Katalogsatzes — nur Anzeige; gepflegt werden sie in der Kostenverwaltung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_GERAETEKOSTEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_GERAETEKOSTEN_ERL", resourceCulture);
             }
         }
         

@@ -677,6 +677,9 @@
   <data name="KBROW_LBL_HERSTELLER" xml:space="preserve">
     <value>Manufacturer:</value>
   </data>
+  <data name="KBROW_LBL_GERAETEKOSTEN" xml:space="preserve">
+    <value>Device cost:</value>
+  </data>
   <data name="KBROW_LBL_INVEST" xml:space="preserve">
     <value>Investment costs:</value>
   </data>
@@ -12515,6 +12518,9 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="KBROW_HINT_BB_EINHEIT" xml:space="preserve">
     <value>kW or % (of rated output)</value>
+  </data>
+  <data name="KBROW_HINT_KOSTENVERWALTUNG" xml:space="preserve">
+    <value>Device costs are maintained in the cost management</value>
   </data>
   <data name="HZKK_LBL_BRENNWERT" xml:space="preserve">
     <value>Condensing boiler</value>
@@ -28354,6 +28360,9 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_KBROW_BEZEICHNER_ERL" xml:space="preserve">
     <value>The name of the selected catalogue record; it is the key of the record and read-only here – a record gets a different name via “Duplicate…”.</value>
+  </data>
+  <data name="KI_DLG_KBROW_GERAETEKOSTEN_ERL" xml:space="preserve">
+    <value>The device cost in euros taken from this catalogue record's cost template — display only; it is maintained in the cost management.</value>
   </data>
   <data name="KI_DLG_KBROW_INVEST_ERL" xml:space="preserve">
     <value>The investment cost of the unit according to the catalogue, in euros.</value>

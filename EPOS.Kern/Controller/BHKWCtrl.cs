@@ -165,10 +165,8 @@ namespace WindowsFormsApplication1
                 string sql = @"UPDATE Tab_BHKW SET
                                Beschreibung=?, Firma=?, Motortyp=?, Ptherm=?, Pel=?,
                                Brennstoff=?, Wirkungsgrad=?, Wirkungsgrad_el=?, Wirkungsgrad_th=?,
-                               Investition_kwel=?, Raumbedarf=?,
-                               Wartungskosten_kwhel=?, Nutzungsdauer=?, NOx=?, SO2=?, CO=?,
-                               CO2=?, Staub=?, Grenzleistung=?, Kosten_Modul=?, Kosten_Montage=?,
-                               Kosten_Lieferung=?, Kosten_Schallschutzhaube=?, Kosten_Abgasreinigung=?
+                               Raumbedarf=?, Nutzungsdauer=?, NOx=?, SO2=?, CO=?,
+                               CO2=?, Staub=?, Grenzleistung=?
                                WHERE ID=?";
 
                 // EINE WAHRHEIT (Schemaschritt 99): Der Gesamtwirkungsgrad ist die
@@ -178,16 +176,12 @@ namespace WindowsFormsApplication1
                 model.m_Wirkungsgrad = BhkwWirkungsgrad.GesamtZumSchreiben(
                     model.m_Wirkungsgrad_el, model.m_Wirkungsgrad_th, model.m_Wirkungsgrad);
 
-                // Die Einzelposten fuehren (Regel in BHKWKosten, Nutzerentscheid
-                // 22.08.2026): der spezifische Wert wird hier aus den Posten und Pel
-                // abgeleitet, damit auch dieser Schreibweg die beiden Groessen nicht
-                // auseinanderlaufen lassen kann. CopyFromStamm rechnet bewusst NICHT
-                // nach: es kopiert einen Stammsatz unveraendert ins Projekt.
-                model.m_Investition_KWel = BHKWKosten.JeKWel(
-                    BHKWKosten.Summe(model.m_Kosten_Modul, model.m_Kosten_Montage,
-                                     model.m_Kosten_Lieferung, model.m_Kosten_Schallschutzhaube,
-                                     model.m_Kosten_Abgasreinigung),
-                    model.m_Pel);
+                // KEINE KOSTEN MEHR AM GERAET (Welle KB-4, Anwenderentscheid 13.10.2026
+                // „eine Kostenbasis, keine Doppelhaltung"): Die fuenf Kostenposten, die
+                // Wartung je kWhel und die daraus abgeleitete Investition je kWel sind mit
+                // Schemaschritt GeraetekostenEntfallSchema entfallen. Die eine Basis ist die
+                // Satzvorlage des Katalogsatzes; der Planwert einer Anlage kommt seither aus
+                // ihr (TechnikPlanwertCtrl.Satzvorlagenbasis), nicht mehr aus Spalten.
 
                 // ARBEITSPAKET iU6: Die Parametersammlung des DBCommand war hier nur
                 // ZWISCHENSPEICHER - unten wurde sie sofort in ein Array kopiert und an
@@ -208,9 +202,7 @@ namespace WindowsFormsApplication1
                 werte.Add(new DbParam("@wirk", model.m_Wirkungsgrad));
                 werte.Add(P("@wirkEl", model.m_Wirkungsgrad_el));
                 werte.Add(P("@wirkTh", model.m_Wirkungsgrad_th));
-                werte.Add(new DbParam("@inv", model.m_Investition_KWel));
                 werte.Add(new DbParam("@raum", model.m_Raumbedarf));
-                werte.Add(new DbParam("@wart", model.m_Wartungskosten_kWhel));
                 werte.Add(new DbParam("@nutz", model.m_Nutzungsdauer));
                 werte.Add(new DbParam("@nox", model.m_NOx));
                 werte.Add(new DbParam("@so2", model.m_SO2));
@@ -218,11 +210,6 @@ namespace WindowsFormsApplication1
                 werte.Add(new DbParam("@co2", model.m_CO2));
                 werte.Add(new DbParam("@staub", model.m_Staub));
                 werte.Add(new DbParam("@grenz", model.m_Grenzleistung));
-                werte.Add(new DbParam("@modul", model.m_Kosten_Modul));
-                werte.Add(new DbParam("@mont", model.m_Kosten_Montage));
-                werte.Add(new DbParam("@lief", model.m_Kosten_Lieferung));
-                werte.Add(new DbParam("@schall", model.m_Kosten_Schallschutzhaube));
-                werte.Add(new DbParam("@abgas", model.m_Kosten_Abgasreinigung));
                 werte.Add(new DbParam("@key", model.m_ID));
 
                 // ARBEITSPAKET S4b/S4e: Ohne fremden Vorgang läuft der Schreibvorgang
@@ -312,10 +299,9 @@ namespace WindowsFormsApplication1
                 string sql = @"INSERT INTO Tab_BHKW
                     (ID, ID_Projekt, Bezeichner, Firma, Beschreibung, Ptherm, Pel, Brennstoff,
                      Wirkungsgrad, Wirkungsgrad_el, Wirkungsgrad_th,
-                     Investition_kwel, Raumbedarf, Wartungskosten_kwhel, Nutzungsdauer,
-                     NOx, SO2, CO, CO2, Staub, Motortyp, Grenzleistung, Kosten_Modul, Kosten_Montage,
-                     Kosten_Lieferung, Kosten_Schallschutzhaube, Kosten_Abgasreinigung, Vorlauf, Ruecklauf)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                     Raumbedarf, Nutzungsdauer,
+                     NOx, SO2, CO, CO2, Staub, Motortyp, Grenzleistung, Vorlauf, Ruecklauf)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
       
                 DbParam[] ps = {
                     new DbParam("@id", neueId),
@@ -332,9 +318,7 @@ namespace WindowsFormsApplication1
                     // Datenverlust.
                     P("@wirkEl", ColOrNull(s, BhkwWirkungsgrad.SPALTE_EL)),
                     P("@wirkTh", ColOrNull(s, BhkwWirkungsgrad.SPALTE_TH)),
-                    P("@inv", s["Investition_kwel"]),
                     P("@raum", s["Raumbedarf"]),
-                    P("@wart", s["Wartungskosten_kwhel"]),
                     P("@nutz", s["Nutzungsdauer"]),
                     P("@nox", s["NOx"]),
                     P("@so2", s["SO2"]),
@@ -343,11 +327,6 @@ namespace WindowsFormsApplication1
                     P("@staub", s["Staub"]),
                     P("@motor", s["Motortyp"]),
                     P("@grenz", s["Grenzleistung"]),
-                    P("@modul", s["Kosten_Modul"]),
-                    P("@mont", s["Kosten_Montage"]),
-                    P("@lief", s["Kosten_Lieferung"]),
-                    P("@schall", s["Kosten_Schallschutzhaube"]),
-                    P("@abgas", s["Kosten_Abgasreinigung"]),
                     P("@vor", ColOrNull(s, "Vorlauf")),
                     P("@rue", ColOrNull(s, "Ruecklauf"))
                 };
@@ -435,9 +414,7 @@ namespace WindowsFormsApplication1
             m.m_Wirkungsgrad = row["Wirkungsgrad"] != DBNull.Value ? Convert.ToDouble(row["Wirkungsgrad"]) : 0;
             m.m_Wirkungsgrad_el = AnteilAus(row, BhkwWirkungsgrad.SPALTE_EL);
             m.m_Wirkungsgrad_th = AnteilAus(row, BhkwWirkungsgrad.SPALTE_TH);
-            m.m_Investition_KWel = row["Investition_kwel"] != DBNull.Value ? Convert.ToDouble(row["Investition_kwel"]) : 0;
             m.m_Raumbedarf = row["Raumbedarf"] != DBNull.Value ? Convert.ToDouble(row["Raumbedarf"]) : 0;
-            m.m_Wartungskosten_kWhel = row["Wartungskosten_kwhel"] != DBNull.Value ? Convert.ToDouble(row["Wartungskosten_kwhel"]) : 0;
             m.m_Nutzungsdauer = row["Nutzungsdauer"] != DBNull.Value ? Convert.ToInt32(row["Nutzungsdauer"]) : 0;
             m.m_NOx = row["NOx"] != DBNull.Value ? Convert.ToInt32(row["NOx"]) : 0;
             m.m_SO2 = row["SO2"] != DBNull.Value ? Convert.ToInt32(row["SO2"]) : 0;
@@ -446,11 +423,6 @@ namespace WindowsFormsApplication1
             m.m_Staub = row["Staub"] != DBNull.Value ? Convert.ToInt32(row["Staub"]) : 0;
             m.m_szMotortyp = row["Motortyp"].ToString();
             m.m_Grenzleistung = row["Grenzleistung"] != DBNull.Value ? Convert.ToDouble(row["Grenzleistung"]) : 0;
-            m.m_Kosten_Modul = row["Kosten_Modul"] != DBNull.Value ? Convert.ToDouble(row["Kosten_Modul"]) : 0;
-            m.m_Kosten_Montage = row["Kosten_Montage"] != DBNull.Value ? Convert.ToDouble(row["Kosten_Montage"]) : 0;
-            m.m_Kosten_Lieferung = row["Kosten_Lieferung"] != DBNull.Value ? Convert.ToDouble(row["Kosten_Lieferung"]) : 0;
-            m.m_Kosten_Schallschutzhaube = row["Kosten_Schallschutzhaube"] != DBNull.Value ? Convert.ToDouble(row["Kosten_Schallschutzhaube"]) : 0;
-            m.m_Kosten_Abgasreinigung = row["Kosten_Abgasreinigung"] != DBNull.Value ? Convert.ToDouble(row["Kosten_Abgasreinigung"]) : 0;
             // Welle M4: die Teillastfelder; eine nicht migrierte Datenbank liefert sie leer.
             ErzeugerTeillastWerte.BhkwAusZeile(m, row);
             return m;
@@ -470,9 +442,7 @@ namespace WindowsFormsApplication1
             this.m_Wirkungsgrad = m.m_Wirkungsgrad;
             this.m_Wirkungsgrad_el = m.m_Wirkungsgrad_el;
             this.m_Wirkungsgrad_th = m.m_Wirkungsgrad_th;
-            this.m_Investition_KWel = m.m_Investition_KWel;
             this.m_Raumbedarf = m.m_Raumbedarf;
-            this.m_Wartungskosten_kWhel = m.m_Wartungskosten_kWhel;
             this.m_Nutzungsdauer = m.m_Nutzungsdauer;
             this.m_NOx = m.m_NOx;
             this.m_SO2 = m.m_SO2;
@@ -481,11 +451,6 @@ namespace WindowsFormsApplication1
             this.m_Staub = m.m_Staub;
             this.m_szMotortyp = m.m_szMotortyp;
             this.m_Grenzleistung = m.m_Grenzleistung;
-            this.m_Kosten_Modul = m.m_Kosten_Modul;
-            this.m_Kosten_Montage = m.m_Kosten_Montage;
-            this.m_Kosten_Lieferung = m.m_Kosten_Lieferung;
-            this.m_Kosten_Schallschutzhaube = m.m_Kosten_Schallschutzhaube;
-            this.m_Kosten_Abgasreinigung = m.m_Kosten_Abgasreinigung;
             ErzeugerTeillastWerte.BhkwUebertragen(m, this);
         }
 

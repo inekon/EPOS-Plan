@@ -9919,9 +9919,9 @@ namespace WindowsFormsApplication1
         /// Die Gruppen „Eingabedaten zur Berechnung der Kosten", „Emissionen nach
         /// BEHG-V" und „Emissionsfaktoren" sind am 15.09.2026 aus dem Editor gefallen
         /// („Der Dialog ueber Button Bearbeiten soll keine Kosten und Emissionen
-        /// enthalten"). Die fuenf Kostenposten, Raumbedarf, Wartung, Nutzungsdauer und
-        /// die fuenf Emissionsfaktoren bleiben im Feldsatz, weil die Huelle sie beim
-        /// Speichern unveraendert zurueckschreibt — sie stehen aber NICHT in dieser
+        /// enthalten"). Raumbedarf, Nutzungsdauer und die fuenf Emissionsfaktoren bleiben
+        /// im Feldsatz, weil die Huelle sie beim Speichern unveraendert zurueckschreibt
+        /// (die Kostenspalten sind mit Welle KB-4 ganz entfallen) — sie stehen aber NICHT in dieser
         /// Maske und gehoeren damit nicht in den Katalog (Fachkonzept 11.6: ein
         /// Katalogfeld, das in der offenen Maske niemand sieht, waere eine stille
         /// Setzung).

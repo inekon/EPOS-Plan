@@ -152,7 +152,8 @@ public class BhkwDialogTests : EposBunitContext
 
     /// <summary>
     /// Die Felder des Aufklappers — ein Ausschnitt des BHKW-Profils: ein Text, eine
-    /// Zahl und die ABGELEITETE Investition je kWel, die niemand von Hand setzt.
+    /// Zahl und die GERAETEKOSTEN aus der Satzvorlage, die niemand von Hand setzt
+    /// (Welle KB-4: die Kostenspalten des Geräts sind entfallen).
     /// </summary>
     private static List<BrowserFeldwert> Felder() => new()
     {
@@ -166,21 +167,21 @@ public class BhkwDialogTests : EposBunitContext
         },
         new BrowserFeldwert
         {
-            Schluessel = KatalogBrowserProfil.FeldKostenModul,
-            Bezeichnung = "Modul:",
-            Einheit = "€",
+            Schluessel = KatalogBrowserProfil.FeldRaumbedarf,
+            Bezeichnung = "Raumbedarf:",
+            Einheit = "m³",
             Art = BrowserFeldArt.Zahl,
             Editierbar = true,
-            Wert = "40000"
+            Wert = "40"
         },
         new BrowserFeldwert
         {
-            Schluessel = KatalogBrowserProfil.FeldInvestitionJeKwel,
-            Bezeichnung = "Investition je kW elektrisch:",
-            Einheit = "€ / kWel",
+            Schluessel = KatalogBrowserProfil.FeldGeraetekosten,
+            Bezeichnung = "Gerätekosten:",
+            Einheit = "€",
             Art = BrowserFeldArt.Zahl,
             Editierbar = false,
-            Wert = "1250"
+            Wert = "42000"
         }
     };
 
@@ -331,11 +332,11 @@ public class BhkwDialogTests : EposBunitContext
         var cut = Aufbauen(projektsatzWege: Wege(gespeichert));
         Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
 
-        // Der Projektsatz hat „Alle Daten" mit den Kostenposten; die Investition je kWel ist nur Anzeige.
+        // Der Projektsatz hat „Alle Daten"; die Gerätekosten aus der Satzvorlage sind nur Anzeige.
         Assert.True(cut.Instance.ParameterOffen);
         var felder = cut.FindComponent<EPOS.UI.Bausteine.Katalogfelder>();
-        Assert.Contains(felder.Instance.Felder, f => f.Schluessel == KatalogBrowserProfil.FeldKostenModul && f.Editierbar);
-        Assert.Contains(felder.Instance.Felder, f => f.Schluessel == KatalogBrowserProfil.FeldInvestitionJeKwel && !f.Editierbar);
+        Assert.Contains(felder.Instance.Felder, f => f.Schluessel == KatalogBrowserProfil.FeldRaumbedarf && f.Editierbar);
+        Assert.Contains(felder.Instance.Felder, f => f.Schluessel == KatalogBrowserProfil.FeldGeraetekosten && !f.Editierbar);
 
         cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("60000");
         cut.Find(".epos-satzueberlagerung-ok").Click();
@@ -1388,7 +1389,7 @@ public class BhkwDialogTests : EposBunitContext
         Assert.Equal("Modul A", name);
         Assert.NotNull(geschrieben);
         Assert.Equal("60000",
-            geschrieben!.First(f => f.Schluessel == KatalogBrowserProfil.FeldKostenModul).Wert);
+            geschrieben!.First(f => f.Schluessel == KatalogBrowserProfil.FeldRaumbedarf).Wert);
         Assert.Equal("", cut.Instance.Meldung);
         Assert.False(cut.Instance.SatzUeberlagerungOffen);
     }

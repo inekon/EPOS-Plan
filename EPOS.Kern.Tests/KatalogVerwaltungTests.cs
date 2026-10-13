@@ -409,13 +409,13 @@ namespace EPOS.Kern.Tests
                 var profil = KatalogBrowserProfil.Finde(art);
                 foreach (var feld in profil.Detailfelder)
                 {
-                    // Nicht editierbar ist der SCHLUESSEL des UPDATE und was
-                    // ABGELEITET ist: die Investition je kWel (Summe der fuenf
-                    // Posten je kWel) und der BHKW-Gesamtwirkungsgrad (Summe der
-                    // zwei Anteile, Anwenderentscheid 20.09.2026).
+                    // Nicht editierbar ist der SCHLUESSEL des UPDATE, der LESEWERT der
+                    // Satzvorlage (Geraetekosten, Welle KB-4) und was ABGELEITET ist: der
+                    // BHKW-Gesamtwirkungsgrad (Summe der zwei Anteile, Anwenderentscheid
+                    // 20.09.2026).
                     bool schluesselOderAbgeleitet =
                         feld.Schluessel == KatalogBrowserProfil.FeldBezeichner
-                        || feld.Schluessel == KatalogBrowserProfil.FeldInvestitionJeKwel
+                        || feld.Schluessel == KatalogBrowserProfil.FeldGeraetekosten
                         || (art == KatalogBrowserArt.Bhkw
                             && feld.Schluessel == KatalogBrowserProfil.FeldWirkungsgrad);
 
@@ -482,8 +482,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.True(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldInvestitionskosten));
             Assert.True(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldNutzungsdauer));
-            Assert.True(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldKostenModul));
-            Assert.True(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldWartungJeKwhel));
+            Assert.True(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldGeraetekosten));
 
             Assert.False(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldPtherm));
             Assert.False(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldWirkungsgrad));
@@ -945,7 +944,7 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
             using var _ = new DeutscheOberflaeche();
 
-            var felder = new HeizkesselStammCtrl.AnzeigefelderHeizkessel("x", 1, 2, true, 3, 4);
+            var felder = new HeizkesselStammCtrl.AnzeigefelderHeizkessel("x", 1, true, 3, 4);
             var ergebnis = HeizkesselStammCtrl.AnzeigefelderSchreiben("W14a-gibt-es-nicht", felder);
 
             Assert.False(ergebnis.Ok);

@@ -16,16 +16,16 @@
 
    WO DIE ENTFALLENEN WERTE JETZT GEPFLEGT WERDEN. Die Kostenwege stehen als
    Knopfleiste unter den Gruppen, in der Verwaltung im Modulbereich unmittelbar
-   ueber "Bearbeiten..."; alle uebrigen Spalten - die fuenf Kostenposten,
-   Raumbedarf, Wartung, Nutzungsdauer und die fuenf Emissionsfaktoren - stehen
-   im Aufklapper "Alle Daten anzeigen" des Projektdialogs (Baustein
-   Katalogfelder ueber BHKWStammCtrl.AnzeigefelderSchreiben).
+   ueber "Bearbeiten..."; alle uebrigen Spalten - Raumbedarf, Nutzungsdauer und
+   die fuenf Emissionsfaktoren - stehen im Aufklapper "Alle Daten anzeigen" des
+   Projektdialogs (Baustein Katalogfelder ueber
+   BHKWStammCtrl.AnzeigefelderSchreiben).
 
    WAS BEIM SPEICHERN MIT IHNEN GESCHIEHT: nichts. Die Huelle laedt den
    VOLLSTAENDIGEN Satz in BhkwKatalogDaten (BhkwHuelle.AusModell) und schreibt
    ihn vollstaendig zurueck (NachModell); was der Dialog nicht mehr zeigt,
-   geht unveraendert durch. Investition_kwel bleibt die Ableitung der fuenf
-   Posten (W14a-E-8-B3) - nachgerechnet im Kern, nicht mehr hier.
+   geht unveraendert durch. KOSTEN REISEN NICHT MEHR MIT: Die Kostenspalten sind
+   mit Welle KB-4 entfallen, die eine Basis ist die Satzvorlage des Satzes.
 
    DER NAME IST IM MODUS BEARBEITEN NUR LESBAR (A-3 des Protokolls W6).
    BHKWStammCtrl.Update filtert per Bezeichner; ein in comboBox_Name
@@ -183,17 +183,17 @@
 
        WO DIE WERTE JETZT GEPFLEGT WERDEN. Die Kostenwege stehen als Knopfleiste
        darunter - in der Verwaltung seit demselben Entscheid im Modulbereich,
-       unmittelbar ueber "Bearbeiten...". Die fuenf Kostenposten, Raumbedarf,
-       Wartung, Nutzungsdauer und die fuenf Emissionsfaktoren stehen im Aufklapper
-       "Alle Daten anzeigen" des Projektdialogs (Baustein Katalogfelder); der
-       BHKW-Katalog hat dafuer einen Speicherweg.
+       unmittelbar ueber "Bearbeiten...". Raumbedarf, Nutzungsdauer und die fuenf
+       Emissionsfaktoren stehen im Aufklapper "Alle Daten anzeigen" des
+       Projektdialogs (Baustein Katalogfelder); der BHKW-Katalog hat dafuer einen
+       Speicherweg.
 
-       DIE UMRECHNUNG BLEIBT, WO SIE HINGEHOERT. Investition je kWel ist die
-       Ableitung der fuenf Posten (W14a-E-8-B3); sie wird beim Schreiben im Kern
-       nachgerechnet (BHKWStammCtrl.Update, BhkwHuelle.NachModell) - der Dialog
-       muss sie nicht mehr vorrechnen. Die drei Eingabewege (Gesamtsumme, Wert je
-       kW, fuenf Posten) sind damit entfallen; die Klasse BHKWKosten bleibt, sie
-       traegt die Regel fuer Kern und Kostenplanung.
+       DIE KOSTEN HABEN NUR NOCH EINE QUELLE (Welle KB-4, Anwenderentscheid
+       13.10.2026): Die fuenf Posten, die Wartung je kWhel und die abgeleitete
+       Investition je kWel sind als SPALTEN entfallen (Schemaschritt
+       GeraetekostenEntfallSchema); die Satzvorlage des Katalogsatzes traegt sie.
+       Der Aufklapper zeigt ihre Summe als Lesewert, der Weg zum Aendern ist die
+       Kostenverwaltung - umzurechnen ist hier nichts mehr.
 
        DIE EMISSIONSFELDER waren ohnehin nur ANZEIGE (W14a-E-8-B1): Gerechnet wird
        mit dem Faktor des Energietraegers aus dem Emissionskatalog. Mit ihnen
@@ -270,8 +270,8 @@
 
     // OHNE "Co2Vorgabe" und "EmissionsVorgabe" seit dem 15.09.2026: Die zwei
     // Vorgabeknoepfe gehoerten zu den Gruppen BEHG und Emissionen, und die sind
-    // ersatzlos entfallen. Ebenso ohne die Umrechnung der Investition - sie stand
-    // schon bisher im Kern (BHKWKosten) und wird beim Schreiben dort gezogen.
+    // ersatzlos entfallen. Ebenso ohne jede Kostenrechnung - mit Welle KB-4 fuehrt
+    // der Satz keine Kostenspalte mehr.
 
     /// <summary>Der Name, unter dem der Satz jetzt steht - <c>null</c> bei Abbruch.</summary>
     [Parameter] public EventCallback<string?> Geschlossen { get; set; }
@@ -483,10 +483,9 @@
     // OHNE DIE INVESTITIONSRECHNUNG seit dem 15.09.2026: Die drei Eingabewege
     // (Gesamtsumme, Wert je kW elektrisch, fuenf Einzelposten) samt ihren zwei
     // Eingabemerkern, den vier Hinweiszustaenden und dem Bestandsschalter standen
-    // ausschliesslich in der entfallenen Kostengruppe. Die REGEL bleibt, wo sie
-    // hingehoert - im Kern (BHKWKosten); gezogen wird sie beim Schreiben
-    // (BhkwHuelle.NachModell und BHKWStammCtrl.Update rechnen Investition_kwel aus
-    // den fuenf Posten nach, ohne dass dieser Dialog sie vorrechnen muesste).
+    // ausschliesslich in der entfallenen Kostengruppe. Mit Welle KB-4 ist auch die
+    // REGEL fort: Es gibt keine Kostenspalte mehr, aus der etwas abzuleiten waere -
+    // die Satzvorlage des Katalogsatzes ist die eine Basis.
 
     private void BeiPtherm(double? wert) => Daten.Ptherm = wert;
 
@@ -573,11 +572,9 @@
         return false;
     }
 
-    // OHNE "AbleitungNachziehen" seit dem 15.09.2026: Der Dialog zeigt die fuenf Posten
-    // nicht mehr, also kann er sie auch nicht mehr veraendern - Investition_kwel bleibt
-    // beim Laden stehen und wird auf dem Schreibweg ohnehin aus den Posten
-    // nachgerechnet (BhkwHuelle.NachModell, BHKWStammCtrl.Update). Die Spalte bleibt
-    // damit die Ableitung der Posten, wie W14a-E-8-B3 es verlangt.
+    // OHNE "AbleitungNachziehen" seit dem 15.09.2026: Der Dialog zeigte die fuenf Posten
+    // nicht mehr, also konnte er sie auch nicht mehr veraendern. Mit Welle KB-4 gibt es
+    // sie gar nicht mehr - nachzuziehen ist nichts.
 
     private async Task BeiUeberschreiben()
     {
