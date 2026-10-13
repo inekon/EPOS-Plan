@@ -55043,5 +55043,17 @@ chart</value>
   <data name="MP_GRUPPE_RECHENFAEHIGKEIT" xml:space="preserve">
     <value>Calculability</value>
   </data>
+  <data name="IMP_IFC_STANDARD_HERKUNFT" xml:space="preserve">
+    <value>from IFC file (standard property sets)</value>
+  </data>
+  <data name="IMP_IFC_PROT_STANDARDSAETZE" xml:space="preserve">
+    <value>Standard property sets read in {0} spaces ({1} values, file before profile); {2} values without target field passed through: {3}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_HERSTELLER_VORSCHLAG" xml:space="preserve">
+    <value>{0} spaces: air change rate {2} … {3} 1/h suggested by the vendor-specific property "{1}" — not a standard value, not taken over; the usage profile applies ({4}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_OPTIK_ABWEICHUNG" xml:space="preserve">
+    <value>Material "{0}", {1}: the file gives {2}, EPOS-Plan calculates with {3} — the file value is not taken over.</value>
+  </data>
 </root>
 

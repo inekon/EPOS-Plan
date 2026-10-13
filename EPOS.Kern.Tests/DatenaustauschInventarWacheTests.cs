@@ -13,7 +13,9 @@ namespace EPOS.Kern.Tests
     /// <see cref="DatenaustauschInventar"/> führt die 71 Daten des Konzepts (A 10, B 22, C 10, D 8, E 7, F 10, G 4) mit eindeutiger
     /// Kennung, jedes mit einer Einstufung für gbXML; und die Einstufung passt zum Code: Was „beide Richtungen“ oder „nur
     /// geschrieben“ heißt, steht in der Datei des Rundlaufs (<see cref="GbxmlExportRundlaufTests"/>), was „beide Richtungen“
-    /// oder „nur gelesen“ heißt, nennt der Leser; „ohne Element“ nennt keines.
+    /// oder „nur gelesen“ heißt, nennt der Leser; „ohne Element“ nennt keines. Dasselbe gilt für IFC (Welle DA-3,
+    /// <see cref="DatenaustauschInventar.Ifc"/>) gegen den Export von <see cref="IfcExportRundlaufTests"/> und die Quellen des
+    /// IFC-Lesers; „nur EPOS_*“ heißt dort beide Richtungen über einen eigenen Satz.
     /// </summary>
     public class DatenaustauschInventarWacheTests
     {
@@ -61,6 +63,54 @@ namespace EPOS.Kern.Tests
             Assert.Equal(3, zaehlung[Austauschweg.NurGelesen]);
             Assert.False(zaehlung.ContainsKey(Austauschweg.NurGeschrieben));
             Assert.Equal(26, zaehlung[Austauschweg.OhneElement]);
+        }
+
+        [Fact]
+        public void Die_Einstufung_fuer_IFC_passt_zu_Schreiber_und_Leser()
+        {
+            // Dieselben Kennungen in derselben Reihenfolge wie die Tafel.
+            Assert.Equal(DatenaustauschInventar.Alle.Select(d => d.Nr), DatenaustauschInventar.Ifc.Select(d => d.Nr));
+            string step = Encoding.UTF8.GetString(IfcExportProbe.Schreiben(IfcExportRundlaufTests.Abbild()));
+            string kern = Path.Combine(Repowurzel(), "EPOS.Kern", "Allgemein");
+            // Der Leser: die Dateien des IFC-Imports und die gemeinsame Festlegung der Konditionierungssätze.
+            string leser = string.Concat(Directory.GetFiles(Path.Combine(kern, "Import", "Ifc"), "*.cs")
+                                                  .Append(Path.Combine(kern, "Export", "Ifc", "IfcKonditionierungssatz.cs"))
+                                                  .Select(File.ReadAllText));
+            var fehler = new List<string>();
+            foreach (IfcEinstufung d in DatenaustauschInventar.Ifc)
+            {
+                Assert.True(Enum.IsDefined(typeof(Austauschweg), d.Weg), d.Nr);
+                if (d.Weg == Austauschweg.OhneElement)
+                {
+                    Assert.Empty(d.Elemente);
+                    continue;
+                }
+                Assert.NotEmpty(d.Elemente);
+                bool schreibt = d.Weg != Austauschweg.NurGelesen;
+                bool liest = d.Weg != Austauschweg.NurGeschrieben;
+                foreach (string e in d.Elemente)
+                {
+                    int punkt = e.IndexOf('.');
+                    string klasse = punkt > 0 ? e.Substring(0, punkt) : e.StartsWith("Ifc", StringComparison.Ordinal) ? e : null;
+                    if (schreibt && !(klasse != null ? step.Contains(klasse.ToUpperInvariant(), StringComparison.Ordinal)
+                                                   : step.Contains("'" + e, StringComparison.Ordinal)))
+                        fehler.Add(d.Nr + ": " + e + " steht nicht in der exportierten Datei.");
+                    if (liest && !(punkt > 0 ? leser.Contains(e.Substring(punkt), StringComparison.Ordinal)
+                                    : klasse != null ? leser.Contains("I" + klasse, StringComparison.Ordinal)
+                                    : leser.Contains("\"" + e + "\"", StringComparison.Ordinal)))
+                        fehler.Add(d.Nr + ": " + e + " liest der Leser nicht.");
+                }
+            }
+            Assert.True(fehler.Count == 0, string.Join(" | ", fehler));
+            // Die Zählung je Einstufung (Protokoll DA-3) - eine Änderung der Tafel zeigt sich hier.
+            var zaehlung = DatenaustauschInventar.Ifc.GroupBy(d => d.Weg).ToDictionary(g => g.Key, g => g.Count());
+            Assert.Equal(31, zaehlung[Austauschweg.BeideRichtungen]);
+            Assert.Equal(1, zaehlung[Austauschweg.NurGelesen]);
+            Assert.False(zaehlung.ContainsKey(Austauschweg.NurGeschrieben));
+            Assert.Equal(16, zaehlung[Austauschweg.NurEpos]);
+            Assert.Equal(23, zaehlung[Austauschweg.OhneElement]);
+            // gbXML kennt den Weg über einen eigenen Satz nicht (DA-2: Rückfall nur als benannter Verlust).
+            Assert.DoesNotContain(DatenaustauschInventar.Alle, d => d.Gbxml == Austauschweg.NurEpos);
         }
 
         private static string Repowurzel()

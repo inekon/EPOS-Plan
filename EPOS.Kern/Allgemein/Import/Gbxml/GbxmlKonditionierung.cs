@@ -65,7 +65,16 @@ namespace WindowsFormsApplication1
             int werte = mit.Sum(r => r.GbxmlLasten.Werte + new[] { r.Personen ?? r.FlaecheJePersonM2, r.GeraeteWm2, r.LichtWm2 }.Count(w => w.HasValue));
             int plaene = mit.SelectMany(r => r.GbxmlLasten.Plaene).Distinct().Count();
             foreach (GbxmlZeitplan p in mit.SelectMany(r => r.GbxmlLasten.Plaene).Where(p => p.Verworfen != null)) z.Verworfen.Add(p);
-            var k = new Zonenkonditionierung { Zone = name, Groessen = groessen };
+            // Welle DA-3: Lasten aus den IFC-Standardsätzen tragen die Herkunft der IFC-Datei (Bemerkung „Standardsätze“).
+            bool ifc = mit.All(r => r.GbxmlLasten.AusIfc);
+            if (ifc)
+                groessen = groessen.Select(x => x.Herkunft != Konditionierungsherkunft.GbxmlDatei ? x : new Groessenkonditionierung
+                {
+                    Groesse = x.Groesse, Herkunft = Konditionierungsherkunft.IfcDatei, Kalender = x.Kalender, KalenderBeleg = x.KalenderBeleg,
+                    Vorgaben = x.Vorgaben, Begrenzt = x.Begrenzt, NennwertDatei = x.NennwertDatei,
+                    BemerkungText = MyResource.Resource.IMP_IFC_STANDARD_HERKUNFT,
+                }).ToList();
+            var k = new Zonenkonditionierung { Zone = name, Groessen = groessen, AusIfcStandard = ifc };
             k.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "ZONE_LASTEN", name, Ganz(werte), Ganz(plaene), Ganz(z.Verdichtet), Ganz(z.Verworfen.Count)));
             k.Meldungen.AddRange(meldungen);
             return k;
@@ -444,10 +453,11 @@ namespace WindowsFormsApplication1
         internal static List<PruefMeldung> Profilabgleich(Zonenkonditionierung k, Raumnutzungsprofil profil, double? flaecheM2)
         {
             var aus = new List<PruefMeldung>();
-            if (k == null || profil == null || !(flaecheM2 > 0.0) || !k.AusGbxml) return aus;
+            if (k == null || profil == null || !(flaecheM2 > 0.0) || !(k.AusGbxml || k.AusIfcStandard)) return aus;
             void Vergleich(Konditionierungsgroesse g, double? profilwert)
             {
-                Groessenkonditionierung d = k.Groessen.FirstOrDefault(x => x.Groesse == g && x.Herkunft == Konditionierungsherkunft.GbxmlDatei);
+                Groessenkonditionierung d = k.Groessen.FirstOrDefault(x => x.Groesse == g && (x.Herkunft == Konditionierungsherkunft.GbxmlDatei
+                                                                                   || x.Herkunft == Konditionierungsherkunft.IfcDatei));
                 double? datei = d?.Kalender?.Nennwert ?? d?.NennwertDatei;
                 if (!(datei > 0.0) || !(profilwert > 0.0)) return;
                 if (Math.Abs(datei.Value - profilwert.Value) > ABWEICHUNG_HINWEIS * profilwert.Value)

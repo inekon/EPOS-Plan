@@ -14,7 +14,19 @@ namespace WindowsFormsApplication1
         NurGeschrieben = 2,
         /// <summary>Kein Element im Format (oder kein Weg im Code) — Verlust bzw. Rückfall nach Konzept 3.3.</summary>
         OhneElement = 3,
+        /// <summary>Kein Standardelement, aber beide Richtungen über den eigenen Satz (IFC <c>EPOS_*</c>, Konzept 3.3) — für ein
+        /// Fremdwerkzeug unsichtbar.</summary>
+        NurEpos = 4,
     }
+
+    /// <summary>Die Einstufung eines Inventardatums für IFC (Welle DA-3).</summary>
+    /// <param name="Nr">Die Kennung des Konzepts (A1 … G4).</param>
+    /// <param name="Weg">Der Weg in IFC4.</param>
+    /// <param name="Elemente">
+    /// Die IFC-Träger: Eigenschaftsnamen (<c>OccupancyNumber</c>), Klassen (<c>IfcSpatialZone</c>) oder Klasse mit Attribut
+    /// (<c>IfcSite.RefLatitude</c>); leer ohne Element.
+    /// </param>
+    internal sealed record IfcEinstufung(string Nr, Austauschweg Weg, params string[] Elemente);
 
     /// <summary>Ein Datum des Inventars (Konzept Datenaustausch, Abschnitt 2) mit seiner Einstufung je Format.</summary>
     /// <param name="Nr">Die Kennung des Konzepts (A1 … G4).</param>
@@ -25,8 +37,8 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// <b>Das Inventar der simulationsrelevanten Daten als Tafel</b> (Konzept Datenaustausch, Abschnitt 2; E138 F5) mit der
-    /// Einstufung je Format. Die Welle DA-2 stuft gbXML ein, so wie der Code schreibt und liest; DA-3 (IFC) und DA-4 (Rest)
-    /// knüpfen hier an. Die Wache <c>DatenaustauschInventarWacheTests</c> hält Zählung, Kennungen und die Deckung mit
+    /// Einstufung je Format. Die Welle DA-2 stuft gbXML ein, DA-3 IFC (<see cref="Ifc"/>), so wie der Code schreibt und liest;
+    /// DA-4 (Rest) knüpft hier an. Die Wache <c>DatenaustauschInventarWacheTests</c> hält Zählung, Kennungen und die Deckung mit
     /// Schreiber und Leser.
     /// </summary>
     internal static class DatenaustauschInventar
@@ -35,6 +47,7 @@ namespace WindowsFormsApplication1
         private const Austauschweg L = Austauschweg.NurGelesen;
         private const Austauschweg S = Austauschweg.NurGeschrieben;
         private const Austauschweg O = Austauschweg.OhneElement;
+        private const Austauschweg E = Austauschweg.NurEpos;
 
         /// <summary>Die 71 Daten in der Reihenfolge des Konzepts.</summary>
         internal static readonly IReadOnlyList<Inventardatum> Alle = new[]
@@ -116,6 +129,91 @@ namespace WindowsFormsApplication1
             new Inventardatum("G2", "Bodenplatte und Randbedingung", B, "surfaceType"),
             new Inventardatum("G3", "Umfang P", O),
             new Inventardatum("G4", "wirksamer U-Wert Erdreich, Kellertemperatur", O),
+        };
+
+        /// <summary>
+        /// <b>Die Einstufung für IFC</b> (Welle DA-3), in derselben Reihenfolge: Standardsatz vor <c>EPOS_*</c>; die Zeitpläne bleiben
+        /// in <c>EPOS_Kalender_*</c> (E138 F6 a), Absorptions- und Emissionsgrad werden nur durchgereicht (F8 b).
+        /// </summary>
+        internal static readonly IReadOnlyList<IfcEinstufung> Ifc = new[]
+        {
+            new IfcEinstufung("A1", B, "IfcSite.RefLatitude", "IfcSite.RefLongitude"),
+            new IfcEinstufung("A2", O),
+            new IfcEinstufung("A3", O),
+            new IfcEinstufung("A4", B, "IfcGeometricRepresentationContext.TrueNorth"),
+            new IfcEinstufung("A5", B, "YearOfConstruction"),
+            new IfcEinstufung("A6", E, "Gebaeudeart"),
+            new IfcEinstufung("A7", O),
+            new IfcEinstufung("A8", O),
+            new IfcEinstufung("A9", O),
+            new IfcEinstufung("A10", E, "Periode_"),
+
+            new IfcEinstufung("B1", B, "IfcSpace.Name"),
+            new IfcEinstufung("B2", B, "NetFloorArea"),
+            new IfcEinstufung("B3", B, "NetVolume", "Height"),
+            new IfcEinstufung("B4", B, "SpaceTemperature"),
+            new IfcEinstufung("B5", E, "Nutzung"),
+            new IfcEinstufung("B6", B, "SpaceTemperature", "HeatingDryBulb"),
+            new IfcEinstufung("B7", E, "Heizsollwert_Nacht"),
+            new IfcEinstufung("B8", E, "Woche"),
+            new IfcEinstufung("B9", B, "SpaceTemperatureSummerMax", "CoolingDryBulb"),
+            new IfcEinstufung("B10", O),
+            new IfcEinstufung("B11", O),
+            new IfcEinstufung("B12", E, "LuftwechselInfiltration"),
+            new IfcEinstufung("B13", B, "NaturalVentilationRate"),
+            new IfcEinstufung("B14", E, "AussenluftJePerson"),
+            new IfcEinstufung("B15", B, "OccupancyNumber"),
+            new IfcEinstufung("B16", B, "People"),
+            new IfcEinstufung("B17", B, "EquipmentSensible"),
+            new IfcEinstufung("B18", B, "Lighting", "ArtificialLighting"),
+            new IfcEinstufung("B19", O),
+            new IfcEinstufung("B20", O),
+            new IfcEinstufung("B21", O),
+            new IfcEinstufung("B22", O),
+
+            new IfcEinstufung("C1", E, "Woche"),
+            new IfcEinstufung("C2", E, "Woche"),
+            new IfcEinstufung("C3", E, "Woche"),
+            new IfcEinstufung("C4", E, "Nennwert_W", "Woche"),
+            new IfcEinstufung("C5", E, "Nennwert_W", "Woche"),
+            new IfcEinstufung("C6", E, "Periode_"),
+            new IfcEinstufung("C7", E, "Periode_"),
+            new IfcEinstufung("C8", O),
+            new IfcEinstufung("C9", O),
+            new IfcEinstufung("C10", O),
+
+            new IfcEinstufung("D1", B, "IfcWall", "IfcSlab", "IfcWindow"),
+            new IfcEinstufung("D2", B, "GrossArea"),
+            new IfcEinstufung("D3", B, "IfcRelSpaceBoundary"),
+            new IfcEinstufung("D4", B, "IfcRelSpaceBoundary"),
+            new IfcEinstufung("D5", B, "IsExternal"),
+            new IfcEinstufung("D6", B, "IfcRelSpaceBoundary"),
+            new IfcEinstufung("D7", B, "ThermalTransmittance"),
+            new IfcEinstufung("D8", E, "WaermebrueckeUA"),
+
+            new IfcEinstufung("E1", B, "IfcMaterialLayerSet", "IfcMaterialLayer.LayerThickness"),
+            new IfcEinstufung("E2", B, "ThermalConductivity"),
+            new IfcEinstufung("E3", B, "MassDensity"),
+            new IfcEinstufung("E4", B, "SpecificHeatCapacity"),
+            new IfcEinstufung("E5", E, "Waermedurchlasswiderstand"),
+            new IfcEinstufung("E6", O),
+            new IfcEinstufung("E7", O),
+
+            new IfcEinstufung("F1", B, "ThermalTransmittance"),
+            new IfcEinstufung("F2", B, "SolarHeatGainTransmittance"),
+            new IfcEinstufung("F3", B, "GlazingAreaFraction"),
+            new IfcEinstufung("F4", O),
+            new IfcEinstufung("F5", L, "VisibleLightTransmittance"),
+            new IfcEinstufung("F6", O),
+            new IfcEinstufung("F7", O),
+            new IfcEinstufung("F8", B, "SolarReflectanceFront"),
+            new IfcEinstufung("F9", B, "ThermalIrEmissivityFront"),
+            new IfcEinstufung("F10", O),
+
+            new IfcEinstufung("G1", O),
+            new IfcEinstufung("G2", B, "IfcSlab", "IsExternal"),
+            new IfcEinstufung("G3", O),
+            new IfcEinstufung("G4", O),
         };
 
         /// <summary>Die Zahl je Gruppe des Konzepts (A 10, B 22, C 10, D 8, E 7, F 10, G 4).</summary>

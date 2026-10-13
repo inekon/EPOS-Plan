@@ -1409,7 +1409,7 @@ namespace WindowsFormsApplication1
                     _v._zonen.Add(m);
                     _v._profile.Add(iz.Profil);
                     _v._projektdatei.Add(iz.Projektdatei);
-                    if (iz.Projektdatei?.AusGbxml == true)
+                    if (iz.Projektdatei?.AusGbxml == true || iz.Projektdatei?.AusIfcStandard == true)
                     {
                         // Welle DA-1: Zähler, Verdichtungen und Verwürfe je Zone, dazu die Abweichungen vom Profil (E138 F2).
                         _v._meldungen.AddRange(iz.Projektdatei.Meldungen);

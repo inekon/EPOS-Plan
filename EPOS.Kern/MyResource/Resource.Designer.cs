@@ -50181,6 +50181,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume: Luftwechsel {2} … {3} 1/h aus der herstellereigenen Eigenschaft „{1}“ als Vorschlag genannt — kein Normwert, nicht übernommen; es gilt das Nutzungsprofil ({4}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_HERSTELLER_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_HERSTELLER_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Innenwände ohne Nachbarraum (innen nach IsExternal oder Angrenzung) zählen einseitig als innere Masse: {1} m² Bruttofläche. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_INNEN_EINSEITIG {
@@ -50703,6 +50712,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoff „{0}“, {1}: Die Datei gibt {2}, EPOS-Plan rechnet mit {3} — der Wert der Datei wird nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OPTIK_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OPTIK_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Orientierung der Datei: Azimut bzw. Dachneigung bei Mengensatz aus den Raumgrenzen ({1}) bzw. aus dem Bauteilkörper ({2}), die Fläche bleibt die des Mengensatzes; Fenster und Türen, deren Wand bzw. Dach keine Richtung hat, aus dem eigenen Körper ({4}) ({3}). ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_ORIENTIERUNG_ERGAENZT {
@@ -50933,6 +50951,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_SOLLWERT_CAD_SPANNE {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_SOLLWERT_CAD_SPANNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standard-Eigenschaftssätze in {0} Räumen gelesen ({1} Werte, Datei vor Profil); {2} Werte ohne Zielfeld durchgereicht: {3}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_STANDARDSAETZE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_STANDARDSAETZE", resourceCulture);
             }
         }
         
@@ -51248,6 +51275,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_ZU_VIELE_ZONEN_VORSCHLAG {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_ZU_VIELE_ZONEN_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus IFC-Datei (Standardsätze) ähnelt.
+        /// </summary>
+        public static string IMP_IFC_STANDARD_HERKUNFT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_STANDARD_HERKUNFT", resourceCulture);
             }
         }
         
