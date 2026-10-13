@@ -54954,13 +54954,19 @@ chart</value>
     <value>Building</value>
   </data>
   <data name="MP_VORSCHLAG_PROJEKTAUFBAU" xml:space="preserve">
-    <value>Apply project construction '{0}'</value>
+    <value>Level 1, project construction: apply '{0}'</value>
   </data>
   <data name="MP_VORSCHLAG_KATALOGAUFBAU" xml:space="preserve">
-    <value>Apply catalogue construction '{0}' (U {1} W/(m²K))</value>
+    <value>Level 2, catalogue construction: apply '{0}' (U {1} W/(m²K))</value>
   </data>
   <data name="MP_VORSCHLAG_TYPAUFBAU" xml:space="preserve">
-    <value>Type construction '{0}', matched to U {1} W/(m²K)</value>
+    <value>Level 3, type construction: '{0}', matched to U {1} W/(m²K)</value>
+  </data>
+  <data name="MP_VORSCHLAG_ZUSATZ_NAME" xml:space="preserve">
+    <value>; the name '{0}' matches the group {1}</value>
+  </data>
+  <data name="MP_VORSCHLAG_ZUSATZ_KLASSE" xml:space="preserve">
+    <value>; with U {0} W/(m²K) from construction age class {1}</value>
   </data>
   <data name="MP_VORSCHLAG_PROFIL_DINNUMMER" xml:space="preserve">
     <value>Profile '{0}' from the DIN number</value>

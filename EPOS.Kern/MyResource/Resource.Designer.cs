@@ -93225,7 +93225,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogaufbau „{0}“ (U {1} W/(m²K)) übernehmen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 2, Katalogaufbau: „{0}“ (U {1} W/(m²K)) übernehmen ähnelt.
         /// </summary>
         public static string MP_VORSCHLAG_KATALOGAUFBAU {
             get {
@@ -93270,7 +93270,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Projektaufbau „{0}“ übernehmen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 1, Projektaufbau: „{0}“ übernehmen ähnelt.
         /// </summary>
         public static string MP_VORSCHLAG_PROJEKTAUFBAU {
             get {
@@ -93288,11 +93288,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Typaufbau „{0}“, abgeglichen auf U {1} W/(m²K) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 3, Typaufbau: „{0}“, abgeglichen auf U {1} W/(m²K) ähnelt.
         /// </summary>
         public static string MP_VORSCHLAG_TYPAUFBAU {
             get {
                 return ResourceManager.GetString("MP_VORSCHLAG_TYPAUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ; mit U {0} W/(m²K) aus der Baualtersklasse {1} ähnelt.
+        /// </summary>
+        public static string MP_VORSCHLAG_ZUSATZ_KLASSE {
+            get {
+                return ResourceManager.GetString("MP_VORSCHLAG_ZUSATZ_KLASSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ; der Name „{0}“ trifft die Gruppe {1} ähnelt.
+        /// </summary>
+        public static string MP_VORSCHLAG_ZUSATZ_NAME {
+            get {
+                return ResourceManager.GetString("MP_VORSCHLAG_ZUSATZ_NAME", resourceCulture);
             }
         }
         
