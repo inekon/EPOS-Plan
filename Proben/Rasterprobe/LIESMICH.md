@@ -1875,8 +1875,12 @@ Kanten, die Tabelle füllt die Hülle, die Seite rollt nie quer (mit sechs Varia
 allein die Hülle, die Gewerkspalte haftet), kein Feld des Kopfes ragt über das Fenster.
 Darunter steht der Abschnitt „Ergebnisse — Energie“ aus der echten Hülle `UebersichtErgebnisGaben`
 mit synthetischen Ergebnissen (Variante 1 simuliert und abweichend, weitere Varianten nicht
-simuliert); `?emissionen=1` klappt die Gruppe „Emissionen“ auf. Zu prüfen: die Kennzahlspalte
-haftet, die Werte stehen rechtsbündig unter ihrem Spaltenkopf, die Seite rollt nie quer.
+simuliert, mit einer Trägerzeile „Endenergie Erdgas“ und der Gruppe „Kälte“); `?offen=alle` klappt alle
+zugeklappten Gruppen auf, `?offen=<schluessel,…>` die genannten (Gruppenschlüssel des Kerns, etwa
+`kaelte,emissionen`). Zu prüfen bei 1 800, 940 und 700 px: die Kennzahlspalte haftet und ist in allen
+Tafeln gleich breit (20rem, unter 760 px 12rem), die Versionsspalten sind gleich breit, Spaltenkopf und
+Wert stehen rechtsbündig an derselben Kante, die nicht simulierte Version zeigt leise Striche und
+„nicht simuliert“ fett im Kopf, die Seite rollt nie quer.
 
 ## Bildschirmfotos fürs Wiki: Seite `/wikibild` und `wikibilder.mjs`
 

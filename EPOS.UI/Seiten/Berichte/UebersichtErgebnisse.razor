@@ -155,6 +155,13 @@
     /// <summary>Ist die Version an Stelle <paramref name="i"/> simuliert? Ohne Angabe ja.</summary>
     private bool VersionSimuliert(int i) => i >= _ergebnis!.Simuliert.Count || _ergebnis.Simuliert[i];
 
+    /// <summary>
+    /// Die Versionsspalten teilen sich den Platz neben der festen Kennzahlspalte gleich (Prozentanteil je Spalte); die
+    /// Mindestbreite im Stilblatt bleibt, darunter rollt allein die Hülle.
+    /// </summary>
+    private string Spaltenbreite
+        => "width:" + (100.0 / Math.Max(1, _ergebnis!.Versionsspalten.Count)).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) + "%";
+
     /// <summary>Die Tafel über die Gruppen; mit Gruppenkopf je Gruppe oder (in der Klappgruppe) ohne.</summary>
     private RenderFragment Tafel(IEnumerable<ErgebnisVergleichGruppe> gruppen, bool mitGruppenkopf) => __builder =>
     {
@@ -166,7 +173,8 @@
                         @for (int i = 0; i < _ergebnis!.Versionsspalten.Count; i++)
                         {
                             VersionsSpalte v = _ergebnis.Versionsspalten[i];
-                            <th scope="col" class="@(VersionSimuliert(i) ? "epos-komponenten-versionkopf epos-ergebnis-versionkopf" : "epos-komponenten-versionkopf epos-ergebnis-versionkopf epos-ergebnis-versionkopf--ohne")">
+                            <th scope="col" class="@(VersionSimuliert(i) ? "epos-komponenten-versionkopf epos-ergebnis-versionkopf" : "epos-komponenten-versionkopf epos-ergebnis-versionkopf epos-ergebnis-versionkopf--ohne")"
+                                style="@Spaltenbreite">
                                 <span class="epos-komponenten-version">@v.Name</span>
                                 @if (!string.IsNullOrEmpty(v.Stand))
                                 {
