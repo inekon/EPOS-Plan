@@ -44897,7 +44897,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Energy price [€/unit]</value>
   </data>
   <data name="PBRS_SP_LEISTUNGSPREIS" xml:space="preserve">
-    <value>Demand price [€/kW]</value>
+    <value>Demand price [€/(kW·a)]</value>
   </data>
   <data name="PBRS_SP_STAND" xml:space="preserve">
     <value>Status</value>

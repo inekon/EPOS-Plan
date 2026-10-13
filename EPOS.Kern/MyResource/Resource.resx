@@ -44904,7 +44904,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Arbeitspreis [€/Einheit]</value>
   </data>
   <data name="PBRS_SP_LEISTUNGSPREIS" xml:space="preserve">
-    <value>Leistungspreis [€/kW]</value>
+    <value>Leistungspreis [€/(kW·a)]</value>
   </data>
   <data name="PBRS_SP_STAND" xml:space="preserve">
     <value>Stand</value>

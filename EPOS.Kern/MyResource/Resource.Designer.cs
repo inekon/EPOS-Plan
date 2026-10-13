@@ -97360,7 +97360,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis [€/kW] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis [€/(kW·a)] ähnelt.
         /// </summary>
         public static string PBRS_SP_LEISTUNGSPREIS {
             get {
