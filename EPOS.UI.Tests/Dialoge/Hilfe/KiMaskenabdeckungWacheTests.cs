@@ -168,6 +168,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // und als Überlagerung über dem Ampelblatt des Gebäudedialogs; jede Handlung schreibt mit eigenem Knopf. Die Tabelle
         // führt je Kind EINEN Wirt: den Editor, der als Form_Gebaeude1 anmeldet.
         new("ZonenNutzungsblatt",                "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
+        // MA-6: die Vorschau des Wiederimports steht im Importdialog nach dem ersten OK.
+        new("WiederimportVorschau",              "GebaeudeImportDialog",     KiMaskennamen.GEBAEUDE_IMPORT),
         // NP4a (Konzept Nutzungsprofile 6.1, 6.4): CSV-Import und -Export im Kopf des Blatts — ein Baustein darin.
         new("RaumnutzungCsvAustausch",           "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
         // NP7b (Konzept Nutzungsprofile 6.5): der Dialog „Normwerte einlesen" als Überlagerung im Blatt.
@@ -427,6 +429,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // Handlungen über mehrere Zonen, die mit eigenem Knopf sofort schreiben, kein Einstellwert der Maske.
         new("ZonenNutzungsblatt", 7, "Profilwahl, Kalenderquelle und Sollwerte des Blatts sind Handlungen über mehrere Zonen " +
             "mit eigenem Knopf (Profil zuweisen…, Kalender kopieren…, Sollwerte setzen); jede schreibt sofort über den Kern"),
+        // MA-6: der Haken „Entfallende Zonen und Bauteile entfernen" der Wiederimportvorschau ist die Wahl vor dem zweiten OK.
+        new("WiederimportVorschau", 1, "der Haken „Entfallende entfernen“ ist die Wahl des Wiederimports vor dem zweiten OK, " +
+            "kein Einstellwert der Maske; er gilt nur für den einen Vormerkvorgang"),
         new("AufheizzeitManuellFeld", 1),
         // KP2 U2: die Auswahlliste der Vorlagen je Kalenderkarte - die Feldkarte führt sie als
         // kond_<größe>_vorlage mit der Aktion des Knopfs „Übernehmen“ (Entwurf KP2 D9); dazu Name,

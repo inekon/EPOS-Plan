@@ -97,15 +97,17 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public async Task Hulle_lehnt_abweichende_Pruefsumme_ab_ohne_Blatt()
+        public async Task Hulle_oeffnet_geaenderte_Fassung_zur_Zusammenfuehrung_mit_Vorschau()
         {
+            // MA-6: eine geänderte Fassung (andere Prüfsumme, gleiches Format) öffnet das Blatt samt Vorschau des Wiederimports.
             string pfad = Probehaus();
             ImportquelleModel q = QuelleVon(pfad);
             q.Hash = new string('0', 64);
             var h = new GebaeudeMehrzonenHuelle(() => 0, 0, ios: false);
             GebaeudeMehrzonenstart s = await h.StartAsync(pfad, q);
-            Assert.Null(s.Gaben);
-            Assert.Contains("weicht von der gespeicherten Importquelle ab", s.Meldung);
+            Assert.Null(s.Meldung);
+            Assert.NotNull(s.Gaben);
+            Assert.True(s.Gaben!.ContainsKey("Wiederimport"));
             Assert.Null(h.Ausstehend());
         }
 
@@ -174,12 +176,12 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1, erst.Quellen);
             Assert.NotNull(MehrzonenuebernahmeCtrl.Quelle(idGebaeude));
 
-            // Zweiter Lauf ersetzt: wieder drei Zonen, neue Ids, eine Quelle; die Gebäudefelder bleiben.
+            // Zweiter Lauf führt zusammen (MA-6): dieselben drei Zonen mit ihren Ids, eine Quelle; die Gebäudefelder bleiben.
             await Vormerken(h, pfad, MehrzonenuebernahmeCtrl.Quelle(idGebaeude));
             Assert.Null(h.Schreiben());
             var zweit = Stand(idGebaeude);
             Assert.Equal(3, zweit.Zonen.Count);
-            Assert.Empty(zweit.Zonen.Intersect(erst.Zonen));
+            Assert.Equal(erst.Zonen, zweit.Zonen);
             Assert.Equal(erst.Bauteile, zweit.Bauteile);
             Assert.Equal(1, zweit.Quellen);
             Assert.Equal(felder, Gebaeudefelder(idGebaeude));
