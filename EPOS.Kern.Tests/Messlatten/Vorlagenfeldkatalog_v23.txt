@@ -140,6 +140,7 @@ hat.fehler
 hat.gebaeude
 hat.kaelte
 hat.kaelte.dezentral
+hat.kaelte.kaeltefolge
 hat.schnellaufheizung
 hat.sensitivitaet
 hat.tabelle.abweichungen

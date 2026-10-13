@@ -86,7 +86,7 @@ namespace Berichtsvorlage
             internal string Sprache, Untertitel, Kunde, Bearbeitung, Ersteller, Datum, Verglichen, ErstelltMit;
             internal string Ausgangslage, Klimaregion, Ergebnisse, Variante, Waermebedarf, Jaz, Co2, Kapitalwertdiff;
             internal string Empfehlung, BesteVor, BesteMitte, BesteNach, Wirtschaft, Kuehlung, KuehlungVor, KuehlungMitte, KuehlungNach;
-            internal string KuehlungSplitMitte, KuehlungSplitFolge, KuehlungSplitNach;
+            internal string KuehlungSplitMitte, KuehlungSplitFolge, KuehlungSplitNach, KuehlungSplitAllein;
             internal string Deckung, Anhang, Stamm, Gruppe, Summe, Warnung;
             internal string Aufheizung, AufheizVor, AufheizBei, AufheizLeistung, AufheizAuslegung, AufheizAus, AufheizUnd, AufheizNach;
             internal string VorheizZeit, VorheizLeistung, VorheizVerfehlt, VorheizMehr;
@@ -244,7 +244,9 @@ namespace Berichtsvorlage
             r.Add(Beispielvorlage.Absatz("Normal", P("wirtschaft.warnungen")));
 
             // 7 — Bedingter Abschnitt: nur mit Kälte. Der Satz hängt an der dezentralen Deckung (K6d-N, Katalog v23): ohne
-            //     Split-Zeile der Deckungsgrad der Anlage, mit ihr die Hauptzahl samt „davon Kältefolge“
+            //     Split-Zeile der Deckungsgrad der Anlage, mit ihr die Hauptzahl samt „davon Kältefolge“ — ohne Kälteerzeuger
+            //     (hat.kaelte.kaeltefolge falsch) nur der Anteil der Split-Geräte. Blöcke schachteln höchstens zwei Ebenen tief:
+            //     Der Split-Block steht darum hinter dem Kälteblock (hat.kaelte.dezentral setzt hat.kaelte voraus).
             Paragraph wennKaelte = Beispielvorlage.Absatz("Normal", new CommentRangeStart { Id = "5" }, P("#wenn hat.kaelte"));
             wennKaelte.Append(Ende("5"));
             r.Add(wennKaelte);
@@ -254,11 +256,18 @@ namespace Berichtsvorlage
                                          Beispielvorlage.Lauf(t.KuehlungMitte + " "), P("stamm.kennzahl.kaelte.deckungsgrad"),
                                          Beispielvorlage.Lauf(t.KuehlungNach)));
             r.Add(Beispielvorlage.Absatz("Normal", P("/wenn")));
+            r.Add(Beispielvorlage.Absatz("Normal", P("/wenn")));
             r.Add(Beispielvorlage.Absatz("Normal", P("#wenn hat.kaelte.dezentral")));
+            r.Add(Beispielvorlage.Absatz("Normal", P("#wenn hat.kaelte.kaeltefolge")));
             r.Add(Beispielvorlage.Absatz("Normal", Beispielvorlage.Lauf(t.KuehlungVor + " "), P("stamm.kennzahl.kaelte.jahresbedarf"),
                                          Beispielvorlage.Lauf(t.KuehlungSplitMitte + " "), P("stamm.kennzahl.kaelte.deckungsgrad_gesamt"),
                                          Beispielvorlage.Lauf(t.KuehlungSplitFolge + " "), P("stamm.kennzahl.kaelte.deckungsgrad_kaeltefolge"),
                                          Beispielvorlage.Lauf(t.KuehlungSplitNach)));
+            r.Add(Beispielvorlage.Absatz("Normal", P("/wenn")));
+            r.Add(Beispielvorlage.Absatz("Normal", P("#wenn nicht hat.kaelte.kaeltefolge")));
+            r.Add(Beispielvorlage.Absatz("Normal", Beispielvorlage.Lauf(t.KuehlungVor + " "), P("stamm.kennzahl.kaelte.jahresbedarf"),
+                                         Beispielvorlage.Lauf(t.KuehlungSplitAllein + " "), P("stamm.kennzahl.kaelte.deckungsgrad_gesamt"),
+                                         Beispielvorlage.Lauf(t.KuehlungNach)));
             r.Add(Beispielvorlage.Absatz("Normal", P("/wenn")));
             r.Add(Beispielvorlage.Absatz("Normal", P("/wenn")));
 
@@ -715,7 +724,7 @@ namespace Berichtsvorlage
             Wirtschaft = "Wirtschaftlichkeit",
             Kuehlung = "Kühlung", KuehlungVor = "Der Kältebedarf beträgt", KuehlungMitte = "; davon deckt die Anlage", KuehlungNach = ".",
             KuehlungSplitMitte = "; davon decken die Anlage und die dezentralen Split-Geräte", KuehlungSplitFolge = ", davon die Kältefolge",
-            KuehlungSplitNach = " des zentral zu deckenden Kältebedarfs.",
+            KuehlungSplitNach = " des zentral zu deckenden Kältebedarfs.", KuehlungSplitAllein = "; davon decken die dezentralen Split-Geräte",
             Deckung = "Deckung je Variante", Anhang = "Anhang",
             Stamm = "Stamm", Gruppe = "Gruppe", Summe = "Summe", Warnung = "Warnung",
             Aufheizung = "Aufheizung", AufheizVor = ": Die Aufheizzeit beträgt", AufheizBei = "bei",
@@ -768,9 +777,11 @@ namespace Berichtsvorlage
                 {
                     "Ein bedingter Abschnitt: Alles zwischen {{#wenn hat.kaelte}} und {{/wenn}} erscheint nur, wenn das Projekt "
                     + "Kälte rechnet. Die Absätze mit den Blockmarken entfallen im Bericht.",
-                    "Darin wählen {{#wenn nicht hat.kaelte.dezentral}} und {{#wenn hat.kaelte.dezentral}} den Satz: Deckt eine "
-                    + "Kältebedarfszeile dezentral über Split-Geräte, nennt er den Deckungsgrad samt Split-Geräten und davon den "
-                    + "Anteil der Kältefolge.",
+                    "Darin steht der Satz ohne dezentrale Deckung ({{#wenn nicht hat.kaelte.dezentral}}). Deckt eine "
+                    + "Kältebedarfszeile dezentral über Split-Geräte, nennt der Block {{#wenn hat.kaelte.dezentral}} dahinter den "
+                    + "Deckungsgrad samt Split-Geräten und mit {{#wenn hat.kaelte.kaeltefolge}} den Anteil der Kältefolge, ohne "
+                    + "Kälteerzeuger ({{#wenn nicht hat.kaelte.kaeltefolge}}) allein den Anteil der Split-Geräte. Blöcke lassen "
+                    + "sich höchstens zwei Ebenen tief schachteln.",
                 },
                 new[]
                 {
@@ -819,7 +830,7 @@ namespace Berichtsvorlage
             Wirtschaft = "Economic viability",
             Kuehlung = "Cooling", KuehlungVor = "The cooling demand is", KuehlungMitte = "; the system covers", KuehlungNach = " of it.",
             KuehlungSplitMitte = "; the system and the decentralised split units cover", KuehlungSplitFolge = " of it, of which the cooling sequence covers",
-            KuehlungSplitNach = " of the centrally supplied cooling demand.",
+            KuehlungSplitNach = " of the centrally supplied cooling demand.", KuehlungSplitAllein = "; the decentralised split units cover",
             Deckung = "Coverage per variant", Anhang = "Appendix",
             Stamm = "Base", Gruppe = "Group", Summe = "Total", Warnung = "Warning",
             Aufheizung = "Preheating", AufheizVor = ": The preheat time is", AufheizBei = "at",
@@ -871,9 +882,11 @@ namespace Berichtsvorlage
                 {
                     "A conditional section: everything between {{#wenn hat.kaelte}} and {{/wenn}} appears only if the project "
                     + "calculates cooling. The paragraphs holding the block markers are removed from the report.",
-                    "Inside, {{#wenn nicht hat.kaelte.dezentral}} and {{#wenn hat.kaelte.dezentral}} choose the sentence: if a "
-                    + "cooling demand row is covered locally by split units, it states the coverage including the split units and, "
-                    + "of that, the share of the cooling sequence.",
+                    "Inside stands the sentence without local cooling ({{#wenn nicht hat.kaelte.dezentral}}). If a cooling demand "
+                    + "row is covered locally by split units, the block {{#wenn hat.kaelte.dezentral}} after it states the coverage "
+                    + "including the split units and, with {{#wenn hat.kaelte.kaeltefolge}}, the share of the cooling sequence; "
+                    + "without a cooling generator ({{#wenn nicht hat.kaelte.kaeltefolge}}) only the share of the split units. "
+                    + "Blocks can be nested at most two levels deep.",
                 },
                 new[]
                 {

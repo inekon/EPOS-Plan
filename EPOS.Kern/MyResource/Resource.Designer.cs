@@ -132520,6 +132520,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenschalter: Deckt im Stand (bzw. in irgendeinem Stand) neben einer Split-Zeile ein Kälteerzeuger über die Kältefolge (Wert „davon Kältefolge“ vorhanden)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__KAELTE__KAELTEFOLGE {
+            get {
+                return ResourceManager.GetString("VF_HAT__KAELTE__KAELTEFOLGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Datenschalter: Hat ein Gebäude des Stands (bzw. irgendeines Stands) mit wirksamer Schnellaufheizung gerechnet? ähnelt.
         /// </summary>
         public static string VF_HAT__SCHNELLAUFHEIZUNG {
