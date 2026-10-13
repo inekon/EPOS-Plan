@@ -69,8 +69,9 @@ public class ProjektBrennstoffeDialogTests : EposBunitContext
 
         Assert.Equal("Brennstoffe des Projekts", cut.Find("h1").TextContent.Trim());
         Assert.Equal("Musterprojekt", cut.Find(".epos-pbrs-projekt").TextContent.Trim());
-        // Brennstoff, Einheit, zehn Werte, Stand, Aktionen.
-        Assert.Equal(14, cut.FindAll(".epos-pbrs-liste thead th").Count);
+        // Brennstoff, Einheit, sieben Werte, Stand, Aktionen (die drei Preise stehen seit KB-2 in der
+        // Karte des Energietraegers).
+        Assert.Equal(11, cut.FindAll(".epos-pbrs-liste thead th").Count);
         Assert.Equal(3, cut.FindAll(".epos-pbrs-liste tbody tr").Count);
         Assert.Equal(new[] { "wie Katalog", "abweichend", "nicht mehr im Katalog" },
                      cut.FindAll(".epos-pbrs-stand").Select(e => e.TextContent.Trim()));
@@ -102,7 +103,7 @@ public class ProjektBrennstoffeDialogTests : EposBunitContext
         cut.FindAll(".epos-pbrs-bearbeiten")[0].Click();
         var ueber = cut.FindComponents<Ueberlagerung>().Single(u => u.Instance.Offen);
         Assert.Contains("Erdgas E", ueber.Instance.Titel);
-        Assert.Equal(10, ueber.FindAll("input").Count);
+        Assert.Equal(7, ueber.FindAll("input").Count);
 
         ueber.FindAll("input")[2].Input("230");       // CO₂
         cut.Find(".epos-pbrs-speichern").Click();
