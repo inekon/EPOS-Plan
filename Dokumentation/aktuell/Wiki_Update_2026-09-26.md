@@ -333,6 +333,8 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 12.10.2026: Die Knopfleiste am gewählten Satz bricht in schmalen Fenstern um; Katalogfunktionen stehen im Katalogkopf. (#1029)
 - Seit 13.10.2026: Im Dialog „Kältemaschinen im Projekt“ öffnet „Bearbeiten…“ bei einer Wärmepumpe ihre Anlagenfelder mit Gerätesteckbrief und der Gruppe „Kühlbetrieb“. (#1034)
 - Seit 13.10.2026: Im Dialog „Kältemaschinen im Projekt“ führt der Knopf „Energiekosten…“ zur Trägerkarte des Kühlträgers der gewählten Anlage. (#1041)
+- Seit 13.10.2026: Der Komponentenbestand des Gewerks Kältemaschine lässt sich im Reiter Übersicht als Ganzes aus einer anderen Version übernehmen. (#1042)
+- Seit 13.10.2026: Eine abweichende Anzahl gleicher Kältemaschinen erscheint in den Unterschieden zum Stammprojekt und lässt sich einzeln übernehmen. (#1042)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 
