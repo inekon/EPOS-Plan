@@ -270,25 +270,21 @@ else
             <button type="button" class="epos-diagramm-knopf" title="@ZurueckHilfe"
                     @onclick="ZurueckGewaehlt">@ZurueckText</button>
 
-            @* DIE WAHL "MONAT | TAG | STUNDE" (Anwenderrueckmeldung 13.10.2026): nur an einer
+            @* DIE WAHL "DATUM | STUNDE IM JAHR" (Anwenderentscheid 13.10.2026): nur an einer
                Zeitachse eines Jahresrasters. Sie bestimmt Teilung und Beschriftung der x-Achse
-               in der Vollansicht wie im Ausschnitt; Vorgabe ist die Teilung des Bildes (Monat
-               beim ganzen Jahr, Jahresstunden im Ausschnitt). Die Wahl haelt der Baustein. *@
+               in der Vollansicht wie im Ausschnitt (Zeitachse.Teilung); Vorgabe ist das Datum.
+               Die Wahl haelt der Baustein je Sitzung. *@
             @if (MitZeiteinheit)
             {
                 <span class="epos-diagramm-einheiten" role="group" aria-label="@Resource.DIAGRAMM_TIP_EINHEIT">
-                    <button type="button" class="epos-diagramm-knopf" data-einheit="monat"
-                            aria-pressed="@(Zeiteinheit == Zeitachseneinheit.Monat ? "true" : "false")"
+                    <button type="button" class="epos-diagramm-knopf" data-einheit="datum"
+                            aria-pressed="@(Zeiteinheit == Zeitachseneinheit.Datum ? "true" : "false")"
                             title="@Resource.DIAGRAMM_TIP_EINHEIT"
-                            @onclick="@(() => EinheitWaehlen(Zeitachseneinheit.Monat))">@Resource.DIAGRAMM_BTN_MONAT</button>
-                    <button type="button" class="epos-diagramm-knopf" data-einheit="tag"
-                            aria-pressed="@(Zeiteinheit == Zeitachseneinheit.Tag ? "true" : "false")"
-                            title="@Resource.DIAGRAMM_TIP_EINHEIT"
-                            @onclick="@(() => EinheitWaehlen(Zeitachseneinheit.Tag))">@Resource.DIAGRAMM_BTN_TAG</button>
+                            @onclick="@(() => EinheitWaehlen(Zeitachseneinheit.Datum))">@Resource.DIAGRAMM_BTN_DATUM</button>
                     <button type="button" class="epos-diagramm-knopf" data-einheit="stunde"
-                            aria-pressed="@(Zeiteinheit == Zeitachseneinheit.Stunde ? "true" : "false")"
+                            aria-pressed="@(Zeiteinheit == Zeitachseneinheit.StundeImJahr ? "true" : "false")"
                             title="@Resource.DIAGRAMM_TIP_EINHEIT"
-                            @onclick="@(() => EinheitWaehlen(Zeitachseneinheit.Stunde))">@Resource.DIAGRAMM_BTN_STUNDE</button>
+                            @onclick="@(() => EinheitWaehlen(Zeitachseneinheit.StundeImJahr))">@Resource.DIAGRAMM_BTN_STUNDE_IM_JAHR</button>
                 </span>
             }
         }
@@ -536,9 +532,8 @@ else
     private int _farbstand;
 
     /// <summary>
-    /// Die gewählte Einheit der Zeitachse; <c>null</c> = die Vorgabe (die Teilung des Bildes in
-    /// der Vollansicht, Jahresstunden im Ausschnitt). Sie gilt je Baustein und Sitzung und
-    /// überlebt einen Modellwechsel.
+    /// Die gewählte Skala der Zeitachse; <c>null</c> = die Vorgabe (Datum). Sie gilt je
+    /// Baustein und Sitzung, in Vollansicht und Ausschnitt, und überlebt einen Modellwechsel.
     /// </summary>
     private Zeitachseneinheit? _einheit;
 
@@ -577,20 +572,19 @@ else
     public IReadOnlyDictionary<string, string> Bandpfade => _band;
 
     /// <summary>
-    /// Die wirksame Einheit der Zeitachse: die gewählte, sonst die Vorgabe — im Ausschnitt
-    /// Jahresstunden, in der Vollansicht die Teilung des Bildes (<c>Zeichenflaeche.Teilung</c>).
+    /// Die wirksame Skala der Zeitachse: die gewählte, sonst die Vorgabe Datum.
     /// </summary>
     public Zeitachseneinheit Zeiteinheit => _einheit ?? VorgabeEinheit;
 
-    /// <summary>Trägt das Bild eine Zeitachse eines Jahresrasters — und damit die Wahl „Monat | Tag | Stunde“?</summary>
-    public bool MitZeiteinheit => Bedienbar && WerteJeStunde > 0;
+    /// <summary>Trägt das Bild eine Zeitachse eines Jahresrasters — und damit die Wahl „Datum | Stunde im Jahr“?</summary>
+    public bool MitZeiteinheit => Bedienbar && StundenJeStelle > 0;
 
     /// <summary>
-    /// Zeichnet der Baustein die Achsenteilung selbst? Im Ausschnitt immer; in der Vollansicht,
-    /// sobald eine andere Einheit gewählt ist als die, mit der das Bild seine Achse setzt.
+    /// Zeichnet der Baustein die Achsenteilung selbst? Im Ausschnitt immer; in der Vollansicht
+    /// an jeder Zeitachse eines Jahresrasters — dort gilt die Wahl „Datum | Stunde im Jahr“
+    /// statt der Teilung des Bildes (die bleibt dem Bericht).
     /// </summary>
-    public bool AchseNachgezeichnet
-        => _fenster is not null || (MitZeiteinheit && _einheit is not null && _einheit != VorgabeEinheit);
+    public bool AchseNachgezeichnet => _fenster is not null || MitZeiteinheit;
 
     /// <summary>
     /// Der Wert des Elements unter dem Zeiger (DG-E3-10); leer = keiner. Prüfstände
@@ -1069,7 +1063,8 @@ else
             builder.AddAttribute(14, "text-anchor", "middle");
             builder.AddAttribute(15, "dominant-baseline", "text-before-edge");
             builder.AddAttribute(16, "fill", textfarbe);
-            builder.AddContent(17, beschriftung);
+            builder.AddAttribute(18, "xml:space", "preserve");
+            builder.AddContent(19, beschriftung);
             builder.CloseElement();
 
             // DIE ZWEITE ZEILE: das Datum (Auftrag GX) bzw. die zweite Zeile der Einheit.
@@ -1085,7 +1080,8 @@ else
                 builder.AddAttribute(25, "text-anchor", "middle");
                 builder.AddAttribute(26, "dominant-baseline", "text-before-edge");
                 builder.AddAttribute(27, "fill", textfarbe);
-                builder.AddContent(28, datum);
+                builder.AddAttribute(29, "xml:space", "preserve");
+                builder.AddContent(30, datum);
                 builder.CloseElement();
             }
 
@@ -1112,7 +1108,8 @@ else
             builder.AddAttribute(5, "text-anchor", "middle");
             builder.AddAttribute(6, "dominant-baseline", "text-before-edge");
             builder.AddAttribute(7, "fill", textfarbe);
-            builder.AddContent(8, achsentitel);
+            builder.AddAttribute(9, "xml:space", "preserve");
+            builder.AddContent(10, achsentitel);
             builder.CloseElement();
             builder.CloseRegion();
         }
@@ -1131,7 +1128,8 @@ else
             builder.AddAttribute(5, "text-anchor", "middle");
             builder.AddAttribute(6, "dominant-baseline", "text-before-edge");
             builder.AddAttribute(7, "fill", textfarbe);
-            builder.AddContent(8, hinweis);
+            builder.AddAttribute(9, "xml:space", "preserve");
+            builder.AddContent(10, hinweis);
             builder.CloseElement();
             builder.CloseRegion();
         }
@@ -1141,33 +1139,35 @@ else
 
     /// <summary>
     /// <b>Die Marken der nachgezeichneten Achse</b>: auf der Zeitachse eines Jahresrasters in
-    /// der gewählten Einheit (<see cref="Zeitachse.Teilung"/> — Monat, Tag, Stunde; die Stellen
+    /// der gewählten Skala (<see cref="Zeitachse.Teilung"/> — Datum, Stunde im Jahr; die Stellen
     /// in Stützstellen der Reihe, bei Viertelstunden also × 4), sonst die Teilung der
     /// Achsenart (<see cref="ChartRenderer.Achsenteilung"/>) mit der Datumszeile des Bildes.
     /// </summary>
     private IEnumerable<(double Stelle, string Text, string Zweitzeile)> Teilung(int von, int bis)
     {
         if (Bild?.Flaeche is null) yield break;
-        int jeStunde = WerteJeStunde;
-        if (MitZeiteinheit && jeStunde > 0)
+        double jeStelle = StundenJeStelle;
+        if (MitZeiteinheit && jeStelle > 0)
         {
             foreach (Zeitachse.Achsenmarke m in
-                     Zeitachse.Teilung(Zeiteinheit, (double)von / jeStunde, (double)bis / jeStunde, Bild.Flaeche.Bild.Breite))
-                yield return (m.Stunde * jeStunde, m.Text, m.Zweitzeile ?? "");
+                     Zeitachse.Teilung(Zeiteinheit, von * jeStelle, bis * jeStelle, Bild.Flaeche.Bild.Breite))
+                yield return (m.Stunde / jeStelle, m.Text, m.Zweitzeile ?? "");
             yield break;
         }
         foreach ((double stelle, string text) in ChartRenderer.Achsenteilung(Bild.Flaeche, von, bis))
             yield return (stelle, text, ChartRenderer.Datumszeile(Bild.Flaeche, stelle, von, bis));
     }
 
+    /// <summary>Die Jahresstunden je Stützstelle (¼, 1, 24 bei Tageswerten); 0 = keine Zeitachse über das Jahr.</summary>
+    private double StundenJeStelle => Bild?.Flaeche is null ? 0 : Zeitachse.StundenJeStuetzstelle(Bild.Flaeche);
+
     /// <summary>Die Werte je Jahresstunde der Zeichenfläche (1 Stunden, 4 Viertelstunden); 0 = keine Zeitachse eines Jahresrasters.</summary>
     private int WerteJeStunde => Bild?.Flaeche is null ? 0 : Zeitachse.WerteJeStunde(Bild.Flaeche);
 
-    /// <summary>Die Vorgabe der Einheit: Jahresstunden im Ausschnitt, sonst die Teilung des Bildes.</summary>
-    private Zeitachseneinheit VorgabeEinheit
-        => _fenster is not null ? Zeitachseneinheit.Stunde : Bild?.Flaeche?.Teilung ?? Zeitachseneinheit.Monat;
+    /// <summary>Die Vorgabe der Skala: das Datum, in der Vollansicht wie im Ausschnitt.</summary>
+    private const Zeitachseneinheit VorgabeEinheit = Zeitachseneinheit.Datum;
 
-    /// <summary>Die Wahl „Monat | Tag | Stunde“ — sie bleibt stehen, bis der Anwender sie wechselt.</summary>
+    /// <summary>Die Wahl „Datum | Stunde im Jahr“ — sie bleibt stehen, bis der Anwender sie wechselt.</summary>
     private void EinheitWaehlen(Zeitachseneinheit einheit) => _einheit = einheit;
 
     /// <summary>

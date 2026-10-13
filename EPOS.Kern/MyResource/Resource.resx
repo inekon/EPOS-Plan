@@ -2017,9 +2017,6 @@ Ohne Quellpuffer steht hier 0,00.</value>
   <data name="CHART_ACHSE_JAHRESSTUNDEN_DATUM" xml:space="preserve">
     <value>Jahresstunden [h] · Datum</value>
   </data>
-  <data name="CHART_ACHSE_TAG_DATUM" xml:space="preserve">
-    <value>Tag des Jahres · Datum</value>
-  </data>
   <data name="CHART_ACHSE_MONATSKUERZEL" xml:space="preserve">
     <value>Jan.|Feb.|März|Apr.|Mai|Juni|Juli|Aug.|Sep.|Okt.|Nov.|Dez.</value>
   </data>
@@ -51526,17 +51523,8 @@ Chart</value>
   <data name="DIAGRAMM_TIP_CSV" xml:space="preserve">
     <value>Jahresganglinie als CSV speichern</value>
   </data>
-  <data name="DIAGRAMM_BTN_MONAT" xml:space="preserve">
-    <value>Monat</value>
-  </data>
-  <data name="DIAGRAMM_BTN_TAG" xml:space="preserve">
-    <value>Tag</value>
-  </data>
-  <data name="DIAGRAMM_BTN_STUNDE" xml:space="preserve">
-    <value>Stunde</value>
-  </data>
   <data name="DIAGRAMM_TIP_EINHEIT" xml:space="preserve">
-    <value>Teilung der Zeitachse: Monat, Tag oder Stunde</value>
+    <value>Zeitachse: Datum oder Stunde im Jahr</value>
   </data>
   <data name="SIMQ_ERDREICH_LAUF_KENNWERTE_ZEILE" xml:space="preserve">
     <value>Jahresmittel {0} °C  ·  Tiefstwert {1} °C am {2}  ·  Höchstwert {3} °C am {4}</value>
@@ -55775,6 +55763,33 @@ Chart</value>
   </data>
   <data name="MP_BAUTEIL_ERGAENZT" xml:space="preserve">
     <value>{0} (ergänzt)</value>
+  </data>
+  <data name="CHART_ACHSE_DATUM" xml:space="preserve">
+    <value>Datum</value>
+  </data>
+  <data name="CHART_ACHSE_DATUM_ZIFFERN" xml:space="preserve">
+    <value>{0}.{1}.</value>
+  </data>
+  <data name="CHART_ACHSE_STUNDE_IM_JAHR" xml:space="preserve">
+    <value>Stunde im Jahr [h]</value>
+  </data>
+  <data name="DIAGRAMM_BTN_DATUM" xml:space="preserve">
+    <value>Datum</value>
+  </data>
+  <data name="DIAGRAMM_BTN_STUNDE_IM_JAHR" xml:space="preserve">
+    <value>Stunde im Jahr</value>
+  </data>
+  <data name="CHART_LEGENDE_PV_EIGENVERBRAUCH" xml:space="preserve">
+    <value>PV-Eigenverbrauch</value>
+  </data>
+  <data name="CHART_LEGENDE_PV_EINSPEISUNG" xml:space="preserve">
+    <value>PV-Einspeisung (Überschuss)</value>
+  </data>
+  <data name="CHART_LEGENDE_PV_ABREGELUNG" xml:space="preserve">
+    <value>PV-Abregelung</value>
+  </data>
+  <data name="SIM_CHK_PV_AUFTEILEN" xml:space="preserve">
+    <value>PV aufteilen (Eigenverbrauch + Überschuss)</value>
   </data>
 </root>
 

@@ -141,6 +141,11 @@
                 <div class="epos-simerg-schalter">
                     <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_sortiert"
                               WertChanged="@(w => _sortiert = w)" />
+                    @* PV AUFTEILEN (Anwenderentscheid 13.10.2026): die Erzeugung als Stapel
+                       aus Eigenverbrauch und Einspeisung (und Abregelung); die Schichten
+                       rechnet der Kern, die Hülle baut das Bild. *@
+                    <Schalter Bezeichnung="@Resource.SIM_CHK_PV_AUFTEILEN" Wert="@_aufgeteilt"
+                              WertChanged="@(w => _aufgeteilt = w)" />
                 </div>
 
                 @* W11b‑B‑19: EINE Zeile mit ALLEN vier Reihen, jede in der
@@ -283,11 +288,17 @@
     /// <summary>Steht die Dauerlinie vorn? (Pruefhilfe)</summary>
     public bool Sortiert => _sortiert;
 
+    /// <summary>Steht die PV-Erzeugung als Stapel aus Eigenverbrauch und Einspeisung? (Pruefhilfe)</summary>
+    public bool Aufgeteilt => _aufgeteilt;
+
     /// <summary>Die eingeschalteten Reihen (Pruefhilfe).</summary>
     public IReadOnlyList<string> GewaehlteReihen => Reihen();
 
     /// <summary>Die Darstellungsart: aus = Ganglinie ueber das Jahr, an = Dauerlinie.</summary>
     private bool _sortiert;
+
+    /// <summary>Schalter „PV aufteilen“: aus = die Erzeugung als eine Linie (Vorgabe).</summary>
+    private bool _aufgeteilt;
 
     // W11b‑B‑19: je Reihe ein Zustand. Die Vorbelegung ist die des Vorbilds: die
     // zwei GRUNDREIHEN an, die zwei ZUSATZREIHEN aus (woertlich :4676-4679).
@@ -314,7 +325,8 @@
     }
 
     private Zeichenmodell? ModellPv =>
-        Modell?.Invoke(new Bildauftrag(Bilder.Photovoltaik, _sortiert, -1, Reihen()));
+        Modell?.Invoke(new Bildauftrag(Bilder.Photovoltaik, _sortiert, -1, Reihen(),
+                                      PvAufgeteilt: _aufgeteilt));
 
     /// <summary>
     /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch
@@ -346,13 +358,14 @@
     //  Der Hilfe-Assistent (Welle #458, Stufe 2): die Schalter der Anzeige
     // =====================================================================
 
-    /// <summary>Die fünf Schalter über dem Bild — nur, solange das Blatt ein Ergebnis zeigt.</summary>
+    /// <summary>Die sechs Schalter über dem Bild — nur, solange das Blatt ein Ergebnis zeigt.</summary>
     protected override IReadOnlyList<Anzeigeschalter> Blattschalter()
         => Daten is null
             ? Array.Empty<Anzeigeschalter>()
             : new[]
             {
                 Umschalter(Resource.SIM_CHK_SORTIERT, () => _sortiert, w => _sortiert = w),
+                Umschalter(Resource.SIM_CHK_PV_AUFTEILEN, () => _aufgeteilt, w => _aufgeteilt = w),
                 Umschalter(Resource.CHART_ACHSE_STROMBEDARF, () => _strombedarf, w => _strombedarf = w),
                 Umschalter(Resource.SIM_PHOTOVOLTAIK, () => _photovoltaik, w => _photovoltaik = w),
                 Umschalter(Resource.CHART_LEGENDE_UEBERSCHUSS, () => _ueberschuss, w => _ueberschuss = w),

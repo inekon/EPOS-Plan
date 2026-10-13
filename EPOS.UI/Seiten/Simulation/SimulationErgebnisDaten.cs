@@ -1044,6 +1044,8 @@ public sealed class SimulationErgebnisDaten
 /// <param name="Kanal">Bedarfsart des Wärmegangs; −1 = Produktion.</param>
 /// <param name="Reihen">Die gewaehlten Serienschluessel; leer = alle.</param>
 /// <param name="Zahl">Freier Zahlenparameter (Was-wäre-wenn-Kapazitaet der Autarkie).</param>
+/// <param name="PvAufgeteilt">Reiter Photovoltaik: die Erzeugung als Stapel aus Eigenverbrauch,
+/// Einspeisung und Abregelung statt als eine Linie (Schalter „PV aufteilen“).</param>
 /// <remarks>
 /// <b>DER RUNDLAUF-DATENZOOM IST ENTFALLEN</b> (Entscheid DG-E3-9, Konzept Diagramme
 /// § 6). Bis zur Etappe DG-E3 trug der Auftrag einen sechsten Wert
@@ -1055,12 +1057,13 @@ public sealed class SimulationErgebnisDaten
 /// kannten nie einen Bereich.
 /// </remarks>
 public sealed record Bildauftrag(string Bild, bool Sortiert = false, int Kanal = -1,
-                                 IReadOnlyList<string>? Reihen = null, double Zahl = 0.0)
+                                 IReadOnlyList<string>? Reihen = null, double Zahl = 0.0,
+                                 bool PvAufgeteilt = false)
 {
     /// <summary>Der Zwischenspeicherschluessel — er trennt zwei Schalterstellungen.</summary>
     public string Schluessel =>
         Bild + "|" + (Sortiert ? "1" : "0") + "|" + Kanal + "|" + Zahl.ToString("R") + "|" +
-        (Reihen is null ? "" : string.Join(",", Reihen));
+        (Reihen is null ? "" : string.Join(",", Reihen)) + (PvAufgeteilt ? "|PV" : "");
 }
 
 /// <summary>Die sprachneutralen Bildschluessel der Ergebnisseite.</summary>

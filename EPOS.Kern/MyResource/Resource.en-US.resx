@@ -2010,9 +2010,6 @@ Without a source buffer this reads 0.00.</value>
   <data name="CHART_ACHSE_JAHRESSTUNDEN_DATUM" xml:space="preserve">
     <value>Hours of the year [h] · date</value>
   </data>
-  <data name="CHART_ACHSE_TAG_DATUM" xml:space="preserve">
-    <value>Day of year · date</value>
-  </data>
   <data name="CHART_ACHSE_MONATSKUERZEL" xml:space="preserve">
     <value>Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec</value>
   </data>
@@ -51519,17 +51516,8 @@ chart</value>
   <data name="DIAGRAMM_TIP_CSV" xml:space="preserve">
     <value>Save annual load curve as CSV</value>
   </data>
-  <data name="DIAGRAMM_BTN_MONAT" xml:space="preserve">
-    <value>Month</value>
-  </data>
-  <data name="DIAGRAMM_BTN_TAG" xml:space="preserve">
-    <value>Day</value>
-  </data>
-  <data name="DIAGRAMM_BTN_STUNDE" xml:space="preserve">
-    <value>Hour</value>
-  </data>
   <data name="DIAGRAMM_TIP_EINHEIT" xml:space="preserve">
-    <value>Division of the time axis: month, day or hour</value>
+    <value>Time axis: date or hour of year</value>
   </data>
   <data name="SIMQ_ERDREICH_LAUF_KENNWERTE_ZEILE" xml:space="preserve">
     <value>annual mean {0} °C  ·  minimum {1} °C on {2}  ·  maximum {3} °C on {4}</value>
@@ -55768,6 +55756,33 @@ chart</value>
   </data>
   <data name="MP_BAUTEIL_ERGAENZT" xml:space="preserve">
     <value>{0} (added)</value>
+  </data>
+  <data name="CHART_ACHSE_DATUM" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="CHART_ACHSE_DATUM_ZIFFERN" xml:space="preserve">
+    <value>{1}/{0}</value>
+  </data>
+  <data name="CHART_ACHSE_STUNDE_IM_JAHR" xml:space="preserve">
+    <value>Hour of year [h]</value>
+  </data>
+  <data name="DIAGRAMM_BTN_DATUM" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="DIAGRAMM_BTN_STUNDE_IM_JAHR" xml:space="preserve">
+    <value>Hour of year</value>
+  </data>
+  <data name="CHART_LEGENDE_PV_EIGENVERBRAUCH" xml:space="preserve">
+    <value>PV self-consumption</value>
+  </data>
+  <data name="CHART_LEGENDE_PV_EINSPEISUNG" xml:space="preserve">
+    <value>PV feed-in (surplus)</value>
+  </data>
+  <data name="CHART_LEGENDE_PV_ABREGELUNG" xml:space="preserve">
+    <value>PV curtailment</value>
+  </data>
+  <data name="SIM_CHK_PV_AUFTEILEN" xml:space="preserve">
+    <value>Split PV (self-consumption + surplus)</value>
   </data>
 </root>
 

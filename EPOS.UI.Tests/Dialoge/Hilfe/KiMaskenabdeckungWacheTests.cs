@@ -500,7 +500,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("OptimierungBlock", 9),
         new("PeakShavingDialog", 17),
         new("PhotovoltaikDialog", 5, "„Alle Daten“ über die Feldtafel des Modulprofils"),
-        new("PhotovoltaikReiter", 5),
+        new("PhotovoltaikReiter", 6),
         new("PhotovoltaikVerguetungDialog", 16),
         // Berichtsvorlagen BV-E1: die Suche des Platzhalterkatalogs - der Wirt BerichtSeite führt
         // sie und meldet sie als BerichtSeiteKiSicht.Katalogsuche an; das Feld „Schreibweise"

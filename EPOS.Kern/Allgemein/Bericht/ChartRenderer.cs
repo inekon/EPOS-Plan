@@ -2964,11 +2964,13 @@ namespace WindowsFormsApplication1
             }
 
             // DIE ZEICHENFLAECHE SAMT DATENFENSTER (Etappe E3). x zaehlt den INDEX
-            // der Reihe (0 … n-1), y ist die fertige Skala.
+            // der Reihe (0 … n-1), y ist die fertige Skala. Ein Jahresprofil (8 760 Stunden)
+            // zaehlt Jahresstunden - damit traegt die Oberflaeche die Wahl "Datum | Stunde im
+            // Jahr" (Anwenderentscheid 13.10.2026); die Befehlsliste bleibt dieselbe.
             z.Flaeche = new Zeichenflaeche(
                 rc.Modellrahmen(),
                 new Datenfenster(0, stundenwerte.Length - 1, min, max),
-                Achsenart.Index);
+                stundenwerte.Length == Zeitachse.STUNDEN_JAHR ? Achsenart.Stunden : Achsenart.Index);
 
             // Die Linie. 8 760 Punkte auf 1 146 Bildpunkte: jeder n-te Wert
             // genügt — mehr Punkte als Pixel zeichnen dasselbe Bild langsamer.
@@ -4789,7 +4791,7 @@ namespace WindowsFormsApplication1
             z.Flaeche = new Zeichenflaeche(
                 rc.Modellrahmen(),
                 new Datenfenster(xVon, xVon + gueltig[0].Werte.Length - 1, 0, Y_PROZENT_MAX),
-                Zeitachsenart(sortiert), Teilung: Zeitteilung(achse));
+                Zeitachsenart(sortiert));
 
             // DIE LINIEN ZUERST, DER STAPEL DARÜBER (siehe Kopf) — dieselbe Zeichenlage
             // wie die Kontur im Erzeugerstapel: Die Summenlinie ist die Oberkante des
@@ -4990,7 +4992,8 @@ namespace WindowsFormsApplication1
                                                          string yTitel, Achse achse, bool sortiert,
                                                          IReadOnlyList<Reihe> zweiteAchsen = null,
                                                          string y2Titel = null,
-                                                         Achsenfenster fenster = null)
+                                                         Achsenfenster fenster = null,
+                                                         bool stufenNachStapel = false)
         {
             int W = 1240, H = 560;
 
@@ -5088,7 +5091,7 @@ namespace WindowsFormsApplication1
             double xVon = fenster == null ? 0.0 : Math.Max(0, Math.Min(gesamt, fenster.Von));
             var fensterLinks = new Datenfenster(xVon, xVon + n - 1, 0, max);
             z.Flaeche = new Zeichenflaeche(rc.Modellrahmen(), fensterLinks,
-                                           Zeitachsenart(sortiert), Teilung: Zeitteilung(achse));
+                                           Zeitachsenart(sortiert));
 
             // Steht ein Stapel im Bild, begleiten ihn Kontur und Linien: Bei dichten
             // Reihen zeichnen sie die Treppe ihrer Werte in den Spitzenstunden (Huelle),
@@ -5112,7 +5115,11 @@ namespace WindowsFormsApplication1
                 Stapelart bezugsgruppe = stapelG.Any(r => r.Stapelgruppe == Stapelart.Flaeche) ? Stapelart.Flaeche
                                        : stapelG.Any(r => r.Stapelgruppe == Stapelart.Saeule) ? Stapelart.Saeule
                                        : Stapelart.Keine;
-                stapelbezug = bedarfslinie != null ? bedarfslinie.Werte
+                // stufenNachStapel: Der Stapel IST die Groesse des Bildes (die aufgeteilte
+                // PV-Erzeugung) - seine Oberkante waehlt die Stunde, nicht der Bedarf, sonst
+                // zeigte ein Tag mit abendlicher Bedarfsspitze keine Erzeugung.
+                stapelbezug = stufenNachStapel ? Stapeloberkante(stapelG, bezugsgruppe, n)
+                            : bedarfslinie != null ? bedarfslinie.Werte
                             : mitKontur ? kontur.Werte
                             : Stapeloberkante(stapelG, bezugsgruppe, n);
             }
@@ -6806,14 +6813,6 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static Achsenart Zeitachsenart(bool sortiert)
             => sortiert ? Achsenart.Index : Achsenart.Stunden;
-
-        /// <summary>
-        /// Die Teilung der Zeitachse in der Vollansicht des Bildes — die Vorgabe der Wahl
-        /// „Monat | Tag | Stunde“ am Bild: Monatsgrenzen bei <see cref="Achse.Monate"/>, sonst
-        /// Jahresstunden.
-        /// </summary>
-        private static Zeitachseneinheit Zeitteilung(Achse achse)
-            => achse == Achse.Monate ? Zeitachseneinheit.Monat : Zeitachseneinheit.Stunde;
 
         /// <summary>
         /// Der Werttext an der Stelle <paramref name="i"/>; <c>null</c>, wo es keinen

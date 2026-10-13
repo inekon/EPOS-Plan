@@ -53,6 +53,24 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Wie viele Jahresstunden eine Stützstelle der Zeitachse umfasst</b> — die Grundlage
+        /// der Wahl „Datum | Stunde im Jahr“ an jeder Jahreszeitachse: ¼ (35 040 Viertelstunden),
+        /// 1 (8 760 Stunden), 24 (365 Tage; Tag d steht bei Stunde 24·d), sonst 0 — dann ist die
+        /// x-Achse keine Zeitachse über das Jahr. Wie <see cref="WerteJeStunde(Zeichenflaeche)"/>
+        /// nur für eine Stundenachse mit Fenster ab 0.
+        /// </summary>
+        public static double StundenJeStuetzstelle(Zeichenflaeche flaeche)
+        {
+            if (flaeche == null || flaeche.X != Achsenart.Stunden || flaeche.Daten == null) return 0.0;
+            Datenfenster d = flaeche.Daten;
+            if (Math.Abs(d.XVon) > 1e-9) return 0.0;
+            int gesamt = (int)Math.Round(d.XBis - d.XVon) + 1;
+            if (gesamt == 365) return 24.0;
+            int jeStunde = WerteJeStunde(gesamt);
+            return jeStunde == 0 ? 0.0 : 1.0 / jeStunde;
+        }
+
+        /// <summary>
         /// Das Datum der Jahresstunde <paramref name="stunde"/> im Gemeinjahr, ohne Jahr:
         /// „7. Sep.“ bzw. „Sep 7“. Stunden außerhalb des Jahres werden an den Rand
         /// geklemmt (1. Januar bzw. 31. Dezember).
@@ -111,14 +129,13 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        // DIE WAHL "MONAT | TAG | STUNDE" (Anwenderrueckmeldung 13.10.2026)
+        // DIE WAHL "DATUM | STUNDE IM JAHR" (Anwenderentscheid 13.10.2026)
         //
-        // Die Oberflaeche teilt die Zeitachse eines Jahresbildes in der Einheit,
-        // die der Anwender am Bild waehlt - in der Vollansicht wie im Ausschnitt.
-        // Die Regel steht hier einmal: Marken in GANZEN Einheiten, die Schrittweite
-        // so, dass zwei Beschriftungen mindestens MARKE_MIN_PX Bildpunkte
-        // auseinanderliegen (keine Ueberlappung), jede Marke mit erster und zweiter
-        // Zeile - Monatsname; Tag des Jahres und Datum; Jahresstunde und Datum.
+        // Die Oberflaeche teilt die Zeitachse eines Jahresbildes in der Skala, die
+        // der Anwender am Bild waehlt - in der Vollansicht wie im Ausschnitt. Die
+        // Regel steht hier einmal: Die Schrittweite ist die kleinste der Skala, bei
+        // der zwei Marken mindestens MARKE_MIN_PX Bildpunkte auseinanderliegen (bei
+        // Marken mit Uhrzeit MARKE_UHRZEIT_MIN_PX) - die Beschriftungen ueberlappen nie.
         // =================================================================
 
         /// <summary>
@@ -130,18 +147,27 @@ namespace WindowsFormsApplication1
         /// <summary>Der kleinste Abstand zweier Marken in Bildpunkten — darunter überlappten sich die Beschriftungen.</summary>
         public const double MARKE_MIN_PX = 72.0;
 
-        private static readonly int[] TAGESSCHRITTE = { 1, 2, 3, 5, 7, 10, 14, 15, 20, 30, 50, 60, 90, 120, 180 };
-        private static readonly int[] MONATSSCHRITTE = { 1, 2, 3, 4, 6 };
+        /// <summary>Der kleinste Abstand zweier Marken mit Datum UND Uhrzeit („31.12. 18:00“) — die längere Beschriftung.</summary>
+        public const double MARKE_UHRZEIT_MIN_PX = 144.0;
+
+        private static readonly int[] STUNDENSCHRITTE_TAG = { 1, 2, 3, 6, 12 };
+        private static readonly int[] TAGESSCHRITTE = { 1, 2, 3, 5, 7, 10, 14 };
+        private static readonly int[] MONATSSCHRITTE = { 1, 2, 3, 6 };
+        private static readonly int[] JAHRESSTUNDENSCHRITTE =
+            { 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000 };
 
         /// <summary>
-        /// <b>Die Teilung der Zeitachse in einer Einheit</b> für den Ausschnitt
+        /// <b>Die Teilung der Zeitachse in einer Skala</b> für den Ausschnitt
         /// <paramref name="vonStunde"/> … <paramref name="bisStunde"/> (Jahresstunden,
-        /// einschließlich) über <paramref name="breitePx"/> Bildpunkte: bei
-        /// <see cref="Zeitachseneinheit.Monat"/> die Monatsgrenzen mit Monatskürzel, bei
-        /// <see cref="Zeitachseneinheit.Tag"/> die Tagesgrenzen mit Tag des Jahres und Datum,
-        /// bei <see cref="Zeitachseneinheit.Stunde"/> die runden Jahresstunden mit Datum
-        /// (<c>ChartRenderer.Jahresstundenteilung</c>). Die Schrittweite ist die kleinste der
-        /// Einheit, bei der zwei Marken mindestens <see cref="MARKE_MIN_PX"/> auseinanderliegen.
+        /// einschließlich) über <paramref name="breitePx"/> Bildpunkte.
+        ///
+        /// <para><see cref="Zeitachseneinheit.Datum"/>: das Datum ohne Jahr
+        /// (<see cref="DatumKurz"/>, „01.02.“) — je nach Ausschnitt an Monatsanfängen
+        /// (Schritt 1, 2, 3, 6 Monate), an Tagen (1 … 14 Tage) oder innerhalb des Tages
+        /// (1 … 12 Stunden, dann mit Uhrzeit „01.02. 06:00“).</para>
+        ///
+        /// <para><see cref="Zeitachseneinheit.StundeImJahr"/>: die Jahresstunden 0 … 8 760 in
+        /// runden Schritten (1, 2, 5 × 10^k).</para>
         /// </summary>
         public static IReadOnlyList<Achsenmarke> Teilung(Zeitachseneinheit einheit, double vonStunde,
                                                          double bisStunde, double breitePx)
@@ -153,63 +179,76 @@ namespace WindowsFormsApplication1
             if (breitePx <= 0) breitePx = 1000;
             double pxJeStunde = breitePx / spanne;
 
-            switch (einheit)
+            if (einheit == Zeitachseneinheit.StundeImJahr)
             {
-                case Zeitachseneinheit.Monat:
-                    {
-                        int schritt = MONATSSCHRITTE[MONATSSCHRITTE.Length - 1];
-                        foreach (int s in MONATSSCHRITTE)
-                            if (s * 28 * 24 * pxJeStunde >= MARKE_MIN_PX) { schritt = s; break; }
-                        string[] kuerzel = (MyResource.Resource.CHART_ACHSE_MONATSKUERZEL ?? "").Split('|');
-                        int tag = 0;
-                        for (int m = 0; m < 12; m++)
-                        {
-                            double stunde = tag * 24.0;
-                            tag += Feiertage.TageJeMonat[m];
-                            if (m % schritt != 0) continue;
-                            if (stunde < vonStunde - 1e-9 || stunde > bisStunde + 1e-9) continue;
-                            string name = kuerzel.Length == 12 ? kuerzel[m] : (m + 1).ToString(CultureInfo.InvariantCulture);
-                            marken.Add(new Achsenmarke(stunde, name, ""));
-                        }
-                        return marken;
-                    }
-
-                case Zeitachseneinheit.Tag:
-                    {
-                        int schritt = TAGESSCHRITTE[TAGESSCHRITTE.Length - 1];
-                        foreach (int s in TAGESSCHRITTE)
-                            if (s * 24 * pxJeStunde >= MARKE_MIN_PX) { schritt = s; break; }
-                        int erster = (int)Math.Ceiling(vonStunde / 24.0 - 1e-9);
-                        int letzter = (int)Math.Floor(bisStunde / 24.0 + 1e-9);
-                        for (int t = erster; t <= letzter && t < 365; t++)
-                        {
-                            if (t < 0 || t % schritt != 0) continue;
-                            marken.Add(new Achsenmarke(t * 24.0, (t + 1).ToString("N0", CultureInfo.CurrentCulture),
-                                                       Datum(t * 24.0)));
-                        }
-                        return marken;
-                    }
-
-                default:
-                    foreach ((int stunde, string text) in
-                             ChartRenderer.Jahresstundenteilung((int)Math.Ceiling(vonStunde), (int)Math.Floor(bisStunde)))
-                        marken.Add(new Achsenmarke(stunde, text, Markentext(stunde, spanne)));
-                    return marken;
+                int schritt = JAHRESSTUNDENSCHRITTE[JAHRESSTUNDENSCHRITTE.Length - 1];
+                foreach (int s in JAHRESSTUNDENSCHRITTE)
+                    if (s * pxJeStunde >= MARKE_MIN_PX) { schritt = s; break; }
+                long erste = (long)Math.Ceiling(vonStunde / schritt - 1e-9) * schritt;
+                for (long h = Math.Max(0, erste); h <= bisStunde + 1e-9 && h <= STUNDEN_JAHR; h += schritt)
+                    marken.Add(new Achsenmarke(h, h.ToString("N0", CultureInfo.CurrentCulture), ""));
+                return marken;
             }
+
+            // Datum: zuerst innerhalb des Tages, dann Tage, dann Monatsanfaenge.
+            foreach (int s in STUNDENSCHRITTE_TAG)
+            {
+                if (s * pxJeStunde < MARKE_UHRZEIT_MIN_PX) continue;
+                long erste = (long)Math.Ceiling(vonStunde / s - 1e-9) * s;
+                for (long h = Math.Max(0, erste); h <= bisStunde + 1e-9 && h < STUNDEN_JAHR; h += s)
+                    marken.Add(new Achsenmarke(h, DatumKurz(h) + " " + Uhrzeit(h), ""));
+                return marken;
+            }
+            foreach (int s in TAGESSCHRITTE)
+            {
+                if (s * 24 * pxJeStunde < MARKE_MIN_PX) continue;
+                int erster = (int)Math.Ceiling(vonStunde / 24.0 - 1e-9);
+                int letzter = (int)Math.Floor(bisStunde / 24.0 + 1e-9);
+                for (int t = Math.Max(0, erster); t <= letzter && t < 365; t++)
+                    if (t % s == 0) marken.Add(new Achsenmarke(t * 24.0, DatumKurz(t * 24.0), ""));
+                return marken;
+            }
+
+            // Monatsanfaenge; der kuerzeste Monat (28 Tage) bestimmt den Abstand.
+            int monatsschritt = MONATSSCHRITTE[MONATSSCHRITTE.Length - 1];
+            foreach (int s in MONATSSCHRITTE)
+                if (s * 28 * 24 * pxJeStunde >= MARKE_MIN_PX) { monatsschritt = s; break; }
+            int tag = 0;
+            for (int m = 0; m < 12; m++)
+            {
+                double stunde = tag * 24.0;
+                tag += Feiertage.TageJeMonat[m];
+                if (m % monatsschritt != 0) continue;
+                if (stunde < vonStunde - 1e-9 || stunde > bisStunde + 1e-9) continue;
+                marken.Add(new Achsenmarke(stunde, DatumKurz(stunde), ""));
+            }
+            return marken;
         }
 
         /// <summary>
-        /// Der Titel der Zeitachse in der gewählten Einheit: „Monat“, „Tag des Jahres · Datum“,
-        /// „Jahresstunden [h] · Datum“ (Ressourcenkatalog).
+        /// Das Datum der Jahresstunde als Ziffernfolge ohne Jahr: „07.09.“ (de) bzw. „09/07“ (en),
+        /// Muster <c>CHART_ACHSE_DATUM_ZIFFERN</c> mit Tag {0} und Monat {1}, je zweistellig.
         /// </summary>
-        public static string Achsentitel(Zeitachseneinheit einheit)
+        public static string DatumKurz(double stunde)
         {
-            switch (einheit)
+            int tag = (int)Math.Floor(Klemmen(stunde) / 24.0);   // 0 … 364
+            int monat = 0;
+            while (monat < 11 && tag >= Feiertage.TageJeMonat[monat])
             {
-                case Zeitachseneinheit.Monat: return MyResource.Resource.CHART_ACHSE_MONAT;
-                case Zeitachseneinheit.Tag: return MyResource.Resource.CHART_ACHSE_TAG_DATUM;
-                default: return MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN_DATUM;
+                tag -= Feiertage.TageJeMonat[monat];
+                monat++;
             }
+            string muster = MyResource.Resource.CHART_ACHSE_DATUM_ZIFFERN;
+            if (string.IsNullOrEmpty(muster)) muster = "{0}.{1}.";
+            return string.Format(CultureInfo.InvariantCulture, muster,
+                                 (tag + 1).ToString("00", CultureInfo.InvariantCulture),
+                                 (monat + 1).ToString("00", CultureInfo.InvariantCulture));
         }
+
+        /// <summary>Der Titel der Zeitachse in der gewählten Skala: „Datum“ bzw. „Stunde im Jahr [h]“ (Ressourcenkatalog).</summary>
+        public static string Achsentitel(Zeitachseneinheit einheit)
+            => einheit == Zeitachseneinheit.StundeImJahr
+                ? MyResource.Resource.CHART_ACHSE_STUNDE_IM_JAHR
+                : MyResource.Resource.CHART_ACHSE_DATUM;
     }
 }

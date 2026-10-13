@@ -263,6 +263,27 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die PV-Erzeugung in drei Schichten</b> je Viertelstunde [kW] — für das aufgeteilte
+        /// Bild des Reiters Photovoltaik: Eigenverbrauch (direkt genutzt, Speicherladung und
+        /// Standby aus PV-Überschuss), Einspeisung und Abregelung nach
+        /// <see cref="PvEinspeisungAufteilen"/>. Der Eigenverbrauch ist der Rest der Erzeugung
+        /// (<c>Stromproduktion_Theoretisch_viertelstunde</c>), die Summe der drei Schichten ist
+        /// deshalb in jedem Intervall genau die Erzeugung.
+        /// </summary>
+        public void PvErzeugungAufteilen(out double[] eigenverbrauchKw, out double[] einspeisungKw,
+                                         out double[] abregelungKw)
+        {
+            PvEinspeisungAufteilen(out einspeisungKw, out abregelungKw);
+            double[] erzeugung = simulation_pv.Stromproduktion_Theoretisch_viertelstunde;
+            eigenverbrauchKw = new double[einspeisungKw.Length];
+            for (int q = 0; q < eigenverbrauchKw.Length; q++)
+            {
+                double p = q < erzeugung.Length ? erzeugung[q] : 0.0;
+                eigenverbrauchKw[q] = p - einspeisungKw[q] - abregelungKw[q];
+            }
+        }
+
+        /// <summary>
         /// Parametersatz, Variante und Anlagenbezug des Speicherlaufs (AP3b) —
         /// belegt zusammen mit <see cref="Speicherergebnis"/>.
         /// </summary>

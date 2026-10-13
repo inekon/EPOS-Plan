@@ -554,43 +554,39 @@ public class DiagrammSvgTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// Im Fenster gilt die Monatsteilung des Bildes nicht mehr: Die Komponente
-    /// blendet die Elemente mit der Marke <c>xachse</c> aus und zeichnet die
-    /// Ticks aus <c>ChartRenderer.Jahresstundenteilung</c> nach — dieselbe
-    /// Regel, mit der der Renderer sie ins PNG setzt.
+    /// Die Komponente blendet an einer Zeitachse eines Jahresrasters die Elemente mit der
+    /// Marke <c>xachse</c> aus und zeichnet die Teilung der gewählten Skala nach
+    /// (<see cref="Zeitachse.Teilung"/>, Vorgabe Datum) — schon in der Vollansicht
+    /// (Monatsanfänge) und im Fenster mit der Teilung des Ausschnitts.
     /// </summary>
     [Fact]
     public async Task DS5_Ein_Fenster_blendet_die_Monatsachse_aus_und_zeichnet_Ticks()
     {
         var fenster = new List<ChartRenderer.Achsenfenster?>();
         var cut = Zeige(fensterGeaendert: f => fenster.Add(f));
+        float breite = cut.Instance.Bild!.Flaeche!.Bild.Breite;
 
         Assert.NotEmpty(cut.FindAll("[data-marke='xachse']"));
         Assert.All(cut.FindAll("[data-marke='xachse']"),
-                   e => Assert.False(e.HasAttribute("display")));
-        Assert.Empty(cut.FindAll(".epos-diagramm-ticks"));
+                   e => Assert.Equal("none", e.GetAttribute("display")));
+        Assert.Equal(Zeitachse.Teilung(Zeitachseneinheit.Datum, 0, 8759, breite).Count,
+                     cut.FindAll(".epos-diagramm-ticks line").Count);
 
         await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(3000, 3400));
 
         Assert.All(cut.FindAll("[data-marke='xachse']"),
                    e => Assert.Equal("none", e.GetAttribute("display")));
 
-        var ticks = ChartRenderer.Jahresstundenteilung(3000, 3400);
+        var ticks = Zeitachse.Teilung(Zeitachseneinheit.Datum, 3000, 3400, breite);
         Assert.NotEmpty(ticks);
         Assert.Equal(ticks.Count, cut.FindAll(".epos-diagramm-ticks line").Count);
 
-        // Die Beschriftungen sind die der Teilung, je Marke mit Datumszeile (Auftrag GX),
-        // dazu der Achsentitel.
+        // Die Beschriftungen sind die der Teilung (Datum ohne Jahr), dazu der Achsentitel.
         var texte = cut.FindAll(".epos-diagramm-ticks text").Select(t => t.TextContent).ToList();
-        Assert.Equal(2 * ticks.Count + 1, texte.Count);
-        foreach ((int stunde, string text) in ticks)
-        {
-            Assert.Contains(text, texte);
-            Assert.Contains(Zeitachse.Markentext(stunde, 400), texte);
-        }
-        Assert.Equal(ticks.Count, cut.FindAll(".epos-diagramm-ticks text.epos-diagramm-datum").Count);
-        Assert.Contains("6. Mai", texte);   // Stunde 3 000 = Tag 125 = 6. Mai
-        Assert.Contains(Resource.CHART_ACHSE_JAHRESSTUNDEN_DATUM, texte);
+        Assert.Equal(ticks.Count + 1, texte.Count);
+        foreach (Zeitachse.Achsenmarke m in ticks)
+            Assert.Contains(m.Text, texte);
+        Assert.Contains(Resource.CHART_ACHSE_DATUM, texte);
 
         Assert.Equal((3000, 3400), cut.Instance.Fenster);
         Assert.Single(fenster);
@@ -600,8 +596,8 @@ public class DiagrammSvgTests : EposBunitContext
 
     /// <summary>
     /// Deckt das gemeldete Fenster das ganze Bild ab, ist das die Vollansicht:
-    /// Die Monatsachse steht wieder, die Ticks fallen, und der Wirt bekommt
-    /// <c>null</c>.
+    /// Die Achse steht wieder mit der Teilung des ganzen Jahres (Monatsanfänge der
+    /// Skala Datum), und der Wirt bekommt <c>null</c>.
     /// </summary>
     [Fact]
     public async Task DS5_Der_Vollbereich_stellt_die_Monatsachse_her_und_meldet_null()
@@ -612,9 +608,9 @@ public class DiagrammSvgTests : EposBunitContext
         await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(3000, 3400));
         await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(0, 8759));
 
-        Assert.All(cut.FindAll("[data-marke='xachse']"),
-                   e => Assert.False(e.HasAttribute("display")));
-        Assert.Empty(cut.FindAll(".epos-diagramm-ticks"));
+        Assert.Equal(Zeitachse.Teilung(Zeitachseneinheit.Datum, 0, 8759, cut.Instance.Bild!.Flaeche!.Bild.Breite).Count,
+                     cut.FindAll(".epos-diagramm-ticks line").Count);
+        Assert.Contains(Zeitachse.DatumKurz(31 * 24), cut.FindAll(".epos-diagramm-ticks text").Select(t => t.TextContent));
         Assert.Null(cut.Instance.Fenster);
 
         Assert.Equal(2, fenster.Count);
@@ -1985,7 +1981,8 @@ public class DiagrammSvgTests : EposBunitContext
 
         Assert.False(cut.Instance.IstAus(MIT_ROLLE));
         Assert.Null(cut.Instance.Fenster);
-        Assert.Empty(cut.FindAll(".epos-diagramm-ticks"));
+        Assert.Equal(Zeitachse.Teilung(Zeitachseneinheit.Datum, 0, 8759, cut.Instance.Bild!.Flaeche!.Bild.Breite).Count,
+                     cut.FindAll(".epos-diagramm-ticks line").Count);
         Assert.Empty(cut.FindAll(".epos-farbwahl"));
     }
 
@@ -2194,7 +2191,7 @@ public class DiagrammSvgTests : EposBunitContext
     }
 
     // =====================================================================
-    //  DS-12  Die Oberflächenregel und die Wahl „Monat | Tag | Stunde“
+    //  DS-12  Die Oberflächenregel und die Wahl „Datum | Stunde im Jahr“
     // =====================================================================
 
     /// <summary>
@@ -2294,49 +2291,48 @@ public class DiagrammSvgTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Die Wahl „Monat | Tag | Stunde“ wirkt auf die Achse</b>: In der Vollansicht steht die
-    /// Monatsachse des Bildes (Vorgabe Monat, Knopf gedrückt); „Tag“ blendet sie aus und
-    /// zeichnet Tage mit Datum, „Stunde“ Jahresstunden mit Datum, „Monat“ stellt die Achse des
-    /// Bildes wieder her. Im Ausschnitt gilt die Wahl ebenso; ohne Wahl zählt er Jahresstunden.
+    /// <b>Die Wahl „Datum | Stunde im Jahr“ wirkt auf die Achse</b> (Anwenderentscheid
+    /// 13.10.2026): Vorgabe ist das Datum — schon in der Vollansicht zeichnet der Baustein die
+    /// Achse selbst (Monatsanfänge „01.01.“ …, Titel „Datum“) und blendet die Monatsachse des
+    /// Bildes aus. „Stunde im Jahr“ zählt die Jahresstunden in runden Schritten; die Wahl gilt
+    /// im Ausschnitt weiter, dort mit Tagen bzw. Stunden.
     /// </summary>
     [Fact]
-    public async Task DS12_Die_Wahl_Monat_Tag_Stunde_wirkt_auf_die_Achse()
+    public async Task DS12_Die_Wahl_Datum_Stunde_im_Jahr_wirkt_auf_die_Achse()
     {
         var cut = Zeige();
+        float breite = cut.Instance.Bild!.Flaeche!.Bild.Breite;
 
         Assert.True(cut.Instance.MitZeiteinheit);
-        Assert.Equal(Zeitachseneinheit.Monat, cut.Instance.Zeiteinheit);
-        Assert.Equal("true", cut.Find("button[data-einheit='monat']").GetAttribute("aria-pressed"));
-        Assert.False(cut.Instance.AchseNachgezeichnet);
-        Assert.Empty(cut.FindAll(".epos-diagramm-ticks"));
-
-        cut.Find("button[data-einheit='tag']").Click();
-        Assert.Equal(Zeitachseneinheit.Tag, cut.Instance.Zeiteinheit);
+        Assert.Equal(2, cut.FindAll("button[data-einheit]").Count);
+        Assert.Equal(Zeitachseneinheit.Datum, cut.Instance.Zeiteinheit);
+        Assert.Equal("true", cut.Find("button[data-einheit='datum']").GetAttribute("aria-pressed"));
         Assert.True(cut.Instance.AchseNachgezeichnet);
         Assert.All(cut.FindAll("[data-marke='xachse']"), e => Assert.Equal("none", e.GetAttribute("display")));
-        var tage = Zeitachse.Teilung(Zeitachseneinheit.Tag, 0, 8759, cut.Instance.Bild!.Flaeche!.Bild.Breite);
-        Assert.Equal(tage.Count, cut.FindAll(".epos-diagramm-ticks line").Count);
+        var monate = Zeitachse.Teilung(Zeitachseneinheit.Datum, 0, 8759, breite);
+        Assert.Equal(monate.Count, cut.FindAll(".epos-diagramm-ticks line").Count);
         var texte = cut.FindAll(".epos-diagramm-ticks text").Select(t => t.TextContent).ToList();
-        Assert.Contains("1", texte);
-        Assert.Contains(Zeitachse.Datum(0), texte);
-        Assert.Contains(Resource.CHART_ACHSE_TAG_DATUM, texte);
+        Assert.Contains(Zeitachse.DatumKurz(0), texte);
+        Assert.Contains(Zeitachse.DatumKurz(31 * 24), texte);
+        Assert.Contains(Resource.CHART_ACHSE_DATUM, texte);
 
         cut.Find("button[data-einheit='stunde']").Click();
-        var stunden = ChartRenderer.Jahresstundenteilung(0, 8759);
+        Assert.Equal(Zeitachseneinheit.StundeImJahr, cut.Instance.Zeiteinheit);
+        Assert.Equal("true", cut.Find("button[data-einheit='stunde']").GetAttribute("aria-pressed"));
+        var stunden = Zeitachse.Teilung(Zeitachseneinheit.StundeImJahr, 0, 8759, breite);
         Assert.Equal(stunden.Count, cut.FindAll(".epos-diagramm-ticks line").Count);
-        Assert.Contains(Resource.CHART_ACHSE_JAHRESSTUNDEN_DATUM,
+        Assert.Contains(Resource.CHART_ACHSE_STUNDE_IM_JAHR,
                         cut.FindAll(".epos-diagramm-ticks text").Select(t => t.TextContent));
 
-        cut.Find("button[data-einheit='monat']").Click();
-        Assert.False(cut.Instance.AchseNachgezeichnet);
-        Assert.Empty(cut.FindAll(".epos-diagramm-ticks"));
-        Assert.All(cut.FindAll("[data-marke='xachse']"), e => Assert.False(e.HasAttribute("display")));
-
-        // Im Ausschnitt: die Wahl Monat zeichnet Monatsgrenzen, die Vorgabe waeren Jahresstunden.
+        // Im Ausschnitt bleibt die Wahl stehen; zurueck auf Datum zeichnet er Tage.
         await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(0, 2000));
-        var monate = Zeitachse.Teilung(Zeitachseneinheit.Monat, 0, 2000, cut.Instance.Bild.Flaeche.Bild.Breite);
-        Assert.Equal(monate.Count, cut.FindAll(".epos-diagramm-ticks line").Count);
-        Assert.Contains(Resource.CHART_ACHSE_MONAT, cut.FindAll(".epos-diagramm-ticks text").Select(t => t.TextContent));
+        Assert.Equal(Zeitachseneinheit.StundeImJahr, cut.Instance.Zeiteinheit);
+        Assert.Equal(Zeitachse.Teilung(Zeitachseneinheit.StundeImJahr, 0, 2000, breite).Count,
+                     cut.FindAll(".epos-diagramm-ticks line").Count);
+        cut.Find("button[data-einheit='datum']").Click();
+        var tage = Zeitachse.Teilung(Zeitachseneinheit.Datum, 0, 2000, breite);
+        Assert.Equal(tage.Count, cut.FindAll(".epos-diagramm-ticks line").Count);
+        Assert.Contains(Resource.CHART_ACHSE_DATUM, cut.FindAll(".epos-diagramm-ticks text").Select(t => t.TextContent));
     }
 
     /// <summary>Ohne Zeitachse eines Jahresrasters gibt es die Wahl nicht (Stundenprofil über 168 Stunden, Indexachse).</summary>

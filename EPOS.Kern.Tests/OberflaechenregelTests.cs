@@ -83,7 +83,6 @@ namespace EPOS.Kern.Tests
                                                                  new List<ChartRenderer.Reihe> { reihe }, null,
                                                                  "kW", ChartRenderer.Achse.Monate, false);
             Assert.Equal(Reihenrolle.Bedarf, m.Reihen.Single().Reihenrolle);
-            Assert.Equal(Zeitachseneinheit.Monat, m.Flaeche.Teilung);
         }
 
         // ---------------------------------------------------------------- Die Regel
@@ -254,63 +253,123 @@ namespace EPOS.Kern.Tests
             Assert.Contains("data-band=\"Strombedarf\"", svg);
         }
 
-        // ---------------------------------------------------------------- Die Achsteilung je Einheit
+        // ---------------------------------------------------------------- Die Achsteilung je Skala
+
+        /// <summary>Kein Paar benachbarter Marken liegt enger als <paramref name="minPx"/>.</summary>
+        private static void Abstand_haelt(IReadOnlyList<Zeitachse.Achsenmarke> marken, double von, double bis,
+                                          double breite, double minPx)
+        {
+            for (int i = 1; i < marken.Count; i++)
+                Assert.True((marken[i].Stunde - marken[i - 1].Stunde) / (bis - von) * breite >= minPx - 1e-9,
+                            marken[i - 1].Text + " / " + marken[i].Text);
+        }
 
         [Fact]
-        public void Die_Monatsteilung_nennt_die_Monatsgrenzen()
+        public void Die_Datumsteilung_nennt_im_Jahr_die_Monatsanfaenge()
         {
             using (new Kulturvorrichtung("de-DE"))
             {
-                IReadOnlyList<Zeitachse.Achsenmarke> marken = Zeitachse.Teilung(Zeitachseneinheit.Monat, 0, 8759, 1100);
+                IReadOnlyList<Zeitachse.Achsenmarke> marken = Zeitachse.Teilung(Zeitachseneinheit.Datum, 0, 8759, 1100);
                 Assert.Equal(12, marken.Count);
                 Assert.Equal(0.0, marken[0].Stunde);
-                Assert.Equal("Jan.", marken[0].Text);
+                Assert.Equal("01.01.", marken[0].Text);
                 Assert.Equal(31 * 24.0, marken[1].Stunde);
-                Assert.Equal("Sep.", marken[8].Text);
+                Assert.Equal("01.02.", marken[1].Text);
+                Assert.Equal("01.09.", marken[8].Text);
                 Assert.All(marken, m => Assert.Equal("", m.Zweitzeile));
-                Assert.Equal("Monat", Zeitachse.Achsentitel(Zeitachseneinheit.Monat));
+                Abstand_haelt(marken, 0, 8759, 1100, Zeitachse.MARKE_MIN_PX);
+                Assert.Equal("Datum", Zeitachse.Achsentitel(Zeitachseneinheit.Datum));
+
+                // Schmal: jeder zweite Monat oder weiter - nie enger als 72 px.
+                IReadOnlyList<Zeitachse.Achsenmarke> schmal = Zeitachse.Teilung(Zeitachseneinheit.Datum, 0, 8759, 500);
+                Assert.True(schmal.Count < 12);
+                Abstand_haelt(schmal, 0, 8759, 500, Zeitachse.MARKE_MIN_PX);
             }
         }
 
         [Fact]
-        public void Die_Tagesteilung_nennt_Tag_und_Datum_ohne_Ueberlappung()
+        public void Die_Datumsteilung_nennt_im_Ausschnitt_Tage()
         {
             using (new Kulturvorrichtung("de-DE"))
             {
-                // Zwei Wochen auf 1 100 Bildpunkten: jeder Tag eine Marke.
-                IReadOnlyList<Zeitachse.Achsenmarke> zwei = Zeitachse.Teilung(Zeitachseneinheit.Tag, 0, 14 * 24, 1100);
-                Assert.Equal(15, zwei.Count);
-                Assert.Equal("1", zwei[0].Text);
-                Assert.Equal("1. Jan.", zwei[0].Zweitzeile);
-                Assert.Equal("15", zwei[14].Text);
-                Assert.Equal("15. Jan.", zwei[14].Zweitzeile);
+                // Zwei Wochen ab dem 1. Februar auf 1 100 Bildpunkten: jeder Tag eine Marke.
+                double von = 31 * 24, bis = von + 14 * 24;
+                IReadOnlyList<Zeitachse.Achsenmarke> marken = Zeitachse.Teilung(Zeitachseneinheit.Datum, von, bis, 1100);
+                Assert.Equal(15, marken.Count);
+                Assert.Equal("01.02.", marken[0].Text);
+                Assert.Equal("15.02.", marken[14].Text);
+                Abstand_haelt(marken, von, bis, 1100, Zeitachse.MARKE_MIN_PX);
 
-                // Das ganze Jahr: eine Schrittweite, die MARKE_MIN_PX haelt.
-                IReadOnlyList<Zeitachse.Achsenmarke> jahr = Zeitachse.Teilung(Zeitachseneinheit.Tag, 0, 8759, 1100);
-                Assert.True(jahr.Count >= 2);
-                for (int i = 1; i < jahr.Count; i++)
-                    Assert.True((jahr[i].Stunde - jahr[i - 1].Stunde) / 8759.0 * 1100 >= Zeitachse.MARKE_MIN_PX);
-                Assert.Equal("1", jahr[0].Text);
-                Assert.Equal("Tag des Jahres · Datum", Zeitachse.Achsentitel(Zeitachseneinheit.Tag));
+                // Ein Vierteljahr: Tagesschritte, keine Uhrzeit, kein Ueberlappen.
+                IReadOnlyList<Zeitachse.Achsenmarke> quartal = Zeitachse.Teilung(Zeitachseneinheit.Datum, 0, 90 * 24, 1100);
+                Assert.True(quartal.Count >= 5);
+                Assert.DoesNotContain(quartal, m => m.Text.Contains(':'));
+                Abstand_haelt(quartal, 0, 90 * 24, 1100, Zeitachse.MARKE_MIN_PX);
             }
         }
 
         [Fact]
-        public void Die_Stundenteilung_ist_die_des_Bildes()
+        public void Die_Datumsteilung_nennt_im_Tag_die_Uhrzeit()
         {
             using (new Kulturvorrichtung("de-DE"))
             {
-                IReadOnlyList<Zeitachse.Achsenmarke> marken = Zeitachse.Teilung(Zeitachseneinheit.Stunde, 3000, 3400, 1100);
-                IReadOnlyList<(int Stunde, string Text)> bild = ChartRenderer.Jahresstundenteilung(3000, 3400);
-                Assert.Equal(bild.Count, marken.Count);
-                for (int i = 0; i < bild.Count; i++)
-                {
-                    Assert.Equal(bild[i].Stunde, marken[i].Stunde);
-                    Assert.Equal(bild[i].Text, marken[i].Text);
-                    Assert.Equal(Zeitachse.Markentext(bild[i].Stunde, 400), marken[i].Zweitzeile);
-                }
-                Assert.Contains("6. Mai", marken.Select(m => m.Zweitzeile));
-                Assert.Empty(Zeitachse.Teilung(Zeitachseneinheit.Stunde, 100, 100, 1100));
+                // Ein Tag (6. Mai) auf 1 100 Bildpunkten: Stundenschritte mit Datum und Uhrzeit.
+                double von = 125 * 24, bis = von + 24;
+                IReadOnlyList<Zeitachse.Achsenmarke> marken = Zeitachse.Teilung(Zeitachseneinheit.Datum, von, bis, 1100);
+                Assert.Equal("06.05. 00:00", marken[0].Text);
+                Assert.Contains("06.05. 12:00", marken.Select(m => m.Text));
+                Assert.All(marken, m => Assert.Matches(@"^\d\d\.\d\d\. \d\d:00$", m.Text));
+                Abstand_haelt(marken, von, bis, 1100, Zeitachse.MARKE_UHRZEIT_MIN_PX);
+            }
+            using (new Kulturvorrichtung("en-US"))
+                Assert.Equal("05/06", Zeitachse.DatumKurz(125 * 24 + 3));
+        }
+
+        /// <summary>
+        /// Jede Zeitachse über das Jahr trägt die Wahl: Viertelstunden, Stunden und Tageswerte
+        /// (Tag d bei Stunde 24·d); eine Indexachse, eine Woche oder ein Ausschnitt nicht.
+        /// </summary>
+        [Fact]
+        public void Jede_Jahreszeitachse_kennt_ihre_Stunden_je_Stuetzstelle()
+        {
+            var bild = new Rahmen(0, 0, 1000, 400);
+            double Je(int n, Achsenart art = Achsenart.Stunden, double von = 0)
+                => Zeitachse.StundenJeStuetzstelle(new Zeichenflaeche(bild, new Datenfenster(von, von + n - 1, 0, 1), art));
+            Assert.Equal(0.25, Je(35040));
+            Assert.Equal(1.0, Je(8760));
+            Assert.Equal(24.0, Je(365));
+            Assert.Equal(0.0, Je(168));
+            Assert.Equal(0.0, Je(12));
+            Assert.Equal(0.0, Je(8760, Achsenart.Index));
+            Assert.Equal(0.0, Je(8760, Achsenart.Stunden, 100));
+        }
+
+        /// <summary>Das Kostenprofil eines Jahres zählt Jahresstunden — die Oberfläche trägt dort die Wahl.</summary>
+        [Fact]
+        public void Das_Kostenprofil_eines_Jahres_zaehlt_Jahresstunden()
+        {
+            Zeichenmodell m = ChartRenderer.KostenprofilModell("Kostenprofil", Stunden(i => 10.0 + i % 24), "ct/kWh", "Monat");
+            Assert.Equal(Achsenart.Stunden, m.Flaeche.X);
+            Assert.Equal(1.0, Zeitachse.StundenJeStuetzstelle(m.Flaeche));
+        }
+
+        [Fact]
+        public void Die_Teilung_Stunde_im_Jahr_geht_in_runden_Schritten()
+        {
+            using (new Kulturvorrichtung("de-DE"))
+            {
+                IReadOnlyList<Zeitachse.Achsenmarke> marken = Zeitachse.Teilung(Zeitachseneinheit.StundeImJahr, 3000, 3400, 1100);
+                Assert.Equal(new[] { 3000.0, 3050.0, 3100.0, 3150.0, 3200.0, 3250.0, 3300.0, 3350.0, 3400.0 },
+                             marken.Select(m => m.Stunde));
+                Assert.Equal("3.000", marken[0].Text);
+                Assert.All(marken, m => Assert.Equal("", m.Zweitzeile));
+                Abstand_haelt(marken, 3000, 3400, 1100, Zeitachse.MARKE_MIN_PX);
+
+                IReadOnlyList<Zeitachse.Achsenmarke> jahr = Zeitachse.Teilung(Zeitachseneinheit.StundeImJahr, 0, 8759, 1100);
+                Assert.Equal(0.0, jahr[0].Stunde);
+                Assert.Equal(1000.0, jahr[1].Stunde);
+                Assert.Equal("Stunde im Jahr [h]", Zeitachse.Achsentitel(Zeitachseneinheit.StundeImJahr));
+                Assert.Empty(Zeitachse.Teilung(Zeitachseneinheit.StundeImJahr, 100, 100, 1100));
             }
         }
     }

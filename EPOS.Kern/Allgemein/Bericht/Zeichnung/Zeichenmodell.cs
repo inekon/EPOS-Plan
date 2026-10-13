@@ -248,16 +248,9 @@ namespace WindowsFormsApplication1.Zeichnung
     /// „kWh", „a"; <c>null</c> = keine (eine Stunden- oder Indexachse braucht keine,
     /// und ein Bild, dessen x-Größe je Aufruf wechselt, nennt sie nicht).
     /// </param>
-    /// <param name="Teilung">
-    /// <b>Wie das Bild seine Zeitachse in der Vollansicht teilt</b> — die Vorgabe der Wahl
-    /// „Monat | Tag | Stunde“ am Bild: <see cref="Zeitachseneinheit.Monat"/> bei einer
-    /// Monatsachse 0…12 (die Vorgabe), <see cref="Zeitachseneinheit.Stunde"/> bei einer
-    /// Jahresstundenachse. Nur eine Stundenachse eines Jahresrasters wertet sie aus.
-    /// </param>
     public sealed record Zeichenflaeche(Rahmen Bild, Datenfenster Daten,
                                         Achsenart X = Achsenart.Stunden,
-                                        string XEinheit = null,
-                                        Zeitachseneinheit Teilung = Zeitachseneinheit.Monat);
+                                        string XEinheit = null);
 
     /// <summary>
     /// <b>Auf WELCHER y-Achse eine Reihe steht (Entscheid DG-E3-12).</b>
@@ -346,20 +339,17 @@ namespace WindowsFormsApplication1.Zeichnung
     }
 
     /// <summary>
-    /// <b>Die Einheit, in der die Zeitachse eines Jahresbildes geteilt wird</b> (Wahl
-    /// „Monat | Tag | Stunde“ am Bild): Monatsgrenzen mit Monatsnamen, Tage des Gemeinjahres
-    /// mit Datum, Jahresstunden mit Datum (<c>Zeitachse.Teilung</c>).
+    /// <b>Die Skala der Zeitachse eines Jahresbildes</b> (Wahl „Datum | Stunde im Jahr“ am
+    /// Bild, Anwenderentscheid 13.10.2026): das Datum ohne Jahr oder die Jahresstunde
+    /// (<c>Zeitachse.Teilung</c>).
     /// </summary>
     public enum Zeitachseneinheit
     {
-        /// <summary>Monatsgrenzen — die Teilung der Vollansicht jedes Monatsbildes.</summary>
-        Monat = 0,
+        /// <summary>Das Datum des Gemeinjahres („01.02.“, im Tagesausschnitt mit Uhrzeit) — die Vorgabe.</summary>
+        Datum = 0,
 
-        /// <summary>Tage des Gemeinjahres (Tag 1 = 1. Januar), beschriftet mit Tag und Datum.</summary>
-        Tag = 1,
-
-        /// <summary>Jahresstunden, beschriftet mit Stunde und Datum.</summary>
-        Stunde = 2
+        /// <summary>Die Jahresstunde 0 … 8 760 in runden Schritten.</summary>
+        StundeImJahr = 1
     }
 
     /// <summary>
