@@ -612,6 +612,7 @@
             {
                 <Modellpruefungsblatt @ref="_modellpruefungsblatt" Weg="@_modellpruefung" AnsichtSperre="@ModellpruefungAnsichtSperre()"
                                       Simulation="ModellpruefungSimulation" Ansicht="ModellpruefungAnsicht"
+                                      AnsichtGruppe="ModellpruefungAnsichtGruppe"
                                       Bearbeiten="@ModellpruefungBearbeitenWirt" Geaendert="ModellpruefungGeaendert" />
             }
         </KindInhalt>
@@ -696,7 +697,8 @@
                         }
                         <GebaeudeAnsicht Daten="@stand.Ansicht" Geschoss="@_neulesenGeschoss"
                                          GeschossChanged="g => _neulesenGeschoss = g" Texte="@_ansichtTexte"
-                                         FarbmodusVorgabe="@_neulesenFarbmodus" />
+                                         FarbmodusVorgabe="@_neulesenFarbmodus" Pruefung="@_neulesenPruefung"
+                                         PruefungUebernehmen="@AnsichtUebernehmenWirt" PruefungVerwerfen="@AnsichtVerwerfenWirt" />
                     }
                     @if (stand.AndereDateiAnbieten)
                     {
@@ -2546,6 +2548,8 @@
         if (_modellpruefungZeile is not { } z || ModellpruefungAnsichtSperre() is not null) return;
         if (!ReferenceEquals(_gewaehlt, z)) ProjektzeileWaehlen(z);
         _neulesenFarbmodus = Farbmodusschluessel(ziel);
+        _neulesenGruppe = null;
+        _neulesenPruefung = null;
         await BeiNeuLesen();
     }
 
@@ -2562,7 +2566,76 @@
     private Task BeiNeuLesenAmSatz()
     {
         _neulesenFarbmodus = null;
+        _neulesenGruppe = null;
+        _neulesenPruefung = null;
         return BeiNeuLesen();
+    }
+
+    // =====================================================================
+    //  MA-5: Ansicht als Werkzeug — Sprung mit Hervorhebung, Vorschläge an der Legende
+    // =====================================================================
+
+    /// <summary>Die Prüfgruppe, aus der die Ansicht geöffnet ist; <c>null</c> = ohne Prüfung.</summary>
+    private Pruefgruppe? _neulesenGruppe;
+
+    /// <summary>Die Prüfung der Ansicht (Befunde der Gruppe mit ihren Kennungen); <c>null</c> = keine Hervorhebung.</summary>
+    private GebaeudeAnsichtPruefung? _neulesenPruefung;
+
+    /// <summary>Die Prüfung der Ansicht (Prüfhilfe für Tests).</summary>
+    public GebaeudeAnsichtPruefung? AnsichtPruefung => _neulesenPruefung;
+
+    /// <summary>
+    /// „Ansicht…" einer Prüfgruppe (MA-5): wie <see cref="ModellpruefungAnsicht"/>, dazu die Hervorhebung ihrer Befunde; Gruppe 3
+    /// öffnet im Farbmodus „Nutzung" (ohne gelesene Zonen fällt die Ansicht auf „Zonen" zurück).
+    /// </summary>
+    private async Task ModellpruefungAnsichtGruppe(Pruefgruppe gruppe)
+    {
+        if (_modellpruefungZeile is not { } z || ModellpruefungAnsichtSperre() is not null) return;
+        if (!ReferenceEquals(_gewaehlt, z)) ProjektzeileWaehlen(z);
+        ModellpruefungStand? stand = _modellpruefung?.Pruefen();
+        ModellpruefungGruppenzeile? zeile = stand?.Gruppen.FirstOrDefault(g => g.Gruppe == gruppe);
+        _neulesenFarbmodus = gruppe == Pruefgruppe.NutzungKonditionierung
+            ? GebaeudeAnsicht.FARBMODUS_NUTZUNG
+            : Farbmodusschluessel(zeile?.Sprungziel ?? Pruefsprungziel.Zonen);
+        _neulesenGruppe = gruppe;
+        _neulesenPruefung = PruefungAus(zeile);
+        await BeiNeuLesen();
+    }
+
+    /// <summary>Die Prüfung der Ansicht aus einer Gruppenzeile des Blatts; <c>null</c> ohne Zeile.</summary>
+    internal static GebaeudeAnsichtPruefung? PruefungAus(ModellpruefungGruppenzeile? zeile)
+        => zeile is null ? null : new GebaeudeAnsichtPruefung(zeile.Gruppe, zeile.Name, zeile.Befunde);
+
+    /// <summary>„Übernehmen" an der Legende — nur mit Weg des Blatts.</summary>
+    private EventCallback<ModellpruefungAuswahl> AnsichtUebernehmenWirt
+        => _modellpruefung?.UebernehmenAuswahl is null || _neulesenPruefung is null ? default
+           : EventCallback.Factory.Create<ModellpruefungAuswahl>(this, a => AnsichtVorschlaege(_modellpruefung.UebernehmenAuswahl, a));
+
+    /// <summary>„Verwerfen" an der Legende — nur mit Weg des Blatts.</summary>
+    private EventCallback<ModellpruefungAuswahl> AnsichtVerwerfenWirt
+        => _modellpruefung?.VerwerfenAuswahl is null || _neulesenPruefung is null ? default
+           : EventCallback.Factory.Create<ModellpruefungAuswahl>(this, a => AnsichtVorschlaege(_modellpruefung.VerwerfenAuswahl, a));
+
+    /// <summary>
+    /// Führt eine Auswahl über den Weg des Blatts aus (Kern, mit Rücknahme der Gruppe), meldet das Ergebnis, liest Stufen, Zonen und
+    /// Nutzung der Ansicht neu (die Ansicht zeichnet neu), setzt die neue Prüfung und frischt Ampelblatt und Zeile auf.
+    /// </summary>
+    private void AnsichtVorschlaege(Func<ModellpruefungAuswahl, ModellpruefungAusgang>? weg, ModellpruefungAuswahl auswahl)
+    {
+        if (weg is null || _neulesenGruppe is not { } gruppe) return;
+        ModellpruefungAusgang ausgang;
+        try { ausgang = weg(auswahl); }
+        catch (Exception ex) when (ex is not OutOfMemoryException) { Melden(ex.Message, WarnStufe.Warnung); return; }
+        if (ausgang.Meldung.Length > 0) Melden(ausgang.Meldung, ausgang.Ok ? WarnStufe.Hinweis : WarnStufe.Warnung);
+        if (_neulesenStand is { AnsichtNeuLesen: { } neu } stand)
+        {
+            try { if (neu() is { } daten) stand.Ansicht = daten; }
+            catch (Exception ex) when (ex is not OutOfMemoryException) { Melden(ex.Message, WarnStufe.Warnung); }
+        }
+        ModellpruefungStand? neuStand = ausgang.Stand ?? _modellpruefung?.Pruefen();
+        _neulesenPruefung = PruefungAus(neuStand?.Gruppen.FirstOrDefault(g => g.Gruppe == gruppe));
+        _modellpruefungsblatt?.Auffrischen();
+        ModellpruefungGeaendert();
     }
 
     private void BedarfFertig() => _bedarfGaben = null;

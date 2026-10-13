@@ -49221,6 +49221,45 @@ chart</value>
   <data name="GANS_FARBMODUS_BEFUND" xml:space="preserve">
     <value>Findings</value>
   </data>
+  <data name="GANS_FARBMODUS_NUTZUNG" xml:space="preserve">
+    <value>Usage</value>
+  </data>
+  <data name="GANS_NUTZUNG_LEGENDE" xml:space="preserve">
+    <value>Usage profiles</value>
+  </data>
+  <data name="GANS_NUTZUNG_ZONEN" xml:space="preserve">
+    <value>{0} zones</value>
+  </data>
+  <data name="GANS_NUTZUNG_ZONEN_KOPF" xml:space="preserve">
+    <value>Zones</value>
+  </data>
+  <data name="GANS_NUTZUNG_FEHLT" xml:space="preserve">
+    <value>no profile</value>
+  </data>
+  <data name="GANS_PRUEF_HERVOR" xml:space="preserve">
+    <value>Highlighted: {0} — {1} components, {2} zones</value>
+  </data>
+  <data name="GANS_PRUEF_OHNE" xml:space="preserve">
+    <value>{0}: No finding of this group lies on a surface or zone of the view.</value>
+  </data>
+  <data name="GANS_PRUEF_VORSCHLAEGE" xml:space="preserve">
+    <value>Proposals</value>
+  </data>
+  <data name="GANS_PRUEF_ZAHL" xml:space="preserve">
+    <value>{0} proposals</value>
+  </data>
+  <data name="GANS_PRUEF_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="GANS_PRUEF_VERWERFEN" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="GANS_PRUEF_UEBERNEHMEN_HINWEIS" xml:space="preserve">
+    <value>{0}: apply the proposals — undo in the “Check model” sheet</value>
+  </data>
+  <data name="GANS_PRUEF_VERWERFEN_HINWEIS" xml:space="preserve">
+    <value>{0}: discard the proposals — the findings remain</value>
+  </data>
   <data name="GANS_BEFUND_OHNE" xml:space="preserve">
     <value>“Findings” is unavailable: there are no findings for the components (no component proposal).</value>
   </data>
@@ -54997,6 +55036,12 @@ chart</value>
   </data>
   <data name="MP_MSG_KEINE_RUECKNAHME" xml:space="preserve">
     <value>There is nothing to undo for this group.</value>
+  </data>
+  <data name="MP_MSG_VORSCHLAG_VERWORFEN" xml:space="preserve">
+    <value>Proposal discarded: {0}</value>
+  </data>
+  <data name="MP_MSG_VERWORFEN_ZAHL" xml:space="preserve">
+    <value>{0} proposals discarded — the findings remain.</value>
   </data>
   <data name="MP_MSG_UNBEKANNT" xml:space="preserve">
     <value>Unknown kind of proposal.</value>
