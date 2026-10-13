@@ -29,7 +29,23 @@ namespace WindowsFormsApplication1
             new KeyValuePair<string, string>("Photovoltaik",  "Tab_PV"),
             new KeyValuePair<string, string>("Pufferspeicher","Tab_Pufferspeicher"),
             new KeyValuePair<string, string>("Stromspeicher", "Tab_Stromspeicher"),
+            new KeyValuePair<string, string>(GEWERK_KAELTEMASCHINE, "Tab_Kaeltemaschine"),
         };
+
+        /// <summary>
+        /// Gewerk-Schlüssel der Kältemaschine. Sie wird gelesen und verglichen, aber nicht
+        /// übernommen (<see cref="KomponentenUebernahmeCtrl.Leseplan"/>); Tafeln, die jedes Gewerk
+        /// zeigen, führen sie nur, wenn ein Stand sie verbaut (<see cref="NurWennVerbaut"/>).
+        /// </summary>
+        public const string GEWERK_KAELTEMASCHINE = "Kältemaschine";
+
+        /// <summary>
+        /// Erscheint das Gewerk in einer Tafel, die sonst JEDES Gewerk zeigt (Komponentenmatrix),
+        /// nur dann, wenn wenigstens ein Stand es verbaut? Gilt für die Kältemaschine — so bleiben
+        /// die Tafeln der Projekte ohne Kälteerzeuger, wie sie sind.
+        /// </summary>
+        public static bool NurWennVerbaut(string gewerk)
+        { return string.Equals(gewerk, GEWERK_KAELTEMASCHINE, StringComparison.Ordinal); }
 
         public int IdProjekt;
 
@@ -337,8 +353,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static DataTable LadeGewerk(string gewerk, string tabelle, int idProjekt)
         {
-            KomponentenUebernahmeCtrl.GewerkPlan plan;
-            if (KomponentenUebernahmeCtrl.Plaene.TryGetValue(gewerk ?? "", out plan))
+            KomponentenUebernahmeCtrl.GewerkPlan plan = KomponentenUebernahmeCtrl.Leseplan(gewerk);
+            if (plan != null)
                 return KomponentenUebernahmeCtrl.GeraeteJeAnlagenzeile(plan, idProjekt);
 
             return LadeTabelle(tabelle, idProjekt);   // Gewerk ohne Plan: wie bisher

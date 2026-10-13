@@ -48852,6 +48852,12 @@ chart</value>
   <data name="BV_A1D_GEWERK_PUFFERSPEICHER" xml:space="preserve">
     <value>Buffer storage</value>
   </data>
+  <data name="BV_A1D_GEWERK_KAELTEMASCHINE" xml:space="preserve">
+    <value>Chiller</value>
+  </data>
+  <data name="BV_A1D_EINHEIT_KW_KAELTE" xml:space="preserve">
+    <value>kW cooling</value>
+  </data>
   <data name="BV_A1D_GEWERK_GEBAEUDE" xml:space="preserve">
     <value>Building</value>
   </data>

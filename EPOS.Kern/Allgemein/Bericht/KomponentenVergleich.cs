@@ -98,9 +98,9 @@ namespace WindowsFormsApplication1
     /// W5‑E‑2 vom 05.09.2026).
     ///
     /// <para><b>Was gezeigt wird.</b> Ausschließlich die im Projekt bzw. in der
-    /// Variante tatsächlich VERWENDETEN Erzeugerkomponenten — die sieben Gewerke aus
+    /// Variante tatsächlich VERWENDETEN Erzeugerkomponenten — die acht Gewerke aus
     /// <see cref="ProjektDetails.GewerkTabellen"/> (Wärmepumpe, BHKW, Spitzenkessel,
-    /// Solarthermie, Photovoltaik, Pufferspeicher, Stromspeicher), je Gewerk die
+    /// Solarthermie, Photovoltaik, Pufferspeicher, Stromspeicher, Kältemaschine), je Gewerk die
     /// Stückzahl und darunter eine Zeile je Komponente mit ihrem Bezeichner. Ein
     /// Gewerk, das keine der Versionen führt, erscheint gar nicht.</para>
     ///
@@ -272,17 +272,32 @@ namespace WindowsFormsApplication1
                 KomponentenVergleichEintrag vorhanden = null;
                 foreach (KomponentenVergleichEintrag e in liste)
                     if (e.Bezeichner == name && e.Kennwerte == kennwerte) { vorhanden = e; break; }
-                if (vorhanden != null) { vorhanden.Anzahl++; continue; }
+                // Die Kältemaschine trägt ihre Stückzahl an der Anlagenzeile
+                // (Kaeltemaschine_Anzahl): „2 × Kältemaschine“, Kennwert je Maschine.
+                int stueck = Stueckzahl(d, gewerk, k);
+                if (vorhanden != null) { vorhanden.Anzahl += stueck; continue; }
 
                 liste.Add(new KomponentenVergleichEintrag
                 {
-                    Anzahl = 1,
+                    Anzahl = stueck,
                     Bezeichner = name,
                     Kennwerte = kennwerte,
                     Kurztext = AbweichungsErmittler.MerkmaleText(rk, gewerk, trenner)
                 });
             }
             return liste;
+        }
+
+        /// <summary>
+        /// Die Stückzahl der n-ten Komponente: 1, bei der Kältemaschine die
+        /// <c>Kaeltemaschine_Anzahl</c> ihrer Anlagenzeile (leer oder kleiner 1 zählt als 1 —
+        /// dieselbe Regel wie der Lauf).
+        /// </summary>
+        private static int Stueckzahl(ProjektDetails d, string gewerk, int index)
+        {
+            if (!string.Equals(gewerk, ProjektDetails.GEWERK_KAELTEMASCHINE, StringComparison.Ordinal)) return 1;
+            double? n = ProjektDetails.D(AnlageZu(d, gewerk, index), "Kaeltemaschine_Anzahl");
+            return n.HasValue && n.Value >= 1 ? (int)Math.Round(n.Value) : 1;
         }
 
         private static bool GleicherInhalt(KomponentenVergleichZelle a, KomponentenVergleichZelle b)
@@ -304,7 +319,10 @@ namespace WindowsFormsApplication1
         /// formatiert in der Anzeigesprache — leer, wo die Daten keinen hergeben:
         ///
         /// <list type="bullet">
-        /// <item>Wärmepumpe: Nennleistung in kW (<c>Tab_WP.Nennleistung</c>),</item>
+        /// <item>Wärmepumpe: Nennleistung in kW (<c>Tab_WP.Nennleistung</c>), im Kühlbetrieb
+        /// (<c>Kuehlbetrieb</c>) dazu die gepflegte Kühlleistung in kW Kälte (<c>Kuehlleistung</c>),</item>
+        /// <item>Kältemaschine: Nennkälteleistung je Maschine in kW Kälte
+        /// (<c>Tab_Kaeltemaschine.Nennkaelteleistung_kW</c>),</item>
         /// <item>Spitzenkessel: Leistung in kW (<c>Tab_Heizkessel.Ptherm</c>),</item>
         /// <item>BHKW: kW el und kW th (<c>Tab_BHKW.Pel</c>, <c>Ptherm</c>),</item>
         /// <item>Pufferspeicher: Volumen in l (<c>Tab_Pufferspeicher.Gesamtvolumen</c>, sonst
@@ -330,6 +348,11 @@ namespace WindowsFormsApplication1
             {
                 case "Wärmepumpe":
                     Kennwert(teile, ProjektDetails.D(rk, "Nennleistung"), "kW");
+                    if (ProjektDetails.B(rk, "Kuehlbetrieb") == true)
+                        Kennwert(teile, ProjektDetails.D(rk, "Kuehlleistung"), EinheitKwKaelte);
+                    break;
+                case ProjektDetails.GEWERK_KAELTEMASCHINE:
+                    Kennwert(teile, ProjektDetails.D(rk, "Nennkaelteleistung_kW"), EinheitKwKaelte);
                     break;
                 case "Spitzenkessel":
                     Kennwert(teile, ProjektDetails.D(rk, "Ptherm"), "kW");
@@ -357,6 +380,9 @@ namespace WindowsFormsApplication1
             return string.Join(" · ", teile);
         }
 
+        /// <summary>Die Einheit einer Kälteleistung in der Anzeigesprache: „kW Kälte“.</summary>
+        private static string EinheitKwKaelte => AbweichungsErmittler.Text("BV_A1D_EINHEIT_KW_KAELTE", "kW Kälte");
+
         /// <summary>Ein Kennwert, sofern er belegt und größer null ist: „16 kW“, „1.000 l“, „12,8 kWh“.</summary>
         private static void Kennwert(List<string> teile, double? wert, string einheit)
         {
@@ -370,9 +396,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static DataRow AnlageZu(ProjektDetails d, string gewerk, int index)
         {
-            KomponentenUebernahmeCtrl.GewerkPlan plan;
-            if (d == null || d.Anlagen == null || gewerk == null
-                || !KomponentenUebernahmeCtrl.Plaene.TryGetValue(gewerk, out plan)) return null;
+            KomponentenUebernahmeCtrl.GewerkPlan plan = KomponentenUebernahmeCtrl.Leseplan(gewerk);
+            if (d == null || d.Anlagen == null || plan == null) return null;
             DataTable geraete;
             if (!d.KomponentenAlle.TryGetValue(gewerk, out geraete) || geraete == null
                 || index >= geraete.Rows.Count || !geraete.Columns.Contains("ID")
