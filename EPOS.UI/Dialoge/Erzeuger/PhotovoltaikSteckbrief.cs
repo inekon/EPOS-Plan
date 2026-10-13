@@ -32,7 +32,7 @@ public static class PhotovoltaikSteckbrief
         (ModulKatalogProfil.FeldTNoct, "tnoct"),
         (ModulKatalogProfil.FeldUMpp, "umpp"),
         (ModulKatalogProfil.FeldIMpp, "impp"),
-        (ModulKatalogProfil.FeldModulkosten, "invest"),
+        (ModulKatalogProfil.FeldKostensatz, "invest"),
     };
 
     /// <summary>Die Zeilen aus Feldsatz bzw. Detailblock, am Projektsatz mit den Kostensummen der Anlage.</summary>

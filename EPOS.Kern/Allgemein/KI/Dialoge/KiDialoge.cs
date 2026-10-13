@@ -7930,11 +7930,11 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kuehlleistung", "WaermepumpeAnlageKiSicht.Kuehlleistung",
                                      KiDialogTexte.WpaKuehlleistungName, KiParameterTyp.Zahl,
                                      KiDialogTexte.WpaKuehlleistungErl,
-                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
-                    new KiDialogFeld("modulkosten", "WaermepumpeAnlageKiSicht.Modulkosten",
-                                     KiDialogTexte.WpaModulkostenName, KiParameterTyp.Ganzzahl,
-                                     KiDialogTexte.WpaModulkostenErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO, nurLesen: true)
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true)
+
+                    // KEIN KOSTENFELD (Welle KB-4): Die Geraetespalte Modulkosten ist
+                    // entfallen, der Kostensatz steht in der Satzvorlage und die Maske
+                    // zeigt ihn nur lesend - gepflegt wird er in der Kostenverwaltung.
                 },
                 knoepfe: new[]
                 {
@@ -8800,17 +8800,15 @@ namespace WindowsFormsApplication1
         /// <remarks>
         /// <para>
         /// Begruendung fuer den Feldumfang wie beim Pufferspeicher (Fachkonzept 11.7):
-        /// <c>btn_Speichern_Click</c> prueft ausschliesslich die Modulkosten, und zwar
-        /// mit <c>leerErlaubt: false</c>.
+        /// Der Dialog fuehrt die Stammfelder des Bausteins.
         /// </para>
         /// <para>
-        /// <b>Die MODULKOSTEN sind seit dem Anwenderentscheid 21.09.2026 (KI-D-Q7) nur
-        /// lesbar.</b> Der Katalog fuehrte sie setzbar, <c>WaermepumpeStammFelder</c>
-        /// zeigt sie aber seit W14a-O-1 als Lesewert mit Herleitungszeile: Gepflegt
-        /// werden sie in der Kostenverwaltung. Ein Setzer bot damit an, eine Zahl zu
-        /// aendern, die auf der Maske kein Eingabefeld hat — dieselbe Lage und
-        /// dieselbe Antwort wie bei <c>Form_WP_Anlage</c>, wo sie schon vorher
-        /// <c>nurLesen</c> war.
+        /// <b>KEIN KOSTENFELD</b> (Welle KB-4, Anwenderentscheid 13.10.2026 „eine
+        /// Kostenbasis, keine Doppelhaltung"): Die Gerätespalte <c>Modulkosten</c> ist mit
+        /// Schemaschritt 228 entfallen, der Kostensatz steht in der Satzvorlage und die
+        /// Maske zeigt ihn nur lesend. Gepflegt wird er in der Maske
+        /// <c>Kostenverwaltung</c> — dort fuehrt der Feldkatalog die Kostenfelder, hier
+        /// gaebe ein Feld vor, eine Zahl aendern zu koennen, die diese Maske nicht haelt.
         /// </para>
         /// </remarks>
         private static KiDialog Waermepumpe()
@@ -8820,12 +8818,6 @@ namespace WindowsFormsApplication1
                 anzeigename: KiDialogTexte.MaskeWp,
                 felder: new[]
                 {
-                    new KiDialogFeld("modulkosten", "WaermepumpeStammDaten.Modulkosten",
-                                     KiDialogTexte.WpModulkostenName, KiParameterTyp.Ganzzahl,
-                                     KiDialogTexte.WpModulkostenErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: false,
-                                     nurLesen: true),
-
                     // ---- Die Stammfelder des Bausteins (KI-F1b, KI-D-Q6) ----------
                     new KiDialogFeld("name", "WaermepumpeStammDaten.Name",
                                      KiDialogTexte.WpNameName, KiParameterTyp.Text,
@@ -10214,10 +10206,14 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.ModkBreiteName, KiParameterTyp.Zahl,
                                      KiDialogTexte.ModkBreiteErl,
                                      einheit: KiDialogTexte.EINHEIT_METER, leerErlaubt: true),
-                    new KiDialogFeld("modulkosten", "ModulKatalogKiSicht.Modulkosten",
-                                     KiDialogTexte.ModkPvKostenName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.ModkPvKostenErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: true),
+                    // Welle KB-4: Die Geraetespalte ist entfallen; der Kostensatz steht in der
+                    // Satzvorlage, die Maske zeigt ihn GESPERRT - hier deshalb nur lesend,
+                    // gepflegt wird er in der Kostenverwaltung.
+                    new KiDialogFeld("kostensatz", "ModulKatalogKiSicht.Kostensatz",
+                                     KiDialogTexte.ModkKostensatzName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkKostensatzErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWP, leerErlaubt: true,
+                                     nurLesen: true),
                     new KiDialogFeld("t_noct", "ModulKatalogKiSicht.TNoct",
                                      KiDialogTexte.ModkTNoctName, KiParameterTyp.Zahl,
                                      KiDialogTexte.ModkTNoctErl,
@@ -10356,10 +10352,14 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.WrkPDcMaxName, KiParameterTyp.Zahl,
                                      KiDialogTexte.WrkPDcMaxErl,
                                      einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
-                    new KiDialogFeld("kosten", "ModulKatalogKiSicht.Kosten",
-                                     KiDialogTexte.WrkKostenName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.WrkKostenErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: true),
+                    // Welle KB-4: Die Geraetespalte ist entfallen; der Kostensatz steht in der
+                    // Satzvorlage, die Maske zeigt ihn GESPERRT - hier deshalb nur lesend,
+                    // gepflegt wird er in der Kostenverwaltung.
+                    new KiDialogFeld("kostensatz", "ModulKatalogKiSicht.Kostensatz",
+                                     KiDialogTexte.ModkKostensatzName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkKostensatzErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KW, leerErlaubt: true,
+                                     nurLesen: true),
                     new KiDialogFeld("herkunft", "ModulKatalogKiSicht.Herkunft",
                                      KiDialogTexte.WrkHerkunftName, KiParameterTyp.Text,
                                      KiDialogTexte.WrkHerkunftErl,

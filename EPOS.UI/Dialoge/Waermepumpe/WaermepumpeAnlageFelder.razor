@@ -1174,8 +1174,8 @@
     /// (<c>WaermepumpeGeraeteCtrl.GeraetedatenFuellen</c> füllt sie Projektkopie vor
     /// Katalog).</para>
     ///
-    /// <para><see cref="WaermepumpeStammDaten.Modulkosten"/> steht im Baustein nur lesend
-    /// und läuft unverändert mit. Die <see cref="WaermepumpeStammDaten.Kuehlleistung"/>
+    /// <para><see cref="WaermepumpeStammDaten.Kostensatz"/> steht im Baustein nur lesend
+    /// und kommt aus der Satzvorlage. Die <see cref="WaermepumpeStammDaten.Kuehlleistung"/>
     /// dagegen ist seit dem 16.09.2026 eine Spalte der PROJEKTKOPIE wie die Nennleistung
     /// — sie kommt aus <see cref="Daten"/> und geht dorthin zurück
     /// (<c>KuehlleistungAenderbar="true"</c>).</para>
@@ -1195,7 +1195,8 @@
             Nennleistung = Daten.Nennleistung,
             Heizstab = Daten.HeizstabLeistung,
             Kuehlleistung = Daten.Kuehlleistung ?? 0,
-            Modulkosten = Daten.Modulkosten,
+            Kostensatz = Daten.Kostensatz,
+            KostensatzEinheit = Daten.KostensatzEinheit,
             // Welle M4 (WP1): Mindestleistung und C_d der Projektkopie - im Baustein nur lesend.
             MindestleistungKw = Daten.MindestleistungKw,
             TaktverlustfaktorCd = Daten.TaktverlustfaktorCd
@@ -1414,7 +1415,7 @@
     ///
     /// <para>Der BEZEICHNER wird NICHT zurückgeschrieben: Er steht im Baustein nur lesend
     /// (<c>BezeichnerAenderbar="false"</c>), und die Kopplung Projektkopie ↔ Katalogsatz
-    /// hängt an ihm. Die Modulkosten sind ebenfalls nur lesend; die KÜHLLEISTUNG ist es
+    /// hängt an ihm. Der Kostensatz ist ebenfalls nur lesend; die KÜHLLEISTUNG ist es
     /// seit dem 16.09.2026 nicht mehr — sie ist eine Spalte der Projektkopie und geht
     /// denselben Weg wie die Nennleistung.</para>
     /// </summary>

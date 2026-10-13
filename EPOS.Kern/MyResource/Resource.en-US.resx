@@ -1133,8 +1133,11 @@
   <data name="MODK_LBL_MODULKOSTEN" xml:space="preserve">
     <value>Module costs</value>
   </data>
-  <data name="MODK_LBL_MODULKOSTEN_PV" xml:space="preserve">
-    <value>Module costs:</value>
+  <data name="MODK_LBL_KOSTENSATZ" xml:space="preserve">
+    <value>Cost rate</value>
+  </data>
+  <data name="MODK_HERL_KOSTENSATZ" xml:space="preserve">
+    <value>from the rate template; equipment costs are maintained in cost management</value>
   </data>
   <data name="MODK_LBL_PMAX" xml:space="preserve">
     <value>Rated power (Pmax):</value>
@@ -9619,12 +9622,6 @@ The seat becomes available for another device; a new activation is required to c
   <data name="KI_DLG_PSP_VOLUMEN_ERL" xml:space="preserve">
     <value>Storage capacity of the buffer tank.</value>
   </data>
-  <data name="KI_DLG_WP_MODULKOSTEN_NAME" xml:space="preserve">
-    <value>Module cost</value>
-  </data>
-  <data name="KI_DLG_WP_MODULKOSTEN_ERL" xml:space="preserve">
-    <value>Purchase cost of the heat pump in euros — display only; the form shows it with its derivation, it is maintained in the cost management.</value>
-  </data>
   <data name="KI_DLG_MASKE_UNBEKANNT" xml:space="preserve">
     <value>The form “{0}” is not released for the assistant. Released are: {1}.</value>
   </data>
@@ -17240,11 +17237,11 @@ Please go through the project page again so that the data of the selected projec
   <data name="PARV_LBL_GEWICHT" xml:space="preserve">
     <value>Weight:</value>
   </data>
-  <data name="WPS_HERL_MODULKOSTEN" xml:space="preserve">
-    <value>from the stored catalogue; equipment costs are maintained in cost management</value>
+  <data name="WPS_HERL_KOSTENSATZ" xml:space="preserve">
+    <value>from the rate template; equipment costs are maintained in cost management</value>
   </data>
-  <data name="WPS_HINWEIS_MODULKOSTEN_LEER" xml:space="preserve">
-    <value>no planned value in the stored catalogue</value>
+  <data name="WPS_HINWEIS_KOSTENSATZ_LEER" xml:space="preserve">
+    <value>no cost rate in cost management</value>
   </data>
   <data name="WRK_TITEL_VERWALTUNG" xml:space="preserve">
     <value>Inverter management</value>
@@ -17281,9 +17278,6 @@ Please go through the project page again so that the data of the selected projec
   </data>
   <data name="WRK_LBL_P_DC_MAX" xml:space="preserve">
     <value>max. DC power:</value>
-  </data>
-  <data name="WRK_LBL_KOSTEN" xml:space="preserve">
-    <value>Device price:</value>
   </data>
   <data name="WRK_LBL_HERKUNFT" xml:space="preserve">
     <value>Origin:</value>
@@ -17428,9 +17422,6 @@ Please go through the project page again so that the data of the selected projec
   </data>
   <data name="WRK_PLAUSI_STANDBY_NEGATIV" xml:space="preserve">
     <value>{0} is negative ({1} W).</value>
-  </data>
-  <data name="WRK_PLAUSI_KOSTEN_NEGATIV" xml:space="preserve">
-    <value>The device price is negative ({0} EUR).</value>
   </data>
   <data name="WRK_PLAUSI_KOPF_FEHLER" xml:space="preserve">
     <value>Errors:</value>
@@ -23204,9 +23195,6 @@ Do you want to allow this?</value>
   <data name="KI_DLG_WPA_KUEHLLEISTUNG_ERL" xml:space="preserve">
     <value>The cooling capacity of the device in kW; decimals are allowed, empty means “not maintained”.</value>
   </data>
-  <data name="KI_DLG_WPA_MODULKOSTEN_ERL" xml:space="preserve">
-    <value>The device costs in euros — display only; they are maintained in the cost management, not on this form.</value>
-  </data>
   <data name="KI_DLG_PV_MODELL_ERL" xml:space="preserve">
     <value>The two entries of the drop-down list: “Simple” = isotropic irradiance and linear temperature response, “Extended” = Hay-Davies, low-light model and inverter characteristic curve. The inverter is calculated in both models.</value>
   </data>
@@ -25151,9 +25139,6 @@ Do you want to allow this?</value>
   <data name="KI_DLG_MODK_BREITE_ERL" xml:space="preserve">
     <value>The width of the module.</value>
   </data>
-  <data name="KI_DLG_MODK_PV_KOSTEN_ERL" xml:space="preserve">
-    <value>The price of one module; the plant cost follows from it via the module count.</value>
-  </data>
   <data name="KI_DLG_MODK_TNOCT_ERL" xml:space="preserve">
     <value>The cell temperature under nominal operating conditions; it drives the heating in the yield model.</value>
   </data>
@@ -25177,9 +25162,6 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_WRK_P_DC_MAX_ERL" xml:space="preserve">
     <value>The maximum generator power the inverter accepts on the DC side.</value>
-  </data>
-  <data name="KI_DLG_WRK_KOSTEN_ERL" xml:space="preserve">
-    <value>The price of one device; it enters the investment of the plant.</value>
   </data>
   <data name="KI_DLG_WRK_HERKUNFT_ERL" xml:space="preserve">
     <value>Where the record comes from: the device import sets the source, a hand-maintained record carries „HAND“. The entry is information, not input.</value>
@@ -51496,9 +51478,6 @@ chart</value>
   </data>
   <data name="WPV_MSG_ANLAGE_PRUEFEN" xml:space="preserve">
     <value>Please check the system and confirm with OK.</value>
-  </data>
-  <data name="WPV_MSG_MODULKOSTEN_NEGATIV" xml:space="preserve">
-    <value>The module costs must not be negative.</value>
   </data>
   <data name="WPV_MSG_NENNLEISTUNG_NEGATIV" xml:space="preserve">
     <value>The rated output must not be negative.</value>

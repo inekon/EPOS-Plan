@@ -1133,8 +1133,11 @@
   <data name="MODK_LBL_MODULKOSTEN" xml:space="preserve">
     <value>Modulkosten</value>
   </data>
-  <data name="MODK_LBL_MODULKOSTEN_PV" xml:space="preserve">
-    <value>Modulkosten:</value>
+  <data name="MODK_LBL_KOSTENSATZ" xml:space="preserve">
+    <value>Kostensatz</value>
+  </data>
+  <data name="MODK_HERL_KOSTENSATZ" xml:space="preserve">
+    <value>aus der Satzvorlage; Gerätekosten werden in der Kostenverwaltung gepflegt</value>
   </data>
   <data name="MODK_LBL_PMAX" xml:space="preserve">
     <value>Nennleistung (Pmax):</value>
@@ -9626,12 +9629,6 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   <data name="KI_DLG_PSP_VOLUMEN_ERL" xml:space="preserve">
     <value>Speicherinhalt des Pufferspeichers.</value>
   </data>
-  <data name="KI_DLG_WP_MODULKOSTEN_NAME" xml:space="preserve">
-    <value>Modulkosten</value>
-  </data>
-  <data name="KI_DLG_WP_MODULKOSTEN_ERL" xml:space="preserve">
-    <value>Anschaffungskosten der Wärmepumpe in Euro — Anzeige; die Maske zeigt sie mit ihrer Herleitung, gepflegt werden sie in der Kostenverwaltung.</value>
-  </data>
   <data name="KI_DLG_MASKE_UNBEKANNT" xml:space="preserve">
     <value>Die Maske „{0}“ ist für den Assistenten nicht freigegeben. Freigegeben sind: {1}.</value>
   </data>
@@ -17229,11 +17226,11 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   <data name="PARV_LBL_GEWICHT" xml:space="preserve">
     <value>Gewicht:</value>
   </data>
-  <data name="WPS_HERL_MODULKOSTEN" xml:space="preserve">
-    <value>aus dem Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt</value>
+  <data name="WPS_HERL_KOSTENSATZ" xml:space="preserve">
+    <value>aus der Satzvorlage; Gerätekosten werden in der Kostenverwaltung gepflegt</value>
   </data>
-  <data name="WPS_HINWEIS_MODULKOSTEN_LEER" xml:space="preserve">
-    <value>kein Planwert im Datenbestand</value>
+  <data name="WPS_HINWEIS_KOSTENSATZ_LEER" xml:space="preserve">
+    <value>kein Kostensatz in der Kostenverwaltung</value>
   </data>
   <data name="WRK_TITEL_VERWALTUNG" xml:space="preserve">
     <value>Verwaltung Wechselrichter</value>
@@ -17270,9 +17267,6 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   </data>
   <data name="WRK_LBL_P_DC_MAX" xml:space="preserve">
     <value>max. DC-Leistung:</value>
-  </data>
-  <data name="WRK_LBL_KOSTEN" xml:space="preserve">
-    <value>Gerätepreis:</value>
   </data>
   <data name="WRK_LBL_HERKUNFT" xml:space="preserve">
     <value>Herkunft:</value>
@@ -17417,9 +17411,6 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   </data>
   <data name="WRK_PLAUSI_STANDBY_NEGATIV" xml:space="preserve">
     <value>{0} ist negativ ({1} W).</value>
-  </data>
-  <data name="WRK_PLAUSI_KOSTEN_NEGATIV" xml:space="preserve">
-    <value>Der Gerätepreis ist negativ ({0} €).</value>
   </data>
   <data name="WRK_PLAUSI_KOPF_FEHLER" xml:space="preserve">
     <value>Fehler:</value>
@@ -23211,9 +23202,6 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_WPA_KUEHLLEISTUNG_ERL" xml:space="preserve">
     <value>Die Kühlleistung des Geräts in kW; Kommazahlen sind zulässig, leer heißt „nicht gepflegt“.</value>
   </data>
-  <data name="KI_DLG_WPA_MODULKOSTEN_ERL" xml:space="preserve">
-    <value>Die Gerätekosten in Euro — Anzeige; gepflegt werden sie in der Kostenverwaltung, nicht auf dieser Maske.</value>
-  </data>
   <data name="KI_DLG_PV_MODELL_ERL" xml:space="preserve">
     <value>Die zwei Einträge der Klappliste: „Einfach“ = isotrope Einstrahlung und linearer Temperaturgang, „Erweitert“ = Hay-Davies, Schwachlichtmodell und Wechselrichter-Kennlinie. Der Wechselrichter rechnet in beiden Modellen mit.</value>
   </data>
@@ -25158,9 +25146,6 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_MODK_BREITE_ERL" xml:space="preserve">
     <value>Die Breite des Moduls.</value>
   </data>
-  <data name="KI_DLG_MODK_PV_KOSTEN_ERL" xml:space="preserve">
-    <value>Der Preis eines Moduls; die Anlagenkosten entstehen daraus über die Modulzahl.</value>
-  </data>
   <data name="KI_DLG_MODK_TNOCT_ERL" xml:space="preserve">
     <value>Die Zelltemperatur unter Normalbetriebsbedingungen; sie steuert die Erwärmung im Ertragsmodell.</value>
   </data>
@@ -25184,9 +25169,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_WRK_P_DC_MAX_ERL" xml:space="preserve">
     <value>Die größte Generatorleistung, die der Wechselrichter gleichstromseitig aufnimmt.</value>
-  </data>
-  <data name="KI_DLG_WRK_KOSTEN_ERL" xml:space="preserve">
-    <value>Der Preis eines Geräts; er geht in die Investition der Anlage ein.</value>
   </data>
   <data name="KI_DLG_WRK_HERKUNFT_ERL" xml:space="preserve">
     <value>Woher der Satz stammt: der Geräteimport setzt die Quelle, ein von Hand gepflegter Satz trägt „HAND“. Die Angabe ist Auskunft und keine Eingabe.</value>
@@ -51503,9 +51485,6 @@ Chart</value>
   </data>
   <data name="WPV_MSG_ANLAGE_PRUEFEN" xml:space="preserve">
     <value>Bitte die Anlage prüfen und mit OK bestätigen.</value>
-  </data>
-  <data name="WPV_MSG_MODULKOSTEN_NEGATIV" xml:space="preserve">
-    <value>Die Modulkosten dürfen nicht negativ sein.</value>
   </data>
   <data name="WPV_MSG_NENNLEISTUNG_NEGATIV" xml:space="preserve">
     <value>Die Nennleistung darf nicht negativ sein.</value>

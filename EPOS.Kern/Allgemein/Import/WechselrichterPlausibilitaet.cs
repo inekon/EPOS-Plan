@@ -281,9 +281,8 @@ namespace WindowsFormsApplication1
                 b.Fehler.Add(string.Format(MyResource.Resource.WRK_PLAUSI_STANDBY_NEGATIV,
                                            WechselrichterSchema.SPALTE_P_NACHT, Z(m.m_P_Nacht.Value)));
 
-            if (m.m_Kosten.HasValue && m.m_Kosten.Value < 0.0)
-                b.Fehler.Add(string.Format(MyResource.Resource.WRK_PLAUSI_KOSTEN_NEGATIV,
-                                           Z(m.m_Kosten.Value)));
+            // Welle KB-4: Eine Kostenspalte fuehrt das Geraet nicht mehr (Schemaschritt 228) -
+            // der Satz steht in der Kostenverwaltung und wird dort geprueft.
         }
 
         private static void PruefeAusweis(WechselrichterModel m, Befund b, string vorlage,

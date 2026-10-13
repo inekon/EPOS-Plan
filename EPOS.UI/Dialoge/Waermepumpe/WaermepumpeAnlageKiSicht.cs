@@ -312,8 +312,8 @@ public sealed class WaermepumpeAnlageKiSicht
     public int? HeizstabLeistung { get => D?.HeizstabLeistung; set { if (D is { } d) d.HeizstabLeistung = value; } }
     public double? Kuehlleistung { get => D?.Kuehlleistung; set { if (D is { } d) d.Kuehlleistung = value; } }
 
-    /// <summary>Die Modulkosten — eine Anzeige; gepflegt werden sie in der Kostenverwaltung.</summary>
-    public int Modulkosten => D?.Modulkosten ?? 0;
+    /// <summary>Der Kostensatz — eine Anzeige; gepflegt wird er in der Kostenverwaltung.</summary>
+    public string Kostensatz => D?.Kostensatz ?? "";
 
     // =====================================================================
     //  KT-8b: der Ladestand der Fangstelle

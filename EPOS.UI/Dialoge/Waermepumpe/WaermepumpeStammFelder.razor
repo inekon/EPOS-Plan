@@ -13,7 +13,8 @@
    KATALOG; sie bleiben in der Stammdatenpflege bzw. beim jeweiligen Wirt. Dieser
    Baustein zeichnet nur die Felder EINES Satzes.
 
-   MODULKOSTEN STEHEN NUR LESEND DA (Anwenderentscheid W14a-O-1 vom 06.09.2026):
+   DER KOSTENSATZ STEHT NUR LESEND DA (Anwenderentscheid W14a-O-1 vom 06.09.2026,
+   Quelle seit Welle KB-4 die Satzvorlage):
    kein Eingabefeld, sondern ein <span> in der Rasterzelle mit Herleitungszeile
    darunter. Gepflegt werden Geraetekosten in der Kostenverwaltung (Ä19); der Wert
    im Datensatz wird nur durchgereicht.
@@ -91,31 +92,31 @@
                     WertChanged="BeiTaktverlustCd"
                     Aktiv="@(Aktiv && TeillastAenderbar)" />
 
-        @* --- Modulkosten, nur lesend (W14a-O-1) --------------------------------
+        @* --- Kostensatz, nur lesend (W14a-O-1, Welle KB-4) ---------------------
            KEIN EINGABEFELD, sondern ein <span> in der Rasterzelle. Ein gesperrtes
            Feld sagte "hier koenntest du tippen, nur jetzt nicht"; hier gibt es
            nichts zu tippen. Die Klassen sind die des Hauses: .epos-feld traegt im
            Formularraster die Beschriftungsspalte, .epos-feld-zeile setzt Wert und
            Einheit nebeneinander. *@
         @* In der KATALOGPFLEGE steht der Wert seit Stufe 4 der Neuordnung in der
-           eigenen Gruppe "Kosten" des Stammblatts (MitModulkosten="false"); hier
+           eigenen Gruppe "Kosten" des Stammblatts (MitKostensatz="false"); hier
            bleibt er fuer den Anlagendialog. *@
-        @if (MitModulkosten)
+        @if (MitKostensatz)
         {
             <div class="epos-feld">
-                <span class="epos-feld-text">@Texte.LabelModulkosten</span>
+                <span class="epos-feld-text">@Texte.LabelKostensatz</span>
                 <span class="epos-feld-zeile">
-                    <span class="epos-lesewert">@ModulkostenText</span>
-                    @if (HatModulkosten)
+                    <span class="epos-lesewert">@KostensatzText</span>
+                    @if (HatKostensatz)
                     {
-                        <span class="epos-einheit">@Texte.EinheitEuro</span>
+                        <span class="epos-einheit">@Daten.KostensatzEinheit</span>
                     }
                 </span>
             </div>
-            <Herleitungszeile Text="@Texte.HerleitungModulkosten" />
-            @if (!HatModulkosten)
+            <Herleitungszeile Text="@Texte.HerleitungKostensatz" />
+            @if (!HatKostensatz)
             {
-                <Herleitungszeile Text="@Texte.HinweisModulkostenLeer" />
+                <Herleitungszeile Text="@Texte.HinweisKostensatzLeer" />
             }
         }
     </KindInhalt>
@@ -166,11 +167,11 @@
     [Parameter] public EventCallback Geaendert { get; set; }
 
     /// <summary>
-    /// Stehen die Modulkosten im Feldraster? <c>true</c> (Vorgabe) ist der Weg des
-    /// Anlagendialogs; die Katalogpflege zeigt sie seit Stufe 4 der Neuordnung in der
+    /// Steht der Kostensatz im Feldraster? <c>true</c> (Vorgabe) ist der Weg des
+    /// Anlagendialogs; die Katalogpflege zeigt ihn seit Stufe 4 der Neuordnung in der
     /// eigenen Gruppe „Kosten" ihres Stammblatts (<see cref="Kostenwerte"/>).
     /// </summary>
-    [Parameter] public bool MitModulkosten { get; set; } = true;
+    [Parameter] public bool MitKostensatz { get; set; } = true;
 
     /// <summary>
     /// <b>Die Felder als Werte für den Lesemodus</b> (V13): Ein Auslieferungssatz zeigt
@@ -199,17 +200,17 @@
     }
 
     /// <summary>
-    /// <b>Die Gruppe „Kosten" der Katalogpflege</b> (Stufe 4): die Modulkosten — immer
-    /// ein Lesewert (W14a-O-1, gepflegt in der Kostenverwaltung), ohne Planwert der
-    /// Halbgeviertstrich.
+    /// <b>Die Gruppe „Kosten" der Katalogpflege</b> (Stufe 4): der Kostensatz der
+    /// Satzvorlage — immer ein Lesewert (W14a-O-1, gepflegt in der Kostenverwaltung),
+    /// ohne Satz der Halbgeviertstrich.
     /// </summary>
     public static IReadOnlyList<EPOS.UI.Bausteine.Stammblattwert> Kostenwerte(
         WaermepumpeStammDaten daten, WaermepumpeStammFelderTexte texte)
         => new[]
         {
-            new EPOS.UI.Bausteine.Stammblattwert(texte.LabelModulkosten,
-                daten.Modulkosten > 0 ? daten.Modulkosten.ToString(CultureInfo.CurrentCulture) : "",
-                texte.EinheitEuro)
+            new EPOS.UI.Bausteine.Stammblattwert(texte.LabelKostensatz,
+                daten.Kostensatz ?? "",
+                string.IsNullOrEmpty(daten.Kostensatz) ? "" : (daten.KostensatzEinheit ?? ""))
         };
 
     /// <summary>Die vier Wärmepumpentypen (<c>SetControls</c>:219-222).</summary>
@@ -250,21 +251,17 @@
     [Parameter] public IReadOnlyList<int> Baujahre { get; set; } = BAUJAHRE;
 
     /// <summary>
-    /// Führt der Satz einen Planwert im Datenbestand? (W14a‑O‑1) <b>0 und NULL sind
-    /// dasselbe:</b> <c>Tab_WP_STAMM.Modulkosten</c> ist eine INTEGER-Spalte, und
-    /// <c>TechnikPlanwertCtrl.Basis</c> verwirft Beträge ≤ 0.
+    /// Führt der Satz einen Kostensatz? (W14a‑O‑1) Die leere Zeichenkette heißt „keine
+    /// Satzvorlage oder kein gepflegter Satz" (<c>KatalogkostensatzCtrl.SatzText</c>).
     /// </summary>
-    private bool HatModulkosten => Daten.Modulkosten > 0;
+    private bool HatKostensatz => !string.IsNullOrEmpty(Daten.Kostensatz);
 
     /// <summary>
-    /// Der Anzeigetext der Modulkosten — die rohe Zahl in der Kultur des Anwenders, ohne
-    /// Tausenderpunkt, genau wie <c>ParameterUebersichtCtrl.Anzeige</c> sie in den
-    /// Aufklapper schreibt. Ohne Planwert steht derselbe Halbgeviertstrich da, den auch
-    /// der Verwendungskatalog für „kein Wert" führt.
+    /// Der Anzeigetext des Kostensatzes — die rohe Zahl in der Kultur des Anwenders, so
+    /// wie sie aus der Satzvorlage kommt. Ohne Satz steht derselbe Halbgeviertstrich da,
+    /// den auch der Verwendungskatalog für „kein Wert" führt.
     /// </summary>
-    private string ModulkostenText => HatModulkosten
-        ? Daten.Modulkosten.ToString(CultureInfo.CurrentCulture)
-        : "–";
+    private string KostensatzText => HatKostensatz ? Daten.Kostensatz : "–";
 
     // =================================================================================
     // Die Eingaben

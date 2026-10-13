@@ -320,6 +320,14 @@ namespace WindowsFormsApplication1
               "KostenVorlagenUebernahmeCtrl.PflichtpositionenSicherstellen (Vorrang vor der Standardvorlage)"),
         };
 
+        /// <summary>
+        /// Schemaschritt 228 (<see cref="GeraetekostenEntfallSchema"/>, Welle KB-4): am Wechselrichter
+        /// allein die Investitionsvorlage — er fuehrt genau einen Kostenwert, den Stueckpreis, und keine
+        /// Betriebsvorlage. Hinter den Katalogspalten, weil der Schritt die Spalte per ADD COLUMN anhaengt.
+        /// </summary>
+        private static IEnumerable<ParameterEintrag> KostenvorlageInvestition(Func<string, string> t) =>
+            Kostenvorlage(t).Where(e => e.Spalte == KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION);
+
         private static ParameterEintrag E(string spalte, string anzeige, string einheit,
                                           Verwendung[] verwendung, string fundstelle = "")
         {
@@ -577,18 +585,12 @@ namespace WindowsFormsApplication1
         /// <c>KennlinienEditorDialog</c> (W7.2). Sie sind KEINE Spalten dieser Tabelle
         /// und stehen deshalb nicht in diesem Katalog.
         ///
-        /// <para><b>Der Befund dieser Tabelle:</b> <c>Modulkosten</c> ist der einzige
-        /// Kostenwert der Waermepumpe, den die Kostenplanung liest
-        /// (<c>TechnikPlanwertCtrl.BasenFuellen</c>) — und der einzige gerechnete Parameter
-        /// aller sieben Kataloge, den seine Verwaltung nicht zur PFLEGE fuehrt.
-        /// <b>Seit dem Anwenderentscheid W14a-O-1 vom 06.09.2026 zeigt sie ihn
-        /// wenigstens</b>: als Lesewert mit Herleitungszeile im Stammdialog. Ä19
-        /// bleibt damit gewahrt — hier tippt niemand Kosten ein, gepflegt werden
-        /// Geraetekosten in der Kostenverwaltung. <b>Befund W14a-O-2 (06.09.2026):</b>
-        /// Der VDI-3805-Import fuellt die Spalte NICHT — <c>KatalogImportSatz.NachStamm</c>
-        /// setzt sie nie, und <c>WPStammCtrl.UpdateImport</c> laesst sie beim
-        /// Ueberschreiben ausdruecklich stehen („vom Anwender gepflegte Felder").
-        /// Ein neu importiertes Geraet steht damit dauerhaft auf 0. Fuenf weitere
+        /// <para><b>Der Befund dieser Tabelle:</b> Einen KOSTENWERT fuehrt sie nicht mehr.
+        /// Die Spalte <c>Modulkosten</c> ist mit Schemaschritt 228 entfallen (Welle KB-4,
+        /// Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung"); der
+        /// Kostensatz steht in der Satzvorlage der Kostenverwaltung, auf die
+        /// <c>ID_KostenVorlageInvestition</c> verweist (<see cref="Kostenvorlage"/>), und
+        /// der Stammdialog zeigt ihn dort als Lesewert mit Herleitungszeile. Fuenf weitere
         /// Spalten (<c>Laenge</c> … <c>Raum</c>) hat
         /// ueberhaupt kein Leser: sie kommen aus dem VDI-3805-Import und bleiben
         /// liegen.</para>
@@ -620,10 +622,6 @@ namespace WindowsFormsApplication1
                   "SimulationWaermepumpe.ModuleAufbauen (WP_Heizung, Heizstabphase)"),
                 E("Regelung", t("WPS_LBL_REGELUNG"), "", BER,
                   "AbweichungsErmittler.Felder (Tab_WP.Regelung); WaermepumpenKatalogFilter.Anwenden"),
-                E("Modulkosten", t("MODK_LBL_MODULKOSTEN"), "€", WIRT,
-                  "TechnikPlanwertCtrl.BasenFuellen (ERZEUGER_WAERMEPUMPE) — " +
-                  "im Stammdialog nur lesend (W14a-O-1); geschrieben wird die Spalte " +
-                  "heute von KEINEM Importweg (Befund W14a-O-2)"),
                 E("Laenge", t("MODK_LBL_LAENGE"), "mm", NIX),
                 E("Breite", t("MODK_LBL_BREITE"), "mm", NIX),
                 E("Hoehe", t("PARV_LBL_HOEHE"), "mm", NIX),
@@ -761,8 +759,6 @@ namespace WindowsFormsApplication1
                   "SimulationPV.Berechnung (Modulflaeche)"),
                 E("Breite", t("MODK_LBL_BREITE"), "m", SIM,
                   "SimulationPV.Berechnung (Modulflaeche)"),
-                E("Modulkosten", t("MODK_LBL_MODULKOSTEN_PV"), "€", WIRT,
-                  "TechnikPlanwertCtrl.BasenFuellen (Stueckpreis, ERZEUGER_PHOTOVOLTAIK)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "PhotovoltaikStammCtrl.SpeichernAus (Auslieferungssatz)"),
                 E("Technologie", t("PVM_MODUL_LABEL_TECHNOLOGIE"), "", SIM_BER,
@@ -1120,9 +1116,6 @@ namespace WindowsFormsApplication1
                 E("P_Nacht", t("WRK_LBL_P_NACHT"), "W", SIM,
                   "PvStrangModell.Stunde (NACHTVERBRAUCH, negative Erzeugung); " +
                   "ModulKatalogProfil (Gruppe Wirkungsgrad); CEC-Import (Pnt)"),
-                E("Kosten", t("WRK_LBL_KOSTEN"), "€", WIRT,
-                  "TechnikPlanwertCtrl.Wechselrichteranlagen (Investition je Geraet x Geraetezahl, Q8); " +
-                  "ModulKatalogProfil (Gruppe Geraet)"),
                 E("Sandia_Pdco", "Sandia Pdco:", "W", NIX),
                 E("Sandia_Vdco", "Sandia Vdco:", "V", NIX),
                 E("Sandia_Pso", "Sandia Pso:", "W", NIX),
@@ -1144,7 +1137,7 @@ namespace WindowsFormsApplication1
                   "ModulKatalogProfil (Gruppe Eingang) - JE MPPT, Handpflege; " +
                   "StrangPlausibilitaet.MpptPruefen (P4 rot); " +
                   "StrangAuslegung.ParallelJeMppt (Grenze)")
-            }.Concat(Katalogspalten(t)).ToList();
+            }.Concat(Katalogspalten(t)).Concat(KostenvorlageInvestition(t)).ToList();
         }
     }
 }

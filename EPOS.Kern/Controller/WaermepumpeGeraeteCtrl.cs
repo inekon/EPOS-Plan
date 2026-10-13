@@ -49,7 +49,6 @@ namespace WindowsFormsApplication1
 
             ziel.Regelung = quelle.Regelung;
             ziel.Nennleistung = quelle.Nennleistung;
-            ziel.Modulkosten = quelle.Modulkosten;
             ziel.Baujahr = quelle.Baujahr;
             ziel.Beschreibung = quelle.Beschreibung;
             ziel.Firma = quelle.Firma;

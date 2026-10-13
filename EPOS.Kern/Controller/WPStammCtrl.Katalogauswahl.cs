@@ -12,7 +12,7 @@ namespace WindowsFormsApplication1
     /// </summary>
     /// <remarks>
     /// <para><b>Welche Felder.</b> Die Satzbearbeitung trägt nur, was für mehrere Geräte zugleich Sinn ergibt:
-    /// Hersteller, Beschreibung und Modulkosten. Nennleistung, Heizstab, Kühlleistung, Typ und Regelung hängen an der
+    /// Hersteller und Beschreibung. Nennleistung, Heizstab, Kühlleistung, Typ und Regelung hängen an der
     /// Kennlinie des Geräts; sie und die Kennlinien selbst bearbeitet der Katalogeditor (ein Katalogsatz) bzw. die
     /// Anlagenseite „Anlage…" (die Projektkopie).</para>
     /// <para><b>Kopie oder Katalog</b> wählt <c>projektkopie</c>: <c>Tab_WP</c> bzw. <see cref="TABLE"/>. Der Name
@@ -28,8 +28,11 @@ namespace WindowsFormsApplication1
 
         private static string Satztabelle(bool projektkopie) => projektkopie ? TABELLE_PROJEKT : TABLE;
 
-        /// <summary>Die Felder der Satzbearbeitung eines Geräts; <c>Modulkosten</c> leer = keine gepflegt.</summary>
-        public sealed record Sammelfelder(string Firma, string Beschreibung, double? Modulkosten);
+        /// <summary>
+        /// Die Felder der Satzbearbeitung eines Geräts. <b>Ohne Kosten</b> (Welle KB-4): Die Kostenspalte
+        /// ist entfallen, gepflegt wird der Satz in der Kostenverwaltung.
+        /// </summary>
+        public sealed record Sammelfelder(string Firma, string Beschreibung);
 
         /// <summary>Ein gelesener Satz der Satzbearbeitung: Name, Sperre (nur Katalog) und die Felder.</summary>
         public sealed record Sammelsatz(int Id, string Bezeichner, bool Gesperrt, Sammelfelder Felder);
@@ -50,17 +53,14 @@ namespace WindowsFormsApplication1
             DataRow r = dt.Rows[0];
             bool gesperrt = !projektkopie && dt.Columns.Contains("ReadOnly") && r["ReadOnly"] != DBNull.Value &&
                             Convert.ToInt64(r["ReadOnly"], CultureInfo.InvariantCulture) != 0;
-            double? kosten = r["Modulkosten"] == DBNull.Value
-                ? (double?)null : Convert.ToDouble(r["Modulkosten"], CultureInfo.InvariantCulture);
             return new Sammelsatz(id, Convert.ToString(r["Bezeichner"], CultureInfo.InvariantCulture) ?? "", gesperrt,
                                   new Sammelfelder(Convert.ToString(r["Firma"], CultureInfo.InvariantCulture) ?? "",
-                                                   Convert.ToString(r["Beschreibung"], CultureInfo.InvariantCulture) ?? "",
-                                                   kosten));
+                                                   Convert.ToString(r["Beschreibung"], CultureInfo.InvariantCulture) ?? ""));
         }
 
         /// <summary>
         /// <b>Schreibt alle geänderten Sätze einer Satzbearbeitung — alle oder keiner</b> (Konzept 4.6). Ein gesperrter
-        /// Katalogsatz, eine fehlende ID oder negative Modulkosten rollen die ganze Transaktion zurück und nennen den Satz.
+        /// Katalogsatz oder eine fehlende ID rollen die ganze Transaktion zurück und nennen den Satz.
         /// Der Name, die Kennlinien und alle übrigen Spalten bleiben.
         /// </summary>
         public static SpeicherErgebnis SammelfelderSchreibenAlle(bool projektkopie, IReadOnlyList<Sammelaenderung> saetze)
@@ -92,17 +92,9 @@ namespace WindowsFormsApplication1
                             return new SpeicherErgebnis(false, string.Format(CultureInfo.CurrentCulture,
                                 Text("KAT_MSG_SAMMEL_GESPERRT", "„{0}“ ist gesperrt. Es wurde nichts gespeichert."), name), name);
                         }
-                        if (s.Felder.Modulkosten is double k && (k < 0 || double.IsNaN(k) || double.IsInfinity(k)))
-                        {
-                            v.Rollback();
-                            return new SpeicherErgebnis(false, string.Format(CultureInfo.CurrentCulture,
-                                Text("KAT_MSG_SAMMEL_VERSTOSS", "„{0}“: {1} Es wurde nichts gespeichert."), name,
-                                Text("WPV_MSG_MODULKOSTEN_NEGATIV", "Die Modulkosten dürfen nicht negativ sein.")), name);
-                        }
-                        v.Ausfuehren("UPDATE [" + tabelle + "] SET Firma = ?, Beschreibung = ?, Modulkosten = ? WHERE ID = ?",
+                        v.Ausfuehren("UPDATE [" + tabelle + "] SET Firma = ?, Beschreibung = ? WHERE ID = ?",
                                      new DbParam("@firma", (s.Felder.Firma ?? "").Trim()),
                                      new DbParam("@beschreibung", s.Felder.Beschreibung ?? ""),
-                                     new DbParam("@kosten", s.Felder.Modulkosten.HasValue ? (object)s.Felder.Modulkosten.Value : DBNull.Value),
                                      new DbParam("@id", s.Id));
                     }
                     v.Commit();
@@ -131,10 +123,10 @@ namespace WindowsFormsApplication1
         /// Nr. 5): die Heizkennlinie <c>Tab_Kenndaten</c> → <see cref="CURVE"/> und die Kühlkennlinie
         /// <c>Tab_Kenndaten_Kuehlung</c> → <see cref="CURVE_K"/>, je mit allen Vorlauf-Stützstellen — bei „neu" als Kopie am
         /// neuen Satz, bei „überschreiben" als Ersatz. Mit der Schnittmenge gehen die Fachspalten samt Kühlkonfiguration,
-        /// Taktwerten, den acht Gerätespalten der Übergabegrenze und <c>Modulkosten</c>. Anlagenbezogen und damit im
+        /// Taktwerten und den acht Gerätespalten der Übergabegrenze. Anlagenbezogen und damit im
         /// Projekt bleiben die Anlagenzeile (Betriebsart, Temperaturen, Bivalenz, Heizstab, Sperrzeiten und Zeitprogramm,
         /// Quellfelder <c>WQ_*</c>, Einbindung, Vorwärmbetrieb, <c>Vorlauf_Max</c>) und die Senken. Prüfregel: Nennleistung
-        /// und Modulkosten nicht negativ.
+        /// nicht negativ.
         /// </summary>
         public static Rueckweggewerk Rueckweg() => new Rueckweggewerk
         {
@@ -152,7 +144,6 @@ namespace WindowsFormsApplication1
                 double Zahl(string spalte) => zeile.Table.Columns.Contains(spalte) && zeile[spalte] != DBNull.Value
                     ? Convert.ToDouble(zeile[spalte], CultureInfo.InvariantCulture) : 0;
                 if (Zahl("Nennleistung") < 0) return Text("WPV_MSG_NENNLEISTUNG_NEGATIV", "Die Nennleistung darf nicht negativ sein.");
-                if (Zahl("Modulkosten") < 0) return Text("WPV_MSG_MODULKOSTEN_NEGATIV", "Die Modulkosten dürfen nicht negativ sein.");
                 return null;
             },
         };

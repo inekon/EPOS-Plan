@@ -157,12 +157,18 @@ public sealed class ModulKatalogKiSicht
         set => ZahlSetzen(ModulKatalogProfil.FeldLeistung, value);
     }
 
-    /// <summary>Die Modulkosten — Stromspeicher [€/kWh], PV-Modul [€].</summary>
+    /// <summary>Die Modulkosten des Stromspeichers [€/kWh].</summary>
     public double? Modulkosten
     {
         get => Zahl(ModulKatalogProfil.FeldModulkosten);
         set => ZahlSetzen(ModulKatalogProfil.FeldModulkosten, value);
     }
+
+    /// <summary>
+    /// Der Kostensatz aus der Satzvorlage (Photovoltaik [€/kWp], Wechselrichter [€/kW]) —
+    /// eine ANZEIGE; gepflegt wird er in der Kostenverwaltung (Welle KB-4).
+    /// </summary>
+    public double? Kostensatz => Zahl(ModulKatalogProfil.FeldKostensatz);
 
     // ---- Nur der Stromspeicher ------------------------------------------
 
@@ -340,13 +346,6 @@ public sealed class ModulKatalogKiSicht
     {
         get => Zahl(ModulKatalogProfil.FeldPDcMax);
         set => ZahlSetzen(ModulKatalogProfil.FeldPDcMax, value);
-    }
-
-    /// <summary>Der Gerätepreis [€].</summary>
-    public double? Kosten
-    {
-        get => Zahl(ModulKatalogProfil.FeldKosten);
-        set => ZahlSetzen(ModulKatalogProfil.FeldKosten, value);
     }
 
     /// <summary>Woher der Satz stammt — Auskunft des Imports, nur lesbar.</summary>

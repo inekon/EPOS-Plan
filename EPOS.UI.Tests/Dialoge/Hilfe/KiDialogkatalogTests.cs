@@ -721,8 +721,9 @@ public class KiDialogkatalogTests : IDisposable
                              .Count(f => !IstAlleDaten(f)));
         Assert.Equal(5, KiDialoge.Katalog.Finde(KiMaskennamen.PUFFERSPEICHER)!.Felder.Count);
         // Die Waermepumpe fuehrt dazu Mindestleistung und C_d (Welle M4, WP1) und die acht
-        // Geraetegrenzen der Uebergabegrenze (UB-E3-b): 21.
-        Assert.Equal(21, KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.Felder.Count);
+        // Geraetegrenzen der Uebergabegrenze (UB-E3-b), ohne Kostenfeld (Welle KB-4: die
+        // Geraetespalte Modulkosten ist entfallen, der Satz steht in der Satzvorlage): 20.
+        Assert.Equal(20, KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.Felder.Count);
 
         // Die Ueberlagerung „Anlagenwerte" fuehrt die VIER Kennwerte des
         // Wechselrichters - Nennleistung und die drei Punkte der Teillastkennlinie.
@@ -768,22 +769,20 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     /// <summary>
-    /// <b>Die MODULKOSTEN der Wärmepumpenverwaltung sind nur lesbar</b>
-    /// (Anwenderentscheid 21.09.2026, KI‑D‑Q7).
+    /// <b>Beide Wärmepumpenmasken führen kein Kostenfeld</b> (Welle KB-4,
+    /// Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung").
     /// </summary>
     /// <remarks>
-    /// Die Maske zeigt sie als Lesewert mit Herleitungszeile — gepflegt werden sie in
-    /// der Kostenverwaltung. Der Katalog führte sie bis dahin setzbar und bot damit an,
-    /// eine Zahl zu ändern, für die es auf der Maske kein Eingabefeld gibt; bei
-    /// <c>Form_WP_Anlage</c> war dieselbe Größe schon vorher <c>nurLesen</c>.
+    /// Die Gerätespalte <c>Modulkosten</c> ist entfallen; die Masken zeigen den Kostensatz
+    /// der Satzvorlage als Lesewert mit Herleitungszeile, gepflegt wird er in der
+    /// Kostenverwaltung — die als eigene Maske im Katalog steht.
     /// </remarks>
     [Fact]
-    public void Die_Modulkosten_beider_Waermepumpenmasken_sind_nur_lesbar()
+    public void Beide_Waermepumpenmasken_fuehren_kein_Kostenfeld()
     {
-        Assert.True(KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!
-                              .FindeFeld("modulkosten")!.NurLesen);
-        Assert.True(KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE_ANLAGE)!
-                              .FindeFeld("modulkosten")!.NurLesen);
+        Assert.Null(KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.FindeFeld("modulkosten"));
+        Assert.Null(KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE_ANLAGE)!.FindeFeld("modulkosten"));
+        Assert.NotNull(KiDialoge.Katalog.Finde(KiMaskennamen.KOSTENVERWALTUNG));
 
         // Die Nennleistung derselben Maske bleibt setzbar — der Feldsatz ist nicht
         // insgesamt gesperrt, nur diese eine Anzeige.

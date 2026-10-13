@@ -30,8 +30,11 @@ namespace WindowsFormsApplication1
     //      Spalte waere eine Zusage, die nichts einloest.
     //   2. SAAT des Wechselrichters ueber die Maschinerie von KB-3
     //      (KatalogkostenSaatSchema.Saeen mit der Gewerkliste dieser Welle): Kosten geteilt
-    //      durch P_AC_Nenn wird EUR_PRO_KW_LEISTUNG - dieselbe Bauform wie bei der
-    //      Kaeltemaschine (Konzept Wirtschaftlichkeit 3.2). Satz x (P_AC_Nenn x Stueckzahl)
+    //      durch P_AC_Nenn wird EUR_PRO_KW_ELEKTRISCH - dieselbe Bauform wie bei der
+    //      Kaeltemaschine (Konzept Wirtschaftlichkeit 3.2), aber mit der Art, die das Gewerk
+    //      der Vorlage (Photovoltaik) kennt: „je kW Leistung" fuehrt die Photovoltaik nicht
+    //      (BemessungKatalog.PasstZuGewerk), die Nennleistung des Wechselrichters ist eine
+    //      elektrische Leistung. Satz x (P_AC_Nenn x Stueckzahl)
     //      ergibt wieder Stueckpreis x Stueckzahl, also dieselbe Zahl, die
     //      TechnikPlanwertCtrl heute zeigt.
     //   3. SICHERHEITSLAUF der Saat aller Gewerke dieser Welle (idempotent; ein zweiter Lauf
@@ -128,13 +131,17 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Das Gewerk Wechselrichter</b> — der Nachzug zu den acht Gewerken von KB-3. Die Bemessung
-        /// ist die der Kältemaschine: ein Stückpreis, geteilt durch die Baugröße EINES Stücks.
+        /// ist die der Kältemaschine: ein Stückpreis, geteilt durch die Baugröße EINES Stücks. Die Art
+        /// ist „je kW elektrisch", nicht „je kW Leistung": Die Satzvorlage steht unter der
+        /// Photovoltaik, und dort führt allein die elektrische Leistung eine Bezugsgröße — eine
+        /// gewerksfremde Art stünde in der Kostenverwaltung ohne Basis da. Die Bezugsgröße des
+        /// Satzes bleibt die Nennleistung EINES Geräts (<see cref="SPALTE_WR_LEISTUNG"/>).
         /// </summary>
         public static readonly Katalogkostengewerk GEWERK_WECHSELRICHTER =
             new Katalogkostengewerk(TAB_WR_STAMM, TAB_WR, KOMPONENTE_WECHSELRICHTER, new[]
             {
                 new Katalogkostenfeld(SPALTE_WR_KOSTEN, DbWerte.KOSTEN_KATEGORIE_INVESTITION,
-                                      DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, BEZEICHNUNG_WECHSELRICHTER,
+                                      DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, BEZEICHNUNG_WECHSELRICHTER,
                                       DbWerte.KOSTENART_KAPITALGEBUNDEN, 10,
                                       bezugsspalte: SPALTE_WR_LEISTUNG),
             });

@@ -93,7 +93,8 @@ namespace EPOS.Kern.Tests
             IList<KostenVorlagenPosition> positionen = KostenVorlagenCtrl.Positionen(idVorlage);
             Assert.Single(positionen);
             Assert.Equal(GeraetekostenEntfallSchema.BEZEICHNUNG_WECHSELRICHTER, positionen[0].Bezeichnung);
-            Assert.Equal(DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, positionen[0].Bemessung);
+            // „je kW elektrisch": die Art, die das Gewerk der Vorlage (Photovoltaik) kennt.
+            Assert.Equal(DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, positionen[0].Bemessung);
             Assert.True(positionen[0].Satz.HasValue);
             Assert.Equal(480.0, positionen[0].Satz.Value, 3);
         }
