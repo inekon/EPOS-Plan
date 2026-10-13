@@ -133,7 +133,7 @@ public sealed class ProjektBrennstoffeTexte
         [ProjektBrennstoffFelder.Pe] = "Primärenergiefaktor",
         [ProjektBrennstoffFelder.Grundpreis] = "Grundpreis [€/a]",
         [ProjektBrennstoffFelder.Arbeitspreis] = "Arbeitspreis [€/Einheit]",
-        [ProjektBrennstoffFelder.Leistungspreis] = "Leistungspreis [€/kW]",
+        [ProjektBrennstoffFelder.Leistungspreis] = "Leistungspreis [€/(kW·a)]",
     };
 
     /// <summary><c>PBRS_SP_STAND</c></summary>
