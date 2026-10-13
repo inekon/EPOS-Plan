@@ -13,12 +13,12 @@ nach `Dokumentation/ueberholt/`, sobald die Fortsetzung den ersten Importlauf, B
 | Was | Wert |
 |---|---|
 | Arbeitszweig | `ios_migration_september` (Remote `origin`). Der Sitzungszweig des alten Kontos `claude/magical-bohr-ff5ufj` wurde bei jedem Push mitgezogen; die neue Sitzung nimmt ihren eigenen Sitzungszweig |
-| Letzte Wellen | #1054 MA-7 (Einzonen-Vorgaben; abgenommen, Zweig `ma7` gemergt, Push steht an), #1053 MA-2 (Nutzung und Kalender; abgenommen, Zweig `ma2` gemergt, Push steht an), #1052 MA-1b (Modellprüfung Oberfläche), #1051 MA-1a (Modellprüfung Kern), #1050 GD-N (Nachzüge, NP7 70/71), #1049 DA-1 (gbXML-Import Lasten und Zeitpläne), #1048 AB4 (Ein- und Ausblenden in der Körperansicht), #1047 BK-3b/3c, #1046 GD-6a, #1032 BK-2b Oberfläche und Bänder, #1031 BK-3 Import, #1030 BK-2 (Schritt 221), #1026 GD-4, #1023 BK-1, #1020 GD-5, #1022 NP7/NP7b (Schritt 220); davor #1011 NP6, #1012 Quick Assist (Admin-Zweig), #1013 AB2, #1014 AB3, #1015 GD-1, #1016 GD-2, #1017 Entwurf BK — gepusht `f40fe2fa1`; danach Anmeldung Schritt 220 (`6870f7169`) und GD-3 mit diesem Papier (#1019) |
+| Letzte Wellen | #1055 MA-3 (Hülle geschlossen; abgenommen, Zweig `ma3` gemergt, Push steht an), #1054 MA-7 (Einzonen-Vorgaben; abgenommen, Zweig `ma7` gemergt, Push steht an), #1053 MA-2 (Nutzung und Kalender; abgenommen, Zweig `ma2` gemergt, Push steht an), #1052 MA-1b (Modellprüfung Oberfläche), #1051 MA-1a (Modellprüfung Kern), #1050 GD-N (Nachzüge, NP7 70/71), #1049 DA-1 (gbXML-Import Lasten und Zeitpläne), #1048 AB4 (Ein- und Ausblenden in der Körperansicht), #1047 BK-3b/3c, #1046 GD-6a, #1032 BK-2b Oberfläche und Bänder, #1031 BK-3 Import, #1030 BK-2 (Schritt 221), #1026 GD-4, #1023 BK-1, #1020 GD-5, #1022 NP7/NP7b (Schritt 220); davor #1011 NP6, #1012 Quick Assist (Admin-Zweig), #1013 AB2, #1014 AB3, #1015 GD-1, #1016 GD-2, #1017 Entwurf BK — gepusht `f40fe2fa1`; danach Anmeldung Schritt 220 (`6870f7169`) und GD-3 mit diesem Papier (#1019) |
 | CI | Kern-Lauf 38206954119 grün auf `02d4ddfe0` (enthält alles bis #1022); #1010 grün mit 38188012085 auf `228a10287`; vermerkt in #1010, #1011, #1013–#1017, #1019, #1020, #1022. #1023 (BK-1) und die Papiere danach sind mit [skip ci] gepusht und laufen mit dem nächsten Push ohne [skip ci] durch die CI |
 | Referenzbasis | **R52** `Referenzlaeufe/2026-10-11_R52_Vorheizen`, dreißig Projekte; CI-Auswahl 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065. R53 hat die Sitzung Kälteanlagen für die Projekte 1066–1071 angemeldet (13.10.2026); SA4 nimmt die nächste freie Basis danach |
 | Testdatenbank | Schemastand **222** (Git LFS) |
 | Schemakette | 218 `KaelteArtSchema` (Sitzung Kälteanlagen), 219 `RaumnutzungNormkategorienSchema` (NP6), 220 `RaumnutzungNormwerteSchema` (NP7); 221 `BauteilkatalogSchema` (BK-2); 222 `BauteilkatalogHaustechnikSchema` (BK-3c); 223 `TwwZonenferienSchema` (Zapfprofilgenerator), 224 `KaeltebedarfSplitAbrechnungSchema` (K6, Sitzung Anlagendialog), **225 angemeldet für DA-2 (`ZonenLastfelderSchema`)**, 226 frei |
-| Statuszeilen | höchste vergebene #1054 (Nummern werden beim Push gegen origin geprüft; #1033 bis #1038 gehören anderen Sitzungen); vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E138**, **E139 frei** |
+| Statuszeilen | höchste vergebene #1055 (Nummern werden beim Push gegen origin geprüft; #1033 bis #1038 gehören anderen Sitzungen); vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E138**, **E139 frei** |
 | Parallele Sitzungen | „Kälteanlagen“, „Dialoge und Korrekturen“ (Konto 3), „Administration und Support“; alle pushen auf denselben Zweig. Statuskonflikte zeilenweise lösen, Nummernkollisionen über die nächste freie Nummer |
 
 ## 2. Was die Sitzung seit dem 08.10.2026 gebaut hat
@@ -45,6 +45,7 @@ Alle Zeilen mit grünem Gate gepusht; Einzelheiten in der Statuszeile und im Pro
 | BK-3 | #1031 | „Bauteilkatalog einlesen…“ direkt aus dem CSV-Export: Leser, Regeln, Zusammenführung, Vorschau, Dialog |
 | BK-2b | #1032 | Gruppe, Klasse, Herkunft und Kennzeichen in Katalogen und Bauteilwahl; Bänder des Rechenwegs ohne Ausnahme, Filter „nur geeignete“ |
 | MA-2 | #1053 | Blatt „Nutzung und Kalender“ mit Mehrfachwahl: Profil zuweisen, Projektvorgabe Ferien/Heizperiode, Kalender kopieren, Sollwerte setzen, Zurücknehmen; Einstiege im Reiter „Zonen“ und im Ampelblatt (Gruppe 3); Kern `ZonenNutzungCtrl`, 81 Ressourcen |
+| MA-3 | #1055 | Hülle geschlossen: Prüfung je Zone in Gruppe 1 der Modellprüfung (vier Codes `HUELLE_*`) und fehlendes Dach, Bodenplatte oder Geschossdecke als Vorschlag mit Übernahme und Rücknahme; Kern `Modellpruefung.HuelleJeZone`, `GebaeudeZonenCtrl.BauteilEinfuegen`, 10 Ressourcen `MP_*` |
 | MA-7 | #1054 | Einzonen-Vorgaben: Knopf „Vorgaben der Baualtersklasse übernehmen…“ im Gebäudeeditor mit Vorschau Jetzt/Vorgabe, Rücknahme und Sperre mit Grund; Profil der Gebäudeart über den bestehenden Generator; Kern `Einzonenvorgaben`, 23 Ressourcen |
 
 ## 3. Laufende Arbeit beim Schreiben
@@ -61,12 +62,13 @@ Auftrag in Abschnitt 4 neu beauftragt. Die Routinen des alten Kontos sind gelös
 - **Modellprüfung (MA-1a):** Kernbaustein `Modellpruefung` mit `ModellpruefungCtrl`, fünf Gruppen, Rechenstatus; MA-1b baut die Oberfläche darauf.
 - **Nutzung und Kalender (MA-2):** Kern `ZonenNutzungCtrl` mit fünf Schreibwegen für n Zonen in einem Vorgang und Sitzungsgedächtnis zum Zurücknehmen; Hülle `ZonenNutzungHuelle`, Blatt `ZonenNutzungsblatt.razor`, Parametersatz `ZonenNutzungGaben` am Gebäudedialog.
 - **Einzonen-Vorgaben (MA-7):** Kern `Einzonenvorgaben` (Vorschau, Anwenden, Zurücknehmen, Sperre) über `GebaeudeVorgaben` und die Bauart-Tafel `BAUART_JE_KLASSE`; `GebaeudeKatalogDaten.KlasseGesetzt` hält eine beim Laden leere Baualtersklasse fest; das Profil der Gebäudeart läuft über die Naht `KonditionierungWeg.ProfilDerGebaeudeart`. Kein Schemaschritt, kein SQL.
+- **Hülle geschlossen (MA-3):** Gruppe 1 der Modellprüfung prüft je Zone über `Zonenkopplungsregeln.Bilanz` mit den Codes `HUELLE_OBEN_FEHLT`/`HUELLE_UNTEN_FEHLT` (rot), `HUELLE_OFFEN` und `HUELLE_GESPIEGELT` (gelb); die gemeinsame Schwelle (10 %) steht in `Zonenkopplungsregeln.SenkrechtOffen`. `Vorschlagsart.Huellbauteil` (`Modellvorschlagsregeln.Huellbauteil`) schlägt das fehlende Bauteil an der Nachbarzone mit der Lückenfläche vor, Übernahme und Rücknahme über `ModellpruefungCtrl`, Einfügen über `GebaeudeZonenCtrl.BauteilEinfuegen`. Kein Schemaschritt, kein Eingriff in den Rechenweg.
 - **Maskenschlüssel `Projektgebaeude`** (GD-N) öffnet unter Windows `GebaeudeFenster.ProjektOeffnen`, auf iOS benannte Ablehnung.
 - **Haustechnik:** Klasse `HAUSTECHNIK` (Schritt 222) ist die letzte Klasse der Gruppe Sonstige an Baustoff und Bauteilaufbau; der Import setzt sie für Basis-Codes 14, 19, 29, 30.
 
 ## 4. Nächste Arbeit (Reihenfolge)
 
-Erledigt am 13.10.: CI-Vermerk, GD-6a (#1046), BK-3b/3c (#1047), AB4 (#1048), DA-1 (#1049), GD-N (#1050), MA-1a (#1051), MA-1b (#1052), MA-2 (#1053), MA-7 (#1054).
+Erledigt am 13.10.: CI-Vermerk, GD-6a (#1046), BK-3b/3c (#1047), AB4 (#1048), DA-1 (#1049), GD-N (#1050), MA-1a (#1051), MA-1b (#1052), MA-2 (#1053), MA-3 (#1055), MA-7 (#1054).
 
 1. **Erneuter Importlauf beim Anwender** nach BK-3b/3c („Bauteilkatalog einlesen…“ ordnet per Quellkennung um, keine Dubletten);
    Zählungen laut Statuszeile #1047 ins Protokoll.
@@ -77,7 +79,7 @@ Erledigt am 13.10.: CI-Vermerk, GD-6a (#1046), BK-3b/3c (#1047), AB4 (#1048), DA
    [Konzepts Datenaustausch Simulationsdaten](2026-10-12_Konzept_Datenaustausch_Simulationsdaten.md)) direkt nach MA-1 (E138 F4, MA-1 erledigt); DA-2 in Arbeit (Schemaschritt 225 angemeldet), DA-3 danach.
 4. ~~NP7-Nachzug~~ erledigt mit GD-N (#1050): Nummern 70/71 auf die Wohnprofile, nur beim Einlesen.
 5. ~~GD-Nachzüge~~ erledigt mit GD-N (#1050): gespeicherter Zonenplan, Projektdatei-Befund, Sprung Kühlung, Jahreswärmebedarf.
-6. **MA-3 bis MA-7** nach Wellenplan des Entwurfs (MA-5 setzt an der Sichtlegende von AB4 an): MA-2 (#1053) und MA-7 (#1054) erledigt, MA-3 und MA-5 laufen (Zweige `ma3`, `ma5`), MA-4 nach MA-3, MA-6 danach (möglicher Schemaschritt, Nummer vor dem Bau anmelden). Nachzüge aus MA-2: Ferien aus den Kalenderperioden, Sollwertweg bei Heizkalender (Zeilen `TAG`/`NACHT`), Kurzbild der Woche je Größe, Sprung „Zone…“ aus dem Ampelblatt. Nachzüge aus MA-7: leere Baualtersklasse bis zum Speichern erkennbar halten (echte Wahl „keine Klasse“), Bauart-Tafel (siehe Abschnitt 5), Knopf im Stammblatt der Gebäudeverwaltung, Wiki-Seite „Gebäude“.
+6. **MA-3 bis MA-7** nach Wellenplan des Entwurfs (MA-5 setzt an der Sichtlegende von AB4 an): MA-2 (#1053), MA-3 (#1055) und MA-7 (#1054) erledigt, MA-4 und MA-5 laufen (Zweige `ma4`, `ma5`), MA-6 danach (möglicher Schemaschritt, Nummer vor dem Bau anmelden). Nachzüge aus MA-2: Ferien aus den Kalenderperioden, Sollwertweg bei Heizkalender (Zeilen `TAG`/`NACHT`), Kurzbild der Woche je Größe, Sprung „Zone…“ aus dem Ampelblatt. Nachzüge aus MA-3: `HUELLE_OFFEN` erst ab zwei Zonen; gespiegelte Bauteile ohne Vorschlag („Neigung spiegeln“ passt zu MA-5); geneigte Dächer von 1052/1054 bleiben gelb; der Typaufbau bleibt nach Rücknahme nur der Gruppe 1 ungenutzt im Projekt. Nachzüge aus MA-7: leere Baualtersklasse bis zum Speichern erkennbar halten (echte Wahl „keine Klasse“), Bauart-Tafel (siehe Abschnitt 5), Knopf im Stammblatt der Gebäudeverwaltung, Wiki-Seite „Gebäude“.
 7. **DA-4 bis DA-7**; DA-6 (DIN-Saat) erst nach Lieferung der DIN-Werte (E135); DA-8 bleibt offen; Schemaschritt erst bei
    Baubeginn anmelden (225 für DA-2 angemeldet, 226 frei; 223 Zapfprofilgenerator, 224 K6 Kältebedarf).
 8. **Wiki und Logbuch** der Wellen GD, AB, NP6/NP7, KS, BK (Seiten „Gebäude“, „Gebäudeimport“, „Nutzungsprofile“, „Baustoffe“,
@@ -103,6 +105,7 @@ Erledigt am 13.10.: CI-Vermerk, GD-6a (#1046), BK-3b/3c (#1047), AB4 (#1048), DA
 - **Hilfeseite „Gebäude“:** Abschnitt Modellprüfung mit Anker (Wiki-Quelle), danach `help_mapping.txt` — mit dem Wiki-Auftrag.
 - **MA-2, Ferien (F5):** Gelten die Ferienwerte, die der Profilgenerator je Zone schreibt, als Abweichung von der Projektvorgabe, oder nimmt „Projektvorgabe übernehmen“ sie mit? Empfehlung: sie gelten als Abweichung und bleiben erhalten; der Knopf fragt vorher.
 - **Modellprüfung:** Bauteilart `SONSTIGES` in der Modellprüfung gelb lassen oder als bekannt werten? Empfehlung: gelb lassen, bis die Art gepflegt ist.
+- **MA-3, Dachflächen der Referenzprojekte 1052/1054:** Das Dach ist als geneigte Fläche (428 bzw. 286 m²) mit Neigung 0° gesät, deshalb melden die zwei oberen Zonen 26 % offene Hülle. Berichtigen (Neigung oder Projektionsfläche) heißt neue Basis nach Einfrierregel „gesäte Zonendaten“. Empfehlung: mit der nächsten ohnehin fälligen Basis (R53/R54) berichtigen, bis dahin gelb lassen.
 - **MA-7, Bauart je Baualtersklasse:** Die Tafel leitet die Bauart aus den Katalogbauten ab und steht damit in allen 13 Klassen auf „schwer“. Soll eine fachliche Tafel je Klasse vorgegeben werden (etwa leicht für Holz- und Fertigbau nach 1990)? Empfehlung: Katalogableitung belassen; eine Vorgabe erst, wenn der Anwender Klassen mit anderer Bauart nennt.
 
 ## 6. Arbeitsweise in der Cloud
@@ -140,11 +143,11 @@ der eigene Sitzungszweig wird bei jedem Push mitgezogen.
 
 1. Lies CLAUDE.md und das Übergabepapier
    Dokumentation/aktuell/Gebaeudesimulation/2026-10-12_Uebergabe_Gebaeudesimulation_Kontowechsel.md ganz; aus
-   Dokumentation/aktuell/Status_iOS_Migration.md nur den Kopf (Schemaanmeldung) und die Zeilen ab #1046 (#1034 gehört der Sitzung Kälteanlagen; höchste eigene #1054); aus
+   Dokumentation/aktuell/Status_iOS_Migration.md nur den Kopf (Schemaanmeldung) und die Zeilen ab #1046 (#1034 gehört der Sitzung Kälteanlagen; höchste eigene #1055); aus
    Dokumentation/aktuell/Status_Gebaeudesimulation_VDI6007.md die Entscheide E135–E138. Weitere Papiere nur gezielt.
 2. Prüfe mit git log --format='%h %<(72,trunc)%s' -n 20 origin/ios_migration_september, was seit dem Papier hinzukam.
 3. Arbeite Abschnitt 4 der Reihe nach ab: Importlauf beim Anwender, MA-1 (erledigt, MA-1a und MA-1b), DA-2 (in Arbeit) und DA-3,
-   MA-3 bis MA-7 (MA-2 und MA-7 erledigt; MA-3 und MA-5 laufen), DA-4 bis DA-7 (DA-6 nach Lieferung der DIN-Werte), Wiki, BK-5 ff., SA4.
+   MA-3 bis MA-7 (MA-2, MA-3 und MA-7 erledigt; MA-4 und MA-5 laufen), DA-4 bis DA-7 (DA-6 nach Lieferung der DIN-Werte), Wiki, BK-5 ff., SA4.
 4. Arbeitsweise: Orchestrierung mit Agenten (opus-umsetzung für Fachcode, sonnet-mechanik für Status/Protokolle, Modell immer
    ausdrücklich setzen), je Welle ein Worktree; Merge im Integrations-Worktree, Gate nach Abschnitt 6, Statuszeile (nächste
    freie Nummer vor dem Push gegen origin prüfen — andere Sitzungen vergeben laufend Nummern), Push auf
