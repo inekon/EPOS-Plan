@@ -55,22 +55,51 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Die_Pruefsumme_jedes_ausgelieferten_Brennstoffs_stimmt_nach_dem_Schritt()
+        public void Die_Pruefsumme_eines_unveraenderten_Satzes_wird_neu_gebildet_die_eines_geaenderten_nicht()
         {
             if (!_db.Vorhanden) return;
+            // In der Testdatenbank trägt kein Brennstoff einen Auslieferungsstand (ReadOnly = 0, kein Schlüssel,
+            // keine Prüfsumme) — die Lage einer Anwenderdatenbank wird deshalb hier hergestellt.
+            SpaltenZurueckholen();
+            (int _, int stimmig) = Traeger(0);
+            (int _, int geaendert) = Traeger(1);
+            Setze(stimmig, 0.09, 120.0, 12.0);
+            Setze(geaendert, 0.07, 110.0, 11.0);
+
+            string alt = BrennstoffpreiseTraegerkarteSchema.AltePruefsumme(stimmig);
+            Assert.False(string.IsNullOrEmpty(alt));
+            const string falsch = "0000000000000000000000000000000000000000000000000000000000000000";
+            Summe(stimmig, alt);
+            Summe(geaendert, falsch);
+
+            BrennstoffpreiseTraegerkarteSchema.Laufergebnis e = BrennstoffpreiseTraegerkarteSchema.Lauf(null);
+            Assert.Equal(1, e.PruefsummenNeu);
+
+            // Der unveränderte Satz trägt die Summe der NEUEN Spaltenfolge — er gilt weiter als unverändert.
             Katalogtabelle t = Katalogfassung.Tabelle(BrennstoffpreiseTraegerkarteSchema.TAB_STAMM);
-            Assert.NotNull(t);
             List<string> spalten = Katalogfassung.VorhandeneFachspalten(t);
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT \"ID\", \"" + Katalogfassung.SPALTE_PRUEFSUMME + "\", " + Katalogfassung.Spaltentext(spalten) +
-                " FROM \"" + BrennstoffpreiseTraegerkarteSchema.TAB_STAMM + "\" WHERE \"" +
-                Katalogfassung.SPALTE_PRUEFSUMME + "\" IS NOT NULL");
+                " FROM \"" + BrennstoffpreiseTraegerkarteSchema.TAB_STAMM + "\" WHERE \"ID\" = ?",
+                new DbParam("@id", stimmig));
             Assert.NotNull(dt);
-            Assert.True(dt.Rows.Count > 0, "Kein ausgelieferter Brennstoff trägt eine Prüfsumme.");
-            foreach (DataRow r in dt.Rows)
-                Assert.Equal(Convert.ToString(r[Katalogfassung.SPALTE_PRUEFSUMME], CultureInfo.InvariantCulture),
-                             Katalogfassung.PruefsummeDerZeile(t, spalten, r, Katalogfassung.LeseOhneVorgang));
+            Assert.Single(dt.Rows);
+            string jetzt = Convert.ToString(dt.Rows[0][Katalogfassung.SPALTE_PRUEFSUMME], CultureInfo.InvariantCulture);
+            Assert.Equal(Katalogfassung.PruefsummeDerZeile(t, spalten, dt.Rows[0], Katalogfassung.LeseOhneVorgang), jetzt);
+            Assert.NotEqual(alt, jetzt);
+
+            // Der geänderte Satz behält seine Summe — er bleibt als geändert erkennbar.
+            Assert.Equal(falsch, Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT \"" + Katalogfassung.SPALTE_PRUEFSUMME + "\" FROM \"" +
+                BrennstoffpreiseTraegerkarteSchema.TAB_STAMM + "\" WHERE \"ID\" = ?",
+                new DbParam("@id", geaendert)), CultureInfo.InvariantCulture));
         }
+
+        private static void Summe(int idBrennstoff, string summe)
+            => DataRepository.ExecuteNonQuery(
+                "UPDATE \"" + BrennstoffpreiseTraegerkarteSchema.TAB_STAMM + "\" SET \"" +
+                Katalogfassung.SPALTE_PRUEFSUMME + "\" = ? WHERE \"ID\" = ?",
+                new DbParam("@s", summe), new DbParam("@id", idBrennstoff));
 
         [Fact]
         public void Der_Uebertrag_nimmt_den_leeren_Traegerpreis_und_laesst_den_gepflegten()

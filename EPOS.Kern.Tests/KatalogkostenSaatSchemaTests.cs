@@ -25,7 +25,10 @@ namespace EPOS.Kern.Tests
             // Die Kette hängt an 225 (Sitzung Gebäudesimulation, DA-2), sobald 225 auf origin liegt; bis dahin
             // rechnet sie aus der höchsten Klasse im Baum.
             Assert.Equal(BauteilkatalogSchema.SCHRITT + 5, KatalogkostenSaatSchema.SCHRITT);
-            Assert.Equal(KatalogkostenSaatSchema.SCHRITT, SchemaStand.Zielversion);
+            // Den Zielstand hält seit KB-2 der Schritt 227 (BrennstoffpreiseTraegerkarteSchema); 226 liegt
+            // darunter oder darauf.
+            Assert.True(SchemaStand.Zielversion >= KatalogkostenSaatSchema.SCHRITT,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter " + KatalogkostenSaatSchema.SCHRITT + ".");
             Assert.Contains(Paketanhebung.Stufen,
                             s => s.Nr == KatalogkostenSaatSchema.SCHRITT && s.Wirkung == Paketanhebung.Art.Ddl);
         }

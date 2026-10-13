@@ -276,16 +276,16 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>
-        /// Die Sätze, deren gespeicherte Prüfsumme VOR dem Entfall stimmte — gebildet über
-        /// <see cref="ALTSPALTEN"/>. Nur sie bekommen danach eine neue Summe.
+        /// Die Sicht des Brennstoffkatalogs mit der ALTEN Spaltenfolge (<see cref="ALTSPALTEN"/>, soweit die
+        /// Spalten noch stehen) — die Folge, mit der die gespeicherten Prüfsummen gebildet wurden.
+        /// <c>(null, null)</c>, wenn der Katalog nicht im Register steht oder die Preisspalten schon fort sind.
         /// </summary>
-        private static List<long> StimmigeSaetze()
+        private static (Katalogtabelle Tabelle, List<string> Spalten) AlteSicht()
         {
-            var ids = new List<long>();
             Katalogtabelle neu = Katalogfassung.Tabelle(TAB_STAMM);
-            if (neu == null || !Katalogfassung.SpaltenVorhanden(TAB_STAMM)) return ids;
+            if (neu == null || !Katalogfassung.SpaltenVorhanden(TAB_STAMM)) return (null, null);
             List<string> alt = ALTSPALTEN.Where(s => DataRepository.SpalteVorhanden(TAB_STAMM, s)).ToList();
-            if (alt.Count == ALTSPALTEN.Count - PAARE.Count) return ids;   // die Preisspalten sind schon fort
+            if (alt.Count == ALTSPALTEN.Count - PAARE.Count) return (null, null);   // die Preisspalten sind schon fort
             var tAlt = new Katalogtabelle(neu.Tabelle, neu.Kuerzel, alt.ToArray())
             {
                 Stufe = neu.Stufe,
@@ -293,14 +293,41 @@ namespace WindowsFormsApplication1
                 Verweise = neu.Verweise,
                 Namensspalten = neu.Namensspalten,
             };
+            return (tAlt, alt);
+        }
+
+        /// <summary>
+        /// Die Prüfsumme eines Katalogsatzes mit der ALTEN Spaltenfolge — die EINE Stelle, an der die Welle sie
+        /// noch bilden kann (Nachweis und Vergleich des Schritts). <c>null</c>, sobald die Preisspalten fort sind.
+        /// </summary>
+        internal static string AltePruefsumme(long id)
+        {
+            (Katalogtabelle t, List<string> alt) = AlteSicht();
+            if (t == null) return null;
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT " + Q("ID") + ", " + Katalogfassung.Spaltentext(alt) + " FROM " + Q(TAB_STAMM) +
+                " WHERE " + Q("ID") + " = ?", new DbParam("@id", id));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            return Katalogfassung.PruefsummeDerZeile(t, alt, dt.Rows[0], Katalogfassung.LeseOhneVorgang);
+        }
+
+        /// <summary>
+        /// Die Sätze, deren gespeicherte Prüfsumme VOR dem Entfall stimmte — gebildet über
+        /// <see cref="ALTSPALTEN"/>. Nur sie bekommen danach eine neue Summe.
+        /// </summary>
+        private static List<long> StimmigeSaetze()
+        {
+            var ids = new List<long>();
+            (Katalogtabelle tAlt, List<string> alt) = AlteSicht();
+            if (tAlt == null) return ids;
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT " + Q("ID") + ", " + Q(Katalogfassung.SPALTE_PRUEFSUMME) + ", " + Katalogfassung.Spaltentext(alt) +
                 " FROM " + Q(TAB_STAMM) + " WHERE " + Q(Katalogfassung.SPALTE_PRUEFSUMME) + " IS NOT NULL");
             if (dt == null) return ids;
-            Func<string, DbParam[], DataTable> lese = (sql, p) => DataRepository.GetDataTable(sql, p);
             foreach (DataRow r in dt.Rows)
                 if (string.Equals(Convert.ToString(r[Katalogfassung.SPALTE_PRUEFSUMME], CultureInfo.InvariantCulture),
-                                  Katalogfassung.PruefsummeDerZeile(tAlt, alt, r, lese), StringComparison.Ordinal))
+                                  Katalogfassung.PruefsummeDerZeile(tAlt, alt, r, Katalogfassung.LeseOhneVorgang),
+                                  StringComparison.Ordinal))
                     ids.Add(Convert.ToInt64(r["ID"], CultureInfo.InvariantCulture));
             return ids;
         }
