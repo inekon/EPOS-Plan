@@ -252,13 +252,12 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
 
     /// <summary>
     /// <b>Der kanonische setzbare Fall der Wärmepumpenverwaltung ist die
-    /// NENNLEISTUNG</b> — nicht mehr die Modulkosten.
+    /// NENNLEISTUNG</b> — kein Kostenfeld.
     /// </summary>
     /// <remarks>
-    /// Die Modulkosten sind seit dem Anwenderentscheid 21.09.2026 (KI‑D‑Q7)
-    /// <c>nurLesen</c>: Die Maske zeigt sie als Lesewert mit Herleitungszeile, gepflegt
-    /// werden sie in der Kostenverwaltung. Ein Fall, der sie setzt, prüfte damit nicht
-    /// mehr das Setzen, sondern die Ablehnung — die steht weiter unten.
+    /// Ein Kostenfeld führt die Maske seit Welle KB-4 nicht mehr: Die Gerätespalte ist
+    /// entfallen, der Kostensatz kommt aus der Satzvorlage und wird in der
+    /// Kostenverwaltung gepflegt. Der Fall der Ablehnung steht weiter unten.
     /// </remarks>
     [Fact]
     public async Task Waermepumpe_Die_Bestaetigung_setzt_die_Nennleistung()
@@ -274,21 +273,22 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
     }
 
     /// <summary>
-    /// <b>Die MODULKOSTEN sind eine Anzeige und werden benannt abgelehnt</b>
-    /// (Anwenderentscheid 21.09.2026, KI‑D‑Q7) — dieselbe Lage wie an
-    /// <c>Form_WP_Anlage</c>.
+    /// <b>Ein Kostenfeld gibt es nicht mehr und es wird benannt abgelehnt</b> (Welle
+    /// KB-4, Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung"):
+    /// Der Feldkatalog der Maske führt kein <c>modulkosten</c>, weil die Gerätespalte
+    /// entfallen ist — gepflegt wird der Satz in der Kostenverwaltung.
     /// </summary>
     [Fact]
-    public async Task Waermepumpe_Die_Modulkosten_sind_nur_lesbar_und_werden_abgelehnt()
+    public async Task Waermepumpe_Ein_Kostenfeld_gibt_es_nicht_mehr()
     {
-        var daten = new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeStammDaten { Modulkosten = 1000 };
+        var daten = new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeStammDaten { Kostensatz = "1000" };
         using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEPUMPE, () => daten,
                                                      Haken());
 
         KiErgebnis ergebnis = await Setzen(KiMaskennamen.WAERMEPUMPE, "modulkosten", "2400");
 
         Assert.Equal(KiStatus.Abgelehnt, ergebnis.Status);
-        Assert.Equal(1000, daten.Modulkosten);
+        Assert.Equal("1000", daten.Kostensatz);
     }
 
     /// <summary>
@@ -300,7 +300,7 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
     public async Task Waermepumpe_Die_Bauart_wird_ueber_ihren_Text_gewaehlt()
     {
         var daten = new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeStammDaten
-        { Modulkosten = 1000, Typ = "Sole-Wasser" };
+        { Typ = "Sole-Wasser" };
 
         using var anmeldung = KiMaskenanmeldung.Fuer(
             KiMaskennamen.WAERMEPUMPE, () => daten, Haken(),
@@ -319,8 +319,8 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
     /// Feld <c>nennleistung</c>, und das Ergebnis vermerkt die Auflösung.
     /// </summary>
     /// <remarks>
-    /// Bis zum Anwenderentscheid 21.09.2026 stand hier „Modulkosten des Geräts"; das
-    /// Feld ist seither <c>nurLesen</c> und taugt nicht mehr als setzbarer Fall.
+    /// Bis zum Anwenderentscheid 21.09.2026 stand hier das Kostenfeld des Geräts; es
+    /// war seither <c>nurLesen</c> und ist mit Welle KB-4 ganz entfallen.
     /// </remarks>
     [Fact]
     public async Task Ein_tolerant_genannter_Feldname_trifft_und_wird_vermerkt()
@@ -489,8 +489,8 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
     {
         // Gesetzt wird ein SETZBARES Feld (die Nennleistung): Sonst läge die Ablehnung
         // schon am nurLesen des Feldes und nicht am Schreibschutz des Satzes — genau
-        // das wäre die stumpfe Probe. Die Modulkosten sind seit dem Anwenderentscheid
-        // 21.09.2026 nur lesbar und haben ihren eigenen Fall weiter oben.
+        // das wäre die stumpfe Probe. Ein Kostenfeld fuehrt die Maske seit Welle KB-4
+        // nicht mehr; sein Fall steht weiter oben.
         var daten = new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeStammDaten
         {
             Nennleistung = 12,

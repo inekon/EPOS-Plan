@@ -33,7 +33,8 @@ public class WaermepumpeStammFelderTests : EposBunitContext
         Heizstab = 6,
         Regelung = "stetig",
         Kuehlleistung = 8.5,
-        Modulkosten = 4000
+        Kostensatz = "4000",
+        KostensatzEinheit = "€"
     };
 
     private IRenderedComponent<WaermepumpeStammFelder> Aufbauen(
@@ -67,7 +68,7 @@ public class WaermepumpeStammFelderTests : EposBunitContext
                  {
                      "Name", "Hersteller", "Beschreibung", "Wärmepumpentyp", "Leistungsstufen",
                      "Aufstellung", "Baujahr", "Nennleistung", "Heizstab", "Kühlleistung",
-                     "Modulkosten", "Mindestleistung", "Teillastkoeffizient C_d"
+                     "Kostensatz", "Mindestleistung", "Teillastkoeffizient C_d"
                  })
             Assert.Contains(soll, texte);
     }
@@ -93,9 +94,9 @@ public class WaermepumpeStammFelderTests : EposBunitContext
 
     /// <summary>
     /// <b>Zwei Werte stehen in der KATALOGPFLEGE nur lesend da.</b> Die Kühlleistung
-    /// kommt dort aus den Kühl-Kenndaten der Auslieferung; die Modulkosten sind seit
-    /// W14a‑O‑1 ein Lesewert mit Herleitungszeile — gepflegt werden Gerätekosten in der
-    /// Kostenverwaltung (Ä19).
+    /// kommt dort aus den Kühl-Kenndaten der Auslieferung; der Kostensatz ist seit
+    /// W14a‑O‑1 ein Lesewert mit Herleitungszeile und kommt seit Welle KB-4 aus der
+    /// Satzvorlage — gepflegt werden Gerätekosten in der Kostenverwaltung (Ä19).
     ///
     /// <para>Der ANLAGENDIALOG setzt seit dem 16.09.2026
     /// <c>KuehlleistungAenderbar="true"</c>: Dort bearbeitet der Baustein die
@@ -111,7 +112,7 @@ public class WaermepumpeStammFelderTests : EposBunitContext
         // Die Kuehlleistung ist das EINZIGE gesperrte Eingabefeld.
         Assert.Single(cut.FindAll("input[disabled]"));
 
-        // Die Modulkosten sind gar kein Feld, sondern ein Lesewert samt Einheit. Die
+        // Der Kostensatz ist gar kein Feld, sondern ein Lesewert samt Einheit. Die
         // Einheit steht in DERSELBEN Zeile wie der Lesewert - die erste Einheit der
         // Maske waere sonst das "kW" der Nennleistung.
         IElement lesewert = cut.Find(".epos-lesewert");
@@ -124,7 +125,7 @@ public class WaermepumpeStammFelderTests : EposBunitContext
     /// <summary>
     /// <b>Mit <c>KuehlleistungAenderbar</c> ist das Feld bedienbar und schreibt</b> — der
     /// Weg des Anlagendialogs (Anwenderentscheid 16.09.2026). Es ist dann KEIN gesperrtes
-    /// Feld mehr; die Modulkosten bleiben ein Lesewert.
+    /// Feld mehr; der Kostensatz bleibt ein Lesewert.
     /// </summary>
     [Fact]
     public void Mit_KuehlleistungAenderbar_schreibt_das_Feld_in_den_Satz()
@@ -150,17 +151,17 @@ public class WaermepumpeStammFelderTests : EposBunitContext
         Assert.Equal(0.0, daten.Kuehlleistung);
     }
 
-    /// <summary>Ohne Planwert: der Halbgeviertstrich und die zweite, leise Zeile.</summary>
+    /// <summary>Ohne Kostensatz: der Halbgeviertstrich und die zweite, leise Zeile.</summary>
     [Fact]
-    public void Ohne_Planwert_stehen_Strich_und_Hinweis()
+    public void Ohne_Kostensatz_stehen_Strich_und_Hinweis()
     {
         var daten = Satz();
-        daten.Modulkosten = 0;
+        daten.Kostensatz = "";
         var cut = Aufbauen(daten);
 
         Assert.Equal("–", cut.Find(".epos-lesewert").TextContent.Trim());
         Assert.Contains(cut.FindAll(".epos-herleitung").Select(e => e.TextContent),
-                        t => t.Contains("kein Planwert im Datenbestand"));
+                        t => t.Contains("kein Kostensatz in der Kostenverwaltung"));
     }
 
     [Fact]

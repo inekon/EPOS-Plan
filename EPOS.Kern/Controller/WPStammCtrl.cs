@@ -322,7 +322,7 @@ namespace WindowsFormsApplication1
             {
                 string sql = @"UPDATE " + TABLE + @"
                                SET Firma = ?, Beschreibung = ?, Typ = ?, Baujahr = ?, Aufstellung = ?,
-                                   Nennleistung = ?, maxPtherm = ?, Heizung = ?, Regelung = ?, Modulkosten = ?
+                                   Nennleistung = ?, maxPtherm = ?, Heizung = ?, Regelung = ?
                                WHERE Bezeichner = ?";
                 DbParam[] ps = {
                     new DbParam("@fir", Firma ?? (object)DBNull.Value),
@@ -334,7 +334,6 @@ namespace WindowsFormsApplication1
                     new DbParam("@max", maxPTherm),
                     new DbParam("@hei", Heizung),
                     new DbParam("@reg", Regelung ?? (object)DBNull.Value),
-                    new DbParam("@mod", Modulkosten),
                     new DbParam("@nam", WPName ?? (object)DBNull.Value)
                 };
                 return DataRepository.ExecuteSQL(sql, ps);
@@ -412,7 +411,6 @@ namespace WindowsFormsApplication1
             maxPTherm = daten.maxPTherm;
             Heizung = daten.Heizung;
             Regelung = daten.Regelung;
-            Modulkosten = daten.Modulkosten;
             Bauart = daten.Bauart;
             Kuehlleistung = daten.Kuehlleistung;
 
@@ -513,8 +511,8 @@ namespace WindowsFormsApplication1
 
                     string sql = @"INSERT INTO " + TABLE + @"
                             (Bezeichner, Firma, Beschreibung, Typ, Baujahr, Aufstellung, Nennleistung,
-                             maxPtherm, Heizung, Regelung, Modulkosten, Bauart, Kuehlleistung, ReadOnly)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                             maxPtherm, Heizung, Regelung, Bauart, Kuehlleistung, ReadOnly)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     DbParam[] ps = {
                         new DbParam("@nam", (object)bezeichner ?? DBNull.Value),
                         new DbParam("@fir", Firma ?? (object)DBNull.Value),
@@ -526,7 +524,6 @@ namespace WindowsFormsApplication1
                         new DbParam("@max", maxPTherm),
                         new DbParam("@hei", Heizung),
                         new DbParam("@reg", Regelung ?? (object)DBNull.Value),
-                        new DbParam("@mod", Modulkosten),
                         new DbParam("@bart", Bauart ?? (object)DBNull.Value),
                         new DbParam("@kuehl", Kuehlleistung),
                         new DbParam("@ro", false)
@@ -612,9 +609,9 @@ namespace WindowsFormsApplication1
                     {
                         string sql = @"INSERT INTO " + TABLE + @"
                             (Bezeichner, Firma, Beschreibung, Typ, Baujahr, Aufstellung, Nennleistung,
-                             maxPtherm, Heizung, Regelung, Modulkosten, Bauart, Kuehlleistung, ReadOnly,
+                             maxPtherm, Heizung, Regelung, Bauart, Kuehlleistung, ReadOnly,
                              Kuehlbetrieb, Kuehl_Vorlauf, Kuehl_Hilfsstromanteil)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                         DbParam[] ps = {
                             new DbParam("@nam", WPName ?? (object)DBNull.Value),
                             new DbParam("@fir", Firma ?? (object)DBNull.Value),
@@ -626,7 +623,6 @@ namespace WindowsFormsApplication1
                             new DbParam("@max", maxPTherm),
                             new DbParam("@hei", Heizung),
                             new DbParam("@reg", Regelung ?? (object)DBNull.Value),
-                            new DbParam("@mod", Modulkosten),
                             new DbParam("@bart", Bauart ?? (object)DBNull.Value),
                             new DbParam("@kuehl", Kuehlleistung),
                             new DbParam("@ro", false),
@@ -705,7 +701,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Import-Ueberschreiben (Dublettenkonzept 4.2): aktualisiert GENAU die Felder,
         /// die der VDI-Import liefert, adressiert per ID. Vom Anwender gepflegte Felder
-        /// (Bezeichner, Beschreibung, Modulkosten, ReadOnly) bleiben unangetastet.
+        /// (Bezeichner, Beschreibung, ReadOnly) bleiben unangetastet.
         /// </summary>
         /// <remarks>
         /// Bewusst OHNE ReadOnly-Sperre: Das Ueberschreiben eines ReadOnly-Satzes ist
@@ -827,7 +823,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private const string UEBERNAHME_SPALTEN =
             "Firma, Beschreibung, Typ, Baujahr, Aufstellung, Nennleistung, maxPtherm, " +
-            "Heizung, Regelung, Modulkosten, Laenge, Breite, Hoehe, Gewicht, Raum, " +
+            "Heizung, Regelung, Laenge, Breite, Hoehe, Gewicht, Raum, " +
             "Kuehlleistung, Bauart, Kuehlbetrieb, Kuehl_Vorlauf, Kuehl_Hilfsstromanteil";
 
         /// <summary>
@@ -1074,7 +1070,7 @@ namespace WindowsFormsApplication1
                             v.Ausfuehren(
                                 "UPDATE " + TABLE + " SET Firma = ?, Beschreibung = ?, Typ = ?, " +
                                 "Baujahr = ?, Aufstellung = ?, Nennleistung = ?, maxPtherm = ?, " +
-                                "Heizung = ?, Regelung = ?, Modulkosten = ?, Laenge = ?, Breite = ?, " +
+                                "Heizung = ?, Regelung = ?, Laenge = ?, Breite = ?, " +
                                 "Hoehe = ?, Gewicht = ?, Raum = ?, Kuehlleistung = ?, Bauart = ?, " +
                                 "Kuehlbetrieb = ?, Kuehl_Vorlauf = ?, Kuehl_Hilfsstromanteil = ? " +
                                 "WHERE ID = ?",
@@ -1203,7 +1199,6 @@ namespace WindowsFormsApplication1
                 new DbParam("@max", Feldwert(satz, "maxPtherm")),
                 new DbParam("@hei", Feldwert(satz, "Heizung")),
                 new DbParam("@reg", Feldwert(satz, "Regelung")),
-                new DbParam("@mod", Feldwert(satz, "Modulkosten")),
                 new DbParam("@lae", Feldwert(satz, "Laenge")),
                 new DbParam("@bre", Feldwert(satz, "Breite")),
                 new DbParam("@hoe", Feldwert(satz, "Hoehe")),
@@ -1259,7 +1254,6 @@ namespace WindowsFormsApplication1
             if (dt.Columns.Contains("maxPtherm") && row["maxPtherm"] != DBNull.Value) item.maxPTherm = Convert.ToInt32(row["maxPtherm"]);
             if (dt.Columns.Contains("Heizung") && row["Heizung"] != DBNull.Value) item.Heizung = Convert.ToInt32(row["Heizung"]);
             if (dt.Columns.Contains("Regelung") && row["Regelung"] != DBNull.Value) item.Regelung = row["Regelung"].ToString();
-            if (dt.Columns.Contains("Modulkosten") && row["Modulkosten"] != DBNull.Value) item.Modulkosten = Convert.ToInt32(row["Modulkosten"]);
             if (dt.Columns.Contains("Kuehlleistung") && row["Kuehlleistung"] != DBNull.Value) item.Kuehlleistung = Convert.ToDouble(row["Kuehlleistung"]);
             if (dt.Columns.Contains("Bauart") && row["Bauart"] != DBNull.Value) item.Bauart = row["Bauart"].ToString();
             if (dt.Columns.Contains("Max") && row["Max"] != DBNull.Value) item.MaxVorlauf = Convert.ToInt32(row["Max"]);

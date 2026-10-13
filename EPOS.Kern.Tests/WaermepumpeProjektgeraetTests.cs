@@ -631,7 +631,7 @@ namespace EPOS.Kern.Tests
             DataRepository.ExecuteSQL("DELETE FROM Tab_WP WHERE ID = ?", new DbParam("@id", idWp));
             DataRepository.ExecuteSQL(
                 "INSERT INTO Tab_WP (ID, Bezeichner, ID_Projekt, Firma, Beschreibung, Typ, " +
-                "Baujahr, Aufstellung, Nennleistung, maxPtherm, Heizung, Regelung, Modulkosten, " +
+                "Baujahr, Aufstellung, Nennleistung, maxPtherm, Heizung, Regelung, " +
                 "Kuehlleistung, Bauart) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 new DbParam("@id", idWp),
                 new DbParam("@bez", bezeichner),

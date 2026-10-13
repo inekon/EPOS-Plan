@@ -81,29 +81,21 @@ public sealed class WaermepumpeStammFelderTexte
     public string PlatzhalterCdVorgabe { get; set; } = T("WPS_PLATZHALTER_CD_VORGABE", "0,9");
 
     /// <summary>
-    /// MODK_LBL_MODULKOSTEN — derselbe Schlüssel, den der Verwendungskatalog für diese
-    /// Spalte führt (<c>ParameterVerwendung.Waermepumpe</c>); Raster und Aufklapper
-    /// nennen den Parameter damit wortgleich.
+    /// MODK_LBL_KOSTENSATZ — die Beschriftung des Lesewerts der Gruppe „Kosten"; die
+    /// Modulkataloge (Photovoltaik, Wechselrichter) nennen ihn wortgleich.
     /// </summary>
-    public string LabelModulkosten { get; set; } = T("MODK_LBL_MODULKOSTEN", "Modulkosten");
+    public string LabelKostensatz { get; set; } = T("MODK_LBL_KOSTENSATZ", "Kostensatz");
 
-    /// <summary>WPS_HERL_MODULKOSTEN — die Herleitungszeile unter dem Lesewert (W14a‑O‑1).</summary>
-    public string HerleitungModulkosten { get; set; } = T("WPS_HERL_MODULKOSTEN",
-        "aus dem Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt");
+    /// <summary>WPS_HERL_KOSTENSATZ — die Herleitungszeile unter dem Lesewert (W14a‑O‑1).</summary>
+    public string HerleitungKostensatz { get; set; } = T("WPS_HERL_KOSTENSATZ",
+        "aus der Satzvorlage; Gerätekosten werden in der Kostenverwaltung gepflegt");
 
-    /// <summary>WPS_HINWEIS_MODULKOSTEN_LEER — die zweite, leise Zeile bei einem Wert von 0.</summary>
-    public string HinweisModulkostenLeer { get; set; } = T("WPS_HINWEIS_MODULKOSTEN_LEER",
-        "kein Planwert im Datenbestand");
+    /// <summary>WPS_HINWEIS_KOSTENSATZ_LEER — die zweite, leise Zeile ohne gepflegten Satz.</summary>
+    public string HinweisKostensatzLeer { get; set; } = T("WPS_HINWEIS_KOSTENSATZ_LEER",
+        "kein Kostensatz in der Kostenverwaltung");
 
     /// <summary>Einheit der Leistungen; in beiden Sprachen gleich.</summary>
     public string EinheitKw { get; set; } = "kW";
-
-    /// <summary>
-    /// Einheit der Modulkosten. <b>Euro, nicht €/kW:</b> <c>TechnikPlanwertCtrl</c> nimmt
-    /// den Wert als Basis „Modulpreis" UNVERÄNDERT als Betrag. Sie steht in beiden
-    /// Sprachen gleich und braucht deshalb keinen Ressourcenschlüssel.
-    /// </summary>
-    public string EinheitEuro { get; set; } = "€";
 
     // ---------------------------------------------------------------------------------
     //  Gruppe „Gerätegrenzen" (UB‑E3‑b, WaermepumpeGeraetegrenzenFelder)

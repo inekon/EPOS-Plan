@@ -83,7 +83,8 @@ public class WaermepumpeAnlageFelderTests : EposBunitContext
         Typ = "Luft-Wasser",
         Firma = "Alpha",
         Nennleistung = 12,
-        Modulkosten = 4000,
+        Kostensatz = "4000",
+        KostensatzEinheit = "€",
         Volumen = 1.5,
         Solaranteil = 30,
         RendeMix = true
@@ -100,7 +101,8 @@ public class WaermepumpeAnlageFelderTests : EposBunitContext
         Regelung = id == 1 ? "stetig" : "einstufig",
         Nennleistung = id == 1 ? 12 : 25,
         Heizstab = id == 1 ? 6 : 9,
-        Modulkosten = id == 1 ? 4000 : 7000
+        Kostensatz = id == 1 ? "4000" : "7000",
+        KostensatzEinheit = "€"
     };
 
     private IRenderedComponent<WaermepumpeAnlageFelder> Aufbauen(
@@ -1812,10 +1814,10 @@ public class WaermepumpeAnlageFelderTests : EposBunitContext
     /// <summary>
     /// Auch ein Feld des STAMMFELDBLOCKS gehört zur Maske: Er bindet an ein Abbild von
     /// <c>Daten</c>, und der Haken <c>Auffrischen</c> baut es nach einer Setzung neu
-    /// auf. Die Modulkosten daneben bleiben Anzeige.
+    /// auf. Ein Kostenfeld führt die Maske seit Welle KB-4 nicht mehr.
     /// </summary>
     [Fact]
-    public void Die_Nennleistung_ist_setzbar_und_die_Modulkosten_sind_es_nicht()
+    public void Die_Nennleistung_ist_setzbar_und_ein_Kostenfeld_gibt_es_nicht()
     {
         WaermepumpeAnlageDaten daten = Voll();
         Aufbauen(daten);
@@ -1826,10 +1828,9 @@ public class WaermepumpeAnlageFelderTests : EposBunitContext
         nenn.Setzen(18);
         Assert.Equal(18, daten.Nennleistung);
 
-        KiFeldzugang kosten =
-            KiMaskenbruecke.Feldzugang(KiMaskennamen.WAERMEPUMPE_ANLAGE, "modulkosten");
-        Assert.Equal(4000, kosten.Lesen());
-        Assert.False(kosten.Setzbar);
+        // Welle KB-4: Die Gerätespalte ist entfallen, der Kostensatz steht in der
+        // Satzvorlage — der Feldkatalog der Maske führt kein Kostenfeld mehr.
+        Assert.Null(KiMaskenbruecke.Feldzugang(KiMaskennamen.WAERMEPUMPE_ANLAGE, "modulkosten"));
     }
 
     /// <summary>

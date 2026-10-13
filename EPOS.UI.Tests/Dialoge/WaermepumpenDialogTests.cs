@@ -113,7 +113,8 @@ public class WaermepumpenDialogTests : EposBunitContext
 
     private static WaermepumpeStammDaten Stamm(string name, string firma, int nennleistung) => new()
     {
-        Id = 1, Name = name, Firma = firma, Nennleistung = nennleistung, Heizstab = 6, Modulkosten = 9000
+        Id = 1, Name = name, Firma = firma, Nennleistung = nennleistung, Heizstab = 6,
+        Kostensatz = "9000", KostensatzEinheit = "€"
     };
 
     private static Satzbearbeitungswege Wege(List<(int Id, IReadOnlyList<BrowserFeldwert> Felder)>? gespeichert = null)
@@ -122,7 +123,7 @@ public class WaermepumpenDialogTests : EposBunitContext
             Lesen = id => new List<BrowserFeldwert>
             {
                 new() { Schluessel = "Firma", Bezeichnung = "Hersteller:", Art = BrowserFeldArt.Text, Editierbar = true, Wert = "Alpha" },
-                new() { Schluessel = "Modulkosten", Bezeichnung = "Modulkosten:", Art = BrowserFeldArt.Zahl, Editierbar = true, Wert = "100" },
+                new() { Schluessel = "Nennleistung", Bezeichnung = "Nennleistung:", Art = BrowserFeldArt.Zahl, Editierbar = true, Wert = "100" },
             },
             Speichern = l => { gespeichert?.AddRange(l); return new KatalogSpeicherErgebnis(true, "gespeichert", ""); }
         };
