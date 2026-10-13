@@ -25955,7 +25955,64 @@ Möchten Sie das zulassen?</value>
     <value>{0} MWh/a Zapfung</value>
   </data>
   <data name="ZPG_GRP_ZONE" xml:space="preserve">
-    <value>{0} · Nutzung</value>
+    <value>Zone „{0}“</value>
+  </data>
+  <data name="ZPG_GRP_GEBAEUDE_ANLAGE" xml:space="preserve">
+    <value>Gebäude und Anlage</value>
+  </data>
+  <data name="ZPG_KARTE_NUTZUNG" xml:space="preserve">
+    <value>Nutzung</value>
+  </data>
+  <data name="ZPG_KARTE_MESSWERT" xml:space="preserve">
+    <value>Messwert</value>
+  </data>
+  <data name="ZPG_SUMME_WOHNUNGEN" xml:space="preserve">
+    <value>{0} WE aus der Wohnungstabelle</value>
+  </data>
+  <data name="ZPG_SUMME_PERSONEN_JE_WE" xml:space="preserve">
+    <value>{0} Personen je WE</value>
+  </data>
+  <data name="ZPG_SUMME_ZIRK_JA" xml:space="preserve">
+    <value>Zirkulation ja</value>
+  </data>
+  <data name="ZPG_SUMME_ZIRK_NEIN" xml:space="preserve">
+    <value>Zirkulation nein</value>
+  </data>
+  <data name="ZPG_SUMME_KEINER" xml:space="preserve">
+    <value>keiner</value>
+  </data>
+  <data name="ZPG_SUMME_KEINE_ANGABE" xml:space="preserve">
+    <value>keine Angabe</value>
+  </data>
+  <data name="ZPG_SUMME_EIGENE_WERTE" xml:space="preserve">
+    <value>{0} eigene Werte</value>
+  </data>
+  <data name="ZPG_SUMME_EIGENER_WERT" xml:space="preserve">
+    <value>1 eigener Wert</value>
+  </data>
+  <data name="ZPG_SUMME_VORGABEN" xml:space="preserve">
+    <value>Vorgaben</value>
+  </data>
+  <data name="ZPG_SUMME_ANGESETZT" xml:space="preserve">
+    <value>{0} {1} ({2})</value>
+  </data>
+  <data name="ZPG_SUMME_LADEFENSTER" xml:space="preserve">
+    <value>Ladefenster {0} h ab {1} Uhr</value>
+  </data>
+  <data name="ZPG_SUMME_SEED" xml:space="preserve">
+    <value>Seed {0}</value>
+  </data>
+  <data name="ZPG_SUMME_TYPTAGE" xml:space="preserve">
+    <value>Typtage</value>
+  </data>
+  <data name="ZPG_HINW_EINWERT" xml:space="preserve">
+    <value>Leer = Vorschlag (grau im Feld); ein eingetragener Wert gilt als manueller Wert.</value>
+  </data>
+  <data name="ZPG_BTN_KATALOG" xml:space="preserve">
+    <value>Katalog…</value>
+  </data>
+  <data name="ZPG_KATALOG_BLATT_HINWEIS" xml:space="preserve">
+    <value>Eine Zeile wählen setzt die Nutzungsart der Zone „{0}“.</value>
   </data>
   <data name="ZPG_SP_ZONE" xml:space="preserve">
     <value>Zone</value>
@@ -31373,7 +31430,7 @@ Möchten Sie das zulassen?</value>
     <value>Wirksam aus der Wohnungstabelle: {0} {1} — OK übernimmt sie als Bezugsgröße.</value>
   </data>
   <data name="ZPG_GRP_BELEGUNG" xml:space="preserve">
-    <value>Belegung und Anlage</value>
+    <value>Belegung</value>
   </data>
   <data name="ZPG_LBL_WOHNUNGSTABELLE" xml:space="preserve">
     <value>Wohnungen (wahlweise)</value>
@@ -31630,32 +31687,20 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_HINW_JAHRESMESSWERT" xml:space="preserve">
     <value>Leer = kein Messwert. Ein Messwert skaliert die Zone mit einem ausgewiesenen Faktor; ein Volumen gilt an der Zapfstelle und wird über Zapf- und Kaltwassertemperatur umgerechnet.</value>
   </data>
-  <data name="ZPG_GRP_SCHAETZHILFEN" xml:space="preserve">
-    <value>Tagesbedarf, Ladeleistung, Zirkulation</value>
-  </data>
-  <data name="ZPG_HINW_SCHAETZHILFEN" xml:space="preserve">
-    <value>Muster auto/manuell: Vorschlag, manueller Wert und der angesetzte Wert, der weiterverwendet wird. Der angesetzte Wert folgt aus dem Umschalter.</value>
-  </data>
   <data name="ZPG_LBL_TAGESBEDARF" xml:space="preserve">
     <value>Tagesbedarf</value>
-  </data>
-  <data name="ZPG_LBL_TAGESBEDARF_MANUELL" xml:space="preserve">
-    <value>Tagesbedarf manuell</value>
   </data>
   <data name="ZPG_LBL_VORSCHLAG" xml:space="preserve">
     <value>Vorschlag: {0} {1}</value>
   </data>
   <data name="ZPG_BTN_VORSCHLAG" xml:space="preserve">
-    <value>Als manuellen Wert übernehmen</value>
+    <value>Vorschlag übernehmen</value>
   </data>
   <data name="ZPG_HINW_VORSCHLAG_OHNE" xml:space="preserve">
     <value>Das Verfahren liefert keinen Vorschlag — der Rechenweg nennt den Grund.</value>
   </data>
   <data name="ZPG_HINW_OHNE_VORSCHLAG" xml:space="preserve">
     <value>Einen Vorschlag gibt es erst mit einer gerechneten Vorschau.</value>
-  </data>
-  <data name="ZPG_HINW_MANUELL" xml:space="preserve">
-    <value>Wirkt nur bei „manuell“.</value>
   </data>
   <data name="ZPG_LBL_ANGESETZT" xml:space="preserve">
     <value>Angesetzt: {0} {1} ({2})</value>
@@ -31667,10 +31712,10 @@ Möchten Sie das zulassen?</value>
     <value>Rechenweg: {0}</value>
   </data>
   <data name="ZPG_LBL_LADELEISTUNG" xml:space="preserve">
-    <value>Ladeleistung (Gebäude)</value>
+    <value>Ladeleistung und Ladefenster</value>
   </data>
   <data name="ZPG_LBL_LADELEISTUNG_MANUELL" xml:space="preserve">
-    <value>Ladeleistung manuell</value>
+    <value>Ladeleistung</value>
   </data>
   <data name="ZPG_LBL_LADEFENSTER" xml:space="preserve">
     <value>Ladezeitfenster</value>
@@ -31691,10 +31736,10 @@ Möchten Sie das zulassen?</value>
     <value>Angesetzt: {0} kW (manuell)</value>
   </data>
   <data name="ZPG_LBL_ZIRKULATION" xml:space="preserve">
-    <value>Zirkulation (Gebäude)</value>
+    <value>Zirkulation</value>
   </data>
   <data name="ZPG_LBL_ZIRK_MANUELL" xml:space="preserve">
-    <value>Zirkulation manuell</value>
+    <value>Zirkulationsleistung</value>
   </data>
   <data name="ZPG_LBL_ZIRK_METHODE" xml:space="preserve">
     <value>Methode der Zirkulation</value>
@@ -31739,7 +31784,7 @@ Möchten Sie das zulassen?</value>
     <value>Wasserinhalt der Leitungen zwischen Erwärmer und entferntester Zapfstelle; er entscheidet mit über die Großanlage nach DVGW W 551.</value>
   </data>
   <data name="ZPG_GRP_FACHWERTE" xml:space="preserve">
-    <value>Fachwerte · {0}</value>
+    <value>Fachwerte der Zone</value>
   </data>
   <data name="ZPG_LBL_BEDARF_SPEZ" xml:space="preserve">
     <value>Spezifischer Bedarf</value>
@@ -31903,26 +31948,17 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_ZPG_MESSWERT_ZEITRAUM_ERL" xml:space="preserve">
     <value>Der Zeitraum des Messwerts — nur Vermerk.</value>
   </data>
-  <data name="KI_DLG_ZPG_TAGESBEDARF_MODUS_ERL" xml:space="preserve">
-    <value>Der Tagesbedarf der gewählten Zone aus dem Katalog (auto) oder als manueller Wert.</value>
-  </data>
   <data name="KI_DLG_ZPG_TAGESBEDARF_MANUELL_ERL" xml:space="preserve">
-    <value>Der manuelle Tagesbedarf der gewählten Zone; er gilt nur bei „manuell“.</value>
-  </data>
-  <data name="KI_DLG_ZPG_LADELEISTUNG_MODUS_ERL" xml:space="preserve">
-    <value>Die Ladeleistung des Gebäudes als Vorschlag der Auslegung (auto) oder als manueller Wert — wirkt nur auf die Auslegung.</value>
+    <value>Der Tagesbedarf der gewählten Zone; leer = Vorschlag aus dem Katalog (auto), ein Wert gilt als manueller Tagesbedarf.</value>
   </data>
   <data name="KI_DLG_ZPG_LADELEISTUNG_MANUELL_ERL" xml:space="preserve">
-    <value>Die manuelle Ladeleistung; sie gilt nur bei „manuell“.</value>
+    <value>Die Ladeleistung des Gebäudes; leer = Vorschlag der Auslegung (auto), ein Wert gilt als manuelle Ladeleistung — wirkt nur auf die Auslegung.</value>
   </data>
   <data name="KI_DLG_ZPG_LADEFENSTER_ERL" xml:space="preserve">
     <value>Die effektive Ladezeit je Tag; leer = Vorgabe des Katalogs.</value>
   </data>
   <data name="KI_DLG_ZPG_LADEFENSTER_BEGINN_ERL" xml:space="preserve">
     <value>Die Stunde, zu der das Ladefenster beginnt; leer = Vorgabe.</value>
-  </data>
-  <data name="KI_DLG_ZPG_ZIRKULATION_MODUS_ERL" xml:space="preserve">
-    <value>Die Zirkulation des Gebäudes nach der gewählten Methode (auto) oder als manuelle Leistung.</value>
   </data>
   <data name="KI_DLG_ZPG_ZIRK_METHODE_ERL" xml:space="preserve">
     <value>Wie die Zirkulation geschätzt wird: Leitungslänge × Verlust, Anteil am Tagesbedarf oder Flächenkennwert.</value>
@@ -31940,7 +31976,7 @@ Möchten Sie das zulassen?</value>
     <value>Die Lage der Leitung zur thermischen Hülle (Methode Flächenkennwert); leer = Vorgabe.</value>
   </data>
   <data name="KI_DLG_ZPG_ZIRK_MANUELL_ERL" xml:space="preserve">
-    <value>Die manuelle Leistung der Zirkulation; sie gilt nur bei „manuell“.</value>
+    <value>Die Leistung der Zirkulation des Gebäudes; leer = nach der gewählten Methode (auto), ein Wert gilt als manuelle Leistung.</value>
   </data>
   <data name="KI_DLG_ZPG_LEITUNGSINHALT_ERL" xml:space="preserve">
     <value>Der Wasserinhalt der Leitungen; er entscheidet mit über die Großanlage.</value>

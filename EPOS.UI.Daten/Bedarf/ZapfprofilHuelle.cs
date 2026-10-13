@@ -1074,8 +1074,26 @@ namespace WindowsFormsApplication1
             string kennung = "ZPG_WARN_" + (h?.Code ?? "");
             string titel = Text_(kennung, null) ?? Text_("ZPG_AUS_HINWEIS", "Hinweis");
             return new ZapfprofilWarnDaten(kennung, titel, Satztext(h?.Satz),
-                                           h != null && h.Warnung ? ZapfprofilWarnstufe.Warnung : ZapfprofilWarnstufe.Hinweis);
+                                           h != null && h.Warnung ? ZapfprofilWarnstufe.Warnung : ZapfprofilWarnstufe.Hinweis)
+            {
+                AbErweitert = ErstAbErweitert(h?.Code)
+            };
         }
+
+        /// <summary>
+        /// Die Hinweise des Bilanzrechenwegs, die der Anwender in der Stufe EINFACH beheben kann (ZB8): Dort stehen
+        /// nur Nutzungsart, Bezugsgröße und Bedarfsniveau — ein Bedarf außerhalb der Bandbreite des Niveaus ist der
+        /// einzige Hinweis, den diese Felder beheben. Jeder andere Hinweis (Zirkulation, Wohnungstabelle, Messwert,
+        /// Katalog, Typtage, Einstellungen) steht erst ab der Stufe Erweitert.
+        /// </summary>
+        internal static readonly string[] EINFACH_BEHEBBAR = { Mengengeruest.HINWEIS_BANDBREITE };
+
+        /// <summary>
+        /// DIE Regel der Hinweise je Stufe (ZB8), einmal hier: Steht der Hinweis mit dem Code
+        /// <paramref name="code"/> erst ab der Stufe Erweitert? Ein Hinweis ohne Code steht in jeder Stufe.
+        /// </summary>
+        internal static bool ErstAbErweitert(string code)
+            => !string.IsNullOrEmpty(code) && Array.IndexOf(EINFACH_BEHEBBAR, code) < 0;
 
         /// <summary>Eine Schätzhilfe des Kerns als DTO — Vorschlag <c>null</c> ohne Verfahren, Rechenweg in der Oberflächensprache.</summary>
         internal static ZapfprofilSchaetzhilfeDaten AlsSchaetzhilfe(Schaetzhilfe s)
@@ -1776,7 +1794,10 @@ namespace WindowsFormsApplication1
         /// <summary>Ein Hinweis des Rechenwegs: der Satz des Kerns in der Oberflächensprache, Kennung des Satzes.</summary>
         internal static ZapfprofilMeldung Meldung(ZapfHinweis h)
             => new ZapfprofilMeldung(Satzkennung(h.Satz, "ZPG_SATZ_" + h.Code), h.Zone ?? "", Satztext(h.Satz),
-                                     ZapfprofilMeldungsart.Hinweis, h.Text ?? "");
+                                     ZapfprofilMeldungsart.Hinweis, h.Text ?? "")
+            {
+                AbErweitert = ErstAbErweitert(h.Code)
+            };
 
         /// <summary>Die Kennung der Nichtverfügbarkeit: die des Satzes.</summary>
         private static string VerfuegbarkeitsKennung(ZapfVerfuegbarkeit v) => Satzkennung(v?.Satz, "ZPG_SATZ_VERFUEGBAR_TABELLEN_FEHLEN");
@@ -1831,6 +1852,25 @@ namespace WindowsFormsApplication1
             t.GruppeZonen = Text_("ZPG_GRP_ZONEN", t.GruppeZonen);
             t.GruppeZonenSumme = Text_("ZPG_GRP_ZONEN_SUMME", t.GruppeZonenSumme);
             t.GruppeZone = Text_("ZPG_GRP_ZONE", t.GruppeZone);
+            t.GruppeGebaeudeAnlage = Text_("ZPG_GRP_GEBAEUDE_ANLAGE", t.GruppeGebaeudeAnlage);
+            t.KarteNutzung = Text_("ZPG_KARTE_NUTZUNG", t.KarteNutzung);
+            t.KarteMesswert = Text_("ZPG_KARTE_MESSWERT", t.KarteMesswert);
+            t.SummeWohnungen = Text_("ZPG_SUMME_WOHNUNGEN", t.SummeWohnungen);
+            t.SummePersonenJeWe = Text_("ZPG_SUMME_PERSONEN_JE_WE", t.SummePersonenJeWe);
+            t.SummeZirkJa = Text_("ZPG_SUMME_ZIRK_JA", t.SummeZirkJa);
+            t.SummeZirkNein = Text_("ZPG_SUMME_ZIRK_NEIN", t.SummeZirkNein);
+            t.SummeKeiner = Text_("ZPG_SUMME_KEINER", t.SummeKeiner);
+            t.SummeKeineAngabe = Text_("ZPG_SUMME_KEINE_ANGABE", t.SummeKeineAngabe);
+            t.SummeEigeneWerte = Text_("ZPG_SUMME_EIGENE_WERTE", t.SummeEigeneWerte);
+            t.SummeEigenerWert = Text_("ZPG_SUMME_EIGENER_WERT", t.SummeEigenerWert);
+            t.SummeVorgaben = Text_("ZPG_SUMME_VORGABEN", t.SummeVorgaben);
+            t.SummeAngesetzt = Text_("ZPG_SUMME_ANGESETZT", t.SummeAngesetzt);
+            t.SummeLadefenster = Text_("ZPG_SUMME_LADEFENSTER", t.SummeLadefenster);
+            t.SummeSeed = Text_("ZPG_SUMME_SEED", t.SummeSeed);
+            t.SummeTyptage = Text_("ZPG_SUMME_TYPTAGE", t.SummeTyptage);
+            t.HinweisEinwert = Text_("ZPG_HINW_EINWERT", t.HinweisEinwert);
+            t.KnopfKatalog = Text_("ZPG_BTN_KATALOG", t.KnopfKatalog);
+            t.KatalogBlattHinweis = Text_("ZPG_KATALOG_BLATT_HINWEIS", t.KatalogBlattHinweis);
             t.SpalteZone = Text_("ZPG_SP_ZONE", t.SpalteZone);
             t.SpalteNutzungsart = Text_("ZPG_SP_NUTZUNGSART", t.SpalteNutzungsart);
             t.SpalteBezugsgroesse = Text_("ZPG_SP_BEZUGSGROESSE", t.SpalteBezugsgroesse);
@@ -2098,15 +2138,11 @@ namespace WindowsFormsApplication1
             t.LabelMesswertQuelle = Text_("ZPG_LBL_MESSWERT_QUELLE", t.LabelMesswertQuelle);
             t.LabelMesswertZeitraum = Text_("ZPG_LBL_MESSWERT_ZEITRAUM", t.LabelMesswertZeitraum);
             t.HinweisJahresmesswert = Text_("ZPG_HINW_JAHRESMESSWERT", t.HinweisJahresmesswert);
-            t.GruppeSchaetzhilfen = Text_("ZPG_GRP_SCHAETZHILFEN", t.GruppeSchaetzhilfen);
-            t.HinweisSchaetzhilfen = Text_("ZPG_HINW_SCHAETZHILFEN", t.HinweisSchaetzhilfen);
             t.LabelTagesbedarf = Text_("ZPG_LBL_TAGESBEDARF", t.LabelTagesbedarf);
-            t.LabelTagesbedarfManuell = Text_("ZPG_LBL_TAGESBEDARF_MANUELL", t.LabelTagesbedarfManuell);
             t.LabelVorschlag = Text_("ZPG_LBL_VORSCHLAG", t.LabelVorschlag);
             t.KnopfVorschlag = Text_("ZPG_BTN_VORSCHLAG", t.KnopfVorschlag);
             t.HinweisVorschlagOhne = Text_("ZPG_HINW_VORSCHLAG_OHNE", t.HinweisVorschlagOhne);
             t.HinweisOhneVorschlag = Text_("ZPG_HINW_OHNE_VORSCHLAG", t.HinweisOhneVorschlag);
-            t.HinweisManuell = Text_("ZPG_HINW_MANUELL", t.HinweisManuell);
             t.LabelAngesetzt = Text_("ZPG_LBL_ANGESETZT", t.LabelAngesetzt);
             t.AngesetztKalibriert = Text_("ZPG_ANGESETZT_KALIBRIERT", t.AngesetztKalibriert);
             t.LabelRechenweg = Text_("ZPG_LBL_RECHENWEG", t.LabelRechenweg);

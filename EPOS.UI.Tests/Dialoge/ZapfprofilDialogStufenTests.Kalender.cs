@@ -18,7 +18,7 @@ public partial class ZapfprofilDialogStufenTests
         => cut.Find(".epos-zapfprofil-kalender .epos-klappgruppe-zusatz").TextContent.Trim();
 
     private static void Aufklappen(IRenderedComponent<ZapfprofilDialog> cut)
-        => cut.Find(".epos-zapfprofil-kalender .epos-klappgruppe-knopf").Click();
+        => ZapfprofilKarten.Auf(cut, "kalender");
 
     /// <summary>Die Datumsfelder „von" bzw. „bis" der eigenen Ferien, je Zeile eines.</summary>
     private static IElement[] Datumsfelder(IRenderedComponent<ZapfprofilDialog> cut, string bezeichnung)
@@ -33,7 +33,7 @@ public partial class ZapfprofilDialogStufenTests
     public void Die_Karte_Kalender_ist_zugeklappt_und_nennt_die_Lage_der_Nutzungsart()
     {
         var cut = Aufbauen();
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Erweitert", aufklappen: false);
 
         Assert.Equal("false", cut.Find(".epos-zapfprofil-kalender .epos-klappgruppe-knopf").GetAttribute("aria-expanded"));
         Assert.Equal("Kalender der Nutzungsart · keine eigenen Ferien", Zusammenfassung(cut));
@@ -47,7 +47,8 @@ public partial class ZapfprofilDialogStufenTests
         Assert.Equal(new[] { "Kalender der Nutzungsart · Wohnen", "Gebäude „Haus Nord“" },
                      quelle.QuerySelectorAll("label.epos-option").Select(l => l.TextContent.Trim()).ToArray());
         Assert.Empty(cut.FindAll(".epos-zapfprofil-kalender-gebaeude"));
-        Assert.Contains("Eigene Ferien der Zone gehen vor", Karte(cut).TextContent);
+        // ZB8: Format und Vorrang der eigenen Ferien stehen im title, nicht als Dauerzeile.
+        Assert.Contains("Eigene Ferien der Zone gehen vor", Karte(cut).QuerySelector(".epos-zapfprofil-ferien-neu")!.GetAttribute("title"));
     }
 
     [Fact]

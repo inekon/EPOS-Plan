@@ -25948,7 +25948,64 @@ Do you want to allow this?</value>
     <value>{0} MWh/a draw-off</value>
   </data>
   <data name="ZPG_GRP_ZONE" xml:space="preserve">
-    <value>{0} · Use</value>
+    <value>Zone “{0}”</value>
+  </data>
+  <data name="ZPG_GRP_GEBAEUDE_ANLAGE" xml:space="preserve">
+    <value>Building and system</value>
+  </data>
+  <data name="ZPG_KARTE_NUTZUNG" xml:space="preserve">
+    <value>Use</value>
+  </data>
+  <data name="ZPG_KARTE_MESSWERT" xml:space="preserve">
+    <value>Measured value</value>
+  </data>
+  <data name="ZPG_SUMME_WOHNUNGEN" xml:space="preserve">
+    <value>{0} DU from the dwelling table</value>
+  </data>
+  <data name="ZPG_SUMME_PERSONEN_JE_WE" xml:space="preserve">
+    <value>{0} persons per DU</value>
+  </data>
+  <data name="ZPG_SUMME_ZIRK_JA" xml:space="preserve">
+    <value>circulation yes</value>
+  </data>
+  <data name="ZPG_SUMME_ZIRK_NEIN" xml:space="preserve">
+    <value>circulation no</value>
+  </data>
+  <data name="ZPG_SUMME_KEINER" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="ZPG_SUMME_KEINE_ANGABE" xml:space="preserve">
+    <value>not specified</value>
+  </data>
+  <data name="ZPG_SUMME_EIGENE_WERTE" xml:space="preserve">
+    <value>{0} own values</value>
+  </data>
+  <data name="ZPG_SUMME_EIGENER_WERT" xml:space="preserve">
+    <value>1 own value</value>
+  </data>
+  <data name="ZPG_SUMME_VORGABEN" xml:space="preserve">
+    <value>defaults</value>
+  </data>
+  <data name="ZPG_SUMME_ANGESETZT" xml:space="preserve">
+    <value>{0} {1} ({2})</value>
+  </data>
+  <data name="ZPG_SUMME_LADEFENSTER" xml:space="preserve">
+    <value>charging window {0} h from {1}:00</value>
+  </data>
+  <data name="ZPG_SUMME_SEED" xml:space="preserve">
+    <value>seed {0}</value>
+  </data>
+  <data name="ZPG_SUMME_TYPTAGE" xml:space="preserve">
+    <value>type days</value>
+  </data>
+  <data name="ZPG_HINW_EINWERT" xml:space="preserve">
+    <value>Empty = suggestion (grey in the field); an entered value counts as a manual value.</value>
+  </data>
+  <data name="ZPG_BTN_KATALOG" xml:space="preserve">
+    <value>Catalogue…</value>
+  </data>
+  <data name="ZPG_KATALOG_BLATT_HINWEIS" xml:space="preserve">
+    <value>Selecting a row sets the use type of zone “{0}”.</value>
   </data>
   <data name="ZPG_SP_ZONE" xml:space="preserve">
     <value>Zone</value>
@@ -31366,7 +31423,7 @@ Do you want to allow this?</value>
     <value>Effective from the dwelling table: {0} {1} — OK adopts it as the reference quantity.</value>
   </data>
   <data name="ZPG_GRP_BELEGUNG" xml:space="preserve">
-    <value>Occupancy and system</value>
+    <value>Occupancy</value>
   </data>
   <data name="ZPG_LBL_WOHNUNGSTABELLE" xml:space="preserve">
     <value>Dwellings (optional)</value>
@@ -31623,32 +31680,20 @@ Do you want to allow this?</value>
   <data name="ZPG_HINW_JAHRESMESSWERT" xml:space="preserve">
     <value>Empty = no measured value. A measured value scales the zone with a stated factor; a volume applies at the draw-off point and is converted via draw-off and cold water temperature.</value>
   </data>
-  <data name="ZPG_GRP_SCHAETZHILFEN" xml:space="preserve">
-    <value>Daily demand, charging power, circulation</value>
-  </data>
-  <data name="ZPG_HINW_SCHAETZHILFEN" xml:space="preserve">
-    <value>Pattern auto/manual: proposal, manual value and the applied value that is used further. The applied value follows from the switch.</value>
-  </data>
   <data name="ZPG_LBL_TAGESBEDARF" xml:space="preserve">
     <value>Daily demand</value>
-  </data>
-  <data name="ZPG_LBL_TAGESBEDARF_MANUELL" xml:space="preserve">
-    <value>Daily demand manual</value>
   </data>
   <data name="ZPG_LBL_VORSCHLAG" xml:space="preserve">
     <value>Proposal: {0} {1}</value>
   </data>
   <data name="ZPG_BTN_VORSCHLAG" xml:space="preserve">
-    <value>Adopt as manual value</value>
+    <value>Adopt suggestion</value>
   </data>
   <data name="ZPG_HINW_VORSCHLAG_OHNE" xml:space="preserve">
     <value>The method yields no proposal — the calculation path names the reason.</value>
   </data>
   <data name="ZPG_HINW_OHNE_VORSCHLAG" xml:space="preserve">
     <value>A proposal is available only with a calculated preview.</value>
-  </data>
-  <data name="ZPG_HINW_MANUELL" xml:space="preserve">
-    <value>Takes effect only with “manual”.</value>
   </data>
   <data name="ZPG_LBL_ANGESETZT" xml:space="preserve">
     <value>Applied: {0} {1} ({2})</value>
@@ -31660,10 +31705,10 @@ Do you want to allow this?</value>
     <value>Calculation: {0}</value>
   </data>
   <data name="ZPG_LBL_LADELEISTUNG" xml:space="preserve">
-    <value>Charging power (building)</value>
+    <value>Charging power and charging window</value>
   </data>
   <data name="ZPG_LBL_LADELEISTUNG_MANUELL" xml:space="preserve">
-    <value>Charging power manual</value>
+    <value>Charging power</value>
   </data>
   <data name="ZPG_LBL_LADEFENSTER" xml:space="preserve">
     <value>Charging window</value>
@@ -31684,10 +31729,10 @@ Do you want to allow this?</value>
     <value>Applied: {0} kW (manual)</value>
   </data>
   <data name="ZPG_LBL_ZIRKULATION" xml:space="preserve">
-    <value>Circulation (building)</value>
+    <value>Circulation</value>
   </data>
   <data name="ZPG_LBL_ZIRK_MANUELL" xml:space="preserve">
-    <value>Circulation manual</value>
+    <value>Circulation power</value>
   </data>
   <data name="ZPG_LBL_ZIRK_METHODE" xml:space="preserve">
     <value>Circulation method</value>
@@ -31732,7 +31777,7 @@ Do you want to allow this?</value>
     <value>Water content of the pipes between heater and most remote draw-off point; it helps decide a large system according to DVGW W 551.</value>
   </data>
   <data name="ZPG_GRP_FACHWERTE" xml:space="preserve">
-    <value>Technical values · {0}</value>
+    <value>Technical values of the zone</value>
   </data>
   <data name="ZPG_LBL_BEDARF_SPEZ" xml:space="preserve">
     <value>Specific demand</value>
@@ -31896,26 +31941,17 @@ Do you want to allow this?</value>
   <data name="KI_DLG_ZPG_MESSWERT_ZEITRAUM_ERL" xml:space="preserve">
     <value>The period of the measured value — note only.</value>
   </data>
-  <data name="KI_DLG_ZPG_TAGESBEDARF_MODUS_ERL" xml:space="preserve">
-    <value>The daily demand of the selected zone from the catalogue (auto) or as a manual value.</value>
-  </data>
   <data name="KI_DLG_ZPG_TAGESBEDARF_MANUELL_ERL" xml:space="preserve">
-    <value>The manual daily demand of the selected zone; it applies only with “manual”.</value>
-  </data>
-  <data name="KI_DLG_ZPG_LADELEISTUNG_MODUS_ERL" xml:space="preserve">
-    <value>The charging power of the building as proposal of the design (auto) or as a manual value — affects only the design.</value>
+    <value>The daily demand of the selected zone; empty = proposal from the catalogue (auto), a value counts as manual daily demand.</value>
   </data>
   <data name="KI_DLG_ZPG_LADELEISTUNG_MANUELL_ERL" xml:space="preserve">
-    <value>The manual charging power; it applies only with “manual”.</value>
+    <value>The charging power of the building; empty = proposal of the sizing (auto), a value counts as manual charging power — affects only the sizing.</value>
   </data>
   <data name="KI_DLG_ZPG_LADEFENSTER_ERL" xml:space="preserve">
     <value>The effective charging time per day; empty = default of the catalogue.</value>
   </data>
   <data name="KI_DLG_ZPG_LADEFENSTER_BEGINN_ERL" xml:space="preserve">
     <value>The hour at which the charging window starts; empty = default.</value>
-  </data>
-  <data name="KI_DLG_ZPG_ZIRKULATION_MODUS_ERL" xml:space="preserve">
-    <value>The circulation of the building by the selected method (auto) or as a manual power.</value>
   </data>
   <data name="KI_DLG_ZPG_ZIRK_METHODE_ERL" xml:space="preserve">
     <value>How the circulation is estimated: pipe length × loss, share of daily demand or area-related value.</value>
@@ -31933,7 +31969,7 @@ Do you want to allow this?</value>
     <value>The position of the pipe relative to the thermal envelope (area method); empty = default.</value>
   </data>
   <data name="KI_DLG_ZPG_ZIRK_MANUELL_ERL" xml:space="preserve">
-    <value>The manual circulation power; it applies only with “manual”.</value>
+    <value>The circulation power of the building; empty = according to the selected method (auto), a value counts as manual power.</value>
   </data>
   <data name="KI_DLG_ZPG_LEITUNGSINHALT_ERL" xml:space="preserve">
     <value>The water content of the pipes; it helps decide a large system.</value>

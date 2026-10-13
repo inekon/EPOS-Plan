@@ -4523,20 +4523,14 @@ namespace WindowsFormsApplication1
                                           KiDialogTexte.ZpgMesswertZeitraumErl, leerErlaubt: true);
 
             // ---- Tagesbedarf der Zone, Ladeleistung und Zirkulation des Gebäudes (Erweitert) -----
-            yield return Wahl("tagesbedarf_modus", "TagesbedarfModus", KiDialogTexte.ZpgTagesbedarfModusName,
-                              KiDialogTexte.ZpgTagesbedarfModusErl, false);
             yield return Zahl("tagesbedarf_manuell", "TagesbedarfManuell", KiDialogTexte.ZpgTagesbedarfManuellName,
                               KiDialogTexte.ZpgTagesbedarfManuellErl, KiDialogTexte.EINHEIT_KWH_D, 0, null);
-            yield return Wahl("ladeleistung_modus", "LadeleistungModus", KiDialogTexte.ZpgLadeleistungModusName,
-                              KiDialogTexte.ZpgLadeleistungModusErl, false);
             yield return Zahl("ladeleistung_manuell", "LadeleistungManuell", KiDialogTexte.ZpgLadeleistungManuellName,
                               KiDialogTexte.ZpgLadeleistungManuellErl, KiDialogTexte.EINHEIT_KW, 0, null);
             yield return Zahl("ladefenster", "Ladefenster", KiDialogTexte.ZpgLadefensterName,
                               KiDialogTexte.ZpgLadefensterErl, KiDialogTexte.EINHEIT_H_D, 0, 24);
             yield return Zahl("ladefenster_beginn", "LadefensterBeginn", KiDialogTexte.ZpgLadefensterBeginnName,
                               KiDialogTexte.ZpgLadefensterBeginnErl, KiDialogTexte.EINHEIT_STUNDE, 0, 24);
-            yield return Wahl("zirkulation_modus", "ZirkulationModus", KiDialogTexte.ZpgZirkulationModusName,
-                              KiDialogTexte.ZpgZirkulationModusErl, false);
             yield return Wahl("zirk_methode", "ZirkMethode", KiDialogTexte.ZpgZirkMethodeName, KiDialogTexte.ZpgZirkMethodeErl, false);
             yield return Zahl("zirk_laenge", "ZirkLaenge", KiDialogTexte.ZpgZirkLaengeName,
                               KiDialogTexte.ZpgZirkLaengeErl, KiDialogTexte.EINHEIT_METER, 0, null);

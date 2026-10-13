@@ -200,10 +200,14 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
             .Add(x => x.AuslegungGaben, auslegung)
             .Add(x => x.Geschlossen, e => geschlossen?.Invoke(e)));
 
-    private static void Stufe(IRenderedComponent<ZapfprofilDialog> cut, string stufe)
-        => cut.Find("fieldset[aria-label='Stufe']").QuerySelectorAll("label.epos-option")
-              .First(l => l.TextContent.Trim() == stufe).QuerySelector("input")!.Change(
-                  stufe == "Einfach" ? "0" : stufe == "Erweitert" ? "1" : "2");
+    /// <summary>Wählt die Stufe und klappt danach alle Karten auf (ZB3) — außer mit <paramref name="aufklappen"/> = false.</summary>
+    private static void Stufe(IRenderedComponent<ZapfprofilDialog> cut, string stufe, bool aufklappen = true)
+    {
+        cut.Find("fieldset[aria-label='Stufe']").QuerySelectorAll("label.epos-option")
+           .First(l => l.TextContent.Trim() == stufe).QuerySelector("input")!.Change(
+               stufe == "Einfach" ? "0" : stufe == "Erweitert" ? "1" : "2");
+        if (aufklappen) ZapfprofilKarten.AlleAuf(cut);
+    }
 
     private static void Option(IRenderedComponent<ZapfprofilDialog> cut, string gruppe, string eintrag, string wert)
         => cut.Find("fieldset[aria-label='" + gruppe + "']").QuerySelectorAll("label.epos-option")
@@ -237,60 +241,84 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        Assert.DoesNotContain("Belegung und Anlage", Gruppen(cut));
-        Assert.DoesNotContain("Tagesbedarf, Ladeleistung, Zirkulation", Gruppen(cut));
+        // ZB3: in Einfach nur die Karte „Nutzung" (ohne Klappe), keine Gruppe „Gebäude und Anlage", kein Katalogknopf.
+        Assert.Equal(new[] { "Nutzungszonen", "Zone „Wohnen“", "Vorschau" }, Gruppen(cut));
+        Assert.Equal("Nutzung", cut.Find(".epos-zapfprofil-karte--nutzung .epos-zapfprofil-kartentitel").TextContent.Trim());
+        Assert.Empty(cut.FindAll(".epos-zapfprofil .epos-klappgruppe"));
+        Assert.Empty(cut.FindAll(".epos-zapfprofil-katalogknopf"));
         Assert.False(HatFeld(cut, "Anlagentopologie"));
         Assert.Empty(cut.FindAll(".epos-zapfprofil-katalog"));
         Assert.Equal("Weitere Angaben stehen in der Stufe Erweitert.", cut.Find(".epos-zapfprofil-weitere").TextContent.Trim());
         Assert.Equal(4, cut.FindAll("table.epos-zapfprofil-zonen thead th").Count);
+        // ZB8: Herkunft und Einheit stehen im title des Felds, nicht als Dauerzeile.
+        Assert.Equal("Einheit aus dem Katalog der Nutzungsart", Feld(cut, "Bezugsgröße").Closest("label")!.GetAttribute("title"));
+        Assert.Contains("Katalog · fiktiv (Testdaten)", Auswahl(cut, "Nutzungsart").Closest("label")!.GetAttribute("title"));
+        Assert.DoesNotContain("Einheit aus dem Katalog der Nutzungsart", cut.Find(".epos-zapfprofil-karte--nutzung").TextContent);
     }
 
     [Fact]
     public void Erweitert_zeigt_Belegung_Schaetzhilfen_Katalog_und_verweist_auf_Experte()
     {
         var cut = Aufbauen();
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Erweitert", aufklappen: false);
 
-        string[] gruppen = Gruppen(cut);
-        Assert.Contains("Belegung und Anlage", gruppen);
-        Assert.Contains("Tagesbedarf, Ladeleistung, Zirkulation", gruppen);
-        Assert.Contains("Stochastik · Jahresreihe", gruppen);
-        Assert.DoesNotContain(gruppen, g => g.StartsWith("Fachwerte", StringComparison.Ordinal));
+        // ZB3: zwei Ebenen - der Block der Zone und die Gruppe „Gebäude und Anlage", je als Karten, alle zugeklappt.
+        Assert.Equal(new[] { "Nutzungszonen", "Zone „Wohnen“", "Gebäude und Anlage", "Vorschau" }, Gruppen(cut));
+        string[] Karten(string block) => cut.FindAll(block + " .epos-klappgruppe-text").Select(k => k.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "Belegung", "Kalender", "Messwert", "Tagesbedarf" }, Karten(".epos-zapfprofil-zonenblock"));
+        Assert.Equal(new[] { "Zirkulation", "Ladeleistung und Ladefenster", "Leitungsinhalt", "Stochastik · Jahresreihe" },
+                     Karten(".epos-zapfprofil-gebaeudeblock"));
+        Assert.All(cut.FindAll(".epos-zapfprofil-karte .epos-klappgruppe-knopf"), k => Assert.Equal("false", k.GetAttribute("aria-expanded")));
+        Assert.False(HatFeld(cut, "Anlagentopologie"));
 
+        // Zugeklappt nennt jede Karte ihre wirksamen Werte - aus dem Arbeitsstand und der Vorschau des Kerns.
+        Assert.Equal("Speicher · Zirkulation ja", ZapfprofilKarten.Zusatz(cut, "belegung"));
+        Assert.Equal("keiner", ZapfprofilKarten.Zusatz(cut, "messwert"));
+        Assert.Equal("100,0 kWh/d (auto)", ZapfprofilKarten.Zusatz(cut, "tagesbedarf"));
+        Assert.StartsWith("1,5 kW (auto) · ", ZapfprofilKarten.Zusatz(cut, "zirkulation"));
+        Assert.Equal("auto · Ladefenster 10 h ab 22 Uhr", ZapfprofilKarten.Zusatz(cut, "ladeleistung"));
+        Assert.Equal("keine Angabe", ZapfprofilKarten.Zusatz(cut, "leitungsinhalt"));
+        Assert.Equal("deterministisch", ZapfprofilKarten.Zusatz(cut, "jahresreihe"));
+
+        ZapfprofilKarten.AlleAuf(cut);
         foreach (string feld in new[] { "Personen je Wohneinheit", "Wohnfläche je Wohneinheit", "Anlagentopologie",
-                                        "Jahresmesswert", "Tagesbedarf manuell", "Ladezeitfenster",
+                                        "Jahresmesswert", "Tagesbedarf", "Ladeleistung", "Zirkulationsleistung", "Ladezeitfenster",
                                         "Methode der Zirkulation", "Leitungsinhalt" })
             Assert.True(HatFeld(cut, feld), feld);
-        // Der Kalender steht als zugeklappte Karte (ZB5); das gesperrte Feld Bundesland gibt es nicht mehr.
         Assert.Equal("Kalender", cut.Find(".epos-zapfprofil-kalender .epos-klappgruppe-text").TextContent.Trim());
         Assert.False(HatFeld(cut, "Bundesland"));
+        Assert.False(HatFeld(cut, "Tagesbedarf manuell"));
         // Der Rechenweg der Jahresreihe steht ab Erweitert (N12 (s)), Seed und Realisierungen erst in Experte.
         Assert.NotNull(cut.Find("fieldset[aria-label='Rechenweg der Jahresreihe']"));
         Assert.False(HatFeld(cut, "Zufallssaat (Seed)"));
         Assert.False(HatFeld(cut, "Spezifischer Bedarf"));
 
-        // Die aufgeklappte Katalogauswahl: Bezugsart, Kalender, Herkunft, Status, Katalogversion.
-        IElement katalog = cut.Find(".epos-zapfprofil-katalog table");
-        Assert.Contains("Katalog der Nutzungsarten", katalog.TextContent);
-        Assert.Contains("Arbeitstage", katalog.TextContent);
-        Assert.Contains("fiktiv (Testdaten) · Testquelle", katalog.TextContent);
+        // ZB9: Die Tabelle des Katalogs klappt nicht mehr unter der Nutzungsart auf; „Katalog…" öffnet sie als Blatt.
+        Assert.Empty(cut.FindAll(".epos-zapfprofil-katalog"));
+        Assert.Contains("Wohnen A · Personen", Auswahl(cut, "Nutzungsart").TextContent);
 
         Assert.Equal("Fachwerte, Tagesgänge und Zufallssaat stehen in der Stufe Experte.",
                      cut.Find(".epos-zapfprofil-weitere").TextContent.Trim());
-        // Vorgaben als Platzhalter im leeren Feld.
+        // Vorgaben als Platzhalter im leeren Feld, ihre Erklärung im title statt als Zeile „Vorgabe · …" (ZB8).
         Assert.Equal("(80)", Feld(cut, "Wohnfläche je Wohneinheit").GetAttribute("placeholder"));
         Assert.Equal("(10)", Feld(cut, "Ladezeitfenster").GetAttribute("placeholder"));
+        Assert.StartsWith("Vorgabe · 80 m²", Feld(cut, "Wohnfläche je Wohneinheit").Closest("label")!.GetAttribute("title"));
+        Assert.DoesNotContain(cut.FindAll(".epos-zapfprofil-zonenblock .epos-herleitung, .epos-zapfprofil-gebaeudeblock .epos-herleitung"),
+                              h => h.TextContent.Contains("Vorgabe ·"));
     }
 
     [Fact]
     public void Experte_zeigt_Fachwerte_Auslastungsgang_und_ohne_Delegat_die_gesperrten_Editoren_mit_Grund()
     {
         var cut = Aufbauen();
-        Stufe(cut, "Experte");
+        Stufe(cut, "Experte", aufklappen: false);
 
-        string[] gruppen = Gruppen(cut);
-        Assert.Contains("Fachwerte · Wohnen", gruppen);
-        Assert.Contains("Fachwerte · Gebäude", gruppen);
+        // ZB3: Experte bringt die Karten „Fachwerte der Zone" und „Fachwerte · Gebäude"; ohne Eingabe „Vorgaben".
+        Assert.Equal("Vorgaben", ZapfprofilKarten.Zusatz(cut, "fachwerte"));
+        Assert.Equal("Vorgaben", ZapfprofilKarten.Zusatz(cut, "fachwerte-gebaeude"));
+        Assert.Equal("deterministisch · Seed 1", ZapfprofilKarten.Zusatz(cut, "jahresreihe"));
+        ZapfprofilKarten.AlleAuf(cut);
+
         foreach (string feld in new[] { "Spezifischer Bedarf", "Zapftemperatur", "Kaltwasser Jahresmittel", "Kaltwasser Amplitude",
                                         "Tagesgangsatz", "Kaltwasser der Auslegung", "Speichertemperatur", "Zirkulationsverlust (Kennwert)",
                                         "Zirkulationsfläche", "Laufzeit der Zirkulation", "Zufallssaat (Seed)", "Januar", "Dezember" })
@@ -305,6 +333,10 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         Assert.Equal("(1)", Feld(cut, "März").GetAttribute("placeholder"));
         Assert.Equal("kWh/(P·d)", cut.FindAll("label").First(l => l.TextContent.Contains("Spezifischer Bedarf")).QuerySelector(".epos-feld-einheit")?.TextContent.Trim()
                                    ?? "kWh/(P·d)");
+
+        // Ein eigener Wert zählt in der Zusammenfassung der Karte.
+        Feld(cut, "Zapftemperatur").Input("55");
+        Assert.Equal("1 eigener Wert", ZapfprofilKarten.Zusatz(cut, "fachwerte"));
 
         // Der gesperrte Tagesgangsatz nennt seinen Grund an der Option.
         IElement halb = Auswahl(cut, "Tagesgangsatz").QuerySelectorAll("option").First(o => o.TextContent.StartsWith("Halber Satz"));
@@ -372,8 +404,7 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         Assert.Contains("Summe 2 Zonen", cut.Find("table.epos-zapfprofil-zonen tfoot").TextContent);
 
         // Tagesbedarf manuell (die gewählte Zone ist nach dem Entfernen „Büro"): Die Liste nennt den Rechenweg der Zone.
-        Option(cut, "Tagesbedarf", "manuell", "1");
-        Feld(cut, "Tagesbedarf manuell").Input("50");
+        Feld(cut, "Tagesbedarf").Input("50");
         Assert.Contains("manuell", cut.FindAll("table.epos-zapfprofil-zonen tbody tr")[1].TextContent);
         Assert.Contains("Katalog", cut.FindAll("table.epos-zapfprofil-zonen tbody tr")[0].TextContent);
     }
@@ -451,33 +482,53 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
     }
 
     [Fact]
-    public void Angesetzt_folgt_dem_Umschalter_und_der_Vorschlag_wird_zum_manuellen_Wert()
+    public void Ein_Feld_je_Wert_leer_ist_auto_und_ein_Wert_ist_manuell()
     {
         var cut = Aufbauen();
         Stufe(cut, "Erweitert");
 
-        Assert.Contains("Vorschlag: 100,0 kWh/d", cut.Markup);
+        // ZB4 (b): EIN Feld - leer = auto, der Vorschlag grau im Feld; der Umschalter auto/manuell ist weg.
+        Assert.Empty(cut.FindAll("fieldset[aria-label='Tagesbedarf']"));
+        IElement feld = Feld(cut, "Tagesbedarf");
+        Assert.Equal("", feld.GetAttribute("value") ?? "");
+        Assert.Equal("(100)", feld.GetAttribute("placeholder"));
         Assert.Contains("Angesetzt: 100,0 kWh/d (auto)", cut.Markup);
+        Assert.Contains("Rechenweg: Rechenweg der Probe", cut.Find(".epos-zapfprofil-karte--tagesbedarf details").TextContent);
 
-        Option(cut, "Tagesbedarf", "manuell", "1");
-        Feld(cut, "Tagesbedarf manuell").Input("80");
+        // Ein Wert ist manuell; leer ist wieder auto (der Arbeitsstand bleibt Auto + manueller Wert).
+        Feld(cut, "Tagesbedarf").Input("80");
+        ZapfprofilZonenangabenDaten a = cut.Instance.Eingabe.Zonen[0].Angaben!;
+        Assert.Equal((false, (double?)80.0), (a.TagesbedarfAuto, a.TagesbedarfManuellKwh));
         Assert.Contains("Angesetzt: 80,0 kWh/d (manuell)", cut.Markup);
-        Option(cut, "Tagesbedarf", "auto", "0");
+        Assert.Equal("80,0 kWh/d (manuell)", ZapfprofilKarten.Zusatz(cut, "tagesbedarf"));
+        Feld(cut, "Tagesbedarf").Input("");
+        Assert.Equal((true, (double?)null), (a.TagesbedarfAuto, a.TagesbedarfManuellKwh));
         Assert.Contains("Angesetzt: 100,0 kWh/d (auto)", cut.Markup);
-        Assert.Equal(80.0, cut.Instance.Eingabe.Zonen[0].Angaben!.TagesbedarfManuellKwh);   // der Wert bleibt
 
-        // „Als manuellen Wert übernehmen": Vorschlag -> manueller Wert, Umschalter auf manuell.
-        cut.FindAll(".epos-vorschlagszeile button")[0].Click();
-        Assert.Equal(100.0, cut.Instance.Eingabe.Zonen[0].Angaben!.TagesbedarfManuellKwh);
-        Assert.False(cut.Instance.Eingabe.Zonen[0].Angaben!.TagesbedarfAuto);
+        // „Vorschlag übernehmen": Vorschlag -> manueller Wert.
+        cut.Find(".epos-zapfprofil-karte--tagesbedarf .epos-zapfprofil-einwert-uebernehmen").Click();
+        Assert.Equal((false, (double?)100.0), (a.TagesbedarfAuto, a.TagesbedarfManuellKwh));
+        Assert.Equal("100", Feld(cut, "Tagesbedarf").GetAttribute("value"));
 
-        // Die Ladeleistung: angesetzt der Vorschlag der Auslegung (auto) oder der manuelle Wert.
+        // Rundlauf: Das OK trägt den Arbeitsstand unverändert (Auto + manueller Wert).
+        ZapfprofilErgebnisDaten? ergebnis = null;
+        var zwei = Aufbauen(geschlossen: e => ergebnis = e);
+        Stufe(zwei, "Erweitert");
+        Feld(zwei, "Tagesbedarf").Input("75");
+        Knopf(zwei, "OK").Click();
+        Assert.Equal((false, (double?)75.0), (ergebnis!.Eingabe.Zonen[0].Angaben!.TagesbedarfAuto, ergebnis.Eingabe.Zonen[0].Angaben!.TagesbedarfManuellKwh));
+
+        // Die Ladeleistung: angesetzt der Vorschlag der Auslegung (auto) oder der eingetragene Wert.
         Assert.Contains("Angesetzt: Vorschlag der Auslegung (auto)", cut.Markup);
-        Option(cut, "Ladeleistung (Gebäude)", "manuell", "1");
-        Feld(cut, "Ladeleistung manuell").Input("15");
+        Feld(cut, "Ladeleistung").Input("15");
         Assert.Contains("Angesetzt: 15,0 kW (manuell)", cut.Markup);
+        Assert.Equal((false, (double?)15.0), (cut.Instance.Eingabe.Gebaeude!.LadeAuto, cut.Instance.Eingabe.Gebaeude.LadeManuellKw));
 
-        // Die Zirkulation: die Felder folgen der Methode.
+        // Die Zirkulation: ein Wert ist manuell; die Felder folgen der Methode.
+        Feld(cut, "Zirkulationsleistung").Input("2");
+        Assert.Equal((false, (double?)2.0), (cut.Instance.Eingabe.Gebaeude!.ZirkAuto, cut.Instance.Eingabe.Gebaeude.ZirkManuellKw));
+        Feld(cut, "Zirkulationsleistung").Input("");
+        Assert.True(cut.Instance.Eingabe.Gebaeude!.ZirkAuto);
         Assert.False(HatFeld(cut, "Leitungslänge"));
         Assert.True(HatFeld(cut, "Lage der Leitung"));
         Auswahl(cut, "Methode der Zirkulation").Change("1");
@@ -618,7 +669,10 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         Assert.Equal(226, sommer.Bis);
 
         // Die Wohnungstabelle der gewählten Zone.
+        // Der Assistent setzt auch in einer zugeklappten Karte (die Stufe zählt, nicht die Klappe); den Knopf
+        // „Wohnungstyp hinzufügen" drückt hier der Anwender - dafür klappt er die Karte „Belegung" auf.
         cut.Find("table.epos-zapfprofil-zonen tbody tr button").Click();
+        ZapfprofilKarten.Auf(cut, "belegung");
         cut.InvokeAsync(() => Knopf(cut, "Wohnungstyp hinzufügen").Click());
         Setze("wohnung_anzahl_1", "5");
         Assert.Equal(5, cut.Instance.Eingabe.Zonen[0].Angaben!.Wohnungen[0].Anzahl);

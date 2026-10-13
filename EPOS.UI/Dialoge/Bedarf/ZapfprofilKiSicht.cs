@@ -261,16 +261,10 @@ public sealed class ZapfprofilKiSicht
 
     // ---- Tagesbedarf, Ladeleistung, Zirkulation (Erweitert) --------------------------
 
-    public int? TagesbedarfModus { get => Ganz(nameof(TagesbedarfModus)); set => Setze(nameof(TagesbedarfModus), value); }
-    public IReadOnlyList<KiWahleintrag> TagesbedarfModusWahl => Wahl(nameof(TagesbedarfModus));
     public double? TagesbedarfManuell { get => Zahl(nameof(TagesbedarfManuell)); set => Setze(nameof(TagesbedarfManuell), value); }
-    public int? LadeleistungModus { get => Ganz(nameof(LadeleistungModus)); set => Setze(nameof(LadeleistungModus), value); }
-    public IReadOnlyList<KiWahleintrag> LadeleistungModusWahl => Wahl(nameof(LadeleistungModus));
     public double? LadeleistungManuell { get => Zahl(nameof(LadeleistungManuell)); set => Setze(nameof(LadeleistungManuell), value); }
     public double? Ladefenster { get => Zahl(nameof(Ladefenster)); set => Setze(nameof(Ladefenster), value); }
     public double? LadefensterBeginn { get => Zahl(nameof(LadefensterBeginn)); set => Setze(nameof(LadefensterBeginn), value); }
-    public int? ZirkulationModus { get => Ganz(nameof(ZirkulationModus)); set => Setze(nameof(ZirkulationModus), value); }
-    public IReadOnlyList<KiWahleintrag> ZirkulationModusWahl => Wahl(nameof(ZirkulationModus));
     public int? ZirkMethode { get => Ganz(nameof(ZirkMethode)); set => Setze(nameof(ZirkMethode), value); }
     public IReadOnlyList<KiWahleintrag> ZirkMethodeWahl => Wahl(nameof(ZirkMethode));
     public double? ZirkLaenge { get => Zahl(nameof(ZirkLaenge)); set => Setze(nameof(ZirkLaenge), value); }

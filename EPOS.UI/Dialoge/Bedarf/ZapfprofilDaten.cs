@@ -147,7 +147,15 @@ public enum ZapfprofilVorschauZustand
 /// allgemeinen Meldungen, nie an zwei Zonen.
 /// </param>
 public sealed record ZapfprofilMeldung(string Kennung, string Zone, string Text, ZapfprofilMeldungsart Art,
-                                       string Klartext = "", int? Position = null);
+                                       string Klartext = "", int? Position = null)
+{
+    /// <summary>
+    /// Steht der Hinweis erst ab der Stufe Erweitert (ZB8)? Die Hülle setzt es nach EINER Regel
+    /// (<c>ZapfprofilHuelle.ErstAbErweitert</c>): In der Stufe Einfach stehen nur Hinweise, die der
+    /// Anwender dort beheben kann. Eine Ablehnung steht immer; ohne Angabe steht der Hinweis in jeder Stufe.
+    /// </summary>
+    public bool AbErweitert { get; init; }
+}
 
 /// <summary>
 /// Eine Nutzungsart des Katalogs, wie die Auswahl sie zeigt (5.3): Name, Bezugsart samt
@@ -1688,7 +1696,14 @@ public sealed record ZapfprofilKategorienErgebnis(bool Ok, int IdNutzungsart, bo
 /// Hinweis einer eindeutig benannten Zone — deren Position in der Eingabe (sonst <c>null</c>).
 /// </summary>
 public sealed record ZapfprofilWarnDaten(string Kennung, string Titel, string Text, ZapfprofilWarnstufe Stufe,
-                                         int? Position = null);
+                                         int? Position = null)
+{
+    /// <summary>
+    /// Steht der Eintrag erst ab der Stufe Erweitert (ZB8)? Dieselbe Regel wie
+    /// <see cref="ZapfprofilMeldung.AbErweitert"/>; ohne Angabe steht er in jeder Stufe.
+    /// </summary>
+    public bool AbErweitert { get; init; }
+}
 
 /// <summary>
 /// <b>Eine Zeile der Karte „Herkunft"</b> (Herkunftsprotokoll des Kerns, N19): welche Größe

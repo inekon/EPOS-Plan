@@ -15424,17 +15424,114 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
    Zonenblock. Die Werte eines gebundenen Gebaeudes stehen als Liste aus Begriff und Wert, die
    eigenen Ferien wie im Gebaeudedialog je Zeile Name, von, bis und „Entfernen", umbrechend statt
    quer rollend; das Jahresraster rollt in seinem eigenen Kasten (.epos-kalb-rolle). */
-/* Die Zusammenfassung im Kopf der zugeklappten Karte ist ein Satz: Sie bricht um, der Titel nicht. */
-.epos-zapfprofil-kalender .epos-klappgruppe-text {
+/* Die Zusammenfassung im Kopf der zugeklappten Karte ist ein Satz: Sie bricht um, der Titel nicht
+   (gilt fuer jede Karte des Zapfprofils, ZB3). */
+.epos-zapfprofil-karte .epos-klappgruppe-text {
     flex: 0 0 auto;
     white-space: nowrap;
 }
 
-.epos-zapfprofil-kalender .epos-klappgruppe-zusatz {
+.epos-zapfprofil-karte .epos-klappgruppe-zusatz {
     flex: 1 1 auto;
     min-width: 0;
     white-space: normal;
     text-align: start;
+}
+
+/* DIE KARTEN DES ZAPFPROFILS (Konzept Zapfprofil-Benutzerfuehrung ZB3, Entscheid ZB-Q1 A): Der Block der
+   markierten Zone und die Gruppe „Gebaeude und Anlage" sind Folgen von Karten - „Nutzung" steht offen, die
+   uebrigen klappen auf und nennen zugeklappt ihre wirksamen Werte. Eine Linie trennt die Karten; die Hoehe
+   kommt aus dem Zuklappen, nicht aus kleineren Bedienelementen. */
+.epos-zapfprofil {
+    container: zapfprofil / inline-size;
+}
+
+.epos-zapfprofil-zonenblock,
+.epos-zapfprofil-gebaeudeblock {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.epos-zapfprofil-karte + .epos-zapfprofil-karte {
+    border-top: 1px solid var(--epos-rahmen-leise);
+    padding-top: 4px;
+}
+
+.epos-zapfprofil-karte > .epos-klappgruppe-inhalt {
+    padding: 0 0 var(--epos-abstand) 1.5em;
+}
+
+.epos-zapfprofil-kartenkopf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--epos-touchziel);
+}
+
+.epos-zapfprofil-kartentitel {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+}
+
+/* EIN FELD JE WERT (ZB4 (b)): das Feld samt „Vorschlag uebernehmen" in einer umbrechenden Zeile, darunter
+   der angesetzte Wert und der Aufklapper „Rechenweg" (Formeln nur dort). */
+.epos-zapfprofil-einwert {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    margin-block: 4px;
+}
+
+.epos-zapfprofil-einwert-zeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px;
+    min-width: 0;
+}
+
+.epos-zapfprofil-angesetzt {
+    margin: 0;
+}
+
+.epos-zapfprofil-rechenweg > summary {
+    display: flex;
+    align-items: center;
+    min-height: var(--epos-touchziel);
+    cursor: pointer;
+    color: var(--epos-marke);
+}
+
+.epos-zapfprofil-rechenweg > p {
+    margin: 0 0 4px 0;
+    overflow-wrap: anywhere;
+}
+
+/* DIE VORSCHAU HAFTET (L4): Steht sie neben den Eingaben, bleibt sie beim Rollen im Bild - im Rollbehaelter der
+   Ueberlagerung bzw. des Blattes wie auf der Seite. Hoeher als der sichtbare Bereich (abzueglich der haftenden
+   Fussleiste einer Ueberlagerung) rollt sie in ihrem eigenen Kasten. Bricht die Spalte unter die Eingaben um,
+   rollt sie mit. */
+@container zapfprofil (min-width: 800px) {
+    .epos-zapfprofil-vorschauspalte {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        max-height: calc(min(90vh, 100dvh) - var(--epos-ueberlagerung-fuss, 0px) - 2 * var(--epos-karte-rand));
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        background: var(--epos-karte-flaeche);
+    }
+}
+
+/* Das Blatt „Katalog der Nutzungsarten" (ZB9): Die Tabelle nimmt die Breite des Blattes und rollt nur in
+   ihrer Huelle. */
+.epos-zapfprofil-katalogblatt .epos-zapfprofil-katalog {
+    max-height: none;
 }
 
 .epos-zapfprofil-kalender-titel {
