@@ -57,6 +57,8 @@ Jede zugeklappte Gruppe ist beim Öffnen der Seite zu; ihr Kopf nennt die Zahl d
 
 Ist '''nur Unterschiede''' eingeschaltet, blendet der Abschnitt auch hier die Gruppen aus, in denen keine Version vom Stammprojekt abweicht – offene wie zugeklappte.
 
+Der Umschalter '''Tabelle | Grafik''' im Kopf des Abschnitts wählt die Darstellung; die Vorgabe ist die Tabelle, die Wahl bleibt je Benutzer gespeichert. Die Grafik zeigt dieselben Gruppen und Kennzahlen wie die Tabelle als waagrechte Balken: je Kennzahl ein Block mit einem Balken je Version. Jede Version hat in allen Diagrammen dieselbe Farbe, die Legende steht einmal oben; eine nicht simulierte Version erscheint dort grau mit ''nicht simuliert'' und hat keine Balken. Kennzahlen mit verschiedener Einheit stehen je Einheit in einem eigenen Diagramm, die Achse nennt die Einheit, etwa [MWh/a]; eine Zahl ohne Einheit wie die Jahresarbeitszahl steht für sich. Am Balkenende stehen der Wert und die Abweichung zum Stammprojekt in Prozent wie in der Tabelle, ein dunkler Randstrich markiert die Abweichung; zeigt der Mauszeiger auf einen Balken, nennt die Zeile unter dem Diagramm Version, Kennzahl, Wert und Abweichung. Zugeklappte Gruppen stehen auch hier zugeklappt und zeigen ihre Diagramme nach dem Aufklappen. Eine Sprachausgabe liest zu jedem Diagramm die Werte als Tabelle vor.
+
 == Unterschiede übernehmen ==
 {{Anker|uebernahme|komponentenuebernahme}}
 
