@@ -274,15 +274,18 @@ namespace WindowsFormsApplication1
 
             // Default-Werte (reine Lesezugriffe) VOR der Transaktion ermitteln.
             // In einem Projekt die Vorgaben der Projektkopie (ProjektBrennstoffe.Sicht), sonst des Katalogs.
+            //
+            // DIE PREISE KOMMEN NICHT VON HIER (Welle KB-2, Anwenderentscheid 13.10.2026 "eine Kostenbasis,
+            // keine Doppelhaltung"): Arbeits-, Grund- und Leistungspreis saet die KARTE DES TRAEGERS
+            // (energy_carrier.price_work/price_base/price_power, gelesen weiter unten, sobald der Traeger steht) -
+            // der Brennstoff fuehrt keine Preisspalten mehr (Schemaschritt
+            // BrennstoffpreiseTraegerkarteSchema.SCHRITT). Vom Brennstoff kommen allein die Emissionsfaktoren
+            // eines NEUEN Katalogtraegers.
             string quelle = ProjektBrennstoffe.Sicht(projektId, out DbParam[] sicht);
             DataTable dtBs = DataRepository.GetDataTable(
-                "SELECT bs.Standard_Arbeitspreis, bs.Standard_Grundpreis, bs.Standard_Leistungspreis, bs.CO2, bs.SO2, bs.NOx " +
-                "FROM " + quelle + " AS bs WHERE bs.ID = ?",
+                "SELECT bs.CO2, bs.SO2, bs.NOx FROM " + quelle + " AS bs WHERE bs.ID = ?",
                 ProjektBrennstoffe.Mit(sicht, new DbParam("@bs", brennstoffId)));
             DataRow rBs = dtBs != null && dtBs.Rows.Count > 0 ? dtBs.Rows[0] : null;
-            double default_arbeitspreis = ZuDouble(rBs?["Standard_Arbeitspreis"]);
-            double default_grundpreis = ZuDouble(rBs?["Standard_Grundpreis"]);
-            double default_leistungspreis = ZuDouble(rBs?["Standard_Leistungspreis"]);
             double default_co2 = ZuDouble(rBs?["CO2"]);
             double default_so2 = ZuDouble(rBs?["SO2"]);
             double default_nox = ZuDouble(rBs?["NOx"]);
@@ -319,8 +322,6 @@ namespace WindowsFormsApplication1
                             new DbParam("@unit", daten.BillingUnit),
                             new DbParam("@shi", daten.Hi),
                             new DbParam("@shs", daten.Hs),
-                            new DbParam("@defap", default_arbeitspreis),
-                            new DbParam("@defgp", default_grundpreis),
                             new DbParam("@co2", default_co2),
                             new DbParam("@so2", default_so2),
                             new DbParam("@nox", default_nox),
@@ -329,10 +330,13 @@ namespace WindowsFormsApplication1
                         // ARBEITSPAKET S4e: Einfuegen und ID-Rueckgabe in EINEM Aufruf auf der
                         // Verbindung des Vorgangs (frueher SELECT @@IDENTITY auf con/tx).
                         carrierId = v.EinfuegenUndId(
+                            // Ein NEUER Traeger entsteht ohne Preise (KB-2): Sie gehoeren in seine Karte und
+                            // werden dort gepflegt - price_work, price_base und price_power stehen auf ihrer
+                            // Vorgabe 0, bis der Anwender sie setzt.
                             @"INSERT INTO energy_carrier
                                      (ID_Brennstoff, code, name, group_code, pricing_model, billing_unit, hi_kwh_per_unit,
-                                      hs_kwh_per_unit, price_work, price_base, co2, so2, nox, is_active)
-                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                      hs_kwh_per_unit, co2, so2, nox, is_active)
+                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                             pTraeger.ToArray());
                     }
 
@@ -357,6 +361,18 @@ namespace WindowsFormsApplication1
                         { KatalogNeu = katalogNeu };
                     }
 
+                    // DIE PREISE DER TRAEGERKARTE (KB-2) - die EINE Quelle der Saat. Fuer einen neu
+                    // angelegten Traeger stehen sie auf 0, fuer einen wiederverwendeten auf dem gepflegten
+                    // Wert. Der Zeitbezug des Leistungspreises haengt an der Karte
+                    // (energy_carrier.price_power_modus); die Projektzeile tragt ihn nicht, sie fuehrt die Zahl
+                    // in derselben Einheit wie der Katalog.
+                    DataTable dtPreis = v.Lese("SELECT price_work, price_base, price_power FROM energy_carrier WHERE id = ?",
+                                               new[] { new DbParam("@cid", carrierId) });
+                    DataRow rPreis = dtPreis != null && dtPreis.Rows.Count > 0 ? dtPreis.Rows[0] : null;
+                    double preis_arbeit = ZuDouble(rPreis?["price_work"]);
+                    double preis_grund = ZuDouble(rPreis?["price_base"]);
+                    double preis_leistung = ZuDouble(rPreis?["price_power"]);
+
                     // 2) Ist der Träger diesem Projekt schon zugeordnet? -> nicht doppeln.
                     int vorhanden = Convert.ToInt32(v.Skalar(
                         "SELECT COUNT(*) FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_Energieträger = ?",
@@ -379,12 +395,12 @@ namespace WindowsFormsApplication1
                                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                         new DbParam("@cid", carrierId),
                         new DbParam("@prid", projektId),
-                        new DbParam("@ap", Math.Round(default_arbeitspreis, 4)),
+                        new DbParam("@ap", Math.Round(preis_arbeit, 4)),
                         new DbParam("@hi", Math.Round(daten.Hi, 4)),
-                        new DbParam("@gp", Math.Round(default_grundpreis, 4)),
+                        new DbParam("@gp", Math.Round(preis_grund, 4)),
                         new DbParam("@date", DbParamTyp.Date) { Wert = DateTime.Now },
                         new DbParam("@au", daten.BillingUnit),
-                        new DbParam("@lp", Math.Round(default_leistungspreis, 4)));
+                        new DbParam("@lp", Math.Round(preis_leistung, 4)));
 
                     v.Ausfuehren(@"INSERT INTO energy_Project_settings
                                      (ID_Projekt, ID_Energieträger, custom_price_work, custom_price_power, custom_hi, custom_Hs,
@@ -392,11 +408,11 @@ namespace WindowsFormsApplication1
                                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                         new DbParam("@pid", projektId),
                         new DbParam("@eid", carrierId),
-                        new DbParam("@p", Math.Round(default_arbeitspreis, 4)),
-                        new DbParam("@pl", Math.Round(default_leistungspreis, 4)),
+                        new DbParam("@p", Math.Round(preis_arbeit, 4)),
+                        new DbParam("@pl", Math.Round(preis_leistung, 4)),
                         new DbParam("@h", Math.Round(daten.Hi, 4)),
                         new DbParam("@hs", Math.Round(daten.Hs, 4)),
-                        new DbParam("@b", Math.Round(default_grundpreis, 4)),
+                        new DbParam("@b", Math.Round(preis_grund, 4)),
                         new DbParam("@convid", daten.ConvID),
                         new DbParam("@co2", default_co2),
                         new DbParam("@so2", default_so2),
