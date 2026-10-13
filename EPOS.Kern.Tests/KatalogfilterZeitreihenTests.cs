@@ -111,6 +111,18 @@ namespace EPOS.Kern.Tests
             Assert.Equal("kW", spitze.Einheit);
         }
 
+        /// <summary>Das Zeitintervall nennt je Liste die eigene Einheit (ZI1).</summary>
+        [Fact]
+        public void Zeitintervall_traegt_je_Liste_die_eigene_Einheit()
+        {
+            Assert.Equal("min", Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.PvGanglinie)
+                .Spalte(Katalogfilterprofil.SpZeitintervall).Einheit);
+            Assert.Equal("t", Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Stromganglinie, x => "t")
+                .Spalte(Katalogfilterprofil.SpZeitintervall).Einheit);
+            Assert.False(string.IsNullOrEmpty(Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Stromganglinie)
+                .Spalte(Katalogfilterprofil.SpZeitintervall).Einheit));
+        }
+
         /// <summary>
         /// Jeder Zeitreihenkatalog fuehrt seinen eigenen Filterstand, und keiner faellt
         /// mit einem Bedarfs- oder Anlagenkatalog zusammen.
