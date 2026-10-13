@@ -10,7 +10,9 @@
     (Spalten fluchten, kein Querrollen der Seite), nicht der Rechenweg.
 
     Gaben aus der Adresse: ?varianten=<n> (Vorgabe 1) - so viele Varianten im Vergleich;
-    ?nurunterschiede=1 setzt den Schalter. *@
+    ?nurunterschiede=1 setzt den Schalter; ?variante=<i> waehlt unter "Detail-Unterschiede
+    fuer Variante" die i-te Variante (Unterschiedstabelle), die Vorgabe ist der
+    Komponentenvergleich. Die Wahl im Feld wirkt auch von Hand. *@
 
 <div class="epos-startseite uep-rahmen">
     <Reiter Aktiv="BERICHTE_KOSTEN" Bezeichnung="Hauptreiter">
@@ -41,12 +43,15 @@
     private const string STAMM = "Referenzprojekt Mehrfamilienhaus";
     private static int s_varianten = 1;
     private static bool s_nurUnterschiede;
+    private static int s_markiert = 1;
 
     protected override void OnInitialized()
     {
         var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
         s_varianten = abfrage.TryGetValue("varianten", out var v) && int.TryParse(v, out int n) ? Math.Clamp(n, 0, 8) : 1;
         s_nurUnterschiede = abfrage.TryGetValue("nurunterschiede", out var u) && u.ToString() == "1";
+        s_markiert = abfrage.TryGetValue("variante", out var w) && int.TryParse(w, out int i) && i >= 1 && i <= s_varianten
+            ? 1 + i : 1;
     }
 
     private static Reiterstatus? Kurzstand(string seite) => seite == BerichteKostenSeite.SEITE_UEBERSICHT
@@ -100,6 +105,7 @@
             Gewerk("Stromspeicher", i => Zelle("Batterie 1", "12,8 kWh"))
         };
         int unterschiede = s_varianten > 0 ? 1 : 0;
+        if (s_markiert > 1) return Unterschiedsstand(gruppe);
         return new UebersichtStand
         {
             Staemme = new[] { (1, STAMM) },
@@ -117,11 +123,45 @@
         };
     }
 
+    /// <summary>Eine Variante ist gewaehlt: die Unterschiedstabelle mit Aktionsspalte.</summary>
+    private static UebersichtStand Unterschiedsstand(VarianteZeile[] gruppe)
+    {
+        string name = Variantenname(s_markiert - 1);
+        return new UebersichtStand
+        {
+            Staemme = new[] { (1, STAMM) },
+            StammId = 1,
+            Zeilen = gruppe,
+            MarkierteId = s_markiert,
+            GewaehlteVarianten = gruppe.Select(z => z.IdProjekt).ToArray(),
+            KomponentenTitel = "Unterschiede zum Stammprojekt — Variante „" + name + "“",
+            Spalten = new[] { "Gewerk", "Merkmal", "Stamm", "Variante" },
+            Vergleich = new[]
+            {
+                new VergleichZeile { Schluessel = 1, Gewerk = "Pufferspeicher", Merkmal = "Anzahl Komponenten",
+                                     Zellen = new[] { "0", "1" }, MitAktion = true,
+                                     AktionKurztext = "Den Komponentenbestand aus einer anderen Version übernehmen" },
+                new VergleichZeile { Schluessel = 2, Gewerk = "", Merkmal = "Volumen",
+                                     Zellen = new[] { "—", "1.000 l" }, MitAktion = true,
+                                     AktionKurztext = "Dieses Feld aus einer anderen Version übernehmen" },
+                new VergleichZeile { Schluessel = 3, Gewerk = "", Merkmal = "Bezeichner",
+                                     Zellen = new[] { "—", "Speicher 1" }, MitAktion = true,
+                                     Sperrgrund = "Der Bezeichner ist der Schlüssel der Zuordnung." }
+            },
+            Loeschbar = true,
+            AnlegenMoeglich = true,
+            SimulierenMoeglich = true,
+            Statuszeile = "3 Unterschiede gegenüber dem Stammprojekt."
+        };
+    }
+
     private static IReadOnlyDictionary<string, object>? Gaben(string seite) => seite == BerichteKostenSeite.SEITE_UEBERSICHT
         ? new Dictionary<string, object>
         {
             ["Laden"] = new Func<UebersichtStand>(Stand),
             ["VergleichGewaehlt"] = new Action<IReadOnlyList<int>>(_ => { }),
+            ["ZeileMarkiert"] = new Action<int>(id => s_markiert = id),
+            ["UebernahmeGaben"] = new Func<VergleichZeile, IReadOnlyDictionary<string, object>>(_ => new Dictionary<string, object>()),
             ["VarianteUmbenennen"] = new Func<string, string>(_ => ""),
             ["VarianteAnlegenOeffnen"] = new Func<Task<bool>>(() => Task.FromResult(false)),
             ["NurUnterschiedeLesen"] = new Func<bool>(() => s_nurUnterschiede),

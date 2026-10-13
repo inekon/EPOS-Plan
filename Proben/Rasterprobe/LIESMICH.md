@@ -1866,7 +1866,10 @@ P_th, σ, η und Motortyp, bei 1 280 × 800 am BHKW neben Motortyp, am Heizkesse
 Der echte Rahmen `BerichteKostenSeite` mit der Seite „Übersicht“: Kopf in drei Teilen
 (Projektwahl, Variantenverwaltung, Lauf) und die Gegenüberstellung je Gewerk mit Stamm und
 Varianten, ein Gewerk weicht ab. Synthetische Stände ohne Datenbank, neutrale Namen.
-Adressgaben: `?varianten=<n>` (Vorgabe 1, höchstens 8) und `?nurunterschiede=1`. Zu prüfen
+Adressgaben: `?varianten=<n>` (Vorgabe 1, höchstens 8), `?nurunterschiede=1` und `?variante=<i>`
+(wählt unter „Detail-Unterschiede für Variante“ die i-te Variante und zeigt die Unterschiedstabelle;
+ohne die Gabe steht die Vorgabe „— keine —“, der Komponentenvergleich; die Wahl im Feld wirkt auch
+von Hand). Zu prüfen
 bei 1 800, 940 und 700 px: Kopf- und Rumpfzellen der Tabelle stehen an denselben linken
 Kanten, die Tabelle füllt die Hülle, die Seite rollt nie quer (mit sechs Varianten rollt
 allein die Hülle, die Gewerkspalte haftet), kein Feld des Kopfes ragt über das Fenster.
