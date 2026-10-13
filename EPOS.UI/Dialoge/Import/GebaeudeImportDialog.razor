@@ -945,6 +945,12 @@
         </div>
     }
 
+    @if (_wiederimport is not null)
+    {
+        @* MA-6: die Vorschau des Wiederimports nach dem ersten OK; das zweite OK merkt die Zusammenfuehrung vor. *@
+        <WiederimportVorschau Daten="_wiederimport" />
+    }
+
     <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" OkErlaubt="@(!Beschaeftigt)"
                      OkSperrgrund="@OkSperrgrund" Ergebnis="BeiLeiste" />
 
@@ -1032,6 +1038,17 @@
 
     /// <summary>Der Dialog ist zu: das Ergebnis nach einer Übernahme, <c>null</c> bei Abbrechen, ✕ und Esc.</summary>
     [Parameter] public EventCallback<GebaeudeImportErgebnis?> Geschlossen { get; set; }
+
+    /// <summary>
+    /// MA-6: die Vorschau des Wiederimports in ein Gebäude mit Bestand. Gesetzt, zeigt das erste OK die Unterschiede
+    /// (<see cref="WiederimportVorschau"/>), erst das zweite ruft <see cref="Uebernehmen"/>; <c>null</c> = ohne Vorschau.
+    /// </summary>
+    [Parameter] public Func<GebaeudeImportErgebnis, GebaeudeWiederimportDaten?>? Wiederimport { get; set; }
+
+    private GebaeudeWiederimportDaten? _wiederimport;
+
+    /// <summary>Die stehende Vorschau des Wiederimports (Prüfhilfe für Tests).</summary>
+    public GebaeudeWiederimportDaten? Wiederimportvorschau => _wiederimport;
 
     /// <summary>
     /// Entwicklerbereich <c>PROJEKTDATEI_IMPORT</c>: die Projektdatei des CAD-Programms anlegen — Quellenwahl „mit/nur
@@ -1717,6 +1734,7 @@
     private void StandUebernehmen(GebaeudeImportStand stand)
     {
         _stand = stand;
+        _wiederimport = null;   // MA-6: eine neue Zuordnung braucht eine neue Vorschau.
         _zeilen = stand.Zeilen.Select(z => MitHandaenderungen(z, stand.ManuellHerkunftText)).ToList();
         if (!_nameGeaendert) _name = stand.Vorschlagsname ?? "";
         FlaechenFiltern();
@@ -2575,6 +2593,19 @@
             Melden(Texte.Gesperrt + Environment.NewLine + string.Join(Environment.NewLine, fehler.Select(m => m.Text)),
                    WarnStufe.Fehler);
             return;
+        }
+
+        // MA-6: erst die Unterschiede zum Bestand, dann das Vormerken.
+        if (Wiederimport is not null && _wiederimport is null)
+        {
+            GebaeudeWiederimportDaten? vorschau = Wiederimport(ergebnis);
+            if (vorschau is not null)
+            {
+                if (vorschau.Meldung.Length > 0) { Melden(vorschau.Meldung, WarnStufe.Fehler); return; }
+                _wiederimport = vorschau;
+                _meldung = "";
+                return;
+            }
         }
 
         _schreibt = true;

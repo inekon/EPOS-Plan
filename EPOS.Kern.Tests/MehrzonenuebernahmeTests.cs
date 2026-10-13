@@ -15,7 +15,7 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>„Als Mehrzonenmodell übernehmen…“</b> (Welle GD-4; Entwurf Gebäudedialog 2.4, E130 F7): die Prüfsumme der gespeicherten
     /// Importquelle (passend, abweichend, Datei fehlt, anderes Format, keine Quelle — nie ein stiller Rückfall) und das
-    /// <b>Ersetzen in einem Vorgang</b> samt Rückweg auf den alten Stand bei einem Fehler. Synthetische Projektdatei aus dem
+    /// <b>Zusammenführen in einem Vorgang</b> (MA-6) samt Rückweg auf den alten Stand bei einem Fehler. Synthetische Projektdatei aus dem
     /// <see cref="SqprojProbenErzeuger"/>.
     /// </summary>
     [Collection("Testdatenbank")]
@@ -97,15 +97,17 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public async Task Hulle_lehnt_abweichende_Pruefsumme_ab_ohne_Blatt()
+        public async Task Hulle_oeffnet_geaenderte_Fassung_zur_Zusammenfuehrung_mit_Vorschau()
         {
+            // MA-6: eine geänderte Fassung (andere Prüfsumme, gleiches Format) öffnet das Blatt samt Vorschau des Wiederimports.
             string pfad = Probehaus();
             ImportquelleModel q = QuelleVon(pfad);
             q.Hash = new string('0', 64);
             var h = new GebaeudeMehrzonenHuelle(() => 0, 0, ios: false);
             GebaeudeMehrzonenstart s = await h.StartAsync(pfad, q);
-            Assert.Null(s.Gaben);
-            Assert.Contains("weicht von der gespeicherten Importquelle ab", s.Meldung);
+            Assert.Null(s.Meldung);
+            Assert.NotNull(s.Gaben);
+            Assert.True(s.Gaben!.ContainsKey("Wiederimport"));
             Assert.Null(h.Ausstehend());
         }
 
@@ -146,7 +148,7 @@ namespace EPOS.Kern.Tests
                                                             new DbParam("@g", idGebaeude)).Rows[0].ItemArray.Select(o => Convert.ToString(o, System.Globalization.CultureInfo.InvariantCulture)));
 
         [Fact]
-        public async Task Ersetzen_in_einem_Vorgang_und_Rueckweg_bei_Fehler()
+        public async Task Zusammenfuehren_in_einem_Vorgang_und_Rueckweg_bei_Fehler()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -174,12 +176,12 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1, erst.Quellen);
             Assert.NotNull(MehrzonenuebernahmeCtrl.Quelle(idGebaeude));
 
-            // Zweiter Lauf ersetzt: wieder drei Zonen, neue Ids, eine Quelle; die Gebäudefelder bleiben.
+            // Zweiter Lauf führt zusammen (MA-6): dieselben drei Zonen mit ihren Ids, eine Quelle; die Gebäudefelder bleiben.
             await Vormerken(h, pfad, MehrzonenuebernahmeCtrl.Quelle(idGebaeude));
             Assert.Null(h.Schreiben());
             var zweit = Stand(idGebaeude);
             Assert.Equal(3, zweit.Zonen.Count);
-            Assert.Empty(zweit.Zonen.Intersect(erst.Zonen));
+            Assert.Equal(erst.Zonen, zweit.Zonen);
             Assert.Equal(erst.Bauteile, zweit.Bauteile);
             Assert.Equal(1, zweit.Quellen);
             Assert.Equal(felder, Gebaeudefelder(idGebaeude));
@@ -194,7 +196,7 @@ namespace EPOS.Kern.Tests
                 Quelle = new GebaeudeQuelle(g.Format, g.Dateiname, "kein-hash", g.Groesse, g.Schemastand, g.Zeitpunkt,
                                             g.Programmfassung, g.Zonenregel, g.FehlendeEntitaeten)
             };
-            Mehrzonenersetzung e = MehrzonenuebernahmeCtrl.Ersetzen(idGebaeude, kaputt);
+            Mehrzonenersetzung e = MehrzonenuebernahmeCtrl.Zusammenfuehren(idGebaeude, kaputt, true);
             Assert.False(e.Ok);
             Assert.StartsWith("Das Mehrzonenmodell ist nicht übernommen", e.Meldung);
             Assert.Equal(zweit.Zonen, Stand(idGebaeude).Zonen);
@@ -203,8 +205,8 @@ namespace EPOS.Kern.Tests
 
             // Ohne Bauteilvorschlag und an einem Katalogsatz: benannt abgelehnt, bevor etwas geschrieben ist.
             Assert.Equal(MyResource.Resource.GEBMZ_MSG_OHNE_ZONEN,
-                         MehrzonenuebernahmeCtrl.Ersetzen(idGebaeude, gut with { Vorschlag = null }).Meldung);
-            Assert.False(MehrzonenuebernahmeCtrl.Ersetzen(-5, gut).Ok);
+                         MehrzonenuebernahmeCtrl.Zusammenfuehren(idGebaeude, gut with { Vorschlag = null }, false).Meldung);
+            Assert.False(MehrzonenuebernahmeCtrl.Zusammenfuehren(-5, gut, false).Ok);
             Assert.Equal(zweit.Zonen, Stand(idGebaeude).Zonen);
         }
     }
