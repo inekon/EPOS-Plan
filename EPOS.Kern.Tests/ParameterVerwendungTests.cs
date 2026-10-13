@@ -488,9 +488,9 @@ namespace EPOS.Kern.Tests
         /// und <c>WaermepumpeStammHuelle.Speichern</c>; Photovoltaik, Stromspeicher und
         /// Wechselrichter aus <c>ModulKatalogProfil.Felder</c> mit der Zuordnung in
         /// <c>PvAdminHuelle</c>/<c>StromspeicherAdminHuelle</c>/<c>WechselrichterAdminHuelle</c>.
-        /// <b>Abgeleitete Werte gehoeren nicht hinein:</b> <c>Investition_kwel</c> steht
-        /// im BHKW-Aufklapper ausdruecklich NICHT editierbar (der Kern rechnet ihn aus
-        /// den fuenf Posten nach) und fehlt deshalb in der BHKW-Liste.</para>
+        /// <b>Lesewerte gehoeren nicht hinein:</b> Die Geraetekosten stehen im Aufklapper
+        /// ausdruecklich NICHT editierbar - sie kommen aus der Satzvorlage des Katalogsatzes
+        /// (Welle KB-4) - und fehlen deshalb in den Listen der beiden Gewerke.</para>
         /// <para><b>Warum sie hier stehen und nicht aus dem Profil gelesen werden.</b>
         /// Ein Profilfeld mit <c>Editierbar</c> ist ein ANGEBOT; ob der Wert ankommt,
         /// entscheidet der Speicherweg der Huelle — und der liegt in einem

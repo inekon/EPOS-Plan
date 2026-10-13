@@ -48,85 +48,11 @@ namespace WindowsFormsApplication1
             foreach (DataRow r in dtS.Rows) Brennstoffart.Add(r["Bezeichner"].ToString());
         }
 
-        // --- SCHEMA-VORSORGE ---
-
-        /// <summary>
-        /// Stellt die Spalte <c>Wartungskosten_Einheit</c> in <c>Tab_Heizkessel</c> und
-        /// <c>Tab_Heizkessel_STAMM</c> sicher (Migrationsschritt 15) — die tolerante
-        /// Rückfallebene für den Fall, dass die Migration nie angestoßen wurde.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// <b>Warum es sie braucht.</b> <see cref="SchemaKatalog.Alle"/> ist ausdrücklich
-        /// der Umfang der SIMULATIONS-Eingabespalten; die Wartungseinheit gehört zum
-        /// Kostenmodul und steht deshalb nicht darin (Begründung dort). Ohne die Spalte
-        /// scheitern aber <see cref="Insert"/>, <see cref="Update"/> und
-        /// <c>HeizkesselCtrl.CopyFromStamm</c> sichtbar — genau das Fehlerbild, das
-        /// <c>StrompreisZerlegungCtrl.StelleSpaltenSicher</c> für Schritt 12 abfängt.
-        /// </para>
-        /// <para>
-        /// <b>Ohne Dialog, Schema je Tabelle.</b> Beides übernommen aus der korrigierten
-        /// Fassung von <c>StrompreisZerlegungCtrl.StelleSpaltenSicher</c> (Commit 87483b4):
-        /// Eine Vorsorge ist kein Bedienschritt und darf keine MessageBox zeigen, deshalb
-        /// <see cref="StilleDb"/> statt <c>DataRepository.ExecuteSQL</c>;
-        /// und das Schema wird je Tabelle gelesen, sonst greift die Existenzprüfung für
-        /// die zweite Tabelle nie und das <c>ALTER TABLE</c> läuft bei jedem Aufruf erneut.
-        /// Echte Fehler bleiben sichtbar — sie melden sich beim folgenden Schreibzugriff.
-        /// </para>
-        /// <para>
-        /// ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht, Schemaprobe statt
-        /// <c>GetOleDbSchemaTable</c> (S4c vorgezogen), SQLite-Spaltentypen statt
-        /// Access-Typen (S4d vorgezogen).
-        /// </para>
-        /// </remarks>
-        public static void StelleSpaltenSicher()
-        {
-            try
-            {
-                Dictionary<string, HashSet<string>> schemaJeTabelle =
-                    new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-
-                foreach (SchemaSpalte s in SchemaKatalog.Schritt15_KesselWartungseinheit)
-                {
-                    HashSet<string> vorhanden;
-                    if (!schemaJeTabelle.TryGetValue(s.Tabelle, out vorhanden))
-                    {
-                        vorhanden = StilleDb.SpaltenNamen(s.Tabelle);
-                        schemaJeTabelle[s.Tabelle] = vorhanden;
-                    }
-
-                    if (vorhanden == null) continue;          // Tabelle fehlt - nicht unsere Aufgabe
-                    if (vorhanden.Contains(s.Name)) continue;
-
-                    if (StilleDb.NonQuery(StilleDb.AlterTableAddColumn(
-                            s.Tabelle, s.Name, s.TypDefinition)) < 0)
-                    {
-                        Protokoll(s.Tabelle + "." + s.Name + ": Spalte konnte nicht angelegt werden.");
-                        continue;
-                    }
-
-                    // Frisch angelegte Spalte ist NULL. Dieselbe Vorbelegung wie
-                    // Migrationsschritt 15b - sonst haetten die Bestandszeilen
-                    // einen Betrag ohne Einheit.
-                    if (StilleDb.NonQuery(
-                            "UPDATE [" + s.Tabelle + "] SET [" + s.Name + "] = ? " +
-                            "WHERE [" + s.Name + "] IS NULL OR [" + s.Name + "] = ''",
-                            new DbParam("@e", DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR)) < 0)
-                        Protokoll(s.Tabelle + "." + s.Name + ": Vorbelegung fehlgeschlagen.");
-                }
-            }
-            catch (Exception ex)
-            {
-                Protokoll(ex.Message);
-            }
-        }
-
-        /// <summary>Protokolliert einen Vorsorge-Fehlschlag, ohne den Anwender zu stören.</summary>
-        private static void Protokoll(string meldung)
-        {
-            try { Console.WriteLine("HeizkesselStammCtrl.StelleSpaltenSicher: " + meldung); }
-            catch { }
-        }
+        // HIER STAND DIE SCHEMA-VORSORGE StelleSpaltenSicher() - sie legte die Spalte
+        // Wartungskosten_Einheit nach, wo Migrationsschritt 15 nie gelaufen war. Mit Welle KB-4
+        // ist die Spalte ENTFALLEN (GeraetekostenEntfallSchema, Anwenderentscheid 13.10.2026);
+        // eine Vorsorge, die sie wieder anlegt, wuerde den Schemaschritt zurueckdrehen. Den
+        // Zeitbezug der Wartung traegt jetzt die BEMESSUNG der Betriebsposition der Satzvorlage.
 
         // --- READ ---
 
@@ -159,7 +85,7 @@ namespace WindowsFormsApplication1
         /// Zusage machen kann: Ohne Sortierung bestimmt die ACE-Engine die Reihenfolge,
         /// und zwei Lesewege auf dieselbe Tabelle koennen VERSCHIEDENE Zeilen liefern.
         /// Genau das war in <c>Form_Heizkessel_Bearbeiten.SetControls</c> angelegt, das
-        /// die Anzeigefelder aus einem <c>RecordSet</c> und die Wartungskosten aus diesem
+        /// die Anzeigefelder aus einem <c>RecordSet</c> und die Kostenfelder aus diesem
         /// Controller fuellte - bei einer Dublette konnte die Maske Werte aus ZWEI Zeilen
         /// mischen. Die kleinste ID ist dieselbe Wahl, die Migrationsschritt 17 fuer
         /// Anlagendubletten trifft: Sie ist die zuerst angelegte Zeile.
@@ -281,7 +207,7 @@ namespace WindowsFormsApplication1
         /// ist woertlich uebernommen; nur die <c>MessageBox</c> ist zum
         /// Rueckgabewert geworden, damit der Aufrufer die Meldung waehlt.</para>
         ///
-        /// <para>Die Spaltenliste bleibt die des Imports: <c>Wartungskosten_Einheit</c>,
+        /// <para>Die Spaltenliste bleibt die des Imports:
         /// <c>Vorlauf</c> und <c>Ruecklauf</c> schreibt er NICHT (anders als
         /// <see cref="Insert"/>) — sie sind Anwenderfelder. <c>Brennwert</c> (aus der
         /// Bauart), <c>Wirkungsgrad_Teillast30</c> und <c>Mindestleistung</c> (aus Satz
@@ -512,7 +438,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Import-Ueberschreiben (Dublettenkonzept 4.2): aktualisiert GENAU die Felder,
         /// die der VDI-Import liefert, adressiert per ID. Vom Anwender gepflegte Felder
-        /// (Bezeichner, Beschreibung, Investitionskosten, Wartungskosten(_Einheit),
+        /// (Bezeichner, Beschreibung,
         /// Nutzungsdauer, Vorlauf, Ruecklauf, Anfahrverlust, Mindestlaufzeit, ReadOnly)
         /// bleiben unangetastet - der Import befuellt sie nicht.
         /// </summary>
@@ -1376,8 +1302,8 @@ namespace WindowsFormsApplication1
         /// (<c>… WHERE Bezeichner='" + listBox.Text + "'</c>, Befund W14-B12). Hier steht
         /// derselbe Zugriff mit <see cref="DbParam"/>; ein Bezeichner mit Apostroph
         /// zerreisst das Praedikat nicht mehr.</para>
-        /// <para><b>Die Formatierung ist woertlich uebernommen</b>: Leistung und
-        /// Investitionskosten mit <c>F2</c> (Z. 61-62), Vorlauf und Ruecklauf als leerer
+        /// <para><b>Die Formatierung ist woertlich uebernommen</b>: die Leistung
+        /// mit <c>F2</c> (Z. 61-62), Vorlauf und Ruecklauf als leerer
         /// Text bei <c>NULL</c> (Z. 64-65), der Brennstoff als NACHSCHLAG in
         /// <see cref="Brennstoffart"/> ueber die 1-basierte Nummer (Z. 59). Der Schalter
         /// „Brennwertkessel" kommt sprachneutral als <c>"1"</c> oder <c>"0"</c> — die
@@ -1552,7 +1478,7 @@ namespace WindowsFormsApplication1
         /// ueberschrieben — deshalb hier abbrechen.</item>
         /// <item><b>Satz VOLLSTAENDIG lesen</b> (Z. 342-351) und nur die angezeigten
         /// Felder aendern: <see cref="Update"/> schreibt alle Spalten, ein halb gefuelltes
-        /// Modell wuerde Wirkungsgrade, Emissionen und Wartungskosten nullen.</item>
+        /// Modell wuerde Wirkungsgrade und Emissionen nullen.</item>
         /// <item><b>Schreiben</b> (Z. 355). Der Grund einer Ablehnung kommt als Text
         /// zurueck statt als <c>MessageBox</c> — eine Razor-Komponente hat keine.</item>
         /// </list>
@@ -1606,7 +1532,7 @@ namespace WindowsFormsApplication1
         /// eines noch strittig ist — sonst stuende nach einer Ablehnung ein halb
         /// geaenderter Satz im Speicher, den der naechste Aufruf mitschriebe.</para>
         /// <para><b>Was nicht mitkommt, bleibt stehen</b> (<c>null</c>-Regel des
-        /// Datensatzes). Der Energietraeger und die Bezugsgroesse der Wartungskosten
+        /// Datensatzes). Der Energietraeger und die Einheit des Bereitschaftsverlusts
         /// sind Nachschlagewerte: Sie kommen als TEXT herein und werden gegen ihre
         /// Liste gehalten; ein leeres Feld laesst den gespeicherten Wert stehen, ein
         /// unbekannter Text wird benannt abgelehnt.</para>

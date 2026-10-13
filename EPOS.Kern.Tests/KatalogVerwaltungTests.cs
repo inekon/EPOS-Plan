@@ -581,7 +581,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Brennwert-Kessel", satz[KatalogBrowserProfil.FeldBeschreibung]);
             Assert.Equal(ctrl.Brennstoffart[2], satz[KatalogBrowserProfil.FeldBrennstoff]);
             Assert.Equal("22,00", satz[KatalogBrowserProfil.FeldPtherm]);
-            Assert.Equal("0,00", satz[KatalogBrowserProfil.FeldInvestitionskosten]);
+            // Welle KB-4: An der Stelle der Investition steht der Lesewert der Satzvorlage.
+            // Dieser Satz fuehrt keine (sein Preis war 0, und 0 wird nicht gesaet) - dann
+            // bleibt das Feld LEER statt eine Null zu behaupten.
+            Assert.Equal("", satz[KatalogBrowserProfil.FeldGeraetekosten]);
             Assert.Equal("1", satz[KatalogBrowserProfil.FeldBrennwert]);
 
             // Vorlauf und Ruecklauf sind NULL - der Bestand zeigte dort einen leeren Text.
