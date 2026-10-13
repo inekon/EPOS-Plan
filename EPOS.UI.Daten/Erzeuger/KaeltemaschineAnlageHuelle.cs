@@ -73,6 +73,18 @@ namespace WindowsFormsApplication1
                 ["Schloss"] = Schlosswege.Aus(KaeltemaschineStammCtrl.SchlossSetzen),
                 ["KatalogLoeschen"] = new Func<int, string>(KatalogLoeschen),
                 ["KatalogGaben"] = new Func<IReadOnlyDictionary<string, object>>(KaeltemaschineKatalogHuelle.Gaben),
+                // KD1 (Anwenderentscheid 13.10.2026): der Weg hinter „Energiekosten..." - die TRAEGERKARTE des
+                // Kuehltraegers der Anlage. Er ist PLATTFORMFREI, weil die Energietraegerverwaltung mit ihrer
+                // Huelle selbst in EPOS.UI.Daten liegt (dieselbe Gabe wie auf der Kostenseite, KD6a); die Huelle
+                // fuellt ihn deshalb selbst - Muster der Naht WaermepumpeAnlageGaben -, Windows und iOS reichen
+                // ihn nur durch. Die Komponente engt den Katalog auf STROM ein (EnergietraegerZulaessigkeit),
+                // das Geraet ist die Projektkopie der Maschine. Ohne Traeger kein Satz: dann bleibt die
+                // benannte Sperre im Dialog stehen.
+                ["EnergietraegerGaben"] = new Func<int, int, IReadOnlyDictionary<string, object>>(
+                    (traegerId, geraeteId) => traegerId <= 0
+                        ? null
+                        : new EnergietraegerHuelle(projektId).Gaben(traegerId, DbWerte.ERZEUGER_KAELTEMASCHINE,
+                                                                    geraeteId)),
                 // Die Kostensummen der Anlage (Kostenkomponente 11) fuer die Zusammenfassung der Detailzeile.
                 ["Kostensumme"] = new Func<int, (double Invest, double Betrieb)>(id => Kostensumme(projektId, id)),
                 // Die Kenndaten als Bild: Kennlinie (EER, Kaelteleistung) und Teillastkurve - je Projektkopie
