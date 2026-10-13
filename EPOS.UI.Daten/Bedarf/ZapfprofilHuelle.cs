@@ -201,6 +201,53 @@ namespace WindowsFormsApplication1
                     Id = g.Id,
                     Name = string.IsNullOrWhiteSpace(g.Name) ? "#" + g.Id.ToString(CultureInfo.InvariantCulture) : g.Name.Trim()
                 }).ToList();
+            daten.Gebaeudekalender = ZapfprofilCtrl.GebaeudekalenderDesProjekts(idProjekt).Select(AlsGebaeudekalender).ToList();
+        }
+
+        /// <summary>
+        /// Der Kalender eines Gebäudes, wie eine gebundene Zone ihn liest, als fertige Texte der Karte „Kalender" (ZB5):
+        /// das Wochenende als Kürzel der Tage („Sa + So"), das Feiertagsland mit seinem Namen (leer = bundeseinheitlich)
+        /// und je Ferienzeitraum „Name: von – bis" (ohne Namen „Ferien n", ohne Beginn ab dem 1. Januar).
+        /// </summary>
+        internal static ZapfprofilGebaeudekalenderDaten AlsGebaeudekalender(ZapfprofilCtrl.ZapfGebaeudekalender g)
+        {
+            var d = new ZapfprofilGebaeudekalenderDaten
+            {
+                Id = g.Id,
+                Name = string.IsNullOrWhiteSpace(g.Name) ? "#" + g.Id.ToString(CultureInfo.InvariantCulture) : g.Name.Trim(),
+                Wochenende = Wochenendtext(g.Wochenendtage),
+                Feiertagsland = Landname(g.Feiertagsland)
+            };
+            string vorgabename = Text_("ZPG_LBL_FERIEN", "Ferien {0}");
+            string muster = Text_("ZPG_KAL_FERIENTEXT", "{0}: {1} – {2}");
+            int n = 0;
+            foreach (ZonenferienStand f in g.Ferien ?? new ZonenferienStand[0])
+            {
+                n++;
+                int? ende = Gemeinjahrestag(f?.Ende);
+                if (f == null || !ende.HasValue) continue;
+                string name = string.IsNullOrWhiteSpace(f.Name) ? Format(vorgabename, n) : f.Name.Trim();
+                d.Ferien.Add(Format(muster, name, Gemeinjahrdatumtext.Anzeigetext(Gemeinjahrestag(f.Beginn) ?? 1),
+                                    Gemeinjahrdatumtext.Anzeigetext(ende)));
+            }
+            return d;
+        }
+
+        /// <summary>Die Wochenmaske (Mo = Bit 0) als Kürzel der Tage, „Sa + So"; leer gilt die Vorgabe Samstag und Sonntag.</summary>
+        internal static string Wochenendtext(int? maske)
+        {
+            int m = maske ?? (1 << 5 | 1 << 6);
+            var tage = Enumerable.Range(0, 7).Where(t => (m & (1 << t)) != 0).Select(t => Kalendertage.Wochentagname(t, kurz: true)).ToList();
+            return string.Join(" + ", tage);
+        }
+
+        /// <summary>Der Name eines Feiertagslands (ISO-Kürzel) in der Oberflächensprache; leer ohne Land oder für ein unbekanntes.</summary>
+        internal static string Landname(string kuerzel)
+        {
+            if (string.IsNullOrWhiteSpace(kuerzel)) return "";
+            int i = Landesfeiertage.BUNDESLAENDER.ToList().IndexOf(kuerzel.Trim().ToUpperInvariant());
+            string[] namen = Text_("KOND_TXT_KALB_BUNDESLAENDER", "").Split(';');
+            return i >= 0 && i < namen.Length && namen[i].Length > 0 ? namen[i] : kuerzel.Trim();
         }
 
         /// <summary>Ein Tagesgangsatz als Eintrag der Auswahl: Name · Katalogversion, Herkunft als Status; unvollständig = gesperrt mit Grund.</summary>
@@ -377,8 +424,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Angaben der Stufen Erweitert und Experte einer Zone des Kerns (5.3): Jahrestage der
-        /// Ferien als Tag und Monat des Rechenjahrs (0, 366 und leer = keine Angabe) — JEDER Zeitraum der
-        /// Liste 1:1 als Zeile samt Name, aufgefüllt auf die Zeilen der Maske —, Wohnungstabelle in ihrer
+        /// Ferien als Jahrestage des Gemeinjahrs (0, 366 und leer = keine Angabe) — JEDER Zeitraum der
+        /// Liste 1:1 als Zeile samt Name, ohne Auffüllen —, Wohnungstabelle in ihrer
         /// Reihenfolge, Texte leer statt <c>null</c>.
         /// </summary>
         internal static ZapfprofilZonenangabenDaten AlsAngaben(ZonenStand z)
@@ -411,14 +458,11 @@ namespace WindowsFormsApplication1
             foreach (ZonenferienStand f in z.Ferien ?? new ZonenferienStand[0])
             {
                 if (f == null) continue;
-                (int? bt, int? bm) = AlsDatum(f.Beginn);
-                (int? et, int? em) = AlsDatum(f.Ende);
                 a.Ferien.Add(new ZapfprofilFerienDaten
                 {
-                    Name = f.Name, BeginnTag = bt, BeginnMonat = bm, EndeTag = et, EndeMonat = em
+                    Name = f.Name, Von = Gemeinjahrestag(f.Beginn), Bis = Gemeinjahrestag(f.Ende)
                 });
             }
-            while (a.Ferien.Count < ZapfprofilZonenangabenDaten.FERIENZEITRAEUME) a.Ferien.Add(new ZapfprofilFerienDaten());
             for (int m = 0; m < ZapfprofilZonenangabenDaten.MONATE; m++)
                 a.Auslastung[m] = z.Auslastung != null && m < z.Auslastung.Length ? z.Auslastung[m] : null;
             foreach (WohnungstypStand w in (z.Wohnungen ?? new WohnungstypStand[0]).OrderBy(w => w.Reihenfolge))
@@ -446,12 +490,12 @@ namespace WindowsFormsApplication1
             var ferien = new List<ZonenferienStand>();
             foreach (ZapfprofilFerienDaten f in a.Ferien ?? new List<ZapfprofilFerienDaten>())
             {
-                int? ende = Jahrestag(f?.EndeTag, f?.EndeMonat);
+                int? ende = Gemeinjahrestag(f?.Bis);
                 if (f == null || !ende.HasValue) continue;
                 ferien.Add(new ZonenferienStand
                 {
                     Name = string.IsNullOrWhiteSpace(f.Name) ? null : f.Name,
-                    Beginn = Jahrestag(f.BeginnTag, f.BeginnMonat),
+                    Beginn = Gemeinjahrestag(f.Von),
                     Ende = ende
                 });
             }
@@ -500,6 +544,10 @@ namespace WindowsFormsApplication1
                 Wohnungen = wohnungen.AsReadOnly()
             };
         }
+
+        /// <summary>Ein Jahrestag des Gemeinjahrs (1 … 365); <c>null</c>, 0, 366 und alles außerhalb = keine Angabe.</summary>
+        internal static int? Gemeinjahrestag(int? jahrestag)
+            => jahrestag is int t && t >= 1 && t <= Zapfkalender.TAGE ? t : null;
 
         /// <summary>
         /// Ein Jahrestag des Kerns (1 … 365) als Tag und Monat des Rechenjahrs ohne Schaltjahr;
@@ -1128,7 +1176,8 @@ namespace WindowsFormsApplication1
                 WocheZapfungKw = woche.ZapfungKw.ToArray(),
                 WocheZirkulationKw = woche.ZirkulationKw.ToArray(),
                 MonateZapfungKwh = zapfung.MonatssummenKwh.ToArray(),
-                MonateZirkulationKwh = zirkulation.MonatssummenKwh.ToArray()
+                MonateZirkulationKwh = zirkulation.MonatssummenKwh.ToArray(),
+                Tagtypen = kalender?.Select(t => (int)t).ToArray()
             };
 
             string monatsname = Monatsname(monat);
@@ -1333,13 +1382,12 @@ namespace WindowsFormsApplication1
             {
                 ZapfprofilFerienDaten f = a.Ferien[i];
                 if (f == null || !f.Belegt) continue;
-                bool beginn = f.BeginnTag.HasValue || f.BeginnMonat.HasValue;
-                bool beginnGut = !beginn || Jahrestag(f.BeginnTag, f.BeginnMonat).HasValue;
-                bool endeGut = Jahrestag(f.EndeTag, f.EndeMonat).HasValue;
+                bool beginnGut = !f.Von.HasValue || Gemeinjahrestag(f.Von).HasValue;
+                bool endeGut = Gemeinjahrestag(f.Bis).HasValue;
                 if (!beginnGut || !endeGut)
                     m.Add(Fehler("ZPG_MSG_FERIEN_UNGUELTIG", name,
                         Format(Text_("ZPG_MSG_FERIEN_UNGUELTIG",
-                                     "Zone „{0}“: Ferienzeitraum {1} braucht ein Ende und für Beginn und Ende je einen gültigen Tag und Monat."),
+                                     "Zone „{0}“: Ferienzeitraum {1} braucht ein Ende („bis“); Beginn und Ende sind Tage des Jahres ohne Schalttag."),
                                name, i + 1)));
             }
 
@@ -2003,15 +2051,41 @@ namespace WindowsFormsApplication1
             t.KalenderNutzungsart = Text_("ZPG_KALENDER_NUTZUNGSART", t.KalenderNutzungsart);
             t.KalenderGebaeude = Text_("ZPG_KALENDER_GEBAEUDE", t.KalenderGebaeude);
             t.HinweisKalender = Text_("ZPG_HINW_KALENDER", t.HinweisKalender);
+            t.LabelKalenderQuelle = Text_("ZPG_LBL_KAL_QUELLE", t.LabelKalenderQuelle);
+            t.KalenderAusGebaeude = Text_("ZPG_KAL_AUS_GEBAEUDE", t.KalenderAusGebaeude);
+            t.KalenderWochenende = Text_("ZPG_KAL_WOCHENENDE", t.KalenderWochenende);
+            t.KalenderFeiertage = Text_("ZPG_KAL_FEIERTAGE", t.KalenderFeiertage);
+            t.KalenderFerien = Text_("ZPG_KAL_FERIEN", t.KalenderFerien);
+            t.KalenderBundeseinheitlich = Text_("ZPG_KAL_BUNDESEINHEITLICH", t.KalenderBundeseinheitlich);
+            t.KalenderKeineFerien = Text_("ZPG_KAL_KEINE_FERIEN", t.KalenderKeineFerien);
+            t.KalenderFerienZoneVor = Text_("ZPG_KAL_FERIEN_ZONE_VOR", t.KalenderFerienZoneVor);
+            t.SummeGebaeude = Text_("ZPG_KAL_SUM_GEBAEUDE", t.SummeGebaeude);
+            t.SummeNutzungsart = Text_("ZPG_KAL_SUM_NUTZUNGSART", t.SummeNutzungsart);
+            t.SummeFerien = Text_("ZPG_KAL_SUM_FERIEN", t.SummeFerien);
+            t.SummeFerienEins = Text_("ZPG_KAL_SUM_FERIEN_EINS", t.SummeFerienEins);
+            t.SummeEigene = Text_("ZPG_KAL_SUM_EIGENE", t.SummeEigene);
+            t.SummeEigeneEins = Text_("ZPG_KAL_SUM_EIGENE_EINS", t.SummeEigeneEins);
+            t.SummeKeineEigenen = Text_("ZPG_KAL_SUM_KEINE_EIGENEN", t.SummeKeineEigenen);
+            t.SummeKeineFerien = Text_("ZPG_KAL_SUM_KEINE", t.SummeKeineFerien);
+            t.SummeFeiertage = Text_("ZPG_KAL_SUM_FEIERTAGE", t.SummeFeiertage);
+            t.SummeBundeseinheitlich = Text_("ZPG_KAL_SUM_BUNDESEINHEITLICH", t.SummeBundeseinheitlich);
+            t.LabelEigeneFerien = Text_("ZPG_LBL_KAL_EIGENE_FERIEN", t.LabelEigeneFerien);
             t.LabelFerien = Text_("ZPG_LBL_FERIEN", t.LabelFerien);
-            t.LabelBeginnTag = Text_("ZPG_LBL_BEGINN_TAG", t.LabelBeginnTag);
-            t.LabelBeginnMonat = Text_("ZPG_LBL_BEGINN_MONAT", t.LabelBeginnMonat);
-            t.LabelEndeTag = Text_("ZPG_LBL_ENDE_TAG", t.LabelEndeTag);
-            t.LabelEndeMonat = Text_("ZPG_LBL_ENDE_MONAT", t.LabelEndeMonat);
+            t.LabelFerienName = Text_("ZPG_LBL_FERIEN_NAME", t.LabelFerienName);
+            t.LabelFerienVon = Text_("ZPG_LBL_FERIEN_VON", t.LabelFerienVon);
+            t.LabelFerienBis = Text_("ZPG_LBL_FERIEN_BIS", t.LabelFerienBis);
+            t.KnopfFerienNeu = Text_("ZPG_KNOPF_FERIEN_NEU", t.KnopfFerienNeu);
+            t.KnopfFerienEntfernen = Text_("ZPG_KNOPF_FERIEN_ENTFERNEN", t.KnopfFerienEntfernen);
             t.HinweisFerien = Text_("ZPG_HINW_FERIEN", t.HinweisFerien);
-            t.LabelBundesland = Text_("ZPG_LBL_BUNDESLAND", t.LabelBundesland);
-            t.BundeslandKlimaregion = Text_("ZPG_BUNDESLAND_KLIMAREGION", t.BundeslandKlimaregion);
-            t.GrundBundesland = Text_("ZPG_GRUND_BUNDESLAND", t.GrundBundesland);
+            t.LabelJahresraster = Text_("ZPG_LBL_JAHRESRASTER", t.LabelJahresraster);
+            t.TagtypFerien = Text_("ZPG_TAGTYP_FERIEN", t.TagtypFerien);
+            t.HinweisJahresraster = Text_("ZPG_HINW_JAHRESRASTER", t.HinweisJahresraster);
+            t.HinweisJahresrasterOhne = Text_("ZPG_HINW_JAHRESRASTER_OHNE", t.HinweisJahresrasterOhne);
+            t.PlatzhalterFerienVon = Text_("ZPG_PLATZHALTER_FERIEN_VON", t.PlatzhalterFerienVon);
+            t.PlatzhalterFerienBis = Text_("ZPG_PLATZHALTER_FERIEN_BIS", t.PlatzhalterFerienBis);
+            t.HinweisDatumFormat = Text_("ZPG_HINW_DATUM_FORMAT", t.HinweisDatumFormat);
+            t.HinweisDatumJahr = Text_("ZPG_HINW_DATUM_JAHR", t.HinweisDatumJahr);
+            t.MeldungGemeinjahr = Text_("ZPG_MSG_GEMEINJAHR", t.MeldungGemeinjahr);
             t.LabelJahresmesswert = Text_("ZPG_LBL_JAHRESMESSWERT", t.LabelJahresmesswert);
             t.LabelMesswertEinheit = Text_("ZPG_LBL_MESSWERT_EINHEIT", t.LabelMesswertEinheit);
             t.MesswertKwh = Text_("ZPG_MESSWERT_KWH", t.MesswertKwh);

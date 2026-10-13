@@ -242,17 +242,17 @@ namespace EPOS.Kern.Tests
             List<ZapfprofilFerienDaten> zeilen = e.Zonen[0].Angaben.Ferien;
             Assert.Equal(6, zeilen.Count);
             Assert.Equal(new[] { "Winter", null, "Ostern", "Pfingsten", "Sommer", "Herbst" }, zeilen.Select(f => f.Name));
-            Assert.Equal((21, 12, 6, 1), (zeilen[0].BeginnTag, zeilen[0].BeginnMonat, zeilen[0].EndeTag, zeilen[0].EndeMonat));
-            Assert.Null(zeilen[1].BeginnTag);
+            Assert.Equal((355, 6), (zeilen[0].Von, zeilen[0].Bis));     // 21.12. bis 06.01.
+            Assert.Null(zeilen[1].Von);
             Assert.Equal(6, e.Zonen[0].Angaben.Ueberschrieben());
 
             ZapfprofilStand zurueck = ZapfprofilHuelle.AlsStand(e, stand);
             Assert.Equal(Sechs(), zurueck.Zonen[0].Ferien);
 
-            // Eine Zone mit zwei Zeiträumen zeigt die vier Zeilen der Maske, gibt aber nur zwei zurück.
+            // Eine Zone mit zwei Zeiträumen zeigt genau zwei Zeilen — ohne Auffüllen — und gibt zwei zurück.
             var kurz = new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { zone with { Ferien = Sechs().Take(2).ToArray() } }, null);
             ZapfprofilEingabeDaten k = ZapfprofilHuelle.AlsEingabe(kurz);
-            Assert.Equal(ZapfprofilZonenangabenDaten.FERIENZEITRAEUME, k.Zonen[0].Angaben.Ferien.Count);
+            Assert.Equal(2, k.Zonen[0].Angaben.Ferien.Count);
             Assert.Equal(Sechs().Take(2), ZapfprofilHuelle.AlsStand(k, kurz).Zonen[0].Ferien);
         }
 

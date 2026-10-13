@@ -4502,11 +4502,11 @@ namespace WindowsFormsApplication1
             yield return Wahl("zirkulation_vorhanden", "ZirkulationVorhanden", KiDialogTexte.ZpgZirkulationVorhandenName,
                               KiDialogTexte.ZpgZirkulationVorhandenErl, false);
             yield return Wahl("kalender", "Kalender", KiDialogTexte.ZpgKalenderName, KiDialogTexte.ZpgKalenderErl, false);
-            // Die vier Ferienzeitraeume als TABELLE (Muster Gebaeudekatalog): Spalten mit dem Zeitraum als Kennzeichen.
-            yield return Ferienspalte("ferien_beginn_tag", "BeginnTag", KiDialogTexte.ZpgFerienBeginnTagName, 31);
-            yield return Ferienspalte("ferien_beginn_monat", "BeginnMonat", KiDialogTexte.ZpgFerienBeginnMonatName, 12);
-            yield return Ferienspalte("ferien_ende_tag", "EndeTag", KiDialogTexte.ZpgFerienEndeTagName, 31);
-            yield return Ferienspalte("ferien_ende_monat", "EndeMonat", KiDialogTexte.ZpgFerienEndeMonatName, 12);
+            // Die eigenen Ferienzeitraeume als TABELLE (Muster Gebaeudekatalog): Spalten mit dem Zeitraum als Kennzeichen;
+            // die Zeile hinter dem letzten Zeitraum legt einen neuen an (Karte „Kalender", ZB5).
+            yield return Ferienspalte("ferien_name", "Name", KiDialogTexte.ZpgFerienNameName);
+            yield return Ferienspalte("ferien_von", "Von", KiDialogTexte.ZpgFerienVonName);
+            yield return Ferienspalte("ferien_bis", "Bis", KiDialogTexte.ZpgFerienBisName);
             yield return Zahl("jahresmesswert", "Jahresmesswert", KiDialogTexte.ZpgJahresmesswertName,
                               KiDialogTexte.ZpgJahresmesswertErl, null, 0, null);
             yield return Wahl("messwert_einheit", "MesswertEinheit", KiDialogTexte.ZpgMesswertEinheitName,
@@ -4581,9 +4581,9 @@ namespace WindowsFormsApplication1
                 => new KiDialogFeld(name, ZAPFPROFIL_SICHT + "." + eigenschaft, anzeigename, KiParameterTyp.Zahl, erlaeuterung,
                                     einheit: einheit, leerErlaubt: true, min: min, max: max);
 
-            static KiDialogFeld Ferienspalte(string name, string eigenschaft, string anzeigename, double max)
-                => new KiDialogFeld(name, ZAPFPROFIL_SICHT + ".Ferien[]." + eigenschaft, anzeigename, KiParameterTyp.Ganzzahl,
-                                    KiDialogTexte.ZpgFerienErl, leerErlaubt: true, zeilenkennzeichen: "Zeitraum", min: 1, max: max);
+            static KiDialogFeld Ferienspalte(string name, string eigenschaft, string anzeigename)
+                => new KiDialogFeld(name, ZAPFPROFIL_SICHT + ".Ferien[]." + eigenschaft, anzeigename, KiParameterTyp.Text,
+                                    KiDialogTexte.ZpgFerienErl, leerErlaubt: true, zeilenkennzeichen: "Zeitraum");
 
             static KiDialogFeld Wahl(string name, string eigenschaft, string anzeigename, string erlaeuterung, bool leer)
                 => new KiDialogFeld(name, ZAPFPROFIL_SICHT + "." + eigenschaft, anzeigename, KiParameterTyp.Wahl, erlaeuterung,

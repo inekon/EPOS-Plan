@@ -1969,10 +1969,9 @@
         internal static string ZpgKalenderName => MyResource.Resource.ZPG_LBL_KALENDER;
         internal static string ZpgKalenderErl => MyResource.Resource.KI_DLG_ZPG_KALENDER_ERL;
 
-        internal static string ZpgFerienBeginnTagName => MyResource.Resource.ZPG_LBL_BEGINN_TAG;
-        internal static string ZpgFerienBeginnMonatName => MyResource.Resource.ZPG_LBL_BEGINN_MONAT;
-        internal static string ZpgFerienEndeTagName => MyResource.Resource.ZPG_LBL_ENDE_TAG;
-        internal static string ZpgFerienEndeMonatName => MyResource.Resource.ZPG_LBL_ENDE_MONAT;
+        internal static string ZpgFerienNameName => MyResource.Resource.KI_DLG_ZPG_FERIEN_NAME_NAME;
+        internal static string ZpgFerienVonName => MyResource.Resource.KI_DLG_ZPG_FERIEN_VON_NAME;
+        internal static string ZpgFerienBisName => MyResource.Resource.KI_DLG_ZPG_FERIEN_BIS_NAME;
         internal static string ZpgFerienErl => MyResource.Resource.KI_DLG_ZPG_FERIEN_ERL;
         internal static string ZpgJahresmesswertName => MyResource.Resource.ZPG_LBL_JAHRESMESSWERT;
         internal static string ZpgJahresmesswertErl => MyResource.Resource.KI_DLG_ZPG_JAHRESMESSWERT_ERL;

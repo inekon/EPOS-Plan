@@ -74027,11 +74027,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Ferienzeitraum der gewählten Zone als Beginn Tag, Beginn Monat, Ende Tag und Ende Monat; leer = keine Ferien. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien · bis ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_FERIEN_BIS_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_FERIEN_BIS_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein eigener Ferienzeitraum der gewählten Zone: Name, von und bis als TT.MM. im Jahr ohne Schalttag; leer = keine Angabe. Die Zeile hinter dem letzten Zeitraum legt einen neuen an. Eigene Ferien gehen den Ferien eines Gebäudes vor. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_FERIEN_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_ZPG_FERIEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien · Name ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_FERIEN_NAME_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_FERIEN_NAME_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien · von ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZPG_FERIEN_VON_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZPG_FERIEN_VON_NAME", resourceCulture);
             }
         }
         
@@ -151973,15 +152000,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die wie Klimaregion ähnelt.
-        /// </summary>
-        public static string ZPG_BUNDESLAND_KLIMAREGION {
-            get {
-                return ResourceManager.GetString("ZPG_BUNDESLAND_KLIMAREGION", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die P{0} · {1} kW (Rang {2}) ähnelt.
         /// </summary>
         public static string ZPG_DAUERLINIE_MARKE {
@@ -152675,15 +152693,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkt erst mit einer Kalendertabelle je Bundesland; bis dahin gelten Wochenende und Feiertage der Klimaregion. ähnelt.
-        /// </summary>
-        public static string ZPG_GRUND_BUNDESLAND {
-            get {
-                return ResourceManager.GetString("ZPG_GRUND_BUNDESLAND", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Dauerlinie zeigt die Stufe Erweitert. ähnelt.
         /// </summary>
         public static string ZPG_GRUND_DAUERLINIE {
@@ -152999,7 +153008,25 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Leer = keine Ferien. Ein Zeitraum über den Jahreswechsel beginnt im Dezember; ohne Beginn läuft er vom 1. Januar an. Gerechnet wird im Jahr ohne Schalttag. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Format TT.MM., ohne Jahr (Gemeinjahr), etwa 01.07. bis 14.08. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_DATUM_FORMAT {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_DATUM_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Jahr: Das Jahr wurde verworfen, es gilt das Gemeinjahr. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_DATUM_JAHR {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_DATUM_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigene Ferien der Zone gehen vor: Trägt die Zone einen Zeitraum, gelten die Ferien des Gebäudes nicht. Ein Zeitraum zählt, sobald er ein Ende hat; über den Jahreswechsel beginnt er im Dezember, ohne Beginn läuft er vom 1. Januar an. Gerechnet wird im Jahr ohne Schalttag. ähnelt.
         /// </summary>
         public static string ZPG_HINW_FERIEN {
             get {
@@ -153026,6 +153053,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Tag der Tagtyp, mit dem die Zone rechnet — aus Wochenende, Feiertagen und Ferien, wie die Vorschau sie liest. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_JAHRESRASTER {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_JAHRESRASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Jahresraster erscheint mit der Vorschau. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_JAHRESRASTER_OHNE {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_JAHRESRASTER_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahresreihe ist abgebrochen — „Stochastisch rechnen“ zieht sie erneut. ähnelt.
         /// </summary>
         public static string ZPG_HINW_JAHRESREIHE_ABGEBROCHEN {
@@ -153044,7 +153089,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe · Kalender der Nutzungsart; ein Gebäude belegt Ferien und Fläche nur vor — eigene Ferien der Zone gehen vor. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle bestimmt Wochenende, Feiertage und Ferien der Zone: der Kalender der Nutzungsart oder ein Gebäude des Projekts. Ein Gebäude belegt Ferien und Fläche nur vor. ähnelt.
         /// </summary>
         public static string ZPG_HINW_KALENDER {
             get {
@@ -153422,7 +153467,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien des Gebäudes {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude „{0}“ ähnelt.
         /// </summary>
         public static string ZPG_KALENDER_GEBAEUDE {
             get {
@@ -153467,6 +153512,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus dem Gebäude „{0}“ ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_AUS_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_AUS_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur bundeseinheitliche ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_BUNDESEINHEITLICH {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_BUNDESEINHEITLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertage ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_FEIERTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_FEIERTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_FERIEN {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} – {2} ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_FERIENTEXT {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_FERIENTEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone trägt eigene Ferien; die Ferien des Gebäudes gelten nicht. ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_FERIEN_ZONE_VOR {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_FERIEN_ZONE_VOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_KEINE_FERIEN {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_KEINE_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kalibrierung läuft — Messreihe „{0}“ ähnelt.
         /// </summary>
         public static string ZPG_KAL_LAEUFT {
@@ -153481,6 +153589,105 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_KAL_QUELLE {
             get {
                 return ResourceManager.GetString("ZPG_KAL_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bundeseinheitliche Feiertage ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_SUM_BUNDESEINHEITLICH {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_SUM_BUNDESEINHEITLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} eigene Ferienzeiträume ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_SUM_EIGENE {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_SUM_EIGENE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 eigener Ferienzeitraum ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_SUM_EIGENE_EINS {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_SUM_EIGENE_EINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertage {0} ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_SUM_FEIERTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_SUM_FEIERTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Ferienzeiträume ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_SUM_FERIEN {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_SUM_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Ferienzeitraum ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_SUM_FERIEN_EINS {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_SUM_FERIEN_EINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Gebäude „{0}“ ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_SUM_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_SUM_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Ferien ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_SUM_KEINE {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_SUM_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine eigenen Ferien ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_SUM_KEINE_EIGENEN {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_SUM_KEINE_EIGENEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender der Nutzungsart ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_SUM_NUTZUNGSART {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_SUM_NUTZUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenende ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_WOCHENENDE {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_WOCHENENDE", resourceCulture);
             }
         }
         
@@ -153814,6 +154021,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_KAT_SPERRE_TAGESGANG {
             get {
                 return ResourceManager.GetString("ZPG_KAT_SPERRE_TAGESGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
+        /// </summary>
+        public static string ZPG_KNOPF_FERIEN_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("ZPG_KNOPF_FERIEN_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die + Ferien ähnelt.
+        /// </summary>
+        public static string ZPG_KNOPF_FERIEN_NEU {
+            get {
+                return ResourceManager.GetString("ZPG_KNOPF_FERIEN_NEU", resourceCulture);
             }
         }
         
@@ -154313,24 +154538,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Beginn Monat ähnelt.
-        /// </summary>
-        public static string ZPG_LBL_BEGINN_MONAT {
-            get {
-                return ResourceManager.GetString("ZPG_LBL_BEGINN_MONAT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Beginn Tag ähnelt.
-        /// </summary>
-        public static string ZPG_LBL_BEGINN_TAG {
-            get {
-                return ResourceManager.GetString("ZPG_LBL_BEGINN_TAG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsgröße ähnelt.
         /// </summary>
         public static string ZPG_LBL_BEZUGSMENGE {
@@ -154340,38 +154547,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bundesland ähnelt.
-        /// </summary>
-        public static string ZPG_LBL_BUNDESLAND {
-            get {
-                return ResourceManager.GetString("ZPG_LBL_BUNDESLAND", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ende Monat ähnelt.
-        /// </summary>
-        public static string ZPG_LBL_ENDE_MONAT {
-            get {
-                return ResourceManager.GetString("ZPG_LBL_ENDE_MONAT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ende Tag ähnelt.
-        /// </summary>
-        public static string ZPG_LBL_ENDE_TAG {
-            get {
-                return ResourceManager.GetString("ZPG_LBL_ENDE_TAG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ferienzeitraum {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien {0} ähnelt.
         /// </summary>
         public static string ZPG_LBL_FERIEN {
             get {
                 return ResourceManager.GetString("ZPG_LBL_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bis ähnelt.
+        /// </summary>
+        public static string ZPG_LBL_FERIEN_BIS {
+            get {
+                return ResourceManager.GetString("ZPG_LBL_FERIEN_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name ähnelt.
+        /// </summary>
+        public static string ZPG_LBL_FERIEN_NAME {
+            get {
+                return ResourceManager.GetString("ZPG_LBL_FERIEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die von ähnelt.
+        /// </summary>
+        public static string ZPG_LBL_FERIEN_VON {
+            get {
+                return ResourceManager.GetString("ZPG_LBL_FERIEN_VON", resourceCulture);
             }
         }
         
@@ -154381,6 +154588,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_LBL_JAHRESMESSWERT {
             get {
                 return ResourceManager.GetString("ZPG_LBL_JAHRESMESSWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresraster der Zone ähnelt.
+        /// </summary>
+        public static string ZPG_LBL_JAHRESRASTER {
+            get {
+                return ResourceManager.GetString("ZPG_LBL_JAHRESRASTER", resourceCulture);
             }
         }
         
@@ -154417,6 +154633,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_LBL_KALTWASSER_MITTEL {
             get {
                 return ResourceManager.GetString("ZPG_LBL_KALTWASSER_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigene Ferien der Zone ähnelt.
+        /// </summary>
+        public static string ZPG_LBL_KAL_EIGENE_FERIEN {
+            get {
+                return ResourceManager.GetString("ZPG_LBL_KAL_EIGENE_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string ZPG_LBL_KAL_QUELLE {
+            get {
+                return ResourceManager.GetString("ZPG_LBL_KAL_QUELLE", resourceCulture);
             }
         }
         
@@ -154889,11 +155123,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Ferienzeitraum {1} braucht ein Ende und für Beginn und Ende je einen gültigen Tag und Monat. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Ferienzeitraum {1} braucht ein Ende („bis“); Beginn und Ende sind Tage des Jahres ohne Schalttag. ähnelt.
         /// </summary>
         public static string ZPG_MSG_FERIEN_UNGUELTIG {
             get {
                 return ResourceManager.GetString("ZPG_MSG_FERIEN_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ungültiges Datum: TT.MM. im Gemeinjahr; den 29.02. gibt es nicht. ähnelt.
+        /// </summary>
+        public static string ZPG_MSG_GEMEINJAHR {
+            get {
+                return ResourceManager.GetString("ZPG_MSG_GEMEINJAHR", resourceCulture);
             }
         }
         
@@ -155164,6 +155407,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_OPT_STOCHASTISCH {
             get {
                 return ResourceManager.GetString("ZPG_OPT_STOCHASTISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bis TT.MM. ähnelt.
+        /// </summary>
+        public static string ZPG_PLATZHALTER_FERIEN_BIS {
+            get {
+                return ResourceManager.GetString("ZPG_PLATZHALTER_FERIEN_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die von TT.MM. ähnelt.
+        /// </summary>
+        public static string ZPG_PLATZHALTER_FERIEN_VON {
+            get {
+                return ResourceManager.GetString("ZPG_PLATZHALTER_FERIEN_VON", resourceCulture);
             }
         }
         
@@ -161635,6 +161896,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_TAGESGANGSATZ_VORGABE {
             get {
                 return ResourceManager.GetString("ZPG_TAGESGANGSATZ_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien ähnelt.
+        /// </summary>
+        public static string ZPG_TAGTYP_FERIEN {
+            get {
+                return ResourceManager.GetString("ZPG_TAGTYP_FERIEN", resourceCulture);
             }
         }
         

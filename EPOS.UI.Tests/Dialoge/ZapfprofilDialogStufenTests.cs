@@ -99,10 +99,27 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
                 BezugsmengeWirksam = mengen[i], Anteil = summe > 0 ? kwh / summe : null,
                 Rechenweg = manuell ? ZapfprofilZonenrechenweg.Manuell : ZapfprofilZonenrechenweg.Katalog
             });
-            v.Ansichten.Add(Ansicht(z.Name, kwh,
-                Hilfe(z.Angaben?.TagesbedarfAuto ?? true, z.Angaben?.TagesbedarfManuellKwh, 100.0, "kWh/d")));
+            ZapfprofilAnsichtDaten ansicht = Ansicht(z.Name, kwh,
+                Hilfe(z.Angaben?.TagesbedarfAuto ?? true, z.Angaben?.TagesbedarfManuellKwh, 100.0, "kWh/d"));
+            ansicht.Tagtypen = Tagtypen(z);
+            v.Ansichten.Add(ansicht);
         }
         return v;
+    }
+
+    /// <summary>
+    /// Der Kalender der Probe, wie der Kern ihn je Zone liefert: 1. Januar ein Montag, Samstag und Sonntag, der
+    /// 1. Mai als Feiertag und die eigenen Ferien der Zone (von … bis, ohne Jahreswechsel) als Ferientage.
+    /// </summary>
+    private static int[] Tagtypen(ZapfprofilZoneDaten z)
+    {
+        var tage = new int[365];
+        for (int d = 1; d <= 365; d++)
+            tage[d - 1] = (d - 1) % 7 == 5 ? 2 : (d - 1) % 7 == 6 || d == 121 ? 3 : 1;
+        foreach (ZapfprofilFerienDaten f in z.Angaben?.Ferien ?? new List<ZapfprofilFerienDaten>())
+            if (f.Bis is int bis)
+                for (int d = f.Von ?? 1; d <= bis; d++) tage[d - 1] = 4;
+        return tage;
     }
 
     private static ZapfprofilSchaetzhilfeDaten Hilfe(bool auto, double? manuell, double vorschlag, string einheit) => new()
@@ -157,6 +174,14 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
                                 new ZapfprofilKatalogeintragDaten { Id = 2, Name = "Halber Satz · TEST-1", Waehlbar = false, Sperrgrund = "unvollständig" } },
             Ausstattungen = { new ZapfprofilKatalogeintragDaten { Id = 3, Name = "Testklasse A" } },
             Gebaeude = { new ZapfprofilKatalogeintragDaten { Id = 10614, Name = "Haus Nord" } },
+            Gebaeudekalender =
+            {
+                new ZapfprofilGebaeudekalenderDaten
+                {
+                    Id = 10614, Name = "Haus Nord", Wochenende = "Sa + So", Feiertagsland = "Baden-Württemberg",
+                    Ferien = { "Sommer: 01.07. – 14.08.", "Ferien 2: 26.10. – 30.10." }
+                }
+            },
             Monatsnamen = { "Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember" }
         };
     }
@@ -232,10 +257,13 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         Assert.Contains("Stochastik · Jahresreihe", gruppen);
         Assert.DoesNotContain(gruppen, g => g.StartsWith("Fachwerte", StringComparison.Ordinal));
 
-        foreach (string feld in new[] { "Personen je Wohneinheit", "Wohnfläche je Wohneinheit", "Anlagentopologie", "Kalender",
-                                        "Bundesland", "Jahresmesswert", "Tagesbedarf manuell", "Ladezeitfenster",
+        foreach (string feld in new[] { "Personen je Wohneinheit", "Wohnfläche je Wohneinheit", "Anlagentopologie",
+                                        "Jahresmesswert", "Tagesbedarf manuell", "Ladezeitfenster",
                                         "Methode der Zirkulation", "Leitungsinhalt" })
             Assert.True(HatFeld(cut, feld), feld);
+        // Der Kalender steht als zugeklappte Karte (ZB5); das gesperrte Feld Bundesland gibt es nicht mehr.
+        Assert.Equal("Kalender", cut.Find(".epos-zapfprofil-kalender .epos-klappgruppe-text").TextContent.Trim());
+        Assert.False(HatFeld(cut, "Bundesland"));
         // Der Rechenweg der Jahresreihe steht ab Erweitert (N12 (s)), Seed und Realisierungen erst in Experte.
         Assert.NotNull(cut.Find("fieldset[aria-label='Rechenweg der Jahresreihe']"));
         Assert.False(HatFeld(cut, "Zufallssaat (Seed)"));
@@ -395,25 +423,6 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
     // =================================================================================
 
     [Fact]
-    public void Das_Bundesland_ist_gesperrt_und_nennt_seinen_Grund()
-    {
-        var cut = Aufbauen();
-        Stufe(cut, "Erweitert");
-
-        IElement land = Auswahl(cut, "Bundesland");
-        Assert.True(land.HasAttribute("disabled"));
-        Assert.Equal("wie Klimaregion", land.QuerySelector("option")!.TextContent.Trim());
-        Assert.Contains("Wirkt erst mit einer Kalendertabelle je Bundesland", cut.Markup);
-
-        // Der Kalender bindet ein Gebäude des Projekts (A8) und löst die Bindung wieder.
-        Auswahl(cut, "Kalender").Change("10614");
-        Assert.Equal(10614, cut.Instance.Eingabe.Zonen[0].Angaben!.IdGebaeude);
-        Assert.Contains("Ferien des Gebäudes Haus Nord", Auswahl(cut, "Kalender").TextContent);
-        Auswahl(cut, "Kalender").Change("0");
-        Assert.Null(cut.Instance.Eingabe.Zonen[0].Angaben!.IdGebaeude);
-    }
-
-    [Fact]
     public void Der_Jahresmesswert_nimmt_die_Einheit_und_zeigt_Grenze_und_Speicherverlust_nach_Bedarf()
     {
         var cut = Aufbauen();
@@ -490,24 +499,6 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         Feld(cut, "Ladezeitfenster").Input("6");
         Assert.True(cut.Instance.Eingabe.PunktUeberholt);
         Assert.Null(cut.Instance.Eingabe.Auslegung!.PunktVolumenL);
-    }
-
-    [Fact]
-    public void Ein_ungueltiger_Ferientag_haelt_das_OK_an_und_faellt_mit_der_Stufe_weg()
-    {
-        ZapfprofilErgebnisDaten? ergebnis = null;
-        var cut = Aufbauen(geschlossen: e => ergebnis = e);
-        Stufe(cut, "Erweitert");
-
-        cut.FindAll("label").Where(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == "Beginn Tag")
-           .First().QuerySelector("input")!.Input("40");
-        Knopf(cut, "OK").Click();
-        Assert.Null(ergebnis);
-        Assert.Contains("Ferienzeitraum 1 · Beginn Tag", cut.Instance.OkMeldung);
-
-        Stufe(cut, "Einfach");
-        Knopf(cut, "OK").Click();
-        Assert.NotNull(ergebnis);
     }
 
     // =================================================================================
@@ -614,11 +605,17 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         Assert.Equal(1.1, cut.Instance.Eingabe.Zonen[0].Angaben!.Auslastung[0]);
         Assert.Equal(0.5, cut.Instance.Eingabe.Zonen[0].Angaben!.Auslastung[7]);
 
-        // Ferien als Tabelle: Zeile 2, Beginn und Ende.
-        Setze("ferien_beginn_tag_2", "1");
-        Setze("ferien_beginn_monat_2", "7");
-        Assert.Equal(7, cut.Instance.Eingabe.Zonen[0].Angaben!.Ferien[1].BeginnMonat);
-        Assert.Throws<InvalidOperationException>(() => Zugang("ferien_ende_monat_2").Setzen(13));
+        // Ferien als Tabelle: Die Zeile hinter dem letzten Zeitraum legt einen neuen an; von und bis als „TT.MM.".
+        int vorher = cut.Instance.Eingabe.Zonen[0].Angaben!.Ferien.Count;
+        string neu = (vorher + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        Setze("ferien_von_" + neu, "01.07.");
+        Setze("ferien_bis_" + neu, "14.08.");
+        Setze("ferien_name_" + neu, "Sommer");
+        ZapfprofilFerienDaten sommer = cut.Instance.Eingabe.Zonen[0].Angaben!.Ferien[vorher];
+        Assert.Equal(vorher + 1, cut.Instance.Eingabe.Zonen[0].Angaben!.Ferien.Count);
+        Assert.Equal(("Sommer", 182, 226), (sommer.Name, sommer.Von, sommer.Bis));
+        Assert.Throws<InvalidOperationException>(() => Zugang("ferien_bis_" + neu).Setzen("30.02."));
+        Assert.Equal(226, sommer.Bis);
 
         // Die Wohnungstabelle der gewählten Zone.
         cut.Find("table.epos-zapfprofil-zonen tbody tr button").Click();

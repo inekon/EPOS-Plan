@@ -436,6 +436,20 @@ namespace WindowsFormsApplication1
         /// <summary>Die Ferienspalten eines Gebäudes ohne Heizkalender (<c>Tab_Gebaeude.Ferienbeginn_1…4</c>).</summary>
         internal const int FERIENPAARE = 4;
 
+        /// <summary>
+        /// Der Kalender eines Gebäudes, wie eine gebundene Zone ihn liest (<see cref="GebaeudekalenderDesProjekts"/>):
+        /// Wochenmaske (Mo = Bit 0; <c>null</c> = Samstag und Sonntag), Feiertagsland (ISO-Kürzel; <c>null</c> = nur die
+        /// bundeseinheitlichen Feiertage) und die Ferienzeiträume, die eine Zone ohne eigene Ferien übernimmt.
+        /// </summary>
+        internal sealed record ZapfGebaeudekalender
+        {
+            public int Id { get; init; }
+            public string Name { get; init; }
+            public int? Wochenendtage { get; init; }
+            public string Feiertagsland { get; init; }
+            public IReadOnlyList<ZonenferienStand> Ferien { get; init; } = new ZonenferienStand[0];
+        }
+
         private sealed class GebaeudeAngaben
         {
             internal string Name;
@@ -444,6 +458,12 @@ namespace WindowsFormsApplication1
 
             /// <summary>Die Ferienzeiträume des Gebäudes in ihrer Reihenfolge (Jahrestage wie gelesen, 0 und 366 = keine Angabe).</summary>
             internal List<ZonenferienStand> Ferien = new List<ZonenferienStand>();
+
+            /// <summary>
+            /// Die Namen der Ferienzeiträume, gleich lang wie <see cref="Ferien"/> (<c>null</c> = keiner) — nur für die Anzeige
+            /// (<see cref="GebaeudekalenderDesProjekts"/>); der Lauf liest sie nicht.
+            /// </summary>
+            internal List<string> Feriennamen = new List<string>();
 
             /// <summary>Die Wochenmaske des Gebäudes (<c>Wochenendtage</c>, Mo = Bit 0); <c>null</c> = Vorgabe Sa + So.</summary>
             internal int? Wochenendtage;
@@ -466,6 +486,35 @@ namespace WindowsFormsApplication1
                 new DbParam("@projekt", idProjekt));
             if (dt != null)
                 foreach (DataRow r in dt.Rows) liste.Add((Ganz(r, "ID"), Text(r, "Gebaeudename")));
+            return liste.AsReadOnly();
+        }
+
+        /// <summary>
+        /// <b>Die Kalender der Gebäude eines Projekts, wie eine gebundene Zone sie liest</b> (A8; Konzept Zapfprofil
+        /// Benutzerführung ZB5): je Gebäude Wochenmaske, Feiertagsland und — nur wenn das Gebäude seine Ferien führt — die
+        /// Ferienzeiträume samt Namen. Dieselbe Lesung wie der Lauf (<see cref="GebaeudeLesen"/>), keine zweite Regel;
+        /// gedacht für die Anzeige beim Öffnen des Dialogs, nicht je Tastendruck. Ohne Projekt eine leere Liste.
+        /// </summary>
+        internal static IReadOnlyList<ZapfGebaeudekalender> GebaeudekalenderDesProjekts(int idProjekt)
+        {
+            var liste = new List<ZapfGebaeudekalender>();
+            foreach ((int id, string name) in GebaeudeDesProjekts(idProjekt))
+            {
+                GebaeudeAngaben a = GebaeudeLesen(idProjekt, id);
+                if (a == null) continue;
+                var ferien = new List<ZonenferienStand>();
+                if (a.FerienAktiv)
+                    for (int i = 0; i < a.Ferien.Count; i++)
+                        ferien.Add(a.Ferien[i] with { Name = i < a.Feriennamen.Count ? a.Feriennamen[i] : null });
+                liste.Add(new ZapfGebaeudekalender
+                {
+                    Id = id,
+                    Name = name,
+                    Wochenendtage = a.Wochenendtage,
+                    Feiertagsland = string.IsNullOrWhiteSpace(a.Feiertagsland) ? null : a.Feiertagsland.Trim(),
+                    Ferien = ferien.AsReadOnly()
+                });
+            }
             return liste.AsReadOnly();
         }
 
@@ -521,6 +570,8 @@ namespace WindowsFormsApplication1
                 }
                 foreach ((int Beginn, int Ende) p in perioden)
                     a.Ferien.Add(new ZonenferienStand { Beginn = p.Beginn, Ende = p.Ende });
+                foreach (Ferienzeile f in liste) a.Feriennamen.Add(string.IsNullOrWhiteSpace(f.Name) ? null : f.Name.Trim());
+                while (a.Feriennamen.Count < a.Ferien.Count) a.Feriennamen.Add(null);
                 return a;
             }
 
@@ -534,6 +585,7 @@ namespace WindowsFormsApplication1
                 // Ein Paar ohne jede Angabe (leer, 0 oder 366 auf beiden Seiten) ist kein Zeitraum.
                 if (Angegeben(b) || Angegeben(e)) a.Ferien.Add(new ZonenferienStand { Beginn = b, Ende = e });
             }
+            while (a.Feriennamen.Count < a.Ferien.Count) a.Feriennamen.Add(null);
             return a;
         }
 

@@ -613,7 +613,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("ZapfkategorienEditor", 7),
         new("ZapfprofilAuslegungDialog", 20),
         new("ZapfprofilDialog", 57, "Stufen Erweitert und Experte (Z4): die Angaben der gewählten Zone und des Gebäudes " +
-            "samt Wohnungstabelle in der Feldkarte; das Bundesland ist gesperrt (ohne Kalendertabelle) und zählt nicht. " +
+            "samt Wohnungstabelle in der Feldkarte; die Karte „Kalender“ (ZB5) führt Quelle und eigene Ferien (Name, von, bis) als " +
+            "Feld kalender und Zeilen ferien_name/ferien_von/ferien_bis der Feldkarte, Quelle als Wahl oder Liste je Gebäudezahl. " +
             "Dazu die drei Eingaben der Wahl des Typtagwegs (Z4b): Schalter, Klimazone und Gebäudeart, und die Wahl " +
             "der Messreihe des Vergleichs (Z5): Feld messreihe der Feldkarte")
     };

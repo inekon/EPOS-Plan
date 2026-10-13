@@ -440,39 +440,117 @@
                                                    Auswahl="@(a.Zirkulation ? JA : NEIN)"
                                                    AuswahlChanged="id => Angabe(zone, x => x.Zirkulation = id != NEIN)" />
                                     <Herleitungszeile Text="@Texte.HinweisZirkulationVorhanden" />
-                                    <Auswahlfeld Bezeichnung="@Texte.LabelKalender" Eintraege="@Kalenderwahl(art, a)"
-                                                 Auswahl="@(a.IdGebaeude ?? KALENDER_NUTZUNGSART)" AuswahlChanged="id => KalenderSetzen(zone, id)" />
-                                    <Herleitungszeile Text="@Texte.HinweisKalender" />
-                                    <Auswahlfeld Bezeichnung="@Texte.LabelBundesland" Eintraege="@KeineEintraege"
-                                                 Platzhalter="@Texte.BundeslandKlimaregion" Aktiv="false" />
-                                    <Herleitungszeile Text="@Texte.GrundBundesland" />
+                                </KindInhalt>
+                            </Formularraster>
 
-                                    @for (int n = 0; n < ZapfprofilZonenangabenDaten.FERIENZEITRAEUME; n++)
-                                    {
-                                        int k = n;
-                                        ZapfprofilFerienDaten f = Ferienzeitraum(a, k);
-                                        <Formulargruppe Titel="@Format(Texte.LabelFerien, k + 1)">
-                                            <KindInhalt>
-                                                <Ganzzahlfeld Bezeichnung="@Texte.LabelBeginnTag" Feldname="@FerienFeld(Texte.LabelBeginnTag, k)"
-                                                              Min="1" Max="31" Wert="@f.BeginnTag"
-                                                              WertChanged="w => FerienSetzen(zone, k, x => x.BeginnTag = w)"
-                                                              FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert)" />
-                                                <Ganzzahlfeld Bezeichnung="@Texte.LabelBeginnMonat" Feldname="@FerienFeld(Texte.LabelBeginnMonat, k)"
-                                                              Min="1" Max="12" Wert="@f.BeginnMonat"
-                                                              WertChanged="w => FerienSetzen(zone, k, x => x.BeginnMonat = w)"
-                                                              FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert)" />
-                                                <Ganzzahlfeld Bezeichnung="@Texte.LabelEndeTag" Feldname="@FerienFeld(Texte.LabelEndeTag, k)"
-                                                              Min="1" Max="31" Wert="@f.EndeTag"
-                                                              WertChanged="w => FerienSetzen(zone, k, x => x.EndeTag = w)"
-                                                              FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert)" />
-                                                <Ganzzahlfeld Bezeichnung="@Texte.LabelEndeMonat" Feldname="@FerienFeld(Texte.LabelEndeMonat, k)"
-                                                              Min="1" Max="12" Wert="@f.EndeMonat"
-                                                              WertChanged="w => FerienSetzen(zone, k, x => x.EndeMonat = w)"
-                                                              FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert)" />
-                                            </KindInhalt>
-                                        </Formulargruppe>
+                            @* ZB5: der Kalender der Zone als aufklappbare Karte wie im Gebaeudedialog. Zugeklappt nennt
+                               die Kopfzeile die wirksame Lage; aufgeklappt stehen die Quelle, bei gebundenem Gebaeude
+                               dessen Wochenende, Feiertage und Ferien (nur Anzeige, gelesen beim Oeffnen), die eigenen
+                               Ferien der Zone als Liste und das Jahresraster aus dem Rechenweg der Vorschau. *@
+                            <Klappgruppe Titel="@Texte.LabelKalender" Zusatz="@KalenderZusammenfassung(art, a)"
+                                         Klasse="epos-zapfprofil-kalender">
+                                <ChildContent>
+                                    @{
+                                        IReadOnlyList<(int Id, string Text)> quellen = Kalenderwahl(art, a);
                                     }
+                                    @if (quellen.Count <= 2)
+                                    {
+                                        <Optionsgruppe Bezeichnung="@Texte.LabelKalenderQuelle" Eintraege="@quellen" Waagerecht="true"
+                                                       Auswahl="@(a.IdGebaeude ?? KALENDER_NUTZUNGSART)"
+                                                       AuswahlChanged="id => KalenderSetzen(zone, id)" />
+                                    }
+                                    else
+                                    {
+                                        <Auswahlfeld Bezeichnung="@Texte.LabelKalenderQuelle" Eintraege="@quellen"
+                                                     Auswahl="@(a.IdGebaeude ?? KALENDER_NUTZUNGSART)"
+                                                     AuswahlChanged="id => KalenderSetzen(zone, id)" />
+                                    }
+                                    <Herleitungszeile Text="@Texte.HinweisKalender" />
+
+                                    @if (a.IdGebaeude is int idGebaeude)
+                                    {
+                                        ZapfprofilGebaeudekalenderDaten? gk = Gebaeudekalender(idGebaeude);
+                                        <section class="epos-zapfprofil-kalender-gebaeude" aria-label="@Format(Texte.KalenderAusGebaeude, Gebaeudename(idGebaeude))">
+                                            <p class="epos-zapfprofil-kalender-vermerk">@Format(Texte.KalenderAusGebaeude, Gebaeudename(idGebaeude))</p>
+                                            <dl class="epos-zapfprofil-kalender-werte">
+                                                <dt>@Texte.KalenderWochenende</dt>
+                                                <dd>@(gk?.Wochenende ?? "")</dd>
+                                                <dt>@Texte.KalenderFeiertage</dt>
+                                                <dd>@(string.IsNullOrEmpty(gk?.Feiertagsland) ? Texte.KalenderBundeseinheitlich : gk!.Feiertagsland)</dd>
+                                                <dt>@Texte.KalenderFerien</dt>
+                                                <dd>
+                                                    @if (gk is { Ferien.Count: > 0 })
+                                                    {
+                                                        <ul class="epos-zapfprofil-kalender-ferien">
+                                                            @foreach (string f in gk.Ferien)
+                                                            {
+                                                                <li>@f</li>
+                                                            }
+                                                        </ul>
+                                                    }
+                                                    else
+                                                    {
+                                                        @Texte.KalenderKeineFerien
+                                                    }
+                                                </dd>
+                                            </dl>
+                                            @if (EigeneFerien(a) > 0 && gk is { Ferien.Count: > 0 })
+                                            {
+                                                <p class="epos-leisezeile epos-zapfprofil-kalender-vorrang">@Texte.KalenderFerienZoneVor</p>
+                                            }
+                                        </section>
+                                    }
+
+                                    <h5 class="epos-zapfprofil-kalender-titel">@Texte.LabelEigeneFerien</h5>
+                                    <div class="epos-zapfprofil-ferienliste">
+                                        @for (int i = 0; i < (a.Ferien?.Count ?? 0); i++)
+                                        {
+                                            int n = i;
+                                            ZapfprofilFerienDaten f = a.Ferien![n] ?? new ZapfprofilFerienDaten();
+                                            <div class="epos-zapfprofil-ferienzeile" data-ferien="@(n + 1)" @key="n">
+                                                <Textfeld Bezeichnung="@Texte.LabelFerienName" Wert="@(f.Name ?? "")"
+                                                          Platzhalter="@Format(Texte.LabelFerien, n + 1)"
+                                                          WertChanged="t => FerienSetzen(zone, n, x => x.Name = string.IsNullOrWhiteSpace(t) ? null : t.Trim(), auslegung: false)" />
+                                                <Gemeinjahrdatum Bezeichnung="@Texte.LabelFerienVon" Wert="@f.Von" Feldname="@FerienFeld(Texte.LabelFerienVon, n)"
+                                                                 Platzhalter="@Texte.PlatzhalterFerienVon" Hinweis="@Texte.HinweisDatumFormat"
+                                                                 JahrHinweis="@Texte.HinweisDatumJahr" Meldung="@Texte.MeldungGemeinjahr"
+                                                                 WertChanged="t => FerienSetzen(zone, n, x => x.Von = t)"
+                                                                 FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert)" />
+                                                <Gemeinjahrdatum Bezeichnung="@Texte.LabelFerienBis" Wert="@f.Bis" Feldname="@FerienFeld(Texte.LabelFerienBis, n)"
+                                                                 Platzhalter="@Texte.PlatzhalterFerienBis" Hinweis="@Texte.HinweisDatumFormat"
+                                                                 JahrHinweis="@Texte.HinweisDatumJahr" Meldung="@Texte.MeldungGemeinjahr"
+                                                                 WertChanged="t => FerienSetzen(zone, n, x => x.Bis = t)"
+                                                                 FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Erweitert)" />
+                                                <button type="button" class="epos-knopf epos-zapfprofil-ferien-entfernen"
+                                                        aria-label="@(Ferienname(f, n) + " · " + Texte.KnopfFerienEntfernen)"
+                                                        @onclick="() => FerienEntfernen(zone, n)">@Texte.KnopfFerienEntfernen</button>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="epos-zeilenknoepfe">
+                                        <button type="button" class="epos-knopf epos-zapfprofil-ferien-neu"
+                                                @onclick="() => FerienHinzufuegen(zone)">@Texte.KnopfFerienNeu</button>
+                                    </div>
                                     <Herleitungszeile Text="@Texte.HinweisFerien" />
+
+                                    <section class="epos-zapfprofil-jahresraster" aria-label="@Texte.LabelJahresraster">
+                                        <h5 class="epos-zapfprofil-kalender-titel">@Texte.LabelJahresraster</h5>
+                                        @if (TagtypenDerZone() is { } tagtypen)
+                                        {
+                                            <Jahresraster Bezeichnung="@Texte.LabelJahresraster" Tage="@tagtypen" Legende="@Tagtyplegende"
+                                                          Monatsnamen="@Daten.Monatsnamen" />
+                                            <p class="epos-leisezeile">@Texte.HinweisJahresraster</p>
+                                        }
+                                        else
+                                        {
+                                            <p class="epos-leisezeile epos-zapfprofil-jahresraster-ohne">@Texte.HinweisJahresrasterOhne</p>
+                                        }
+                                    </section>
+                                </ChildContent>
+                            </Klappgruppe>
+
+                            <Formularraster>
+                                <KindInhalt>
 
                                     <Formulargruppe Titel="@Texte.LabelJahresmesswert">
                                         <KindInhalt>
@@ -1978,6 +2056,89 @@
         return liste;
     }
 
+    // --- Die Karte „Kalender" der Zone (ZB5) ----------------------------------------------------
+
+    /// <summary>Der Name eines Gebäudes des Projekts; ein unbekanntes trägt seine Id („#7").</summary>
+    private string Gebaeudename(int id)
+        => Daten.Gebaeude.FirstOrDefault(g => g.Id == id)?.Name is { Length: > 0 } name
+            ? name : "#" + id.ToString(CultureInfo.InvariantCulture);
+
+    /// <summary>Der Kalender eines Gebäudes, wie die Hülle ihn beim Öffnen gelesen hat; <c>null</c> = unbekannt.</summary>
+    private ZapfprofilGebaeudekalenderDaten? Gebaeudekalender(int id)
+        => Daten.Gebaeudekalender.FirstOrDefault(g => g.Id == id);
+
+    /// <summary>Die eigenen Ferienzeiträume der Zone, die wirken — jeder mit einem Ende („bis").</summary>
+    private static int EigeneFerien(ZapfprofilZonenangabenDaten a)
+        => (a.Ferien ?? new List<ZapfprofilFerienDaten>()).Count(f => f?.Bis is not null);
+
+    /// <summary>Der Name eines eigenen Ferienzeitraums; ohne Namen „Ferien n".</summary>
+    private string Ferienname(ZapfprofilFerienDaten f, int n)
+        => string.IsNullOrWhiteSpace(f.Name) ? Format(Texte.LabelFerien, n + 1) : f.Name!;
+
+    /// <summary>
+    /// Die Zusammenfassung der zugeklappten Karte: die Quelle, die Ferien, die wirken (eigene gehen vor), und mit
+    /// gebundenem Gebäude dessen Feiertagsland — „wie Gebäude „Haus A“ · 3 Ferienzeiträume · Feiertage Baden-Württemberg“.
+    /// </summary>
+    private string KalenderZusammenfassung(ZapfprofilNutzungsartDaten? art, ZapfprofilZonenangabenDaten a)
+    {
+        int eigene = EigeneFerien(a);
+        string eigeneText = eigene == 0 ? "" : eigene == 1 ? Texte.SummeEigeneEins : Format(Texte.SummeEigene, eigene);
+        if (a.IdGebaeude is not int id)
+            return Texte.SummeNutzungsart + " · " + (eigene == 0 ? Texte.SummeKeineEigenen : eigeneText);
+
+        ZapfprofilGebaeudekalenderDaten? gk = Gebaeudekalender(id);
+        int geerbt = gk?.Ferien.Count ?? 0;
+        string ferien = eigene > 0 ? eigeneText
+                      : geerbt == 0 ? Texte.SummeKeineFerien
+                      : geerbt == 1 ? Texte.SummeFerienEins : Format(Texte.SummeFerien, geerbt);
+        string feiertage = string.IsNullOrEmpty(gk?.Feiertagsland)
+            ? Texte.SummeBundeseinheitlich : Format(Texte.SummeFeiertage, gk!.Feiertagsland);
+        return Format(Texte.SummeGebaeude, Gebaeudename(id)) + " · " + ferien + " · " + feiertage;
+    }
+
+    /// <summary>Die Legende des Jahresrasters: die vier Tagtypen des Zapfkalenders mit der Farbe ihrer Tagesart.</summary>
+    private IReadOnlyList<(int Art, string Name)> Tagtyplegende => new[]
+    {
+        (RASTER_WERKTAG, Texte.TagtypWerktag), (RASTER_SAMSTAG, Texte.TagtypSamstag),
+        (RASTER_SONNFEIERTAG, Texte.TagtypSonntag), (RASTER_FERIEN, Texte.TagtypFerien)
+    };
+
+    // Die Farbe je Tagtyp im Jahresraster — die Tagesarten des Kalenders im Gebäudedialog (epos-kalb-art-n).
+    private const int RASTER_WERKTAG = 0, RASTER_SAMSTAG = 1, RASTER_SONNFEIERTAG = 5, RASTER_FERIEN = 4;
+
+    /// <summary>Das zuletzt gezeichnete Jahresraster je Zone — es bleibt stehen, solange die Vorschau neu rechnet.</summary>
+    private (ZapfprofilZoneDaten Zone, int[] Tage)? _jahresraster;
+
+    /// <summary>
+    /// Die Tagesarten des Jahresrasters der gewählten Zone: die Tagtypen ihres wirksamen Kalenders aus dem Rechenweg der
+    /// Vorschau (<see cref="ZapfprofilAnsichtDaten.Tagtypen"/>) — keine zweite Regel in der Oberfläche. Rechnet die
+    /// Vorschau gerade neu, bleibt das letzte Raster derselben Zone stehen; <c>null</c> ohne Vorschau oder für eine
+    /// abgelehnte Zone.
+    /// </summary>
+    private int[]? TagtypenDerZone()
+    {
+        if (Gewaehlte is not { } z) return null;
+        if (_vorschauAktuell && _vorschau is not null)
+        {
+            ZapfprofilAnsichtDaten? ansicht = _wahl >= 0 && _wahl + 1 < _vorschau.Ansichten.Count ? _vorschau.Ansichten[_wahl + 1] : null;
+            if (ansicht is not { Abgelehnt: false, Tagtypen.Length: > 0 })
+            {
+                _jahresraster = null;
+                return null;
+            }
+            int[] tage = ansicht.Tagtypen!.Select(t => t switch
+            {
+                2 => RASTER_SAMSTAG,
+                3 => RASTER_SONNFEIERTAG,
+                4 => RASTER_FERIEN,
+                _ => RASTER_WERKTAG
+            }).ToArray();
+            if (_jahresraster is not { } alt || !ReferenceEquals(alt.Zone, z) || !alt.Tage.SequenceEqual(tage))
+                _jahresraster = (z, tage);
+        }
+        return _jahresraster is { } stand && ReferenceEquals(stand.Zone, z) ? stand.Tage : null;
+    }
+
     /// <summary>Die Ausstattungsklassen der Wohnungstabelle — neutrale Namen; ein unbekannter Wert bleibt als Eintrag.</summary>
     private IReadOnlyList<(int Id, string Text)> Ausstattungswahl(ZapfprofilWohnungDaten w)
     {
@@ -2133,11 +2294,8 @@
     private string WohnFeld(string spalte, ZapfprofilZonenangabenDaten a, ZapfprofilWohnungDaten w)
         => Format(Texte.FeldZeile, spalte, a.Wohnungen.IndexOf(w) + 1);
 
-    /// <summary>Der Feldname eines Ferienfeldes: „Ferienzeitraum 2 · Beginn Tag".</summary>
+    /// <summary>Der Feldname eines Ferienfeldes: „Ferien 2 · von".</summary>
     private string FerienFeld(string spalte, int k) => Format(Texte.LabelFerien, k + 1) + " · " + spalte;
-
-    private static ZapfprofilFerienDaten Ferienzeitraum(ZapfprofilZonenangabenDaten a, int k)
-        => a.Ferien is not null && k < a.Ferien.Count && a.Ferien[k] is { } f ? f : new ZapfprofilFerienDaten();
 
     private string Messwerteinheit(ZapfprofilZonenangabenDaten a)
         => a.JahresmesswertEinheit == ZapfprofilMesswerteinheit.KubikmeterJeJahr ? Texte.MesswertM3 : Texte.MesswertKwh;
@@ -2641,13 +2799,29 @@
     private void KalenderSetzen(ZapfprofilZoneDaten z, int? id)
         => Angabe(z, x => x.IdGebaeude = id is int g && g != KALENDER_NUTZUNGSART ? g : null);
 
-    private void FerienSetzen(ZapfprofilZoneDaten z, int k, Action<ZapfprofilFerienDaten> setzen)
+    /// <summary>Setzt ein Feld des eigenen Ferienzeitraums <paramref name="k"/>; eine Zeile hinter der Liste legt ihn an.</summary>
+    private void FerienSetzen(ZapfprofilZoneDaten z, int k, Action<ZapfprofilFerienDaten> setzen, bool auslegung = true)
         => Angabe(z, x =>
         {
-            x.Ferien ??= ZapfprofilZonenangabenDaten.NeueFerien();
+            x.Ferien ??= new List<ZapfprofilFerienDaten>();
             while (x.Ferien.Count <= k) x.Ferien.Add(new ZapfprofilFerienDaten());
             setzen(x.Ferien[k] ??= new ZapfprofilFerienDaten());
-        });
+        }, auslegung);
+
+    /// <summary>„+ Ferien": ein leerer Zeitraum am Ende der Liste — ohne Obergrenze; er wirkt, sobald er ein Ende hat.</summary>
+    private void FerienHinzufuegen(ZapfprofilZoneDaten z)
+        => Angabe(z, x => (x.Ferien ??= new List<ZapfprofilFerienDaten>()).Add(new ZapfprofilFerienDaten()), auslegung: false);
+
+    /// <summary>„Entfernen": nimmt den Zeitraum <paramref name="k"/> aus der Liste der Zone.</summary>
+    private void FerienEntfernen(ZapfprofilZoneDaten z, int k)
+    {
+        if (z.Angaben?.Ferien is not { } liste || k < 0 || k >= liste.Count) return;
+        bool wirkte = liste[k]?.Belegt == true;
+        // Die Fehleingaben der Datumsfelder dieser und der folgenden Zeilen gehören zu Zeilen, die nun weiterrücken.
+        foreach (string feld in _fehlfelder.Where(f => f.StartsWith(Format(Texte.LabelFerien, ""), StringComparison.Ordinal)).ToList())
+            _fehlfelder.Remove(feld);
+        Angabe(z, x => x.Ferien.RemoveAt(k), auslegung: wirkte);
+    }
 
     /// <summary>
     /// Der Jahresmesswert; der erste Wert ohne Einheit nimmt die Vorgabe kWh/a. Eine EIGENE
@@ -3362,30 +3536,42 @@
         return null;
     }
 
-    /// <summary>Die vier Ferienzeiträume der gewählten Zone als Zeilen — ihre Setzer nehmen den Weg der vier Felder.</summary>
+    /// <summary>
+    /// Die eigenen Ferienzeiträume der gewählten Zone als Zeilen, dazu EINE leere Zeile dahinter: Ein Wert in ihr legt
+    /// einen neuen Zeitraum an wie „+ Ferien". Die Setzer nehmen den Weg der Felder der Karte „Kalender".
+    /// </summary>
     private IReadOnlyList<ZapfprofilFerienKiZeile> KiFerien()
     {
         if (Gewaehlte is not { } z) return Array.Empty<ZapfprofilFerienKiZeile>();
-        ZapfprofilZonenangabenDaten a = AngabenVon(z);
-        return Enumerable.Range(0, ZapfprofilZonenangabenDaten.FERIENZEITRAEUME)
-            .Select(k => new ZapfprofilFerienKiZeile(Ferienzeitraum(a, k), k + 1)
+        List<ZapfprofilFerienDaten> liste = AngabenVon(z).Ferien ?? new List<ZapfprofilFerienDaten>();
+        return Enumerable.Range(0, liste.Count + 1)
+            .Select(k => new ZapfprofilFerienKiZeile(k < liste.Count ? liste[k] ?? new ZapfprofilFerienDaten() : new ZapfprofilFerienDaten(), k + 1)
             {
-                BeginnTagSetzen = v => KiFerienteil(z, k, Texte.LabelBeginnTag, v, 31, f => f.BeginnTag = v),
-                BeginnMonatSetzen = v => KiFerienteil(z, k, Texte.LabelBeginnMonat, v, 12, f => f.BeginnMonat = v),
-                EndeTagSetzen = v => KiFerienteil(z, k, Texte.LabelEndeTag, v, 31, f => f.EndeTag = v),
-                EndeMonatSetzen = v => KiFerienteil(z, k, Texte.LabelEndeMonat, v, 12, f => f.EndeMonat = v)
+                NameSetzen = v => KiFerienteil(z, k, Texte.LabelFerienName,
+                                               () => FerienSetzen(z, k, f => f.Name = string.IsNullOrWhiteSpace(v) ? null : v.Trim(), auslegung: false)),
+                VonSetzen = v => KiFeriendatum(z, k, Texte.LabelFerienVon, v, (f, t) => f.Von = t),
+                BisSetzen = v => KiFeriendatum(z, k, Texte.LabelFerienBis, v, (f, t) => f.Bis = t)
             }).ToList();
     }
 
-    /// <summary>Ein Feld eines Ferienzeitraums: nur in Erweitert, solange die Zone steht, in den Grenzen des Feldes.</summary>
-    private string? KiFerienteil(ZapfprofilZoneDaten z, int k, string feld, int? wert, int hoechstens,
-                                 Action<ZapfprofilFerienDaten> weg)
+    /// <summary>Ein Datum eines Ferienzeitraums: „TT.MM." im Gemeinjahr wie das Feld der Karte; leer = keine Angabe.</summary>
+    private string? KiFeriendatum(ZapfprofilZoneDaten z, int k, string feld, string? text, Action<ZapfprofilFerienDaten, int?> weg)
     {
-        if (_stufe == ZapfprofilStufe.Einfach) return ZapfprofilKiRegeln.NurMit(feld, Texte.StufeErweitert);
+        int? tag = null;
+        if (!string.IsNullOrWhiteSpace(text))
+        {
+            if (!Gemeinjahrdatumtext.Lesen(text, out int t)) return FerienFeld(feld, k) + ": " + Texte.MeldungGemeinjahr;
+            tag = t;
+        }
+        return KiFerienteil(z, k, feld, () => FerienSetzen(z, k, f => weg(f, tag)));
+    }
+
+    /// <summary>Ein Feld eines Ferienzeitraums: nur in Erweitert und solange die Zone steht.</summary>
+    private string? KiFerienteil(ZapfprofilZoneDaten z, int k, string feld, Action weg)
+    {
+        if (_stufe == ZapfprofilStufe.Einfach) return ZapfprofilKiRegeln.NurMit(FerienFeld(feld, k), Texte.StufeErweitert);
         if (!_eingabe.Zonen.Contains(z)) return ZapfprofilKiRegeln.ZeileFehlt;
-        string? grund = ZapfprofilKiRegeln.Bereich(FerienFeld(feld, k), wert, 1, hoechstens);
-        if (grund is not null) return grund;
-        FerienSetzen(z, k, weg);
+        weg();
         return null;
     }
 

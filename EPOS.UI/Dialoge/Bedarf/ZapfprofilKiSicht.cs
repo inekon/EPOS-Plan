@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using KiKern;
+using WindowsFormsApplication1;
 using WindowsFormsApplication1.MyResource;
 
 namespace EPOS.UI.Dialoge.Bedarf;
@@ -242,10 +243,10 @@ public sealed class ZapfprofilKiSicht
     public int? Kalender { get => Ganz(nameof(Kalender)); set => Setze(nameof(Kalender), value); }
     public IReadOnlyList<KiWahleintrag> KalenderWahl => Wahl(nameof(Kalender));
 
-    /// <summary>Die vier Ferienzeiträume der gewählten Zone als Zeilen (Muster Gebäudekatalog).</summary>
+    /// <summary>Die eigenen Ferienzeiträume der gewählten Zone als Zeilen, dazu eine leere Zeile zum Anlegen.</summary>
     public Func<IReadOnlyList<ZapfprofilFerienKiZeile>>? FerienLesen { get; init; }
 
-    /// <summary>Die Ferienzeiträume 1 … 4 der gewählten Zone — Beginn und Ende als Tag und Monat.</summary>
+    /// <summary>Die eigenen Ferienzeiträume der gewählten Zone — Name, von und bis als „TT.MM."; die letzte Zeile ist neu.</summary>
     public IReadOnlyList<ZapfprofilFerienKiZeile> Ferien
         => FerienLesen?.Invoke() ?? Array.Empty<ZapfprofilFerienKiZeile>();
 
@@ -313,9 +314,10 @@ public sealed class ZapfprofilKiSicht
 }
 
 /// <summary>
-/// Ein Ferienzeitraum der gewählten Zone als ZEILE der Sichtklasse <see cref="ZapfprofilKiSicht"/>
-/// (Stufe Erweitert) — Beginn und Ende als Tag und Monat, wie die vier Felder der Maske; das
-/// Kennzeichen ist die Nummer des Zeitraums.
+/// Ein eigener Ferienzeitraum der gewählten Zone als ZEILE der Sichtklasse <see cref="ZapfprofilKiSicht"/>
+/// (Stufe Erweitert, Karte „Kalender") — Name, von und bis als „TT.MM." im Gemeinjahr wie die Felder der Maske; das
+/// Kennzeichen ist die Nummer des Zeitraums. Die Zeile hinter dem letzten Zeitraum ist leer und legt beim Setzen einen
+/// neuen an.
 /// </summary>
 public sealed class ZapfprofilFerienKiZeile
 {
@@ -329,18 +331,16 @@ public sealed class ZapfprofilFerienKiZeile
         _nummer = nummer;
     }
 
-    public Func<int?, string?>? BeginnTagSetzen { get; init; }
-    public Func<int?, string?>? BeginnMonatSetzen { get; init; }
-    public Func<int?, string?>? EndeTagSetzen { get; init; }
-    public Func<int?, string?>? EndeMonatSetzen { get; init; }
+    public Func<string?, string?>? NameSetzen { get; init; }
+    public Func<string?, string?>? VonSetzen { get; init; }
+    public Func<string?, string?>? BisSetzen { get; init; }
 
-    /// <summary>Das ZEILENKENNZEICHEN — die Nummer des Zeitraums („2"), wie die Maske ihn beschriftet.</summary>
+    /// <summary>Das ZEILENKENNZEICHEN — die Nummer des Zeitraums („2"), wie die Maske ihn zählt.</summary>
     public string Zeitraum => _nummer.ToString(CultureInfo.InvariantCulture);
 
-    public int? BeginnTag { get => _ferien.BeginnTag; set => ZapfprofilKiRegeln.Setze(BeginnTagSetzen, value); }
-    public int? BeginnMonat { get => _ferien.BeginnMonat; set => ZapfprofilKiRegeln.Setze(BeginnMonatSetzen, value); }
-    public int? EndeTag { get => _ferien.EndeTag; set => ZapfprofilKiRegeln.Setze(EndeTagSetzen, value); }
-    public int? EndeMonat { get => _ferien.EndeMonat; set => ZapfprofilKiRegeln.Setze(EndeMonatSetzen, value); }
+    public string Name { get => _ferien.Name ?? ""; set => ZapfprofilKiRegeln.Setze(NameSetzen, value); }
+    public string Von { get => Gemeinjahrdatumtext.Anzeigetext(_ferien.Von); set => ZapfprofilKiRegeln.Setze(VonSetzen, value); }
+    public string Bis { get => Gemeinjahrdatumtext.Anzeigetext(_ferien.Bis); set => ZapfprofilKiRegeln.Setze(BisSetzen, value); }
 }
 
 /// <summary>

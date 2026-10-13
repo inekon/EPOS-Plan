@@ -15420,6 +15420,92 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
     white-space: normal;
 }
 
+/* DIE KARTE „KALENDER" DER ZONE (Konzept Zapfprofil-Benutzerfuehrung ZB5): eine Klappgruppe im
+   Zonenblock. Die Werte eines gebundenen Gebaeudes stehen als Liste aus Begriff und Wert, die
+   eigenen Ferien wie im Gebaeudedialog je Zeile Name, von, bis und „Entfernen", umbrechend statt
+   quer rollend; das Jahresraster rollt in seinem eigenen Kasten (.epos-kalb-rolle). */
+.epos-zapfprofil-kalender-titel {
+    margin: var(--epos-abstand) 0 4px 0;
+    font-weight: 600;
+}
+
+.epos-zapfprofil-kalender-gebaeude {
+    margin: 4px 0 var(--epos-abstand) 0;
+    padding: 6px 8px;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: 6px;
+}
+
+.epos-zapfprofil-kalender-vermerk {
+    margin: 0 0 4px 0;
+    font-style: italic;
+}
+
+.epos-zapfprofil-kalender-werte {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 2px var(--epos-abstand);
+    margin: 0;
+}
+
+.epos-zapfprofil-kalender-werte dt {
+    font-weight: 600;
+}
+
+.epos-zapfprofil-kalender-werte dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.epos-zapfprofil-kalender-ferien {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.epos-zapfprofil-ferienliste {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.epos-zapfprofil-ferienzeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 6px;
+    min-width: 0;
+}
+
+/* Die Tage des Jahresrasters zum Ansehen (Baustein Jahresraster): dasselbe Mass wie die Tage des
+   Jahresrasters im Gebaeudedialog, aber ohne Zeiger - sie sind keine Knoepfe. */
+.epos-jahresraster-tag {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--epos-touchziel);
+    border: 1px solid var(--epos-rahmen-leise);
+    color: var(--epos-text);
+    font-size: 11px;
+}
+
+@media (pointer: fine) {
+    .epos-jahresraster .epos-kalb-jahr {
+        grid-template-columns: 3em repeat(31, 24px);
+    }
+
+    .epos-jahresraster .epos-jahresraster-tag {
+        min-height: 22px;
+    }
+}
+
+@media (forced-colors: active) {
+    .epos-jahresraster-tag,
+    .epos-zapfprofil-kalender-gebaeude {
+        border: 1px solid CanvasText;
+    }
+}
+
 /* Die Stochastik des Zapfprofils (Stufe Z3): Die Konsistenzprobe der Jahresreihe
    (Reiter Kennzahlen) und der Konsistenzhinweis der Auslegung stehen als Kohaerenzzeile -
    innerhalb der Toleranz in Ampelgruen, ausserhalb amber wie jede abweichende

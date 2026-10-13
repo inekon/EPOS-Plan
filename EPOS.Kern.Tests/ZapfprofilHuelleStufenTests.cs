@@ -105,14 +105,12 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ZapfprofilBilanzgrenze.MitSpeicher, a.JahresmesswertBilanzgrenze);
             Assert.Equal("Wärmemengenzähler", a.JahresmesswertQuelle);
             Assert.False(a.TagesbedarfAuto);
-            // Ferien als Tag und Monat, je Zeitraum der Liste eine Zeile: 335 = 1. Dezember, 31 = 31. Januar;
-            // 0 und 366 = keine Angabe (der dritte Zeitraum bleibt leer), aufgefüllt auf die vier Zeilen der Maske.
-            Assert.Equal(4, a.Ferien.Count);
-            Assert.Equal((1, 12), (a.Ferien[0].BeginnTag.Value, a.Ferien[0].BeginnMonat.Value));
-            Assert.Equal((31, 1), (a.Ferien[0].EndeTag.Value, a.Ferien[0].EndeMonat.Value));
-            Assert.Equal((1, 7), (a.Ferien[1].BeginnTag.Value, a.Ferien[1].BeginnMonat.Value));
+            // Ferien als Jahrestage des Gemeinjahrs, je Zeitraum der Liste eine Zeile, ohne Auffüllen: 335 = 1. Dezember,
+            // 31 = 31. Januar; 0 und 366 = keine Angabe (der dritte Zeitraum bleibt leer).
+            Assert.Equal(3, a.Ferien.Count);
+            Assert.Equal((335, 31), (a.Ferien[0].Von!.Value, a.Ferien[0].Bis!.Value));
+            Assert.Equal((182, 243), (a.Ferien[1].Von!.Value, a.Ferien[1].Bis!.Value));
             Assert.False(a.Ferien[2].Belegt);
-            Assert.False(a.Ferien[3].Belegt);
             // Die Wohnungstabelle in ihrer Reihenfolge.
             Assert.Equal(new[] { 30, 31 }, a.Wohnungen.Select(w => w.Id).ToArray());
             Assert.Null(a.Wohnungen[0].Personen);
@@ -210,7 +208,7 @@ namespace EPOS.Kern.Tests
 
             ZapfprofilZonenangabenDaten a = e.Zonen[0].Angaben;
             a.Topologie = ZapfprofilTopologie.Speicher;
-            a.Ferien[1] = new ZapfprofilFerienDaten { BeginnTag = 1, BeginnMonat = 4, EndeTag = 14, EndeMonat = 4 };
+            a.Ferien[1] = new ZapfprofilFerienDaten { Von = 91, Bis = 104 };        // 01.04. bis 14.04.
             a.Wohnungen.RemoveAt(0);
             a.Wohnungen.Add(new ZapfprofilWohnungDaten { Anzahl = 2, Raumzahl = 4 });
             a.JahresmesswertQuelle = "  ";
@@ -285,9 +283,9 @@ namespace EPOS.Kern.Tests
             };
             a.Wohnungen.Add(new ZapfprofilWohnungDaten { Anzahl = 3 });
             a.Wohnungen.Add(new ZapfprofilWohnungDaten());
-            a.Ferien[0] = new ZapfprofilFerienDaten { BeginnTag = 1, BeginnMonat = 7 };
-            a.Ferien[1] = new ZapfprofilFerienDaten { EndeTag = 6, EndeMonat = 1 };        // über den Jahreswechsel — gültig
-            a.Ferien[2] = new ZapfprofilFerienDaten { BeginnTag = 30, BeginnMonat = 2, EndeTag = 5, EndeMonat = 3 };
+            a.Ferien.Add(new ZapfprofilFerienDaten { Von = 182 });                     // ohne Ende — ungültig
+            a.Ferien.Add(new ZapfprofilFerienDaten { Bis = 6 });                       // ohne Beginn ab 1. Januar — gültig
+            a.Ferien.Add(new ZapfprofilFerienDaten { Von = 400, Bis = 64 });          // kein Tag des Gemeinjahrs — ungültig
             var e = new ZapfprofilEingabeDaten
             {
                 Zonen = { new ZapfprofilZoneDaten { Name = "Wohnen", IdNutzungsart = 1, Bezugsmenge = 10, Angaben = a } }

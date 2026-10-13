@@ -319,10 +319,7 @@ namespace EPOS.Kern.Tests
                     z.Angaben.Wohnungen.Add(new ZapfprofilWohnungDaten { Anzahl = 2, Raumzahl = 99.0 });
                     return z;
                 case "ferien_nur_beginn":
-                    z.Angaben.Ferien[0].BeginnTag = 1;
-                    z.Angaben.Ferien[0].BeginnMonat = 8;
-                    z.Angaben.Ferien[0].EndeTag = null;
-                    z.Angaben.Ferien[0].EndeMonat = null;
+                    z.Angaben.Ferien.Add(new ZapfprofilFerienDaten { Von = 213 });   // 01.08. ohne Ende
                     return z;
                 case "messwert_ohne_einheit":
                     z.Angaben.Jahresmesswert = 5000.0;

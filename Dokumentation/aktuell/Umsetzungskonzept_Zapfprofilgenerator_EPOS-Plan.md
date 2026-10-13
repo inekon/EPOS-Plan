@@ -1152,8 +1152,7 @@ Eigenkonstruktion, nie ein Hersteller- oder Produktname, nie Tabellenwerte; `Bel
 | Wohnfläche je WE | Erweitert | Zahlenfeld m² | Annahme, Flächenformel DIN V 18599-10 | `ZPG_LBL_WOHNFLAECHE_JE_WE` |
 | Anlagentopologie | Erweitert | Auswahlfeld | Speicher; bestimmt Auslegungsgröße und Gültigkeit der Verfahren | `ZPG_LBL_TOPOLOGIE` |
 | Zirkulation vorhanden | Erweitert | Optionsgruppe ja/nein | ja bei Großanlage nach DVGW W 551 | `ZPG_LBL_ZIRKULATION_VORHANDEN` |
-| Kalender / Ferien | Erweitert | Auswahlfeld + vier Zeiträume | Kalenderart der Nutzungsart, Gebäude (A8) | `ZPG_LBL_KALENDER` |
-| Bundesland | Erweitert | Auswahlfeld, gesperrt bis A6 | — | `ZPG_LBL_BUNDESLAND` |
+| Kalender / Ferien | Erweitert | Karte „Kalender“ (Klappgruppe): Quelle, Werte des Gebäudes, eigene Ferien als Liste (Name, von, bis), Jahresraster | Kalenderart der Nutzungsart, Gebäude (A8), Feiertagsland des Gebäudes | `ZPG_LBL_KALENDER` |
 | Jahresmesswert | Erweitert | Zahlenfeld + Einheit kWh/m³ + Bilanzgrenze + Quelle + Zeitraum | leer | `ZPG_LBL_JAHRESMESSWERT`, `ZPG_LBL_MESSWERT_EINHEIT`, `ZPG_LBL_MESSWERT_GRENZE`, `ZPG_LBL_MESSWERT_QUELLE`, `ZPG_LBL_MESSWERT_ZEITRAUM` |
 | Rechenweg der Jahresreihe | Erweitert | Optionsgruppe deterministisch/stochastisch | deterministisch | `ZPG_LBL_RECHENWEG_JAHRESREIHE` |
 | Tagesbedarf (auto/manuell) | Erweitert | Optionsgruppe + Vorschlag + Zahlenfeld + angesetzt + Rechenweg | auto, Katalog | `ZPG_LBL_TAGESBEDARF`, `ZPG_LBL_VORSCHLAG`, `ZPG_LBL_MANUELL`, `ZPG_LBL_ANGESETZT`, `ZPG_LBL_RECHENWEG` |

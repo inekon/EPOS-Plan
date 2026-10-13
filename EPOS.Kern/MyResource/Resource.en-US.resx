@@ -31297,7 +31297,7 @@ Do you want to allow this?</value>
     <value>Zone “{0}”: dwelling type {1} needs a number greater than 0.</value>
   </data>
   <data name="ZPG_MSG_FERIEN_UNGUELTIG" xml:space="preserve">
-    <value>Zone “{0}”: holiday period {1} needs an end and a valid day and month for start and end.</value>
+    <value>Zone “{0}”: holiday period {1} needs an end (“to”); start and end are days of the year without leap day.</value>
   </data>
   <data name="ZPG_MSG_MESSWERT_NICHT_POSITIV" xml:space="preserve">
     <value>Zone “{0}”: the measured annual value must be greater than 0.</value>
@@ -31465,37 +31465,127 @@ Do you want to allow this?</value>
     <value>Calendar of the type of use · {0}</value>
   </data>
   <data name="ZPG_KALENDER_GEBAEUDE" xml:space="preserve">
-    <value>Holidays of building {0}</value>
+    <value>Building “{0}”</value>
   </data>
   <data name="ZPG_HINW_KALENDER" xml:space="preserve">
-    <value>Default · calendar of the type of use; a building only presets holidays and area — the zone's own holidays take precedence.</value>
+    <value>The source determines weekend, public holidays and holidays of the zone: the calendar of the type of use or a building of the project. A building only presets holidays and area.</value>
   </data>
   <data name="ZPG_LBL_FERIEN" xml:space="preserve">
-    <value>Holiday period {0}</value>
-  </data>
-  <data name="ZPG_LBL_BEGINN_TAG" xml:space="preserve">
-    <value>Start day</value>
-  </data>
-  <data name="ZPG_LBL_BEGINN_MONAT" xml:space="preserve">
-    <value>Start month</value>
-  </data>
-  <data name="ZPG_LBL_ENDE_TAG" xml:space="preserve">
-    <value>End day</value>
-  </data>
-  <data name="ZPG_LBL_ENDE_MONAT" xml:space="preserve">
-    <value>End month</value>
+    <value>Holidays {0}</value>
   </data>
   <data name="ZPG_HINW_FERIEN" xml:space="preserve">
-    <value>Empty = no holidays. A period over the turn of the year starts in December; without a start it runs from 1 January. Calculated in a year without leap day.</value>
+    <value>The zone's own holidays take precedence: if the zone has a period, the holidays of the building do not apply. A period counts once it has an end; over the turn of the year it starts in December, without a start it runs from 1 January. Calculated in a year without leap day.</value>
   </data>
-  <data name="ZPG_LBL_BUNDESLAND" xml:space="preserve">
-    <value>Federal state</value>
+  <data name="ZPG_LBL_KAL_QUELLE" xml:space="preserve">
+    <value>Source</value>
   </data>
-  <data name="ZPG_BUNDESLAND_KLIMAREGION" xml:space="preserve">
-    <value>as climate region</value>
+  <data name="ZPG_KAL_AUS_GEBAEUDE" xml:space="preserve">
+    <value>from building “{0}”</value>
   </data>
-  <data name="ZPG_GRUND_BUNDESLAND" xml:space="preserve">
-    <value>Takes effect only with a calendar table per federal state; until then weekends and holidays of the climate region apply.</value>
+  <data name="ZPG_KAL_WOCHENENDE" xml:space="preserve">
+    <value>Weekend</value>
+  </data>
+  <data name="ZPG_KAL_FEIERTAGE" xml:space="preserve">
+    <value>Public holidays</value>
+  </data>
+  <data name="ZPG_KAL_FERIEN" xml:space="preserve">
+    <value>Holidays</value>
+  </data>
+  <data name="ZPG_KAL_BUNDESEINHEITLICH" xml:space="preserve">
+    <value>nationwide only</value>
+  </data>
+  <data name="ZPG_KAL_KEINE_FERIEN" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="ZPG_KAL_FERIEN_ZONE_VOR" xml:space="preserve">
+    <value>The zone has its own holidays; the holidays of the building do not apply.</value>
+  </data>
+  <data name="ZPG_KAL_FERIENTEXT" xml:space="preserve">
+    <value>{0}: {1} – {2}</value>
+  </data>
+  <data name="ZPG_KAL_SUM_GEBAEUDE" xml:space="preserve">
+    <value>as building “{0}”</value>
+  </data>
+  <data name="ZPG_KAL_SUM_NUTZUNGSART" xml:space="preserve">
+    <value>Calendar of the type of use</value>
+  </data>
+  <data name="ZPG_KAL_SUM_FERIEN" xml:space="preserve">
+    <value>{0} holiday periods</value>
+  </data>
+  <data name="ZPG_KAL_SUM_FERIEN_EINS" xml:space="preserve">
+    <value>1 holiday period</value>
+  </data>
+  <data name="ZPG_KAL_SUM_EIGENE" xml:space="preserve">
+    <value>{0} own holiday periods</value>
+  </data>
+  <data name="ZPG_KAL_SUM_EIGENE_EINS" xml:space="preserve">
+    <value>1 own holiday period</value>
+  </data>
+  <data name="ZPG_KAL_SUM_KEINE_EIGENEN" xml:space="preserve">
+    <value>no own holidays</value>
+  </data>
+  <data name="ZPG_KAL_SUM_KEINE" xml:space="preserve">
+    <value>no holidays</value>
+  </data>
+  <data name="ZPG_KAL_SUM_FEIERTAGE" xml:space="preserve">
+    <value>public holidays {0}</value>
+  </data>
+  <data name="ZPG_KAL_SUM_BUNDESEINHEITLICH" xml:space="preserve">
+    <value>nationwide public holidays</value>
+  </data>
+  <data name="ZPG_LBL_KAL_EIGENE_FERIEN" xml:space="preserve">
+    <value>Own holidays of the zone</value>
+  </data>
+  <data name="ZPG_LBL_FERIEN_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ZPG_LBL_FERIEN_VON" xml:space="preserve">
+    <value>from</value>
+  </data>
+  <data name="ZPG_LBL_FERIEN_BIS" xml:space="preserve">
+    <value>to</value>
+  </data>
+  <data name="ZPG_KNOPF_FERIEN_NEU" xml:space="preserve">
+    <value>+ Holidays</value>
+  </data>
+  <data name="ZPG_KNOPF_FERIEN_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="ZPG_LBL_JAHRESRASTER" xml:space="preserve">
+    <value>Year grid of the zone</value>
+  </data>
+  <data name="ZPG_TAGTYP_FERIEN" xml:space="preserve">
+    <value>Holidays</value>
+  </data>
+  <data name="ZPG_HINW_JAHRESRASTER" xml:space="preserve">
+    <value>For each day the day type the zone calculates with — from weekend, public holidays and holidays, as the preview reads them.</value>
+  </data>
+  <data name="ZPG_HINW_JAHRESRASTER_OHNE" xml:space="preserve">
+    <value>The year grid appears with the preview.</value>
+  </data>
+  <data name="ZPG_PLATZHALTER_FERIEN_VON" xml:space="preserve">
+    <value>from DD.MM.</value>
+  </data>
+  <data name="ZPG_PLATZHALTER_FERIEN_BIS" xml:space="preserve">
+    <value>to DD.MM.</value>
+  </data>
+  <data name="ZPG_HINW_DATUM_FORMAT" xml:space="preserve">
+    <value>Format DD.MM., without year (common year), e.g. 01.07. to 14.08.</value>
+  </data>
+  <data name="ZPG_HINW_DATUM_JAHR" xml:space="preserve">
+    <value>Without year: the year was discarded, the common year applies.</value>
+  </data>
+  <data name="ZPG_MSG_GEMEINJAHR" xml:space="preserve">
+    <value>Invalid date: DD.MM. in the common year; there is no 29.02.</value>
+  </data>
+  <data name="KI_DLG_ZPG_FERIEN_NAME_NAME" xml:space="preserve">
+    <value>Holidays · name</value>
+  </data>
+  <data name="KI_DLG_ZPG_FERIEN_VON_NAME" xml:space="preserve">
+    <value>Holidays · from</value>
+  </data>
+  <data name="KI_DLG_ZPG_FERIEN_BIS_NAME" xml:space="preserve">
+    <value>Holidays · to</value>
   </data>
   <data name="ZPG_LBL_JAHRESMESSWERT" xml:space="preserve">
     <value>Measured annual value</value>
@@ -31786,7 +31876,7 @@ Do you want to allow this?</value>
     <value>The calendar of the selected zone: that of the type of use or the holidays of a building of the project, which only preset.</value>
   </data>
   <data name="KI_DLG_ZPG_FERIEN_ERL" xml:space="preserve">
-    <value>A holiday period of the selected zone as start day, start month, end day and end month; empty = no holidays.</value>
+    <value>An own holiday period of the selected zone: name, from and to as DD.MM. in a year without leap day; empty = no entry. The row after the last period creates a new one. Own holidays take precedence over the holidays of a building.</value>
   </data>
   <data name="KI_DLG_ZPG_JAHRESMESSWERT_ERL" xml:space="preserve">
     <value>A measured annual consumption of the selected zone; it scales the zone with a stated factor, empty = no measured value.</value>
