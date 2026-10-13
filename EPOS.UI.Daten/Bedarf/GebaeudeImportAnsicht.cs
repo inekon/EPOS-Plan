@@ -142,6 +142,8 @@ namespace WindowsFormsApplication1
                     .ToList(),
                 Bauteilkoerper = bauteile.Select(x => new GebaeudeAnsichtBauteilkoerper(x.Zeile.Bauteilkennung, (Randgruppe)x.Zeile.Gruppe,
                                                                                          Koerper(x.Bauteil.Koerper, bezug))).ToList(),
+                // AB4: die Bauteilart je Kennung — die Bauteilgruppen der Körperansicht.
+                Bauteilarten = jeKennung.ToDictionary(x => x.Key, x => x.Value.Art.ToString(), StringComparer.Ordinal),
             };
         }
 

@@ -745,6 +745,12 @@ public sealed record GebaeudeProjektdateiDaten
     /// <summary>Die Namen der Räume der Projektdatei ohne Raum der Gebäudedatei (Geschoss/Name).</summary>
     public IReadOnlyList<string> RaeumeOhneTreffer { get; init; } = Array.Empty<string>();
 
+    /// <summary>
+    /// Der Prüfbefund der Projektdatei beim Weg „Gebäudedatei + Projektdatei“ der Mehrzonenübernahme (GD-N): je eine Zeile
+    /// Vorhandensein, Lesbarkeit, Zuordnung zur Gebäudedatei und Prüfsumme; leer = nicht geprüft (der gewöhnliche Import).
+    /// </summary>
+    public IReadOnlyList<string> Pruefbefund { get; init; } = Array.Empty<string>();
+
     /// <summary>Nach der Übernahme: je Größe die Zonen aus Ganglinie und Nutzungsprofil; vorher leer.</summary>
     public IReadOnlyList<GebaeudeProjektdateiGroesse> Groessen { get; init; } = Array.Empty<GebaeudeProjektdateiGroesse>();
 
@@ -1015,6 +1021,15 @@ public sealed record GebaeudeZonierungDaten
 
     /// <summary>Der Zonenplan für den Zonenbaum; <c>null</c> = keiner (die Regel ist abgelehnt).</summary>
     public GebaeudeZonenplanDaten? Plan { get; init; }
+
+    /// <summary>
+    /// Die Zeile der Vorbelegung (GD-N): der Zonenplan eines früheren Imports dieses Gebäudes ist vorgelegt — Datei, Zeitpunkt,
+    /// Räume und Zonen; leer = der Zonenbaum startet mit der Vorgabe der Datei.
+    /// </summary>
+    public string Planvorlage { get; init; } = "";
+
+    /// <summary>Die benannte Abweichung der Prüfsumme zum vorgelegten Plan; leer = gleiche Prüfsumme.</summary>
+    public string PlanvorlageAbweichung { get; init; } = "";
 }
 
 /// <summary>

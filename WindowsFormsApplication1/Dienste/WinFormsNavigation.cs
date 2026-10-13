@@ -49,6 +49,12 @@ namespace WindowsFormsApplication1
                 case Masken.GebaeudeAdmin:
                     return GebaeudeFenster.Katalogverwaltung(null);
 
+                // GD-N: Die Gebaeude des offenen Projekts, wahlweise mit Sprungziel (Sprungziele.Kuehlung) -
+                // derselbe Weg wie die Kacheln „Gebaeude" und „Gebaeudekuehlung" der Startseite.
+                case Masken.Projektgebaeude:
+                    return GebaeudeFenster.ProjektOeffnen(null, Dienste.Projekt?.Id ?? 0, Dienste.Projekt?.Name ?? "",
+                                                          argumente is { Length: > 0 } ? argumente[0] as string : null).Ok;
+
                 // iU9-W8.4: Die Gebaeudetypen-Verwaltung ist die Razor-Komponente
                 // GebaeudetypDialog; Form_EingGebTyp ist im selben Schritt GELOESCHT
                 // (Regel M1). Die Huelle liefert dasselbe true/false wie MitOk.

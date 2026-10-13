@@ -1234,6 +1234,19 @@ Wege führen einen Katalogsatz in ein Projekt, und alle drei führen die Kühlke
 | **Katalogsatz übernehmen** | `WPCtrl.CopyFromStamm` (`:509` über den Namen, `:520` über die Stamm-ID), Kühlblock `:608-626` | kopiert `Tab_Kenndaten_Kuehlung_STAMM` → `Tab_Kenndaten_Kuehlung` und bildet `ID_WP` auf die neue Projekt-ID ab; der Nachzug für fehlende Kennlinien prüft Wärme **und** Kühlung getrennt (`:696`: `kuehlFehlt`, Kopierweg `:704-759`) |
 | **Gewerkübernahme** | `KomponentenUebernahmeCtrl.cs:128` | der Plan „Wärmepumpe" führt `Tab_Kenndaten` **und** `Tab_Kenndaten_Kuehlung` als Kindtabellen über `ID_WP` |
 | **Projekt duplizieren** | `ProjektDuplizierenCtrl.cs:165` | `Tab_Kenndaten_Kuehlung` steht in der Kinderliste mit demselben Elternfilter wie `Tab_Kenndaten` |
+| **Gewerkübernahme Kältemaschine** | `KomponentenUebernahmeCtrl.Plaene` | der Plan „Kältemaschine“ führt `Tab_Kaeltemaschine` mit `Tab_Kenndaten_Kaeltemaschine` über `ID_Kaeltemaschine` |
+
+**Wie gebaut (KN1).** Die Kältemaschine ist ein Gewerk der Übernahme wie jedes andere: Die
+Anlagenzeile kommt samt Stückzahl (`Kaeltemaschine_Anzahl`), Kühlträger und Abrechnungsart, das
+Gerät als eigene Projektkopie samt Kennfeld. Ihr Geräteverweis `ID_Kaeltemaschine` steht nicht im
+Modell der einen Einfügeanweisung, sondern in den Fachspalten; der Austausch nimmt ihn deshalb aus
+der Fachspaltenübertragung heraus und setzt ihn nach dem Einfügen über die Abbildung nach ID — über
+den Bezeichner wären zwei gleichnamige Maschinen nicht zu trennen. Was nicht zum Gewerk gehört,
+wird benannt statt geraten (`BK_KOMP_HINW_KAELTESEITE`): die Kaskade des Projekts, ein
+Kältespeicher und die Kältefolge der übrigen Kälteerzeuger. Die Stückzahl zählt zum BESTAND —
+sie entscheidet über „nichts zu tun“ und steht als eigenes Merkmal in der Unterschiedsliste,
+gelesen und geschrieben an der ersten Anlagenzeile dieses Gewerks, bei mehreren abgelehnt.
+Nachweis `EPOS.Kern.Tests/KaeltemaschineUebernahmeTests`.
 
 **Folge für KU2:** Die Kühlkennlinie ist im Projekt vorhanden, sobald die Maschine es ist. Was
 fehlt, ist allein der **Leser** (5.1) und die **Einstellung** (5.0.5). Ein Datenbankfall hält
@@ -2834,6 +2847,8 @@ beiden Masken (`Form_WP_Anlage` und die Konfiguration der Simulation) über dies
 - **Kältefolge-Platz:** Eine neu in den Kühlbetrieb gesetzte Wärmepumpe bekommt den nächsten `Kaelte_Rang` hinter den Erzeugern mit Rang (`KaeltefolgeCtrl.RangAnhaengen`, Schritt 212); beim Ausschalten wird ihr Rang entfernt und die Folge geschlossen (`KaeltefolgeCtrl.RangEntfernen`). Gepflegt wird die Folge weiter im Bereich „Kälte“.
 
 **So gebaut (KM‑K2, 13.10.2026).** „Bearbeiten…“ einer Wärmepumpe im Kältemaschinen-Dialog öffnet die Wärmepumpen-Überlagerung — dieselben Anlagenfelder mit Gerätesteckbrief und Klappgruppe „Kühlbetrieb“ wie im Wärmepumpendialog. Die Naht `WaermepumpeAnlageGaben` reicht Gaben, Anlagenzeile und Schreibweg herein; Lesen und Schreiben liegen plattformfrei in `WaermepumpeAnlagenaht` (`EPOS.UI.Daten`) und gehen über `WErzeugerCtrl.KonfigurationSchreiben` samt `WaermepumpeGeraeteCtrl.KuehlkonfigurationNachziehen` — Kühlbetrieb, Kühlvorlauf und Hilfsstromanteil der Kopie bleiben damit auf dem einen Schreibweg des Kühlbetriebs. Ohne die Naht bleibt die benannte Sperre. Die Verwendungsmarke der Wärmepumpe zählt jede Projektkopie des Projekts, nicht erst die mit Kühlbetrieb. Die Wärmekaskade bleibt unberührt wie im Wärmepumpendialog; führt `Tool_1…4` keinen Platz für Wärmepumpen, nennt die Übernahme das im Banner (ohne Platz kühlt die Anlage nicht, 8.2 und `Kaeltefolge.InWaermekaskade`). Regeln in [Konzept Projektdialoge mit Katalogauswahl](../ueberholt/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md), Abschnitt 5.10a. Tests `KaeltemaschineAnlageWpBearbeitenTests`, `KuehlerzeugerKatalogCtrlTests`.
+
+**So gebaut (KD1, 13.10.2026).** Die Kostenleiste der Kältemaschinen-Anlage trägt wie Wärmepumpe und BHKW den Knopf „Energiekosten…“ (`KostenKnoepfeLeiste`, Beschriftung `KDLG_KNOPF_ENERGIE`): Er öffnet die Energieträgerverwaltung als Überlagerung desselben Fensters, aufgeschlagen auf die Trägerkarte des Kühlträgers dieser Anlage (`Kuehl_ID_Carrier`, ohne eigenen der Stromträger des Projekts) samt ihrer Projektkopie als Gerät. Der Weg ist plattformfrei: Die Gabe `EnergietraegerGaben` füllt `KaeltemaschineAnlageHuelle` selbst über `EnergietraegerHuelle` (Komponente `ERZEUGER_KAELTEMASCHINE`, die den Katalog nach `EnergietraegerZulaessigkeit` auf Strom einengt) — kein zweites Fenster und keine Windows-Naht wie bei Investition und Betrieb. Gelesen wird der Arbeitsstand, die Trägerwahl des Satzes gilt also schon vor dem OK; führt weder die Anlage einen Kühlträger noch das Projekt einen Stromträger, steht der Knopf weich gesperrt (`KMA_ENERGIEKOSTEN_OHNE_TRAEGER`), und nach dem Schließen zieht der Satz seine Kostensummen nach. Für eine gewählte Wärmepumpe nennt der Knopf in der Knopfleiste am Satz den Wärmepumpendialog als Weg (`KMA_ENERGIEKOSTEN_WP`): Ihre Projektkopie kann mehrere Anlagenzeilen tragen, und eine dritte Überlagerungsebene über die Anlagenfelder lässt das Hausblatt nicht zu. Tests `KaeltemaschineAnlageEnergiekostenTests`, `KostenKnoepfeLeisteTests`.
 
 ### 8.3 Projekteinstellung
 

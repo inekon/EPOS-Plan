@@ -31,7 +31,9 @@ namespace EPOS.iOS;
 /// <c>EPOS.UI</c> sind fuer alle Maskenschluessel VERWEISE auf <c>Masken.*</c> -
 /// dieselbe Zeichenkette, nicht eine zweite. Die Verwaltungsschluessel der
 /// Kataloge, <c>Masken.PeakShaving</c>, <c>Masken.StromganglinieAdmin</c> und
-/// <c>Masken.ProjektSpeichernUnter</c> laufen deshalb UNUEBERSETZT durch, und es
+/// <c>Masken.ProjektSpeichernUnter</c> laufen deshalb UNUEBERSETZT durch - ebenso
+/// <c>Masken.Projektgebaeude</c> mit seinem Sprungziel (GD-N; die Wurzel lehnt ihn auf
+/// dem iPad benannt ab, die Gebaeude pflegt dort der Assistent) -, und es
 /// gibt fuer sie nichts zu ergaenzen; toter Uebersetzungscode waere eine zweite
 /// Wahrheit ueber denselben Text. Was mit einem Schluessel geschieht, entscheidet
 /// allein die WURZEL (<c>AppWurzel.OeffneMaske</c>): Sie fuehrt die Positivliste

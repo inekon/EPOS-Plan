@@ -1294,6 +1294,12 @@ dreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `615aec8f6f42b63ed00084dcdcd0b4c66a370de023d75d95a7cd51149123cf5b`**. Alle dreißig Projekte rechnen gegen R52
 > GESAMT PASS und byte-gleich
 > ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-11_SA2_Schema217.md)).
+> **Nachtrag — Schema 222 (Klasse „Haustechnik“, BK-3c, 13.10.2026, hängt an 221 `BauteilkatalogSchema`), Basis R52 unverändert.**
+> `BauteilkatalogHaustechnikSchema` führt `HAUSTECHNIK` in den Klassenlisten und der Prüfklausel `Klasse_Code` an
+> `Tab_Baustoff(_STAMM)` und `Tab_Bauteilaufbau(_STAMM)`; die vier Tabellen sind neu gebaut, Zeilen und IDs bleiben. Die
+> Testdatenbank steht auf **222** (`integrity_check` ok, `foreign_key_check` leer): **96 604 160 Byte, LFS-SHA-256
+> `03ba8220…`**, Katalog 132 Baustoffe und 9 Aufbauten; kein Rechenweg liest die Klasse
+> ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-12_BK-3_Import.md)).
 > **Nachtrag — Schema 224 (Zonenferien als Liste, ZB5/ZB‑Q3 B, hängt an 223 `KaeltebedarfSplitAbrechnungSchema`), Basis R52
 > unberührt.** `TwwZonenferienSchema` legt `Tab_TwwZonenferien` an (STRICT; `ID_Zone` mit Kaskade, `Reihenfolge` ≥ 1,
 > `Name`, `Beginn` 1 … 365 oder leer, `Ende` 1 … 365; eindeutig je Zone und Reihenfolge), überträgt die vier Spaltenpaare

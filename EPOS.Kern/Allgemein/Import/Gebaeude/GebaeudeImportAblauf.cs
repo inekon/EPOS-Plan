@@ -626,9 +626,14 @@ namespace WindowsFormsApplication1
         internal Zonenkonditionierung Gebaeudekonditionierung(int gebaeudeIndex)
         {
             SqprojStand p = ProjektdateiFuer(gebaeudeIndex);
-            if (p == null || p.Abgelehnt || Abbild == null || gebaeudeIndex < 0 || gebaeudeIndex >= Abbild.Gebaeude.Count) return null;
+            if (Abbild == null || gebaeudeIndex < 0 || gebaeudeIndex >= Abbild.Gebaeude.Count) return null;
             List<AbbildRaum> warm = Abbild.Gebaeude[gebaeudeIndex].Raeume.Where(r => r.Beheizt).ToList();
             double flaeche = warm.Sum(r => r.FlaecheM2 ?? 0.0), volumen = warm.Sum(r => r.VolumenM3 ?? 0.0);
+            // Welle DA-1: ohne Projektdatei die Lasten und Zeitpläne einer gbXML-Datei als Gebäudekalender (Datei vor Profil).
+            if (p == null)
+                return GbxmlKonditionierung.Bilden(Abbild.Gebaeude[gebaeudeIndex].Anzeigename, warm, flaeche > 0.0 ? flaeche : null,
+                                                   volumen > 0.0 ? volumen : null);
+            if (p.Abgelehnt) return null;
             Zonenkonditionierung k = SqprojZonen.Gebaeudekonditionierung(p.Abbild, p.Abgleich, flaeche > 0.0 ? flaeche : null, volumen > 0.0 ? volumen : null,
                                                                          p.Gewaehlt);
             return k != null && k.Liefert ? k : null;

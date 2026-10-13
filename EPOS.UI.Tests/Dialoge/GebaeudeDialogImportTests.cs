@@ -178,8 +178,10 @@ public class GebaeudeDialogImportTests : EposBunitContext
     }
 
     private IRenderedComponent<GebaeudeDialog> Aufbauen(Protokoll p, List<GebaeudeProjektZeile> zeilen, bool mitImport = true,
-                                                        Func<GebaeudeImportweg>? weg = null)
+                                                        Func<GebaeudeImportweg>? weg = null,
+                                                        Func<GebaeudeProjektZeile, ModellpruefungWeg?>? modellpruefung = null)
         => Render<GebaeudeDialog>(c => c
+            .Add(x => x.ModellpruefungGaben, modellpruefung)
             .Add(x => x.Zeilen, zeilen)
             .Add(x => x.Katalogzeilen, () => new[]
             {
@@ -289,6 +291,34 @@ public class GebaeudeDialogImportTests : EposBunitContext
                         editor.FindAll(".epos-herleitung-text").Select(e => e.TextContent));
         Assert.Equal("Gebäude in DB neu...", cut.Find(".epos-ueberlagerung-titel").TextContent);
         Assert.Equal(0, p.Aufgenommen);                            // noch keine Zeile
+    }
+
+    [Fact]
+    public void MA1b_Nach_dem_Import_oeffnet_das_Blatt_Modell_pruefen_fuer_das_neue_Gebaeude()
+    {
+        var p = new Protokoll();
+        var zeilen = EineZeile();
+        var geoeffnet = new List<GebaeudeProjektZeile>();
+        var cut = Aufbauen(p, zeilen, modellpruefung: z => { geoeffnet.Add(z); return new ModellpruefungProbeweg().Weg(); });
+        ImportEinlesen(cut).Find(".epos-leiste button.epos-knopf--primaer").Click();
+        Assert.False(cut.Instance.ModellpruefungOffen);                     // erst nach dem Speichern im Editor
+        cut.FindComponent<GebaeudeKatalogDialog>().Find(".epos-leiste button.epos-knopf--primaer").Click();
+
+        Assert.Equal(2, zeilen.Count);
+        Assert.Same(zeilen[1], Assert.Single(geoeffnet));
+        Assert.True(cut.Instance.ModellpruefungOffen);
+        Assert.Equal(5, cut.FindAll(".epos-modellpruefung-gruppe").Count);
+    }
+
+    [Fact]
+    public void MA1b_Ohne_Weg_nach_dem_Import_bleibt_das_Blatt_still_zu()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p, EineZeile(), modellpruefung: _ => null);
+        ImportEinlesen(cut).Find(".epos-leiste button.epos-knopf--primaer").Click();
+        cut.FindComponent<GebaeudeKatalogDialog>().Find(".epos-leiste button.epos-knopf--primaer").Click();
+        Assert.Equal(1, p.Aufgenommen);
+        Assert.False(cut.Instance.ModellpruefungOffen);
     }
 
     [Fact]
