@@ -252,6 +252,20 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   - **Die Farbwahl am Bild steht einmal** in `Bausteine/Farbwahlwirt.cs`: Ein Wirt schreibt
     `@inherits Farbwahlwirt` und reicht `FarbwahlErlaubt`/`FarbeGewaehlt`/`FarbeZurueckgesetzt`
     samt `Palette` durch. **Kein Delegat, kein Wähler.**
+  - **Die Oberfläche zeigt jedes Modell nach der OBERFLÄCHENREGEL, der Bericht nicht:**
+    `DiagrammSvg` rechnet aus der Gabe `Modell` sein wirksames `Bild`
+    (`Oberflaechenregel.Anwenden`, Parameter `Darstellung`, Vorgabe `Interaktiv`) — Bedarf als
+    Linie über den Flächen, Erzeugung als durchscheinende Fläche (die größere hinten), Stapel
+    bleibt Stapel, dichte Jahresreihen als Tagesband (Minimum bis Maximum, Mittel als Kern;
+    beim Zoom die Stunden). Die Regel liest `Datenreihe.Reihenrolle`, die aus der Farbrolle
+    folgt; **eine Hülle nennt die Rolle nur dort, wo die Farbrolle sie nicht sagt**
+    (`Reihe.MitRolle`). Kein Einzelfall-Code je Dialog, kein Umbau im Renderer: Die
+    Befehlsliste des Berichts bleibt dieselbe Instanz, jedes PNG byte-gleich.
+  - **Die Zeitachse eines Jahresbildes ist umschaltbar** — die Wahl „Monat | Tag | Stunde“ in
+    der Leiste (`Zeitachse.Teilung`, `Zeichenflaeche.Teilung` als Vorgabe): Sie gilt je
+    Baustein und Sitzung und zeichnet die Teilung in der Vollansicht wie im Ausschnitt nach;
+    ohne Wahl zeigt die Vollansicht die Achse des Bildes und der Ausschnitt Jahresstunden mit
+    Datum.
 - **Eine Summenlinie heißt nach dem, was sie summiert, und ist abschaltbar wie ihre
   Summanden.** Der Name folgt der Summenbildung im Code, nicht der Gewohnheit: Ein
   Schlüssel „Gesamt" für drei verschiedene Summen benennt keine davon — je Diagramm ein

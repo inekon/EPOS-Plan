@@ -1289,7 +1289,14 @@ public class DiagrammSvgTests : EposBunitContext
     [Fact]
     public async Task DS8_Eine_rohe_Reihe_wird_nicht_nachgeladen()
     {
-        var cut = Zeige();   // zwei Reihen, 8 760 Stuetzstellen - also roh
+        // Im BERICHTSMODUS: zwei Reihen, 8 760 Stuetzstellen - also roh. Im Oberflaechenmodus
+        // traegt dieselbe Reihe das Tagesband und wird nachgerechnet (DS12).
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, Modell());
+            p.Add(x => x.Kennung, "probe");
+            p.Add(x => x.Darstellung, Darstellung.Bericht);
+        });
 
         await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(3000, 3400));
 
@@ -2184,5 +2191,187 @@ public class DiagrammSvgTests : EposBunitContext
         Assert.Equal(366, zeilen.Length);
         Assert.Equal(26, zeilen[1].Split(';').Length);
         Assert.StartsWith("01.01.;Do;20,0;", zeilen[1], StringComparison.Ordinal);
+    }
+
+    // =====================================================================
+    //  DS-12  Die Oberflächenregel und die Wahl „Monat | Tag | Stunde“
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der Oberflächenmodus ist gesetzt</b>: Der Baustein zeigt das Modell nach der
+    /// Oberflächenregel — ein Bedarf als Linie zuletzt, eine Erzeugung als Fläche mit Tagesband —
+    /// und sagt es am Bild (<c>data-darstellung</c>). Die Gabe bleibt unverändert.
+    /// </summary>
+    [Fact]
+    public void DS12_Der_Oberflaechenmodus_ist_gesetzt_und_die_Gabe_bleibt()
+    {
+        Zeichenmodell modell = PvModell();
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, modell);
+            p.Add(x => x.Kennung, "pv");
+        });
+
+        Assert.Equal("interaktiv", cut.Find("svg[data-darstellung]").GetAttribute("data-darstellung"));
+        Assert.Same(modell, cut.Instance.Modell);
+        Assert.Equal(Darstellung.Bericht, modell.Darstellung);
+        Assert.Equal(Darstellung.Interaktiv, cut.Instance.Bild!.Darstellung);
+
+        var pfade = cut.FindAll("svg.epos-flaeche path.epos-reihe");
+        Assert.Equal(3, pfade.Count);
+        Assert.Equal("Photovoltaik", pfade[0].GetAttribute("data-reihe"));   // die groessere Flaeche hinten
+        Assert.Equal("Überschuss", pfade[1].GetAttribute("data-reihe"));
+        Assert.Equal("Strombedarf", pfade[2].GetAttribute("data-reihe"));   // der Bedarf zuletzt
+        Assert.NotEqual("none", pfade[0].GetAttribute("fill"));
+        Assert.Equal("none", pfade[2].GetAttribute("fill"));
+        Assert.Equal(3, cut.FindAll("svg.epos-flaeche path.epos-band").Count);
+        Assert.Single(cut.FindAll("path[data-band='Strombedarf']"));
+    }
+
+    /// <summary><b>Der Berichtsmodus ist unverändert</b>: dieselben Reihen in der Reihenfolge des Renderers, alle Linien, kein Band.</summary>
+    [Fact]
+    public void DS12_Der_Berichtsmodus_zeigt_das_Modell_wie_der_Renderer()
+    {
+        Zeichenmodell modell = PvModell();
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, modell);
+            p.Add(x => x.Kennung, "pv");
+            p.Add(x => x.Darstellung, Darstellung.Bericht);
+        });
+
+        Assert.Empty(cut.FindAll("svg[data-darstellung]"));
+        Assert.Same(modell, cut.Instance.Bild);
+        var pfade = cut.FindAll("svg.epos-flaeche path.epos-reihe");
+        Assert.Equal(new[] { "Überschuss", "Strombedarf", "Photovoltaik" },
+                     pfade.Select(p => p.GetAttribute("data-reihe")).ToArray());
+        Assert.All(pfade, p => Assert.Equal("none", p.GetAttribute("fill")));
+        Assert.Empty(cut.FindAll("path.epos-band"));
+        Assert.Equal(SvgSchreiber.Text(modell, null, "pv").Length > 0, true);
+    }
+
+    /// <summary>Der Legendenklick schaltet Band und Kern derselben Reihe gemeinsam.</summary>
+    [Fact]
+    public void DS12_Der_Legendenklick_schaltet_auch_das_Band()
+    {
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, PvModell());
+            p.Add(x => x.Kennung, "pv");
+        });
+        cut.Find("text[data-legende='Strombedarf']").Click();
+        Assert.Equal("none", cut.Find("path[data-reihe='Strombedarf']").GetAttribute("display"));
+        Assert.Equal("none", cut.Find("path[data-band='Strombedarf']").GetAttribute("display"));
+        Assert.False(cut.Find("path[data-band='Photovoltaik']").HasAttribute("display"));
+    }
+
+    /// <summary>
+    /// Im Oberflächenmodus ist ein Tagesband nie roh: Ab dem Vierfachen rechnet der Baustein
+    /// Kern und Band nach — die Stunden kommen zurück, das Band wird leer.
+    /// </summary>
+    [Fact]
+    public async Task DS12_Das_Tagesband_wird_im_Ausschnitt_nachgerechnet()
+    {
+        var cut = Zeige();   // zwei Reihen, 8 760 Stuetzstellen - im Berichtsmodus roh, hier Tagesband
+        Assert.Equal(2, cut.FindAll("path.epos-band").Count);
+        string band = cut.Find("path[data-band='" + MIT_ROLLE + "']").GetAttribute("d")!;
+        Assert.EndsWith(" Z", band);
+
+        // 400 Stunden auf voller Breite: ein Tag ist breiter als vier Spalten - Stunden statt Band.
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(3000, 3400));
+
+        Assert.Equal(2, cut.Instance.Ausschnittpfade.Count);
+        Assert.Equal(2, cut.Instance.Bandpfade.Count);
+        Assert.Equal("", cut.Instance.Bandpfade[MIT_ROLLE]);
+        Assert.Equal("", cut.Find("path[data-band='" + MIT_ROLLE + "']").GetAttribute("d"));
+        Datenreihe reihe = cut.Instance.Bild!.Reihen.Single(r => r.Name == MIT_ROLLE);
+        Assert.Equal(SvgSchreiber.Reihenpfad(reihe, cut.Instance.Bild.Flaeche, 3000, 3400, true),
+                     cut.Find("path[data-reihe='" + MIT_ROLLE + "']").GetAttribute("d"));
+
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(0, 8759));
+        Assert.Empty(cut.Instance.Bandpfade);
+        Assert.Equal(band, cut.Find("path[data-band='" + MIT_ROLLE + "']").GetAttribute("d"));
+    }
+
+    /// <summary>
+    /// <b>Die Wahl „Monat | Tag | Stunde“ wirkt auf die Achse</b>: In der Vollansicht steht die
+    /// Monatsachse des Bildes (Vorgabe Monat, Knopf gedrückt); „Tag“ blendet sie aus und
+    /// zeichnet Tage mit Datum, „Stunde“ Jahresstunden mit Datum, „Monat“ stellt die Achse des
+    /// Bildes wieder her. Im Ausschnitt gilt die Wahl ebenso; ohne Wahl zählt er Jahresstunden.
+    /// </summary>
+    [Fact]
+    public async Task DS12_Die_Wahl_Monat_Tag_Stunde_wirkt_auf_die_Achse()
+    {
+        var cut = Zeige();
+
+        Assert.True(cut.Instance.MitZeiteinheit);
+        Assert.Equal(Zeitachseneinheit.Monat, cut.Instance.Zeiteinheit);
+        Assert.Equal("true", cut.Find("button[data-einheit='monat']").GetAttribute("aria-pressed"));
+        Assert.False(cut.Instance.AchseNachgezeichnet);
+        Assert.Empty(cut.FindAll(".epos-diagramm-ticks"));
+
+        cut.Find("button[data-einheit='tag']").Click();
+        Assert.Equal(Zeitachseneinheit.Tag, cut.Instance.Zeiteinheit);
+        Assert.True(cut.Instance.AchseNachgezeichnet);
+        Assert.All(cut.FindAll("[data-marke='xachse']"), e => Assert.Equal("none", e.GetAttribute("display")));
+        var tage = Zeitachse.Teilung(Zeitachseneinheit.Tag, 0, 8759, cut.Instance.Bild!.Flaeche!.Bild.Breite);
+        Assert.Equal(tage.Count, cut.FindAll(".epos-diagramm-ticks line").Count);
+        var texte = cut.FindAll(".epos-diagramm-ticks text").Select(t => t.TextContent).ToList();
+        Assert.Contains("1", texte);
+        Assert.Contains(Zeitachse.Datum(0), texte);
+        Assert.Contains(Resource.CHART_ACHSE_TAG_DATUM, texte);
+
+        cut.Find("button[data-einheit='stunde']").Click();
+        var stunden = ChartRenderer.Jahresstundenteilung(0, 8759);
+        Assert.Equal(stunden.Count, cut.FindAll(".epos-diagramm-ticks line").Count);
+        Assert.Contains(Resource.CHART_ACHSE_JAHRESSTUNDEN_DATUM,
+                        cut.FindAll(".epos-diagramm-ticks text").Select(t => t.TextContent));
+
+        cut.Find("button[data-einheit='monat']").Click();
+        Assert.False(cut.Instance.AchseNachgezeichnet);
+        Assert.Empty(cut.FindAll(".epos-diagramm-ticks"));
+        Assert.All(cut.FindAll("[data-marke='xachse']"), e => Assert.False(e.HasAttribute("display")));
+
+        // Im Ausschnitt: die Wahl Monat zeichnet Monatsgrenzen, die Vorgabe waeren Jahresstunden.
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(0, 2000));
+        var monate = Zeitachse.Teilung(Zeitachseneinheit.Monat, 0, 2000, cut.Instance.Bild.Flaeche.Bild.Breite);
+        Assert.Equal(monate.Count, cut.FindAll(".epos-diagramm-ticks line").Count);
+        Assert.Contains(Resource.CHART_ACHSE_MONAT, cut.FindAll(".epos-diagramm-ticks text").Select(t => t.TextContent));
+    }
+
+    /// <summary>Ohne Zeitachse eines Jahresrasters gibt es die Wahl nicht (Stundenprofil über 168 Stunden, Indexachse).</summary>
+    [Fact]
+    public void DS12_Ohne_Jahresraster_keine_Wahl()
+    {
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, Stapelmodell());
+            p.Add(x => x.Kennung, "stapel");
+        });
+        Assert.False(cut.Instance.MitZeiteinheit);
+        Assert.Empty(cut.FindAll("button[data-einheit]"));
+    }
+
+    /// <summary>Das PV-Bild der Simulation: drei Linien über Viertelstunden, der Speicher rechts.</summary>
+    private static Zeichenmodell PvModell()
+    {
+        var pv = new double[35040];
+        var bedarf = new double[35040];
+        var ueberschuss = new double[35040];
+        for (int i = 0; i < 35040; i++)
+        {
+            double stunde = (i % 96) / 4.0;
+            pv[i] = 8.0 * Math.Max(0.0, Math.Sin((stunde - 6.0) / 12.0 * Math.PI));
+            bedarf[i] = 3.0 + (stunde > 6 && stunde < 22 ? 2.0 : 0.0);
+            ueberschuss[i] = Math.Max(0.0, pv[i] - bedarf[i]);
+        }
+        var linien = new List<ChartRenderer.Reihe>
+        {
+            new ChartRenderer.Reihe("Überschuss", ueberschuss, Farbrolle.UEBERSCHUSS),
+            new ChartRenderer.Reihe("Strombedarf", bedarf, Farbrolle.BEDARF),
+            new ChartRenderer.Reihe("Photovoltaik", pv, Farbrolle.STROM_PV)
+        };
+        return ChartRenderer.ErzeugerStapelModell("PV", new List<ChartRenderer.Reihe>(), linien, null,
+                                                  "Leistung [kW]", ChartRenderer.Achse.Monate, false);
     }
 }

@@ -1680,7 +1680,8 @@ public class KlimadatenDialogTests : EposBunitContext
 
         cut.WaitForAssertion(() => Assert.Single(cut.FindAll("svg.epos-flaeche")),
                              TimeSpan.FromSeconds(10));
-        Assert.Equal(new[] { "Bereich", "1:1" },
+        // Die Leiste: Bereich, 1:1 und - am Jahresbild - die Wahl "Monat | Tag | Stunde".
+        Assert.Equal(new[] { "Bereich", "1:1", "Monat", "Tag", "Stunde" },
                      cut.FindAll("button.epos-diagramm-knopf")
                         .Select(k => k.TextContent.Trim()).ToArray());
         Assert.Single(cut.FindAll(".epos-diagramm-zeigerzeile"));
@@ -1689,7 +1690,7 @@ public class KlimadatenDialogTests : EposBunitContext
 
         cut.WaitForAssertion(() => Assert.Single(cut.FindAll("svg.epos-flaeche")),
                              TimeSpan.FromSeconds(10));
-        Assert.Equal(new[] { "Bereich", "1:1" },
+        Assert.Equal(new[] { "Bereich", "1:1", "Monat", "Tag", "Stunde" },
                      cut.FindAll("button.epos-diagramm-knopf")
                         .Select(k => k.TextContent.Trim()).ToArray());
     }

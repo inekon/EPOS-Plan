@@ -214,6 +214,27 @@ else
     /// </summary>
     [Parameter] public Zeichenmodell? Modell { get; set; }
 
+    /// <summary>
+    /// <b>Der Darstellungsmodus</b> (Oberflächenregel, Anwenderrückmeldung 13.10.2026): Mit
+    /// <see cref="Darstellung.Interaktiv"/> — der Vorgabe der Oberfläche — zeigt der Baustein das
+    /// Modell nach <see cref="Oberflaechenregel.Anwenden"/>: Bedarf als Linie über den Flächen,
+    /// Erzeugung als Fläche (größere hinten, durchscheinend), dichte Jahresreihen als Tagesband.
+    /// <see cref="Darstellung.Bericht"/> zeigt das Modell, wie der Renderer es für den Bericht
+    /// baut. Die Gabe <see cref="Modell"/> bleibt unangetastet; CSV schreibt immer ihre Reihen.
+    /// </summary>
+    [Parameter] public Darstellung Darstellung { get; set; } = Darstellung.Interaktiv;
+
+    /// <summary>
+    /// <b>Das wirksame Bild</b>: die Gabe <see cref="Modell"/> im Berichtsmodus, sonst das Modell
+    /// nach der Oberflächenregel — einmal je Modellinstanz gerechnet. Alles, was Reihen und Fläche
+    /// liest (Baum, Zeigerzeile, Nachladen, Legende), liest hier.
+    /// </summary>
+    public Zeichenmodell? Bild => _bild;
+
+    private Zeichenmodell? _bild;
+    private Zeichenmodell? _bildQuelle;
+    private Darstellung _bildDarstellung;
+
     /// <summary>Was das Diagramm zeigt (<c>aria-label</c> der Fläche).</summary>
     [Parameter] public string Bezeichnung { get; set; } = "";
 
@@ -248,6 +269,28 @@ else
 
             <button type="button" class="epos-diagramm-knopf" title="@ZurueckHilfe"
                     @onclick="ZurueckGewaehlt">@ZurueckText</button>
+
+            @* DIE WAHL "MONAT | TAG | STUNDE" (Anwenderrueckmeldung 13.10.2026): nur an einer
+               Zeitachse eines Jahresrasters. Sie bestimmt Teilung und Beschriftung der x-Achse
+               in der Vollansicht wie im Ausschnitt; Vorgabe ist die Teilung des Bildes (Monat
+               beim ganzen Jahr, Jahresstunden im Ausschnitt). Die Wahl haelt der Baustein. *@
+            @if (MitZeiteinheit)
+            {
+                <span class="epos-diagramm-einheiten" role="group" aria-label="@Resource.DIAGRAMM_TIP_EINHEIT">
+                    <button type="button" class="epos-diagramm-knopf" data-einheit="monat"
+                            aria-pressed="@(Zeiteinheit == Zeitachseneinheit.Monat ? "true" : "false")"
+                            title="@Resource.DIAGRAMM_TIP_EINHEIT"
+                            @onclick="@(() => EinheitWaehlen(Zeitachseneinheit.Monat))">@Resource.DIAGRAMM_BTN_MONAT</button>
+                    <button type="button" class="epos-diagramm-knopf" data-einheit="tag"
+                            aria-pressed="@(Zeiteinheit == Zeitachseneinheit.Tag ? "true" : "false")"
+                            title="@Resource.DIAGRAMM_TIP_EINHEIT"
+                            @onclick="@(() => EinheitWaehlen(Zeitachseneinheit.Tag))">@Resource.DIAGRAMM_BTN_TAG</button>
+                    <button type="button" class="epos-diagramm-knopf" data-einheit="stunde"
+                            aria-pressed="@(Zeiteinheit == Zeitachseneinheit.Stunde ? "true" : "false")"
+                            title="@Resource.DIAGRAMM_TIP_EINHEIT"
+                            @onclick="@(() => EinheitWaehlen(Zeitachseneinheit.Stunde))">@Resource.DIAGRAMM_BTN_STUNDE</button>
+                </span>
+            }
         }
 
         @* CSV AM DIAGRAMM: rechts neben „1:1“, dieselbe Knopfart — der benannte Export des
@@ -492,6 +535,19 @@ else
     /// <summary>Arbeitsstand des Farbfeldes — er verwirft eine stehengebliebene Fehleingabe.</summary>
     private int _farbstand;
 
+    /// <summary>
+    /// Die gewählte Einheit der Zeitachse; <c>null</c> = die Vorgabe (die Teilung des Bildes in
+    /// der Vollansicht, Jahresstunden im Ausschnitt). Sie gilt je Baustein und Sitzung und
+    /// überlebt einen Modellwechsel.
+    /// </summary>
+    private Zeitachseneinheit? _einheit;
+
+    /// <summary>
+    /// Die NACHGERECHNETEN Tagesbänder des Ausschnitts (Reihenname → <c>d</c>), neben den
+    /// Kernpfaden in <see cref="_ausschnitt"/>; leer unterhalb des Vierfachen.
+    /// </summary>
+    private readonly Dictionary<string, string> _band = new(StringComparer.Ordinal);
+
     // =====================================================================
     //  Prüfhilfen (bunit liest sie statt der DOM-Innereien)
     // =====================================================================
@@ -516,6 +572,25 @@ else
 
     /// <summary>Sind alle Reihen der zweiten y-Achse abgewählt?</summary>
     public bool ZweiteAchseAus => RechteAchseLeer;
+
+    /// <summary>Die nachgerechneten Tagesbänder des Ausschnitts (Reihenname → <c>d</c>).</summary>
+    public IReadOnlyDictionary<string, string> Bandpfade => _band;
+
+    /// <summary>
+    /// Die wirksame Einheit der Zeitachse: die gewählte, sonst die Vorgabe — im Ausschnitt
+    /// Jahresstunden, in der Vollansicht die Teilung des Bildes (<c>Zeichenflaeche.Teilung</c>).
+    /// </summary>
+    public Zeitachseneinheit Zeiteinheit => _einheit ?? VorgabeEinheit;
+
+    /// <summary>Trägt das Bild eine Zeitachse eines Jahresrasters — und damit die Wahl „Monat | Tag | Stunde“?</summary>
+    public bool MitZeiteinheit => Bedienbar && WerteJeStunde > 0;
+
+    /// <summary>
+    /// Zeichnet der Baustein die Achsenteilung selbst? Im Ausschnitt immer; in der Vollansicht,
+    /// sobald eine andere Einheit gewählt ist als die, mit der das Bild seine Achse setzt.
+    /// </summary>
+    public bool AchseNachgezeichnet
+        => _fenster is not null || (MitZeiteinheit && _einheit is not null && _einheit != VorgabeEinheit);
 
     /// <summary>
     /// Der Wert des Elements unter dem Zeiger (DG-E3-10); leer = keiner. Prüfstände
@@ -571,7 +646,7 @@ else
     /// Hat das Bild eine Zeichenfläche MIT Reihen? Nur dann gibt es ein inneres
     /// <c>&lt;svg&gt;</c> in Datenkoordinaten — und nur dann etwas zu bedienen.
     /// </summary>
-    private bool HatFlaeche => Modell?.Flaeche is not null && Modell.Reihen.Count > 0;
+    private bool HatFlaeche => Bild?.Flaeche is not null && Bild.Reihen.Count > 0;
 
     /// <summary>
     /// <b>OHNE ZEICHENFLÄCHE KEIN ZOOM (DG-E3-10).</b> Ein Bild ohne inneres
@@ -600,7 +675,7 @@ else
     /// <c>Zeichenflaeche.X</c> steht seit Gruppe (b) im Kern, und zwei Stellen, die
     /// dasselbe behaupten, gehen irgendwann auseinander.
     /// </summary>
-    private Achsenart XAchsenart => Modell?.Flaeche?.X ?? Achsenart.Stunden;
+    private Achsenart XAchsenart => Bild?.Flaeche?.X ?? Achsenart.Stunden;
 
     /// <summary>
     /// Die Einheit der x-Stelle in der Zeigerzeile: die des MODELLS, sonst die des
@@ -610,7 +685,7 @@ else
     {
         get
         {
-            string ausModell = Modell?.Flaeche?.XEinheit ?? "";
+            string ausModell = Bild?.Flaeche?.XEinheit ?? "";
             if (ausModell.Length > 0) return ausModell;
             if (XEinheit.Length > 0) return XEinheit;
             return XAchsenart == Achsenart.Stunden ? "h" : "";
@@ -631,10 +706,10 @@ else
     /// Katalogauswahl, Konzept 4.9), rechnet daraus die Breite der Zeichenfläche.
     /// </summary>
     private string? Seitenverhaeltnis
-        => Modell is null || Modell.Breite <= 0 || Modell.Hoehe <= 0
+        => Bild is null || Bild.Breite <= 0 || Bild.Hoehe <= 0
             ? null
-            : "--epos-bild-verhaeltnis: " + Modell.Breite.ToString(System.Globalization.CultureInfo.InvariantCulture)
-              + " / " + Modell.Hoehe.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            : "--epos-bild-verhaeltnis: " + Bild.Breite.ToString(System.Globalization.CultureInfo.InvariantCulture)
+              + " / " + Bild.Hoehe.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
     private string Flaechenklassen
         => _farbwahl is null
@@ -653,20 +728,36 @@ else
         // Der Baum wird nur neu gebaut, wenn sich sein Gegenstand geaendert hat:
         // ein anderes Modell, eine andere Palette, eine andere Kennung. Ein
         // Zeichenlauf des Wirtes allein kostet dann nichts.
+        // DAS WIRKSAME BILD: einmal je Modellinstanz nach der Oberflaechenregel
+        // (Darstellung.Interaktiv), sonst die Gabe selbst. Eine neue Instanz
+        // desselben Bildes bekommt ein neues Bild - der Vergleich unten laeuft auf
+        // dem wirksamen Bild, dieselbe Regel wie bisher auf der Gabe.
         if (Modell is null)
+        {
+            _bild = null;
+            _bildQuelle = null;
+        }
+        else if (!ReferenceEquals(_bildQuelle, Modell) || _bildDarstellung != Darstellung)
+        {
+            _bildQuelle = Modell;
+            _bildDarstellung = Darstellung;
+            _bild = Darstellung == Darstellung.Interaktiv ? Oberflaechenregel.Anwenden(Modell) : Modell;
+        }
+
+        if (Bild is null)
         {
             _baum = null;
             _baumModell = null;
             return;
         }
 
-        if (ReferenceEquals(_baumModell, Modell) &&
+        if (ReferenceEquals(_baumModell, Bild) &&
             ReferenceEquals(_baumPalette, AktivePalette) &&
             string.Equals(_baumKennung, KennungOderZaehler, StringComparison.Ordinal)) return;
 
-        bool neueInstanz = !ReferenceEquals(_baumModell, Modell);
+        bool neueInstanz = !ReferenceEquals(_baumModell, Bild);
         bool anderesBild = neueInstanz &&
-                           (_baumModell is null || !SelbesBild(_baumModell, Modell));
+                           (_baumModell is null || !SelbesBild(_baumModell, Bild));
 
         if (anderesBild)
         {
@@ -682,6 +773,7 @@ else
             _farbwahl = null;
             _elementwert = null;
             _ausschnitt.Clear();
+            _band.Clear();
         }
         else if (neueInstanz)
         {
@@ -691,10 +783,10 @@ else
             else Nachladen(_fenster.Value.Von, _fenster.Value.Bis, false);
         }
 
-        _baumModell = Modell;
+        _baumModell = Bild;
         _baumPalette = AktivePalette;
         _baumKennung = KennungOderZaehler;
-        _baum = SvgSchreiber.Baum(Modell, _baumPalette, _baumKennung);
+        _baum = SvgSchreiber.Baum(Bild, _baumPalette, _baumKennung);
 
         // EINMAL je Baum gezählt, nicht je Zeichenlauf: Ob es Werte am Element gibt,
         // entscheidet nur, ob die Zeigerzeile überhaupt steht.
@@ -820,10 +912,11 @@ else
 
         // Die nachgezeichnete Achsenteilung gehoert an die WURZEL: Sie steht in
         // Bildpunkten, nicht in Datenkoordinaten (DG-E2-3).
-        if (ReferenceEquals(knoten, _baum) && _fenster is not null)
+        if (ReferenceEquals(knoten, _baum) && AchseNachgezeichnet && Bild?.Flaeche is not null)
         {
             builder.OpenRegion(1000001);
-            Ticks(builder, _fenster.Value.Von, _fenster.Value.Bis);
+            Datenfenster voll = Bild.Flaeche.Daten;
+            Ticks(builder, _fenster?.Von ?? (int)Math.Ceiling(voll.XVon), _fenster?.Bis ?? (int)Math.Floor(voll.XBis));
             builder.CloseRegion();
         }
 
@@ -846,7 +939,7 @@ else
         bool versteckt = false;
         string? reihe = Reihenname(knoten);
         if (reihe is not null && _versteckt.Contains(reihe)) versteckt = true;
-        if (_fenster is not null && knoten.Marke == MARKE_XACHSE) versteckt = true;
+        if (AchseNachgezeichnet && knoten.Marke == MARKE_XACHSE) versteckt = true;
 
         // DIE ZWEITE ACHSE FAELLT MIT IHREN REIHEN (DG-E3-1): Rasterlinie,
         // Beschriftung und Titel rechts beschriften nichts mehr, sobald jede Reihe
@@ -860,7 +953,13 @@ else
         // fuer diese Reihe ein roher Fensterpfad vor, geht er an die Stelle des
         // Vollpfads - der Baum bleibt derselbe, Blazor tauscht das eine d.
         string? pfad = null;
-        if (reihe is not null) _ausschnitt.TryGetValue(reihe, out pfad);
+        if (reihe is not null)
+        {
+            // DAS TAGESBAND IST EIN ZWEITER PFAD DERSELBEN REIHE (data-band): Es nimmt
+            // sein eigenes nachgerechnetes d, nicht das des Kerns.
+            if (IstBand(knoten)) _band.TryGetValue(reihe, out pfad);
+            else _ausschnitt.TryGetValue(reihe, out pfad);
+        }
 
         foreach (KeyValuePair<string, string> a in knoten.Attribute)
         {
@@ -899,9 +998,9 @@ else
         // DIE VOLLE viewBox ALS EIGENES ATTRIBUT: Das Modul liest sie von hier,
         // waehrend es die viewBox selbst veraendert. Wechselt das Modell, wechselt
         // auch dieser Wert - so kennt das Modul nie veraltete Grenzen.
-        if (IstDatenflaeche(knoten) && Modell?.Flaeche is not null)
+        if (IstDatenflaeche(knoten) && Bild?.Flaeche is not null)
         {
-            Datenfenster d = Modell.Flaeche.Daten;
+            Datenfenster d = Bild.Flaeche.Daten;
             werte.Add(new KeyValuePair<string, object>(
                 "data-voll",
                 Wert(d.XVon) + " 0 " + Wert(Breite(d)) + " " + Px(Flaechenhoehe())));
@@ -913,7 +1012,7 @@ else
     /// <summary>Die Zeigerlinie im inneren <c>&lt;svg&gt;</c> — x ist die Stelle der Achse.</summary>
     private void Zeigerlinie(RenderTreeBuilder builder, double stunde)
     {
-        if (Modell?.Flaeche is null) return;
+        if (Bild?.Flaeche is null) return;
 
         builder.OpenElement(0, "line");
         builder.AddAttribute(1, "class", "epos-diagramm-zeiger");
@@ -933,8 +1032,8 @@ else
     /// </summary>
     private void Ticks(RenderTreeBuilder builder, int von, int bis)
     {
-        if (Modell?.Flaeche is null) return;
-        Rahmen bild = Modell.Flaeche.Bild;
+        if (Bild?.Flaeche is null) return;
+        Rahmen bild = Bild.Flaeche.Bild;
         double spanne = bis - von;
         if (spanne <= 0) return;
 
@@ -947,8 +1046,7 @@ else
 
         int i = 0;
         bool mitDatum = false;
-        foreach ((double stelle, string beschriftung) in
-                 ChartRenderer.Achsenteilung(Modell.Flaeche, von, bis))
+        foreach ((double stelle, string beschriftung, string zweitzeile) in Teilung(von, bis))
         {
             float x = bild.X + (float)((stelle - von) / spanne) * bild.Breite;
 
@@ -974,8 +1072,8 @@ else
             builder.AddContent(17, beschriftung);
             builder.CloseElement();
 
-            // DIE DATUMSZEILE (Auftrag GX) - dieselbe Regel wie im Bild des Renderers.
-            string datum = ChartRenderer.Datumszeile(Modell.Flaeche, stelle, von, bis);
+            // DIE ZWEITE ZEILE: das Datum (Auftrag GX) bzw. die zweite Zeile der Einheit.
+            string datum = zweitzeile;
             if (datum.Length > 0)
             {
                 mitDatum = true;
@@ -998,9 +1096,11 @@ else
 
         // Im Fenster zaehlt die Achse das, was die Achsenart sagt - auch wenn das
         // Bild sonst Monatsgrenzen traegt. Ohne Titel bleibt die Zeile weg.
-        string achsentitel = mitDatum && XTitelText.Length == 0
-            ? Resource.CHART_ACHSE_JAHRESSTUNDEN_DATUM
-            : Achsentitel;
+        string achsentitel = XTitelText.Length == 0 && MitZeiteinheit
+            ? Zeitachse.Achsentitel(Zeiteinheit)
+            : mitDatum && XTitelText.Length == 0
+                ? Resource.CHART_ACHSE_JAHRESSTUNDEN_DATUM
+                : Achsentitel;
         if (achsentitel.Length > 0)
         {
             builder.OpenRegion(1000000);
@@ -1038,6 +1138,37 @@ else
 
         builder.CloseElement();
     }
+
+    /// <summary>
+    /// <b>Die Marken der nachgezeichneten Achse</b>: auf der Zeitachse eines Jahresrasters in
+    /// der gewählten Einheit (<see cref="Zeitachse.Teilung"/> — Monat, Tag, Stunde; die Stellen
+    /// in Stützstellen der Reihe, bei Viertelstunden also × 4), sonst die Teilung der
+    /// Achsenart (<see cref="ChartRenderer.Achsenteilung"/>) mit der Datumszeile des Bildes.
+    /// </summary>
+    private IEnumerable<(double Stelle, string Text, string Zweitzeile)> Teilung(int von, int bis)
+    {
+        if (Bild?.Flaeche is null) yield break;
+        int jeStunde = WerteJeStunde;
+        if (MitZeiteinheit && jeStunde > 0)
+        {
+            foreach (Zeitachse.Achsenmarke m in
+                     Zeitachse.Teilung(Zeiteinheit, (double)von / jeStunde, (double)bis / jeStunde, Bild.Flaeche.Bild.Breite))
+                yield return (m.Stunde * jeStunde, m.Text, m.Zweitzeile ?? "");
+            yield break;
+        }
+        foreach ((double stelle, string text) in ChartRenderer.Achsenteilung(Bild.Flaeche, von, bis))
+            yield return (stelle, text, ChartRenderer.Datumszeile(Bild.Flaeche, stelle, von, bis));
+    }
+
+    /// <summary>Die Werte je Jahresstunde der Zeichenfläche (1 Stunden, 4 Viertelstunden); 0 = keine Zeitachse eines Jahresrasters.</summary>
+    private int WerteJeStunde => Bild?.Flaeche is null ? 0 : Zeitachse.WerteJeStunde(Bild.Flaeche);
+
+    /// <summary>Die Vorgabe der Einheit: Jahresstunden im Ausschnitt, sonst die Teilung des Bildes.</summary>
+    private Zeitachseneinheit VorgabeEinheit
+        => _fenster is not null ? Zeitachseneinheit.Stunde : Bild?.Flaeche?.Teilung ?? Zeitachseneinheit.Monat;
+
+    /// <summary>Die Wahl „Monat | Tag | Stunde“ — sie bleibt stehen, bis der Anwender sie wechselt.</summary>
+    private void EinheitWaehlen(Zeitachseneinheit einheit) => _einheit = einheit;
 
     /// <summary>
     /// Der Titel der nachgezeichneten Achsenteilung; leer = keiner. <b>Was x zählt,
@@ -1081,6 +1212,15 @@ else
             : null;
     }
 
+    /// <summary>Ist der Knoten das Tagesband einer Reihe (<c>data-band</c>, Oberflächenregel)?</summary>
+    private static bool IstBand(SvgKnoten knoten)
+    {
+        if (knoten.Name != "path") return false;
+        foreach (KeyValuePair<string, string> a in knoten.Attribute)
+            if (string.Equals(a.Key, "data-band", StringComparison.Ordinal)) return true;
+        return false;
+    }
+
     private bool IstDatenflaeche(SvgKnoten knoten)
     {
         if (knoten.Name != "svg") return false;
@@ -1105,7 +1245,7 @@ else
     /// (die linke Achse). Dieselbe Regel wie im <c>SvgSchreiber</c>.
     /// </summary>
     private Datenfenster? Reihenfenster(Datenreihe reihe)
-        => reihe?.Fenster ?? Modell?.Flaeche?.Daten;
+        => reihe?.Fenster ?? Bild?.Flaeche?.Daten;
 
     /// <summary>
     /// Steht die Reihe auf der ZWEITEN y-Achse? <b>Sie sagt es selbst</b> (DG-E3-12):
@@ -1128,9 +1268,9 @@ else
     {
         get
         {
-            if (Modell is null) return false;
+            if (Bild is null) return false;
             bool gibtEs = false;
-            foreach (Datenreihe r in Modell.Reihen)
+            foreach (Datenreihe r in Bild.Reihen)
             {
                 if (!AufRechterAchse(r)) continue;
                 gibtEs = true;
@@ -1167,8 +1307,8 @@ else
     /// </summary>
     private Farbrolle? RolleDerReihe(string reihe)
     {
-        if (Modell is null) return null;
-        foreach (Datenreihe r in Modell.Reihen)
+        if (Bild is null) return null;
+        foreach (Datenreihe r in Bild.Reihen)
         {
             if (!string.Equals(r.Name ?? "", reihe, StringComparison.Ordinal)) continue;
             if (r.Ton is null) return null;
@@ -1249,19 +1389,19 @@ else
     {
         get
         {
-            if (_baum is null || Modell is null || _farbwahl is null) return "";
+            if (_baum is null || Bild is null || _farbwahl is null) return "";
             string marke = MARKE_LEGENDE + _farbwahl;
             foreach (SvgKnoten k in _baum.Alle())
             {
                 if (k.Name != "rect" || k.Marke != marke) continue;
                 double x = Zahl(k, "x"), y = Zahl(k, "y");
                 double b = Zahl(k, "width"), h = Zahl(k, "height");
-                string oben = "top: " + Px((y + h + 4.0) / Modell.Hoehe * 100.0) + "%;";
+                string oben = "top: " + Px((y + h + 4.0) / Bild.Hoehe * 100.0) + "%;";
 
-                return x > Modell.Breite / 2.0
-                    ? "right: " + Px((Modell.Breite - x - b) / Modell.Breite * 100.0)
+                return x > Bild.Breite / 2.0
+                    ? "right: " + Px((Bild.Breite - x - b) / Bild.Breite * 100.0)
                         + "%; " + oben
-                    : "left: " + Px(x / Modell.Breite * 100.0) + "%; " + oben;
+                    : "left: " + Px(x / Bild.Breite * 100.0) + "%; " + oben;
             }
             return "";
         }
@@ -1323,7 +1463,7 @@ else
             // Wert lesen liesse - er steht fertig formatiert am Element.
             if (ZeigtWertAmElement) return _elementwert ?? "";
 
-            if (!_zeiger.HasValue || Modell?.Flaeche is null) return "";
+            if (!_zeiger.HasValue || Bild?.Flaeche is null) return "";
 
             // ZUSAMMENGEFASST ZEIGT JEDE STUFE EINE STUNDE (Stufenregel des Stapels): je Tag
             // bzw. je Bildpunktspalte die Spitzenstunde der Bezugsgroesse. Die Zeile nennt dann
@@ -1331,7 +1471,7 @@ else
             // sagen dasselbe. Sonst steht die Stelle unter dem Zeiger.
             (int Index, double X, Datenreihe Reihe)? spitze = Spitzenstelle(_zeiger.Value);
             double stelle = spitze?.X ?? _zeiger.Value;
-            var teile = new List<string>(Modell.Reihen.Count + 1)
+            var teile = new List<string>(Bild.Reihen.Count + 1)
             {
                 spitze is null ? Zeigerstelle(_zeiger.Value) : Spitzenstundentext(spitze.Value.Reihe, spitze.Value.X)
             };
@@ -1341,7 +1481,7 @@ else
             // die Legende beides zusammen schaltet), gibt es mehrere Reihen je Name.
             var genannt = new HashSet<string>(StringComparer.Ordinal);
 
-            foreach (Datenreihe r in Modell.Reihen)
+            foreach (Datenreihe r in Bild.Reihen)
             {
                 string name = r.Name ?? "";
                 if (_versteckt.Contains(name) || !genannt.Add(name)) continue;
@@ -1393,14 +1533,14 @@ else
     /// </summary>
     private (int Index, double X, Datenreihe Reihe)? Spitzenstelle(double x)
     {
-        if (Modell?.Flaeche is null) return null;
-        foreach (Datenreihe r in Modell.Reihen)
+        if (Bild?.Flaeche is null) return null;
+        foreach (Datenreihe r in Bild.Reihen)
         {
             if (!(Pfadregel.IstStapelschicht(r) || r.Huelle)) continue;
             if (r.Werte is null || r.Werte.Length < 2) continue;
             int stunde = _fenster is not null && _ausschnitt.ContainsKey(r.Name ?? "")
-                ? SvgSchreiber.Stufenstunde(r, Modell.Flaeche, _fenster.Value.Von, _fenster.Value.Bis, x)
-                : SvgSchreiber.Stufenstunde(r, Modell.Flaeche, x);
+                ? SvgSchreiber.Stufenstunde(r, Bild.Flaeche, _fenster.Value.Von, _fenster.Value.Bis, x)
+                : SvgSchreiber.Stufenstunde(r, Bild.Flaeche, x);
             if (stunde < 0) continue;
             Datenfenster? f = Reihenfenster(r);
             if (f is null) continue;
@@ -1437,13 +1577,13 @@ else
     {
         get
         {
-            if (Modell?.Flaeche is null) return "";
-            foreach (Datenreihe r in Modell.Reihen)
+            if (Bild?.Flaeche is null) return "";
+            foreach (Datenreihe r in Bild.Reihen)
             {
                 if (!(Pfadregel.IstStapelschicht(r) || r.Huelle)) continue;
                 Stufenart art = _fenster is not null && _ausschnitt.ContainsKey(r.Name ?? "")
-                    ? SvgSchreiber.Stufenansicht(r, Modell.Flaeche, _fenster.Value.Von, _fenster.Value.Bis)
-                    : SvgSchreiber.Stufenansicht(r, Modell.Flaeche);
+                    ? SvgSchreiber.Stufenansicht(r, Bild.Flaeche, _fenster.Value.Von, _fenster.Value.Bis)
+                    : SvgSchreiber.Stufenansicht(r, Bild.Flaeche);
                 if (art == Stufenart.Tag) return Resource.CHART_HINWEIS_STUFE_TAG;
                 if (art == Stufenart.Spalte) return Resource.CHART_HINWEIS_STUFE_SPALTE;
             }
@@ -1463,8 +1603,8 @@ else
 
         // EINE ZEITACHSE NENNT DAS DATUM (Auftrag GX): „4.000 h · 16. Juni 16:00" - die
         // Stuetzstelle in Jahresstunden, dazu Datum und Uhrzeit des Gemeinjahres.
-        int jeStunde = XAchsenart == Achsenart.Stunden && Modell?.Flaeche is not null
-            ? Zeitachse.WerteJeStunde(Modell.Flaeche) : 0;
+        int jeStunde = XAchsenart == Achsenart.Stunden && Bild?.Flaeche is not null
+            ? Zeitachse.WerteJeStunde(Bild.Flaeche) : 0;
         if (jeStunde > 0)
             return Zeitachse.Zeigertext(Math.Round(x) / jeStunde, mass, CultureInfo.CurrentCulture);
 
@@ -1589,7 +1729,7 @@ else
             // NUR EIN VERSUCH je Komponente: Schlaegt der Import fehl, bleibt das
             // Bild starr - ein Wiederholen bei jedem Zeichenlauf brächte nichts.
             _gebunden = true;
-            _modellGebunden = Modell;
+            _modellGebunden = Bild;
             _flaecheGebunden = _flaeche.Id;   // VOR dem ersten await - ein Zeichenlauf dazwischen bindet sonst doppelt
             try
             {
@@ -1612,7 +1752,7 @@ else
         if (_modul is not null && !string.Equals(_flaeche.Id, _flaecheGebunden, StringComparison.Ordinal))
         {
             _flaecheGebunden = _flaeche.Id;
-            _modellGebunden = Modell;
+            _modellGebunden = Bild;
             try
             {
                 await _modul.InvokeVoidAsync("binden", _flaeche, _hilfe);
@@ -1623,14 +1763,14 @@ else
             return;
         }
 
-        if (ReferenceEquals(_modellGebunden, Modell)) return;
+        if (ReferenceEquals(_modellGebunden, Bild)) return;
 
         // EIN ANDERES BILD heisst andere Grenzen: Das Modul faengt von vorn an. Eine
         // neue INSTANZ desselben Bildes laesst es stehen (DG-E3-15) - sonst spraenge
         // der Zoom bei jedem Zeichenlauf des Wirtes auf 1:1 zurueck.
-        bool anderesBild = _modellGebunden is null || Modell is null ||
-                           !SelbesBild(_modellGebunden, Modell);
-        _modellGebunden = Modell;
+        bool anderesBild = _modellGebunden is null || Bild is null ||
+                           !SelbesBild(_modellGebunden, Bild);
+        _modellGebunden = Bild;
 
         if (anderesBild)
         {
@@ -1675,8 +1815,8 @@ else
     [JSInvokable]
     public async Task FensterGemeldet(int von, int bis)
     {
-        if (Modell?.Flaeche is null) return;
-        Datenfenster d = Modell.Flaeche.Daten;
+        if (Bild?.Flaeche is null) return;
+        Datenfenster d = Bild.Flaeche.Daten;
 
         bool voll = von <= (int)Math.Ceiling(d.XVon) && bis >= (int)Math.Floor(d.XBis);
         _fenster = voll ? null : (von, bis);
@@ -1715,37 +1855,45 @@ else
     /// </summary>
     private void Nachladen(int von, int bis, bool voll)
     {
-        if (Modell?.Flaeche is null) { _ausschnitt.Clear(); return; }
+        if (Bild?.Flaeche is null) { _ausschnitt.Clear(); return; }
 
-        Datenfenster d = Modell.Flaeche.Daten;
+        Datenfenster d = Bild.Flaeche.Daten;
         double spanne = bis - von;
         double faktor = voll || spanne <= 0 ? 1.0 : Breite(d) / spanne;
 
         if (voll || faktor < NACHLADEN_AB)
         {
             _ausschnitt.Clear();
+            _band.Clear();
             return;
         }
 
-        int reihen = Modell.Reihen.Count;
-        int spalten = (int)Math.Max(1.0, Math.Round(Modell.Flaeche.Bild.Breite));
+        int reihen = Bild.Reihen.Count;
+        int spalten = (int)Math.Max(1.0, Math.Round(Bild.Flaeche.Bild.Breite));
         var neu = new Dictionary<string, string>(StringComparer.Ordinal);
+        var baender = new Dictionary<string, string>(StringComparer.Ordinal);
 
-        foreach (Datenreihe r in Modell.Reihen)
+        foreach (Datenreihe r in Bild.Reihen)
         {
             int n = r.Werte is null ? 0 : r.Werte.Length;
             // EINE PUNKTWOLKE WIRD NIE GEBUENDELT (DG-E3-5) - ihr Vollpfad traegt schon
             // jeden Punkt, und ein Fensterpfad waere genau sein Ausschnitt. Eine
             // Stapelschicht oder Huellkurve mit mehr Werten als Spalten ist dagegen nie
-            // roh (Stufenregel des Stapels) - Pfadregel.VollpfadRoh sagt beides.
-            if (n < 2 || Pfadregel.VollpfadRoh(r, reihen, spalten)) continue;
+            // roh (Stufenregel des Stapels) - Pfadregel.VollpfadRoh sagt beides. EIN
+            // TAGESBAND IST NIE ROH (Oberflaechenregel): Sein Vollpfad ist das Tagesmittel,
+            // im Ausschnitt kommen die Stunden zurueck - Kern und Band werden nachgerechnet.
+            if (n < 2 || (!r.Tagesband && Pfadregel.VollpfadRoh(r, reihen, spalten))) continue;
 
             neu[r.Name ?? ""] =
-                SvgSchreiber.Reihenpfad(r, Modell.Flaeche, von, bis, true);
+                SvgSchreiber.Reihenpfad(r, Bild.Flaeche, von, bis, true);
+            if (r.Tagesband)
+                baender[r.Name ?? ""] = SvgSchreiber.Bandpfad(r, Bild.Flaeche, von, bis);
         }
 
         _ausschnitt.Clear();
+        _band.Clear();
         foreach (KeyValuePair<string, string> p in neu) _ausschnitt[p.Key] = p.Value;
+        foreach (KeyValuePair<string, string> p in baender) _band[p.Key] = p.Value;
     }
 
     /// <summary>
@@ -1779,9 +1927,9 @@ else
     /// </summary>
     private async Task ZeigertafelGeben()
     {
-        if (_modul is null || Modell?.Flaeche is null || ZeigtWertAmElement) return;
+        if (_modul is null || Bild?.Flaeche is null || ZeigtWertAmElement) return;
 
-        bool neueReihen = !ReferenceEquals(_tafelModell, Modell) ||
+        bool neueReihen = !ReferenceEquals(_tafelModell, Bild) ||
                           !string.Equals(_tafelFlaeche, _flaeche.Id, StringComparison.Ordinal);
         string schluessel = string.Join("\u001f", _versteckt.OrderBy(n => n, StringComparer.Ordinal)) + "|" +
                             (_fenster?.ToString() ?? "") + "|" + string.Join(",", _ausschnitt.Keys) + "|" +
@@ -1789,7 +1937,7 @@ else
                             Einheit + "|" + EinheitRechts + "|" + XMass;
         if (!neueReihen && string.Equals(schluessel, _tafelSchluessel, StringComparison.Ordinal)) return;
 
-        _tafelModell = Modell;
+        _tafelModell = Bild;
         _tafelFlaeche = _flaeche.Id;
         _tafelSchluessel = schluessel;
 
@@ -1812,8 +1960,8 @@ else
     /// <summary>Die Reihen des Modells für das Modul — Werte mit Lücken als <c>null</c>.</summary>
     private object[] Tafelreihen()
     {
-        var liste = new List<object>(Modell!.Reihen.Count);
-        foreach (Datenreihe r in Modell.Reihen)
+        var liste = new List<object>(Bild!.Reihen.Count);
+        foreach (Datenreihe r in Bild.Reihen)
         {
             Datenfenster? f = Reihenfenster(r);
             bool mitUnten = (r.Art == Reihenart.Flaeche || r.Art == Reihenart.Linie) && r.Unten is not null;
@@ -1840,11 +1988,11 @@ else
     /// <summary>Der Zustand der Zeigerzeile: was sich ohne neues Modell ändern kann.</summary>
     private object Tafelzustand()
     {
-        int jeStunde = XAchsenart == Achsenart.Stunden ? Zeitachse.WerteJeStunde(Modell!.Flaeche) : 0;
+        int jeStunde = XAchsenart == Achsenart.Stunden ? Zeitachse.WerteJeStunde(Bild!.Flaeche) : 0;
         return new
         {
             versteckt = _versteckt.ToArray(),
-            einheiten = Modell!.Reihen.Select(Reiheneinheit).ToArray(),
+            einheiten = Bild!.Reihen.Select(Reiheneinheit).ToArray(),
             kultur = CultureInfo.CurrentCulture.Name,
             wertachse = XAchsenart == Achsenart.Wert,
             mass = XMass,
@@ -1862,14 +2010,14 @@ else
     /// </summary>
     private object? Tafelstufen()
     {
-        foreach (Datenreihe r in Modell!.Reihen)
+        foreach (Datenreihe r in Bild!.Reihen)
         {
             if (!(Pfadregel.IstStapelschicht(r) || r.Huelle)) continue;
             if (r.Werte is null || r.Werte.Length < 2) continue;
             IReadOnlyList<(double Links, int Index)>? tafel =
                 _fenster is not null && _ausschnitt.ContainsKey(r.Name ?? "")
-                    ? SvgSchreiber.Stufentafel(r, Modell.Flaeche!, _fenster.Value.Von, _fenster.Value.Bis)
-                    : SvgSchreiber.Stufentafel(r, Modell.Flaeche!);
+                    ? SvgSchreiber.Stufentafel(r, Bild.Flaeche!, _fenster.Value.Von, _fenster.Value.Bis)
+                    : SvgSchreiber.Stufentafel(r, Bild.Flaeche!);
             if (tafel is null || tafel.Count == 0) continue;
             Datenfenster? f = Reihenfenster(r);
             if (f is null) continue;
@@ -1905,6 +2053,7 @@ else
         _zeiger = null;
         _farbwahl = null;
         _ausschnitt.Clear();
+        _band.Clear();
         StateHasChanged();
 
         if (_modul is null) return;
@@ -1955,7 +2104,7 @@ else
     /// </summary>
     private double Flaechenhoehe()
     {
-        double h = Modell?.Flaeche is null ? 0 : Modell.Flaeche.Bild.Hoehe;
+        double h = Bild?.Flaeche is null ? 0 : Bild.Flaeche.Bild.Hoehe;
         return h <= 0 ? 1 : h;
     }
 
