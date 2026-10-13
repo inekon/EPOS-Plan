@@ -31,6 +31,12 @@ public sealed class ErgebnisVergleichZeile
     /// <summary>Je Version eine Zelle, der Stamm zuerst.</summary>
     public IReadOnlyList<ErgebnisVergleichZelle> Zellen { get; set; } = Array.Empty<ErgebnisVergleichZelle>();
 
+    /// <summary>
+    /// Ist der Wert in allen gezeigten Versionen 0 oder leer? Die Hülle entscheidet aus den Zahlen des Kerns; unter
+    /// „Zeilen ohne Wert ausblenden“ entfällt die Zeile (<see cref="UebersichtErgebnisAnzeige.Anwenden"/>).
+    /// </summary>
+    public bool OhneWert { get; set; }
+
     /// <summary>Weicht wenigstens eine Version ab?</summary>
     public bool WeichtAb
     {
@@ -52,7 +58,7 @@ public enum ErgebnisGruppenZustand
     /// <summary>Als Klappgruppe unter der Tafel, beim Öffnen zugeklappt.</summary>
     Zugeklappt,
 
-    /// <summary>Nicht gezeigt (für einen späteren Benutzerzustand).</summary>
+    /// <summary>Nicht gezeigt (Benutzerzustand aus „Anzeige anpassen…“).</summary>
     Ausgeblendet
 }
 
@@ -103,4 +109,13 @@ public sealed class UebersichtErgebnisStand
 
     /// <summary>Ist keine Version im Vergleich simuliert? Dann zeigt der Abschnitt einen Hinweis statt der Tabelle.</summary>
     public bool KeineSimulation { get; set; }
+
+    /// <summary>
+    /// Die Gruppen des Dialogs „Anzeige anpassen…“ mit Vorgabe und allen bekannten Kennzahlen (Katalog und Trägerzeilen
+    /// der aktuellen Daten); leer = kein Knopf.
+    /// </summary>
+    public IReadOnlyList<ErgebnisAnpassGruppe> Anpassbar { get; set; } = Array.Empty<ErgebnisAnpassGruppe>();
+
+    /// <summary>Wie viele Kennzahlen „Zeilen ohne Wert ausblenden“ aus den gezeigten Gruppen genommen hat.</summary>
+    public int OhneWertAusgeblendet { get; set; }
 }

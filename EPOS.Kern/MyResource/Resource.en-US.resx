@@ -5875,6 +5875,45 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_ERG_KEINE_SIMULATION" xml:space="preserve">
     <value>No version in the comparison has a simulation result. Start the simulation to compare the energy results.</value>
   </data>
+  <data name="BK_ERG_ANP_KNOPF" xml:space="preserve">
+    <value>Customize display…</value>
+  </data>
+  <data name="BK_ERG_ANP_TITEL" xml:space="preserve">
+    <value>Customize display</value>
+  </data>
+  <data name="BK_ERG_ANP_HINWEIS" xml:space="preserve">
+    <value>Choose which groups appear open, collapsed or hidden and which key figures the table shows. The setting applies to all projects.</value>
+  </data>
+  <data name="BK_ERG_ANP_OFFEN" xml:space="preserve">
+    <value>open</value>
+  </data>
+  <data name="BK_ERG_ANP_ZUGEKLAPPT" xml:space="preserve">
+    <value>collapsed</value>
+  </data>
+  <data name="BK_ERG_ANP_AUSGEBLENDET" xml:space="preserve">
+    <value>hidden</value>
+  </data>
+  <data name="BK_ERG_ANP_KENNZAHLEN" xml:space="preserve">
+    <value>Key figures</value>
+  </data>
+  <data name="BK_ERG_ANP_KENNZAHLEN_ANZAHL" xml:space="preserve">
+    <value>{0} of {1} shown</value>
+  </data>
+  <data name="BK_ERG_ANP_OHNE_WERT" xml:space="preserve">
+    <value>Hide rows without a value</value>
+  </data>
+  <data name="BK_ERG_ANP_OHNE_WERT_ERKL" xml:space="preserve">
+    <value>These are rows whose value is 0 or empty in every version shown.</value>
+  </data>
+  <data name="BK_ERG_ANP_STANDARD" xml:space="preserve">
+    <value>Restore defaults</value>
+  </data>
+  <data name="BK_ERG_ANP_OHNE_WERT_HINWEIS" xml:space="preserve">
+    <value>{0} key figures without a value hidden</value>
+  </data>
+  <data name="BK_ERG_ANP_OHNE_WERT_HINWEIS_EINS" xml:space="preserve">
+    <value>1 key figure without a value hidden</value>
+  </data>
   <data name="BK_STATUS_SIMULIERT" xml:space="preserve">
     <value>{0} · simulated</value>
   </data>
@@ -25694,9 +25733,6 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_BKU_VARIANTE_ERL" xml:space="preserve">
     <value>The variant whose detailed differences from the base project the table shows; the default “— none —” shows the component comparison of all checked versions. Delete and rename only act on a selected variant, simulate acts on the selected variant or otherwise on the base project.</value>
-  </data>
-  <data name="KI_DLG_BKU_BEZEICHNER_ERL" xml:space="preserve">
-    <value>The identifier used to rename the selected version; it takes effect only with the 'Rename' button.</value>
   </data>
   <data name="KI_DLG_BKU_SIM_NAME" xml:space="preserve">
     <value>Simulation state</value>

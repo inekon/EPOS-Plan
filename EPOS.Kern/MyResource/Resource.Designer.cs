@@ -12050,6 +12050,123 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ausgeblendet ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_AUSGEBLENDET {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_AUSGEBLENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Legen Sie fest, welche Gruppen offen, zugeklappt oder ausgeblendet erscheinen und welche Kennzahlen die Tabelle zeigt. Die Einstellung gilt für alle Projekte. ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_HINWEIS {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahlen ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_KENNZAHLEN {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_KENNZAHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} gezeigt ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_KENNZAHLEN_ANZAHL {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_KENNZAHLEN_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzeige anpassen… ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_KNOPF {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die offen ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_OFFEN {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeilen ohne Wert ausblenden ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_OHNE_WERT {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_OHNE_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gemeint sind Zeilen, deren Wert in allen gezeigten Versionen 0 oder leer ist. ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_OHNE_WERT_ERKL {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_OHNE_WERT_ERKL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kennzahlen ohne Wert ausgeblendet ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_OHNE_WERT_HINWEIS {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_OHNE_WERT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Kennzahl ohne Wert ausgeblendet ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_OHNE_WERT_HINWEIS_EINS {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_OHNE_WERT_HINWEIS_EINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standard wiederherstellen ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_STANDARD {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_STANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzeige anpassen ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_TITEL {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die zugeklappt ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANP_ZUGEKLAPPT {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANP_ZUGEKLAPPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kennzahlen ähnelt.
         /// </summary>
         public static string BK_ERG_ANZAHL_KENNZAHLEN {
@@ -61486,15 +61603,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BKB_ZIEL_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_BKB_ZIEL_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner für das Umbenennen der markierten Version; er wirkt erst mit dem Knopf „Umbenennen“. ähnelt.
-        /// </summary>
-        public static string KI_DLG_BKU_BEZEICHNER_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_BKU_BEZEICHNER_ERL", resourceCulture);
             }
         }
         

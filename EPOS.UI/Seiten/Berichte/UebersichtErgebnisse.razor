@@ -20,15 +20,30 @@
    fertig aus dem Kern (Energievergleich, ueber die Huelle UebersichtErgebnisGaben).
    Die Komponente zeigt nur; sie laedt neu, sobald die Seite einen neuen Stand reicht.
 
+   ANZEIGE ANPASSEN. Der Knopf rechts im Kopf oeffnet den Dialog ErgebnisAnpassenDialog als
+   Ueberlagerung (Titel und Kreuz an der Ueberlagerung). Die Einstellung (Zustand je Gruppe,
+   abgewaehlte Kennzahlen, "Zeilen ohne Wert ausblenden") wirkt in der Huelle auf die
+   Gruppenliste; die Komponente reicht sie bei OK an AnzeigeSpeichern und laedt neu. Was
+   "ohne Wert" ausblendet, nennt eine leise Zeile unter der Tabelle. Kein Delegat, kein Knopf.
+
    LEERE FAELLE. Eine nicht simulierte Version zeigt leise "—", ihr Spaltenkopf sagt
    deutlich "nicht simuliert"; ist keine Version simuliert, steht ein Hinweis statt
    der Tabelle. Ohne Gaben zeichnet der Abschnitt nichts. *@
 
+@using EPOS.UI.Dialoge.Berichte
+
 @if (_ergebnis is not null && _ergebnis.Versionsspalten.Count > 0)
 {
     <section class="epos-uebersicht-ergebnisse" aria-label="@Titel">
-        <h2 class="epos-uebersicht-abschnitt">@Titel</h2>
-        @if (_ergebnis.KeineSimulation || _ergebnis.Gruppen.Count == 0)
+        <div class="epos-ergebnis-kopf">
+            <h2 class="epos-uebersicht-abschnitt">@Titel</h2>
+            @if (AnpassenMoeglich)
+            {
+                <button type="button" class="epos-knopf epos-ergebnis-anpassen-knopf"
+                        @onclick="AnpassenOeffnen">@AnpassenTexte.Knopf</button>
+            }
+        </div>
+        @if (_ergebnis.KeineSimulation || (_ergebnis.Gruppen.Count == 0 && _ergebnis.Anpassbar.Count == 0))
         {
             <p class="epos-komponenten-leer epos-ergebnis-leer">@KeineSimulationText</p>
         }
@@ -39,7 +54,7 @@
                     <span class="epos-komponenten-legende-marke" aria-hidden="true"></span>@LegendeAbweichung; @LegendeProzent
                 </span>
             </div>
-            @if (Tafelgruppen.Count == 0 && Klappgruppen.Count == 0)
+            @if (NurUnterschiede && Tafelgruppen.Count == 0 && Klappgruppen.Count == 0)
             {
                 <p class="epos-komponenten-leer epos-ergebnis-gleich">@KeineUnterschiedeText</p>
             }
@@ -66,9 +81,24 @@
                     </ChildContent>
                 </Klappgruppe>
             }
+            @if (_ergebnis.OhneWertAusgeblendet > 0)
+            {
+                <p class="epos-leisezeile epos-ergebnis-ohnewert">@OhneWertHinweis</p>
+            }
             <p class="epos-leisezeile epos-ergebnis-quelle">@HinweisQuelle</p>
         }
     </section>
+
+    <Ueberlagerung Offen="@_anpassenOffen" Titel="@AnpassenTexte.Titel" Geschlossen="() => AnpassenFertig(null)">
+        <KindInhalt>
+            @if (_anpassenOffen)
+            {
+                <ErgebnisAnpassenDialog TitelText="" Gruppen="@_ergebnis.Anpassbar" Einstellung="@AnzeigeLesen?.Invoke()"
+                                        Texte="@AnpassenTexte" HilfeSchluessel="@HilfeSchluessel"
+                                        Geschlossen="AnpassenFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 }
 
 @code {
@@ -122,6 +152,49 @@
 
     /// <summary>Meldet die neue Stellung einer Klappgruppe (Gruppenschlüssel, aufgeklappt) an die Hülle.</summary>
     [Parameter] public Action<string, bool>? KlappgruppeOffenGewechselt { get; set; }
+
+    /// <summary>Liest die gespeicherte Anzeigeeinstellung (Hülle, je Benutzer); ohne Delegat die Vorgabe.</summary>
+    [Parameter] public Func<ErgebnisAnzeigeEinstellung>? AnzeigeLesen { get; set; }
+
+    /// <summary>Schreibt die Anzeigeeinstellung nach OK (Hülle, Einstellungsnaht); ohne Delegat kein Knopf.</summary>
+    [Parameter] public Action<ErgebnisAnzeigeEinstellung>? AnzeigeSpeichern { get; set; }
+
+    /// <summary>Die Beschriftungen des Dialogs „Anzeige anpassen…“ und des Hinweises „ohne Wert“.</summary>
+    [Parameter] public ErgebnisAnpassenTexte AnpassenTexte { get; set; } = new();
+
+    /// <summary>Der Hilfeschlüssel des Dialogs „Anzeige anpassen…“; leer = keine Hilfepille.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "";
+
+    /// <summary>Steht der Dialog beim ersten Zeichnen offen? (Prüfhilfe der Probenseite)</summary>
+    [Parameter] public bool AnpassenOffen { get; set; }
+
+    private bool _anpassenOffen;
+    private bool _anpassenVorgabeGelesen;
+
+    /// <summary>Steht der Dialog „Anzeige anpassen…“? (Prüfhilfe)</summary>
+    public bool AnpassenSteht => _anpassenOffen;
+
+    private bool AnpassenMoeglich
+        => AnzeigeSpeichern is not null && _ergebnis is not null && !_ergebnis.KeineSimulation && _ergebnis.Anpassbar.Count > 0;
+
+    private string OhneWertHinweis
+        => _ergebnis!.OhneWertAusgeblendet == 1 ? AnpassenTexte.OhneWertHinweisEins
+           : string.Format(AnpassenTexte.OhneWertHinweis, _ergebnis.OhneWertAusgeblendet);
+
+    /// <summary>Öffnet den Dialog „Anzeige anpassen…“ (auch Prüfhilfe).</summary>
+    public void AnpassenOeffnen()
+    {
+        if (AnpassenMoeglich) _anpassenOffen = true;
+    }
+
+    /// <summary>OK: Einstellung schreiben und sofort übernehmen; Abbrechen (<c>null</c>): nichts ändern.</summary>
+    private void AnpassenFertig(ErgebnisAnzeigeEinstellung? einstellung)
+    {
+        _anpassenOffen = false;
+        if (einstellung is null) return;
+        AnzeigeSpeichern?.Invoke(einstellung);
+        _ergebnis = Stand is not null && Laden is not null ? Laden(Stand) : _ergebnis;
+    }
 
     /// <summary>Die aufgeklappten Klappgruppen, solange die Hülle die Stellung nicht führt.</summary>
     private readonly HashSet<string> _offen = new();
@@ -236,6 +309,11 @@
         _geladenFuer = Stand;
         _geladenMit = Laden;
         _ergebnis = Stand is not null && Laden is not null ? Laden(Stand) : null;
+        if (!_anpassenVorgabeGelesen && _ergebnis is not null)
+        {
+            _anpassenVorgabeGelesen = true;
+            if (AnpassenOffen) AnpassenOeffnen();
+        }
     }
 
     private static string ZellKlasse(ErgebnisVergleichZelle c)

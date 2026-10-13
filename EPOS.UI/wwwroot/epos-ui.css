@@ -5613,6 +5613,73 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     max-height: none;
 }
 
+/* "Anzeige anpassen" (Anwenderentscheid 13.10.2026): Der Abschnittskopf traegt rechts den
+   Knopf; die leise Linie wandert vom Titel an den Kopf. Unter der Tabelle nennt eine leise
+   Zeile, wie viele Kennzahlen ohne Wert ausgeblendet sind. */
+.epos-ergebnis-kopf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px var(--epos-abstand);
+    margin: 18px 0 6px 0;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-ergebnis-kopf .epos-uebersicht-abschnitt {
+    flex: 1 1 auto;
+    margin: 0;
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.epos-ergebnis-anpassen-knopf {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+/* Der Dialog: je Gruppe eine Zeile mit Titel und den drei Zustaenden, darunter die
+   aufklappbare Kennzahlenliste in Spalten, die bei schmalem Fenster auf eine fallen. */
+.epos-ergebnis-anpassen {
+    min-width: min(640px, 100%);
+}
+
+.epos-ergebnis-anpassen-liste {
+    margin: 6px 0 var(--epos-abstand) 0;
+}
+
+.epos-ergebnis-anpassen-gruppe {
+    padding: 4px 0;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-ergebnis-anpassen-kopf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 var(--epos-abstand);
+}
+
+.epos-ergebnis-anpassen-titel {
+    flex: 1 1 12rem;
+    font-weight: 600;
+}
+
+.epos-ergebnis-anpassen-kopf .epos-optionsgruppe {
+    flex: 0 1 auto;
+    margin: 0;
+}
+
+.epos-ergebnis-anpassen-kennzahlliste {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr));
+    gap: 0 var(--epos-abstand);
+}
+
+.epos-ergebnis-anpassen-ohnewert .epos-leisezeile {
+    margin: 0 0 var(--epos-abstand) 0;
+}
+
 /* Wo die Uebernahme nicht traegt, steht statt des Knopfes ein grauer Strich
    mit Begruendung im Kurztext. */
 .epos-gesperrt {
