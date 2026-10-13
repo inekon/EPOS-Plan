@@ -104,7 +104,7 @@ namespace EPOS.Kern.Tests
             KuehlerzeugerKatalogCtrl.Uebernahme u = KuehlerzeugerKatalogCtrl.WaermepumpeUebernehmen(PROJEKT, STAMM_WP);
             Assert.True(u.Ok);
             Assert.Equal(vorher, KonfigurationCtrl.KaskadeLesen(PROJEKT));
-            Assert.Equal(platz ? null : MyResource.Resource.KMA_MSG_WP_OHNE_KASKADE, u.Hinweis);
+            Assert.Equal(platz ? null : WindowsFormsApplication1.MyResource.Resource.KMA_MSG_WP_OHNE_KASKADE, u.Hinweis);
             Assert.Equal(u.Hinweis, KuehlerzeugerKatalogCtrl.WaermekaskadeHinweis(PROJEKT));
             Assert.Null(KuehlerzeugerKatalogCtrl.WaermekaskadeHinweis(0));
 
