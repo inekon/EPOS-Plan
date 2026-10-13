@@ -220,6 +220,20 @@
                             title="@Resource.KMA_WP_BEARBEITEN_GESPERRT"
                             @onclick="() => BeiSchlossAbgelehnt(Resource.KMA_WP_BEARBEITEN_GESPERRT)">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
                 }
+                @* KD1: „Energiekosten…" der gewaehlten WAERMEPUMPE - benannt gesperrt, und zwar HIER:
+                   Die Leiste der drei Kostenknoepfe steht in der Satz-Ueberlagerung, und die oeffnet eine
+                   Waermepumpe nicht (ihr „Bearbeiten…" fuehrt in die Anlagenfelder). Gefuehrt wird der Weg
+                   im Waermepumpendialog - dort steht ihr Traeger (ID_Carrier) samt Geraet, eine Projektkopie
+                   kann mehrere Anlagenzeilen tragen (der Traeger waere nicht eindeutig), und eine dritte
+                   Ueberlagerungsebene (Dialog -> Anlagenfelder -> Traegerverwaltung samt ihren eigenen
+                   Ueberlagerungen) laesst das Hausblatt nicht zu. Ein Katalogsatz gehoert keinem Projekt,
+                   deshalb nur bei einer PROJEKTwaermepumpe. *@
+                @if (AktuellWp is not null && EnergietraegerGaben is not null)
+                {
+                    <button type="button" class="epos-knopf epos-knopf--energiekosten-wp" aria-disabled="true"
+                            title="@Resource.KMA_ENERGIEKOSTEN_WP"
+                            @onclick="() => BeiSchlossAbgelehnt(Resource.KMA_ENERGIEKOSTEN_WP)">@Texte.KostenEnergie</button>
+                }
             }
             else if (SatzArt == Satzmarke.Projektsatz)
             {
@@ -256,10 +270,20 @@
 
         <Satz>
             <div class="epos-leiste">
-                @if (Aktuell is Zeile k && KostenOeffnen is not null)
+                @* KD1 (Anwenderentscheid 13.10.2026): Die Leiste traegt jetzt auch „Energiekosten…" -
+                   derselbe Knopf wie bei Waermepumpe und BHKW. Er fuehrt in die Traegerkarte des KUEHLTRAEGERS
+                   dieser Anlage (Kuehl_ID_Carrier, ohne eigenen Traeger der Stromtraeger des Projekts).
+                   Investition und Betrieb haengen weiter an der Naht der Schale (Kostenfenster), der
+                   Traegerweg ist PLATTFORMFREI (Gabe EnergietraegerGaben, von der Huelle gefuellt) - deshalb
+                   zeichnet die Leiste schon, wenn EINER der beiden Wege steht. *@
+                @if (Aktuell is Zeile k && (KostenOeffnen is not null || EnergietraegerGaben is not null))
                 {
-                    <KostenKnoepfeLeiste KostenOeffnen="@(b => BeiKosten(k, b))"
-                                         InvestText="@Texte.KostenInvest" BetriebText="@Texte.KostenBetrieb" />
+                    <KostenKnoepfeLeiste KostenOeffnen="@(KostenOeffnen is null ? null : (Func<bool, Task>)(b => BeiKosten(k, b)))"
+                                         EnergiekostenOeffnen="@EnergiekostenWeg(k)"
+                                         EnergieSperrgrund="@EnergiekostenSperrgrund(k)"
+                                         EnergieAbgelehnt="EnergiekostenAbgelehnt"
+                                         InvestText="@Texte.KostenInvest" BetriebText="@Texte.KostenBetrieb"
+                                         EnergieText="@Texte.KostenEnergie" />
                 }
                 <span class="epos-leiste-fueller"></span>
                 <span class="epos-berechnungshilfe">
@@ -367,6 +391,23 @@
                 <WaermepumpeAnlageFelder @ref="_wpFelder" @key="_wpGaben.IdAnlage" @attributes="_wpGaben.Gaben"
                                          KostenleisteAnzeigen="false" />
                 <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" Ergebnis="BeiWpUebernommen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- KD1: die TRAEGERKARTE („Energiekosten…" der gewaehlten Kaeltemaschine) ---
+       Dieselbe Komponente und derselbe Gabenweg wie auf der Kostenseite (KD6a): Die
+       Energietraegerverwaltung liegt mit ihrer Huelle in EPOS.UI.Daten, also erscheint sie
+       als Ueberlagerung DESSELBEN Fensters - kein zweites Fenster, keine Windows-Naht. Die
+       Verwaltung schreibt selbst (OK wirkt dort, nicht hier); zu ist zu, und danach zieht
+       der Satz seine Kostensummen nach. *@
+    <Ueberlagerung Offen="@(_traegerGaben is not null)" Titel="@Texte.TitelEnergietraeger"
+                   Geschlossen="TraegerkarteZu">
+        <KindInhalt>
+            @if (_traegerGaben is not null)
+            {
+                <EnergietraegerDialog @attributes="_traegerGaben" TitelAnzeigen="false"
+                                      Geschlossen="@((bool _) => TraegerkarteZu())" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -495,6 +536,15 @@
     /// </summary>
     [Parameter] public Func<int, bool, Task>? KostenOeffnen { get; set; }
 
+    /// <summary>
+    /// <b>KD1: die Gaben der Energietraegerverwaltung</b>, aufgeschlagen auf die TRAEGERKARTE eines Traegers
+    /// (Traeger-Id, Projektkopie des Geraets; 0 = unbekannt) — der Weg hinter „Energiekosten…". Die Huelle
+    /// fuellt die Gabe selbst (<c>EnergietraegerHuelle</c>, plattformfrei wie die Naht
+    /// <see cref="WaermepumpeAnlageGaben"/>), Windows und iOS reichen sie nur durch; <c>null</c> = kein
+    /// Knopf, <c>null</c> als Antwort = die benannte Sperre.
+    /// </summary>
+    [Parameter] public Func<int, int, IReadOnlyDictionary<string, object>?>? EnergietraegerGaben { get; set; }
+
     /// <summary>Die Kennlinienbilder eines Satzes (Id, <c>true</c> = Katalogsatz); ohne sie kein Bild.</summary>
     [Parameter] public Func<int, bool, KaeltemaschineKennlinienbilder?>? Kennlinienbilder { get; set; }
 
@@ -564,6 +614,10 @@
     private WaermepumpeAnlagegaben? _wpGaben;
     private WaermepumpeAnlageFelder? _wpFelder;
     private string? _wpFehler;
+
+    /// <summary>KD1: die offene Traegerkarte (Gaben der Energietraegerverwaltung); <c>null</c> = zu.</summary>
+    private IReadOnlyDictionary<string, object>? _traegerGaben;
+    private int _traegerkarteTraeger;
 
     private IReadOnlyDictionary<string, object>? _editorGaben;
     private int _editorVorwahl;
@@ -991,6 +1045,80 @@
         string grund = await Katalogladung.SchreibenAsync(async () => { await oeffnen(zeile.Arbeit.AnlagenId, betrieb); return ""; },
                                                           zeile.Arbeit.Bezeichner, g => g);
         if (grund.Length > 0) { Melden(grund, true); StateHasChanged(); }
+    }
+
+    // =====================================================================
+    // KD1: „Energiekosten…" — die Trägerkarte des Kühlträgers
+    // =====================================================================
+
+    /// <summary>
+    /// Der Träger, dessen Karte „Energiekosten…" aufschlägt: der Kühlträger der Anlage
+    /// (<c>Kuehl_ID_Carrier</c>), ohne eigenen der Stromträger des Projekts; 0 = keiner. Gelesen wird der
+    /// ARBEITSSTAND — die Trägerwahl im Satz gilt, lange bevor ein OK sie schreibt (wie im Wärmepumpendialog).
+    /// </summary>
+    private int Energietraeger(Zeile zeile)
+        => zeile.Arbeit.KuehlCarrierId is int id && id > 0 ? id : ProjektStromtraeger;
+
+    /// <summary>Der Weg hinter „Energiekosten…"; <c>null</c> = kein Knopf oder weiche Sperre.</summary>
+    private Func<Task>? EnergiekostenWeg(Zeile zeile)
+        => EnergietraegerGaben is null || Energietraeger(zeile) <= 0
+               ? null
+               : () => { BeiEnergiekosten(zeile); return Task.CompletedTask; };
+
+    /// <summary>Der Grund, aus dem „Energiekosten…" nicht führt; leer = er führt.</summary>
+    private string EnergiekostenSperrgrund(Zeile zeile)
+        => EnergietraegerGaben is not null && Energietraeger(zeile) <= 0
+               ? Resource.KMA_ENERGIEKOSTEN_OHNE_TRAEGER : "";
+
+    /// <summary>Steht die Trägerkarte offen? (Prüfhilfe)</summary>
+    public bool TraegerkarteOffen => _traegerGaben is not null;
+
+    /// <summary>Der Träger, mit dem die Trägerkarte geöffnet wurde (Prüfhilfe); 0 = zu.</summary>
+    public int TraegerkarteTraeger => _traegerkarteTraeger;
+
+    /// <summary>
+    /// Meldet eine Ablehnung dort, wo der Anwender steht: Steht die Satz-Überlagerung offen, trägt SIE den
+    /// Hinweis — der Banner des Dialogs läge dahinter.
+    /// </summary>
+    private void EnergiekostenAbgelehnt(string grund)
+    {
+        if (_satzGross) _satzUeberlagerungFehler = grund;
+        else BeiSchlossAbgelehnt(grund);
+        // Der Knopf gehoert der Leiste: Blazor zeichnet nach ihrem Ereignis nur SIE neu,
+        // der Hinweis steht aber hier. Deshalb der ausdrueckliche Zeichenlauf.
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Öffnet die Trägerkarte des Kühlträgers dieser Anlage. Liefert die Gabe keinen Satz oder wirft sie,
+    /// bleibt es bei der benannten Sperre im Banner — ein Knopf, der still verpufft, gibt es nicht.
+    /// </summary>
+    private void BeiEnergiekosten(Zeile zeile)
+    {
+        if (EnergietraegerGaben is null) return;
+        int traeger = Energietraeger(zeile);
+        if (traeger <= 0) { EnergiekostenAbgelehnt(Resource.KMA_ENERGIEKOSTEN_OHNE_TRAEGER); return; }
+        IReadOnlyDictionary<string, object>? gaben;
+        try { gaben = EnergietraegerGaben(traeger, zeile.Arbeit.GeraetId ?? 0); }
+        catch (Exception ex) { Melden(ex.Message, true); return; }
+        if (gaben is null) { EnergiekostenAbgelehnt(Resource.KMA_ENERGIEKOSTEN_OHNE_TRAEGER); return; }
+        _meldung = "";
+        _traegerkarteTraeger = traeger;
+        _traegerGaben = gaben;
+        StateHasChanged();   // s. EnergiekostenAbgelehnt: das Ereignis gehoert der Leiste
+    }
+
+    /// <summary>
+    /// Die Trägerkarte ist zu — OK wie ✕ und Esc: Die Verwaltung schreibt selbst, ihr Ergebnis ist keine
+    /// Zusage an diesen Dialog. Danach frischt der Satz seine Kurzangaben auf, denn die Kostensummen der
+    /// Anlage können sich geändert haben.
+    /// </summary>
+    private void TraegerkarteZu()
+    {
+        _traegerGaben = null;
+        _traegerkarteTraeger = 0;
+        KostenNachziehen();
+        StateHasChanged();   // das Ereignis gehoert der Ueberlagerung bzw. der Verwaltung darin
     }
 
     // =====================================================================

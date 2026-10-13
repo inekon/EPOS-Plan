@@ -332,6 +332,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 12.10.2026: Der Kältemaschinen-Dialog führt Wärmepumpen mit Kühlfunktion in Katalog und Projekt; Übernehmen schaltet den Kühlbetrieb ein und reiht die Wärmepumpe in die Kältefolge ein. (#1029)
 - Seit 12.10.2026: Die Knopfleiste am gewählten Satz bricht in schmalen Fenstern um; Katalogfunktionen stehen im Katalogkopf. (#1029)
 - Seit 13.10.2026: Im Dialog „Kältemaschinen im Projekt“ öffnet „Bearbeiten…“ bei einer Wärmepumpe ihre Anlagenfelder mit Gerätesteckbrief und der Gruppe „Kühlbetrieb“. (#1034)
+- Seit 13.10.2026: Im Dialog „Kältemaschinen im Projekt“ führt der Knopf „Energiekosten…“ zur Trägerkarte des Kühlträgers der gewählten Anlage. (#1041)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 

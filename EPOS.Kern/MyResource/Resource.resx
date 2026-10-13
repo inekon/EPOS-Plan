@@ -52564,6 +52564,12 @@ Chart</value>
   <data name="KMA_WP_TITEL_BEARBEITEN" xml:space="preserve">
     <value>Wärmepumpe bearbeiten</value>
   </data>
+  <data name="KMA_ENERGIEKOSTEN_WP" xml:space="preserve">
+    <value>Energiekosten der Wärmepumpe über den Wärmepumpendialog</value>
+  </data>
+  <data name="KMA_ENERGIEKOSTEN_OHNE_TRAEGER" xml:space="preserve">
+    <value>Energiekosten gibt es erst mit einem Träger: Die Anlage führt keinen Kühlträger, und das Projekt keinen Stromträger.</value>
+  </data>
   <data name="KMA_MSG_WP_OHNE_KASKADE" xml:space="preserve">
     <value>Die Wärmepumpe kühlt erst, wenn die Wärmekaskade einen Platz für Wärmepumpen führt (Simulation, Konfiguration).</value>
   </data>

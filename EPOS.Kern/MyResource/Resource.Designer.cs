@@ -80848,6 +80848,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten gibt es erst mit einem Träger: Die Anlage führt keinen Kühlträger, und das Projekt keinen Stromträger. ähnelt.
+        /// </summary>
+        public static string KMA_ENERGIEKOSTEN_OHNE_TRAEGER {
+            get {
+                return ResourceManager.GetString("KMA_ENERGIEKOSTEN_OHNE_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten der Wärmepumpe über den Wärmepumpendialog ähnelt.
+        /// </summary>
+        public static string KMA_ENERGIEKOSTEN_WP {
+            get {
+                return ResourceManager.GetString("KMA_ENERGIEKOSTEN_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Soll die Kältemaschine „{0}“ aus der Datenbank gelöscht werden? ähnelt.
         /// </summary>
         public static string KMA_FRAGE_KATALOG_LOESCHEN {
