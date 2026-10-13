@@ -38,6 +38,22 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>
+        /// <b>Die Gebäude des Projekts samt Abgleich</b> — der gemeinsame Weg der Startseitenkacheln „Gebäude“ und
+        /// „Gebäudekühlung“ und des Maskenschlüssels <see cref="Masken.Projektgebaeude"/> (GD-N): Zuordnungen lesen, Fenster
+        /// mit Sprungziel, nach OK der Abgleich in EINEM Vorgang. <c>Ok</c> = mit OK geschlossen; <c>Meldung</c> = Grund eines
+        /// gescheiterten Abgleichs (leer sonst).
+        /// </summary>
+        internal static (bool Ok, string Meldung) ProjektOeffnen(IWin32Window besitzer, int projektId, string projektName,
+                                                                 string sprungziel = null)
+        {
+            if (projektId <= 0) return (false, "");
+            List<Z_ProjGebModel> liste = Z_ProjGebCtrl.LiesProjekt(projektId);
+            if (!Oeffnen(besitzer, projektId, projektName, liste, sprungziel)) return (false, "");
+            (bool gelungen, string meldung) = new WizardCtrl().Speichere_Projekt_Gebaeudeliste(projektId, liste);
+            return (true, gelungen ? "" : meldung ?? "");
+        }
+
+        /// <summary>
         /// Zeigt die Gebäude eines Projekts als eigenes Fenster — der Weg von
         /// <c>Form_Start.pBox_Gebaude_Click</c> und den beiden Kontextmenüpunkten.
         /// </summary>

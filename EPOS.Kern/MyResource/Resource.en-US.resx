@@ -54800,5 +54800,50 @@ chart</value>
   <data name="IMP_GBXML_PROT_PROFIL_ABWEICHUNG" xml:space="preserve">
     <value>Zone "{0}", {1}: the file gives {2} W, the usage profile "{3}" {4} W — the file applies.</value>
   </data>
+  <data name="GEBMZ_PLAN_VORLAGE" xml:space="preserve">
+    <value>Pre-filled with the stored zone plan from “{0}” ({1}): {2} rooms in {3} zones.</value>
+  </data>
+  <data name="GEBMZ_PLAN_VERLOREN" xml:space="preserve">
+    <value>{0} stored room assignments no longer find a room or a zone.</value>
+  </data>
+  <data name="GEBMZ_PLAN_PRUEFSUMME" xml:space="preserve">
+    <value>The selected file differs from the stored zone plan (checksum {0} instead of {1}). Only rooms whose identifier the file still contains are pre-filled.</value>
+  </data>
+  <data name="GEBMZ_SQ_VORHANDEN" xml:space="preserve">
+    <value>Project file “{0}”: present.</value>
+  </data>
+  <data name="GEBMZ_SQ_FEHLT" xml:space="preserve">
+    <value>Project file “{0}”: cannot be opened ({1}).</value>
+  </data>
+  <data name="GEBMZ_SQ_LESBAR" xml:space="preserve">
+    <value>Readable (version {0}).</value>
+  </data>
+  <data name="GEBMZ_SQ_NICHT_LESBAR" xml:space="preserve">
+    <value>Not readable: {0}</value>
+  </data>
+  <data name="GEBMZ_SQ_ZUORDNUNG" xml:space="preserve">
+    <value>Against the building file: {0} rooms matched, {1} without a match, {2} rooms of the building file without a counterpart.</value>
+  </data>
+  <data name="GEBMZ_SQ_ZUORDNUNG_KEINE" xml:space="preserve">
+    <value>Against the building file: no room matched — the project file does not belong to this building file.</value>
+  </data>
+  <data name="GEBMZ_SQ_PRUEFSUMME" xml:space="preserve">
+    <value>Checksum {0} — the import does not store it; please compare with the project file of the first import.</value>
+  </data>
+  <data name="WURZEL_PROJEKTGEBAEUDE_NICHT" xml:space="preserve">
+    <value>On this device the project buildings open in the assistant, not as a separate view.</value>
+  </data>
+  <data name="GEB_ZF_JAHRESWAERME" xml:space="preserve">
+    <value>Annual heat demand</value>
+  </data>
+  <data name="GEB_ZF_JWB_WERT" xml:space="preserve">
+    <value>{0} MWh/a (run of {1})</value>
+  </data>
+  <data name="GEB_ZF_JWB_PROJEKT" xml:space="preserve">
+    <value>{0} MWh/a, whole project (run of {1}; the run has no value per building)</value>
+  </data>
+  <data name="GEB_ZF_JWB_OFFEN" xml:space="preserve">
+    <value>not calculated yet</value>
+  </data>
 </root>
 

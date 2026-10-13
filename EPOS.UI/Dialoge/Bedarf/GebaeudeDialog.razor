@@ -965,10 +965,35 @@
 
     /// <summary>
     /// Ein Sprungziel beim Öffnen (<see cref="Sprungziele"/>; Konzept Kältebedarf 3.5): <see cref="Sprungziele.Kuehlung"/>
-    /// wählt das erste Projektgebäude und öffnet seinen Editor an der Gruppe „Kühlung“; ohne Projektgebäude steht der Hinweis
-    /// „Noch kein Gebäude im Projekt“. Leer = keins.
+    /// wählt das zuletzt gewählte Projektgebäude (<see cref="ZuletztGewaehlt"/>), sonst das erste, und öffnet seinen Editor
+    /// an der Gruppe „Kühlung“; ohne Projektgebäude steht der Hinweis „Noch kein Gebäude im Projekt“. Leer = keins.
     /// </summary>
     [Parameter] public string Sprungziel { get; set; } = "";
+
+    /// <summary>
+    /// Das zuletzt gewählte Projektgebäude über das Öffnen hinaus (GD-N): der Zuordnungsschlüssel (<c>IdZ</c>) bzw.
+    /// <c>null</c> = keins gemerkt. Die Hülle hält ihn je Projekt in den Einstellungen.
+    /// </summary>
+    [Parameter] public Func<int?>? ZuletztGewaehlt { get; set; }
+
+    /// <summary>Merkt das gewählte Projektgebäude (Zuordnungsschlüssel) für den nächsten Sprung.</summary>
+    [Parameter] public Action<int>? GewaehltMerken { get; set; }
+
+    /// <summary>
+    /// Der Jahreswärmebedarf des letzten Rechenlaufs eines Projektgebäudes für die Zusammenfassung (GD-N); <c>null</c> =
+    /// noch nicht gerechnet. Ohne Gabe entfällt die Zeile.
+    /// </summary>
+    [Parameter] public Func<GebaeudeProjektZeile, GebaeudeJahreswaermebedarf?>? Jahreswaermebedarf { get; set; }
+
+    /// <summary>Der Text der Zeile „Jahreswärmebedarf“: Wert und Datum des Laufs bzw. „noch nicht gerechnet“.</summary>
+    private string JahreswaermebedarfText(GebaeudeProjektZeile z)
+    {
+        System.Globalization.CultureInfo k = System.Globalization.CultureInfo.CurrentCulture;
+        if (Jahreswaermebedarf?.Invoke(z) is not GebaeudeJahreswaermebedarf w) return Resource.GEB_ZF_JWB_OFFEN;
+        string datum = w.Zeitpunkt?.ToString("d", k) ?? "—";
+        return string.Format(k, w.Projektwert ? Resource.GEB_ZF_JWB_PROJEKT : Resource.GEB_ZF_JWB_WERT,
+                             w.Mwh.ToString("N1", k), datum);
+    }
 
     /// <summary>Der Sprung beim Öffnen: Gebäude wählen, Editor mit dem Sprungziel öffnen — oder den Grund nennen.</summary>
     private void SprungAusfuehren()
@@ -979,7 +1004,9 @@
             Melden(Resource.GEB_SPRUNG_KEIN_GEBAEUDE, WarnStufe.Hinweis);
             return;
         }
-        GebaeudeProjektZeile z = _gewaehlt ?? Zeilen[0];
+        // GD-N: das zuletzt gewählte Gebäude des Projekts (über das Öffnen hinaus gemerkt), sonst das erste.
+        GebaeudeProjektZeile? zuletzt = ZuletztGewaehlt?.Invoke() is int idZ ? Zeilen.FirstOrDefault(x => x.IdZ == idZ) : null;
+        GebaeudeProjektZeile z = zuletzt ?? _gewaehlt ?? Zeilen[0];
         if (!ReferenceEquals(_gewaehlt, z)) ProjektzeileWaehlen(z);
         if (ProjektGaben is null || !z.HatProjektkopie) return;
         IReadOnlyDictionary<string, object>? gaben = ProjektGaben(z);
@@ -1450,7 +1477,7 @@
         // Der Anwender steht im Katalog - seine Wahl wird nicht ueberschrieben.
         if (_katalogzeile is not null) return;
 
-        if (Zeilen.Count > 0) ProjektzeileWaehlen(Zeilen[0]);
+        if (Zeilen.Count > 0) ProjektzeileWaehlen(Zeilen[0], merken: false);
     }
 
     /// <summary>
@@ -1532,9 +1559,11 @@
     /// <summary>Name des gewählten Satzes in der zugeklappten Detailzeile.</summary>
     private string? SatzName => SatzArt == Satzmarke.Keiner ? null : _detailName;
 
-    private void ProjektzeileWaehlen(GebaeudeProjektZeile z)
+    private void ProjektzeileWaehlen(GebaeudeProjektZeile z, bool merken = true)
     {
         _gewaehlt = z;
+        // GD-N: nur eine Wahl merken, nicht die Vorauswahl der ersten Zeile beim Öffnen.
+        if (merken) GewaehltMerken?.Invoke(z.IdZ);
         _katalogzeile = null;
         _katalogGewaehlt = "";
         _loeschsperre = "";
@@ -1656,7 +1685,7 @@
         foreach (GebaeudeProjektZeile z in ziele) Zeilen.Remove(z);
         _projektWahl.Setzen(Array.Empty<string>());
         _gewaehlt = null;
-        if (Zeilen.Count > 0) ProjektzeileWaehlen(Zeilen[0]);
+        if (Zeilen.Count > 0) ProjektzeileWaehlen(Zeilen[0], merken: false);
         else
         {
             IReadOnlyList<Katalogfilterzeile> sichtbar = Sichtbar;
@@ -1852,6 +1881,7 @@
             if (z.HatProjektkopie) l.Add(new(Resource.GEB_ZF_KUEHLUNG, z.KuehlungAktiv ? JaText : NeinText));
             l.Add(new(Resource.GEB_ZF_ZONEN, z.Zonenzahl.ToString(k)));
             if (z.HgesWK.HasValue) l.Add(new(Beschriftung(LabelHges), Leitwert(z.HgesWK)));
+            if (Jahreswaermebedarf is not null) l.Add(new(Resource.GEB_ZF_JAHRESWAERME, JahreswaermebedarfText(z)));
         }
         else if (_katalogzeile is Katalogfilterzeile kz)
         {

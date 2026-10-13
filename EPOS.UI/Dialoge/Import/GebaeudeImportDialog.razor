@@ -266,6 +266,16 @@
                 @* DIE WAHL DER AUFBAUQUELLE (Anwenderentscheid vom 08.10.2026): nach angeschlagener Standpruefung die Rueckfrage mit
                    drei Wegen ohne Vorgabe; danach die gewaehlte Quelle als leise Zeile, aenderbar bis zur Uebernahme. Solange die
                    Rueckfrage steht, traegt sie den Befund - das Banner derselben Warnung entfaellt. *@
+                @if (sq.Pruefbefund.Count > 0)
+                {
+                    @* GD-N: der Pruefbefund der Projektdatei beim Weg "Gebaeudedatei + Projektdatei" der Mehrzonenuebernahme. *@
+                    <ul class="epos-gebimport-sqbefund" data-bereich="projektdatei-pruefung">
+                        @foreach (string zeile in sq.Pruefbefund)
+                        {
+                            <li>@zeile</li>
+                        }
+                    </ul>
+                }
                 <Aufbauquellenwahl Pruefung="@sq.Standpruefung" Wahl="@sq.Aufbauquelle" Texte="@Texte"
                                    Aktiv="@(!Beschaeftigt && AufbauquelleWaehlen is not null)"
                                    Gewaehlt="BeiAufbauquelle" NeuExportierenGewaehlt="BeiNeuExport" />
@@ -504,6 +514,17 @@
                Knopf ist ein Schritt am Zonenplan des Kerns; lehnt er ab, steht seine Meldung als Banner, bei
                ungleicher Beheizung mit dem Raumhaken als Ausweg. *@
             <Gruppenkopf Titel="@Texte.GruppeZonen" />
+            @if (zplan.Planvorlage.Length > 0)
+            {
+                @* GD-N: der Zonenplan eines frueheren Imports ist vorgelegt; eine abweichende Pruefsumme steht benannt darueber. *@
+                <div class="epos-gebimport-planvorlage" data-abweichend="@(zplan.PlanvorlageAbweichung.Length > 0 ? "ja" : "nein")">
+                    @if (zplan.PlanvorlageAbweichung.Length > 0)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@zplan.PlanvorlageAbweichung" />
+                    }
+                    <Herleitungszeile Text="@zplan.Planvorlage" />
+                </div>
+            }
             @* Stufe NP3b (Konzept Nutzungsprofile 6.2, NP-F22): der Katalog der Nutzungsprofile als Überlagerung; nach dem
                Schließen liest der Plan Katalog und Zuordnung neu. Kein Delegat, kein Knopf. *@
             @if (Raumnutzung is not null)

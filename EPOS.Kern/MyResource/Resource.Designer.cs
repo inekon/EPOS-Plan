@@ -36162,6 +36162,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Datei weicht vom gespeicherten Zonenplan ab (Prüfsumme {0} statt {1}). Vorgelegt sind nur die Räume, deren Kennung die Datei noch führt. ähnelt.
+        /// </summary>
+        public static string GEBMZ_PLAN_PRUEFSUMME {
+            get {
+                return ResourceManager.GetString("GEBMZ_PLAN_PRUEFSUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} gespeicherte Raumzuordnungen finden keinen Raum oder keine Zone mehr. ähnelt.
+        /// </summary>
+        public static string GEBMZ_PLAN_VERLOREN {
+            get {
+                return ResourceManager.GetString("GEBMZ_PLAN_VERLOREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt mit dem gespeicherten Zonenplan aus „{0}“ ({1}): {2} Räume in {3} Zonen. ähnelt.
+        /// </summary>
+        public static string GEBMZ_PLAN_VORLAGE {
+            get {
+                return ResourceManager.GetString("GEBMZ_PLAN_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen sind geändert — erst speichern oder verwerfen. ähnelt.
         /// </summary>
         public static string GEBMZ_SPERRE_GEAENDERT {
@@ -36194,6 +36221,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBMZ_SPERRE_LAEUFT {
             get {
                 return ResourceManager.GetString("GEBMZ_SPERRE_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdatei „{0}“: nicht zu öffnen ({1}). ähnelt.
+        /// </summary>
+        public static string GEBMZ_SQ_FEHLT {
+            get {
+                return ResourceManager.GetString("GEBMZ_SQ_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lesbar (Fassung {0}). ähnelt.
+        /// </summary>
+        public static string GEBMZ_SQ_LESBAR {
+            get {
+                return ResourceManager.GetString("GEBMZ_SQ_LESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht lesbar: {0} ähnelt.
+        /// </summary>
+        public static string GEBMZ_SQ_NICHT_LESBAR {
+            get {
+                return ResourceManager.GetString("GEBMZ_SQ_NICHT_LESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prüfsumme {0} — der Import speichert sie nicht; bitte mit der Projektdatei des ersten Imports vergleichen. ähnelt.
+        /// </summary>
+        public static string GEBMZ_SQ_PRUEFSUMME {
+            get {
+                return ResourceManager.GetString("GEBMZ_SQ_PRUEFSUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdatei „{0}“: vorhanden. ähnelt.
+        /// </summary>
+        public static string GEBMZ_SQ_VORHANDEN {
+            get {
+                return ResourceManager.GetString("GEBMZ_SQ_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zur Gebäudedatei: {0} Räume zugeordnet, {1} ohne Treffer, {2} Räume der Gebäudedatei ohne Gegenstück. ähnelt.
+        /// </summary>
+        public static string GEBMZ_SQ_ZUORDNUNG {
+            get {
+                return ResourceManager.GetString("GEBMZ_SQ_ZUORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zur Gebäudedatei: kein Raum zugeordnet — die Projektdatei gehört nicht zu dieser Gebäudedatei. ähnelt.
+        /// </summary>
+        public static string GEBMZ_SQ_ZUORDNUNG_KEINE {
+            get {
+                return ResourceManager.GetString("GEBMZ_SQ_ZUORDNUNG_KEINE", resourceCulture);
             }
         }
         
@@ -38777,6 +38867,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_ZF_AUSRICHTUNG_WERT {
             get {
                 return ResourceManager.GetString("GEB_ZF_AUSRICHTUNG_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahreswärmebedarf ähnelt.
+        /// </summary>
+        public static string GEB_ZF_JAHRESWAERME {
+            get {
+                return ResourceManager.GetString("GEB_ZF_JAHRESWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die noch nicht gerechnet ähnelt.
+        /// </summary>
+        public static string GEB_ZF_JWB_OFFEN {
+            get {
+                return ResourceManager.GetString("GEB_ZF_JWB_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} MWh/a, Projekt gesamt (Lauf vom {1}; der Lauf führt keinen Wert je Gebäude) ähnelt.
+        /// </summary>
+        public static string GEB_ZF_JWB_PROJEKT {
+            get {
+                return ResourceManager.GetString("GEB_ZF_JWB_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} MWh/a (Lauf vom {1}) ähnelt.
+        /// </summary>
+        public static string GEB_ZF_JWB_WERT {
+            get {
+                return ResourceManager.GetString("GEB_ZF_JWB_WERT", resourceCulture);
             }
         }
         
@@ -146002,6 +146128,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WURZEL_NICHT_GEFUEHRT {
             get {
                 return ResourceManager.GetString("WURZEL_NICHT_GEFUEHRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäude des Projekts öffnen sich auf diesem Gerät im Assistenten, nicht als eigene Maske. ähnelt.
+        /// </summary>
+        public static string WURZEL_PROJEKTGEBAEUDE_NICHT {
+            get {
+                return ResourceManager.GetString("WURZEL_PROJEKTGEBAEUDE_NICHT", resourceCulture);
             }
         }
         
