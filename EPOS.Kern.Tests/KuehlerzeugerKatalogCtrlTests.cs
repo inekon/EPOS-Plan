@@ -88,6 +88,52 @@ namespace EPOS.Kern.Tests
             Assert.Equal(KuehlerzeugerKatalogCtrl.PROFIL, profil.Schluessel);
         }
 
+        /// <summary>
+        /// KM‑K2: Die Übernahme aus dem Kältedialog lässt die WÄRMEKASKADE unberührt — genau wie der Anlegeweg des
+        /// Wärmepumpendialogs, der ebenfalls keinen Platz vergibt (den Platz pflegt allein die
+        /// Simulationskonfiguration). Ohne Platz kühlt die Wärmepumpe nicht; das steht als Hinweis am Ergebnis und
+        /// wird nicht still übergangen.
+        /// </summary>
+        [Fact]
+        public void Uebernehmen_laesst_die_Waermekaskade_wie_der_Waermepumpendialog_und_nennt_den_fehlenden_Platz()
+        {
+            if (!_db.Vorhanden) return;
+            List<string> vorher = KonfigurationCtrl.KaskadeLesen(PROJEKT);
+            bool platz = vorher.Contains(DbWerte.ERZEUGER_WAERMEPUMPE);
+
+            KuehlerzeugerKatalogCtrl.Uebernahme u = KuehlerzeugerKatalogCtrl.WaermepumpeUebernehmen(PROJEKT, STAMM_WP);
+            Assert.True(u.Ok);
+            Assert.Equal(vorher, KonfigurationCtrl.KaskadeLesen(PROJEKT));
+            Assert.Equal(platz ? null : WindowsFormsApplication1.MyResource.Resource.KMA_MSG_WP_OHNE_KASKADE, u.Hinweis);
+            Assert.Equal(u.Hinweis, KuehlerzeugerKatalogCtrl.WaermekaskadeHinweis(PROJEKT));
+            Assert.Null(KuehlerzeugerKatalogCtrl.WaermekaskadeHinweis(0));
+
+            KuehlerzeugerKatalogCtrl.UebernahmeZuruecknehmen(PROJEKT, u);
+        }
+
+        /// <summary>
+        /// KM‑K2: Die Verwendungsmarke „im Projekt verwendet" zählt JEDE Projektkopie der Wärmepumpe — nicht erst die
+        /// mit eingeschaltetem Kühlbetrieb (dasselbe Maß nimmt die Projektliste des Wärmepumpendialogs).
+        /// </summary>
+        [Fact]
+        public void Die_Verwendungsmarke_zaehlt_jede_Projektkopie_der_Waermepumpe()
+        {
+            if (!_db.Vorhanden) return;
+            IReadOnlyList<string> namen = KuehlerzeugerKatalogCtrl.ProjektkopienNamen(PROJEKT);
+            Assert.NotEmpty(namen);
+            foreach (KuehlerzeugerKatalogCtrl.ProjektWaermepumpe w in KuehlerzeugerKatalogCtrl.ProjektWaermepumpen(PROJEKT))
+                Assert.Contains(w.Bezeichner, namen);
+
+            // Eine eben übernommene Kopie steht sofort da; ihr Kühlbetrieb spielt keine Rolle.
+            KuehlerzeugerKatalogCtrl.Uebernahme u = KuehlerzeugerKatalogCtrl.WaermepumpeUebernehmen(PROJEKT, STAMM_WP);
+            Assert.Contains(u.Bezeichner, KuehlerzeugerKatalogCtrl.ProjektkopienNamen(PROJEKT));
+            KuehlerzeugerKatalogCtrl.KuehlbetriebSetzen(PROJEKT, u.IdWp, false);
+            Assert.Contains(u.Bezeichner, KuehlerzeugerKatalogCtrl.ProjektkopienNamen(PROJEKT));
+            KuehlerzeugerKatalogCtrl.UebernahmeZuruecknehmen(PROJEKT, u);
+
+            Assert.Empty(KuehlerzeugerKatalogCtrl.ProjektkopienNamen(0));
+        }
+
         [Fact]
         public void Uebernehmen_legt_Kopie_Anlage_Kuehlbetrieb_und_Rang_an_und_laesst_sich_zuruecknehmen()
         {

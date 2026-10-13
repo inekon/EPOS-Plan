@@ -52554,12 +52554,6 @@ chart</value>
   <data name="KMA_VERGLEICH_EINE_ART" xml:space="preserve">
     <value>Compare records of one type only</value>
   </data>
-  <data name="KMA_BEZUG_HINWEIS" xml:space="preserve">
-    <value>Cooling capacity and EER at {0} °C chilled water and {1} °C source (EN 14511).</value>
-  </data>
-  <data name="KMA_BEZUG_RUECKFALL" xml:space="preserve">
-    <value>{0} kW at {1} °C</value>
-  </data>
   <data name="KMA_LBL_QUELLE" xml:space="preserve">
     <value>Source</value>
   </data>
@@ -52584,14 +52578,17 @@ chart</value>
   <data name="KMA_WP_BEARBEITEN_GESPERRT" xml:space="preserve">
     <value>Heat pumps are edited in the heat pump dialog</value>
   </data>
+  <data name="KMA_WP_TITEL_BEARBEITEN" xml:space="preserve">
+    <value>Edit heat pump</value>
+  </data>
+  <data name="KMA_MSG_WP_OHNE_KASKADE" xml:space="preserve">
+    <value>The heat pump only cools once the heat cascade holds a slot for heat pumps (Simulation, configuration).</value>
+  </data>
   <data name="KMA_GRUPPE_STECKBRIEF" xml:space="preserve">
     <value>Unit</value>
   </data>
   <data name="KMA_LBL_INVEST_BETRIEB" xml:space="preserve">
     <value>Investment / operation</value>
-  </data>
-  <data name="KMA_LBL_KALTWASSER" xml:space="preserve">
-    <value>Chilled water flow min.</value>
   </data>
   <data name="GANGL_UEBERSPRUNGEN_ZUGEORDNET" xml:space="preserve">
     <value>Skipped (assigned in the project): {0}</value>
