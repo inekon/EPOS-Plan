@@ -28,6 +28,12 @@ namespace WindowsFormsApplication1
         private readonly Dictionary<Pruefgruppe, List<Action<DbVorgang>>> _ruecknahme = new Dictionary<Pruefgruppe, List<Action<DbVorgang>>>();
         private readonly Dictionary<int, Zonenquelle> _quellen = new Dictionary<int, Zonenquelle>();
 
+        /// <summary>
+        /// MA-5: die in dieser Sitzung verworfenen Vorschläge (Schlüssel aus Gruppe, Code, Zone und Bauteil, siehe
+        /// <see cref="Befundschluessel"/>). Der Befund bleibt, nur sein Vorschlag fällt — „Alle übernehmen“ überspringt ihn.
+        /// </summary>
+        private readonly HashSet<string> _verworfen = new HashSet<string>(StringComparer.Ordinal);
+
         /// <summary>Die Prüfung des Projektgebäudes <paramref name="idGebaeude"/> (<c>Tab_Gebaeude.ID</c>).</summary>
         public ModellpruefungCtrl(int idGebaeude) { IdGebaeude = idGebaeude; }
 
@@ -54,7 +60,43 @@ namespace WindowsFormsApplication1
         public Modellpruefergebnis Pruefen()
         {
             Modellpruefstand s = Lesen();
-            return s == null ? null : Modellpruefung.Pruefen(s);
+            return s == null ? null : OhneVerworfene(Modellpruefung.Pruefen(s));
+        }
+
+        /// <summary>Der Schlüssel eines Befunds für das Verwerfen: Gruppe, Code, Zone und Bauteil (stabil über Neuprüfungen).</summary>
+        public static string Befundschluessel(Modellbefund b)
+            => (int)b.Gruppe + "|" + b.Code + "|" + (b.IdZone?.ToString(CultureInfo.InvariantCulture) ?? "")
+               + "|" + (b.IdBauteil?.ToString(CultureInfo.InvariantCulture) ?? "");
+
+        /// <summary>Das Ergebnis ohne die Vorschläge, die in dieser Sitzung verworfen sind (Befunde und Ampeln bleiben).</summary>
+        private Modellpruefergebnis OhneVerworfene(Modellpruefergebnis e)
+        {
+            if (e == null || _verworfen.Count == 0) return e;
+            var gruppen = e.Gruppen.Select(g => g with
+            {
+                Befunde = g.Befunde.Select(b => b.Vorschlag != null && _verworfen.Contains(Befundschluessel(b)) ? b with { Vorschlag = null } : b)
+                                   .ToList()
+            }).ToList();
+            return e with { Gruppen = gruppen };
+        }
+
+        /// <summary>
+        /// <b>MA-5: verwirft die Vorschläge einer Auswahl</b> der Gruppe für diese Sitzung — die Legende der Gebäudeansicht ruft es je
+        /// Zeile. Es schreibt nichts: Der Befund bleibt mit seiner Ampel, nur sein Vorschlag fällt aus Zählung und Übernahme.
+        /// </summary>
+        public Uebernahmeergebnis Verwerfen(Pruefgruppe gruppe, Func<Modellbefund, bool> auswahl)
+        {
+            Modellpruefergebnis e = Pruefen();
+            if (e == null) return new Uebernahmeergebnis(false, Modellpruefung.Ressource("MP_MSG_GEBAEUDE_FEHLT", IdGebaeude),
+                                                         new Pruefgruppe[0], 0, new string[0], _ruecknahme.Count > 0, null);
+            var texte = new List<string>();
+            foreach (Modellbefund b in e.Gruppe(gruppe).Befunde.Where(b => b.Vorschlag != null && (auswahl == null || auswahl(b))))
+            {
+                _verworfen.Add(Befundschluessel(b));
+                texte.Add(Modellpruefung.Ressource("MP_MSG_VORSCHLAG_VERWORFEN", b.Text));
+            }
+            return new Uebernahmeergebnis(true, Modellpruefung.Ressource("MP_MSG_VERWORFEN_ZAHL", texte.Count), new[] { gruppe }, 0, texte,
+                                          _ruecknahme.Count > 0, Pruefen());
         }
 
         // =====================================================================
@@ -62,13 +104,19 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary><b>Übernimmt die Vorschläge einer Gruppe</b> in einem Vorgang und prüft danach neu.</summary>
-        public Uebernahmeergebnis Uebernehmen(Pruefgruppe gruppe) => Ausfuehren(new[] { gruppe });
+        public Uebernahmeergebnis Uebernehmen(Pruefgruppe gruppe) => Ausfuehren(new[] { gruppe }, null);
+
+        /// <summary>
+        /// <b>MA-5: übernimmt die Vorschläge einer Auswahl</b> der Gruppe (eine Legendenzeile der Gebäudeansicht) — derselbe Weg wie
+        /// <see cref="Uebernehmen(Pruefgruppe)"/>; die Rücknahme der Gruppe sammelt die Schritte aller Teilübernahmen.
+        /// </summary>
+        public Uebernahmeergebnis Uebernehmen(Pruefgruppe gruppe, Func<Modellbefund, bool> auswahl) => Ausfuehren(new[] { gruppe }, auswahl);
 
         /// <summary><b>Übernimmt alle Vorschläge</b> — Gruppe für Gruppe, je mit eigener Rücknahme — und prüft danach neu.</summary>
         public Uebernahmeergebnis AlleUebernehmen()
-            => Ausfuehren(Enum.GetValues(typeof(Pruefgruppe)).Cast<Pruefgruppe>().OrderBy(g => (int)g).ToArray());
+            => Ausfuehren(Enum.GetValues(typeof(Pruefgruppe)).Cast<Pruefgruppe>().OrderBy(g => (int)g).ToArray(), null);
 
-        private Uebernahmeergebnis Ausfuehren(Pruefgruppe[] gruppen)
+        private Uebernahmeergebnis Ausfuehren(Pruefgruppe[] gruppen, Func<Modellbefund, bool> auswahl)
         {
             var verworfen = new List<string>();
             var erledigt = new List<Pruefgruppe>();
@@ -78,7 +126,8 @@ namespace WindowsFormsApplication1
                 Modellpruefstand s = Lesen();
                 if (s == null) return new Uebernahmeergebnis(false, Modellpruefung.Ressource("MP_MSG_GEBAEUDE_FEHLT", IdGebaeude),
                                                              erledigt, zahl, verworfen, false, null);
-                List<Modellbefund> befunde = Modellpruefung.Pruefen(s).Gruppe(g).Befunde.ToList();
+                List<Modellbefund> befunde = OhneVerworfene(Modellpruefung.Pruefen(s)).Gruppe(g).Befunde
+                                                 .Where(b => auswahl == null || auswahl(b)).ToList();
                 foreach (Modellbefund b in befunde.Where(b => b.Vorschlag == null && b.Ampel != Pruefampel.Gruen))
                     verworfen.Add(Modellpruefung.Ressource("MP_MSG_OHNE_VORSCHLAG", b.Text));
                 List<Modellbefund> mit = befunde.Where(b => b.Vorschlag != null).ToList();
@@ -107,7 +156,9 @@ namespace WindowsFormsApplication1
                 }
                 if (n > 0)
                 {
-                    _ruecknahme[g] = rueck;
+                    // MA-5: eine Teilübernahme (Auswahl) hängt ihre Schritte an die offene Rücknahme der Gruppe an.
+                    if (auswahl != null && _ruecknahme.TryGetValue(g, out List<Action<DbVorgang>> offen)) offen.AddRange(rueck);
+                    else _ruecknahme[g] = rueck;
                     erledigt.Add(g);
                     zahl += n;
                 }
