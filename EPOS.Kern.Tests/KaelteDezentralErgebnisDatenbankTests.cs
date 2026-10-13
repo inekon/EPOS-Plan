@@ -84,6 +84,39 @@ namespace EPOS.Kern.Tests
         private static string Davon(string format) => format.Substring(0, format.IndexOf('{'));
 
         /// <summary>
+        /// K6b-N: die Zeilen des Knotens „Dezentral (Split)“ ohne Datenbank — der Kurzname gekürzt wie lange Knotentitel auf
+        /// die Abnehmerspalte, die Sammelzeile „Strom: Projektträger“ nur, wenn alle Zeilen den Träger des Projekts nehmen,
+        /// sonst „Strom: n Träger“ mit der Zahl der verschiedenen Träger (der Projektträger zählt mit).
+        /// </summary>
+        [Fact]
+        public void K6bN_Der_Split_Knoten_kuerzt_auf_die_Abnehmerspalte_und_sammelt_den_Strom()
+        {
+            string zeile = WindowsFormsApplication1.MyResource.Resource.KONF_KS_DEZENTRAL_ZEILE;
+            int breite = SchemaLayout.SPALTEN_BREITE[(int)SchemaModell.Knotenart.Abnehmer] - 2 * SchemaLayout.KNOTEN_RAND;
+
+            List<string> projekt = SchemaModell.KaelteDezentralZeilen(
+                new[] { ("Kühlraum", "3,0", (int?)null), ("Büro", "3,5", (int?)5) }, 5);
+            Assert.Equal(new[]
+            {
+                string.Format(CultureInfo.CurrentCulture, zeile, "Kühlraum", "3,0"),
+                string.Format(CultureInfo.CurrentCulture, zeile, "Büro", "3,5"),
+                WindowsFormsApplication1.MyResource.Resource.KONF_KS_DEZENTRAL_STROM_PROJEKT
+            }, projekt);
+
+            List<string> drei = SchemaModell.KaelteDezentralZeilen(new[]
+            {
+                ("Raumkühlung Bürotrakt Nord", "3,0", (int?)null), ("A", "3,0", (int?)7), ("B", "4,0", (int?)8), ("C", "4,0", (int?)7)
+            }, 5);
+            Assert.Equal(5, drei.Count);
+            Assert.EndsWith("…" + string.Format(CultureInfo.CurrentCulture, zeile, "", "3,0"), drei[0]);
+            Assert.All(drei, x => Assert.True(SchemaLayout.TextBreite(x) <= breite, x));
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture,
+                                       WindowsFormsApplication1.MyResource.Resource.KONF_KS_DEZENTRAL_STROM_TRAEGER, 3), drei[4]);
+
+            Assert.Empty(SchemaModell.KaelteDezentralZeilen(Array.Empty<(string, string, int?)>(), 5));
+        }
+
+        /// <summary>
         /// K6b-N (Plan K6, Abschnitt 4): am Kältekreis die Herkunft des zentralen Kältebedarfs — „davon Lastgang“ (Zahl der
         /// Lastgangzeilen im Kanal Kühlung) und „davon Profil“ (Zahl der Profile); Split-Zeilen zählen nicht.
         /// </summary>
@@ -161,8 +194,25 @@ namespace EPOS.Kern.Tests
             SchemaModell.Knoten knoten = Assert.Single(schema.Knotenliste, x => x.Schluessel == SchemaModell.ABNEHMER_KAELTE_DEZENTRAL);
             Assert.Equal(SchemaModell.Bahn.Kaelte, knoten.Bahn);
             Assert.DoesNotContain(schema.Kantenliste, x => x.Von == knoten.Schluessel || x.Nach == knoten.Schluessel);
-            Assert.Contains(knoten.Zeilen, x => x.Contains(KUEHLRAUM));
-            Assert.Equal(4, knoten.Zeilen.Count);
+            // K6b-N: je Split-Zeile eine kurze Zeile auf die Abnehmerspalte, dann die Sammelzeile zum Strom (beide Zeilen auf
+            // demselben abweichenden Träger); der Tooltip trägt den vollen Text mit EER-Weg, Träger und Zähler.
+            string E(double w) => w.ToString("0.0#", CultureInfo.CurrentCulture);
+            string zeile = WindowsFormsApplication1.MyResource.Resource.KONF_KS_DEZENTRAL_ZEILE;
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIM_SCHEMA_ABNEHMER_KAELTE_DEZENTRAL, knoten.Titel);
+            Assert.Equal(3, knoten.Zeilen.Count);
+            Assert.Contains(string.Format(CultureInfo.CurrentCulture, zeile, KUEHLRAUM, E(3.0)), knoten.Zeilen.Take(2));
+            string gekuerzt = Assert.Single(knoten.Zeilen.Take(2), x => x.StartsWith("K6b_K", StringComparison.Ordinal));
+            Assert.EndsWith("…" + string.Format(CultureInfo.CurrentCulture, zeile, "", E(3.0) + "–" + E(4.0)), gekuerzt);
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture,
+                                       WindowsFormsApplication1.MyResource.Resource.KONF_KS_DEZENTRAL_STROM_TRAEGER, 1), knoten.Zeilen[2]);
+            int breite = SchemaLayout.SPALTEN_BREITE[(int)SchemaModell.Knotenart.Abnehmer] - 2 * SchemaLayout.KNOTEN_RAND;
+            Assert.All(knoten.Zeilen, x => Assert.True(SchemaLayout.TextBreite(x) <= breite, x));
+            Assert.Contains(string.Format(CultureInfo.CurrentCulture, zeile, LASTGANG,
+                                          string.Format(CultureInfo.CurrentCulture,
+                                                        WindowsFormsApplication1.MyResource.Resource.SIMKONF_KAELTE_DEZ_EER_LINEAR,
+                                                        E(3.0), "35", E(4.0), "25")), knoten.Hinweis);
+            string traeger = WindowsFormsApplication1.MyResource.Resource.KONF_KS_DEZENTRAL_TRAEGER;
+            Assert.Equal(2, knoten.Hinweis.Split(traeger.Substring(0, traeger.IndexOf('{'))).Length - 1);
 
             // Projektbeschreibung: Profile und Split-Zeilen mit EER-Weg und Träger.
             ProjektDetails d = ProjektDetails.Lade(PROJEKT);

@@ -142,18 +142,20 @@
         {
             Von = SchemaModell.PRAEFIX_KAELTE_ERZEUGER + 1, Nach = SchemaModell.ABNEHMER_KAELTEKREIS, Art = SchemaModell.Kantenart.Versorgung
         });
-        m.Knotenliste.Add(new SchemaModell.Knoten
+        // K6b-N: die Zeilen des Kerns (je Split-Zeile eine kurze, dann die Sammelzeile zum Strom), der volle Text im Tooltip.
+        var dezentral = new SchemaModell.Knoten
         {
             Schluessel = SchemaModell.ABNEHMER_KAELTE_DEZENTRAL, Art = SchemaModell.Knotenart.Abnehmer, Bahn = SchemaModell.Bahn.Kaelte,
             Titel = Resource.SIM_SCHEMA_ABNEHMER_KAELTE_DEZENTRAL,
-            Zeilen =
-            {
-                string.Format(Resource.KONF_KS_DEZENTRAL_ZEILE, "Raumkühlung Büro", "fest 3,0"),
-                string.Format(Resource.KONF_KS_DEZENTRAL_TRAEGER, "Stromträger des Projekts, anteilig"),
-                string.Format(Resource.KONF_KS_DEZENTRAL_ZEILE, "Serverraum", "linear 3,0 / 4,0"),
-                string.Format(Resource.KONF_KS_DEZENTRAL_TRAEGER, "Strom 2, eigener Zähler")
-            }
-        });
+            Hinweis = string.Join("\n", Resource.SIM_SCHEMA_TIP_ABNEHMER,
+                                  string.Format(Resource.KONF_KS_DEZENTRAL_ZEILE, "Raumkühlung Büro", "fest 3,0"),
+                                  string.Format(Resource.KONF_KS_DEZENTRAL_TRAEGER, "Stromträger des Projekts"),
+                                  string.Format(Resource.KONF_KS_DEZENTRAL_ZEILE, "Serverraum", "linear 3,0 bei 35 °C / 4,0 bei 25 °C"),
+                                  string.Format(Resource.KONF_KS_DEZENTRAL_TRAEGER, "Strom 2, eigener Zähler"))
+        };
+        dezentral.Zeilen.AddRange(SchemaModell.KaelteDezentralZeilen(
+            new[] { ("Raumkühlung Büro", "3,0", (int?)null), ("Serverraum", "3,0–4,0", (int?)2) }, 1));
+        m.Knotenliste.Add(dezentral);
         m.KaelteKette.Add("Wärmepumpe 1");
         return SimulationKonfigHuelle.SchemaAbbilden(SchemaLayout.Anordnen(m, 0));
     }

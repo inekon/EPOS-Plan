@@ -54768,7 +54768,7 @@ chart</value>
     <value>Decentrally supplied rows run alongside the cooling sequence with their own EER; they are maintained under “External cooling demand” and “Cooling demand profiles”.</value>
   </data>
   <data name="SIM_SCHEMA_ABNEHMER_KAELTE_DEZENTRAL" xml:space="preserve">
-    <value>Cooling demand, decentralised (split)</value>
+    <value>Decentral (split)</value>
   </data>
   <data name="KONF_KS_DEZENTRAL_ZEILE" xml:space="preserve">
     <value>{0}: EER {1}</value>
@@ -54790,6 +54790,12 @@ chart</value>
   </data>
   <data name="KI_DLG_SIM_KAELTE_DEZENTRAL_ERL" xml:space="preserve">
     <value>The cooling demand rows covered decentrally (split) with source, annual total, EER, cooling carrier and meter; read-only. They are maintained in the dialogs “External cooling demand” and “Cooling demand profiles”.</value>
+  </data>
+  <data name="KONF_KS_DEZENTRAL_STROM_PROJEKT" xml:space="preserve">
+    <value>Power: project carrier</value>
+  </data>
+  <data name="KONF_KS_DEZENTRAL_STROM_TRAEGER" xml:space="preserve">
+    <value>Power: {0} carriers</value>
   </data>
 </root>
 

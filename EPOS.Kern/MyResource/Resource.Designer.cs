@@ -88782,6 +88782,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom: Projektträger ähnelt.
+        /// </summary>
+        public static string KONF_KS_DEZENTRAL_STROM_PROJEKT {
+            get {
+                return ResourceManager.GetString("KONF_KS_DEZENTRAL_STROM_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom: {0} Träger ähnelt.
+        /// </summary>
+        public static string KONF_KS_DEZENTRAL_STROM_TRAEGER {
+            get {
+                return ResourceManager.GetString("KONF_KS_DEZENTRAL_STROM_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kühlträger: {0} ähnelt.
         /// </summary>
         public static string KONF_KS_DEZENTRAL_TRAEGER {
@@ -121765,7 +121783,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf dezentral (Split) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezentral (Split) ähnelt.
         /// </summary>
         public static string SIM_SCHEMA_ABNEHMER_KAELTE_DEZENTRAL {
             get {

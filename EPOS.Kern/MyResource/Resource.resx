@@ -54775,7 +54775,7 @@ Chart</value>
     <value>Dezentral gedeckte Zeilen laufen neben der Kältefolge mit eigenem EER; gepflegt werden sie unter „Kältebedarf extern“ und „Kältebedarfsprofile“.</value>
   </data>
   <data name="SIM_SCHEMA_ABNEHMER_KAELTE_DEZENTRAL" xml:space="preserve">
-    <value>Kältebedarf dezentral (Split)</value>
+    <value>Dezentral (Split)</value>
   </data>
   <data name="KONF_KS_DEZENTRAL_ZEILE" xml:space="preserve">
     <value>{0}: EER {1}</value>
@@ -54797,6 +54797,12 @@ Chart</value>
   </data>
   <data name="KI_DLG_SIM_KAELTE_DEZENTRAL_ERL" xml:space="preserve">
     <value>Die dezentral (Split) gedeckten Kältebedarfszeilen mit Quelle, Jahressumme, EER, Kühlträger und Zähler; nur lesend. Gepflegt werden sie in den Dialogen „Kältebedarf extern“ und „Kältebedarfsprofile“.</value>
+  </data>
+  <data name="KONF_KS_DEZENTRAL_STROM_PROJEKT" xml:space="preserve">
+    <value>Strom: Projektträger</value>
+  </data>
+  <data name="KONF_KS_DEZENTRAL_STROM_TRAEGER" xml:space="preserve">
+    <value>Strom: {0} Träger</value>
   </data>
 </root>
 
