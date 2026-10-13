@@ -105,7 +105,7 @@ namespace EPOS.Kern.Tests
             Assert.NotEqual(ZapfTagtyp.Ruhetag, k[5]);
             Assert.NotEqual(ZapfTagtyp.Ruhetag, k[358]);
 
-            ZonenStand z = Zone() with { Ferienbeginn = new int?[] { 366, 100, null, null }, Ferienende = new int?[] { 3, 102, null, null } };
+            ZonenStand z = Zone() with { Ferien = Zonenferienprobe.Liste(new int?[] { 366, 100, null, null }, new int?[] { 3, 102, null, null }) };
             ZapfTagtyp[] kz = Zapfkalender.Bilden(0, We(0), Zapfkalender.FensterDerZone(z));
             Assert.Equal(6, kz.Count(t => t == ZapfTagtyp.Ruhetag));
         }

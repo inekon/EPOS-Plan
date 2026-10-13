@@ -103,17 +103,15 @@ namespace WindowsFormsApplication1
             return new[] { new Ferienfenster(b.Value, TAGE), new Ferienfenster(1, e.Value) };
         }
 
-        /// <summary>Die Ferienfenster einer Zone aus ihren vier Paaren.</summary>
+        /// <summary>
+        /// Die Ferienfenster einer Zone aus der Liste ihrer Ferienzeiträume (<see cref="ZonenStand.Ferien"/>,
+        /// <c>Tab_TwwZonenferien</c>), in deren Reihenfolge, je Zeitraum über <see cref="AusJahrestagen"/>.
+        /// </summary>
         internal static IReadOnlyList<Ferienfenster> FensterDerZone(ZonenStand z)
         {
             var fenster = new List<Ferienfenster>();
-            int anzahl = Math.Max(z.Ferienbeginn?.Length ?? 0, z.Ferienende?.Length ?? 0);
-            for (int i = 0; i < anzahl; i++)
-            {
-                int? b = z.Ferienbeginn != null && i < z.Ferienbeginn.Length ? z.Ferienbeginn[i] : null;
-                int? e = z.Ferienende != null && i < z.Ferienende.Length ? z.Ferienende[i] : null;
-                fenster.AddRange(AusJahrestagen(b, e));
-            }
+            foreach (ZonenferienStand f in z?.Ferien ?? new ZonenferienStand[0])
+                if (f != null) fenster.AddRange(AusJahrestagen(f.Beginn, f.Ende));
             return fenster;
         }
 

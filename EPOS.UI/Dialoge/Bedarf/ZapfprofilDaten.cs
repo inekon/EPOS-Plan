@@ -285,12 +285,15 @@ public sealed class ZapfprofilWohnungDaten
 }
 
 /// <summary>
-/// Ein Ferienzeitraum einer Zone (5.3 „Kalender / Ferien", vier Zeiträume) als Tag und Monat —
+/// Ein Ferienzeitraum einer Zone (5.3 „Kalender / Ferien", beliebig viele Zeiträume) als Tag und Monat —
 /// die Hülle rechnet ihn in den Jahrestag des Kerns um (Rechenjahr ohne Schaltjahr). Leer =
 /// keine Angabe; ein Beginn ohne Ende gilt nicht.
 /// </summary>
 public sealed class ZapfprofilFerienDaten
 {
+    /// <summary>Der wahlfreie Name des Zeitraums (<c>Tab_TwwZonenferien.Name</c>); <c>null</c> = keiner. Kein Belegt-Merkmal.</summary>
+    public string? Name { get; set; }
+
     public int? BeginnTag { get; set; }
     public int? BeginnMonat { get; set; }
     public int? EndeTag { get; set; }
@@ -310,7 +313,10 @@ public sealed class ZapfprofilFerienDaten
 /// </summary>
 public sealed class ZapfprofilZonenangabenDaten
 {
-    /// <summary>Anzahl der Ferienzeiträume je Zone.</summary>
+    /// <summary>
+    /// Anzahl der Ferienzeiträume, die die Maske je Zone mindestens zeigt; die Liste <see cref="Ferien"/> darf länger
+    /// sein (eine Zone trägt beliebig viele Zeiträume).
+    /// </summary>
     public const int FERIENZEITRAEUME = 4;
 
     /// <summary>Anzahl der Monate des Auslastungsgangs.</summary>
@@ -329,7 +335,7 @@ public sealed class ZapfprofilZonenangabenDaten
     /// <summary>Zirkulation vorhanden? <c>false</c> nimmt die Zone aus dem Zirkulationsanteil (4.3).</summary>
     public bool Zirkulation { get; set; } = true;
 
-    /// <summary>Die vier Ferienzeiträume der Zone.</summary>
+    /// <summary>Die Ferienzeiträume der Zone in ihrer Reihenfolge — mindestens <see cref="FERIENZEITRAEUME"/> Zeilen.</summary>
     public List<ZapfprofilFerienDaten> Ferien { get; set; } = NeueFerien();
 
     public double? Jahresmesswert { get; set; }

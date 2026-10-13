@@ -377,9 +377,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Zonen mit den Vorbelegungen ihres gebundenen Gebäudes: Ferien, wenn die Zone
         /// keine trägt, und die Fläche — Gebäudefläche minus die eigenen Flächen der Zonen
-        /// desselben Gebäudes, geteilt unter den Zonen ohne eigene Fläche (N8). Kommen die Ferien
-        /// aus einem Heizkalender mit mehr Ferienperioden, als eine Zone Paare führt, nennt es ein
-        /// Hinweis in <paramref name="hinweise"/> (Entwurf KP2, Festlegung 10).
+        /// desselben Gebäudes, geteilt unter den Zonen ohne eigene Fläche (N8). Die Ferien des Gebäudes
+        /// gehen vollständig als Liste in die Zone (<see cref="ZonenStand.Ferien"/>), auch alle Ferienperioden
+        /// eines Heizkalenders (Entwurf KP2, Festlegung 10).
         /// </summary>
         private static IReadOnlyList<ZonenStand> MitGebaeude(int idProjekt, IReadOnlyList<ZonenStand> zonen,
                                                              IReadOnlyList<Nutzungsart> katalog,
@@ -417,7 +417,7 @@ namespace WindowsFormsApplication1
                 }
                 ZonenStand neu = z;
                 if (a.FerienAktiv && !FerienGesetzt(z))
-                    neu = neu with { Ferienbeginn = (int?[])a.Ferienbeginn.Clone(), Ferienende = (int?[])a.Ferienende.Clone() };
+                    neu = neu with { Ferien = a.Ferien.ToArray() };
                 if (a.Wochenendtage.HasValue) neu = neu with { Wochenendtage = a.Wochenendtage };
                 // Die Feiertage aus den Regeln des Kerns nach der Konvention, bundeseinheitlich und nach dem Feiertagsland
                 // des Gebäudes — unter jeder Wochenendmaske (Zapfkalender.Kennzeichen).
@@ -433,7 +433,7 @@ namespace WindowsFormsApplication1
             return ergebnis;
         }
 
-        /// <summary>Die Ferienpaare einer Zone (<see cref="ZonenStand.Ferienbeginn"/>, <c>Tab_TwwZone.Ferienbeginn_1…4</c>).</summary>
+        /// <summary>Die Ferienspalten eines Gebäudes ohne Heizkalender (<c>Tab_Gebaeude.Ferienbeginn_1…4</c>).</summary>
         internal const int FERIENPAARE = 4;
 
         private sealed class GebaeudeAngaben
@@ -441,8 +441,9 @@ namespace WindowsFormsApplication1
             internal string Name;
             internal double? FlaecheM2;
             internal bool FerienAktiv;
-            internal int?[] Ferienbeginn = new int?[FERIENPAARE];
-            internal int?[] Ferienende = new int?[FERIENPAARE];
+
+            /// <summary>Die Ferienzeiträume des Gebäudes in ihrer Reihenfolge (Jahrestage wie gelesen, 0 und 366 = keine Angabe).</summary>
+            internal List<ZonenferienStand> Ferien = new List<ZonenferienStand>();
 
             /// <summary>Die Wochenmaske des Gebäudes (<c>Wochenendtage</c>, Mo = Bit 0); <c>null</c> = Vorgabe Sa + So.</summary>
             internal int? Wochenendtage;
@@ -518,23 +519,20 @@ namespace WindowsFormsApplication1
                     perioden.Clear();
                     foreach (Ferienzeile f in liste) perioden.Add((f.Beginn, f.Ende));
                 }
-                a.Ferienbeginn = new int?[Math.Max(FERIENPAARE, perioden.Count)];
-                a.Ferienende = new int?[a.Ferienbeginn.Length];
-                for (int i = 0; i < perioden.Count; i++)
-                {
-                    a.Ferienbeginn[i] = perioden[i].Beginn;
-                    a.Ferienende[i] = perioden[i].Ende;
-                }
+                foreach ((int Beginn, int Ende) p in perioden)
+                    a.Ferien.Add(new ZonenferienStand { Beginn = p.Beginn, Ende = p.Ende });
                 return a;
             }
 
             double? ferien = dt.Columns.Contains("Ferien") ? ZahlOderNull(r, "Ferien") : null;
             a.FerienAktiv = ferien.HasValue && ferien.Value > GebaeudeFestwerte.FERIEN_FLAG_SCHWELLE;
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < FERIENPAARE; i++)
             {
                 string n = (i + 1).ToString(CultureInfo.InvariantCulture);
-                a.Ferienbeginn[i] = Jahrestag(dt, r, "Ferienbeginn_" + n);
-                a.Ferienende[i] = Jahrestag(dt, r, "Ferienende_" + n);
+                int? b = Jahrestag(dt, r, "Ferienbeginn_" + n);
+                int? e = Jahrestag(dt, r, "Ferienende_" + n);
+                // Ein Paar ohne jede Angabe (leer, 0 oder 366 auf beiden Seiten) ist kein Zeitraum.
+                if (Angegeben(b) || Angegeben(e)) a.Ferien.Add(new ZonenferienStand { Beginn = b, Ende = e });
             }
             return a;
         }
@@ -561,14 +559,16 @@ namespace WindowsFormsApplication1
             return (int)Math.Min(FERIEN_KEINE_ANGABE_366, Math.Max(FERIEN_KEINE_ANGABE_NULL, t));
         }
 
+        /// <summary>Ist der Jahrestag eine Angabe (ein Wert außer null, 0 und 366)?</summary>
+        private static bool Angegeben(int? t)
+            => t.HasValue && t.Value != FERIEN_KEINE_ANGABE_NULL && t.Value != FERIEN_KEINE_ANGABE_366;
+
         /// <summary>Trägt die Zone eine eigene Ferienangabe (ein Wert außer null, 0 und 366)?</summary>
         private static bool FerienGesetzt(ZonenStand z)
         {
-            foreach (int?[] reihe in new[] { z.Ferienbeginn, z.Ferienende })
-                if (reihe != null)
-                    foreach (int? t in reihe)
-                        if (t.HasValue && t.Value != FERIEN_KEINE_ANGABE_NULL && t.Value != FERIEN_KEINE_ANGABE_366)
-                            return true;
+            foreach (ZonenferienStand f in z.Ferien ?? new ZonenferienStand[0])
+                if (f != null)
+                    if (Angegeben(f.Beginn) || Angegeben(f.Ende)) return true;
             return false;
         }
 

@@ -127577,6 +127577,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferienzeitraum/-räume der Zonen in die Liste der Zonenferien übertragen ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_ZONENFERIEN {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_ZONENFERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt „{0}“ ist selbst eine Variante und kann keine weiteren Varianten mitnehmen. Bitte das Stammprojekt wählen. ähnelt.
         /// </summary>
         public static string TRANSFER_EXPORT_VARIANTE_ALS_STAMM {

@@ -41809,6 +41809,9 @@ This folder holds the standard template, the short report, the detailed template
   <data name="TRANSFER_ANHEBUNG_KESSEL_BRENNWERT" xml:space="preserve">
     <value>project boiler(s) marked as condensing boilers (from the catalogue record or the description)</value>
   </data>
+  <data name="TRANSFER_ANHEBUNG_ZONENFERIEN" xml:space="preserve">
+    <value>holiday period(s) of the zones transferred to the list of zone holidays</value>
+  </data>
   <data name="SIMENG_KESSEL_BRENNWERTKENNLINIE" xml:space="preserve">
     <value>Condensing curve “{0}”: dew point {1} °C, condensation gain at 30 °C return {2}, dry η30 {3}, upper limit Hs/Hi {4}. The return temperature comes from the heating circuit of the system coupling, otherwise from the sink storage, otherwise {5} °C applies.</value>
   </data>

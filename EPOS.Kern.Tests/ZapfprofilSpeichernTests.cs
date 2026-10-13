@@ -50,8 +50,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ZapfNiveau.Hoch, a.Niveau);
             Assert.Equal(ZapfTopologie.Frischwasserstation, a.Topologie);
             Assert.False(a.Zirkulation);
-            Assert.Equal(new int?[] { 100, null, null, null }, a.Ferienbeginn);
-            Assert.Equal(new int?[] { 110, null, null, null }, a.Ferienende);
+            Assert.Equal(Zonenferienprobe.Paare(new int?[] { 100, null, null, null }, new int?[] { 110, null, null, null }), Zonenferienprobe.Paare(a));
             Assert.Equal(55.0, a.ZapftemperaturC);
             Assert.Equal(1.5, a.Auslastung[0]);
             Assert.Null(a.Auslastung[1]);
@@ -442,25 +441,24 @@ namespace EPOS.Kern.Tests
             var stand = new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { ohneFerien, mitFerien, ungebunden }, null);
 
             Zapfprofileingang e = ZapfprofilCtrl.Eingang(PROJEKT, stand, 0, new bool[365]);
-            Assert.Equal(new int?[] { 200, 366, 0, 0 }, e.Zonen[0].Ferienbeginn);
-            Assert.Equal(new int?[] { 210, 0, 0, 0 }, e.Zonen[0].Ferienende);
-            Assert.Equal(new int?[] { 100, null, null, null }, e.Zonen[1].Ferienbeginn);   // eigene Ferien bleiben
+            Assert.Equal(Zonenferienprobe.Paare(new int?[] { 200 }, new int?[] { 210 }), Zonenferienprobe.Paare(e.Zonen[0]));
+            Assert.Equal(Zonenferienprobe.Paare(new int?[] { 100 }, new int?[] { 110 }), Zonenferienprobe.Paare(e.Zonen[1]));   // eigene Ferien bleiben
             Assert.Equal(100.0, e.Zonen[0].GebaeudeflaecheM2);                              // 200 m² zu gleichen Teilen
             Assert.Equal(100.0, e.Zonen[1].GebaeudeflaecheM2);
             Assert.Null(e.Zonen[2].GebaeudeflaecheM2);
-            Assert.Equal(new int?[4], e.Zonen[2].Ferienbeginn);
+            Assert.Empty(e.Zonen[2].Ferien);
 
             // Nichts davon wird gespeichert.
             ZapfprofilCtrl.Speichern(PROJEKT, stand);
             ZapfprofilStand gelesen = ZapfprofilCtrl.Lies(PROJEKT);
-            Assert.Equal(new int?[4], gelesen.Zonen[0].Ferienbeginn);
+            Assert.Empty(gelesen.Zonen[0].Ferien);
             Assert.Null(gelesen.Zonen[0].GebaeudeflaecheM2);
 
             // Ohne Ferienkennzeichen des Gebäudes: keine Ferien aus dem Gebäude.
             Assert.True(DataRepository.ExecuteSQL("UPDATE Tab_Gebaeude SET Ferien = 0.0 WHERE ID = ?",
                                                   new DbParam("@id", gebaeude)));
             Zapfprofileingang ohne = ZapfprofilCtrl.Eingang(PROJEKT, stand, 0, new bool[365]);
-            Assert.Equal(new int?[4], ohne.Zonen[0].Ferienbeginn);
+            Assert.Empty(ohne.Zonen[0].Ferien);
 
             // Im Rechenweg trägt die Zone die Gebäudefläche als Zonenfläche.
             ZapfprofilErgebnis r = ZapfprofilRechner.Rechnen(e, ZapfprofilCtrl.Katalog());
@@ -518,8 +516,7 @@ namespace EPOS.Kern.Tests
                 Niveau = ZapfNiveau.Hoch,
                 Topologie = ZapfTopologie.Frischwasserstation,
                 Zirkulation = false,
-                Ferienbeginn = new int?[] { 100, null, null, null },
-                Ferienende = new int?[] { 110, null, null, null },
+                Ferien = Zonenferienprobe.Liste(new int?[] { 100, null, null, null }, new int?[] { 110, null, null, null }),
                 ZapftemperaturC = 55.0,
                 Auslastung = auslastung,
                 Wohnungen = new[]

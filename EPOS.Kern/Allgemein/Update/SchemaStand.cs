@@ -1046,7 +1046,11 @@ namespace WindowsFormsApplication1
         /// <see cref="BauteilkatalogSchema.SCHRITT"/>: Herkunft EIGEN/IMPORT, Gruppe und Klasse, das Kennzeichen „für die
         /// Gebäudesimulation meist nicht geeignet“, die Felder der Quelle und die Abschnittstabellen
         /// (<see cref="BauteilkatalogSchema"/>). <b>Ergebnisneutral:</b> Der Bauteilweg liest keine neue Spalte.
-        public const int Zielversion = BauteilkatalogSchema.SCHRITT;
+        /// Danach, mit den ZONENFERIEN ALS LISTE (ZB5, ZB‑Q3 B), steht das Ziel auf <see cref="TwwZonenferienSchema.SCHRITT"/>:
+        /// die Tabelle <c>Tab_TwwZonenferien</c> (beliebig viele eigene Ferienzeiträume je Zone), in die der Schritt die vier
+        /// Spaltenpaare von <c>Tab_TwwZone</c> überträgt und sie danach abbaut (<see cref="TwwZonenferienSchema"/>).
+        /// <b>Ergebnisneutral:</b> Der Zapfkalender rechnet über die Liste dieselben Fenster.
+        public const int Zielversion = TwwZonenferienSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
