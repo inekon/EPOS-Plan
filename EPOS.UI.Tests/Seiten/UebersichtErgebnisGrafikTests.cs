@@ -107,9 +107,15 @@ public class UebersichtErgebnisGrafikTests : EposBunitContext
         Assert.Equal(UebersichtErgebnisse.ANSICHT_TABELLE, cut.Instance.Ansicht);
         Assert.NotEmpty(cut.FindAll("table.epos-ergebnisvergleich"));
         Assert.Empty(cut.FindAll(".epos-ergebnis-grafik"));
+        string tabellentext = cut.Instance.Text();
+        Assert.StartsWith(UebersichtErgebnisse.KI_ANSICHT_TABELLE + "\n", tabellentext);
 
         cut.Find(".epos-ergebnis-ansicht button[data-ansicht=grafik]").Click();
         Assert.Equal(UebersichtErgebnisse.ANSICHT_GRAFIK, ablage["ansicht"]);
+        // Der Assistent erfährt die Ansicht; die Zahlen bleiben die der Tabelle.
+        string grafiktext = cut.Instance.Text();
+        Assert.StartsWith("Ansicht: Grafik (Balken je Version, je Gruppe und Einheit ein Diagramm)\n", grafiktext);
+        Assert.Equal(tabellentext.Substring(tabellentext.IndexOf('\n')), grafiktext.Substring(grafiktext.IndexOf('\n')));
         Assert.Equal("true", cut.Find(".epos-ergebnis-ansicht button[data-ansicht=grafik]").GetAttribute("aria-checked"));
         Assert.Empty(cut.FindAll("table.epos-ergebnisvergleich"));
         Assert.NotEmpty(cut.FindAll(".epos-ergebnis-grafik figure.epos-ergebnis-diagramm"));

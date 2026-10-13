@@ -241,6 +241,12 @@
     /// <summary>Der Ablagewert der Grafikansicht.</summary>
     public const string ANSICHT_GRAFIK = "grafik";
 
+    /// <summary>Die erste Zeile des Assistententextes in der Tabellenansicht.</summary>
+    public const string KI_ANSICHT_TABELLE = "Ansicht: Tabelle";
+
+    /// <summary>Die erste Zeile des Assistententextes in der Grafikansicht.</summary>
+    public const string KI_ANSICHT_GRAFIK = "Ansicht: Grafik (Balken je Version, je Gruppe und Einheit ein Diagramm)";
+
     /// <summary>Liest die gewählte Ansicht („tabelle“, „grafik“) aus der Einstellungsnaht der Hülle; ohne Leseweg gilt die Tabelle.</summary>
     [Parameter] public Func<string>? AnsichtLesen { get; set; }
 
@@ -429,13 +435,14 @@
     /// <summary>
     /// Die Tabelle als Text für den Assistenten: alle Gruppen, auch die zugeklappten, je Gruppe eine Kopfzeile
     /// „[Gruppenschlüssel] Titel“, darunter je Zeile „Gruppe · Kennzahl: Version = Wert (Abweichung); …“; leer ohne
-    /// Tabelle, der Hinweis, wenn keine Version simuliert ist.
+    /// Tabelle, der Hinweis, wenn keine Version simuliert ist. Die erste Zeile nennt die gezeigte Ansicht
+    /// („Ansicht: Tabelle“ oder „Ansicht: Grafik …“); die Zahlen sind in beiden Ansichten die der Tabelle.
     /// </summary>
     public string Text()
     {
         if (_ergebnis is null || _ergebnis.Versionsspalten.Count == 0) return "";
         if (_ergebnis.KeineSimulation || _ergebnis.Gruppen.Count == 0) return KeineSimulationText;
-        var zeilen = new List<string>();
+        var zeilen = new List<string> { IstGrafik ? KI_ANSICHT_GRAFIK : KI_ANSICHT_TABELLE };
         foreach (ErgebnisVergleichGruppe g in _ergebnis.Gruppen)
         {
             zeilen.Add("[" + g.Schluessel + "] " + g.Titel);

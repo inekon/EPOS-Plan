@@ -321,6 +321,7 @@ public class UebersichtErgebnisseTests : EposBunitContext
         Assert.NotNull(feld);
         Assert.False(feld.Setzbar);
         string text = (string)feld.Lesen();
+        Assert.StartsWith("Ansicht: Tabelle\n", text);
         Assert.Contains("Bedarf · Wärmebedarf gesamt [MWh/a]: Stamm = 100; WP klein = 110 (+10,0 %)"
                         + " — weicht vom Stammprojekt ab", text);
         // Alle Gruppen als Text, auch die zugeklappten, mit Gruppenkennung.
