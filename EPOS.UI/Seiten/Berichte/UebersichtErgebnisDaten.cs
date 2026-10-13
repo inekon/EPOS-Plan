@@ -17,6 +17,9 @@ public sealed class ErgebnisVergleichZelle
 
     /// <summary>Ist die Version nicht simuliert? Dann trägt die Zelle „—“ mit Kurztext.</summary>
     public bool NichtSimuliert { get; set; }
+
+    /// <summary>Der Wert als Zahl für die Grafik (Einheit der Zeile); <c>null</c> ohne Wert — dann kein Balken.</summary>
+    public double? Wert { get; set; }
 }
 
 /// <summary>Eine Zeile des Energievergleichs: eine Kennzahl, je Version eine Zelle.</summary>
@@ -27,6 +30,12 @@ public sealed class ErgebnisVergleichZeile
 
     /// <summary>Die Beschriftung samt Einheit („Wärmebedarf gesamt [MWh/a]“).</summary>
     public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Die Beschriftung ohne Einheit („Wärmebedarf gesamt“) für die Grafik; leer = <see cref="Bezeichnung"/>.</summary>
+    public string Kennzahl { get; set; } = "";
+
+    /// <summary>Die Einheit der Kennzahl („MWh/a“, „%“); leer bei einer dimensionslosen Zahl (JAZ).</summary>
+    public string Einheit { get; set; } = "";
 
     /// <summary>Je Version eine Zelle, der Stamm zuerst.</summary>
     public IReadOnlyList<ErgebnisVergleichZelle> Zellen { get; set; } = Array.Empty<ErgebnisVergleichZelle>();

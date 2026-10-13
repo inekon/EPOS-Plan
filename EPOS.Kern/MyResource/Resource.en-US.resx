@@ -5875,6 +5875,21 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_ERG_KEINE_SIMULATION" xml:space="preserve">
     <value>No version in the comparison has a simulation result. Start the simulation to compare the energy results.</value>
   </data>
+  <data name="BK_ERG_ANSICHT" xml:space="preserve">
+    <value>View</value>
+  </data>
+  <data name="BK_ERG_ANSICHT_TABELLE" xml:space="preserve">
+    <value>Table</value>
+  </data>
+  <data name="BK_ERG_ANSICHT_GRAFIK" xml:space="preserve">
+    <value>Chart</value>
+  </data>
+  <data name="BK_ERG_GRAFIK_LEGENDE" xml:space="preserve">
+    <value>Versions</value>
+  </data>
+  <data name="BK_ERG_GRAFIK_HINWEIS" xml:space="preserve">
+    <value>Edge mark: differs from the base project; at the bar the value and the deviation from the base project in percent</value>
+  </data>
   <data name="BK_STATUS_SIMULIERT" xml:space="preserve">
     <value>{0} · simulated</value>
   </data>
