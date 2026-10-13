@@ -152,6 +152,52 @@ namespace WindowsFormsApplication1
         /// <summary>Unterhalb dieser Spanne gelten zwei Sätze als gleich (Rundung der Anzeige).</summary>
         public const double TOLERANZ = 0.005;
 
+        /// <summary>Dieselbe Vorschau; die Art der Anlage liest sie selbst (<c>Tab_Energieanlagen.ID_Type</c>).</summary>
+        public static Abgleichbefund Vorschau(int idProjekt, int idAnlage, int komponentenId)
+            => Vorschau(idProjekt, idAnlage, ArtDerAnlage(idAnlage), komponentenId);
+
+        /// <summary>Dasselbe Ausführen; die Art der Anlage liest es selbst.</summary>
+        public static Abgleichergebnis Ausfuehren(int idProjekt, int idAnlage, int komponentenId)
+            => Ausfuehren(idProjekt, idAnlage, ArtDerAnlage(idAnlage), komponentenId);
+
+        /// <summary>Dieselbe Vorschau; das Gewerk über seinen Namen (<c>Tab_KostenKomponente.Komponente</c>).</summary>
+        public static Abgleichbefund Vorschau(int idProjekt, int idAnlage, string komponente)
+            => Vorschau(idProjekt, idAnlage, KomponentenId(komponente));
+
+        /// <summary>Dasselbe Ausführen; das Gewerk über seinen Namen.</summary>
+        public static Abgleichergebnis Ausfuehren(int idProjekt, int idAnlage, string komponente)
+            => Ausfuehren(idProjekt, idAnlage, KomponentenId(komponente));
+
+        /// <summary>
+        /// Führt der Katalogsatz des Geräts dieser Anlage überhaupt eine Satzvorlage? Die Frage der
+        /// Kostenseite, bevor sie einen Knopf zeichnet — eine Abfrage je Anlage, ohne die Positionen
+        /// zu lesen.
+        /// </summary>
+        public static bool Abgleichbar(int idAnlage, string komponente)
+        {
+            int id = KomponentenId(komponente);
+            return id > 0 && Katalogrueckweg.SatzvorlagenDerAnlage(idAnlage, ArtDerAnlage(idAnlage), id).Count > 0;
+        }
+
+        /// <summary>Die Kostenkomponente zu ihrem Namen (<c>Tab_KostenKomponente</c>); 0 = unbekannt.</summary>
+        internal static int KomponentenId(string komponente)
+        {
+            if (string.IsNullOrEmpty(komponente)) return 0;
+            object o = DataRepository.ExecuteScalar(
+                "SELECT MIN(\"ID\") FROM \"Tab_KostenKomponente\" WHERE \"Komponente\" = ?",
+                new DbParam("@k", komponente));
+            return o == null || o == DBNull.Value ? 0 : Convert.ToInt32(o, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>Die Art der Anlage (<c>Tab_Energieanlagen.ID_Type</c>); 0 = nicht lesbar.</summary>
+        private static int ArtDerAnlage(int idAnlage)
+        {
+            if (idAnlage <= 0) return 0;
+            object o = DataRepository.ExecuteScalar(
+                "SELECT \"ID_Type\" FROM \"Tab_Energieanlagen\" WHERE \"ID\" = ?", new DbParam("@a", idAnlage));
+            return o == null || o == DBNull.Value ? 0 : Convert.ToInt32(o, CultureInfo.InvariantCulture);
+        }
+
         /// <summary>
         /// Was ein Abgleich der Anlage <paramref name="idAnlage"/> ändern würde — <b>reiner Lesevorgang</b>.
         /// </summary>

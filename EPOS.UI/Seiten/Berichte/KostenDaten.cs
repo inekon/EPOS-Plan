@@ -56,6 +56,13 @@ public sealed class KostenZeile
     /// in der Zeile (Abweichung A-3 der Welle 5).
     /// </summary>
     public bool Loeschbar { get; set; }
+
+    /// <summary>
+    /// KB-3: Lässt sich diese Anlagenzeile mit dem zentralen Kostenkatalog abgleichen? Wahr, wo
+    /// der Katalogsatz des Geräts eine Satzvorlage führt — dann steht in der Wertzelle statt „—"
+    /// der Hinweis, dass Katalogkosten vorliegen, und die Aktionenspalte trägt den Abgleich.
+    /// </summary>
+    public bool Abgleichbar { get; set; }
 }
 
 /// <summary>Eine Zeile der Energieträgertabelle (zehn Spalten).</summary>

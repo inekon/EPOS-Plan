@@ -208,6 +208,15 @@
                                                     title="@LoeschenKurztext"
                                                     @onclick="@(() => LoeschenFragen(zeile))">🗑️</button>
                                         }
+                                        @* KB-3: Der Abgleich mit dem zentralen Kostenkatalog - nur an
+                                           einer Zeile, deren Katalogsatz eine Satzvorlage fuehrt, und
+                                           nur auf Knopfdruck. Ohne Delegat kein Knopf. *@
+                                        @if (zeile.Abgleichbar && AbgleichFrage is not null)
+                                        {
+                                            <button type="button" class="epos-knopf epos-zr-knopf"
+                                                    title="@AbgleichKurztext"
+                                                    @onclick="@(() => AbgleichenFragen(zeile))">⇄</button>
+                                        }
                                     </div>
                                 </td>
                                 <td>@zeile.Anzeige</td>
@@ -296,6 +305,11 @@
     <Rueckfrage Offen="@(_loeschzeile is not null)" Frage="@_loeschfrage"
                 TitelText="@LoeschenTitel" Beantwortet="LoeschenBeantwortet"
                 JaText="@JaText" NeinText="@NeinText" />
+
+    @* KB-3: dieselbe Rueckfrage fuer den Abgleich mit dem zentralen Kostenkatalog. *@
+    <Rueckfrage Offen="@(_abgleichzeile is not null)" Frage="@_abgleichfrage"
+                TitelText="@AbgleichKurztext" Beantwortet="AbgleichBeantwortet"
+                JaText="@JaText" NeinText="@NeinText" />
 </div>
 
 @code {
@@ -361,6 +375,18 @@
 
     /// <summary>Löscht die losen Positionen und liefert die Meldung.</summary>
     [Parameter] public Func<KostenZeile, string>? Loeschen { get; set; }
+
+    /// <summary>
+    /// KB-3: Die Vorschau des Abgleichs mit dem zentralen Kostenkatalog — der fertige Fragetext
+    /// der Hülle; leer heißt „nichts abzugleichen". <b><c>null</c> heißt: kein Knopf.</b>
+    /// </summary>
+    [Parameter] public Func<KostenZeile, string>? AbgleichFrage { get; set; }
+
+    /// <summary>KB-3: Führt den Abgleich aus und liefert die Meldung für die Fußzeile.</summary>
+    [Parameter] public Func<KostenZeile, string>? Abgleichen { get; set; }
+
+    /// <summary>Kurztext des Abgleichknopfes (<c>BK_KOSTEN_ABGLEICH_KURZTEXT</c>).</summary>
+    [Parameter] public string AbgleichKurztext { get; set; } = "Mit dem Kostenkatalog abgleichen…";
 
     /// <summary>
     /// Der Rechenweg des Knopfes „Neu berechnen": DERSELBE Delegat wie <c>Berechnen</c> der
@@ -455,6 +481,12 @@
     private IReadOnlyDictionary<string, object>? _gaben;
 
     private KostenZeile? _loeschzeile;
+
+    /// <summary>KB-3: die Zeile, deren Abgleich zur Rückfrage steht.</summary>
+    private KostenZeile? _abgleichzeile;
+
+    /// <summary>KB-3: der Fragetext mit der Vorschau.</summary>
+    private string _abgleichfrage = "";
     private string _loeschfrage = "";
 
     /// <summary>Läuft „Neu berechnen"? Dann sind Knöpfe und Vergleichswahl gesperrt.</summary>
@@ -709,6 +741,32 @@
         }
         _loeschzeile = z;
         _loeschfrage = frage;
+    }
+
+    /// <summary>
+    /// KB-3: Der Abgleich einer Anlagenzeile mit dem zentralen Kostenkatalog — erst die Vorschau
+    /// der Hülle, dann die Rückfrage, erst danach das Schreiben. Während „Neu berechnen" läuft,
+    /// wird nichts abgeglichen (der Lauf liest dieselben Positionen).
+    /// </summary>
+    private void AbgleichenFragen(KostenZeile z)
+    {
+        if (!z.Abgleichbar || AbgleichFrage is null || _laeuft) return;
+        string frage = AbgleichFrage(z);
+        if (string.IsNullOrEmpty(frage)) return;
+        _abgleichzeile = z;
+        _abgleichfrage = frage;
+    }
+
+    private void AbgleichBeantwortet(bool? antwort)
+    {
+        KostenZeile? zeile = _abgleichzeile;
+        _abgleichzeile = null;
+
+        if (antwort != true || zeile is null || Abgleichen is null) return;
+
+        string meldung = Abgleichen(zeile);
+        Auffrischen();
+        if (!string.IsNullOrEmpty(meldung)) _status = meldung;
     }
 
     private void LoeschenBeantwortet(bool? antwort)
