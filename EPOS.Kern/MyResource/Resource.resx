@@ -6448,6 +6448,9 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
   <data name="BK_KOMP_HINW_KINDZEILEN" xml:space="preserve">
     <value>Die Zuordnungen „{1}" der Anlage „{0}" konnten nicht übernommen werden.</value>
   </data>
+  <data name="BK_KOMP_HINW_KAELTESEITE" xml:space="preserve">
+    <value>Nicht zum Gewerk Kältemaschine gehören und bleiben unverändert: die Kaskade des Projekts, ein Kältespeicher und die Kältefolge der übrigen Kälteerzeuger — der Rang der übernommenen Maschinen kommt aus der Quelle. Bitte die Kältefolge im Bereich Kälte prüfen.</value>
+  </data>
   <data name="KOSTEN_PLANWERT_BASIS_MODUL" xml:space="preserve">
     <value>Modulpreis</value>
   </data>
@@ -45928,6 +45931,9 @@ Chart</value>
   </data>
   <data name="KM_ANLAGE_NAME_LEER" xml:space="preserve">
     <value>Bitte geben Sie der Anlage einen Namen.</value>
+  </data>
+  <data name="KM_LBL_ANLAGE_ANZAHL" xml:space="preserve">
+    <value>Anzahl Maschinen</value>
   </data>
   <data name="KM_ANLAGE_ANZAHL_UNGUELTIG" xml:space="preserve">
     <value>Die Anzahl muss mindestens 1 sein.</value>

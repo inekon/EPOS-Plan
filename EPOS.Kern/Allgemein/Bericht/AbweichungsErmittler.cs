@@ -219,14 +219,22 @@ namespace WindowsFormsApplication1
             new Merkmal("Stromspeicher", "Tab_Stromspeicher", "Leistung",   "Leistung", "kW", 1, "BV_A1D_MERKMAL_LEISTUNG"),
             new Merkmal("Stromspeicher", "Tab_Stromspeicher", "Energie",    "Kapazität", "kWh", 1, "BV_A1D_MERKMAL_KAPAZITAET"),
 
-            // Kältemaschine (Tab_Kaeltemaschine, Projektkopie) - gelesen und verglichen, der Bestand
-            // wird nicht übernommen (KomponentenUebernahmeCtrl.Leseplan).
+            // Kältemaschine (Tab_Kaeltemaschine, Projektkopie); der Bestand wird wie bei jedem
+            // anderen Gewerk übernommen (KomponentenUebernahmeCtrl.Plaene).
             new Merkmal(ProjektDetails.GEWERK_KAELTEMASCHINE, "Tab_Kaeltemaschine", "Bezeichner", "Komponente", "", TEXT, "BV_A1D_MERKMAL_KOMPONENTE"),
             new Merkmal(ProjektDetails.GEWERK_KAELTEMASCHINE, "Tab_Kaeltemaschine", "Firma",      "Hersteller", "", TEXT, "BV_A1D_MERKMAL_HERSTELLER"),
             new Merkmal(ProjektDetails.GEWERK_KAELTEMASCHINE, "Tab_Kaeltemaschine", "Typ",        "Typ", "", TEXT, "BV_A1D_MERKMAL_TYP"),
             new Merkmal(ProjektDetails.GEWERK_KAELTEMASCHINE, "Tab_Kaeltemaschine", "Nennkaelteleistung_kW", "Nennkälteleistung", "kW", 1, "KM_LBL_NENNKAELTELEISTUNG"),
             new Merkmal(ProjektDetails.GEWERK_KAELTEMASCHINE, "Tab_Kaeltemaschine", "Nenn_EER",   "Nenn-EER", "", 2, "KM_LBL_NENN_EER"),
             new Merkmal(ProjektDetails.GEWERK_KAELTEMASCHINE, "Tab_Kaeltemaschine", "Kaeltemittel", "Kältemittel", "", TEXT, "KM_LBL_KAELTEMITTEL"),
+            // KN1: Die Stückzahl steht an der ANLAGENZEILE der Kältemaschine, nicht an ihrer
+            // Projektkopie - gelesen über die erste Anlagenzeile DIESES Gewerks
+            // (ZeileFuer), nicht über den Anlagen-Anker. Ohne diese Zeile meldete der
+            // Vergleich zweier Stände mit gleicher Anlagenzahl und verschiedener Stückzahl
+            // „Keine Abweichungen", während die Komponentenmatrix „2 ×" gegen „1 ×" zeigte.
+            new Merkmal(ProjektDetails.GEWERK_KAELTEMASCHINE, "Tab_Energieanlagen",
+                        KaeltemaschineAnlageSchema.SPALTE_ANZAHL, "Anzahl Maschinen", "", 0,
+                        "KM_LBL_ANLAGE_ANZAHL"),
 
             // Gebäude (Tab_Gebaeude — erstes Gebäude)
             new Merkmal("Gebäude", "Tab_Gebaeude", "Waermebedarf",       "Wärmebedarf", "kWh/a", 0, "BV_A1D_MERKMAL_WAERMEBEDARF"),
@@ -471,7 +479,11 @@ namespace WindowsFormsApplication1
             bool anlagenVergleichbar = AnlagenVergleichbar(stamm, variante);
             foreach (Merkmal f in Felder)
             {
-                if (f.Tabelle == "Tab_Energieanlagen" && !anlagenVergleichbar) continue;
+                // Die Wache gilt dem ANKER-Block „Anlage" (erste echte Anlagenzeile). Eine
+                // Anlagenspalte, die zu einem GEWERK gehört (KN1: die Stückzahl der
+                // Kältemaschine), wird an der Anlagenzeile dieses Gewerks gelesen - sie ist
+                // vergleichbar, sobald beide Stände das Gewerk führen.
+                if (f.Tabelle == "Tab_Energieanlagen" && !IstGewerkanlage(f) && !anlagenVergleichbar) continue;
                 DataRow rS = ZeileFuer(stamm, f);
                 DataRow rV = ZeileFuer(variante, f);
                 if (rS == null && rV == null) continue;            // Gewerk in beiden nicht vorhanden
@@ -559,7 +571,7 @@ namespace WindowsFormsApplication1
         public static DataRow ZeileFuer(ProjektDetails d, Merkmal f)
         {
             if (f.Tabelle == "Tab_Energieanlagen")
-                return ErsteEchteAnlage(d);
+                return IstGewerkanlage(f) ? ErsteAnlageDesGewerks(d, f.Gewerk) : ErsteEchteAnlage(d);
             if (f.Tabelle == "Tab_Gebaeude")
                 return (d.Gebaeude != null && d.Gebaeude.Rows.Count > 0) ? d.Gebaeude.Rows[0] : null;
             if (f.Tabelle == "Tab_Einstellungen")
@@ -571,6 +583,41 @@ namespace WindowsFormsApplication1
             foreach (KeyValuePair<string, string> g in ProjektDetails.GewerkTabellen)
                 if (g.Value == f.Tabelle)
                     return d.Komponenten.ContainsKey(g.Key) ? d.Komponenten[g.Key] : null;
+            return null;
+        }
+
+        /// <summary>
+        /// Gehört das Merkmal zu einer Spalte von <c>Tab_Energieanlagen</c>, die einem GEWERK
+        /// zugeordnet ist (KN1: <c>Kaeltemaschine_Anzahl</c>) — und nicht dem Anker-Block
+        /// „Anlage", der je Stand die erste echte Anlagenzeile zeigt?
+        ///
+        /// <para>
+        /// Der Unterschied ist die Zeile, aus der gelesen und in die geschrieben wird: hier die
+        /// erste Anlagenzeile DIESES Gewerks (<see cref="ErsteAnlageDesGewerks"/>), dort der
+        /// Anker. Öffentlich, weil die Merkmalübernahme dieselbe Unterscheidung braucht
+        /// (<c>MerkmalUebernahmeCtrl</c>: Zeilenzahl und Eindeutigkeit gelten dann je Gewerk).
+        /// </para>
+        /// </summary>
+        public static bool IstGewerkanlage(Merkmal f)
+        {
+            if (f == null || f.Tabelle != "Tab_Energieanlagen" || string.IsNullOrEmpty(f.Gewerk)) return false;
+            foreach (KeyValuePair<string, string> g in ProjektDetails.GewerkTabellen)
+                if (string.Equals(g.Key, f.Gewerk, StringComparison.Ordinal)) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Die erste Anlagenzeile eines GEWERKS nach <c>ID</c> (null = das Projekt führt das
+        /// Gewerk nicht) — über die Anlagentypen des Gewerksplans
+        /// (<see cref="KomponentenUebernahmeCtrl.Leseplan"/>), damit es eine Lesart der
+        /// Zuordnung Anlage ↔ Gewerk gibt und nicht zwei.
+        /// </summary>
+        public static DataRow ErsteAnlageDesGewerks(ProjektDetails d, string gewerk)
+        {
+            KomponentenUebernahmeCtrl.GewerkPlan plan = KomponentenUebernahmeCtrl.Leseplan(gewerk);
+            if (d == null || d.Anlagen == null || plan == null || plan.AnlagenTypen == null) return null;
+            foreach (DataRow r in d.Anlagen.Rows)
+                if (Array.IndexOf(plan.AnlagenTypen, (int)(ProjektDetails.D(r, "ID_Type") ?? 0)) >= 0) return r;
             return null;
         }
 
