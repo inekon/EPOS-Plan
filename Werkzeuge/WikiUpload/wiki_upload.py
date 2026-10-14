@@ -28,7 +28,7 @@ nur eine Meldung. Der Upload selbst laeuft als action=upload mit multipart/form-
 plus [[Kategorie:Grafiken]], token; ignorewarnings=1 nur bei ERSATZ), danach Ruecklese ueber imageinfo: SHA-1 muss zur lokalen
 Datei passen. Das Skript aendert keine Datei im Repository.
 """
-import os, sys, json, io, re, hashlib, mimetypes, urllib.request, urllib.parse, http.cookiejar, time
+import os, sys, json, io, re, hashlib, mimetypes, urllib.request, urllib.parse, urllib.error, http.client, http.cookiejar, time
 
 API = "https://wiki.epos-plan.de/api.php"
 RAW = "https://wiki.epos-plan.de/index.php?title={t}&action=raw"
@@ -40,9 +40,22 @@ UA = "EPOS-Plan Wiki-Upload (Orchestrierung; Kontakt siehe Repository)"
 cj = http.cookiejar.CookieJar()
 opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
 
+def oeffnen(req, timeout):
+    """opener.open mit Wiederholung: der Weg zum Wiki setzt einzelne Verbindungen zurueck (Connection reset,
+    Tunnel geschlossen); bis zu sechs Versuche mit wachsender Wartezeit, danach der urspruengliche Fehler."""
+    import time
+    for versuch in range(6):
+        try:
+            return opener.open(req, timeout=timeout)
+        except (urllib.error.URLError, ConnectionError, TimeoutError, http.client.HTTPException) as e:
+            if isinstance(e, urllib.error.HTTPError) or versuch == 5:
+                raise
+            print("  (Verbindung gestoert: %s - Wiederholung %d)" % (str(e)[:60], versuch + 1), file=sys.stderr)
+            time.sleep(2 * (versuch + 1))
+
 def get(url):
     req = urllib.request.Request(url, headers={"User-Agent": UA})
-    with opener.open(req, timeout=60) as r:
+    with oeffnen(req, 60) as r:
         return r.status, r.read().decode("utf-8")
 
 def api(params, post=False):
@@ -52,7 +65,7 @@ def api(params, post=False):
         req = urllib.request.Request(API, data=data, headers={"User-Agent": UA})
     else:
         req = urllib.request.Request(API + "?" + data.decode("utf-8"), headers={"User-Agent": UA})
-    with opener.open(req, timeout=60) as r:
+    with oeffnen(req, 60) as r:
         return json.loads(r.read().decode("utf-8"))
 
 def live_raw(title):
@@ -156,7 +169,7 @@ def hochladen(dateiname, pfad, text, comment, csrf, ignorewarnings):
     body, grenze = multipart_body(felder, dateiname, inhalt, mime)
     req = urllib.request.Request(API, data=body,
                                   headers={"User-Agent": UA, "Content-Type": "multipart/form-data; boundary=%s" % grenze})
-    with opener.open(req, timeout=120) as r:
+    with oeffnen(req, 120) as r:
         return json.loads(r.read().decode("utf-8"))
 
 def dateien(trocken, csrf, nur, repo, comment, dateiliste):
