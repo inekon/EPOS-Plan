@@ -143,6 +143,35 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Ifc_Rundlauf_traegt_DIN_Nummer_der_DA_5_und_Restdaten_der_DA_4_zusammen_in_EPOS_Zone()
+        {
+            // Beide Standardsätze in einem Satz EPOS_Zone: die DIN-Nummer (Kennwort, DA-5) neben den Textwerten der Restdaten (DA-4).
+            GebaeudeAbbild quelle = Abbild();
+            AbbildRaum r1 = quelle.Gebaeude[0].Raeume.Single(x => x.Kennung == GebaeudeExportKennung.Raum(ZONE1));
+            r1.Konditionierung ??= new AbbildKonditionierung();
+            r1.Konditionierung.DinNummer = 7;
+            byte[] datei = IfcExportProbe.Schreiben(quelle);
+            string step = Encoding.UTF8.GetString(datei);
+            foreach (string s in new[] { "'" + IfcKonditionierungssatz.DIN_NUMMER + "'", "'Vorheizzeit_H'", "'Luftstrom_1'", "'Woche_1'" })
+                Assert.Contains(s, step, StringComparison.Ordinal);
+            GebaeudeAbbild gelesen = IfcExportProbe.Lesen(datei);
+            AbbildRaum l1 = gelesen.Gebaeude[0].Raeume.Single(r => r.Name == r1.Name);
+            Assert.Equal(7, l1.Konditionierung?.DinNummer);
+            // Die Restdaten kommen vollständig und ohne übergangenen Wert zurück — die DIN-Nummer stört den Leser der Restdaten nicht.
+            int felder = Vergleichen(quelle, gelesen, q => gelesen.Gebaeude[0].Raeume.Single(r => r.Name == q.Name));
+            Assert.Equal(3 + 14 + 2 + 28 + 340 + 14, felder);
+            // Gegenprobe: ohne Restdaten bleibt die DIN-Nummer allein und kommt ebenso zurück.
+            GebaeudeAbbild ohne = IfcExportRundlaufTests.Abbild();
+            AbbildRaum o1 = ohne.Gebaeude[0].Raeume.Single(x => x.Kennung == GebaeudeExportKennung.Raum(ZONE1));
+            o1.Konditionierung ??= new AbbildKonditionierung();
+            o1.Konditionierung.DinNummer = 7;
+            GebaeudeAbbild ohneGelesen = IfcExportProbe.Lesen(IfcExportProbe.Schreiben(ohne));
+            AbbildRaum ol = ohneGelesen.Gebaeude[0].Raeume.Single(r => r.Name == o1.Name);
+            Assert.Equal(7, ol.Konditionierung?.DinNummer);
+            Assert.Null(ol.Rest);
+        }
+
+        [Fact]
         public void Ohne_Restdaten_schreibt_keiner_der_Schreiber_etwas_Neues()
         {
             string xml = Encoding.UTF8.GetString(GbxmlExportProbe.Schreiben(IfcExportRundlaufTests.Abbild()));

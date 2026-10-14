@@ -14,9 +14,9 @@ namespace EPOS.Kern.Tests
         DA2 = 2,
         /// <summary>IFC-Standardsätze lesen und schreiben.</summary>
         DA3 = 3,
-        /// <summary>Restdaten beider Formate — läuft parallel; die Wache lässt jeden Weg durch, die Orchestrierung stellt beim
-        /// Zusammenführen auf die getragene Welle um.</summary>
-        DA4InArbeit = 4,
+        /// <summary>Restdaten beider Formate: gbXML über den Rückfall Weg 2 (Block <c>EPOS:</c> in <c>Description</c>), IFC über
+        /// <c>EPOS_Zone</c>/<c>EPOS_Gebaeude</c> — beide Richtungen.</summary>
+        DA4 = 4,
         /// <summary>Kein Element und noch keine Welle im Auftrag (Rückfall nach Konzept 3.3 offen).</summary>
         Offen = 8,
         /// <summary>EPOS führt kein Feld (Konstante, Klimadatensatz oder nicht gerechnet) — es gibt nichts zu übertragen.</summary>
@@ -70,12 +70,11 @@ namespace EPOS.Kern.Tests
         private const Traegerwelle BE = Traegerwelle.Bestand;
         private const Traegerwelle D2 = Traegerwelle.DA2;
         private const Traegerwelle D3 = Traegerwelle.DA3;
-        private const Traegerwelle D4 = Traegerwelle.DA4InArbeit;
+        private const Traegerwelle D4 = Traegerwelle.DA4;
         private const Traegerwelle OF = Traegerwelle.Offen;
         private const Traegerwelle KF = Traegerwelle.KeinFeld;
 
         private const string RUECKFALL = "kein Standardelement; Rückfall nach Konzept 3.3 nicht gebaut";
-        private const string DA4_GRUND = "kein Element; Welle DA-4 (in Arbeit)";
         private const string KEIN_FELD = "EPOS führt kein Feld";
 
         // Kurzformen der Felder.
@@ -114,14 +113,14 @@ namespace EPOS.Kern.Tests
             new Inventarzeile("B2", BE, null, BE, null, Z("Nutzflaeche"), G("Nutzflaeche")),
             new Inventarzeile("B3", BE, null, BE, null, Z("Volumen"), Z("Raumhoehe"), G("Raumhoehe")),
             new Inventarzeile("B4", BE, null, BE, null, Z("IstBeheizt")),
-            new Inventarzeile("B5", BE, "nur gelesen: spaceType der Quelle; der Export schreibt keine Enumeration (DA-5)", BE, null,
+            new Inventarzeile("B5", BE, "nur gelesen: spaceType der Quelle, über die Raumtyptafel auf die DIN-Nummer abgebildet (DA-5); der Export schreibt keine Enumeration. IFC trägt die DIN-Nummer zusätzlich als EPOS_Zone.DinNummer (DA-5)", BE, null,
                               Z("Nutzungsprofil"), K("Nutzung")),
             new Inventarzeile("B6", BE, null, BE, null, ZG("Raumsolltemperatur_Tag")),
             new Inventarzeile("B7", D2, null, BE, null, F(ZG("Raumsolltemperatur_Nachtabsenkung"), G("Nachtabsenkung_Beginn"), G("Nachtabsenkung_Ende"))),
             new Inventarzeile("B8", D2, null, D3, null, F(ZG("Raumsolltemperatur_Wochenende", "Raumsolltemperatur_Ferien"), G("Wochenende"))),
             new Inventarzeile("B9", D2, null, D3, null, ZG("Kuehl_Sollwert", "Kuehl_Sollwert_Nacht", "Kuehlung_Aktiv")),
-            new Inventarzeile("B10", D4, DA4_GRUND, D4, DA4_GRUND, ZG("Maximaleraumtemperatur")),
-            new Inventarzeile("B11", D4, DA4_GRUND, D4, DA4_GRUND, ZG("Heizleistung_Max", "Kuehlleistung_Max")),
+            new Inventarzeile("B10", OF, RUECKFALL, OF, "kein Standardsatz; EPOS_Zone nicht erweitert", ZG("Maximaleraumtemperatur")),
+            new Inventarzeile("B11", D4, null, D4, null, ZG("Heizleistung_Max", "Kuehlleistung_Max")),
             new Inventarzeile("B12", BE, null, D3, null, F(ZG("Luftwechsel_Infiltration"), G("Luftwechselrate"))),
             new Inventarzeile("B13", D2, null, D3, null, ZG("Luftwechsel_Nutzer")),
             new Inventarzeile("B14", D2, null, D3, null, Z("Aussenluft_Person")),
@@ -130,10 +129,10 @@ namespace EPOS.Kern.Tests
             new Inventarzeile("B17", D2, null, D3, null, ZG("Interne_Waermegewinne")),
             new Inventarzeile("B18", D2, null, D3, null, Z("Licht_W_m2")),
             new Inventarzeile("B19", OF, RUECKFALL, OF, "kein Standardsatz; EPOS_Zone nicht erweitert", ZG("Heizung_Strahlungsanteil")),
-            new Inventarzeile("B20", D4, DA4_GRUND, D4, DA4_GRUND, Z("Vorheizzeit_H"), G("Aufheizzeit_Manuell_H")),
-            new Inventarzeile("B21", D4, DA4_GRUND, D4, DA4_GRUND, Z("Uebergabe_Art"), Z("Uebergabe_Exponent"), Z("Uebergabe_Leistung_Nenn"),
+            new Inventarzeile("B20", D4, null, D4, null, Z("Vorheizzeit_H"), G("Aufheizzeit_Manuell_H")),
+            new Inventarzeile("B21", D4, null, D4, null, Z("Uebergabe_Art"), Z("Uebergabe_Exponent"), Z("Uebergabe_Leistung_Nenn"),
                               Z("Auslegung_Vorlauf"), Z("Auslegung_Ruecklauf"), Z("Auslegung_Raumtemperatur"), Z("Regler_Proportionalband")),
-            new Inventarzeile("B22", D4, DA4_GRUND, D4, DA4_GRUND, Z("Kuehl_Uebergabe_Art"), Z("Kuehl_Uebergabe_Exponent"), Z("Kuehl_Uebergabe_Leistung_Nenn")),
+            new Inventarzeile("B22", D4, null, D4, null, Z("Kuehl_Uebergabe_Art"), Z("Kuehl_Uebergabe_Exponent"), Z("Kuehl_Uebergabe_Leistung_Nenn")),
 
             new Inventarzeile("C1", D2, null, BE, null, K("Groesse"), K("Wert"), K("Aus"), K("Woche")),
             new Inventarzeile("C2", D2, null, BE, null, K("Groesse"), K("Wert"), K("Aus"), K("Woche")),
@@ -143,10 +142,10 @@ namespace EPOS.Kern.Tests
             new Inventarzeile("C6", D2, null, BE, null, P("Art"), P("Feiertagsregel")),
             new Inventarzeile("C7", D2, null, BE, null, P("Art"), P("Bezeichner"), P("Beginn"), P("Ende"), P("Wert"), P("Aus"), P("Woche"),
                               P("WieWochentag"), P("Gilt_Fuer")),
-            new Inventarzeile("C8", D4, DA4_GRUND, D4, DA4_GRUND, "Tab_Konditionierungsvorgabe.Groesse", "Tab_Konditionierungsvorgabe.Zeile",
+            new Inventarzeile("C8", D4, null, D4, null, "Tab_Konditionierungsvorgabe.Groesse", "Tab_Konditionierungsvorgabe.Zeile",
                               "Tab_Konditionierungsvorgabe.Wert", "Tab_Konditionierungsvorgabe.Aus", "Tab_Konditionierungsvorgabe.Von",
                               "Tab_Konditionierungsvorgabe.Bis", "Tab_Konditionierungsvorgabe.Bedingt_K"),
-            new Inventarzeile("C9", D4, DA4_GRUND, D4, DA4_GRUND, "Tab_Konditionierungswoche.Groesse", "Tab_Konditionierungswoche.Name",
+            new Inventarzeile("C9", D4, null, D4, null, "Tab_Konditionierungswoche.Groesse", "Tab_Konditionierungswoche.Name",
                               "Tab_Konditionierungswoche.Woche", P("ID_Woche")),
             new Inventarzeile("C10", KF, KEIN_FELD + " (Zeitplan steckt im Profil Beleuchtung_Anteil)", KF, KEIN_FELD + " (Zeitplan steckt im Profil Beleuchtung_Anteil)"),
 
@@ -192,11 +191,11 @@ namespace EPOS.Kern.Tests
             new Inventarzeile("F10", KF, KEIN_FELD + " (Konstante im Klimaweg, nicht Gegenstand eines Bauteils)", KF,
                               KEIN_FELD + " (Konstante im Klimaweg, nicht Gegenstand eines Bauteils)"),
 
-            new Inventarzeile("G1", D4, DA4_GRUND, D4, DA4_GRUND,
+            new Inventarzeile("G1", D4, null, D4, null,
                               "Tab_Zonenluftstrom.ID_ZoneA", "Tab_Zonenluftstrom.ID_ZoneB", "Tab_Zonenluftstrom.Volumenstrom"),
             new Inventarzeile("G2", BE, null, BE, null, G("Grundflaeche"), G("Grundflaeche_Randbedingung"), B("Randbedingung")),
-            new Inventarzeile("G3", D4, DA4_GRUND, D4, DA4_GRUND, G("Abmessung_Anschluß_Außenwand_Kellerdecke")),
-            new Inventarzeile("G4", D4, DA4_GRUND, D4, DA4_GRUND, G("Erdreich_U_Wirksam"), G("Kellertemperatur")),
+            new Inventarzeile("G3", D4, null, D4, null, G("Abmessung_Anschluß_Außenwand_Kellerdecke")),
+            new Inventarzeile("G4", D4, null, D4, null, G("Erdreich_U_Wirksam"), G("Kellertemperatur")),
         };
 
         /// <summary>Die Tabellen, deren Spalten die Wache über <c>PRAGMA table_info</c> der Testdatenbank prüft.</summary>

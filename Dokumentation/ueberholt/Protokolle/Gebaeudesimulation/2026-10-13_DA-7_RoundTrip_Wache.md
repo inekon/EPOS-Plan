@@ -24,8 +24,8 @@ unberührt.
 Je Datum: Kennung, EPOS-Felder (`Tabelle.Spalte`, für reine Modellfelder `Modell.Feld`), Welle je Format, Grund, wenn ein Format
 das Datum nicht oder nur lesend trägt. Weg und Elemente kommen aus der Kerntafel (keine Doppelführung). Formatklasse: gbXML
 Standardelement (beide Richtungen oder nur gelesen) / Erweiterungspunkt (nicht gebaut, 0) / nicht übertragbar; IFC Standardsatz /
-`EPOS_*` / nicht übertragbar. „DA-4 (in Arbeit)“ lässt die Wache in jedem Weg durch; die Orchestrierung stellt diese Zeilen beim
-Zusammenführen von DA-4 auf die tragende Welle um (und die Zählungen in der Wache).
+`EPOS_*` / nicht übertragbar. Stand nach dem Zusammenführen mit DA-4: siehe Abschnitt „Abgleich“ unten (die Tafel darunter ist
+der Stand der Welle DA-7).
 
 | Nr | Datum | gbXML | Welle | IFC | Welle | Grund, wo nicht getragen |
 |---|---|---|---|---|---|---|
@@ -173,14 +173,27 @@ sobald DA-4 sie ins Abbild bringt.
 - `dotnet test EPOS.Kern.Tests --filter "Datenaustausch|Rundlauf|Inventar|Gbxml|Ifc|Export|Dokumentation|Repository"`: 866 grün,
   0 rot, 5 übersprungen (Bestand); vor diesem Protokoll gefahren, die Dokumentationswache danach erneut.
 
+## Abgleich beim Zusammenführen mit DA-4 und DA-5
+
+- **Tafel:** B11, B20–B22, C8, C9, G1, G3, G4 tragen die Welle DA-4, in beiden Formaten über den eigenen Weg (`NurEpos`: gbXML
+  Rückfall Weg 2, Block `EPOS:` in `Description`; IFC `EPOS_Zone`/`EPOS_Gebaeude`); die Elemente der Kerntafel sind die Schlüssel
+  von `GebaeudeRestdaten`. B10 (Höchsttemperatur) trägt DA-4 nicht und steht auf „offen“. Die Welle „DA-4 (in Arbeit)“ entfällt.
+- **Zählung:** gbXML Standard 45, eigener Weg 9, nicht übertragbar 17 (Bestand 26, DA-2 19, DA-4 9, offen 12, kein Feld 5); IFC
+  Standard 32, `EPOS_*` 25, nicht übertragbar 14 (Bestand 31, DA-3 17, DA-4 9, offen 9, kein Feld 5). Kerntafel gbXML: 42 beide
+  Richtungen, 3 nur gelesen, 9 eigener Weg, 17 ohne Element; IFC: 31, 1, 25, 14.
+- **Abstimmung:** sieben Einträge erledigt (Zone `Luftwechsel_Nutzer`, `Interne_Waermegewinne`, `Bewohner`, `Kuehl_Sollwert`,
+  `Kuehl_Sollwert_Nacht`, `Kuehlung_Aktiv`, Gebäude `Gebaeudeart`); neu benannt die Gebäudefelder `Heizleistung_Max`,
+  `Kuehlleistung_Max` und `Aufheizzeit_Manuell_H` (DA-4 trägt B11 und B20 nur je Zone). Die Abweichungsprüfung zählt in gbXML jeden
+  rundläufigen Weg (auch den Rückfall).
+- **Gemeinsamer Rundlauf:** Die Probe trägt die Restdaten (Abbild von `RestdatenRundlaufTests`), Vergleicher für B11, B20–B22, C8,
+  C9, G1, G3, G4. gbXML: gleich 51, abweichend 5 (A1 A5 B5 D8 F3), ohne Träger 15; IFC: gleich 53, abweichend 3 (D3 D4 D6), ohne
+  Träger 15; Felder je 70 661. Die Grenze „IFC D4 Bauteil 103“ (Außenwand Ost) entfällt, DA-4 hat den Leser behoben.
+- **DIN-Nummer (DA-5):** B5 führt in IFC `EPOS_Zone.DinNummer` neben `Nutzung`; ein Rundlauf mit DIN-Nummer und Restdaten zusammen in
+  `EPOS_Zone` steht in `RestdatenRundlaufTests`.
+
 ## Offen
 
-- **IFC-Azimut der Außenwand Ost** (90° → 270°): Ursache in `IfcSchreiber` bzw. `IfcLeser`/`IfcAbbildBauer` suchen; der DA-3-Rundlauf
-  verglich die Bauteillage nicht. Nach der Behebung die Grenze aus `Rundlaufgrenzen` nehmen.
-- **Verlustliste nachführen** (Ergänzung oben) und die Abstimmungsliste entsprechend kürzen.
-- **Beim Zusammenführen von DA-4:** die DA-4-Zeilen der Tafel (B10, B11, B20–B22, C8, C9, G1, G3, G4) auf die tragende Welle
-  setzen, die Zählungen in `Die_Tafel_fuehrt_die_71_Daten_mit_Welle_und_Grund_je_Format` und im Rundlauf nachziehen und für die neuen
-  Abbildfelder Vergleicher ergänzen (Luftströme G1 auch in die gemeinsame Probe).
+- **Verlustliste nachführen** für die übrigen Einträge der Abstimmungsliste und die Liste entsprechend kürzen.
 - Die Kerntafel und diese Tafel stehen getrennt (Weg und Elemente im Kern, Felder und Welle im Test); eine neue Spalte braucht einen
   Eintrag hier, ein neuer Weg einen in der Kerntafel.
 

@@ -43,11 +43,11 @@ namespace EPOS.Kern.Tests
             Assert.True(fehler.Count == 0, string.Join(" | ", fehler));
 
             // Die Zählung je Welle (Protokoll DA-7) — eine Änderung der Tafel zeigt sich hier.
-            Assert.Equal("Bestand 26, DA2 19, DA4InArbeit 10, Offen 11, KeinFeld 5", Zaehlung(z => z.WelleGbxml));
-            Assert.Equal("Bestand 31, DA3 17, DA4InArbeit 10, Offen 8, KeinFeld 5", Zaehlung(z => z.WelleIfc));
-            Assert.Equal("Standard 45, NichtUebertragbar 26",
+            Assert.Equal("Bestand 26, DA2 19, DA4 9, Offen 12, KeinFeld 5", Zaehlung(z => z.WelleGbxml));
+            Assert.Equal("Bestand 31, DA3 17, DA4 9, Offen 9, KeinFeld 5", Zaehlung(z => z.WelleIfc));
+            Assert.Equal("Standard 45, Eigen 9, NichtUebertragbar 17",
                          Zaehlung(z => Datenaustauschinventar.KlasseGbxml(z.Gbxml)));
-            Assert.Equal("Standard 32, Eigen 16, NichtUebertragbar 23",
+            Assert.Equal("Standard 32, Eigen 25, NichtUebertragbar 14",
                          Zaehlung(z => Datenaustauschinventar.KlasseIfc(z.Ifc)));
         }
 
@@ -57,14 +57,9 @@ namespace EPOS.Kern.Tests
 
         private static void Pruefen(string was, Austauschweg weg, Traegerwelle welle, string grund, List<string> fehler)
         {
-            // DA-4 läuft parallel: jeder Weg geht durch, die Orchestrierung stellt beim Zusammenführen um.
-            if (welle == Traegerwelle.DA4InArbeit)
-            {
-                if (string.IsNullOrWhiteSpace(grund)) fehler.Add(was + ": DA-4 ohne Grund");
-                return;
-            }
             bool getragen = weg != Austauschweg.OhneElement;
-            bool traegerwelle = welle == Traegerwelle.Bestand || welle == Traegerwelle.DA2 || welle == Traegerwelle.DA3;
+            bool traegerwelle = welle == Traegerwelle.Bestand || welle == Traegerwelle.DA2 || welle == Traegerwelle.DA3
+                                || welle == Traegerwelle.DA4;
             if (getragen != traegerwelle) fehler.Add(was + ": Weg " + weg + " passt nicht zur Welle " + welle);
             bool ganz = Datenaustauschinventar.Rundlaeufig(weg);
             if (ganz == !string.IsNullOrWhiteSpace(grund))
@@ -111,21 +106,15 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Die benannten Abweichungen zwischen <see cref="GebaeudeExportVerluste"/> und der Tafel (Stand DA-2/DA-3). Die Verlustliste
+        /// Die benannten Abweichungen zwischen <see cref="GebaeudeExportVerluste"/> und der Tafel (Stand nach DA-4). Die Verlustliste
         /// ist nicht Gegenstand von DA-7 (keine Export-/Importänderung); die Ergänzung steht im Protokoll. Eine neue Abweichung oder
         /// eine behobene macht die Wache rot.
         /// </summary>
         internal static readonly IReadOnlyDictionary<string, string> Abstimmung = new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            ["Zone.Luftwechsel_Nutzer"] = "B13 trägt gbXML seit DA-2 (Zone/AirChangesPerHour); Verlustliste noch „Verlust“",
-            ["Zone.Interne_Waermegewinne"] = "B17 trägt gbXML seit DA-2 je Zone (EquipPowerPerArea); Verlustliste noch „Verlust“",
-            ["Zone.Bewohner"] = "B15 trägt gbXML seit DA-2 je Zone (PeopleNumber); Verlustliste noch „Verlust“",
             ["Zone.Raumsolltemperatur_Nachtabsenkung"] = "B7 trägt gbXML über den Heizzeitplan (DA-2); Feld selbst kommt als Kalender zurück",
             ["Zone.Raumsolltemperatur_Wochenende"] = "B8 trägt gbXML über den Heizzeitplan (DA-2); Feld selbst kommt als Kalender zurück",
             ["Zone.Raumsolltemperatur_Ferien"] = "B8 trägt gbXML über den Heizzeitplan (DA-2); Feld selbst kommt als Kalender zurück",
-            ["Zone.Kuehl_Sollwert"] = "B9 trägt gbXML (DesignCoolT, coolSchedIdRef); Verlustliste noch „Verlust“",
-            ["Zone.Kuehl_Sollwert_Nacht"] = "B9 trägt gbXML über den Kühlzeitplan (DA-2)",
-            ["Zone.Kuehlung_Aktiv"] = "B9 trägt gbXML über DesignCoolT/coolSchedIdRef",
             ["Zone.Bezeichner"] = "B1 trägt gbXML (Zone/Name); der Einzonenweg des Imports nennt die Zone nach dem Gebäude (X4)",
             ["Zone.Nutzungsprofil"] = "Verlustliste „nicht Gegenstand“, die Tafel führt B5 (gbXML nur gelesen)",
             ["Bauteil.ID_Nachbarzone"] = "D6 trägt gbXML (AdjacentSpaceId × 2); der Import macht aus der Trennfläche eine innere Masse (X4)",
@@ -144,8 +133,10 @@ namespace EPOS.Kern.Tests
             ["Gebaeude.Kuehl_Sollwert"] = "B9 am Gebäude: wie die Zone", ["Gebaeude.Kuehl_Sollwert_Nacht"] = "B9 am Gebäude: wie die Zone",
             ["Gebaeude.Kuehlung_Aktiv"] = "B9 am Gebäude: wie die Zone",
             ["Gebaeude.Luftwechsel_Nutzer"] = "B13 am Gebäude: wie die Zone",
+            ["Gebaeude.Heizleistung_Max"] = "B11 trägt DA-4 je Zone (Restdaten); das Gebäudefeld bleibt benannter Verlust",
+            ["Gebaeude.Kuehlleistung_Max"] = "B11 trägt DA-4 je Zone (Restdaten); das Gebäudefeld bleibt benannter Verlust",
+            ["Gebaeude.Aufheizzeit_Manuell_H"] = "B20 trägt DA-4 je Zone (Vorheizzeit_H); die manuelle Aufheizzeit des Gebäudes bleibt benannter Verlust",
             ["Gebaeude.Interne_Waermegewinne"] = "B17 am Gebäude: wie die Zone",
-            ["Gebaeude.Gebaeudeart"] = "A6 trägt gbXML (buildingType); Verlustliste noch „Verlust“",
             ["Gebaeude.Wohngebaeude_Nicht_Wohngebaeude"] = "A6 trägt gbXML (buildingType); Verlustliste noch „Verlust“",
             ["Gebaeude.Luftwechselrate"] = "B12 am Gebäude (Gesamtluftwechsel des Klassenwegs); die Datei trägt Infiltration und Nutzerluftwechsel getrennt",
             ["Gebaeude.Sommerlueftung"] = "C3 trägt gbXML als Lüftungszeitplan, nicht den Schalter",
@@ -164,7 +155,8 @@ namespace EPOS.Kern.Tests
                 {
                     string[] daten = Datenaustauschinventar.Tafel
                         .Where(z => z.Felder.Contains(tabelle + "." + e.Key) || z.Felder.Contains(modell + "." + e.Key)).Select(z => z.Nr).ToArray();
-                    bool beide = daten.Length > 0 && daten.All(n => Datenaustauschinventar.Tafel.Single(z => z.Nr == n).Gbxml == Austauschweg.BeideRichtungen);
+                    // Getragen in gbXML: beide Richtungen, als Standard oder über den Rückfall (DA-4).
+                    bool beide = daten.Length > 0 && daten.All(n => Datenaustauschinventar.Rundlaeufig(Datenaustauschinventar.Tafel.Single(z => z.Nr == n).Gbxml));
                     bool stimmt = e.Value switch
                     {
                         // Rundläufig: in der Tafel und dort in gbXML in beiden Richtungen — oder eine Ausnahme (Anzeige, Name).
@@ -238,10 +230,11 @@ namespace EPOS.Kern.Tests
                                    Func<AbbildRaum, Konditionierungsgroesse, Konditionierungskalender> Kalender, Func<GebaeudeAbbild, string, bool> Meldet);
 
         /// <summary>Das gemeinsame Probegebäude: das Abbild des IFC-Rundlaufs (zwei Zonen, Kalender, Lasten, Lage, Baujahr,
-        /// Rahmenanteil, Wärmebrücke) mit einem Nordwinkel.</summary>
+        /// Rahmenanteil, Wärmebrücke) mit einem Nordwinkel, dazu die Restdaten der Welle DA-4 (Zonenfelder, Luftstrom, Zeilenbild,
+        /// Wochen, Erdreich).</summary>
         private static GebaeudeAbbild Probe()
         {
-            GebaeudeAbbild a = IfcExportRundlaufTests.Abbild();
+            GebaeudeAbbild a = RestdatenRundlaufTests.Abbild();
             // Wie in EPOS: der Nennwert der Kalender ist Personen × Wärme je Person (420 W = 5,25 × 80 W) bzw. (Geräte + Licht) × Fläche
             // (800 W = (5 + 3) W/m² × 100 m²) — der gbXML-Export schreibt Personen und Geräte aus dem Nennwert (DA-2).
             AbbildRaum r = a.Gebaeude[0].Raeume.Single(x => x.Name == "Zone 1");
@@ -359,6 +352,61 @@ namespace EPOS.Kern.Tests
             // Die Konstanten (F8 b): der Import schweigt, wenn die Datei sie trägt; fehlen sie, ist es kein Rundlauf.
             ["F8"] = (x, v) => Konstante(x, v, "Absorptance", "SolarReflectanceFront"),
             ["F9"] = (x, v) => Konstante(x, v, "Absorptance", "ThermalIrEmissivityFront"),
+            // Die Restdaten (DA-4): gbXML über den Block EPOS: in Description, IFC über EPOS_Zone/EPOS_Gebaeude.
+            ["B11"] = (x, v) => { foreach (var (q, l) in Raeume(x)) { v.Wert(q.Rest?.HeizleistungMax, l?.Rest?.HeizleistungMax); v.Wert(q.Rest?.KuehlleistungMax, l?.Rest?.KuehlleistungMax); } },
+            ["B20"] = (x, v) => { foreach (var (q, l) in Raeume(x)) v.Wert(q.Rest?.VorheizzeitH, l?.Rest?.VorheizzeitH); },
+            ["B21"] = (x, v) =>
+            {
+                foreach (var (q, l) in Raeume(x))
+                {
+                    AbbildZonenrest a = q.Rest, b = l?.Rest;
+                    v.Gleich(a?.UebergabeArt, b?.UebergabeArt);
+                    v.Wert(a?.UebergabeExponent, b?.UebergabeExponent);
+                    v.Wert(a?.UebergabeLeistungNenn, b?.UebergabeLeistungNenn);
+                    v.Wert(a?.AuslegungVorlauf, b?.AuslegungVorlauf);
+                    v.Wert(a?.AuslegungRuecklauf, b?.AuslegungRuecklauf);
+                    v.Wert(a?.AuslegungRaumtemperatur, b?.AuslegungRaumtemperatur);
+                    v.Wert(a?.ReglerProportionalband, b?.ReglerProportionalband);
+                }
+            },
+            ["B22"] = (x, v) =>
+            {
+                foreach (var (q, l) in Raeume(x))
+                {
+                    v.Gleich(q.Rest?.KuehlUebergabeArt, l?.Rest?.KuehlUebergabeArt);
+                    v.Wert(q.Rest?.KuehlUebergabeExponent, l?.Rest?.KuehlUebergabeExponent);
+                    v.Wert(q.Rest?.KuehlUebergabeLeistungNenn, l?.Rest?.KuehlUebergabeLeistungNenn);
+                }
+            },
+            ["C8"] = (x, v) =>
+            {
+                static string Zeile(Vorgabezeile z) => z == null ? null : string.Join("|", z.Groesse, z.Zeile, z.Wert, z.Aus, z.Von, z.Bis, z.BedingtK);
+                foreach (var (q, l) in Raeume(x).Where(p => p.Q.Rest != null))
+                    for (int i = 0; i < q.Rest.Zeilenbild.Count; i++)
+                        v.Gleich(Zeile(q.Rest.Zeilenbild[i]), Zeile(l?.Rest?.Zeilenbild.ElementAtOrDefault(i)));
+            },
+            ["C9"] = (x, v) =>
+            {
+                foreach (var (q, l) in Raeume(x).Where(p => p.Q.Rest != null))
+                    for (int i = 0; i < q.Rest.Wochen.Count; i++)
+                    {
+                        BenannteWoche wq = q.Rest.Wochen[i], wl = l?.Rest?.Wochen.ElementAtOrDefault(i);
+                        v.Gleich(wq.Groesse + "|" + wq.Name, wl == null ? null : wl.Groesse + "|" + wl.Name);
+                        v.Reihe(wq.Werte, wl?.Werte);
+                    }
+            },
+            ["G1"] = (x, v) =>
+            {
+                foreach (var (q, l) in Raeume(x).Where(p => p.Q.Rest != null))
+                    for (int i = 0; i < q.Rest.Luftstroeme.Count; i++)
+                        v.Gleich(q.Rest.Luftstroeme[i], l?.Rest?.Luftstroeme.ElementAtOrDefault(i));
+            },
+            ["G3"] = (x, v) => v.Wert(x.Quelle.Gebaeude[0].Erdreich?.UmfangM, x.Gelesen.Gebaeude.FirstOrDefault()?.Erdreich?.UmfangM),
+            ["G4"] = (x, v) =>
+            {
+                v.Wert(x.Quelle.Gebaeude[0].Erdreich?.UWirksam, x.Gelesen.Gebaeude.FirstOrDefault()?.Erdreich?.UWirksam);
+                v.Wert(x.Quelle.Gebaeude[0].Erdreich?.KellertemperaturC, x.Gelesen.Gebaeude.FirstOrDefault()?.Erdreich?.KellertemperaturC);
+            },
             ["G2"] = (x, v) =>
             {
                 foreach (var (q, l) in Bauteile(x).Where(b => b.Q.Randbedingung == Randbedingung.Erdreich))
@@ -398,7 +446,6 @@ namespace EPOS.Kern.Tests
         internal static readonly IReadOnlyDictionary<string, string> Rundlaufgrenzen = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["IFC D3 Bauteil 108"] = "Innendecke zum unbeheizten Raum (Ersatzaufbau): die Neigung kommt leer zurück, wirksam gilt die Vorgabe der Bauteilart",
-            ["IFC D4 Bauteil 103"] = "Außenwand Ost: der Azimut 90° kommt als 270° zurück — Befund, offen (Leser bzw. Schreiber IFC)",
             ["IFC D4 Bauteil 105"] = "Innenwand zum unbeheizten Raum: der Azimut kommt leer zurück (ohne Einstrahlung)",
             ["IFC D4 Bauteil 109"] = "Innenwand innerhalb der Zone: der Azimut kommt leer zurück (ohne Einstrahlung)",
             ["IFC D6 Bauteil 109"] = "Innenwand mit derselben Zone auf beiden Seiten: eine Raumgrenze statt zwei Nachbarn",
@@ -427,7 +474,6 @@ namespace EPOS.Kern.Tests
                     Austauschweg weg = gbxml ? z.Gbxml : z.Ifc;
                     Traegerwelle welle = gbxml ? z.WelleGbxml : z.WelleIfc;
                     Ausgang a = m[z.Nr].Ausgang;
-                    if (welle == Traegerwelle.DA4InArbeit) continue;
                     if (Datenaustauschinventar.Rundlaeufig(weg) && a == Ausgang.Abweichend)
                     {
                         grenzen.UnionWith(m[z.Nr].Bei);
@@ -448,12 +494,12 @@ namespace EPOS.Kern.Tests
             Assert.True(fehler.Count == 0, string.Join(" | ", fehler) + " || " + string.Join(" || ", bericht.Select(b => b.Key + ": " + b.Value)));
             string[] erledigt = Rundlaufgrenzen.Keys.Where(k => !grenzen.Contains(k)).ToArray();
             Assert.True(erledigt.Length == 0, "Grenze behoben, aus der Liste nehmen: " + string.Join(", ", erledigt));
-            // Die Zählung des Rundlaufs (Protokoll DA-7) — eine Änderung zeigt sich hier.
+            // Die Zählung des Rundlaufs (Protokoll DA-7, mit den Restdaten der DA-4) — eine Änderung zeigt sich hier.
             // gbXML: abweichend genau die Daten, die gbXML nicht oder nur lesend trägt und die das Abbild führt.
-            Assert.Equal("Gleich 42, Abweichend 5, OhneTraeger 24; Felder 70300; abweichend A1 A5 B5 D8 F3; ohne Träger, aber getragen: keins",
+            Assert.Equal("Gleich 51, Abweichend 5, OhneTraeger 15; Felder 70661; abweichend A1 A5 B5 D8 F3; ohne Träger, aber getragen: keins",
                          bericht["gbXML"]);
             // IFC: abweichend nur an den benannten Grenzen der Bauteillage (Rundlaufgrenzen).
-            Assert.Equal("Gleich 44, Abweichend 3, OhneTraeger 24; Felder 70300; abweichend D3 D4 D6; ohne Träger, aber getragen: keins",
+            Assert.Equal("Gleich 53, Abweichend 3, OhneTraeger 15; Felder 70661; abweichend D3 D4 D6; ohne Träger, aber getragen: keins",
                          bericht["IFC"]);
         }
 
