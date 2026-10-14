@@ -193,9 +193,9 @@
     [Parameter] public string LabelVolumen { get; set; } = "Gesamtvolumen:";
     [Parameter] public string FeldVolumen { get; set; } = "Gesamtvolumen";
 
-    // OHNE GruppeKosten, LabelInvest und FeldInvest (15.09.2026): Sie gehoerten zur
-    // entfallenen Kostengruppe. Ihre Ressourcenschluessel bleiben bestehen - der
-    // Katalogbrowser beschriftet dasselbe Feld weiter (KBROW_LBL_INVEST).
+    // OHNE GruppeKosten, LabelInvest und FeldInvest: Die Kosten des Katalogsatzes stehen
+    // allein in seiner Satzvorlage; der Katalogbrowser zeigt sie als Lesewert
+    // Geraetekosten (KBROW_LBL_GERAETEKOSTEN).
 
     [Parameter] public string BtnUeberschreibenText { get; set; } = "Überschreiben";
     [Parameter] public string BtnSpeichernUnterText { get; set; } = "Speichern unter";
