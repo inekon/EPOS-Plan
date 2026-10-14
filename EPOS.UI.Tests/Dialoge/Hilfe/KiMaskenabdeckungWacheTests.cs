@@ -273,8 +273,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // BK-2b: die Klasse des Baustoffs (Katalogfeld klasse, 8 → 9); Gruppe und Klasse des Aufbaus (Katalogfelder
         // gruppe, klasse) und der Werkzeugschalter „nur geeignete“ (Filter der Liste, kein Maskenfeld): 4 → 7.
         new("BaustoffKatalogDialog", 9, "der Werkzeugschalter „nur herstellerneutral“ setzt den Filter der Liste"),
-        new("BauteilaufbauDialog", 7, "der Werkzeugschalter „nur geeignete“ blendet Zeilen der Liste aus"),
-        new("BauteilschichtenFelder", 6),
+        new("BauteilaufbauDialog", 12, "der Werkzeugschalter „nur geeignete“ blendet Zeilen der Liste aus; die fünf Fensterwerte (BK-6: U_g, g, Rahmenanteil, U_f, ψ_g) meldet die Sicht noch nicht an"),
+        new("BauteilschichtenFelder", 8, "Abschnitt und Flächenanteil der inhomogenen Schicht (BK-5) meldet die Sicht noch nicht an"),
 
         // KU3-1: die Verwaltung der Kaeltemaschinen - zwoelf Kenndaten als EIN Fragment fuer
         // Stammblatt und „Neu…" (Rueckkuehlart als Auswahlfeld) und das Kennlinienraster mit vier
