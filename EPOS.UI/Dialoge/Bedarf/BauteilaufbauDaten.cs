@@ -53,7 +53,6 @@ public sealed class BauteilaufbauDaten
     /// <summary>Ein eingelesener Aufbau (Herkunft <c>IMPORT</c>).</summary>
     public bool Import { get; set; }
 
-    /// <summary>Eine entkoppelte Kopie samt Schichten — der Arbeitsstand der Verwaltung.</summary>
     /// <summary>BK-6: U_g der Verglasung [W/(m²K)]; nur bei Fenster und Vorhangfassade bedient.</summary>
     public double? FensterUg { get; set; }
 
@@ -74,6 +73,7 @@ public sealed class BauteilaufbauDaten
         => (FensterUg != andere.FensterUg ? 1 : 0) + (FensterUf != andere.FensterUf ? 1 : 0) + (FensterG != andere.FensterG ? 1 : 0)
            + (FensterRahmenanteil != andere.FensterRahmenanteil ? 1 : 0) + (FensterPsiGlasrand != andere.FensterPsiGlasrand ? 1 : 0);
 
+    /// <summary>Eine entkoppelte Kopie samt Schichten — der Arbeitsstand der Verwaltung.</summary>
     public BauteilaufbauDaten Kopie()
     {
         var k = (BauteilaufbauDaten)MemberwiseClone();

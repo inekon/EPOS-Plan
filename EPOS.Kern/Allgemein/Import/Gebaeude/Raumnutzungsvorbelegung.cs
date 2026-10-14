@@ -127,6 +127,64 @@ namespace WindowsFormsApplication1
         internal Planprofil AusDinNummer(int? nummer)
             => nummer is int n ? Aufloesen(RaumnutzungSchema.ZUORDNUNG_DIN, n.ToString(CultureInfo.InvariantCulture)) : null;
 
+        /// <summary>Ein Stand aus gegebenen Listen (Welle DA-5: synthetische Kataloge ohne Datenbank); fehlt eine, gilt <see cref="Vorgabe"/>.</summary>
+        internal static Raumnutzungsvorbelegung Aus(IReadOnlyList<RaumnutzungCtrl.Kategorie> kategorien, IReadOnlyList<Raumnutzungsprofil> profile,
+                                                    IReadOnlyList<RaumnutzungCtrl.Zuordnung> zuordnungen)
+            => kategorien == null || profile == null || zuordnungen == null ? Vorgabe : new Raumnutzungsvorbelegung(kategorien, profile, zuordnungen);
+
+        // ------------------------------------------------------------------
+        //  DIN-Nummer mit Katalogtreffer (Welle DA-5, Konzept DA 4.3)
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// <b>Das Profil einer DIN-Nummer mit Katalogtreffer</b> (Rangstufe 1 der Profilprüfung): die Zeile <c>DIN_NUMMER</c> der
+        /// Zuordnung (ein „keine“ dort heißt kein Treffer), sonst das Profil der Kategorie DIN/TS 18599-10 mit dieser Nummer,
+        /// sonst — nur ohne Katalog — die Vorgabe im Code (<see cref="Din18599Nutzung"/>). <c>null</c> = kein Treffer.
+        /// </summary>
+        internal Planprofil DinTreffer(int nummer)
+        {
+            string s = nummer.ToString(CultureInfo.InvariantCulture);
+            if (_zuordnung != null && _zuordnung.TryGetValue(Schluessel(RaumnutzungSchema.ZUORDNUNG_DIN, s), out long? id))
+                return id is long i && _profile.FirstOrDefault(p => p.Id == i) is { Name: not null } p ? new Planprofil(p.Id, p.Name) : null;
+            if (AusDinKatalog(nummer) is Planprofil din) return din;
+            if (MitKatalog) return null;
+            Planprofil vorgabe = AusKennung(Din18599Nutzung.Nutzung(nummer));
+            return vorgabe == null || vorgabe.NichtImKatalog ? null : vorgabe;
+        }
+
+        /// <summary>Das Profil der Kategorie DIN/TS 18599-10 mit der Nummer <paramref name="nummer"/>; <c>null</c> = keins oder ohne Katalog.</summary>
+        internal Planprofil AusDinKatalog(int nummer)
+            => Dinprofile().FirstOrDefault(x => x.Nummer == nummer) is { Profil: not null } t ? t.Profil : null;
+
+        /// <summary>
+        /// <b>Das nächstliegende Profil der DIN-Kategorie</b> zu einer Nummer ohne Katalogtreffer (Vorschlag der Ampel gelb): das
+        /// Profil mit dem kleinsten Abstand der Nummer, bei Gleichstand das mit der kleineren Nummer. <c>null</c> ohne
+        /// DIN-Profile mit Nummer.
+        /// </summary>
+        internal Planprofil NaechstesDinProfil(int nummer)
+            => Dinprofile().OrderBy(x => Math.Abs((long)x.Nummer - nummer)).ThenBy(x => x.Nummer).Select(x => x.Profil).FirstOrDefault();
+
+        /// <summary>
+        /// <b>Die DIN-Nummer eines Profils</b> (IFC-Export <c>EPOS_Zone.DinNummer</c>): die Nummer des Profils der Kategorie
+        /// DIN/TS 18599-10, das der Text bezeichnet (<see cref="AusText"/>); <c>null</c> für jedes andere Profil.
+        /// </summary>
+        internal int? DinNummer(string profiltext)
+        {
+            Planprofil p = AusText(profiltext);
+            if (p?.Id is not long id) return null;
+            return Dinprofile().FirstOrDefault(x => x.Profil.Id == id) is { Profil: not null } t ? t.Nummer : null;
+        }
+
+        /// <summary>Die Profile der Kategorie DIN/TS 18599-10 mit ganzzahliger Nummer; leer ohne Katalog.</summary>
+        private IEnumerable<(int Nummer, Planprofil Profil)> Dinprofile()
+        {
+            if (_profile == null) yield break;
+            foreach (var p in _profile)
+                if (p.Art == RaumnutzungSchema.ART_DIN_V_18599_10 && p.Name != null
+                    && int.TryParse(p.Profil?.Nummer?.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out int n))
+                    yield return (n, new Planprofil(p.Id, p.Name));
+        }
+
         /// <summary>Das Profil einer Nutzungsklasse (Z6): Zeile <c>IFC_KLASSE</c>, sonst <see cref="Zonenplan.NutzungAusKlasse"/>.</summary>
         internal Planprofil AusKlasse(string klasse) => Aufloesen(RaumnutzungSchema.ZUORDNUNG_IFC, klasse);
 

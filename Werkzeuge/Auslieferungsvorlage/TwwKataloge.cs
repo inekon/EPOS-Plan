@@ -28,8 +28,8 @@ namespace Auslieferungsvorlage
     /// bekommt <c>ReadOnly = 1</c>: Eine Auslieferungszeile ist unveränderlich (Konzept 3.1,
     /// K7), und die Prüfung verlangt es für jede Zeile mit Status <c>AUSLIEFERUNG</c>.</para>
     ///
-    /// <para><b>Die Projekttabellen</b> <c>Tab_TwwZone</c>, <c>Tab_TwwWohnungstyp</c> und
-    /// <c>Tab_TwwProjekt</c> sind Projektdaten und fallen in Schritt 2 wie alle anderen
+    /// <para><b>Die Projekttabellen</b> <c>Tab_TwwZone</c>, <c>Tab_TwwWohnungstyp</c>,
+    /// <c>Tab_TwwZonenferien</c> und <c>Tab_TwwProjekt</c> sind Projektdaten und fallen in Schritt 2 wie alle anderen
     /// (<see cref="Projektsicht"/> erkennt sie über <c>ID_Projekt</c> bzw. den
     /// Fremdschlüssel auf die Zone).</para>
     ///

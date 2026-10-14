@@ -36,11 +36,17 @@ namespace WindowsFormsApplication1
         /// <summary>Der Katalog.</summary>
         public const string TAB_STAMM = "Tab_Brennstoff_Stamm";
 
-        /// <summary>Die Fachspalten in fester Folge — dieselben wie im Katalogregister.</summary>
+        /// <summary>
+        /// Die Fachspalten in fester Folge — dieselben wie im Katalogregister. <b>Ohne Preise</b> (Welle KB-2,
+        /// Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung"): Arbeits-, Grund- und
+        /// Leistungspreis stehen in der Karte des Energieträgers, der Brennstoff führt sie nicht mehr
+        /// (Schemaschritt <see cref="BrennstoffpreiseTraegerkarteSchema.SCHRITT"/>). <c>PreisEinheit</c> bleibt —
+        /// sie ist Katalogtext, kein Preis.
+        /// </summary>
         public static readonly IReadOnlyList<string> FACHSPALTEN = new[]
         {
             "ID_Kategorie", "Bezeichner", "Einheit", "PreisEinheit", "Hi", "Hs", "CO2", "SO2", "NOx", "Staub",
-            "PE_Faktor", "Standard_Grundpreis", "Standard_Arbeitspreis", "Standard_Leistungspreis"
+            "PE_Faktor"
         };
 
         /// <summary>
@@ -49,8 +55,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static readonly IReadOnlyList<string> BEARBEITBAR = new[]
         {
-            "Hi", "Hs", "CO2", "SO2", "NOx", "Staub", "PE_Faktor",
-            "Standard_Grundpreis", "Standard_Arbeitspreis", "Standard_Leistungspreis"
+            "Hi", "Hs", "CO2", "SO2", "NOx", "Staub", "PE_Faktor"
         };
 
         private static readonly string SPALTEN = string.Join(", ", FACHSPALTEN.Select(s => "\"" + s + "\""));
@@ -102,11 +107,10 @@ namespace WindowsFormsApplication1
         private const string SQL_SICHERN_ALLE =
             "INSERT INTO \"" + TAB + "\" (\"ID_Projekt\", \"ID_Brennstoff\", " +
             "\"ID_Kategorie\", \"Bezeichner\", \"Einheit\", \"PreisEinheit\", \"Hi\", \"Hs\", \"CO2\", \"SO2\", \"NOx\", " +
-            "\"Staub\", \"PE_Faktor\", \"Standard_Grundpreis\", \"Standard_Arbeitspreis\", \"Standard_Leistungspreis\", " +
+            "\"Staub\", \"PE_Faktor\", " +
             "\"" + ProjektkopienKatalogeSchema.SPALTE_HERKUNFT + "\") " +
             "SELECT p.\"ID\", s.\"ID\", s.\"ID_Kategorie\", s.\"Bezeichner\", s.\"Einheit\", s.\"PreisEinheit\", s.\"Hi\", " +
-            "s.\"Hs\", s.\"CO2\", s.\"SO2\", s.\"NOx\", s.\"Staub\", s.\"PE_Faktor\", s.\"Standard_Grundpreis\", " +
-            "s.\"Standard_Arbeitspreis\", s.\"Standard_Leistungspreis\", " + FASSUNG + " " +
+            "s.\"Hs\", s.\"CO2\", s.\"SO2\", s.\"NOx\", s.\"Staub\", s.\"PE_Faktor\", " + FASSUNG + " " +
             "FROM \"Tab_Projekt\" AS p CROSS JOIN \"" + TAB_STAMM + "\" AS s " +
             "WHERE NOT EXISTS (SELECT 1 FROM \"" + TAB + "\" AS k WHERE k.\"ID_Projekt\" = p.\"ID\" AND k.\"ID_Brennstoff\" = s.\"ID\") " +
             "ORDER BY p.\"ID\", s.\"ID\"";
@@ -114,11 +118,10 @@ namespace WindowsFormsApplication1
         private const string SQL_SICHERN_PROJEKT =
             "INSERT INTO \"" + TAB + "\" (\"ID_Projekt\", \"ID_Brennstoff\", " +
             "\"ID_Kategorie\", \"Bezeichner\", \"Einheit\", \"PreisEinheit\", \"Hi\", \"Hs\", \"CO2\", \"SO2\", \"NOx\", " +
-            "\"Staub\", \"PE_Faktor\", \"Standard_Grundpreis\", \"Standard_Arbeitspreis\", \"Standard_Leistungspreis\", " +
+            "\"Staub\", \"PE_Faktor\", " +
             "\"" + ProjektkopienKatalogeSchema.SPALTE_HERKUNFT + "\") " +
             "SELECT p.\"ID\", s.\"ID\", s.\"ID_Kategorie\", s.\"Bezeichner\", s.\"Einheit\", s.\"PreisEinheit\", s.\"Hi\", " +
-            "s.\"Hs\", s.\"CO2\", s.\"SO2\", s.\"NOx\", s.\"Staub\", s.\"PE_Faktor\", s.\"Standard_Grundpreis\", " +
-            "s.\"Standard_Arbeitspreis\", s.\"Standard_Leistungspreis\", " + FASSUNG + " " +
+            "s.\"Hs\", s.\"CO2\", s.\"SO2\", s.\"NOx\", s.\"Staub\", s.\"PE_Faktor\", " + FASSUNG + " " +
             "FROM \"Tab_Projekt\" AS p CROSS JOIN \"" + TAB_STAMM + "\" AS s " +
             "WHERE p.\"ID\" = ? AND (? = 0 OR s.\"ID\" = ?) " +
             "AND NOT EXISTS (SELECT 1 FROM \"" + TAB + "\" AS k WHERE k.\"ID_Projekt\" = p.\"ID\" AND k.\"ID_Brennstoff\" = s.\"ID\") " +
@@ -159,12 +162,9 @@ namespace WindowsFormsApplication1
         private const string SQL_KOPIEN =
             "SELECT k.\"ID\" AS \"ID_Kopie\", k.\"ID_Brennstoff\", k.\"ID_Kategorie\", k.\"Bezeichner\", k.\"Einheit\", " +
             "k.\"PreisEinheit\", k.\"Hi\", k.\"Hs\", k.\"CO2\", k.\"SO2\", k.\"NOx\", k.\"Staub\", k.\"PE_Faktor\", " +
-            "k.\"Standard_Grundpreis\", k.\"Standard_Arbeitspreis\", k.\"Standard_Leistungspreis\", " +
             "k.\"" + ProjektkopienKatalogeSchema.SPALTE_HERKUNFT + "\" AS \"Herkunft\", " +
             "s.\"Hi\" AS \"S_Hi\", s.\"Hs\" AS \"S_Hs\", s.\"CO2\" AS \"S_CO2\", s.\"SO2\" AS \"S_SO2\", s.\"NOx\" AS \"S_NOx\", " +
-            "s.\"Staub\" AS \"S_Staub\", s.\"PE_Faktor\" AS \"S_PE_Faktor\", s.\"Standard_Grundpreis\" AS \"S_Standard_Grundpreis\", " +
-            "s.\"Standard_Arbeitspreis\" AS \"S_Standard_Arbeitspreis\", " +
-            "s.\"Standard_Leistungspreis\" AS \"S_Standard_Leistungspreis\", s.\"ID\" AS \"S_ID\" " +
+            "s.\"Staub\" AS \"S_Staub\", s.\"PE_Faktor\" AS \"S_PE_Faktor\", s.\"ID\" AS \"S_ID\" " +
             "FROM \"" + TAB + "\" AS k LEFT JOIN \"" + TAB_STAMM + "\" AS s ON s.\"ID\" = k.\"ID_Brennstoff\" " +
             "WHERE k.\"ID_Projekt\" = ? ORDER BY k.\"ID_Brennstoff\"";
 
@@ -186,9 +186,6 @@ namespace WindowsFormsApplication1
             "\"NOx\" = (SELECT s.\"NOx\" FROM \"" + TAB_STAMM + "\" AS s WHERE s.\"ID\" = \"" + TAB + "\".\"ID_Brennstoff\"), " +
             "\"Staub\" = (SELECT s.\"Staub\" FROM \"" + TAB_STAMM + "\" AS s WHERE s.\"ID\" = \"" + TAB + "\".\"ID_Brennstoff\"), " +
             "\"PE_Faktor\" = (SELECT s.\"PE_Faktor\" FROM \"" + TAB_STAMM + "\" AS s WHERE s.\"ID\" = \"" + TAB + "\".\"ID_Brennstoff\"), " +
-            "\"Standard_Grundpreis\" = (SELECT s.\"Standard_Grundpreis\" FROM \"" + TAB_STAMM + "\" AS s WHERE s.\"ID\" = \"" + TAB + "\".\"ID_Brennstoff\"), " +
-            "\"Standard_Arbeitspreis\" = (SELECT s.\"Standard_Arbeitspreis\" FROM \"" + TAB_STAMM + "\" AS s WHERE s.\"ID\" = \"" + TAB + "\".\"ID_Brennstoff\"), " +
-            "\"Standard_Leistungspreis\" = (SELECT s.\"Standard_Leistungspreis\" FROM \"" + TAB_STAMM + "\" AS s WHERE s.\"ID\" = \"" + TAB + "\".\"ID_Brennstoff\"), " +
             "\"" + ProjektkopienKatalogeSchema.SPALTE_HERKUNFT + "\" = " + FASSUNG + " " +
             "WHERE \"ID_Projekt\" = ? AND \"ID_Brennstoff\" = ? " +
             "AND EXISTS (SELECT 1 FROM \"" + TAB_STAMM + "\" AS s WHERE s.\"ID\" = \"" + TAB + "\".\"ID_Brennstoff\")";

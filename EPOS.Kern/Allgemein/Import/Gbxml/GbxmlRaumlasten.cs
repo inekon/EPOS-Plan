@@ -12,6 +12,12 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed class GbxmlRaumlasten
     {
+        /// <summary>
+        /// Stammen die Werte aus den IFC-Standardsätzen eines Raums (Welle DA-3, <c>IfcAbbildBauer</c>)? Dann trägt die
+        /// Konditionierung der Zone die Herkunft „aus IFC-Datei (Standardsätze)“; Pläne gibt es dort keine (E138 F6 a).
+        /// </summary>
+        public bool AusIfc { get; set; }
+
         /// <summary>Wärmeabgabe je Person [W] (<c>PeopleHeatGain</c>); <c>null</c> = keine.</summary>
         public double? WaermeJePersonW { get; set; }
 

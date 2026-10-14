@@ -197,6 +197,7 @@ namespace WindowsFormsApplication1
             Innenflaechenfaktor(einordnung, datei, z);
             Fenster(aktiv, datei, k, z, meldungen);
             Waermebruecken(k, z);
+            Erdreich(g, datei, z);
             Lueftung(beheizt, datei, z, meldungen);
             bool cadMoeglich = GebaeudeCadSollwert.Moeglich(beheizt);
             Sollwerte(beheizt, datei, z, meldungen, profil, g.Anzeigename, cadMoeglich && raumtemperaturAlsSollwert);
@@ -978,6 +979,19 @@ namespace WindowsFormsApplication1
         // ==================================================================
         //  Wärmebrücken, Lüftung, Sollwerte
         // ==================================================================
+
+        /// <summary>
+        /// Welle DA-4: das Erdreich der Datei (Inventar G3, G4) — Umfang P in die Anschlusslänge Außenwand/Kellerdecke, wirksamer
+        /// U-Wert am Erdreich und Kellertemperatur; nur, was die Datei trägt (gbXML-Block <c>EPOS:</c>, IFC <c>EPOS_Gebaeude</c>).
+        /// </summary>
+        private static void Erdreich(AbbildGebaeude g, Importherkunft datei, Dictionary<string, GebaeudeFeldzeile> z)
+        {
+            if (g.Erdreich is not AbbildErdreich e) return;
+            var beleg = new GebaeudeBeleg("GIMP_BELEG_EPOS_RESTDATEN", g.Anzeigename ?? "");
+            if (e.UmfangM.HasValue) Setzen(z[GebaeudeZielfelder.LAENGE_AUSSENWAND_KELLER], e.UmfangM, datei, beleg);
+            if (e.UWirksam.HasValue) Setzen(z[GebaeudeZielfelder.ERDREICH_U_WIRKSAM], e.UWirksam, datei, beleg);
+            if (e.KellertemperaturC.HasValue) Setzen(z[GebaeudeZielfelder.KELLERTEMPERATUR], e.KellertemperaturC, datei, beleg);
+        }
 
         private static void Waermebruecken(char? k, Dictionary<string, GebaeudeFeldzeile> z)
         {

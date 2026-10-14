@@ -1053,6 +1053,18 @@ namespace EPOS.Kern.Tests
                 // Schritt KaeltebedarfSplitAbrechnungSchema.SCHRITT (K6): Tab_ErgebnisKaelteDezentral, leer, reines DDL.
                 // Wiederholbar, ergebnisneutral.
                 KaeltebedarfSplitAbrechnungSchema.Ausfuehren(null);
+                // Schritt TwwZonenferienSchema.SCHRITT (ZB5, ZB-Q3 B): Zonenferien als Liste - Tab_TwwZonenferien, die vier
+                // Spaltenpaare von Tab_TwwZone uebertragen und abgebaut. Wiederholbar, ergebnisneutral.
+                TwwZonenferienSchema.Ausfuehren(null);
+                // Schritt ZonenLastfelderSchema.SCHRITT (DA-2, E138 F5): Aussenluft je Person, Licht und Waerme je Person an
+                // Tab_Zone und Tab_Zone_STAMM, leer, reines DDL. Wiederholbar, ergebnisneutral.
+                ZonenLastfelderSchema.Ausfuehren(null);
+                // Schritt KatalogkostenSaatSchema.SCHRITT (KB-3): die zwei Verweise an den acht Projektkopien mit
+                // Kosten, dazu je Satz mit Kosten genau eine Satzvorlage je Art. Wiederholbar, ergebnisneutral.
+                KatalogkostenSaatSchema.Ausfuehren(null);
+                // Schritt BrennstoffpreiseTraegerkarteSchema.SCHRITT (KB-2): die drei Standardpreise des Brennstoffs
+                // gehen in die Traegerkarte und fallen an Katalog und Projektkopie weg. Wiederholbar, ergebnisneutral.
+                BrennstoffpreiseTraegerkarteSchema.Ausfuehren(null);
                 // Schritt BauteilkatalogAbschnittSchema.SCHRITT (BK-5/BK-6): Psi_Glasrand am Aufbaukatalog, leer, reines DDL.
                 // Wiederholbar, ergebnisneutral.
                 BauteilkatalogAbschnittSchema.Ausfuehren(null);

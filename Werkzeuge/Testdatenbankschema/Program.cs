@@ -3592,6 +3592,86 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt TwwZonenferienSchema.SCHRITT (ZB5, ZB-Q3 B): Zonenferien als Liste - Tab_TwwZonenferien anlegen,
+            //      die vier Spaltenpaare von Tab_TwwZone uebertragen und abbauen (Neubau mit Erhalt der IDs). Aus DERSELBEN
+            //      Quelle wie SchemaMigration.Schritt_TwwZonenferien. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: der Zapfkalender rechnet ueber die Liste dieselben Fenster.
+            string nrZf = TwwZonenferienSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrZf + " - Zonenferien als Liste: " +
+                              (TwwZonenferienSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtZf = new List<string>();
+                tabellen += TwwZonenferienSchema.Ausfuehren(berichtZf);
+                foreach (string zeile in berichtZf)
+                    Console.WriteLine("Schritt " + nrZf + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrZf + " - vollstaendig: " + TwwZonenferienSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt ZonenLastfelderSchema.SCHRITT (DA-2, E138 F5): Aussenluft je Person, Licht und Waerme je Person an
+            //      Tab_Zone und Tab_Zone_STAMM. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_ZonenLastfelder.
+            //      Wiederholbar. REFERENZLAUF UNVERAENDERT: der Rechenweg liest die Spalten nicht, alle stehen leer.
+            string nrDa2 = ZonenLastfelderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrDa2 + " - Lastfelder der Zone: " +
+                              (ZonenLastfelderSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtDa2 = new List<string>();
+                angelegt += ZonenLastfelderSchema.Ausfuehren(berichtDa2);
+                foreach (string zeile in berichtDa2)
+                    Console.WriteLine("Schritt " + nrDa2 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrDa2 + " - vollstaendig: " + ZonenLastfelderSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt KatalogkostenSaatSchema.SCHRITT (KB-3): die zwei Verweise an den acht Projektkopien mit
+            //      Kosten, dazu je Satz mit mindestens einem Kostenwert > 0 und ohne Verweis genau eine Satzvorlage
+            //      je Art samt Positionen. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_KatalogkostenSaat.
+            //      Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: gerechnet wird aus Tab_ProjektWerte; eine Satzvorlage wirkt erst beim
+            //      Uebernehmen oder Abgleichen.
+            string nrKb3 = KatalogkostenSaatSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKb3 + " - Saat der Katalogkosten-Satzvorlagen: " +
+                              (KatalogkostenSaatSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKb3 = new List<string>();
+                angelegt += KatalogkostenSaatSchema.Ausfuehren(berichtKb3);
+                foreach (string zeile in berichtKb3)
+                    Console.WriteLine("Schritt " + nrKb3 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKb3 + " - vollstaendig: " + KatalogkostenSaatSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+            // ---- Schritt BrennstoffpreiseTraegerkarteSchema.SCHRITT (KB-2): die drei Standardpreise des Brennstoffs
+            //      gehen in energy_carrier.price_work/price_base/price_power und fallen danach an
+            //      Tab_Brennstoff_Stamm und Tab_Brennstoff weg. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_BrennstoffpreiseTraegerkarte. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: kein Rechenweg liest die drei Spalten (Saat der Energietraeger-Variante);
+            //      in der Testdatenbank stehen sie durchweg auf 0, der Uebertrag ist leer.
+            //      NEUE KATALOGFASSUNG: Die Pruefsumme jedes Brennstoffs aendert sich; der Schritt bildet sie fuer jeden
+            //      Satz neu, dessen Summe vorher stimmte.
+            string nrKb2 = BrennstoffpreiseTraegerkarteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKb2 + " - Brennstoffpreise in die Traegerkarte: " +
+                              (BrennstoffpreiseTraegerkarteSchema.Vollstaendig() ? "steht bereits" : "offen") +
+                              " (" + BrennstoffpreiseTraegerkarteSchema.Uebertragbar() + " Preis(e) zu uebertragen).");
+            if (!trocken)
+            {
+                var berichtKb2 = new List<string>();
+                angelegt += BrennstoffpreiseTraegerkarteSchema.Ausfuehren(berichtKb2);
+                foreach (string zeile in berichtKb2)
+                    Console.WriteLine("Schritt " + nrKb2 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKb2 + " - vollstaendig: " + BrennstoffpreiseTraegerkarteSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             // ---- Schritt BauteilkatalogAbschnittSchema.SCHRITT (BK-5/BK-6): Psi_Glasrand an Tab_Bauteilaufbau(_STAMM). Aus
             //      DERSELBEN Quelle wie SchemaMigration.Schritt_BauteilkatalogAbschnitt. Wiederholbar.
             //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt fuehrt einen Aufbau, die Spalte bleibt leer.

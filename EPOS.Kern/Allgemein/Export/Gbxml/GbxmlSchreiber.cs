@@ -273,6 +273,9 @@ namespace WindowsFormsApplication1
             private readonly List<XElement> _stoffe = new List<XElement>();
             private readonly List<XElement> _fenstertypen = new List<XElement>();
             private readonly List<XElement> _zonen = new List<XElement>();
+            private readonly List<XElement> _plaene = new List<XElement>();
+            private readonly Dictionary<AbbildRaum, Dictionary<Konditionierungsgroesse, (string Kennung, double Teiler)>> _planJeRaum
+                = new Dictionary<AbbildRaum, Dictionary<Konditionierungsgroesse, (string Kennung, double Teiler)>>();
 
             private Zonengeometrie _geometrie;
             private Zonenkoerper _koerper;
@@ -335,7 +338,8 @@ namespace WindowsFormsApplication1
                     new XAttribute("volumeUnit", GbxmlVokabular.CubicMeters),
                     new XAttribute("useSIUnitsForResults", "true"),
                     campus);
-                wurzel.Add(_konstruktionen, _schichten, _stoffe, _fenstertypen, _zonen, _ergebnisse);
+                // Welle DA-2: die Zeitpläne (Schedule, WeekSchedule, DaySchedule) vor den Zonen (Reihenfolge des Schemas 6.01: Annahme).
+                wurzel.Add(_konstruktionen, _schichten, _stoffe, _fenstertypen, _plaene, _zonen, _ergebnisse);
                 wurzel.Add(Dokumentgeschichte());
                 Sammelmeldung(FLAECHE_OHNE_POLYGON, _ohnePolygon);
                 Sammelmeldung(FLAECHE_TEILPLATTEN, _teilplatten);
@@ -403,7 +407,10 @@ namespace WindowsFormsApplication1
                     new XAttribute("id", Kennung(g.Kennung, "Building")),
                     new XAttribute("buildingType", art));
                 Text(building, "Name", g.Name);
-                if (_koerper != null) Text(building, "Description", T(_koerper.Schematisch ? "GEXP_DATEI_SCHEMATISCH" : "GEXP_DATEI_DATEIKOERPER"));
+                // Welle DA-4: das Erdreich (G3, G4) im Block EPOS: der Beschreibung (Konzept 3.3, Weg 2).
+                Text(building, "Description", GebaeudeRestdaten.MitBlock(
+                    _koerper != null ? T(_koerper.Schematisch ? "GEXP_DATEI_SCHEMATISCH" : "GEXP_DATEI_DATEIKOERPER") : null,
+                    GebaeudeRestdaten.Werte(g.Erdreich)));
                 double flaeche = g.Raeume.Where(r => r.FlaecheM2.HasValue).Sum(r => r.FlaecheM2.Value);
                 building.Add(new XElement(NS + "Area", Zahl(flaeche)));
 
@@ -432,10 +439,31 @@ namespace WindowsFormsApplication1
                 Groesse(space, "Area", r.FlaecheM2, null);
                 Groesse(space, "Volume", r.VolumenM3, null);
                 Groesse(space, "AirChangesPerHour", r.LuftwechselJeH, null);
-                if (r.Personen.HasValue) Groesse(space, "PeopleNumber", r.Personen, GbxmlVokabular.NumberOfPeople);
+                // Welle DA-2: Personen und Geräte als Nennwert der Kalender PERSONEN und GERAETE, wo die Zone sie trägt (Nennwert =
+                // Personen × Wärme je Person bzw. (Geräte + Licht) × Fläche, wie der Import sie zusammensetzt); sonst der Bestand.
+                double? waerme = r.GbxmlLasten?.WaermeJePersonW;
+                double? personenNenn = Nennwert(r, Konditionierungsgroesse.Personen);
+                if (personenNenn > 0.0)
+                {
+                    double w = waerme ?? Matrixeingang.PERSON_W;
+                    Groesse(space, "PeopleNumber", personenNenn / w, GbxmlVokabular.NumberOfPeople);
+                    waerme = w;
+                }
+                else if (r.Personen.HasValue) Groesse(space, "PeopleNumber", r.Personen, GbxmlVokabular.NumberOfPeople);
                 else Groesse(space, "PeopleNumber", r.FlaecheJePersonM2, GbxmlVokabular.SquareMPerPerson);
+                if (waerme.HasValue)
+                    space.Add(new XElement(NS + "PeopleHeatGain", Zahl(waerme.Value), new XAttribute("unit", GbxmlVokabular.W),
+                                           new XAttribute("heatGainType", GbxmlVokabular.Sensible)));
                 Groesse(space, "LightPowerPerArea", r.LichtWm2, GbxmlVokabular.WattPerSquareMeter);
-                Groesse(space, "EquipPowerPerArea", r.GeraeteWm2, GbxmlVokabular.WattPerSquareMeter);
+                double? geraeteNenn = Nennwert(r, Konditionierungsgroesse.Geraete);
+                double? geraete = geraeteNenn > 0.0 && r.FlaecheM2 > 0.0
+                    ? Math.Max(0.0, geraeteNenn.Value / r.FlaecheM2.Value - (r.LichtWm2 ?? 0.0)) : r.GeraeteWm2;
+                Groesse(space, "EquipPowerPerArea", geraete, GbxmlVokabular.WattPerSquareMeter);
+                Groesse(space, "OAFlowPerPerson", r.GbxmlLasten?.AussenluftJePersonM3h, GbxmlVokabular.CubicMPerHr);
+                Groesse(space, "OAFlowPerArea", r.GbxmlLasten?.AussenluftJeFlaecheM3hM2, GbxmlVokabular.CubicMPerHrSquareM);
+                Verweis(space, "peopleScheduleIdRef", r, Konditionierungsgroesse.Personen);
+                Verweis(space, "equipmentScheduleIdRef", r, Konditionierungsgroesse.Geraete);
+                if (r.LichtWm2 > 0.0) Verweis(space, "lightScheduleIdRef", r, Konditionierungsgroesse.Geraete);
                 Raumkoerper koerper = _koerper?.Raum(r.Kennung);
                 if (koerper != null)
                     space.Add(new XElement(NS + "ShellGeometry",
@@ -449,11 +477,58 @@ namespace WindowsFormsApplication1
             {
                 var zone = new XElement(NS + "Zone", new XAttribute("id", Kennung(r.ZonenKennung, "Zone")));
                 Text(zone, "Name", r.Name);
-                Text(zone, "Description", r.ZonenBeschreibung);
+                // Welle DA-4: die Restdaten der Zone im Block EPOS: der Beschreibung (Konzept 3.3, Weg 2).
+                Text(zone, "Description", GebaeudeRestdaten.MitBlock(r.ZonenBeschreibung, GebaeudeRestdaten.Werte(r.Rest)));
                 Groesse(zone, "DesignHeatT", r.SollHeizenC, null);
                 Groesse(zone, "DesignCoolT", r.SollKuehlenC, null);
+                // Welle DA-2: der Nutzerluftwechsel der Zone (Nennwert des Lüftungsplans) und die Verweise auf die Pläne.
+                double? luftwechsel = Plaene(r).TryGetValue(Konditionierungsgroesse.Lueftung, out var lueftung)
+                    ? lueftung.Teiler : r.LuftwechselNutzerJeH > 0.0 ? r.LuftwechselNutzerJeH : null;
+                Groesse(zone, "AirChangesPerHour", luftwechsel, null);
+                Verweis(zone, "heatSchedIdRef", r, Konditionierungsgroesse.Heizsoll);
+                Verweis(zone, "coolSchedIdRef", r, Konditionierungsgroesse.Kuehlsoll);
+                Verweis(zone, "airChangesSchedIdRef", r, Konditionierungsgroesse.Lueftung);
                 Ergebnisse(r);
                 return zone;
+            }
+
+            /// <summary>Der Nennwert des Kalenders einer Größe der Zone; <c>null</c> = keiner.</summary>
+            private static double? Nennwert(AbbildRaum r, Konditionierungsgroesse g) => r.Konditionierung?.KalenderVon(g)?.Kalender.Nennwert;
+
+            /// <summary>Setzt den Verweis auf den Plan einer Größe, wo die Zone einen trägt.</summary>
+            private void Verweis(XElement ziel, string attribut, AbbildRaum r, Konditionierungsgroesse g)
+            {
+                if (Plaene(r).TryGetValue(g, out var plan)) ziel.Add(new XAttribute(attribut, plan.Kennung));
+            }
+
+            /// <summary>
+            /// <b>Die Zeitpläne der Zone</b> (Welle DA-2, Konzept Datenaustausch 4.4): je Kalender der Zone ein <c>Schedule</c> mit
+            /// stabiler Kennung (Zonenkennung und Größe), beim ersten Aufruf geschrieben. Die Lüftung trägt Anteile des
+            /// Nennluftwechsels (Höchstwert des Kalenders, sonst Luftwechsel der Nutzer); ohne Nennwert entfällt ihr Plan.
+            /// </summary>
+            private Dictionary<Konditionierungsgroesse, (string Kennung, double Teiler)> Plaene(AbbildRaum r)
+            {
+                if (_planJeRaum.TryGetValue(r, out var d)) return d;
+                d = new Dictionary<Konditionierungsgroesse, (string Kennung, double Teiler)>();
+                _planJeRaum[r] = d;
+                if (r.Konditionierung == null || r.ZonenKennung == null) return d;
+                foreach (AbbildKalender ak in r.Konditionierung.Kalender)
+                {
+                    Konditionierungskalender k = ak.Kalender;
+                    double teiler = 1.0;
+                    if (k.Groesse == Konditionierungsgroesse.Lueftung)
+                    {
+                        double hoechst = GbxmlZeitplanschreiber.Hoechstwert(k);
+                        teiler = hoechst > 0.0 ? hoechst : r.LuftwechselNutzerJeH ?? 0.0;
+                        if (!(teiler > 0.0)) continue;
+                    }
+                    string kennwort = Konditionierungsgroessen.Kennwort(k.Groesse);
+                    GbxmlZeitplan p = GbxmlZeitplanschreiber.Plan(k, r.ZonenKennung + "-" + kennwort,
+                                                                  string.IsNullOrWhiteSpace(r.Name) ? kennwort : r.Name.Trim() + " " + kennwort, teiler);
+                    _plaene.AddRange(GbxmlZeitplanschreiber.Elemente(p, NS, Kennung));
+                    d[k.Groesse] = (p.Kennung, teiler);
+                }
+                return d;
             }
 
             /// <summary>
@@ -624,6 +699,12 @@ namespace WindowsFormsApplication1
                 Text(construction, "Name", a.Name);
                 Text(construction, "Description", a.Beschreibung);
                 Groesse(construction, "U-value", a.UWertWm2K, GbxmlVokabular.WPerSquareMeterK);
+                // E138 F8 (b): die Konstanten des Rechenwegs durchreichen - solarer Absorptionsgrad und langwelliger Emissionsgrad
+                // außen (als Absorptionsgrad im Infraroten, Kirchhoff); der Import liest sie und meldet Abweichungen, ohne Feld.
+                construction.Add(new XElement(NS + "Absorptance", Zahl(GebaeudeFestwerte.ABSORPTIONSGRAD_OPAK),
+                                              new XAttribute("unit", GbxmlVokabular.Fraction), new XAttribute("type", GbxmlVokabular.ExtSolar)),
+                                 new XElement(NS + "Absorptance", Zahl(GebaeudeFestwerte.EMISSIONSGRAD_AUSSEN),
+                                              new XAttribute("unit", GbxmlVokabular.Fraction), new XAttribute("type", GbxmlVokabular.ExtIR)));
                 foreach (AbbildSchicht s in AussenNachInnen(a))
                     construction.Add(new XElement(NS + "LayerId", new XAttribute("layerIdRef", Schicht(s))));
                 _konstruktionen.Add(construction);

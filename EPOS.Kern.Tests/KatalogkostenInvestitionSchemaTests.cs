@@ -39,8 +39,12 @@ namespace EPOS.Kern.Tests
             {
                 Assert.Contains(Verweise(tabelle), f => f.Spalte == KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION &&
                                                         f.Ziel == KatalogkostenUrsprungSchema.TAB_KOSTENVORLAGE);
+                // Die Spalte entsteht leer; seit KB-3 (KatalogkostenSaatSchema) saet der Schritt 226 sie. Geprueft
+                // wird deshalb, dass jeder gesetzte Verweis auf eine vorhandene Kostenvorlage zeigt.
                 Assert.Equal(0L, Convert.ToInt64(DataRepository.ExecuteScalar(
-                    "SELECT COUNT(*) FROM \"" + tabelle + "\" WHERE \"" + spalte + "\" IS NOT NULL"), CultureInfo.InvariantCulture));
+                    "SELECT COUNT(*) FROM \"" + tabelle + "\" t WHERE t.\"" + spalte + "\" IS NOT NULL AND NOT EXISTS " +
+                    "(SELECT 1 FROM \"" + KatalogkostenUrsprungSchema.TAB_KOSTENVORLAGE + "\" v WHERE v.\"ID\" = t.\"" +
+                    spalte + "\")"), CultureInfo.InvariantCulture));
             }
 
             var bericht = new List<string>();

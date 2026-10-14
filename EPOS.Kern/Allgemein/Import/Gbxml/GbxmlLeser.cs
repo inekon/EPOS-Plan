@@ -285,6 +285,17 @@ namespace WindowsFormsApplication1
             //  Gebäude und Räume
             // --------------------------------------------------------------
 
+            /// <summary>Welle DA-4: die Zonen, deren übersprungene Restdaten schon gemeldet sind (eine Meldung je Zone).</summary>
+            private readonly HashSet<string> _restGemeldet = new HashSet<string>(StringComparer.Ordinal);
+
+            /// <summary>Welle DA-4: nicht lesbare Werte des Blocks EPOS: benannt (<c>RESTDATEN_UEBERSPRUNGEN</c>).</summary>
+            private static void Restmeldung(AbbildGebaeude g, string wo, List<string> uebersprungen)
+            {
+                if (uebersprungen.Count > 0)
+                    g.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "RESTDATEN_UEBERSPRUNGEN", wo ?? "",
+                        uebersprungen.Count.ToString(System.Globalization.CultureInfo.InvariantCulture), string.Join(", ", uebersprungen)));
+            }
+
             private void Gebaeude(XElement building)
             {
                 int index = _abbild.Gebaeude.Count;
@@ -294,6 +305,11 @@ namespace WindowsFormsApplication1
                     Name = Text(Kind(building, "Name")),
                     Art = Attr(building, "buildingType"),
                 };
+                // Welle DA-4: das Erdreich aus dem Block EPOS: der Beschreibung (die Beschreibung selbst liest der Leser nicht).
+                GebaeudeRestdaten.OhneBlock(Text(Kind(building, "Description")), out List<(string, string)> erdreich);
+                var uebersprungen = new List<string>();
+                g.Erdreich = GebaeudeRestdaten.ErdreichLesen(erdreich, uebersprungen);
+                Restmeldung(g, g.Kennung, uebersprungen);
                 _abbild.Gebaeude.Add(g);
 
                 foreach (XElement space in Kinder(building, "Space"))
@@ -382,6 +398,12 @@ namespace WindowsFormsApplication1
                     if (_zone.TryGetValue(r.ZonenKennung, out XElement zone))
                     {
                         r.ZonenName = Text(Kind(zone, "Name"));
+                        // Welle DA-4: die Restdaten der Zone aus dem Block EPOS: der Beschreibung.
+                        GebaeudeRestdaten.OhneBlock(Text(Kind(zone, "Description")), out List<(string, string)> rest);
+                        var uebersprungen = new List<string>();
+                        r.Rest = GebaeudeRestdaten.ZoneLesen(rest, uebersprungen);
+                        if (!_restGemeldet.Contains(r.ZonenKennung)) Restmeldung(g, r.ZonenKennung, uebersprungen);
+                        _restGemeldet.Add(r.ZonenKennung);
                         r.SollHeizenC = MitEinheit(Kind(zone, "DesignHeatT"), _temperatur, _temperaturGilt, GbxmlEinheiten.Temperatur, r.ZonenKennung);
                         r.SollKuehlenC = MitEinheit(Kind(zone, "DesignCoolT"), _temperatur, _temperaturGilt, GbxmlEinheiten.Temperatur, r.ZonenKennung);
                         // Welle DA-1: Lüftung und Pläne der Zone; Außenluft der Zone nur, wo der Raum keine trägt.
@@ -714,6 +736,7 @@ namespace WindowsFormsApplication1
                     RichtungAngenommen = true,
                 };
                 _aufbauten[kref] = a;
+                Absorptionsgrade(k, kref, a.Name);
 
                 bool luecke = false;
                 foreach (XElement li in Kinder(k, "LayerId"))
@@ -843,6 +866,32 @@ namespace WindowsFormsApplication1
                     Datei(PruefStufe.Info, "KENNUNG_GEKUERZT", quelltyp, Quellkennung.Kuerzen(id), Ganz(id.Length));
                 return id;
             }
+
+            /// <summary>
+            /// E138 F8 (b), Welle DA-2: Der Absorptionsgrad (solar, <c>ExtSolar</c>) und der Emissionsgrad (<c>ExtIR</c>) einer
+            /// <c>Construction</c> werden gelesen und nur gemeldet, wo sie von den Konstanten des Rechenwegs abweichen
+            /// (<see cref="GebaeudeFestwerte.ABSORPTIONSGRAD_OPAK"/>, <see cref="GebaeudeFestwerte.EMISSIONSGRAD_AUSSEN"/>); es gibt
+            /// kein Feld, es gilt die Konstante.
+            /// </summary>
+            private void Absorptionsgrade(XElement k, string kref, string name)
+            {
+                foreach (XElement e in Kinder(k, "Absorptance"))
+                {
+                    string typ = Attr(e, "type");
+                    double konstante = string.Equals(typ, GbxmlVokabular.ExtSolar, StringComparison.OrdinalIgnoreCase) ? GebaeudeFestwerte.ABSORPTIONSGRAD_OPAK
+                                     : string.Equals(typ, GbxmlVokabular.ExtIR, StringComparison.OrdinalIgnoreCase) ? GebaeudeFestwerte.EMISSIONSGRAD_AUSSEN
+                                     : double.NaN;
+                    if (double.IsNaN(konstante)) continue;
+                    double? wert = Zahl(e, kref);
+                    if (string.Equals(Attr(e, "unit"), "Percent", StringComparison.OrdinalIgnoreCase)) wert /= 100.0;
+                    if (wert.HasValue && Math.Abs(wert.Value - konstante) > ABSORPTION_TOLERANZ && _gemeldet.Add("A|" + kref + "|" + typ))
+                        Datei(PruefStufe.Info, "ABSORPTION_ABWEICHUNG", name ?? kref, typ,
+                              wert.Value.ToString("0.###", CultureInfo.CurrentCulture), konstante.ToString("0.###", CultureInfo.CurrentCulture));
+                }
+            }
+
+            /// <summary>Die Abweichung vom Absorptions- bzw. Emissionsgrad des Rechenwegs, ab der gemeldet wird.</summary>
+            internal const double ABSORPTION_TOLERANZ = 0.005;
 
             private void VerweisLeer(string art, string ziel, string wo)
             {

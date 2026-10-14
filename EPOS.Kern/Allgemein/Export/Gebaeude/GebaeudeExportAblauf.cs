@@ -513,6 +513,8 @@ namespace WindowsFormsApplication1
                     Beschreibung = Campusbeschreibung(),
                     Baujahr = _geb.Baujahr,
                     Baualtersklasse = string.IsNullOrWhiteSpace(_geb.Baualtersklasse) ? null : _geb.Baualtersklasse.Trim(),
+                    // Welle DA-4: Umfang, wirksamer U-Wert am Erdreich und Kellertemperatur (Inventar G3, G4).
+                    Erdreich = GebaeudeRestdaten.AusGebaeude(_geb),
                 };
                 _abbild.Gebaeude.Add(_g);
                 if (_profil.Testlizenz) Info(TESTLIZENZ);
@@ -572,6 +574,18 @@ namespace WindowsFormsApplication1
 
             private bool Gekuehlt(ZoneModel z) => _satz.Kuehlbetrieb && (z.Kuehlung_Aktiv ?? _geb.Kuehlung_Aktiv);
 
+            /// <summary>Welle DA-4: die Restdaten einer Zone; die Partnerzone eines Luftstroms über ihre Exportkennung.</summary>
+            private AbbildZonenrest Zonenrest(ZoneModel z)
+            {
+                var stroeme = (_satz.Luftstroeme ?? Array.Empty<ZonenluftstromModel>())
+                    .Where(l => l.ID_ZoneA == z.ID)
+                    .OrderBy(l => l.ID_ZoneB).ThenBy(l => l.ID)
+                    .Select(l => (GebaeudeExportKennung.Zone(l.ID_ZoneB), l.Volumenstrom));
+                Konditionierungsstand stand = null;
+                _satz.Zonenstaende?.TryGetValue(z.ID, out stand);
+                return GebaeudeRestdaten.AusZone(z, GebaeudeExportKennung.Zone(z.ID), stroeme, stand);
+            }
+
             /// <summary>
             /// <b>Der Heizsollwert des Raums</b> (Entwurf KP2, Festlegung 9): Gilt für die Zone ein angelegter
             /// Heizkalender (Zone vor Gebäude, <see cref="GebaeudeExportSatz.Heizkalender"/>), ist es der häufigste
@@ -619,7 +633,13 @@ namespace WindowsFormsApplication1
                     Zustandsangabe = !z.IstBeheizt ? GbxmlVokabular.Unconditioned : gekuehlt ? GbxmlVokabular.HeatedAndCooled : GbxmlVokabular.Heated,
                     LuftwechselJeH = z.Luftwechsel_Infiltration ?? _geb.Luftwechsel_Infiltration ?? GebaeudeFestwerte.VORGABE_LUFTWECHSEL_INFILTRATION,
                     Personen = personen > 0.0 ? personen : null,
-                    GeraeteWm2 = a > 0.0 ? gewinne / a : (double?)null,
+                    // DA-2: die Lichtleistung ist ein Teil der inneren Gewinne; die Geräte sind der Rest (nie unter null).
+                    GeraeteWm2 = a > 0.0 ? Math.Max(0.0, gewinne / a - (z.Licht_W_m2 ?? 0.0)) : (double?)null,
+                    LichtWm2 = z.Licht_W_m2,
+                    // DA-2: Wärme und Außenluft je Person der Zone (Lastfelder, ZonenLastfelderSchema) - nur Datenaustausch.
+                    GbxmlLasten = z.Personen_Waerme_W.HasValue || z.Aussenluft_Person.HasValue
+                        ? new GbxmlRaumlasten { WaermeJePersonW = z.Personen_Waerme_W, AussenluftJePersonM3h = z.Aussenluft_Person }
+                        : null,
                     SollHeizenC = Heizsollwert(z),
                     SollKuehlenC = gekuehlt ? z.Kuehl_Sollwert ?? _geb.Kuehl_Sollwert : null,
                     HoeheM = Hoehe(z) > 0.0 ? Hoehe(z) : (double?)null,
@@ -630,6 +650,8 @@ namespace WindowsFormsApplication1
                     ZonenBeschreibung = T(nameof(MyResource.Resource.GEB_PRODUKTAUSWEIS_VDI6007)),
                     Konditionierung = konditionierung,
                     // HC-5 (F10): die Grundrisse der Räume der Zone - nur Gestalt und Lage des Exportmodells.
+                    // Welle DA-4: Vorheizzeit, Höchstleistungen, Übergabe, Luftströme (als Zone A), Zeilenbild und Wochen der Zone.
+                    Rest = _klassenweg ? null : Zonenrest(z),
                     Grundrisse = !_klassenweg && _satz.Zonengrundrisse != null
                                  && _satz.Zonengrundrisse.TryGetValue(z.ID, out IReadOnlyList<Raumgrundriss> grundrisse)
                         ? grundrisse : Array.Empty<Raumgrundriss>(),

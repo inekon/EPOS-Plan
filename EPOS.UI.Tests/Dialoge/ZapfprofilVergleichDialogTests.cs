@@ -277,6 +277,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
     private static void Erweitert(IRenderedComponent<ZapfprofilDialog> cut)
     {
         Option(cut, "Erweitert").Change("1");
+        ZapfprofilKarten.AlleAuf(cut);
         cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Kennzahlen").Click();
     }
 
@@ -667,6 +668,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
         var p = new Pruefstand();
         var cut = Aufbauen(p);
         Option(cut, "Erweitert").Change("1");
+        ZapfprofilKarten.Auf(cut, "messwert");
 
         IElement knopf = cut.Find("button.epos-zapfprofil-kalibrieren");
         Assert.Equal("true", knopf.GetAttribute("aria-disabled"));

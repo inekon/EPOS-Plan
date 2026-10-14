@@ -414,30 +414,35 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Benannt abgelehnt bleibt genau eines:</b> der Knopf „Variante
-        /// anlegen" der Übersichtsseite. Er führt unter Windows in ein ZWEITES
-        /// Fenster; ohne diesen Weg steht der Schlüssel gar nicht erst im Satz
-        /// (kein Delegat, kein Knopf), und auf iOS ist der Variantendialog eine
-        /// eigene Ansicht der Wurzel.
+        /// <b>Benannt abgelehnt bleibt nichts mehr:</b> Die drei Handlungen der Gruppe „Variante
+        /// verwalten" (Anlegen aus einer Quelle der Gruppe, Umbenennen, Löschen) stehen der
+        /// Übersichtsseite auf JEDER Plattform zu (Anwenderauftrag 13.10.2026) — ihre Dialoge
+        /// sind Überlagerungen der Seite, geschrieben wird im Kern. Die Schale reicht höchstens
+        /// ihre Nachläufe herein; einen Öffner für ein zweites Fenster trägt kein Satz mehr.
         /// </summary>
         [Fact]
-        public void Die_Uebersicht_ohne_Naht_bietet_das_Anlegen_einer_Variante_nicht_an()
+        public void Die_Uebersicht_bietet_die_Variantenverwaltung_auf_jeder_Plattform_an()
         {
             var ohne = new BerichteKostenHuelle();
             ohne.SetzeProjekt(PROJEKT_BHKW, "");
             var seitenOhne = (Func<string, IReadOnlyDictionary<string, object>>)
                              ohne.Gaben()["SeitenGaben"];
+            IReadOnlyDictionary<string, object> satzOhne = seitenOhne(BerichteKostenSeite.SEITE_UEBERSICHT);
 
-            Assert.False(seitenOhne(BerichteKostenSeite.SEITE_UEBERSICHT)
-                             .ContainsKey("VarianteAnlegenOeffnen"));
+            Assert.True(satzOhne.ContainsKey("VarianteAnlegen"));
+            Assert.True(satzOhne.ContainsKey("VarianteUmbenennen"));
+            Assert.True(satzOhne.ContainsKey("VarianteLoeschen"));
+            Assert.True(satzOhne.ContainsKey("Zielname"));
+            Assert.False(satzOhne.ContainsKey("VarianteAnlegenOeffnen"));
 
-            var mit = new BerichteKostenHuelle((_, _) => Task.FromResult(false));
+            var mit = new BerichteKostenHuelle((_, _) => { }, () => { });
             mit.SetzeProjekt(PROJEKT_BHKW, "");
             var seitenMit = (Func<string, IReadOnlyDictionary<string, object>>)
                             mit.Gaben()["SeitenGaben"];
+            IReadOnlyDictionary<string, object> satzMit = seitenMit(BerichteKostenSeite.SEITE_UEBERSICHT);
 
-            Assert.True(seitenMit(BerichteKostenSeite.SEITE_UEBERSICHT)
-                            .ContainsKey("VarianteAnlegenOeffnen"));
+            Assert.True(satzMit.ContainsKey("VarianteAnlegen"));
+            Assert.False(satzMit.ContainsKey("VarianteAnlegenOeffnen"));
         }
 
         /// <summary>

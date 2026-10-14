@@ -1504,6 +1504,99 @@ eine Fehlanzeige.
 aber nur, wenn die Gruppe **nirgends** eine Position mit Wert führt; sonst bleibt sie vollständig
 stehen, denn dort ist die Hauptkomponentenzeile die Überschrift ihrer Positionen.
 
+## 2.14a Eine Kostenbasis — Katalogkosten als Satzvorlage, Abgleich je Anlage
+
+**Wie gebaut (KB-3).** Anwenderentscheid 13.10.2026: Für alle Anlagen gilt die zentrale Verwaltung
+der Energie-, Betriebs- und Investitionskosten; die Gerätekosten werden nicht doppelt gehalten, und
+die Kosten einer Anlage sollen sich mit dem zentralen Kostenkatalog **abgleichen können** — je
+Katalogsatz genau ein Verweis dorthin, keine mehrfache Kostenposition.
+
+**Die Saat (Schemaschritt `KatalogkostenSaatSchema`).** Jeder Katalogsatz mit mindestens einem
+Kostenwert größer null bekommt **genau eine** Satzvorlage je Art: eine Investitionsvorlage
+(`ID_KostenVorlageInvestition`) und eine Betriebsvorlage (`ID_KostenVorlage`), beide Verweise aus
+den Schritten 208/209. Dieselben zwei Spalten tragen seither auch die acht **Projektkopien** mit
+Kosten — ihr Ursprung ist meist unbekannt, und ohne eigene Vorlage stünden ihre gepflegten Werte
+nach dem Entfall der Spalten (KB-4) nirgends mehr. Je gepflegter Kostenspalte entsteht eine
+Position; ihre Bemessung ist die des Rechenwegs (§ 3.2), nicht eine neue:
+
+| Gerätespalte | Kategorie | Bemessung | Satz |
+|---|---|---|---|
+| BHKW `Kosten_Modul` und die vier Nebenposten, Kessel- und Pufferspeicher-`Investitionskosten`, Wärmepumpe `Modulkosten`, Stromspeicher `Investition_Fix` | Investition | `BETRAG` | der Spaltenwert |
+| Photovoltaik `Modulkosten` (Preis je Modul) | Investition | `EUR_PRO_KWP` | Spaltenwert ÷ (Modulleistung ÷ 1000) |
+| Solarthermie `Investitionskosten` (Preis je Kollektor) | Investition | `EUR_PRO_M2_KOLLEKTOR` | Spaltenwert ÷ Aperturfläche |
+| Kältemaschine `Modulkosten` (Preis je Gerät) | Investition | `EUR_PRO_KW_LEISTUNG` | Spaltenwert ÷ Nennkälteleistung |
+| Stromspeicher `Modulkosten` [€/kWh] · `Leistungskosten` [€/kW] | Investition | `EUR_PRO_KWH_KAPAZITAET` · `EUR_PRO_KW_LEISTUNG` | der Spaltenwert |
+| BHKW `Wartungskosten_kwhel`, Stromspeicher `Verschleisskosten` | Betrieb | `EUR_PRO_KWH_ELEKTRISCH` | der Spaltenwert |
+| Kessel `Wartungskosten` | Betrieb | nach `Wartungskosten_Einheit`: `JAHRESBETRAG` · `EUR_PRO_KWH_THERMISCH` · `PROZENT_INVESTITION` | der Spaltenwert |
+
+Ein **Stückpreis** wird damit zum spezifischen Satz, indem er durch die Baugröße **eines** Stücks
+geteilt wird — Satz × Bezugsgröße ergibt wieder Stückpreis × Stückzahl, also dieselbe Zahl, die der
+Planwert heute zeigt. `Tab_BHKW.Investition_kwel` wird **nicht** gesät: Der Wert ist aus den fünf
+Posten abgeleitet und wäre eine zweite Zählung. Fehlt einem Stückpreis seine Baugröße, entsteht
+**keine** Position mit Fantasiesatz; die Zeile steht benannt im Migrationsbericht. Die Saat ist
+wiederholbar (Schlüssel ist der Verweis), überschreibt keine gepflegte Vorlage und gibt einem Satz
+ohne Kosten keine leere Vorlage. Sie ist **ergebnisneutral**: Gerechnet wird aus
+`Tab_ProjektWerte`, die beiden Verweise sind Metaspalten der Katalogfassung, und `Tab_KostenVorlage`
+reist in keinem Katalogpaket — eine neue Katalogfassung entsteht dadurch nicht.
+
+**Der Abgleich (`Katalogkostenabgleich`).** Er hält die Positionen **einer Anlage** gegen die
+Satzvorlagen des Katalogsatzes, aus dem ihre Projektkopie stammt (`ID_Stamm`). Je Vorlagenposition
+eines von drei Ergebnissen: **fehlt** · **weicht ab** (mit Projekt- und Katalogwert) · **gleich**.
+Verglichen wird das Feld, das die Bemessung meint — ein Betrag gegen `EingegebenerWert`, ein Satz
+gegen `Einheitpreis`; Menge und Bezugsgröße bleiben, wie sie gepflegt sind. **Er läuft nie von
+selbst:** Die Vorschau liest nur; erst das ausdrückliche Ausführen legt die fehlenden Positionen an
+(über denselben Weg wie die Übernahme einer Vorlage, vorhandene bleiben unberührt) und setzt die
+abweichenden auf den Katalogwert. Deshalb bleibt jeder gerechnete Kapitalwert unverändert, solange
+niemand abgleicht. Benannte Absagen statt stiller Leere: kein Gewerk mit Ursprung, keine Zuordnung
+zum Katalog, kein Katalogsatz mit Satzvorlage.
+
+**Bedienung an zwei Orten, eine Mechanik.** Im Kostendialog der Anlage steht unter dem
+Positionsraster „Mit dem Kostenkatalog abgleichen…"; auf der Kostenseite (Berichte & Kosten →
+Kosten) trägt die Aktionenspalte derselben Anlagenzeile denselben Abgleich, und wo eine Anlage keine
+Position führt, steht in der Wertzelle statt „—" der Hinweis **„Katalogkosten vorhanden"**. Beide
+Wege zeigen vor dem Schreiben dieselbe Vorschau in derselben Rückfrage.
+
+**Grenzen dieser Welle.** Die Kostenspalten der Projektkopie bleiben stehen und der Planwert liest
+sie weiter (ihr Entfall ist KB-4); der Stromspeicher gleicht wie jedes Gewerk ab, seine eigene
+Speicherrechnung liest aber noch die Gerätespalten (KB-5). Kältemaschine und Rückkühlwerk tragen
+ihre Satzvorlage, führen aber keinen Ursprung an der Anlage — für sie ist der Abgleich erst möglich,
+wenn der Rückweg sie aufnimmt. `Tab_Wechselrichter` hat keine Verweisspalte und bleibt außen vor.
+
+**Wie gebaut (KB-2) — die Preise des Brennstoffs wandern in die Trägerkarte.** Derselbe Entscheid
+gilt den Energiepreisen: `Tab_Brennstoff_Stamm` und seine Projektkopie `Tab_Brennstoff` führten je
+einen `Standard_Arbeitspreis`, `Standard_Grundpreis` und `Standard_Leistungspreis`. **Kein
+Rechenweg las sie.** Ihr einziger Weg in die Welt war die **Saat** einer Energieträger-Variante
+(`EnergietraegerVarianteCtrl.Anlegen`, `WizardCtrl.TraegerSatzAnlegen`); gerechnet wird allein aus
+der Trägerwelt — Projektwert `custom_price_*` vor Katalogwert `energy_carrier.price_*` (§ 2.14).
+Ein Preis am Stoff war damit eine zweite, stumme Kostenbasis neben der Karte des Trägers.
+
+- **Die Saat hat eine Quelle.** Arbeits-, Grund- und Leistungspreis der Projektzeilen
+  (`energy_price`, `energy_project_settings`) kommen aus `energy_carrier.price_work`,
+  `price_base` und `price_power` — der Karte des Trägers, auf dem die Zuordnung sitzt. Der
+  **Zeitbezug** des Leistungspreises bleibt, wo er hingehört: an `price_power_modus` der Karte
+  (`JAHR` = €/(kW·a), Vorgabe; `MONAT` = €/(kW·Monat) × 12). Die Projektzeile führt die Zahl in
+  derselben Einheit und braucht ihn nicht zu wiederholen. Ein **neu angelegter** Träger entsteht
+  ohne Preise; sie werden in seiner Karte gepflegt.
+- **Der Schemaschritt** `BrennstoffpreiseTraegerkarteSchema` überträgt zuerst und entfernt dann:
+  Je Träger mit `ID_Brennstoff` und noch **leerem** Preis übernimmt die Karte den Standardwert des
+  verknüpften Katalogbrennstoffs, wenn dieser größer als 0 ist; mit einem übertragenen
+  Leistungspreis bekommt ein leerer Modus den Zeitbezug `JAHR`. Ein **gepflegter** Trägerwert wird
+  nie überschrieben, der Schritt ist wiederholbar. Danach fallen die drei Spalten an Katalog und
+  Projektkopie (`DROP COLUMN`, kein Tabellenneubau).
+- **Nur Katalog zu Katalog.** `energy_carrier` ist ein Katalog ohne Projektbezug; die Projektebene
+  des Trägers ist `energy_project_settings`. Die Werte der **Projektkopien** gehen deshalb
+  nirgends hin: `custom_price_*` ist die oberste Ebene der Lesekette, ein Übertrag dorthin würde
+  die Kosten jedes Projekts mit abweichender Kopie verschieben — eine Saat darf kein Ergebnis
+  bewegen (dieselbe Regel wie beim Emissionsentscheid vom 30.08.2026).
+- **Neue Katalogfassung.** Die drei Spalten standen in der Prüfsumme des Brennstoffkatalogs und
+  trugen auch mit dem Wert 0 je eine Zeile bei; mit ihrem Entfall ändert sich die Prüfsumme jedes
+  ausgelieferten Brennstoffs. Der Schritt bildet sie für jeden Satz neu, dessen gespeicherte Summe
+  vorher stimmte — ein vom Anwender geänderter Satz bleibt als geändert erkennbar. Die nächste
+  Auslieferung trägt damit eine neue Fassung (`--katalogfassung`, Setup-Kette).
+- **Im Dialog** „Brennstoffe des Projekts" entfallen die drei Preisspalten; `PreisEinheit` bleibt,
+  sie ist Katalogtext (die Abrechnungseinheit zeigt die Anzeige aus `energy_carrier.billing_unit`).
+  Gepflegt werden die Preise in der **Energieträgerverwaltung**.
+
 ## 2.15 Vergleichssicht der Ergebnisansicht — alle Varianten gegen die Referenz oder zwei Stände
 
 > **Stand: umgesetzt.** Sicht, A und B liegen als Sitzungswahl in `Vergleichsauswahl.Sicht`

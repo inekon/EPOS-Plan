@@ -165,6 +165,30 @@ Eine gbXML-Datei liefert mehr als Flächen. Der Import liest je Raum die Persone
 * '''Personen, Geräte, Licht.''' Der Nennwert ist die Zahl der Personen mal Wärme je Person (ohne Angabe 70 W; der latente Anteil entfällt) bzw. Leistung mal Fläche; das Licht wird zu den Geräten addiert und mit seinem Plan gewichtet. Die Anteile der Pläne gelten nennwertgewichtet.
 * '''Feiertage, Ferien, Betriebspause.''' Tagtypen für Feiertage werden auf die neun Feiertagsregeln des Programms abgebildet (die Datei nennt kein Datum); ein Jahresabschnitt, dessen Name Ferien, Urlaub, Holiday oder Vacation enthält, wird eine Ferienperiode, sonstige Abschnitte ein Zeitraum oder eine Betriebspause.
 * '''Verdichten und Verwerfen.''' Ein Tagesverlauf mit 24 mal k Werten wird auf Stundenmittel verdichtet; eine andere Zahl oder ein Wochentag ohne Tagesverlauf verwirft den Plan. Mehrere Räume einer Zone werden auf eine gemeinsame Teilung gebracht, Anteile nach Nennwert, Temperaturen nach Fläche gewichtet. Pläne anderer Art als Temperatur, Anteil oder Ein/Aus und die Auslegungstage werden benannt verworfen; die Datei wird deshalb nie abgelehnt. Das Importprotokoll führt je Zone eine Zeile mit Lastwerten, Zeitplänen, Verdichtungen und Verwürfen.
+* '''Restdaten aus EPOS-Dateien.''' Eine mit EPOS-Plan geschriebene gbXML-Datei trägt Vorheizzeit, Höchstleistungen, Wärmeübergabe und Kühlübergabe je Zone, Luftströme zwischen Zonen, Erdreichangaben sowie Zeilenbild und benannte Wochen der Kalender im Block <code>EPOS:</code> der Zonenbeschreibung; der Import liest den Block zonenweise, der Text davor bleibt unbeachtet. Werte außerhalb des zulässigen Bereichs und eine Übergabeart, die das Programm nicht kennt, werden benannt übergangen. Dieselben Angaben liest der IFC-Import aus den Sätzen <code>EPOS_Zone</code> und <code>EPOS_Gebaeude</code>.
+
+=== Nutzungsprofil je Zone beim Import ===
+{{Anker|profil-beim-import}}
+
+Im Mehrzonenweg bekommt jede Zone ein Nutzungsprofil nach dieser Rangfolge:
+
+# '''Profilnummer der Datei.''' Eine IFC-Datei von EPOS-Plan trägt die DIN-Nummer in <code>EPOS_Zone</code>; bei gbXML wird der Raumtyp der Datei über eine feste Tafel einer Nummer der DIN/TS 18599-10 zugeordnet. Es zählt der flächengrößte Raum der Zone, der eine Nummer trägt. Das Profil dieser Nummer geht der Regel nach Raumtyp vor.
+# '''Raumtyp der Quelle''' (Raumtyp der Datei oder Nutzungsklasse) über die Zuordnung im Katalog der Nutzungsprofile.
+# '''Gebäudeart''' des Gebäudes.
+# Das Muster „Wohnen“ bzw. „Sonstige“.
+
+Werte, die die Datei selbst führt, gehen dem Profil immer vor; das Profil füllt nur, was die Datei offen lässt. Einige gbXML-Raumtypen sind mehrdeutig (etwa Speisebereich, Umkleide, Werkstatt oder Lobby) und führen bewusst zu keiner Nummer; sie fallen auf die nächste Stufe der Rangfolge.
+
+Die Prüfgruppe 3 der [[Programm Dokumentation/Gebäude#modell-pruefen|Modellprüfung]] zeigt, woher das Profil jeder Zone kommt:
+* '''grün:''' Das Profil stammt aus der Datei und hat einen Treffer im Katalog (oder wurde von Hand gesetzt).
+* '''gelb:''' Das Profil stammt aus einer Regel (Raumtyp, Nutzungsklasse, Gebäudeart oder ein übernommener Vorschlag).
+* '''gelb:''' Die Datei nennt eine Profilnummer ohne Treffer im Katalog; die Zone bleibt ohne Profil, und die Prüfung schlägt das nächstliegende Profil der Kategorie DIN/TS 18599-10 vor.
+* '''gelb:''' Eine beheizte Zone hat weder Profil noch Kalender; sie erbt die Werte vom Gebäude und rechnet. Die Prüfung schlägt ein Profil nach Regel vor.
+
+Rot kommt in dieser Gruppe nicht vor. Die Vorschläge übernehmen Sie wie alle Vorschläge der Modellprüfung.
+
+{{Anker|wiederimport}}
+'''Wiederimport.''' Lesen Sie eine neue Fassung derselben Datei (gleiches Format, anderer Inhalt) in ein Gebäude ein, das schon Zonen hat, führt EPOS-Plan Datei und Bestand zusammen. Je Feld gilt: Hand vor Datei vor Vorgabe. Ein von Hand gesetztes Profil, Sollwerte, Kalender, eine von Hand angepasste Fläche oder ein gewählter Aufbau bleiben, Zonen und Bauteile ohne Kennung der Datei bleiben unberührt. Vor dem Schreiben zeigt eine Vorschau je Zone und Bauteil, was neu hinzukommt, sich verändert oder entfällt; entfallende Zonen und Bauteile werden nur entfernt, wenn Sie den Haken dazu setzen.
 
 === Mehrere Zonen ===
 {{Anker|mehrere-zonen}}

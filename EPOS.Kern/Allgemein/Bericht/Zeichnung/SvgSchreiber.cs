@@ -190,6 +190,9 @@ namespace WindowsFormsApplication1.Zeichnung
         /// <summary>Der Klassenname eines Reihenpfads — der Griff der Oberfläche.</summary>
         public const string KLASSE_REIHE = "epos-reihe";
 
+        /// <summary>Die Klasse des Tagesbands einer Reihe (Oberflächenregel) — ein zweiter Pfad vor ihrem Kern.</summary>
+        public const string KLASSE_BAND = "epos-band";
+
         /// <summary>Der Klassenname des inneren <c>&lt;svg&gt;</c> in Datenkoordinaten.</summary>
         public const string KLASSE_FLAECHE = "epos-flaeche";
 
@@ -267,7 +270,12 @@ namespace WindowsFormsApplication1.Zeichnung
                 .Attribut("width", Px(modell.Breite))
                 .Attribut("height", Px(modell.Hoehe))
                 .Attribut("viewBox", "0 0 " + Px(modell.Breite) + " " + Px(modell.Hoehe))
-                .Attribut("font-family", SCHRIFTKETTE);
+                .Attribut("font-family", SCHRIFTKETTE)
+                // Der Oberflaechenmodus steht am Bild (Oberflaechenregel) - nur auf dem
+                // Bildschirm: Ein Modell des Berichtswegs traegt das Attribut nicht, und der
+                // Druck (Druckbaum) nie - sein SVG bleibt byte-gleich, wie es war.
+                .Attribut("data-darstellung",
+                          datenflaeche && modell.Darstellung == Darstellung.Interaktiv ? "interaktiv" : null);
 
             var defs = new SvgKnoten("defs");
             var inhalt = new List<SvgKnoten>();
@@ -564,6 +572,20 @@ namespace WindowsFormsApplication1.Zeichnung
                 Farbton strich = flaeche ? r.Randton : r.Ton;
                 string marke = "reihe:" + (r.Name ?? "");
 
+                // DAS TAGESBAND (Oberflaechenregel): VOR dem Kern der Reihe ihr Band vom
+                // Tagestief zur Tagesspitze - durchscheinend, ohne Strich, mit data-band
+                // statt data-reihe (der Legendenklick schaltet beide, die Pruefstaende
+                // zaehlen je Reihe EINEN Reihenpfad). Leer, sobald der Ausschnitt die
+                // Stunden zeigt; die Oberflaeche rechnet es im Fenster nach.
+                if (r.Tagesband)
+                    knoten.Fuege(new SvgKnoten("path", marke)
+                        .Attribut("class", KLASSE_BAND)
+                        .Attribut("data-band", r.Name ?? "")
+                        .Attribut("fill", Hex(lage.Palette, r.Ton))
+                        .Attribut("fill-opacity", Oberflaechenregel.DECKUNG_BAND.ToString("0.##", INV))
+                        .Attribut("stroke", "none")
+                        .Attribut("d", Bandpfad(r, fl)));
+
                 var pfad = new SvgKnoten("path", marke)
                     .Attribut("class", KLASSE_REIHE)
                     .Attribut("data-reihe", r.Name ?? "")
@@ -668,6 +690,16 @@ namespace WindowsFormsApplication1.Zeichnung
             int spalten = (int)Math.Max(1.0, Math.Round(flaeche.Bild.Breite));
             var sb = new StringBuilder(laenge * 12 + 16);
 
+            // DAS TAGESBAND (Oberflaechenregel): Eine dichte Jahresreihe ohne Stapel zeigt
+            // in der Jahresansicht je Tag ihr Mittel als Kern - Linie oder Flaeche -, das
+            // Band davor zeichnet Bandpfad. Sobald ein Tag breiter als TAG_MIN_SPALTEN
+            // Bildpunkte ist, geht es unten weiter: jede Stunde, roh oder gebuendelt.
+            if (Pfadregel.AlsTagesband(reihe, laenge, spalten))
+            {
+                Tagesbandkern(sb, reihe, rf, schritt, ab, laenge, hoehe, spanne);
+                return sb.ToString();
+            }
+
             // DIE STUFENREGEL DES STAPELS: Eine Stapelschicht oder eine Linie, die einen
             // Stapel begleitet, geht mit mehr Werten als Bildpunktspalten als TREPPE ihrer
             // Werte in den Spitzenstunden in den Pfad - ob roh oder gebuendelt verlangt ist.
@@ -709,6 +741,101 @@ namespace WindowsFormsApplication1.Zeichnung
                 Punkt(sb, i == 0, XStelle(reihe, rf, schritt, ab + gebuendelt[i].X),
                       Bildpunkt(gebuendelt[i].Y, rf, hoehe, spanne));
             return sb.ToString();
+        }
+
+        // =====================================================================
+        // Das Tagesband (Oberflaechenregel)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Das Tagesband der ganzen Reihe</b>: je Tag des Jahresrasters ein Punkt der
+        /// Tagesspitze (vorwärts, in der Tagesmitte) und der Tagestiefe (rückwärts), als
+        /// geschlossener Zug je Stück ohne Lücke; leer, wenn die Reihe nicht als Tagesband
+        /// steht (<see cref="Pfadregel.AlsTagesband"/>).
+        /// </summary>
+        public static string Bandpfad(Datenreihe reihe, Zeichenflaeche flaeche)
+        {
+            Datenfenster rf = Reihenfenster(reihe, flaeche);
+            return rf == null ? "" : Bandpfad(reihe, flaeche, rf.XVon, rf.XBis);
+        }
+
+        /// <summary>
+        /// <b>Das Tagesband eines Ausschnitts</b> <paramref name="von"/> … <paramref name="bis"/>
+        /// (Einheit der x-Achse) — dieselbe Rechnung wie der Kern in
+        /// <see cref="Reihenpfad(Datenreihe, Zeichenflaeche, double, double, bool)"/>. Die
+        /// Oberfläche rechnet es beim Zoom nach; leer, sobald der Ausschnitt die Stunden zeigt.
+        /// </summary>
+        public static string Bandpfad(Datenreihe reihe, Zeichenflaeche flaeche, double von, double bis)
+        {
+            Datenfenster rf = Reihenfenster(reihe, flaeche);
+            if (rf == null || reihe.XWerte != null || reihe.Art == Reihenart.Punkte) return "";
+            int n = reihe.Werte.Length;
+            double schritt = (rf.XBis - rf.XVon) / (n - 1);
+            if (schritt <= 0) return "";
+            Indexgrenzen(rf, schritt, n, von, bis, out int ab, out int biss);
+            if (biss < ab) return "";
+            int laenge = biss - ab + 1;
+            int spalten = (int)Math.Max(1.0, Math.Round(flaeche.Bild.Breite));
+            if (!Pfadregel.AlsTagesband(reihe, laenge, spalten)) return "";
+
+            double hoehe = flaeche.Bild.Hoehe;
+            double spanne = rf.YBis - rf.YVon;
+            if (spanne <= 0) spanne = 1;
+
+            IReadOnlyList<Pfadregel.Tagesstufe> tage = Pfadregel.Tagesband(reihe.Werte, ab, laenge);
+            var sb = new StringBuilder(tage.Count * 24 + 16);
+            foreach ((int start, int ende) in Stuecke(tage))
+            {
+                if (sb.Length > 0) sb.Append(' ');
+                for (int t = start; t <= ende; t++)
+                    Punkt(sb, t == start, XStelle(reihe, rf, schritt, tage[t].Mitte),
+                          Bildpunkt(tage[t].Max, rf, hoehe, spanne));
+                for (int t = ende; t >= start; t--)
+                    Punkt(sb, false, XStelle(reihe, rf, schritt, tage[t].Mitte),
+                          Bildpunkt(tage[t].Min, rf, hoehe, spanne));
+                sb.Append(" Z");
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// <b>Der Kern des Tagesbands</b>: das Tagesmittel je Tag in der Tagesmitte — bei einer
+        /// Linie als Streckenzug, bei einer Fläche als geschlossener Zug auf der Achsennull
+        /// (in das Fenster geklemmt wie der Flächenzug). Je Stück ohne Lücke ein Teilpfad.
+        /// </summary>
+        private static void Tagesbandkern(StringBuilder sb, Datenreihe reihe, Datenfenster rf, double schritt,
+                                          int ab, int laenge, double hoehe, double spanne)
+        {
+            IReadOnlyList<Pfadregel.Tagesstufe> tage = Pfadregel.Tagesband(reihe.Werte, ab, laenge);
+            bool flaeche = reihe.Art == Reihenart.Flaeche;
+            double null0 = rf.YVon > 0 ? rf.YVon : rf.YBis < 0 ? rf.YBis : 0.0;
+            foreach ((int start, int ende) in Stuecke(tage))
+            {
+                if (sb.Length > 0) sb.Append(' ');
+                for (int t = start; t <= ende; t++)
+                    Punkt(sb, t == start, XStelle(reihe, rf, schritt, tage[t].Mitte),
+                          Bildpunkt(tage[t].Mittel, rf, hoehe, spanne));
+                if (!flaeche) continue;
+                Punkt(sb, false, XStelle(reihe, rf, schritt, tage[ende].Mitte), Bildpunkt(null0, rf, hoehe, spanne));
+                Punkt(sb, false, XStelle(reihe, rf, schritt, tage[start].Mitte), Bildpunkt(null0, rf, hoehe, spanne));
+                sb.Append(" Z");
+            }
+        }
+
+        /// <summary>Die Läufe aufeinanderfolgender belegter Tage (erster und letzter Index in <paramref name="tage"/>).</summary>
+        private static IReadOnlyList<(int Von, int Bis)> Stuecke(IReadOnlyList<Pfadregel.Tagesstufe> tage)
+        {
+            var stuecke = new List<(int, int)>();
+            int t = 0;
+            while (t < tage.Count)
+            {
+                while (t < tage.Count && !tage[t].Belegt) t++;
+                if (t >= tage.Count) break;
+                int von = t;
+                while (t < tage.Count && tage[t].Belegt) t++;
+                stuecke.Add((von, t - 1));
+            }
+            return stuecke;
         }
 
         private static bool Endlich(double w) => !double.IsNaN(w) && !double.IsInfinity(w);

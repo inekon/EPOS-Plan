@@ -72,8 +72,13 @@ namespace WindowsFormsApplication1
                                          double? Kapazitaet, bool SchichtOhneStoffwert, int Folge, string Klasse = null,
                                          IReadOnlyCollection<string> Typgruppen = null);
 
-    /// <summary>Die Hinweise der Quelle zu einer Zone (Profilregel 2.4 Stufe 1 und 2).</summary>
-    internal sealed record Zonenquelle(int? DinNummer, string Raumtyp, string Nutzungsklasse);
+    /// <summary>
+    /// Die Hinweise der Quelle zu einer Zone (Profilregel 2.4 Stufe 1 und 2): DIN-Nummer der Datei, Raumtyp (HottCAD-Raumtyp
+    /// oder gbXML-<c>spaceType</c>), Nutzungsklasse. <paramref name="ProfilAusRegel"/> (Welle DA-5): Das Profil der Zone kam
+    /// aus einer Regel oder einem übernommenen Vorschlag (Raumtyp, Nutzungsklasse, Gebäudeart, EPOS-Muster), nicht aus der
+    /// Datei — Ampel gelb in Prüfgruppe 3.
+    /// </summary>
+    internal sealed record Zonenquelle(int? DinNummer, string Raumtyp, string Nutzungsklasse, bool ProfilAusRegel = false);
 
     /// <summary>
     /// <b>Die Modellprüfung</b> (Entwurf Geführter Modellaufbau 2.2, E137): fünf Prüfgruppen über einem
@@ -108,6 +113,8 @@ namespace WindowsFormsApplication1
         internal const string EINZONE_BAUWEISE_FEHLT = "EINZONE_BAUWEISE_FEHLT";
 
         internal const string ZONE_OHNE_PROFIL = "ZONE_OHNE_PROFIL";
+        internal const string DIN_OHNE_KATALOGTREFFER = "DIN_OHNE_KATALOGTREFFER";
+        internal const string PROFIL_AUS_REGEL = "PROFIL_AUS_REGEL";
         internal const string HEIZKALENDER_GEERBT = "HEIZKALENDER_GEERBT";
         internal const string UNBEHEIZT_MIT_HEIZKALENDER = "UNBEHEIZT_MIT_HEIZKALENDER";
         internal const string KUEHLKALENDER_FEHLT = "KUEHLKALENDER_FEHLT";
@@ -131,7 +138,7 @@ namespace WindowsFormsApplication1
                                                      HUELLE_UNTEN_FEHLT, HUELLE_GESPIEGELT },
             [Pruefgruppe.AufbautenStoffwerte] = new[] { NUR_U_WERT, OHNE_U_OHNE_AUFBAU, AUFBAU_UNGEEIGNET, SCHICHT_OHNE_STOFFWERT, KAPAZITAET_FEHLT,
                                                        EINZONE_BAUWEISE_FEHLT },
-            [Pruefgruppe.NutzungKonditionierung] = new[] { ZONE_OHNE_PROFIL, HEIZKALENDER_GEERBT, UNBEHEIZT_MIT_HEIZKALENDER, KUEHLKALENDER_FEHLT,
+            [Pruefgruppe.NutzungKonditionierung] = new[] { ZONE_OHNE_PROFIL, DIN_OHNE_KATALOGTREFFER, PROFIL_AUS_REGEL, HEIZKALENDER_GEERBT, UNBEHEIZT_MIT_HEIZKALENDER, KUEHLKALENDER_FEHLT,
                                                           LUEFTUNG_GEERBT, FERIEN_FEHLEN, HEIZPERIODE_FEHLT },
             [Pruefgruppe.OrtLage] = new[] { KLIMAREGION_FEHLT, NORDRICHTUNG_ANGENOMMEN, FEIERTAGSLAND_FEHLT },
             [Pruefgruppe.Rechenfaehigkeit] = new[] { PFLICHTGROESSE_FEHLT, RECHENWEG_ABGELEHNT },
@@ -407,12 +414,23 @@ namespace WindowsFormsApplication1
                         f.Add(new Modellbefund(G, UNBEHEIZT_MIT_HEIZKALENDER, Pruefampel.Gelb, Text(UNBEHEIZT_MIT_HEIZKALENDER, z.Bezeichner), z.ID));
                     continue;
                 }
-                if (s.Nutzung(z) == null && !kalender)
+                // Welle DA-5 (Konzept DA 4.3, E135): die Ampel des Profils. Grün: Profil aus der Datei mit Katalogtreffer (oder von
+                // Hand); gelb: Profil aus Regel bzw. Vorschlag, DIN-Nummer ohne Katalogtreffer, Zone ohne Profil — sie rechnet mit den
+                // Werten der Datei und erbt das Übrige vom Gebäude (rot hieße nicht rechenfähig; diese Lage gibt es hier nicht).
+                s.Quellen.TryGetValue(z.ID, out Zonenquelle q);
+                string nutzung = s.Nutzung(z);
+                if (nutzung == null && !kalender)
                 {
-                    f.Add(new Modellbefund(G, ZONE_OHNE_PROFIL, Pruefampel.Gelb, Text(ZONE_OHNE_PROFIL, z.Bezeichner), z.ID,
-                                          Vorschlag: Modellvorschlagsregeln.Profil(s, z)));
+                    if (q?.DinNummer is int din && Modellvorschlagsregeln.DinTreffer(s.Vorbelegung, din) == null)
+                        f.Add(new Modellbefund(G, DIN_OHNE_KATALOGTREFFER, Pruefampel.Gelb, Text(DIN_OHNE_KATALOGTREFFER, z.Bezeichner, din), z.ID,
+                                              Vorschlag: Modellvorschlagsregeln.Profil(s, z)));
+                    else
+                        f.Add(new Modellbefund(G, ZONE_OHNE_PROFIL, Pruefampel.Gelb,
+                                              Text(ZONE_OHNE_PROFIL, z.Bezeichner), z.ID, Vorschlag: Modellvorschlagsregeln.Profil(s, z)));
                     continue;
                 }
+                if (nutzung != null && q?.ProfilAusRegel == true)
+                    f.Add(new Modellbefund(G, PROFIL_AUS_REGEL, Pruefampel.Gelb, Text(PROFIL_AUS_REGEL, z.Bezeichner, nutzung), z.ID));
                 if (!s.HatKalender(z.ID, DbWerte.KOND_GROESSE_HEIZSOLL) && !z.Raumsolltemperatur_Tag.HasValue)
                     f.Add(new Modellbefund(G, HEIZKALENDER_GEERBT, Pruefampel.Gelb, Text(HEIZKALENDER_GEERBT, z.Bezeichner), z.ID));
                 if (!s.HatKalender(z.ID, DbWerte.KOND_GROESSE_LUEFTUNG) && !z.Luftwechsel_Infiltration.HasValue && !z.Luftwechsel_Nutzer.HasValue)

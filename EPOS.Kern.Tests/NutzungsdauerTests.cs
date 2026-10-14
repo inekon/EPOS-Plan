@@ -106,8 +106,15 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
-            // 31 aus der Saat-Zuordnung, dazu drei der Kältemaschine aus Schritt 183 (Aggregat, Montage, Planung).
-            Assert.Equal(31L + 3L, Zahl(NutzungsdauerSchema.ZaehlungZuordnung()));
+            // 31 aus der Saat-Zuordnung, dazu drei der Kältemaschine aus Schritt 183 (Aggregat, Montage, Planung) -
+            // gezählt an den Standardvorlagen der Auslieferung. Die Satzvorlagen der Katalogkosten-Saat (Schritt
+            // KatalogkostenSaatSchema.SCHRITT, IstStandard = 0) liegen in der Testdatenbank schon vor; die
+            // Testvorrichtung wiederholt die Zuordnung von Schritt 75 danach und träfe sie, was der Migrationsweg
+            // (Schritt 75 vor der Saat) nie tut.
+            Assert.Equal(31L + 3L, Zahl(
+                "SELECT COUNT(*) FROM Tab_KostenVorlagePosition p " +
+                "JOIN Tab_KostenVorlage v ON v.ID = p.VorlageID " +
+                "WHERE v.IstStandard = 1 AND p.NutzungsdauerID IS NOT NULL"));
 
             long betrieb = Zahl(
                 "SELECT COUNT(*) FROM Tab_KostenVorlagePosition p " +

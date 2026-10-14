@@ -1,0 +1,466 @@
+﻿@* Der Abschnitt "Ergebnisse — Energie" der Seite "Uebersicht" (Anwenderauftrag 13.10.2026).
+
+   WAS ER ZEIGT. Die Energie-Kennzahlen von Stamm und Varianten nebeneinander -
+   dieselben Versionen und dieselbe Reihenfolge wie die Gegenueberstellung der
+   Komponenten (Stamm und die Varianten "Im Vergleich"), im Spaltenkopf der
+   Simulationsstand. Die Einheit steht im Zeilenkopf. Was vom Stamm abweicht, ist
+   hinterlegt wie in der Komponententabelle, darunter leise die Abweichung in
+   Prozent. Kosten gehoeren nicht hierher, sie stehen in der Wirtschaftlichkeit.
+
+   GRUPPEN ALS ZUSTAND. Jede Gruppe traegt einen stabilen Schluessel und einen
+   Zustand (Offen, Zugeklappt, Ausgeblendet). Die Vorgabe setzt der Kern
+   (Energievergleich.GRUPPEN_DATEN, ueber die Huelle); die Komponente zeichnet allein
+   ueber den Zustand: offene Gruppen in der Tafel, zugeklappte je als Klappgruppe des
+   Hauses (Baustein Klappgruppe) darunter, im Kopf die Zahl der Kennzahlen und der
+   Hinweis auf eine Abweichung. Ob eine Klappgruppe aufgeklappt ist, gilt je Gruppe
+   und Sitzung (Ablage der Huelle). "nur Unterschiede" der Seite blendet in allen
+   Gruppen Gruppen ohne Abweichung aus.
+
+   WOHER. Die Zahlen, das Format je Zeile und die Entscheidung "weicht ab" kommen
+   fertig aus dem Kern (Energievergleich, ueber die Huelle UebersichtErgebnisGaben).
+   Die Komponente zeigt nur; sie laedt neu, sobald die Seite einen neuen Stand reicht.
+
+   ANZEIGE ANPASSEN. Der Knopf rechts im Kopf oeffnet den Dialog ErgebnisAnpassenDialog als
+   Ueberlagerung (Titel und Kreuz an der Ueberlagerung). Die Einstellung (Zustand je Gruppe,
+   abgewaehlte Kennzahlen, "Zeilen ohne Wert ausblenden") wirkt in der Huelle auf die
+   Gruppenliste; die Komponente reicht sie bei OK an AnzeigeSpeichern und laedt neu. Was
+   "ohne Wert" ausblendet, nennt eine leise Zeile unter der Tabelle. Kein Delegat, kein Knopf.
+   TABELLE ODER GRAFIK. Im Kopf des Abschnitts steht der Umschalter "Tabelle |
+   Grafik" (Vorgabe Tabelle); die Wahl gilt je Benutzer ueber die Einstellungsnaht
+   des Kerns (Schluessel Uebersicht.Ergebnisse.Ansicht, Lesen und Schreiben reicht
+   die Huelle durch). Die Grafik (UebersichtErgebnisGrafik) bekommt dieselben
+   Gruppen wie die Tafel, gefiltert nach Zustand und "nur Unterschiede".
+
+   LEERE FAELLE. Eine nicht simulierte Version zeigt leise "—", ihr Spaltenkopf sagt
+   deutlich "nicht simuliert"; ist keine Version simuliert, steht ein Hinweis statt
+   der Tabelle. Ohne Gaben zeichnet der Abschnitt nichts. *@
+
+@using EPOS.UI.Dialoge.Berichte
+
+@if (_ergebnis is not null && _ergebnis.Versionsspalten.Count > 0)
+{
+    <section class="epos-uebersicht-ergebnisse" aria-label="@Titel">
+        @{ bool mitDaten = !(_ergebnis.KeineSimulation || (_ergebnis.Gruppen.Count == 0 && _ergebnis.Anpassbar.Count == 0)); }
+        <div class="epos-ergebnis-kopf">
+            <h2 class="epos-uebersicht-abschnitt">@Titel</h2>
+            @if (mitDaten)
+            {
+                <span class="epos-ergebnis-ansicht" role="radiogroup" aria-label="@AnsichtText" title="@AnsichtText"
+                      @onkeydown="BeiAnsichtTaste">
+                    @for (int i = 0; i < 2; i++)
+                    {
+                        int k = i;
+                        bool an = (k == 1) == IstGrafik;
+                        <button type="button" role="radio" aria-checked="@(an ? "true" : "false")" tabindex="@(an ? 0 : -1)"
+                                class="@(an ? "epos-ergebnis-ansicht-stellung epos-ergebnis-ansicht-stellung--an" : "epos-ergebnis-ansicht-stellung")"
+                                data-ansicht="@(k == 1 ? ANSICHT_GRAFIK : ANSICHT_TABELLE)"
+                                @ref="_ansichtKnoepfe[k]"
+                                @onclick="() => AnsichtSetzen(k == 1 ? ANSICHT_GRAFIK : ANSICHT_TABELLE)">@(k == 1 ? AnsichtGrafikText : AnsichtTabelleText)</button>
+                    }
+                </span>
+            }
+            @if (AnpassenMoeglich)
+            {
+                <button type="button" class="epos-knopf epos-ergebnis-anpassen-knopf"
+                        @onclick="AnpassenOeffnen">@AnpassenTexte.Knopf</button>
+            }
+        </div>
+        @if (!mitDaten)
+        {
+            <p class="epos-komponenten-leer epos-ergebnis-leer">@KeineSimulationText</p>
+        }
+        else if (IstGrafik)
+        {
+            @if (Tafelgruppen.Count == 0 && Klappgruppen.Count == 0)
+            {
+                <p class="epos-komponenten-leer epos-ergebnis-gleich">@KeineUnterschiedeText</p>
+            }
+            <UebersichtErgebnisGrafik Ergebnis="@_ergebnis" Tafelgruppen="@Tafelgruppen" Klappgruppen="@Klappgruppen"
+                                      KlappgruppeOffen="@KlappgruppeOffen" KlappgruppeGewechselt="@BeiKlappgruppe"
+                                      SpalteKennzahl="@SpalteKennzahl" LegendeText="@GrafikLegendeText"
+                                      HinweisText="@GrafikHinweisText" NichtSimuliertText="@NichtSimuliertText"
+                                      WeichtAbText="@WeichtAbText" ZusatzText="@(g => Anzahl(g.Zeilen.Count))" />
+            @if (_ergebnis.OhneWertAusgeblendet > 0)
+            {
+                <p class="epos-leisezeile epos-ergebnis-ohnewert">@OhneWertHinweis</p>
+            }
+            <p class="epos-leisezeile epos-ergebnis-quelle">@HinweisQuelle</p>
+        }
+        else
+        {
+            <div class="epos-komponenten-werkzeug">
+                <span class="epos-komponenten-legende">
+                    <span class="epos-komponenten-legende-marke" aria-hidden="true"></span>@LegendeAbweichung; @LegendeProzent
+                </span>
+            </div>
+            @if (NurUnterschiede && Tafelgruppen.Count == 0 && Klappgruppen.Count == 0)
+            {
+                <p class="epos-komponenten-leer epos-ergebnis-gleich">@KeineUnterschiedeText</p>
+            }
+            @if (Tafelgruppen.Count > 0)
+            {
+                @Tafel(Tafelgruppen, true)
+            }
+            @foreach (ErgebnisVergleichGruppe g in Klappgruppen)
+            {
+                <Klappgruppe @key="g.Schluessel" Titel="@g.Titel" Zusatz="@Anzahl(g.Zeilen.Count)" Ebene="3"
+                             Klasse="@("epos-ergebnis-klappgruppe epos-ergebnis-klappgruppe--" + g.Schluessel)"
+                             Offen="@KlappgruppeOffen(g.Schluessel)"
+                             OffenChanged="@(an => BeiKlappgruppe(g.Schluessel, an))">
+                    <Kopfhandlungen>
+                        @if (g.WeichtAb)
+                        {
+                            <span class="epos-ergebnis-klapphinweis" title="@WeichtAbText">
+                                <span class="epos-komponenten-gewerkmarke" aria-hidden="true">●</span>@WeichtAbText
+                            </span>
+                        }
+                    </Kopfhandlungen>
+                    <ChildContent>
+                        @Tafel(new[] { g }, false)
+                    </ChildContent>
+                </Klappgruppe>
+            }
+            @if (_ergebnis.OhneWertAusgeblendet > 0)
+            {
+                <p class="epos-leisezeile epos-ergebnis-ohnewert">@OhneWertHinweis</p>
+            }
+            <p class="epos-leisezeile epos-ergebnis-quelle">@HinweisQuelle</p>
+        }
+    </section>
+
+    <Ueberlagerung Offen="@_anpassenOffen" Titel="@AnpassenTexte.Titel" Geschlossen="() => AnpassenFertig(null)">
+        <KindInhalt>
+            @if (_anpassenOffen)
+            {
+                <ErgebnisAnpassenDialog TitelText="" Gruppen="@_ergebnis.Anpassbar" Einstellung="@AnzeigeLesen?.Invoke()"
+                                        Texte="@AnpassenTexte" HilfeSchluessel="@HilfeSchluessel"
+                                        Geschlossen="AnpassenFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+}
+
+@code {
+    /// <summary>Der Stand der Seite (Gruppe, Vergleichswahl, Stamm); ein neuer Stand lädt den Abschnitt neu.</summary>
+    [Parameter] public UebersichtStand? Stand { get; set; }
+
+    /// <summary>Baut aus dem Stand der Seite den Energievergleich (Hülle <c>UebersichtErgebnisGaben</c>).</summary>
+    [Parameter] public Func<UebersichtStand, UebersichtErgebnisStand>? Laden { get; set; }
+
+    /// <summary>Die Abschnittsüberschrift (<c>BK_ERG_ABSCHNITT_ERGEBNISSE</c>).</summary>
+    [Parameter] public string Titel { get; set; } = "Ergebnisse — Energie";
+
+    /// <summary>Der Kopf der ersten Spalte (<c>BK_ERG_SP_KENNZAHL</c>).</summary>
+    [Parameter] public string SpalteKennzahl { get; set; } = "Kennzahl";
+
+    /// <summary>Die Legende der Markierung (<c>BK_LBL_LEGENDE_ABWEICHUNG</c>).</summary>
+    [Parameter] public string LegendeAbweichung { get; set; } = "markiert: weicht vom Stammprojekt ab";
+
+    /// <summary>Der Zusatz zur Prozentangabe (<c>BK_ERG_LEGENDE_PROZENT</c>).</summary>
+    [Parameter] public string LegendeProzent { get; set; } = "darunter die Abweichung zum Stammprojekt in Prozent";
+
+    /// <summary>Die leise Zeile unter der Tabelle (<c>BK_ERG_HINWEIS_QUELLE</c>).</summary>
+    [Parameter] public string HinweisQuelle { get; set; } =
+        "Werte aus dem letzten gespeicherten Simulationslauf je Version. Kosten stehen unter Wirtschaftlichkeit.";
+
+    /// <summary>Der Hinweis, wenn keine Version simuliert ist (<c>BK_ERG_KEINE_SIMULATION</c>).</summary>
+    [Parameter] public string KeineSimulationText { get; set; } =
+        "Für keine Version im Vergleich liegt ein Simulationsergebnis vor. Starten Sie die Simulation, um die Energie-Ergebnisse gegenüberzustellen.";
+
+    /// <summary>Der Kurztext einer nicht simulierten Zelle (<c>BK_LBL_NICHT_SIMULIERT</c>).</summary>
+    [Parameter] public string NichtSimuliertText { get; set; } = "nicht simuliert";
+
+    /// <summary>Der Text der Sprachausgabe an einer abweichenden Zelle (<c>BK_LBL_WEICHT_AB</c>).</summary>
+    [Parameter] public string WeichtAbText { get; set; } = "weicht vom Stammprojekt ab";
+
+    /// <summary>Ein Wert unter „nur Unterschiede“ der Seite: Gruppen ohne Abweichung entfallen, in der Tafel wie zugeklappt.</summary>
+    [Parameter] public bool NurUnterschiede { get; set; }
+
+    /// <summary>Der Hinweis, wenn „nur Unterschiede“ alles ausblendet (<c>BK_ERG_KEINE_UNTERSCHIEDE</c>).</summary>
+    [Parameter] public string KeineUnterschiedeText { get; set; } =
+        "Keine Version im Vergleich weicht in den Energie-Ergebnissen vom Stammprojekt ab.";
+
+    /// <summary>Die Zahl im Kopf der Klappgruppe (<c>BK_ERG_ANZAHL_KENNZAHLEN</c>).</summary>
+    [Parameter] public string AnzahlFormat { get; set; } = "{0} Kennzahlen";
+
+    /// <summary>Die Einzahl im Kopf der Klappgruppe (<c>BK_ERG_ANZAHL_KENNZAHL_EINS</c>).</summary>
+    [Parameter] public string AnzahlEins { get; set; } = "1 Kennzahl";
+
+    /// <summary>Liest aus der Merkablage der Hülle, ob die Klappgruppe mit diesem Gruppenschlüssel aufgeklappt ist (je Sitzung).</summary>
+    [Parameter] public Func<string, bool>? KlappgruppeOffenLesen { get; set; }
+
+    /// <summary>Meldet die neue Stellung einer Klappgruppe (Gruppenschlüssel, aufgeklappt) an die Hülle.</summary>
+    [Parameter] public Action<string, bool>? KlappgruppeOffenGewechselt { get; set; }
+
+    /// <summary>Liest die gespeicherte Anzeigeeinstellung (Hülle, je Benutzer); ohne Delegat die Vorgabe.</summary>
+    [Parameter] public Func<ErgebnisAnzeigeEinstellung>? AnzeigeLesen { get; set; }
+
+    /// <summary>Schreibt die Anzeigeeinstellung nach OK (Hülle, Einstellungsnaht); ohne Delegat kein Knopf.</summary>
+    [Parameter] public Action<ErgebnisAnzeigeEinstellung>? AnzeigeSpeichern { get; set; }
+
+    /// <summary>Die Beschriftungen des Dialogs „Anzeige anpassen…“ und des Hinweises „ohne Wert“.</summary>
+    [Parameter] public ErgebnisAnpassenTexte AnpassenTexte { get; set; } = new();
+
+    /// <summary>Der Hilfeschlüssel des Dialogs „Anzeige anpassen…“; leer = keine Hilfepille.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "";
+
+    /// <summary>Steht der Dialog beim ersten Zeichnen offen? (Prüfhilfe der Probenseite)</summary>
+    [Parameter] public bool AnpassenOffen { get; set; }
+
+    private bool _anpassenOffen;
+    private bool _anpassenVorgabeGelesen;
+
+    /// <summary>Steht der Dialog „Anzeige anpassen…“? (Prüfhilfe)</summary>
+    public bool AnpassenSteht => _anpassenOffen;
+
+    private bool AnpassenMoeglich
+        => AnzeigeSpeichern is not null && _ergebnis is not null && !_ergebnis.KeineSimulation && _ergebnis.Anpassbar.Count > 0;
+
+    private string OhneWertHinweis
+        => _ergebnis!.OhneWertAusgeblendet == 1 ? AnpassenTexte.OhneWertHinweisEins
+           : string.Format(AnpassenTexte.OhneWertHinweis, _ergebnis.OhneWertAusgeblendet);
+
+    /// <summary>Öffnet den Dialog „Anzeige anpassen…“ (auch Prüfhilfe).</summary>
+    public void AnpassenOeffnen()
+    {
+        if (AnpassenMoeglich) _anpassenOffen = true;
+    }
+
+    /// <summary>OK: Einstellung schreiben und sofort übernehmen; Abbrechen (<c>null</c>): nichts ändern.</summary>
+    private void AnpassenFertig(ErgebnisAnzeigeEinstellung? einstellung)
+    {
+        _anpassenOffen = false;
+        if (einstellung is null) return;
+        AnzeigeSpeichern?.Invoke(einstellung);
+        _ergebnis = Stand is not null && Laden is not null ? Laden(Stand) : _ergebnis;
+    }
+
+    /// <summary>Der Ablagewert der Tabellenansicht (Vorgabe).</summary>
+    public const string ANSICHT_TABELLE = "tabelle";
+
+    /// <summary>Der Ablagewert der Grafikansicht.</summary>
+    public const string ANSICHT_GRAFIK = "grafik";
+
+    /// <summary>Die erste Zeile des Assistententextes in der Tabellenansicht.</summary>
+    public const string KI_ANSICHT_TABELLE = "Ansicht: Tabelle";
+
+    /// <summary>Die erste Zeile des Assistententextes in der Grafikansicht.</summary>
+    public const string KI_ANSICHT_GRAFIK = "Ansicht: Grafik (Balken je Version, je Gruppe und Einheit ein Diagramm)";
+
+    /// <summary>Liest die gewählte Ansicht („tabelle“, „grafik“) aus der Einstellungsnaht der Hülle; ohne Leseweg gilt die Tabelle.</summary>
+    [Parameter] public Func<string>? AnsichtLesen { get; set; }
+
+    /// <summary>Meldet die neue Ansicht an die Hülle, die sie je Benutzer ablegt.</summary>
+    [Parameter] public Action<string>? AnsichtGewechselt { get; set; }
+
+    /// <summary>Die Sprachausgabe des Umschalters (<c>BK_ERG_ANSICHT</c>).</summary>
+    [Parameter] public string AnsichtText { get; set; } = "Darstellung";
+
+    /// <summary>Die Stellung „Tabelle“ (<c>BK_ERG_ANSICHT_TABELLE</c>).</summary>
+    [Parameter] public string AnsichtTabelleText { get; set; } = "Tabelle";
+
+    /// <summary>Die Stellung „Grafik“ (<c>BK_ERG_ANSICHT_GRAFIK</c>).</summary>
+    [Parameter] public string AnsichtGrafikText { get; set; } = "Grafik";
+
+    /// <summary>Die Sprachausgabe der Versionslegende der Grafik (<c>BK_ERG_GRAFIK_LEGENDE</c>).</summary>
+    [Parameter] public string GrafikLegendeText { get; set; } = "Versionen";
+
+    /// <summary>Die Legende des Randstrichs der Grafik (<c>BK_ERG_GRAFIK_HINWEIS</c>).</summary>
+    [Parameter] public string GrafikHinweisText { get; set; } =
+        "Randstrich: weicht vom Stammprojekt ab; am Balken Wert und Abweichung zum Stammprojekt in Prozent";
+
+    private string? _ansicht;
+    private readonly ElementReference[] _ansichtKnoepfe = new ElementReference[2];
+    private bool _ansichtFokus;
+
+    /// <summary>Die gezeigte Ansicht („tabelle“ oder „grafik“; Prüfhilfe).</summary>
+    public string Ansicht => _ansicht ??= AnsichtLesen?.Invoke() == ANSICHT_GRAFIK ? ANSICHT_GRAFIK : ANSICHT_TABELLE;
+
+    private bool IstGrafik => Ansicht == ANSICHT_GRAFIK;
+
+    private void AnsichtSetzen(string ansicht)
+    {
+        if (Ansicht == ansicht) return;
+        _ansicht = ansicht;
+        AnsichtGewechselt?.Invoke(ansicht);
+    }
+
+    private void BeiAnsichtTaste(KeyboardEventArgs e)
+    {
+        string? neu = e.Key switch
+        {
+            "ArrowRight" or "ArrowDown" or "ArrowLeft" or "ArrowUp" => IstGrafik ? ANSICHT_TABELLE : ANSICHT_GRAFIK,
+            "Home" => ANSICHT_TABELLE,
+            "End" => ANSICHT_GRAFIK,
+            _ => null
+        };
+        if (neu is null || neu == Ansicht) return;
+        AnsichtSetzen(neu);
+        _ansichtFokus = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_ansichtFokus) return;
+        _ansichtFokus = false;
+        try { await _ansichtKnoepfe[IstGrafik ? 1 : 0].FocusAsync(preventScroll: true); }
+        catch (Exception) { /* Ohne Browser (Prüfstand) gibt es keinen Fokus. */ }
+    }
+
+    /// <summary>Die aufgeklappten Klappgruppen, solange die Hülle die Stellung nicht führt.</summary>
+    private readonly HashSet<string> _offen = new();
+
+    /// <summary>Ist die Klappgruppe mit diesem Gruppenschlüssel aufgeklappt? (auch Prüfhilfe)</summary>
+    public bool KlappgruppeOffen(string schluessel)
+        => KlappgruppeOffenLesen?.Invoke(schluessel) ?? _offen.Contains(schluessel);
+
+    private void BeiKlappgruppe(string schluessel, bool an)
+    {
+        if (an) _offen.Add(schluessel);
+        else _offen.Remove(schluessel);
+        KlappgruppeOffenGewechselt?.Invoke(schluessel, an);
+    }
+
+    private string Anzahl(int n) => n == 1 ? AnzahlEins : string.Format(AnzahlFormat, n);
+
+    private bool Sichtbar(ErgebnisVergleichGruppe g)
+        => g.Zustand != ErgebnisGruppenZustand.Ausgeblendet && (!NurUnterschiede || g.WeichtAb);
+
+    /// <summary>Die offenen Gruppen der Tafel, unter „nur Unterschiede“ nur die abweichenden.</summary>
+    private IReadOnlyList<ErgebnisVergleichGruppe> Tafelgruppen
+        => _ergebnis?.Gruppen.Where(g => g.Zustand == ErgebnisGruppenZustand.Offen && Sichtbar(g)).ToList()
+           ?? new List<ErgebnisVergleichGruppe>();
+
+    /// <summary>Die zugeklappten Gruppen unter der Tafel, je als Klappgruppe.</summary>
+    private IReadOnlyList<ErgebnisVergleichGruppe> Klappgruppen
+        => _ergebnis?.Gruppen.Where(g => g.Zustand == ErgebnisGruppenZustand.Zugeklappt && Sichtbar(g)).ToList()
+           ?? new List<ErgebnisVergleichGruppe>();
+
+    /// <summary>Ist die Version an Stelle <paramref name="i"/> simuliert? Ohne Angabe ja.</summary>
+    private bool VersionSimuliert(int i) => i >= _ergebnis!.Simuliert.Count || _ergebnis.Simuliert[i];
+
+    /// <summary>
+    /// Die Versionsspalten teilen sich den Platz neben der festen Kennzahlspalte gleich (Prozentanteil je Spalte); die
+    /// Mindestbreite im Stilblatt bleibt, darunter rollt allein die Hülle.
+    /// </summary>
+    private string Spaltenbreite
+        => "width:" + (100.0 / Math.Max(1, _ergebnis!.Versionsspalten.Count)).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) + "%";
+
+    /// <summary>Die Tafel über die Gruppen; mit Gruppenkopf je Gruppe oder (in der Klappgruppe) ohne.</summary>
+    private RenderFragment Tafel(IEnumerable<ErgebnisVergleichGruppe> gruppen, bool mitGruppenkopf) => __builder =>
+    {
+        <div class="epos-raster-huelle epos-raster-huelle--vergleich epos-komponenten-huelle epos-ergebnis-huelle">
+            <table class="epos-raster epos-uebersicht-tabelle epos-komponentenvergleich epos-ergebnisvergleich">
+                <thead>
+                    <tr>
+                        <th scope="col" class="epos-komponenten-gewerk epos-ergebnis-kennzahlkopf">@SpalteKennzahl</th>
+                        @for (int i = 0; i < _ergebnis!.Versionsspalten.Count; i++)
+                        {
+                            VersionsSpalte v = _ergebnis.Versionsspalten[i];
+                            <th scope="col" class="@(VersionSimuliert(i) ? "epos-komponenten-versionkopf epos-ergebnis-versionkopf" : "epos-komponenten-versionkopf epos-ergebnis-versionkopf epos-ergebnis-versionkopf--ohne")"
+                                style="@Spaltenbreite">
+                                <span class="epos-komponenten-version">@v.Name</span>
+                                @if (!string.IsNullOrEmpty(v.Stand))
+                                {
+                                    <span class="epos-komponenten-stand">@v.Stand</span>
+                                }
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (ErgebnisVergleichGruppe g in gruppen)
+                    {
+                        @if (mitGruppenkopf)
+                        {
+                            <tr class="epos-ergebnis-gruppe" data-gruppe="@g.Schluessel">
+                                <th scope="rowgroup" class="epos-komponenten-gewerk">@g.Titel</th>
+                                @for (int i = 0; i < _ergebnis.Versionsspalten.Count; i++)
+                                {
+                                    <td></td>
+                                }
+                            </tr>
+                        }
+                        @foreach (ErgebnisVergleichZeile z in g.Zeilen)
+                        {
+                            <tr data-kennzahl="@z.Schluessel">
+                                <th scope="row" class="epos-komponenten-gewerk epos-ergebnis-kennzahl">@z.Bezeichnung</th>
+                                @foreach (ErgebnisVergleichZelle c in z.Zellen)
+                                {
+                                    <td class="@ZellKlasse(c)" title="@(c.NichtSimuliert ? NichtSimuliertText : null)">
+                                        <span class="epos-ergebnis-wert">@c.Text</span>
+                                        @if (!string.IsNullOrEmpty(c.Abweichung))
+                                        {
+                                            <span class="epos-ergebnis-prozent">@c.Abweichung</span>
+                                        }
+                                        @if (c.WeichtAb)
+                                        {
+                                            <span class="epos-komponenten-sprachausgabe">@WeichtAbText</span>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    };
+
+    private UebersichtErgebnisStand? _ergebnis;
+    private UebersichtStand? _geladenFuer;
+    private Func<UebersichtStand, UebersichtErgebnisStand>? _geladenMit;
+
+    /// <summary>Der gezeigte Stand (Prüfhilfe); <c>null</c> ohne Gaben.</summary>
+    public UebersichtErgebnisStand? Ergebnis => _ergebnis;
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(Stand, _geladenFuer) && ReferenceEquals(Laden, _geladenMit)) return;
+        _geladenFuer = Stand;
+        _geladenMit = Laden;
+        _ergebnis = Stand is not null && Laden is not null ? Laden(Stand) : null;
+        if (!_anpassenVorgabeGelesen && _ergebnis is not null)
+        {
+            _anpassenVorgabeGelesen = true;
+            if (AnpassenOffen) AnpassenOeffnen();
+        }
+    }
+
+    private static string ZellKlasse(ErgebnisVergleichZelle c)
+        => c.WeichtAb ? "epos-zahl epos-komponenten-zelle epos-komponenten-zelle--abweichend"
+         : c.NichtSimuliert ? "epos-zahl epos-komponenten-zelle epos-ergebnis-zelle--ohne"
+         : "epos-zahl epos-komponenten-zelle";
+
+    /// <summary>
+    /// Die Tabelle als Text für den Assistenten: alle Gruppen, auch die zugeklappten, je Gruppe eine Kopfzeile
+    /// „[Gruppenschlüssel] Titel“, darunter je Zeile „Gruppe · Kennzahl: Version = Wert (Abweichung); …“; leer ohne
+    /// Tabelle, der Hinweis, wenn keine Version simuliert ist. Die erste Zeile nennt die gezeigte Ansicht
+    /// („Ansicht: Tabelle“ oder „Ansicht: Grafik …“); die Zahlen sind in beiden Ansichten die der Tabelle.
+    /// </summary>
+    public string Text()
+    {
+        if (_ergebnis is null || _ergebnis.Versionsspalten.Count == 0) return "";
+        if (_ergebnis.KeineSimulation || _ergebnis.Gruppen.Count == 0) return KeineSimulationText;
+        var zeilen = new List<string> { IstGrafik ? KI_ANSICHT_GRAFIK : KI_ANSICHT_TABELLE };
+        foreach (ErgebnisVergleichGruppe g in _ergebnis.Gruppen)
+        {
+            zeilen.Add("[" + g.Schluessel + "] " + g.Titel);
+            foreach (ErgebnisVergleichZeile z in g.Zeilen)
+            {
+                var teile = new List<string>();
+                for (int i = 0; i < z.Zellen.Count; i++)
+                {
+                    ErgebnisVergleichZelle c = z.Zellen[i];
+                    string name = i < _ergebnis.Versionsspalten.Count ? _ergebnis.Versionsspalten[i].Name : "";
+                    string wert = c.NichtSimuliert ? NichtSimuliertText : c.Text;
+                    teile.Add(name + " = " + wert
+                              + (string.IsNullOrEmpty(c.Abweichung) ? "" : " (" + c.Abweichung + ")")
+                              + (c.WeichtAb ? " — " + WeichtAbText : ""));
+                }
+                zeilen.Add(g.Titel + " · " + z.Bezeichnung + ": " + string.Join("; ", teile));
+            }
+        }
+        return string.Join("\n", zeilen);
+    }
+}

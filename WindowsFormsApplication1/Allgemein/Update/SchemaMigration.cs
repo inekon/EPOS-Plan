@@ -5500,6 +5500,46 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_KAELTEBEDARF_SPLIT_ABRECHNUNG = KaeltebedarfSplitAbrechnungSchema.SCHRITT;
 
         /// <summary>
+        /// Schritt <see cref="TwwZonenferienSchema.SCHRITT"/> — <b>Zonenferien als Liste</b> (ZB5, ZB‑Q3 B): die Tabelle
+        /// <c>Tab_TwwZonenferien</c> mit beliebig vielen eigenen Ferienzeiträumen je Zone; die vier Spaltenpaare
+        /// <c>Ferienbeginn_1…4</c>/<c>Ferienende_1…4</c> von <c>Tab_TwwZone</c> werden übertragen und danach abgebaut
+        /// (Neubau mit Erhalt der IDs).
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Zapfkalender rechnet über die Liste dieselben Fenster.</para>
+        /// </summary>
+        public const int SCHRITT_TWW_ZONENFERIEN = TwwZonenferienSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="ZonenLastfelderSchema.SCHRITT"/> — <b>Lastfelder der Zone</b> (DA-2, E138 F5): <c>Aussenluft_Person</c>,
+        /// <c>Licht_W_m2</c> und <c>Personen_Waerme_W</c> an <c>Tab_Zone</c> und <c>Tab_Zone_STAMM</c>, leer.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Rechenweg liest keine der drei Spalten.</para>
+        /// </summary>
+        public const int SCHRITT_ZONEN_LASTFELDER = ZonenLastfelderSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="KatalogkostenSaatSchema.SCHRITT"/> — <b>Saat der Katalogkosten-Satzvorlagen</b> (KB-3,
+        /// Anwenderentscheid 13.10.2026): die zwei Verweise <c>ID_KostenVorlage</c> und
+        /// <c>ID_KostenVorlageInvestition</c> an den acht Projektkopien mit Kosten, dazu je Satz mit mindestens einem
+        /// Kostenwert &gt; 0 und ohne Verweis genau eine Satzvorlage je Art samt Positionen.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Ein zweiter Lauf findet jeden Verweis gesetzt; gerechnet wird
+        /// aus <c>Tab_ProjektWerte</c>, eine Satzvorlage wirkt erst beim Übernehmen oder Abgleichen.</para>
+        /// </summary>
+        public const int SCHRITT_KATALOGKOSTEN_SAAT = KatalogkostenSaatSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="BrennstoffpreiseTraegerkarteSchema.SCHRITT"/> — <b>Brennstoffpreise in die
+        /// Trägerkarte</b> (KB-2, Anwenderentscheid 13.10.2026): <c>Standard_Arbeitspreis</c>,
+        /// <c>Standard_Grundpreis</c> und <c>Standard_Leistungspreis</c> gehen je Träger mit Brennstoffverweis an
+        /// <c>energy_carrier.price_work</c>/<c>price_base</c>/<c>price_power</c> über (nur wo der Trägerpreis leer
+        /// ist) und fallen danach an <c>Tab_Brennstoff_Stamm</c> und <c>Tab_Brennstoff</c> weg.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Rechenweg liest die drei Spalten — sie waren allein
+        /// die Saat der Energieträger-Variante. <b>Neue Katalogfassung:</b> Die Prüfsumme jedes Brennstoffs
+        /// ändert sich; der Schritt bildet sie für jeden Satz neu, dessen Summe vorher stimmte.</para>
+        /// </summary>
+        public const int SCHRITT_BRENNSTOFFPREISE_TRAEGERKARTE = BrennstoffpreiseTraegerkarteSchema.SCHRITT;
         /// Schritt <see cref="BauteilkatalogAbschnittSchema.SCHRITT"/> — <b>Inhomogene Schicht und Fenster im Aufbaukatalog</b>
         /// (BK-5/BK-6, E132 F7): ψ des Glasrands <c>Psi_Glasrand</c> an <c>Tab_Bauteilaufbau(_STAMM)</c>; die Abschnitte stehen
         /// seit Schritt 221. Angemeldet als 229, hängt beim Merge an 228.
@@ -8079,6 +8119,37 @@ namespace WindowsFormsApplication1
                         "Der Strom der Split-Zeilen liesse sich nicht je Kuehltraeger und Zaehler abrechnen, und Bericht und " +
                         "Kostenrechnung saehen ohne frischen Lauf keine Split-Zeile. KEIN Rechenergebnis aendert sich - die Tabelle bleibt leer.",
                         Schritt_KaeltebedarfSplitAbrechnung),
+            // ZB5 (ZB-Q3 B): Zonenferien als Liste. Quelle ist TwwZonenferienSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_TWW_ZONENFERIEN,
+                        "Tab_TwwZonenferien (neu); Tab_TwwZone: die vier Spaltenpaare Ferienbeginn/Ferienende uebertragen und entfernt",
+                        "Eine Zone des Zapfprofils koennte nicht mehr als vier eigene Ferienzeitraeume tragen. KEIN Rechenergebnis " +
+                        "aendert sich - der Zapfkalender rechnet ueber die Liste dieselben Fenster.",
+                        Schritt_TwwZonenferien),
+            // DA-2: Lastfelder der Zone. Quelle ist ZonenLastfelderSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_ZONEN_LASTFELDER,
+                        "Tab_Zone, Tab_Zone_STAMM: Aussenluft_Person, Licht_W_m2, Personen_Waerme_W (leer)",
+                        "Aussenluft je Person, Lichtleistung und Waerme je Person einer Zone haetten beim Datenaustausch keinen " +
+                        "Platz und gingen im Rundlauf verloren. KEIN Rechenergebnis aendert sich - alle Spalten stehen leer.",
+                        Schritt_ZonenLastfelder),
+            // KB-3: Saat der Katalogkosten-Satzvorlagen. Quelle ist KatalogkostenSaatSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KATALOGKOSTEN_SAAT,
+                        "Tab_BHKW, Tab_Heizkessel, Tab_WP, Tab_PV, Tab_Solarkollektoren, Tab_Pufferspeicher, " +
+                        "Tab_Kaeltemaschine, Tab_Stromspeicher: ID_KostenVorlage und ID_KostenVorlageInvestition; " +
+                        "je Satz mit Kosten eine Satzvorlage je Art samt Positionen",
+                        "Die Kosten eines Katalogsatzes stuenden weiter nur am Geraet und waeren mit dem zentralen " +
+                        "Kostenkatalog nicht abgleichbar. KEIN Rechenergebnis aendert sich - gerechnet wird aus " +
+                        "Tab_ProjektWerte, eine Satzvorlage wirkt erst beim Uebernehmen oder Abgleichen.",
+                        Schritt_KatalogkostenSaat),
+            // KB-2: Brennstoffpreise in die Traegerkarte. Quelle ist BrennstoffpreiseTraegerkarteSchema, die Nummer
+            // steht allein dort.
+            new Schritt(SCHRITT_BRENNSTOFFPREISE_TRAEGERKARTE,
+                        "energy_carrier: price_work, price_base, price_power (und price_power_modus) aus dem " +
+                        "Brennstoffkatalog; Tab_Brennstoff_Stamm und Tab_Brennstoff: Standard_Arbeitspreis, " +
+                        "Standard_Grundpreis, Standard_Leistungspreis entfallen",
+                        "Die Preise eines Brennstoffs stuenden weiter neben der Karte des Energietraegers und " +
+                        "saeten eine zweite Kostenbasis. KEIN Rechenergebnis aendert sich - gerechnet wird aus der " +
+                        "Traegerwelt; die drei Spalten waren allein Saat der Energietraeger-Variante.",
+                        Schritt_BrennstoffpreiseTraegerkarte),
             // BK-5/BK-6: Inhomogene Schicht und Fenster im Aufbaukatalog. Quelle ist BauteilkatalogAbschnittSchema, die Nummer
             // steht allein dort.
             new Schritt(SCHRITT_BAUTEILKATALOG_ABSCHNITT,
@@ -15589,6 +15660,59 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Der Schritt „Zonenferien als Liste" — Anlass und Wirkung stehen bei <see cref="SCHRITT_TWW_ZONENFERIEN"/>, die
+        /// Anweisungen bei <see cref="TwwZonenferienSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_TwwZonenferien(Lauf l)
+        {
+            string nr = TwwZonenferienSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in TwwZonenferienSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = TwwZonenferienSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!TwwZonenferienSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Zonenferien stehen nach dem Schritt nicht vollstaendig (Tabelle oder Spaltenabbau).";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Zonenferien - " + (handgriffe == 0 ? "stand bereits." : handgriffe + " Handgriff(e).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
         /// Der Schritt „Bauteilkatalog" — Anlass und Wirkung stehen bei <see cref="SCHRITT_BAUTEILKATALOG"/>, die Anweisungen bei
         /// <see cref="BauteilkatalogSchema"/>. <b>Wiederholbar.</b>
         /// </summary>
@@ -15748,6 +15872,13 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Der Schritt „Lastfelder der Zone" — Anlass und Wirkung stehen bei <see cref="SCHRITT_ZONEN_LASTFELDER"/>, die
+        /// Anweisungen bei <see cref="ZonenLastfelderSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_ZonenLastfelder(Lauf l)
+        {
+            string nr = ZonenLastfelderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ZonenLastfelderSchema.Voraussetzungen())
         /// Der Schritt „Inhomogene Schicht und Fenster im Aufbaukatalog" — Anlass und Wirkung stehen bei <see cref="SCHRITT_BAUTEILKATALOG_ABSCHNITT"/>,
         /// die Anweisungen bei <see cref="BauteilkatalogAbschnittSchema"/>. <b>Wiederholbar.</b>
         /// </summary>
@@ -15769,6 +15900,7 @@ namespace WindowsFormsApplication1
                 DataRepository.StilleFehlerAbholen();          // Sammlung leeren
                 try
                 {
+                    handgriffe = ZonenLastfelderSchema.Ausfuehren(bericht);
                     handgriffe = BauteilkatalogAbschnittSchema.Ausfuehren(bericht);
                 }
                 catch (Exception ex)
@@ -15788,6 +15920,9 @@ namespace WindowsFormsApplication1
 
             foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
 
+            if (!ZonenLastfelderSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Lastfelder der Zone stehen nach dem Schritt nicht vollstaendig.";
             if (!BauteilkatalogAbschnittSchema.Vollstaendig())
             {
                 l.LetzterFehler = "Psi_Glasrand am Aufbaukatalog steht nach dem Schritt nicht vollstaendig.";
@@ -15795,6 +15930,120 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
+            l.Notiz(nr + ": Lastfelder der Zone - " + (handgriffe == 0 ? "standen bereits." : handgriffe + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Saat der Katalogkosten-Satzvorlagen" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KATALOGKOSTEN_SAAT"/>, die Anweisungen bei <see cref="KatalogkostenSaatSchema"/>.
+        /// <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_KatalogkostenSaat(Lauf l)
+        {
+            string nr = KatalogkostenSaatSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KatalogkostenSaatSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = KatalogkostenSaatSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KatalogkostenSaatSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Saat der Katalogkosten steht nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Saat der Katalogkosten - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Handgriff(e).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Brennstoffpreise in die Trägerkarte" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_BRENNSTOFFPREISE_TRAEGERKARTE"/>, die Anweisungen bei
+        /// <see cref="BrennstoffpreiseTraegerkarteSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_BrennstoffpreiseTraegerkarte(Lauf l)
+        {
+            string nr = BrennstoffpreiseTraegerkarteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in BrennstoffpreiseTraegerkarteSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            BrennstoffpreiseTraegerkarteSchema.Laufergebnis ergebnis;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    ergebnis = BrennstoffpreiseTraegerkarteSchema.Lauf(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!BrennstoffpreiseTraegerkarteSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die drei Preisspalten des Brennstoffs stehen nach dem Schritt noch.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Brennstoffpreise in die Traegerkarte - " +
+                    (ergebnis.Handgriffe == 0
+                        ? "stand bereits."
+                        : ergebnis.Uebertragen + " Preis(e) uebertragen, " + ergebnis.Entfernt + " Spalte(n) entfernt, " +
+                          ergebnis.PruefsummenNeu + " Pruefsumme(n) neu.") +
             l.Notiz(nr + ": Psi_Glasrand am Aufbaukatalog - " + (handgriffe == 0 ? "stand bereits." : "Spalten angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;

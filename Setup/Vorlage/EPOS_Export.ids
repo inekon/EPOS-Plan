@@ -370,6 +370,38 @@
             <simpleValue>NaturalVentilationRate</simpleValue>
           </baseName>
         </property>
+        <property dataType="IFCREAL" cardinality="optional">
+          <propertySet>
+            <simpleValue>Pset_SpaceOccupancyRequirements</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>OccupancyNumber</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCTHERMODYNAMICTEMPERATUREMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Pset_SpaceThermalDesign</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>HeatingDryBulb</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCTHERMODYNAMICTEMPERATUREMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Pset_SpaceThermalDesign</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>CoolingDryBulb</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCPOWERMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Pset_SpaceThermalLoad</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>EquipmentSensible</simpleValue>
+          </baseName>
+        </property>
         <property dataType="IFCLABEL" cardinality="optional">
           <propertySet>
             <simpleValue>EPOS_Rechenlauf</simpleValue>
@@ -1093,6 +1125,22 @@
           </propertySet>
           <baseName>
             <simpleValue>MassDensity</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCNORMALISEDRATIOMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Pset_MaterialOptical</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>SolarReflectanceFront</simpleValue>
+          </baseName>
+        </property>
+        <property dataType="IFCNORMALISEDRATIOMEASURE" cardinality="optional">
+          <propertySet>
+            <simpleValue>Pset_MaterialOptical</simpleValue>
+          </propertySet>
+          <baseName>
+            <simpleValue>ThermalIrEmissivityFront</simpleValue>
           </baseName>
         </property>
         <property dataType="IFCTHERMALRESISTANCEMEASURE" cardinality="optional">

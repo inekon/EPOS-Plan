@@ -8,7 +8,7 @@ namespace WindowsFormsApplication1
     // ====================================================================================
     // SCHRITT 229 - INHOMOGENE SCHICHT UND FENSTER IM AUFBAUKATALOG (Entwurf Bauteilkatalog 6a, Wellen BK-5 und BK-6;
     // Entscheid E132 F7). Angemeldet als 229, haengt beim Merge an 228 GeraetekostenEntfallSchema; bis dahin haengt die Klasse
-    // vorlaeufig an der letzten vorhandenen Klasse (KaeltebedarfSplitAbrechnungSchema, 223) - die Kette laeuft ueber + 1.
+    // vorlaeufig an der letzten vorhandenen Klasse (BrennstoffpreiseTraegerkarteSchema, 227) - die Kette laeuft ueber + 1.
     //
     // BEFUND. Was BK-5 und BK-6 an Spalten brauchen, steht zum groessten Teil seit Schritt 221 (BauteilkatalogSchema):
     //   - Abschnitte: Tab_Bauteilabschnitt(_STAMM) (Nummer, Flaechenanteil 0..1, Text, Quellkennung) und an der Schicht der
@@ -36,10 +36,10 @@ namespace WindowsFormsApplication1
     public static class BauteilkatalogAbschnittSchema
     {
         /// <summary>
-        /// Die Nummer des Schritts — angemeldet als 229; vorläufig an <see cref="KaeltebedarfSplitAbrechnungSchema"/> (223)
+        /// Die Nummer des Schritts — angemeldet als 229; vorläufig an <see cref="BrennstoffpreiseTraegerkarteSchema"/> (227)
         /// gehängt, beim Merge an 228 <c>GeraetekostenEntfallSchema</c>. Die Nummer steht allein hier.
         /// </summary>
-        public const int SCHRITT = KaeltebedarfSplitAbrechnungSchema.SCHRITT + 1;
+        public const int SCHRITT = BrennstoffpreiseTraegerkarteSchema.SCHRITT + 1;
 
         /// <summary>ψ des Glasrands [W/(m·K)] (DIN EN ISO 10077-1, ψ_g); NULL = nicht angegeben.</summary>
         public const string SPALTE_PSI_GLASRAND = "Psi_Glasrand";

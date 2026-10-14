@@ -92,9 +92,18 @@ namespace WindowsFormsApplication1
                 ? new[] { VorheizenSchema.SPALTE_ZONE_VORHEIZZEIT }
                 : (IReadOnlyList<string>)Array.Empty<string>();
 
-        /// <summary>Alle Spalten der Zone hinter <see cref="ZonenSchema.Zonenspalten"/>: Kühlübergabe, Übergabe je Zone, Nutzungsprofil, Vorheizzeit.</summary>
+        /// <summary>
+        /// Die Lastfelder der Zone (DA-2, <see cref="ZonenLastfelderSchema"/>) — Datenaustausch, vom Lauf nicht gelesen; leer, solange
+        /// die Datenbank den Schritt nicht trägt. NULL bleibt NULL.
+        /// </summary>
+        private static IReadOnlyList<string> Lastspalten()
+            => GebaeudeZonenanschluss.LastfelderVorhanden()
+                ? ZonenLastfelderSchema.SPALTEN.Select(s => s.Spalte).ToList()
+                : (IReadOnlyList<string>)Array.Empty<string>();
+
+        /// <summary>Alle Spalten der Zone hinter <see cref="ZonenSchema.Zonenspalten"/>: Kühlübergabe, Übergabe je Zone, Nutzungsprofil, Vorheizzeit, Lastfelder.</summary>
         private static IReadOnlyList<string> Zusatzspalten()
-            => Kuehlspalten().Concat(Uebergabespalten()).Concat(Nutzungsprofilspalten()).Concat(Vorheizspalten()).ToList();
+            => Kuehlspalten().Concat(Uebergabespalten()).Concat(Nutzungsprofilspalten()).Concat(Vorheizspalten()).Concat(Lastspalten()).ToList();
 
         /// <summary>Die Werte zu <paramref name="zusatz"/> (aus <see cref="Zusatzspalten"/>) in derselben Reihenfolge.</summary>
         private static IEnumerable<DbParam> Zusatzwerte(ZoneModel z, IReadOnlyList<string> zusatz)
@@ -109,6 +118,10 @@ namespace WindowsFormsApplication1
                 {
                     Wert = z.Vorheizzeit_H.HasValue ? (object)z.Vorheizzeit_H.Value : DBNull.Value
                 });
+            if (zusatz.Contains(ZonenLastfelderSchema.SPALTE_LICHT))
+                werte = werte.Append(BaustoffCtrl.Zahl("@al", z.Aussenluft_Person))
+                             .Append(BaustoffCtrl.Zahl("@lw", z.Licht_W_m2))
+                             .Append(BaustoffCtrl.Zahl("@pw", z.Personen_Waerme_W));
             return werte;
         }
 
@@ -1195,6 +1208,17 @@ namespace WindowsFormsApplication1
                         }
                     }
 
+                    // 3b) Welle DA-4: die Luftströme der Datei zwischen den Zonen (S-G), auf A < B gedreht; ohne Kopplung keiner.
+                    if (kopplung)
+                        foreach (ZonenluftstromModel l in vorschlag.Luftstroeme)
+                        {
+                            if (!zoneJeVorlaeufig.TryGetValue(l.ID_ZoneA, out int a) || !zoneJeVorlaeufig.TryGetValue(l.ID_ZoneB, out int b)) continue;
+                            v.EinfuegenUndId("INSERT INTO \"" + ZonenkopplungSchema.TAB_LUFTSTROM + "\" " +
+                                             "(\"ID_ZoneA\", \"ID_ZoneB\", \"Volumenstrom\") VALUES (?, ?, ?)",
+                                             new[] { new DbParam("@a", Math.Min(a, b)), new DbParam("@b", Math.Max(a, b)),
+                                                     new DbParam("@v", DbParamTyp.Double) { Wert = l.Volumenstrom } });
+                        }
+
                     // 4) Je Zone das Nutzungsprofil des Zonenplans über den Generator (Fläche und lichte Höhe der Zone) und
                     //    danach die Konditionierung der HottCAD-Projektdatei (SQ-1), die die Kopien des Profils ersetzt, wo
                     //    sie etwas liefert (Datei vor Profil, NP-F16) - im selben Vorgang (je Größe ein Sicherungspunkt).
@@ -1208,6 +1232,12 @@ namespace WindowsFormsApplication1
                                 ? ZonenplanCtrl.NutzungUebernehmen(idGebaeude, zonen[i].ID, profil, zonen[i].Nutzflaeche, zonen[i].Raumhoehe)
                                 : ZonenplanCtrl.ProjektdateiUebernehmen(idGebaeude, zonen[i].ID, datei, profil, zonen[i].Nutzflaeche, zonen[i].Raumhoehe);
                             if (fehlerZone != null) throw new InvalidOperationException(fehlerZone);
+                            // Welle DA-4: Zeilenbild und benannte Wochen der Datei nach der Konditionierung (Datei vor Profil).
+                            if (i < vorschlag.Zonenreste.Count && vorschlag.Zonenreste[i] is AbbildZonenrest rest && rest.TraegtKonditionierung)
+                            {
+                                string fehlerRest = ZonenplanCtrl.RestUebernehmen(idGebaeude, zonen[i].ID, rest);
+                                if (fehlerRest != null) throw new InvalidOperationException(fehlerRest);
+                            }
                         }
                     }
 
@@ -1489,7 +1519,10 @@ namespace WindowsFormsApplication1
                     Herkunft = BaustoffCtrl.TextAus(r, "Herkunft"),
                     Quellkennung = BaustoffCtrl.TextAus(r, "Quellkennung"),
                     Nutzungsprofil = BaustoffCtrl.TextAus(r, RaumnutzungSchema.SPALTE_ZONE_NUTZUNGSPROFIL),
-                    Vorheizzeit_H = BaustoffCtrl.GanzAus(r, VorheizenSchema.SPALTE_ZONE_VORHEIZZEIT)
+                    Vorheizzeit_H = BaustoffCtrl.GanzAus(r, VorheizenSchema.SPALTE_ZONE_VORHEIZZEIT),
+                    Aussenluft_Person = BaustoffCtrl.ZahlAus(r, ZonenLastfelderSchema.SPALTE_AUSSENLUFT_PERSON),
+                    Licht_W_m2 = BaustoffCtrl.ZahlAus(r, ZonenLastfelderSchema.SPALTE_LICHT),
+                    Personen_Waerme_W = BaustoffCtrl.ZahlAus(r, ZonenLastfelderSchema.SPALTE_PERSONEN_WAERME),
                 };
                 liste.Add(z);
                 jeId[z.ID] = z;

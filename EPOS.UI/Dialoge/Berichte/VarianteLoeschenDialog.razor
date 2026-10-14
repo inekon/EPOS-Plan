@@ -1,0 +1,111 @@
+﻿@* "Variante loeschen" - der kleine Dialog der Gruppe "Variante verwalten" auf der Seite
+   "Uebersicht" des Reiters "Berichte & Kosten" (Anwenderauftrag 13.10.2026).
+
+   EIN FELD. "Variante" fuehrt nur die Varianten der Gruppe; vorbelegt ist die im Feld
+   "Detail-Unterschiede fuer Variante" gewaehlte, sonst die erste. Bis dahin loeschte der
+   Knopf stumm die Variante jener Wahl - der Anwender sah nicht, welche (Anwenderbefund
+   13.10.2026: "'Variante loeschen' loescht die Variante im Drop-Down").
+
+   DER DIALOG LOESCHT NICHT. Er meldet die Wahl; der Wirt stellt danach die unveraenderte
+   Rueckfrage (und die zweite bei mehrdeutigem Projektnamen, Entscheid O-4) und loescht
+   erst auf "Ja". Enter bestaetigt deshalb hier wie in einem reinen OK-Dialog; Esc bricht ab. *@
+
+@namespace EPOS.UI.Dialoge.Berichte
+@using EPOS.UI.Bausteine
+
+<div class="epos-dialog epos-variantendialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
+        @if (!string.IsNullOrEmpty(HilfeSchluessel))
+        {
+            <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@TitelText" />
+        }
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="@(() => BeiErgebnis(false))" />
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(HinweisText))
+    {
+        <Herleitungszeile Text="@HinweisText" />
+    }
+
+    <Auswahlfeld Bezeichnung="@LabelVariante" Eintraege="@Varianten"
+                 Auswahl="@_varianteId" AuswahlChanged="BeiVariante" />
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
+                     OkErlaubt="@OkErlaubt" Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    /// <summary>Kopfzeile (<c>BK_BTN_LOESCHEN</c>); leer = die Überlagerung trägt den Titel.</summary>
+    [Parameter] public string TitelText { get; set; } = "Variante löschen";
+
+    /// <summary>Die Varianten der Gruppe (Id = <c>Tab_Projekt.ID</c>, Text = Bezeichner).</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Varianten { get; set; } = Array.Empty<(int, string)>();
+
+    /// <summary>Die vorbelegte Variante; <c>null</c> = die erste.</summary>
+    [Parameter] public int? VorgabeVariante { get; set; }
+
+    /// <summary>Die Antwort: die zu löschende Variante, oder <c>null</c> bei Abbruch.</summary>
+    [Parameter] public EventCallback<int?> Geschlossen { get; set; }
+
+    /// <summary>Der Satz über dem Feld (<c>BK_DLG_LOESCHEN_HINWEIS</c>); leer = keiner.</summary>
+    [Parameter] public string HinweisText { get; set; } = "";
+
+    /// <summary>Beschriftung der Variantenwahl (<c>BK_LBL_VARIANTE_WAHL</c>).</summary>
+    [Parameter] public string LabelVariante { get; set; } = "Variante:";
+
+    /// <summary>Beschriftung des Knopfes (<c>BK_BTN_LOESCHEN</c>).</summary>
+    [Parameter] public string OkText { get; set; } = "Variante löschen";
+
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Schlüssel des Hilfeknopfes; leer = kein Knopf.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private int? _varianteId;
+
+    /// <summary>Die gewählte Variante, 0 = keine (Prüfhilfe).</summary>
+    public int VarianteId => _varianteId ?? 0;
+
+    /// <summary>Ist der Knopf frei? Nur mit gewählter Variante.</summary>
+    public bool OkErlaubt => VarianteId > 0;
+
+    protected override void OnParametersSet()
+    {
+        if (_varianteId is null)
+            _varianteId = VorgabeVariante ?? (Varianten.Count > 0 ? Varianten[0].Id : null);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync(preventScroll: true);
+    }
+
+    private void BeiVariante(int? id) => _varianteId = id;
+
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok) { await Geschlossen.InvokeAsync(null); return; }
+        if (!OkErlaubt) return;
+        await Geschlossen.InvokeAsync(VarianteId);
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        "Enter" => OkErlaubt ? BeiErgebnis(true) : Task.CompletedTask,
+        "Escape" => BeiErgebnis(false),
+        _ => Task.CompletedTask
+    };
+}

@@ -2018,4 +2018,35 @@ public class EnergietraegerDialogTests : EposBunitContext
             KiMaskenbruecke.Feldzugang(KiMaskennamen.ENERGIETRAEGER, "effektivpreis");
         Assert.False(effektiv.Setzbar);
     }
+
+    /// <summary>
+    /// Vorgabe €/kWh: Ein Stand ohne gemerkte Preisbasis kommt aus der Hülle mit der
+    /// Vorgabe des Kerns (<see cref="EnergietraegerPreiskarte.VorgabePreisbasis"/>) —
+    /// die Klappliste steht auf „€/kWh", das Feld zeigt den mit dem Heizwert
+    /// umgerechneten Preis (0,10 €/Nm³ bei 10 kWh/Nm³ = 0,01 €/kWh).
+    /// </summary>
+    [Fact]
+    public void Ohne_gemerkte_Preisbasis_steht_die_Klappliste_auf_EUR_je_kWh()
+    {
+        var basen = EnergietraegerPreisCtrl.Preisbasen("Nm³", Array.Empty<EnergyConversion>(), 10.0);
+        string vorgabe = EnergietraegerPreiskarte.VorgabePreisbasis(null, "Nm³", true, 10.0);
+        int? id = EnergietraegerPreisCtrl.PreisbasisIndex(basen, vorgabe);
+
+        EnergietraegerStand stand = Stand();
+        stand.Heizwert = 10.0;
+        stand.PreisbasisId = id;
+        stand.Arbeitspreis = EnergietraegerPreiskarte.AnzeigeArbeitspreis(0.10, basen[id!.Value].Faktor);
+        stand.EinheitArbeitspreis = EnergietraegerPreiskarte.ArbeitspreisEinheit(vorgabe, true);
+        var cut = Zeige(ansicht: new EnergietraegerAnsicht { Stand = stand });
+
+        var feld = PreisbasisListe(cut)!;
+        IElement gewaehlt = feld.QuerySelectorAll("option").Single(o => o.HasAttribute("selected"));
+        Assert.Equal("€/kWh", gewaehlt.TextContent.Trim());
+        Assert.Equal("1", gewaehlt.GetAttribute("value"));
+
+        IElement blockA = cut.FindAll(".epos-blockspalte")[0];
+        var arbeitspreis = blockA.QuerySelectorAll(".epos-formularraster > .epos-feld")[0];
+        Assert.Contains("€/kWh", arbeitspreis.TextContent);
+        Assert.Equal(0.01, stand.Arbeitspreis, 12);
+    }
 }

@@ -89,6 +89,10 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain(wt.Rows.Cast<DataRow>().Select(r => Convert.ToInt64(r["ID"])),
                                   id => q.Wohnungstypen.Contains(id));
 
+            // --- Die sechs Ferienzeiträume hängen an der NEUEN Zone ----------------------
+            Assert.Equal(FerienErwartet(), Zonenferien(zoneNeu));
+            Assert.Equal(FerienErwartet(), Zonenferien(q.Zone));
+
             // --- Die Projektzeile ------------------------------------------------------
             DataTable tp = DataRepository.GetDataTable(
                 "SELECT Weg, Seed, ID_Bedarfstag FROM Tab_TwwProjekt WHERE ID_Projekt = ?", new DbParam("@p", neu));
@@ -105,6 +109,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, Wohnungstypen(q.Zone).Rows.Count);        // Kaskade an der Quelle
             Assert.Single(Zonen(neu).Rows.Cast<DataRow>());
             Assert.Equal(2, Wohnungstypen(zoneNeu).Rows.Count);
+            Assert.Empty(Zonenferien(q.Zone));                           // Kaskade an der Quelle
+            Assert.Equal(FerienErwartet(), Zonenferien(zoneNeu));
             Assert.Equal(1L, Convert.ToInt64(DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM Tab_TwwProjekt WHERE ID_Projekt = ?", new DbParam("@p", quelle))));
         }
@@ -138,6 +144,8 @@ namespace EPOS.Kern.Tests
             DataTable wt = Wohnungstypen(Convert.ToInt64(z["ID"]));
             Assert.Equal(new[] { q.KlasseA, q.KlasseB },
                          wt.Rows.Cast<DataRow>().Select(r => Convert.ToInt64(r["ID_Ausstattung"])).ToArray());
+            // Die sechs Ferienzeiträume reisen mit und hängen an der importierten Zone.
+            Assert.Equal(FerienErwartet(), Zonenferien(Convert.ToInt64(z["ID"])));
             Assert.Equal(q.Bedarfstag, Convert.ToInt64(DataRepository.ExecuteScalar(
                 "SELECT ID_Bedarfstag FROM Tab_TwwProjekt WHERE ID_Projekt = ?", new DbParam("@p", neu))));
 
@@ -975,6 +983,12 @@ namespace EPOS.Kern.Tests
             Assert.True(DataRepository.ExecuteSQL(
                 "INSERT INTO Tab_TwwProjekt (ID_Projekt, Weg, Seed, ID_Bedarfstag) VALUES (?, 'BESTAND', 7, ?)",
                 new DbParam("@p", idProjekt), new DbParam("@b", s.Bedarfstag)));
+            // Sechs eigene Ferienzeiträume der Zone (ZB-Q3 B: mehr als die vier früheren Spaltenpaare).
+            for (int i = 0; i < FERIEN.Length; i++)
+                Assert.True(DataRepository.ExecuteSQL(
+                    "INSERT INTO Tab_TwwZonenferien (ID_Zone, Reihenfolge, Name, Beginn, Ende) VALUES (?, ?, ?, ?, ?)",
+                    new DbParam("@z", s.Zone), new DbParam("@r", i + 1), new DbParam("@n", FERIEN[i].Name),
+                    new DbParam("@b", (object)FERIEN[i].Beginn ?? DBNull.Value), new DbParam("@e", FERIEN[i].Ende)));
 
             s.Katalogzeilen = Katalogzeilen();
             return s;
@@ -998,6 +1012,26 @@ namespace EPOS.Kern.Tests
 
         private static DataTable Wohnungstypen(long idZone) => DataRepository.GetDataTable(
             "SELECT * FROM Tab_TwwWohnungstyp WHERE ID_Zone = ? ORDER BY Reihenfolge", new DbParam("@z", idZone));
+
+        /// <summary>Die sechs Ferienzeiträume der Probezone (erfunden, rund; einer über den Jahreswechsel, einer ohne Beginn).</summary>
+        private static readonly (string Name, int? Beginn, int Ende)[] FERIEN =
+        {
+            ("Winter", 355, 6), (null, null, 20), ("Ostern", 90, 100), ("Pfingsten", 140, 145),
+            ("Sommer", 200, 230), ("Herbst", 300, 305)
+        };
+
+        /// <summary>Die Ferienzeiträume einer Zone als (Reihenfolge, Name, Beginn, Ende), geordnet.</summary>
+        private static (long Reihenfolge, string Name, long? Beginn, long Ende)[] Zonenferien(long idZone) =>
+            DataRepository.GetDataTable(
+                "SELECT Reihenfolge, Name, Beginn, Ende FROM Tab_TwwZonenferien WHERE ID_Zone = ? ORDER BY Reihenfolge",
+                new DbParam("@z", idZone)).Rows.Cast<DataRow>()
+                .Select(r => (Convert.ToInt64(r["Reihenfolge"]), r["Name"] == DBNull.Value ? null : Convert.ToString(r["Name"]),
+                              r["Beginn"] == DBNull.Value ? (long?)null : Convert.ToInt64(r["Beginn"]), Convert.ToInt64(r["Ende"])))
+                .ToArray();
+
+        /// <summary>Die erwarteten Zeilen der Probezone.</summary>
+        private static (long Reihenfolge, string Name, long? Beginn, long Ende)[] FerienErwartet() =>
+            FERIEN.Select((f, i) => ((long)(i + 1), f.Name, (long?)f.Beginn, (long)f.Ende)).ToArray();
 
         private static readonly string[] KATALOGE =
         {

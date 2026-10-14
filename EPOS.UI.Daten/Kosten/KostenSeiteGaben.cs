@@ -111,6 +111,12 @@ namespace WindowsFormsApplication1
                 ["LoeschFrage"] = new Func<KostenZeile, string>(LoeschFrage),
                 ["LoeschNichts"] = new Func<KostenZeile, string>(LoeschNichts),
                 ["Loeschen"] = new Func<KostenZeile, string>(Loeschen),
+
+                // KB-3 (Anwenderentscheid 13.10.2026): der Abgleich einer Anlage mit dem zentralen
+                // Kostenkatalog - dieselbe Vorschau und dasselbe Ausfuehren wie im Kostendialog.
+                ["AbgleichFrage"] = new Func<KostenZeile, string>(AbgleichFrage),
+                ["Abgleichen"] = new Func<KostenZeile, string>(Abgleichen),
+                ["AbgleichKurztext"] = T("BK_KOSTEN_ABGLEICH_KURZTEXT", "Mit dem Kostenkatalog abgleichen…"),
                 ["VergleichGewaehlt"] = new Action<IReadOnlyList<int>>(VergleichSetzen),
                 ["LabelVergleich"] = MyResource.Resource.BK_LBL_VERGLEICHSWAHL,
                 ["StammFestTipp"] = MyResource.Resource.BK_BER_MSG_STAMM_REFERENZ,
@@ -546,6 +552,11 @@ namespace WindowsFormsApplication1
                     };
                     _anlagen[z.Schluessel] = a;
 
+                    // KB-3: Fuehrt der Katalogsatz des Geraets eine Satzvorlage, ist die Zeile
+                    // abgleichbar - dann traegt die Aktionenspalte den Abgleich.
+                    z.Abgleichbar = a.AnlageId > 0 &&
+                                    Katalogkostenabgleich.Abgleichbar(a.AnlageId, a.Komponente);
+
                     if (!mitPositionen.Contains(a.Komponente))
                     {
                         // Die KOMPONENTE hat nirgends eine Position: FEHLENDE
@@ -553,6 +564,18 @@ namespace WindowsFormsApplication1
                         z.Art = ZeilenArt.OhnePosition;
                         z.Kurztext = string.Format(
                             MyResource.Resource.BK_KOSTEN_OHNE_POSITION_HINT, a.Komponente);
+                        // KB-3: Statt "-" steht in der leeren Wertzelle, DASS Katalogkosten
+                        // vorliegen; die Zahl entsteht erst mit dem Abgleich.
+                        if (z.Abgleichbar)
+                        {
+                            string hinweis = T("BK_KOSTEN_KATALOGKOSTEN", "Katalogkosten vorhanden");
+                            if (!hatI) z.Summe = hinweis;
+                            if (!hatB) z.Betrieb = hinweis;
+                            z.Kurztext = string.Format(
+                                T("BK_KOSTEN_KATALOGKOSTEN_HINT",
+                                  "„{0}“ führt keine Kostenposition, der Katalogsatz des Geräts aber Kosten — über „Mit dem Kostenkatalog abgleichen…“ entstehen daraus Positionen."),
+                                a.Komponente);
+                        }
                         if (!rotGemeldet.Contains(a.Komponente))
                         {
                             rotGemeldet.Add(a.Komponente);
@@ -1071,6 +1094,45 @@ namespace WindowsFormsApplication1
         /// sagt es dann in der Fußzeile, statt den Papierkorb still verpuffen zu
         /// lassen.</para>
         /// </summary>
+        /// <summary>
+        /// KB-3: Die Vorschau des Abgleichs dieser Anlagenzeile — der fertige Fragetext; leer heißt
+        /// „nichts abzugleichen". Gerechnet wird im Kern (<c>Katalogkostenabgleich</c>), in Text
+        /// gesetzt mit denselben Bausteinen wie im Kostendialog (eine Formulierung, nicht zwei).
+        /// </summary>
+        private string AbgleichFrage(KostenZeile zeile)
+        {
+            ProjektEnergietraegerCtrl.AnlagenEintrag a = Anlage(zeile);
+            if (a == null || a.AnlageId <= 0) return "";
+            Abgleichbefund befund = Katalogkostenabgleich.Vorschau(_idProjekt, a.AnlageId, a.Komponente);
+            if (befund.Absage != Abgleichabsage.Keine || !befund.Handlungsbedarf) return "";
+            return string.Format(MyResource.Resource.Culture,
+                                 T("KAT_ABGLEICH_FRAGE", "{0} fehlen, {1} weichen ab:\n{2}\nAbgleichen?"),
+                                 befund.Fehlt, befund.WeichtAb, KostenKomponenteHuelle.Vorschautext(befund));
+        }
+
+        /// <summary>KB-3: Führt den Abgleich aus und liefert die Meldung der Fußzeile.</summary>
+        private string Abgleichen(KostenZeile zeile)
+        {
+            ProjektEnergietraegerCtrl.AnlagenEintrag a = Anlage(zeile);
+            if (a == null || a.AnlageId <= 0) return "";
+            Abgleichergebnis e = Katalogkostenabgleich.Ausfuehren(_idProjekt, a.AnlageId, a.Komponente);
+            if (e.Absage != Abgleichabsage.Keine) return KostenKomponenteHuelle.Absagetext(e.Absage);
+            string meldung = string.Format(MyResource.Resource.Culture,
+                T("KAT_ABGLEICH_STATUS", "Abgleich: {0} Position(en) angelegt, {1} auf den Katalogwert gesetzt."),
+                e.Angelegt, e.Gesetzt);
+            if (e.Fehler)
+                meldung += " " + T("KAT_ABGLEICH_FEHLER",
+                    "Mindestens eine Position konnte nicht geschrieben werden; der Abgleich ist unvollständig.");
+            return meldung;
+        }
+
+        /// <summary>Die Anlagenzeile zu einem Zeilenschlüssel; <c>null</c> = keine.</summary>
+        private ProjektEnergietraegerCtrl.AnlagenEintrag Anlage(KostenZeile zeile)
+        {
+            ProjektEnergietraegerCtrl.AnlagenEintrag a;
+            return zeile != null && _anlagen.TryGetValue(zeile.Schluessel, out a) ? a : null;
+        }
+
         private string LoeschFrage(KostenZeile zeile)
         {
             string komponente;

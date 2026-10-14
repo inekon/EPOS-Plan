@@ -519,6 +519,9 @@ namespace WindowsFormsApplication1
         // Stufe G6c: der Vorschlag mehrerer Zonen.
         /// <summary>I — {0} Zahl der Zonen, {1} Regel, {2} Zahl der Trennflächenzeilen: Der Vorschlag mehrerer Zonen.</summary>
         internal const string MEHRZONEN = "IMP_BAUTEIL_PROT_MEHRZONEN";
+
+        /// <summary>Welle DA-4: ein Luftstrom der Datei, dessen Partnerzone die Datei nicht führt (oder doppelt) — übergangen.</summary>
+        internal const string LUFTSTROM_PARTNER = "IMP_BAUTEIL_PROT_LUFTSTROM_PARTNER";
         /// <summary>F — {0} Zahl der Zonen, {1} Grenze, {2} vorgeschlagene Regel: Mehr Zonen, als das Gebäude rechnet (M12).</summary>
         internal const string ZU_VIELE_ZONEN = "IMP_BAUTEIL_PROT_ZU_VIELE_ZONEN";
         /// <summary>F — {0} Zone: Ab zwei Zonen trägt jede eine Nutzfläche (N1.56 Nr. 14).</summary>
@@ -653,6 +656,21 @@ namespace WindowsFormsApplication1
         internal IReadOnlyList<Zonenkonditionierung> Zonenkonditionierungen => _projektdatei;
 
         private readonly List<Zonenkonditionierung> _projektdatei = new List<Zonenkonditionierung>();
+
+        /// <summary>
+        /// Welle DA-4: die Restdaten der Datei je Zone in der Reihenfolge von <see cref="Zonen"/> (<c>null</c> = keine) — Zeilenbild
+        /// und benannte Wochen schreibt <see cref="ZonenplanCtrl.RestUebernehmen"/> nach der Konditionierung der Datei.
+        /// </summary>
+        internal IReadOnlyList<AbbildZonenrest> Zonenreste => _zonenreste;
+
+        private readonly List<AbbildZonenrest> _zonenreste = new List<AbbildZonenrest>();
+
+        /// <summary>
+        /// Welle DA-4: die Luftströme der Datei zwischen den Zonen, über die vorläufigen Ids der Zonen (−1, −2, …); leer = keine.
+        /// </summary>
+        internal IReadOnlyList<ZonenluftstromModel> Luftstroeme => _luftstroeme;
+
+        private readonly List<ZonenluftstromModel> _luftstroeme = new List<ZonenluftstromModel>();
 
         // ==================================================================
         //  Inhalt
@@ -1075,6 +1093,12 @@ namespace WindowsFormsApplication1
                 _v.HerkunftNutzflaeche = nf.Wert > 0.0 ? nf.Herkunft : Importherkunft.Leer;
                 _v.HerkunftVolumen = vol.Wert > 0.0 ? vol.Herkunft : Importherkunft.Leer;
                 _v.HerkunftRaumhoehe = rh.Wert > 0.0 ? rh.Herkunft : Importherkunft.Leer;
+                // Welle DA-2: die Lastfelder der einen Zone aus den beheizten Räumen der Datei (gbXML; ohne Lasten bleiben sie leer).
+                GbxmlKonditionierung.Lastfelder(_v.Zone, _g.Raeume.Where(IstBeheizt), _v.Zone.Nutzflaeche);
+                // Welle DA-4: Vorheizzeit, Höchstleistungen und Übergabe aus den Restdaten; die eine Zone trägt keinen Luftstrom.
+                GebaeudeRestdaten.Setzen(_v.Zone, _g.Raeume.Where(IstBeheizt));
+                _v._zonenreste.Clear();
+                _v._zonenreste.Add(GebaeudeRestdaten.Rest(_g.Raeume.Where(IstBeheizt)));
             }
 
             /// <summary>
@@ -1402,10 +1426,15 @@ namespace WindowsFormsApplication1
                         Quellkennung = string.IsNullOrEmpty(iz.Quellkennung) ? null : WindowsFormsApplication1.Quellkennung.Kuerzen(iz.Quellkennung),
                     };
                     if (satz.CadSollwertAktiv && iz.IstBeheizt) ZonensollwertAusDatei(m, iz);
+                    // Welle DA-2: Licht, Wärme und Außenluft je Person der Datei in die Lastfelder der Zone (zusätzlich zum Kalender).
+                    GbxmlKonditionierung.Lastfelder(m, iz.Raeume, m.Nutzflaeche);
                     _v._zonen.Add(m);
                     _v._profile.Add(iz.Profil);
                     _v._projektdatei.Add(iz.Projektdatei);
-                    if (iz.Projektdatei?.AusGbxml == true)
+                    // Welle DA-4: Vorheizzeit, Höchstleistungen und Übergabe der Zone aus den Restdaten der Datei.
+                    GebaeudeRestdaten.Setzen(m, iz.Raeume);
+                    _v._zonenreste.Add(GebaeudeRestdaten.Rest(iz.Raeume));
+                    if (iz.Projektdatei?.AusGbxml == true || iz.Projektdatei?.AusIfcStandard == true)
                     {
                         // Welle DA-1: Zähler, Verdichtungen und Verwürfe je Zone, dazu die Abweichungen vom Profil (E138 F2).
                         _v._meldungen.AddRange(iz.Projektdatei.Meldungen);
@@ -1417,6 +1446,8 @@ namespace WindowsFormsApplication1
                         _v._raeume.Add(new GebaeudeQuellzuordnung(r.Quelltyp, r.Kennung, ImportZiel.Zone, m.ID));
                     if (!(m.Nutzflaeche > 0.0)) Fehler(ZONE_OHNE_NUTZFLAECHE, m.Bezeichner);
                 }
+                // Welle DA-4: die Luftströme der Datei zwischen den Zonen — die Partnerzone über die Kennung ihres Rests.
+                _v._luftstroeme.AddRange(GebaeudeRestdaten.Luftstroeme(_v._zonen.Select(z => z.ID).ToList(), _v._zonenreste, _v._meldungen));
                 _v.Zone = _v._zonen[0];
                 _v.HerkunftNutzflaeche = _datei;
                 _v.HerkunftVolumen = _v._zonen.All(z => z.Volumen.HasValue) ? _datei : Importherkunft.Leer;

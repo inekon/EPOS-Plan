@@ -49,12 +49,22 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Alle_Spalten_entstehen_leer()
+        public void Der_Ursprung_entsteht_leer_und_kein_Verweis_zeigt_ins_Leere()
         {
             if (!_db.Vorhanden) return;
-            foreach ((string tabelle, string spalte, _) in KatalogkostenUrsprungSchema.SPALTEN)
+            // ID_Stamm traegt der Schritt bewusst nicht nach (eine Umbenennung traefe den falschen Satz).
+            foreach ((string kopie, _) in KatalogkostenUrsprungSchema.KOPIEN_OHNE_URSPRUNG)
                 Assert.Equal(0L, Convert.ToInt64(DataRepository.ExecuteScalar(
-                    "SELECT COUNT(*) FROM \"" + tabelle + "\" WHERE \"" + spalte + "\" IS NOT NULL"), CultureInfo.InvariantCulture));
+                    "SELECT COUNT(*) FROM \"" + kopie + "\" WHERE \"" +
+                    KatalogkostenUrsprungSchema.SPALTE_ID_STAMM + "\" IS NOT NULL"), CultureInfo.InvariantCulture));
+            // ID_Kostenvorlage entsteht leer, wird aber seit KB-3 (KatalogkostenSaatSchema) gesaet: geprueft wird
+            // deshalb, dass jeder gesetzte Verweis auf eine vorhandene Kostenvorlage zeigt - keine Zeile ins Leere.
+            foreach (string katalog in KatalogkostenUrsprungSchema.KATALOGE_MIT_KOSTEN)
+                Assert.Equal(0L, Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM \"" + katalog + "\" t WHERE t.\"" +
+                    KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE + "\" IS NOT NULL AND NOT EXISTS " +
+                    "(SELECT 1 FROM \"" + KatalogkostenUrsprungSchema.TAB_KOSTENVORLAGE + "\" v WHERE v.\"ID\" = t.\"" +
+                    KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE + "\")"), CultureInfo.InvariantCulture));
         }
 
         private static List<(string Spalte, string Ziel)> Verweise(string tabelle)

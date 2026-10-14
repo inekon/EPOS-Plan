@@ -140,9 +140,6 @@ public sealed class UebersichtStand
     /// </summary>
     public IReadOnlyList<int> GewaehlteVarianten { get; set; } = Array.Empty<int>();
 
-    /// <summary>Vorbelegung des Bezeichnerfeldes für „Variante anlegen".</summary>
-    public string Bezeichnervorschlag { get; set; } = "";
-
     /// <summary>Überschrift des Komponentenbereichs (Vergleich bzw. Unterschiede).</summary>
     public string KomponentenTitel { get; set; } = "";
 
@@ -161,9 +158,6 @@ public sealed class UebersichtStand
     /// <summary>Die Spaltenköpfe der Versionen zu <see cref="Gewerke"/>, der Stamm zuerst.</summary>
     public IReadOnlyList<VersionsSpalte> Versionsspalten { get; set; } = Array.Empty<VersionsSpalte>();
 
-    /// <summary>Ist die markierte Zeile löschbar (eine Variante)?</summary>
-    public bool Loeschbar { get; set; }
-
     /// <summary>Lässt sich eine Variante anlegen (es gibt ein Stammprojekt)?</summary>
     public bool AnlegenMoeglich { get; set; }
 
@@ -173,3 +167,23 @@ public sealed class UebersichtStand
     /// <summary>Die Statuszeile.</summary>
     public string Statuszeile { get; set; } = "";
 }
+
+/// <summary>
+/// Das Ergebnis einer Handlung der Gruppe „Variante verwalten“ (Anlegen, Umbenennen):
+/// gelungen oder nicht, und die Meldung dazu. Scheitert die Handlung, bleibt der Dialog
+/// mit der Meldung offen; gelingt sie, steht die Meldung in der Statuszeile der Seite.
+/// </summary>
+public readonly record struct VariantenAktionErgebnis(bool Gelungen, string Meldung)
+{
+    /// <summary>Gelungen, mit der Meldung für die Statuszeile.</summary>
+    public static VariantenAktionErgebnis Ok(string meldung) => new(true, meldung ?? "");
+
+    /// <summary>Gescheitert, mit dem Grund für den Dialog.</summary>
+    public static VariantenAktionErgebnis Fehler(string meldung) => new(false, meldung ?? "");
+}
+
+/// <summary>Die Antwort des Dialogs „Variante anlegen“: die Quelle der Gruppe und der Bezeichner.</summary>
+public readonly record struct VarianteAnlegenWahl(int QuelleId, string Bezeichner);
+
+/// <summary>Die Antwort des Dialogs „Variante umbenennen“: die Variante und ihr neuer Bezeichner.</summary>
+public readonly record struct VarianteUmbenennenWahl(int VarianteId, string Bezeichner);

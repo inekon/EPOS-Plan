@@ -123,6 +123,56 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Welle DA-4: Zeilenbild und benannte Wochen aus einer Datei</b> (gbXML-Block <c>EPOS:</c>, IFC <c>EPOS_Zone</c>) in die
+        /// Konditionierung einer Zone — über denselben Weg wie die Bedienung (<see cref="Konditionierungsarbeit.ZelleSetzen"/>,
+        /// <see cref="Konditionierungsstand.MitWochen"/>), im Vorgang des Aufrufers. Eine Woche gleichen Namens und gleicher Größe wird
+        /// ersetzt. <c>null</c> = geschrieben (oder nichts zu tun), sonst die Meldung.
+        /// </summary>
+        internal static string RestUebernehmen(int idGebaeude, int idZone, AbbildZonenrest rest)
+        {
+            if (rest == null || !rest.TraegtKonditionierung) return null;
+            var kond = new KonditionierungCtrl();
+            Konditionierungsarbeitsstand stand = kond.ArbeitsstandLesen(idGebaeude, null, out string gelesen);
+            if (stand?.Zone(idZone) == null) return gelesen ?? "";
+            foreach (Vorgabezeile z in rest.Zeilenbild)
+            {
+                if (!Konditionierungsgroessen.AusKennwort(z.Groesse, out Konditionierungsgroesse g)) continue;
+                Konditionierungsschritt schritt = Konditionierungsarbeit.ZelleSetzen(stand, new Konditionierungsort(g, idZone), z.Zeile,
+                                                                                    Konditionierungsstand.Zelle(z));
+                if (schritt.Rueckfrage)
+                {
+                    Konditionierungsschritt geteilt = Konditionierungsarbeit.LuftwechselAufteilen(stand);
+                    if (!geteilt.Ok) return geteilt.Meldung;
+                    schritt = Konditionierungsarbeit.ZelleSetzen(geteilt.Stand, new Konditionierungsort(g, idZone), z.Zeile,
+                                                                 Konditionierungsstand.Zelle(z));
+                }
+                if (!schritt.Ok || schritt.Rueckfrage) return schritt.Meldung ?? "";
+                stand = schritt.Stand;
+            }
+            if (rest.Wochen.Count > 0)
+            {
+                Konditionierungsstand ebene = stand.Zone(idZone).Stand;
+                var wochen = ebene.Wochen.Where(w => !rest.Wochen.Any(n => n.Groesse == w.Groesse && n.Name == w.Name)).ToList();
+                long neu = Math.Min(0, wochen.Count == 0 ? 0 : wochen.Min(w => w.Id));
+                foreach (BenannteWoche w in rest.Wochen) wochen.Add(w with { Id = --neu });
+                stand = stand.MitEbene(idZone, ebene.MitWochen(wochen));
+            }
+            using (DbVorgang v = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(v))
+            {
+                KonditionierungCtrl.Ergebnis e = kond.StandSchreiben(v, KonditionierungCtrl.Eigner.Gebaeude(idGebaeude), stand.Gebaeude, true, out _);
+                if (e.Ok) e = kond.StandSchreiben(v, KonditionierungCtrl.Eigner.Zone(idGebaeude, idZone), stand.Zone(idZone).Stand, true, out _);
+                if (!e.Ok)
+                {
+                    v.Rollback();
+                    return e.Meldung;
+                }
+                v.Commit();
+            }
+            return null;
+        }
+
+        /// <summary>
         /// <b>Gibt einer Zone die Konditionierung aus der HottCAD-Projektdatei</b> (Datenaustauschkonzept 16.3, SQ-1) — mit
         /// <paramref name="profil"/> zuerst das Nutzungsprofil der Zone (<see cref="NutzungUebernehmen"/>, Fläche und lichte
         /// Höhe), dann über dieselben reinen Schritte der Konditionierung die Datei (Rangfolge „Datei vor Profil“, NP-F16):
