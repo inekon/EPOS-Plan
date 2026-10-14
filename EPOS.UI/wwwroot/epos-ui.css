@@ -12760,6 +12760,10 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
 /* die Grundregel des Stundenrasters (1,75rem, rechtsbuendig) steht weiter */
 /* unten und gewaenne sonst bei gleicher Spezifitaet; die Felder liefen    */
 /* mit den Namenslaengen aus der Flucht.                                    */
+.epos-stundenraster.epos-kbp-monatsraster .epos-feld {
+    align-items: center;
+}
+
 .epos-stundenraster.epos-kbp-monatsraster .epos-feld-text {
     flex: 0 0 6rem;
     min-width: 6rem;
