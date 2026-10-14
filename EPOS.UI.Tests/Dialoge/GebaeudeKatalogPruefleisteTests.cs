@@ -28,7 +28,10 @@ public sealed class GebaeudeKatalogPruefleisteTests : EposBunitContext
     private int _neugelesen;
 
     private IRenderedComponent<GebaeudeKatalogDialog> Aufbauen(ModellpruefungProbeweg probe, List<Pruefgruppe> geklickt,
-                                                               bool mitWeg = true, int? startZone = null)
+                                                               bool mitWeg = true, int? startZone = null,
+                                                               GebaeudeKatalogDaten? daten = null,
+                                                               Func<GebaeudeKatalogDaten?>? gebaeudeNeulesen = null,
+                                                               List<GebaeudeKatalogDaten>? geschrieben = null)
     {
         var zonenweg = new GebaeudeZonenweg
         {
@@ -39,13 +42,21 @@ public sealed class GebaeudeKatalogPruefleisteTests : EposBunitContext
         ModellpruefungWeg weg = probe.Weg();
         return Render<GebaeudeKatalogDialog>(p =>
         {
-            p.Add(x => x.Daten, new GebaeudeKatalogDaten { Name = "Haus A", Gebaeudeart = "Hotel", WohnflaecheGesamt = 100 })
+            p.Add(x => x.Daten, daten ?? new GebaeudeKatalogDaten { Name = "Haus A", Gebaeudeart = "Hotel", WohnflaecheGesamt = 100 })
              .Add(x => x.Modus, GebaeudeKatalogModus.Projekt)
+             .Add(x => x.GebaeudeNeulesen, gebaeudeNeulesen)
+             .Add(x => x.Geschlossen, _ => { })
              .Add(x => x.Gebaeudetypen, () => new[] { "Einfamilienhaus" })
              .Add(x => x.Gebaeudearten, () => new[] { "Hotel" })
              .Add(x => x.Zonen, zonenweg)
              .Add(x => x.StartReiter, GebaeudeKatalogDialog.REITER_ZONEN)
              .Add(x => x.StartZone, startZone);
+            if (geschrieben is not null)
+                p.Add(x => x.Speichern, (d, istNeu, _) =>
+                {
+                    if (!istNeu) geschrieben.Add(d.Kopie());
+                    return new GebaeudeKatalogErgebnis(true, "");
+                });
             if (mitWeg)
                 p.Add(x => x.ModellpruefungLesen, () => weg.Pruefen())
                  .Add(x => x.PruefgruppeOeffnen, g => geklickt.Add(g));
@@ -90,6 +101,94 @@ public sealed class GebaeudeKatalogPruefleisteTests : EposBunitContext
         Assert.Equal(1, _neugelesen);
         Assert.Contains("epos-ampel-gruen", cut.Find(".epos-pruefleiste-status").ClassName);
         Assert.Contains(cut.FindAll("td, th, input"), e => (e.GetAttribute("value") ?? e.TextContent).Contains("EG neu", StringComparison.Ordinal));
+    }
+
+    // =============================================================================
+    //  N3: Gebäudefelder einer Übernahme (Feiertagsland, Konditionierung) neu lesen, sonst Leiste sperren
+    // =============================================================================
+
+    /// <summary>Ein vollständiger Satz mit runden Phantasiewerten, der die Prüfregeln des OK-Wegs hält.</summary>
+    private static GebaeudeKatalogDaten Satz(string? land) => new()
+    {
+        Name = "Haus A", Typ = "Einfamilienhaus", Gebaeudeart = "Hotel", Verwendung = "Wohngebaeude",
+        Baualtersklasse = 4, Bauart = 1, WohnflaecheGesamt = 150, FlaecheNutzer = 35, Waermegewinne = 400,
+        Fensterdurchlassgrad = 0.4, Raumhoehe = 2.5, FensterflaecheNord = 10, FensterflaecheSued = 20,
+        FensterflaecheOstWest = 15, FlaecheAussenwand = 200, Dachflaeche = 120, Grundflaeche = 100, SonstigeFlaechen = 5,
+        UWertAussenwand = 0.3, UWertFenster = 1.3, UWertDachflaeche = 0.2, UWertGrundflaeche = 0.35, UWertSonstiges = 0.5,
+        WbvkFensterWand = 0.1, AnschlussFensterWand = 50, SollTag = 20, NachtAbsenkung = 17, MaxTemperatur = 24,
+        WochenendAbsenkung = 0, SollFerien = 0, Luftwechselrate = 0.5, WwBedarf = 700, Feiertagsland = land,
+    };
+
+    private int _gebaeudeGelesen;
+
+    /// <summary>Die Projektkopie nach der Übernahme der Gruppe 4: Feiertagsland „BW“.</summary>
+    private GebaeudeKatalogDaten? NachUebernahme()
+    {
+        _gebaeudeGelesen++;
+        return Satz("BW");
+    }
+
+    [Fact]
+    public void N3_Uebernahme_liest_das_Feiertagsland_neu_und_OK_schreibt_es_nicht_zurueck()
+    {
+        var probe = new ModellpruefungProbeweg();
+        var geschrieben = new List<GebaeudeKatalogDaten>();
+        var cut = Aufbauen(probe, new List<Pruefgruppe>(), daten: Satz("BY"), gebaeudeNeulesen: NachUebernahme,
+                           geschrieben: geschrieben);
+        Assert.Equal("BY", cut.Instance.Arbeitsstand.Feiertagsland);
+        Assert.Equal(0, _gebaeudeGelesen);
+        probe.Weg().Uebernehmen!(Pruefgruppe.OrtLage);
+        cut.Render(p => p.Add(x => x.PruefFassung, 1));
+        Assert.Equal(1, _gebaeudeGelesen);
+        Assert.Equal("BW", cut.Instance.Arbeitsstand.Feiertagsland);
+        Assert.False(cut.Instance.PrueffelderGeaendert);
+        cut.Find(".epos-leiste button.epos-knopf--primaer").Click();
+        GebaeudeKatalogDaten d = Assert.Single(geschrieben);
+        Assert.Equal("BW", d.Feiertagsland);
+    }
+
+    [Fact]
+    public void N3_Gegenprobe_ungespeichertes_Feiertagsland_sperrt_die_Leiste_und_bleibt_stehen()
+    {
+        var probe = new ModellpruefungProbeweg();
+        var geklickt = new List<Pruefgruppe>();
+        var cut = Aufbauen(probe, geklickt, daten: Satz("BY"), gebaeudeNeulesen: NachUebernahme);
+        cut.Instance.Arbeitsstand.Feiertagsland = "HE";
+        cut.Render();
+        Assert.True(cut.Instance.PrueffelderGeaendert);
+        IElement vier = cut.Find(".epos-pruefleiste-gruppe[data-gruppe='4']");
+        Assert.Equal("true", vier.GetAttribute("aria-disabled"));
+        Assert.Equal(R.GEB_SPERRE_PRUEFFELDER, vier.GetAttribute("title"));
+        vier.Click();
+        Assert.Empty(geklickt);
+        Assert.Equal(R.GEB_SPERRE_PRUEFFELDER, cut.Instance.Meldung);
+        // Eine Prüffassung von außen liest die geänderten Felder nicht neu — der Anwenderwert bleibt.
+        cut.Render(p => p.Add(x => x.PruefFassung, 1));
+        Assert.Equal(0, _gebaeudeGelesen);
+        Assert.Equal("HE", cut.Instance.Arbeitsstand.Feiertagsland);
+    }
+
+    [Fact]
+    public void N3_Gegenprobe_geaenderte_Konditionierung_sperrt_die_Leiste()
+    {
+        var cut = Aufbauen(new ModellpruefungProbeweg(), new List<Pruefgruppe>(), daten: Satz("BY"),
+                           gebaeudeNeulesen: NachUebernahme);
+        cut.Instance.Arbeitsstand.Konditionierung = new KonditionierungDaten { Fassung = 1 };
+        cut.Render();
+        Assert.Equal("true", cut.Find(".epos-pruefleiste-gruppe[data-gruppe='3']").GetAttribute("aria-disabled"));
+        cut.Render(p => p.Add(x => x.PruefFassung, 1));
+        Assert.Equal(0, _gebaeudeGelesen);
+    }
+
+    [Fact]
+    public void N3_unveraenderter_Dialog_laesst_die_Leiste_frei()
+    {
+        var geklickt = new List<Pruefgruppe>();
+        var cut = Aufbauen(new ModellpruefungProbeweg(), geklickt, daten: Satz("BY"), gebaeudeNeulesen: NachUebernahme);
+        Assert.False(cut.Instance.PrueffelderGeaendert);
+        Assert.All(cut.FindAll(".epos-pruefleiste-gruppe"), g => Assert.Null(g.GetAttribute("aria-disabled")));
+        cut.Find(".epos-pruefleiste-gruppe[data-gruppe='4']").Click();
+        Assert.Equal(new[] { Pruefgruppe.OrtLage }, geklickt);
     }
 
     [Fact]

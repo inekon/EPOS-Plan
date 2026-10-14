@@ -40059,6 +40059,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst die geänderten Gebäudedaten (Feiertagsland, Konditionierung) mit OK speichern — eine Übernahme der Modellprüfung schreibt dort. ähnelt.
+        /// </summary>
+        public static string GEB_SPERRE_PRUEFFELDER {
+            get {
+                return ResourceManager.GetString("GEB_SPERRE_PRUEFFELDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nur für genau ein gewähltes Projektgebäude – mehrere Gebäude nacheinander übernehmen. ähnelt.
         /// </summary>
         public static string GEB_SPERRE_RUECKWEG_MEHRERE {
