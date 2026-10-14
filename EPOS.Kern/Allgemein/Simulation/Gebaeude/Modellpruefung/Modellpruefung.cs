@@ -415,7 +415,8 @@ namespace WindowsFormsApplication1
                     continue;
                 }
                 // Welle DA-5 (Konzept DA 4.3, E135): die Ampel des Profils. Grün: Profil aus der Datei mit Katalogtreffer (oder von
-                // Hand); gelb: Profil aus Regel bzw. Vorschlag, DIN-Nummer ohne Katalogtreffer; rot: weder Profil noch Dateiwerte.
+                // Hand); gelb: Profil aus Regel bzw. Vorschlag, DIN-Nummer ohne Katalogtreffer, Zone ohne Profil — sie rechnet mit den
+                // Werten der Datei und erbt das Übrige vom Gebäude (rot hieße nicht rechenfähig; diese Lage gibt es hier nicht).
                 s.Quellen.TryGetValue(z.ID, out Zonenquelle q);
                 string nutzung = s.Nutzung(z);
                 if (nutzung == null && !kalender)
@@ -424,7 +425,7 @@ namespace WindowsFormsApplication1
                         f.Add(new Modellbefund(G, DIN_OHNE_KATALOGTREFFER, Pruefampel.Gelb, Text(DIN_OHNE_KATALOGTREFFER, z.Bezeichner, din), z.ID,
                                               Vorschlag: Modellvorschlagsregeln.Profil(s, z)));
                     else
-                        f.Add(new Modellbefund(G, ZONE_OHNE_PROFIL, Dateiwerte(z) ? Pruefampel.Gelb : Pruefampel.Rot,
+                        f.Add(new Modellbefund(G, ZONE_OHNE_PROFIL, Pruefampel.Gelb,
                                               Text(ZONE_OHNE_PROFIL, z.Bezeichner), z.ID, Vorschlag: Modellvorschlagsregeln.Profil(s, z)));
                     continue;
                 }
@@ -439,13 +440,6 @@ namespace WindowsFormsApplication1
                     f.Add(new Modellbefund(G, KUEHLKALENDER_FEHLT, Pruefampel.Gelb, Text(KUEHLKALENDER_FEHLT, z.Bezeichner), z.ID));
             }
         }
-
-        /// <summary>
-        /// Trägt die Zone Werte der Datei (E138 F2 a: Datei vor Profil) — Heizsollwert, Kühlsollwert oder Luftwechsel der Nutzer?
-        /// Eine Zone ohne Profil mit solchen Werten rechnet mit ihnen (gelb); ohne sie erbt sie alles vom Gebäude (rot).
-        /// </summary>
-        internal static bool Dateiwerte(ZoneModel z)
-            => z != null && (z.Raumsolltemperatur_Tag.HasValue || z.Kuehl_Sollwert.HasValue || z.Luftwechsel_Nutzer.HasValue);
 
         private static void Konditionierung(Modellpruefstand s, List<Modellbefund> f)
         {

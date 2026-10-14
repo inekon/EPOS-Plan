@@ -170,15 +170,16 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Rot_Zone_ohne_Profil_und_ohne_Dateiwerte()
+        public void Gelb_Zone_ohne_Profil_und_ohne_Dateiwerte_erbt_vom_Gebaeude()
         {
+            // Die Zone erbt Kalender und Werte vom Gebäude und rechnet — gelb, nicht rot (rot = nicht rechenfähig).
             Modellpruefergebnis e = Modellpruefung.Pruefen(Stand(null, null));
             Modellbefund b = Assert.Single(e.Gruppe(Pruefgruppe.NutzungKonditionierung).Befunde, x => x.Code == Modellpruefung.ZONE_OHNE_PROFIL);
-            Assert.Equal(Pruefampel.Rot, b.Ampel);
-            Assert.Equal(Pruefampel.Rot, e.Gruppe(Pruefgruppe.NutzungKonditionierung).Ampel);
+            Assert.Equal(Pruefampel.Gelb, b.Ampel);
+            Assert.NotEqual(Pruefampel.Rot, e.Gruppe(Pruefgruppe.NutzungKonditionierung).Ampel);
             Assert.NotNull(b.Vorschlag);                       // über den bestehenden Weg übernehmbar
             Assert.Equal(Vorschlagsherkunft.Gebaeudeart, b.Vorschlag.Herkunft);
-            // Gegenprobe: Werte der Datei (Datei vor Profil, E138 F2 a) → gelb; eine unbeheizte Zone → kein Befund.
+            // Mit Werten der Datei (Datei vor Profil, E138 F2 a) ebenso gelb; eine unbeheizte Zone → kein Befund.
             Assert.Equal(Pruefampel.Gelb, Assert.Single(Profilbefunde(Stand(z => z.Raumsolltemperatur_Tag = 20, null))).Ampel);
             Assert.Equal(Pruefampel.Gelb, Assert.Single(Profilbefunde(Stand(z => z.Luftwechsel_Nutzer = 0.5, null))).Ampel);
             Assert.Empty(Profilbefunde(Stand(z => z.IstBeheizt = false, null)));

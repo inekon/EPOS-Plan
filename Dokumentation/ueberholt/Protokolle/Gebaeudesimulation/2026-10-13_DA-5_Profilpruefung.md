@@ -47,8 +47,10 @@ beheizte Zone ohne Profil kommt der Vorschlag aus der Modellprüfung.
 | grün | — | Profil aus der Datei mit Katalogtreffer, von Hand oder ohne Quellhinweis | — |
 | gelb | `PROFIL_AUS_REGEL` | Profil aus Raumtyp, Nutzungsklasse, Gebäudeart oder einem übernommenen Vorschlag | keiner (Hinweis) |
 | gelb | `DIN_OHNE_KATALOGTREFFER` | Zone ohne Profil, DIN-Nummer der Datei ohne Treffer | nächstliegendes Profil der DIN-Kategorie (`Vorschlagsherkunft.DinNaechstes`) |
-| gelb | `ZONE_OHNE_PROFIL` | Zone ohne Profil, aber mit Werten der Datei (Heizsollwert, Kühlsollwert, Luftwechsel der Nutzer) | Profil nach Regel |
-| rot | `ZONE_OHNE_PROFIL` | beheizte Zone ohne Profil, ohne Kalender und ohne Werte der Datei | Profil nach Regel |
+| gelb | `ZONE_OHNE_PROFIL` | beheizte Zone ohne Profil und ohne Kalender — mit oder ohne Werte der Datei; sie erbt vom Gebäude und rechnet | Profil nach Regel |
+
+Rot heißt „nicht rechenfähig“. Eine solche Lage gibt es in Gruppe 3 nicht: Eine Zone ohne Profil, ohne Kalender und ohne Werte
+der Datei erbt vom Gebäude und rechnet. Deshalb ist `ZONE_OHNE_PROFIL` immer gelb (Abgleich beim Zusammenführen mit DA-4/DA-7).
 
 Die Vorschläge laufen über den bestehenden Weg (`ModellpruefungCtrl.Uebernehmen` → `ZonenplanCtrl.NutzungUebernehmen`, mit
 Rücknahme). Eine Übernahme markiert die Zone in der Sitzung als „Profil aus Regel“. Ausgenommen ist ein Profil der DIN-Nummer
@@ -104,7 +106,7 @@ nutzen denselben Weg (`Zonenwerte`). Ohne DIN-Profil bleibt die Datei byte-gleic
   `EPOS.Kern.Tests/GbxmlRaumtyptafelTests.cs`
 - geändert:
   - Kern: `Raumnutzungsvorbelegung` (`Aus`, `DinTreffer`, `AusDinKatalog`, `NaechstesDinProfil`, `DinNummer`);
-    `Modellpruefung` (zwei Codes, `Dateiwerte`, Ampel); `Modellpruefungstypen` (`DinNaechstes`); `Modellvorschlagsregeln`;
+    `Modellpruefung` (zwei Codes, Ampel); `Modellpruefungstypen` (`DinNaechstes`); `Modellvorschlagsregeln`;
     `ModellpruefungCtrl`; `Zonenplan` (`DinNummerAnwenden`, `DateiDinNummer`); `GebaeudeAbbild` (`AbbildKonditionierung.DinNummer`);
     `IfcKonditionierungssatz`; `IfcAbbildBauer`; `GebaeudeExportSatz`
   - Hülle: `EPOS.UI.Daten/Bedarf/ModellpruefungHuelle.cs`
@@ -133,10 +135,8 @@ nutzen denselben Weg (`Zonenwerte`). Ohne DIN-Profil bleibt die Datei byte-gleic
   `Tab_Raumnutzungszuordnung` (CHECK der Spalte `Art`), also einen Schemaschritt. Als Nachzug benannt, nicht gebaut.
 - **Prüfen gegen Profilwerte** (Konzept 4.3: Dateiwerte gegen Profil, Abweichung über eine Schwelle als Hinweis): Das kommt mit
   DA-6, weil die DIN-Profile vorher keine Kennwerte tragen. Die Ampel unterscheidet bis dahin nicht „mit Werten“ und „ohne Werte“.
-- **Rot heißt „nicht rechenfähig“:** Der Rechenstatus folgt der höchsten Ampel. Eine beheizte Zone ohne Profil und ohne
-  Dateiwerte macht das Gebäude damit „nicht rechenfähig“, obwohl der Rechenweg vom Gebäude erbt. Der Auftrag verlangt das so;
-  „Alle Vorschläge übernehmen“ hebt den Zustand auf. Bei Bedarf ist zu entscheiden, ob rot in Gruppe 3 den Rechenstatus setzen
-  soll.
+- **Rot heißt „nicht rechenfähig“ (erledigt beim Zusammenführen):** Eine beheizte Zone ohne Profil und ohne Dateiwerte erbt vom
+  Gebäude und rechnet; `ZONE_OHNE_PROFIL` ist deshalb gelb, Gruppe 3 kennt keinen Rot-Fall (`Gelb_Zone_ohne_Profil_und_ohne_Dateiwerte_erbt_vom_Gebaeude`).
 - Die Herkunft „Profil aus Regel“ gilt nur in der Sitzung bzw. aus den Hinweisen des Imports. Eine gespeicherte Herkunftsspalte
   an der Zone gibt es nicht.
 - Eine Eigenschaft mit DIN-Nummer aus fremden IFC-Sätzen (Konzept 4.3: „oder eine Eigenschaft mit DIN-Nummer“) wird nicht
