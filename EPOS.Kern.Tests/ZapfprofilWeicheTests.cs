@@ -239,8 +239,9 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Kein stiller Rückfall, aber kein Abbruch (2.2, N8): Fehlt ein Parameter, den nur eine
-        /// Zone braucht, trägt diese Zone 0 und steht mit ihrem Namen und dem Schlüssel als
-        /// Warnung im Protokoll; die rechenbare Zone rechnet, der Lauf geht weiter.
+        /// Zone braucht, und lässt er sich nicht aus dem freien Paketteil nachtragen, trägt diese Zone 0
+        /// und steht mit ihrem Namen und dem Schlüssel als Warnung im Protokoll; die rechenbare Zone
+        /// rechnet, der Lauf geht weiter.
         /// </summary>
         [Fact]
         public void Ein_fehlender_Parameter_nennt_die_Zone_und_sie_traegt_null()
@@ -254,6 +255,10 @@ namespace EPOS.Kern.Tests
             Assert.True(DataRepository.ExecuteSQL(
                 "DELETE FROM Tab_TwwParameter_STAMM WHERE Schluessel = ? AND Katalogversion = ?",
                 new DbParam("@s", ZapfParameter.KALTWASSER_MITTEL), new DbParam("@k", VERSION)));
+            // Den Schlüssel trüge Verfuegbar() aus dem freien Paketteil nach (TwwPaketteilCtrl.ParameterNachtragen);
+            // hier weist die Datei jedes Einfügen in den Parameterkatalog ab — er bleibt fehlend.
+            DataRepository.ExecuteNonQuery("CREATE TRIGGER \"Probe_Abweisen\" BEFORE INSERT ON \"Tab_TwwParameter_STAMM\" " +
+                                           "BEGIN SELECT RAISE(ABORT, 'Probe weist ab'); END");
 
             SimulationProtokoll.NeuStarten();
             var waerme = new SimulationWaermebedarf();

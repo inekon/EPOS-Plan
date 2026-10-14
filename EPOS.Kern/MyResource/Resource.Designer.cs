@@ -165622,6 +165622,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zapfprofilgenerator hat fehlende frei verfügbare Parameter in die Katalogversion „{0}“ nachgetragen: {1} Parameter ({2}). ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_PAKETTEIL_PARAMETER_NACHGETRAGEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_PAKETTEIL_PARAMETER_NACHGETRAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Katalogversion „{0}“ trägt keine Brauchwasserparameter. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_PARAMETER_KATALOGVERSION_LEER {

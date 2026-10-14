@@ -174,6 +174,12 @@ namespace WindowsFormsApplication1
                 nachladen = TwwPaketteilCtrl.Nachladen();
                 version = AktuelleKatalogversion();
             }
+            else
+            {
+                // Eine Katalogversion steht: allein die Parameter nachtragen, die der Paketteil nach seiner
+                // ersten Auslieferung hinzubekommen hat und die ihr fehlen (Kaltwasser, Zirkulation).
+                nachladen = TwwPaketteilCtrl.ParameterNachtragen();
+            }
             if (version == null)
                 return new ZapfVerfuegbarkeit(false, ZapfVerfuegbarkeitsgrund.KeineKatalogversion,
                     nachladen.Versucht && !nachladen.Erfolg
