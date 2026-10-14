@@ -2,7 +2,7 @@
   "kopf": {
     "vorlage": "INEKON-Vorlage TWW-Auslegung V4 (Version 2.1.2, 30.07.2026)",
     "herkunftsart": "EIGENKONSTRUKTION",
-    "regel": "Die Auslieferungswerte der Setzungen der Speicherauslegung (Umsetzungskonzept Zapfprofilgenerator 4.7, Nachtrag N28), abgelesen aus der INEKON-eigenen Vorlage TWW-Auslegung_V4.xlsx (Blattköpfe Version 2.1.2, Dateistand 30.07.2026). Kein Normwert, kein Produktwert. tww_testkatalog_fiktiv.py --paketteil-schreiben erzeugt daraus die Zeilen der Speicherauslegung in Referenzlaeufe/Katalogpaket_frei/Tab_TwwParameter_STAMM.csv; von Hand wird dort an diesen Zeilen nichts geändert.",
+    "regel": "Die Auslieferungswerte der Setzungen der Speicherauslegung (Umsetzungskonzept Zapfprofilgenerator 4.7, Nachtrag N28) und die Werte der Vorlage für Kaltwasser und Zirkulation des Mengengerüsts (Kaltwasser.Bilanz.Mittel, Zirkulation.Laufzeit, Zirkulation.Anteil, Zirkulation.VerlustJeMeter; Anwenderentscheid 14.10.2026), abgelesen aus der INEKON-eigenen Vorlage TWW-Auslegung_V4.xlsx (Blattköpfe Version 2.1.2, Dateistand 30.07.2026). Kein Normwert, kein Produktwert. tww_testkatalog_fiktiv.py --paketteil-schreiben erzeugt daraus ihre Zeilen in Referenzlaeufe/Katalogpaket_frei/Tab_TwwParameter_STAMM.csv; von Hand wird dort an diesen Zeilen nichts geändert.",
     "offen": {
       "Speicherauslegung.Ladefenster.Beginn": "V4 führt keinen Beginn: die Bilanz setzt die Ladeleistung konstant über 24 h an (Berechnung B12), das Ladezeitfenster (Eingaben B63) dient nur dem Vorschlag der Ladeleistung. Der Auslieferungswert steht als INEKON-Setzung in zapfprofil_setzungen_inekon.json (Anwenderentscheid 26.09.2026).",
       "Speicherauslegung.GLF_Gueltigkeitsgrenze": "V4 führt keine Grenze: Hilfe B66 nennt nur qualitativ, dass der GLF-Faustwert für Nutzungen ohne Wannen eingeschränkt aussagefähig ist. Der Auslieferungswert steht als INEKON-Setzung in zapfprofil_setzungen_inekon.json (Anwenderentscheid 26.09.2026)."
@@ -207,6 +207,42 @@
       "zelle": "A53",
       "fundstelle": "Zeile 53, Spalte A",
       "beschriftung": "Nachschlagetabelle marktübliche Speichergrößen, Nenninhalt"
+    },
+    {
+      "schluessel": "Kaltwasser.Bilanz.Mittel",
+      "wert": 10.0,
+      "einheit": "°C",
+      "blatt": "Berechnung",
+      "zelle": "B389",
+      "fundstelle": "Zeile 389, Spalte B",
+      "beschriftung": "Bezug Kaltwasser, Jahresmittel des Kaltwassers der Bilanz"
+    },
+    {
+      "schluessel": "Zirkulation.Laufzeit",
+      "wert": 24.0,
+      "einheit": "h",
+      "blatt": "Berechnung",
+      "zelle": "B10",
+      "fundstelle": "Zeile 10, Spalte B (Zirkulationsleistung mal 24 h, Dauerlast rund um die Uhr)",
+      "beschriftung": "Zirkulationsverluste je Tag, tägliche Laufzeit der Zirkulation"
+    },
+    {
+      "schluessel": "Zirkulation.Anteil",
+      "wert": 0.2,
+      "einheit": "-",
+      "blatt": "Eingaben",
+      "zelle": "B75",
+      "fundstelle": "Zeile 75, Spalte B",
+      "beschriftung": "Schätzhilfe Zirkulationsverlust, Anteil am Tagesbedarf"
+    },
+    {
+      "schluessel": "Zirkulation.VerlustJeMeter",
+      "wert": 10.0,
+      "einheit": "W/m",
+      "blatt": "Eingaben",
+      "zelle": "B74",
+      "fundstelle": "Zeile 74, Spalte B",
+      "beschriftung": "Schätzhilfe Zirkulationsverlust, spez. Verlust je Meter"
     }
   ]
 }
