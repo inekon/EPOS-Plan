@@ -114574,6 +114574,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteerzeugung: {0} MWh/a von {1} MWh/a Kältebedarf gedeckt ({2} %; davon Kältefolge {3} %, dezentral {4} MWh/a), Kältestrom der Kältefolge {5} MWh/a, EER-Jahreswert {6}; {7} Kühltage. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_DECKUNG_SPLIT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_DECKUNG_SPLIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteerzeugung: {0} MWh/a von {1} MWh/a Kältebedarf gedeckt ({2} %; ganz dezentral, {3} MWh/a), Kältestrom der Kältefolge {4} MWh/a, EER-Jahreswert {5}; {6} Kühltage. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_DECKUNG_SPLIT_NUR_DEZENTRAL {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_DECKUNG_SPLIT_NUR_DEZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf dezentral (Split): {0} Zeilen, {1} MWh/a, Spitze {2} kW, Strom {3} MWh/a, Jahres-EER {4}. Gedeckt neben der Kältefolge, ohne Kaltwasser und ohne Leistungsgrenze. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_DEZENTRAL {

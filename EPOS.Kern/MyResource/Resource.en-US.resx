@@ -56197,5 +56197,11 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="IMP_BAUTEIL_PROT_LUFTSTROM_PARTNER" xml:space="preserve">
     <value>Zone {0}: the air flow to zone {1} is skipped — the file does not contain this zone, it is the zone itself, or the pair already exists.</value>
   </data>
+  <data name="SIMENG_KAELTE_DECKUNG_SPLIT" xml:space="preserve">
+    <value>Cooling generation: {0} MWh/a of {1} MWh/a cooling demand covered ({2} %; of which cooling sequence {3} %, decentralised {4} MWh/a), cooling electricity of the cooling sequence {5} MWh/a, seasonal EER {6}; {7} cooling days.</value>
+  </data>
+  <data name="SIMENG_KAELTE_DECKUNG_SPLIT_NUR_DEZENTRAL" xml:space="preserve">
+    <value>Cooling generation: {0} MWh/a of {1} MWh/a cooling demand covered ({2} %; entirely decentralised, {3} MWh/a), cooling electricity of the cooling sequence {4} MWh/a, seasonal EER {5}; {6} cooling days.</value>
+  </data>
 </root>
 

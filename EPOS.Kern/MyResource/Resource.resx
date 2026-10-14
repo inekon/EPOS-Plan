@@ -56204,5 +56204,11 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="IMP_BAUTEIL_PROT_LUFTSTROM_PARTNER" xml:space="preserve">
     <value>Zone {0}: Der Luftstrom zur Zone {1} wird übergangen — die Datei führt diese Zone nicht, es ist die Zone selbst, oder das Paar steht schon.</value>
   </data>
+  <data name="SIMENG_KAELTE_DECKUNG_SPLIT" xml:space="preserve">
+    <value>Kälteerzeugung: {0} MWh/a von {1} MWh/a Kältebedarf gedeckt ({2} %; davon Kältefolge {3} %, dezentral {4} MWh/a), Kältestrom der Kältefolge {5} MWh/a, EER-Jahreswert {6}; {7} Kühltage.</value>
+  </data>
+  <data name="SIMENG_KAELTE_DECKUNG_SPLIT_NUR_DEZENTRAL" xml:space="preserve">
+    <value>Kälteerzeugung: {0} MWh/a von {1} MWh/a Kältebedarf gedeckt ({2} %; ganz dezentral, {3} MWh/a), Kältestrom der Kältefolge {4} MWh/a, EER-Jahreswert {5}; {6} Kühltage.</value>
+  </data>
 </root>
 

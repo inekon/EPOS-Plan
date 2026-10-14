@@ -215,6 +215,18 @@ namespace EPOS.Kern.Tests
             Assert.InRange(e.DeckungsgradGesamtProzent.Value, 99.9, 100.0 + 1e-9);
             Assert.Equal(6.0, e.ProfilMwh, 6);                              // drei Profile, zentral und dezentral
 
+            // K6c-N: Die Laufmeldung nennt mit Split-Zeile die Hauptzahl wie die Übersicht, „davon Kältefolge“ und die
+            // dezentrale Menge — nicht mehr die Kältefolge allein am Gesamtbedarf (gespeichert bleibt diese).
+            string meldung = Assert.Single(lauf.Protokoll.Hinweise, h => h.StartsWith("Kälteerzeugung:", StringComparison.Ordinal));
+            Assert.StartsWith("Kälteerzeugung: 10,05 MWh/a von 10,05 MWh/a Kältebedarf gedeckt (100,0 %; davon Kältefolge 100,0 %, " +
+                              "dezentral 5,00 MWh/a), Kältestrom der Kältefolge ", meldung, StringComparison.Ordinal);
+            Assert.EndsWith(" Kühltage.", meldung, StringComparison.Ordinal);
+            Assert.Equal(SimulationControl.KaeltedeckungMeldung(kaskade.DeckungGesamtKwh / 1000.0, k.Kaeltebedarf_Dezentral_Gesamt,
+                             k.Kaeltebedarf_Gesamt, kaskade.StromGesamtKwh / 1000.0, kaskade.EerJahreswert, kaskade.AnzahlKuehltage),
+                         meldung);
+            Assert.Contains(KaelteErgebnisexport.Skalare(k), s => s.Key == "Kaelte.DeckungsgradProzent" &&
+                            Math.Abs(s.Value - SimulationRunner.DeckungProzent(kaskade.DeckungGesamtKwh / 1000.0, k.Kaeltebedarf_Gesamt)) < 1e-12);
+
             // Kein Befund der dezentralen Kälte; die Warnkriterien wie in der Vorlage.
             List<Warnbefund> befunde = Warnkriterien.PruefeProjekt(PROJEKT);
             Assert.DoesNotContain(befunde, b => b.Kriterium == Warnkriterien.DEZENTRALE_KAELTE_OHNE_EER ||
@@ -238,6 +250,54 @@ namespace EPOS.Kern.Tests
             Nahe(R55_BUERO_NETZ_MWH, buero.NetzbezugKwh / 1000.0, "Netzbezug Split Büro");
             Nahe(R55_SERVER_STROM_MWH, server.StromKwh / 1000.0, "Strom Split Serverraum");
             Nahe(R55_SERVER_NETZ_MWH, server.NetzbezugKwh / 1000.0, "Netzbezug Split Serverraum");
+        }
+
+        // =====================================================================
+        //  Die Laufmeldung der Kälteerzeugung (K6c-N)
+        // =====================================================================
+
+        [Fact]
+        public void Die_Laufmeldung_nennt_mit_Split_die_Hauptzahl_und_ohne_Split_den_Bestand()
+        {
+            // Mit Split-Zeile: Hauptzahl (60 + 20) / 100, „davon Kältefolge“ 60 / (100 − 20), die dezentrale Menge.
+            Assert.Equal("Kälteerzeugung: 80,00 MWh/a von 100,00 MWh/a Kältebedarf gedeckt (80,0 %; davon Kältefolge 75,0 %, " +
+                         "dezentral 20,00 MWh/a), Kältestrom der Kältefolge 20,00 MWh/a, EER-Jahreswert 3,00; 120 Kühltage.",
+                         SimulationControl.KaeltedeckungMeldung(60.0, 20.0, 100.0, 20.0, 3.0, 120));
+
+            // Ohne Split-Zeile wörtlich wie immer: die Kältefolge am Gesamtbedarf.
+            Assert.Equal("Kälteerzeugung: 60,00 MWh/a von 100,00 MWh/a Kältebedarf gedeckt (60,0 %), Kältestrom 20,00 MWh/a, " +
+                         "EER-Jahreswert 3,00; 120 Kühltage.",
+                         SimulationControl.KaeltedeckungMeldung(60.0, 0.0, 100.0, 20.0, 3.0, 120));
+
+            // Bleibt kein zentral zu deckender Bedarf, entfällt „davon Kältefolge“.
+            Assert.Equal("Kälteerzeugung: 100,00 MWh/a von 100,00 MWh/a Kältebedarf gedeckt (100,0 %; ganz dezentral, 100,00 MWh/a), " +
+                         "Kältestrom der Kältefolge 0,00 MWh/a, EER-Jahreswert 0,00; 0 Kühltage.",
+                         SimulationControl.KaeltedeckungMeldung(0.0, 100.0, 100.0, 0.0, 0.0, 0));
+        }
+
+        [Fact]
+        public void Die_Vorlage_1055_ohne_Split_meldet_die_Kaelteerzeugung_wie_bisher()
+        {
+            if (!_db.Vorhanden) return;
+            SimulationProtokoll.NeuStarten();
+            var lauf = new SimulationRunner();
+            int kopf = lauf.SimuliereUndSpeichere(VORLAGE, out string fehler);
+            Assert.True(kopf > 0, "Lauf gescheitert: " + fehler);
+
+            Kaeltekaskade kaskade = lauf.simulation_Kaeltebedarf.Kaskade;
+            SimulationKaeltebedarf k = lauf.simulation_Kaeltebedarf;
+            Assert.False(k.MitDezentral);
+            string meldung = Assert.Single(lauf.Protokoll.Hinweise, h => h.StartsWith("Kälteerzeugung:", StringComparison.Ordinal));
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, WindowsFormsApplication1.MyResource.Resource.SIMENG_KAELTE_DECKUNG,
+                             (kaskade.DeckungGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                             k.Kaeltebedarf_Gesamt.ToString("N2", CultureInfo.CurrentCulture),
+                             SimulationRunner.DeckungProzent(kaskade.DeckungGesamtKwh / 1000.0, k.Kaeltebedarf_Gesamt)
+                                             .ToString("N1", CultureInfo.CurrentCulture),
+                             (kaskade.StromGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                             kaskade.EerJahreswert.ToString("N2", CultureInfo.CurrentCulture),
+                             kaskade.AnzahlKuehltage),
+                         meldung);
+            Assert.DoesNotContain("davon Kältefolge", meldung, StringComparison.Ordinal);
         }
     }
 }
