@@ -4,9 +4,9 @@ Dieses Papier übergibt die Sitzung „Dialoge und Korrekturen — Anlagendialog
 an eine neue Sitzung. Es nennt den Stand, die geltenden Entscheide, die Regeln der Sitzung und
 die offenen Punkte; der Einstiegs-Prompt steht in Abschnitt 5. Regelquelle bleibt `CLAUDE.md`.
 Es ergänzt das Papier der parallel arbeitenden Sitzung „Dialoge und Korrekturen, Konto 3“
-([`2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Konto3.md`](2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Konto3.md))
+([`2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Konto3.md`](../aktuell/Dialoge/2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Konto3.md))
 und löst das Papier der Vorgängerrolle
-([`2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md`](../../ueberholt/2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md))
+([`2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md`](2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md))
 für die hier genannten Gegenstände ab.
 
 ## 1 Stand
@@ -39,7 +39,7 @@ für die hier genannten Gegenstände ab.
 ## 3 Regeln der Sitzung
 
 - Wie im Papier von Konto 3, Abschnitt 3
-  ([`2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Konto3.md`](2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Konto3.md)),
+  ([`2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Konto3.md`](../aktuell/Dialoge/2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Konto3.md)),
   dazu:
 - Nach jedem Merge mit origin die ChartProben-Messlatte beachten: Auf einem Container mit anderer Schriftkette (Carlito) weichen alle 222 Hashes ab; der Nachweis ist dann der Vergleichslauf derselben Maschine auf dem origin-Stand (ChartProben-LIESMICH), die CI hält die Messlatte.
 - `git lfs install --local` im Container, sonst liegt nach einem Merge ein Zeiger.
@@ -68,7 +68,7 @@ für die hier genannten Gegenstände ab.
 Du übernimmst die Sitzung „Dialoge und Korrekturen — Anlagendialog, Kältebedarf, Katalogauswahl“ für
 EPOS-Plan (Repo inekon/EPOS-Plan, Arbeitszweig ios_migration_september) aus einem anderen Konto.
 Lies zuerst CLAUDE.md und
-Dokumentation/aktuell/Dialoge/2026-10-11_Uebergabe_Dialoge_Anlagendialog_Kaeltebedarf.md,
+Dokumentation/ueberholt/2026-10-11_Uebergabe_Dialoge_Anlagendialog_Kaeltebedarf.md,
 dann den Kopf (Zeile „Schemaschritt angemeldet“) und die letzten zwanzig Tabellenzeilen von
 Dokumentation/aktuell/Status_iOS_Migration.md sowie
 `git log --format='%h %<(72,trunc)%s' -n 25 origin/ios_migration_september`.
