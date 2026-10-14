@@ -1,4 +1,6 @@
-== Version 1.2.0.11 – Sammel-Upload 14.10.2026 ==
+== Version 1.2.0.11 – Oktober 2026 ==
+{{Anker|version-1-2-0-11-oktober-2026|v1-2-0-11}}
+
 * Seit 13.10.2026: Der Gebäudedialog prüft ein Gebäude mit „Modell prüfen…“ auf Rechenfähigkeit, zeigt je Prüfgruppe eine Ampel, schlägt fehlende Hüllflächen und Aufbauten nach Namen und Baualtersklasse vor und übernimmt die Vorschläge mit einem Klick; nach einem Import öffnet die Prüfung von selbst.
 * Seit 13.10.2026: Aus „Modell prüfen“ öffnet „Ansicht…“ die Gebäudeansicht mit den betroffenen Flächen und Zonen hervorgehoben; Zonen, Legendeneinträge und Bauteilgruppen lassen sich ein- und ausblenden, und der neue Farbmodus „Nutzung“ zeigt die Nutzungsprofile.
 * Seit 13.10.2026: Das neue Blatt „Nutzung und Kalender“ zeigt Nutzungsprofil, Kalender, Sollwerte, Ferien und Heizperiode aller Zonen eines Gebäudes mit einem Kurzbild der Woche und weist sie mehreren Zonen in einem Schritt zu.
@@ -22,4 +24,5 @@
 * Seit 13.10.2026: In den Zeitreihendiagrammen stehen Bedarfe als Linie über den Erzeugungsflächen, die Zeitachse der Jahresdiagramme ist zwischen Datum und Stunde im Jahr umschaltbar, und im Reiter Photovoltaik zeigt „PV aufteilen“ die Erzeugung als Stapel aus Eigenverbrauch, Einspeisung und Abregelung.
 * Seit 13.10.2026: Der Arbeitspreis eines Energieträgers wird bei neuer Auswahl in €/kWh angezeigt und mit dem Heizwert umgerechnet.
 * Seit 13.10.2026: In den Dialogen mit Katalogauswahl sind die Kästchen der Liste „Im Projekt“ runde Knöpfe, angekreuzt dunkelblau mit weißem Haken.
+
 
