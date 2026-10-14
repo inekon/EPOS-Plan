@@ -250,6 +250,9 @@ jobs:
           fi
           echo "Messlatte: $messlatte"
           echo "Hashliste: $liste (Laeuferabbild ${ImageOS:-?} ${ImageVersion:-?})"
+          echo "::group::ChartProben-Hashliste ubuntu (vollständig, für die Messlatte)"
+          cat "$liste"
+          echo "::endgroup::"
           awk -v messlatte="$(basename "$messlatte")" '
             function abweichung(art, bild, text) {
               print art bild text
@@ -264,7 +267,7 @@ jobs:
             $2 in hash { abweichung("GEAENDERT: ", $2, "  Messlatte " $1 "  Lauf " hash[$2]); next }
                        { abweichung("FEHLT:     ", $2, "  Messlatte " $1 "  - im Lauf nicht gezeichnet") }
             END {
-              for (i = 1; i <= n; i++) if (!(name[i] in alt)) { print "NEU:       " name[i]; neu++ }
+              for (i = 1; i <= n; i++) if (!(name[i] in alt)) { print "NEU:       " name[i] " " hash[name[i]]; neu++ }
               printf "%s: %d von %d Zeilen unveraendert, %d geaendert oder fehlend, %d neue Bilder ohne Messlattenzeile.\n", messlatte, gleich, zeilen, aus, neu
               if (zeilen == 0) { print "::error::Die Messlatte " messlatte " ist leer."; exit 1 }
               if (aus > 0) { print "::error::ChartProben-Messlatte: " aus " von " zeilen " Zeilen geaendert oder fehlend: " betroffen; exit 1 }
