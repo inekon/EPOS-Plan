@@ -567,13 +567,13 @@ namespace EPOS.Kern.Tests
             Pruefen(typeof(BauteilModel), GebaeudeExportVerluste.Bauteil);
             Pruefen(typeof(ProjektGebaeudeModel), GebaeudeExportVerluste.Gebaeude);
             // Mindestens benannt (Umsetzungsauftrag W2).
-            foreach (string n in new[] { "Luftwechsel_Nutzer", "Interne_Waermegewinne", "Raumsolltemperatur_Nachtabsenkung",
-                                         "Raumsolltemperatur_Wochenende", "Raumsolltemperatur_Ferien", "Heizleistung_Max", "Kuehlleistung_Max",
-                                         "Heizung_Strahlungsanteil", "Maximaleraumtemperatur", "Uebergabe_Art", "Kuehl_Uebergabe_Art", "Bewohner" })
+            // DA-4: Nutzerluftwechsel, innere Gewinne, Belegung, Höchstleistungen und Übergabe reisen inzwischen (RestdatenRundlaufTests).
+            foreach (string n in new[] { "Raumsolltemperatur_Nachtabsenkung", "Raumsolltemperatur_Wochenende", "Raumsolltemperatur_Ferien",
+                                         "Heizung_Strahlungsanteil", "Maximaleraumtemperatur" })
                 Assert.Equal(Exporteinstufung.BenannterVerlust, GebaeudeExportVerluste.Zone[n]);
             foreach (string n in new[] { "Psi_L", "Rahmenanteil", "Verschattungsfaktor" })
                 Assert.Equal(Exporteinstufung.BenannterVerlust, GebaeudeExportVerluste.Bauteil[n]);
-            foreach (string n in new[] { "Bauweise", "Masseanteil_Aussen", "Baualtersklasse", "Baujahr", "Kellertemperatur" })
+            foreach (string n in new[] { "Bauweise", "Masseanteil_Aussen", "Baualtersklasse", "Baujahr" })
                 Assert.Equal(Exporteinstufung.BenannterVerlust, GebaeudeExportVerluste.Gebaeude[n]);
         }
 
@@ -595,7 +595,8 @@ namespace EPOS.Kern.Tests
             z.Bauteile[0].Psi_L = 2.5;
             GebaeudeExportPlan plan = ExportSatzProbe.Plan(ExportSatzProbe.Satz(z));
             PruefMeldung m = Assert.Single(plan.Meldungen, x => x.Schluessel == GebaeudeExportAblauf.VERLUSTE);
-            Assert.Contains("Luftwechsel_Nutzer", m.Werte[0], StringComparison.Ordinal);
+            // DA-4: der Nutzerluftwechsel der Zone reist (Lüftungsplan und Zone/AirChangesPerHour) und ist kein Verlust mehr.
+            Assert.DoesNotContain("Luftwechsel_Nutzer", m.Werte[0], StringComparison.Ordinal);
             Assert.Contains("Psi_L", m.Werte[0], StringComparison.Ordinal);
             Assert.Contains("Raumsolltemperatur_Nachtabsenkung", m.Werte[0], StringComparison.Ordinal);
         }

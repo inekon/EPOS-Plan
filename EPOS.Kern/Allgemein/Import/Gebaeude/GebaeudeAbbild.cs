@@ -298,6 +298,9 @@ namespace WindowsFormsApplication1
         /// Wasserzeichen der Testlizenz, Vermerke; G7a); <c>null</c> = keiner. Der Leser lässt ihn leer.
         /// </summary>
         public string Beschreibung { get; set; }
+
+        /// <summary>Das Erdreich des Gebäudes (Welle DA-4, Inventar G3, G4); <c>null</c> = keines.</summary>
+        public AbbildErdreich Erdreich { get; set; }
     }
 
     /// <summary>Ein Geschoss des Abbilds (IFC: <c>IfcBuildingStorey</c>).</summary>
@@ -541,6 +544,10 @@ namespace WindowsFormsApplication1
         /// <c>Pset_SpaceCommon.Category</c> bzw. <c>ObjectType</c> — er benennt die Nutzungsklasse der Regel Z6.
         /// </summary>
         public double? RaumtemperaturC { get; set; }
+
+        /// <summary>Die Restdaten der Zone dieses Raums (Welle DA-4: Vorheizzeit, Höchstleistungen, Übergabe, Luftströme,
+        /// Zeilenbild, benannte Wochen); <c>null</c> = keine.</summary>
+        public AbbildZonenrest Rest { get; set; }
     }
 
     /// <summary>Ein Nachbarraum eines Bauteils samt der Sicht dieses Raums auf die Fläche.</summary>

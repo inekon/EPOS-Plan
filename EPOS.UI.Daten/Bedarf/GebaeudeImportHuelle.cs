@@ -1737,6 +1737,9 @@ namespace WindowsFormsApplication1
                     case GebaeudeZielfelder.GRUND_RANDBEDINGUNG:
                         if (!string.IsNullOrEmpty(z.Textwert)) d.GrundflaecheRandbedingung = z.Textwert;
                         break;
+                    // Welle DA-4: wirksamer U-Wert am Erdreich und Kellertemperatur der Datei.
+                    case GebaeudeZielfelder.ERDREICH_U_WIRKSAM: d.ErdreichUWirksam = w; break;
+                    case GebaeudeZielfelder.KELLERTEMPERATUR: d.Kellertemperatur = w; break;
                     case GebaeudeZielfelder.FLAECHE_SONSTIGE: d.SonstigeFlaechen = w; break;
                     case GebaeudeZielfelder.U_SONSTIGE: d.UWertSonstiges = w; break;
 

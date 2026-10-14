@@ -108,6 +108,15 @@ namespace WindowsFormsApplication1
         internal IReadOnlyDictionary<int, string> Zonennutzungen { get; init; } = new Dictionary<int, string>();
 
         /// <summary>
+        /// Welle DA-4: der Konditionierungsstand jeder Zone (Zeilenbild der Vorgabematrix und benannte Wochen) je Zonen-Id;
+        /// eine Zone ohne lesbaren Stand fehlt.
+        /// </summary>
+        internal IReadOnlyDictionary<int, Konditionierungsstand> Zonenstaende { get; init; } = new Dictionary<int, Konditionierungsstand>();
+
+        /// <summary>Welle DA-4: die Luftströme zwischen den Zonen des Gebäudes (<c>Tab_Zonenluftstrom</c>); leer = keine.</summary>
+        internal IReadOnlyList<ZonenluftstromModel> Luftstroeme { get; init; } = Array.Empty<ZonenluftstromModel>();
+
+        /// <summary>
         /// Die gespeicherten Grundrisse je Zonen-Id (HC-5, F10; <see cref="GebaeudeImportCtrl.LesenRaumgrundrisse"/>, jüngste Quelle):
         /// Gestalt und Lage des Exportmodells. Zeilen ohne Zone fehlen; leer = keine (Export wie ohne Grundriss).
         /// </summary>
@@ -192,6 +201,8 @@ namespace WindowsFormsApplication1
             Zonenkalender = Zonenkalender,
             Zonenvermerke = Zonenvermerke,
             Zonennutzungen = Zonennutzungen,
+            Zonenstaende = Zonenstaende,
+            Luftstroeme = Luftstroeme,
             Zonengrundrisse = Zonengrundrisse,
             Ergebnis = Ergebnis,
             Rechenzeitpunkt = Rechenzeitpunkt,
@@ -222,6 +233,8 @@ namespace WindowsFormsApplication1
             Zonenkalender = Zonenkalender,
             Zonenvermerke = Zonenvermerke,
             Zonennutzungen = Zonennutzungen,
+            Zonenstaende = Zonenstaende,
+            Luftstroeme = Luftstroeme,
             Zonengrundrisse = Zonengrundrisse,
             Ergebnis = ergebnis,
             Rechenzeitpunkt = ergebnis != null ? rechenzeitpunkt : null,
@@ -287,6 +300,13 @@ namespace WindowsFormsApplication1
                 }
                 if (ZonenplanCtrl.Zonennutzung(z.ID) is string nutzung) nutzungen[z.ID] = nutzung;
             }
+            // Welle DA-4: Zeilenbild und benannte Wochen jeder Zone, dazu die Luftströme zwischen den Zonen.
+            var staende = new Dictionary<int, Konditionierungsstand>();
+            foreach (ZoneModel z in zonen)
+                if (konditionierung.StandLesen(KonditionierungCtrl.Eigner.Zone(g.ID_Gebaeude, z.ID), out _) is Konditionierungsstand st)
+                    staende[z.ID] = st;
+            List<ZonenluftstromModel> luftstroeme = zonen.Count > 1
+                ? new GebaeudeZonenCtrl().LuftstroemeJeGebaeude(g.ID_Gebaeude) : new List<ZonenluftstromModel>();
 
             // Die Ergebnisse des letzten Laufs (G7c, Teil 2) über den Leser der Ergebnisseite.
             ErgebnisModel lauf = new ErgebnisCtrl().Load(idProjekt);
@@ -332,6 +352,8 @@ namespace WindowsFormsApplication1
                 Zonenkalender = zonenkalender,
                 Zonenvermerke = vermerke,
                 Zonennutzungen = nutzungen,
+                Zonenstaende = staende,
+                Luftstroeme = luftstroeme,
                 Zonengrundrisse = GrundrisseJeZone(new GebaeudeImportCtrl().LesenRaumgrundrisse(g.ID_Gebaeude)),
             };
         }
