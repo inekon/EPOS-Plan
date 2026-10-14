@@ -59,7 +59,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die Gerätekosten als LESEWERT</b> [€] — die Investitionssumme der Satzvorlage
-        /// dieses Satzes (<see cref="Katalogkostenanzeige.Investition"/>); <c>null</c> ohne
+        /// dieses Satzes (<see cref="KatalogkostensatzCtrl.Betrag"/>); <c>null</c> ohne
         /// Vorlage oder Betrag. Die Spalte <c>Modulkosten</c> ist mit Welle KB-4 entfallen
         /// (Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung"); gepflegt
         /// wird der Wert in der Kostenverwaltung, kein Schreibweg schreibt ihn.

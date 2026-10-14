@@ -431,7 +431,7 @@ namespace WindowsFormsApplication1
             };
             // DIE EINE KOSTENBASIS (Welle KB-4): An der Stelle der Modulkosten steht der
             // Lesewert der Satzvorlage; gepflegt in der Kostenverwaltung.
-            double geraetekosten = Katalogkostenanzeige.Investition(tabelle, r);
+            double geraetekosten = KatalogkostensatzCtrl.Betrag(tabelle, r);
             m.Geraetekosten = geraetekosten > 0 ? geraetekosten : (double?)null;
             // Schritt 210: Teillast und Takten - vor dem Schritt fehlen die Spalten, dann null.
             if (r.Table.Columns.Contains(KaeltemaschineTeillastSchema.SPALTE_TEILLAST_WEG))

@@ -359,7 +359,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die Gerätekosten als LESEWERT</b> (Welle KB-4, Anwenderentscheid 13.10.2026): die
         /// Investitionssumme der Satzvorlage des Satzes
-        /// (<see cref="Katalogkostenanzeige.Investitionstext"/>). An seiner Stelle standen am
+        /// (<see cref="KatalogkostensatzCtrl.BetragText"/>). An seiner Stelle standen am
         /// BHKW die fünf Kostenposten samt Investition je kWel und Wartung je kWhel, am
         /// Heizkessel Investition und Wartung mit ihrem Zeitbezug, an Solarkollektor und
         /// Pufferspeicher die Investitionskosten — alle als Spalten entfallen.

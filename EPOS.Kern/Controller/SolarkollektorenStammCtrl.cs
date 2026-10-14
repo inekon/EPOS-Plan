@@ -552,7 +552,7 @@ namespace WindowsFormsApplication1
             werte[KatalogBrowserProfil.FeldKdiff] = Feld(r, "Kdfu");
             // DIE EINE KOSTENBASIS (Welle KB-4): An der Stelle der Investitionskosten steht
             // EIN Lesewert - die Investitionssumme der Satzvorlage; gepflegt in der Kostenverwaltung.
-            werte[KatalogBrowserProfil.FeldGeraetekosten] = Katalogkostenanzeige.Investitionstext(tabelle, r);
+            werte[KatalogBrowserProfil.FeldGeraetekosten] = KatalogkostensatzCtrl.BetragText(tabelle, r);
 
             // ST6: die Bezugsfläche der Kennwerte; ohne Spalte und bei NULL apertur.
             werte[KatalogBrowserProfil.FeldBezugsflaeche] = SolarkollektorenCtrl.Bezugsflaeche(r);

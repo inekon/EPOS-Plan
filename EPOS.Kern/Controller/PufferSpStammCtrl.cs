@@ -651,7 +651,7 @@ namespace WindowsFormsApplication1
             werte[KatalogBrowserProfil.FeldVolumen] = RohFeld(r, "Gesamtvolumen");
             // DIE EINE KOSTENBASIS (Welle KB-4): An der Stelle der Investitionskosten steht
             // EIN Lesewert - die Investitionssumme der Satzvorlage; gepflegt in der Kostenverwaltung.
-            werte[KatalogBrowserProfil.FeldGeraetekosten] = Katalogkostenanzeige.Investitionstext(TABLE, r);
+            werte[KatalogBrowserProfil.FeldGeraetekosten] = KatalogkostensatzCtrl.BetragText(TABLE, r);
 
             return werte;
         }
@@ -1015,7 +1015,7 @@ namespace WindowsFormsApplication1
                 [KatalogBrowserProfil.FeldSpeichertyp] = RohFeld(r, "Speichertyp"),
                 [KatalogBrowserProfil.FeldVerluste] = RohFeld(r, "Bereitschaftsverluste"),
                 [KatalogBrowserProfil.FeldVolumen] = RohFeld(r, "Gesamtvolumen"),
-                [KatalogBrowserProfil.FeldGeraetekosten] = Katalogkostenanzeige.Investitionstext(Tabelle(projektkopie), r),
+                [KatalogBrowserProfil.FeldGeraetekosten] = KatalogkostensatzCtrl.BetragText(Tabelle(projektkopie), r),
             };
         }
 

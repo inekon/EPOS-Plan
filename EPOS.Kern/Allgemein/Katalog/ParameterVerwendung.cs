@@ -447,7 +447,7 @@ namespace WindowsFormsApplication1
         /// Schemaschritt <c>GeraetekostenEntfallSchema</c>). Die eine Basis ist die Satzvorlage
         /// des Katalogsatzes; der Planwert einer Anlage kommt aus ihr
         /// (<c>TechnikPlanwertCtrl.Satzvorlagenbasis</c>), die Anzeige des Satzes aus
-        /// <c>Katalogkostenanzeige.Investitionstext</c> — beide lesen dieselbe Vorlage, keine
+        /// <c>KatalogkostensatzCtrl.BetragText</c> — beide lesen dieselbe Vorlage, keine
         /// Spalte.
         ///
         /// <para><b>Die Pflegestelle ist seit dem 15.09.2026 der AUFKLAPPER</b> „Alle
@@ -669,7 +669,7 @@ namespace WindowsFormsApplication1
         /// Doppelhaltung", Schemaschritt <c>GeraetekostenEntfallSchema</c>). Die eine Basis ist
         /// die Satzvorlage des Katalogsatzes; der Planwert einer Anlage kommt aus ihr
         /// (<c>TechnikPlanwertCtrl.Satzvorlagenbasis</c>), die Anzeige des Satzes aus
-        /// <c>Katalogkostenanzeige.Investitionstext</c>.</para>
+        /// <c>KatalogkostensatzCtrl.BetragText</c>.</para>
         /// </remarks>
         private static IReadOnlyList<ParameterEintrag> Solarkollektoren(Func<string, string> t)
         {
@@ -846,7 +846,7 @@ namespace WindowsFormsApplication1
         /// Doppelhaltung", Schemaschritt <c>GeraetekostenEntfallSchema</c>). Die eine Basis ist
         /// die Satzvorlage des Katalogsatzes; der Planwert einer Anlage kommt aus ihr
         /// (<c>TechnikPlanwertCtrl.Satzvorlagenbasis</c>), die Anzeige des Satzes aus
-        /// <c>Katalogkostenanzeige.Investitionstext</c>.</para>
+        /// <c>KatalogkostensatzCtrl.BetragText</c>.</para>
         /// </remarks>
         private static IReadOnlyList<ParameterEintrag> Pufferspeicher(Func<string, string> t)
         {
@@ -913,7 +913,7 @@ namespace WindowsFormsApplication1
         /// Datenblatts, das Kältemittel ein Code mit Verweis auf die Kältemitteltabelle für die Zulässigkeitsprüfung (seine
         /// Treibhauswirkung rechnet EPOS-Plan nicht, Kühlkonzept 6.3). Eine Kostenspalte führt die Tabelle nicht mehr: <c>Modulkosten</c>
         /// ist mit Welle KB-4 entfallen (<c>GeraetekostenEntfallSchema</c>); der Planwert kommt aus der Satzvorlage
-        /// (<c>TechnikPlanwertCtrl.Satzvorlagenbasis</c>), die Anzeige aus <c>Katalogkostenanzeige.Investition</c>.
+        /// (<c>TechnikPlanwertCtrl.Satzvorlagenbasis</c>), die Anzeige aus <c>KatalogkostensatzCtrl.Betrag</c>.
         /// </summary>
         private static IReadOnlyList<ParameterEintrag> Kaeltemaschine(Func<string, string> t)
         {

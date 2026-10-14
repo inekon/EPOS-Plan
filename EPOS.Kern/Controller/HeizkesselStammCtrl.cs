@@ -1384,7 +1384,7 @@ namespace WindowsFormsApplication1
             // ihrem Zeitbezug steht EIN Lesewert - die Investitionssumme der Satzvorlage dieses
             // Satzes; gepflegt wird sie in der Kostenverwaltung (Muster Waermepumpe).
             werte[KatalogBrowserProfil.FeldGeraetekosten] =
-                Katalogkostenanzeige.Investitionstext(tabelle, r);
+                KatalogkostensatzCtrl.BetragText(tabelle, r);
             werte[KatalogBrowserProfil.FeldNutzungsdauer] = Feld(r, "Nutzungsdauer");
             werte[KatalogBrowserProfil.FeldCo2] = Feld(r, "CO2");
             werte[KatalogBrowserProfil.FeldSo2] = Feld(r, "SO2");

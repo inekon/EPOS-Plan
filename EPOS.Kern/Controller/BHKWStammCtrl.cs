@@ -845,7 +845,7 @@ namespace WindowsFormsApplication1
             // Investitionssumme der Satzvorlage dieses Satzes. Gepflegt wird sie in der
             // Kostenverwaltung, deshalb ist das Feld nicht editierbar (Muster Waermepumpe).
             werte[KatalogBrowserProfil.FeldGeraetekosten] =
-                Katalogkostenanzeige.Investitionstext(tabelle, r);
+                KatalogkostensatzCtrl.BetragText(tabelle, r);
             werte[KatalogBrowserProfil.FeldNutzungsdauer] = Feld(r, "Nutzungsdauer");
             werte[KatalogBrowserProfil.FeldNox] = Feld(r, "NOX");
             werte[KatalogBrowserProfil.FeldSo2] = Feld(r, "SO2");
