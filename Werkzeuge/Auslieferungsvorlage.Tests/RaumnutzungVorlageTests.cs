@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -50,7 +51,10 @@ namespace Auslieferungsvorlage.Tests
                             e.Ausgabe, StringComparison.Ordinal);
             Assert.Contains("Kategorie EPOS-Muster", e.Ausgabe, StringComparison.Ordinal);
             Assert.Contains("ok      ausgelieferte Saat der Nutzungsprofile vollstaendig: offen 0", e.Ausgabe, StringComparison.Ordinal);
-            Assert.Contains("ok      Werte in Normkategorien: Profile mit Kennwert 0", e.Ausgabe, StringComparison.Ordinal);
+            Assert.Contains("ok      DIN-Profile mit den gesaeten Werten der Fassung " + RaumnutzungDinSaat.FASSUNG + ": offen 0, abweichend 0",
+                            e.Ausgabe, StringComparison.Ordinal);
+            Assert.Contains("ok      Werte des Anwenders in Normkategorien: eingelesene Profile 0, Zeilenbild 0, Stundenprofile 0",
+                            e.Ausgabe, StringComparison.Ordinal);
             Assert.Contains("ok      eigene Zeilen des Katalogs der Nutzungsprofile nach --kataloge readonly: 0", e.Ausgabe,
                             StringComparison.Ordinal);
 
@@ -68,8 +72,12 @@ namespace Auslieferungsvorlage.Tests
             });
         }
 
+        /// <summary>
+        /// DA-6 (E135): Die DIN-Profile werden mit den gesäten Werten ausgeliefert; ein Kennwert, der von der Saat abweicht
+        /// und nicht eingelesen ist, ist ein Fehler. Der Wert der Probe ist ein runder Phantasiewert.
+        /// </summary>
         [Fact]
-        public void Ein_Kennwert_in_einer_Normkategorie_ist_ein_Fehler()
+        public void Ein_von_der_Saat_abweichender_Kennwert_in_der_Normkategorie_ist_ein_Fehler()
         {
             if (Werkzeuglauf.Testdatenbank == null) return;
             using var o = new Arbeitsordner();
@@ -77,18 +85,20 @@ namespace Auslieferungsvorlage.Tests
             File.Copy(Werkzeuglauf.Testdatenbank, quelle);
             string ziel = o.Datei("Kenndaten.sqlite");
             Bearbeiten(quelle, () => DataRepository.ExecuteNonQuery(
-                "UPDATE \"Tab_Raumnutzungsprofil\" SET \"Heiz_Soll\" = 21 WHERE \"Nummer\" = '1' AND \"ID_Katalog\" = " +
+                "UPDATE \"Tab_Raumnutzungsprofil\" SET \"Heiz_Soll\" = 12 WHERE \"Nummer\" = '1' AND \"ID_Katalog\" = " +
                 "(SELECT \"ID\" FROM \"Tab_Raumnutzungskatalog\" WHERE \"Art\" = 'DIN_V_18599_10')"));
 
             Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel);
             Assert.True(e.Code != 0, e.Alles);
-            Assert.Contains("FEHLER  Werte in Normkategorien: Profile mit Kennwert 1", e.Ausgabe, StringComparison.Ordinal);
+            Assert.Contains("FEHLER  DIN-Profile mit den gesaeten Werten der Fassung " + RaumnutzungDinSaat.FASSUNG + ": offen 0, abweichend 1",
+                            e.Ausgabe, StringComparison.Ordinal);
         }
 
         /// <summary>
         /// <b>Eingelesene Normwerte fallen</b> (NP7, E131): Werte, die „Normwerte einlesen“ in ein ausgeliefertes DIN-Profil
-        /// geschrieben hat, nimmt Schritt 3d heraus; der Prüfbericht nennt die Zahl und findet danach keinen Kennwert in der
-        /// Normkategorie. Die Werte der Probe sind runde Phantasiewerte.
+        /// geschrieben hat, nimmt Schritt 3d heraus und stellt die gesäten Werte wieder her (DA-6); ein leeres DIN-Profil wird
+        /// nachgesät. Der Prüfbericht nennt die Zahlen und findet danach keine Abweichung von der Saat. Die Werte der Probe sind
+        /// runde Phantasiewerte.
         /// </summary>
         [Fact]
         public void Eingelesene_Normwerte_der_DIN_fallen_mit_Pruefberichtzeile()
@@ -99,19 +109,24 @@ namespace Auslieferungsvorlage.Tests
             File.Copy(Werkzeuglauf.Testdatenbank, quelle);
             string ziel = o.Datei("Kenndaten.sqlite");
             Bearbeiten(quelle, () => DataRepository.ExecuteNonQuery(
+                "UPDATE \"Tab_Raumnutzungsprofil\" SET " + string.Join(", ", RaumnutzungDinWerteSchema.Wertspalten.Select(c => "\"" + c + "\" = NULL")) +
+                " WHERE \"Nummer\" = '3' AND \"ID_Katalog\" = (SELECT \"ID\" FROM \"Tab_Raumnutzungskatalog\" WHERE \"Art\" = 'DIN_V_18599_10')"));
+            Bearbeiten(quelle, () => DataRepository.ExecuteNonQuery(
                 "UPDATE \"Tab_Raumnutzungsprofil\" SET \"Heiz_Soll\" = 21, \"Aussenluft_Person\" = 30, \"Werte_Herkunft\" = 'EINGELESEN', " +
                 "\"Werte_Quelle\" = 'probe.csv', \"Werte_Datum\" = '2026-10-12' WHERE \"Nummer\" IN ('1', '2') AND \"ID_Katalog\" = " +
                 "(SELECT \"ID\" FROM \"Tab_Raumnutzungskatalog\" WHERE \"Art\" = 'DIN_V_18599_10')"));
 
             Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
             Assert.True(e.Code == 0, e.Alles);
-            Assert.Contains("eingelesene Normwerte entfernt: 2 Profil(e) der DIN", e.Ausgabe, StringComparison.Ordinal);
-            Assert.Contains("ok      Werte in Normkategorien: Profile mit Kennwert 0", e.Ausgabe, StringComparison.Ordinal);
+            Assert.Contains("eingelesene Normwerte entfernt, gesaete Werte wiederhergestellt: 2 Profil(e) der DIN", e.Ausgabe, StringComparison.Ordinal);
+            Assert.Contains("DIN-Profile mit den Werten der Fassung " + RaumnutzungDinSaat.FASSUNG + " nachgesaet: 1", e.Ausgabe, StringComparison.Ordinal);
+            Assert.Contains("ok      DIN-Profile mit den gesaeten Werten der Fassung " + RaumnutzungDinSaat.FASSUNG + ": offen 0, abweichend 0",
+                            e.Ausgabe, StringComparison.Ordinal);
             Lesen(ziel, () =>
             {
                 Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungsprofil\" WHERE \"Werte_Herkunft\" IS NOT NULL " +
-                                     "OR \"Aussenluft_Person\" IS NOT NULL OR \"Heiz_Soll\" IS NOT NULL AND \"ReadOnly\" = 1 AND \"ID_Katalog\" = " +
-                                     "(SELECT \"ID\" FROM \"Tab_Raumnutzungskatalog\" WHERE \"Art\" = 'DIN_V_18599_10')"));
+                                     "OR \"Aussenluft_Person\" IS NOT NULL"));
+                Assert.Empty(RaumnutzungDinWerteSchema.Abweichungen());
                 Assert.Equal(RaumnutzungSaat.Din.Count + RaumnutzungNormkategorienSchema.WOHNPROFILE.Count,
                              Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungsprofil\" p JOIN \"Tab_Raumnutzungskatalog\" k ON k.\"ID\" = p.\"ID_Katalog\" " +
                                   "WHERE k.\"Art\" = 'DIN_V_18599_10'"));
