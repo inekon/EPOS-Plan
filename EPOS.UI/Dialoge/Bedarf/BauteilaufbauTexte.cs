@@ -47,6 +47,24 @@ public sealed class BauteilaufbauTexte
     /// <summary><c>BTA_LBL_BESCHREIBUNG</c></summary>
     public string LabelBeschreibung { get; set; } = Resource.BTA_LBL_BESCHREIBUNG;
 
+    /// <summary><c>BTA_LBL_UG</c> (BK-6)</summary>
+    public string LabelUg { get; set; } = Resource.BTA_LBL_UG;
+
+    /// <summary><c>BTA_LBL_UF</c> (BK-6)</summary>
+    public string LabelUf { get; set; } = Resource.BTA_LBL_UF;
+
+    /// <summary><c>BTA_LBL_GWERT</c> (BK-6)</summary>
+    public string LabelGWert { get; set; } = Resource.BTA_LBL_GWERT;
+
+    /// <summary><c>BTA_LBL_RAHMENANTEIL</c> (BK-6)</summary>
+    public string LabelRahmenanteil { get; set; } = Resource.BTA_LBL_RAHMENANTEIL;
+
+    /// <summary><c>BTA_LBL_PSI_GLASRAND</c> (BK-6)</summary>
+    public string LabelPsiGlasrand { get; set; } = Resource.BTA_LBL_PSI_GLASRAND;
+
+    /// <summary><c>BTA_FENSTER_HINWEIS</c> — die Übernahme an das Bauteil und die Formel für U_w (BK-6).</summary>
+    public string FensterHinweis { get; set; } = Resource.BTA_FENSTER_HINWEIS;
+
     /// <summary><c>BTA_LBL_QUELLE</c></summary>
     public string LabelQuelle { get; set; } = Resource.BTA_LBL_QUELLE;
 

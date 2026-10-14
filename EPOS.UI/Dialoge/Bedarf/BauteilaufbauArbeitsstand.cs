@@ -56,6 +56,7 @@ public sealed class BauteilaufbauArbeitsstand
             if (!Gleich(Arbeit.Quelle, Gespeichert.Quelle)) n++;
             if (!Gleich(Arbeit.GruppeCode, Gespeichert.GruppeCode)) n++;
             if (!Gleich(Arbeit.KlasseCode, Gespeichert.KlasseCode)) n++;
+            n += Arbeit.FensterUnterschiede(Gespeichert);
             int gemeinsam = Math.Min(Arbeit.Schichten.Count, Gespeichert.Schichten.Count);
             for (int i = 0; i < gemeinsam; i++)
                 if (!Arbeit.Schichten[i].GleicheWerte(Gespeichert.Schichten[i])) n++;
@@ -102,6 +103,47 @@ public sealed class BauteilaufbauArbeitsstand
         Fassung++;
         return true;
     }
+
+    /// <summary>
+    /// <b>BK-5: „Abschnitt daneben"</b> — macht die Schicht an <paramref name="index"/> zum Abschnitt ihrer Ebene (eine
+    /// homogene Schicht wird Abschnitt 1) und legt hinter der Ebene eine Schicht mit der nächsten Abschnittsnummer an, gleich
+    /// dick. In einer Ebene stehen die Abschnitte aufsteigend nebeneinander (Kernregel <c>InhomogeneSchichten.Ebenen</c>).
+    /// </summary>
+    public BauteilschichtDaten? AbschnittAnlegen(int index)
+    {
+        if (index < 0 || index >= Arbeit.Schichten.Count) return null;
+        BauteilschichtDaten s = Arbeit.Schichten[index];
+        s.Abschnitt ??= 1;
+        int ende = index;
+        while (ende + 1 < Arbeit.Schichten.Count && Arbeit.Schichten[ende + 1].Abschnitt is int b && b > Arbeit.Schichten[ende].Abschnitt)
+            ende++;
+        int nr = Arbeit.Schichten[ende].Abschnitt!.Value + 1;
+        var neu = new BauteilschichtDaten { DickeMm = s.DickeMm, Abschnitt = nr, Flaechenanteil = AnteilVon(nr) };
+        Arbeit.Schichten.Insert(ende + 1, neu);
+        Fassung++;
+        return neu;
+    }
+
+    /// <summary>BK-5: Der Flächenanteil eines Abschnitts gilt für alle seine Schichten — gesetzt an jeder.</summary>
+    public void AnteilSetzen(int index, double? anteil)
+    {
+        if (index < 0 || index >= Arbeit.Schichten.Count || Arbeit.Schichten[index].Abschnitt is not int nr) return;
+        foreach (BauteilschichtDaten s in Arbeit.Schichten.Where(x => x.Abschnitt == nr)) s.Flaechenanteil = anteil;
+        Fassung++;
+    }
+
+    /// <summary>BK-5: Die Abschnittsnummer einer Schicht; <c>null</c> macht sie homogen. Der Anteil folgt dem Abschnitt.</summary>
+    public void AbschnittSetzen(int index, int? nummer)
+    {
+        if (index < 0 || index >= Arbeit.Schichten.Count) return;
+        BauteilschichtDaten s = Arbeit.Schichten[index];
+        s.Abschnitt = nummer is > 0 ? nummer : null;
+        s.Flaechenanteil = s.Abschnitt is int nr ? AnteilVon(nr) ?? s.Flaechenanteil : null;
+        Fassung++;
+    }
+
+    private double? AnteilVon(int nummer)
+        => Arbeit.Schichten.FirstOrDefault(x => x.Abschnitt == nummer && x.Flaechenanteil.HasValue)?.Flaechenanteil;
 
     /// <summary>Nimmt die Schicht an <paramref name="index"/> heraus.</summary>
     public bool Entfernen(int index)
