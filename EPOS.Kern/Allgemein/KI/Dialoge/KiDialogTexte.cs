@@ -2596,6 +2596,9 @@
         internal static string BpfDeckungName => MyResource.Resource.KI_DLG_BPF_DECKUNG_NAME;
         internal static string BpfDeckungErl => MyResource.Resource.KI_DLG_BPF_DECKUNG_ERL;
         internal static string KaelteArtErl => MyResource.Resource.KAELTE_ART_HINWEIS;
+        // KBP-3a: die Eingabeart der Kaeltezeile in den Bedarfsprofilen.
+        internal static string KbpEingabeartName => MyResource.Resource.KBP_LBL_EINGABEART;
+        internal static string KbpEingabeartErl => MyResource.Resource.KBP_KI_EINGABEART_ERL;
         internal static string NudSucheName => MyResource.Resource.IMP_KAT_FILTER_SUCHE;
         internal static string NudSucheErl => MyResource.Resource.KI_DLG_NUD_SUCHE_ERL;
         internal static string NudTechnikName => MyResource.Resource.KI_DLG_NUD_TECHNIK_NAME;

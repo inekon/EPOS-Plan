@@ -56288,5 +56288,98 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="BKAL_MSG_FERIEN_FEHLEN" xml:space="preserve">
     <value>Feiertagsland und Ferien von „{0}“ übernommen. Das Gebäude führt {1} Ferienzeiträume, der Kalender nimmt vier auf: Übernommen sind die ersten vier, {2} fehlen.</value>
   </data>
+  <data name="KBP_GRUPPE_EINGABEART" xml:space="preserve">
+    <value>Eingabeart</value>
+  </data>
+  <data name="KBP_LBL_EINGABEART" xml:space="preserve">
+    <value>Eingabeart:</value>
+  </data>
+  <data name="KBP_EINGABE_JAHR" xml:space="preserve">
+    <value>Jahressumme mit Vorlage</value>
+  </data>
+  <data name="KBP_EINGABE_MONAT" xml:space="preserve">
+    <value>Monatswerte</value>
+  </data>
+  <data name="KBP_EINGABE_WOCHE" xml:space="preserve">
+    <value>Wochenprofil</value>
+  </data>
+  <data name="KBP_EINGABE_TYPTAG" xml:space="preserve">
+    <value>Typtage (folgt)</value>
+  </data>
+  <data name="KBP_HINW_TYPTAG_FOLGT" xml:space="preserve">
+    <value>Typtage folgen in einer späteren Fassung.</value>
+  </data>
+  <data name="KBP_HINW_EINGABEART" xml:space="preserve">
+    <value>Monatswerte und Wochenprofil ändern die Projektkopie dieser Zuordnung, nie den Katalog. Teilen sich zwei Zuordnungen eine Kopie, erhält die bearbeitete beim OK eine eigene.</value>
+  </data>
+  <data name="KBP_GRUPPE_MONATE" xml:space="preserve">
+    <value>Monatswerte</value>
+  </data>
+  <data name="KBP_LBL_MONATSEINHEIT" xml:space="preserve">
+    <value>Eingabe in:</value>
+  </data>
+  <data name="KBP_EINHEIT_PROZENT" xml:space="preserve">
+    <value>% der Jahressumme</value>
+  </data>
+  <data name="KBP_MONATE" xml:space="preserve">
+    <value>Januar;Februar;März;April;Mai;Juni;Juli;August;September;Oktober;November;Dezember</value>
+  </data>
+  <data name="KBP_SUMME_MWH" xml:space="preserve">
+    <value>Jahressumme aus den Monaten: {0} MWh</value>
+  </data>
+  <data name="KBP_SUMME_PROZENT" xml:space="preserve">
+    <value>Summe der Anteile: {0} % (Jahressumme {1} MWh)</value>
+  </data>
+  <data name="KBP_MSG_SUMME_PROZENT" xml:space="preserve">
+    <value>Die Monatsanteile ergeben {0} %, zusammen müssen sie 100 % ergeben.</value>
+  </data>
+  <data name="KBP_MSG_MONAT_NEGATIV" xml:space="preserve">
+    <value>Jeder Monatswert muss eine Zahl ab 0 sein.</value>
+  </data>
+  <data name="KBP_MSG_MONATE_NULL" xml:space="preserve">
+    <value>Die Monatswerte ergeben zusammen 0 – mindestens ein Monat muss Bedarf tragen.</value>
+  </data>
+  <data name="KBP_GRUPPE_WOCHE" xml:space="preserve">
+    <value>Wochenprofil</value>
+  </data>
+  <data name="KBP_LBL_ANSICHT" xml:space="preserve">
+    <value>Ansicht:</value>
+  </data>
+  <data name="KBP_ANSICHT_DREI" xml:space="preserve">
+    <value>Werktag | Samstag | Sonntag</value>
+  </data>
+  <data name="KBP_ANSICHT_168" xml:space="preserve">
+    <value>168 h</value>
+  </data>
+  <data name="KBP_LBL_TAG" xml:space="preserve">
+    <value>Tag:</value>
+  </data>
+  <data name="KBP_TAGE_DREI" xml:space="preserve">
+    <value>Werktag (Mo–Fr);Samstag;Sonntag</value>
+  </data>
+  <data name="KBP_WOCHENTAGE" xml:space="preserve">
+    <value>Montag;Dienstag;Mittwoch;Donnerstag;Freitag;Samstag;Sonntag</value>
+  </data>
+  <data name="KBP_HINW_WERKTAGE_UNGLEICH" xml:space="preserve">
+    <value>Werktage unterscheiden sich — 168-h-Ansicht</value>
+  </data>
+  <data name="KBP_HINW_WOCHE" xml:space="preserve">
+    <value>Relative Werte wie im Typkatalog; die Monatswerte bestimmen die Menge. Mit einem Betriebskalender zählen Feiertage wie Sonntag.</value>
+  </data>
+  <data name="KBP_MSG_WOCHE" xml:space="preserve">
+    <value>Das Wochenprofil braucht Werte ab 0 und mindestens eine Stunde mit Bedarf.</value>
+  </data>
+  <data name="KBP_BTN_TAG_KOPIEREN" xml:space="preserve">
+    <value>Tag kopieren</value>
+  </data>
+  <data name="KBP_BTN_TAG_EINFUEGEN" xml:space="preserve">
+    <value>Tag einfügen</value>
+  </data>
+  <data name="KBP_STUNDE" xml:space="preserve">
+    <value>{0} Uhr</value>
+  </data>
+  <data name="KBP_KI_EINGABEART_ERL" xml:space="preserve">
+    <value>Eingabeart der markierten Kältezeile: Jahressumme mit Vorlage, Monatswerte oder Wochenprofil; Typtage folgen.</value>
+  </data>
 </root>
 

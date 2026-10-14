@@ -4292,6 +4292,10 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kaelte_art", "BedarfsProfileKiSicht.KaelteArt",
                                      KiDialogTexte.KaelteArtName, KiParameterTyp.Wahl,
                                      KiDialogTexte.KaelteArtErl, leerErlaubt: true),
+                    // KBP-3a: die Eingabeart der markierten Kaeltezeile (Jahressumme, Monatswerte, Wochenprofil).
+                    new KiDialogFeld("eingabeart", "BedarfsProfileKiSicht.Eingabeart",
+                                     KiDialogTexte.KbpEingabeartName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KbpEingabeartErl, leerErlaubt: true),
                     // K5b (Konzept Kaeltebedarf 3.4): die Feldgruppe „Deckung" der markierten Kaeltezeile.
                     new KiDialogFeld("deckung", "BedarfsProfileKiSicht.Deckungsart",
                                      KiDialogTexte.BpfDeckungName, KiParameterTyp.Wahl,

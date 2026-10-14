@@ -670,7 +670,7 @@ namespace WindowsFormsApplication1
 
             // PW1 Stufe 1: die Vorbelegung des Katalogs - die Kopie übernimmt sie beim Speichern.
             (double? vorlauf, double? ruecklauf) = BedarfStammCtrl.Temperaturpaar(art, name);
-            return new BedarfsProfilZeile
+            var zeile = new BedarfsProfilZeile
             {
                 IdZ = naechsteId[0]++,      // noch nicht gespeichert, also noch unbekannt
                 IdStamm = idStamm,
@@ -679,6 +679,8 @@ namespace WindowsFormsApplication1
                 Vorlauf = vorlauf,
                 Ruecklauf = ruecklauf
             };
+            if (art == BedarfsArt.Kaelte) KaeltebedarfsprofilAbbildung.Aufgenommen(zeile, name);
+            return zeile;
         }
 
         private static bool KatalogLoeschen(BedarfsArt art, string name)
