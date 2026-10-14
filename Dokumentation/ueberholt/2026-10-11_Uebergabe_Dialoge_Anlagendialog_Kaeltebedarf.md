@@ -6,7 +6,7 @@ die offenen Punkte; der Einstiegs-Prompt steht in Abschnitt 5. Regelquelle bleib
 Es ergänzt das Papier der parallel arbeitenden Sitzung „Dialoge und Korrekturen, Konto 3“
 ([`2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Konto3.md`](2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Konto3.md))
 und löst das Papier der Vorgängerrolle
-([`2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md`](../../ueberholt/2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md))
+([`2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md`](2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md))
 für die hier genannten Gegenstände ab.
 
 ## 1 Stand
@@ -59,7 +59,7 @@ für die hier genannten Gegenstände ab.
 9. Offen für die Sitzung Kälteanlagen (aus Befund KA1 zur zentralen Kostenverwaltung, 13.10.2026): Der Wasserpreis am Rückkühlwerk (`Tab_Energieanlagen.Wasserpreis_EUR_m3`) steht als Energiepreis an der Anlage und wirkt nur im Hinweistext der Simulation, nicht im Kapitalwert. Entscheid dort: Wasser als Träger der zentralen Kostenverwaltung mit Kapitalwertwirkung oder benannte Ausnahme „nur Ausweis“. Die Sitzung Kälteanlagen ist aus diesem Konto nicht erreichbar; der Anwender gibt den Punkt weiter.
 10. Erledigt (Sitzung Übersicht Berichte & Kosten, Statuszeilen #1073 und #1074): Diagramme — Bedarf als Linie, Erzeugung als Fläche, Tagesband der Jahresreihen, Achswahl „Datum | Stunde im Jahr“ an allen Jahresdiagrammen, Schalter „PV aufteilen“. Offen bleiben der Word-Bericht (ohne die Regel), das Konzeptpapier zu Diagrammen und der Zoomanschlag ×12.
 11. Erledigt (Statuszeile #1075): Kosten-Einheiten — beim Energieträger steht die Preisbasis des Arbeitspreises bei neuer Auswahl auf €/kWh, umgerechnet mit dem Heizwert, nur in der Anzeige; gespeicherte Einheiten und Rechenweg unberührt. Der Gesetzeskatalog ist seit Punkt 13 erledigt.
-12. Kältebedarfsprofile wie Wärmebedarfsprofile: Konzept vorgelegt und entschieden (OE-1 bis OE-6 nach Empfehlung, Statuszeile #1087), KBP-1 erledigt (#1088), KBP-2 mit Schemaschritt 230 in Arbeit. Bitten der Sitzungen: Feldgruppe „Deckung“ und Naht `SimulationPlattformwege.KaelteDezentralBearbeiten` unverändert; neue Vorlagen als neue Katalogzeilen mit neuen IDs, bestehende `Tab_Kaeltebedarf*_STAMM` unverändert (Projekt 1072); Knopf „Betriebskalender…“ als Baustein auch für Wärme und Prozesswärme; `BedarfsProfileHuelle.Oeffnen(...)` mit Pflicht-Schreibweg und `Projektkopievormerkung.Schliessen(...)` bleiben.
+12. Kältebedarfsprofile wie Wärmebedarfsprofile: Konzept vorgelegt und entschieden (OE-1 bis OE-6 nach Empfehlung, Statuszeile #1087), KBP-1 erledigt (#1088); KBP-2, KBP-3a, KBP-3b und Quellen-Nachzug fertig, geparkt auf `claude/elegant-cerf-qdr6kp`; Welle 5 nach den Schemaschritten 228/229 (Übergabe: [`2026-10-14_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md`](../aktuell/Dialoge/2026-10-14_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md)). Bitten der Sitzungen: Feldgruppe „Deckung“ und Naht `SimulationPlattformwege.KaelteDezentralBearbeiten` unverändert; neue Vorlagen als neue Katalogzeilen mit neuen IDs, bestehende `Tab_Kaeltebedarf*_STAMM` unverändert (Projekt 1072); Knopf „Betriebskalender…“ als Baustein auch für Wärme und Prozesswärme; `BedarfsProfileHuelle.Oeffnen(...)` mit Pflicht-Schreibweg und `Projektkopievormerkung.Schliessen(...)` bleiben.
 13. Erledigt (Statuszeile #1086): Gesetzeskatalog — die Einheit einer neuen Zeile wird aus dem Schlüssel oder dem Bereich vorbelegt (ENERGIESTEUER mit Pflichtwahl), EEG und Umlagen sind als Bereich wählbar. Offen: Sichtprüfung unter Windows.
 
 ## 5 Einstiegs-Prompt für die neue Sitzung
@@ -68,7 +68,7 @@ für die hier genannten Gegenstände ab.
 Du übernimmst die Sitzung „Dialoge und Korrekturen — Anlagendialog, Kältebedarf, Katalogauswahl“ für
 EPOS-Plan (Repo inekon/EPOS-Plan, Arbeitszweig ios_migration_september) aus einem anderen Konto.
 Lies zuerst CLAUDE.md und
-Dokumentation/aktuell/Dialoge/2026-10-11_Uebergabe_Dialoge_Anlagendialog_Kaeltebedarf.md,
+Dokumentation/ueberholt/2026-10-11_Uebergabe_Dialoge_Anlagendialog_Kaeltebedarf.md,
 dann den Kopf (Zeile „Schemaschritt angemeldet“) und die letzten zwanzig Tabellenzeilen von
 Dokumentation/aktuell/Status_iOS_Migration.md sowie
 `git log --format='%h %<(72,trunc)%s' -n 25 origin/ios_migration_september`.

@@ -79,7 +79,7 @@ gegen diese Datei.
   `Messlatte_<Datum>.sha256`; jede Zeile der bisherigen Datei muss darin unverändert stehen —
   sonst hat sich ein Bild geändert —, die neuen Zeilen sind die neuen Proben. Die neue Datei
   ersetzt die alte im selben Schritt, die Begründung (wie viele neu, keines geändert) steht in der
-  Commit-Nachricht. Wer Proben hinzufügt, nennt sie im Abschnitt seiner Etappe unten.
+  Commit-Nachricht. Wer Proben hinzufügt, nennt sie im Abschnitt seiner Etappe unten. Die Hashliste steht auch im Job-Protokoll des ubuntu-Laufs (Gruppe „ChartProben-Hashliste ubuntu“), sodass eine neue Messlatte auch ohne Artefakt-Download geschrieben werden kann.
 - Die Datei steht als `text eol=lf` in `.gitattributes`: Ein Auschecken mit `autocrlf`
   machte sonst CRLF daraus, und der Vergleich schlüge in jeder Zeile fehl.
 - **Die Messlatte ist plattformgebunden.** Sie ist auf dem Linux-Läufer der CI eingefroren.

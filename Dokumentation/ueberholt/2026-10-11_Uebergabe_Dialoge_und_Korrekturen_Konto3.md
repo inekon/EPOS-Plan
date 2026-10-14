@@ -4,9 +4,9 @@ Dieses Papier übergibt die Sitzung „Dialoge und Korrekturen“, Konto 3, nach
 Sitzung. Es nennt den Stand, die geltenden Entscheide, die Regeln der Sitzung über `CLAUDE.md`
 hinaus, die Cloud-Umgebung und die offenen Punkte; der Einstiegs-Prompt steht in Abschnitt 5.
 Regelquelle bleibt `CLAUDE.md`. Es löst das Papier der Vorgängersitzung
-([`2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md`](../../ueberholt/2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md))
+([`2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md`](2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md))
 ab; dessen Abschnitt 2 und das Papier vom 08.10.2026
-([`2026-10-08_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md`](../../ueberholt/2026-10-08_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md))
+([`2026-10-08_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md`](2026-10-08_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md))
 bleiben für die dort genannten Entscheide gültig und werden nicht abgeschrieben.
 
 ## 1 Stand
@@ -126,7 +126,7 @@ Keine Zugangsdaten ins Repository. **Antworten:** auf Deutsch, knapp.
 ```
 Du übernimmst die Sitzung „Dialoge und Korrekturen“ für EPOS-Plan (Repo inekon/EPOS-Plan,
 Arbeitszweig ios_migration_september). Lies zuerst CLAUDE.md und
-Dokumentation/aktuell/Dialoge/2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Konto3.md,
+Dokumentation/ueberholt/2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Konto3.md,
 dann den Kopf und die letzten zwanzig Zeilen der Tabelle in
 Dokumentation/aktuell/Status_iOS_Migration.md und
 `git log --format='%h %<(72,trunc)%s' -n 20 origin/ios_migration_september`.
