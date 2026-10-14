@@ -174,8 +174,8 @@ namespace EPOS.Kern.Tests
             Assert.True(KuehlungSchema.Schritt119Vollstaendig());
             foreach (SchemaSpalte s in KuehlungSchema.Schritt119Spalten())
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL" +
-                                      // Die Kältemaschinen der Referenzprojekte 1055 (KU3-4b), 1059 (AK3-K-K5a) und 1063 (KM3) tragen Kühlträger und eigenen Zähler.
-                                      (s.Tabelle == "Tab_Energieanlagen" ? " AND ID_Projekt NOT IN (1055, 1059, 1063)" : "")));
+                                      // Die Kältemaschinen der Referenzprojekte 1055 (KU3-4b), 1059 (AK3-K-K5a), 1063 (KM3) und 1072 (K6c) tragen Kühlträger und eigenen Zähler.
+                                      (s.Tabelle == "Tab_Energieanlagen" ? " AND ID_Projekt NOT IN (1055, 1059, 1063, 1072)" : "")));
 
             try
             {

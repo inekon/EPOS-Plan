@@ -124,6 +124,10 @@
          Typtagimport und Auslegung des Zapfprofils (ZapfprofilCtrl, TwwTyptagCtrl) sind internal. Der Name ist der des
          dateibasierten Programms (Referenzlaeufe/Skripte/referenzprojekte_zapfprofil_optionen.cs). -->
     <InternalsVisibleTo Include="referenzprojekte_zapfprofil_optionen" />
+    <!-- Und fuer das Saatskript des Referenzprojekts 1072 (K6c, Kaeltebedarf dezentral): die Projektkopie eines
+         Kaeltebedarfsprofils (KaeltebedarfStammCtrl) und die Zuordnung (WizardCtrl.Add_Projekt_Kaelte) sind internal. Der
+         Name ist der des dateibasierten Programms (Referenzlaeufe/Skripte/referenzprojekt_1072_kaeltebedarf.cs). -->
+    <InternalsVisibleTo Include="referenzprojekt_1072_kaeltebedarf" />
     <!-- Und fuer den plattformfreien Referenzlauf: Der Lauf mit der Stoerung "ulp" setzt den
          AppContext-Schalter Plattformrundung.SCHALTER_ULP und prueft danach
          Plattformrundung.UlpStoerung - die Naht ist internal, weil ausser dem Referenzlauf

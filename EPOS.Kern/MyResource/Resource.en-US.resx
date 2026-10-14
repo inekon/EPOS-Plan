@@ -43078,7 +43078,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Operating calendars</value>
   </data>
   <data name="BKAL_KONTEXT" xml:space="preserve">
-    <value>Holidays and company holidays for the weekly profiles of domestic hot water, process heat and electricity. A calendar is chosen per profile assignment in the project.</value>
+    <value>Holidays and company holidays for the weekly profiles of domestic hot water, process heat, cooling and electricity. A calendar is chosen per profile assignment in the project.</value>
   </data>
   <data name="BKAL_LBL_LISTE" xml:space="preserve">
     <value>Calendar</value>
@@ -43162,7 +43162,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>without calendar</value>
   </data>
   <data name="BPF_HINW_KALENDER" xml:space="preserve">
-    <value>Holidays and company holidays of the calendar are applied to the weekly profile of the selected assignment; saved with OK. Calendars are created under "Operating calendars" in "Profiles &amp; load curves".</value>
+    <value>Holidays and company holidays of the calendar are applied to the weekly profile of the selected assignment; saved with OK.</value>
   </data>
   <data name="BKAL_LAND_BW" xml:space="preserve">
     <value>Baden-Württemberg</value>
@@ -56197,6 +56197,12 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="IMP_BAUTEIL_PROT_LUFTSTROM_PARTNER" xml:space="preserve">
     <value>Zone {0}: the air flow to zone {1} is skipped — the file does not contain this zone, it is the zone itself, or the pair already exists.</value>
   </data>
+  <data name="SIMENG_KAELTE_DECKUNG_SPLIT" xml:space="preserve">
+    <value>Cooling generation: {0} MWh/a of {1} MWh/a cooling demand covered ({2} %; of which cooling sequence {3} %, decentralised {4} MWh/a), cooling electricity of the cooling sequence {5} MWh/a, seasonal EER {6}; {7} cooling days.</value>
+  </data>
+  <data name="SIMENG_KAELTE_DECKUNG_SPLIT_NUR_DEZENTRAL" xml:space="preserve">
+    <value>Cooling generation: {0} MWh/a of {1} MWh/a cooling demand covered ({2} %; entirely decentralised, {3} MWh/a), cooling electricity of the cooling sequence {4} MWh/a, seasonal EER {5}; {6} cooling days.</value>
+  </data>
   <data name="GESETZ_KLASSE_ANZ_EEG" xml:space="preserve">
     <value>Renewable Energy Sources Act (EEG)</value>
   </data>
@@ -56235,6 +56241,45 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="GESETZ_SPERRE_EINHEIT" xml:space="preserve">
     <value>Choose a unit.</value>
+  </data>
+  <data name="BKW_BTN_KALENDER" xml:space="preserve">
+    <value>Operating calendars…</value>
+  </data>
+  <data name="BKW_BTN_KALENDER_HINWEIS" xml:space="preserve">
+    <value>Create and edit operating calendars; a newly created calendar is preselected for the selected row.</value>
+  </data>
+  <data name="BKW_HINW_KEINE_ZEILE" xml:space="preserve">
+    <value>Calendars apply per project row — select a row first.</value>
+  </data>
+  <data name="BKW_HINW_KEIN_KALENDER" xml:space="preserve">
+    <value>No operating calendar created yet. Use "Operating calendars…" to create holidays and company holidays.</value>
+  </data>
+  <data name="BKAL_BTN_AUS_GEBAEUDE" xml:space="preserve">
+    <value>Copy from building…</value>
+  </data>
+  <data name="BKAL_HINW_AUS_GEBAEUDE" xml:space="preserve">
+    <value>Copies the holiday state and the holidays of a project building into the calendar; later changes to the building do not affect the calendar.</value>
+  </data>
+  <data name="BKAL_SPERRE_KEIN_GEBAEUDE" xml:space="preserve">
+    <value>The project has no building — there is nothing to copy.</value>
+  </data>
+  <data name="BKAL_TITEL_AUS_GEBAEUDE" xml:space="preserve">
+    <value>Copy from building</value>
+  </data>
+  <data name="BKAL_TXT_GEBAEUDE_WAHL" xml:space="preserve">
+    <value>Select the building whose holiday state and holidays the calendar copies. Saved with "Save" or OK of the calendar.</value>
+  </data>
+  <data name="BKAL_GEBAEUDE_ZEILE" xml:space="preserve">
+    <value>{0} — {1}, {2} holiday periods</value>
+  </data>
+  <data name="BKAL_MSG_GEBAEUDE_WAEHLEN" xml:space="preserve">
+    <value>Please select a building.</value>
+  </data>
+  <data name="BKAL_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>Holiday state and holidays of "{0}" copied; saved with "Save" or OK.</value>
+  </data>
+  <data name="BKAL_MSG_FERIEN_FEHLEN" xml:space="preserve">
+    <value>Holiday state and holidays of "{0}" copied. The building has {1} holiday periods, the calendar takes four: the first four are copied, {2} are missing.</value>
   </data>
 </root>
 
