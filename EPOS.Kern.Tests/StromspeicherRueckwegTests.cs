@@ -272,11 +272,13 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
             IReadOnlyList<string> spalten = Katalogrueckweg.Spalten(StromspeicherStammCtrl.Rueckweg());
             foreach (string aus in new[] { "ID", "ID_Projekt", "ID_Stamm", "ReadOnly", "ID_KostenVorlage", "ID_KostenVorlageInvestition", "Bezeichner",
-                                           "Katalog_Schluessel", "Katalog_Pruefsumme", "Katalog_Ausgelaufen" })
+                                           "Katalog_Schluessel", "Katalog_Pruefsumme", "Katalog_Ausgelaufen",
+                                           // Die vier Kostenspalten sind entfallen (StromspeicherKostenSchema).
+                                           "Modulkosten", "Verschleisskosten", "Leistungskosten", "Investition_Fix" })
                 Assert.DoesNotContain(aus, spalten);
-            foreach (string mit in new[] { "Typ", "Firma", "Energie", "Leistung", "Degradation", "Ladezustand", "Modulkosten",
-                                           "Wirkungsgrad_RT", "Zyklen_Zugesichert", "Verschleisskosten", "Leistungskosten",
-                                           "Investition_Fix", "Standby_Verbrauch", "Selbstentladung_Prozent_Monat" })
+            foreach (string mit in new[] { "Typ", "Firma", "Energie", "Leistung", "Degradation", "Ladezustand",
+                                           "Wirkungsgrad_RT", "Zyklen_Zugesichert",
+                                           "Standby_Verbrauch", "Selbstentladung_Prozent_Monat" })
                 Assert.Contains(mit, spalten);
             Assert.Empty(StromspeicherStammCtrl.Rueckweg().Kinder);
         }
@@ -415,12 +417,14 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Die_vier_Kostenposten_und_die_Geraetewerte_gehen_mit_der_Name_der_Kopie_bleibt()
+        public void Die_Geraetewerte_gehen_mit_der_Name_der_Kopie_bleibt()
         {
             if (!_db.Vorhanden) return;
             var k = Kopie();
-            Sql("UPDATE Tab_Stromspeicher SET Modulkosten = 450, Leistungskosten = 120, Investition_Fix = 3000, " +
-                "Verschleisskosten = 0.04, Wirkungsgrad_RT = 0.91, Zyklen_Zugesichert = 7000, Standby_Verbrauch = 25, " +
+            // Die Kosten des Stromspeichers stehen nicht mehr am Gerät (StromspeicherKostenSchema): Sie laufen über
+            // die Satzvorlage oder die Kostenposition der Anlage und gehen den Rückweg nicht mit.
+            Sql("UPDATE Tab_Stromspeicher SET " +
+                "Wirkungsgrad_RT = 0.91, Zyklen_Zugesichert = 7000, Standby_Verbrauch = 25, " +
                 "Selbstentladung_Prozent_Monat = 2 WHERE ID = ?", k.Id);
 
             Rueckwegergebnis e = Neu(k.Id, "Rueckweg Kostenposten");
@@ -428,10 +432,8 @@ namespace EPOS.Kern.Tests
             int satz = e.Saetze[0].IdKatalog;
             double Z(string spalte) => Convert.ToDouble(Wert("SELECT " + spalte + " FROM Tab_Stromspeicher_STAMM WHERE ID = ?", satz),
                                                         CultureInfo.InvariantCulture);
-            Assert.Equal(450, Z("Modulkosten"));
-            Assert.Equal(120, Z("Leistungskosten"));
-            Assert.Equal(3000, Z("Investition_Fix"));
-            Assert.Equal(0.04, Z("Verschleisskosten"), 9);
+            foreach (string entfallen in new[] { "Modulkosten", "Leistungskosten", "Investition_Fix", "Verschleisskosten" })
+                Assert.False(DataRepository.SpalteVorhanden("Tab_Stromspeicher_STAMM", entfallen));
             Assert.Equal(0.91, Z("Wirkungsgrad_RT"), 9);
             Assert.Equal(7000, Z("Zyklen_Zugesichert"));
             Assert.Equal(25, Z("Standby_Verbrauch"));

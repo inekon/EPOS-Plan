@@ -587,11 +587,16 @@ namespace EPOS.Kern.Tests
             Assert.True(id > 0);
 
             // Der Anwender pflegt von Hand nach, was keine Quelle liefert.
-            DataRepository.ExecuteSQL(
-                "UPDATE [Tab_Stromspeicher_STAMM] SET Modulkosten = ?, Zyklen_Zugesichert = ?, " +
+            // Die Kosten stehen als Verweis auf die Investitions-Satzvorlage (StromspeicherKostenSchema):
+            // gepflegt in der Kostenverwaltung, am Satz nur der Verweis — hier die Vorlage des Katalogsatzes 1.
+            int vorlage = Convert.ToInt32(DataRepository.ExecuteScalar(
+                "SELECT ID_KostenVorlageInvestition FROM [Tab_Stromspeicher_STAMM] WHERE ID = 1"));
+            Assert.True(vorlage > 0);
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE [Tab_Stromspeicher_STAMM] SET ID_KostenVorlageInvestition = ?, Zyklen_Zugesichert = ?, " +
                 "Degradation = ? WHERE ID = ?",
-                new DbParam("@mod", 420.0), new DbParam("@zyk", 6000),
-                new DbParam("@deg", 1.5), new DbParam("@id", id));
+                new DbParam("@vor", vorlage), new DbParam("@zyk", 6000),
+                new DbParam("@deg", 1.5), new DbParam("@id", id)));
 
             // Eine NEUERE Liste bringt andere Kennwerte - hier der zweite
             // bslib-Satz, der ueber dieselbe Zeile geht.
@@ -610,7 +615,9 @@ namespace EPOS.Kern.Tests
 
             // Stehen geblieben - Bezeichner UND Handarbeit:
             Assert.Equal("W13 Speicher Update", ctrl.m_szBezeichner);
-            Assert.Equal(420.0, ctrl.m_Modulkosten, 9);
+            Assert.Equal(vorlage, Convert.ToInt32(DataRepository.ExecuteScalar(
+                "SELECT ID_KostenVorlageInvestition FROM [Tab_Stromspeicher_STAMM] WHERE ID = ?",
+                new DbParam("@id", id))));
             Assert.Equal(6000, ctrl.m_ZyklenZugesichert);
             Assert.Equal(1.5, ctrl.m_Degradation, 9);
         }

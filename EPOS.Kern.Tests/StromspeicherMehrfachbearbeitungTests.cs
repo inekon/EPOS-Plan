@@ -9,7 +9,7 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Mehrfach-Bearbeiten der Stromspeicher in EINER Transaktion</b> (Konzept Projektdialoge mit Katalogauswahl
     /// 4.6, Entscheid KA‑E‑8, Stufe 3): <see cref="StromspeicherStammCtrl.SchreibenAlle"/> schreibt alle geänderten
-    /// Sätze — Projektkopien oder Katalogsätze — oder keinen; die vier Kostenposten gehen mit, der Name bleibt, eine
+    /// Sätze — Projektkopien oder Katalogsätze — oder keinen; die Kosten stehen nicht am Gerät, der Name bleibt, eine
     /// leere Gerätespalte bleibt leer. Geschrieben wird in der Kopie der Testdatenbank (<see cref="TestDatenbank"/>).
     /// </summary>
     [Collection("Testdatenbank")]
@@ -69,7 +69,7 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Alle_Projektkopien_werden_samt_Kostenposten_geschrieben_Name_und_Katalog_bleiben()
+        public void Alle_Projektkopien_werden_geschrieben_Name_und_Katalog_bleiben()
         {
             if (!_db.Vorhanden) return;
             var ids = Ids(StromspeicherStammCtrl.TABELLE_PROJEKT, 2);
@@ -89,10 +89,10 @@ namespace EPOS.Kern.Tests
             Assert.True(e.Ok, e.Meldung);
             Assert.Equal("Sammel 1", Feld(true, ids[0], ModulKatalogProfil.FeldFirma));
             Assert.Equal("Sammel 2", Feld(true, ids[1], ModulKatalogProfil.FeldFirma));
-            Assert.Equal(333, Convert.ToDouble(Roh("Tab_Stromspeicher", ids[0], "Modulkosten"), CultureInfo.InvariantCulture));
-            Assert.Equal(111, Convert.ToDouble(Roh("Tab_Stromspeicher", ids[0], "Leistungskosten"), CultureInfo.InvariantCulture));
-            Assert.Equal(2222, Convert.ToDouble(Roh("Tab_Stromspeicher", ids[0], "Investition_Fix"), CultureInfo.InvariantCulture));
-            Assert.Equal(0.05, Convert.ToDouble(Roh("Tab_Stromspeicher", ids[0], "Verschleisskosten"), CultureInfo.InvariantCulture), 9);
+            // Die Kostenfelder des Modells schreiben nichts mehr: Die Spalten sind entfallen (StromspeicherKostenSchema),
+            // die Kosten laufen über Satzvorlage und Kostenposition.
+            foreach (string entfallen in new[] { "Modulkosten", "Leistungskosten", "Investition_Fix", "Verschleisskosten" })
+                Assert.False(DataRepository.SpalteVorhanden("Tab_Stromspeicher", entfallen));
             Assert.Equal(name0, Feld(true, ids[0], ModulKatalogProfil.FeldBezeichner));
             Assert.Equal(katalogVorher, Feld(false, katalog, ModulKatalogProfil.FeldFirma));
         }
