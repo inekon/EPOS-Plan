@@ -111,6 +111,18 @@ public static partial class SpeicherFlottenStudieCtrl
         WHERE ID = ?";
 
     /// <summary>
+    /// Die <c>StammID</c> der Kostenpositionen eines Stromspeichers: die Hauptposition „Stromspeicher" des
+    /// Kostenkatalogs, wo es sie gibt; sonst der Lexikoneintrag gleichen Namens, der bei Bedarf angelegt wird
+    /// (<see cref="KostenVorlagenUebernahmeCtrl.StammIdSicher"/>). Der Katalog führt nicht überall eine
+    /// Hauptposition des Stromspeichers (Testdatenbank: keine) — ohne Rückfall entstünde keine Position.
+    /// </summary>
+    internal static int KostenstammStromspeicher()
+    {
+        int stamm = KostenPositionCtrl.StammIdHaupt(DbWerte.ERZEUGER_STROMSPEICHER);
+        return stamm > 0 ? stamm : KostenVorlagenUebernahmeCtrl.StammIdSicher(DbWerte.ERZEUGER_STROMSPEICHER);
+    }
+
+    /// <summary>
     /// <b>Welle KB-5 — die Kosten der Einheit als Kostenpositionen der Anlage</b> (<c>Tab_ProjektWerte</c>):
     /// Investition je kWh Kapazität, je kW Leistung und als Betrag, Betrieb je entladener kWh (Durchsatzkosten).
     /// Nur eine Einheit mit EIGENEN Kosten schreibt; eine vorhandene Position derselben Kategorie und Bemessung
@@ -232,7 +244,7 @@ public static partial class SpeicherFlottenStudieCtrl
         {
             KostenPositionCtrl.StelleSpaltenSicher();
             KostenPositionCtrl.GruppeSichern(DbWerte.KOSTEN_GRUPPE_ALLGEMEIN);
-            stammKosten = KostenPositionCtrl.StammIdHaupt(DbWerte.ERZEUGER_STROMSPEICHER);
+            stammKosten = KostenstammStromspeicher();
         }
         catch { stammKosten = 0; }
         try

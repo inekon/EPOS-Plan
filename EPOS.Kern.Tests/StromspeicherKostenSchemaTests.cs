@@ -220,7 +220,7 @@ namespace EPOS.Kern.Tests
                 "Nutzungsdauer, Einheit, Gruppe, Kostenart, Bemessung, Einheitpreis, IstErloes, ID_Anlage) " +
                 "VALUES (?, ?, 5, ?, 0, 0, '€', 'Allgemein', ?, ?, ?, 0, ?)",
                 new DbParam("@p", projekt),
-                new DbParam("@s", KostenPositionCtrl.StammIdHaupt(DbWerte.ERZEUGER_STROMSPEICHER)),
+                new DbParam("@s", SpeicherFlottenStudieCtrl.KostenstammStromspeicher()),
                 new DbParam("@k", kategorie),
                 new DbParam("@ka", kategorie == DbWerte.KOSTEN_KATEGORIE_INVESTITION
                     ? DbWerte.KOSTENART_KAPITALGEBUNDEN : DbWerte.KOSTENART_BETRIEBSGEBUNDEN),
