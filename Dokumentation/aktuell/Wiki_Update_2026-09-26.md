@@ -398,6 +398,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 14.10.2026: Im Bedarfsprofil-Dialog öffnet der Knopf „Betriebskalender…“ die Kalenderverwaltung direkt im Dialog, ein dort neu angelegter Kalender ist vorgewählt, und „Aus Gebäude übernehmen…“ kopiert Bundesland und Ferien eines Projektgebäudes in einen Betriebskalender. (#1088)
 - 13.10.2026: Der Kostendialog und die Kostenseite gleichen die Kosten einer Anlage mit dem zentralen Kostenkatalog ab („Mit dem Kostenkatalog abgleichen…“). (#1079)
 - 13.10.2026: Arbeits-, Grund- und Leistungspreis eines Brennstoffs stehen allein in der Karte seines Energieträgers. (#1080)
+- 14.10.2026: Die Gerätekataloge führen keine Kostenfelder mehr; die Kosten eines Geräts stehen allein in der Kostenverwaltung, die Maske zeigt die Gerätekosten bzw. den Kostensatz aus der Satzvorlage des Katalogsatzes. (#1095)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 

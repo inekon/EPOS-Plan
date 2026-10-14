@@ -19,7 +19,7 @@ Wechsel verloren; alles, was die neue Sitzung braucht, steht deshalb in diesem P
 |---|---|---|
 | KM‑K2, NK3, WK1, ZI1, KD1, KN1 (#1034–#1042) | fertig, gepusht, CI grün | Statusdatei |
 | KB-3 Saat der Katalogkosten-Satzvorlagen (226), KB-2 Brennstoffpreise in der Trägerkarte (227) | fertig: #1079/#1080, Push `b67d9995`, CI-Lauf 38502511137 grün, Vermerk `c959f451`; Testdatenbank 227 | origin |
-| KB-4 eine Kostenbasis (228 `GeraetekostenEntfallSchema`): KB-4a Heizkessel/BHKW, KB-4b Wärmepumpe/PV/Wechselrichter, KB-4c Solar/Puffer/Kältemaschine, KB-4d eine Leseklasse `KatalogkostensatzCtrl`, Prosa, Konzept; KB-4e sieben Wiki-Seiten | gebaut auf den lokalen Zweigen `kb4` (`3236ab27` + Nachzüge) und `kb4w` (7 Wiki-Commits); Abnahmen: Kern-Filter und Windows-Schale 0 Fehler, SQL-Prüfer 0 gegen 227 und 228-Kopie, Referenzlauf der 18 CI-Projekte gegen R54 PASS; voller Kern-Testlauf lief zuletzt (Prüfung der Vorlagenplatzhalter des Berichts offen) | lokal, bis zur Merge-Welle (Abschnitt 5.1) |
+| KB-4 eine Kostenbasis (228 `GeraetekostenEntfallSchema`): KB-4a Heizkessel/BHKW, KB-4b Wärmepumpe/PV/Wechselrichter, KB-4c Solar/Puffer/Kältemaschine, KB-4d eine Leseklasse `KatalogkostensatzCtrl`, Prosa, Konzept; KB-4e sieben Wiki-Seiten | erledigt #1095: Merge `771603419`/`e8b0ec4ba`, Testdatenbank 228 `bba9ebff9`, Vollgate grün (24 841 Tests, Referenzlauf 37/37 gegen R55 PASS); Vorlagenplatzhalter des Berichts geprüft, ohne Gerätespalte | Hauptbaum, Push ausstehend |
 | KB-5 Stromspeicher-Kosten auf Position (229 `StromspeicherKostenSchema`) | Inventar fertig; KB-5a (Rechenwege, Schema, Flotte) in Arbeit auf dem lokalen Zweig `kb5` (auf `kb4`); KB-5b (Masken, Hüllen, Register, Wiki) offen | lokal |
 | Schemakette (Kopfzeile der Statusdatei, gepusht `788c0c92d`) | 228 KB-4 (wir) → 229 KB-5 (wir) → 230 `KaeltebedarfsprofilVorlagenSchema` (KBP-2, Sitzung Dialoge/Cloud) → 231 `RaumnutzungDinWerteSchema` (DA-6, Gebäudesimulation) → 232 `BauteilkatalogAbschnittSchema` (BK-5/BK-6, Gebäudesimulation); 233 frei | origin |
 | Referenzbasen | aktuell R55 `2026-10-14_R55_KaeltebedarfDezentral` (37 Projekte, Anlagendialog); R56 ist für KB-5 reserviert und nur nötig, wenn sich ein Wert ändert (die Testdatenbank trägt außer `Modulkosten` keine Stromspeicher-Kosten) — sonst bleibt R55; danach R57 SA4 | `Referenzlaeufe/` |
@@ -74,7 +74,7 @@ gemergte Zweige `kb2`, `kb3`, `kb4a`, `kb4b`, `kb4c` sind als Worktrees entfernt
 
 ## 4 Offene Punkte (mit Empfehlung)
 
-1. **KB-4 Merge-Welle** (Abschnitt 5.1): nach dem Bericht des KB-4d-Testlaufs; Push mit Ankündigung, Meldung mit SHA an Gebäudesimulation
+1. **KB-4 Merge-Welle** (Abschnitt 5.1): erledigt #1095 (lokal); offen: Push mit Ankündigung, Meldung mit SHA an Gebäudesimulation
    und Anlagendialog, CI-Vermerk.
 2. **KB-5b** (Abschnitt 5.3) und **KB-5 Merge-Welle** (Abschnitt 5.4): Hebung auf 229, Vollgate gegen R55; R56 nur bei Wertänderung.
 3. **KB-6:** Konzept und Wiki-Quellen sind je Welle nachgeführt; Logbuchsätze ohne Version liegen im Entwurf; Bilder neu ziehen
