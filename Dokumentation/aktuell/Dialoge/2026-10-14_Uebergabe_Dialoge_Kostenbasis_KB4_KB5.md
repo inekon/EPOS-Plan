@@ -83,9 +83,7 @@ gemergte Zweige `kb2`, `kb3`, `kb4a`, `kb4b`, `kb4c` sind als Worktrees entfernt
 
 ## 4 Offene Punkte (mit Empfehlung)
 
-1. **KB-4** ist gepusht (#1095); offen ist allein der CI-Vermerk: Kern-Lauf (kern.yml) auf dem Push abwarten, bei Grün in der
-   Statuszeile #1095 „CI-Kern-Lauf: ausstehend (Vermerk folgt)“ durch „CI-Kern-Lauf [<run-id>](https://github.com/inekon/EPOS-Plan/actions/runs/<run-id>) grün auf `<sha>`.“
-   ersetzen, Commit allein mit `[skip ci]`, Push.
+1. **KB-4** ist gepusht (#1095) und nachgewiesen: Kern-Lauf 38575318361 grün auf `e2a8170bf` (CI-Vermerk gesetzt).
 2. **KB-5b** (Abschnitt 5.3) und **KB-5 Merge-Welle** (Abschnitt 5.4): Hebung auf 229, Vollgate gegen R55; R56 nur bei Wertänderung.
 3. **KB-6:** Konzept und Wiki-Quellen sind je Welle nachgeführt; Logbuchsätze ohne Version liegen im Entwurf; Bilder neu ziehen
    (`wikibilder.mjs`), Upload erst ab 16.10.2026 nach Freigabe und Versionsnummer.
