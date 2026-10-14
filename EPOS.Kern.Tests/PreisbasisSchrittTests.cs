@@ -64,11 +64,12 @@ namespace EPOS.Kern.Tests
             // von 1056): zwei Zeilen „kWh" und eine „kg". Das Referenzprojekt Kältemaschine mit Teillast 1063 (KM3,
             // Kopie von 1055): zwei Zeilen „kWh" und eine „kg". Das Referenzprojekt Freie Kühlung 1064 (Kopie von
             // 1017): zwei Zeilen „kWh" und eine „kg". Die Referenzprojekte der Zapfprofil-Optionen 1066 bis 1071 (ZB12,
-            // Kopien von 1045): je eine Zeile „Nm³".
-            Assert.Equal(28, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kWh'"));
+            // Kopien von 1045): je eine Zeile „Nm³". Das Referenzprojekt Kältebedarf dezentral 1072 (K6c, Kopie von 1055):
+            // zwei Zeilen „kWh" und eine „kg".
+            Assert.Equal(30, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kWh'"));
             Assert.Equal(31,Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'Nm³'"));
             Assert.Equal(4, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'L'"));
-            Assert.Equal(11,Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kg'"));
+            Assert.Equal(12,Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kg'"));
 
             // Die Regel nach kWh (51: kWh → kWh am Stromträger) trägt „kWh", die
             // Identitätsregel des Erdgases die Abrechnungseinheit.

@@ -1246,14 +1246,8 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                Protokoll.Hinweis(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_DECKUNG,
-                    (k.DeckungGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
-                    kaelte.Kaeltebedarf_Gesamt.ToString("N2", CultureInfo.CurrentCulture),
-                    SimulationRunner.DeckungProzent(k.DeckungGesamtKwh / 1000.0, kaelte.Kaeltebedarf_Gesamt)
-                                    .ToString("N1", CultureInfo.CurrentCulture),
-                    (k.StromGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
-                    k.EerJahreswert.ToString("N2", CultureInfo.CurrentCulture),
-                    k.AnzahlKuehltage));
+                Protokoll.Hinweis(KaeltedeckungMeldung(k.DeckungGesamtKwh / 1000.0, kaelte.Kaeltebedarf_Dezentral_Gesamt,
+                    kaelte.Kaeltebedarf_Gesamt, k.StromGesamtKwh / 1000.0, k.EerJahreswert, k.AnzahlKuehltage));
 
                 if (k.RestGesamtKwh > 0)
                     Protokoll.Warnung(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_UNTERDECKUNG,
@@ -1265,6 +1259,56 @@ namespace WindowsFormsApplication1
             }
 
             DeckungsprobeKaelteAusfuehren(kaelte, kanaele);
+        }
+
+        /// <summary>
+        /// <b>Die Laufmeldung der Kälteerzeugung</b> (F-K12; K6c-N). Ohne dezentrale (Split-)Deckung steht sie wörtlich
+        /// wie immer: die Deckung der Kältefolge am Gesamtbedarf — die gespeicherte Größe <c>Kaelte.DeckungsgradProzent</c>.
+        /// Mit Split-Zeile nennt sie wie die Übersicht die Hauptzahl nach <see cref="KaelteDeckungsgrad.Hauptzahl"/>
+        /// (Kältefolge + dezentral am Gesamtbedarf), dazu „davon Kältefolge“ nach
+        /// <see cref="KaelteDeckungsgrad.DavonKaeltefolge"/> und die dezentral gedeckte Menge; bleibt kein zentral zu
+        /// deckender Bedarf, entfällt „davon Kältefolge“.
+        /// </summary>
+        /// <param name="kaeltefolgeMwh">Die Deckung der Kältefolge [MWh/a].</param>
+        /// <param name="dezentralMwh">Die dezentral (Split) gedeckte Kälte [MWh/a]; 0 ohne Split-Zeile.</param>
+        /// <param name="gesamtMwh">Der Kältebedarf gesamt samt dezentraler Zeilen [MWh/a].</param>
+        /// <param name="stromMwh">Der Kältestrom der Kältefolge [MWh/a].</param>
+        /// <param name="eerJahreswert">Der EER-Jahreswert der Kältefolge.</param>
+        /// <param name="kuehltage">Die Zahl der Kühltage.</param>
+        public static string KaeltedeckungMeldung(double kaeltefolgeMwh, double dezentralMwh, double gesamtMwh,
+                                                   double stromMwh, double eerJahreswert, int kuehltage)
+        {
+            CultureInfo kultur = CultureInfo.CurrentCulture;
+            double? hauptzahl = KaelteDeckungsgrad.Hauptzahl(kaeltefolgeMwh, dezentralMwh, gesamtMwh);
+            if (hauptzahl == null)
+                return string.Format(kultur, MyResource.Resource.SIMENG_KAELTE_DECKUNG,
+                    kaeltefolgeMwh.ToString("N2", kultur),
+                    gesamtMwh.ToString("N2", kultur),
+                    SimulationRunner.DeckungProzent(kaeltefolgeMwh, gesamtMwh).ToString("N1", kultur),
+                    stromMwh.ToString("N2", kultur),
+                    eerJahreswert.ToString("N2", kultur),
+                    kuehltage);
+
+            double? davon = KaelteDeckungsgrad.DavonKaeltefolge(kaeltefolgeMwh, dezentralMwh, gesamtMwh);
+            string gedeckt = (kaeltefolgeMwh + dezentralMwh).ToString("N2", kultur);
+            if (davon == null)
+                return string.Format(kultur, MyResource.Resource.SIMENG_KAELTE_DECKUNG_SPLIT_NUR_DEZENTRAL,
+                    gedeckt,
+                    gesamtMwh.ToString("N2", kultur),
+                    hauptzahl.Value.ToString("N1", kultur),
+                    dezentralMwh.ToString("N2", kultur),
+                    stromMwh.ToString("N2", kultur),
+                    eerJahreswert.ToString("N2", kultur),
+                    kuehltage);
+            return string.Format(kultur, MyResource.Resource.SIMENG_KAELTE_DECKUNG_SPLIT,
+                gedeckt,
+                gesamtMwh.ToString("N2", kultur),
+                hauptzahl.Value.ToString("N1", kultur),
+                davon.Value.ToString("N1", kultur),
+                dezentralMwh.ToString("N2", kultur),
+                stromMwh.ToString("N2", kultur),
+                eerJahreswert.ToString("N2", kultur),
+                kuehltage);
         }
 
         /// <summary>

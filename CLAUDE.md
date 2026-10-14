@@ -175,7 +175,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-10-14_R54_Dachflaechen`, sechsunddreißig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Feiertage liegen im Gemeinjahr ohne Jahresdatum — Ostern ist der Sonntag des Wochentagsrasters am nächsten zum 8. April, Buß- und Bettag der letzte Mittwoch vor dem 23. November, nur eine Preisreihe mit Jahr setzt die echten Daten —, alle Leser — Gebäudelauf, Zapfkalender, Bedarfsprofile — rechnen mit dem Wochentagsraster der Klimaregion (in der Testdatenbank ist der 1. Januar ein Donnerstag), eine Preisreihe mit Jahr setzt für alle Raster und Feiertage dieses Jahres, die Gebäude rechnen nach VDI 6007 und laufen
+`2026-10-14_R55_KaeltebedarfDezentral`, siebenunddreißig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Feiertage liegen im Gemeinjahr ohne Jahresdatum — Ostern ist der Sonntag des Wochentagsrasters am nächsten zum 8. April, Buß- und Bettag der letzte Mittwoch vor dem 23. November, nur eine Preisreihe mit Jahr setzt die echten Daten —, alle Leser — Gebäudelauf, Zapfkalender, Bedarfsprofile — rechnen mit dem Wochentagsraster der Klimaregion (in der Testdatenbank ist der 1. Januar ein Donnerstag), eine Preisreihe mit Jahr setzt für alle Raster und Feiertage dieses Jahres, die Gebäude rechnen nach VDI 6007 und laufen
 ohne wirksame Kühlung frei, die Gebäude heizen und kühlen eine Zone nie am selben Tag — die Tagesbetriebsart je Zone wählt innerhalb der Kalenderfreigabe (Heiz- und Kühlsollwertkalender, Heiz- und Kühlperiode) nach den Tagessummen des unbegrenzten Probetags, die Gegenseite steht den Tag über auf „aus“ —, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
 Kühlübergabe gekoppelt —, beide rechnen ihren Strombedarf mit der gepflegten Jahressumme ihrer
@@ -209,6 +209,7 @@ Projekt 1063 rechnet als Kopie von 1055 seine Kältemaschine mit Teillastkurve, 
 Projekt 1064 rechnet als Kopie von 1017 seine Kälte mit freier Kühlung über die Erdsonde der Wärmepumpe — Grädigkeit 4 K, Leistungsgrenze 4 kW, den Rest deckt der Verdichter —, gehalten von `EPOS.Kern.Tests/FreieKuehlungReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
 Projekt 1065 rechnet als Kopie von 1051 sein Gebäude mit berechneter Vorheizzeit — Deckel aus dem Jahresmaximum der Heizlast am Kalendersprung mit 20 % Toleranz, Vorheizzeit als 95-%-Quantil des Bedarfs, Ankunft innerhalb 1 K —, gehalten von `EPOS.Kern.Tests/VorheizReferenzprojektWacheTests`,
 die Projekte 1066 bis 1071 rechnen als Kopien von 1045 je eine Option des Zapfprofils — 1066 Mischnutzung in vier Zonen mit Wohnungstabelle (Belegung nach Raumzahl) und Zirkulation nach Leitungslänge, 1067 der Kalender der Nutzungsart mit fünf eigenen Ferienzeiträumen der Zone und ein Gebäudekalender mit Feiertagsland, 1068 die stochastische Jahresreihe, 1069 die Typtage eines erfundenen Typtagsatzes, 1070 die Kalibrierung auf einen Jahresmesswert mit manuellem Tagesbedarf, manueller Zirkulation und eigenen Fachwerten, 1071 die vier Topologien mit einer Auslegung über den Ecodesign-Bedarfstag, die nicht auf die Simulation wirkt —, gehalten samt den eingefrorenen Auslegungswerten von 1071 von `EPOS.Kern.Tests/ZapfprofilOptionenReferenzprojekteWacheTests`,
+Projekt 1072 rechnet als Kopie von 1055 drei Kältebedarfsprofile — eines zentral über Kältemaschine und Kältespeicher, zwei dezentral über Split-Geräte neben der Kältefolge, mit EER fest 3,0 anteilig über den Stromträger des Projekts und mit EER linear über einen eigenen Zähler auf dem Kühlträger 58, je Split-Zeile eine Ergebniszeile in `Tab_ErgebnisKaelteDezentral` —, gehalten von `EPOS.Kern.Tests/KaelteDezentralReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
 die Sole-Wärmepumpen der Referenzprojekte rechnen mit Erdreichquelle (Erdsonde), deren Entzug ohne Taktstrom
 und deren Prüfung je Anlage mit Erdreichquelle, die Wärmepumpen rechnen ihre Kennlinie über den Vorlauf interpoliert,
 1047 und 1056 weisen die Vorlaufwahl ihrer Wärmepumpe aus, 1051 und 1052 weisen ihre Auslegungsheizlast aus,
@@ -340,6 +341,11 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   `Aufheiz_Geltung`, `Aufheiz_Heizkreis_Einbeziehen`, `Tab_Zone.Vorheizzeit_H` und `Tab_Gebaeude.Aufheizzeit_Manuell_H`
   seiner Gebäude, die Festwerte des Rechenwegs (Vorgabe 20 % Toleranz, Vorgabe ε 1 K, Quantil 95 %, Fenstergrenze 47 h,
   Ankunftsbezug), dazu das Anlegen oder Entfernen eines Referenzprojekts mit Vorheizen.
+- gesäte Kältebedarfs-Zuordnungen eines Referenzprojekts: `Z_Projekt_Kaeltebedarf` samt Projektkopien `Tab_Kaeltebedarf`
+  und `Tab_Kaeltetyp` (`Summe`, `Kaelte_Art`, `Deckung`, `Split_EER_Weg`, `Split_EER_1`, `Split_EER_2`, `Split_Taussen_1`,
+  `Split_Taussen_2`, `Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler`), die Katalogzeilen `Tab_Kaeltebedarf_STAMM` und
+  `Tab_Kaeltetyp_STAMM`, die sie benutzen, und der Festwert `KaeltebedarfFestwerte.EER_MIN`, dazu das Anlegen oder
+  Entfernen eines Referenzprojekts mit Kältebedarfsprofil oder Split-Zeile.
 
 Frühere Basen liegen nicht mehr im Repository; ihre Protokolle stehen unter
 [`Dokumentation/ueberholt/Referenzbasen/`](Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).

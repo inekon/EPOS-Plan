@@ -80,15 +80,19 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(KaeltebedarfSchema.Paarpruefung(6, null));
         }
 
-        /// <summary>Die Testkopie steht auf dem Schritt; jeder Lastgang steht auf „zentral“, keine Zuordnung (Basis byte-gleich).</summary>
+        /// <summary>
+        /// Die Testkopie steht auf dem Schritt; jeder Lastgang steht auf „zentral“, Zuordnungen führt allein das Referenzprojekt
+        /// 1072 (K6c, KaelteDezentralReferenzprojektWacheTests), alle übrigen Projekte rechnen ohne Kältebedarfsprofil.
+        /// </summary>
         [Fact]
         public void Die_Testkopie_steht_auf_213_ohne_Kaeltebedarf_im_Projekt()
         {
             if (!_db.Vorhanden) return;
             Assert.True(Zahl("SELECT SchemaVersion FROM Tab_Applikation") >= KaeltebedarfSchema.SCHRITT);
             Assert.True(KaeltebedarfSchema.Vollstaendig());
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Z_Projekt_Kaeltebedarf"));
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltebedarf"));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Z_Projekt_Kaeltebedarf WHERE ID_Projekt <> 1072"));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltebedarf WHERE ID_Projekt <> 1072"));
+            Assert.Equal(3L, Zahl("SELECT COUNT(*) FROM Z_Projekt_Kaeltebedarf"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Z_ProjektWaermebedarf WHERE Deckung <> 'zentral' OR Split_EER_1 IS NOT NULL"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_ErgebnisEnergiebedarf WHERE Kaeltebedarf_Profil_MWh IS NOT NULL"));
         }
