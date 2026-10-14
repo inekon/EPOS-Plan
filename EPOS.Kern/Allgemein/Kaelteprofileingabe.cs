@@ -82,17 +82,6 @@ namespace WindowsFormsApplication1
             return w;
         }
 
-        /// <summary>
-        /// Monatsanteile auf genau 100 % gebracht (Katalogsätze tragen Rundungsreste); ohne Summe bleibt die Reihe.
-        /// Nur für die Anzeige der Vorbelegung — gespeichert wird, was der Anwender eingibt.
-        /// </summary>
-        public static double?[] AlsProzent(double[] anteile)
-        {
-            var w = new double?[MONATE];
-            for (int m = 0; m < MONATE; m++) w[m] = anteile != null && m < anteile.Length ? anteile[m] : 0;
-            return w;
-        }
-
         // ---- Wochenprofil ------------------------------------------------------------------------------------------
 
         /// <summary>Sind Montag bis Freitag des Wochenprofils gleich (Bedingung der Dreitagesansicht, Konzept 3.3)?</summary>

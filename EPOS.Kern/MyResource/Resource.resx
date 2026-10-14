@@ -56381,5 +56381,71 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KBP_KI_EINGABEART_ERL" xml:space="preserve">
     <value>Eingabeart der markierten Kältezeile: Jahressumme mit Vorlage, Monatswerte oder Wochenprofil; Typtage folgen.</value>
   </data>
+  <data name="KBP_GRAFIK_GRUPPE" xml:space="preserve">
+    <value>Grafik der markierten Zeile</value>
+  </data>
+  <data name="KBP_REITER_JAHRESGANG" xml:space="preserve">
+    <value>Jahresgang</value>
+  </data>
+  <data name="KBP_REITER_MONATE" xml:space="preserve">
+    <value>Monate</value>
+  </data>
+  <data name="KBP_REITER_WOCHE" xml:space="preserve">
+    <value>Woche</value>
+  </data>
+  <data name="KBP_REITER_DAUERLINIE" xml:space="preserve">
+    <value>Dauerlinie</value>
+  </data>
+  <data name="KBP_TITEL_JAHRESGANG" xml:space="preserve">
+    <value>Kältebedarf im Jahresgang</value>
+  </data>
+  <data name="KBP_TITEL_MONATE" xml:space="preserve">
+    <value>Kältebedarf je Monat</value>
+  </data>
+  <data name="KBP_TITEL_WOCHE" xml:space="preserve">
+    <value>Typische Woche nach Tagesarten</value>
+  </data>
+  <data name="KBP_TITEL_DAUERLINIE" xml:space="preserve">
+    <value>Jahresdauerlinie des Kältebedarfs</value>
+  </data>
+  <data name="KBP_ACHSE_LEISTUNG" xml:space="preserve">
+    <value>Kältelast [kW]</value>
+  </data>
+  <data name="KBP_ACHSE_WOCHENSTUNDE" xml:space="preserve">
+    <value>Stunde der Woche ab Montag 0 Uhr</value>
+  </data>
+  <data name="KBP_ACHSE_RANG" xml:space="preserve">
+    <value>Stunden im Jahr, absteigend sortiert</value>
+  </data>
+  <data name="KBP_REIHE_KAELTE" xml:space="preserve">
+    <value>Kältebedarf</value>
+  </data>
+  <data name="KBP_REIHE_WOCHE" xml:space="preserve">
+    <value>Werktag, Samstag, Sonntag bzw. Feiertag</value>
+  </data>
+  <data name="KBP_REIHE_FERIEN" xml:space="preserve">
+    <value>Ferientag</value>
+  </data>
+  <data name="KBP_KZ_SUMME" xml:space="preserve">
+    <value>Jahressumme</value>
+  </data>
+  <data name="KBP_KZ_SPITZE" xml:space="preserve">
+    <value>Spitze</value>
+  </data>
+  <data name="KBP_KZ_VBH" xml:space="preserve">
+    <value>Vollbenutzungsstunden</value>
+  </data>
+  <data name="KBP_KZ_GRUNDLAST" xml:space="preserve">
+    <value>Grundlast-Anteil</value>
+  </data>
+  <data name="KBP_GRAFIK_HERLEITUNG" xml:space="preserve">
+    <value>Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile mit der Jahressumme dieses Dialogs; die Monate stapeln alle Zeilen.</value>
+  </data>
+  <data name="KBP_GRAFIK_OHNE" xml:space="preserve">
+    <value>Für die markierte Zeile liegt kein Profil vor.</value>
+  </data>
+  <data name="KBP_GRAFIK_ERL" xml:space="preserve">
+    <value>Grafik der markierten Kältezeile: Jahresgang, Monate, Woche und Dauerlinie samt Kennzahlen (nur Anzeige).</value>
+  </data>
 </root>
 

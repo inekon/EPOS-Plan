@@ -56374,5 +56374,71 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="KBP_KI_EINGABEART_ERL" xml:space="preserve">
     <value>Input method of the selected cooling row: annual total with template, monthly values or weekly profile; typical days follow.</value>
   </data>
+  <data name="KBP_GRAFIK_GRUPPE" xml:space="preserve">
+    <value>Chart of the selected row</value>
+  </data>
+  <data name="KBP_REITER_JAHRESGANG" xml:space="preserve">
+    <value>Annual profile</value>
+  </data>
+  <data name="KBP_REITER_MONATE" xml:space="preserve">
+    <value>Months</value>
+  </data>
+  <data name="KBP_REITER_WOCHE" xml:space="preserve">
+    <value>Week</value>
+  </data>
+  <data name="KBP_REITER_DAUERLINIE" xml:space="preserve">
+    <value>Duration curve</value>
+  </data>
+  <data name="KBP_TITEL_JAHRESGANG" xml:space="preserve">
+    <value>Cooling demand over the year</value>
+  </data>
+  <data name="KBP_TITEL_MONATE" xml:space="preserve">
+    <value>Cooling demand per month</value>
+  </data>
+  <data name="KBP_TITEL_WOCHE" xml:space="preserve">
+    <value>Typical week by day type</value>
+  </data>
+  <data name="KBP_TITEL_DAUERLINIE" xml:space="preserve">
+    <value>Annual duration curve of the cooling demand</value>
+  </data>
+  <data name="KBP_ACHSE_LEISTUNG" xml:space="preserve">
+    <value>Cooling load [kW]</value>
+  </data>
+  <data name="KBP_ACHSE_WOCHENSTUNDE" xml:space="preserve">
+    <value>Hour of the week from Monday 0:00</value>
+  </data>
+  <data name="KBP_ACHSE_RANG" xml:space="preserve">
+    <value>Hours of the year, sorted in descending order</value>
+  </data>
+  <data name="KBP_REIHE_KAELTE" xml:space="preserve">
+    <value>Cooling demand</value>
+  </data>
+  <data name="KBP_REIHE_WOCHE" xml:space="preserve">
+    <value>Working day, Saturday, Sunday or public holiday</value>
+  </data>
+  <data name="KBP_REIHE_FERIEN" xml:space="preserve">
+    <value>Company holiday</value>
+  </data>
+  <data name="KBP_KZ_SUMME" xml:space="preserve">
+    <value>Annual total</value>
+  </data>
+  <data name="KBP_KZ_SPITZE" xml:space="preserve">
+    <value>Peak</value>
+  </data>
+  <data name="KBP_KZ_VBH" xml:space="preserve">
+    <value>Full-load hours</value>
+  </data>
+  <data name="KBP_KZ_GRUNDLAST" xml:space="preserve">
+    <value>Base-load share</value>
+  </data>
+  <data name="KBP_GRAFIK_HERLEITUNG" xml:space="preserve">
+    <value>Annual profile, week and duration curve show the selected row with the annual total of this dialog; the months stack all rows.</value>
+  </data>
+  <data name="KBP_GRAFIK_OHNE" xml:space="preserve">
+    <value>There is no profile for the selected row.</value>
+  </data>
+  <data name="KBP_GRAFIK_ERL" xml:space="preserve">
+    <value>Chart of the selected cooling row: annual profile, months, week and duration curve with key figures (display only).</value>
+  </data>
 </root>
 
