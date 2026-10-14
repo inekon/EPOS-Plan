@@ -40338,6 +40338,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die üblich im Bereich {0} ähnelt.
+        /// </summary>
+        public static string GESETZ_EINHEIT_HINWEIS_BEREICH {
+            get {
+                return ResourceManager.GetString("GESETZ_EINHEIT_HINWEIS_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die übernommen von {0} ab {1} ähnelt.
+        /// </summary>
+        public static string GESETZ_EINHEIT_HINWEIS_SCHLUESSEL {
+            get {
+                return ResourceManager.GetString("GESETZ_EINHEIT_HINWEIS_SCHLUESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ihre Wahl ähnelt.
+        /// </summary>
+        public static string GESETZ_EINHEIT_IHRE_WAHL {
+            get {
+                return ResourceManager.GetString("GESETZ_EINHEIT_IHRE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diesen Bereich gibt es keine übliche Einheit. Bitte wählen. ähnelt.
+        /// </summary>
+        public static string GESETZ_EINHEIT_PFLICHT_BEREICH {
+            get {
+                return ResourceManager.GetString("GESETZ_EINHEIT_PFLICHT_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neuer Schlüssel ohne Bereich. Bereich oder Einheit wählen. ähnelt.
+        /// </summary>
+        public static string GESETZ_EINHEIT_PFLICHT_OHNE {
+            get {
+                return ResourceManager.GetString("GESETZ_EINHEIT_PFLICHT_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Bereich {0} wechselt die Einheit je Brennstoff. Bitte wählen. ähnelt.
+        /// </summary>
+        public static string GESETZ_EINHEIT_PFLICHT_WECHSEL {
+            get {
+                return ResourceManager.GetString("GESETZ_EINHEIT_PFLICHT_WECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag übernehmen ({0}) ähnelt.
+        /// </summary>
+        public static string GESETZ_EINHEIT_VORSCHLAG_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("GESETZ_EINHEIT_VORSCHLAG_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeile „{0}&quot; (gültig ab {1}) wirklich löschen?
         ///
         ///Danach fehlt der Wert in jeder Rechnung, die dieses Jahr betrifft. ähnelt.
@@ -40376,6 +40439,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GESETZ_KLASSE_ANZ_CO2_PREIS {
             get {
                 return ResourceManager.GetString("GESETZ_KLASSE_ANZ_CO2_PREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erneuerbare-Energien-Gesetz (EEG) ähnelt.
+        /// </summary>
+        public static string GESETZ_KLASSE_ANZ_EEG {
+            get {
+                return ResourceManager.GetString("GESETZ_KLASSE_ANZ_EEG", resourceCulture);
             }
         }
         
@@ -40439,6 +40511,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GESETZ_KLASSE_ANZ_STROMSTEUER {
             get {
                 return ResourceManager.GetString("GESETZ_KLASSE_ANZ_STROMSTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umlagen auf den Strompreis ähnelt.
+        /// </summary>
+        public static string GESETZ_KLASSE_ANZ_UMLAGEN {
+            get {
+                return ResourceManager.GetString("GESETZ_KLASSE_ANZ_UMLAGEN", resourceCulture);
             }
         }
         
@@ -40538,6 +40619,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GESETZ_MSG_WERT_UNGUELTIG {
             get {
                 return ResourceManager.GetString("GESETZ_MSG_WERT_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (bitte wählen) ähnelt.
+        /// </summary>
+        public static string GESETZ_PLATZHALTER_WAEHLEN {
+            get {
+                return ResourceManager.GetString("GESETZ_PLATZHALTER_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorhandene Schlüssel: ähnelt.
+        /// </summary>
+        public static string GESETZ_SCHLUESSEL_VORHANDEN {
+            get {
+                return ResourceManager.GetString("GESETZ_SCHLUESSEL_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich wählen. ähnelt.
+        /// </summary>
+        public static string GESETZ_SPERRE_BEREICH {
+            get {
+                return ResourceManager.GetString("GESETZ_SPERRE_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit wählen. ähnelt.
+        /// </summary>
+        public static string GESETZ_SPERRE_EINHEIT {
+            get {
+                return ResourceManager.GetString("GESETZ_SPERRE_EINHEIT", resourceCulture);
             }
         }
         

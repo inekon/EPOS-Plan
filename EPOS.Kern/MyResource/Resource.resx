@@ -56204,5 +56204,44 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="IMP_BAUTEIL_PROT_LUFTSTROM_PARTNER" xml:space="preserve">
     <value>Zone {0}: Der Luftstrom zur Zone {1} wird übergangen — die Datei führt diese Zone nicht, es ist die Zone selbst, oder das Paar steht schon.</value>
   </data>
+  <data name="GESETZ_KLASSE_ANZ_EEG" xml:space="preserve">
+    <value>Erneuerbare-Energien-Gesetz (EEG)</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_UMLAGEN" xml:space="preserve">
+    <value>Umlagen auf den Strompreis</value>
+  </data>
+  <data name="GESETZ_PLATZHALTER_WAEHLEN" xml:space="preserve">
+    <value>(bitte wählen)</value>
+  </data>
+  <data name="GESETZ_SCHLUESSEL_VORHANDEN" xml:space="preserve">
+    <value>Vorhandene Schlüssel:</value>
+  </data>
+  <data name="GESETZ_EINHEIT_HINWEIS_SCHLUESSEL" xml:space="preserve">
+    <value>übernommen von {0} ab {1}</value>
+  </data>
+  <data name="GESETZ_EINHEIT_HINWEIS_BEREICH" xml:space="preserve">
+    <value>üblich im Bereich {0}</value>
+  </data>
+  <data name="GESETZ_EINHEIT_PFLICHT_WECHSEL" xml:space="preserve">
+    <value>Im Bereich {0} wechselt die Einheit je Brennstoff. Bitte wählen.</value>
+  </data>
+  <data name="GESETZ_EINHEIT_PFLICHT_BEREICH" xml:space="preserve">
+    <value>Für diesen Bereich gibt es keine übliche Einheit. Bitte wählen.</value>
+  </data>
+  <data name="GESETZ_EINHEIT_PFLICHT_OHNE" xml:space="preserve">
+    <value>Neuer Schlüssel ohne Bereich. Bereich oder Einheit wählen.</value>
+  </data>
+  <data name="GESETZ_EINHEIT_IHRE_WAHL" xml:space="preserve">
+    <value>Ihre Wahl</value>
+  </data>
+  <data name="GESETZ_EINHEIT_VORSCHLAG_UEBERNEHMEN" xml:space="preserve">
+    <value>Vorschlag übernehmen ({0})</value>
+  </data>
+  <data name="GESETZ_SPERRE_BEREICH" xml:space="preserve">
+    <value>Bereich wählen.</value>
+  </data>
+  <data name="GESETZ_SPERRE_EINHEIT" xml:space="preserve">
+    <value>Einheit wählen.</value>
+  </data>
 </root>
 
