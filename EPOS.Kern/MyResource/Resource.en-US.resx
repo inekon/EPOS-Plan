@@ -56197,5 +56197,44 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="IMP_BAUTEIL_PROT_LUFTSTROM_PARTNER" xml:space="preserve">
     <value>Zone {0}: the air flow to zone {1} is skipped — the file does not contain this zone, it is the zone itself, or the pair already exists.</value>
   </data>
+  <data name="GESETZ_KLASSE_ANZ_EEG" xml:space="preserve">
+    <value>Renewable Energy Sources Act (EEG)</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_UMLAGEN" xml:space="preserve">
+    <value>Levies on the electricity price</value>
+  </data>
+  <data name="GESETZ_PLATZHALTER_WAEHLEN" xml:space="preserve">
+    <value>(please choose)</value>
+  </data>
+  <data name="GESETZ_SCHLUESSEL_VORHANDEN" xml:space="preserve">
+    <value>Existing keys:</value>
+  </data>
+  <data name="GESETZ_EINHEIT_HINWEIS_SCHLUESSEL" xml:space="preserve">
+    <value>taken from {0} as of {1}</value>
+  </data>
+  <data name="GESETZ_EINHEIT_HINWEIS_BEREICH" xml:space="preserve">
+    <value>usual in the area {0}</value>
+  </data>
+  <data name="GESETZ_EINHEIT_PFLICHT_WECHSEL" xml:space="preserve">
+    <value>In the area {0} the unit changes with the fuel. Please choose.</value>
+  </data>
+  <data name="GESETZ_EINHEIT_PFLICHT_BEREICH" xml:space="preserve">
+    <value>There is no usual unit for this area. Please choose.</value>
+  </data>
+  <data name="GESETZ_EINHEIT_PFLICHT_OHNE" xml:space="preserve">
+    <value>New key without an area. Choose an area or a unit.</value>
+  </data>
+  <data name="GESETZ_EINHEIT_IHRE_WAHL" xml:space="preserve">
+    <value>Your choice</value>
+  </data>
+  <data name="GESETZ_EINHEIT_VORSCHLAG_UEBERNEHMEN" xml:space="preserve">
+    <value>Use suggestion ({0})</value>
+  </data>
+  <data name="GESETZ_SPERRE_BEREICH" xml:space="preserve">
+    <value>Choose an area.</value>
+  </data>
+  <data name="GESETZ_SPERRE_EINHEIT" xml:space="preserve">
+    <value>Choose a unit.</value>
+  </data>
 </root>
 

@@ -38,6 +38,23 @@
    BEFUND W14c-B8, WOERTLICH: Die Id wird nur durchgereicht; beim Anlegen ist
    sie 0, und Anlegen ignoriert sie ohnehin.
 
+   DIE EINHEIT WIRD VORBELEGT (Anwenderentscheid 14.10.2026, Mockup
+   Gesetzeskatalog_Einheit_Vorbelegung). Nur bei einer NEUEN Zeile und nur,
+   solange der Anwender die Einheit nicht selbst gewaehlt hat. Die Regel steht im
+   Kern (GesetzKatalog.EinheitVorschlagen): ein bestehender Schluessel gibt die
+   Einheit seiner juengsten Zeile (Bereich und Quelle ebenso, solange nicht
+   selbst gewaehlt), ein neuer die haeufigste Einheit seines Bereichs, sonst
+   bleibt das Feld leer und ist Pflicht. Die Daten reicht der Wirt herein
+   (Vorschlagsdaten); der Dialog fragt keine Datenbank. Eine eigene Wahl gewinnt
+   gegen jeden spaeteren Wechsel von Bereich oder Schluessel; "Vorschlag
+   uebernehmen" holt den Vorschlag zurueck. Ohne Bereich oder Einheit ist OK
+   weich gesperrt, der Grund steht am Knopf - ein stilles "-" gibt es fuer eine
+   neue Zeile nicht mehr. Beim Aendern bleibt die gespeicherte Einheit.
+
+   DIE SCHLUESSELVORSCHLAEGE sind Knoepfe unter dem Feld, kein <datalist>
+   (Hausregel EPOS.UI): Sie erscheinen beim Tippen eines Schluessels, der noch
+   nicht genau einem bestehenden entspricht.
+
    TASTATUR: Esc bricht ab. Enter ist nicht belegt - der Dialog schreibt zwar
    nicht selbst, aber sein OK loest im Wirt sofort einen Schreibvorgang aus. *@
 
@@ -67,8 +84,21 @@
             <Textfeld Bezeichnung="@LabelSchluessel" Wert="@_schluessel" WertChanged="BeiSchluessel"
                       Hoechstlaenge="60" NurLesen="@(!IstNeu)" />
 
+            @if (SchluesselTreffer.Count > 0)
+            {
+                <p class="epos-herleitung epos-gesetz-schluesselvorschlaege">
+                    <span class="epos-herleitung-text">@TextSchluesselVorhanden</span>
+                    @foreach (string treffer in SchluesselTreffer)
+                    {
+                        <button type="button" class="epos-knopf epos-vorschlag" @key="treffer"
+                                @onclick="() => BeiSchluessel(treffer)">@treffer</button>
+                    }
+                </p>
+            }
+
             <Auswahlfeld Bezeichnung="@LabelKlasse" Eintraege="@KlassenEintraege"
-                         Auswahl="@_klasseIndex" AuswahlChanged="BeiKlasse" Aktiv="@IstNeu" />
+                         Auswahl="@_klasseIndex" AuswahlChanged="BeiKlasseGewaehlt" Aktiv="@IstNeu"
+                         Platzhalter="@(IstNeu && _klasseIndex is null ? PlatzhalterWaehlen : null)" />
 
             <Ganzzahlfeld Bezeichnung="@LabelJahr" Wert="@_jahr" WertChanged="BeiJahr"
                           Min="@GesetzKatalog.JAHR_MIN" Max="@GesetzKatalog.JAHR_MAX"
@@ -84,18 +114,46 @@
     <Formularraster>
         <KindInhalt>
             <Auswahlfeld Bezeichnung="@LabelEinheit" Eintraege="@EinheitEintraege"
-                         Auswahl="@_einheitIndex" AuswahlChanged="BeiEinheit" />
+                         Auswahl="@Stelle(Einheiten, WirksameEinheit)" AuswahlChanged="BeiEinheit"
+                         Platzhalter="@(IstNeu ? PlatzhalterWaehlen : null)" />
+
+            @if (IstNeu)
+            {
+                GesetzEinheitVorschlag vorschlag = Vorschlag;
+                if (_einheitGewaehlt)
+                {
+                    if (vorschlag.Einheit.Length > 0 &&
+                        !string.Equals(vorschlag.Einheit, WirksameEinheit, StringComparison.Ordinal))
+                    {
+                        <Vorschlagszeile Text="@TextIhreWahl"
+                                         Knopftext="@string.Format(TextVorschlagUebernehmen, vorschlag.Einheit)"
+                                         Uebernommen="VorschlagUebernehmen" />
+                    }
+                    else
+                    {
+                        <p class="epos-herleitung epos-gesetz-einheit-hinweis">
+                            <span class="epos-herleitung-text">@TextIhreWahl</span>
+                        </p>
+                    }
+                }
+                else
+                {
+                    <p class="epos-herleitung epos-gesetz-einheit-hinweis@(vorschlag.Einheit.Length == 0 ? " epos-gesetz-einheit-hinweis--pflicht" : "")">
+                        <span class="epos-herleitung-text">@EinheitHinweis(vorschlag)</span>
+                    </p>
+                }
+            }
 
             <Auswahlfeld Bezeichnung="@LabelStatus" Eintraege="@StatusEintraege"
                          Auswahl="@_statusIndex" AuswahlChanged="BeiStatus" />
 
-            <Textfeld Bezeichnung="@LabelQuelle" Wert="@_quelle" WertChanged="@(t => _quelle = t)"
+            <Textfeld Bezeichnung="@LabelQuelle" Wert="@_quelle" WertChanged="BeiQuelle"
                       Hoechstlaenge="120" />
         </KindInhalt>
     </Formularraster>
 
     <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
-                     OkErlaubt="@(!_fehlerhaft)" Ergebnis="BeiLeiste" />
+                     OkErlaubt="@(!_fehlerhaft)" OkSperrgrund="@Sperrgrund" Ergebnis="BeiLeiste" />
 </div>
 
 @code {
@@ -156,6 +214,13 @@
     [Parameter] public IReadOnlyList<string> Statuswerte { get; set; } = Array.Empty<string>();
 
     /// <summary>
+    /// Die Vorschlagsdaten der Einheit (<c>GesetzKatalog.Vorschlagsdaten</c>): je
+    /// Schlüssel die jüngste Zeile, je Bereich die häufigste Einheit. Ohne Gabe gibt es
+    /// keinen Vorschlag — die Einheit ist dann bei einer neuen Zeile Pflicht.
+    /// </summary>
+    [Parameter] public GesetzVorschlagsdaten Vorschlagsdaten { get; set; } = GesetzVorschlagsdaten.Leer;
+
+    /// <summary>
     /// Die Prüfung vor dem Schließen (<c>GesetzKatalog.Pruefe</c>): leerer Text = in
     /// Ordnung, sonst der Meldungstext. <b>Sie läuft genau einmal</b> — die Wirtsmaske
     /// prüft nicht noch einmal (Befund W14c-B7).
@@ -183,6 +248,17 @@
     // W-E2 (Mockup-Prüfung 04): Abbrechen ist ein Hausknopf — kein eigener,
     // gleichlautender Schlüssel je Dialog; GESETZ_BTN_ABBRECHEN bleibt in der .resx stehen.
     [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+    [Parameter] public string PlatzhalterWaehlen { get; set; } = Resource.GESETZ_PLATZHALTER_WAEHLEN;
+    [Parameter] public string TextSchluesselVorhanden { get; set; } = Resource.GESETZ_SCHLUESSEL_VORHANDEN;
+    [Parameter] public string VorlageHinweisSchluessel { get; set; } = Resource.GESETZ_EINHEIT_HINWEIS_SCHLUESSEL;
+    [Parameter] public string VorlageHinweisBereich { get; set; } = Resource.GESETZ_EINHEIT_HINWEIS_BEREICH;
+    [Parameter] public string VorlagePflichtWechsel { get; set; } = Resource.GESETZ_EINHEIT_PFLICHT_WECHSEL;
+    [Parameter] public string TextPflichtBereich { get; set; } = Resource.GESETZ_EINHEIT_PFLICHT_BEREICH;
+    [Parameter] public string TextPflichtOhne { get; set; } = Resource.GESETZ_EINHEIT_PFLICHT_OHNE;
+    [Parameter] public string TextIhreWahl { get; set; } = Resource.GESETZ_EINHEIT_IHRE_WAHL;
+    [Parameter] public string TextVorschlagUebernehmen { get; set; } = Resource.GESETZ_EINHEIT_VORSCHLAG_UEBERNEHMEN;
+    [Parameter] public string TextSperreBereich { get; set; } = Resource.GESETZ_SPERRE_BEREICH;
+    [Parameter] public string TextSperreEinheit { get; set; } = Resource.GESETZ_SPERRE_EINHEIT;
 
     // =====================================================================
     // Zustand
@@ -198,6 +274,12 @@
     private int? _klasseIndex;
     private int? _einheitIndex;
     private int? _statusIndex;
+
+    // Die drei Wahlen des Anwenders (nur bei einer neuen Zeile von Belang): Was er
+    // selbst gewählt hat, überschreibt kein Vorschlag mehr.
+    private bool _einheitGewaehlt;
+    private bool _klasseGewaehlt;
+    private bool _quelleGewaehlt;
 
     private string _meldung = "";
     private readonly HashSet<string> _fehlerFelder = new();
@@ -229,9 +311,116 @@
         _quelle = Quelle ?? "";
         _jahr = JahrVon;
         _wert = Wert;
-        _klasseIndex = Suchen(Klassen.Select(k => k.Wert).ToList(), Klasse);
-        _einheitIndex = Suchen(Einheiten, Einheit);
         _statusIndex = Suchen(Statuswerte, Status);
+
+        if (IstNeu)
+        {
+            // Eine neue Zeile hat keinen Rückfall auf den ersten Eintrag: Ein unbekannter
+            // Bereich bleibt ungewählt, eine hereingereichte Einheit gilt als Wahl.
+            _klasseIndex = Stelle(KlassenWerte, Klasse);
+            _einheitIndex = Stelle(Einheiten, Einheit);
+            _einheitGewaehlt = _einheitIndex.HasValue;
+            SchluesselNachziehen();
+        }
+        else
+        {
+            _klasseIndex = Suchen(KlassenWerte, Klasse);
+            _einheitIndex = Suchen(Einheiten, Einheit);
+        }
+    }
+
+    private IReadOnlyList<string> KlassenWerte => Klassen.Select(k => k.Wert).ToList();
+
+    /// <summary>Der DB-Wert des gewählten Bereichs; leer, wenn keiner gewählt ist.</summary>
+    private string KlasseWert => _klasseIndex is int ki && ki >= 0 && ki < Klassen.Count ? Klassen[ki].Wert : "";
+
+    /// <summary>Der Anzeigename des gewählten Bereichs.</summary>
+    private string KlasseAnzeigename => _klasseIndex is int ki && ki >= 0 && ki < Klassen.Count ? Klassen[ki].Anzeige : "";
+
+    /// <summary>Der Vorschlag der Kernregel; beim Ändern keiner.</summary>
+    private GesetzEinheitVorschlag Vorschlag => IstNeu
+        ? GesetzKatalog.EinheitVorschlagen(_schluessel, KlasseWert, Vorschlagsdaten)
+        : GesetzEinheitVorschlag.Keiner;
+
+    /// <summary>
+    /// Die Einheit, die gilt: beim Ändern und nach eigener Wahl die gewählte, sonst der
+    /// Vorschlag — und nur, wenn er in der Liste der Einheiten steht.
+    /// </summary>
+    private string WirksameEinheit
+    {
+        get
+        {
+            if (!IstNeu || _einheitGewaehlt) return Eintrag(Einheiten, _einheitIndex);
+            string v = Vorschlag.Einheit;
+            return Stelle(Einheiten, v).HasValue ? v : "";
+        }
+    }
+
+    /// <summary>Warum OK gesperrt ist — erst der Bereich, dann die Einheit; <c>null</c> = frei.</summary>
+    private string? Sperrgrund
+    {
+        get
+        {
+            if (!IstNeu) return null;
+            if (KlasseWert.Length == 0) return TextSperreBereich;
+            if (WirksameEinheit.Length == 0) return TextSperreEinheit;
+            return null;
+        }
+    }
+
+    /// <summary>Der Hinweis unter der Einheit, solange der Anwender nicht selbst gewählt hat.</summary>
+    private string EinheitHinweis(GesetzEinheitVorschlag v)
+    {
+        switch (v.Herkunft)
+        {
+            case GesetzEinheitHerkunft.Schluessel when v.Stand is not null:
+                return string.Format(VorlageHinweisSchluessel, v.Stand.Schluessel,
+                                     v.Stand.JahrVon.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            case GesetzEinheitHerkunft.Bereich:
+                return string.Format(VorlageHinweisBereich, KlasseAnzeigename);
+            case GesetzEinheitHerkunft.EinheitWechselt:
+                return string.Format(VorlagePflichtWechsel, KlasseAnzeigename);
+            default:
+                return KlasseWert.Length > 0 ? TextPflichtBereich : TextPflichtOhne;
+        }
+    }
+
+    /// <summary>
+    /// Die bestehenden Schlüssel, die zum Getippten passen (höchstens sechs) — leer,
+    /// solange nichts getippt ist oder der Schlüssel genau einem bestehenden entspricht.
+    /// </summary>
+    private IReadOnlyList<string> SchluesselTreffer
+    {
+        get
+        {
+            string s = (_schluessel ?? "").Trim();
+            if (!IstNeu || s.Length == 0 || Vorschlagsdaten.Stand(s) is not null)
+                return Array.Empty<string>();
+            return Vorschlagsdaten.Schluessel
+                .Select(z => z.Schluessel)
+                .Where(z => z.Contains(s, StringComparison.OrdinalIgnoreCase))
+                .Take(SCHLUESSELTREFFER_HOECHSTENS)
+                .ToList();
+        }
+    }
+
+    private const int SCHLUESSELTREFFER_HOECHSTENS = 6;
+
+    /// <summary>
+    /// Ein bestehender Schlüssel bringt Bereich und Quelle seiner jüngsten Zeile mit —
+    /// nur bei einer neuen Zeile und nur, was der Anwender nicht selbst gewählt hat.
+    /// </summary>
+    private void SchluesselNachziehen()
+    {
+        if (!IstNeu) return;
+        GesetzSchluesselStand? stand = Vorschlagsdaten.Stand(_schluessel);
+        if (stand is null) return;
+        if (!_klasseGewaehlt)
+        {
+            int? stelle = Stelle(KlassenWerte, stand.Klasse);
+            if (stelle.HasValue) _klasseIndex = stelle;
+        }
+        if (!_quelleGewaehlt) _quelle = stand.Quelle;
     }
 
     /// <summary>
@@ -285,8 +474,8 @@
             WertLesen = () => _wert,
             WertSetzen = BeiWert,
 
-            EinheitLesen = () => Eintrag(Einheiten, _einheitIndex),
-            EinheitSetzen = wert => _einheitIndex = Stelle(Einheiten, wert),
+            EinheitLesen = () => WirksameEinheit,
+            EinheitSetzen = wert => BeiEinheit(Stelle(Einheiten, wert)),
             EinheitEintraege = () => KiMaskenanmeldung.Eintraege(
                 Einheiten, z => z, z => z),
 
@@ -296,7 +485,7 @@
                 Statuswerte, z => z, z => z),
 
             QuelleLesen = () => _quelle,
-            QuelleSetzen = wert => _quelle = wert ?? ""
+            QuelleSetzen = BeiQuelle
         };
     }
 
@@ -319,7 +508,7 @@
         for (int i = 0; i < Klassen.Count; i++)
         {
             if (!string.Equals(Klassen[i].Wert, wert, StringComparison.Ordinal)) continue;
-            BeiKlasse(i);
+            BeiKlasseGewaehlt(i);
             return;
         }
     }
@@ -339,11 +528,28 @@
     /// <inheritdoc/>
     public void Dispose() => _kiMaske?.Dispose();
 
-    private void BeiSchluessel(string text) { _schluessel = text ?? ""; _meldung = ""; }
-    private void BeiKlasse(int? index) { _klasseIndex = index; _meldung = ""; }
+    private void BeiSchluessel(string text) { _schluessel = text ?? ""; _meldung = ""; SchluesselNachziehen(); }
+    private void BeiKlasseGewaehlt(int? index) { _klasseIndex = index; _klasseGewaehlt = true; _meldung = ""; }
+    private void BeiQuelle(string text) { _quelle = text ?? ""; _quelleGewaehlt = true; }
     private void BeiJahr(int? jahr) { _jahr = jahr; _meldung = ""; }
     private void BeiWert(double? wert) { _wert = wert; _meldung = ""; }
-    private void BeiEinheit(int? index) { _einheitIndex = index; }
+    /// <summary>
+    /// Die Einheit wählen: beim Ändern einfach gesetzt; bei einer neuen Zeile ist jede
+    /// Einheit eine Wahl, der Platzhalter nimmt die Wahl zurück und gibt den Vorschlag frei.
+    /// </summary>
+    private void BeiEinheit(int? index)
+    {
+        _einheitIndex = index;
+        if (IstNeu) _einheitGewaehlt = index.HasValue;
+        _meldung = "";
+    }
+
+    /// <summary>„Vorschlag übernehmen": die eigene Wahl verwerfen, der Vorschlag gilt wieder.</summary>
+    private void VorschlagUebernehmen()
+    {
+        _einheitGewaehlt = false;
+        _einheitIndex = null;
+    }
     private void BeiStatus(int? index) { _statusIndex = index; }
 
     /// <summary>
@@ -363,6 +569,10 @@
     {
         if (!ok) { await Geschlossen.InvokeAsync(null); return; }
 
+        // Die weiche Sperre meldet den Versuch (Hausregel: der Grund steht am Knopf).
+        string? sperre = Sperrgrund;
+        if (sperre is not null) { _meldung = sperre; return; }
+
         Zeilenwerte werte = Sammeln();
 
         if (Pruefen is not null)
@@ -375,15 +585,20 @@
     }
 
     /// <summary>
-    /// Die sieben Werte samt der drei Rückfälle des Vorläufers: ohne Klassenwahl
-    /// <c>KWKG</c>, ohne Einheit <c>-</c>, ohne Status <c>GESICHERT</c>.
+    /// Die sieben Werte. Eine neue Zeile kommt nur mit Bereich und Einheit hierher (die
+    /// Sperre davor) und nimmt die WIRKSAME Einheit — Wahl oder Vorschlag; einen stillen
+    /// Rückfall auf <c>-</c> gibt es für sie nicht. Beim Ändern bleiben die Rückfälle des
+    /// Vorläufers: ohne Klassenwahl <c>KWKG</c>, ohne Einheit <c>-</c>, ohne Status
+    /// <c>GESICHERT</c>.
     /// </summary>
     private Zeilenwerte Sammeln()
     {
         string klasse = _klasseIndex is int ki && ki >= 0 && ki < Klassen.Count
             ? Klassen[ki].Wert : DbWerte.GESETZ_KLASSE_KWKG;
-        string einheit = _einheitIndex is int ei && ei >= 0 && ei < Einheiten.Count
-            ? Einheiten[ei] : DbWerte.GESETZ_EINHEIT_OHNE;
+        string einheit = IstNeu
+            ? WirksameEinheit
+            : _einheitIndex is int ei && ei >= 0 && ei < Einheiten.Count
+                ? Einheiten[ei] : DbWerte.GESETZ_EINHEIT_OHNE;
         string status = _statusIndex is int si && si >= 0 && si < Statuswerte.Count
             ? Statuswerte[si] : DbWerte.GESETZ_STATUS_GESICHERT;
 
