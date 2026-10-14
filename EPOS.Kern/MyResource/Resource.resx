@@ -54273,7 +54273,7 @@ Chart</value>
     <value>{0} Profil(e) der DIN mit Werten gefüllt, {1} übersprungen (Werte vorhanden), {2} Profil(e) der Quelle ohne Zuordnung.</value>
   </data>
   <data name="RNP_NW_MSG_ENTFERNT" xml:space="preserve">
-    <value>Eingelesene Werte aus {0} Profil(en) der DIN entfernt.</value>
+    <value>Eingelesene Werte aus {0} Profil(en) der DIN entfernt; die ausgelieferten Werte stehen wieder.</value>
   </data>
   <data name="RNP_NW_BTN_EINLESEN" xml:space="preserve">
     <value>Normwerte einlesen…</value>
@@ -54285,7 +54285,7 @@ Chart</value>
     <value>Normwerte einlesen</value>
   </data>
   <data name="RNP_NW_TXT_HINWEIS" xml:space="preserve">
-    <value>Füllt die Profile der Kategorie DIN/TS 18599-10 mit den Werten aus Ihrer CSV-Datei oder einer Projektdatei. Das Programm liefert keine Normwerte mit.</value>
+    <value>Gleicht die Profile der Kategorie DIN/TS 18599-10 mit den Werten aus Ihrer CSV-Datei oder einer Projektdatei ab. Ausgeliefert werden die Werte der Fassung 2025-10; abweichende Werte übernehmen Sie hier, die Rücknahme stellt die ausgelieferten wieder her.</value>
   </data>
   <data name="RNP_NW_BTN_CSV" xml:space="preserve">
     <value>CSV-Datei wählen…</value>
@@ -54378,7 +54378,7 @@ Chart</value>
     <value>Kein Profil trägt eingelesene Werte.</value>
   </data>
   <data name="RNP_NW_FRAGE_ENTFERNEN" xml:space="preserve">
-    <value>Die eingelesenen Werte von {0} Profil(en) entfernen? Die Profile stehen danach wieder ohne Werte.</value>
+    <value>Die eingelesenen Werte von {0} Profil(en) entfernen? Die Profile tragen danach wieder die ausgelieferten Werte.</value>
   </data>
   <data name="RNP_NW_BTN_JA" xml:space="preserve">
     <value>Entfernen</value>
