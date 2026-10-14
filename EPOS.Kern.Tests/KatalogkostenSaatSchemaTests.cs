@@ -22,9 +22,8 @@ namespace EPOS.Kern.Tests
         public void Die_Nummer_ist_226_und_steht_im_Register()
         {
             Assert.Equal(226, KatalogkostenSaatSchema.SCHRITT);
-            // Die Kette hängt an 225 (Sitzung Gebäudesimulation, DA-2), sobald 225 auf origin liegt; bis dahin
-            // rechnet sie aus der höchsten Klasse im Baum.
-            Assert.Equal(BauteilkatalogSchema.SCHRITT + 5, KatalogkostenSaatSchema.SCHRITT);
+            // Die Kette hängt an 225 ZonenLastfelderSchema (Sitzung Gebäudesimulation, DA-2).
+            Assert.Equal(ZonenLastfelderSchema.SCHRITT + 1, KatalogkostenSaatSchema.SCHRITT);
             // Den Zielstand hält seit KB-2 der Schritt 227 (BrennstoffpreiseTraegerkarteSchema); 226 liegt
             // darunter oder darauf.
             Assert.True(SchemaStand.Zielversion >= KatalogkostenSaatSchema.SCHRITT,

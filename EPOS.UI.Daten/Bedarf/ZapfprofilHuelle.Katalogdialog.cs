@@ -522,6 +522,7 @@ namespace WindowsFormsApplication1
                 {
                     TwwImportbereich.Bedarfstag => TwwImportbereichDaten.Bedarfstag,
                     TwwImportbereich.Parameter => TwwImportbereichDaten.Parameter,
+                    TwwImportbereich.Din4708 => TwwImportbereichDaten.Din4708,
                     _ => TwwImportbereichDaten.Nutzungsart
                 };
                 d.Zeilen.Add(new TwwImportzeileDaten(name, a, text, Satztext(z.Grund), z.IdNeu) { Bereich = bereich });
@@ -633,9 +634,11 @@ namespace WindowsFormsApplication1
             t.ImportWuerdeAblehnen = Text_("ZPGK_IMPORT_W_ABGELEHNT", t.ImportWuerdeAblehnen);
             t.ImportGruppeBedarfstage = Text_("ZPGK_IMPORT_GRP_BEDARFSTAGE", t.ImportGruppeBedarfstage);
             t.ImportGruppeParameter = Text_("ZPGK_IMPORT_GRP_PARAMETER", t.ImportGruppeParameter);
+            t.ImportGruppeDin4708 = Text_("ZPGK_IMPORT_GRP_DIN4708", t.ImportGruppeDin4708);
             t.ImportGruppeNutzungsarten = Text_("ZPGK_IMPORT_GRP_NUTZUNGSARTEN", t.ImportGruppeNutzungsarten);
             t.ImportSpalteBedarfstag = Text_("ZPGK_IMPORT_SP_BEDARFSTAG", t.ImportSpalteBedarfstag);
             t.ImportSpalteParameter = Text_("ZPGK_IMPORT_SP_PARAMETER", t.ImportSpalteParameter);
+            t.ImportSpalteDin4708 = Text_("ZPGK_IMPORT_SP_DIN4708", t.ImportSpalteDin4708);
             t.ImportPruefen = Text_("ZPGK_IMPORT_PRUEFEN", t.ImportPruefen);
             t.ImportPruefhinweis = Text_("ZPGK_IMPORT_PRUEFHINWEIS", t.ImportPruefhinweis);
             t.EditorTitelNeu = Text_("ZPGK_ED_TITEL_NEU", t.EditorTitelNeu);

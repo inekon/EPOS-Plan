@@ -169,11 +169,52 @@ Brauchwasser-Zapfprofil, Berichtsvorlagen, Mehrzonenmodell und Projekttransfer.
 ## 2 Logbuch-Einträge für die Wiki-Seite „Update-Logbuch“
 
 Die Abschnitte 1.2.6 und 1.2.0.5 stehen seit dem 29.09.2026 im Wiki (Revision 723). Die Blöcke 1.2.0.6 bis 1.2.0.9 und "Version offen" sind am 10.10.2026 (#889, Revision 827) veröffentlicht, zusammengefasst nach Regel 13.4 (70 Sätze) und unter den Versionsnummern laut Anwenderentscheid 10.10.2026 "letzte Stelle um eins erhöhen": 1.2.0.10 (29 Sätze aus den Blöcken 1.2.0.9 und „Version offen“), 1.2.0.9 (1 Satz: BDEW-Standardlastprofile Strom 2025), 1.2.0.8 (4 Sätze: Berichtsseite mit vier Karten, Wirtschaftlichkeitsbericht mit drei Szenarien, Pufferspeicher-Auslegung, Sperrfenster der Wärmepumpe), 1.2.0.7 (36 Sätze: Block 1.2.0.6 und die nie veröffentlichten Sätze aus 1.2.0.5). Die Entwürfe unten bleiben als Geschichte stehen. Ein neuer Satz gehört in einen
-neuen Abschnitt; seine Version erfragt die Sitzung beim Anwender.
+neuen Abschnitt; seine Version erfragt die Sitzung beim Anwender. **Anwenderentscheid 13.10.2026:** Bis zum 16.10.2026 wird keine neue Versionsnummer vergeben; neue Sätze bleiben bis dahin ohne Version im Entwurf, und es gibt keinen Upload.
 
 Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung, ohne
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
+
+### Version 1.2.0.12 — Entwurf, Versionsnummer beim Anwender zu bestätigen
+
+Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1, MA-1 bis MA-5, MA-7; Statuszeilen #1002 bis #1057). Die Wiki-Quellen (Gebäude, Gebäudeimport, Nutzungsprofile, Baustoffe und Bauteilaufbauten, Index der Hilfeschlüssel) sind fortgeschrieben, ins Wiki geladen ist noch nichts. Nach dem Anwenderentscheid vom 13.10.2026 gilt die Nummer bis zum 16.10.2026 nur als Vorschlag; es gibt keinen Upload.
+
+- Seit 13.10.2026: Der Gebäudedialog prüft ein Gebäude mit „Modell prüfen…“ auf Rechenfähigkeit, zeigt je Prüfgruppe eine Ampel und übernimmt die Vorschläge mit einem Klick; nach einem Import öffnet die Prüfung von selbst.
+- Seit 13.10.2026: Die Modellprüfung meldet je Zone eine nicht geschlossene Hülle und schlägt das fehlende Dach, die fehlende Bodenplatte oder Geschossdecke mit passender Fläche vor.
+- Seit 13.10.2026: Die Modellprüfung schlägt Aufbauten nach Namen und Baualtersklasse vor; Bauteile ohne U-Wert erhalten U-Wert und Aufbau in einem Schritt.
+- Seit 13.10.2026: Das neue Blatt „Nutzung und Kalender“ zeigt Nutzungsprofil, Kalender, Sollwerte, Ferien und Heizperiode aller Zonen eines Gebäudes und weist sie mehreren Zonen in einem Schritt zu.
+- Seit 13.10.2026: Im Gebäudeeditor übernimmt „Vorgaben der Baualtersklasse übernehmen…“ U-Werte, Wärmebrücken, Fensterdurchlassgrad, Bauart und das Nutzungsprofil der Gebäudeart nach Vorschau mit einem Klick.
+- Seit 13.10.2026: Aus „Modell prüfen“ öffnet „Ansicht…“ die Gebäudeansicht mit den betroffenen Flächen und Zonen hervorgehoben, Vorschläge lassen sich an der Legende übernehmen oder verwerfen, und der neue Farbmodus „Nutzung“ zeigt die Nutzungsprofile der Zonen.
+- Seit 13.10.2026: In der Gebäudeansicht lassen sich Zonen, Legendeneinträge und Bauteilgruppen ein- und ausblenden.
+- Seit 13.10.2026: Der gbXML-Import liest je Raum Lasten, Sollwerte und Zeitpläne und legt daraus die Konditionierungskalender der Zonen an; Werte der Datei gehen dem Nutzungsprofil vor.
+- Seit 13.10.2026: Im Gebäudedialog lassen sich alle oder die gewählten Gebäude des Projekts aus der Kopfleiste simulieren; die Baustoff-Zuordnungen stehen im Gebäudeimport und im Gebäudeeditor.
+- Seit 13.10.2026: Beim erneuten Mehrzonenimport wird der gespeicherte Zonenplan vorgelegt und die Projektdatei mitgeprüft, die Zusammenfassung des Gebäudedialogs zeigt den Jahreswärmebedarf des letzten Laufs, und die Kachel Gebäudekühlung springt auf das zuletzt gewählte Gebäude.
+- Seit 13.10.2026: Der Bauteilkatalog-Import ordnet Stoffgruppen nach der Code-Tafel zu, führt Haustechnik-Werkstoffe und Luftdurchlässe in einer eigenen Klasse und korrigiert Skalenfehler der Wärmeleitfähigkeit.
+- Seit 12.10.2026: „Administration › Gebäude › Bauteilkatalog einlesen…“ liest einen Bauteilkatalog aus CSV-Dateien in Baustoff- und Aufbaukatalog ein; Gruppe, Klasse und Herkunft gliedern die Sätze, und für die Gebäudesimulation meist ungeeignete Aufbauten sind gekennzeichnet.
+- Seit 12.10.2026: Der Gebäudeeditor trennt „Beschreibung und Einordnung“ von den „Rechengrößen“ und kennzeichnet an jedem Wert, woher er kommt oder dass der Rechenweg ihn nicht liest.
+- Seit 12.10.2026: Der Import aus einer Projektdatei übernimmt Verwendung, Gebäudeart, Energiestandard und Bauweise, platziert Räume ohne Zone selbst und belegt die Zonen mit dem Profil der DIN-Nummer oder der Gebäudeart vor.
+- Seit 12.10.2026: „Normwerte einlesen…“ füllt die Profile der DIN/TS 18599-10 aus Ihrer eigenen CSV-Datei oder Projektdatei; neu ist die Außenluft je Person.
+- Seit 12.10.2026: Die leeren Kategorien SIA 2024 und VDI 2078 sind aus dem Katalog der Nutzungsprofile entfernt; vorhandene Profile bleiben in einer eigenen Kategorie.
+- Seit 11.10.2026: Saison, Ferien, Zeiträume und Einzeltage der Kalender nehmen Tag und Monat als „TT.MM.“ an und prüfen die Eingabe erst beim Verlassen des Feldes.
+
+### Version ‹Version› — Kältebedarf dezentral (Split) (Entwurf, Upload ausstehend)
+
+Version beim Anwender zu erfragen (Empfehlung: Sammelversion mit K4/K5); Wiki-Quelle „Programm Dokumentation - Kältebedarf“ fortgeschrieben, Upload ausstehend.
+
+- Seit 13.10.2026: Kältebedarf, der dezentral über Split-Geräte gedeckt wird, erscheint im Kältegang, in der Kältelast, in der Strombilanz als „Kühlung dezentral“, im Deckungsgrad Kälte, im Anlagenschema, in der Simulationskonfiguration und im Bericht; der Strom wird je Kühlträger und Zähler abgerechnet.
+- Seit 13.10.2026: Die Berichtsvorlagen bieten Platzhalter für den Kältebedarf aus Profilen und die dezentrale Kühlung mit Split-Geräten (Kälte, Strom, Jahres-EER, Deckungsgrad gesamt und Anteil der Kälteerzeuger).
+
+### Version 1.2.0.11 — Brauchwasser-Zapfprofil (Entwurf, Upload am 20.10.2026)
+
+Version laut Anwender (13.10.2026); die Wiki-Quellen (Programm Dokumentation/Brauchwasser-Zapfprofil, Brauchwasser) sind fortgeschrieben, ins Wiki (wiki.epos-plan.de) wird am 20.10.2026 geladen.
+
+- Seit 13.10.2026: Im Dialog Brauchwasser-Zapfprofil führt „Zone hinzufügen“ ohne Abbruch zur Wahl der Nutzungsart; eine Zone mit fehlender Angabe steht in der Liste als „unvollständig“ und nennt den nächsten Schritt.
+- Seit 13.10.2026: Der Dialog Brauchwasser-Zapfprofil gliedert die Eingaben in aufklappbare Karten, die zugeklappt ihre Werte nennen, und in die Gruppe „Gebäude und Anlage“; die Vorschau bleibt beim Rollen stehen.
+- Seit 13.10.2026: Die Karte „Kalender“ einer Zone nimmt beliebig viele eigene Ferienzeiträume auf und zeigt das Jahresraster der Zone mit den Tagtypen.
+- Seit 13.10.2026: Tagesbedarf, Ladeleistung, Zirkulationsleistung und Leitungsinhalt haben je ein Feld; leer rechnet das Programm mit seinem Vorschlag.
+- Seit 13.10.2026: Temperatur der Literanzeige und Schwelle der Stundenzählung stehen nur noch in den Einstellungen, Rubrik „Zapfprofil“.
+- Seit 13.10.2026: Der Katalogimport der Brauchwasser-Nutzungsarten spielt auch die Kennwerte nach DIN 4708 ein (Belegung je Raumzahl, Ausstattungsklassen); eine Paketvorlage liegt im Ordner „Vorlage\Katalogpaket_DIN4708“ bei.
+- Seit 13.10.2026: Für die Typtage nach VDI 4655 liegt eine Paketvorlage im Ordner „Vorlage\Typtagpaket_VDI4655“ bei.
 
 ### Version ‹Version› — Dialoge mit Katalogauswahl (Entwurf, Upload ausstehend)
 
@@ -187,6 +228,16 @@ Die Wiki-Quelle (Programm Dokumentation/Varianten) ist fortgeschrieben, ins Wiki
 
 - Seit 13.10.2026: Der Reiter „Übersicht“ unter „Berichte & Kosten“ stellt die Komponenten je Gewerk mit ihren Kennwerten nebeneinander, hebt Abweichungen zum Stammprojekt hervor und blendet mit „nur Unterschiede“ gleiche Gewerke aus.
 - Seit 13.10.2026: Die Tafel „Komponenten im Vergleich“ im Reiter „Übersicht“ führt die Kältemaschine als eigenes Gewerk mit Anzahl und Kälteleistung.
+- Seit 13.10.2026: Im Reiter Übersicht von Berichte & Kosten enthält die Liste ‚Detail-Unterschiede für Variante‘ nur noch Varianten; ohne Auswahl zeigt die Übersicht den Komponentenvergleich.
+- Seit 13.10.2026: Varianten werden über die Dialoge ‚Variante anlegen…‘, ‚Umbenennen…‘ und ‚Löschen…‘ verwaltet; eine neue Variante entsteht aus dem Stammprojekt oder aus einer vorhandenen Variante.
+- Seit 13.10.2026: Das Umbenennen einer Variante legt keine Kopie mehr an.
+- Seit 13.10.2026: Die Übersicht vergleicht die Energie-Ergebnisse der Versionen (Bedarf, Erzeugung, Strom, Endenergie, Deckung, Effizienz; Kälte, Gebäude und Emissionen zum Aufklappen).
+- Seit 13.10.2026: Über ‚Anzeige anpassen…‘ legt jeder Benutzer fest, welche Gruppen und Kennzahlen die Übersicht zeigt.
+- Seit 13.10.2026: Die Ergebnisse der Übersicht lassen sich als Tabelle oder als Balkengrafik anzeigen.
+- Seit 13.10.2026: In den Zeitreihendiagrammen stehen Bedarfe als Linie über den Erzeugungsflächen; die Jahresansicht zeigt je Reihe ein Tagesband mit Tagesmittel.
+- Seit 13.10.2026: Die Zeitachse aller Jahresdiagramme ist zwischen Datum und Stunde im Jahr umschaltbar.
+- Seit 13.10.2026: Im Reiter Photovoltaik zeigt der Schalter ‚PV aufteilen‘ die Erzeugung als Stapel aus Eigenverbrauch, Einspeisung und Abregelung.
+- Seit 13.10.2026: Der Arbeitspreis eines Energieträgers wird bei neuer Auswahl in €/kWh angezeigt und mit dem Heizwert umgerechnet; gespeicherte Einheiten bleiben erhalten.
 
 ### Version ‹Version› — Kältemittel als Stammdatum (Entwurf, Upload ausstehend)
 
@@ -332,6 +383,11 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 12.10.2026: Der Kältemaschinen-Dialog führt Wärmepumpen mit Kühlfunktion in Katalog und Projekt; Übernehmen schaltet den Kühlbetrieb ein und reiht die Wärmepumpe in die Kältefolge ein. (#1029)
 - Seit 12.10.2026: Die Knopfleiste am gewählten Satz bricht in schmalen Fenstern um; Katalogfunktionen stehen im Katalogkopf. (#1029)
 - Seit 13.10.2026: Im Dialog „Kältemaschinen im Projekt“ öffnet „Bearbeiten…“ bei einer Wärmepumpe ihre Anlagenfelder mit Gerätesteckbrief und der Gruppe „Kühlbetrieb“. (#1034)
+- Seit 13.10.2026: Im Dialog „Kältemaschinen im Projekt“ führt der Knopf „Energiekosten…“ zur Trägerkarte des Kühlträgers der gewählten Anlage. (#1041)
+- Seit 13.10.2026: Der Komponentenbestand des Gewerks Kältemaschine lässt sich im Reiter Übersicht als Ganzes aus einer anderen Version übernehmen. (#1042)
+- Seit 13.10.2026: Eine abweichende Anzahl gleicher Kältemaschinen erscheint in den Unterschieden zum Stammprojekt und lässt sich einzeln übernehmen. (#1042)
+- 13.10.2026: Der Kostendialog und die Kostenseite gleichen die Kosten einer Anlage mit dem zentralen Kostenkatalog ab („Mit dem Kostenkatalog abgleichen…“). (#1079)
+- 13.10.2026: Arbeits-, Grund- und Leistungspreis eines Brennstoffs stehen allein in der Karte seines Energieträgers. (#1080)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 

@@ -122,6 +122,14 @@ public sealed class KonditionierungWeg
     /// </summary>
     public Func<KonditionierungStand, KonditionierungProfilanfrage, KonditionierungProfilergebnis>? ProfilUebernehmen { get; init; }
 
+    /// <summary>
+    /// <b>Das Profil der Gebäudeart</b> (MA-7, Entwurf Geführter Modellaufbau 2.1 Nr. 2): die Kennung des Profils, das die
+    /// Profilregel der Gebäudeart vorgibt (das EPOS-Muster gleicher Nutzung); <c>null</c> = die Art gibt keins vor. Übernommen
+    /// wird es über <see cref="ProfilUebernehmen"/> — denselben Generator wie „Nutzungsprofil übernehmen…“.
+    /// <para>Kern: <c>Zonenvorbesetzung.AusGebaeudeart</c> über <c>Raumnutzungsvorbelegung.Lesen</c>.</para>
+    /// </summary>
+    public Func<string, long?>? ProfilDerGebaeudeart { get; init; }
+
     // ------------------------------------------------------------------ Zonen (Stufe KP2, Welle U4)
 
     /// <summary>

@@ -1520,7 +1520,7 @@ public class ErzeugerReiterTests : EposBunitContext
     {
         var seite = PvZeichnen();
 
-        Assert.Equal(new[] { "sortiert" }, Schalterzeile(seite, 0));
+        Assert.Equal(new[] { "sortiert", Resource.SIM_CHK_PV_AUFTEILEN }, Schalterzeile(seite, 0));
         _auftraege.Clear();
 
         Kasten(seite, 0, 0).Change(true);
@@ -1529,6 +1529,29 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Contains(_auftraege, a => a.Bild == Bilder.Photovoltaik && a.Sortiert);
         Assert.Equal(new[] { "STROMBEDARF", "PHOTOVOLTAIK" },
                      _auftraege.Last(a => a.Bild == Bilder.Photovoltaik).Reihen!.ToArray());
+    }
+
+    /// <summary>
+    /// <b>Der Schalter „PV aufteilen“</b> (Anwenderentscheid 13.10.2026) steht aus; an trägt
+    /// der Bildauftrag ihn — mit denselben Reihen — und der Schlüssel des Zwischenspeichers
+    /// trennt beide Stellungen.
+    /// </summary>
+    [Fact]
+    public void Photovoltaik_wechselt_den_Bildauftrag_mit_dem_Aufteilschalter()
+    {
+        var seite = PvZeichnen();
+        Assert.False(seite.Instance.Aufgeteilt);
+        Assert.False(_auftraege.Last(a => a.Bild == Bilder.Photovoltaik).PvAufgeteilt);
+        string aus = _auftraege.Last(a => a.Bild == Bilder.Photovoltaik).Schluessel;
+        _auftraege.Clear();
+
+        Kasten(seite, 1, 0).Change(true);
+
+        Assert.True(seite.Instance.Aufgeteilt);
+        Bildauftrag an = _auftraege.Last(a => a.Bild == Bilder.Photovoltaik);
+        Assert.True(an.PvAufgeteilt);
+        Assert.Equal(new[] { "STROMBEDARF", "PHOTOVOLTAIK" }, an.Reihen!.ToArray());
+        Assert.NotEqual(aus, an.Schluessel);
     }
 
     /// <summary>

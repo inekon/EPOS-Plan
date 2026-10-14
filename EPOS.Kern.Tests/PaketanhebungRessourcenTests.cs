@@ -54,6 +54,7 @@ namespace EPOS.Kern.Tests
         [InlineData("TRANSFER_ANHEBUNG_S148")]
         [InlineData("TRANSFER_ANHEBUNG_S148_UNKLAR")]
         [InlineData("TRANSFER_ANHEBUNG_KESSEL_BRENNWERT")]
+        [InlineData("TRANSFER_ANHEBUNG_ZONENFERIEN")]
         public void Jeder_Schluessel_steht_in_beiden_Sprachen(string schluessel)
         {
             string deutsch = null, englisch = null;

@@ -347,10 +347,13 @@ namespace EPOS.Kern.Tests
                                  "kaelte.rk.ventilator", "kaelte.rk.wasser_m3",
                                  // K-F3 (Katalog v22): die Teil-Freikühlung in Reihe.
                                  "kaelte.rk.teilfrei", "kaelte.rk.teilfrei_stunden",
+                                 // K6d (Katalog v23): Kältebedarf aus Profilen und die dezentrale (Split-)Deckung.
+                                 "kaelte.profil", "kaelte.dezentral", "kaelte.dezentral_strom", "kaelte.dezentral_eer",
+                                 "kaelte.deckungsgrad_gesamt", "kaelte.deckungsgrad_kaeltefolge",
                                  "kaelte.rest", "kaelte.jaz", "kaelte.strom",
                                  "kaelte.netzbezug", "kaelte.kosten", "kaelte.co2" },
                          kaelte.Where(k => k.Gruppe == KennzahlenKatalog.GR_KAELTE).Select(k => k.Schluessel));
-            Assert.Equal(29, kaelte.Count);
+            Assert.Equal(35, kaelte.Count);
         }
 
         /// <summary>

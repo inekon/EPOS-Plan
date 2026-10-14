@@ -143,6 +143,7 @@ namespace WindowsFormsApplication1
             _abbild.VolumenFaktorNachM3 = _einheiten.Volumen;
             _winkel = IfcRaumkoerper.Winkelfaktor(projekt);
             Kontext(projekt);
+            Lage();
 
             List<IIfcBuilding> gebaeude = Sortiert<IIfcBuilding>().ToList();
             if (gebaeude.Count == 0)
@@ -158,6 +159,7 @@ namespace WindowsFormsApplication1
             Untergeschosse();
             Zonen();
             for (int i = 0; i < gebaeude.Count; i++) Flaechenart(i);
+            StandardsaetzeAbbilden();
             Melden(0.2);
 
             Raumbezuege();
@@ -253,6 +255,7 @@ namespace WindowsFormsApplication1
             _abbild.Gebaeude.Add(g);
 
             Baujahr(b, g);
+            EposGebaeudeLesen(b, g);
             _gelaende[index] = Gelaendehoehe(b);
 
             var besucht = new HashSet<int>();
@@ -516,6 +519,7 @@ namespace WindowsFormsApplication1
             r.Klassifikation = Klassifikation(s);
             RaumtypLesen(s, r);
             r.Konditionierung = KonditionierungLesen(s, r, g);
+            StandardsaetzeLesen(s, r);
 
             g.Raeume.Add(r);
             _raum[s.EntityLabel] = r;
@@ -1711,7 +1715,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die Zonen der Datei</b> (Regel Z1, Mehrzonenkonzept 6.1): <c>IfcSpatialZone</c> mit
-        /// <c>THERMAL</c> (Räume über <c>IfcRelReferencedInSpatialStructure</c>), sonst <c>IfcZone</c>
+        /// <c>THERMAL</c> (Räume über <c>IfcRelReferencedInSpatialStructure</c>, in beiden Richtungen: Zone → Räume oder
+        /// schemagültig Raum → Zone), sonst <c>IfcZone</c>
         /// (Räume über <c>IfcRelAssignsToGroup</c>). Zonen werden entschachtelt — es zählen die obersten,
         /// die Räume über den transitiven Abschluss; ein Raum in mehreren obersten Zonen gehört in keine
         /// (<c>IMP_IFC_PROT_RAUM_MEHRFACH</c>).
@@ -1734,6 +1739,13 @@ namespace WindowsFormsApplication1
                     if (!bezug.TryGetValue(rel.RelatingStructure.EntityLabel, out HashSet<int> m))
                         bezug[rel.RelatingStructure.EntityLabel] = m = new HashSet<int>();
                     foreach (IIfcSpace s in rel.RelatedElements.OfType<IIfcSpace>()) m.Add(s.EntityLabel);
+                    // Die schemagültige Richtung (WR31, Export DA-3): der Raum verweist auf die Zone.
+                    if (rel.RelatingStructure is IIfcSpace raum)
+                        foreach (IIfcSpatialZone z in rel.RelatedElements.OfType<IIfcSpatialZone>())
+                        {
+                            if (!bezug.TryGetValue(z.EntityLabel, out HashSet<int> n)) bezug[z.EntityLabel] = n = new HashSet<int>();
+                            n.Add(raum.EntityLabel);
+                        }
                 }
                 foreach (IIfcSpatialZone z in thermisch)
                     zonen.Add((z.GlobalId.ToString(), IfcEigenschaften.Text(z.LongName) ?? IfcEigenschaften.Text(z.Name),
@@ -3390,6 +3402,7 @@ namespace WindowsFormsApplication1
             IfcFund g = IfcEigenschaften.Finden(_bezuege, o, "Pset_DoorWindowGlazingType", "SolarHeatGainTransmittance");
             b.GWert = g == null ? null : Zahl(g);
             Rahmenanteil(o, b);
+            FensterStandardLesen(o, b);
             Bauteilkoerper(o, b, gi);
             GrenzenUebernehmen(b, GrenzenVon(o));
             b.GeschossKennung = _elementGeschoss.TryGetValue(o.EntityLabel, out string geschoss) ? geschoss : wirt.GeschossKennung;
@@ -3460,6 +3473,7 @@ namespace WindowsFormsApplication1
         /// <returns>Bleibt das Bauteil ohne U-Wert, weil die Datei ihn null oder kleiner angibt?</returns>
         private bool UWert(IIfcElement e, string satz, AbbildBauteil b)
         {
+            EposBauteilLesen(e, b);
             (IfcFund gewaehlt, double? u, string nichtPositiv, List<string> abweichend) = UWertWaehlen(e, satz);
             foreach (string a in abweichend.Distinct())
             {
@@ -3733,7 +3747,9 @@ namespace WindowsFormsApplication1
                     LambdaWmK = lambda,
                     RhoKgM3 = rho,
                     CpJkgK = cp,
+                    RWertM2KW = StoffWiderstand(stoff),
                 });
+                OptikPruefen(stoff);
             }
             // Eine Meldung je Aufbau: Autorensysteme schreiben je Bauteil einen eigenen Schichtsatz gleichen Namens und Inhalts.
             if (rueckfall != null && _cpRueckfallSignaturen.Add((a.Name ?? a.Kennung) + "\u0001" + string.Join("\u0001", rueckfall)))

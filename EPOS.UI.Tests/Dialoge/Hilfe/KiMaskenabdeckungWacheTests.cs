@@ -164,6 +164,12 @@ public sealed class KiMaskenabdeckungWacheTests
         // NP3a (Konzept Nutzungsprofile 6.1, NP-F22): das Blatt „Nutzungsprofile" im Katalogeditor - der
         // Katalog ist projektübergreifend (NP-F3) und schreibt sofort; der WIRT meldet an, nicht das Blatt.
         new("RaumnutzungBlatt",                  "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
+        // MA-2 (Entwurf Geführter Modellaufbau 2.4): das Blatt „Nutzung und Kalender" — im Reiter „Zonen" des Katalogeditors
+        // und als Überlagerung über dem Ampelblatt des Gebäudedialogs; jede Handlung schreibt mit eigenem Knopf. Die Tabelle
+        // führt je Kind EINEN Wirt: den Editor, der als Form_Gebaeude1 anmeldet.
+        new("ZonenNutzungsblatt",                "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
+        // MA-6: die Vorschau des Wiederimports steht im Importdialog nach dem ersten OK.
+        new("WiederimportVorschau",              "GebaeudeImportDialog",     KiMaskennamen.GEBAEUDE_IMPORT),
         // NP4a (Konzept Nutzungsprofile 6.1, 6.4): CSV-Import und -Export im Kopf des Blatts — ein Baustein darin.
         new("RaumnutzungCsvAustausch",           "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
         // NP7b (Konzept Nutzungsprofile 6.5): der Dialog „Normwerte einlesen" als Überlagerung im Blatt.
@@ -183,6 +189,17 @@ public sealed class KiMaskenabdeckungWacheTests
         // Überlagerung IN der Berichtsseite; seine Suche führt der Wirt (Suche/SucheChanged)
         // und meldet sie über BerichtSeiteKiSicht.Katalogsuche an.
         new("PlatzhalterkatalogDialog",       "BerichtSeite",                KiMaskennamen.BERICHTSEITE),
+
+        // Anwenderauftrag 13.10.2026: die drei kleinen Dialoge der Gruppe „Variante verwalten" stehen
+        // als Überlagerungen IN der Übersichtsseite; ihre Felder (Quelle, Variante, Bezeichner) sind
+        // Angaben der jeweiligen Handlung, kein Einstellwert der Seite (EINGABESTELLEN).
+        new("VarianteAnlegenDialog",          "UebersichtSeite",             KiMaskennamen.BERICHTE_UEBERSICHT),
+        new("VarianteUmbenennenDialog",       "UebersichtSeite",             KiMaskennamen.BERICHTE_UEBERSICHT),
+        new("VarianteLoeschenDialog",         "UebersichtSeite",             KiMaskennamen.BERICHTE_UEBERSICHT),
+        // Anwenderentscheid 13.10.2026: „Anzeige anpassen…“ des Abschnitts „Ergebnisse — Energie“ steht als
+        // Überlagerung in UebersichtErgebnisse auf der Übersichtsseite; seine Felder sind eine Benutzereinstellung der
+        // Ansicht (für alle Projekte), kein Einstellwert der Seite (EINGABESTELLEN).
+        new("ErgebnisAnpassenDialog",         "UebersichtSeite",             KiMaskennamen.BERICHTE_UEBERSICHT),
 
         // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): der Umschalter der Platzhalteranzeige in der
         // Kopfzeile von „Berichte & Kosten" - als Reiterblatt steht die Seite in der Startseite, die
@@ -419,6 +436,13 @@ public sealed class KiMaskenabdeckungWacheTests
         new("KonditionierungReiter", 6),
         // KP3 O2 (E59): das Feld „Aufheizzeit manuell (h)" (Katalogfeld aufheizzeit_manuell); „Übernehmen" setzt
         // denselben Wert aus dem Vorschlag und ist keine eigene Eingabestelle.
+        // MA-2: das Blatt „Nutzung und Kalender" — Profilwahl, Kalenderquelle, Sollwerte Tag und Nacht und die Zonenwahl sind
+        // Handlungen über mehrere Zonen, die mit eigenem Knopf sofort schreiben, kein Einstellwert der Maske.
+        new("ZonenNutzungsblatt", 7, "Profilwahl, Kalenderquelle und Sollwerte des Blatts sind Handlungen über mehrere Zonen " +
+            "mit eigenem Knopf (Profil zuweisen…, Kalender kopieren…, Sollwerte setzen); jede schreibt sofort über den Kern"),
+        // MA-6: der Haken „Entfallende Zonen und Bauteile entfernen" der Wiederimportvorschau ist die Wahl vor dem zweiten OK.
+        new("WiederimportVorschau", 1, "der Haken „Entfallende entfernen“ ist die Wahl des Wiederimports vor dem zweiten OK, " +
+            "kein Einstellwert der Maske; er gilt nur für den einen Vormerkvorgang"),
         new("AufheizzeitManuellFeld", 1),
         // KP2 U2: die Auswahlliste der Vorlagen je Kalenderkarte - die Feldkarte führt sie als
         // kond_<größe>_vorlage mit der Aktion des Knopfs „Übernehmen“ (Entwurf KP2 D9); dazu Name,
@@ -492,7 +516,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("OptimierungBlock", 9),
         new("PeakShavingDialog", 17),
         new("PhotovoltaikDialog", 5, "„Alle Daten“ über die Feldtafel des Modulprofils"),
-        new("PhotovoltaikReiter", 5),
+        new("PhotovoltaikReiter", 6),
         new("PhotovoltaikVerguetungDialog", 16),
         // Berichtsvorlagen BV-E1: die Suche des Platzhalterkatalogs - der Wirt BerichtSeite führt
         // sie und meldet sie als BerichtSeiteKiSicht.Katalogsuche an; das Feld „Schreibweise"
@@ -578,7 +602,18 @@ public sealed class KiMaskenabdeckungWacheTests
         new("TwwMessreihenDialog", 5, "Angaben zur gewählten Datei, kein Einstellwert der Maske "
             + "(Grund je Bindung in BewusstDraussen)"),
         new("TypProfilDialog", 2),
-        new("UebersichtSeite", 5),
+        // Anwenderauftrag 13.10.2026: das freie Bezeichnerfeld der Gruppe „Variante verwalten" ist
+        // gefallen (5 -> 4); seine Aufgabe tragen die drei Dialoge darunter, deren Felder Angaben
+        // der jeweiligen Handlung sind (Quelle und Bezeichner des Anlegens, Variante und Bezeichner
+        // des Umbenennens, Variante des Löschens) - kein Einstellwert der Seite, kein Katalogfeld.
+        new("UebersichtSeite", 4),
+        new("VarianteAnlegenDialog", 2, "Quelle und Bezeichner sind Angaben der Handlung „Variante anlegen“, kein Einstellwert der Seite"),
+        new("VarianteLoeschenDialog", 1, "die Wahl der zu löschenden Variante ist eine Angabe der Handlung „Löschen“, kein Einstellwert der Seite"),
+        new("VarianteUmbenennenDialog", 2, "Variante und Bezeichner sind Angaben der Handlung „Umbenennen“, kein Einstellwert der Seite"),
+        // Anwenderentscheid 13.10.2026: der Dialog „Anzeige anpassen…“ - Zustand je Gruppe, Haken je Kennzahl und
+        // „Zeilen ohne Wert ausblenden“ sind eine Benutzereinstellung der Ansicht (je Benutzer, für alle Projekte über
+        // die Einstellungsnaht), kein Einstellwert der Seite und kein Katalogfeld.
+        new("ErgebnisAnpassenDialog", 3, "Gruppenzustände, Kennzahlenhaken und „ohne Wert“ sind eine Benutzereinstellung der Ansicht, kein Einstellwert der Seite"),
         // ETAPPE E16 (V-G3): das Ganzzahlfeld „Zahlung alle … Jahre" der Betriebsseite; die
         // Feldkarte (KiDialoge, Maske Form_VorlagenPosition) führt es als wiederholperiode (8 -> 9).
         new("VorlagenPositionDialog", 9),
@@ -612,8 +647,11 @@ public sealed class KiMaskenabdeckungWacheTests
         // und die neun Eingaben des Verfahrensvergleichs der Auslegung (lade_modus … fuellstand_bezug).
         new("ZapfkategorienEditor", 7),
         new("ZapfprofilAuslegungDialog", 20),
-        new("ZapfprofilDialog", 59, "Stufen Erweitert und Experte (Z4): die Angaben der gewählten Zone und des Gebäudes " +
-            "samt Wohnungstabelle in der Feldkarte; das Bundesland ist gesperrt (ohne Kalendertabelle) und zählt nicht. " +
+        new("ZapfprofilDialog", 52, "Stufen Erweitert und Experte (Z4): die Angaben der gewählten Zone und des Gebäudes " +
+            "als Karten (ZB3); Tagesbedarf, Ladeleistung und Zirkulation je EIN Feld (ZB4 (b): leer = Vorschlag, ein Wert = " +
+            "manuell; ein Baustein Einwertfeld zeichnet alle drei, Felder tagesbedarf_manuell, ladeleistung_manuell, zirk_manuell) " +
+            "samt Wohnungstabelle in der Feldkarte; die Karte „Kalender“ (ZB5) führt Quelle und eigene Ferien (Name, von, bis) als " +
+            "Feld kalender und Zeilen ferien_name/ferien_von/ferien_bis der Feldkarte, Quelle als Wahl oder Liste je Gebäudezahl. " +
             "Dazu die drei Eingaben der Wahl des Typtagwegs (Z4b): Schalter, Klimazone und Gebäudeart, und die Wahl " +
             "der Messreihe des Vergleichs (Z5): Feld messreihe der Feldkarte")
     };

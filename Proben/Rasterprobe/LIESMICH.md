@@ -1743,6 +1743,14 @@ Linie und Zeile nach einem Rundlauf selbst, und die Linie steht nicht im Bild de
 größter Abstand **0,50 px**, Zeile mit Datum **41/41**, 3 Pfade, **0 Mutationen** — Rückgabe 0. Gegenprobe:
 13 von 41 Schritten über 1 px (verfehlt, richtig).
 
+**Die Seite trägt die Oberflächenregel** (Bedarf als Linie, Erzeugung als Fläche, Tagesband, Wahl
+„Datum | Stunde im Jahr“): `?bild=photovoltaik` stellt Strombedarf, Photovoltaik und Überschuss als drei dichte
+Viertelstundenlinien samt Speicherfüllstand — den Fall der Anwenderrückmeldung —, `&aufteilen=1` dazu die Erzeugung als
+Stapel aus Eigenverbrauch, Einspeisung (Grenze 4 kW) und Abregelung (der Schalter „PV aufteilen“), `?darstellung=bericht` zeigt
+dasselbe Modell ohne die Regel (das Bild des Berichts). Die Probe misst den Zeigerbalken weiter am Jahresgang; mit
+der Regel zählt sie je Reihe zwei Pfade (Band und Kern), und auch die Bänder bleiben über die Bewegung dieselben
+Elemente.
+
 ---
 
 ## Tabellenprobe (Ergebnistabellen der Simulation, Auftrag TA) — Seite `/tabellenprobe`
@@ -1866,10 +1874,42 @@ P_th, σ, η und Motortyp, bei 1 280 × 800 am BHKW neben Motortyp, am Heizkesse
 Der echte Rahmen `BerichteKostenSeite` mit der Seite „Übersicht“: Kopf in drei Teilen
 (Projektwahl, Variantenverwaltung, Lauf) und die Gegenüberstellung je Gewerk mit Stamm und
 Varianten, ein Gewerk weicht ab. Synthetische Stände ohne Datenbank, neutrale Namen.
-Adressgaben: `?varianten=<n>` (Vorgabe 1, höchstens 8) und `?nurunterschiede=1`. Zu prüfen
+Adressgaben: `?varianten=<n>` (Vorgabe 1, höchstens 8), `?nurunterschiede=1` und `?variante=<i>`
+(wählt unter „Detail-Unterschiede für Variante“ die i-te Variante und zeigt die Unterschiedstabelle;
+ohne die Gabe steht die Vorgabe „— keine —“, der Komponentenvergleich; die Wahl im Feld wirkt auch
+von Hand). Die drei Knöpfe der Gruppe „Variante verwalten“ öffnen ihre Dialoge als Überlagerung
+(Anlegen mit Quelle und Bezeichner, Umbenennen und Löschen mit der Variantenwahl); sie wirken auf
+die synthetische Gruppe der Seite, ohne Datenbank. Der Schalter „nur Unterschiede“ steht in der Zeile „Im Vergleich“.
+Die Probe führt den Brennstoffeinsatz des Kessels passend zur Trägerzeile Erdgas (37,2 bzw. 24,6 MWh/a). Zu prüfen
 bei 1 800, 940 und 700 px: Kopf- und Rumpfzellen der Tabelle stehen an denselben linken
 Kanten, die Tabelle füllt die Hülle, die Seite rollt nie quer (mit sechs Varianten rollt
 allein die Hülle, die Gewerkspalte haftet), kein Feld des Kopfes ragt über das Fenster.
+Darunter steht der Abschnitt „Ergebnisse — Energie“ aus der echten Hülle `UebersichtErgebnisGaben`
+mit synthetischen Ergebnissen (Variante 1 simuliert und abweichend, weitere Varianten nicht
+simuliert, mit einer Trägerzeile „Endenergie Erdgas“ und der Gruppe „Kälte“); `?offen=alle` klappt alle
+zugeklappten Gruppen auf, `?offen=<schluessel,…>` die genannten (Gruppenschlüssel des Kerns, etwa
+`kaelte,emissionen`). `?anpassen=1` öffnet beim Laden den Dialog „Anzeige anpassen…“ (Zustand je Gruppe,
+Kennzahlen je Haken, „Zeilen ohne Wert ausblenden“, „Standard wiederherstellen“); `?anzeige=beispiel` legt eine
+angepasste Anzeige in die Einstellungsablage der Probe (Deckung ausgeblendet, Stromlast abgewählt, Kälte offen) —
+die Ablage ist eine Attrappe der Naht und wird je Seitenaufruf geleert, OK im Dialog wirkt bis zum nächsten Aufruf.
+Unter der Tafel steht leise „n Kennzahlen ohne Wert ausgeblendet“. Zu prüfen bei 1 800, 940 und 700 px: die Kennzahlspalte haftet und ist in allen
+Tafeln gleich breit (20rem, unter 760 px 12rem), die Versionsspalten sind gleich breit, Spaltenkopf und
+Wert stehen rechtsbündig an derselben Kante, die nicht simulierte Version zeigt leise Striche und
+„nicht simuliert“ fett im Kopf, die Seite rollt nie quer.
+`?ansicht=grafik` stellt den Abschnitt auf die Grafik (Umschalter „Tabelle | Grafik“, im Wirt je Sitzung):
+je Gruppe und Einheit ein Balkendiagramm, eine Serie je Version, die Legende der Versionen einmal oben, die nicht
+simulierte Version grau mit „nicht simuliert“ und ohne Balken. Zu prüfen bei 1 800, 1 280, 940 und 700 px: die
+Diagramme teilen sich die Breite (ab 440 px je Spalte, darunter eine Spalte), nichts rollt quer, Legende und
+Beschriftungen überlappen nicht, die Farben bleiben unterscheidbar; mit `?varianten=6` bleiben die Balken lesbar.
+
+## Sichtprobe „Dezentrale Kälte“ (K6b) — Seite `/kaeltedezentralprobe`
+
+Ein synthetischer Lauf mit Split-Zeile, ohne Datenbank, mit neutralen Namen; gemessen wird nichts, die Seite dient den
+Bildschirmfotos. Sie zeigt die Übersicht (Posten „Kühlung dezentral“ in der Strombilanz, Deckungsgrad Kälte samt
+„davon Kältefolge“), die echte Konfigurationsseite mit der Gruppe „Dezentrale Kältedeckung“ samt „Bearbeiten…“ (der Weg
+schreibt nur Quelle und Zuordnung unter die Seite), das Anlagenschema aus einem Modell im Speicher, angeordnet von
+`SchemaLayout` (Kältekreis mit „davon Lastgang/Profil“, Knoten „Kältebedarf dezentral (Split)“), dann Kältegang,
+Kältegruppe des Bedarfsreiters und Stromgang.
 
 ## Bildschirmfotos fürs Wiki: Seite `/wikibild` und `wikibilder.mjs`
 

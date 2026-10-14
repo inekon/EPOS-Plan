@@ -43,7 +43,7 @@ namespace EPOS.Kern.Tests
                 Assert.False(string.IsNullOrWhiteSpace(global::WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(s, de)), s + " (de)");
                 Assert.False(string.IsNullOrWhiteSpace(global::WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(s, en)), s + " (en)");
             }
-            Assert.Equal(48 + 12 + 5 + 14, schluessel.Count);
+            Assert.Equal(49 + 12 + 5 + 15, schluessel.Count); // BK-3c: Klasse HAUSTECHNIK an Baustoff und Aufbau
             Assert.Equal("Dächer", Bauteilkatalog.GruppeText(false, "DAECHER"));
             Assert.Equal("Steildach", Bauteilkatalog.KlasseText(false, "STEILDACH"));
             Assert.Equal("Mineralwolle", Bauteilkatalog.KlasseText(true, "MINERALWOLLE"));

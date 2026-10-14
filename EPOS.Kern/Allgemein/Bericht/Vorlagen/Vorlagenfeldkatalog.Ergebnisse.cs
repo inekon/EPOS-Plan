@@ -48,6 +48,9 @@ namespace WindowsFormsApplication1
         /// <summary>Die Fassung der Kennzahlen der Teil-Freikühlung in Reihe am Rückkühlwerk (Katalog v22, K-F3).</summary>
         internal const int FASSUNG_TEILFREIKUEHLUNG = 22;
 
+        /// <summary>Die Fassung der Kennzahlen des Kältebedarfs aus Profilen und der dezentralen (Split-)Deckung (Katalog v23, K6d).</summary>
+        internal const int FASSUNG_KAELTE_DEZENTRAL = 23;
+
         /// <summary>
         /// Die Kennzahlen der Kältemaschine als Anlage (Schemaschritt 183) kamen mit Katalog v12 — ihre erzeugten
         /// Einträge (Stammzahl, Beschriftung, Einheit) stehen erst ab dieser Fassung, frühere Listen bleiben, wie sie

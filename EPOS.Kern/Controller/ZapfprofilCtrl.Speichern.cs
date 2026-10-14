@@ -85,7 +85,7 @@ namespace WindowsFormsApplication1
     /// <b>Der Schreibweg des Arbeitsstands</b> (Umsetzungskonzept Zapfprofilgenerator 3.3,
     /// 5.2; Stufe Z1, Gruppe 2).
     ///
-    /// <para><b>Ein Vorgang.</b> <c>Tab_TwwProjekt</c>, Zonen und Wohnungstypen entstehen in
+    /// <para><b>Ein Vorgang.</b> <c>Tab_TwwProjekt</c>, Zonen, Wohnungstypen und Ferienzeiträume der Zonen entstehen in
     /// EINEM <see cref="DbVorgang"/> — dem eigenen oder dem des Aufrufers (Bedarfsprofil-Dialog:
     /// derselbe Vorgang wie <c>Add_Projekt_Brauchwasser</c>). Eine Ablehnung wirft
     /// <see cref="ZapfprofilSpeicherException"/> vor dem ersten Schreiben; der Aufrufer rollt
@@ -152,6 +152,11 @@ namespace WindowsFormsApplication1
             if (dz != null) foreach (DataRow r in dz.Rows) bekannteZonen.Add(Ganz(r, "ID"));
 
             foreach (ZonenStand z in zonen) ZonePruefen(v, idProjekt, z, bekannteZonen);
+            bool ferientabelle = Anzahl(v, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?",
+                                        TwwZonenferienSchema.TAB_ZONENFERIEN) > 0;
+            if (!ferientabelle && zonen.Any(z => FerienZumSchreiben(z).Count > 0))
+                throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.TabellenFehlen, "",
+                    ZapfSatz.Neu("SPEICHER_TABELLE_FEHLT", ZapfSatz.Tabelle(TwwZonenferienSchema.TAB_ZONENFERIEN)));
 
             // Ein konstruierter Bedarfstag (Z2, Gruppe 2) entsteht im selben Vorgang als
             // Katalogzeile; die Projektzeile zeigt danach auf ihn (Quelle Konstruktor).
@@ -230,6 +235,8 @@ namespace WindowsFormsApplication1
             {
                 if (behalten.Contains(alt)) continue;
                 v.Ausfuehren("DELETE FROM " + TwwSchema.TAB_TWW_WOHNUNGSTYP + " WHERE ID_Zone = ?", new DbParam("@zone", alt));
+                if (ferientabelle)
+                    v.Ausfuehren("DELETE FROM " + TwwZonenferienSchema.TAB_ZONENFERIEN + " WHERE ID_Zone = ?", new DbParam("@zone", alt));
                 v.Ausfuehren("DELETE FROM " + TwwSchema.TAB_TWW_ZONE + " WHERE ID = ?", new DbParam("@id", alt));
             }
 
@@ -253,7 +260,8 @@ namespace WindowsFormsApplication1
                 {
                     Id = idZone,
                     Reihenfolge = i + 1,
-                    Wohnungen = WohnungenSchreiben(v, idZone, z)
+                    Wohnungen = WohnungenSchreiben(v, idZone, z),
+                    Ferien = ferientabelle ? FerienSchreiben(v, idZone, z) : z.Ferien ?? new ZonenferienStand[0]
                 });
             }
 
@@ -409,16 +417,66 @@ namespace WindowsFormsApplication1
                 && Mengengeruest.WohnungstabelleWirksam((ZapfBezugsart)Convert.ToInt32(roh, CultureInfo.InvariantCulture));
         }
 
+        /// <summary>
+        /// Jeder Jahrestag der Ferienzeiträume in der Wertemenge des Arbeitsstands (0 … 366, 0 und 366 = keine Angabe) —
+        /// beliebig viele Zeiträume (ZB‑Q3 B). Ein Zeitraum ohne Angabe ist erlaubt; er wird nicht geschrieben.
+        /// </summary>
         private static bool FerienImBereich(ZonenStand z)
         {
-            foreach (int?[] reihe in new[] { z.Ferienbeginn, z.Ferienende })
+            foreach (ZonenferienStand f in z.Ferien ?? new ZonenferienStand[0])
             {
-                if (reihe == null) continue;
-                if (reihe.Length > 4) return false;
-                foreach (int? t in reihe)
+                if (f == null) continue;
+                foreach (int? t in new[] { f.Beginn, f.Ende })
                     if (t.HasValue && (t.Value < FERIEN_KEINE_ANGABE_NULL || t.Value > FERIEN_KEINE_ANGABE_366)) return false;
             }
             return true;
+        }
+
+        /// <summary>
+        /// Die Ferienzeiträume, die als Zeile in <c>Tab_TwwZonenferien</c> gehen, in ihrer Reihenfolge: nur mit Ende
+        /// 1 … 365; ein Beginn 0 oder 366 wird <c>null</c> (vom 1. Januar an), ein leerer Name <c>null</c>
+        /// (<see cref="TwwZonenferienSchema.Zeitraum"/> — dieselbe Regel wie der Schemaschritt).
+        /// </summary>
+        internal static IReadOnlyList<ZonenferienStand> FerienZumSchreiben(ZonenStand z)
+        {
+            var liste = new List<ZonenferienStand>();
+            foreach (ZonenferienStand f in z?.Ferien ?? new ZonenferienStand[0])
+            {
+                if (f == null) continue;
+                (int? Beginn, int Ende)? zr = TwwZonenferienSchema.Zeitraum(f.Beginn, f.Ende);
+                if (!zr.HasValue) continue;
+                liste.Add(new ZonenferienStand
+                {
+                    Name = string.IsNullOrWhiteSpace(f.Name) ? null : f.Name.Trim(),
+                    Beginn = zr.Value.Beginn,
+                    Ende = zr.Value.Ende
+                });
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// <b>Die Ferienzeiträume einer Zone</b> (<c>Tab_TwwZonenferien</c>) — <b>ersetzend</b>: erst weg, was an der Zone
+        /// steht, dann jede Zeile aus <see cref="FerienZumSchreiben"/> mit ihrer Position als Reihenfolge. Liefert die
+        /// geschriebene Liste.
+        /// </summary>
+        private static IReadOnlyList<ZonenferienStand> FerienSchreiben(DbVorgang v, int idZone, ZonenStand z)
+        {
+            v.Ausfuehren("DELETE FROM " + TwwZonenferienSchema.TAB_ZONENFERIEN + " WHERE ID_Zone = ?", new DbParam("@zone", idZone));
+            IReadOnlyList<ZonenferienStand> liste = FerienZumSchreiben(z);
+            for (int i = 0; i < liste.Count; i++)
+            {
+                ZonenferienStand f = liste[i];
+                Anlegen(v, TwwZonenferienSchema.TAB_ZONENFERIEN, new List<KeyValuePair<string, object>>
+                {
+                    W("ID_Zone", idZone),
+                    W("Reihenfolge", i + 1),
+                    W("Name", f.Name),
+                    W("Beginn", f.Beginn),
+                    W("Ende", f.Ende)
+                });
+            }
+            return liste;
         }
 
         /// <summary>Führt die Tabelle die Spalte? Im laufenden Vorgang gefragt (Stand vor oder nach einem Schemaschritt).</summary>
@@ -557,12 +615,6 @@ namespace WindowsFormsApplication1
                 W("Topologie", (int)z.Topologie),
                 W("Zirkulation", Bool(z.Zirkulation))
             };
-            for (int i = 0; i < 4; i++)
-            {
-                string n = (i + 1).ToString(CultureInfo.InvariantCulture);
-                w.Add(W("Ferienbeginn_" + n, z.Ferienbeginn != null && i < z.Ferienbeginn.Length ? z.Ferienbeginn[i] : null));
-                w.Add(W("Ferienende_" + n, z.Ferienende != null && i < z.Ferienende.Length ? z.Ferienende[i] : null));
-            }
             w.Add(W("Jahresmesswert", z.Jahresmesswert));
             w.Add(W("Jahresmesswert_Einheit", Enumwert(z.JahresmesswertEinheit)));
             w.Add(W("Jahresmesswert_Bilanzgrenze", Enumwert(z.JahresmesswertBilanzgrenze)));

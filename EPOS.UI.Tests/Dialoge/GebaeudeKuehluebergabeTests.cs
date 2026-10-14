@@ -488,4 +488,72 @@ public class GebaeudeKuehluebergabeTests : EposBunitContext
 
         Assert.True(geschrieben);
     }
+
+    /// <summary>
+    /// GD-6a: Der Gebäudeeditor trägt „Baustoff-Zuordnungen…" im Reiter „Zonen" (Bauteile und Aufbauten) — nur mit dem
+    /// vom Gebäudedialog durchgereichten Parametersatz; der Klick öffnet die Ansicht als Überlagerung.
+    /// </summary>
+    [Fact]
+    public void GD6a_Der_Editor_bietet_Baustoff_Zuordnungen_im_Reiter_Zonen()
+    {
+        IRenderedComponent<GebaeudeKatalogDialog> Mit(Func<IReadOnlyDictionary<string, object>>? gaben)
+            => Render<GebaeudeKatalogDialog>(p => p
+                .Add(x => x.Daten, Satz())
+                .Add(x => x.Modus, GebaeudeKatalogModus.Bearbeiten)
+                .Add(x => x.Gebaeudetypen, () => new[] { "Einfamilienhaus" })
+                .Add(x => x.Gebaeudearten, () => new[] { "Hotel" })
+                .Add(x => x.Baualtersklassen, new[] { "bis 1859", "1860 bis 1918", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968" })
+                .Add(x => x.Speichern, (_, _, _) => new GebaeudeKatalogErgebnis(true, ""))
+                .Add(x => x.StartReiter, GebaeudeKatalogDialog.REITER_ZONEN)
+                .Add(x => x.BaustoffzuordnungenGaben, gaben));
+
+        Assert.Empty(Mit(null).FindAll("button.epos-gebaeude-baustoffzuordnungen"));
+
+        int gelesen = 0;
+        var cut = Mit(() => { gelesen++; return new Dictionary<string, object>(); });
+        cut.Find(".epos-gebaeude-baustoffzuordnungen-leiste button.epos-gebaeude-baustoffzuordnungen").Click();
+        Assert.Equal(1, gelesen);
+        Assert.True(cut.Instance.BaustoffzuordnungenOffen);
+    }
+
+    /// <summary>
+    /// MA-2: „Nutzung und Kalender…" im Reiter „Zonen" — nur mit dem durchgereichten Weg und mit Zonen; mit ungespeicherten
+    /// Zonen weich gesperrt; der Klick öffnet das Blatt, nach einer Änderung liest der Reiter die Zonen neu.
+    /// </summary>
+    [Fact]
+    public void MA2_Der_Editor_bietet_Nutzung_und_Kalender_im_Reiter_Zonen()
+    {
+        int neugelesen = 0;
+        var zonen = new[] { new ZoneDaten { Id = 1, Bezeichner = "Zone 1", Nutzflaeche = 100, IstBeheizt = true } };
+        IRenderedComponent<GebaeudeKatalogDialog> Mit(Func<ZonenNutzungWeg?>? gaben)
+            => Render<GebaeudeKatalogDialog>(p => p
+                .Add(x => x.Daten, Satz())
+                .Add(x => x.Modus, GebaeudeKatalogModus.Projekt)
+                .Add(x => x.Gebaeudetypen, () => new[] { "Einfamilienhaus" })
+                .Add(x => x.Gebaeudearten, () => new[] { "Hotel" })
+                .Add(x => x.Baualtersklassen, new[] { "bis 1859", "1860 bis 1918", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968" })
+                .Add(x => x.Speichern, (_, _, _) => new GebaeudeKatalogErgebnis(true, ""))
+                .Add(x => x.StartReiter, GebaeudeKatalogDialog.REITER_ZONEN)
+                .Add(x => x.Zonen, new GebaeudeZonenweg
+                {
+                    Zonen = zonen,
+                    Speichern = _ => ZonenSchreibergebnis.Gut,
+                    Neulesen = () => { neugelesen++; return new ZonenNeulesung(zonen, Array.Empty<ZonenluftstromDaten>()); },
+                })
+                .Add(x => x.ZonenNutzungGaben, gaben));
+
+        Assert.Empty(Mit(null).FindAll("button.epos-gebaeude-zonennutzung"));
+
+        var probe = new ZonenNutzungProbeweg();
+        var cut = Mit(() => probe.Weg());
+        var knopf = cut.Find(".epos-gebaeude-zonennutzung-leiste button.epos-gebaeude-zonennutzung");
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.GEB_BTN_ZONENNUTZUNG, knopf.TextContent.Trim());
+        knopf.Click();
+        Assert.True(cut.Instance.ZonenNutzungOffen);
+        cut.Find("table.epos-zonennutzung-tabelle tbody tr input.epos-zonennutzung-zeilenwahl").Change(true);
+        cut.Find(".epos-zonennutzung-werkzeuge button.epos-zonennutzung-projekt").Click();
+        cut.FindAll("button.epos-ueberlagerung-zu").Last().Click();
+        Assert.False(cut.Instance.ZonenNutzungOffen);
+        Assert.Equal(1, neugelesen);
+    }
 }

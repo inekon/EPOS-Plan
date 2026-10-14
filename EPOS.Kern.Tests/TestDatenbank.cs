@@ -1047,6 +1047,18 @@ namespace EPOS.Kern.Tests
                 // Schritt BauteilkatalogSchema.SCHRITT (BK-2, E132): Herkunft, Gliederung, Kennzeichen und Felder der Quelle am
                 // Baustoff- und Bauteilkatalog, Abschnittstabellen. Wiederholbar, ergebnisneutral.
                 BauteilkatalogSchema.Ausfuehren(null);
+                // Schritt BauteilkatalogHaustechnikSchema.SCHRITT (BK-3c, E134): Klasse Haustechnik in der Pruefklausel von
+                // Klasse_Code (Neubau der vier Kopftabellen). Wiederholbar, ergebnisneutral.
+                BauteilkatalogHaustechnikSchema.Ausfuehren(null);
+                // Schritt KaeltebedarfSplitAbrechnungSchema.SCHRITT (K6): Tab_ErgebnisKaelteDezentral, leer, reines DDL.
+                // Wiederholbar, ergebnisneutral.
+                KaeltebedarfSplitAbrechnungSchema.Ausfuehren(null);
+                // Schritt TwwZonenferienSchema.SCHRITT (ZB5, ZB-Q3 B): Zonenferien als Liste - Tab_TwwZonenferien, die vier
+                // Spaltenpaare von Tab_TwwZone uebertragen und abgebaut. Wiederholbar, ergebnisneutral.
+                TwwZonenferienSchema.Ausfuehren(null);
+                // Schritt ZonenLastfelderSchema.SCHRITT (DA-2, E138 F5): Aussenluft je Person, Licht und Waerme je Person an
+                // Tab_Zone und Tab_Zone_STAMM, leer, reines DDL. Wiederholbar, ergebnisneutral.
+                ZonenLastfelderSchema.Ausfuehren(null);
                 // Schritt KatalogkostenSaatSchema.SCHRITT (KB-3): die zwei Verweise an den acht Projektkopien mit
                 // Kosten, dazu je Satz mit Kosten genau eine Satzvorlage je Art. Wiederholbar, ergebnisneutral.
                 KatalogkostenSaatSchema.Ausfuehren(null);

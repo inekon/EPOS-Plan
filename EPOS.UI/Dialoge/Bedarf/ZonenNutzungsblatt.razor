@@ -1,0 +1,378 @@
+﻿@* DAS BLATT „NUTZUNG UND KALENDER“ (MA-2, Entwurf Gefuehrter Modellaufbau 2 und 4, E137 F5/F6): alle Zonen eines Gebaeudes
+   auf einem Blatt mit Mehrfachwahl (Kaestchen je Zeile, Kopfkaestchen). Spalten Zone, Flaeche, Nutzungsprofil (Auswahl je
+   Zeile, Herkunft Profil/Datei/Vorgabe, Vorschlag der Profilregel), fuenf Kalendermarken (eigen, Profil, geerbt, fehlt),
+   Sollwerte Tag/Nacht, Ferien/Heizperiode (Projekt, Abweichung, fehlt) und die Ampel der Pruefgruppe 3. Die Werkzeugleiste
+   wirkt auf die Wahl: Profil zuweisen…, Vorschlag uebernehmen, Projektvorgabe Ferien/Heizperiode, Kalender kopieren von…,
+   Sollwerte setzen…, Zuruecknehmen (letzte Mehrfachaenderung). Einzelheiten je Zone ueber den Zonendialog des Wirts.
+   Keine Datenbank: alles kommt ueber den Weg der Huelle (ZonenNutzungHuelle). *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1
+@using WindowsFormsApplication1.MyResource
+
+<div class="epos-zonennutzung-blatt">
+    @if (_stand is null)
+    {
+        <p class="epos-kond-feldmeldung epos-zonennutzung-ohne" role="alert">@Resource.ZNB_MSG_NICHT_GELESEN</p>
+    }
+    else
+    {
+        bool ohneWahl = _wahl.Count == 0;
+        string? sperre = ohneWahl ? Resource.ZNB_SPERRE_WAHL : null;
+        <div class="epos-zonennutzung-kopf">
+            <span class="epos-zonennutzung-gebaeude">@Weg.Gebaeudename</span>
+            <span class="epos-leisezeile epos-zonennutzung-gewaehlt" role="status">@string.Format(CultureInfo.CurrentCulture, Resource.ZNB_GEWAEHLT, _wahl.Count, _stand.Zonen.Count)</span>
+            <InfoKnopf Schluessel="ZonenNutzung.btn_Help" StandardKurztext="@Resource.ZNB_HILFE_KURZ" MitAssistent="false" />
+        </div>
+        <div class="epos-leiste epos-zonennutzung-werkzeuge">
+            <button type="button" class="epos-knopf epos-zonennutzung-profil" disabled="@(ohneWahl || _laeuft)"
+                    title="@(sperre ?? Resource.ZNB_BTN_PROFIL_HINWEIS)" @onclick="() => Werkzeug(Werkzeuge.Profil)">@Resource.ZNB_BTN_PROFIL</button>
+            <button type="button" class="epos-knopf epos-zonennutzung-vorschlag" disabled="@(ohneWahl || _laeuft)"
+                    title="@(sperre ?? Resource.ZNB_BTN_VORSCHLAG_HINWEIS)" @onclick="VorschlagUebernehmen">@Resource.ZNB_BTN_VORSCHLAG</button>
+            <button type="button" class="epos-knopf epos-zonennutzung-projekt" disabled="@(ohneWahl || _laeuft)"
+                    title="@(sperre ?? Resource.ZNB_BTN_PROJEKT_HINWEIS)" @onclick="ProjektvorgabeUebernehmen">@Resource.ZNB_BTN_PROJEKT</button>
+            <button type="button" class="epos-knopf epos-zonennutzung-kopieren" disabled="@(ohneWahl || _laeuft)"
+                    title="@(sperre ?? Resource.ZNB_BTN_KOPIEREN_HINWEIS)" @onclick="() => Werkzeug(Werkzeuge.Kopieren)">@Resource.ZNB_BTN_KOPIEREN</button>
+            <button type="button" class="epos-knopf epos-zonennutzung-soll" disabled="@(ohneWahl || _laeuft)"
+                    title="@(sperre ?? Resource.ZNB_BTN_SOLL_HINWEIS)" @onclick="() => Werkzeug(Werkzeuge.Soll)">@Resource.ZNB_BTN_SOLL</button>
+            @if (_stand.KannZuruecknehmen)
+            {
+                <button type="button" class="epos-knopf epos-zonennutzung-zurueck" disabled="@_laeuft"
+                        title="@Resource.ZNB_BTN_ZURUECK_HINWEIS" @onclick="Zuruecknehmen">@Resource.ZNB_BTN_ZURUECK</button>
+            }
+        </div>
+        @if (_werkzeug != Werkzeuge.Keins && !ohneWahl)
+        {
+            <div class="epos-leiste epos-zonennutzung-eingabe">
+                @if (_werkzeug == Werkzeuge.Profil)
+                {
+                    <label>@Resource.ZNB_LABEL_PROFIL
+                        <select class="epos-zonennutzung-profilwahl" @bind="_profilWahl">
+                            <option value=""></option>
+                            @foreach (ZonenNutzungsprofil p in _profile)
+                            {
+                                <option value="@p.Id.ToString(CultureInfo.InvariantCulture)">@Profiltext(p)</option>
+                            }
+                        </select>
+                    </label>
+                }
+                else if (_werkzeug == Werkzeuge.Kopieren)
+                {
+                    <label>@Resource.ZNB_LABEL_QUELLE
+                        <select class="epos-zonennutzung-quellwahl" @bind="_quellWahl">
+                            <option value=""></option>
+                            @foreach (ZonenNutzungszeile z in _stand.Zonen)
+                            {
+                                <option value="@z.IdZone.ToString(CultureInfo.InvariantCulture)">@z.Zone</option>
+                            }
+                        </select>
+                    </label>
+                }
+                else
+                {
+                    <label>@Resource.ZNB_LABEL_TAG <input type="text" inputmode="decimal" class="epos-zonennutzung-tag" @bind="_tagText" /></label>
+                    <label>@Resource.ZNB_LABEL_NACHT <input type="text" inputmode="decimal" class="epos-zonennutzung-nacht" @bind="_nachtText" /></label>
+                }
+                <button type="button" class="epos-knopf epos-knopf--primaer epos-zonennutzung-anwenden" disabled="@_laeuft"
+                        @onclick="Anwenden">@Resource.ZNB_BTN_ANWENDEN</button>
+                <button type="button" class="epos-knopf epos-zonennutzung-abbrechen"
+                        @onclick="() => Werkzeug(Werkzeuge.Keins)">@Resource.ZNB_BTN_ABBRECHEN</button>
+            </div>
+        }
+        @if (_stand.Zonen.Count == 0)
+        {
+            <p class="epos-leisezeile">@Resource.ZNB_MSG_KEINE_ZONEN</p>
+        }
+        else
+        {
+            <div class="epos-zonennutzung-huelle">
+                <table class="epos-zonennutzung-tabelle">
+                    <thead>
+                        <tr>
+                            <th class="epos-zonennutzung-wahl">
+                                <input type="checkbox" class="epos-zonennutzung-alle" aria-label="@Resource.ZNB_ALLE_WAEHLEN"
+                                       checked="@(_wahl.Count == _stand.Zonen.Count)" @onchange="AlleUmschalten" />
+                            </th>
+                            <th>@Resource.ZNB_SPALTE_ZONE</th>
+                            <th class="epos-zahl">@Resource.ZNB_SPALTE_FLAECHE</th>
+                            <th>@Resource.ZNB_SPALTE_PROFIL</th>
+                            <th>@Resource.ZNB_SPALTE_KALENDER</th>
+                            <th class="epos-zahl">@Resource.ZNB_SPALTE_SOLL</th>
+                            <th>@Resource.ZNB_SPALTE_FERIEN</th>
+                            <th>@Resource.ZNB_SPALTE_BEFUND</th>
+                            @if (ZoneOeffnen.HasDelegate)
+                            {
+                                <th>@Resource.ZNB_SPALTE_AKTION</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (ZonenNutzungszeile zeile in _stand.Zonen)
+                        {
+                            ZonenNutzungszeile z = zeile;
+                            bool gewaehlt = _wahl.Contains(z.IdZone);
+                            <tr @key="z.IdZone" data-zone="@z.IdZone" class="@(gewaehlt ? "epos-zonennutzung-gewaehlt-zeile" : null)">
+                                <td class="epos-zonennutzung-wahl">
+                                    <input type="checkbox" class="epos-zonennutzung-zeilenwahl" checked="@gewaehlt"
+                                           aria-label="@string.Format(CultureInfo.CurrentCulture, Resource.ZNB_ZONE_WAEHLEN, z.Zone)"
+                                           @onchange="() => Umschalten(z.IdZone)" />
+                                </td>
+                                <td>@z.Zone</td>
+                                <td class="epos-zahl">@Flaeche(z.Flaeche)</td>
+                                <td class="epos-zonennutzung-profilzelle">
+                                    <select class="epos-zonennutzung-zeilenprofil" disabled="@(_laeuft || _profile.Count == 0)"
+                                            aria-label="@(z.Zone + " – " + Resource.ZNB_SPALTE_PROFIL)"
+                                            @onchange="e => ZeilenprofilGewaehlt(z.IdZone, e.Value?.ToString())">
+                                        <option value="" selected="@(z.IdProfil is null)">@(z.Profil.Length > 0 ? z.Profil : Resource.ZNB_OHNE_PROFIL)</option>
+                                        @foreach (ZonenNutzungsprofil p in _profile)
+                                        {
+                                            <option value="@p.Id.ToString(CultureInfo.InvariantCulture)" selected="@(z.IdProfil == p.Id)">@Profiltext(p)</option>
+                                        }
+                                    </select>
+                                    <span class="epos-zonennutzung-herkunft epos-zonennutzung-herkunft--@z.Herkunft.ToString().ToLowerInvariant()">@Herkunft(z.Herkunft)</span>
+                                    @if (z.Vorschlag.Length > 0)
+                                    {
+                                        <span class="epos-leisezeile epos-zonennutzung-vorschlag">@string.Format(CultureInfo.CurrentCulture, Resource.ZNB_VORSCHLAG, z.Vorschlag)</span>
+                                    }
+                                </td>
+                                <td class="epos-zonennutzung-kalender">
+                                    @foreach (string g in ZonenNutzungCtrl.GROESSEN)
+                                    {
+                                        Kalenderkennung k = z.Kalender.TryGetValue(g, out Kalenderkennung kk) ? kk : Kalenderkennung.Fehlt;
+                                        <span class="epos-zonennutzung-marke epos-zonennutzung-marke--@k.ToString().ToLowerInvariant()" data-groesse="@g"
+                                              title="@string.Format(CultureInfo.CurrentCulture, Resource.ZNB_MARKE_TITEL, Groessenname(g), Kennung(k))">@Groessenkurz(g)</span>
+                                    }
+                                </td>
+                                <td class="epos-zahl">@(Grad(z.SollTag) + " / " + Grad(z.SollNacht))</td>
+                                <td class="epos-zonennutzung-ferien">
+                                    <span class="epos-zonennutzung-marke epos-zonennutzung-marke--@Ferienklasse(z.Ferien)" data-zeile="FERIEN"
+                                          title="@string.Format(CultureInfo.CurrentCulture, Resource.ZNB_MARKE_TITEL, Resource.ZNB_NAME_FERIEN, Ferienangabe(z))">@Resource.ZNB_KURZ_FERIEN</span>
+                                    <span class="epos-zonennutzung-marke epos-zonennutzung-marke--@Ferienklasse(z.Heizperiode)" data-zeile="SAISON"
+                                          title="@string.Format(CultureInfo.CurrentCulture, Resource.ZNB_MARKE_TITEL, Resource.ZNB_NAME_SAISON, Ferientext(z.Heizperiode))">@Resource.ZNB_KURZ_SAISON</span>
+                                </td>
+                                <td>
+                                    <span class="epos-ampel epos-ampel-@Modellpruefungsblatt.AmpelKlasse(z.Ampel)"
+                                          title="@(z.Befunde.Count > 0 ? string.Join(" ", z.Befunde) : AmpelText(z.Ampel))"
+                                          aria-label="@AmpelText(z.Ampel)"></span>
+                                </td>
+                                @if (ZoneOeffnen.HasDelegate)
+                                {
+                                    <td>
+                                        <button type="button" class="epos-knopf epos-zonennutzung-zone" title="@Resource.ZNB_BTN_ZONE_HINWEIS"
+                                                aria-label="@(z.Zone + " – " + Resource.ZNB_BTN_ZONE)"
+                                                @onclick="() => ZoneOeffnen.InvokeAsync(z.IdZone)">@Resource.ZNB_BTN_ZONE</button>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        @if (!_stand.ProjektFerien && !_stand.ProjektHeizperiode)
+        {
+            <p class="epos-leisezeile epos-zonennutzung-projekt-ohne">@Resource.ZNB_MSG_PROJEKT_OHNE</p>
+        }
+        @foreach (string b in _stand.Gebaeudebefunde)
+        {
+            <p class="epos-leisezeile epos-zonennutzung-gebaeudebefund">@b</p>
+        }
+        @if (_meldung.Length > 0)
+        {
+            <p class="epos-leisezeile epos-zonennutzung-meldung" role="status">@_meldung</p>
+        }
+    }
+</div>
+
+@code {
+    /// <summary>Der Weg der Hülle (Lesen, Profile, Schreibwege, Rücknahme).</summary>
+    [Parameter, EditorRequired] public ZonenNutzungWeg Weg { get; set; } = new();
+
+    /// <summary>„Zone…“ — der Zonendialog des Wirts für die Zone mit dieser Id; ohne Delegat keine Spalte.</summary>
+    [Parameter] public EventCallback<int> ZoneOeffnen { get; set; }
+
+    /// <summary>Meldet eine geschriebene Änderung an den Wirt (etwa um Zonen oder Prüfstand neu zu lesen).</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>Die Werkzeuge mit Eingabezeile.</summary>
+    public enum Werkzeuge { Keins, Profil, Kopieren, Soll }
+
+    private ZonenNutzungWeg? _gezeigterWeg;
+    private ZonenNutzungsstand? _stand;
+    private IReadOnlyList<ZonenNutzungsprofil> _profile = Array.Empty<ZonenNutzungsprofil>();
+    private readonly HashSet<int> _wahl = new();
+    private Werkzeuge _werkzeug;
+    private string _profilWahl = "", _quellWahl = "", _tagText = "", _nachtText = "";
+    private string _meldung = "";
+    private bool _laeuft;
+
+    /// <summary>Der gezeigte Stand (Prüfhilfe für Tests).</summary>
+    public ZonenNutzungsstand? Stand => _stand;
+
+    /// <summary>Die gewählten Zonen (Prüfhilfe für Tests).</summary>
+    public IReadOnlyCollection<int> Wahl => _wahl;
+
+    /// <summary>Das offene Werkzeug (Prüfhilfe für Tests).</summary>
+    public Werkzeuge OffenesWerkzeug => _werkzeug;
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_gezeigterWeg, Weg)) return;
+        _gezeigterWeg = Weg;
+        _wahl.Clear();
+        _werkzeug = Werkzeuge.Keins;
+        _meldung = "";
+        _stand = Weg.Lesen();
+        _profile = Weg.Profile() ?? Array.Empty<ZonenNutzungsprofil>();
+    }
+
+    /// <summary>Liest den Stand neu (etwa nach dem Zonendialog des Wirts); die Wahl bleibt, soweit die Zonen bleiben.</summary>
+    public void Auffrischen()
+    {
+        _stand = Weg.Lesen();
+        if (_stand is not null) _wahl.IntersectWith(_stand.Zonen.Select(z => z.IdZone));
+        StateHasChanged();
+    }
+
+    private void Umschalten(int id)
+    {
+        if (!_wahl.Remove(id)) _wahl.Add(id);
+        if (_wahl.Count == 0) _werkzeug = Werkzeuge.Keins;
+    }
+
+    private void AlleUmschalten()
+    {
+        if (_stand is null) return;
+        if (_wahl.Count == _stand.Zonen.Count) { _wahl.Clear(); _werkzeug = Werkzeuge.Keins; }
+        else foreach (ZonenNutzungszeile z in _stand.Zonen) _wahl.Add(z.IdZone);
+    }
+
+    private void Werkzeug(Werkzeuge w)
+    {
+        _werkzeug = w;
+        _meldung = "";
+    }
+
+    private Task VorschlagUebernehmen() => Ausfuehren(() => Weg.ProfilZuweisen(_wahl.ToList(), null));
+
+    /// <summary>„Projektvorgabe übernehmen“: tragen gewählte Zonen eigene Ferien, fragt der Dialogdienst vorher (E139).</summary>
+    private async Task ProjektvorgabeUebernehmen()
+    {
+        if (_laeuft) return;
+        List<int> wahl = _wahl.ToList();
+        string? frage = Weg.FerienRueckfrage(wahl);
+        bool ersetzen = frage is not null && await Weg.Fragen(frage);
+        await Ausfuehren(() => Weg.ProjektvorgabeUebernehmen(wahl, ersetzen));
+    }
+
+    private Task Zuruecknehmen() => Ausfuehren(Weg.Zuruecknehmen);
+
+    private Task ZeilenprofilGewaehlt(int idZone, string? wert)
+        => long.TryParse(wert, NumberStyles.Integer, CultureInfo.InvariantCulture, out long id)
+            ? Ausfuehren(() => Weg.ProfilZuweisen(new[] { idZone }, id))
+            : Task.CompletedTask;
+
+    private async Task Anwenden()
+    {
+        switch (_werkzeug)
+        {
+            case Werkzeuge.Profil:
+                if (!long.TryParse(_profilWahl, NumberStyles.Integer, CultureInfo.InvariantCulture, out long idProfil)) return;
+                await Ausfuehren(() => Weg.ProfilZuweisen(_wahl.ToList(), idProfil));
+                break;
+            case Werkzeuge.Kopieren:
+                if (!int.TryParse(_quellWahl, NumberStyles.Integer, CultureInfo.InvariantCulture, out int quelle)) return;
+                await Ausfuehren(() => Weg.KalenderKopieren(quelle, _wahl.ToList()));
+                break;
+            case Werkzeuge.Soll:
+                double? tag = null, nacht = null;
+                if (_tagText.Trim().Length > 0)
+                {
+                    if (!double.TryParse(_tagText, NumberStyles.Float, CultureInfo.CurrentCulture, out double t)) { _meldung = Resource.ZNB_MSG_ZAHL; return; }
+                    tag = t;
+                }
+                if (_nachtText.Trim().Length > 0)
+                {
+                    if (!double.TryParse(_nachtText, NumberStyles.Float, CultureInfo.CurrentCulture, out double n)) { _meldung = Resource.ZNB_MSG_ZAHL; return; }
+                    nacht = n;
+                }
+                await Ausfuehren(() => Weg.SollwerteSetzen(_wahl.ToList(), tag, nacht));
+                break;
+        }
+    }
+
+    /// <summary>Führt eine Mehrfachänderung aus und zeigt danach den neuen Stand samt Meldung.</summary>
+    private async Task Ausfuehren(Func<ZonenNutzungsergebnis> weg)
+    {
+        if (_laeuft) return;
+        _laeuft = true;
+        try
+        {
+            ZonenNutzungsergebnis e = weg();
+            _stand = e.Stand ?? Weg.Lesen();
+            if (_stand is not null) _wahl.IntersectWith(_stand.Zonen.Select(z => z.IdZone));
+            _meldung = e.Meldung ?? "";
+            if (e.Ok) _werkzeug = Werkzeuge.Keins;
+            if (e.Ok && e.Zonen > 0 && Geaendert.HasDelegate) await Geaendert.InvokeAsync();
+        }
+        finally
+        {
+            _laeuft = false;
+        }
+    }
+
+    private static string Profiltext(ZonenNutzungsprofil p) => p.Kategorie.Length > 0 ? p.Kategorie + " — " + p.Name : p.Name;
+
+    private static string Flaeche(double? f) => f.HasValue ? f.Value.ToString("0.#", CultureInfo.CurrentCulture) + " m²" : "–";
+
+    private static string Grad(double? t) => t.HasValue ? t.Value.ToString("0.#", CultureInfo.CurrentCulture) : "–";
+
+    private static string Groessenkurz(string g) => Resource.ResourceManager.GetString("ZNB_KURZ_" + g, Resource.Culture) ?? g;
+
+    private static string Groessenname(string g) => Resource.ResourceManager.GetString("ZNB_NAME_" + g, Resource.Culture) ?? g;
+
+    private static string Kennung(Kalenderkennung k) => k switch
+    {
+        Kalenderkennung.Eigen => Resource.ZNB_KENNUNG_EIGEN,
+        Kalenderkennung.Profil => Resource.ZNB_KENNUNG_PROFIL,
+        Kalenderkennung.Geerbt => Resource.ZNB_KENNUNG_GEERBT,
+        Kalenderkennung.Entfaellt => Resource.ZNB_KENNUNG_ENTFAELLT,
+        _ => Resource.ZNB_KENNUNG_FEHLT
+    };
+
+    private static string Herkunft(Profilherkunft h) => h switch
+    {
+        Profilherkunft.Profil => Resource.ZNB_HERKUNFT_PROFIL,
+        Profilherkunft.Datei => Resource.ZNB_HERKUNFT_DATEI,
+        _ => Resource.ZNB_HERKUNFT_VORGABE
+    };
+
+    private static string Ferienklasse(Ferienkennung f) => f switch
+    {
+        Ferienkennung.Projekt => "projekt",
+        Ferienkennung.Abweichung => "abweichung",
+        _ => "fehlt"
+    };
+
+    private static string Ferientext(Ferienkennung f) => f switch
+    {
+        Ferienkennung.Projekt => Resource.ZNB_FERIEN_PROJEKT,
+        Ferienkennung.Abweichung => Resource.ZNB_FERIEN_ABWEICHUNG,
+        _ => Resource.ZNB_FERIEN_FEHLT
+    };
+
+    /// <summary>Der Text der Ferienmarke; bei einer Abweichung mit Herkunft und Zahl der Zeiträume und Ferienwerte (E139).</summary>
+    private static string Ferienangabe(ZonenNutzungszeile z)
+        => z.Ferien == Ferienkennung.Abweichung && z.FerienAngaben is { Abweichend: true } f
+            ? string.Format(CultureInfo.CurrentCulture, Resource.ZNB_FERIEN_ANGABE, Ferientext(z.Ferien),
+                            ZonenNutzungCtrl.Herkunftstext(f.Herkunft), f.Zeitraeume, f.Werte)
+            : Ferientext(z.Ferien);
+
+    private static string AmpelText(Pruefampel a) => a switch
+    {
+        Pruefampel.Gruen => Resource.MPB_AMPEL_GRUEN,
+        Pruefampel.Gelb => Resource.MPB_AMPEL_GELB,
+        _ => Resource.MPB_AMPEL_ROT
+    };
+}

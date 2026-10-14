@@ -311,6 +311,8 @@ namespace WindowsFormsApplication1
             {
                 Bedarf = z.Hole(ZeitreihenSatz.BedarfSchluessel(Kanal.KUEHLUNG)) ?? new double[rest.Length],
                 Rest = rest,
+                // K6b: die Split-Deckung, wenn der Lauf sie führt; sonst leer wie die Vorgabe.
+                Dezentral = z.Hole(ZeitreihenSatz.KAELTE_DEZENTRAL) ?? new double[0],
             };
             foreach (string schluessel in z.Kaeltereihen)
                 reihen.Erzeuger.Add(new KaelteProduktionBild.Erzeugerreihe
@@ -325,6 +327,7 @@ namespace WindowsFormsApplication1
                 Bedarf = R.CHART_LEGENDE_KAELTEBEDARF,
                 Rest = R.CHART_LEGENDE_KAELTE_UNGEDECKT,
                 Erzeuger = R.SIM_ERZEUGERNAME_WAERMEPUMPE,
+                Dezentral = R.CHART_LEGENDE_KAELTE_DEZENTRAL,
             };
             var (stapel, linien) = KaelteProduktionBild.Reihenbilden(reihen, texte, false);
             var p = Stapelbild(texte.Titel, texte.Achse, ChartRenderer.Achse.Monate);

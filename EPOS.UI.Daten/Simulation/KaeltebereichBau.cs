@@ -53,7 +53,39 @@ namespace WindowsFormsApplication1
             d.FreieKuehlung = stand.FreieKuehlung
                 .Select(f => new FreieKuehlungZeile(Stufe(f.Art), f.AnlagenId, f.Bezeichner, f.VorAllenErzeugern))
                 .ToList();
+
+            DezentralLesen(idProjekt, d);
             return d;
+        }
+
+        /// <summary>
+        /// K6b (Konzept Kältebedarf 6): die Gruppe „Dezentrale Kältedeckung“ — je Split-Zeile Bezeichner, Quelle, Jahressumme,
+        /// EER-Weg, Kühlträger (leer = Stromträger des Projekts) und Zähler, dazu Summe und die Zeile „Kältebedarf zentral“.
+        /// Nur lesend; ohne Split-Zeile bleibt die Gruppe leer und steht nicht da.
+        /// </summary>
+        internal static void DezentralLesen(int idProjekt, KaeltebereichDaten d)
+        {
+            List<Z_ProjektKaeltebedarfCtrl.Uebersichtszeile> zeilen = Z_ProjektKaeltebedarfCtrl.ZeilenDesProjekts(idProjekt);
+            List<Z_ProjektKaeltebedarfCtrl.Uebersichtszeile> split = zeilen.Where(z => z.Split).ToList();
+            if (split.Count == 0) return;
+
+            CultureInfo kultur = CultureInfo.CurrentCulture;
+            int projekttraeger = Kaeltestromabrechnung.Projekttraeger(idProjekt);
+            d.Dezentral = split.Select(z =>
+            {
+                bool abweichend = Kaeltestromabrechnung.Abweichend(z.KuehlIdCarrier, projekttraeger);
+                return new KaelteDezentralAnzeige(
+                    z.Profil, z.IdZuordnung, z.Bezeichner,
+                    z.Profil ? MyResource.Resource.SIMKONF_KAELTE_DEZ_QUELLE_PROFIL : MyResource.Resource.SIMKONF_KAELTE_DEZ_QUELLE_LASTGANG,
+                    z.SummeMwh, Z_ProjektKaeltebedarfCtrl.EerText(z, kultur),
+                    abweichend ? Emissionsquelle.TraegerName(z.KuehlIdCarrier.Value) : MyResource.Resource.BER_KAELTE_TRAEGER_PROJEKT,
+                    abweichend && z.EigenerZaehler ? MyResource.Resource.SIMKONF_KAELTE_DEZ_ZAEHLER_EIGEN
+                                                   : MyResource.Resource.SIMKONF_KAELTE_DEZ_ZAEHLER_ANTEILIG);
+            }).ToList();
+            d.DezentralSumme = string.Format(kultur, MyResource.Resource.SIMKONF_KAELTE_DEZ_SUMME,
+                                             split.Sum(z => z.SummeMwh ?? 0.0).ToString("N2", kultur));
+            d.ZentralZeile = string.Format(kultur, MyResource.Resource.SIMKONF_KAELTE_DEZ_ZENTRAL,
+                                           zeilen.Count(z => !z.Split && !z.Profil), zeilen.Count(z => !z.Split && z.Profil));
         }
 
         /// <summary>Die Stufe des Kerns als Aufzählung der Seite.</summary>

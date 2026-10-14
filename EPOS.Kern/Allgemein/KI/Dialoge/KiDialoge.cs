@@ -1308,9 +1308,10 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("variante", "UebersichtSeiteKiSicht.Variante",
                                      KiDialogTexte.BkuVarianteName, KiParameterTyp.Wahl,
                                      KiDialogTexte.BkuVarianteErl, leerErlaubt: true),
-                    new KiDialogFeld("bezeichner", "UebersichtSeiteKiSicht.Bezeichner",
-                                     KiDialogTexte.BkuBezeichnerName, KiParameterTyp.Text,
-                                     KiDialogTexte.BkuBezeichnerErl, leerErlaubt: true),
+                    // Kein Feld "bezeichner" mehr: Der Bezeichner einer neuen oder umbenannten
+                    // Variante ist eine Angabe der Dialoge "Variante anlegen" und "Umbenennen"
+                    // der Gruppe "Variante verwalten" (Anwenderauftrag 13.10.2026), kein
+                    // Einstellwert der Seite.
                     new KiDialogFeld("nur_unterschiede", "UebersichtSeiteKiSicht.NurUnterschiede",
                                      KiDialogTexte.BkuNurUnterschiedeName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.BkuNurUnterschiedeErl),
@@ -1325,6 +1326,11 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("statuszeile", "UebersichtSeiteKiSicht.Statuszeile",
                                      KiDialogTexte.KseStatusName, KiParameterTyp.Text,
                                      KiDialogTexte.KseStatusErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    // Der Energievergleich (Anwenderauftrag 13.10.2026): die Ergebnistabelle als Text.
+                    new KiDialogFeld("ergebnisse", "UebersichtSeiteKiSicht.Ergebnisvergleich",
+                                     KiDialogTexte.BkuErgebnisseName, KiParameterTyp.Text,
+                                     KiDialogTexte.BkuErgebnisseErl,
                                      leerErlaubt: true, nurLesen: true)
                 });
         }
@@ -4499,11 +4505,11 @@ namespace WindowsFormsApplication1
             yield return Wahl("zirkulation_vorhanden", "ZirkulationVorhanden", KiDialogTexte.ZpgZirkulationVorhandenName,
                               KiDialogTexte.ZpgZirkulationVorhandenErl, false);
             yield return Wahl("kalender", "Kalender", KiDialogTexte.ZpgKalenderName, KiDialogTexte.ZpgKalenderErl, false);
-            // Die vier Ferienzeitraeume als TABELLE (Muster Gebaeudekatalog): Spalten mit dem Zeitraum als Kennzeichen.
-            yield return Ferienspalte("ferien_beginn_tag", "BeginnTag", KiDialogTexte.ZpgFerienBeginnTagName, 31);
-            yield return Ferienspalte("ferien_beginn_monat", "BeginnMonat", KiDialogTexte.ZpgFerienBeginnMonatName, 12);
-            yield return Ferienspalte("ferien_ende_tag", "EndeTag", KiDialogTexte.ZpgFerienEndeTagName, 31);
-            yield return Ferienspalte("ferien_ende_monat", "EndeMonat", KiDialogTexte.ZpgFerienEndeMonatName, 12);
+            // Die eigenen Ferienzeitraeume als TABELLE (Muster Gebaeudekatalog): Spalten mit dem Zeitraum als Kennzeichen;
+            // die Zeile hinter dem letzten Zeitraum legt einen neuen an (Karte „Kalender", ZB5).
+            yield return Ferienspalte("ferien_name", "Name", KiDialogTexte.ZpgFerienNameName);
+            yield return Ferienspalte("ferien_von", "Von", KiDialogTexte.ZpgFerienVonName);
+            yield return Ferienspalte("ferien_bis", "Bis", KiDialogTexte.ZpgFerienBisName);
             yield return Zahl("jahresmesswert", "Jahresmesswert", KiDialogTexte.ZpgJahresmesswertName,
                               KiDialogTexte.ZpgJahresmesswertErl, null, 0, null);
             yield return Wahl("messwert_einheit", "MesswertEinheit", KiDialogTexte.ZpgMesswertEinheitName,
@@ -4520,20 +4526,14 @@ namespace WindowsFormsApplication1
                                           KiDialogTexte.ZpgMesswertZeitraumErl, leerErlaubt: true);
 
             // ---- Tagesbedarf der Zone, Ladeleistung und Zirkulation des Gebäudes (Erweitert) -----
-            yield return Wahl("tagesbedarf_modus", "TagesbedarfModus", KiDialogTexte.ZpgTagesbedarfModusName,
-                              KiDialogTexte.ZpgTagesbedarfModusErl, false);
             yield return Zahl("tagesbedarf_manuell", "TagesbedarfManuell", KiDialogTexte.ZpgTagesbedarfManuellName,
                               KiDialogTexte.ZpgTagesbedarfManuellErl, KiDialogTexte.EINHEIT_KWH_D, 0, null);
-            yield return Wahl("ladeleistung_modus", "LadeleistungModus", KiDialogTexte.ZpgLadeleistungModusName,
-                              KiDialogTexte.ZpgLadeleistungModusErl, false);
             yield return Zahl("ladeleistung_manuell", "LadeleistungManuell", KiDialogTexte.ZpgLadeleistungManuellName,
                               KiDialogTexte.ZpgLadeleistungManuellErl, KiDialogTexte.EINHEIT_KW, 0, null);
             yield return Zahl("ladefenster", "Ladefenster", KiDialogTexte.ZpgLadefensterName,
                               KiDialogTexte.ZpgLadefensterErl, KiDialogTexte.EINHEIT_H_D, 0, 24);
             yield return Zahl("ladefenster_beginn", "LadefensterBeginn", KiDialogTexte.ZpgLadefensterBeginnName,
                               KiDialogTexte.ZpgLadefensterBeginnErl, KiDialogTexte.EINHEIT_STUNDE, 0, 24);
-            yield return Wahl("zirkulation_modus", "ZirkulationModus", KiDialogTexte.ZpgZirkulationModusName,
-                              KiDialogTexte.ZpgZirkulationModusErl, false);
             yield return Wahl("zirk_methode", "ZirkMethode", KiDialogTexte.ZpgZirkMethodeName, KiDialogTexte.ZpgZirkMethodeErl, false);
             yield return Zahl("zirk_laenge", "ZirkLaenge", KiDialogTexte.ZpgZirkLaengeName,
                               KiDialogTexte.ZpgZirkLaengeErl, KiDialogTexte.EINHEIT_METER, 0, null);
@@ -4572,19 +4572,15 @@ namespace WindowsFormsApplication1
                               KiDialogTexte.ZpgZirkFlaecheErl, KiDialogTexte.EINHEIT_M2, 0, null);
             yield return Zahl("zirk_laufzeit", "ZirkLaufzeit", KiDialogTexte.ZpgZirkLaufzeitName,
                               KiDialogTexte.ZpgZirkLaufzeitErl, KiDialogTexte.EINHEIT_H_D, 0, 24);
-            yield return Zahl("anzeigetemperatur", "Anzeigetemperatur", KiDialogTexte.ZpgAnzeigetemperaturName,
-                              KiDialogTexte.ZpgAnzeigetemperaturErl, KiDialogTexte.EINHEIT_GRAD_C, null, null);
-            yield return Zahl("stundenschwelle", "Stundenschwelle", KiDialogTexte.ZpgStundenschwelleName,
-                              KiDialogTexte.ZpgStundenschwelleErl, KiDialogTexte.EINHEIT_KW, 0, null);
 
             static KiDialogFeld Zahl(string name, string eigenschaft, string anzeigename, string erlaeuterung, string einheit,
                                      double? min, double? max)
                 => new KiDialogFeld(name, ZAPFPROFIL_SICHT + "." + eigenschaft, anzeigename, KiParameterTyp.Zahl, erlaeuterung,
                                     einheit: einheit, leerErlaubt: true, min: min, max: max);
 
-            static KiDialogFeld Ferienspalte(string name, string eigenschaft, string anzeigename, double max)
-                => new KiDialogFeld(name, ZAPFPROFIL_SICHT + ".Ferien[]." + eigenschaft, anzeigename, KiParameterTyp.Ganzzahl,
-                                    KiDialogTexte.ZpgFerienErl, leerErlaubt: true, zeilenkennzeichen: "Zeitraum", min: 1, max: max);
+            static KiDialogFeld Ferienspalte(string name, string eigenschaft, string anzeigename)
+                => new KiDialogFeld(name, ZAPFPROFIL_SICHT + ".Ferien[]." + eigenschaft, anzeigename, KiParameterTyp.Text,
+                                    KiDialogTexte.ZpgFerienErl, leerErlaubt: true, zeilenkennzeichen: "Zeitraum");
 
             static KiDialogFeld Wahl(string name, string eigenschaft, string anzeigename, string erlaeuterung, bool leer)
                 => new KiDialogFeld(name, ZAPFPROFIL_SICHT + "." + eigenschaft, anzeigename, KiParameterTyp.Wahl, erlaeuterung,
@@ -9541,6 +9537,10 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kaeltespeicher", "SimulationKiSicht.Kaeltespeicher",
                                      KiDialogTexte.SimKaeltespeicherName, KiParameterTyp.Text,
                                      KiDialogTexte.SimKaeltespeicherErl, leerErlaubt: true, nurLesen: true),
+                    // K6b-N: die Gruppe „Dezentrale Kaeltedeckung" nur lesend - gepflegt wird im Dialog der Zeile.
+                    new KiDialogFeld("kaelte_dezentral", "SimulationKiSicht.KaelteDezentral",
+                                     KiDialogTexte.SimKaelteDezentralName, KiParameterTyp.Text,
+                                     KiDialogTexte.SimKaelteDezentralErl, leerErlaubt: true, nurLesen: true),
                     new KiDialogFeld("kuehlbetrieb_waermepumpen", "SimulationKiSicht.KuehlbetriebWaermepumpen",
                                      KiDialogTexte.SimKuehlWpName, KiParameterTyp.Text,
                                      KiDialogTexte.SimKuehlWpErl, leerErlaubt: true),

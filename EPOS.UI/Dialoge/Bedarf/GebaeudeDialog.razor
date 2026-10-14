@@ -51,14 +51,16 @@
    Aenderungen, sagt der Exportdialog, dass der gespeicherte Stand exportiert wird. Nach dem
    Schreiben steht die Rueckmeldung mit Pfad im Banner. Kein Delegat, kein Knopf.
 
-   DIE BAUSTOFF-ZUORDNUNGEN DES PROJEKTS (Nacharbeit G4b): der Knopf "Baustoff-Zuordnungen..." steht
-   in der Leiste unter dem Katalog gleich neben "Importieren (gbXML, IFC)..." (Anwenderentscheid
-   06.10.2026) - die Zuordnungen von Materialnamen zu Katalogbaustoffen entstehen beim Gebaeudeimport
-   und gelten fuer das Projekt, nicht fuer die markierte Zeile; der Importdialog lebt nur waehrend
-   eines Imports, die Liste soll auch dazwischen erreichbar sein. Er oeffnet sie als achte
-   Ueberlagerung; einzelne lassen sich dort entfernen, geschrieben mit deren OK (nicht mit dem OK
-   dieses Dialogs). Die Rueckmeldung steht unter der Leiste. Im Assistenten und ohne Delegat kein
-   Knopf.
+   DIE BAUSTOFF-ZUORDNUNGEN DES PROJEKTS (Nacharbeit G4b, GD-6a): Dieser Dialog traegt keinen Knopf
+   "Baustoff-Zuordnungen..." mehr; er reicht den Parametersatz (BaustoffzuordnungenGaben) an die beiden
+   Wirte durch, wo die Zuordnungen entstehen und wirken - den Gebaeudeimport (Liste "Bauteilaufbauten")
+   und den Gebaeudeeditor (Reiter "Zonen", Bauteile und Aufbauten). Im Assistenten reicht er nichts durch.
+
+   SIMULATION IM PROJEKT (GD-6a, Anwenderwunsch 12.10.2026): "Simulation..." steht in der Kopfleiste des
+   Abschnitts IM PROJEKT - ohne Kaestchen fuer alle Gebaeude des Projekts, sonst fuer die angekreuzten.
+   Ein Gebaeude oeffnet den Waermebedarf wie bisher; mehrere rechnen nacheinander je Zeile (derselbe
+   Weg BedarfGaben) und zeigen eine Liste je Gebaeude mit Sprung in den Einzelbedarf. Das Kaestchen einer
+   Projektzeile laesst einen gewaehlten Katalogsatz stehen. Nicht im Assistenten.
 
    "IN DB UEBERNEHMEN": der dritte Knopf der Uebernahmeleiste schreibt die Projektkopie der
    markierten Projektzeile als neuen Anwendersatz in den Katalog - nach einer kleinen
@@ -115,8 +117,8 @@
 
     @* KATALOGAUSWAHL V1, Stufe 4 (Konzept Projektdialoge mit Katalogauswahl 4.2, 4.9 Zeile „Gebäude", UeS1/UeS2):
        Projekt-Kopfleiste nur mit „Bearbeiten…" (Hülle und Zonen der Projektkopie), „In die Datenbank übernehmen…" und
-       „Aus dem Projekt entfernen"; Katalog-Fußleiste links Schloss, Löschen, Bearbeiten…, rechts Neu…, Importieren…,
-       Baustoff-Zuordnungen…; beide Listen mit Kästchen (Mehrfachwahl) und Stift je Zeile; die Detailzeile ist eine
+       „Aus dem Projekt entfernen", dazu „Simulation…" (GD-6a); Katalog-Fußleiste links Schloss, Löschen, Bearbeiten…,
+       rechts Neu…, Importieren…; beide Listen mit Kästchen (Mehrfachwahl) und Stift je Zeile; die Detailzeile ist eine
        Zusammenfassung, „Bearbeiten" öffnet den heutigen Satzinhalt als Satz-Überlagerung. *@
     <Zweispaltenauswahl Dialogname="Gebaeude" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
                         KatalogZeile="@((int)Katalogliste.ZEILENHOEHE_ZEILENWAHL)"
@@ -167,6 +169,44 @@
                     <button type="button" class="epos-knopf epos-zweispalten-knopf epos-gebaeude-in-db epos-knopf--rueckweg"
                             title="@Resource.KATRUECK_BTN_HINWEIS" disabled="@(ProjektZiele().Count == 0)" @onclick="BeiRueckweg">
                         <span class="epos-zweispalten-knopftext">@Resource.KATRUECK_BTN</span>
+                    </button>
+                }
+            }
+            @* GD-6a: „Simulation…" fuer das Projekt - ohne Kaestchen alle Gebaeude, sonst die angekreuzten. *@
+            @if (BedarfGaben is not null && !Wizard)
+            {
+                @if (Zeilen.Count == 0)
+                {
+                    <button type="button" class="epos-knopf epos-zweispalten-knopf epos-gebaeude-simulation-projekt"
+                            aria-disabled="true" title="@Resource.GEBSIM_SPERRE_LEER"
+                            @onclick="() => Melden(Resource.GEBSIM_SPERRE_LEER, WarnStufe.Hinweis)">
+                        <span class="epos-zweispalten-knopftext">@SimulationKopfText</span>
+                    </button>
+                }
+                else
+                {
+                    <button type="button" class="epos-knopf epos-zweispalten-knopf epos-gebaeude-simulation-projekt"
+                            title="@Resource.GEBSIM_BTN_HINWEIS" @onclick="BeiSimulationProjekt">
+                        <span class="epos-zweispalten-knopftext">@SimulationKopfText</span>
+                    </button>
+                }
+            }
+            @* MA-1b: „Modell prüfen…" fuer die gewaehlte Projektzeile (ohne Wahl die erste) - nicht im Assistenten. *@
+            @if (ModellpruefungGaben is not null && !Wizard)
+            {
+                @if (Zeilen.Count == 0)
+                {
+                    <button type="button" class="epos-knopf epos-zweispalten-knopf epos-gebaeude-modellpruefung"
+                            aria-disabled="true" title="@Resource.MPB_SPERRE_LEER"
+                            @onclick="() => Melden(Resource.MPB_SPERRE_LEER, WarnStufe.Hinweis)">
+                        <span class="epos-zweispalten-knopftext">@Resource.MPB_BTN_KOPF</span>
+                    </button>
+                }
+                else
+                {
+                    <button type="button" class="epos-knopf epos-zweispalten-knopf epos-gebaeude-modellpruefung"
+                            title="@Resource.MPB_BTN_KOPF_HINWEIS" @onclick="BeiModellpruefung">
+                        <span class="epos-zweispalten-knopftext">@Resource.MPB_BTN_KOPF</span>
                     </button>
                 }
             }
@@ -352,13 +392,6 @@
                 <button type="button" class="epos-knopf epos-importknopf" title="@BtnImportHinweis"
                         @onclick="BeiImport">@BtnImportText</button>
             }
-            @* Nacharbeit G4b: die gemerkten Baustoff-Zuordnungen des Projekts - sie gelten für das ganze Projekt. *@
-            @if (BaustoffzuordnungenGaben is not null && !Wizard)
-            {
-                <button type="button" class="epos-knopf epos-gebaeude-baustoffzuordnungen"
-                        title="@BtnBaustoffzuordnungenHinweis"
-                        @onclick="BeiBaustoffzuordnungen">@BtnBaustoffzuordnungenText</button>
-            }
         </KatalogFussRechts>
 
         <SatzKopfKnoepfe>
@@ -458,7 +491,7 @@
                 @if (DateiNeuLesen is not null && QuelleVon(_gewaehlt) is not null)
                 {
                     <button type="button" class="epos-knopf epos-gebaeude-neulesen"
-                            title="@BtnNeuLesenHinweis" @onclick="BeiNeuLesen">@BtnNeuLesenText</button>
+                            title="@BtnNeuLesenHinweis" @onclick="BeiNeuLesenAmSatz">@BtnNeuLesenText</button>
                 }
 
                 @if (BedarfGaben is not null)
@@ -498,6 +531,7 @@
             @if (_katalogGaben is not null)
             {
                 <GebaeudeKatalogDialog @attributes="_katalogGaben" TitelAnzeigen="false"
+                                       BaustoffzuordnungenGaben="@BaustoffzuordnungenWirt"
                                        Geschlossen="KatalogeditorFertig" />
             }
         </KindInhalt>
@@ -511,6 +545,9 @@
             @if (_projektGaben is not null)
             {
                 <GebaeudeKatalogDialog @attributes="_projektGaben" TitelAnzeigen="false"
+                                       BaustoffzuordnungenGaben="@BaustoffzuordnungenWirt"
+                                       ZonenNutzungGaben="@ZonenNutzungEditorWirt"
+                                       MehrzonenGeschrieben="() => _mehrzonenGeschrieben = true"
                                        Geschlossen="ProjekteditorFertig" />
             }
         </KindInhalt>
@@ -528,18 +565,6 @@
         </KindInhalt>
     </Ueberlagerung>
 
-    @* --- Ueberlagerung 8: die Baustoff-Zuordnungen des Projekts (Nacharbeit G4b) --- *@
-    <Ueberlagerung Offen="@(_baustoffzuordnungenGaben is not null)" Titel="@TitelBaustoffzuordnungen"
-                   Geschlossen="() => BaustoffzuordnungenFertig(null)">
-        <KindInhalt>
-            @if (_baustoffzuordnungenGaben is not null)
-            {
-                <BaustoffzuordnungenDialog @attributes="_baustoffzuordnungenGaben" TitelAnzeigen="false"
-                                           Geschlossen="BaustoffzuordnungenFertig" />
-            }
-        </KindInhalt>
-    </Ueberlagerung>
-
     @* --- Ueberlagerung 5: der Gebaeudeimport (Stufe G4, A17) ---------------
        Ohne Titel und ohne Kreuz: Der Importdialog fuehrt beides selbst, nimmt sein Kreuz
        waehrend eines Lesegangs weg und deutet Esc dann als "Lauf abbrechen" - ein Kreuz
@@ -549,7 +574,8 @@
         <KindInhalt>
             @if (_importGaben is not null)
             {
-                <GebaeudeImportDialog @attributes="_importGaben" RaumnutzungKi="@_raumnutzungKi" Geschlossen="ImportFertig" />
+                <GebaeudeImportDialog @attributes="_importGaben" RaumnutzungKi="@_raumnutzungKi"
+                                      BaustoffzuordnungenGaben="@BaustoffzuordnungenWirt" Geschlossen="ImportFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -574,6 +600,45 @@
             {
                 <GebaeudetypDialog @attributes="GebaeudetypGaben()" TitelText=""
                                    Geschlossen="_ => _gebaeudetypOffen = false" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- MA-1b: das Blatt „Modell prüfen" - Ampel je Pruefgruppe, Vorschlaege, Ruecknahme. Steht VOR dem Waermebedarf und
+       dem Neulesen, damit „Simulation…" und „Ansicht…" darueber oeffnen und das Blatt darunter stehen bleibt. --- *@
+    <Ueberlagerung Offen="@(_modellpruefung is not null)" Titel="@Resource.MPB_TITEL" Geschlossen="ModellpruefungFertig">
+        <KindInhalt>
+            @if (_modellpruefung is not null && _modellpruefungZeile is not null)
+            {
+                <Modellpruefungsblatt @ref="_modellpruefungsblatt" Weg="@_modellpruefung" AnsichtSperre="@ModellpruefungAnsichtSperre()"
+                                      Simulation="ModellpruefungSimulation" Ansicht="ModellpruefungAnsicht"
+                                      AnsichtGruppe="ModellpruefungAnsichtGruppe"
+                                      Bearbeiten="@ModellpruefungBearbeitenWirt" Geaendert="ModellpruefungGeaendert" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- MA-2: das Blatt „Nutzung und Kalender" aus Gruppe 3 der Modellpruefung - steht ueber dem Ampelblatt; beim Schliessen
+       prueft das Ampelblatt neu. --- *@
+    <Ueberlagerung Offen="@(_zonenNutzung is not null)" Titel="@Resource.ZNB_TITEL" Zusatzklasse="epos-ueberlagerung--breit"
+                   Geschlossen="ZonenNutzungFertig">
+        <KindInhalt>
+            @if (_zonenNutzung is not null)
+            {
+                <ZonenNutzungsblatt Weg="@_zonenNutzung" Geaendert="ZonenNutzungGeaendert" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 8: der Waermebedarf mehrerer Gebaeude (GD-6a) - eine Liste je Gebaeude; der Sprung
+       oeffnet Ueberlagerung 4 darueber, die Liste bleibt stehen. Keine Datenbank: die Zahlen kommen aus den
+       Parametersaetzen von BedarfGaben. --- *@
+    <Ueberlagerung Offen="@(_simulationsliste is not null)" Titel="@Resource.GEBSIM_TITEL"
+                   Geschlossen="SimulationslisteFertig">
+        <KindInhalt>
+            @if (_simulationsliste is not null)
+            {
+                <GebaeudeSimulationsliste Eintraege="@_simulationsliste" Oeffnen="SimulationslisteOeffnen" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -631,7 +696,9 @@
                             <p class="epos-leisezeile epos-gebaeude-neulesen-zonen">@stand.Zonenhinweis</p>
                         }
                         <GebaeudeAnsicht Daten="@stand.Ansicht" Geschoss="@_neulesenGeschoss"
-                                         GeschossChanged="g => _neulesenGeschoss = g" Texte="@_ansichtTexte" />
+                                         GeschossChanged="g => _neulesenGeschoss = g" Texte="@_ansichtTexte"
+                                         FarbmodusVorgabe="@_neulesenFarbmodus" Pruefung="@_neulesenPruefung"
+                                         PruefungUebernehmen="@AnsichtUebernehmenWirt" PruefungVerwerfen="@AnsichtVerwerfenWirt" />
                     }
                     @if (stand.AndereDateiAnbieten)
                     {
@@ -811,6 +878,19 @@
     public Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>?>? BedarfGaben { get; set; }
 
     /// <summary>
+    /// MA-1b: der Weg des Blatts „Modell prüfen" für eine Projektzeile (Hülle <c>ModellpruefungHuelle</c>); <c>null</c> als
+    /// Ergebnis = die Zeile hat (noch) kein Projektgebäude. Ohne Delegat kein Knopf; im Assistenten nie.
+    /// </summary>
+    [Parameter] public Func<GebaeudeProjektZeile, ModellpruefungWeg?>? ModellpruefungGaben { get; set; }
+
+    /// <summary>
+    /// MA-2: der Weg des Blatts „Nutzung und Kalender" für eine Projektzeile (Hülle <c>ZonenNutzungHuelle</c>); <c>null</c> als
+    /// Ergebnis = kein Projektgebäude. Einstiege: „Bearbeiten…" an Gruppe 3 des Blatts „Modell prüfen" und „Nutzung und
+    /// Kalender…" im Reiter „Zonen" des Editors. Ohne Delegat kein Knopf; im Assistenten nie.
+    /// </summary>
+    [Parameter] public Func<GebaeudeProjektZeile, ZonenNutzungWeg?>? ZonenNutzungGaben { get; set; }
+
+    /// <summary>
     /// <b>„Hülle und Zonen…"</b> (Gebäudesimulation G3, Welle D2): der Parametersatz des
     /// Gebäudeeditors in der Betriebsart Projekt für eine Projektzeile — bearbeitet wird die
     /// Projektkopie samt Zonen. Kein Delegat = kein Knopf; <c>null</c> als Rückgabe heißt „diese Zeile
@@ -947,10 +1027,35 @@
 
     /// <summary>
     /// Ein Sprungziel beim Öffnen (<see cref="Sprungziele"/>; Konzept Kältebedarf 3.5): <see cref="Sprungziele.Kuehlung"/>
-    /// wählt das erste Projektgebäude und öffnet seinen Editor an der Gruppe „Kühlung“; ohne Projektgebäude steht der Hinweis
-    /// „Noch kein Gebäude im Projekt“. Leer = keins.
+    /// wählt das zuletzt gewählte Projektgebäude (<see cref="ZuletztGewaehlt"/>), sonst das erste, und öffnet seinen Editor
+    /// an der Gruppe „Kühlung“; ohne Projektgebäude steht der Hinweis „Noch kein Gebäude im Projekt“. Leer = keins.
     /// </summary>
     [Parameter] public string Sprungziel { get; set; } = "";
+
+    /// <summary>
+    /// Das zuletzt gewählte Projektgebäude über das Öffnen hinaus (GD-N): der Zuordnungsschlüssel (<c>IdZ</c>) bzw.
+    /// <c>null</c> = keins gemerkt. Die Hülle hält ihn je Projekt in den Einstellungen.
+    /// </summary>
+    [Parameter] public Func<int?>? ZuletztGewaehlt { get; set; }
+
+    /// <summary>Merkt das gewählte Projektgebäude (Zuordnungsschlüssel) für den nächsten Sprung.</summary>
+    [Parameter] public Action<int>? GewaehltMerken { get; set; }
+
+    /// <summary>
+    /// Der Jahreswärmebedarf des letzten Rechenlaufs eines Projektgebäudes für die Zusammenfassung (GD-N); <c>null</c> =
+    /// noch nicht gerechnet. Ohne Gabe entfällt die Zeile.
+    /// </summary>
+    [Parameter] public Func<GebaeudeProjektZeile, GebaeudeJahreswaermebedarf?>? Jahreswaermebedarf { get; set; }
+
+    /// <summary>Der Text der Zeile „Jahreswärmebedarf“: Wert und Datum des Laufs bzw. „noch nicht gerechnet“.</summary>
+    private string JahreswaermebedarfText(GebaeudeProjektZeile z)
+    {
+        System.Globalization.CultureInfo k = System.Globalization.CultureInfo.CurrentCulture;
+        if (Jahreswaermebedarf?.Invoke(z) is not GebaeudeJahreswaermebedarf w) return Resource.GEB_ZF_JWB_OFFEN;
+        string datum = w.Zeitpunkt?.ToString("d", k) ?? "—";
+        return string.Format(k, w.Projektwert ? Resource.GEB_ZF_JWB_PROJEKT : Resource.GEB_ZF_JWB_WERT,
+                             w.Mwh.ToString("N1", k), datum);
+    }
 
     /// <summary>Der Sprung beim Öffnen: Gebäude wählen, Editor mit dem Sprungziel öffnen — oder den Grund nennen.</summary>
     private void SprungAusfuehren()
@@ -961,12 +1066,15 @@
             Melden(Resource.GEB_SPRUNG_KEIN_GEBAEUDE, WarnStufe.Hinweis);
             return;
         }
-        GebaeudeProjektZeile z = _gewaehlt ?? Zeilen[0];
+        // GD-N: das zuletzt gewählte Gebäude des Projekts (über das Öffnen hinaus gemerkt), sonst das erste.
+        GebaeudeProjektZeile? zuletzt = ZuletztGewaehlt?.Invoke() is int idZ ? Zeilen.FirstOrDefault(x => x.IdZ == idZ) : null;
+        GebaeudeProjektZeile z = zuletzt ?? _gewaehlt ?? Zeilen[0];
         if (!ReferenceEquals(_gewaehlt, z)) ProjektzeileWaehlen(z);
         if (ProjektGaben is null || !z.HatProjektkopie) return;
         IReadOnlyDictionary<string, object>? gaben = ProjektGaben(z);
         if (gaben is null) return;
         _projektGaben = new Dictionary<string, object>(gaben) { ["Sprungziel"] = Sprungziel };
+        _projektZeile = z;
     }
 
     /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
@@ -992,18 +1100,6 @@
 
     /// <summary><c>GEXP_TITEL_FORMATWAHL</c> — der Titel der Überlagerung (Formatwahl gbXML oder IFC).</summary>
     [Parameter] public string TitelExport { get; set; } = Resource.GEXP_TITEL_FORMATWAHL;
-
-    /// <summary><c>GEB_BTN_BAUSTOFFZUORDNUNGEN</c> — der Knopf „Baustoff-Zuordnungen…".</summary>
-    [Parameter] public string BtnBaustoffzuordnungenText { get; set; } = Resource.GEB_BTN_BAUSTOFFZUORDNUNGEN;
-
-    /// <summary><c>GEB_BTN_BAUSTOFFZUORDNUNGEN_HINWEIS</c> — sein Kurztext.</summary>
-    [Parameter] public string BtnBaustoffzuordnungenHinweis { get; set; } = Resource.GEB_BTN_BAUSTOFFZUORDNUNGEN_HINWEIS;
-
-    /// <summary><c>BSZU_TITEL</c> — der Titel der Überlagerung.</summary>
-    [Parameter] public string TitelBaustoffzuordnungen { get; set; } = Resource.BSZU_TITEL;
-
-    /// <summary><c>GEB_MSG_BAUSTOFFZUORDNUNGEN_ENTFERNT</c> — {0} = Zahl der entfernten Zuordnungen.</summary>
-    [Parameter] public string MeldungBaustoffzuordnungenEntfernt { get; set; } = Resource.GEB_MSG_BAUSTOFFZUORDNUNGEN_ENTFERNT;
 
     /// <summary><c>GEBZ_SPERRE_PROJEKT_ASSISTENT</c> — der Grund der weichen Sperre für eine Zeile ohne Projektkopie im Assistenten.</summary>
     [Parameter] public string SperreNeueZeile { get; set; } = Resource.GEBZ_SPERRE_PROJEKT_ASSISTENT;
@@ -1202,7 +1298,16 @@
 
     /// <summary>Der Parametersatz des Exportdialogs, solange „Exportieren (gbXML)…" steht (G7a).</summary>
     private IReadOnlyDictionary<string, object>? _exportGaben;
-    private IReadOnlyDictionary<string, object>? _baustoffzuordnungenGaben;
+
+    /// <summary>Die Liste „Simulation…" mehrerer Gebäude (GD-6a), solange sie steht.</summary>
+    private IReadOnlyList<GebaeudeSimulationseintrag>? _simulationsliste;
+
+    /// <summary>Steht die Liste des Wärmebedarfs mehrerer Gebäude? Prüfhilfe für die Tests.</summary>
+    public bool SimulationslisteOffen => _simulationsliste is not null;
+
+    /// <summary>Die Einträge der Liste „Simulation…" (GD-6a); leer, solange sie nicht steht. Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<GebaeudeSimulationseintrag> Simulationsliste
+        => _simulationsliste ?? Array.Empty<GebaeudeSimulationseintrag>();
 
     /// <summary>Steht der Exportdialog? Prüfhilfe für die Tests.</summary>
     public bool ExportOffen => _exportGaben is not null;
@@ -1435,7 +1540,7 @@
         // Der Anwender steht im Katalog - seine Wahl wird nicht ueberschrieben.
         if (_katalogzeile is not null) return;
 
-        if (Zeilen.Count > 0) ProjektzeileWaehlen(Zeilen[0]);
+        if (Zeilen.Count > 0) ProjektzeileWaehlen(Zeilen[0], merken: false);
     }
 
     /// <summary>
@@ -1517,9 +1622,11 @@
     /// <summary>Name des gewählten Satzes in der zugeklappten Detailzeile.</summary>
     private string? SatzName => SatzArt == Satzmarke.Keiner ? null : _detailName;
 
-    private void ProjektzeileWaehlen(GebaeudeProjektZeile z)
+    private void ProjektzeileWaehlen(GebaeudeProjektZeile z, bool merken = true)
     {
         _gewaehlt = z;
+        // GD-N: nur eine Wahl merken, nicht die Vorauswahl der ersten Zeile beim Öffnen.
+        if (merken) GewaehltMerken?.Invoke(z.IdZ);
         _katalogzeile = null;
         _katalogGewaehlt = "";
         _loeschsperre = "";
@@ -1641,7 +1748,7 @@
         foreach (GebaeudeProjektZeile z in ziele) Zeilen.Remove(z);
         _projektWahl.Setzen(Array.Empty<string>());
         _gewaehlt = null;
-        if (Zeilen.Count > 0) ProjektzeileWaehlen(Zeilen[0]);
+        if (Zeilen.Count > 0) ProjektzeileWaehlen(Zeilen[0], merken: false);
         else
         {
             IReadOnlyList<Katalogfilterzeile> sichtbar = Sichtbar;
@@ -1837,6 +1944,7 @@
             if (z.HatProjektkopie) l.Add(new(Resource.GEB_ZF_KUEHLUNG, z.KuehlungAktiv ? JaText : NeinText));
             l.Add(new(Resource.GEB_ZF_ZONEN, z.Zonenzahl.ToString(k)));
             if (z.HgesWK.HasValue) l.Add(new(Beschriftung(LabelHges), Leitwert(z.HgesWK)));
+            if (Jahreswaermebedarf is not null) l.Add(new(Resource.GEB_ZF_JAHRESWAERME, JahreswaermebedarfText(z)));
         }
         else if (_katalogzeile is Katalogfilterzeile kz)
         {
@@ -2068,6 +2176,8 @@
         ProjektzeileWaehlen(neu);
         Geaendert?.Invoke();
         Melden(Format(MeldungImportAufgenommen, neu.Name), WarnStufe.Hinweis);
+        // MA-1b (Leitziel): nach jedem erfolgreichen Import das Blatt „Modell prüfen" für das neue Gebäude - nicht im Assistenten.
+        if (!Wizard) ModellpruefungOeffnen(neu, still: true);
     }
 
     // =================================================================================
@@ -2136,16 +2246,27 @@
         if (!z.HatProjektkopie && !VorherSpeichern(z, SperreNeueZeile)) return;
         _meldung = "";
         _projektGaben = ProjektGaben(z);
+        _projektZeile = _projektGaben is null ? null : z;
         if (_projektGaben is null) Melden(MeldungProjektkopieFehlt, WarnStufe.Warnung);
     }
 
     private void ProjekteditorFertig(bool gespeichert)
     {
         _projektGaben = null;
+        _projektZeile = null;
+        bool mehrzonen = _mehrzonenGeschrieben;
+        _mehrzonenGeschrieben = false;
+        if (gespeichert && mehrzonen && _gewaehlt is not null && !Wizard) _modellpruefungNachEditor = _gewaehlt;
         KatalogLaden();   // "Speichern unter" legt einen Katalogsatz an
         if (!gespeichert || _gewaehlt is null) return;
         ZeileAuffrischen?.Invoke(_gewaehlt);
         ProjektzeileWaehlen(_gewaehlt);
+        // MA-1b (Leitziel: Import → ein Klick → rechenfähig): nach „Als Mehrzonenmodell übernehmen…" das Blatt von selbst.
+        if (_modellpruefungNachEditor is { } nachEditor)
+        {
+            _modellpruefungNachEditor = null;
+            ModellpruefungOeffnen(nachEditor, still: true);
+        }
     }
 
     /// <summary>
@@ -2161,23 +2282,11 @@
         if (_exportGaben is null) Melden(MeldungProjektkopieFehlt, WarnStufe.Warnung);
     }
 
-    /// <summary>„Baustoff-Zuordnungen…" (Nacharbeit G4b) — die Ansicht als Überlagerung, je Klick neu gelesen.</summary>
-    private void BeiBaustoffzuordnungen()
-    {
-        if (BaustoffzuordnungenGaben is null) return;
-        _meldung = "";
-        _baustoffzuordnungenGaben = BaustoffzuordnungenGaben();
-    }
-
     /// <summary>
-    /// Die Ansicht ist zu: nach OK mit der Zahl der entfernten Zuordnungen (sie sind dann geschrieben) —
-    /// ab einer steht der Hinweis im Banner; <c>null</c> bei Abbrechen, ✕ und Esc.
+    /// Der Parametersatz „Baustoff-Zuordnungen…" für die Wirte Import und Editor (GD-6a) — im Assistenten keiner.
     /// </summary>
-    private void BaustoffzuordnungenFertig(int? entfernt)
-    {
-        _baustoffzuordnungenGaben = null;
-        if (entfernt is > 0) Melden(Format(MeldungBaustoffzuordnungenEntfernt, entfernt.Value), WarnStufe.Hinweis, amKatalog: true);
-    }
+    private Func<IReadOnlyDictionary<string, object>>? BaustoffzuordnungenWirt
+        => Wizard ? null : BaustoffzuordnungenGaben;
 
     /// <summary>
     /// Der Exportdialog ist zu: nach dem Schreiben steht seine Rückmeldung (mit Pfad) im Banner;
@@ -2222,30 +2331,311 @@
     private void BeiSimulation()
     {
         if (_gewaehlt is null || BedarfGaben is null) return;
+        SimulationEinesGebaeudes(_gewaehlt);
+    }
 
+    /// <summary>Der Wärmebedarf genau einer Zeile: die Überlagerung oder die Meldung ohne Zahl.</summary>
+    private void SimulationEinesGebaeudes(GebaeudeProjektZeile zeile)
+    {
         _meldung = "";
-        IReadOnlyDictionary<string, object>? gaben = BedarfGaben(_gewaehlt);
+        IReadOnlyDictionary<string, object>? gaben = BedarfGabenFuer(zeile, out string grund, out bool gemeldet);
+        if (gaben is null)
+        {
+            if (!gemeldet) Melden(grund, WarnStufe.Warnung);
+            return;
+        }
+        _bedarfGaben = gaben;
+    }
+
+    /// <summary>
+    /// Der Parametersatz des Wärmebedarfs einer Zeile (Weg <see cref="BedarfGaben"/>); ohne Zahl der benannte Grund.
+    /// <paramref name="gemeldet"/> sagt, dass das stille Speichern scheiterte und seine Meldung schon steht.
+    /// </summary>
+    private IReadOnlyDictionary<string, object>? BedarfGabenFuer(GebaeudeProjektZeile zeile, out string grund, out bool gemeldet)
+    {
+        grund = "";
+        gemeldet = false;
+        if (BedarfGaben is null) return null;
+        IReadOnlyDictionary<string, object>? gaben = BedarfGaben(zeile);
         // Anwenderentscheid 06.10.2026: Eine ungespeicherte Importzeile, deren Zone mit Bauteilen erst
         // der Speicherweg anlegt, wird außerhalb des Assistenten zuerst still gespeichert und dann
         // gerechnet; scheitert das Speichern, steht seine Meldung.
-        if (gaben is null && ListeSpeichern is not null && !_gewaehlt.HatProjektkopie
-            && _gewaehlt.Herkunftsschluessel is not null)
+        if (gaben is null && ListeSpeichern is not null && !zeile.HatProjektkopie
+            && zeile.Herkunftsschluessel is not null)
         {
-            if (!KopienAnlegen(new[] { _gewaehlt }, amKatalog: false)) return;
-            gaben = BedarfGaben(_gewaehlt);
+            if (!KopienAnlegen(new[] { zeile }, amKatalog: false))
+            {
+                gemeldet = true;
+                grund = _meldung.Length > 0 ? _meldung : MeldungKeinBedarf;
+                return null;
+            }
+            gaben = BedarfGaben(zeile);
         }
         if (gaben is null)
         {
             // Stufe G6a: der benannte Grund der Fassade statt der allgemeinen Meldung.
-            string? grund = BedarfBefund?.Invoke();
-            Melden(string.IsNullOrWhiteSpace(grund)
-                       ? MeldungKeinBedarf
-                       : string.Format(System.Globalization.CultureInfo.CurrentCulture, MeldungKeinBedarfGrund, grund),
-                   WarnStufe.Warnung);
+            string? befund = BedarfBefund?.Invoke();
+            grund = string.IsNullOrWhiteSpace(befund)
+                ? MeldungKeinBedarf
+                : string.Format(System.Globalization.CultureInfo.CurrentCulture, MeldungKeinBedarfGrund, befund);
+        }
+        return gaben;
+    }
+
+    /// <summary>Die Zeilen, für die „Simulation…" der Kopfleiste rechnet: die angekreuzten, sonst alle (GD-6a).</summary>
+    private List<GebaeudeProjektZeile> SimulationsZiele()
+    {
+        if (_projektWahl.Anzahl == 0) return Zeilen.ToList();
+        return _projektWahl.Gewaehlte
+            .Select(s => Zeilen.FirstOrDefault(z => Projektschluessel(z) == s))
+            .OfType<GebaeudeProjektZeile>().ToList();
+    }
+
+    /// <summary>Die Beschriftung des Kopfknopfes: „(alle n Gebäude)" ohne Kästchen, sonst „(m gewählt)".</summary>
+    private string SimulationKopfText
+        => _projektWahl.Anzahl > 0
+            ? Format(Resource.GEBSIM_BTN_GEWAEHLT, _projektWahl.Anzahl)
+            : Format(Resource.GEBSIM_BTN_ALLE, Zeilen.Count);
+
+    /// <summary>
+    /// „Simulation…" der Kopfleiste (GD-6a): ein Gebäude öffnet den Wärmebedarf wie der Knopf am Satz; mehrere
+    /// rechnen nacheinander je Zeile über <see cref="BedarfGaben"/> — geschrieben wird nichts außer dem stillen
+    /// Speichern einer Importzeile — und stehen als Liste je Gebäude mit Sprung in den Einzelbedarf.
+    /// </summary>
+    private void BeiSimulationProjekt()
+    {
+        if (BedarfGaben is null) return;
+        List<GebaeudeProjektZeile> ziele = SimulationsZiele();
+        if (ziele.Count == 0) return;
+        if (ziele.Count == 1)
+        {
+            SimulationEinesGebaeudes(ziele[0]);
             return;
         }
 
-        _bedarfGaben = gaben;
+        _meldung = "";
+        var eintraege = new List<GebaeudeSimulationseintrag>(ziele.Count);
+        foreach (GebaeudeProjektZeile zeile in ziele)
+        {
+            IReadOnlyDictionary<string, object>? gaben = BedarfGabenFuer(zeile, out string grund, out _);
+            eintraege.Add(GebaeudeSimulationseintrag.Aus(zeile.Name, gaben, grund));
+        }
+        _meldung = "";
+        _simulationsliste = eintraege;
+    }
+
+    /// <summary>Der Sprung aus der Liste in den Wärmebedarf eines Gebäudes — die Liste bleibt darunter stehen.</summary>
+    private void SimulationslisteOeffnen(GebaeudeSimulationseintrag eintrag)
+    {
+        if (eintrag.Gaben is not null) _bedarfGaben = eintrag.Gaben;
+    }
+
+    private void SimulationslisteFertig() => _simulationsliste = null;
+
+    // =================================================================================
+    // MA-1b: das Blatt „Modell prüfen" (Entwurf Geführter Modellaufbau 2, E137 F1/F2)
+    // =================================================================================
+
+    private ModellpruefungWeg? _modellpruefung;
+    private GebaeudeProjektZeile? _modellpruefungZeile;
+    private GebaeudeProjektZeile? _modellpruefungNachEditor;
+    private bool _mehrzonenGeschrieben;
+
+    /// <summary>Der Farbmodus, mit dem die Ansicht des Neulesens öffnet (Sprung aus dem Blatt); <c>null</c> = Wahl des Anwenders.</summary>
+    private string? _neulesenFarbmodus;
+
+    /// <summary>Ist das Blatt „Modell prüfen" offen? (Prüfhilfe für Tests)</summary>
+    public bool ModellpruefungOffen => _modellpruefung is not null;
+
+    /// <summary>Die Zeile des offenen Blatts (Prüfhilfe für Tests).</summary>
+    public GebaeudeProjektZeile? ModellpruefungZeile => _modellpruefungZeile;
+
+    /// <summary>„Modell prüfen…" der Kopfleiste: die gewählte Projektzeile, ohne Wahl die erste.</summary>
+    private void BeiModellpruefung()
+    {
+        if (Zeilen.Count == 0) return;
+        GebaeudeProjektZeile z = _gewaehlt is not null && Zeilen.Contains(_gewaehlt) ? _gewaehlt : Zeilen[0];
+        if (!z.HatProjektkopie && !VorherSpeichern(z, Format(Resource.MPB_SPERRE_OHNE_KOPIE, z.Name))) return;
+        ModellpruefungOeffnen(z, still: false);
+    }
+
+    /// <summary>Öffnet das Blatt für eine Zeile; <paramref name="still"/> = ohne Meldung, wenn es keinen Weg gibt (Import).</summary>
+    private void ModellpruefungOeffnen(GebaeudeProjektZeile z, bool still)
+    {
+        if (ModellpruefungGaben is null) return;
+        ModellpruefungWeg? weg;
+        try { weg = ModellpruefungGaben(z); }
+        catch (Exception ex) when (ex is not OutOfMemoryException) { weg = null; if (!still) Melden(ex.Message, WarnStufe.Warnung); return; }
+        if (weg is null)
+        {
+            if (!still) Melden(Format(Resource.MPB_SPERRE_OHNE_KOPIE, z.Name), WarnStufe.Hinweis);
+            return;
+        }
+        if (!ReferenceEquals(_gewaehlt, z)) ProjektzeileWaehlen(z);
+        _modellpruefungZeile = z;
+        _modellpruefung = weg;
+    }
+
+    private void ModellpruefungFertig()
+    {
+        _modellpruefung = null;
+        _modellpruefungZeile = null;
+    }
+
+    // =====================================================================
+    //  MA-2: Blatt „Nutzung und Kalender"
+    // =====================================================================
+
+    private Modellpruefungsblatt? _modellpruefungsblatt;
+    private ZonenNutzungWeg? _zonenNutzung;
+    private GebaeudeProjektZeile? _projektZeile;
+
+    /// <summary>Steht das Blatt „Nutzung und Kalender"? Prüfhilfe für die Tests.</summary>
+    public bool ZonenNutzungOffen => _zonenNutzung is not null;
+
+    /// <summary>„Bearbeiten…" an Gruppe 3 — nur mit Delegat und außerhalb des Assistenten.</summary>
+    private EventCallback<Pruefgruppe> ModellpruefungBearbeitenWirt
+        => ZonenNutzungGaben is null || Wizard ? default : EventCallback.Factory.Create<Pruefgruppe>(this, ModellpruefungBearbeiten);
+
+    private void ModellpruefungBearbeiten(Pruefgruppe gruppe)
+    {
+        if (_modellpruefungZeile is not { } z || ZonenNutzungGaben is null) return;
+        ZonenNutzungWeg? weg;
+        try { weg = ZonenNutzungGaben(z); }
+        catch (Exception ex) when (ex is not OutOfMemoryException) { Melden(ex.Message, WarnStufe.Warnung); return; }
+        if (weg is null) { Melden(Format(Resource.MPB_SPERRE_OHNE_KOPIE, z.Name), WarnStufe.Hinweis); return; }
+        _zonenNutzung = weg;
+    }
+
+    /// <summary>Das Blatt ist zu: das Ampelblatt prüft neu.</summary>
+    private void ZonenNutzungFertig()
+    {
+        _zonenNutzung = null;
+        _modellpruefungsblatt?.Auffrischen();
+    }
+
+    private void ZonenNutzungGeaendert()
+    {
+        if (_modellpruefungZeile is { } z) ZeileAuffrischen?.Invoke(z);
+    }
+
+    /// <summary>„Nutzung und Kalender…" im Reiter „Zonen" des Editors für die Projektzeile des offenen Editors.</summary>
+    private Func<ZonenNutzungWeg?>? ZonenNutzungEditorWirt
+        => Wizard || ZonenNutzungGaben is null || _projektZeile is null ? null : () => ZonenNutzungGaben(_projektZeile);
+
+    /// <summary>Eine Übernahme oder Rücknahme hat geschrieben: die Kennwerte der Zeile neu lesen.</summary>
+    private void ModellpruefungGeaendert()
+    {
+        if (_modellpruefungZeile is { } z) ZeileAuffrischen?.Invoke(z);
+    }
+
+    /// <summary>„Simulation…" im Blatt — derselbe Weg wie der Knopf am Satz, für das geprüfte Gebäude.</summary>
+    private void ModellpruefungSimulation()
+    {
+        if (_modellpruefungZeile is { } z && BedarfGaben is not null) SimulationEinesGebaeudes(z);
+    }
+
+    /// <summary>Warum „Ansicht…" gesperrt ist: ohne Importdatei kein Dateikörper; <c>null</c> = frei.</summary>
+    private string? ModellpruefungAnsichtSperre()
+        => DateiNeuLesen is not null && QuelleVon(_modellpruefungZeile) is not null ? null : Resource.MPB_SPERRE_ANSICHT;
+
+    /// <summary>
+    /// „Ansicht…" einer Prüfgruppe: die Gebäudeansicht über „Datei erneut lesen" (Dateiwahl, Prüfsumme) im Farbmodus des
+    /// Sprungziels — Gruppe 1 Randbedingung, 2 Aufbau, 3 Zonen, 4 und 5 Befund.
+    /// </summary>
+    private async Task ModellpruefungAnsicht(Pruefsprungziel ziel)
+    {
+        if (_modellpruefungZeile is not { } z || ModellpruefungAnsichtSperre() is not null) return;
+        if (!ReferenceEquals(_gewaehlt, z)) ProjektzeileWaehlen(z);
+        _neulesenFarbmodus = Farbmodusschluessel(ziel);
+        _neulesenGruppe = null;
+        _neulesenPruefung = null;
+        await BeiNeuLesen();
+    }
+
+    /// <summary>Der Schlüssel des Farbmodus der Gebäudeansicht zu einem Sprungziel der Prüfung.</summary>
+    public static string Farbmodusschluessel(Pruefsprungziel ziel) => ziel switch
+    {
+        Pruefsprungziel.Randbedingung => GebaeudeAnsicht.FARBMODUS_RAND,
+        Pruefsprungziel.Aufbau => GebaeudeAnsicht.FARBMODUS_AUFBAU,
+        Pruefsprungziel.Befund => GebaeudeAnsicht.FARBMODUS_BEFUND,
+        _ => GebaeudeAnsicht.FARBMODUS_ZONEN
+    };
+
+    /// <summary>„Datei erneut lesen" am Satz: ohne Farbvorgabe.</summary>
+    private Task BeiNeuLesenAmSatz()
+    {
+        _neulesenFarbmodus = null;
+        _neulesenGruppe = null;
+        _neulesenPruefung = null;
+        return BeiNeuLesen();
+    }
+
+    // =====================================================================
+    //  MA-5: Ansicht als Werkzeug — Sprung mit Hervorhebung, Vorschläge an der Legende
+    // =====================================================================
+
+    /// <summary>Die Prüfgruppe, aus der die Ansicht geöffnet ist; <c>null</c> = ohne Prüfung.</summary>
+    private Pruefgruppe? _neulesenGruppe;
+
+    /// <summary>Die Prüfung der Ansicht (Befunde der Gruppe mit ihren Kennungen); <c>null</c> = keine Hervorhebung.</summary>
+    private GebaeudeAnsichtPruefung? _neulesenPruefung;
+
+    /// <summary>Die Prüfung der Ansicht (Prüfhilfe für Tests).</summary>
+    public GebaeudeAnsichtPruefung? AnsichtPruefung => _neulesenPruefung;
+
+    /// <summary>
+    /// „Ansicht…" einer Prüfgruppe (MA-5): wie <see cref="ModellpruefungAnsicht"/>, dazu die Hervorhebung ihrer Befunde; Gruppe 3
+    /// öffnet im Farbmodus „Nutzung" (ohne gelesene Zonen fällt die Ansicht auf „Zonen" zurück).
+    /// </summary>
+    private async Task ModellpruefungAnsichtGruppe(Pruefgruppe gruppe)
+    {
+        if (_modellpruefungZeile is not { } z || ModellpruefungAnsichtSperre() is not null) return;
+        if (!ReferenceEquals(_gewaehlt, z)) ProjektzeileWaehlen(z);
+        ModellpruefungStand? stand = _modellpruefung?.Pruefen();
+        ModellpruefungGruppenzeile? zeile = stand?.Gruppen.FirstOrDefault(g => g.Gruppe == gruppe);
+        _neulesenFarbmodus = gruppe == Pruefgruppe.NutzungKonditionierung
+            ? GebaeudeAnsicht.FARBMODUS_NUTZUNG
+            : Farbmodusschluessel(zeile?.Sprungziel ?? Pruefsprungziel.Zonen);
+        _neulesenGruppe = gruppe;
+        _neulesenPruefung = PruefungAus(zeile);
+        await BeiNeuLesen();
+    }
+
+    /// <summary>Die Prüfung der Ansicht aus einer Gruppenzeile des Blatts; <c>null</c> ohne Zeile.</summary>
+    internal static GebaeudeAnsichtPruefung? PruefungAus(ModellpruefungGruppenzeile? zeile)
+        => zeile is null ? null : new GebaeudeAnsichtPruefung(zeile.Gruppe, zeile.Name, zeile.Befunde);
+
+    /// <summary>„Übernehmen" an der Legende — nur mit Weg des Blatts.</summary>
+    private EventCallback<ModellpruefungAuswahl> AnsichtUebernehmenWirt
+        => _modellpruefung?.UebernehmenAuswahl is null || _neulesenPruefung is null ? default
+           : EventCallback.Factory.Create<ModellpruefungAuswahl>(this, a => AnsichtVorschlaege(_modellpruefung.UebernehmenAuswahl, a));
+
+    /// <summary>„Verwerfen" an der Legende — nur mit Weg des Blatts.</summary>
+    private EventCallback<ModellpruefungAuswahl> AnsichtVerwerfenWirt
+        => _modellpruefung?.VerwerfenAuswahl is null || _neulesenPruefung is null ? default
+           : EventCallback.Factory.Create<ModellpruefungAuswahl>(this, a => AnsichtVorschlaege(_modellpruefung.VerwerfenAuswahl, a));
+
+    /// <summary>
+    /// Führt eine Auswahl über den Weg des Blatts aus (Kern, mit Rücknahme der Gruppe), meldet das Ergebnis, liest Stufen, Zonen und
+    /// Nutzung der Ansicht neu (die Ansicht zeichnet neu), setzt die neue Prüfung und frischt Ampelblatt und Zeile auf.
+    /// </summary>
+    private void AnsichtVorschlaege(Func<ModellpruefungAuswahl, ModellpruefungAusgang>? weg, ModellpruefungAuswahl auswahl)
+    {
+        if (weg is null || _neulesenGruppe is not { } gruppe) return;
+        ModellpruefungAusgang ausgang;
+        try { ausgang = weg(auswahl); }
+        catch (Exception ex) when (ex is not OutOfMemoryException) { Melden(ex.Message, WarnStufe.Warnung); return; }
+        if (ausgang.Meldung.Length > 0) Melden(ausgang.Meldung, ausgang.Ok ? WarnStufe.Hinweis : WarnStufe.Warnung);
+        if (_neulesenStand is { AnsichtNeuLesen: { } neu } stand)
+        {
+            try { if (neu() is { } daten) stand.Ansicht = daten; }
+            catch (Exception ex) when (ex is not OutOfMemoryException) { Melden(ex.Message, WarnStufe.Warnung); }
+        }
+        ModellpruefungStand? neuStand = ausgang.Stand ?? _modellpruefung?.Pruefen();
+        _neulesenPruefung = PruefungAus(neuStand?.Gruppen.FirstOrDefault(g => g.Gruppe == gruppe));
+        _modellpruefungsblatt?.Auffrischen();
+        ModellpruefungGeaendert();
     }
 
     private void BedarfFertig() => _bedarfGaben = null;
@@ -2605,7 +2995,7 @@
         if (e.Key != "Escape" || _katalogGaben is not null || _importGaben is not null ||
             _wohnflaecheGaben is not null || _bedarfGaben is not null || _gebaeudetypOffen ||
             _loeschfrage || _ausProjektFrage || _projektGaben is not null || _exportGaben is not null ||
-            _baustoffzuordnungenGaben is not null || _rueckweg is not null || _neulesenOffen ||
+            _simulationsliste is not null || _rueckweg is not null || _neulesenOffen ||
             _zweispalten?.SatzUeberlagerungOffen == true || _ausrichtungFrage is not null) return Task.CompletedTask;
         return Abbrechen();
     }

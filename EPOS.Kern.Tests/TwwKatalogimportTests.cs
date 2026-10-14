@@ -441,8 +441,9 @@ namespace EPOS.Kern.Tests
             List<TwwPaketdatei> p = PaketMit(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM,
                 t => t + "99;Waise (erfunden);1;1;1;1;0;;Probepaket (erfunden);;PROBE-1;FREI;EIGEN;0\r\n");
             // Zwei Dateien, die der Katalogimport nicht kennt: eine Tww-Tabelle außerhalb von
-            // IMPORT_TABELLEN und eine Beilage. Bedarfstage und Parameter KENNT er (ZU30, ZU31).
-            p.Add(new TwwPaketdatei(TwwSchema.TAB_TWW_DIN4708_WERT_STAMM + ".csv", "Art;Schluessel\r\nBELEGUNG;x\r\n"));
+            // IMPORT_TABELLEN (eine Projekttabelle) und eine Beilage. Bedarfstage, Parameter und die
+            // DIN-4708-Katalogwerte KENNT er (ZU30, ZU31, ZB7).
+            p.Add(new TwwPaketdatei(TwwSchema.TAB_TWW_WOHNUNGSTYP + ".csv", "Name;Anzahl\r\nTyp;1\r\n"));
             p.Add(new TwwPaketdatei("notizen.csv", "a;b\r\n"));
 
             TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(p);

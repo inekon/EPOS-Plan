@@ -3556,6 +3556,78 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrBk2 + " - vollstaendig: " + BauteilkatalogSchema.Vollstaendig() +
                                   " (erwartet True).");
             }
+
+            // ---- Schritt BauteilkatalogHaustechnikSchema.SCHRITT (BK-3c, E134): Klasse Haustechnik in der Pruefklausel von
+            //      Klasse_Code (Neubau der vier Kopftabellen). Aus DERSELBEN Quelle wie SchemaMigration.Schritt_BauteilkatalogHaustechnik.
+            //      Wiederholbar. REFERENZLAUF UNVERAENDERT: der Bauteilweg liest keine Gliederung.
+            string nrBk3c = BauteilkatalogHaustechnikSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBk3c + " - Klasse Haustechnik am Bauteilkatalog: " +
+                              (BauteilkatalogHaustechnikSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBk3c = new List<string>();
+                angelegt += BauteilkatalogHaustechnikSchema.Ausfuehren(berichtBk3c);
+                foreach (string zeile in berichtBk3c)
+                    Console.WriteLine("Schritt " + nrBk3c + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBk3c + " - vollstaendig: " + BauteilkatalogHaustechnikSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt KaeltebedarfSplitAbrechnungSchema.SCHRITT (K6): Tab_ErgebnisKaelteDezentral, die Ergebnistabelle je
+            //      dezentral (Split) gedeckter Kaeltebedarfszeile. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_KaeltebedarfSplitAbrechnung. Wiederholbar.
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt fuehrt eine Split-Zeile, die Tabelle bleibt leer.
+            string nrK6 = KaeltebedarfSplitAbrechnungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrK6 + " - Ergebnis je Split-Zeile (Abrechnung des Split-Stroms): " +
+                              (KaeltebedarfSplitAbrechnungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtK6 = new List<string>();
+                tabellen += KaeltebedarfSplitAbrechnungSchema.Ausfuehren(berichtK6);
+                foreach (string zeile in berichtK6)
+                    Console.WriteLine("Schritt " + nrK6 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrK6 + " - vollstaendig: " + KaeltebedarfSplitAbrechnungSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt TwwZonenferienSchema.SCHRITT (ZB5, ZB-Q3 B): Zonenferien als Liste - Tab_TwwZonenferien anlegen,
+            //      die vier Spaltenpaare von Tab_TwwZone uebertragen und abbauen (Neubau mit Erhalt der IDs). Aus DERSELBEN
+            //      Quelle wie SchemaMigration.Schritt_TwwZonenferien. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: der Zapfkalender rechnet ueber die Liste dieselben Fenster.
+            string nrZf = TwwZonenferienSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrZf + " - Zonenferien als Liste: " +
+                              (TwwZonenferienSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtZf = new List<string>();
+                tabellen += TwwZonenferienSchema.Ausfuehren(berichtZf);
+                foreach (string zeile in berichtZf)
+                    Console.WriteLine("Schritt " + nrZf + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrZf + " - vollstaendig: " + TwwZonenferienSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt ZonenLastfelderSchema.SCHRITT (DA-2, E138 F5): Aussenluft je Person, Licht und Waerme je Person an
+            //      Tab_Zone und Tab_Zone_STAMM. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_ZonenLastfelder.
+            //      Wiederholbar. REFERENZLAUF UNVERAENDERT: der Rechenweg liest die Spalten nicht, alle stehen leer.
+            string nrDa2 = ZonenLastfelderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrDa2 + " - Lastfelder der Zone: " +
+                              (ZonenLastfelderSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtDa2 = new List<string>();
+                angelegt += ZonenLastfelderSchema.Ausfuehren(berichtDa2);
+                foreach (string zeile in berichtDa2)
+                    Console.WriteLine("Schritt " + nrDa2 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrDa2 + " - vollstaendig: " + ZonenLastfelderSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             // ---- Schritt KatalogkostenSaatSchema.SCHRITT (KB-3): die zwei Verweise an den acht Projektkopien mit
             //      Kosten, dazu je Satz mit mindestens einem Kostenwert > 0 und ohne Verweis genau eine Satzvorlage
             //      je Art samt Positionen. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_KatalogkostenSaat.

@@ -69,9 +69,8 @@ namespace WindowsFormsApplication1
     // ID_KostenVorlageInvestition sind Metaspalten der Katalogfassung, und Tab_KostenVorlage
     // reist in keinem Katalogpaket. Der Referenzlauf bleibt byte-gleich.
     //
-    // NUMMER. 226 - angemeldet fuer KB-3. Sie haengt an 225 (Sitzung Gebaeudesimulation, DA-2),
-    // sobald 225 auf origin liegt; bis dahin rechnet sie sich aus der hoechsten Klasse im Baum
-    // (BauteilkatalogSchema, 221) + 5. Eingetragen in SchemaStand.Zielversion, im Register der
+    // NUMMER. 226 (KB-3). Sie haengt an 225 ZonenLastfelderSchema (Sitzung Gebaeudesimulation,
+    // DA-2): ZonenLastfelderSchema.SCHRITT + 1. Eingetragen in SchemaStand.Zielversion, im Register der
     // Paketanhebung, in der SchemaMigration der Schale, in Werkzeuge/Testdatenbankschema und in
     // EPOS.Kern.Tests/TestDatenbank.
     // ====================================================================================
@@ -156,11 +155,10 @@ namespace WindowsFormsApplication1
     public static class KatalogkostenSaatSchema
     {
         /// <summary>
-        /// Die Nummer des Schritts: <b>226</b>. Sie hängt an 225 (Sitzung Gebäudesimulation, DA-2),
-        /// sobald 225 auf origin liegt; bis dahin rechnet sie sich aus der höchsten Klasse im Baum
-        /// (<see cref="BauteilkatalogSchema"/>, 221) + 5.
+        /// Die Nummer des Schritts: <b>226</b>. Sie hängt an 225 <see cref="ZonenLastfelderSchema"/>
+        /// (Sitzung Gebäudesimulation, DA-2).
         /// </summary>
-        public const int SCHRITT = BauteilkatalogSchema.SCHRITT + 5;
+        public const int SCHRITT = ZonenLastfelderSchema.SCHRITT + 1;
 
         /// <summary>Die Tabelle der Kostenvorlagen.</summary>
         public const string TAB_KOSTENVORLAGE = KatalogkostenUrsprungSchema.TAB_KOSTENVORLAGE;

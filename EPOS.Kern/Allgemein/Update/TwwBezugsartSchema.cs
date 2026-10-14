@@ -198,13 +198,24 @@ namespace WindowsFormsApplication1
         /// (<see cref="ProjektdateiImportSchema"/>), damit der Hilfsname ihren eigenen Anlass trägt.
         /// </summary>
         internal static int Neubau(DbVorgang v, string tabelle, string ziel, string alt)
+            => Neubau(v, tabelle, ziel, alt, null);
+
+        /// <summary>
+        /// Dasselbe Rezept für einen Spaltenabbau (<see cref="TwwZonenferienSchema"/>): Die Spalten aus
+        /// <paramref name="ohneSpalten"/> ziehen nicht mit um — der Zieltext führt sie nicht mehr.
+        /// </summary>
+        internal static int Neubau(DbVorgang v, string tabelle, string ziel, string alt, ICollection<string> ohneSpalten)
         {
 
             // Spalten NAMENTLICH - "SELECT *" haengt an der Reihenfolge zweier Schemastaende.
             var namen = new List<string>();
             DataTable info = v.Lese("SELECT name FROM pragma_table_info(?)", new DbParam("p1", tabelle));
             foreach (DataRow zeile in info.Rows)
-                namen.Add("\"" + Convert.ToString(zeile["name"], CultureInfo.InvariantCulture) + "\"");
+            {
+                string name = Convert.ToString(zeile["name"], CultureInfo.InvariantCulture);
+                if (ohneSpalten != null && ohneSpalten.Contains(name)) continue;
+                namen.Add("\"" + name + "\"");
+            }
             string spaltenliste = string.Join(", ", namen.ToArray());
 
             // Indizes und Trigger der Tabelle (die automatischen Indizes tragen keinen Text).

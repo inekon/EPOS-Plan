@@ -92,9 +92,18 @@ namespace WindowsFormsApplication1
                 ? new[] { VorheizenSchema.SPALTE_ZONE_VORHEIZZEIT }
                 : (IReadOnlyList<string>)Array.Empty<string>();
 
-        /// <summary>Alle Spalten der Zone hinter <see cref="ZonenSchema.Zonenspalten"/>: Kühlübergabe, Übergabe je Zone, Nutzungsprofil, Vorheizzeit.</summary>
+        /// <summary>
+        /// Die Lastfelder der Zone (DA-2, <see cref="ZonenLastfelderSchema"/>) — Datenaustausch, vom Lauf nicht gelesen; leer, solange
+        /// die Datenbank den Schritt nicht trägt. NULL bleibt NULL.
+        /// </summary>
+        private static IReadOnlyList<string> Lastspalten()
+            => GebaeudeZonenanschluss.LastfelderVorhanden()
+                ? ZonenLastfelderSchema.SPALTEN.Select(s => s.Spalte).ToList()
+                : (IReadOnlyList<string>)Array.Empty<string>();
+
+        /// <summary>Alle Spalten der Zone hinter <see cref="ZonenSchema.Zonenspalten"/>: Kühlübergabe, Übergabe je Zone, Nutzungsprofil, Vorheizzeit, Lastfelder.</summary>
         private static IReadOnlyList<string> Zusatzspalten()
-            => Kuehlspalten().Concat(Uebergabespalten()).Concat(Nutzungsprofilspalten()).Concat(Vorheizspalten()).ToList();
+            => Kuehlspalten().Concat(Uebergabespalten()).Concat(Nutzungsprofilspalten()).Concat(Vorheizspalten()).Concat(Lastspalten()).ToList();
 
         /// <summary>Die Werte zu <paramref name="zusatz"/> (aus <see cref="Zusatzspalten"/>) in derselben Reihenfolge.</summary>
         private static IEnumerable<DbParam> Zusatzwerte(ZoneModel z, IReadOnlyList<string> zusatz)
@@ -109,6 +118,10 @@ namespace WindowsFormsApplication1
                 {
                     Wert = z.Vorheizzeit_H.HasValue ? (object)z.Vorheizzeit_H.Value : DBNull.Value
                 });
+            if (zusatz.Contains(ZonenLastfelderSchema.SPALTE_LICHT))
+                werte = werte.Append(BaustoffCtrl.Zahl("@al", z.Aussenluft_Person))
+                             .Append(BaustoffCtrl.Zahl("@lw", z.Licht_W_m2))
+                             .Append(BaustoffCtrl.Zahl("@pw", z.Personen_Waerme_W));
             return werte;
         }
 
@@ -1073,7 +1086,10 @@ namespace WindowsFormsApplication1
         /// <param name="idGebaeude">Die Projektkopie (<c>Tab_Gebaeude.ID</c>).</param>
         /// <param name="vorschlag">Der Vorschlag.</param>
         /// <param name="vorgang">Der Vorgang des Aufrufers; <c>null</c> = ein eigener.</param>
-        internal Vorschlagsergebnis VorschlagSchreiben(int idGebaeude, GebaeudeBauteilvorschlag vorschlag, DbVorgang vorgang = null)
+        /// <param name="bestandZulassen">MA-6: <c>true</c> schreibt neben die vorhandenen Zonen (die Zusammenführung des
+        /// Wiederimports, <see cref="MehrzonenuebernahmeCtrl.Zusammenfuehren"/>); <c>false</c> lehnt ein Gebäude mit Zonen ab.</param>
+        internal Vorschlagsergebnis VorschlagSchreiben(int idGebaeude, GebaeudeBauteilvorschlag vorschlag, DbVorgang vorgang = null,
+                                                       bool bestandZulassen = false)
         {
             if (vorschlag == null) throw new ArgumentNullException(nameof(vorschlag));
             if (vorschlag.Abgelehnt)
@@ -1119,7 +1135,7 @@ namespace WindowsFormsApplication1
                     long vorhanden = Convert.ToInt64(v.Skalar(
                         "SELECT COUNT(*) FROM \"" + ZonenSchema.TAB_ZONE + "\" WHERE \"ID_Gebaeude\" = ?", new DbParam("@g", idGebaeude)),
                         CultureInfo.InvariantCulture);
-                    if (vorhanden > 0)
+                    if (vorhanden > 0 && !bestandZulassen)
                     {
                         v.Rollback();
                         return Vorschlagsergebnis.Fehler(GebaeudeBauteilvorschlag.ZONE_VORHANDEN, id,
@@ -1373,6 +1389,52 @@ namespace WindowsFormsApplication1
             if (flaechenherkunft) yield return BaustoffCtrl.Text("@fh", b.Flaechenherkunft);
         }
 
+        /// <summary>
+        /// <b>Legt ein einzelnes Bauteil an</b> (Projektebene, im Vorgang <paramref name="v"/>) — für die Übernahme eines
+        /// Vorschlags der Modellprüfung (MA-3, fehlendes Hüllbauteil); dieselben Spalten und Werte wie das Speichern der Zone.
+        /// Liefert die neue Id.
+        /// </summary>
+        internal static int BauteilEinfuegen(DbVorgang v, BauteilModel b)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            if (b == null) throw new ArgumentNullException(nameof(b));
+            IReadOnlyList<string> spalten = Bauteilspalten();
+            b.ID = v.EinfuegenUndId("INSERT INTO \"" + ZonenSchema.TAB_BAUTEIL + "\" (" +
+                                    string.Join(", ", spalten.Select(s => "\"" + s + "\"")) +
+                                    ") VALUES (" + BaustoffCtrl.Fragezeichen(spalten.Count) + ")",
+                                    Bauteilwerte(b, MitKopplung(spalten), MitFlaechenherkunft(spalten)).ToArray());
+            return b.ID;
+        }
+
+        /// <summary>
+        /// <b>Schreibt ein vorhandenes Bauteil</b> mit allen Spalten des Speicherns zurück (Projektebene, im Vorgang
+        /// <paramref name="v"/>) — für die Zusammenführung des Wiederimports (MA-6).
+        /// </summary>
+        internal static void BauteilAktualisieren(DbVorgang v, BauteilModel b)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            if (b == null) throw new ArgumentNullException(nameof(b));
+            IReadOnlyList<string> spalten = Bauteilspalten();
+            v.Ausfuehren("UPDATE \"" + ZonenSchema.TAB_BAUTEIL + "\" SET " + string.Join(", ", spalten.Select(s => "\"" + s + "\" = ?")) +
+                         " WHERE \"ID\" = ?",
+                         Bauteilwerte(b, MitKopplung(spalten), MitFlaechenherkunft(spalten)).Append(new DbParam("@id", b.ID)).ToArray());
+        }
+
+        /// <summary>
+        /// <b>Schreibt eine vorhandene Zone</b> mit allen Spalten des Speicherns zurück (Projektebene, im Vorgang
+        /// <paramref name="v"/>) — für die Zusammenführung des Wiederimports (MA-6). Die Bauteile bleiben unberührt.
+        /// </summary>
+        internal static void ZoneAktualisieren(DbVorgang v, ZoneModel z)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            if (z == null) throw new ArgumentNullException(nameof(z));
+            IReadOnlyList<string> zusatz = Zusatzspalten();
+            List<string> spalten = ZonenSchema.Zonenspalten.Concat(zusatz).ToList();
+            v.Ausfuehren("UPDATE \"" + ZonenSchema.TAB_ZONE + "\" SET " + string.Join(", ", spalten.Select(s => "\"" + s + "\" = ?")) +
+                         " WHERE \"ID\" = ?",
+                         Zonenwerte(z).Concat(Zusatzwerte(z, zusatz)).Append(new DbParam("@id", z.ID)).ToArray());
+        }
+
         /// <summary>Die Werte eines Bauteils in der Reihenfolge von <see cref="ZonenSchema.Bauteilspalten"/>; NULL bleibt NULL.</summary>
         private static IEnumerable<DbParam> Bauteilwerte(BauteilModel b)
         {
@@ -1440,7 +1502,10 @@ namespace WindowsFormsApplication1
                     Herkunft = BaustoffCtrl.TextAus(r, "Herkunft"),
                     Quellkennung = BaustoffCtrl.TextAus(r, "Quellkennung"),
                     Nutzungsprofil = BaustoffCtrl.TextAus(r, RaumnutzungSchema.SPALTE_ZONE_NUTZUNGSPROFIL),
-                    Vorheizzeit_H = BaustoffCtrl.GanzAus(r, VorheizenSchema.SPALTE_ZONE_VORHEIZZEIT)
+                    Vorheizzeit_H = BaustoffCtrl.GanzAus(r, VorheizenSchema.SPALTE_ZONE_VORHEIZZEIT),
+                    Aussenluft_Person = BaustoffCtrl.ZahlAus(r, ZonenLastfelderSchema.SPALTE_AUSSENLUFT_PERSON),
+                    Licht_W_m2 = BaustoffCtrl.ZahlAus(r, ZonenLastfelderSchema.SPALTE_LICHT),
+                    Personen_Waerme_W = BaustoffCtrl.ZahlAus(r, ZonenLastfelderSchema.SPALTE_PERSONEN_WAERME),
                 };
                 liste.Add(z);
                 jeId[z.ID] = z;

@@ -5484,6 +5484,41 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_BAUTEILKATALOG = BauteilkatalogSchema.SCHRITT;
 
         /// <summary>
+        /// Schritt <see cref="BauteilkatalogHaustechnikSchema.SCHRITT"/> — <b>Klasse Haustechnik am Bauteilkatalog</b> (BK-3c, E134):
+        /// die Klasse <c>HAUSTECHNIK</c> in der Prüfklausel von <c>Klasse_Code</c> (Neubau der vier Kopftabellen mit Erhalt der IDs).
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Bauteilweg liest keine Gliederung.</para>
+        /// </summary>
+        public const int SCHRITT_BAUTEILKATALOG_HAUSTECHNIK = BauteilkatalogHaustechnikSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="KaeltebedarfSplitAbrechnungSchema.SCHRITT"/> — <b>Abrechnung des Split-Stroms</b> (K6, Konzept
+        /// Kältebedarf 4.2/4.3, E34/E35): die Ergebnistabelle <c>Tab_ErgebnisKaelteDezentral</c> je dezentral (Split) gedeckter
+        /// Kältebedarfszeile eines Laufs — Kälte, Strom, Spitzen, Jahres-EER, Netzbezug, abweichender Kühlträger samt Zähler.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Referenzprojekt führt eine Split-Zeile; die Tabelle bleibt leer.</para>
+        /// </summary>
+        public const int SCHRITT_KAELTEBEDARF_SPLIT_ABRECHNUNG = KaeltebedarfSplitAbrechnungSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="TwwZonenferienSchema.SCHRITT"/> — <b>Zonenferien als Liste</b> (ZB5, ZB‑Q3 B): die Tabelle
+        /// <c>Tab_TwwZonenferien</c> mit beliebig vielen eigenen Ferienzeiträumen je Zone; die vier Spaltenpaare
+        /// <c>Ferienbeginn_1…4</c>/<c>Ferienende_1…4</c> von <c>Tab_TwwZone</c> werden übertragen und danach abgebaut
+        /// (Neubau mit Erhalt der IDs).
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Zapfkalender rechnet über die Liste dieselben Fenster.</para>
+        /// </summary>
+        public const int SCHRITT_TWW_ZONENFERIEN = TwwZonenferienSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="ZonenLastfelderSchema.SCHRITT"/> — <b>Lastfelder der Zone</b> (DA-2, E138 F5): <c>Aussenluft_Person</c>,
+        /// <c>Licht_W_m2</c> und <c>Personen_Waerme_W</c> an <c>Tab_Zone</c> und <c>Tab_Zone_STAMM</c>, leer.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Rechenweg liest keine der drei Spalten.</para>
+        /// </summary>
+        public const int SCHRITT_ZONEN_LASTFELDER = ZonenLastfelderSchema.SCHRITT;
+
+        /// <summary>
         /// Schritt <see cref="KatalogkostenSaatSchema.SCHRITT"/> — <b>Saat der Katalogkosten-Satzvorlagen</b> (KB-3,
         /// Anwenderentscheid 13.10.2026): die zwei Verweise <c>ID_KostenVorlage</c> und
         /// <c>ID_KostenVorlageInvestition</c> an den acht Projektkopien mit Kosten, dazu je Satz mit mindestens einem
@@ -8082,6 +8117,30 @@ namespace WindowsFormsApplication1
                         "Ein eingelesener Katalogsatz waere nicht als solcher erkennbar, Baustoffe und Aufbauten nicht gegliedert, und die " +
                         "Felder der Quelle haetten keinen Platz. KEIN Rechenergebnis aendert sich - der Bauteilweg liest keine neue Spalte.",
                         Schritt_Bauteilkatalog),
+            // BK-3c: Klasse Haustechnik am Bauteilkatalog. Quelle ist BauteilkatalogHaustechnikSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_BAUTEILKATALOG_HAUSTECHNIK,
+                        "Tab_Baustoff(_STAMM), Tab_Bauteilaufbau(_STAMM): Klasse HAUSTECHNIK in der Pruefklausel von Klasse_Code",
+                        "Werkstoffe und Zubehoer der Haustechnik liessen sich im Katalog nicht als eigene Klasse fuehren und nicht " +
+                        "ausblenden. KEIN Rechenergebnis aendert sich - der Bauteilweg liest keine Gliederung.",
+                        Schritt_BauteilkatalogHaustechnik),
+            // K6: Abrechnung des Split-Stroms. Quelle ist KaeltebedarfSplitAbrechnungSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KAELTEBEDARF_SPLIT_ABRECHNUNG,
+                        "Tab_ErgebnisKaelteDezentral: Ergebnis je dezentral (Split) gedeckter Kaeltebedarfszeile (leer)",
+                        "Der Strom der Split-Zeilen liesse sich nicht je Kuehltraeger und Zaehler abrechnen, und Bericht und " +
+                        "Kostenrechnung saehen ohne frischen Lauf keine Split-Zeile. KEIN Rechenergebnis aendert sich - die Tabelle bleibt leer.",
+                        Schritt_KaeltebedarfSplitAbrechnung),
+            // ZB5 (ZB-Q3 B): Zonenferien als Liste. Quelle ist TwwZonenferienSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_TWW_ZONENFERIEN,
+                        "Tab_TwwZonenferien (neu); Tab_TwwZone: die vier Spaltenpaare Ferienbeginn/Ferienende uebertragen und entfernt",
+                        "Eine Zone des Zapfprofils koennte nicht mehr als vier eigene Ferienzeitraeume tragen. KEIN Rechenergebnis " +
+                        "aendert sich - der Zapfkalender rechnet ueber die Liste dieselben Fenster.",
+                        Schritt_TwwZonenferien),
+            // DA-2: Lastfelder der Zone. Quelle ist ZonenLastfelderSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_ZONEN_LASTFELDER,
+                        "Tab_Zone, Tab_Zone_STAMM: Aussenluft_Person, Licht_W_m2, Personen_Waerme_W (leer)",
+                        "Aussenluft je Person, Lichtleistung und Waerme je Person einer Zone haetten beim Datenaustausch keinen " +
+                        "Platz und gingen im Rundlauf verloren. KEIN Rechenergebnis aendert sich - alle Spalten stehen leer.",
+                        Schritt_ZonenLastfelder),
             // KB-3: Saat der Katalogkosten-Satzvorlagen. Quelle ist KatalogkostenSaatSchema, die Nummer steht allein dort.
             new Schritt(SCHRITT_KATALOGKOSTEN_SAAT,
                         "Tab_BHKW, Tab_Heizkessel, Tab_WP, Tab_PV, Tab_Solarkollektoren, Tab_Pufferspeicher, " +
@@ -15616,6 +15675,59 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Der Schritt „Zonenferien als Liste" — Anlass und Wirkung stehen bei <see cref="SCHRITT_TWW_ZONENFERIEN"/>, die
+        /// Anweisungen bei <see cref="TwwZonenferienSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_TwwZonenferien(Lauf l)
+        {
+            string nr = TwwZonenferienSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in TwwZonenferienSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = TwwZonenferienSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!TwwZonenferienSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Zonenferien stehen nach dem Schritt nicht vollstaendig (Tabelle oder Spaltenabbau).";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Zonenferien - " + (handgriffe == 0 ? "stand bereits." : handgriffe + " Handgriff(e).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
         /// Der Schritt „Bauteilkatalog" — Anlass und Wirkung stehen bei <see cref="SCHRITT_BAUTEILKATALOG"/>, die Anweisungen bei
         /// <see cref="BauteilkatalogSchema"/>. <b>Wiederholbar.</b>
         /// </summary>
@@ -15664,6 +15776,165 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Bauteilkatalog - " + (handgriffe == 0 ? "stand bereits." : handgriffe + " Handgriff(e).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Klasse Haustechnik" — Anlass und Wirkung stehen bei <see cref="SCHRITT_BAUTEILKATALOG_HAUSTECHNIK"/>, die
+        /// Anweisungen bei <see cref="BauteilkatalogHaustechnikSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_BauteilkatalogHaustechnik(Lauf l)
+        {
+            string nr = BauteilkatalogHaustechnikSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in BauteilkatalogHaustechnikSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = BauteilkatalogHaustechnikSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!BauteilkatalogHaustechnikSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Klasse Haustechnik am Bauteilkatalog steht nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Klasse Haustechnik - " + (handgriffe == 0 ? "stand bereits." : handgriffe + " Tabelle(n) neu gebaut.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Abrechnung des Split-Stroms" — Anlass und Wirkung stehen bei <see cref="SCHRITT_KAELTEBEDARF_SPLIT_ABRECHNUNG"/>,
+        /// die Anweisungen bei <see cref="KaeltebedarfSplitAbrechnungSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_KaeltebedarfSplitAbrechnung(Lauf l)
+        {
+            string nr = KaeltebedarfSplitAbrechnungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KaeltebedarfSplitAbrechnungSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = KaeltebedarfSplitAbrechnungSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KaeltebedarfSplitAbrechnungSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Ergebnistabelle je Split-Zeile steht nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Ergebnis je Split-Zeile - " + (handgriffe == 0 ? "stand bereits." : "Tabelle angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Lastfelder der Zone" — Anlass und Wirkung stehen bei <see cref="SCHRITT_ZONEN_LASTFELDER"/>, die
+        /// Anweisungen bei <see cref="ZonenLastfelderSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_ZonenLastfelder(Lauf l)
+        {
+            string nr = ZonenLastfelderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ZonenLastfelderSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = ZonenLastfelderSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!ZonenLastfelderSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Lastfelder der Zone stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Lastfelder der Zone - " + (handgriffe == 0 ? "standen bereits." : handgriffe + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

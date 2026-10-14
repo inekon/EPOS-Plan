@@ -8,9 +8,10 @@
     public static class Sprungziele
     {
         /// <summary>
-        /// Die Gruppe „Kühlung“ des Projektgebäudes: Der Gebäudedialog wählt das erste Projektgebäude, öffnet
-        /// dessen Editor auf dem Reiter „Gebäude und Hülle“, rollt die Gruppe in Sicht und fokussiert ihr erstes
-        /// Feld; ohne Projektgebäude öffnet er normal mit dem Banner „Noch kein Gebäude im Projekt“.
+        /// Die Gruppe „Kühlung“ des Projektgebäudes (Maske <see cref="Masken.Projektgebaeude"/>): Der Gebäudedialog wählt
+        /// das zuletzt gewählte Projektgebäude, sonst das erste, öffnet dessen Editor auf dem Reiter „Gebäude und Hülle“,
+        /// rollt die Gruppe in Sicht und fokussiert ihr erstes Feld; ohne Projektgebäude öffnet er normal mit dem Banner
+        /// „Noch kein Gebäude im Projekt“.
         /// </summary>
         public const string Kuehlung = "KUEHLUNG";
     }

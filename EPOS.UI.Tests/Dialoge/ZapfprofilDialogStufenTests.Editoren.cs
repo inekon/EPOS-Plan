@@ -209,10 +209,15 @@ public partial class ZapfprofilDialogStufenTests
         Stufe(cut, "Erweitert");
         Assert.True(gerufen >= 1);
 
-        IElement zeile = cut.FindAll(".epos-vorschlagszeile").First(z => z.TextContent.Contains("Vorschlag: 12,5 kW"));
-        Assert.Contains("Rechenweg: Ladeweg der Probe", cut.Markup);
-        Assert.Contains("Angesetzt: 12,5 kW (auto)", cut.Markup);
-        zeile.QuerySelector("button")!.Click();
+        // ZB4 (b): EIN Feld - der Vorschlag steht grau im leeren Feld, der Knopf daneben übernimmt ihn.
+        IElement karte = cut.Find(".epos-zapfprofil-karte--ladeleistung");
+        Assert.Equal("(12,5)", Feld(cut, "Ladeleistung").GetAttribute("placeholder"));
+        Assert.Contains("Rechenweg: Ladeweg der Probe", karte.QuerySelector("details.epos-zapfprofil-rechenweg")!.TextContent);
+        Assert.Contains("Angesetzt: 12,5 kW (auto)", karte.TextContent);
+        Assert.StartsWith("12,5 kW (auto)", ZapfprofilKarten.Zusatz(cut, "ladeleistung"));
+        IElement knopf = karte.QuerySelector(".epos-zapfprofil-einwert-uebernehmen")!;
+        Assert.Equal("Vorschlag: 12,5 kW", knopf.GetAttribute("title"));
+        knopf.Click();
 
         Assert.False(cut.Instance.Eingabe.Gebaeude!.LadeAuto);
         Assert.Equal(12.5, cut.Instance.Eingabe.Gebaeude.LadeManuellKw);
@@ -223,7 +228,11 @@ public partial class ZapfprofilDialogStufenTests
     {
         var cut = MitEditoren();
         Stufe(cut, "Erweitert");
-        Assert.Contains("Einen Vorschlag gibt es erst mit einer gerechneten Vorschau.", cut.Markup);
+        IElement knopf = cut.Find(".epos-zapfprofil-karte--ladeleistung .epos-zapfprofil-einwert-uebernehmen");
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Equal("Einen Vorschlag gibt es erst mit einer gerechneten Vorschau.", knopf.GetAttribute("title"));
+        knopf.Click();
+        Assert.Equal("Einen Vorschlag gibt es erst mit einer gerechneten Vorschau.", cut.Instance.Hinweis);
         Assert.Null(cut.Instance.Eingabe.Gebaeude?.LadeManuellKw);
     }
 }

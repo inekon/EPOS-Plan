@@ -56,6 +56,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string ABNEHMER_KAELTEKREIS = "ABNEHMER_KAELTEKREIS";
 
+        /// <summary>
+        /// K6b (Konzept Kältebedarf 4.3, Frage 2 des Plans K6): der Abnehmer „Kältebedarf dezentral (Split)“ in der
+        /// Kältebahn — die dezentral gedeckten Kältebedarfszeilen. Er steht OHNE Kante da (die Split-Geräte hängen an keinem
+        /// Kältekreis), Träger und Zähler stehen als Hinweiszeilen; eine Stromlinie zum Kühlträger kennt das Schema nicht.
+        /// Nur, wenn das Projekt Kälte rechnet und mindestens eine Split-Zeile führt.
+        /// </summary>
+        public const string ABNEHMER_KAELTE_DEZENTRAL = "ABNEHMER_KAELTE_DEZENTRAL";
+
         // --- Auftrag KS: die KÄLTEBAHN unter der Wärmebahn ------------------------------
         //
         // Eigene Schlüsselpräfixe, weil eine Wärmepumpe im Kühlbetrieb in BEIDEN Bahnen
@@ -854,6 +862,7 @@ namespace WindowsFormsApplication1
                 };
                 KuehluebergabeZeilen(idProjekt, k.Zeilen);
                 if (!projektKaelte) k.Zeilen.Add(MyResource.Resource.KONF_KS_PROJEKT_AUS);
+                else KaelteHerkunftZeilen(idProjekt, k.Zeilen);
                 if (k.Zeilen.Count > 0)
                     k.Hinweis = k.Hinweis + Environment.NewLine + string.Join(Environment.NewLine, k.Zeilen.ToArray());
                 Knotenliste.Add(k);
@@ -863,8 +872,17 @@ namespace WindowsFormsApplication1
                 OhneVersorgerAnlegen(ABNEHMER_KAELTEKREIS, MyResource.Resource.SIM_ZIEL_KAELTEKREIS,
                                      Kanal.KUEHLUNG, false, kanalBedarfMwh);
                 Knoten ohne = Finden(ABNEHMER_KAELTEKREIS);
-                if (ohne != null) ohne.Bahn = Bahn.Kaelte;
+                if (ohne != null)
+                {
+                    ohne.Bahn = Bahn.Kaelte;
+                    if (projektKaelte) KaelteHerkunftZeilen(idProjekt, ohne.Zeilen);
+                    if (ohne.Zeilen.Count > 0)
+                        ohne.Hinweis = ohne.Hinweis + Environment.NewLine + string.Join(Environment.NewLine, ohne.Zeilen.ToArray());
+                }
             }
+
+            // 4a. K6b: die dezentral (Split) gedeckten Zeilen - ein Abnehmer ohne Kante, nur mit Split-Zeile.
+            if (projektKaelte) KaelteDezentralAnlegen(idProjekt);
 
             // 5. Kanten - dieselbe Sprache wie in der Wärmebahn.
             for (int i = 0; i < erzeuger.Count; i++)
@@ -890,6 +908,108 @@ namespace WindowsFormsApplication1
             if (erzeuger.Count > 1)
                 for (int i = 0; i < erzeuger.Count; i++)
                     Finden(erzeuger[i]).Rang = (i + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// K6b-N (Plan K6, Abschnitt 4): die Herkunft des zentral gedeckten Kältebedarfs am Kältekreis — „davon Lastgang“ mit
+        /// der Zahl der Lastgangzeilen im Kanal Kühlung und „davon Profil“ mit der Zahl der Kältebedarfsprofile, je nur, wenn
+        /// es solche Zuordnungen gibt. Nur Zahlen: Die Abnehmerspalte ist 132 px breit, eine Jahressumme schnitte der Knoten ab
+        /// (sie steht in der Gruppe der Konfiguration). Dezentral (Split) gedeckte Zeilen zählen nicht: Sie stehen am eigenen Knoten.
+        /// </summary>
+        private static void KaelteHerkunftZeilen(int idProjekt, List<string> zeilen)
+        {
+            List<Z_ProjektKaeltebedarfCtrl.Uebersichtszeile> zentral =
+                Z_ProjektKaeltebedarfCtrl.ZeilenDesProjekts(idProjekt).Where(z => !z.Split).ToList();
+            System.Globalization.CultureInfo kultur = System.Globalization.CultureInfo.CurrentCulture;
+
+            int lastgaenge = zentral.Count(z => !z.Profil);
+            if (lastgaenge > 0)
+                zeilen.Add(string.Format(kultur, MyResource.Resource.KONF_KS_DAVON_LASTGANG, lastgaenge));
+
+            int profile = zentral.Count(z => z.Profil);
+            if (profile > 0)
+                zeilen.Add(string.Format(kultur, MyResource.Resource.KONF_KS_DAVON_PROFIL, profile));
+        }
+
+        /// <summary>
+        /// K6b: der Knoten „Dezentral (Split)“ (<see cref="ABNEHMER_KAELTE_DEZENTRAL"/>; „Kältebedarf“ entfällt, er steht im
+        /// Abschnitt Kälte). Im Kasten je Split-Zeile genau eine kurze Zeile und eine Sammelzeile zum Strom
+        /// (<see cref="KaelteDezentralZeilen"/>); der Tooltip trägt den vollen Text — Bezeichner mit EER-Weg, Kühlträger mit
+        /// Abrechnungsart. Ohne Split-Zeile entsteht kein Knoten, und das Schema bleibt, wie es war.
+        /// </summary>
+        private void KaelteDezentralAnlegen(int idProjekt)
+        {
+            List<Z_ProjektKaeltebedarfCtrl.Uebersichtszeile> zeilen =
+                Z_ProjektKaeltebedarfCtrl.ZeilenDesProjekts(idProjekt).Where(z => z.Split).ToList();
+            if (zeilen.Count == 0) return;
+
+            int projekttraeger = Kaeltestromabrechnung.Projekttraeger(idProjekt);
+            Knoten k = new Knoten
+            {
+                Schluessel = ABNEHMER_KAELTE_DEZENTRAL,
+                Art = Knotenart.Abnehmer,
+                Bahn = Bahn.Kaelte,
+                Titel = MyResource.Resource.SIM_SCHEMA_ABNEHMER_KAELTE_DEZENTRAL,
+                Hinweis = MyResource.Resource.SIM_SCHEMA_TIP_ABNEHMER
+            };
+            System.Globalization.CultureInfo kultur = System.Globalization.CultureInfo.CurrentCulture;
+            k.Zeilen.AddRange(KaelteDezentralZeilen(
+                zeilen.Select(z => (z.Bezeichner, EerKurz(z, kultur), z.KuehlIdCarrier)), projekttraeger));
+
+            // Der Tooltip trägt den vollen Text (Frage 2: Träger und Zähler statt einer Stromlinie).
+            List<string> voll = new List<string>();
+            foreach (Z_ProjektKaeltebedarfCtrl.Uebersichtszeile z in zeilen)
+            {
+                voll.Add(string.Format(kultur, MyResource.Resource.KONF_KS_DEZENTRAL_ZEILE, z.Bezeichner,
+                                       Z_ProjektKaeltebedarfCtrl.EerText(z, kultur)));
+                voll.Add(string.Format(kultur, MyResource.Resource.KONF_KS_DEZENTRAL_TRAEGER,
+                                       ProjektDetails.TraegerText(z, projekttraeger)));
+            }
+            k.Hinweis = k.Hinweis + Environment.NewLine + string.Join(Environment.NewLine, voll.ToArray());
+            Knotenliste.Add(k);
+        }
+
+        /// <summary>
+        /// K6b-N (Entscheid zum Foto der Sichtprobe): die Zeilen im Kasten „Dezentral (Split)“ — je Split-Zeile genau EINE
+        /// „Kurzname: EER Wert“, der Kurzname mit derselben Regel gekürzt wie lange Knotentitel
+        /// (<see cref="SchemaLayout.TitelKuerzen"/>) auf die Abnehmerspalte (<see cref="SchemaLayout.SPALTEN_BREITE"/>), der
+        /// Rechenweg (fest/linear) nur im Tooltip; danach die Sammelzeile „Strom: Projektträger“, wenn alle Zeilen den Träger
+        /// des Projekts nehmen, sonst „Strom: n Träger“ mit der Zahl der verschiedenen Träger. Ohne Datenbank.
+        /// </summary>
+        /// <param name="zeilen">Je Split-Zeile Bezeichner, EER-Wert (kurz, <see cref="EerKurz"/>) und Kühlträger
+        /// (<c>null</c> = Stromträger des Projekts).</param>
+        /// <param name="projekttraeger">Der Stromträger des Projekts.</param>
+        public static List<string> KaelteDezentralZeilen(IEnumerable<(string Bezeichner, string Eer, int? Kuehltraeger)> zeilen,
+                                                         int projekttraeger)
+        {
+            System.Globalization.CultureInfo kultur = System.Globalization.CultureInfo.CurrentCulture;
+            List<(string Bezeichner, string Eer, int? Kuehltraeger)> liste =
+                (zeilen ?? Enumerable.Empty<(string, string, int?)>()).ToList();
+            List<string> aus = new List<string>();
+            if (liste.Count == 0) return aus;
+
+            int breite = SchemaLayout.SPALTEN_BREITE[(int)Knotenart.Abnehmer] - 2 * SchemaLayout.KNOTEN_RAND;
+            foreach (var z in liste)
+            {
+                string rest = string.Format(kultur, MyResource.Resource.KONF_KS_DEZENTRAL_ZEILE, "", z.Eer);
+                string name = SchemaLayout.TitelKuerzen(z.Bezeichner ?? "", breite - SchemaLayout.TextBreite(rest));
+                aus.Add(string.Format(kultur, MyResource.Resource.KONF_KS_DEZENTRAL_ZEILE, name, z.Eer));
+            }
+
+            List<int> traeger = liste
+                .Select(z => Kaeltestromabrechnung.Abweichend(z.Kuehltraeger, projekttraeger) ? z.Kuehltraeger.Value : projekttraeger)
+                .Distinct().ToList();
+            aus.Add(liste.All(z => !Kaeltestromabrechnung.Abweichend(z.Kuehltraeger, projekttraeger))
+                ? MyResource.Resource.KONF_KS_DEZENTRAL_STROM_PROJEKT
+                : string.Format(kultur, MyResource.Resource.KONF_KS_DEZENTRAL_STROM_TRAEGER, traeger.Count));
+            return aus;
+        }
+
+        /// <summary>K6b-N: der EER einer Split-Zeile ohne Rechenweg — fest „3,0“, linear „3,0–4,0“ (Format wie <c>EerText</c>).</summary>
+        internal static string EerKurz(Z_ProjektKaeltebedarfCtrl.Uebersichtszeile z, IFormatProvider kultur)
+        {
+            string E(double? w) => (w ?? 0.0).ToString("0.0#", kultur);
+            return z.EerWeg == KaeltebedarfSchema.EER_LINEAR ? E(z.Eer1) + "–" + E(z.Eer2) : E(z.Eer1);
         }
 
         /// <summary>Kühlvorlauf des Projektgeräts einer Wärmepumpen-Anlage [°C]; <c>null</c> = nicht gepflegt.</summary>

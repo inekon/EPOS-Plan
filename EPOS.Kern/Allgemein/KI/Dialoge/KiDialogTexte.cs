@@ -846,6 +846,9 @@
         internal static string SimKaelteerzeugerErl => MyResource.Resource.KI_DLG_SIM_KAELTEERZEUGER_ERL;
         internal static string SimKaeltespeicherName => MyResource.Resource.SIMKONF_KAELTE_SPEICHER;
         internal static string SimKaeltespeicherErl => MyResource.Resource.KI_DLG_SIM_KAELTESPEICHER_ERL;
+        // K6b-N: die Gruppe „Dezentrale Kaeltedeckung" (nur lesend).
+        internal static string SimKaelteDezentralName => MyResource.Resource.SIMKONF_KAELTE_DEZENTRAL;
+        internal static string SimKaelteDezentralErl => MyResource.Resource.KI_DLG_SIM_KAELTE_DEZENTRAL_ERL;
         internal static string SimKuehlWpName => MyResource.Resource.KMA_GRUPPE_WP;
         internal static string SimKuehlWpErl => MyResource.Resource.KI_DLG_SIM_KUEHL_WP_ERL;
         internal static string SimAnlagenkopplungName => MyResource.Resource.SIMKONF_LBL_ANLAGENKOPPLUNG;
@@ -1963,10 +1966,9 @@
         internal static string ZpgKalenderName => MyResource.Resource.ZPG_LBL_KALENDER;
         internal static string ZpgKalenderErl => MyResource.Resource.KI_DLG_ZPG_KALENDER_ERL;
 
-        internal static string ZpgFerienBeginnTagName => MyResource.Resource.ZPG_LBL_BEGINN_TAG;
-        internal static string ZpgFerienBeginnMonatName => MyResource.Resource.ZPG_LBL_BEGINN_MONAT;
-        internal static string ZpgFerienEndeTagName => MyResource.Resource.ZPG_LBL_ENDE_TAG;
-        internal static string ZpgFerienEndeMonatName => MyResource.Resource.ZPG_LBL_ENDE_MONAT;
+        internal static string ZpgFerienNameName => MyResource.Resource.KI_DLG_ZPG_FERIEN_NAME_NAME;
+        internal static string ZpgFerienVonName => MyResource.Resource.KI_DLG_ZPG_FERIEN_VON_NAME;
+        internal static string ZpgFerienBisName => MyResource.Resource.KI_DLG_ZPG_FERIEN_BIS_NAME;
         internal static string ZpgFerienErl => MyResource.Resource.KI_DLG_ZPG_FERIEN_ERL;
         internal static string ZpgJahresmesswertName => MyResource.Resource.ZPG_LBL_JAHRESMESSWERT;
         internal static string ZpgJahresmesswertErl => MyResource.Resource.KI_DLG_ZPG_JAHRESMESSWERT_ERL;
@@ -1980,20 +1982,14 @@
         internal static string ZpgMesswertQuelleErl => MyResource.Resource.KI_DLG_ZPG_MESSWERT_QUELLE_ERL;
         internal static string ZpgMesswertZeitraumName => MyResource.Resource.ZPG_LBL_MESSWERT_ZEITRAUM;
         internal static string ZpgMesswertZeitraumErl => MyResource.Resource.KI_DLG_ZPG_MESSWERT_ZEITRAUM_ERL;
-        internal static string ZpgTagesbedarfModusName => MyResource.Resource.ZPG_LBL_TAGESBEDARF;
-        internal static string ZpgTagesbedarfModusErl => MyResource.Resource.KI_DLG_ZPG_TAGESBEDARF_MODUS_ERL;
-        internal static string ZpgTagesbedarfManuellName => MyResource.Resource.ZPG_LBL_TAGESBEDARF_MANUELL;
+        internal static string ZpgTagesbedarfManuellName => MyResource.Resource.ZPG_LBL_TAGESBEDARF;
         internal static string ZpgTagesbedarfManuellErl => MyResource.Resource.KI_DLG_ZPG_TAGESBEDARF_MANUELL_ERL;
-        internal static string ZpgLadeleistungModusName => MyResource.Resource.ZPG_LBL_LADELEISTUNG;
-        internal static string ZpgLadeleistungModusErl => MyResource.Resource.KI_DLG_ZPG_LADELEISTUNG_MODUS_ERL;
         internal static string ZpgLadeleistungManuellName => MyResource.Resource.ZPG_LBL_LADELEISTUNG_MANUELL;
         internal static string ZpgLadeleistungManuellErl => MyResource.Resource.KI_DLG_ZPG_LADELEISTUNG_MANUELL_ERL;
         internal static string ZpgLadefensterName => MyResource.Resource.ZPG_LBL_LADEFENSTER;
         internal static string ZpgLadefensterErl => MyResource.Resource.KI_DLG_ZPG_LADEFENSTER_ERL;
         internal static string ZpgLadefensterBeginnName => MyResource.Resource.ZPG_LBL_LADEFENSTER_BEGINN;
         internal static string ZpgLadefensterBeginnErl => MyResource.Resource.KI_DLG_ZPG_LADEFENSTER_BEGINN_ERL;
-        internal static string ZpgZirkulationModusName => MyResource.Resource.ZPG_LBL_ZIRKULATION;
-        internal static string ZpgZirkulationModusErl => MyResource.Resource.KI_DLG_ZPG_ZIRKULATION_MODUS_ERL;
         internal static string ZpgZirkMethodeName => MyResource.Resource.ZPG_LBL_ZIRK_METHODE;
         internal static string ZpgZirkMethodeErl => MyResource.Resource.KI_DLG_ZPG_ZIRK_METHODE_ERL;
         internal static string ZpgZirkLaengeName => MyResource.Resource.ZPG_LBL_ZIRK_LAENGE;
@@ -2030,10 +2026,6 @@
         internal static string ZpgZirkFlaecheErl => MyResource.Resource.KI_DLG_ZPG_ZIRK_FLAECHE_ERL;
         internal static string ZpgZirkLaufzeitName => MyResource.Resource.ZPG_LBL_ZIRK_LAUFZEIT;
         internal static string ZpgZirkLaufzeitErl => MyResource.Resource.KI_DLG_ZPG_ZIRK_LAUFZEIT_ERL;
-        internal static string ZpgAnzeigetemperaturName => MyResource.Resource.ZPG_LBL_ANZEIGETEMPERATUR;
-        internal static string ZpgAnzeigetemperaturErl => MyResource.Resource.KI_DLG_ZPG_ANZEIGETEMPERATUR_ERL;
-        internal static string ZpgStundenschwelleName => MyResource.Resource.ZPG_LBL_STUNDENSCHWELLE;
-        internal static string ZpgStundenschwelleErl => MyResource.Resource.KI_DLG_ZPG_STUNDENSCHWELLE_ERL;
 
         internal static string ZpgaBedarfstagName => MyResource.Resource.ZPG_AUS_LBL_BEDARFSTAG;
         internal static string ZpgaBedarfstagErl => MyResource.Resource.KI_DLG_ZPGA_BEDARFSTAG_ERL;
@@ -3563,8 +3555,8 @@
         internal static string BkuNurStaemmeErl => MyResource.Resource.KI_DLG_BKU_NURSTAEMME_ERL;
         internal static string BkuVarianteName => MyResource.Resource.BKS_LBL_VARIANTE;
         internal static string BkuVarianteErl => MyResource.Resource.KI_DLG_BKU_VARIANTE_ERL;
-        internal static string BkuBezeichnerName => MyResource.Resource.BKS_LBL_BEZEICHNER;
-        internal static string BkuBezeichnerErl => MyResource.Resource.KI_DLG_BKU_BEZEICHNER_ERL;
+        internal static string BkuErgebnisseName => MyResource.Resource.KI_DLG_BKU_ERG_NAME;
+        internal static string BkuErgebnisseErl => MyResource.Resource.KI_DLG_BKU_ERG_ERL;
         internal static string BkuSimName => MyResource.Resource.KI_DLG_BKU_SIM_NAME;
         internal static string BkuSimErl => MyResource.Resource.KI_DLG_BKU_SIM_ERL;
         internal static string BkuNurUnterschiedeName => MyResource.Resource.BK_LBL_NUR_UNTERSCHIEDE;

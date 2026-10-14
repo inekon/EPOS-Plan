@@ -388,7 +388,9 @@ namespace EPOS.Kern.Tests
             // EQ1 (Entscheidungsvorlage Modellgrenzen, Welle M6): die gespeicherte Erdreichpruefung.
             KatalogfassungSchema.TAB_ERGEBNIS_ERDREICH,
             // KU3-4 (Schritt 183): das Ergebnis je Kaeltemaschine.
-            KaeltemaschineAnlageSchema.TAB_ERGEBNIS
+            KaeltemaschineAnlageSchema.TAB_ERGEBNIS,
+            // K6 (Schritt 223): das Ergebnis je Split-Zeile des Kaeltebedarfs (dezentral).
+            KaeltebedarfSplitAbrechnungSchema.TAB_ERGEBNIS
         };
 
         private static bool Ergebnistabelle(string tabelle)

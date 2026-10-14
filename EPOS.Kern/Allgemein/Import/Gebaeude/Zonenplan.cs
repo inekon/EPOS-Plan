@@ -308,6 +308,9 @@ namespace WindowsFormsApplication1
                         z.Quelle = new Profilquelle(Profilquelle.DATEI);
                     }
                 }
+                // Welle DA-1: Lasten und Zeitpläne einer gbXML-Datei je Zone (Datei vor Profil, E138 F2) — nur ohne EPOS_*-Sätze.
+                else if (GbxmlKonditionierung.Bilden(z.Name, iz.Raeume, iz.FlaecheM2, iz.VolumenM3) is Zonenkonditionierung gbxml)
+                    z.Projektdatei = gbxml;
             }
             foreach (AbbildRaum r in Gebaeude.Raeume)
                 if (!_zoneJeRaum.ContainsKey(r.Kennung)) _ausserhalb.Add(r.Kennung);

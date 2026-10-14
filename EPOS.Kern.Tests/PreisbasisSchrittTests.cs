@@ -63,9 +63,10 @@ namespace EPOS.Kern.Tests
             // 1062 (Kopie von 1061): je zwei Zeilen „kWh" und eine „kg". Das Referenzprojekt Übergabegrenze 1060 (Kopie
             // von 1056): zwei Zeilen „kWh" und eine „kg". Das Referenzprojekt Kältemaschine mit Teillast 1063 (KM3,
             // Kopie von 1055): zwei Zeilen „kWh" und eine „kg". Das Referenzprojekt Freie Kühlung 1064 (Kopie von
-            // 1017): zwei Zeilen „kWh" und eine „kg".
+            // 1017): zwei Zeilen „kWh" und eine „kg". Die Referenzprojekte der Zapfprofil-Optionen 1066 bis 1071 (ZB12,
+            // Kopien von 1045): je eine Zeile „Nm³".
             Assert.Equal(28, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kWh'"));
-            Assert.Equal(25,Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'Nm³'"));
+            Assert.Equal(31,Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'Nm³'"));
             Assert.Equal(4, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'L'"));
             Assert.Equal(11,Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE Preisbasis = 'kg'"));
 
