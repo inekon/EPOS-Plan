@@ -223,6 +223,53 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltebedarf WHERE ID_Projekt = ?", PROJEKT));
         }
 
+        // ---- Art-Vorschlag und Abbildung der Hülle ---------------------------------------------------------------------
+
+        [Fact]
+        public void Beim_Uebernehmen_belegt_der_Art_Vorschlag_die_Kaelte_Art_vor()
+        {
+            if (!_db.Vorhanden) return;
+            string prozess = Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT Bezeichner FROM Tab_Kaeltebedarf_STAMM WHERE Kaelte_Art = ? ORDER BY ID LIMIT 1",
+                new DbParam("@a", KaelteArtSchema.PROZESS)), CultureInfo.InvariantCulture);
+            Assert.False(string.IsNullOrEmpty(prozess), "Die Saat trägt keine Vorlage mit Art-Vorschlag Prozess.");
+
+            int kopie = KaeltebedarfStammCtrl.CopyFromStamm(prozess, PROJEKT);
+            var zeile = new EPOS.UI.Dialoge.Bedarf.BedarfsProfilZeile { IdStamm = kopie, Name = prozess };
+            KaeltebedarfsprofilAbbildung.Aufgenommen(zeile, prozess);
+            Assert.Equal(KaelteArtSchema.PROZESS, zeile.KaelteArt);
+            Assert.Equal(DbWerte.KAELTE_EINGABE_JAHR, zeile.Eingabeart);
+            Assert.Equal(Katalogmonate(prozess), zeile.Monatsanteile);
+            Assert.Equal(168, zeile.Wochenprofil!.Length);
+
+            // Eine Bestandsvorlage ohne Vorschlag bleibt bei der Vorgabe Raum.
+            var buero = new EPOS.UI.Dialoge.Bedarf.BedarfsProfilZeile { IdStamm = KaeltebedarfStammCtrl.CopyFromStamm(BUERO, PROJEKT), Name = BUERO };
+            KaeltebedarfsprofilAbbildung.Aufgenommen(buero, BUERO);
+            Assert.Equal(KaelteArtSchema.RAUM, buero.KaelteArt);
+        }
+
+        [Fact]
+        public void Der_Rueckweg_gibt_Monate_und_Woche_nur_nach_einer_Bearbeitung_weiter()
+        {
+            var modelle = new List<Z_ProjektKaeltebedarfModel>
+            {
+                new Z_ProjektKaeltebedarfModel { ID_Z = 1, ID_Kaeltebedarf = 0, Bezeichner = "A", Summe = 1 },
+                new Z_ProjektKaeltebedarfModel { ID_Z = 2, ID_Kaeltebedarf = 0, Bezeichner = "B", Summe = 2 },
+            };
+            List<EPOS.UI.Dialoge.Bedarf.BedarfsProfilZeile> zeilen = KaeltebedarfsprofilAbbildung.Zeilen(modelle);
+            Action rueckweg = KaeltebedarfsprofilAbbildung.Rueckweg(zeilen, modelle, PROJEKT);
+            zeilen[0].Eingabeart = DbWerte.KAELTE_EINGABE_MONAT;
+            zeilen[0].Monatsanteile = new double[] { 10, 10, 10, 10, 10, 10, 10, 10, 5, 5, 5, 5 };
+            zeilen[0].ProfilGeaendert = true;
+            zeilen[1].Eingabeart = DbWerte.KAELTE_EINGABE_WOCHE;
+            zeilen[1].Wochenprofil = new double[168];
+            rueckweg();
+            Assert.Equal(DbWerte.KAELTE_EINGABE_MONAT, modelle[0].Eingabeart);
+            Assert.Equal(zeilen[0].Monatsanteile, modelle[0].Monatsanteile);
+            Assert.Equal(DbWerte.KAELTE_EINGABE_WOCHE, modelle[1].Eingabeart);
+            Assert.Null(modelle[1].Wochenprofil);                                                       // nicht übernommen
+        }
+
         // ---- Mitzieher ---------------------------------------------------------------------------------------------------
 
         [Fact]

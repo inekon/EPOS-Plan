@@ -81,6 +81,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // KBP-1: die Wahl des Betriebskalenders der markierten Zuordnung - Katalogfeld betriebskalender der Feldkarte
         // Form_Bedarfsprofile, gebunden ueber BedarfsProfileKiSicht (KalenderLesen/KalenderSetzen) des Wirts.
         new("Betriebskalenderwahl",           "BedarfsProfileDialog",        KiMaskennamen.BEDARFSPROFILE),
+        // KBP-3a: die Editoren der Eingabearten Monatswerte und Wochenprofil in der Bearbeiten-Ueberlagerung der Kaeltezeile.
+        new("KaelteMonatswerteEditor",        "BedarfsProfileDialog",        KiMaskennamen.BEDARFSPROFILE),
+        new("KaelteWochenprofilEditor",       "BedarfsProfileDialog",        KiMaskennamen.BEDARFSPROFILE),
         // Die Rueckfrage „In die Datenbank übernehmen…“ (Stufe 2b) steht ebenso als Ueberlagerung im Projektdialog;
         // sie fragt nur (Wahl und Name), der Assistent arbeitet ueber denselben Wirt.
         new("Rueckwegfrage",                  "HeizkesselDialog",            KiMaskennamen.HEIZKESSEL_PROJEKT),
@@ -345,7 +348,9 @@ public sealed class KiMaskenabdeckungWacheTests
         new("BedarfReiter", 3),
         // PW2/BW2: die Wahl des Betriebskalenders der gewählten Zuordnung - Katalogfeld betriebskalender (5 → 6).
         // KBP-1: die Kalenderwahl steht im Baustein Betriebskalenderwahl (Eintrag in WIRTE) - 7 → 6.
-        new("BedarfsProfileDialog", 6, "die beiden Temperaturfelder der Prozesswärme (PW1 Stufe 1) sind Eingaben des Knopfes „Temperaturen übernehmen“ an der gewählten Projektzeile, wie der neue Jahresverbrauch; die Werte führt die Zeile, nicht die Maske"),
+        new("BedarfsProfileDialog", 7, "die beiden Temperaturfelder der Prozesswärme (PW1 Stufe 1) sind Eingaben des Knopfes „Temperaturen übernehmen“ an der gewählten Projektzeile, wie der neue Jahresverbrauch; die Werte führt die Zeile, nicht die Maske; die Wahl der Eingabeart (KBP-3a) ist das Katalogfeld eingabeart"),
+        new("KaelteMonatswerteEditor", 2, "KBP-3a: die zwölf Monatswerte und ihre Einheit sind ein Editor der Bearbeiten-Überlagerung; der Assistent setzt die Eingabeart, die Werte gibt der Anwender ein"),
+        new("KaelteWochenprofilEditor", 3, "KBP-3a: Ansicht, Tag und die 24 Stundenwerte sind ein Editor der Bearbeiten-Überlagerung; der Assistent setzt die Eingabeart, die Werte gibt der Anwender ein"),
         // PW2/BW2: die Verwaltung der Betriebskalender - Kalender, Bezeichnung, Bundesland, Feiertagsregel, die
         // Ferienfelder (eine Schleife über vier Paare), Ferienfaktor und Kürzen; Katalog Form_Betriebskalender.
         new("BetriebskalenderDialog", 8),
