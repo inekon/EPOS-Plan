@@ -199,6 +199,20 @@ namespace Auslieferungsvorlage
 
             bau.PersonenbezugAbraeumen(sicht);
 
+            // ---- Schritt 3a2: die verwaisten Satzvorlagen (KB-4) -------------------
+            //      Seit Welle KB-4 ist die Satzvorlage des zentralen Kostenkatalogs die EINE
+            //      Kostenbasis eines Katalogsatzes. Mit den Projektdaten und den nicht
+            //      ausgelieferten Saetzen verlieren deren Satzvorlagen ihren Traeger - eine
+            //      Waise ist ein Kostensatz ohne Geraet und hat in der Auslieferung nichts zu
+            //      suchen. Die Regel ist die des Loeschens eines Satzes
+            //      (Katalogrueckweg.Abraeumen): Standard- und gesperrte Vorlagen bleiben,
+            //      ebenso jede mit Verweis oder Projektzeile.
+            bericht.Abschnitt("Schritt 3a2 — verwaiste Satzvorlagen des Kostenkatalogs");
+            int waisen = Katalogrueckweg.SatzvorlagenAbraeumen();
+            bericht.Zeile(waisen == 0
+                              ? "Keine verwaiste Satzvorlage - nichts zu tun."
+                              : waisen + " verwaiste Satzvorlage(n) samt Positionen entfernt.");
+
             // ---- Schritt 3b: die Nachpflege des Kesselkatalogs aus VDI 3805 (Konzept
             //      Kesselkennlinie, Entscheid F2) - nur mit --kesselkatalog. Allein
             //      Tab_Heizkessel_STAMM; Projektkopien gibt es in der Vorlage ohnehin nicht mehr.

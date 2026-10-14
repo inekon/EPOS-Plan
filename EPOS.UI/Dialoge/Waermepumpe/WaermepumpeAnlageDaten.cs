@@ -15,9 +15,9 @@
 /// Listenobjekt auf halbem Weg zu verändern.</para>
 ///
 /// <para><b>Vier Werte laufen VERBORGEN mit</b> — <see cref="Volumen"/>,
-/// <see cref="Solaranteil"/>, <see cref="RendeMix"/> und <see cref="Modulkosten"/>.
+/// <see cref="Solaranteil"/>, <see cref="RendeMix"/> und <see cref="Kostensatz"/>.
 /// Die Pufferspeichergruppe ist seit Ä19 nicht mehr gezeichnet (gepflegt wird sie in
-/// der Simulation-Konfiguration), die Modulkosten laufen über die Kostenverwaltung.
+/// der Simulation-Konfiguration), die Gerätekosten laufen über die Kostenverwaltung.
 /// Ihre Werte gehen dabei NICHT verloren: Sie kommen aus dem Datensatz herein und
 /// werden unverändert zurückgeschrieben.</para>
 /// </summary>
@@ -238,8 +238,14 @@ public sealed class WaermepumpeAnlageDaten
 
     // --- Verborgen mitlaufend --------------------------------------------------
 
-    /// <summary>Modulkosten [€] — Ä19, nicht gezeichnet.</summary>
-    public int Modulkosten { get; set; }
+    /// <summary>
+    /// Der Kostensatz des Projektgeräts aus seiner Satzvorlage, bereits gesetzt; leer =
+    /// keiner gepflegt (Welle KB-4, die Gerätespalte ist entfallen). Ä19: nur Anzeige.
+    /// </summary>
+    public string Kostensatz { get; set; } = "";
+
+    /// <summary>Das Einheitenzeichen des Kostensatzes — es gehört zur Bemessung der Satzvorlage.</summary>
+    public string KostensatzEinheit { get; set; } = "";
 
     /// <summary>Puffervolumen [m³] — Ä19, nicht gezeichnet.</summary>
     public double Volumen { get; set; }
@@ -319,7 +325,8 @@ public sealed class WaermepumpeAnlageDaten
         KuehlFreiLeistungKw = KuehlFreiLeistungKw,
         MindestleistungKw = MindestleistungKw,
         TaktverlustfaktorCd = TaktverlustfaktorCd,
-        Modulkosten = Modulkosten,
+        Kostensatz = Kostensatz,
+        KostensatzEinheit = KostensatzEinheit,
         Volumen = Volumen,
         Solaranteil = Solaranteil,
         RendeMix = RendeMix

@@ -36,6 +36,9 @@ public static class KaeltemaschineSteckbrief
             new(t.LabelVerdichterregelung, g.Verdichterregelung, Kennung: "regelung"),
             new(vorlauf is null ? t.LabelKaltwasserMin : t.LabelVorlauf,
                 vorlauf is double v ? Z(v, 1) : Z(g.KaltwasserMin, 1), t.EinheitGradC, Kennung: "vorlauf"),
+            // Welle KB-4: der Lesewert der Satzvorlage - leer ohne Vorlage (gepflegt in der Kostenverwaltung).
+            new(Resource.KBROW_LBL_GERAETEKOSTEN.TrimEnd(':', ' '), Z(g.Geraetekosten, 0),
+                g.Geraetekosten.HasValue ? "€" : "", Kennung: "geraetekosten"),
         };
         if (kosten is (double invest, double betrieb))
             liste.Add(new(Resource.KMA_LBL_INVEST_BETRIEB, Z(invest, 0) + " / " + Z(betrieb, 0), "€", Kennung: "kosten"));

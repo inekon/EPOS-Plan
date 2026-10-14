@@ -274,9 +274,8 @@ namespace EPOS.Kern.Tests
             foreach (string aus in new[] { "ID", "ID_Projekt", "ID_Stamm", "ReadOnly", "ID_KostenVorlage", "ID_KostenVorlageInvestition", "Bezeichner",
                                            "Katalog_Schluessel", "Katalog_Pruefsumme", "Katalog_Ausgelaufen" })
                 Assert.DoesNotContain(aus, spalten);
-            foreach (string mit in new[] { "Ptherm", "Pel", "Grenzleistung", "Kosten_Modul", "Kosten_Montage", "Kosten_Lieferung",
-                                           "Kosten_Schallschutzhaube", "Kosten_Abgasreinigung", "Investition_kwel",
-                                           "Wartungskosten_kwhel", "Nutzungsdauer", "Wirkungsgrad_el", "Wirkungsgrad_th",
+            foreach (string mit in new[] { "Ptherm", "Pel", "Grenzleistung", "Raumbedarf",
+                                           "Nutzungsdauer", "Wirkungsgrad_el", "Wirkungsgrad_th",
                                            "Wirkungsgrad_el_Teillast50", "Anfahrverlust_kWh", "Mindestlaufzeit_min", "Ruecklauf_Max" })
                 Assert.Contains(mit, spalten);
             Assert.Empty(BHKWStammCtrl.Rueckweg().Kinder);
@@ -416,26 +415,22 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Nebenposten_und_Grenzleistung_des_Moduls_gehen_mit_der_Name_der_Kopie_bleibt()
+        public void Geraetefelder_und_Grenzleistung_des_Moduls_gehen_mit_der_Name_der_Kopie_bleibt()
         {
             if (!_db.Vorhanden) return;
             var k = Kopie();
-            Sql("UPDATE Tab_BHKW SET Kosten_Modul = 30000, Kosten_Montage = 4000, Kosten_Lieferung = 1000, " +
-                "Kosten_Schallschutzhaube = 3000, Kosten_Abgasreinigung = 2000, Investition_kwel = 1000, " +
-                "Wartungskosten_kwhel = 0.025, Grenzleistung = 45, Anfahrverlust_kWh = 1.5 WHERE ID = ?", k.Id);
+            // Welle KB-4: Die sieben Kostenspalten sind entfallen; was mitgeht, sind die
+            // Geraetefelder. Die Kosten reisen als Satzvorlage des Katalogsatzes.
+            Sql("UPDATE Tab_BHKW SET Raumbedarf = 7.5, Nutzungsdauer = 18, " +
+                "Grenzleistung = 45, Anfahrverlust_kWh = 1.5 WHERE ID = ?", k.Id);
 
-            Rueckwegergebnis e = Neu(k.Id, "Rueckweg Nebenposten");
+            Rueckwegergebnis e = Neu(k.Id, "Rueckweg Geraetefelder");
             Assert.True(e.Ok, e.Meldung);
             int satz = e.Saetze[0].IdKatalog;
             double Z(string spalte) => Convert.ToDouble(Wert("SELECT " + spalte + " FROM Tab_BHKW_STAMM WHERE ID = ?", satz),
                                                         CultureInfo.InvariantCulture);
-            Assert.Equal(30000, Z("Kosten_Modul"));
-            Assert.Equal(4000, Z("Kosten_Montage"));
-            Assert.Equal(1000, Z("Kosten_Lieferung"));
-            Assert.Equal(3000, Z("Kosten_Schallschutzhaube"));
-            Assert.Equal(2000, Z("Kosten_Abgasreinigung"));
-            Assert.Equal(1000, Z("Investition_kwel"));
-            Assert.Equal(0.025, Z("Wartungskosten_kwhel"), 9);
+            Assert.Equal(7.5, Z("Raumbedarf"), 9);
+            Assert.Equal(18, Z("Nutzungsdauer"));
             Assert.Equal(45, Z("Grenzleistung"));
             Assert.Equal(1.5, Z("Anfahrverlust_kWh"), 9);
             // KA-E-15: Der Name der Projektkopie bleibt, auch wenn der Katalogsatz anders heisst.

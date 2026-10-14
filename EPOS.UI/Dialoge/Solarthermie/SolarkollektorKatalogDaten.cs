@@ -11,8 +11,10 @@
 ///
 /// <para><b>Acht Pflichtzahlen.</b> Der Vorläufer (<c>InitDatensatzUpdate</c>) prüft
 /// Modulfläche, Aperturfläche, h0, k1, k2, Kdir, Kdiff und die Investitionskosten mit
-/// <c>leerErlaubt: false</c>. Deshalb sind alle acht <c>double?</c>: Ein leeres Feld ist
-/// etwas anderes als eine 0, und erst der Speicherweg entscheidet, ob das reicht.</para>
+/// <c>leerErlaubt: false</c>. Geblieben sind sieben (die Investitionskosten sind mit Welle
+/// KB-4 entfallen, die Gerätekosten pflegt die Kostenverwaltung); alle sind <c>double?</c>:
+/// Ein leeres Feld ist etwas anderes als eine 0, und erst der Speicherweg entscheidet, ob
+/// das reicht.</para>
 ///
 /// <para><b>Veränderlich, nicht als <c>record</c>.</b> Der Dialog schreibt beim Tippen
 /// hinein; die Hülle nimmt den Stand beim Speichern entgegen.</para>
@@ -68,7 +70,4 @@ public sealed class SolarkollektorKatalogDaten
     /// Fläche, mit der die Simulation rechnet. Ein Persistenzwert, die Hülle bildet ab.
     /// </summary>
     public string Bezugsflaeche { get; set; } = "apertur";
-
-    /// <summary>Investitionskosten [€].</summary>
-    public double? Kosten { get; set; }
 }

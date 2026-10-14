@@ -106,10 +106,9 @@
        seither im Aufklapper "Alle Daten anzeigen" des Projektdialogs - und dort auch im
        Katalogbrowser, der dasselbe Raster zeigt.
 
-       DER WERT BLEIBT IM FELDSATZ. PufferSpKatalogDaten.Investitionskosten fuehrt ihn
-       weiter, die Huelle liest ihn beim Oeffnen aus dem Katalogsatz und schreibt ihn
-       beim OK unveraendert zurueck; ohne das nullte jedes "Ueberschreiben" die Spalte,
-       die dieser Dialog nicht mehr zeigt. *@
+       Mit Welle KB-4 ist die Spalte selbst entfallen (Anwenderentscheid 13.10.2026
+       "eine Kostenbasis, keine Doppelhaltung"): Die Geraetekosten pflegt die
+       Kostenverwaltung, der Aufklapper zeigt sie nur noch als Lesewert. *@
 
     @if (!string.IsNullOrEmpty(_meldung))
     {
@@ -194,9 +193,9 @@
     [Parameter] public string LabelVolumen { get; set; } = "Gesamtvolumen:";
     [Parameter] public string FeldVolumen { get; set; } = "Gesamtvolumen";
 
-    // OHNE GruppeKosten, LabelInvest und FeldInvest (15.09.2026): Sie gehoerten zur
-    // entfallenen Kostengruppe. Ihre Ressourcenschluessel bleiben bestehen - der
-    // Katalogbrowser beschriftet dasselbe Feld weiter (KBROW_LBL_INVEST).
+    // OHNE GruppeKosten, LabelInvest und FeldInvest: Die Kosten des Katalogsatzes stehen
+    // allein in seiner Satzvorlage; der Katalogbrowser zeigt sie als Lesewert
+    // Geraetekosten (KBROW_LBL_GERAETEKOSTEN).
 
     [Parameter] public string BtnUeberschreibenText { get; set; } = "Überschreiben";
     [Parameter] public string BtnSpeichernUnterText { get; set; } = "Speichern unter";

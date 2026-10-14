@@ -225,7 +225,7 @@ namespace WindowsFormsApplication1
                 // Vorgang. Die Straenge bleiben an der Anlage im Projekt.
                 ["RueckwegWege"] = mitKopie ? RueckwegWege() : null,
                 ["RueckwegBleibtText"] = Text_("PVD_RUECK_BLEIBT",
-                    "Im Projekt bleiben: Stränge und Wechselrichterzuordnung, Neigung, Azimut, Anzahl Module, Ertragsmodell und Energieträger der Anlage. Alle Modulwerte samt den Temperaturkoeffizienten und den Modulkosten gehen mit."),
+                    "Im Projekt bleiben: Stränge und Wechselrichterzuordnung, Neigung, Azimut, Anzahl Module, Ertragsmodell und Energieträger der Anlage. Alle Modulwerte samt den Temperaturkoeffizienten gehen mit."),
 
                 // Loeschen im Katalogfuss (samt Satzvorlage, KA-E-16): leer = geloescht, sonst der Grund.
                 ["KatalogLoeschen"] = new Func<int, string>(KatalogLoeschen),

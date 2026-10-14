@@ -56,7 +56,10 @@ namespace WindowsFormsApplication1
                     if (row.Table.Columns.Contains("T_NOCT") && row["T_NOCT"] != DBNull.Value) item.m_T_NOCT = Convert.ToDouble(row["T_NOCT"]);
                     if (row.Table.Columns.Contains("Laenge") && row["Laenge"] != DBNull.Value) item.m_Laenge = Convert.ToDouble(row["Laenge"]);
                     if (row.Table.Columns.Contains("Breite") && row["Breite"] != DBNull.Value) item.m_Breite = Convert.ToDouble(row["Breite"]);
-                    if (row.Table.Columns.Contains("Modulkosten") && row["Modulkosten"] != DBNull.Value) item.m_Modulkosten = Convert.ToDouble(row["Modulkosten"]);
+                    // Welle KB-4: der VERWEIS auf die Satzvorlage statt der entfallenen Kostenspalte.
+                    if (row.Table.Columns.Contains(KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION)
+                        && row[KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION] != DBNull.Value)
+                        item.IdKostenVorlageInvestition = Convert.ToInt32(row[KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION]);
                     // E2.3 (Migrationsschritt 63): fehlende Spalte und NULL sind
                     // derselbe Fall - "Technologie unbekannt".
                     if (row.Table.Columns.Contains("Technologie") && row["Technologie"] != DBNull.Value) item.m_Technologie = row["Technologie"].ToString();
@@ -98,7 +101,10 @@ namespace WindowsFormsApplication1
                 if (row.Table.Columns.Contains("T_NOCT") && row["T_NOCT"] != DBNull.Value) m_T_NOCT = Convert.ToDouble(row["T_NOCT"]);
                 if (row.Table.Columns.Contains("Laenge") && row["Laenge"] != DBNull.Value) m_Laenge = Convert.ToDouble(row["Laenge"]);
                 if (row.Table.Columns.Contains("Breite") && row["Breite"] != DBNull.Value) m_Breite = Convert.ToDouble(row["Breite"]);
-                if (row.Table.Columns.Contains("Modulkosten") && row["Modulkosten"] != DBNull.Value) m_Modulkosten = Convert.ToDouble(row["Modulkosten"]);
+                // Welle KB-4: der VERWEIS auf die Satzvorlage statt der entfallenen Kostenspalte.
+                if (row.Table.Columns.Contains(KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION)
+                    && row[KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION] != DBNull.Value)
+                    IdKostenVorlageInvestition = Convert.ToInt32(row[KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION]);
                 // E2.3 (Migrationsschritt 63) - die Groesse, an der das erweiterte
                 // Rechenmodell den Huld-Koeffizientensatz waehlt.
                 if (row.Table.Columns.Contains("Technologie") && row["Technologie"] != DBNull.Value) m_Technologie = row["Technologie"].ToString();
@@ -133,7 +139,6 @@ namespace WindowsFormsApplication1
                         T_NOCT = ?, 
                         Laenge = ?,
                         Breite = ?,
-                        Modulkosten = ?,
                         Technologie = ?
                     WHERE
                         Bezeichner = ?";
@@ -156,7 +161,6 @@ namespace WindowsFormsApplication1
 
                     new DbParam("?", model.m_Laenge),
                     new DbParam("?", model.m_Breite),
-                    new DbParam("?", model.m_Modulkosten),
                     // E2.3: leer bleibt NULL - "nicht gepflegt" ist keine Technologie.
                     new DbParam("?", string.IsNullOrEmpty(model.m_Technologie)
                                                 ? DBNull.Value : (object)model.m_Technologie),
@@ -411,9 +415,9 @@ namespace WindowsFormsApplication1
                 // Modell nie einen Huld-Koeffizientensatz.
                 string sql = @"INSERT INTO Tab_PV
                     (ID, ID_Projekt, Bezeichner, Firma, Beschreibung, Leistung, Wirkungsgrad, U_Mpp, U_Leerlauf,
-                     I_Mpp, I_Kurzschluss, alpha_SC, beta_OC, gamma_PMP, T_NOCT, Laenge, Breite, Modulkosten,
+                     I_Mpp, I_Kurzschluss, alpha_SC, beta_OC, gamma_PMP, T_NOCT, Laenge, Breite,
                      Technologie)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 DbParam[] ps = {
                     new DbParam("@id", neueId),
@@ -433,7 +437,6 @@ namespace WindowsFormsApplication1
                     P("@noc", ColOrNull(s, "T_NOCT")),
                     P("@lae", ColOrNull(s, "Laenge")),
                     P("@bre", ColOrNull(s, "Breite")),
-                    P("@mod", ColOrNull(s, "Modulkosten")),
                     P("@tec", ColOrNull(s, "Technologie"))
                 };
 

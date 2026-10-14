@@ -234,13 +234,14 @@ namespace WindowsFormsApplication1
         public const string SQL_PUFFER_INSERT =
             "INSERT INTO Tab_Pufferspeicher " +
             "(ID, ID_Projekt, Bezeichner, Speichertyp, Gesamtvolumen, " +
-            " Bereitschaftsverluste, Investitionskosten, Verwendung, Vorlauf, Ruecklauf) " +
-            "VALUES (?,?,?,?,?,?,?,?,?,?)";
+            " Bereitschaftsverluste, Verwendung, Vorlauf, Ruecklauf) " +
+            "VALUES (?,?,?,?,?,?,?,?,?)";
 
         /// <summary>
-        /// Parameter zu <see cref="SQL_PUFFER_INSERT"/>. Bereitschaftsverluste und
-        /// Investitionskosten sind 0: der Alt-Pendelspeicher kennt weder das eine noch
-        /// das andere, und 0 hält das Simulationsergebnis unverändert.
+        /// Parameter zu <see cref="SQL_PUFFER_INSERT"/>. Die Bereitschaftsverluste sind 0:
+        /// der Alt-Pendelspeicher kennt sie nicht, und 0 hält das Simulationsergebnis
+        /// unverändert. Eine Investition führt der Puffer nicht (Welle KB-4: die Kosten
+        /// trägt die Kostenverwaltung, Satzvorlage oder Position der Anlage).
         ///
         /// <paramref name="vorlauf"/>/<paramref name="ruecklauf"/> sind seit Etappe 4 die
         /// Vorbelegung aus den SYSTEMVORGABEN des Projekts
@@ -266,7 +267,6 @@ namespace WindowsFormsApplication1
                 Par("@typ",   DbParamTyp.VarWChar, SPEICHERTYP_PUFFER),
                 Par("@vol",   DbParamTyp.Integer,  volumenLiter),
                 Par("@verl",  DbParamTyp.Double,   0.0),
-                Par("@inv",   DbParamTyp.Double,   0.0),
                 Par("@verw",  DbParamTyp.VarWChar, VERWENDUNG_HEIZUNG),
                 Par("@vor",   DbParamTyp.Integer,  paar ? (object)vorlauf.Value   : System.DBNull.Value),
                 Par("@rueck", DbParamTyp.Integer,  paar ? (object)ruecklauf.Value : System.DBNull.Value)
@@ -284,15 +284,15 @@ namespace WindowsFormsApplication1
         public const string SQL_PUFFER_INSERT_VOLL =
             "INSERT INTO Tab_Pufferspeicher " +
             "(ID, ID_Projekt, Bezeichner, Hersteller, Speichertyp, Gesamtvolumen, " +
-            " Bereitschaftsverluste, Investitionskosten, Verwendung, Vorlauf, Ruecklauf, " +
+            " Bereitschaftsverluste, Verwendung, Vorlauf, Ruecklauf, " +
             " Schwelle_Ein, Schwelle_Aus, Schwelle_Aus_Nachrang, Entladeprio, Schwelle_Reserve) " +
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         /// <summary>Gegenstück zu <see cref="SQL_PUFFER_INSERT_VOLL"/> zum Ändern.</summary>
         public const string SQL_PUFFER_UPDATE_VOLL =
             "UPDATE Tab_Pufferspeicher SET " +
             "Bezeichner = ?, Hersteller = ?, Speichertyp = ?, Gesamtvolumen = ?, " +
-            "Bereitschaftsverluste = ?, Investitionskosten = ?, Verwendung = ?, " +
+            "Bereitschaftsverluste = ?, Verwendung = ?, " +
             "Vorlauf = ?, Ruecklauf = ?, Schwelle_Ein = ?, Schwelle_Aus = ?, " +
             "Schwelle_Aus_Nachrang = ?, Entladeprio = ?, Schwelle_Reserve = ? WHERE ID = ?";
 
@@ -314,7 +314,7 @@ namespace WindowsFormsApplication1
         /// </param>
         public static DbParam[] PufferParameterVoll(
             int idPuffer, int idProjekt, string bezeichner, string hersteller, string speichertyp,
-            int volumenLiter, double verluste, double investitionskosten, string verwendung,
+            int volumenLiter, double verluste, string verwendung,
             int? vorlauf, int? ruecklauf,
             double schwelleEin, double schwelleAus, double? schwelleAusNachrang, int entladeprio,
             double schwelleReserve)
@@ -330,7 +330,6 @@ namespace WindowsFormsApplication1
                 Par("@typ",      DbParamTyp.VarWChar, string.IsNullOrEmpty(speichertyp) ? SPEICHERTYP_PUFFER : speichertyp),
                 Par("@vol",      DbParamTyp.Integer,  volumenLiter),
                 Par("@verl",     DbParamTyp.Double,   verluste),
-                Par("@inv",      DbParamTyp.Double,   investitionskosten),
                 Par("@verw",     DbParamTyp.VarWChar, string.IsNullOrEmpty(verwendung) ? VERWENDUNG_HEIZUNG : verwendung),
                 Par("@vor",      DbParamTyp.Integer,  paar ? (object)vorlauf.Value   : System.DBNull.Value),
                 Par("@rueck",    DbParamTyp.Integer,  paar ? (object)ruecklauf.Value : System.DBNull.Value),
@@ -356,7 +355,7 @@ namespace WindowsFormsApplication1
         /// <summary>Parameter zu <see cref="SQL_PUFFER_UPDATE_VOLL"/> (ID zuletzt).</summary>
         public static DbParam[] PufferParameterVollUpdate(
             int idPuffer, string bezeichner, string hersteller, string speichertyp,
-            int volumenLiter, double verluste, double investitionskosten, string verwendung,
+            int volumenLiter, double verluste, string verwendung,
             int? vorlauf, int? ruecklauf,
             double schwelleEin, double schwelleAus, double? schwelleAusNachrang, int entladeprio,
             double schwelleReserve)
@@ -370,7 +369,6 @@ namespace WindowsFormsApplication1
                 Par("@typ",      DbParamTyp.VarWChar, string.IsNullOrEmpty(speichertyp) ? SPEICHERTYP_PUFFER : speichertyp),
                 Par("@vol",      DbParamTyp.Integer,  volumenLiter),
                 Par("@verl",     DbParamTyp.Double,   verluste),
-                Par("@inv",      DbParamTyp.Double,   investitionskosten),
                 Par("@verw",     DbParamTyp.VarWChar, string.IsNullOrEmpty(verwendung) ? VERWENDUNG_HEIZUNG : verwendung),
                 Par("@vor",      DbParamTyp.Integer,  paar ? (object)vorlauf.Value   : System.DBNull.Value),
                 Par("@rueck",    DbParamTyp.Integer,  paar ? (object)ruecklauf.Value : System.DBNull.Value),

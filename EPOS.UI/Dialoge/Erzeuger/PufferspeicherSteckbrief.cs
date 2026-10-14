@@ -24,7 +24,8 @@ public static class PufferspeicherSteckbrief
         (KatalogBrowserProfil.FeldSpeichertyp, "speichertyp"),
         (KatalogBrowserProfil.FeldVolumen, "volumen"),
         (KatalogBrowserProfil.FeldVerluste, "verluste"),
-        (KatalogBrowserProfil.FeldInvestitionskosten, "invest"),
+        // Welle KB-4: an der Stelle der Investition steht der Lesewert der Satzvorlage.
+        (KatalogBrowserProfil.FeldGeraetekosten, "geraetekosten"),
     };
 
     /// <summary>Die Zeilen aus Feldsatz bzw. Detailblock, am Projektsatz mit den Kostensummen der Anlage.</summary>

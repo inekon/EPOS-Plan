@@ -83,7 +83,6 @@ namespace WindowsFormsApplication1
                     if (r.Table.Columns.Contains("Speichertyp") && r["Speichertyp"] != DBNull.Value) item.Speichertyp = r["Speichertyp"].ToString();
                     if (r.Table.Columns.Contains("Bereitschaftsverluste") && r["Bereitschaftsverluste"] != DBNull.Value) item.Betriebsbereitschaftverlust = Convert.ToDouble(r["Bereitschaftsverluste"]);
                     if (r.Table.Columns.Contains("Gesamtvolumen") && r["Gesamtvolumen"] != DBNull.Value) item.Gesamtvolumen = Convert.ToInt32(r["Gesamtvolumen"]);
-                    if (r.Table.Columns.Contains("Investitionskosten") && r["Investitionskosten"] != DBNull.Value) item.Investitionskosten = Convert.ToDouble(r["Investitionskosten"]);
 
                     // KLASSEN-SET (Migrationsschritt 49, Konzept 6.1). Spaltentolerant
                     // mit Rueckfall auf Verwendung - siehe KlassenSetAusZeile.
@@ -171,8 +170,8 @@ namespace WindowsFormsApplication1
 
                 // ReadOnly wird NICHT uebernommen (existiert in der Projekt-Tabelle nicht).
                 string sql = @"INSERT INTO Tab_Pufferspeicher
-                    (ID, ID_Projekt, Bezeichner, Hersteller, Speichertyp, Bereitschaftsverluste, Gesamtvolumen, Investitionskosten)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                    (ID, ID_Projekt, Bezeichner, Hersteller, Speichertyp, Bereitschaftsverluste, Gesamtvolumen)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)";
 
                 DbParam[] ps = {
                     new DbParam("@id", neueId),
@@ -181,8 +180,7 @@ namespace WindowsFormsApplication1
                     P("@her", ColOrNull(s, "Hersteller")),
                     P("@typ", ColOrNull(s, "Speichertyp")),
                     P("@ver", ColOrNull(s, "Bereitschaftsverluste")),
-                    P("@vol", ColOrNull(s, "Gesamtvolumen")),
-                    P("@inv", ColOrNull(s, "Investitionskosten"))
+                    P("@vol", ColOrNull(s, "Gesamtvolumen"))
                 };
 
                 bool ok = DataRepository.ExecuteSQL(sql, ps);
@@ -311,7 +309,6 @@ namespace WindowsFormsApplication1
                 Text(ColOrNull(s, "Speichertyp")),
                 StilleDb.Zahl(ColOrNull(s, "Gesamtvolumen")),
                 StilleDb.Kommazahl(ColOrNull(s, "Bereitschaftsverluste")),
-                StilleDb.Kommazahl(ColOrNull(s, "Investitionskosten")),
                 verwendung,
                 vorlauf ?? SystemVorlauf(idProjekt),
                 ruecklauf ?? SystemRuecklauf(idProjekt),
@@ -357,7 +354,7 @@ namespace WindowsFormsApplication1
         /// </param>
         public static int ProjektPufferAnlegen(int idProjekt, string bezeichner, string hersteller,
                                                string speichertyp, int volumenLiter, double verluste,
-                                               double investitionskosten, string verwendung,
+                                               string verwendung,
                                                int? vorlauf, int? ruecklauf,
                                                double schwelleEin, double schwelleAus,
                                                double? schwelleAusNachrang, int entladeprio,
@@ -378,7 +375,7 @@ namespace WindowsFormsApplication1
             if (StilleDb.NonQuery(ProjektPuffer.SQL_PUFFER_INSERT_VOLL,
                                   ProjektPuffer.PufferParameterVoll(
                                       neueId, idProjekt, name, hersteller, speichertyp,
-                                      volumenLiter, verluste, investitionskosten, verwendung,
+                                      volumenLiter, verluste, verwendung,
                                       vorlauf, ruecklauf,
                                       schwelleEin, schwelleAus, schwelleAusNachrang, entladeprio,
                                       schwelleReserve)) < 0)
@@ -456,8 +453,7 @@ namespace WindowsFormsApplication1
         /// </param>
         public static bool ProjektPufferAendern(int idPuffer, int idProjekt, string bezeichner,
                                                 string hersteller, string speichertyp, int volumenLiter,
-                                                double verluste, double investitionskosten,
-                                                string verwendung, int? vorlauf, int? ruecklauf,
+                                                double verluste, string verwendung, int? vorlauf, int? ruecklauf,
                                                 double schwelleEin, double schwelleAus,
                                                 double? schwelleAusNachrang, int entladeprio,
                                                 double schwelleReserve = ProjektPuffer.SCHWELLE_RESERVE_DEFAULT,
@@ -479,7 +475,7 @@ namespace WindowsFormsApplication1
             if (StilleDb.NonQuery(ProjektPuffer.SQL_PUFFER_UPDATE_VOLL,
                                   ProjektPuffer.PufferParameterVollUpdate(
                                       idPuffer, name, hersteller, speichertyp, volumenLiter,
-                                      verluste, investitionskosten, verwendung,
+                                      verluste, verwendung,
                                       vorlauf, ruecklauf,
                                       schwelleEin, schwelleAus, schwelleAusNachrang, entladeprio,
                                       schwelleReserve)) < 0)

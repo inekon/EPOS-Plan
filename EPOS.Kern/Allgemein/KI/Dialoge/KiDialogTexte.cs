@@ -351,8 +351,6 @@
 
         // ========================================================= Waermepumpe: Felder
 
-        internal static string WpModulkostenName => MyResource.Resource.KI_DLG_WP_MODULKOSTEN_NAME;
-        internal static string WpModulkostenErl => MyResource.Resource.KI_DLG_WP_MODULKOSTEN_ERL;
 
         // Die Stammfelder des Katalogeditors (KI-F1b, KI-D-Q6). Ihre Anzeigenamen sind
         // die Beschriftungen des Bausteins WaermepumpeStammFelder - dieselben, die auch
@@ -524,8 +522,6 @@
         internal static string WpaHeizstabLeistungErl => MyResource.Resource.KI_DLG_WPA_HEIZSTAB_KW_ERL;
         internal static string WpaKuehlleistungName => MyResource.Resource.WPS_LBL_KUEHLLEISTUNG;
         internal static string WpaKuehlleistungErl => MyResource.Resource.KI_DLG_WPA_KUEHLLEISTUNG_ERL;
-        internal static string WpaModulkostenName => MyResource.Resource.MODK_LBL_MODULKOSTEN;
-        internal static string WpaModulkostenErl => MyResource.Resource.KI_DLG_WPA_MODULKOSTEN_ERL;
 
         // Welle #458: die Projekteinstellung neben der Auslegung.
         internal static string WpaExtrapolationName => MyResource.Resource.SIM_EXTRAPOLATION_SCHALTER;
@@ -1584,8 +1580,6 @@
         internal static string KmHilfsstromErl => MyResource.Resource.KI_DLG_KM_HILFSSTROM_ERL;
         internal static string KmKaltwasserMinName => MyResource.Resource.KM_LBL_KALTWASSER_MIN;
         internal static string KmKaltwasserMinErl => MyResource.Resource.KI_DLG_KM_KALTWASSER_MIN_ERL;
-        internal static string KmModulkostenName => MyResource.Resource.KM_LBL_MODULKOSTEN;
-        internal static string KmModulkostenErl => MyResource.Resource.KI_DLG_KM_MODULKOSTEN_ERL;
         // K-A: Katalogfelder der Kaelteerzeuger.
         internal static string KmGeraeteartName => MyResource.Resource.KM_LBL_GERAETEART;
         internal static string KmGeraeteartErl => MyResource.Resource.KI_DLG_KM_GERAETEART_ERL;
@@ -2954,6 +2948,9 @@
         /// <summary>Einheit der leistungsbezogenen Kosten.</summary>
         internal const string EINHEIT_EURO_KW = "€/kW";
 
+        /// <summary>Einheit der Kosten je installierter Modulleistung.</summary>
+        internal const string EINHEIT_EURO_KWP = "€/kWp";
+
         /// <summary>Einheit einer elektrischen Spannung.</summary>
         internal const string EINHEIT_VOLT = "V";
 
@@ -3114,8 +3111,6 @@
         internal static string ModkLaengeErl => MyResource.Resource.KI_DLG_MODK_LAENGE_ERL;
         internal static string ModkBreiteName => MyResource.Resource.MODK_LBL_BREITE;
         internal static string ModkBreiteErl => MyResource.Resource.KI_DLG_MODK_BREITE_ERL;
-        internal static string ModkPvKostenName => MyResource.Resource.MODK_LBL_MODULKOSTEN_PV;
-        internal static string ModkPvKostenErl => MyResource.Resource.KI_DLG_MODK_PV_KOSTEN_ERL;
         internal static string ModkTNoctName => MyResource.Resource.PV_MODUL_LABEL_TNOCT;
         internal static string ModkTNoctErl => MyResource.Resource.KI_DLG_MODK_TNOCT_ERL;
         internal static string ModkTechnologieName => MyResource.Resource.PVM_MODUL_LABEL_TECHNOLOGIE;
@@ -3134,9 +3129,11 @@
         internal static string WrkSAcMaxErl => MyResource.Resource.KI_DLG_WRK_S_AC_MAX_ERL;
         internal static string WrkPDcMaxName => MyResource.Resource.WRK_LBL_P_DC_MAX;
         internal static string WrkPDcMaxErl => MyResource.Resource.KI_DLG_WRK_P_DC_MAX_ERL;
-        internal static string WrkKostenName => MyResource.Resource.WRK_LBL_KOSTEN;
-        internal static string WrkKostenErl => MyResource.Resource.KI_DLG_WRK_KOSTEN_ERL;
         internal static string WrkHerkunftName => MyResource.Resource.WRK_LBL_HERKUNFT;
+        // Welle KB-4: der Kostensatz der Satzvorlage an PV-Modul- und Wechselrichterkatalog -
+        // dieselbe Beschriftung und dieselbe Herleitungszeile wie an der Maske.
+        internal static string ModkKostensatzName => MyResource.Resource.MODK_LBL_KOSTENSATZ;
+        internal static string ModkKostensatzErl => MyResource.Resource.MODK_HERL_KOSTENSATZ;
         internal static string WrkHerkunftErl => MyResource.Resource.KI_DLG_WRK_HERKUNFT_ERL;
         internal static string WrkUMppMinName => MyResource.Resource.WRK_LBL_U_MPP_MIN;
         internal static string WrkUMppMinErl => MyResource.Resource.KI_DLG_WRK_U_MPP_MIN_ERL;
@@ -3692,10 +3689,6 @@
                         case KatalogBrowserProfil.FeldMindestleistung: return HkMindestleistungErl;
                         case KatalogBrowserProfil.FeldAnfahrverlust: return HkAnfahrverlustErl;
                         case KatalogBrowserProfil.FeldMindestlaufzeit: return HkMindestlaufzeitErl;
-                        case KatalogBrowserProfil.FeldWartungskosten:
-                            return MyResource.Resource.KI_DLG_KBROW_WARTUNG_ERL;
-                        case KatalogBrowserProfil.FeldWartungEinheit:
-                            return MyResource.Resource.KI_DLG_KBROW_WARTUNG_EINHEIT_ERL;
                     }
                     return null;
 
@@ -3719,10 +3712,6 @@
                         case KatalogBrowserProfil.FeldTeillastTh50: return BhkkEtaTh50Erl;
                         case KatalogBrowserProfil.FeldAnfahrverlust: return BhkkAnfahrverlustErl;
                         case KatalogBrowserProfil.FeldMindestlaufzeit: return BhkkMindestlaufzeitErl;
-                        case KatalogBrowserProfil.FeldInvestitionJeKwel:
-                            return MyResource.Resource.KI_DLG_KBROW_INVEST_KWEL_ERL;
-                        case KatalogBrowserProfil.FeldWartungJeKwhel:
-                            return MyResource.Resource.KI_DLG_KBROW_WARTUNG_KWHEL_ERL;
                     }
                     return null;
 
@@ -3768,8 +3757,9 @@
                     return MyResource.Resource.KI_DLG_KBROW_BEZEICHNER_ERL;
                 case KatalogBrowserProfil.FeldBeschreibung:
                     return HkBeschreibungErl;
-                case KatalogBrowserProfil.FeldInvestitionskosten:
-                    return MyResource.Resource.KI_DLG_KBROW_INVEST_ERL;
+                // Welle KB-4: der Lesewert aus der Satzvorlage - gepflegt in der Kostenverwaltung.
+                case KatalogBrowserProfil.FeldGeraetekosten:
+                    return MyResource.Resource.KI_DLG_KBROW_GERAETEKOSTEN_ERL;
                 case KatalogBrowserProfil.FeldRaumbedarf:
                     return MyResource.Resource.KI_DLG_KBROW_RAUMBEDARF_ERL;
                 case KatalogBrowserProfil.FeldNutzungsdauer:
@@ -3783,13 +3773,6 @@
                     return string.Format(System.Globalization.CultureInfo.CurrentCulture,
                                          MyResource.Resource.KI_DLG_KBROW_EMISSION_ERL, feldname ?? "");
 
-                case KatalogBrowserProfil.FeldKostenModul:
-                case KatalogBrowserProfil.FeldKostenMontage:
-                case KatalogBrowserProfil.FeldKostenLieferung:
-                case KatalogBrowserProfil.FeldKostenSchallschutz:
-                case KatalogBrowserProfil.FeldKostenAbgasreinigung:
-                    return string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                                         MyResource.Resource.KI_DLG_KBROW_KOSTENPOSTEN_ERL, feldname ?? "");
             }
 
             return null;

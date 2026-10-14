@@ -324,7 +324,10 @@ public class PhotovoltaikDialogTests : EposBunitContext
         Assert.True(cut.Instance.ParameterOffen);
         Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung, ihr OK speichert
         var felder = cut.FindComponent<Katalogfelder>();
-        Assert.Contains(felder.Instance.Felder, f => f.Schluessel == ModulKatalogProfil.FeldModulkosten && f.Editierbar);
+        // Welle KB-4: Der Kostensatz der Satzvorlage steht nur lesend da; bearbeitet wird
+        // ein Kennwert des Moduls.
+        Assert.Contains(felder.Instance.Felder, f => f.Schluessel == ModulKatalogProfil.FeldLeistung && f.Editierbar);
+        Assert.Contains(felder.Instance.Felder, f => f.Schluessel == ModulKatalogProfil.FeldKostensatz && !f.Editierbar);
 
         cut.FindAll(".epos-modulparameter input[inputmode=decimal]")[0].Input("42");
         Ok(cut);

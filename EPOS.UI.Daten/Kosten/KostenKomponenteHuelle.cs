@@ -741,9 +741,22 @@ namespace WindowsFormsApplication1
             _satztafel = null;      // E10: je Aufbau frisch gelesen
             _varianten = KostenVorlagenCtrl.Vorlagen(KomponentenId, KategorieId);
 
+            // KB-4: Die Satzvorlagen der Katalogsätze stehen hinter den Varianten (KostenVorlagenCtrl
+            // sortiert sie dorthin) und bekommen EINE Gruppenzeile davor, statt sich zwischen die freien
+            // Varianten zu mischen. Die Gruppenzeile trägt keinen Vorlagenschlüssel; wer sie wählt, bleibt
+            // bei der vorigen Wahl (die Zuordnung unten findet sie nicht).
             var eintraege = new List<ValueTuple<int, string>>();
+            bool gruppeGesetzt = false;
             foreach (KostenVorlageKopf v in _varianten)
+            {
+                if (KostenVorlagenCtrl.KATALOGSAETZE_GRUPPIEREN && v.IstKatalogsatz && !gruppeGesetzt)
+                {
+                    eintraege.Add(new ValueTuple<int, string>(KostenVorlagenCtrl.ID_GRUPPE_KATALOGSAETZE,
+                                                              MyResource.Resource.KDLG_VARIANTEN_GRUPPE_KATALOG));
+                    gruppeGesetzt = true;
+                }
                 eintraege.Add(new ValueTuple<int, string>(v.Id, v.Name));
+            }
             stand.Varianten = eintraege;
 
             _variante = null;

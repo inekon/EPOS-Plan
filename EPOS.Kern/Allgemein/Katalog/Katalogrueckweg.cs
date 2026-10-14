@@ -530,6 +530,62 @@ namespace WindowsFormsApplication1
             return Satzvorlagenabbau.Geloescht;
         }
 
+        /// <summary>
+        /// <b>Räumt jede verwaiste Satzvorlage ab</b> — die Vorlagen, auf die kein Katalogsatz und keine
+        /// Projektzeile mehr verweist und die nicht Standard und nicht gesperrt sind
+        /// (<see cref="Abraeumen"/> je Vorlage). Gibt die Zahl der gelöschten Vorlagen zurück.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Wofür.</b> Die Auslieferungsvorlage entfernt die Projektdaten und die nicht ausgelieferten
+        /// Katalogsätze; deren Satzvorlagen bleiben sonst als Waisen in <c>Tab_KostenVorlage</c> stehen und
+        /// reisen in die Auslieferung. Seit Welle KB-4 ist die Satzvorlage die EINE Kostenbasis eines
+        /// Katalogsatzes — eine Waise ist damit ein Kostensatz ohne Gerät.
+        /// </para>
+        /// <para>
+        /// <b>Dieselbe Regel wie beim Löschen eines Satzes</b>, nur über alle Vorlagen: Standard- und
+        /// gesperrte Vorlagen bleiben, ebenso jede Vorlage mit einem Verweis oder einer Projektzeile.
+        /// </para>
+        /// </remarks>
+        public static int SatzvorlagenAbraeumen(DbVorgang v)
+        {
+            if (v == null) return 0;
+            DataTable dt = v.Lese("SELECT \"ID\" FROM \"" + SchemaKatalog.TAB_KOSTENVORLAGE +
+                                  "\" WHERE IFNULL(\"IstStandard\", 0) = 0 AND IFNULL(\"ReadOnly\", 0) = 0 " +
+                                  "ORDER BY \"ID\"", null);
+            if (dt == null) return 0;
+            int geloescht = 0;
+            foreach (DataRow r in dt.Rows)
+            {
+                int id = Convert.ToInt32(r["ID"], CultureInfo.InvariantCulture);
+                if (Abraeumen(v, id) == Satzvorlagenabbau.Geloescht) geloescht++;
+            }
+            return geloescht;
+        }
+
+        /// <summary>
+        /// <see cref="SatzvorlagenAbraeumen(DbVorgang)"/> in einem eigenen Vorgang — der Weg der
+        /// Auslieferungsvorlage, die keinen offenen Vorgang führt.
+        /// </summary>
+        public static int SatzvorlagenAbraeumen()
+        {
+            if (!DataRepository.TabelleVorhanden(SchemaKatalog.TAB_KOSTENVORLAGE)) return 0;
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    int n = SatzvorlagenAbraeumen(v);
+                    v.Commit();
+                    return n;
+                }
+                catch
+                {
+                    v.Rollback();
+                    throw;
+                }
+            }
+        }
+
         /// <summary>Die Meldung zum Ausgang von <see cref="SatzvorlageBeimLoeschen"/>; leer, wenn nichts zu sagen ist.</summary>
         public static string SatzvorlagenMeldung(Satzvorlagenabbau abbau, string satzname)
             => abbau == Satzvorlagenabbau.BleibtProjektzeilen ? F(MyResource.Resource.KATRUECK_LOESCHEN_VORLAGE_PROJEKT, satzname) : "";

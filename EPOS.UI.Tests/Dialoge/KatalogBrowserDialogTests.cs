@@ -162,11 +162,13 @@ public class KatalogBrowserDialogTests : EposBunitContext
     // Vorlaeufer-Masken. Beim BHKW kamen mit dem Entscheid vom 20.09.2026 die zwei
     // Wirkungsgradanteile dazu, beim Heizkessel mit der Gruppe „Kennlinie" (Konzept
     // Kesselkennlinie, Etappe E1) fuenf Felder: 21 -> 26, mit der Einheit des
-    // Bereitschaftsverlusts (Anwenderentscheid 02.10.2026) 27. Die Quelle ist
+    // Bereitschaftsverlusts (Anwenderentscheid 02.10.2026) 27, mit Welle KB-4 ohne
+    // Investition, Wartung und Zeitbezug, dafuer mit dem Lesewert der Satzvorlage 25.
+    // Beim BHKW nehmen die sieben Kostenfelder denselben Weg: 32 -> 26. Die Quelle ist
     // KatalogBrowserProfil; hier steht nur die Zahl.
     [Theory]
-    [InlineData(KatalogBrowserArt.Heizkessel, "Administration Heizkessel", 27)]
-    [InlineData(KatalogBrowserArt.Bhkw, "BHKW Verwaltung", 32)]   // mit Teillast und Takten (Welle M4) und Ruecklauf_Max (UB-E3)
+    [InlineData(KatalogBrowserArt.Heizkessel, "Administration Heizkessel", 25)]
+    [InlineData(KatalogBrowserArt.Bhkw, "BHKW Verwaltung", 26)]   // mit Teillast und Takten (Welle M4) und Ruecklauf_Max (UB-E3)
     [InlineData(KatalogBrowserArt.Solarkollektoren, "Administration Solarkollektoren", 13)]   // mit der Bezugsfläche (Welle M2)
     [InlineData(KatalogBrowserArt.Pufferspeicher, "Administration Pufferspeicher", 6)]
     public void Jede_Auspraegung_zeigt_ihren_Titel_und_ihre_Detailfelder(
@@ -1122,11 +1124,13 @@ public class KatalogBrowserDialogTests : EposBunitContext
         Assert.Equal(new[] { "Kenndaten", "Kosten" },
                      gruppen.Select(g => g.QuerySelector(".epos-stammblattgruppe-titel")!.TextContent));
 
+        // Welle KB-4: In der Gruppe „Kosten" steht statt der entfallenen Spalte
+        // Investitionskosten der Lesewert der Satzvorlage (Geraetekosten).
         var profil = Profil(KatalogBrowserArt.Heizkessel);
-        string invest = profil.Detailfelder.Single(f => f.Schluessel == KatalogBrowserProfil.FeldInvestitionskosten).Bezeichnung;
+        string kosten = profil.Detailfelder.Single(f => f.Schluessel == KatalogBrowserProfil.FeldGeraetekosten).Bezeichnung;
         string leistung = profil.Detailfelder.Single(f => f.Schluessel == KatalogBrowserProfil.FeldPtherm).Bezeichnung;
-        Assert.Contains(invest, gruppen[1].TextContent);
-        Assert.DoesNotContain(invest, gruppen[0].TextContent);
+        Assert.Contains(kosten, gruppen[1].TextContent);
+        Assert.DoesNotContain(kosten, gruppen[0].TextContent);
         Assert.Contains(leistung, gruppen[0].TextContent);
     }
 

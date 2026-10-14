@@ -331,7 +331,10 @@ namespace WindowsFormsApplication1
                 KuehlFreiGraedigkeitK = m.Kuehl_Frei_Graedigkeit_K,
                 KuehlFreiLeistungKw = m.Kuehl_Frei_Leistung_kW,
 
-                Modulkosten = m.Modulkosten,
+                // Welle KB-4: der Kostensatz kommt aus der Satzvorlage der Projektkopie,
+                // nicht mehr aus einer Geraetespalte (Schemaschritt 228).
+                Kostensatz = KatalogkostensatzCtrl.SatzText(WPStammCtrl.TABELLE_PROJEKT, m.ID),
+                KostensatzEinheit = KatalogkostensatzCtrl.Einheit(WPStammCtrl.TABELLE_PROJEKT),
                 Volumen = m.Volumen,
                 Solaranteil = m.Solaranteil,
                 RendeMix = m.rendeMix

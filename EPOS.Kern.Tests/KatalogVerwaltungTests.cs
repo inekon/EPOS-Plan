@@ -339,10 +339,13 @@ namespace EPOS.Kern.Tests
         {
             var erwartet = new Dictionary<KatalogBrowserArt, int>
             {
-                // Heizkessel: mit der Einheit des Bereitschaftsverlusts (02.10.2026) 27.
-                [KatalogBrowserArt.Heizkessel] = 27,
-                // BHKW: mit der Gruppe Teillast und Takten (Welle M4: BH1, BH2) und der Ruecklaufgrenze (UB-E3) 32.
-                [KatalogBrowserArt.Bhkw] = 32,
+                // Heizkessel: mit der Einheit des Bereitschaftsverlusts (02.10.2026) 27, mit
+                // Welle KB-4 ohne Investition, Wartung und Zeitbezug, dafuer mit dem Lesewert
+                // der Satzvorlage 25.
+                [KatalogBrowserArt.Heizkessel] = 25,
+                // BHKW: mit der Gruppe Teillast und Takten (Welle M4: BH1, BH2) und der Ruecklaufgrenze
+                // (UB-E3) 32, mit Welle KB-4 ohne die sieben Kostenfelder, dafuer mit dem Lesewert 26.
+                [KatalogBrowserArt.Bhkw] = 26,
                 // Solarkollektoren: mit der Bezugsfläche der Kennwerte (Welle M2, ST6) 13.
                 [KatalogBrowserArt.Solarkollektoren] = 13,
                 [KatalogBrowserArt.Pufferspeicher] = 6
@@ -392,30 +395,30 @@ namespace EPOS.Kern.Tests
             Assert.True(solar.HatSpeicherweg);
             Assert.True(puffer.HatSpeicherweg);
 
-            // Alles ausser dem Bezeichner — beim BHKW zusaetzlich ohne die zwei
-            // ABGELEITETEN Groessen: die Investition je kWel (W14a-E-8-B3) und den
-            // GESAMTwirkungsgrad, die Summe der zwei Anteile (Anwenderentscheid
-            // 20.09.2026): 26 / 24 / 11 / 5 - beim Heizkessel mit den fuenf Feldern der
-            // Kennlinie (Konzept Kesselkennlinie, Etappe E1) und der Einheit des
+            // Alles ausser dem Bezeichner, dem LESEWERT der Satzvorlage (Geraetekosten,
+            // Welle KB-4) und — beim BHKW — dem GESAMTwirkungsgrad, der Summe der zwei
+            // Anteile (Anwenderentscheid 20.09.2026): beim Heizkessel mit den fuenf Feldern
+            // der Kennlinie (Konzept Kesselkennlinie, Etappe E1) und der Einheit des
             // Bereitschaftsverlusts (Anwenderentscheid 02.10.2026), beim BHKW mit den vier
-            // Feldern von Teillast und Takten (Welle M4: BH1, BH2) und der Ruecklaufgrenze (UB-E3) 29.
-            Assert.Equal(26, heiz.Detailfelder.Count(f => f.Editierbar));
-            Assert.Equal(29, bhkw.Detailfelder.Count(f => f.Editierbar));
-            Assert.Equal(12, solar.Detailfelder.Count(f => f.Editierbar));   // mit der Bezugsfläche (Welle M2)
-            Assert.Equal(5, puffer.Detailfelder.Count(f => f.Editierbar));
+            // Feldern von Teillast und Takten (Welle M4: BH1, BH2) und der Ruecklaufgrenze (UB-E3).
+            Assert.Equal(23, heiz.Detailfelder.Count(f => f.Editierbar));
+            Assert.Equal(23, bhkw.Detailfelder.Count(f => f.Editierbar));
+            // Solarkollektor und Pufferspeicher ohne die Investitionskosten (Welle KB-4).
+            Assert.Equal(11, solar.Detailfelder.Count(f => f.Editierbar));   // mit der Bezugsfläche (Welle M2)
+            Assert.Equal(4, puffer.Detailfelder.Count(f => f.Editierbar));
 
             foreach (var art in KatalogBrowserProfil.AlleArten)
             {
                 var profil = KatalogBrowserProfil.Finde(art);
                 foreach (var feld in profil.Detailfelder)
                 {
-                    // Nicht editierbar ist der SCHLUESSEL des UPDATE und was
-                    // ABGELEITET ist: die Investition je kWel (Summe der fuenf
-                    // Posten je kWel) und der BHKW-Gesamtwirkungsgrad (Summe der
-                    // zwei Anteile, Anwenderentscheid 20.09.2026).
+                    // Nicht editierbar ist der SCHLUESSEL des UPDATE, der LESEWERT der
+                    // Satzvorlage (Geraetekosten, Welle KB-4) und was ABGELEITET ist: der
+                    // BHKW-Gesamtwirkungsgrad (Summe der zwei Anteile, Anwenderentscheid
+                    // 20.09.2026).
                     bool schluesselOderAbgeleitet =
                         feld.Schluessel == KatalogBrowserProfil.FeldBezeichner
-                        || feld.Schluessel == KatalogBrowserProfil.FeldInvestitionJeKwel
+                        || feld.Schluessel == KatalogBrowserProfil.FeldGeraetekosten
                         || (art == KatalogBrowserArt.Bhkw
                             && feld.Schluessel == KatalogBrowserProfil.FeldWirkungsgrad);
 
@@ -480,10 +483,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Kostenfelder_des_Stammblatts_stehen_im_Profil()
         {
-            Assert.True(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldInvestitionskosten));
             Assert.True(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldNutzungsdauer));
-            Assert.True(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldKostenModul));
-            Assert.True(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldWartungJeKwhel));
+            Assert.True(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldGeraetekosten));
 
             Assert.False(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldPtherm));
             Assert.False(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldWirkungsgrad));
@@ -572,13 +573,18 @@ namespace EPOS.Kern.Tests
             var satz = ctrl.KatalogsatzAnzeige("GC7000F 22 23 - MX25");
 
             Assert.NotNull(satz);
-            Assert.Equal(27, satz.Count);
+            // Welle KB-4: ohne Investition, Wartung und Zeitbezug, dafuer mit dem Lesewert
+            // der Satzvorlage - 25 Felder.
+            Assert.Equal(25, satz.Count);
             Assert.Equal("GC7000F 22 23 - MX25", satz[KatalogBrowserProfil.FeldBezeichner]);
             Assert.Equal("kW", satz[KatalogBrowserProfil.FeldBBEinheit]);
             Assert.Equal("Brennwert-Kessel", satz[KatalogBrowserProfil.FeldBeschreibung]);
             Assert.Equal(ctrl.Brennstoffart[2], satz[KatalogBrowserProfil.FeldBrennstoff]);
             Assert.Equal("22,00", satz[KatalogBrowserProfil.FeldPtherm]);
-            Assert.Equal("0,00", satz[KatalogBrowserProfil.FeldInvestitionskosten]);
+            // Welle KB-4: An der Stelle der Investition steht der Lesewert der Satzvorlage.
+            // Dieser Satz fuehrt keine (sein Preis war 0, und 0 wird nicht gesaet) - dann
+            // bleibt das Feld LEER statt eine Null zu behaupten.
+            Assert.Equal("", satz[KatalogBrowserProfil.FeldGeraetekosten]);
             Assert.Equal("1", satz[KatalogBrowserProfil.FeldBrennwert]);
 
             // Vorlauf und Ruecklauf sind NULL - der Bestand zeigte dort einen leeren Text.
@@ -718,7 +724,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Pufferspeicher", satz[KatalogBrowserProfil.FeldSpeichertyp]);
             Assert.Equal("3,34", satz[KatalogBrowserProfil.FeldVerluste]);
             Assert.Equal("3000", satz[KatalogBrowserProfil.FeldVolumen]);
-            Assert.Equal("0", satz[KatalogBrowserProfil.FeldInvestitionskosten]);
+            // Welle KB-4: an der Stelle der Investitionskosten der Lesewert der Satzvorlage - ohne Betrag LEER.
+            Assert.Equal("", satz[KatalogBrowserProfil.FeldGeraetekosten]);
 
             // Der Projektdialog formatiert dieselben Werte mit einer Nachkommastelle.
             var detail = PufferSpStammCtrl.Detail("Puffer 3000Ltr");
@@ -945,7 +952,7 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
             using var _ = new DeutscheOberflaeche();
 
-            var felder = new HeizkesselStammCtrl.AnzeigefelderHeizkessel("x", 1, 2, true, 3, 4);
+            var felder = new HeizkesselStammCtrl.AnzeigefelderHeizkessel("x", 1, true, 3, 4);
             var ergebnis = HeizkesselStammCtrl.AnzeigefelderSchreiben("W14a-gibt-es-nicht", felder);
 
             Assert.False(ergebnis.Ok);
@@ -1213,8 +1220,8 @@ namespace EPOS.Kern.Tests
                 "PSPK_LBL_VOLUMEN", "PSPK_LBL_INVEST",
                 "PSPK_FELD_VOLUMEN", "PSPK_FELD_VERLUSTE",
                 // PSPK_GRP_KOSTEN und PSPK_FELD_INVEST sind mit der Kostengruppe des
-                // Editors gefallen (15.09.2026); PSPK_LBL_INVEST bleibt, weil
-                // ParameterVerwendung die Investitionskosten weiterhin damit beschriftet.
+                // Editors gefallen (15.09.2026); PSPK_LBL_INVEST bleibt als Bestandsschluessel,
+                // obwohl die Spalte mit Welle KB-4 entfallen ist.
                 "PSPK_TYP_SOLAR", "PSPK_TYP_PUFFER", "PSPK_TYP_KOMBI", "PSPK_MSG_SCHUTZ",
                 "BHKWK_MSG_SCHUTZ", "MODK_MSG_SCHUTZ", "MODK_MSG_TYP_FEHLT",
                 // KBROW_BTN_BEARBEITEN ist mit AD-Q6 ("Bearbeiten..." entfaellt) verwaist

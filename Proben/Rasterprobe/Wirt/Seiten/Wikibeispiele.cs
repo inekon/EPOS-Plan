@@ -218,7 +218,7 @@ public static class Wikibeispiele
 
     public static WaermepumpeStammDaten WaermepumpeStamm(string name, string firma, int kw) => new()
     {
-        Id = 1, Name = name, Firma = firma, Nennleistung = kw, Heizstab = 6, Modulkosten = 10000
+        Id = 1, Name = name, Firma = firma, Nennleistung = kw, Heizstab = 6, Kostensatz = "10000", KostensatzEinheit = "€"
     };
 
     // ------------------------------------------------------------------ Kältemaschine

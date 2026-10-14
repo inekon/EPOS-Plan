@@ -126,7 +126,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             var k = Kopie();
-            Sql("UPDATE Tab_WP SET Nennleistung = 17, Modulkosten = 12345, Kaeltemittel = 'R290', Spreizung_Auslegung_K = 6.5, " +
+            Sql("UPDATE Tab_WP SET Nennleistung = 17, Kaeltemittel = 'R290', Spreizung_Auslegung_K = 6.5, " +
                 "Kuehl_Vorlauf = 16 WHERE ID = ?", k.Id);
 
             Rueckwegergebnis e = Neu(k.Id, "Rueckweg WP Neu");
@@ -136,7 +136,6 @@ namespace EPOS.Kern.Tests
             Assert.True(s.Neu);
             Assert.Equal(0, Anzahl("SELECT ReadOnly FROM Tab_WP_STAMM WHERE ID = ?", s.IdKatalog));
             Assert.Equal(17, Anzahl("SELECT Nennleistung FROM Tab_WP_STAMM WHERE ID = ?", s.IdKatalog));
-            Assert.Equal(12345, Anzahl("SELECT Modulkosten FROM Tab_WP_STAMM WHERE ID = ?", s.IdKatalog));
             Assert.Equal("R290", Wert("SELECT Kaeltemittel FROM Tab_WP_STAMM WHERE ID = ?", s.IdKatalog));
             Assert.Equal(6.5, D(Wert("SELECT Spreizung_Auslegung_K FROM Tab_WP_STAMM WHERE ID = ?", s.IdKatalog)));
             Assert.Equal(16, Anzahl("SELECT Kuehl_Vorlauf FROM Tab_WP_STAMM WHERE ID = ?", s.IdKatalog));
@@ -257,7 +256,8 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             var k = Kopie();
-            Sql("UPDATE Tab_WP SET Modulkosten = -1 WHERE ID = ?", k.Id);
+            // Welle KB-4: Die Pruefregel haelt die Nennleistung - die Kostenspalte ist entfallen.
+            Sql("UPDATE Tab_WP SET Nennleistung = -1 WHERE ID = ?", k.Id);
             int vorher = Anzahl("SELECT COUNT(*) FROM Tab_Kenndaten_STAMM");
 
             Rueckwegergebnis e = Neu(k.Id, "Rueckweg WP Verstoss");
@@ -291,8 +291,10 @@ namespace EPOS.Kern.Tests
             IReadOnlyList<string> sp = Katalogrueckweg.Spalten(g);
             foreach (string nie in new[] { "ID", "ID_Projekt", "ID_Stamm", "ReadOnly", "Bezeichner", "Katalog_Schluessel", "ID_KostenVorlage" })
                 Assert.DoesNotContain(nie, sp);
-            foreach (string mit in new[] { "Nennleistung", "Modulkosten", "Kuehlbetrieb", "Kuehl_Vorlauf", "Kaeltemittel", "Ruecklauf_Max" })
+            foreach (string mit in new[] { "Nennleistung", "Kuehlbetrieb", "Kuehl_Vorlauf", "Kaeltemittel", "Ruecklauf_Max" })
                 Assert.Contains(mit, sp);
+            // Welle KB-4: Die Kostenspalte ist entfallen; der Rueckweg traegt sie nicht mehr.
+            Assert.DoesNotContain("Modulkosten", sp);
             Assert.Equal(new[] { ("Tab_Kenndaten", "Tab_Kenndaten_STAMM", "ID_WP"), ("Tab_Kenndaten_Kuehlung", "Tab_Kenndaten_Kuehlung_STAMM", "ID_WP") },
                          g.Kinder.ToArray());
             Assert.Equal(1, g.KomponentenId);
@@ -411,7 +413,7 @@ namespace EPOS.Kern.Tests
             Assert.True(Ueberschreiben(k.Id).Ok);
             Assert.True(WPStammCtrl.SammelfelderSchreibenAlle(false, new[]
             {
-                new WPStammCtrl.Sammelaenderung(satz, new WPStammCtrl.Sammelfelder("Neuwerk", "", 1)),
+                new WPStammCtrl.Sammelaenderung(satz, new WPStammCtrl.Sammelfelder("Neuwerk", "")),
             }).Ok);
             Assert.True(WPStammCtrl.KatalogsatzLoeschen(satz).Ok);
 

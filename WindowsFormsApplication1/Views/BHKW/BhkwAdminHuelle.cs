@@ -116,10 +116,11 @@ namespace WindowsFormsApplication1
         /// <para><b>Gelesen wird genau, was das Profil als <c>Editierbar</c> führt</b>
         /// (Anwenderentscheid 15.09.2026): Firma, Beschreibung, Brennstoff, Motortyp,
         /// die vier Leistungs- und Temperaturwerte, die zwei Wirkungsgradanteile,
-        /// Raumbedarf, die fünf
-        /// Kostenposten, Wartung, Nutzungsdauer und die fünf Emissionsfaktoren. Die
-        /// Investition je kWel bleibt draußen: Sie ist die ABLEITUNG der fünf Posten
-        /// (W14a-E-8-B3) und wird im Kern nachgerechnet.</para>
+        /// Raumbedarf, Nutzungsdauer und die fünf Emissionsfaktoren. Die Kostenfelder
+        /// bleiben draußen, weil es sie nicht mehr gibt: Die sieben Kostenspalten des BHKW
+        /// sind mit Welle KB-4 entfallen (Anwenderentscheid 13.10.2026 „eine Kostenbasis,
+        /// keine Doppelhaltung"); der Aufklapper zeigt die Gerätekosten nur noch als
+        /// LESEWERT der Satzvorlage, gepflegt werden sie in der Kostenverwaltung.</para>
         /// <para><b>Der GESAMTwirkungsgrad bleibt ebenso draußen</b>
         /// (Anwenderentscheid 20.09.2026): Er ist die Summe der zwei Anteile und im
         /// Aufklapper nur Anzeige.</para>
@@ -165,15 +166,6 @@ namespace WindowsFormsApplication1
                 Brennstoff: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldBrennstoff),
                 Motortyp: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldMotortyp),
                 Raumbedarf: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldRaumbedarf),
-                KostenModul: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKostenModul),
-                KostenMontage: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKostenMontage),
-                KostenLieferung: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKostenLieferung),
-                KostenSchallschutzhaube:
-                    KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKostenSchallschutz),
-                KostenAbgasreinigung:
-                    KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKostenAbgasreinigung),
-                WartungskostenJeKWhel:
-                    KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldWartungJeKwhel),
                 Nutzungsdauer: KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldNutzungsdauer),
                 NOx: KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldNox),
                 SO2: KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldSo2),

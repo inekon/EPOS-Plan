@@ -138,6 +138,15 @@ verändert oder nur erklärt.
    Eine Novelle ist eine neue Jahreszeile, kein Überschreiben
 ```
 
+**Die Gerätewelt führt keine Preise.** Die Gerätekataloge (`Tab_BHKW`, `Tab_Heizkessel`, `Tab_WP`,
+`Tab_PV`, `Tab_Wechselrichter`, `Tab_Solarkollektoren`, `Tab_Pufferspeicher`,
+`Tab_Kaeltemaschine` — je samt `_STAMM`) beschreiben Technik: Leistungen, Wirkungsgrade, Maße,
+Emissionen. Ihre Kosten stehen in der **Vorlagenwelt** ②: je Katalogsatz eine Satzvorlage je Art,
+verwiesen über `ID_KostenVorlageInvestition` bzw. `ID_KostenVorlage` (§ 2.14a). Derselbe Kostensatz
+steht damit an **einer** Stelle — die eine Kostenbasis des Anwenderentscheids vom 13.10.2026. Der
+Stromspeicher ist der letzte Rest: Seine vier Kostenspalten tragen noch seine eigene
+Speicherrechnung.
+
 Dazu die **Projektrahmen-Zeile** `Tab_ProjektWirtschaftlichkeit` — **eine Zeile je Stammprojekt**,
 gültig für die ganze Vergleichsgruppe (Befund R-1), und seit Schema 61 die **neun
 `KWKG_*`-Spalten** an `Tab_Energieanlagen` samt `Energiesteuer_Wahl`, `Aufteilung_Methode`,
@@ -1506,7 +1515,7 @@ stehen, denn dort ist die Hauptkomponentenzeile die Überschrift ihrer Positione
 
 ## 2.14a Eine Kostenbasis — Katalogkosten als Satzvorlage, Abgleich je Anlage
 
-**Wie gebaut (KB-3).** Anwenderentscheid 13.10.2026: Für alle Anlagen gilt die zentrale Verwaltung
+**Grundsatz.** Anwenderentscheid 13.10.2026: Für alle Anlagen gilt die zentrale Verwaltung
 der Energie-, Betriebs- und Investitionskosten; die Gerätekosten werden nicht doppelt gehalten, und
 die Kosten einer Anlage sollen sich mit dem zentralen Kostenkatalog **abgleichen können** — je
 Katalogsatz genau ein Verweis dorthin, keine mehrfache Kostenposition.
@@ -1514,9 +1523,9 @@ Katalogsatz genau ein Verweis dorthin, keine mehrfache Kostenposition.
 **Die Saat (Schemaschritt `KatalogkostenSaatSchema`).** Jeder Katalogsatz mit mindestens einem
 Kostenwert größer null bekommt **genau eine** Satzvorlage je Art: eine Investitionsvorlage
 (`ID_KostenVorlageInvestition`) und eine Betriebsvorlage (`ID_KostenVorlage`), beide Verweise aus
-den Schritten 208/209. Dieselben zwei Spalten tragen seither auch die acht **Projektkopien** mit
+den Schritten 208/209. Dieselben zwei Spalten tragen auch die acht **Projektkopien** mit
 Kosten — ihr Ursprung ist meist unbekannt, und ohne eigene Vorlage stünden ihre gepflegten Werte
-nach dem Entfall der Spalten (KB-4) nirgends mehr. Je gepflegter Kostenspalte entsteht eine
+ohne die Kostenspalten nirgends. Je gepflegter Kostenspalte entsteht eine
 Position; ihre Bemessung ist die des Rechenwegs (§ 3.2), nicht eine neue:
 
 | Gerätespalte | Kategorie | Bemessung | Satz |
@@ -1531,7 +1540,7 @@ Position; ihre Bemessung ist die des Rechenwegs (§ 3.2), nicht eine neue:
 
 Ein **Stückpreis** wird damit zum spezifischen Satz, indem er durch die Baugröße **eines** Stücks
 geteilt wird — Satz × Bezugsgröße ergibt wieder Stückpreis × Stückzahl, also dieselbe Zahl, die der
-Planwert heute zeigt. `Tab_BHKW.Investition_kwel` wird **nicht** gesät: Der Wert ist aus den fünf
+Planwert zeigt. `Tab_BHKW.Investition_kwel` wird **nicht** gesät: Der Wert ist aus den fünf
 Posten abgeleitet und wäre eine zweite Zählung. Fehlt einem Stückpreis seine Baugröße, entsteht
 **keine** Position mit Fantasiesatz; die Zeile steht benannt im Migrationsbericht. Die Saat ist
 wiederholbar (Schlüssel ist der Verweis), überschreibt keine gepflegte Vorlage und gibt einem Satz
@@ -1553,14 +1562,65 @@ zum Katalog, kein Katalogsatz mit Satzvorlage.
 **Bedienung an zwei Orten, eine Mechanik.** Im Kostendialog der Anlage steht unter dem
 Positionsraster „Mit dem Kostenkatalog abgleichen…"; auf der Kostenseite (Berichte & Kosten →
 Kosten) trägt die Aktionenspalte derselben Anlagenzeile denselben Abgleich, und wo eine Anlage keine
-Position führt, steht in der Wertzelle statt „—" der Hinweis **„Katalogkosten vorhanden"**. Beide
+Position führt, ihr Katalogsatz aber eine Satzvorlage, steht in der Wertzelle statt „—" der Hinweis
+**„Satzvorlage vorhanden"**. Beide
 Wege zeigen vor dem Schreiben dieselbe Vorschau in derselben Rückfrage.
 
-**Grenzen dieser Welle.** Die Kostenspalten der Projektkopie bleiben stehen und der Planwert liest
-sie weiter (ihr Entfall ist KB-4); der Stromspeicher gleicht wie jedes Gewerk ab, seine eigene
-Speicherrechnung liest aber noch die Gerätespalten (KB-5). Kältemaschine und Rückkühlwerk tragen
+**Grenzen des Abgleichs.** Der Stromspeicher gleicht wie jedes Gewerk ab, seine eigene
+Speicherrechnung liest aber noch seine Gerätespalten. Kältemaschine und Rückkühlwerk tragen
 ihre Satzvorlage, führen aber keinen Ursprung an der Anlage — für sie ist der Abgleich erst möglich,
-wenn der Rückweg sie aufnimmt. `Tab_Wechselrichter` hat keine Verweisspalte und bleibt außen vor.
+wenn der Rückweg sie aufnimmt.
+
+**Die Investitionsgewerke führen keine Kostenspalten.** Schemaschritt
+`GeraetekostenEntfallSchema`: Der Wechselrichter bekommt seinen Investitionsverweis und seine
+Satzvorlage (`Kosten` ÷ `P_AC_Nenn` → `EUR_PRO_KW_LEISTUNG`, dieselbe Bauform wie bei der
+Kältemaschine), die Saat aller acht Gewerke läuft noch einmal, und danach fallen ihre
+**32 Kostenspalten** an Katalog und Projektkopie. Mit `Kosten_Modul` fällt auch die daraus
+abgeleitete `Investition_kwel`; mit `Wartungskosten` fällt `Wartungskosten_Einheit`, denn ihren
+Zeitbezug trägt die **Bemessung** der Position.
+
+- **Eine Wache vor dem Entfall.** Trägt nach der Saat noch eine Zeile einen Kostenwert ohne
+  Satzvorlage, bricht der Schritt **benannt** ab und lässt die Spalten stehen. Das trifft auch den
+  Fall ohne Bezugsgröße, den die Saat bewusst ungesät lässt — hier wäre er ein stiller
+  Datenverlust.
+- **Der Planwert liest die Satzvorlage.** `TechnikPlanwertCtrl` bildet die Kostenbasis einer
+  Gerätezeile aus den Positionen ihrer Vorlage: eine absolute Position ist der Betrag, eine
+  satzbasierte wird mit der Baugröße **eines** Stücks und der Stückzahl der Anlage multipliziert —
+  die Umkehrung der Saat, also dieselbe Zahl. Welche Gerätespalte eine Bemessung meint, steht in
+  derselben Feldliste, aus der die Saat gerechnet hat. Ohne Verweis entsteht keine Basis; die
+  Abweichungsanzeige des Kostendialogs bleibt, wie sie ist. Die vier BHKW-Nebenposten bleiben über
+  ihre gesäte Bezeichnung Nebenposten. Ebenso umgestellt: der Wechselrichter, die BHKW-Wartung und
+  die Kessel-Wartung samt ihrem Zeitbezug.
+- **Eine neue Katalogfassung.** Die Kostenspalten standen in der Fachspaltenliste ihres Katalogs und
+  trugen — auch leer — zur Prüfsumme bei; mit ihrem Entfall ändert sich die Prüfsumme jedes Satzes
+  der acht Kataloge. Der Schritt bildet sie für jeden Satz neu, dessen Summe vorher stimmte, damit
+  ein unveränderter Satz nicht als „vom Anwender geändert" gilt. Die alte Spaltenfolge steht allein
+  im Schritt; das Register führt sie nicht mehr.
+- **Die Masken zeigen die Satzvorlage, sie pflegen sie nicht.** Katalogdialoge, Stammblätter,
+  Aufklapper des Katalogbrowsers und der KI-Katalog führen kein Kostenfeld zum Eintippen. Wo eine
+  Maske Kosten zeigt, ist es ein **Lesewert** aus der Investitions-Satzvorlage des Satzes, gelesen
+  über die eine Leseklasse `KatalogkostensatzCtrl` in zwei Formen: der **Kostensatz** je
+  Bemessungsgröße, so wie er in der Kostenverwaltung steht (Wärmepumpe, Photovoltaik in €/kWp,
+  Wechselrichter in €/kW), und die **Gerätekosten** eines Stücks — absolute Positionen wie
+  eingetragen, spezifische mal Baugröße des Satzes (Heizkessel, BHKW, Pufferspeicher,
+  Solarkollektor, Kältemaschine). Ohne Verweis, ohne Vorlage oder ohne Bezugsgröße bleibt das Feld
+  leer, nie 0. Gepflegt wird allein in der Kostenverwaltung. Eine Kopie eines Katalogsatzes
+  übernimmt den Verweis nicht, damit ein Rückweg auf einen der beiden Sätze nie die Vorlage des
+  anderen umschreibt; der Rückweg einer Projektkopie in den Katalog legt aus den Positionen der
+  Anlage die Satzvorlagen des Satzes an.
+- **Die Auslieferung räumt die Waisen ab.** Nach dem Bereinigen entfernt
+  `Werkzeuge/Auslieferungsvorlage` jede Satzvorlage, auf die kein Katalogsatz und keine Projektzeile
+  mehr verweist und die nicht Standard und nicht gesperrt ist — eine Waise ist ein Kostensatz ohne
+  Gerät.
+- **Die Kostenverwaltung gruppiert.** Satzvorlagen, die zu einem Katalogsatz gehören, stehen in der
+  Variantenliste als eigene Gruppe **„Katalogsätze"** hinter den freien Varianten, mit einer
+  Gruppenzeile davor statt dazwischengemischt.
+- **Grenzen.** Der Stromspeicher behält seine vier Kostenspalten, bis sein Rechenweg und die
+  Flotte des Referenzprojekts 1046 auf die Positionen umgestellt sind. `Tab_Rueckkuehlwerk.Modulkosten`
+  bleibt eine Gerätespalte. `Tab_Rueckkuehlwerk` bleibt außen
+  vor: Es hat keine Zeile, keinen Leser und keine Saat.
+- **Ergebnisneutral.** Kein Rechenweg der acht Gewerke liest eine der Spalten; der Referenzlauf
+  bleibt byte-gleich.
 
 **Wie gebaut (KB-2) — die Preise des Brennstoffs wandern in die Trägerkarte.** Derselbe Entscheid
 gilt den Energiepreisen: `Tab_Brennstoff_Stamm` und seine Projektkopie `Tab_Brennstoff` führten je

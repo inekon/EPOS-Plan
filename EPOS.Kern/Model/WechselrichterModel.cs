@@ -120,7 +120,9 @@
         public double? m_P_Nacht;
 
         /// <summary>Gerätepreis [€] — Anwenderfeld.</summary>
-        public double? m_Kosten;
+        /// <summary>Der Verweis auf die Investitions-Satzvorlage des Satzes (Welle KB-4);
+        /// 0 = keine. Die Kostenspalte ist mit Schemaschritt 228 entfallen.</summary>
+        public int IdKostenVorlageInvestition;
 
         /// <summary>Sandia <c>Pdco</c> [W] — mitgeschriebenes Katalogwissen (Konzept 3.3.3).</summary>
         public double? m_Sandia_Pdco;
@@ -202,7 +204,7 @@
             m_Eta_Max = m.m_Eta_Max;
             m_P_Standby = m.m_P_Standby;
             m_P_Nacht = m.m_P_Nacht;
-            m_Kosten = m.m_Kosten;
+            IdKostenVorlageInvestition = m.IdKostenVorlageInvestition;
             m_Sandia_Pdco = m.m_Sandia_Pdco;
             m_Sandia_Vdco = m.m_Sandia_Vdco;
             m_Sandia_Pso = m.m_Sandia_Pso;

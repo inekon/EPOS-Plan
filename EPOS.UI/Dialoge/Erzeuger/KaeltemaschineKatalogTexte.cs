@@ -30,7 +30,10 @@ public sealed class KaeltemaschineKatalogTexte
     public string LabelHilfsstrom { get; set; } = Resource.KM_LBL_HILFSSTROM;
     public string HilfsstromLeer { get; set; } = Resource.KM_HILFSSTROM_LEER;
     public string LabelKaltwasserMin { get; set; } = Resource.KM_LBL_KALTWASSER_MIN;
-    public string LabelModulkosten { get; set; } = Resource.KM_LBL_MODULKOSTEN;
+    /// <summary>Welle KB-4: der Lesewert der Satzvorlage im Stammblatt (ohne Doppelpunkt).</summary>
+    public string LabelGeraetekosten { get; set; } = Resource.KBROW_LBL_GERAETEKOSTEN.TrimEnd(':', ' ');
+    /// <summary>Welle KB-4: der Vermerk, wo die Gerätekosten gepflegt werden.</summary>
+    public string HinweisKostenverwaltung { get; set; } = Resource.KBROW_HINT_KOSTENVERWALTUNG;
     public string RueckkuehlartKeine { get; set; } = Resource.KM_RUECKKUEHLART_KEINE;
 
     /// <summary>

@@ -131,7 +131,7 @@ Im Simulationsergebnis zeigt das Blatt ''Kälteproduktion'' des Reiters ''Ergebn
 
 '''Beispiel.''' Kältemaschine 1, 100 kW, Mindestteillast 20 %, Teillastrechnung ''Kurve'': Bei 60 % Last gilt der Strom der Kurve; fällt die Last unter 20 %, taktet die Maschine, und der Lauf zählt Starts und Taktstrom. Zwei solche Maschinen decken eine Last von 150 kW beide mit 75 %; bei 90 kW läuft nur eine.
 
-Die Kältemaschine ist Kostenkomponente der Wirtschaftlichkeit: Investition aus Nennkälteleistung mal Anzahl, wählbare Standardvorlagen für Investition und Betrieb; ihr Kältestrom geht zum Strompreis des Projekts beziehungsweise des Kühlträgers in die Energiekosten ein.
+Die Kältemaschine ist Kostenkomponente der Wirtschaftlichkeit; der Katalogsatz führt keine Kostenfelder, sondern einen Verweis auf eine Satzvorlage des Kostenkatalogs, und die Kosten pflegt die Kostenverwaltung: Investition aus Nennkälteleistung mal Anzahl, wählbare Standardvorlagen für Investition und Betrieb; ihr Kältestrom geht zum Strompreis des Projekts beziehungsweise des Kühlträgers in die Energiekosten ein.
 
 == Kältespeicher ==
 {{Anker|kaeltespeicher}}
