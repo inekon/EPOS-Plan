@@ -291,13 +291,13 @@ Spalte erst mit Entscheid OE-5.
 | **KBP-4** Typtage (nur nach OE-1) | Schemaschritt B; `Typtagschicht` in `ProfilBedarf`; Editor (sechs Typtage, Matrix) | Kern-Tests der Schicht (Summe, Monat × Tagesart, Feiertag = Sonntag, Ferienfaktor); SQL-Dialekt-Prüfer; Referenzlauf byte-gleich |
 | **KBP-5** Angleichung und Doku | Eingabearten auch für Prozesswärme und Brauchwasser (nur nach OE-5); Wiki-Quellen der Bedienungsseite, Logbuch-Entwurf | Wiki-Gegenlesemuster aus `CLAUDE.md`; `DokumentationLinkWacheTests`; Konzept nach `ueberholt/`, wenn umgesetzt |
 
-## 11. Offene Entscheide für den Anwender
+## 11. Entscheide
 
 | Nr. | Frage | Empfehlung |
 |---|---|---|
-| **OE-1** | Typtage als vierte Eingabeart (eigene Tabellen, neuer Rechenzweig)? | **Ja, aber als eigene Welle nach KBP-3.** Monatswerte und Wochenprofil decken die meisten Fälle ohne Schema für Werte; Typtage lohnen, wo Sommer- und Wintertag verschieden aussehen (Raumkühlung mit Lüftung, Gewerbekälte). |
-| **OE-2** | Witterungsführung (Außentemperatur, Kühlgradstunden)? | **Nein im Rechenweg** — das Wärme-Muster hat keine, und witterungsabhängige Kälte rechnet die Gebäudesimulation. Optional der einmalige Vorschlagsknopf „Monatswerte aus Kühlgradstunden“ (Abschnitt 4), ohne Rechenänderung. |
-| **OE-3** | Umfang der Vorlagen: alle zehn neuen (Nr. 7–16) oder ein Kern? | **Alle zehn**, aber nur mit belegten Nutzungszeiten; Werte mit „Richtwert, Quelle prüfen“ werden in KBP-2 belegt oder als Richtwert in der Beschreibung gekennzeichnet. |
-| **OE-4** | Gemeinsamer Kalenderbaustein zuerst (KBP-1 vor allem anderen)? | **Ja.** Er beantwortet die Anwenderfrage sofort, braucht kein Schema, wirkt für alle Bedarfsarten und ändert keinen Rechenweg. |
-| **OE-5** | Eingabearten Monatswerte/Wochenprofil auch für Prozesswärme und Brauchwasser? | **Ja, nach KBP-3**, mit derselben Spalte `Eingabeart` an deren Zuordnungen; der Dialog ist derselbe. |
-| **OE-6** | „Aus Gebäude übernehmen…“ im Betriebskalender (Kopie von Feiertagsland und Ferien eines Projektgebäudes)? | **Ja, als Kopie** (KP1b 6), in KBP-1. |
+| **OE-1** | Typtage als vierte Eingabeart (eigene Tabellen, neuer Rechenzweig)? | **Ja, aber als eigene Welle nach KBP-3.** Monatswerte und Wochenprofil decken die meisten Fälle ohne Schema für Werte; Typtage lohnen, wo Sommer- und Wintertag verschieden aussehen (Raumkühlung mit Lüftung, Gewerbekälte). — *entschieden 14.10.2026: Empfehlung übernommen* |
+| **OE-2** | Witterungsführung (Außentemperatur, Kühlgradstunden)? | **Nein im Rechenweg** — das Wärme-Muster hat keine, und witterungsabhängige Kälte rechnet die Gebäudesimulation. Optional der einmalige Vorschlagsknopf „Monatswerte aus Kühlgradstunden“ (Abschnitt 4), ohne Rechenänderung. — *entschieden 14.10.2026: Empfehlung übernommen* |
+| **OE-3** | Umfang der Vorlagen: alle zehn neuen (Nr. 7–16) oder ein Kern? | **Alle zehn**, aber nur mit belegten Nutzungszeiten; Werte mit „Richtwert, Quelle prüfen“ werden in KBP-2 belegt oder als Richtwert in der Beschreibung gekennzeichnet. — *entschieden 14.10.2026: Empfehlung übernommen* |
+| **OE-4** | Gemeinsamer Kalenderbaustein zuerst (KBP-1 vor allem anderen)? | **Ja.** Er beantwortet die Anwenderfrage sofort, braucht kein Schema, wirkt für alle Bedarfsarten und ändert keinen Rechenweg. — *entschieden 14.10.2026: Empfehlung übernommen* |
+| **OE-5** | Eingabearten Monatswerte/Wochenprofil auch für Prozesswärme und Brauchwasser? | **Ja, nach KBP-3**, mit derselben Spalte `Eingabeart` an deren Zuordnungen; der Dialog ist derselbe. — *entschieden 14.10.2026: Empfehlung übernommen* |
+| **OE-6** | „Aus Gebäude übernehmen…“ im Betriebskalender (Kopie von Feiertagsland und Ferien eines Projektgebäudes)? | **Ja, als Kopie** (KP1b 6), in KBP-1. — *entschieden 14.10.2026: Empfehlung übernommen* |
