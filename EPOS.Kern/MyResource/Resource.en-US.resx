@@ -56236,5 +56236,17 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="GESETZ_SPERRE_EINHEIT" xml:space="preserve">
     <value>Choose a unit.</value>
   </data>
+  <data name="MPB_LEISTE_TITEL" xml:space="preserve">
+    <value>Model check of the saved building</value>
+  </data>
+  <data name="MPB_LEISTE_GRUPPE_HINWEIS" xml:space="preserve">
+    <value>{0}: {1} findings, {2} proposals – opens “Check model” on this group.</value>
+  </data>
+  <data name="ZNB_WOCHE_BILD" xml:space="preserve">
+    <value>Week of zone {0} per quantity</value>
+  </data>
+  <data name="ZNB_WOCHE_TITEL" xml:space="preserve">
+    <value>{0} · {1} {2:00}–{3:00} h: {4} {5}</value>
+  </data>
 </root>
 
