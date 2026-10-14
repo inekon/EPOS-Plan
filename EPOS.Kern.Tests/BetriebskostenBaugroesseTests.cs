@@ -244,35 +244,39 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// H4c: „je kWh elektrisch" am Speicher = ENTLADENE Jahresenergie des jüngsten
-        /// Laufs. 50.000 kWh × 0,01 €/kWh = 500,00 €/a — der Fall des Anwenderbefundes.
+        /// „je kWh elektrisch" am Speicher ist der Verschleißsatz c_ver: Der Lauf bucht ihn
+        /// mit der ENTLADENEN Jahresenergie, die Kostenrechnung nicht ein zweites Mal (KB-5).
         /// </summary>
         [Fact]
-        public void Speicher_je_kWh_elektrisch_rechnet_mit_der_entladenen_Jahresenergie()
+        public void Speicher_je_kWh_elektrisch_bucht_der_Lauf_nicht_die_Kostenrechnung()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
             BeispielAnlegen();
             LaufAnlegen(SP_ENTLADUNG);
 
-            Assert.Equal(SP_ENTLADUNG, Menge(P_KWH_EL).Value, 6);
-            Assert.Equal(500.0, Betrag(P_KWH_EL), 6);
+            // Welle KB-5 „eine Quelle, eine Buchung": Die Position ist die Quelle des Verschleißsatzes c_ver,
+            // gebucht wird sie vom Lauf (c_ver × entladene kWh) — die Kostenrechnung führt sie nicht ein zweites Mal.
+            Assert.False(WirtschaftlichkeitCtrl.BetriebNachId(PROJEKT, WirtschaftlichkeitSzenario.ERWARTET)
+                                               .ContainsKey(P_KWH_EL));
+            Assert.True(WirtschaftlichkeitCtrl.VomLaufGebucht(5, DbWerte.KOSTEN_KATEGORIE_BETRIEB,
+                                                               DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, false));
         }
 
         /// <summary>
-        /// OHNE Lauf bleibt es beim Anwenderentscheid I-2: keine Menge, also gilt der
-        /// erfasste Betrag — und der Dialog nennt jetzt den GRUND, statt still 0 zu
-        /// zeigen.
+        /// OHNE Lauf nennt der Dialog den GRUND der fehlenden Menge; gebucht wird die
+        /// Verschleißposition auch dann nicht von der Kostenrechnung (KB-5).
         /// </summary>
         [Fact]
-        public void Speicher_je_kWh_elektrisch_ohne_Lauf_faellt_auf_den_erfassten_Wert()
+        public void Speicher_je_kWh_elektrisch_ohne_Lauf_nennt_den_Grund_und_bucht_nicht()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
             BeispielAnlegen();   // kein LaufAnlegen
 
-            Assert.Null(Menge(P_KWH_EL));
-            Assert.Equal(0.0, Betrag(P_KWH_EL), 6);
+            // Welle KB-5: Auch ohne Lauf bucht die Kostenrechnung die Verschleißposition nicht (der Lauf bucht sie).
+            Assert.False(WirtschaftlichkeitCtrl.BetriebNachId(PROJEKT, WirtschaftlichkeitSzenario.ERWARTET)
+                                               .ContainsKey(P_KWH_EL));
             Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_LAUF,
                          WirtschaftlichkeitCtrl.BasisGrund(DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, 5));
         }
