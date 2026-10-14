@@ -563,10 +563,14 @@ namespace WindowsFormsApplication1
             {
                 string baujahr = !string.IsNullOrWhiteSpace(_g.BaujahrText) ? _g.BaujahrText.Trim() : _g.Baujahr?.ToString(CultureInfo.InvariantCulture);
                 Ergaenzen(b, "Pset_BuildingCommon", baujahr == null ? null : Neben("YearOfConstruction", new IfcLabel(baujahr)));
-                Eigen(b, IfcSchreiber.EPOS_GEBAEUDE,
-                      Wert("Kennung", new IfcIdentifier(_g.Kennung)),
-                      string.IsNullOrWhiteSpace(_g.Art) ? null : Wert("Gebaeudeart", new IfcLabel(_g.Art.Trim())),
-                      string.IsNullOrWhiteSpace(_g.Baualtersklasse) ? null : Wert("Baualtersklasse", new IfcLabel(_g.Baualtersklasse.Trim())));
+                Eigen(b, IfcSchreiber.EPOS_GEBAEUDE, new[]
+                      {
+                          Wert("Kennung", new IfcIdentifier(_g.Kennung)),
+                          string.IsNullOrWhiteSpace(_g.Art) ? null : Wert("Gebaeudeart", new IfcLabel(_g.Art.Trim())),
+                          string.IsNullOrWhiteSpace(_g.Baualtersklasse) ? null : Wert("Baualtersklasse", new IfcLabel(_g.Baualtersklasse.Trim())),
+                      }
+                      // Nachzug N2 (DA-4): das Erdreich (G3, G4) als Text — derselbe Weg wie der Schreiber.
+                      .Concat(GebaeudeRestdaten.Werte(_g.Erdreich).Select(p => Wert(p.Schluessel, new IfcText(p.Wert)))).ToArray());
                 Ergebnis(b, _g.Kennung, null);
                 Rechenlauf(b);
             }
@@ -600,6 +604,8 @@ namespace WindowsFormsApplication1
                     Zahl(IfcStandardsaetze.EPOS_WAERME_PERSON, r.GbxmlLasten?.WaermeJePersonW, null),
                 };
                 zone.AddRange(IfcKonditionierungssatz.Zonenwerte(r.Konditionierung).Select(Satzwert));
+                // Nachzug N2 (DA-4): die Restdaten der Zone als Text — derselbe Weg wie der Schreiber.
+                zone.AddRange(GebaeudeRestdaten.Werte(r.Rest).Select(p => Wert(p.Schluessel, new IfcText(p.Wert))));
                 Eigen(o, IfcSchreiber.EPOS_ZONE, zone.ToArray());
                 // Die Kalendersätze (6.3, 16.3): je Größe der Satz eines früheren Durchlaufs ersetzt, ein überholter entfernt —
                 // nie doppelt.
