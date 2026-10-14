@@ -354,7 +354,8 @@ namespace WindowsFormsApplication1
         /// jede Schicht mit <b>λ</b> (außer der ruhenden Luftschicht), eine Stoffschicht auch mit
         /// <b>ρ und c_p</b> — der Bauteilweg braucht sie für die Speichermasse; die
         /// <b>Reihenfolge lückenlos ab 1</b>, wo sie gesetzt ist; kein Schichtaufbau für Fenster
-        /// und Vorhangfassade (sie rechnen aus dem U-Wert, VDI 6007 Blatt 1 Gl. (25)/(26)).</para>
+        /// und Vorhangfassade (sie rechnen aus dem U-Wert, VDI 6007 Blatt 1 Gl. (25)/(26)); bei Abschnitten die Regeln von
+        /// <see cref="InhomogeneSchichten.Pruefen"/> (BK-5, Flächenanteile Σ = 1 ± 0,01).</para>
         /// </summary>
         public static string EingabePruefen(BauteilaufbauModel m)
         {
@@ -386,7 +387,8 @@ namespace WindowsFormsApplication1
 
                 if (!SchichtAusModell(s, nr, out _, out string fehlt)) return fehlt;
             }
-            return null;
+            // BK-5: Abschnitte inhomogener Schichten - gleiche Abschnitte je Ebene, jeder Anteil > 0, Summe 1 ± 0,01.
+            return InhomogeneSchichten.Pruefen(m);
         }
 
         // =================================================================
