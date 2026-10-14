@@ -1319,6 +1319,24 @@ Repositoriums.
 | **frei** | Ecodesign-Zapfprofile (VO (EU) 814/2013 und 812/2013), Jordan/Vajen-Parametrik, DOE/ASHRAE-Schedules; OpenDHW (MIT) nur als Testorakel mit Attribution im Testordner, nicht im Auslieferungspaket |
 | **Hinweis** | lpagg und demandlib (MIT) sind Grundlage des Wärmespeicher-Tools; hier nur als Quellenhinweis, kein Code, keine Daten |
 
+**Freier Paketteil und Stufe Einfach.** Jede mitgelieferte Nutzungsart, deren Bezugsart keine Fläche
+ist (Personen, Wohneinheiten, Betten, Zimmer, Beschäftigte), rechnet in der Stufe Einfach allein mit dem
+freien Paketteil (`Referenzlaeufe/Katalogpaket_frei/`). Dafür führt er neben den freien Daten die
+Kaltwasser- und Zirkulationsschlüssel des Mengengerüsts: aus der INEKON-Vorlage TWW-Auslegung V4
+`Kaltwasser.Bilanz.Mittel` 10 °C, `Zirkulation.Laufzeit` 24 h (Dauerlast), `Zirkulation.Anteil` 0,2 und
+`Zirkulation.VerlustJeMeter` 10 W/m, als INEKON-Setzung `Kaltwasser.Bilanz.Amplitude` 3 K und
+`Kaltwasser.Bilanz.MonatMaximum` 8 (August), alle mit Herkunftsart `EIGENKONSTRUKTION`. Ohne Fläche
+rechnet die Zirkulation der Projektvorgabe (Flächenkennwert) mit der Methode Anteil. Die Flächenformel
+Wohnen (`DIN18599.Wohnen.*`), Leitungslage und Flächenkennwerte der DIN V 4701-10 sowie die
+Auslegungswerte (A100, DIN 4708, DVGW W 551) sind Normzahlen und bleiben im externen Katalogpaket; eine
+flächenbezogene Zone und die Speicherauslegung lehnen ohne es benannt ab. Eine Datenbank, die den
+Paketteil in einem früheren Stand führt, bekommt diese sechs Schlüssel beim ersten
+`ZapfprofilCtrl.Verfuegbar()` in ihre Katalogversion nachgetragen (`TwwPaketteilCtrl.ParameterNachtragen`,
+Liste `PaketteilNachfuehrung.PARAMETER`): nur was fehlt, `AUSLIEFERUNG` und `ReadOnly` 1, eine
+vorhandene Zeile bleibt; das Ergebnis steht im Laufprotokoll. Die Testdatenbank führt dieselben
+Schlüssel als fiktive Zeilen; dort treten die des Paketteils zurück. Wache:
+`EPOS.Kern.Tests/TwwPaketteilParameterNachtragTests`.
+
 **Lokale Testdaten.** `Referenzlaeufe/Normzahlen/` mit `vdi4655/`, `vdi6002/` und
 `zapfprofil/normtabellen.js` (Ladedatei des Mockups) ist per `.gitignore` ausgeschlossen (Zeilen
 `Referenzlaeufe/Normzahlen/*` und `!Referenzlaeufe/Normzahlen/LIESMICH.md` — allein das LIESMICH
@@ -3675,10 +3693,11 @@ Katalog kommt als **Modell** herein: `Nutzungsart`, `Tagesgangsatz`, `Parameters
 `Zapfkategorie`, gebaut aus einem Paketordner im Format N2 (Kapitel 6 (b)) **oder** aus einer
 `.sqlite`. Kein Controller, keine Projektkopie, kein `DataRepository`; eine SQLite-Quelle wird
 `immutable=1` und `ReadOnly` geöffnet und bleibt byte-gleich. Die im Auftrag vorgesehene
-Projektkopie war damit nicht nötig. Der **freie Paketteil allein genügt nicht** — er führt die
-Kaltwasser-, Wohnen- und Zirkulationsparameter des Mengengerüsts nicht; Vorgabe der Katalogquelle ist
-deshalb `Referenzlaeufe/Kenndaten_Test.sqlite`, und das Beispiel bringt einen vollständigen,
-erfundenen Paketteil mit.
+Projektkopie war damit nicht nötig. Der **freie Paketteil** führt Kaltwasser und Zirkulation des
+Mengengerüsts (Kapitel 6, „Freier Paketteil und Stufe Einfach"), aber nicht die Flächenformel Wohnen
+und die Flächenkennwerte der Zirkulation — beides Normzahlen; für ein Messobjekt mit Bezugsart Fläche
+genügt er allein nicht. Vorgabe der Katalogquelle ist deshalb `Referenzlaeufe/Kenndaten_Test.sqlite`,
+und das Beispiel bringt einen vollständigen, erfundenen Paketteil mit.
 
 **(c) Zwei benannte Unterschiede zum Dialogweg**, beide mit Grund im Quelltext:
 
@@ -4134,9 +4153,10 @@ des Maximums". **Abweichungen:** (1) Wirkung des Ladefensters — in V4 nur Sch�
 in EPOS-Plan begrenzt es zusätzlich die Nachladung der Stundenbilanz (4.7); der Wert ist derselbe,
 seine Wirkung weiter. (2) Die Speichertemperatur 60 °C fällt mit der Mindesttemperatur nach
 DVGW W 551 zusammen, die V4 in der Beschriftung nennt; ausgeliefert wird der Eingabewert der Vorlage,
-nicht der Normwert (`W551.Mindesttemperatur` bleibt unberührt). (3) Nicht Gegenstand: die übrigen
-Eingaben der Vorlage (Kaltwasser 10 °C, Zirkulation 10 W/m, Ladeleistung) — sie gehören zu anderen
-Schlüsseln und bleiben, wie sie sind.
+nicht der Normwert (`W551.Mindesttemperatur` bleibt unberührt). (3) Kaltwasser 10 °C und Zirkulation
+(Dauerlast 24 h, Anteil 0,2, 10 W/m) stehen unter den Schlüsseln des Mengengerüsts
+(`Kaltwasser.Bilanz.Mittel`, `Zirkulation.*`) im freien Paketteil (Kapitel 6, „Freier Paketteil und
+Stufe Einfach"); nicht Gegenstand ist die Ladeleistung.
 
 **Herkunftsart.** `EIGENKONSTRUKTION` — eine Setzung von INEKON aus einer eigenen Unterlage, weder
 frei verfügbare Quelle (`FREI`) noch gerechnetes Verfahren (`VERFAHREN`). Die Paketteil-Regel
