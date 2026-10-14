@@ -85,6 +85,16 @@ namespace WindowsFormsApplication1
         public int SchichtenMitBaustoff { get; internal set; }
         /// <summary>Baustoffe, deren λ als Skalenfehler der Quelle durch 1 000 geteilt wurde (E134; je Zeile im Protokoll).</summary>
         public int LambdaSkaliert { get; internal set; }
+        /// <summary>
+        /// Importsätze (<c>IMPORT</c>) des Katalogs mit Name und Gruppe eines Auslieferungssatzes (<c>VORGABE</c>) — vermutete
+        /// Dubletten, nur gezählt (BK-3d); die Vorschau nennt die Zahl im Protokoll, gelöscht wird nichts.
+        /// </summary>
+        public int DublettenImKatalog { get; internal set; }
+        /// <summary>
+        /// Importsätze des Katalogs, deren Bezeichner und Gruppe ein Importsatz anderer Quellkennung teilt — nur gezählt (BK-3d);
+        /// die Quelle trennt gleichnamige Sätze mit Werten außerhalb der Dublettenregel als eigene Stoffe.
+        /// </summary>
+        public int NamensgleicheImporte { get; internal set; }
         /// <summary>Baustoffe der Klasse Haustechnik (Basis-Codes 14, 19, 29, 30).</summary>
         public int HaustechnikBaustoffe { get; internal set; }
         /// <summary>Aufbauten der Klasse Haustechnik (Basis-Codes 14, 19, 29, 30).</summary>
@@ -563,13 +573,6 @@ namespace WindowsFormsApplication1
 
             // Gegen den Katalog: Quellkennung, dann Dublettenregel.
             Dictionary<string, BauteilkatalogBestand> nachKennung = NachKennung(stand.Baustoffe);
-            var nachName = new Dictionary<(string, string), List<BauteilkatalogBestand>>();
-            foreach (BauteilkatalogBestand b in stand.Baustoffe)
-            {
-                var schl = (Baustoffabgleich.Schluessel(b.Bezeichner ?? ""), b.Gruppe ?? Bauteilkatalog.GRUPPE_SONSTIGE);
-                if (!nachName.TryGetValue(schl, out List<BauteilkatalogBestand> l)) nachName[schl] = l = new List<BauteilkatalogBestand>();
-                l.Add(b);
-            }
             foreach (Satz s in p.Baustoffe)
             {
                 if (nachKennung.TryGetValue(s.Kennung, out BauteilkatalogBestand b))
@@ -577,11 +580,31 @@ namespace WindowsFormsApplication1
                     s.Bestand = b;
                     s.Aktion = b.Herkunft == BauteilkatalogSchema.HERKUNFT_IMPORT ? AKTUALISIEREN : ERGAENZEN;
                     v.Baustoffe.Wiedererkannt++;
-                    continue;
                 }
-                if (nachName.TryGetValue((s.Schluessel, s.Gruppe), out List<BauteilkatalogBestand> kandidaten))
+            }
+            // BK-3d: Die Dublettenregel prüft gegen den Stand NACH diesem Lauf. Ein Importsatz, den ein Satz der Quelle per
+            // Quellkennung aktualisiert, trägt danach dessen Name, Gruppe und Werte; an seinen alten Werten gebunden, zählte
+            // ein zweiter Satz jetzt „zusammengeführt“ und im nächsten Lauf „neu“ - der Wiederimport konvergierte nicht.
+            var aktualisiert = new Dictionary<long, Satz>();
+            foreach (Satz s in p.Baustoffe)
+                if (s.Aktion == AKTUALISIEREN) aktualisiert[s.Bestand.Id] = s;
+            var nachName = new Dictionary<(string, string), List<(BauteilkatalogBestand B, double? L, double? R, double? C)>>();
+            foreach (BauteilkatalogBestand b in stand.Baustoffe)
+            {
+                bool neuStand = aktualisiert.TryGetValue(b.Id, out Satz a);
+                var schl = neuStand
+                    ? (Baustoffabgleich.Schluessel(a.Werte["Bezeichner"] as string ?? ""), a.Gruppe)
+                    : (Baustoffabgleich.Schluessel(b.Bezeichner ?? ""), b.Gruppe ?? Bauteilkatalog.GRUPPE_SONSTIGE);
+                if (!nachName.TryGetValue(schl, out var l)) nachName[schl] = l = new List<(BauteilkatalogBestand, double?, double?, double?)>();
+                l.Add(neuStand ? (b, a.Lambda, a.Rho, a.Cp) : (b, b.Lambda, b.Rho, b.Cp));
+            }
+            foreach (Satz s in p.Baustoffe)
+            {
+                if (s.Aktion != null) continue;
+                BauteilkatalogBestand b;
+                if (nachName.TryGetValue((s.Schluessel, s.Gruppe), out var kandidaten))
                 {
-                    b = kandidaten.FirstOrDefault(x => WerteGleich(x.Lambda, x.Rho, x.Cp, s.Lambda, s.Rho, s.Cp));
+                    b = kandidaten.FirstOrDefault(x => WerteGleich(x.L, x.R, x.C, s.Lambda, s.Rho, s.Cp)).B;
                     if (b != null)
                     {
                         s.Bestand = b;
@@ -593,6 +616,7 @@ namespace WindowsFormsApplication1
                 s.Aktion = NEU;
                 v.Baustoffe.Neu++;
             }
+            DublettenZaehlen(v, stand.Baustoffe);
 
             // ---- Aufbauten ----
             var fenster = new Dictionary<string, (double? Ug, double? G)>(StringComparer.Ordinal);
@@ -874,6 +898,30 @@ namespace WindowsFormsApplication1
                 r.MedianVerhaeltnis = n % 2 == 1 ? verhaeltnisse[n / 2] : 0.5 * (verhaeltnisse[n / 2 - 1] + verhaeltnisse[n / 2]);
                 r.AnteilAusserhalb = verhaeltnisse.Count(x => Math.Abs(x - 1.0) > 0.10) / (double)n;
             }
+        }
+
+        /// <summary>
+        /// Zählt vermutete Dubletten im Katalog (BK-3d), ohne etwas zu ändern: Importsätze mit Bezeichner und Gruppe eines
+        /// Auslieferungssatzes und Importsätze, deren Bezeichner und Gruppe ein Importsatz anderer Quellkennung teilt.
+        /// Bezeichner ohne Randleerzeichen und ohne Groß/Klein verglichen.
+        /// </summary>
+        private static void DublettenZaehlen(BauteilkatalogVorschau v, IEnumerable<BauteilkatalogBestand> bestand)
+        {
+            (string, string) Schl(BauteilkatalogBestand b) =>
+                ((b.Bezeichner ?? "").Trim().ToUpperInvariant(), b.Gruppe ?? Bauteilkatalog.GRUPPE_SONSTIGE);
+            List<BauteilkatalogBestand> alle = bestand.ToList();
+            var vorgabe = new HashSet<(string, string)>(alle.Where(b => b.Herkunft == BauteilkatalogSchema.HERKUNFT_VORGABE).Select(Schl));
+            List<BauteilkatalogBestand> import = alle.Where(b => b.Herkunft == BauteilkatalogSchema.HERKUNFT_IMPORT).ToList();
+            v.DublettenImKatalog = import.Count(b => vorgabe.Contains(Schl(b)));
+            v.NamensgleicheImporte = import.GroupBy(Schl)
+                                           .Where(g => g.Select(b => b.Quellkennung ?? "").Distinct(StringComparer.Ordinal).Count() > 1)
+                                           .Sum(g => g.Count());
+            if (v.DublettenImKatalog > 0)
+                v.Protokoll.Add("Hinweis: Importsätze mit Name und Gruppe eines Auslieferungssatzes: " + Zahl(v.DublettenImKatalog) +
+                                " (nur gezählt, nichts geändert)");
+            if (v.NamensgleicheImporte > 0)
+                v.Protokoll.Add("Hinweis: Importsätze mit Name und Gruppe eines Importsatzes anderer Quellkennung: " +
+                                Zahl(v.NamensgleicheImporte) + " (gleicher Name, Werte außerhalb der Dublettenregel; nur gezählt)");
         }
 
         private static Dictionary<string, BauteilkatalogBestand> NachKennung(IEnumerable<BauteilkatalogBestand> liste)
