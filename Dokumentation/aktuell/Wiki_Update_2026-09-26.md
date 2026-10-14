@@ -177,7 +177,7 @@ ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
 ### Version 1.2.0.12 — Entwurf, Versionsnummer beim Anwender zu bestätigen
 
-Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5, MA-7; Statuszeilen #1002 bis #1057, #1076 bis #1083, #1085, #1091, #1092). Die Wiki-Quellen (Gebäude, Gebäudeimport, Nutzungsprofile, Baustoffe und Bauteilaufbauten, Datenexport, Index der Hilfeschlüssel) sind fortgeschrieben, ins Wiki geladen ist noch nichts. Nach dem Anwenderentscheid vom 13.10.2026 gilt die Nummer bis zum 16.10.2026 nur als Vorschlag; es gibt keinen Upload.
+Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5, MA-7; Statuszeilen #1002 bis #1057, #1076 bis #1083, #1085, #1091, #1092, #1094). Die Wiki-Quellen (Gebäude, Gebäudeimport, Nutzungsprofile, Baustoffe und Bauteilaufbauten, Datenexport, Index der Hilfeschlüssel) sind fortgeschrieben, ins Wiki geladen ist noch nichts. Nach dem Anwenderentscheid vom 13.10.2026 gilt die Nummer bis zum 16.10.2026 nur als Vorschlag; es gibt keinen Upload.
 
 - Seit 13.10.2026: Der Gebäudedialog prüft ein Gebäude mit „Modell prüfen…“ auf Rechenfähigkeit, zeigt je Prüfgruppe eine Ampel und übernimmt die Vorschläge mit einem Klick; nach einem Import öffnet die Prüfung von selbst.
 - Seit 13.10.2026: Die Modellprüfung meldet je Zone eine nicht geschlossene Hülle und schlägt das fehlende Dach, die fehlende Bodenplatte oder Geschossdecke mit passender Fläche vor.
@@ -197,6 +197,7 @@ Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5
 - Seit 13.10.2026: Im Gebäudedialog lassen sich alle oder die gewählten Gebäude des Projekts aus der Kopfleiste simulieren; die Baustoff-Zuordnungen stehen im Gebäudeimport und im Gebäudeeditor.
 - Seit 13.10.2026: Beim erneuten Mehrzonenimport wird der gespeicherte Zonenplan vorgelegt und die Projektdatei mitgeprüft, die Zusammenfassung des Gebäudedialogs zeigt den Jahreswärmebedarf des letzten Laufs, und die Kachel Gebäudekühlung springt auf das zuletzt gewählte Gebäude.
 - Seit 13.10.2026: Der Bauteilkatalog-Import ordnet Stoffgruppen nach der Code-Tafel zu, führt Haustechnik-Werkstoffe und Luftdurchlässe in einer eigenen Klasse und korrigiert Skalenfehler der Wärmeleitfähigkeit.
+- Seit 14.10.2026: Der Wiederimport des Bauteilkatalogs erkennt zusammengeführte Baustoffe schon im ersten Lauf wieder; die Vorschau zählt namensgleiche Sätze.
 - Seit 12.10.2026: „Administration › Gebäude › Bauteilkatalog einlesen…“ liest einen Bauteilkatalog aus CSV-Dateien in Baustoff- und Aufbaukatalog ein; Gruppe, Klasse und Herkunft gliedern die Sätze, und für die Gebäudesimulation meist ungeeignete Aufbauten sind gekennzeichnet.
 - Seit 12.10.2026: Der Gebäudeeditor trennt „Beschreibung und Einordnung“ von den „Rechengrößen“ und kennzeichnet an jedem Wert, woher er kommt oder dass der Rechenweg ihn nicht liest.
 - Seit 12.10.2026: Der Import aus einer Projektdatei übernimmt Verwendung, Gebäudeart, Energiestandard und Bauweise, platziert Räume ohne Zone selbst und belegt die Zonen mit dem Profil der DIN-Nummer oder der Gebäudeart vor.
