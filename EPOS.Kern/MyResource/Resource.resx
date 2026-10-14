@@ -55374,6 +55374,12 @@ Chart</value>
   <data name="MP_BEFUND_ZONE_OHNE_PROFIL" xml:space="preserve">
     <value>Zone „{0}“ hat kein Nutzungsprofil und keine Kalender; sie erbt vom Gebäude.</value>
   </data>
+  <data name="MP_BEFUND_DIN_OHNE_KATALOGTREFFER" xml:space="preserve">
+    <value>Zone „{0}“ trägt die DIN-Nummer {1}, zu der der Katalog kein Profil führt.</value>
+  </data>
+  <data name="MP_BEFUND_PROFIL_AUS_REGEL" xml:space="preserve">
+    <value>Zone „{0}“: Profil „{1}“ stammt aus einer Regel, nicht aus der Datei; bitte prüfen.</value>
+  </data>
   <data name="MP_BEFUND_HEIZKALENDER_GEERBT" xml:space="preserve">
     <value>Zone „{0}“ hat keinen Heizkalender; sie erbt den Heizsollwert vom Gebäude.</value>
   </data>
@@ -55460,6 +55466,9 @@ Chart</value>
   </data>
   <data name="MP_VORSCHLAG_PROFIL_EPOSMUSTER" xml:space="preserve">
     <value>EPOS-Muster „{0}“</value>
+  </data>
+  <data name="MP_VORSCHLAG_PROFIL_DINNAECHSTES" xml:space="preserve">
+    <value>Profil „{0}“ — das nächstliegende der DIN-Kategorie zur Nummer {1}</value>
   </data>
   <data name="MP_VORSCHLAG_FERIEN_PROJEKT" xml:space="preserve">
     <value>Ferien eines anderen Gebäudes des Projekts übernehmen</value>

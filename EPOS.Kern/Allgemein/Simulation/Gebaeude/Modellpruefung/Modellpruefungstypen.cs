@@ -118,6 +118,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Wert eines anderen Gebäudes desselben Projekts.</summary>
         Projekt = 7,
+
+        /// <summary>Nächstliegendes Profil der DIN-Kategorie zu einer DIN-Nummer ohne Katalogtreffer (Welle DA-5).</summary>
+        DinNaechstes = 8,
     }
 
     /// <summary>

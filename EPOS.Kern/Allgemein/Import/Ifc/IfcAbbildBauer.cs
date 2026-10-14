@@ -1865,6 +1865,8 @@ namespace WindowsFormsApplication1
                 if (rest.Count > 0)
                     g.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "RESTDATEN_UEBERSPRUNGEN", r.Name ?? r.Kennung,
                         Ganz(rest.Count), string.Join(", ", rest)));
+                // Welle DA-5: die DIN-Nummer des Profils (Rangstufe 1 der Profilzuordnung, Konzept DA 4.3).
+                k.DinNummer = IfcKonditionierungssatz.DinNummerLesen(W(IfcKonditionierungssatz.DIN_NUMMER));
             }
             var uebersprungen = new List<string>();
             foreach (Konditionierungsgroesse groesse in Konditionierungsgroessen.Alle)

@@ -45,7 +45,14 @@ namespace WindowsFormsApplication1
         /// Importdialog kennt sie, die Datenbank nicht.
         /// </summary>
         public void QuelleSetzen(int idZone, int? dinNummer, string raumtyp, string nutzungsklasse)
-            => _quellen[idZone] = new Zonenquelle(dinNummer, raumtyp, nutzungsklasse);
+            => QuelleSetzen(idZone, dinNummer, raumtyp, nutzungsklasse, false);
+
+        /// <summary>
+        /// Wie <see cref="QuelleSetzen(int, int?, string, string)"/>, dazu ob das Profil der Zone aus einer Regel kam (Raumtyp,
+        /// Nutzungsklasse, Gebäudeart — Welle DA-5: Ampel gelb in Prüfgruppe 3).
+        /// </summary>
+        public void QuelleSetzen(int idZone, int? dinNummer, string raumtyp, string nutzungsklasse, bool profilAusRegel)
+            => _quellen[idZone] = new Zonenquelle(dinNummer, raumtyp, nutzungsklasse, profilAusRegel);
 
         /// <summary>Der Anzeigename einer Prüfgruppe (Ressource <c>MP_GRUPPE_*</c>).</summary>
         public static string Gruppenname(Pruefgruppe g) => Modellpruefung.Ressource("MP_GRUPPE_" + g.ToString().ToUpperInvariant());
@@ -314,8 +321,15 @@ namespace WindowsFormsApplication1
             string grund = ZonenplanCtrl.NutzungUebernehmen(IdGebaeude, z.ID, profil, z.Nutzflaeche, z.Raumhoehe);
             if (grund != null) return grund;
             int idz = z.ID;
+            // Welle DA-5: Ein übernommener Vorschlag ist ein Profil aus der Regel (gelb), auch wenn er aus der DIN-Nummer kommt —
+            // außer die Nummer der Datei hatte einen Katalogtreffer (dann ist es das Profil der Datei).
+            bool hatte = _quellen.TryGetValue(idz, out Zonenquelle alteQuelle);
+            bool ausDatei = b.Vorschlag.Herkunft == Vorschlagsherkunft.DinNummer && alteQuelle?.DinNummer is int nr
+                            && Modellvorschlagsregeln.DinTreffer(s.Vorbelegung, nr) != null;
+            _quellen[idz] = (alteQuelle ?? new Zonenquelle(null, "", "")) with { ProfilAusRegel = !ausDatei };
             rueck.Add(x =>
             {
+                if (hatte) _quellen[idz] = alteQuelle; else _quellen.Remove(idz);
                 foreach (int id in Ids(SQL_KALENDER_ZONE, idz).Where(i => !kal.Contains(i)))
                     x.Ausfuehren("DELETE FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE \"ID\" = ?", new DbParam("@i", id));
                 foreach (int id in Ids(SQL_VORGABE_ZONE, idz).Where(i => !vor.Contains(i)))
