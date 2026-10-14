@@ -175,7 +175,7 @@ Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
-### Version 1.2.0.12 — Entwurf, Versionsnummer beim Anwender zu bestätigen
+### Version 1.2.0.12 — Entwurf, Versionsnummer beim Anwender zu bestätigen — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
 Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5, MA-7; Statuszeilen #1002 bis #1057, #1076 bis #1083, #1085, #1091, #1092, #1094). Die Wiki-Quellen (Gebäude, Gebäudeimport, Nutzungsprofile, Baustoffe und Bauteilaufbauten, Datenexport, Index der Hilfeschlüssel) sind fortgeschrieben, ins Wiki geladen ist noch nichts. Nach dem Anwenderentscheid vom 13.10.2026 gilt die Nummer bis zum 16.10.2026 nur als Vorschlag; es gibt keinen Upload.
 
@@ -205,14 +205,14 @@ Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5
 - Seit 12.10.2026: Die leeren Kategorien SIA 2024 und VDI 2078 sind aus dem Katalog der Nutzungsprofile entfernt; vorhandene Profile bleiben in einer eigenen Kategorie.
 - Seit 11.10.2026: Saison, Ferien, Zeiträume und Einzeltage der Kalender nehmen Tag und Monat als „TT.MM.“ an und prüfen die Eingabe erst beim Verlassen des Feldes.
 
-### Version ‹Version› — Kältebedarf dezentral (Split) (Entwurf, Upload ausstehend)
+### Version ‹Version› — Kältebedarf dezentral (Split) (Entwurf, Upload ausstehend) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
 Version beim Anwender zu erfragen (Empfehlung: Sammelversion mit K4/K5); Wiki-Quelle „Programm Dokumentation - Kältebedarf“ fortgeschrieben, Upload ausstehend.
 
 - Seit 13.10.2026: Kältebedarf, der dezentral über Split-Geräte gedeckt wird, erscheint im Kältegang, in der Kältelast, in der Strombilanz als „Kühlung dezentral“, im Deckungsgrad Kälte, im Anlagenschema, in der Simulationskonfiguration und im Bericht; der Strom wird je Kühlträger und Zähler abgerechnet.
 - Seit 13.10.2026: Die Berichtsvorlagen bieten Platzhalter für den Kältebedarf aus Profilen und die dezentrale Kühlung mit Split-Geräten (Kälte, Strom, Jahres-EER, Deckungsgrad gesamt und Anteil der Kälteerzeuger).
 
-### Version 1.2.0.11 — Brauchwasser-Zapfprofil (Entwurf, Upload am 20.10.2026)
+### Version 1.2.0.11 — Brauchwasser-Zapfprofil (Entwurf, Upload am 20.10.2026) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
 Version laut Anwender (13.10.2026); die Wiki-Quellen (Programm Dokumentation/Brauchwasser-Zapfprofil, Brauchwasser) sind fortgeschrieben, ins Wiki (wiki.epos-plan.de) wird am 20.10.2026 geladen.
 
@@ -224,13 +224,13 @@ Version laut Anwender (13.10.2026); die Wiki-Quellen (Programm Dokumentation/Bra
 - Seit 13.10.2026: Der Katalogimport der Brauchwasser-Nutzungsarten spielt auch die Kennwerte nach DIN 4708 ein (Belegung je Raumzahl, Ausstattungsklassen); eine Paketvorlage liegt im Ordner „Vorlage\Katalogpaket_DIN4708“ bei.
 - Seit 13.10.2026: Für die Typtage nach VDI 4655 liegt eine Paketvorlage im Ordner „Vorlage\Typtagpaket_VDI4655“ bei.
 
-### Version ‹Version› — Dialoge mit Katalogauswahl (Entwurf, Upload ausstehend)
+### Version ‹Version› — Dialoge mit Katalogauswahl (Entwurf, Upload ausstehend) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
 Version beim Anwender zu erfragen; keine Wiki-Quelle geändert (die Quellen beschreiben nur die Funktion, sie stimmt).
 
 - Seit 13.10.2026: In den Dialogen mit Katalogauswahl sind die Kästchen der Liste „Im Projekt“ und das Kästchen im Spaltenkopf runde Knöpfe, angekreuzt dunkelblau mit weißem Haken.
 
-### Version 1.2.0.9 (laut Auftrag; die Version ist schon veröffentlicht, beim Anwender bestätigen) — Übersicht unter Berichte & Kosten (Entwurf, Upload ausstehend)
+### Version 1.2.0.9 (laut Auftrag; die Version ist schon veröffentlicht, beim Anwender bestätigen) — Übersicht unter Berichte & Kosten (Entwurf, Upload ausstehend) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
 Die Wiki-Quelle (Programm Dokumentation/Varianten) ist fortgeschrieben, ins Wiki geladen ist noch nichts.
 
@@ -247,14 +247,14 @@ Die Wiki-Quelle (Programm Dokumentation/Varianten) ist fortgeschrieben, ins Wiki
 - Seit 13.10.2026: Im Reiter Photovoltaik zeigt der Schalter ‚PV aufteilen‘ die Erzeugung als Stapel aus Eigenverbrauch, Einspeisung und Abregelung.
 - Seit 13.10.2026: Der Arbeitspreis eines Energieträgers wird bei neuer Auswahl in €/kWh angezeigt und mit dem Heizwert umgerechnet; gespeicherte Einheiten bleiben erhalten.
 
-### Version ‹Version› — Kältemittel als Stammdatum (Entwurf, Upload ausstehend)
+### Version ‹Version› — Kältemittel als Stammdatum (Entwurf, Upload ausstehend) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
 Version beim Anwender zu erfragen; die Wiki-Quellen (Gerätekataloge, Kälteerzeugung, Wärmepumpe, Kurzanleitung) sind fortgeschrieben, ins Wiki geladen ist noch nichts.
 
 - Seit 11.10.2026: Kältemaschine und Wärmepumpe wählen ihr Kältemittel aus einer Kältemitteltabelle mit GWP und Kennzeichen, die sich unter „Daten & Import → Kältemittel…“ pflegen lässt.
 - Seit 11.10.2026: Mit einem Inbetriebnahmejahr im Projekt weist EPOS-Plan hin, wenn ein Stichtag der F-Gas-Verordnung Geräteart und Kältemittel betrifft.
 
-### Version offen — Aufheizen vor Nutzungsbeginn (Entwurf, Upload ausstehend)
+### Version offen — Aufheizen vor Nutzungsbeginn (Entwurf, Upload ausstehend) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
 Version beim Anwender zu erfragen; die Wiki-Quellen (Simulation, Gebäude, Mehrzonenmodell, Einstellungen, Gebäudemodell VDI 6007, Simulationsergebnisse, Berichtsvorlagen) sind fortgeschrieben, ins Wiki geladen ist noch nichts.
 
