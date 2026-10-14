@@ -167,6 +167,26 @@
                                               WertChanged="BeiBeschreibung" Mehrzeilig="true" Zeilen="3" />
                                 </KindInhalt>
                             </Formularraster>
+                            @* N1 (MA-7): „Vorgaben der Baualtersklasse übernehmen…“ wie im Gebaeudeeditor - gleiche Sperren (Zonen des
+                               Satzes, keine Klasse, keine Werte), dieselbe Vorschau; die Uebernahme traegt in den Arbeitsstand,
+                               „Speichern“ schreibt. Ein Auslieferungssatz traegt den Knopf nicht. *@
+                            @if (!_auslieferung && _satz is not null)
+                            {
+                                <div class="epos-gebk-vorgaben" data-teil="vorgaben">
+                                    <button type="button" class="epos-knopf epos-gebk-vorgaben-knopf"
+                                            disabled="@(VorgabenGrund is not null)" title="@(VorgabenGrund ?? "")"
+                                            @onclick="VorgabenOeffnen">@Resource.GEBV_BTN_OEFFNEN</button>
+                                    @if (_arbeit.KannEinzonenvorgabenZuruecknehmen)
+                                    {
+                                        <button type="button" class="epos-knopf epos-gebk-vorgaben-zurueck"
+                                                @onclick="VorgabenZuruecknehmen">@Resource.GEBV_BTN_ZURUECKNEHMEN</button>
+                                    }
+                                    @if (VorgabenGrund is string grund)
+                                    {
+                                        <span class="epos-herleitung-text epos-gebk-vorgaben-grund">@grund</span>
+                                    }
+                                </div>
+                            }
                         </KindInhalt>
                     </Stammblattgruppe>
 
@@ -289,6 +309,21 @@
     </Blattwechsel>
 
     @* --- Namensabfrage von "Duplizieren..." (AD-Q11): Vorbelegung "... (Kopie)" -- *@
+    @* --- N1 (MA-7): Vorgaben der Baualtersklasse - Vorschau alt -> neu je Feld, Uebernahme nur auf Klick --- *@
+    <Ueberlagerung Offen="@_vorgabenOffen" Titel="@Resource.GEBV_TITEL" Geschlossen="() => _vorgabenOffen = false">
+        <KindInhalt>
+            @if (_vorgabenOffen)
+            {
+                <div class="epos-gebk-vorgabenblatt" data-teil="vorgabenblatt">
+                    <EinzonenvorgabenVorschau Arbeit="@_arbeit" Huelletexte="@HuellTexte" LabelBauart="@Beschriftungen.LabelBauart"
+                                              LabelFensterdurchlassgrad="@Beschriftungen.LabelFensterdurchlassgrad"
+                                              Bauarten="@Bauarteintraege" Uebernehmen="VorgabenUebernehmen"
+                                              Abbrechen="() => _vorgabenOffen = false" />
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
     <Ueberlagerung Offen="@_duplizierfrage" Titel="@BtnDuplizierenText"
                    Geschlossen="() => _duplizierfrage = false">
         <KindInhalt>
@@ -1091,6 +1126,47 @@
     /// Nach einer Eingabe: Warnband und Statuszeile fallen; ob etwas geändert ist, sagt der
     /// Vergleich mit dem gespeicherten Satz (<see cref="Geaendert"/>).
     /// </summary>
+    // =====================================================================
+    //  N1 (MA-7): Vorgaben der Baualtersklasse im Stammblatt
+    // =====================================================================
+
+    private bool _vorgabenOffen;
+
+    /// <summary>Steht das Blatt „Vorgaben der Baualtersklasse“? Prüfhilfe für die Tests.</summary>
+    public bool VorgabenOffen => _vorgabenOffen;
+
+    /// <summary>
+    /// Warum die Übernahme nicht geht; <c>null</c> = sie geht. Die Verwaltung lädt die Zonen nicht in den Arbeitsstand — die
+    /// Sperre „Zonen“ kommt aus den Zonen des Satzes (Gruppe „Zonen“ des Stammblatts).
+    /// </summary>
+    public string? VorgabenGrund
+        => EinzonenvorgabenVorschau.Grund(Einzonenvorgaben.Sperre(_satz?.Zonen.Count ?? 0, _arbeit.Stand.KlasseGesetzt, _arbeit.Einzonenvorgabe));
+
+    private void VorgabenOeffnen()
+    {
+        if (VorgabenGrund is string grund) { Melden(grund, WarnStufe.Hinweis); return; }
+        _vorgabenOffen = true;
+    }
+
+    /// <summary>„Übernehmen“: die Vorgabe in den Arbeitsstand; „Speichern“ schreibt.</summary>
+    private void VorgabenUebernehmen()
+    {
+        if (VorgabenGrund is not null) return;
+        int geaendert = _arbeit.Einzonenvorschau().Count(p => p.Aendert);
+        string kennung = _arbeit.Einzonenvorgabe?.Kennung ?? "";
+        if (!_arbeit.EinzonenvorgabenUebernehmen()) return;
+        _vorgabenOffen = false;
+        Nachziehen();
+        Melden(string.Format(CultureInfo.CurrentCulture, Resource.GEBV_MELDUNG_UEBERNOMMEN, kennung, geaendert), WarnStufe.Erfolg);
+    }
+
+    private void VorgabenZuruecknehmen()
+    {
+        if (!_arbeit.EinzonenvorgabenZuruecknehmen()) return;
+        Nachziehen();
+        Melden(Resource.GEBV_MELDUNG_ZURUECK, WarnStufe.Hinweis);
+    }
+
     private void Nachziehen()
     {
         _meldung = "";

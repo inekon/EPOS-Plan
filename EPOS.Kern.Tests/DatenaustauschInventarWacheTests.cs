@@ -74,8 +74,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(42, zaehlung[Austauschweg.BeideRichtungen]);
             Assert.Equal(3, zaehlung[Austauschweg.NurGelesen]);
             Assert.False(zaehlung.ContainsKey(Austauschweg.NurGeschrieben));
-            Assert.Equal(9, zaehlung[Austauschweg.NurEpos]);
-            Assert.Equal(17, zaehlung[Austauschweg.OhneElement]);
+            Assert.Equal(10, zaehlung[Austauschweg.NurEpos]);
+            Assert.Equal(16, zaehlung[Austauschweg.OhneElement]);
         }
 
         [Fact]
@@ -123,8 +123,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(31, zaehlung[Austauschweg.BeideRichtungen]);
             Assert.Equal(1, zaehlung[Austauschweg.NurGelesen]);
             Assert.False(zaehlung.ContainsKey(Austauschweg.NurGeschrieben));
-            Assert.Equal(25, zaehlung[Austauschweg.NurEpos]);
-            Assert.Equal(14, zaehlung[Austauschweg.OhneElement]);
+            Assert.Equal(26, zaehlung[Austauschweg.NurEpos]);
+            Assert.Equal(13, zaehlung[Austauschweg.OhneElement]);
             // gbXML trägt den eigenen Weg nur für die Restdaten (DA-4, Rückfall Weg 2) — dieselben Daten wie IFC über EPOS_*.
             Assert.Equal(DatenaustauschInventar.Alle.Where(d => d.Gbxml == Austauschweg.NurEpos).Select(d => d.Nr),
                          DatenaustauschInventar.Ifc.Where(d => d.Weg == Austauschweg.NurEpos && d.Elemente.All(e => GebaeudeRestdatenSchluessel(e)))

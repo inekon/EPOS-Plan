@@ -94127,6 +94127,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} Befunde, {2} Vorschläge – öffnet „Modell prüfen“ auf dieser Gruppe. ähnelt.
+        /// </summary>
+        public static string MPB_LEISTE_GRUPPE_HINWEIS {
+            get {
+                return ResourceManager.GetString("MPB_LEISTE_GRUPPE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modellprüfung des gespeicherten Gebäudes ähnelt.
+        /// </summary>
+        public static string MPB_LEISTE_TITEL {
+            get {
+                return ResourceManager.GetString("MPB_LEISTE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude ließ sich nicht lesen. ähnelt.
         /// </summary>
         public static string MPB_MSG_NICHT_GELESEN {
@@ -150117,6 +150135,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZNB_VORSCHLAG {
             get {
                 return ResourceManager.GetString("ZNB_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woche der Zone {0} je Größe ähnelt.
+        /// </summary>
+        public static string ZNB_WOCHE_BILD {
+            get {
+                return ResourceManager.GetString("ZNB_WOCHE_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · {1} {2:00}–{3:00} Uhr: {4} {5} ähnelt.
+        /// </summary>
+        public static string ZNB_WOCHE_TITEL {
+            get {
+                return ResourceManager.GetString("ZNB_WOCHE_TITEL", resourceCulture);
             }
         }
         

@@ -143,6 +143,8 @@
                                         <span class="epos-zonennutzung-marke epos-zonennutzung-marke--@k.ToString().ToLowerInvariant()" data-groesse="@g"
                                               title="@string.Format(CultureInfo.CurrentCulture, Resource.ZNB_MARKE_TITEL, Groessenname(g), Kennung(k))">@Groessenkurz(g)</span>
                                     }
+                                    @* N1 (Entwurf 2.4): das Kurzbild der Woche je Groesse aus dem Kalender, der fuer die Zone gilt. *@
+                                    <Wochenkurzbild Spuren="@Spuren(z)" Beschriftung="@string.Format(CultureInfo.CurrentCulture, Resource.ZNB_WOCHE_BILD, z.Zone)" />
                                 </td>
                                 <td class="epos-zahl">@(Grad(z.SollTag) + " / " + Grad(z.SollNacht))</td>
                                 <td class="epos-zonennutzung-ferien">
@@ -331,6 +333,17 @@
     private static string Groessenkurz(string g) => Resource.ResourceManager.GetString("ZNB_KURZ_" + g, Resource.Culture) ?? g;
 
     private static string Groessenname(string g) => Resource.ResourceManager.GetString("ZNB_NAME_" + g, Resource.Culture) ?? g;
+
+    /// <summary>Die Spuren des Kurzbilds einer Zone in der Reihenfolge der Kalendermarken (N1).</summary>
+    private static IReadOnlyList<Wochenkurzbild.Wochenspur> Spuren(ZonenNutzungszeile z)
+        => z.Wochen is null ? Array.Empty<Wochenkurzbild.Wochenspur>()
+           : ZonenNutzungCtrl.GROESSEN.Where(g => z.Wochen.TryGetValue(g, out double[]? w) && w.Length == 168)
+                                      .Select(g => new Wochenkurzbild.Wochenspur(g, Groessenname(g), Einheit(g), z.Wochen[g])).ToList();
+
+    /// <summary>Die Einheit eines Wochenwerts: °C bei den Sollwerten, 1/h bei der Lüftung, sonst der Anteil ohne Einheit.</summary>
+    private static string Einheit(string g)
+        => g == DbWerte.KOND_GROESSE_HEIZSOLL || g == DbWerte.KOND_GROESSE_KUEHLSOLL ? "°C"
+           : g == DbWerte.KOND_GROESSE_LUEFTUNG ? "1/h" : "";
 
     private static string Kennung(Kalenderkennung k) => k switch
     {

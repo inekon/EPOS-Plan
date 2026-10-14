@@ -608,6 +608,70 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// Nachzug N2 (DA-4, DA-5): Die Anreicherung schreibt die Restdaten der Zone, das Erdreich und die DIN-Nummer in die
+        /// Originaldatei wie der Schreiber; der eigene Leser gibt sie zurück, ein zweiter Durchlauf ersetzt sie, und ohne Restdaten
+        /// trägt <c>EPOS_Zone</c> keinen ihrer Schlüssel (Gegenprobe). Runde Phantasiewerte.
+        /// </summary>
+        [Fact]
+        public void Anreicherung_schreibt_Restdaten_Erdreich_und_DIN_Nummer_wie_der_Schreiber()
+        {
+            AbbildZonenrest Rest()
+            {
+                var r = new AbbildZonenrest
+                {
+                    Zone = GebaeudeExportKennung.Zone(ZONE_W), VorheizzeitH = 2, HeizleistungMax = 3000.0, UebergabeArt = DbWerte.UEBERGABE_RADIATOR,
+                    AuslegungVorlauf = 60.0, Maximaleraumtemperatur = 26.0,
+                };
+                r.Zeilenbild.Add(new Vorgabezeile { Groesse = DbWerte.KOND_GROESSE_HEIZSOLL, Zeile = DbWerte.KOND_ZEILE_NACHT, Wert = 17.0, Von = 22, Bis = 6 });
+                r.Wochen.Add(new BenannteWoche(0, Konditionierungsgroesse.Heizsoll, "Messewoche", Enumerable.Repeat(20.0, Kalenderwoche.WOCHENWERTE).ToArray()));
+                r.Periodenwochen.Add(new AbbildPeriodenwoche(Konditionierungsgroesse.Heizsoll, 100, 110, "Messe", "Messewoche"));
+                return r;
+            }
+            void Mit(GbxmlAbbild a)
+            {
+                a.Gebaeude[0].Erdreich = new AbbildErdreich { UmfangM = 40.0, UWirksam = 0.3, KellertemperaturC = 10.0 };
+                AbbildRaum wohnen = a.Gebaeude[0].Raeume.Single(r => r.Name == "Wohnen");
+                wohnen.Rest = Rest();
+                wohnen.Konditionierung = new AbbildKonditionierung { DinNummer = 7 };
+            }
+            byte[] erste = Anreichern(Fremdhaus(), out GebaeudeAnreicherungBilanz b1, anpassen: Mit);
+            Assert.True(b1.Geschrieben, string.Join("\n", b1.Meldungen.Select(m => m.Schluessel + " " + string.Join("|", m.Werte))));
+            byte[] zweite = Anreichern(erste, out GebaeudeAnreicherungBilanz b2, anpassen: Mit);
+            Assert.True(b2.Geschrieben);
+            using (MemoryModel m = IfcExportProbe.Modell(zweite))
+            {
+                var wohnen = (IIfcObject)Objekt(m, G_WOHNEN);
+                Assert.Single(Saetze(wohnen, IfcSchreiber.EPOS_ZONE));
+                Dictionary<string, IIfcPropertySingleValue> zone = IfcExportProbe.Eigenschaften(wohnen)[IfcSchreiber.EPOS_ZONE];
+                Assert.Equal("7", zone[IfcKonditionierungssatz.DIN_NUMMER].NominalValue.ToString());
+                Assert.Equal("26", zone[GebaeudeRestdaten.MAXIMALERAUMTEMPERATUR].NominalValue.ToString());
+                Assert.True(zone.ContainsKey(GebaeudeRestdaten.PERIODENWOCHE + "1"));
+            }
+            AbbildGebaeude g = IfcExportProbe.Lesen(zweite).Gebaeude[0];
+            AbbildZonenrest zurueck = g.Raeume.Single(r => r.Kennung == G_WOHNEN).Rest;
+            AbbildZonenrest q = Rest();
+            Assert.NotNull(zurueck);
+            Assert.Equal((q.VorheizzeitH, q.HeizleistungMax, q.UebergabeArt, q.AuslegungVorlauf, q.Maximaleraumtemperatur),
+                         (zurueck.VorheizzeitH, zurueck.HeizleistungMax, zurueck.UebergabeArt, zurueck.AuslegungVorlauf, zurueck.Maximaleraumtemperatur));
+            Assert.Equal(q.Periodenwochen, zurueck.Periodenwochen);
+            Assert.Equal("Messewoche", Assert.Single(zurueck.Wochen).Name);
+            Assert.Single(zurueck.Zeilenbild);
+            Assert.Equal((40.0, 0.3, 10.0), (g.Erdreich.UmfangM, g.Erdreich.UWirksam, g.Erdreich.KellertemperaturC));
+            Assert.Equal(7, g.Raeume.Single(r => r.Kennung == G_WOHNEN).Konditionierung?.DinNummer);
+            Assert.Null(g.Raeume.Single(r => r.Name == "Küche").Rest);
+
+            // Gegenprobe: ohne Restdaten trägt EPOS_Zone keinen ihrer Schlüssel (der Satz eines früheren Durchlaufs ist ersetzt).
+            byte[] ohne = Anreichern(zweite, out _);
+            using (MemoryModel m = IfcExportProbe.Modell(ohne))
+            {
+                var wohnen = (IIfcObject)Objekt(m, G_WOHNEN);
+                Assert.DoesNotContain(IfcExportProbe.Eigenschaften(wohnen)[IfcSchreiber.EPOS_ZONE].Keys,
+                                      k => k != "Kennung" && GebaeudeRestdaten.IstZonenschluessel(k));
+            }
+            Assert.Null(IfcExportProbe.Lesen(ohne).Gebaeude[0].Erdreich);
+        }
+
         // ==================================================================
         //  Kennungen, Kennung der Datei, Baustoffe
         // ==================================================================

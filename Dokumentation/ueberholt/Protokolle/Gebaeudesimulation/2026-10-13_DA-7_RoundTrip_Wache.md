@@ -200,3 +200,25 @@ sobald DA-4 sie ins Abbild bringt.
 ## Logbuch-Vorschlag
 
 Keiner — die Welle ändert keine sichtbare Funktion (nur Prüfungen im Testprojekt).
+
+## Nachzug N2 (14.10.2026)
+
+**Befund.** B10 (Höchsttemperatur, `Tab_Zone.Maximaleraumtemperatur`) stand auf „offen“. Sie reist nun als Restdatum der Zone
+(`GebaeudeRestdaten`, Schlüssel `Maximaleraumtemperatur`): gbXML über den Rückfall Weg 2 (Block `EPOS:`), IFC als `EPOS_Zone`; der
+Import setzt sie an die Zone (`GebaeudeRestdaten.Setzen`). Das Gebäudefeld gleichen Namens reist nicht.
+
+- **Tafel:** B10 auf die Welle `N2` (neuer Wert `Traegerwelle.N2`) in beiden Formaten; Kerntafel B10 `NurEpos` mit dem Element
+  `Maximaleraumtemperatur`, C9 zusätzlich `Periodenwoche_` (DA-4, Nachzug N2).
+- **Zählung:** gbXML Bestand 26, DA-2 19, DA-4 9, N2 1, offen 11, kein Feld 5 — Standard 45, eigener Weg 10, nicht übertragbar 16;
+  IFC Bestand 31, DA-3 17, DA-4 9, N2 1, offen 8, kein Feld 5 — Standard 32, `EPOS_*` 26, nicht übertragbar 13. Kerntafel gbXML:
+  42 beide Richtungen, 3 nur gelesen, 10 eigener Weg, 16 ohne Element; IFC: 31, 1, 26, 13.
+- **Gemeinsamer Rundlauf:** neuer Vergleicher B10, C9 vergleicht zusätzlich die Periodenverweise. gbXML gleich 52, abweichend 5
+  (A1 A5 B5 D8 F3), ohne Träger 14; IFC gleich 54, abweichend 3 (D3 D4 D6), ohne Träger 14; Felder je 70 663.
+- **Abstimmung:** kein Eintrag erledigt; neu benannt `Gebaeude.Maximaleraumtemperatur` (B10 reist je Zone, das Gebäudefeld bleibt
+  benannter Verlust — wie `Heizleistung_Max`). Verlustliste: `Zone.Maximaleraumtemperatur` rundläufig.
+
+**Dateien und Tests.** Siehe Protokoll DA-4, Nachzug N2 (`DatenaustauschInventar.cs`, `GebaeudeExportVerluste.cs`,
+`Datenaustauschinventar.cs`, `DatenaustauschRundlaufWacheTests.cs`, `DatenaustauschInventarWacheTests.cs`,
+`RestdatenRundlaufTests.cs`, `GebaeudeExportAblaufTests.cs`); alle grün.
+
+**Logbuch-Vorschlag.** Keiner eigener — die Höchsttemperatur steht im Satz zu DA-4, Nachzug N2.

@@ -135,3 +135,49 @@ Mindestliste „benannt“).
 
 Der Gebäudeexport in gbXML und IFC nimmt Vorheizzeit, Höchstleistungen, Wärmeübergabe je Zone, Luftströme zwischen Zonen, die
 Erdreichangaben sowie Zeilenbild und benannte Wochen der Kalender mit, der Import liest sie wieder ein.
+
+## Nachzug N2 (14.10.2026)
+
+**Befund.** (a) Der Verweis einer Periode auf eine benannte Woche (`ID_Woche`) hatte kein Element; die Periode reiste mit
+eingebetteter Woche. (b) `IfcAnreicherung` schrieb `EPOS_Zone` ohne die Restdaten und `EPOS_Gebaeude` ohne das Erdreich; die
+DIN-Nummer (DA-5) trug sie schon über `IfcKonditionierungssatz.Zonenwerte`.
+
+- **(a)** Neuer Restdatenschlüssel `Periodenwoche_<n>=<GRÖSSE>;<Beginn>;<Ende>;<Wochennummer>;<Bezeichner>` (Wochennummer = `n`
+  von `Woche_<n>` desselben Blocks, Bezeichner zuletzt, darf `;` tragen) — in gbXML im Block `EPOS:` der `Zone/Description`, in
+  IFC als `IfcText` in `EPOS_Zone`, wie die übrigen Restdaten. Der Export (`GebaeudeRestdaten.AusZone`) schreibt ihn für jede
+  Periode, die keine Feiertagsperiode ist und auf eine benannte Woche der Zone verweist. Der Import liest die Verweise nach allen
+  Wochen; `ZonenplanCtrl.RestUebernehmen` setzt nach dem Anlegen der Wochen an der Periode gleicher Größe, gleichen Beginns, Endes
+  und Bezeichners `Kalenderangabe.AusBenannterWoche` (Werte der benannten Woche) — es entsteht keine eigene Woche. Eine Periode
+  ohne Verweis bleibt eingebettet. Feiertagsperioden reisen ohne Verweis (gbXML führt sie als Tagtyp `Holiday`).
+- **(b)** `IfcAnreicherung` schreibt `GebaeudeRestdaten.Werte(r.Rest)` in `EPOS_Zone` und `GebaeudeRestdaten.Werte(g.Erdreich)` in
+  `EPOS_Gebaeude` — derselbe Weg wie `IfcSchreiber`; ein zweiter Durchlauf ersetzt die Sätze (`Eigen`).
+- Kerntafel `DatenaustauschInventar`: C9 trägt zusätzlich das Element `Periodenwoche_` (gbXML und IFC). `GebaeudeExportVerluste`:
+  `Tab_Zone.Maximaleraumtemperatur` rundläufig (siehe DA-7, Nachzug N2); die Anreicherung braucht keine eigene Einstufung.
+- `Setup/Vorlage/EPOS_Export.ids`: unverändert — die IDS-Proben entstehen aus dem Schreiber ohne Restdaten, `IdsWacheTests` grün.
+
+**Dateien.** `EPOS.Kern/Allgemein/Import/Gebaeude/GebaeudeRestdaten.cs` (`AbbildPeriodenwoche`, `Periodenwochen`,
+`Maximaleraumtemperatur`, Schlüssel `PERIODENWOCHE`, `MAXIMALERAUMTEMPERATUR`), `EPOS.Kern/Controller/ZonenplanCtrl.cs`,
+`EPOS.Kern/Allgemein/Export/Ifc/IfcAnreicherung.cs`, `EPOS.Kern/Allgemein/Export/Gebaeude/DatenaustauschInventar.cs`,
+`GebaeudeExportVerluste.cs`; Tests `RestdatenRundlaufTests.cs`, `IfcAnreicherungTests.cs`, `DatenaustauschInventarWacheTests.cs`,
+`DatenaustauschRundlaufWacheTests.cs`, `Datenaustauschinventar.cs`, `GebaeudeExportAblaufTests.cs`. Kein Schemaschritt, keine
+neue SQL-Anweisung, keine neuen Ressourcen.
+
+**Tests.**
+- `RestdatenRundlaufTests`: gbXML- und IFC-Rundlauf je 408 Felder, 0 Abweichungen (Zone 1: 15 Felder, 1 Luftstrom 2, 4 Zeilen 28,
+  2 Wochen 340, 1 Periodenverweis 5; Zone 2: 15; Erdreich 3). Neu
+  `Eine_Periode_mit_Verweis_auf_eine_benannte_Woche_verweist_nach_dem_Import_wieder_auf_sie` (Projekt 1045, `ifc4_haus.ifc`,
+  Zonenplan): Periode „Messe“ verweist auf die angelegte Woche, Gegenprobe „Revision“ bleibt eingebettet; der Export schreibt
+  genau einen Verweis.
+- `IfcAnreicherungTests.Anreicherung_schreibt_Restdaten_Erdreich_und_DIN_Nummer_wie_der_Schreiber` (synthetische Probe
+  „Fremdhaus“): Rücklesen der Restdaten samt Periodenverweis, Erdreich und DIN-Nummer 7; zweiter Durchlauf ein Satz; Gegenprobe
+  ohne Restdaten trägt `EPOS_Zone` keinen ihrer Schlüssel.
+- Abnahmefilter Kern (`Wiederimport|Mehrzonen|Zonenplan|Konditionierung|ZonenNutzung|Restdaten|Datenaustausch|Rundlauf|Gbxml|Ifc|
+  Ids|Export|GebaeudeImport|Modultrennung|Dokumentation|Repository|Resource`): 1581 Tests, 1576 grün, 5 übersprungen (Bestand),
+  0 rot nach Nachzug von `GebaeudeExportAblaufTests` (Mindestliste „benannt“ ohne die Höchsttemperatur). Importproben unverändert.
+- Bau `WP-Plan.Kern.slnf` Release 0 Fehler; Windows-Schale nicht berührt. SQL-Dialekt-Prüfer: 2978 SQL-Texte, 0 Fundstellen.
+
+**Offen.** Feiertagsperioden mit Wochenverweis; ein Bezeichner mit Zeilenumbruch bricht den gbXML-Block (Bestand der Blockform).
+
+**Logbuch-Vorschlag.** „Der Gebäudeexport in gbXML und IFC nimmt die Zuordnung von Kalenderzeiträumen zu benannten Wochen und
+die Höchsttemperatur der Zonen mit, und die Anreicherung einer IFC-Datei schreibt auch Vorheizzeit, Übergabe, Luftströme und
+Erdreichangaben.“

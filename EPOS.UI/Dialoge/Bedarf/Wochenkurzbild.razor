@@ -1,0 +1,84 @@
+﻿@* KURZBILD DER WOCHE (N1, Entwurf Gefuehrter Modellaufbau 2.4): je Groesse eine Spur mit sieben Tagesbloecken, je Stunde ein
+   Balken, die Hoehe nach dem Wert (zwischen kleinstem und groesstem Wert der Spur). Gleiche Stunden eines Tages stehen in
+   EINEM Balken; sein Titel nennt Tag, Stunden und Wert. „aus" zeichnet keinen Balken. Kleines Inline-SVG ohne Skript und
+   ohne Farbwerte: Fuellung und Rahmen kommen aus den Tokens der Regeln epos-wochenbild-*. Zeigt nur. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1.MyResource
+
+@if (Spuren.Count > 0)
+{
+    <svg class="epos-wochenbild" width="@Breite" height="@Hoehe" viewBox="@($"0 0 {Breite} {Hoehe}")" role="img"
+         aria-label="@Beschriftung">
+        @for (int s = 0; s < Spuren.Count; s++)
+        {
+            Wochenspur spur = Spuren[s];
+            double y0 = s * (SPURHOEHE + SPURABSTAND);
+            (double lo, double hi) = Bereich(spur.Werte);
+            <g class="epos-wochenbild-spur" data-groesse="@spur.Schluessel">
+                @for (int d = 0; d < 7; d++)
+                {
+                    int tag = d;
+                    double x0 = tag * (TAGBREITE + TAGABSTAND);
+                    <rect class="epos-wochenbild-tag" x="@Zahl(x0)" y="@Zahl(y0)" width="@Zahl(TAGBREITE)" height="@Zahl(SPURHOEHE)"></rect>
+                    @foreach ((int von, int bis, double wert) in Laeufe(spur.Werte, tag))
+                    {
+                        if (double.IsNaN(wert)) continue;
+                        double h = hi > lo ? 1.0 + (wert - lo) / (hi - lo) * (SPURHOEHE - 1.0) : SPURHOEHE;
+                        <rect class="epos-wochenbild-balken" x="@Zahl(x0 + von * STUNDE)" y="@Zahl(y0 + SPURHOEHE - h)"
+                              width="@Zahl((bis - von) * STUNDE)" height="@Zahl(h)">
+                            <title>@Titel(spur, tag, von, bis, wert)</title>
+                        </rect>
+                    }
+                }
+            </g>
+        }
+    </svg>
+}
+
+@code {
+    /// <summary>Eine Spur: Schlüssel der Größe, ihr Name, die Einheit und die 168 Werte („aus" = NaN).</summary>
+    public sealed record Wochenspur(string Schluessel, string Name, string Einheit, double[] Werte);
+
+    /// <summary>Die Spuren, oben beginnend; leer = kein Bild.</summary>
+    [Parameter] public IReadOnlyList<Wochenspur> Spuren { get; set; } = Array.Empty<Wochenspur>();
+
+    /// <summary>Die Beschriftung des Bilds (Zone).</summary>
+    [Parameter] public string Beschriftung { get; set; } = "";
+
+    private const double STUNDE = 0.75, TAGBREITE = 24 * STUNDE, TAGABSTAND = 2, SPURHOEHE = 8, SPURABSTAND = 2;
+
+    private static double Breite => 7 * TAGBREITE + 6 * TAGABSTAND;
+
+    private double Hoehe => Spuren.Count * SPURHOEHE + Math.Max(0, Spuren.Count - 1) * SPURABSTAND;
+
+    private static string Zahl(double v) => v.ToString("0.##", CultureInfo.InvariantCulture);
+
+    private static (double, double) Bereich(double[] w)
+    {
+        double[] f = w.Where(double.IsFinite).ToArray();
+        return f.Length == 0 ? (0, 0) : (f.Min(), f.Max());
+    }
+
+    /// <summary>Die Läufe gleicher Werte eines Tages: (erste Stunde, Stunde danach, Wert).</summary>
+    internal static IEnumerable<(int Von, int Bis, double Wert)> Laeufe(double[] w, int tag)
+    {
+        int start = 0;
+        for (int h = 1; h <= 24; h++)
+        {
+            if (h < 24 && Gleich(w[tag * 24 + h], w[tag * 24 + start])) continue;
+            yield return (start, h, w[tag * 24 + start]);
+            start = h;
+        }
+    }
+
+    private static bool Gleich(double a, double b) => (double.IsNaN(a) && double.IsNaN(b)) || a == b;
+
+    private static string Titel(Wochenspur s, int tag, int von, int bis, double wert)
+    {
+        CultureInfo c = CultureInfo.CurrentCulture;
+        string tagname = c.DateTimeFormat.GetAbbreviatedDayName((DayOfWeek)((tag + 1) % 7));
+        return string.Format(c, Resource.ZNB_WOCHE_TITEL, s.Name, tagname, von, bis, wert.ToString("0.##", c), s.Einheit);
+    }
+}

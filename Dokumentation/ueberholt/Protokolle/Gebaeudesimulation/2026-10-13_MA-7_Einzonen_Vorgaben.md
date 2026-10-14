@@ -94,3 +94,19 @@ Keine Normwerte, keine Herstellerdaten. `BaualterEinzonenvorgabenTests` rechnet 
 
 „Im Gebäudeeditor übernimmt ‚Vorgaben der Baualtersklasse übernehmen…‘ U-Werte, Wärmebrücken, Fensterdurchlassgrad, Bauart und
 das Nutzungsprofil der Gebäudeart nach Vorschau mit einem Klick.“
+
+## Nachzug N1 (14.10.2026)
+
+- **Befund:** Das Stammblatt der Gebäudeverwaltung trug „Vorgaben der Baualtersklasse übernehmen…“ nicht. Die Verwaltung
+  arbeitet auf demselben `GebaeudeArbeitsstand` wie der Editor — die Übernahme trägt dort, „Speichern“ schreibt.
+- **Ergebnis:** Knopf, Rücknahme und Grund in der Gruppe „Kenndaten“ der Verwaltung (`GebaeudeAdminDialog`, unter dem
+  Formularraster, nicht bei Auslieferungssätzen), Vorschau als Überlagerung. Die Vorschau ist ein gemeinsamer Baustein
+  `EinzonenvorgabenVorschau.razor` (Herkunft, Tabelle alt → neu, Hinweis, Übernehmen/Abbrechen) für Editor und Verwaltung;
+  Grund und Herkunft als statische Helfer. Gleiche Sperren: Die Verwaltung lädt keine Zonen in den Arbeitsstand, die Sperre
+  „Zonen“ kommt deshalb aus den Zonen des Satzes (`Einzonenvorgaben.Sperre` mit deren Zahl). Das Profil der Gebäudeart
+  (Gruppe „Nutzungsprofil“ der Vorschau) bleibt dem Editor vorbehalten.
+- **Dateien:** `EPOS.UI/Dialoge/Bedarf/EinzonenvorgabenVorschau.razor` (neu), `GebaeudeAdminDialog.razor`,
+  `GebaeudeKatalogDialog.razor`.
+- **Tests:** `GebaeudeAdminDialogTests.N1_Vorgaben_der_Baualtersklasse_im_Stammblatt_mit_Vorschau_und_Speichern`,
+  `…N1_Vorgaben_der_Baualtersklasse_sind_mit_Zonen_des_Satzes_gesperrt`; `GebaeudeEinzonenvorgabenTests` unverändert grün.
+- **Logbuch:** „Die Vorgaben der Baualtersklasse lassen sich auch im Stammblatt der Gebäudeverwaltung übernehmen.“

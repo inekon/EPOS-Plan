@@ -90,3 +90,30 @@ Vorgabe: behalten), das zweite merkt vor; eine neue Zuordnung verwirft die Vorsc
 „Ein erneuter Gebäudeimport führt Datei und Modell zusammen: Geometrie und Werte der Datei werden aktualisiert, von Hand
 ergänzte Profile, Kalender, Aufbauten, Zonen und Bauteile bleiben erhalten, und eine Vorschau zeigt die Unterschiede vor dem
 Übernehmen.“
+
+## Nachzug N2 (14.10.2026)
+
+**Befund.** Offene Punkte (a) und (c) waren ohne Schema schließbar: Kalendereditor und Zonenfelder schreiben beide über den
+OK-Weg des Zonendialogs (`GebaeudeZonenCtrl.Schreiben`, Hülle `GebaeudeKatalogHuelle`).
+
+- **(a)** Schreibt der OK-Weg die Konditionierung einer bestehenden Projektzone und hat sich dabei etwas gegen die Datenbank
+  geändert (`StandSchreiben` meldet `geschrieben`: Vorgabezeilen, Kalender, Perioden, Wochen), setzt er an der Zone
+  `Herkunft = MANUELL` (derselbe Satz wie `ZonenNutzungCtrl.HandMarkieren`). Keine Rücknahme: der Editor schreibt erst mit OK.
+- **(c)** Vor dem Schreiben vergleicht `GebaeudeZonenCtrl.HandfelderGeaendert` jede bestehende Projektzone mit dem gespeicherten
+  Stand: Übergabe (sieben Spalten), Kühlübergabe (drei), Vorheizzeit, Heiz- und Kühlleistung höchstens, die vier Heizsollwerte,
+  beide Kühlsollwerte und die Höchsttemperatur (Rand 1e-9 relativ). Weicht eines ab, wird die Zone `MANUELL`. Nutzfläche,
+  Raumhöhe und Volumen zählen nicht, sie kommen immer aus der Datei. Die Katalogebene wird nicht markiert.
+- Offen bleibt (b) (von Hand eingetragener U-Wert ohne Aufbauwechsel). Ein Kalender, der außerhalb des Zonendialogs geschrieben
+  wird (Knöpfe `KonditionierungCtrl.Schrittweg`, Vorlagenkopie), markiert die Zone weiterhin nicht.
+
+**Dateien.** `EPOS.Kern/Controller/GebaeudeZonenCtrl.cs` (`Schreiben`, `HandfelderGeaendert`),
+`EPOS.Kern.Tests/WiederimportTests.cs`.
+
+**Tests.** `WiederimportTests.Kalendereditor_und_Zonendialog_markieren_die_Zone_und_der_Wiederimport_bewahrt_sie` (Projekt 1045
+der Testdatenbank, synthetische Projektdatei): eine Woche im Kalendereditor der Halle und Vorheizzeit und Sollwert am Lager
+markieren beide Zonen; der Wiederimport bewahrt Woche, Vorheizzeit und Sollwert. Gegenproben: das Büro mit unverändertem Stand
+und geänderter Nutzfläche bleibt ohne Marke; dieselbe Woche am Büro, ohne den Dialog geschrieben, ersetzt die Datei. Abnahme
+siehe Protokoll DA-4, Nachzug N2.
+
+**Logbuch-Vorschlag.** „Änderungen an Kalendern und Werten einer Zone im Zonendialog bleiben bei einem erneuten Gebäudeimport
+erhalten.“

@@ -100,6 +100,47 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Neulesen_ordnet_eine_umbenannte_Zone_ueber_die_Kennung_der_Datei_zu()
+        {
+            // N1: Die Zone „Büro" heißt nach dem Import „Chefbüro"; die Paarung der Quelle (Raum r-1 → Zone 11) trägt.
+            GebaeudeAnsichtPunkt[][] ohne = Array.Empty<GebaeudeAnsichtPunkt[]>();
+            var ansicht = new GebaeudeAnsichtDaten
+            {
+                Geschosse = new[]
+                {
+                    new GebaeudeAnsichtGeschoss("eg", "EG", false, 0, 0, 1, 1, new[]
+                    {
+                        new GebaeudeAnsichtRaum("r-1", "Raum 1", "z-1", true, false, "", ohne),
+                        new GebaeudeAnsichtRaum("r-2", "Raum 2", "z-2", true, false, "", ohne),
+                    }),
+                },
+                Zonen = new[]
+                {
+                    new GebaeudeAnsichtZone("z-1", "Büro", 0, true, false, false),
+                    new GebaeudeAnsichtZone("z-2", "Flur", 1, true, false, false),
+                },
+            };
+            ZonenNutzungszeile Zeile(int id, string name, string profil)
+                => new ZonenNutzungszeile(id, name, 10, true, profil, null, "Nichtwohnen", Profilherkunft.Vorgabe, "",
+                                          new Dictionary<string, Kalenderkennung>(), null, null, Ferienkennung.Fehlt, Ferienkennung.Fehlt,
+                                          Pruefampel.Gruen, Array.Empty<string>());
+            ZonenNutzungszeile[] gespeichert = { Zeile(11, "Chefbüro", "Einzelbüro"), Zeile(12, "Flur", "") };
+
+            // Ohne Paarungen findet nur der Name: die umbenannte Zone fehlt.
+            Assert.Equal(new Dictionary<string, int> { ["z-2"] = 12 }, GebaeudeNeulesenHuelle.MitNutzung(ansicht, gespeichert).ZonenIds);
+
+            GebaeudeAnsichtDaten d = GebaeudeNeulesenHuelle.MitNutzung(ansicht, gespeichert,
+                new Dictionary<string, int>(StringComparer.Ordinal) { ["r-1"] = 11 });
+            Assert.Equal(new Dictionary<string, int> { ["z-1"] = 11, ["z-2"] = 12 }, d.ZonenIds);
+            Assert.Equal(new GebaeudeAnsichtNutzung("Einzelbüro", "Nichtwohnen"), d.Nutzungen["z-1"]);
+
+            // Die Kennung der Zone selbst geht vor dem Namen: z-2 zeigt auf Zone 11, obwohl eine Zone „Flur" existiert.
+            GebaeudeAnsichtDaten d2 = GebaeudeNeulesenHuelle.MitNutzung(ansicht, gespeichert,
+                new Dictionary<string, int>(StringComparer.Ordinal) { ["z-2"] = 11 });
+            Assert.Equal(11, d2.ZonenIds["z-2"]);
+        }
+
+        [Fact]
         public void Neulesen_ordnet_Zonen_und_Nutzung_ueber_den_Namen_zu()
         {
             var ansicht = new GebaeudeAnsichtDaten

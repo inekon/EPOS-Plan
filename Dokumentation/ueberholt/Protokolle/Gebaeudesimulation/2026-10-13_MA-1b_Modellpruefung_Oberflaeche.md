@@ -98,3 +98,27 @@ Nachweis: Kern-Filter 0 Fehler; `EPOS.UI.Tests` mit Filter `Formularraster|Infok
 
 „Im Gebäudedialog prüft ‚Modell prüfen…‘ ein Gebäude auf Rechenfähigkeit, zeigt je Prüfgruppe eine Ampel und übernimmt die
 Vorschläge mit einem Klick — nach einem Import öffnet die Prüfung von selbst.“
+
+## Nachzug N1 (14.10.2026)
+
+- **Befund:** Die Ampelleiste im Reiter „Zonen“ des Editors stand aus (Entwurf 2.2, Offen oben); die Prüfung war nur über
+  „Modell prüfen…“ der Kopfleiste zu erreichen.
+- **Ergebnis:** Neuer Baustein `EPOS.UI/Dialoge/Bedarf/Modellpruefungsleiste.razor` — Rechenstatus (Klasse
+  `epos-ampel-gruen|gelb|rot`) und je Prüfgruppe ein Knopf mit Ampel, Name und Zahl der Befunde, Titel mit Befunden und
+  Vorschlägen. Der Gebäudedialog reicht dem Editor der Projektzeile `ModellpruefungLesen` (Weg `ModellpruefungWeg.Pruefen` der
+  Hülle `ModellpruefungHuelle`, einmal je Öffnen gebaut) und `PruefgruppeOeffnen` durch; ein Klick öffnet das Ampelblatt
+  über dem Editor auf dieser Gruppe (`Modellpruefungsblatt.StartGruppe`: ihre Befunde stehen offen). Jede Übernahme oder
+  Rücknahme im Ampelblatt, jede Änderung im Blatt „Nutzung und Kalender“ und jede Auswahl an der Legende der Ansicht zählt
+  `PruefFassung` hoch — die Leiste prüft neu, ohne ungespeicherte Zonen liest der Reiter die Zonen neu (das OK des Editors
+  schreibt so keinen veralteten Stand zurück). Mit ungespeicherten Zonen ist die Leiste weich gesperrt (Grund wie „Nutzung und
+  Kalender…“); im Assistenten, im Katalog und ohne Delegat keine Leiste. CSS `epos-pruefleiste*` vor dem Formularraster.
+- **Dateien:** `Modellpruefungsleiste.razor` (neu), `Modellpruefungsblatt.razor`, `GebaeudeKatalogDialog.razor`,
+  `GebaeudeDialog.razor`, `EPOS.UI/wwwroot/epos-ui.css`, `Resource(.en-US).resx` (`MPB_LEISTE_TITEL`,
+  `MPB_LEISTE_GRUPPE_HINWEIS`), `Resource.Designer.cs`.
+- **Tests:** `GebaeudeKatalogPruefleisteTests` (Leiste mit Status, fünf Gruppen, Klick; ohne Weg keine Leiste; neue Prüffassung
+  liest Leiste und Zonen neu; Startzone), `GebaeudeDialogTests.N1_Ampelleiste_im_Editor_oeffnet_das_Ampelblatt_auf_der_Gruppe`,
+  `…N1_Ampelleiste_nicht_im_Assistenten`.
+- **Offen:** Eine Übernahme der Gruppe 4 (Nordrichtung) schreibt am Gebäude; der Editor liest nach einer Prüffassung nur die
+  Zonen neu, nicht die Felder der Hülle — ein OK danach schreibt die Hüllfelder des Editors. Windows-Sichtabnahme der Leiste.
+- **Logbuch:** „Im Reiter „Zonen“ des Gebäudeeditors zeigt eine Ampelleiste den Stand der Modellprüfung; ein Klick öffnet die
+  Prüfung auf der Gruppe.“

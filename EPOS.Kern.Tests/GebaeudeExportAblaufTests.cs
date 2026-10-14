@@ -567,9 +567,10 @@ namespace EPOS.Kern.Tests
             Pruefen(typeof(BauteilModel), GebaeudeExportVerluste.Bauteil);
             Pruefen(typeof(ProjektGebaeudeModel), GebaeudeExportVerluste.Gebaeude);
             // Mindestens benannt (Umsetzungsauftrag W2).
-            // DA-4: Nutzerluftwechsel, innere Gewinne, Belegung, Höchstleistungen und Übergabe reisen inzwischen (RestdatenRundlaufTests).
+            // DA-4: Nutzerluftwechsel, innere Gewinne, Belegung, Höchstleistungen und Übergabe reisen inzwischen (RestdatenRundlaufTests);
+            // Nachzug N2: die Höchsttemperatur der Zone ebenso.
             foreach (string n in new[] { "Raumsolltemperatur_Nachtabsenkung", "Raumsolltemperatur_Wochenende", "Raumsolltemperatur_Ferien",
-                                         "Heizung_Strahlungsanteil", "Maximaleraumtemperatur" })
+                                         "Heizung_Strahlungsanteil" })
                 Assert.Equal(Exporteinstufung.BenannterVerlust, GebaeudeExportVerluste.Zone[n]);
             foreach (string n in new[] { "Psi_L", "Rahmenanteil", "Verschattungsfaktor" })
                 Assert.Equal(Exporteinstufung.BenannterVerlust, GebaeudeExportVerluste.Bauteil[n]);
