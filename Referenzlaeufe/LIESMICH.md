@@ -1377,6 +1377,19 @@ Projekt 1072. 1050, 1052, 1054, 1055, 1056, 1057, 1059, 1061, 1062, 1064 und 107
 > `fb42e2f3b6cf1a010ec3bac6bb654523e5d9701c3bd5a57fa676b03052911f46`**. Die achtzehn Projekte der CI-Auswahl rechnen gegen R53
 > GESAMT PASS.
 
+> **Nachtrag — Schema 228 (KB-4 eine Kostenbasis an den Gerätekatalogen, 14.10.2026, hängt an 227
+> `BrennstoffpreiseTraegerkarteSchema`), Basis R55 unverändert.** `GeraetekostenEntfallSchema` (228 =
+> `BrennstoffpreiseTraegerkarteSchema.SCHRITT + 1`) legt `ID_KostenVorlageInvestition` an `Tab_Wechselrichter(_STAMM)` an, sät je
+> Wechselrichter mit Kosten eine Satzvorlage mit einer Position (`EUR_PRO_KW_ELEKTRISCH`, 480 €/kW), prüft, dass kein Satz mit
+> Kosten > 0 ohne Verweis bleibt, entfernt die 32 Kostenspalten an BHKW, Heizkessel, Wärmepumpe, PV-Modul, Wechselrichter,
+> Solarkollektoren, Pufferspeicher und Kältemaschine (Katalog und Projektkopie) und bildet die Katalogprüfsummen neu. Gehoben aus der
+> Fassung 227 der Basis R55 (108 720 128 Byte) mit `Werkzeuge/Testdatenbankschema`; der Inhaltsvergleich aller Tabellen zeigt den
+> neuen Verweis (1 Katalog- und 7 Projektsätze), **8 Satzvorlagen mit 8 Positionen**, den Wegfall der 32 Spalten, die neu gebildeten
+> `Katalog_Pruefsumme` (75 BHKW, 8 Wärmepumpen, 1 Wechselrichter), `Tab_Applikation.SchemaVersion` und — aus dem wiederholten
+> Schritt 75 — die Nutzungsdauer-Zuordnung von 125 mit Schritt 226 gesäten Auslieferungspositionen (`NutzungsdauerID`). Die
+> Testdatenbank steht auf **228** (`integrity_check` ok, `foreign_key_check` leer): **108 687 360 Byte, LFS-SHA-256
+> `04080c4e53b1b1c2956cf25cb7f58320023142173846bf4d576898c813dbf6e3`**.
+
 ### Die Vorgängerbasis R54 (Dachflächen)
 
 Sechsunddreißig Projekte, 1 171 CSV, 7 983 Skalare, auf Linux eingefroren gegen die Testdatenbank `1f2cf95f…`
