@@ -235,19 +235,26 @@ namespace EPOS.Kern.Tests
             => Convert.ToInt64(DataRepository.GetDataTable(sql, p).Rows[0][0], CultureInfo.InvariantCulture);
 
         [Fact]
-        public void Referenzprojekt_1054_meldet_die_offene_Huelle_gelb_ohne_Vorschlag()
+        public void Referenzprojekt_1054_schliesst_die_Huelle_jeder_Zone()
         {
             if (!_db.Vorhanden) return;
-            Modellpruefergebnis e = new ModellpruefungCtrl(Gebaeude(1054)).Pruefen();
+            int g = Gebaeude(1054);
+            Modellpruefergebnis e = new ModellpruefungCtrl(g).Pruefen();
             List<Modellbefund> h = e.Gruppe(Pruefgruppe.GeometrieBauteile).Befunde.Where(b => b.Code.StartsWith("HUELLE_", StringComparison.Ordinal)
                                                                                            && b.Code != Modellpruefung.HUELLE_OHNE_AUSSENWAND
                                                                                            && b.Code != Modellpruefung.HUELLE_OHNE_DACH
                                                                                            && b.Code != Modellpruefung.HUELLE_OHNE_BODEN).ToList();
-            // Die Dachflächen sind geneigte Flächen mit Neigung 0° (26 %); der Keller schließt.
-            Assert.Equal(2, h.Count);
-            Assert.All(h, b => Assert.Equal(Modellpruefung.HUELLE_OFFEN, b.Code));
-            Assert.All(h, b => Assert.Null(b.Vorschlag));
+            // Die Dächer der beheizten Zonen sind Satteldächer mit 42° (Nord- und Südhälfte), der Keller schließt.
+            Assert.Empty(h);
+            Assert.DoesNotContain(e.Befunde, b => b.Code == Modellpruefung.AZIMUT_FEHLT);
             Assert.NotEqual(Rechenstatus.NichtRechenfaehig, e.Status);
+            List<ZoneModel> zonen = new GebaeudeZonenCtrl().LesenJeGebaeude(g);
+            for (int i = 0; i < zonen.Count; i++)
+            {
+                Zonenkopplungsregeln.Huellbilanz b = Zonenkopplungsregeln.Bilanz(zonen, i);
+                Assert.True(b.AbweichungSenkrecht < Zonenkopplungsregeln.HUELLE_ABWEICHUNG_HINWEIS,
+                            zonen[i].Bezeichner + ": " + b.AbweichungSenkrecht.ToString("P1", CultureInfo.InvariantCulture));
+            }
         }
 
         [Fact]

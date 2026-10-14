@@ -112,7 +112,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             string soll = Zonenprojekt1054.Zaehlung(Zonenprojekt1052.NEU);
-            Assert.Equal("Zonen 3, Bauteile 31, Trennflächen 3, Luftströme 1, Kalender 2, Perioden 9, Vorgaben 2", soll);
+            Assert.Equal("Zonen 3, Bauteile 33, Trennflächen 3, Luftströme 1, Kalender 2, Perioden 9, Vorgaben 2", soll);
             Assert.Equal(soll, Zonenprojekt1054.Zaehlung(PROJEKT));
 
             // Die Zonen tragen dieselben Werte (ohne Schlüssel und Übergabespalten) und dieselben Bauteile.
