@@ -204,6 +204,104 @@ namespace WindowsFormsApplication1
         public bool Ok => Ausgang == GesetzPruefung.Ok;
     }
 
+    /// <summary>
+    /// Die jüngste Zeile eines Schlüssels, wie der Zeilendialog sie für die
+    /// Vorbelegung braucht (Anwenderentscheid 14.10.2026).
+    /// </summary>
+    public sealed class GesetzSchluesselStand
+    {
+        public GesetzSchluesselStand(string schluessel, string klasse, int jahrVon,
+                                     string einheit, string quelle)
+        {
+            Schluessel = schluessel ?? "";
+            Klasse = klasse ?? "";
+            JahrVon = jahrVon;
+            Einheit = einheit ?? "";
+            Quelle = quelle ?? "";
+        }
+
+        public string Schluessel { get; }
+        public string Klasse { get; }
+        public int JahrVon { get; }
+        public string Einheit { get; }
+        public string Quelle { get; }
+    }
+
+    /// <summary>
+    /// Die Vorschlagsdaten des Zeilendialogs: je Schlüssel die jüngste Zeile, je Klasse
+    /// die häufigste Einheit. Ohne Datenbank — gelesen von
+    /// <see cref="GesetzKatalog.Vorschlagsdaten"/>, hereingereicht von der Hülle.
+    /// </summary>
+    public sealed class GesetzVorschlagsdaten
+    {
+        private readonly Dictionary<string, GesetzSchluesselStand> _nachSchluessel;
+
+        public GesetzVorschlagsdaten(IReadOnlyList<GesetzSchluesselStand> schluessel,
+                                     IReadOnlyDictionary<string, string> bereichseinheit)
+        {
+            Schluessel = schluessel ?? Array.Empty<GesetzSchluesselStand>();
+            Bereichseinheit = bereichseinheit ?? new Dictionary<string, string>();
+            _nachSchluessel = new Dictionary<string, GesetzSchluesselStand>(StringComparer.Ordinal);
+            foreach (GesetzSchluesselStand s in Schluessel)
+                if (s != null && s.Schluessel.Length > 0) _nachSchluessel[s.Schluessel] = s;
+        }
+
+        /// <summary>Ohne Daten: kein Schlüssel, keine Bereichseinheit.</summary>
+        public static readonly GesetzVorschlagsdaten Leer =
+            new GesetzVorschlagsdaten(Array.Empty<GesetzSchluesselStand>(), new Dictionary<string, string>());
+
+        /// <summary>Die bestehenden Schlüssel, alphabetisch.</summary>
+        public IReadOnlyList<GesetzSchluesselStand> Schluessel { get; }
+
+        /// <summary>Je Klasse die häufigste Einheit ihres Bestands.</summary>
+        public IReadOnlyDictionary<string, string> Bereichseinheit { get; }
+
+        /// <summary>Die jüngste Zeile eines Schlüssels (getrimmt, exakt); <c>null</c> = neu.</summary>
+        public GesetzSchluesselStand Stand(string schluessel)
+        {
+            string s = (schluessel ?? "").Trim();
+            return s.Length > 0 && _nachSchluessel.TryGetValue(s, out GesetzSchluesselStand st) ? st : null;
+        }
+    }
+
+    /// <summary>Woher die vorgeschlagene Einheit stammt.</summary>
+    public enum GesetzEinheitHerkunft
+    {
+        /// <summary>Keine Vorbelegung — kein Schlüsseltreffer und keine Bereichseinheit.</summary>
+        Keine,
+
+        /// <summary>Von der jüngsten Zeile desselben Schlüssels.</summary>
+        Schluessel,
+
+        /// <summary>Die häufigste Einheit der Klasse.</summary>
+        Bereich,
+
+        /// <summary>Keine Vorbelegung, weil die Einheit in der Klasse je Brennstoff wechselt.</summary>
+        EinheitWechselt
+    }
+
+    /// <summary>Der Vorschlag samt Herkunft; eine leere <see cref="Einheit"/> heißt: keine Vorbelegung.</summary>
+    public sealed class GesetzEinheitVorschlag
+    {
+        public GesetzEinheitVorschlag(string einheit, GesetzEinheitHerkunft herkunft,
+                                      GesetzSchluesselStand stand)
+        {
+            Einheit = einheit ?? "";
+            Herkunft = herkunft;
+            Stand = stand;
+        }
+
+        /// <summary>Kein Vorschlag.</summary>
+        public static readonly GesetzEinheitVorschlag Keiner =
+            new GesetzEinheitVorschlag("", GesetzEinheitHerkunft.Keine, null);
+
+        public string Einheit { get; }
+        public GesetzEinheitHerkunft Herkunft { get; }
+
+        /// <summary>Die Zeile, von der übernommen wurde — nur bei <see cref="GesetzEinheitHerkunft.Schluessel"/>.</summary>
+        public GesetzSchluesselStand Stand { get; }
+    }
+
     public class GesetzKatalog
     {
         public const string TAB_GESETZESPARAMETER = "Tab_Gesetzesparameter";
@@ -316,13 +414,16 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die neun Klassen, die der Zeilendialog zur Auswahl stellt — <b>in dieser
+        /// Die elf Klassen, die der Zeilendialog zur Auswahl stellt — <b>in dieser
         /// Reihenfolge</b> und mit ihren eingefrorenen DB-Schreibweisen.
         ///
         /// <para><b>Nicht zu verwechseln mit <see cref="Klassen"/>:</b> Das ist, was in
-        /// der Datenbank VORKOMMT (heute neun, mit <c>EEG</c>); dies hier ist, was der
-        /// Anwender beim Anlegen WAEHLEN kann. Beide Listen sind gewollt verschieden —
-        /// <c>EEG</c>-Zeilen pflegt der Vergütungsdialog, nicht die Hand.</para>
+        /// der Datenbank VORKOMMT; dies hier ist, was der Anwender beim Anlegen WÄHLEN
+        /// kann. <c>EEG</c> und <c>UMLAGEN</c> stehen im Vorrat: Ihre Zeilen schreibt
+        /// keine andere Maske (der PV-Vergütungsdialog liest sie nur), ohne sie ließe
+        /// sich ein neuer EEG- oder Umlagesatz nicht anlegen. Draußen bleibt allein die
+        /// technische Klasse <c>SYSTEM</c> — ihre Markerzeile der Nachsaat ist kein
+        /// gesetzlicher Parameter (<see cref="DbWerte.GESETZ_KLASSE_SYSTEM"/>).</para>
         /// </summary>
         public static IReadOnlyList<string> KlassenVorrat()
         {
@@ -336,7 +437,9 @@ namespace WindowsFormsApplication1
                 DbWerte.GESETZ_KLASSE_EF_BILANZ,
                 DbWerte.GESETZ_KLASSE_PEF_NACHWEIS,
                 DbWerte.GESETZ_KLASSE_UMSATZSTEUER,
-                DbWerte.GESETZ_KLASSE_FGAS
+                DbWerte.GESETZ_KLASSE_FGAS,
+                DbWerte.GESETZ_KLASSE_EEG,
+                DbWerte.GESETZ_KLASSE_UMLAGEN
             };
         }
 
@@ -364,6 +467,137 @@ namespace WindowsFormsApplication1
                 DbWerte.GESETZ_EINHEIT_JAHR,
                 DbWerte.GESETZ_EINHEIT_OHNE
             };
+        }
+
+        // =====================================================================
+        // Vorbelegung der Einheit im Zeilendialog (Anwenderentscheid 14.10.2026)
+        //
+        // Sie gilt nur für eine NEUE Zeile und nur, solange der Anwender die Einheit
+        // nicht selbst gewählt hat — das hält der Dialog. Hier steht die Regel, ohne
+        // Datenbank: Die Daten liest Vorschlagsdaten() einmal aus dem geladenen
+        // Katalog, die Hülle reicht sie dem Dialog herein.
+        // =====================================================================
+
+        /// <summary>
+        /// Die Klassen OHNE Vorbelegung aus dem Bereich — eine <b>benannte Ausnahme</b>,
+        /// keine Schwelle.
+        ///
+        /// <para><b>Warum keine Schwelle.</b> Im Bereich <c>ENERGIESTEUER</c> wechselt die
+        /// Einheit je Brennstoff (EUR/1000 l, EUR/1000 kg, EUR/MWh, EUR/GJ); die häufigste
+        /// deckt nur ein Drittel der Zeilen (5 von 15 in der Testdatenbank). Eine Schwelle
+        /// müsste zwischen diesem Drittel und den Bereichen liegen, deren Vorbelegung
+        /// gewollt ist (Stromsteuer 3 von 8, KWKG 20 von 53, EEG 14 von 35) — ein Band von
+        /// wenigen Prozentpunkten, das jede neue Zeile verschieben kann. Der Grund ist
+        /// fachlich (Bezugsgröße je Brennstoff), nicht statistisch; deshalb steht er als
+        /// Name da.</para>
+        /// </summary>
+        public static readonly IReadOnlySet<string> OHNE_BEREICHSVORBELEGUNG =
+            new HashSet<string>(StringComparer.Ordinal) { DbWerte.GESETZ_KLASSE_ENERGIESTEUER };
+
+        /// <summary>
+        /// Die Vorschlagsdaten des Zeilendialogs aus dem geladenen Katalog: je Schlüssel
+        /// seine jüngste Zeile (Einheit, Klasse, Quelle) und je Klasse die häufigste
+        /// Einheit ihres Bestands — <b>zur Laufzeit gezählt</b>, nicht fest verdrahtet.
+        /// Die technische Klasse <c>SYSTEM</c> bleibt außen vor.
+        /// </summary>
+        public GesetzVorschlagsdaten Vorschlagsdaten()
+        {
+            Sicherstellen();
+            var staende = new List<GesetzSchluesselStand>();
+            var alle = new List<GesetzParameter>();
+            foreach (KeyValuePair<string, List<GesetzParameter>> e in _reihen)
+            {
+                GesetzParameter juengste = null;
+                foreach (GesetzParameter p in e.Value)
+                {
+                    if (string.Equals(p.Klasse, DbWerte.GESETZ_KLASSE_SYSTEM, StringComparison.Ordinal))
+                        continue;
+                    alle.Add(p);
+                    if (juengste == null || p.JahrVon >= juengste.JahrVon) juengste = p;
+                }
+                if (juengste != null)
+                    staende.Add(new GesetzSchluesselStand(juengste.Schluessel, juengste.Klasse,
+                                                          juengste.JahrVon, juengste.Einheit,
+                                                          juengste.Quelle));
+            }
+            staende.Sort((a, b) => string.CompareOrdinal(a.Schluessel, b.Schluessel));
+            return new GesetzVorschlagsdaten(staende, HaeufigsteEinheiten(alle));
+        }
+
+        /// <summary>
+        /// Je Klasse die häufigste Einheit ihrer Zeilen. Gleichstand entscheidet die
+        /// Reihenfolge von <see cref="Einheiten"/>, danach die Schreibweise — das Ergebnis
+        /// hängt nicht an der Lesereihenfolge. Leere Einheiten zählen nicht; die Klassen
+        /// aus <see cref="OHNE_BEREICHSVORBELEGUNG"/> bekommen keinen Eintrag.
+        /// </summary>
+        public static IReadOnlyDictionary<string, string> HaeufigsteEinheiten(IEnumerable<GesetzParameter> zeilen)
+        {
+            var zaehler = new Dictionary<string, Dictionary<string, int>>(StringComparer.Ordinal);
+            foreach (GesetzParameter p in zeilen ?? Array.Empty<GesetzParameter>())
+            {
+                if (p == null || string.IsNullOrEmpty(p.Klasse) || string.IsNullOrEmpty(p.Einheit)) continue;
+                if (!zaehler.TryGetValue(p.Klasse, out Dictionary<string, int> je))
+                    zaehler[p.Klasse] = je = new Dictionary<string, int>(StringComparer.Ordinal);
+                je.TryGetValue(p.Einheit, out int n);
+                je[p.Einheit] = n + 1;
+            }
+
+            IReadOnlyList<string> reihenfolge = Einheiten();
+            int Rang(string einheit)
+            {
+                for (int i = 0; i < reihenfolge.Count; i++)
+                    if (string.Equals(reihenfolge[i], einheit, StringComparison.Ordinal)) return i;
+                return int.MaxValue;
+            }
+
+            var ergebnis = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (KeyValuePair<string, Dictionary<string, int>> k in zaehler)
+            {
+                if (OHNE_BEREICHSVORBELEGUNG.Contains(k.Key)) continue;
+                string beste = null;
+                int besteZahl = 0;
+                foreach (KeyValuePair<string, int> e in k.Value)
+                {
+                    bool besser = beste == null || e.Value > besteZahl ||
+                                  (e.Value == besteZahl &&
+                                   (Rang(e.Key) < Rang(beste) ||
+                                    (Rang(e.Key) == Rang(beste) &&
+                                     string.CompareOrdinal(e.Key, beste) < 0)));
+                    if (besser) { beste = e.Key; besteZahl = e.Value; }
+                }
+                if (beste != null) ergebnis[k.Key] = beste;
+            }
+            return ergebnis;
+        }
+
+        /// <summary>
+        /// <b>Die Regel der Vorbelegung</b> — welche Einheit eine neue Zeile vorgeschlagen
+        /// bekommt und woher sie stammt:
+        /// <list type="number">
+        ///   <item>Ein <b>bestehender Schlüssel</b> (getrimmt, exakt) gibt die Einheit seiner
+        ///   jüngsten Zeile; der Stand trägt dazu Klasse, Jahr und Quelle.</item>
+        ///   <item>Ein <b>neuer Schlüssel</b> bekommt die häufigste Einheit seiner Klasse —
+        ///   außer in den Klassen aus <see cref="OHNE_BEREICHSVORBELEGUNG"/>.</item>
+        ///   <item>Sonst <b>keine</b> Vorbelegung: Die Einheit ist leer und Pflicht.</item>
+        /// </list>
+        /// Ob der Anwender schon selbst gewählt hat, entscheidet der Dialog, nicht die Regel.
+        /// </summary>
+        public static GesetzEinheitVorschlag EinheitVorschlagen(string schluessel, string klasse,
+                                                                GesetzVorschlagsdaten daten)
+        {
+            daten ??= GesetzVorschlagsdaten.Leer;
+            GesetzSchluesselStand stand = daten.Stand(schluessel);
+            if (stand != null && stand.Einheit.Length > 0)
+                return new GesetzEinheitVorschlag(stand.Einheit, GesetzEinheitHerkunft.Schluessel, stand);
+
+            string k = (klasse ?? "").Trim();
+            if (k.Length == 0)
+                return GesetzEinheitVorschlag.Keiner;
+            if (OHNE_BEREICHSVORBELEGUNG.Contains(k))
+                return new GesetzEinheitVorschlag("", GesetzEinheitHerkunft.EinheitWechselt, null);
+            if (daten.Bereichseinheit.TryGetValue(k, out string einheit) && !string.IsNullOrEmpty(einheit))
+                return new GesetzEinheitVorschlag(einheit, GesetzEinheitHerkunft.Bereich, null);
+            return GesetzEinheitVorschlag.Keiner;
         }
 
         /// <summary>Die vier Statuswerte einer Zeile (gesichert / vorläufig / Prognose /
@@ -399,6 +633,8 @@ namespace WindowsFormsApplication1
                 case DbWerte.GESETZ_KLASSE_PEF_NACHWEIS: return MyResource.Resource.GESETZ_KLASSE_ANZ_PEF_NACHWEIS;
                 case DbWerte.GESETZ_KLASSE_UMSATZSTEUER: return MyResource.Resource.GESETZ_KLASSE_ANZ_UMSATZSTEUER;
                 case DbWerte.GESETZ_KLASSE_FGAS: return MyResource.Resource.GESETZ_KLASSE_ANZ_FGAS;
+                case DbWerte.GESETZ_KLASSE_EEG: return MyResource.Resource.GESETZ_KLASSE_ANZ_EEG;
+                case DbWerte.GESETZ_KLASSE_UMLAGEN: return MyResource.Resource.GESETZ_KLASSE_ANZ_UMLAGEN;
                 default: return klasse ?? "";
             }
         }

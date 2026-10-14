@@ -1093,6 +1093,7 @@ Datenbank. bunit misst weder Lage noch Rollstand; die Voraussetzungen der Regel 
 | `…?fall=gebaeude` | `GebaeudeDialog`; „Simulation…" öffnet den Wärmebedarf als Überlagerung |
 | `…?fall=dubletten` | `KatalogDublettenDialog` — das Protokoll steht **unter** der Schlussleiste |
 | `…?fall=katalog` | `BedarfAdminDialog` (Katalogdialog, `.epos-katalog-dialog`) |
+| `…?fall=kaelteprofile` | `BedarfsProfileDialog` der Art Kälte mit dem Baustein `Betriebskalenderwahl`; „Betriebskalender…“ öffnet das Blatt mit dem `BetriebskalenderDialog` samt „Aus Gebäude übernehmen…“ (Ablage im Speicher); `&kalender=leer` ohne Kalender, `&gebaeude=0` ohne Gebäude — Ansicht für Fotos und Handprobe, nicht in der Fallliste der `fensterprobe.mjs` |
 | `…&lizenz=1` | das Lizenzbanner der `AppWurzel` (Baustein `Lizenzbanner`, Lesemodus-Satz) als erstes Kind von `#app` vor dem Dialog |
 | `…&marke=0` | ohne Fenstermarke — der Dialog steht wie ohne die Regel |
 | `…?meldung=liste` | statt des Falls ein langer Dialog aus Hausbausteinen, dessen `Warnbanner` 30 Hinweise aufgeklappt zeigt (Fall „Meldungsliste" unten) |
