@@ -12750,6 +12750,21 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
     gap: 4px 12px;
 }
 
+/* KBP-3a: die zwoelf Monatswerte der Kaeltezeile in drei Spalten zu je  */
+/* einem Quartal; die Monatsnamen sind breiter als die Stundennummern.   */
+.epos-kbp-monatsraster {
+    grid-template-rows: repeat(4, auto);
+}
+
+.epos-kbp-monatsraster .epos-feld-text {
+    min-width: 5.5rem;
+}
+
+.epos-kbp-summenfehler {
+    color: var(--epos-stufe-fehler);
+    margin: 4px 0 0;
+}
+
 /* Die Nummer steht VOR dem Feld, nicht darueber: Label3 lag bei x = 16  */
 /* und st1 bei x = 37 auf DERSELBEN Zeile. Uebereinander waere die       */
 /* Spalte doppelt so hoch - und genau das war der Befund.                */

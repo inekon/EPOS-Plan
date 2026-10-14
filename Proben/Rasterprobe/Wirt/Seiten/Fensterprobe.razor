@@ -518,7 +518,17 @@
     private IReadOnlyList<Katalogfilterzeile> KpKatalog => _kpKatalog ??= Zeilenbau.Voll(KpProfil, _anzahl);
     private List<BedarfsProfilZeile>? _kpZeilen;
     private List<BedarfsProfilZeile> KpZeilen => _kpZeilen ??= Enumerable.Range(1, 2)
-        .Select(i => new BedarfsProfilZeile { IdZ = i, IdStamm = 200 + i, Name = "Kälte " + i, Summe = 40 * i, Vorlauf = 16, Ruecklauf = 19 })
+        .Select(i => new BedarfsProfilZeile
+        {
+            IdZ = i, IdStamm = 200 + i, Name = "Kälte " + i, Summe = 40 * i, Vorlauf = 16, Ruecklauf = 19,
+            // KBP-3a: Eingabeart, Monatsanteile und Wochenprofil der Projektkopie fuer die beiden Editoren.
+            Eingabeart = WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_JAHR,
+            Monatsanteile = new double[] { 1, 2, 4, 7, 11, 15, 18, 17, 12, 7, 4, 2 },
+            Wochenprofil = WindowsFormsApplication1.Kaelteprofileingabe.WocheAusTagen(
+                Enumerable.Range(0, 24).Select(h => h >= 7 && h < 19 ? 1.0 : 0.2).ToArray(),
+                Enumerable.Range(0, 24).Select(h => h >= 8 && h < 14 ? 0.5 : 0.2).ToArray(),
+                Enumerable.Repeat(0.2, 24).ToArray())
+        })
         .ToList();
 
     private readonly List<BetriebskalenderDaten> _kpKalender = new()
