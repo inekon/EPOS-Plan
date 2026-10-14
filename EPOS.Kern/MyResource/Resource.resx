@@ -680,9 +680,6 @@
   <data name="KBROW_LBL_GERAETEKOSTEN" xml:space="preserve">
     <value>Gerätekosten:</value>
   </data>
-  <data name="KBROW_LBL_INVEST" xml:space="preserve">
-    <value>Investitionskosten:</value>
-  </data>
   <data name="KBROW_LBL_KOLLEKTOR" xml:space="preserve">
     <value>Kollektor:</value>
   </data>
@@ -6614,7 +6611,7 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
     <value>Nicht zum Gewerk Kältemaschine gehören und bleiben unverändert: die Kaskade des Projekts, ein Kältespeicher und die Kältefolge der übrigen Kälteerzeuger — der Rang der übernommenen Maschinen kommt aus der Quelle. Bitte die Kältefolge im Bereich Kälte prüfen.</value>
   </data>
   <data name="KOSTEN_PLANWERT_BASIS_MODUL" xml:space="preserve">
-    <value>Modulpreis</value>
+    <value>Stückpreis</value>
   </data>
   <data name="KOSTEN_PLANWERT_BASIS_SPEZ" xml:space="preserve">
     <value>spezifischer Preis × Baugröße</value>
@@ -6647,7 +6644,7 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
     <value>Vorbelegung der Betriebskosten erst nach einem Simulationslauf verfügbar.</value>
   </data>
   <data name="KOSTEN_BETRIEB_OHNE_WARTUNGSFELD" xml:space="preserve">
-    <value>Für dieses Gewerk sind keine Wartungsangaben hinterlegt — keine Vorbelegung.</value>
+    <value>Für dieses Gewerk führt keine Betriebs-Satzvorlage einen Wartungssatz — keine Vorbelegung.</value>
   </data>
   <data name="KOSTEN_BETRIEB_OHNE_MENGE" xml:space="preserve">
     <value>Der Simulationslauf weist für dieses Gewerk keine Jahresmenge aus — keine Vorbelegung.</value>
@@ -6656,13 +6653,13 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
     <value>Die Wartungssätze lassen sich den Modulen des Laufs nicht eindeutig zuordnen — keine Vorbelegung.</value>
   </data>
   <data name="KOSTEN_BETRIEB_EINHEIT_GEMISCHT" xml:space="preserve">
-    <value>Die Kessel dieses Projekts führen unterschiedliche Einheiten für die Wartungskosten — keine Vorbelegung.</value>
+    <value>Die Betriebs-Satzvorlagen der Kessel dieses Projekts bemessen die Wartung unterschiedlich — keine Vorbelegung.</value>
   </data>
   <data name="KOSTEN_BETRIEB_OHNE_INVESTITION" xml:space="preserve">
     <value>Die Wartungskosten sind als Anteil der Investition angegeben, die Investitionsposition ist aber noch nicht erfasst — keine Vorbelegung.</value>
   </data>
   <data name="KOSTEN_BETRIEB_HERL_KESSEL_JAHR" xml:space="preserve">
-    <value>Vorbelegt: {0} €/a — fester Jahresbetrag aus der Kesseltechnik.</value>
+    <value>Vorbelegt: {0} €/a — fester Jahresbetrag aus der Betriebs-Satzvorlage des Kessels.</value>
   </data>
   <data name="KOSTEN_BETRIEB_HERL_KESSEL_ARBEIT" xml:space="preserve">
     <value>Vorbelegt: {0} €/kWh × {1} kWh Wärme aus dem Lauf vom {2}.</value>
@@ -6865,10 +6862,10 @@ Fehlende anlegen und abweichende auf den Katalogwert setzen?</value>
     <value>Mindestens eine Position konnte nicht geschrieben werden; der Abgleich ist unvollständig.</value>
   </data>
   <data name="BK_KOSTEN_KATALOGKOSTEN" xml:space="preserve">
-    <value>Katalogkosten vorhanden</value>
+    <value>Satzvorlage vorhanden</value>
   </data>
   <data name="BK_KOSTEN_KATALOGKOSTEN_HINT" xml:space="preserve">
-    <value>„{0}" führt keine Kostenposition, der Katalogsatz des Geräts aber Kosten — über „Mit dem Kostenkatalog abgleichen…" entstehen daraus Positionen.</value>
+    <value>„{0}" führt keine Kostenposition, der Katalogsatz des Geräts aber eine Satzvorlage — über „Mit dem Kostenkatalog abgleichen…" entstehen daraus Positionen.</value>
   </data>
   <data name="BK_KOSTEN_ABGLEICH_KURZTEXT" xml:space="preserve">
     <value>Mit dem Kostenkatalog abgleichen…</value>
@@ -28578,32 +28575,14 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_KBROW_GERAETEKOSTEN_ERL" xml:space="preserve">
     <value>Die Gerätekosten in Euro aus der Satzvorlage dieses Katalogsatzes — nur Anzeige; gepflegt werden sie in der Kostenverwaltung.</value>
   </data>
-  <data name="KI_DLG_KBROW_INVEST_ERL" xml:space="preserve">
-    <value>Die Investitionskosten des Geräts laut Katalog in Euro.</value>
-  </data>
   <data name="KI_DLG_KBROW_RAUMBEDARF_ERL" xml:space="preserve">
     <value>Der Platzbedarf des Geräts im Aufstellraum in Kubikmetern.</value>
-  </data>
-  <data name="KI_DLG_KBROW_WARTUNG_ERL" xml:space="preserve">
-    <value>Die Wartungskosten des Kessels; worauf sie sich beziehen, sagt das Feld „Einheit“.</value>
-  </data>
-  <data name="KI_DLG_KBROW_WARTUNG_EINHEIT_ERL" xml:space="preserve">
-    <value>Die Bezugsgröße der Wartungskosten, wie sie im Katalog steht (freier Text).</value>
   </data>
   <data name="KI_DLG_KBROW_NUTZUNGSDAUER_ERL" xml:space="preserve">
     <value>Die Nutzungsdauer des Geräts laut Katalog in Jahren — Gerätedaten, nicht rechenwirksam; maßgeblich ist die Nutzungsdauertabelle (Nutzungsdauern (AfA)).</value>
   </data>
   <data name="KI_DLG_KBROW_EMISSION_ERL" xml:space="preserve">
     <value>Die Herstellerangabe zum Ausstoß von {0} je MWh; gepflegt wird sie hier, gerechnet wird mit dem Emissionskatalog des Energieträgers.</value>
-  </data>
-  <data name="KI_DLG_KBROW_KOSTENPOSTEN_ERL" xml:space="preserve">
-    <value>Der Kostenposten „{0}“ des Moduls in Euro; die fünf Posten zusammen ergeben die Investition, aus der die Investition je kWel gerechnet wird.</value>
-  </data>
-  <data name="KI_DLG_KBROW_INVEST_KWEL_ERL" xml:space="preserve">
-    <value>Die Investition je Kilowatt elektrischer Leistung; sie wird aus den fünf Kostenposten gerechnet und ist deshalb nur lesbar.</value>
-  </data>
-  <data name="KI_DLG_KBROW_WARTUNG_KWHEL_ERL" xml:space="preserve">
-    <value>Die Wartungskosten je erzeugter Kilowattstunde Strom in Euro.</value>
   </data>
   <data name="KI_DLG_KBROW_FELD_ERL" xml:space="preserve">
     <value>Der Katalogwert „{0}“ des gewählten Satzes.</value>
@@ -46069,9 +46048,6 @@ Chart</value>
   <data name="KM_LBL_KALTWASSER_MIN" xml:space="preserve">
     <value>Kleinster Kaltwasservorlauf</value>
   </data>
-  <data name="KM_LBL_MODULKOSTEN" xml:space="preserve">
-    <value>Gerätepreis</value>
-  </data>
   <data name="KM_RUECKKUEHLART_KEINE" xml:space="preserve">
     <value>(keine Angabe)</value>
   </data>
@@ -46209,9 +46185,6 @@ Chart</value>
   </data>
   <data name="KI_DLG_KM_KALTWASSER_MIN_ERL" xml:space="preserve">
     <value>Kleinster zulässiger Kaltwasservorlauf in °C.</value>
-  </data>
-  <data name="KI_DLG_KM_MODULKOSTEN_ERL" xml:space="preserve">
-    <value>Gerätepreis in Euro; nicht negativ.</value>
   </data>
   <data name="KI_DLG_KM_RUECKKUEHLTEMPERATUR_ERL" xml:space="preserve">
     <value>Eintrittstemperatur des Rückkühlmediums im Kennlinienpunkt in °C (luftgekühlt: Außenluft).</value>
@@ -51931,7 +51904,7 @@ Chart</value>
     <value>{0} Stränge</value>
   </data>
   <data name="PVD_RUECK_BLEIBT" xml:space="preserve">
-    <value>Im Projekt bleiben: Stränge und Wechselrichterzuordnung, Neigung, Azimut, Anzahl Module, Ertragsmodell und Energieträger der Anlage. Alle Modulwerte samt den Temperaturkoeffizienten und den Modulkosten gehen mit.</value>
+    <value>Im Projekt bleiben: Stränge und Wechselrichterzuordnung, Neigung, Azimut, Anzahl Module, Ertragsmodell und Energieträger der Anlage. Alle Modulwerte samt den Temperaturkoeffizienten gehen mit.</value>
   </data>
   <data name="CHART_TITEL_SOLARERTRAG_JAHRESGANGLINIE" xml:space="preserve">
     <value>Solarertrag Jahresganglinie</value>

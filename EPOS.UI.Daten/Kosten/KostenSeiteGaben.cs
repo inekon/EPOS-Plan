@@ -564,16 +564,16 @@ namespace WindowsFormsApplication1
                         z.Art = ZeilenArt.OhnePosition;
                         z.Kurztext = string.Format(
                             MyResource.Resource.BK_KOSTEN_OHNE_POSITION_HINT, a.Komponente);
-                        // KB-3: Statt "-" steht in der leeren Wertzelle, DASS Katalogkosten
+                        // KB-3: Statt "-" steht in der leeren Wertzelle, DASS eine Satzvorlage
                         // vorliegen; die Zahl entsteht erst mit dem Abgleich.
                         if (z.Abgleichbar)
                         {
-                            string hinweis = T("BK_KOSTEN_KATALOGKOSTEN", "Katalogkosten vorhanden");
+                            string hinweis = T("BK_KOSTEN_KATALOGKOSTEN", "Satzvorlage vorhanden");
                             if (!hatI) z.Summe = hinweis;
                             if (!hatB) z.Betrieb = hinweis;
                             z.Kurztext = string.Format(
                                 T("BK_KOSTEN_KATALOGKOSTEN_HINT",
-                                  "„{0}“ führt keine Kostenposition, der Katalogsatz des Geräts aber Kosten — über „Mit dem Kostenkatalog abgleichen…“ entstehen daraus Positionen."),
+                                  "„{0}“ führt keine Kostenposition, der Katalogsatz des Geräts aber eine Satzvorlage — über „Mit dem Kostenkatalog abgleichen…“ entstehen daraus Positionen."),
                                 a.Komponente);
                         }
                         if (!rotGemeldet.Contains(a.Komponente))

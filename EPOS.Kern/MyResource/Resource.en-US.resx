@@ -680,9 +680,6 @@
   <data name="KBROW_LBL_GERAETEKOSTEN" xml:space="preserve">
     <value>Device cost:</value>
   </data>
-  <data name="KBROW_LBL_INVEST" xml:space="preserve">
-    <value>Investment costs:</value>
-  </data>
   <data name="KBROW_LBL_KOLLEKTOR" xml:space="preserve">
     <value>Collector:</value>
   </data>
@@ -6598,7 +6595,7 @@ Depending on the project size this takes several minutes. Continue?</value>
     <value>Not part of the chiller trade and left unchanged: the cascade of the project, a cold storage tank and the cooling sequence of the other cooling generators — the rank of the transferred machines comes from the source. Please check the cooling sequence in the cooling section.</value>
   </data>
   <data name="KOSTEN_PLANWERT_BASIS_MODUL" xml:space="preserve">
-    <value>Module price</value>
+    <value>Unit price</value>
   </data>
   <data name="KOSTEN_PLANWERT_BASIS_SPEZ" xml:space="preserve">
     <value>specific price × size</value>
@@ -6631,7 +6628,7 @@ Depending on the project size this takes several minutes. Continue?</value>
     <value>Operating cost defaults are available only after a simulation run.</value>
   </data>
   <data name="KOSTEN_BETRIEB_OHNE_WARTUNGSFELD" xml:space="preserve">
-    <value>No maintenance data is stored for this trade — no default value.</value>
+    <value>No operating rate template of this trade holds a maintenance rate — no default value.</value>
   </data>
   <data name="KOSTEN_BETRIEB_OHNE_MENGE" xml:space="preserve">
     <value>The simulation run reports no annual quantity for this trade — no default value.</value>
@@ -6640,13 +6637,13 @@ Depending on the project size this takes several minutes. Continue?</value>
     <value>Maintenance rates cannot be matched unambiguously to the modules of the run — no default value.</value>
   </data>
   <data name="KOSTEN_BETRIEB_EINHEIT_GEMISCHT" xml:space="preserve">
-    <value>The boilers of this project use different units for their maintenance costs — no default value.</value>
+    <value>The operating rate templates of the boilers of this project rate maintenance in different units — no default value.</value>
   </data>
   <data name="KOSTEN_BETRIEB_OHNE_INVESTITION" xml:space="preserve">
     <value>The maintenance costs are given as a share of the investment, but no investment item has been recorded yet — no default value.</value>
   </data>
   <data name="KOSTEN_BETRIEB_HERL_KESSEL_JAHR" xml:space="preserve">
-    <value>Default: {0} €/a — fixed annual amount from the boiler data.</value>
+    <value>Default: {0} €/a — fixed annual amount from the operating rate template of the boiler.</value>
   </data>
   <data name="KOSTEN_BETRIEB_HERL_KESSEL_ARBEIT" xml:space="preserve">
     <value>Default: {0} €/kWh × {1} kWh of heat from the run of {2}.</value>
@@ -6849,10 +6846,10 @@ Add the missing ones and set the differing ones to the catalogue value?</value>
     <value>At least one item could not be written; the reconciliation is incomplete.</value>
   </data>
   <data name="BK_KOSTEN_KATALOGKOSTEN" xml:space="preserve">
-    <value>catalogue costs available</value>
+    <value>rate template available</value>
   </data>
   <data name="BK_KOSTEN_KATALOGKOSTEN_HINT" xml:space="preserve">
-    <value>“{0}” carries no cost item, but the catalogue record of the device does carry costs — “Reconcile with the cost catalogue…” turns them into items.</value>
+    <value>“{0}” carries no cost item, but the catalogue record of the device does carry a rate template — “Reconcile with the cost catalogue…” turns it into items.</value>
   </data>
   <data name="BK_KOSTEN_ABGLEICH_KURZTEXT" xml:space="preserve">
     <value>Reconcile with the cost catalogue…</value>
@@ -28571,32 +28568,14 @@ Do you want to allow this?</value>
   <data name="KI_DLG_KBROW_GERAETEKOSTEN_ERL" xml:space="preserve">
     <value>The device cost in euros taken from this catalogue record's cost template — display only; it is maintained in the cost management.</value>
   </data>
-  <data name="KI_DLG_KBROW_INVEST_ERL" xml:space="preserve">
-    <value>The investment cost of the unit according to the catalogue, in euros.</value>
-  </data>
   <data name="KI_DLG_KBROW_RAUMBEDARF_ERL" xml:space="preserve">
     <value>The space the unit needs in the installation room, in cubic metres.</value>
-  </data>
-  <data name="KI_DLG_KBROW_WARTUNG_ERL" xml:space="preserve">
-    <value>The maintenance costs of the boiler; the field “Unit” states what they refer to.</value>
-  </data>
-  <data name="KI_DLG_KBROW_WARTUNG_EINHEIT_ERL" xml:space="preserve">
-    <value>What the maintenance costs refer to, as stated in the catalogue (free text).</value>
   </data>
   <data name="KI_DLG_KBROW_NUTZUNGSDAUER_ERL" xml:space="preserve">
     <value>The service life of the unit according to the catalogue, in years — device data, not used in the calculation; the service life table (Service lives (depreciation)) governs.</value>
   </data>
   <data name="KI_DLG_KBROW_EMISSION_ERL" xml:space="preserve">
     <value>The manufacturer’s figure for the emission of {0} per MWh; it is maintained here, calculations use the emission catalogue of the energy carrier.</value>
-  </data>
-  <data name="KI_DLG_KBROW_KOSTENPOSTEN_ERL" xml:space="preserve">
-    <value>The cost item “{0}” of the module in euros; the five items together make up the investment from which the investment per kWel is calculated.</value>
-  </data>
-  <data name="KI_DLG_KBROW_INVEST_KWEL_ERL" xml:space="preserve">
-    <value>The investment per kilowatt of electrical output; it is calculated from the five cost items and is therefore read-only.</value>
-  </data>
-  <data name="KI_DLG_KBROW_WARTUNG_KWHEL_ERL" xml:space="preserve">
-    <value>The maintenance costs per kilowatt-hour of electricity generated, in euros.</value>
   </data>
   <data name="KI_DLG_KBROW_FELD_ERL" xml:space="preserve">
     <value>The catalogue value “{0}” of the selected record.</value>
@@ -46062,9 +46041,6 @@ chart</value>
   <data name="KM_LBL_KALTWASSER_MIN" xml:space="preserve">
     <value>Lowest chilled water supply</value>
   </data>
-  <data name="KM_LBL_MODULKOSTEN" xml:space="preserve">
-    <value>Unit price</value>
-  </data>
   <data name="KM_RUECKKUEHLART_KEINE" xml:space="preserve">
     <value>(not specified)</value>
   </data>
@@ -46202,9 +46178,6 @@ chart</value>
   </data>
   <data name="KI_DLG_KM_KALTWASSER_MIN_ERL" xml:space="preserve">
     <value>Lowest permissible chilled water supply in °C.</value>
-  </data>
-  <data name="KI_DLG_KM_MODULKOSTEN_ERL" xml:space="preserve">
-    <value>Unit price in euros; not negative.</value>
   </data>
   <data name="KI_DLG_KM_RUECKKUEHLTEMPERATUR_ERL" xml:space="preserve">
     <value>Inlet temperature of the heat rejection medium at the curve point in °C (air-cooled: outdoor air).</value>
@@ -51924,7 +51897,7 @@ chart</value>
     <value>{0} strings</value>
   </data>
   <data name="PVD_RUECK_BLEIBT" xml:space="preserve">
-    <value>Remaining in the project: strings and inverter assignment, tilt, azimuth, number of modules, yield model and energy carrier of the system. All module values including the temperature coefficients and the module costs are transferred.</value>
+    <value>Remaining in the project: strings and inverter assignment, tilt, azimuth, number of modules, yield model and energy carrier of the system. All module values including the temperature coefficients are transferred.</value>
   </data>
   <data name="CHART_TITEL_SOLARERTRAG_JAHRESGANGLINIE" xml:space="preserve">
     <value>Solar yield, annual profile</value>

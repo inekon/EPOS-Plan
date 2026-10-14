@@ -12743,7 +12743,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogkosten vorhanden ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satzvorlage vorhanden ähnelt.
         /// </summary>
         public static string BK_KOSTEN_KATALOGKOSTEN {
             get {
@@ -12752,7 +12752,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}&quot; führt keine Kostenposition, der Katalogsatz des Geräts aber Kosten — über „Mit dem Kostenkatalog abgleichen…&quot; entstehen daraus Positionen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}&quot; führt keine Kostenposition, der Katalogsatz des Geräts aber eine Satzvorlage — über „Mit dem Kostenkatalog abgleichen…&quot; entstehen daraus Positionen. ähnelt.
         /// </summary>
         public static string BK_KOSTEN_KATALOGKOSTEN_HINT {
             get {
@@ -56132,15 +56132,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten: ähnelt.
-        /// </summary>
-        public static string KBROW_LBL_INVEST {
-            get {
-                return ResourceManager.GetString("KBROW_LBL_INVEST", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kollektor: ähnelt.
         /// </summary>
         public static string KBROW_LBL_KOLLEKTOR {
@@ -66163,33 +66154,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Investitionskosten des Geräts laut Katalog in Euro. ähnelt.
-        /// </summary>
-        public static string KI_DLG_KBROW_INVEST_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_KBROW_INVEST_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Investition je Kilowatt elektrischer Leistung; sie wird aus den fünf Kostenposten gerechnet und ist deshalb nur lesbar. ähnelt.
-        /// </summary>
-        public static string KI_DLG_KBROW_INVEST_KWEL_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_KBROW_INVEST_KWEL_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kostenposten „{0}“ des Moduls in Euro; die fünf Posten zusammen ergeben die Investition, aus der die Investition je kWel gerechnet wird. ähnelt.
-        /// </summary>
-        public static string KI_DLG_KBROW_KOSTENPOSTEN_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_KBROW_KOSTENPOSTEN_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diese Verwaltung ist nur zum Ansehen geöffnet; Werte lassen sich hier nicht ändern. ähnelt.
         /// </summary>
         public static string KI_DLG_KBROW_NURLESEN {
@@ -66231,33 +66195,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_KBROW_SATZ_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_KBROW_SATZ_NAME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bezugsgröße der Wartungskosten, wie sie im Katalog steht (freier Text). ähnelt.
-        /// </summary>
-        public static string KI_DLG_KBROW_WARTUNG_EINHEIT_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_KBROW_WARTUNG_EINHEIT_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wartungskosten des Kessels; worauf sie sich beziehen, sagt das Feld „Einheit“. ähnelt.
-        /// </summary>
-        public static string KI_DLG_KBROW_WARTUNG_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_KBROW_WARTUNG_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wartungskosten je erzeugter Kilowattstunde Strom in Euro. ähnelt.
-        /// </summary>
-        public static string KI_DLG_KBROW_WARTUNG_KWHEL_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_KBROW_WARTUNG_KWHEL_ERL", resourceCulture);
             }
         }
         
@@ -66780,15 +66717,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_KM_MINDESTTEILLAST_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_KM_MINDESTTEILLAST_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätepreis in Euro; nicht negativ. ähnelt.
-        /// </summary>
-        public static string KI_DLG_KM_MODULKOSTEN_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_KM_MODULKOSTEN_ERL", resourceCulture);
             }
         }
         
@@ -84729,15 +84657,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätepreis ähnelt.
-        /// </summary>
-        public static string KM_LBL_MODULKOSTEN {
-            get {
-                return ResourceManager.GetString("KM_LBL_MODULKOSTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nennkälteleistung ähnelt.
         /// </summary>
         public static string KM_LBL_NENNKAELTELEISTUNG {
@@ -91016,7 +90935,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kessel dieses Projekts führen unterschiedliche Einheiten für die Wartungskosten — keine Vorbelegung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Betriebs-Satzvorlagen der Kessel dieses Projekts bemessen die Wartung unterschiedlich — keine Vorbelegung. ähnelt.
         /// </summary>
         public static string KOSTEN_BETRIEB_EINHEIT_GEMISCHT {
             get {
@@ -91043,7 +90962,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt: {0} €/a — fester Jahresbetrag aus der Kesseltechnik. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt: {0} €/a — fester Jahresbetrag aus der Betriebs-Satzvorlage des Kessels. ähnelt.
         /// </summary>
         public static string KOSTEN_BETRIEB_HERL_KESSEL_JAHR {
             get {
@@ -91097,7 +91016,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Gewerk sind keine Wartungsangaben hinterlegt — keine Vorbelegung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Gewerk führt keine Betriebs-Satzvorlage einen Wartungssatz — keine Vorbelegung. ähnelt.
         /// </summary>
         public static string KOSTEN_BETRIEB_OHNE_WARTUNGSFELD {
             get {
@@ -91205,7 +91124,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Modulpreis ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stückpreis ähnelt.
         /// </summary>
         public static string KOSTEN_PLANWERT_BASIS_MODUL {
             get {
@@ -105985,7 +105904,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Stränge und Wechselrichterzuordnung, Neigung, Azimut, Anzahl Module, Ertragsmodell und Energieträger der Anlage. Alle Modulwerte samt den Temperaturkoeffizienten und den Modulkosten gehen mit. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Stränge und Wechselrichterzuordnung, Neigung, Azimut, Anzahl Module, Ertragsmodell und Energieträger der Anlage. Alle Modulwerte samt den Temperaturkoeffizienten gehen mit. ähnelt.
         /// </summary>
         public static string PVD_RUECK_BLEIBT {
             get {
