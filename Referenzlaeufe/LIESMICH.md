@@ -1327,6 +1327,19 @@ sechsunddreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > [`Skripte/referenzprojekte_zapfprofil_optionen.cs`](Skripte/referenzprojekte_zapfprofil_optionen.cs) die Projekte 1066 bis
 > 1071 (Basis R53, Abschnitt „Die Referenzprojekte 1066 bis 1071“). Die Testdatenbank steht auf **224** (`integrity_check` ok,
 > `foreign_key_check` leer): **108 412 928 Byte, LFS-SHA-256 `6ef7aa68317c37e1dd34e726b5ee7cce3debc8edd9061686ccb0a8993fc4260f`**.
+> **Nachtrag — Schema 226 und 227 (KB-3 Saat der Katalogkosten-Satzvorlagen, KB-2 Brennstoffpreise in der Trägerkarte,
+> 13.10.2026, hängen an 225 `ZonenLastfelderSchema`), Basis R53 unverändert.** `KatalogkostenSaatSchema` (226 =
+> `ZonenLastfelderSchema.SCHRITT + 1`) legt `ID_KostenVorlage` und `ID_KostenVorlageInvestition` an den acht Projektkopien mit
+> Kosten an und sät je Satz mit Kosten und ohne Verweis eine Satzvorlage je Art samt Position; `BrennstoffpreiseTraegerkarteSchema`
+> (227 = `KatalogkostenSaatSchema.SCHRITT + 1`) überträgt leere Trägerpreise aus dem Katalogbrennstoff nach
+> `energy_carrier.price_*` und entfernt `Standard_Arbeitspreis`, `Standard_Grundpreis` und `Standard_Leistungspreis` an
+> `Tab_Brennstoff(_Stamm)`. Gehoben aus der Fassung 225 (107 827 200 Byte) mit `Werkzeuge/Testdatenbankschema`; der
+> Inhaltsvergleich aller Tabellen zeigt nur die sechzehn neuen Verweisspalten der Projektkopien, **176 Satzvorlagen mit 176
+> Positionen** samt ihren Verweisen an den Katalog- und Projektsätzen (sieben `_STAMM`-Kataloge), den Wegfall der sechs
+> Preisspalten (0 Preise übertragen, `energy_carrier` unverändert) und `Tab_Applikation.SchemaVersion`. Die Testdatenbank steht
+> auf **227** (`integrity_check` ok, `foreign_key_check` leer): **107 864 064 Byte, LFS-SHA-256
+> `fb42e2f3b6cf1a010ec3bac6bb654523e5d9701c3bd5a57fa676b03052911f46`**. Die achtzehn Projekte der CI-Auswahl rechnen gegen R53
+> GESAMT PASS.
 
 ### Die Vorgängerbasis R52 (Vorheizen)
 

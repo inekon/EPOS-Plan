@@ -23,7 +23,8 @@ namespace EPOS.Kern.Tests
         public void Die_Nummer_haengt_an_der_Kette_ist_das_Ziel_und_die_Paketanhebung_fuehrt_Ddl()
         {
             Assert.Equal(TwwZonenferienSchema.SCHRITT + 1, ZonenLastfelderSchema.SCHRITT);
-            Assert.Equal(ZonenLastfelderSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= ZonenLastfelderSchema.SCHRITT,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter " + ZonenLastfelderSchema.SCHRITT + ".");
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == ZonenLastfelderSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);
             Assert.Null(s.Umformung);

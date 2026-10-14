@@ -3321,9 +3321,6 @@
         internal static string PbrsNoxName => MyResource.Resource.PBRS_SP_NOX;
         internal static string PbrsStaubName => MyResource.Resource.PBRS_SP_STAUB;
         internal static string PbrsPeName => MyResource.Resource.PBRS_SP_PE;
-        internal static string PbrsGrundpreisName => MyResource.Resource.PBRS_SP_GRUNDPREIS;
-        internal static string PbrsArbeitspreisName => MyResource.Resource.PBRS_SP_ARBEITSPREIS;
-        internal static string PbrsLeistungspreisName => MyResource.Resource.PBRS_SP_LEISTUNGSPREIS;
 
         internal static string MaskeKatalogDubletten => MyResource.Resource.KI_DLG_MASKE_DUBL;
         internal static string DublKatalogName => MyResource.Resource.KI_DLG_DUBL_KATALOG_NAME;

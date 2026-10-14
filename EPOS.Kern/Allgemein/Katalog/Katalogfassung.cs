@@ -354,11 +354,16 @@ namespace WindowsFormsApplication1
                     Nebenspalten = new[] { BauteilkatalogSchema.SPALTE_ID_ABSCHNITT }
                 })
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_BAUTEILAUFBAU" },
+            // BrennstoffpreiseTraegerkarteSchema (Schritt 227, KB-2): Standard_Grundpreis, Standard_Arbeitspreis und
+            // Standard_Leistungspreis sind fort - die Preise stehen in der Karte des Energietraegers. Sie trugen je
+            // eine Zeile zur Pruefsumme bei, auch mit dem Wert 0: Die Pruefsumme jedes Brennstoffs aendert sich
+            // deshalb, und der Schritt bildet sie fuer jeden unveraenderten Satz neu. PreisEinheit bleibt
+            // (Katalogtext, kein Preis).
             new Katalogtabelle("Tab_Brennstoff_Stamm", "BRS",
                 new[]
                 {
                     "ID_Kategorie", "Bezeichner", "Einheit", "PreisEinheit", "Hi", "Hs", "CO2", "SO2", "NOx", "Staub",
-                    "PE_Faktor", "Standard_Grundpreis", "Standard_Arbeitspreis", "Standard_Leistungspreis"
+                    "PE_Faktor"
                 })
             {
                 Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_BRENNSTOFF",

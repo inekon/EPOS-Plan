@@ -92,24 +92,6 @@ public sealed class ProjektBrennstoffeKiSicht
         set => _setzen(ProjektBrennstoffFelder.Pe, value);
     }
 
-    /// <summary>Der Grundpreis der Zeile in Bearbeitung.</summary>
-    public double? Grundpreis
-    {
-        get => _wert(ProjektBrennstoffFelder.Grundpreis);
-        set => _setzen(ProjektBrennstoffFelder.Grundpreis, value);
-    }
-
-    /// <summary>Der Arbeitspreis der Zeile in Bearbeitung.</summary>
-    public double? Arbeitspreis
-    {
-        get => _wert(ProjektBrennstoffFelder.Arbeitspreis);
-        set => _setzen(ProjektBrennstoffFelder.Arbeitspreis, value);
-    }
-
-    /// <summary>Der Leistungspreis der Zeile in Bearbeitung.</summary>
-    public double? Leistungspreis
-    {
-        get => _wert(ProjektBrennstoffFelder.Leistungspreis);
-        set => _setzen(ProjektBrennstoffFelder.Leistungspreis, value);
-    }
+    // Welle KB-2: Arbeits-, Grund- und Leistungspreis stehen in der Karte des Energietraegers
+    // (EnergietraegerKiSicht), nicht mehr am Brennstoff.
 }

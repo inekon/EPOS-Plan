@@ -1061,7 +1061,21 @@ namespace WindowsFormsApplication1
         /// Danach, mit den LASTFELDERN DER ZONE (DA-2, E138 F5), steht das Ziel auf <see cref="ZonenLastfelderSchema.SCHRITT"/>:
         /// <c>Aussenluft_Person</c>, <c>Licht_W_m2</c> und <c>Personen_Waerme_W</c> an <c>Tab_Zone</c> und <c>Tab_Zone_STAMM</c>
         /// (<see cref="ZonenLastfelderSchema"/>). <b>Ergebnisneutral:</b> Der Rechenweg liest keine der drei Spalten.
-        public const int Zielversion = ZonenLastfelderSchema.SCHRITT;
+        /// Danach, mit der SAAT DER KATALOGKOSTEN-SATZVORLAGEN (KB-3), steht das Ziel auf
+        /// <see cref="KatalogkostenSaatSchema.SCHRITT"/>: die zwei Verweise
+        /// <c>ID_KostenVorlage</c>/<c>ID_KostenVorlageInvestition</c> an den acht Projektkopien mit Kosten und je
+        /// Katalogsatz mit Kosten genau eine Satzvorlage je Art (<see cref="KatalogkostenSaatSchema"/>).
+        /// <b>Ergebnisneutral:</b> Gerechnet wird aus <c>Tab_ProjektWerte</c>; eine Satzvorlage wirkt erst beim
+        /// Übernehmen oder Abgleichen.
+        /// Danach, mit den BRENNSTOFFPREISEN IN DER TRÄGERKARTE (KB-2), steht das Ziel auf
+        /// <see cref="BrennstoffpreiseTraegerkarteSchema.SCHRITT"/>: <c>Standard_Arbeitspreis</c>,
+        /// <c>Standard_Grundpreis</c> und <c>Standard_Leistungspreis</c> gehen an
+        /// <c>energy_carrier.price_work</c>/<c>price_base</c>/<c>price_power</c> über und fallen an
+        /// <c>Tab_Brennstoff_Stamm</c> und <c>Tab_Brennstoff</c> weg
+        /// (<see cref="BrennstoffpreiseTraegerkarteSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg liest die
+        /// drei Spalten; sie waren allein Saat der Energieträger-Variante. <b>Neue Katalogfassung:</b> Die
+        /// Prüfsumme jedes Brennstoffs ändert sich, der Schritt bildet sie für unveränderte Sätze neu.
+        public const int Zielversion = BrennstoffpreiseTraegerkarteSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

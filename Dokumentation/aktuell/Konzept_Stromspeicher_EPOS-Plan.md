@@ -428,7 +428,7 @@ eintragen — davon hängt die Wirtschaftlichkeit der Netzladung entscheidend ab
 
 **Leistungspreis L_P — eigenes Feld (Entscheidung, gestützt durch die Code-Prüfung).** Ein Leistungspreis
 existiert bereits (`energy_price.leistungspreis`, `energy_project_settings.custom_price_power`, Schalter
-`pricing_model.has_powerprice`, Default aus `Tab_Brennstoff_Stamm.Standard_Leistungspreis`) — **aber mit
+`pricing_model.has_powerprice`, Vorbelegung aus `energy_carrier.price_power` samt `price_power_modus`) — **aber mit
 unklarer Einheit**: Das UI-Label wird als `€/{ToUnitCode}` gesetzt, für Strom also „€/kWh", während die
 Auslese-Eigenschaft `LeistungspreisEurYear` heißt. Faktisch ist es ein freies Zahlenfeld ohne durchgesetzte
 Einheitensemantik. Das Konzept deutet dieses Feld **nicht** um, sondern führt `L_P` als eigenes, explizit in

@@ -36,9 +36,11 @@ namespace EPOS.Kern.Tests
         /// <summary>Der Träger „Erdgas E" von 1030.</summary>
         private const int TRAEGER_1030 = 63;
 
+        // Welle KB-2 (Schemaschritt BrennstoffpreiseTraegerkarteSchema.SCHRITT): Standard_Grundpreis,
+        // Standard_Arbeitspreis und Standard_Leistungspreis sind fort - die Preise stehen in der Karte des
+        // Energietraegers. PreisEinheit bleibt (Katalogtext, kein Preis).
         private const string FACHSPALTEN =
-            "ID_Kategorie, Bezeichner, Einheit, PreisEinheit, Hi, Hs, CO2, SO2, NOx, Staub, PE_Faktor, " +
-            "Standard_Grundpreis, Standard_Arbeitspreis, Standard_Leistungspreis";
+            "ID_Kategorie, Bezeichner, Einheit, PreisEinheit, Hi, Hs, CO2, SO2, NOx, Staub, PE_Faktor";
 
         // =====================================================================
         //  Schritt, Register, Schema
@@ -266,10 +268,7 @@ namespace EPOS.Kern.Tests
             DataRepository.ExecuteNonQuery(
                 "UPDATE Tab_Brennstoff_Stamm SET Bezeichner = Bezeichner || ' neu', Hi = Hi * 1.5 + 1, Hs = Hs * 1.5 + 1, " +
                 "CO2 = COALESCE(CO2, 0) * 2 + 7, SO2 = COALESCE(SO2, 0) * 2 + 7, NOx = COALESCE(NOx, 0) * 2 + 7, " +
-                "Staub = COALESCE(Staub, 0) * 2 + 7, PE_Faktor = COALESCE(PE_Faktor, 0) + 1, " +
-                "Standard_Grundpreis = COALESCE(Standard_Grundpreis, 0) + 50, " +
-                "Standard_Arbeitspreis = COALESCE(Standard_Arbeitspreis, 0) + 0.5, " +
-                "Standard_Leistungspreis = COALESCE(Standard_Leistungspreis, 0) + 5");
+                "Staub = COALESCE(Staub, 0) * 2 + 7, PE_Faktor = COALESCE(PE_Faktor, 0) + 1");
 
             foreach (int p in new[] { 1030, 1017 }) Assert.Equal(vorher[p], Rechne(p));
         }

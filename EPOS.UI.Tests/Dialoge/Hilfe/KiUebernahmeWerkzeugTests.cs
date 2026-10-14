@@ -175,8 +175,7 @@ public sealed class KiUebernahmeWerkzeugTests : EposBunitContext, IDisposable
         [ProjektBrennstoffFelder.Hi] = hi, [ProjektBrennstoffFelder.Hs] = hi * 1.1,
         [ProjektBrennstoffFelder.Co2] = co2, [ProjektBrennstoffFelder.So2] = 0,
         [ProjektBrennstoffFelder.Nox] = 0, [ProjektBrennstoffFelder.Staub] = null,
-        [ProjektBrennstoffFelder.Pe] = 1.1, [ProjektBrennstoffFelder.Grundpreis] = 0,
-        [ProjektBrennstoffFelder.Arbeitspreis] = 0, [ProjektBrennstoffFelder.Leistungspreis] = 0
+        [ProjektBrennstoffFelder.Pe] = 1.1
     };
 
     private static readonly ProjektBrennstoffeStand BRENNSTOFFE = new("Musterprojekt",

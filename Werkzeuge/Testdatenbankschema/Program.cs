@@ -3627,6 +3627,51 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrDa2 + " - vollstaendig: " + ZonenLastfelderSchema.Vollstaendig() +
                                   " (erwartet True).");
             }
+
+            // ---- Schritt KatalogkostenSaatSchema.SCHRITT (KB-3): die zwei Verweise an den acht Projektkopien mit
+            //      Kosten, dazu je Satz mit mindestens einem Kostenwert > 0 und ohne Verweis genau eine Satzvorlage
+            //      je Art samt Positionen. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_KatalogkostenSaat.
+            //      Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: gerechnet wird aus Tab_ProjektWerte; eine Satzvorlage wirkt erst beim
+            //      Uebernehmen oder Abgleichen.
+            string nrKb3 = KatalogkostenSaatSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKb3 + " - Saat der Katalogkosten-Satzvorlagen: " +
+                              (KatalogkostenSaatSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKb3 = new List<string>();
+                angelegt += KatalogkostenSaatSchema.Ausfuehren(berichtKb3);
+                foreach (string zeile in berichtKb3)
+                    Console.WriteLine("Schritt " + nrKb3 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKb3 + " - vollstaendig: " + KatalogkostenSaatSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+            // ---- Schritt BrennstoffpreiseTraegerkarteSchema.SCHRITT (KB-2): die drei Standardpreise des Brennstoffs
+            //      gehen in energy_carrier.price_work/price_base/price_power und fallen danach an
+            //      Tab_Brennstoff_Stamm und Tab_Brennstoff weg. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_BrennstoffpreiseTraegerkarte. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: kein Rechenweg liest die drei Spalten (Saat der Energietraeger-Variante);
+            //      in der Testdatenbank stehen sie durchweg auf 0, der Uebertrag ist leer.
+            //      NEUE KATALOGFASSUNG: Die Pruefsumme jedes Brennstoffs aendert sich; der Schritt bildet sie fuer jeden
+            //      Satz neu, dessen Summe vorher stimmte.
+            string nrKb2 = BrennstoffpreiseTraegerkarteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKb2 + " - Brennstoffpreise in die Traegerkarte: " +
+                              (BrennstoffpreiseTraegerkarteSchema.Vollstaendig() ? "steht bereits" : "offen") +
+                              " (" + BrennstoffpreiseTraegerkarteSchema.Uebertragbar() + " Preis(e) zu uebertragen).");
+            if (!trocken)
+            {
+                var berichtKb2 = new List<string>();
+                angelegt += BrennstoffpreiseTraegerkarteSchema.Ausfuehren(berichtKb2);
+                foreach (string zeile in berichtKb2)
+                    Console.WriteLine("Schritt " + nrKb2 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKb2 + " - vollstaendig: " + BrennstoffpreiseTraegerkarteSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
