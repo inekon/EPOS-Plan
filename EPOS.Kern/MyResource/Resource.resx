@@ -56249,6 +56249,18 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="GESETZ_SPERRE_EINHEIT" xml:space="preserve">
     <value>Einheit wählen.</value>
   </data>
+  <data name="MPB_LEISTE_TITEL" xml:space="preserve">
+    <value>Modellprüfung des gespeicherten Gebäudes</value>
+  </data>
+  <data name="MPB_LEISTE_GRUPPE_HINWEIS" xml:space="preserve">
+    <value>{0}: {1} Befunde, {2} Vorschläge – öffnet „Modell prüfen“ auf dieser Gruppe.</value>
+  </data>
+  <data name="ZNB_WOCHE_BILD" xml:space="preserve">
+    <value>Woche der Zone {0} je Größe</value>
+  </data>
+  <data name="ZNB_WOCHE_TITEL" xml:space="preserve">
+    <value>{0} · {1} {2:00}–{3:00} Uhr: {4} {5}</value>
+  </data>
   <data name="BKW_BTN_KALENDER" xml:space="preserve">
     <value>Betriebskalender…</value>
   </data>

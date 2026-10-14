@@ -1,0 +1,47 @@
+﻿@* DIE AMPELLEISTE IM REITER „ZONEN“ (N1, Entwurf Gefuehrter Modellaufbau 2.2): der Rechenstatus und je Pruefgruppe eine
+   Ampel mit der Zahl der Befunde. Ein Klick auf eine Gruppe oeffnet das Ampelblatt „Modell prüfen“ auf dieser Gruppe (der
+   Wirt entscheidet, wie). Zeigt nur, schreibt nichts: der Stand kommt fertig vom Wirt (ModellpruefungWeg.Pruefen der
+   Huelle). Gesperrt mit Grund, solange der Wirt einen nennt (etwa ungespeicherte Zonen). *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using WindowsFormsApplication1
+@using WindowsFormsApplication1.MyResource
+
+@if (Stand is not null)
+{
+    <div class="epos-pruefleiste" role="group" aria-label="@Resource.MPB_LEISTE_TITEL">
+        <span class="epos-pruefleiste-status epos-ampel-@Modellpruefungsblatt.AmpelKlasse(Modellpruefungsblatt.Stufe(Stand.Status))"
+              role="status">@Stand.Statustext</span>
+        @foreach (ModellpruefungGruppenzeile gruppe in Stand.Gruppen)
+        {
+            ModellpruefungGruppenzeile g = gruppe;
+            <button type="button" class="epos-pruefleiste-gruppe" data-gruppe="@((int)g.Gruppe)"
+                    aria-disabled="@(Sperre is null ? null : "true")"
+                    title="@(Sperre ?? Titel(g))" @onclick="() => Klick(g.Gruppe)">
+                <span class="epos-ampel epos-ampel-@Modellpruefungsblatt.AmpelKlasse(g.Ampel)" aria-hidden="true"></span>
+                <span class="epos-pruefleiste-name">@g.Name</span>
+                <span class="epos-pruefleiste-zahl">@g.Anzahl.ToString(System.Globalization.CultureInfo.CurrentCulture)</span>
+            </button>
+        }
+    </div>
+}
+
+@code {
+    /// <summary>Der Prüfstand des gespeicherten Gebäudes; <c>null</c> = keine Leiste.</summary>
+    [Parameter] public ModellpruefungStand? Stand { get; set; }
+
+    /// <summary>Warum ein Klick nichts öffnet (wird gemeldet statt geöffnet); <c>null</c> = frei.</summary>
+    [Parameter] public string? Sperre { get; set; }
+
+    /// <summary>Der Klick auf eine Gruppe — der Wirt öffnet das Ampelblatt auf ihr.</summary>
+    [Parameter] public EventCallback<Pruefgruppe> GruppeOeffnen { get; set; }
+
+    /// <summary>Ein Klick auf eine gesperrte Gruppe: der Wirt meldet den Grund.</summary>
+    [Parameter] public EventCallback<string> Gesperrt { get; set; }
+
+    private Task Klick(Pruefgruppe g)
+        => Sperre is string grund ? Gesperrt.InvokeAsync(grund) : GruppeOeffnen.InvokeAsync(g);
+
+    private static string Titel(ModellpruefungGruppenzeile g)
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.MPB_LEISTE_GRUPPE_HINWEIS, g.Name, g.Anzahl, g.Vorschlaege);
+}

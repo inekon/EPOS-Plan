@@ -537,21 +537,12 @@
         </KindInhalt>
     </Ueberlagerung>
 
-    @* --- Ueberlagerung 6: das Gebaeude im Projekt - Huelle und Zonen (G3) ----- *@
-    <Ueberlagerung Offen="@(_projektGaben is not null)" Titel="@TitelProjekteditor"
-                   Zusatzklasse="epos-ueberlagerung--breit"
-                   Geschlossen="() => ProjekteditorFertig(false)">
-        <KindInhalt>
-            @if (_projektGaben is not null)
-            {
-                <GebaeudeKatalogDialog @attributes="_projektGaben" TitelAnzeigen="false"
-                                       BaustoffzuordnungenGaben="@BaustoffzuordnungenWirt"
-                                       ZonenNutzungGaben="@ZonenNutzungEditorWirt"
-                                       MehrzonenGeschrieben="() => _mehrzonenGeschrieben = true"
-                                       Geschlossen="ProjekteditorFertig" />
-            }
-        </KindInhalt>
-    </Ueberlagerung>
+    @* --- Ueberlagerung 6: das Gebaeude im Projekt - Huelle und Zonen (G3). N1: Steht sie aus dem Sprung „Zone…" des Blatts
+       „Nutzung und Kalender" ueber dem Ampelblatt, zeichnet sie weiter unten (nach dem Blatt), damit sie darueber liegt. *@
+    @if (!_editorOben)
+    {
+        @Projekteditor
+    }
 
     @* --- Ueberlagerung 7: der Gebaeudeexport im Format gbXML (G7a, W3) ----- *@
     <Ueberlagerung Offen="@(_exportGaben is not null)" Titel="@TitelExport"
@@ -613,7 +604,8 @@
                 <Modellpruefungsblatt @ref="_modellpruefungsblatt" Weg="@_modellpruefung" AnsichtSperre="@ModellpruefungAnsichtSperre()"
                                       Simulation="ModellpruefungSimulation" Ansicht="ModellpruefungAnsicht"
                                       AnsichtGruppe="ModellpruefungAnsichtGruppe"
-                                      Bearbeiten="@ModellpruefungBearbeitenWirt" Geaendert="ModellpruefungGeaendert" />
+                                      Bearbeiten="@ModellpruefungBearbeitenWirt" Geaendert="ModellpruefungGeaendert"
+                                      StartGruppe="@_modellpruefungStartGruppe" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -625,10 +617,16 @@
         <KindInhalt>
             @if (_zonenNutzung is not null)
             {
-                <ZonenNutzungsblatt Weg="@_zonenNutzung" Geaendert="ZonenNutzungGeaendert" />
+                <ZonenNutzungsblatt Weg="@_zonenNutzung" ZoneOeffnen="@ModellpruefungZoneWirt" Geaendert="ZonenNutzungGeaendert" />
             }
         </KindInhalt>
     </Ueberlagerung>
+
+    @* --- N1: der Editor aus „Zone…" des Blatts ueber dem Ampelblatt - dieselbe Ueberlagerung 6, nur weiter oben im Stapel. *@
+    @if (_editorOben)
+    {
+        @Projekteditor
+    }
 
     @* --- Ueberlagerung 8: der Waermebedarf mehrerer Gebaeude (GD-6a) - eine Liste je Gebaeude; der Sprung
        oeffnet Ueberlagerung 4 darueber, die Liste bleibt stehen. Keine Datenbank: die Zahlen kommen aus den
@@ -2254,6 +2252,12 @@
     {
         _projektGaben = null;
         _projektZeile = null;
+        _leistenweg = null;
+        if (_editorOben)
+        {
+            _editorOben = false;
+            _modellpruefungsblatt?.Auffrischen();
+        }
         bool mehrzonen = _mehrzonenGeschrieben;
         _mehrzonenGeschrieben = false;
         if (gespeichert && mehrzonen && _gewaehlt is not null && !Wizard) _modellpruefungNachEditor = _gewaehlt;
@@ -2480,6 +2484,97 @@
     {
         _modellpruefung = null;
         _modellpruefungZeile = null;
+        _modellpruefungStartGruppe = null;
+    }
+
+    // =====================================================================
+    //  N1: Ampelleiste im Reiter „Zonen" und Sprung „Zone…" über dem Ampelblatt
+    // =====================================================================
+
+    /// <summary>Die Gruppe, auf der das Ampelblatt aufgeht (Klick in der Leiste des Editors); <c>null</c> = alle zu.</summary>
+    private Pruefgruppe? _modellpruefungStartGruppe;
+
+    /// <summary>Zählt jede Änderung am gespeicherten Gebäude aus Blatt oder Ansicht — der Editor prüft und liest dann neu.</summary>
+    private int _pruefFassung;
+
+    /// <summary>Der Weg der Leiste für den offenen Editor (einmal je Öffnen gebaut).</summary>
+    private ModellpruefungWeg? _leistenweg;
+
+    /// <summary>Steht der Editor über dem Ampelblatt (Sprung „Zone…")?</summary>
+    private bool _editorOben;
+
+    private GebaeudeKatalogDialog? _projekteditor;
+
+    /// <summary>Steht der Editor über dem Ampelblatt? Prüfhilfe für die Tests.</summary>
+    public bool EditorUeberAmpelblatt => _editorOben && _projektGaben is not null;
+
+    /// <summary>Überlagerung 6 — an einer der zwei Stellen des Stapels gezeichnet.</summary>
+    private RenderFragment Projekteditor => __builder =>
+    {
+        <Ueberlagerung Offen="@(_projektGaben is not null)" Titel="@TitelProjekteditor"
+                       Zusatzklasse="epos-ueberlagerung--breit"
+                       Geschlossen="() => ProjekteditorFertig(false)">
+            <KindInhalt>
+                @if (_projektGaben is not null)
+                {
+                    <GebaeudeKatalogDialog @ref="_projekteditor" @attributes="_projektGaben" TitelAnzeigen="false"
+                                           BaustoffzuordnungenGaben="@BaustoffzuordnungenWirt"
+                                           ZonenNutzungGaben="@ZonenNutzungEditorWirt"
+                                           ModellpruefungLesen="@ModellpruefungLeisteWirt"
+                                           PruefgruppeOeffnen="@PruefgruppeWirt" PruefFassung="@_pruefFassung"
+                                           MehrzonenGeschrieben="() => _mehrzonenGeschrieben = true"
+                                           Geschlossen="ProjekteditorFertig" />
+                }
+            </KindInhalt>
+        </Ueberlagerung>
+    };
+
+    /// <summary>Die Leiste des Editors liest die Prüfung des gespeicherten Gebäudes — nur mit Weg, nicht im Assistenten.</summary>
+    private Func<ModellpruefungStand?>? ModellpruefungLeisteWirt
+        => Wizard || ModellpruefungGaben is null || _projektZeile is null || !_projektZeile.HatProjektkopie ? null : LeisteLesen;
+
+    private ModellpruefungStand? LeisteLesen()
+    {
+        if (_projektZeile is not { } z || ModellpruefungGaben is null) return null;
+        _leistenweg ??= ModellpruefungGaben(z);
+        return _leistenweg?.Pruefen();
+    }
+
+    /// <summary>Klick in der Leiste — nicht, solange der Editor schon über dem Ampelblatt steht.</summary>
+    private EventCallback<Pruefgruppe> PruefgruppeWirt
+        => ModellpruefungLeisteWirt is null || _editorOben ? default : EventCallback.Factory.Create<Pruefgruppe>(this, LeisteGruppe);
+
+    private void LeisteGruppe(Pruefgruppe gruppe)
+    {
+        if (_projektZeile is not { } z) return;
+        _modellpruefungStartGruppe = gruppe;
+        ModellpruefungOeffnen(z, still: false);
+    }
+
+    /// <summary>„Zone…" im Blatt über dem Ampelblatt — nicht im Assistenten, nur mit Editor.</summary>
+    private EventCallback<int> ModellpruefungZoneWirt
+        => Wizard || ProjektGaben is null ? default : EventCallback.Factory.Create<int>(this, ModellpruefungZone);
+
+    /// <summary>
+    /// „Zone…" über dem Ampelblatt: Das Blatt schließt. Steht der Editor schon (das Ampelblatt kam aus seiner Leiste), schließt
+    /// auch das Ampelblatt und der Editor öffnet die Zone; sonst geht der Editor über dem Ampelblatt mit der Zone auf.
+    /// </summary>
+    private void ModellpruefungZone(int id)
+    {
+        ZonenNutzungFertig();
+        if (_projektGaben is not null && _projekteditor is not null)
+        {
+            ModellpruefungFertig();
+            _projekteditor.ZoneVonAussenOeffnen(id);
+            return;
+        }
+        if (_modellpruefungZeile is not { } z || ProjektGaben is null) return;
+        IReadOnlyDictionary<string, object>? gaben = ProjektGaben(z);
+        if (gaben is null) { Melden(MeldungProjektkopieFehlt, WarnStufe.Warnung); return; }
+        _projektGaben = new Dictionary<string, object>(gaben) { ["StartZone"] = id };
+        _projektZeile = z;
+        _leistenweg = null;
+        _editorOben = true;
     }
 
     // =====================================================================
@@ -2516,6 +2611,7 @@
 
     private void ZonenNutzungGeaendert()
     {
+        _pruefFassung++;
         if (_modellpruefungZeile is { } z) ZeileAuffrischen?.Invoke(z);
     }
 
@@ -2526,6 +2622,7 @@
     /// <summary>Eine Übernahme oder Rücknahme hat geschrieben: die Kennwerte der Zeile neu lesen.</summary>
     private void ModellpruefungGeaendert()
     {
+        _pruefFassung++;
         if (_modellpruefungZeile is { } z) ZeileAuffrischen?.Invoke(z);
     }
 

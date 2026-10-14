@@ -17,6 +17,8 @@ namespace EPOS.Kern.Tests
         /// <summary>Restdaten beider Formate: gbXML über den Rückfall Weg 2 (Block <c>EPOS:</c> in <c>Description</c>), IFC über
         /// <c>EPOS_Zone</c>/<c>EPOS_Gebaeude</c> — beide Richtungen.</summary>
         DA4 = 4,
+        /// <summary>Nachzug N2 zu DA-4/DA-7: Höchsttemperatur der Zone (B10) über dieselben Restdaten, beide Richtungen.</summary>
+        N2 = 5,
         /// <summary>Kein Element und noch keine Welle im Auftrag (Rückfall nach Konzept 3.3 offen).</summary>
         Offen = 8,
         /// <summary>EPOS führt kein Feld (Konstante, Klimadatensatz oder nicht gerechnet) — es gibt nichts zu übertragen.</summary>
@@ -71,6 +73,7 @@ namespace EPOS.Kern.Tests
         private const Traegerwelle D2 = Traegerwelle.DA2;
         private const Traegerwelle D3 = Traegerwelle.DA3;
         private const Traegerwelle D4 = Traegerwelle.DA4;
+        private const Traegerwelle N2 = Traegerwelle.N2;
         private const Traegerwelle OF = Traegerwelle.Offen;
         private const Traegerwelle KF = Traegerwelle.KeinFeld;
 
@@ -119,7 +122,7 @@ namespace EPOS.Kern.Tests
             new Inventarzeile("B7", D2, null, BE, null, F(ZG("Raumsolltemperatur_Nachtabsenkung"), G("Nachtabsenkung_Beginn"), G("Nachtabsenkung_Ende"))),
             new Inventarzeile("B8", D2, null, D3, null, F(ZG("Raumsolltemperatur_Wochenende", "Raumsolltemperatur_Ferien"), G("Wochenende"))),
             new Inventarzeile("B9", D2, null, D3, null, ZG("Kuehl_Sollwert", "Kuehl_Sollwert_Nacht", "Kuehlung_Aktiv")),
-            new Inventarzeile("B10", OF, RUECKFALL, OF, "kein Standardsatz; EPOS_Zone nicht erweitert", ZG("Maximaleraumtemperatur")),
+            new Inventarzeile("B10", N2, null, N2, null, ZG("Maximaleraumtemperatur")),
             new Inventarzeile("B11", D4, null, D4, null, ZG("Heizleistung_Max", "Kuehlleistung_Max")),
             new Inventarzeile("B12", BE, null, D3, null, F(ZG("Luftwechsel_Infiltration"), G("Luftwechselrate"))),
             new Inventarzeile("B13", D2, null, D3, null, ZG("Luftwechsel_Nutzer")),

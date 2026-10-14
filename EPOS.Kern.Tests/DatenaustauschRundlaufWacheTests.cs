@@ -43,11 +43,11 @@ namespace EPOS.Kern.Tests
             Assert.True(fehler.Count == 0, string.Join(" | ", fehler));
 
             // Die Zählung je Welle (Protokoll DA-7) — eine Änderung der Tafel zeigt sich hier.
-            Assert.Equal("Bestand 26, DA2 19, DA4 9, Offen 12, KeinFeld 5", Zaehlung(z => z.WelleGbxml));
-            Assert.Equal("Bestand 31, DA3 17, DA4 9, Offen 9, KeinFeld 5", Zaehlung(z => z.WelleIfc));
-            Assert.Equal("Standard 45, Eigen 9, NichtUebertragbar 17",
+            Assert.Equal("Bestand 26, DA2 19, DA4 9, N2 1, Offen 11, KeinFeld 5", Zaehlung(z => z.WelleGbxml));
+            Assert.Equal("Bestand 31, DA3 17, DA4 9, N2 1, Offen 8, KeinFeld 5", Zaehlung(z => z.WelleIfc));
+            Assert.Equal("Standard 45, Eigen 10, NichtUebertragbar 16",
                          Zaehlung(z => Datenaustauschinventar.KlasseGbxml(z.Gbxml)));
-            Assert.Equal("Standard 32, Eigen 25, NichtUebertragbar 14",
+            Assert.Equal("Standard 32, Eigen 26, NichtUebertragbar 13",
                          Zaehlung(z => Datenaustauschinventar.KlasseIfc(z.Ifc)));
         }
 
@@ -59,7 +59,7 @@ namespace EPOS.Kern.Tests
         {
             bool getragen = weg != Austauschweg.OhneElement;
             bool traegerwelle = welle == Traegerwelle.Bestand || welle == Traegerwelle.DA2 || welle == Traegerwelle.DA3
-                                || welle == Traegerwelle.DA4;
+                                || welle == Traegerwelle.DA4 || welle == Traegerwelle.N2;
             if (getragen != traegerwelle) fehler.Add(was + ": Weg " + weg + " passt nicht zur Welle " + welle);
             bool ganz = Datenaustauschinventar.Rundlaeufig(weg);
             if (ganz == !string.IsNullOrWhiteSpace(grund))
@@ -135,6 +135,7 @@ namespace EPOS.Kern.Tests
             ["Gebaeude.Luftwechsel_Nutzer"] = "B13 am Gebäude: wie die Zone",
             ["Gebaeude.Heizleistung_Max"] = "B11 trägt DA-4 je Zone (Restdaten); das Gebäudefeld bleibt benannter Verlust",
             ["Gebaeude.Kuehlleistung_Max"] = "B11 trägt DA-4 je Zone (Restdaten); das Gebäudefeld bleibt benannter Verlust",
+            ["Gebaeude.Maximaleraumtemperatur"] = "B10 trägt N2 je Zone (Restdaten); das Gebäudefeld bleibt benannter Verlust",
             ["Gebaeude.Aufheizzeit_Manuell_H"] = "B20 trägt DA-4 je Zone (Vorheizzeit_H); die manuelle Aufheizzeit des Gebäudes bleibt benannter Verlust",
             ["Gebaeude.Interne_Waermegewinne"] = "B17 am Gebäude: wie die Zone",
             ["Gebaeude.Wohngebaeude_Nicht_Wohngebaeude"] = "A6 trägt gbXML (buildingType); Verlustliste noch „Verlust“",
@@ -355,6 +356,8 @@ namespace EPOS.Kern.Tests
             // Die Restdaten (DA-4): gbXML über den Block EPOS: in Description, IFC über EPOS_Zone/EPOS_Gebaeude.
             ["B11"] = (x, v) => { foreach (var (q, l) in Raeume(x)) { v.Wert(q.Rest?.HeizleistungMax, l?.Rest?.HeizleistungMax); v.Wert(q.Rest?.KuehlleistungMax, l?.Rest?.KuehlleistungMax); } },
             ["B20"] = (x, v) => { foreach (var (q, l) in Raeume(x)) v.Wert(q.Rest?.VorheizzeitH, l?.Rest?.VorheizzeitH); },
+            // Nachzug N2: die Höchsttemperatur der Zone über dieselben Restdaten.
+            ["B10"] = (x, v) => { foreach (var (q, l) in Raeume(x)) v.Wert(q.Rest?.Maximaleraumtemperatur, l?.Rest?.Maximaleraumtemperatur); },
             ["B21"] = (x, v) =>
             {
                 foreach (var (q, l) in Raeume(x))
@@ -394,6 +397,10 @@ namespace EPOS.Kern.Tests
                         v.Gleich(wq.Groesse + "|" + wq.Name, wl == null ? null : wl.Groesse + "|" + wl.Name);
                         v.Reihe(wq.Werte, wl?.Werte);
                     }
+                // Nachzug N2: der Verweis der Perioden auf die benannten Wochen.
+                foreach (var (q, l) in Raeume(x).Where(p => p.Q.Rest != null))
+                    for (int i = 0; i < q.Rest.Periodenwochen.Count; i++)
+                        v.Gleich(q.Rest.Periodenwochen[i], l?.Rest?.Periodenwochen.ElementAtOrDefault(i));
             },
             ["G1"] = (x, v) =>
             {
@@ -496,10 +503,10 @@ namespace EPOS.Kern.Tests
             Assert.True(erledigt.Length == 0, "Grenze behoben, aus der Liste nehmen: " + string.Join(", ", erledigt));
             // Die Zählung des Rundlaufs (Protokoll DA-7, mit den Restdaten der DA-4) — eine Änderung zeigt sich hier.
             // gbXML: abweichend genau die Daten, die gbXML nicht oder nur lesend trägt und die das Abbild führt.
-            Assert.Equal("Gleich 51, Abweichend 5, OhneTraeger 15; Felder 70661; abweichend A1 A5 B5 D8 F3; ohne Träger, aber getragen: keins",
+            Assert.Equal("Gleich 52, Abweichend 5, OhneTraeger 14; Felder 70663; abweichend A1 A5 B5 D8 F3; ohne Träger, aber getragen: keins",
                          bericht["gbXML"]);
             // IFC: abweichend nur an den benannten Grenzen der Bauteillage (Rundlaufgrenzen).
-            Assert.Equal("Gleich 53, Abweichend 3, OhneTraeger 15; Felder 70661; abweichend D3 D4 D6; ohne Träger, aber getragen: keins",
+            Assert.Equal("Gleich 54, Abweichend 3, OhneTraeger 14; Felder 70663; abweichend D3 D4 D6; ohne Träger, aber getragen: keins",
                          bericht["IFC"]);
         }
 

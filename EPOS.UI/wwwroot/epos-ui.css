@@ -19032,6 +19032,23 @@ td.epos-vorlage-katalogbeschreibung {
 .epos-zonennutzung-marke--fehlt { color: var(--epos-ampel-rot); background: var(--epos-ampel-rot-flaeche); }
 .epos-zonennutzung-marke--entfaellt { opacity: 0.5; }
 
+/* N1: Kurzbild der Woche je Größe im Blatt „Nutzung und Kalender“ (Wochenkurzbild.razor) - Tagesblöcke, Balken je Stundenlauf. */
+.epos-wochenbild { display: block; margin-top: 0.2em; }
+.epos-wochenbild-tag { fill: var(--epos-flaeche); stroke: var(--epos-rahmen-leise); stroke-width: 0.5; }
+.epos-wochenbild-balken { fill: var(--epos-text-leise); }
+.epos-wochenbild-balken:hover { fill: var(--epos-text); }
+
+/* N1: Ampelleiste der Modellprüfung im Reiter „Zonen“ (Modellpruefungsleiste.razor) - Status und fünf Gruppen als Knöpfe. */
+.epos-pruefleiste { display: flex; gap: 0.4em; align-items: center; flex-wrap: wrap; margin: 0.3em 0 0.6em; }
+.epos-pruefleiste-status { padding: 0.1em 0.5em; border-radius: var(--epos-ecke); font-weight: 600; }
+.epos-pruefleiste-status.epos-ampel-gruen { color: var(--epos-ampel-gruen); background: var(--epos-ampel-gruen-flaeche); }
+.epos-pruefleiste-status.epos-ampel-gelb { color: var(--epos-ampel-gelb); background: var(--epos-ampel-gelb-flaeche); }
+.epos-pruefleiste-status.epos-ampel-rot { color: var(--epos-ampel-rot); background: var(--epos-ampel-rot-flaeche); }
+.epos-pruefleiste-gruppe { display: inline-flex; gap: 0.35em; align-items: center; min-height: var(--epos-touchziel); padding: 0 0.5em;
+    border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke); background: var(--epos-flaeche); color: var(--epos-text); cursor: pointer; }
+.epos-pruefleiste-gruppe[aria-disabled="true"] { opacity: 0.6; cursor: default; }
+.epos-pruefleiste-zahl { font-variant-numeric: tabular-nums; color: var(--epos-text-leise); }
+
 /* MA-7: „Vorgaben der Baualtersklasse übernehmen…“ im Gebäudeeditor - Knopfzeile mit Grund, Blatt mit Vorschau alt -> neu. */
 .epos-gebk-vorgaben { display: flex; gap: 0.5em; align-items: center; flex-wrap: wrap; margin: 0.4em 0 0.6em; }
 .epos-gebk-vorgaben-grund { font-size: 0.9em; }

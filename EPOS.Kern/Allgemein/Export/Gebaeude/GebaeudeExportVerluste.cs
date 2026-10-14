@@ -41,7 +41,9 @@ namespace WindowsFormsApplication1
             ["Nutzflaeche"] = R, ["Volumen"] = R, ["Raumhoehe"] = R, ["IstBeheizt"] = R,
             ["Raumsolltemperatur_Tag"] = R, ["Luftwechsel_Infiltration"] = R,
             ["Raumsolltemperatur_Nachtabsenkung"] = V, ["Raumsolltemperatur_Wochenende"] = V, ["Raumsolltemperatur_Ferien"] = V,
-            ["Maximaleraumtemperatur"] = V, ["Heizung_Strahlungsanteil"] = V,
+            ["Heizung_Strahlungsanteil"] = V,
+            // Nachzug N2 (DA-7 B10): die Höchsttemperatur der Zone reist als Restdatum wie die Höchstleistungen.
+            ["Maximaleraumtemperatur"] = R,
             // DA-4: Höchstleistungen, Übergabe und Kühlübergabe je Zone und die Vorheizzeit reisen als Restdaten (gbXML-Block
             // EPOS: der Zone/Description, IFC EPOS_Zone) und kommen über den Import wieder an die Zone (GebaeudeRestdaten.Setzen).
             ["Heizleistung_Max"] = R,

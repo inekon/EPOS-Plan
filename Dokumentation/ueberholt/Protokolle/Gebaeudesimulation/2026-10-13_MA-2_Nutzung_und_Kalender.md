@@ -126,3 +126,37 @@ von der Projektvorgabe und bleiben erhalten; „Projektvorgabe übernehmen“ fr
   0 Fundstellen. `designer_neu.py`: zweiter Lauf +0.
 - **Logbuch-Satz:** „„Projektvorgabe übernehmen“ im Blatt „Nutzung und Kalender“ fragt nach, bevor eigene Ferien einer Zone —
   auch die eines Nutzungsprofils — ersetzt werden.“
+
+## Nachzug N1 (14.10.2026)
+
+- **Befund:** (a) „Zone…“ fehlte im Blatt, wenn es über dem Ampelblatt stand (kein Wirt). (b) „Sollwerte setzen…“ schrieb nur
+  die Spalten an `Tab_Zone`; trägt die Zone einen eigenen Heizkalender, ist dieser die erste Quelle
+  (`Konditionierungseingang.ErsteQuelle`) und die Spalten blieben wirkungslos. (c) Das Kurzbild der Woche je Größe stand aus.
+- **(a) Ergebnis:** Der Gebäudedialog gibt dem Blatt über dem Ampelblatt `ZoneOeffnen`. Steht der Editor schon (Ampelblatt aus
+  seiner Leiste), schließen Blatt und Ampelblatt und der Editor öffnet die Zone (`GebaeudeKatalogDialog.ZoneVonAussenOeffnen`);
+  sonst geht der Editor als Überlagerung 6 ÜBER dem Ampelblatt auf (zweite Stelle im Stapel, `_editorOben`) mit
+  `StartZone` (Reiter „Zonen“, Zone im Zonendialog). Schließt er, prüft das Ampelblatt neu. Nicht im Assistenten, ohne Editor
+  kein Knopf.
+- **(b) Ergebnis:** `ZonenNutzungCtrl.SollwerteImKalender` (vor den Spalten, im selben Vorgang): alte Werte Tag/Nacht aus den
+  Zeilen `TAG`/`NACHT` (Größe Heizsoll) der Zone mit Wert, sonst aus den Spalten, sonst höchster/tiefster Wert der Woche; in
+  jedem Heizkalender der Zone werden Woche, Grundangabe und Perioden mit dem alten Tageswert auf den neuen gesetzt, ebenso der
+  Nachtwert (`Kalenderwoche.Schreiben`); „aus“ und andere Werte bleiben. Zeilen `TAG`/`NACHT` mit Wert bekommen den neuen
+  Wert, ihre Zeiten bleiben; eine Zeile nur mit Zeiten bleibt. Die Rücknahme stellt Kalender, Perioden und Zeilen über das
+  Abbild her.
+- **(c) Ergebnis:** `ZonenNutzungszeile.Wochen` je Größe die Standardwoche des geltenden Kalenders (eigen, sonst vom Gebäude
+  geerbt; Woche über `Kalenderwoche.Lesen`, sonst Grundangabe in 168 Stunden; „ALLE“ und unlesbare Wochen fehlen). Baustein
+  `Wochenkurzbild.razor`: Inline-SVG, je Größe eine Spur mit sieben Tagesblöcken, Balkenhöhe nach Wert, gleiche Stunden eines
+  Tages in einem Balken mit Titel „Größe · Tag hh–hh Uhr: Wert Einheit“; „aus“ ohne Balken; keine Farbwerte, Tokens in
+  `epos-wochenbild-*`; kein `DiagrammSvg`. Steht in der Kalenderspalte unter den Marken.
+- **Dateien:** `EPOS.Kern/Controller/ZonenNutzungCtrl.cs`, `EPOS.UI/Dialoge/Bedarf/ZonenNutzungsblatt.razor`,
+  `Wochenkurzbild.razor` (neu), `GebaeudeDialog.razor`, `GebaeudeKatalogDialog.razor`, `epos-ui.css`, `Resource(.en-US).resx`
+  (`ZNB_WOCHE_BILD`, `ZNB_WOCHE_TITEL`), `Resource.Designer.cs`.
+- **Tests:** `ZonenNutzungCtrlTests.Sollwerte_setzen_traegt_die_Werte_in_den_Heizkalender_der_Zone_mit_Ruecknahme` (1054,
+  Gästezimmer: Woche 18/20 → 16,5/21,5, Nachtzeile mit Zeiten bleibt, Rücknahme bitgleich),
+  `…Kurzbild_der_Woche_je_Groesse_eigen_und_ohne_Kalender`, `GebaeudeKatalogPruefleisteTests.Kurzbild_der_Woche_…`,
+  `GebaeudeDialogTests.N1_Zone_aus_dem_Blatt_ueber_dem_Ampelblatt_oeffnet_den_Editor_darueber`. Die Referenzprojekte werden
+  nicht beschrieben (Tests auf der Kopie der Testdatenbank).
+- **Offen:** Das Kurzbild zeigt die Standardwoche ohne Perioden (Ferien, Feiertage) und ohne die aus der Matrix abgeleitete
+  Woche einer Zone ohne Kalender. Windows-Sichtabnahme der Kalenderspalte mit Kurzbild.
+- **Logbuch:** „Das Blatt „Nutzung und Kalender“ zeigt je Zone ein Kurzbild der Woche; „Sollwerte setzen…“ wirkt auch auf den
+  Heizkalender einer Zone.“
