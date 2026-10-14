@@ -175,7 +175,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-10-13_R53_Zapfprofiloptionen`, sechsunddreißig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Feiertage liegen im Gemeinjahr ohne Jahresdatum — Ostern ist der Sonntag des Wochentagsrasters am nächsten zum 8. April, Buß- und Bettag der letzte Mittwoch vor dem 23. November, nur eine Preisreihe mit Jahr setzt die echten Daten —, alle Leser — Gebäudelauf, Zapfkalender, Bedarfsprofile — rechnen mit dem Wochentagsraster der Klimaregion (in der Testdatenbank ist der 1. Januar ein Donnerstag), eine Preisreihe mit Jahr setzt für alle Raster und Feiertage dieses Jahres, die Gebäude rechnen nach VDI 6007 und laufen
+`2026-10-14_R54_Dachflaechen`, sechsunddreißig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Feiertage liegen im Gemeinjahr ohne Jahresdatum — Ostern ist der Sonntag des Wochentagsrasters am nächsten zum 8. April, Buß- und Bettag der letzte Mittwoch vor dem 23. November, nur eine Preisreihe mit Jahr setzt die echten Daten —, alle Leser — Gebäudelauf, Zapfkalender, Bedarfsprofile — rechnen mit dem Wochentagsraster der Klimaregion (in der Testdatenbank ist der 1. Januar ein Donnerstag), eine Preisreihe mit Jahr setzt für alle Raster und Feiertage dieses Jahres, die Gebäude rechnen nach VDI 6007 und laufen
 ohne wirksame Kühlung frei, die Gebäude heizen und kühlen eine Zone nie am selben Tag — die Tagesbetriebsart je Zone wählt innerhalb der Kalenderfreigabe (Heiz- und Kühlsollwertkalender, Heiz- und Kühlperiode) nach den Tagessummen des unbegrenzten Probetags, die Gegenseite steht den Tag über auf „aus“ —, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
 Kühlübergabe gekoppelt —, beide rechnen ihren Strombedarf mit der gepflegten Jahressumme ihrer
@@ -194,7 +194,7 @@ die Gebäude rechnen Bauteile am Erdreich mit dem Erdreichwiderstand nach DIN EN
 Projekt 1051 rechnet als Kopie von 1007 einen Bürobau mit Konditionierungskalendern (Nachtzeile der
 Lüftung, Ferien, Heizperiode) und Aufheizoptimierung, gehalten von
 `EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests`, Projekt 1052 rechnet als Kopie von 1018 das Hotel in
-drei Zonen mit Zonenkalendern, gehalten von `EPOS.Kern.Tests/ZonenReferenzprojektWacheTests`, und steht nicht in
+drei Zonen mit Zonenkalendern (die Dächer von 1052 und 1054 sind mit 42° geneigt), gehalten von `EPOS.Kern.Tests/ZonenReferenzprojektWacheTests`, und steht nicht in
 der CI-Auswahl,
 Projekt 1054 rechnet als Kopie von 1052 mit Anlagenkopplung AK1, Radiator und Heizkurve am Gebäude und einer Zone mit eigener Übergabe (Konvektor 70/50 °C, Proportionalband 2 K) — die Übergabe je Zone am gemeinsamen Vorlauf, Rücklauf massenstromgewichtet —, gehalten von `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
 Projekt 1055 rechnet als Kopie von 1017 seine Kälte mit einer Kältemaschine mit Trocken-Rückkühler und eigenem Zähler und einem Kältespeicher (die Wärmepumpe heizt nur), gehalten von `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,

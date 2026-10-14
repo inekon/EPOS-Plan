@@ -488,6 +488,9 @@ Emissionen.
 > Gehalten werden die Zellen von `EPOS.Kern.Tests/ZonenReferenzprojektWacheTests` (jede gesäte Zelle gegen den Bauplan,
 > derselbe Bauweg auf einer Kopie bitgleich, Zonenschleife deterministisch, `Tab_ErgebnisZone` nach dem Lauf); die
 > Zeilen von 1052 legt [`Skripte/referenzprojekt_1052_zonen.cs`](Skripte/referenzprojekt_1052_zonen.cs) an.
+>
+> Letzter Wechsel nach dieser Regel: R53 → R54 (E141) — die Dächer der beheizten Zonen von 1052 und 1054 als Satteldach
+> mit 42° in zwei Hälften nach Nord und Süd (Abschnitt „Aktuelle Basis“).
 
 ## Die Einfrierregel „gesäte Konditionierungsdaten“
 
@@ -777,7 +780,7 @@ lehnt die Prüfung sie benannt ab; `EPOS.Kern.Tests/TwwTyptagVorlageTests` hält
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-10-13_R53_Zapfprofiloptionen`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-10-14_R54_Dachflaechen`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Katalogpaket_Vorlage_DIN4708`,
 `Typtagpaket_Vorlage_VDI4655`, `Skripte` und `LIESMICH.md`
 stehen.**
@@ -807,12 +810,12 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-10-13_R53_Zapfprofiloptionen/`** — **sechsunddreißig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+**`2026-10-14_R54_Dachflaechen/`** — **sechsunddreißig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065, 1066, 1067, 1068, 1069, 1070, 1071), **1 171 CSV**, **7 983 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 13.10.2026, Stand `bf13fbc67`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **224**, 108 412 928 Byte, LFS-SHA-256 `6ef7aa68…`, mit den Projekten 1053 bis 1071
-und dem erfundenen Typtagsatz; die Nachträge der Schemaschritte unten sind darin enthalten; auf dem Schemastand 224 neu
-gesät und gerechnet, byte-gleich zur Fassung auf dem vorläufigen Stand). Gegen diese Basis hält
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 14.10.2026, Stand `b67d99952`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **227**, 107 864 064 Byte, LFS-SHA-256 `1f2cf95f…`, mit den Projekten 1053 bis 1071,
+dem erfundenen Typtagsatz und den Satteldächern von 1052 und 1054; die Nachträge der Schemaschritte unten sind darin
+enthalten). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065 und 1066 bis 1071) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -847,39 +850,36 @@ Projekt 1065 und `EPOS.Kern.Tests/ZapfprofilOptionenReferenzprojekteWacheTests` 
 1055, 1056, 1057, 1059, 1061, 1062 und 1064 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle
 sechsunddreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: je ein Referenzprojekt für sechs Optionen des Zapfprofils (Konzept Zapfprofil Benutzerführung, ZB12) — bis
-> dahin rechnete allein 1045 über den Zapfprofilgenerator (eine Zone Wohnen, Personen, deterministisch, am Gebäude, ohne
-> Zirkulation).** Die Projekte 1066 bis 1071 sind Kopien von 1045 (Abschnitt „Die Referenzprojekte 1066 bis 1071“
-> unten); alle sechs stehen in der CI-Auswahl. Die Testdatenbank wächst um die sechs Kopien und den erfundenen
-> Typtagsatz (33 Zeilen in `Tab_TwwTyptag_IMPORT`).
+> **Anlass: die Dachflächen der Zonenprojekte 1052 und 1054 (Anwenderentscheid E141).** Die Übernahme des
+> Gebäudes 1018 als eine Zone liefert die geneigte Dachfläche mit Neigung 0°; so trugen die Dächer der beheizten Zonen
+> (Gästezimmer 428,28 m², Gastronomie und Verwaltung 285,52 m²) die geneigte Fläche waagerecht über Kellerdecken von
+> 318,93 bzw. 212,62 m² — Verhältnis 0,745 = cos 41,9°, ein Satteldach mit rund 42°. Die Modellprüfung meldete dort 26 %
+> offene Hülle. Ein geneigtes Bauteil an Außenluft braucht einen Azimut (`GebaeudeZonenCtrl.BrauchtAzimut`; ohne ihn
+> lehnen Zonendialog, Modellprüfung und Gebäudelauf benannt ab), darum ist jedes der vier Dächer in zwei Hälften geteilt:
+> „Dach Nord“ (die bisherige Zeile, halbe Fläche, Neigung 42°, Azimut 0°) und „Dach Süd“ (neue Zeile, ID 80 bis 83,
+> halbe Fläche, Neigung 42°, Azimut 180°, übrige Spalten gleich, Rang direkt hinter der Nordhälfte). Die Hüllbilanz
+> schließt danach je beheizte Zone bis auf 0,2 % (Σ A·cos β 318,27 gegen 318,93 m² bzw. 212,18 gegen 212,62 m²). Es
+> gilt die Einfrierregel „gesäte Zonendaten“ (Neigung und Azimut der Bauteile eines Zonen-Referenzprojekts).
+> Der Bauplan [`Skripte/referenzprojekt_1052_bauplan.cs`](Skripte/referenzprojekt_1052_bauplan.cs) teilt das Dach
+> ebenso (`DACHNEIGUNG`), die Wachen von 1052 und 1054 zählen 16/15/2 bzw. 33 Bauteile.
 >
-> Gegen R52 sind alle dreißig Projekte byte-gleich (979/979 CSV; einziger Befund des `vergleich`: die sechs neuen
-> Projekte nur im Vergleichslauf); hinzu kommen 1066 bis 1071 mit je 32 CSV und 201 Skalaren. Die Brauchwasserreihe
-> (`Vektor.waermebedarf_brauchwasser.Summe`, kWh/a):
->
-> | Projekt | Option | Zapfung | Zirkulation | Kanal |
-> |---|---|---|---|---|
-> | 1045 (zum Vergleich) | eine Zone Wohnen, deterministisch | 5 006,62 | 0 | 5 006,62 |
-> | 1066 | Mischnutzung, Wohnungstabelle, Zirkulation nach Leitungslänge | 55 854,23 | 6 306,17 | 62 160,41 |
-> | 1067 | Kalender der Nutzungsart mit fünf Ferienzeiträumen, Gebäudekalender mit Feiertagsland | 19 375,42 | 0 | 19 375,42 |
-> | 1068 | Jahresreihe stochastisch (Seed 1068, 10 Realisierungen) | 5 006,62 | 0 | 5 006,62 |
-> | 1069 | Typtage (erfundener Satz) | 5 006,62 | 0 | 5 006,62 |
-> | 1070 | Jahresmesswert, manueller Tagesbedarf, Zirkulation manuell | 12 475,00 | 4 672,00 | 17 147,00 |
-> | 1071 | vier Topologien, Auslegung mit Ecodesign-Tag | 26 104,32 | 4 205,00 | 30 309,32 |
->
-> 1068 und 1069 treffen die Jahresmenge von 1045 (der Generator bringt die gezogene Reihe bzw. die Typtagmengen auf das
-> Mengengerüst); ihre Stundenreihen unterscheiden sich. Zwei Läufe sind byte-gleich (1 171/1 171 CSV).
+> **Gegen R53 sind alle sechsunddreißig Projekte byte-gleich (1 171/1 171 CSV, `vergleich` GESAMT PASS), auch 1052 und
+> 1054.** Grund: Beide Gebäude rechnen ohne den Schalter „Strahlung auf Außenbauteile“ (`Aussenbauteile_Strahlung` = 0);
+> ein opakes Bauteil an Außenluft geht dann allein mit U·A gegen θ_out ein, und Fläche und U-Wert des Dachs sind
+> unverändert (zwei Hälften = die alte Fläche). Neigung und Azimut wirken erst über die Einstrahlung opaker Flächen
+> (Gl. (32)) und bleiben für die Kennzahlen der Zonen ohne Wirkung. Die neue Basis hält den berichtigten Datenstand fest;
+> wer an 1052 oder 1054 den Schalter setzt, rechnet mit dem geneigten Dach. Zwei Läufe sind byte-gleich.
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064,1065,1066,1067,1068,1069,1070,1071 \
->   --ziel Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen
+>   --ziel Referenzlaeufe/2026-10-14_R54_Dachflaechen
 > ```
 >
-> Die Regel steht im [Konzept Zapfprofil Benutzerführung](../Dokumentation/aktuell/Konzept_Zapfprofil_Benutzerfuehrung_EPOS-Plan.md),
-> Vorschlag ZB12.
+> Befund, Berichtigung und Vergleich stehen im
+> [Protokoll R54](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-14_R54_Dachflaechen.md).
 
 
 > **Nachtrag — Schemaschritte 177 bis 179 (Sperrfenster der Wärmepumpe, Nutzungsprofile, Ergänzungen der
@@ -1341,13 +1341,13 @@ sechsunddreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `fb42e2f3b6cf1a010ec3bac6bb654523e5d9701c3bd5a57fa676b03052911f46`**. Die achtzehn Projekte der CI-Auswahl rechnen gegen R53
 > GESAMT PASS.
 
-### Die Vorgängerbasis R52 (Vorheizen)
+### Die Vorgängerbasis R53 (Zapfprofiloptionen)
 
-Dreißig Projekte, 979 CSV, 6 777 Skalare, auf Linux eingefroren gegen die Testdatenbank `832fda50…`
-(Schemastand 215); mit R53 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Referenzprojekt 1065 mit berechneter
-Vorheizzeit) unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R53 sind
-die Referenzprojekte 1066 bis 1071 der Zapfprofil-Optionen; die dreißig Projekte von R52 sind byte-gleich.
+Sechsunddreißig Projekte, 1 171 CSV, 7 983 Skalare, auf Linux eingefroren gegen die Testdatenbank `6ef7aa68…`
+(Schemastand 224); mit R54 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Referenzprojekte 1066 bis 1071 der
+Zapfprofil-Optionen) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R54 sind
+die Satteldächer der Zonenprojekte 1052 und 1054 (E141); alle sechsunddreißig Projekte von R53 sind byte-gleich.
 
 ## Was hier liegt
 
@@ -1462,8 +1462,8 @@ Zuordnung 500 m² mit dem Faktor 500 / 1 975,34 = 0,25312) und der OK-Weg der Zo
 
 | Zone | Nutzfläche | Bauteile | gesät |
 |---|---|---|---|
-| 1 Gästezimmer, beheizt | 60 % = 300 m² | 15 | 60 % jeder Außenfläche (Wände, Fenster, Sonstiges je Richtung, Dach; ψ·L anteilig), Kellerdecke 60 % der Bodenplatte (318,93 m², U 0,55, `ZONE` → Keller), Trennwand zur Gastronomie 30 m², U 0,6 W/(m²K), Gruppe nach der 4-K-Regel |
-| 2 Gastronomie und Verwaltung, beheizt | 40 % = 200 m² | 14 | 40 % derselben Außenflächen, Kellerdecke 212,62 m² |
+| 1 Gästezimmer, beheizt | 60 % = 300 m² | 16 | 60 % jeder Außenfläche (Wände, Fenster, Sonstiges je Richtung; ψ·L anteilig), das Dach als Satteldach 42° in zwei Hälften (Nord, Süd; je 214,14 m²), Kellerdecke 60 % der Bodenplatte (318,93 m², U 0,55, `ZONE` → Keller), Trennwand zur Gastronomie 30 m², U 0,6 W/(m²K), Gruppe nach der 4-K-Regel |
+| 2 Gastronomie und Verwaltung, beheizt | 40 % = 200 m² | 15 | 40 % derselben Außenflächen, Dach Nord und Süd je 142,76 m², Kellerdecke 212,62 m² |
 | 3 Keller, unbeheizt | 531,55 m² (= Bodenplatte) | 2 | Kellerboden 531,55 m² und Kellerwände 230,6 m² (Umfang des flächengleichen Quadrats × 2,5 m), beide U 0,55 am Erdreich; innere Gewinne 0, Bewohner 0, Infiltration 0,2 1/h, Nutzerluftwechsel 0 |
 
 Zwischen Gästezimmern und Gastronomie strömen **150 m³/h** (`Tab_Zonenluftstrom`). Jede beheizte Zone trägt einen
@@ -1499,7 +1499,7 @@ Nach einer Neufassung der Testdatenbank wird es auf der neuen Fassung erneut gez
 ### Das Referenzprojekt 1054 „Zonen mit Heizkreis“
 
 Projekt **1054 „Referenzprojekt Zonen mit Heizkreis“** ist die gekoppelte Fassung des Zonenprojekts: Kopie von 1052 auf
-dem Kopierweg des Programms (`ProjektDuplizierenCtrl`) — dieselben drei Zonen, 31 Bauteile mit drei Trennflächen, der
+dem Kopierweg des Programms (`ProjektDuplizierenCtrl`) — dieselben drei Zonen, 33 Bauteile mit drei Trennflächen, der
 Luftstrom, die zwei Zonenkalender samt neun Perioden und zwei Vorgaben, Kaskade, Kühlbetrieb (aus) und
 Aufheizoptimierung (an) wie kopiert. 1052 bleibt unverändert und trägt weiter den Nachweis der Aufheizoptimierung mit
 Zonen. Gesät sind:
