@@ -174,7 +174,7 @@ Die gemeinsame Bedienung — Spalten…, Mehrfachwahl, Vergleichen…, Übernehm
 * '''Vorlauf''' und '''Rücklauf''' – in °C, aus dem Katalog vorbelegt und je Anlage änderbar. Die Rechnung des BHKW verwendet sie nicht; sie dienen der Prüfung gegen den Zielspeicher und bei Anlagenkopplung dem Vorlauf gekoppelter Gebäude ohne Heizkurve.
 * {{Anker|bhkw-ruecklauf-max}}'''Höchster Rücklauf (Abschaltgrenze)''' – in °C; liegt der Rücklauf des Heizkreises darüber, liefert das Modul in dieser Stunde nicht. Leer heißt keine Grenze. Das Feld steht im Katalog und in der Verwaltung des Projekts.
 * '''Senken: …''' – die Wärmesenken der Anlage; gepflegt werden sie in der ''Simulation Konfiguration''.
-* '''Investitionskosten…''', '''Betriebskosten…''', '''Energiekosten…''' – die Kosten des Moduls für die Wirtschaftlichkeit; '''Bearbeiten...''' öffnet ''BHKW Eigenschaften'' für den markierten Katalogsatz.
+* '''Investitionskosten…''', '''Betriebskosten…''', '''Energiekosten…''' – die Kosten des Moduls für die Wirtschaftlichkeit, allein in der Kostenverwaltung gepflegt; dort gleicht ''Mit dem Kostenkatalog abgleichen…'' die Kostenpositionen auf Wunsch mit der Satzvorlage des Katalogsatzes ab, nie automatisch. '''Bearbeiten...''' öffnet ''BHKW Eigenschaften'' für den markierten Katalogsatz.
 
 === Kennwerte des Moduls ===
 {{Anker|kennwerte|modulationsgrenze|gesamtwirkungsgrad}}
