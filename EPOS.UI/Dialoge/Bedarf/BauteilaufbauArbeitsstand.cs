@@ -142,6 +142,24 @@ public sealed class BauteilaufbauArbeitsstand
         Fassung++;
     }
 
+    /// <summary>
+    /// <b>BK-5: Die Summe der Flächenanteile einer inhomogenen Schichtebene</b> — nur an der LETZTEN Schicht der Ebene, sonst
+    /// <c>null</c>. Die Ebene folgt der Kernregel (<c>InhomogeneSchichten.Ebenen</c>): Schichten mit Abschnitt, die mit
+    /// aufsteigender Nummer aufeinander folgen. Gezählt wird je Abschnitt EIN Anteil; ein fehlender zählt null.
+    /// <c>InOrdnung</c> heißt 1 ± <see cref="WindowsFormsApplication1.InhomogeneSchichten.ANTEIL_TOLERANZ"/>. Eine Eingabeprüfung, keine Rechnung.
+    /// </summary>
+    public (double Summe, bool InOrdnung)? Ebenensumme(int index)
+    {
+        var s = Arbeit.Schichten;
+        if (index < 0 || index >= s.Count || s[index].Abschnitt is not int nr) return null;
+        if (index + 1 < s.Count && s[index + 1].Abschnitt is int nach && nach > nr) return null;
+        int anfang = index;
+        while (anfang > 0 && s[anfang - 1].Abschnitt is int vor && vor < s[anfang].Abschnitt) anfang--;
+        double summe = 0.0;
+        for (int i = anfang; i <= index; i++) summe += s[i].Flaechenanteil ?? 0.0;
+        return (summe, Math.Abs(summe - 1.0) <= WindowsFormsApplication1.InhomogeneSchichten.ANTEIL_TOLERANZ + 1e-12);
+    }
+
     private double? AnteilVon(int nummer)
         => Arbeit.Schichten.FirstOrDefault(x => x.Abschnitt == nummer && x.Flaechenanteil.HasValue)?.Flaechenanteil;
 

@@ -90,6 +90,12 @@ public sealed class BauteilschichtenTexte
     /// <summary><c>BTA_ABSCHNITT_NEU</c> — „Abschnitt daneben anlegen" (BK-5).</summary>
     public string AbschnittNeu { get; set; } = Resource.BTA_ABSCHNITT_NEU;
 
+    /// <summary><c>BTA_ABS_EBENENSUMME</c> — „Σ Flächenanteile der Ebene = {0}" (BK-5).</summary>
+    public string Ebenensumme { get; set; } = Resource.BTA_ABS_EBENENSUMME;
+
+    /// <summary><c>BTA_ABS_EBENENSUMME_WARN</c> — die Summe außerhalb 1 ± 0,01 (BK-5).</summary>
+    public string EbenensummeWarnung { get; set; } = Resource.BTA_ABS_EBENENSUMME_WARN;
+
     /// <summary><c>BTA_RICHTUNG</c> — die Richtungsangabe innen → außen über dem Raster.</summary>
     public string Richtung { get; set; } = Resource.BTA_RICHTUNG;
 

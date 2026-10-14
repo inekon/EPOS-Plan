@@ -47,6 +47,9 @@ public sealed class BauteilaufbauTexte
     /// <summary><c>BTA_LBL_BESCHREIBUNG</c></summary>
     public string LabelBeschreibung { get; set; } = Resource.BTA_LBL_BESCHREIBUNG;
 
+    /// <summary><c>BTA_GRUPPE_FENSTER</c> — die Gruppe der Fensterwerte (BK-6).</summary>
+    public string GruppeFenster { get; set; } = Resource.BTA_GRUPPE_FENSTER;
+
     /// <summary><c>BTA_LBL_UG</c> (BK-6)</summary>
     public string LabelUg { get; set; } = Resource.BTA_LBL_UG;
 

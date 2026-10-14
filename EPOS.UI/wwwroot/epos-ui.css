@@ -3006,6 +3006,33 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     margin: var(--epos-rand) 0 0;
 }
 
+/* BK-5: Die vierte Lage einer Schicht - Abschnitt der inhomogenen Schicht und Flaechenanteil -
+   und die Summe der Anteile an der letzten Schicht einer inhomogenen Ebene. */
+.epos-bauteilschicht-abschnitt {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px;
+    min-width: 0;
+}
+
+.epos-bauteilschicht-abschnitt > .epos-feld {
+    flex: 0 1 9em;
+    min-width: 0;
+}
+
+.epos-bauteilschicht-ebenensumme {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: var(--epos-text-leise);
+}
+
+.epos-bauteilschicht-ebenensumme--warn {
+    color: var(--epos-warn-text);
+    font-weight: 700;
+}
+
 @media (forced-colors: active) {
     .epos-ueberlagerung {
         border: 2px solid ButtonBorder;

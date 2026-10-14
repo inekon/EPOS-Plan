@@ -56248,5 +56248,11 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="IMP_BAUTEIL_PROT_LUFTSTROM_PARTNER" xml:space="preserve">
     <value>Zone {0}: the air flow to zone {1} is skipped — the file does not contain this zone, it is the zone itself, or the pair already exists.</value>
   </data>
+  <data name="BTA_ABS_EBENENSUMME" xml:space="preserve">
+    <value>Σ area fractions of the layer = {0}</value>
+  </data>
+  <data name="BTA_ABS_EBENENSUMME_WARN" xml:space="preserve">
+    <value>Σ area fractions of the layer = {0} – 0.99 to 1.01 is allowed; the construction is calculated only then.</value>
+  </data>
 </root>
 

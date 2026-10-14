@@ -8,7 +8,9 @@
    Katalog, "(freie Eingabe)" als erster Eintrag), in der Mitte die vier Zahlen unter dem
    Spaltenkopf (Dicke in mm, lambda, rho, c_p), unten der Schalter "Luftschicht", der
    Widerstand der Schicht und die drei Zeilenknoepfe (nach innen, nach aussen, entfernen) -
-   immer sichtbar, 44 px. Die Abschlusszeile "+ Neue Schicht ..." haengt aussen an.
+   immer sichtbar, 44 px. Eine vierte Lage traegt den Abschnitt der inhomogenen Schicht (BK-5): Nummer,
+   Flaechenanteil, "Abschnitt daneben anlegen" und an der letzten Schicht der Ebene die Summe der Anteile.
+   Die Abschlusszeile "+ Neue Schicht ..." haengt aussen an.
 
    DIE OBERFLAECHE RECHNET NICHT. R je Schicht und der Summenfuss kommen fertig aus der Huelle
    (BauteilaufbauCtrl.Kennwerte im Kern) als AufbauKennwerteDaten herein; die Komponente
@@ -80,6 +82,30 @@
                                     @onclick="() => Entfernen(index)"><span aria-hidden="true">✕</span></button>
                         </span>
                     </div>
+                    @* ABSCHNITT (BK-5): die Unterzeile der inhomogenen Schicht - Abschnittsnummer, bei gesetzter
+                       Nummer der Flaechenanteil des Abschnitts, und "Abschnitt daneben anlegen". An der letzten
+                       Schicht einer inhomogenen Ebene steht die Summe ihrer Anteile (Eingabepruefung, keine Rechnung). *@
+                    <div class="epos-zr-zelle epos-bauteilschicht-abschnitt" role="cell">
+                        <Ganzzahlfeld Bezeichnung="@Texte.SpalteAbschnitt" Wert="@s.Abschnitt" Min="1"
+                                    Titel="@(nummer + " – " + Texte.SpalteAbschnitt)"
+                                    Feldname="@(nummer + " – " + Texte.SpalteAbschnitt)"
+                                    WertChanged="w => AbschnittSetzen(index, w)" />
+                        @if (s.Abschnitt.HasValue)
+                        {
+                            <Zahlenfeld Bezeichnung="@Texte.SpalteFlaechenanteil" Wert="@s.Flaechenanteil" Nachkommastellen="3"
+                                        Min="0" Max="1" Titel="@(nummer + " – " + Texte.SpalteFlaechenanteil)"
+                                        Feldname="@(nummer + " – " + Texte.SpalteFlaechenanteil)"
+                                        WertChanged="w => AnteilSetzen(index, w)" />
+                        }
+                        <button type="button" class="epos-textknopf" aria-label="@(nummer + " – " + Texte.AbschnittNeu)"
+                                @onclick="() => AbschnittAnlegen(index)">@Texte.AbschnittNeu</button>
+                    </div>
+                    @if (Stand.Ebenensumme(index) is (double summe, bool inOrdnung))
+                    {
+                        <p class="epos-zr-zelle epos-bauteilschicht-ebenensumme@(inOrdnung ? "" : " epos-bauteilschicht-ebenensumme--warn")"
+                           role="cell">@string.Format(CultureInfo.CurrentCulture, inOrdnung ? Texte.Ebenensumme : Texte.EbenensummeWarnung,
+                                                     summe.ToString("0.###", CultureInfo.CurrentCulture))</p>
+                    }
                 </div>
             }
         </KindInhalt>
@@ -172,6 +198,21 @@ else
         return Geaendert.InvokeAsync();
     }
 
+    private Task AbschnittSetzen(int index, int? nummer)
+    {
+        Stand.AbschnittSetzen(index, nummer);
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task AnteilSetzen(int index, double? anteil)
+    {
+        Stand.AnteilSetzen(index, anteil);
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task AbschnittAnlegen(int index)
+        => Stand.AbschnittAnlegen(index) is null ? Task.CompletedTask : Geaendert.InvokeAsync();
+
     private Task Verschieben(int index, int richtung)
         => Stand.Verschieben(index, richtung) ? Geaendert.InvokeAsync() : Task.CompletedTask;
 
@@ -206,10 +247,21 @@ else
                 (string.Format(c, Texte.SummeRsi, k.RSi_M2KW.ToString("0.00", c)), false),
                 (string.Format(c, Texte.SummeR, (k.R_M2KW ?? 0).ToString("0.000", c)), false),
                 (string.Format(c, Texte.SummeRse, k.RSe_M2KW.ToString("0.00", c)), false),
-                (string.Format(c, Texte.SummeRt, (k.RT_M2KW ?? 0).ToString("0.000", c)), false),
+            };
+            // BK-5: Ein inhomogener Aufbau zeigt beide Grenzwerte und ihr Mittel statt der einfachen Summe (DIN EN ISO 6946, 6.7).
+            if (k.RT_Oben_M2KW is double oben && k.RT_Unten_M2KW is double unten)
+            {
+                liste.Add((string.Format(c, Texte.SummeRtOben, oben.ToString("0.000", c)), false));
+                liste.Add((string.Format(c, Texte.SummeRtUnten, unten.ToString("0.000", c)), false));
+                liste.Add((string.Format(c, Texte.SummeRtMittel, (k.RT_M2KW ?? 0).ToString("0.000", c)), false));
+            }
+            else
+                liste.Add((string.Format(c, Texte.SummeRt, (k.RT_M2KW ?? 0).ToString("0.000", c)), false));
+            liste.AddRange(new (string, bool)[]
+            {
                 (string.Format(c, Texte.SummeU, k.U_WM2K.Value.ToString("0.000", c)), true),
                 (string.Format(c, Texte.SummeC, (k.Kapazitaet_KJM2K ?? 0).ToString("0.0", c)), false)
-            };
+            });
             if (k.Bezugsperiode_D.HasValue)
                 liste.Add((string.Format(c, Texte.SummeTbt, k.Bezugsperiode_D.Value.ToString("0", c),
                                          (k.KapazitaetWirksam_KJM2K ?? 0).ToString("0.0", c)), false));
@@ -252,6 +304,9 @@ else
             var teile = new List<string>(4);
             if (s.DickeMm.HasValue) teile.Add(s.DickeMm.Value.ToString("0.#", c) + " " + texte.EinheitMm);
             if (s.IstLuftschicht) teile.Add(texte.Luftschicht);
+            if (s.Abschnitt is int nr)
+                teile.Add(texte.SpalteAbschnitt + " " + nr.ToString(c)
+                          + (s.Flaechenanteil is double f ? " (" + texte.SpalteFlaechenanteil + " " + f.ToString("0.###", c) + ")" : ""));
             if (s.Lambda.HasValue) teile.Add("λ " + s.Lambda.Value.ToString("0.0###", c));
             double? r = i < kennwerte.RJeSchicht_M2KW.Count ? kennwerte.RJeSchicht_M2KW[i] : null;
             if (r.HasValue) teile.Add(string.Format(c, texte.RSchicht, r.Value.ToString("0.000", c)));

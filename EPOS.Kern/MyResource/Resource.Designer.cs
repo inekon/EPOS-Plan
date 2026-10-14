@@ -15886,6 +15886,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Σ Flächenanteile der Ebene = {0} ähnelt.
+        /// </summary>
+        public static string BTA_ABS_EBENENSUMME {
+            get {
+                return ResourceManager.GetString("BTA_ABS_EBENENSUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Σ Flächenanteile der Ebene = {0} – zulässig sind 0,99 bis 1,01; der Aufbau rechnet erst danach. ähnelt.
+        /// </summary>
+        public static string BTA_ABS_EBENENSUMME_WARN {
+            get {
+                return ResourceManager.GetString("BTA_ABS_EBENENSUMME_WARN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Der Abschnitt {1} hat keinen Flächenanteil größer null. ähnelt.
         /// </summary>
         public static string BTA_ABS_MSG_ANTEIL {
