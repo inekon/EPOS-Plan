@@ -45,12 +45,12 @@ namespace WindowsFormsApplication1
             // DA-4: Höchstleistungen, Übergabe und Kühlübergabe je Zone und die Vorheizzeit reisen als Restdaten (gbXML-Block
             // EPOS: der Zone/Description, IFC EPOS_Zone) und kommen über den Import wieder an die Zone (GebaeudeRestdaten.Setzen).
             ["Heizleistung_Max"] = R,
-            ["Luftwechsel_Nutzer"] = V,
-            // Innere Gewinne: der Import setzt die Vorgabe E43 (5 W/m²), nicht den Mittelwert der Datei.
-            ["Interne_Waermegewinne"] = V,
-            // Bewohner kommen als Fläche je Nutzer des Gebäudes zurück.
-            ["Bewohner"] = V,
-            ["Kuehl_Sollwert"] = V, ["Kuehlleistung_Max"] = R, ["Kuehlung_Aktiv"] = V, ["Kuehl_Sollwert_Nacht"] = V,
+            // DA-1 bis DA-3, nachgeführt in DA-4 (Befund DA-7): Nutzerluftwechsel, innere Gewinne (Geräte und Licht je Zone),
+            // Belegung und die Kühlsollwerte kommen über Lasten, Zeitpläne und Sollwerte je Zone zurück.
+            ["Luftwechsel_Nutzer"] = R,
+            ["Interne_Waermegewinne"] = R,
+            ["Bewohner"] = R,
+            ["Kuehl_Sollwert"] = R, ["Kuehlleistung_Max"] = R, ["Kuehlung_Aktiv"] = R, ["Kuehl_Sollwert_Nacht"] = R,
             ["Uebergabe_Art"] = R, ["Uebergabe_Exponent"] = R, ["Uebergabe_Leistung_Nenn"] = R,
             ["Kuehl_Uebergabe_Art"] = R, ["Kuehl_Uebergabe_Exponent"] = R, ["Kuehl_Uebergabe_Leistung_Nenn"] = R,
             // Schritt 181 (E63, AK1z): der Auslegungspunkt und das Proportionalband der Zone.
@@ -93,7 +93,9 @@ namespace WindowsFormsApplication1
             ["Interne_Waermegewinne"] = V, ["Bauweise"] = V, ["Masseanteil_Aussen"] = V, ["Innenflaechenfaktor"] = V,
             ["Raumsolltemperatur_Nachtabsenkung"] = V, ["Raumsolltemperatur_Wochenende"] = V, ["Raumsolltemperatur_Ferien"] = V,
             ["Maximaleraumtemperatur"] = V, ["Luftwechselrate"] = V, ["Luftwechsel_Nutzer"] = V,
-            ["Baualtersklasse"] = V, ["Baujahr"] = V, ["Energiestandard"] = V, ["Gebaeudeart"] = V, ["Wohngebaeude_Nicht_Wohngebaeude"] = V,
+            ["Baualtersklasse"] = V, ["Baujahr"] = V, ["Energiestandard"] = V,
+            // DA-3/DA-7: die Gebäudeart reist als buildingType (gbXML) bzw. EPOS_Gebaeude.Gebaeudeart (IFC).
+            ["Gebaeudeart"] = R, ["Wohngebaeude_Nicht_Wohngebaeude"] = V,
             ["Rahmenanteil"] = V, ["Verschattungsfaktor"] = V, ["Grundflaeche_Randbedingung"] = V,
             // DA-4: das Erdreich (Inventar G3, G4) reist als Restdatum (gbXML-Block EPOS: der Building/Description, IFC
             // EPOS_Gebaeude) und kommt über die Zielfelder LAENGE_AUSSENWAND_KELLER, ERDREICH_U_WIRKSAM, KELLERTEMPERATUR zurück.
@@ -176,9 +178,6 @@ namespace WindowsFormsApplication1
             foreach (ZoneModel z in zonen ?? new List<ZoneModel>())
             {
                 if (z == null) continue;
-                if (z.Luftwechsel_Nutzer.HasValue) namen.Add("Luftwechsel_Nutzer");
-                if (z.Interne_Waermegewinne.HasValue) namen.Add("Interne_Waermegewinne");
-                if (z.Bewohner.HasValue) namen.Add("Bewohner");
                 foreach (BauteilModel b in z.Bauteile ?? new List<BauteilModel>())
                 {
                     if (b == null) continue;

@@ -279,5 +279,42 @@ namespace EPOS.Kern.Tests
                 Assert.True(q.Werte.Zip(w.Werte, (x, y) => double.IsNaN(x) ? double.IsNaN(y) : x == y).All(x => x));
             }
         }
+
+        /// <summary>
+        /// Befund der Welle DA-7 (gemeinsamer Rundlauf): Die Außenwand Ost kam aus IFC mit 270° zurück. Gehalten werden die vier
+        /// Himmelsrichtungen, die Neigung und der Nachbarraum jedes Bauteils im IFC-Rundlauf.
+        /// </summary>
+        [Fact]
+        public void Ifc_Rundlauf_gibt_Azimut_aller_vier_Himmelsrichtungen_Neigung_und_Nachbarn_zurueck()
+        {
+            GebaeudeAbbild quelle = IfcExportRundlaufTests.Abbild();
+            GebaeudeAbbild gelesen = IfcExportProbe.Lesen(IfcExportProbe.Schreiben(quelle));
+            List<AbbildBauteil> lq = quelle.Gebaeude[0].Bauteile, ll = gelesen.Gebaeude[0].Bauteile;
+            var fehler = new List<string>();
+            var richtungen = new HashSet<double>();
+            foreach (AbbildBauteil q in lq)
+            {
+                AbbildBauteil l = ll.FirstOrDefault(b => b.Name == q.Name);
+                if (l == null) { fehler.Add(q.Name + " fehlt"); continue; }
+                // Außenbauteile tragen Neigung und Azimut; ein inneres Bauteil darf sie offen lassen (der Import nimmt die Vorgabe
+                // der Bauteilart), trägt es sie, müssen sie stimmen.
+                bool aussen = q.Randbedingung == Randbedingung.Aussenluft || q.Randbedingung == Randbedingung.Erdreich;
+                if (q.NeigungGrad.HasValue && (aussen || l.NeigungGrad.HasValue)
+                    && !(Math.Abs(q.NeigungGrad.Value - (l.NeigungGrad ?? double.NaN)) <= 1e-6))
+                    fehler.Add(q.Name + " Neigung " + q.NeigungGrad + " ≠ " + l.NeigungGrad);
+                if (q.AzimutGrad.HasValue && q.NeigungGrad is > 1.0 and < 179.0 && (aussen || l.AzimutGrad.HasValue))
+                {
+                    double d = Math.Abs(((q.AzimutGrad.Value - (l.AzimutGrad ?? double.NaN)) % 360.0 + 540.0) % 360.0 - 180.0);
+                    if (!(d <= 1e-6)) fehler.Add(q.Name + " Azimut " + q.AzimutGrad + " ≠ " + l.AzimutGrad);
+                    else if (q.Randbedingung == Randbedingung.Aussenluft) richtungen.Add(q.AzimutGrad.Value);
+                }
+                // Die Nachbarräume nach dem Namen (eine Innenwand im selben Raum hat zwei Seiten, aber einen Raum).
+                string Namen(AbbildBauteil b, GebaeudeAbbild a) => string.Join(",", b.Nachbarn.Select(n => a.Gebaeude[0].Raeume
+                    .FirstOrDefault(r => r.Kennung == n.Kennung)?.Name ?? "?").Distinct().OrderBy(x => x, StringComparer.Ordinal));
+                if (Namen(q, quelle) != Namen(l, gelesen)) fehler.Add(q.Name + " Nachbarn " + Namen(q, quelle) + " ≠ " + Namen(l, gelesen));
+            }
+            Assert.True(fehler.Count == 0, string.Join(" | ", fehler));
+            Assert.Equal(new[] { 0.0, 90.0, 180.0, 270.0 }, richtungen.OrderBy(x => x));
+        }
     }
 }

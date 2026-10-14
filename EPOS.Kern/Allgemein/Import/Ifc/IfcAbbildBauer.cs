@@ -736,7 +736,10 @@ namespace WindowsFormsApplication1
                 // (KOERPER_ABWEICHUNG*), keine Fläche aus dem Körper (Herkunft KOERPER).
                 if (!koerper.Any(Dateikoerper.Beleg)) continue;
                 if (!schwerpunkte.TryGetValue(gi, out double[] g)) schwerpunkte[gi] = g = Gebaeudeschwerpunkt(gi);
-                Bauteilkoerperflaeche kf = Vereinigt(koerper.Where(Dateikoerper.Beleg).Select(k => IfcBauteilkoerper.Auswerten(k, art, g, _drehung)).Where(x => x != null).ToList());
+                // DA-4 (Befund DA-7): Eine Außenwand zeigt von IHREM Raum weg — der Gebäudeschwerpunkt liegt bei angebauten Zonen
+                // jenseits der Wand (die Ostwand kam als West zurück). Mit genau einem Raum mit Körper gilt dessen Mitte.
+                double[] bezug = art == Bauteilkoerperart.Wand ? Wandbezug(b, gi) ?? g : g;
+                Bauteilkoerperflaeche kf = Vereinigt(koerper.Where(Dateikoerper.Beleg).Select(k => IfcBauteilkoerper.Auswerten(k, art, bezug, _drehung)).Where(x => x != null).ToList());
                 if (kf == null)
                 {
                     // G5-3: ein Körper mit Dreiecken, aber ohne maßgebliche Fläche ist entartet.
@@ -1366,6 +1369,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Mitte eines Körpers (umschließender Quader) [m]; <c>null</c> ohne Körper.</summary>
         private static double[] Mitte(Dateikoerper k) => k == null || k.PunkteM.Count == 0 ? null : IfcBauteilkoerper.Mitte(k);
+
+        /// <summary>
+        /// Der Bezugspunkt einer Außenwand [m] (DA-4): die Mitte ihres einen Raums (Nachbar oder Raumgrenze) mit Körper; <c>null</c>
+        /// bei keinem oder mehreren Räumen — dann gilt der Gebäudeschwerpunkt.
+        /// </summary>
+        private double[] Wandbezug(AbbildBauteil b, int gi)
+        {
+            if (gi < 0 || gi >= _abbild.Gebaeude.Count
+                || !(b.Randbedingung == Randbedingung.Aussenluft || b.Randbedingung == Randbedingung.Erdreich)) return null;
+            var kennungen = new HashSet<string>(b.Nachbarn.Select(n => n.Kennung).Concat(b.Grenzen.Select(x => x.RaumKennung))
+                                                 .Where(k => k != null), StringComparer.Ordinal);
+            if (kennungen.Count != 1) return null;
+            return IfcBauteilkoerper.Schwerpunkt(_abbild.Gebaeude[gi].Raeume.Where(r => kennungen.Contains(r.Kennung))
+                                                                             .Select(r => r.Koerper).Where(k => k != null));
+        }
 
         /// <summary>Der Gebäudeschwerpunkt [m]: das Mittel der Raumkörper, ohne sie der vorgemerkten Bauteilkörper (alle Gebäude bei −1).</summary>
         private double[] Gebaeudeschwerpunkt(int gi)
