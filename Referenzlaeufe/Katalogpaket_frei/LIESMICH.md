@@ -152,8 +152,8 @@ den Beginn nicht und das Projekt auch nicht, lehnt die Speicherauslegung benannt
 
 **Kaltwasser und Zirkulation der Stufe Einfach (Anwenderentscheid 14.10.2026).** Ohne diese Schlüssel
 lehnte das Mengengerüst jede Zone ab („Parameter fehlt: Kaltwasser.Bilanz.Mittel"), sobald die
-Datenbank allein den Paketteil führt. Aus der Vorlage V4: Kaltwasser 10 °C (Bezug Kaltwasser, dieselbe
-Zelle wie die Bezugsspreizung des klassischen Faustwerts), Zirkulation als Dauerlast über 24 h, Anteil
+Datenbank allein den Paketteil führt. Aus der Vorlage V4: Kaltwasser 10 °C (Kaltwassertemperatur, Jahresmittel
+Trinkwasser kalt, Blatt Eingaben), Zirkulation als Dauerlast über 24 h, Anteil
 am Tagesbedarf 0,2 und spezifischer Verlust 10 W/m (Schätzhilfe Zirkulationsverlust). V4 führt keinen
 Jahresgang des Kaltwassers; Amplitude 3 K und Maximum im August sind INEKON-Setzungen aus
 `zapfprofil_setzungen_inekon.json`. Ohne Fläche fällt der Flächenkennwert der Zirkulation auf den Anteil

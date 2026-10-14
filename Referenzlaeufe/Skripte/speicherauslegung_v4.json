@@ -212,10 +212,10 @@
       "schluessel": "Kaltwasser.Bilanz.Mittel",
       "wert": 10.0,
       "einheit": "°C",
-      "blatt": "Berechnung",
-      "zelle": "B389",
-      "fundstelle": "Zeile 389, Spalte B",
-      "beschriftung": "Bezug Kaltwasser, Jahresmittel des Kaltwassers der Bilanz"
+      "blatt": "Eingaben",
+      "zelle": "B23",
+      "fundstelle": "Zeile 23, Spalte B",
+      "beschriftung": "Kaltwassertemperatur T_KW, Jahresmittel Trinkwasser kalt"
     },
     {
       "schluessel": "Zirkulation.Laufzeit",
