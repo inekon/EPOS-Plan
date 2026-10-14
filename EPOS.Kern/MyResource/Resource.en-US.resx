@@ -55918,6 +55918,9 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="GEB_SPERRE_ZONENNUTZUNG" xml:space="preserve">
     <value>Save the changed zones with OK first.</value>
   </data>
+  <data name="GEB_SPERRE_PRUEFFELDER" xml:space="preserve">
+    <value>Save the changed building data (public holiday state, conditioning) with OK first — a model check takeover writes there.</value>
+  </data>
   <data name="MPB_BTN_BEARBEITEN" xml:space="preserve">
     <value>Edit…</value>
   </data>

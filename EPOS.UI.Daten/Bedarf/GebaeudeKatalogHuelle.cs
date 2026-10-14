@@ -140,9 +140,26 @@ namespace WindowsFormsApplication1
                         ? Schreiben(d, true, bez, KonditionierungCtrl.Eigner.Gebaeude(idGebaeude))
                         : ProjektSchreiben(idProjekt, idGebaeude, d)),
                 ["Zonen"] = Zonenweg(idProjekt, idZ, idGebaeude),
+                // N3: nach einer Übernahme, Rücknahme oder Nordrichtungs-Bestätigung der Modellprüfung liest der Editor die
+                // Gebäudefelder, die eine Übernahme schreiben kann, aus der Projektkopie neu (OK schriebe sonst den alten Stand).
+                ["GebaeudeNeulesen"] = new Func<GebaeudeKatalogDaten>(() => ProjektNeulesen(idGebaeude)),
                 ["HilfeSchluessel"] = HILFE_PROJEKT
             };
             return gaben;
+        }
+
+        /// <summary>
+        /// <b>Liest die Projektkopie neu</b> (N3): die Gebäudedaten samt Konditionierung der Gebäudeebene, wie
+        /// <see cref="ProjektGaben"/> sie beim Öffnen liefert; <c>null</c>, wenn die Kopie nicht (mehr) zu lesen ist. Der Editor
+        /// übernimmt daraus nur die Felder, die eine Übernahme der Modellprüfung schreiben kann (Feiertagsland, Konditionierung).
+        /// </summary>
+        internal static GebaeudeKatalogDaten ProjektNeulesen(int idGebaeude)
+        {
+            GebaeudeModel kopie = idGebaeude > 0 ? GebaeudeStammCtrl.LiesProjektkopie(idGebaeude) : null;
+            if (kopie == null) return null;
+            GebaeudeKatalogDaten daten = AusModell(kopie);
+            daten.Konditionierung = KonditionierungHuelle.Lesen(KonditionierungCtrl.Eigner.Gebaeude(idGebaeude));
+            return daten;
         }
 
         /// <summary>

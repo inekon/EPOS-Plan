@@ -55925,6 +55925,9 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="GEB_SPERRE_ZONENNUTZUNG" xml:space="preserve">
     <value>Erst die geänderten Zonen mit OK speichern.</value>
   </data>
+  <data name="GEB_SPERRE_PRUEFFELDER" xml:space="preserve">
+    <value>Erst die geänderten Gebäudedaten (Feiertagsland, Konditionierung) mit OK speichern — eine Übernahme der Modellprüfung schreibt dort.</value>
+  </data>
   <data name="MPB_BTN_BEARBEITEN" xml:space="preserve">
     <value>Bearbeiten…</value>
   </data>

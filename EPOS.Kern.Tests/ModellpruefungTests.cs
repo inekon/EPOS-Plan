@@ -181,6 +181,31 @@ namespace EPOS.Kern.Tests
             Assert.Single(r.Neu.Befunde, x => x.Code == "ZONE_OHNE_PROFIL");
         }
 
+        /// <summary>
+        /// N3: Der Editor der Projektkopie bekommt mit <c>GebaeudeNeulesen</c> den Weg, der die Gebäudefelder einer Übernahme
+        /// (hier das Feiertagsland der Gruppe 4) aus der Projektkopie neu liest; die Daten beim Öffnen bleiben der alte Stand.
+        /// </summary>
+        [Fact]
+        public void Gebaeudeeditor_liest_das_Feiertagsland_nach_einer_Uebernahme_neu()
+        {
+            if (!_db.Vorhanden) return;
+            const int PROJEKT = 1007;
+            int idZ = Z_ProjGebCtrl.LiesProjekt(PROJEKT)[0].ID_Z;
+            int idGebaeude = GebaeudeBedarfCtrl.TabGebaeudeId(idZ);
+            IReadOnlyDictionary<string, object> gaben = GebaeudeKatalogHuelle.ProjektGaben(PROJEKT, idZ);
+            var beimOeffnen = (EPOS.UI.Dialoge.Bedarf.GebaeudeKatalogDaten)gaben["Daten"];
+            var neulesen = Assert.IsType<Func<EPOS.UI.Dialoge.Bedarf.GebaeudeKatalogDaten>>(gaben["GebaeudeNeulesen"]);
+            Assert.NotEqual("SN", beimOeffnen.Feiertagsland);
+            DataRepository.ExecuteNonQuery("UPDATE \"Tab_Gebaeude\" SET \"Feiertagsland\" = ? WHERE \"ID\" = ?",
+                                           new DbParam("@f", "SN"), new DbParam("@g", idGebaeude));
+            EPOS.UI.Dialoge.Bedarf.GebaeudeKatalogDaten frisch = neulesen();
+            Assert.NotNull(frisch);
+            Assert.Equal("SN", frisch.Feiertagsland);
+            Assert.NotNull(frisch.Konditionierung);
+            Assert.NotEqual("SN", beimOeffnen.Feiertagsland);
+            Assert.Null(GebaeudeKatalogHuelle.ProjektNeulesen(0));
+        }
+
         [Fact]
         public void Alle_uebernehmen_macht_das_Zonenmodell_gruen_oder_gelb_und_baut_keinen_Vorschlag_doppelt()
         {
