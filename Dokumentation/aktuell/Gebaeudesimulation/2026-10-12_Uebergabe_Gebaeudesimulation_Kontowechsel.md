@@ -1,4 +1,4 @@
-# Übergabe der Sitzung „Gebäudesimulation“ — Stand 12.10.2026 (Kontowechsel)
+# Übergabe der Sitzung „Gebäudesimulation“ — Stand 14.10.2026 (Kontowechsel)
 
 Dieses Papier hält, was eine neue Cloud-Sitzung auf einem anderen Konto braucht, um die Sitzung „Gebäudesimulation“
 ohne Verlust fortzuführen: Stand, laufende und nächste Arbeit, offene Anwenderpunkte, Arbeitsweise und am Ende den
@@ -8,16 +8,19 @@ in der [Statusdatei iOS-Migration](../Status_iOS_Migration.md) (eine Zeile je Sc
 Es löst die [Übergabe vom 08.10.2026](../../ueberholt/2026-10-08_Uebergabe_Gebaeudesimulation_Kontowechsel.md) ab und wandert
 nach `Dokumentation/ueberholt/`, sobald die Fortsetzung den ersten Importlauf, BK-2b und die GD-Nachzüge abgeschlossen hat.
 
+Das Papier führt den gültigen Stand und wird bei jedem Push nachgeführt.
+
 ## 1. Stand bei der Übergabe
 
 | Was | Wert |
 |---|---|
+| Letzter Push | `29f0ba4b0` auf `ios_migration_september`: Runden N1+N2 (#1091/#1092) und N3+BK-3d (#1093/#1094), Nachgates grün gegen R54 bzw. R55. CI-Vermerk ausstehend (Check-in 09:00 UTC) |
 | Arbeitszweig | `ios_migration_september` (Remote `origin`). Der Sitzungszweig des alten Kontos `claude/magical-bohr-ff5ufj` wurde bei jedem Push mitgezogen; die neue Sitzung nimmt ihren eigenen Sitzungszweig |
 | Letzte Wellen | Nachzug N3 (#1093, Gebäudeeditor liest Feiertagsland und Konditionierung nach einer Übernahme neu) und BK-3d (#1094, Wiederimport konvergiert in einem Lauf) gemergt (Runde N3+BK-3d, Nachweis in den Statuszeilen); Nachzüge N1 (#1091, Oberfläche zu MA-1b/MA-2/MA-5/MA-7) und N2 (#1092, Kern zu MA-6/DA-4/DA-7) gepusht am 14.10.2026 (Runde N1+N2, Nachgate grün auf 48eb857ed: 12/12 gegen R54, UI 9 535, Kern gefiltert 2 625); davor DA-4 (#1081, Restdaten), DA-5 (#1082, Profilprüfung) und DA-7 (#1083, Round-Trip-Wache): abgenommen und gemergt (Zweig `r5` mit origin zusammengeführt, Kern-Filter 2 109 / 0, UI-Filter 135 / 0), Push steht an; davor DA-2 (#1076, gbXML-Export, Schritt 225) und DA-3 (#1077, IFC-Standardsätze, Nachzug IDS-Datei `694aa2bb3`); #1061 Wiki-Quellen und Logbuch-Entwurf 1.2.0.12 (abgenommen, kein Upload), #1060 MA-6 (Wiederimport bewahrt; abgenommen, Zweig `ma6` gemergt; Runde 4 im Nachgate, Push steht an), #1059 MA-5 (Ansicht als Werkzeug; abgenommen, Zweig `ma5` gemergt, Push mit Runde 3), #1058 MA-4 (Aufbauvorschläge vertieft; abgenommen, Zweig `ma4` gemergt, Push mit Runde 3), #1055 MA-3 (Hülle geschlossen; abgenommen, Zweig `ma3` gemergt, Push steht an), #1054 MA-7 (Einzonen-Vorgaben; abgenommen, Zweig `ma7` gemergt, Push steht an), #1053 MA-2 (Nutzung und Kalender; abgenommen, Zweig `ma2` gemergt, Push steht an), #1052 MA-1b (Modellprüfung Oberfläche), #1051 MA-1a (Modellprüfung Kern), #1050 GD-N (Nachzüge, NP7 70/71), #1049 DA-1 (gbXML-Import Lasten und Zeitpläne), #1048 AB4 (Ein- und Ausblenden in der Körperansicht), #1047 BK-3b/3c, #1046 GD-6a, #1032 BK-2b Oberfläche und Bänder, #1031 BK-3 Import, #1030 BK-2 (Schritt 221), #1026 GD-4, #1023 BK-1, #1020 GD-5, #1022 NP7/NP7b (Schritt 220); davor #1011 NP6, #1012 Quick Assist (Admin-Zweig), #1013 AB2, #1014 AB3, #1015 GD-1, #1016 GD-2, #1017 Entwurf BK — gepusht `f40fe2fa1`; danach Anmeldung Schritt 220 (`6870f7169`) und GD-3 mit diesem Papier (#1019) |
 | CI | Kern-Lauf 38206954119 grün auf `02d4ddfe0` (enthält alles bis #1022); #1010 grün mit 38188012085 auf `228a10287`; vermerkt in #1010, #1011, #1013–#1017, #1019, #1020, #1022. #1023 (BK-1) und die Papiere danach sind mit [skip ci] gepusht und laufen mit dem nächsten Push ohne [skip ci] durch die CI |
-| Referenzbasis | **R54** `Referenzlaeufe/2026-10-14_R54_Dachflaechen`, 36 Projekte (eingefroren mit #1084; R53 liegt nach `Dokumentation/ueberholt/`); R55 K6 (Anlagendialog) auf origin (8bf550004, 14.10.2026); nächste Basen R56 KB-5, R57 SA4. CI-Auswahl 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065. R52 liegt nach `Dokumentation/ueberholt/`. Reihenfolge der Folgebasen (abgestimmt am 13.10.2026): R54 = Dachflächen (erledigt, #1084), R55 = K6 (auf origin, 8bf550004, 14.10.2026), R56 = KB-5, R57 = SA4 |
-| Testdatenbank | Schemastand **227** (Git LFS) |
-| Schemakette | 218 `KaelteArtSchema` (Sitzung Kälteanlagen), 219 `RaumnutzungNormkategorienSchema` (NP6), 220 `RaumnutzungNormwerteSchema` (NP7); 221 `BauteilkatalogSchema` (BK-2); 222 `BauteilkatalogHaustechnikSchema` (BK-3c); 223 `TwwZonenferienSchema` (Zapfprofilgenerator), 224 `KaeltebedarfSplitAbrechnungSchema` (K6, Sitzung Anlagendialog), **225 `ZonenLastfelderSchema` (DA-2, gebaut)**, **226 `KatalogkostenSaatSchema` und 227 Brennstoffpreise/Trägerkarte (Kältebedarf, gebaut, Datenbank 227)**, 228 angemeldet, 229 BK-5/BK-6 angemeldet |
+| Referenzbasis | **R55** `Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral`, 37 Projekte (mit Projekt 1072); R54 liegt nach `Dokumentation/ueberholt/`; nächste Basen R56 KB-5, R57 SA4. CI-Auswahl 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065 (und 1066 bis 1071 laut `CLAUDE.md`) |
+| Testdatenbank | Schemastand **227** (Git LFS), 108 720 128 Byte, mit Projekt 1072 |
+| Schemakette | 218 `KaelteArtSchema` (Sitzung Kälteanlagen), 219 `RaumnutzungNormkategorienSchema` (NP6), 220 `RaumnutzungNormwerteSchema` (NP7); 221 `BauteilkatalogSchema` (BK-2); 222 `BauteilkatalogHaustechnikSchema` (BK-3c); 223 `TwwZonenferienSchema` (Zapfprofilgenerator), 224 `KaeltebedarfSplitAbrechnungSchema` (K6, Sitzung Anlagendialog), **225 `ZonenLastfelderSchema` (DA-2, gebaut)**, **226 `KatalogkostenSaatSchema` und 227 Brennstoffpreise/Trägerkarte (Kältebedarf, gebaut, Datenbank 227)**; im Statuskopf angemeldet: 228 `GeraetekostenEntfallSchema` (KB-4, Kältebedarf, Push angekündigt 10:00–12:00 UTC) → 229 `StromspeicherKostenSchema` (KB-5, Kältebedarf) → 230 `KaeltebedarfsprofilVorlagenSchema` (KBP-2, Dialoge/Cloud) → 231 `RaumnutzungDinWerteSchema` (DA-6, wir) → 232 `BauteilkatalogAbschnittSchema` (BK-5/BK-6, wir); Basen danach R56 KB-5, R57 SA4 |
 | Statuszeilen | höchste vergebene #1094 (N3 #1093, BK-3d #1094; N1 #1091, N2 #1092; #1086 und #1087 gehören anderen Sitzungen; #1085 DA-9 Wiki; #1084 Basis R54; #1083 DA-7; #1081 DA-4, #1082 DA-5; #1078 bis #1080 gehören anderen Sitzungen) (Nummern werden beim Push gegen origin geprüft; #1033 bis #1038 gehören anderen Sitzungen); vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E138**, **E139 frei** |
 | Parallele Sitzungen | „Kälteanlagen“, „Dialoge und Korrekturen“ (Konto 3), „Administration und Support“; alle pushen auf denselben Zweig. Statuskonflikte zeilenweise lösen, Nummernkollisionen über die nächste freie Nummer |
 
@@ -66,8 +69,16 @@ Alle Zeilen mit grünem Gate gepusht; Einzelheiten in der Statuszeile und im Pro
 
 ## 3. Laufende Arbeit beim Schreiben
 
-Kein Agent läuft. **GD-6a** wurde beim Kontowechsel mitten im Bau angehalten; seine Arbeit ist verworfen und wird mit dem
-Auftrag in Abschnitt 4 neu beauftragt. Die Routinen des alten Kontos sind gelöscht. Festlegungen, die Folgewellen kennen müssen:
+**Zwei fertige, noch nicht gemergte Wellen** liegen nur als lokale Zweige im Container der alten Sitzung:
+
+- `da6` (HEAD `fdb7c7072`, 6 Commits): DIN-Saat `RaumnutzungDinSaat`/`RaumnutzungDinWerteSchema`, NP7-Rücknahme auf die Saat, Auslieferungsvorlage 3d umgekehrt, E143 Wochenmuster, Protokoll `2026-10-14_DA-6_DIN_Saat.md`; sitzt auf `bk5` Stand `39943d78b` und enthält eine eigene Reparatur der Schalen-Schrittliste (`d8f54230d`).
+- `bk5` (HEAD `9407ae602`): Abschnitte und Fenster, Katalogpaket, Tests, Protokoll `2026-10-13_BK-5_BK-6_Abschnitte_Fenster.md`; eigene Reparatur `57e335977` derselben Schalen-Schrittliste — Konflikt beim Zusammenführen erwartet (Opus).
+
+Vorgehen, sobald 230 auf origin liegt: Opus-Runde in einem Worktree aus origin; `bk5` und `da6` mergen; Kette umhängen (`RaumnutzungDinWerteSchema.SCHRITT = KaeltebedarfsprofilVorlagenSchema.SCHRITT + 1`, `BauteilkatalogAbschnittSchema.SCHRITT = RaumnutzungDinWerteSchema.SCHRITT + 1`); Tests mit festen Nummern nachziehen (`BauteilaufbauAbschnittTests` „vorläufig an 227“, `BrennstoffpreiseTraegerkarteSchemaTests` Zielversion, `RaumnutzungDinWerteSchemaTests` Kettentest, `GebaeudeG3SchemaTests` Spaltenliste, `KiMaskenabdeckungWacheTests`); Testdatenbank von der origin-Datei (230) mit `Werkzeuge/Testdatenbankschema` auf 232 heben und mit LFS committen; `Referenzlaeufe/LIESMICH.md` Schemastand nachtragen; Nachgate mit Referenzlauf (byte-gleich erwartet); zwei Statuszeilen; Push. **Vor einem Kontowechsel vor diesem Push** müssen `da6` und `bk5` als Sitzungszweige nach origin (Freigabe des Anwenders), sonst sind sie für das neue Konto unerreichbar.
+
+Nachbarn: die lokale Sitzung „Lokal EPOS-Plan“ (Rechner des Anwenders) hat Importlauf und DA-6-Lieferung geliefert, nichts offen. Nachbarsitzungen: Anlagendialog (K6, R55), Kältebedarf (KB-4/KB-5), Dialoge und Korrekturen Cloud (KBP-2), Zapfprofilgenerator; ihre Kennungen sind kontogebunden und stehen nicht hier — Abstimmung über `list_sessions`/`send_message` oder den Statuskopf.
+
+Festlegungen, die Folgewellen kennen müssen:
 
 - **Außenluft je Person** (NP7) ist eine eigene Spalte `Aussenluft_Person` (m³/(h·Person)) neben `Aussenluft`/`Aussenluft_Einheit`;
   im Generator geht die raum- oder flächenbezogene Außenluft vor.
@@ -89,6 +100,18 @@ Auftrag in Abschnitt 4 neu beauftragt. Die Routinen des alten Kontos sind gelös
 - **Haustechnik:** Klasse `HAUSTECHNIK` (Schritt 222) ist die letzte Klasse der Gruppe Sonstige an Baustoff und Bauteilaufbau; der Import setzt sie für Basis-Codes 14, 19, 29, 30.
 
 ## 4. Nächste Arbeit (Reihenfolge)
+
+Reihenfolge ab 14.10.2026 (die Liste darunter ist der Verlauf):
+
+1. Runde 231/232 wie in Abschnitt 3.
+2. CI-Vermerke.
+3. Nachzugsliste (Punkt 12): KI-Sicht für Fensterwerte und Abschnitte, Importdialog Unterordner `Export`, „Klimaregion wählen…“ im Gebäudedialog, MA-6 (b) Hand-U, Wochenvorschau der Konditionierung nach Neulesen, Gebäudefeld `Maximaleraumtemperatur`, Feiertagsperioden ohne Wochenverweis, DA-8 optional.
+4. BK-7 (Teilkatalognamen `Katalog_Inhalt.csv`, Hilfeschlüssel Importdialog).
+5. Wiki-Quellen für BK-5/BK-6 und DA-6, dann Sammel-Upload nur auf Zuruf mit Versionsnummer (Logbuch-Entwurf 1.2.0.12 in `Dokumentation/aktuell/Wiki_Update_2026-09-26.md`). Sätze aus den Berichten, erst mit dem Push von 231/232 ins Logbuch: „Bauteilaufbauten können inhomogene Schichten mit Abschnitten und Flächenanteilen führen; der Wärmedurchgang rechnet aus oberem und unterem Grenzwert nach DIN EN ISO 6946.“ — „Fensteraufbauten führen U_g, U_f, g-Wert, Rahmenanteil und ψ des Glasrands; beim Zuweisen an ein Fenster übernimmt das Bauteil U_w, g-Wert und Rahmenanteil.“ — „Die Nutzungsprofile der Kategorie DIN/TS 18599-10 werden mit den Werten der Fassung 2025-10 ausgeliefert; ‚Normwerte einlesen…‘ gleicht eigene Werte dagegen ab, und die Rücknahme stellt die ausgelieferten Werte wieder her.“
+6. SA4 (Referenzprojekt Schnellaufheizung, Basis R57 nach R56).
+7. Zweiter Importlauf beim Anwender nach BK-5/BK-6 (Abschnitte und Fensterwerte).
+
+Verlauf:
 
 Erledigt am 13.10.: Wiki-Quellen und Logbuch-Entwurf (#1061), MA-6 (#1060), CI-Vermerk, GD-6a (#1046), BK-3b/3c (#1047), AB4 (#1048), DA-1 (#1049), GD-N (#1050), MA-1a (#1051), MA-1b (#1052), MA-2 (#1053), MA-3 (#1055), MA-7 (#1054), MA-4 (#1058), MA-5 (#1059), DA-4 (#1081), DA-5 (#1082), DA-7 (#1083).
 
@@ -118,70 +141,41 @@ Erledigt am 13.10.: Wiki-Quellen und Logbuch-Entwurf (#1061), MA-6 (#1060), CI-V
 
 ## 5. Offen beim Anwender
 
-- ~~Lieferung der DIN/TS-18599-10-Werte~~ erfolgt 14.10.2026 (PDF lokal, Übertragung in NP7-CSV durch die lokale Sitzung); ~~**E143**: Wochenmuster der DIN-Profile — (a) aus den Nutzungstagen je Jahr ableiten (365 → alle Tage, 300 → Mo–Sa, sonst Mo–Fr; Empfehlung) oder (b) leer lassen~~ entschieden 14.10.2026: a
-- **Erneuter Importlauf Bauteilkatalog** mit Zählungen (Abschnitt 4 Punkt 1): läuft lokal nach E142 (Werte in den Katalog übernehmen, Sicherung vorher); gelaufen 14.10.2026: Wiederimport konvergiert nach zwei Übernahmen, 7 549 Baustoffe, Befund BK-3d behoben im Zweig `bk3d`.
-- **BK-1, Katalogprobe:** `Proben/Rasterprobe` Katalogprobe meldet 8 von 66 Fällen mit Überlagerung (Kessel, BHKW, Wärmepumpe,
-  Klimadaten) — gegen den Stand vor BK-1 prüfen, ob vorbestehend (kein Baustofffall betroffen).
-- **Sichtabnahmen unter Windows:** gesperrte Farbmodusknöpfe mit Grund (#1010), Legendenzuordnung (#1013), Schichtwahl im
-  Aufbau (#1014), Herkunftsmarken und Rundung im Gebäudekopf (#1015), Namensvorschlag „Übernehmen“ im Importdialog (#1016),
-  Marke und „Zurücknehmen“ der automatisch platzierten Räume (#1019), Saisondatum (#1002), Geste Strg+Umschalt+F12 (#997),
-  Kopfleiste des Gebäudedialogs mit drei Knöpfen (#1046), Körperansicht Ein-/Ausblenden (#1048), Zonenplan-Vorbelegung, Projektdatei-Befund, Jahreswärmebedarf und Sprung Kühlung (#1050), Kopfleiste mit zwei Knöpfen („Simulation…“, „Modell prüfen…“) und Ampelblatt der Modellprüfung (#1052), Blatt „Nutzung und Kalender“ mit Mehrfachwahl (#1053), Vorschau der Vorgaben der Baualtersklasse (#1054), Prüfzeile und Spalte „Vorschläge“ der Gebäudeansicht bei schmaler Breite, Dimmung in beiden Farbschemata und Kontrastmodus (#1059), Vorschau des Wiederimports (#1060), Rückfrage vor dem Ersetzen eigener Ferien im Blatt „Nutzung und Kalender“ (E139), Export und Import der Restdaten (DA-4: Mehrzonengebäude mit Luftströmen nach gbXML und IFC ausgeben und im Importdialog wieder einlesen), Ampel der Prüfgruppe 3 mit Herkunft des Profils (DA-5).
-- **SQ2:** gegen welchen Wert der Anwender die Raumgrößen des Sportheims verglichen hat.
-- **GD-2:** fachliche Bestätigung Gebäudetyp 3 = Nichtwohngebäude und Code 0 = keine Angabe an weiteren Projektdateien.
-- **Hilfeseite „Gebäude“:** Abschnitt Modellprüfung mit Anker (Wiki-Quelle), danach `help_mapping.txt` — mit dem Wiki-Auftrag.
-- **Modellprüfung:** Bauteilart `SONSTIGES` in der Modellprüfung gelb lassen oder als bekannt werten? Empfehlung: gelb lassen, bis die Art gepflegt ist.
+- Wiki-Upload und Versionsnummer (gebündelt, nur auf Zuruf).
+- Sichtabnahmen unter Windows: Ampelleiste, Fensterteil, Abschnitte (dazu die früheren Punkte der Gebäudedialoge).
+- Zweiter Importlauf nach BK-5/BK-6 (Abschnitte und Fensterwerte).
+- Bereinigung des einen Importsatzes mit Vorgabe-Namen (Befund im BK-3d-Protokoll) als Entscheid.
 
 ## 6. Arbeitsweise in der Cloud
 
 - **Anwenderdateien** (`Quellen/*.sqproj`, Hottgenroth-Katalog `.mdf`) liegen nie im Repositorium; Namen und Werte daraus nie in
   Code, Tests, Protokollen oder Nachrichten — nur Struktur, Zählungen, Anteile. Katalogwerte eines Herstellers nur in die
   Datenbank des Anwenders, nie in die Auslieferung. **Normwerte:** allein die DIN/TS-18599-10-Profile nach E135 kommen ins
-  Repositorium und in die Auslieferung, und nur aus der Lieferung des Anwenders; alle anderen Normwerte bleiben tabu. Google-Drive-Freigaben des Anwenders lassen sich mit
-  `curl -L "https://drive.usercontent.google.com/download?id=<ID>&export=download&confirm=t"` laden (`drive.google.com` selbst
-  ist gesperrt); große Dateien (> 5 GB) sprengen das Plattenkontingent des Containers.
+  Repositorium und in die Auslieferung, und nur aus der Lieferung des Anwenders; alle anderen Normwerte bleiben tabu. Dateien des Anwenders kommen über die lokale Sitzung „Lokal EPOS-Plan“ (Google-Drive-Freigaben kamen nicht an).
 - **Agenten** mit ausdrücklichem Modell (`opus-umsetzung` für Fachcode, `sonnet-mechanik`, `haiku-pruefung`), je Welle ein
   Worktree, Commits auf dem eigenen Zweig, kein Push. Die Orchestrierung mergt in einem Integrations-Worktree, fährt das Gate
   und pusht.
-- **Gate nach dem Merge:** `python3 Werkzeuge/ResourceDesigner/designer_neu.py`, `python3 Werkzeuge/SqlDialektPruefer/pruefer.py
-  --db Referenzlaeufe/Kenndaten_Test.sqlite`, Bau `WP-Plan.Kern.slnf` (Release) und Windows-Schale mit
-  `-p:EnableWindowsTargeting=true`, Referenzlauf der zwölf CI-Projekte gegen R52 (FAIL nur für nicht gerechnete Projekte ist
-  erwartet), `EPOS.UI.Tests` voll, `EPOS.Kern.Tests` mit `--filter` auf die betroffenen Klassen, Werkzeugtests
-  `Werkzeuge/Auslieferungsvorlage`, `Formularkarte`, `Gebaeudevergleich` — immer mit
-  `-- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2`. Die CI rechnet den Kern-Filter **ohne** Filter:
-  Tests, die feste Zahlen der Kataloge erwarten, auf Konstanten der Saat beziehen.
+- **Gate nach dem Merge:** `Werkzeuge/Gate/nachgate_gebaeudesimulation.sh <Worktree> <Gatelog>` (Schritte 0–7, `REF=1` für den Referenzlauf der zwölf CI-Projekte; Basis aus `Referenzlaeufe/LIESMICH.md`, Ende an `NACHGATE-ENDE`); Aufrufe in `Werkzeuge/Gate/LIESMICH.md`, Abschnitt „Skripte der Sitzung Gebäudesimulation“. Die CI rechnet den Kern-Filter **ohne** Filter: Tests, die feste Zahlen der Kataloge erwarten, auf Konstanten der Saat beziehen.
+- **Statusnummern** unmittelbar vor dem Commit gegen origin messen; bei Kollision `status_merge.py` und Verweise per `sed`; `resx_merge.py` für `.resx`-Konflikte, `nachweis.py` für den Nachweis in den Statuszeilen.
 - **Ressourcenkonflikte** beim Merge (`.resx`, Anhänge am Dateiende): beide Seiten behalten — zuerst die eigene, dann ein
   `</data>`, dann die fremde Seite, wenn hinter dem Konfliktblock das schließende `</data>` steht; danach
   `designer_neu.py schreiben` und die Namen auf Dubletten prüfen.
-- **Testdatenbank** nach Merges oft als LFS-Zeiger: `git lfs pull --include=Referenzlaeufe/Kenndaten_Test.sqlite`.
-- **Push:** `git -c "lfs.https://github.com/inekon/EPOS-Plan.git/info/lfs.locksverify=false" push -q origin
-  HEAD:refs/heads/<zweig>` auf `ios_migration_september` und den Sitzungszweig; den doppelten Kern-Lauf des Sitzungszweigs
-  abbrechen. Reihenfolge einer Welle: Merge → Gate → Statuszeile und Protokoll → Push → CI-Vermerk `[skip ci]`.
+- **Testdatenbank** in Worktrees: `git lfs fetch origin ios_migration_september --include=Referenzlaeufe/Kenndaten_Test.sqlite && git lfs checkout Referenzlaeufe/Kenndaten_Test.sqlite` (ohne `-q`); vor jedem Merge mit Datenbankänderung `git checkout -- Referenzlaeufe/Kenndaten_Test.sqlite`.
+- **Push:** `git -c "lfs.https://github.com/inekon/EPOS-Plan.git/info/lfs.locksverify=false" push -q origin HEAD:refs/heads/<zweig>` auf `ios_migration_september` und den Sitzungszweig. Pushes auf den Sitzungszweig brechen dessen laufende CI ab; reine Papier-Pushes deshalb mit `[skip ci]` nur auf den Arbeitszweig. Der CI-Nachweis kommt vom Lauf des Sitzungszweigs; Check-in per `send_later` (etwa 50 Minuten), der einen Sonnet-Agenten auslöst. Reihenfolge einer Welle: Merge → Gate → Statuszeile und Protokoll → Push → CI-Vermerk `[skip ci]`.
+- **Container und Platte:** Container-Neustarts beenden Agenten; Worktrees unter `/home/user/wt` überleben, `/tmp` nicht (deshalb liegen die Skripte im Repositorium). Worktrees nach dem Push entfernen; unter 5 GB frei kein Gate.
 - **Modellregel (Anwender, 13.10.2026):** Fable 5.1 nur für Orchestrierung und sehr komplexe Analysen; Fachcode, Schema, Tests und Fachkonflikte Opus 5.5; Merges ohne Fachkonflikt, Gates, Nachweise, Status, Protokolle, Wiki und CI-Auswertung Sonnet; Zählungen und Prüfungen Haiku; Check-ins lösen Agenten aus.
 - Keine macOS-, iOS- oder Setup-Läufe, kein Wiki-Upload, keine Pull Requests, kein Force-Push und keine Tags ohne Rückfrage.
 
 ## 7. Einstiegs-Prompt
 
 ```text
-Sitzung „Gebäudesimulation“ (EPOS-Plan, inekon/EPOS-Plan) auf neuem Konto fortsetzen. Arbeitszweig ios_migration_september;
-der eigene Sitzungszweig wird bei jedem Push mitgezogen.
+Sitzung „Gebäudesimulation“ (EPOS-Plan, inekon/EPOS-Plan) auf neuem Konto fortsetzen. Arbeitszweig ios_migration_september; der eigene Sitzungszweig wird bei jedem Push mitgezogen. Antworten auf Deutsch.
 
-1. Lies CLAUDE.md und das Übergabepapier
-   Dokumentation/aktuell/Gebaeudesimulation/2026-10-12_Uebergabe_Gebaeudesimulation_Kontowechsel.md ganz; aus
-   Dokumentation/aktuell/Status_iOS_Migration.md nur den Kopf (Schemaanmeldung) und die Zeilen ab #1046 (#1034 gehört der Sitzung Kälteanlagen; höchste eigene #1084); aus
-   Dokumentation/aktuell/Status_Gebaeudesimulation_VDI6007.md die Entscheide E135–E138. Weitere Papiere nur gezielt.
-2. Prüfe mit git log --format='%h %<(72,trunc)%s' -n 20 origin/ios_migration_september, was seit dem Papier hinzukam.
-3. Arbeite Abschnitt 4 der Reihe nach ab: Importlauf beim Anwender, MA-1 (erledigt, MA-1a und MA-1b), DA-2 und DA-3 (erledigt, #1076/#1077), DA-4, DA-5, DA-7 (erledigt, #1081 bis #1083),
-   MA-3 bis MA-7 (alle MA-Wellen erledigt; offen DA-6, DA-8, DA-9, BK-5 bis BK-7, SA4), DA-6 (im Bau, 231), Wiki, BK-5 ff., SA4.
-4. Arbeitsweise: Orchestrierung mit Agenten (opus-umsetzung für Fachcode, sonnet-mechanik für Status/Protokolle, Modell immer
-   ausdrücklich setzen), je Welle ein Worktree; Merge im Integrations-Worktree, Gate nach Abschnitt 6, Statuszeile (nächste
-   freie Nummer vor dem Push gegen origin prüfen — andere Sitzungen vergeben laufend Nummern), Push auf
-   ios_migration_september und den Sitzungszweig; doppelten Kern-Lauf des Sitzungszweigs abbrechen; reine Papier-Pushes mit
-   [skip ci], damit ein laufender CI-Lauf nicht abbricht. Übergabepapier bei jedem Push nachführen.
-5. Grenzen: keine macOS-, iOS- oder Setup-Läufe, kein Wiki-Upload, keine Pull Requests, kein Force-Push ohne Rückfrage.
-   Anwenderdateien (.sqproj, .mdf, CSV-Export) nie ins Repositorium; Normwerte nur die DIN/TS-18599-10-Profile nach E135
-   (aus der Lieferung des Anwenders), alles andere bleibt tabu; aus Anwenderdateien nur Struktur und Zählungen.
-   Die lokale Sitzung „iOS migration merge conflicts“ auf dem Rechner des Anwenders kann den Hottgenroth-Export auswerten
-   (nur Kategorien und Zählungen zurückmelden lassen).
-6. Offene Anwenderfragen (Abschnitt 5) gesammelt mit Empfehlung vorlegen; kurze Antworten in Stichpunkten, Tabellen für
-   Stände.
+1. Lies CLAUDE.md ganz und das Übergabepapier Dokumentation/aktuell/Gebaeudesimulation/2026-10-12_Uebergabe_Gebaeudesimulation_Kontowechsel.md ganz (Stand 14.10.2026). Aus Dokumentation/aktuell/Status_iOS_Migration.md nur den Kopf („Schemaschritt angemeldet“, Referenzbasis) und die Zeilen ab #1091; aus Dokumentation/aktuell/Status_Gebaeudesimulation_VDI6007.md die Entscheide E135 bis E143. Weitere Papiere nur gezielt per grep.
+2. git fetch und git log --format='%h %<(72,trunc)%s' -n 30 origin/ios_migration_september: was seit dem Papier hinzukam. Den Statuskopf auf origin gegen Abschnitt 1 des Papiers halten (Schemakette 228 bis 232, Basen R55 ff.).
+3. Zuerst Abschnitt 3 des Papiers: die noch nicht gemergten Wellen (DA-6 Schritt 231, BK-5/BK-6 Schritt 232) — sobald 230 auf origin liegt: Kette umhängen, Testdatenbank 230 → 231 → 232 auf der origin-Datei heben, Integrationsrunde mit Nachgate gegen die aktuelle Basis, Push. Danach Abschnitt 4 der Reihe nach.
+4. Arbeitsweise: Orchestrierung mit Agenten, Modell immer ausdrücklich — opus-umsetzung für Fachcode, Schema, Tests, Fachkonflikte; sonnet-mechanik für Merges ohne Fachkonflikt, Gates, Status, Protokolle, Übergabepapier, CI-Vermerke, Wiki-Quellen; haiku-pruefung für Zählungen. Fable nur für Auftragsschnitt, Abnahme, Abstimmung, Push und Anwenderentscheide. Je Welle ein Worktree unter /home/user/wt, Integrations-Worktree aus origin; Skripte und Aufrufe in Werkzeuge/Gate/LIESMICH.md (Abschnitt Gebäudesimulation). Statusnummern unmittelbar vor dem Commit gegen origin messen. Push nur auf ios_migration_september und den Sitzungszweig; reine Papier-Pushes mit [skip ci] nur auf den Arbeitszweig; CI-Nachweis über den Kern-Lauf des Sitzungszweigs, Check-in per send_later (etwa 50 Minuten), der einen Sonnet-Agenten für den CI-Vermerk auslöst. Übergabepapier bei jedem Push nachführen. Erledigte Worktrees nach dem Push entfernen (Platte).
+5. Abstimmung: Nachbarsitzungen (Anlagendialog, Kältebedarf, Dialoge und Korrekturen Cloud, Zapfprofilgenerator) per send_message, wenn list_sessions sie zeigt, sonst über Statuskopf und Papier. Schemaschritte nur über die Kopfzeile anmelden und allein diese Zeile sofort pushen; vor macOS-, iOS- oder Setup-Läufen, Wiki-Upload, Pull Requests und Force-Push immer Rückfrage.
+6. Grenzen: Anwenderdateien (.sqproj, .mdf, CSV-Export, PDF der Norm) nie ins Repositorium, aus ihnen nur Struktur und Zählungen; Normwerte nur die DIN/TS-18599-10-Profile nach E135 aus der Lieferung (als Saat in DA-6). Den Rechner des Anwenders erreicht nur eine lokale Sitzung „Lokal EPOS-Plan“, die der Anwender startet; sie fährt Importläufe und liest C:\Temp.
+7. Offene Anwenderfragen (Abschnitt 5) gesammelt mit Empfehlung vorlegen; Antworten knapp, Stände als Tabelle.
 ```
