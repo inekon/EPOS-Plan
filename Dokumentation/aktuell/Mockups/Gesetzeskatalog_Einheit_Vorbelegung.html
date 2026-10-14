@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gesetzeskatalog Zeilendialog: Einheit vorbelegt</title>
+<!--
+  MOCKUP, kein Produktcode. Zeilendialog des Gesetzeskatalogs mit vorbelegter Einheit.
+  Vorlage: EPOS.UI/Dialoge/Wirtschaftlichkeit/GesetzeskatalogZeileDialog.razor
+  (sieben Felder, Neu und Aendern; beim Aendern sind Schluessel und Klasse gesperrt).
+
+  REGEL (nur Neu): Vorbelegt wird, solange der Anwender die Einheit nicht selbst gewaehlt hat.
+    1. bestehender Schluessel -> Einheit der juengsten Zeile dieses Schluessels (Klasse und Quelle ebenso)
+    2. neuer Schluessel      -> haeufigste Einheit des Bereichs in der Testdatenbank
+    3. sonst keine Vorbelegung; Pflichtfeld, OK gesperrt, Sperrgrund am Knopf; kein stilles "-"
+    4. Wahl des Anwenders gewinnt; "Vorschlag uebernehmen" erscheint, wenn der Vorschlag abweicht
+    5. Aendern: gespeicherte Einheit bleibt, nichts wird vorbelegt
+
+  ALLE ZAHLEN SIND GEMESSEN gegen Referenzlaeufe/Kenndaten_Test.sqlite, Tabelle
+  Tab_Gesetzesparameter (240 Zeilen, 192 Schluessel). Die Daten stehen unten als Feld
+  DATEN im Skript. EIGENSTAENDIG: kein CDN, keine Schriftdatei von aussen. Farben und
+  Masse aus EPOS.UI/wwwroot/epos-ui.css (Kopfband #0F1F3D, Flaeche #f5f4ef, Rahmen #b4b2a9,
+  Fehleingabe rgb(255,235,235)).
+-->
+<style>
+:root {
+    --epos-schrift: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    --epos-schriftgroesse: 13px;
+    --epos-rahmen: #b4b2a9;
+    --epos-rahmen-leise: #d9d7cf;
+    --epos-text: #2c2c2a;
+    --epos-text-leise: #5f5e5a;
+    --epos-text-sehr-leise: #888780;
+    --epos-flaeche: #f5f4ef;
+    --epos-kopf: #0F1F3D;
+    --epos-reiterband: #f0f8ff;
+    --epos-quelle-rahmen: #378ADD;
+    --epos-quelle-text: #185FA5;
+    --epos-warn-rahmen: rgb(200, 138, 0);
+    --epos-warn-flaeche: rgb(255, 246, 224);
+    --epos-warn-text: rgb(138, 91, 0);
+    --epos-fehleingabe: rgb(255, 235, 235);
+    --epos-fehler: rgb(176, 0, 32);
+    --epos-erfolg: rgb(24, 98, 24);
+    --epos-seite: #e9e8e2;
+    --epos-weiss: #ffffff;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font: var(--epos-schriftgroesse)/1.4 var(--epos-schrift); color: var(--epos-text); background: var(--epos-seite); }
+
+/* Szenarienleiste */
+.leiste { background: var(--epos-kopf); color: #fff; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.leiste strong { margin-right: 6px; font-size: 14px; }
+.leiste button { min-height: 36px; padding: 4px 12px; border-radius: 6px; border: 1px solid #5b6b8c; background: transparent; color: #fff; font: inherit; cursor: pointer; text-align: left; }
+.leiste button:hover { background: #1c2f57; }
+.leiste button[aria-pressed="true"] { background: var(--epos-reiterband); color: var(--epos-kopf); border-color: var(--epos-reiterband); font-weight: 600; }
+.leiste .rechts { margin-left: auto; }
+.szenariotext { padding: 8px 16px; background: var(--epos-reiterband); border-bottom: 1px solid var(--epos-rahmen-leise); color: var(--epos-text-leise); }
+.szenariotext b { color: var(--epos-text); }
+
+/* Buehne */
+.raster { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; padding: 16px; align-items: start; }
+@media (max-width: 960px) { .raster { grid-template-columns: 1fr; } }
+.buehne { background: #cfcdc4; border-radius: 6px; padding: 28px 16px 36px; display: flex; justify-content: center; min-height: 560px; }
+
+/* Dialog */
+.dialog { width: 600px; max-width: 100%; background: var(--epos-weiss); border: 1px solid var(--epos-rahmen); border-radius: 6px; box-shadow: 0 8px 28px rgba(15,31,61,.28); align-self: flex-start; }
+.dkopf { background: var(--epos-kopf); color: #fff; height: 40px; display: flex; align-items: center; padding: 0 12px; border-radius: 5px 5px 0 0; gap: 10px; }
+.dkopf h2 { margin: 0; font-size: 13px; font-weight: 700; flex: 1; }
+.pille { width: 24px; height: 24px; border-radius: 12px; border: 1px solid #8fa0c4; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
+.kreuz { font-size: 18px; line-height: 1; opacity: .85; }
+.dkoerper { padding: 14px 16px 4px; }
+.zeile { display: grid; grid-template-columns: 12rem minmax(0, 1fr); gap: 4px 12px; align-items: start; margin-bottom: 10px; }
+.zeile > label { padding-top: 7px; color: var(--epos-text); }
+.zeile .pfl { color: var(--epos-fehler); font-weight: 700; margin-left: 2px; }
+input[type=text], input[type=number], select {
+    width: 100%; min-height: 32px; padding: 3px 8px; font: inherit; color: var(--epos-text);
+    background: #fff; border: 1px solid var(--epos-rahmen); border-radius: 4px;
+}
+input.kurz { width: 8em; }
+input[readonly], select:disabled { background: var(--epos-flaeche); color: var(--epos-text-leise); cursor: not-allowed; }
+input:focus, select:focus, button:focus-visible { outline: 2px solid var(--epos-quelle-rahmen); outline-offset: 1px; }
+select.pflicht { background: var(--epos-fehleingabe); border-color: var(--epos-fehler); }
+.herleitung { margin: -4px 0 10px 12rem; padding-left: 12px; color: var(--epos-text-sehr-leise); font-size: 12px; }
+.hinweis { margin-top: 4px; font-size: 12px; color: var(--epos-quelle-text); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.hinweis .i { display: inline-flex; width: 14px; height: 14px; border-radius: 7px; border: 1px solid var(--epos-quelle-rahmen); align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex: none; }
+.hinweis.leise { color: var(--epos-text-leise); }
+.hinweis.leise .i { border-color: var(--epos-text-sehr-leise); }
+.hinweis.pflicht { color: var(--epos-fehler); }
+.hinweis.pflicht .i { border-color: var(--epos-fehler); }
+.mini { min-height: 26px; padding: 0 10px; border-radius: 13px; border: 1px solid var(--epos-quelle-rahmen); background: #fff; color: var(--epos-quelle-text); font: inherit; font-size: 12px; cursor: pointer; }
+.mini:hover { background: var(--epos-reiterband); }
+.schluss { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 10px 16px; border-top: 1px solid var(--epos-rahmen-leise); background: var(--epos-flaeche); border-radius: 0 0 5px 5px; margin-top: 8px; }
+.sperrgrund { margin-right: auto; color: var(--epos-fehler); font-size: 12px; }
+.knopf { min-height: 44px; min-width: 96px; padding: 0 18px; border-radius: 6px; border: 1px solid var(--epos-rahmen); background: var(--epos-flaeche); color: var(--epos-text); font: inherit; cursor: pointer; }
+.knopf:hover:not(:disabled) { background: #ebe9e1; }
+.knopf.ok { font-weight: 700; border-color: var(--epos-kopf); }
+.knopf:disabled { opacity: .5; cursor: not-allowed; }
+.gespeichert { margin-top: 8px; padding: 8px 12px; border-radius: 4px; background: rgb(240,250,240); border: 1px solid rgb(34,139,34); color: var(--epos-erfolg); font-size: 12px; display: none; }
+.gespeichert.an { display: block; }
+
+/* Regeltafel */
+.tafel { background: #fff; border: 1px solid var(--epos-rahmen); border-radius: 6px; }
+.tafel h3 { margin: 0; background: var(--epos-kopf); color: #fff; font-size: 13px; padding: 10px 12px; border-radius: 5px 5px 0 0; }
+.tafel .in { padding: 10px 12px 12px; }
+.fall { display: grid; grid-template-columns: 26px 1fr; gap: 8px; margin-bottom: 10px; }
+.fall .nr { width: 22px; height: 22px; border-radius: 11px; background: var(--epos-reiterband); border: 1px solid var(--epos-quelle-rahmen); color: var(--epos-quelle-text); font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 12px; margin-top: 1px; }
+.fall.aktiv .nr { background: var(--epos-quelle-text); color: #fff; }
+.fall.aktiv { background: var(--epos-reiterband); border-radius: 4px; outline: 4px solid var(--epos-reiterband); }
+.fall b { display: block; }
+.fall span { color: var(--epos-text-leise); font-size: 12px; }
+table { border-collapse: collapse; width: 100%; font-size: 12px; margin-top: 4px; }
+th, td { text-align: left; padding: 3px 6px; border-bottom: 1px solid var(--epos-rahmen-leise); vertical-align: top; }
+th { background: var(--epos-flaeche); font-weight: 600; }
+td.z { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+tr.aktiv td { background: var(--epos-reiterband); font-weight: 600; }
+.fuss { color: var(--epos-text-sehr-leise); font-size: 11px; margin-top: 8px; }
+.schwach { color: var(--epos-warn-text); }
+</style>
+</head>
+<body>
+
+<div class="leiste" role="toolbar" aria-label="Szenarien">
+    <strong>Szenario</strong>
+    <button type="button" data-s="a">(a) Bestehender KWKG-Schlüssel</button>
+    <button type="button" data-s="b">(b) Neuer Schlüssel, CO2_PREIS</button>
+    <button type="button" data-s="c">(c) Neuer Schlüssel, ENERGIESTEUER</button>
+    <button type="button" data-s="d">(d) Eigene Wahl, dann Bereichswechsel</button>
+    <button type="button" data-s="e">(e) Ändern</button>
+    <button type="button" class="rechts" id="zurueck">Szenario zurücksetzen</button>
+</div>
+<div class="szenariotext" id="szenariotext"></div>
+
+<div class="raster">
+    <div class="buehne">
+        <div style="width:600px;max-width:100%">
+        <form class="dialog" id="dialog" autocomplete="off" onsubmit="return false">
+            <div class="dkopf"><h2 id="titel">Neu</h2><span class="pille" title="Hilfe">?</span><span class="kreuz" aria-hidden="true">×</span></div>
+            <div class="dkoerper">
+                <div class="zeile"><label for="f_schluessel">Schlüssel</label>
+                    <input type="text" id="f_schluessel" list="schluesselliste" maxlength="60"></div>
+                <div class="zeile"><label for="f_klasse">Bereich (Klasse)</label>
+                    <select id="f_klasse"></select></div>
+                <div class="zeile"><label for="f_jahr">Gültig ab</label>
+                    <input type="number" id="f_jahr" class="kurz" min="1990" max="2100"></div>
+                <div class="zeile"><label for="f_wert">Wert</label>
+                    <input type="text" id="f_wert" class="kurz" inputmode="decimal"></div>
+                <div class="herleitung">Ein leeres Wertfeld heißt: der Satz ist entfallen.</div>
+                <div class="zeile"><label for="f_einheit">Einheit<span class="pfl" id="pfl" hidden>*</span></label>
+                    <div><select id="f_einheit"></select><div id="hinweis"></div></div></div>
+                <div class="zeile"><label for="f_status">Status</label>
+                    <select id="f_status"></select></div>
+                <div class="zeile"><label for="f_quelle">Quelle</label>
+                    <input type="text" id="f_quelle" maxlength="120"></div>
+            </div>
+            <div class="schluss">
+                <span class="sperrgrund" id="sperrgrund" role="status"></span>
+                <button type="button" class="knopf ok" id="ok">OK</button>
+                <button type="button" class="knopf" id="abbrechen">Abbrechen</button>
+            </div>
+        </form>
+        <div class="gespeichert" id="gespeichert"></div>
+        <datalist id="schluesselliste"></datalist>
+        </div>
+    </div>
+
+    <aside class="tafel" aria-label="Regel">
+        <h3>Regel: Vorbelegung der Einheit</h3>
+        <div class="in">
+            <div class="fall" id="fall1"><div class="nr">1</div><div><b>Bestehender Schlüssel</b><span>Einheit der jüngsten Zeile dieses Schlüssels; Bereich und Quelle ebenso. Hinweis „übernommen von &lt;Schlüssel&gt; ab &lt;Jahr&gt;“.</span></div></div>
+            <div class="fall" id="fall2"><div class="nr">2</div><div><b>Neuer Schlüssel</b><span>Häufigste Einheit des Bereichs in der Testdatenbank. Hinweis „üblich im Bereich &lt;Bereich&gt;“.</span></div></div>
+            <div class="fall" id="fall3"><div class="nr">3</div><div><b>Keine Vorbelegung</b><span>Feld leer und Pflicht; OK gesperrt, der Grund steht am Knopf. Kein stilles „-“.</span></div></div>
+            <div class="fall"><div class="nr">!</div><div><b>Wahl des Anwenders gewinnt</b><span>Ein Wechsel von Schlüssel oder Bereich überschreibt sie nicht; „Vorschlag übernehmen“ holt ihn zurück. Beim Ändern wird nichts vorbelegt.</span></div></div>
+            <table id="zuordnung">
+                <thead><tr><th>Bereich</th><th>Vorbelegung</th><th class="z">Treffer</th></tr></thead>
+                <tbody></tbody>
+            </table>
+            <div class="fuss">Treffer = Zeilen des Bereichs mit dieser Einheit von allen Zeilen des Bereichs in Tab_Gesetzesparameter (240 Zeilen, 192 Schlüssel). Gelb: weniger als die Hälfte der Zeilen. Die Einheit eines Schlüssels wechselt über die Jahre nirgends.</div>
+        </div>
+    </aside>
+</div>
+
+<script>
+"use strict";
+// Gemessen: [Schluessel, Klasse, JahrVon, Wert, Einheit, Status, Quelle], Tab_Gesetzesparameter
+const DATEN = [["CO2_PREIS_NEHS","CO2_PREIS",2021,25.0,"EUR/t","GESICHERT","BEHG § 10 Abs. 2 — Festpreisphase des nationalen Emissionshandels"],["CO2_PREIS_NEHS","CO2_PREIS",2022,30.0,"EUR/t","GESICHERT","BEHG § 10 Abs. 2 — Festpreisphase des nationalen Emissionshandels"],["CO2_PREIS_NEHS","CO2_PREIS",2023,30.0,"EUR/t","GESICHERT","BEHG § 10 Abs. 2 — Festpreisphase des nationalen Emissionshandels"],["CO2_PREIS_NEHS","CO2_PREIS",2024,45.0,"EUR/t","GESICHERT","BEHG § 10 Abs. 2 — Festpreisphase des nationalen Emissionshandels"],["CO2_PREIS_NEHS","CO2_PREIS",2025,55.0,"EUR/t","GESICHERT","BEHG § 10 Abs. 2 — Festpreisphase des nationalen Emissionshandels"],["CO2_PREIS_NEHS","CO2_PREIS",2026,65.0,"EUR/t","GESICHERT","EEX-Auktionen 2026 — durchgehend am Höchstpreis des Korridors zugeteilt"],["CO2_PREIS_NEHS","CO2_PREIS",2027,65.0,"EUR/t","VORLAEUFIG","Kabinettsbeschluss 12.08.2026 (3. BEHG-ÄndG); Bundestag und Bundesrat stehen aus"],["CO2_PREIS_NEHS","CO2_PREIS",2028,80.0,"EUR/t","PROGNOSE","Konzept Kosten/Energietraeger E5 - konservativ, Marktkommentare 2026; frei editierbar"],["CO2_PREIS_NEHS_KORRIDOR_MAX","CO2_PREIS",2026,65.0,"EUR/t","GESICHERT","BEHG § 10 Abs. 2 — Obergrenze des Preiskorridors 2026"],["CO2_PREIS_NEHS_KORRIDOR_MAX","CO2_PREIS",2027,65.0,"EUR/t","VORLAEUFIG","Kabinettsbeschluss 12.08.2026 — Korridor 2027, Gesetz im Verfahren"],["CO2_PREIS_NEHS_KORRIDOR_MIN","CO2_PREIS",2026,55.0,"EUR/t","GESICHERT","BEHG § 10 Abs. 2 — Untergrenze des Preiskorridors 2026"],["CO2_PREIS_NEHS_KORRIDOR_MIN","CO2_PREIS",2027,55.0,"EUR/t","VORLAEUFIG","Kabinettsbeschluss 12.08.2026 — Korridor 2027, Gesetz im Verfahren"],["CO2_PREIS_NEHS_NACHKAUF","CO2_PREIS",2027,70.0,"EUR/t","GESICHERT","DEHSt — Nachkauf von 2026er-Zertifikaten bis 31.08.2027"],["CO2_PREIS_NEHS_NACHVERKAUF","CO2_PREIS",2026,68.0,"EUR/t","GESICHERT","DEHSt — Verkauf ab 03.11.2026, unbegrenzte Menge"],["EEG_51A_FAKTOR_SOLAR","EEG",2025,0.5,"-","GESICHERT","§ 51a EEG — Verlängerung um 0,5 Viertelstunden je Ausfall-Viertelstunde (Solar)"],["EEG_51A_VLVST_MONAT_1","EEG",2025,87.0,"-","GESICHERT","§ 51a EEG — Monatskontingent Viertelstunden, Monat 1"],["EEG_51A_VLVST_MONAT_10","EEG",2025,231.0,"-","GESICHERT","§ 51a EEG — Monatskontingent Viertelstunden, Monat 10"],["EEG_51A_VLVST_MONAT_11","EEG",2025,118.0,"-","GESICHERT","§ 51a EEG — Monatskontingent Viertelstunden, Monat 11"],["EEG_51A_VLVST_MONAT_12","EEG",2025,73.0,"-","GESICHERT","§ 51a EEG — Monatskontingent Viertelstunden, Monat 12"],["EEG_51A_VLVST_MONAT_2","EEG",2025,189.0,"-","GESICHERT","§ 51a EEG — Monatskontingent Viertelstunden, Monat 2"],["EEG_51A_VLVST_MONAT_3","EEG",2025,340.0,"-","GESICHERT","§ 51a EEG — Monatskontingent Viertelstunden, Monat 3"],["EEG_51A_VLVST_MONAT_4","EEG",2025,442.0,"-","GESICHERT","§ 51a EEG — Monatskontingent Viertelstunden, Monat 4"],["EEG_51A_VLVST_MONAT_5","EEG",2025,490.0,"-","GESICHERT","§ 51a EEG — Monatskontingent Viertelstunden, Monat 5"],["EEG_51A_VLVST_MONAT_6","EEG",2025,508.0,"-","GESICHERT","§ 51a EEG — Monatskontingent Viertelstunden, Monat 6"],["EEG_51A_VLVST_MONAT_7","EEG",2025,498.0,"-","GESICHERT","§ 51a EEG — Monatskontingent Viertelstunden, Monat 7"],["EEG_51A_VLVST_MONAT_8","EEG",2025,453.0,"-","GESICHERT","§ 51a EEG — Monatskontingent Viertelstunden, Monat 8"],["EEG_51A_VLVST_MONAT_9","EEG",2025,371.0,"-","GESICHERT","§ 51a EEG — Monatskontingent Viertelstunden, Monat 9"],["EEG_51_GRENZE_KW","EEG",2025,100.0,"kW","GESICHERT","§ 51 EEG (Solarspitzengesetz) — darunter verschont bis iMSys-Einbau"],["EEG_AUSFALLVERG_ABSCHLAG","EEG",2022,20.0,"Prozent","GESICHERT","§ 53 EEG Abs. 3 — Ausfallvergütung 80 % des AW, nur Anlagen > 100 kW (N3)"],["EEG_AUSSCHREIBUNG_GRENZE_KW","EEG",2022,1000.0,"kW","GESICHERT","§ 22 EEG — darüber Ausschreibung, AW = Zuschlagswert (manuelle Eingabe)"],["EEG_AW_BASIS_UE_10","EEG",2022,8.6,"ct/kWh","GESICHERT","§ 49 EEG i. V. m. BNetzA-Tabelle der anzulegenden Werte, Überschuss bis 10 kW"],["EEG_AW_BASIS_UE_100","EEG",2022,6.2,"ct/kWh","GESICHERT","§ 49 EEG i. V. m. BNetzA-Tabelle der anzulegenden Werte, Überschuss bis 100 kW"],["EEG_AW_BASIS_UE_1000","EEG",2022,6.2,"ct/kWh","GESICHERT","§ 49 EEG i. V. m. BNetzA-Tabelle der anzulegenden Werte, Überschuss bis 1.000 kW"],["EEG_AW_BASIS_UE_40","EEG",2022,7.5,"ct/kWh","GESICHERT","§ 49 EEG i. V. m. BNetzA-Tabelle der anzulegenden Werte, Überschuss bis 40 kW"],["EEG_AW_BASIS_UE_400","EEG",2022,6.2,"ct/kWh","GESICHERT","§ 49 EEG i. V. m. BNetzA-Tabelle der anzulegenden Werte, Überschuss bis 400 kW"],["EEG_AW_VOLL_ZUSCHLAG_10","EEG",2022,4.8,"ct/kWh","GESICHERT","§ 49 EEG i. V. m. BNetzA-Tabelle der anzulegenden Werte, Voll-Zuschlag bis 10 kW"],["EEG_AW_VOLL_ZUSCHLAG_100","EEG",2022,5.1,"ct/kWh","GESICHERT","§ 49 EEG i. V. m. BNetzA-Tabelle der anzulegenden Werte, Voll-Zuschlag bis 100 kW"],["EEG_AW_VOLL_ZUSCHLAG_1000","EEG",2022,1.9,"ct/kWh","GESICHERT","§ 49 EEG i. V. m. BNetzA-Tabelle der anzulegenden Werte, Voll-Zuschlag bis 1.000 kW"],["EEG_AW_VOLL_ZUSCHLAG_40","EEG",2022,3.8,"ct/kWh","GESICHERT","§ 49 EEG i. V. m. BNetzA-Tabelle der anzulegenden Werte, Voll-Zuschlag bis 40 kW"],["EEG_AW_VOLL_ZUSCHLAG_400","EEG",2022,3.2,"ct/kWh","GESICHERT","§ 49 EEG i. V. m. BNetzA-Tabelle der anzulegenden Werte, Voll-Zuschlag bis 400 kW"],["EEG_DEGRESSION_HALBJAHR","EEG",2024,1.0,"Prozent","GESICHERT","§ 49 Abs. 1 EEG — 1 % je Halbjahresstichtag (1.2./1.8.), erstmals 01.02.2024"],["EEG_EV_ABSCHLAG","EEG",2022,0.4,"ct/kWh","GESICHERT","§ 53 EEG Abs. 1 — feste Einspeisevergütung = AW − 0,4 ct/kWh"],["EEG_EV_GRENZE_KW","EEG",2022,100.0,"kW","GESICHERT","§ 21 Abs. 1 Nr. 1 EEG — feste Einspeisevergütung nur bis 100 kW"],["EEG_JAHRESMARKTWERT_SOLAR","EEG",2024,4.624,"ct/kWh","GESICHERT","netztransparenz.de, Jahresmarktwert Solar (§ 23a EEG), 2024"],["EEG_JAHRESMARKTWERT_SOLAR","EEG",2025,4.508,"ct/kWh","GESICHERT","netztransparenz.de, Jahresmarktwert Solar (§ 23a EEG), 2025"],["EEG_KAPPUNG_PROZENT","EEG",2023,60.0,"Prozent","GESICHERT","§ 9 Abs. 2 EEG — Wirkleistungsbegrenzung ohne iMSys"],["EEG_SOLARPAKET_AUFSCHLAG","EEG",2024,1.5,"ct/kWh","VORLAEUFIG","§ 101 EEG — Solarpaket I, +1,5 ct/kWh > 40 kW; EU-Beihilfevorbehalt, NICHT anwenden (F8)"],["EEG_UNENTGELTLICH_GRENZE_KW","EEG",2022,200.0,"kW","GESICHERT","§ 21 Abs. 1 Nr. 2 EEG — unentgeltliche Abnahme nur < 200 kW (N4)"],["EEG_VERGUETUNGSDAUER","EEG",2022,20.0,"Jahr","GESICHERT","§ 25 Abs. 1 EEG — 20 Jahre zzgl. Inbetriebnahmemonate"],["EF_BILANZ_BAFA_BIODIESEL","EF_BILANZ",2026,70.0,"g/kWh","GESICHERT","BAFA-Infoblatt CO2-Faktoren EEW, Version 3.4, Stand 01.06.2026, heizwertbezogen"],["EF_BILANZ_BAFA_BIOGAS","EF_BILANZ",2026,152.0,"g/kWh","GESICHERT","BAFA-Infoblatt CO2-Faktoren EEW, Version 3.4, Stand 01.06.2026, heizwertbezogen"],["EF_BILANZ_BAFA_DEPONIEGAS","EF_BILANZ",2026,50.0,"g/kWh","GESICHERT","BAFA-Infoblatt CO2-Faktoren EEW, Version 3.4, Stand 01.06.2026, heizwertbezogen"],["EF_BILANZ_BAFA_FERNWAERME","EF_BILANZ",2026,280.0,"g/kWh","GESICHERT","BAFA-Infoblatt CO2-Faktoren EEW, Version 3.4, Stand 01.06.2026, heizwertbezogen"],["EF_BILANZ_BAFA_HOLZ_TROCKEN","EF_BILANZ",2026,27.0,"g/kWh","GESICHERT","BAFA-Infoblatt CO2-Faktoren EEW, Version 3.4, Stand 01.06.2026, heizwertbezogen"],["EF_BILANZ_BAFA_KLAERGAS","EF_BILANZ",2026,50.0,"g/kWh","GESICHERT","BAFA-Infoblatt CO2-Faktoren EEW, Version 3.4, Stand 01.06.2026, heizwertbezogen"],["EF_BILANZ_BAFA_KLAERSCHLAMM","EF_BILANZ",2026,10.0,"g/kWh","GESICHERT","BAFA-Infoblatt CO2-Faktoren EEW, Version 3.4, Stand 01.06.2026, heizwertbezogen"],["EF_BILANZ_BAFA_PELLETS","EF_BILANZ",2026,36.0,"g/kWh","GESICHERT","BAFA-Infoblatt CO2-Faktoren EEW, Version 3.4, Stand 01.06.2026, heizwertbezogen"],["EF_BILANZ_BAFA_STROM","EF_BILANZ",2026,435.0,"g/kWh","GESICHERT","BAFA-Infoblatt CO2-Faktoren EEW, Version 3.4, Stand 01.06.2026, heizwertbezogen"],["EF_BILANZ_BIOGEN_VERBRENNUNG","EF_BILANZ",2024,365.0,"g/kWh","VORLAEUFIG","UBA-CO2-Rechner, Methodikumstellung Maerz 2024 — biogenes Verbrennungs-CO2"],["EF_BILANZ_EBEV_BIODIESEL","EF_BILANZ",2023,266.4,"g/kWh","GESICHERT","EBeV 2030, Anlage 2 Teil 4"],["EF_BILANZ_EBEV_BIOMASSE","EF_BILANZ",2023,0.0,"g/kWh","GESICHERT","EBeV 2030 § 8 — nur MIT Nachhaltigkeitsnachweis, sonst voller fossiler Wert (L13)"],["EF_BILANZ_EBEV_ERDGAS_HI","EF_BILANZ",2023,200.9,"g/kWh","GESICHERT","EBeV 2030, Anlage 2 Teil 4 — 55,8 t CO2/TJ, heizwertbezogen"],["EF_BILANZ_EBEV_ERDGAS_HO","EF_BILANZ",2023,181.4,"g/kWh","GESICHERT","EBeV 2030, Anlage 2 Teil 4 — brennwertbezogen, die deutsche Abrechnungspraxis"],["EF_BILANZ_EBEV_FLUESSIGGAS","EF_BILANZ",2023,235.8,"g/kWh","GESICHERT","EBeV 2030, Anlage 2 Teil 4 — 65,5 t CO2/TJ"],["EF_BILANZ_EBEV_HEIZOEL_EL","EF_BILANZ",2023,266.4,"g/kWh","GESICHERT","EBeV 2030, Anlage 2 Teil 4 — 74,0 t CO2/TJ"],["EF_BILANZ_EBEV_HEIZOEL_S","EF_BILANZ",2023,286.9,"g/kWh","GESICHERT","EBeV 2030, Anlage 2 Teil 4 — 79,7 t CO2/TJ"],["EF_BILANZ_EBEV_PFLANZENOEL","EF_BILANZ",2023,266.4,"g/kWh","GESICHERT","EBeV 2030, Anlage 2 Teil 4 — auch Tierfette und Altspeiseöl"],["EF_BILANZ_EBEV_UMRECHNUNG_HO","EF_BILANZ",2023,3.2508,"GJ/MWh","GESICHERT","EBeV 2030, Anlage 2 Teil 4 — Umrechnung brennwertbezogener Mengen; Hi/Ho-Falle rund 10 %"],["EF_BILANZ_STROMMIX_CO2_DIREKT","EF_BILANZ",2020,365.0,"g/kWh","GESICHERT","UBA CLIMATE CHANGE 16/2026 — Strommix 1990-2025, März 2026, CO2 direkt"],["EF_BILANZ_STROMMIX_CO2_DIREKT","EF_BILANZ",2021,406.0,"g/kWh","GESICHERT","UBA CLIMATE CHANGE 16/2026 — Strommix 1990-2025, März 2026, CO2 direkt"],["EF_BILANZ_STROMMIX_CO2_DIREKT","EF_BILANZ",2022,433.0,"g/kWh","GESICHERT","UBA CLIMATE CHANGE 16/2026 — Strommix 1990-2025, März 2026, CO2 direkt"],["EF_BILANZ_STROMMIX_CO2_DIREKT","EF_BILANZ",2023,379.0,"g/kWh","GESICHERT","UBA CLIMATE CHANGE 16/2026 — Strommix 1990-2025, März 2026, CO2 direkt"],["EF_BILANZ_STROMMIX_CO2_DIREKT","EF_BILANZ",2024,353.0,"g/kWh","VORLAEUFIG","UBA CLIMATE CHANGE 16/2026 — Strommix 1990-2025, März 2026, CO2 direkt (vorläufig)"],["EF_BILANZ_STROMMIX_CO2_DIREKT","EF_BILANZ",2025,344.0,"g/kWh","VORLAEUFIG","UBA CLIMATE CHANGE 16/2026 — Strommix 1990-2025, März 2026, CO2 direkt (geschätzt)"],["EF_BILANZ_STROMMIX_THG_MIT_VORKETTE","EF_BILANZ",2020,435.0,"g/kWh","GESICHERT","UBA CLIMATE CHANGE 16/2026 — Strommix 1990-2025, März 2026, THG mit Vorkette — maßgeblich"],["EF_BILANZ_STROMMIX_THG_MIT_VORKETTE","EF_BILANZ",2021,477.0,"g/kWh","GESICHERT","UBA CLIMATE CHANGE 16/2026 — Strommix 1990-2025, März 2026, THG mit Vorkette — maßgeblich"],["EF_BILANZ_STROMMIX_THG_MIT_VORKETTE","EF_BILANZ",2022,503.0,"g/kWh","GESICHERT","UBA CLIMATE CHANGE 16/2026 — Strommix 1990-2025, März 2026, THG mit Vorkette — maßgeblich"],["EF_BILANZ_STROMMIX_THG_MIT_VORKETTE","EF_BILANZ",2023,442.0,"g/kWh","GESICHERT","UBA CLIMATE CHANGE 16/2026 — Strommix 1990-2025, März 2026, THG mit Vorkette — maßgeblich"],["EF_BILANZ_STROMMIX_THG_MIT_VORKETTE","EF_BILANZ",2024,414.0,"g/kWh","VORLAEUFIG","UBA CLIMATE CHANGE 16/2026 — Strommix 1990-2025, März 2026, THG mit Vorkette — maßgeblich (vorläufig)"],["EF_BILANZ_STROMMIX_THG_MIT_VORKETTE","EF_BILANZ",2025,406.0,"g/kWh","VORLAEUFIG","UBA CLIMATE CHANGE 16/2026 — Strommix 1990-2025, März 2026, THG mit Vorkette — maßgeblich (geschätzt)"],["EF_BILANZ_STROMMIX_THG_OHNE_VORKETTE","EF_BILANZ",2020,373.0,"g/kWh","GESICHERT","UBA CLIMATE CHANGE 16/2026 — Strommix 1990-2025, März 2026, THG ohne Vorkette"],["EF_BILANZ_STROMMIX_THG_OHNE_VORKETTE","EF_BILANZ",2021,414.0,"g/kWh","GESICHERT","UBA CLIMATE CHANGE 16/2026 — Strommix 1990-2025, März 2026, THG ohne Vorkette"],["EF_BILANZ_STROMMIX_THG_OHNE_VORKETTE","EF_BILANZ",2022,441.0,"g/kWh","GESICHERT","UBA CLIMATE CHANGE 16/2026 — Strommix 1990-2025, März 2026, THG ohne Vorkette"],["EF_BILANZ_STROMMIX_THG_OHNE_VORKETTE","EF_BILANZ",2023,387.0,"g/kWh","GESICHERT","UBA CLIMATE CHANGE 16/2026 — Strommix 1990-2025, März 2026, THG ohne Vorkette"],["EF_BILANZ_STROMMIX_THG_OHNE_VORKETTE","EF_BILANZ",2024,361.0,"g/kWh","VORLAEUFIG","UBA CLIMATE CHANGE 16/2026 — Strommix 1990-2025, März 2026, THG ohne Vorkette (vorläufig)"],["EF_BILANZ_STROMMIX_THG_OHNE_VORKETTE","EF_BILANZ",2025,352.0,"g/kWh","VORLAEUFIG","UBA CLIMATE CHANGE 16/2026 — Strommix 1990-2025, März 2026, THG ohne Vorkette (geschätzt)"],["EF_BILANZ_SUBSTITUTION_STROM","EF_BILANZ",2024,685.0,"g/kWh","VORLAEUFIG","UBA CLIMATE CHANGE 11/2026 — Substitutionsfaktor, fuer Photovoltaik 2024 hergeleitet"],["EF_NACHWEIS_ABWAERME","EF_NACHWEIS",2020,40.0,"g/kWh","GESICHERT","GEG Anlage 9, Fassung bis 31.12.2026"],["EF_NACHWEIS_ABWAERME","EF_NACHWEIS",2027,10.0,"g/kWh","GESICHERT","GModG Anlage 9 ab 01.01.2027, BGBl. 2026 I Nr. 226"],["EF_NACHWEIS_BIOGAS","EF_NACHWEIS",2020,140.0,"g/kWh","GESICHERT","GEG Anlage 9, Fassung bis 31.12.2026"],["EF_NACHWEIS_BIOGAS","EF_NACHWEIS",2027,80.0,"g/kWh","GESICHERT","GModG Anlage 9 ab 01.01.2027, BGBl. 2026 I Nr. 226"],["EF_NACHWEIS_BIOGAS_GEBAEUDENAH","EF_NACHWEIS",2020,75.0,"g/kWh","GESICHERT","GEG Anlage 9, Fassung bis 31.12.2026"],["EF_NACHWEIS_BIOGAS_GEBAEUDENAH","EF_NACHWEIS",2027,70.0,"g/kWh","GESICHERT","GModG Anlage 9 ab 01.01.2027, BGBl. 2026 I Nr. 226"],["EF_NACHWEIS_BIOGENES_FLUESSIGGAS","EF_NACHWEIS",2020,180.0,"g/kWh","GESICHERT","GEG Anlage 9, Fassung bis 31.12.2026"],["EF_NACHWEIS_BIOGENES_FLUESSIGGAS","EF_NACHWEIS",2027,80.0,"g/kWh","GESICHERT","GModG Anlage 9 ab 01.01.2027, BGBl. 2026 I Nr. 226"],["EF_NACHWEIS_BIOMETHAN","EF_NACHWEIS",2020,240.0,"g/kWh","GESICHERT","GEG Anlage 9, Fassung bis 31.12.2026"],["EF_NACHWEIS_BIOMETHAN","EF_NACHWEIS",2027,80.0,"g/kWh","GESICHERT","GModG Anlage 9 ab 01.01.2027, BGBl. 2026 I Nr. 226"],["EF_NACHWEIS_BIOOEL","EF_NACHWEIS",2020,210.0,"g/kWh","GESICHERT","GEG Anlage 9, Fassung bis 31.12.2026"],["EF_NACHWEIS_BIOOEL","EF_NACHWEIS",2027,80.0,"g/kWh","GESICHERT","GModG Anlage 9 ab 01.01.2027, BGBl. 2026 I Nr. 226"],["EF_NACHWEIS_BRAUNKOHLE","EF_NACHWEIS",2020,430.0,"g/kWh","GESICHERT","GEG/GModG Anlage 9 — durch das GModG unverändert"],["EF_NACHWEIS_ERDGAS","EF_NACHWEIS",2020,240.0,"g/kWh","GESICHERT","GEG/GModG Anlage 9 — durch das GModG unverändert"],["EF_NACHWEIS_FLUESSIGGAS","EF_NACHWEIS",2020,270.0,"g/kWh","GESICHERT","GEG/GModG Anlage 9 — durch das GModG unverändert"],["EF_NACHWEIS_FW_HEIZWERK_ERNEUERBAR","EF_NACHWEIS",2020,60.0,"g/kWh","GESICHERT","GEG/GModG Anlage 9 — Fernwärme aus Heizwerken, erneuerbar"],["EF_NACHWEIS_FW_HEIZWERK_GAS_FLUESSIG","EF_NACHWEIS",2020,300.0,"g/kWh","GESICHERT","GEG/GModG Anlage 9 — Fernwärme aus Heizwerken, gasförmig/flüssig"],["EF_NACHWEIS_FW_HEIZWERK_KOHLE","EF_NACHWEIS",2020,400.0,"g/kWh","GESICHERT","GEG/GModG Anlage 9 — Fernwärme aus Heizwerken, Kohle"],["EF_NACHWEIS_FW_KWK_ERNEUERBAR","EF_NACHWEIS",2020,40.0,"g/kWh","GESICHERT","GEG/GModG Anlage 9 — Fernwärme aus KWK mit mindestens 70 %, erneuerbar"],["EF_NACHWEIS_FW_KWK_GAS_FLUESSIG","EF_NACHWEIS",2020,180.0,"g/kWh","GESICHERT","GEG/GModG Anlage 9 — Fernwärme aus KWK mit mindestens 70 %, gasförmig/flüssig"],["EF_NACHWEIS_FW_KWK_KOHLE","EF_NACHWEIS",2020,300.0,"g/kWh","GESICHERT","GEG/GModG Anlage 9 — Fernwärme aus KWK mit mindestens 70 %, Kohle"],["EF_NACHWEIS_FW_VORKETTE_AUFSCHLAG","EF_NACHWEIS",2027,20.0,"Prozent","GESICHERT","GModG Anlage 9 ab 01.01.2027, BGBl. 2026 I Nr. 226 — pauschaler Aufschlag Vorkette und Netzverluste"],["EF_NACHWEIS_FW_VORKETTE_MINDEST","EF_NACHWEIS",2027,40.0,"g/kWh","GESICHERT","GModG Anlage 9 ab 01.01.2027, BGBl. 2026 I Nr. 226 — Mindestaufschlag Vorkette und Netzverluste"],["EF_NACHWEIS_HEIZOEL","EF_NACHWEIS",2020,310.0,"g/kWh","GESICHERT","GEG/GModG Anlage 9 — durch das GModG unverändert"],["EF_NACHWEIS_HOLZ","EF_NACHWEIS",2020,20.0,"g/kWh","GESICHERT","GEG/GModG Anlage 9 — durch das GModG unverändert"],["EF_NACHWEIS_STEINKOHLE","EF_NACHWEIS",2020,400.0,"g/kWh","GESICHERT","GEG/GModG Anlage 9 — durch das GModG unverändert"],["EF_NACHWEIS_STROM_NETZ","EF_NACHWEIS",2020,560.0,"g/kWh","GESICHERT","GEG Anlage 9, Fassung bis 31.12.2026"],["EF_NACHWEIS_STROM_NETZ","EF_NACHWEIS",2027,100.0,"g/kWh","GESICHERT","GModG Anlage 9 ab 01.01.2027, BGBl. 2026 I Nr. 226"],["EF_NACHWEIS_VERDRAENGUNGSSTROMMIX","EF_NACHWEIS",2020,860.0,"g/kWh","GESICHERT","GEG Anlage 9, Fassung bis 31.12.2026 — Verdrängungsstrommix KWK"],["EF_NACHWEIS_VERDRAENGUNGSSTROMMIX","EF_NACHWEIS",2027,null,"g/kWh","GESICHERT","GModG: entfällt ersatzlos, Bewertung nach DIN EN 15316-4-5 (L12)"],["ENERGIEST_53A5_ERDGAS","ENERGIESTEUER",2024,4.42,"EUR/MWh","GESICHERT","EnergieStG § 53a Abs. 5 — Gasturbinen und Verbrennungsmotoren (Formular 1135)"],["ENERGIEST_53A5_FLUESSIGGAS","ENERGIESTEUER",2024,19.6,"EUR/1000kg","GESICHERT","EnergieStG § 53a Abs. 5 — Gasturbinen und Verbrennungsmotoren (Formular 1135)"],["ENERGIEST_53A5_HEIZOEL_EL","ENERGIESTEUER",2024,40.35,"EUR/1000l","GESICHERT","EnergieStG § 53a Abs. 5 — Gasturbinen und Verbrennungsmotoren (Formular 1135)"],["ENERGIEST_53A5_KOHLE","ENERGIESTEUER",2024,0.16,"EUR/GJ","GESICHERT","EnergieStG § 53a Abs. 5 — Gasturbinen und Verbrennungsmotoren (Formular 1135)"],["ENERGIEST_53A5_SCHWEROEL","ENERGIESTEUER",2024,4.0,"EUR/1000kg","GESICHERT","EnergieStG § 53a Abs. 5 — Gasturbinen und Verbrennungsmotoren (Formular 1135)"],["ENERGIEST_53A_MINDESTNUTZUNGSGRAD","ENERGIESTEUER",2024,70.0,"Prozent","GESICHERT","EnergieStG § 53a — Monats- oder Jahresnutzungsgrad als Voraussetzung"],["ENERGIEST_54_ERDGAS","ENERGIESTEUER",2024,1.38,"EUR/MWh","GESICHERT","EnergieStG § 54 — Heizstoffe im produzierenden Gewerbe (Formular 1450)"],["ENERGIEST_54_FLUESSIGGAS","ENERGIESTEUER",2024,15.15,"EUR/1000kg","GESICHERT","EnergieStG § 54 — Heizstoffe im produzierenden Gewerbe (Formular 1450)"],["ENERGIEST_54_HEIZOEL_EL","ENERGIESTEUER",2024,15.34,"EUR/1000l","GESICHERT","EnergieStG § 54 — Heizstoffe im produzierenden Gewerbe (Formular 1450)"],["ENERGIEST_54_SOCKELBETRAG","ENERGIESTEUER",2024,250.0,"EUR/a","GESICHERT","EnergieStG § 54 — Heizstoffe im produzierenden Gewerbe (Formular 1450), Sockelbetrag"],["ENERGIEST_ERDGAS","ENERGIESTEUER",2003,5.5,"EUR/MWh","GESICHERT","EnergieStG § 2 Abs. 3 Satz 1 Nr. 4 — Erdgas"],["ENERGIEST_FLUESSIGGAS","ENERGIESTEUER",2003,60.6,"EUR/1000kg","GESICHERT","EnergieStG § 2 Abs. 3 Satz 1 Nr. 5 — Flüssiggas"],["ENERGIEST_GASOEL_SCHWEFELREICH","ENERGIESTEUER",2003,76.35,"EUR/1000l","GESICHERT","EnergieStG § 2 Abs. 3 Satz 1 Nr. 1 — Gasöl, Schwefel über 50 mg/kg"],["ENERGIEST_HEIZOEL_EL","ENERGIESTEUER",2003,61.35,"EUR/1000l","GESICHERT","EnergieStG § 2 Abs. 3 Satz 1 Nr. 1 Buchst. a — Heizöl EL, Schwefel bis 50 mg/kg"],["ENERGIEST_SCHWEROEL","ENERGIESTEUER",2003,25.0,"EUR/1000kg","GESICHERT","EnergieStG § 2 Abs. 3 Satz 1 Nr. 2 — Schweröl"],["FGAS_IV_KUEHLER_ALLE_HFKW","FGAS",2020,2500.0,"-","GESICHERT","VO (EU) 2024/573 Anh. IV Nr. 7 Buchst. a, S. 71/86 (nur HFKW nach Art. 3 Nr. 4)"],["FGAS_IV_KUEHLER_BIS12_FGAS","FGAS",2032,0.0,"-","GESICHERT","VO (EU) 2024/573 Anh. IV Nr. 7 Buchst. c, S. 72/86"],["FGAS_IV_KUEHLER_BIS12_GWP","FGAS",2027,150.0,"-","GESICHERT","VO (EU) 2024/573 Anh. IV Nr. 7 Buchst. b, S. 72/86"],["FGAS_IV_KUEHLER_UEBER12_GWP","FGAS",2027,750.0,"-","GESICHERT","VO (EU) 2024/573 Anh. IV Nr. 7 Buchst. d, S. 72/86; dt. Wortlaut ohne ‚oder mehr‘, Lesart ≥ 750 (Anwenderentscheid)"],["FGAS_IV_MONOBLOCK_ALLE_GWP","FGAS",2030,150.0,"-","GESICHERT","VO (EU) 2024/573 Anh. IV Nr. 8 Buchst. e, S. 73/86"],["FGAS_IV_MONOBLOCK_BIS12_FGAS","FGAS",2032,0.0,"-","GESICHERT","VO (EU) 2024/573 Anh. IV Nr. 8 Buchst. c, S. 73/86 (Höchstnennleistung)"],["FGAS_IV_MONOBLOCK_BIS12_GWP","FGAS",2027,150.0,"-","GESICHERT","VO (EU) 2024/573 Anh. IV Nr. 8 Buchst. b, S. 72/86 (Höchstnennleistung)"],["FGAS_IV_MONOBLOCK_UEBER12BIS50_GWP","FGAS",2027,150.0,"-","GESICHERT","VO (EU) 2024/573 Anh. IV Nr. 8 Buchst. d, S. 73/86 (Höchstnennleistung)"],["FGAS_IV_SPLIT_BIS12_FGAS","FGAS",2035,0.0,"-","GESICHERT","VO (EU) 2024/573 Anh. IV Nr. 9 Buchst. d, S. 74/86"],["FGAS_IV_SPLIT_LUFTLUFT_BIS12_GWP","FGAS",2029,150.0,"-","GESICHERT","VO (EU) 2024/573 Anh. IV Nr. 9 Buchst. c, S. 74/86"],["FGAS_IV_SPLIT_LUFTWASSER_BIS12_GWP","FGAS",2027,150.0,"-","GESICHERT","VO (EU) 2024/573 Anh. IV Nr. 9 Buchst. b, S. 74/86"],["FGAS_IV_SPLIT_UEBER12_GWP","FGAS",2029,750.0,"-","GESICHERT","VO (EU) 2024/573 Anh. IV Nr. 9 Buchst. e, S. 74/86"],["FGAS_IV_SPLIT_UEBER12_GWP","FGAS",2033,150.0,"-","GESICHERT","VO (EU) 2024/573 Anh. IV Nr. 9 Buchst. f, S. 75/86"],["KATALOG_GENERATION","SYSTEM",0,10.0,"-","GESICHERT","EPOS-Plan — Verwaltungszeile der generationsweisen Nachsaat (Etappe E6)"],["KWKG_AUSSCHREIBUNG_GRENZE_KW","KWKG",2020,500.0,"kW","GESICHERT","KWKG 2025 § 8a i.V.m. KWKAusV — Ausschreibungspflicht je Anlage"],["KWKG_EIGEN_N1_GRENZE_KW","KWKG",2020,100.0,"kW","GESICHERT","KWKG 2025 § 6 Abs. 3 Nr. 1 — Anlagengrenze des Eigenstromzuschlags"],["KWKG_INBETRIEBNAHME_FRISTENDE","KWKG",2020,2030.0,"Jahr","GESICHERT","KWKG 2025 § 6 — Inbetriebnahme bis zum 31.12. dieses Jahres (Förderende, R-U5)"],["KWKG_KOSTENSCHWELLE_10","KWKG",2020,10.0,"Prozent","GESICHERT","KWKG 2025 § 8 Abs. 2/3 — Anteil an den Neuherstellungskosten"],["KWKG_KOSTENSCHWELLE_25","KWKG",2020,25.0,"Prozent","GESICHERT","KWKG 2025 § 8 Abs. 2/3 — Anteil an den Neuherstellungskosten"],["KWKG_KOSTENSCHWELLE_50","KWKG",2020,50.0,"Prozent","GESICHERT","KWKG 2025 § 8 Abs. 2/3 — Anteil an den Neuherstellungskosten"],["KWKG_LEISTUNGSSTUFE_1_KW","KWKG",2020,50.0,"kW","GESICHERT","KWKG 2025 § 7 — Obergrenze der Leistungsklasse"],["KWKG_LEISTUNGSSTUFE_2_KW","KWKG",2020,100.0,"kW","GESICHERT","KWKG 2025 § 7 — Obergrenze der Leistungsklasse"],["KWKG_LEISTUNGSSTUFE_3_KW","KWKG",2020,250.0,"kW","GESICHERT","KWKG 2025 § 7 — Obergrenze der Leistungsklasse"],["KWKG_LEISTUNGSSTUFE_4_KW","KWKG",2020,2000.0,"kW","GESICHERT","KWKG 2025 § 7 — Obergrenze der Leistungsklasse"],["KWKG_MINDESTALTER_10","KWKG",2020,2.0,"Jahr","GESICHERT","KWKG 2025 § 8 Abs. 2 — Mindestabstand zur Inbetriebnahme (Schwelle 10 %)"],["KWKG_MINDESTALTER_25","KWKG",2020,5.0,"Jahr","GESICHERT","KWKG 2025 § 8 Abs. 2 — Mindestabstand zur Inbetriebnahme (Schwelle 25 %)"],["KWKG_MINDESTALTER_50","KWKG",2020,10.0,"Jahr","GESICHERT","KWKG 2025 § 8 Abs. 2 — Mindestabstand zur Inbetriebnahme (Schwelle 50 %)"],["KWKG_PAUSCHALE_BIS2KW","KWKG",2020,4.0,"ct/kWh","GESICHERT","KWKG 2025 § 9 — pauschale Vorauszahlung für Anlagen bis 2 kWel"],["KWKG_PAUSCHALE_BIS2KW_VBH","KWKG",2020,60000.0,"h","GESICHERT","KWKG 2025 § 9 — pauschale Vorauszahlung für Anlagen bis 2 kWel"],["KWKG_PAUSCHALE_GRENZE_KW","KWKG",2020,2.0,"kW","GESICHERT","KWKG 2025 § 9 — pauschale Vorauszahlung für Anlagen bis 2 kWel"],["KWKG_REALISIERUNGSFRIST","KWKG",2025,4.0,"Jahr","ABGEKUENDIGT","KWKG 2025 § 6 — Novelle 2025: bis 4 Jahre später bei Genehmigung/Beauftragung"],["KWKG_STICHTAG_DAUERBETRIEB","KWKG",2020,2026.0,"Jahr","ABGEKUENDIGT","KWKG 2025 § 6 Abs. 1 — Dauerbetrieb bis zum 31.12. dieses Jahres"],["KWKG_VBH_JAHRESDECKEL","KWKG",2021,5000.0,"h","GESICHERT","KWKG 2025 § 8 Abs. 4 — Vollbenutzungsstunden je Kalenderjahr"],["KWKG_VBH_JAHRESDECKEL","KWKG",2023,4000.0,"h","GESICHERT","KWKG 2025 § 8 Abs. 4 — Vollbenutzungsstunden je Kalenderjahr"],["KWKG_VBH_JAHRESDECKEL","KWKG",2025,3500.0,"h","GESICHERT","KWKG 2025 § 8 Abs. 4 — Vollbenutzungsstunden je Kalenderjahr"],["KWKG_VBH_JAHRESDECKEL","KWKG",2026,3300.0,"h","GESICHERT","KWKG 2025 § 8 Abs. 4 — Vollbenutzungsstunden je Kalenderjahr"],["KWKG_VBH_JAHRESDECKEL","KWKG",2027,3100.0,"h","GESICHERT","KWKG 2025 § 8 Abs. 4 — Vollbenutzungsstunden je Kalenderjahr"],["KWKG_VBH_JAHRESDECKEL","KWKG",2028,2900.0,"h","GESICHERT","KWKG 2025 § 8 Abs. 4 — Vollbenutzungsstunden je Kalenderjahr"],["KWKG_VBH_JAHRESDECKEL","KWKG",2029,2700.0,"h","GESICHERT","KWKG 2025 § 8 Abs. 4 — Vollbenutzungsstunden je Kalenderjahr"],["KWKG_VBH_JAHRESDECKEL","KWKG",2030,2500.0,"h","GESICHERT","KWKG 2025 § 8 Abs. 4 — Vollbenutzungsstunden je Kalenderjahr"],["KWKG_VBH_MODERNISIERT_10","KWKG",2020,6000.0,"h","GESICHERT","KWKG 2025 § 8 Abs. 2 — modernisierte Anlagen, ab 10 % (nur Dampfsammelschienen-KWK > 50 MW)"],["KWKG_VBH_MODERNISIERT_25","KWKG",2020,15000.0,"h","GESICHERT","KWKG 2025 § 8 Abs. 2 — modernisierte Anlagen, ab 25 %"],["KWKG_VBH_MODERNISIERT_50","KWKG",2020,30000.0,"h","GESICHERT","KWKG 2025 § 8 Abs. 2 — modernisierte Anlagen, ab 50 %"],["KWKG_VBH_NACHGERUESTET_10","KWKG",2020,10000.0,"h","GESICHERT","KWKG 2025 § 8 Abs. 3 — nachgerüstete Anlagen, 10 bis unter 25 %"],["KWKG_VBH_NACHGERUESTET_25","KWKG",2020,15000.0,"h","GESICHERT","KWKG 2025 § 8 Abs. 3 — nachgerüstete Anlagen, 25 bis unter 50 %"],["KWKG_VBH_NACHGERUESTET_50","KWKG",2020,30000.0,"h","GESICHERT","KWKG 2025 § 8 Abs. 3 — nachgerüstete Anlagen, ab 50 %"],["KWKG_VBH_NEUANLAGE","KWKG",2020,30000.0,"h","GESICHERT","KWKG 2025 § 8 Abs. 1 — neue Anlagen"],["KWKG_ZUSCHLAG_EIGEN_N1_BIS100KW","KWKG",2020,3.0,"ct/kWh","GESICHERT","KWKG 2025 § 7 Abs. 2 i.V.m. § 6 Abs. 3 Nr. 1 (Anlagen bis 100 kW), 50 bis 100 kW"],["KWKG_ZUSCHLAG_EIGEN_N1_BIS50KW","KWKG",2020,4.0,"ct/kWh","GESICHERT","KWKG 2025 § 7 Abs. 2 i.V.m. § 6 Abs. 3 Nr. 1 (Anlagen bis 100 kW), bis 50 kW"],["KWKG_ZUSCHLAG_EIGEN_N2_BIS100KW","KWKG",2020,3.0,"ct/kWh","GESICHERT","KWKG 2025 § 7 Abs. 2 i.V.m. § 6 Abs. 3 Nr. 2 (Kundenanlage/geschl. Verteilernetz)"],["KWKG_ZUSCHLAG_EIGEN_N2_BIS250KW","KWKG",2020,2.0,"ct/kWh","GESICHERT","KWKG 2025 § 7 Abs. 2 i.V.m. § 6 Abs. 3 Nr. 2 (Kundenanlage/geschl. Verteilernetz)"],["KWKG_ZUSCHLAG_EIGEN_N2_BIS2MW","KWKG",2020,1.5,"ct/kWh","GESICHERT","KWKG 2025 § 7 Abs. 2 i.V.m. § 6 Abs. 3 Nr. 2 (Kundenanlage/geschl. Verteilernetz)"],["KWKG_ZUSCHLAG_EIGEN_N2_BIS50KW","KWKG",2020,4.0,"ct/kWh","GESICHERT","KWKG 2025 § 7 Abs. 2 i.V.m. § 6 Abs. 3 Nr. 2 (Kundenanlage/geschl. Verteilernetz)"],["KWKG_ZUSCHLAG_EIGEN_N2_UEBER2MW","KWKG",2020,1.0,"ct/kWh","GESICHERT","KWKG 2025 § 7 Abs. 2 i.V.m. § 6 Abs. 3 Nr. 2 (Kundenanlage/geschl. Verteilernetz)"],["KWKG_ZUSCHLAG_EIGEN_N3_BIS250KW","KWKG",2020,4.0,"ct/kWh","GESICHERT","KWKG 2025 § 7 Abs. 2 i.V.m. § 6 Abs. 3 Nr. 3 (stromkostenintensiv), 50 bis 250 kW"],["KWKG_ZUSCHLAG_EIGEN_N3_BIS2MW","KWKG",2020,2.4,"ct/kWh","GESICHERT","KWKG 2025 § 7 Abs. 2 i.V.m. § 6 Abs. 3 Nr. 3 (stromkostenintensiv)"],["KWKG_ZUSCHLAG_EIGEN_N3_BIS50KW","KWKG",2020,5.41,"ct/kWh","GESICHERT","KWKG 2025 § 7 Abs. 2 i.V.m. § 6 Abs. 3 Nr. 3 (stromkostenintensiv)"],["KWKG_ZUSCHLAG_EIGEN_N3_UEBER2MW","KWKG",2020,1.8,"ct/kWh","GESICHERT","KWKG 2025 § 7 Abs. 2 i.V.m. § 6 Abs. 3 Nr. 3 (stromkostenintensiv)"],["KWKG_ZUSCHLAG_EINSPEISUNG_BIS100KW","KWKG",2020,6.0,"ct/kWh","GESICHERT","KWKG 2025 § 7 Abs. 1 — eingespeister KWK-Strom, über 50 bis 100 kW"],["KWKG_ZUSCHLAG_EINSPEISUNG_BIS250KW","KWKG",2020,5.0,"ct/kWh","GESICHERT","KWKG 2025 § 7 Abs. 1 — eingespeister KWK-Strom, über 100 bis 250 kW"],["KWKG_ZUSCHLAG_EINSPEISUNG_BIS2MW","KWKG",2020,4.4,"ct/kWh","GESICHERT","KWKG 2025 § 7 Abs. 1 — eingespeister KWK-Strom, über 250 kW bis 2 MW"],["KWKG_ZUSCHLAG_EINSPEISUNG_BIS50KW","KWKG",2020,8.0,"ct/kWh","GESICHERT","KWKG 2025 § 7 Abs. 1 — eingespeister KWK-Strom, bis 50 kW"],["KWKG_ZUSCHLAG_EINSPEISUNG_UEBER2MW","KWKG",2020,3.4,"ct/kWh","GESICHERT","KWKG 2025 § 7 Abs. 1 — eingespeister KWK-Strom, über 2 MW, neu/modernisiert"],["KWKG_ZUSCHLAG_EINSPEISUNG_UEBER2MW_NACHGERUESTET","KWKG",2020,3.1,"ct/kWh","GESICHERT","KWKG 2025 § 7 Abs. 1 — eingespeister KWK-Strom, über 2 MW, nachgerüstet"],["KWKG_ZUSCHLAG_NEU_BIS50KW_EIGEN","KWKG",2020,8.0,"ct/kWh","GESICHERT","KWKG 2025 § 7 Abs. 3a — neue Anlagen bis 50 kWel, geht Abs. 1 und 2 vor, nicht eingespeist"],["KWKG_ZUSCHLAG_NEU_BIS50KW_EINSPEISUNG","KWKG",2020,16.0,"ct/kWh","GESICHERT","KWKG 2025 § 7 Abs. 3a — neue Anlagen bis 50 kWel, geht Abs. 1 und 2 vor, eingespeist"],["KWKG_ZUSCHLAG_NEU_GRENZE_KW","KWKG",2020,50.0,"kW","GESICHERT","KWKG 2025 § 7 Abs. 3a — Anlagengrenze der Sonderregel für neue Anlagen"],["PEF_NACHWEIS_ABWAERME","PEF_NACHWEIS",2020,0.0,"-","GESICHERT","GEG/GModG Anlage 4 — durch das GModG unverändert"],["PEF_NACHWEIS_BIOGAS","PEF_NACHWEIS",2020,1.1,"-","GESICHERT","GEG Anlage 4, Fassung bis 31.12.2026 — nicht erneuerbarer Anteil"],["PEF_NACHWEIS_BIOGAS","PEF_NACHWEIS",2027,0.7,"-","GESICHERT","GModG Anlage 4 ab 01.01.2027, BGBl. 2026 I Nr. 226"],["PEF_NACHWEIS_BIOGENES_FLUESSIGGAS","PEF_NACHWEIS",2020,1.1,"-","GESICHERT","GEG Anlage 4, Fassung bis 31.12.2026 — nicht erneuerbarer Anteil"],["PEF_NACHWEIS_BIOGENES_FLUESSIGGAS","PEF_NACHWEIS",2027,0.7,"-","GESICHERT","GModG Anlage 4 ab 01.01.2027, BGBl. 2026 I Nr. 226"],["PEF_NACHWEIS_BIOMASSE_RAEUMLICH","PEF_NACHWEIS",2020,0.3,"-","GESICHERT","GEG/GModG § 22 Abs. 1 Satz 2 — Biomasse im unmittelbaren räumlichen Zusammenhang"],["PEF_NACHWEIS_BIOMETHAN","PEF_NACHWEIS",2020,1.1,"-","GESICHERT","GEG Anlage 4, Fassung bis 31.12.2026 — nicht erneuerbarer Anteil"],["PEF_NACHWEIS_BIOMETHAN","PEF_NACHWEIS",2027,0.7,"-","GESICHERT","GModG Anlage 4 ab 01.01.2027, BGBl. 2026 I Nr. 226"],["PEF_NACHWEIS_BIOOEL","PEF_NACHWEIS",2020,1.1,"-","GESICHERT","GEG Anlage 4, Fassung bis 31.12.2026 — nicht erneuerbarer Anteil"],["PEF_NACHWEIS_BIOOEL","PEF_NACHWEIS",2027,0.7,"-","GESICHERT","GModG Anlage 4 ab 01.01.2027, BGBl. 2026 I Nr. 226"],["PEF_NACHWEIS_BRAUNKOHLE","PEF_NACHWEIS",2020,1.2,"-","GESICHERT","GEG/GModG Anlage 4 — durch das GModG unverändert"],["PEF_NACHWEIS_ERDGAS","PEF_NACHWEIS",2020,1.1,"-","GESICHERT","GEG/GModG Anlage 4 — durch das GModG unverändert"],["PEF_NACHWEIS_ERDWAERME","PEF_NACHWEIS",2020,0.0,"-","GESICHERT","GEG/GModG Anlage 4 — durch das GModG unverändert"],["PEF_NACHWEIS_FERNWAERME","PEF_NACHWEIS",2027,0.7,"-","GESICHERT","GModG Anlage 4 ab 01.01.2027, BGBl. 2026 I Nr. 226 — Standardwert Fernwärme"],["PEF_NACHWEIS_FLUESSIGGAS","PEF_NACHWEIS",2020,1.1,"-","GESICHERT","GEG/GModG Anlage 4 — durch das GModG unverändert"],["PEF_NACHWEIS_FW_MINDERUNG_JE_PROZENTPUNKT","PEF_NACHWEIS",2027,0.002,"-","GESICHERT","GModG § 22 Abs. 6 — Minderung je Prozentpunkt erneuerbarer Anteil"],["PEF_NACHWEIS_FW_MINDESTWERT","PEF_NACHWEIS",2027,0.5,"-","GESICHERT","GModG § 22 Abs. 6 — Untergrenze für Fernwärme"],["PEF_NACHWEIS_HEIZOEL","PEF_NACHWEIS",2020,1.1,"-","GESICHERT","GEG/GModG Anlage 4 — durch das GModG unverändert"],["PEF_NACHWEIS_HOLZ","PEF_NACHWEIS",2020,0.2,"-","GESICHERT","GEG Anlage 4, Fassung bis 31.12.2026 — nicht erneuerbarer Anteil"],["PEF_NACHWEIS_HOLZ","PEF_NACHWEIS",2027,0.7,"-","GESICHERT","GModG Anlage 4 ab 01.01.2027, BGBl. 2026 I Nr. 226 — Faktor 3,5"],["PEF_NACHWEIS_SOLARTHERMIE","PEF_NACHWEIS",2020,0.0,"-","GESICHERT","GEG/GModG Anlage 4 — durch das GModG unverändert"],["PEF_NACHWEIS_STEINKOHLE","PEF_NACHWEIS",2020,1.1,"-","GESICHERT","GEG/GModG Anlage 4 — durch das GModG unverändert"],["PEF_NACHWEIS_STROM_GEBAEUDENAH","PEF_NACHWEIS",2020,0.0,"-","GESICHERT","GEG/GModG Anlage 4 — durch das GModG unverändert — PV, Wind am Gebäude"],["PEF_NACHWEIS_STROM_NETZ","PEF_NACHWEIS",2020,1.8,"-","GESICHERT","GEG Anlage 4, Fassung bis 31.12.2026 — nicht erneuerbarer Anteil"],["PEF_NACHWEIS_STROM_NETZ","PEF_NACHWEIS",2027,1.5,"-","GESICHERT","GModG Anlage 4 ab 01.01.2027, BGBl. 2026 I Nr. 226"],["PEF_NACHWEIS_UMGEBUNGSWAERME","PEF_NACHWEIS",2020,0.0,"-","GESICHERT","GEG/GModG Anlage 4 — durch das GModG unverändert"],["PEF_NACHWEIS_VERDRAENGUNGSSTROMMIX","PEF_NACHWEIS",2020,2.8,"-","GESICHERT","GEG Anlage 4, Fassung bis 31.12.2026 — nicht erneuerbarer Anteil — Verdrängungsstrommix KWK"],["PEF_NACHWEIS_VERDRAENGUNGSSTROMMIX","PEF_NACHWEIS",2027,null,"-","GESICHERT","GModG: entfällt ersatzlos, Bewertung nach DIN EN 15316-4-5 (L12)"],["PEF_NACHWEIS_WASSERSTOFF","PEF_NACHWEIS",2027,0.7,"-","GESICHERT","GModG Anlage 4 ab 01.01.2027, BGBl. 2026 I Nr. 226 — Wasserstoff, Derivate, synthetisches Heizöl"],["STROMST_CO2_GRENZWERT_HOCHEFFIZIENT","STROMSTEUER",2026,270.0,"g/kWh","GESICHERT","§ 2 StromStG — hocheffizient, fossile Anlagen, je kWh Energieertrag"],["STROMST_ENTLASTUNG_9B","STROMSTEUER",2026,20.0,"EUR/MWh","GESICHERT","§ 9b StromStG — Entlastung für das produzierende Gewerbe (Formular 1453)"],["STROMST_ERLAUBNISSCHWELLE_KW","STROMSTEUER",2026,1000.0,"kW","GESICHERT","StromStG — Erlaubnisschwelle für Anlagenbetreiber"],["STROMST_GRENZE_BEFREIUNG_9_1_3_KW","STROMSTEUER",2026,2000.0,"kW","GESICHERT","§ 9 Abs. 1 Nr. 3 StromStG — elektrische Nennleistung der KWK-Anlage"],["STROMST_RADIUS_RAEUMLICH_KM","STROMSTEUER",2026,4.5,"km","GESICHERT","§ 12b StromStV — räumlicher Zusammenhang (steht in der Verordnung)"],["STROMST_REDUZIERT_SATZ","STROMSTEUER",2026,0.5,"EUR/MWh","GESICHERT","§ 9b StromStG — verbleibende Belastung energieintensiver Unternehmen; Angabe des Anwenders vom 17.09.2026"],["STROMST_REGELSATZ","STROMSTEUER",2026,20.5,"EUR/MWh","GESICHERT","§ 3 StromStG, Fassung vom 22.12.2025 (BGBl. 2025 I Nr. 340)"],["STROMST_SOCKELBETRAG_9B","STROMSTEUER",2026,250.0,"EUR/a","GESICHERT","§ 9b StromStG — Sockelbetrag je Kalenderjahr (entspricht 12,5 MWh/a)"],["UMLAGE_KWKG","UMLAGEN",2026,0.446,"ct/kWh","GESICHERT","KWKG-Umlage — Angabe des Anwenders vom 17.09.2026; Umlagen 2026 laut den Übertragungsnetzbetreibern"],["UMLAGE_OFFSHORE","UMLAGEN",2026,0.941,"ct/kWh","GESICHERT","Offshore-Netzumlage — Angabe des Anwenders vom 17.09.2026; Umlagen 2026 laut den Übertragungsnetzbetreibern"],["UMLAGE_STROMNEV19","UMLAGEN",2026,1.559,"ct/kWh","GESICHERT","§ 19 StromNEV-Umlage — Angabe des Anwenders vom 17.09.2026; Umlagen 2026 laut den Übertragungsnetzbetreibern"],["UMSATZSTEUER_REGELSATZ","UMSATZSTEUER",2007,19.0,"Prozent","GESICHERT","UStG § 12 Abs. 1 — Regelsteuersatz seit 01.01.2007"]];
+const KLASSEN_VORRAT = ["KWKG","STROMSTEUER","ENERGIESTEUER","CO2_PREIS","EF_NACHWEIS","EF_BILANZ","PEF_NACHWEIS","UMSATZSTEUER"];
+const EINHEITEN = ["EUR/MWh","EUR/1000l","EUR/1000kg","EUR/GJ","EUR/t","EUR/a","ct/kWh","g/kWh","GJ/MWh","h","kW","km","Prozent","Jahr","-"];
+const STATUS = [["GESICHERT","gesichert"],["VORLAEUFIG","vorläufig"],["PROGNOSE","Prognose"],["ABGEKUENDIGT","abgekündigt"]];
+// Festgelegte Vorbelegung je Bereich (Regel 2); ENERGIESTEUER bewusst leer (Regel 3)
+const BEREICHSEINHEIT = {CO2_PREIS:"EUR/t",EEG:"ct/kWh",KWKG:"ct/kWh",UMLAGEN:"ct/kWh",EF_BILANZ:"g/kWh",EF_NACHWEIS:"g/kWh",
+    STROMSTEUER:"EUR/MWh",FGAS:"-",PEF_NACHWEIS:"-",SYSTEM:"-",UMSATZSTEUER:"Prozent",ENERGIESTEUER:""};
+
+const $ = id => document.getElementById(id);
+const nachSchluessel = {};
+for (const z of DATEN) (nachSchluessel[z[0]] = nachSchluessel[z[0]] || []).push(z);
+function juengste(schluessel) {
+    const l = nachSchluessel[schluessel]; if (!l) return null;
+    return l.reduce((a, b) => b[2] >= a[2] ? b : a);
+}
+
+// Zustand
+let s;
+function neuerZustand(v) {
+    return Object.assign({modus: "neu", schluessel: "", klasse: "", jahr: "", wert: "", einheit: "", status: "GESICHERT", quelle: "",
+        einheitGewaehlt: false, klasseGewaehlt: false, quelleGewaehlt: false}, v);
+}
+
+// Vorschlag nach der Regel (nur Modus Neu)
+function vorschlag() {
+    if (s.modus !== "neu") return null;
+    const z = juengste(s.schluessel.trim());
+    if (z) return {einheit: z[4], fall: 1, hinweis: "übernommen von " + z[0] + " ab " + z[2]};
+    const e = s.klasse ? BEREICHSEINHEIT[s.klasse] : "";
+    if (e) return {einheit: e, fall: 2, hinweis: "üblich im Bereich " + s.klasse};
+    return {einheit: "", fall: 3, hinweis: ""};
+}
+function wirksameEinheit(v) { return s.einheitGewaehlt || s.modus === "aendern" ? s.einheit : (v ? v.einheit : ""); }
+
+// Beim Tippen eines Schluessels: Bereich und Quelle des juengsten Satzes uebernehmen
+function nachSchluesselEingabe() {
+    const z = juengste(s.schluessel.trim());
+    if (z && s.modus === "neu") {
+        if (!s.klasseGewaehlt) s.klasse = z[1];
+        if (!s.quelleGewaehlt) s.quelle = z[6];
+    }
+}
+
+function aufbauen() {
+    const kl = $("f_klasse"), ein = $("f_einheit"), st = $("f_status");
+    const klassen = KLASSEN_VORRAT.slice();
+    if (s.klasse && !klassen.includes(s.klasse)) klassen.push(s.klasse);
+    kl.innerHTML = '<option value="">(bitte wählen)</option>' + klassen.map(k => `<option>${k}</option>`).join("");
+    ein.innerHTML = '<option value="">(bitte wählen)</option>' + EINHEITEN.map(k => `<option>${k}</option>`).join("");
+    st.innerHTML = STATUS.map(a => `<option value="${a[0]}">${a[1]}</option>`).join("");
+    $("schluesselliste").innerHTML = Object.keys(nachSchluessel).sort().map(k => `<option value="${k}">`).join("");
+}
+
+function zeichnen(ausFeld) {
+    const v = vorschlag();
+    const e = wirksameEinheit(v);
+    const aendern = s.modus === "aendern";
+    $("titel").textContent = aendern ? "Ändern" : "Neu";
+    if (ausFeld !== "schluessel") $("f_schluessel").value = s.schluessel;
+    $("f_schluessel").readOnly = aendern;
+    if (ausFeld !== "klasse") {
+        if (s.klasse && ![...$("f_klasse").options].some(o => o.value === s.klasse)) aufbauen();
+        $("f_klasse").value = s.klasse;
+    }
+    $("f_klasse").disabled = aendern;
+    if (ausFeld !== "jahr") $("f_jahr").value = s.jahr;
+    if (ausFeld !== "wert") $("f_wert").value = s.wert;
+    $("f_einheit").value = e;
+    if (ausFeld !== "quelle") $("f_quelle").value = s.quelle;
+    $("f_status").value = s.status;
+
+    const pflicht = !aendern && !e;
+    $("f_einheit").classList.toggle("pflicht", pflicht);
+    $("f_einheit").setAttribute("aria-required", pflicht ? "true" : "false");
+    $("pfl").hidden = !pflicht;
+
+    // Hinweis unter dem Feld
+    const h = $("hinweis"); let html = "", kls = "hinweis";
+    if (aendern) { html = ""; }
+    else if (!s.einheitGewaehlt && v && v.einheit) { html = `<span class="i">i</span><span>${v.hinweis}</span>`; }
+    else if (pflicht) {
+        kls += " pflicht";
+        html = `<span class="i">!</span><span>${s.klasse === "ENERGIESTEUER" ? "Im Bereich ENERGIESTEUER wechselt die Einheit je Brennstoff. Bitte wählen." : (s.klasse ? "Für diesen Bereich gibt es keine übliche Einheit. Bitte wählen." : "Neuer Schlüssel ohne Bereich. Bereich oder Einheit wählen.")}</span>`;
+    } else if (s.einheitGewaehlt) {
+        kls += " leise";
+        html = `<span class="i">✓</span><span>Ihre Wahl</span>`;
+        if (v && v.einheit && v.einheit !== s.einheit) html += `<button type="button" class="mini" id="uebernehmen">Vorschlag übernehmen (${v.einheit})</button>`;
+    }
+    h.className = kls; h.innerHTML = html;
+    const b = $("uebernehmen"); if (b) b.onclick = () => { s.einheitGewaehlt = false; s.einheit = ""; zeichnen(); };
+
+    // OK sperren
+    let grund = "";
+    const j = parseInt(s.jahr, 10);
+    if (!aendern && !s.schluessel.trim()) grund = "Schlüssel eintragen.";
+    else if (!s.klasse && !aendern) grund = "Bereich wählen.";
+    else if (!(j >= 1990 && j <= 2100)) grund = "Gültig ab: Jahr von 1990 bis 2100.";
+    else if (!e) grund = "Einheit wählen.";
+    $("ok").disabled = !!grund;
+    $("sperrgrund").textContent = grund ? "OK gesperrt: " + grund : "";
+
+    // Regeltafel
+    const fall = aendern ? 0 : (v ? v.fall : 0);
+    ["fall1","fall2","fall3"].forEach((id, i) => $(id).classList.toggle("aktiv", s.modus === "neu" && !s.einheitGewaehlt && fall === i + 1));
+    document.querySelectorAll("#zuordnung tbody tr").forEach(tr => tr.classList.toggle("aktiv", !aendern && tr.dataset.k === s.klasse && !juengste(s.schluessel.trim())));
+}
+
+// Eingaben
+$("f_schluessel").addEventListener("input", ev => { s.schluessel = ev.target.value; nachSchluesselEingabe(); zeichnen("schluessel"); });
+$("f_klasse").addEventListener("change", ev => { s.klasse = ev.target.value; s.klasseGewaehlt = true; zeichnen("klasse"); });
+$("f_jahr").addEventListener("input", ev => { s.jahr = ev.target.value; zeichnen("jahr"); });
+$("f_wert").addEventListener("input", ev => { s.wert = ev.target.value; zeichnen("wert"); });
+$("f_einheit").addEventListener("change", ev => {
+    if (s.modus === "aendern") { s.einheit = ev.target.value; }
+    else if (ev.target.value) { s.einheit = ev.target.value; s.einheitGewaehlt = true; }
+    else { s.einheit = ""; s.einheitGewaehlt = false; }
+    zeichnen();
+});
+$("f_status").addEventListener("change", ev => { s.status = ev.target.value; });
+$("f_quelle").addEventListener("input", ev => { s.quelle = ev.target.value; s.quelleGewaehlt = true; zeichnen("quelle"); });
+$("ok").addEventListener("click", () => {
+    const e = wirksameEinheit(vorschlag());
+    const g = $("gespeichert");
+    g.textContent = "Mockup: gespeichert wäre " + s.schluessel + " ab " + s.jahr + ", Einheit " + e + ", Bereich " + s.klasse + ".";
+    g.classList.add("an");
+});
+$("abbrechen").addEventListener("click", () => laden(aktuell));
+
+// Szenarien
+const SZENARIEN = {
+    a: {text: "<b>(a)</b> Ein Gesetz ändert einen Satz ab einem neuen Jahr. Der Schlüssel <b>KWKG_VBH_JAHRESDECKEL</b> ist getippt; Einheit, Bereich und Quelle kommen von der jüngsten Zeile (2030). Der Bereichsvorschlag für KWKG wäre ct/kWh, der Schlüssel gewinnt mit „h“. Probieren: Schlüssel ändern oder löschen.",
+        z: () => { const z = juengste("KWKG_VBH_JAHRESDECKEL"); return neuerZustand({schluessel: z[0], klasse: z[1], jahr: 2031, wert: "2500", quelle: z[6]}); }},
+    b: {text: "<b>(b)</b> Neuer Schlüssel im Bereich CO2_PREIS: kein Treffer im Katalog, die Einheit kommt aus dem Bereich (EUR/t). Probieren: Bereich wechseln, die Vorbelegung folgt, solange Sie keine Einheit gewählt haben.",
+        z: () => neuerZustand({schluessel: "CO2_PREIS_BEHG_KORRIDOR_OBEN", klasse: "CO2_PREIS", jahr: 2031, wert: "", quelle: "BEHG-Korridor"})},
+    c: {text: "<b>(c)</b> Neuer Schlüssel im Bereich ENERGIESTEUER: die Einheit wechselt je Brennstoff, deshalb keine Vorbelegung. Das Feld ist Pflicht, OK bleibt gesperrt, bis eine Einheit gewählt ist.",
+        z: () => neuerZustand({schluessel: "ENERGIESTEUER_FLUESSIGGAS", klasse: "ENERGIESTEUER", jahr: 2027, wert: "", quelle: ""})},
+    d: {text: "<b>(d)</b> Der Anwender hat <b>EUR/MWh</b> selbst gewählt (Bereich CO2_PREIS schlägt EUR/t vor). Wechseln Sie jetzt den Bereich oder den Schlüssel: die Wahl bleibt stehen, und „Vorschlag übernehmen“ nennt den jeweils neuen Vorschlag.",
+        z: () => neuerZustand({schluessel: "CO2_PREIS_BEHG_KORRIDOR_OBEN", klasse: "CO2_PREIS", klasseGewaehlt: true, jahr: 2031, wert: "", einheit: "EUR/MWh", einheitGewaehlt: true, quelle: "BEHG-Korridor"})},
+    e: {text: "<b>(e)</b> Ändern einer bestehenden Zeile (KWKG_VBH_JAHRESDECKEL ab 2030): Schlüssel und Bereich sind gesperrt, die gespeicherte Einheit bleibt stehen, nichts wird vorbelegt und kein Hinweis erscheint.",
+        z: () => { const z = juengste("KWKG_VBH_JAHRESDECKEL"); return neuerZustand({modus: "aendern", schluessel: z[0], klasse: z[1], jahr: z[2], wert: String(z[3] ?? ""), einheit: z[4], status: z[5], quelle: z[6]}); }}
+};
+let aktuell = "a";
+function laden(k) {
+    aktuell = k; s = SZENARIEN[k].z();
+    $("szenariotext").innerHTML = SZENARIEN[k].text;
+    $("gespeichert").classList.remove("an");
+    document.querySelectorAll(".leiste [data-s]").forEach(b => b.setAttribute("aria-pressed", b.dataset.s === k ? "true" : "false"));
+    aufbauen(); zeichnen();
+}
+document.querySelectorAll(".leiste [data-s]").forEach(b => b.addEventListener("click", () => laden(b.dataset.s)));
+$("zurueck").addEventListener("click", () => laden(aktuell));
+
+// Zuordnungstabelle aus den Daten
+(function () {
+    const je = {};
+    for (const z of DATEN) { (je[z[1]] = je[z[1]] || {n: 0, e: {}}); je[z[1]].n++; je[z[1]].e[z[4]] = (je[z[1]].e[z[4]] || 0) + 1; }
+    const tb = document.querySelector("#zuordnung tbody");
+    Object.keys(je).sort().forEach(k => {
+        const v = BEREICHSEINHEIT[k];
+        const treffer = v ? (je[k].e[v] || 0) : null;
+        const tr = document.createElement("tr"); tr.dataset.k = k;
+        const nicht = KLASSEN_VORRAT.includes(k) ? "" : " <span style='color:var(--epos-text-sehr-leise)'>(nicht wählbar)</span>";
+        let mitte, rechts;
+        if (v) { mitte = v; rechts = `${treffer} von ${je[k].n}`; }
+        else {
+            const top = Object.entries(je[k].e).sort((a, b) => b[1] - a[1])[0];
+            mitte = "keine (Einheit wechselt je Brennstoff)"; rechts = `${top[0]} ${top[1]} von ${je[k].n}`;
+        }
+        tr.innerHTML = `<td>${k}${nicht}</td><td>${mitte}</td><td class="z${v && treffer * 2 < je[k].n ? " schwach" : ""}">${rechts}</td>`;
+        tb.appendChild(tr);
+    });
+})();
+laden("a");
+</script>
+</body>
+</html>

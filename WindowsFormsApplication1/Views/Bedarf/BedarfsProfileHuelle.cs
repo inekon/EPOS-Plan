@@ -463,7 +463,7 @@ namespace WindowsFormsApplication1
 
             // PW2/BW2: die Betriebskalender zur Wahl je Zuordnung - nur, wenn es die Tabelle gibt.
             if (BetriebskalenderCtrl.TabelleVorhanden())
-                BetriebskalenderHuelle.WahlEinhaengen(gaben);
+                BetriebskalenderHuelle.WahlEinhaengen(gaben, projektId);
 
             // PW1 Stufe 1: das Temperaturpaar je Prozess - die Pruefung steht im Kern
             // (Prozesstemperatur.Paarpruefung), dieselbe wie die Pruefklauseln des Schemas.

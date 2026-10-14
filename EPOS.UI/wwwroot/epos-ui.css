@@ -19022,6 +19022,9 @@ td.epos-vorlage-katalogbeschreibung {
 .epos-wiederimport-zeile[data-stand="Unveraendert"] td { color: var(--epos-text-leise); }
 .epos-wiederimport-entfernen { display: flex; gap: 0.4em; align-items: center; min-height: var(--epos-touchziel); }
 
+/* Gesetzeskatalog: Pflichtwahl der Einheit (ENERGIESTEUER) in Warnfarbe. */
+.epos-gesetz-einheit-hinweis--pflicht { color: var(--epos-warn-text); }
+
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */

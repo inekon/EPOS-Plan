@@ -51,6 +51,15 @@ public sealed class BetriebskalenderDaten
     };
 }
 
+/// <summary>
+/// Ein Projektgebäude als Quelle für „Aus Gebäude übernehmen…“ (Konzept Kältebedarfsprofile 7.2): Feiertagsland und
+/// alle Ferienzeiträume des Gebäudes. Der Kalender übernimmt eine KOPIE — die Herkunft steht nie als ID am Kalender.
+/// </summary>
+/// <param name="Bezeichner">Der Gebäudename.</param>
+/// <param name="Bundesland">Länderkennung; <c>null</c> = nur die bundeseinheitlichen Feiertage.</param>
+/// <param name="Ferien">Die Ferienzeiträume als Jahrestage (Beginn, Ende) in ihrer Reihenfolge.</param>
+public sealed record BetriebskalenderGebaeude(string Bezeichner, string? Bundesland, IReadOnlyList<(int Von, int Bis)> Ferien);
+
 /// <summary>Ein Bundesland zur Wahl: Kennung und Name in der Oberflächensprache.</summary>
 /// <param name="Kennung">BW … TH.</param>
 /// <param name="Name">Klartext.</param>

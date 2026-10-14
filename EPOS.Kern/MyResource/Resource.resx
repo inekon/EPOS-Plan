@@ -43085,7 +43085,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Betriebskalender</value>
   </data>
   <data name="BKAL_KONTEXT" xml:space="preserve">
-    <value>Feiertage und Betriebsferien für die Wochenprofile von Brauchwasser, Prozesswärme und Strom. Gewählt wird ein Kalender je Profilzuordnung im Projekt.</value>
+    <value>Feiertage und Betriebsferien für die Wochenprofile von Brauchwasser, Prozesswärme, Kälte und Strom. Gewählt wird ein Kalender je Profilzuordnung im Projekt.</value>
   </data>
   <data name="BKAL_LBL_LISTE" xml:space="preserve">
     <value>Kalender</value>
@@ -43169,7 +43169,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>ohne Kalender</value>
   </data>
   <data name="BPF_HINW_KALENDER" xml:space="preserve">
-    <value>Feiertage und Betriebsferien des Kalenders liegen auf dem Wochenprofil der gewählten Zuordnung; gespeichert wird mit OK. Kalender legt „Betriebskalender“ unter „Profile &amp; Lastgänge“ an.</value>
+    <value>Feiertage und Betriebsferien des Kalenders liegen auf dem Wochenprofil der gewählten Zuordnung; gespeichert wird mit OK.</value>
   </data>
   <data name="BKAL_LAND_BW" xml:space="preserve">
     <value>Baden-Württemberg</value>
@@ -56209,6 +56209,84 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="SIMENG_KAELTE_DECKUNG_SPLIT_NUR_DEZENTRAL" xml:space="preserve">
     <value>Kälteerzeugung: {0} MWh/a von {1} MWh/a Kältebedarf gedeckt ({2} %; ganz dezentral, {3} MWh/a), Kältestrom der Kältefolge {4} MWh/a, EER-Jahreswert {5}; {6} Kühltage.</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_EEG" xml:space="preserve">
+    <value>Erneuerbare-Energien-Gesetz (EEG)</value>
+  </data>
+  <data name="GESETZ_KLASSE_ANZ_UMLAGEN" xml:space="preserve">
+    <value>Umlagen auf den Strompreis</value>
+  </data>
+  <data name="GESETZ_PLATZHALTER_WAEHLEN" xml:space="preserve">
+    <value>(bitte wählen)</value>
+  </data>
+  <data name="GESETZ_SCHLUESSEL_VORHANDEN" xml:space="preserve">
+    <value>Vorhandene Schlüssel:</value>
+  </data>
+  <data name="GESETZ_EINHEIT_HINWEIS_SCHLUESSEL" xml:space="preserve">
+    <value>übernommen von {0} ab {1}</value>
+  </data>
+  <data name="GESETZ_EINHEIT_HINWEIS_BEREICH" xml:space="preserve">
+    <value>üblich im Bereich {0}</value>
+  </data>
+  <data name="GESETZ_EINHEIT_PFLICHT_WECHSEL" xml:space="preserve">
+    <value>Im Bereich {0} wechselt die Einheit je Brennstoff. Bitte wählen.</value>
+  </data>
+  <data name="GESETZ_EINHEIT_PFLICHT_BEREICH" xml:space="preserve">
+    <value>Für diesen Bereich gibt es keine übliche Einheit. Bitte wählen.</value>
+  </data>
+  <data name="GESETZ_EINHEIT_PFLICHT_OHNE" xml:space="preserve">
+    <value>Neuer Schlüssel ohne Bereich. Bereich oder Einheit wählen.</value>
+  </data>
+  <data name="GESETZ_EINHEIT_IHRE_WAHL" xml:space="preserve">
+    <value>Ihre Wahl</value>
+  </data>
+  <data name="GESETZ_EINHEIT_VORSCHLAG_UEBERNEHMEN" xml:space="preserve">
+    <value>Vorschlag übernehmen ({0})</value>
+  </data>
+  <data name="GESETZ_SPERRE_BEREICH" xml:space="preserve">
+    <value>Bereich wählen.</value>
+  </data>
+  <data name="GESETZ_SPERRE_EINHEIT" xml:space="preserve">
+    <value>Einheit wählen.</value>
+  </data>
+  <data name="BKW_BTN_KALENDER" xml:space="preserve">
+    <value>Betriebskalender…</value>
+  </data>
+  <data name="BKW_BTN_KALENDER_HINWEIS" xml:space="preserve">
+    <value>Betriebskalender anlegen und bearbeiten; ein neu angelegter Kalender wird für die gewählte Zeile vorgewählt.</value>
+  </data>
+  <data name="BKW_HINW_KEINE_ZEILE" xml:space="preserve">
+    <value>Kalender gelten je Projektzeile — erst eine Zeile wählen.</value>
+  </data>
+  <data name="BKW_HINW_KEIN_KALENDER" xml:space="preserve">
+    <value>Noch kein Betriebskalender angelegt. Mit „Betriebskalender…“ Feiertage und Ferien anlegen.</value>
+  </data>
+  <data name="BKAL_BTN_AUS_GEBAEUDE" xml:space="preserve">
+    <value>Aus Gebäude übernehmen…</value>
+  </data>
+  <data name="BKAL_HINW_AUS_GEBAEUDE" xml:space="preserve">
+    <value>Übernimmt Feiertagsland und Ferien eines Projektgebäudes als Kopie in den Kalender; spätere Änderungen am Gebäude wirken nicht auf den Kalender.</value>
+  </data>
+  <data name="BKAL_SPERRE_KEIN_GEBAEUDE" xml:space="preserve">
+    <value>Das Projekt hat kein Gebäude — es gibt nichts zu übernehmen.</value>
+  </data>
+  <data name="BKAL_TITEL_AUS_GEBAEUDE" xml:space="preserve">
+    <value>Aus Gebäude übernehmen</value>
+  </data>
+  <data name="BKAL_TXT_GEBAEUDE_WAHL" xml:space="preserve">
+    <value>Das Gebäude wählen, dessen Feiertagsland und Ferien der Kalender als Kopie übernimmt. Gespeichert wird mit „Speichern“ oder OK des Kalenders.</value>
+  </data>
+  <data name="BKAL_GEBAEUDE_ZEILE" xml:space="preserve">
+    <value>{0} — {1}, {2} Ferienzeiträume</value>
+  </data>
+  <data name="BKAL_MSG_GEBAEUDE_WAEHLEN" xml:space="preserve">
+    <value>Bitte ein Gebäude wählen.</value>
+  </data>
+  <data name="BKAL_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>Feiertagsland und Ferien von „{0}“ übernommen; gespeichert wird mit „Speichern“ oder OK.</value>
+  </data>
+  <data name="BKAL_MSG_FERIEN_FEHLEN" xml:space="preserve">
+    <value>Feiertagsland und Ferien von „{0}“ übernommen. Das Gebäude führt {1} Ferienzeiträume, der Kalender nimmt vier auf: Übernommen sind die ersten vier, {2} fehlen.</value>
   </data>
 </root>
 
