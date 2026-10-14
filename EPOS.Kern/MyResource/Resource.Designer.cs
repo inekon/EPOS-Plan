@@ -8907,6 +8907,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus Gebäude übernehmen… ähnelt.
+        /// </summary>
+        public static string BKAL_BTN_AUS_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("BKAL_BTN_AUS_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
         /// </summary>
         public static string BKAL_BTN_LOESCHEN {
@@ -8939,6 +8948,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BKAL_FRAGE_LOESCHEN {
             get {
                 return ResourceManager.GetString("BKAL_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — {1}, {2} Ferienzeiträume ähnelt.
+        /// </summary>
+        public static string BKAL_GEBAEUDE_ZEILE {
+            get {
+                return ResourceManager.GetString("BKAL_GEBAEUDE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernimmt Feiertagsland und Ferien eines Projektgebäudes als Kopie in den Kalender; spätere Änderungen am Gebäude wirken nicht auf den Kalender. ähnelt.
+        /// </summary>
+        public static string BKAL_HINW_AUS_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("BKAL_HINW_AUS_GEBAEUDE", resourceCulture);
             }
         }
         
@@ -8988,7 +9015,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertage und Betriebsferien für die Wochenprofile von Brauchwasser, Prozesswärme und Strom. Gewählt wird ein Kalender je Profilzuordnung im Projekt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertage und Betriebsferien für die Wochenprofile von Brauchwasser, Prozesswärme, Kälte und Strom. Gewählt wird ein Kalender je Profilzuordnung im Projekt. ähnelt.
         /// </summary>
         public static string BKAL_KONTEXT {
             get {
@@ -9258,6 +9285,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertagsland und Ferien von „{0}“ übernommen. Das Gebäude führt {1} Ferienzeiträume, der Kalender nimmt vier auf: Übernommen sind die ersten vier, {2} fehlen. ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_FERIEN_FEHLEN {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_FERIEN_FEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte ein Gebäude wählen. ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_GEBAEUDE_WAEHLEN {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_GEBAEUDE_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskalender gelöscht. ähnelt.
         /// </summary>
         public static string BKAL_MSG_GELOESCHT {
@@ -9321,6 +9366,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertagsland und Ferien von „{0}“ übernommen; gespeichert wird mit „Speichern“ oder OK. ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die neuer Kalender ähnelt.
         /// </summary>
         public static string BKAL_NEU_PLATZHALTER {
@@ -9330,11 +9384,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt hat kein Gebäude — es gibt nichts zu übernehmen. ähnelt.
+        /// </summary>
+        public static string BKAL_SPERRE_KEIN_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("BKAL_SPERRE_KEIN_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskalender ähnelt.
         /// </summary>
         public static string BKAL_TITEL {
             get {
                 return ResourceManager.GetString("BKAL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus Gebäude übernehmen ähnelt.
+        /// </summary>
+        public static string BKAL_TITEL_AUS_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("BKAL_TITEL_AUS_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude wählen, dessen Feiertagsland und Ferien der Kalender als Kopie übernimmt. Gespeichert wird mit „Speichern“ oder OK des Kalenders. ähnelt.
+        /// </summary>
+        public static string BKAL_TXT_GEBAEUDE_WAHL {
+            get {
+                return ResourceManager.GetString("BKAL_TXT_GEBAEUDE_WAHL", resourceCulture);
             }
         }
         
@@ -10523,6 +10604,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BKS_WAHL_VERSION {
             get {
                 return ResourceManager.GetString("BKS_WAHL_VERSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskalender… ähnelt.
+        /// </summary>
+        public static string BKW_BTN_KALENDER {
+            get {
+                return ResourceManager.GetString("BKW_BTN_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskalender anlegen und bearbeiten; ein neu angelegter Kalender wird für die gewählte Zeile vorgewählt. ähnelt.
+        /// </summary>
+        public static string BKW_BTN_KALENDER_HINWEIS {
+            get {
+                return ResourceManager.GetString("BKW_BTN_KALENDER_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender gelten je Projektzeile — erst eine Zeile wählen. ähnelt.
+        /// </summary>
+        public static string BKW_HINW_KEINE_ZEILE {
+            get {
+                return ResourceManager.GetString("BKW_HINW_KEINE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch kein Betriebskalender angelegt. Mit „Betriebskalender…“ Feiertage und Ferien anlegen. ähnelt.
+        /// </summary>
+        public static string BKW_HINW_KEIN_KALENDER {
+            get {
+                return ResourceManager.GetString("BKW_HINW_KEIN_KALENDER", resourceCulture);
             }
         }
         
@@ -14671,7 +14788,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertage und Betriebsferien des Kalenders liegen auf dem Wochenprofil der gewählten Zuordnung; gespeichert wird mit OK. Kalender legt „Betriebskalender“ unter „Profile &amp; Lastgänge“ an. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertage und Betriebsferien des Kalenders liegen auf dem Wochenprofil der gewählten Zuordnung; gespeichert wird mit OK. ähnelt.
         /// </summary>
         public static string BPF_HINW_KALENDER {
             get {
