@@ -22,8 +22,7 @@ namespace WindowsFormsApplication1
     //   Monatswerte   Q_M(m) = 100 MWh * f(m) * d(m) / Summe f(k) * d(k), zusammen 100 (wie KaeltetypSaat).
     //
     // QUELLEN (je Vorlage im Kommentar). Nutzungszeit und Nutzungstage nach den Nutzungsprofilen der
-    // DIN V 18599-10:2018-09 (Nichtwohngebaeude; abgeloest durch DIN/TS 18599-10:2025-10, Nummern dort in Klammern) -
-    // vor der Auslieferung gegen die gueltige Ausgabe pruefen ("Ausgabe pruefen"). Tagesgang, Monatsverteilung und
+    // DIN/TS 18599-10:2025-10, Tab. 6/7 (Tabelle vom Anwender bereitgestellt). Tagesgang, Monatsverteilung und
     // Grundlast folgen keiner Normtabelle: Sie sind ausgewiesene Richtwerte ("Richtwert, Quelle prüfen"); der
     // Verlauf aus inneren und aeusseren Lasten ist nur qualitativ nach VDI 2078 gebildet, VDI 3807 dient allein der
     // Plausibilisierung des Jahresverbrauchs, nicht der Form. Keine Genauigkeit, die die Quelle nicht traegt.
@@ -119,7 +118,7 @@ namespace WindowsFormsApplication1
         public const int LETZTE_ID = 16;
 
         /// <summary>Kurzform der Quelle der Nutzungszeiten.</summary>
-        public const string DIN = "DIN V 18599-10:2018-09";
+        public const string DIN = "DIN/TS 18599-10:2025-10, Tab. 6/7,";
 
         /// <summary>Kennung eines nicht belegten Werts.</summary>
         public const string RICHTWERT = "Richtwert, Quelle prüfen";
@@ -150,39 +149,41 @@ namespace WindowsFormsApplication1
 
             return new[]
             {
-                // 7 Krankenhaus. Nutzungszeit 0-24 Uhr, 365 d: DIN V 18599-10:2018-09, Profil 10 Bettenzimmer (TS 2025: 10),
-                // Ausgabe pruefen. Tag 7-20 Uhr 1,0, Nacht 0,6, Wochenende wie Werktag; Monate Grundlast 0,4 ganzjaehrig,
+                // 7 Krankenhaus. Nutzungszeit 0-24 Uhr, 365 d: DIN/TS 18599-10:2025-10 Tab. 6/7, Profil 10 Bettenzimmer. Tag 7-20 Uhr 1,0, Nacht 0,6, Wochenende wie Werktag; Monate Grundlast 0,4 ganzjaehrig,
                 // Spitze Juni-August; Gang, Monate, Grundlast: Richtwert, Quelle pruefen.
                 new Kaeltevorlage(7, "Krankenhaus",
                     "Raumkühlung eines Krankenhauses (Bettenbereich) an sieben Tagen rund um die Uhr, tags 7 bis 20 Uhr volle Last, nachts 60 %; ganzjährige Grundlast 40 %, Spitze Juni bis August.",
                     R, 16, 19, 0.4, Woche(Band(alle, 0, 24, 0.6), Band(alle, 7, 20, 1.0)),
                     Faktoren(0.4, (5, 0.6), (6, 0.9), (7, 1.0), (8, 1.0), (9, 0.6)),
                     "Nutzungszeit " + DIN + " Profil 10 Bettenzimmer; Gang, Monate, Grundlast: " + RICHTWERT),
-                // 8 Prozesskaelte einschichtig. Mo-Fr 6-14 Uhr 1,0, sonst Grundlast 0,1 (Schichtbild wie Prozesswaerme
-                // "Einschicht 5 Tage"); alles Richtwert, Quelle pruefen.
+                // 8 Prozesskaelte einschichtig. Nutzungszeit 7-16 Uhr, 230 d: DIN/TS 18599-10:2025-10 Tab. 6/7, Hallenprofile
+                // 22-24 (gewerbliche und industrielle Hallen). Mo-Fr 7-16 Uhr 1,0, sonst Grundlast 0,1; Gang, Monate,
+                // Grundlast: Richtwert, Quelle pruefen.
                 new Kaeltevorlage(8, "Prozesskälte einschichtig",
-                    "Prozesskälte eines Betriebs im Einschichtbetrieb Montag bis Freitag 6 bis 14 Uhr, sonst Grundlast 10 %; zwölf Monate fast gleich, Juli und August +10 %.",
-                    P, 6, 12, 0.1, Woche(Band(alle, 0, 24, 0.1), Band(werktage, 6, 14, 1.0)), schicht,
-                    RICHTWERT + " (Schichtbild wie Prozesswärme Einschicht 5 Tage)"),
-                // 9 Prozesskaelte zweischichtig. Mo-Fr 6-22 Uhr 1,0, sonst Grundlast 0,15; Richtwert, Quelle pruefen.
+                    "Prozesskälte eines Betriebs im Einschichtbetrieb Montag bis Freitag 7 bis 16 Uhr, sonst Grundlast 10 %; zwölf Monate fast gleich, Juli und August +10 %.",
+                    P, 6, 12, 0.1, Woche(Band(alle, 0, 24, 0.1), Band(werktage, 7, 16, 1.0)), schicht,
+                    "Nutzungszeit " + DIN + " Hallenprofile 22–24 (7–16 Uhr, 230 d); Gang, Monate, Grundlast: " + RICHTWERT),
+                // 9 Prozesskaelte zweischichtig. Mo-Fr 6-22 Uhr 1,0, sonst Grundlast 0,15. Die Norm kennt keinen
+                // Mehrschichtbetrieb: Nutzungszeit Richtwert, Quelle pruefen; Tagesgrenzen auf Grundlage der Hallenprofile 22-24.
                 new Kaeltevorlage(9, "Prozesskälte zweischichtig",
                     "Prozesskälte eines Betriebs im Zweischichtbetrieb Montag bis Freitag 6 bis 22 Uhr, sonst Grundlast 15 %; zwölf Monate fast gleich, Juli und August +10 %.",
                     P, 6, 12, 0.15, Woche(Band(alle, 0, 24, 0.15), Band(werktage, 6, 22, 1.0)), schicht,
-                    RICHTWERT + " (Schichtbild wie Prozesswärme Zweischicht 5 Tage)"),
-                // 10 Prozesskaelte dreischichtig. Mo-Fr 0-24 Uhr 1,0, Sa/So Grundlast 0,2; Richtwert, Quelle pruefen.
+                    RICHTWERT + " (Norm ohne Mehrschichtbetrieb; Tagesgrenzen auf Grundlage der Hallenprofile 22–24 der DIN/TS 18599-10:2025-10)"),
+                // 10 Prozesskaelte dreischichtig. Mo-Fr 0-24 Uhr 1,0, Sa/So Grundlast 0,2. Die Norm kennt keinen
+                // Mehrschichtbetrieb: Nutzungszeit Richtwert, Quelle pruefen; Tagesgrenzen auf Grundlage der Hallenprofile 22-24.
                 new Kaeltevorlage(10, "Prozesskälte dreischichtig",
                     "Prozesskälte eines Betriebs im Dreischichtbetrieb Montag bis Freitag rund um die Uhr, Samstag und Sonntag Grundlast 20 %; zwölf Monate fast gleich, Juli und August +10 %.",
                     P, 6, 12, 0.2, Woche(Band(wochenende, 0, 24, 0.2), Band(werktage, 0, 24, 1.0)), schicht,
-                    RICHTWERT + " (Schichtbild wie Prozesswärme Dreischicht 5 Tage)"),
-                // 11 Rechenzentrum. Nutzungszeit 0-24 Uhr, 365 d: DIN V 18599-10:2018-09, Profil 21 Rechenzentrum (TS 2025: 21),
-                // Ausgabe pruefen. Grundlast 0,85, Mo-Fr 8-18 Uhr 1,0 (Aufschlag rund 15 %), zwoelf Monate gleich;
+                    RICHTWERT + " (Norm ohne Mehrschichtbetrieb; Tagesgrenzen auf Grundlage der Hallenprofile 22–24 der DIN/TS 18599-10:2025-10)"),
+                // 11 Rechenzentrum. Nutzungszeit 0-24 Uhr, 365 d: DIN/TS 18599-10:2025-10 Tab. 6/7, Profil 21 Rechenzentrum.
+                // Grundlast 0,85, Mo-Fr 8-18 Uhr 1,0 (Aufschlag rund 15 %), zwoelf Monate gleich;
                 // Aufschlag und Grundlast: Richtwert, Quelle pruefen.
                 new Kaeltevorlage(11, "Rechenzentrum",
                     "Kühlung der IT-Last eines Rechenzentrums an sieben Tagen rund um die Uhr nahezu gleich (85 %), Montag bis Freitag 8 bis 18 Uhr volle Last; zwölf Monate gleich.",
                     P, 18, 24, 0.85, Woche(Band(alle, 0, 24, 0.85), Band(werktage, 8, 18, 1.0)), gleich,
                     "Nutzungszeit " + DIN + " Profil 21 Rechenzentrum; Aufschlag, Grundlast: " + RICHTWERT),
-                // 12 Buero/Verwaltung. Nutzungszeit 7-18 Uhr, 250 d: DIN V 18599-10:2018-09, Profile 1 und 2 Einzel-/Gruppenbuero
-                // (TS 2025: 1, 2), Ausgabe pruefen. Gang qualitativ VDI 2078 (innere Lasten, Spitze 13-16 Uhr durch Sonne
+                // 12 Buero/Verwaltung. Nutzungszeit 7-18 Uhr, 250 d: DIN/TS 18599-10:2025-10 Tab. 6/7, Profile 1 und 2 Einzel-/Gruppenbuero.
+                // Gang qualitativ VDI 2078 (innere Lasten, Spitze 13-16 Uhr durch Sonne
                 // und Speicherwirkung): Mo-Fr 7-13 0,7, 13-16 1,0, 16-18 0,8, sonst Grundlast 0,1 (Serverraeume, Technik);
                 // Monate April-Oktober, Spitze Juli/August, Winter 0,1; Monate, Grundlast: Richtwert, Quelle pruefen.
                 new Kaeltevorlage(12, "Büro/Verwaltung",
@@ -191,8 +192,8 @@ namespace WindowsFormsApplication1
                     Woche(Band(alle, 0, 24, 0.1), Band(werktage, 7, 13, 0.7), Band(werktage, 13, 16, 1.0), Band(werktage, 16, 18, 0.8)),
                     Faktoren(0.1, (4, 0.3), (5, 0.5), (6, 0.8), (7, 1.0), (8, 1.0), (9, 0.6), (10, 0.2)),
                     "Nutzungszeit " + DIN + " Profile 1/2 Einzel-/Gruppenbüro; Gang qualitativ VDI 2078; Monate, Grundlast: " + RICHTWERT),
-                // 13 Hotel. Nutzungszeit Hotelzimmer 21-8 Uhr, 365 d: DIN V 18599-10:2018-09, Profil 11 (TS 2025: 11), Ausgabe
-                // pruefen. Ganztaegig: 0-8 Uhr 0,5 (Zimmer), 8-17 Uhr 0,6 (Allgemeinflaechen), 17-23 Uhr 1,0, 23-24 Uhr 0,6,
+                // 13 Hotel. Nutzungszeit Hotelzimmer 21-8 Uhr, 365 d: DIN/TS 18599-10:2025-10 Tab. 6/7, Profil 11.
+                // Ganztaegig: 0-8 Uhr 0,5 (Zimmer), 8-17 Uhr 0,6 (Allgemeinflaechen), 17-23 Uhr 1,0, 23-24 Uhr 0,6,
                 // Wochenende wie Werktag; Monate Mai-September, Winter Grundlast 0,25 (Kueche, Kuehlraeume); Spitze,
                 // Monate, Grundlast: Richtwert, Quelle pruefen.
                 new Kaeltevorlage(13, "Hotel",
@@ -202,8 +203,8 @@ namespace WindowsFormsApplication1
                     Faktoren(0.25, (5, 0.5), (6, 0.8), (7, 1.0), (8, 1.0), (9, 0.6)),
                     "Nutzungszeit " + DIN + " Profil 11 Hotelzimmer; Spitze, Monate, Grundlast: " + RICHTWERT),
                 // 14 Lebensmitteleinzelhandel mit Gewerbekaelte. Nutzungszeit 8-20 Uhr, 300 d (rund Mo-Sa):
-                // DIN V 18599-10:2018-09, Profil 7 Einzelhandel/Kaufhaus Lebensmittelabteilung mit Kuehlprodukten
-                // (TS 2025: 7), Ausgabe pruefen. Kuehlmoebel 168 h Grundlast 0,6, Oeffnungszeit Mo-Sa 1,0, Sonntag
+                // DIN/TS 18599-10:2025-10 Tab. 6/7, Profil 7 Einzelhandel/Kaufhaus Lebensmittelabteilung mit Kuehlprodukten.
+                // Kuehlmoebel 168 h Grundlast 0,6, Oeffnungszeit Mo-Sa 1,0, Sonntag
                 // Grundlast; ganzjaehrig, Juli/August +20 %; Gewerbekaelte, Monate, Grundlast: Richtwert, Quelle pruefen.
                 new Kaeltevorlage(14, "Lebensmitteleinzelhandel mit Gewerbekälte",
                     "Gewerbekälte der Kühlmöbel eines Lebensmittelmarkts an sieben Tagen rund um die Uhr mit Grundlast 60 %, Öffnungszeit Montag bis Samstag 8 bis 20 Uhr volle Last; ganzjährig, Juli und August +20 %.",
@@ -211,7 +212,7 @@ namespace WindowsFormsApplication1
                     Faktoren(1.0, (7, 1.2), (8, 1.2)),
                     "Nutzungszeit " + DIN + " Profil 7 Einzelhandel mit Kühlprodukten; Gewerbekälte, Monate, Grundlast: " + RICHTWERT),
                 // 15 Schule/Hochschule. Nutzungszeit Klassenzimmer 8-15 Uhr, 200 d, Hoersaal 8-18 Uhr, 150 d:
-                // DIN V 18599-10:2018-09, Profile 8 und 9 (TS 2025: 8, 9), Ausgabe pruefen. Mo-Fr 8-15 Uhr 1,0, 15-18 Uhr 0,4
+                // DIN/TS 18599-10:2025-10 Tab. 6/7, Profile 8 und 9. Mo-Fr 8-15 Uhr 1,0, 15-18 Uhr 0,4
                 // (Hoersaal), sonst Grundlast 0,05 (auch Sa/So); Monate Mai-September OHNE Ferienabzug - Ferien ueber den
                 // Betriebskalender; Monate, Grundlast: Richtwert, Quelle pruefen.
                 new Kaeltevorlage(15, "Schule/Hochschule",
@@ -220,14 +221,15 @@ namespace WindowsFormsApplication1
                     Woche(Band(alle, 0, 24, 0.05), Band(werktage, 8, 15, 1.0), Band(werktage, 15, 18, 0.4)),
                     Faktoren(0.05, (5, 0.4), (6, 0.8), (7, 1.0), (8, 1.0), (9, 0.5)),
                     "Nutzungszeit " + DIN + " Profile 8 Klassenzimmer, 9 Hörsaal; Monate, Grundlast: " + RICHTWERT),
-                // 16 Labor. Nutzungszeit 7-18 Uhr, 250 d: DIN V 18599-10:2018-09, Profil 36 Labor (TS 2025: 38), Ausgabe
-                // pruefen. Mo-Fr 7-18 Uhr 1,0, sonst Grundlast 0,4 (Abzuege, Geraete); ganzjaehrig mit Sommerspitze
+                // 16 Labor. Nutzungszeit 7-18 Uhr, 250 d:
+                // DIN/TS 18599-10:2025-10 Tab. 6/7, Profil 38 Labor (die Lueftung laeuft nach der Norm 24 h,
+                // t_v,op,d = 24 h/d). Mo-Fr 7-18 Uhr 1,0, sonst Grundlast 0,4 (Abzuege, Geraete); ganzjaehrig mit Sommerspitze
                 // (Winter 0,7); Grundlast, Monate: Richtwert, Quelle pruefen.
                 new Kaeltevorlage(16, "Labor",
                     "Raumkühlung eines Laborbaus Montag bis Freitag 7 bis 18 Uhr, sonst Grundlast 40 % für Abzüge und Geräte; ganzjährig mit Sommerspitze Juni bis August.",
                     R, 16, 19, 0.4, Woche(Band(alle, 0, 24, 0.4), Band(werktage, 7, 18, 1.0)),
                     Faktoren(0.7, (5, 0.85), (6, 1.0), (7, 1.0), (8, 1.0), (9, 0.85)),
-                    "Nutzungszeit " + DIN + " Profil 36 Labor; Grundlast, Monate: " + RICHTWERT),
+                    "Nutzungszeit " + DIN + " Profil 38 Labor (Lüftung nach der Norm 24 h/d); Grundlast, Monate: " + RICHTWERT),
             };
         }
 
