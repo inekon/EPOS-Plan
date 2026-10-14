@@ -112,6 +112,9 @@ namespace EPOS.Kern.Tests
                 // Jede Vorlage nennt ihre Quelle: Norm samt Profil oder die Kennung des Richtwerts.
                 Assert.False(string.IsNullOrWhiteSpace(s.Quelle));
                 Assert.True(s.Quelle.Contains(KaeltevorlagenSaat.DIN) || s.Quelle.Contains(KaeltevorlagenSaat.RICHTWERT), name);
+                Assert.DoesNotContain("2018", s.Quelle);
+                Assert.DoesNotContain("Ausgabe prüfen", s.Quelle);
+                if (s.Id == 16) Assert.Contains("Profil 38", s.Quelle);
             }
             // Schule nennt die Ferien über den Betriebskalender (Doppelzählung vermeiden).
             Assert.Contains(KaeltevorlagenSaat.VERMERK_FERIEN, KaeltevorlagenSaat.Alle.Single(s => s.Id == 15).Beschreibung);
