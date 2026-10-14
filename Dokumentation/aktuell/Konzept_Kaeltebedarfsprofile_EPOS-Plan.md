@@ -174,6 +174,23 @@ und hält sie mit einer Saatwache. Die Nutzungszeiten nach DIN V 18599-10 sind b
 | 15 | Schule/Hochschule | Raum | 8–15 Uhr (Klassenraum, 200 d), Hörsaal 8–18 Uhr | Mo–Fr 8–16 Uhr; Wochenende 0 | Mai–September **ohne** Ferienabzug — Ferien kommen über den Betriebskalender | 5 % | Nutzungszeiten DIN V 18599-10 (Klassenzimmer, Hörsaal); Monate, Grundlast: Richtwert, Quelle prüfen |
 | 16 | Labor | Raum | 7–18 Uhr · 250 d | Mo–Fr 7–18 Uhr 1,0; sonst Grundlast (Abzüge, Geräte) | ganzjährig mit Sommerspitze | 40 % | Nutzungszeit DIN V 18599-10 (Labor); Grundlast, Monate: Richtwert, Quelle prüfen |
 
+**Belegstand der Saat (Welle KBP-2).** Die Saat (`KaeltevorlagenSaat`, Schritt `KaeltebedarfsprofilVorlagenSchema`) führt die Werte
+der Tafel mit IDs 7–16 und vermerkt je Vorlage ihre Quelle im Kommentar und in der Eigenschaft `Quelle`. Belegt sind allein
+die Nutzungszeiten und Nutzungstage: Sie folgen den Nutzungsprofilen der DIN V 18599-10:2018-09 — Profil 10 Bettenzimmer
+(0–24 Uhr, 365 d), 21 Rechenzentrum (0–24 Uhr, 365 d), 1/2 Einzel- und Gruppenbüro (7–18 Uhr, 250 d), 11 Hotelzimmer
+(21–8 Uhr, 365 d), 7 Einzelhandel mit Kühlprodukten (8–20 Uhr, 300 d), 8 Klassenzimmer (8–15 Uhr, 200 d), 9 Hörsaal
+(8–18 Uhr, 150 d) und 36 Labor (7–18 Uhr, 250 d; in DIN/TS 18599-10:2025-10 Nummer 38). Die Werte sind aus der
+Sekundärliteratur übernommen; ein Abgleich mit der gültigen Ausgabe DIN/TS 18599-10:2025-10 (lizenziert, nicht frei
+zugänglich) steht aus. Abweichend von der Tafel nimmt Nr. 14 die Normzeit 8–20 Uhr statt 7–21 Uhr. Tagesgänge,
+Monatsverteilungen und Grundlasten folgen keiner Normtabelle: VDI 2078 trägt nur den qualitativen Verlauf (Büro, Spitze
+nachmittags), VDI 3807 nur die Plausibilisierung des Jahresverbrauchs, SIA 2024 wurde nicht herangezogen. Diese Werte bleiben
+ausgewiesene **Richtwerte** mit der Kennung „Richtwert, Quelle prüfen“; die Prozesskälte der Schichtbetriebe (Nr. 8–10) ist
+ganz Richtwert. Der Grundlast-Anteil ist der Wochenwert außerhalb der Nutzungszeit relativ zur Spitze; beim Krankenhaus
+(Nachtwert 0,6) und bei den Raumkühlungen mit Jahresgang steht er zugleich als Faktor der Wintermonate. Den Art-Vorschlag
+trägt die Katalogspalte `Kaelte_Art` (Werte wie an der Zuordnung, `RAUM`/`PROZESS`; leer an den Zeilen 1–6). Die
+Saatwache `KaeltebedarfsprofilVorlagenSchemaTests` hält Zeilen, Monatssummen 100, vollständige Tagesgänge, die Quelle je Vorlage und die
+Zeilen 1–6 bytegleich gegen einen eingefrorenen Abdruck.
+
 Temperaturpaare der neuen Köpfe bleiben Angabe ohne Wirkung (E-K3): Raumkühlung 16/19 °C, Prozesskälte 6/12 °C,
 Rechenzentrum 18/24 °C, Gewerbekälte −2/+4 °C — runde Ordnungswerte wie im Bestand.
 
