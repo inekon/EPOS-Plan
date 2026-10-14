@@ -56204,5 +56204,17 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="IMP_BAUTEIL_PROT_LUFTSTROM_PARTNER" xml:space="preserve">
     <value>Zone {0}: Der Luftstrom zur Zone {1} wird übergangen — die Datei führt diese Zone nicht, es ist die Zone selbst, oder das Paar steht schon.</value>
   </data>
+  <data name="MPB_LEISTE_TITEL" xml:space="preserve">
+    <value>Modellprüfung des gespeicherten Gebäudes</value>
+  </data>
+  <data name="MPB_LEISTE_GRUPPE_HINWEIS" xml:space="preserve">
+    <value>{0}: {1} Befunde, {2} Vorschläge – öffnet „Modell prüfen“ auf dieser Gruppe.</value>
+  </data>
+  <data name="ZNB_WOCHE_BILD" xml:space="preserve">
+    <value>Woche der Zone {0} je Größe</value>
+  </data>
+  <data name="ZNB_WOCHE_TITEL" xml:space="preserve">
+    <value>{0} · {1} {2:00}–{3:00} Uhr: {4} {5}</value>
+  </data>
 </root>
 

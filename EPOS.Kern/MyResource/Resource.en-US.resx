@@ -56197,5 +56197,17 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="IMP_BAUTEIL_PROT_LUFTSTROM_PARTNER" xml:space="preserve">
     <value>Zone {0}: the air flow to zone {1} is skipped — the file does not contain this zone, it is the zone itself, or the pair already exists.</value>
   </data>
+  <data name="MPB_LEISTE_TITEL" xml:space="preserve">
+    <value>Model check of the saved building</value>
+  </data>
+  <data name="MPB_LEISTE_GRUPPE_HINWEIS" xml:space="preserve">
+    <value>{0}: {1} findings, {2} proposals – opens “Check model” on this group.</value>
+  </data>
+  <data name="ZNB_WOCHE_BILD" xml:space="preserve">
+    <value>Week of zone {0} per quantity</value>
+  </data>
+  <data name="ZNB_WOCHE_TITEL" xml:space="preserve">
+    <value>{0} · {1} {2:00}–{3:00} h: {4} {5}</value>
+  </data>
 </root>
 
