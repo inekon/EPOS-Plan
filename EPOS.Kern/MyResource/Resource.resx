@@ -43085,7 +43085,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Betriebskalender</value>
   </data>
   <data name="BKAL_KONTEXT" xml:space="preserve">
-    <value>Feiertage und Betriebsferien für die Wochenprofile von Brauchwasser, Prozesswärme und Strom. Gewählt wird ein Kalender je Profilzuordnung im Projekt.</value>
+    <value>Feiertage und Betriebsferien für die Wochenprofile von Brauchwasser, Prozesswärme, Kälte und Strom. Gewählt wird ein Kalender je Profilzuordnung im Projekt.</value>
   </data>
   <data name="BKAL_LBL_LISTE" xml:space="preserve">
     <value>Kalender</value>

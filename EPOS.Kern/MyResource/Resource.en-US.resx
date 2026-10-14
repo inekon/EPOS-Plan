@@ -43078,7 +43078,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Operating calendars</value>
   </data>
   <data name="BKAL_KONTEXT" xml:space="preserve">
-    <value>Holidays and company holidays for the weekly profiles of domestic hot water, process heat and electricity. A calendar is chosen per profile assignment in the project.</value>
+    <value>Holidays and company holidays for the weekly profiles of domestic hot water, process heat, cooling and electricity. A calendar is chosen per profile assignment in the project.</value>
   </data>
   <data name="BKAL_LBL_LISTE" xml:space="preserve">
     <value>Calendar</value>
