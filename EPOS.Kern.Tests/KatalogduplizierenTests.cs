@@ -30,7 +30,10 @@ namespace EPOS.Kern.Tests
         private static readonly string[] KOPF =
         {
             "ID", "Bezeichner", "ReadOnly",
-            Katalogfassung.SPALTE_SCHLUESSEL, Katalogfassung.SPALTE_PRUEFSUMME, Katalogfassung.SPALTE_AUSGELAUFEN
+            Katalogfassung.SPALTE_SCHLUESSEL, Katalogfassung.SPALTE_PRUEFSUMME, Katalogfassung.SPALTE_AUSGELAUFEN,
+            // Die Satzvorlagen bleiben beim Original (Katalogkopie.KOPFSPALTEN); sichtbar, seit die Testdatenbank
+            // die Saat der Katalogkosten trägt.
+            KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE, KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION
         };
 
         /// <summary>Der Weg je Tabelle — genau der Controller, den die Hülle ruft.</summary>
