@@ -414,6 +414,18 @@
     {
         <DeckungsartFelder Daten="@_deckungArbeit" Stromtraeger="@Stromtraeger" ProjektStromtraeger="@ProjektStromtraeger" Klappbar="true" />
     }
+
+    @* KBP-3b (Konzept Kaeltebedarfsprofile 5): die Kennzahlenzeile und die vier Blaetter der markierten Kaeltezeile.
+       Gerechnet wird im Kern ueber den Weg der Huelle (KaelteGrafik), mit den Jahressummen und Kalendern, wie der Dialog
+       sie gerade zeigt; das Ergebnis bleibt liegen, bis sich dieser Stand aendert (eine Referenz je Rechenstand). *@
+    @if (GrafikSichtbar)
+    {
+        <Gruppenkopf Titel="@Resource.KBP_GRAFIK_GRUPPE">
+            <KindInhalt>
+                <KaelteProfilgrafik Bilder="@GrafikBilder()" />
+            </KindInhalt>
+        </Gruppenkopf>
+    }
     }
     </div>
 
@@ -634,6 +646,43 @@
 
     /// <summary><c>KAELTE_ART_HINWEIS</c></summary>
     [Parameter] public string HinweisKaelteArt { get; set; } = Resource.KAELTE_ART_HINWEIS;
+
+    /// <summary>
+    /// KBP-3b (Konzept Kältebedarfsprofile 5): Kennzahlen und die vier Bilder der markierten Kältezeile — der Weg der
+    /// Hülle in den Kern (<c>KaelteprofilgrafikCtrl</c>) mit der markierten Zeile und allen Zeilen des Dialogs;
+    /// <c>null</c> = keine Grafik (andere Bedarfsarten).
+    /// </summary>
+    [Parameter] public Func<BedarfsProfilZeile, IReadOnlyList<BedarfsProfilZeile>, WindowsFormsApplication1.Kaelteprofilbilder?>? KaelteGrafik { get; set; }
+
+    /// <summary>Steht die Grafik der markierten Kältezeile in der Bearbeiten-Überlagerung?</summary>
+    private bool GrafikSichtbar => Art == BedarfsArt.Kaelte && KaelteGrafik is not null && _gewaehlt is not null;
+
+    private WindowsFormsApplication1.Kaelteprofilbilder? _grafik;
+    private string? _grafikStand;
+
+    /// <summary>
+    /// Die Bilder zum gegenwärtigen Stand: neu gerechnet nur, wenn sich markierte Zeile, Namen, Jahressummen oder
+    /// Kalender geändert haben — sonst dieselbe Referenz (DiagrammSvg baut seinen Baum nur bei neuer Referenz neu und
+    /// behält Zoom, Zeigerstelle und abgewählte Reihen). Ein Fehler des Wegs zeigt „kein Profil“.
+    /// </summary>
+    private WindowsFormsApplication1.Kaelteprofilbilder? GrafikBilder()
+    {
+        if (KaelteGrafik is null || _gewaehlt is null) return null;
+        var stand = new System.Text.StringBuilder();
+        stand.Append(Zeilen.IndexOf(_gewaehlt)).Append('|');
+        foreach (BedarfsProfilZeile z in Zeilen)
+            stand.Append(z.Name).Append('\u001f').Append(z.Summe.ToString("R", System.Globalization.CultureInfo.InvariantCulture))
+                 .Append('\u001f').Append(z.KalenderId).Append('\u001e');
+        string schluessel = stand.ToString();
+        if (schluessel == _grafikStand) return _grafik;
+        _grafikStand = schluessel;
+        try { _grafik = KaelteGrafik(_gewaehlt, Zeilen); }
+        catch (Exception) { _grafik = null; }
+        return _grafik;
+    }
+
+    /// <summary>Die Bilder des letzten Rechenstands — Prüfhilfe für die Tests.</summary>
+    public WindowsFormsApplication1.Kaelteprofilbilder? Grafikstand => _grafik;
 
     /// <summary><c>BPF_LBL_KALENDER</c></summary>
     [Parameter] public string LabelKalender { get; set; } = Resource.BPF_LBL_KALENDER;

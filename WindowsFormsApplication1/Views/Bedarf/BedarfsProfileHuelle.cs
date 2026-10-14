@@ -487,6 +487,15 @@ namespace WindowsFormsApplication1
                     .StromtraegerDesProjekts(projektId).Select(t => (t.Key, t.Value)).ToList();
                 // K6b (E34): der Stromtraeger des Projekts - der eigene Zaehler wirkt nur bei abweichendem Kuehltraeger.
                 gaben["ProjektStromtraeger"] = Kaeltestromabrechnung.Projekttraeger(projektId);
+                // KBP-3b (Konzept Kaeltebedarfsprofile 5): die vier Blaetter und die Kennzahlenzeile der markierten
+                // Kaeltezeile - gerechnet im Kern mit den Jahressummen und Kalendern, wie der Dialog sie gerade zeigt.
+                gaben["KaelteGrafik"] = new Func<BedarfsProfilZeile, IReadOnlyList<BedarfsProfilZeile>, Kaelteprofilbilder>(
+                    (markiert, alle) =>
+                    {
+                        var zeilenDesDialogs = alle.Select(z => new Kaeltegrafikzeile(z.Name, z.Summe, z.KalenderId)).ToList();
+                        int platz = alle.ToList().IndexOf(markiert);
+                        return platz < 0 ? null : KaelteprofilgrafikCtrl.Rechnen(projektId, zeilenDesDialogs, zeilenDesDialogs[platz]);
+                    });
             }
 
             // Brauchwasser (5.2): Das OK schreibt Zuordnungen und Zapfprofil in EINEM Vorgang,
