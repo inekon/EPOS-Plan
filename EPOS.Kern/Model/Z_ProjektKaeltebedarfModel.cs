@@ -64,5 +64,11 @@
         /// <c>Kaeltebedarf_Prozess</c> mitgeführt.
         /// </summary>
         public string KaelteArt = KaelteArtSchema.RAUM;
+
+        /// <summary>
+        /// Eingabeart der Zuordnung (KBP-2, Schritt <see cref="KaeltebedarfsprofilVorlagenSchema.SCHRITT"/>): 'jahr' (Vorgabe, Jahressumme
+        /// mit Vorlage), 'monat', 'woche' oder 'typtag'. Gelesen; die Bedienung folgt mit KBP-3.
+        /// </summary>
+        public string Eingabeart = KaeltebedarfsprofilVorlagenSchema.EINGABE_JAHR;
     }
 }

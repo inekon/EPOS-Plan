@@ -1075,7 +1075,12 @@ namespace WindowsFormsApplication1
         /// (<see cref="BrennstoffpreiseTraegerkarteSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg liest die
         /// drei Spalten; sie waren allein Saat der Energieträger-Variante. <b>Neue Katalogfassung:</b> Die
         /// Prüfsumme jedes Brennstoffs ändert sich, der Schritt bildet sie für unveränderte Sätze neu.
-        public const int Zielversion = BrennstoffpreiseTraegerkarteSchema.SCHRITT;
+        /// Danach, mit SCHEMASCHRITT A DER KÄLTEBEDARFSPROFILE (KBP-2), steht das Ziel auf
+        /// <see cref="KaeltebedarfsprofilVorlagenSchema.SCHRITT"/>: <c>Z_Projekt_Kaeltebedarf.Eingabeart</c> (Vorgabe 'jahr'), der
+        /// Art-Vorschlag <c>Kaelte_Art</c> an <c>Tab_Kaeltebedarf_STAMM</c> und <c>Tab_Kaeltebedarf</c> und die Saat der
+        /// Vorlagen 7–16 (<see cref="KaeltebedarfsprofilVorlagenSchema"/>). <b>Ergebnisneutral:</b> Jede Zuordnung rechnet weiter mit
+        /// der Jahressumme, die Zeilen 1–6 bleiben bytegleich samt Prüfsumme.
+        public const int Zielversion = KaeltebedarfsprofilVorlagenSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

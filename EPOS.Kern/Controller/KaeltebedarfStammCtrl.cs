@@ -63,6 +63,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Das Temperaturpaar (Angabe) einer PROJEKTKOPIE (<c>Tab_Kaeltebedarf.ID</c>).</summary>
+        /// <summary>
+        /// Der Art-Vorschlag eines Katalogsatzes (KBP-2, Konzept Kältebedarfsprofile 6.2): <see cref="KaelteArtSchema.RAUM"/>,
+        /// <see cref="KaelteArtSchema.PROZESS"/> oder null, wenn der Satz keinen trägt oder der Schritt noch nicht steht.
+        /// Ein Vorschlag — die Kälte-Art der Zuordnung setzt der Anwender.
+        /// </summary>
+        public static string ArtVorschlag(string szBezeichner)
+        {
+            if (!Da || !KaeltebedarfsprofilVorlagenSchema.ArtVorschlagLesbar()) return null;
+            // Ganze Zeile lesen: Die Spalte entsteht erst im Schemaschritt, ein Text mit ihrem Namen fiele auf einem
+            // aelteren Stand (und im SQL-Dialekt-Pruefer gegen die Testdatenbank) durch.
+            DataTable dt = DataRepository.GetDataTable("SELECT * FROM " + TABLE + " WHERE Bezeichner = ?",
+                                                       new DbParam("@bez", szBezeichner ?? ""));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            return KaeltebedarfsprofilVorlagenSchema.ArtVorschlag(ColOrNull(dt.Rows[0], KaeltebedarfsprofilVorlagenSchema.SPALTE_ART));
+        }
+
         public static (double? Vorlauf, double? Ruecklauf) ProjektTemperaturpaar(int idKopie)
         {
             if (idKopie <= 0 || !DataRepository.TabelleVorhanden(TABLE_PROJ)) return (null, null);
@@ -187,6 +203,7 @@ namespace WindowsFormsApplication1
             string typName = h["Typ"] != DBNull.Value ? h["Typ"].ToString() : "";
             DataTable dtTyp = string.IsNullOrEmpty(typName) ? null
                 : DataRepository.GetDataTable("SELECT * FROM " + TYP_STAMM + " WHERE Bezeichner = ?", new DbParam("@bez", typName));
+            bool artProj = DataRepository.SpalteVorhanden(TABLE_PROJ, KaeltebedarfsprofilVorlagenSchema.SPALTE_ART);
 
             using (DbVorgang v = DataRepository.Vorgang())
             {
@@ -211,6 +228,12 @@ namespace WindowsFormsApplication1
                     p.Add(new DbParam("@hvl", ColOrNull(h, KaeltebedarfSchema.SPALTE_VORLAUF)));
                     p.Add(new DbParam("@hrl", ColOrNull(h, KaeltebedarfSchema.SPALTE_RUECKLAUF)));
                     p.Add(new DbParam("@hstamm", Convert.ToInt64(h["ID"], CultureInfo.InvariantCulture)));
+                    // KBP-2: der Art-Vorschlag reist mit der Kopie, wenn beide Tabellen ihn fuehren.
+                    if (artProj && h.Table.Columns.Contains(KaeltebedarfsprofilVorlagenSchema.SPALTE_ART))
+                    {
+                        cols.Append(", " + KaeltebedarfsprofilVorlagenSchema.SPALTE_ART); vals.Append(", ?");
+                        p.Add(new DbParam("@hart", ColOrNull(h, KaeltebedarfsprofilVorlagenSchema.SPALTE_ART)));
+                    }
                     v.Ausfuehren("INSERT INTO " + TABLE_PROJ + " (" + cols + ") VALUES (" + vals + ")", p.ToArray());
 
                     if (dtTyp != null && dtTyp.Rows.Count > 0)

@@ -466,6 +466,10 @@ namespace WindowsFormsApplication1
             // Schritt überträgt sie an der Zieldatenbank in die Trägerkarte und entfernt sie danach.
             new Stufe(BrennstoffpreiseTraegerkarteSchema.SCHRITT, Art.Ddl,
                       "Brennstoffpreise in die Trägerkarte, Entfall der drei Standardpreise am Brennstoff (KB-2)"),
+            // KBP-2: Ein älteres Paket bringt seine Kältebedarfszuordnungen ohne Eingabeart und seine Projektkopien ohne
+            // Art-Vorschlag; der Schritt legt die Spalten am Ziel an (Vorgabe 'jahr' bzw. leer).
+            new Stufe(KaeltebedarfsprofilVorlagenSchema.SCHRITT, Art.Ddl,
+                      "Eingabeart der Kältebedarfszuordnung, Art-Vorschlag und Vorlagen 7–16 des Kältekatalogs (KBP-2)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

@@ -1065,6 +1065,9 @@ namespace EPOS.Kern.Tests
                 // Schritt BrennstoffpreiseTraegerkarteSchema.SCHRITT (KB-2): die drei Standardpreise des Brennstoffs
                 // gehen in die Traegerkarte und fallen an Katalog und Projektkopie weg. Wiederholbar, ergebnisneutral.
                 BrennstoffpreiseTraegerkarteSchema.Ausfuehren(null);
+                // Schritt KaeltebedarfsprofilVorlagenSchema.SCHRITT (KBP-2): Eingabeart der Kaeltebedarfszuordnung, Art-Vorschlag am
+                // Kaeltekatalog und Saat der Vorlagen 7-16. Wiederholbar, ergebnisneutral.
+                KaeltebedarfsprofilVorlagenSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

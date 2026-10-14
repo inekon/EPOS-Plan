@@ -5541,6 +5541,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_BRENNSTOFFPREISE_TRAEGERKARTE = BrennstoffpreiseTraegerkarteSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="KaeltebedarfsprofilVorlagenSchema.SCHRITT"/> — <b>Schemaschritt A der Kältebedarfsprofile</b> (KBP-2,
+        /// Konzept Kältebedarfsprofile 8.1, Entscheid OE-3): <c>Z_Projekt_Kaeltebedarf.Eingabeart</c> (Vorgabe 'jahr',
+        /// Prüfklausel jahr/monat/woche/typtag), der Art-Vorschlag <c>Kaelte_Art</c> an <c>Tab_Kaeltebedarf_STAMM</c> und
+        /// <c>Tab_Kaeltebedarf</c> (nullbar) und die Saat der Vorlagen 7–16 samt Katalogschlüssel.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> kein UPDATE des Bestands, jede Zuordnung rechnet weiter mit der
+        /// Jahressumme; die Zeilen 1–6 bleiben samt Prüfsumme bytegleich.</para>
+        /// </summary>
+        public const int SCHRITT_KAELTEVORLAGEN = KaeltebedarfsprofilVorlagenSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -8143,6 +8154,14 @@ namespace WindowsFormsApplication1
                         "saeten eine zweite Kostenbasis. KEIN Rechenergebnis aendert sich - gerechnet wird aus der " +
                         "Traegerwelt; die drei Spalten waren allein Saat der Energietraeger-Variante.",
                         Schritt_BrennstoffpreiseTraegerkarte),
+            // KBP-2: Schemaschritt A der Kaeltebedarfsprofile. Quelle ist KaeltebedarfsprofilVorlagenSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KAELTEVORLAGEN,
+                        "Z_Projekt_Kaeltebedarf: Eingabeart; Tab_Kaeltebedarf_STAMM und Tab_Kaeltebedarf: Kaelte_Art " +
+                        "(Art-Vorschlag); Saat der Kaeltebedarfsvorlagen 7-16 in Tab_Kaeltebedarf_STAMM/Tab_Kaeltetyp_STAMM",
+                        "Der Kaeltekatalog fuehrte nur sechs Saetze, die Zuordnung kannte allein die Jahressumme. KEIN " +
+                        "Rechenergebnis aendert sich - jede Zuordnung rechnet mit Eingabeart 'jahr', die Zeilen 1-6 " +
+                        "bleiben unberuehrt.",
+                        Schritt_Kaeltevorlagen),
         };
 
         /// <summary>
@@ -16019,6 +16038,60 @@ namespace WindowsFormsApplication1
                         ? "stand bereits."
                         : ergebnis.Uebertragen + " Preis(e) uebertragen, " + ergebnis.Entfernt + " Spalte(n) entfernt, " +
                           ergebnis.PruefsummenNeu + " Pruefsumme(n) neu.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Kältebedarfsvorlagen und Eingabeart" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KAELTEVORLAGEN"/>, die Anweisungen bei <see cref="KaeltebedarfsprofilVorlagenSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Kaeltevorlagen(Lauf l)
+        {
+            string nr = KaeltebedarfsprofilVorlagenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KaeltebedarfsprofilVorlagenSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int angelegt;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    angelegt = KaeltebedarfsprofilVorlagenSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KaeltebedarfsprofilVorlagenSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Eingabeart, Art-Vorschlag oder Kaeltebedarfsvorlagen fehlen nach dem Schritt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Kaeltebedarfsvorlagen und Eingabeart - " +
+                    (angelegt == 0 ? "Spalten standen bereits." : angelegt + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

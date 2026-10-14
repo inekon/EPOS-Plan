@@ -27,7 +27,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(227, BrennstoffpreiseTraegerkarteSchema.SCHRITT);
             // Die Kette hängt über + 1 an 226 (KB-3, Saat der Katalogkosten).
             Assert.Equal(KatalogkostenSaatSchema.SCHRITT + 1, BrennstoffpreiseTraegerkarteSchema.SCHRITT);
-            Assert.Equal(BrennstoffpreiseTraegerkarteSchema.SCHRITT, SchemaStand.Zielversion);
+            // Das Ziel steht seit KBP-2 auf einem späteren Schritt (KaeltebedarfsprofilVorlagenSchema).
+            Assert.True(SchemaStand.Zielversion >= BrennstoffpreiseTraegerkarteSchema.SCHRITT);
             Assert.Contains(Paketanhebung.Stufen,
                             s => s.Nr == BrennstoffpreiseTraegerkarteSchema.SCHRITT && s.Wirkung == Paketanhebung.Art.Ddl);
         }
