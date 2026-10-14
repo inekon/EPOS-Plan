@@ -36,8 +36,11 @@ namespace EPOS.Kern.Tests
         public void Die_Einstufung_fuer_gbXML_passt_zu_Schreiber_und_Leser()
         {
             string xml = Encoding.UTF8.GetString(GbxmlExportProbe.Schreiben(GbxmlExportRundlaufTests.Abbild()));
+            // Die Restdaten (DA-4, Rückfall Weg 2): Block EPOS: in Description, geschrieben aus dem Abbild des Restdatenrundlaufs.
+            string rest = Encoding.UTF8.GetString(GbxmlExportProbe.Schreiben(RestdatenRundlaufTests.Abbild()));
             string leser = string.Concat(Directory.GetFiles(Path.Combine(Repowurzel(), "EPOS.Kern", "Allgemein", "Import", "Gbxml"), "*.cs")
                                                   .Select(File.ReadAllText));
+            string restleser = File.ReadAllText(Path.Combine(Repowurzel(), "EPOS.Kern", "Allgemein", "Import", "Gebaeude", "GebaeudeRestdaten.cs"));
             foreach (Inventardatum d in DatenaustauschInventar.Alle)
             {
                 bool schreibt = d.Gbxml == Austauschweg.BeideRichtungen || d.Gbxml == Austauschweg.NurGeschrieben;
@@ -48,6 +51,15 @@ namespace EPOS.Kern.Tests
                     continue;
                 }
                 Assert.NotEmpty(d.Elemente);
+                if (d.Gbxml == Austauschweg.NurEpos)
+                {
+                    foreach (string e in d.Elemente)
+                    {
+                        Assert.True(rest.Contains(e, StringComparison.Ordinal), d.Nr + ": " + e + " steht nicht im Block EPOS: der Datei.");
+                        Assert.True(restleser.Contains("\"" + e + "\"", StringComparison.Ordinal), d.Nr + ": " + e + " liest der Leser nicht.");
+                    }
+                    continue;
+                }
                 foreach (string e in d.Elemente)
                 {
                     if (schreibt)
@@ -62,7 +74,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(42, zaehlung[Austauschweg.BeideRichtungen]);
             Assert.Equal(3, zaehlung[Austauschweg.NurGelesen]);
             Assert.False(zaehlung.ContainsKey(Austauschweg.NurGeschrieben));
-            Assert.Equal(26, zaehlung[Austauschweg.OhneElement]);
+            Assert.Equal(9, zaehlung[Austauschweg.NurEpos]);
+            Assert.Equal(17, zaehlung[Austauschweg.OhneElement]);
         }
 
         [Fact]
@@ -70,11 +83,14 @@ namespace EPOS.Kern.Tests
         {
             // Dieselben Kennungen in derselben Reihenfolge wie die Tafel.
             Assert.Equal(DatenaustauschInventar.Alle.Select(d => d.Nr), DatenaustauschInventar.Ifc.Select(d => d.Nr));
-            string step = Encoding.UTF8.GetString(IfcExportProbe.Schreiben(IfcExportRundlaufTests.Abbild()));
+            // Dazu die Restdaten (DA-4, EPOS_Zone/EPOS_Gebaeude) aus dem Abbild des Restdatenrundlaufs.
+            string step = Encoding.UTF8.GetString(IfcExportProbe.Schreiben(IfcExportRundlaufTests.Abbild()))
+                          + Encoding.UTF8.GetString(IfcExportProbe.Schreiben(MitDinNummer(RestdatenRundlaufTests.Abbild())));
             string kern = Path.Combine(Repowurzel(), "EPOS.Kern", "Allgemein");
             // Der Leser: die Dateien des IFC-Imports und die gemeinsame Festlegung der Konditionierungssätze.
             string leser = string.Concat(Directory.GetFiles(Path.Combine(kern, "Import", "Ifc"), "*.cs")
                                                   .Append(Path.Combine(kern, "Export", "Ifc", "IfcKonditionierungssatz.cs"))
+                                                  .Append(Path.Combine(kern, "Import", "Gebaeude", "GebaeudeRestdaten.cs"))
                                                   .Select(File.ReadAllText));
             var fehler = new List<string>();
             foreach (IfcEinstufung d in DatenaustauschInventar.Ifc)
@@ -107,11 +123,26 @@ namespace EPOS.Kern.Tests
             Assert.Equal(31, zaehlung[Austauschweg.BeideRichtungen]);
             Assert.Equal(1, zaehlung[Austauschweg.NurGelesen]);
             Assert.False(zaehlung.ContainsKey(Austauschweg.NurGeschrieben));
-            Assert.Equal(16, zaehlung[Austauschweg.NurEpos]);
-            Assert.Equal(23, zaehlung[Austauschweg.OhneElement]);
-            // gbXML kennt den Weg über einen eigenen Satz nicht (DA-2: Rückfall nur als benannter Verlust).
-            Assert.DoesNotContain(DatenaustauschInventar.Alle, d => d.Gbxml == Austauschweg.NurEpos);
+            Assert.Equal(25, zaehlung[Austauschweg.NurEpos]);
+            Assert.Equal(14, zaehlung[Austauschweg.OhneElement]);
+            // gbXML trägt den eigenen Weg nur für die Restdaten (DA-4, Rückfall Weg 2) — dieselben Daten wie IFC über EPOS_*.
+            Assert.Equal(DatenaustauschInventar.Alle.Where(d => d.Gbxml == Austauschweg.NurEpos).Select(d => d.Nr),
+                         DatenaustauschInventar.Ifc.Where(d => d.Weg == Austauschweg.NurEpos && d.Elemente.All(e => GebaeudeRestdatenSchluessel(e)))
+                                                   .Select(d => d.Nr));
         }
+
+        /// <summary>Das Abbild mit einer DIN-Nummer an der ersten beheizten Zone (DA-5, <c>EPOS_Zone.DinNummer</c>, Inventar B5).</summary>
+        private static GebaeudeAbbild MitDinNummer(GebaeudeAbbild a)
+        {
+            AbbildRaum r = a.Gebaeude[0].Raeume.First(x => x.Beheizt);
+            r.Konditionierung ??= new AbbildKonditionierung();
+            r.Konditionierung.DinNummer = 7;
+            return a;
+        }
+
+        /// <summary>Ist das Element ein Schlüssel der Restdaten (Zone oder Erdreich)?</summary>
+        private static bool GebaeudeRestdatenSchluessel(string e)
+            => GebaeudeRestdaten.IstZonenschluessel(e) || GebaeudeRestdaten.IstErdreichschluessel(e);
 
         private static string Repowurzel()
         {

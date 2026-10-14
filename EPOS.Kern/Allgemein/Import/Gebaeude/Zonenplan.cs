@@ -311,10 +311,40 @@ namespace WindowsFormsApplication1
                 // Welle DA-1: Lasten und Zeitpläne einer gbXML-Datei je Zone (Datei vor Profil, E138 F2) — nur ohne EPOS_*-Sätze.
                 else if (GbxmlKonditionierung.Bilden(z.Name, iz.Raeume, iz.FlaecheM2, iz.VolumenM3) is Zonenkonditionierung gbxml)
                     z.Projektdatei = gbxml;
+                DinNummerAnwenden(z, iz);
             }
             foreach (AbbildRaum r in Gebaeude.Raeume)
                 if (!_zoneJeRaum.ContainsKey(r.Kennung)) _ausserhalb.Add(r.Kennung);
         }
+
+        /// <summary>
+        /// <b>Rangstufe 1 der Profilzuordnung</b> (Welle DA-5, Konzept DA 4.3, E135): die DIN-Nummer der Datei — IFC
+        /// <c>EPOS_Zone.DinNummer</c>, sonst der gbXML-Raumtyp über die Raumtyptafel (<see cref="GbxmlRaumtyptafel"/>) — des
+        /// flächengrößten Raums der Zone, der eine trägt. Sie geht der Regel des Raumtyps (Z6) vor; nur ein Profilname aus
+        /// <c>EPOS_Zone.Nutzung</c> mit Katalogtreffer bleibt (er ist das Profil selbst). Die Quelle ist die Zuordnung
+        /// <c>DIN_NUMMER</c> mit der Nummer, auch ohne Katalogtreffer (dann bleibt die Zone ohne Profil; die Modellprüfung
+        /// schlägt das nächstliegende Profil der DIN-Kategorie vor). Nur beheizte Zonen.
+        /// </summary>
+        private void DinNummerAnwenden(Planzone z, Importzone iz)
+        {
+            if (!iz.IstBeheizt) return;
+            if (z.Quelle?.Art == Profilquelle.DATEI && z.Profil != null && !z.Profil.NichtImKatalog) return;
+            int? din = DateiDinNummer(iz.Raeume);
+            if (din is not int n) return;
+            Planprofil p = Vorbelegung.DinTreffer(n);
+            z.Profil = p == null || p.NichtImKatalog ? null : p;
+            z.Quelle = new Profilquelle(RaumnutzungSchema.ZUORDNUNG_DIN, n.ToString(CultureInfo.InvariantCulture));
+        }
+
+        /// <summary>
+        /// Die DIN-Nummer der Datei für eine Zone: je Raum (flächengrößter zuerst, dann in der Ordnung der Datei) die Nummer aus
+        /// <c>EPOS_Zone</c>, sonst die des gbXML-Raumtyps; <c>null</c> = keine.
+        /// </summary>
+        internal static int? DateiDinNummer(IEnumerable<AbbildRaum> raeume)
+            => (raeume ?? Enumerable.Empty<AbbildRaum>()).Select((r, i) => (R: r, I: i))
+                   .OrderByDescending(x => x.R.FlaecheM2 > 0.0 ? x.R.FlaecheM2.Value : 0.0).ThenBy(x => x.I)
+                   .Select(x => x.R.Konditionierung?.DinNummer ?? GbxmlRaumtyptafel.DinNummer(x.R.Raumtyp))
+                   .FirstOrDefault(n => n.HasValue);
 
         private Planzone Neu(string name, Planprofil profil, string herkunft, string quellkennung, bool angelegt)
         {

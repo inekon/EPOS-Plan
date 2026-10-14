@@ -614,9 +614,14 @@ namespace WindowsFormsApplication1
                 Satz(b, g.Kennung, "Pset_BuildingCommon",
                      baujahr == null ? null : Wert("YearOfConstruction", new IfcLabel(baujahr)));
                 Satz(b, g.Kennung, EPOS_GEBAEUDE,
-                     Wert("Kennung", new IfcIdentifier(g.Kennung)),
-                     string.IsNullOrWhiteSpace(g.Art) ? null : Wert("Gebaeudeart", new IfcLabel(g.Art.Trim())),
-                     string.IsNullOrWhiteSpace(g.Baualtersklasse) ? null : Wert("Baualtersklasse", new IfcLabel(g.Baualtersklasse.Trim())));
+                     new[]
+                     {
+                         Wert("Kennung", new IfcIdentifier(g.Kennung)),
+                         string.IsNullOrWhiteSpace(g.Art) ? null : Wert("Gebaeudeart", new IfcLabel(g.Art.Trim())),
+                         string.IsNullOrWhiteSpace(g.Baualtersklasse) ? null : Wert("Baualtersklasse", new IfcLabel(g.Baualtersklasse.Trim())),
+                     }
+                     // Welle DA-4: das Erdreich (G3, G4) als Text.
+                     .Concat(GebaeudeRestdaten.Werte(g.Erdreich).Select(p => Wert(p.Schluessel, new IfcText(p.Wert)))).ToArray());
                 Ergebnis(b, g.Kennung, null);
                 Rechenlauf(b, g.Kennung, mitLauf: true);
                 return b;
@@ -662,6 +667,8 @@ namespace WindowsFormsApplication1
                 };
                 // Nutzung, Matrixzellen und Kalender der Zone (6.3, 16.3); ohne Konditionierung bleibt die Datei byte-gleich.
                 zone.AddRange(IfcKonditionierungssatz.Zonenwerte(r.Konditionierung).Select(Satzwert));
+                // Welle DA-4: die Restdaten der Zone (Vorheizzeit, Höchstleistungen, Übergabe, Luftströme, Zeilenbild, Wochen) als Text.
+                zone.AddRange(GebaeudeRestdaten.Werte(r.Rest).Select(p => Wert(p.Schluessel, new IfcText(p.Wert))));
                 Satz(s, r.Kennung, EPOS_ZONE, zone.ToArray());
                 if (r.Konditionierung != null)
                     foreach (AbbildKalender k in r.Konditionierung.Kalender)

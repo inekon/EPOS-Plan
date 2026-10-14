@@ -318,8 +318,15 @@ namespace WindowsFormsApplication1
                                                                                         string gebaeudeart, string wohngebaeude)
         {
             v ??= Raumnutzungsvorbelegung.Vorgabe;
-            if (q?.DinNummer is int din && v.AusDinNummer(din) is Planprofil p1 && !p1.NichtImKatalog)
-                return (p1, Vorschlagsherkunft.DinNummer);
+            // Stufe 1 (Welle DA-5, Konzept DA 4.3): die DIN-Nummer der Datei mit Katalogtreffer; ohne Treffer das nächstliegende
+            // Profil der DIN-Kategorie. Danach der gbXML-Raumtyp über die Raumtyptafel — wie eine DIN-Nummer der Datei.
+            if (q?.DinNummer is int din)
+            {
+                if (DinTreffer(v, din) is Planprofil p1) return (p1, Vorschlagsherkunft.DinNummer);
+                if (v.NaechstesDinProfil(din) is Planprofil pn) return (pn, Vorschlagsherkunft.DinNaechstes);
+            }
+            if (GbxmlRaumtyptafel.DinNummer(q?.Raumtyp) is int gbxml && DinTreffer(v, gbxml) is Planprofil pg)
+                return (pg, Vorschlagsherkunft.DinNummer);
             if (!string.IsNullOrWhiteSpace(q?.Raumtyp)
                 && v.Aufloesen(RaumnutzungSchema.ZUORDNUNG_HOTTCAD, q.Raumtyp) is Planprofil p2 && !p2.NichtImKatalog)
                 return (p2, Vorschlagsherkunft.Raumtyp);
@@ -332,6 +339,10 @@ namespace WindowsFormsApplication1
             return (p5, Vorschlagsherkunft.EposMuster);
         }
 
+        /// <summary>Das Profil einer DIN-Nummer mit Katalogtreffer (<see cref="Raumnutzungsvorbelegung.DinTreffer"/>); <c>null</c> = keiner.</summary>
+        internal static Planprofil DinTreffer(Raumnutzungsvorbelegung v, int nummer)
+            => (v ?? Raumnutzungsvorbelegung.Vorgabe).DinTreffer(nummer) is Planprofil p && !p.NichtImKatalog ? p : null;
+
         /// <summary><b>Der Profilvorschlag</b> einer Zone ohne Profil.</summary>
         internal static Pruefvorschlag Profil(Modellpruefstand s, ZoneModel z)
         {
@@ -339,7 +350,7 @@ namespace WindowsFormsApplication1
             (Planprofil p, Vorschlagsherkunft h) = ProfilNachRegel(s.Vorbelegung, q, s.Gebaeudeart, s.Wohngebaeude);
             if (p == null) return null;
             return new Pruefvorschlag(Vorschlagsart.Profil, h,
-                                      Modellpruefung.Ressource("MP_VORSCHLAG_PROFIL_" + h.ToString().ToUpperInvariant(), p.Name),
+                                      Modellpruefung.Ressource("MP_VORSCHLAG_PROFIL_" + h.ToString().ToUpperInvariant(), p.Name, q?.DinNummer),
                                       IdProfil: p.Id, Name: p.Name);
         }
     }
