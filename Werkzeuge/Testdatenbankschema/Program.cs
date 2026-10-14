@@ -3688,6 +3688,24 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrBk5 + " - vollstaendig: " + BauteilkatalogAbschnittSchema.Vollstaendig() +
                                   " (erwartet True).");
             }
+
+            // ---- Schritt RaumnutzungDinWerteSchema.SCHRITT (DA-6, E135): die 45 DIN-Nutzungsprofile mit den Werten der
+            //      Saat RaumnutzungDinSaat (Fassung 2025-10), nur wo kein Wert steht. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_RaumnutzungDinWerte. Wiederholbar.
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt nutzt ein Nutzungsprofil.
+            string nrDa6 = RaumnutzungDinWerteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrDa6 + " - Werte der DIN-Nutzungsprofile: " +
+                              (RaumnutzungDinWerteSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtDa6 = new List<string>();
+                RaumnutzungDinWerteSchema.Ausfuehren(berichtDa6);
+                foreach (string zeile in berichtDa6)
+                    Console.WriteLine("Schritt " + nrDa6 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrDa6 + " - vollstaendig: " + RaumnutzungDinWerteSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
