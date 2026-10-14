@@ -55366,6 +55366,12 @@ chart</value>
   <data name="MP_BEFUND_ZONE_OHNE_PROFIL" xml:space="preserve">
     <value>Zone '{0}' has no usage profile and no calendars; it inherits from the building.</value>
   </data>
+  <data name="MP_BEFUND_DIN_OHNE_KATALOGTREFFER" xml:space="preserve">
+    <value>Zone '{0}' carries DIN number {1}, for which the catalogue holds no profile.</value>
+  </data>
+  <data name="MP_BEFUND_PROFIL_AUS_REGEL" xml:space="preserve">
+    <value>Zone '{0}': profile '{1}' comes from a rule, not from the file; please check.</value>
+  </data>
   <data name="MP_BEFUND_HEIZKALENDER_GEERBT" xml:space="preserve">
     <value>Zone '{0}' has no heating calendar; it inherits the heating set point from the building.</value>
   </data>
@@ -55452,6 +55458,9 @@ chart</value>
   </data>
   <data name="MP_VORSCHLAG_PROFIL_EPOSMUSTER" xml:space="preserve">
     <value>EPOS template '{0}'</value>
+  </data>
+  <data name="MP_VORSCHLAG_PROFIL_DINNAECHSTES" xml:space="preserve">
+    <value>Profile '{0}' — the nearest of the DIN category to number {1}</value>
   </data>
   <data name="MP_VORSCHLAG_FERIEN_PROJEKT" xml:space="preserve">
     <value>Apply the holidays of another building of the project</value>
@@ -56136,6 +56145,24 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="SIM_CHK_PV_AUFTEILEN" xml:space="preserve">
     <value>Split PV (self-consumption + surplus)</value>
+  </data>
+  <data name="GIMP_FELD_ERDREICH_U_WIRKSAM" xml:space="preserve">
+    <value>Effective U-value to ground</value>
+  </data>
+  <data name="GIMP_FELD_KELLERTEMPERATUR" xml:space="preserve">
+    <value>Basement temperature</value>
+  </data>
+  <data name="GIMP_BELEG_EPOS_RESTDATEN" xml:space="preserve">
+    <value>from the EPOS remainder data of the file ({0})</value>
+  </data>
+  <data name="IMP_GBXML_PROT_RESTDATEN_UEBERSPRUNGEN" xml:space="preserve">
+    <value>{0}: {1} value(s) in the "EPOS:" block of the description cannot be read or are out of range and are skipped: {2}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_RESTDATEN_UEBERSPRUNGEN" xml:space="preserve">
+    <value>{0}: {1} remainder value(s) in EPOS_Zone or EPOS_Gebaeude cannot be read or are out of range and are skipped: {2}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_LUFTSTROM_PARTNER" xml:space="preserve">
+    <value>Zone {0}: the air flow to zone {1} is skipped — the file does not contain this zone, it is the zone itself, or the pair already exists.</value>
   </data>
 </root>
 

@@ -426,6 +426,8 @@ jobs:
       # R53 (13.10.2026): dazu 1066 bis 1071 (Referenzprojekte der Zapfprofil-Optionen:
       # Mischnutzung, Kalender, Stochastisch, Typtage, Kalibrierung, Auslegung), alle in
       # der CI-Auswahl; die zwoelf uebrigen bleiben byte-gleich.
+      # R54 (14.10.2026): Daecher von 1052 und 1054 als Satteldach 42 Grad (E141), beide nicht
+      # in der CI-Auswahl; alle achtzehn bleiben byte-gleich.
       - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065, 1066-1071
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: >
@@ -438,28 +440,28 @@ jobs:
       # Suite (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den
       # Job rot. Der Byte-Diff danach ist nur Information - auf ARM64 sind
       # Gleitkomma-Abweichungen im Rahmen der Toleranz erwartbar (iF15).
-      - name: Vergleich mit Referenzbasis 2026-10-13_R53_Zapfprofiloptionen
+      - name: Vergleich mit Referenzbasis 2026-10-14_R54_Dachflaechen
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: |
           mkdir -p artifacts/reflauf/ref
-          cp -r Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen/Projekt_1030 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen/Projekt_1007 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen/Projekt_1017 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen/Projekt_1045 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen/Projekt_1046 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen/Projekt_1047 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen/Projekt_1049 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen/Projekt_1051 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen/Projekt_1058 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen/Projekt_1060 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen/Projekt_1063 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen/Projekt_1065 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen/Projekt_1066 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen/Projekt_1067 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen/Projekt_1068 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen/Projekt_1069 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen/Projekt_1070 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen/Projekt_1071 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1007 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1017 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1045 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1046 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1047 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1049 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1051 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1058 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1060 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1063 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1065 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1066 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1067 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1068 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1069 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1070 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1071 artifacts/reflauf/ref/
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
           echo "--- Byte-Diff (nur Information) ---"
           for p in 1030 1007 1017 1045 1046 1047 1049 1051 1058 1060 1063 1065 1066 1067 1068 1069 1070 1071; do

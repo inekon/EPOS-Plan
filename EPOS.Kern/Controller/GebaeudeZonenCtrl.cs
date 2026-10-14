@@ -1208,6 +1208,17 @@ namespace WindowsFormsApplication1
                         }
                     }
 
+                    // 3b) Welle DA-4: die Luftströme der Datei zwischen den Zonen (S-G), auf A < B gedreht; ohne Kopplung keiner.
+                    if (kopplung)
+                        foreach (ZonenluftstromModel l in vorschlag.Luftstroeme)
+                        {
+                            if (!zoneJeVorlaeufig.TryGetValue(l.ID_ZoneA, out int a) || !zoneJeVorlaeufig.TryGetValue(l.ID_ZoneB, out int b)) continue;
+                            v.EinfuegenUndId("INSERT INTO \"" + ZonenkopplungSchema.TAB_LUFTSTROM + "\" " +
+                                             "(\"ID_ZoneA\", \"ID_ZoneB\", \"Volumenstrom\") VALUES (?, ?, ?)",
+                                             new[] { new DbParam("@a", Math.Min(a, b)), new DbParam("@b", Math.Max(a, b)),
+                                                     new DbParam("@v", DbParamTyp.Double) { Wert = l.Volumenstrom } });
+                        }
+
                     // 4) Je Zone das Nutzungsprofil des Zonenplans über den Generator (Fläche und lichte Höhe der Zone) und
                     //    danach die Konditionierung der HottCAD-Projektdatei (SQ-1), die die Kopien des Profils ersetzt, wo
                     //    sie etwas liefert (Datei vor Profil, NP-F16) - im selben Vorgang (je Größe ein Sicherungspunkt).
@@ -1221,6 +1232,12 @@ namespace WindowsFormsApplication1
                                 ? ZonenplanCtrl.NutzungUebernehmen(idGebaeude, zonen[i].ID, profil, zonen[i].Nutzflaeche, zonen[i].Raumhoehe)
                                 : ZonenplanCtrl.ProjektdateiUebernehmen(idGebaeude, zonen[i].ID, datei, profil, zonen[i].Nutzflaeche, zonen[i].Raumhoehe);
                             if (fehlerZone != null) throw new InvalidOperationException(fehlerZone);
+                            // Welle DA-4: Zeilenbild und benannte Wochen der Datei nach der Konditionierung (Datei vor Profil).
+                            if (i < vorschlag.Zonenreste.Count && vorschlag.Zonenreste[i] is AbbildZonenrest rest && rest.TraegtKonditionierung)
+                            {
+                                string fehlerRest = ZonenplanCtrl.RestUebernehmen(idGebaeude, zonen[i].ID, rest);
+                                if (fehlerRest != null) throw new InvalidOperationException(fehlerRest);
+                            }
                         }
                     }
 

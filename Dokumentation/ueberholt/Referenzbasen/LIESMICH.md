@@ -1,6 +1,6 @@
-# Die Protokolle der 55 entfernten Referenzbasen
+# Die Protokolle der 56 entfernten Referenzbasen
 
-**Was hier liegt.** Für jede der **55 historischen Referenzbasen** unter `Referenzlaeufe/` das
+**Was hier liegt.** Für jede der **56 historischen Referenzbasen** unter `Referenzlaeufe/` das
 Protokoll ihrer Entstehung — `lauf_protokoll.md` beziehungsweise `protokoll.txt`, byte-gleich
 aus dem Stand `b02f986^` (= dem letzten Commit vor der Löschung) gesichert; das Protokoll von R7 kam am
 16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16, das von R17 und das von R18 am 25.09.2026, das von R19, das von R20, das von R21 und das von R22 am 26.09.2026, das von R23 am 29.09.2026, das von R24 und das von R25 am 29.09.2026, das von R26, das von R27, das von R28 und das von R29 am 30.09.2026, das von R30, das von R31 und das von R32 am 02.10.2026. **51 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen`](../../../Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen/);
+> [`Referenzlaeufe/2026-10-14_R54_Dachflaechen`](../../../Referenzlaeufe/2026-10-14_R54_Dachflaechen/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -98,6 +98,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-10-10_R50_Wochentagsraster` | 10.10.2026 | Basis mit dem Wochentagsraster der Klimaregion für alle Leser (Anwenderentscheid E115), auf Linux eingefroren; Testdatenbank `32af2d32…` (Schemastand 210); achtundzwanzig Projekte, 911 CSV, 6 336 Skalare — abgelöst durch R51 am 10.10.2026 | [`2026-10-10_R50_Wochentagsraster/protokoll.txt`](2026-10-10_R50_Wochentagsraster/protokoll.txt) |
 | `2026-10-10_R51_FreieKuehlung` | 10.10.2026 | Basis mit dem Referenzprojekt 1064 (freie Kühlung über die Wärmequelle, Stufe KU3-6), auf Linux eingefroren; Testdatenbank `3b9097b6…` (Schemastand 210), Nachträge bis Schemastand 215 (`cc9222a8…`); neunundzwanzig Projekte, 943 CSV, 6 568 Skalare — abgelöst durch R52 am 11.10.2026 | [`2026-10-10_R51_FreieKuehlung/protokoll.txt`](2026-10-10_R51_FreieKuehlung/protokoll.txt) |
 | `2026-10-11_R52_Vorheizen` | 11.10.2026 | Basis mit dem Referenzprojekt 1065 (berechnete Vorheizzeit, AH-V7), auf Linux eingefroren; Testdatenbank `832fda50…` (Schemastand 215), Nachträge bis Schemastand 222; dreißig Projekte, 979 CSV, 6 777 Skalare — abgelöst durch R53 am 13.10.2026 | [`2026-10-11_R52_Vorheizen/protokoll.txt`](2026-10-11_R52_Vorheizen/protokoll.txt) |
+| `2026-10-13_R53_Zapfprofiloptionen` | 13.10.2026 | Basis mit den Referenzprojekten 1066 bis 1071 der Zapfprofil-Optionen (ZB12), auf Linux eingefroren; Testdatenbank `6ef7aa68…` (Schemastand 224), Nachträge bis Schemastand 227 (`fb42e2f3…`); sechsunddreißig Projekte, 1 171 CSV, 7 983 Skalare — abgelöst durch R54 am 14.10.2026 | [`2026-10-13_R53_Zapfprofiloptionen/protokoll.txt`](2026-10-13_R53_Zapfprofiloptionen/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -5665,5 +5666,89 @@ dreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 >
 > Die Regel steht im Protokoll [AH-V7](../Protokolle/Gebaeudesimulation/2026-10-11_AH_V7_Referenzprojekt_R52.md)
 > und im [Entwurf Vorheizrampe](../../aktuell/Gebaeudesimulation/2026-10-10_Entwurf_Vorheizrampe.md), Abschnitt 4.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R53 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 13.10.2026 die Basis R53 beschrieben — den Anlass (Referenzprojekte 1066 bis 1071 der Zapfprofil-Optionen) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`.
+
+**Abgelöst wurde R53 durch `2026-10-14_R54_Dachflaechen`** (Satteldächer 42° der Zonenprojekte 1052 und 1054, Anwenderentscheid E141): Alle sechsunddreißig Projekte von R53 sind byte-gleich (1 171 CSV), weil 1052 und 1054 ohne Strahlung auf Außenbauteile rechnen und Fläche und U-Wert der Dächer gleich bleiben.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-10-13_R53_Zapfprofiloptionen/`** — **sechsunddreißig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065, 1066, 1067, 1068, 1069, 1070, 1071), **1 171 CSV**, **7 983 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 13.10.2026, Stand `bf13fbc67`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **224**, 108 412 928 Byte, LFS-SHA-256 `6ef7aa68…`, mit den Projekten 1053 bis 1071
+und dem erfundenen Typtagsatz; die Nachträge der Schemaschritte unten sind darin enthalten; auf dem Schemastand 224 neu
+gesät und gerechnet, byte-gleich zur Fassung auf dem vorläufigen Stand). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065 und 1066 bis 1071) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045 (Feiertage zählen im
+Zapfkalender als Sonntag und liegen nach der Konvention des Gemeinjahrs im Wochentagsraster der Klimaregion), `EPOS.Kern.Tests/FeiertageTests` die Konvention selbst,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker (genutzte Solarwärme,
+Überschuss, mittlere Arbeitstemperatur des Felds), `EPOS.Kern.Tests/StromViertelstundenTests` die PV-Bilanz der
+Projekte 1045 und 1046 (Erzeugung, Einspeisung, Restbezug),
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel,
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046, `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests` die Rangfolge der BHKW-Untergrenze (Anlagenfeld, Katalog,
+Projekt) in allen drei Betriebsarten, `EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests` die Kalender,
+die Nachtzeile der Lüftung und die Aufheizoptimierung von Projekt 1051 und
+`EPOS.Kern.Tests/ZonenReferenzprojektWacheTests` die Zonen von Projekt 1052 und `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests` Kopplung, Heizkurve und die
+Zonenübergabe von Projekt 1054, `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests` die Kältemaschine von Projekt 1055
+`EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests` Sperrzeit, Zeitprogramme, Vorlaufgrenze und Komfortstunden von
+Projekt 1056, `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests` die Erdreichquellen der Referenzprojekte und das
+Sondenfeld von Projekt 1057 und `EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests` Stufe AK3, Heizungspuffer, Raumeinfluss
+und Kennzahlen des Kreises von Projekt 1058, `EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests` die Kälteseite im Kreis
+von Projekt 1059, `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests` die Kühlkurve von Projekt 1061 und
+`EPOS.Kern.Tests/ZonenKuehlkurveReferenzprojektWacheTests` die Kühlübergabe je Zone von Projekt 1062 und
+`EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests` Übergabegrenze, Betriebsbereiche, Bivalenzpunkte und die
+Rücklaufstufe „Vorwärmer“ von Projekt 1060 samt Rücklauf- und Spreizungsgrenze und
+`EPOS.Kern.Tests/KaeltemaschineTeillastReferenzprojektWacheTests` Teillastkurve, Takten und Gütegrad-Extrapolation der
+Kältemaschine von Projekt 1063 und `EPOS.Kern.Tests/FreieKuehlungReferenzprojektWacheTests` die freie Kühlung über die
+Wärmequelle von Projekt 1064, `EPOS.Kern.Tests/VorheizReferenzprojektWacheTests` die berechnete Vorheizzeit von
+Projekt 1065 und `EPOS.Kern.Tests/ZapfprofilOptionenReferenzprojekteWacheTests` die Zapfprofile der Projekte 1066 bis
+1071 samt Generator-Bilanz und den eingefrorenen Auslegungswerten von 1071. 1050, 1052, 1054,
+1055, 1056, 1057, 1059, 1061, 1062 und 1064 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle
+sechsunddreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: je ein Referenzprojekt für sechs Optionen des Zapfprofils (Konzept Zapfprofil Benutzerführung, ZB12) — bis
+> dahin rechnete allein 1045 über den Zapfprofilgenerator (eine Zone Wohnen, Personen, deterministisch, am Gebäude, ohne
+> Zirkulation).** Die Projekte 1066 bis 1071 sind Kopien von 1045 (Abschnitt „Die Referenzprojekte 1066 bis 1071“
+> unten); alle sechs stehen in der CI-Auswahl. Die Testdatenbank wächst um die sechs Kopien und den erfundenen
+> Typtagsatz (33 Zeilen in `Tab_TwwTyptag_IMPORT`).
+>
+> Gegen R52 sind alle dreißig Projekte byte-gleich (979/979 CSV; einziger Befund des `vergleich`: die sechs neuen
+> Projekte nur im Vergleichslauf); hinzu kommen 1066 bis 1071 mit je 32 CSV und 201 Skalaren. Die Brauchwasserreihe
+> (`Vektor.waermebedarf_brauchwasser.Summe`, kWh/a):
+>
+> | Projekt | Option | Zapfung | Zirkulation | Kanal |
+> |---|---|---|---|---|
+> | 1045 (zum Vergleich) | eine Zone Wohnen, deterministisch | 5 006,62 | 0 | 5 006,62 |
+> | 1066 | Mischnutzung, Wohnungstabelle, Zirkulation nach Leitungslänge | 55 854,23 | 6 306,17 | 62 160,41 |
+> | 1067 | Kalender der Nutzungsart mit fünf Ferienzeiträumen, Gebäudekalender mit Feiertagsland | 19 375,42 | 0 | 19 375,42 |
+> | 1068 | Jahresreihe stochastisch (Seed 1068, 10 Realisierungen) | 5 006,62 | 0 | 5 006,62 |
+> | 1069 | Typtage (erfundener Satz) | 5 006,62 | 0 | 5 006,62 |
+> | 1070 | Jahresmesswert, manueller Tagesbedarf, Zirkulation manuell | 12 475,00 | 4 672,00 | 17 147,00 |
+> | 1071 | vier Topologien, Auslegung mit Ecodesign-Tag | 26 104,32 | 4 205,00 | 30 309,32 |
+>
+> 1068 und 1069 treffen die Jahresmenge von 1045 (der Generator bringt die gezogene Reihe bzw. die Typtagmengen auf das
+> Mengengerüst); ihre Stundenreihen unterscheiden sich. Zwei Läufe sind byte-gleich (1 171/1 171 CSV).
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064,1065,1066,1067,1068,1069,1070,1071 \
+>   --ziel Referenzlaeufe/2026-10-13_R53_Zapfprofiloptionen
+> ```
+>
+> Die Regel steht im [Konzept Zapfprofil Benutzerführung](../../aktuell/Konzept_Zapfprofil_Benutzerfuehrung_EPOS-Plan.md),
+> Vorschlag ZB12.
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->

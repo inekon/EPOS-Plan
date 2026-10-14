@@ -513,6 +513,8 @@ namespace WindowsFormsApplication1
                     Beschreibung = Campusbeschreibung(),
                     Baujahr = _geb.Baujahr,
                     Baualtersklasse = string.IsNullOrWhiteSpace(_geb.Baualtersklasse) ? null : _geb.Baualtersklasse.Trim(),
+                    // Welle DA-4: Umfang, wirksamer U-Wert am Erdreich und Kellertemperatur (Inventar G3, G4).
+                    Erdreich = GebaeudeRestdaten.AusGebaeude(_geb),
                 };
                 _abbild.Gebaeude.Add(_g);
                 if (_profil.Testlizenz) Info(TESTLIZENZ);
@@ -571,6 +573,18 @@ namespace WindowsFormsApplication1
             private double Hoehe(ZoneModel z) => z.Raumhoehe ?? _geb.Raumhoehe;
 
             private bool Gekuehlt(ZoneModel z) => _satz.Kuehlbetrieb && (z.Kuehlung_Aktiv ?? _geb.Kuehlung_Aktiv);
+
+            /// <summary>Welle DA-4: die Restdaten einer Zone; die Partnerzone eines Luftstroms über ihre Exportkennung.</summary>
+            private AbbildZonenrest Zonenrest(ZoneModel z)
+            {
+                var stroeme = (_satz.Luftstroeme ?? Array.Empty<ZonenluftstromModel>())
+                    .Where(l => l.ID_ZoneA == z.ID)
+                    .OrderBy(l => l.ID_ZoneB).ThenBy(l => l.ID)
+                    .Select(l => (GebaeudeExportKennung.Zone(l.ID_ZoneB), l.Volumenstrom));
+                Konditionierungsstand stand = null;
+                _satz.Zonenstaende?.TryGetValue(z.ID, out stand);
+                return GebaeudeRestdaten.AusZone(z, GebaeudeExportKennung.Zone(z.ID), stroeme, stand);
+            }
 
             /// <summary>
             /// <b>Der Heizsollwert des Raums</b> (Entwurf KP2, Festlegung 9): Gilt für die Zone ein angelegter
@@ -636,6 +650,8 @@ namespace WindowsFormsApplication1
                     ZonenBeschreibung = T(nameof(MyResource.Resource.GEB_PRODUKTAUSWEIS_VDI6007)),
                     Konditionierung = konditionierung,
                     // HC-5 (F10): die Grundrisse der Räume der Zone - nur Gestalt und Lage des Exportmodells.
+                    // Welle DA-4: Vorheizzeit, Höchstleistungen, Übergabe, Luftströme (als Zone A), Zeilenbild und Wochen der Zone.
+                    Rest = _klassenweg ? null : Zonenrest(z),
                     Grundrisse = !_klassenweg && _satz.Zonengrundrisse != null
                                  && _satz.Zonengrundrisse.TryGetValue(z.ID, out IReadOnlyList<Raumgrundriss> grundrisse)
                         ? grundrisse : Array.Empty<Raumgrundriss>(),

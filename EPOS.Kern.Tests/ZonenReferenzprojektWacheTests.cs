@@ -149,7 +149,18 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { Zonenprojekt1052.ZONE_GAESTE, Zonenprojekt1052.ZONE_GASTRO, Zonenprojekt1052.ZONE_KELLER },
                          z.Select(x => x.Bezeichner).ToArray());
             Assert.Equal(new[] { true, true, false }, z.Select(x => x.IstBeheizt).ToArray());
-            Assert.Equal(new[] { 15, 14, 2 }, z.Select(x => x.Bauteile.Count).ToArray());
+            Assert.Equal(new[] { 16, 15, 2 }, z.Select(x => x.Bauteile.Count).ToArray());
+            // Die beheizten Zonen tragen ein Satteldach mit 42° in zwei gleichen Hälften nach Nord und Süd; ihre Hülle
+            // schließt senkrecht (Σ oben gegen Σ unten unter 10 %).
+            for (int i = 0; i < 2; i++)
+            {
+                BauteilModel nord = z[i].Bauteile.Single(b => b.Bezeichner == Zonenprojekt1052.DACH_NORD);
+                BauteilModel sued = z[i].Bauteile.Single(b => b.Bezeichner == Zonenprojekt1052.DACH_SUED);
+                Assert.Equal(new double?[] { 42.0, 42.0 }, new[] { nord.Neigung, sued.Neigung });
+                Assert.Equal(new double?[] { 0.0, 180.0 }, new[] { nord.Azimut, sued.Azimut });
+                Assert.Equal(nord.Flaeche, sued.Flaeche);
+                Assert.False(Zonenkopplungsregeln.SenkrechtOffen(Zonenkopplungsregeln.Bilanz(z, i)), z[i].Bezeichner);
+            }
             Assert.Equal(300.0, z[0].Nutzflaeche.Value, 9);
             Assert.Equal(200.0, z[1].Nutzflaeche.Value, 9);
             Assert.Equal(531.554, z[2].Nutzflaeche.Value, 3);

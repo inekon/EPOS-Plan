@@ -42927,6 +42927,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus den EPOS-Restdaten der Datei ({0}) ähnelt.
+        /// </summary>
+        public static string GIMP_BELEG_EPOS_RESTDATEN {
+            get {
+                return ResourceManager.GetString("GIMP_BELEG_EPOS_RESTDATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Fenster ähnelt.
         /// </summary>
         public static string GIMP_BELEG_FENSTER_SEKTOR {
@@ -45510,6 +45519,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirksamer U-Wert am Erdreich ähnelt.
+        /// </summary>
+        public static string GIMP_FELD_ERDREICH_U_WIRKSAM {
+            get {
+                return ResourceManager.GetString("GIMP_FELD_ERDREICH_U_WIRKSAM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gesamte Fensterfläche ähnelt.
         /// </summary>
         public static string GIMP_FELD_FENSTER_GESAMT {
@@ -45632,6 +45650,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_FELD_INNERE_GEWINNE {
             get {
                 return ResourceManager.GetString("GIMP_FELD_INNERE_GEWINNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kellertemperatur ähnelt.
+        /// </summary>
+        public static string GIMP_FELD_KELLERTEMPERATUR {
+            get {
+                return ResourceManager.GetString("GIMP_FELD_KELLERTEMPERATUR", resourceCulture);
             }
         }
         
@@ -49353,6 +49380,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone {0}: Der Luftstrom zur Zone {1} wird übergangen — die Datei führt diese Zone nicht, es ist die Zone selbst, oder das Paar steht schon. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_LUFTSTROM_PARTNER {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_LUFTSTROM_PARTNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag mit {0} Zonen nach Regel {1}; {2} Trennflächen zwischen den Zonen. ähnelt.
         /// </summary>
         public static string IMP_BAUTEIL_PROT_MEHRZONEN {
@@ -50312,6 +50348,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GBXML_PROT_RAUM_UMGEHAENGT {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_RAUM_UMGEHAENGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} Wert(e) im Block „EPOS:“ der Beschreibung sind nicht lesbar oder liegen außerhalb des Bereichs und werden übergangen: {2}. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_RESTDATEN_UEBERSPRUNGEN {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_RESTDATEN_UEBERSPRUNGEN", resourceCulture);
             }
         }
         
@@ -52229,6 +52274,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_RAUM_UMGEHAENGT {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_RAUM_UMGEHAENGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} Restdatenwert(e) in EPOS_Zone bzw. EPOS_Gebaeude sind nicht lesbar oder liegen außerhalb des Bereichs und werden übergangen: {2}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_RESTDATEN_UEBERSPRUNGEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_RESTDATEN_UEBERSPRUNGEN", resourceCulture);
             }
         }
         
@@ -93884,6 +93938,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“ trägt die DIN-Nummer {1}, zu der der Katalog kein Profil führt. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_DIN_OHNE_KATALOGTREFFER {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_DIN_OHNE_KATALOGTREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauweise (Wärmekapazität) des Gebäudes fehlt; es gilt die Vorgabe. ähnelt.
         /// </summary>
         public static string MP_BEFUND_EINZONE_BAUWEISE_FEHLT {
@@ -94087,6 +94150,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MP_BEFUND_PFLICHTGROESSE_FEHLT {
             get {
                 return ResourceManager.GetString("MP_BEFUND_PFLICHTGROESSE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Profil „{1}“ stammt aus einer Regel, nicht aus der Datei; bitte prüfen. ähnelt.
+        /// </summary>
+        public static string MP_BEFUND_PROFIL_AUS_REGEL {
+            get {
+                return ResourceManager.GetString("MP_BEFUND_PROFIL_AUS_REGEL", resourceCulture);
             }
         }
         
@@ -94474,6 +94546,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MP_VORSCHLAG_KATALOGAUFBAU {
             get {
                 return ResourceManager.GetString("MP_VORSCHLAG_KATALOGAUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil „{0}“ — das nächstliegende der DIN-Kategorie zur Nummer {1} ähnelt.
+        /// </summary>
+        public static string MP_VORSCHLAG_PROFIL_DINNAECHSTES {
+            get {
+                return ResourceManager.GetString("MP_VORSCHLAG_PROFIL_DINNAECHSTES", resourceCulture);
             }
         }
         
