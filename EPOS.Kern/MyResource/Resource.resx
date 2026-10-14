@@ -6643,6 +6643,9 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
   <data name="KOSTEN_BETRIEB_OHNE_ERGEBNIS" xml:space="preserve">
     <value>Vorbelegung der Betriebskosten erst nach einem Simulationslauf verfügbar.</value>
   </data>
+  <data name="KOSTEN_BETRIEB_SPEICHER_VERSCHLEISS_QUELLE" xml:space="preserve">
+    <value>Der Verschleiß des Stromspeichers ist eine Betriebsposition „je entladener kWh“: Sie ist die Quelle des Verschleißsatzes, gebucht wird sie vom Simulationslauf — die Kostenrechnung zählt sie nicht ein zweites Mal.</value>
+  </data>
   <data name="KOSTEN_BETRIEB_OHNE_WARTUNGSFELD" xml:space="preserve">
     <value>Für dieses Gewerk führt keine Betriebs-Satzvorlage einen Wartungssatz — keine Vorbelegung.</value>
   </data>

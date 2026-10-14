@@ -6627,6 +6627,9 @@ Depending on the project size this takes several minutes. Continue?</value>
   <data name="KOSTEN_BETRIEB_OHNE_ERGEBNIS" xml:space="preserve">
     <value>Operating cost defaults are available only after a simulation run.</value>
   </data>
+  <data name="KOSTEN_BETRIEB_SPEICHER_VERSCHLEISS_QUELLE" xml:space="preserve">
+    <value>Battery wear is an operating item "per discharged kWh": it is the source of the wear rate and is booked by the simulation run — the cost calculation does not count it a second time.</value>
+  </data>
   <data name="KOSTEN_BETRIEB_OHNE_WARTUNGSFELD" xml:space="preserve">
     <value>No operating rate template of this trade holds a maintenance rate — no default value.</value>
   </data>

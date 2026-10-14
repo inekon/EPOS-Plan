@@ -345,9 +345,13 @@ namespace WindowsFormsApplication1
                     double ladezustand = Zahl(dt, row, "Ladezustand");
                     if (ladezustand > 0.0) v.StartSoCProzent = ladezustand;
 
-                    v.CCapEurProKwh = Zahl(dt, row, "Modulkosten");
-                    v.CPowEurProKw = Zahl(dt, row, "Leistungskosten");
-                    v.IFixEur = Zahl(dt, row, "Investition_Fix");
+                    // Welle KB-5: die Kostensätze aus Satzvorlage der Projektkopie bzw. des Katalogsatzes
+                    // (dieser Weg kennt keine Anlagenzeile); ein fehlender Satz bleibt 0 wie die leere Spalte.
+                    KatalogkostensatzCtrl.Stromspeichersaetze kosten = KatalogkostensatzCtrl.Stromspeicher(
+                        StromspeicherKostenSchema.TAB_KOPIE, (int)Zahl(dt, row, "ID"));
+                    v.CCapEurProKwh = kosten.CCapEurProKwh ?? 0.0;
+                    v.CPowEurProKw = kosten.CPowEurProKw ?? 0.0;
+                    v.IFixEur = kosten.IFixEur ?? 0.0;
                     v.Bezeichner = Text(dt, row, "Bezeichner");
                     v.AusProjekt = true;
                 }

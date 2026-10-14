@@ -91079,6 +91079,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Verschleiß des Stromspeichers ist eine Betriebsposition „je entladener kWh“: Sie ist die Quelle des Verschleißsatzes, gebucht wird sie vom Simulationslauf — die Kostenrechnung zählt sie nicht ein zweites Mal. ähnelt.
+        /// </summary>
+        public static string KOSTEN_BETRIEB_SPEICHER_VERSCHLEISS_QUELLE {
+            get {
+                return ResourceManager.GetString("KOSTEN_BETRIEB_SPEICHER_VERSCHLEISS_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ⚙ Betriebskosten VDI 2067… ähnelt.
         /// </summary>
         public static string KOSTEN_BTN_VDI2067 {

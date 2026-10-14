@@ -78,10 +78,10 @@ namespace WindowsFormsApplication1
             int neueId = DataRepository.GetMaxID(TABLE) + 1;
 
             string sql = @"INSERT INTO [" + TABLE + @"]
-                            (ID, Bezeichner, Firma, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten, ReadOnly,
-                             Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch,
+                            (ID, Bezeichner, Firma, Typ, Leistung, Energie, Degradation, Ladezustand, ReadOnly,
+                             Wirkungsgrad_RT, Zyklen_Zugesichert, Standby_Verbrauch,
                              Selbstentladung_Prozent_Monat)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             DbParam[] ps = {
                 new DbParam("@id", neueId),
@@ -92,13 +92,9 @@ namespace WindowsFormsApplication1
                 new DbParam("@ene", this.m_Energie),
                 new DbParam("@deg", this.m_Degradation),
                 new DbParam("@lad", this.m_Ladezustand),
-                new DbParam("@mod", this.m_Modulkosten),
                 new DbParam("@ro", false),
                 new DbParam("@eta", this.m_WirkungsgradRT),
                 new DbParam("@nzyk", this.m_ZyklenZugesichert),
-                new DbParam("@cver", this.m_Verschleisskosten),
-                new DbParam("@cpow", this.m_Leistungskosten),
-                new DbParam("@ifix", this.m_InvestitionFix),
                 new DbParam("@stby", this.m_StandbyVerbrauch),
                 new DbParam("@selbst", this.m_Selbstentladung)
             };
@@ -123,9 +119,8 @@ namespace WindowsFormsApplication1
 
             string sql = @"UPDATE [" + TABLE + @"] SET
                             Bezeichner = ?, Firma = ?, Typ = ?, Leistung = ?, Energie = ?,
-                            Degradation = ?, Ladezustand = ?, Modulkosten = ?,
-                            Wirkungsgrad_RT = ?, Zyklen_Zugesichert = ?, Verschleisskosten = ?,
-                            Leistungskosten = ?, Investition_Fix = ?, Standby_Verbrauch = ?,
+                            Degradation = ?, Ladezustand = ?,
+                            Wirkungsgrad_RT = ?, Zyklen_Zugesichert = ?, Standby_Verbrauch = ?,
                             Selbstentladung_Prozent_Monat = ?
                           WHERE Bezeichner = ?";
 
@@ -137,12 +132,8 @@ namespace WindowsFormsApplication1
                 new DbParam("@ene", this.m_Energie),
                 new DbParam("@deg", this.m_Degradation),
                 new DbParam("@lad", this.m_Ladezustand),
-                new DbParam("@mod", this.m_Modulkosten),
                 new DbParam("@eta", this.m_WirkungsgradRT),
                 new DbParam("@nzyk", this.m_ZyklenZugesichert),
-                new DbParam("@cver", this.m_Verschleisskosten),
-                new DbParam("@cpow", this.m_Leistungskosten),
-                new DbParam("@ifix", this.m_InvestitionFix),
                 new DbParam("@stby", this.m_StandbyVerbrauch),
                 new DbParam("@selbst", this.m_Selbstentladung),
                 new DbParam("@key", szKey ?? "")
@@ -198,10 +189,10 @@ namespace WindowsFormsApplication1
                     int neueId = (mx == null || mx == DBNull.Value) ? 1 : Convert.ToInt32(mx) + 1;
 
                     string sql = @"INSERT INTO [" + TABLE + @"]
-                            (ID, Bezeichner, Firma, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten, ReadOnly,
-                             Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch,
+                            (ID, Bezeichner, Firma, Typ, Leistung, Energie, Degradation, Ladezustand, ReadOnly,
+                             Wirkungsgrad_RT, Zyklen_Zugesichert, Standby_Verbrauch,
                              Selbstentladung_Prozent_Monat)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                     DbParam[] ps = {
                         new DbParam("@id", neueId),
@@ -212,13 +203,9 @@ namespace WindowsFormsApplication1
                         new DbParam("@ene", model.m_Energie),
                         new DbParam("@deg", model.m_Degradation),
                         new DbParam("@lad", model.m_Ladezustand),
-                        new DbParam("@mod", model.m_Modulkosten),
                         new DbParam("@ro", false),
                         new DbParam("@eta", model.m_WirkungsgradRT),
                         new DbParam("@nzyk", model.m_ZyklenZugesichert),
-                        new DbParam("@cver", model.m_Verschleisskosten),
-                        new DbParam("@cpow", model.m_Leistungskosten),
-                        new DbParam("@ifix", model.m_InvestitionFix),
                         new DbParam("@stby", model.m_StandbyVerbrauch),
                         new DbParam("@selbst", model.m_Selbstentladung)
                     };
@@ -326,16 +313,12 @@ namespace WindowsFormsApplication1
             if (row.Table.Columns.Contains("Energie") && row["Energie"] != DBNull.Value) t.m_Energie = Convert.ToDouble(row["Energie"]);
             if (row.Table.Columns.Contains("Degradation") && row["Degradation"] != DBNull.Value) t.m_Degradation = Convert.ToDouble(row["Degradation"]);
             if (row.Table.Columns.Contains("Ladezustand") && row["Ladezustand"] != DBNull.Value) t.m_Ladezustand = Convert.ToDouble(row["Ladezustand"]);
-            if (row.Table.Columns.Contains("Modulkosten") && row["Modulkosten"] != DBNull.Value) t.m_Modulkosten = Convert.ToDouble(row["Modulkosten"]);
 
             // AP3-Geraetetechnik (Fachkonzept 5.1) - dieselbe Columns.Contains-Wache wie
             // darueber: auf einer Datenbank vor Migrationsschritt 11 fehlen die Spalten,
             // die Felder behalten dann ihre 0.
             if (row.Table.Columns.Contains("Wirkungsgrad_RT") && row["Wirkungsgrad_RT"] != DBNull.Value) t.m_WirkungsgradRT = Convert.ToDouble(row["Wirkungsgrad_RT"]);
             if (row.Table.Columns.Contains("Zyklen_Zugesichert") && row["Zyklen_Zugesichert"] != DBNull.Value) t.m_ZyklenZugesichert = Convert.ToInt32(row["Zyklen_Zugesichert"]);
-            if (row.Table.Columns.Contains("Verschleisskosten") && row["Verschleisskosten"] != DBNull.Value) t.m_Verschleisskosten = Convert.ToDouble(row["Verschleisskosten"]);
-            if (row.Table.Columns.Contains("Leistungskosten") && row["Leistungskosten"] != DBNull.Value) t.m_Leistungskosten = Convert.ToDouble(row["Leistungskosten"]);
-            if (row.Table.Columns.Contains("Investition_Fix") && row["Investition_Fix"] != DBNull.Value) t.m_InvestitionFix = Convert.ToDouble(row["Investition_Fix"]);
             if (row.Table.Columns.Contains("Standby_Verbrauch") && row["Standby_Verbrauch"] != DBNull.Value) t.m_StandbyVerbrauch = Convert.ToDouble(row["Standby_Verbrauch"]);
             // Welle M5 (SP1): dieselbe Wache - vor dem Schemaschritt fehlt die Spalte.
             if (row.Table.Columns.Contains(StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG) &&
@@ -1040,8 +1023,7 @@ namespace WindowsFormsApplication1
 
             string sql = "UPDATE [" + tabelle + @"] SET
                             Firma = ?, Typ = ?, Leistung = ?, Energie = ?, Degradation = ?, Ladezustand = ?,
-                            Modulkosten = ?, Wirkungsgrad_RT = ?, Zyklen_Zugesichert = ?, Verschleisskosten = ?,
-                            Leistungskosten = ?, Investition_Fix = ?, Standby_Verbrauch = ?,
+                            Wirkungsgrad_RT = ?, Zyklen_Zugesichert = ?, Standby_Verbrauch = ?,
                             Selbstentladung_Prozent_Monat = ?
                           WHERE ID = ?";
             DbParam[] ps =
@@ -1052,12 +1034,8 @@ namespace WindowsFormsApplication1
                 new DbParam("@ene", Wert("Energie", m.m_Energie)),
                 new DbParam("@deg", Wert("Degradation", m.m_Degradation)),
                 new DbParam("@lad", Wert("Ladezustand", m.m_Ladezustand)),
-                new DbParam("@mod", Wert("Modulkosten", m.m_Modulkosten)),
                 new DbParam("@eta", Wert("Wirkungsgrad_RT", m.m_WirkungsgradRT)),
                 new DbParam("@nzyk", Wert("Zyklen_Zugesichert", m.m_ZyklenZugesichert)),
-                new DbParam("@cver", Wert("Verschleisskosten", m.m_Verschleisskosten)),
-                new DbParam("@cpow", Wert("Leistungskosten", m.m_Leistungskosten)),
-                new DbParam("@ifix", Wert("Investition_Fix", m.m_InvestitionFix)),
                 new DbParam("@stby", Wert("Standby_Verbrauch", m.m_StandbyVerbrauch)),
                 new DbParam("@selbst", Wert(StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG, m.m_Selbstentladung)),
                 new DbParam("@id", id)

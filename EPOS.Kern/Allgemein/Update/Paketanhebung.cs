@@ -470,6 +470,10 @@ namespace WindowsFormsApplication1
             // Schritt sät die fehlenden Satzvorlagen an der Zieldatenbank und entfernt die Spalten danach.
             new Stufe(GeraetekostenEntfallSchema.SCHRITT, Art.Ddl,
                       "Satzvorlage am Wechselrichter, Entfall der 32 Kostenspalten der Investitionsgewerke (KB-4)"),
+            // KB-5: Ein älteres Paket bringt seine Stromspeicher samt Projektkopien noch mit den vier Kostenspalten;
+            // der Schritt sät die fehlenden Satzvorlagen an der Zieldatenbank und entfernt die Spalten danach.
+            new Stufe(StromspeicherKostenSchema.SCHRITT, Art.Ddl,
+                      "Entfall der vier Kostenspalten des Stromspeichers, Kosten in der Satzvorlage (KB-5)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
