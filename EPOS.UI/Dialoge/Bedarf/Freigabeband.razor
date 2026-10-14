@@ -1,0 +1,60 @@
+﻿@* DAS JAHRESBAND DER FREIGABE (Entwurf AK3-K 3.3; Welle KZ) - je Ort (das Gebaeude, dann seine Zonen) ein Band
+   ueber die 365 Tage: "Heizen frei", "Kuehlen frei", "beides", "keines", gelesen aus dem "aus" der Heiz- und
+   Kuehlkalender (Kern: Konditionierungsfreigabe, dieselbe Regel wie der Lauf). Darunter je Ort die Zahl der Tage;
+   an Tagen mit beiden Freigaben entscheidet im Lauf der Bedarf die Tagesart der Zone. Nur Anzeige, kein Knopf;
+   ohne Baender steht nichts da. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+
+@if (Baender is { Count: > 0 })
+{
+    <section class="epos-kond-freigabe" aria-label="@Texte.LabelFreigabe">
+        <p class="epos-kond-freigabe-titel">@Texte.LabelFreigabe</p>
+        @foreach (KonditionierungFreigabeband b in Baender)
+        {
+            string zeile = Zeile(b);
+            <div class="epos-kond-freigabe-ort" data-ort="@b.Ort" data-beides="@b.TageBeides.ToString(CultureInfo.InvariantCulture)">
+                <svg class="epos-kond-freigabe-band" viewBox="0 0 365 1" preserveAspectRatio="none" role="img" aria-label="@zeile">
+                    @foreach ((int von, int laenge, int art) in Abschnitte(b.Tage))
+                    {
+                        <rect class="@("epos-freigabe-" + art.ToString(CultureInfo.InvariantCulture))"
+                              x="@von.ToString(CultureInfo.InvariantCulture)" y="0"
+                              width="@laenge.ToString(CultureInfo.InvariantCulture)" height="1" />
+                    }
+                </svg>
+                <p class="epos-leisezeile epos-kond-freigabe-zeile">@zeile</p>
+            </div>
+        }
+        <p class="epos-kond-freigabe-legende">
+            <span class="epos-kond-freigabe-marke epos-freigabe-1"></span>@Texte.FreigabeHeizen
+            <span class="epos-kond-freigabe-marke epos-freigabe-2"></span>@Texte.FreigabeKuehlen
+            <span class="epos-kond-freigabe-marke epos-freigabe-3"></span>@Texte.FreigabeBeides
+            <span class="epos-kond-freigabe-marke epos-freigabe-0"></span>@Texte.FreigabeKeine
+        </p>
+        <p class="epos-leisezeile epos-kond-freigabe-hinweis">@Texte.HinweisFreigabe</p>
+    </section>
+}
+
+@code {
+    /// <summary>Die Bänder je Ort; <c>null</c> oder leer = nichts.</summary>
+    [Parameter] public IReadOnlyList<KonditionierungFreigabeband>? Baender { get; set; }
+
+    /// <summary>Die Texte der Konditionierung.</summary>
+    [Parameter] public KonditionierungTexte Texte { get; set; } = new();
+
+    private string Zeile(KonditionierungFreigabeband b)
+        => string.Format(CultureInfo.CurrentCulture, Texte.TextFreigabeZeile, b.Ort, b.TageHeizen, b.TageKuehlen, b.TageBeides, b.TageKeine);
+
+    /// <summary>Die Läufe gleicher Freigabe (Anfangstag, Länge, Art) — ein Rechteck je Lauf statt je Tag.</summary>
+    internal static IEnumerable<(int Von, int Laenge, int Art)> Abschnitte(IReadOnlyList<int> tage)
+    {
+        int von = 0;
+        for (int d = 1; d <= tage.Count; d++)
+            if (d == tage.Count || tage[d] != tage[von])
+            {
+                yield return (von, d - von, tage[von]);
+                von = d;
+            }
+    }
+}

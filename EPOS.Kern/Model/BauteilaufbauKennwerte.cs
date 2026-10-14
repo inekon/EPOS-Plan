@@ -37,6 +37,12 @@ namespace WindowsFormsApplication1
         /// <summary>Wärmedurchlasswiderstand des Aufbaus R = Σ d/λ einschließlich ruhender Luftschichten [m²K/W].</summary>
         public double? R_M2KW { get; init; }
 
+        /// <summary>
+        /// Wärmedurchgangswiderstand R_T = R_si + R + R_se [m²K/W] — der Nenner von U, für den
+        /// Summenfuß; <c>null</c>, solange R nicht steht.
+        /// </summary>
+        public double? RT_M2KW => R_M2KW.HasValue ? RSi_M2KW + R_M2KW.Value + RSe_M2KW : null;
+
         /// <summary>Wärmedurchgangskoeffizient U = 1/(R_si + R + R_se) [W/(m²K)].</summary>
         public double? U_WM2K { get; init; }
 

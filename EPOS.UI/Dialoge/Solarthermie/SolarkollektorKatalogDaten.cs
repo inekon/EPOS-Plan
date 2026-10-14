@@ -57,8 +57,17 @@ public sealed class SolarkollektorKatalogDaten
     /// <summary>Einfallswinkelkorrektur direkte Strahlung (Kdir).</summary>
     public double? Kdir { get; set; }
 
-    /// <summary>Einfallswinkelkorrektur diffuse Strahlung bei 50° (Kdiff).</summary>
+    /// <summary>
+    /// Einfallswinkelkorrektur der diffusen Strahlung (Kdiff, Spalte <c>Kdfu</c>) — ein fester Wert,
+    /// unabhängig vom Einfallswinkel; 0 = nicht bekannt, dann gilt der Faktor der Direktstrahlung.
+    /// </summary>
     public double? Kdiff { get; set; }
+
+    /// <summary>
+    /// Bezugsfläche der Kennwerte (ST6): <c>"apertur"</c> (Vorgabe) oder <c>"brutto"</c> — die
+    /// Fläche, mit der die Simulation rechnet. Ein Persistenzwert, die Hülle bildet ab.
+    /// </summary>
+    public string Bezugsflaeche { get; set; } = "apertur";
 
     /// <summary>Investitionskosten [€].</summary>
     public double? Kosten { get; set; }

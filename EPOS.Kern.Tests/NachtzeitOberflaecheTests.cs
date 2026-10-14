@@ -105,17 +105,23 @@ namespace EPOS.Kern.Tests
             Assert.Equal(18.0, eigen[4]);
         }
 
-        /// <summary>Der Lesemodus der Verwaltung zeigt gesetzte Stunden, leer die Vorgabe — wie der Platzhalter.</summary>
+        /// <summary>
+        /// „Alle Daten" der Verwaltung führt die Nachtzeit nicht mehr — sie steht mit den übrigen Altfeldern
+        /// im Blatt „Konditionierung" (E56 F3 (a); Stufe KP2, Welle U4), im Lesemodus als Text der Matrix.
+        /// </summary>
         [Fact]
-        public void Der_Lesemodus_der_Verwaltung_zeigt_leer_die_Vorgabe()
+        public void Alle_Daten_der_Verwaltung_fuehren_die_Altfelder_nicht_mehr()
         {
-            var leer = GebaeudeAdminHuelle.AlleDaten(new GebaeudeModel());
-            Assert.Contains(leer, w => w.Name.StartsWith("Nachtabsenkung von", StringComparison.Ordinal) && w.Wert == "Vorgabe 22" && w.Einheit == "h");
-            Assert.Contains(leer, w => w.Name.StartsWith("Nachtabsenkung bis", StringComparison.Ordinal) && w.Wert == "Vorgabe 6");
-
-            var gesetzt = GebaeudeAdminHuelle.AlleDaten(new GebaeudeModel { Nachtabsenkung_Beginn = 23, Nachtabsenkung_Ende = 5 });
-            Assert.Contains(gesetzt, w => w.Name.StartsWith("Nachtabsenkung von", StringComparison.Ordinal) && w.Wert == "23");
-            Assert.Contains(gesetzt, w => w.Name.StartsWith("Nachtabsenkung bis", StringComparison.Ordinal) && w.Wert == "5");
+            var werte = GebaeudeAdminHuelle.AlleDaten(new GebaeudeModel { Nachtabsenkung_Beginn = 23, Nachtabsenkung_Ende = 5 });
+            foreach (string altfeld in new[]
+                     {
+                         "Nachtabsenkung", "Soll am Tag", "Soll am Wochenende", "Soll in Ferien", "Maximalraumtemperatur",
+                         "Interne Wärmegewinne", "Infiltration", "Nutzerlüftung", "Raumtemperaturen"
+                     })
+                Assert.DoesNotContain(werte, w => w.Name.StartsWith(altfeld, StringComparison.Ordinal));
+            // Was bleibt, bleibt: Kenngrößen und Modellparameter.
+            Assert.Contains(werte, w => w.Name.StartsWith("Raumhöhe", StringComparison.Ordinal));
+            Assert.Contains(werte, w => w.Name.StartsWith("Kellertemperatur", StringComparison.Ordinal));
         }
 
         /// <summary>Die Texte kommen aus den Ressourcen, in beiden Sprachen.</summary>

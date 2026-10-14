@@ -98,6 +98,24 @@ internal static class GebaeudeAnsichtZeichnung
         return string.Join(" ", teile);
     }
 
+    /// <summary>Die Kachel der Bodenschraffur als Vielfaches der Schrift (Farbmodus „Randbedingung").</summary>
+    internal const double SCHRAFFUR_ANTEIL = 0.6;
+
+    /// <summary>Eine Strecke des Bildes als SVG-Zahlen (y gespiegelt).</summary>
+    internal readonly record struct Strecke(string X1, string Y1, string X2, string Y2);
+
+    /// <summary>
+    /// Der Abschnitt <paramref name="von"/> bis <paramref name="bis"/> (Anteile der Länge) der Kante <paramref name="kante"/>
+    /// eines Polygons — von Punkt <c>kante</c> nach <c>kante + 1</c>, die letzte schließt zum ersten.
+    /// </summary>
+    internal static Strecke StreckeVon(IReadOnlyList<GebaeudeAnsichtPunkt> polygon, int kante, double von, double bis)
+    {
+        GebaeudeAnsichtPunkt a = polygon[kante], b = polygon[(kante + 1) % polygon.Count];
+        double x1 = a.X + von * (b.X - a.X), y1 = a.Y + von * (b.Y - a.Y);
+        double x2 = a.X + bis * (b.X - a.X), y2 = a.Y + bis * (b.Y - a.Y);
+        return new Strecke(Zahl(x1), Zahl(-y1), Zahl(x2), Zahl(-y2));
+    }
+
     /// <summary>Eine Zahl des Bildes: invariant, <see cref="STELLEN"/> Nachkommastellen, nie „−0".</summary>
     internal static string Zahl(double wert)
     {

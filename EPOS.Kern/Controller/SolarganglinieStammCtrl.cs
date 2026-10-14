@@ -110,11 +110,14 @@ namespace WindowsFormsApplication1
                 new DbParam("@id", id));
         }
 
-        // Import einer neuen Ganglinie in die STAMM-Tabellen (Admin-Dialog "Einlesen").
-        // Kopf-ID und Daten-IDs explizit (MAX+1), ReadOnly = false. Alles in einer Transaktion.
-        public bool ImportGanglinie(string szBezeichner, string szBeschreibung, List<string> roheWerte)
+        /// <summary>
+        /// Import einer neuen Ganglinie in die STAMM-Tabellen (Katalogseite des
+        /// Solarthermie-Ganglinien-Dialogs, „Import…", über <c>SolarganglinieImportCtrl</c>). Kopf-ID und Daten-IDs explizit
+        /// (MAX+1), ReadOnly = false. Alles in einer Transaktion.
+        /// </summary>
+        public bool ImportGanglinie(string szBezeichner, string szBeschreibung, IList<double> werte)
         {
-            if (roheWerte == null || roheWerte.Count == 0) return false;
+            if (werte == null || werte.Count == 0) return false;
 
             using (DbVorgang v = DataRepository.Vorgang())
             {
@@ -141,14 +144,13 @@ namespace WindowsFormsApplication1
                         datenId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
                     }
 
-                    foreach (string s in roheWerte)
+                    foreach (double w in werte)
                     {
                         v.Ausfuehren(
                             "INSERT INTO " + DATA_STAMM + " (ID, ID_Ganglinie, Wert, ReadOnly) VALUES (?, ?, ?, ?)",
                             new DbParam("@id", DbParamTyp.Integer) { Wert = datenId++ },
                             new DbParam("@g", DbParamTyp.Integer) { Wert = neueId },
-                            new DbParam("@w", DbParamTyp.Double)
-                            { Wert = double.Parse(s, System.Globalization.CultureInfo.InvariantCulture) },
+                            new DbParam("@w", DbParamTyp.Double) { Wert = w },
                             new DbParam("@r", DbParamTyp.Boolean) { Wert = false });
                     }
 
@@ -230,7 +232,10 @@ namespace WindowsFormsApplication1
                 p.Add(new DbParam("@proj", DbParamTyp.Integer) { Wert = idProjekt });
                 p.Add(new DbParam("@bez", DbParamTyp.VarWChar) { Wert = szBezeichner ?? (object)DBNull.Value });
                 p.Add(new DbParam("@beschr", DbParamTyp.VarWChar) { Wert = (object)(beschreibung ?? "") });
-                v.Ausfuehren("INSERT INTO " + HEAD_PROJ + " (ID, ID_Projekt, Bezeichner, Beschreibung) VALUES (?, ?, ?, ?)", p.ToArray());
+                // Der Ursprung der Kopie (Spalte ID_Stamm, Katalogauswahl V1 Stufe 4): der Katalogsatz,
+                // aus dem sie entsteht - Rueckweg und Abgleich finden ihn ueber die ID, nicht den Namen.
+                p.Add(new DbParam("@stamm", DbParamTyp.Integer) { Wert = stammId });
+                v.Ausfuehren("INSERT INTO " + HEAD_PROJ + " (ID, ID_Projekt, Bezeichner, Beschreibung, ID_Stamm) VALUES (?, ?, ?, ?, ?)", p.ToArray());
             }
 
             // Daten der Stamm-Ganglinie einlesen (in Reihenfolge) ...

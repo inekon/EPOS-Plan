@@ -233,6 +233,9 @@ namespace EPOS.Kern.Tests
         [InlineData(GRUPPE_1019, true, 1)]
         [InlineData(GRUPPE_1019, false, 2)]
         [InlineData(GRUPPE_1019, true, 2)]
+        // Katalog v12: 1018 mit BHKW (Stromlast), 1017 mit Kälte (Kälteproduktion).
+        [InlineData(1018, false, 1)]
+        [InlineData(1017, false, 1)]
         public void Rundlauf_mit_der_Testdatenbank(int stamm, bool englisch, int sicht)
         {
             using var db = new TestDatenbank();

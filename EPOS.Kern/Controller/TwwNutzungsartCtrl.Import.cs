@@ -27,15 +27,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die vorhandene Zeile trägt jetzt die Werte des Pakets (Bedarfstag, Parameter — ZU30,
-        /// ZU31): dieselbe <c>ID</c>, Stand <c>IMPORT</c>, <c>ReadOnly</c> 0. Nutzungsarten werden
-        /// nie ersetzt.
+        /// ZU31 —, DIN-4708-Katalogwert — ZB7): dieselbe <c>ID</c>, Stand <c>IMPORT</c>,
+        /// <c>ReadOnly</c> 0. Nutzungsarten werden nie ersetzt.
         /// </summary>
         Ersetzt = 3
     }
 
     /// <summary>
     /// Zu welcher Tabelle eine Zeile des Importberichts gehört (ZU32): Der Bericht führt je Tabelle
-    /// eigene Zeilen, in der Reihenfolge Bedarfstage, Parameter, Nutzungsarten.
+    /// eigene Zeilen, in der Reihenfolge Bedarfstage, Parameter, DIN-4708-Katalogwerte, Nutzungsarten.
     /// </summary>
     internal enum TwwImportbereich
     {
@@ -46,7 +46,10 @@ namespace WindowsFormsApplication1
         Bedarfstag = 1,
 
         /// <summary><c>Tab_TwwParameter_STAMM</c>.</summary>
-        Parameter = 2
+        Parameter = 2,
+
+        /// <summary><c>Tab_TwwDin4708Wert_STAMM</c>: Belegung je Raumzahl und Ausstattungsklassen (ZB7).</summary>
+        Din4708 = 3
     }
 
     /// <summary>
@@ -77,7 +80,7 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// Je Eintrag des Pakets eine Zeile, in der Reihenfolge Bedarfstage, Parameter,
-        /// Nutzungsarten und darin in der Reihenfolge der Paketdatei (ZU32).
+        /// DIN-4708-Katalogwerte, Nutzungsarten und darin in der Reihenfolge der Paketdatei (ZU32).
         /// </summary>
         internal List<TwwImportzeile> Zeilen { get; } = new List<TwwImportzeile>();
 
@@ -135,6 +138,13 @@ namespace WindowsFormsApplication1
     /// trägt. Für den Tagesgangsatz gilt dieselbe Regel. <b>Die Katalogsperre bleibt unberührt:</b> Der
     /// Import ändert und löscht keine vorhandene Zeile.</para>
     ///
+    /// <para><b>Frühere Stände des Paketteils (N34, E-A2-4).</b> Führt ein älteres Paket eine Zeile des
+    /// ausgelieferten Paketteils unter einem früheren Bezeichner oder mit einer früheren Bezugsart, liest
+    /// der Import sie VOR dem Dublettenscan als die heutige (<see cref="PaketteilNachfuehrung"/>) — der
+    /// natürliche Schlüssel trifft dann die Zeile des Katalogs, und die Zeile des Berichts nennt es mit
+    /// einem Satz (<c>KATALOGIMPORT_FRUEHERER_STAND</c>). Eine Anwenderzeile gleichen Namens trifft die
+    /// Regel nie.</para>
+    ///
     /// <para><b>Kategorien als Datenblock (N12 (m)/(p)).</b> Eine Kategorie mit <c>ID_Nutzungsart</c>
     /// gehört zu dieser Nutzungsart des Pakets; Kategorien OHNE sie sind ein Vorgabesatz und binden an
     /// jede Nutzungsart des Pakets, die keine eigenen führt. Ohne die Tabelle (Stand vor Schritt 115)
@@ -159,6 +169,25 @@ namespace WindowsFormsApplication1
     /// Ersetzung, und ein Hinweis nennt die betroffenen Auslieferungszeilen. Eine Versionsbildung
     /// „(Import n)" gibt es hier nicht — ein Parameter ist ein Wert, keine Version.</para>
     ///
+    /// <para><b>DIN-4708-Katalogwerte (ZB7).</b> Wahlfrei dazu <c>Tab_TwwDin4708Wert_STAMM.csv</c> —
+    /// Belegung je Raumzahl und Ausstattungsklassen; dieselbe Ersetzungsregel wie beim Parameter,
+    /// Einzelheiten in <c>TwwNutzungsartCtrl.ImportDin4708.cs</c>. Ein Paket, das diese Datei und
+    /// keine Datei der Nutzungsarten-Kette (Tagesgangsatz, Tagesgang, Zapfkategorie) führt, ist ein
+    /// <b>Kennwertpaket</b> und braucht <c>Tab_TwwNutzungsart_STAMM.csv</c> nicht — so die Paketvorlage
+    /// <c>Referenzlaeufe/Katalogpaket_Vorlage_DIN4708</c>.</para>
+    ///
+    /// <para><b>Die Katalogversion ist wahlfrei.</b> Ein Paket darf die Spalte
+    /// <c>Katalogversion</c> führen — dann bestimmt sie, wie bisher, mit dem Bezeichner bzw. dem
+    /// Schlüssel die Zeile des Katalogs. Führt es sie in KEINER seiner Kopfdateien (so der freie
+    /// Paketteil <c>Referenzlaeufe/Katalogpaket_frei</c>), <b>treten alle Zeilen der Katalogversion
+    /// des Zielkatalogs bei</b> — <see cref="ZapfprofilCtrl.Zielkatalogversion"/>, dieselbe Regel,
+    /// die die Auslieferungsvorlage für den Paketteil nimmt; ein Hinweis des Berichts nennt sie.
+    /// Sonst stünden die eingespielten Parameter in der Tabelle, und kein Rechenweg sähe sie. Führt
+    /// ein Paket die Spalte nur in EINEM TEIL seiner Kopfdateien, ist es als Ganzes abgelehnt
+    /// (<c>KATALOGIMPORT_VERSION_GEMISCHT</c>): Halb beigetreten gäbe es keinen Katalog, sondern
+    /// zwei. Die Kopfdateien stehen in <see cref="IMPORT_TABELLEN_MIT_VERSION"/>; Tagesgänge,
+    /// Ereignisse und Kategorien führen nie eine eigene Version.</para>
+    ///
     /// <para><b>Prüfmodus.</b> <see cref="Importieren(IReadOnlyList{TwwPaketdatei}, bool)"/> mit
     /// <c>pruefen = true</c> rechnet denselben Bericht und schreibt NICHTS (der Vorgang wird
     /// zurückgerollt); die Oberfläche sagt dann „würde ersetzen" statt „ersetzt".</para>
@@ -175,11 +204,30 @@ namespace WindowsFormsApplication1
             TwwSchema.TAB_TWW_BEDARFSTAG_STAMM,
             TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM,
             TwwSchema.TAB_TWW_PARAMETER_STAMM,
+            TwwSchema.TAB_TWW_DIN4708_WERT_STAMM,
             TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM,
             TwwSchema.TAB_TWW_TAGESGANG_STAMM,
             TwwSchema.TAB_TWW_NUTZUNGSART_STAMM,
             TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM
         };
+
+        /// <summary>
+        /// <b>Die Tabellen, die eine Spalte <c>Katalogversion</c> führen</b> — die fünf Köpfe des
+        /// Katalogs. Tagesgänge, Ereignisse und Kategorien hängen an ihrem Kopf und führen keine
+        /// eigene. Ein Paket führt die Spalte in ALLEN vorhandenen dieser Dateien oder in KEINER
+        /// (<see cref="Zielversion"/>).
+        /// </summary>
+        internal static readonly IReadOnlyList<string> IMPORT_TABELLEN_MIT_VERSION = new[]
+        {
+            TwwSchema.TAB_TWW_BEDARFSTAG_STAMM,
+            TwwSchema.TAB_TWW_PARAMETER_STAMM,
+            TwwSchema.TAB_TWW_DIN4708_WERT_STAMM,
+            TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM,
+            TwwSchema.TAB_TWW_NUTZUNGSART_STAMM
+        };
+
+        /// <summary>Der Name der Spalte, die eine Katalogzeile ihrer Katalogversion zuordnet.</summary>
+        internal const string SPALTE_KATALOGVERSION = "Katalogversion";
 
         /// <summary>Der Zusatz einer abweichenden namensgleichen Version: „ (Import n)" — derselbe wie im Projektimport.</summary>
         internal static string ImportZusatz(int n) => " (Import " + n.ToString(CultureInfo.InvariantCulture) + ")";
@@ -472,7 +520,7 @@ namespace WindowsFormsApplication1
                     var satzZiel = new Dictionary<long, int>();
                     var zeilen = new List<TwwImportzeile>();
                     var ersetzteAuslieferung = new List<string>();
-                    // Die Reihenfolge des Berichts (ZU32): Bedarfstage, Parameter, Nutzungsarten.
+                    // Die Reihenfolge des Berichts (ZU32): Bedarfstage, Parameter, DIN-4708-Werte, Nutzungsarten.
                     foreach (PaketBedarfstag b in paket.Bedarfstage)
                         zeilen.Add(BedarfstagEinspielen(v, b, paket, ersetzteAuslieferung));
                     int ersetzteParameter = 0;
@@ -482,6 +530,8 @@ namespace WindowsFormsApplication1
                         if (z.Ausgang == TwwImportausgang.Ersetzt) ersetzteParameter++;
                         zeilen.Add(z);
                     }
+                    foreach (PaketDin4708Zeile d in paket.Din4708)
+                        zeilen.Add(Din4708Einspielen(v, d, ersetzteAuslieferung));
                     foreach (PaketNutzungsart p in paket.Nutzungsarten)
                         zeilen.Add(Einspielen(v, p, paket, satzZiel));
 
@@ -503,8 +553,33 @@ namespace WindowsFormsApplication1
             return bericht;
         }
 
-        /// <summary>Eine Nutzungsart des Pakets: Ablehnung, Dublettenscan und Anlegen im laufenden Vorgang.</summary>
+        /// <summary>
+        /// Eine Nutzungsart des Pakets: Ablehnung, Dublettenscan und Anlegen im laufenden Vorgang. Führt
+        /// das Paket sie in einem früheren Stand (<see cref="PaketNutzungsart.FruehererStand"/>), nennt die
+        /// Zeile des Berichts das mit einem Satz vor ihrem Grund.
+        /// </summary>
         private static TwwImportzeile Einspielen(DbVorgang v, PaketNutzungsart p, Paket paket, Dictionary<long, int> satzZiel)
+        {
+            TwwImportzeile z = EinspielenGelesen(v, p, paket, satzZiel);
+            return p.FruehererStand == null ? z : z with { Grund = FruehererStandSatz(p.FruehererStand, z.Grund) };
+        }
+
+        /// <summary>
+        /// Der Satz des Berichts zu einer Paketzeile in einem früheren Stand: früherer Name und frühere
+        /// Bezugsart, gelesen als heutiger Name und heutige Bezugsart — mit dem übrigen Grund dahinter,
+        /// wenn es einen gibt.
+        /// </summary>
+        internal static ZapfSatz FruehererStandSatz(PaketteilNachfuehrung.Eintrag e, ZapfSatz grund)
+            => grund == null
+                ? ZapfSatz.Neu("KATALOGIMPORT_FRUEHERER_STAND", e.FruehererBezeichner,
+                               ZapfprofilAuslegung.Bezugsartbegriff(e.FruehereBezugsart), e.Bezeichner,
+                               ZapfprofilAuslegung.Bezugsartbegriff(e.Bezugsart))
+                : ZapfSatz.Neu("KATALOGIMPORT_FRUEHERER_STAND_UND", e.FruehererBezeichner,
+                               ZapfprofilAuslegung.Bezugsartbegriff(e.FruehereBezugsart), e.Bezeichner,
+                               ZapfprofilAuslegung.Bezugsartbegriff(e.Bezugsart), grund);
+
+        /// <summary>Eine Nutzungsart des Pakets, wie sie gelesen ist: Ablehnung, Dublettenscan und Anlegen.</summary>
+        private static TwwImportzeile EinspielenGelesen(DbVorgang v, PaketNutzungsart p, Paket paket, Dictionary<long, int> satzZiel)
         {
             if (p.Fehler != null)
                 return new TwwImportzeile(TwwImportausgang.Abgelehnt, p.Bezeichner, p.Katalogversion, "", 0, p.Zeile, p.Fehler);
@@ -672,10 +747,25 @@ namespace WindowsFormsApplication1
             internal List<PaketNutzungsart> Nutzungsarten { get; } = new List<PaketNutzungsart>();
             internal List<PaketBedarfstag> Bedarfstage { get; } = new List<PaketBedarfstag>();
             internal List<PaketParameterzeile> Parameter { get; } = new List<PaketParameterzeile>();
+            internal List<PaketDin4708Zeile> Din4708 { get; } = new List<PaketDin4708Zeile>();
             internal bool MitKategorien { get; set; }
 
             /// <summary>Führt <c>Tab_TwwBedarfstag_STAMM</c> die Spalte <c>Bezugsart</c> (Schritt 124)?</summary>
             internal bool MitBezugsart { get; set; }
+
+            /// <summary>
+            /// Die Katalogversion, der die Zeilen dieses Pakets beitreten, weil das Paket keine
+            /// eigene führt (<see cref="ZapfprofilCtrl.Zielkatalogversion"/>); <c>null</c>, wenn
+            /// das Paket die Spalte <c>Katalogversion</c> führt — dann gilt ihr Wert je Zeile.
+            /// </summary>
+            internal string Zielversion { get; set; }
+
+            /// <summary>
+            /// Die Katalogversion EINER Zeile: die des Pakets oder — führt es keine — die des
+            /// Zielkatalogs. Die eine Stelle, an der der Import die Version einer Zeile bestimmt.
+            /// </summary>
+            internal string Version(PaketTabelle t, (int Zeile, string[] Felder) z)
+                => Zielversion ?? t.Text(z, SPALTE_KATALOGVERSION);
         }
 
         /// <summary>Ein Tagesgangsatz des Pakets: Paket-Id, Name, die vier Tagesgänge samt Provenienz und — wenn er nicht taugt — der Grund.</summary>
@@ -700,6 +790,12 @@ namespace WindowsFormsApplication1
             internal PaketSatz Satz { get; set; }
             internal List<Zapfkategorie> Kategorien { get; set; } = new List<Zapfkategorie>();
             internal ZapfSatz Fehler { get; set; }
+
+            /// <summary>
+            /// Der frühere Stand, unter dem das Paket die Zeile führt (<see cref="PaketteilNachfuehrung"/>);
+            /// <c>null</c> = die Zeile steht so im Paket, wie sie gelesen ist.
+            /// </summary>
+            internal PaketteilNachfuehrung.Eintrag FruehererStand { get; set; }
         }
 
         /// <summary>Eine Datei als Tabelle: Name, Kopf und je Datenzeile ihre Zeilennummer und Felder.</summary>
@@ -753,6 +849,7 @@ namespace WindowsFormsApplication1
             bool bedarfstageDa = DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM)
                                  && DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM);
             bool parameterDa = DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_PARAMETER_STAMM);
+            bool din4708Da = DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_DIN4708_WERT_STAMM);
             bool bedarfstageGemeldet = false;
             foreach (TwwPaketdatei d in dateien)
             {
@@ -780,25 +877,37 @@ namespace WindowsFormsApplication1
                     bericht.Hinweise.Add(ZapfSatz.Neu("KATALOGIMPORT_PARAMETER_OHNE_TABELLE"));
                     continue;
                 }
+                if (tabelle == TwwSchema.TAB_TWW_DIN4708_WERT_STAMM && !din4708Da)
+                {
+                    bericht.Hinweise.Add(ZapfSatz.Neu("KATALOGIMPORT_DIN4708_OHNE_TABELLE"));
+                    continue;
+                }
                 if (tabellen.ContainsKey(tabelle)) throw new PaketFehler(ZapfSatz.Neu("KATALOGIMPORT_DATEI_DOPPELT", d.Name));
                 tabellen[tabelle] = Tabelle(d, tabelle);
             }
-            if (!tabellen.TryGetValue(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, out PaketTabelle tn))
+            if (!tabellen.TryGetValue(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, out PaketTabelle tn)
+                && !Kennwertpaket(dateien))
                 throw new PaketFehler(ZapfSatz.Neu("KATALOGIMPORT_KEINE_DATEI", TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ".csv"));
 
             var paket = new Paket
             {
                 MitKategorien = kategorienDa,
                 MitBezugsart = bedarfstageDa
-                               && DataRepository.SpalteVorhanden(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, TwwSchema.SPALTE_BEZUGSART)
+                               && DataRepository.SpalteVorhanden(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, TwwSchema.SPALTE_BEZUGSART),
+                Zielversion = Zielversion(tabellen, bericht)
             };
             paket.Bedarfstage.AddRange(Bedarfstage(tabellen, paket, bericht));
-            paket.Parameter.AddRange(Parameterzeilen(tabellen, bericht));
-            Dictionary<long, PaketSatz> saetze = Saetze(tabellen, bericht);
+            paket.Parameter.AddRange(Parameterzeilen(tabellen, paket, bericht));
+            paket.Din4708.AddRange(Din4708Zeilen(tabellen, paket));
+            // Ein Kennwertpaket ohne Nutzungsarten: Es bleibt bei Bedarfstagen, Parametern und
+            // DIN-4708-Werten — die Kette der Nutzungsarten ist leer.
+            if (tn == null) return paket;
+            Dictionary<long, PaketSatz> saetze = Saetze(tabellen, paket, bericht);
             List<PaketKategorie> kategorien =
                 tabellen.TryGetValue(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, out PaketTabelle tk) ? Kategorien(tk) : new List<PaketKategorie>();
 
-            Pflicht(tn, "Bezeichner", "Katalogversion", "Bezugsart", "Bedarf_Niedrig", "Bedarf_Mittel", "Bedarf_Hoch",
+            if (paket.Zielversion == null) Pflicht(tn, SPALTE_KATALOGVERSION);
+            Pflicht(tn, "Bezeichner", "Bezugsart", "Bedarf_Niedrig", "Bedarf_Mittel", "Bedarf_Hoch",
                     "Bedarf_Quelle", "Bedarf_Version", "Bedarf_Herkunftsart", "Bezug_Zapftemperatur", "Bezug_Kaltwasser",
                     "Bilanzgrenze", "Kalenderart", "Jahresgang_Quelle", "Jahresgang_Version", "Jahresgang_Herkunftsart",
                     "Wochengang_Quelle", "Wochengang_Version", "Wochengang_Herkunftsart", "ID_Tagesgangsatz");
@@ -812,7 +921,7 @@ namespace WindowsFormsApplication1
                 long? id = tn.Ganz(z, "ID");
                 if (id.HasValue && !ids.Add(id.Value))
                     throw new PaketFehler(ZapfSatz.Neu("KATALOGIMPORT_ID_DOPPELT", tn.Datei, z.Zeile, id.Value));
-                PaketNutzungsart p = PaketNutzungsartAus(tn, z, saetze);
+                PaketNutzungsart p = PaketNutzungsartAus(tn, z, saetze, paket);
                 p.Id = id;
                 if (p.Fehler == null && !schluessel.Add(p.Bezeichner + "\u0001" + p.Katalogversion))
                     p.Fehler = ZapfSatz.Neu("KATALOGIMPORT_DOPPELT_IM_PAKET");
@@ -864,6 +973,40 @@ namespace WindowsFormsApplication1
             }
             if (ohneVorgabe > 0) bericht.Hinweise.Add(ZapfSatz.Neu("KATALOGIMPORT_OHNE_VORGABESATZ", ohneVorgabe));
             return paket;
+        }
+
+        /// <summary>
+        /// <b>Führt das Paket eine Katalogversion?</b> Geprüft werden allein die Kopfdateien, die
+        /// das Paket mitbringt (<see cref="IMPORT_TABELLEN_MIT_VERSION"/>; eine wegen fehlender
+        /// Tabelle übergangene Datei zählt nicht mit — sie wird ohnehin nicht eingespielt).
+        ///
+        /// <list type="bullet">
+        /// <item>ALLE führen sie — <c>null</c>: Es gilt der Wert je Zeile, wie bisher.</item>
+        /// <item>KEINE führt sie — die Katalogversion des Zielkatalogs
+        /// (<see cref="ZapfprofilCtrl.Zielkatalogversion"/>), dazu der Hinweis
+        /// <c>KATALOGIMPORT_OHNE_KATALOGVERSION</c>.</item>
+        /// <item>NUR EIN TEIL führt sie — das Paket ist als Ganzes abgelehnt
+        /// (<c>KATALOGIMPORT_VERSION_GEMISCHT</c>), mit beiden Dateilisten im Grund.</item>
+        /// </list>
+        ///
+        /// <para>Gelesen wird VOR dem Schreibvorgang, also einmal für das ganze Paket: Alle Zeilen
+        /// treten derselben Version bei, auch die Parameter, die der Import selbst anlegt.</para>
+        /// </summary>
+        private static string Zielversion(Dictionary<string, PaketTabelle> tabellen, TwwKatalogimportBericht bericht)
+        {
+            var mit = new List<string>();
+            var ohne = new List<string>();
+            foreach (string t in IMPORT_TABELLEN_MIT_VERSION)
+                if (tabellen.TryGetValue(t, out PaketTabelle pt))
+                    (pt.Hat(SPALTE_KATALOGVERSION) ? mit : ohne).Add(pt.Datei);
+            if (mit.Count > 0 && ohne.Count > 0)
+                throw new PaketFehler(ZapfSatz.Neu("KATALOGIMPORT_VERSION_GEMISCHT",
+                                                   SPALTE_KATALOGVERSION, mit.ToArray(), ohne.ToArray()));
+            if (ohne.Count == 0) return null;
+
+            string version = ZapfprofilCtrl.Zielkatalogversion();
+            bericht.Hinweise.Add(ZapfSatz.Neu("KATALOGIMPORT_OHNE_KATALOGVERSION", version));
+            return version;
         }
 
         /// <summary>Eine Datei als Tabelle: Trenner aus der Kopfzeile, jede Spalte bekannt, jede Zeile mit der Feldzahl des Kopfes.</summary>
@@ -925,16 +1068,18 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Tagesgangsätze des Pakets samt ihren Tagesgängen; ein Tagesgang ohne Satz ist benannt übergangen.</summary>
-        private static Dictionary<long, PaketSatz> Saetze(Dictionary<string, PaketTabelle> tabellen, TwwKatalogimportBericht bericht)
+        private static Dictionary<long, PaketSatz> Saetze(Dictionary<string, PaketTabelle> tabellen, Paket paket,
+                                                          TwwKatalogimportBericht bericht)
         {
             var saetze = new Dictionary<long, PaketSatz>();
             if (!tabellen.TryGetValue(TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM, out PaketTabelle ts)) return saetze;
-            Pflicht(ts, "ID", "Bezeichner", "Katalogversion");
+            Pflicht(ts, "ID", "Bezeichner");
+            if (paket.Zielversion == null) Pflicht(ts, SPALTE_KATALOGVERSION);
             foreach (var z in ts.Zeilen)
             {
                 long id = ts.Ganz(z, "ID") ?? throw new PaketFehler(ZapfSatz.Neu("KATALOGIMPORT_ID_FEHLT", ts.Datei, z.Zeile, "ID"));
                 if (saetze.ContainsKey(id)) throw new PaketFehler(ZapfSatz.Neu("KATALOGIMPORT_ID_DOPPELT", ts.Datei, z.Zeile, id));
-                var s = new PaketSatz { Id = id, Bezeichner = ts.Text(z, "Bezeichner"), Katalogversion = ts.Text(z, "Katalogversion") };
+                var s = new PaketSatz { Id = id, Bezeichner = ts.Text(z, "Bezeichner"), Katalogversion = paket.Version(ts, z) };
                 if (s.Bezeichner.Length == 0) s.Fehler = ZapfSatz.Neu("KATALOGIMPORT_SATZ_PFLICHT", "#" + id.ToString(CultureInfo.InvariantCulture), "Bezeichner");
                 else if (s.Katalogversion.Length == 0) s.Fehler = ZapfSatz.Neu("KATALOGIMPORT_SATZ_PFLICHT", s.Bezeichner, "Katalogversion");
                 saetze[id] = s;
@@ -1037,9 +1182,10 @@ namespace WindowsFormsApplication1
         /// Eine Nutzungsart aus ihrer Zeile: der Entwurf mit der Provenienz des Pakets (die Herkunftsart
         /// setzt erst <see cref="ImportHerkunft"/>) und der erste Regelverstoß als Grund.
         /// </summary>
-        private static PaketNutzungsart PaketNutzungsartAus(PaketTabelle t, (int Zeile, string[] Felder) z, Dictionary<long, PaketSatz> saetze)
+        private static PaketNutzungsart PaketNutzungsartAus(PaketTabelle t, (int Zeile, string[] Felder) z,
+                                                            Dictionary<long, PaketSatz> saetze, Paket paket)
         {
-            var p = new PaketNutzungsart { Zeile = z.Zeile, Bezeichner = t.Text(z, "Bezeichner"), Katalogversion = t.Text(z, "Katalogversion") };
+            var p = new PaketNutzungsart { Zeile = z.Zeile, Bezeichner = t.Text(z, "Bezeichner"), Katalogversion = paket.Version(t, z) };
             ZapfSatz fehler = null;
             void Fehlt(string spalte) { fehler ??= ZapfSatz.Neu("KATALOGIMPORT_PFLICHT_FEHLT", spalte); }
             double Wert(string spalte) { double? w = t.Zahl(z, spalte); if (!w.HasValue) Fehlt(spalte); return w ?? 0.0; }
@@ -1078,6 +1224,21 @@ namespace WindowsFormsApplication1
             for (int w = 0; w < woche.Length; w++) woche[w] = Wert("Woche_" + (w + 1).ToString(CultureInfo.InvariantCulture));
             Provenienz hw = Herkunft(t, z, "Wochengang_", out ZapfSatz fw);
             fehler ??= fb ?? fj ?? fw;
+
+            // Eine Zeile des ausgelieferten Paketteils in einem früheren Stand (älteres Paket) wird als
+            // die heutige gelesen — VOR dem Dublettenscan, damit der natürliche Schlüssel die Zeile des
+            // Katalogs trifft statt eine zweite anzulegen (PaketteilNachfuehrung, E-A2-4 b). Die Grenze
+            // zieht die Regel: Status des Pakets und die rohe Provenienz der Gruppe Bedarf.
+            if (hb != null)
+            {
+                p.FruehererStand = PaketteilNachfuehrung.Finden(p.Bezeichner, t.Ganz(z, "Bezugsart"), t.Text(z, "Status"),
+                                                                 hb.Version, TwwWertemengen.Text(hb.Art));
+                if (p.FruehererStand != null)
+                {
+                    p.Bezeichner = p.FruehererStand.Bezeichner;
+                    bezug = (int)p.FruehererStand.Bezugsart;
+                }
+            }
 
             long? satzId = t.Ganz(z, "ID_Tagesgangsatz");
             if (!satzId.HasValue) Fehlt("ID_Tagesgangsatz");

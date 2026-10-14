@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using EPOS.UI.Dienste;
 using KiKern;
+using WindowsFormsApplication1;
 
 namespace EPOS.UI.Dialoge.Bedarf;
 
@@ -92,6 +93,33 @@ public sealed class BauteilaufbauKiSicht
         set => Kopf(a => a.Beschreibung = value ?? "");
     }
 
+    /// <summary>Die Gruppen des Aufbaus (Code, Anzeigetext) — BK-2b.</summary>
+    public IReadOnlyList<KiWahleintrag> GruppeWahl
+        => Bauteilkatalog.Gruppen(false).Select(g => new KiWahleintrag(g, Bauteilkatalog.GruppeText(false, g))).ToList();
+
+    /// <summary>Die Gruppe als Code; leer = aus der Bauteilart. Eine Klasse einer anderen Gruppe fällt weg.</summary>
+    public string Gruppe
+    {
+        get => StandLesen?.Invoke()?.Arbeit.GruppeCode ?? "";
+        set => Kopf(a =>
+        {
+            a.GruppeCode = value ?? "";
+            if (!Bauteilkatalog.Klassen(false, a.GruppeCode).Contains(a.KlasseCode)) a.KlasseCode = "";
+        });
+    }
+
+    /// <summary>Die Klassen der Gruppe des Arbeitsstands (Code, Anzeigetext).</summary>
+    public IReadOnlyList<KiWahleintrag> KlasseWahl
+        => Bauteilkatalog.Klassen(false, StandLesen?.Invoke()?.Arbeit.GruppeCode)
+               .Select(k => new KiWahleintrag(k, Bauteilkatalog.KlasseText(false, k))).ToList();
+
+    /// <summary>Die Klasse als Code; leer = keine Klasse.</summary>
+    public string Klasse
+    {
+        get => StandLesen?.Invoke()?.Arbeit.KlasseCode ?? "";
+        set => Kopf(a => a.KlasseCode = value ?? "");
+    }
+
     /// <summary>Die Quelle im Arbeitsstand.</summary>
     public string Quelle
     {
@@ -120,6 +148,23 @@ public sealed class BauteilaufbauKiSicht
         stand.Eingabe();
         Geaendert?.Invoke();
     }
+
+    // =====================================================================
+    //  KT-8b: der Ladestand der Fangstelle
+    // =====================================================================
+
+    /// <summary>
+    /// Liefert die Bannertexte der Fangstelle (<c>Katalogladung</c>): gescheiterte Liste,
+    /// gescheiterter Satz; leer = alles geladen.
+    /// </summary>
+    public Func<string>? LadestandLesen { get; init; }
+
+    /// <summary>
+    /// Was der Dialog nicht lesen konnte, im Wortlaut seines Warnbanners — nur lesbar. Steht hier
+    /// ein Grund, sperrt der Dialog die Felder und lehnt Speichern mit demselben Grund ab
+    /// (<c>KatalogKiSperre</c>).
+    /// </summary>
+    public string Ladestand => LadestandLesen?.Invoke() ?? "";
 }
 
 /// <summary>

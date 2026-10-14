@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 
 namespace WindowsFormsApplication1
@@ -56,6 +57,35 @@ namespace WindowsFormsApplication1
         /// nicht über <c>Properties.Settings</c>.
         /// </summary>
         public bool NeueProjekteMitKuehlung;
+
+        /// <summary>
+        /// Die Vorbelegung des zulässigen Sprungs zum Nutzungsbeginn neuer Projekte (Entwurf Vorheizrampe, F14 (a); AH-V5) —
+        /// Wert in der Einheit von <see cref="NeueProjekteVorheizToleranzArt"/>; <c>null</c> = keine Vorbelegung (Kern-Vorgabe
+        /// 20 %). Gelesen und geschrieben über <c>Dienste.Einstellungen</c>
+        /// (<see cref="EinstellungenCtrl.VorheiztoleranzLesen"/>).
+        /// </summary>
+        public double? NeueProjekteVorheizToleranz;
+
+        /// <summary>Die Einheit der Vorbelegung: Prozent (Vorgabe) oder kW.</summary>
+        public Vorheiztoleranzart NeueProjekteVorheizToleranzArt;
+
+        // Anwenderrubrik „Zapfprofil“: die fünf Rechenvorgaben des Zapfprofils als Text der Einstellung,
+        // leer = Vorgabe (Schlüssel gelöscht). Gelesen und geschrieben für jeden Anwender.
+
+        /// <summary><c>Zapfprofil.Anzeigetemperatur</c>: °C, invariante Zahl; leer = Vorgabe.</summary>
+        public string ZapfAnzeigetemperatur = "";
+
+        /// <summary><c>Zapfprofil.Stundenschwelle</c>: kW, invariante Zahl; leer = Vorgabe.</summary>
+        public string ZapfStundenschwelle = "";
+
+        /// <summary><c>Zapfprofil.Nenninhalte</c>: Liter, aufsteigende Liste; leer = Vorgabe.</summary>
+        public string ZapfNenninhalte = "";
+
+        /// <summary><c>Zapfprofil.Katalogordner</c>: Startordner der Katalogpaketwahl; leer = keiner.</summary>
+        public string ZapfKatalogordner = "";
+
+        /// <summary><c>Zapfprofil.Importordner</c>: Startordner der Typtagwahl; leer = keiner.</summary>
+        public string ZapfImportordner = "";
     }
 
     /// <summary>Das Ergebnis des Speicherns: gelungen oder mit Grund gescheitert.</summary>
@@ -159,6 +189,56 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
+        // Die Programmeinstellung „Toleranz des Vorheizens für neue Projekte" (AH-V4, F14 (a))
+        // =====================================================================
+
+        /// <summary>
+        /// Der Schlüssel des Werts in <c>Dienste.Einstellungen</c> — ASCII und <b>eingefroren</b>; der Wert steht als Text in
+        /// invarianter Schreibweise (Prozent bzw. kW, ≥ 0). Leer heißt: keine Vorbelegung, das Projekt rechnet mit der
+        /// Kern-Konstante 20 % (<see cref="Vorheizvorgabe.TOLERANZ_VORGABE_PROZENT"/>). Die Oberfläche kommt mit V5.
+        /// </summary>
+        public const string SCHLUESSEL_NEUE_PROJEKTE_VORHEIZTOLERANZ = "NeueProjekteVorheizToleranz";
+
+        /// <summary>Der Schlüssel der Art (<c>PROZENT</c> oder <c>KW</c>); leer heißt Prozent.</summary>
+        public const string SCHLUESSEL_NEUE_PROJEKTE_VORHEIZTOLERANZ_ART = "NeueProjekteVorheizToleranzArt";
+
+        /// <summary>
+        /// Liest die Vorbelegung der Toleranz; nichts hinterlegt, unlesbar, negativ oder eine Ausnahme der Ablage heißen
+        /// „keine“ (<c>null</c>). Einziger Leser außer dem Einstellungsdialog: <see cref="KonfigurationCtrl.VorheiztoleranzAnfangswertSetzen"/>.
+        /// </summary>
+        public static (double? Wert, Vorheiztoleranzart Art) VorheiztoleranzLesen()
+        {
+            try
+            {
+                string text = Dienste.Einstellungen.Lies(SCHLUESSEL_NEUE_PROJEKTE_VORHEIZTOLERANZ, null);
+                string art = Dienste.Einstellungen.Lies(SCHLUESSEL_NEUE_PROJEKTE_VORHEIZTOLERANZ_ART, null);
+                if (string.IsNullOrWhiteSpace(text)
+                    || !double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out double wert)
+                    || double.IsNaN(wert) || double.IsInfinity(wert) || wert < 0.0)
+                    return (null, Vorheiztoleranzart.Prozent);
+                return (wert, VorheizenSchema.ToleranzartAus(art));
+            }
+            catch
+            {
+                return (null, Vorheiztoleranzart.Prozent);
+            }
+        }
+
+        /// <summary>Schreibt die Vorbelegung der Toleranz; <c>null</c> löscht sie (keine Vorbelegung).</summary>
+        public static void VorheiztoleranzSchreiben(double? wert, Vorheiztoleranzart art)
+        {
+            if (!wert.HasValue)
+            {
+                Dienste.Einstellungen.Loesche(SCHLUESSEL_NEUE_PROJEKTE_VORHEIZTOLERANZ);
+                Dienste.Einstellungen.Loesche(SCHLUESSEL_NEUE_PROJEKTE_VORHEIZTOLERANZ_ART);
+                return;
+            }
+            Dienste.Einstellungen.Schreib(SCHLUESSEL_NEUE_PROJEKTE_VORHEIZTOLERANZ, wert.Value.ToString("R", CultureInfo.InvariantCulture));
+            Dienste.Einstellungen.Schreib(SCHLUESSEL_NEUE_PROJEKTE_VORHEIZTOLERANZ_ART,
+                                          VorheizenSchema.ToleranzartWert(art) ?? VorheizenSchema.TOLERANZ_PROZENT);
+        }
+
+        // =====================================================================
         // Lesen (Form_AdminSettings_Load)
         // =====================================================================
 
@@ -186,7 +266,62 @@ namespace WindowsFormsApplication1
             s.TryRegionalUrl = Properties.Settings.Default.TRYRegionalUrl ?? "";
             s.DiagrammFarben = Properties.Settings.Default.DiagrammFarben ?? "";
             s.NeueProjekteMitKuehlung = NeueProjekteMitKuehlungLesen();
+            (s.NeueProjekteVorheizToleranz, s.NeueProjekteVorheizToleranzArt) = VorheiztoleranzLesen();
+
+            ZapfprofilVorgabenLesen(s);
             return s;
+        }
+
+        // =====================================================================
+        // Anwenderrubrik „Zapfprofil“ (Konzept Administration und Support 3.4)
+        // =====================================================================
+
+        /// <summary>
+        /// Die fünf Schlüssel der Rechenvorgaben des Zapfprofils in <c>Dienste.Einstellungen</c> — dieselben Texte wie bei
+        /// ihren Lesern (<c>ZapfprofilCtrl.EINSTELLUNG_*</c>, <c>ZapfprofilHuelle.EINSTELLUNG_KATALOGORDNER</c> und
+        /// <c>EINSTELLUNG_IMPORTORDNER</c>).
+        /// </summary>
+        public const string SCHLUESSEL_ZAPF_ANZEIGETEMPERATUR = "Zapfprofil.Anzeigetemperatur";
+        public const string SCHLUESSEL_ZAPF_STUNDENSCHWELLE = "Zapfprofil.Stundenschwelle";
+        public const string SCHLUESSEL_ZAPF_NENNINHALTE = "Zapfprofil.Nenninhalte";
+        public const string SCHLUESSEL_ZAPF_KATALOGORDNER = "Zapfprofil.Katalogordner";
+        public const string SCHLUESSEL_ZAPF_IMPORTORDNER = "Zapfprofil.Importordner";
+
+        private static string ZapfLies(string schluessel)
+        {
+            try { return Dienste.Einstellungen.Lies(schluessel, "") ?? ""; }
+            catch { return ""; }
+        }
+
+        /// <summary>Liest die fünf Vorgaben in den Satz (leer = nicht gesetzt).</summary>
+        public static void ZapfprofilVorgabenLesen(Einstellungensatz s)
+        {
+            if (s == null) return;
+            s.ZapfAnzeigetemperatur = ZapfLies(SCHLUESSEL_ZAPF_ANZEIGETEMPERATUR);
+            s.ZapfStundenschwelle = ZapfLies(SCHLUESSEL_ZAPF_STUNDENSCHWELLE);
+            s.ZapfNenninhalte = ZapfLies(SCHLUESSEL_ZAPF_NENNINHALTE);
+            s.ZapfKatalogordner = ZapfLies(SCHLUESSEL_ZAPF_KATALOGORDNER);
+            s.ZapfImportordner = ZapfLies(SCHLUESSEL_ZAPF_IMPORTORDNER);
+        }
+
+        /// <summary>
+        /// Schreibt die fünf Vorgaben der Anwenderrubrik „Zapfprofil“; ein leerer Wert löscht den Schlüssel, dann gilt
+        /// die Vorgabe des Lesers. Einen ungültigen Wert verwirft der Leser mit Hinweis und rechnet mit der Vorgabe.
+        /// </summary>
+        public static void ZapfprofilVorgabenSchreiben(Einstellungensatz s)
+        {
+            if (s == null) return;
+            ZapfSchreib(SCHLUESSEL_ZAPF_ANZEIGETEMPERATUR, s.ZapfAnzeigetemperatur);
+            ZapfSchreib(SCHLUESSEL_ZAPF_STUNDENSCHWELLE, s.ZapfStundenschwelle);
+            ZapfSchreib(SCHLUESSEL_ZAPF_NENNINHALTE, s.ZapfNenninhalte);
+            ZapfSchreib(SCHLUESSEL_ZAPF_KATALOGORDNER, s.ZapfKatalogordner);
+            ZapfSchreib(SCHLUESSEL_ZAPF_IMPORTORDNER, s.ZapfImportordner);
+        }
+
+        private static void ZapfSchreib(string schluessel, string wert)
+        {
+            if (string.IsNullOrWhiteSpace(wert)) Dienste.Einstellungen.Loesche(schluessel);
+            else Dienste.Einstellungen.Schreib(schluessel, wert.Trim());
         }
 
         /// <summary>
@@ -204,6 +339,8 @@ namespace WindowsFormsApplication1
             // Der Wert aus Dienste.Einstellungen kennt kein Reset() - die Werksvorgabe wird
             // hier gesetzt und wie alles andere erst mit „OK" gespeichert.
             s.NeueProjekteMitKuehlung = NEUE_PROJEKTE_MIT_KUEHLUNG_VORGABE;
+            s.NeueProjekteVorheizToleranz = null;
+            s.NeueProjekteVorheizToleranzArt = Vorheiztoleranzart.Prozent;
             return s;
         }
 
@@ -261,11 +398,26 @@ namespace WindowsFormsApplication1
             try
             {
                 NeueProjekteMitKuehlungSchreiben(s.NeueProjekteMitKuehlung);
+                // AH-V5 (F14 (a)): die Vorbelegung der Toleranz neuer Projekte über denselben Weg.
+                double? toleranz = s.NeueProjekteVorheizToleranz is double t && !double.IsNaN(t) && !double.IsInfinity(t) && t >= 0.0
+                    ? t : null;
+                VorheiztoleranzSchreiben(toleranz, s.NeueProjekteVorheizToleranzArt);
             }
             catch (Exception ex)
             {
                 return new SpeicherBefund(false,
                     string.Format(MyResource.Resource.ADM_SET_MSG_KUEHLUNG_FEHLER, ex.Message));
+            }
+
+            // Die Rechenvorgaben des Zapfprofils (Anwenderrubrik „Zapfprofil“).
+            try
+            {
+                ZapfprofilVorgabenSchreiben(s);
+            }
+            catch (Exception ex)
+            {
+                return new SpeicherBefund(false,
+                    string.Format(MyResource.Resource.ADM_SET_MSG_ZAPF_FEHLER, ex.Message));
             }
 
             Properties.Settings.Default.Save();

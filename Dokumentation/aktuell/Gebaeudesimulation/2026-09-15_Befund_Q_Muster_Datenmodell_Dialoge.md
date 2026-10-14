@@ -331,7 +331,7 @@ Für die Saat eines Baustoffkatalogs gibt es zwei Vorbilder im Haus:
 ### 2.5 Menü
 
 Das Menü ist Daten (`EPOS.UI/Bausteine/Menuetabelle.cs:175` Kopf „Administration"). Ein
-Baustoffkatalog wäre ein `Menuepunkt` unter der Rubrik „Wärmebedarf & Heizung"
+Baustoffkatalog wäre ein `Menuepunkt` unter der Rubrik „Wärme- und Kälteerzeugung"
 (`Menuetabelle.cs:177-198`) oder als eigene Rubrik; sein Ziel ist ein `Seitenschluessel`
 (`EPOS.UI/Seiten/Seitenschluessel.cs:28`, Beispiel `WechselrichterAdmin` `:252`), der in der
 Prüfliste `:401-402` mitgeführt wird. **Regel W16c-E-6:** kein Untermenü mit nur einem Punkt

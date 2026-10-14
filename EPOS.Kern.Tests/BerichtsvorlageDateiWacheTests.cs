@@ -480,7 +480,22 @@ namespace EPOS.Kern.Tests
             "{{bericht.warnungen}}",
             "{{wirtschaft.beste.anzeige}}", "{{wirtschaft.beste.kapitalwert_diff}}", "{{wirtschaft.vorschlag}}",
             "{{#wenn hat.bild.wirtschaft.spanne}}", "{{/wenn}}", "{{tabelle.wirtschaft.szenarien}}", "{{wirtschaft.warnungen}}",
-            "{{#wenn hat.kaelte}}", "{{stamm.kennzahl.kaelte.jahresbedarf}}", "{{stamm.kennzahl.kaelte.deckungsgrad}}", "{{/wenn}}",
+            // K6d-N (Katalog v23): der Kühlsatz ohne Split-Zeile wie zuvor, mit ihr die Hauptzahl samt „davon Kältefolge“.
+            "{{#wenn hat.kaelte}}", "{{#wenn nicht hat.kaelte.dezentral}}", "{{stamm.kennzahl.kaelte.jahresbedarf}}",
+            "{{stamm.kennzahl.kaelte.deckungsgrad}}", "{{/wenn}}", "{{/wenn}}", "{{#wenn hat.kaelte.dezentral}}",
+            "{{#wenn hat.kaelte.kaeltefolge}}", "{{stamm.kennzahl.kaelte.jahresbedarf}}", "{{stamm.kennzahl.kaelte.deckungsgrad_gesamt}}",
+            "{{stamm.kennzahl.kaelte.deckungsgrad_kaeltefolge}}", "{{/wenn}}",
+            "{{#wenn nicht hat.kaelte.kaeltefolge}}", "{{stamm.kennzahl.kaelte.jahresbedarf}}",
+            "{{stamm.kennzahl.kaelte.deckungsgrad_gesamt}}", "{{/wenn}}", "{{/wenn}}",
+            // KP3 Welle O3a (E58 F4 (b)): der Aufheizabsatz je Gebäude aus Einzelfeldern, nur mit Aufheizoptimierung.
+            "{{#wenn hat.aufheizung}}", "{{#je gebaeude}}", "{{gebaeude.name}}", "{{gebaeude.ergebnis.aufheizzeit}}",
+            "{{gebaeude.ergebnis.aufheiz_aussentemperatur}}", "{{gebaeude.ergebnis.aufheizleistung}}",
+            "{{gebaeude.ergebnis.auslegungsgroesse}}", "{{gebaeude.ergebnis.auslegungsheizlast}}",
+            "{{gebaeude.ergebnis.aufheizzuschlag}}", "{{gebaeude.ergebnis.aufheizhinweise}}", "{{/je}}", "{{/wenn}}",
+            // AH-V6 (Katalog v19): der Vorheizsatz je Gebäude, nur mit vorgegebener oder berechneter Vorheizzeit.
+            "{{#wenn hat.vorheizen}}", "{{#je gebaeude}}", "{{gebaeude.name}}", "{{gebaeude.ergebnis.vorheizverfahren}}",
+            "{{gebaeude.ergebnis.vorheizzeit}}", "{{gebaeude.ergebnis.vorheizleistung}}", "{{gebaeude.ergebnis.vorheiz_tage_verfehlt}}",
+            "{{gebaeude.ergebnis.vorheiz_mehrwaerme}}", "{{gebaeude.ergebnis.vorheiz_schnellaufheizung}}", "{{/je}}", "{{/wenn}}",
             "{{#je stand}}", "{{stand.anzeige}}", "{{/je}}",
             "{{kapitel.anhang|ohne titel|ebene 2}}",
         };
@@ -490,7 +505,7 @@ namespace EPOS.Kern.Tests
         /// drei Bildrahmen — das Spannenbild in voller Breite, die Deckungsbilder nebeneinander in einer Tabelle ohne
         /// Rahmen — und dem Anhang als einzigem Kapitel; am Ende die Mustertabelle. Jede Marke steht allein in einem Run
         /// mit <c>w:noProof</c>; Kopfzeile <c>{{projekt.name}} · {{bericht.titel}}</c> mit dem Bildplatzhalter des Logos,
-        /// Fußzeile wie die Standardvorlage; neun Kommentare in der Sprache der Datei, jeder mit genau einem Verweis;
+        /// Fußzeile wie die Standardvorlage; zehn Kommentare in der Sprache der Datei, jeder mit genau einem Verweis;
         /// <c>custom.xml</c> mit Fassung, Art <c>kurzbericht</c> und Sprache.
         /// </summary>
         [Theory]
@@ -541,7 +556,7 @@ namespace EPOS.Kern.Tests
 
             // Kommentare je Stelle, in der Sprache der Datei.
             List<string> kommentare = main.WordprocessingCommentsPart.Comments.Elements<Comment>().Select(c => c.Id.Value).ToList();
-            Assert.Equal(9, kommentare.Count);
+            Assert.Equal(10, kommentare.Count);
             Assert.Equal(kommentare.OrderBy(k => k, StringComparer.Ordinal),
                          rumpf.Descendants<CommentReference>().Select(r => r.Id.Value).OrderBy(k => k, StringComparer.Ordinal));
             Assert.Contains(sprache == "en" ? "Summary report" : "Kurzbericht", main.WordprocessingCommentsPart.Comments.InnerText,
@@ -608,6 +623,9 @@ namespace EPOS.Kern.Tests
                                            "{{kennzahl.", "{{stand.wirtschaft.", "{{wirtschaft.beste.", "{{vergleich.",
                                            "{{gebaeude.", "{{wirtschaft.warnungen}}", "{{bericht.warnungen}}" })
                 Assert.True(marken.Any(m => m.StartsWith(art, StringComparison.Ordinal)), datei + ": keine Marke „" + art + "…“");
+            // Katalog v16 (KP3 Welle O3b, E58 F3 (c)): die Kennzahlgruppe „Gebäude“ und die Gebäudetafel je Stand im Vergleich.
+            Assert.Contains("{{tabelle.vergleich.gebaeude}}", marken);
+            Assert.Contains("{{stand.tabelle.gebaeude}}", marken);
             Assert.Equal(marken.Count(m => m.StartsWith("{{#je", StringComparison.Ordinal)), marken.Count(m => m == "{{/je}}"));
             Assert.Equal(marken.Count(m => m.StartsWith("{{#wenn", StringComparison.Ordinal)), marken.Count(m => m == "{{/wenn}}"));
             Assert.Equal(new[] { "{{ersteller.programm}}" }, main.HeaderParts.SelectMany(h => Marken(h.Header)).ToArray());
@@ -624,7 +642,7 @@ namespace EPOS.Kern.Tests
             // Bildrahmen: Schlüssel eines Bildes im Alternativtext, volle oder halbe Breite, die halben paarweise ohne Rahmen.
             List<DocumentFormat.OpenXml.Drawing.Wordprocessing.Inline> rahmen =
                 rumpf.Descendants<DocumentFormat.OpenXml.Drawing.Wordprocessing.Inline>().ToList();
-            Assert.Equal(26, rahmen.Count);
+            Assert.Equal(28, rahmen.Count);                     // Katalog v12: Stromlast des BHKW und Kälteproduktion
             long voll = rahmen.Max(i => i.Extent.Cx.Value);
             foreach (var bild in rahmen)
             {

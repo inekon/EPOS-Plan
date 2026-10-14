@@ -26,8 +26,9 @@ namespace WindowsFormsApplication1
     /// <list type="number">
     /// <item>die Zusatzbedingung <c>ID_WP/ID_Solar/… &gt; 0</c> entfällt — es zählt
     ///       allein <c>ID_Type</c>, wie in der Bitmaske;</item>
-    /// <item>„Solar" gilt wie in der Bitmaske auch dann als vorhanden, wenn nur eine
-    ///       Solarganglinie zugeordnet ist.</item>
+    /// <item>„Solar" gilt auch dann als vorhanden, wenn nur eine Solarganglinie
+    ///       zugeordnet ist — aber nur eine VOLLSTÄNDIGE (8 760 Werte), denn nur sie
+    ///       rechnet (Folgeauftrag 4, <see cref="SolarganglinieWeiche"/>).</item>
     /// </list>
     /// </para>
     /// <para>
@@ -50,7 +51,8 @@ namespace WindowsFormsApplication1
     /// </summary>
     public class KomponentenBestandCtrl
     {
-        // Kennungen der dreizehn Komponenten. Die Reihenfolge ist die Lesereihenfolge
+        // Kennungen der fuenfzehn Komponenten - die dreizehn des Vorlaeufers und die zwei
+        // Kaeltebedarfe der Stufe K4 dahinter. Die Reihenfolge ist die Lesereihenfolge
         // der Kacheln (Bedarf -> Strom -> Erzeuger -> Speicher), NICHT die der
         // Assistentenseiten; die Zuordnung zur Seite steht in SeitenIndex.
         public const int GEBAEUDE = 0;
@@ -67,8 +69,20 @@ namespace WindowsFormsApplication1
         public const int SP = 11;
         public const int PUFFER = 12;
 
+        /// <summary>
+        /// Kältebedarf extern (Konzept Kältebedarf 3.1, Stufe K4): mindestens eine Zeile in
+        /// <c>Z_ProjektWaermebedarf</c> mit Kanal „Kuehlung“ — Bitwert 8192, ohne Assistentenseite.
+        /// </summary>
+        public const int KAELTE_EXTERN = 13;
+
+        /// <summary>
+        /// Kältebedarfsprofile (Konzept Kältebedarf 3.1, Stufe K4): mindestens eine Zeile in
+        /// <c>Z_Projekt_Kaeltebedarf</c> — Bitwert 16384, ohne Assistentenseite.
+        /// </summary>
+        public const int KAELTEPROFIL = 14;
+
         /// <summary>Anzahl der geführten Komponenten (13).</summary>
-        public const int ANZAHL = 13;
+        public const int ANZAHL = 15;
 
         /// <summary>Kennung ohne eigene Assistentenseite (Brauchwasser, Pufferspeicher).</summary>
         public const int OHNE_SEITE = -1;
@@ -107,7 +121,7 @@ namespace WindowsFormsApplication1
 
         private KomponentenBestandCtrl()
         {
-            int[] bits = { 8, 16, 32, 4096, 64, 128, 2, 256, 1, 512, 1024, 4, 2048 };
+            int[] bits = { 8, 16, 32, 4096, 64, 128, 2, 256, 1, 512, 1024, 4, 2048, 8192, 16384 };
             int[] seiten =
             {
                 WizardItemClass.GEBAEUDE_ITEM, WizardItemClass.WAERMEBEDARF_ITEM,
@@ -115,7 +129,9 @@ namespace WindowsFormsApplication1
                 WizardItemClass.STROMSTD_ITEM, WizardItemClass.STROMLASTGANG_ITEM,
                 WizardItemClass.WP_ITEM, WizardItemClass.BHKW_ITEM,
                 WizardItemClass.KESSEL_ITEM, WizardItemClass.SOLAR_ITEM,
-                WizardItemClass.PV_ITEM, WizardItemClass.SP_ITEM, OHNE_SEITE
+                WizardItemClass.PV_ITEM, WizardItemClass.SP_ITEM, OHNE_SEITE,
+                // Kälte (K4): der Projektassistent bekommt keine Kälteseite.
+                OHNE_SEITE, OHNE_SEITE
             };
 
             for (int i = 0; i < ANZAHL; i++)
@@ -225,29 +241,43 @@ namespace WindowsFormsApplication1
             wbctrl.ReadAll("select * from Z_ProjektWaermebedarf where ID_Projekt=" + idProjekt);
             for (int n = 0; n < wbctrl.rows; n++) Merken(WAERMEBEDARF, wbctrl.items[n].m_szBezeichner);
 
-            Z_ProjektProzesswaermeCtrl prozctrl = new Z_ProjektProzesswaermeCtrl();
-            prozctrl.ReadAll("select * from Z_Projekt_Prozesswaerme where ID_Projekt=" + idProjekt);
-            for (int n = 0; n < prozctrl.rows; n++) Merken(PROZESS, prozctrl.items[n].szProzessname);
+            // Kältebedarf extern (K4): dieselben Zeilen, gezählt nur mit Kanal „Kuehlung“. Das Bit
+            // WAERMEBEDARF bleibt, wie es war - es zählt jede Zeile, gleich welchen Kanals.
+            for (int n = 0; n < wbctrl.rows; n++)
+                if (string.Equals(wbctrl.items[n].Kanal, DbWerte.KANAL_KUEHLUNG, StringComparison.Ordinal))
+                    Merken(KAELTE_EXTERN, wbctrl.items[n].m_szBezeichner);
 
-            Z_ProjektBrauchwasserCtrl bwctrl = new Z_ProjektBrauchwasserCtrl();
-            bwctrl.ReadAll("select * from Z_Projekt_Brauchwasser where ID_Projekt=" + idProjekt);
-            for (int n = 0; n < bwctrl.rows; n++) Merken(BRAUCHWASSER, bwctrl.items[n].szBezeichner);
+            // Kältebedarfsprofile (K4): die Zuordnungszeilen; vor Schema 213 ist die Liste leer.
+            foreach (Z_ProjektKaeltebedarfModel kb in Z_ProjektKaeltebedarfCtrl.LiesProjekt(idProjekt))
+                Merken(KAELTEPROFIL, kb.Bezeichner);
 
-            Z_ProjektStromverbraucherCtrl svctrl = new Z_ProjektStromverbraucherCtrl();
-            svctrl.ReadAll("select * from Z_Projekt_Stromverbraucher where ID_Projekt=" + idProjekt);
-            for (int n = 0; n < svctrl.rows; n++) Merken(STROMSTD, svctrl.items[n].m_szVerbraucher);
+            // SV1/SV2: Prozesswaerme, Brauchwasser und Stromverbraucher nennen je Zeile die
+            // Projektkopie, auf die die Zeile per ID zeigt - wie die Kacheln der Startseite -,
+            // nicht den Bezeichner der Zuordnungszeile.
+            foreach (Z_ProjektProzesswaermeModel pw in Z_ProjektProzesswaermeCtrl.LiesProjekt(idProjekt))
+                Merken(PROZESS, pw.szProzessname);
+
+            foreach (Z_ProjektBrauchwasserModel bw in Z_ProjektBrauchwasserCtrl.LiesProjekt(idProjekt))
+                Merken(BRAUCHWASSER, bw.szBezeichner);
+
+            foreach (Z_ProjektStromverbraucherModel sv in Z_ProjektStromverbraucherCtrl.LiesProjekt(idProjekt))
+                Merken(STROMSTD, sv.m_szVerbraucher);
 
             Z_ProjektStromganglinieCtrl sgctrl = new Z_ProjektStromganglinieCtrl();
             sgctrl.ReadAll("select * from Z_ProjektStromganglinie where ID_Projekt=" + idProjekt);
             for (int n = 0; n < sgctrl.rows; n++) Merken(STROMLASTGANG, sgctrl.items[n].m_szStromganglinie);
 
-            // Solar: die Bitmaske der Startmaske setzt das Bit auch bei einer blossen
-            // Solarganglinie. Die Ganglinie wird beim Abwaehlen NICHT geloescht (der
-            // Assistent fasst Z_ProjektSolarganglinie nirgends an) - sie steht deshalb
-            // nur im Vorhanden-Merkmal, nicht in der Namensliste.
-            Z_ProjektSolarganglinieCtrl solgctrl = new Z_ProjektSolarganglinieCtrl();
-            solgctrl.ReadAll("select * from Z_ProjektSolarganglinie where ID_Projekt=" + idProjekt);
-            if (solgctrl.rows > 0) _eintraege[SOLAR].Vorhanden = true;
+            // Solar: Ohne Anlagenzeile gilt die Solarthermie nur dann als vorhanden, wenn
+            // die Weiche auf Ganglinie steht, die Simulation sie also rechnet
+            // (Folgeauftrag 4, SolarganglinieWeiche): eine zugeordnete Ganglinie mit
+            // vollstaendigen 8 760 Werten. Eine unvollstaendige Ganglinie faerbt den
+            // Statuspunkt nicht - der Lauf rechnet dann das Kollektorfeld. Die Ganglinie
+            // steht nur im Vorhanden-Merkmal, nicht in der Namensliste.
+            if (SolarganglinieWeiche.Lesen(idProjekt).Vollstaendig) _eintraege[SOLAR].Vorhanden = true;
+
+            // PV (PVG, Schemaschritt 206): dieselbe Regel - eine vollstaendige PV-Ganglinie rechnet anstelle der
+            // Module und faerbt den Statuspunkt der Kachel auch ohne Anlagenzeile.
+            if (PvGanglinieWeiche.Lesen(idProjekt).Vollstaendig) _eintraege[PV].Vorhanden = true;
         }
 
         /// <summary>Namen der zugeordneten Gebäude (Verbund wie in <c>WizardParent.LoadZGeb</c>).</summary>

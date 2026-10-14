@@ -204,6 +204,11 @@ namespace WindowsFormsApplication1
                 KlassenSetSchreiben(neueId,
                                     KlassenSetAusVerwendung(Text(ColOrNull(s, "Verwendung"))));
 
+                // Der Ursprung der Kopie (Katalogauswahl V1, Stufe 3): Der Rueckweg „In die Datenbank
+                // uebernehmen…" kann ihn dann ueberschreiben, und die Kostenvorlage des Satzes geht der
+                // Standardvorlage vor. Eine schon vorhandene Kopie (oben) behaelt ihren Verweis.
+                KatalogverweisSetzen(neueId, idProjekt, stammId);
+
                 return neueId;
             }
             catch (Exception ex)
@@ -407,6 +412,35 @@ namespace WindowsFormsApplication1
             MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idProjekt);
 
             return neueId;
+        }
+
+        // ---- Katalogverweis des Projektpuffers (Tab_Pufferspeicher.ID_Stamm, Welle P4c) ----
+
+        internal const string SQL_KATALOGHERKUNFT =
+            "SELECT s.Bezeichner FROM Tab_Pufferspeicher p JOIN Tab_Pufferspeicher_STAMM s ON s.ID = p.ID_Stamm WHERE p.ID = ?";
+        internal const string SQL_KATALOGVERWEIS_SETZEN =
+            "UPDATE Tab_Pufferspeicher SET ID_Stamm = ? WHERE ID = ? AND ID_Projekt = ?";
+
+        /// <summary>Gibt es den Katalogverweis am Projektpuffer (Schemaschritt der Pufferauslegungs-Ergänzungen)?</summary>
+        public static bool KatalogverweisVorhanden() =>
+            DataRepository.SpalteVorhanden(SchemaKatalog.TAB_PUFFERSPEICHER, PufferAuslegungErgaenzungSchema.SPALTE_PUFFER_STAMM);
+
+        /// <summary>Der Bezeichner des Katalogsatzes, aus dem der Puffer übernommen wurde; <c>null</c> = keiner.</summary>
+        public static string Katalogherkunft(int idPuffer)
+        {
+            if (idPuffer <= 0 || !KatalogverweisVorhanden()) return null;
+            object o = DataRepository.ExecuteScalar(SQL_KATALOGHERKUNFT, new DbParam("@id", idPuffer));
+            string b = o == null || o == DBNull.Value ? null : Convert.ToString(o, System.Globalization.CultureInfo.InvariantCulture);
+            return string.IsNullOrWhiteSpace(b) ? null : b;
+        }
+
+        /// <summary>Setzt den Katalogverweis des Projektpuffers (<c>null</c> = keiner); ohne die Spalte: nichts.</summary>
+        public static bool KatalogverweisSetzen(int idPuffer, int idProjekt, int? idStamm)
+        {
+            if (!KatalogverweisVorhanden()) return true;
+            return DataRepository.ExecuteNonQuery(SQL_KATALOGVERWEIS_SETZEN,
+                new DbParam("@stamm", DbParamTyp.Integer) { Wert = idStamm.HasValue ? idStamm.Value : DBNull.Value },
+                new DbParam("@id", idPuffer), new DbParam("@projekt", idProjekt)) >= 0;
         }
 
         /// <summary>
@@ -651,7 +685,19 @@ namespace WindowsFormsApplication1
             StilleDb.NonQuery("DELETE FROM Z_ProjektPufferSp WHERE ID_Pufferspeicher = ?",
                               StilleDb.Par("@id", DbParamTyp.Integer, idPuffer));
 
-            // Anlagenzeile (ID_Type = 12) des Speichers
+            // Anlagenzeile (ID_Type = 12) des Speichers - ihre Kostenpositionen gehen mit
+            // (Anwenderentscheid 07.10.2026, wie WizardCtrl.Del_Projekt_ID_Waermeerzeuger).
+            if (bezeichner.Length > 0)
+            {
+                DataTable anlagen = DataRepository.GetDataTable(
+                    "SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ? AND Bezeichner = ?",
+                    new DbParam("@proj", idProjekt),
+                    new DbParam("@typ", ProjektPuffer.TYP_PUFFER),
+                    new DbParam("@bez", bezeichner));
+                if (anlagen != null)
+                    foreach (DataRow r in anlagen.Rows)
+                        AnlagenKostenpositionen.Loeschen(null, idProjekt, Convert.ToInt32(r[0], System.Globalization.CultureInfo.InvariantCulture));
+            }
             if (bezeichner.Length > 0)
                 StilleDb.NonQuery(
                     "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ? AND Bezeichner = ?",
@@ -705,11 +751,25 @@ namespace WindowsFormsApplication1
             public readonly bool Brauchwasser;
             public readonly bool Prozess;
 
+            /// <summary>
+            /// KÄLTESPEICHER (KU3-5, E68): Der Speicher gehört allein der Kältekaskade. Er steht
+            /// in keiner <c>Nutzung_*</c>-Spalte — die drei Wärmeflags bleiben 0 und die
+            /// Verwendung „Kaelte" trägt die Aussage. Ein Kältespeicher bedient keinen
+            /// Wärmekanal; gesetzt mit einem Wärmeflag zusammen gilt allein die Kälte.
+            /// </summary>
+            public readonly bool Kaelte;
+
             public KlassenSet(bool heizung, bool brauchwasser, bool prozess)
+                : this(heizung, brauchwasser, prozess, false)
             {
-                Heizung = heizung;
-                Brauchwasser = brauchwasser;
-                Prozess = prozess;
+            }
+
+            public KlassenSet(bool heizung, bool brauchwasser, bool prozess, bool kaelte)
+            {
+                Kaelte = kaelte;
+                Heizung = !kaelte && heizung;
+                Brauchwasser = !kaelte && brauchwasser;
+                Prozess = !kaelte && prozess;
             }
 
             /// <summary>
@@ -720,7 +780,7 @@ namespace WindowsFormsApplication1
             /// </summary>
             public bool Leer
             {
-                get { return !Heizung && !Brauchwasser && !Prozess; }
+                get { return !Heizung && !Brauchwasser && !Prozess && !Kaelte; }
             }
 
             /// <summary>
@@ -739,6 +799,7 @@ namespace WindowsFormsApplication1
             {
                 get
                 {
+                    if (Kaelte) return WaermesenkeClass.VERWENDUNG_KAELTE;
                     if (Heizung && Brauchwasser) return WaermesenkeClass.VERWENDUNG_KOMBI;
                     if (Brauchwasser) return WaermesenkeClass.VERWENDUNG_BRAUCHWASSER;
                     return WaermesenkeClass.VERWENDUNG_HEIZUNG;
@@ -752,7 +813,7 @@ namespace WindowsFormsApplication1
             /// </summary>
             public bool HatAltEntsprechung
             {
-                get { return !Prozess && !Leer; }
+                get { return !Prozess && !Kaelte && !Leer; }
             }
         }
 
@@ -770,6 +831,9 @@ namespace WindowsFormsApplication1
         public static KlassenSet KlassenSetAusVerwendung(string verwendung)
         {
             string wirksam = WaermesenkeClass.NormalisierteVerwendung(verwendung);
+
+            // KU3-5: Der Kältespeicher hat kein Wärmeflag - die Verwendung trägt ihn allein.
+            if (WaermesenkeClass.IstKaelteVerwendung(wirksam)) return new KlassenSet(false, false, false, true);
 
             bool brauchwasser =
                 string.Equals(wirksam, WaermesenkeClass.VERWENDUNG_BRAUCHWASSER,
@@ -895,6 +959,10 @@ namespace WindowsFormsApplication1
                                                      bool? nutzungBrauchwasser, bool? nutzungProzess)
         {
             KlassenSet ausAltwert = KlassenSetAusVerwendung(verwendung);
+
+            // KU3-5: Der Kältespeicher trägt kein Wärmeflag - die Hebung auf Heizung darunter
+            // machte aus ihm still einen Heizungspuffer.
+            if (ausAltwert.Kaelte) return ausAltwert;
 
             bool h = nutzungHeizung ?? ausAltwert.Heizung;
             bool b = nutzungBrauchwasser ?? ausAltwert.Brauchwasser;
@@ -1072,6 +1140,33 @@ namespace WindowsFormsApplication1
             /// <summary>Größte Entladeleistung [kW]; 0 = unbegrenzt.</summary>
             public double EntladeleistungMax;
 
+            // --- Welle M7 (Schemaschritt PufferOptionenSchema; Konzept Simulationsablauf 21) ---
+
+            /// <summary>PS1 (c): <c>tag</c> oder <c>temperatur</c>; <c>null</c> = Tageswert.</summary>
+            public string BereitschaftWeg;
+
+            /// <summary>PS1 (c): Temperatur des Aufstellraums [°C]; <c>null</c> = 20 °C.</summary>
+            public double? AufstellraumC;
+
+            /// <summary>PS1 (a): Zonenanteile von oben („0,10;0,16;0,37;0,37"); <c>null</c> = gleich groß.</summary>
+            public string SchichtAnteile;
+
+            /// <summary>PS5 (a): Frischwassermodul am Speicher.</summary>
+            public bool Frischwassermodul;
+
+            /// <summary>PS5 (a): Grädigkeit des Frischwassermoduls [K]; <c>null</c> = 5 K.</summary>
+            public double? FwmGraedigkeitK;
+
+            /// <summary>true, wenn keine der Optionen der Welle M7 gepflegt ist.</summary>
+            public bool OptionenLeer
+            {
+                get
+                {
+                    return string.IsNullOrEmpty(BereitschaftWeg) && !AufstellraumC.HasValue &&
+                           string.IsNullOrEmpty(SchichtAnteile) && !Frischwassermodul && !FwmGraedigkeitK.HasValue;
+                }
+            }
+
             /// <summary>true, sobald der Speicher mehr als eine Schicht führt.</summary>
             public bool Geschichtet
             {
@@ -1092,7 +1187,7 @@ namespace WindowsFormsApplication1
                            !Hoehe.HasValue && !LambdaEff.HasValue && !TNutzBW.HasValue &&
                            !EntnahmeHeizung.HasValue && !EntnahmeBW.HasValue &&
                            !EntnahmeProzess.HasValue &&
-                           LadeleistungMax <= 0 && EntladeleistungMax <= 0;
+                           LadeleistungMax <= 0 && EntladeleistungMax <= 0 && OptionenLeer;
                 }
             }
 
@@ -1110,6 +1205,11 @@ namespace WindowsFormsApplication1
                 m.Entnahme_Prozess = EntnahmeProzess;
                 m.Ladeleistung_Max = LadeleistungMax;
                 m.Entladeleistung_Max = EntladeleistungMax;
+                m.Bereitschaft_Weg = BereitschaftWeg;
+                m.Aufstellraum_Temperatur_C = AufstellraumC;
+                m.Schicht_Anteile = SchichtAnteile;
+                m.Frischwassermodul = Frischwassermodul;
+                m.FWM_Graedigkeit_K = FwmGraedigkeitK;
             }
         }
 
@@ -1139,6 +1239,13 @@ namespace WindowsFormsApplication1
             d.EntnahmeProzess = KommazahlOderNull(r, SchemaKatalog.SPALTE_PSP_ENTNAHME_PROZESS);
             d.LadeleistungMax = KommazahlOderNull(r, SchemaKatalog.SPALTE_PSP_LADELEISTUNG_MAX) ?? 0;
             d.EntladeleistungMax = KommazahlOderNull(r, SchemaKatalog.SPALTE_PSP_ENTLADELEISTUNG_MAX) ?? 0;
+
+            // Welle M7 - spaltentolerant: ohne den Schritt bleiben die Vorgaben stehen.
+            d.BereitschaftWeg = TextOderNull(r, PufferOptionenSchema.SPALTE_BEREITSCHAFT_WEG);
+            d.AufstellraumC = KommazahlOderNull(r, PufferOptionenSchema.SPALTE_AUFSTELLRAUM);
+            d.SchichtAnteile = TextOderNull(r, PufferOptionenSchema.SPALTE_SCHICHT_ANTEILE);
+            d.Frischwassermodul = (ZahlOderNull(r, PufferOptionenSchema.SPALTE_FRISCHWASSERMODUL) ?? 0) == 1;
+            d.FwmGraedigkeitK = KommazahlOderNull(r, PufferOptionenSchema.SPALTE_FWM_GRAEDIGKEIT);
 
             return d;
         }
@@ -1223,6 +1330,7 @@ namespace WindowsFormsApplication1
 
             if (daten.IstVorbelegung && !SchichtSpaltenVorhanden()) return true;
             if (!StelleSchichtSpaltenSicher()) return false;
+            if (!OptionenSchreiben(idPuffer, daten)) return false;
 
             return StillNonQuery(
                 "UPDATE Tab_Pufferspeicher SET " +
@@ -1245,6 +1353,46 @@ namespace WindowsFormsApplication1
                 Zahlpar("@ep", daten.EntnahmeProzess),
                 StilleDb.Par("@lp", DbParamTyp.Double, daten.LadeleistungMax),
                 StilleDb.Par("@ep2", DbParamTyp.Double, daten.EntladeleistungMax),
+                StilleDb.Par("@id", DbParamTyp.Integer, idPuffer)) > 0;
+        }
+
+        /// <summary>
+        /// Die Optionen der Welle M7 an einer Puffer-Zeile — ein zielgenaues <c>UPDATE</c> der fünf Spalten
+        /// des Schemaschritts <see cref="PufferOptionenSchema"/>. Fehlen die Spalten, ist das ohne gepflegte
+        /// Option kein Fehler (es gibt nichts zu schreiben); mit gepflegter Option scheitert das Speichern
+        /// benannt am fehlenden Schritt, statt die Angabe still zu verlieren. Die Prüfklauseln der Spalten
+        /// halten die Grenzen.
+        /// </summary>
+        public static bool OptionenSchreiben(int idPuffer, Schichtdaten daten)
+        {
+            if (idPuffer <= 0 || daten == null) return false;
+            if (!DataRepository.SpalteVorhanden(PufferOptionenSchema.TAB_PUFFER, PufferOptionenSchema.SPALTE_FWM_GRAEDIGKEIT))
+                return daten.OptionenLeer;
+
+            string weg = PufferOptionen.IstTemperaturweg(daten.BereitschaftWeg) ? DbWerte.PSP_BEREITSCHAFT_TEMPERATUR
+                       : string.IsNullOrEmpty(daten.BereitschaftWeg) ? null : DbWerte.PSP_BEREITSCHAFT_TAG;
+            string anteile = string.IsNullOrWhiteSpace(daten.SchichtAnteile) ? null : daten.SchichtAnteile.Trim();
+
+            DbParam pWeg = new DbParam("@weg", DbParamTyp.VarWChar);
+            pWeg.Wert = (object)weg ?? DBNull.Value;
+            DbParam pAnteile = new DbParam("@anteile", DbParamTyp.VarWChar);
+            pAnteile.Wert = (object)anteile ?? DBNull.Value;
+            DbParam pFwm = new DbParam("@fwm", DbParamTyp.Integer);
+            pFwm.Wert = daten.Frischwassermodul ? (object)1 : DBNull.Value;
+
+            return StillNonQuery(
+                "UPDATE Tab_Pufferspeicher SET " +
+                "[" + PufferOptionenSchema.SPALTE_BEREITSCHAFT_WEG + "] = ?, " +
+                "[" + PufferOptionenSchema.SPALTE_AUFSTELLRAUM + "] = ?, " +
+                "[" + PufferOptionenSchema.SPALTE_SCHICHT_ANTEILE + "] = ?, " +
+                "[" + PufferOptionenSchema.SPALTE_FRISCHWASSERMODUL + "] = ?, " +
+                "[" + PufferOptionenSchema.SPALTE_FWM_GRAEDIGKEIT + "] = ? " +
+                "WHERE ID = ?",
+                pWeg,
+                Zahlpar("@raum", daten.AufstellraumC),
+                pAnteile,
+                pFwm,
+                Zahlpar("@grad", daten.FwmGraedigkeitK),
                 StilleDb.Par("@id", DbParamTyp.Integer, idPuffer)) > 0;
         }
 
@@ -1414,6 +1562,15 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Ein Kommazahl-Feld; fehlende Spalte, NULL und Unlesbares ergeben <c>null</c>.</summary>
+        private static string TextOderNull(DataRow r, string spalte)
+        {
+            if (r == null || !r.Table.Columns.Contains(spalte)) return null;
+            object v = r[spalte];
+            if (v == null || v == DBNull.Value) return null;
+            string s = Convert.ToString(v, System.Globalization.CultureInfo.InvariantCulture);
+            return string.IsNullOrWhiteSpace(s) ? null : s;
+        }
+
         private static double? KommazahlOderNull(DataRow r, string spalte)
         {
             if (r == null || !r.Table.Columns.Contains(spalte)) return null;

@@ -114,7 +114,7 @@ namespace EPOS.Kern.Tests
             (TwwSchema.TAB_TWW_TAGESGANG_STAMM, "Tagtyp", "5"),
             (TwwSchema.TAB_TWW_TAGESGANG_STAMM, "Tagtyp", "0"),
             (TwwSchema.TAB_TWW_TAGESGANG_STAMM, "Herkunftsart", "'GESCHAETZT'"),
-            (TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, "Bezugsart", "8"),
+            (TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, "Bezugsart", "9"),
             (TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, "Bezugsart", "0"),
             (TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, "Bedarf_Herkunftsart", "'GESCHAETZT'"),
             (TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, "Bilanzgrenze", "4"),
@@ -380,7 +380,8 @@ namespace EPOS.Kern.Tests
 
             // Die Wertemengen greifen — dieselben Zahlen wie im Schreibweg.
             Assert.Equal(new[] { 1, 2 }, TwwSchema.Werte(TwwSchema.ERZEUGERART_WERTE));
-            Assert.Equal(new[] { 1, 2, 3, 4 }, TwwSchema.Werte(TwwSchema.FUELLSTAND_BEZUG_WERTE));
+            // Seit dem Schritt der Verfahrensvolumina (N36 (d)) 1 … 8: vier Größen, vier Verfahren.
+            Assert.Equal(new[] { 1, 2, 3, 4, 5, 6, 7, 8 }, TwwSchema.Werte(TwwSchema.FUELLSTAND_BEZUG_WERTE));
             Assert.Equal(Enum.GetValues(typeof(ZapfBezugsart)).Cast<int>().ToArray(), TwwSchema.Werte(TwwSchema.BEZUGSART_WERTE));
             Assert.Equal(Enum.GetValues(typeof(ZapfFuellstandbezug)).Cast<int>().ToArray(), TwwSchema.Werte(TwwSchema.FUELLSTAND_BEZUG_WERTE));
             Assert.Equal(Enum.GetValues(typeof(ZapfErzeugerart)).Cast<int>().ToArray(), TwwSchema.Werte(TwwSchema.ERZEUGERART_WERTE));
@@ -390,8 +391,9 @@ namespace EPOS.Kern.Tests
             Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Personen_Auto\" = 2"));
             Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Personen_Auto\" = NULL"));
             Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Personen_Manuell\" = -1"));
-            Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Fuellstand_Bezug\" = 5"));
-            Assert.True(Wirft(c, "UPDATE \"Tab_TwwBedarfstag_STAMM\" SET \"Bezugsart\" = 8"));
+            Assert.False(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Fuellstand_Bezug\" = 8"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Fuellstand_Bezug\" = 9"));
+            Assert.True(Wirft(c, "UPDATE \"Tab_TwwBedarfstag_STAMM\" SET \"Bezugsart\" = 9"));
             Assert.True(Wirft(c, "UPDATE \"Tab_TwwProjekt\" SET \"Personen_Manuell\" = 'viele'"));   // STRICT
             Ausfuehren(c, "UPDATE \"Tab_TwwProjekt\" SET \"Erzeugerart\" = 2, \"Uebertrager_Werkstoff\" = 1, " +
                           "\"Personen_Auto\" = 0, \"Personen_Manuell\" = 12.5, \"Fuellstand_Bezug\" = 4");

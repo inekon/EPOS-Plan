@@ -167,6 +167,36 @@ namespace EPOS.Kern.Tests
             finally { Aufraeumen(ordner); }
         }
 
+        /// <summary>
+        /// <b>Die Strukturmesslatte der VALERI-Darstellung</b> (Etappe VB‑E2): der Wortbericht der Probe 1030 mit voller
+        /// Konfiguration in VALERI-Darstellung (Tafel „Kennzahlen je Szenario“ je Stand, alles Übrige im Leitszenario
+        /// Erwartet) gegen <c>Messlatten/Bericht_Word_1030_Valeri.txt</c>; neu einfrieren wie die übrigen.
+        /// </summary>
+        [Fact]
+        public void Messlatte_Word_Valeri()
+        {
+            string vorlage = Berichtsdatenproben.Berichtsvorlage();
+            if (vorlage == null) return;
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string ordner = TempOrdner();
+            try
+            {
+                BerichtsDaten daten = Probe(PROBE_1030);
+                BerichtsKonfiguration konfig = Berichtsdatenproben.VolleKonfiguration();
+                konfig.Szenariodarstellung = BerichtsKonfiguration.DARSTELLUNG_VALERI;
+
+                string docx = Path.Combine(ordner, "bericht.docx");
+                new WordBerichtGenerator().Erzeuge(daten, konfig, docx, vorlage);
+
+                var befunde = new List<string>();
+                Vergleiche("Bericht_Word_" + PROBE_1030 + "_Valeri.txt", Berichtsstruktur.Word(docx), befunde);
+                Assert.True(befunde.Count == 0, string.Join(Environment.NewLine + Environment.NewLine, befunde));
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
         /// <summary>Die erste Zeile der Messlatten des Vorlagenwegs.</summary>
         private const string KOPFZEILE_VORLAGE =
             "# Strukturmesslatte BV-E2 (BerichtVorlagenMesslatteTests, Vorlagenweg mit der Standardvorlage) — ";

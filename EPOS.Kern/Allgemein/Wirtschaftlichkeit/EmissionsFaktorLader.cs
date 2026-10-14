@@ -165,7 +165,7 @@ namespace WindowsFormsApplication1
             if (arten.Count == 0) { arten = ErsatzKernarten(); satz.ArtenkatalogFehlt = true; }
 
             Dictionary<int, EmissionswertModel> aktive = EmissionskatalogCtrl.AktiveWerte(carrierId);
-            Dictionary<string, double?> stamm = AltwerteStamm(carrierId);
+            Dictionary<string, double?> stamm = AltwerteStamm(idProjekt, carrierId);
             Dictionary<string, double?> carrier = AltwerteCarrier(carrierId);
             Dictionary<string, double?> projekt = idProjekt > 0
                 ? AltwerteProjekt(idProjekt, carrierId)
@@ -282,16 +282,19 @@ namespace WindowsFormsApplication1
                         new DbParam("@p", idProjekt), new DbParam("@c", carrierId));
         }
 
-        private static Dictionary<string, double?> AltwerteStamm(int carrierId)
+        private static Dictionary<string, double?> AltwerteStamm(int idProjekt, int carrierId)
         {
             // staub kommt seit W14a-E-8-B1 mit: Nur diese eine der vier Quellen fuehrt
             // eine Staubspalte - energy_carrier und energy_project_settings haben keine
             // (Lies liest deshalb nur, was die jeweilige Abfrage liefert).
+            // Im Projekt liest die Ebene STAMM die Projektkopie des Brennstoffs
+            // (ProjektBrennstoffe.Sicht); ohne Projekt den Katalog.
+            string quelle = ProjektBrennstoffe.Sicht(idProjekt, out DbParam[] sicht);
             return Lies("SELECT bs.CO2 AS co2, bs.SO2 AS so2, bs.NOx AS nox, bs.Staub AS staub " +
                         "FROM energy_carrier AS ec " +
-                        "INNER JOIN Tab_Brennstoff_Stamm AS bs ON ec.id_brennstoff = bs.ID " +
+                        "INNER JOIN " + quelle + " AS bs ON ec.id_brennstoff = bs.ID " +
                         "WHERE ec.id = ?",
-                        new DbParam("@c", carrierId));
+                        ProjektBrennstoffe.Mit(sicht, new DbParam("@c", carrierId)));
         }
 
         private static Dictionary<string, double?> AltwerteCarrier(int carrierId)

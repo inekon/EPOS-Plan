@@ -44,6 +44,31 @@ public sealed class QuelleErdreichKiSicht
     public Func<double?>? SpreizungLesen { get; init; }
     public Action<double?>? SpreizungSetzen { get; init; }
 
+    public Func<double?>? SondenabstandLesen { get; init; }
+    public Action<double?>? SondenabstandSetzen { get; init; }
+
+    public Func<double?>? BohrlochdurchmesserLesen { get; init; }
+    public Action<double?>? BohrlochdurchmesserSetzen { get; init; }
+
+    public Func<double?>? BohrlochwiderstandLesen { get; init; }
+    public Action<double?>? BohrlochwiderstandSetzen { get; init; }
+
+    public Func<double?>? KopfueberdeckungLesen { get; init; }
+    public Action<double?>? KopfueberdeckungSetzen { get; init; }
+
+    public Func<int?>? BetrachtungsjahrLesen { get; init; }
+    public Action<int?>? BetrachtungsjahrSetzen { get; init; }
+
+    public Func<string>? SondenanordnungLesen { get; init; }
+    public Action<string>? SondenanordnungSetzen { get; init; }
+
+    /// <summary>Liefert die Anordnungen des Sondenfeldes, die die Maske zur Wahl stellt.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? SondenanordnungEintraege { get; init; }
+
+    /// <summary>Die Anordnungen des Sondenfeldes (Quadratisch, Reihe).</summary>
+    public IReadOnlyList<KiWahleintrag> SondenanordnungWahl
+        => SondenanordnungEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
     public Func<string>? BodentypLesen { get; init; }
     public Action<string>? BodentypSetzen { get; init; }
 
@@ -115,6 +140,48 @@ public sealed class QuelleErdreichKiSicht
     {
         get => SpreizungLesen?.Invoke();
         set => SpreizungSetzen?.Invoke(value);
+    }
+
+    /// <summary>Der Sondenabstand [m]; leer = Vorgabe.</summary>
+    public double? Sondenabstand
+    {
+        get => SondenabstandLesen?.Invoke();
+        set => SondenabstandSetzen?.Invoke(value);
+    }
+
+    /// <summary>Der Bohrlochdurchmesser [mm]; leer = Vorgabe.</summary>
+    public double? Bohrlochdurchmesser
+    {
+        get => BohrlochdurchmesserLesen?.Invoke();
+        set => BohrlochdurchmesserSetzen?.Invoke(value);
+    }
+
+    /// <summary>Der Bohrlochwiderstand [m·K/W]; leer = Vorgabe.</summary>
+    public double? Bohrlochwiderstand
+    {
+        get => BohrlochwiderstandLesen?.Invoke();
+        set => BohrlochwiderstandSetzen?.Invoke(value);
+    }
+
+    /// <summary>Die Kopfüberdeckung [m]; leer = Vorgabe.</summary>
+    public double? Kopfueberdeckung
+    {
+        get => KopfueberdeckungLesen?.Invoke();
+        set => KopfueberdeckungSetzen?.Invoke(value);
+    }
+
+    /// <summary>Das Betrachtungsjahr; leer = Vorgabe.</summary>
+    public int? Betrachtungsjahr
+    {
+        get => BetrachtungsjahrLesen?.Invoke();
+        set => BetrachtungsjahrSetzen?.Invoke(value);
+    }
+
+    /// <summary>Der Schlüssel der Anordnung (Quadratisch, Reihe); leer = Vorgabe.</summary>
+    public string Sondenanordnung
+    {
+        get => SondenanordnungLesen?.Invoke() ?? "";
+        set => SondenanordnungSetzen?.Invoke(value ?? "");
     }
 
     /// <summary>

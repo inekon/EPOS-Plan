@@ -621,4 +621,24 @@ public class KostenprofilDialogTests : EposBunitContext
         Assert.Equal(25.0, monate![0]);
         Assert.Null(KiMaskenbruecke.Haken(KiMaskennamen.KOSTENPROFIL).Speichern);
     }
+
+    /// <summary>
+    /// CSV-3: Mit dem Delegat der Hülle trägt die Vorschau „CSV…“; der Klick gibt das gezeigte
+    /// Modell an die Naht, das Raster folgt der Länge (hier eine Woche, 168 Werte).
+    /// </summary>
+    [Fact]
+    public void Die_Vorschau_schreibt_CSV_ueber_die_Naht()
+    {
+        var exporte = new List<(Zeichenmodell M, Zeitraster R)>();
+        var cut = Zeige(mehr: p => p.Add(x => x.CsvSpeichern,
+            (m, t, r) => { exporte.Add((m, r)); return Task.CompletedTask; }));
+        Reiter(cut, 2);
+        cut.WaitForAssertion(() => cut.Find("div.epos-diagramm-leiste button.epos-diagramm-csv"));
+        cut.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
+
+        var (m, r) = Assert.Single(exporte);
+        Assert.Same(MODELL, m);
+        Assert.Equal(168, ZeitreihenCsv.AusModell(m)[0].Werte.Length);
+        Assert.Equal(Zeitraster.Wochenstunde, r);
+    }
 }

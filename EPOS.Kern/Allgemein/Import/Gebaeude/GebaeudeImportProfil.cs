@@ -41,11 +41,12 @@ namespace WindowsFormsApplication1
         /// Formate; das Profil folgt danach aus der Endung (<see cref="FuerDatei"/>).
         /// </summary>
         public const string DATEIFILTER_ALLE =
-            "gbXML, IFC (*.xml;*.gbxml;*.ifc;*.ifcxml;*.ifczip)|*.xml;*.gbxml;*.ifc;*.ifcxml;*.ifczip";
+            "gbXML, IFC, Projektdatei (*.xml;*.gbxml;*.ifc;*.ifcxml;*.ifczip;*.sqproj)|*.xml;*.gbxml;*.ifc;*.ifcxml;*.ifczip;*.sqproj";
 
         /// <summary>
         /// <b>Das Profil einer Datei nach ihrer Endung</b> — <c>.ifc</c>, <c>.ifcxml</c> und
-        /// <c>.ifczip</c> sind IFC, <c>.xml</c> und <c>.gbxml</c> gbXML, Groß- und Kleinschreibung
+        /// <c>.ifczip</c> sind IFC, <c>.xml</c> und <c>.gbxml</c> gbXML, <c>.sqproj</c> die Projektdatei
+        /// (Import allein aus der Projektdatei, <see cref="SqprojImportProfil"/>), Groß- und Kleinschreibung
         /// gleich; ein Pfadanteil zählt nicht. Jede andere Endung ergibt <c>null</c> — der Aufrufer
         /// lehnt dann benannt ab („Dateiart nicht unterstützt"). Das neue Profil trägt die
         /// Windows-Grenze; die Hülle belegt sie danach je Plattform
@@ -62,6 +63,8 @@ namespace WindowsFormsApplication1
                 case ".xml":
                 case ".gbxml":
                     return new GbxmlImportProfil();
+                case ".sqproj":
+                    return new SqprojImportProfil();
                 default:
                     return null;
             }
@@ -144,6 +147,30 @@ namespace WindowsFormsApplication1
         /// liefert die Flächen aus der Geometrie und kennt diese Rückfälle nicht (<c>false</c>).
         /// </summary>
         public virtual bool FlaechenRueckfaelle => false;
+
+        /// <summary>
+        /// Ressourcenschlüssel des Hinweises zur Exporteinstellung an der Dateiwahl (IFC: empfohlenes Schema, Basismengen,
+        /// Raumgrenzen 2. Ebene); leer = keiner.
+        /// </summary>
+        public virtual string ExporthinweisSchluessel => "";
+
+        /// <summary>
+        /// G5-N (N1/N2): der vom Anwender vorgegebene Nordwinkel [°] für den nächsten Lauf; <c>null</c> = der Dateiwert bzw. die
+        /// Annahme Planoberseite = Nord. Der Leser dreht die Azimute damit genau einmal (<see cref="GebaeudeAbbild.NordwinkelVorgabeGrad"/>).
+        /// </summary>
+        public double? NordwinkelVorgabeGrad { get; set; }
+
+        /// <summary>
+        /// G5-3: den Körperweg der Bauteilflächen ausschalten (IFC ohne Raumgrenzen und Raumbezüge) — dann gilt der Rückfall
+        /// ohne Zuordnung zu den Räumen. Nur für den Vergleich beider Wege (Abstimmung G5, A6); die Oberfläche setzt ihn nie.
+        /// </summary>
+        public bool KoerperflaechenAus { get; set; }
+
+        /// <summary>
+        /// Prüfnaht der Sperren gebildeter Körper (Datenaustauschkonzept 17.5, Probe 43): stempelt die gelesenen IFC-Körper mit
+        /// dieser Quelle. Die Oberfläche setzt sie nie; Vorgabe <see cref="Koerperquelle.Datei"/>.
+        /// </summary>
+        internal Koerperquelle KoerperquellePruefung { get; set; } = Koerperquelle.Datei;
 
         /// <summary>Die Leserfabrik: ein neuer Leser je Lauf.</summary>
         public abstract IGebaeudeLeser LeserErzeugen();

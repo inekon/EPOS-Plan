@@ -133,6 +133,15 @@ public sealed class KostenPositionZeile
     /// </summary>
     public string SatzHerleitung { get; set; } = "";
 
+    /// <summary>
+    /// AUFTRAG P671 (E30-Rest 1): Das Satzfeld zeigt einen WIRKSAMEN Satz, den die Zeile nicht
+    /// selbst trägt — den Hilfsenergieanteil ihrer Anlage (Konzept Wirtschaftlichkeit § 3.4). Es
+    /// ist dann schreibgeschützt, und <see cref="SatzHerleitung"/> nennt die Herkunft („2 % · Satz
+    /// aus dem Hilfsenergieanteil der Anlage"). Die Hülle schreibt diesen Satz nie in die Position
+    /// zurück: Ein eigener Satz hätte Vorrang vor dem Anteil. Gepflegt wird er an der Anlage.
+    /// </summary>
+    public bool SatzGesperrt { get; set; }
+
     /// <summary>Darf die Zeile bearbeitet werden? (Auslieferungsvorlagen nicht.)</summary>
     public bool Schreibbar { get; set; } = true;
 }
@@ -169,6 +178,14 @@ public sealed record ErsatzRestwertZeile(string Position, bool IstSumme, string 
 /// Vorgabe davon abweicht — sie bleiben, bis der Anwender das Überschreiben
 /// bestätigt (Anwenderentscheid ND‑Q4 (b): nichts geschieht still).</param>
 public sealed record NutzungsdauerVorbelegung(int Gefuellt, int Belegt);
+
+/// <summary>
+/// Was ein Abgleich mit dem zentralen Kostenkatalog ergibt (KB-3) — die Hülle rechnet ihn, die
+/// Komponente zeigt ihn. <paramref name="Absage"/> leer heißt: Der Abgleich war möglich;
+/// <paramref name="Vorschau"/> trägt je Unterschied eine fertige Zeile.
+/// </summary>
+public sealed record KatalogAbgleichStand(string Absage, int Fehlt, int WeichtAb, int Gleich,
+                                           string Vorschau, int Angelegt, int Gesetzt, bool Fehler);
 
 /// <summary>
 /// U31 — EINE Zeile der Gruppe „Endenergie je Komponente" unter dem Raster der
@@ -212,6 +229,13 @@ public sealed class KostenKomponenteStand
 
     /// <summary>Zeigt die Variantenzeile (nur im Stammkontext, Ä-KD6a).</summary>
     public bool VariantePflegbar { get; set; }
+
+    /// <summary>
+    /// KB-3: Lässt sich diese Ansicht mit dem zentralen Kostenkatalog abgleichen? Wahr im
+    /// Projektmodus an einer gewählten Anlage — nur dort gibt es einen Katalogsatz, aus dem das
+    /// Gerät stammt. Ohne das Kennzeichen bleibt der Knopf weg (kein Knopf ohne Wirkung).
+    /// </summary>
+    public bool KatalogAbgleichbar { get; set; }
 
     /// <summary>Die gewählte Vorlage ist eine Auslieferungsvorlage (<c>lblReadOnly</c>).</summary>
     public bool NurLesen { get; set; }

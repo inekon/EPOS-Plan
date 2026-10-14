@@ -389,7 +389,10 @@
        PvModellFelder; sie steht jetzt dort, wo alles zum Wechselrichter steht. *@
     <Ueberlagerung Offen="@_offen" Titel="@Titel" Geschlossen="() => _offen = false">
         <KindInhalt>
-            <p class="epos-kontextzeile">@AnlagenTexte.KopfErweitert</p>
+            @* B2 (Verbesserungen 29.09.2026): Im Modell "Einfach" wirken die vier Werte
+               nicht (SimulationPV rechnet dort mit dem festen Wirkungsgrad) - die Felder
+               sind gesperrt, und die Kopfzeile sagt warum. *@
+            <p class="epos-kontextzeile">@(Zeile.ModellErweitert ? AnlagenTexte.KopfErweitert : AnlagenTexte.KopfEinfach)</p>
             <Formularraster Einspaltig="true">
                 <KindInhalt>
                     <div title="@AnlagenTexte.TipNennleistung">
@@ -397,6 +400,7 @@
                                     Wert="@_anlagenwerte.Nennleistung"
                                     WertChanged="@(w => _anlagenwerte.Nennleistung = w)"
                                     Min="0" Max="100000" Nachkommastellen="2"
+                                    Aktiv="@Zeile.ModellErweitert"
                                     Feldname="WrNennleistung" />
                     </div>
                     <div title="@AnlagenTexte.TipEta">
@@ -404,16 +408,19 @@
                                     Wert="@_anlagenwerte.Eta10"
                                     WertChanged="@(w => _anlagenwerte.Eta10 = w)"
                                     Min="0" Max="1" Nachkommastellen="3"
+                                    Aktiv="@Zeile.ModellErweitert"
                                     Feldname="WrEta10" />
                         <Zahlenfeld Bezeichnung="@AnlagenTexte.LabelEta50"
                                     Wert="@_anlagenwerte.Eta50"
                                     WertChanged="@(w => _anlagenwerte.Eta50 = w)"
                                     Min="0" Max="1" Nachkommastellen="3"
+                                    Aktiv="@Zeile.ModellErweitert"
                                     Feldname="WrEta50" />
                         <Zahlenfeld Bezeichnung="@AnlagenTexte.LabelEta100"
                                     Wert="@_anlagenwerte.Eta100"
                                     WertChanged="@(w => _anlagenwerte.Eta100 = w)"
                                     Min="0" Max="1" Nachkommastellen="3"
+                                    Aktiv="@Zeile.ModellErweitert"
                                     Feldname="WrEta100" />
                     </div>
                 </KindInhalt>
@@ -1608,10 +1615,27 @@
             ? "(" + anlagenwert.Value.ToString(CultureInfo.CurrentCulture) + ")"
             : "";
 
-    /// <summary>Die Zeile des Weges „vereinfacht" — mit dem Wirkungsgrad, der wirklich gilt.</summary>
-    private string VereinfachtText
-        => string.Format(CultureInfo.CurrentCulture, Texte.HinweisVereinfacht,
-                         (Zeile.WrWirkungsgrad ?? 0.95).ToString("N3", CultureInfo.CurrentCulture));
+    /// <summary>
+    /// Die Zeile des Weges „vereinfacht" — je RECHENMODELL, was wirklich gilt
+    /// (Verbesserungen 29.09.2026, B2): Im Modell „Einfach" der feste Wirkungsgrad ohne
+    /// Clipping, im Modell „Erweitert" die Kennlinie der Anlagenwerte und — sobald eine
+    /// AC-Nennleistung eingetragen ist — die Abregelung auf sie
+    /// (<c>SimulationPV</c>, Zweig „Modell erweitert").
+    /// </summary>
+    public string VereinfachtText
+    {
+        get
+        {
+            if (!Zeile.ModellErweitert)
+                return string.Format(CultureInfo.CurrentCulture, Texte.HinweisVereinfacht,
+                                     (Zeile.WrWirkungsgrad ?? 0.95).ToString("N3", CultureInfo.CurrentCulture));
+
+            return Zeile.WrNennleistungKw is double ac && ac > 0.0
+                ? string.Format(CultureInfo.CurrentCulture, Texte.HinweisErweitertClipping,
+                                ac.ToString("N2", CultureInfo.CurrentCulture))
+                : Texte.HinweisErweitertOhneAc;
+        }
+    }
 
     // =================================================================================
     // Die Ueberlagerung mit den fuenf Anlagenwerten

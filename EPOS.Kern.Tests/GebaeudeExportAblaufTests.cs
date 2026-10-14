@@ -137,7 +137,8 @@ namespace EPOS.Kern.Tests
 
             // Ohne Namensabgleich: Kandidat (i) ist ein masseloser Aufbau — die Zeile trägt nur U.
             GebaeudeBauteilvorschlag ohne = GebaeudeBauteilvorschlag.Bilden(abbildI, 0, 'E', null, new GbxmlImportProfil());
-            Assert.False(ohne.Zeilen.Single(x => x.Kennung == "epos-bauteil-1001").Bauteil.ID_Aufbau.HasValue);
+            GebaeudeBauteilzeile zOhne = ohne.Zeilen.Single(x => x.Kennung == "epos-bauteil-1001");
+            Assert.True(!zOhne.Bauteil.ID_Aufbau.HasValue || zOhne.Typaufbau != null);   // BA-2: höchstens ein Ersatzaufbau
             _ausgabe.WriteLine("Luftschicht-Rückweg: (i) mit Namensabgleich vollständig als Luftschicht (ρ leer), U = "
                                + uI.ToString("R", CultureInfo.InvariantCulture) + "; (ii) vollständig als Schicht mit ρ = 5, U gleich; "
                                + "(i) ohne Namensabgleich masselos. Festgeschrieben: (i).");
@@ -325,7 +326,7 @@ namespace EPOS.Kern.Tests
             double r = 1.0 / u - rSi - rSe;
             Assert.Equal(u, 1.0 / (rSi + w.DickeM / w.LambdaWmK + rSe), 12);
             Assert.Equal(kappa, w.RhoKgM3 * w.CpJkgK * w.DickeM, 6);
-            Assert.InRange(w.DickeM, 0.001, 1.0);
+            Assert.InRange(w.DickeM, GebaeudeFestwerte.SCHICHT_DICKE_MIN_M, GebaeudeFestwerte.SCHICHT_DICKE_MAX_M);
             Assert.InRange(w.LambdaWmK, GebaeudeFestwerte.LAMBDA_MIN_WMK, GebaeudeFestwerte.LAMBDA_MAX_WMK);
             Assert.InRange(w.RhoKgM3, GebaeudeFestwerte.ROHDICHTE_MIN_KGM3, GebaeudeFestwerte.ROHDICHTE_MAX_KGM3);
             double vorzug = kappa / (GebaeudeExportAblauf.RHO_VORZUG_KGM3 * GebaeudeExportAblauf.CP_ERSATZ_JKGK);
@@ -566,13 +567,13 @@ namespace EPOS.Kern.Tests
             Pruefen(typeof(BauteilModel), GebaeudeExportVerluste.Bauteil);
             Pruefen(typeof(ProjektGebaeudeModel), GebaeudeExportVerluste.Gebaeude);
             // Mindestens benannt (Umsetzungsauftrag W2).
-            foreach (string n in new[] { "Luftwechsel_Nutzer", "Interne_Waermegewinne", "Raumsolltemperatur_Nachtabsenkung",
-                                         "Raumsolltemperatur_Wochenende", "Raumsolltemperatur_Ferien", "Heizleistung_Max", "Kuehlleistung_Max",
-                                         "Heizung_Strahlungsanteil", "Maximaleraumtemperatur", "Uebergabe_Art", "Kuehl_Uebergabe_Art", "Bewohner" })
+            // DA-4: Nutzerluftwechsel, innere Gewinne, Belegung, Höchstleistungen und Übergabe reisen inzwischen (RestdatenRundlaufTests).
+            foreach (string n in new[] { "Raumsolltemperatur_Nachtabsenkung", "Raumsolltemperatur_Wochenende", "Raumsolltemperatur_Ferien",
+                                         "Heizung_Strahlungsanteil", "Maximaleraumtemperatur" })
                 Assert.Equal(Exporteinstufung.BenannterVerlust, GebaeudeExportVerluste.Zone[n]);
             foreach (string n in new[] { "Psi_L", "Rahmenanteil", "Verschattungsfaktor" })
                 Assert.Equal(Exporteinstufung.BenannterVerlust, GebaeudeExportVerluste.Bauteil[n]);
-            foreach (string n in new[] { "Bauweise", "Masseanteil_Aussen", "Baualtersklasse", "Baujahr", "Kellertemperatur" })
+            foreach (string n in new[] { "Bauweise", "Masseanteil_Aussen", "Baualtersklasse", "Baujahr" })
                 Assert.Equal(Exporteinstufung.BenannterVerlust, GebaeudeExportVerluste.Gebaeude[n]);
         }
 
@@ -594,7 +595,8 @@ namespace EPOS.Kern.Tests
             z.Bauteile[0].Psi_L = 2.5;
             GebaeudeExportPlan plan = ExportSatzProbe.Plan(ExportSatzProbe.Satz(z));
             PruefMeldung m = Assert.Single(plan.Meldungen, x => x.Schluessel == GebaeudeExportAblauf.VERLUSTE);
-            Assert.Contains("Luftwechsel_Nutzer", m.Werte[0], StringComparison.Ordinal);
+            // DA-4: der Nutzerluftwechsel der Zone reist (Lüftungsplan und Zone/AirChangesPerHour) und ist kein Verlust mehr.
+            Assert.DoesNotContain("Luftwechsel_Nutzer", m.Werte[0], StringComparison.Ordinal);
             Assert.Contains("Psi_L", m.Werte[0], StringComparison.Ordinal);
             Assert.Contains("Raumsolltemperatur_Nachtabsenkung", m.Werte[0], StringComparison.Ordinal);
         }

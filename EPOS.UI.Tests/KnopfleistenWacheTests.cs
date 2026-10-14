@@ -401,13 +401,20 @@ public sealed class KnopfleistenWacheTests
     /// <summary>
     /// Blendet aus, was NICHT zur Komponente selbst gehört: den Inhalt jeder
     /// <c>&lt;Ueberlagerung&gt;</c> (Unterdialoge, im Quelltext fast immer NACH dem
-    /// Fuß) und jedes <c>&lt;Reiter&gt;</c> (Blattleisten). Die Zeichen werden durch
+    /// Fuß), jedes <c>&lt;Reiter&gt;</c> (Blattleisten) und den <c>@code</c>-Block
+    /// (Render-Fragmente wie die Projektfelder eines Wirts sind keine Fußleiste). Die Zeichen werden durch
     /// Leerzeichen ersetzt, Zeilenumbrüche bleiben stehen — so stimmen Indizes und
     /// Zeilennummern weiter mit der Quelldatei überein.
     /// </summary>
     private static string OhneUnterbereiche(string s)
     {
         char[] a = s.ToCharArray();
+
+        // Der @code-Block: alles ab der Zeile "@code {" bis zum Dateiende.
+        Match code = Regex.Match(s, @"^@code\s*\{", RegexOptions.Multiline);
+        if (code.Success)
+            for (int i = code.Index; i < a.Length; i++)
+                if (a[i] != '\n') a[i] = ' ';
 
         foreach (string tag in new[] { "Ueberlagerung", "Reiter" })
         {

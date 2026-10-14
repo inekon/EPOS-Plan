@@ -21,7 +21,7 @@ namespace EPOS.Kern.Tests
     /// <para><b>Und die Belegpflicht.</b> Eine Einstufung ohne Fundstelle ist eine
     /// Behauptung. <see cref="Jede_gerechnete_Spalte_nennt_eine_Fundstelle"/> faellt rot
     /// aus, sobald eine als <c>Simulation</c> oder <c>Wirtschaftlichkeit</c> gefuehrte
-    /// Spalte keine Datei und Zeile nennt.</para>
+    /// Spalte keine Datei samt Symbol nennt.</para>
     ///
     /// <para><b>Nur lesend, eine Arbeitskopie je Klasse</b> (Regel seit iU9-W11a).
     /// Fehlt die Datei, schweigen die Faelle.</para>
@@ -103,6 +103,88 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Ein Beleg im Variantenvergleich nennt das Merkmal, nicht die Zeile</b> (KP3-A1): Zeilenverweise
+        /// „AbweichungsErmittler.cs:NN“ veralteten mit jeder neuen Merkmalszeile. Die Fundstelle nennt das Merkmal
+        /// als „AbweichungsErmittler.Felder (Tabelle.Spalte)“, und genau dieses Merkmal steht in
+        /// <see cref="AbweichungsErmittler.Felder"/>.
+        /// </summary>
+        [Fact]
+        public void Belege_im_Variantenvergleich_nennen_ein_vorhandenes_Merkmal()
+        {
+            var merkmale = new HashSet<string>(AbweichungsErmittler.Felder.Select(f => f.Tabelle + "." + f.Spalte));
+            var muster = new System.Text.RegularExpressions.Regex(@"AbweichungsErmittler\.Felder \(([^)]+)\)");
+            int belege = 0;
+            foreach (Anlagenart art in ParameterVerwendung.AlleArten)
+                foreach (ParameterEintrag e in ParameterVerwendung.Katalog(art))
+                {
+                    string fundstelle = e.Fundstelle ?? "";
+                    Assert.DoesNotContain("AbweichungsErmittler.cs:", fundstelle);
+                    foreach (System.Text.RegularExpressions.Match m in muster.Matches(fundstelle))
+                    {
+                        belege++;
+                        Assert.True(merkmale.Contains(m.Groups[1].Value),
+                                    art + "." + e.Spalte + " nennt das Merkmal " + m.Groups[1].Value + ", das der Ermittler nicht führt");
+                    }
+                }
+            Assert.NotEqual(0, belege);
+        }
+
+        /// <summary>
+        /// <b>Eine Fundstelle nennt das Symbol, nicht die Zeile</b> (KP3-A1c): Zeilenverweise „Datei.cs:NN“
+        /// veralteten mit jeder Änderung der Datei. Die Fundstelle nennt „Datei.Methode“ (oder
+        /// „Klasse.Eigenschaft“); keine Fundstelle enthält „.cs:“ mit Zeilennummer, und jeder Verweis
+        /// „Name.Symbol“, dessen <c>Name.cs</c> unter <c>EPOS.Kern</c> oder <c>SpeicherEngine</c> liegt, nennt
+        /// ein Symbol, das als Bezeichner in dieser Datei vorkommt.
+        /// </summary>
+        [Fact]
+        public void Fundstellen_nennen_ein_vorhandenes_Symbol_statt_einer_Zeile()
+        {
+            string wurzel = RepoWurzel();
+            var quellen = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (string ordner in new[] { "EPOS.Kern", "SpeicherEngine" })
+                foreach (string datei in System.IO.Directory.EnumerateFiles(
+                             System.IO.Path.Combine(wurzel, ordner), "*.cs", System.IO.SearchOption.AllDirectories))
+                {
+                    string rel = datei.Substring(wurzel.Length).Replace('\\', '/');
+                    if (rel.Contains("/obj/") || rel.Contains("/bin/")) continue;
+                    string name = System.IO.Path.GetFileNameWithoutExtension(datei);
+                    if (!quellen.ContainsKey(name)) quellen[name] = System.IO.File.ReadAllText(datei);
+                }
+
+            var zeilenverweis = new System.Text.RegularExpressions.Regex(@"\.cs:\d+");
+            var verweis = new System.Text.RegularExpressions.Regex(@"\b([A-Z][A-Za-z0-9]*)\.([A-Za-z_][A-Za-z0-9_]*)");
+            int belege = 0;
+            foreach (Anlagenart art in ParameterVerwendung.AlleArten)
+                foreach (ParameterEintrag e in ParameterVerwendung.Katalog(art))
+                {
+                    string fundstelle = e.Fundstelle ?? "";
+                    Assert.False(zeilenverweis.IsMatch(fundstelle),
+                                 art + "." + e.Spalte + " nennt eine Zeilennummer: " + fundstelle);
+                    foreach (System.Text.RegularExpressions.Match m in verweis.Matches(fundstelle))
+                    {
+                        if (m.Groups[2].Value is "cs" or "razor") continue;   // Dateiname ohne Symbol
+                        if (!quellen.TryGetValue(m.Groups[1].Value, out string text)) continue;
+                        belege++;
+                        Assert.True(System.Text.RegularExpressions.Regex.IsMatch(
+                                        text, @"\b" + System.Text.RegularExpressions.Regex.Escape(m.Groups[2].Value) + @"\b"),
+                                    art + "." + e.Spalte + " nennt " + m.Value + ", das in " + m.Groups[1].Value + ".cs nicht vorkommt");
+                    }
+                }
+            Assert.True(belege >= 60, "Zu wenige Symbolverweise geprüft: " + belege);
+        }
+
+        private static string RepoWurzel()
+        {
+            System.IO.DirectoryInfo d = new System.IO.DirectoryInfo(AppContext.BaseDirectory);
+            while (d != null &&
+                   !System.IO.File.Exists(System.IO.Path.Combine(d.FullName, "EPOS.Kern", "EPOS.Kern.csproj")))
+                d = d.Parent;
+
+            Assert.True(d != null, "Die Repowurzel ist vom Ausgabeordner aus nicht zu finden.");
+            return d.FullName;
+        }
+
+        /// <summary>
         /// <c>Keine</c> steht allein: Wer nicht verwendet wird, traegt keine zweite Stufe —
         /// sonst waere die Kennzeichnung in der Uebersicht widerspruechlich.
         /// </summary>
@@ -164,7 +246,14 @@ namespace EPOS.Kern.Tests
         [Theory]
         [InlineData(Anlagenart.Heizkessel, "Ptherm")]
         [InlineData(Anlagenart.Heizkessel, "Betriebsbereitschaftverlust")]
+        [InlineData(Anlagenart.Heizkessel, "Bereitschaft_Einheit")]
         [InlineData(Anlagenart.Heizkessel, "Vorlauf")]
+        [InlineData(Anlagenart.Heizkessel, "Wirkungsgrad_Teillast30")]
+        [InlineData(Anlagenart.Heizkessel, "Brennwert")]
+        [InlineData(Anlagenart.Heizkessel, "Kennlinie_Brennwert")]
+        [InlineData(Anlagenart.Heizkessel, "Mindestleistung")]
+        [InlineData(Anlagenart.Heizkessel, "Anfahrverlust_kWh")]
+        [InlineData(Anlagenart.Heizkessel, "Mindestlaufzeit_min")]
         [InlineData(Anlagenart.Bhkw, "Grenzleistung")]
         [InlineData(Anlagenart.Bhkw, "Wirkungsgrad")]
         [InlineData(Anlagenart.Waermepumpe, "Heizung")]
@@ -369,8 +458,9 @@ namespace EPOS.Kern.Tests
 
             // Die sieben Sandia-Spalten sind mitgeschriebenes Katalogwissen und haben
             // auch nach S3 GAR KEINEN Leser (Konzept 3.3.3).
-            Assert.Equal(7, katalog.Count(e => e.Hat(Verwendung.Keine)));
-            Assert.All(katalog.Where(e => e.Hat(Verwendung.Keine)),
+            // Ohne die drei Katalogspalten (KU1), die kein Fachwert sind und ebenfalls keinen Leser haben.
+            Assert.Equal(7, katalog.Count(e => e.Hat(Verwendung.Keine) && !Katalogfassung.IstKatalogspalte(e.Spalte)));
+            Assert.All(katalog.Where(e => e.Hat(Verwendung.Keine) && !Katalogfassung.IstKatalogspalte(e.Spalte)),
                        e => Assert.StartsWith("Sandia_", e.Spalte, StringComparison.Ordinal));
         }
 
@@ -423,7 +513,13 @@ namespace EPOS.Kern.Tests
                                    "Wirkungsgrad_Gas", "Wirkungsgrad_Öl", "Investitionskosten",
                                    "Raumbedarf", "Wartungskosten", "Wartungskosten_Einheit",
                                    "Nutzungsdauer", "CO2", "SO2", "NOx", "CO", "Staub",
-                                   "Betriebsbereitschaftverlust", "Brennwert", "Vorlauf", "Ruecklauf" };
+                                   "Betriebsbereitschaftverlust", "Brennwert", "Vorlauf", "Ruecklauf",
+                                   // Anwenderentscheid 02.10.2026: die Einheit des Bereitschaftsverlusts.
+                                   "Bereitschaft_Einheit",
+                                   // Konzept Kesselkennlinie 3.4: die Gruppe „Kennlinie" des Editors
+                                   // (HeizkesselAdminHuelle.Schreiben, AnzeigefelderSchreiben).
+                                   "Wirkungsgrad_Teillast30", "Kennlinie_Brennwert", "Mindestleistung",
+                                   "Anfahrverlust_kWh", "Mindestlaufzeit_min" };
 
                 case Anlagenart.Bhkw:
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Motortyp", "Ptherm", "Pel",
@@ -436,7 +532,13 @@ namespace EPOS.Kern.Tests
                                    "Kosten_Montage", "Kosten_Lieferung", "Kosten_Schallschutzhaube",
                                    "Kosten_Abgasreinigung", "Raumbedarf", "Wartungskosten_kwhel",
                                    "Nutzungsdauer", "NOX", "SO2", "CO", "CO2", "Staub",
-                                   "Vorlauf", "Ruecklauf" };
+                                   "Vorlauf", "Ruecklauf",
+                                   // Welle M4 (BH1, BH2): die Gruppe „Teillast und Takten" des
+                                   // Katalogeditors (BHKWStammCtrl.Update).
+                                   "Wirkungsgrad_el_Teillast50", "Wirkungsgrad_th_Teillast50",
+                                   "Anfahrverlust_kWh", "Mindestlaufzeit_min",
+                                   // UB-E3-b (U-3): die Abschaltgrenze des Ruecklaufs (GeraetegrenzWerte.BhkwSchreiben).
+                                   "Ruecklauf_Max" };
 
                 case Anlagenart.Waermepumpe:
                     // ELF von achtzehn Fachspalten. maxPtherm laeuft verborgen mit,
@@ -446,12 +548,23 @@ namespace EPOS.Kern.Tests
                     // Masse zeigt die Maske gar nicht. Diese Liste fuehrt, was die
                     // Verwaltung ZURUECKSCHREIBT - ein Lesewert gehoert nicht hinein.
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Typ", "Baujahr",
-                                   "Aufstellung", "Nennleistung", "Heizung", "Regelung", "Bauart" };
+                                   "Aufstellung", "Nennleistung", "Heizung", "Regelung", "Bauart",
+                                   // Welle M4 (WP1): Mindestleistung und C_d schreibt die
+                                   // Katalogpflege zurueck (WPStammCtrl.Speichern).
+                                   "Mindestleistung_kW", "Taktverlustfaktor_Cd",
+                                   // UB-E3-b: die Gruppe „Geraetegrenzen" des Stammblatts
+                                   // (WPStammCtrl.Speichern -> GeraetegrenzWerte.WpSchreiben).
+                                   "Kaeltemittel", "Spreizung_Auslegung_K", "Spreizung_Max_K", "Spreizung_Min_K",
+                                   "Mindestvolumenstrom_Prozent", "Ruecklauf_Max", "Ruecklauf_Bezug",
+                                   "Ruecklauf_Abwertung_ProzentJeK" };
 
                 case Anlagenart.Solarkollektoren:
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Kollektortyp",
                                    "Modulflaeche", "Aperturflaeche", "h0", "k1", "k2", "Kdir",
-                                   "Kdfu", "Investitionskosten" };
+                                   "Kdfu", "Investitionskosten",
+                                   // Welle M2 (ST6): die Bezugsfläche, Auswahl im Katalogeditor und
+                                   // Feld im Aufklapper (SolarkollektorAdminHuelle.Schreiben).
+                                   "Bezugsflaeche" };
 
                 case Anlagenart.Photovoltaik:
                     // alpha_SC und beta_OC fehlen - sie kommen nur aus dem CEC-/PAN-Import.
@@ -463,7 +576,9 @@ namespace EPOS.Kern.Tests
                     return new[] { "Bezeichner", "Typ", "Energie", "Leistung", "Ladezustand",
                                    "Degradation", "Modulkosten", "Wirkungsgrad_RT",
                                    "Zyklen_Zugesichert", "Verschleisskosten", "Leistungskosten",
-                                   "Investition_Fix", "Standby_Verbrauch" };
+                                   "Investition_Fix", "Standby_Verbrauch",
+                                   // Welle M5 (SP1): das Katalogfeld „Selbstentladung".
+                                   StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG };
 
                 case Anlagenart.Wechselrichter:
                     // Aus ModulKatalogProfil.Felder (Auspraegung Wechselrichter, W6-E-2)
@@ -478,6 +593,16 @@ namespace EPOS.Kern.Tests
                                    "Eta05", "Eta10", "Eta20", "Eta30", "Eta50", "Eta100",
                                    "Eta_Euro", "Eta_Max", "P_Standby", "P_Nacht" };
 
+                case Anlagenart.Kaeltemaschine:
+                    // KaeltemaschineKatalogDialog (KU3-1): die zwoelf Grundspalten der einen Liste und die acht Spalten der
+                    // Gruppe „Teillast und Takten" (KM3-E3-a), dazu die fuenf Katalogfelder in den Kenndaten (K-A).
+                    return KaeltemaschineSchema.Fachspalten;
+
+                case Anlagenart.Rueckkuehlwerk:
+                    // K-F1: der Schreibweg des Katalogs (RueckkuehlwerkStammCtrl.Speichern/KopfSchreiben) setzt jede Fachspalte;
+                    // der Katalogdialog folgt mit der Oberflaeche (K-F5) und haelt dieselbe Liste.
+                    return RueckkuehlwerkSchema.Fachspalten;
+
                 default:
                     return new[] { "Bezeichner", "Hersteller", "Speichertyp",
                                    "Bereitschaftsverluste", "Gesamtvolumen", "Investitionskosten" };
@@ -485,14 +610,18 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die zwei Spalten, die keine Maske je von Hand setzt: der Primaerschluessel und
-        /// die Auslieferungsmarke. Sie sind vom Vergleich ausgenommen, weil eine
+        /// Die Spalten, die keine Maske je von Hand setzt: der Primaerschluessel,
+        /// die Auslieferungsmarke und die zwei Kostenvorlagen-Verweise. Sie sind vom Vergleich ausgenommen, weil eine
         /// Eingabemoeglichkeit dort ein FEHLER waere.
         /// </summary>
         private static bool Verwaltungsspalte(string spalte)
         {
             return string.Equals(spalte, "ID", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(spalte, "ReadOnly", StringComparison.OrdinalIgnoreCase);
+                || string.Equals(spalte, "ReadOnly", StringComparison.OrdinalIgnoreCase)
+                // Schritte 208 und 209: die Verweise auf Betriebs- und Investitionsvorlage des Satzes - kein Eingabefeld,
+                // sie schreibt der Rueckweg „In die Datenbank übernehmen…", gepflegt wird die Vorlage in der Kostenverwaltung.
+                || string.Equals(spalte, KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(spalte, KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

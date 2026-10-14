@@ -52,6 +52,13 @@
 
     <p class="epos-kontextzeile">@Bezeichner</p>
 
+    @* DER KOPF DER SATZFLAECHE (DZ1-N1, Konzept 4.9): Name, Beschreibung und weitere Kennwerte des
+       Wirts in EINER Zeile, die Beschriftung vor dem Feld. Ohne Kopfzeile bleibt das Markup, wie es war. *@
+    @if (Kopfzeile is not null)
+    {
+        <div class="epos-ganglinie-kopf">@Kopfzeile</div>
+    }
+
     <dl class="epos-ganglinie-kennzahlen">
         <div class="epos-ganglinie-kennzahl">
             <dt>@LabelJahresarbeit</dt>
@@ -71,6 +78,11 @@
         <Schalter Bezeichnung="@LabelSortiert" Wert="@_sortiert" WertChanged="SortiertGesetzt" />
         <Auswahlfeld Bezeichnung="@LabelEinheit" Eintraege="@Einheitenwahl"
                      Auswahl="@EinheitIndex" AuswahlChanged="EinheitWaehlen" />
+        @* Die Infoknoepfe des Wirts stehen rechts in der Kennzahlenzeile (DZ1-N1), keine eigene Zeile. *@
+        @if (Knoepfe is not null)
+        {
+            <span class="epos-ganglinie-knoepfe">@Knoepfe</span>
+        }
     </div>
 
     @* Der Zoom liegt im Bild (Etappe DG-E3, Gruppe (a)): Ein Zeitausschnitt ist die
@@ -82,7 +94,8 @@
                  Palette="@Farbpalette.Aktuell"
                  FarbwahlErlaubt="@Farbwahl"
                  FarbeGewaehlt="FarbeUebernehmen"
-                 FarbeZurueckgesetzt="FarbeVerwerfen" />
+                 FarbeZurueckgesetzt="FarbeVerwerfen"
+                 MassGeaendert="@Massrueckruf" />
 
 </section>
 
@@ -111,11 +124,30 @@
     /// </summary>
     [Parameter] public Func<bool, Zeichenmodell?>? Bildauftrag { get; set; }
 
+    /// <summary>
+    /// <b>Das Bild in Behältergröße</b> (DZ1‑N2): wie <see cref="Bildauftrag"/>, dazu Breite
+    /// und Höhe der Zeichenfläche in px (<c>0, 0</c> = Vorgabegröße, solange nicht gemessen).
+    /// Mit ihm misst die Grafik ihre Fläche (<c>DiagrammSvg.MassGeaendert</c>) und lässt das
+    /// Modell beim Aufklappen und nach jeder Größenänderung in genau dieser Größe neu bauen —
+    /// die Kurve nimmt dann die volle Breite der Satzfläche, Achsen und Schrift unverzerrt.
+    /// Er geht dem <see cref="Bildauftrag"/> vor.
+    /// </summary>
+    [Parameter] public Func<bool, int, int, Zeichenmodell?>? BildauftragMass { get; set; }
+
     /// <summary>Die ANZEIGEEINHEIT beim Öffnen (Anwenderentscheid W8‑O‑5).</summary>
     [Parameter] public Energieeinheit Einheit { get; set; } = Energieeinheit.MWh;
 
     /// <summary>Meldet der Hülle die neu gewählte Einheit, damit sie gemerkt wird.</summary>
     [Parameter] public Action<Energieeinheit>? EinheitGewaehlt { get; set; }
+
+    /// <summary>
+    /// Die KOPFZEILE der Satzfläche (DZ1-N1): Name, Beschreibung und weitere Kennwerte des Wirts,
+    /// nebeneinander mit der Beschriftung vor dem Feld. Ohne sie entfällt die Zeile.
+    /// </summary>
+    [Parameter] public RenderFragment? Kopfzeile { get; set; }
+
+    /// <summary>Die Infoknöpfe des Wirts — rechts in der Kennzahlenzeile (DZ1-N1).</summary>
+    [Parameter] public RenderFragment? Knoepfe { get; set; }
 
     // --- Texte -----------------------------------------------------------------
 
@@ -231,10 +263,12 @@
     {
         get
         {
-            if (Bildauftrag is null) return null;
+            if (Bildauftrag is null && BildauftragMass is null) return null;
             if (_modelle.TryGetValue(_sortiert, out Zeichenmodell? vorhanden)) return vorhanden;
 
-            Zeichenmodell? neu = Bildauftrag(_sortiert);
+            Zeichenmodell? neu = BildauftragMass is not null
+                ? BildauftragMass(_sortiert, _mass.Breite, _mass.Hoehe)
+                : Bildauftrag!(_sortiert);
             _modelle[_sortiert] = neu;
             return neu;
         }
@@ -253,4 +287,22 @@
     /// und mit ihm beginnt der Zoom des Bildes von vorn.
     /// </summary>
     private void SortiertGesetzt(bool wert) => _sortiert = wert;
+
+    /// <summary>Das zuletzt gemessene Maß der Zeichenfläche; <c>0, 0</c> = noch nicht gemessen.</summary>
+    private Flaechenmass _mass;
+
+    /// <summary>Das gemessene Maß — Prüfhilfe für die Tests.</summary>
+    public Flaechenmass Zeichenmass => _mass;
+
+    /// <summary>Der Rückruf des Behältermaßes — nur mit <see cref="BildauftragMass"/>.</summary>
+    private EventCallback<Flaechenmass> Massrueckruf
+        => BildauftragMass is null ? default : EventCallback.Factory.Create<Flaechenmass>(this, BeiMass);
+
+    /// <summary>Ein neues Maß: Die Modelle beider Schalterstellungen werden in ihm neu gebaut.</summary>
+    public void BeiMass(Flaechenmass mass)
+    {
+        if (mass == _mass) return;
+        _mass = mass;
+        _modelle.Clear();
+    }
 }

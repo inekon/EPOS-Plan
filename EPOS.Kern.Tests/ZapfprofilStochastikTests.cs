@@ -46,7 +46,7 @@ namespace EPOS.Kern.Tests
             {
                 Wohnungen = new[] { new WohnungstypStand { Anzahl = 20, Personen = 2 } }
             };
-            if (ferien) wohnhaus = wohnhaus with { Ferienbeginn = new int?[] { 190, null, null, null }, Ferienende = new int?[] { 210, null, null, null } };
+            if (ferien) wohnhaus = wohnhaus with { Ferien = Zonenferienprobe.Liste(new int?[] { 190, null, null, null }, new int?[] { 210, null, null, null }) };
             ZonenStand buero = Zone("Büro", 2, 30.0, 2) with { Topologie = ZapfTopologie.Durchfluss };
             return ZapfprofilTestbau.Eingang(p, ps ?? Satz(), wohnhaus, buero) with
             {

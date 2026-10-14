@@ -111,7 +111,7 @@ public class GebaeudeZonenTests : EposBunitContext
         {
             Zonen = zonen ?? Array.Empty<ZoneDaten>(),
             Uebernehmen = d => { Probestaende.Add(d); return Task.FromResult(Vorschlag); },
-            Speichern = s => { Zonengeschrieben.Add(s.Zonen.Select(z => z.Kopie()).ToList()); return Zonenfehler; }
+            Speichern = s => { Zonengeschrieben.Add(s.Zonen.Select(z => z.Kopie()).ToList()); return Zonenfehler.Length == 0 ? ZonenSchreibergebnis.Gut : ZonenSchreibergebnis.Fehler(Zonenfehler); }
         };
     }
 
@@ -160,7 +160,8 @@ public class GebaeudeZonenTests : EposBunitContext
         var cut = Aufbauen(weg, GebaeudeKatalogModus.Bearbeiten);
 
         Assert.StartsWith("Rechenweg der Hülle: Klassenweg", cut.Instance.Huellwegzeile);
-        Assert.Contains("Ein Katalogsatz trägt keine Zonen", cut.Instance.Huellwegzeile);
+        Assert.Contains("Der Katalogsatz trägt keine Zone; legt der Reiter „Zonen“ welche an, kopiert die Übernahme ins Projekt sie",
+                        cut.Instance.Huellwegzeile);
         Assert.Contains(cut.FindAll(".epos-herleitung"), z => z.TextContent == cut.Instance.Huellwegzeile);
 
         IElement knopf = Knoepfe(cut, KNOPF).Single();
@@ -168,7 +169,7 @@ public class GebaeudeZonenTests : EposBunitContext
         Assert.Contains("Katalogsatz", knopf.GetAttribute("title"));
 
         knopf.Click();
-        Assert.Contains("Katalogsatz trägt keine Zonen", cut.Instance.Meldung);
+        Assert.Contains("„Gebäude als eine Zone übernehmen“ rechnet mit dem Klima eines Projekts", cut.Instance.Meldung);
         Assert.Empty(weg.Probestaende);
         Assert.False(cut.Instance.UebernahmefrageOffen);
     }
@@ -426,19 +427,76 @@ public class GebaeudeZonenTests : EposBunitContext
 
         Knoepfe(cut, "Speichern unter")[0].Click();
 
-        Assert.Contains("trägt die Zone „Haus A“ mit 3 Bauteilen nicht mit", cut.Find(".epos-rueckfrage-text").TextContent);
+        Assert.Contains("übernimmt die Zone „Haus A“ mit 3 Bauteilen in ihrem gespeicherten Stand", cut.Find(".epos-rueckfrage-text").TextContent);
         Assert.Empty(weg.Gespeichert);
 
         Antwort(cut, "Nein").Click();
         Assert.Empty(weg.Gespeichert);
         Assert.Null(zu);
 
+        // „Ja" schreibt den Katalogsatz und lässt den Dialog offen (E27, Entwurf KP2 B1).
         Knoepfe(cut, "Speichern unter")[0].Click();
         Antwort(cut, "Ja").Click();
         var (_, istNeu, _) = Assert.Single(weg.Gespeichert);
         Assert.True(istNeu);
         Assert.Empty(weg.Zonengeschrieben);
+        Assert.Null(zu);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+
+        // Das folgende OK schreibt die Projektkopie; die Zonen sind unverändert.
+        Ok(cut);
+        Assert.Equal(2, weg.Gespeichert.Count);
+        Assert.False(weg.Gespeichert[1].IstNeu);
+        Assert.Empty(weg.Zonengeschrieben);
         Assert.True(zu);
+    }
+
+    /// <summary>
+    /// <b>„Speichern unter" im Projekt mit Konditionierung</b> (Stufe KP2, Welle U1; Entwurf KP2
+    /// Festlegung 3): EINE Frage nennt, was im Projekt zurückbleibt — Kalender und Zellen der Zonen,
+    /// Bauteile — und die Zonen mit Namen, aus dem Befund des Wegs VOR dem Schreiben; Vorgabe „Nein".
+    /// </summary>
+    [Fact]
+    public void Speichern_unter_im_Projekt_nennt_Zonen_Bauteile_und_Konditionierung_in_einer_Frage()
+    {
+        var weg = new Weg();
+        int befragt = 0;
+        var kond = new KonditionierungWeg
+        {
+            ZelleSetzen = (s, _, _, _) => KonditionierungErgebnis.Gut(s),
+            SpeichernUnterRueckfrage = _ =>
+            {
+                befragt++;
+                return new KonditionierungRueckfrage(
+                    Array.Empty<KonditionierungPosten>(),
+                    new[] { new KonditionierungPosten(KonditionierungPostenart.Zonenkalender, 2),
+                            new KonditionierungPosten(KonditionierungPostenart.Bauteile, 3) },
+                    new[] { "Haus A" });
+            }
+        };
+        GebaeudeKatalogDaten daten = Satz();
+        daten.Konditionierung = new KonditionierungDaten();
+        var cut = Render<GebaeudeKatalogDialog>(p => p
+            .Add(x => x.Daten, daten)
+            .Add(x => x.Modus, GebaeudeKatalogModus.Projekt)
+            .Add(x => x.Gebaeudetypen, () => TYPEN)
+            .Add(x => x.Gebaeudearten, () => ARTEN)
+            .Add(x => x.Baualtersklassen, KLASSEN)
+            .Add(x => x.Speichern, weg.Speichern)
+            .Add(x => x.Zonen, weg.Zonenweg(new[] { Vorschlagszone() }))
+            .Add(x => x.Konditionierung, kond));
+
+        Knoepfe(cut, "Speichern unter")[0].Click();
+
+        Assert.Equal(1, befragt);
+        Assert.Empty(weg.Gespeichert);
+        Assert.Equal("„Speichern unter“ legt einen Katalogsatz mit der Gebäudeebene an; die Zonen kommen in ihrem gespeicherten " +
+                     "Stand mit, darunter: 2 Kalender und Zellen von Zonen, 3 Bauteile. Anlegen? Betroffene Zonen: Haus A.",
+                     cut.Find(".epos-rueckfrage-text").TextContent);
+        Assert.Contains("epos-knopf--primaer", Antwort(cut, "Nein").ClassName);
+
+        Antwort(cut, "Ja").Click();
+        Assert.True(Assert.Single(weg.Gespeichert).IstNeu);
     }
 
     [Fact]
@@ -517,8 +575,10 @@ public class GebaeudeZonenTests : EposBunitContext
     // Der Wirt: „Hülle und Zonen…"
     // =================================================================================
 
-    private IRenderedComponent<GebaeudeDialog> Wirt(bool hatKopie, Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>?>? gaben)
+    private IRenderedComponent<GebaeudeDialog> Wirt(bool hatKopie, Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>?>? gaben,
+                                                    Func<string>? listeSpeichern = null)
         => Render<GebaeudeDialog>(p => p
+            .Add(x => x.ListeSpeichern, listeSpeichern)
             .Add(x => x.Zeilen, new List<GebaeudeProjektZeile>
             {
                 new()
@@ -537,7 +597,7 @@ public class GebaeudeZonenTests : EposBunitContext
         int gerufen = 0;
         var cut = Wirt(false, _ => { gerufen++; return null; });
 
-        IElement knopf = cut.FindAll("button").Single(b => b.TextContent.Trim() == "Gebäude im Projekt bearbeiten…");
+        IElement knopf = cut.FindAll("button.epos-gebaeude-projekt").Single();
         Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
         knopf.Click();
 
@@ -545,6 +605,64 @@ public class GebaeudeZonenTests : EposBunitContext
         Assert.Equal(0, gerufen);
         Assert.False(cut.Instance.ProjekteditorOffen);
     }
+
+    /// <summary>
+    /// <b>Eine frisch übernommene Zeile: erst still speichern, dann öffnen</b> (Anwenderentscheid
+    /// 06.10.2026). Der Knopf ist nicht gesperrt; der Klick ruft den Speicherweg (wie OK ohne Schließen)
+    /// genau einmal, die Zeile trägt danach ihre echte Id und Kopie, und der Editor öffnet für sie.
+    /// </summary>
+    [Fact]
+    public void Ohne_Projektkopie_speichert_der_Klick_still_und_oeffnet_den_Editor()
+    {
+        int gespeichert = 0;
+        GebaeudeProjektZeile? geoeffnet = null;
+        IRenderedComponent<GebaeudeDialog>? cut = null;
+        cut = Wirt(false, z => { geoeffnet = z; return Editorgaben(); }, () =>
+        {
+            gespeichert++;
+            GebaeudeProjektZeile z = cut!.Instance.Zeilen[0];
+            z.IdZ = 4711;                                        // die echte Id nach dem Festschreiben
+            z.HatProjektkopie = true;
+            return "";
+        });
+
+        IElement knopf = cut.FindAll("button.epos-gebaeude-projekt").Single();
+        Assert.Null(knopf.GetAttribute("aria-disabled"));
+        knopf.Click();
+
+        Assert.Equal(1, gespeichert);
+        Assert.True(cut.Instance.ProjekteditorOffen);
+        Assert.Same(cut.Instance.Zeilen[0], geoeffnet);
+        Assert.Equal(4711, geoeffnet!.IdZ);
+        Assert.Single(cut.Instance.Zeilen);
+    }
+
+    /// <summary>Scheitert das stille Speichern, steht die Meldung da, und der Editor öffnet nicht.</summary>
+    [Fact]
+    public void Scheitert_das_stille_Speichern_oeffnet_der_Editor_nicht()
+    {
+        int gerufen = 0;
+        var cut = Wirt(false, _ => { gerufen++; return Editorgaben(); },
+                       () => "Die Gebäudeliste wurde nicht gespeichert.");
+
+        cut.FindAll("button.epos-gebaeude-projekt").Single().Click();
+
+        Assert.Equal(0, gerufen);
+        Assert.False(cut.Instance.ProjekteditorOffen);
+        Assert.Equal("Die Gebäudeliste wurde nicht gespeichert.", cut.Instance.Meldung);
+        Assert.Contains("Die Gebäudeliste wurde nicht gespeichert.", cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    private IReadOnlyDictionary<string, object> Editorgaben() => new Dictionary<string, object>
+    {
+        ["Daten"] = Satz(),
+        ["Modus"] = GebaeudeKatalogModus.Projekt,
+        ["Gebaeudetypen"] = new Func<IReadOnlyList<string>>(() => TYPEN),
+        ["Gebaeudearten"] = new Func<IReadOnlyList<string>>(() => ARTEN),
+        ["Baualtersklassen"] = (IReadOnlyList<string>)KLASSEN,
+        ["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>(new Weg().Speichern),
+        ["Zonen"] = new Weg().Zonenweg()
+    };
 
     [Fact]
     public void Mit_Projektkopie_oeffnet_Huelle_und_Zonen_den_Editor_als_Ueberlagerung()
@@ -561,17 +679,146 @@ public class GebaeudeZonenTests : EposBunitContext
             ["Zonen"] = weg.Zonenweg()
         });
 
-        cut.FindAll("button").Single(b => b.TextContent.Trim() == "Gebäude im Projekt bearbeiten…").Click();
+        cut.FindAll("button.epos-gebaeude-projekt").Single().Click();
 
         Assert.True(cut.Instance.ProjekteditorOffen);
         Assert.Contains(KNOPF, cut.Markup);
+        // Auch im Projekt steht der Editor in der breiten Überlagerung (Stufe KP2, Festlegung 7).
+        Assert.Contains("epos-ueberlagerung--breit", cut.Find(".epos-ueberlagerung").ClassName);
     }
+
+    // =================================================================================
+    // Stufe KP2, Welle U4: der Zonendialog als Blatt mit Zonenmatrix
+    // =================================================================================
+
+    /// <summary>
+    /// Hausregel „ein Unterdialog mit eigenen Spalten ist ein Blatt": Der Zonendialog tauscht den Inhalt
+    /// des Editors (Blattwechsel), trägt keinen eigenen Titel, und der Rückknopf verwirft wie Abbrechen.
+    /// </summary>
+    [Fact]
+    public void Der_Zonendialog_steht_als_Blatt_und_der_Rueckweg_verwirft()
+    {
+        var cut = Aufbauen(new Weg(), zonen: new[] { Vorschlagszone() });
+        ReiterWaehlen(cut, "Zonen");
+
+        Knoepfe(cut, "Öffnen…")[0].Click();
+
+        Assert.True(cut.Instance.ZonendialogOffen);
+        IElement blatt = cut.Find(".epos-blatt");
+        Assert.Contains("epos-blatt--breit", blatt.ClassName);
+        Assert.Equal("Zone", blatt.QuerySelector(".epos-blatt-titel")!.TextContent.Trim());
+        Assert.NotNull(blatt.QuerySelector(".epos-zonendialog"));
+        Assert.Empty(cut.FindAll(".epos-zonendialog .epos-dialog-titel"));
+        // Der Haupt-Inhalt des Editors steht nicht, solange das Blatt steht.
+        Assert.Empty(cut.FindAll(".epos-gebk-editor > .epos-dialog-kopf"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung .epos-zonendialog"));
+
+        cut.Find(".epos-zonendialog input").Input("Umbenannt");
+        cut.Find(".epos-blatt-zurueck").Click();
+
+        Assert.False(cut.Instance.ZonendialogOffen);
+        Assert.Empty(cut.FindAll(".epos-blatt"));
+        Assert.Equal("Haus A", cut.Instance.ZonenImArbeitsstand[0].Bezeichner);
+    }
+
+    /// <summary>
+    /// <b>Eine neue Zone mit eigener Zelle steht nach OK richtig</b> (Entwurf KP2 Abschnitt 7, SA2;
+    /// Id-Zuordnung aus K2): Das OK des Editors schreibt sie samt Konditionierung, übernimmt die Id des
+    /// Kerns — und ein zweites OK schreibt nichts.
+    /// </summary>
+    [Fact]
+    public void Eine_neue_Zone_mit_eigener_Zelle_steht_nach_OK_richtig_und_ein_zweites_OK_schreibt_nichts()
+    {
+        var weg = new Weg();
+        var geschrieben = new List<IReadOnlyList<ZoneDaten>>();
+        var zonenweg = new GebaeudeZonenweg
+        {
+            Zonen = new[] { Vorschlagszone() },
+            Speichern = s =>
+            {
+                geschrieben.Add(s.Zonen.Select(z => z.Kopie()).ToList());
+                var neu = s.Zonen.Where(z => z.Id <= 0).ToDictionary(z => z.Id, z => 40 - z.Id);
+                return new ZonenSchreibergebnis("", neu, new Dictionary<int, IReadOnlyList<int>>(), null);
+            }
+        };
+        GebaeudeKatalogDaten daten = Satz();
+        daten.Konditionierung = new KonditionierungDaten();
+        var cut = Render<GebaeudeKatalogDialog>(p => p
+            .Add(x => x.Daten, daten)
+            .Add(x => x.Modus, GebaeudeKatalogModus.Projekt)
+            .Add(x => x.Gebaeudetypen, () => TYPEN)
+            .Add(x => x.Gebaeudearten, () => ARTEN)
+            .Add(x => x.Baualtersklassen, KLASSEN)
+            .Add(x => x.Speichern, weg.Speichern)
+            .Add(x => x.Zonen, zonenweg)
+            .Add(x => x.Konditionierung, KonditionierungHuelle.ReinerWeg(Kalendereigentuemer.Gebaeude, projekt: true)));
+        ReiterWaehlen(cut, "Zonen");
+
+        // Die zweite Zone: erst die Rückfrage, dann das Blatt mit der leeren Zone.
+        Knoepfe(cut, "+ Neue Zone …")[0].Click();
+        Antwort(cut, "Ja").Click();
+        IElement zone = cut.Find(".epos-zonendialog");
+        Feld(zone, "Nutzfläche").Input("50");
+        Feld(cut.Find(".epos-zonendialog"), "Personen · Nennwert").Input("300");
+        Assert.Equal("", cut.FindComponent<ZonenDialog>().Instance.Meldung);
+        cut.Find(".epos-zonendialog > .epos-leiste button.epos-knopf--primaer").Click();
+        Assert.False(cut.Instance.ZonendialogOffen);
+
+        Ok(cut);
+        IReadOnlyList<ZoneDaten> erste = Assert.Single(geschrieben);
+        ZoneDaten neue = erste.Single(z => z.Nutzflaeche == 50);
+        Assert.True(neue.Id <= 0);
+        Assert.True(neue.Konditionierung!.Fassung > 0);
+        Assert.Equal(300.0, neue.Konditionierung.Spalte(KonditionierungGroesse.Personen).Nennwert.Wert);
+        // Die Id des Kerns steht im Arbeitsstand, die Konditionierung an ihr.
+        ZoneDaten danach = cut.Instance.ZonenImArbeitsstand.Single(z => z.Id == 40 - neue.Id);
+        Assert.Equal(300.0, danach.Konditionierung!.Spalte(KonditionierungGroesse.Personen).Nennwert.Wert);
+
+        Ok(cut);
+        Assert.Single(geschrieben);
+    }
+
+    private static IElement Feld(IElement bereich, string beschriftung)
+        => bereich.QuerySelectorAll("label.epos-feld")
+                  .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == beschriftung)
+                  .QuerySelector("input, select")!;
 
     [Fact]
     public void Ohne_Delegat_gibt_es_keinen_Knopf_Huelle_und_Zonen()
     {
         var cut = Wirt(true, null);
 
-        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Gebäude im Projekt bearbeiten…");
+        Assert.Empty(cut.FindAll("button.epos-gebaeude-projekt"));
+    }
+
+    /// <summary>
+    /// <b>Die Übergabe je Zone reist mit dem Zonenweg</b> (E63, AK1z): Eine im Zonendialog gewählte Art und ein
+    /// Exponent stehen nach OK im Arbeitsstand, gelten als Änderung und gehen mit dem OK des Editors in den
+    /// Schreibweg der Zonen.
+    /// </summary>
+    [Fact]
+    public void Die_Uebergabe_der_Zone_geht_mit_dem_OK_in_den_Zonenweg()
+    {
+        var weg = new Weg();
+        var cut = Aufbauen(weg, zonen: new[] { Vorschlagszone() });
+        ReiterWaehlen(cut, "Zonen");
+        Knoepfe(cut, "Öffnen…")[0].Click();
+
+        IElement art = cut.FindAll(".epos-zonendialog label.epos-feld")
+                          .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == "Übergabeart")
+                          .QuerySelector("select")!;
+        art.Change("2");
+        cut.FindAll(".epos-zonendialog label.epos-feld")
+           .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == "Exponent")
+           .QuerySelector("input")!.Input("1,25");
+        cut.FindAll(".epos-zonendialog > .epos-leiste button.epos-knopf--primaer").Single().Click();
+        Assert.Equal(DbWerte.UEBERGABE_RADIATOR, cut.Instance.ZonenImArbeitsstand[0].UebergabeArt);
+
+        Ok(cut);
+
+        ZoneDaten zone = Assert.Single(Assert.Single(weg.Zonengeschrieben));
+        Assert.Equal(DbWerte.UEBERGABE_RADIATOR, zone.UebergabeArt);
+        Assert.Equal(1.25, zone.UebergabeExponent);
+        Assert.Null(zone.AuslegungVorlauf);
     }
 }

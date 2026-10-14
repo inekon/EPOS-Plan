@@ -320,6 +320,12 @@ public sealed class SimulationParameterDienste
     public Action<double>? BereitschaftSchreiben;
 
     /// <summary>
+    /// Die Heizgrenze der Kesselbereitschaft [°C]; <c>null</c> = leer (Vorgabe). Geschrieben im
+    /// OK-Weg des <c>KomponentenKonfigurationDialog</c>, wie die Betriebsbereitschaft.
+    /// </summary>
+    public Action<double?>? HeizgrenzeSchreiben;
+
+    /// <summary>
     /// Die Projekteinstellung „Kühlung rechnen" (Stufe KU1, Kühlkonzept 8.3) — schreibt
     /// SOFORT, wie die Netzverluste, und meldet, ob danach der gewünschte Wert steht
     /// (<c>KonfigurationCtrl.KuehlbetriebSetzen</c>). <c>null</c> = die Plattform bietet
@@ -335,6 +341,45 @@ public sealed class SimulationParameterDienste
     /// steht der Abschnitt „Anlagenkopplung" nicht da.
     /// </summary>
     public Func<string?, bool>? AnlagenkopplungSchreiben;
+
+    /// <summary>
+    /// Die Projekteinstellung „Aufheizoptimierung" (Entwurf KP3, Grundsatz 5; Welle O1) — schreibt
+    /// SOFORT je Feld wie der Kühlschalter und meldet, ob danach die gewünschte Einstellung steht
+    /// (<c>KonfigurationCtrl.AufheizvorgabeSetzen</c>, ohne Einstellungssatz mit Vormerksatz). Der
+    /// Parameter ist die ganze Einstellung; geschrieben wird ihre normalisierte Form (Festlegung 24).
+    /// <c>null</c> = die Plattform bietet die Einstellung nicht an; dann steht der Abschnitt
+    /// „Aufheizoptimierung" nicht da.
+    /// </summary>
+    public Func<WindowsFormsApplication1.Aufheizvorgabe, bool>? AufheizvorgabeSchreiben;
+
+    /// <summary>
+    /// Netzverluste je Kanal und Zirkulation im Bestandsweg (Entscheidungsvorlage Modellgrenzen BW4) —
+    /// schreibt SOFORT die ganze Vorgabe wie die Aufheizoptimierung und meldet, ob sie danach steht
+    /// (<c>KonfigurationCtrl.NetzverlustvorgabeSetzen</c>). <c>null</c> = die Plattform bietet die
+    /// Felder nicht an; dann steht der Abschnitt nicht da.
+    /// </summary>
+    public Func<WindowsFormsApplication1.Netzverlustvorgabe, bool>? NetzkanaeleSchreiben;
+    /// Die Projekteinstellung „Einspeisegrenze" (Welle M5, PV3) — schreibt SOFORT wie der
+    /// Kühlschalter und meldet, ob danach die gewünschte Grenze steht
+    /// (<c>KonfigurationCtrl.EinspeisegrenzeSetzen</c>, ohne Einstellungssatz mit Vormerksatz).
+    /// <c>null</c> = die Plattform bietet die Einstellung nicht an; dann steht der Abschnitt nicht da.
+    /// </summary>
+    public Func<WindowsFormsApplication1.Einspeisegrenze, bool>? EinspeisegrenzeSchreiben;
+
+    /// <summary>
+    /// Die Projekteinstellung „Thermische Desinfektion" (Welle M7, BW5) — schreibt SOFORT wie der
+    /// Kühlschalter und meldet, ob danach die gewünschte Vorgabe steht
+    /// (<c>KonfigurationCtrl.DesinfektionSetzen</c>, ohne Einstellungssatz mit Vormerksatz).
+    /// <c>null</c> = die Plattform bietet die Einstellung nicht an; dann steht der Abschnitt nicht da.
+    /// </summary>
+    public Func<WindowsFormsApplication1.Desinfektionsvorgabe, bool>? DesinfektionSchreiben;
+
+    /// <summary>
+    /// Die Herleitungszeilen der Aufheizoptimierung, eine je Gebäude („Gebäude: t_auf,max … bei … ·
+    /// P_auf … · C_w …"), in der Oberflächensprache — die Bemessung ohne Jahreslauf (Entwurf KP3,
+    /// Festlegung 3; verdrahtet mit der Welle D2). <c>null</c> = kein Weg; dann steht keine Zeile da.
+    /// </summary>
+    public Func<IReadOnlyList<string>>? AufheizHerleitung;
 
     // =====================================================================
     //  Die Konfiguration EINER Wärmepumpen-Anlage (Anwenderwunsch 16.09.2026)

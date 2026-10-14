@@ -34,6 +34,12 @@
         public double m_StandbyVerbrauch;    // Standby-/Eigenverbrauch [W]
 
         /// <summary>
+        /// Selbstentladung [% des Inhalts je Monat], 0 … 20; 0 = keine (Welle M5, SP1;
+        /// Spalte <c>Selbstentladung_Prozent_Monat</c>, <see cref="StromViertelstundenSchema"/>).
+        /// </summary>
+        public double m_Selbstentladung;
+
+        /// <summary>
         /// Vorgabewert des Round-Trip-Wirkungsgrads (Fachkonzept 5.2). Bewusst KEIN
         /// DEFAULT in der Datenbank: der wuerde nur neue Zeilen erreichen und alle
         /// Bestandszeilen auf 0 stehen lassen - einen Wert, den die Engine als
@@ -71,6 +77,7 @@
             m_Leistungskosten = 0.0;
             m_InvestitionFix = 0.0;
             m_StandbyVerbrauch = 0.0;
+            m_Selbstentladung = 0.0;
         }
 
     }

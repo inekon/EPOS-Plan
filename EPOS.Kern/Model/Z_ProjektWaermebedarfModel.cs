@@ -30,6 +30,42 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string Kanal;
 
+        /// <summary>
+        /// Deckungsart der Zeile (Konzept Kältebedarf 3.4, Schemaschritt 213): wirksam nur im Kanal
+        /// <see cref="DbWerte.KANAL_KUEHLUNG"/>; jeder andere Kanal schreibt stets
+        /// <see cref="KaeltebedarfSchema.DECKUNG_ZENTRAL"/> mit leeren Split-Feldern. Regeln:
+        /// <see cref="Z_ProjektKaeltebedarfCtrl.Deckungspruefung(Z_ProjWaermebedarfModel)"/>.
+        /// </summary>
+        public string Deckung = KaeltebedarfSchema.DECKUNG_ZENTRAL;
+
+        /// <summary>EER-Weg bei Split (<c>fest</c>/<c>linear</c>); leer bei zentral.</summary>
+        public string EerWeg;
+
+        /// <summary>Fester EER bzw. EER am Punkt 1.</summary>
+        public double? Eer1;
+
+        /// <summary>Außentemperatur am Punkt 1 [°C].</summary>
+        public double? Taussen1;
+
+        /// <summary>EER am Punkt 2 (nur linear).</summary>
+        public double? Eer2;
+
+        /// <summary>Außentemperatur am Punkt 2 [°C] (nur linear).</summary>
+        public double? Taussen2;
+
+        /// <summary>Kühlträger des Split-Stroms; <c>null</c> = Stromträger des Projekts.</summary>
+        public int? KuehlIdCarrier;
+
+        /// <summary>Eigener Zähler des Split-Stroms.</summary>
+        public bool KuehlEigenerZaehler;
+
+        /// <summary>
+        /// Art der Kältebedarfszeile (KWN-0, Schritt <see cref="KaelteArtSchema.SCHRITT"/>): <see cref="KaelteArtSchema.RAUM"/>
+        /// (Vorgabe) oder <see cref="KaelteArtSchema.PROZESS"/>. Prozesskälte bleibt im Kühlkanal und wird als Unterposten
+        /// <c>Kaeltebedarf_Prozess</c> mitgeführt.
+        /// </summary>
+        public string KaelteArt = KaelteArtSchema.RAUM;
+
         public Z_ProjWaermebedarfModel()
         {
             items = null;

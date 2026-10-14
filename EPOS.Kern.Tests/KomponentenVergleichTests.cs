@@ -32,8 +32,13 @@ namespace EPOS.Kern.Tests
     /// Photovoltaik, keinen Stromspeicher.</para>
     /// </summary>
     [Collection("Testdatenbank")]
-    public class KomponentenVergleichTests
+    public class KomponentenVergleichTests : System.IDisposable
     {
+        /// <summary>Die Proben erwarten deutsche Merkmalsnamen („Nennleistung:“) — de-DE gepinnt.</summary>
+        private readonly Kulturvorrichtung _kultur = new Kulturvorrichtung();
+
+        public void Dispose() => _kultur.Dispose();
+
         /// <summary>Das Stammprojekt des Bildschirmfotos.</summary>
         private const int STAMM = 1042;
 
@@ -104,7 +109,7 @@ namespace EPOS.Kern.Tests
             // Die Kopfzeile trägt das Gewerk und die Stückzahl je Version.
             KomponentenVergleichZeile kopf = zeilen[0];
             Assert.Equal("Wärmepumpe", kopf.Gewerk);
-            Assert.Equal(AbweichungsErmittler.MERKMAL_ANZAHL, kopf.Merkmal);
+            Assert.Equal(AbweichungsErmittler.MerkmalAnzahl, kopf.Merkmal);
             Assert.Equal(new[] { "2", "2" }, kopf.Zellen);
 
             // Jede Zeile trägt genau eine Zelle je Version (Stamm + eine Variante).
@@ -152,7 +157,7 @@ namespace EPOS.Kern.Tests
                 KomponentenVergleich.Gegenueberstellung(new[] { stamm, variante });
 
             KomponentenVergleichZeile pv = zeilen.First(z => z.Gewerk == "Photovoltaik");
-            Assert.Equal(new[] { AbweichungsErmittler.BESTAND_FEHLT, "1" }, pv.Zellen);
+            Assert.Equal(new[] { AbweichungsErmittler.BestandFehlt, "1" }, pv.Zellen);
 
             // Die Komponentenzeile darunter zeigt beim Stamm den Strich.
             KomponentenVergleichZeile komp = zeilen[zeilen.IndexOf(pv) + 1];
@@ -217,6 +222,45 @@ namespace EPOS.Kern.Tests
             Thread.CurrentThread.CurrentUICulture = k;
             CultureInfo.CurrentUICulture = k;
             Resource.Culture = k;
+        }
+
+        // =============================================================================
+        //  V8 — Bestand, Anzahl, Merkmale und Gewerke folgen der Berichtssprache
+        // =============================================================================
+
+        /// <summary>
+        /// <b>Rote Probe (KP3-A1d):</b> Die Zeilen der Stufe 1 („Bestand“, „Anzahl Komponenten“, „vorhanden“, „nicht
+        /// vorhanden“) und die Merkmalsnamen der Feldliste standen fest auf Deutsch — auch im englischen Bericht. Sie folgen
+        /// jetzt der Berichtssprache (<see cref="BerichtTexte.ImLauf"/>); der sprachfreie Schlüssel der Zeile bleibt.
+        /// </summary>
+        [Theory]
+        [InlineData(true, "Inventory", "Number of components", "present", "not present", "Rated output", "Peak-load boiler")]
+        [InlineData(false, "Bestand", "Anzahl Komponenten", "vorhanden", "nicht vorhanden", "Nennleistung", "Spitzenkessel")]
+        public void V8_Bestand_Anzahl_und_Merkmale_folgen_der_Berichtssprache(bool englisch, string bestand, string anzahl,
+            string vorhanden, string fehlt, string nennleistung, string kessel)
+        {
+            ProjektDetails stamm = Kunstbestand(("Wärmepumpe", new[] { "WP 1" }));
+            ProjektDetails variante = Kunstbestand(("Wärmepumpe", new[] { "WP 1", "WP 2" }),
+                                                   ("Photovoltaik", new[] { "Modul A" }));
+            using (BerichtTexte.ImLauf(englisch))
+            {
+                List<KomponentenVergleichZeile> zeilen = KomponentenVergleich.Gegenueberstellung(new[] { stamm, variante });
+                Assert.Equal(anzahl, zeilen[0].Merkmal);
+                Assert.Equal(fehlt, zeilen.First(z => z.Gewerk == "Photovoltaik").Zellen[0]);
+
+                List<Abweichung> liste = AbweichungsErmittler.Vergleiche(stamm, variante);
+                Abweichung pv = liste.Single(a => a.Gewerk == "Photovoltaik");
+                Assert.Equal(bestand, pv.Merkmal);
+                Assert.Equal(fehlt, pv.WertStamm);
+                Assert.Equal(vorhanden, pv.WertVariante);
+                Assert.Equal(AbweichungsErmittler.SCHLUESSEL_BESTAND, pv.Schluessel);
+                Abweichung wp = liste.Single(a => a.Gewerk == "Wärmepumpe");
+                Assert.Equal(anzahl, wp.Merkmal);
+                Assert.Equal(AbweichungsErmittler.SCHLUESSEL_ANZAHL, wp.Schluessel);
+
+                Assert.Equal(nennleistung, AbweichungsErmittler.Felder.First(f => f.Spalte == "Nennleistung").Label);
+                Assert.Equal(kessel, AbweichungsErmittler.Gewerkname("Spitzenkessel"));
+            }
         }
 
         // =============================================================================

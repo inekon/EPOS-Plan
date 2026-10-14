@@ -23,6 +23,39 @@ public sealed class BedarfsProfilZeile
 
     /// <summary>Der Jahresverbrauch dieser Zuordnung.</summary>
     public double Summe { get; set; }
+
+    /// <summary>
+    /// Die geforderte Vorlauftemperatur der Projektkopie [°C] — nur Prozesswärme (PW1 Stufe 1);
+    /// <c>null</c> = ohne Temperaturniveau.
+    /// </summary>
+    public double? Vorlauf { get; set; }
+
+    /// <summary>Die Rücklauftemperatur der Projektkopie [°C]; <c>null</c> = ohne.</summary>
+    public double? Ruecklauf { get; set; }
+
+    /// <summary>
+    /// <c>true</c>, sobald der Anwender das Paar im Dialog übernommen hat — erst dann schreibt das
+    /// Speichern (OK) es in die Projektkopie.
+    /// </summary>
+    public bool TemperaturGeaendert { get; set; }
+
+    /// <summary>
+    /// Der Betriebskalender dieser Zuordnung (PW2/BW2); <c>null</c> = keiner — das Wochenprofil
+    /// gilt für alle Wochen. Gewählt im Dialog, geschrieben mit OK wie der Jahresverbrauch.
+    /// </summary>
+    public int? KalenderId { get; set; }
+
+    /// <summary>
+    /// Die Art einer Kältebedarfszeile als Steuerwert (KWN-0): <c>DbWerte.KAELTE_ART_RAUM</c> (Vorgabe) oder
+    /// <c>DbWerte.KAELTE_ART_PROZESS</c>; nur Kältebedarfsprofile, gewählt im Dialog, geschrieben mit OK.
+    /// </summary>
+    public string KaelteArt { get; set; } = WindowsFormsApplication1.DbWerte.KAELTE_ART_RAUM;
+
+    /// <summary>
+    /// Die Feldgruppe „Deckung“ einer Kältebedarfszeile (Konzept Kältebedarf 3.4, K5b); <c>null</c> außerhalb der
+    /// Kältebedarfsprofile. Bearbeitet in der Überlagerung „Deckung…“, geschrieben mit OK.
+    /// </summary>
+    public DeckungsartDaten? Deckung { get; set; }
 }
 
 /// <summary>
@@ -31,7 +64,10 @@ public sealed class BedarfsProfilZeile
 /// <param name="Name">Der Bezeichner.</param>
 /// <param name="Beschreibung">Die Beschreibung aus dem Kopfsatz.</param>
 /// <param name="Typ">Der Profiltyp aus dem Kopfsatz.</param>
-public sealed record BedarfsProfilInfo(string Name, string Beschreibung, string Typ);
+/// <param name="Vorlauf">Das Temperaturpaar des Kopfsatzes — nur Prozesswärme (PW1 Stufe 1).</param>
+/// <param name="Ruecklauf">Der Rücklauf dazu; beide <c>null</c> = ohne Temperaturniveau.</param>
+public sealed record BedarfsProfilInfo(string Name, string Beschreibung, string Typ,
+                                       double? Vorlauf = null, double? Ruecklauf = null);
 
 /// <summary>
 /// Die Beschriftungen des Zapfprofil-Einstiegs im Bedarfsprofil-Dialog der Ausprägung

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace WindowsFormsApplication1
 {
@@ -77,7 +78,7 @@ namespace WindowsFormsApplication1
         /// Zahl, die mit ihr reisen muss — beim Kältebedarf „sensibel, ohne Entfeuchtung" (K5).
         /// <c>null</c> oder leer = die Datei beginnt wie bisher mit der Spaltenzeile.
         /// </param>
-        public static void Export(string vorschlagDateiname, double[] temperaturStuendlich, List<CsvSpalte> spalten,
+        public static async Task Export(string vorschlagDateiname, double[] temperaturStuendlich, List<CsvSpalte> spalten,
                                   bool viertelstundenwerte = false, IReadOnlyList<string> kopfzeilen = null)
         {
             if (spalten == null || spalten.Count == 0)
@@ -86,23 +87,8 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            // Zuletzt verwendeten Export-Ordner vorschlagen, sonst "Dokumente"
-            string startOrdner = LetztenPfadLesen();
-            if (string.IsNullOrEmpty(startOrdner) || !Directory.Exists(startOrdner))
-                startOrdner = Dienste.Pfade.Dokumente;
-
-            // Der Ordner geht MIT im Dateinamen hinein: Ein Startordner allein wird von
-            // Windows ignoriert, sobald sich das System für die Anwendung bereits einen
-            // zuletzt verwendeten Ordner gemerkt hat. Der Adapter setzt beides.
-            string dateiname = Dienste.Datei.DateiSpeichern(
-                "CSV Export",
-                "CSV Dateien (*.csv)|*.csv|Alle Dateien (*.*)|*.*",
-                Path.Combine(startOrdner, vorschlagDateiname));
-
+            string dateiname = await DateiWaehlenAsync(vorschlagDateiname);
             if (string.IsNullOrEmpty(dateiname)) return;
-
-            // Ordner für den nächsten Export merken
-            PfadMerken(dateiname);
 
             try
             {
@@ -113,6 +99,83 @@ namespace WindowsFormsApplication1
             {
                 Dienste.Dialog.Fehler("Fehler beim Schreiben der CSV-Datei:\n" + ex.Message, "CSV Export");
             }
+        }
+
+        /// <summary>
+        /// <b>Der Export einer Diagrammzeitreihe</b> (CSV am Diagramm): derselbe Speichern-Dialog
+        /// über <c>Dienste.Datei</c>, derselbe gemerkte Ordner, dieselben Meldungen — der Inhalt
+        /// kommt aus <see cref="ZeitreihenCsv.Text"/>.
+        /// </summary>
+        public static async Task ExportZeitreihen(string vorschlagDateiname, Zeitraster raster,
+                                                  IReadOnlyList<ZeitreihenSpalte> spalten)
+        {
+            if (spalten == null || spalten.Count == 0)
+            {
+                Dienste.Dialog.Meldung("Keine Datenreihe für den Export ausgewählt!", "CSV Export");
+                return;
+            }
+
+            await TextSchreiben(vorschlagDateiname, () => ZeitreihenCsv.Text(raster, spalten));
+        }
+
+        /// <summary>Dateiwahl, Schreiben (UTF-8 mit BOM) und Meldung — der eine Weg beider Diagrammexporte.</summary>
+        private static async Task TextSchreiben(string vorschlagDateiname, Func<string> inhalt)
+        {
+            string dateiname = await DateiWaehlenAsync(vorschlagDateiname);
+            if (string.IsNullOrEmpty(dateiname)) return;
+
+            try
+            {
+                File.WriteAllText(dateiname, inhalt(), new UTF8Encoding(true));
+                Dienste.Dialog.Meldung("CSV-Datei wurde erstellt:\n" + dateiname, "CSV Export");
+            }
+            catch (Exception ex)
+            {
+                Dienste.Dialog.Fehler("Fehler beim Schreiben der CSV-Datei:\n" + ex.Message, "CSV Export");
+            }
+        }
+
+        /// <summary>
+        /// <b>CSV am Diagramm, der eine Weg jeder Hülle:</b> die Reihen, die das Bild zeigt
+        /// (<see cref="ZeitreihenCsv.AusModell"/>), unter dem ausdrücklichen Raster oder dem aus
+        /// ihrer Länge, Dateiname nach <c>CHART_DATEI_GANGLINIE</c> aus Bildtitel und Kennung
+        /// (Projekt- oder Satznummer).
+        /// </summary>
+        public static Task ExportDiagramm(WindowsFormsApplication1.Zeichnung.Zeichenmodell modell, string titel,
+                                          object kennung, Zeitraster? raster = null)
+        {
+            string vorschlag = string.Format(MyResource.Resource.CHART_DATEI_GANGLINIE, ZeitreihenCsv.Dateistamm(titel), kennung);
+            // Ein Kalenderteppich schreibt seine Tafel 365 × 24, wie das Bild sie zeigt.
+            if (modell?.Tafel is WindowsFormsApplication1.Zeichnung.Tagesstundentafel tafel)
+                return TextSchreiben(vorschlag, () => ZeitreihenCsv.Kalenderteppich(tafel));
+            IReadOnlyList<ZeitreihenSpalte> spalten = ZeitreihenCsv.AusModell(modell);
+            return ExportZeitreihen(vorschlag, raster ?? ZeitreihenCsv.RasterAus(spalten), spalten);
+        }
+
+        /// <summary>
+        /// Die Dateiwahl beider Exporte: gemerkter Ordner, sonst „Dokumente“; der gewählte Ordner
+        /// wird für den nächsten Export gemerkt. <c>null</c> bei Abbruch.
+        /// </summary>
+        private static async Task<string> DateiWaehlenAsync(string vorschlagDateiname)
+        {
+            // Zuletzt verwendeten Export-Ordner vorschlagen, sonst "Dokumente"
+            string startOrdner = LetztenPfadLesen();
+            if (string.IsNullOrEmpty(startOrdner) || !Directory.Exists(startOrdner))
+                startOrdner = Dienste.Pfade.Dokumente;
+
+            // Der Ordner geht MIT im Dateinamen hinein: Ein Startordner allein wird von
+            // Windows ignoriert, sobald sich das System für die Anwendung bereits einen
+            // zuletzt verwendeten Ordner gemerkt hat. Der Adapter setzt beides.
+            string dateiname = await Dienste.Datei.DateiSpeichernAsync(
+                "CSV Export",
+                "CSV Dateien (*.csv)|*.csv|Alle Dateien (*.*)|*.*",
+                Path.Combine(startOrdner, vorschlagDateiname));
+
+            if (string.IsNullOrEmpty(dateiname)) return null;
+
+            // Ordner für den nächsten Export merken
+            PfadMerken(dateiname);
+            return dateiname;
         }
 
         /// <summary>

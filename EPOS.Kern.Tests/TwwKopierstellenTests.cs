@@ -89,6 +89,10 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain(wt.Rows.Cast<DataRow>().Select(r => Convert.ToInt64(r["ID"])),
                                   id => q.Wohnungstypen.Contains(id));
 
+            // --- Die sechs Ferienzeiträume hängen an der NEUEN Zone ----------------------
+            Assert.Equal(FerienErwartet(), Zonenferien(zoneNeu));
+            Assert.Equal(FerienErwartet(), Zonenferien(q.Zone));
+
             // --- Die Projektzeile ------------------------------------------------------
             DataTable tp = DataRepository.GetDataTable(
                 "SELECT Weg, Seed, ID_Bedarfstag FROM Tab_TwwProjekt WHERE ID_Projekt = ?", new DbParam("@p", neu));
@@ -105,6 +109,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, Wohnungstypen(q.Zone).Rows.Count);        // Kaskade an der Quelle
             Assert.Single(Zonen(neu).Rows.Cast<DataRow>());
             Assert.Equal(2, Wohnungstypen(zoneNeu).Rows.Count);
+            Assert.Empty(Zonenferien(q.Zone));                           // Kaskade an der Quelle
+            Assert.Equal(FerienErwartet(), Zonenferien(zoneNeu));
             Assert.Equal(1L, Convert.ToInt64(DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM Tab_TwwProjekt WHERE ID_Projekt = ?", new DbParam("@p", quelle))));
         }
@@ -138,6 +144,8 @@ namespace EPOS.Kern.Tests
             DataTable wt = Wohnungstypen(Convert.ToInt64(z["ID"]));
             Assert.Equal(new[] { q.KlasseA, q.KlasseB },
                          wt.Rows.Cast<DataRow>().Select(r => Convert.ToInt64(r["ID_Ausstattung"])).ToArray());
+            // Die sechs Ferienzeiträume reisen mit und hängen an der importierten Zone.
+            Assert.Equal(FerienErwartet(), Zonenferien(Convert.ToInt64(z["ID"])));
             Assert.Equal(q.Bedarfstag, Convert.ToInt64(DataRepository.ExecuteScalar(
                 "SELECT ID_Bedarfstag FROM Tab_TwwProjekt WHERE ID_Projekt = ?", new DbParam("@p", neu))));
 
@@ -228,6 +236,54 @@ namespace EPOS.Kern.Tests
             Assert.Equal(vorher + 11, Katalogzeilen());
             DataRow z2 = Assert.Single(Zonen(zweit).Rows.Cast<DataRow>());
             Assert.Equal(nutzung, Convert.ToInt64(z2["ID_Nutzungsart"]));
+        }
+
+        /// <summary>
+        /// <b>Eine Paketzeile des Hotels im früheren Stand</b> (Auftrag A2, E-A2-4 c): Ein Paket, das eine
+        /// Datenbank VOR dem Schritt der Bezugsart Zimmer geschrieben hat, führt die Auslieferungszeile
+        /// „Hotel (aus Messung)" mit Betten. Am nachgeführten Ziel heißt dieselbe Zeile „Hotel (aus Messung,
+        /// je Zimmer)" und trägt Zimmer. Der Import liest die Paketzeile als die heutige, die Zone zeigt auf
+        /// die nachgeführte Zeile, keine zweite entsteht, und der Bericht nennt es.
+        /// </summary>
+        [Fact]
+        public void Transfer_liest_eine_Paketzeile_des_Hotels_im_frueheren_Stand_als_die_heutige()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Stand q = Anlegen(quelle);
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Probesatz Hotel", "FREI-1");
+            int hotel = TwwTestdatenbank.NutzungsartAnlegen("Hotel (aus Messung)", "FREI-1", satz,
+                                                            TwwSchema.STATUS_AUSLIEFERUNG, readOnly: true);
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_TwwNutzungsart_STAMM SET Bezugsart = 3, Bedarf_Version = 'FREI-1', Bedarf_Herkunftsart = ? WHERE ID = ?",
+                new DbParam("@h", TwwSchema.HERKUNFT_EIGENKONSTRUKTION), new DbParam("@id", hotel)));
+            Assert.True(DataRepository.ExecuteSQL("UPDATE Tab_TwwZone SET ID_Nutzungsart = ?, ID_Tagesgangsatz = NULL WHERE ID = ?",
+                                                  new DbParam("@n", hotel), new DbParam("@z", q.Zone)));
+
+            string paket = ordner.Datei("tww.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(PROJEKT, paket));
+
+            // Das Ziel ist nachgeführt (Schemaschritt der Bezugsart Zimmer): dieselbe Zeile, heutiger Stand.
+            var bericht = new List<string>();
+            TwwBezugsartSchema.Ausfuehren(bericht);
+            Assert.Contains("1 Paketzeile(n) in einem frueheren Stand nachgefuehrt", bericht);
+            Assert.Equal("Hotel (aus Messung, je Zimmer)", Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT Bezeichner FROM Tab_TwwNutzungsart_STAMM WHERE ID = ?", new DbParam("@id", hotel))));
+            int vorher = Katalogzeilen();
+
+            int neu = io.Importieren(paket, "Tww Hotel", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                     null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+            DataRow z = Assert.Single(Zonen(neu).Rows.Cast<DataRow>());
+            Assert.Equal((long)hotel, Convert.ToInt64(z["ID_Nutzungsart"]));
+            Assert.Equal(vorher, Katalogzeilen());
+            Assert.Equal(0, ImportZeilen());
+            Assert.Contains(io.LetzterBericht, b => b.Contains("„Hotel (aus Messung)“ (Bezugsart Betten)")
+                                                    && b.Contains("gelesen als „Hotel (aus Messung, je Zimmer)“ mit der Bezugsart Zimmer"));
         }
 
         /// <summary>
@@ -927,6 +983,12 @@ namespace EPOS.Kern.Tests
             Assert.True(DataRepository.ExecuteSQL(
                 "INSERT INTO Tab_TwwProjekt (ID_Projekt, Weg, Seed, ID_Bedarfstag) VALUES (?, 'BESTAND', 7, ?)",
                 new DbParam("@p", idProjekt), new DbParam("@b", s.Bedarfstag)));
+            // Sechs eigene Ferienzeiträume der Zone (ZB-Q3 B: mehr als die vier früheren Spaltenpaare).
+            for (int i = 0; i < FERIEN.Length; i++)
+                Assert.True(DataRepository.ExecuteSQL(
+                    "INSERT INTO Tab_TwwZonenferien (ID_Zone, Reihenfolge, Name, Beginn, Ende) VALUES (?, ?, ?, ?, ?)",
+                    new DbParam("@z", s.Zone), new DbParam("@r", i + 1), new DbParam("@n", FERIEN[i].Name),
+                    new DbParam("@b", (object)FERIEN[i].Beginn ?? DBNull.Value), new DbParam("@e", FERIEN[i].Ende)));
 
             s.Katalogzeilen = Katalogzeilen();
             return s;
@@ -950,6 +1012,26 @@ namespace EPOS.Kern.Tests
 
         private static DataTable Wohnungstypen(long idZone) => DataRepository.GetDataTable(
             "SELECT * FROM Tab_TwwWohnungstyp WHERE ID_Zone = ? ORDER BY Reihenfolge", new DbParam("@z", idZone));
+
+        /// <summary>Die sechs Ferienzeiträume der Probezone (erfunden, rund; einer über den Jahreswechsel, einer ohne Beginn).</summary>
+        private static readonly (string Name, int? Beginn, int Ende)[] FERIEN =
+        {
+            ("Winter", 355, 6), (null, null, 20), ("Ostern", 90, 100), ("Pfingsten", 140, 145),
+            ("Sommer", 200, 230), ("Herbst", 300, 305)
+        };
+
+        /// <summary>Die Ferienzeiträume einer Zone als (Reihenfolge, Name, Beginn, Ende), geordnet.</summary>
+        private static (long Reihenfolge, string Name, long? Beginn, long Ende)[] Zonenferien(long idZone) =>
+            DataRepository.GetDataTable(
+                "SELECT Reihenfolge, Name, Beginn, Ende FROM Tab_TwwZonenferien WHERE ID_Zone = ? ORDER BY Reihenfolge",
+                new DbParam("@z", idZone)).Rows.Cast<DataRow>()
+                .Select(r => (Convert.ToInt64(r["Reihenfolge"]), r["Name"] == DBNull.Value ? null : Convert.ToString(r["Name"]),
+                              r["Beginn"] == DBNull.Value ? (long?)null : Convert.ToInt64(r["Beginn"]), Convert.ToInt64(r["Ende"])))
+                .ToArray();
+
+        /// <summary>Die erwarteten Zeilen der Probezone.</summary>
+        private static (long Reihenfolge, string Name, long? Beginn, long Ende)[] FerienErwartet() =>
+            FERIEN.Select((f, i) => ((long)(i + 1), f.Name, (long?)f.Beginn, (long)f.Ende)).ToArray();
 
         private static readonly string[] KATALOGE =
         {

@@ -1,0 +1,45 @@
+Beim Schritt '''Strombedarf erfassen''' entsteht der Bedarf auf demselben Weg wie der Wärmebedarf: aus Verbrauchertypen mit Monatswerten und 168-Stunden-Wochenprofilen. Ein gemessener Lastgang lässt sich zusätzlich einlesen.
+
+== Verbrauchertypen und Wochenprofile ==
+{{Anker|verbrauchertypen-und-wochenprofile|verbrauchertypen}}
+
+Sie wählen einen Verbrauchertyp aus dem Katalog – darunter die BDEW-Standardlastprofile Strom 2025 für Haushalt, Gewerbe und Landwirtschaft sowie die Netzbezugsprofile für Haushalte mit Photovoltaik – und geben den Jahresverbrauch an; die Verteilung über das Jahr übernehmen die hinterlegten Monatswerte und das Wochenprofil mit 168 Stundenwerten. Je Zuordnung kann ein [[Programm Dokumentation/Betriebskalender|Betriebskalender]] Feiertage und Betriebsferien auf das Wochenprofil legen.
+
+=== Dialog Strombedarf ===
+{{Anker|dialog-strombedarf|bedarfsprofile}}
+
+Der Dialog zeigt oben die Liste ''Im Projekt'' mit der Jahressumme aller Zuordnungen in der Kopfleiste, darunter den ''Katalog (Datenbank)'' und unten die Zeile ''gewählter Satz''. ''In das Projekt übernehmen'' (auch Doppelklick oder Enter) nimmt einen oder mehrere angekreuzte Katalogsätze auf und legt dabei die Projektkopie an; ''Aus dem Projekt entfernen'' wirkt auf die Auswahl. Ein Klick auf die Zeile wählt den Satz, die gewählte Zeile ist farbig hervorgehoben; Ankreuzen wählt keine Zeile. Die Zeile ''gewählter Satz'' fasst Typ, Jahressumme, Kalender und Beschreibung zusammen. ''Bearbeiten…'' der Knopfleiste oder der Stift am Ende einer Projektzeile öffnet den Satz über dem Dialog: Dort stehen der neue Jahresverbrauch mit Einheit und der Betriebskalender; ''OK'' übernimmt die Eingaben, ''Abbrechen'' stellt den Stand beim Öffnen wieder her. ''Simulation…'' in der Kopfleiste rechnet den Bedarf mit dem Stand des Dialogs und zeigt Kennzahlen, Monate und Grafik.
+
+Die Knopfleiste in der Zeile ''gewählter Satz'' trägt ''Typ ändern…'' (die Wochenprofile der Typen), ''Schloss setzen…'' bzw. ''Schloss aufheben…'', ''Löschen'', ''Bearbeiten…'' und ''Neu…''. Schloss und Löschen gelten nur für Katalogsätze; ''Bearbeiten…'' öffnet beim Projektsatz genau eine gewählte Zeile, beim Katalogsatz den Katalogsatz im Katalogeditor; ''Neu…'' legt einen Katalogsatz an; ''Vergleichen…'' gibt es hier nicht. Ein gesperrter Katalogsatz öffnet über den Stift nur zum Lesen. Beim Löschen mehrerer Sätze fragt der Dialog einmal und überspringt gesperrte und im Projekt zugeordnete Sätze; die Rückfrage nennt sie.
+
+== Rechnen in Viertelstundenwerten ==
+{{Anker|rechnen-in-viertelstundenwerten|viertelstundenwerte|zeitraster}}
+
+Da für Eigenverbrauchsbetrachtungen die Stundenauflösung zu grob ist – Eigenverbrauch und Speicherbewirtschaftung fallen in Stundenmittelwerten zu günstig aus –, rechnet EPOS-Plan das Profil auf Viertelstunden um und arbeitet intern mit 35.040 Werten je Jahr.
+
+== Gemessenen Lastgang einlesen ==
+{{Anker|gemessenen-lastgang-einlesen|lastgang|import}}
+
+Gemessene Lastgänge lassen sich importieren und werden je nach Zeitraster – Stunden- oder Viertelstundenwerte – automatisch eingepasst und dem berechneten Profil überlagert.
+
+Im Dialog ''Stromganglinie'' steht oben die Liste der Lastgänge im Projekt, darunter der Katalog. Gewählt wird ein Lastgang durch den Klick auf seine Zeile, die gewählte Zeile ist farbig hervorgehoben; Ankreuzen wählt keine Zeile. Beide Listen tragen Kästchen für die Mehrfachwahl: Angekreuzte Katalogsätze übernehmen Sie mit ''In das Projekt übernehmen'' in einem Zug, angekreuzte Projektzeilen entfernt ''Aus dem Projekt entfernen''. Die Knopfleiste in der Zeile ''Gewählter Satz'' trägt ''Vergrößern'', ''Speichern unter…'', ''Schloss setzen…'', ''Löschen'' (bei mehreren Sätzen mit einer Rückfrage; gesperrte und im Projekt zugeordnete Sätze bleiben stehen und werden genannt), ''Bearbeiten…'' und ''Import'' (Schloss und Löschen gelten nur für Katalogsätze; ''Vergleichen…'' und ''Neu…'' gibt es nicht); welches Dateiformat erwartet wird, sagt der Infoknopf im Kopf des Katalogs. ''Bearbeiten…'' (ebenso der Stift am Ende einer Zeile) öffnet den Lastgang: Beim Projektsatz und beim gesperrten Katalogsatz zeigt es die Ganglinie zur Ansicht über dem ganzen Dialog, beim ungesperrten Katalogsatz öffnet es die Verwaltung. Unter den Listen zeigt die Zeile ''Gewählter Satz'' aufgeklappt Jahresarbeit, Spitzenlast, Vollbenutzungsstunden und die Jahresganglinie; ''Vergrößern'' zeigt sie über dem ganzen Dialog.
+
+== Ergebnis ==
+{{Anker|ergebnis}}
+
+Als Ergebnis stehen der maximale Leistungsbedarf, der Jahresverbrauch, die Monatswerte und die geordnete Jahresdauerlinie zur Verfügung. Die Jahreshöchstlast und ihre Kappung durch einen Stromspeicher wertet die [[Programm Dokumentation/Stromspeicher#maske-lastspitzenkappung|Lastspitzenkappung]] aus.
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Grundlagen/Strombedarf und Lastprofile]] – Herkunft und Aufbau der Lastprofile
+* [[Stammdaten und Datenimport]] – Katalog der Stromverbrauchertypen und Stromganglinien
+* [[Industrie und Gewerbe]] – der gemessene Viertelstundenlastgang als belastbarste Eingangsgröße
+* [[Programm Dokumentation/Strombedarf|Programm-Dokumentation: Strombedarf]] – Standardlastprofil, eigenes Profil und Messdaten im Einzelnen
+* [[Programm Dokumentation/Stromverbraucher|Programm-Dokumentation: Stromverbraucher]] – der Dialog der Standardlastprofile im Projekt
+
+← [[Wärmebedarf erfassen]] | [[Erzeuger und Speicher auswählen]] →
+
+{{Navigation Programmablauf}}
+
+[[Kategorie:Programmablauf]]

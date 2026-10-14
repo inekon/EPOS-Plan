@@ -320,7 +320,7 @@
         <KindInhalt>
             <div class="epos-berechnungshilfe">
                 <InfoKnopf Schluessel="Form_WirtschaftlichkeitParameter.btn_Help_Risiko"
-                           StandardKurztext="@_t.GRisiko" />
+                           StandardKurztext="@_t.GRisiko" MitAssistent="false" />
             </div>
             <Formularraster>
                 <KindInhalt>
@@ -774,7 +774,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     private static CultureInfo Kultur => BhwTexte.Kultur;

@@ -89,6 +89,12 @@
             <Zahlenfeld Bezeichnung="@LabelAperturflaeche" Einheit="@EinheitFlaeche"
                         Feldname="@LabelAperturflaecheKurz" Wert="@Daten.Aperturflaeche"
                         WertChanged="w => Daten.Aperturflaeche = w" />
+            @* BEZUGSFLAECHE DER KENNWERTE (Welle M2, ST6): die Flaeche, auf die h0, k1 und
+               k2 im Datenblatt bezogen sind - mit ihr rechnet die Simulation. *@
+            <Auswahlfeld Bezeichnung="@Resource.SKK_LBL_BEZUGSFLAECHE" Eintraege="@Bezugsflaechen"
+                         Auswahl="@(Daten.Bezugsflaeche == BRUTTO ? 1 : 0)"
+                         AuswahlChanged="w => Daten.Bezugsflaeche = w == 1 ? BRUTTO : APERTUR" />
+            <Herleitungszeile Text="@Resource.SKK_HINT_BEZUGSFLAECHE" />
             <Zahlenfeld Bezeichnung="@LabelH0" Feldname="@LabelH0Kurz"
                         Wert="@Daten.H0" WertChanged="w => Daten.H0 = w" />
             <Zahlenfeld Bezeichnung="@LabelK1" Einheit="@EinheitK1"
@@ -198,7 +204,18 @@
     [Parameter] public string EinheitFlaeche { get; set; } = "m²";
     [Parameter] public string EinheitK1 { get; set; } = "W/(m²*K)";
     [Parameter] public string EinheitK2 { get; set; } = "W/(m²*K²)";
-    [Parameter] public string EinheitWinkel { get; set; } = "50°";
+    [Parameter] public string EinheitWinkel { get; set; } = "";
+
+    /// <summary>Persistenzwerte der Bezugsfläche (<c>DbWerte.SOLAR_BEZUGSFLAECHE_*</c>).</summary>
+    private const string APERTUR = "apertur";
+    private const string BRUTTO = "brutto";
+
+    /// <summary>Die zwei Bezugsflächen (ST6): 0 = Apertur (Vorgabe), 1 = Brutto.</summary>
+    private static IReadOnlyList<(int Id, string Text)> Bezugsflaechen => new[]
+    {
+        (0, Resource.SKK_OPT_BEZUG_APERTUR),
+        (1, Resource.SKK_OPT_BEZUG_BRUTTO)
+    };
 
     [Parameter] public string BtnUeberschreibenText { get; set; } = "Überschreiben";
     [Parameter] public string BtnSpeichernUnterText { get; set; } = "Speichern unter";
@@ -286,7 +303,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     /// <summary>

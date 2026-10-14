@@ -51,6 +51,66 @@ public sealed class VergleichZeile
 }
 
 /// <summary>
+/// Ein Eintrag einer Zelle der Gegenüberstellung je Gewerk: „n × Komponente“ und
+/// darunter leise ihre Kennwerte (aus <c>KomponentenVergleich.JeGewerk</c>).
+/// </summary>
+public sealed class GewerkVergleichEintrag
+{
+    /// <summary>Wie oft die Version diese Komponente führt.</summary>
+    public int Anzahl { get; set; }
+
+    /// <summary>Der Bezeichner der Komponente.</summary>
+    public string Bezeichner { get; set; } = "";
+
+    /// <summary>Die Kennwerte, fertig formatiert („16 kW“); leer = keine.</summary>
+    public string Kennwerte { get; set; } = "";
+
+    /// <summary>Die Merkmale der Komponente als Kurztext; leer = keiner.</summary>
+    public string Kurztext { get; set; } = "";
+}
+
+/// <summary>Die Zelle einer Version in der Gegenüberstellung je Gewerk.</summary>
+public sealed class GewerkVergleichZelle
+{
+    /// <summary>Die Einträge; leer = die Version führt das Gewerk nicht.</summary>
+    public IReadOnlyList<GewerkVergleichEintrag> Eintraege { get; set; } = Array.Empty<GewerkVergleichEintrag>();
+
+    /// <summary>Weicht die Zelle vom Stammprojekt ab? (Der Kern entscheidet.)</summary>
+    public bool WeichtAb { get; set; }
+}
+
+/// <summary>Eine Zeile der Gegenüberstellung: ein Gewerk, je Version eine Zelle.</summary>
+public sealed class GewerkVergleichZeile
+{
+    /// <summary>Der Anzeigename des Gewerks.</summary>
+    public string Gewerk { get; set; } = "";
+
+    /// <summary>Je Version eine Zelle, der Stamm zuerst — in der Reihenfolge der <see cref="UebersichtStand.Versionsspalten"/>.</summary>
+    public IReadOnlyList<GewerkVergleichZelle> Zellen { get; set; } = Array.Empty<GewerkVergleichZelle>();
+
+    /// <summary>Weicht wenigstens eine Version in diesem Gewerk vom Stamm ab?</summary>
+    public bool WeichtAb
+    {
+        get
+        {
+            foreach (GewerkVergleichZelle z in Zellen)
+                if (z.WeichtAb) return true;
+            return false;
+        }
+    }
+}
+
+/// <summary>Der Spaltenkopf einer Version: ihr Name und ihr Simulationsstand.</summary>
+public sealed class VersionsSpalte
+{
+    /// <summary>„Stamm“ bzw. der Bezeichner der Variante.</summary>
+    public string Name { get; set; } = "";
+
+    /// <summary>„simuliert 12.10.26 23:05“ bzw. „nicht simuliert“; leer = unbekannt.</summary>
+    public string Stand { get; set; } = "";
+}
+
+/// <summary>
 /// Der Anzeigestand der Übersichtsseite — was der Vorläufer in
 /// <c>LadeProjekte</c>, <c>LadeAuswahl</c> und <c>ZeigeKomponenten</c>
 /// zusammentrug, in einer Antwort.
@@ -80,9 +140,6 @@ public sealed class UebersichtStand
     /// </summary>
     public IReadOnlyList<int> GewaehlteVarianten { get; set; } = Array.Empty<int>();
 
-    /// <summary>Vorbelegung des Bezeichnerfeldes für „Variante anlegen".</summary>
-    public string Bezeichnervorschlag { get; set; } = "";
-
     /// <summary>Überschrift des Komponentenbereichs (Vergleich bzw. Unterschiede).</summary>
     public string KomponentenTitel { get; set; } = "";
 
@@ -92,8 +149,14 @@ public sealed class UebersichtStand
     /// <summary>Die Zeilen des Komponentenbereichs.</summary>
     public IReadOnlyList<VergleichZeile> Vergleich { get; set; } = Array.Empty<VergleichZeile>();
 
-    /// <summary>Ist die markierte Zeile löschbar (eine Variante)?</summary>
-    public bool Loeschbar { get; set; }
+    /// <summary>
+    /// Die Gegenüberstellung je Gewerk (Stammzeile markiert); leer = keine — dann
+    /// zeigt die Seite die <see cref="Vergleich"/>-Zeilen (die Unterschiede einer Variante).
+    /// </summary>
+    public IReadOnlyList<GewerkVergleichZeile> Gewerke { get; set; } = Array.Empty<GewerkVergleichZeile>();
+
+    /// <summary>Die Spaltenköpfe der Versionen zu <see cref="Gewerke"/>, der Stamm zuerst.</summary>
+    public IReadOnlyList<VersionsSpalte> Versionsspalten { get; set; } = Array.Empty<VersionsSpalte>();
 
     /// <summary>Lässt sich eine Variante anlegen (es gibt ein Stammprojekt)?</summary>
     public bool AnlegenMoeglich { get; set; }
@@ -104,3 +167,23 @@ public sealed class UebersichtStand
     /// <summary>Die Statuszeile.</summary>
     public string Statuszeile { get; set; } = "";
 }
+
+/// <summary>
+/// Das Ergebnis einer Handlung der Gruppe „Variante verwalten“ (Anlegen, Umbenennen):
+/// gelungen oder nicht, und die Meldung dazu. Scheitert die Handlung, bleibt der Dialog
+/// mit der Meldung offen; gelingt sie, steht die Meldung in der Statuszeile der Seite.
+/// </summary>
+public readonly record struct VariantenAktionErgebnis(bool Gelungen, string Meldung)
+{
+    /// <summary>Gelungen, mit der Meldung für die Statuszeile.</summary>
+    public static VariantenAktionErgebnis Ok(string meldung) => new(true, meldung ?? "");
+
+    /// <summary>Gescheitert, mit dem Grund für den Dialog.</summary>
+    public static VariantenAktionErgebnis Fehler(string meldung) => new(false, meldung ?? "");
+}
+
+/// <summary>Die Antwort des Dialogs „Variante anlegen“: die Quelle der Gruppe und der Bezeichner.</summary>
+public readonly record struct VarianteAnlegenWahl(int QuelleId, string Bezeichner);
+
+/// <summary>Die Antwort des Dialogs „Variante umbenennen“: die Variante und ihr neuer Bezeichner.</summary>
+public readonly record struct VarianteUmbenennenWahl(int VarianteId, string Bezeichner);

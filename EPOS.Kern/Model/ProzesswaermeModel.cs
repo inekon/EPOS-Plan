@@ -17,6 +17,12 @@ namespace WindowsFormsApplication1
         public int m_ID_Projekt;
         public bool m_bReadOnly;
 
+        /// <summary>Geforderte Vorlauftemperatur [°C]; <c>null</c> = ohne Temperaturniveau (PW1 Stufe 1).</summary>
+        public double? m_Vorlauf;
+
+        /// <summary>Rücklauftemperatur [°C]; <c>null</c> = ohne Temperaturniveau (PW1 Stufe 1).</summary>
+        public double? m_Ruecklauf;
+
         public ProzesswaermeModel()
         {
             m_ID = 0;

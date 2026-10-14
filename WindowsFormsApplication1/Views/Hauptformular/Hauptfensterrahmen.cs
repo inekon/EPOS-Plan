@@ -190,6 +190,14 @@ namespace WindowsFormsApplication1
             return base.ProcessCmdKey(ref nachricht, taste);
         }
 
+        /// <summary>Der Fenstertitel; im Entwicklermodus mit dem Zusatz <c>ENTW_TITELZUSATZ</c>.</summary>
+        private void TitelSetzen()
+        {
+            Text = Entwicklermodus.Aktiv
+                ? PRODUKTNAME + " " + MyResource.Resource.ENTW_TITELZUSATZ
+                : PRODUKTNAME;
+        }
+
         private void BeimLaden(object sender, EventArgs e)
         {
             // Verhindert, dass der Designer in Visual Studio die API blockiert.
@@ -219,6 +227,9 @@ namespace WindowsFormsApplication1
             // W16b hing hier eine BlazorSeite<Startseite>, davor die
             // eingebettete Form_Start.
             _huelle = new HauptfensterHuelle(() => this, Program.projektkontext);
+            _huelle.Entwicklerwerkzeuge = () => _bild != null && _bild.EntwicklerwerkzeugeOeffnen();
+            _huelle.FreigabeGewechselt += TitelSetzen;
+            TitelSetzen();
             _bild = new BlazorSeite<EPOS.UI.Seiten.Hauptfenster>(
                 new Dictionary<string, object>(_huelle.Gaben()));
             Controls.Add(_bild);

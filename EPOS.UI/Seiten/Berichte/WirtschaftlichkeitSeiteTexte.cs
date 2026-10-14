@@ -86,6 +86,8 @@ public sealed class WirtschaftlichkeitSeiteTexte
     /// <summary>WIRT_ZUM_BERICHT_KURZ — der Kurztext am freien Knopf.</summary>
     public string ZumBerichtKurztext { get; set; } = T("WIRT_ZUM_BERICHT_KURZ",
         "Wechselt in den Bereich „Bericht“ — Baustein Wirtschaftlichkeit und diese Vergleichsgruppe sind dort vorbelegt; erzeugt wird mit „Erstellen“.");
+    /// <summary>BK_BER_SZENARIO_VALERI — das Szenario der Vorbelegung aus der Darstellung „ValERI-Bewertung“ (VB‑Q6 a).</summary>
+    public string ZumBerichtValeri { get; set; } = T("BK_BER_SZENARIO_VALERI", "Alle drei Szenarien (VALERI)");
     /// <summary>WIRT_ZUM_BERICHT_GESPERRT — der Grund der weichen Sperre ohne Ergebnisse.</summary>
     public string ZumBerichtGesperrt { get; set; } = T("WIRT_ZUM_BERICHT_GESPERRT",
         "Erst berechnen: Für diese Vergleichsgruppe liegen noch keine Ergebnisse der Wirtschaftlichkeit vor.");

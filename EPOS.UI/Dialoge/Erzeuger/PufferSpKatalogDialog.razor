@@ -44,8 +44,12 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+    @* Ohne Titel (im Katalogeditor des Projektdialogs, Katalogauswahl V1) traegt die Ueberlagerung Titel und Kreuz. *@
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
         @* Das Kreuz steht beim Titel: Ohne Titel traegt ihn die umschliessende
            Ueberlagerung — und mit ihm das Kreuz. *@
@@ -158,6 +162,19 @@
     [Parameter] public Func<PufferSpKatalogDaten, string, KatalogSpeicherErgebnis>? Anlegen { get; set; }
 
     /// <summary>
+    /// KT-7: „Überschreiben" über die Fangstelle — wirft der Schreibweg, kommt die Ablehnung mit
+    /// Grund zurück (<c>WURZEL_SCHREIBEN_FEHLER</c>), der Dialog bleibt mit seinen Eingaben offen.
+    /// </summary>
+    private KatalogSpeicherErgebnis UeberschreibenGefangen()
+        => Katalogladung.Schreiben(() => Ueberschreiben!(Daten), Daten.Name,
+                                   g => new KatalogSpeicherErgebnis(false, g, Daten.Name));
+
+    /// <summary>KT-7: „Speichern"/„Speichern unter" über die Fangstelle, wie <see cref="UeberschreibenGefangen"/>.</summary>
+    private KatalogSpeicherErgebnis AnlegenGefangen(string name)
+        => Katalogladung.Schreiben(() => Anlegen!(Daten, name), name,
+                                   g => new KatalogSpeicherErgebnis(false, g, name));
+
+    /// <summary>
     /// Der Name, unter dem der Satz jetzt steht - <c>null</c> bei Abbruch. Der Aufrufer
     /// waehlt damit die Zeile in seiner Liste wieder aus (Bestand: <c>m_szPufferSp</c>).
     /// </summary>
@@ -264,8 +281,8 @@
             return KiKern.KiErgebnis.Abgelehnt(_meldung);
 
         KatalogSpeicherErgebnis? ergebnis = Modus == KatalogModus.Bearbeiten
-            ? Ueberschreiben?.Invoke(Daten)
-            : Anlegen?.Invoke(Daten, Daten.Name);
+            ? (Ueberschreiben is null ? null : UeberschreibenGefangen())
+            : (Anlegen is null ? null : AnlegenGefangen(Daten.Name));
 
         if (ergebnis is null)
             return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
@@ -284,7 +301,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     private void BeiName(string wert)
@@ -329,7 +346,7 @@
         if (Ueberschreiben is null) return;
         if (!EingabenPruefen()) return;
 
-        KatalogSpeicherErgebnis ergebnis = Ueberschreiben(Daten);
+        KatalogSpeicherErgebnis ergebnis = UeberschreibenGefangen();
         await NachDemSchreiben(ergebnis);
     }
 
@@ -338,7 +355,7 @@
         if (Anlegen is null) return;
         if (!EingabenPruefen()) return;
 
-        KatalogSpeicherErgebnis ergebnis = Anlegen(Daten, Daten.Name);
+        KatalogSpeicherErgebnis ergebnis = AnlegenGefangen(Daten.Name);
         await NachDemSchreiben(ergebnis);
     }
 
@@ -353,7 +370,7 @@
         // auf, weil der Knopf die Ueberlagerung sofort zeigt.
         if (!EingabenPruefen()) return;
 
-        KatalogSpeicherErgebnis ergebnis = Anlegen(Daten, name);
+        KatalogSpeicherErgebnis ergebnis = AnlegenGefangen(name);
         await NachDemSchreiben(ergebnis);
     }
 

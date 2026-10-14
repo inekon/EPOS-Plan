@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- EPOS-Plan Importprobe (selbst erzeugt): zwei Räume mit gemeinsamer Innenwand, Raum B mit Pultdach, ein Fenster, Dicken in mm, ohne ClosedShell, nur AdjacentSpaceId. -->
+<gbXML xmlns="http://www.gbxml.org/schema" version="0.37" temperatureUnit="C" lengthUnit="Meters" areaUnit="SquareMeters" volumeUnit="CubicMeters" useSIUnitsForResults="true">
+  <Campus id="campus-1">
+    <Location>
+      <ZipcodeOrPostalCode>00000</ZipcodeOrPostalCode>
+      <Latitude>50</Latitude>
+      <Longitude>10</Longitude>
+      <Name>Musterort</Name>
+    </Location>
+    <Building id="geb-1" buildingType="Office">
+      <Name>Pultdachhaus</Name>
+      <BuildingStorey id="gs-eg"><Name>Erdgeschoss</Name><Level>0</Level></BuildingStorey>
+      <Space id="raum-a" conditionType="Heated" buildingStoreyIdRef="gs-eg">
+        <Name>Raum A</Name>
+        <Area>15.776</Area>
+        <Volume>47.328</Volume>
+      </Space>
+      <Space id="raum-b" conditionType="Heated" buildingStoreyIdRef="gs-eg">
+        <Name>Raum B</Name>
+        <Area>15.776</Area>
+        <Volume>55.216</Volume>
+      </Space>
+    </Building>
+    <Surface id="boden-a" surfaceType="SlabOnGrade" constructionIdRef="kon-boden">
+      <AdjacentSpaceId spaceIdRef="raum-a"/>
+      <PlanarGeometry>
+        <PolyLoop>
+          <CartesianPoint><Coordinate>0</Coordinate><Coordinate>0</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>0</Coordinate><Coordinate>4</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>4</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>0</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+        </PolyLoop>
+      </PlanarGeometry>
+    </Surface>
+    <Surface id="boden-b" surfaceType="SlabOnGrade" constructionIdRef="kon-boden">
+      <AdjacentSpaceId spaceIdRef="raum-b"/>
+      <PlanarGeometry>
+        <PolyLoop>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>0</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>4</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>10</Coordinate><Coordinate>4</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>10</Coordinate><Coordinate>0</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+        </PolyLoop>
+      </PlanarGeometry>
+    </Surface>
+    <Surface id="dach-a" surfaceType="Roof" constructionIdRef="kon-dach">
+      <AdjacentSpaceId spaceIdRef="raum-a"/>
+      <PlanarGeometry>
+        <PolyLoop>
+          <CartesianPoint><Coordinate>0</Coordinate><Coordinate>0</Coordinate><Coordinate>3</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>0</Coordinate><Coordinate>3</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>4</Coordinate><Coordinate>3</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>0</Coordinate><Coordinate>4</Coordinate><Coordinate>3</Coordinate></CartesianPoint>
+        </PolyLoop>
+      </PlanarGeometry>
+    </Surface>
+    <Surface id="dach-b" surfaceType="Roof" constructionIdRef="kon-dach">
+      <AdjacentSpaceId spaceIdRef="raum-b"/>
+      <PlanarGeometry>
+        <PolyLoop>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>0</Coordinate><Coordinate>3</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>10</Coordinate><Coordinate>0</Coordinate><Coordinate>3</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>10</Coordinate><Coordinate>4</Coordinate><Coordinate>4</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>4</Coordinate><Coordinate>4</Coordinate></CartesianPoint>
+        </PolyLoop>
+      </PlanarGeometry>
+    </Surface>
+    <Surface id="aw-a-sued" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-a"/>
+      <PlanarGeometry>
+        <PolyLoop>
+          <CartesianPoint><Coordinate>0</Coordinate><Coordinate>0</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>0</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>0</Coordinate><Coordinate>3</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>0</Coordinate><Coordinate>0</Coordinate><Coordinate>3</Coordinate></CartesianPoint>
+        </PolyLoop>
+      </PlanarGeometry>
+      <Opening id="fenster-a-sued" openingType="OperableWindow" windowTypeIdRef="fenster-typ-1">
+        <PlanarGeometry>
+          <PolyLoop>
+            <CartesianPoint><Coordinate>1.5</Coordinate><Coordinate>0</Coordinate><Coordinate>1</Coordinate></CartesianPoint>
+            <CartesianPoint><Coordinate>3</Coordinate><Coordinate>0</Coordinate><Coordinate>1</Coordinate></CartesianPoint>
+            <CartesianPoint><Coordinate>3</Coordinate><Coordinate>0</Coordinate><Coordinate>2.2</Coordinate></CartesianPoint>
+            <CartesianPoint><Coordinate>1.5</Coordinate><Coordinate>0</Coordinate><Coordinate>2.2</Coordinate></CartesianPoint>
+          </PolyLoop>
+        </PlanarGeometry>
+      </Opening>
+    </Surface>
+    <Surface id="aw-a-west" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-a"/>
+      <PlanarGeometry>
+        <PolyLoop>
+          <CartesianPoint><Coordinate>0</Coordinate><Coordinate>4</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>0</Coordinate><Coordinate>0</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>0</Coordinate><Coordinate>0</Coordinate><Coordinate>3</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>0</Coordinate><Coordinate>4</Coordinate><Coordinate>3</Coordinate></CartesianPoint>
+        </PolyLoop>
+      </PlanarGeometry>
+    </Surface>
+    <Surface id="aw-a-nord" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-a"/>
+      <PlanarGeometry>
+        <PolyLoop>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>4</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>0</Coordinate><Coordinate>4</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>0</Coordinate><Coordinate>4</Coordinate><Coordinate>3</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>4</Coordinate><Coordinate>3</Coordinate></CartesianPoint>
+        </PolyLoop>
+      </PlanarGeometry>
+    </Surface>
+    <Surface id="aw-b-sued" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-b"/>
+      <PlanarGeometry>
+        <PolyLoop>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>0</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>10</Coordinate><Coordinate>0</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>10</Coordinate><Coordinate>0</Coordinate><Coordinate>3</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>0</Coordinate><Coordinate>3</Coordinate></CartesianPoint>
+        </PolyLoop>
+      </PlanarGeometry>
+    </Surface>
+    <Surface id="aw-b-ost" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-b"/>
+      <PlanarGeometry>
+        <PolyLoop>
+          <CartesianPoint><Coordinate>10</Coordinate><Coordinate>0</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>10</Coordinate><Coordinate>4</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>10</Coordinate><Coordinate>4</Coordinate><Coordinate>4</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>10</Coordinate><Coordinate>0</Coordinate><Coordinate>3</Coordinate></CartesianPoint>
+        </PolyLoop>
+      </PlanarGeometry>
+    </Surface>
+    <Surface id="aw-b-nord" surfaceType="ExteriorWall" constructionIdRef="kon-aw">
+      <AdjacentSpaceId spaceIdRef="raum-b"/>
+      <PlanarGeometry>
+        <PolyLoop>
+          <CartesianPoint><Coordinate>10</Coordinate><Coordinate>4</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>4</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>4</Coordinate><Coordinate>4</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>10</Coordinate><Coordinate>4</Coordinate><Coordinate>4</Coordinate></CartesianPoint>
+        </PolyLoop>
+      </PlanarGeometry>
+    </Surface>
+    <Surface id="aw-b-giebel" surfaceType="ExteriorWall">
+      <AdjacentSpaceId spaceIdRef="raum-b"/>
+      <PlanarGeometry>
+        <PolyLoop>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>0</Coordinate><Coordinate>3</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>4</Coordinate><Coordinate>3</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>4</Coordinate><Coordinate>4</Coordinate></CartesianPoint>
+        </PolyLoop>
+      </PlanarGeometry>
+    </Surface>
+    <Surface id="iw-ab" surfaceType="InteriorWall" constructionIdRef="kon-iw">
+      <AdjacentSpaceId spaceIdRef="raum-a"/>
+      <AdjacentSpaceId spaceIdRef="raum-b"/>
+      <PlanarGeometry>
+        <PolyLoop>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>0</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>4</Coordinate><Coordinate>0</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>4</Coordinate><Coordinate>3</Coordinate></CartesianPoint>
+          <CartesianPoint><Coordinate>5</Coordinate><Coordinate>0</Coordinate><Coordinate>3</Coordinate></CartesianPoint>
+        </PolyLoop>
+      </PlanarGeometry>
+    </Surface>
+  </Campus>
+  <Construction id="kon-aw">
+    <Name>Außenwand</Name>
+    <U-value unit="WPerSquareMeterK">0.3</U-value>
+    <LayerId layerIdRef="sch-aw"/>
+  </Construction>
+  <Construction id="kon-iw">
+    <Name>Innenwand</Name>
+    <LayerId layerIdRef="sch-iw"/>
+  </Construction>
+  <Construction id="kon-dach">
+    <Name>Dach</Name>
+    <U-value unit="WPerSquareMeterK">0.2</U-value>
+    <LayerId layerIdRef="sch-dach"/>
+  </Construction>
+  <Construction id="kon-boden">
+    <Name>Bodenplatte</Name>
+    <U-value unit="WPerSquareMeterK">0.35</U-value>
+    <LayerId layerIdRef="sch-boden"/>
+  </Construction>
+  <Layer id="sch-aw">
+    <MaterialId materialIdRef="mat-mauerwerk-200"/>
+    <MaterialId materialIdRef="mat-daemmung-100"/>
+  </Layer>
+  <Layer id="sch-iw">
+    <MaterialId materialIdRef="mat-mauerwerk-120"/>
+  </Layer>
+  <Layer id="sch-dach">
+    <MaterialId materialIdRef="mat-holz-m"/>
+    <MaterialId materialIdRef="mat-daemmung-200"/>
+  </Layer>
+  <Layer id="sch-boden">
+    <MaterialId materialIdRef="mat-beton-250"/>
+  </Layer>
+  <Material id="mat-mauerwerk-200">
+    <Name>Mauerwerk 200 mm</Name>
+    <Thickness unit="Millimeters">200</Thickness>
+    <Conductivity unit="WPerMeterK">0.8</Conductivity>
+    <Density unit="KgPerCubicM">1600</Density>
+    <SpecificHeat unit="JPerKgK">1000</SpecificHeat>
+  </Material>
+  <Material id="mat-daemmung-100">
+    <Name>Dämmung 100 mm</Name>
+    <Thickness unit="Millimeters">100</Thickness>
+    <Conductivity unit="WPerMeterK">0.04</Conductivity>
+    <Density unit="KgPerCubicM">30</Density>
+    <SpecificHeat unit="JPerKgK">1500</SpecificHeat>
+  </Material>
+  <Material id="mat-mauerwerk-120">
+    <Name>Mauerwerk 120 mm</Name>
+    <Thickness unit="Millimeters">120</Thickness>
+    <Conductivity unit="WPerMeterK">0.8</Conductivity>
+    <Density unit="KgPerCubicM">1600</Density>
+    <SpecificHeat unit="JPerKgK">1000</SpecificHeat>
+  </Material>
+  <Material id="mat-holz-m">
+    <Name>Holzschalung 0,05 m</Name>
+    <Thickness>0.05</Thickness>
+    <Conductivity unit="WPerMeterK">0.13</Conductivity>
+    <Density unit="KgPerCubicM">500</Density>
+    <SpecificHeat unit="JPerKgK">1600</SpecificHeat>
+  </Material>
+  <Material id="mat-daemmung-200">
+    <Name>Dämmung 200 mm</Name>
+    <Thickness unit="Millimeters">200</Thickness>
+    <Conductivity unit="WPerMeterK">0.04</Conductivity>
+    <Density unit="KgPerCubicM">30</Density>
+    <SpecificHeat unit="JPerKgK">1500</SpecificHeat>
+  </Material>
+  <Material id="mat-beton-250">
+    <Name>Beton 250 mm</Name>
+    <Thickness unit="Millimeters">250</Thickness>
+    <Conductivity unit="WPerMeterK">2.0</Conductivity>
+    <Density unit="KgPerCubicM">2400</Density>
+    <SpecificHeat unit="JPerKgK">1000</SpecificHeat>
+  </Material>
+  <WindowType id="fenster-typ-1">
+    <Name>Fenster 1</Name>
+    <U-value unit="WPerSquareMeterK">1.1</U-value>
+    <SolarHeatGainCoeff unit="Fraction" solarIncidentAngle="0">0.6</SolarHeatGainCoeff>
+  </WindowType>
+</gbXML>

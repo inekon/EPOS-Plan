@@ -1,0 +1,62 @@
+Der '''Datenexport''' gibt die berechneten Zeitreihen als CSV-Datei aus – Semikolon als Trennzeichen, Dezimalkomma. Der Knopf ''CSV…'' steht in der Leiste jedes Zeitreihendiagramms der [[Ergebnisdarstellung]] rechts neben ''Bereich'' und ''1:1''; Säulenbilder ohne Zeitachse (Monate, Wochen, Tage) tragen in ihrer Leiste allein ''CSV…''. Dieselbe Leiste tragen die Bilder der Lastspitzenkappung, der Speicherflotte, des Quellprofils und der Kapitalwertverlauf der Wirtschaftlichkeit; dort zählt die erste Spalte die Betrachtungsjahre.
+
+Außerdem trägt jedes Bild mit Zeitreihen in den Eingabedialogen ''CSV…'': das Zahlungsstrombild der Wirtschaftlichkeit (je Jahr), die Monatssäulen des Bedarfs, der Jahresgang der Wärmequelle Erdreich, die Ganglinien der Wärmebedarfs- und Stromganglinienverwaltung und der Projektdialoge dazu, die Bilder des Gebäudebedarfs, der Klimadaten und des Kostenprofils, die Wochen- und Tagesprofile (Typprofile, Gebäudetypen, Raumnutzung, Konditionierung, Nutzungsarten) und die Bilder des Zapfprofils samt Auslegung. Die erste Spalte folgt dem Raster der Reihe: Stunde, Viertelstunde, Tag, Woche, Monat, Jahr, Stunde des Tages oder Wochenstunde. Kennlinien tragen keinen Knopf. Der Kalenderteppich (Konditionierung, Raumnutzung) wird als Tabelle mit 365 Tageszeilen – Datum ohne Jahr und Wochentag – und 24 Stundenspalten mit Einheit gespeichert; Stunden „aus“ bleiben leer.
+
+== Export von Zeitreihen ==
+{{Anker|export-von-zeitreihen|csv-export|zeitreihen}}
+
+''Wärmelast'' und ''Stromlast'' im Reiter ''Wärme-/Strombedarf'' schreiben dieselbe Datei ''Energiebedarf'' mit Wärmelast, je Bedarfsart einer Spalte und dem Strombedarf; ''Kältelast'' schreibt bei Projekten mit Kühlung die Datei ''Kältebedarf''. ''Wärmepumpe'', ''Heizkessel'', ''Stromspeicher'' und die Blätter ''Wärmeproduktion'' und ''Stromproduktion'' des Reiters ''Ergebnis'' schreiben je eine eigene Datei mit den Werten der Seite.
+
+== Grafikexport ==
+{{Anker|grafikexport|grafik}}
+
+Jedes andere Zeitreihendiagramm – etwa ''BHKW'', ''Photovoltaik'', ''Solarthermie'', ''Kälteproduktion'' oder die Speichertemperaturen der Wärmepumpe – schreibt die Reihen, die es gerade zeigt, je Reihe eine Spalte mit Name und Einheit; der Dateiname folgt dem Diagrammtitel. Ist ''sortiert'' angehakt, stehen die Werte als Dauerlinie in der Datei.
+
+== Aufbau der Exportdateien ==
+{{Anker|aufbau-der-exportdateien|zeitstempel|aussentemperatur}}
+
+Die Dateien des Energiebedarfs und der Seiten ''Wärmepumpe'', ''Heizkessel'', ''Stromspeicher'', ''Wärmeproduktion'' und ''Stromproduktion'' beginnen mit einem Zeitstempel und der Außentemperatur, sodass die Werte in einer Tabellenkalkulation unmittelbar weiterverwendet werden können; bei der Wärmepumpe stehen die Kennzahlen der Betriebsbereiche als Kopfzeilen davor. Die übrigen Diagramme zählen in der ersten Spalte Stunde oder Viertelstunde, die Monatsbilder des Reiters ''Ergebnis'' den Monat.
+
+== Speicherort ==
+{{Anker|speicherort|verzeichnis}}
+
+Der zuletzt verwendete Speicherort wird gemerkt. Die Ordner für Datenbank-Sicherungen und Datenbank-Importe legen Sie unter {{Menü|Administration|Einstellungen}} fest.
+
+== Gebäudeexport gbXML und IFC ==
+{{Anker|gebaeudeexport|gebaeudeexport-gbxml-ifc}}
+
+Der Dialog ''Exportieren…'' im Gebäudedialog schreibt ein Gebäude des Projekts als gbXML- oder IFC-Datei (Bedienung: [[Programm Dokumentation/Gebäudeimport#export|Gebäudedaten ausgeben]]). Beide Formate tragen, was die Gebäudesimulation rechnet:
+
+* '''Geometrie und Hülle:''' Zonen mit Fläche und Volumen, Bauteile mit Fläche, Ausrichtung, Neigung, Randbedingung und Nachbarzone, Fenster und Türen mit U-Wert und Gesamtenergiedurchlassgrad, Schichtaufbauten mit Dicke und Stoffwerten. Die Geometrie ist schematisch.
+* '''Lasten je Zone:''' Personen und Wärme je Person, Geräte, Beleuchtung, Außenluft je Person, Luftwechsel sowie Heiz- und Kühlsollwerte.
+* '''Kalender:''' In gbXML schreibt der Export jeden Kalender der Zone (Heiz- und Kühlsollwert, Lüftung, Geräte, Personen, Licht) als <code>Schedule</code> mit Jahresabschnitten, Wochenplänen und Tagesverläufen; Ferien und Feiertage erscheinen als eigene Wochen bzw. Tagtypen. In IFC stehen die Nennwerte in den Standardsätzen für Raumbelegung, thermische Last und Auslegung, die Zeitpläne in den Sätzen <code>EPOS_Kalender_*</code>.
+* '''Restdaten:''' Vorheizzeit, Höchstleistungen der Heizung und Kühlung, Wärmeübergabe und Kühlübergabe je Zone, Luftströme zwischen Zonen, Erdreichangaben (Umfang, wirksamer U-Wert am Erdreich, Kellertemperatur), das Zeilenbild der Konditionierung und die benannten Wochen. Dafür gibt es in beiden Formaten kein Standardelement: gbXML trägt sie als Block <code>EPOS:</code> in der Beschreibung der Zone, IFC in den Sätzen <code>EPOS_Zone</code> und <code>EPOS_Gebaeude</code>.
+* '''Profilnummer:''' Hat die Zone ein Nutzungsprofil der DIN/TS 18599-10, schreibt der Export dessen Nummer mit (IFC: <code>EPOS_Zone</code>); der Import liest sie wieder ([[Programm Dokumentation/Gebäudeimport#profil-beim-import|Nutzungsprofil je Zone beim Import]]).
+
+'''Formatwahl.''' Für die Weitergabe an ein Fremdwerkzeug gilt: gbXML, wenn das Werkzeug Lasten und Zeitpläne einer Simulation liest – gbXML trägt sie in Standardelementen. IFC, wenn die Datei zum CAD-Programm zurückgehen soll: Die Anreicherung der Originaldatei lässt Geometrie und Kennungen unverändert und ergänzt nur die Kennwerte. Für den eigenen Rundlauf – Export aus EPOS-Plan, Wiedereinlesen in EPOS-Plan – sind beide Formate gleichwertig; die Restdaten und die Zeitpläne in <code>EPOS_*</code> bzw. im Block <code>EPOS:</code> kommen dabei vollständig zurück, ein Fremdwerkzeug sieht sie nicht.
+
+'''Verlustliste.''' Vor dem Schreiben nennt der Exportdialog, was das gewählte Format nicht trägt, was ersetzt wird und was wegfällt (zum Beispiel eine Ersatzschicht für ein Bauteil ohne Aufbau); erst nach der Bestätigung lässt sich speichern.
+
+'''Rundlauf.''' Eine mit EPOS-Plan geschriebene Datei gibt beim Wiedereinlesen im selben Format alle Angaben der Gebäudesimulation zurück; ein Programmtest hält das für jedes Feld von Zone, Bauteil und Kalender fest. Nicht Teil des Rundlaufs sind die Ergebnisse des Rechenlaufs.
+
+== Weitere Ausgabewege ==
+{{Anker|weitere-ausgabewege}}
+
+Der Bericht einer Vergleichsgruppe entsteht als Word-Dokument, als Excel-Arbeitsmappe oder als beides ([[Varianten und Bericht]]); ''Verlauf nach Excel…'' in der Wirtschaftlichkeit speichert den Kapitalwertverlauf als eigene Arbeitsmappe. Gebäudedaten lassen sich als gbXML- oder IFC-Datei ausgeben ([[#gebaeudeexport|Gebäudeexport gbXML und IFC]]), ganze Projekte samt Varianten als <code>.wpx</code>-Paket ([[Programm Dokumentation/Projekttransfer|Projekttransfer]]).
+
+== Datenaustausch in der Gegenrichtung ==
+{{Anker|datenaustausch-in-der-gegenrichtung|import}}
+
+{{Hinweis|Herstellerdaten für Wärmepumpen, Heizkessel, Pufferspeicher und Solarkollektoren können nach VDI 3805 eingelesen werden, PV-Module, Wechselrichter und Stromspeicher aus der CEC-Liste und weiteren Formaten; Klimadaten werden online bezogen, Gebäude aus gbXML- und IFC-Dateien und Lastgänge für Wärme und Strom importiert. Diese Wege beschreibt die Seite [[Stammdaten und Datenimport]].}}
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Ergebnisse auswerten und Kosten hinterlegen]] – der zugehörige Schritt im Programmablauf
+* [[Ergebnisdarstellung]] – die Bereiche, aus denen exportiert wird
+* [[Stammdaten und Datenimport]] – Import von Hersteller- und Messdaten
+* [[Einstellungen, Hilfe und Sprache]] – Verzeichnisse für Import und Export
+
+{{Navigation Programmfunktionen}}
+
+[[Kategorie:Programmfunktionen]]

@@ -91,6 +91,16 @@
         </p>
     }
 
+    @* DIE HERKUNFT DES PEAK-ZIELS (Anwenderentscheid 04.10.2026): welches Peak-Ziel im
+       angezeigten Lauf gegolten hat und woher es stammt - aus dem Lastgang dieses Laufs,
+       aus dem gespeicherten Flottenstand oder als benannter Rückfall. *@
+    @if (Daten.PeakZielKw is double peakZiel && Daten.PeakZielHerkunft is { } peakHerkunft)
+    {
+        <p class="epos-simerg-status epos-simerg-peakherkunft" data-herkunft="@peakHerkunft">
+            @PeakZielZeile(peakZiel, peakHerkunft)
+        </p>
+    }
+
     @if (Daten.FlottenAenderungOhneNeuenLauf)
     {
         <Warnbanner Stufe="WarnStufe.Warnung" Text="Flotte geändert: Projektsimulation neu berechnen. Angezeigte Ergebnisse gehören noch zum vorherigen Lauf." />
@@ -190,7 +200,7 @@
                    in der Vollansicht liegen rund 40 Viertelstunden auf einem
                    Bildpunkt — erst der Ausschnitt zeigt einen einzelnen Zyklus.
                    Der LADEZUSTAND steht auf der zweiten Achse in kWh. *@
-                <DiagrammSvg Modell="@ModellBetrieb" Kennung="simerg-speicherbetrieb"
+                <DiagrammSvg Modell="@ModellBetrieb" Kennung="simerg-speicherbetrieb" CsvExport="Csv"
                              Bezeichnung="@Resource.SP_CHART_TITEL_BETRIEB"
                              Einheit="kW" EinheitRechts="kWh"
                              Palette="@Farbpalette.Aktuell"
@@ -202,11 +212,6 @@
                              VorlagenfeldHinweis="@Resource.VF_ORT_SPEICHERVERLAUF" />
 
                 <div class="epos-simerg-schalter">
-                    @if (Csv.HasDelegate)
-                    {
-                        <button type="button" class="epos-simerg-knopf" @onclick="Csv"
-                                title="@Resource.SP_TOOLTIP_CSV">@Resource.SIM_BTN_CSV_EXPORT</button>
-                    }
                     @* Vergleichen laesst sich erst ab zwei Varianten (Fachkonzept 7.3):
                        Bei einer einzigen zeigte die Maske dieselben Zahlen, die eine
                        Handbreit weiter links bereits stehen. *@
@@ -233,10 +238,10 @@
                     <thead>
                         <tr>
                             <th scope="col">@Resource.SP_ERG_SPALTE_KENNZAHL</th>
-                            <th scope="col">@Resource.SP_ERG_SPALTE_WERT</th>
+                            <th scope="col" class="epos-simerg-zahl">@Resource.SP_ERG_SPALTE_WERT</th>
                             @if (Daten.MitVergleich)
                             {
-                                <th scope="col" title="@Resource.NACHT_ERG_VERGLEICH_HINWEIS">
+                                <th scope="col" class="epos-simerg-zahl" title="@Resource.NACHT_ERG_VERGLEICH_HINWEIS">
                                     @Resource.NACHT_ERG_SPALTE_VERGLEICH
                                 </th>
                             }
@@ -311,6 +316,23 @@
     public string Herkunftszeile(FlottenStudieKonfiguration flotte)
         => WindowsFormsApplication1.SpeicherAnzeigeCtrl.FlottenKontextText(
                flotte, Resource.SIM_SP_HERKUNFT);
+
+    /// <summary>
+    /// Die Zeile „Peak-Ziel dieses Laufs: … kW – Herkunft" unter der Herkunftszeile.
+    /// </summary>
+    /// <param name="peakZielKw">Das Peak-Ziel H₀, mit dem die Flotte gerechnet hat [kW].</param>
+    /// <param name="herkunft">Woher es stammt.</param>
+    public static string PeakZielZeile(double peakZielKw, FlottenPeakZielHerkunft herkunft)
+    {
+        System.Globalization.CultureInfo k = System.Globalization.CultureInfo.CurrentCulture;
+        string quelle = herkunft switch
+        {
+            FlottenPeakZielHerkunft.Lastgang => Resource.SIMERG_SP_PEAKZIEL_LASTGANG,
+            FlottenPeakZielHerkunft.Gespeichert => Resource.SIMERG_SP_PEAKZIEL_GESPEICHERT,
+            _ => Resource.SIMERG_SP_PEAKZIEL_RUECKFALL
+        };
+        return string.Format(k, Resource.SIMERG_SP_PEAKZIEL_ZEILE, peakZielKw.ToString("N1", k), quelle);
+    }
 
     /// <summary>Die Rückmeldung des CSV-Schreibers (Pfad bzw. Fehlertext); leer = nichts zu melden.</summary>
     private string _csvMeldung = "";
@@ -525,6 +547,11 @@
     /// „sortiert" und je Reihe des Bildes ein Schalter — nur, solange das Bild des
     /// Laufs steht (ein Lauf ohne Flottenergebnis, mit Modelldelegat).
     /// </summary>
+    /// <remarks>
+    /// <b>Mit Flottenergebnis</b> steht statt des Bildes die <c>SpeicherFlottenErgebnisAnsicht</c>;
+    /// sie meldet ihre Schalter selbst beim selben Register an (Freigabe der Masken, Teil C) —
+    /// hier stünden sie doppelt.
+    /// </remarks>
     protected override IReadOnlyList<Anzeigeschalter> Blattschalter()
     {
         if (!Daten.LaufVorhanden || Daten.Flottenergebnis is not null || Modell is null)

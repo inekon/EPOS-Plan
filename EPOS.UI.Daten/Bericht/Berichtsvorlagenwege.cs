@@ -54,5 +54,16 @@ namespace WindowsFormsApplication1
         /// die Hülle der Einstellungen sperrt das Feld dann mit Grund.
         /// </summary>
         internal bool OrdnerWaehlbar { get; init; }
+
+        /// <summary>
+        /// Bleibt der Herkunftspfad einer hinzugefügten Vorlage nach dem Hinzufügen erreichbar — gibt es
+        /// also ein ORIGINAL außerhalb des Vorlagenordners, das sich ändern kann? Unter Windows ja: Die
+        /// Datei liegt weiter dort, wo der Anwender sie gewählt hat. Auf iOS nein — die Dateiwahl kopiert
+        /// sie beim Hinzufügen in die Sandbox, ein dauerhafter Verweis nach draußen besteht nicht.
+        ///
+        /// <para>Ohne diesen Weg entsteht die Zeile „Original geändert – übernehmen?“ nicht (Konzept 10.2,
+        /// 10.3); käme ihre Handlung dennoch herein, lehnt die Hülle sie BENANNT ab.</para>
+        /// </summary>
+        internal bool HerkunftDauerhaft { get; init; }
     }
 }

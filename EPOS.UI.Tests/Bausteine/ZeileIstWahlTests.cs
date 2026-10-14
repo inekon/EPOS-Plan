@@ -501,7 +501,8 @@ public class ZeileIstWahlTests : EposBunitContext
         int a = blatt.IndexOf(".epos-zeilenzelle {", StringComparison.Ordinal);
         Assert.True(a > 0, "Regel .epos-zeilenzelle fehlt");
         string regel = blatt.Substring(a, blatt.IndexOf('}', a) - a);
-        Assert.Contains("height: 45px;", regel);
+        // 45 px in der Normalstufe (Zeilenskala 1); die Kompaktstufe skaliert dieselbe Zahl (KB1).
+        Assert.Contains("height: calc(46px * var(--epos-zeilenskala, 1) - 1px);", regel);
         Assert.Contains("white-space: nowrap;", regel);
         Assert.Contains("box-sizing: border-box;", regel);
         Assert.Equal(45f + 1f, Katalogliste.ZEILENHOEHE_ZEILENWAHL);

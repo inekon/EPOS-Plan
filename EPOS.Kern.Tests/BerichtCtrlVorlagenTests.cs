@@ -441,6 +441,27 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Zweiter Einstieg mit einer Vorlage ganz ohne Platzhalter: Der Lauf hängt den Bericht an ihr Ende — samt
+        /// Wirtschaftlichkeit —, die Vorprüfung fragt deshalb nicht nach der Standardvorlage.
+        /// </summary>
+        [Fact]
+        public void Zweiter_Einstieg_mit_einer_Vorlage_ohne_Platzhalter_fragt_nicht()
+        {
+            if (_standard == null) return;
+            Vorlageneintrag eigen = Hinzu("Briefkopf.docx", Probevorlagen.AusAbsaetzen("Ingenieurbüro Muster", "Bericht"));
+            BerichtsKonfiguration konfig = Konfig();
+            BerichtsvorlagenCtrl.SetzeAbweichung(konfig, eigen);
+
+            Startbefund zweiterEinstieg = _ctrl.PruefeVorStart(konfig, false, 1, erzwingtWirtschaftlichkeit: true);
+
+            Assert.True(zweiterEinstieg.Pruefbefund.IstLesbar);
+            Assert.Equal(0, zweiterEinstieg.Pruefbefund.AnzahlPlatzhalter);
+            Assert.False(zweiterEinstieg.Pruefbefund.HatWirtschaftlichkeit);
+            Assert.False(zweiterEinstieg.OhneWirtschaftlichkeit);
+            Assert.False(zweiterEinstieg.BrauchtRueckfrage);
+        }
+
+        /// <summary>
         /// Geprüft = gefüllt (Konzept 6.8): Nach der Vorprüfung wird die Vorlage in der Datei geändert;
         /// der Lauf füllt trotzdem die Bytes, die geprüft wurden — gleiche Prüfsumme, alter Text, kein
         /// neuer unbekannter Platzhalter.

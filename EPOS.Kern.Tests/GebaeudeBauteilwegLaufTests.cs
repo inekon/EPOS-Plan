@@ -1133,6 +1133,7 @@ namespace EPOS.Kern.Tests
                 Assert.True(GebaeudeZonenanschluss.TabelleVorhanden());
                 GebaeudeZonenanschluss.KuehlspaltenVorhanden();   // gemerkt wie die Tabellenprobe
                 GebaeudeZonenanschluss.KopplungVorhanden();       // ebenso die Probe des Schritts S-G
+                BauteilkatalogSchema.Lesbar();                    // ebenso die Probe des Schritts 221 (BK-2)
                 var zaehler = new Zaehlzugriff(DataRepository.Zugriff);
                 try
                 {

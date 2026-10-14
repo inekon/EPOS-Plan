@@ -134,8 +134,11 @@ public sealed class KiMaskenanmeldung : IDisposable
             Action<object?>? setzen = eigenschaft.CanWrite && !feld.NurLesen
                 ? wert =>
                   {
-                      T? stand = quelle();
-                      if (stand is not null) Setze(eigenschaft, stand, wert);
+                      // Meldung 10.10.2026: Ohne Daten-Objekt (kein Satz gewählt) wird
+                      // ein Wert nie still verworfen - die Absage nennt den Grund.
+                      T stand = quelle() ?? throw new InvalidOperationException(
+                          WindowsFormsApplication1.MyResource.Resource.KI_FELD_KEIN_SATZ);
+                      Setze(eigenschaft, stand, wert);
                   }
                 : null;
 
@@ -177,7 +180,10 @@ public sealed class KiMaskenanmeldung : IDisposable
             ? null
             : wert =>
               {
-                  if (quelle() is IKiFeldtafel tafel) tafel.Setzen(schluessel, wert);
+                  if (quelle() is not IKiFeldtafel tafel)
+                      throw new InvalidOperationException(
+                          WindowsFormsApplication1.MyResource.Resource.KI_FELD_KEIN_SATZ);
+                  tafel.Setzen(schluessel, wert);
               };
 
         return new KiFeldzugang(feld, lesen, setzen, Tafeltyp(feld.Typ),

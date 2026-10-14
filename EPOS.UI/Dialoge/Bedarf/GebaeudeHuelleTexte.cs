@@ -92,6 +92,26 @@ public sealed class GebaeudeHuelleTexte
     /// <summary><c>GEBK_LBL_KELLERTEMPERATUR</c></summary>
     public string LabelKellertemperatur { get; set; } = "Kellertemperatur :";
 
+    /// <summary><c>GEBK_LBL_ERDREICH_U_WIRKSAM</c></summary>
+    public string LabelErdreichUWirksam { get; set; } = "Wirksamer U-Wert Bodenplatte :";
+
+    /// <summary><c>GEBK_HINWEIS_ERDREICH_U_WIRKSAM</c> — der Platzhalter des leeren Felds.</summary>
+    public string HinweisErdreichUWirksam { get; set; } = "leer = Erdreichkorrektur nach DIN EN ISO 13370";
+
+    /// <summary><c>GEBK_SPERRE_ERDREICH_U_WIRKSAM</c> — der Grund der Sperre bei Randbedingung Keller oder Außenluft.</summary>
+    public string SperreErdreichUWirksam { get; set; }
+        = "Der wirksame U-Wert gilt nur bei Randbedingung Erdreich; der eingetragene Wert bleibt erhalten.";
+
+    /// <summary><c>GEBK_ZEILE_ERDREICH_RECHNUNG</c> — „{0}" B′ in m, „{1}" U_g in W/(m²K).</summary>
+    public string ZeileErdreichRechnung { get; set; } = "Erdreichkorrektur nach DIN EN ISO 13370: B′ = {0} m, U_g = {1} W/(m²K)";
+
+    /// <summary><c>GEBK_ZEILE_ERDREICH_VORGABE</c> — „{0}" U_g in W/(m²K).</summary>
+    public string ZeileErdreichVorgabe { get; set; } = "U_g = Vorgabe {0} W/(m²K)";
+
+    /// <summary><c>GEBK_MSG_ERDREICH_U</c></summary>
+    public string MeldungErdreichU { get; set; }
+        = "Der wirksame U-Wert der Bodenplatte muss größer als 0 W/(m²K) sein; leer gilt die Erdreichkorrektur nach DIN EN ISO 13370.";
+
     /// <summary><c>GEBK_HINWEIS_FENSTER_SUMME</c></summary>
     public string HinweisFensterflaeche { get; set; }
         = "Die Fensterfläche ist die Summe der vier Orientierungen.";
@@ -182,6 +202,51 @@ public sealed class GebaeudeHuelleTexte
 
     /// <summary><c>GEBK_HERKUNFT_VORGABE</c></summary>
     public string HerkunftVorgabe { get; set; } = "Vorgabe";
+
+    // ---- Kopf zweigeteilt, Herkunft je Feld (Entwurf GD 2.1, Welle GD-1) ----------------------
+
+    /// <summary><c>GEBK_HINWEIS_EINORDNUNG</c> — die leise Zeile unter „Beschreibung und Einordnung".</summary>
+    public string HinweisEinordnung { get; set; } =
+        "Diese Angaben ordnen das Gebäude ein: Bericht, Vorgaben des Imports, Pufferauslegung. Der Rechenweg liest sie nicht.";
+
+    /// <summary><c>GEBK_MARKE_DATEI</c></summary>
+    public string MarkeDatei { get; set; } = "Datei";
+
+    /// <summary><c>GEBK_MARKE_VORGABE</c></summary>
+    public string MarkeVorgabe { get; set; } = "Vorgabe";
+
+    /// <summary><c>GEBK_MARKE_HAND</c></summary>
+    public string MarkeHand { get; set; } = "von Hand";
+
+    /// <summary><c>GEBK_MARKE_GEERBT</c></summary>
+    public string MarkeGeerbt { get; set; } = "geerbt";
+
+    /// <summary><c>GEBK_MARKE_WIRKUNGSLOS</c></summary>
+    public string MarkeWirkungslos { get; set; } = "wirkungslos";
+
+    /// <summary><c>GEBK_ZONEN_VORGABE_HOEHE</c> — „{0}" Zonen ohne eigene Höhe, „{1}" alle Zonen.</summary>
+    public string ZonenVorgabeHoehe { get; set; } = "Vorgabe für {0} von {1} Zonen ohne eigene Höhe";
+
+    /// <summary><c>GEBK_ZONEN_VORGABE_LUFTWECHSEL</c> — „{0}" Zonen ohne Lüftungswerte, „{1}" alle Zonen.</summary>
+    public string ZonenVorgabeLuftwechsel { get; set; } = "Vorgabe für {0} von {1} Zonen ohne Lüftungswerte";
+
+    /// <summary><c>GEBK_JEZONE_RAUMHOEHE</c> — statt des Feldes, wenn jede Zone Höhe bzw. Volumen trägt.</summary>
+    public string JeZoneRaumhoehe { get; set; } = "Raumhöhe: gilt je Zone, siehe Reiter „Zonen“.";
+
+    /// <summary><c>GEBK_JEZONE_LUFTWECHSEL</c> — statt des Feldes, wenn jede Zone Lüftungswerte trägt.</summary>
+    public string JeZoneLuftwechsel { get; set; } = "Luftwechselrate: Jede Zone rechnet mit Infiltration und Nutzerlüftung, siehe Reiter „Konditionierung“.";
+
+    /// <summary><c>GEBK_RUECKFALL_FENSTER</c> — „{0}" Fenster ohne eigenes g.</summary>
+    public string RueckfallFenster { get; set; } = "Rückfall für {0} Fenster ohne eigenes g";
+
+    /// <summary><c>GEBK_RUECKFALL_FENSTER_KEINES</c></summary>
+    public string RueckfallFensterKeines { get; set; } = "Rückfall: Jedes Fenster trägt ein eigenes g, der Wert wirkt derzeit nicht.";
+
+    /// <summary><c>GEBK_RUECKFALL_BAUWEISE</c> — „{0}" Bauteilgruppen ohne Aufbau.</summary>
+    public string RueckfallBauweise { get; set; } = "Rückfall für {0} Bauteilgruppen ohne Aufbau";
+
+    /// <summary><c>GEBK_RUECKFALL_BAUWEISE_KEINE</c></summary>
+    public string RueckfallBauweiseKeine { get; set; } = "Rückfall: Jede Bauteilgruppe trägt einen Aufbau, der Wert wirkt derzeit nicht.";
 
     /// <summary><c>GEBK_HINWEIS_SOMMERLUEFTUNG</c> — „{0}" Schwelle [°C], „{1}" Luftwechsel [1/h].</summary>
     public string HinweisSommerlueftung { get; set; }
@@ -293,8 +358,11 @@ public sealed class GebaeudeHuelleTexte
 
     /// <summary><c>GEBK_HINWEIS_SPEICHERN_UNTER</c></summary>
     public string HinweisSpeichernUnter { get; set; }
-        = "„Speichern unter“ legt einen neuen Katalogsatz unter dem eingegebenen Namen an "
-        + "und schließt wie OK.";
+        = "„Speichern unter“ legt einen neuen Katalogsatz unter dem eingegebenen Namen an; "
+        + "der Dialog bleibt offen.";
+
+    /// <summary><c>GEBK_MSG_SPEICHERN_UNTER_ANGELEGT</c> — „{0}" ist der Name des neuen Katalogsatzes (E27, Entwurf KP2 B1).</summary>
+    public string MeldungSpeichernUnterAngelegt { get; set; } = "Katalogsatz „{0}“ angelegt.";
 
     // ------------------------------------------------------------ Prüfregeln (Konzept 4.8)
 

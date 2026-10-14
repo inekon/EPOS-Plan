@@ -116,6 +116,102 @@ public class KomponentenKonfigurationDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Die Heizgrenze der Kesselbereitschaft</b> (Schemaschritt 154): ein Zahlenfeld [°C]
+    /// unter der Betriebsbereitschaft, leer mit dem Platzhalter der Vorgabe „15" und dem
+    /// Kurzhinweis, wozu der Wert dient. Eine Eingabe landet in der Arbeitskopie, Leeren macht
+    /// sie wieder leer (= Vorgabe).
+    /// </summary>
+    [Fact]
+    public void Der_Heizkessel_zeigt_die_Heizgrenze_leer_mit_der_Vorgabe_als_Platzhalter()
+    {
+        var cut = Zeige(Komponentenart.Heizkessel);
+        string text = cut.Markup;
+
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_LBL_KESSEL_HEIZGRENZE, text);
+        Assert.Contains(string.Format(WindowsFormsApplication1.MyResource.Resource.SIMKONF_HRL_KESSEL_HEIZGRENZE, "15"),
+                        text);
+        Assert.Contains("°C", text);
+
+        IElement feld = cut.FindAll("input")[1];
+        Assert.Equal("15", feld.GetAttribute("placeholder"));
+        Assert.True(string.IsNullOrEmpty(feld.GetAttribute("value")));
+        Assert.Null(_werte.Heizgrenze);
+
+        feld.Input("12,5");
+        Assert.Equal(12.5, _werte.Heizgrenze);
+
+        cut.FindAll("input")[1].Input("");
+        Assert.Null(_werte.Heizgrenze);
+
+        // Leer ist zulässig: OK schließt.
+        Leiste(cut, 1).Click();
+        Assert.Equal(new[] { true }, _ergebnis);
+    }
+
+    /// <summary>
+    /// <b>Die Plausibilitätsgrenzen:</b> Eine Heizgrenze außerhalb von 0 bis 30 °C färbt das
+    /// Feld; beim OK steht eine BENANNTE Meldung, und der Dialog bleibt offen. Nach einer
+    /// gültigen Eingabe schließt OK, und die Arbeitskopie trägt den Wert.
+    /// </summary>
+    [Fact]
+    public void Eine_Heizgrenze_ausserhalb_der_Grenzen_meldet_benannt_und_haelt_den_Dialog_offen()
+    {
+        var cut = Zeige(Komponentenart.Heizkessel);
+        string meldung = string.Format(
+            WindowsFormsApplication1.MyResource.Resource.SIMKONF_MSG_KESSEL_HEIZGRENZE_BEREICH, "0", "30", "15");
+
+        cut.FindAll("input")[1].Input("35");
+        Assert.Contains("epos-fehleingabe", cut.FindAll("input")[1].ClassName);
+        Assert.Null(_werte.Heizgrenze);
+
+        Leiste(cut, 1).Click();
+        Assert.Empty(_ergebnis);
+        Assert.Contains(meldung, cut.Markup);
+
+        cut.FindAll("input")[1].Input("20");
+        Assert.Equal(20.0, _werte.Heizgrenze);
+        Assert.DoesNotContain(meldung, cut.Markup);
+
+        Leiste(cut, 1).Click();
+        Assert.Equal(new[] { true }, _ergebnis);
+
+        // Abbrechen bleibt immer frei - auch mit einer Fehleingabe.
+        var zweiter = Zeige(Komponentenart.Heizkessel);
+        zweiter.FindAll("input")[1].Input("-5");
+        Leiste(zweiter, 0).Click();
+        Assert.Equal(new[] { true, false }, _ergebnis);
+    }
+
+    /// <summary>
+    /// <b>Der Assistent</b> liest und setzt die Heizgrenze über dieselbe Arbeitskopie; ein Wert
+    /// außerhalb der Grenzen kommt dort an und wird beim OK benannt abgewiesen.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_setzt_die_Heizgrenze_und_das_OK_prueft_sie()
+    {
+        var cut = Zeige(Komponentenart.Heizkessel);
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+                WindowsFormsApplication1.KiMaskennamen.KOMPONENTENKONFIGURATION,
+                "kessel_heizgrenze");
+        Assert.NotNull(zugang);
+        Assert.Null(zugang.Lesen());
+
+        zugang.Setzen(13.0);
+        cut.Render();
+        Assert.Equal(13.0, _werte.Heizgrenze);
+
+        zugang.Setzen(45.0);
+        cut.Render();
+        Leiste(cut, 1).Click();
+        Assert.Empty(_ergebnis);
+        Assert.Contains(string.Format(
+            WindowsFormsApplication1.MyResource.Resource.SIMKONF_MSG_KESSEL_HEIZGRENZE_BEREICH, "0", "30", "15"),
+            cut.Markup);
+    }
+
+    /// <summary>
     /// Die Wärmepumpe OHNE Anlagendaten zeigt KEINEN Schalter mehr.
     ///
     /// <para><b>Anwenderentscheid 16.09.2026 (Auftrag #299).</b> Bis dahin stand hier
@@ -456,5 +552,72 @@ public class KomponentenKonfigurationDialogTests : EposBunitContext
         var abgelehnt = Assert.Throws<InvalidOperationException>(() => Kuehlfeld("hilfsstromanteil").Setzen(5.0));
         Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_DLG_WPA_KUEHLUNG_NICHT_EINSTELLBAR, abgelehnt.Message);
         Assert.Null(ohneGaben.KuehlHilfsstromanteil);
+    }
+
+    // ================================================================== Sperrgrund und Meldeweg
+
+    /// <summary>
+    /// Ohne Anlage zeigt die Maske keine Wärmepumpen-Felder: Der Sperrgrund lehnt sie vor der
+    /// Bestätigung ab — mit dem Text, den die Maske an ihrer Stelle zeigt —, und der Setzer verwirft nicht still, sondern lehnt benannt ab.
+    /// </summary>
+    [Fact]
+    public void Ohne_Anlage_sind_die_Waermepumpen_Felder_gesperrt_und_der_Setzer_lehnt_ab()
+    {
+        Zeige(Komponentenart.Waermepumpe);
+
+        string grund = WindowsFormsApplication1.MyResource.Resource.SIMKONF_MSG_WP_OHNE_ANLAGE;
+        WindowsFormsApplication1.KiMaskenhaken haken = WindowsFormsApplication1.KiMaskenbruecke
+            .Haken(WindowsFormsApplication1.KiMaskennamen.KOMPONENTENKONFIGURATION);
+        Assert.Equal(grund, haken.Feldsperre("heizstab"));
+        Assert.Equal(grund, haken.Feldsperre("energietraeger"));
+        Assert.Equal(grund, haken.Feldsperre("kuehlbetrieb"));
+        Assert.Equal("", haken.Feldsperre("bereitschaft"));
+
+        WindowsFormsApplication1.KiFeldzugang heizstab =
+            WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+                WindowsFormsApplication1.KiMaskennamen.KOMPONENTENKONFIGURATION, "heizstab");
+        var abgelehnt = Assert.ThrowsAny<Exception>(() => heizstab.Setzen(true));
+        Assert.Contains(grund, (abgelehnt.InnerException ?? abgelehnt).Message);
+    }
+
+    /// <summary>
+    /// Mit Anlage ist dasselbe Feld frei — auch der Energieträger: Seine Wahl schreibt nur in
+    /// die Arbeitskopie, in die Datenbank trägt sie erst der OK-Weg des Wirts.
+    /// </summary>
+    [Fact]
+    public void Mit_Anlage_sind_die_Waermepumpen_Felder_frei()
+    {
+        Zeige(Komponentenart.Waermepumpe, new WaermepumpeAnlageDaten());
+
+        WindowsFormsApplication1.KiMaskenhaken haken = WindowsFormsApplication1.KiMaskenbruecke
+            .Haken(WindowsFormsApplication1.KiMaskennamen.KOMPONENTENKONFIGURATION);
+        Assert.Equal("", haken.Feldsperre("heizstab"));
+        Assert.Equal("", haken.Feldsperre("energietraeger"));
+    }
+
+    /// <summary>
+    /// Nach einer Setzung geht die Maske den Meldeweg der Hand: Die Warnung eines
+    /// abgewiesenen OK verschwindet wie nach einer Eingabe im Feld.
+    /// </summary>
+    [Fact]
+    public void Eine_Setzung_raeumt_die_Warnung_wie_die_Eingabe_von_Hand()
+    {
+        var anlage = new WaermepumpeAnlageDaten { VorlaufMax = 999 };
+        var cut = Zeige(Komponentenart.Waermepumpe, anlage);
+
+        Leiste(cut, 1).Click();
+        Assert.Empty(_ergebnis);
+        Assert.Contains(cut.FindComponents<EPOS.UI.Bausteine.Warnbanner>(),
+                        b => b.Instance.Stufe == EPOS.UI.Bausteine.WarnStufe.Warnung);
+
+        WindowsFormsApplication1.KiFeldzugang vorlauf =
+            WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+                WindowsFormsApplication1.KiMaskennamen.KOMPONENTENKONFIGURATION, "vorlauf_max");
+        cut.InvokeAsync(() => vorlauf.Setzen(50.0)).GetAwaiter().GetResult();
+        cut.Render();
+
+        Assert.Equal(50.0, anlage.VorlaufMax);
+        Assert.DoesNotContain(cut.FindComponents<EPOS.UI.Bausteine.Warnbanner>(),
+                              b => b.Instance.Stufe == EPOS.UI.Bausteine.WarnStufe.Warnung);
     }
 }

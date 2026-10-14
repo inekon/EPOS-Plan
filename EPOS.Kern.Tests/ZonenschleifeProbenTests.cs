@@ -89,12 +89,12 @@ namespace EPOS.Kern.Tests
             for (int v = 0; v < vorlaeufe; v++)
                 for (int h = v == 2 ? 8760 - Zonenschleife.VORLAUF_LANG_H : start; h < 8760; h++)
                 {
-                    bool s = lauf.Sommerlueftung();
+                    bool s = lauf.Sommerlueftung(h);
                     lauf.VorlaufUebernehmen(h, lauf.Modell.Schritt(e1.Rand(h, s, keine)));
                 }
             for (int h = 0; h < 8760; h++)
             {
-                bool s = lauf.Sommerlueftung();
+                bool s = lauf.Sommerlueftung(h);
                 lauf.Uebernehmen(h, s, lauf.Modell.Schritt(e1.Rand(h, s, keine)));
             }
             GebaeudeModellErgebnis soll = lauf.Ergebnis(0, 1);
@@ -824,7 +824,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Der Rechenweg rechnet ein Gebäude mit zwei Zonen über die Zonenschleife (Freigabe W5):
-        /// Summe in Zielpuffer und Träger, AK1 als ideale Last gemeldet (A4). Ein Kopplungsfehler
+        /// Summe in Zielpuffer und Träger, AK1 mit Wärmeübergabe je Zone (E63). Ein Kopplungsfehler
         /// kommt als Meldung der Stufe Fehler mit <c>false</c> zurück — der Bedarfslauf bricht ab
         /// (Festlegung 12).
         /// </summary>
@@ -850,9 +850,12 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(m.Gebaeude.HeizlastW, ziel);
                 Assert.Same(m.Gebaeude, traeger.Ergebnis(0));
                 Assert.Equal(m.Gebaeude.VerbrauchAltKwh, kwh);
-                Assert.Contains(m.Eingaenge, z => z.Eingang.KopplungAlsIdealeLast);
-                Assert.All(m.Eingaenge, z => Assert.False(z.Eingang.KopplungWirksam));
-                Assert.Contains(protokoll.Warnungen, x => x.Contains(string.Format(CultureInfo.CurrentCulture,
+                // E63 (AK1z): die Wärmeübergabe rechnet je beheizter Zone; ideal bleibt allein die Kälteseite,
+                // und ohne Kühlung gibt es den Hinweis nicht.
+                Assert.All(m.Eingaenge, z => Assert.False(z.Eingang.KopplungAlsIdealeLast));
+                Assert.All(m.Eingaenge, z => Assert.Equal(z.IstBeheizt, z.Eingang.KopplungWirksam));
+                Assert.NotNull(m.Gebaeude.Heizkreis);
+                Assert.DoesNotContain(protokoll.Warnungen, x => x.Contains(string.Format(CultureInfo.CurrentCulture,
                     WindowsFormsApplication1.MyResource.Resource.SIMENG_G6_AK1_IDEAL, "Probegebäude (4711)", "2")));
 
                 // Ein Kopplungsfehler: benannt, false.

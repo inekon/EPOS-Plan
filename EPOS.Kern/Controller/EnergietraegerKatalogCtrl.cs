@@ -125,6 +125,27 @@ namespace WindowsFormsApplication1
             // KU-S3 (Schemaschritt 114): Auch der Stromtraeger der Kuehlung haelt den Traeger.
             int anlagen = Zaehle(
                 "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ? IN (ID_Carrier, Kuehl_ID_Carrier)", carrierId);
+            // K1 (Schemaschritt 213): Auch der Kuehltraeger einer dezentralen (Split-)Deckung haelt den Traeger.
+            int kaelte = 0;
+            if (KaeltebedarfSchema.TabellenVorhanden() &&
+                DataRepository.SpalteVorhanden(KaeltebedarfSchema.TAB_LASTGANG, KaeltebedarfSchema.SPALTE_KUEHL_ID_CARRIER))
+                kaelte = Zaehle("SELECT COUNT(*) FROM Z_Projekt_Kaeltebedarf WHERE Kuehl_ID_Carrier = ?", carrierId) +
+                         Zaehle("SELECT COUNT(*) FROM Z_ProjektWaermebedarf WHERE Kuehl_ID_Carrier = ?", carrierId);
+            if (kaelte > 0 && projekte == 0 && anlagen == 0)
+            {
+                grund = string.Format("{0} Kältebedarfszeile(n) verweisen auf den Träger.", kaelte);
+                return false;
+            }
+            // Schritt 223: Auch eine gespeicherte Split-Ergebniszeile hält ihren Kühlträger - ohne ihn verlöre die Abrechnung
+            // des Laufs Preis und Faktor.
+            int splitErgebnis = KaeltebedarfSplitAbrechnungSchema.TabelleVorhanden()
+                ? Zaehle("SELECT COUNT(*) FROM " + KaeltebedarfSplitAbrechnungSchema.TAB_ERGEBNIS + " WHERE Kuehl_ID_Carrier = ?", carrierId)
+                : 0;
+            if (splitErgebnis > 0 && projekte == 0 && anlagen == 0)
+            {
+                grund = string.Format("{0} Ergebniszeile(n) dezentraler Kälte verweisen auf den Träger.", splitErgebnis);
+                return false;
+            }
             if (projekte > 0 || anlagen > 0)
             {
                 grund = string.Format(

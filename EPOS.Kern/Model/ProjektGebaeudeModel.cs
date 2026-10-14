@@ -51,6 +51,13 @@ namespace WindowsFormsApplication1
         public double Abmessung_Anschluß_Außenwand_Kellerdecke;
         public double Luftwechselrate;
         public double Wochenende;
+
+        /// <summary>Die Wochenendtage als Wochenmaske (Mo = Bit 0 … So = Bit 6), Vorgabe Sa + So (Schemaschritt K2).</summary>
+        public int Wochenendtage = KalenderbedienungSchema.WOCHENENDE_VORGABE;
+
+        /// <summary>Das Land der Feiertage (ISO-Kürzel); <c>null</c> = nur bundeseinheitlich (Schemaschritt K2).</summary>
+        public string Feiertagsland;
+
         public double Ferien;
         public double Ferienbeginn_1;
         public double Ferienende_1;
@@ -211,6 +218,67 @@ namespace WindowsFormsApplication1
         public string Energiestandard;
 
         // =====================================================================
+        //  Die manuelle Aufheizzeit (E59, Festlegungen 37, 38; achter
+        //  Sichtneubau) — NULL-ERHALTEND. Nur am Projektgebäude, der Katalog
+        //  führt sie nicht; null = das Gebäude folgt der Art des Projekts.
+        // =====================================================================
+
+        /// <summary>
+        /// Die manuelle Aufheizzeit t [h], 1 … 47 (<c>Tab_Gebaeude.Aufheizzeit_Manuell_H</c>): Mit eingeschalteter
+        /// Aufheizoptimierung rampt das Gebäude an jedem Sprung mit n = t + 1; seine Zonen erben den Wert.
+        /// <c>null</c> = die Art des Projekts (täglich oder fest).
+        /// </summary>
+        public int? Aufheizzeit_Manuell_H;
+
+        // =====================================================================
+        //  Der wirksame U-Wert der Bodenplatte (E65, neunter Sichtneubau) —
+        //  NULL-ERHALTEND; null = Erdreichkorrektur nach DIN EN ISO 13370.
+        // =====================================================================
+
+        /// <summary>
+        /// Der wirksame U-Wert der Bodenplatte samt Erdreich U_g [W/(m²K)] als Vorgabe
+        /// (<c>Tab_Gebaeude.Erdreich_U_Wirksam</c>): gesetzt, nimmt die Erdreichrechnung ihn für die Bodenbauteile am
+        /// Erdreich und rechnet kein B′. <c>null</c> = die Rechnung nach DIN EN ISO 13370.
+        /// </summary>
+        public double? Erdreich_U_Wirksam;
+
+        /// <summary>
+        /// Der Raumeinfluss der Heizkurve k_R [K/K] (<c>Tab_Gebaeude.Heizkurve_Raumeinfluss</c>, Entwurf AK3 Festlegung 23):
+        /// Mit Stufe AK3 und <see cref="Heizkurve_Aktiv"/> hebt der Kreis den Vorlauf um k_R · (θ_soll − θ_i) der Zone mit
+        /// der größten Unterschreitung an. <c>null</c> oder 0 = aus.
+        /// </summary>
+        public double? Heizkurve_Raumeinfluss;
+
+        // =====================================================================
+        //  Die Kühlkurve (Entwurf KK, 2.1–2.2, Festlegungen 1–7) — die Spalten von Tab_Gebaeude aus Schemaschritt 202
+        //  (KuehlkurveSchema), gelesen über die Sicht (ProjektGebaeudeCtrl); wirksam auf AK3.
+        // =====================================================================
+
+        /// <summary>
+        /// Der Schalter der Kühlkurve (<c>Tab_Gebaeude.Kuehlkurve_Aktiv</c>): Mit Stufe AK3, wirksamer Kühlübergabe
+        /// wird der Kühlvorlauf eine Jahresreihe nach <see cref="Kuehlkurve"/>; <c>false</c> = fester Vorlauf wie
+        /// bisher (Festlegung 1).
+        /// </summary>
+        public bool Kuehlkurve_Aktiv { get; set; }
+
+        /// <summary>Der Fußpunkt der Kühlkurve θ_V,F [°C] (<c>Tab_Gebaeude.Kuehlkurve_Fusspunkt</c>, 4 … 22 °C);
+        /// <c>null</c> = der Auslegungsrücklauf der Kühlübergabe (Festlegung 4).</summary>
+        public double? Kuehlkurve_Fusspunkt { get; set; }
+
+        /// <summary>Der Raumeinfluss der Kühlkurve k_K [K/K] (<c>Tab_Gebaeude.Kuehlkurve_Raumeinfluss</c>, 0 … 10);
+        /// <c>null</c> oder 0 = aus (Festlegungen 1, 6). Gerechnet erst mit KK3.</summary>
+        public double? Kuehlkurve_Raumeinfluss { get; set; }
+
+        /// <summary>Der Auslegungsweg der Kühlkurve (<c>Tab_Gebaeude.Kuehlkurve_Auslegung_Weg</c>, E107):
+        /// <c>DbWerte.KUEHLKURVE_AUSLEGUNG_STUNDE</c>, <c>…_TAGESMITTEL</c> oder <c>…_EINGABE</c>; <c>null</c> oder leer =
+        /// <c>…_TAGESMITTEL</c> (Festlegung 3).</summary>
+        public string Kuehlkurve_Auslegung_Weg { get; set; }
+
+        /// <summary>Die Auslegungs-Außentemperatur der Kühlkurve [°C] (<c>Tab_Gebaeude.Kuehlkurve_Auslegung_Aussen</c>);
+        /// wirkt nur mit dem Weg <c>eingabe</c> (E107).</summary>
+        public double? Kuehlkurve_Auslegung_Aussen { get; set; }
+
+        // =====================================================================
         //  Die Zonen des Gebäudes (Stufe G3, Entscheid A14/E27) — KEINE Spalte der
         //  Sicht: gefüllt vom Zonenleser über GebaeudeZonenanschluss, nicht aus der
         //  Gebäudezeile. Bewusst internal und eine Eigenschaft: Die Feldspiegel
@@ -231,6 +299,16 @@ namespace WindowsFormsApplication1
         /// (<see cref="GebaeudeZonenanschluss"/>) nur für Gebäude mit mindestens zwei Zonen.
         /// </summary>
         internal IReadOnlyList<Zonenluftstrom> Zonenluftstroeme { get; set; }
+
+        /// <summary>
+        /// <b>Der Katalogbau, aus dem dieses Gebäude entsteht</b> (Stufe KP1b, Befund NB3) — nur am
+        /// ARBEITSSTAND eines noch nicht gespeicherten Gebäudes gesetzt
+        /// (<c>GebaeudeBedarfCtrl.Arbeitsstandgebaeude</c>, <c>ID_Gebaeude = 0</c>). Der Datenweg der
+        /// Konditionierung liest dann dessen Matrix und Kalender, damit die Vorschau vor dem OK
+        /// dieselbe Zahl zeigt wie der Lauf danach. <c>null</c> an jeder Projektkopie — keine Spalte
+        /// der Sicht, wie <see cref="Zonen"/>.
+        /// </summary>
+        internal long? KonditionierungKatalogbau { get; set; }
 
         public ProjektGebaeudeModel()
         {
@@ -278,6 +356,8 @@ namespace WindowsFormsApplication1
             Abmessung_Anschluß_Außenwand_Kellerdecke = 0;
             Luftwechselrate = 0;
             Wochenende = 0;
+            Wochenendtage = KalenderbedienungSchema.WOCHENENDE_VORGABE;
+            Feiertagsland = null;
             Ferien = 0;
             Ferienbeginn_1 = 0;
             Ferienende_1 = 0;

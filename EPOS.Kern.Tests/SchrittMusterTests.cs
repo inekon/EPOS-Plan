@@ -69,14 +69,68 @@ namespace EPOS.Kern.Tests
             Assert.Equal(s.Abschnitte, m.LetzteAbschnittsdauern.Length);
         }
 
+        /// <summary>
+        /// <b>Eine Stunde mit Wärmeübergabe lässt sich nachrechnen</b> (Musterfesthaltung, Konzept
+        /// Anlagenkopplung 10.2): <see cref="Zonenmodell2K.SchrittMitMuster"/> hält auch die Fälle
+        /// <see cref="Betriebsfall.UebergabeGesaettigt"/> und <see cref="Betriebsfall.UebergabeRegelbereich"/>
+        /// fest und löst ihre Leistung mit der Gleichung des festen Falls neu. Mit dem Muster, das
+        /// <see cref="Zonenmodell2K.Schritt"/> für denselben Rand und Zustand gefunden hat, ist jede Stunde
+        /// eines Jahres der AK1-Heizseite bitgleich — Ergebnis und Endzustand der Massen.
+        /// </summary>
         [Fact]
-        public void Eine_Stunde_mit_Uebergabe_laesst_sich_nicht_nachrechnen()
+        public void Eine_Stunde_mit_Uebergabe_laesst_sich_nachrechnen()
         {
             GebaeudeModellEingang e = GebaeudeEinzonennetzTests.Eingang(GebaeudeEinzonennetzTests.AK1_HEIZSEITE);
             Assert.True(e.KopplungWirksam);
             var m = new Zonenmodell2K(e.Parameter, e.Bezeichnung);
             m.Zuruecksetzen(e.ThetaSoll[0]);
-            Stundenrand r = e.Rand(0);
+            int mitUebergabe = 0, uebergabefaelle = 0;
+            for (int h = 0; h < 8760; h++)
+            {
+                Stundenrand r = e.Rand(h);
+                if (r.MitUebergabe) mitUebergabe++;
+                double aw = m.ThetaMAw, iw = m.ThetaMIw;
+                Stundenergebnis s = m.Schritt(in r);
+                Stundenmuster muster = m.LetztesMuster;
+                foreach (Betriebsfall f in muster.Folge)
+                    if (f == Betriebsfall.UebergabeGesaettigt || f == Betriebsfall.UebergabeRegelbereich) uebergabefaelle++;
+
+                double awEnde = m.ThetaMAw, iwEnde = m.ThetaMIw;
+                m.Zuruecksetzen(aw, iw);
+                Stundenergebnis n = m.SchrittMitMuster(in r, muster);
+                Gleich(s, n, h);
+                Assert.True(Bits(s.VorlaufC) == Bits(n.VorlaufC), "Stunde " + h + ": Vorlauf");
+                Assert.True(Bits(s.RuecklaufC) == Bits(n.RuecklaufC), "Stunde " + h + ": Rücklauf");
+                Assert.Equal(s.Begrenzungsgrund, n.Begrenzungsgrund);
+                Assert.Equal(Bits(awEnde), Bits(m.ThetaMAw));
+                Assert.Equal(Bits(iwEnde), Bits(m.ThetaMIw));
+            }
+
+            Assert.True(mitUebergabe > 0, "Keine Stunde mit Übergabe im Rand.");
+            Assert.True(uebergabefaelle > 0, "Kein Übergabefall im Muster.");
+        }
+
+        /// <summary>
+        /// <b>Eine Stunde mit Kühlübergabe bleibt ausgeschlossen</b> (Konzept Anlagenkopplung 10.2,
+        /// Musterfesthaltung): Im Mehrzonenweg rechnet die Kälteseite ideal; <see cref="Zonenmodell2K.SchrittMitMuster"/>
+        /// lehnt einen Rand mit Kühlübergabe mit <see cref="ArgumentException"/> ab, der Zustand bleibt unverändert.
+        /// </summary>
+        [Fact]
+        public void Eine_Stunde_mit_Kuehluebergabe_laesst_sich_nicht_nachrechnen()
+        {
+            GebaeudeModellEingang e = GebaeudeEinzonennetzTests.Eingang(GebaeudeEinzonennetzTests.AK1_KAELTESEITE);
+            Assert.True(e.KuehlKopplungWirksam);
+            var m = new Zonenmodell2K(e.Parameter, e.Bezeichnung);
+            m.Zuruecksetzen(e.ThetaSoll[0]);
+            // Bis zur ersten Stunde mit Kühlübergabe im Rand rechnen.
+            int h = 0;
+            Stundenrand r = e.Rand(h);
+            while (!r.MitKuehluebergabe && h < 8759)
+            {
+                m.Schritt(in r);
+                r = e.Rand(++h);
+            }
+            Assert.True(r.MitKuehluebergabe, "Keine Stunde mit Kühlübergabe im Rand.");
             m.Schritt(in r);
             Stundenmuster muster = m.LetztesMuster;
             double aw = m.ThetaMAw, iw = m.ThetaMIw;

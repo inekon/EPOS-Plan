@@ -1,0 +1,234 @@
+﻿using System;
+using System.Globalization;
+using System.IO;
+using WindowsFormsApplication1;
+using Xunit;
+
+namespace Auslieferungsvorlage.Tests
+{
+    /// <summary>
+    /// <b>Der Katalog der Nutzungsprofile in der Auslieferungsvorlage</b> (Konzept Nutzungsprofile NP-F21, Schritt
+    /// <see cref="RaumnutzungSchema.SCHRITT"/>): Mit <c>--kataloge readonly</c> fallen eigene Kategorien, Profile und
+    /// Zuordnungen, eine ausgelieferte Zuordnung zeigt wieder auf ihr Saatprofil; der Prüfbericht zählt je Kategorie und
+    /// meldet einen Kennwert in einer Normkategorie als Fehler.
+    ///
+    /// <para>Quelle ist eine KOPIE der Testdatenbank; die Datei im Repository wird nie geöffnet.</para>
+    /// </summary>
+    [Collection("Auslieferungsvorlage")]
+    public sealed class RaumnutzungVorlageTests
+    {
+        /// <summary>Legt eine eigene Kategorie mit Profil an und stellt die ausgelieferte Zuordnung „Buero" darauf.</summary>
+        private static void EigenesAnlegen()
+        {
+            Assert.True(RaumnutzungSchema.Vollstaendig(), "Die Testdatenbank steht vor Schritt " + RaumnutzungSchema.SCHRITT + ".");
+            DataRepository.ExecuteNonQuery("INSERT INTO \"Tab_Raumnutzungskatalog\" (\"Bezeichner\", \"Art\") VALUES ('Eigene Probe', 'EIGEN')");
+            DataRepository.ExecuteNonQuery(
+                "INSERT INTO \"Tab_Raumnutzungsprofil\" (\"ID_Katalog\", \"Bezeichner\", \"Heiz_Soll\") SELECT \"ID\", 'Probebüro', 21 " +
+                "FROM \"Tab_Raumnutzungskatalog\" WHERE \"Bezeichner\" = 'Eigene Probe'");
+            DataRepository.ExecuteNonQuery(
+                "INSERT INTO \"Tab_Raumnutzungszuordnung\" (\"Art\", \"Schluessel\", \"ID_Profil\") SELECT 'HOTTCAD_RAUMTYP', " +
+                "'mrtProbe', \"ID\" FROM \"Tab_Raumnutzungsprofil\" WHERE \"Bezeichner\" = 'Probebüro'");
+            DataRepository.ExecuteNonQuery(
+                "UPDATE \"Tab_Raumnutzungszuordnung\" SET \"ID_Profil\" = (SELECT \"ID\" FROM \"Tab_Raumnutzungsprofil\" " +
+                "WHERE \"Bezeichner\" = 'Probebüro') WHERE \"Art\" = 'IFC_KLASSE' AND \"Schluessel\" = 'Buero'");
+        }
+
+        [Fact]
+        public void Readonly_raeumt_eigene_Zeilen_und_stellt_die_Zuordnung_zurueck()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string ziel = o.Datei("Kenndaten.sqlite");
+            Bearbeiten(quelle, EigenesAnlegen);
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
+            Assert.True(e.Code == 0, e.Alles);
+            Assert.Contains("Schritt 3d — Katalog der Nutzungsprofile", e.Ausgabe, StringComparison.Ordinal);
+            Assert.Contains("entfernt: 1 eigene Zuordnung(en), 1 eigene(s) Profil(e), 1 eigene Kategorie(n); 1 ausgelieferte",
+                            e.Ausgabe, StringComparison.Ordinal);
+            Assert.Contains("Kategorie EPOS-Muster", e.Ausgabe, StringComparison.Ordinal);
+            Assert.Contains("ok      ausgelieferte Saat der Nutzungsprofile vollstaendig: offen 0", e.Ausgabe, StringComparison.Ordinal);
+            Assert.Contains("ok      Werte in Normkategorien: Profile mit Kennwert 0", e.Ausgabe, StringComparison.Ordinal);
+            Assert.Contains("ok      eigene Zeilen des Katalogs der Nutzungsprofile nach --kataloge readonly: 0", e.Ausgabe,
+                            StringComparison.Ordinal);
+
+            Lesen(ziel, () =>
+            {
+                // Nach RaumnutzungNormkategorienSchema (E129) nur noch EPOS-Muster und DIN.
+                Assert.Equal(2, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungskatalog\""));
+                Assert.Equal(RaumnutzungSaat.Profile.Count + RaumnutzungNormkategorienSchema.WOHNPROFILE.Count,
+                    Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungsprofil\""));
+                Assert.Equal(RaumnutzungSaat.Zuordnungen.Count, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungszuordnung\""));
+                Assert.Equal(1, Zahl(
+                    "SELECT COUNT(*) FROM \"Tab_Raumnutzungszuordnung\" z JOIN \"Tab_Raumnutzungsprofil\" p ON p.\"ID\" = z.\"ID_Profil\" " +
+                    "WHERE z.\"Schluessel\" = 'Buero' AND p.\"Bezeichner\" = ?", new DbParam("@p", RaumnutzungSaat.BUERO)));
+                Assert.Equal(0, RaumnutzungSchema.OffeneSaat());
+            });
+        }
+
+        [Fact]
+        public void Ein_Kennwert_in_einer_Normkategorie_ist_ein_Fehler()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string ziel = o.Datei("Kenndaten.sqlite");
+            Bearbeiten(quelle, () => DataRepository.ExecuteNonQuery(
+                "UPDATE \"Tab_Raumnutzungsprofil\" SET \"Heiz_Soll\" = 21 WHERE \"Nummer\" = '1' AND \"ID_Katalog\" = " +
+                "(SELECT \"ID\" FROM \"Tab_Raumnutzungskatalog\" WHERE \"Art\" = 'DIN_V_18599_10')"));
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel);
+            Assert.True(e.Code != 0, e.Alles);
+            Assert.Contains("FEHLER  Werte in Normkategorien: Profile mit Kennwert 1", e.Ausgabe, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// <b>Eingelesene Normwerte fallen</b> (NP7, E131): Werte, die „Normwerte einlesen“ in ein ausgeliefertes DIN-Profil
+        /// geschrieben hat, nimmt Schritt 3d heraus; der Prüfbericht nennt die Zahl und findet danach keinen Kennwert in der
+        /// Normkategorie. Die Werte der Probe sind runde Phantasiewerte.
+        /// </summary>
+        [Fact]
+        public void Eingelesene_Normwerte_der_DIN_fallen_mit_Pruefberichtzeile()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string ziel = o.Datei("Kenndaten.sqlite");
+            Bearbeiten(quelle, () => DataRepository.ExecuteNonQuery(
+                "UPDATE \"Tab_Raumnutzungsprofil\" SET \"Heiz_Soll\" = 21, \"Aussenluft_Person\" = 30, \"Werte_Herkunft\" = 'EINGELESEN', " +
+                "\"Werte_Quelle\" = 'probe.csv', \"Werte_Datum\" = '2026-10-12' WHERE \"Nummer\" IN ('1', '2') AND \"ID_Katalog\" = " +
+                "(SELECT \"ID\" FROM \"Tab_Raumnutzungskatalog\" WHERE \"Art\" = 'DIN_V_18599_10')"));
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
+            Assert.True(e.Code == 0, e.Alles);
+            Assert.Contains("eingelesene Normwerte entfernt: 2 Profil(e) der DIN", e.Ausgabe, StringComparison.Ordinal);
+            Assert.Contains("ok      Werte in Normkategorien: Profile mit Kennwert 0", e.Ausgabe, StringComparison.Ordinal);
+            Lesen(ziel, () =>
+            {
+                Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungsprofil\" WHERE \"Werte_Herkunft\" IS NOT NULL " +
+                                     "OR \"Aussenluft_Person\" IS NOT NULL OR \"Heiz_Soll\" IS NOT NULL AND \"ReadOnly\" = 1 AND \"ID_Katalog\" = " +
+                                     "(SELECT \"ID\" FROM \"Tab_Raumnutzungskatalog\" WHERE \"Art\" = 'DIN_V_18599_10')"));
+                Assert.Equal(RaumnutzungSaat.Din.Count + RaumnutzungNormkategorienSchema.WOHNPROFILE.Count,
+                             Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungsprofil\" p JOIN \"Tab_Raumnutzungskatalog\" k ON k.\"ID\" = p.\"ID_Katalog\" " +
+                                  "WHERE k.\"Art\" = 'DIN_V_18599_10'"));
+            });
+        }
+
+        /// <summary>
+        /// <b>Eine Kategorie aus einer Projektdatei fällt auch im Modus „alle"</b> (NP4b, Q46, NP-F21): Ihre Werte stammen
+        /// aus der lizenzierten Software des Anwenders und gehören nie in die Auslieferung — dieselbe Regel wie jede eigene
+        /// Kategorie, unabhängig von der Vorgabe für die <c>_STAMM</c>-Kataloge (#160-E-1a). Die Werte der Probe sind
+        /// runde Phantasiewerte.
+        /// </summary>
+        [Fact]
+        public void Modus_alle_entfernt_eine_Kategorie_aus_einer_Projektdatei()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string ziel = o.Datei("Kenndaten.sqlite");
+            Bearbeiten(quelle, () =>
+            {
+                Assert.True(RaumnutzungSchema.Vollstaendig(), "Die Testdatenbank steht vor Schritt " + RaumnutzungSchema.SCHRITT + ".");
+                DataRepository.ExecuteNonQuery(
+                    "INSERT INTO \"Tab_Raumnutzungskatalog\" (\"Bezeichner\", \"Art\") VALUES ('Projektdatei Probe.sqproj', 'EIGEN')");
+                DataRepository.ExecuteNonQuery(
+                    "INSERT INTO \"Tab_Raumnutzungsprofil\" (\"ID_Katalog\", \"Nummer\", \"Bezeichner\", \"Heiz_Soll\", \"Geraete_Leistung\") " +
+                    "SELECT \"ID\", '1', 'Probeprofil', 20, 10 FROM \"Tab_Raumnutzungskatalog\" WHERE \"Bezeichner\" = 'Projektdatei Probe.sqproj'");
+            });
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--kataloge", "alle");
+            Assert.True(e.Code == 0, e.Alles);
+            Assert.Contains("Schritt 3d — Katalog der Nutzungsprofile", e.Ausgabe, StringComparison.Ordinal);
+            Assert.Contains("ok      eigene Zeilen des Katalogs der Nutzungsprofile: 0", e.Ausgabe, StringComparison.Ordinal);
+            Lesen(ziel, () =>
+            {
+                Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungskatalog\" WHERE \"Bezeichner\" = 'Projektdatei Probe.sqproj'"));
+                Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungskatalog\" WHERE \"ReadOnly\" = 0"));
+                Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungsprofil\" WHERE \"ReadOnly\" = 0"));
+                Assert.Equal(RaumnutzungSaat.Profile.Count + RaumnutzungNormkategorienSchema.WOHNPROFILE.Count,
+                    Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungsprofil\""));
+            });
+        }
+
+        /// <summary>
+        /// <b>Eine eigene Zeile auf einem ausgelieferten Schlüssel fällt, die ausgelieferte wird nachgesät</b> (E96): Vor
+        /// E96 waren DIN 19 und 20 frei; eine eigene Zeile darauf bleibt in Schritt 190 stehen, fällt in der Auslieferung mit
+        /// den eigenen Zeilen — und die Vorlage trägt danach die ausgelieferte Zeile auf das Muster.
+        /// </summary>
+        [Fact]
+        public void Eine_eigene_Zeile_auf_DIN_20_faellt_und_die_ausgelieferte_wird_nachgesaet()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string ziel = o.Datei("Kenndaten.sqlite");
+            Bearbeiten(quelle, () =>
+            {
+                Assert.True(RaumnutzungDinTsSchema.Vollstaendig(), "Die Testdatenbank steht vor Schritt " + RaumnutzungDinTsSchema.SCHRITT + ".");
+                DataRepository.ExecuteNonQuery("UPDATE \"Tab_Raumnutzungszuordnung\" SET \"ID_Profil\" = NULL, \"ReadOnly\" = 0 " +
+                                               "WHERE \"Art\" = 'DIN_NUMMER' AND \"Schluessel\" = '20'");
+            });
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--kataloge", "alle");
+            Assert.True(e.Code == 0, e.Alles);
+            Assert.Contains("entfernt: 1 eigene Zuordnung(en)", e.Ausgabe, StringComparison.Ordinal);
+            Assert.Contains("zurueckgestellt, 1 nachgesaet", e.Ausgabe, StringComparison.Ordinal);
+            Assert.Contains("ok      ausgelieferte Saat der Nutzungsprofile vollstaendig: offen 0", e.Ausgabe, StringComparison.Ordinal);
+            Lesen(ziel, () =>
+            {
+                Assert.Equal(RaumnutzungSaat.Zuordnungen.Count, Zahl("SELECT COUNT(*) FROM \"Tab_Raumnutzungszuordnung\""));
+                Assert.Equal(1, Zahl(
+                    "SELECT COUNT(*) FROM \"Tab_Raumnutzungszuordnung\" z JOIN \"Tab_Raumnutzungsprofil\" p ON p.\"ID\" = z.\"ID_Profil\" " +
+                    "WHERE z.\"Art\" = 'DIN_NUMMER' AND z.\"Schluessel\" = '20' AND z.\"ReadOnly\" = 1 AND p.\"Bezeichner\" = ?",
+                    new DbParam("@p", RaumnutzungSaat.LAGER)));
+                Assert.True(RaumnutzungDinTsSchema.Vollstaendig());
+            });
+        }
+
+        private static long Zahl(string sql, params DbParam[] p)
+        {
+            object w = DataRepository.ExecuteScalar(sql, p);
+            return w == null || w == DBNull.Value ? 0 : Convert.ToInt64(w, CultureInfo.InvariantCulture);
+        }
+
+        private static void Bearbeiten(string datei, Action aktion)
+        {
+            string vorher = DataRepository.PfadUeberschreibung;
+            Func<bool> schreibrecht = Schreibnaht.Schreibrecht;
+            try
+            {
+                DataRepository.PfadUeberschreibung = datei;
+                Schreibnaht.WerkzeugFreigabe("Auslieferungsvorlage.Tests (Nutzungsprofilprobe vorbereiten)");
+                aktion();
+            }
+            finally
+            {
+                DataRepository.PfadUeberschreibung = vorher;
+                Schreibnaht.Schreibrecht = schreibrecht;
+                try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
+            }
+        }
+
+        private static void Lesen(string datei, Action aktion)
+        {
+            string vorher = DataRepository.PfadUeberschreibung;
+            try
+            {
+                DataRepository.PfadUeberschreibung = datei;
+                aktion();
+            }
+            finally
+            {
+                DataRepository.PfadUeberschreibung = vorher;
+                try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
+            }
+        }
+    }
+}

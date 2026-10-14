@@ -103,6 +103,24 @@ namespace WindowsFormsApplication1
         public Func<string> Schreibschutzgrund { get; set; }
 
         /// <summary>
+        /// Warum EIN FELD gerade nicht gesetzt werden darf, in den Worten des Dialogs:
+        /// Feldschluessel (<see cref="KiDialogFeld.Name"/>) → Grund im Klartext;
+        /// <c>null</c> oder leer = frei.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Je Feld, nicht je Satz.</b> <see cref="Schreibgeschuetzt"/> sperrt den
+        /// ganzen Satz; der Sperrgrund trifft einzelne Felder, deren Setzen in DIESEM
+        /// Zustand der Maske nicht geht — ein Feld, dessen Handweg sofort in die Datenbank
+        /// schreibt (der Assistent setzt es nicht, er sagt es), oder ein Zeilenfeld, solange
+        /// keine Zeile gewaehlt ist.</para>
+        /// <para><b>Die Absage kommt VOR der Bestaetigung</b>: Die Vorbedingungen von
+        /// <c>feld_setzen</c>, <c>formular_ausfuellen</c> und <c>reihe_setzen</c> fragen den
+        /// Haken, bevor sie eine Vorschau zeigen — der Anwender bestaetigt nie etwas, das
+        /// danach scheitert.</para>
+        /// </remarks>
+        public Func<string, string> Sperrgrund { get; set; }
+
+        /// <summary>
         /// Der Speicherweg des Dialogs — sein OK-/Speichern-Knopf (Anwenderentscheid
         /// KI‑D‑Q4). <c>null</c> = diese Maske speichert nicht ueber den Assistenten.
         /// </summary>
@@ -181,6 +199,18 @@ namespace WindowsFormsApplication1
             Func<string> haken = Schreibschutzgrund;
             if (haken == null) return "";
             try { return haken() ?? ""; }
+            catch (Exception) { return ""; }
+        }
+
+        /// <summary>
+        /// Der Sperrgrund des Dialogs fuer dieses Feld; leer = frei. Ein werfender Haken
+        /// zaehlt als frei — der Setzer des Felds bleibt die zweite Sicherung.
+        /// </summary>
+        public string Feldsperre(string feld)
+        {
+            Func<string, string> haken = Sperrgrund;
+            if (haken == null || string.IsNullOrWhiteSpace(feld)) return "";
+            try { return haken(feld.Trim()) ?? ""; }
             catch (Exception) { return ""; }
         }
     }

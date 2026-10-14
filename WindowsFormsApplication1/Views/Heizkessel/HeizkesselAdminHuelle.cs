@@ -72,7 +72,7 @@ namespace WindowsFormsApplication1
                 Detail = name => KatalogBrowserHuelle.Felder(profil, ctrl.KatalogsatzAnzeige(name)),
                 Existiert = name => new HeizkesselStammCtrl().Exists(name),
                 Loeschen = Loeschen,
-                Speichern = (name, felder, _) => Schreiben(name, felder),
+                Speichern = Schreiben,
                 // AD-Q11 (23.09.2026): ein Auslieferungssatz wird nie ueberschrieben;
                 // "Duplizieren..." legt den eigenen Satz an.
                 Duplizieren = (id, name) => KatalogBrowserHuelle.Kopie(HeizkesselStammCtrl.Duplizieren(id, name)),
@@ -128,7 +128,30 @@ namespace WindowsFormsApplication1
         private static KatalogSpeicherErgebnis Schreiben(string name,
                                                          IReadOnlyList<BrowserFeldwert> felder)
         {
-            var werte = new HeizkesselStammCtrl.AnzeigefelderHeizkessel(
+            HeizkesselStammCtrl.SpeicherErgebnis e =
+                HeizkesselStammCtrl.AnzeigefelderSchreiben(name, Werte(felder));
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        /// <summary>
+        /// Schreibt die Sätze einer Mehrfachbearbeitung (Katalogauswahl V1, KA‑E‑8) in EINER
+        /// Transaktion — die Projektkopien oder die Katalogsätze, alle oder keiner.
+        /// </summary>
+        internal static KatalogSpeicherErgebnis SammelSchreiben(
+            bool projektkopie, IReadOnlyList<(int Id, IReadOnlyList<BrowserFeldwert> Felder)> saetze)
+        {
+            var liste = new List<HeizkesselStammCtrl.Satzaenderung>();
+            foreach (var (id, felder) in saetze)
+                liste.Add(new HeizkesselStammCtrl.Satzaenderung(id, Werte(felder)));
+            HeizkesselStammCtrl.SpeicherErgebnis e =
+                HeizkesselStammCtrl.AnzeigefelderSchreibenAlle(projektkopie, liste);
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        /// <summary>Die Felder des Aufklappers als Anzeigefelder des Kerns.</summary>
+        internal static HeizkesselStammCtrl.AnzeigefelderHeizkessel Werte(IReadOnlyList<BrowserFeldwert> felder)
+        {
+            return new HeizkesselStammCtrl.AnzeigefelderHeizkessel(
                 KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldBeschreibung),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldPtherm),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldInvestitionskosten),
@@ -154,11 +177,18 @@ namespace WindowsFormsApplication1
                 SO2: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldSo2),
                 NOx: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldNox),
                 CO: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldCo),
-                Staub: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldStaub));
-
-            HeizkesselStammCtrl.SpeicherErgebnis e =
-                HeizkesselStammCtrl.AnzeigefelderSchreiben(name, werte);
-            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+                Staub: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldStaub),
+                // Die Kennlinie (Konzept Kesselkennlinie 3.1) als TEXT: Ein leeres Feld heisst
+                // hier „Vorgabe" (NULL), nicht 0 - der Kern liest und prueft ihn.
+                Teillast30: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldTeillast30),
+                KennlinieBrennwert:
+                    KatalogBrowserHuelle.Schalter(felder, KatalogBrowserProfil.FeldKennlinieBrennwert),
+                Mindestleistung: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldMindestleistung),
+                Anfahrverlust: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldAnfahrverlust),
+                Mindestlaufzeit: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldMindestlaufzeit),
+                // Die Einheit des Bereitschaftsverlusts („kW" oder „%", Anwenderentscheid
+                // 02.10.2026) als TEXT - der Kern haelt ihn gegen seine Liste.
+                BereitschaftEinheit: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldBBEinheit));
         }
 
         /// <summary>

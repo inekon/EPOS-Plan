@@ -7,8 +7,10 @@
    (Vorlagenfeldansicht.Markenzahl; jede Marke meldet sich an und ab).
 
    "KATALOG…" oeffnet den Platzhalterkatalog als Ueberlagerung (Titel und Kreuz in der
-   Ueberlagerung, der Dialog ohne eigenen Kopf) - mit den Eintraegen des Halters, also ohne
-   Huelle und ohne Baukasten; "In der App zeigen" geht auch von hier. *@
+   Ueberlagerung, der Dialog ohne eigenen Kopf) - mit den Eintraegen des Halters, ohne eigene
+   Huelle; "Baukasten speichern…" steht darin, sobald die Huelle den Weg beim Einhaengen
+   gesetzt hat (Vorlagenfeldhalter.Baukasten, derselbe wie im Katalog der Berichtsseite).
+   "In der App zeigen" geht auch von hier. *@
 
 @namespace EPOS.UI.Bausteine
 @using System.Globalization
@@ -32,6 +34,7 @@
         @if (_katalogOffen)
         {
             <PlatzhalterkatalogDialog Eintraege="@_eintraege" Texte="@_katalogTexte" TitelAnzeigen="false"
+                                      BaukastenSpeichern="@Vorlagenfeldhalter.Baukasten"
                                       Geschlossen="KatalogSchliessen" />
         }
     </KindInhalt>

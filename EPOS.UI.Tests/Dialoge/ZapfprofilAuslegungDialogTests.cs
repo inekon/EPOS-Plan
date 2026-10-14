@@ -214,11 +214,11 @@ public partial class ZapfprofilAuslegungDialogTests : EposBunitContext
         IElement uebergabe = Knopf(cut, "An Speicherauslegung übergeben…");
         Assert.Equal("true", uebergabe.GetAttribute("aria-disabled"));
         Assert.False(uebergabe.HasAttribute("disabled"));
-        Assert.Equal("Die Übergabe an die Speicherauslegung kommt mit einer späteren Fassung.", uebergabe.GetAttribute("title"));
+        Assert.Equal("Die Übergabe öffnet die Pufferspeicher-Auslegung in einem eigenen Fenster; diese Plattform hat keines — die Auslegung steht in ① Konfiguration unter „Pufferspeicher auslegen…“.", uebergabe.GetAttribute("title"));
 
         uebergabe.Click();
-        Assert.Equal("Die Übergabe an die Speicherauslegung kommt mit einer späteren Fassung.", cut.Instance.Hinweis);
-        Assert.Contains("kommt mit einer späteren Fassung", cut.Find(".epos-zapfausl-hinweis").TextContent);
+        Assert.Equal("Die Übergabe öffnet die Pufferspeicher-Auslegung in einem eigenen Fenster; diese Plattform hat keines — die Auslegung steht in ① Konfiguration unter „Pufferspeicher auslegen…“.", cut.Instance.Hinweis);
+        Assert.Contains("in einem eigenen Fenster", cut.Find(".epos-zapfausl-hinweis").TextContent);
     }
 
     [Fact]
@@ -1522,5 +1522,31 @@ public partial class ZapfprofilAuslegungDialogTests : EposBunitContext
         Knopf(cut.FindComponent<BedarfstagKonstruktor>(), "Abbrechen").Click();
         Assert.False(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.BEDARFSTAG_KONSTRUKTOR));
         Assert.Equal(KiMaskennamen.ZAPFPROFIL_AUSLEGUNG, KiMaskenbruecke.AktiveMaske());
+    }
+
+    /// <summary>
+    /// Stufe P2 der Pufferspeicher-Auslegung: Mit Weg ist „An Speicherauslegung übergeben…" aktiv,
+    /// übergibt die Eingaben der Auslegung und zeigt einen Grund, den die Hülle meldet.
+    /// </summary>
+    [Fact]
+    public void Mit_Weg_uebergibt_der_Knopf_die_Eingaben_an_die_Pufferauslegung()
+    {
+        var uebergeben = new List<ZapfprofilAuslegungEingabeDaten>();
+        string? antwort = null;
+        var cut = Render<ZapfprofilAuslegungDialog>(p => p
+            .Add(x => x.Daten, Start())
+            .Add(x => x.Texte, new ZapfprofilAuslegungTexte())
+            .Add(x => x.Uebergeben, e => { uebergeben.Add(e); return Task.FromResult(antwort); }));
+
+        IElement knopf = Knopf(cut, "An Speicherauslegung übergeben…");
+        Assert.Null(knopf.GetAttribute("aria-disabled"));
+        knopf.Click();
+        Assert.Single(uebergeben);
+        Assert.Equal("", cut.Instance.Hinweis);
+
+        antwort = "Kein Klimakalender für das Projekt.";
+        Knopf(cut, "An Speicherauslegung übergeben…").Click();
+        Assert.Equal(2, uebergeben.Count);
+        Assert.Equal("Kein Klimakalender für das Projekt.", cut.Instance.Hinweis);
     }
 }

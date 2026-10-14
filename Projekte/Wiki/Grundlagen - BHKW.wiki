@@ -1,0 +1,63 @@
+<!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen/BHKW
+     Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen - BHKW.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Ein '''Blockheizkraftwerk (BHKW)''' erzeugt Strom und Wärme gleichzeitig in einem Modul. Weil die sonst verlorene Abwärme des Motors genutzt wird, liegt der Gesamtnutzungsgrad deutlich über dem einer getrennten Erzeugung – wirtschaftlich lohnt sich das aber nur, wenn beide Produkte zeitgleich gebraucht werden. Die Auslegung eines BHKW ist damit im Kern eine Frage der Betriebsstunden.
+
+== Funktionsprinzip ==
+{{Anker|funktionsprinzip|aufbau-und-technik|betriebsweisen}}
+
+Ein Verbrennungsmotor treibt einen Generator an; Wärmetauscher koppeln die Wärme aus Kühlwasser, Ölkreis und Abgas aus. Als Brennstoff kommen unter anderem Erdgas, Biogas, Heizöl und Pflanzenöl in Frage, die Baugrößen reichen von wenigen kW<sub>el</sub> bis in den Megawattbereich. Für den Betrieb stehen drei Fahrweisen zur Wahl: '''wärmegeführt''' folgt das Modul dem Wärmebedarf und speist überschüssigen Strom ein; '''stromgeführt''' folgt es dem Strombedarf, die Wärme ist Koppelprodukt; '''ohne Einspeisung''' begrenzt die Erzeugung so, dass kein Strom ins Netz geht.
+
+<!-- Beispielhafte Aufteilung eines Gas-BHKW: Gesamtwirkungsgrad rund 90 %, davon elektrischer
+     Wirkungsgrad rund 35 % und thermischer Wirkungsgrad rund 55 % (Stromkennzahl sigma =
+     P_el / P_th ungefaehr 0,6); die Differenz zu 100 % sind Abgas- und Abstrahlungsverluste.
+     Gerundete Richtwerte, kein EPOS-Plan-Rechenergebnis. -->
+{{Diagramm-Anfang|titel=Energiefluss eines BHKW-Moduls}}
+{{Säulen-Anfang|achse=Anteil am Brennstoffeinsatz in %}}
+{{Säule|Brennstoff|waerme=55|strom=35|netz=10|wert=100}}
+{{Säulen-Ende}}
+{{Legende|waerme=Nutzwärme|strom=Strom|netz=Verluste}}
+{{Diagramm-Ende|Prinzipbild, gerundete Richtwerte.}}
+
+== Kennwerte ==
+{{Anker|kennwerte}}
+
+{| class="wikitable"
+! Kennzahl !! Bedeutung !! Typischer Bereich
+|-
+| Stromkennzahl <math>\sigma = P_{\mathrm{el}} / P_{\mathrm{th}}</math> || Verhältnis elektrischer zu thermischer Leistung || 0,4–0,8 (Verbrennungsmotor)
+|-
+| Gesamtwirkungsgrad || elektrischer plus thermischer Wirkungsgrad zusammen || 80–95 %
+|-
+| Elektrischer Wirkungsgrad || Anteil des Brennstoffs, der als Strom ankommt || 25–40 %
+|-
+| Modulationsgrenze || kleinste Teillast, unterhalb derer das Modul abschaltet statt zu regeln || meist 50–60 % der Nennleistung
+|}
+
+== Typische Größen ==
+{{Anker|typische-groessen|auslegung}}
+
+Ein BHKW wird bewusst kleiner als die Gebäudeheizlast dimensioniert – häufig auf zehn bis dreißig Prozent –, womit es je nach Lastprofil rund die Hälfte bis zwei Drittel der Jahreswärmearbeit erbringt. Zielgröße sind 5 000 bis 7 000 Vollbenutzungsstunden im Jahr; unterhalb von etwa 4 000 Stunden wird der Betrieb meist unwirtschaftlich. Ein Pufferspeicher von 60 bis 100 Litern je kW thermischer Leistung verlängert die Laufzeiten und entkoppelt Strom- und Wärmebedarf zeitlich.
+
+== Einsatz und Grenzen ==
+{{Anker|einsatz-und-grenzen}}
+
+Ein BHKW passt, wo Wärme- und Strombedarf über weite Teile des Jahres gleichzeitig anfallen – Mehrfamilienhäuser, Hotels, Gewerbe und Nahwärmenetze; bei stark schwankendem oder überwiegend sommerlichem Wärmebedarf sinken die Laufzeiten und damit die Wirtschaftlichkeit. Den verbleibenden Bedarf und die Lastspitzen übernimmt ein Spitzenlastkessel, der zugleich die Redundanz sicherstellt.
+
+[[Datei:Einbindung_BHKW_Kessel.svg|mini|zentriert|800px|BHKW mit zwei Spitzenlastkesseln am Pufferspeicher, solare Vorwärmung des Trinkwassers und Strom ins Hausnetz. Prinzipbild, Beispielwerte gerundet.]]
+
+== In EPOS-Plan ==
+{{Anker|in-epos-plan|abbildung-in-epos-plan}}
+
+In EPOS-Plan wird ein BHKW-Modul im Reiter „Energieerzeuger“ der Startseite über die Kachel „BHKW“ angelegt; sie öffnet den Dialog „Verwaltung BHKW". Der Gerätekatalog liegt unter Administration → Wärme- und Kälteerzeugung → BHKW. Wie das Modul eingebunden, ausgelegt und mit anderen Erzeugern verschaltet wird, zeigen [[Programm Dokumentation/BHKW#einbindung|Einbindung]], [[Programm Dokumentation/BHKW#beispiel|Beispiel]], [[Programm Dokumentation/BHKW#zusammenspiel|Zusammenspiel]] und [[Programm Dokumentation/BHKW#fallstricke|Fallstricke]]; der Rechenweg steht unter [[Programm Dokumentation/Berechnung/BHKW|Berechnung: BHKW]].
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Grundlagen/Kessel und Spitzenlast|Kessel und Spitzenlast]] – übernimmt Spitzenlast und Redundanz
+* [[Grundlagen/Pufferspeicher|Pufferspeicher]] – Pendelspeicher und Speicherbewirtschaftung
+* [[Grundlagen/Photovoltaik|Photovoltaik]] – Stromüberschuss und Eigenverbrauch
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]

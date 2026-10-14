@@ -123,7 +123,7 @@ namespace EPOS.Kern.Tests
         // =================================================================================
 
         [Fact]
-        public void Ohne_festes_Profil_bietet_die_Huelle_beide_Formate_an()
+        public void Ohne_festes_Profil_bietet_die_Huelle_drei_Formate_an()
         {
             var h = new GebaeudeImportHuelle();
             Assert.True(h.ProfilNachDatei);
@@ -131,9 +131,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(GebaeudeImportProfil.DATEIFILTER_ALLE, h.Dateifilter);
 
             var profil = (GebaeudeImportProfilDaten)h.Gaben()["Profil"];
-            Assert.Equal("gbXML, IFC", profil.Formatname);
+            Assert.Equal("gbXML, IFC, Projektdatei", profil.Formatname);
             Assert.Equal(GebaeudeImportProfil.DATEIFILTER_ALLE, profil.Dateifilter);
-            Assert.Equal("gbXML 25 MB · IFC 50 MB", profil.Groessengrenze);   // der Prüfstand ist nicht iOS
+            Assert.Equal("gbXML 25 MB · IFC 50 MB · Projektdatei 250 MB", profil.Groessengrenze);   // der Prüfstand ist nicht iOS
             Assert.Equal(new[] { "X4 – eine Zone je Gebäude", GebaeudeZuordnungsModell.ZonenregelText(IfcImportProfil.ZONENREGEL_Z5) },
                          profil.Zonierungsregeln);
             Assert.Equal(GebaeudeImportProfil.HILFE_ZUORDNUNG, profil.HilfeSchluessel);
@@ -214,7 +214,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Vorbelegt aus dem Import: Datei gbxml_haus_si.xml, Format gbXML. Vorgaben, nicht aus der Datei: "
                          + "Interne Wärmegewinne 600 W; ψ Anschluss Fenster–Wand 0,09 W/(mK); ψ Anschluss Wand–Dach 0,3 W/(mK); "
                          + "ψ Anschluss Außenwand–Keller 0,6 W/(mK); Luftwechselrate 0,7 1/h; Heizsollwert in der Nacht 18 °C; "
-                         + "Nachtabsenkung von 22 h; Nachtabsenkung bis 6 h.", v.Herleitung);
+                         + "Nachtabsenkung von 22 h; Nachtabsenkung bis 6 h. "
+                         // Dahinter die Verwendung, die die Datei hergibt (Anwenderwunsch 08.10.2026).
+                         + "Verwendung „Wohngebäude“ aus der Gebäudeart „SingleFamily“ der Datei.", v.Herleitung);
+            Assert.Equal(GebaeudeStammCtrl.FILTERWERT_WOHN, v.Daten.Verwendung);
             Assert.Equal("Neubau A", v.Daten.Name);
             Assert.Equal(120.0, v.Daten.WohnflaecheGesamt);
             // Was nicht aus der Datei kommt, steht wie im Modus Neu des Editors.
@@ -240,6 +243,8 @@ namespace EPOS.Kern.Tests
             // Projekt fragt.
             IDatenzugriff vorherZugriff = DataRepository.Zugriff;
             IDateiDienst vorherDatei = Dienste.Datei;
+            // Ohne Datenbank wie der Wirt — auch auf einem Rechner mit Anwenderdatenbank.
+            using var ohneDb = new OhneDatenbankprobe();
             var zugriffe = new Zaehlzugriff(vorherZugriff);
             try
             {
@@ -272,14 +277,14 @@ namespace EPOS.Kern.Tests
         {
             // Die Schalen lassen sie weg (die laufende Plattform); ein Prüfstand zeigt die Grenze von iOS.
             var ios = new GebaeudeImportHuelle(ios: true);
-            Assert.Equal("gbXML 25 MB · IFC 20 MB", ((GebaeudeImportProfilDaten)ios.Gaben()["Profil"]).Groessengrenze);
+            Assert.Equal("gbXML 25 MB · IFC 20 MB · Projektdatei 100 MB", ((GebaeudeImportProfilDaten)ios.Gaben()["Profil"]).Groessengrenze);
             GebaeudeLesestand ifc = await Lesen(ios.Gaben())(Path.Combine(IfcProbenTests.Ordner(), "ifc4_haus.ifc"), null, CancellationToken.None);
             Assert.True(ifc.Gelesen, string.Join(" | ", ifc.Meldungen.Select(m => m.Text)));
             Assert.Equal(IfcImportProfil.MAX_BYTES_IOS, ios.Profil.MaxBytes);
 
             Assert.Equal(IfcImportProfil.MAX_BYTES_IOS, new GebaeudeImportHuelle(new IfcImportProfil(), ios: true).Profil.MaxBytes);
             Assert.Equal(IfcImportProfil.MAX_BYTES_WINDOWS, new GebaeudeImportHuelle(new IfcImportProfil(), ios: false).Profil.MaxBytes);
-            Assert.Equal("gbXML 25 MB · IFC 50 MB",
+            Assert.Equal("gbXML 25 MB · IFC 50 MB · Projektdatei 250 MB",
                          ((GebaeudeImportProfilDaten)new GebaeudeImportHuelle(ios: false).Gaben()["Profil"]).Groessengrenze);
         }
 
@@ -315,7 +320,9 @@ namespace EPOS.Kern.Tests
         {
             (GebaeudeImportHuelle h, _, GebaeudeImportStand stand) = await Probenhaus();
 
-            Assert.Equal("Haus 1", stand.Vorschlagsname);
+            // F8 (GD-2): der Name ist der Dateiname, der Gebäudename der Datei steht als Vorschlag daneben.
+            Assert.Equal("gbxml_haus_si", stand.Vorschlagsname);
+            Assert.Equal("Haus 1", stand.NameDerDatei);
             Assert.Equal("Manuell", stand.ManuellHerkunftText);
             Assert.StartsWith("gbxml_haus_si.xml · Gebäude „Haus 1“ · Baualtersklasse F", stand.Kopftext);
             Assert.Equal(GebaeudeZielfelder.Alle.Count, stand.Zeilen.Count);
@@ -444,7 +451,7 @@ namespace EPOS.Kern.Tests
             var zeilen = stand.Zeilen.Select(z => z.Zielfeld == GebaeudeZielfelder.LAENGE_WAND_DACH ? z with { Haken = true } : z).ToList();
             GebaeudeKatalogDaten d = GebaeudeImportHuelle.NachKatalogdaten(grundlage, Ergebnis(stand, zeilen));
 
-            Assert.Equal("Haus 1", d.Name);
+            Assert.Equal("gbxml_haus_si", d.Name);   // der Name des Ergebnisses: der Dateiname (F8)
             Assert.Equal(120.0, d.WohnflaecheGesamt);
             Assert.Equal(2.5, d.Raumhoehe);
             Assert.Equal(24.0, d.FlaecheNutzer);

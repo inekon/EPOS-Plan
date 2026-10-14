@@ -122,6 +122,10 @@ namespace EPOS.Kern.Tests
                     zeile["Vorlauf"] = 60;                 // vor 150 führte der Kollektor sie
                     zeile["Ruecklauf"] = 30;
                 }
+                else if (tabelle == "Tab_Heizkessel")
+                {
+                    zeile["Brennwert"] = 0;                // vor dem Nachzug (Kesselkennlinie E2b) ohne Kennzeichen
+                }
             });
 
             int neu = io.Importieren(alt, "Anhebung 93", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
@@ -132,6 +136,14 @@ namespace EPOS.Kern.Tests
                                                     && z.Contains(SchemaStand.Zielversion.ToString(CultureInfo.InvariantCulture)));
             Assert.Contains(io.LetzterBericht, z => z.StartsWith("Schritt 98:", StringComparison.Ordinal));
             Assert.Contains(io.LetzterBericht, z => z.StartsWith("Schritt 148:", StringComparison.Ordinal));
+            Assert.Contains(io.LetzterBericht, z => z.StartsWith(
+                "Schritt " + KesselBrennwertNachzug.SCHRITT.ToString(CultureInfo.InvariantCulture) + ":", StringComparison.Ordinal));
+
+            // Kesselkennlinie E2b: Der Projektkessel (Katalogsatz ein Brennwertkessel) trägt das
+            // Kennzeichen wieder, wie in der Quelle.
+            Assert.Equal(1L, Convert.ToInt64(DataRepository.ExecuteScalar(
+                "SELECT MIN(Brennwert) FROM Tab_Heizkessel WHERE ID_Projekt = ?", new DbParam("@p", neu)),
+                CultureInfo.InvariantCulture));
 
             DataTable bhkwNeu = DataRepository.GetDataTable(
                 "SELECT Bezeichner, Wirkungsgrad, Wirkungsgrad_el, Wirkungsgrad_th FROM Tab_BHKW WHERE ID_Projekt = ? ORDER BY Bezeichner",
@@ -210,6 +222,62 @@ namespace EPOS.Kern.Tests
         // =============================================================================
         //  Zielstand unverändert, Fehler lässt die Datenbank unberührt
         // =============================================================================
+
+        /// <summary>
+        /// <b>KM4-E1-b:</b> <c>ID_Kaeltemittel</c> reist nicht (Ausnahme wie <c>ID_Stamm</c>); am Ziel setzt der Import ihn
+        /// aus dem Text — auch bei abweichender ID-Vergabe der Kältemitteltabelle —, für einen Text ohne Code-Treffer über
+        /// den Katalogsatz mit demselben Text und Verweis („R1234ze“), und ein unbekannter Text bleibt ohne ID stehen.
+        /// </summary>
+        [Fact]
+        public void Kaeltemittelverweis_reist_nicht_und_wird_am_Ziel_aus_dem_Text_gesetzt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+            const string QUELLE = "Kältemaschine mit Kältespeicher"; // Referenzprojekt 1055
+            const int PROJEKT = 1055;
+
+            // Zwei weitere Kopien: der Satz „R1234ze“ (Verweis über den Katalogschlüssel) und ein unbekannter Text.
+            int nass = Convert.ToInt32(DataRepository.ExecuteScalar(
+                "SELECT ID FROM Tab_Kaeltemaschine_STAMM WHERE Katalog_Schluessel = ?",
+                new DbParam("?", KaeltemittelSchema.BEISPIEL_SCHLUESSEL)), CultureInfo.InvariantCulture);
+            Assert.True(KaeltemaschineCtrl.EigeneKopieAnlegen(nass, PROJEKT) > 0);
+            int fremd = KaeltemaschineCtrl.EigeneKopieAnlegen(nass, PROJEKT);
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Kaeltemaschine SET Kaeltemittel = 'Frigen X', ID_Kaeltemittel = NULL, " +
+                                           "Bezeichner = 'Fremdgerät' WHERE ID = ?", new DbParam("?", fremd));
+            var quelle = KaeltemaschineCtrl.IdsImProjekt(PROJEKT);
+            Assert.Equal(3, quelle.Count);
+
+            string paket = ordner.Datei("kaeltemittel.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(QUELLE, paket));
+
+            // Am Ziel eine andere ID-Vergabe: R513A und R1234ze(E) bekommen neue IDs (die Katalogsätze ziehen mit).
+            foreach ((string Code, int Neu) z in new[] { ("R513A", 500), (KaeltemittelSchema.BEISPIEL_CODE, 501) })
+            {
+                int alt = KaeltemittelCtrl.IdZumCode(z.Code).Value;
+                DataRepository.ExecuteNonQuery("UPDATE Tab_Kaeltemittel_STAMM SET ID = ? WHERE ID = ?",
+                                               new DbParam("?", z.Neu), new DbParam("?", alt));
+                DataRepository.ExecuteNonQuery("UPDATE Tab_Kaeltemaschine_STAMM SET ID_Kaeltemittel = ? WHERE ID_Kaeltemittel = ?",
+                                               new DbParam("?", z.Neu), new DbParam("?", alt));
+            }
+
+            int neu = io.Importieren(paket, "Kältemittel Rundreise", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                     null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+            var ziel = KaeltemaschineCtrl.IdsImProjekt(neu);
+            Assert.Equal(3, ziel.Count);
+            KaeltemaschineModel r513a = KaeltemaschineCtrl.Laden(ziel[0]);
+            Assert.Equal("R513A", r513a.Kaeltemittel);
+            Assert.Equal(500, r513a.ID_Kaeltemittel);
+            KaeltemaschineModel r1234ze = KaeltemaschineCtrl.Laden(ziel[1]);
+            Assert.Equal(KaeltemittelSchema.BEISPIEL_TEXT, r1234ze.Kaeltemittel);
+            Assert.Equal(nass, r1234ze.IdStamm);
+            Assert.Equal(501, r1234ze.ID_Kaeltemittel);
+            KaeltemaschineModel unbekannt = KaeltemaschineCtrl.Laden(ziel[2]);
+            Assert.Equal("Frigen X", unbekannt.Kaeltemittel);
+            Assert.Null(unbekannt.ID_Kaeltemittel);
+        }
 
         [Fact]
         public void Ein_Paket_auf_Zielstand_wird_nicht_angefasst()
@@ -582,6 +650,60 @@ namespace EPOS.Kern.Tests
                 }
                 using Stream s = aus.CreateEntry(kvp.Key, CompressionLevel.Optimal).Open();
                 s.Write(roh, 0, roh.Length);
+            }
+        }
+
+        // =============================================================================
+        //  Geraetegrenzen der Uebergabegrenze (Schritt 205, UB-E3-b)
+        // =============================================================================
+
+        /// <summary>
+        /// Die acht Gerätespalten der Wärmepumpe und die Abschaltgrenze des BHKW reisen mit dem Projektpaket: Ein Paket
+        /// auf Zielstand trägt die gepflegten Werte zurück, ein Paket von vor Schritt 203 (ohne die Spalten) wird
+        /// gehoben und trägt sie leer — leer heißt „Vorgabe", nie 0.
+        /// </summary>
+        [Fact]
+        public void Geraetegrenzen_reisen_mit_dem_Paket_und_ein_altes_Paket_traegt_sie_leer()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int wp = Id(WP), solar = Id(SOLAR);
+            Assert.True(wp > 0 && solar > 0);
+            DataRepository.ExecuteNonQuery("UPDATE Tab_WP SET Spreizung_Min_K = 4, Ruecklauf_Max = 52, Kaeltemittel = 'R290' WHERE ID_Projekt = ?",
+                                           new DbParam("@p", wp));
+            DataRepository.ExecuteNonQuery("UPDATE Tab_BHKW SET Ruecklauf_Max = 75 WHERE ID_Projekt = ?", new DbParam("@p", solar));
+            Assert.True(Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_WP WHERE ID_Projekt = ?",
+                                                                     new DbParam("@p", wp)), CultureInfo.InvariantCulture) > 0);
+
+            var io = new ProjektExportImportCtrl();
+            foreach ((string name, string tabelle, string pruef) in new[]
+            {
+                (WP, "Tab_WP", "SELECT COUNT(*) FROM Tab_WP WHERE ID_Projekt = ? AND Spreizung_Min_K = 4 AND Ruecklauf_Max = 52 AND Kaeltemittel = 'R290'"),
+                (SOLAR, "Tab_BHKW", "SELECT COUNT(*) FROM Tab_BHKW WHERE ID_Projekt = ? AND Ruecklauf_Max = 75"),
+            })
+            {
+                string paket = ordner.Datei(tabelle + "_neu.wpx");
+                Assert.True(io.Exportieren(name, paket));
+                int neu = io.Importieren(paket, "Grenzen " + tabelle, ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                         null, out string fehler);
+                Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+                Assert.True(Convert.ToInt64(DataRepository.ExecuteScalar(pruef, new DbParam("@p", neu)), CultureInfo.InvariantCulture) > 0,
+                            tabelle + ": die gepflegten Grenzen fehlen nach dem Import");
+
+                string alt = ordner.Datei(tabelle + "_alt.wpx");
+                Umbauen(paket, alt, UebergabegrenzeSchema.SCHRITT - 1, (t, zeile) =>
+                {
+                    if (t != tabelle) return;
+                    foreach ((string spalte, string _) in UebergabegrenzeSchema.WP_SPALTEN) zeile.Remove(spalte);
+                });
+                int gehoben = io.Importieren(alt, "Grenzen alt " + tabelle, ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                             null, out fehler);
+                Assert.True(gehoben > 0, "Import fehlgeschlagen: " + fehler);
+                Assert.Equal(0L, Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM " + tabelle + " WHERE ID_Projekt = ? AND Ruecklauf_Max IS NOT NULL",
+                    new DbParam("@p", gehoben)), CultureInfo.InvariantCulture));
             }
         }
 

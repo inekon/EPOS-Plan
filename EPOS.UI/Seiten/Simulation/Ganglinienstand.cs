@@ -99,6 +99,9 @@ public static class Ganglinienregister
     /// <summary>Schlüssel des Stromgang-Reiters.</summary>
     public const string STROMGANG = "STROMGANG";
 
+    /// <summary>Schlüssel des Kältegang-Reiters (nur „sortiert").</summary>
+    public const string KAELTEGANG = "KAELTEGANG";
+
     private static readonly object _schloss = new object();
 
     private static readonly Dictionary<string, Ganglinienstand> _staende =

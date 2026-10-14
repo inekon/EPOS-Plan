@@ -1033,6 +1033,11 @@ namespace EPOS.Kern.Tests
                     if (c.DataType == typeof(DateTime)) continue;
                     if (c.ColumnName.IndexOf("datum", StringComparison.OrdinalIgnoreCase) >= 0) continue;
                     if (c.ColumnName.IndexOf("valid_", StringComparison.OrdinalIgnoreCase) >= 0) continue;
+                    // Kostenstempel (Schritt 159, KostenStempelSchema): Tab_Projekt.Kosten_Geaendert und
+                    // Tab_Applikation.Kostenkatalog_Geaendert schreiben Trigger mit datetime('now') -
+                    // eine erwartete Nebenwirkung jeder Kostenaenderung, sekundenscharf und deshalb
+                    // zwischen Vorbereitung und Aenderung des Falls nicht stabil.
+                    if (c.ColumnName.EndsWith("_Geaendert", StringComparison.Ordinal)) continue;
                     sb.Append(c.ColumnName).Append('=')
                       .Append(Convert.ToString(r[c], CultureInfo.InvariantCulture)).Append('|');
                 }

@@ -106,6 +106,7 @@ namespace EPOS.Kern.Tests
         [InlineData("Wizard_WPItem.btn_Help", KiChatKontext.B_WAERMEPUMPE)]
         [InlineData("Form_GebWohnflaeche.btn_Help", KiChatKontext.B_GEBAEUDE)]
         [InlineData("Form_Gebaeude.btn_Help", KiChatKontext.B_GEBAEUDE)]
+        [InlineData("Nutzungsprofile.btn_Help", KiChatKontext.B_GEBAEUDE)]
         public void Der_Bereich_folgt_aus_dem_Maskenpraefix(string schluessel, string erwartet)
         {
             Assert.Equal(erwartet, KiChatKontext.BereichFuerHilfeschluessel(schluessel));
@@ -224,11 +225,12 @@ namespace EPOS.Kern.Tests
         public void Jede_Kennung_hat_einen_Wissensabschnitt()
         {
             // 21 Kennungen der Flotte, des Laufs, der Strangampel und der Klimadaten,
-            // dazu 53 der Berichtsvorlagen (Prüfer, Vorlagen-Controller, Laufmeldung, Vorprüfung; mit
-            // BV-E2 Kapitel doppelt, „erst später“ und Anhang E ohne Stelle, mit BV-E4 der Paarvergleich, mit
-            // BV-E5 die Mustertabelle ohne Rolle, mit BV-E9 die Positionsadressierung über der Auswahl).
-            Assert.Equal(21 + 53, KiMeldungskennung.Alle.Length);
-            Assert.Equal(53, KiMeldungskennung.Berichtsvorlagen.Length);
+            // dazu 54 der Berichtsvorlagen (Prüfer, Vorlagen-Controller, Laufmeldung, Vorprüfung; mit
+            // BV-E2 Kapitel doppelt, „erst später“ und Anhang E ohne Stelle, mit BV-E4 der Paarvergleich und das
+            // Kapitel im Wiederholblock, mit BV-E5 die Mustertabelle ohne Rolle, mit BV-E9 die Positionsadressierung
+            // über der Auswahl).
+            Assert.Equal(21 + 54, KiMeldungskennung.Alle.Length);
+            Assert.Equal(54, KiMeldungskennung.Berichtsvorlagen.Length);
             Assert.Equal(KiMeldungskennung.Alle.Length, KiMeldungskennung.Alle.Distinct(StringComparer.Ordinal).Count());
 
             foreach (string kennung in KiMeldungskennung.Alle)

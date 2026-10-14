@@ -24,7 +24,8 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// Der Parametersatz des Bedarfsdialogs zu EINER Projektzeile — <c>null</c>, wenn
-        /// es dafür keine Zahl gibt: kein Projekt (Katalogverwaltung) oder keine Klimaregion.
+        /// es dafür keine Zahl gibt: kein Projekt, keine Klimaregion, kein Katalogsatz bzw. keine
+        /// Projektkopie, eine Importzeile mit Zone vor dem OK.
         /// Der Dialog MELDET das. Gerechnet wird aus dem ARBEITSSTAND der Zeile
         /// (<see cref="GebaeudeBedarfCtrl.Arbeitsstandgebaeude"/>) — auch eine eben übernommene
         /// Zeile ohne Projektkopie rechnet, vor dem OK und ohne dass etwas geschrieben wird.
@@ -45,7 +46,16 @@ namespace WindowsFormsApplication1
             GebaeudeProjektZeile zeile, int projektId, out string befund, bool zoneAusstehend = false)
         {
             befund = null;
-            if (zeile == null || projektId <= 0) return null;
+            if (zeile == null) return null;
+
+            // Jeder Fall ohne Zahl nennt seinen WIRKLICHEN Grund (Verbesserungen 29.09.2026, A1):
+            // Gerechnet wird aus dem Arbeitsstand, auch für eine ungespeicherte Zeile - ein
+            // pauschales „bitte speichern" träfe nur die Importzeile mit Zone.
+            if (projektId <= 0)
+            {
+                befund = MyResource.Resource.GEB_MSG_BEDARF_OHNE_PROJEKT;
+                return null;
+            }
 
             // Die vorläufige Id einer ungespeicherten Zeile ist keine Zuordnung - 0 heißt: aus dem
             // Katalogsatz, den der Speicherweg kopieren wird.
@@ -57,6 +67,14 @@ namespace WindowsFormsApplication1
             }
             int idZ = ungespeichert ? 0 : zeile.IdZ;
 
+            var projekt = new ProjektCtrl();
+            projekt.ReadSingle(projektId);
+            if (projekt.m_ID_Klimaregion <= 0)
+            {
+                befund = MyResource.Resource.GEB_MSG_BEDARF_OHNE_KLIMAREGION;
+                return null;
+            }
+
             // Je Rechnung ein FRISCHES Modell - die Fassade setzt Rechenweg, Bewohner und
             // Bezugsfläche am Modell wie im Lauf.
             Func<ProjektGebaeudeModel> modell = () => GebaeudeBedarfCtrl.Arbeitsstandgebaeude(
@@ -66,13 +84,14 @@ namespace WindowsFormsApplication1
             ProjektGebaeudeModel gebaeude = modell();
             if (gebaeude == null)
             {
-                // Eine ungespeicherte Zeile ohne Katalogsatz: Erst das OK bildet ihre Projektkopie.
-                befund = ungespeichert ? MyResource.Resource.GEB_MSG_BEDARF_UNGESPEICHERT : null;
+                // Ungespeichert: Der Katalogsatz, aus dem der Arbeitsstand entsteht, fehlt.
+                // Gespeichert: Die Projektkopie hinter der Zuordnung fehlt.
+                befund = ungespeichert
+                    ? string.Format(CultureInfo.CurrentCulture,
+                                    MyResource.Resource.GEB_MSG_BEDARF_OHNE_KATALOGSATZ, zeile.Name ?? "")
+                    : MyResource.Resource.GEB_MSG_BEDARF_OHNE_PROJEKTKOPIE;
                 return null;
             }
-
-            var projekt = new ProjektCtrl();
-            projekt.ReadSingle(projektId);
 
             GebaeudeBedarfErgebnis ergebnis =
                 GebaeudeBedarfCtrl.Rechnen(projektId, projekt.m_ID_Klimaregion, gebaeude);
@@ -95,7 +114,29 @@ namespace WindowsFormsApplication1
             // es haengt an den Brauchwasserprofilen bzw. dem Zapfprofil und laeuft im Kanal Warmwasser.
             double? warmwasser = GebaeudeBedarfCtrl.WarmwasserDesProjektsMwh(projektId, projekt.m_ID_Klimaregion);
 
-            GebaeudeBedarfDaten daten = Daten(ergebnis, gegen.Erfolgreich ? Daten(gegen, null) : null, warmwasser);
+            // Anlagenkopplung AK2 (5.5): der Restbedarf des Projekts steht neben den Komfortstunden.
+            double? restbedarf = GebaeudeBedarfCtrl.RestbedarfDesProjektsMwh(projektId);
+            // Stufe KP3, Welle O2 (E60, Festlegung 41): die Gruppe „Aufheizung" - die Ergebniszeile des Laufs, bei
+            // ausgeschalteter Optimierung die Auskunft der Bemessung fuer die Auslegungsgroesse.
+            GebaeudeBedarfAufheizDaten aufheizung = Aufheizung(ergebnis,
+                ohneSchalter => AufheizauskunftCtrl.Gebaeude(projektId, projekt.m_ID_Klimaregion, modell(), ohneSchalter));
+            // Anlagenkopplung AK3 (Festlegung 22): die Kennzahlen des Kreises aus dem letzten Lauf - neben Komfort und Restbedarf.
+            Ak3Kennzahlen ak3 = GebaeudeBedarfCtrl.Ak3KennzahlenDesProjekts(projektId);
+            // AK3-K (Festlegung 20): Zonensperre und Kaelteseite im Kreis aus demselben Lauf - nur mit Wert.
+            Ak3KKennzahlen ak3k = GebaeudeBedarfCtrl.Ak3KKennzahlenDesProjekts(projektId);
+            // KK (Festlegung 12): die Kennzahlen der Kuehlkurve aus demselben Lauf - nur mit Wert.
+            KuehlkurveKennzahlen kk = GebaeudeBedarfCtrl.KuehlkurveKennzahlenDesProjekts(projektId);
+            GebaeudeBedarfDaten daten = Daten(ergebnis, gegen.Erfolgreich ? Daten(gegen, null) : null, warmwasser,
+                                              restbedarf, aufheizung, ak3, ak3k, kk);
+
+            // Das Bild „Raumtemperatur und Sollwert" (AK2, E80): die Woche mit der größten Unterschreitung -
+            // nur, wenn am Gebäude Komfort erhoben ist und eine Stunde zählt.
+            int komfortStart = ergebnis.KomfortMaske != null
+                ? Komfortwoche.GroessteUnterschreitung(ergebnis.HeizsollwertC, ergebnis.RaumtemperaturC, ergebnis.KomfortMaske)
+                : -1;
+            Func<Zeichenmodell> komfortbild = komfortStart >= 0
+                ? () => Komfortwochenmodell(ergebnis, komfortStart)
+                : null;
 
             // Das Bild "Raumtemperatur" gibt es nur auf dem VDI-Weg (Konzept 8.2).
             Func<Zeichenmodell> raumbild = ergebnis.RaumtemperaturC != null
@@ -134,6 +175,7 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Daten"] = daten,
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(projektId),
                 ["BildauftragZone"] = zonenbild,
                 ["BildauftragRaumtemperaturZone"] = zonenraumbild,
                 ["Bildauftrag"] = new Func<bool, Zeichenmodell>(
@@ -141,6 +183,42 @@ namespace WindowsFormsApplication1
                 ["BildauftragRaumtemperatur"] = raumbild,
                 ["BildauftragKaelte"] = kaeltebild,
                 ["BildauftragVorlauf"] = vorlaufbild,
+                ["BildauftragKomfortwoche"] = komfortbild,
+                ["BildtextKomfortwoche"] = Text_("GEBB_BILD_KOMFORTWOCHE", "Raumtemperatur und Sollwert — Woche mit der größten Unterschreitung"),
+                ["HinweisKomfortwoche"] = komfortStart >= 0
+                    ? string.Format(CultureInfo.CurrentCulture,
+                                    Text_("GEBB_HRL_KOMFORTWOCHE", "Die Woche ab {0}; markiert sind die gezählten Unterschreitungsstunden."),
+                                    Wochenbeginn(komfortStart))
+                    : "",
+                ["KachelKomfortStunden"] = Text_("GEBB_KACHEL_KOMFORT_STUNDEN", "Unterschreitungsstunden"),
+                ["KachelKomfortKelvin"] = Text_("GEBB_KACHEL_KOMFORT_KELVIN", "Kelvinstunden"),
+                ["KachelKomfortStrecke"] = Text_("GEBB_KACHEL_KOMFORT_STRECKE", "Längste Strecke"),
+                ["QuelleKomfort"] = Text_("GEBB_KACHEL_KOMFORT_QUELLE", "Stunden der Nutzungszeit mehr als 1,0 K unter dem Sollwert"),
+                ["KachelRestbedarf"] = Text_("GEBB_KACHEL_RESTBEDARF", "Restbedarf (Projekt, letzter Lauf)"),
+                ["QuelleRestbedarf"] = Text_("GEBB_KACHEL_RESTBEDARF_QUELLE", "Wärme, die kein Erzeuger gedeckt hat — steht neben den Komfortstunden"),
+                ["KachelKomfortUeber"] = Text_("GEBB_KACHEL_KOMFORT_UEBER", "Überschreitungsstunden Kühlung"),
+                ["KachelKomfortKelvinKuehl"] = Text_("GEBB_KACHEL_KOMFORT_KELVIN_KUEHL", "Kelvinstunden Kühlung"),
+                ["KachelBedarfsbegriff"] = Text_("GEBB_KACHEL_BEDARFSBEGRIFF", "Bedarfsbegriff"),
+                ["KachelFahrplanBegrenzt"] = Text_("GEBB_KACHEL_FAHRPLAN_BEGRENZT", "Stunden am Fahrplan begrenzt"),
+                ["HinweisKomfortOhne"] = Text_("GEBB_HRL_KOMFORT_OHNE", "Komfortstunden gibt es nur für ein gekoppelt gerechnetes Gebäude."),
+                // Anlagenkopplung AK3 (Festlegung 22): die Kacheln des geschlossenen Kreises.
+                ["KachelAk3Durchlaeufe"] = Text_("AK3_GEBB_KACHEL_DURCHLAEUFE", "Durchläufe je Stunde (Mittel / Höchstwert)"),
+                ["KachelAk3Fallwechsel"] = Text_("AK3_GEBB_KACHEL_FALLWECHSEL", "Fallwechsel"),
+                ["KachelAk3Schranke"] = Text_("AK3_GEBB_KACHEL_SCHRANKE", "Stunden an der Schranke"),
+                ["KachelAk3SpeicherLeer"] = Text_("AK3_GEBB_KACHEL_SPEICHER_LEER", "Stunden mit leerem Speicher"),
+                ["KachelAk3Restbedarf"] = Text_("AK3_GEBB_KACHEL_RESTBEDARF", "Stunden mit Restbedarf"),
+                ["QuelleAk3"] = Text_("AK3_GEBB_QUELLE", "Geschlossener Kreis (AK3), Projekt, letzter Lauf"),
+                ["KachelZonensperreTage"] = Text_("AK3K_GEBB_KACHEL_SPERRTAGE", "Tage mit Sperre der Gegenseite"),
+                ["KachelZonensperreGesperrt"] = Text_("AK3K_GEBB_KACHEL_GESPERRT", "Gesperrte Energie (Heizen / Kühlen)"),
+                ["QuelleZonensperre"] = Text_("AK3K_GEBB_QUELLE_ZONENSPERRE", "Zonensperre, Projekt, letzter Lauf"),
+                ["KachelAk3Kaelteschranke"] = Text_("AK3K_GEBB_KACHEL_KAELTESCHRANKE", "Stunden an der Kälteschranke"),
+                ["KachelAk3Umschaltung"] = Text_("AK3K_GEBB_KACHEL_UMSCHALTUNG", "Umschaltstunden"),
+                ["KachelAk3Kaelterest"] = Text_("AK3K_GEBB_KACHEL_KAELTEREST", "Kälte-Restbedarf"),
+                ["QuelleAk3Kaelte"] = Text_("AK3K_GEBB_QUELLE_KREIS", "Kälteseite im Kreis (AK3), Projekt, letzter Lauf"),
+                ["KachelKuehlkurveVorlauf"] = Text_("KK_GEBB_KACHEL_VORLAUF_MITTEL", "Mittlerer Kühlvorlauf (Kühlkurve)"),
+                ["KachelKuehlkurveAbsenkung"] = Text_("KK_GEBB_KACHEL_ABSENKUNG", "Absenkung durch Raumeinfluss"),
+                ["KachelKuehlkurveGrenze"] = Text_("KK_GEBB_KACHEL_VORLAUFGRENZE", "Stunden an der Vorlaufgrenze"),
+                ["QuelleKuehlkurve"] = Text_("KK_GEBB_QUELLE", "Kühlkurve, Projekt, letzter Lauf"),
                 ["BildtextVorlauf"] = Text_("GEBB_BILD_VORLAUF_RUECKLAUF", "Vorlauf und Rücklauf"),
                 ["KachelVorlaufRuecklauf"] = Text_("GEBB_KACHEL_VORLAUF_RUECKLAUF", "Vorlauf / Rücklauf"),
                 ["KachelBegrenzt"] = Text_("GEBB_KACHEL_BEGRENZT", "Stunden mit begrenzter Übergabe"),
@@ -175,6 +253,7 @@ namespace WindowsFormsApplication1
                     Text_("GEBB_LBL_MITTLERE_RAUMTEMPERATUR", "mittlere Raumtemperatur (Nutzungszeit):"),
                 ["LabelUeberhitzung"] = Text_("GEBB_LBL_UEBERHITZUNG", "Überhitzungsstunden:"),
                 ["LabelSommerlueftung"] = Text_("GEBB_LBL_SOMMERLUEFTUNG", "Stunden mit Sommerlüftung:"),
+                ["LabelNachtauskuehlung"] = Text_("KOND_LBL_STUNDEN_NACHTAUSKUEHLUNG", "Stunden mit Nachtauskühlung:"),
                 ["EinheitStundenZahl"] = Text_("GEBB_EINHEIT_H", "h"),
                 ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
                 ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
@@ -214,8 +293,11 @@ namespace WindowsFormsApplication1
         /// Anzeigekante.
         /// </summary>
         private static GebaeudeBedarfDaten Daten(GebaeudeBedarfErgebnis ergebnis, GebaeudeBedarfDaten vergleich,
-                                                 double? warmwasserProjektMwh = null)
+                                                 double? warmwasserProjektMwh = null, double? restbedarfProjektMwh = null,
+                                                 GebaeudeBedarfAufheizDaten aufheizung = null, Ak3Kennzahlen ak3 = null,
+                                                 Ak3KKennzahlen ak3k = null, KuehlkurveKennzahlen kk = null)
         {
+            ErgebnisGebaeudeModel zeile = ergebnis.Ergebniszeile;
             var monate = new double[12];
             for (int m = 0; m < 12 && m < ergebnis.MonatswerteMwh.Length; m++)
                 monate[m] = ergebnis.MonatswerteMwh[m];
@@ -229,6 +311,7 @@ namespace WindowsFormsApplication1
                 MonatswerteMwh = monate,
 
                 Modelltext = Rechenweg(ergebnis),
+                Aufheizung = aufheizung,
                 WarmwasserProjektMwh = warmwasserProjektMwh,
                 IstVdi6007 = ergebnis.Modell == DbWerte.GEBAEUDE_MODELL_VDI6007,
 
@@ -238,6 +321,35 @@ namespace WindowsFormsApplication1
                 RuecklaufMittelC = ergebnis.Gekoppelt ? ergebnis.RuecklaufMittelC : null,
                 UebergabeBegrenztStundenH = ergebnis.Gekoppelt ? ergebnis.UebergabeBegrenztStundenH : null,
                 Heizkreiszeile = ergebnis.Gekoppelt ? Heizkreiszeile(ergebnis) : "",
+                // Anlagenkopplung AK2 (5.5, 6.2): Komfort neben Restbedarf, Bedarfsbegriff, Fahrplanstunden.
+                KomfortUnterschreitungsstundenH = zeile?.KomfortUnterschreitungsstundenH,
+                KomfortKelvinstundenKh = zeile?.KomfortKelvinstundenKh,
+                KomfortLaengsteStreckeH = zeile?.KomfortLaengsteStreckeH,
+                KomfortUeberschreitungsstundenH = zeile?.KomfortUeberschreitungsstundenH,
+                KomfortKelvinstundenKuehlungKh = zeile?.KomfortKelvinstundenKuehlungKh,
+                RestbedarfProjektMwh = restbedarfProjektMwh,
+                Bedarfsbegriff = zeile?.Bedarfsbegriff is Bedarfsbegriff bb ? Bedarfsbegrifftext(bb) : "",
+                FahrplanBegrenztStundenH = zeile?.FahrplanBegrenztStundenH,
+                // Anlagenkopplung AK3 (Festlegungen 20 und 22): Kennzahlen des Kreises und die Rückstufe der Auskunft.
+                Ak3DurchlaeufeMittel = ak3?.DurchlaeufeMittel,
+                Ak3DurchlaeufeMax = ak3?.DurchlaeufeMax,
+                Ak3Fallwechsel = ak3?.Fallwechsel,
+                Ak3SchrankeStundenH = ak3?.SchrankeStundenH,
+                Ak3SpeicherLeerStundenH = ak3?.SpeicherLeerStundenH,
+                Ak3RestbedarfStundenH = ak3?.RestbedarfStundenH,
+                // AK3-K (Festlegung 20): Zonensperre und Kaelteseite im Kreis.
+                ZonensperreTage = ak3k?.ZonensperreTage,
+                ZonensperreHeizenGesperrtMwh = ak3k?.HeizenGesperrtMwh,
+                ZonensperreKuehlenGesperrtMwh = ak3k?.KuehlenGesperrtMwh,
+                Ak3KaelteschrankeStundenH = ak3k?.KaelteschrankeStundenH,
+                Ak3UmschaltStundenH = ak3k?.UmschaltStundenH,
+                Ak3KaelterestStundenH = ak3k?.KaelterestStundenH,
+                Ak3KaelterestMwh = ak3k?.KaelterestMwh,
+                // KK (Festlegung 12): die Kennzahlen der Kuehlkurve.
+                KuehlkurveVorlaufMittelC = kk?.VorlaufMittelC,
+                KuehlkurveAbsenkungKh = kk?.AbsenkungKh,
+                KuehlkurveVorlaufgrenzeStundenH = kk?.VorlaufgrenzeStundenH,
+                Rueckstufe = ergebnis.Rueckstufe ?? "",
                 // E37: der Kaeltekreis - nur kuehlgekoppelt, aus demselben Ergebnis.
                 IstKuehlgekoppelt = ergebnis.KuehlGekoppelt,
                 KuehlVorlaufMittelC = ergebnis.KuehlGekoppelt ? ergebnis.KuehlVorlaufMittelC : null,
@@ -254,6 +366,9 @@ namespace WindowsFormsApplication1
                 MittlereRaumtemperaturC = ergebnis.MittlereRaumtemperaturC,
                 UeberhitzungsstundenH = ergebnis.UeberhitzungsstundenH,
                 SommerlueftungsstundenH = ergebnis.SommerlueftungsstundenH,
+                // KP2 K4: die Nachtauskuehlstunden des Laufs (null ohne Nachtauskuehlung) - die
+                // sichtbare Zeile „nur mit Wert" baut U1.
+                NachtauskuehlstundenH = ergebnis.NachtauskuehlstundenH,
                 Vergleich = vergleich,
 
                 // Stufe KU1 (Kuehlkonzept 8.4): der Abschnitt „Kaeltebedarf" - fuer jedes Gebaeude
@@ -263,6 +378,8 @@ namespace WindowsFormsApplication1
                 KaeltelastMaxKw = ergebnis.KaelteBestandsweg ? 0.0 : ergebnis.KaeltelastMaxKw,
                 VollbenutzungsstundenKaelteH = ergebnis.VollbenutzungsstundenKaelteH,
                 StundenHeizenUndKuehlenH = ergebnis.StundenHeizenUndKuehlen,
+                GleichzeitigHeizenKwh = ergebnis.GleichzeitigHeizenKwh,
+                GleichzeitigKuehlenKwh = ergebnis.GleichzeitigKuehlenKwh,
                 KuehlMonatswerteMwh = ergebnis.KuehlMonatswerteMwh != null
                     ? (IReadOnlyList<double>)(double[])ergebnis.KuehlMonatswerteMwh.Clone()
                     : ergebnis.KaelteBestandsweg ? new double[12] : new List<double>(),
@@ -276,7 +393,18 @@ namespace WindowsFormsApplication1
                     HeizwaermeMwh = z.HeizwaermeMwh,
                     MaxLastKw = z.MaxLastKw,
                     MittlereRaumtemperaturC = z.MittlereRaumtemperaturC,
-                    UeberhitzungsstundenH = z.UeberhitzungsstundenH
+                    UeberhitzungsstundenH = z.UeberhitzungsstundenH,
+                    NachtauskuehlstundenH = z.NachtauskuehlstundenH,
+                    // AK1z (E63): der Heizkreis der Zone aus der Ergebniszeile des Laufs - null ohne Kopplung.
+                    VorlaufMittelC = z.Ergebniszeile?.VorlaufMittelC,
+                    RuecklaufMittelC = z.Ergebniszeile?.RuecklaufMittelC,
+                    UebergabeBegrenztH = z.Ergebniszeile?.UebergabeBegrenztH,
+                    // KU3-3: die Kaelte der Zone aus dem Lauf (nicht gespeichert: Spitze und Stunden).
+                    KaeltebedarfMwh = z.KaeltebedarfMwh,
+                    // Schritt 185: die Werte der Ergebniszeile (dieselbe, die der Lauf nach Tab_ErgebnisZone schreibt),
+                    // sonst die des Laufs.
+                    KaeltespitzeKw = z.Ergebniszeile?.KaeltespitzeKw ?? z.KaeltespitzeKw,
+                    KuehlstundenH = z.Ergebniszeile?.KuehlstundenH ?? z.KuehlstundenH
                 })
             };
         }
@@ -286,6 +414,127 @@ namespace WindowsFormsApplication1
         /// wirksamer Kopplung einer Seite (Heiz- oder Kälteseite, E37) „VDI 6007, gekoppelt (AK1)",
         /// sonst der Rechenweg allein.
         /// </summary>
+        /// <summary>
+        /// <b>Die Gruppe „Aufheizung"</b> (Entwurf KP3, Welle O2; Festlegungen 22, 25, 39, 41) — aus der Ergebniszeile des
+        /// Laufs (<see cref="GebaeudeBedarfErgebnis.Ergebniszeile"/>), dieselben Zahlen wie <c>Tab_ErgebnisGebaeude</c>.
+        /// Bei ausgeschalteter Optimierung (Zustand NULL auf dem VDI-Weg) nimmt sie die Teile der Auslegungsgröße aus der
+        /// Auskunft der Bemessung (<paramref name="auskunft"/> mit <c>true</c> = auch ohne Schalter); bei Art „manuell"
+        /// die bemessene Zeit aus der Auskunft (<c>false</c>), denn die Ergebniszeile trägt dann den manuellen Wert.
+        /// <c>null</c> auf dem Tagesbilanz-Weg und ohne Bemessung.
+        /// </summary>
+        internal static GebaeudeBedarfAufheizDaten Aufheizung(GebaeudeBedarfErgebnis e, Func<bool, Aufheizauskunft> auskunft)
+        {
+            if (e == null || e.Modell != DbWerte.GEBAEUDE_MODELL_VDI6007) return null;
+            ErgebnisGebaeudeModel z = e.Ergebniszeile;
+            double spitze = z?.SpitzeKw ?? e.MaxLastKw;
+            double? tagesmittel = z?.SpitzeTagesmittelKw ?? e.SpitzeTagesmittelKw;
+            if (z?.AufheizZustand == null)
+            {
+                Aufheizauskunft a = auskunft?.Invoke(true);
+                if (a == null || a.Zustand == null) return null;
+                return new GebaeudeBedarfAufheizDaten
+                {
+                    Zustand = GebaeudeBedarfAufheizDaten.AUS,
+                    Zustandtext = MyResource.Resource.GEBB_AUFH_ZUSTAND_AUS,
+                    AuslegungsheizlastKw = a.AuslegungsheizlastKw,
+                    AufheizzuschlagKw = a.AufheizzuschlagKw,
+                    AuslegungsgroesseKw = a.AuslegungsheizlastKw + a.AufheizzuschlagKw,
+                    SpitzeKw = spitze,
+                    SpitzeTagesmittelKw = tagesmittel,
+                    LeistungKw = a.LeistungKw,
+                    Quelle = Aufheizquelle(a.Quelle),
+                    FaktorErstImLauf = a.FaktorErstImLauf,
+                    Rueckstufe = a.Rueckstufe ?? "",
+                };
+            }
+
+            // Festlegung 39: bei MANUELL traegt die Zeile den manuellen Wert als t_auf,max - die bemessene Zeit
+            // nennt die Auskunft (dieselbe Bemessung, ohne Jahreslauf).
+            bool manuell = z.AufheizArt == DbWerte.AUFHEIZ_ART_MANUELL;
+            int? manuellH = manuell ? z.AufheizzeitMaxH : null;
+            Aufheizauskunft bemessen = manuell ? auskunft?.Invoke(false) : null;
+            int? bemessenH = manuell ? bemessen?.AufheizzeitMaxH : z.AufheizzeitMaxH;
+            var hinweise = new List<string>();
+            CultureInfo k = CultureInfo.CurrentCulture;
+            if (z.AufheizZustand == DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR) hinweise.Add(MyResource.Resource.GEBB_AUFH_W1_BEMESSUNG);
+            if (z.AufheiztageUnerreichbar is int w1 && w1 > 0) hinweise.Add(string.Format(k, MyResource.Resource.GEBB_AUFH_W1, w1));
+            if (z.AufheiztageBegrenzt is int w2 && w2 > 0) hinweise.Add(string.Format(k, MyResource.Resource.GEBB_AUFH_W2, w2));
+            if (z.AufheiztageNachweisband is int w3 && w3 > 0) hinweise.Add(string.Format(k, MyResource.Resource.GEBB_AUFH_W3, w3));
+            if (z.AufheizspruengeAus is int w4 && w4 > 0) hinweise.Add(string.Format(k, MyResource.Resource.GEBB_AUFH_W4, w4));
+            if (z.AufheizZustand == DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT) hinweise.Add(MyResource.Resource.GEBB_AUFH_W5);
+
+            var zonen = new List<GebaeudeBedarfAufheizZoneDaten>();
+            if (e.Zonen.Count >= 2)
+                foreach (GebaeudeBedarfZone zone in e.Zonen)
+                {
+                    ErgebnisZoneModel zz = zone.Ergebniszeile;
+                    zonen.Add(new GebaeudeBedarfAufheizZoneDaten
+                    {
+                        Name = zone.Name,
+                        Zustandtext = Aufheizzustand(zz?.AufheizZustand),
+                        AufheizzeitMaxH = zz?.AufheizzeitMaxH,
+                        LeistungKw = zz?.AufheizLeistungKw,
+                        Quelle = Aufheizquelle(zz?.AufheizLeistungsquelle),
+                        Aufheiztage = zz?.Aufheiztage,
+                        AufheizzeitLaengsteH = zz?.AufheizzeitLaengsteH,
+                        KappungsstundenH = zz?.HeizleistungMaxStundenH,
+                    });
+                }
+
+            return new GebaeudeBedarfAufheizDaten
+            {
+                Zustand = z.AufheizZustand,
+                Zustandtext = Aufheizzustand(z.AufheizZustand),
+                AufheizzeitMaxH = bemessenH,
+                AussenC = z.AufheizAussenC,
+                Variante = z.AufheizBemessung == DbWerte.AUFHEIZ_BEMESSUNG_STUNDE_ABZUG
+                    ? MyResource.Resource.SIMKONF_AUFH_BEMESSUNG_ABZUG
+                    : z.AufheizBemessung == null ? "" : MyResource.Resource.SIMKONF_AUFH_BEMESSUNG_STUNDE,
+                Art = manuell ? string.Format(k, MyResource.Resource.GEBB_AUFH_ART_MANUELL, manuellH)
+                    : z.AufheizArt == DbWerte.AUFHEIZ_ART_FEST ? MyResource.Resource.SIMKONF_AUFH_ART_FEST
+                    : z.AufheizArt == DbWerte.AUFHEIZ_ART_TAEGLICH ? MyResource.Resource.SIMKONF_AUFH_ART_TAEGLICH : "",
+                AufheizzeitManuellH = manuellH,
+                // Festlegung 20: nennt die Bemessung der Auskunft (MANUELL) die Rückstufe, steht sie in der Gruppe.
+                Rueckstufe = bemessen?.Rueckstufe ?? "",
+                LeistungKw = z.AufheizLeistungKw,
+                Quelle = Aufheizquelle(z.AufheizLeistungsquelle),
+                Aufheiztage = z.Aufheiztage,
+                AufheizstundenH = z.AufheizstundenH,
+                AufheizzeitLaengsteH = z.AufheizzeitLaengsteH,
+                TageBegrenzt = z.AufheiztageBegrenzt,
+                TageUnerreichbar = z.AufheiztageUnerreichbar,
+                TageNachweisband = z.AufheiztageNachweisband,
+                SpruengeAus = z.AufheizspruengeAus,
+                KappungsstundenH = z.HeizleistungMaxStundenH,
+                AuslegungsheizlastKw = z.AuslegungsheizlastKw,
+                AufheizzuschlagKw = z.AufheizzuschlagKw,
+                AuslegungsgroesseKw = z.AuslegungsheizlastKw + z.AufheizzuschlagKw,
+                SpitzeKw = spitze,
+                SpitzeTagesmittelKw = tagesmittel,
+                Hinweise = hinweise,
+                Zonen = zonen,
+            };
+        }
+
+        /// <summary>Der Zustand der Aufheizrechnung als Anzeigetext; leer ohne Zustand.</summary>
+        internal static string Aufheizzustand(string zustand) => zustand switch
+        {
+            DbWerte.AUFHEIZ_ZUSTAND_BEMESSEN => MyResource.Resource.GEBB_AUFH_ZUSTAND_BEMESSEN,
+            DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR => MyResource.Resource.GEBB_AUFH_ZUSTAND_UNERREICHBAR,
+            DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT => MyResource.Resource.GEBB_AUFH_ZUSTAND_GEKOPPELT,
+            DbWerte.AUFHEIZ_ZUSTAND_UNBEHEIZT => MyResource.Resource.GEBB_AUFH_ZUSTAND_UNBEHEIZT,
+            _ => "",
+        };
+
+        /// <summary>Die Quelle von P_auf als Anzeigetext; leer ohne Quelle.</summary>
+        internal static string Aufheizquelle(string quelle) => quelle switch
+        {
+            DbWerte.AUFHEIZ_QUELLE_GRENZE => MyResource.Resource.SIMKONF_AUFH_QUELLE_GRENZE,
+            DbWerte.AUFHEIZ_QUELLE_ZIEL => MyResource.Resource.SIMKONF_AUFH_QUELLE_ZIEL,
+            DbWerte.AUFHEIZ_QUELLE_GEMISCHT => MyResource.Resource.SIMKONF_AUFH_QUELLE_GEMISCHT,
+            _ => "",
+        };
+
         internal static string Rechenweg(GebaeudeBedarfErgebnis e)
         {
             string text = GebaeudeHuelle.Rechenwegtext(e.Modell, vorgabe: false);
@@ -438,6 +687,31 @@ namespace WindowsFormsApplication1
         /// Das Bild „Raumtemperatur" (Stufe G2): Raumluft und operativ mit dem Sollwertband —
         /// gezeichnet im Kern (<c>ChartRenderer.RaumtemperaturModell</c>).
         /// </summary>
+        /// <summary>Das Bild „Raumtemperatur und Sollwert" (AK2, E80): die Woche ab <paramref name="start"/>.</summary>
+        private static Zeichenmodell Komfortwochenmodell(GebaeudeBedarfErgebnis ergebnis, int start)
+            => ChartRenderer.KomfortwocheModell(
+                Text_("GEBB_BILD_KOMFORTWOCHE", "Raumtemperatur und Sollwert — Woche mit der größten Unterschreitung"),
+                Komfortwoche.Ausschnitt(ergebnis.RaumtemperaturC, start),
+                Komfortwoche.Ausschnitt(ergebnis.HeizsollwertC, start),
+                Komfortwoche.Ausschnitt(ergebnis.KomfortMaske, start),
+                new ChartRenderer.Komfortwochennamen
+                {
+                    Raumluft = Text_("GEBB_LEG_KOMFORT_RAUMLUFT", "Raumluft"),
+                    Sollwert = Text_("GEBB_LEG_KOMFORT_SOLLWERT", "Sollwert"),
+                    Unterschreitung = Text_("GEBB_LEG_KOMFORT_UNTERSCHREITUNG", "Unterschreitung"),
+                });
+
+        /// <summary>Der Tag, an dem die Woche beginnt — im festen Raster ohne Schaltjahr („3. Februar").</summary>
+        internal static string Wochenbeginn(int startStunde)
+            => new DateTime(2001, 1, 1).AddHours(Math.Max(0, startStunde))
+                .ToString("d. MMMM", CultureInfo.CurrentCulture);
+
+        /// <summary>Der Anzeigetext eines Bedarfsbegriffs — dieselben Wörter wie im Bericht.</summary>
+        internal static string Bedarfsbegrifftext(Bedarfsbegriff b)
+            => b == Bedarfsbegriff.Rueckwirkung
+                ? Text_("GEB_BEDARFSBEGRIFF_RUECKWIRKUNG", "mit Rückwirkung")
+                : Text_("GEB_BEDARFSBEGRIFF_FESTE_LAST", "feste Last");
+
         private static Zeichenmodell Raumtemperaturmodell(GebaeudeBedarfErgebnis ergebnis)
             => Raumtemperaturmodell(ergebnis.RaumtemperaturC, ergebnis.OperativeTemperaturC,
                                     ergebnis.HeizsollwertC, ergebnis.ObereRaumtemperaturC);

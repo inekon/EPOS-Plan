@@ -49,10 +49,12 @@
    fehlerfrei), die Komponente zeigt derweil eine Ueberlagerung "Simulation
    laeuft …" und sperrt OK.
 
-   WOERTLICH TROTZ BEFUND (W10-B10, Anwenderentscheid steht aus): Die PRUEFUNG
-   rechnet mit den ANGEZEIGTEN Eingaben, der LAUF mit den GESPEICHERTEN. Genau
-   das benennt der Aenderungshinweis SIMQ_ERDREICH_SIM_NUR_GESPEICHERT; die
-   Halbheit bleibt, sie wird nicht stillschweigend repariert.
+   PRUEFUNG UND LAUF RECHNEN MIT DEN ANGEZEIGTEN EINGABEN: Der Knopf "Simulation"
+   prueft dieselben acht Regeln wie OK und reicht den Eingabesatz an die Huelle,
+   die ihn fuer den Lauf ueber die gespeicherten Werte legt (ErdreichLaufvorgabe) -
+   geschrieben wird erst beim OK. Ergebnis, Kennwerte und gerechnete Reihe stehen
+   sofort im Dialog; aendert der Anwender danach eine Eingabe, verlangt der
+   Aenderungshinweis einen neuen Lauf.
 
    TASTATUR: Esc bricht ab - erst die Karte, dann der Dialog. Enter ist NICHT
    belegt: Acht Pruefregeln haengen an OK, und ein versehentliches Enter waere
@@ -63,6 +65,7 @@
 @using WindowsFormsApplication1.Zeichnung
 @inherits Farbwahlwirt
 @implements IDisposable
+<CascadingValue Value="@CsvNaht">
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -144,6 +147,33 @@
             <Ganzzahlfeld Bezeichnung="@LblAnzahlSonden" Aktiv="@_sonde"
                           Feldname="@LblAnzahlSonden" Wert="@_anzahl"
                           WertChanged="w => Setzen(() => _anzahl = w)" />
+
+            @* Das Sondenfeld je Anlage (Konzept Simulationsablauf 23.3): leer heisst Vorgabe,
+               der Platzhalter nennt sie. *@
+            <Zahlenfeld Bezeichnung="@LblSondenabstand" Einheit="m" Aktiv="@_sonde"
+                        Feldname="@LblSondenabstand" Wert="@_sondenabstand"
+                        Platzhalter="@Vorgabetext(Sondenfeldgeometrie.Norm.AbstandM)"
+                        WertChanged="w => Setzen(() => _sondenabstand = w)" />
+            <Auswahlfeld Bezeichnung="@LblSondenanordnung" Eintraege="@Anordnungen" Aktiv="@_sonde"
+                         Platzhalter="@Vorgabetext(AnordnungText(Sondenfeldgeometrie.Norm.Anordnung))"
+                         Auswahl="@_anordnung" AuswahlChanged="w => Setzen(() => _anordnung = w)" />
+            <Zahlenfeld Bezeichnung="@LblBohrlochdurchmesser" Einheit="mm" Aktiv="@_sonde"
+                        Feldname="@LblBohrlochdurchmesser" Wert="@_bohrlochdurchmesser"
+                        Platzhalter="@Vorgabetext(Sondenfeldgeometrie.NormBohrlochdurchmesserMm)"
+                        WertChanged="w => Setzen(() => _bohrlochdurchmesser = w)" />
+            <Zahlenfeld Bezeichnung="@LblBohrlochwiderstand" Einheit="m·K/W" Aktiv="@_sonde"
+                        Feldname="@LblBohrlochwiderstand" Wert="@_bohrlochwiderstand"
+                        Platzhalter="@Vorgabetext(Sondenfeldgeometrie.Norm.Bohrlochwiderstand)"
+                        WertChanged="w => Setzen(() => _bohrlochwiderstand = w)" />
+            <Zahlenfeld Bezeichnung="@LblKopfueberdeckung" Einheit="m" Aktiv="@_sonde"
+                        Feldname="@LblKopfueberdeckung" Wert="@_kopfueberdeckung"
+                        Platzhalter="@Vorgabetext(Sondenfeldgeometrie.Norm.KopfueberdeckungM)"
+                        WertChanged="w => Setzen(() => _kopfueberdeckung = w)" />
+            <Ganzzahlfeld Bezeichnung="@LblBetrachtungsjahr" Aktiv="@_sonde"
+                          Feldname="@LblBetrachtungsjahr" Wert="@_betrachtungsjahr"
+                          Platzhalter="@Vorgabetext(Sondenfeldgeometrie.Norm.Betrachtungsjahr)"
+                          WertChanged="w => Setzen(() => _betrachtungsjahr = w)" />
+            <Herleitungszeile Text="@LblSondenfeldHinweis" />
                     </KindInhalt>
                 </Formularraster>
             </div>
@@ -155,8 +185,11 @@
        Quelltemperatur (Bodentyp, Tiefe) und die Auslegungspruefung (Klimazone,
        Spreizung). Der Fensterknopf im Kopf bleibt die Bedienhilfe. *@
     <p class="epos-herleitung">
+        @* Der Weg in die Rubrik Grundlagen (Konzept Technikdokumentation, Abschnitt 7). *@
+        <InfoKnopf Schluessel="Form_QuelleErdreich.Grundlagen"
+                   StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
         <InfoKnopf Schluessel="@HilfeSchluesselBerechnung"
-                   StandardKurztext="@HilfeKurztextBerechnung" />
+                   StandardKurztext="@HilfeKurztextBerechnung" MitAssistent="false" />
     </p>
 
     <Gruppenkopf Titel="@GbStandort">
@@ -204,12 +237,39 @@
                          FarbeGewaehlt="FarbeUebernehmen"
                          FarbeZurueckgesetzt="FarbeVerwerfen" />
             <Herleitungszeile Text="@_kennwertzeile" />
+            @* NACH EINEM LAUF (Anwenderwunsch 08.10.2026): die gerechnete Soletemperatur am
+               Quelleintritt als zweite Reihe "gerechnet (letzter Lauf)" neben der ungestoerten,
+               ihre Kennwerte in einer eigenen Zeile. Gezeigt, nicht gerechnet - die Reihe kommt
+               mit dem Laufergebnis aus dem Kern. *@
+            @if (_kennwertzeileLauf.Length > 0)
+            {
+                <div data-zeile="kennwerte-lauf">
+                    <Herleitungszeile Text="@_kennwertzeileLauf" />
+                </div>
+            }
+            @* Die Erdsonde rechnet ihre ungestoerte Temperatur ohne Jahresgang - das sagt die
+               Vorschau, sonst liest man die waagrechte Linie als Fehler; beide Hinweise nennen
+               auch die gerechnete Reihe nach dem Lauf. *@
+            @if (_sonde && !string.IsNullOrEmpty(HinweisSondeKonstant))
+            {
+                <Herleitungszeile Text="@HinweisSondeKonstant" />
+            }
+            else if (!_sonde && !string.IsNullOrEmpty(HinweisKollektorLauf))
+            {
+                <Herleitungszeile Text="@HinweisKollektorLauf" />
+            }
         </KindInhalt>
     </Gruppenkopf>
 
     @* --- Auslegungsprüfung -------------------------------------------------- *@
     <Gruppenkopf Titel="@GbPruefung">
         <KindInhalt>
+            @* Ohne Lauf: die VORPRUEFUNG aus Auslegungswerten, deutlich gekennzeichnet.
+               Ein Lauf ersetzt sie. *@
+            @if (_vorpruefung)
+            {
+                <p class="epos-erdreich-vorpruefung"><strong>@VorpruefungKopf</strong></p>
+            }
             @if (_pruefungWarnt)
             {
                 <Warnbanner Stufe="WarnStufe.Warnung" Text="@_pruefung" />
@@ -217,6 +277,12 @@
             else
             {
                 <p class="epos-erdreich-pruefung">@_pruefung</p>
+            }
+
+            @* EQ1: Ein GESPEICHERTES Ergebnis (kein Lauf in dieser Sitzung) nennt seinen Lauf. *@
+            @if (_lauf.Vorhanden && _lauf.Laufstempel.Length > 0)
+            {
+                <p class="epos-erdreich-laufstand">@string.Format(StandDesLaufs, _lauf.Laufstempel)</p>
             }
 
             @if (_aenderungshinweis.Length > 0)
@@ -254,7 +320,21 @@
     </Ueberlagerung>
 </div>
 
+</CascadingValue>
+
 @code {
+    /// <summary>
+    /// „CSV…“ am Bild: der Weg der Hülle (Modell, Bildtitel, Raster der ersten Spalte); jedes
+    /// Diagramm dieses Dialogs mit Reihen bekommt den Knopf über die Kaskade. <c>null</c> = kein Knopf.
+    /// </summary>
+    [Parameter] public System.Func<WindowsFormsApplication1.Zeichnung.Zeichenmodell, string, WindowsFormsApplication1.Zeitraster, System.Threading.Tasks.Task>? CsvSpeichern { get; set; }
+
+    private Ganglinienexport? _csvNaht;
+
+    /// <summary>Die Naht der Kaskade; das Raster folgt der Länge der Reihen.</summary>
+    private Ganglinienexport? CsvNaht => CsvSpeichern is null ? null
+        : _csvNaht ??= new Ganglinienexport(CsvSpeichern);
+
     /// <summary>Listenplatz „Erdkollektor" in der Optionsgruppe.</summary>
     public const int KOLLEKTOR = 0;
 
@@ -281,8 +361,10 @@
     /// W10-B9). Kommt weder Ergebnis noch Fehler zurück, hat der Lauf für diese Anlage
     /// nichts geliefert — der dritte Fall des Vorläufers.</para>
     /// </summary>
+    /// <para>Herein geht der geprüfte EINGABESATZ des Dialogs — derselbe, den OK zurückgibt;
+    /// gerechnet wird mit ihm, gespeichert wird er nicht.</para>
     [Parameter]
-    public Func<int, Task<(ErdreichAuswertung.ErdreichLaufErgebnis? Ergebnis, string? Fehler)>>?
+    public Func<QuelleErdreichDaten, Task<(ErdreichAuswertung.ErdreichLaufErgebnis? Ergebnis, string? Fehler)>>?
         Simulieren { get; set; }
 
     /// <summary>
@@ -293,8 +375,12 @@
     /// <c>_modell</c> — der Baustein baut seinen Knotenbaum nur neu, wenn die REFERENZ
     /// wechselt, und ein Modell je Zeichenlauf verwürfe mit dem Baum auch Zoom und
     /// abgewählte Reihe.</para>
+    ///
+    /// <para>Die DRITTE Reihe ist der gerechnete Verlauf der Quelltemperatur des letzten Laufs
+    /// (<see cref="ErdreichAuswertung.ErdreichLaufErgebnis.QuelltemperaturStuendlich"/>); <c>null</c> ohne
+    /// Lauf — dann zeichnet die Vorschau wie zuvor die ungestörte Reihe allein.</para>
     /// </summary>
-    [Parameter] public Func<double[], double[]?, Task<Zeichenmodell?>>? Jahresgangmodell { get; set; }
+    [Parameter] public Func<double[], double[]?, double[]?, Task<Zeichenmodell?>>? Jahresgangmodell { get; set; }
 
     /// <summary>Das Ergebnis: der geänderte Satz, <c>null</c> bei Abbruch oder Esc.</summary>
     [Parameter] public EventCallback<QuelleErdreichDaten?> Geschlossen { get; set; }
@@ -316,6 +402,25 @@
     [Parameter] public string GbStandort { get; set; } = "Standort und Boden";
     [Parameter] public string GbVorschau { get; set; } = "Jahresgang der Quelltemperatur";
     [Parameter] public string GbPruefung { get; set; } = "Auslegungsprüfung nach VDI 4640 Blatt 2";
+
+    /// <summary>Kennzeichnung der Vorprüfung ohne Lauf (<c>SIMQ_ERDREICH_VORPRUEFUNG_KOPF</c>).</summary>
+    [Parameter] public string VorpruefungKopf { get; set; }
+        = "Vorprüfung aus Auslegungswerten (noch kein Simulationslauf)";
+
+    /// <summary>Hinweis unter der Vorschau bei der Erdsonde (<c>SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT</c>).</summary>
+    [Parameter] public string HinweisSondeKonstant { get; set; }
+        = "Vor einem Simulationslauf zeigt die Vorschau die ungestörte Erdreichtemperatur der Sonde aus mittlerer " +
+          "Erdreichtemperatur und Tiefenzuschlag — eine Konstante. In der Simulation sinkt die Soletemperatur mit dem " +
+          "Entzug des Sondenfelds; nach dem Lauf steht ihr gerechneter Verlauf am Quelleintritt daneben " +
+          "(„gerechnet (letzter Lauf)“).";
+    /// <summary>Hinweis unter der Vorschau beim Erdkollektor (<c>SIMQ_ERDREICH_HINWEIS_KOLLEKTOR_LAUF</c>).</summary>
+    [Parameter] public string HinweisKollektorLauf { get; set; }
+        = "Vor einem Simulationslauf zeigt die Vorschau die ungestörte Erdreichtemperatur in Verlegetiefe; " +
+          "nach dem Lauf steht daneben die gerechnete Soletemperatur am Quelleintritt („gerechnet (letzter Lauf)“).";
+
+    /// <summary>Kennwertzeile der gerechneten Reihe; {0} = min/max/Mittel (<c>SIMQ_ERDREICH_KENNWERTE_LAUF</c>).</summary>
+    [Parameter] public string KennwerteLaufZeile { get; set; } = "gerechnet (letzter Lauf): {0}";
+
     /// <summary>Titel der ersten Rubrik — zugleich der Name des Quellsystems.</summary>
     [Parameter] public string RbKollektor { get; set; } = "Erdkollektor";
 
@@ -341,6 +446,16 @@
     [Parameter] public string LblKlimazoneHinweis { get; set; } = "";
     [Parameter] public string LblSpreizung { get; set; } = "Nutzbare Spreizung:";
     [Parameter] public string LblSpreizungHinweis { get; set; } = "";
+    [Parameter] public string LblSondenabstand { get; set; } = "Sondenabstand:";
+    [Parameter] public string LblBohrlochdurchmesser { get; set; } = "Bohrlochdurchmesser:";
+    [Parameter] public string LblBohrlochwiderstand { get; set; } = "Bohrlochwiderstand:";
+    [Parameter] public string LblKopfueberdeckung { get; set; } = "Kopfüberdeckung:";
+    [Parameter] public string LblBetrachtungsjahr { get; set; } = "Betrachtungsjahr:";
+    [Parameter] public string LblSondenanordnung { get; set; } = "Anordnung:";
+    [Parameter] public string LblAnordnungQuadratisch { get; set; } = "Quadratisch";
+    [Parameter] public string LblAnordnungReihe { get; set; } = "Reihe";
+    [Parameter] public string LblVorgabe { get; set; } = "Vorgabe {0}";
+    [Parameter] public string LblSondenfeldHinweis { get; set; } = "";
     /// <summary>
     /// Beschriftung des Kartenknopfes. Der Vorläufer trug „…" — ein SYMBOL, kein Text;
     /// was der Knopf tut, sagt <see cref="KarteKnopfTip"/>.
@@ -368,8 +483,14 @@
         = "   (ohne Klimadaten — Ersatzwerte 9,5 °C / 8,5 K)";
 
     [Parameter] public string PruefungKeinLauf { get; set; }
-        = "(noch kein Simulationslauf)\n\nDie Prüfung braucht maximale Entzugsleistung, " +
-          "Jahresentzugsarbeit und\nJahresvolllaststunden aus einem Simulationslauf.";
+        = "(noch kein Simulationslauf)\n\nOhne Lauf rechnet die Prüfung aus Auslegungswerten; " +
+          "nach einem Simulationslauf\nprüft sie dessen Entzugsleistung, Jahresentzugsarbeit und Volllaststunden.";
+
+    /// <summary>
+    /// Die Zeile unter einer GESPEICHERTEN Prüfung (EQ1, <c>SIMQ_ERDREICH_STAND_LAUF</c>);
+    /// {0} = Laufstempel des gespeicherten Laufs.
+    /// </summary>
+    [Parameter] public string StandDesLaufs { get; set; } = "Stand des Laufs vom {0}.";
 
     [Parameter] public string HinweisFestgestein { get; set; }
         = "\n  Hinweis: Festgestein wird auf die höchste Bodenart der Tabelle A1 " +
@@ -378,10 +499,6 @@
     [Parameter] public string AenderungHinweis { get; set; }
         = "Eingaben geändert — die Auslegungsprüfung zeigt noch den letzten " +
           "Simulationslauf. Bitte die Simulation neu starten.";
-    [Parameter] public string SimNurGespeichert { get; set; }
-        = "Der Lauf hat mit den GESPEICHERTEN Quelldaten gerechnet — die hier " +
-          "geänderten Eingaben wirken erst nach „OK“ und einem neuen Lauf. " +
-          "Grenzwert und Sondenmeter sind bereits mit den geänderten Eingaben gerechnet.";
 
     [Parameter] public string WarteTitel { get; set; } = "Simulation";
     [Parameter] public string WarteText { get; set; } = "Simulation läuft …";
@@ -403,6 +520,8 @@
         = "Die Sondenlänge muss größer als 0 m sein!";
     [Parameter] public string MsgAnzahlMin { get; set; }
         = "Es muss mindestens eine Sonde vorhanden sein!";
+    [Parameter] public string MsgSondenfeld { get; set; } =
+        "Sondenabstand, Bohrlochdurchmesser und Bohrlochwiderstand müssen größer als 0 sein, die Kopfüberdeckung mindestens 0 und das Betrachtungsjahr mindestens 1.";
     [Parameter] public string MsgSpreizung { get; set; }
         = "Bitte eine nutzbare Spreizung größer als 0 K eintragen!\n" +
           "Sie ist Eingangsgröße der Frostprüfung der Quelle.";
@@ -447,6 +566,14 @@
     private double? _laenge;
     private int? _anzahl;
     private double? _spreizung;
+
+    // Das Sondenfeld je Anlage: null heisst Vorgabe (Sondenfeldgeometrie.Norm).
+    private double? _sondenabstand;
+    private double? _bohrlochdurchmesser;
+    private double? _bohrlochwiderstand;
+    private double? _kopfueberdeckung;
+    private int? _betrachtungsjahr;
+    private int? _anordnung;
     private int? _bodenIndex;
     private int? _zone;
 
@@ -456,16 +583,23 @@
     /// <summary>Der Eingabestand beim Öffnen — Vergleichsgröße des Änderungshinweises.</summary>
     private string _standGeladen = "";
 
-    /// <summary>Ist der angezeigte Lauf aus DIESEM Dialog angestoßen worden?</summary>
-    private bool _laufAusDialog;
+    /// <summary>
+    /// Der Eingabestand, mit dem der angezeigte Lauf gerechnet hat: beim Öffnen der gespeicherte,
+    /// nach einem Lauf aus DIESEM Dialog dessen Eingaben.
+    /// </summary>
+    private string _standLauf = "";
 
     private bool _karteOffen;
     private bool _laeuft;
 
     private string _bodenkennwerte = "";
     private string _kennwertzeile = "";
+
+    /// <summary>Die Kennwerte der gerechneten Reihe des letzten Laufs; leer ohne Reihe.</summary>
+    private string _kennwertzeileLauf = "";
     private string _pruefung = "";
     private bool _pruefungWarnt;
+    private bool _vorpruefung;
     private string _aenderungshinweis = "";
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
@@ -493,6 +627,9 @@
     /// <summary>Warnt die Prüfung (im Vorläufer: Firebrick)?</summary>
     public bool PruefungWarnt => _pruefungWarnt;
 
+    /// <summary>Zeigt die Prüfung die Vorprüfung aus Auslegungswerten (kein Lauf)?</summary>
+    public bool IstVorpruefung => _vorpruefung;
+
     /// <summary>Der Änderungshinweis; leer = keiner.</summary>
     public string Aenderungshinweis => _aenderungshinweis;
 
@@ -507,6 +644,9 @@
 
     /// <summary>Die Kennwertzeile unter der Vorschau.</summary>
     public string Kennwertzeile => _kennwertzeile;
+
+    /// <summary>Die Kennwertzeile der gerechneten Reihe des letzten Laufs; leer ohne Reihe.</summary>
+    public string KennwertzeileLauf => _kennwertzeileLauf;
 
     /// <summary>Die Bodenkennwerte-Zeile.</summary>
     public string Bodenkennwerte => _bodenkennwerte;
@@ -618,10 +758,18 @@
 
         _spreizung = Daten.Spreizung > 0 ? Daten.Spreizung : ErdreichAuswertung.SPREIZUNG_DEFAULT;
 
+        _sondenabstand = Daten.Sondenabstand;
+        _bohrlochdurchmesser = Daten.Bohrlochdurchmesser;
+        _bohrlochwiderstand = Daten.Bohrlochwiderstand;
+        _kopfueberdeckung = Daten.Kopfueberdeckung;
+        _betrachtungsjahr = Daten.Betrachtungsjahr;
+        Sondenanordnung? anordnung = Sondenfeldgeometrie.AnordnungAusText(Daten.Sondenanordnung);
+        _anordnung = anordnung.HasValue ? (int)anordnung.Value : null;
+
         // Ausgangsstand festhalten, BEVOR der Anwender etwas aendern kann (Befund 4
         // des Bestands). Er ist der Stand der Datenbank.
         _standGeladen = Eingabestand();
-        _laufAusDialog = false;
+        _standLauf = _standGeladen;
 
         Aktualisieren();
 
@@ -671,6 +819,19 @@
         AnzahlSondenSetzen = w => Setzen(() => _anzahl = w),
         SpreizungLesen = () => _spreizung,
         SpreizungSetzen = w => Setzen(() => _spreizung = w),
+        SondenabstandLesen = () => _sondenabstand,
+        SondenabstandSetzen = w => Setzen(() => _sondenabstand = w),
+        BohrlochdurchmesserLesen = () => _bohrlochdurchmesser,
+        BohrlochdurchmesserSetzen = w => Setzen(() => _bohrlochdurchmesser = w),
+        BohrlochwiderstandLesen = () => _bohrlochwiderstand,
+        BohrlochwiderstandSetzen = w => Setzen(() => _bohrlochwiderstand = w),
+        KopfueberdeckungLesen = () => _kopfueberdeckung,
+        KopfueberdeckungSetzen = w => Setzen(() => _kopfueberdeckung = w),
+        BetrachtungsjahrLesen = () => _betrachtungsjahr,
+        BetrachtungsjahrSetzen = w => Setzen(() => _betrachtungsjahr = w),
+        SondenanordnungLesen = () => AnordnungSchluessel(),
+        SondenanordnungSetzen = KiAnordnungSetzen,
+        SondenanordnungEintraege = () => KiMaskenanmeldung.Eintraege(Anordnungen, a => ((Sondenanordnung)a.Id).ToString(), a => a.Text),
         BodentypLesen = () => Bodentyp,
         BodentypSetzen = KiBodentypSetzen,
         BodentypEintraege = Bodentypeintraege,
@@ -726,7 +887,7 @@
         if (firstRender && _ersterAufbau)
         {
             _ersterAufbau = false;
-            await _wurzel.FocusAsync();
+            await _wurzel.FocusAsync(preventScroll: true);
             await BildZeichnen();
         }
     }
@@ -803,9 +964,22 @@
             ErdreichTemperatur.AnalysiereJahresgang(Daten.Aussentemperatur);
         _kennwertzeile = kw.Zeile() + (jg.AusKlimadaten ? "" : OhneKlimadaten);
 
+        double[]? gerechnet = GerechneteReihe();
+        // Jahresmittel, Tiefst- und Hoechstwert samt Zeitpunkt - gebildet im Kern, hier nur gezeigt.
+        ErdreichTemperatur.Laufkennwerte? lk = gerechnet is null ? null : ErdreichTemperatur.LaufKennwerte(gerechnet);
+        _kennwertzeileLauf = lk is null ? "" : string.Format(ci, KennwerteLaufZeile, lk.Zeile());
+
         PruefungAktualisieren(boden);
         AenderungshinweisAktualisieren();
     }
+
+    /// <summary>
+    /// Der gerechnete Verlauf der Quelltemperatur des letzten Laufs (Soletemperatur am Quelleintritt);
+    /// <c>null</c> ohne Lauf, ohne Reihe oder mit einer Reihe, die kein Jahr deckt.
+    /// </summary>
+    private double[]? GerechneteReihe()
+        => _lauf.Vorhanden && _lauf.QuelltemperaturStuendlich is { } r && r.Length >= ErdreichTemperatur.STUNDEN_JAHR
+            ? r : null;
 
     /// <summary>Das Quelltemperaturprofil des gewählten Zweigs.</summary>
     private double[] Profil()
@@ -815,14 +989,29 @@
 
     /// <summary>
     /// Der Bereich der Auslegungsprüfung (<c>PruefungAktualisieren</c>:863-909).
-    /// Ohne Lauf steht der Hinweis da und NICHTS wird gerechnet.
+    /// Ein Lauf mit belastbarem Ergebnis hat Vorrang; ein Lauf ohne belastbares Ergebnis
+    /// zeigt seinen Hinweis. Ohne Lauf rechnet die VORPRÜFUNG aus Auslegungswerten
+    /// (<see cref="VDI4640Pruefung.Pruefgroessen"/>); fehlt ein Wert, sagt der Bereich welcher.
     /// </summary>
     private void PruefungAktualisieren(string boden)
     {
-        if (!_lauf.ErgebnisseVorhanden)
+        _vorpruefung = false;
+        _pruefungWarnt = false;
+
+        if (_lauf.Vorhanden && !_lauf.ErgebnisseVorhanden)
         {
             _pruefung = _lauf.HinweisErgebnis.Length > 0 ? _lauf.HinweisErgebnis : PruefungKeinLauf;
-            _pruefungWarnt = false;
+            return;
+        }
+
+        VDI4640Pruefung.Pruefwerte werte = VDI4640Pruefung.Pruefgroessen(
+            _lauf.ErgebnisseVorhanden, _lauf.MaxEntzugW, _lauf.JahresentzugKWh,
+            _lauf.VolllastStunden, Auslegungswerte(), Klimazone);
+
+        if (werte.Quelle == VDI4640Pruefung.Pruefquelle.Keine)
+        {
+            // Luft-Wasser: allein der Hinweis, dass die Quelle nicht gerechnet wird.
+            _pruefung = werte.Unwirksam ? werte.Fehlt : PruefungKeinLauf + "\n\n" + werte.Fehlt;
             return;
         }
 
@@ -833,15 +1022,15 @@
             erg = VDI4640Pruefung.PruefeSonde(
                 ErdreichTemperatur.Bodentyp(boden).Lambda,
                 (int)Math.Max(1, anzahl),
-                VDI4640Pruefung.Volllaststunden(_lauf.VolllastStunden, Klimazone),
+                werte.VolllastStunden,
                 VDI4640Pruefung.Sondenmeter(_laenge ?? 0, anzahl),
-                _lauf.MaxEntzugW, boden);
+                werte.MaxEntzugW, boden);
         }
         else
         {
             erg = VDI4640Pruefung.PruefeKollektor(
                 Klimazone, VDI4640Pruefung.BodenartAusBodentyp(boden),
-                _flaeche ?? 0, _lauf.MaxEntzugW, _lauf.JahresentzugKWh, boden);
+                _flaeche ?? 0, werte.MaxEntzugW, werte.JahresentzugKWh, boden);
         }
 
         string text = erg.Anzeigetext();
@@ -850,10 +1039,26 @@
             text += string.Format(HinweisVorbehalt, _lauf.HinweisVorbehalt);
         if (_lauf.HinweisFrost.Length > 0) text += "\n  " + _lauf.HinweisFrost;
 
-        _pruefung = text;
+        _vorpruefung = werte.Quelle == VDI4640Pruefung.Pruefquelle.Vorpruefung;
+        _pruefung = _vorpruefung ? werte.Herleitung + "\n" + text : text;
 
         // Firebrick des Vorlaeufers (:908) - hier die Warnstufe des Banners.
         _pruefungWarnt = erg.Moeglich && erg.Warnung;
+    }
+
+    /// <summary>Die Auslegungswerte der Hülle als Eingang der Kernrechnung.</summary>
+    private IEnumerable<VDI4640Pruefung.Auslegungswert> Auslegungswerte()
+    {
+        if (Daten.Auslegung is null) yield break;
+        foreach (WpAuslegung a in Daten.Auslegung)
+            yield return new VDI4640Pruefung.Auslegungswert
+            {
+                Modul = a.Modul ?? "",
+                NennheizleistungKw = a.NennheizleistungKw,
+                Cop = a.Cop,
+                Normpunkt = a.Normpunkt ?? "",
+                LuftWasser = a.LuftWasser
+            };
     }
 
     /// <summary>
@@ -864,20 +1069,19 @@
     private string Eingabestand()
         => (_sonde ? "S" : "K") + "" + _tiefe + "" + _flaeche + "" +
            _laenge + "" + _anzahl + "" + _bodenIndex + "" +
-           _zone + "" + _spreizung;
+           _zone + "" + _spreizung + "" + _sondenabstand + "" +
+           _bohrlochdurchmesser + "" + _bohrlochwiderstand + "" + _kopfueberdeckung + "" +
+           _betrachtungsjahr + "" + _anordnung;
 
     /// <summary>
-    /// Die drei Zustände des Änderungshinweises
-    /// (<c>AenderungshinweisAktualisieren</c>:961-974). Ohne Lauf oder ohne Änderung
-    /// steht keiner; sonst entscheidet, ob HIER gerechnet wurde.
+    /// Der Änderungshinweis: Ohne Lauf oder ohne Änderung seit den Eingaben des angezeigten
+    /// Laufs steht keiner; sonst verlangt er einen neuen Lauf.
     /// </summary>
     private void AenderungshinweisAktualisieren()
     {
-        bool geaendert = !string.Equals(Eingabestand(), _standGeladen, StringComparison.Ordinal);
+        bool geaendert = !string.Equals(Eingabestand(), _standLauf, StringComparison.Ordinal);
 
-        _aenderungshinweis = (!_lauf.ErgebnisseVorhanden || !geaendert)
-            ? ""
-            : _laufAusDialog ? SimNurGespeichert : AenderungHinweis;
+        _aenderungshinweis = (!_lauf.ErgebnisseVorhanden || !geaendert) ? "" : AenderungHinweis;
     }
 
     private async Task BildZeichnen()
@@ -896,7 +1100,14 @@
             for (int i = 0; i < aussen.Length; i++) aussen[i] = a[i];
         }
 
-        _modell = await Jahresgangmodell(quelle, aussen);
+        double[]? gerechnet = null;
+        if (GerechneteReihe() is { } g)
+        {
+            gerechnet = new double[ErdreichTemperatur.STUNDEN_JAHR];
+            for (int i = 0; i < gerechnet.Length; i++) gerechnet[i] = g[i];
+        }
+
+        _modell = await Jahresgangmodell(quelle, aussen, gerechnet);
         StateHasChanged();
     }
 
@@ -917,6 +1128,15 @@
             return;
         }
 
+        // Dieselben acht Regeln wie OK: Gerechnet wird mit dem Satz, den OK zurückgäbe.
+        string? regel = Eingabesatz(out QuelleErdreichDaten satz);
+        if (regel is not null)
+        {
+            Melden(regel, WarnStufe.Warnung);
+            return;
+        }
+        string stand = Eingabestand();
+
         _meldung = "";
         _laeuft = true;
         StateHasChanged();
@@ -924,7 +1144,7 @@
         (ErdreichAuswertung.ErdreichLaufErgebnis? erg, string? fehler) antwort;
         try
         {
-            antwort = await Simulieren(Daten.IdProjekt);
+            antwort = await Simulieren(satz);
         }
         finally
         {
@@ -944,7 +1164,7 @@
         }
 
         _lauf = antwort.erg;
-        _laufAusDialog = true;
+        _standLauf = stand;
         _meldung = "";
         Aktualisieren();
         await BildZeichnen();
@@ -966,35 +1186,49 @@
     {
         if (!ok) return Geschlossen.InvokeAsync(null);
 
+        string? regel = Eingabesatz(out QuelleErdreichDaten satz);
+        if (regel is not null) return Meldet(regel);
+
+        _meldung = "";
+        return Geschlossen.InvokeAsync(satz);
+    }
+
+    /// <summary>
+    /// Prüft die Eingaben und bildet den Eingabesatz — für OK und für den Lauf derselbe.
+    /// Liefert den Text der ersten verletzten Regel, sonst <c>null</c>.
+    /// </summary>
+    private string? Eingabesatz(out QuelleErdreichDaten satz)
+    {
+        satz = Daten;
         double tiefe = 0, flaeche = 0, laenge = 0;
         int anzahl = 0;
 
         if (!_sonde)
         {
-            if (_tiefe is null || _flaeche is null) return Meldet(MsgZahlKollektor);
+            if (_tiefe is null || _flaeche is null) return MsgZahlKollektor;
             tiefe = _tiefe.Value;
             flaeche = _flaeche.Value;
 
-            if (tiefe <= 0) return Meldet(MsgTiefeNull);
-            if (tiefe > 10) return Meldet(MsgTiefeMax);
-            if (flaeche <= 0) return Meldet(MsgFlaeche);
+            if (tiefe <= 0) return MsgTiefeNull;
+            if (tiefe > 10) return MsgTiefeMax;
+            if (flaeche <= 0) return MsgFlaeche;
         }
         else
         {
-            if (_laenge is null || _anzahl is null) return Meldet(MsgZahlSonde);
+            if (_laenge is null || _anzahl is null) return MsgZahlSonde;
             laenge = _laenge.Value;
             anzahl = _anzahl.Value;
 
-            if (laenge <= 0) return Meldet(MsgLaengeNull);
-            if (anzahl < 1) return Meldet(MsgAnzahlMin);
+            if (laenge <= 0) return MsgLaengeNull;
+            if (anzahl < 1) return MsgAnzahlMin;
         }
 
-        if (_spreizung is null || _spreizung.Value <= 0) return Meldet(MsgSpreizung);
+        if (_sonde && !Sondenfeld().Zulaessig()) return MsgSondenfeld;
 
-        _meldung = "";
+        if (_spreizung is null || _spreizung.Value <= 0) return MsgSpreizung;
 
         // Rueckschreiben je Zweig - :1224-1227 bzw. :1248-1251, woertlich.
-        return Geschlossen.InvokeAsync(Daten with
+        satz = Daten with
         {
             Quellsystem = _sonde
                 ? ErdreichTemperatur.QUELLSYSTEM_SONDE
@@ -1003,9 +1237,57 @@
             Flaeche = _sonde ? 0 : flaeche,
             Anzahl = _sonde ? anzahl : 0,
             Spreizung = _spreizung.Value,
+            Sondenabstand = _sondenabstand,
+            Bohrlochdurchmesser = _bohrlochdurchmesser,
+            Bohrlochwiderstand = _bohrlochwiderstand,
+            Kopfueberdeckung = _kopfueberdeckung,
+            Betrachtungsjahr = _betrachtungsjahr,
+            Sondenanordnung = _anordnung.HasValue ? ((Sondenanordnung)_anordnung.Value).ToString() : null,
             Bodentyp = Bodentyp,
             Klimazone = Klimazone
-        });
+        };
+        return null;
+    }
+
+    /// <summary>Die Eingaben des Sondenfeldes als Satz des Kerns (null = Vorgabe).</summary>
+    private ErdsondenfeldEingabe Sondenfeld() => new ErdsondenfeldEingabe
+    {
+        AbstandM = _sondenabstand,
+        BohrlochdurchmesserMm = _bohrlochdurchmesser,
+        Bohrlochwiderstand = _bohrlochwiderstand,
+        KopfueberdeckungM = _kopfueberdeckung,
+        Betrachtungsjahr = _betrachtungsjahr,
+        Anordnung = _anordnung.HasValue ? (Sondenanordnung)_anordnung.Value : null
+    };
+
+    /// <summary>Die Anordnungen des Sondenfeldes; die Id ist der Wert von <see cref="Sondenanordnung"/>.</summary>
+    private IReadOnlyList<(int Id, string Text)> Anordnungen => new[]
+    {
+        ((int)Sondenanordnung.Quadratisch, AnordnungText(Sondenanordnung.Quadratisch)),
+        ((int)Sondenanordnung.Reihe, AnordnungText(Sondenanordnung.Reihe)),
+    };
+
+    private string AnordnungText(Sondenanordnung a)
+        => a == Sondenanordnung.Reihe ? LblAnordnungReihe : LblAnordnungQuadratisch;
+
+    /// <summary>Der Platzhalter eines leeren Feldes: „Vorgabe 6" in der Kultur der Oberfläche.</summary>
+    private string Vorgabetext(double wert)
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, LblVorgabe,
+                         wert.ToString("0.###", System.Globalization.CultureInfo.CurrentCulture));
+
+    private string Vorgabetext(string text)
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, LblVorgabe, text);
+
+    /// <summary>Der Schlüssel der gewählten Anordnung für den Assistenten; leer = Vorgabe.</summary>
+    private string AnordnungSchluessel()
+        => _anordnung.HasValue ? ((Sondenanordnung)_anordnung.Value).ToString() : "";
+
+    /// <summary>Die Anordnung über ihren Schlüssel; leer heißt Vorgabe, ein unbekannter Schlüssel wird abgewiesen.</summary>
+    private void KiAnordnungSetzen(string? schluessel)
+    {
+        if (string.IsNullOrWhiteSpace(schluessel)) { Setzen(() => _anordnung = null); return; }
+        Sondenanordnung? a = Sondenfeldgeometrie.AnordnungAusText(schluessel);
+        if (a.HasValue) Setzen(() => _anordnung = (int)a.Value);
     }
 
     private Task Meldet(string text)

@@ -52,6 +52,21 @@
         public int m_Vorlauf;
         public int m_Ruecklauf;
 
+        // Welle M4 (Schemaschritt ErzeugerTeillastSchema.SCHRITT): Teillastkennlinie (BH1) und
+        // Takten (BH2). Leer heißt „nicht gepflegt" - das Modul rechnet dann wie zuvor.
+
+        /// <summary>η_el bei 50 % elektrischer Last als Faktor (BH1); <c>null</c> = wie Volllast.</summary>
+        public double? m_Wirkungsgrad_el_Teillast50;
+
+        /// <summary>η_th bei 50 % elektrischer Last als Faktor (BH1); <c>null</c> = wie Volllast.</summary>
+        public double? m_Wirkungsgrad_th_Teillast50;
+
+        /// <summary>Anfahrverlust je Start [kWh Brennstoff] (BH2); <c>null</c> = nicht gepflegt.</summary>
+        public double? m_Anfahrverlust_kWh;
+
+        /// <summary>Mindestlaufzeit je Start [min] (BH2); <c>null</c> = nicht gepflegt.</summary>
+        public int? m_Mindestlaufzeit_min;
+
         public BHKWModel()
         {
             m_ID = 0;
@@ -83,6 +98,10 @@
             m_Kosten_Abgasreinigung = 0;
             m_Vorlauf = 0;
             m_Ruecklauf = 0;
+            m_Wirkungsgrad_el_Teillast50 = null;
+            m_Wirkungsgrad_th_Teillast50 = null;
+            m_Anfahrverlust_kWh = null;
+            m_Mindestlaufzeit_min = null;
         }
     }
 }

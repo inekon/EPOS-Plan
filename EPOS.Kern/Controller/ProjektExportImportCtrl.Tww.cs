@@ -311,6 +311,37 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Eine mitreisende Nutzungsart des ausgelieferten Paketteils in einem früheren Stand</b>
+        /// (Paket einer Datenbank vor Schritt <see cref="TwwBezugsartSchema.SCHRITT"/>; Auftrag A2,
+        /// E-A2-4 c): Der Import liest sie als die heutige (<see cref="PaketteilNachfuehrung"/>) — dann
+        /// findet der natürliche Schlüssel die nachgeführte Zeile des Ziels, statt sie als zweite Zeile
+        /// mitzunehmen, und die Zone zeigt auf sie. Die Grenze zieht die Regel (Status und Provenienz der
+        /// Paketzeile); jede andere Zeile bleibt, wie sie ist. Der Bericht nennt es.
+        /// </summary>
+        private void TwwFruehererStand(KatMeta k, Dictionary<string, JsonElement> row)
+        {
+            if (!string.Equals(k.name, TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, StringComparison.OrdinalIgnoreCase)) return;
+            string Text(string spalte)
+                => row.TryGetValue(spalte, out JsonElement w) && w.ValueKind == JsonValueKind.String ? w.GetString() : null;
+            long? bezug = null;
+            if (row.TryGetValue("Bezugsart", out JsonElement b))
+            {
+                if (b.ValueKind == JsonValueKind.Number && b.TryGetInt64(out long l)) bezug = l;
+                else if (b.ValueKind == JsonValueKind.String
+                         && long.TryParse(b.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out long s)) bezug = s;
+            }
+            PaketteilNachfuehrung.Eintrag e = PaketteilNachfuehrung.Finden(Text("Bezeichner"), bezug, Text("Status"),
+                                                                           Text("Bedarf_Version"), Text("Bedarf_Herkunftsart"));
+            if (e == null) return;
+            row["Bezeichner"] = JsonSerializer.SerializeToElement(e.Bezeichner);
+            row["Bezugsart"] = JsonSerializer.SerializeToElement((int)e.Bezugsart);
+            _twwBericht.Add("Die Nutzungsart „" + e.FruehererBezeichner + "“ (Bezugsart " +
+                            ZapfprofilAuslegung.Bezugsartbegriff(e.FruehereBezugsart).Klartext + ") ist eine Zeile des " +
+                            "ausgelieferten Paketteils in einem früheren Stand — gelesen als „" + e.Bezeichner +
+                            "“ mit der Bezugsart " + ZapfprofilAuslegung.Bezugsartbegriff(e.Bezugsart).Klartext + ".");
+        }
+
+        /// <summary>
         /// Ein am Ziel fehlender Tagesgangsatz, auf den keine Projektzeile direkt zeigt, wird
         /// nur vorgemerkt (<c>true</c>) — eine mitgenommene Nutzungsart holt ihn bei Bedarf.
         /// </summary>

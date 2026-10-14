@@ -160,8 +160,8 @@ public class ListenrahmenTests : EposBunitContext
     }
 
     /// <summary>
-    /// Die Übernahmeleiste der Zweispaltenauswahl rahmt NICHT mit: Dort stehen zwei
-    /// Knöpfe und keine Liste, und sie trägt deshalb gar keine Hülle. Geprüft wird
+    /// Die Kopfleisten der Zweispaltenauswahl rahmen NICHT mit: Dort stehen Marke,
+    /// Überschrift und Knöpfe, keine Liste, und sie tragen deshalb keine Hülle. Geprüft wird
     /// beides — die Regel (keine Rahmenangabe im Stilblatt) und das Markup.
     /// <b>Sie hieß bis W14a-E-10-Q2 „Pfeilspalte"</b> und stand senkrecht zwischen
     /// den zwei Listen; seit Q2 stehen die Listen untereinander und die Leiste ist
@@ -170,13 +170,13 @@ public class ListenrahmenTests : EposBunitContext
     [Fact]
     public void Die_Uebernahmeleiste_der_Zweispaltenauswahl_rahmt_nicht_mit()
     {
-        Assert.DoesNotContain("border", Stilblock(".epos-zweispalten-uebernahme {"));
+        Assert.DoesNotContain("border", Stilblock(".epos-zweispalten-kopfleiste {"));
 
         var cut = Render<GebaeudeDialog>(p => p
             .Add(x => x.Zeilen, new List<GebaeudeProjektZeile>())
             .Add(x => x.Filterstandvorgabe, new WindowsFormsApplication1.Katalogfilterstand()));
 
-        Assert.Empty(cut.FindAll(".epos-zweispalten-uebernahme .epos-raster-huelle"));
+        Assert.Empty(cut.FindAll(".epos-zweispalten-kopfleiste .epos-raster-huelle"));
         Assert.Equal(2, cut.FindAll(".epos-zweispalten-spalte .epos-raster-huelle").Count);
     }
 

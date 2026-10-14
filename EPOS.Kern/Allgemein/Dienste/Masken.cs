@@ -28,20 +28,41 @@
         /// <c>Form_Gebaeude.btn_Help</c>.</para>
         /// </summary>
         public const string GebaeudeAdmin = "Form_Gebaeude_Admin";
+        /// <summary>
+        /// Die Gebäude des offenen Projekts (<c>GebaeudeDialog</c>; unter Windows <c>GebaeudeFenster.ProjektOeffnen</c>).
+        /// Argument: ein Sprungziel aus <see cref="Sprungziele"/> (etwa <see cref="Sprungziele.Kuehlung"/>), sonst keins.
+        /// Auf iOS lehnt die Wurzel den Schlüssel benannt ab — dort pflegt der Assistent die Gebäude.
+        /// </summary>
+        public const string Projektgebaeude = "Form_Projektgebaeude";
         /// <summary>Stammdaten Gebäudetypen.</summary>
         public const string GebaeudetypenAdmin = "Form_EingGebTyp";
         /// <summary>Stammdaten eingelesener Wärmebedarf.</summary>
         public const string WaermebedarfExternAdmin = "Form_AdminWaermeeinlesen";
         /// <summary>Stammdaten Prozesswärme.</summary>
         public const string ProzesswaermeAdmin = "Form_Prozesswaerme_Admin";
+        /// <summary>Stammdaten Kältebedarf (Konzept Kältebedarf 3.3, K5b) — <c>BedarfAdminDialog</c> mit der Art Kälte.</summary>
+        public const string KaeltebedarfAdmin = "Form_Kaeltebedarf_Admin";
         /// <summary>Stammdaten Stromverbraucher.</summary>
         public const string StromverbraucherAdmin = "Form_Stromverbraucher_Admin";
         /// <summary>Stammdaten Stromganglinien.</summary>
         public const string StromganglinieAdmin = "Form_Stromganglinie_Admin";
         /// <summary>Stammdaten Solarganglinien.</summary>
         public const string SolarganglinieAdmin = "Form_Solarganglinie_Admin";
+        /// <summary>Stammdaten PV-Ganglinien (PVG, Schemaschritt 206).</summary>
+        public const string PvGanglinieAdmin = "Form_PvGanglinie_Admin";
         /// <summary>Herstellerdaten Wärmepumpen einlesen.</summary>
         public const string WpImport = "Form_WP_einlesen";
+        /// <summary>
+        /// Herstellerdaten für Kälteanlagen einlesen: nur Wärmepumpen mit Kühlfunktion aus VDI 3805
+        /// Blatt 22 (Entscheid E119) — dieselbe Komponente wie <see cref="WpImport"/> im Kältemodus.
+        /// </summary>
+        public const string WpKaelteImport = "Form_WP_Kaelte_einlesen";
+        /// <summary>
+        /// Kältemaschinen einlesen (K-C): CSV-Vorlage in den Formen Kennfeld, Nennwerte und Ökodesign A–D oder
+        /// Copper-Kurvendatei — derselbe Importdialog wie der Knopf „Import…“ im Katalog der Kältemaschinen
+        /// (<c>KatalogImportArt.Kaeltemaschine</c>).
+        /// </summary>
+        public const string KaeltemaschineImport = "Form_Kaeltemaschine_einlesen";
         /// <summary>Stammdaten Heizkessel.</summary>
         public const string HeizkesselAdmin = "Form_Heizkessel_Admin";
         /// <summary>Stammdaten BHKW.</summary>

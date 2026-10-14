@@ -101,7 +101,14 @@ namespace WindowsFormsApplication1
                     Waermebedarf_Kanal = Mal(e.Waermebedarf_Kanal, f),
                     Kaeltebedarf_Gesamt = e.Kaeltebedarf_Gesamt * f,
                     Kaeltelast_Max = e.Kaeltelast_Max,
-                    Kaelterestbedarf = e.Kaelterestbedarf * f
+                    Kaelterestbedarf = e.Kaelterestbedarf * f,
+                    // K3 (Schritt 213): die Mengen des Kältebedarfs ohne Gebäudemodell skalieren, Spitze und Jahres-EER bleiben
+                    // wie Kaeltelast_Max; null („nicht erhoben") bleibt null.
+                    KaeltebedarfProfilMwh = Mal(e.KaeltebedarfProfilMwh, f),
+                    KaeltebedarfDezentralMwh = Mal(e.KaeltebedarfDezentralMwh, f),
+                    KaelteDezentralSpitzeKw = e.KaelteDezentralSpitzeKw,
+                    StromDezentralMwh = Mal(e.StromDezentralMwh, f),
+                    JahresEerDezentral = e.JahresEerDezentral
                 };
             }
 
@@ -125,7 +132,13 @@ namespace WindowsFormsApplication1
                     // Kühlträger und Abrechnungsart sind Konfiguration und bleiben. Ohne sie verlöre
                     // ein Mengenszenario Kosten und Emissionen des Kältestroms eines Kühlträgers.
                     Kaelteproduktion_WP = Mal(w.Kaelteproduktion_WP, f),
-                    Stromverbrauch_Kuehlung = Mal(w.Stromverbrauch_Kuehlung, f)
+                    Stromverbrauch_Kuehlung = Mal(w.Stromverbrauch_Kuehlung, f),
+                    // KU3-6: freie Kühlung über die Wärmequelle wie bei der Kältemaschine - die Kälte skaliert,
+                    // die Stunden bleiben; null bleibt null.
+                    FreieKuehlung_MWh = Mal(w.FreieKuehlung_MWh, f),
+                    FreieKuehlung_Stunden = w.FreieKuehlung_Stunden,
+                    // UB-E4: die Betriebsbereiche sind ein Ausweis des Laufs - sie bleiben wie die Vorlaufstunden.
+                    Bereiche = w.Bereiche
                 };
                 if (w.Module != null)
                     foreach (ErgebnisWaermepumpeModulModel mo in w.Module)
@@ -140,11 +153,74 @@ namespace WindowsFormsApplication1
                             Kaelteproduktion = Mal(mo.Kaelteproduktion, f),
                             Stromverbrauch_Kuehlung = Mal(mo.Stromverbrauch_Kuehlung, f),
                             Kaeltestrom_Netzbezug = Mal(mo.Kaeltestrom_Netzbezug, f),
+                            FreieKuehlung_MWh = Mal(mo.FreieKuehlung_MWh, f),
+                            FreieKuehlung_Stunden = mo.FreieKuehlung_Stunden,
+                            // VW1b: die Vorlaufwahl sind Stunden, keine Mengen - sie bleiben; null bleibt null.
+                            Vorlaufwahl_Stunden = mo.Vorlaufwahl_Stunden,
+                            Vorlauf_Darueber_Stunden = mo.Vorlauf_Darueber_Stunden,
+                            Vorlauf_Darunter_Stunden = mo.Vorlauf_Darunter_Stunden,
                             Kuehl_CarrierId = mo.Kuehl_CarrierId,
-                            Kuehl_EigenerZaehler = mo.Kuehl_EigenerZaehler
+                            Kuehl_EigenerZaehler = mo.Kuehl_EigenerZaehler,
+                            Bereiche = mo.Bereiche
                         });
                 k.Waermepumpe = wk;
             }
+
+            // KU3-4d: die Kältemaschinen skalieren wie die Module der Wärmepumpe - Mengen, Netzbezug und Spitze
+            // ihres Kältestroms; Anzahl, Kühlträger und Abrechnungsart sind Konfiguration und bleiben.
+            if (m.Kaeltemaschinen != null)
+                foreach (ErgebnisKaeltemaschineModel km in m.Kaeltemaschinen)
+                    k.Kaeltemaschinen.Add(km == null ? null : new ErgebnisKaeltemaschineModel
+                    {
+                        ID_Kaeltemaschine = km.ID_Kaeltemaschine,
+                        Bezeichner = km.Bezeichner,
+                        Anzahl = km.Anzahl,
+                        Kaelteproduktion_MWh = km.Kaelteproduktion_MWh * f,
+                        Stromverbrauch_MWh = km.Stromverbrauch_MWh * f,
+                        Hilfsstrom_MWh = km.Hilfsstrom_MWh * f,
+                        FreieKuehlung_MWh = km.FreieKuehlung_MWh * f,
+                        FreieKuehlung_Stunden = km.FreieKuehlung_Stunden,
+                        Taktstunden = km.Taktstunden,
+                        Unterdeckung_MWh = km.Unterdeckung_MWh * f,
+                        Stunden_Leistungsgrenze = km.Stunden_Leistungsgrenze,
+                        Kaeltestrom_Netzbezug_MWh = Mal(km.Kaeltestrom_Netzbezug_MWh, f),
+                        Kuehl_CarrierId = km.Kuehl_CarrierId,
+                        Kuehl_EigenerZaehler = km.Kuehl_EigenerZaehler,
+                        Stromspitze_kW = Mal(km.Stromspitze_kW, f),
+                        // KM3: der Mehrstrom skaliert als Menge, Starts, Stunden und Lastgrad bleiben.
+                        Taktstrom_MWh = Mal(km.Taktstrom_MWh, f),
+                        Starts = km.Starts,
+                        Teillaststunden = km.Teillaststunden,
+                        Lastgrad_Mittel = km.Lastgrad_Mittel,
+                        Stunden_Extrapoliert = km.Stunden_Extrapoliert,
+                        // K-F2: Strom und Wasser des Rueckkuehlwerks skalieren als Menge, Stunden und Temperatur bleiben.
+                        Ventilatorstrom_MWh = Mal(km.Ventilatorstrom_MWh, f),
+                        Wasser_m3 = Mal(km.Wasser_m3, f),
+                        Stunden_Nass = km.Stunden_Nass,
+                        Rueckkuehltemperatur_Mittel = km.Rueckkuehltemperatur_Mittel,
+                        // K-F3: die Kälte der Teil-Freikühlung skaliert als Menge, die Stunden bleiben.
+                        TeilFreikuehlung_MWh = Mal(km.TeilFreikuehlung_MWh, f),
+                        TeilFreikuehlung_Stunden = km.TeilFreikuehlung_Stunden,
+                    });
+
+            // Schritt 223: die Split-Zeilen skalieren wie die Kältemaschinen - Kälte, Strom, Netzbezug und Spitze des Stroms;
+            // Quelle, Zuordnung, Kühlträger, Abrechnungsart, Kältespitze und Jahres-EER bleiben.
+            if (m.KaelteDezentral != null)
+                foreach (ErgebnisKaelteDezentralModel d in m.KaelteDezentral)
+                    k.KaelteDezentral.Add(d == null ? null : new ErgebnisKaelteDezentralModel
+                    {
+                        Quelle = d.Quelle,
+                        ID_Zuordnung = d.ID_Zuordnung,
+                        Bezeichner = d.Bezeichner,
+                        Kaelte_MWh = d.Kaelte_MWh * f,
+                        Strom_MWh = d.Strom_MWh * f,
+                        Kaelte_Spitze_kW = d.Kaelte_Spitze_kW,
+                        Jahres_EER = d.Jahres_EER,
+                        Kaeltestrom_Netzbezug_MWh = Mal(d.Kaeltestrom_Netzbezug_MWh, f),
+                        Kuehl_CarrierId = d.Kuehl_CarrierId,
+                        Kuehl_EigenerZaehler = d.Kuehl_EigenerZaehler,
+                        Stromspitze_kW = Mal(d.Stromspitze_kW, f),
+                    });
 
             if (m.BHKW != null)
             {

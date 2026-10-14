@@ -164,13 +164,13 @@ namespace EPOS.Kern.Tests
 
             var pw = new ProzesswaermeStammCtrl();
             pw.ReadAll();
-            Assert.Equal(32, pw.rows);
+            Assert.Equal(40, pw.rows);              // 32 + acht Betriebsweisen (PW5)
             Assert.Equal("Beckenwasseraufheizung", pw.items[0].m_szProzessname);
 
             var sv = new StromverbraucherStammCtrl();
             sv.ReadAll();
-            Assert.Equal(41, sv.rows);
-            Assert.Equal("Berger-Fertigung", sv.items[0].m_szBezeichner);
+            Assert.Equal(46, sv.rows);              // 41 + drei BDEW-Standardlastprofile (Schritt 193) + P25, S25 (Schritt 196)
+            Assert.Equal("BDEW_G25_Gewerbe", sv.items[0].m_szBezeichner);   // ORDER BY Bezeichner: „BD…" vor „Be…"
         }
 
         /// <summary>
@@ -223,8 +223,8 @@ namespace EPOS.Kern.Tests
                          BedarfStammCtrl.Bezeichner(BedarfsArt.Stromverbraucher));
 
             Assert.Equal(16, BedarfStammCtrl.Bezeichner(BedarfsArt.Brauchwasser).Count);
-            Assert.Equal(32, BedarfStammCtrl.Bezeichner(BedarfsArt.Prozesswaerme).Count);
-            Assert.Equal(41, BedarfStammCtrl.Bezeichner(BedarfsArt.Stromverbraucher).Count);
+            Assert.Equal(40, BedarfStammCtrl.Bezeichner(BedarfsArt.Prozesswaerme).Count);
+            Assert.Equal(46, BedarfStammCtrl.Bezeichner(BedarfsArt.Stromverbraucher).Count);   // dazu die fünf BDEW-Sätze
         }
 
         /// <summary>
@@ -560,9 +560,10 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der ganze Weg des Knopfes „Datei Einlesen…" auf einer eigenen Arbeitskopie:
-        /// lesen, Dublettenpruefung, schreiben, wiederfinden, loeschen. Der Fall
-        /// SCHREIBT und legt sich deshalb seine eigene Kopie an.
+        /// Der ganze Weg des Knopfes „Import…" auf einer eigenen Arbeitskopie: lesen mit
+        /// Formaterkennung, Dublettenpruefung, schreiben, wiederfinden, loeschen. Die Probe
+        /// ist die einspaltige Textdatei mit Beschreibungszeile; der Bezeichner kommt aus
+        /// dem Dateinamen. Der Fall SCHREIBT und legt sich deshalb seine eigene Kopie an.
         /// </summary>
         [Fact]
         public void Der_Einleseweg_der_Solarganglinie_traegt_Kopf_und_8760_Werte()
@@ -570,111 +571,85 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            GanglinienTextErgebnis datei = GanglinienTextDatei.Lies(Probe("solarganglinie_8760.txt"),
-                                                                    mitKopfzeile: true);
-            Assert.True(datei.Erfolgreich);
-
-            var ctrl = new SolarganglinieStammCtrl();
             string name = "W14b-SG-" + Guid.NewGuid().ToString("N").Substring(0, 8);
+            string ordner = Path.Combine(Path.GetTempPath(), "epos-sg-" + Guid.NewGuid().ToString("N").Substring(0, 8));
+            Directory.CreateDirectory(ordner);
+            try
+            {
+                string pfad = Path.Combine(ordner, name + ".txt");
+                File.Copy(Probe("solarganglinie_8760.txt"), pfad);
 
-            Assert.False(ctrl.Exists(name));
-            Assert.True(ctrl.ImportGanglinie(name, datei.Beschreibung, datei.Werte));
-            Assert.True(ctrl.Exists(name));
+                var ctrl = new SolarganglinieStammCtrl();
+                Assert.False(ctrl.Exists(name));
 
-            ctrl.ReadAll();
-            SolarganglinieModel satz = ctrl.items.First(m => m.m_szBezeichner == name);
-            Assert.Equal("Solarganglinie Sued 45 Grad, Leistung Solarsystem [W]", satz.m_szBeschreibung);
+                SolarganglinieImportBericht b = SolarganglinieImportCtrl.Einlesen(pfad);
+                Assert.True(b.Erfolgreich, b.Meldung);
+                Assert.True(ctrl.Exists(name));
 
-            Assert.False(ctrl.HatProjektzuordnung(name));
-            Assert.True(ctrl.Delete(name));
-            Assert.False(ctrl.Exists(name));
+                ctrl.ReadAll();
+                SolarganglinieModel satz = ctrl.items.First(m => m.m_szBezeichner == name);
+                Assert.Equal("Solarganglinie Sued 45 Grad, Leistung Solarsystem [W]", satz.m_szBeschreibung);
+
+                Assert.False(ctrl.HatProjektzuordnung(name));
+                Assert.True(ctrl.Delete(name));
+                Assert.False(ctrl.Exists(name));
+            }
+            finally
+            {
+                try { Directory.Delete(ordner, true); } catch { }
+            }
         }
 
         // ==================================================================
-        //  5 — Die Ganglinien-Textdatei MIT Kopfzeile
+        //  5 — Die einspaltige Ganglinien-Textdatei mit Beschreibungszeile
         // ==================================================================
 
         /// <summary>
-        /// Das Format der Solarganglinie: erste Zeile = Beschreibung, danach 8 760 Werte
-        /// (<c>Form_Solarganglinie_Admin</c>:135-138). Gelesen wird es seit W13.0h von
-        /// <see cref="GanglinienTextDatei"/> mit <c>mitKopfzeile: true</c>; die Werte sind
-        /// gegen <c>ToolsClass.OpenText</c> eingefroren, VOR dessen Loeschung.
+        /// Das einspaltige Format der Solarganglinie: erste Zeile = Beschreibung, danach
+        /// 8 760 Werte. Es ist ein Sonderfall der Formaterkennung
+        /// (<see cref="StundenganglinieDatei"/>: kein Trennzeichen, Kopfzeile); die Werte
+        /// sind dieselben wie vor der Formaterkennung.
         /// </summary>
         [Fact]
         public void Die_Ganglinie_mit_Kopfzeile_wird_wie_bisher_gelesen()
         {
-            GanglinienTextErgebnis erg = GanglinienTextDatei.Lies(Probe("solarganglinie_8760.txt"),
-                                                                  mitKopfzeile: true);
+            StundenganglinieLesung erg = StundenganglinieDatei.Lies(Probe("solarganglinie_8760.txt"));
 
             Assert.True(erg.Erfolgreich);
-            Assert.Equal("Solarganglinie Sued 45 Grad, Leistung Solarsystem [W]", erg.Beschreibung);
-            Assert.Equal(8760, erg.Werte.Count);
-            Assert.Equal("51.470", erg.Werte[0]);
-            Assert.Equal("52.199", erg.Werte[8759]);
-            Assert.Empty(erg.Meldungen);
+            Assert.Equal('\0', erg.Format.Trennzeichen);
+            Assert.True(erg.Format.Kopfzeile);
+            Assert.Equal("Solarganglinie Sued 45 Grad, Leistung Solarsystem [W]", erg.Kopftext);
+            Assert.Equal(8760, erg.AnzahlWerte);
+            Assert.Equal(51.470, erg.StundenwerteKw[0], 9);
+            Assert.Equal(52.199, erg.StundenwerteKw[8759], 9);
         }
 
         /// <summary>
-        /// Die kleine Probe aus W13 (Kopfzeile + 24 Werte) — sie belegt, dass der Schalter
-        /// die Zeilenzahl nicht voraussetzt.
-        /// </summary>
-        [Fact]
-        public void Auch_die_kurze_Probe_traegt_ihre_Kopfzeile()
-        {
-            GanglinienTextErgebnis erg = GanglinienTextDatei.Lies(Probe("ganglinie_mit_kopfzeile.txt"),
-                                                                  mitKopfzeile: true);
-
-            Assert.True(erg.Erfolgreich);
-            Assert.Equal("Sued 45 Grad, Referenzjahr 2026", erg.Beschreibung);
-            Assert.Equal(24, erg.Werte.Count);
-            Assert.Equal("51.470", erg.Werte[0]);
-            Assert.Equal("52.274", erg.Werte[23]);
-        }
-
-        /// <summary>
-        /// <b>Dieselbe Datei OHNE Schalter</b> — der Waermebedarfsweg (W13.2): Dann ist die
-        /// Kopfzeile ein WERT, und es sind 8 761 statt 8 760. Der Schalter ist also nicht
-        /// Zierde, sondern der Unterschied zwischen beiden Katalogen.
-        /// </summary>
-        [Fact]
-        public void Ohne_Schalter_zaehlt_die_Kopfzeile_als_Wert()
-        {
-            GanglinienTextErgebnis erg = GanglinienTextDatei.Lies(Probe("solarganglinie_8760.txt"),
-                                                                  mitKopfzeile: false);
-
-            Assert.True(erg.Erfolgreich);
-            Assert.Equal("", erg.Beschreibung);
-            Assert.Equal(8761, erg.Werte.Count);
-        }
-
-        /// <summary>
-        /// Die drei Gegenproben. <c>ToolsClass.OpenText</c> lieferte bei Semikolon und
-        /// Komma <c>false</c> und ZEIGTE dabei selbst einen Dialog; bei einer LEERZEILE
-        /// warf es eine <c>ArgumentOutOfRangeException</c> mitten im Parser (Befund
-        /// W14-B72 / W13-B11). Hier kommt in allen drei Faellen eine Meldung mit
-        /// Zeilennummer zurueck.
+        /// Die Gegenproben — eine kurze Reihe mit Kopfzeile, Semikolon, Dezimalkomma und
+        /// Leerzeile: Keine wirft, jede kommt als Misserfolg mit benanntem Grund zurueck,
+        /// weil keine 8 760 oder 35 040 Werte traegt.
         /// </summary>
         [Theory]
-        [InlineData("waermebedarf_gegenprobe_semikolon.txt", "IMP_TXT_TRENNZEICHEN")]
-        [InlineData("waermebedarf_gegenprobe_komma.txt", "IMP_TXT_TRENNZEICHEN")]
-        [InlineData("waermebedarf_gegenprobe_leerzeile.txt", "IMP_TXT_LEERZEILE")]
-        public void Die_Gegenproben_melden_statt_zu_werfen(string datei, string schluessel)
+        [InlineData("ganglinie_mit_kopfzeile.txt")]
+        [InlineData("waermebedarf_gegenprobe_semikolon.txt")]
+        [InlineData("waermebedarf_gegenprobe_komma.txt")]
+        [InlineData("waermebedarf_gegenprobe_leerzeile.txt")]
+        public void Die_Gegenproben_melden_statt_zu_werfen(string datei)
         {
-            GanglinienTextErgebnis erg = GanglinienTextDatei.Lies(Probe(datei), mitKopfzeile: true);
+            StundenganglinieLesung erg = StundenganglinieDatei.Lies(Probe(datei));
 
             Assert.False(erg.Erfolgreich);
-            Assert.Single(erg.Meldungen);
-            Assert.Equal(schluessel, erg.Meldungen[0].Schluessel);
-            Assert.Equal(PruefStufe.Fehler, erg.Meldungen[0].Stufe);
+            Assert.NotNull(erg.ErsterFehler);
+            Assert.Equal(PruefStufe.Fehler, erg.ErsterFehler!.Stufe);
         }
 
         /// <summary>Ein leerer Pfad ergibt einen Misserfolg ohne Wurf.</summary>
         [Fact]
         public void Ein_leerer_Pfad_wirft_nicht()
         {
-            GanglinienTextErgebnis erg = GanglinienTextDatei.Lies("", mitKopfzeile: true);
+            StundenganglinieLesung erg = StundenganglinieDatei.Lies("");
             Assert.False(erg.Erfolgreich);
-            Assert.Equal("IMP_TXT_KEIN_PFAD", erg.Meldungen[0].Schluessel);
+            Assert.Equal(GanglinienDatei.SchluesselDateiFehlt, erg.ErsterFehler!.Schluessel);
         }
 
         // ==================================================================

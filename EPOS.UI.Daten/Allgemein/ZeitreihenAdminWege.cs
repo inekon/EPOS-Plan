@@ -46,6 +46,52 @@ namespace WindowsFormsApplication1
                 new GanglinienKennzahlen(a.JahresarbeitMwh, a.SpitzeKw, a.VollbenutzungsstundenH));
         }
 
+        /// <summary>
+        /// Die Kennzahlen eines Katalogsatzes für die Grafik einer Satzansicht (<c>GanglinienGrafik</c>);
+        /// <c>null</c> ohne brauchbare Reihe.
+        /// </summary>
+        internal static Task<GanglinienKennzahlen> SatzKennzahlen(Zeitreihenart art, string bezeichner)
+        {
+            GanglinienAuswertung a = SatzLesen(art, bezeichner);
+            return Task.FromResult(a == null || !a.Erfolgreich ? null
+                : new GanglinienKennzahlen(a.JahresarbeitMwh, a.SpitzeKw, a.VollbenutzungsstundenH));
+        }
+
+        /// <summary>
+        /// Das Bild eines Katalogsatzes für die Grafik einer Satzansicht: Jahresgang nach Monaten oder,
+        /// sortiert, die Dauerlinie (<see cref="ChartRenderer.GanglinieNormiertModell"/>, dieselbe Bauform wie
+        /// der Stromganglinien-Dialog); <c>null</c> ohne brauchbare Reihe.
+        /// </summary>
+        internal static Zeichenmodell SatzBild(Zeitreihenart art, string bezeichner, bool sortiert, string titel)
+        {
+            GanglinienAuswertung a = SatzLesen(art, bezeichner);
+            if (a == null || !a.Erfolgreich) return null;
+            var reihen = new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe(MyResource.Resource.CHART_ACHSE_LEISTUNG, a.Stundenwerte, Rolle(art))
+            };
+            return ChartRenderer.GanglinieNormiertModell(titel ?? "", reihen, MyResource.Resource.CHART_ACHSE_LEISTUNG,
+                sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate, sortiert);
+        }
+
+        private static readonly object _satzRiegel = new object();
+        private static string _satzSchluessel = "";
+        private static GanglinienAuswertung _satzStand;
+
+        /// <summary>Liest die Reihe eines Katalogsatzes — oder gibt die zuletzt gelesene zurück.</summary>
+        private static GanglinienAuswertung SatzLesen(Zeitreihenart art, string bezeichner)
+        {
+            string schluessel = art + "|" + (bezeichner ?? "");
+            lock (_satzRiegel)
+            {
+                if (schluessel == _satzSchluessel) return _satzStand;
+                GanglinienAuswertung a = GanglinienAuswertungCtrl.AusKatalog(GanglinienQuelle.Zu(art), bezeichner ?? "");
+                _satzSchluessel = schluessel;
+                _satzStand = a;
+                return a;
+            }
+        }
+
         /// <summary>Welche Projekte welchen Satz verwenden — je Bezeichner die Projektnamen.</summary>
         internal static Task<IReadOnlyDictionary<string, IReadOnlyList<string>>> Verwendung(Zeitreihenart art)
             => Task.FromResult(ZeitreihenKatalogCtrl.Projektverwendung(art));
@@ -60,6 +106,7 @@ namespace WindowsFormsApplication1
             {
                 case Zeitreihenart.Stromganglinie: return Farbrolle.BEDARF;
                 case Zeitreihenart.Solarganglinie: return Farbrolle.WAERME_SOLAR;
+                case Zeitreihenart.PvGanglinie:    return Farbrolle.STROM_PV;
                 default:                           return Farbrolle.HEIZWAERME;
             }
         }

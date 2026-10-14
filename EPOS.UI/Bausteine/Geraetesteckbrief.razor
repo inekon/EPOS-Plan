@@ -1,0 +1,62 @@
+﻿@* DER GERAETESTECKBRIEF (WP1a, Anwenderentscheid 12.10.2026): eine LESENDE Liste aus Beschriftung und Wert - die
+   wichtigsten Daten des gewaehlten Satzes neben seinen Feldern, etwa links in der Satz-Ueberlagerung einer
+   Erzeugerverwaltung. Kein Fachwissen: Der Wirt reicht fertig formatierte Zeilen (Steckbriefzeile) herein und
+   haelt sie live aus demselben DTO, das seine Felder bearbeiten.
+
+   ZWEISPALTIG im dl-Muster des Hausblatts (Beschriftung | Wert, die Regel .epos-steckbrief-werte des
+   Bauteilsteckbriefs), ohne eigene Farben. Ein fehlender Wert steht als „—", nie als leere Zeile - der Steckbrief
+   zeigt, dass es die Angabe gibt und dass sie fehlt. Eine Herleitung steht leise unter ihrem Wert.
+
+   Ohne Zeilen zeichnet er nur seinen Leertext (leer = gar nichts). *@
+
+@namespace EPOS.UI.Bausteine
+
+<section class="@Klassen" aria-label="@(string.IsNullOrEmpty(Titel) ? null : Titel)">
+    @if (!string.IsNullOrEmpty(Titel) && TitelAnzeigen)
+    {
+        <h4 class="epos-geraetesteckbrief-titel">@Titel</h4>
+    }
+    @if (Zeilen.Count > 0)
+    {
+        <dl class="epos-steckbrief-werte epos-geraetesteckbrief-werte">
+            @foreach (Steckbriefzeile z in Zeilen)
+            {
+                <dt>@z.Beschriftung</dt>
+                <dd data-zeile="@(z.Kennung.Length > 0 ? z.Kennung : null)"
+                    class="@(z.HatWert ? null : "epos-geraetesteckbrief-fehlt")">
+                    <span class="epos-geraetesteckbrief-wert">@z.Anzeige</span>
+                    @if (z.Herleitung.Length > 0)
+                    {
+                        <span class="epos-geraetesteckbrief-herleitung">@z.Herleitung</span>
+                    }
+                </dd>
+            }
+        </dl>
+    }
+    else if (!string.IsNullOrEmpty(Leertext))
+    {
+        <p class="epos-leisezeile epos-geraetesteckbrief-leer">@Leertext</p>
+    }
+</section>
+
+@code {
+    /// <summary>Der Titel: Name des Abschnitts (aria-label) und, mit <see cref="TitelAnzeigen"/>, Überschrift.</summary>
+    [Parameter] public string Titel { get; set; } = "";
+
+    /// <summary>
+    /// Zeichnet den Titel als Überschrift (Vorgabe ja). <c>false</c>, wo ein Gruppenkopf des Wirts ihn schon trägt
+    /// — ein Titel, eine Stelle.
+    /// </summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    /// <summary>Die Zeilen in Anzeigereihenfolge.</summary>
+    [Parameter] public IReadOnlyList<Steckbriefzeile> Zeilen { get; set; } = Array.Empty<Steckbriefzeile>();
+
+    /// <summary>Der Text ohne Zeilen (kein Satz gewählt); leer = nichts.</summary>
+    [Parameter] public string Leertext { get; set; } = "";
+
+    /// <summary>Zusätzliche Klasse am Abschnitt (Prüfanker des Wirts).</summary>
+    [Parameter] public string Klasse { get; set; } = "";
+
+    private string Klassen => "epos-geraetesteckbrief" + (string.IsNullOrEmpty(Klasse) ? "" : " " + Klasse);
+}

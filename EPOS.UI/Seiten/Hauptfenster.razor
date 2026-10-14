@@ -60,13 +60,18 @@
                BerichteKostenGaben="@BerichteKostenGaben"
                AssistentGaben="@AssistentGaben"
                StromspeicherAuslegungGaben="@StromspeicherAuslegungGaben"
+               PufferAuslegungGaben="@PufferAuslegungGaben"
                SimulationGaben="@SimulationGaben"
                BaustoffKatalogGaben="@BaustoffKatalogGaben"
                BauteilaufbauKatalogGaben="@BauteilaufbauKatalogGaben"
+               KaeltemaschineKatalogGaben="@KaeltemaschineKatalogGaben"
+               KaeltemaschineAnlageGaben="@KaeltemaschineAnlageGaben"
+               BetriebskalenderGaben="@BetriebskalenderGaben"
+               BauteilkatalogImportGaben="@BauteilkatalogImportGaben"
                Lizenzlage="@Lizenzlage">
         <Kopfleiste>
             <Menueband @ref="_band"
-                       Eintraege="@Eintraege"
+                       Eintraege="@(_eintraegeNeu ?? Eintraege)"
                        Gewaehlt="Springe"
                        Bezeichnung="@MenueBezeichnung" />
 
@@ -93,12 +98,40 @@
                                Dialogname="@_hilfekontext.Dialogname"
                                Aktiv="@AssistentSteht" />
                     <span class="epos-hauptfenster-version">@VersionText</span>
+                    @* DIE MARKE DES ENTWICKLERMODUS (Administration und Support, Stufe 1, Konzept
+                       Abschnitt 3.3): neben der Versionszeile, der Tooltip nennt die Quelle. Leer =
+                       kein Span. Den fertigen Text bringt die Huelle; die Komponente fragt den Kern
+                       nicht. *@
+                    @if (!string.IsNullOrEmpty(_markeNeu ?? EntwicklerMarke))
+                    {
+                        <span class="epos-hauptfenster-entwickler"
+                              title="@(_markeTipNeu ?? EntwicklerMarkeTip)">@(_markeNeu ?? EntwicklerMarke)</span>
+                    }
                 </div>
             </header>
         </Kopfleiste>
     </AppWurzel>
 
 </CascadingValue>
+
+@* DER BERICHT DES KATALOGABGLEICHS BEIM START (Entscheidungsvorlage Modellgrenzen KU1 Stufe 1).
+   Hat der Programmstart den Katalog mit dem Paket einer neuen Auslieferung abgeglichen, steht
+   hier einmal, was geschehen ist („n neu, m aktualisiert, k behalten, a ausgelaufen"). Die
+   Huelle reicht den fertigen Text herein; ohne Text bleibt die Ueberlagerung zu. Nur unter
+   Windows - iOS gleicht nicht ab. *@
+<Ueberlagerung Offen="@(_starthinweisOffen && Starthinweis.Length > 0)" Titel="@StarthinweisTitel"
+               Geschlossen="StarthinweisSchliessen">
+    <KindInhalt>
+        <div class="epos-starthinweis">
+            <p class="epos-starthinweis-text">@Starthinweis</p>
+            <div class="epos-leiste">
+                <span class="epos-leiste-fueller"></span>
+                <button type="button" class="epos-knopf epos-knopf--primaer"
+                        @onclick="StarthinweisSchliessen">@StarthinweisOk</button>
+            </div>
+        </div>
+    </KindInhalt>
+</Ueberlagerung>
 
 </div>
 
@@ -110,8 +143,13 @@
     //  Das Menue
     // =====================================================================
 
-    /// <summary>Die Menuetabelle; Vorgabe ist die des Bestands (58 Punkte).</summary>
-    [Parameter] public IReadOnlyList<Menuepunkt> Eintraege { get; set; } = Menuetabelle.Eintraege;
+    /// <summary>
+    /// Die Menuetabelle; Vorgabe ist der Baum des Anwenders (<c>Menuetabelle.Sichtbar</c>).
+    /// Der Kopf „Entwicklung" erscheint nur, wenn die Huelle den Zuschnitt der Stufe
+    /// Entwickler hereinreicht.
+    /// </summary>
+    [Parameter] public IReadOnlyList<Menuepunkt> Eintraege { get; set; } =
+        Menuetabelle.Sichtbar(WindowsFormsApplication1.Freigabestufe.Anwender);
 
     /// <summary>Beschriftung der Menueleiste fuer die Sprachausgabe.</summary>
     [Parameter] public string MenueBezeichnung { get; set; } = "Hauptmenü";
@@ -138,6 +176,48 @@
 
     /// <summary>Die fertige Versionszeile, z. B. „Version 1.0.0.0".</summary>
     [Parameter] public string VersionText { get; set; } = "";
+
+    /// <summary>
+    /// Die Marke des Entwicklermodus neben der Versionszeile (<c>ENTW_MARKE</c>); leer =
+    /// keine Marke (Konzept Administration und Support, Abschnitt 3.3).
+    /// </summary>
+    [Parameter] public string EntwicklerMarke { get; set; } = "";
+
+    /// <summary>Der Tooltip der Marke — nennt die Quelle des Modus (<c>ENTW_MARKE_TIP</c>).</summary>
+    [Parameter] public string EntwicklerMarkeTip { get; set; } = "";
+
+    /// <summary>
+    /// Die Naht fuer einen Wechsel der Freigabestufe zur Laufzeit (Tastenfolge, „Entwicklermodus
+    /// ausschalten"): Die Seite reicht beim Start ihren Setzer hinaus — Menuebaum, Marke,
+    /// Tooltip —, und die Huelle ruft ihn nach dem Wechsel. Ein Wurzelparameter laesst sich
+    /// von aussen nicht neu setzen; ohne Naht gaelte der Wechsel erst beim naechsten Start.
+    /// </summary>
+    [Parameter] public Action<Action<IReadOnlyList<Menuepunkt>, string, string>>? FreigabeAnmelden { get; set; }
+
+    // Ueberschreiben die Parameter, sobald die Huelle neu versorgt; null = der Parameter gilt.
+    private IReadOnlyList<Menuepunkt>? _eintraegeNeu;
+    private string? _markeNeu;
+    private string? _markeTipNeu;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        FreigabeAnmelden?.Invoke(FreigabeSetzen);
+    }
+
+    /// <summary>Menue und Marke neu versorgen — von jedem Faden aus (zeichnet ueber InvokeAsync).</summary>
+    private void FreigabeSetzen(IReadOnlyList<Menuepunkt> eintraege, string marke, string markeTip)
+    {
+        _ = InvokeAsync(() =>
+        {
+            _band?.Schliessen();
+            _eintraegeNeu = eintraege ?? Menuetabelle.Sichtbar(WindowsFormsApplication1.Freigabestufe.Anwender);
+            _markeNeu = marke ?? "";
+            _markeTipNeu = markeTip ?? "";
+            StateHasChanged();
+        });
+    }
 
     /// <summary>
     /// Der Hilfeschluessel der FENSTERHILFE — im Bestand
@@ -233,6 +313,9 @@
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? StromspeicherAuslegungGaben { get; set; }
 
+    /// <summary>Der Parametersatz der Pufferspeicher-Auslegung je Projekt (Windows: <c>PufferAuslegungHuelle.AnsichtGaben</c>); nur durchgereicht.</summary>
+    [Parameter] public Func<int, IReadOnlyDictionary<string, object>?>? PufferAuslegungGaben { get; set; }
+
     /// <summary>
     /// Der Parametersatz der Ansicht „Simulation" (Windows:
     /// <c>SimulationHuelle.AnsichtGaben</c>, Auftrag #207). Er wird nur
@@ -251,12 +334,42 @@
     /// <summary>Siehe <see cref="BaustoffKatalogGaben"/>.</summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BauteilaufbauKatalogGaben { get; set; }
 
+    /// <summary>Der Parametersatz der Verwaltung „Kältemaschinen" (Windows: <c>KaeltemaschineKatalogHuelle.Gaben</c>); nur durchgereicht.</summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? KaeltemaschineKatalogGaben { get; set; }
+
+    /// <summary>Der Parametersatz des Erzeugerdialogs „Kältemaschinen im Projekt" (Windows: <c>KaeltemaschineAnlageHuelle.Gaben</c>); nur durchgereicht.</summary>
+    [Parameter] public Func<int, IReadOnlyDictionary<string, object>?>? KaeltemaschineAnlageGaben { get; set; }
+
+    /// <summary>Der Parametersatz der Betriebskalender (Windows: <c>BetriebskalenderHuelle.Gaben</c>); nur durchgereicht.</summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BetriebskalenderGaben { get; set; }
+
+    /// <summary>Der Parametersatz von „Bauteilkatalog einlesen…" (Windows: <c>BauteilkatalogImportHuelle.Gaben</c>); nur durchgereicht.</summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? BauteilkatalogImportGaben { get; set; }
+
     /// <summary>
     /// Das Lagebild der Lizenz für das Banner der Wurzel (Welle iF30). Es kommt
     /// fertig aus <c>HauptfensterHuelle</c> und wird hier nur durchgereicht —
     /// das Fenster selbst wertet nichts davon aus.
     /// </summary>
     [Parameter] public WindowsFormsApplication1.LizenzLage? Lizenzlage { get; set; }
+
+    // =====================================================================
+    //  Der Bericht des Katalogabgleichs beim Start (KU1 Stufe 1)
+    // =====================================================================
+
+    /// <summary>Der fertige Bericht des Abgleichs beim Start; leer = nichts zu melden.</summary>
+    [Parameter] public string Starthinweis { get; set; } = "";
+
+    /// <summary>Der Titel der Überlagerung (<c>KABG_START_TITEL</c>).</summary>
+    [Parameter] public string StarthinweisTitel { get; set; } = "Katalog aktualisiert";
+
+    /// <summary>Der Knopf der Überlagerung (<c>KABG_OK</c>).</summary>
+    [Parameter] public string StarthinweisOk { get; set; } = "OK";
+
+    /// <summary>Steht die Überlagerung noch? Einmal geschlossen, bleibt sie zu.</summary>
+    private bool _starthinweisOffen = true;
+
+    private void StarthinweisSchliessen() => _starthinweisOffen = false;
 
     // =====================================================================
     //  Der EINE Handler

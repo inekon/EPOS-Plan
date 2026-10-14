@@ -1,0 +1,2521 @@
+﻿using System.Globalization;
+using AngleSharp.Dom;
+using Bunit;
+using EPOS.UI.Bausteine;
+using EPOS.UI.Dialoge.Erzeuger;
+using EPOS.UI.Dialoge.Waermepumpe;
+using EPOS.UI.Dienste;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
+using Xunit;
+
+namespace EPOS.UI.Tests.Dialoge;
+
+/// <summary>
+/// Detailansicht einer Wärmepumpen-Anlage (iU9-W7.4). Soll ist die Feldkarte von
+/// <c>Wizard_WPItem</c>: 47 Zeilen, zwei Reiterblätter mit den Kennlinienbildern, die
+/// Kostenzeile — und OHNE die Pufferspeichergruppe (Ä19).
+///
+/// <para><b>Seit dem 16.09.2026 stehen ZWEI Gruppen im Dialogkörper.</b> Der Block
+/// „Wärmeerzeuger Spitzenlast:" heißt „Konfiguration", liegt im Baustein
+/// <c>WaermepumpeKonfiguration</c> und geht über den gleichnamigen Knopf in einer
+/// <c>Ueberlagerung</c> auf; die Kenndaten sind ein Modulbereich mit Knopfzeile und den
+/// bearbeitbaren Stammfeldern. Die Regeln der beiden Bausteine halten
+/// <c>WaermepumpeKonfigurationTests</c> und <c>WaermepumpeStammFelderTests</c>.</para>
+/// </summary>
+public class WaermepumpeAnlageFelderTests : EposBunitContext
+{
+    /// <summary>
+    /// Die beiden Kennlinienbilder als ZEICHENMODELL — je EINE Instanz, EINMAL
+    /// gebaut: Der Baustein <c>DiagrammSvg</c> vergleicht die MODELLREFERENZ, und ein
+    /// je Zeichenlauf neu gebautes Modell setzte seinen Baum jedes Mal neu.
+    /// </summary>
+    private static readonly Zeichenmodell BildCop = Kennlinienbild("BILD-COP");
+    private static readonly Zeichenmodell BildLeistung = Kennlinienbild("BILD-LEISTUNG");
+
+    private static Zeichenmodell Kennlinienbild(string titel)
+    {
+        var punkte = new List<(double Temperatur, double Wert)>();
+        for (int t = -15; t <= 15; t += 5) punkte.Add((t, 4.0 + t * 0.05));
+
+        return ChartRenderer.KennlinienModell(
+            titel, titel, "Temperatur",
+            new[] { new ChartRenderer.KennlinienReihe(35, punkte) },
+            ChartRenderer.Kennlinienmarke.Kreis);
+    }
+
+    /// <summary>
+    /// Die Stammliste führt seit <b>W7‑B‑1</b> auch den HERSTELLER — die Liste zeigt
+    /// „Wahl | Hersteller | Typ", und Typ ist die Modellbezeichnung.
+    /// </summary>
+    private static readonly WaermepumpeStammZeile[] Stammliste =
+    {
+        new(1, "WP Alpha", false, "Alpha"),
+        new(2, "WP Beta", false, "Beta")
+    };
+
+    public WaermepumpeAnlageFelderTests()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+    }
+
+    /// <summary>Eine vollständig ausgefüllte Anlagenzeile — so kommt sie aus der Verwaltung.</summary>
+    private static WaermepumpeAnlageDaten Voll() => new()
+    {
+        Bezeichner = "WP Alpha",
+        IdWp = 77,                      // PROJEKT-Geräte-Id, nicht die Stamm-Id
+        Vorlauf = 35,
+        Ruecklauf = 28,
+        Heizstab = true,
+        HeizstabLeistung = 6,
+        Sperrung = false,
+        SperrzeitVon = 0,
+        SperrzeitBis = 0,
+        BivalenterBetrieb = false,
+        Betriebsart = "",
+        Abschaltpunkt = -5,
+        Beschreibung = "Testgerät",
+        Baujahr = 2023,
+        Regelung = "stetig",
+        Typ = "Luft-Wasser",
+        Firma = "Alpha",
+        Nennleistung = 12,
+        Modulkosten = 4000,
+        Volumen = 1.5,
+        Solaranteil = 30,
+        RendeMix = true
+    };
+
+    private static WaermepumpeStammDaten Stamm(int id) => new()
+    {
+        Id = id,
+        Name = id == 1 ? "WP Alpha" : "WP Beta",
+        Firma = id == 1 ? "Alpha" : "Beta",
+        Beschreibung = id == 1 ? "Testgerät" : "Zweitgerät",
+        Typ = id == 1 ? "Luft-Wasser" : "Sole-Wasser",
+        Baujahr = id == 1 ? 2023 : 2019,
+        Regelung = id == 1 ? "stetig" : "einstufig",
+        Nennleistung = id == 1 ? 12 : 25,
+        Heizstab = id == 1 ? 6 : 9,
+        Modulkosten = id == 1 ? 4000 : 7000
+    };
+
+    private IRenderedComponent<WaermepumpeAnlageFelder> Aufbauen(
+        WaermepumpeAnlageDaten? daten = null,
+        Func<int?, int?, string?>? temperaturen = null,
+        Func<bool>? kostenBereit = null,
+        Func<(double, double)>? kostensumme = null,
+        Func<bool, Task>? kostenOeffnen = null,
+        Func<WaermepumpeAnlageDaten, Task>? energiekosten = null,
+        bool wizard = false,
+        bool nurLesen = false,
+        Func<int, IReadOnlyList<KennlinienZeile>>? kennlinien = null,
+        Func<int, IReadOnlyList<KennlinienZeile>, bool>? kennlinienAbgleichen = null,
+        Action<bool>? geschlossen = null,
+        IReadOnlyList<EnergietraegerWahl.Eintrag>? traegerkatalog = null,
+        bool eingebettet = false,
+        Func<bool, bool>? extrapolationSchreiben = null,
+        bool extrapolationErlaubt = true,
+        Func<int, bool>? projektkopieVorhanden = null,
+        Func<int, WaermepumpeUebernahmeVorschau?>? uebernahmeVorschau = null,
+        Func<int, bool, KatalogSpeicherErgebnis>? inStammUebernehmen = null,
+        WaermepumpeKuehlGaben? kuehlung = null,
+        Func<int, int, string, WaermepumpeArbeitspunkt?>? arbeitspunkt = null)
+    {
+        _geschlossen = geschlossen;
+        return Render<WaermepumpeAnlageFelder>(p => p
+            .Add(x => x.Daten, daten ?? Voll())
+            .Add(x => x.Kuehlung, kuehlung)
+            .Add(x => x.Traegerkatalog, traegerkatalog ?? Array.Empty<EnergietraegerWahl.Eintrag>())
+            .Add(x => x.ExtrapolationSchreiben, extrapolationSchreiben)
+            .Add(x => x.ExtrapolationErlaubt, extrapolationErlaubt)
+            .Add(x => x.Vorlaeufe, _ => new[] { 35, 45, 55 })
+            .Add(x => x.Bilder, _ => new KennlinienBilder(BildCop, BildLeistung))
+            .Add(x => x.Stammdaten, Stamm)
+            .Add(x => x.TemperaturenPruefen, temperaturen ?? ((v, r) =>
+                (v is null || r is null || v <= r) ? "Die Vorlauftemperatur muss über der Rücklauftemperatur liegen." : null))
+            .Add(x => x.KostenBereit, kostenBereit ?? (() => true))
+            .Add(x => x.Kostensumme, kostensumme ?? (() => (12000d, 340d)))
+            .Add(x => x.KostenOeffnen, kostenOeffnen)
+            .Add(x => x.EnergiekostenOeffnen, energiekosten)
+            .Add(x => x.Wizard, wizard)
+            .Add(x => x.NurLesen, nurLesen)
+            // 16.09.2026: Die Stammfelder binden an die ANLAGENDATEN und gehen mit dem OK
+            // hinaus; StammSatz und StammSpeichern (der Katalogweg) sind entfallen. Neu ist
+            // die Frage nach der Projektkopie — sie entscheidet über die weiche Sperre.
+            .Add(x => x.ProjektkopieVorhanden, projektkopieVorhanden)
+            .Add(x => x.UebernahmeVorschau, uebernahmeVorschau)
+            .Add(x => x.InStammUebernehmen, inStammUebernehmen)
+            .Add(x => x.Kennlinien, kennlinien)
+            .Add(x => x.KennlinienAbgleichen, kennlinienAbgleichen)
+            .Add(x => x.Arbeitspunkt, arbeitspunkt)
+            .Add(x => x.KostenleisteAnzeigen, true));
+    }
+
+    /// <summary>Der Rückruf des Wirts — die Felder kennen kein eigenes OK mehr (AW2).</summary>
+    private Action<bool>? _geschlossen;
+
+    /// <summary>
+    /// AW2: das OK des Wirts (Satz-Überlagerung) — er ruft <c>Pruefen()</c> und schließt nur ohne Mangel.
+    /// </summary>
+    private void OkDesWirts(IRenderedComponent<WaermepumpeAnlageFelder> cut)
+    {
+        cut.InvokeAsync(() => { if (cut.Instance.Pruefen() is null) _geschlossen?.Invoke(true); }).GetAwaiter().GetResult();
+        cut.Render();   // der Wirt zeichnet nach seinem OK neu - mit ihm die Felder
+    }
+
+    private static IElement Knopf(IRenderedComponent<WaermepumpeAnlageFelder> cut, string text)
+        => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
+
+    /// <summary>Der Auswahlpfad der Kostenknöpfe — drei Stück, in dieser Reihenfolge.</summary>
+    private const string KOSTENKNOEPFE = ".epos-kostenleiste button.epos-knopf";
+
+    /// <summary>Die Überlagerung „Konfiguration" öffnen — der Weg zu den acht Feldern.</summary>
+    private static void KonfigurationOeffnen(IRenderedComponent<WaermepumpeAnlageFelder> cut)
+        => Knopf(cut, "Konfiguration…").Click();
+
+    /// <summary>Der Block der Konfiguration; er steht seit dem 16.09.2026 in der Überlagerung.</summary>
+    private static IElement Konfiguration(IRenderedComponent<WaermepumpeAnlageFelder> cut)
+        => cut.Find(".epos-ueberlagerung .epos-wp-konfiguration");
+
+    /// <summary>Ein Knopf INNERHALB der Überlagerung — OK und Abbrechen gibt es zweimal.</summary>
+    private static IElement Ueberlagerungsknopf(IRenderedComponent<WaermepumpeAnlageFelder> cut, string text)
+        => cut.Find(".epos-ueberlagerung").QuerySelectorAll("button")
+              .First(b => b.TextContent.Trim() == text);
+
+    /// <summary>
+    /// Das Eingabefeld zu einer Beschriftung — die Felder des Bausteins tragen keinen
+    /// eigenen Haken, wohl aber ihr <c>label</c> mit der Beschriftung darin.
+    /// </summary>
+    private static IElement Feld(IRenderedComponent<WaermepumpeAnlageFelder> cut, string bezeichnung)
+        => cut.FindAll("label.epos-feld")
+              .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == bezeichnung)
+              .QuerySelector("input")!;
+
+    // =================================================================================
+    // Feldbestand
+    // =================================================================================
+
+    /// <summary>
+    /// <b>ZWEI Gruppen seit dem 16.09.2026.</b> „Wärmeerzeuger Spitzenlast:" ist aus dem
+    /// Dialogkörper verschwunden — der Block heißt „Konfiguration" und steht in einer
+    /// Überlagerung hinter dem gleichnamigen Knopf.
+    /// </summary>
+    [Fact]
+    public void Die_zwei_Gruppen_und_die_zwei_Reiter_stehen()
+    {
+        var cut = Aufbauen();
+
+        var gruppen = cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent.Trim()).ToList();
+        // WP1a: links unter der Auslegung der Gerätesteckbrief.
+        Assert.Equal(new[] { "Auslegung für Verteilung", "Gewähltes Gerät", "Wärmepumpen Kenndaten" }, gruppen);
+
+        var reiter = cut.FindAll(".epos-reiter-knopf").Select(b => b.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "COP", "Leistung" }, reiter);
+    }
+
+    [Fact]
+    public void Die_Pufferspeichergruppe_wird_gar_nicht_gezeichnet()
+    {
+        // Ä19: Volumen, Kapazitaet, Anteil Solaranlage und rende MIX laufen im
+        // Datensatz mit, gepflegt wird der Puffer in der Simulation-Konfiguration.
+        var cut = Aufbauen();
+        var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
+
+        Assert.DoesNotContain("Volumen", texte);
+        Assert.DoesNotContain("Kapazität", texte);
+        Assert.DoesNotContain("Anteil Speicher für Solaranlage", texte);
+        Assert.DoesNotContain(cut.FindAll(".epos-schalter").Select(e => e.TextContent),
+                              t => t.Contains("rende MIX"));
+    }
+
+    /// <summary>
+    /// <b>Die Stammfelder binden an die ANLAGENDATEN</b> (Anwenderentscheid 16.09.2026):
+    /// Sie schreiben nicht mehr in den Katalog, sondern in den Feldsatz dieser Anlage —
+    /// und gehen damit mit dem OK des Dialogs hinaus, wie jedes andere Feld auch.
+    /// </summary>
+    [Fact]
+    public void Die_Stammfelder_binden_an_die_Anlagendaten_und_gehen_mit_OK_hinaus()
+    {
+        bool? ergebnis = null;
+        var daten = Voll();
+        var cut = Aufbauen(daten, geschlossen: b => ergebnis = b);
+
+        // Der Baustein zeigt die Werte der ANLAGE, nicht die eines Katalogsatzes.
+        var felder = cut.FindComponent<WaermepumpeStammFelder>();
+        Assert.Equal("WP Alpha", felder.Instance.Daten.Name);
+        Assert.Equal(12, felder.Instance.Daten.Nennleistung);
+
+        Feld(cut, "Nennleistung").Input("18");
+        Assert.Equal(18, daten.Nennleistung);
+
+        OkDesWirts(cut);
+
+        Assert.True(ergebnis);
+        Assert.Equal(18, daten.Nennleistung);
+    }
+
+    /// <summary>
+    /// <b>Die KÜHLLEISTUNG ist im Anlagendialog bedienbar</b> (Anwenderentscheid
+    /// 16.09.2026) — sie ist eine Spalte der Projektkopie (<c>Tab_WP.Kuehlleistung</c>)
+    /// wie die Nennleistung daneben und geht denselben Weg: in den Feldsatz, mit dem OK
+    /// hinaus, von dort über <c>WPCtrl.ProjektgeraetSchreiben</c> in die Zeile.
+    ///
+    /// <para>In der KATALOGPFLEGE bleibt das Feld ein Lesewert; das prüft
+    /// <c>WaermepumpeStammFelderTests</c>.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Kuehlleistung_ist_bedienbar_und_geht_in_die_Anlagendaten()
+    {
+        var daten = Voll();
+        daten.Kuehlleistung = 4.0;
+        var cut = Aufbauen(daten);
+
+        var felder = cut.FindComponent<WaermepumpeStammFelder>();
+        Assert.True(felder.Instance.KuehlleistungAenderbar);
+        Assert.Equal(4.0, felder.Instance.Daten.Kuehlleistung);
+
+        IElement feld = Feld(cut, "Kühlleistung");
+        Assert.False(feld.HasAttribute("disabled"));
+
+        feld.Input("5,5");
+        Assert.Equal(5.5, daten.Kuehlleistung);
+    }
+
+    /// <summary>
+    /// <b>Der Bezeichner ist im Anlagendialog nur lesend.</b> Projektkopie und
+    /// Katalogsatz kennen einander allein über den Namen, und die Wärmesenken hängen an
+    /// (Typ, Bezeichner) — umbenannt wird in der Katalogverwaltung.
+    /// </summary>
+    [Fact]
+    public void Der_Bezeichner_ist_im_Anlagendialog_nur_lesend()
+    {
+        var cut = Aufbauen();
+
+        var felder = cut.FindComponent<WaermepumpeStammFelder>();
+        Assert.False(felder.Instance.BezeichnerAenderbar);
+
+        IElement name = felder.FindAll("input[type=text]")[0];
+        Assert.True(name.HasAttribute("readonly"));
+
+        // Die übrigen Textfelder bleiben bedienbar — gesperrt ist NUR der Name.
+        Assert.False(felder.FindAll("input[type=text]")[1].HasAttribute("readonly"));
+    }
+
+    /// <summary>
+    /// <b>Kein eigener Speichern-Knopf mehr.</b> Die Stammfelder sind Teil der
+    /// Anlagendaten; ein zweiter Schreibweg neben dem OK wäre ein zweiter Zeitpunkt, zu
+    /// dem etwas in der Datenbank steht.
+    /// </summary>
+    [Fact]
+    public void Es_gibt_keinen_eigenen_Speichern_Knopf_fuer_die_Stammfelder()
+    {
+        var cut = Aufbauen();
+        Assert.DoesNotContain(cut.FindAll("button").Select(b => b.TextContent.Trim()),
+                              t => t == "Speichern");
+    }
+
+    // =================================================================================
+    // Kennlinieneditor und „In Stamm übernehmen…" (Anwenderentscheid 16.09.2026)
+    // =================================================================================
+
+    private static WaermepumpeAnlageDaten Ungespeichert()
+    {
+        var d = Voll();
+        d.IdWp = 1;                     // die KATALOG-Id, wie bei „Neu.."
+        return d;
+    }
+
+    /// <summary>
+    /// <b>Weiche Sperre, kein <c>disabled</c></b> (Hausregel „Bedienung"): Vor dem ersten
+    /// Speichern gibt es keine Projektkennlinien — der Knopf MELDET den Grund, statt still
+    /// nichts zu tun.
+    /// </summary>
+    [Fact]
+    public void Kennliniendaten_ist_vor_dem_ersten_Speichern_weich_gesperrt_und_meldet()
+    {
+        bool gerufen = false;
+        var cut = Aufbauen(Ungespeichert(),
+                           projektkopieVorhanden: _ => false,
+                           kennlinien: _ => { gerufen = true; return Array.Empty<KennlinienZeile>(); });
+
+        IElement knopf = Knopf(cut, "Kennliniendaten Ansicht/Bearbeiten...");
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.False(knopf.HasAttribute("disabled"));
+        Assert.Contains("noch nicht gespeichert", knopf.GetAttribute("title"));
+
+        knopf.Click();
+
+        Assert.False(gerufen);
+        Assert.False(cut.Instance.KennlinieneditorOffen);
+        Assert.Contains("noch nicht gespeichert", cut.Markup);
+    }
+
+    /// <summary>
+    /// Mit Projektkopie öffnet der Knopf den Editor — <b>mit der PROJEKT-Id</b>
+    /// (<c>Daten.IdWp</c>), nicht mit einer Katalog-Id: Gerechnet wird ausschließlich mit
+    /// den Projektkennlinien.
+    /// </summary>
+    [Fact]
+    public void Kennliniendaten_oeffnet_den_Editor_mit_der_Projekt_Id()
+    {
+        var gefragt = new List<int>();
+        var cut = Aufbauen(projektkopieVorhanden: _ => true,
+                           kennlinien: id => { gefragt.Add(id); return Array.Empty<KennlinienZeile>(); });
+
+        IElement knopf = Knopf(cut, "Kennliniendaten Ansicht/Bearbeiten...");
+        Assert.Equal("false", knopf.GetAttribute("aria-disabled"));
+
+        knopf.Click();
+
+        Assert.Equal(new[] { 77 }, gefragt);        // Voll().IdWp = die Projektkopie
+        Assert.True(cut.Instance.KennlinieneditorOffen);
+    }
+
+    private static WaermepumpeUebernahmeVorschau Vorhanden(int andere = 3)
+        => new("WP Alpha", true, false, andere);
+
+    private IRenderedComponent<WaermepumpeAnlageFelder> MitUebernahme(
+        WaermepumpeUebernahmeVorschau vorschau,
+        Action<(int IdWp, bool MitKennlinien)>? uebernommen = null)
+        => Aufbauen(projektkopieVorhanden: _ => true,
+                    uebernahmeVorschau: _ => vorschau,
+                    inStammUebernehmen: (id, mit) =>
+                    {
+                        uebernommen?.Invoke((id, mit));
+                        return new KatalogSpeicherErgebnis(true, "Katalogsatz „WP Alpha“ überschrieben.", "WP Alpha");
+                    });
+
+    /// <summary>Die Warnung nennt den Namen UND die Zahl der anderen Projekte.</summary>
+    [Fact]
+    public void In_Stamm_uebernehmen_zeigt_die_Vorschau_mit_Anzahl()
+    {
+        var cut = MitUebernahme(Vorhanden(3));
+
+        Knopf(cut, "In Stamm übernehmen…").Click();
+
+        Assert.True(cut.Instance.UebernahmeOffen);
+        string text = cut.Find(".epos-ueberlagerung .epos-warnbanner").TextContent;
+        Assert.Contains("WP Alpha", text);
+        Assert.Contains("überschrieben", text);
+        Assert.Contains("3 weitere Projekte", text);
+
+        // Der Schalter steht da und ist AUS.
+        Assert.False(cut.Find(".epos-ueberlagerung input[type=checkbox]").HasAttribute("checked"));
+    }
+
+    /// <summary>
+    /// <b>Der UMBENANNTE Katalogsatz wird beim Namen genannt</b> (Anwenderentscheid
+    /// 16.09.2026, Schemaschritt 80).
+    ///
+    /// <para>Seit die Projektkopie über <c>Tab_WP.ID_Stamm</c> an ihrem Katalogsatz
+    /// hängt, überlebt die Klammer eine Umbenennung im Katalog — überschrieben wird dann
+    /// aber ein Satz, der ANDERS heißt als die Anlage. Stünde dort weiter nur der Name
+    /// der Anlage, suchte der Anwender im Katalog nach einem Satz, den es unter diesem
+    /// Namen nicht mehr gibt.</para>
+    /// </summary>
+    [Fact]
+    public void In_Stamm_uebernehmen_nennt_den_umbenannten_Katalogsatz()
+    {
+        var cut = MitUebernahme(
+            new WaermepumpeUebernahmeVorschau("WP Alpha", true, false, 2, "WP Alpha II"));
+
+        Knopf(cut, "In Stamm übernehmen…").Click();
+
+        string text = cut.Find(".epos-ueberlagerung .epos-warnbanner").TextContent;
+        Assert.Contains("WP Alpha", text);
+        Assert.Contains("jetzt", text);
+        Assert.Contains("WP Alpha II", text);
+        Assert.Contains("überschrieben", text);
+        Assert.Contains("2 weitere Projekte", text);
+    }
+
+    /// <summary>
+    /// GLEICHER Name heißt: der bisherige Wortlaut. Und ein LEERER
+    /// <c>KatalogBezeichner</c> ist keine Umbenennung, sondern eine Vorschau, die die
+    /// Angabe nicht führt — auch dann bleibt es beim bisherigen Satz.
+    /// </summary>
+    [Theory]
+    [InlineData("WP Alpha")]
+    [InlineData("")]
+    public void Ohne_Umbenennung_bleibt_der_bisherige_Warntext(string katalogname)
+    {
+        var cut = MitUebernahme(
+            new WaermepumpeUebernahmeVorschau("WP Alpha", true, false, 3, katalogname));
+
+        Knopf(cut, "In Stamm übernehmen…").Click();
+
+        string text = cut.Find(".epos-ueberlagerung .epos-warnbanner").TextContent;
+        Assert.Contains("WP Alpha", text);
+        Assert.Contains("überschrieben", text);
+        Assert.DoesNotContain("jetzt", text);
+    }
+
+    /// <summary>Ohne Katalogsatz gleichen Namens wird ein neuer angelegt — und das steht da.</summary>
+    [Fact]
+    public void In_Stamm_uebernehmen_zeigt_den_Neu_Anlegen_Text_ohne_Katalogsatz()
+    {
+        var cut = MitUebernahme(new WaermepumpeUebernahmeVorschau("WP Alpha", false, false, 0));
+
+        Knopf(cut, "In Stamm übernehmen…").Click();
+
+        string text = cut.Find(".epos-ueberlagerung .epos-warnbanner").TextContent;
+        Assert.Contains("keinen Katalogsatz", text);
+        Assert.Contains("neu angelegt", text);
+    }
+
+    /// <summary>
+    /// Ein Auslieferungssatz wird nicht überschrieben: der Grund steht da, und es gibt
+    /// KEINEN Übernehmen-Knopf — ein Knopf, der nur ablehnen kann, ist ein Versprechen,
+    /// das der Weg nicht halten darf.
+    /// </summary>
+    [Fact]
+    public void In_Stamm_uebernehmen_bietet_bei_ReadOnly_kein_Uebernehmen()
+    {
+        bool gerufen = false;
+        var cut = Aufbauen(projektkopieVorhanden: _ => true,
+                           uebernahmeVorschau: _ => new WaermepumpeUebernahmeVorschau("WP Alpha", true, true, 0),
+                           inStammUebernehmen: (_, _) =>
+                           {
+                               gerufen = true;
+                               return new KatalogSpeicherErgebnis(true, "", "");
+                           });
+
+        Knopf(cut, "In Stamm übernehmen…").Click();
+
+        var ueberlagerung = cut.Find(".epos-ueberlagerung");
+        Assert.Contains("Auslieferungssätze", ueberlagerung.QuerySelector(".epos-warnbanner")!.TextContent);
+        Assert.DoesNotContain(ueberlagerung.QuerySelectorAll("button").Select(b => b.TextContent.Trim()),
+                              t => t == "Übernehmen");
+        Assert.Null(ueberlagerung.QuerySelector("input[type=checkbox]"));
+        Assert.False(gerufen);
+    }
+
+    /// <summary>„Übernehmen" ruft die Gabe — mit der Geräte-Id und dem Stand des Schalters.</summary>
+    [Fact]
+    public void Uebernehmen_ruft_die_Gabe_mit_dem_Kennlinien_Schalter()
+    {
+        var gerufen = new List<(int IdWp, bool MitKennlinien)>();
+        var cut = MitUebernahme(Vorhanden(), gerufen.Add);
+
+        Knopf(cut, "In Stamm übernehmen…").Click();
+        cut.Find(".epos-ueberlagerung input[type=checkbox]").Change(true);
+        Ueberlagerungsknopf(cut, "Übernehmen").Click();
+
+        Assert.Equal(new[] { (77, true) }, gerufen);
+        Assert.False(cut.Instance.UebernahmeOffen);
+        Assert.Contains("überschrieben", cut.Markup);
+    }
+
+    /// <summary>„Abbrechen" ruft nichts — die Überlagerung schließt, der Katalog bleibt.</summary>
+    [Fact]
+    public void Abbrechen_der_Uebernahme_ruft_nichts()
+    {
+        var gerufen = new List<(int, bool)>();
+        var cut = MitUebernahme(Vorhanden(), gerufen.Add);
+
+        Knopf(cut, "In Stamm übernehmen…").Click();
+        Ueberlagerungsknopf(cut, "Abbrechen").Click();
+
+        Assert.Empty(gerufen);
+        Assert.False(cut.Instance.UebernahmeOffen);
+    }
+
+    /// <summary>Ohne Delegat kein Knopf (Hausregel seit W2).</summary>
+    [Fact]
+    public void Ohne_Uebernahmeweg_gibt_es_den_Knopf_In_Stamm_nicht()
+    {
+        var cut = Aufbauen();
+        Assert.DoesNotContain(cut.FindAll("button").Select(b => b.TextContent.Trim()),
+                              t => t == "In Stamm übernehmen…");
+    }
+
+    /// <summary>
+    /// „Parameter Bearbeiten…" gibt es nicht mehr (16.09.2026) — der Knopf öffnete die
+    /// ganze Stammdatenpflege in einer Überlagerung, nur um ein Feldraster zu zeigen.
+    /// </summary>
+    [Fact]
+    public void Den_Knopf_Parameter_Bearbeiten_gibt_es_nicht_mehr()
+    {
+        var cut = Aufbauen();
+
+        Assert.DoesNotContain(cut.FindAll("button").Select(b => b.TextContent.Trim()),
+                              t => t.StartsWith("Parameter Bearbeiten", StringComparison.Ordinal));
+        Assert.Empty(cut.FindComponents<WaermepumpeStammDialog>());
+    }
+
+    /// <summary>
+    /// <b>Die Knopfzeile steht direkt unter dem Kenndaten-Kopf</b> (16.09.2026, dieselbe
+    /// Bauart wie in den sechs Erzeugerdialogen): links Kosten und Konfiguration, rechts
+    /// der Kennlinieneditor, dazwischen der Füller.
+    /// </summary>
+    [Fact]
+    public void Die_Knopfzeile_steht_direkt_unter_dem_Kenndaten_Kopf()
+    {
+        var cut = Aufbauen(kostenOeffnen: _ => Task.CompletedTask,
+                           energiekosten: _ => Task.CompletedTask,
+                           kennlinien: _ => Array.Empty<KennlinienZeile>());
+
+        var gruppe = cut.Find(".epos-wp-abschnitt--kenndaten .epos-gruppenkopf-koerper");
+        var erstes = gruppe.Children[0];
+
+        // 17.09.2026: Links steht die KostenKnoepfeLeiste der sechs Erzeugerdialoge
+        // (drei Knoepfe) statt des einen Sammelknopfs "Kosten bearbeiten…".
+        Assert.Contains("epos-leiste", erstes.ClassName);
+        Assert.Equal(new[] { "Investitionskosten…", "Betriebskosten…", "Energiekosten…",
+                             "Konfiguration…",
+                             "Kennliniendaten Ansicht/Bearbeiten..." },
+                     erstes.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
+        Assert.NotNull(erstes.QuerySelector(".epos-leiste-fueller"));
+    }
+
+    [Fact]
+    public void Die_Beschriftungen_stehen_wie_im_Designer()
+    {
+        var cut = Aufbauen();
+        var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
+
+        // Die Stammfelder der Anlage und ihre Auslegungsfelder.
+        foreach (string soll in new[]
+                 {
+                     "Name", "Hersteller", "Beschreibung", "Wärmepumpentyp", "Leistungsstufen",
+                     "Aufstellung", "Baujahr", "Nennleistung", "Heizstab", "Kühlleistung",
+                     "Vorlauf", "Rücklauf"
+                 })
+            Assert.Contains(soll, texte);
+
+        // Die NUTZUNGSDAUER steht nicht mehr hier (Anwenderauftrag 30.09.2026: „Nutzungsdauer
+        // soll in Kostendialog und nicht in diesem sein.") — sie wird an den
+        // Investitionspositionen des Kostendialogs gepflegt.
+        Assert.DoesNotContain("Nutzungsdauer", texte);
+
+        // EIN Heizstabfeld, nicht zwei (16.09.2026): Das eigene Feld der Anlage
+        // („Leistung Heizstab") ist mit dem des Bausteins VERSCHMOLZEN — beide schreiben
+        // dieselbe Spalte Tab_WP.Heizung, und zwei gleich beschriftete Felder in einem
+        // Block waren nicht auseinanderzuhalten.
+        Assert.DoesNotContain("Leistung Heizstab", texte);
+        Assert.Single(texte, t => t == "Heizstab");
+
+        // Die Konfigurationsfelder stehen NICHT mehr im Dialogkoerper.
+        Assert.DoesNotContain("Sperrzeit von", texte);
+        Assert.DoesNotContain("Wärmeerzeuger Spitzenlast:",
+                              cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent.Trim()));
+
+        KonfigurationOeffnen(cut);
+        Assert.Contains("Sperrzeit von",
+                        cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
+        Assert.Contains("Wärmepumpenleistung / maximale Betriebszeit:",
+                        cut.FindAll(".epos-formulargruppe-titel").Select(e => e.TextContent.Trim()));
+        Assert.Contains("Bivalenter Betrieb",
+                        cut.FindAll(".epos-schalter").Select(e => e.TextContent.Trim()));
+    }
+
+    [Fact]
+    public void Der_Aufbau_laesst_die_Projekt_Geraete_Id_stehen()
+    {
+        // Ä21: Der Vorlaeufer musste sich dafuer mit m_bStilleFuellung gegen seinen
+        // eigenen Auswahl-Handler wehren. Hier gibt es das Problem nicht.
+        var daten = Voll();
+        Aufbauen(daten);
+        Assert.Equal(77, daten.IdWp);
+    }
+
+    [Fact]
+    public void Die_Vorlaufliste_kommt_aus_den_Kennlinien()
+    {
+        var cut = Aufbauen();
+        var stufen = cut.FindAll(".epos-gruppenkopf-koerper")[0]
+                        .QuerySelectorAll("select option").Select(o => o.TextContent).ToList();
+        Assert.Equal(new[] { "35", "45", "55" }, stufen);
+    }
+
+    [Fact]
+    public void Ein_Vorlauf_ausserhalb_der_Kennlinien_bleibt_stehen()
+    {
+        // A-16: Der Vorlaeufer hatte eine frei beschreibbare ComboBox.
+        var daten = Voll();
+        daten.Vorlauf = 60;
+        var cut = Aufbauen(daten);
+
+        var stufen = cut.FindAll(".epos-gruppenkopf-koerper")[0]
+                        .QuerySelectorAll("select option").Select(o => o.TextContent).ToList();
+        Assert.Equal(new[] { "60", "35", "45", "55" }, stufen);
+    }
+
+    [Fact]
+    public void Der_Ruecklauf_bleibt_frei_eingebbar_und_nennt_die_Vorschlaege()
+    {
+        // A-18: RUECKLAUF_VORSCHLAEGE ist ausdruecklich eine Vorschlagsliste ohne
+        // Grenzwirkung - fuer 35/28 gab es frueher gar keinen Eintrag.
+        var daten = Voll();
+        var cut = Aufbauen(daten);
+
+        var auslegung = cut.FindAll(".epos-gruppenkopf-koerper")[0];
+        auslegung.QuerySelectorAll("input")[0].Input("26");
+        Assert.Equal(26, daten.Ruecklauf);
+
+        Assert.Contains("20, 22, 25, 28, 30, 32, 35, 40, 45",
+                        cut.FindAll(".epos-herleitung").Select(e => e.TextContent).First(t => t.Contains("20, 22")));
+    }
+
+    // =================================================================================
+    // Sichtbarkeitsregeln
+    // =================================================================================
+
+    /// <summary>
+    /// Die Sichtbarkeitsregeln selbst hält seit dem 16.09.2026
+    /// <c>WaermepumpeKonfigurationTests</c>; hier steht, dass der Dialog sie durch die
+    /// Überlagerung hindurch zeigt.
+    /// </summary>
+    [Fact]
+    public void Die_Betriebsart_erscheint_erst_mit_bivalentem_Betrieb()
+    {
+        var cut = Aufbauen();
+        KonfigurationOeffnen(cut);
+
+        Assert.DoesNotContain("Betriebsart",
+                              cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
+
+        NachBeschriftung(Konfiguration(cut), new WaermepumpeKonfigurationTexte().LabelBivalent)
+                          .Change(true);                                  // Bivalenter Betrieb
+
+        Assert.Contains("Betriebsart", cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
+    }
+
+    [Fact]
+    public void Die_Betriebsarten_sind_die_Steuerwerte_aus_DbWerte()
+    {
+        var daten = Voll();
+        daten.BivalenterBetrieb = true;
+        var cut = Aufbauen(daten);
+        KonfigurationOeffnen(cut);
+
+        // UB-E2: Die Gruppe „Bivalenz und Übergabe“ führt dahinter die Klappliste „Einbindung“ - gezählt wird
+        // die erste Klappliste, die der Betriebsart.
+        var werte = Konfiguration(cut).QuerySelector("select")!.QuerySelectorAll("option")
+                                      .Select(o => o.TextContent).ToList();
+
+        // Der leere erste Eintrag ist der Platzhalter - er entspricht der leeren
+        // ComboBox des Vorlaeufers, bei der btn_Beenden "Bitte Betriebsart
+        // auswaehlen!" meldete.
+        Assert.Equal(new[] { "", DbWerte.WP_BETRIEBSART_ALTERNATIV,
+                             DbWerte.WP_BETRIEBSART_PARALLEL,
+                             DbWerte.WP_BETRIEBSART_TEILPARALLEL }, werte);
+    }
+
+    // =================================================================================
+    // Die Kostenleiste
+    //
+    // 17.09.2026 (Anwenderentscheid „angleichen!"): Die Wärmepumpe trägt dieselbe
+    // KostenKnoepfeLeiste wie die sechs Erzeugerdialoge. Bis dahin stand hier EIN Knopf
+    // „Kosten bearbeiten…", der die Kostenverwaltung immer auf der Investitionsseite
+    // aufschlug, und gar kein Weg „Energiekosten…" — obwohl die Wärmepumpe Strom bezieht.
+    // =================================================================================
+
+    /// <summary>
+    /// Der Leerlauf, den es zu vermeiden gilt: Ohne Wege der Hülle steht KEIN Knopf.
+    /// Die Summenzeile darunter bleibt — sie ist keine Schaltfläche.
+    /// </summary>
+    [Fact]
+    public void Ohne_Wege_bleibt_die_Kostenleiste_leer()
+    {
+        var cut = Aufbauen();
+
+        Assert.Empty(cut.FindAll(KOSTENKNOEPFE));
+        Assert.DoesNotContain(cut.FindAll("button").Select(b => b.TextContent.Trim()),
+                              t => t == "Kosten bearbeiten…");
+    }
+
+    [Fact]
+    public void Mit_den_Wegen_stehen_die_drei_Knoepfe()
+    {
+        var cut = Aufbauen(kostenOeffnen: _ => Task.CompletedTask,
+                           energiekosten: _ => Task.CompletedTask);
+
+        var knoepfe = cut.FindAll(KOSTENKNOEPFE);
+        Assert.Equal(3, knoepfe.Count);
+        Assert.Equal("Investitionskosten…", knoepfe[0].TextContent);
+        Assert.Equal("Betriebskosten…", knoepfe[1].TextContent);
+        Assert.Equal("Energiekosten…", knoepfe[2].TextContent);
+    }
+
+    /// <summary>
+    /// Beide Kostenknöpfe führen in dieselbe Maske dieser EINEN Anlage und
+    /// unterscheiden sich nur im Schalter <c>betrieb</c> — genau der Parameter, den
+    /// der Sammelknopf nie setzte (er schlug immer die Investitionsseite auf).
+    /// </summary>
+    [Fact]
+    public void Invest_und_Betrieb_gehen_denselben_Weg_mit_dem_Schalter()
+    {
+        var gerufen = new List<bool>();
+        var cut = Aufbauen(kostenOeffnen: b => { gerufen.Add(b); return Task.CompletedTask; },
+                           energiekosten: _ => Task.CompletedTask);
+
+        cut.FindAll(KOSTENKNOEPFE)[0].Click();
+        cut.FindAll(KOSTENKNOEPFE)[1].Click();
+
+        Assert.Equal(new[] { false, true }, gerufen.ToArray());
+    }
+
+    /// <summary>
+    /// „Energiekosten…" nimmt den FELDSATZ mit — Träger und Gerät dieser Anlage. Sie
+    /// stehen nicht im Modell der Hülle: Die Trägerwahl der Überlagerung
+    /// „Konfiguration" ändert sie, lange bevor ein OK sie schreibt.
+    /// </summary>
+    [Fact]
+    public void Energiekosten_nimmt_Traeger_und_Geraet_der_Anlage_mit()
+    {
+        WaermepumpeAnlageDaten? mitgegeben = null;
+        var daten = Voll();
+        daten.CarrierId = 5;
+
+        var cut = Aufbauen(daten: daten,
+                           kostenOeffnen: _ => Task.CompletedTask,
+                           energiekosten: d => { mitgegeben = d; return Task.CompletedTask; });
+
+        cut.FindAll(KOSTENKNOEPFE)[2].Click();
+
+        Assert.NotNull(mitgegeben);
+        Assert.Equal(5, mitgegeben!.CarrierId);
+        Assert.Equal(77, mitgegeben!.IdWp);
+    }
+
+    /// <summary>
+    /// Nur einer der beiden Wege belegt: Dann steht auch nur sein Knopf
+    /// (die Regel der <c>KostenKnoepfeLeiste</c>, hier über den Dialog geprüft).
+    /// </summary>
+    [Fact]
+    public void Ein_fehlender_Weg_nimmt_seine_Knoepfe_mit()
+    {
+        var cut = Aufbauen(energiekosten: _ => Task.CompletedTask);
+
+        var knoepfe = cut.FindAll(KOSTENKNOEPFE);
+        Assert.Single(knoepfe);
+        Assert.Equal("Energiekosten…", knoepfe[0].TextContent);
+    }
+
+    /// <summary>
+    /// Im ASSISTENTEN fehlt die Leiste ganz: Dort gibt es das Projekt noch nicht, zu
+    /// dem Kostenpositionen und Projektträger gehörten. Dieselbe Weiche wie in den
+    /// sechs Erzeugerdialogen — die Wärmepumpen Verwaltung reicht den Schalter durch.
+    /// </summary>
+    /// <summary>
+    /// Eigenständig geöffnet (eigenes Fenster der Hülle) behält die Anlagenseite ihre
+    /// Kostenknöpfe: Ohne den Schalter <c>KostenleisteAnzeigen</c> steht die Leiste,
+    /// denn dort gibt es keine Detailzeile, die sie trüge.
+    /// </summary>
+    [Fact]
+    public void Ohne_Schalter_steht_die_Kostenleiste_weiter()
+    {
+        var cut = Aufbauen(kostenOeffnen: _ => Task.CompletedTask,
+                           energiekosten: _ => Task.CompletedTask);
+
+        Assert.True(cut.Instance.KostenleisteAnzeigen);
+        Assert.Equal(3, cut.FindAll(KOSTENKNOEPFE).Count);
+    }
+
+    [Fact]
+    public void Im_Assistenten_fehlt_die_Kostenleiste()
+    {
+        var cut = Aufbauen(wizard: true,
+                           kostenOeffnen: _ => Task.CompletedTask,
+                           energiekosten: _ => Task.CompletedTask);
+
+        Assert.Empty(cut.FindAll(KOSTENKNOEPFE));
+    }
+
+    [Fact]
+    public void Mit_Anlagenzeile_zeigt_die_Kostenzeile_die_Summen()
+    {
+        var cut = Aufbauen(kostenOeffnen: _ => Task.CompletedTask,
+                           energiekosten: _ => Task.CompletedTask);
+
+        Assert.Equal(3, cut.FindAll(KOSTENKNOEPFE).Count);
+        Assert.Equal("Invest 12.000 € · Betrieb 340 €/a",
+                     cut.Find(".epos-kostenleiste-hinweis").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// Ä22: Kosten und Träger hängen an der ANLAGENZEILE; bei einer noch nicht
+    /// gespeicherten Neuanlage gibt es sie nicht. Der Vorläufer sperrte den Knopf und
+    /// erklärte es im Tooltip; die Leiste kennt kein <c>disabled</c> — der Knopf
+    /// entfällt, und die Herleitungszeile nennt den Grund weiterhin im Klartext (ein
+    /// Tooltip ist auf einem Berührungsgerät ohnehin nicht erreichbar).
+    /// </summary>
+    [Fact]
+    public void Ohne_Anlagenzeile_bleibt_die_Leiste_weg_und_der_Grund_ist_lesbar()
+    {
+        var cut = Aufbauen(kostenBereit: () => false,
+                           kostenOeffnen: _ => Task.CompletedTask,
+                           energiekosten: _ => Task.CompletedTask);
+
+        Assert.Empty(cut.FindAll(KOSTENKNOEPFE));
+        Assert.Equal("Invest — · Betrieb —", cut.Find(".epos-kostenleiste-hinweis").TextContent.Trim());
+        Assert.Contains(cut.FindAll(".epos-herleitung").Select(e => e.TextContent),
+                        t => t.Contains("zuerst mit OK anlegen"));
+    }
+
+    /// <summary>
+    /// „Nur ansehen": Alle drei Knöpfe führen in eine BEARBEITBARE Verwaltung — in
+    /// dieser Betriebsart bleiben sie weg, wie der Sammelknopf dort gesperrt war.
+    /// </summary>
+    [Fact]
+    public void In_der_Ansicht_bleibt_die_Kostenleiste_weg()
+    {
+        var cut = Aufbauen(nurLesen: true,
+                           kostenOeffnen: _ => Task.CompletedTask,
+                           energiekosten: _ => Task.CompletedTask);
+
+        Assert.Empty(cut.FindAll(KOSTENKNOEPFE));
+    }
+
+    // =================================================================================
+    // Pruefungen beim OK
+    // =================================================================================
+
+    [Fact]
+    public void OK_ohne_Betriebsart_bei_Bivalenz_meldet()
+    {
+        bool? ergebnis = null;
+        var daten = Voll();
+        daten.BivalenterBetrieb = true;
+        var cut = Aufbauen(daten, geschlossen: b => ergebnis = b);
+
+        OkDesWirts(cut);
+
+        Assert.Null(ergebnis);
+        Assert.Contains("Bitte Betriebsart auswählen!", cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    [Fact]
+    public void OK_ohne_Waermepumpe_meldet()
+    {
+        var daten = Voll();
+        daten.Bezeichner = "";
+        var cut = Aufbauen(daten);
+
+        OkDesWirts(cut);
+        Assert.Contains("Bitte Wärmepumpe auswählen!", cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    [Fact]
+    public void Vorlauf_kleiner_gleich_Ruecklauf_meldet_aus_der_Kernpruefung()
+    {
+        var daten = Voll();
+        daten.Vorlauf = 35;
+        daten.Ruecklauf = 35;
+        var cut = Aufbauen(daten);
+
+        OkDesWirts(cut);
+        Assert.Contains("über der Rücklauftemperatur", cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// Die Pflicht-Ganzzahlen des OK-Knopfs. Es waren vier; die Nutzungsdauer ist mit dem
+    /// Feld aus dem Dialog gegangen (Anwenderauftrag 30.09.2026) — sie gehört in den
+    /// Kostendialog und ist dort keine Pflichtangabe dieses Dialogs.
+    /// </summary>
+    [Fact]
+    public void Jede_der_drei_Pflicht_Ganzzahlen_wird_beim_Namen_genannt()
+    {
+        (string Feld, Action<WaermepumpeAnlageDaten> Leeren)[] faelle =
+        {
+            ("Sperrzeit von",     d => d.SperrzeitVon = null),
+            ("Sperrzeit bis",     d => d.SperrzeitBis = null),
+            ("Leistung Heizstab", d => d.HeizstabLeistung = null)
+        };
+
+        foreach (var fall in faelle)
+        {
+            var daten = Voll();
+            fall.Leeren(daten);
+
+            bool? ergebnis = null;
+            var cut = Aufbauen(daten, geschlossen: b => ergebnis = b);
+            OkDesWirts(cut);
+
+            Assert.Null(ergebnis);
+            Assert.Contains(fall.Feld, cut.Find(".epos-warnbanner").TextContent);
+        }
+    }
+
+    [Fact]
+    public void Die_Bivalenztemperatur_darf_leer_bleiben()
+    {
+        bool? ergebnis = null;
+        var daten = Voll();
+        daten.Abschaltpunkt = null;
+        var cut = Aufbauen(daten, geschlossen: b => ergebnis = b);
+
+        OkDesWirts(cut);
+        Assert.True(ergebnis);
+    }
+
+    [Fact]
+    public void OK_meldet_true_wenn_alles_steht()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(geschlossen: b => ergebnis = b);
+
+        OkDesWirts(cut);
+        Assert.True(ergebnis);
+    }
+
+    // =================================================================================
+    // Ueberlagerungen und Tastatur
+    // =================================================================================
+
+    [Fact]
+    public void Der_Dialog_schreibt_in_den_uebergebenen_Datensatz()
+    {
+        // Er ist die KOPIE der Huelle: Erst der OK-Zweig der Huelle uebertraegt sie in
+        // das Listenobjekt, ein Abbruch verwirft sie. Hier steht fest, dass die
+        // Eingabe im uebergebenen Satz ankommt.
+        var daten = Voll();
+        var cut = Aufbauen(daten);
+
+        // Die Auslegung steht im Dialogkoerper...
+        cut.FindAll(".epos-gruppenkopf-koerper")[0].QuerySelectorAll("input[type=text]")[0].Input("26");
+        Assert.Equal(26, daten.Ruecklauf);
+
+        // ...die Konfiguration in ihrer Ueberlagerung, und auch sie schreibt in DENSELBEN Satz.
+        KonfigurationOeffnen(cut);
+        NachBeschriftung(Konfiguration(cut), new WaermepumpeKonfigurationTexte().LabelVon).Input("3");
+
+        Assert.Equal(3, daten.SperrzeitVon);
+    }
+
+    /// <summary>
+    /// Das ✕ der Ueberlagerung „Konfiguration" wirkt wie Abbrechen: Es schliesst NUR die
+    /// Ebene und schreibt den gesicherten Stand zurueck (Hausregel „✕ = Esc = Abbrechen").
+    /// </summary>
+    [Fact]
+    public void Ueberlagerungskreuz_der_Konfiguration_schliesst_nur_die_Ebene_und_verwirft()
+    {
+        var daten = Voll();
+        var cut = Aufbauen(daten);
+
+        KonfigurationOeffnen(cut);
+        Assert.True(cut.Instance.KonfigurationOffen);
+
+        NachBeschriftung(Konfiguration(cut), new WaermepumpeKonfigurationTexte().LabelVon).Input("7");
+        Assert.Equal(7, daten.SperrzeitVon);
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Assert.False(cut.Instance.KonfigurationOffen);
+        Assert.Equal(0, daten.SperrzeitVon);        // der Stand beim Oeffnen
+    }
+
+    /// <summary>
+    /// <b>Der Knopf „Konfiguration…" öffnet die Überlagerung mit dem Titel
+    /// „Konfiguration" und den Konfigurationsfeldern</b> (Anwenderentscheid 16.09.2026).
+    /// Ein Titel, eine Stelle: Die Überlagerung trägt Titel und Kreuz, der Baustein
+    /// darin keinen eigenen Kopf.
+    /// </summary>
+    [Fact]
+    public void Der_Knopf_Konfiguration_oeffnet_die_Ueberlagerung_mit_den_Feldern()
+    {
+        var cut = Aufbauen();
+        Assert.False(cut.Instance.KonfigurationOffen);
+
+        KonfigurationOeffnen(cut);
+
+        Assert.True(cut.Instance.KonfigurationOffen);
+        Assert.Equal("Konfiguration", cut.Find(".epos-ueberlagerung-titel").TextContent);
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+
+        var block = Konfiguration(cut);
+        Assert.Contains("Heizstab mitrechnen", block.TextContent);
+        Assert.Contains("Sperrzeit durch Energieversorger", block.TextContent);
+        Assert.Contains("Bivalenter Betrieb", block.TextContent);
+        Assert.Equal(3, block.QuerySelectorAll(".epos-wp-erklaerung").Length);
+
+        // OK und Abbrechen der Ueberlagerung stehen DARIN, der Baustein traegt keinen Kopf.
+        var ueberlagerung = cut.Find(".epos-ueberlagerung");
+        Assert.Contains(ueberlagerung.QuerySelectorAll("button").Select(b => b.TextContent.Trim()),
+                        t => t == "OK");
+        Assert.Empty(ueberlagerung.QuerySelectorAll(".epos-dialog-titel"));
+
+        // AW2: Die Felder tragen keinen eigenen Dialogkopf - Titel und Kreuz gehoeren der Satz-Ueberlagerung.
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+    }
+
+    /// <summary>
+    /// <b>Abbrechen verwirft die Änderung, OK übernimmt sie in <c>Daten</c></b>
+    /// (Hausregel „Geschrieben wird im OK-Weg"). Der Baustein schreibt unmittelbar in
+    /// den Satz; der Dialog sichert deshalb beim Öffnen die acht Felder.
+    /// </summary>
+    [Fact]
+    public void Abbrechen_verwirft_die_Aenderung_OK_uebernimmt_sie()
+    {
+        var daten = Voll();
+        var cut = Aufbauen(daten);
+
+        KonfigurationOeffnen(cut);
+        NachBeschriftung(Konfiguration(cut), new WaermepumpeKonfigurationTexte().LabelBis).Input("9");   // Sperrzeit bis
+        Assert.Equal(9, daten.SperrzeitBis);
+
+        Ueberlagerungsknopf(cut, "Abbrechen").Click();
+
+        Assert.False(cut.Instance.KonfigurationOffen);
+        Assert.Equal(0, daten.SperrzeitBis);                                     // verworfen
+
+        KonfigurationOeffnen(cut);
+        NachBeschriftung(Konfiguration(cut), new WaermepumpeKonfigurationTexte().LabelBis).Input("9");
+        Ueberlagerungsknopf(cut, "OK").Click();
+
+        Assert.False(cut.Instance.KonfigurationOffen);
+        Assert.Equal(9, daten.SperrzeitBis);                                     // uebernommen
+    }
+
+    /// <summary>
+    /// Die Prüfregeln der Konfiguration laufen im OK-Weg der Überlagerung — und halten
+    /// sie offen, statt den Mangel in einem Dialog zu melden, in dem das Feld gar nicht
+    /// steht.
+    /// </summary>
+    [Fact]
+    public void OK_der_Ueberlagerung_haelt_sie_bei_einem_Mangel_offen()
+    {
+        var daten = Voll();
+        daten.BivalenterBetrieb = true;
+        daten.Betriebsart = "";
+        var cut = Aufbauen(daten);
+
+        KonfigurationOeffnen(cut);
+        Ueberlagerungsknopf(cut, "OK").Click();
+
+        Assert.True(cut.Instance.KonfigurationOffen);
+        Assert.Contains("Bitte Betriebsart auswählen!",
+                        cut.Find(".epos-ueberlagerung .epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// Umgekehrt: Ein Mangel an einem Feld der Konfiguration ÖFFNET beim OK des Dialogs
+    /// die Überlagerung — ein Band, das ein unsichtbares Feld nennt, hilft nicht weiter
+    /// (dieselbe Überlegung wie W7‑B‑2).
+    /// </summary>
+    [Fact]
+    public void OK_des_Dialogs_oeffnet_die_Konfiguration_wenn_dort_ein_Feld_fehlt()
+    {
+        var daten = Voll();
+        daten.SperrzeitVon = null;
+        var cut = Aufbauen(daten);
+
+        OkDesWirts(cut);
+
+        Assert.True(cut.Instance.KonfigurationOffen);
+        Assert.Contains("Sperrzeit von",
+                        cut.Find(".epos-ueberlagerung .epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// <b>iU8‑E‑2, Paket P1:</b> „Darstellung der Dialoge kompakter und
+    /// übersichtlicher — Parameterblöcke rechts."
+    ///
+    /// <para>Der Kenndatenblock der Anlage steht seither im <c>Formularraster</c>: Die Beschriftung
+    /// fällt NEBEN das Feld, die Felder ordnen sich in eine oder zwei Spalten,
+    /// und ein Zahlenfeld ist kurz mit der Einheit unmittelbar dahinter. Zuvor
+    /// nahm jedes Feld die volle Breite und die Beschriftung stand darüber.</para>
+    ///
+    /// <para>Die Regeln dahinter hält <c>Bausteine/FormularrasterTests</c>;
+    /// hier steht nur, dass der Block ihn TRÄGT.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Parameterbloecke_stehen_im_Formularraster()
+    {
+        var cut = Aufbauen();
+
+        var raster = cut.FindAll(".epos-formularraster");
+        Assert.NotEmpty(raster);
+        Assert.Contains(raster, r => r.QuerySelectorAll(".epos-feld").Length > 0);
+
+        // Ein Zahlenfeld meldet sich als KURZES Feld, und seine Einheit steht in
+        // derselben Feldzeile — im Vorbild 4 px hinter dem Feld, im Befund am
+        // rechten Rand des Blocks.
+        var kurz = cut.FindAll(".epos-formularraster .epos-feld--kurz");
+        Assert.NotEmpty(kurz);
+        Assert.Contains(kurz, f => f.QuerySelector(".epos-feld-zeile .epos-einheit") is not null);
+    }
+
+    // =====================================================================
+    //  W7-B-2 — „OK-Button funktioniert nicht im Dialog Detailansicht bei
+    //  Aufruf über button Ändern" (Windows-Abnahme 06.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Prüfung des Kerns, WÖRTLICH: <c>ProjektPuffer.TemperaturenPruefen</c>
+    /// verwirft einen Rücklauf ≤ 0 °C. Die Vorrichtung oben tut das nicht — und
+    /// genau darin lag der Unterschied zwischen Prüfstand und Anwenderrechner.
+    /// </summary>
+    private static string? WieDerKern(int? vorlauf, int? ruecklauf)
+    {
+        if (vorlauf is null) return "Bitte eine Vorlauftemperatur als ganze Zahl eingeben (°C).";
+        if (ruecklauf is null) return "Bitte eine Rücklauftemperatur als ganze Zahl eingeben (°C).";
+        if (ruecklauf <= 0) return "Die Rücklauftemperatur muss größer als 0 °C sein.";
+        if (vorlauf <= ruecklauf) return "Die Vorlauftemperatur muss über der Rücklauftemperatur liegen.";
+        return null;
+    }
+
+    /// <summary>
+    /// EINE BESTANDSZEILE, wie sie „Ändern.." aus <c>Tab_Energieanlagen</c> holt:
+    /// Kenndaten gefüllt, aber <c>Rücklauf</c> nie gepflegt (0). So kommt sie OHNE die
+    /// Hülle in den Dialog — die Hülle belegt den Rücklauf seit dem 30.09.2026 vor
+    /// (<c>TemperaturVorbelegung.Waermepumpe</c>, Fälle „Vorbelegung" unten); die Fälle
+    /// hier halten fest, dass der Dialog selbst einen Rücklauf 0 weiter meldet.
+    /// </summary>
+    private static WaermepumpeAnlageDaten Bestandszeile()
+    {
+        var d = Voll();
+        d.Ruecklauf = 0;
+        return d;
+    }
+
+    /// <summary>
+    /// <b>Die Ursache, Teil 1.</b> Der OK-Knopf REAGIERT — er meldet einen Fehler.
+    /// Nur stand die Meldung ganz oben im Dialog, der Knopf ganz unten in einer
+    /// rollenden Überlagerung: Der Anwender drückt, sieht nichts geschehen und
+    /// schließt daraus, der Knopf sei tot. Seit W7‑B‑2 steht das Band DORT, WO ER
+    /// HINSCHAUT — in derselben Fußleiste wie OK und Abbrechen.
+    /// </summary>
+    [Fact]
+    public void W7_B_2_Das_Warnband_steht_bei_der_Speichernleiste()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(Bestandszeile(), temperaturen: WieDerKern,
+                           geschlossen: b => ergebnis = b);
+
+        OkDesWirts(cut);
+
+        Assert.Null(ergebnis);
+        var band = cut.Find(".epos-wp-anlagefelder > .epos-warnbanner");
+        Assert.Contains("Rücklauftemperatur", band.TextContent);
+    }
+
+    /// <summary>
+    /// <b>Die Ursache, Teil 1 — die Gegenprobe.</b> Steht der Rücklauf, geht dieselbe
+    /// Zeile durch. Ohne diesen Fall bewiese der Fall darüber nur, dass ein Band da
+    /// ist, nicht dass es der GRUND ist.
+    /// </summary>
+    [Fact]
+    public void W7_B_2_Mit_gepflegtem_Ruecklauf_meldet_dieselbe_Zeile_true()
+    {
+        bool? ergebnis = null;
+        var daten = Bestandszeile();
+        daten.Ruecklauf = 28;
+        var cut = Aufbauen(daten, temperaturen: WieDerKern, geschlossen: b => ergebnis = b);
+
+        OkDesWirts(cut);
+
+        Assert.True(ergebnis);
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));
+    }
+
+    // =====================================================================
+    //  Vorbelegung des Rücklaufs (Anwenderauftrag 30.09.2026)
+    // =====================================================================
+
+    /// <summary>Die Bestandszeile, wie die Hülle sie in den Dialog reicht: Rücklauf vorbelegt.</summary>
+    private static WaermepumpeAnlageDaten Vorbelegt()
+    {
+        var d = Bestandszeile();
+        Assert.True(TemperaturVorbelegung.Waermepumpe(d));
+        return d;
+    }
+
+    private IRenderedComponent<WaermepumpeAnlageFelder> MitVorbelegung(
+        WaermepumpeAnlageDaten daten, Action<bool>? geschlossen = null)
+        => (_geschlossen = geschlossen) is var _ ? Render<WaermepumpeAnlageFelder>(p => p
+            .Add(x => x.Daten, daten)
+            .Add(x => x.Vorlaeufe, _ => new[] { 35, 45, 55 })
+            .Add(x => x.TemperaturenPruefen, WieDerKern)
+            .Add(x => x.RuecklaufVorbelegen, d => TemperaturVorbelegung.Waermepumpe(d))
+            .Add(x => x.Wizard, false)) : null!;
+
+    private static AngleSharp.Dom.IElement Auslegung(IRenderedComponent<WaermepumpeAnlageFelder> cut)
+        => cut.Find(".epos-wp-abschnitt--auslegung");
+
+    /// <summary>
+    /// <b>Die Bestandszeile mit Rücklauf 0</b> kommt vorbelegt: Vorlauf 35 °C − 10 K = 25 °C,
+    /// die Zeile darunter nennt die Herkunft, und OK geht durch — die Warnung „Die
+    /// Rücklauftemperatur muss größer als 0 °C sein" gibt es für sie nicht mehr.
+    /// </summary>
+    [Fact]
+    public void Eine_Bestandszeile_mit_Ruecklauf_0_kommt_vorbelegt_und_geht_durch()
+    {
+        bool? ergebnis = null;
+        var cut = MitVorbelegung(Vorbelegt(), b => ergebnis = b);
+
+        var block = Auslegung(cut);
+        Assert.Equal("25", block.QuerySelector("input[inputmode=numeric]")!.GetAttribute("value"));
+        Assert.Contains("Rücklauf vorbelegt: Vorlauf 35 °C − 10 K = 25 °C (Rückfall-Spreizung).",
+                        block.QuerySelectorAll(".epos-herleitung-text").Select(e => e.TextContent));
+
+        OkDesWirts(cut);
+
+        Assert.True(ergebnis);
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));
+    }
+
+    /// <summary>
+    /// Ein anderer Vorlauf zieht den UNBERÜHRTEN Vorschlag nach — sonst ergäbe ein tieferer
+    /// Vorlauf ein vertauschtes Paar, das niemand eingegeben hat.
+    /// </summary>
+    [Fact]
+    public void Ein_anderer_Vorlauf_zieht_den_unberuehrten_Vorschlag_nach()
+    {
+        var daten = Vorbelegt();
+        var cut = MitVorbelegung(daten);
+
+        Auslegung(cut).QuerySelector("select")!.Change("55");
+
+        Assert.Equal(55, daten.Vorlauf);
+        Assert.Equal(45, daten.Ruecklauf);
+        Assert.Contains("Rücklauf vorbelegt: Vorlauf 55 °C − 10 K = 45 °C (Rückfall-Spreizung).",
+                        Auslegung(cut).QuerySelectorAll(".epos-herleitung-text").Select(e => e.TextContent));
+    }
+
+    /// <summary>
+    /// Eine Eingabe macht den Rücklauf zu dem des Anwenders: Die Vorschlagszeile geht, und
+    /// ein anderer Vorlauf lässt ihn stehen.
+    /// </summary>
+    [Fact]
+    public void Eine_Eingabe_im_Ruecklauf_nimmt_den_Vorschlag_weg()
+    {
+        var daten = Vorbelegt();
+        var cut = MitVorbelegung(daten);
+
+        Auslegung(cut).QuerySelector("input[inputmode=numeric]")!.Input("30");
+        Auslegung(cut).QuerySelector("select")!.Change("45");
+
+        Assert.Equal("", daten.RuecklaufHerleitung);
+        Assert.Equal(30, daten.Ruecklauf);
+        Assert.DoesNotContain(Auslegung(cut).QuerySelectorAll(".epos-herleitung-text"),
+                              e => e.TextContent.StartsWith("Rücklauf vorbelegt", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// Die Vorbelegung greift nur bei Rücklauf 0/leer und mit Vorlauf — ein eingetragener
+    /// Rücklauf bleibt, ohne Vorlauf gibt es nichts, woraus er folgen könnte.
+    /// </summary>
+    [Fact]
+    public void Die_Vorbelegung_laesst_einen_eingetragenen_Ruecklauf_und_eine_Zeile_ohne_Vorlauf_stehen()
+    {
+        var gepflegt = Voll();                          // 35/28
+        Assert.False(TemperaturVorbelegung.Waermepumpe(gepflegt));
+        Assert.Equal(28, gepflegt.Ruecklauf);
+        Assert.Equal("", gepflegt.RuecklaufHerleitung);
+
+        var ohneVorlauf = Bestandszeile();
+        ohneVorlauf.Vorlauf = null;
+        Assert.False(TemperaturVorbelegung.Waermepumpe(ohneVorlauf));
+        Assert.Equal(0, ohneVorlauf.Ruecklauf);
+    }
+
+    /// <summary>
+    /// <b>Die Ursache, Teil 2.</b> Der Vorläufer <c>Wizard_WPItem</c> zeigte die
+    /// Betriebsart in einer FREI BESCHREIBBAREN <c>ComboBox</c> und schrieb deren
+    /// Text ungeprüft in die Spalte (Befund L0‑1). Ein <c>select</c> kann einen
+    /// nicht zeichengleichen Wert nicht zeigen: Die Klappliste stand leer, der
+    /// Anwender sah eine Bestandszeile ohne Betriebsart — und beim OK meldete
+    /// <c>ErsterFehler</c> „Bitte Betriebsart auswählen!", sobald der Wert dabei
+    /// ganz verlorenging. Seit W7‑B‑2 liest der Dialog TOLERANT
+    /// (<c>DbWerte.BetriebsartOderDefault</c>).
+    /// </summary>
+    [Fact]
+    public void W7_B_2_Ein_alter_Betriebsart_Text_steht_gewaehlt_in_der_Klappliste()
+    {
+        bool? ergebnis = null;
+        var daten = Voll();
+        daten.BivalenterBetrieb = true;
+        daten.Betriebsart = "parallelbetrieb";          // Altwert aus der Datenbank
+        var cut = Aufbauen(daten, geschlossen: b => ergebnis = b);
+        KonfigurationOeffnen(cut);
+
+        var betriebsart = Konfiguration(cut).QuerySelectorAll("select")
+                             .First(s => s.QuerySelectorAll("option")
+                                          .Any(o => o.TextContent == DbWerte.WP_BETRIEBSART_PARALLEL));
+        Assert.Equal("1", betriebsart.GetAttribute("value"));   // Parallelbetrieb steht gewählt
+
+        Ueberlagerungsknopf(cut, "OK").Click();
+        OkDesWirts(cut);
+        Assert.True(ergebnis);
+    }
+
+    /// <summary>
+    /// Der berichtigte Steuerwert geht auch in den Datensatz — sonst zeigte die
+    /// Maske „Parallelbetrieb" und die Engine läse weiter den Altwert, den sie
+    /// zeichengleich vergleicht (<c>SimulationWaermepumpe</c>:980 ff.).
+    /// </summary>
+    [Fact]
+    public void W7_B_2_Der_Altwert_wird_beim_Aufbau_auf_den_Steuerwert_gezogen()
+    {
+        var daten = Voll();
+        daten.BivalenterBetrieb = true;
+        daten.Betriebsart = "Bivalent-teilparallel";
+        Aufbauen(daten);
+
+        Assert.Equal(DbWerte.WP_BETRIEBSART_TEILPARALLEL, daten.Betriebsart);
+    }
+
+    /// <summary>
+    /// Ist der Wert gar nicht zu deuten, bleibt die Pflichtangabe offen — und die
+    /// Meldung nennt sie, wieder in der Fußleiste.
+    /// </summary>
+    [Fact]
+    public void W7_B_2_Ohne_deutbare_Betriebsart_meldet_das_Band_bei_der_Leiste()
+    {
+        bool? ergebnis = null;
+        var daten = Voll();
+        daten.BivalenterBetrieb = true;
+        daten.Betriebsart = "Monovalent";
+        var cut = Aufbauen(daten, geschlossen: b => ergebnis = b);
+
+        OkDesWirts(cut);
+
+        Assert.Null(ergebnis);
+        Assert.Contains("Bitte Betriebsart auswählen!",
+                        cut.Find(".epos-wp-anlagefelder > .epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// „das genannte Feld wird markiert": Das Band nennt das Feld, und das Feld
+    /// selbst trägt die Mängelklasse — ein Band allein hilft in einem Dialog mit
+    /// dreißig Feldern nicht weiter.
+    ///
+    /// <para>Geprüft an der Auslegung: Sie steht im Dialogkörper. Bis zum 30.09.2026 war
+    /// es die Nutzungsdauer, die seither im Kostendialog steht; ein eingetragenes, aber
+    /// vertauschtes Paar belegt niemand vor, es bleibt ein Mangel. Ein Mangel an einem
+    /// Feld der KONFIGURATION öffnet seit dem 16.09.2026 stattdessen deren Überlagerung
+    /// (<c>OK_des_Dialogs_oeffnet_die_Konfiguration_wenn_dort_ein_Feld_fehlt</c>).</para>
+    /// </summary>
+    [Fact]
+    public void W7_B_2_Das_bemaengelte_Feld_ist_markiert()
+    {
+        var daten = Voll();
+        daten.Ruecklauf = 40;           // über dem Vorlauf 35
+        var cut = Aufbauen(daten);
+
+        OkDesWirts(cut);
+
+        Assert.Contains("über der Rücklauftemperatur", cut.Find(".epos-wp-anlagefelder > .epos-warnbanner").TextContent);
+        Assert.Contains(cut.FindAll(".epos-feldhuelle--mangel .epos-feld"),
+                        e => e.TextContent.Contains("Rücklauf", StringComparison.Ordinal));
+    }
+
+    // =====================================================================
+    //  W7-B-1 — Spalten „Wahl | Hersteller | Typ"
+    // =====================================================================
+
+    /// <summary>
+    /// Die DREI farbigen Erklärkästen des Vorbilds (label21 grün, label22 gelb,
+    /// label23 türkis) — sie standen dort ALLE DREI und immer, weil sie die Wahl
+    /// der Betriebsart erklären. Die Texte sind wortgleich aus der alten
+    /// <c>.resx</c> und stehen in <c>MyResource</c>; seit dem 16.09.2026 zeichnet sie
+    /// der Baustein <c>WaermepumpeKonfiguration</c> in der Überlagerung.
+    /// </summary>
+    [Fact]
+    public void W7_E_2_Die_drei_farbigen_Erklaerkaesten_stehen_in_der_Konfiguration()
+    {
+        var cut = Aufbauen();
+        Assert.Empty(cut.FindAll(".epos-wp-erklaerung"));
+
+        KonfigurationOeffnen(cut);
+        var kaesten = Konfiguration(cut).QuerySelectorAll(".epos-wp-erklaerung");
+
+        Assert.Equal(3, kaesten.Length);
+        Assert.Contains("epos-wp-erklaerung--gruen", kaesten[0].ClassName);
+        Assert.Contains("epos-wp-erklaerung--gelb", kaesten[1].ClassName);
+        Assert.Contains("epos-wp-erklaerung--tuerkis", kaesten[2].ClassName);
+
+        Assert.Contains("bivalent-alternativen", kaesten[0].TextContent);
+        Assert.Contains("bivalent-parallelen", kaesten[1].TextContent);
+        Assert.Contains("bivalent-teilparallele", kaesten[2].TextContent);
+    }
+
+    /// <summary>
+    /// Die Häkchen tragen wieder ihren EIGENEN Text; „Wärmeerzeuger Spitzenlast:"
+    /// und „Wärmepumpenleistung / maximale Betriebszeit:" sind im Vorbild
+    /// Überschriften (label7, label19), keine Beschriftungen der Kästchen.
+    /// </summary>
+    [Fact]
+    public void W7_E_2_Die_Haekchen_tragen_die_Texte_des_Vorbilds()
+    {
+        var cut = Aufbauen();
+        KonfigurationOeffnen(cut);
+
+        var schalter = Konfiguration(cut).QuerySelectorAll(".epos-schalter")
+                                         .Select(e => e.TextContent.Trim()).ToList();
+
+        Assert.Contains("Heizstab mitrechnen", schalter);
+        Assert.Contains("Sperrzeit durch Energieversorger", schalter);
+        Assert.Contains("Bivalenter Betrieb", schalter);
+    }
+
+    // =================================================================================
+    // W7‑B‑3 — Herkunft der Kennlinien (Windows-Abnahme V2 vom 07.09.2026)
+    // =================================================================================
+
+    /// <summary>
+    /// Der Regelfall: Die Bilder kommen aus der PROJEKTKOPIE. Dann sagt der Dialog
+    /// nichts dazu — eine Herleitung, die immer da steht, sagt nichts mehr — und der
+    /// Knopf erscheint nicht.
+    /// </summary>
+    [Fact]
+    public void W7_B_3_Projektkennlinien_stehen_ohne_Herleitung_da()
+    {
+        var cut = Render<WaermepumpeAnlageFelder>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Bilder, _ => new KennlinienBilder(BildCop, BildLeistung,
+                                                          Kennlinienherkunft.Projekt))
+            .Add(x => x.KennlinienUebernehmen, _ => 16));
+
+        Assert.Empty(cut.FindAll(".epos-wp-kennlinienquelle .epos-herleitung"));
+        Assert.DoesNotContain("Kennlinien aus dem Katalog übernehmen", cut.Markup);
+        // Der Reiter zeichnet nur das aktive Blatt.
+        Assert.Single(cut.FindComponents<DiagrammSvg>());
+    }
+
+    /// <summary>
+    /// <b>Der Rückfall.</b> Fehlen die Projektkennlinien, zeigt der Dialog die des
+    /// Katalogsatzes — und sagt es in einer Herleitungszeile. Der Lauf rechnet
+    /// ausschließlich mit den Projektkennlinien; eine Katalogkennlinie ohne diesen
+    /// Satz behauptete einen Stand, den die Simulation nicht kennt.
+    /// </summary>
+    [Fact]
+    public void W7_B_3_Katalogkennlinien_tragen_ihre_Herleitung()
+    {
+        var cut = Render<WaermepumpeAnlageFelder>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Bilder, _ => new KennlinienBilder(BildCop, BildLeistung,
+                                                          Kennlinienherkunft.Katalog, true))
+            .Add(x => x.KennlinienUebernehmen, _ => 16));
+
+        Assert.Single(cut.FindAll(".epos-wp-kennlinienquelle .epos-herleitung"));
+        Assert.Contains("Katalogsatzes gleichen Namens", cut.Find(".epos-wp-kennlinienquelle .epos-herleitung").TextContent);
+        // Der Reiter zeichnet nur das aktive Blatt.
+        Assert.Single(cut.FindComponents<DiagrammSvg>());
+    }
+
+    /// <summary>
+    /// <b>Die Kennlinien stehen als SVG im Baum</b> (Etappe DG-E3, Gruppe (b)) — unter
+    /// zwei verschiedenen Kennungen. Ohne Zeichenfläche gibt es dort auch keine
+    /// Bedienleiste: Ein Zoom auf eine Handvoll Stützstellen hätte keine Aussage
+    /// (Entscheid DG-E3-7/-10).
+    /// </summary>
+    [Fact]
+    public void Die_Kennlinien_stehen_als_DiagrammSvg()
+    {
+        var cut = Render<WaermepumpeAnlageFelder>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Bilder, _ => new KennlinienBilder(BildCop, BildLeistung,
+                                                          Kennlinienherkunft.Projekt)));
+
+        Assert.Equal("wp-kennlinie-cop", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
+        Assert.Contains("BILD-COP", cut.Find(".epos-diagramm-svg").TextContent);
+        Assert.Empty(cut.FindAll(".epos-diagramm-leiste"));
+
+        // Das zweite Blatt traegt die ANDERE Kennung - zwei gleiche schnitten das eine
+        // Bild am clipPath-Rechteck des anderen.
+        cut.FindAll(".epos-reiter-knopf")[1].Click();
+        Assert.Equal("wp-kennlinie-leistung", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
+        Assert.Contains("BILD-LEISTUNG", cut.Find(".epos-diagramm-svg").TextContent);
+    }
+
+    /// <summary>
+    /// Der Knopf ruft den Weg mit der GERÄTE-Id und frischt danach auf — beim zweiten
+    /// Zeichnen liefert der Delegat die Projektkennlinien, und die Herleitung ist
+    /// weg. Genau das sieht der Anwender nach dem Druck.
+    /// </summary>
+    [Fact]
+    public void W7_B_3_Der_Knopf_holt_die_Kennlinien_und_raeumt_die_Herleitung_weg()
+    {
+        int gerufenMit = 0;
+        bool geholt = false;
+
+        var cut = Render<WaermepumpeAnlageFelder>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Bilder, _ => geholt
+                ? new KennlinienBilder(BildCop, BildLeistung, Kennlinienherkunft.Projekt)
+                : new KennlinienBilder(BildCop, BildLeistung, Kennlinienherkunft.Katalog, true))
+            .Add(x => x.KennlinienUebernehmen, id =>
+            {
+                gerufenMit = id;
+                geholt = true;
+                return 16;
+            }));
+
+        Knopf(cut, "Kennlinien aus dem Katalog übernehmen").Click();
+
+        Assert.Equal(77, gerufenMit);            // die PROJEKT-Geraete-Id, nicht die Stamm-Id
+        Assert.Empty(cut.FindAll(".epos-wp-kennlinienquelle .epos-herleitung"));
+        Assert.Contains("16 Stützstellen", cut.Markup);
+    }
+
+    /// <summary>
+    /// Ohne Delegat kein Knopf (Hausregel seit W2) — und ohne Gerätekopie im Projekt
+    /// ebenso wenig: Vor dem ersten Speichern gibt es nichts nachzuholen.
+    /// </summary>
+    [Fact]
+    public void W7_B_3_Ohne_Ziel_erscheint_der_Knopf_nicht()
+    {
+        var ohneDelegat = Render<WaermepumpeAnlageFelder>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Bilder, _ => new KennlinienBilder(BildCop, BildLeistung,
+                                                          Kennlinienherkunft.Katalog, true)));
+
+        Assert.Single(ohneDelegat.FindAll(".epos-wp-kennlinienquelle .epos-herleitung"));
+        Assert.DoesNotContain("Kennlinien aus dem Katalog übernehmen", ohneDelegat.Markup);
+
+        var nichtNachholbar = Render<WaermepumpeAnlageFelder>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Bilder, _ => new KennlinienBilder(BildCop, BildLeistung,
+                                                          Kennlinienherkunft.Katalog))
+            .Add(x => x.KennlinienUebernehmen, _ => 16));
+
+        Assert.Single(nichtNachholbar.FindAll(".epos-wp-kennlinienquelle .epos-herleitung"));
+        Assert.DoesNotContain("Kennlinien aus dem Katalog übernehmen", nichtNachholbar.Markup);
+    }
+
+    /// <summary>
+    /// <b>Allein die Kühlkennlinie fehlt</b> (Verbesserungen 29.09.2026, B1): Die Bilder
+    /// kommen aus dem Projekt, der Dialog nennt die fehlende Kühlkennlinie und bietet
+    /// „Kühlkennlinie aus dem Katalog übernehmen" an — mit derselben Geräte-Id.
+    /// </summary>
+    [Fact]
+    public void B1_Fehlt_allein_die_Kuehlkennlinie_erscheint_ihr_Knopf()
+    {
+        int gerufenMit = 0;
+        bool geholt = false;
+
+        var cut = Render<WaermepumpeAnlageFelder>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Bilder, _ => new KennlinienBilder(BildCop, BildLeistung,
+                                                          Kennlinienherkunft.Projekt, false, !geholt))
+            .Add(x => x.KennlinienUebernehmen, id =>
+            {
+                gerufenMit = id;
+                geholt = true;
+                return 4;
+            }));
+
+        Assert.Contains("keine Kühlkennlinie", cut.Find(".epos-wp-kennlinienquelle .epos-herleitung").TextContent);
+        Assert.DoesNotContain("Kennlinien aus dem Katalog übernehmen", cut.Markup);
+
+        Knopf(cut, "Kühlkennlinie aus dem Katalog übernehmen").Click();
+
+        Assert.Equal(77, gerufenMit);
+        Assert.Empty(cut.FindAll(".epos-wp-kennlinienquelle .epos-herleitung"));
+        Assert.Contains("4 Stützstellen", cut.Markup);
+
+        // Ohne Schreibweg: Herleitung ja, Knopf nein.
+        var ohneDelegat = Render<WaermepumpeAnlageFelder>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Bilder, _ => new KennlinienBilder(BildCop, BildLeistung,
+                                                          Kennlinienherkunft.Projekt, false, true)));
+        Assert.Single(ohneDelegat.FindAll(".epos-wp-kennlinienquelle .epos-herleitung"));
+        Assert.DoesNotContain("Kühlkennlinie aus dem Katalog übernehmen", ohneDelegat.Markup);
+    }
+
+    /// <summary>
+    /// Gab es nichts zu holen — kein Katalogsatz gleichen Namens —, meldet der Dialog
+    /// das als WARNUNG statt still nichts zu tun.
+    /// </summary>
+    [Fact]
+    public void W7_B_3_Ohne_Katalogsatz_meldet_der_Knopf_es()
+    {
+        var cut = Render<WaermepumpeAnlageFelder>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Bilder, _ => new KennlinienBilder(BildCop, BildLeistung,
+                                                          Kennlinienherkunft.Katalog, true))
+            .Add(x => x.KennlinienUebernehmen, _ => 0));
+
+        Knopf(cut, "Kennlinien aus dem Katalog übernehmen").Click();
+
+        Assert.Contains("keinen Katalogsatz gleichen Namens", cut.Markup);
+    }
+
+    // =================================================================================
+    // ET-5 (Anwenderentscheid 08.09.2026): der Energietraeger der Waermepumpe, Gruppe > Art
+    // =================================================================================
+
+    [Fact]
+    public void Die_Traegerwahl_zeigt_Gruppe_und_Art_und_schreibt_in_die_Daten()
+    {
+        WaermepumpeAnlageDaten daten = Voll();
+        daten.CarrierId = 60;
+        var cut = Aufbauen(daten, traegerkatalog: new[]
+        {
+            new EnergietraegerWahl.Eintrag(11, "Gas", "Erdgas E"),
+            new EnergietraegerWahl.Eintrag(60, "Strom", "Elektrische Energie"),
+            new EnergietraegerWahl.Eintrag(58, "Strom", "Elektrische Energie 2")
+        });
+        KonfigurationOeffnen(cut);
+
+        var wahl = cut.Find(".epos-traegerwahl");
+        var selects = wahl.QuerySelectorAll("select");
+        Assert.Equal(2, selects.Length);
+        Assert.Contains("Elektrische Energie", selects[1].InnerHtml);
+        Assert.DoesNotContain("Erdgas E", selects[1].InnerHtml);
+
+        selects[1].Change("58");
+        Assert.Equal(58, daten.CarrierId);
+
+        selects[0].Change("0");     // Gruppe Gas -> erster Traeger der Gruppe
+        Assert.Equal(11, daten.CarrierId);
+    }
+
+    [Fact]
+    public void Ohne_Traegerkatalog_steht_keine_Traegerwahl()
+    {
+        var cut = Aufbauen();
+        KonfigurationOeffnen(cut);
+        Assert.Empty(cut.FindAll(".epos-traegerwahl"));
+    }
+
+    // =================================================================================
+    // Eingebettet in der Waermepumpen Verwaltung (W7-B-3, 08.09.2026)
+    // =================================================================================
+
+    [Fact]
+    public void Pruefen_meldet_den_Mangel_und_null_wenn_alles_steht()
+    {
+        var cut = Aufbauen(eingebettet: true);
+        Assert.Null(cut.Instance.Pruefen());
+
+        WaermepumpeAnlageDaten ohne = Voll();
+        ohne.Bezeichner = "";
+        var cut2 = Aufbauen(ohne, eingebettet: true);
+        string? fehler = cut2.Instance.Pruefen();
+        Assert.NotNull(fehler);
+        cut2.Render();
+        Assert.Contains(fehler!, cut2.Markup);
+    }
+
+    // =================================================================================
+    // W7-B-3 Nachtrag (08.09.2026): eingebettet ohne Innenliste, Umstellen durch den Wirt
+    // =================================================================================
+
+    [Fact]
+    public void Der_Extrapolationsschalter_steht_bei_den_Kennlinien_und_ist_vorbelegt()
+    {
+        var geschrieben = new List<bool>();
+        var cut = Aufbauen(extrapolationSchreiben: w => { geschrieben.Add(w); return true; });
+
+        var schalter = cut.Find(".epos-wp-abschnitt--kennlinien .epos-wp-extrapolation");
+        Assert.Contains("Extrapolation der WP-Kennlinie erlauben", schalter.TextContent);
+        Assert.Equal("H2", schalter.PreviousElementSibling?.TagName);
+        Assert.Contains("Kenndaten Kennlinien", schalter.PreviousElementSibling!.TextContent);
+
+        var kasten = schalter.QuerySelector("input[type=checkbox]")!;
+        Assert.True(kasten.HasAttribute("checked"));
+        Assert.False(kasten.HasAttribute("disabled"));
+
+        kasten.Change(false);
+        Assert.Equal(new[] { false }, geschrieben);
+        Assert.False(cut.Find(".epos-wp-extrapolation input[type=checkbox]").HasAttribute("checked"));
+    }
+
+    [Fact]
+    public void Die_Vorbelegung_des_Projekts_kommt_am_Extrapolationsschalter_an()
+    {
+        var cut = Aufbauen(extrapolationSchreiben: _ => true, extrapolationErlaubt: false);
+        Assert.False(cut.Find(".epos-wp-extrapolation input[type=checkbox]").HasAttribute("checked"));
+    }
+
+    [Fact]
+    public void Ohne_Schreibweg_ist_der_Extrapolationsschalter_gesperrt()
+    {
+        var cut = Aufbauen();
+        Assert.True(cut.Find(".epos-wp-extrapolation input[type=checkbox]").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void Ein_Fehlschlag_beim_Schreiben_laesst_den_Schalter_und_sagt_es()
+    {
+        var cut = Aufbauen(extrapolationSchreiben: _ => false);
+        cut.Find(".epos-wp-extrapolation input[type=checkbox]").Change(false);
+
+        Assert.True(cut.Find(".epos-wp-extrapolation input[type=checkbox]").HasAttribute("checked"));
+        Assert.Contains("ließ sich nicht speichern", cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    // =====================================================================
+    //  Die Farbwahl am Bild (Farbrollen, Bedienung Teil 2)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Mit Schreibweg trägt das Farbfeld des Legendeneintrags die Klasse
+    /// <c>epos-legende-farbfeld</c>, und ein Klick öffnet den Wähler.</b> Jede
+    /// Vorlaufkennlinie führt eine Farbrolle; ohne <c>FarbeSetzen</c> gäbe es dort
+    /// nichts zu klicken — kein Delegat, kein Wähler.
+    /// </summary>
+    [Fact]
+    public void Das_Farbfeld_der_Kennlinie_oeffnet_den_Farbwaehler()
+    {
+        var cut = Render<WaermepumpeAnlageFelder>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Bilder, _ => new KennlinienBilder(BildCop, BildLeistung))
+            .Add(x => x.FarbeSetzen, (rolle, farbe) => Task.CompletedTask));
+
+        Assert.NotEmpty(cut.FindAll("rect.epos-legende-farbfeld"));
+        Assert.Empty(cut.FindAll(".epos-farbwahl"));
+
+        cut.FindAll("rect.epos-legende-farbfeld")[0].Click();
+        Assert.Single(cut.FindAll(".epos-farbwahl"));
+    }
+
+    /// <summary>Ohne Schreibweg bleibt das Farbfeld ein gemaltes Rechteck.</summary>
+    [Fact]
+    public void Ohne_Schreibweg_traegt_die_Kennlinie_kein_Farbfeld()
+    {
+        var cut = Aufbauen();
+        Assert.Empty(cut.FindAll("rect.epos-legende-farbfeld"));
+    }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F1)
+    // =====================================================================
+
+    /// <summary>
+    /// Nach dem Zeichnen steht die Maske an der <c>KiMaskenbruecke</c>; die Brücke
+    /// liest den Vorlauf und setzt ihn — und der Wert steht danach im Feldsatz der
+    /// Anlage.
+    /// </summary>
+    /// <remarks>
+    /// <b>Monotone Aussage</b> (Muster <c>KiMaskenhakenTests</c>): Geprüft wird, was
+    /// nach dem Zeichnen DA ist. Die Brücke ist prozessweiter Zustand.
+    /// </remarks>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_den_Vorlauf()
+    {
+        WaermepumpeAnlageDaten daten = Voll();
+        Aufbauen(daten);
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.WAERMEPUMPE_ANLAGE));
+
+        KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.WAERMEPUMPE_ANLAGE, "vorlauf");
+        Assert.NotNull(zugang);
+        Assert.Equal(35, zugang.Lesen());
+
+        Assert.True(zugang.Setzbar);
+        zugang.Setzen(45);
+
+        Assert.Equal(45, daten.Vorlauf);
+    }
+
+    /// <summary>
+    /// Auch ein Feld des STAMMFELDBLOCKS gehört zur Maske: Er bindet an ein Abbild von
+    /// <c>Daten</c>, und der Haken <c>Auffrischen</c> baut es nach einer Setzung neu
+    /// auf. Die Modulkosten daneben bleiben Anzeige.
+    /// </summary>
+    [Fact]
+    public void Die_Nennleistung_ist_setzbar_und_die_Modulkosten_sind_es_nicht()
+    {
+        WaermepumpeAnlageDaten daten = Voll();
+        Aufbauen(daten);
+
+        KiFeldzugang nenn =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.WAERMEPUMPE_ANLAGE, "nennleistung");
+        Assert.Equal(12, nenn.Lesen());
+        nenn.Setzen(18);
+        Assert.Equal(18, daten.Nennleistung);
+
+        KiFeldzugang kosten =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.WAERMEPUMPE_ANLAGE, "modulkosten");
+        Assert.Equal(4000, kosten.Lesen());
+        Assert.False(kosten.Setzbar);
+    }
+
+    /// <summary>
+    /// Die Maske meldet ihre PRÜFUNG und ihren Schreibschutz, aber keinen Speicherweg:
+    /// Geschrieben wird im OK-Weg, und zwar von der Hülle.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_Pruefung_und_Schreibschutz_aber_keinen_Speicherweg()
+    {
+        Aufbauen();
+
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(KiMaskennamen.WAERMEPUMPE_ANLAGE);
+
+        Assert.NotNull(haken.Auffrischen);
+        Assert.NotNull(haken.Pruefen);
+        Assert.NotNull(haken.Schreibgeschuetzt);
+        Assert.Null(haken.Speichern);
+    }
+
+    /// <summary>
+    /// <b>Der Extrapolationsschalter steht in der Feldkarte</b> (Welle #458): Er gehört dem
+    /// PROJEKT, nicht dem Feldsatz, und geht denselben Weg wie der Schalter — sofort über
+    /// <c>ExtrapolationSchreiben</c>. Scheitert das Schreiben, bleibt der Stand, und die
+    /// Setzung nennt den Satz des Kennlinienbands.
+    /// </summary>
+    [Fact]
+    public void Der_Extrapolationsschalter_schreibt_ueber_seinen_Weg_und_nennt_den_Fehlschlag()
+    {
+        var geschrieben = new List<bool>();
+        bool gelingt = true;
+        var cut = Aufbauen(extrapolationSchreiben: w => { geschrieben.Add(w); return gelingt; },
+                           extrapolationErlaubt: true);
+
+        KiFeldzugang feld =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.WAERMEPUMPE_ANLAGE, "extrapolation");
+        Assert.NotNull(feld);
+        Assert.True(feld.Setzbar);
+        Assert.Equal(true, feld.Lesen());
+
+        cut.InvokeAsync(() => feld.Setzen(false));
+        Assert.Equal(new[] { false }, geschrieben);
+        Assert.Equal(false, feld.Lesen());
+
+        gelingt = false;
+        var fehler = Assert.Throws<InvalidOperationException>(() => feld.Setzen(true));
+        Assert.Equal(cut.Instance.WarnungExtrapolation, fehler.Message);
+        Assert.Equal(false, feld.Lesen());
+    }
+
+    /// <summary>Ohne Schreibweg lehnt die Setzung benannt ab, statt still nichts zu tun.</summary>
+    [Fact]
+    public void Ohne_Schreibweg_lehnt_der_Extrapolationsschalter_benannt_ab()
+    {
+        Aufbauen(extrapolationSchreiben: null);
+
+        KiFeldzugang feld =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.WAERMEPUMPE_ANLAGE, "extrapolation");
+        var fehler = Assert.Throws<InvalidOperationException>(() => feld.Setzen(false));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_SIM_KEIN_SCHREIBWEG, fehler.Message);
+    }
+
+    // =================================================================================
+    // Senken der Anlage (Anwenderentscheid 23.09.2026)
+    // =================================================================================
+
+    /// <summary>
+    /// Die Zeile „Senken: …" steht in der Gruppe „Auslegung für Verteilung" — fertig
+    /// formuliert von der Hülle; ohne Text steht keine Zeile.
+    /// </summary>
+    [Fact]
+    public void Die_Senken_der_Anlage_stehen_bei_der_Auslegung()
+    {
+        var cut = Aufbauen();
+        Assert.DoesNotContain(cut.FindAll(".epos-herleitung-text"),
+                              e => e.TextContent.StartsWith("Senken", StringComparison.Ordinal));
+
+        cut.Render(p => p.Add(x => x.SenkenText, "Senken: Heizkreis (Heizung + Warmwasser); Prozesswärme"));
+
+        Assert.Contains(cut.FindAll(".epos-wp-abschnitt--auslegung .epos-herleitung-text"),
+                        e => e.TextContent == "Senken: Heizkreis (Heizung + Warmwasser); Prozesswärme");
+    }
+
+    // =================================================================================
+    // Kühlbetrieb (Stufe KU2 Welle 3; Kühlkonzept 8.2, 8.6)
+    // =================================================================================
+
+    private static WaermepumpeKuehlGaben Kuehlgaben() => new()
+    {
+        Vorlaeufe = _ => new[] { new KuehlVorlaufEintrag(7), new KuehlVorlaufEintrag(18) },
+        Sperrgrund = _ => null,
+        Stromtraeger = new[] { (58, "Strom Kühlung"), (60, "Strom Projekt") },
+        ProjektStromtraeger = 60
+    };
+
+    /// <summary>Der Dialog reicht die Kühlgaben an die Konfiguration durch; ohne sie steht keine Gruppe „Kühlbetrieb".</summary>
+    [Fact]
+    public void Die_Konfiguration_zeigt_den_Kuehlbetrieb_nur_mit_Kuehlgaben()
+    {
+        var ohne = Aufbauen();
+        KonfigurationOeffnen(ohne);
+        Assert.DoesNotContain("Kühlbetrieb",
+            ohne.FindAll(".epos-formulargruppe-titel").Select(e => e.TextContent.Trim()));
+
+        var mit = Aufbauen(kuehlung: Kuehlgaben());
+        KonfigurationOeffnen(mit);
+        Assert.Contains("Kühlbetrieb",
+            mit.FindAll(".epos-formulargruppe-titel").Select(e => e.TextContent.Trim()));
+    }
+
+    /// <summary>Abbrechen der Konfiguration nimmt auch die fünf Kühlfelder zurück (Hausregel „Geschrieben wird im OK-Weg").</summary>
+    [Fact]
+    public void Abbrechen_der_Konfiguration_nimmt_die_Kuehlfelder_zurueck()
+    {
+        var daten = Voll();
+        var cut = Aufbauen(daten, kuehlung: Kuehlgaben());
+        KonfigurationOeffnen(cut);
+
+        cut.FindAll("label.epos-schalter").First(l => l.TextContent.Trim() == "Maschine auch zum Kühlen benutzen")
+           .QuerySelector("input")!.Change(true);
+        Assert.True(daten.Kuehlbetrieb);
+        Feld(cut, "Hilfsstromanteil").Input("8");
+        Assert.Equal(0.08, daten.KuehlHilfsstromanteil!.Value, 12);
+
+        Ueberlagerungsknopf(cut, "Abbrechen").Click();
+        Assert.False(daten.Kuehlbetrieb);
+        Assert.Null(daten.KuehlHilfsstromanteil);
+    }
+
+    /// <summary>OK der Konfiguration prüft die Kühlfelder: Ein Hilfsstromanteil ab 100 % hält die Überlagerung offen und nennt den Mangel dort.</summary>
+    [Fact]
+    public void Ein_Hilfsstromanteil_ab_100_Prozent_haelt_die_Konfiguration_offen()
+    {
+        var daten = Voll();
+        daten.Kuehlbetrieb = true;
+        var cut = Aufbauen(daten, kuehlung: Kuehlgaben());
+        KonfigurationOeffnen(cut);
+        Feld(cut, "Hilfsstromanteil").Input("100");
+
+        Ueberlagerungsknopf(cut, "OK").Click();
+        Assert.Contains("Der Hilfsstromanteil muss mindestens 0 % und weniger als 100 % betragen.",
+                        cut.Find(".epos-ueberlagerung").TextContent);
+        Assert.True(cut.Instance.KonfigurationOffen);
+    }
+
+    // ---- Der Hilfe-Assistent und die Gruppe „Kühlbetrieb" (KU2 Welle 3) --------------
+
+    private static KiFeldzugang Kuehlzugang(string name)
+        => KiMaskenbruecke.Feldzugang(KiMaskennamen.WAERMEPUMPE_ANLAGE, name)!;
+
+    /// <summary>
+    /// Die fünf Felder der Gruppe „Kühlbetrieb" stehen in der Feldkarte der Anlage und schreiben in
+    /// denselben Feldsatz wie die Maske: Schalter, Vorlauf aus den Stützstellen, Hilfsstrom in
+    /// Prozent (gespeichert als Anteil), Kühlträger und — bei abweichendem Träger — die
+    /// Abrechnungsart. Ein Träger ohne Abweichung setzt die Abrechnungsart zurück (E34).
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_setzt_die_Kuehlfelder_im_Feldsatz_der_Anlage()
+    {
+        WaermepumpeAnlageDaten daten = Voll();
+        Aufbauen(daten, kuehlung: Kuehlgaben());
+
+        Kuehlzugang("kuehlbetrieb").Setzen(true);
+        Assert.True(daten.Kuehlbetrieb);
+
+        KiFeldzugang vorlauf = Kuehlzugang("kuehl_vorlauf");
+        Assert.Equal(new[] { "7", "18" }, vorlauf.Wahleintraege().Select(e => e.Schluessel));
+        vorlauf.Setzen(18);
+        Assert.Equal(18, daten.KuehlVorlauf);
+
+        Kuehlzugang("hilfsstromanteil").Setzen(8.0);
+        Assert.Equal(0.08, daten.KuehlHilfsstromanteil!.Value, 12);
+        Assert.Equal(8.0, (double)Kuehlzugang("hilfsstromanteil").Lesen()!, 9);
+
+        KiFeldzugang traeger = Kuehlzugang("kuehltraeger");
+        Assert.Equal(new[] { "58", "60" }, traeger.Wahleintraege().Select(e => e.Schluessel));
+        traeger.Setzen(58);
+        Assert.Equal(58, daten.KuehlCarrierId);
+
+        KiFeldzugang abrechnung = Kuehlzugang("kuehl_abrechnung");
+        Assert.Equal(new[] { "anteilig am Netzbezug (Vorgabe)", "eigener Zähler" },
+                     abrechnung.Wahleintraege().Select(e => e.Text));
+        abrechnung.Setzen(1);
+        Assert.True(daten.KuehlEigenerZaehler);
+        Assert.Equal(1, abrechnung.Lesen());
+
+        // Der Stromträger des Projekts weicht nicht ab: Die Abrechnungsart fällt auf NULL (anteilig).
+        traeger.Setzen(60);
+        Assert.Null(daten.KuehlEigenerZaehler);
+        Assert.Equal(0, abrechnung.Lesen());
+    }
+
+    /// <summary>
+    /// Was die Maske WEICH sperrt, lehnt der Assistent BENANNT ab: der Kühlbetrieb eines Geräts ohne
+    /// Kühlkennlinie (Grund der Gaben) und die Abrechnungsart ohne abweichenden Stromträger. Der
+    /// Feldsatz bleibt dabei unverändert.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_lehnt_gesperrten_Kuehlbetrieb_und_Abrechnung_ohne_Abweichung_benannt_ab()
+    {
+        WaermepumpeAnlageDaten daten = Voll();
+        var gaben = new WaermepumpeKuehlGaben
+        {
+            Vorlaeufe = _ => Array.Empty<KuehlVorlaufEintrag>(),
+            Sperrgrund = _ => "Zu diesem Gerät liegen keine Kühlkenndaten vor.",
+            Stromtraeger = new[] { (60, "Strom Projekt") },
+            ProjektStromtraeger = 60
+        };
+        Aufbauen(daten, kuehlung: gaben);
+
+        var gesperrt = Assert.Throws<InvalidOperationException>(() => Kuehlzugang("kuehlbetrieb").Setzen(true));
+        Assert.Equal("Zu diesem Gerät liegen keine Kühlkenndaten vor.", gesperrt.Message);
+        Assert.False(daten.Kuehlbetrieb);
+        Kuehlzugang("kuehlbetrieb").Setzen(false);   // Ausschalten geht immer.
+
+        var ohneTraeger = Assert.Throws<InvalidOperationException>(() => Kuehlzugang("kuehl_abrechnung").Setzen(1));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_DLG_WPA_ABRECHNUNG_OHNE_TRAEGER, ohneTraeger.Message);
+        Assert.Null(daten.KuehlEigenerZaehler);
+    }
+
+    /// <summary>Ohne Kühlgaben bietet der Wirt keinen Kühlbetrieb an — jede Setzung eines Kühlfeldes sagt das.</summary>
+    [Fact]
+    public void Ohne_Kuehlgaben_lehnt_der_Assistent_jedes_Kuehlfeld_benannt_ab()
+    {
+        WaermepumpeAnlageDaten daten = Voll();
+        Aufbauen(daten);
+
+        foreach ((string name, object wert) in new (string, object)[]
+                 { ("kuehlbetrieb", true), ("kuehl_vorlauf", 18), ("hilfsstromanteil", 5.0),
+                   ("kuehltraeger", 58), ("kuehl_abrechnung", 0) })
+        {
+            var fehler = Assert.Throws<InvalidOperationException>(() => Kuehlzugang(name).Setzen(wert));
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_DLG_WPA_KUEHLUNG_NICHT_EINSTELLBAR, fehler.Message);
+        }
+        Assert.False(daten.Kuehlbetrieb);
+        Assert.Null(daten.KuehlVorlauf);
+        Assert.Null(daten.KuehlHilfsstromanteil);
+        Assert.Null(daten.KuehlCarrierId);
+        Assert.Empty(Kuehlzugang("kuehl_vorlauf").Wahleintraege());
+    }
+
+    /// <summary>
+    /// Das Eingabe-Element unter einer Beschriftung (Schalter oder Feld) — die Sperrzeiten stehen am Ende
+    /// des Bausteins (Anwenderwunsch 08.10.2026), darum nicht über die Stellung in der Liste.
+    /// </summary>
+    private static AngleSharp.Dom.IElement NachBeschriftung(AngleSharp.Dom.IElement wurzel, string text)
+        => wurzel.QuerySelectorAll("label")
+                 .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == text)
+                 .QuerySelector("input")!;
+
+    // =================================================================================
+    // Assistent: die Maske beim Anzeigenamen genannt (Anwendermeldung 10.10.2026)
+    // =================================================================================
+
+    /// <summary>
+    /// Der Assistent nennt die Maske so, wie sie im Feldblock des Prompts steht — beim
+    /// ANZEIGENAMEN „Wärmepumpe im Projekt", nicht beim Schlüssel <c>Form_WP_Anlage</c>.
+    /// <c>formular_ausfuellen</c> muss dann genauso setzen wie mit dem Schlüssel; der
+    /// Vorlauf 50 liegt außerhalb der Kennlinienstufen und wird der Klappliste vorangestellt.
+    /// </summary>
+    [Fact]
+    public async Task Der_Assistent_fuellt_die_Maske_beim_Anzeigenamen_aus()
+    {
+        Func<bool> vorher = Schreibnaht.Schreibrecht;
+        Schreibnaht.Schreibrecht = Schreibnaht.ImmerErlaubt;
+        try
+        {
+            var daten = Voll();
+            var cut = Aufbauen(daten);
+
+            KiKern.KiErgebnis ergebnis = await cut.InvokeAsync(() => EPOS.UI.Tests.Dialoge.Hilfe.KiSetzweg.Ausfuehren(
+                "formular_ausfuellen",
+                new Dictionary<string, object?>
+                {
+                    ["maske"] = "Wärmepumpe im Projekt",
+                    ["werte"] = "vorlauf=50; ruecklauf=45"
+                }));
+
+            Assert.True(ergebnis.Status == KiKern.KiStatus.Ausgefuehrt, ergebnis.Text);
+            Assert.Equal(50, daten.Vorlauf);
+            Assert.Equal(45, daten.Ruecklauf);
+
+            cut.WaitForAssertion(() =>
+            {
+                var stufen = cut.FindAll(".epos-gruppenkopf-koerper")[0]
+                                .QuerySelectorAll("select option").Select(o => o.TextContent).ToList();
+                Assert.Equal(new[] { "50", "35", "45", "55" }, stufen);
+                Assert.Equal("45", cut.FindAll(".epos-gruppenkopf-koerper")[0]
+                                      .QuerySelectorAll("input")[0].GetAttribute("value"));
+            });
+        }
+        finally
+        {
+            Schreibnaht.Schreibrecht = vorher;
+        }
+    }
+
+    /// <summary>
+    /// Die Anwendermeldung selbst: Vorlauf 55 und Rücklauf 45 stehen schon, der Assistent
+    /// schreibt <c>mask</c> statt <c>maske</c>. Der Ausweichname greift, und „nichts zu
+    /// ändern" kommt als Erfolg ohne Bestätigung zurück — nicht als rote Absage.
+    /// </summary>
+    [Fact]
+    public async Task Der_Assistent_meldet_unveraendert_wenn_Vorlauf_und_Ruecklauf_schon_stehen()
+    {
+        Func<bool> vorher = Schreibnaht.Schreibrecht;
+        Schreibnaht.Schreibrecht = Schreibnaht.ImmerErlaubt;
+        try
+        {
+            var daten = Voll();
+            daten.Vorlauf = 55;
+            daten.Ruecklauf = 45;
+            var cut = Aufbauen(daten);
+
+            KiKern.KiErgebnis ergebnis = await cut.InvokeAsync(() => EPOS.UI.Tests.Dialoge.Hilfe.KiSetzweg.Ausfuehren(
+                "formular_ausfuellen",
+                new Dictionary<string, object?>
+                {
+                    ["mask"] = "Wärmepumpe im Projekt",
+                    ["werte"] = "vorlauf=55; ruecklauf=45"
+                }));
+
+            Assert.True(ergebnis.Status == KiKern.KiStatus.Ausgefuehrt, ergebnis.Text);
+            Assert.True(ergebnis.Unveraendert, ergebnis.Text);
+            Assert.Equal(0, ergebnis.Anzahl);
+            Assert.Contains("Wärmepumpe im Projekt", ergebnis.Text, StringComparison.Ordinal);
+            Assert.Contains("55", ergebnis.Text, StringComparison.Ordinal);
+            Assert.Contains("45", ergebnis.Text, StringComparison.Ordinal);
+            Assert.Equal(55, daten.Vorlauf);
+            Assert.Equal(45, daten.Ruecklauf);
+        }
+        finally
+        {
+            Schreibnaht.Schreibrecht = vorher;
+        }
+    }
+
+    /// <summary>
+    /// Gemischt: Der Vorlauf ändert sich (55 → 50), der Rücklauf steht schon. Gesetzt und
+    /// gezählt wird nur der Vorlauf; der Rücklauf steht als Meldung „trug den Wert bereits".
+    /// </summary>
+    [Fact]
+    public async Task Der_Assistent_setzt_nur_das_geaenderte_Feld()
+    {
+        Func<bool> vorher = Schreibnaht.Schreibrecht;
+        Schreibnaht.Schreibrecht = Schreibnaht.ImmerErlaubt;
+        try
+        {
+            var daten = Voll();
+            daten.Vorlauf = 55;
+            daten.Ruecklauf = 45;
+            var cut = Aufbauen(daten);
+
+            KiKern.KiErgebnis ergebnis = await cut.InvokeAsync(() => EPOS.UI.Tests.Dialoge.Hilfe.KiSetzweg.Ausfuehren(
+                "formular_ausfuellen",
+                new Dictionary<string, object?>
+                {
+                    ["maske"] = "Wärmepumpe im Projekt",
+                    ["werte"] = "vorlauf=50; ruecklauf=45"
+                }));
+
+            Assert.True(ergebnis.Status == KiKern.KiStatus.Ausgefuehrt, ergebnis.Text);
+            Assert.False(ergebnis.Unveraendert);
+            Assert.Equal(1, ergebnis.Anzahl);
+            Assert.Single(ergebnis.Zeilen);
+            Assert.Contains(ergebnis.Meldungen, m => m.Contains("45", StringComparison.Ordinal));
+            Assert.Equal(50, daten.Vorlauf);
+            Assert.Equal(45, daten.Ruecklauf);
+        }
+        finally
+        {
+            Schreibnaht.Schreibrecht = vorher;
+        }
+    }
+
+    // =================================================================================
+    // KT-7: Wirft der Schreibweg, bleibt der Dialog offen und nennt den Grund
+    // =================================================================================
+
+    private const string KT7_GRUND = "Schreibweg gesperrt";
+
+    /// <summary>Führt <paramref name="handlung"/> aus und schreibt die Vermerke des Ausnahmeprotokolls mit.</summary>
+    private static List<string> Kt7Mitschreiben(Action handlung)
+    {
+        var vermerke = new List<string>();
+        void Mitschreiben(string z) { lock (vermerke) vermerke.Add(z); }
+        WindowsFormsApplication1.Ausnahmeprotokoll.Vermerkt += Mitschreiben;
+        try { handlung(); }
+        finally { WindowsFormsApplication1.Ausnahmeprotokoll.Vermerkt -= Mitschreiben; }
+        return vermerke;
+    }
+
+    /// <summary>Der Banner nennt <paramref name="vorlage"/> samt Grund, das Protokoll hat einen Vermerk.</summary>
+    private static void Kt7GrundSteht(IReadOnlyList<string> vermerke, string banner, string vorlage, string vermerk)
+    {
+        Assert.Contains(vorlage.Split('{')[0], banner);
+        Assert.Contains(KT7_GRUND, banner);
+        lock (vermerke) Assert.Contains(vermerke, v => v.StartsWith(vermerk, StringComparison.Ordinal) && v.Contains(KT7_GRUND));
+    }
+
+    /// <summary>KT-7: Wirft das Lesen der Projektkennlinien, öffnet der Editor nicht, und der Satzbanner nennt den Grund.</summary>
+    [Fact]
+    public void KT7_werfen_die_Kennlinien_zeigt_der_Baustein_den_Grund()
+    {
+        var cut = Aufbauen(projektkopieVorhanden: _ => true,
+                           kennlinien: _ => throw new InvalidOperationException(KT7_GRUND));
+        List<string> vermerke = Kt7Mitschreiben(() => Knopf(cut, "Kennliniendaten Ansicht/Bearbeiten...").Click());
+
+        Assert.False(cut.Instance.KennlinieneditorOffen);
+        string banner = string.Join("\n", cut.FindAll(".epos-warnbanner").Select(e => e.TextContent.Trim()));
+        Kt7GrundSteht(vermerke, banner.Split('\n').First(b => b.Contains(KT7_GRUND)),
+                      WindowsFormsApplication1.MyResource.Resource.WURZEL_SATZ_FEHLER, "Katalogsatz");
+    }
+
+    [Fact]
+    public void KT7_werfen_die_Vorlaufstufen_zeigt_der_Baustein_den_Grund()
+    {
+        IRenderedComponent<WaermepumpeAnlageFelder>? cut = null;
+        List<string> vermerke = Kt7Mitschreiben(() => cut = Render<WaermepumpeAnlageFelder>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Vorlaeufe, _ => throw new InvalidOperationException(KT7_GRUND))));
+
+        string banner = string.Join("\n", cut!.FindAll(".epos-warnbanner").Select(e => e.TextContent.Trim()));
+        Kt7GrundSteht(vermerke, banner.Split('\n').First(b => b.Contains(KT7_GRUND)),
+                      WindowsFormsApplication1.MyResource.Resource.WURZEL_SATZ_FEHLER, "Katalogsatz");
+    }
+
+    /// <summary>
+    /// KT-7: Wirft das Zurückschreiben der Projektkennlinien beim Abbrechen des Wirts, kommt der Grund zurück
+    /// (der Wirt nennt ihn im Banner), das Protokoll hat einen Vermerk, und es wirft nichts durch.
+    /// </summary>
+    [Fact]
+    public void KT7_wirft_das_Zuruecksetzen_der_Kennlinien_kommt_der_Grund_zurueck()
+    {
+        int abgleiche = 0;
+        var cut = Aufbauen(projektkopieVorhanden: _ => true,
+                           kennlinien: _ => new List<KennlinienZeile> { new() },
+                           kennlinienAbgleichen: (_, _) =>
+                           {
+                               if (++abgleiche > 1) throw new InvalidOperationException(KT7_GRUND);
+                               return true;
+                           });
+        Knopf(cut, "Kennliniendaten Ansicht/Bearbeiten...").Click();
+        cut.FindAll(".epos-ueberlagerung").Last().QuerySelectorAll("button")
+           .First(b => b.TextContent.Trim() == WindowsFormsApplication1.MyResource.Resource.ALLG_BTN_OK).Click();
+        Assert.True(cut.Instance.KennlinienGeaendert);
+
+        string grund = "";
+        List<string> vermerke = Kt7Mitschreiben(() => grund = cut.Instance.KennlinienZuruecksetzen());
+
+        Assert.Contains(KT7_GRUND, grund);
+        Assert.False(cut.Instance.KennlinienGeaendert);
+        lock (vermerke) Assert.Contains(vermerke, v => v.Contains(KT7_GRUND));
+    }
+
+    [Fact]
+    public void KT7_ohne_Ausnahme_zeigt_der_Dialog_keinen_Grund()
+    {
+        List<string> vermerke = Kt7Mitschreiben(() => Aufbauen());
+        lock (vermerke) Assert.Empty(vermerke);
+    }
+
+    // =====================================================================================
+    // KM4-E3-b: die Lesezeile „Zulässigkeit“ des Kältemittels (Konzept 5.2, 7.3)
+    // =====================================================================================
+
+    [Fact]
+    public void Die_Zulaessigkeitszeile_steht_zum_Kaeltemittel_der_Wahl()
+    {
+        WaermepumpeAnlageDaten d = Voll();
+        d.Kaeltemittel = "R410A";
+        var gefragt = new List<string?>();
+        d.ZulaessigkeitRechnen = code =>
+        {
+            gefragt.Add(code);
+            return code == "R410A"
+                ? "Zulässigkeit des Kältemittels R410A: Warnung — nach Anhang IV Nr. 1 ab 2027 nur Restbestand oder Ausnahme (F-Gas mit GWP ≥ 150; Inbetriebnahmejahr 2028)"
+                : "Zulässigkeit des Kältemittels R290: zulässig für das Inbetriebnahmejahr 2028";
+        };
+        var cut = Aufbauen(d);
+
+        Assert.StartsWith("Zulässigkeit des Kältemittels R410A: Warnung", cut.Instance.Zulaessigkeitszeile);
+        Assert.Contains("ab 2027 nur Restbestand oder Ausnahme", cut.Markup);
+        Assert.Contains("R410A", gefragt);
+    }
+
+    [Fact]
+    public void Ohne_Gabe_steht_keine_Zulaessigkeitszeile_und_ein_Wurf_bringt_den_Dialog_nicht_zu_Fall()
+    {
+        WaermepumpeAnlageDaten d = Voll();
+        var cut = Aufbauen(d);
+        Assert.Null(cut.Instance.Zulaessigkeitszeile);
+        Assert.DoesNotContain("Zulässigkeit des Kältemittels", cut.Markup);
+
+        WaermepumpeAnlageDaten d2 = Voll();
+        d2.ZulaessigkeitRechnen = _ => throw new InvalidOperationException("Datenbank weg");
+        var cut2 = Aufbauen(d2);
+        Assert.Null(cut2.Instance.Zulaessigkeitszeile);
+    }
+
+    [Fact]
+    public void Ohne_Inbetriebnahmejahr_nennt_die_Zeile_dass_nicht_geprueft_wird()
+    {
+        WaermepumpeAnlageDaten d = Voll();
+        d.ZulaessigkeitRechnen = _ => WindowsFormsApplication1.MyResource.Resource.KM_ZUL_OHNE_JAHR;
+        var cut = Aufbauen(d);
+        Assert.Contains("ohne Inbetriebnahmejahr nicht geprüft", cut.Markup);
+    }
+
+    [Fact]
+    public void Die_Kopie_traegt_die_Gabe_der_Zulaessigkeitszeile()
+    {
+        WaermepumpeAnlageDaten d = Voll();
+        Func<string?, string> f = _ => "x";
+        d.ZulaessigkeitRechnen = f;
+        Assert.Same(f, d.Kopie().ZulaessigkeitRechnen);
+    }
+
+    // =================================================================================
+    // KT-8a: Kosten-Rückrufe, Projektkopie und Vergleich über die Fangstelle
+    // =================================================================================
+
+    private const string KT8A_GRUND = "Kostenweg gesperrt";
+
+    private static string Banner(IRenderedComponent<WaermepumpeAnlageFelder> cut)
+        => string.Join("\n", cut.FindAll(".epos-warnbanner").Select(e => e.TextContent.Trim()));
+
+    [Fact]
+    public void KT8a_wirft_KostenBereit_nennt_der_Banner_den_Grund_und_die_Leiste_bleibt_zu()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        bool? geschlossen = null;
+        var cut = Aufbauen(kostenBereit: () => throw new InvalidOperationException(KT8A_GRUND),
+                           kostenOeffnen: _ => Task.CompletedTask, energiekosten: _ => Task.CompletedTask,
+                           geschlossen: b => geschlossen = b);
+
+        Assert.Contains(KT8A_GRUND, Banner(cut));
+        Assert.True(vermerke.Enthaelt(KT8A_GRUND));
+        Assert.Empty(cut.FindAll(KOSTENKNOEPFE));
+        Assert.Null(geschlossen);
+    }
+
+    [Fact]
+    public void KT8a_wirft_die_Kostensumme_nennt_der_Banner_den_Grund_und_die_Zeile_steht_ohne_Summe()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        int gelesen = 0;
+        var cut = Aufbauen(kostensumme: () => { gelesen++; throw new InvalidOperationException(KT8A_GRUND); });
+        cut.Render();
+        cut.Render();
+
+        Assert.Contains(KT8A_GRUND, Banner(cut));
+        Assert.True(vermerke.Enthaelt(KT8A_GRUND));
+        Assert.Equal(1, gelesen);   // nicht je Zeichenlauf
+        Assert.NotEmpty(cut.Find(".epos-kostenleiste-hinweis").TextContent.Trim());
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void KT8a_wirft_der_Weg_in_die_Kostenverwaltung_nennt_der_Banner_den_Grund(int knopf)
+    {
+        using var vermerke = new Ausnahmevermerke();
+        bool? geschlossen = null;
+        var cut = Aufbauen(kostenOeffnen: _ => throw new InvalidOperationException(KT8A_GRUND),
+                           energiekosten: _ => throw new InvalidOperationException(KT8A_GRUND),
+                           geschlossen: b => geschlossen = b);
+
+        cut.FindAll(KOSTENKNOEPFE)[knopf].Click();
+
+        Assert.Contains(KT8A_GRUND, Banner(cut));
+        Assert.True(vermerke.Enthaelt(KT8A_GRUND));
+        Assert.Null(geschlossen);
+        Assert.Equal(3, cut.FindAll(KOSTENKNOEPFE).Count);
+    }
+
+    [Fact]
+    public void KT8a_wirft_ProjektkopieVorhanden_sperrt_weich_nennt_den_Grund_und_fragt_einmal()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        int gefragt = 0;
+        var cut = Aufbauen(projektkopieVorhanden: _ => { gefragt++; throw new InvalidOperationException(KT8A_GRUND); },
+                           kennlinien: _ => Array.Empty<KennlinienZeile>());
+        cut.Render();
+        cut.Render();
+
+        Assert.Contains(KT8A_GRUND, Banner(cut));
+        Assert.True(vermerke.Enthaelt(KT8A_GRUND));
+        Assert.Equal(1, gefragt);
+        Assert.Equal("true", Knopf(cut, "Kennliniendaten Ansicht/Bearbeiten...").GetAttribute("aria-disabled"));
+    }
+
+    [Fact]
+    public void KT8a_ohne_Ausnahme_kein_Banner_und_kein_Vermerk()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        int gefragt = 0;
+        var cut = Aufbauen(kostenOeffnen: _ => Task.CompletedTask, energiekosten: _ => Task.CompletedTask,
+                           projektkopieVorhanden: _ => { gefragt++; return true; });
+        cut.FindAll(KOSTENKNOEPFE)[0].Click();
+        cut.FindAll(KOSTENKNOEPFE)[2].Click();
+        int nachKlick = gefragt;
+        cut.Render();
+
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));
+        Assert.True(vermerke.Leer);
+        Assert.Equal(nachKlick, gefragt);
+    }
+
+    // =================================================================================
+    // WP1a: der Gerätesteckbrief links unter „Auslegung für Verteilung"
+    // =================================================================================
+
+    /// <summary>Der Wert einer Steckbriefzeile über ihren sprachneutralen Anker.</summary>
+    private static string Steckbriefwert(IRenderedComponent<WaermepumpeAnlageFelder> cut, string zeile)
+        => cut.Find($".epos-wp-abschnitt--auslegung .epos-wp-steckbrief dd[data-zeile={zeile}] .epos-geraetesteckbrief-wert")
+              .TextContent.Trim();
+
+    [Fact]
+    public void WP1a_Der_Steckbrief_zeigt_die_Satzwerte()
+    {
+        var cut = Aufbauen(arbeitspunkt: (_, v, _) => new WaermepumpeArbeitspunkt("A2/W" + v, 10.24, 3.456));
+
+        Assert.Equal("WP Alpha", Steckbriefwert(cut, "name"));
+        Assert.Equal("Alpha", Steckbriefwert(cut, "hersteller"));
+        Assert.Equal("Luft-Wasser", Steckbriefwert(cut, "typ"));
+        Assert.Equal("stetig", Steckbriefwert(cut, "stufen"));
+        Assert.Equal("2023", Steckbriefwert(cut, "baujahr"));
+        Assert.Equal("12 kW", Steckbriefwert(cut, "nennleistung"));
+        Assert.Equal("6 kW", Steckbriefwert(cut, "heizstab"));
+        Assert.Equal("10,2 kW", Steckbriefwert(cut, "heizleistung"));
+        Assert.Equal("3,46", Steckbriefwert(cut, "cop"));
+        Assert.Contains("A2/W35", cut.Find(".epos-wp-steckbrief").TextContent);
+        Assert.Equal((12000d).ToString("N0", CultureInfo.CurrentCulture) + " €", Steckbriefwert(cut, "invest"));
+        Assert.Equal("340 €/a", Steckbriefwert(cut, "betrieb"));
+        // Fehlende Werte stehen als Strich: kein Kältemittel, kein höchster Vorlauf, keine Aufstellung.
+        Assert.Equal("—", Steckbriefwert(cut, "kaeltemittel"));
+        Assert.Equal("—", Steckbriefwert(cut, "hoechstvorlauf"));
+        Assert.Equal("—", Steckbriefwert(cut, "aufstellung"));
+        // Die rechte Spalte bleibt, wie sie war: kein Steckbrief bei den Kenndaten.
+        Assert.Empty(cut.FindAll(".epos-wp-abschnitt--kenndaten .epos-geraetesteckbrief"));
+    }
+
+    [Fact]
+    public void WP1a_Der_Steckbrief_folgt_einer_Aenderung_rechts()
+    {
+        var cut = Aufbauen();
+        Assert.Equal("12 kW", Steckbriefwert(cut, "nennleistung"));
+
+        Feld(cut, "Nennleistung").Input("18");
+
+        Assert.Equal("18 kW", Steckbriefwert(cut, "nennleistung"));
+    }
+
+    [Fact]
+    public void WP1a_Der_Arbeitspunkt_folgt_dem_Vorlauf_links_und_liest_nur_bei_Wechsel()
+    {
+        var gefragt = new List<int>();
+        var cut = Aufbauen(arbeitspunkt: (id, v, typ) =>
+        {
+            gefragt.Add(v);
+            Assert.Equal(77, id);
+            Assert.Equal("Luft-Wasser", typ);
+            return new WaermepumpeArbeitspunkt("A2/W" + v, v == 55 ? 8.0 : 10.0, v == 55 ? 2.5 : 4.0);
+        });
+        Assert.Equal("10,0 kW", Steckbriefwert(cut, "heizleistung"));
+        Assert.Equal("4,00", Steckbriefwert(cut, "cop"));
+
+        Auslegung(cut).QuerySelector("select")!.Change("55");
+
+        Assert.Equal("8,0 kW", Steckbriefwert(cut, "heizleistung"));
+        Assert.Equal("2,50", Steckbriefwert(cut, "cop"));
+        Assert.Contains("A2/W55", cut.Find(".epos-wp-steckbrief").TextContent);
+        // Je Vorlauf EINE Abfrage — nicht je Zeichenlauf.
+        Assert.Equal(new[] { 35, 55 }, gefragt);
+    }
+
+    [Fact]
+    public void WP1a_Ohne_Arbeitspunkt_stehen_Striche()
+    {
+        var cut = Aufbauen(arbeitspunkt: (_, _, _) => null);
+        Assert.Equal("—", Steckbriefwert(cut, "heizleistung"));
+        Assert.Equal("—", Steckbriefwert(cut, "cop"));
+
+        var ohneWeg = Aufbauen(daten: new WaermepumpeAnlageDaten());
+        Assert.Equal("—", Steckbriefwert(ohneWeg, "nennleistung"));
+        Assert.Equal("—", Steckbriefwert(ohneWeg, "heizleistung"));
+    }
+}

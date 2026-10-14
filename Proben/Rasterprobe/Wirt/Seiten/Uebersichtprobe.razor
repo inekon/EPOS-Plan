@@ -1,0 +1,297 @@
+﻿@page "/uebersichtprobe"
+@using EPOS.UI.Seiten.Berichte
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager Navigation
+
+@*  DIE SICHTPROBE "UEBERSICHT" (Anwenderauftrag 12.10.2026): der echte Rahmen
+    BerichteKostenSeite mit der Seite "Uebersicht" - Kopf in drei Teilen und die
+    Gegenueberstellung je Gewerk aus Stamm und Varianten, ein Gewerk weicht ab.
+    Synthetische Staende ohne Datenbank, neutrale Namen. Gemessen wird das Layout
+    (Spalten fluchten, kein Querrollen der Seite), nicht der Rechenweg.
+
+    Gaben aus der Adresse: ?varianten=<n> (Vorgabe 1) - so viele Varianten im Vergleich;
+    ?nurunterschiede=1 setzt den Schalter; ?variante=<i> waehlt unter "Detail-Unterschiede
+    fuer Variante" die i-te Variante (Unterschiedstabelle), die Vorgabe ist der
+    Komponentenvergleich. Die Wahl im Feld wirkt auch von Hand.
+
+    Darunter der Abschnitt "Ergebnisse — Energie" (Anwenderauftrag 13.10.2026) aus der echten
+    Huelle UebersichtErgebnisGaben mit synthetischen Ergebnissen: Variante 1 ist simuliert und
+    weicht ab, weitere Varianten sind nicht simuliert. ?offen=alle klappt alle zugeklappten
+    Gruppen auf, ?offen=<schluessel,...> die genannten (Gruppenschluessel des Kerns, etwa
+    emissionen). ?anpassen=1 oeffnet den Dialog "Anzeige anpassen..." beim Laden;
+    ?anzeige=beispiel legt eine angepasste Anzeige in die Einstellungsablage der Probe
+    (Deckung ausgeblendet, Stromlast abgewaehlt, Kaelte offen). Die Ablage ist eine
+    Attrappe der Naht und wird je Seitenaufruf geleert.
+
+    Die drei Knoepfe der Gruppe "Variante verwalten" oeffnen ihre Dialoge (Anwenderauftrag
+    13.10.2026); Anlegen, Umbenennen und Loeschen wirken auf die synthetische Gruppe der
+    Seite - ohne Datenbank, nur fuer die Sichtprobe. *@
+
+<div class="epos-startseite uep-rahmen">
+    <Reiter Aktiv="BERICHTE_KOSTEN" Bezeichnung="Hauptreiter">
+        <KindInhalt>
+            @foreach (string titel in new[] { "Projekt", "Wärmebedarf", "Kältebedarf", "Strombedarf", "Energieerzeuger", "Simulation" })
+            {
+                <Reiterblatt @key="titel" Schluessel="@("UEP_" + titel)" Titel="@titel" />
+            }
+            <Reiterblatt Schluessel="BERICHTE_KOSTEN" Titel="Berichte &amp; Kosten">
+                <KindInhalt>
+                    <BerichteKostenSeite SeitenGaben="Gaben" Stamm="@(() => STAMM)"
+                                         StammBeschriftung="Stamm:" Status="Kurzstand"
+                                         Startseite="@BerichteKostenSeite.SEITE_UEBERSICHT"
+                                         NavigationBezeichnung="Berichte und Kosten" />
+                </KindInhalt>
+            </Reiterblatt>
+        </KindInhalt>
+    </Reiter>
+</div>
+
+<style>
+    body { margin: 0; padding: 8px 16px; font-family: var(--epos-schrift); font-size: var(--epos-schriftgroesse);
+           background: var(--epos-flaeche); }
+    .uep-rahmen { min-height: 600px; }
+</style>
+
+@code {
+    private const string STAMM = "Referenzprojekt Mehrfamilienhaus";
+
+    /// <summary>Die Bezeichner der Varianten (Variante i hat die Projekt-Id 1 + i); die Dialoge der Verwaltung aendern die Liste.</summary>
+    private static List<string> s_namen = new() { Vorgabename(1) };
+    private static int s_varianten => s_namen.Count;
+    private static bool s_nurUnterschiede;
+    private static int s_markiert = 1;
+    private static readonly HashSet<string> s_offen = new();
+    private static bool s_anpassen;
+
+    /// <summary>Die Einstellungsablage der Probe (Attrappe der Naht, je Seitenaufruf geleert).</summary>
+    private static readonly WindowsFormsApplication1.FluechtigeEinstellungen s_ablage = new();
+    private static string s_ansicht = "tabelle";
+
+    protected override void OnInitialized()
+    {
+        var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
+        int anzahl = abfrage.TryGetValue("varianten", out var v) && int.TryParse(v, out int n) ? Math.Clamp(n, 0, 8) : 1;
+        s_namen = Enumerable.Range(1, anzahl).Select(Vorgabename).ToList();
+        s_nurUnterschiede = abfrage.TryGetValue("nurunterschiede", out var u) && u.ToString() == "1";
+        s_markiert = abfrage.TryGetValue("variante", out var w) && int.TryParse(w, out int i) && i >= 1 && i <= s_varianten
+            ? 1 + i : 1;
+        s_ansicht = abfrage.TryGetValue("ansicht", out var a) && a.ToString() == "grafik" ? "grafik" : "tabelle";
+        s_offen.Clear();
+        s_anpassen = abfrage.TryGetValue("anpassen", out var anp) && anp.ToString() == "1";
+        s_ablage.Loesche(EPOS.UI.Seiten.Berichte.UebersichtErgebnisAnzeige.SCHLUESSEL_GRUPPEN);
+        s_ablage.Loesche(EPOS.UI.Seiten.Berichte.UebersichtErgebnisAnzeige.SCHLUESSEL_KENNZAHLEN_AUS);
+        s_ablage.Loesche(EPOS.UI.Seiten.Berichte.UebersichtErgebnisAnzeige.SCHLUESSEL_OHNE_WERT_AUS);
+        if (abfrage.TryGetValue("anzeige", out var z) && z.ToString() == "beispiel")
+        {
+            // Eine angepasste Anzeige: Deckung ausgeblendet, die Stromlast abgewählt, Kälte offen in der Tafel.
+            s_ablage.Schreib(EPOS.UI.Seiten.Berichte.UebersichtErgebnisAnzeige.SCHLUESSEL_GRUPPEN, "deckung=ausgeblendet;kaelte=offen");
+            s_ablage.Schreib(EPOS.UI.Seiten.Berichte.UebersichtErgebnisAnzeige.SCHLUESSEL_KENNZAHLEN_AUS, "energie.strommax");
+        }
+        if (abfrage.TryGetValue("offen", out var o))
+        {
+            IEnumerable<string> gruppen = o.ToString() == "alle"
+                ? WindowsFormsApplication1.Energievergleich.GRUPPEN
+                : o.ToString().Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            foreach (string g in gruppen) s_offen.Add(g);
+        }
+    }
+
+    /// <summary>Synthetische Ergebnisse je Version: der Stamm (Id 1) und Variante 1 (Id 2, mit Puffer) sind simuliert.</summary>
+    private static WindowsFormsApplication1.VariantenDaten Ergebnis(int id, bool stamm)
+    {
+        bool puffer = id == 2;
+        var bedarf = new WindowsFormsApplication1.ErgebnisEnergiebedarfModel
+        {
+            Waermebedarf_Gesamt = 182.4, Waermelast_Max = 96, Strombedarf_Gesamt = 64.2, Strombedarf_Max = 31,
+            Stromrestbedarf = puffer ? 70.9 : 75.6, Waermerestbedarf = 0
+        };
+        bedarf.Waermebedarf_Kanal[0] = 151.0;
+        bedarf.Waermebedarf_Kanal[1] = 31.4;
+        return new WindowsFormsApplication1.VariantenDaten
+        {
+            IdProjekt = id, IstStamm = stamm, CO2Gesamt = puffer ? 31.8 : 34.6, CO2Spezifisch = puffer ? 174 : 190,
+            EnergiekostenJeTraeger = new List<WindowsFormsApplication1.EnergieTraegerNachweis>
+            {
+                new() { CarrierId = 1, Traeger = "Erdgas", MengeMWh = puffer ? 24.6 : 37.2, WaermeMengeMWh = puffer ? 24.6 : 37.2 },
+                new() { CarrierId = 2, Traeger = "Strom", Netzstrom = true, MengeMWh = puffer ? 70.9 : 75.6, Einheit = "kWh" }
+            },
+            Ergebnis = new WindowsFormsApplication1.ErgebnisModel
+            {
+                Energiebedarf = bedarf,
+                Waermepumpe = new WindowsFormsApplication1.ErgebnisWaermepumpeModel
+                {
+                    Waermebedarf = 182.4, Waermeproduktion_WP = puffer ? 160.3 : 148.9,
+                    Stromverbrauch_WP = puffer ? 44.1 : 42.5, Waermebedarfsdeckung = puffer ? 87.9 : 81.6,
+                    Vollbenutzungsstunden = puffer ? 3420 : 3180, Stromverbrauch_Kuehlung = puffer ? 2.9 : 3.1
+                },
+                Heizkessel = new WindowsFormsApplication1.ErgebnisHeizkesselModel
+                {
+                    // Der Gasverbrauch des Kessels ist der Brennstoffeinsatz; er gleicht die Trägerzeile „Endenergie Erdgas“.
+                    Waermebedarf = 182.4, Waermeproduktion = puffer ? 22.1 : 33.5, Gasverbrauch = puffer ? 24.6 : 37.2
+                },
+                Photovoltaik = new WindowsFormsApplication1.ErgebnisPhotovoltaikModel
+                {
+                    Strombedarf = 64.2, Stromproduktion = 24.0, Ueberschuss = puffer ? 6.4 : 8.1
+                }
+            }
+        };
+    }
+
+    private static readonly WindowsFormsApplication1.UebersichtErgebnisGaben s_ergebnisHuelle = new(Ergebnis, s_ablage);
+
+    private static IReadOnlyDictionary<string, object> ErgebnisSatz()
+    {
+        var satz = new Dictionary<string, object>(s_ergebnisHuelle.Gaben())
+        {
+            ["AnpassenOffen"] = s_anpassen,
+            // ?ansicht=grafik zeigt die Grafik; die Wahl gilt im Wirt je Sitzung statt in der Einstellungsnaht.
+            ["AnsichtLesen"] = new Func<string>(() => s_ansicht),
+            ["AnsichtGewechselt"] = new Action<string>(a => s_ansicht = a),
+            ["KlappgruppeOffenLesen"] = new Func<string, bool>(g => s_offen.Contains(g)),
+            ["KlappgruppeOffenGewechselt"] = new Action<string, bool>((g, an) =>
+            {
+                if (an) s_offen.Add(g);
+                else s_offen.Remove(g);
+            })
+        };
+        return satz;
+    }
+
+    private static Reiterstatus? Kurzstand(string seite) => seite == BerichteKostenSeite.SEITE_UEBERSICHT
+        ? new Reiterstatus((s_varianten + 1) + " Versionen · simuliert", (s_varianten + 1) + " Versionen")
+        : null;
+
+    private static VarianteZeile[] Gruppe()
+    {
+        var l = new List<VarianteZeile>
+        {
+            new VarianteZeile { IdProjekt = 1, Art = "Stamm", Bezeichner = "(Stammprojekt)", Projektname = STAMM,
+                                SimZeitpunkt = "12.10.26 23:05", IstStamm = true,
+                                Speicher = "mit Speicherflotte: PV-Eigenverbrauch (reaktiv) · 1 Einheit" }
+        };
+        for (int i = 1; i <= s_varianten; i++)
+            l.Add(new VarianteZeile { IdProjekt = 1 + i, Art = "Variante", Bezeichner = Variantenname(i),
+                                      Projektname = STAMM + " - " + Variantenname(i),
+                                      SimZeitpunkt = i == 1 ? "12.10.26 23:07" : "" });
+        return l.ToArray();
+    }
+
+    private static string Vorgabename(int i) => i == 1 ? "mit Pufferspeicher Heizung" : "Variante " + i;
+
+    private static string Variantenname(int i) => s_namen[i - 1];
+
+    private static GewerkVergleichZelle Zelle(string name, string kennwert, int anzahl = 1, bool ab = false)
+        => new GewerkVergleichZelle
+        {
+            WeichtAb = ab,
+            Eintraege = new[] { new GewerkVergleichEintrag { Anzahl = anzahl, Bezeichner = name, Kennwerte = kennwert,
+                                                            Kurztext = "Nennleistung: " + kennwert } }
+        };
+
+    private static GewerkVergleichZeile Gewerk(string name, Func<int, GewerkVergleichZelle> zelle)
+    {
+        var zellen = new List<GewerkVergleichZelle>();
+        for (int i = 0; i <= s_varianten; i++) zellen.Add(zelle(i));
+        return new GewerkVergleichZeile { Gewerk = name, Zellen = zellen };
+    }
+
+    private static UebersichtStand Stand()
+    {
+        VarianteZeile[] gruppe = Gruppe();
+        var spalten = new List<VersionsSpalte> { new VersionsSpalte { Name = "Stamm", Stand = "simuliert 12.10.26 23:05" } };
+        for (int i = 1; i <= s_varianten; i++)
+            spalten.Add(new VersionsSpalte { Name = Variantenname(i), Stand = i == 1 ? "simuliert 12.10.26 23:07" : "nicht simuliert" });
+
+        var gewerke = new List<GewerkVergleichZeile>
+        {
+            Gewerk("Wärmepumpe", i => Zelle("WP 1", "16 kW")),
+            Gewerk("Spitzenkessel", i => Zelle("Kessel 1", "28 kW")),
+            Gewerk("Pufferspeicher", i => i == 0 ? new GewerkVergleichZelle() : Zelle("Speicher 1", "1.000 l", ab: true)),
+            Gewerk("Stromspeicher", i => Zelle("Batterie 1", "12,8 kWh"))
+        };
+        int unterschiede = s_varianten > 0 ? 1 : 0;
+        if (s_markiert > 1) return Unterschiedsstand(gruppe);
+        return new UebersichtStand
+        {
+            Staemme = new[] { (1, STAMM) },
+            StammId = 1,
+            Zeilen = gruppe,
+            MarkierteId = 1,
+            GewaehlteVarianten = gruppe.Select(z => z.IdProjekt).ToArray(),
+            KomponentenTitel = "Komponenten im Vergleich — Stammprojekt und Varianten",
+            Versionsspalten = spalten,
+            Gewerke = gewerke,
+            AnlegenMoeglich = true,
+            SimulierenMoeglich = true,
+            Statuszeile = "4 Gewerke · " + (s_varianten == 1 ? "Stamm und 1 Variante" : "Stamm und " + s_varianten + " Varianten")
+                          + " · " + (unterschiede == 1 ? "1 Unterschied" : "keine Unterschiede")
+        };
+    }
+
+    /// <summary>Eine Variante ist gewaehlt: die Unterschiedstabelle mit Aktionsspalte.</summary>
+    private static UebersichtStand Unterschiedsstand(VarianteZeile[] gruppe)
+    {
+        string name = Variantenname(s_markiert - 1);
+        return new UebersichtStand
+        {
+            Staemme = new[] { (1, STAMM) },
+            StammId = 1,
+            Zeilen = gruppe,
+            MarkierteId = s_markiert,
+            GewaehlteVarianten = gruppe.Select(z => z.IdProjekt).ToArray(),
+            KomponentenTitel = "Unterschiede zum Stammprojekt — Variante „" + name + "“",
+            Spalten = new[] { "Gewerk", "Merkmal", "Stamm", "Variante" },
+            Vergleich = new[]
+            {
+                new VergleichZeile { Schluessel = 1, Gewerk = "Pufferspeicher", Merkmal = "Anzahl Komponenten",
+                                     Zellen = new[] { "0", "1" }, MitAktion = true,
+                                     AktionKurztext = "Den Komponentenbestand aus einer anderen Version übernehmen" },
+                new VergleichZeile { Schluessel = 2, Gewerk = "", Merkmal = "Volumen",
+                                     Zellen = new[] { "—", "1.000 l" }, MitAktion = true,
+                                     AktionKurztext = "Dieses Feld aus einer anderen Version übernehmen" },
+                new VergleichZeile { Schluessel = 3, Gewerk = "", Merkmal = "Bezeichner",
+                                     Zellen = new[] { "—", "Speicher 1" }, MitAktion = true,
+                                     Sperrgrund = "Der Bezeichner ist der Schlüssel der Zuordnung." }
+            },
+            AnlegenMoeglich = true,
+            SimulierenMoeglich = true,
+            Statuszeile = "3 Unterschiede gegenüber dem Stammprojekt."
+        };
+    }
+
+    private static IReadOnlyDictionary<string, object>? Gaben(string seite) => seite == BerichteKostenSeite.SEITE_UEBERSICHT
+        ? new Dictionary<string, object>
+        {
+            ["Laden"] = new Func<UebersichtStand>(Stand),
+            ["VergleichGewaehlt"] = new Action<IReadOnlyList<int>>(_ => { }),
+            ["ZeileMarkiert"] = new Action<int>(id => s_markiert = id),
+            ["UebernahmeGaben"] = new Func<VergleichZeile, IReadOnlyDictionary<string, object>>(_ => new Dictionary<string, object>()),
+            // Die drei Dialoge der Verwaltung wirken auf die synthetische Gruppe (Variante i = Id 1 + i).
+            ["VarianteAnlegen"] = new Func<int, string, VariantenAktionErgebnis>((_, b) =>
+            {
+                s_namen.Add(b);
+                return VariantenAktionErgebnis.Ok("Variante „" + b + "“ angelegt.");
+            }),
+            ["Zielname"] = new Func<int, string, string>((_, b) => STAMM + " - " + b),
+            ["VarianteUmbenennen"] = new Func<int, string, VariantenAktionErgebnis>((id, b) =>
+            {
+                string bisher = s_namen[id - 2];
+                s_namen[id - 2] = b;
+                return VariantenAktionErgebnis.Ok("Die Variante „" + bisher + "“ heißt jetzt „" + b + "“.");
+            }),
+            ["LoeschFrage"] = new Func<int, string>(id =>
+                "Variante „" + s_namen[id - 2] + "“ und alle zugehörigen Projektdaten unwiderruflich löschen?"),
+            ["VarianteLoeschen"] = new Func<int, bool, string>((id, _) =>
+            {
+                string name = s_namen[id - 2];
+                s_namen.RemoveAt(id - 2);
+                if (s_markiert == id) s_markiert = 1;
+                return "Variante „" + name + "“ gelöscht.";
+            }),
+            ["NurUnterschiedeLesen"] = new Func<bool>(() => s_nurUnterschiede),
+            ["NurUnterschiedeGewechselt"] = new Action<bool>(an => s_nurUnterschiede = an),
+            ["LabelAbschnittKomponenten"] = "Komponenten und Einstellungen",
+            ["ErgebnisGaben"] = ErgebnisSatz()
+        }
+        : null;
+}

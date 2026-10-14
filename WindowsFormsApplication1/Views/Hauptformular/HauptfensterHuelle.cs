@@ -115,6 +115,12 @@ namespace WindowsFormsApplication1
                     new Func<IReadOnlyDictionary<string, object>>(
                         StromspeicherAuslegungHuelle.AnsichtGaben),
 
+                // DIE PUFFERSPEICHER-AUSLEGUNG (Stufe P2) - ein Delegat je Betreten wie die
+                // Stromspeicher-Auslegung; die Huelle ist plattformfrei und holt den
+                // angemeldeten Arbeitsgang ab.
+                ["PufferAuslegungGaben"] =
+                    new Func<int, IReadOnlyDictionary<string, object>>(PufferAuslegungHuelle.AnsichtGaben),
+
                 // DIE SIMULATION als EINE freie Ansicht (Auftrag #207, SIM-Q1).
                 // Wie die zwei darueber ein DELEGAT je Betreten: Der Satz bringt
                 // den Stand der zwei Huelleninstanzen mit - den gerechneten Lauf,
@@ -134,6 +140,24 @@ namespace WindowsFormsApplication1
                 ["BauteilaufbauKatalogGaben"] =
                     new Func<IReadOnlyDictionary<string, object>>(BauteilaufbauHuelle.Gaben),
 
+                // DIE KAELTEMASCHINEN (KU3-1) - die Huelle liegt in EPOS.UI.Daten. Unter Windows oeffnet die
+                // Verwaltung ein eigenes Fenster (KaeltemaschineKatalogFensterHuelle, WinFormsNavigation);
+                // die freie Ansicht bekommt fuer Wege an der Navigation vorbei dieselben Gaben, samt "Import..."
+                // (Copper-Kurvendatei, CSV-Kennfeldvorlage) ueber den Dateiwaehler.
+                ["KaeltemaschineKatalogGaben"] =
+                    new Func<IReadOnlyDictionary<string, object>>(KaeltemaschineKatalogFensterHuelle.Gaben),
+                // Die Kaeltemaschinen des offenen Projekts (KU3-4c) - der Erzeugerdialog als freie Ansicht.
+                ["KaeltemaschineAnlageGaben"] =
+                    new Func<int, IReadOnlyDictionary<string, object>>(KaeltemaschineAnlageFensterHuelle.Gaben),
+
+                // DIE BETRIEBSKALENDER der Bedarfsprofile (Entscheidungsvorlage PW2, BW2) als freie
+                // Ansicht der Wurzel - dieselbe Bauart wie die Kataloge darueber.
+                ["BetriebskalenderGaben"] =
+                    new Func<IReadOnlyDictionary<string, object>>(BetriebskalenderHuelle.Gaben),
+                // BAUTEILKATALOG EINLESEN (BK-3) - dieselbe Bauart, Huelle in EPOS.UI.Daten.
+                ["BauteilkatalogImportGaben"] =
+                    new Func<IReadOnlyDictionary<string, object>>(BauteilkatalogImportHuelle.Gaben),
+
                 // Das Kopfband (InitMarke). Die drei Produkttexte waren deutsche
                 // Literale im Code (Befund W16-B25); zwei davon stehen jetzt im
                 // Katalog, der Produktname bleibt eine Konstante — ein Markenname
@@ -143,6 +167,15 @@ namespace WindowsFormsApplication1
                 ["Claim"] = MyResource.Resource.HAUPT_CLAIM,
                 ["VersionText"] = Versionszeile(),
 
+                // DER ENTWICKLERMODUS (Administration und Support, Stufe 1): das Menue im
+                // Zuschnitt der Stufe, die Marke neben der Versionszeile und die Naht, ueber
+                // die beides nach einem Wechsel zur Laufzeit neu versorgt wird.
+                ["Eintraege"] = MenueZuschnitt(),
+                ["EntwicklerMarke"] = Marke(),
+                ["EntwicklerMarkeTip"] = MarkeTip(),
+                ["FreigabeAnmelden"] =
+                    new Action<Action<IReadOnlyList<Menuepunkt>, string, string>>(s => _freigabeSetzer = s),
+
                 // DAS LIZENZBANNER (Welle iF30, Anwenderentscheid 04.09.2026).
                 // Ermittelt wird die Lage HIER, in der Hülle, und nicht in der
                 // Komponente: Der Weg dahinter liest die DPAPI-Ablage und den
@@ -150,8 +183,52 @@ namespace WindowsFormsApplication1
                 // Zeichenfaden (Regel S-2 aus W15c). Was hineingeht, ist ein
                 // fertiger Satz samt Dringlichkeit — kein Token, kein Anker,
                 // kein Schlüssel.
-                ["Lizenzlage"] = LizenzLage.Ermitteln()
+                ["Lizenzlage"] = LizenzLage.Ermitteln(),
+
+                // DER BERICHT DES KATALOGABGLEICHS BEIM START (KU1 Stufe 1): einmal abgeholt, als
+                // Ueberlagerung des Fensters; leer, wenn der Start nichts abgeglichen hat.
+                ["Starthinweis"] = Katalogabgleich.StartberichtAbholen()?.Starttext() ?? "",
+                ["StarthinweisTitel"] = MyResource.Resource.KABG_START_TITEL,
+                ["StarthinweisOk"] = MyResource.Resource.KABG_OK
             };
+        }
+
+        // =====================================================================
+        //  Entwicklermodus (Administration und Support, Stufe 1)
+        // =====================================================================
+
+        /// <summary>Der Setzer der Seite (<c>Hauptfenster.FreigabeAnmelden</c>); null bis zum ersten Zeichnen.</summary>
+        private Action<IReadOnlyList<Menuepunkt>, string, string> _freigabeSetzer;
+
+        /// <summary>Oeffnet die DevTools der WebView des Hauptfensters; der Rahmen belegt ihn.</summary>
+        internal Func<bool> Entwicklerwerkzeuge { get; set; }
+
+        /// <summary>Meldet dem Rahmen einen Wechsel der Freigabestufe (Fenstertitel).</summary>
+        internal event Action FreigabeGewechselt;
+
+        /// <summary>Die Marke „Entwickler"; leer, wenn der Modus aus ist.</summary>
+        internal static string Marke() => Entwicklermodus.Aktiv ? MyResource.Resource.ENTW_MARKE : "";
+
+        /// <summary>Der Tooltip der Marke: die Quelle des Modus als fertiger Satz des Kerns.</summary>
+        /// <summary>
+        /// Das Menue im Zuschnitt der Stufe, mit den Sperrgruenden (Administration und Support,
+        /// Stufe 2, Konzept 4.2): „Fernwartung…" ist immer sichtbar und ohne bezahlte Lizenz
+        /// gesperrt. Die Frage an den Kern ist ohne Nebenwirkung.
+        /// </summary>
+        internal static IReadOnlyList<Menuepunkt> MenueZuschnitt() =>
+            Menuetabelle.Sichtbar(Entwicklermodus.Stufe,
+                                  ziel => ziel == Seitenschluessel.Fernwartung ? LizenzCtrl.FernwartungErlaubt().Grund : "");
+
+        internal static string MarkeTip() => Entwicklermodus.Aktiv ? Entwicklermodus.QuelleText : "";
+
+        /// <summary>
+        /// Menue, Marke und Fenstertitel nach einem Wechsel der Stufe sofort neu versorgen
+        /// (Geste im Dialog „Über EPOS-Plan", „Entwicklermodus ausschalten").
+        /// </summary>
+        internal void FreigabeNeuVersorgen()
+        {
+            _freigabeSetzer?.Invoke(MenueZuschnitt(), Marke(), MarkeTip());
+            FreigabeGewechselt?.Invoke();
         }
 
         /// <summary>„Version 1.0.0.0" — der Text des rechten Kopfbandlabels.</summary>
@@ -314,12 +391,23 @@ namespace WindowsFormsApplication1
                 case Seitenschluessel.EnergietraegerVerwaltung:
                     return () => EnergietraegerFenster.Oeffnen(_besitzer?.Invoke(), 0);
 
+                // Anwenderentscheid 03.10.2026: die Brennstoffe des Projekts (Projektkopie des
+                // Brennstoffkatalogs) - die Datenseite liegt plattformfrei in
+                // ProjektBrennstoffeHuelle (EPOS.UI.Daten), hier nur das Fenster.
+                case Seitenschluessel.ProjektBrennstoffe:
+                    return () => ProjektBrennstoffeFenster.Oeffnen(_besitzer?.Invoke());
+
                 // ANWENDERENTSCHEID ND-Q3 (14.09.2026): die Nutzungsdauern (AfA) als
                 // dritter Punkt der Rubrik Kostenverwaltung. Der Adapter ist duenn -
                 // Fenster und Parametersatz -, die Datenseite liegt plattformfrei in
                 // NutzungsdauerHuelle (EPOS.UI.Daten).
                 case Seitenschluessel.NutzungsdauerVerwaltung:
                     return () => NutzungsdauerFenster.Oeffnen(_besitzer?.Invoke());
+
+                // KM4-E3-c: die Verwaltung der Kaeltemittel (Menue „Daten & Import") - die Datenseite liegt
+                // plattformfrei in KaeltemittelHuelle (EPOS.UI.Daten), hier nur das Fenster.
+                case Seitenschluessel.Kaeltemittel:
+                    return () => KaeltemittelFenster.Oeffnen(_besitzer?.Invoke());
 
                 case Seitenschluessel.Einstellungen:
                     return () => EinstellungenHuelle.Oeffnen(_besitzer?.Invoke());
@@ -330,6 +418,11 @@ namespace WindowsFormsApplication1
                 case Seitenschluessel.KatalogDubletten:
                     return () => KatalogDublettenHuelle.Oeffnen(_besitzer?.Invoke());
 
+                // KU1 Stufe 1: „Katalog aktualisieren…" - die Datenseite liegt plattformfrei in
+                // KatalogabgleichHuelle (EPOS.UI.Daten), hier nur das Fenster.
+                case Seitenschluessel.Katalogabgleich:
+                    return () => KatalogabgleichFenster.Oeffnen(_besitzer?.Invoke());
+
                 // ANWENDERENTSCHEID MN-1 (19.09.2026): Der Fall
                 // Seitenschluessel.LizenzVerwaltung ist WEG. Der Menuepunkt
                 // „Administration → Lizenz…" entfaellt; der eine Einstieg ist
@@ -337,8 +430,14 @@ namespace WindowsFormsApplication1
                 // dort als Reiter „Status & Aktivierung".
 
                 // ---- Menü „Hilfe" -------------------------------------------
+                // Nach dem Lizenzdialog das Menue neu versorgen: Eine frische Aktivierung gibt
+                // „Fernwartung…" frei (Administration und Support, Stufe 2).
                 case Seitenschluessel.Lizenztext:
-                    return () => LizenzHuelle.Anzeigen(_besitzer?.Invoke());
+                    return () =>
+                    {
+                        LizenzHuelle.Anzeigen(_besitzer?.Invoke());
+                        FreigabeNeuVersorgen();
+                    };
 
                 // Der MENUEWEG bleibt (Auftrag #199) und uebergibt keinen
                 // Dialogkontext: Die Huelle baut sich den des aktiven BEREICHS. Den
@@ -347,11 +446,41 @@ namespace WindowsFormsApplication1
                 case Seitenschluessel.KiAssistent:
                     return () => KiChatHuelle.Oeffnen(_besitzer?.Invoke());
 
+                // Administration und Support, Stufe 3 (Konzept 5): der Dialog „Über EPOS-Plan" mit
+                // Diagnoseblock, Kontakt und der Geste des Entwicklermodus; die Datenseite liegt
+                // plattformfrei in UeberHuelle, nach einem Wechsel versorgt FreigabeNeuVersorgen.
                 case Seitenschluessel.Version:
-                    return Versionsmeldung;
+                    return () => UeberFenster.Oeffnen(_besitzer?.Invoke(), VersionText(), FreigabeNeuVersorgen);
 
                 case Seitenschluessel.Dokumentation:
                     return Dokumentation;
+
+                // Administration und Support, Stufe 2 (Konzept 4.2): Kontakt, Diagnosedaten und
+                // die Fernwartungsseite; die Datenseite liegt plattformfrei in FernwartungHuelle.
+                // Gesperrt meldet das Menueband keinen Klick, der Dialog sperrt den Knopf selbst.
+                case Seitenschluessel.Fernwartung:
+                    return () => FernwartungFenster.Oeffnen(_besitzer?.Invoke());
+
+                // ---- Menü „Entwicklung" (Administration und Support, Stufe 1) ----
+                // Nur im Entwicklermodus sichtbar; die Arbeit macht EntwicklungHuelle.
+                // „Auslieferungsstand wiederherstellen…" ist der Fall Katalogabgleich oben.
+                case Seitenschluessel.EntwAusnahmeprotokoll:
+                    return EntwicklungHuelle.AusnahmeprotokollOeffnen;
+
+                case Seitenschluessel.EntwProtokollordner:
+                    return EntwicklungHuelle.ProtokollordnerOeffnen;
+
+                case Seitenschluessel.EntwDatenbankordner:
+                    return EntwicklungHuelle.DatenbankordnerOeffnen;
+
+                case Seitenschluessel.EntwDiagnosedaten:
+                    return EntwicklungHuelle.DiagnosedatenKopieren;
+
+                case Seitenschluessel.EntwWebWerkzeuge:
+                    return () => EntwicklungHuelle.WebWerkzeugeOeffnen(Entwicklerwerkzeuge);
+
+                case Seitenschluessel.EntwModusAus:
+                    return () => EntwicklungHuelle.ModusAusschalten(FreigabeNeuVersorgen);
 
                 // ---- Sprache ------------------------------------------------
                 case Seitenschluessel.SpracheDeutsch:
@@ -390,24 +519,6 @@ namespace WindowsFormsApplication1
         // =====================================================================
         //  Die zusammengesetzten Abläufe
         // =====================================================================
-
-        /// <summary>
-        /// „Über EPOS-Plan" — die EINZIGE <c>MessageBox</c> des Hauptfensters
-        /// (<c>:669-677</c>). Ihr Titel war ein deutsches Literal („Über " +
-        /// PRODUKTNAME) und ihre Schlusszeile ebenso; beide stehen jetzt im
-        /// Katalog.
-        /// </summary>
-        private void Versionsmeldung()
-        {
-            string text = Hauptfensterrahmen.PRODUKTNAME + Environment.NewLine +
-                          MyResource.Resource.HAUPT_CLAIM + Environment.NewLine + Environment.NewLine +
-                          Versionszeile() + Environment.NewLine +
-                          MyResource.Resource.HAUPT_UEBER_HAUS;
-
-            Dienste.Dialog.Meldung(
-                text,
-                string.Format(MyResource.Resource.HAUPT_UEBER_TITEL, Hauptfensterrahmen.PRODUKTNAME));
-        }
 
         /// <summary>
         /// Die Online-Dokumentation im Browser (<c>:807-832</c>). Führend ist der

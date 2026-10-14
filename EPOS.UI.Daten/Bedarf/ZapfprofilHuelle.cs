@@ -201,6 +201,53 @@ namespace WindowsFormsApplication1
                     Id = g.Id,
                     Name = string.IsNullOrWhiteSpace(g.Name) ? "#" + g.Id.ToString(CultureInfo.InvariantCulture) : g.Name.Trim()
                 }).ToList();
+            daten.Gebaeudekalender = ZapfprofilCtrl.GebaeudekalenderDesProjekts(idProjekt).Select(AlsGebaeudekalender).ToList();
+        }
+
+        /// <summary>
+        /// Der Kalender eines Gebäudes, wie eine gebundene Zone ihn liest, als fertige Texte der Karte „Kalender" (ZB5):
+        /// das Wochenende als Kürzel der Tage („Sa + So"), das Feiertagsland mit seinem Namen (leer = bundeseinheitlich)
+        /// und je Ferienzeitraum „Name: von – bis" (ohne Namen „Ferien n", ohne Beginn ab dem 1. Januar).
+        /// </summary>
+        internal static ZapfprofilGebaeudekalenderDaten AlsGebaeudekalender(ZapfprofilCtrl.ZapfGebaeudekalender g)
+        {
+            var d = new ZapfprofilGebaeudekalenderDaten
+            {
+                Id = g.Id,
+                Name = string.IsNullOrWhiteSpace(g.Name) ? "#" + g.Id.ToString(CultureInfo.InvariantCulture) : g.Name.Trim(),
+                Wochenende = Wochenendtext(g.Wochenendtage),
+                Feiertagsland = Landname(g.Feiertagsland)
+            };
+            string vorgabename = Text_("ZPG_LBL_FERIEN", "Ferien {0}");
+            string muster = Text_("ZPG_KAL_FERIENTEXT", "{0}: {1} – {2}");
+            int n = 0;
+            foreach (ZonenferienStand f in g.Ferien ?? new ZonenferienStand[0])
+            {
+                n++;
+                int? ende = Gemeinjahrestag(f?.Ende);
+                if (f == null || !ende.HasValue) continue;
+                string name = string.IsNullOrWhiteSpace(f.Name) ? Format(vorgabename, n) : f.Name.Trim();
+                d.Ferien.Add(Format(muster, name, Gemeinjahrdatumtext.Anzeigetext(Gemeinjahrestag(f.Beginn) ?? 1),
+                                    Gemeinjahrdatumtext.Anzeigetext(ende)));
+            }
+            return d;
+        }
+
+        /// <summary>Die Wochenmaske (Mo = Bit 0) als Kürzel der Tage, „Sa + So"; leer gilt die Vorgabe Samstag und Sonntag.</summary>
+        internal static string Wochenendtext(int? maske)
+        {
+            int m = maske ?? (1 << 5 | 1 << 6);
+            var tage = Enumerable.Range(0, 7).Where(t => (m & (1 << t)) != 0).Select(t => Kalendertage.Wochentagname(t, kurz: true)).ToList();
+            return string.Join(" + ", tage);
+        }
+
+        /// <summary>Der Name eines Feiertagslands (ISO-Kürzel) in der Oberflächensprache; leer ohne Land oder für ein unbekanntes.</summary>
+        internal static string Landname(string kuerzel)
+        {
+            if (string.IsNullOrWhiteSpace(kuerzel)) return "";
+            int i = Landesfeiertage.BUNDESLAENDER.ToList().IndexOf(kuerzel.Trim().ToUpperInvariant());
+            string[] namen = Text_("KOND_TXT_KALB_BUNDESLAENDER", "").Split(';');
+            return i >= 0 && i < namen.Length && namen[i].Length > 0 ? namen[i] : kuerzel.Trim();
         }
 
         /// <summary>Ein Tagesgangsatz als Eintrag der Auswahl: Name · Katalogversion, Herkunft als Status; unvollständig = gesperrt mit Grund.</summary>
@@ -377,8 +424,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Angaben der Stufen Erweitert und Experte einer Zone des Kerns (5.3): Jahrestage der
-        /// Ferien als Tag und Monat des Rechenjahrs (0, 366 und leer = keine Angabe), Wohnungstabelle
-        /// in ihrer Reihenfolge, Texte leer statt <c>null</c>.
+        /// Ferien als Jahrestage des Gemeinjahrs (0, 366 und leer = keine Angabe) — JEDER Zeitraum der
+        /// Liste 1:1 als Zeile samt Name, ohne Auffüllen —, Wohnungstabelle in ihrer
+        /// Reihenfolge, Texte leer statt <c>null</c>.
         /// </summary>
         internal static ZapfprofilZonenangabenDaten AlsAngaben(ZonenStand z)
         {
@@ -406,13 +454,14 @@ namespace WindowsFormsApplication1
                 KaltwasserMittelC = z.KaltwasserMittelC,
                 KaltwasserAmplitudeK = z.KaltwasserAmplitudeK
             };
-            for (int i = 0; i < ZapfprofilZonenangabenDaten.FERIENZEITRAEUME; i++)
+            a.Ferien = new List<ZapfprofilFerienDaten>();
+            foreach (ZonenferienStand f in z.Ferien ?? new ZonenferienStand[0])
             {
-                int? b = z.Ferienbeginn != null && i < z.Ferienbeginn.Length ? z.Ferienbeginn[i] : null;
-                int? e = z.Ferienende != null && i < z.Ferienende.Length ? z.Ferienende[i] : null;
-                (int? bt, int? bm) = AlsDatum(b);
-                (int? et, int? em) = AlsDatum(e);
-                a.Ferien[i] = new ZapfprofilFerienDaten { BeginnTag = bt, BeginnMonat = bm, EndeTag = et, EndeMonat = em };
+                if (f == null) continue;
+                a.Ferien.Add(new ZapfprofilFerienDaten
+                {
+                    Name = f.Name, Von = Gemeinjahrestag(f.Beginn), Bis = Gemeinjahrestag(f.Ende)
+                });
             }
             for (int m = 0; m < ZapfprofilZonenangabenDaten.MONATE; m++)
                 a.Auslastung[m] = z.Auslastung != null && m < z.Auslastung.Length ? z.Auslastung[m] : null;
@@ -430,20 +479,25 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Zone des Kerns mit den Angaben des Dialogs: jede Größe der höheren Stufen aus dem DTO
-        /// (Ferien als Jahrestag des Rechenjahrs, unvollständig = keine Angabe; Wohnungstabelle in
+        /// (Ferien als Jahrestag des Rechenjahrs, JEDE Zeile des DTO mit Ende als Zeitraum der Liste in ihrer
+        /// Reihenfolge samt Name, eine Zeile ohne gültiges Ende = keine Angabe; Wohnungstabelle in
         /// der Reihenfolge des Dialogs, eine Zeile ohne Anzahl trägt 0 — der Schreibweg lehnt sie
         /// benannt ab). Was das DTO nicht führt (die Fläche des gebundenen Gebäudes), bleibt.
         /// </summary>
         internal static ZonenStand MitAngaben(ZonenStand z, ZapfprofilZonenangabenDaten a)
         {
             if (z == null || a == null) return z;
-            var beginn = new int?[ZapfprofilZonenangabenDaten.FERIENZEITRAEUME];
-            var ende = new int?[ZapfprofilZonenangabenDaten.FERIENZEITRAEUME];
-            for (int i = 0; i < ZapfprofilZonenangabenDaten.FERIENZEITRAEUME; i++)
+            var ferien = new List<ZonenferienStand>();
+            foreach (ZapfprofilFerienDaten f in a.Ferien ?? new List<ZapfprofilFerienDaten>())
             {
-                ZapfprofilFerienDaten f = a.Ferien != null && i < a.Ferien.Count ? a.Ferien[i] : null;
-                beginn[i] = Jahrestag(f?.BeginnTag, f?.BeginnMonat);
-                ende[i] = Jahrestag(f?.EndeTag, f?.EndeMonat);
+                int? ende = Gemeinjahrestag(f?.Bis);
+                if (f == null || !ende.HasValue) continue;
+                ferien.Add(new ZonenferienStand
+                {
+                    Name = string.IsNullOrWhiteSpace(f.Name) ? null : f.Name,
+                    Beginn = Gemeinjahrestag(f.Von),
+                    Ende = ende
+                });
             }
             var auslastung = new double?[ZapfprofilZonenangabenDaten.MONATE];
             for (int m = 0; m < auslastung.Length; m++)
@@ -471,8 +525,7 @@ namespace WindowsFormsApplication1
                 WohnflaecheJeWeM2 = a.WohnflaecheJeWeM2,
                 Topologie = (ZapfTopologie)(int)a.Topologie,
                 Zirkulation = a.Zirkulation,
-                Ferienbeginn = beginn,
-                Ferienende = ende,
+                Ferien = ferien,
                 Jahresmesswert = a.Jahresmesswert,
                 JahresmesswertEinheit = a.JahresmesswertEinheit.HasValue
                     ? (ZapfMesswerteinheit)(int)a.JahresmesswertEinheit.Value : (ZapfMesswerteinheit?)null,
@@ -491,6 +544,10 @@ namespace WindowsFormsApplication1
                 Wohnungen = wohnungen.AsReadOnly()
             };
         }
+
+        /// <summary>Ein Jahrestag des Gemeinjahrs (1 … 365); <c>null</c>, 0, 366 und alles außerhalb = keine Angabe.</summary>
+        internal static int? Gemeinjahrestag(int? jahrestag)
+            => jahrestag is int t && t >= 1 && t <= Zapfkalender.TAGE ? t : null;
 
         /// <summary>
         /// Ein Jahrestag des Kerns (1 … 365) als Tag und Monat des Rechenjahrs ohne Schaltjahr;
@@ -609,8 +666,7 @@ namespace WindowsFormsApplication1
                         grund = vorlage with
                         {
                             Id = 0,
-                            Ferienbeginn = (int?[])vorlage.Ferienbeginn?.Clone() ?? new int?[4],
-                            Ferienende = (int?[])vorlage.Ferienende?.Clone() ?? new int?[4],
+                            Ferien = (vorlage.Ferien ?? new ZonenferienStand[0]).Select(f => f with { }).ToArray(),
                             Auslastung = (double?[])vorlage.Auslastung?.Clone() ?? new double?[12],
                             Wohnungen = (vorlage.Wohnungen ?? new WohnungstypStand[0])
                                         .Select(w => w with { Id = 0 }).ToArray()
@@ -720,10 +776,6 @@ namespace WindowsFormsApplication1
                 Auslieferung = n.ReadOnly,
                 Waehlbar = vollstaendig,
                 Sperrgrund = vollstaendig ? "" : Text_("ZPG_KAT_SPERRE_TAGESGANG", "Der Tagesgangsatz dieser Nutzungsart ist unvollständig."),
-                // Kennwerte je Zimmer bei der Bezugsart Betten: der Hinweis am Feld der Bezugsmenge.
-                HinweisBezugsmenge = n.BezugsmengeIstZimmerzahl
-                    ? Text_("ZPG_HINW_BEZUGSMENGE_ZIMMER", "Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl")
-                    : "",
                 // Die Vorgaben der höheren Stufen (Z4) — Bezug und Faktoren des Katalogs, nie ein Beleg.
                 Kalenderart = (int)n.Kalender,
                 Kalender = Kalendername(n.Kalender),
@@ -987,7 +1039,13 @@ namespace WindowsFormsApplication1
             foreach (ZapfAblehnung a in e.Ablehnungen) vorschau.Meldungen.Add(MitPosition(Meldung(a), position));
             foreach (ZapfHinweis h in e.Hinweise) vorschau.Meldungen.Add(MitPosition(Meldung(h), position));
             // Die Warnliste der Bilanz (Warnlogik Z4, N9 (g)): jeder Hinweis mit Titel und Stufe.
-            foreach (ZapfHinweis h in e.Hinweise) vorschau.Warnliste.Add(Warnung(h));
+            // Ein Hinweis einer Zone trägt deren Position — der Dialog lässt die Hinweise einer
+            // unvollständigen Zone weg (ZB2).
+            foreach (ZapfHinweis h in e.Hinweise)
+            {
+                ZapfprofilWarnDaten w = Warnung(h);
+                vorschau.Warnliste.Add(!string.IsNullOrEmpty(h.Zone) && position.TryGetValue(h.Zone, out int p) ? w with { Position = p } : w);
+            }
             // Das Herkunftsprotokoll (Karte "Herkunft", N19) in der Reihenfolge des Rechenwegs.
             vorschau.Herkunft.AddRange(Herkunftszeilen(e.Herkunft));
             return vorschau;
@@ -1016,8 +1074,26 @@ namespace WindowsFormsApplication1
             string kennung = "ZPG_WARN_" + (h?.Code ?? "");
             string titel = Text_(kennung, null) ?? Text_("ZPG_AUS_HINWEIS", "Hinweis");
             return new ZapfprofilWarnDaten(kennung, titel, Satztext(h?.Satz),
-                                           h != null && h.Warnung ? ZapfprofilWarnstufe.Warnung : ZapfprofilWarnstufe.Hinweis);
+                                           h != null && h.Warnung ? ZapfprofilWarnstufe.Warnung : ZapfprofilWarnstufe.Hinweis)
+            {
+                AbErweitert = ErstAbErweitert(h?.Code)
+            };
         }
+
+        /// <summary>
+        /// Die Hinweise des Bilanzrechenwegs, die der Anwender in der Stufe EINFACH beheben kann (ZB8): Dort stehen
+        /// nur Nutzungsart, Bezugsgröße und Bedarfsniveau — ein Bedarf außerhalb der Bandbreite des Niveaus ist der
+        /// einzige Hinweis, den diese Felder beheben. Jeder andere Hinweis (Zirkulation, Wohnungstabelle, Messwert,
+        /// Katalog, Typtage, Einstellungen) steht erst ab der Stufe Erweitert.
+        /// </summary>
+        internal static readonly string[] EINFACH_BEHEBBAR = { Mengengeruest.HINWEIS_BANDBREITE };
+
+        /// <summary>
+        /// DIE Regel der Hinweise je Stufe (ZB8), einmal hier: Steht der Hinweis mit dem Code
+        /// <paramref name="code"/> erst ab der Stufe Erweitert? Ein Hinweis ohne Code steht in jeder Stufe.
+        /// </summary>
+        internal static bool ErstAbErweitert(string code)
+            => !string.IsNullOrEmpty(code) && Array.IndexOf(EINFACH_BEHEBBAR, code) < 0;
 
         /// <summary>Eine Schätzhilfe des Kerns als DTO — Vorschlag <c>null</c> ohne Verfahren, Rechenweg in der Oberflächensprache.</summary>
         internal static ZapfprofilSchaetzhilfeDaten AlsSchaetzhilfe(Schaetzhilfe s)
@@ -1118,7 +1194,8 @@ namespace WindowsFormsApplication1
                 WocheZapfungKw = woche.ZapfungKw.ToArray(),
                 WocheZirkulationKw = woche.ZirkulationKw.ToArray(),
                 MonateZapfungKwh = zapfung.MonatssummenKwh.ToArray(),
-                MonateZirkulationKwh = zirkulation.MonatssummenKwh.ToArray()
+                MonateZirkulationKwh = zirkulation.MonatssummenKwh.ToArray(),
+                Tagtypen = kalender?.Select(t => (int)t).ToArray()
             };
 
             string monatsname = Monatsname(monat);
@@ -1231,6 +1308,11 @@ namespace WindowsFormsApplication1
         /// Bezugsmenge größer 0, und kein Name doppelt — das Laufprotokoll nennt die Zonen beim
         /// Namen. Leer = in Ordnung. Dieselbe Prüfung für jeden Weg, der übernimmt.
         ///
+        /// <para>Jede Meldung einer Zone trägt deren <see cref="ZapfprofilMeldung.Position"/>: Der Dialog
+        /// stellt eine Zone, die hier nicht besteht, als „unvollständig“ dar und nennt am Zonenblock ihren
+        /// ersten Satz als nächsten Schritt (ZB2) — aus DIESER Prüfung, keine zweite Regelsammlung. Der
+        /// doppelte Name betrifft mehrere Zonen und bleibt ohne Position.</para>
+        ///
         /// <para><paramref name="katalog"/> ist der beim Öffnen geladene Katalog (<see cref="Gaben"/>
         /// reicht ihn als Abschluss durch, KEIN neuer Datenbankzugriff je Tastendruck): Er entscheidet
         /// je Zone, ob ihre Wohnungstabelle wirksam ist (<see cref="Mengengeruest.WohnungstabelleWirksam(ZapfBezugsart)"/>,
@@ -1250,9 +1332,11 @@ namespace WindowsFormsApplication1
             // Kalenderart „Wohnen" kommt dabei keine Rolle zu.
             Dictionary<int, ZapfBezugsart> bezugJeNutzungsart = (katalog ?? Array.Empty<ZapfprofilNutzungsartDaten>())
                 .ToDictionary(n => n.Id, n => (ZapfBezugsart)n.Bezugsart);
-            foreach (ZapfprofilZoneDaten z in eingabe.Zonen)
+            for (int position = 0; position < eingabe.Zonen.Count; position++)
             {
+                ZapfprofilZoneDaten z = eingabe.Zonen[position];
                 string name = (z.Name ?? "").Trim();
+                int anfang = m.Count;
                 if (name.Length == 0)
                     m.Add(Fehler("ZPG_MSG_ZONE_OHNE_NAME", "", Text_("ZPG_MSG_ZONE_OHNE_NAME", "Eine Zone hat keinen Namen.")));
                 if (z.IdNutzungsart <= 0)
@@ -1264,6 +1348,8 @@ namespace WindowsFormsApplication1
                 bool wohnungstabelleWirksam = bezugJeNutzungsart.TryGetValue(z.IdNutzungsart, out ZapfBezugsart bezug)
                                               && Mengengeruest.WohnungstabelleWirksam(bezug);
                 if (z.Angaben != null) AngabenPruefen(z.Angaben, name, wohnungstabelleWirksam, m);
+                // Die Meldungen dieser Zone tragen ihre Position (ZB2).
+                for (int i = anfang; i < m.Count; i++) m[i] = m[i] with { Position = position };
             }
             foreach (string doppelt in eingabe.Zonen.Select(z => (z.Name ?? "").Trim())
                                                     .Where(n => n.Length > 0)
@@ -1314,13 +1400,12 @@ namespace WindowsFormsApplication1
             {
                 ZapfprofilFerienDaten f = a.Ferien[i];
                 if (f == null || !f.Belegt) continue;
-                bool beginn = f.BeginnTag.HasValue || f.BeginnMonat.HasValue;
-                bool beginnGut = !beginn || Jahrestag(f.BeginnTag, f.BeginnMonat).HasValue;
-                bool endeGut = Jahrestag(f.EndeTag, f.EndeMonat).HasValue;
+                bool beginnGut = !f.Von.HasValue || Gemeinjahrestag(f.Von).HasValue;
+                bool endeGut = Gemeinjahrestag(f.Bis).HasValue;
                 if (!beginnGut || !endeGut)
                     m.Add(Fehler("ZPG_MSG_FERIEN_UNGUELTIG", name,
                         Format(Text_("ZPG_MSG_FERIEN_UNGUELTIG",
-                                     "Zone „{0}“: Ferienzeitraum {1} braucht ein Ende und für Beginn und Ende je einen gültigen Tag und Monat."),
+                                     "Zone „{0}“: Ferienzeitraum {1} braucht ein Ende („bis“); Beginn und Ende sind Tage des Jahres ohne Schalttag."),
                                name, i + 1)));
             }
 
@@ -1486,7 +1571,8 @@ namespace WindowsFormsApplication1
                 liste.Add(new Z_ProjektBrauchwasserModel
                 {
                     ID_Z = z.IdZ, ID_Projekt = idProjekt, ID_Brauchwasser = z.IdStamm,
-                    szBezeichner = z.Name, Summe = z.Summe
+                    szBezeichner = z.Name, Summe = z.Summe,
+                    ID_Betriebskalender = z.KalenderId
                 });
 
             ZapfprofilSpeicherergebnis e;
@@ -1708,7 +1794,10 @@ namespace WindowsFormsApplication1
         /// <summary>Ein Hinweis des Rechenwegs: der Satz des Kerns in der Oberflächensprache, Kennung des Satzes.</summary>
         internal static ZapfprofilMeldung Meldung(ZapfHinweis h)
             => new ZapfprofilMeldung(Satzkennung(h.Satz, "ZPG_SATZ_" + h.Code), h.Zone ?? "", Satztext(h.Satz),
-                                     ZapfprofilMeldungsart.Hinweis, h.Text ?? "");
+                                     ZapfprofilMeldungsart.Hinweis, h.Text ?? "")
+            {
+                AbErweitert = ErstAbErweitert(h.Code)
+            };
 
         /// <summary>Die Kennung der Nichtverfügbarkeit: die des Satzes.</summary>
         private static string VerfuegbarkeitsKennung(ZapfVerfuegbarkeit v) => Satzkennung(v?.Satz, "ZPG_SATZ_VERFUEGBAR_TABELLEN_FEHLEN");
@@ -1763,6 +1852,25 @@ namespace WindowsFormsApplication1
             t.GruppeZonen = Text_("ZPG_GRP_ZONEN", t.GruppeZonen);
             t.GruppeZonenSumme = Text_("ZPG_GRP_ZONEN_SUMME", t.GruppeZonenSumme);
             t.GruppeZone = Text_("ZPG_GRP_ZONE", t.GruppeZone);
+            t.GruppeGebaeudeAnlage = Text_("ZPG_GRP_GEBAEUDE_ANLAGE", t.GruppeGebaeudeAnlage);
+            t.KarteNutzung = Text_("ZPG_KARTE_NUTZUNG", t.KarteNutzung);
+            t.KarteMesswert = Text_("ZPG_KARTE_MESSWERT", t.KarteMesswert);
+            t.SummeWohnungen = Text_("ZPG_SUMME_WOHNUNGEN", t.SummeWohnungen);
+            t.SummePersonenJeWe = Text_("ZPG_SUMME_PERSONEN_JE_WE", t.SummePersonenJeWe);
+            t.SummeZirkJa = Text_("ZPG_SUMME_ZIRK_JA", t.SummeZirkJa);
+            t.SummeZirkNein = Text_("ZPG_SUMME_ZIRK_NEIN", t.SummeZirkNein);
+            t.SummeKeiner = Text_("ZPG_SUMME_KEINER", t.SummeKeiner);
+            t.SummeKeineAngabe = Text_("ZPG_SUMME_KEINE_ANGABE", t.SummeKeineAngabe);
+            t.SummeEigeneWerte = Text_("ZPG_SUMME_EIGENE_WERTE", t.SummeEigeneWerte);
+            t.SummeEigenerWert = Text_("ZPG_SUMME_EIGENER_WERT", t.SummeEigenerWert);
+            t.SummeVorgaben = Text_("ZPG_SUMME_VORGABEN", t.SummeVorgaben);
+            t.SummeAngesetzt = Text_("ZPG_SUMME_ANGESETZT", t.SummeAngesetzt);
+            t.SummeLadefenster = Text_("ZPG_SUMME_LADEFENSTER", t.SummeLadefenster);
+            t.SummeSeed = Text_("ZPG_SUMME_SEED", t.SummeSeed);
+            t.SummeTyptage = Text_("ZPG_SUMME_TYPTAGE", t.SummeTyptage);
+            t.HinweisEinwert = Text_("ZPG_HINW_EINWERT", t.HinweisEinwert);
+            t.KnopfKatalog = Text_("ZPG_BTN_KATALOG", t.KnopfKatalog);
+            t.KatalogBlattHinweis = Text_("ZPG_KATALOG_BLATT_HINWEIS", t.KatalogBlattHinweis);
             t.SpalteZone = Text_("ZPG_SP_ZONE", t.SpalteZone);
             t.SpalteNutzungsart = Text_("ZPG_SP_NUTZUNGSART", t.SpalteNutzungsart);
             t.SpalteBezugsgroesse = Text_("ZPG_SP_BEZUGSGROESSE", t.SpalteBezugsgroesse);
@@ -1830,6 +1938,7 @@ namespace WindowsFormsApplication1
             t.KennzahlGleichzeitigkeit = Text_("ZPG_KZ_GLEICHZEITIGKEIT", t.KennzahlGleichzeitigkeit);
             t.KennzahlGleichzeitigkeitVermerk = Text_("ZPG_KZ_GLEICHZEITIGKEIT_VERMERK", t.KennzahlGleichzeitigkeitVermerk);
             t.KennzahlAbgelehnt = Text_("ZPG_KZ_ABGELEHNT", t.KennzahlAbgelehnt);
+            t.ZoneUnvollstaendig = Text_("ZPG_ZONE_UNVOLLSTAENDIG", t.ZoneUnvollstaendig);
 
             t.GruppeStochastik = Text_("ZPG_GRP_STOCHASTIK", t.GruppeStochastik);
             t.LabelRechenwegJahresreihe = Text_("ZPG_LBL_RECHENWEG_JAHRESREIHE", t.LabelRechenwegJahresreihe);
@@ -1949,6 +2058,17 @@ namespace WindowsFormsApplication1
             t.HinweisBezugsmengeWohnungstabelle = Text_("ZPG_HINW_BEZUGSMENGE_WOHNUNGSTABELLE", t.HinweisBezugsmengeWohnungstabelle);
             t.GruppeBelegung = Text_("ZPG_GRP_BELEGUNG", t.GruppeBelegung);
             t.LabelWohnungstabelle = Text_("ZPG_LBL_WOHNUNGSTABELLE", t.LabelWohnungstabelle);
+            t.HinweisWohnungen = Text_("ZPG_HINW_WOHNUNGEN", t.HinweisWohnungen);
+            t.SpalteWohnungAnzahl = Text_("ZPG_SP_WOHNUNG_ANZAHL", t.SpalteWohnungAnzahl);
+            t.SpalteWohnungRaumzahl = Text_("ZPG_SP_WOHNUNG_RAUMZAHL", t.SpalteWohnungRaumzahl);
+            t.SpalteWohnungPersonen = Text_("ZPG_SP_WOHNUNG_PERSONEN", t.SpalteWohnungPersonen);
+            t.HilfeWohnungAnzahl = Text_("ZPG_TIP_WOHNUNG_ANZAHL", t.HilfeWohnungAnzahl);
+            t.HilfeWohnungRaumzahl = Text_("ZPG_TIP_WOHNUNG_RAUMZAHL", t.HilfeWohnungRaumzahl);
+            t.HilfeWohnungPersonen = Text_("ZPG_TIP_WOHNUNG_PERSONEN", t.HilfeWohnungPersonen);
+            t.HilfeWohnungAusstattung = Text_("ZPG_TIP_WOHNUNG_AUSSTATTUNG", t.HilfeWohnungAusstattung);
+            t.WohnungenSumme = Text_("ZPG_WOHNUNGEN_SUMME", t.WohnungenSumme);
+            t.WohnungenSummeWe = Text_("ZPG_WOHNUNGEN_SUMME_WE", t.WohnungenSummeWe);
+            t.HinweisAusstattungOhneKatalog = Text_("ZPG_HINW_AUSSTATTUNG_OHNE_KATALOG", t.HinweisAusstattungOhneKatalog);
             t.LabelAnzahl = Text_("ZPG_LBL_ANZAHL", t.LabelAnzahl);
             t.LabelRaumzahl = Text_("ZPG_LBL_RAUMZAHL", t.LabelRaumzahl);
             t.LabelPersonen = Text_("ZPG_LBL_PERSONEN", t.LabelPersonen);
@@ -1957,7 +2077,6 @@ namespace WindowsFormsApplication1
             t.KnopfWohnungNeu = Text_("ZPG_BTN_WOHNUNG_NEU", t.KnopfWohnungNeu);
             t.KnopfWohnungEntfernen = Text_("ZPG_BTN_WOHNUNG_ENTFERNEN", t.KnopfWohnungEntfernen);
             t.AusstattungVorgabe = Text_("ZPG_AUSSTATTUNG_VORGABE", t.AusstattungVorgabe);
-            t.HinweisWohnungstabelle = Text_("ZPG_HINW_WOHNUNGSTABELLE", t.HinweisWohnungstabelle);
             t.HinweisWohnungstabelleLeer = Text_("ZPG_HINW_WOHNUNGSTABELLE_LEER", t.HinweisWohnungstabelleLeer);
             t.LabelPersonenJeWe = Text_("ZPG_LBL_PERSONEN_JE_WE", t.LabelPersonenJeWe);
             t.EinheitPersonenJeWe = Text_("ZPG_EINHEIT_PERSONEN_JE_WE", t.EinheitPersonenJeWe);
@@ -1972,15 +2091,41 @@ namespace WindowsFormsApplication1
             t.KalenderNutzungsart = Text_("ZPG_KALENDER_NUTZUNGSART", t.KalenderNutzungsart);
             t.KalenderGebaeude = Text_("ZPG_KALENDER_GEBAEUDE", t.KalenderGebaeude);
             t.HinweisKalender = Text_("ZPG_HINW_KALENDER", t.HinweisKalender);
+            t.LabelKalenderQuelle = Text_("ZPG_LBL_KAL_QUELLE", t.LabelKalenderQuelle);
+            t.KalenderAusGebaeude = Text_("ZPG_KAL_AUS_GEBAEUDE", t.KalenderAusGebaeude);
+            t.KalenderWochenende = Text_("ZPG_KAL_WOCHENENDE", t.KalenderWochenende);
+            t.KalenderFeiertage = Text_("ZPG_KAL_FEIERTAGE", t.KalenderFeiertage);
+            t.KalenderFerien = Text_("ZPG_KAL_FERIEN", t.KalenderFerien);
+            t.KalenderBundeseinheitlich = Text_("ZPG_KAL_BUNDESEINHEITLICH", t.KalenderBundeseinheitlich);
+            t.KalenderKeineFerien = Text_("ZPG_KAL_KEINE_FERIEN", t.KalenderKeineFerien);
+            t.KalenderFerienZoneVor = Text_("ZPG_KAL_FERIEN_ZONE_VOR", t.KalenderFerienZoneVor);
+            t.SummeGebaeude = Text_("ZPG_KAL_SUM_GEBAEUDE", t.SummeGebaeude);
+            t.SummeNutzungsart = Text_("ZPG_KAL_SUM_NUTZUNGSART", t.SummeNutzungsart);
+            t.SummeFerien = Text_("ZPG_KAL_SUM_FERIEN", t.SummeFerien);
+            t.SummeFerienEins = Text_("ZPG_KAL_SUM_FERIEN_EINS", t.SummeFerienEins);
+            t.SummeEigene = Text_("ZPG_KAL_SUM_EIGENE", t.SummeEigene);
+            t.SummeEigeneEins = Text_("ZPG_KAL_SUM_EIGENE_EINS", t.SummeEigeneEins);
+            t.SummeKeineEigenen = Text_("ZPG_KAL_SUM_KEINE_EIGENEN", t.SummeKeineEigenen);
+            t.SummeKeineFerien = Text_("ZPG_KAL_SUM_KEINE", t.SummeKeineFerien);
+            t.SummeFeiertage = Text_("ZPG_KAL_SUM_FEIERTAGE", t.SummeFeiertage);
+            t.SummeBundeseinheitlich = Text_("ZPG_KAL_SUM_BUNDESEINHEITLICH", t.SummeBundeseinheitlich);
+            t.LabelEigeneFerien = Text_("ZPG_LBL_KAL_EIGENE_FERIEN", t.LabelEigeneFerien);
             t.LabelFerien = Text_("ZPG_LBL_FERIEN", t.LabelFerien);
-            t.LabelBeginnTag = Text_("ZPG_LBL_BEGINN_TAG", t.LabelBeginnTag);
-            t.LabelBeginnMonat = Text_("ZPG_LBL_BEGINN_MONAT", t.LabelBeginnMonat);
-            t.LabelEndeTag = Text_("ZPG_LBL_ENDE_TAG", t.LabelEndeTag);
-            t.LabelEndeMonat = Text_("ZPG_LBL_ENDE_MONAT", t.LabelEndeMonat);
+            t.LabelFerienName = Text_("ZPG_LBL_FERIEN_NAME", t.LabelFerienName);
+            t.LabelFerienVon = Text_("ZPG_LBL_FERIEN_VON", t.LabelFerienVon);
+            t.LabelFerienBis = Text_("ZPG_LBL_FERIEN_BIS", t.LabelFerienBis);
+            t.KnopfFerienNeu = Text_("ZPG_KNOPF_FERIEN_NEU", t.KnopfFerienNeu);
+            t.KnopfFerienEntfernen = Text_("ZPG_KNOPF_FERIEN_ENTFERNEN", t.KnopfFerienEntfernen);
             t.HinweisFerien = Text_("ZPG_HINW_FERIEN", t.HinweisFerien);
-            t.LabelBundesland = Text_("ZPG_LBL_BUNDESLAND", t.LabelBundesland);
-            t.BundeslandKlimaregion = Text_("ZPG_BUNDESLAND_KLIMAREGION", t.BundeslandKlimaregion);
-            t.GrundBundesland = Text_("ZPG_GRUND_BUNDESLAND", t.GrundBundesland);
+            t.LabelJahresraster = Text_("ZPG_LBL_JAHRESRASTER", t.LabelJahresraster);
+            t.TagtypFerien = Text_("ZPG_TAGTYP_FERIEN", t.TagtypFerien);
+            t.HinweisJahresraster = Text_("ZPG_HINW_JAHRESRASTER", t.HinweisJahresraster);
+            t.HinweisJahresrasterOhne = Text_("ZPG_HINW_JAHRESRASTER_OHNE", t.HinweisJahresrasterOhne);
+            t.PlatzhalterFerienVon = Text_("ZPG_PLATZHALTER_FERIEN_VON", t.PlatzhalterFerienVon);
+            t.PlatzhalterFerienBis = Text_("ZPG_PLATZHALTER_FERIEN_BIS", t.PlatzhalterFerienBis);
+            t.HinweisDatumFormat = Text_("ZPG_HINW_DATUM_FORMAT", t.HinweisDatumFormat);
+            t.HinweisDatumJahr = Text_("ZPG_HINW_DATUM_JAHR", t.HinweisDatumJahr);
+            t.MeldungGemeinjahr = Text_("ZPG_MSG_GEMEINJAHR", t.MeldungGemeinjahr);
             t.LabelJahresmesswert = Text_("ZPG_LBL_JAHRESMESSWERT", t.LabelJahresmesswert);
             t.LabelMesswertEinheit = Text_("ZPG_LBL_MESSWERT_EINHEIT", t.LabelMesswertEinheit);
             t.MesswertKwh = Text_("ZPG_MESSWERT_KWH", t.MesswertKwh);
@@ -1993,15 +2138,11 @@ namespace WindowsFormsApplication1
             t.LabelMesswertQuelle = Text_("ZPG_LBL_MESSWERT_QUELLE", t.LabelMesswertQuelle);
             t.LabelMesswertZeitraum = Text_("ZPG_LBL_MESSWERT_ZEITRAUM", t.LabelMesswertZeitraum);
             t.HinweisJahresmesswert = Text_("ZPG_HINW_JAHRESMESSWERT", t.HinweisJahresmesswert);
-            t.GruppeSchaetzhilfen = Text_("ZPG_GRP_SCHAETZHILFEN", t.GruppeSchaetzhilfen);
-            t.HinweisSchaetzhilfen = Text_("ZPG_HINW_SCHAETZHILFEN", t.HinweisSchaetzhilfen);
             t.LabelTagesbedarf = Text_("ZPG_LBL_TAGESBEDARF", t.LabelTagesbedarf);
-            t.LabelTagesbedarfManuell = Text_("ZPG_LBL_TAGESBEDARF_MANUELL", t.LabelTagesbedarfManuell);
             t.LabelVorschlag = Text_("ZPG_LBL_VORSCHLAG", t.LabelVorschlag);
             t.KnopfVorschlag = Text_("ZPG_BTN_VORSCHLAG", t.KnopfVorschlag);
             t.HinweisVorschlagOhne = Text_("ZPG_HINW_VORSCHLAG_OHNE", t.HinweisVorschlagOhne);
             t.HinweisOhneVorschlag = Text_("ZPG_HINW_OHNE_VORSCHLAG", t.HinweisOhneVorschlag);
-            t.HinweisManuell = Text_("ZPG_HINW_MANUELL", t.HinweisManuell);
             t.LabelAngesetzt = Text_("ZPG_LBL_ANGESETZT", t.LabelAngesetzt);
             t.AngesetztKalibriert = Text_("ZPG_ANGESETZT_KALIBRIERT", t.AngesetztKalibriert);
             t.LabelRechenweg = Text_("ZPG_LBL_RECHENWEG", t.LabelRechenweg);
@@ -2060,9 +2201,7 @@ namespace WindowsFormsApplication1
             t.LabelZirkFlaeche = Text_("ZPG_LBL_ZIRK_FLAECHE", t.LabelZirkFlaeche);
             t.LabelZirkLaufzeit = Text_("ZPG_LBL_ZIRK_LAUFZEIT", t.LabelZirkLaufzeit);
             t.HinweisZirkExperte = Text_("ZPG_HINW_ZIRK_EXPERTE", t.HinweisZirkExperte);
-            t.LabelAnzeigetemperatur = Text_("ZPG_LBL_ANZEIGETEMPERATUR", t.LabelAnzeigetemperatur);
-            t.LabelStundenschwelle = Text_("ZPG_LBL_STUNDENSCHWELLE", t.LabelStundenschwelle);
-            t.HinweisAnzeige = Text_("ZPG_HINW_ANZEIGE", t.HinweisAnzeige);
+            t.HinweisAnzeigeEinstellung = Text_("ZPG_HINW_ANZEIGE_EINSTELLUNG", t.HinweisAnzeigeEinstellung);
             t.UnterschriftDauerlinie = Text_("ZPG_UNTERSCHRIFT_DAUERLINIE", t.UnterschriftDauerlinie);
             t.DauerlinieMarke = Text_("ZPG_DAUERLINIE_MARKE", t.DauerlinieMarke);
             t.DauerlinieSchwelle = Text_("ZPG_DAUERLINIE_SCHWELLE", t.DauerlinieSchwelle);

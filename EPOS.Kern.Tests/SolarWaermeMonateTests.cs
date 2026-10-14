@@ -141,8 +141,9 @@ namespace EPOS.Kern.Tests
         /// Das Referenzprojekt 1049 deckt SICHTBAR: direkt am Heizkreis und über den Puffer,
         /// mit Überschuss im Sommer, und der Lauf meldet die Nachrang-Vorgabe 30 % (leere
         /// <c>Schwelle_Aus_Nachrang</c>). Die Zahlen hält die aktuelle Referenzbasis genau; hier
-        /// stehen die Bänder, in denen das Projekt seine Aufgabe erfüllt, und die Gleichheit mit
-        /// der Übersicht.
+        /// stehen die Bänder, in denen das Projekt seine Aufgabe erfüllt, die Gleichheit mit
+        /// der Übersicht und die Anker der Basis R32: Das Feld bildet seine Arbeitstemperatur aus
+        /// der untersten Zone des Puffers (Welle M2, ST2 mit ST4; Grädigkeit 5 K, Spreizung 10 K).
         /// </summary>
         [Fact]
         public void Das_Referenzprojekt_1049_deckt_direkt_und_ueber_den_Puffer()
@@ -161,7 +162,7 @@ namespace EPOS.Kern.Tests
                 var u = SimulationErgebnisCtrl.Uebersicht(l.sim, l.simulation_Waermebedarf, l.simulation_Strombedarf);
                 Assert.Equal(u.WaermeSolarMwh * 1000.0, w.SolarJahrKwh, 1e-6 * w.SolarJahrKwh);
 
-                Assert.InRange(w.BedarfJahrKwh, 68000.0, 68500.0);
+                Assert.InRange(w.BedarfJahrKwh, 52500.0, 53000.0);   // RP2a: Erdreichwiderstand (vorher 68 000 … 68 500)
                 Assert.True(w.DirektJahrKwh > 1000.0, "Direktanteil " + w.DirektJahrKwh + " kWh");
                 Assert.True(w.HatSpeicheranteil && w.SpeicherJahrKwh > 1000.0, "Speicheranteil " + w.SpeicherJahrKwh + " kWh");
                 Assert.InRange(w.DeckungsanteilProzent.Value, 12.0, 20.0);
@@ -178,6 +179,17 @@ namespace EPOS.Kern.Tests
 
                 double[] p = w.DeckungMonatProzent;
                 Assert.True(p[6] > p[0], "Juli " + p[6] + " %, Januar " + p[0] + " %");
+
+                // Anker des Rechenwegs RP2a (Erdreichwiderstand nach DIN EN ISO 13370; Basis R33: 9 382,4459 / 19 730,2372 /
+                // 65,3160776), Toleranz der Referenzsuite 1e-4 relativ: genutzte Solarwärme, Überschuss und mittlere
+                // Arbeitstemperatur des Felds.
+                Assert.Equal(7765.5030, st.WaermeproduktionGesamtKwh, 7765.5030 * 1e-4);
+                Assert.Equal(21012.2951, st.UeberschussSummeKwh, 21012.2951 * 1e-4);
+                Assert.True(st.Kollektor_Ergebnisse[0].ArbeitstemperaturAusSpeicher);
+                Assert.Equal(65.8370461, st.Kollektor_Ergebnisse[0].ArbeitstemperaturMittelC, 65.8370461 * 1e-4);
+                Assert.Equal(0.0, st.PumpenstromGesamtKwh);
+                Assert.Contains(l.Protokoll.Hinweise,
+                                t => t.Contains("bildet seine Arbeitstemperatur aus der untersten Zone des Puffers"));
             }
         }
 

@@ -25,6 +25,9 @@
 
 @namespace EPOS.UI.Dialoge.Import
 @using WindowsFormsApplication1
+@using KiKern
+@using EPOS.UI.Dienste
+@implements IDisposable
 
 <div class="epos-dialog epos-importkonflikte" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -196,11 +199,45 @@
         }
     }
 
+    // =====================================================================
+    // Der Hilfe-Assistent (Freigabe der Importdialoge, Teil A)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private ImportKonflikteKiSicht? _kiSicht;
+
+    protected override void OnInitialized()
+    {
+        _kiSicht = new ImportKonflikteKiSicht(
+            () => _zeilen,
+            (z, platz) => { AktionGeaendert(z, platz); _ = InvokeAsync(StateHasChanged); },
+            (z, name) => { NameGeaendert(z, name); _ = InvokeAsync(StateHasChanged); });
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.IMPORT_KONFLIKTE, () => _kiSicht, KiHaken());
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf: <c>Pruefen</c> ist dieselbe Prüfung wie
+    /// am OK-Knopf. <b>Kein Speicherweg:</b> OK gibt die Entscheidungen an den Import zurück, der
+    /// die Sätze anlegt — das bestätigt der Anwender.
+    /// </summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () =>
+        {
+            ImportKonfliktModell.Beanstandung? befund = ImportKonfliktModell.Pruefe(Entscheidungen(), Namen());
+            return befund is null ? "" : ImportKonfliktModell.BeanstandungsText(befund);
+        }
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     // =====================================================================

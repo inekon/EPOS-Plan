@@ -10,7 +10,10 @@
 *.userosscache
 *.sln.docstates
 *.kopie*
-.claude
+# .claude: Worktrees und lokale Einstellungen bleiben ignoriert; die Agentendefinitionen
+# unter .claude/agents/ sind eingecheckt (Cloud-Sitzungen, Anwender 27.09.2026).
+/.claude/*
+!/.claude/agents/
 Kenndaten.accdb
 Kenndaten.laccdb
 
@@ -393,6 +396,9 @@ Setup/Vorlage/*.sqlite
 Setup/Vorlage/*.sqlite-wal
 Setup/Vorlage/*.sqlite-shm
 Setup/Vorlage/*.bericht.txt
+# Das Katalogpaket der Programmfassung (KU1 Stufe 1) entsteht mit der Vorlage und gehoert ebenso
+# wenig ins Repository; die kleine Probe der Tests liegt unter Referenzlaeufe/Importproben/.
+Setup/Vorlage/Katalogpaket.json
 Setup/Voraussetzungen/*.exe
 # ACE-Redist in der Repo-Wurzel (Ablageort fuer build-setup.ps1) nie committen
 /AccessDatabaseEngine*.exe
@@ -446,3 +452,18 @@ Referenzlaeufe/Messreihen_INEKON/*
 # wird nie versioniert oder ausgeliefert. Versioniert ist allein das LIESMICH mit Herkunft und Lizenzstand.
 Referenzlaeufe/Schemakopien/*
 !Referenzlaeufe/Schemakopien/LIESMICH.md
+
+# Vorlagenordner der Berichtsvorlagen (BerichtsvorlagenCtrl, Dokumente/EPOS-Plan/Berichtsvorlagen):
+# Liegt der Klon unter Dokumente/EPOS-Plan, schreibt die laufende Anwendung ihre mitgelieferten
+# Vorlagen und die Ablagedatei in die Repowurzel. Laufzeiterzeugnis, nie versioniert.
+/Berichtsvorlagen/
+
+# HottCAD-Projektdateien (SQLite) sind Anwenderdaten: nur lokal fuer die Diagnose
+# (SqprojQuelldateienDiagnoseTests), nie versioniert (Datenaustauschkonzept 16.6 Nr. 1).
+Quellen/*.sqproj
+
+# FUSE-Temporaerdateien (Sync von einem gemounteten Laufwerk)
+.fuse_hidden*
+
+# Probenfotos der Agenten, nie im Repositorium
+.proben-fotos/

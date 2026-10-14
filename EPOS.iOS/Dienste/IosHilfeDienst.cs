@@ -18,8 +18,9 @@ namespace EPOS.iOS;
 /// <para><b>Was iU10 noch nicht kann.</b> Der Windows-Katalog liefert zu jedem
 /// Ziel auch Kurztext und Beschreibung; sie stammen aus dem Wiki-Zwischen-
 /// speicher, den <c>HelpCatalog</c> pflegt. Den gibt es auf iOS noch nicht.
-/// <see cref="Aufloesen"/> liefert deshalb den Zielnamen als Kurztext und
-/// einen Hinweis als Beschreibung - der Infoknopf ist damit sichtbar und
+/// <see cref="Aufloesen"/> liefert deshalb das lesbare Ziel als Kurztext
+/// (<c>Hilfeziel.Kurztext</c> des Kerns) und einen Hinweis als Beschreibung -
+/// der Infoknopf ist damit sichtbar und
 /// wirksam (er oeffnet die richtige Seite), nur ohne Vorschautext. Das
 /// Nachziehen des Katalogs gehoert zu iU11.</para>
 /// </summary>
@@ -59,7 +60,12 @@ public sealed class IosHilfeDienst : IHilfeDienst
         if (adresse.Length == 0) return null;
 
         return new HilfeEintrag(
-            ziel,
+            // Der Kurztext ist das LESBARE Ziel, nicht der rohe Eintrag der
+            // Zuordnungsdatei: "/wiki/Grundlagen/Kessel_und_Spitzenlast" wird zu
+            // "Grundlagen: Kessel und Spitzenlast", "Berechnung/Wärmepumpe#rechenweg"
+            // zu "Berechnung: Wärmepumpe" - dieselbe Lesbarmachung wie im
+            // Windows-Katalog (Kern, Hilfeziel.Kurztext).
+            Hilfeziel.Kurztext(ziel),
             // Drei-Schichten-Regel (A4): Anzeigetexte ausschliesslich ueber
             // MyResource. Bis iU9-W15b.0g stand hier der deutsche Satz fest im
             // Quelltext - der einzige Verstoss der iOS-Huelle (Befund W15b-B20,
@@ -138,29 +144,10 @@ public sealed class IosHilfeDienst : IHilfeDienst
     /// </summary>
     internal static string Adresse(string ziel)
     {
-        if (string.IsNullOrWhiteSpace(ziel)) return "";
-
-        string rest = ziel.Trim();
-        string anker = "";
-
-        int raute = rest.IndexOf('#');
-        if (raute >= 0)
-        {
-            anker = rest.Substring(raute + 1).Trim();
-            rest = rest.Substring(0, raute).Trim();
-        }
-        if (rest.Length == 0) return "";
-
-        string basis = WikiWissen.Basis();
-
-        // Ein fertiger Seitenpfad wird nur angehaengt, ein Kurzname bekommt
-        // erst die Rubrik davor.
-        if (rest.StartsWith("/"))
-        {
-            string url = basis + rest;
-            return anker.Length > 0 ? url + "#" + anker : url;
-        }
-
-        return WikiWissen.SeitenUrl(basis, WikiWissen.RubrikTitel(rest), anker);
+        // Die Adressbildung steht im Kern (Hilfeziel.Seitenadresse): Auch ein fertiger
+        // Seitenpfad geht dort je Segment durch Uri.EscapeDataString wie jeder Kurzname
+        // (WikiWissen.SeitenUrl) - bis dahin wurde er ungeschuetzt angehaengt, und ein
+        // Umlaut oder Leerzeichen im Pfad stand roh in der Adresse.
+        return Hilfeziel.Seitenadresse(WikiWissen.Basis(), ziel);
     }
 }

@@ -167,6 +167,26 @@ neuer Dateien, nicht das Ändern vorhandener. Eine vom Installer angelegte `Kenn
 dadurch schreibgeschützt — Access meldet das beim Öffnen. Nach „Komprimieren und reparieren"
 gehört die Datei dem angemeldeten Benutzer und ist beschreibbar.
 
+### Abgleich mit der Testdatenbank
+
+Die Testdatenbank `Referenzlaeufe/Kenndaten_Test.sqlite` führt **13** Wochenprofile (davon 4
+`ReadOnly`) und **16** Monatssätze (davon 6 `ReadOnly`). Die 11 Wochenprofile (ID 99–109) und die
+13 Monatssätze (ID 97–109) dieses Papiers stehen dort mit denselben IDs und Werten — die
+Monatswerte der Tabelle in Abschnitt 2 stimmen auf vier Stellen, die Tagessummen der 168 Stundenwerte
+auf die Wochenfaktoren. Die Mehrzeilen sind ältere Testzeilen aus der Zeit vor diesem Katalog:
+
+| Tabelle | ID | Bezeichner | Typ | `ReadOnly` | benutzt von |
+|---|---|---|---|---|---|
+| `Tab_Brauchwassertyp_STAMM` | 97 | Test | — | 0 | Typ der Sätze 94 und 96 |
+| `Tab_Brauchwassertyp_STAMM` | 98 | xxx | — | 0 | Typ des Satzes 95 |
+| `Tab_Brauchwasser_STAMM` | 94 | Haushalt-3 | Test | 1 | Referenzprojekte 1007 und 1046 (`Z_Projekt_Brauchwasser`) |
+| `Tab_Brauchwasser_STAMM` | 95 | test | xxx | 1 | Projekt 1009 |
+| `Tab_Brauchwasser_STAMM` | 96 | Haushalt-3 neu | Test | 0 | Projektkopien ohne Zuordnung |
+
+Sie bleiben in der Testdatenbank: 1007 und 1046 rechnen ihr Brauchwasser über den Satz
+„Haushalt-3“ und gehören zum Regressionsnetz der CI. Die Zählung dieses Papiers gilt für den
+Auslieferungskatalog; die Abweichung zur Testdatenbank ist damit erklärt und kein Datenfehler.
+
 ## 6. Geschichte: die Access-Migration hätte den neuen Katalog gelöscht (überholt seit 24.09.2026)
 
 > **Überholt.** `migration.manuell.sql` und `migration.config.json` (Skripte der Access-nach-Access-
@@ -222,16 +242,13 @@ der Insert mit den erhalten gebliebenen Vorlagenzeilen.
 
 ## 7. Weitere offene Punkte
 
-1. **Spaltennamen-Bug.** `Controller/BrauchwasserCtrl.cs` schreibt in `Insert()`/`Update()` auf
-   `M1…M12`, gelesen wird `Monat_n`. Der Pfad ist derzeit nicht aktiv (die Views speichern über
-   `BrauchwasserStammCtrl`), sollte aber korrigiert werden.
-2. **Lokalisierung.** `Views/Brauchwasser/` enthält nur `.resx`, keine `.de-DE.resx`/`.en-US.resx` —
+1. **Lokalisierung.** `Views/Brauchwasser/` enthält nur `.resx`, keine `.de-DE.resx`/`.en-US.resx` —
    als einziger View-Ordner.
-3. **Schulferien** sind bundesweit gemittelt; für konkrete Objekte lohnt ein landesspezifisches
+2. **Schulferien** sind bundesweit gemittelt; für konkrete Objekte lohnt ein landesspezifisches
    Profil. Analog beim Hotel die Wahl der passenden der drei Varianten.
-4. **Kaltwassertiefe** ist mit z = 2,0 m angesetzt. Bei bekannter Verlegetiefe (1,0–1,5 m in milden
+3. **Kaltwassertiefe** ist mit z = 2,0 m angesetzt. Bei bekannter Verlegetiefe (1,0–1,5 m in milden
    Regionen) wird die Amplitude größer — Parameter in `kaltwasser.py`.
-5. **Hallenbad und Camping** aus VDI 6002 Blatt 2 sind bewusst nicht aufgenommen (die Richtlinie rät
+4. **Hallenbad und Camping** aus VDI 6002 Blatt 2 sind bewusst nicht aufgenommen (die Richtlinie rät
    bei Camping ausdrücklich von der Verwendung ihrer Profile anstelle von Messdaten ab).
 
 ## 8. Relevante Dateien im Repo
@@ -241,7 +258,6 @@ der Insert mit den erhalten gebliebenen Vorlagenzeilen.
 | `migration.manuell.sql` | Migrationsskript der Access-Übernahme, Teil A Zeilen 50/51 und 123–131 betrafen den Brauchwasserkatalog — am 24.09.2026 entfernt, letzter Stand Commit `6d022f6d` |
 | `migration.config.json` | `excludeTables` des Auto-Generators; das manuelle Skript hatte Vorrang — am 24.09.2026 entfernt |
 | `WindowsFormsApplication1/Controller/BrauchwasserStammCtrl.cs` | Katalog lesen/schreiben, `CopyFromStamm()` Stamm → Projekt |
-| `WindowsFormsApplication1/Controller/BrauchwasserCtrl.cs` | Projekttabellen, enthält den `M1…M12`-Bug |
 | `WindowsFormsApplication1/Views/Brauchwasser/Form_EingBrauchwasserTyp.cs` | Maske „Brauchwassertypen Stundenverteilung", schreibt Spalten `1`…`168` einzeln per UPDATE |
 | `WindowsFormsApplication1/Views/Brauchwasser/Form_EingDBBrauchwasser.cs` | Maske „Eingabe Brauchwasser Daten" (12 Monatswerte) |
 | `WindowsFormsApplication1/Views/Brauchwasser/Form_Brauchwasser.cs` | Projektzuordnung inkl. überschreibbarer Jahressumme |

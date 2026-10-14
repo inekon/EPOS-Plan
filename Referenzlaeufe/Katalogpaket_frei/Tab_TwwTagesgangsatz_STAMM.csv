@@ -4,3 +4,6 @@ ID;Bezeichner;Status;ReadOnly
 3;Seniorenheim (abgeleitet);AUSLIEFERUNG;1
 4;Krankenhaus (abgeleitet);AUSLIEFERUNG;1
 5;Hotel (aus Messung);AUSLIEFERUNG;1
+6;Büro (Setzung);AUSLIEFERUNG;1
+7;Schule (Setzung);AUSLIEFERUNG;1
+8;Gewerbe Schichtbetrieb (Setzung);AUSLIEFERUNG;1

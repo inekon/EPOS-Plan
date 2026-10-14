@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dialoge.Erzeuger;
@@ -18,7 +19,7 @@ namespace WindowsFormsApplication1
     /// Auswahlleiste, Stammblatt — und bekommt ihren eigenen Satz; der Projektdialog behält
     /// seinen unverändert.</para>
     ///
-    /// <para><b>Alles über den Kern</b>: Zeilen, Verwendung, Duplizieren, Schloss und Löschen
+    /// <para><b>Alles über den Kern</b>: Zeilen, Löschregel, Duplizieren, Schloss und Löschen
     /// stehen in <see cref="GebaeudeStammCtrl"/>. <b>Gespeichert wird über den Weg des
     /// Katalogeditors</b> (<see cref="GebaeudeKatalogHuelle.Schreiben"/>, Welle #465): Das
     /// Stammblatt führt jedes Feld des Editors auf demselben Arbeitsstand, und derselbe
@@ -36,8 +37,11 @@ namespace WindowsFormsApplication1
         {
             var werte = new Dictionary<string, object>
             {
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(Dienste.Projekt.Id),
+                // Festlegung 15 (KP2): samt Spalte „Kalender" - die angelegten Kalender je Katalogbau,
+                // dasselbe Profil wie die Katalogauswahl des Projekts.
                 ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
-                    () => GebaeudeStammCtrl.Katalogfilterzeilen()),
+                    () => GebaeudeKatalogkalender.Katalogfilterzeilen()),
                 ["Katalogprofil"] = Katalogfilterprofil.FuerGebaeude(Uebersetzen),
                 ["Satz"] = new Func<string, GebaeudeStammblattDaten>(Satz),
                 ["Gebaeudetypen"] = new Func<IReadOnlyList<string>>(() => TagVCtrl.Typen()),
@@ -52,18 +56,30 @@ namespace WindowsFormsApplication1
                     GebaeudeStammCtrl.Verwendungstext(GebaeudeStammCtrl.FILTERWERT_WOHN),
                     GebaeudeStammCtrl.Verwendungstext(GebaeudeStammCtrl.FILTERWERT_SONSTIGE)
                 },
-                ["Verwendung"] = new Func<IReadOnlyDictionary<string, IReadOnlyList<string>>>(
-                    () => GebaeudeStammCtrl.Projektverwendung()),
+                // Die Loeschregel - eine Wahrheit im Kern, dieselbe wie im Projekt-Gebaeudedialog
+                // (Anwenderentscheid 06.10.2026): gesperrt allein der Auslieferungssatz; die Rueckfrage
+                // nennt die Projekte, die ihre Kopie behalten (allein ueber den Katalogverweis).
+                ["Loeschsperre"] = new Func<string, string>(GebaeudeStammCtrl.Loeschsperrgrund),
+                ["Loeschhinweis"] = new Func<IReadOnlyList<string>, string>(GebaeudeStammCtrl.Loeschhinweis),
                 // #465: der Schreibweg des Katalogeditors - dieselbe Pruefung (im Dialog), dieselbe
                 // Ableitung und dieselbe Auslieferungssperre (in der Huelle).
                 ["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>(
                     GebaeudeKatalogHuelle.Schreiben),
                 ["HuellTexte"] = GebaeudeKatalogHuelle.Texte(),
                 ["Prueftexte"] = GebaeudeKatalogHuelle.Prueftexte(),
+                // Stufe KP2, Welle U4: das Blatt "Konditionierung" - derselbe Weg des Katalogbaus wie
+                // im Katalogeditor (ohne "aus dem Katalog erneut uebernehmen"); geschrieben wird mit
+                // "Speichern" ueber GebaeudeKatalogHuelle.Schreiben, nur bei geaenderter Fassung.
+                ["Konditionierung"] = KonditionierungHuelle.Weg(Kalendereigentuemer.Katalogbau, 0),
+                ["KonditionierungTexte"] = KonditionierungTexteHuelle.Texte(),
+                ["KonditionierungFragen"] = KonditionierungTexteHuelle.Fragen(),
+                // Stufe NP3b: die Texte von „Nutzungsprofil übernehmen…" im Blatt „Konditionierung".
+                ["RaumnutzungTexte"] = RaumnutzungHuelle.Texte(),
                 // Stufe AK1 (Anlagenkopplung 8.4, 9.1): die hergeleiteten Vorgaben der
                 // Waermeuebergabe - mit der Klimareihe des geoeffneten Projekts; ohne Projekt
                 // steht die Regel ohne Zahl - und das Vorschaubild des Zeitprogramms.
                 ["UebergabeHerleitung"] = GebaeudeKatalogHuelle.Herleitungsweg(Dienste.Projekt.Id),
+                ["ErdreichAuskunft"] = GebaeudeKatalogHuelle.Erdreichweg(),
                 ["WochenVorschau"] = GebaeudeKatalogHuelle.Wochenvorschau(),
                 ["Loeschen"] = new Func<string, bool>(GebaeudeStammCtrl.Loeschen),
                 ["Duplizieren"] = new Func<int, string, KatalogSpeicherErgebnis>(Duplizieren),
@@ -71,8 +87,9 @@ namespace WindowsFormsApplication1
                 ["Schloss"] = Schlosswege.Aus(GebaeudeStammCtrl.SchlossSetzen),
                 ["Exists"] = new Func<string, bool>(n => new GebaeudeStammCtrl().Lies(n) != null),
                 // Der Katalogeditor nur noch fuer "Neu..." (AD-Q6, #465) - bearbeitet wird im Stammblatt.
-                ["KatalogGaben"] = new Func<IReadOnlyDictionary<string, object>>(
-                    () => GebaeudeKatalogHuelle.Gaben("", GebaeudeKatalogModus.Neu)),
+                ["KatalogGaben"] = new Func<IReadOnlyDictionary<string, object>>(KatalogGaben),
+                // Welle ZK-b: „Zonen bearbeiten …" - der Katalogeditor am gewaehlten Satz, auf dem Reiter „Zonen".
+                ["ZonenGaben"] = new Func<string, IReadOnlyDictionary<string, object>>(ZonenGaben),
                 ["TitelText"] = Titel(),
                 ["HilfeSchluessel"] = "Form_Gebaeude.btn_Help"
             };
@@ -88,6 +105,48 @@ namespace WindowsFormsApplication1
         // =================================================================================
         // Die Wege hinter den Delegaten
         // =================================================================================
+
+        /// <summary>
+        /// <b>Der Parametersatz des Katalogeditors hinter „Neu…"</b> — der des Editors in der
+        /// Betriebsart <see cref="GebaeudeKatalogModus.Neu"/>, mit EINER Abweichung: Aus der
+        /// Verwaltung gehört der Gebäudekatalog keinem Projekt, also reicht der Weg zur
+        /// Brauchwasser-Profilliste keinen Zapfprofil-Behälter; der Bedarfsprofil-Dialog zeigt dann
+        /// weder Knopf noch Optionsgruppe (Umsetzungskonzept Zapfprofilgenerator 5.2). Die Regel
+        /// stand bis Stufe KP2 an der Betriebsart „Admin" des Editors, die kein Aufrufer mehr baute.
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> KatalogGaben()
+            => new Dictionary<string, object>(GebaeudeKatalogHuelle.Gaben("", GebaeudeKatalogModus.Neu))
+            {
+                ["BrauchwasserGaben"] = GebaeudeKatalogHuelle.Brauchwasserweg(mitZapfprofil: false)
+            };
+
+        /// <summary>
+        /// <b>Der Parametersatz hinter „Zonen bearbeiten …"</b> (Welle ZK-b): der Katalogeditor in der Betriebsart
+        /// <see cref="GebaeudeKatalogModus.Bearbeiten"/> am Satz <paramref name="name"/>, aufgeschlagen auf dem Reiter
+        /// „Zonen"; das Schloss eines ausgelieferten Satzes gilt dort wie im Stammblatt. Der Weg zur
+        /// Brauchwasser-Profilliste ohne Zapfprofil-Behälter wie bei „Neu…".
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> ZonenGaben(string name)
+            => new Dictionary<string, object>(GebaeudeKatalogHuelle.Gaben(name ?? "", GebaeudeKatalogModus.Bearbeiten))
+            {
+                ["BrauchwasserGaben"] = GebaeudeKatalogHuelle.Brauchwasserweg(mitZapfprofil: false),
+                ["StartReiter"] = GebaeudeKatalogDialog.REITER_ZONEN
+            };
+
+        /// <summary>Die Gruppe „Zonen" des Stammblatts (Welle ZK-b): je Katalogzone Nutzfläche und Bauteile; leer ohne Zone.</summary>
+        internal static IReadOnlyList<Stammblattwert> Zonenwerte(int idStamm)
+        {
+            if (idStamm <= 0 || !ZonenKatalogSchema.Lesbar()) return Stammblattwert.Keine;
+            var c = System.Globalization.CultureInfo.CurrentCulture;
+            return new GebaeudeZonenCtrl().LesenJeGebaeude(idStamm, Zonenebene.Katalog).Select(z =>
+            {
+                string bauteile = (z.Bauteile?.Count ?? 0).ToString(c);
+                string wert = z.Nutzflaeche is double f
+                    ? string.Format(c, MyResource.Resource.GEBA_SB_ZONE_WERT, f.ToString("0.##", c), bauteile)
+                    : string.Format(c, MyResource.Resource.GEBA_SB_ZONE_WERT_OHNE_FLAECHE, bauteile);
+                return new Stammblattwert(z.Bezeichner ?? "", wert);
+            }).ToList();
+        }
 
         /// <summary>
         /// Ein Satz fürs Stammblatt: Kenndaten, Kennzahlen, die Hülle der vier Bauteile und
@@ -114,9 +173,24 @@ namespace WindowsFormsApplication1
                 Auslieferung = new GebaeudeStammCtrl().IsReadOnly(name),
                 Huelle = Huelle(m),
                 AlleDaten = AlleDaten(m),
+                Zonen = Zonenwerte(m.ID),
                 // #465: der Feldsatz des Katalogeditors - der Arbeitsstand des Stammblatts.
-                Feldsatz = GebaeudeKatalogHuelle.AusModell(m)
+                Feldsatz = MitKonditionierung(GebaeudeKatalogHuelle.AusModell(m), m.ID)
             };
+        }
+
+        /// <summary>
+        /// Der Feldsatz samt der Konditionierung des Katalogbaus (Stufe KP2, Welle K2): Das Stammblatt teilt
+        /// den Arbeitsstand des Editors, und „Speichern" schreibt sie über denselben Weg
+        /// (<see cref="GebaeudeKatalogHuelle.Schreiben(GebaeudeKatalogDaten, bool, string)"/>) — nur bei
+        /// geänderter Fassung.
+        /// </summary>
+        private static GebaeudeKatalogDaten MitKonditionierung(GebaeudeKatalogDaten d, int id)
+        {
+            d.Konditionierung = id > 0
+                ? KonditionierungHuelle.Lesen(KonditionierungCtrl.Eigner.Katalogbau(id))
+                : KonditionierungHuelle.Leer();
+            return d;
         }
 
         /// <summary>Die Gruppe „Hülle": Fläche und U-Wert je Bauteil (Außenwand, Fenster, Dach, Grundfläche).</summary>
@@ -140,16 +214,11 @@ namespace WindowsFormsApplication1
             return new Stammblattwert(Text_(schluessel, rueckfall), wert);
         }
 
-        /// <summary>Eine Stunde der Nachtzeit als Text (E43); leer zeigt die Vorgabe („Vorgabe 22").</summary>
-        internal static string Stunde(int? stunde, int vorgabe)
-            => stunde.HasValue
-                ? stunde.Value.ToString(CultureInfo.InvariantCulture)
-                : Text_("GEBK_VORGABE", "Vorgabe {0}").Replace("{0}", vorgabe.ToString(CultureInfo.InvariantCulture));
-
         /// <summary>
         /// „Alle Daten": die übrigen Felder des Katalogeditors als Text, in seinen Abschnitten —
-        /// Kenngrößen, Fenster nach Orientierung, Raumtemperaturen, Wärmebrücken und
-        /// Anschlussmaße, Modellparameter.
+        /// Kenngrößen, Fenster nach Orientierung, Wärmebrücken und Anschlussmaße, Modellparameter.
+        /// Sollwerte, Nachtzeit, Ferien, innere Wärmegewinne, Infiltration, Nutzerlüftung und
+        /// Maximalraumtemperatur stehen im Blatt „Konditionierung" (E56 F3 (a); Stufe KP2, Welle U4).
         /// </summary>
         internal static IReadOnlyList<Stammblattwert> AlleDaten(GebaeudeModel m)
         {
@@ -162,7 +231,6 @@ namespace WindowsFormsApplication1
                 Stammblattwert.Abschnitt(Text_("GEBK_GRP_KENNGROESSEN", "Kenngrößen")),
                 new(Text_("GEBK_LBL_WOHNFLAECHE", "Nutzfläche"), Z(m.Wohnflaeche_gesamt, 1), "m²"),
                 new(Text_("GEBK_LBL_FLAECHE_NUTZER", "Fläche / Nutzer"), Z(m.Flaeche_Nutzer, 1), "m²"),
-                new(Text_("GEBK_LBL_WAERMEGEWINNE", "Interne Wärmegewinne"), Z(m.Interne_Waermegewinne, 0), "W"),
                 new(Text_("GEBK_LBL_FENSTERDURCHLASS", "Fensterdurchlaßgrad"), Z(m.Fensterdurchlassgrad)),
                 new(Text_("GEBK_LBL_RAUMHOEHE", "Raumhöhe"), Z(m.Raumhoehe), "m"),
                 new(Text_("GEBK_LBL_LUFTWECHSEL", "Luftwechselrate"), Z(m.Luftwechselrate), "1/h"),
@@ -175,16 +243,6 @@ namespace WindowsFormsApplication1
                 new(Text_("GEBK_LBL_FF_OST", "Fensterfläche Ost"), N(m.Fensterflaeche_Ost, 1), "m²"),
                 new(Text_("GEBK_LBL_FF_WEST", "Fensterfläche West"), N(m.Fensterflaeche_West, 1), "m²"),
                 new(Text_("GEBK_LBL_FF_OSTWEST", "Fensterfläche Ost + West"), Z(m.Fensterflaeche_OstWest, 1), "m²"),
-
-                Stammblattwert.Abschnitt(Text_("GEBK_GRP_RAUMTEMPERATUREN", "Raumtemperaturen")),
-                new(Text_("GEBK_LBL_SOLL_TAG", "Soll am Tag"), Z(m.Raumsolltemperatur_Tag, 1), "°C"),
-                new(Text_("GEBK_LBL_NACHTABSENKUNG", "Nachtabsenkung auf"), Z(m.Raumsolltemperatur_Nachtabsenkung, 1), "°C"),
-                // E43: die Nachtzeit - leer zeigt die Vorgabe (22 bzw. 6), wie der Platzhalter des Editors.
-                new(Text_("GEBK_LBL_NACHT_BEGINN", "Nachtabsenkung von"), Stunde(m.Nachtabsenkung_Beginn, Nachtzeit.VORGABE_BEGINN), "h"),
-                new(Text_("GEBK_LBL_NACHT_ENDE", "Nachtabsenkung bis"), Stunde(m.Nachtabsenkung_Ende, Nachtzeit.VORGABE_ENDE), "h"),
-                new(Text_("GEBK_LBL_WE_ABSENKUNG", "Soll am Wochenende (ganztägig)"), Z(m.Raumsolltemperatur_Wochenende, 1), "°C"),
-                new(Text_("GEBK_LBL_SOLL_FERIEN", "Soll in Ferien"), Z(m.Raumsolltemperatur_Ferien, 1), "°C"),
-                new(Text_("GEBK_LBL_MAXTEMPERATUR", "Maximalraumtemperatur"), Z(m.Maximaleraumtemperatur, 1), "°C"),
 
                 Stammblattwert.Abschnitt(Text_("GEBK_GRP_SONSTIGES", "Sonstiges")),
                 new(Text_("GEBK_LBL_FENSTER_WAND", "Fenster-Wand"),
@@ -204,8 +262,6 @@ namespace WindowsFormsApplication1
                 new(Text_("GEBK_LBL_INNENFLAECHENFAKTOR", "Innenflächenfaktor"), N(m.Innenflaechenfaktor)),
                 new(Text_("GEBK_LBL_HEIZUNG_STRAHLUNG", "Strahlungsanteil Heizung"), N(m.Heizung_Strahlungsanteil)),
                 new(Text_("GEBK_LBL_HEIZLEISTUNG_MAX", "Heizleistungsgrenze"), N(m.Heizleistung_Max, 1), "kW"),
-                new(Text_("GEBK_LBL_INFILTRATION", "Infiltration"), N(m.Luftwechsel_Infiltration), "1/h"),
-                new(Text_("GEBK_LBL_NUTZERLUEFTUNG", "Nutzerlüftung"), N(m.Luftwechsel_Nutzer), "1/h"),
                 new(Text_("GEBK_LBL_KELLERTEMPERATUR", "Kellertemperatur"), N(m.Kellertemperatur, 1), "°C")
             };
         }

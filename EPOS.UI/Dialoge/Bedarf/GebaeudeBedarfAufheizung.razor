@@ -1,0 +1,219 @@
+﻿@* Die Gruppe „Aufheizung" des Bedarfsdialogs (Entwurf KP3, Welle O2; E59, E60; Festlegungen 22, 25, 39, 41).
+
+   Mit eingeschalteter Optimierung die Werte der Ergebniszeile des Laufs: Zustand, t_auf,max mit T_a,B und Variante,
+   Art, P_auf mit Quelle, Rampentage, Σ und laengste Rampe, die Tageszaehlungen W1-W4, die Kappungsstunden und die
+   benannten Hinweise W1-W5; je Zone eine Zeile. Daneben die Auslegungsgroesse Φ_HL + Φ_RH mit ihren Teilen, die
+   ideale Spitze, das Tagesmittel und P_auf mit Quelle - mit dem Hinweis, dass die ideale Spitze bei ausgeschalteter
+   Optimierung keine Auslegungsgroesse ist (Festlegung 41). Mit ausgeschalteter Optimierung nur die Auslegungsgroesse,
+   ihre Teile aus der Auskunft der Bemessung.
+
+   Nur Anzeige: kein Eingabefeld, kein Knopf. Ohne Daten steht die Gruppe nicht da. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+
+@if (Daten is not null)
+{
+    <Gruppenkopf Titel="@Texte.Gruppe">
+        <KindInhalt>
+            <div class="gebb-aufheizung" data-zustand="@Daten.Zustand">
+                <div class="epos-raster-huelle">
+                    <table class="epos-raster gebb-kennzahlen gebb-aufheiz-kennzahlen">
+                        <tbody>
+                            <tr class="gebb-aufheiz-zustand">
+                                <td>@Texte.LabelZustand</td>
+                                <td colspan="2">@Daten.Zustandtext</td>
+                            </tr>
+                            @if (!Daten.SchalterAus)
+                            {
+                                <tr class="gebb-aufheiz-zeit">
+                                    <td>@Texte.LabelZeitMax</td>
+                                    <td colspan="2">@Zeitzeile</td>
+                                </tr>
+                                @if (Daten.Art.Length > 0)
+                                {
+                                    <tr class="gebb-aufheiz-art">
+                                        <td>@Texte.LabelArt</td>
+                                        <td colspan="2">@Daten.Art</td>
+                                    </tr>
+                                }
+                                <tr class="gebb-aufheiz-tage">
+                                    <td>@Texte.LabelTage</td>
+                                    <td class="epos-zahl">@Ganzzahl(Daten.Aufheiztage)</td>
+                                    <td></td>
+                                </tr>
+                                <tr class="gebb-aufheiz-stunden">
+                                    <td>@Texte.LabelStunden</td>
+                                    <td class="epos-zahl">@Ganzzahl(Daten.AufheizstundenH)</td>
+                                    <td>@Texte.EinheitH</td>
+                                </tr>
+                                <tr class="gebb-aufheiz-laengste">
+                                    <td>@Texte.LabelLaengste</td>
+                                    <td class="epos-zahl">@Ganzzahl(Daten.AufheizzeitLaengsteH)</td>
+                                    <td>@Texte.EinheitH</td>
+                                </tr>
+                                <tr class="gebb-aufheiz-begrenzt">
+                                    <td>@Texte.LabelBegrenzt</td>
+                                    <td class="epos-zahl">@Ganzzahl(Daten.TageBegrenzt)</td>
+                                    <td></td>
+                                </tr>
+                                <tr class="gebb-aufheiz-unerreichbar">
+                                    <td>@Texte.LabelUnerreichbar</td>
+                                    <td class="epos-zahl">@Ganzzahl(Daten.TageUnerreichbar)</td>
+                                    <td></td>
+                                </tr>
+                                <tr class="gebb-aufheiz-nachweisband">
+                                    <td>@Texte.LabelNachweisband</td>
+                                    <td class="epos-zahl">@Ganzzahl(Daten.TageNachweisband)</td>
+                                    <td></td>
+                                </tr>
+                                <tr class="gebb-aufheiz-spruenge">
+                                    <td>@Texte.LabelSpruengeAus</td>
+                                    <td class="epos-zahl">@Ganzzahl(Daten.SpruengeAus)</td>
+                                    <td></td>
+                                </tr>
+                                <tr class="gebb-aufheiz-kappung">
+                                    <td>@Texte.LabelKappung</td>
+                                    <td class="epos-zahl">@Zahl(Daten.KappungsstundenH)</td>
+                                    <td>@Texte.EinheitH</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @* E60 (Festlegung 41): die Auslegungsgroesse mit ihren Teilen, daneben ideale Spitze, Tagesmittel und P_auf. *@
+                <div class="epos-raster-huelle">
+                    <table class="epos-raster gebb-kennzahlen gebb-aufheiz-auslegung">
+                        <tbody>
+                            <tr class="gebb-aufheiz-auslegungsgroesse">
+                                <td>@Texte.LabelAuslegung</td>
+                                <td class="epos-zahl">@Zahl(Daten.AuslegungsgroesseKw)</td>
+                                <td>kW</td>
+                            </tr>
+                            <tr class="gebb-aufheiz-auslegungsheizlast">
+                                <td>@Texte.LabelAuslegungsheizlast</td>
+                                <td class="epos-zahl">@Zahl(Daten.AuslegungsheizlastKw)</td>
+                                <td>kW</td>
+                            </tr>
+                            <tr class="gebb-aufheiz-zuschlag">
+                                <td>@Texte.LabelZuschlag</td>
+                                <td class="epos-zahl">@Zahl(Daten.AufheizzuschlagKw)</td>
+                                <td>kW</td>
+                            </tr>
+                            <tr class="gebb-aufheiz-spitze">
+                                <td>@Texte.LabelSpitzeIdeal</td>
+                                <td class="epos-zahl">@Zahl(Daten.SpitzeKw)</td>
+                                <td>kW</td>
+                            </tr>
+                            <tr class="gebb-aufheiz-tagesmittel">
+                                <td>@Texte.LabelTagesmittel</td>
+                                <td class="epos-zahl">@Zahl(Daten.SpitzeTagesmittelKw)</td>
+                                <td>kW</td>
+                            </tr>
+                            <tr class="gebb-aufheiz-leistung">
+                                <td>@Texte.LabelLeistung</td>
+                                <td class="epos-zahl">@Zahl(Daten.LeistungKw)</td>
+                                <td>kW</td>
+                            </tr>
+                            @if (Daten.Quelle.Length > 0)
+                            {
+                                <tr class="gebb-aufheiz-quelle">
+                                    <td>@Texte.LabelQuelle</td>
+                                    <td colspan="2">@Daten.Quelle</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <Herleitungszeile Text="@Texte.HinweisSpitze" />
+                @if (Daten.SchalterAus)
+                {
+                    <Herleitungszeile Text="@Texte.HinweisAuskunft" />
+                }
+                @* Anlagenkopplung AK3 (Festlegung 20): die Auskunft rechnet ohne geschlossenen Kreis - benannt. *@
+                @if (Daten.Rueckstufe.Length > 0)
+                {
+                    <Herleitungszeile Text="@Daten.Rueckstufe" />
+                }
+                @if (Daten.FaktorErstImLauf)
+                {
+                    <Herleitungszeile Text="@Texte.HinweisFaktorLauf" />
+                }
+                @if (Daten.AufheizzeitManuellH is int manuell)
+                {
+                    <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, Texte.HinweisManuell, manuell)" />
+                }
+
+                @* Die benannten Hinweise W1-W5 (Konzept 4.8): eine Zeile je Hinweis, nur mit Anlass. *@
+                @if (Daten.Hinweise.Count > 0)
+                {
+                    <ul class="gebb-aufheiz-hinweise">
+                        @foreach (string hinweis in Daten.Hinweise)
+                        {
+                            <li>@hinweis</li>
+                        }
+                    </ul>
+                }
+
+                @* Festlegung 22: je Zone die eigene Bemessung, nur ab zwei Zonen. *@
+                @if (Daten.Zonen.Count >= 2)
+                {
+                    <div class="epos-raster-huelle">
+                        <table class="epos-raster gebb-aufheiz-zonen">
+                            <thead>
+                                <tr>
+                                    <th>@Texte.SpalteZone</th>
+                                    <th>@Texte.SpalteZustand</th>
+                                    <th class="epos-zahl">@Texte.SpalteZeit</th>
+                                    <th class="epos-zahl">@Texte.SpalteLeistung</th>
+                                    <th>@Texte.SpalteQuelle</th>
+                                    <th class="epos-zahl">@Texte.SpalteTage</th>
+                                    <th class="epos-zahl">@Texte.SpalteLaengste</th>
+                                    <th class="epos-zahl">@Texte.SpalteKappung</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Daten.Zonen.Count; i++)
+                                {
+                                    GebaeudeBedarfAufheizZoneDaten z = Daten.Zonen[i];
+                                    <tr @key="i">
+                                        <td>@z.Name</td>
+                                        <td>@z.Zustandtext</td>
+                                        <td class="epos-zahl">@Ganzzahl(z.AufheizzeitMaxH)</td>
+                                        <td class="epos-zahl">@Zahl(z.LeistungKw)</td>
+                                        <td>@z.Quelle</td>
+                                        <td class="epos-zahl">@Ganzzahl(z.Aufheiztage)</td>
+                                        <td class="epos-zahl">@Ganzzahl(z.AufheizzeitLaengsteH)</td>
+                                        <td class="epos-zahl">@Zahl(z.KappungsstundenH)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <Herleitungszeile Text="@Texte.HinweisZonen" />
+                }
+            </div>
+        </KindInhalt>
+    </Gruppenkopf>
+}
+
+@code {
+    /// <summary>Die Werte der Gruppe; <c>null</c> = keine Gruppe (Tagesbilanz-Weg, kein Satz, keine Gaben).</summary>
+    [Parameter] public GebaeudeBedarfAufheizDaten? Daten { get; set; }
+
+    /// <summary>Die Beschriftungen (Bündel).</summary>
+    [Parameter] public GebaeudeBedarfAufheizTexte Texte { get; set; } = new();
+
+    /// <summary>t_auf,max mit T_a,B und Variante — „—" ohne bemessene Zeit (UNERREICHBAR, GEKOPPELT).</summary>
+    private string Zeitzeile
+        => Daten?.AufheizzeitMaxH is int t
+            ? string.Format(CultureInfo.CurrentCulture, Texte.ZeitBei, t, Zahl(Daten.AussenC), Daten.Variante)
+            : "—";
+
+    private static string Zahl(double? wert)
+        => wert is double w && double.IsFinite(w) ? w.ToString("N1", CultureInfo.CurrentCulture) : "—";
+
+    private static string Ganzzahl(int? wert)
+        => wert is int w ? w.ToString("N0", CultureInfo.CurrentCulture) : "—";
+}

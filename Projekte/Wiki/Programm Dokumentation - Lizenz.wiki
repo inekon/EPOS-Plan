@@ -1,0 +1,17 @@
+Der Dialog '''Lizenz und rechtliche Hinweise''' hält den Vertragstext, die rechtlichen Hinweise und die Liste der verwendeten Fremdkomponenten bereit. Beim ersten Programmstart wird die Vereinbarung zur Bestätigung vorgelegt, später ist sie über {{Menü|Hilfe|Lizenz}} jederzeit wieder abrufbar. Die Aktivierung dieses Arbeitsplatzes erledigt derselbe Dialog im Reiter ''Status & Aktivierung''; einen zweiten Einstieg gibt es nicht.
+
+== Eingaben ==
+
+* '''Status & Aktivierung, Lizenzvereinbarung, Rechtliche Hinweise und Komponenten''' – die vier Reiter des Dialogs. In den drei Textreitern springt ''Im Text suchen'' zur Fundstelle, ''A+'' und ''A-'' ändern die Schriftgröße, ''Datei wählen…'' öffnet eine eigene Vertragsfassung.
+* '''Zustimmen''' und '''Ablehnen''' – erscheinen nur beim Bestätigen der Vereinbarung; die Zustimmung wird benutzerbezogen vermerkt und nicht erneut abgefragt. Später zeigt derselbe Dialog stattdessen ''Schließen''.
+* '''Drucken…''' und '''Speichern unter…''' – geben den angezeigten Text aus. Liegt lokal keine Vertragsdatei vor, holt EPOS-Plan die aktuelle Fassung von der Website; Quelle und Stand nennt die Fußzeile.
+* '''Lizenzstatus''' – der Reiter ''Status & Aktivierung'' nennt den Zustand dieses Arbeitsplatzes samt Lizenz, Firma, Benutzer und Gerät: nicht aktiviert, gültig bis Datum, Nachprüfung fällig, Kulanzfenster oder Lesemodus. Im Lesemodus lassen sich Projekte nur noch ansehen und exportieren.
+* '''Aktivieren''' – Lizenzschlüssel und E-Mail-Adresse eintragen und ''Jetzt aktivieren'' wählen; ''Lizenzdatei (.lic)…'' füllt beide Felder aus einer Schlüsseldatei. Die Aktivierung braucht einmalig eine Internetverbindung; der Dialog nennt vor der Aktivierung, welche Angaben an den Lizenzserver übertragen werden – nur Schlüssel, E-Mail und ein anonymer Gerätekennwert.
+* '''Testversion anfordern…''' und '''Gerät von der Lizenz lösen''' – der Test-Lizenzschlüssel geht an die eingetragene E-Mail-Adresse; das Lösen gibt den Platz für ein anderes Gerät frei, danach ist eine Neuaktivierung nötig.
+
+== Siehe auch ==
+
+* [[Installation und Update]] – Erstinstallation, erster Programmstart und die Zustimmung zur Vereinbarung
+* [[Systemvoraussetzungen]] – Windows-Versionen und Internetverbindung
+
+[[Kategorie:Programm Dokumentation]]

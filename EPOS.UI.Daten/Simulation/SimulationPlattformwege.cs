@@ -48,6 +48,16 @@ namespace WindowsFormsApplication1
         internal Action<int, List<WErzeugerModel>> WaermepumpeUebernehmen;
 
         /// <summary>
+        /// Der Abschluss der Projektkopien, wenn der Wärmepumpendialog schließt
+        /// (Katalogauswahl Stufe 3): <c>true</c> nach OK — NACH dem Schreiben der Anlagen —
+        /// löscht die Kopien, auf die keine Zeile der Liste mehr verweist; <c>false</c> nach
+        /// Abbrechen räumt die in dieser Sitzung angelegten ab. Unter Windows schließt sie die
+        /// <c>Projektkopievormerkung</c>, die <see cref="WaermepumpeGaben"/> angelegt hat.
+        /// <c>null</c> = die Plattform legt keine Projektkopien an; dann geschieht nichts.
+        /// </summary>
+        internal Action<bool, List<WErzeugerModel>> WaermepumpeAbschluss;
+
+        /// <summary>
         /// Der Grund, aus dem der Wärmepumpenweg auf DIESER Plattform nicht geht —
         /// die benannte Ablehnung. Leer = er geht.
         /// </summary>
@@ -88,8 +98,38 @@ namespace WindowsFormsApplication1
         /// <summary>Der Trägerkatalog der Energieträgerwahl; <c>null</c> = keine Wahl.</summary>
         internal Func<IReadOnlyList<EnergietraegerWahl.Eintrag>> WaermepumpeTraegerkatalog;
 
+        // =================================================================
+        //  „Bearbeiten…“ der Gruppe „Dezentrale Kältedeckung“ (K6b-N, Konzept Kältebedarf 6)
+        // =================================================================
+        //
+        // Je Split-Zeile führt der Knopf in den Dialog ihrer Quelle: ein Kältebedarfsprofil in
+        // den Bedarfsprofile-Dialog mit der Bedarfsart Kälte, ein Lastgang in den Dialog
+        // „Wärmebedarf extern“ im Modus „nur Kühlung“ — dieselben Wege wie die Kacheln des
+        // Reiters „Kältebedarf“ der Startseite. Beide Dialoge öffnet unter Windows die Schale
+        // in einem eigenen Fenster; eine Schale ohne sie lehnt BENANNT ab.
+
+        /// <summary>
+        /// Öffnet den Dialog der Quelle einer dezentral (Split) gedeckten Kältebedarfszeile. Parameter:
+        /// Projekt, Quelle (<c>true</c> = Kältebedarfsprofil, <c>false</c> = Lastgang), ID der Zuordnungszeile
+        /// und der Nachzug, den die Schale ruft, wenn der Dialog geschlossen ist — mit dem Grund, aus dem das
+        /// Speichern scheiterte, sonst <c>null</c>. Rückgabe <c>null</c> = der Dialog geht auf, sonst der Grund,
+        /// aus dem er nicht aufgeht. <c>null</c> als Delegat = diese Plattform kennt den Weg nicht; dann gilt
+        /// <see cref="KaelteDezentralSperrgrund"/>.
+        /// </summary>
+        internal Func<int, bool, int, Action<string>, string> KaelteDezentralBearbeiten;
+
+        /// <summary>
+        /// Der Grund, aus dem der Weg „Bearbeiten…“ der dezentralen Kältedeckung auf DIESER Plattform nicht
+        /// geht — die benannte Ablehnung. Leer = er geht (oder die Vorgabe <c>SIM_MSG_WEG_NICHT_HIER</c>).
+        /// </summary>
+        internal string KaelteDezentralSperrgrund = "";
+
         /// <summary>Die Naht einer Schale, die keinen der Wege anbietet.</summary>
         internal static SimulationPlattformwege Ohne(string sperrgrund)
-            => new SimulationPlattformwege { WaermepumpeSperrgrund = sperrgrund ?? "" };
+            => new SimulationPlattformwege
+            {
+                WaermepumpeSperrgrund = sperrgrund ?? "",
+                KaelteDezentralSperrgrund = sperrgrund ?? ""
+            };
     }
 }

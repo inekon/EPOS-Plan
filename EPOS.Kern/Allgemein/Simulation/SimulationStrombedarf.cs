@@ -239,8 +239,9 @@ namespace WindowsFormsApplication1
         /// Profilroutine addiert auf, statt zu überschreiben. Bei genau einem Profil ist
         /// das Ergebnis dasselbe wie vor V0.
         ///
-        /// Rückgabe <c>null</c> = Abbruch (wie bisher): Der Aufrufer macht daraus den
-        /// Fehlertext des Laufs, damit kein Ergebnis mit leerem Stromprofil entsteht.
+        /// Rückgabe <c>null</c> = Abbruch durch eine Ausnahme beim Lesen: Der Aufrufer
+        /// macht daraus den Fehlertext des Laufs. Ein Profil ohne Typbezug bricht nicht
+        /// ab, es wird mit Warnung übersprungen (Befund PW6).
         /// </summary>
         /// <param name="list">Die zu rechnenden Profile; <c>null</c> = die des Projekts (Lauf).</param>
         /// <param name="jahressummen">
@@ -265,14 +266,13 @@ namespace WindowsFormsApplication1
 
                 ProfilQuelle quelle = ProfilQuelle.Strom(modus);
                 quelle.Jahressummen = jahressummen;
-                bool vollstaendig = ProfilBedarf.Rechnen(
+                // Typbezug leer (Befund PW6): Die Profilroutine überspringt das Profil mit
+                // benannter Warnung, die übrigen rechnen vollständig - in allen drei
+                // Bedarfsarten gleich. Der Lauf bricht daran nicht mehr ab; die Rückgabe
+                // „nicht vollständig" steht in der Warnung des Protokolls.
+                ProfilBedarf.Rechnen(
                     quelle, m_ID_Projekt, list,
                     WochentagJan1Aufloesen(), mo_anfang, mo_ende, summe, null, info);
-
-                // Typbezug leer: Bis hierher lief der Lauf in eine InvalidCastException und
-                // brach über den catch ab. Jetzt meldet die Profilroutine den Grund und der
-                // Abbruch bleibt - dieselbe Wirkung, mit Diagnose.
-                if (!vollstaendig) return null;
 
                 return summe;
             }

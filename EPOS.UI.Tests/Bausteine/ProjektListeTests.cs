@@ -626,4 +626,62 @@ public class ProjektListeTests : EposBunitContext
         haken[1].Change(true);                                   // Zeile 2 = Stamm "Referenz BHKW"
         Assert.Equal(new[] { 1030, 1031, 1032 }, angehakt.OrderBy(i => i).ToArray());
     }
+
+    // =====================================================================
+    // Rollnachführung der markierten Zeile (MarkierteOben, Auftrag SU)
+    // =====================================================================
+
+    /// <summary>Ohne <c>MarkierteOben</c> lädt der Baustein kein Skript (strenger Prüfstand).</summary>
+    [Fact]
+    public void Ohne_MarkierteOben_rollt_nichts()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+
+        var cut = Aufbauen(p => p.Add(x => x.Markiert, 1030));
+
+        Assert.Empty(JSInterop.Invocations);
+        Assert.Contains("Referenz BHKW", cut.Find("tbody tr.epos-zeile--markiert").TextContent);
+    }
+
+    /// <summary>
+    /// Mit <c>MarkierteOben</c> rollt die markierte Zeile mit ihrem Index in der GEZEIGTEN
+    /// Reihenfolge (nach Namen: Alte Mühle, Laurentiuskirche, Referenz BHKW, …) — einmal,
+    /// auch wenn danach neu gezeichnet wird.
+    /// </summary>
+    [Fact]
+    public void MarkierteOben_rollt_die_markierte_Zeile_einmal_mit_ihrem_Sichtindex()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        var modul = JSInterop.SetupModule(ProjektListe.MODUL);
+        var oben = modul.SetupVoid("zeileOben", _ => true);
+
+        var cut = Aufbauen(p =>
+        {
+            p.Add(x => x.Markiert, 1030);
+            p.Add(x => x.MarkierteOben, true);
+        });
+
+        cut.WaitForAssertion(() => Assert.Single(oben.Invocations));
+        Assert.Equal(2, oben.Invocations.Single().Arguments[1]);
+
+        cut.Render(p => p.Add(x => x.Markiert, 1007));
+        Assert.Single(oben.Invocations);
+    }
+
+    /// <summary>Ohne Modul (Ladefehler) bleibt die Liste stehen — kein Fehlschlag.</summary>
+    [Fact]
+    public void MarkierteOben_ohne_Modul_bleibt_ohne_Fehlschlag()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        JSInterop.SetupModule(ProjektListe.MODUL).SetupVoid("zeileOben", _ => true)
+                 .SetException(new Microsoft.JSInterop.JSException("kein Modul"));
+
+        var cut = Aufbauen(p =>
+        {
+            p.Add(x => x.Markiert, 1007);
+            p.Add(x => x.MarkierteOben, true);
+        });
+
+        Assert.Contains("Laurentiuskirche", cut.Find("tbody tr.epos-zeile--markiert").TextContent);
+    }
 }

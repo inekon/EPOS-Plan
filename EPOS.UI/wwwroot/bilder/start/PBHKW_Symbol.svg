@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="84" height="84" viewBox="0 0 84 84">
+  <!-- Sinnbild BHKW (Kraft-Wärme-Kopplung): Maschinenblock mit Generator, darüber Flamme (Wärme) und Blitz (Strom). Rahmen und Verlauf wie PKuehlung_Symbol.png. -->
+  <defs>
+    <linearGradient id="verlauf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6878E1"/>
+      <stop offset="1" stop-color="#7450A9"/>
+    </linearGradient>
+  </defs>
+  <rect x="4.5" y="4.5" width="75" height="75" rx="14" fill="url(#verlauf)"/>
+  <g stroke="#1A1A1A" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="15" y="44" width="40" height="21" rx="3" fill="#E9ECF7"/>
+    <rect x="55" y="48" width="13" height="13" rx="2" fill="#C9CFE8"/>
+    <path d="M23 49v11M29 49v11M35 49v11M41 49v11" fill="none"/>
+    <path d="M20 65v4M50 65v4" fill="none"/>
+    <path d="M30 40C22 40 20 33 23 28C25 25 27 22 27 16C31 19 33 22 33 26C35 24 36 22 36 19C40 23 41 29 39 34C37 38 34 40 30 40Z" fill="#E5502E"/>
+    <path d="M59 13L48 29H55L51 41L63 25H56Z" fill="#EEC867"/>
+  </g>
+  <path d="M30 38C27 38 26 35 27 33C28 31 30 30 30 27C32 29 34 32 33 35C32 37 31 38 30 38Z" fill="#EEC867"/>
+</svg>

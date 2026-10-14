@@ -1,0 +1,17 @@
+Die '''Startmaske''' von EPOS-Plan führt in sechs Registerkarten durch ein Projekt: Projekt, Wärmebedarf, Strombedarf, Energieerzeuger, Simulation sowie Berichte & Kosten. Jede Registerkarte bündelt die Kacheln des zugehörigen Arbeitsschritts; eine Kachel ist farbig markiert, sobald für ihren Baustein Daten vorliegen, und mit ''Weiter'' und ''Zurück'' arbeiten Sie die Reihenfolge ab.
+
+== Eingaben ==
+
+* '''Projekt''' – ein neues Projekt anlegen (der Assistent öffnet in der Projektkonfiguration), ein gespeichertes öffnen oder bearbeiten, unter anderem Namen speichern, löschen sowie die Projektdetails ansehen. Das Auswahlfeld ''Projekt:'' nennt das geöffnete Projekt; hinter einem Trennstrich stehen dort ''Neue Variante anlegen…'' und – bei einer Variante – ''Variante umbenennen…''.
+* '''Klimaregion''' – die durchsuchbare Klimawahl im Kopf der Maske gilt für alle Berechnungen im Projekt; gespeichert wird mit dem Knopf daneben, die Rückmeldung steht neben dem Knopf, und eine Zeile darunter nennt Quelle, Bezeichnung, Standort und Importdatum der verwendeten Klimadaten.
+* '''Wärmebedarf''' – Gebäudedaten eingeben, Brauchwasserwärme, Prozesswärme sowie der Import bereits vorliegender Wärmebedarfsdaten.
+* '''Strombedarf''' – Standardlastprofil, eigenes Profil oder der Import gemessener Verbrauchsdaten.
+* '''Energieerzeuger''' – Wärmepumpe, Heizkessel, Solarthermie, BHKW, Photovoltaik, Stromspeicher, Pufferspeicher sowie Kühlung und Kälteanlagen; mehrere Technologien lassen sich kombinieren ([[Programm Dokumentation/Energieerzeuger|Energieerzeuger]]).
+* '''Simulation''' und '''Berichte & Kosten''' – der Reiter ''Simulation'' trägt links den Bedienblock mit Projektzusammenfassung, ''Simulation starten ▶'' und ''Simulation Konfiguration…'' und zeigt rechts das Ergebnis ([[Programm Dokumentation/Simulation#startreiter|Simulation]]); ''Berichte & Kosten'' führt Übersicht, Kosten, Wirtschaftlichkeit und Bericht als Reiter ([[Programm Dokumentation/Berichte und Kosten|Berichte und Kosten]]).
+
+== Siehe auch ==
+
+* [[Programmablauf]] – die sieben Stufen einer Planung von der Projektanlage bis zur Auswertung
+* [[Programm Dokumentation/Kurzanleitung|Kurzanleitung]] – der Projektassistent und die Karten der Registerkarte ''Projekt''
+
+[[Kategorie:Programm Dokumentation]]

@@ -3,6 +3,8 @@
 **Stand 12.09.2026 — Anwenderauftrag: „Räume alte nicht mehr genutzte Läufe/Verzeichnisse auf" und „Plane: nicht benötigte
 Dateien/Verzeichnisse löschen, wenn nicht mehr benötigt. Räume auf."**
 
+Das Inventar unter Abschnitt 2 und der Stufenplan unter Abschnitt 3 tragen zusätzlich den Stand vom 29.09.2026 (Aufräumen #602).
+
 ## 1. Die Regel
 
 Eine Datei oder ein Verzeichnis bleibt im Repository, solange **eines** davon zutrifft: ein Build, ein Test, ein Workflow, das Setup
@@ -28,15 +30,18 @@ Sicherung — wird **in demselben Auftrag** entfernt, der es überflüssig macht
 | `VDI-3805-Daten/` | Auslieferung der Herstellerdaten (Setup-Komponente, W6‑O‑9), CEC-Listen, bslib | 186 MB | Setup, Importe, 40 Verweise | bleibt |
 | `Werkzeuge/`, `Proben/`, `Setup/`, `sql/` (Schema- und Reparaturskripte) | Hauswerkzeuge | 5 MB | CLAUDE.md-Werkzeugtabelle, Setup, Gate | bleibt |
 | `Projekte/` | Konzepte (→ Dokumentation seit #241), Wiki-Quellen, Referenzpaket `Speichersimulation/`, fünf docx, Mockup, `.wpx` | 9 MB | Konzepte, Wiki-Upload; docx nach SP‑O‑9 | bleibt |
-| `Quellen/` (seit #243 mit `BHKWPlan/`, `PV-Now/`, `VALERI/`, `Emissionsfaktoren/`), `Dokumentation/aktuell/Mockups/` | Fremdquellen und Entwürfe, die Konzepte und Tests zitieren | 10 MB | Konzepte, zwei Testklassen | bleibt; zusammengezogen mit #243 (AUF‑Q3) |
+| `Quellen/` (seit #243 mit `BHKWPlan/` — **entfernt**, Anwender 07.10.2026, Synchronisation `ea2242b82` —, `PV-Now/`, `VALERI/`, `Emissionsfaktoren/`), `Dokumentation/aktuell/Mockups/` | Fremdquellen und Entwürfe, die Konzepte und Tests zitieren | 10 MB | Konzepte, zwei Testklassen | bleibt; zusammengezogen mit #243 (AUF‑Q3) |
 | `Lizenzserver/` | WordPress-Plugin 1.4.1 + Einbauanleitung | 268 KB | Lizenzkonzept | bleibt; die vier `*.original-2026-08-19` gehen (Stufe 1) |
-| `EPOS-Plan_Beispiele_Geruest/` | Gerüst der Projektbeispiele | 52 KB | Anwenderentscheid 12.09.2026 „ist wichtig" | bleibt |
+| `EPOS-Plan_Beispiele_Geruest/` | Gerüst der Projektbeispiele | 52 KB | Anwenderentscheid 12.09.2026 „ist wichtig" | bleibt; die veraltete Kopie `EPOS-Plan_Beispiele_Geruest.zip` (Stand 16.08.2026, 18 KB) ist entfernt (#602) |
 | `.work/` | Arbeitsordner der Windows-Seite: Einmal-Prüfprogramm, Bericht, **70-MB-Kopie der Produktivdatenbank** | 71 MB | nichts (Bericht liegt seit #241 in `Dokumentation/ueberholt`) | **geht (Stufe 1)** — Anwenderentscheid 12.09.2026 „Lösche .work", Rücknahme von SP‑O‑9 |
 | `DB-Backup/` | 16 Git-LFS-Zeiger auf Access-Sicherungen | 2 KB im Baum | nichts; seit 02.09. per `.gitignore` ausgeschlossen | **geht (Stufe 1)** |
 | `sqlite-probe/` | Spike vor der SQLite-Umstellung (31.08.) | 104 KB | nichts | **geht (Stufe 1)** |
 | `WindowsFormsApplication1/**/*.bak` (4), `Allgemein/Reporting/Reporting_Geruest.zip` | Sicherungskopien, Gerüst-Archiv | 60 KB | nichts | **geht (Stufe 1)** |
 | `WindowsFormsApplication1/Allgemein/Simulation/Entwurf_Hydraulikuebersicht_Konfiguration.html`, `Allgemein/vdi_3805_importer/*` | Entwurf, Überreste eines nicht mehr versionierten Scrapers | klein | Protokolle | **verschieben (Stufe 1)** nach `Mockups/`, heute `Dokumentation/aktuell/Mockups/`, bzw. `Dokumentation/ueberholt/` |
 | 303 Markdown-Dokumente | Konzepte, Doku, Protokolle | 12 MB | Claude, Anwender | seit #241 unter `Dokumentation/aktuell` und `Dokumentation/ueberholt` |
+| `REAMDE-git.txt` | Git-Spickzettel vom 08.11.2025 | 144 Byte | nichts (durch CLAUDE.md Abschnitt „Git" abgelöst) | **entfernt mit #602** |
+| `GitHub_Sync_simple.bat` | ältere Sync-Variante ohne die drei Wächter (`AGENT_LAEUFT`, offener Merge/Rebase, Konfliktmarker) | 1,4 KB | nichts | **entfernt mit #602** |
+| `sql/tools/inventur_report.txt` | eingefrorener SQL-Dialekt-Report vom 12.09.2026 | 27 KB | nichts (`sql_dialekt_inventur.py` erzeugt ihn bei Bedarf neu) | **entfernt mit #602** |
 
 Außerhalb des Arbeitsbaums: elf alte Fernzweige (Anwender 12.09.2026: „vorerst nicht" löschen); alte GitHub-Actions-Läufe (mit den
 hier verfügbaren Werkzeugen nicht löschbar — im Browser unter Actions je Lauf, oder Aufbewahrungsfrist `retention-days` in den Workflows);
@@ -72,7 +77,9 @@ Wurzel-`CLAUDE.md`. Ergebnis: Arbeitsbaum um ~71 MB kleiner, keine Kundendaten m
 
 Dazu kam als Nachzug aus dem Gate zu #242: Die Wache `RepositoryOrdnungWacheTests` prüft seither nur noch **versionierte** Dateien
 (`git ls-files -z`) — über das Dateisystem traf sie die Arbeitskopie des Referenzlaufs und die Agenten-Arbeitsbäume unter
-`.claude/worktrees/`, beides gitignored.
+`.claude/worktrees/`, beides gitignored. Versioniert ist unter `.claude/` allein der Ordner `.claude/agents/` mit den
+Agentendefinitionen der Sitzungen (Anwenderentscheid vom 27.09.2026, damit Cloud-Sitzungen sie vorfinden); die `.gitignore` nimmt
+nur ihn aus, die Wache lässt genau ihn zu.
 
 **Stufe 4 — die Git-Geschichte umschreiben. Anwenderentscheid AUF‑Q1 vom 12.09.2026: „ausführen". Umsetzung Auftrag #244.**
 
@@ -151,6 +158,55 @@ Zeile im Dokumentationsindex, wohl aber diese Erwähnung).
 - **GitHub Actions.** Die Aufbewahrungsfrist der Artefakte steht in allen drei Workflows bereits auf `retention-days: 14` (Vorgabe
   wären 90) — der ursprüngliche Vorschlag war gegenstandslos, nichts zu tun. Alte Läufe löscht nur der Anwender im Browser.
 
+**Stufe 5 — umgesetzt #602 (29.09.2026, Commit `619ab777`, losgelöster Worktree `.claude/worktrees/gate602`).**
+Vier liegen gebliebene, nirgends referenzierte Dateien entfernt: `REAMDE-git.txt`, `GitHub_Sync_simple.bat`,
+`sql/tools/inventur_report.txt`, `EPOS-Plan_Beispiele_Geruest.zip` (zusammen rund 46 KB; der Ordner
+`EPOS-Plan_Beispiele_Geruest/` bleibt, AUF‑E‑1). Dazu unversioniert im Hauptbaum gelöscht (neu erzeugbar, ohne
+Auswirkung auf dieses Inventar): `bin/`/`obj/` der Test- und Werkzeugprojekte, `Referenzlaeufe/Arbeitskopie/`,
+`artifacts/`, sowie die lokalen Zweige `papiere477` und `papiere478` (vollständig auf `origin`). Bewusst nicht
+angefasst: die Worktrees fremder Sitzungen, `Klimazonen DIN4710/`, `Quellen/Klimadaten/try_Python/`, die zwei
+Einmalbereinigungsskripte `sql/tools/Bereinige-Probierpuffer.*`/`Bereinige-Pufferdubletten.*` und vier Konzepte mit
+Kopf „umgesetzt" als Kandidaten für `git mv` nach `ueberholt/` — Einzelheiten im Protokollblock
+[`#602`](../ueberholt/Protokolle/Statusbloecke/Umsetzungskonzept_iOS_Statusbloecke_bis_2026-09-12.md) und in der
+Statuszeile #602.
+
+**Stufe 6 — umgesetzt #604 (29.09.2026).** Die vier Posten, die Stufe 5 als Kandidaten benannt hatte, sind entschieden
+und abgearbeitet.
+*Entfernt:* `Klimazonen DIN4710/Zonenkarte_Klimazonen.svg` und `.png` (byte-gleiche Doppel der Eingangsdatei
+`Werkzeuge/KlimazonenPfade/Zonenkarte_Klimazonen.svg` und des ausgelieferten Bildes
+`EPOS.UI/wwwroot/bilder/Zonenkarte_Klimazonen.png`), `Quellen/Klimadaten/try_Python/` (sechs Dateien Versuchscode zum
+DWD-TRY-Einlesen, nirgends bezogen) und `sql/tools/Bereinige-Probierpuffer.py`/`.sql` (ausgeführte Einmalbereinigung
+aus #302).
+*Verschoben:* die vier Kartendateien, die nur in der Wurzel lagen — `Zonenkarte_Klimazonen.pdf` und
+`Zonenkarte_farbig.pdf`/`.png`/`.svg` — nach `Quellen/Klimadaten/`, dem Ablageort für Herkunftsdaten (AUF‑Q3); der
+Wurzelordner `Klimazonen DIN4710/` fällt damit weg. Dazu
+[`Konzept_Wechselrichter_EPOS-Plan.md`](../ueberholt/Konzept_Wechselrichter_EPOS-Plan.md) per `git mv` nach
+`ueberholt/`, mit Indexzeile und fünf nachgezogenen Verweisen.
+*Bewusst geblieben:* `sql/tools/Bereinige-Pufferdubletten.py`/`.sql` — `EPOS.Kern.Tests/PufferzuordnungWacheTests`
+nennt das Skript in der Meldung des Wächters als das Werkzeug, mit dem der gemeldete Befund zu beheben ist; und drei
+der vier Konzepte: [`Konzept_Katalogfilter_EPOS-Plan.md`](Konzept_Katalogfilter_EPOS-Plan.md) (vier offene Fachfragen
+in Kapitel 10, dazu als Regelquelle zitiert in `Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md`),
+[`Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md`](Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md)
+(Durchsicht der Mapping-Liste § 5.1 steht aus, dazu Regelquelle für Lesekette und Modus in `EPOS.Kern/CLAUDE.md`) und
+[`Konzept_Einheiten_EPOS-Plan.md`](Konzept_Einheiten_EPOS-Plan.md) (Befund U2 „offen, harmlos" sitzt im Rechenweg und
+ist nicht entschieden). Nach der Regel dieses Papiers geht nur, was seine Aufgabe erfüllt hat.
+
+**Stufe 7 — offen (AUF‑Q5): Normdokumente aus der Geschichte entfernen.** Anwenderentscheid vom 07.10.2026: Normen liegen nur
+**vorübergehend** im Repository, unter `Quellen/`, und werden nach Gebrauch gelöscht (Regel); gelöscht wird auf Zuruf des Anwenders. Die Geschichte wird **zu einem späteren
+Zeitpunkt** um die Normdokumente bereinigt — ausgeführt nur auf ausdrücklichen Zuruf des Anwenders. Vorbereitung wie bei Stufe 4:
+alle Sitzungen still, Commit-Karte schreiben, jeder Rechner klont danach neu, aus einem alten Klon wird nie gepusht.
+*Die Bereinigung trifft* die heute versionierten Norm-PDFs unter `Quellen/` — `Quellen/DIN_TS 18599-10, Energetische Bewertung von Gebäuden –Berechnunsschuss Heiz- und Raumlufttechnik sowie deren Sicherheit (NHRS).pdf`,
+`Quellen/VALERI/DIN EN 17463 - DIN.pdf` und unter `Quellen/Waermespeicher-Tool/`: `DIN 4708 Teil3 1994 - DIN.pdf`,
+`DIN 4708-Teil2-1994 - DIN.pdf`, `DIN EN 12831-3 - DIN.pdf`, `DIN EN 12831-3_A1 Entwurf - DIN EN.pdf`,
+`DIN EN 12831-3_A100 Entwurf - DIN EN.pdf`, `DIN EN 15316-5 - DIN EN.pdf`, `DIN EN 15332-A1_2023-01-00_ML_3399035.pdf`,
+`DIN EN 15332_2020-01-00_DE_3083503.pdf`, `DIN V 18599-10 - DIN.pdf`, `VDI 4645_2026-03-00_DE_3676820.pdf`,
+`VDI 4655 - VDI e.V_.pdf`, `VDI 6002 Blatt 1_2014-03-00_ML_2074726.pdf`, `VDI 6002 Blatt 2_2014-03-00_ML_2074727.pdf`,
+`VDI-MT 4645 Blatt 1_2023-04-00_ML_3419726.pdf` — und die zwei mit Commit `dc510eb64`
+gekommenen `Quellen/VDI 4650 Blatt 1 - VDI e.V_.pdf` und `Quellen/DIN EN 14825 - DIN.pdf` (für die Prüfung der Interpolation über den
+Vorlauf, Entwurf AK3; abgeschlossen); sie bleiben bis zur Löschung auf Zuruf unter `Quellen/` (Anwender 07.10.2026: „zu einem späteren
+Zeitpunkt“). Herstellerunterlagen, Handbücher, BDEW- und Klimadaten-PDFs sind keine Normen
+und bleiben unberührt.
+
 ## 4. Entscheide und offene Fragen
 
 | Kennung | Inhalt | Stand |
@@ -162,3 +218,4 @@ Zeile im Dokumentationsindex, wohl aber diese Erwähnung).
 | AUF‑Q2 | LFS-Regeln entfernen; Testdatenbank/VDI-Archive nach LFS? | **entschieden 12.09.2026** („Nehme VDI-Archive und Testdatenbanken in git-lfs"), **umgesetzt #243** |
 | AUF‑Q3 | Fremdquellen unter `Quellen/` sammeln? | **entschieden 12.09.2026** („Setze Empfehlung um"), **umgesetzt #243** |
 | AUF‑Q4 | `retention-days` 14 in den Workflows? | **gegenstandslos** — stand bereits in allen drei Workflows (12.09.2026) |
+| AUF‑Q5 | Normdokumente im Repository? | **entschieden 07.10.2026** (vorübergehend unter `Quellen/`; Löschung und Bereinigung der Geschichte später, je auf Zuruf), Stufe 7 offen |

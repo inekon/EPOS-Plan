@@ -438,7 +438,7 @@ namespace EPOS.Kern.Tests
             zweite.Bauteile[0].Flaeche = 33;
             Assert.True(a.ZoneErsetzen(zweite));
             Assert.Equal("", weg.Pruefen!(a.Zonenstand(false)));
-            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)));
+            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)).Meldung);
 
             List<ZoneModel> nachher = ctrl.LesenJeGebaeude(Gebaeude);
             Assert.Equal(ids, nachher.Select(z => z.ID));
@@ -451,13 +451,13 @@ namespace EPOS.Kern.Tests
 
             (weg, a) = Oeffnen();
             Assert.True(a.ZoneEntfernen(ids[1]));
-            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)));
+            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)).Meldung);
             List<ZoneModel> rest = ctrl.LesenJeGebaeude(Gebaeude);
             Assert.Equal(new[] { ids[0], ids[2] }, rest.Select(z => z.ID));
             Assert.Equal(new[] { 1, 2 }, rest.Select(z => z.Rang));
             Assert.All(rest, z => Assert.Single(z.Bauteile));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Bauteil WHERE ID_Zone = ?", new DbParam("@z", ids[1])));
-            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_Bauteil"));
+            Assert.Equal(2L, Zahl(Zonenbestand.BAUTEILE));
         }
 
         [Fact]
@@ -472,7 +472,7 @@ namespace EPOS.Kern.Tests
             Assert.True(a.ZoneVerschieben(ids[2], -1));
             Assert.True(a.ZoneVerschieben(ids[2], -1));
             Assert.True(a.ZonenGeaendert);
-            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)));
+            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)).Meldung);
 
             List<ZoneModel> g = ctrl.LesenJeGebaeude(Gebaeude);
             Assert.Equal(new[] { ids[2], ids[0], ids[1] }, g.Select(z => z.ID));
@@ -496,7 +496,7 @@ namespace EPOS.Kern.Tests
             (GebaeudeZonenweg weg, GebaeudeArbeitsstand a) = Oeffnen();
             ZoneDaten kopie = a.ZoneDuplizieren(vorher[0].ID, "Erste (Kopie)")!;
             kopie.Nutzflaeche = 10;
-            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)));
+            Assert.Equal("", weg.Speichern!(a.Zonenstand(true)).Meldung);
 
             List<ZoneModel> g = ctrl.LesenJeGebaeude(Gebaeude);
             Assert.Equal(new[] { "Erste", "Erste (Kopie)", "Mitte", "Dritte" }, g.Select(z => z.Bezeichner));
@@ -529,7 +529,7 @@ namespace EPOS.Kern.Tests
             a.ZoneAnlegen(new ZoneDaten { Id = -1, Bezeichner = "Haus", Nutzflaeche = 80 });
             a.ZoneAnlegen(a.NeueZone("Anbau"));
             Assert.Equal(string.Format(R.ZONE_MSG_NUTZFLAECHE_PFLICHT, "Anbau"), weg.Pruefen!(a.Zonenstand(false)));
-            Assert.Equal(string.Format(R.ZONE_MSG_NUTZFLAECHE_PFLICHT, "Anbau"), weg.Speichern!(a.Zonenstand(true)));
+            Assert.Equal(string.Format(R.ZONE_MSG_NUTZFLAECHE_PFLICHT, "Anbau"), weg.Speichern!(a.Zonenstand(true)).Meldung);
             Assert.Empty(new GebaeudeZonenCtrl().LesenJeGebaeude(Gebaeude));
         }
 

@@ -314,6 +314,41 @@ namespace WindowsFormsApplication1
         public const string KANAL_OHNE_VERSORGER = "KANAL_OHNE_VERSORGER";
 
         /// <summary>
+        /// KU3-5 (E68; Kühlkonzept 4.3 #18): Ein Kältespeicher steht im Projekt, aber kein Kälteerzeuger
+        /// (keine Wärmepumpe im Kühlbetrieb, keine Kältemaschine) lädt ihn — er rechnet nicht. WEICH.
+        /// </summary>
+        public const string KAELTESPEICHER_OHNE_ERZEUGER = "KAELTESPEICHER_OHNE_ERZEUGER";
+
+        /// <summary>
+        /// KU3-5: Ein Kältespeicher steht im Projekt, die Kühlung des Projekts ist aber ausgeschaltet
+        /// (<c>Tab_Einstellungen.Kuehlbetrieb</c>) — er rechnet nicht. WEICH.
+        /// </summary>
+        public const string KAELTESPEICHER_OHNE_KUEHLUNG = "KAELTESPEICHER_OHNE_KUEHLUNG";
+
+        /// <summary>
+        /// K3 (Konzept Kältebedarf 4.4, 5): Eine Kältebedarfszeile (Profil oder Lastgang im Kanal Kühlung) ist dezentral
+        /// (Split) gedeckt, aber ihre EER-Angaben rechnen nicht — der Lauf eines Projekts mit Kühlbetrieb bricht dann benannt
+        /// ab. WEICH (die Meldung bringt die Aussage vor den Lauf).
+        /// </summary>
+        public const string DEZENTRALE_KAELTE_OHNE_EER = "DEZENTRALE_KAELTE_OHNE_EER";
+
+        /// <summary>
+        /// Schritt 223 (Konzept Kältebedarf 4.2; E34): Eine dezentral (Split) gedeckte Kältebedarfszeile steht auf „eigener
+        /// Zähler“, trägt aber keinen vom Stromträger des Projekts abweichenden Kühlträger — der Zähler wirkt dann nicht, der
+        /// Strom läuft anteilig mit dem Projektträger. WEICH (die Meldung bringt die Aussage vor den Lauf; Muster der
+        /// Kälteerzeuger, deren Zähler ohne abweichenden Träger ebenso wirkungslos ist).
+        /// </summary>
+        public const string DEZENTRALE_KAELTE_ZAEHLER_OHNE_TRAEGER = "DEZENTRALE_KAELTE_ZAEHLER_OHNE_TRAEGER";
+
+        /// <summary>
+        /// KM4-E2 (Konzept Kältemittel als Stammdatum 3.3, 5.2; E123): Das Kältemittel einer Kältemaschine oder einer
+        /// Wärmepumpe mit Code fällt im geplanten Inbetriebnahmejahr unter eine Regel nach Anhang IV der Verordnung (EU)
+        /// 2024/573 — ab dem Stichtag nur Restbestand oder Ausnahme. WEICH: Die Prüfung warnt und sperrt nie. Ohne
+        /// Inbetriebnahmejahr entsteht kein Befund.
+        /// </summary>
+        public const string KAELTEMITTEL_STICHTAG = "KAELTEMITTEL_STICHTAG";
+
+        /// <summary>
         /// Untergrenze [MWh/a], ab der ein Kanal als „mit Bedarf" gilt. Darunter liegt
         /// nur Rundungsrauschen der Netzverlustverteilung; gemeldet würde sonst
         /// „0,0 MWh/a".
@@ -400,7 +435,167 @@ namespace WindowsFormsApplication1
                 SolarNachrangPruefen(bild, idPuffer, befunde);
             }
 
+            KaeltespeicherPruefen(idProjekt, befunde);
+            DezentraleKaeltePruefen(idProjekt, befunde);
+            KaeltemittelPruefen(idProjekt, befunde);
+
             return befunde;
+        }
+
+        /// <summary>
+        /// <see cref="KAELTEMITTEL_STICHTAG"/> — je Kältemaschine und je Wärmepumpe mit Kältemittel-Code ein weicher
+        /// Befund mit <c>ID_Anlage</c>, nur für Ergebnisklasse 2 (Konzept Kältemittel als Stammdatum 5.2). Ohne
+        /// Inbetriebnahmejahr eine einzige Abfrage und kein Befund. „Nicht prüfbar“ ist kein Befund, sondern ein
+        /// Hinweis des Laufs (<c>SimulationControl.KaeltemittelHinweiseMelden</c>).
+        /// </summary>
+        public static void KaeltemittelPruefen(int idProjekt, List<Warnbefund> befunde)
+        {
+            if (idProjekt <= 0 || befunde == null) return;
+            foreach (KaeltemittelErzeugerpruefung p in KaeltemittelProjektpruefung.Pruefen(idProjekt))
+            {
+                string text = KaeltemittelText(p);
+                if (text.Length > 0)
+                    befunde.Add(Befund(KAELTEMITTEL_STICHTAG, false, p.ID_Anlage, 0, text));
+            }
+        }
+
+        /// <summary>
+        /// Der Warntext eines Erzeugers der Ergebnisklasse 2: Anlage, Kältemittel, Regel (Fundstelle), Stichtag,
+        /// Kriterium, benutztes Jahr und benutzte Leistung; leer für jede andere Klasse.
+        /// </summary>
+        public static string KaeltemittelText(KaeltemittelErzeugerpruefung p)
+        {
+            KaeltemittelErgebnis e = p?.Ergebnis;
+            if (e == null || e.Klasse != KaeltemittelErgebnisklasse.AbStichtag) return "";
+            string kriterium = KaeltemittelKriteriumText(p.Regel?.Kriterium, e.Grenze);
+            string fundstelle = !string.IsNullOrWhiteSpace(p.Regel?.Quelle) ? p.Regel.Quelle.Trim() : e.Regelschluessel;
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMWARN_KAELTEMITTEL_STICHTAG,
+                p.Bezeichner, string.IsNullOrEmpty(p.Code) ? "—" : p.Code, fundstelle,
+                e.Stichtag?.ToString(CultureInfo.InvariantCulture) ?? "—", kriterium,
+                e.Jahr.ToString(CultureInfo.InvariantCulture),
+                e.LeistungKw.HasValue ? Grad(e.LeistungKw.Value) : "—");
+        }
+
+        /// <summary>
+        /// Der Hinweistext eines Erzeugers der Ergebnisklasse 4 („nicht prüfbar“, nur mit Jahr) mit der fehlenden
+        /// Größe; leer für jede andere Klasse.
+        /// </summary>
+        public static string KaeltemittelNichtPruefbarText(KaeltemittelErzeugerpruefung p)
+        {
+            KaeltemittelErgebnis e = p?.Ergebnis;
+            if (e == null || e.Klasse != KaeltemittelErgebnisklasse.NichtPruefbar) return "";
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMWARN_KAELTEMITTEL_NICHT_PRUEFBAR,
+                p.Bezeichner, e.Jahr.ToString(CultureInfo.InvariantCulture), KaeltemittelFehltText(e.FehlendeGroesse));
+        }
+
+        /// <summary>Die fehlende Größe (<c>Kaeltemittelzulaessigkeit.FEHLT_*</c>) als Satzteil.</summary>
+        public static string KaeltemittelFehltText(string fehlt)
+        {
+            switch (fehlt)
+            {
+                case Kaeltemittelzulaessigkeit.FEHLT_GERAETEKLASSE: return MyResource.Resource.SIMWARN_KAELTEMITTEL_FEHLT_GERAETEKLASSE;
+                case Kaeltemittelzulaessigkeit.FEHLT_LEISTUNG: return MyResource.Resource.SIMWARN_KAELTEMITTEL_FEHLT_LEISTUNG;
+                case Kaeltemittelzulaessigkeit.FEHLT_KAELTEMITTEL: return MyResource.Resource.SIMWARN_KAELTEMITTEL_FEHLT_KAELTEMITTEL;
+                case Kaeltemittelzulaessigkeit.FEHLT_GWP: return MyResource.Resource.SIMWARN_KAELTEMITTEL_FEHLT_GWP;
+                case Kaeltemittelzulaessigkeit.FEHLT_FGAS: return MyResource.Resource.SIMWARN_KAELTEMITTEL_FEHLT_FGAS;
+                case Kaeltemittelzulaessigkeit.FEHLT_STOFFKLASSE: return MyResource.Resource.SIMWARN_KAELTEMITTEL_FEHLT_STOFFKLASSE;
+                default: return fehlt ?? "";
+            }
+        }
+
+        /// <summary>Das Kriterium einer Regel (<c>DbWerte.FGAS_KRIT_*</c>) mit seiner Grenze als Satzteil.</summary>
+        public static string KaeltemittelKriteriumText(string kriterium, double? grenze)
+        {
+            string g = grenze.HasValue ? grenze.Value.ToString("#,0.#", CultureInfo.CurrentCulture) : "—";
+            switch (kriterium)
+            {
+                case DbWerte.FGAS_KRIT_FGAS: return MyResource.Resource.SIMWARN_KAELTEMITTEL_KRIT_FGAS;
+                case DbWerte.FGAS_KRIT_HFKW: return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMWARN_KAELTEMITTEL_KRIT_HFKW, g);
+                default: return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMWARN_KAELTEMITTEL_KRIT_GWP, g);
+            }
+        }
+
+        /// <summary>
+        /// <see cref="KAELTESPEICHER_OHNE_ERZEUGER"/> und <see cref="KAELTESPEICHER_OHNE_KUEHLUNG"/> — je
+        /// Kältespeicher des Projekts (KU3-5). Ohne Kältespeicher eine einzige Abfrage und kein Befund.
+        /// </summary>
+        public static void KaeltespeicherPruefen(int idProjekt, List<Warnbefund> befunde)
+        {
+            if (idProjekt <= 0 || befunde == null) return;
+            List<WaermesenkeClass.PufferInfo> speicher =
+                WaermesenkeClass.ProjektPufferListe(idProjekt, WaermesenkeClass.VERWENDUNG_KAELTE);
+            if (speicher.Count == 0) return;
+
+            bool kuehlung = KonfigurationCtrl.KuehlbetriebLesen(idProjekt);
+            int erzeuger = WPCtrl.AnlagenImKuehlbetrieb(idProjekt) + StilleDb.Zahl(StilleDb.Scalar(
+                "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE)));
+
+            foreach (WaermesenkeClass.PufferInfo p in speicher)
+            {
+                string name = string.IsNullOrEmpty(p.Bezeichner) ? p.ID.ToString() : p.Bezeichner;
+                if (!kuehlung)
+                    befunde.Add(Befund(KAELTESPEICHER_OHNE_KUEHLUNG, false, 0, p.ID,
+                        string.Format(MyResource.Resource.SIMWARN_KAELTESPEICHER_OHNE_KUEHLUNG, name)));
+                if (erzeuger <= 0)
+                    befunde.Add(Befund(KAELTESPEICHER_OHNE_ERZEUGER, false, 0, p.ID,
+                        string.Format(MyResource.Resource.SIMWARN_KAELTESPEICHER_OHNE_ERZEUGER, name)));
+            }
+        }
+
+        /// <summary>
+        /// <see cref="DEZENTRALE_KAELTE_OHNE_EER"/> — je Split-Zeile ohne rechnenden EER (K3), nur in einem Projekt mit
+        /// Kühlbetrieb (sonst rechnet die Zeile nicht). Dieselbe Regel wie beim Speichern
+        /// (<see cref="Z_ProjektKaeltebedarfCtrl.Deckungspruefung(Z_ProjektKaeltebedarfModel)"/>). Dazu
+        /// <see cref="DEZENTRALE_KAELTE_ZAEHLER_OHNE_TRAEGER"/> je Split-Zeile mit eigenem Zähler ohne abweichenden Kühlträger
+        /// (<see cref="Kaeltestromabrechnung.Abweichend"/>). Ohne Split-Zeile kein Befund.
+        /// </summary>
+        public static void DezentraleKaeltePruefen(int idProjekt, List<Warnbefund> befunde)
+        {
+            if (idProjekt <= 0 || befunde == null || !KaeltebedarfSchema.TabellenVorhanden()) return;
+            var gruende = new List<KeyValuePair<string, string>>();
+            // Schritt 223: Split-Zeilen mit eigenem Zähler - ob ihr Träger abweicht, entscheidet der Projektträger (unten).
+            var zaehler = new List<KeyValuePair<string, int?>>();
+            foreach (Z_ProjektKaeltebedarfModel z in Z_ProjektKaeltebedarfCtrl.LiesProjekt(idProjekt))
+            {
+                if (z.Deckung != KaeltebedarfSchema.DECKUNG_SPLIT) continue;
+                string grund = Z_ProjektKaeltebedarfCtrl.Deckungspruefung(z);
+                if (grund != null) gruende.Add(new KeyValuePair<string, string>(z.Bezeichner, grund));
+                if (z.KuehlEigenerZaehler) zaehler.Add(new KeyValuePair<string, int?>(z.Bezeichner, z.KuehlIdCarrier));
+            }
+            if (Z_ProjektKaeltebedarfCtrl.LastgangDeckungLesbar())
+            {
+                DataTable dt = StilleDb.Tabelle(
+                    "SELECT * FROM " + KaeltebedarfSchema.TAB_LASTGANG + " WHERE ID_Projekt = ? AND " +
+                    KaeltebedarfSchema.SPALTE_DECKUNG + " = ?",
+                    StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                    StilleDb.Par("@deck", DbParamTyp.VarWChar, KaeltebedarfSchema.DECKUNG_SPLIT));
+                if (dt != null)
+                    foreach (DataRow r in dt.Rows)
+                    {
+                        var w = new Z_ProjWaermebedarfModel
+                        {
+                            m_szBezeichner = StilleDb.Text(StilleDb.Feld(r, "Bezeichner")),
+                            Kanal = StilleDb.Text(StilleDb.Feld(r, "Kanal")),
+                        };
+                        Z_ProjektKaeltebedarfCtrl.DeckungLesen(r, w);
+                        if (!Z_ProjektKaeltebedarfCtrl.IstKuehlkanal(w)) continue;
+                        string grund = Z_ProjektKaeltebedarfCtrl.Deckungspruefung(w);
+                        if (grund != null) gruende.Add(new KeyValuePair<string, string>(w.m_szBezeichner, grund));
+                        if (w.KuehlEigenerZaehler) zaehler.Add(new KeyValuePair<string, int?>(w.m_szBezeichner, w.KuehlIdCarrier));
+                    }
+            }
+            if ((gruende.Count == 0 && zaehler.Count == 0) || !KonfigurationCtrl.KuehlbetriebLesen(idProjekt)) return;
+            foreach (KeyValuePair<string, string> g in gruende)
+                befunde.Add(Befund(DEZENTRALE_KAELTE_OHNE_EER, false, 0, 0,
+                    string.Format(MyResource.Resource.SIMWARN_KAELTE_SPLIT_OHNE_EER, g.Key, g.Value)));
+            if (zaehler.Count == 0) return;
+            int projekttraeger = Kaeltestromabrechnung.Projekttraeger(idProjekt);
+            foreach (KeyValuePair<string, int?> z in zaehler)
+                if (!Kaeltestromabrechnung.Abweichend(z.Value, projekttraeger))
+                    befunde.Add(Befund(DEZENTRALE_KAELTE_ZAEHLER_OHNE_TRAEGER, false, 0, 0,
+                        string.Format(MyResource.Resource.SIMWARN_KAELTE_SPLIT_ZAEHLER_OHNE_TRAEGER, z.Key)));
         }
 
         /// <summary>
@@ -796,6 +991,23 @@ namespace WindowsFormsApplication1
                                          Z_AnlageSenkeModel senke, int rang,
                                          List<Warnbefund> befunde)
         {
+            // --- W3, Prozessvorlauf (PW1 Stufe 1) --------------------------------------
+            //
+            // Eine DIREKTSENKE Prozesswärme an einem Erzeuger, dessen gepflegter Vorlauf unter
+            // dem höchsten Prozessvorlauf des Projekts liegt: In Stunden mit diesem Bedarf deckt
+            // der Lauf den Prozesskanal an diesem Erzeuger nicht (Ausschluss). Die Wärmepumpe
+            // ist ausgenommen - sie wertet ihr Kennfeld am Prozessvorlauf aus, ihr projektierter
+            // Vorlauf ist keine Grenze. Ohne Prozess mit Temperaturpaar schlägt nichts an.
+            if (senke != null && string.Equals(senke.Ziel, WaermesenkeClass.ZIEL_PROZESSWAERME, StringComparison.Ordinal))
+            {
+                double tProzess = bild.ProzessVorlaufMax();
+                int vorlauf = bild.AnlagenVorlauf(idAnlage);
+                if (tProzess > 0 && vorlauf > 0 && vorlauf < tProzess && !bild.IstWaermepumpe(idAnlage))
+                    befunde.Add(Befund(W3_VORLAUF_ZU_NIEDRIG, false, idAnlage, 0,
+                        string.Format(MyResource.Resource.SIMWARN_W3_UNTER_PROZESS,
+                                      bild.Anlagenname(idAnlage), Grad(vorlauf), Grad(tProzess))));
+            }
+
             if (senke == null || senke.ID_Puffer <= 0) return;
 
             int[] kanaele = ZielKanaele(senke.Ziel);
@@ -890,6 +1102,10 @@ namespace WindowsFormsApplication1
         {
             Pufferdaten p = bild.Puffer(idPuffer);
             if (p == null) return;
+
+            // KU3-5: Der Kältespeicher prüft KaeltespeicherPruefen - sein Paar (kalt unten) ist kein
+            // vertauschtes Wärmepaar, und die Wärmekriterien gelten für ihn nicht.
+            if (p.Set != null && p.Set.Kaelte) return;
 
             // --- HART: leeres Klassen-Set ---------------------------------------------
             //
@@ -1006,9 +1222,9 @@ namespace WindowsFormsApplication1
                 // (WaermequelleClass.OhneQuelle ueber DbWerte.WQ_TYP_OHNE). Bis dahin
                 // stand hier Trim().Length > 0 - zeichengleich in der Wirkung, aber der
                 // Persistenzwert kam als Literal-Vergleich daher statt aus DbWerte.
-                if (!WaermequelleClass.OhneQuelle(StilleDb.Text(StilleDb.Feld(r, "WQ_Typ")))) continue;
-
                 int idAnlage = (int)StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                if (!WaermequelleClass.OhneQuelle(
+                        ErdreichLaufvorgabe.Quelltyp(idAnlage, StilleDb.Text(StilleDb.Feld(r, "WQ_Typ"))))) continue;
                 befunde.Add(Befund(QUELLE_NICHT_KONFIGURIERT, false, idAnlage, 0,
                     string.Format(MyResource.Resource.SIMWARN_QUELLE_FEHLT,
                                   StilleDb.Text(StilleDb.Feld(r, "Bezeichner")), bauart)));
@@ -1039,7 +1255,8 @@ namespace WindowsFormsApplication1
 
             foreach (DataRow r in dt.Rows)
             {
-                if (!string.Equals(StilleDb.Text(StilleDb.Feld(r, "WQ_Typ")),
+                if (!string.Equals(ErdreichLaufvorgabe.Quelltyp((int)StilleDb.Zahl(StilleDb.Feld(r, "ID")),
+                                                                StilleDb.Text(StilleDb.Feld(r, "WQ_Typ"))),
                                    WaermequelleClass.TYP_PUFFER, StringComparison.Ordinal))
                     continue;
 
@@ -1205,6 +1422,7 @@ namespace WindowsFormsApplication1
             if (set.Heizung) teile.Add(KanalAnzeige(Kanal.HEIZUNG));
             if (set.Brauchwasser) teile.Add(KanalAnzeige(Kanal.BRAUCHWASSER));
             if (set.Prozess) teile.Add(KanalAnzeige(Kanal.PROZESS));
+            if (set.Kaelte) teile.Add(KanalAnzeige(Kanal.KUEHLUNG));
 
             return Verbinden(teile);
         }
@@ -1378,9 +1596,9 @@ namespace WindowsFormsApplication1
                 {
                     case Kanal.BRAUCHWASSER: return Set.Brauchwasser;
                     case Kanal.PROZESS: return Set.Prozess;
-                    // Kühlkonzept 4.3 #25: benannte Ablehnung statt Rückfall auf Heizung -
-                    // ein Speicher bedient keine Kälte, solange kein Kältespeicher rechnet (K7).
-                    case Kanal.KUEHLUNG: return false;
+                    // Kühlkonzept 4.3 #25: benannte Ablehnung statt Rückfall auf Heizung - den
+                    // Kühlkanal bedient allein der Kältespeicher (KU3-5).
+                    case Kanal.KUEHLUNG: return Set.Kaelte;
                     default: return Set.Heizung;
                 }
             }
@@ -1523,6 +1741,41 @@ namespace WindowsFormsApplication1
             public string Anlagenname(int idAnlage)
             {
                 return Bild.Name(idAnlage);
+            }
+
+            private double? _prozessVorlaufMax;
+
+            /// <summary>
+            /// Der höchste Vorlauf der Prozesswärmesätze des Projekts mit vollständigem Paar [°C]
+            /// (PW1 Stufe 1) — über die Zuordnungszeilen, die der Lauf rechnet; 0 ohne Paar. Still
+            /// gelesen: Vor dem Schemaschritt fehlen die Spalten, dann ist es 0.
+            /// </summary>
+            public double ProzessVorlaufMax()
+            {
+                if (_prozessVorlaufMax == null)
+                {
+                    object o = StilleDb.Scalar(
+                        "SELECT MAX(p.Vorlauf) FROM Tab_Prozesswaerme p INNER JOIN Z_Projekt_Prozesswaerme z " +
+                        "ON z.ID_Prozesswaerme = p.ID WHERE z.ID_Projekt = ? AND p.ID_Projekt = ? " +
+                        "AND p.Vorlauf IS NOT NULL AND p.Ruecklauf IS NOT NULL",
+                        StilleDb.Par("@proj", DbParamTyp.Integer, _idProjekt),
+                        StilleDb.Par("@proj2", DbParamTyp.Integer, _idProjekt));
+                    double wert = 0;
+                    if (o != null && o != DBNull.Value)
+                    {
+                        try { wert = Convert.ToDouble(o, CultureInfo.InvariantCulture); }
+                        catch { wert = 0; }
+                    }
+                    _prozessVorlaufMax = wert;
+                }
+                return _prozessVorlaufMax.Value;
+            }
+
+            /// <summary>Ist die Anlage eine Wärmepumpe (<c>ID_Type</c> = <see cref="ProjektPuffer.TYP_WP"/>)?</summary>
+            public bool IstWaermepumpe(int idAnlage)
+            {
+                Hydraulikbild.AnlagenEintrag a;
+                return Bild.JeId.TryGetValue(idAnlage, out a) && a.ID_Type == ProjektPuffer.TYP_WP;
             }
 
             public int AnlagenVorlauf(int idAnlage)

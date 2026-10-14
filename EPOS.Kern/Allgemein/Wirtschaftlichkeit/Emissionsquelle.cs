@@ -204,7 +204,7 @@ namespace WindowsFormsApplication1
 
             // Kein Energieträger zugeordnet - der Brennstoff des Geräts gegen dieselbe
             // Tabelle, in der die Kette ohnehin endet.
-            Brennstoffwerte b = Brennstoff(idBrennstoff);
+            Brennstoffwerte b = Brennstoff(idProjekt, idBrennstoff);
             f.Co2GKwh = b.Co2 ?? 0.0;
             f.Co2Gepflegt = b.Co2.HasValue;
             f.So2MgKwh = b.So2 ?? 0.0;
@@ -563,19 +563,21 @@ namespace WindowsFormsApplication1
             public string Lesefehler;   // ETAPPE E7c3 (B‑6): null = gelesen
         }
 
-        /// <summary>Die Faktoren eines Brennstoffs aus <c>Tab_Brennstoff_Stamm</c> —
-        /// dieselbe Tabelle, die auch die Ebene <c>STAMM</c> der Lesekette liest,
-        /// nur über die Brennstoff-ID des Geräts statt über den Träger.</summary>
-        private static Brennstoffwerte Brennstoff(int idBrennstoff)
+        /// <summary>Die Faktoren eines Brennstoffs aus <c>Tab_Brennstoff_Stamm</c> bzw. der
+        /// Projektkopie <c>Tab_Brennstoff</c> — dieselbe Sicht, die auch die Ebene <c>STAMM</c>
+        /// der Lesekette liest, nur über die Brennstoff-ID des Geräts statt über den Träger.</summary>
+        private static Brennstoffwerte Brennstoff(int idProjekt, int idBrennstoff)
         {
             var b = new Brennstoffwerte();
             if (idBrennstoff <= 0) return b;
             try
             {
                 // ETAPPE E7c3 (B‑6): der strenge Leseweg, damit der Fang unten greift.
+                // Im Projekt die Projektkopie des Brennstoffs (ProjektBrennstoffe.Sicht).
+                string quelle = ProjektBrennstoffe.Sicht(idProjekt, out DbParam[] sicht);
                 DataTable dt = StilleDb.TabelleStreng(
-                    "SELECT Bezeichner, CO2, SO2, NOx, Staub FROM Tab_Brennstoff_Stamm WHERE ID = ?",
-                    new DbParam("@id", idBrennstoff));
+                    "SELECT bs.Bezeichner, bs.CO2, bs.SO2, bs.NOx, bs.Staub FROM " + quelle + " AS bs WHERE bs.ID = ?",
+                    ProjektBrennstoffe.Mit(sicht, new DbParam("@id", idBrennstoff)));
                 if (dt == null || dt.Rows.Count == 0) return b;
 
                 DataRow r = dt.Rows[0];

@@ -1,7 +1,7 @@
 # ADR-002: Stundenmodell VDI 6007 als Vorgabemodell — Einbindung mit einer Naht und Neu-Einfrieren der Basis
 
 **Status:** Angenommen (15.09.2026, Anwenderentscheide E1, E2, E4, E8, E10)
-**Ergänzung (16.09.2026, E20; 17.09.2026, E26):** Die „eine Naht" ist seit [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md) eine **Weiche am Eingang** der Gebäudebedarfsrechnung zwischen zwei getrennten Modulen (`Altweg/`, `Gebaeude/`); der Tagesbilanz-Weg ist ein eingefrorener Bestandsweg, der nach E23 jetzt bleibt und nach E26 mit der Stufe GA abgelöst wird (Zeitpunkt offen, Q24). Alles Übrige dieses ADR gilt unverändert, **mit Ausnahme von Entscheidung 3, Satz 3** (Flächen- und Bewohnerrechnung).
+**Ergänzung (16.09.2026, E20; 17.09.2026, E26):** Die „eine Naht" ist seit [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md) eine **Weiche am Eingang** der Gebäudebedarfsrechnung zwischen zwei getrennten Modulen (`Altweg/`, `Gebaeude/`); der Tagesbilanz-Weg ist ein eingefrorener Bestandsweg, der nach E23 bleibt und mit E89 (05.10.2026) dauerhaft wählbar ist; die Stufe GA entfällt. Alles Übrige dieses ADR gilt unverändert, **mit Ausnahme von Entscheidung 3, Satz 3** (Flächen- und Bewohnerrechnung).
 **Datum:** 15.09.2026
 **Entscheider:** Anwender (Projektverantwortung EPOS-Plan)
 **Betrifft:** [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)

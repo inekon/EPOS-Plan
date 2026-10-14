@@ -39,12 +39,26 @@ namespace WindowsFormsApplication1
         /// Der PARAMETERSATZ des Dialogs — ohne <c>Geschlossen</c>, damit ihn die beiden
         /// Überlagerungen der Wellen W10a.5 und W10a.7 nehmen können.
         /// </summary>
+        /// <param name="auslegen">
+        /// Der Weg des Knopfs „Auslegen…" (Stufe P2, Puffer-ID, <c>0</c> = neuer Speicher); <c>null</c> =
+        /// die freie Ansicht ohne Nachzug (Überlagerungen in Quellen- und Senkendialog).
+        /// </param>
         internal static IReadOnlyDictionary<string, object> Gaben(
-            int idProjekt, string verwendung, int idPuffer)
+            int idProjekt, string verwendung, int idPuffer, Action<int> auslegen = null)
         {
             return new Dictionary<string, object>
             {
                 ["IdProjekt"] = idProjekt,
+                // Stufe P2: „Auslegen…" oeffnet die Pufferspeicher-Auslegung als freie Ansicht der
+                // Wurzel fuer den gewaehlten Speicher; der Dialog verlaesst sich dabei wie Abbrechen.
+                ["AuslegenOeffnen"] = auslegen ?? (id => PufferAuslegungHuelle.Oeffnen(new PufferAuslegungAuftrag
+                {
+                    IdProjekt = idProjekt,
+                    IdPuffer = id > 0 ? id : (int?)null,
+                    Einstieg = MyResource.Resource.PAUS_EINSTIEG_VERWALTUNG
+                })),
+                ["BtnAuslegen"] = MyResource.Resource.PAUS_BTN_AUSLEGEN,
+                ["HinweisAuslegen"] = MyResource.Resource.PAUS_AUSLEGEN_VERWIRFT,
                 ["Verwendung"] = verwendung ?? "",
                 ["IdPuffer"] = idPuffer,
                 ["Dienste"] = Dienste(idProjekt),
@@ -85,6 +99,7 @@ namespace WindowsFormsApplication1
                 ["LabelAusKatalog"] = MyResource.Resource.PSP_LABEL_AUS_KATALOG,
                 ["KatalogFreieEingabe"] = MyResource.Resource.PSP_KATALOG_FREIE_EINGABE,
                 ["LabelBezeichner"] = MyResource.Resource.PSP_LABEL_BEZEICHNER,
+                ["HerkunftKatalog"] = MyResource.Resource.PSP_HERKUNFT_KATALOG,
                 ["LabelVerwendung"] = MyResource.Resource.PSP_LABEL_VERWENDUNG,
                 ["LabelGesamtvolumen"] = MyResource.Resource.PSP_LABEL_GESAMTVOLUMEN,
                 ["LabelBereitschaftsverluste"] = MyResource.Resource.PSP_LABEL_BEREITSCHAFTSVERLUSTE,
@@ -121,6 +136,11 @@ namespace WindowsFormsApplication1
                 ["NutzungHeizung"] = MyResource.Resource.KANAL_HEIZUNG_ANZEIGE,
                 ["NutzungBrauchwasser"] = MyResource.Resource.KANAL_BRAUCHWASSER_ANZEIGE,
                 ["NutzungProzess"] = MyResource.Resource.KANAL_PROZESS_ANZEIGE,
+                ["NutzungKaelte"] = MyResource.Resource.PSP_VERWENDUNG_KAELTE_ANZEIGE,
+                ["LabelKaltVorlauf"] = MyResource.Resource.PSP_LABEL_KALTWASSER_VORLAUF,
+                ["LabelKaltRuecklauf"] = MyResource.Resource.PSP_LABEL_KALTWASSER_RUECKLAUF,
+                ["HinweisKaeltespeicher"] = MyResource.Resource.PSP_HINWEIS_KAELTESPEICHER,
+                ["FehlerKaeltepaar"] = MyResource.Resource.PSP_FEHLER_KAELTEPAAR,
                 ["HerleitungVerwendung"] = MyResource.Resource.PSP_HERLEITUNG_VERWENDUNG,
 
                 ["AnzeigeQmax"] = MyResource.Resource.PSP_ANZEIGE_QMAX,
@@ -138,6 +158,23 @@ namespace WindowsFormsApplication1
                 ["FehlerNachrangUnterEin"] = MyResource.Resource.PSP_FEHLER_NACHRANG_UNTER_EIN,
                 ["FehlerReserveUeberAus"] = MyResource.Resource.PSP_FEHLER_RESERVE_UEBER_AUS,
                 ["FehlerHoehe"] = MyResource.Resource.PSP_FEHLER_HOEHE,
+                // Welle M7: Bereitschaftsweg, Aufstellraum, Zonenanteile, Frischwassermodul, Hinweis HK4.
+                ["GruppeOptionen"] = MyResource.Resource.PSP_GRUPPE_OPTIONEN,
+                ["LabelBereitschaftWeg"] = MyResource.Resource.PSP_LABEL_BEREITSCHAFT_WEG,
+                ["BereitschaftTag"] = MyResource.Resource.PSP_BEREITSCHAFT_TAG,
+                ["BereitschaftTemperatur"] = MyResource.Resource.PSP_BEREITSCHAFT_TEMPERATUR,
+                ["LabelAufstellraum"] = MyResource.Resource.PSP_LABEL_AUFSTELLRAUM,
+                ["HinweisAufstellraum"] = MyResource.Resource.PSP_HINWEIS_AUFSTELLRAUM,
+                ["LabelSchichtAnteile"] = MyResource.Resource.PSP_LABEL_SCHICHT_ANTEILE,
+                ["BtnVorschlagKombi"] = MyResource.Resource.PSP_BTN_VORSCHLAG_KOMBI,
+                ["HinweisAnteile"] = MyResource.Resource.PSP_HINWEIS_ANTEILE,
+                ["LabelFrischwassermodul"] = MyResource.Resource.PSP_LABEL_FRISCHWASSERMODUL,
+                ["LabelFwmGraedigkeit"] = MyResource.Resource.PSP_LABEL_FWM_GRAEDIGKEIT,
+                ["HinweisFwm"] = MyResource.Resource.PSP_HINWEIS_FWM,
+                ["HinweisUebertrager"] = MyResource.Resource.PSP_HINWEIS_UEBERTRAGER,
+                ["FehlerAufstellraum"] = MyResource.Resource.PSP_FEHLER_AUFSTELLRAUM,
+                ["FehlerFwmGraedigkeit"] = MyResource.Resource.PSP_FEHLER_FWM_GRAEDIGKEIT,
+                ["FehlerAnteile"] = MyResource.Resource.PSP_FEHLER_ANTEILE,
                 ["FehlerLambdaEff"] = MyResource.Resource.PSP_FEHLER_LAMBDA_EFF,
                 ["FehlerTNutzBW"] = MyResource.Resource.PSP_FEHLER_T_NUTZ_BW,
                 ["FehlerEntnahmehoehe"] = MyResource.Resource.PSP_FEHLER_ENTNAHMEHOEHE,
@@ -259,7 +296,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static string Listentext(PspEingaben e)
         {
-            var set = new PufferSpCtrl.KlassenSet(e.Heizung, e.Brauchwasser, e.Prozess);
+            var set = new PufferSpCtrl.KlassenSet(e.Heizung, e.Brauchwasser, e.Prozess, e.Kaelte);
             return string.Format(MyResource.Resource.PSP_LISTE_EINTRAG,
                                  e.Bezeichner,
                                  WaermesenkeClass.VerwendungAnzeige(set.Verwendung),
@@ -293,7 +330,9 @@ namespace WindowsFormsApplication1
                 p.SchwelleReserve,
                 p.Entladeprio,
                 set.Heizung, set.Brauchwasser, set.Prozess,
-                Schichtdaten(s));
+                Schichtdaten(s),
+                PufferSpCtrl.Katalogherkunft(idPuffer),
+                set.Kaelte);
         }
 
         private static PspSchichtdaten Schichtdaten(PufferSpCtrl.Schichtdaten s)
@@ -302,7 +341,8 @@ namespace WindowsFormsApplication1
             return new PspSchichtdaten(
                 PufferSpCtrl.SchichtenKlemmen(s.Schichten), s.Hoehe, s.LambdaEff, s.TNutzBW,
                 s.EntnahmeHeizung, s.EntnahmeBW, s.EntnahmeProzess,
-                s.LadeleistungMax, s.EntladeleistungMax);
+                s.LadeleistungMax, s.EntladeleistungMax,
+                s.BereitschaftWeg, s.AufstellraumC, s.SchichtAnteile, s.Frischwassermodul, s.FwmGraedigkeitK);
         }
 
         private static PufferSpCtrl.Schichtdaten Schichtdaten(PspSchichtdaten s)
@@ -319,6 +359,11 @@ namespace WindowsFormsApplication1
             d.EntnahmeProzess = s.EntnahmeProzess;
             d.LadeleistungMax = s.LadeleistungMax;
             d.EntladeleistungMax = s.EntladeleistungMax;
+            d.BereitschaftWeg = s.BereitschaftWeg;
+            d.AufstellraumC = s.AufstellraumC;
+            d.SchichtAnteile = s.SchichtAnteile;
+            d.Frischwassermodul = s.Frischwassermodul;
+            d.FwmGraedigkeitK = s.FwmGraedigkeitK;
             return d;
         }
 
@@ -448,7 +493,7 @@ namespace WindowsFormsApplication1
             KatalogfelderLesen(e.Katalogzeile, 0, idProjekt, ref hersteller, ref speichertyp,
                                ref investition);
 
-            var set = new PufferSpCtrl.KlassenSet(e.Heizung, e.Brauchwasser, e.Prozess);
+            var set = new PufferSpCtrl.KlassenSet(e.Heizung, e.Brauchwasser, e.Prozess, e.Kaelte);
 
             return PufferSpCtrl.ProjektPufferAnlegen(
                 idProjekt, e.Bezeichner, hersteller, speichertyp, e.Volumen, e.Verluste,
@@ -465,7 +510,7 @@ namespace WindowsFormsApplication1
             KatalogfelderLesen(e.Katalogzeile, idPuffer, idProjekt, ref hersteller,
                                ref speichertyp, ref investition);
 
-            var set = new PufferSpCtrl.KlassenSet(e.Heizung, e.Brauchwasser, e.Prozess);
+            var set = new PufferSpCtrl.KlassenSet(e.Heizung, e.Brauchwasser, e.Prozess, e.Kaelte);
 
             return PufferSpCtrl.ProjektPufferAendern(
                 idPuffer, idProjekt, e.Bezeichner, hersteller, speichertyp, e.Volumen,
@@ -558,6 +603,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static IReadOnlyList<int> VorbelegteNutzung(string verwendung)
         {
+            // KU3-5: Ein Absprung mit Wunsch „Kaelte" legt einen Kältespeicher an (Nutzung 3).
+            if (WaermesenkeClass.IstKaelteVerwendung(verwendung)) return new[] { 3 };
+
             string wunsch =
                 WaermesenkeClass.IstKombiVerwendung(verwendung)
                     ? WaermesenkeClass.VERWENDUNG_KOMBI

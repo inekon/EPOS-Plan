@@ -27,9 +27,11 @@
         }
     </Kopf>
     <KindInhalt>
-        <DiagrammSvg Modell="@Modell" Kennung="@(Kennung + "-" + Schluessel)"
-                     Bezeichnung="@Titel" PlatzhalterText="@PlatzhalterText"
-                     Einheit="@Einheit" Palette="@Farbpalette.Aktuell" />
+        <CascadingValue Value="@Satzexport">
+            <DiagrammSvg Modell="@Modell" Kennung="@(Kennung + "-" + Schluessel)"
+                         Bezeichnung="@Titel" PlatzhalterText="@PlatzhalterText"
+                         Einheit="@Einheit" Palette="@Farbpalette.Aktuell" />
+        </CascadingValue>
     </KindInhalt>
 </Stammblattgruppe>
 
@@ -38,14 +40,45 @@
     <KindInhalt>
         @if (_offen && Modell is not null)
         {
-            <DiagrammSvg Modell="@Modell" Kennung="@(Kennung + "-gross-" + Schluessel)"
-                         Bezeichnung="@GrossTitel" PlatzhalterText="@PlatzhalterText"
-                         Einheit="@Einheit" Palette="@Farbpalette.Aktuell" />
+            <CascadingValue Value="@Satzexport">
+                <DiagrammSvg Modell="@Modell" Kennung="@(Kennung + "-gross-" + Schluessel)"
+                             Bezeichnung="@GrossTitel" PlatzhalterText="@PlatzhalterText"
+                             Einheit="@Einheit" Palette="@Farbpalette.Aktuell" />
+            </CascadingValue>
         }
     </KindInhalt>
 </Ueberlagerung>
 
 @code {
+    /// <summary>
+    /// „CSV…“ am Jahresverlauf: die Naht der Verwaltung aus der Kaskade. Der Name des Satzes
+    /// geht in den Dateistamm ein — eine Verwaltung zeigt viele Sätze, die Datei nennt den gezeigten.
+    /// </summary>
+    [CascadingParameter] public Ganglinienexport? Export { get; set; }
+
+    private Ganglinienexport? _satzexport;
+    private Ganglinienexport? _satzexportQuelle;
+    private string? _satzexportName;
+
+    /// <summary>Die Naht mit dem Satznamen im Titel — gemerkt, solange Quelle und Name bleiben.</summary>
+    private Ganglinienexport? Satzexport
+    {
+        get
+        {
+            if (Export is null) return null;
+            if (!ReferenceEquals(Export, _satzexportQuelle) || Name != _satzexportName)
+            {
+                Ganglinienexport quelle = Export;
+                string name = Name;
+                _satzexport = new Ganglinienexport((m, t) =>
+                    quelle.Speichern(m, string.IsNullOrEmpty(name) ? t : t + " " + name));
+                _satzexportQuelle = quelle;
+                _satzexportName = name;
+            }
+            return _satzexport;
+        }
+    }
+
     /// <summary>Der Titel der Gruppe — „Ganglinie" (<c>ADM_SB_GANGLINIE</c>).</summary>
     [Parameter] public string Titel { get; set; } = Resource.ADM_SB_GANGLINIE;
 

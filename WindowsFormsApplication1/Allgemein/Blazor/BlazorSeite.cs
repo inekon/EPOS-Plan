@@ -186,6 +186,19 @@ namespace WindowsFormsApplication1
         /// Stellt die Seite auf ein anderes Projekt ein - OHNE die WebView neu zu
         /// bauen. Die Komponente erfaehrt es ueber <see cref="SeitenZustand.Geaendert"/>.
         /// </summary>
+        /// <summary>
+        /// Oeffnet die Entwicklerwerkzeuge (DevTools) der WebView2 dieser Seite — der Weg des
+        /// Menuepunkts „Entwicklung -> Entwicklerwerkzeuge der Oberflaeche". <c>false</c>, solange
+        /// die WebView2 noch nicht bereit ist.
+        /// </summary>
+        public bool EntwicklerwerkzeugeOeffnen()
+        {
+            Microsoft.Web.WebView2.Core.CoreWebView2 kern = _web?.WebView?.CoreWebView2;
+            if (kern == null) return false;
+            kern.OpenDevToolsWindow();
+            return true;
+        }
+
         public void ProjektSetzen(int idProjekt, string name)
         {
             Zustand.ProjektSetzen(idProjekt, name);

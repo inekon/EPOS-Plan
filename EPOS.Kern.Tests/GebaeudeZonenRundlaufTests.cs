@@ -85,8 +85,12 @@ namespace EPOS.Kern.Tests
                || tabelle == SchemaKatalog.TAB_ZONENLUFTSTROM
                || tabelle == SchemaKatalog.TAB_IMPORTQUELLE || tabelle == SchemaKatalog.TAB_IMPORTZUORDNUNG;
 
+        /// <summary>Die Zeilen der Tabelle ohne die der Zonenprojekte 1052, 1054 und 1062 (G6d, AK1z, KK5a, <see cref="Zonenbestand"/>).</summary>
         internal static long Zahl(string tabelle)
-            => Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"" + tabelle + "\""), CultureInfo.InvariantCulture);
+            => Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"" + tabelle + "\""), CultureInfo.InvariantCulture)
+               - Zeilen(tabelle, EPOS.Referenzlaeufe.Skripte.Zonenprojekt1052.NEU).Rows.Count
+               - Zeilen(tabelle, EPOS.Referenzlaeufe.Skripte.Zonenprojekt1054.NEU).Rows.Count
+               - Zeilen(tabelle, (int)Zonenbestand.KUEHLKURVE).Rows.Count;
 
         // =============================================================================
         //  Die Vorrichtung
@@ -535,7 +539,7 @@ namespace EPOS.Kern.Tests
                 GebaeudeZonenweg weg = GebaeudeKatalogHuelle.Zonenweg(ZonenRundlauf.PROJEKT, z.ID_Z, idGebaeude);
                 var stand = new GebaeudeArbeitsstand();
                 stand.ZonenLaden(weg.Zonen, true);
-                Assert.Equal("", weg.Speichern!(stand.Zonenstand(true)));
+                Assert.Equal("", weg.Speichern!(stand.Zonenstand(true)).Meldung);
             }
             ZonenRundlauf.Gleich(vorher, ZonenRundlauf.Abdruck(ZonenRundlauf.PROJEKT, ohneIds: false), "OK im Editor");
         }

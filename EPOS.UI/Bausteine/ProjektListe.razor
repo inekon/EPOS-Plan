@@ -63,6 +63,8 @@
 @namespace EPOS.UI.Bausteine
 
 @using WindowsFormsApplication1
+@using Microsoft.JSInterop
+@inject IJSRuntime Js
 
 <div class="epos-projektliste">
 
@@ -79,7 +81,7 @@
     }
     else
     {
-        <div class="@Huellenklasse">
+        <div class="@Huellenklasse" @ref="_huelle">
             <table class="epos-raster epos-projektliste-raster">
                 <thead>
                     <tr>
@@ -256,6 +258,21 @@
     /// <c>false</c>.
     /// </summary>
     [Parameter] public bool AutoVorauswahl { get; set; } = true;
+
+    /// <summary>
+    /// Rollt die markierte Zeile beim ersten Zeichnen, in dem sie steht, an den oberen
+    /// Rand des Rollbereichs (<c>epos-projektliste.js</c>). „Speichern unter" öffnet mit
+    /// dem offenen Projekt als Wahl — mitten in einer langen Liste sähe der Anwender sie
+    /// sonst nicht. Gerollt wird einmal, danach nie wieder von selbst: Ein Klick des
+    /// Anwenders verschiebt seine Liste nicht.
+    /// </summary>
+    [Parameter] public bool MarkierteOben { get; set; }
+
+    /// <summary>Das Skriptmodul der Rollnachführung.</summary>
+    public const string MODUL = "./_content/EPOS.UI/epos-projektliste.js";
+
+    private ElementReference _huelle;
+    private bool _gerollt;
 
     /// <summary>Welche Spalten gezeigt werden.</summary>
     [Parameter] public Spaltensatz Spalten { get; set; } = Spaltensatz.Auswahl;
@@ -640,6 +657,34 @@
     {
         await Markieren(z);
         await Gewaehlt.InvokeAsync(z);
+    }
+
+    /// <summary>
+    /// Rollt die markierte Zeile einmal nach oben (<see cref="MarkierteOben"/>). Ohne
+    /// Modul (Prüfstand, getrennte Verbindung) bleibt die Liste stehen — kein Fehlschlag.
+    /// </summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!MarkierteOben || _gerollt || Markiert == 0) return;
+
+        IReadOnlyList<ProjektKopfZeile> sicht = Sicht;
+        int index = -1;
+        for (int i = 0; i < sicht.Count; i++)
+            if (sicht[i].Id == Markiert) { index = i; break; }
+        if (index < 0) return;
+
+        _gerollt = true;
+        try
+        {
+            IJSObjectReference? modul = await Js.InvokeAsync<IJSObjectReference>("import", MODUL);
+            if (modul is null) return;
+            await modul.InvokeVoidAsync("zeileOben", _huelle, index);
+            await modul.DisposeAsync();
+        }
+        catch (JSDisconnectedException) { }
+        catch (JSException) { }
+        catch (InvalidOperationException) { }
+        catch (TaskCanceledException) { }
     }
 
     protected override async Task OnParametersSetAsync()

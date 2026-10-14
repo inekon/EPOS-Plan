@@ -41,7 +41,7 @@ namespace WindowsFormsApplication1
         /// <summary>Hat das Verfahren einen Vorschlag (sonst ist <see cref="Vorschlag"/> NaN)?</summary>
         internal bool HatVorschlag => !double.IsNaN(Vorschlag);
 
-        /// <summary>Die Einheit einer Bezugsart als Begriff (<c>BEGRIFF_EINHEIT_1</c> … <c>_7</c>) — für Rechenwege und Hinweise.</summary>
+        /// <summary>Die Einheit einer Bezugsart als Begriff (<c>BEGRIFF_EINHEIT_1</c> … <c>_8</c>) — für Rechenwege und Hinweise.</summary>
         internal static ZapfSatz Einheitbegriff(ZapfBezugsart b)
             => ZapfSatz.Neu("BEGRIFF_EINHEIT_" + ((int)b).ToString(CultureInfo.InvariantCulture));
 

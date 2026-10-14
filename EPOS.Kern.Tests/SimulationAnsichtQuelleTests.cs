@@ -389,6 +389,40 @@ namespace EPOS.Kern.Tests
         private static SimulationAnsichtQuelle Quelle()
             => new SimulationAnsichtQuelle(new BedarfsZustand(), null);
 
+        /// <summary>
+        /// K6b-N: „Bearbeiten…“ der Gruppe „Dezentrale Kältedeckung“ geht über die Naht der Schale — mit Projekt, Quelle und
+        /// Zuordnungs-ID. Eine Schale ohne den Weg lehnt benannt ab (ihr Sperrgrund; ohne Sperrgrund die Vorgabe), nie still.
+        /// </summary>
+        [Fact]
+        public void K6bN_Bearbeiten_der_dezentralen_Kaeltedeckung_geht_ueber_die_Naht_oder_wird_benannt()
+        {
+            var gerufen = new List<(int Projekt, bool Profil, int Zuordnung)>();
+            var mit = new SimulationAnsichtQuelle(new BedarfsZustand(), new SimulationPlattformwege
+            {
+                KaelteDezentralBearbeiten = (projekt, profil, zuordnung, nachher) =>
+                {
+                    gerufen.Add((projekt, profil, zuordnung));
+                    nachher("gespeichert?");
+                    return null;
+                }
+            });
+            SimulationKonfigDienste dienste = Konfigdienste(mit.AnsichtGaben(PROJEKT_EINZEL, ""));
+            string nachzug = "";
+            Assert.Null(dienste.KaelteDezentralBearbeiten(true, 7, g => nachzug = g));
+            Assert.Null(dienste.KaelteDezentralBearbeiten(false, 8, g => { }));
+            Assert.Equal(new[] { (PROJEKT_EINZEL, true, 7), (PROJEKT_EINZEL, false, 8) }, gerufen);
+            Assert.Equal("gespeichert?", nachzug);
+
+            var ios = new SimulationAnsichtQuelle(new BedarfsZustand(), SimulationPlattformwege.Ohne("nicht auf diesem Gerät"));
+            Assert.Equal("nicht auf diesem Gerät",
+                         Konfigdienste(ios.AnsichtGaben(PROJEKT_EINZEL, "")).KaelteDezentralBearbeiten(true, 7, g => { }));
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIM_MSG_WEG_NICHT_HIER,
+                         Konfigdienste(Quelle().AnsichtGaben(PROJEKT_EINZEL, "")).KaelteDezentralBearbeiten(false, 8, g => { }));
+        }
+
+        private static SimulationKonfigDienste Konfigdienste(IReadOnlyDictionary<string, object> gaben)
+            => (SimulationKonfigDienste)Dienste(gaben).Konfiguration!["Dienste"];
+
         private static SimulationAnsichtDienste Dienste(IReadOnlyDictionary<string, object> gaben)
             => (SimulationAnsichtDienste)gaben["Dienste"];
 

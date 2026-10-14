@@ -33,9 +33,12 @@ namespace WindowsFormsApplication1
     /// belastbarere der beiden Basen; gibt es einen Senkenspeicher, ist die
     /// Speicherladung darin enthalten und der Kurztext sagt das an.
     ///
-    /// GRENZE DER STUFE 1 (bewusst, siehe Protokoll): Wärmeproduktion und Strombedarf
-    /// liegen als Stundenganglinie nur GLOBAL vor (Summe aller WP-Module). Die
-    /// Zuordnung zum Modul ist deshalb gestuft:
+    /// JE ANLAGE (Konzept Simulationsablauf 23.2): Ein Lauf bucht den Entzug je Modul und
+    /// Stunde (<see cref="SimulationWaermepumpe.ModulEntzugStuendlich"/>, Wärme − Strom ohne
+    /// Taktanteil, dieselbe Reihe, die das Sondenfeld liest). Dann gelten Jahresentzug,
+    /// Spitze, Betriebs- und Froststunden der Anlage mit Erdreichquelle allein — auch neben
+    /// einer Luft-Wasser-Wärmepumpe, und je Anlage, wenn mehrere Erdreichanlagen im Projekt
+    /// stehen. Nur ohne diese Buchung gilt die alte Stufung aus der Summenganglinie:
     ///
     ///   • genau ein WP-Modul                → exakt (die globale Ganglinie IST die des Moduls)
     ///   • mehrere Module, alle mit Erdreich → die globale Ganglinie ist vollständig
@@ -62,7 +65,9 @@ namespace WindowsFormsApplication1
     /// Die Ergebnisse liegen prozessweit je Projekt (Muster der übrigen Statics in
     /// <c>Program</c>), damit sie sowohl die Detailansicht als auch den später
     /// geöffneten Quellendialog erreichen, ohne dass eine Aufrufkette dafür nötig ist.
-    /// Sie werden NICHT persistiert - sie gelten für den Lauf der laufenden Sitzung.
+    /// Mit dem gespeicherten Simulationsergebnis schreibt <c>ErgebnisCtrl.Save</c> sie zudem nach
+    /// <c>Tab_ErgebnisErdreich</c> (Entscheidungsvorlage Modellgrenzen EQ1,
+    /// <see cref="ErdreichErgebnisSpeicher"/>); nach einem Neustart liest der Dialog sie von dort.
     /// </summary>
     public static class ErdreichAuswertung
     {
@@ -146,6 +151,15 @@ namespace WindowsFormsApplication1
             /// <summary>Stunden mit Quelltemperatur − Spreizung &lt; 0 °C.</summary>
             public int FrostStunden;
 
+            /// <summary>
+            /// Der gerechnete Verlauf der Quelltemperatur [°C, 8760 Stunden] — die Soletemperatur am
+            /// Quelleintritt der Wärmepumpe, wie die Kaskade sie gerechnet hat
+            /// (<see cref="SimulationWaermepumpe.Quelltemperaturen"/> des ersten Moduls der Anlage;
+            /// dieselbe Reihe wie der Referenzexport <c>wp_quellentemperatur.csv</c>). Eine eigene Kopie;
+            /// <c>null</c> ohne Reihe und bei Luft-Wasser (dort rechnet die Außenluft).
+            /// </summary>
+            public double[] QuelltemperaturStuendlich;
+
             /// <summary>true, wenn die Frostgrenze dauerhaft unterschritten wird (13.1).</summary>
             public bool FrostWarnung;
 
@@ -216,6 +230,28 @@ namespace WindowsFormsApplication1
             return new List<AnlageErgebnis>();
         }
 
+        /// <summary>
+        /// Der Stand eines Projekts im Zwischenspeicher, so wie er liegt — <c>null</c> ohne Lauf.
+        /// Gegenstück zu <see cref="StandZuruecklegen"/>: Der Erdreichdialog sichert ihn vor seinem
+        /// ersten Lauf und legt ihn beim Abbrechen zurück, wenn sein Lauf mit Eingaben gerechnet hat,
+        /// die nie gespeichert wurden.
+        /// </summary>
+        internal static List<AnlageErgebnis> StandDesProjekts(int idProjekt)
+        {
+            lock (_proProjekt)
+                return _proProjekt.TryGetValue(idProjekt, out List<AnlageErgebnis> liste) ? liste : null;
+        }
+
+        /// <summary>Legt einen mit <see cref="StandDesProjekts"/> gesicherten Stand zurück; <c>null</c> = kein Lauf.</summary>
+        internal static void StandZuruecklegen(int idProjekt, List<AnlageErgebnis> stand)
+        {
+            lock (_proProjekt)
+            {
+                if (stand == null) _proProjekt.Remove(idProjekt);
+                else _proProjekt[idProjekt] = stand;
+            }
+        }
+
         /// <summary>Ergebnis einer einzelnen Energieanlage oder null.</summary>
         public static AnlageErgebnis FuerAnlage(int idProjekt, int idAnlage)
         {
@@ -259,6 +295,20 @@ namespace WindowsFormsApplication1
             string HinweisVorbehalt,
             string HinweisFrost)
         {
+            /// <summary>
+            /// Der Laufstempel eines GESPEICHERTEN Ergebnisses (EQ1, <see cref="ErdreichErgebnisSpeicher"/>);
+            /// leer bei einem Lauf dieser Sitzung. Der Dialog schreibt dann „Stand des Laufs vom …".
+            /// </summary>
+            public string Laufstempel { get; init; } = "";
+
+            /// <summary>
+            /// Der gerechnete Verlauf der Quelltemperatur des Laufs [°C, 8760 Stunden] — die
+            /// Soletemperatur am Quelleintritt (<see cref="AnlageErgebnis.QuelltemperaturStuendlich"/>).
+            /// <c>null</c> ohne Lauf dieser Sitzung, bei einem gespeicherten Ergebnis und bei
+            /// Luft-Wasser; die Vorschau des Dialogs zeigt sie als zweite Reihe neben der ungestörten.
+            /// </summary>
+            public double[] QuelltemperaturStuendlich { get; init; }
+
             /// <summary>„Es gab keinen Lauf" — der Zustand beim Öffnen ohne Ergebnis.</summary>
             public static readonly ErdreichLaufErgebnis Keines =
                 new ErdreichLaufErgebnis(false, false, 0, 0, 0, "", "", "");
@@ -304,7 +354,8 @@ namespace WindowsFormsApplication1
                     string.Format(CultureInfo.CurrentCulture,
                         Zeilenumbruch.Normalisieren(MyResource.Resource.SIMQ_ERDREICH_KEINE_PRUEFUNG),
                         erg.Grenze),
-                    "", "");
+                    "", "")
+                { QuelltemperaturStuendlich = erg.QuelltemperaturStuendlich };
             }
 
             string vorbehalt = erg.MaxEntzugGeschaetzt ? erg.Grenze : "";
@@ -314,7 +365,8 @@ namespace WindowsFormsApplication1
 
             return new ErdreichLaufErgebnis(
                 true, true, erg.MaxEntzugW, erg.JahresentzugKWh, erg.VolllastStunden,
-                "", vorbehalt, erg.FrostWarnung ? erg.Frosttext() : "");
+                "", vorbehalt, erg.FrostWarnung ? erg.Frosttext() : "")
+            { QuelltemperaturStuendlich = erg.QuelltemperaturStuendlich };
         }
 
         /// <summary>
@@ -378,6 +430,10 @@ namespace WindowsFormsApplication1
                 if (wirksam[i]) anzahlWirksam++;
             }
 
+            // Je Anlage aus dem Entzug je Modul und Stunde (Konzept 23.2).
+            if (wp.EntzugJeModulGefuehrt)
+                return AuswertenJeAnlage(idProjekt, wp, mitSenkenspeicher, konfiguriert, wirksam);
+
             // Entzugsganglinie (therm − el) der GESAMTEN Wärmepumpenkaskade [kW].
             // Jahresarbeit, Spitze und Betriebsstunden kommen aus derselben Reihe -
             // das ist der Kern der Basiskorrektur (siehe Klassenkommentar).
@@ -429,22 +485,13 @@ namespace WindowsFormsApplication1
             {
                 if (!konfiguriert[i]) continue;
 
-                AnlageErgebnis a = new AnlageErgebnis();
-                a.ID_Anlage = wp.wp_list[i];
-                a.Modul = (i < wp.WP_Modul.Length && !string.IsNullOrEmpty(wp.WP_Modul[i]))
-                    ? wp.WP_Modul[i]
-                    : string.Format(CultureInfo.CurrentCulture,
-                        MyResource.Resource.SIMQ_ANLAGE_ERSATZNAME, a.ID_Anlage);
+                AnlageErgebnis a = NeuesErgebnis(wp, i);
 
                 // Luft-Wasser: die Konfiguration wird nicht gerechnet - nichts prüfen,
                 // sondern sagen, warum hier keine Zahlen stehen.
                 if (!wirksam[i])
                 {
-                    a.Unwirksam = true;
-                    a.MaxEntzugBelastbar = false;
-                    a.Grenze = MyResource.Resource.SIMQ_ERDREICH_UNWIRKSAM_LUFT_WASSER;
-                    a.Pruefung = new VDI4640Pruefung.Ergebnis { Moeglich = false, Hinweis = a.Grenze };
-                    liste.Add(a);
+                    liste.Add(Unwirksam(a));
                     continue;
                 }
 
@@ -480,10 +527,98 @@ namespace WindowsFormsApplication1
 
                 a.Pruefung = Pruefen(a, klimazone);
                 FrostPruefen(a, wp, i, laeuft, betriebsStunden);
+                a.QuelltemperaturStuendlich = QuelltemperaturDesModuls(wp, i);
                 liste.Add(a);
             }
 
             return liste;
+        }
+
+        /// <summary>
+        /// <b>Auswertung je Anlage</b> (Konzept Simulationsablauf 23.2): Die Ganglinie der Anlage ist
+        /// die Summe der Entzugsreihen ihrer Module (Wärme − Strom ohne Taktanteil). Jahresentzug (9),
+        /// Spitze (10), Volllaststunden (11), Betriebs- und Froststunden kommen allein aus ihr — ein
+        /// Modul an einer anderen Quelle (Luft-Wasser daneben) geht nicht ein. Eine Zeile je Anlage;
+        /// sie trägt den Namen ihres ersten Moduls.
+        /// </summary>
+        private static List<AnlageErgebnis> AuswertenJeAnlage(int idProjekt, SimulationWaermepumpe wp,
+            bool mitSenkenspeicher, bool[] konfiguriert, bool[] wirksam)
+        {
+            var liste = new List<AnlageErgebnis>();
+            var gesehen = new HashSet<int>();
+            int klimazone = KlimazoneDesProjekts(idProjekt);
+            int anzahlModule = konfiguriert.Length;
+
+            for (int i = 0; i < anzahlModule; i++)
+            {
+                if (!konfiguriert[i]) continue;
+                int idAnlage = wp.wp_list[i];
+                if (!gesehen.Add(idAnlage)) continue;
+
+                AnlageErgebnis a = NeuesErgebnis(wp, i);
+                if (!wirksam[i])
+                {
+                    liste.Add(Unwirksam(a));
+                    continue;
+                }
+
+                var laeuft = new bool[8760];
+                int betriebsStunden = 0;
+                double summe = 0, spitze = 0;
+                for (int h = 0; h < 8760; h++)
+                {
+                    double q = 0;
+                    bool lief = false;
+                    for (int k = i; k < anzahlModule; k++)
+                    {
+                        if (wp.wp_list[k] != idAnlage || !wirksam[k]) continue;
+                        double[] reihe = wp.ModulEntzugStuendlich(k);
+                        bool[] betrieb = wp.ModulBetriebStuendlich(k);
+                        if (reihe != null) q += reihe[h];
+                        if (betrieb != null && betrieb[h]) lief = true;
+                    }
+                    if (lief) { laeuft[h] = true; betriebsStunden++; }
+                    if (q <= 0) continue;
+                    summe += q;
+                    if (q > spitze) spitze = q;
+                }
+
+                a.BetriebsStunden = betriebsStunden;
+                a.InklSpeicherladung = mitSenkenspeicher;
+                a.JahresentzugKWh = summe;
+                a.MaxEntzugW = spitze * 1000.0;   // kW -> W
+                a.VolllastStunden = spitze > 0 ? summe / spitze : betriebsStunden;
+                a.MaxEntzugBelastbar = true;
+                a.MaxEntzugGeschaetzt = false;
+
+                a.Pruefung = Pruefen(a, klimazone);
+                FrostPruefen(a, wp, i, laeuft, betriebsStunden);
+                a.QuelltemperaturStuendlich = QuelltemperaturDesModuls(wp, i);
+                liste.Add(a);
+            }
+            return liste;
+        }
+
+        /// <summary>Ergebniszeile des Moduls <paramref name="i"/> mit Anlage und Anzeigename.</summary>
+        private static AnlageErgebnis NeuesErgebnis(SimulationWaermepumpe wp, int i)
+        {
+            AnlageErgebnis a = new AnlageErgebnis();
+            a.ID_Anlage = wp.wp_list[i];
+            a.Modul = (i < wp.WP_Modul.Length && !string.IsNullOrEmpty(wp.WP_Modul[i]))
+                ? wp.WP_Modul[i]
+                : string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.SIMQ_ANLAGE_ERSATZNAME, a.ID_Anlage);
+            return a;
+        }
+
+        /// <summary>Luft-Wasser: die Erdreichkonfiguration wirkt nicht - keine Zahlen, keine Prüfung.</summary>
+        private static AnlageErgebnis Unwirksam(AnlageErgebnis a)
+        {
+            a.Unwirksam = true;
+            a.MaxEntzugBelastbar = false;
+            a.Grenze = MyResource.Resource.SIMQ_ERDREICH_UNWIRKSAM_LUFT_WASSER;
+            a.Pruefung = new VDI4640Pruefung.Ergebnis { Moeglich = false, Hinweis = a.Grenze };
+            return a;
         }
 
         /// <summary>
@@ -572,9 +707,27 @@ namespace WindowsFormsApplication1
             a.FrostWarnung = unterNull > FROST_ANTEIL_MAX * betriebsStunden;
         }
 
-        /// <summary>Klimazone (DIN 4710) der Klimaregion des Projekts; 0 = nicht zugeordnet.</summary>
-        private static int KlimazoneDesProjekts(int idProjekt)
+        /// <summary>
+        /// Eine Kopie der gerechneten Quelltemperatur des Moduls <paramref name="index"/> (höchstens
+        /// 8760 Stunden); <c>null</c>, wenn der Lauf keine Reihe führt. Gelesen, nicht gerechnet —
+        /// der Rechenweg bleibt unberührt.
+        /// </summary>
+        private static double[] QuelltemperaturDesModuls(SimulationWaermepumpe wp, int index)
         {
+            var profile = wp.Quelltemperaturen;
+            if (profile == null || index < 0 || index >= profile.Count) return null;
+            double[] reihe = profile[index];
+            if (reihe == null || reihe.Length == 0) return null;
+            var kopie = new double[Math.Min(reihe.Length, 8760)];
+            Array.Copy(reihe, kopie, kopie.Length);
+            return kopie;
+        }
+
+        /// <summary>Klimazone (DIN 4710) der Klimaregion des Projekts; 0 = nicht zugeordnet.</summary>
+        internal static int KlimazoneDesProjekts(int idProjekt)
+        {
+            int? vorgabe = ErdreichLaufvorgabe.KlimazoneFuer(idProjekt);
+            if (vorgabe.HasValue) return vorgabe.Value;
             try
             {
                 DataTable dt = DataRepository.GetDataTable(

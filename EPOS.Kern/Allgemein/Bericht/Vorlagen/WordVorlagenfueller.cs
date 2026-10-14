@@ -284,6 +284,9 @@ namespace WindowsFormsApplication1
             /// <summary>Die Überschrift vor jedem Kapitel im Bericht (Stelle der Anhang-E-Checkliste).</summary>
             private IReadOnlyDictionary<string, string> _kapitelstellen;
 
+            /// <summary>Die Katalogschlüssel aller Felder der Vorlage (getippt und als Steuerelement, Welle P4c).</summary>
+            private readonly HashSet<string> _vorlagenfelder = new HashSet<string>(StringComparer.Ordinal);
+
             private bool _logoGewarnt;
             private Berichtswerte _werte;
 
@@ -468,15 +471,27 @@ namespace WindowsFormsApplication1
             {
                 foreach (Textstelle s in stellen)
                 {
+                    foreach (Platzhalter m in s.Marken) MerkeFeld(m);
                     if (s.Teil.Art == Teilart.Rumpf) MerkeKopf(s);
                     if (s.Teil.Art != Teilart.Rumpf || s.Marken.Count != 1) continue;
                     if (!OrtVon(s.Absatz, s.Teil).ErlaubtKapitel || !IstAllein(s.Absatz, s.Marken[0])) continue;
                     Beanspruche(s.Marken[0], s.Absatz);
                 }
                 foreach (Sdtstelle s in _sdts)
+                {
+                    MerkeFeld(s.Marke);
                     if (s.Sdt is SdtBlock && s.Teil.Art == Teilart.Rumpf && OrtVon(s.Sdt, s.Teil).ErlaubtKapitel)
                         Beanspruche(s.Marke, s.Sdt);
+                }
                 _kapitelstellen = BerechneKapitelstellen();
+            }
+
+            /// <summary>Merkt den Katalogschlüssel eines Felds der Vorlage (<see cref="WordKontext.Vorlagenfelder"/>).</summary>
+            private void MerkeFeld(Platzhalter m)
+            {
+                if (m == null || m.Art != Platzhalterart.Feld) return;
+                string schluessel = Vorlagenfeldkatalog.Finde(m.Schluessel)?.Schluessel;
+                if (schluessel != null) _vorlagenfelder.Add(schluessel);
             }
 
             /// <summary>Merkt den ersten Absatz je Kapitelkopf <c>{{text.kapitel_&lt;name&gt;}}</c> (<see cref="_kopfOrt"/>).</summary>
@@ -962,6 +977,7 @@ namespace WindowsFormsApplication1
                         OhneTitel = ohneTitel,
                         Ebenenversatz = Math.Max(0, ebene - 1),
                         Kapitelstellen = _kapitelstellen,
+                        Vorlagenfelder = _vorlagenfelder,
                         Vorspann = e.Einzeln && ohneTitel && kopf != null ? Einfuegeanker.Vor(kopf, ti.Teil) : null,
                     };
                     k.NeuerBaustein().SchreibeWord(kontext, _daten, _konfig);

@@ -1,0 +1,110 @@
+﻿@* Reiter 3 der Startseite: „Kaeltebedarf" (Konzept Kaeltebedarf 3.1, Stufe K4).
+
+   Muster: WaermebedarfReiter - Kopfzeile, Erlaeuterung, DREI Bildkacheln und ein
+   Tippkasten (Warnbanner der Stufe "Hinweis", dauerhaft wie im Erzeugerreiter).
+
+   DIE HINWEISZEILE steht nur, wenn das Projekt keine Kaelte rechnet
+   (Tab_Einstellungen.Kuehlbetrieb = 0): ein Satz mit Sprung in die
+   Simulationskonfiguration. Der Schalter selbst bleibt dort (K10/E27); der
+   Reiter zeigt nur den Weg.
+
+   DIE KACHEL „Gebaeudekuehlung" traegt eine Zustandszeile „n von m Gebaeuden
+   gekuehlt" (Konzept 3.5); ihr Bestand kommt aus der Huelle
+   GebaeudekuehlungKachelBau, nicht aus der Datenbank. *@
+
+@namespace EPOS.UI.Seiten.Start
+
+<div class="epos-startreiter">
+
+    <div class="epos-startreiter-kopf">
+        <div>
+            <h2 class="epos-startreiter-titel">@KopfText</h2>
+            <p class="epos-startreiter-text">@Text</p>
+            @if (_stand is { Kuehlbetrieb: false })
+            {
+                <p class="epos-startreiter-hinweis epos-kaeltereiter-ohne">
+                    <span class="epos-startseite-status epos-startseite-status--keins"
+                          aria-hidden="true">@HinweisZeichen</span>
+                    <span>@OhneKuehlbetriebText</span>
+                    <button type="button" class="epos-startreiter-verweis"
+                            @onclick="() => KonfigurationOeffnen.InvokeAsync()">@ZurKonfigText</button>
+                </p>
+            }
+        </div>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Kachelraster Hoechstbreite="404">
+        <KindInhalt>
+            @foreach (StartKachel kachel in Kacheln)
+            {
+                StartKachel k = kachel;
+                <Kachel Titel="@k.Titel"
+                        Beschreibung="@k.Beschreibung"
+                        Status="@StatusVon(k)"
+                        Zustand="@k.Zustand"
+                        Bild="@Kachelbilder.Quelle(k.Schluessel)"
+                        Bildklasse="@Kachelbilder.Klasse(k.Schluessel)"
+                        Geklickt="@(() => Geklickt.InvokeAsync(k.Schluessel))" />
+            }
+        </KindInhalt>
+    </Kachelraster>
+
+    <Warnbanner Stufe="WarnStufe.Hinweis" Text="@(TippTitelText + ": " + TippText)" />
+</div>
+
+@code {
+    /// <summary>Die Kacheln dieses Reiters — drei.</summary>
+    [Parameter] public IReadOnlyList<StartKachel> Kacheln { get; set; } = Array.Empty<StartKachel>();
+
+    /// <summary>Eine Kachel wurde angeklickt; übergeben wird ihr Schlüssel.</summary>
+    [Parameter] public EventCallback<string> Geklickt { get; set; }
+
+    /// <summary>Der Sprung der Hinweiszeile in die Simulationskonfiguration.</summary>
+    [Parameter] public EventCallback KonfigurationOeffnen { get; set; }
+
+    /// <summary>
+    /// Der Stand der Gebäudekühlung samt Projektschalter (Windows: <c>GebaeudekuehlungKachelBau.Daten</c>);
+    /// <c>null</c> = keine Hinweiszeile und keine Zustandszeile.
+    /// </summary>
+    [Parameter] public Func<GebaeudekuehlungDaten?>? Gebaeudekuehlung { get; set; }
+
+    [Parameter] public string KopfText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_KB_KOPF;
+    [Parameter] public string Text { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_KB_TEXT;
+    [Parameter] public string TippTitelText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_KB_TIPP_TITEL;
+    [Parameter] public string TippText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_KB_TIPP;
+
+    /// <summary>Die Hinweiszeile bei <c>Kuehlbetrieb = 0</c>.</summary>
+    [Parameter] public string OhneKuehlbetriebText { get; set; }
+        = WindowsFormsApplication1.MyResource.Resource.START_KB_OHNE_KUEHLBETRIEB;
+
+    /// <summary>Der Verweis der Hinweiszeile.</summary>
+    [Parameter] public string ZurKonfigText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_KB_ZUR_KONFIG;
+
+    /// <summary>Die Zustandszeile der Gebäudekühlung, <c>{0}</c> gekühlt von <c>{1}</c> Gebäuden.</summary>
+    [Parameter] public string GebaeudeStandText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_K_GEBKUEHL_STAND;
+
+    /// <summary>Der Zusatz der Zustandszeile bei <c>Kuehlbetrieb = 0</c>.</summary>
+    [Parameter] public string GebaeudeOhneKaelteText { get; set; } = WindowsFormsApplication1.MyResource.Resource.START_K_GEBKUEHL_AUS;
+
+    /// <summary>Das Warnzeichen der Hinweiszeile — das ⚠ des Kopfbandes.</summary>
+    [Parameter] public string HinweisZeichen { get; set; } = "⚠";
+
+    /// <summary>Hilfeschlüssel des Infoknopfes (<c>help_mapping.txt</c>).</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Start.btn_Help_Kaeltebedarf";
+
+    private GebaeudekuehlungDaten? _stand;
+
+    /// <inheritdoc />
+    protected override void OnParametersSet() => _stand = Gebaeudekuehlung?.Invoke();
+
+    /// <summary>Die Zustandszeile — nur an der Kachel „Gebäudekühlung“ und nur mit Bestand.</summary>
+    private string StatusVon(StartKachel k)
+    {
+        if (k.Schluessel != Kachelschluessel.Gebaeudekuehlung || _stand is null) return "";
+
+        string zeile = string.Format(System.Globalization.CultureInfo.CurrentCulture, GebaeudeStandText,
+                                     _stand.Gekuehlt, _stand.Gebaeude);
+        return _stand.Kuehlbetrieb ? zeile : zeile + " · " + GebaeudeOhneKaelteText;
+    }
+}

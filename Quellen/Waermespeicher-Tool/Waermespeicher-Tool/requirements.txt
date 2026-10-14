@@ -1,0 +1,12 @@
+# Wärmespeicher-Tool — Laufzeitabhängigkeiten
+# Installation:  pip install -r requirements.txt
+# (Windows: start_tool.bat erledigt das automatisch beim ersten Start.)
+
+streamlit>=1.50    # ab 1.50 gilt die width="stretch"-API, die app.py verwendet
+pandas
+numpy
+demandlib==0.2.2   # VDI 4655 / BDEW-Profile — API-stabil nur in 0.2.2, daher gepinnt
+openpyxl
+plotly
+holidays
+pytest

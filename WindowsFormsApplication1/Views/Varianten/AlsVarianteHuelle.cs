@@ -45,10 +45,8 @@ namespace WindowsFormsApplication1
         /// Variante), <paramref name="projektname"/> dessen Name.
         /// </summary>
         /// <returns>
-        /// <c>true</c>, wenn eine Variante entstanden ist. <b>Seit Auftrag #240</b>:
-        /// Der Menüweg wertet den Ausgang wie bisher nicht aus, der dritte Einstieg —
-        /// der Knopf „Variante anlegen" der Seite „Berichte &amp; Kosten › Übersicht" —
-        /// braucht ihn, um seine Variantenliste danach neu zu laden.
+        /// <c>true</c>, wenn eine Variante entstanden ist; der Menüweg wertet den Ausgang
+        /// nicht aus.
         /// </returns>
         internal static bool Zeige(IWin32Window besitzer, int idProjekt, string projektname)
         {
@@ -97,17 +95,15 @@ namespace WindowsFormsApplication1
         /// Das FENSTER — der einzige Windows-Teil dieses Ablaufs, und deshalb die EINE
         /// Stelle, an der der Dialog aufgeht.
         ///
-        /// <para><b>DREI Wege führen zu ihm</b> (seit Auftrag <b>#240</b>; die ersten
-        /// zwei seit dem Anwenderwunsch vom 08.09.2026): der Menüpunkt „Als Variante
-        /// speichern…" über <see cref="Zeige"/>, der Eintrag im Auswahlfeld „Projekt:"
-        /// des Kopfbands über <c>StartseiteHuelle.VarianteAnlegenJetzt</c> und der Knopf
-        /// „Variante anlegen" der Seite „Berichte &amp; Kosten › Übersicht" über
-        /// <c>UebersichtSeiteGaben.VarianteAnlegenOeffnen</c> — der ruft
-        /// <see cref="Zeige"/> mit dem STAMM, den die Seite gewählt hat, und der muss
-        /// nicht das geöffnete Projekt sein. Sie unterscheiden sich NUR darin, wie sie
-        /// den Erfolg melden — Meldungskasten hier und in der Übersicht, Kurzhinweis der
-        /// Seite im Kopfband; der Dialog selbst ist derselbe und steht deshalb nur
-        /// hier.</para>
+        /// <para><b>ZWEI Wege führen zu ihm</b> (Anwenderwunsch vom 08.09.2026): der
+        /// Menüpunkt „Als Variante speichern…" über <see cref="Zeige"/> und der Eintrag im
+        /// Auswahlfeld „Projekt:" des Kopfbands über
+        /// <c>StartseiteHuelle.VarianteAnlegenJetzt</c>. Sie unterscheiden sich NUR darin,
+        /// wie sie den Erfolg melden — Meldungskasten hier, Kurzhinweis der Seite im
+        /// Kopfband; der Dialog selbst ist derselbe und steht deshalb nur hier. Die Seite
+        /// „Berichte &amp; Kosten › Übersicht" führt ihren eigenen kleinen Dialog als
+        /// Überlagerung (Quelle aus der Vergleichsgruppe, plattformfrei) und ruft dieses
+        /// Fenster nicht.</para>
         /// </summary>
         internal static ProjektVarianteWahl? Fragen(IWin32Window besitzer, int idStamm, string stammName)
         {

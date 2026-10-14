@@ -505,14 +505,18 @@ namespace WindowsFormsApplication1
         /// <param name="staende">Die gezeigten Stände in Gruppenreihenfolge.</param>
         /// <param name="idReferenz">Die wirksame Referenz. Sie entscheidet nicht mehr mit — die Referenz
         /// trägt keine Differenz und nimmt deshalb nie teil; der Parameter bleibt für die Aufrufer.</param>
+        /// <param name="szenario">Das Szenario der Wahl — Vorgabe der Erwartungsfall (die Seite); das Brückenbild des
+        /// Wortberichts wählt im Szenario des Berichts (Fachvorgabe E31). Eine Auswahl, keine Rechnung.</param>
         public static int Leitversion(IEnumerable<WirtschaftlichkeitErgebnis> alle,
-                                      IEnumerable<int> staende, int idReferenz)
+                                      IEnumerable<int> staende, int idReferenz,
+                                      string szenario = WirtschaftlichkeitSzenario.ERWARTET)
         {
             if (staende == null) return 0;
             var liste = new List<WirtschaftlichkeitErgebnis>();
             if (alle != null) foreach (WirtschaftlichkeitErgebnis e in alle) if (e != null) liste.Add(e);
 
-            BesteVariante.Auswahl auswahl = BesteVariante.Waehle(liste, 0, new List<int>(staende));
+            BesteVariante.Auswahl auswahl = BesteVariante.Waehle(liste, 0, new List<int>(staende),
+                                                                 WirtschaftlichkeitSzenario.Normiere(szenario));
             return auswahl.Grund == BesteVariante.Auswahlgrund.KeinErgebnis ? 0 : auswahl.IdProjekt;
         }
 

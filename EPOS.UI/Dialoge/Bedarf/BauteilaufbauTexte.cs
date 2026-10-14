@@ -50,6 +50,36 @@ public sealed class BauteilaufbauTexte
     /// <summary><c>BTA_LBL_QUELLE</c></summary>
     public string LabelQuelle { get; set; } = Resource.BTA_LBL_QUELLE;
 
+    /// <summary><c>BKAT_LBL_GRUPPE</c> — die Gruppe des Aufbaus (BK-2b).</summary>
+    public string LabelGruppe { get; set; } = Resource.BKAT_LBL_GRUPPE;
+
+    /// <summary><c>BKAT_GRUPPE_KEINE</c> — die leere Zeile der Gruppenwahl (Gruppe aus der Bauteilart).</summary>
+    public string GruppeKeine { get; set; } = Resource.BKAT_GRUPPE_KEINE;
+
+    /// <summary><c>BKAT_LBL_KLASSE</c></summary>
+    public string LabelKlasse { get; set; } = Resource.BKAT_LBL_KLASSE;
+
+    /// <summary><c>BKAT_KLASSE_KEINE</c></summary>
+    public string KlasseKeine { get; set; } = Resource.BKAT_KLASSE_KEINE;
+
+    /// <summary><c>BKAT_LBL_EIGNUNG</c> — Beschriftung des Lesewerts der Eignung.</summary>
+    public string LabelEignung { get; set; } = Resource.BKAT_LBL_EIGNUNG;
+
+    /// <summary><c>BKAT_GEEIGNET</c></summary>
+    public string Geeignet { get; set; } = Resource.BKAT_GEEIGNET;
+
+    /// <summary><c>BKAT_UNGEEIGNET</c> — „für die Gebäudesimulation meist nicht geeignet".</summary>
+    public string Ungeeignet { get; set; } = Resource.BKAT_UNGEEIGNET;
+
+    /// <summary><c>BKAT_SCHALTER_NUR_GEEIGNETE</c> — der Schalter über der Liste.</summary>
+    public string SchalterNurGeeignete { get; set; } = Resource.BKAT_SCHALTER_NUR_GEEIGNETE;
+
+    /// <summary><c>BKAT_HERKUNFT_IMPORT</c> — die Marke „Import" im Stammblattkopf.</summary>
+    public string MarkeImport { get; set; } = Resource.BKAT_HERKUNFT_IMPORT;
+
+    /// <summary><c>BKAT_IMPORT_QUELLE</c> — die Herleitung unter der festen Quelle eines Importsatzes.</summary>
+    public string ImportQuelle { get; set; } = Resource.BKAT_IMPORT_QUELLE;
+
     /// <summary><c>BTA_LBL_HERKUNFT</c></summary>
     public string LabelHerkunft { get; set; } = Resource.BTA_LBL_HERKUNFT;
 

@@ -171,7 +171,6 @@ ist ein OK-Dialog und trägt **Abbrechen · OK (primär)**.
 | `Bedarf/GebaeudeKatalogDialog.razor` | Überschreiben · **Speichern** · Beenden | Überschreiben · Speichern [unter] · Füller · **Beenden** | beide Speicherwege schreiben sofort und lassen die Maske stehen (im Modus „Admin" ist sie eine Katalogverwaltung mit Namensliste) |
 | `Bedarf/TypStammDialog.razor` | Überschreiben · Speichern unter · **Speichern** · Beenden | Überschreiben · Speichern unter · Speichern · Füller · **Beenden** | alle drei Speicherwege schreiben sofort und melden im Warnbanner |
 | `Bedarf/TypProfilDialog.razor` | Speichern unter · **Speichern** · Löschen · Neu · Schließen | Speichern in DB · Speichern unter · Füller · Neu · Löschen · **Beenden** | Katalogmuster nach der Leseregel: Eingabeblock links, Liste rechts; „Schließen" heißt wie überall „Beenden" (`BPRO_BTN_BEENDEN`) |
-| `Waermepumpe/WaermepumpenKatalogDialog.razor` | **Übernehmen** · Abbrechen | Füller · Abbrechen · **Übernehmen** | „Übernehmen" SCHLIESST mit der gewählten Zeile — der OK-Weg, also **nicht** der Fall der Importdialoge 8/9 (die bleiben nach der Übernahme stehen) |
 | `Kosten/VorlagenUebernahmeDialog.razor` | **OK** · Abbrechen | `SpeichernLeiste`: Füller · Abbrechen · **OK** | die beiden Schlussknöpfe standen vertauscht |
 | `Strom/GanglinieImportOptionenDialog.razor` | Abbrechen · Aktualisieren · **OK** | `SpeichernLeiste` mit `Aktionen`: Vorschau aktualisieren · Füller · Abbrechen · **OK** | „Aktualisieren" wirkt auf den Eingabeblock und gehört damit links vom Füller |
 

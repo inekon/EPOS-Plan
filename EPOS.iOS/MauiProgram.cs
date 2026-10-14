@@ -119,6 +119,10 @@ public static class MauiProgram
         Dienste.Navigation = new IosNavigation();
         Dienste.Projekt = new IosProjektKontext();
 
+        // Entwicklermodus (Administration und Support, Stufe 1): einmal nach der Belegung
+        // ermitteln - Sperre und Einstellung liest der Kern ueber Dienste.Einstellungen.
+        Entwicklermodus.Ermitteln(Array.Empty<string>());
+
         return sprache;
     }
 

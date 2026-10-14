@@ -1,0 +1,179 @@
+﻿@* Die grafische Darstellung des Abschnitts "Ergebnisse — Energie" der Uebersicht
+   (Anwenderauftrag 13.10.2026), neben der Tabelle ueber den Umschalter
+   "Tabelle | Grafik" im Kopf des Abschnitts.
+
+   WAS SIE ZEIGT. Je Gruppe waagrechte Balken, je Kennzahl ein Block, darin ein
+   Balken je Version (Stamm und die Varianten "Im Vergleich"). Jede Version hat in
+   allen Diagrammen dieselbe Farbe; die Legende steht einmal oben. Zeilen mit
+   verschiedener Einheit stehen je Einheit in einem eigenen Diagramm, eine
+   dimensionslose Kennzahl (JAZ) fuer sich; die Achse traegt die Einheit [MWh/a].
+   Am Balken stehen Wert und Abweichung zum Stamm in Prozent - dieselben Texte wie
+   in der Tabelle -, ein dunkler Randstrich markiert die Abweichung, der Zeiger
+   zeigt "Version · Kennzahl: Wert (Abweichung)". Eine nicht simulierte Version hat
+   keinen Balken und steht in der Legende grau mit "nicht simuliert".
+
+   KEIN EIGENER DATENWEG. Die Komponente rendert allein aus derselben Liste
+   ErgebnisVergleichGruppe/ErgebnisVergleichZeile wie die Tabelle; die Diagramme
+   baut UebersichtErgebnisGrafikBau ueber das Zeichenmodell des Kerns
+   (ChartRenderer.VersionsbalkenModell), gezeigt im Baustein DiagrammSvg. Was der
+   Zustand einer Gruppe ausblendet, fehlt auch hier; eine zugeklappte Gruppe steht
+   als zugeklappte Klappgruppe mit ihren Diagrammen darin - dieselbe Stellung wie in
+   der Tabelle.
+
+   BARRIEREARM. Jedes Diagramm traegt seinen Titel als aria-label, darunter steht
+   eine versteckte Wertetabelle als Textalternative. *@
+
+@if (Ergebnis is not null)
+{
+    <div class="epos-ergebnis-grafik">
+        <div class="epos-ergebnis-grafik-legende" role="list" aria-label="@LegendeText">
+            @foreach (ErgebnisGrafikVersion v in Versionen)
+            {
+                <span role="listitem" class="@(v.Simuliert ? "epos-ergebnis-grafik-version" : "epos-ergebnis-grafik-version epos-ergebnis-grafik-version--ohne")"
+                      data-farbe="@(v.Simuliert ? v.Farbe : null)">
+                    <span class="epos-ergebnis-grafik-farbe" aria-hidden="true"
+                          style="@(v.Simuliert ? "background:" + v.Farbe : null)"></span>@v.Name
+                    @if (!v.Simuliert)
+                    {
+                        <span class="epos-ergebnis-grafik-ohne">(@NichtSimuliertText)</span>
+                    }
+                </span>
+            }
+            <span class="epos-ergebnis-grafik-hinweis">
+                <span class="epos-ergebnis-grafik-strich" aria-hidden="true"></span>@HinweisText
+            </span>
+        </div>
+        @foreach (ErgebnisVergleichGruppe g in Tafelgruppen)
+        {
+            <section class="@("epos-ergebnis-grafik-gruppe epos-ergebnis-grafik-gruppe--" + g.Schluessel)" data-gruppe="@g.Schluessel"
+                     aria-label="@g.Titel">
+                <h3 class="epos-ergebnis-grafik-titel">@g.Titel</h3>
+                @Diagrammfeld(g)
+            </section>
+        }
+        @foreach (ErgebnisVergleichGruppe g in Klappgruppen)
+        {
+            <Klappgruppe @key="g.Schluessel" Titel="@g.Titel" Zusatz="@Zusatz(g)" Ebene="3"
+                         Klasse="@("epos-ergebnis-klappgruppe epos-ergebnis-grafik-klappgruppe epos-ergebnis-klappgruppe--" + g.Schluessel)"
+                         Offen="@(KlappgruppeOffen?.Invoke(g.Schluessel) ?? false)"
+                         OffenChanged="@(an => KlappgruppeGewechselt?.Invoke(g.Schluessel, an))">
+                <Kopfhandlungen>
+                    @if (g.WeichtAb)
+                    {
+                        <span class="epos-ergebnis-klapphinweis" title="@WeichtAbText">
+                            <span class="epos-komponenten-gewerkmarke" aria-hidden="true">●</span>@WeichtAbText
+                        </span>
+                    }
+                </Kopfhandlungen>
+                <ChildContent>
+                    @Diagrammfeld(g)
+                </ChildContent>
+            </Klappgruppe>
+        }
+    </div>
+}
+
+@code {
+    /// <summary>Der Stand des Abschnitts — dieselbe Liste, die die Tabelle zeigt.</summary>
+    [Parameter] public UebersichtErgebnisStand? Ergebnis { get; set; }
+
+    /// <summary>Die offenen, sichtbaren Gruppen (vom Abschnitt gefiltert wie die Tafel).</summary>
+    [Parameter] public IReadOnlyList<ErgebnisVergleichGruppe> Tafelgruppen { get; set; } = Array.Empty<ErgebnisVergleichGruppe>();
+
+    /// <summary>Die zugeklappten, sichtbaren Gruppen (vom Abschnitt gefiltert wie die Klappgruppen der Tabelle).</summary>
+    [Parameter] public IReadOnlyList<ErgebnisVergleichGruppe> Klappgruppen { get; set; } = Array.Empty<ErgebnisVergleichGruppe>();
+
+    /// <summary>Ist die Klappgruppe mit diesem Gruppenschlüssel aufgeklappt? (Stellung des Abschnitts)</summary>
+    [Parameter] public Func<string, bool>? KlappgruppeOffen { get; set; }
+
+    /// <summary>Meldet die neue Stellung einer Klappgruppe an den Abschnitt.</summary>
+    [Parameter] public Action<string, bool>? KlappgruppeGewechselt { get; set; }
+
+    /// <summary>Der Kopf der Kennzahlspalte der Wertetabelle (<c>BK_ERG_SP_KENNZAHL</c>).</summary>
+    [Parameter] public string SpalteKennzahl { get; set; } = "Kennzahl";
+
+    /// <summary>Die Sprachausgabe der Legende (<c>BK_ERG_GRAFIK_LEGENDE</c>).</summary>
+    [Parameter] public string LegendeText { get; set; } = "Versionen";
+
+    /// <summary>Die Legende des Randstrichs (<c>BK_ERG_GRAFIK_HINWEIS</c>).</summary>
+    [Parameter] public string HinweisText { get; set; } =
+        "Randstrich: weicht vom Stammprojekt ab; am Balken Wert und Abweichung zum Stammprojekt in Prozent";
+
+    /// <summary>Der Kurztext einer nicht simulierten Version (<c>BK_LBL_NICHT_SIMULIERT</c>).</summary>
+    [Parameter] public string NichtSimuliertText { get; set; } = "nicht simuliert";
+
+    /// <summary>Der Hinweis auf eine Abweichung (<c>BK_LBL_WEICHT_AB</c>).</summary>
+    [Parameter] public string WeichtAbText { get; set; } = "weicht vom Stammprojekt ab";
+
+    /// <summary>Der Zusatz im Kopf einer Klappgruppe (Zahl der Kennzahlen, vom Abschnitt).</summary>
+    [Parameter] public Func<ErgebnisVergleichGruppe, string>? ZusatzText { get; set; }
+
+    private UebersichtErgebnisStand? _gebautFuer;
+    private IReadOnlyList<ErgebnisGrafikVersion> _versionen = Array.Empty<ErgebnisGrafikVersion>();
+    private readonly Dictionary<string, IReadOnlyList<ErgebnisDiagramm>> _diagramme = new(StringComparer.Ordinal);
+
+    /// <summary>Die Versionen mit ihrer Farbe (Prüfhilfe).</summary>
+    public IReadOnlyList<ErgebnisGrafikVersion> Versionen => _versionen;
+
+    /// <summary>
+    /// Die Diagramme einer Gruppe — zwischengespeichert je Stand, damit der Baustein seinen Knotenbaum (samt Zeigerstelle)
+    /// nur bei einem neuen Stand neu baut (Prüfhilfe).
+    /// </summary>
+    public IReadOnlyList<ErgebnisDiagramm> Diagramme(ErgebnisVergleichGruppe g)
+    {
+        if (!_diagramme.TryGetValue(g.Schluessel, out IReadOnlyList<ErgebnisDiagramm>? liste))
+        {
+            liste = UebersichtErgebnisGrafikBau.Diagramme(g, _versionen);
+            _diagramme[g.Schluessel] = liste;
+        }
+        return liste;
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(Ergebnis, _gebautFuer)) return;
+        _gebautFuer = Ergebnis;
+        _diagramme.Clear();
+        _versionen = Ergebnis is null ? Array.Empty<ErgebnisGrafikVersion>() : UebersichtErgebnisGrafikBau.Versionen(Ergebnis);
+    }
+
+    private string Zusatz(ErgebnisVergleichGruppe g) => ZusatzText?.Invoke(g) ?? "";
+
+    /// <summary>Die Diagramme einer Gruppe, je mit versteckter Wertetabelle.</summary>
+    private RenderFragment Diagrammfeld(ErgebnisVergleichGruppe g) => __builder =>
+    {
+        <div class="epos-ergebnis-grafik-feld">
+            @foreach (ErgebnisDiagramm d in Diagramme(g))
+            {
+                <figure class="epos-ergebnis-diagramm" data-einheit="@d.Einheit" @key="d.Kennung">
+                    <DiagrammSvg Modell="@d.Modell" Kennung="@d.Kennung" Bezeichnung="@d.Bezeichnung"
+                                 OhneZoom="true" LegendeSchaltbar="false" />
+                    <table class="epos-komponenten-sprachausgabe epos-ergebnis-wertetabelle">
+                        <caption>@d.Bezeichnung</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">@SpalteKennzahl</th>
+                                @foreach (ErgebnisGrafikVersion v in _versionen)
+                                {
+                                    <th scope="col">@v.Name</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (ErgebnisVergleichZeile z in d.Zeilen)
+                            {
+                                <tr>
+                                    <th scope="row">@z.Bezeichnung</th>
+                                    @foreach (ErgebnisVergleichZelle c in z.Zellen)
+                                    {
+                                        <td>@(c.NichtSimuliert ? NichtSimuliertText : c.Text)@(string.IsNullOrEmpty(c.Abweichung) ? "" : " (" + c.Abweichung + ")")</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </figure>
+            }
+        </div>
+    };
+}

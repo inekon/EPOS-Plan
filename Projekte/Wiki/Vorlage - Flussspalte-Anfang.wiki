@@ -1,0 +1,7 @@
+<includeonly><div style="display:flex;flex-direction:column;align-items:stretch;gap:6px"></includeonly><noinclude><!-- EPOS-Plan Vorlage | Wikititel: Vorlage:Flussspalte-Anfang
+     Repo-Quelle dieser Seite: Projekte/Wiki/Vorlage - Flussspalte-Anfang.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+== Vorlage:Flussspalte-Anfang ==
+
+Stellt innerhalb eines Flussbilds ([[Vorlage:Fluss-Anfang]]) mehrere Kästen übereinander, etwa die Verbraucher, auf die sich ein Strom aufteilt, oder die Erzeuger einer Kaskade in ihrer Reihenfolge. Geschlossen wird mit [[Vorlage:Flussspalte-Ende]].
+</noinclude>

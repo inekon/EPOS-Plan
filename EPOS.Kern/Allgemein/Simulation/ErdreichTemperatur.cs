@@ -165,7 +165,7 @@ namespace WindowsFormsApplication1
             public double Amplitudenanteil(double tiefeM)
             {
                 if (tiefeM < 0) tiefeM = 0;
-                return Math.Exp(-tiefeM / Daempfungstiefe);
+                return Plattformrundung.Exp(-tiefeM / Daempfungstiefe);
             }
         }
 
@@ -344,8 +344,8 @@ namespace WindowsFormsApplication1
                 double dt = t1 - t0;
 
                 // exakte Monatsmittel der Regressoren
-                double ca = (Math.Sin(OMEGA * t1) - Math.Sin(OMEGA * t0)) / (OMEGA * dt);
-                double sa = (Math.Cos(OMEGA * t0) - Math.Cos(OMEGA * t1)) / (OMEGA * dt);
+                double ca = (Plattformrundung.Sin(OMEGA * t1) - Plattformrundung.Sin(OMEGA * t0)) / (OMEGA * dt);
+                double sa = (Plattformrundung.Cos(OMEGA * t0) - Plattformrundung.Cos(OMEGA * t1)) / (OMEGA * dt);
                 double r = monatsmittel[m] - jg.Mittel;
 
                 saa += ca * ca;
@@ -416,14 +416,14 @@ namespace WindowsFormsApplication1
             Bodenkennwerte boden = Bodentyp(bodentyp);
 
             double d = boden.Daempfungstiefe;
-            double daempfung = Math.Exp(-tiefeM / d);
+            double daempfung = Plattformrundung.Exp(-tiefeM / d);
             double phasenversatz = tiefeM / d;            // [rad]
 
             double[] profil = new double[STUNDEN_JAHR];
             for (int t = 0; t < STUNDEN_JAHR; t++)
             {
                 double arg = OMEGA * (t - jg.StundeMin) - phasenversatz;
-                profil[t] = (double)(jg.Mittel - jg.Amplitude * daempfung * Math.Cos(arg));
+                profil[t] = (double)(jg.Mittel - jg.Amplitude * daempfung * Plattformrundung.Cos(arg));
             }
             return profil;
         }
@@ -459,14 +459,14 @@ namespace WindowsFormsApplication1
             // Dämpfungstiefe d = sqrt(2·a/ω) mit a in m²/h und ω in 1/h.
             double aProStunde = temperaturleitfaehigkeitM2d / 24.0;
             double d = Math.Sqrt(2.0 * aProStunde / OMEGA);
-            double daempfung = Math.Exp(-tiefeM / d);
+            double daempfung = Plattformrundung.Exp(-tiefeM / d);
             double phasenversatz = tiefeM / d;            // [rad]
 
             double[] profil = new double[STUNDEN_JAHR];
             for (int t = 0; t < STUNDEN_JAHR; t++)
             {
                 double arg = OMEGA * (t - jg.StundeMin) - phasenversatz;
-                profil[t] = jg.Mittel - jg.Amplitude * daempfung * Math.Cos(arg);
+                profil[t] = jg.Mittel - jg.Amplitude * daempfung * Plattformrundung.Cos(arg);
             }
             return profil;
         }
@@ -561,6 +561,88 @@ namespace WindowsFormsApplication1
             k.MonatMin = MonatAusStunde(iMin);
             k.MonatMax = MonatAusStunde(iMax);
             return k;
+        }
+
+        /// <summary>
+        /// Die Kennwerte der GERECHNETEN Soletemperatur am Quelleintritt eines Laufs
+        /// (<see cref="ErdreichAuswertung.ErdreichLaufErgebnis.QuelltemperaturStuendlich"/>):
+        /// Jahresmittel, Tiefst- und Höchstwert samt der Jahresstunde, in der sie zuerst auftreten.
+        /// Nicht endliche Werte zählen nicht.
+        /// </summary>
+        public sealed class Laufkennwerte
+        {
+            /// <summary>Jahresmittel [°C] über die endlichen Stundenwerte.</summary>
+            public double Mittel { get; init; }
+
+            /// <summary>Tiefstwert [°C].</summary>
+            public double Min { get; init; }
+
+            /// <summary>Höchstwert [°C].</summary>
+            public double Max { get; init; }
+
+            /// <summary>Jahresstunde (0…8759) des ersten Tiefstwerts.</summary>
+            public int StundeMin { get; init; }
+
+            /// <summary>Jahresstunde (0…8759) des ersten Höchstwerts.</summary>
+            public int StundeMax { get; init; }
+
+            /// <summary>
+            /// Die Anzeigezeile (<c>SIMQ_ERDREICH_LAUF_KENNWERTE_ZEILE</c>): °C mit einer
+            /// Nachkommastelle in der Kultur der Anzeige, der Zeitpunkt nach <see cref="Zeitpunkt"/>.
+            /// </summary>
+            public string Zeile()
+            {
+                CultureInfo ci = CultureInfo.CurrentCulture;
+                return string.Format(ci, MyResource.Resource.SIMQ_ERDREICH_LAUF_KENNWERTE_ZEILE,
+                    Mittel.ToString("F1", ci),
+                    Min.ToString("F1", ci), Zeitpunkt(StundeMin),
+                    Max.ToString("F1", ci), Zeitpunkt(StundeMax));
+            }
+        }
+
+        /// <summary>
+        /// Bildet die <see cref="Laufkennwerte"/> einer gerechneten Stundenreihe; <c>null</c> ohne
+        /// endlichen Wert. Gezählt werden höchstens <see cref="STUNDEN_JAHR"/> Stunden.
+        /// </summary>
+        public static Laufkennwerte LaufKennwerte(double[] reihe)
+        {
+            if (reihe == null) return null;
+
+            int n = Math.Min(reihe.Length, STUNDEN_JAHR);
+            double min = double.MaxValue, max = double.MinValue, summe = 0;
+            int iMin = -1, iMax = -1, anzahl = 0;
+            for (int i = 0; i < n; i++)
+            {
+                double v = reihe[i];
+                if (!double.IsFinite(v)) continue;
+                if (v < min) { min = v; iMin = i; }
+                if (v > max) { max = v; iMax = i; }
+                summe += v;
+                anzahl++;
+            }
+            if (anzahl == 0) return null;
+
+            return new Laufkennwerte
+            {
+                Mittel = summe / anzahl,
+                Min = min,
+                Max = max,
+                StundeMin = iMin,
+                StundeMax = iMax
+            };
+        }
+
+        /// <summary>
+        /// Der Zeitpunkt einer Jahresstunde im Raster des Kerns (8760 Stunden, Gemeinjahr, ohne
+        /// Jahreszahl): Tag, Monat und Beginn der Stunde nach <c>SIMQ_ERDREICH_LAUF_ZEITPUNKT</c>
+        /// in der Kultur der Anzeige — Stunde 0 ist der 1. Januar, 00:00.
+        /// </summary>
+        public static string Zeitpunkt(int stunde)
+        {
+            int h = Math.Max(0, Math.Min(STUNDEN_JAHR - 1, stunde));
+            // 2001 ist ein Gemeinjahr - es traegt nur Tag und Monat, die Jahreszahl zeigt der Text nicht.
+            DateTime t = new DateTime(2001, 1, 1, 0, 0, 0, DateTimeKind.Unspecified).AddHours(h);
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMQ_ERDREICH_LAUF_ZEITPUNKT, t);
         }
 
         /// <summary>Monatsindex (0…11) einer Jahresstunde.</summary>
@@ -672,7 +754,7 @@ namespace WindowsFormsApplication1
             double sollMittel = 9.5, sollAmplitude = 9.0, sollTmin = 480.0;
             double[] synth = new double[STUNDEN_JAHR];
             for (int t = 0; t < STUNDEN_JAHR; t++)
-                synth[t] = (double)(sollMittel - sollAmplitude * Math.Cos(OMEGA * (t - sollTmin)));
+                synth[t] = (double)(sollMittel - sollAmplitude * Plattformrundung.Cos(OMEGA * (t - sollTmin)));
 
             Jahresgang jg = AnalysiereJahresgang(synth);
             sb.AppendLine("4. Rueckgewinnung aus synthetischem Jahresgang (T_m 9,5 C, A 9,0 K, t_min 480 h)");
@@ -689,7 +771,7 @@ namespace WindowsFormsApplication1
             double[] gestoert = new double[STUNDEN_JAHR];
             Random rnd = new Random(4640);
             for (int t = 0; t < STUNDEN_JAHR; t++)
-                gestoert[t] = (double)(synth[t] + 4.0 * Math.Sin(2.0 * Math.PI * (t % 24) / 24.0)
+                gestoert[t] = (double)(synth[t] + 4.0 * Plattformrundung.Sin(2.0 * Math.PI * (t % 24) / 24.0)
                                       + 2.0 * (rnd.NextDouble() - 0.5));
             Jahresgang jgG = AnalysiereJahresgang(gestoert);
             double extremAmplitude = 0;
@@ -733,7 +815,7 @@ namespace WindowsFormsApplication1
             allesOk &= PlausibilitaetsProbe(sb, ci, "konstant 12,0 C", konstant, true);
 
             double[] zuKalt = new double[STUNDEN_JAHR];                        // T_m = -30 C
-            for (int t = 0; t < STUNDEN_JAHR; t++) zuKalt[t] = (double)(-30.0 - 5.0 * Math.Cos(OMEGA * (t - 480.0)));
+            for (int t = 0; t < STUNDEN_JAHR; t++) zuKalt[t] = (double)(-30.0 - 5.0 * Plattformrundung.Cos(OMEGA * (t - 480.0)));
             allesOk &= PlausibilitaetsProbe(sb, ci, "T_m = -30 C", zuKalt, false);
 
             allesOk &= PlausibilitaetsProbe(sb, ci, "echter Jahresgang", synth, true);

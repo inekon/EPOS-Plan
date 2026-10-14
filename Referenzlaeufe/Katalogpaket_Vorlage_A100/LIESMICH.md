@@ -17,7 +17,13 @@ Dateien gegen diese Liste.
 
 **Die gefüllte Datei gehört nie ins Repositorium.** Sie wird außerhalb aufbewahrt (beim Anwender, im
 Auslieferungspaket), und `Referenzlaeufe/Normzahlen/` ist für den Lauf der Auslieferungsvorlage
-ausdrücklich gesperrt.
+ausdrücklich gesperrt. **In der Entwicklungsumgebung** kommt die gefüllte Kopie der Vorlage nach
+[`Referenzlaeufe/Normzahlen/Katalogpaket_A100/`](../Normzahlen/LIESMICH.md) und bleibt lokal:
+`.gitignore` schließt den Ordner aus, Setup und eingebettete Ressourcen des Kerns führen ihn nie, und
+`EPOS.Kern.Tests/TwwNormpaketLokalTests` spielt ihn, wenn er vollständig vorliegt, über den
+Katalogimport zur Probe ein. Das Setup liefert allein diese Vorlage (Platzhalter) nach
+`{app}\Vorlage\Katalogpaket_A100` aus, daneben den freien Paketteil nach
+`{app}\Vorlage\Katalogpaket_frei`.
 
 ## Die vier Dateien
 
@@ -28,12 +34,14 @@ ausdrücklich gesperrt.
 | `Tab_TwwNutzungsart_STAMM.csv` | 1 | die Nutzungsart: Bezugsart, Bedarf niedrig/mittel/hoch, Bezugstemperaturen, Bilanzgrenze, Kalenderart, Ferienfaktor, zwölf Monatsfaktoren, sieben Wochenanteile, drei Provenienzgruppen (Bedarf, Jahresgang, Wochengang) und der Verweis `ID_Tagesgangsatz` auf den Satz |
 | `Tab_TwwZapfkategorie_STAMM.csv` | 2 | ein **Vorgabesatz** der Gruppe `Nichtwohnen` ohne `ID_Nutzungsart`: je Kategorie Volumenstrom, Dauer, Anteil, Streuung, Kappung |
 
-Der Katalogimport nimmt über diese vier Dateien hinaus drei **wahlfreie** an — `Tab_TwwBedarfstag_STAMM.csv`, `Tab_TwwBedarfstagEreignis_STAMM.csv` und `Tab_TwwParameter_STAMM.csv` für Bedarfstage, ihre Zapfereignisse und die Parameter des Verfahrens; diese Vorlage führt sie nicht, und ein Paket ohne sie ist vollständig.
+Der Katalogimport nimmt über diese vier Dateien hinaus vier **wahlfreie** an — `Tab_TwwBedarfstag_STAMM.csv`, `Tab_TwwBedarfstagEreignis_STAMM.csv`, `Tab_TwwParameter_STAMM.csv` und `Tab_TwwDin4708Wert_STAMM.csv` für Bedarfstage, ihre Zapfereignisse, die Parameter des Verfahrens und die Katalogwerte nach DIN 4708 (dafür gibt es eine eigene Vorlage, [`Katalogpaket_Vorlage_DIN4708/`](../Katalogpaket_Vorlage_DIN4708/LIESMICH.md)); diese Vorlage führt sie nicht, und ein Paket ohne sie ist vollständig.
 
 ## Schritt für Schritt
 
 1. **Den Ordner kopieren** — außerhalb des Repositoriums, etwa nach
-   `…\EPOS-Katalogpakete\A100\`. In diesem Ordner hier wird nichts ausgefüllt.
+   `…\EPOS-Katalogpakete\A100\`; in der Entwicklungsumgebung nach
+   `Referenzlaeufe/Normzahlen/Katalogpaket_A100/` (bleibt lokal). In diesem Ordner hier wird nichts
+   ausgefüllt.
 2. **Je Typ eine Zeile** in `Tab_TwwNutzungsart_STAMM.csv` anlegen; `ID` fortlaufend, `Bezeichner`
    aus der Liste unten (oder ein eigener Name), `Katalogversion` für alle Zeilen desselben Pakets
    gleich (etwa `A100-1`).
@@ -64,7 +72,7 @@ gehen einem Vorgabesatz vor.
 **Ablehnungsgründe.** Das Paket wird als Ganzes abgelehnt (und nichts geändert), wenn eine Spalte
 unbekannt ist, eine Pflichtspalte fehlt, eine Zeile eine andere Feldzahl als die Kopfzeile hat, eine
 Zahl keine ist (Komma statt Punkt), eine `ID` doppelt vorkommt oder ein Tagtyp eines Satzes doppelt
-steht; ohne `Tab_TwwNutzungsart_STAMM.csv` ebenfalls. **Nur die einzelne Nutzungsart** wird abgelehnt,
+steht; ohne `Tab_TwwNutzungsart_STAMM.csv` ebenfalls (ausgenommen ein reines Kennwertpaket nach DIN 4708). **Nur die einzelne Nutzungsart** wird abgelehnt,
 wenn ihr eine Pflichtangabe oder ein Provenienzfeld fehlt, ein Wert außerhalb seiner Wertemenge liegt,
 eine Summenregel verletzt ist, ihr Tagesgangsatz unvollständig ist oder der Vorgabesatz ihrer Gruppe
 fehlt. Führt der Katalog denselben Bezeichner in derselben Katalogversion, wird bei gleichem Inhalt

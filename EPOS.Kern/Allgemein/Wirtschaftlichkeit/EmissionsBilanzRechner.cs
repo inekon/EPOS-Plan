@@ -238,7 +238,7 @@ namespace WindowsFormsApplication1
                 // ETAPPE E7c3 (B‑6): Scheitert die Einstufung, zählt der Träger nicht als
                 // biogen — wie bisher —, aber der Hinweis nennt den Grund.
                 bool biogen;
-                try { biogen = IstBiogenerTraeger(carrierId); }
+                try { biogen = IstBiogenerTraeger(idProjekt, carrierId); }
                 catch (Exception ex)
                 {
                     biogen = false;
@@ -297,7 +297,7 @@ namespace WindowsFormsApplication1
             // Wirkungsgrade tolerant lesen: Werte ≤ 1,5 gelten als Bruch (0,9),
             // größere als Prozent (90); anschließend auf [10 %, 110 %] geklemmt
             // (Review Phase 8 — verhindert 100-fach überhöhte Referenzmengen).
-            Faktoren rk = LadeKatalogFaktoren(p.RefKesselIdBrennstoff);
+            Faktoren rk = LadeKatalogFaktoren(idProjekt, p.RefKesselIdBrennstoff);
             if (rk.Lesefehler != null) stufenfehler.Add(Stufe(STUFE_REFKESSEL, rk.Lesefehler));   // E7c3 (B‑6)
             double eta = Wirkungsgrad(p.RefKesselWirkungsgrad);
             double etaPark = Wirkungsgrad(park.WirkungsgradProzent);
@@ -438,15 +438,17 @@ namespace WindowsFormsApplication1
         /// (<see cref="StilleDb.TabelleStreng"/>) — ein Lesefehler erreicht den
         /// Aufrufer in <see cref="Berechne(int,WirtschaftlichkeitParameter,BilanzKonvention)"/>,
         /// der den Träger wie bisher als nicht biogen zählt und den Grund im Hinweis nennt.</remarks>
-        private static bool IstBiogenerTraeger(int carrierId)
+        private static bool IstBiogenerTraeger(int idProjekt, int carrierId)
         {
             if (carrierId <= 0) return false;
             bool treffer = false;
+            // Im Projekt die Projektkopie des Brennstoffs (ProjektBrennstoffe.Sicht).
+            string quelle = ProjektBrennstoffe.Sicht(idProjekt, out DbParam[] sicht);
             DataTable dt = StilleDb.TabelleStreng(
                 "SELECT bs.ID_Kategorie, bs.Bezeichner FROM energy_carrier AS ec " +
-                "INNER JOIN Tab_Brennstoff_Stamm AS bs ON ec.id_brennstoff = bs.ID " +
+                "INNER JOIN " + quelle + " AS bs ON ec.id_brennstoff = bs.ID " +
                 "WHERE ec.id = ?",
-                new DbParam("@c", carrierId));
+                ProjektBrennstoffe.Mit(sicht, new DbParam("@c", carrierId)));
             if (dt != null && dt.Rows.Count > 0 && dt.Rows[0]["ID_Kategorie"] != DBNull.Value)
                 treffer = BilanzKonvention.IstBiogen(
                     Convert.ToInt32(dt.Rows[0]["ID_Kategorie"]),
@@ -477,15 +479,17 @@ namespace WindowsFormsApplication1
         /// methodisches Konstrukt über eine Brennstoff-ID, kein Projektträger — es
         /// gibt für ihn keine <c>emissionswert</c>-Zeile und damit kein belegtes
         /// Äquivalent (s. Klassenkommentar zum Modus).</summary>
-        private static Faktoren LadeKatalogFaktoren(int idBrennstoff)
+        private static Faktoren LadeKatalogFaktoren(int idProjekt, int idBrennstoff)
         {
             var f = new Faktoren();
             try
             {
                 // ETAPPE E7c3 (B‑6): der strenge Leseweg, damit der Fang unten greift.
+                // Im Projekt die Projektkopie des Brennstoffs (ProjektBrennstoffe.Sicht).
+                string quelle = ProjektBrennstoffe.Sicht(idProjekt, out DbParam[] sicht);
                 DataTable dt = StilleDb.TabelleStreng(
-                    "SELECT CO2, SO2, NOx FROM Tab_Brennstoff_Stamm WHERE ID = ?",
-                    new DbParam("@id", idBrennstoff));
+                    "SELECT bs.CO2, bs.SO2, bs.NOx FROM " + quelle + " AS bs WHERE bs.ID = ?",
+                    ProjektBrennstoffe.Mit(sicht, new DbParam("@id", idBrennstoff)));
                 if (dt != null && dt.Rows.Count > 0)
                 {
                     f.CO2 = D(dt.Rows[0], "CO2");

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
@@ -29,7 +30,24 @@ namespace WindowsFormsApplication1
             new KeyValuePair<string, string>("Photovoltaik",  "Tab_PV"),
             new KeyValuePair<string, string>("Pufferspeicher","Tab_Pufferspeicher"),
             new KeyValuePair<string, string>("Stromspeicher", "Tab_Stromspeicher"),
+            new KeyValuePair<string, string>(GEWERK_KAELTEMASCHINE, "Tab_Kaeltemaschine"),
         };
+
+        /// <summary>
+        /// Gewerk-Schlüssel der Kältemaschine. Sie wird gelesen, verglichen und wie jedes andere
+        /// Gewerk übernommen (<see cref="KomponentenUebernahmeCtrl.Plaene"/>); Tafeln, die jedes
+        /// Gewerk zeigen, führen sie nur, wenn ein Stand sie verbaut
+        /// (<see cref="NurWennVerbaut"/>).
+        /// </summary>
+        public const string GEWERK_KAELTEMASCHINE = "Kältemaschine";
+
+        /// <summary>
+        /// Erscheint das Gewerk in einer Tafel, die sonst JEDES Gewerk zeigt (Komponentenmatrix),
+        /// nur dann, wenn wenigstens ein Stand es verbaut? Gilt für die Kältemaschine — so bleiben
+        /// die Tafeln der Projekte ohne Kälteerzeuger, wie sie sind.
+        /// </summary>
+        public static bool NurWennVerbaut(string gewerk)
+        { return string.Equals(gewerk, GEWERK_KAELTEMASCHINE, StringComparison.Ordinal); }
 
         public int IdProjekt;
 
@@ -47,6 +65,68 @@ namespace WindowsFormsApplication1
         /// im Variantenvergleich (Anlagenkopplung AK1, Konzept 9.4).
         /// </summary>
         public DataTable Einstellungen;
+
+        /// <summary>
+        /// Das Temperaturniveau des Prozesskanals (PW1 Stufe 1): höchster Vorlauf und tiefster
+        /// Rücklauf der zugeordneten Prozesswärmesätze mit Temperaturpaar [°C]; <c>null</c>, wenn
+        /// keiner ein Paar trägt (dann führt der Bericht keine Zeile).
+        /// </summary>
+        public double? ProzessVorlaufMax;
+
+        /// <summary>Tiefster Rücklauf der Prozesswärmesätze mit Temperaturpaar [°C]; siehe <see cref="ProzessVorlaufMax"/>.</summary>
+        public double? ProzessRuecklaufMin;
+
+        /// <summary>Zahl der zugeordneten Prozesswärmesätze mit Temperaturpaar.</summary>
+        public int ProzessMitTemperatur;
+
+        /// <summary>K6b: Zahl der Kältebedarfsprofilzeilen des Projekts (<c>Z_Projekt_Kaeltebedarf</c>); 0 vor Schritt 213.</summary>
+        public int KaelteProfilZeilen;
+
+        /// <summary>K6b: Summe der gepflegten Jahressummen der Kältebedarfsprofile [MWh/a].</summary>
+        public double KaelteProfilSummeMwh;
+
+        /// <summary>
+        /// K6b: die dezentral (Split) gedeckten Kältebedarfszeilen (Lastgänge und Profile) mit EER-Weg, Kühlträger und Zähler
+        /// als fertige Texte — der Bericht schreibt sie ohne Datenbank; leer ohne Split-Zeile (dann keine Zeile).
+        /// </summary>
+        public List<KaelteDezentralEingabe> KaelteDezentral = new List<KaelteDezentralEingabe>();
+
+        /// <summary>K6b: eine Split-Zeile der Eingabeseite.</summary>
+        public sealed class KaelteDezentralEingabe
+        {
+            public string Bezeichner = "";
+            /// <summary><c>true</c> = Kältebedarfsprofil, <c>false</c> = Lastgang.</summary>
+            public bool Profil;
+            /// <summary>EER-Weg als Text („fest 3,0“, „linear …“).</summary>
+            public string Eer = "";
+            /// <summary>Der Stromträger, der den Split-Strom bepreist, samt Abrechnungsart (E34).</summary>
+            public string Traeger = "";
+        }
+
+        /// <summary>
+        /// Netzverluste je Kanal und Zirkulation im Bestandsweg (Entscheidungsvorlage BW4); leer, wenn
+        /// das Projekt keine führt (dann führt der Bericht keine Zeile).
+        /// </summary>
+        public Netzverlustvorgabe Netzkanaele = Netzverlustvorgabe.Leer;
+
+        /// <summary>Die thermische Desinfektion (BW5); „aus", wenn das Projekt keine führt (dann keine Zeile).</summary>
+        public Desinfektionsvorgabe Desinfektion = Desinfektionsvorgabe.Aus;
+
+        /// <summary>Jahresmenge der Desinfektion [MWh] nach den Regeln des Laufs; 0 ohne.</summary>
+        public double DesinfektionMwh;
+
+        /// <summary>Aufgeheiztes Volumen der Desinfektion [l] (gepflegt oder das der Brauchwasserspeicher).</summary>
+        public double DesinfektionVolumenL;
+
+        /// <summary>Rechnet das Projekt sein Brauchwasser über den Zapfprofilgenerator? (Dann gilt dessen Zirkulation.)</summary>
+        public bool Zapfprofilweg;
+
+        /// <summary>
+        /// Der Ausweis der PV-Ganglinie, wenn das Projekt seine Photovoltaik über eine Ganglinie rechnet
+        /// (PVG); <c>null</c> im Modulmodell. Die Kenndaten der Photovoltaik nennen dann die Quelle statt
+        /// der Modulangaben.
+        /// </summary>
+        public PvGanglinieAusweis PvGanglinie;
 
         /// <summary>Gewerk → erste Komponentenzeile des Projekts (fehlt das Gewerk: kein Eintrag).</summary>
         public Dictionary<string, DataRow> Komponenten = new Dictionary<string, DataRow>();
@@ -92,6 +172,13 @@ namespace WindowsFormsApplication1
         /// Gebäude des Projekts; <c>null</c> ohne geladene Gebäude.
         /// </summary>
         public DataTable Zonenmerkmale;
+
+        /// <summary>
+        /// Der Konditionierungsstand je Projektgebäude (<c>Tab_Gebaeude.ID</c>; Entwurf KP3, Welle O3a, B19) — nur für ein
+        /// Gebäude, das Vorgabezeilen oder Kalender trägt; die Kurzform je Größe bildet daraus <see cref="Aufheizbericht.Konditionierung"/>.
+        /// Leer, wenn die Datenbank die Konditionierungstabellen noch nicht kennt.
+        /// </summary>
+        public Dictionary<int, Konditionierungsstand> Konditionierung = new Dictionary<int, Konditionierungsstand>();
 
         /// <summary>Die Zonen eines Projektgebäudes (<c>Tab_Gebaeude.ID</c>); leer = keine.</summary>
         public List<ZoneModel> ZonenVon(int idGebaeude)
@@ -142,6 +229,28 @@ namespace WindowsFormsApplication1
                 d.AufbauU = new Dictionary<int, double?>();
             }
             d.Zonenmerkmale = BildeZonenmerkmale(d);
+        }
+
+        /// <summary>
+        /// Liest je Gebäude des Projekts den Konditionierungsstand der Gebäudeebene (<see cref="KonditionierungCtrl.StandLesen"/>)
+        /// und legt ihn ab, wenn das Gebäude Vorgabezeilen oder Kalender trägt. Ein Fehler beim Lesen lässt das Gebäude ohne
+        /// Kurzform — der Bericht entsteht trotzdem.
+        /// </summary>
+        private static void LadeKonditionierung(ProjektDetails d)
+        {
+            if (d?.Gebaeude == null) return;
+            var ctrl = new KonditionierungCtrl();
+            foreach (DataRow g in d.Gebaeude.Rows)
+            {
+                int id = (int)(D(g, "ID") ?? 0);
+                if (id <= 0) continue;
+                try
+                {
+                    Konditionierungsstand stand = ctrl.StandLesen(KonditionierungCtrl.Eigner.Gebaeude(id), out _);
+                    if (stand != null && !stand.TabellenLeer) d.Konditionierung[id] = stand;
+                }
+                catch { /* ohne Kurzform */ }
+            }
         }
 
         /// <summary>
@@ -221,8 +330,34 @@ namespace WindowsFormsApplication1
                 if (anzahl > 0) { d.Komponenten[g.Key] = dt.Rows[0]; d.KomponentenAlle[g.Key] = dt; }
             }
 
+            // PVG: rechnet die Photovoltaik ueber eine PV-Ganglinie, nennt der Bericht deren Quelle.
+            try { d.PvGanglinie = PvGanglinieAusweis.Aus(PvGanglinieWeiche.Lesen(idProjekt)); }
+            catch { d.PvGanglinie = null; }
+
             // Stufe G6a: die Zonen EINMAL je Projekt, samt Aufbauten und Zonenmerkmalen.
             LadeZonen(d);
+
+            // PW1 Stufe 1: das Temperaturniveau des Prozesskanals.
+            LadeProzesstemperatur(d);
+
+            // K6b: die Kältebedarfsprofile und die dezentral gedeckten Zeilen.
+            LadeKaeltebedarf(d);
+
+            // KP3 Welle O3a (B19): der Konditionierungsstand je Gebaeude fuer die Kurzform im Bericht.
+            LadeKonditionierung(d);
+
+            // BW4: Netzverluste je Kanal und Zirkulation im Bestandsweg.
+            d.Netzkanaele = KonfigurationCtrl.NetzverlustvorgabeLesen(d.IdProjekt);
+            d.Zapfprofilweg = ZapfprofilCtrl.Weg(d.IdProjekt) == BrauchwasserWeg.Generator;
+
+            // BW5: die thermische Desinfektion samt Jahresmenge (dieselben Regeln wie im Lauf).
+            d.Desinfektion = KonfigurationCtrl.DesinfektionLesen(d.IdProjekt);
+            if (d.Desinfektion.Aktiv)
+            {
+                double kwh = WindowsFormsApplication1.Desinfektion.JahresmengeKwh(d.IdProjekt, d.Desinfektion, out double volumen, out _);
+                d.DesinfektionMwh = Energieeinheit.MWh.AusKWh(kwh);
+                d.DesinfektionVolumenL = volumen;
+            }
             return d;
         }
 
@@ -247,11 +382,72 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static DataTable LadeGewerk(string gewerk, string tabelle, int idProjekt)
         {
-            KomponentenUebernahmeCtrl.GewerkPlan plan;
-            if (KomponentenUebernahmeCtrl.Plaene.TryGetValue(gewerk ?? "", out plan))
+            KomponentenUebernahmeCtrl.GewerkPlan plan = KomponentenUebernahmeCtrl.Leseplan(gewerk);
+            if (plan != null)
                 return KomponentenUebernahmeCtrl.GeraeteJeAnlagenzeile(plan, idProjekt);
 
             return LadeTabelle(tabelle, idProjekt);   // Gewerk ohne Plan: wie bisher
+        }
+
+        /// <summary>
+        /// Liest das Temperaturniveau der zugeordneten Prozesswärmesätze (PW1 Stufe 1) — über die
+        /// Zuordnungszeilen, mit denen der Lauf rechnet. Still: Vor dem Schemaschritt fehlen die
+        /// Spalten, dann bleibt es bei „ohne".
+        /// </summary>
+        private static void LadeProzesstemperatur(ProjektDetails d)
+        {
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT MAX(p.Vorlauf) AS VL, MIN(p.Ruecklauf) AS RL, COUNT(*) AS N FROM Tab_Prozesswaerme p " +
+                "INNER JOIN Z_Projekt_Prozesswaerme z ON z.ID_Prozesswaerme = p.ID " +
+                "WHERE z.ID_Projekt = ? AND p.ID_Projekt = ? AND p.Vorlauf IS NOT NULL AND p.Ruecklauf IS NOT NULL",
+                StilleDb.Par("@p", DbParamTyp.Integer, d.IdProjekt),
+                StilleDb.Par("@p2", DbParamTyp.Integer, d.IdProjekt));
+            if (dt == null || dt.Rows.Count == 0) return;
+            int n = StilleDb.Zahl(StilleDb.Feld(dt.Rows[0], "N"));
+            if (n <= 0) return;
+            d.ProzessMitTemperatur = n;
+            d.ProzessVorlaufMax = D(dt.Rows[0], "VL");
+            d.ProzessRuecklaufMin = D(dt.Rows[0], "RL");
+        }
+
+        /// <summary>
+        /// K6b (Konzept Kältebedarf 4.3): die Eingabeseite des Kältebedarfs ohne Gebäudemodell — Zahl und Summe der
+        /// Kältebedarfsprofile, dazu je dezentral gedeckter Zeile EER-Weg, Kühlträger und Zähler. Still: vor Schritt 213
+        /// bleibt alles leer (dann keine Zeile).
+        /// </summary>
+        private static void LadeKaeltebedarf(ProjektDetails d)
+        {
+            List<Z_ProjektKaeltebedarfCtrl.Uebersichtszeile> zeilen = Z_ProjektKaeltebedarfCtrl.ZeilenDesProjekts(d.IdProjekt);
+            if (zeilen.Count == 0) return;
+            int projekttraeger = -1;
+            foreach (Z_ProjektKaeltebedarfCtrl.Uebersichtszeile z in zeilen)
+            {
+                if (z.Profil)
+                {
+                    d.KaelteProfilZeilen++;
+                    d.KaelteProfilSummeMwh += z.SummeMwh ?? 0.0;
+                }
+                if (!z.Split) continue;
+                if (projekttraeger < 0) projekttraeger = Kaeltestromabrechnung.Projekttraeger(d.IdProjekt);
+                d.KaelteDezentral.Add(new KaelteDezentralEingabe
+                {
+                    Bezeichner = z.Bezeichner,
+                    Profil = z.Profil,
+                    Eer = Z_ProjektKaeltebedarfCtrl.EerText(z, CultureInfo.CurrentCulture),
+                    Traeger = TraegerText(z, projekttraeger),
+                });
+            }
+        }
+
+        /// <summary>K6b: der Stromträger einer Split-Zeile samt Abrechnungsart — dieselben Texte wie die Kälteerzeugertafel.</summary>
+        internal static string TraegerText(Z_ProjektKaeltebedarfCtrl.Uebersichtszeile z, int projekttraeger)
+        {
+            if (z == null || !Kaeltestromabrechnung.Abweichend(z.KuehlIdCarrier, projekttraeger))
+                return MyResource.Resource.BER_KAELTE_TRAEGER_PROJEKT;
+            return string.Format(CultureInfo.CurrentCulture,
+                                 z.EigenerZaehler ? MyResource.Resource.BER_KAELTE_TRAEGER_ZAEHLER
+                                                  : MyResource.Resource.BER_KAELTE_TRAEGER_ANTEILIG,
+                                 Emissionsquelle.TraegerName(z.KuehlIdCarrier.Value));
         }
 
         private static DataTable LadeTabelle(string tabelle, int idProjekt)

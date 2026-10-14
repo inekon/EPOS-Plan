@@ -91,7 +91,7 @@ namespace WindowsFormsApplication1
             return Task.FromResult(liste);
         }
 
-        /// <summary>Der Klassenvorrat des Zeilendialogs — die acht wählbaren Klassen.</summary>
+        /// <summary>Der Klassenvorrat des Zeilendialogs — die neun wählbaren Klassen.</summary>
         private static IReadOnlyList<(string, string)> Klassenvorrat()
         {
             return GesetzKatalog.KlassenVorrat()

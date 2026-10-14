@@ -62,6 +62,178 @@ namespace WindowsFormsApplication1
         /// <summary>Summe der externen Lastgänge mit dem Kanal „Kuehlung" [kWh] — Zwilling von <c>Waermebedarf_Extern</c>.</summary>
         public double[] Kaeltebedarf_Extern = new double[STUNDEN];
 
+        /// <summary>
+        /// Summe der Kältebedarfsprofile (<c>Z_Projekt_Kaeltebedarf</c>, K3, Konzept Kältebedarf 4.1) [kWh] — zentral und
+        /// dezentral gedeckt; Zwilling von <c>prozesswerte</c>.
+        /// </summary>
+        public double[] Kaeltebedarf_Profil = new double[STUNDEN];
+
+        /// <summary>
+        /// <b>Dezentral (Split) gedeckter Kältebedarf</b> [kWh je Stunde] (K3, Konzept Kältebedarf 4.2): Lastgang- und
+        /// Profilzeilen mit Deckungsart „split“. Er steht im Kühlkanal (der Kanal bleibt die Summe aller Kälte) und wird
+        /// vor der Kaskade abgezogen (<see cref="BedarfDerKaskade()"/>); Lieferung = Bedarf.
+        /// </summary>
+        public double[] Kaeltebedarf_Dezentral = new double[STUNDEN];
+
+        /// <summary>Strom der dezentralen Deckung je Stunde [kWh] = Q_dez / EER(θ_e) (Konzept 4.2).</summary>
+        public double[] Strom_Dezentral = new double[STUNDEN];
+
+        /// <summary>
+        /// <b>Der Unterposten Prozesskälte</b> [kWh je Stunde] (KWN-0, Konzept Kühlung 5.6.9; E127/KWN-Q7): die Lastgang- und
+        /// Profilzeilen mit <c>Kaelte_Art = PROZESS</c>, zentral und dezentral gedeckt. Er ist KEIN fünfter Kanal: Die Reihe
+        /// steht im Kühlkanal wie zuvor (der Kanal bleibt Zeichen für Zeichen, wie er war), der Unterposten zählt sie nur
+        /// mit. Der Raumanteil ist der Rest (<see cref="Kaeltebedarf_Raum"/>). Ohne Prozesszeile steht er auf 0.
+        /// </summary>
+        public double[] Kaeltebedarf_Prozess = new double[STUNDEN];
+
+        /// <summary>Der dezentral (Split) gedeckte Teil des Unterpostens Prozesskälte [kWh je Stunde] — er geht nicht an die Kaskade.</summary>
+        private readonly double[] _prozessDezentral = new double[STUNDEN];
+
+        /// <summary>Jahressumme des Unterpostens Prozesskälte [MWh]; 0 ohne Prozesszeile (KWN-0).</summary>
+        public double Kaeltebedarf_Prozess_Mwh = 0;
+
+        /// <summary>Hat eine Zeile mit <c>Kaelte_Art = PROZESS</c> gebucht? (KWN-0)</summary>
+        public bool MitProzess { get; private set; }
+
+        /// <summary>
+        /// Der Raumkühlanteil der Stunde <paramref name="h"/> [kWh] (KWN-0, 5.6.2): Kühlkanal minus Unterposten Prozesskälte.
+        /// Ohne Prozesszeile ist er der Kühlkanal selbst.
+        /// </summary>
+        public double Kaeltebedarf_Raum(int h) => MitProzess ? Kaeltebedarf[h] - Kaeltebedarf_Prozess[h] : Kaeltebedarf[h];
+
+        /// <summary>
+        /// <b>Die Prozesskälte der Stunde für die Kaskade</b> [kWh = kW im Stundenmittel] (KWN-0): der zentral gedeckte
+        /// Unterposten — die Belegung der Naht <c>Kaelteschranke.Prozesskaelte</c> (Vorrang vor der Raumkühlung). Der
+        /// dezentral gedeckte Teil steht neben der Kaskade und zählt nicht.
+        /// </summary>
+        internal double ProzesskaelteDerKaskade(int h)
+        {
+            if (!MitProzess) return 0.0;
+            double q = Kaeltebedarf_Prozess[h] - _prozessDezentral[h];
+            return q > 0.0 ? q : 0.0;
+        }
+
+        /// <summary>Jahressumme der Kältebedarfsprofile [MWh]; 0 ohne Profilzeile.</summary>
+        public double Kaeltebedarf_Profil_Gesamt = 0;
+
+        /// <summary>Jahressumme des dezentral gedeckten Kältebedarfs [MWh].</summary>
+        public double Kaeltebedarf_Dezentral_Gesamt = 0;
+
+        /// <summary>Spitze des dezentral gedeckten Kältebedarfs [kW].</summary>
+        public double Kaelte_Dezentral_Max = 0;
+
+        /// <summary>Jahressumme des Stroms der dezentralen Deckung [MWh].</summary>
+        public double Strom_Dezentral_Gesamt = 0;
+
+        /// <summary>Jahres-EER der dezentralen Deckung = Σ Q / Σ P; 0 ohne dezentrale Deckung.</summary>
+        public double Jahres_EER_Dezentral
+        {
+            get { return Strom_Dezentral_Gesamt > 0 ? Kaeltebedarf_Dezentral_Gesamt / Strom_Dezentral_Gesamt : 0.0; }
+        }
+
+        /// <summary>Hat eine Profilzeile gerechnet? Dann trägt die Ergebniszeile <c>Kaeltebedarf_Profil_MWh</c>.</summary>
+        public bool MitProfil { get; private set; }
+
+        /// <summary>Hat eine Zeile dezentral gerechnet? Dann tragen die Ergebniszeile und der Export die Split-Größen.</summary>
+        public bool MitDezentral => DezentraleZeilen.Count > 0;
+
+        /// <summary>
+        /// Eine dezentral gedeckte Zeile mit ihrem Strom, ihrem Kühlträger und ihrem Zähler (Konzept 4.2) — die Abrechnung
+        /// liest sie (<c>SimulationControl.DezentralenKaeltestromBuchen</c>).
+        /// </summary>
+        public sealed class DezentraleZeile
+        {
+            /// <summary>Bezeichner der Zeile.</summary>
+            public string Bezeichner = "";
+
+            /// <summary><c>true</c> = Profilzeile, <c>false</c> = Lastgangzeile.</summary>
+            public bool Profil;
+
+            /// <summary>Die ID der Zuordnungszeile (<c>Z_Projekt_Kaeltebedarf</c> bzw. <c>Z_ProjektWaermebedarf</c>); <c>null</c> ohne Zeile.</summary>
+            public int? IdZuordnung;
+
+            /// <summary>Kühlträger, wie an der Zeile gepflegt; <c>null</c> = Stromträger des Projekts.</summary>
+            public int? KuehlIdCarrier;
+
+            /// <summary>Eigener Zähler, wie an der Zeile gepflegt.</summary>
+            public bool EigenerZaehler;
+
+            /// <summary>
+            /// Der Kühlträger, WENN er vom Stromträger des Projekts abweicht (<c>energy_carrier.id</c>); <b>0 = der Strom der
+            /// Zeile trägt den Stromträger des Projekts</b> — dieselbe Regel wie <see cref="Kaelteerzeuger.Kuehltraeger"/> (E34).
+            /// Gesetzt von <see cref="KuehltraegerFestlegen"/>, bevor der Strom in die Stufenrechnung geht.
+            /// </summary>
+            public int Kuehltraeger;
+
+            /// <summary>
+            /// Läuft der Strom der Zeile NEBEN der Stufenrechnung (abweichender Kühlträger mit eigenem Zähler, E34 Wahl 2)?
+            /// Dann geht er nicht in den Viertelstundenrest und wird weder aus Photovoltaik noch aus dem Stromspeicher gedeckt.
+            /// </summary>
+            public bool NebenDerStufenrechnung => Kuehltraeger > 0 && EigenerZaehler;
+
+            /// <summary>
+            /// Der Netzbezug, der dem Strom der Zeile zukommt [kWh/a]: über die Stufenrechnung anteilig am Netzbezug, mit
+            /// eigenem Zähler der ganze Strom — dieselbe Aufteilung wie <see cref="Kaelteerzeuger.NetzbezugKwh"/>. Gesetzt am
+            /// Laufende (<c>SimulationControl.KaeltestromNetzbezugAufteilen</c>).
+            /// </summary>
+            public double NetzbezugKwh;
+
+            /// <summary>Kälte der Zeile [kWh/a].</summary>
+            public double KaelteKwh;
+
+            /// <summary>Spitze der Kälte der Zeile [kW].</summary>
+            public double KaelteMaxKw;
+
+            /// <summary>Strom der Zeile [kWh/a].</summary>
+            public double StromKwh;
+
+            /// <summary>Strom der Zeile je Stunde [kWh].</summary>
+            public double[] Strom_stuendlich = new double[STUNDEN];
+
+            /// <summary>Jahres-EER der Zeile = Kälte / Strom; 0 ohne Strom.</summary>
+            public double JahresEer => StromKwh > 0 ? KaelteKwh / StromKwh : 0.0;
+        }
+
+        /// <summary>
+        /// Legt je Split-Zeile fest, ob ihr Kühlträger vom Stromträger des Projekts abweicht (<see cref="DezentraleZeile.Kuehltraeger"/>;
+        /// <see cref="Kaeltestromabrechnung.Abweichend"/>) — nur dann wirken Träger und Zähler (E34). Ohne Split-Zeile wirkungslos.
+        /// </summary>
+        /// <param name="projekttraeger">Der Stromträger, der den Netzbezug des Projekts bepreist (<see cref="Kaeltestromabrechnung.Projekttraeger"/>).</param>
+        internal void KuehltraegerFestlegen(int projekttraeger)
+        {
+            foreach (DezentraleZeile z in DezentraleZeilen)
+                z.Kuehltraeger = Kaeltestromabrechnung.Abweichend(z.KuehlIdCarrier, projekttraeger) ? z.KuehlIdCarrier.Value : 0;
+        }
+
+        /// <summary>
+        /// <b>Der Split-Strom, der durch die Stufenrechnung läuft</b> [kWh je Stunde] — die Zeilen OHNE eigenen Zähler. Läuft
+        /// keine Zeile daneben, ist es Zeichen für Zeichen <see cref="Strom_Dezentral"/> (als Kopie) samt seiner Jahressumme;
+        /// sonst die Summe der übrigen Zeilen. Muster <c>SimulationControl.KaeltestromDerStufenrechnung</c>.
+        /// </summary>
+        /// <param name="summeKwh">Die Jahressumme der Reihe [kWh].</param>
+        internal double[] StromDerStufenrechnung(out double summeKwh)
+        {
+            summeKwh = 0.0;
+            if (!DezentraleZeilen.Exists(z => z.NebenDerStufenrechnung))
+            {
+                double[] alle = (double[])Strom_Dezentral.Clone();
+                for (int h = 0; h < STUNDEN; h++) summeKwh += alle[h];
+                return alle;
+            }
+
+            var reihe = new double[STUNDEN];
+            foreach (DezentraleZeile z in DezentraleZeilen)
+            {
+                if (z.NebenDerStufenrechnung) continue;
+                for (int h = 0; h < STUNDEN; h++) reihe[h] += z.Strom_stuendlich[h];
+            }
+            for (int h = 0; h < STUNDEN; h++) summeKwh += reihe[h];
+            return reihe;
+        }
+
+        /// <summary>Die dezentral gedeckten Zeilen des Laufs in Buchungsfolge (Lastgänge, dann Profile).</summary>
+        public List<DezentraleZeile> DezentraleZeilen = new List<DezentraleZeile>();
+
         /// <summary>Monatswerte des Kältebedarfs [MWh] — Zwilling von <c>Waermebedarf_Gebaeude_Monat</c>.</summary>
         public double[] Kaeltebedarf_Monat = new double[12];
 
@@ -179,6 +351,14 @@ namespace WindowsFormsApplication1
         private double[] _probe = new double[STUNDEN];
         private int _gebaeudeMitKuehlung;
         private int _kaelteGanglinien;
+        private int _kaelteProfile;
+        private readonly List<string> _splitOhneEer = new List<string>();
+
+        /// <summary>
+        /// Die Außenlufttemperatur der Klimaregion des Laufs je Stunde [°C] — dieselbe Reihe wie Kältemaschine und Gebäude
+        /// (<c>SimulationWaermebedarf.Stundentemperatur</c>); der EER der dezentralen Deckung hängt an ihr.
+        /// </summary>
+        internal double[] Aussentemperatur;
 
         // =====================================================================
         //  Die drei Schritte eines Laufs: Beginnen — Buchen — Abschliessen
@@ -197,7 +377,22 @@ namespace WindowsFormsApplication1
             _kuehlbetrieb = kuehlbetrieb;
             _gebaeudeMitKuehlung = 0;
             _kaelteGanglinien = 0;
+            _kaelteProfile = 0;
+            _splitOhneEer.Clear();
             Array.Clear(_probe, 0, STUNDEN);
+            Array.Clear(Kaeltebedarf_Profil, 0, STUNDEN);
+            Array.Clear(Kaeltebedarf_Dezentral, 0, STUNDEN);
+            Array.Clear(Strom_Dezentral, 0, STUNDEN);
+            Kaeltebedarf_Profil_Gesamt = 0;
+            Kaeltebedarf_Dezentral_Gesamt = 0;
+            Kaelte_Dezentral_Max = 0;
+            Strom_Dezentral_Gesamt = 0;
+            MitProfil = false;
+            DezentraleZeilen.Clear();
+            Array.Clear(Kaeltebedarf_Prozess, 0, STUNDEN);
+            Array.Clear(_prozessDezentral, 0, STUNDEN);
+            Kaeltebedarf_Prozess_Mwh = 0;
+            MitProzess = false;
 
             Gerechnet = false;
             Array.Clear(Kaeltebedarf, 0, STUNDEN);
@@ -276,32 +471,124 @@ namespace WindowsFormsApplication1
                 StundenHeizenUndKuehlen = ergebnis.StundenHeizenUndKuehlen;
                 StundenHeizenUndKuehlenGebaeude = name;
             }
+            // KU3-3 (F-K15): im Mehrzonenweg je Gebäude die Energie je Richtung in diesen Stunden.
+            if (ergebnis.StundenHeizenUndKuehlen > 0
+                && ergebnis.GleichzeitigHeizenKwh is double gleichHeiz && ergebnis.GleichzeitigKuehlenKwh is double gleichKuehl)
+                SimulationProtokoll.Aktuell.HinweisEinmal("ku3-gleichzeitig-" + name,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KU3_ZONEN_GLEICHZEITIG, name,
+                                  ergebnis.StundenHeizenUndKuehlen, gleichHeiz.ToString("0", CultureInfo.CurrentCulture),
+                                  gleichKuehl.ToString("0", CultureInfo.CurrentCulture)));
         }
 
         /// <summary>
         /// Ein externer Lastgang mit dem Kanal „Kuehlung" (K3, F-K5) — Kältebedarf ohne
         /// Gebäudemodell. Er geht NIE in einen Wärmekanal und nicht in die Energieprobe der
         /// Wärmeseite (4.2), sondern hierher und in die Bedarfsprobe Kälte. Rechnet das Projekt
-        /// keine Kälte, bleibt er unberücksichtigt, und der Lauf sagt es.
+        /// keine Kälte, bleibt er unberücksichtigt, und der Lauf sagt es. Zentral gedeckt; die
+        /// Deckungsart der Zeile nimmt <see cref="BedarfBuchen"/>.
         /// </summary>
         /// <param name="werte">Die 8 760 Stundenwerte [kWh].</param>
-        internal void GanglinieBuchen(double[] werte)
+        internal void GanglinieBuchen(double[] werte) => BedarfBuchen(werte, Kaeltedeckung.Zentral, false);
+
+        /// <summary>Zählt Profilzeilen eines Projekts ohne Kühlbetrieb für die Meldung „ohne Wirkung“ (Konzept 4.4).</summary>
+        internal void ProfileZaehlen(int anzahl) { if (anzahl > 0) _kaelteProfile += anzahl; }
+
+        /// <summary>
+        /// <b>Der Eingang für Lastgang- und Profilzeilen</b> (Konzept Kältebedarf 4.2): die Reihe geht in den Kühlkanal,
+        /// in <see cref="Kaeltebedarf_Extern"/> (Lastgang) bzw. <see cref="Kaeltebedarf_Profil"/> (Profil) und in die
+        /// Bedarfsprobe Kälte. Ist die Zeile dezentral (Split) gedeckt, geht sie zusätzlich in
+        /// <see cref="Kaeltebedarf_Dezentral"/> — die Kaskade bekommt den Kanal ohne sie (<see cref="BedarfDerKaskade()"/>) —,
+        /// und ihr Strom je Stunde ist Q / EER(θ_e). Ohne Kühlbetrieb wird nur gezählt.
+        /// </summary>
+        /// <param name="werte">Die 8 760 Stundenwerte [kWh].</param>
+        /// <param name="deckung">Die Deckungsart der Zeile; <c>null</c> = zentral.</param>
+        /// <param name="profil"><c>true</c> = Profilzeile (<c>Z_Projekt_Kaeltebedarf</c>), <c>false</c> = Lastgangzeile.</param>
+        internal void BedarfBuchen(double[] werte, Kaeltedeckung deckung, bool profil)
         {
             if (werte == null) return;
-            _kaelteGanglinien++;
+            if (profil) _kaelteProfile++; else _kaelteGanglinien++;
             if (!_kuehlbetrieb || _kanaele == null) return;
+            if (deckung == null) deckung = Kaeltedeckung.Zentral;
 
             double[] kanal = _kanaele.Kuehlung;
+            double[] posten = profil ? Kaeltebedarf_Profil : Kaeltebedarf_Extern;
             double summe = 0;
             for (int h = 0; h < STUNDEN; h++)
             {
                 kanal[h] = ((double)kanal[h] + werte[h]);
-                Kaeltebedarf_Extern[h] = ((double)Kaeltebedarf_Extern[h] + werte[h]);
+                posten[h] = ((double)posten[h] + werte[h]);
                 _probe[h] += werte[h];
                 summe += werte[h];
             }
-            Kaeltebedarf_Extern_Gesamt += summe / 1000;
+            if (profil) { Kaeltebedarf_Profil_Gesamt += summe / 1000; MitProfil = true; }
+            else Kaeltebedarf_Extern_Gesamt += summe / 1000;
+
+            // KWN-0: Prozesskälte bleibt im Kanal (oben) und geht zusätzlich in den Unterposten - kein fünfter Kanal.
+            if (deckung.Prozess)
+            {
+                for (int h = 0; h < STUNDEN; h++) Kaeltebedarf_Prozess[h] += werte[h];
+                MitProzess = true;
+            }
+
+            if (!deckung.Split) return;
+
+            // Split ohne rechnenden EER: benannter Abbruch im Abschluss (Konzept 4.4), kein stiller Strom 0.
+            if (deckung.Pruefgrund != null || Aussentemperatur == null)
+            {
+                _splitOhneEer.Add(deckung.Bezeichner + " (" + (deckung.Pruefgrund ?? "ohne Aussentemperatur") + ")");
+                return;
+            }
+
+            var zeile = new DezentraleZeile
+            {
+                Bezeichner = deckung.Bezeichner, Profil = profil, IdZuordnung = deckung.IdZuordnung,
+                KuehlIdCarrier = deckung.KuehlIdCarrier, EigenerZaehler = deckung.EigenerZaehler,
+            };
+            for (int h = 0; h < STUNDEN; h++)
+            {
+                double q = werte[h];
+                if (q == 0.0) continue;
+                double p = q / deckung.Eer(Aussentemperatur[h]);
+                Kaeltebedarf_Dezentral[h] += q;
+                if (deckung.Prozess) _prozessDezentral[h] += q;
+                Strom_Dezentral[h] += p;
+                zeile.Strom_stuendlich[h] = p;
+                zeile.KaelteKwh += q;
+                if (q > zeile.KaelteMaxKw) zeile.KaelteMaxKw = q;
+                zeile.StromKwh += p;
+            }
+            DezentraleZeilen.Add(zeile);
         }
+
+        /// <summary>
+        /// <b>Die Abzugsstelle vor der Kaskade</b> (Konzept Kältebedarf 4.2) — Andockpunkt für K-D (Raumgeräte, Sitzung
+        /// Kälteanlagen): Der Kühlkanal bleibt die Summe aller Kälte; die Kältekaskade bekommt ihn ohne die Posten, die
+        /// neben ihr gedeckt werden. Heute ist das <see cref="Kaeltebedarf_Dezentral"/>; K-D zieht
+        /// <c>Kaeltebedarf_Raumgeraete</c> HIER mit ab (<see cref="AbzugVorDerKaskade"/>), ohne zweite Naht. Ohne Abzug ist
+        /// das Ergebnis Zeichen für Zeichen <see cref="Kaeltebedarf"/>.
+        /// </summary>
+        /// <param name="h">Jahresstunde.</param>
+        /// <param name="bedarfKwh">Der Kältebedarf dieser Stunde, wie die Kaskade ihn sonst bekäme [kWh].</param>
+        public double BedarfDerKaskade(int h, double bedarfKwh)
+        {
+            double abzug = AbzugVorDerKaskade(h);
+            return abzug != 0.0 ? bedarfKwh - abzug : bedarfKwh;
+        }
+
+        /// <summary>Die ganze Jahresreihe für die Kaskade: <see cref="Kaeltebedarf"/> selbst ohne Abzug, sonst eine Kopie mit Abzug.</summary>
+        public double[] BedarfDerKaskade()
+        {
+            if (!MitDezentral) return Kaeltebedarf;
+            var reihe = new double[STUNDEN];
+            for (int h = 0; h < STUNDEN; h++) reihe[h] = BedarfDerKaskade(h, Kaeltebedarf[h]);
+            return reihe;
+        }
+
+        /// <summary>
+        /// Der Abzug einer Stunde [kWh]: was neben der Kaskade gedeckt wird. Andockpunkt für K-D (Raumgeräte, Sitzung
+        /// Kälteanlagen): <c>+ Kaeltebedarf_Raumgeraete[h]</c> gehört hierher.
+        /// </summary>
+        public double AbzugVorDerKaskade(int h) => Kaeltebedarf_Dezentral[h];
 
         /// <summary>
         /// Abschluss des Bedarfslaufs: Summe, Spitze, Monatswerte, Dauerlinie, Stunden, die
@@ -319,11 +606,24 @@ namespace WindowsFormsApplication1
             {
                 // Projekt aus: Der Kanal bleibt leer, gerechnet wird nichts (7.2, 8.3). Liegen
                 // Kühleingaben vor, sagt der Lauf, warum sie nicht wirken.
-                if (_gebaeudeMitKuehlung > 0 || _kaelteGanglinien > 0)
+                if (_kaelteProfile > 0)
+                    protokoll.HinweisEinmal("kuehlung-projekt-aus",
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_PROJEKT_AUS_PROFILE,
+                                      _gebaeudeMitKuehlung, _kaelteGanglinien, _kaelteProfile));
+                else if (_gebaeudeMitKuehlung > 0 || _kaelteGanglinien > 0)
                     protokoll.HinweisEinmal("kuehlung-projekt-aus",
                         string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_PROJEKT_AUS,
                                       _gebaeudeMitKuehlung, _kaelteGanglinien));
                 return true;
+            }
+
+            // Konzept Kältebedarf 4.4: eine Split-Zeile ohne rechnenden EER ist ein benannter Fehler, kein Strom 0.
+            if (_splitOhneEer.Count > 0)
+            {
+                Fehlertext = string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_SPLIT_OHNE_EER,
+                                           string.Join("; ", _splitOhneEer));
+                protokoll.Fehlermeldung(Fehlertext);
+                return false;
             }
 
             double[] summe = _kanaele.SummeKaelte();
@@ -331,6 +631,35 @@ namespace WindowsFormsApplication1
 
             if (!Bedarfsprobe(summe)) return false;
 
+            KennzahlenBilden(moAnfang, moEnde);
+            Gerechnet = true;
+            DezentralMelden();
+
+            if (Kaeltebedarf_Gesamt > 0)
+            {
+                // F-K12: Unterdeckung ist eine benannte Meldung, kein stiller Rest. Hat das
+                // Projekt Kälteerzeuger, sagt es die Kältekaskade - mit Menge und Grund. Der
+                // dezentral gedeckte Teil ist gedeckt (K3) und zählt hier nicht.
+                if (KaelteerzeugerAngelegt <= 0 && Kaelterestbedarf > 0) OhneErzeugerMelden();
+
+                // K5: die Grenze der Zahl, einmal je Lauf.
+                protokoll.HinweisEinmal("kaelte-grenze-feuchte", GrenzeFeuchte);
+            }
+
+            if (StundenHeizenUndKuehlen > 0)
+                protokoll.Hinweis(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.SIMENG_KAELTE_HEIZEN_UND_KUEHLEN,
+                    StundenHeizenUndKuehlen, StundenHeizenUndKuehlenGebaeude));
+
+            return true;
+        }
+
+        /// <summary>
+        /// Summe, Spitze, Stunden, Monatswerte und die eigene Dauerlinie aus <see cref="Kaeltebedarf"/>; danach ist die
+        /// ungedeckte Kälte der Bedarf. Gerufen von <see cref="Abschliessen"/> und <see cref="KreisNachfuehren"/>.
+        /// </summary>
+        private void KennzahlenBilden(int[] moAnfang, int[] moEnde)
+        {
             // Die Jahressummen in Stundenfolge (siehe Kaeltebedarf_Gesamt).
             Kaeltebedarf_Gesamt = Jahressumme(Kaeltebedarf) / 1000.0;
             Kaeltebedarf_Gebaeude_Gesamt = Jahressumme(Kaeltebedarf_Gebaeude) / 1000.0;
@@ -358,27 +687,135 @@ namespace WindowsFormsApplication1
                 Array.Reverse(Dauerlinie);
             }
 
-            // Vor der Deckung ist die ungedeckte Kälte der Bedarf; die Kältekaskade (KU2) setzt
-            // danach ihren Rest (DeckungUebernehmen).
-            Kaelterestbedarf = Kaeltebedarf_Gesamt;
-            Gerechnet = true;
-
-            if (Kaeltebedarf_Gesamt > 0)
+            // K3 (Konzept Kältebedarf 4.3): die dezentrale Deckung - Lieferung = Bedarf.
+            if (MitDezentral)
             {
-                // F-K12: Unterdeckung ist eine benannte Meldung, kein stiller Rest. Hat das
-                // Projekt Kälteerzeuger, sagt es die Kältekaskade - mit Menge und Grund.
-                if (KaelteerzeugerAngelegt <= 0) OhneErzeugerMelden();
-
-                // K5: die Grenze der Zahl, einmal je Lauf.
-                protokoll.HinweisEinmal("kaelte-grenze-feuchte", GrenzeFeuchte);
+                Kaeltebedarf_Dezentral_Gesamt = Jahressumme(Kaeltebedarf_Dezentral) / 1000.0;
+                Strom_Dezentral_Gesamt = Jahressumme(Strom_Dezentral) / 1000.0;
+                Kaelte_Dezentral_Max = 0;
+                for (int h = 0; h < STUNDEN; h++)
+                    if (Kaelte_Dezentral_Max < Kaeltebedarf_Dezentral[h]) Kaelte_Dezentral_Max = Kaeltebedarf_Dezentral[h];
             }
 
-            if (StundenHeizenUndKuehlen > 0)
-                protokoll.Hinweis(string.Format(CultureInfo.CurrentCulture,
-                    MyResource.Resource.SIMENG_KAELTE_HEIZEN_UND_KUEHLEN,
-                    StundenHeizenUndKuehlen, StundenHeizenUndKuehlenGebaeude));
+            // KWN-0: die Jahressumme des Unterpostens Prozesskälte.
+            if (MitProzess) Kaeltebedarf_Prozess_Mwh = Jahressumme(Kaeltebedarf_Prozess) / 1000.0;
 
+            // Vor der Deckung ist die ungedeckte Kälte der Bedarf; die Kältekaskade (KU2) setzt
+            // danach ihren Rest (DeckungUebernehmen). Der dezentral gedeckte Teil ist kein Rest (K3).
+            Kaelterestbedarf = MitDezentral ? Jahressumme(BedarfDerKaskade()) / 1000.0 : Kaeltebedarf_Gesamt;
+        }
+
+        /// <summary>
+        /// Laufmeldungen der dezentralen Deckung (Konzept Kältebedarf 4.3/4.4): Menge, Strom und Jahres-EER je Lauf, der
+        /// Hinweis „Jahres-EER unter 2“ und je Zeile mit abweichendem Kühlträger, wie ihr Strom abgerechnet wird.
+        /// </summary>
+        private void DezentralMelden()
+        {
+            if (!MitDezentral) return;
+            SimulationProtokoll protokoll = SimulationProtokoll.Aktuell;
+            protokoll.Hinweis(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_DEZENTRAL,
+                DezentraleZeilen.Count,
+                Kaeltebedarf_Dezentral_Gesamt.ToString("N2", CultureInfo.CurrentCulture),
+                Kaelte_Dezentral_Max.ToString("N1", CultureInfo.CurrentCulture),
+                Strom_Dezentral_Gesamt.ToString("N2", CultureInfo.CurrentCulture),
+                Jahres_EER_Dezentral.ToString("N2", CultureInfo.CurrentCulture)));
+            if (Strom_Dezentral_Gesamt > 0 && Jahres_EER_Dezentral < KaeltebedarfFestwerte.JAHRES_EER_HINWEIS)
+                protokoll.Hinweis(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_DEZENTRAL_EER_NIEDRIG,
+                    Jahres_EER_Dezentral.ToString("N2", CultureInfo.CurrentCulture),
+                    KaeltebedarfFestwerte.JAHRES_EER_HINWEIS.ToString("N1", CultureInfo.CurrentCulture)));
+        }
+
+        // =====================================================================
+        //  AK3-K (Fehler 1.1 (a)): der Kühlkanal folgt dem Kreis
+        // =====================================================================
+
+        /// <summary>
+        /// Bucht <see cref="GebaeudeBuchen"/> die Kühlreihe dieses Gebäudeergebnisses in den Kühlkanal? Dieselbe
+        /// Bedingung wie dort: Projekt rechnet Kälte, Gebäude mit Kühlung, VDI-Weg mit wirksamer Kühlung.
+        /// </summary>
+        internal bool Bucht(ProjektGebaeudeModel gebaeude, GebaeudeModellErgebnis ergebnis)
+            => gebaeude != null && gebaeude.Kuehlung_Aktiv && _kuehlbetrieb && _kanaele != null
+               && ergebnis != null && ergebnis.KuehlungWirksam && ergebnis.KuehlbedarfKwh != null;
+
+        /// <summary>
+        /// <b>Führt die Kälteseite um die Abweichung des Kreises nach</b> (Entwurf AK3-K 1.1 (a)): Kühlkanal, <see cref="Kaeltebedarf_Gebaeude"/> und der Prüfakkumulator der
+        /// Bedarfsprobe nehmen in jeder Stunde mit Abweichung dieselbe Abweichung auf; danach laufen die Bedarfsprobe
+        /// ein zweites Mal und Summe, Spitze, Stunden, Monatswerte und Dauerlinie neu — ohne Meldungen, die stehen
+        /// schon aus Pass 1. Stunden ohne Abweichung bleiben Zeichen für Zeichen Pass 1.
+        /// </summary>
+        /// <param name="deltaKwh">Abweichung der Kühlreihe des Kreises gegen Pass 1 je Stunde [kWh] (0 = keine).</param>
+        /// <returns><c>false</c> = die Bedarfsprobe Kälte ist verletzt (<see cref="Fehlertext"/>).</returns>
+        internal bool KreisNachfuehren(double[] deltaKwh, int[] moAnfang, int[] moEnde)
+        {
+            if (!Gerechnet || _kanaele == null || deltaKwh == null) return true;
+            double[] kanal = _kanaele.Kuehlung;
+            bool geaendert = false;
+            for (int h = 0; h < STUNDEN; h++)
+            {
+                double d = deltaKwh[h];
+                if (d == 0.0) continue;
+                kanal[h] += d;
+                Kaeltebedarf_Gebaeude[h] += d;
+                _probe[h] += d;
+                geaendert = true;
+            }
+            if (!geaendert) return true;
+            double[] summe = _kanaele.SummeKaelte();
+            Array.Copy(summe, Kaeltebedarf, STUNDEN);
+            if (!Bedarfsprobe(summe)) return false;
+            KennzahlenBilden(moAnfang, moEnde);
             return true;
+        }
+
+        /// <summary>Der Stand der Kälteseite nach Pass 1 (AK3-K; zweiter Feldlauf der Erdsonde).</summary>
+        internal sealed class Stand
+        {
+            internal double[] Kuehlkanal, Kaeltebedarf, Gebaeude, Monat, Dauerlinie, DauerlinieNichtSortiert, Probe;
+            internal double Max, Gesamt, GebaeudeGesamt, Restbedarf, ProbeMax;
+            internal int Stunden, ProbeVerletzungen;
+            internal bool Gerechnet;
+        }
+
+        /// <summary>Sichert den Stand nach Pass 1, den <see cref="KreisNachfuehren"/> verändert.</summary>
+        internal Stand Sichern() => new Stand
+        {
+            Kuehlkanal = _kanaele != null ? (double[])_kanaele.Kuehlung.Clone() : null,
+            Kaeltebedarf = (double[])Kaeltebedarf.Clone(),
+            Gebaeude = (double[])Kaeltebedarf_Gebaeude.Clone(),
+            Monat = (double[])Kaeltebedarf_Monat.Clone(),
+            Dauerlinie = (double[])Dauerlinie.Clone(),
+            DauerlinieNichtSortiert = (double[])Dauerlinie_nicht_sortiert.Clone(),
+            Probe = (double[])_probe.Clone(),
+            Max = Kaeltebedarf_Max,
+            Gesamt = Kaeltebedarf_Gesamt,
+            GebaeudeGesamt = Kaeltebedarf_Gebaeude_Gesamt,
+            Restbedarf = Kaelterestbedarf,
+            ProbeMax = Bedarfsprobe_MaxAbweichung,
+            Stunden = StundenMitKuehlbedarf,
+            ProbeVerletzungen = Bedarfsprobe_Verletzungen,
+            Gerechnet = Gerechnet,
+        };
+
+        /// <summary>Stellt den mit <see cref="Sichern"/> gesicherten Stand Zeichen für Zeichen wieder her.</summary>
+        internal void Herstellen(Stand s)
+        {
+            if (s == null) return;
+            if (s.Kuehlkanal != null && _kanaele != null) Array.Copy(s.Kuehlkanal, _kanaele.Kuehlung, STUNDEN);
+            Array.Copy(s.Kaeltebedarf, Kaeltebedarf, STUNDEN);
+            Array.Copy(s.Gebaeude, Kaeltebedarf_Gebaeude, STUNDEN);
+            Array.Copy(s.Monat, Kaeltebedarf_Monat, s.Monat.Length);
+            Array.Copy(s.Dauerlinie, Dauerlinie, STUNDEN);
+            Array.Copy(s.DauerlinieNichtSortiert, Dauerlinie_nicht_sortiert, STUNDEN);
+            Array.Copy(s.Probe, _probe, STUNDEN);
+            Kaeltebedarf_Max = s.Max;
+            Kaeltebedarf_Gesamt = s.Gesamt;
+            Kaeltebedarf_Gebaeude_Gesamt = s.GebaeudeGesamt;
+            Kaelterestbedarf = s.Restbedarf;
+            Bedarfsprobe_MaxAbweichung = s.ProbeMax;
+            StundenMitKuehlbedarf = s.Stunden;
+            Bedarfsprobe_Verletzungen = s.ProbeVerletzungen;
+            Gerechnet = s.Gerechnet;
+            Fehlertext = "";
         }
 
         /// <summary>
@@ -388,9 +825,12 @@ namespace WindowsFormsApplication1
         internal void OhneErzeugerMelden()
         {
             if (!Gerechnet || !(Kaeltebedarf_Gesamt > 0)) return;
+            // K3: ohne dezentrale Deckung der ganze Bedarf (wie zuvor), sonst nur der Teil für die Kaskade.
+            double menge = MitDezentral ? Kaelterestbedarf : Kaeltebedarf_Gesamt;
+            if (!(menge > 0)) return;
             SimulationProtokoll.Aktuell.Warnung(string.Format(CultureInfo.CurrentCulture,
                 MyResource.Resource.SIMENG_KAELTE_OHNE_ERZEUGER,
-                Kaeltebedarf_Gesamt.ToString("N2", CultureInfo.CurrentCulture),
+                menge.ToString("N2", CultureInfo.CurrentCulture),
                 Kaeltebedarf_Max.ToString("N1", CultureInfo.CurrentCulture)));
         }
 
@@ -561,6 +1001,29 @@ namespace WindowsFormsApplication1
                             "Angekündigte Kälteerzeuger: Die Unterdeckung meldet dann die Kältekaskade mit ihrem Grund (5.5)."),
             new Gegenstueck(null, "Kaeltekaskade.Kuehltage", "KU2",
                             "Tagesbetriebsart der reversiblen Maschine (K8a, 5.2) - die Wärmeseite kennt keine Umschaltung."),
+
+            // ---- K3 (Konzept Kältebedarf 4.3): Profile und dezentrale (Split-)Deckung ----
+            new Gegenstueck("Waermebedarf_Prozess_Stunde", "Kaeltebedarf_Profil", "K3",
+                            "Profilanteil wie die Prozesswärme; zentral und dezentral gedeckt zusammen."),
+            new Gegenstueck("Waermebedarf_Prozess", "Kaeltebedarf_Profil_Gesamt", "K3",
+                            "Jahressumme der Profile [MWh]."),
+            new Gegenstueck(null, "MitProfil", "K3", "Hat eine Profilzeile gerechnet? Ergebnisspalte nur mit Wert."),
+            new Gegenstueck(null, "Kaeltebedarf_Dezentral", "K3",
+                            "Zugewinn: Kälte neben der Kaskade (Split) - die Wärmeseite kennt keine Deckung ohne Erzeuger."),
+            new Gegenstueck(null, "Kaeltebedarf_Dezentral_Gesamt", "K3", "Jahressumme der dezentralen Deckung [MWh]."),
+            new Gegenstueck(null, "Kaelte_Dezentral_Max", "K3", "Spitze der dezentralen Deckung [kW]."),
+            new Gegenstueck(null, "Strom_Dezentral", "K3", "Strom der dezentralen Deckung je Stunde = Q / EER(θ_e)."),
+            new Gegenstueck(null, "Strom_Dezentral_Gesamt", "K3", "Jahressumme des Split-Stroms [MWh]."),
+            new Gegenstueck(null, "Jahres_EER_Dezentral", "K3", "Jahres-EER der dezentralen Deckung = Σ Q / Σ P."),
+            new Gegenstueck(null, "MitDezentral", "K3", "Hat eine Zeile dezentral gerechnet? Spalten und Export nur mit Wert."),
+            new Gegenstueck(null, "DezentraleZeilen", "K3", "Die Split-Zeilen mit Strom, Kühlträger und Zähler (Abrechnung)."),
+
+            // ---- KWN-0 (Konzept Kühlung 5.6.9): Prozesskälte als Unterposten des Kühlkanals ----
+            new Gegenstueck("Waermebedarf_Prozess_Stunde", "Kaeltebedarf_Prozess", "KWN-0",
+                            "Unterposten, kein eigener Kanal (KWN-Q7): Die Wärmeseite führt Prozesswärme als Kanal PROZESS."),
+            new Gegenstueck("Waermebedarf_Prozess", "Kaeltebedarf_Prozess_Mwh", "KWN-0", "Jahressumme des Unterpostens [MWh]."),
+            new Gegenstueck(null, "MitProzess", "KWN-0", "Hat eine Prozesszeile gebucht? Ohne sie bleibt jede Zahl, wie sie war."),
+            new Gegenstueck(null, "Kaeltebedarf_Raum", "KWN-0", "Raumkühlanteil = Kühlkanal − Prozesskälte (5.6.2)."),
         };
     }
 
@@ -588,6 +1051,12 @@ namespace WindowsFormsApplication1
         /// <summary>Der Dateiname der Kanalreihe — nach dem Muster der Kanaldateien <c>waermebedarf_&lt;kanal&gt;.csv</c> (K17).</summary>
         public const string DATEI = "waermebedarf_kuehlung.csv";
 
+        /// <summary>Die Reihe der dezentral (Split) gedeckten Kälte [kWh je Stunde] (K3) — nur mit Wert.</summary>
+        public const string DATEI_DEZENTRAL = "kaeltebedarf_dezentral.csv";
+
+        /// <summary>Die Reihe des Stroms der dezentralen Deckung [kWh je Stunde] (K3) — nur mit Wert.</summary>
+        public const string DATEI_STROM_DEZENTRAL = "strom_kaelte_dezentral.csv";
+
         /// <summary>
         /// Die Kanalreihe unter ihrem Dateinamen — oder gar keine, wenn der Lauf keine Kälte
         /// erhoben hat oder sein Kältebedarf 0 ist.
@@ -597,6 +1066,12 @@ namespace WindowsFormsApplication1
             var reihen = new List<KeyValuePair<string, double[]>>();
             if (kaelte != null && kaelte.Gerechnet && kaelte.Kaeltebedarf_Gesamt > 0)
                 reihen.Add(new KeyValuePair<string, double[]>(DATEI, kaelte.Kaeltebedarf));
+            // K3 (Konzept Kältebedarf 4.3): die dezentrale Deckung nur mit Wert - sonst keine neue Datei.
+            if (kaelte != null && kaelte.Gerechnet && kaelte.MitDezentral && kaelte.Kaeltebedarf_Dezentral_Gesamt > 0)
+            {
+                reihen.Add(new KeyValuePair<string, double[]>(DATEI_DEZENTRAL, kaelte.Kaeltebedarf_Dezentral));
+                reihen.Add(new KeyValuePair<string, double[]>(DATEI_STROM_DEZENTRAL, kaelte.Strom_Dezentral));
+            }
             return reihen;
         }
 
@@ -614,7 +1089,36 @@ namespace WindowsFormsApplication1
         {
             var s = new List<KeyValuePair<string, double>>();
             Kaeltekaskade k = kaelte?.Kaskade;
-            if (kaelte == null || !kaelte.Gerechnet || k == null || k.Erzeuger.Count == 0) return s;
+            if (kaelte == null || !kaelte.Gerechnet) return s;
+            KaskadeSkalare(kaelte, k, s);
+
+            // K3 (Konzept Kältebedarf 4.3): Profil und dezentrale Deckung nur mit Wert - ohne sie kein neuer Schlüssel.
+            if (kaelte.MitProfil)
+                s.Add(new KeyValuePair<string, double>("Kaelte.ProfilMwh", kaelte.Kaeltebedarf_Profil_Gesamt));
+            if (kaelte.MitDezentral)
+            {
+                s.Add(new KeyValuePair<string, double>("Kaelte.DezentralMwh", kaelte.Kaeltebedarf_Dezentral_Gesamt));
+                s.Add(new KeyValuePair<string, double>("Kaelte.DezentralSpitzeKw", kaelte.Kaelte_Dezentral_Max));
+                s.Add(new KeyValuePair<string, double>("Kaelte.DezentralStromMwh", kaelte.Strom_Dezentral_Gesamt));
+                s.Add(new KeyValuePair<string, double>("Kaelte.DezentralJahresEer", kaelte.Jahres_EER_Dezentral));
+                // Schritt 223: je Split-Zeile Strom, Netzbezug, abweichender Kühlträger (0 = Projektträger) und Zähler.
+                for (int i = 0; i < kaelte.DezentraleZeilen.Count; i++)
+                {
+                    SimulationKaeltebedarf.DezentraleZeile z = kaelte.DezentraleZeilen[i];
+                    string p = "KaelteDezentral[" + i.ToString(CultureInfo.InvariantCulture) + "].";
+                    s.Add(new KeyValuePair<string, double>(p + "StromMwh", z.StromKwh / 1000.0));
+                    s.Add(new KeyValuePair<string, double>(p + "NetzbezugMwh", z.NetzbezugKwh / 1000.0));
+                    s.Add(new KeyValuePair<string, double>(p + "Kuehltraeger", z.Kuehltraeger));
+                    s.Add(new KeyValuePair<string, double>(p + "EigenerZaehler", z.NebenDerStufenrechnung ? 1.0 : 0.0));
+                }
+            }
+            return s;
+        }
+
+        /// <summary>Die Skalare der Kältekaskade — nur mit gerechnetem Kälteerzeuger (Bestand vor K3, Zeichen für Zeichen).</summary>
+        private static void KaskadeSkalare(SimulationKaeltebedarf kaelte, Kaeltekaskade k, List<KeyValuePair<string, double>> s)
+        {
+            if (k == null || k.Erzeuger.Count == 0) return;
 
             s.Add(new KeyValuePair<string, double>("Kaelte.ErzeugungMwh", k.DeckungGesamtKwh / 1000.0));
             s.Add(new KeyValuePair<string, double>("Kaelte.StromMwh", k.StromGesamtKwh / 1000.0));
@@ -628,11 +1132,52 @@ namespace WindowsFormsApplication1
                 Kaelteerzeuger e = k.Erzeuger[i];
                 string p = "Kaelte[" + i.ToString(CultureInfo.InvariantCulture) + "].";
                 s.Add(new KeyValuePair<string, double>(p + "ID_Anlage", e.AnlagenID));
-                s.Add(new KeyValuePair<string, double>(p + "Vorlauf", e.Kennlinie != null ? e.Kennlinie.Vorlauf : 0));
+                s.Add(new KeyValuePair<string, double>(p + "Vorlauf",
+                    e.Maschine != null ? e.Maschine.Kaltwassertemperatur : (e.Kennlinie != null ? e.Kennlinie.Vorlauf : 0)));
                 s.Add(new KeyValuePair<string, double>(p + "ErzeugungMwh", e.KaelteGesamtKwh / 1000.0));
                 s.Add(new KeyValuePair<string, double>(p + "StromMwh", e.StromGesamtKwh / 1000.0));
+                // KU3-2: die Kältemaschine trägt ihre Kennung, die freie Kühlung und den Hilfsstrom der
+                // Rückkühlung - nur sie, die Schlüssel der Wärmepumpe bleiben unverändert.
+                if (e.Maschine != null)
+                {
+                    s.Add(new KeyValuePair<string, double>(p + "ID_Kaeltemaschine", e.Maschine.Id));
+                    s.Add(new KeyValuePair<string, double>(p + "HilfsstromMwh", e.HilfsstromGesamtKwh / 1000.0));
+                    s.Add(new KeyValuePair<string, double>(p + "FreieKuehlungStunden", e.StundenFreieKuehlung));
+                    s.Add(new KeyValuePair<string, double>(p + "FreieKuehlungMwh", e.KaelteFreiKwh / 1000.0));
+                    // KM3 (Fachkonzept Teillast und Takten 5.3, 8.1): nur eine Maschine mit Teillast_Weg bzw. Randweg
+                    // GUETEGRAD trägt die neuen Schlüssel; ohne Weg bleibt die Datei Zeichen für Zeichen wie zuvor.
+                    if (e.Maschine.TeillastWirksam)
+                    {
+                        s.Add(new KeyValuePair<string, double>(p + "TaktstromMwh", e.TaktstromKwh / 1000.0));
+                        s.Add(new KeyValuePair<string, double>(p + "Starts", e.Starts));
+                        s.Add(new KeyValuePair<string, double>(p + "Taktstunden", e.Taktstunden));
+                        s.Add(new KeyValuePair<string, double>(p + "Teillaststunden", e.StundenTeillast));
+                        s.Add(new KeyValuePair<string, double>(p + "LastgradMittel", e.LastgradMittel));
+                    }
+                    if (e.Maschine.GuetegradWirksam)
+                        s.Add(new KeyValuePair<string, double>(p + "StundenExtrapoliert", e.StundenExtrapoliert));
+                }
+                // KU3-6: die Wärmepumpe mit wirksamer freier Kühlung über die Wärmequelle - eigene
+                // Schlüssel; ohne sie bleibt die Datei Zeichen für Zeichen wie zuvor.
+                else if (e.FreieKuehlungSole)
+                {
+                    s.Add(new KeyValuePair<string, double>(p + "WpFreieKuehlungStunden", e.StundenFreieKuehlung));
+                    s.Add(new KeyValuePair<string, double>(p + "WpFreieKuehlungMwh", e.KaelteFreiKwh / 1000.0));
+                }
             }
-            return s;
+            // KU3-5: die Kältespeicher - nur, wenn einer rechnet; sonst kein neuer Schlüssel.
+            if (k.Speicher != null)
+                for (int i = 0; i < k.Speicher.Count; i++)
+                {
+                    SimulationPufferspeicher sp = k.Speicher[i];
+                    string p = "Kaeltespeicher[" + i.ToString(CultureInfo.InvariantCulture) + "].";
+                    s.Add(new KeyValuePair<string, double>(p + "ID_Pufferspeicher", sp.ID_Pufferspeicher));
+                    s.Add(new KeyValuePair<string, double>(p + "KapazitaetKwh", sp.Q_max));
+                    s.Add(new KeyValuePair<string, double>(p + "EntladungMwh", sp.Entladung_gesamt / 1000.0));
+                    s.Add(new KeyValuePair<string, double>(p + "LadungMwh", sp.Ladung_gesamt / 1000.0));
+                    s.Add(new KeyValuePair<string, double>(p + "VerlusteMwh", sp.Verluste_gesamt / 1000.0));
+                    s.Add(new KeyValuePair<string, double>(p + "Vollzyklen", sp.Vollzyklen));
+                }
         }
 
         /// <summary>Der Satz, der mit jeder exportierten Kältezahl reist (K5): sensible Kälte ohne Entfeuchtung.</summary>

@@ -1,0 +1,276 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace WindowsFormsApplication1
+{
+    // ====================================================================================
+    // ERZEUGT von Werkzeuge/Standardlastprofile/ableiten.py - NICHT VON HAND AENDERN.
+    // Pruefen: py Werkzeuge/Standardlastprofile/ableiten.py (ohne Argument), schreiben: ... schreiben.
+    //
+    // DIE BDEW-STANDARDLASTPROFILE STROM 2025 als Katalogsaat der "Datenbank Strombedarf",
+    // gesaet mit dem Schemaschritt StandardlastprofilSchema.SCHRITT.
+    // Die Netzbezugsprofile P25 und S25 saet StandardlastprofilPvSchema.SCHRITT.
+    //
+    // QUELLE. BDEW, Standardlastprofile Strom 2025, Veroeffentlichung vom 17.03.2025; Datei
+    // Quellen/Standardlastprofile/BDEW_Repraesentative_Profile_H25_G25_L25_P25_S25.xlsx
+    // (SHA-256 1803d4c612693563a784eb61001e7c58ffd6bd18a6bca3780f774f3c3459b845). Die Dateien tragen keine Lizenzangabe;
+    // ausgeliefert werden allein die abgeleiteten Werte unten (Quellen/Standardlastprofile/LIESMICH.md).
+    //
+    // ABLEITUNG (Werkzeuge/Standardlastprofile/LIESMICH.md):
+    //   Wochenwerte: 168 Stunden Mo 0 Uhr ... So 23 Uhr; Mo-Fr aus dem Werktag (WT), Sa aus dem Samstag
+    //   (SA), So aus dem Sonn- und Feiertag (FT); Stunde = Summe der vier Viertelstundenenergien;
+    //   Jahresmittel je Typtag, die Monate mit der Zahl ihrer Tage gewichtet; ohne Dynamisierung.
+    //   Einheit kWh je Stunde bei 1.000 MWh/a - die Skala ist fuer die Rechnung gleichgueltig,
+    //   BhkwPlan.StromWocheToJahr normiert je Monat auf den Monatswert.
+    //   Monatswerte: Monatsenergie [MWh] der Abrollung ueber 365 Tage, gemittelt ueber die sieben
+    //   Wochentage des 1. Januar (28-Jahre-Zyklus), ohne Feiertage; H25 mit der Dynamisierung
+    //   F(t) je Tag des Jahres (PDF S. 4), G25 und L25 ohne; danach exakt auf 1.000 MWh skaliert.
+    //   P25 und S25 wie H25 mit F(t) (PDF S. 4-5).
+    //   Feiertage legt ein Betriebskalender an der Zuordnung auf den Sonntag (BDEW: Feiertag = FT).
+    //
+    // NETZBEZUG. P25 und S25 beschreiben den Bezug eines Haushalts mit PV-Anlage bzw. mit PV-Anlage und
+    // Batteriespeicher aus dem Netz nach dem Eigenverbrauch (PDF S. 4-5) - KEIN VERBRAUCHSPROFIL; die
+    // 1.000 MWh/a sind Netzbezug. Mit einer eigenen PV-Rechnung des Projekts zaehlte die PV doppelt.
+    // ====================================================================================
+
+    /// <summary>
+    /// Ein BDEW-Standardlastprofil der Saat — Kopfsatz für <c>Tab_Stromverbraucher_STAMM</c> und Typprofil
+    /// für <c>Tab_Stromverbrauchertyp_STAMM</c>, verknüpft über den Namen (<c>Typ</c> = <c>Typname</c>).
+    /// </summary>
+    public sealed class StandardlastprofilSaat
+    {
+        internal StandardlastprofilSaat(string kuerzel, string bezeichner, string typname, string beschreibung,
+                                        string typbeschreibung, double[] monatswerte, double[] wochenwerte)
+        {
+            Kuerzel = kuerzel;
+            Bezeichner = bezeichner;
+            Typname = typname;
+            Beschreibung = beschreibung;
+            Typbeschreibung = typbeschreibung;
+            Monatswerte = Array.AsReadOnly(monatswerte);
+            Wochenwerte = Array.AsReadOnly(wochenwerte);
+        }
+
+        /// <summary>Das Kürzel des BDEW (H25, G25, L25).</summary>
+        /// <remarks>Die Netzbezugsprofile tragen P25 und S25 (<see cref="StandardlastprofilSaattabelle.Netzbezug"/>).</remarks>
+        public string Kuerzel { get; }
+
+        /// <summary>Der Name des Katalogsatzes (<c>Tab_Stromverbraucher_STAMM.Bezeichner</c>).</summary>
+        public string Bezeichner { get; }
+
+        /// <summary>Der Name des Typprofils (<c>Tab_Stromverbrauchertyp_STAMM.Typname</c>), zugleich <c>Typ</c> des Kopfsatzes.</summary>
+        public string Typname { get; }
+
+        /// <summary>Die Beschreibung des Kopfsatzes.</summary>
+        public string Beschreibung { get; }
+
+        /// <summary>Die Beschreibung des Typprofils.</summary>
+        public string Typbeschreibung { get; }
+
+        /// <summary>Die zwölf Monatswerte [MWh], Januar zuerst; Summe 1.000 MWh.</summary>
+        public IReadOnlyList<double> Monatswerte { get; }
+
+        /// <summary>Die 168 Wochenstunden [kWh je Stunde bei 1.000 MWh/a], Montag 0 Uhr zuerst.</summary>
+        public IReadOnlyList<double> Wochenwerte { get; }
+    }
+
+    /// <summary>
+    /// <b>Die drei Sätze der Saat</b> (H25, G25, L25) mit Quelle und Prüfsumme der Excel, aus der sie
+    /// abgeleitet sind.
+    /// Dazu die zwei Netzbezugsprofile P25 und S25 (<see cref="StandardlastprofilSaattabelle.Netzbezug"/>) — keine Verbrauchsprofile.
+    /// </summary>
+    public static class StandardlastprofilSaattabelle
+    {
+        /// <summary>Die Quelle der Werte.</summary>
+        public const string QUELLE = "BDEW, Standardlastprofile Strom 2025, Veröffentlichung vom 17.03.2025";
+
+        /// <summary>Die Excel im Repositorium, repo-relativ.</summary>
+        public const string QUELLDATEI = "Quellen/Standardlastprofile/BDEW_Repraesentative_Profile_H25_G25_L25_P25_S25.xlsx";
+
+        /// <summary>SHA-256 der Excel, aus der die Werte abgeleitet sind.</summary>
+        public const string QUELLDATEI_SHA256 = "1803d4c612693563a784eb61001e7c58ffd6bd18a6bca3780f774f3c3459b845";
+
+        /// <summary>Die Jahressumme jedes Satzes [MWh] — die Normierung des BDEW (1 Mio. kWh).</summary>
+        public const double JAHRESSUMME_MWH = 1000.0;
+
+        /// <summary>Die Sätze in der Folge H25, G25, L25.</summary>
+        /// <remarks>Die Verbrauchsprofile, gesät von <see cref="StandardlastprofilSchema"/>; die Netzbezugsprofile P25 und S25 stehen in <see cref="StandardlastprofilSaattabelle.Netzbezug"/>.</remarks>
+        public static IReadOnlyList<StandardlastprofilSaat> Alle { get; } = new[]
+        {
+            new StandardlastprofilSaat(
+                "H25", "BDEW_H25_Haushalt", "BDEW_H25",
+                "BDEW-Standardlastprofil 2025 H25 (Haushalt), normiert auf 1.000 MWh/a; im Projekt auf den Jahresverbrauch skalieren; Feiertage über den Betriebskalender",
+                "BDEW-Standardlastprofil 2025 H25 (Haushalt): Wochenprofil aus dem Jahresmittel je Typtag (Mo–Fr Werktag, Sa Samstag, So Sonn- und Feiertag), kWh je Stunde bei 1.000 MWh/a",
+                new[]
+                {
+                    // Januar bis Dezember [MWh]
+                    101.047323, 88.184665, 88.292656, 81.527387, 77.137443, 71.520708, 74.370492, 73.546158, 73.162851, 83.530801, 88.298723, 99.380793,
+                },
+                new[]
+                {
+                    // Montag 0 bis 23 Uhr (Werktag)
+                    80.559652, 69.676000, 65.720523, 65.263707, 68.503008, 78.721570, 99.279214, 106.132986, 100.514288, 98.124142, 98.648679, 107.740937,
+                    112.380674, 110.129132, 106.866310, 109.317948, 120.492901, 142.882003, 163.715378, 169.843310, 161.772567, 147.764992, 129.767792, 103.072526,
+                    // Dienstag 0 bis 23 Uhr (Werktag)
+                    80.559652, 69.676000, 65.720523, 65.263707, 68.503008, 78.721570, 99.279214, 106.132986, 100.514288, 98.124142, 98.648679, 107.740937,
+                    112.380674, 110.129132, 106.866310, 109.317948, 120.492901, 142.882003, 163.715378, 169.843310, 161.772567, 147.764992, 129.767792, 103.072526,
+                    // Mittwoch 0 bis 23 Uhr (Werktag)
+                    80.559652, 69.676000, 65.720523, 65.263707, 68.503008, 78.721570, 99.279214, 106.132986, 100.514288, 98.124142, 98.648679, 107.740937,
+                    112.380674, 110.129132, 106.866310, 109.317948, 120.492901, 142.882003, 163.715378, 169.843310, 161.772567, 147.764992, 129.767792, 103.072526,
+                    // Donnerstag 0 bis 23 Uhr (Werktag)
+                    80.559652, 69.676000, 65.720523, 65.263707, 68.503008, 78.721570, 99.279214, 106.132986, 100.514288, 98.124142, 98.648679, 107.740937,
+                    112.380674, 110.129132, 106.866310, 109.317948, 120.492901, 142.882003, 163.715378, 169.843310, 161.772567, 147.764992, 129.767792, 103.072526,
+                    // Freitag 0 bis 23 Uhr (Werktag)
+                    80.559652, 69.676000, 65.720523, 65.263707, 68.503008, 78.721570, 99.279214, 106.132986, 100.514288, 98.124142, 98.648679, 107.740937,
+                    112.380674, 110.129132, 106.866310, 109.317948, 120.492901, 142.882003, 163.715378, 169.843310, 161.772567, 147.764992, 129.767792, 103.072526,
+                    // Samstag 0 bis 23 Uhr (Samstag)
+                    88.561666, 75.474397, 69.479690, 67.467819, 67.878636, 70.308038, 82.353740, 105.176748, 127.443367, 139.543301, 147.348205, 158.511932,
+                    156.862123, 148.708630, 144.066570, 142.561795, 146.396285, 159.437633, 170.342858, 168.187381, 157.701011, 145.949452, 133.655227, 112.369016,
+                    // Sonntag 0 bis 23 Uhr (Sonn- und Feiertag)
+                    92.146890, 78.989203, 72.204033, 69.164208, 68.286863, 70.197252, 79.030773, 99.426227, 127.625296, 149.592036, 165.763178, 183.835277,
+                    176.417430, 159.135342, 148.070066, 142.892940, 145.556033, 162.365293, 175.711611, 174.419249, 163.085151, 147.575992, 128.590438, 102.058164,
+                }),
+            new StandardlastprofilSaat(
+                "G25", "BDEW_G25_Gewerbe", "BDEW_G25",
+                "BDEW-Standardlastprofil 2025 G25 (Gewerbe allgemein), normiert auf 1.000 MWh/a; im Projekt auf den Jahresverbrauch skalieren; Feiertage über den Betriebskalender",
+                "BDEW-Standardlastprofil 2025 G25 (Gewerbe allgemein): Wochenprofil aus dem Jahresmittel je Typtag (Mo–Fr Werktag, Sa Samstag, So Sonn- und Feiertag), kWh je Stunde bei 1.000 MWh/a",
+                new[]
+                {
+                    // Januar bis Dezember [MWh]
+                    93.642207, 83.681007, 90.014865, 81.551182, 79.761270, 77.307113, 75.673008, 77.063442, 76.754466, 82.065378, 90.076676, 92.409386,
+                },
+                new[]
+                {
+                    // Montag 0 bis 23 Uhr (Werktag)
+                    55.105712, 53.787323, 53.323367, 54.445038, 58.712211, 71.515501, 101.397011, 157.303348, 208.915408, 229.864279, 242.516047, 241.403677,
+                    222.589397, 207.757800, 205.041529, 195.733658, 178.744299, 157.571153, 124.638712, 97.999975, 83.183247, 73.308386, 64.606181, 59.116049,
+                    // Dienstag 0 bis 23 Uhr (Werktag)
+                    55.105712, 53.787323, 53.323367, 54.445038, 58.712211, 71.515501, 101.397011, 157.303348, 208.915408, 229.864279, 242.516047, 241.403677,
+                    222.589397, 207.757800, 205.041529, 195.733658, 178.744299, 157.571153, 124.638712, 97.999975, 83.183247, 73.308386, 64.606181, 59.116049,
+                    // Mittwoch 0 bis 23 Uhr (Werktag)
+                    55.105712, 53.787323, 53.323367, 54.445038, 58.712211, 71.515501, 101.397011, 157.303348, 208.915408, 229.864279, 242.516047, 241.403677,
+                    222.589397, 207.757800, 205.041529, 195.733658, 178.744299, 157.571153, 124.638712, 97.999975, 83.183247, 73.308386, 64.606181, 59.116049,
+                    // Donnerstag 0 bis 23 Uhr (Werktag)
+                    55.105712, 53.787323, 53.323367, 54.445038, 58.712211, 71.515501, 101.397011, 157.303348, 208.915408, 229.864279, 242.516047, 241.403677,
+                    222.589397, 207.757800, 205.041529, 195.733658, 178.744299, 157.571153, 124.638712, 97.999975, 83.183247, 73.308386, 64.606181, 59.116049,
+                    // Freitag 0 bis 23 Uhr (Werktag)
+                    55.105712, 53.787323, 53.323367, 54.445038, 58.712211, 71.515501, 101.397011, 157.303348, 208.915408, 229.864279, 242.516047, 241.403677,
+                    222.589397, 207.757800, 205.041529, 195.733658, 178.744299, 157.571153, 124.638712, 97.999975, 83.183247, 73.308386, 64.606181, 59.116049,
+                    // Samstag 0 bis 23 Uhr (Samstag)
+                    55.895668, 54.437090, 53.338137, 53.756885, 55.992984, 63.170584, 70.116852, 78.434189, 95.236463, 117.114211, 128.799622, 129.622134,
+                    121.110978, 108.351093, 98.461293, 94.673510, 90.638658, 90.108805, 84.368764, 79.137658, 72.709403, 67.289619, 61.504118, 57.641030,
+                    // Sonntag 0 bis 23 Uhr (Sonn- und Feiertag)
+                    54.421701, 52.924230, 52.096033, 51.936238, 52.645677, 54.391159, 57.428997, 60.668099, 64.047537, 67.481356, 71.772079, 74.185978,
+                    73.988838, 72.383882, 70.778241, 71.231986, 73.261833, 75.233551, 74.240312, 71.814353, 68.223025, 63.539353, 58.432356, 54.480778,
+                }),
+            new StandardlastprofilSaat(
+                "L25", "BDEW_L25_Landwirtschaft", "BDEW_L25",
+                "BDEW-Standardlastprofil 2025 L25 (Landwirtschaftsbetriebe), normiert auf 1.000 MWh/a; im Projekt auf den Jahresverbrauch skalieren; Feiertage über den Betriebskalender",
+                "BDEW-Standardlastprofil 2025 L25 (Landwirtschaftsbetriebe): Wochenprofil aus dem Jahresmittel je Typtag (Mo–Fr Werktag, Sa Samstag, So Sonn- und Feiertag), kWh je Stunde bei 1.000 MWh/a",
+                new[]
+                {
+                    // Januar bis Dezember [MWh]
+                    92.021817, 83.116480, 89.509891, 81.760681, 80.823031, 74.670991, 77.160024, 77.160024, 78.215836, 84.486037, 89.053371, 92.021817,
+                },
+                new[]
+                {
+                    // Montag 0 bis 23 Uhr (Werktag)
+                    65.567272, 58.589966, 56.052671, 54.222112, 53.552957, 58.962660, 80.258699, 134.547865, 192.446005, 182.068459, 143.889053, 145.218459,
+                    130.219772, 106.334406, 102.476096, 102.250205, 105.743916, 130.343676, 184.964429, 205.584920, 161.662066, 118.288904, 97.205913, 79.517317,
+                    // Dienstag 0 bis 23 Uhr (Werktag)
+                    65.567272, 58.589966, 56.052671, 54.222112, 53.552957, 58.962660, 80.258699, 134.547865, 192.446005, 182.068459, 143.889053, 145.218459,
+                    130.219772, 106.334406, 102.476096, 102.250205, 105.743916, 130.343676, 184.964429, 205.584920, 161.662066, 118.288904, 97.205913, 79.517317,
+                    // Mittwoch 0 bis 23 Uhr (Werktag)
+                    65.567272, 58.589966, 56.052671, 54.222112, 53.552957, 58.962660, 80.258699, 134.547865, 192.446005, 182.068459, 143.889053, 145.218459,
+                    130.219772, 106.334406, 102.476096, 102.250205, 105.743916, 130.343676, 184.964429, 205.584920, 161.662066, 118.288904, 97.205913, 79.517317,
+                    // Donnerstag 0 bis 23 Uhr (Werktag)
+                    65.567272, 58.589966, 56.052671, 54.222112, 53.552957, 58.962660, 80.258699, 134.547865, 192.446005, 182.068459, 143.889053, 145.218459,
+                    130.219772, 106.334406, 102.476096, 102.250205, 105.743916, 130.343676, 184.964429, 205.584920, 161.662066, 118.288904, 97.205913, 79.517317,
+                    // Freitag 0 bis 23 Uhr (Werktag)
+                    65.567272, 58.589966, 56.052671, 54.222112, 53.552957, 58.962660, 80.258699, 134.547865, 192.446005, 182.068459, 143.889053, 145.218459,
+                    130.219772, 106.334406, 102.476096, 102.250205, 105.743916, 130.343676, 184.964429, 205.584920, 161.662066, 118.288904, 97.205913, 79.517317,
+                    // Samstag 0 bis 23 Uhr (Samstag)
+                    69.153333, 64.235628, 59.179772, 55.527660, 54.161062, 56.319977, 66.888116, 115.519441, 179.667489, 191.232808, 161.962363, 158.966587,
+                    139.310091, 108.379840, 92.174087, 85.529635, 87.268493, 112.373459, 166.219018, 192.568653, 154.373276, 111.668231, 90.897146, 73.644772,
+                    // Sonntag 0 bis 23 Uhr (Sonn- und Feiertag)
+                    62.666884, 58.099737, 55.538128, 54.114361, 53.726678, 59.296484, 85.452432, 141.635890, 197.973904, 188.966336, 149.556427, 150.981689,
+                    134.639110, 110.219600, 104.700662, 100.669349, 103.134098, 128.987078, 181.986438, 204.883710, 163.151621, 119.364132, 97.449680, 77.178162,
+                })
+        };
+
+        /// <summary>
+        /// <b>Die Netzbezugsprofile</b> in der Folge P25, S25 — der Bezug eines Haushalts mit PV-Anlage bzw. mit PV-Anlage
+        /// und Batteriespeicher aus dem Netz nach dem Eigenverbrauch (BDEW-Veröffentlichung S. 4–5): <b>kein
+        /// Verbrauchsprofil</b>, die 1.000 MWh/a sind Netzbezug. Gesät von <see cref="StandardlastprofilPvSchema"/>.
+        /// </summary>
+        public static IReadOnlyList<StandardlastprofilSaat> Netzbezug { get; } = new[]
+        {
+            new StandardlastprofilSaat(
+                "P25", "BDEW_P25_Haushalt_PV", "BDEW_P25",
+                "BDEW-Standardlastprofil 2025 P25: Netzbezug eines Haushalts mit PV-Anlage — kein Verbrauchsprofil; normiert auf 1.000 MWh/a Netzbezug, im Projekt auf den Jahresnetzbezug skalieren; nicht mit einer eigenen PV-Rechnung von EPOS-Plan kombinieren (PV zählte doppelt); Feiertage über den Betriebskalender",
+                "BDEW-Standardlastprofil 2025 P25 (Netzbezug eines Haushalts mit PV-Anlage, kein Verbrauchsprofil): Wochenprofil aus dem Jahresmittel je Typtag (Mo–Fr Werktag, Sa Samstag, So Sonn- und Feiertag), kWh je Stunde bei 1.000 MWh/a Netzbezug",
+                new[]
+                {
+                    // Januar bis Dezember [MWh]
+                    145.198057, 105.655203, 94.798881, 71.642459, 45.050241, 40.387335, 42.045863, 46.797354, 53.388222, 78.719003, 115.208354, 161.109028,
+                },
+                new[]
+                {
+                    // Montag 0 bis 23 Uhr (Werktag)
+                    110.165773, 105.197036, 104.520222, 104.436792, 109.509770, 123.731863, 135.339164, 117.067630, 93.817545, 70.610641, 56.022044, 50.513041,
+                    50.929340, 50.164419, 53.747468, 66.345751, 89.220058, 120.121975, 158.576233, 173.439948, 181.713540, 170.322677, 146.066337, 123.503756,
+                    // Dienstag 0 bis 23 Uhr (Werktag)
+                    110.165773, 105.197036, 104.520222, 104.436792, 109.509770, 123.731863, 135.339164, 117.067630, 93.817545, 70.610641, 56.022044, 50.513041,
+                    50.929340, 50.164419, 53.747468, 66.345751, 89.220058, 120.121975, 158.576233, 173.439948, 181.713540, 170.322677, 146.066337, 123.503756,
+                    // Mittwoch 0 bis 23 Uhr (Werktag)
+                    110.165773, 105.197036, 104.520222, 104.436792, 109.509770, 123.731863, 135.339164, 117.067630, 93.817545, 70.610641, 56.022044, 50.513041,
+                    50.929340, 50.164419, 53.747468, 66.345751, 89.220058, 120.121975, 158.576233, 173.439948, 181.713540, 170.322677, 146.066337, 123.503756,
+                    // Donnerstag 0 bis 23 Uhr (Werktag)
+                    110.165773, 105.197036, 104.520222, 104.436792, 109.509770, 123.731863, 135.339164, 117.067630, 93.817545, 70.610641, 56.022044, 50.513041,
+                    50.929340, 50.164419, 53.747468, 66.345751, 89.220058, 120.121975, 158.576233, 173.439948, 181.713540, 170.322677, 146.066337, 123.503756,
+                    // Freitag 0 bis 23 Uhr (Werktag)
+                    110.165773, 105.197036, 104.520222, 104.436792, 109.509770, 123.731863, 135.339164, 117.067630, 93.817545, 70.610641, 56.022044, 50.513041,
+                    50.929340, 50.164419, 53.747468, 66.345751, 89.220058, 120.121975, 158.576233, 173.439948, 181.713540, 170.322677, 146.066337, 123.503756,
+                    // Samstag 0 bis 23 Uhr (Samstag)
+                    118.306992, 111.536329, 107.623699, 105.763885, 109.872364, 112.934455, 110.086551, 111.698351, 108.787310, 91.519367, 77.892458, 74.163455,
+                    72.571164, 66.387896, 67.738030, 77.905822, 96.916326, 122.691088, 152.645436, 162.671101, 168.897332, 163.956151, 148.130071, 131.282022,
+                    // Sonntag 0 bis 23 Uhr (Sonn- und Feiertag)
+                    117.836512, 108.948126, 105.938888, 105.162049, 107.638110, 109.576375, 105.634592, 99.332562, 97.901764, 90.844942, 80.240038, 82.389216,
+                    79.785205, 69.809975, 71.292337, 81.935641, 101.967184, 127.839570, 157.662044, 174.257918, 179.593890, 166.424408, 143.063077, 119.402510,
+                }),
+            new StandardlastprofilSaat(
+                "S25", "BDEW_S25_Haushalt_PV_Speicher", "BDEW_S25",
+                "BDEW-Standardlastprofil 2025 S25: Netzbezug eines Haushalts mit PV-Anlage und Batteriespeicher — kein Verbrauchsprofil; normiert auf 1.000 MWh/a Netzbezug, im Projekt auf den Jahresnetzbezug skalieren; nicht mit einer eigenen PV-Rechnung von EPOS-Plan kombinieren (PV zählte doppelt); Feiertage über den Betriebskalender",
+                "BDEW-Standardlastprofil 2025 S25 (Netzbezug eines Haushalts mit PV-Anlage und Batteriespeicher, kein Verbrauchsprofil): Wochenprofil aus dem Jahresmittel je Typtag (Mo–Fr Werktag, Sa Samstag, So Sonn- und Feiertag), kWh je Stunde bei 1.000 MWh/a Netzbezug",
+                new[]
+                {
+                    // Januar bis Dezember [MWh]
+                    207.396376, 124.200526, 78.564682, 42.121581, 14.688983, 10.777161, 13.890648, 18.634841, 21.910916, 70.427935, 151.142407, 246.243944,
+                },
+                new[]
+                {
+                    // Montag 0 bis 23 Uhr (Werktag)
+                    88.533438, 86.214992, 88.132312, 93.611959, 104.253225, 124.553068, 149.084167, 150.287795, 124.828515, 95.225770, 74.641340, 64.616948,
+                    61.721362, 55.569551, 58.178110, 70.607841, 91.169501, 111.355636, 124.611586, 124.089792, 124.290375, 117.811058, 107.262529, 95.564077,
+                    // Dienstag 0 bis 23 Uhr (Werktag)
+                    88.533438, 86.214992, 88.132312, 93.611959, 104.253225, 124.553068, 149.084167, 150.287795, 124.828515, 95.225770, 74.641340, 64.616948,
+                    61.721362, 55.569551, 58.178110, 70.607841, 91.169501, 111.355636, 124.611586, 124.089792, 124.290375, 117.811058, 107.262529, 95.564077,
+                    // Mittwoch 0 bis 23 Uhr (Werktag)
+                    88.533438, 86.214992, 88.132312, 93.611959, 104.253225, 124.553068, 149.084167, 150.287795, 124.828515, 95.225770, 74.641340, 64.616948,
+                    61.721362, 55.569551, 58.178110, 70.607841, 91.169501, 111.355636, 124.611586, 124.089792, 124.290375, 117.811058, 107.262529, 95.564077,
+                    // Donnerstag 0 bis 23 Uhr (Werktag)
+                    88.533438, 86.214992, 88.132312, 93.611959, 104.253225, 124.553068, 149.084167, 150.287795, 124.828515, 95.225770, 74.641340, 64.616948,
+                    61.721362, 55.569551, 58.178110, 70.607841, 91.169501, 111.355636, 124.611586, 124.089792, 124.290375, 117.811058, 107.262529, 95.564077,
+                    // Freitag 0 bis 23 Uhr (Werktag)
+                    88.533438, 86.214992, 88.132312, 93.611959, 104.253225, 124.553068, 149.084167, 150.287795, 124.828515, 95.225770, 74.641340, 64.616948,
+                    61.721362, 55.569551, 58.178110, 70.607841, 91.169501, 111.355636, 124.611586, 124.089792, 124.290375, 117.811058, 107.262529, 95.564077,
+                    // Samstag 0 bis 23 Uhr (Samstag)
+                    99.296712, 95.211781, 94.325942, 97.325732, 103.698559, 116.779044, 133.816019, 149.097277, 147.648384, 118.173811, 93.258507, 86.374926,
+                    78.274595, 70.297704, 70.693310, 83.405082, 98.974844, 120.671455, 132.546844, 132.629381, 130.273181, 122.090537, 113.102718, 103.506233,
+                    // Sonntag 0 bis 23 Uhr (Sonn- und Feiertag)
+                    96.215605, 91.965477, 93.770397, 96.816685, 101.492205, 112.243090, 131.809444, 136.701370, 133.678578, 112.723482, 104.735855, 91.862529,
+                    72.952107, 64.923578, 64.439195, 76.557271, 92.907619, 117.119342, 130.169493, 128.991290, 123.282526, 115.307811, 105.067625, 92.477142,
+                })
+        };
+    }
+}

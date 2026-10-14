@@ -192,7 +192,7 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Die DREIZEHN Seiten der Rubrik H13 — namentlich (seit der Zusammenführung von
+        /// Die VIERZEHN Seiten der Rubrik H13 — namentlich (seit der Zusammenführung von
         /// Teil A und Teil B am 06.09.2026 beide Teile). Eine gelöschte oder
         /// umbenannte Datei fiele sonst nur dadurch auf, dass niemand sie mehr findet;
         /// der Infoknopf des zugehörigen Dialogs zeigte weiter auf eine Wikiseite, die
@@ -206,7 +206,9 @@ namespace EPOS.Kern.Tests
         {
             "Simulationsablauf", "Wärmebedarf", "Brauchwasser", "Prozesswärme",
             "Strombedarf", "Wärmequelle Erdreich", "Heizkessel", "BHKW", "Wärmepumpe",
-            "Pufferspeicher", "Solarthermie", "Photovoltaik", "Stromspeicher"
+            "Pufferspeicher", "Solarthermie", "Photovoltaik", "Stromspeicher",
+            // Die Kälteseite: Kältefolge, Rückkühlung, Teillast und Takten der Kältemaschine.
+            "Kühlung"
         };
 
         /// <summary>
@@ -439,7 +441,7 @@ namespace EPOS.Kern.Tests
 
             Assert.True(dateien.Count >= SeitenDerRubrik.Length + 2,
                 "Die Rubrik 'Berechnung' liefert nur " + dateien.Count + " eingebettete Dateien; " +
-                "erwartet sind die dreizehn Seiten plus _Index.wiki und _Bezuege.wiki.");
+                "erwartet sind die vierzehn Seiten plus _Index.wiki und _Bezuege.wiki.");
 
             return dateien;
         }
@@ -633,7 +635,24 @@ namespace EPOS.Kern.Tests
                 // (Speicherflotte)", die adaptive Entladeschwelle und den Abschnitt
                 // "Rastersuche" mit den zwei Suchmethoden - vier Uploads mehr als die
                 // uebrigen Seiten.
-                { "Stromspeicher", 7 }
+                // Welle M5: Standby und Selbstentladung (Stromspeicher), Viertelstundenbilanz
+                // und Einspeisegrenze (Photovoltaik), Viertelstunden-Abzug (Strombedarf).
+                { "Stromspeicher", 8 },
+                { "Photovoltaik", 4 },
+                { "Strombedarf", 4 },
+                // Die Solarthermieseite traegt Arbeitstemperatur aus dem Speicher,
+                // Diffus-IAM, Bezugsflaeche und den Solarkreis (Pumpenstrom, Verluste).
+                { "Solarthermie", 4 },
+                // Die Waermepumpenseite traegt das Takten unter der Mindestleistung nach
+                // EN 14825 (Welle M4, WP1).
+                { "Wärmepumpe", 4 },
+                // Die BHKW-Seite traegt Teillastkennlinie und Takten mit Anfahrverlust
+                // (Welle M4, BH1 und BH2).
+                { "BHKW", 4 },
+                // Welle M7: Bereitschaft nach Temperatur, Zonenanteile und Frischwassermodul
+                // (Pufferspeicher), thermische Desinfektion (Brauchwasser).
+                { "Pufferspeicher", 4 },
+                { "Brauchwasser", 4 }
             };
 
         /// <summary>

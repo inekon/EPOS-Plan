@@ -43,6 +43,7 @@ namespace Auslieferungsvorlage
     ///
     /// <para><b>Rueckgabe.</b> 0 = erzeugt und abgenommen; alles andere ist ein Abbruch
     /// mit Grund auf stderr (2 Aufruf, 3 Schreibort, 4 Katalogwaechter, 5 fachlich,
+    /// 6 leerer Paketteil, 7 Paket passt nicht zur Vorlage, 8 Schemastand der Quelle aelter,
     /// 1 unerwartet). Die Zieldatei entsteht ausschliesslich bei 0 — ein Abbruch laesst
     /// keine halbe Vorlage liegen, die beim naechsten Setup-Lauf als gueltig durchginge.</para>
     /// </summary>
@@ -54,6 +55,12 @@ namespace Auslieferungsvorlage
         private const int SCHREIBORT = 3;
         private const int KATALOGWAECHTER = 4;
         private const int FACHLICH = 5;
+        /// <summary>Ein Registerkatalog hat Zeilen, aber keinen gesperrten Satz mit Schluessel (Konzept Setup 6.5.4 E2).</summary>
+        private const int LEERER_PAKETTEIL = 6;
+        /// <summary>Das zurueckgelesene Paket passt nicht zur Vorlage (Konzept Setup 6.5.3, Schritt 3).</summary>
+        private const int PAKET_ABWEICHUNG = 7;
+        /// <summary>Der Schemastand der Quelle liegt unter <see cref="SchemaStand.Zielversion"/> (Konzept Setup 6.5.4 E3).</summary>
+        private const int SCHEMASTAND = 8;
 
         private static int Main(string[] args)
         {
@@ -127,6 +134,7 @@ namespace Auslieferungsvorlage
             bericht.Zeile("Ziel        " + (arg.Trocken ? "(--trocken: keine Datei)" : arg.Ziel));
             bericht.Zeile("Beispiele   " + (arg.Beispiele.Count == 0 ? "keine" : arg.Beispiele.Count + " Paket(e)"));
             bericht.Zeile("Tww-Paket   " + (arg.Katalogpaket ?? "keines"));
+            bericht.Zeile("Kesselkatalog " + (arg.Kesselkatalog ?? "keiner (Tab_Heizkessel_STAMM wie in der Quelle)"));
             string paketteil = TwwKataloge.PaketteilOrdner();
             bericht.Zeile("Paketteil   " + (paketteil ?? "(Repowurzel nicht gefunden)") + "   (frei, immer)");
             foreach (string b in arg.Beispiele) bericht.Zeile("            " + b);
@@ -154,6 +162,22 @@ namespace Auslieferungsvorlage
             var mitschrieb = new MitschriebDialoge();
             Dienste.Dialog = mitschrieb;
 
+            // ---- Schemastand der Quelle (Konzept Setup 6.5.4 E3) ---------------------
+            // Das Werkzeug migriert nicht. Ein Katalog-DML-Schritt, der erst beim Anwender laeuft,
+            // aenderte gesperrte Saetze, ohne ihre Pruefsumme nachzuziehen - der naechste Abgleich
+            // hielte sie fuer Anpassungen des Anwenders. Eine aeltere Quelle bricht deshalb ab.
+            int standQuelle = SchemastandLesen();
+            bericht.Zeile("Schemastand der Quelle " + standQuelle.ToString(CultureInfo.InvariantCulture) +
+                          "   (Zielstand der Schemakette " + SchemaStand.Zielversion.ToString(CultureInfo.InvariantCulture) + ")");
+            if (standQuelle < SchemaStand.Zielversion)
+            {
+                Console.Error.WriteLine("Abbruch: Der Schemastand der Quelle (" + standQuelle.ToString(CultureInfo.InvariantCulture) +
+                                        ") ist aelter als der Zielstand der Schemakette (" +
+                                        SchemaStand.Zielversion.ToString(CultureInfo.InvariantCulture) + "). Die Quelle einmal " +
+                                        "mit der aktuellen Anwendung oeffnen; danach ist sie angehoben.");
+                return SCHEMASTAND;
+            }
+
             Projektsicht sicht = Projektsicht.Lesen();
             int strictVorher = Prueflauf.StrictTabellenDerKopie();
 
@@ -174,6 +198,22 @@ namespace Auslieferungsvorlage
             }
 
             bau.PersonenbezugAbraeumen(sicht);
+
+            // ---- Schritt 3b: die Nachpflege des Kesselkatalogs aus VDI 3805 (Konzept
+            //      Kesselkennlinie, Entscheid F2) - nur mit --kesselkatalog. Allein
+            //      Tab_Heizkessel_STAMM; Projektkopien gibt es in der Vorlage ohnehin nicht mehr.
+            if (arg.Kesselkatalog != null)
+            {
+                bericht.Abschnitt("Schritt 3b — Kesselkatalog aus VDI 3805 Blatt 3");
+                var kk = new KesselkatalogNachpflege.Ergebnis();
+                List<KesselkatalogNachpflege.Dateisatz> saetze =
+                    KesselkatalogNachpflege.Lesen(arg.Kesselkatalog, kk, HeizkesselImportSatz.MaxBrennstoff());
+                KesselkatalogNachpflege.Nachpflegen(saetze, kk, trocken: false);
+                foreach (string zeile in KesselkatalogNachpflege.Bericht(kk, false)) bericht.Zeile(zeile);
+                if (kk.Zeiger.Count > 0)
+                    bericht.Zeile("WARNUNG " + kk.Zeiger.Count + " Kesseldatei(en) sind Git-LFS-Zeiger und wurden " +
+                                  "uebergangen - die Dateien unter VDI-3805-Daten/ aus Git LFS holen.");
+            }
 
             // ---- Schritt 3c: die Tww-Kataloge (eigene Regel, Katalogpaket) ----------
             var tww = new TwwKataloge(bericht);
@@ -201,15 +241,53 @@ namespace Auslieferungsvorlage
                 return FACHLICH;
             }
 
+            // ---- Schritt 4b: das Katalogpaket der Programmfassung (KU1 Stufe 1 und 2) 
+            //      Die Vorlage bekommt den Auslieferungsstand festgeschrieben (Schluessel,
+            //      Pruefsumme, Katalogfassung), das Paket entsteht aus genau diesem Stand und
+            //      liegt spaeter neben der Vorlage. Geschrieben wird es erst mit der Vorlage.
+            bericht.Abschnitt("Schritt 4b — Katalogpaket (Fassung " +
+                              arg.Katalogfassung.ToString(CultureInfo.InvariantCulture) + ")");
+            var paketbericht = new List<string>();
+            Katalogpaket paket = Katalogpaket.Festschreiben(arg.Katalogfassung, paketbericht);
+            foreach (string zeile in paketbericht) bericht.Zeile(zeile);
+            List<string> leer = ReadOnlyBilanz(paket, arg, bericht);
+            if (leer.Count > 0)
+            {
+                Console.Error.WriteLine("Abbruch: Leerer Paketteil in " + leer.Count.ToString(CultureInfo.InvariantCulture) +
+                                        " Registerkatalog(en) mit Zeilen: " + string.Join(", ", leer) + ". Keiner traegt " +
+                                        "einen gesperrten Satz (ReadOnly = 1) mit Schluessel; ihre Zeilen gingen ohne " +
+                                        "Schluessel in die Vorlage und wuerden beim Anwender nie nachgefuehrt. Gesperrte " +
+                                        "Saetze in der Quelle pflegen oder je Katalog benannt ausnehmen: --ohne-paket <Katalog>.");
+                return LEERER_PAKETTEIL;
+            }
+            if (paket.Tabellen.Count == 0)
+                bericht.Zeile("WARNUNG Die Quelle fuehrt die Katalogspalten nicht (Schemastand vor der Katalogfassung) - " +
+                              "das Paket bleibt leer.");
+            // KU1 Stufe 2: Kataloge ausserhalb des Registers stehen benannt im Bericht.
+            foreach (var grund in Katalogfassung.Ausgenommen.GroupBy(kv => kv.Value))
+                bericht.Zeile("ausgenommen " + string.Join(", ", grund.Select(kv => kv.Key)) + " - " + grund.Key);
+            byte[] paketBytes = paket.Bytes();
+            bericht.Zeile("Paketgroesse " + Vorlagenbau.Mb(paketBytes.Length) +
+                          (paketBytes.Length > Katalogpaket.GROESSE_WARNUNG
+                              ? "   WARNUNG ueber " + Vorlagenbau.Mb(Katalogpaket.GROESSE_WARNUNG) +
+                                " - die Reihen (Ganglinien) waeren benannt auszunehmen"
+                              : ""));
+
             // ---- Schritt 5: verdichten und pruefen ---------------------------------
             bau.Verdichten();
 
             var pruefung = new Prueflauf(bericht, sicht)
             {
                 Eingaben = new[] { arg.Quelle, arg.Katalogpaket, paketteil }.Concat(arg.Beispiele).Where(p => p != null).ToList(),
-                TwwMitnahmen = bau.TwwMitnahmen
+                TwwMitnahmen = bau.TwwMitnahmen,
+                KatalogeVollstaendig = arg.KatalogeVollstaendig
             };
             bool abgenommen = pruefung.Ausfuehren(strictVorher);
+
+            // Der Stand, gegen den das geschriebene Paket zurueckgelesen wird (Schritt 3): Fassung und
+            // gesperrte Saetze der fertigen Vorlage, gelesen, solange sie noch offen ist.
+            int? fassungDerVorlage = Katalogabgleich.FassungDerDatenbank();
+            SortedDictionary<string, SortedDictionary<string, string>> gesperrt = Katalogpaket.GesperrterStand();
 
             // Erst JETZT die Verbindungen schliessen: Solange die Zugriffsschicht die
             // Datei im WAL-Modus offen haelt, liegen -wal und -shm daneben; die Frage
@@ -265,6 +343,43 @@ namespace Auslieferungsvorlage
             File.Move(kopie, arg.Ziel);
             kopie = null;
 
+            // Das Katalogpaket neben die Vorlage (Katalogpaket.Pfad - derselbe Ort, an dem die
+            // Anwendung es neben {app}\Vorlage\Kenndaten.sqlite sucht).
+            string paketdatei = Katalogpaket.Pfad(arg.Ziel);
+            File.WriteAllBytes(paketdatei, paketBytes);
+
+            // ---- Schritt 3 des Konzepts Setup 6.5.3: Paket und Vorlage gehoeren zusammen ----
+            // Das Paket wird so gelesen, wie es der Abgleich beim Anwender liest, und gegen Fassung
+            // und gesperrte Saetze der Vorlage gehalten. Bei einer Abweichung gehen beide Dateien weg.
+            List<string> abweichungen;
+            try
+            {
+                abweichungen = Katalogpaket.Abweichungen(Katalogpaket.Lesen(paketdatei), fassungDerVorlage, gesperrt);
+            }
+            catch (Exception ex)
+            {
+                abweichungen = new List<string> { "Das Paket ist nicht lesbar: " + ex.Message };
+            }
+            if (fassungDerVorlage != arg.Katalogfassung)
+                abweichungen.Add("Fassung der Vorlage " + (fassungDerVorlage?.ToString(CultureInfo.InvariantCulture) ?? "leer") +
+                                 ", verlangt " + arg.Katalogfassung.ToString(CultureInfo.InvariantCulture));
+            if (abweichungen.Count > 0)
+            {
+                foreach (string datei in new[] { arg.Ziel, arg.Ziel + "-wal", arg.Ziel + "-shm", paketdatei })
+                    if (File.Exists(datei)) File.Delete(datei);
+                Console.Error.WriteLine("Abbruch: Das zurueckgelesene Katalogpaket passt nicht zur Vorlage (" +
+                                        abweichungen.Count.ToString(CultureInfo.InvariantCulture) +
+                                        " Abweichung(en)); Vorlage und Paket sind geloescht.");
+                foreach (string a in abweichungen.Take(20)) Console.Error.WriteLine("    - " + a);
+                return PAKET_ABWEICHUNG;
+            }
+            bericht.Zeile("ok      Paket zurueckgelesen: Fassung " + paket.Fassung.ToString(CultureInfo.InvariantCulture) + ", " +
+                          paket.Satzzahl.ToString(CultureInfo.InvariantCulture) + " Saetze in " +
+                          paket.Tabellen.Count.ToString(CultureInfo.InvariantCulture) +
+                          " Tabellen - Schluessel und Pruefsummen wie in der Vorlage");
+            bericht.Zeile("Paket:       " + paketdatei + "   (" + paket.Satzzahl.ToString(CultureInfo.InvariantCulture) +
+                          " Saetze, Fassung " + paket.Fassung.ToString(CultureInfo.InvariantCulture) + ")");
+
             string berichtsdatei = arg.Ziel + ".bericht.txt";
             bericht.Zeile("Vorlage:     " + arg.Ziel + "   (" + Vorlagenbau.Mb(new FileInfo(arg.Ziel).Length) + ")");
             bericht.Zeile("Prüfbericht: " + berichtsdatei);
@@ -273,6 +388,80 @@ namespace Auslieferungsvorlage
             Console.WriteLine();
             Console.WriteLine("Fertig. " + arg.Ziel);
             return OK;
+        }
+
+        /// <summary>Der Schemastand der geoeffneten Datenbank (<c>Tab_Applikation.SchemaVersion</c>); -1, wenn er fehlt.</summary>
+        private static int SchemastandLesen()
+        {
+            try
+            {
+                object roh = DataRepository.ExecuteScalar("SELECT SchemaVersion FROM Tab_Applikation LIMIT 1");
+                return roh == null || roh == DBNull.Value ? -1 : Convert.ToInt32(roh, CultureInfo.InvariantCulture);
+            }
+            catch (Exception)
+            {
+                return -1;
+            }
+        }
+
+        /// <summary>
+        /// <b>Die ReadOnly-Bilanz im Pruefbericht</b> (Konzept Setup 6.5.3, Schritt 2): je Registerkatalog
+        /// „Zeilen / gesperrt mit Schluessel / ungesperrt“. Gesperrt mit Schluessel sind die Saetze des Pakets;
+        /// ungesperrte Zeilen gehen im Modus <c>alle</c> ohne Schluessel in die Vorlage und werden beim
+        /// Anwender nie abgeglichen (Entscheid E7) - der Bericht weist sie in einer Sammelwarnung aus.
+        /// Liefert die Kataloge mit leerem Paketteil, die keine benannte Ausnahme (<c>--ohne-paket</c>) deckt
+        /// (Entscheid E2); jede genutzte Ausnahme steht als WARNUNG im Bericht.
+        /// </summary>
+        private static List<string> ReadOnlyBilanz(Katalogpaket paket, Argumente arg, Bericht bericht)
+        {
+            var leer = new List<string>();
+            var genutzt = new List<string>();
+            long ungesperrtSumme = 0;
+            int ungesperrtKataloge = 0;
+            bericht.Zeile("ReadOnly-Bilanz je Registerkatalog: Zeilen / gesperrt mit Schluessel (im Paket) / ungesperrt");
+            foreach (Katalogpakettabelle pt in paket.Tabellen)
+            {
+                long zeilen = Zahl("SELECT COUNT(*) FROM \"" + pt.Tabelle + "\"");
+                long ungesperrt = Zahl("SELECT COUNT(*) FROM \"" + pt.Tabelle + "\" WHERE \"ReadOnly\" IS NULL OR \"ReadOnly\" = 0");
+                int gesperrtMitSchluessel = pt.Saetze.Count;
+                string zusatz = "";
+                if (zeilen > 0 && gesperrtMitSchluessel == 0)
+                {
+                    if (arg.OhnePaket.Contains(pt.Tabelle, StringComparer.Ordinal))
+                    {
+                        genutzt.Add(pt.Tabelle);
+                        zusatz = "   leerer Paketteil, benannte Ausnahme";
+                    }
+                    else
+                    {
+                        leer.Add(pt.Tabelle);
+                        zusatz = "   leerer Paketteil";
+                    }
+                }
+                if (ungesperrt > 0) { ungesperrtSumme += ungesperrt; ungesperrtKataloge++; }
+                bericht.Zeile("  " + pt.Tabelle.PadRight(34) + " " + zeilen.ToString(CultureInfo.InvariantCulture) + " / " +
+                              gesperrtMitSchluessel.ToString(CultureInfo.InvariantCulture) + " / " +
+                              ungesperrt.ToString(CultureInfo.InvariantCulture) + zusatz);
+            }
+            foreach (string t in leer)
+                bericht.Zeile("FEHLER  leerer Paketteil " + t + ": Zeilen, aber kein gesperrter Satz mit Schluessel (Abbruch, Code 6)");
+            foreach (string t in genutzt)
+                bericht.Zeile("WARNUNG leerer Paketteil " + t + " - benannte Ausnahme --ohne-paket; der Katalog wird ohne " +
+                              "Paketsatz ausgeliefert und beim Anwender nicht nachgefuehrt");
+            foreach (string t in arg.OhnePaket.Where(t => !genutzt.Contains(t, StringComparer.Ordinal)))
+                bericht.Zeile("Ausnahme --ohne-paket " + t + " ohne Wirkung (kein leerer Paketteil)");
+            if (ungesperrtSumme > 0 && arg.KatalogeVollstaendig)
+                bericht.Zeile("WARNUNG " + ungesperrtSumme.ToString(CultureInfo.InvariantCulture) + " ungesperrte Zeile(n) in " +
+                              ungesperrtKataloge.ToString(CultureInfo.InvariantCulture) + " Registerkatalog(en) gehen im Modus " +
+                              "alle ohne Schluessel in die Vorlage: Beim Anwender verhalten sie sich wie eigene Saetze und " +
+                              "werden nie abgeglichen (Konzept Setup 6.5.4 E7).");
+            return leer;
+        }
+
+        private static long Zahl(string sql)
+        {
+            object roh = DataRepository.ExecuteScalar(sql);
+            return roh == null || roh == DBNull.Value ? 0 : Convert.ToInt64(roh, CultureInfo.InvariantCulture);
         }
 
         /// <summary>

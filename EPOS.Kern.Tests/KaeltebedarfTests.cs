@@ -698,7 +698,8 @@ namespace EPOS.Kern.Tests
             foreach (var kv in energieAus)
             {
                 if (kv.Key == "ID" || kv.Key == "ID_Ergebnis") continue;
-                if (KuehlungSchema.Ergebnisspalten.Any(s => s.Name == kv.Key))
+                // Die Zonensperre (AK3-K) wird wie die Kältespalten nur mit wirksamer Kühlung erhoben (Basis R43).
+                if (KuehlungSchema.Ergebnisspalten.Any(s => s.Name == kv.Key) || Ak3KSchema.SPALTEN_ZONENSPERRE.Contains(kv.Key))
                 {
                     Assert.Equal(DBNull.Value, kv.Value);                 // ohne Kühlung: nicht erhoben
                     Assert.NotEqual(DBNull.Value, energieHoch[kv.Key]);   // mit Kühlbetrieb: erhoben

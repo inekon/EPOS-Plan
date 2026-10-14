@@ -1,23 +1,16 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: BHKW | Fassung 3 | Rechenkern:
-     EPOS.Kern/Allgemein/Simulation/SimulationBHKW.cs, EPOS.Kern/Allgemein/Simulation/SimulationControl.cs
-     (BHKW_Liste_Laden, Betriebsart, Protokollmeldungen), EPOS.Kern/Allgemein/Simulation/Ladeordnung.cs,
-     EPOS.Kern/Allgemein/Katalog/ParameterVerwendung.cs,
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: BHKW | Fassung 4 | Rechenkern:
+     EPOS.Kern/Allgemein/Simulation/SimulationBHKW.cs, BhkwTeillast.cs, Kesselkennlinie.cs (StartsImTakt),
+     EPOS.Kern/Allgemein/Simulation/SimulationControl.cs (BHKW_Liste_Laden, Betriebsart, Protokollmeldungen,
+     BhkwUeberschussKw), EPOS.Kern/Allgemein/Simulation/Bivalenz/Ruecklaufgrenze.cs,
+     EPOS.Kern/Allgemein/Simulation/Ladeordnung.cs, EPOS.Kern/Allgemein/Katalog/ParameterVerwendung.cs,
      EPOS.Kern/Allgemein/Wirtschaftlichkeit/Emissionsquelle.cs -->
 
 == Was berechnet wird ==
 {{Anker|was}}
 
-Ein Blockheizkraftwerk erzeugt Wärme und Strom '''gleichzeitig'''; welche der beiden Größen die
-Maschine führt, entscheidet die '''Betriebsart''' des Projekts. Der Lauf ermittelt Stunde für
-Stunde, welche Module laufen und mit welcher Leistung, und bildet daraus die
-'''Wärmeproduktion''', die '''Stromproduktion''', den '''Brennstoffverbrauch''', die
-'''Emissionen''' und die '''Vollbenutzungsstunden''' — thermisch wie elektrisch.
+Ein Blockheizkraftwerk erzeugt Wärme und Strom '''gleichzeitig'''; welche der beiden Größen die Maschine führt, entscheidet die '''Betriebsart''' des Projekts. Der Lauf ermittelt Stunde für Stunde, welche Module laufen und mit welcher Leistung, und bildet daraus die '''Wärmeproduktion''', die '''Stromproduktion''', den '''Brennstoffverbrauch''', die '''Emissionen''' und die '''Vollbenutzungsstunden''' — thermisch wie elektrisch.
 
-Der erzeugte Strom deckt zuerst den Strombedarf des Projekts; was darüber hinausgeht, ist
-Stromüberschuss und wird als solcher getrennt weitergereicht — er ist '''keine'''
-Photovoltaikerzeugung und wird nicht wie eine solche vergütet. Die KWK-Zuschläge, die Vergütung des
-Stroms und die Steuerentlastungen sind Sache der Wirtschaftlichkeit; der Lauf liefert ihr die
-Mengen und die Betriebsstunden.
+Der erzeugte Strom deckt zuerst den Strombedarf des Projekts; was darüber hinausgeht, ist Stromüberschuss und wird als solcher getrennt weitergereicht — er ist '''keine''' Photovoltaikerzeugung und wird nicht wie eine solche vergütet. Die KWK-Zuschläge, die Vergütung des Stroms und die Steuerentlastungen sind Sache der Wirtschaftlichkeit; der Lauf liefert ihr die Mengen und die Betriebsstunden.
 
 == Eingangsgrößen ==
 {{Anker|eingang}}
@@ -37,15 +30,27 @@ Mengen und die Betriebsstunden.
 |-
 | Gesamtwirkungsgrad (elektrisch + thermisch) || — bzw. % || BHKW-Katalog, Feld „Wirkungsgrad"
 |-
-| Grenzleistung (Modulationsgrenze) || % || BHKW-Katalog, Feld „Grenzleistung"; ersatzweise das Feld „Grenzleistung" der Projektzeile im Dialog „BHKW"
+| Untere Grenzleistung des Moduls (Anlage) || % || Projektzeile des BHKW, Feld „Untere Grenzleistung des ausgewählten Moduls"; steht dort ein Wert über 0, gilt er vor Katalog und Projekt
 |-
-| Projektweite Leistungsuntergrenze || % || Simulationskonfiguration, Parameterblatt „BHKW", Feld „Untere Leistungsgrenze der Module"; ein neues Projekt startet mit 30&nbsp;%, '''0 heisst „keine Untergrenze"'''
+| Grenzleistung (Modulationsgrenze) || % || BHKW-Katalog, Feld „Grenzleistung"; gilt, wenn die Projektzeile keinen Wert führt; steht auch dort 0, gilt die projektweite Leistungsuntergrenze
+|-
+| Projektweite Leistungsuntergrenze || % || Simulationskonfiguration, Karte des BHKW, „Konfiguration…", Feld „Untere Leistungsgrenze der Module"; ein neues Projekt startet mit 30&nbsp;%, '''0 heisst „keine Untergrenze"'''
+|-
+| Elektrischer und thermischer Wirkungsgrad bei 50&nbsp;% Last || — (Faktor) || BHKW-Katalog, Gruppe „Teillast und Takten"; leer = wie Volllast
+|-
+| Anfahrverlust je Start || kWh Brennstoff || BHKW-Katalog, Gruppe „Teillast und Takten"; leer = kein Anfahrverlust
+|-
+| Mindestlaufzeit je Start || min || BHKW-Katalog, Gruppe „Teillast und Takten"; leer = Vorgabe 10&nbsp;min, wenn ein Anfahrverlust gepflegt ist
 |-
 | Brennstoff (Energieträger) || — || BHKW-Katalog; im Projekt änderbar über „Brennstoff Variante"
 |-
 | Emissionsfaktoren CO₂ bzw. SO₂, NOₓ, Staub || g/kWh bzw. mg/kWh || '''Emissionskatalog des Energieträgers''' — dieselbe Quelle wie beim Heizkessel; die fünf Spalten des BHKW-Katalogs sind „nur Anzeige"
 |-
 | Vorlauf, Rücklauf || °C || Dialog „BHKW", Abschnitt „Modul"
+|-
+| Höchster Rücklauf (Abschaltgrenze) || °C || BHKW-Katalog und Verwaltung des Projekts, Feld „Höchster Rücklauf (Abschaltgrenze)"; leer = keine Grenze
+|-
+| Gerechneter Rücklauf des Heizkreises || °C je Stunde || Gebäudemodell bei der Anlagenkopplung; nur für die Rücklaufgrenze
 |-
 | Wärmesenken und Ladeaufträge || — || Simulationskonfiguration, Karte des BHKW
 |-
@@ -55,13 +60,7 @@ Mengen und die Betriebsstunden.
 == Formelzeichen und Parameter ==
 {{Anker|zeichen}}
 
-Die Schreibweise ist die der ganzen Rubrik: <math>t</math> ist die Stunde des Jahres
-(1…8&nbsp;760), <math>P</math> eine Leistung, <math>Q</math> eine Wärmemenge, <math>E</math> eine
-Strommenge, <math>\eta</math> ein Wirkungsgrad, <math>\vartheta</math> eine Temperatur in Grad
-Celsius. Weil eine Stunde lang ist, sind Leistung und Energie hier zahlengleich. Der Index
-<math>\mathrm{th}</math> steht für thermisch, <math>\mathrm{el}</math> für elektrisch,
-<math>\mathrm{ueber}</math> für Überschuss — Umlaute stehen in den Formeln in ASCII-Umschrift, weil
-ein Index der Formelauszeichnung keine trägt.
+Die Schreibweise ist die der ganzen Rubrik: <math>t</math> ist die Stunde des Jahres (1…8&nbsp;760), <math>P</math> eine Leistung, <math>Q</math> eine Wärmemenge, <math>E</math> eine Strommenge, <math>\eta</math> ein Wirkungsgrad, <math>\vartheta</math> eine Temperatur in Grad Celsius. Weil eine Stunde lang ist, sind Leistung und Energie hier zahlengleich. Der Index <math>\mathrm{th}</math> steht für thermisch, <math>\mathrm{el}</math> für elektrisch, <math>\mathrm{ueber}</math> für Überschuss — Umlaute stehen in den Formeln in ASCII-Umschrift, weil ein Index der Formelauszeichnung keine trägt.
 
 === Parameter ===
 
@@ -76,17 +75,29 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>\eta</math> || Gesamtwirkungsgrad, elektrisch und thermisch zusammen || — || BHKW-Katalog, Feld „Wirkungsgrad"
 |-
+| <math>x_{\mathrm{Anl}}</math> || untere Grenzleistung des Moduls in der Projektzeile || % || Projektzeile des BHKW, Feld „Untere Grenzleistung des ausgewählten Moduls"
+|-
 | <math>x_{\mathrm{Kat}}</math> || Grenzleistung des Geräts (kleinste zulässige Teillast) || % || BHKW-Katalog, Feld „Grenzleistung"
 |-
-| <math>x_{\mathrm{Proj}}</math> || projektweite Leistungsuntergrenze || % || Simulationskonfiguration, Parameterblatt „BHKW", Feld „Untere Leistungsgrenze der Module"
+| <math>x_{\mathrm{Proj}}</math> || projektweite Leistungsuntergrenze || % || Simulationskonfiguration, Karte des BHKW, „Konfiguration…", Feld „Untere Leistungsgrenze der Module"
 |-
 | <math>x_{0}</math> || Vorgabe der projektweiten Leistungsuntergrenze in einem NEUEN Projekt || % || '''30''' — sichtbar im Feld, nicht im Rechenweg
+|-
+| <math>\eta_{\mathrm{el,50}}</math>, <math>\eta_{\mathrm{th,50}}</math> || elektrischer und thermischer Wirkungsgrad bei 50&nbsp;% elektrischer Last || — || BHKW-Katalog, Gruppe „Teillast und Takten"; leer = Volllastwert aus (15)
+|-
+| <math>Q_{\mathrm{An}}</math> || Anfahrverlust je Start || kWh || BHKW-Katalog, Feld „Anfahrverlust je Start"; leer = 0
+|-
+| <math>t_{\mathrm{min}}</math> || Mindestlaufzeit je Start || min || BHKW-Katalog, Feld „Mindestlaufzeit"; '''Vorgabe: 10&nbsp;min''', höchstens 60
+|-
+| <math>\beta_{50}</math> || Laststufe der Teillaststützstelle || — || '''Konstante: 0,5'''
 |-
 | <math>\mathrm{ID}_{\mathrm{B}}</math> || Kennung des Brennstoffs || — || BHKW-Katalog; im Projekt über „Brennstoff Variante" änderbar
 |-
 | <math>f_{\mathrm{E}}</math> || Emissionsfaktor je Schadstoff (CO₂, SO₂, NO<sub>x</sub>, Staub) || g/kWh (CO₂) bzw. mg/kWh || '''Emissionskatalog des Energieträgers''' — nicht die Gerätewerte des BHKW-Katalogs
 |-
 | <math>\vartheta_{\mathrm{VL}}</math>, <math>\vartheta_{\mathrm{RL}}</math> || Vorlauf- und Rücklauftemperatur des Moduls || °C || Dialog „BHKW", Abschnitt „Modul" (Projektzeile); der Katalogsatz ist die Vorbelegung
+|-
+| <math>\vartheta_{\mathrm{R,max}}</math> || Höchster Rücklauf, über dem das Modul abschaltet || °C || BHKW-Katalog und Verwaltung des Projekts, Feld „Höchster Rücklauf (Abschaltgrenze)"; leer = keine Grenze
 |-
 | <math>r</math> || Ladepriorität des Moduls in der Ladeordnung || — || Simulationskonfiguration; '''Vorgabe: 30''' (Solarthermie 10, Wärmepumpe 20, Heizkessel 40)
 |-
@@ -124,6 +135,8 @@ Größen, die der Lauf je Stunde oder je Modul bildet.
 |-
 | <math>R'_{\mathrm{E}}(t)</math> || Reststrombedarf nach dem Modul; negativ = Stromüberschuss || kWh || (7)
 |-
+| <math>E_{\mathrm{ein}}(q)</math> || BHKW-Einspeisung der Viertelstunde <math>q</math> || kW || Schritt 4, aus dem Reststrombedarf der Viertelstunde nach der Kaskade
+|-
 | <math>Q_{\mathrm{a}}</math> || Wärmeproduktion des Moduls im Jahr || MWh || Jahressumme über <math>Q(t)</math>
 |-
 | <math>E_{\mathrm{a}}</math> || Stromproduktion des Moduls im Jahr || MWh || Jahressumme über <math>E(t)</math>
@@ -139,57 +152,55 @@ Größen, die der Lauf je Stunde oder je Modul bildet.
 | <math>h_{\mathrm{el}}</math> || elektrische Vollbenutzungsstunden des Moduls || h/a || (12)
 |-
 | <math>h_{\mathrm{el,ges}}</math> || leistungsgewichtete elektrische Vollbenutzungsstunden der Anlage || h/a || (13)
+|-
+| <math>\beta(t)</math> || elektrische Auslastung des Moduls in der Stunde || — || (14)
+|-
+| <math>\eta_{\mathrm{el}}(\beta)</math>, <math>\eta_{\mathrm{th}}(\beta)</math> || elektrischer und thermischer Wirkungsgrad bei der Auslastung <math>\beta</math> || — || (14)
+|-
+| <math>\eta_{\mathrm{el,100}}</math>, <math>\eta_{\mathrm{th,100}}</math> || elektrischer und thermischer Wirkungsgrad bei Volllast || — || (15)
+|-
+| <math>Q_{\mathrm{min}}</math> || Wärme der Untergrenze in einer vollen Stunde || kWh || (17)
+|-
+| <math>n_{\mathrm{S}}(t)</math> || Starts der Stunde || — || (18)
+|-
+| <math>\Delta Q_{\mathrm{B}}(t)</math> || Mehrbrennstoff der Stunde aus Teillast und Anfahrten || kWh || (19)
 |}
 
 == Rechenweg ==
 {{Anker|rechenweg}}
 
-Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''; <math>t</math> ist in allen
-Gleichungen dieser Seite die laufende Stunde des Jahres und wird deshalb in den Legenden nicht
-wiederholt. Höchstens <math>N_{\mathrm{max}} = 10</math> Module je Projekt gehen in die Rechnung
-ein; sie werden in jeder Stunde in ihrer Listenreihenfolge nacheinander zugeschaltet.
+Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''; <math>t</math> ist in allen Gleichungen dieser Seite die laufende Stunde des Jahres und wird deshalb in den Legenden nicht wiederholt. Höchstens <math>N_{\mathrm{max}} = 10</math> Module je Projekt gehen in die Rechnung ein; sie werden in jeder Stunde in ihrer Listenreihenfolge nacheinander zugeschaltet.
 
 === Schritt 1 — Kennwerte auflösen ===
 
-Je Modul werden thermische und elektrische Nennleistung, der Gesamtwirkungsgrad und der Brennstoff
-aus dem Katalog gelesen, dazu die Emissionsfaktoren seines '''Energieträgers''' aus dem
-Emissionskatalog — dieselbe Lesekette wie beim Heizkessel und in der Wirtschaftlichkeit:
-Projektwert → aktive Katalogzeile →
-Brennstoffkatalog → Energieträgerspalte, im '''Berechnungsmodus''' des Projekts (CO₂ oder
-CO₂-Äquivalent). Ist dem Modul kein Energieträger zugeordnet, gilt ersatzweise sein Brennstoff
-gegen den Brennstoffkatalog; das Laufprotokoll sagt es an. Die '''Stromkennzahl''' ist das
-Verhältnis der beiden Nennleistungen:
+Je Modul werden thermische und elektrische Nennleistung, der Gesamtwirkungsgrad und der Brennstoff aus dem Katalog gelesen, dazu die Emissionsfaktoren seines '''Energieträgers''' aus dem Emissionskatalog — dieselbe Lesekette wie beim Heizkessel und in der Wirtschaftlichkeit: Projektwert → aktive Katalogzeile → Brennstoffkatalog → Energieträgerspalte, im '''Berechnungsmodus''' des Projekts (CO₂ oder CO₂-Äquivalent). Ist dem Modul kein Energieträger zugeordnet, gilt ersatzweise sein Brennstoff gegen den Brennstoffkatalog; das Laufprotokoll sagt es an. Die '''Stromkennzahl''' ist das Verhältnis der beiden Nennleistungen:
 
 : <math>\displaystyle \mathrm{SKZ} = \frac{P_{\mathrm{el}}}{P_{\mathrm{th}}}</math> &nbsp;&nbsp;(1)
 :: <math>\mathrm{SKZ}</math> – Stromkennzahl des Moduls [–]
 :: <math>P_{\mathrm{el}}</math> – elektrische Nennleistung des BHKW-Moduls [kW]
 :: <math>P_{\mathrm{th}}</math> – thermische Nennleistung des BHKW-Moduls [kW]
 
-Die '''Modulationsgrenze''' ist ein Faktor (0,5 = 50&nbsp;% Teillast). Sie kommt aus dem Katalog,
-sofern dort ein Wert steht; sonst gilt die projektweite Leistungsuntergrenze. Beide Werte werden als
-'''Prozentangaben''' gepflegt und durch 100 geteilt:
+Die '''Modulationsgrenze''' ist ein Faktor (0,5 = 50&nbsp;% Teillast). Sie kommt aus der Projektzeile des Moduls, sofern dort ein Wert steht; sonst aus dem Katalog; sonst gilt die projektweite Leistungsuntergrenze. Alle drei Werte werden als '''Prozentangaben''' gepflegt und durch 100 geteilt:
 
-: <math>\displaystyle x_{\mathrm{min}} = \begin{cases} \frac{x_{\mathrm{Kat}}}{100} & x_{\mathrm{Kat}} > 0 \\ \frac{x_{\mathrm{Proj}}}{100} & \mathrm{sonst} \end{cases}</math> &nbsp;&nbsp;(2)
+: <math>\displaystyle x_{\mathrm{min}} = \begin{cases} \frac{x_{\mathrm{Anl}}}{100} & 0 < x_{\mathrm{Anl}} \le 100 \\ \frac{x_{\mathrm{Kat}}}{100} & \text{sonst, wenn } 0 < x_{\mathrm{Kat}} \le 100 \\ \frac{x_{\mathrm{Proj}}}{100} & \mathrm{sonst} \end{cases}</math> &nbsp;&nbsp;(2)
 :: <math>x_{\mathrm{min}}</math> – Modulationsgrenze als Faktor, 0,5 = 50&nbsp;% Teillast [–]
+:: <math>x_{\mathrm{Anl}}</math> – untere Grenzleistung des Moduls in der Projektzeile [%]
 :: <math>x_{\mathrm{Kat}}</math> – Grenzleistung des Geräts aus dem BHKW-Katalog [%]
 :: <math>x_{\mathrm{Proj}}</math> – projektweite Leistungsuntergrenze der Simulationskonfiguration [%]
 
-: <math>\displaystyle x_{\mathrm{Kat}} = 0 \;\text{und}\; x_{\mathrm{Proj}} = 0 \; \to \; x_{\mathrm{min}} = 0</math> &nbsp;&nbsp;(3)
+: <math>\displaystyle x_{\mathrm{Anl}} = 0 \;\text{und}\; x_{\mathrm{Kat}} = 0 \;\text{und}\; x_{\mathrm{Proj}} = 0 \; \to \; x_{\mathrm{min}} = 0</math> &nbsp;&nbsp;(3)
 :: <math>x_{\mathrm{min}}</math> – Modulationsgrenze als Faktor [–]
+:: <math>x_{\mathrm{Anl}}</math> – untere Grenzleistung des Moduls in der Projektzeile [%]
 :: <math>x_{\mathrm{Kat}}</math> – Grenzleistung des Geräts aus dem BHKW-Katalog [%]
 :: <math>x_{\mathrm{Proj}}</math> – projektweite Leistungsuntergrenze [%]
 
-Führt weder der Katalog noch das Projekt einen Wert, gibt es '''keine Untergrenze''': Das Modul
-moduliert bis 0 herunter. Eine stille Rücklage im Rechenweg gibt es nicht — es gilt allein der
-'''sichtbare''' Wert: Ein neues Projekt startet mit <math>x_{\mathrm{Proj}} = 30</math>&nbsp;%.
-Eine ausdrücklich gepflegte 0 bleibt 0.
+Gleichung (2) gilt je Modul und in '''allen drei Fahrweisen''' — wärmegeführt, stromgeführt und ohne Einspeisung rechnen mit derselben Untergrenze. Ein Wert über 100&nbsp;% ist '''ungültig''' (mit ihm liefe das Modul nie an): Der Lauf meldet ihn im Simulationsprotokoll mit Modul, Wert und Herkunft und rechnet mit der nächsten Stufe von (2); ist die projektweite Grenze selbst ungültig, gibt es keine Untergrenze. Führt weder die Projektzeile noch der Katalog noch das Projekt einen Wert, gibt es '''keine Untergrenze''': Das Modul moduliert bis 0 herunter. Eine stille Rücklage im Rechenweg gibt es nicht — es gilt allein der '''sichtbare''' Wert: Ein neues Projekt startet mit <math>x_{\mathrm{Proj}} = 30</math>&nbsp;%. Eine ausdrücklich gepflegte 0 bleibt 0.
 
 === Schritt 2 — Die drei Fahrweisen ===
 
-Je Stunde steht ein '''Wärmeraum''' <math>R_{\mathrm{Q}}(t) + S(t)</math> zur Verfügung: der
-offene Momentanbedarf plus der freie Raum im zugeordneten Pufferspeicher. Der Speicher wird dabei
-als Spiegel geführt — sein Zuwachs ist die zu ladende Menge, der Rückgang des Restbedarfs die
-Direktdeckung.
+Je Stunde steht ein '''Wärmeraum''' <math>R_{\mathrm{Q}}(t) + S(t)</math> zur Verfügung: der offene Momentanbedarf plus der freie Raum im zugeordneten Pufferspeicher. Der Speicher wird dabei als Spiegel geführt — sein Zuwachs ist die zu ladende Menge, der Rückgang des Restbedarfs die Direktdeckung.
+
+'''Rücklaufgrenze.''' Führt ein Modul einen Höchsten Rücklauf und liegt der Rücklauf zum BHKW in der Stunde darüber, liefert das Modul in dieser Stunde weder Wärme noch Strom — in jeder Fahrweise. Der Rücklauf zum BHKW ist bei der Anlagenkopplung der gerechnete Rücklauf des Heizkreises, sonst die unterste Zone des Pufferspeichers seines ersten Ladeauftrags zu Beginn der Stunde; gibt es beides nicht, ruht die Grenze. Das Laufprotokoll nennt je Modul die Stunden ohne Betrieb.
 
 '''Wärmegeführt (Standard).''' Je Modul, in Listenreihenfolge:
 
@@ -209,25 +220,13 @@ Direktdeckung.
 :: <math>Q(t)</math> – Wärmeproduktion des Moduls in der Stunde [kWh]
 :: <math>P_{\mathrm{th}}</math> – thermische Nennleistung des Moduls [kW]
 
-'''Jede''' Grenze der drei Fahrweisen trägt einen '''Zahlenrand''' — die zwei dieser Tabelle
-ebenso wie die der beiden folgenden. Als erreicht gilt eine Schwelle schon dann, wenn der Rest, der
-ihr gegenübersteht, sie bis auf 10<sup>−9</sup> kWh zuzüglich 10<sup>−12</sup> ihres eigenen
-Betrages erreicht. Das ist Rechentechnik, keine Fachtoleranz: Rest und Nennleistung liegen an der
-Kante zwischen zwei Betriebszuständen gleichauf, und ohne den Rand entschiede die letzte Stelle
-einer Gleitkommazahl darüber, ob ein Modul auf Volllast läuft, moduliert oder stehen bleibt. Der
-Rand liegt vier Größenordnungen unter der Toleranz, mit der die Regressionsprüfung Zahlen überhaupt
-unterscheidet.
+'''Jede''' Grenze der drei Fahrweisen trägt einen '''Zahlenrand''' — die zwei dieser Tabelle ebenso wie die der beiden folgenden. Als erreicht gilt eine Schwelle schon dann, wenn der Rest, der ihr gegenübersteht, sie bis auf <math>10^{-9}</math>&nbsp;kWh zuzüglich <math>10^{-12}</math> ihres eigenen Betrages erreicht. Das ist Rechentechnik, keine Fachtoleranz: Rest und Nennleistung liegen an der Kante zwischen zwei Betriebszuständen gleichauf, und ohne den Rand entschiede die letzte Stelle einer Gleitkommazahl darüber, ob ein Modul auf Volllast läuft, moduliert oder stehen bleibt. Der Rand liegt vier Größenordnungen unter der Toleranz, mit der die Regressionsprüfung Zahlen überhaupt unterscheidet.
 
-Die '''Leserichtung ist überall dieselbe''': Schwelle ist die Maschinengröße — Nennleistung,
-Modulationsgrenze oder die aus ihr abgeleitete Ausbeute —, Wert der Rest, der ihr gegenübersteht
-(Wärmeraum oder Reststrom). Damit entscheiden die drei Fahrweisen nach '''einem''' Maß; die
-Tabellen unten sind entsprechend gesetzt, also mit <math>\le</math> dort, wo Gleichstand den
-größeren Betriebszustand wählt.
+Mit gepflegter '''Teillastkennlinie''' tritt (16) an die Stelle der Dreisätze (4) und (5); unter der Untergrenze kann ein Modul '''takten''' (Schritt 6).
 
-'''Stromgeführt (Wirtschaftlich).''' Die Module folgen dem '''Strombedarf'''; die Wärme ist
-Koppelprodukt. Eine Speichergrenze gibt es in der Zuschaltung nicht — was über den Wärmebedarf
-hinaus entsteht, geht in die Ladephase und, wenn dort nichts mehr aufnimmt, in den
-Wärmeüberschuss.
+Die '''Leserichtung ist überall dieselbe''': Schwelle ist die Maschinengröße — Nennleistung, Modulationsgrenze oder die aus ihr abgeleitete Ausbeute —, Wert der Rest, der ihr gegenübersteht (Wärmeraum oder Reststrom). Damit entscheiden die drei Fahrweisen nach '''einem''' Maß; die Tabellen unten sind entsprechend gesetzt, also mit <math>\le</math> dort, wo Gleichstand den größeren Betriebszustand wählt.
+
+'''Stromgeführt (Wirtschaftlich).''' Die Module folgen dem '''Strombedarf'''; die Wärme ist Koppelprodukt. Eine Speichergrenze gibt es in der Zuschaltung nicht — was über den Wärmebedarf hinaus entsteht, geht in die Ladephase und, wenn dort nichts mehr aufnimmt, in den Wärmeüberschuss.
 
 {| class="wikitable"
 ! Bedingung !! Strom <math>E(t)</math> !! Wärme <math>Q(t)</math>
@@ -245,15 +244,7 @@ Wärmeüberschuss.
 :: <math>E(t)</math> – Stromproduktion des Moduls in der Stunde [kWh]
 :: <math>P_{\mathrm{el}}</math> – elektrische Nennleistung des Moduls [kW]
 
-'''Ohne Einspeisung (Zero-Export).''' Zwei Durchläufe über die Module: erst die wärmeseitige
-Zuschaltung (dieselben drei Fälle wie wärmegeführt), dann die stromseitige. In beiden gilt
-zusätzlich die Zero-Export-Bedingung: '''Reicht der Strombedarf nicht, bleibt das Modul aus''' —
-eingespeist wird nichts. Ein Modul, dessen Teillaststrom
-<math>P_{\mathrm{el}} \cdot x_{\mathrm{min}}</math> über <math>R_{\mathrm{E}}(t)</math> läge,
-wird also abgeregelt, auch wenn Wärme gebraucht würde. Deckt die Teillast den Reststrom '''genau'''
-(<math>P_{\mathrm{el}} \cdot x_{\mathrm{min}} = R_{\mathrm{E}}(t)</math>), läuft das Modul: Es
-speist dabei nichts ein. Die stromseitige Zuschaltung prüft zusätzlich, ob der Wärmeraum die
-anfallende Wärme trägt — auch diese Vergleiche tragen den Zahlenrand.
+'''Ohne Einspeisung (Zero-Export).''' Zwei Durchläufe über die Module: erst die wärmeseitige Zuschaltung (dieselben drei Fälle wie wärmegeführt), dann die stromseitige. In beiden gilt zusätzlich die Zero-Export-Bedingung: '''Reicht der Strombedarf nicht, bleibt das Modul aus''' — eingespeist wird nichts. Ein Modul, dessen Teillaststrom <math>P_{\mathrm{el}} \cdot x_{\mathrm{min}}</math> über <math>R_{\mathrm{E}}(t)</math> läge, wird also abgeregelt, auch wenn Wärme gebraucht würde. Deckt die Teillast den Reststrom '''genau''' (<math>P_{\mathrm{el}} \cdot x_{\mathrm{min}} = R_{\mathrm{E}}(t)</math>), läuft das Modul: Es speist dabei nichts ein. Die stromseitige Zuschaltung prüft zusätzlich, ob der Wärmeraum die anfallende Wärme trägt — auch diese Vergleiche tragen den Zahlenrand.
 
 === Schritt 3 — Wärme unterbringen ===
 
@@ -265,14 +256,9 @@ Die erzeugte Wärme geht in drei Wege, und jede kWh geht genau einen davon:
 :: <math>Q_{\mathrm{lad}}(t)</math> – Anteil, der in einen Pufferspeicher geht [kWh]
 :: <math>Q_{\mathrm{ueber}}(t)</math> – Wärmeüberschuss; weder gedeckt noch gespeichert, also verworfen [kWh]
 
-Die '''Direktdeckung''' läuft über die Direktsenken des Moduls, bei der Senkenart „beides" mit
-Warmwasservorrang. Ein Modul, dessen Hauptsenke ein '''Puffer''' ist, deckt in dieser Phase
-'''nichts''' — es läuft erst in der Ladephase gegen den Bilanzraum des Speichers; sonst wäre
-dieselbe kWh zweimal gebucht. Der '''Überschuss''' <math>Q_{\mathrm{ueber}}(t)</math> ist Wärme,
-die weder gedeckt noch gespeichert werden konnte; sie ist verworfen.
+Die '''Direktdeckung''' läuft über die Direktsenken des Moduls, bei der Senkenart „beides" mit Warmwasservorrang. Ein Modul, dessen Hauptsenke ein '''Puffer''' ist, deckt in dieser Phase '''nichts''' — es läuft erst in der Ladephase gegen den Bilanzraum des Speichers; sonst wäre dieselbe kWh zweimal gebucht. Der '''Überschuss''' <math>Q_{\mathrm{ueber}}(t)</math> ist Wärme, die weder gedeckt noch gespeichert werden konnte; sie ist verworfen.
 
-Mit dem Vorgaberang <math>r = 30</math> lädt das BHKW nach Solarthermie (10) und Wärmepumpe (20),
-aber vor dem Heizkessel (40).
+Mit dem Vorgaberang <math>r = 30</math> lädt das BHKW nach Solarthermie (10) und Wärmepumpe (20), aber vor dem Heizkessel (40).
 
 === Schritt 4 — Strom ===
 
@@ -283,9 +269,9 @@ Die Stromproduktion der Stunde mindert den Strombedarf des Projekts:
 :: <math>R_{\mathrm{E}}(t)</math> – Reststrombedarf vor dem Modul [kWh]
 :: <math>E(t)</math> – Stromproduktion des Moduls in der Stunde [kWh]
 
-Bleibt <math>R'_{\mathrm{E}}(t)</math> '''negativ''', ist das BHKW-Stromüberschuss: Er wird bewusst
-nicht auf 0 geklemmt, damit ein Stromspeicher ihn laden kann, wird aber im Photovoltaikzweig
-getrennt ausgewiesen und '''nicht''' als PV-Einspeisung behandelt.
+Bleibt <math>R'_{\mathrm{E}}(t)</math> '''negativ''', ist das BHKW-Stromüberschuss: Er wird bewusst nicht auf 0 geklemmt, damit ein Stromspeicher ihn laden kann, wird aber im Photovoltaikzweig getrennt ausgewiesen und '''nicht''' als PV-Einspeisung behandelt.
+
+'''Einspeisung je Viertelstunde.''' Der Strombedarf liegt je Viertelstunde vor; die Kaskade zieht den BHKW-Strom der Stunde in jeder ihrer vier Viertelstunden gleich ab. Eingespeist ist je Viertelstunde <math>q</math> der Strom, den kein Verbraucher des Anschlusses abnimmt: <math>E_{\mathrm{ein}}(q) = \max\left( 0 , -R'_{\mathrm{E}}(q) \right)</math>, mit dem Reststrombedarf <math>R'_{\mathrm{E}}(q)</math> der Viertelstunde nach der Kaskade. Auf diese eine Reihe greifen der Reiter, die Kennzahl der Einspeisung, die Zeitreihe und die Aufteilung der Strommatrix in Eigenstrom und Einspeisung zu; im Stundenmittel ist sie der Überschuss, den der Photovoltaikzweig sieht. Mit einer Speicherflotte gilt die Netzbilanz der Flotte.
 
 === Schritt 5 — Verbrauch, Emissionen, Laufzeiten ===
 
@@ -297,7 +283,7 @@ Aus den Jahressummen je Modul:
 :: <math>E_{\mathrm{a}}</math> – Stromproduktion des Moduls im Jahr [MWh]
 :: <math>\eta</math> – Gesamtwirkungsgrad, elektrisch und thermisch zusammen [–]
 
-Die Emissionen folgen diesem Verbrauch, mit den Faktoren des '''Energieträgers''':
+Mit Teillastkennlinie oder Takten kommt der Mehrbrennstoff (19) aus Schritt 6 hinzu. Die Emissionen folgen diesem Verbrauch, mit den Faktoren des '''Energieträgers''':
 
 : <math>\displaystyle m_{\mathrm{E}} = \frac{Q_{\mathrm{B,a}} \cdot f_{\mathrm{E}}}{1\,000}</math> &nbsp;&nbsp;(9)
 :: <math>m_{\mathrm{E}}</math> – Jahresemission [t für CO₂, kg für SO₂, NO<sub>x</sub> und Staub]
@@ -305,9 +291,7 @@ Die Emissionen folgen diesem Verbrauch, mit den Faktoren des '''Energieträgers'
 :: <math>f_{\mathrm{E}}</math> – Emissionsfaktor des Energieträgers [g/kWh für CO₂, mg/kWh für die übrigen]
 :: <math>1\,000</math> – Umrechnung; derselbe Teiler für beide Fälle, weil sich die zwei Katalogeinheiten um genau diesen Faktor unterscheiden
 
-Der Verbrauch geht auf denselben Satz Brennstoffzähler wie beim Heizkessel (Gas 1…5 und 14, Öl 6…9
-und 18…22, Koks 10, Kohle 11, Holz 12, Pellets 15, Rapsöl 16, tierische Fette 17, alles Übrige auf
-den Sammelposten). Bei Gasmodulen kommt die '''Gasspitze''' dazu:
+Der Verbrauch geht auf denselben Satz Brennstoffzähler wie beim Heizkessel (Gas 1…5 und 14, Öl 6…9 und 18…22, Koks 10, Kohle 11, Holz 12, Pellets 15, Rapsöl 16, tierische Fette 17, alles Übrige auf den Sammelposten). Bei Gasmodulen kommt die '''Gasspitze''' dazu:
 
 : <math>\displaystyle P_{\mathrm{Gas,max}} = \sum_{\mathrm{Gasmodule}} \frac{P_{\mathrm{th}} \cdot \left( 1 + \mathrm{SKZ} \right)}{\eta}</math> &nbsp;&nbsp;(10)
 :: <math>P_{\mathrm{Gas,max}}</math> – Gasspitze des Projekts [kW]
@@ -329,10 +313,7 @@ Die Laufzeiten sind '''Vollbenutzungsstunden''', keine Betriebsstunden:
 :: <math>P_{\mathrm{el}}</math> – elektrische Nennleistung des Moduls [kW]
 :: <math>1\,000</math> – Umrechnung von MWh in kWh [kWh/MWh]
 
-Der Faktor 1 000 rechnet die MWh des Zählers auf die kW des Nenners um. Ein Modul, das ein Jahr lang
-zur Hälfte moduliert läuft, hat 8&nbsp;760 Betriebsstunden, aber nur 4&nbsp;380 thermische
-Vollbenutzungsstunden. Die Summe über mehrere Module kann 8&nbsp;760 deshalb überschreiten. Für die
-Anlage insgesamt wird die elektrische Kennzahl '''leistungsgewichtet''' gebildet:
+Der Faktor 1 000 rechnet die MWh des Zählers auf die kW des Nenners um. Ein Modul, das ein Jahr lang zur Hälfte moduliert läuft, hat 8&nbsp;760 Betriebsstunden, aber nur 4&nbsp;380 thermische Vollbenutzungsstunden. Die Summe über mehrere Module kann 8&nbsp;760 deshalb überschreiten. Für die Anlage insgesamt wird die elektrische Kennzahl '''leistungsgewichtet''' gebildet:
 
 : <math>\displaystyle h_{\mathrm{el,ges}} = \frac{\sum_{\mathrm{Module}} E_{\mathrm{a}}}{\sum_{\mathrm{Module}} P_{\mathrm{el}}} \cdot 1\,000</math> &nbsp;&nbsp;(13)
 :: <math>h_{\mathrm{el,ges}}</math> – leistungsgewichtete elektrische Vollbenutzungsstunden der Anlage [h/a]
@@ -342,66 +323,88 @@ Anlage insgesamt wird die elektrische Kennzahl '''leistungsgewichtet''' gebildet
 
 Module ohne gepflegte elektrische Nennleistung bleiben in Zähler und Nenner außen vor.
 
+=== Schritt 6 — Teillast und Takten ===
+
+Dieser Schritt greift nur für ein Modul, dessen Katalogsatz die Gruppe „Teillast und Takten" pflegt. Ohne diese Felder rechnet das Modul nach den Schritten 1 bis 5 allein.
+
+'''Teillastkennlinie.''' Mit einem Wirkungsgrad bei 50&nbsp;% Last hängen der elektrische und der thermische Wirkungsgrad von der Auslastung ab — linear zwischen 50&nbsp;% und Volllast, unter 50&nbsp;% gilt der Wert bei 50&nbsp;%:
+
+: <math>\displaystyle \eta_{i}(\beta) = \eta_{i,50} + \left( \eta_{i,100} - \eta_{i,50} \right) \cdot \frac{\min\left( \max\left( \beta , \beta_{50} \right) , 1 \right) - \beta_{50}}{1 - \beta_{50}} \; ; \quad \beta(t) = \frac{E(t)}{P_{\mathrm{el}}}</math> &nbsp;&nbsp;(14)
+:: <math>\eta_{i}(\beta)</math> – elektrischer (<math>i = \mathrm{el}</math>) bzw. thermischer (<math>i = \mathrm{th}</math>) Wirkungsgrad bei der Auslastung <math>\beta</math> [–]
+:: <math>\eta_{i,50}</math> – Katalogwert bei 50&nbsp;% Last; leer = <math>\eta_{i,100}</math> [–]
+:: <math>\eta_{i,100}</math> – Wirkungsgrad bei Volllast aus (15) [–]
+:: <math>\beta(t)</math> – elektrische Auslastung der Stunde [–]
+:: <math>\beta_{50}</math> – Laststufe der Stützstelle, 0,5 [–]
+
+Die Volllastwerte teilen den Gesamtwirkungsgrad im Verhältnis der Nennleistungen; damit liefert die Kennlinie bei Volllast genau <math>P_{\mathrm{th}}</math> und <math>P_{\mathrm{el}}</math>:
+
+: <math>\displaystyle \eta_{\mathrm{el,100}} = \eta \cdot \frac{P_{\mathrm{el}}}{P_{\mathrm{el}} + P_{\mathrm{th}}} \; ; \quad \eta_{\mathrm{th,100}} = \eta \cdot \frac{P_{\mathrm{th}}}{P_{\mathrm{el}} + P_{\mathrm{th}}}</math> &nbsp;&nbsp;(15)
+:: <math>\eta</math> – Gesamtwirkungsgrad des Katalogs [–]
+:: <math>P_{\mathrm{el}}</math>, <math>P_{\mathrm{th}}</math> – elektrische und thermische Nennleistung [kW]
+
+Wärme und Strom einer modulierten Stunde hängen dann über die Stromkennzahl an der Auslastung zusammen. Die stromgeführte Fahrweise rechnet die Wärme aus dem Strom; die wärmegeführte sucht die Auslastung, deren Wärme dem Wärmeraum entspricht, durch Intervallhalbierung:
+
+: <math>\displaystyle Q(t) = E(t) \cdot \frac{\eta_{\mathrm{th}}(\beta(t))}{\eta_{\mathrm{el}}(\beta(t))}</math> &nbsp;&nbsp;(16)
+:: <math>Q(t)</math> – Wärmeproduktion des Moduls in der Stunde [kWh]
+:: <math>E(t)</math> – Stromproduktion des Moduls in der Stunde [kWh]
+:: <math>\eta_{\mathrm{th}}(\beta(t))</math>, <math>\eta_{\mathrm{el}}(\beta(t))</math> – Wirkungsgrade an der Auslastung der Stunde aus (14) [–]
+
+Die Schwellen der drei Fahrweisen bleiben die aus Schritt 2.
+
+'''Takten.''' Mit einem Anfahrverlust oder einer Mindestlaufzeit und einer Untergrenze <math>x_{\mathrm{min}} > 0</math> bleibt ein Modul unter der Untergrenze nicht aus, sondern '''taktet''': Es liefert den Wärmeraum (wärmegeführt), den Reststrom (stromgeführt) oder das Kleinere von beiden (ohne Einspeisung) mit der Stromkennzahl der Untergrenze, also nach (16) mit <math>\beta = x_{\mathrm{min}}</math>. Die Wärme einer vollen Stunde an der Untergrenze ist
+
+: <math>\displaystyle Q_{\mathrm{min}} = x_{\mathrm{min}} \cdot P_{\mathrm{el}} \cdot \frac{\eta_{\mathrm{th}}(x_{\mathrm{min}})}{\eta_{\mathrm{el}}(x_{\mathrm{min}})}</math> &nbsp;&nbsp;(17)
+:: <math>Q_{\mathrm{min}}</math> – Wärme der Untergrenze in einer vollen Stunde; ohne Kennlinie <math>x_{\mathrm{min}} \cdot P_{\mathrm{th}}</math> [kWh]
+:: <math>x_{\mathrm{min}}</math> – Modulationsgrenze aus (2) [–]
+
+Getaktet wird nur, wenn der Wärmeraum der Stunde mindestens einen Mindestlauf aufnimmt, also die Wärme <math>Q_{\mathrm{min}} \cdot t_{\mathrm{min}}/60</math>; stromgeführt muss der Reststrom den Strom eines Mindestlaufs tragen, ohne Einspeisung beides. Sonst bleibt das Modul in der Stunde aus.
+
+Die Starts zählt der Lauf nach der Regel des Heizkessels: In einer Taktstunde so viele, wie Mindestläufe die Wärme brauchen, höchstens so viele, wie ganz in die Stunde passen; sonst ist ein Start der Übergang aus einer Stillstandsstunde in eine Laufstunde:
+
+: <math>\displaystyle n_{\mathrm{S}}(t) = \begin{cases} \min\left( \left\lfloor \frac{60}{t_{\mathrm{min}}} \right\rfloor , \left\lceil \frac{Q(t)}{Q_{\mathrm{min}} \cdot t_{\mathrm{min}}/60} \right\rceil \right) & \text{Taktstunde} \\ 1 & Q(t-1) = 0 < Q(t) \\ 0 & \mathrm{sonst} \end{cases}</math> &nbsp;&nbsp;(18)
+:: <math>n_{\mathrm{S}}(t)</math> – Starts der Stunde [–]
+:: <math>t_{\mathrm{min}}</math> – Mindestlaufzeit je Start [min]
+:: <math>Q(t)</math> – Wärmeproduktion des Moduls in der Stunde [kWh]
+
+'''Mehrbrennstoff.''' Der Brennstoff einer Laufstunde folgt dem elektrischen Wirkungsgrad an der Auslastung, in einer Taktstunde an der Untergrenze, dazu je Start der Anfahrverlust. Was davon über den Brennstoff nach (8) hinausgeht, ist der Mehrbrennstoff der Stunde:
+
+: <math>\displaystyle \Delta Q_{\mathrm{B}}(t) = \frac{E(t)}{\eta_{\mathrm{el}}(\beta(t))} - \frac{Q(t) + E(t)}{\eta} + n_{\mathrm{S}}(t) \cdot Q_{\mathrm{An}}</math> &nbsp;&nbsp;(19)
+:: <math>\Delta Q_{\mathrm{B}}(t)</math> – Mehrbrennstoff der Stunde; negativ, wo die Kennlinie Brennstoff spart [kWh]
+:: <math>\eta_{\mathrm{el}}(\beta(t))</math> – elektrischer Wirkungsgrad an der Auslastung aus (14), in einer Taktstunde an <math>x_{\mathrm{min}}</math> [–]
+:: <math>Q_{\mathrm{An}}</math> – Anfahrverlust je Start [kWh]
+
+Ohne Kennlinie ist der erste Bruch gleich dem zweiten, und es bleibt der Anfahrverlust. Die Jahressumme von <math>\Delta Q_{\mathrm{B}}(t)</math> geht in den Brennstoffverbrauch (8) und damit in die Emissionen (9) ein.
+
 == Grenzen und Annahmen ==
 {{Anker|grenzen}}
 
-* '''Die Betriebsart gilt für das ganze Projekt.''' Zwei Module mit unterschiedlicher Fahrweise
-  lassen sich nicht abbilden.
-* '''Ein Wirkungsgrad, keine Teillastkennlinie.''' <math>\eta</math> gilt unabhängig von der
-  Auslastung; ein moduliertes Modul rechnet mit demselben Wert wie ein voll laufendes. Auch die
-  Stromkennzahl <math>\mathrm{SKZ}</math> bleibt in Teillast unverändert — das ist die Aussage von
-  (4) und (5).
-* '''Keine Taktung, keine Mindestlaufzeit, keine Anfahrverluste.''' Ein Modul läuft in einer Stunde
-  ganz, moduliert oder gar nicht.
-* '''Keine Bereitschaftsverluste''' im Stillstand — anders als beim Heizkessel gibt es dafür keinen
-  Katalogwert.
-* '''Die fünf Emissionsspalten des BHKW-Katalogs rechnen nicht mit.''' Für alle Erzeuger gilt
-  '''ein''' Faktor: der des Energieträgers. CO₂, SO₂, NOₓ, CO und Staub bleiben am Gerät pflegbar
-  und sind als Herstellerangabe „nur Anzeige"; der Katalogdialog sagt es an.
-* '''Der Faktor folgt dem Berechnungsmodus.''' Steht das Projekt auf „CO₂-Äquivalent", ist
-  <math>f_{\mathrm{E}}</math> für CO₂ die gewichtete Summe der ausgewählten Emissionsarten
-  (GWP₁₀₀) statt des reinen CO₂; SO₂, NOₓ und Staub bleiben in beiden Modi unverändert.
-* '''Kein CO in der Bilanz.''' Der Emissionsarten-Katalog führt keine Art „CO", und der
-  Brennstoffkatalog hat keine CO-Spalte; die CO-Emission des BHKW ist deshalb 0.
-* '''`Investition je kW elektrisch` geht in keine Rechnung des Laufs ein.''' Die Investition wird im
-  Katalog wahlweise als '''Gesamtsumme''' [€], als '''Wert je kW elektrisch''' [€/kW] oder als die
-  '''fünf Einzelposten''' eingegeben — die zuletzt geänderte Eingabe führt, das jeweils andere
-  Feld folgt aus ihr, und der Ausgleich läuft immer über den Modulpreis. Gespeichert werden die
-  fünf Posten; `Investition_kwel` bleibt ihre Ableitung (Summe / <math>P_{\mathrm{el}}</math>).
-  Gerechnet wird mit den Posten — in der Kostenplanung, nicht im Simulationslauf.
-* '''Vor- und Rücklauf des Katalogs sind die Vorbelegung:''' Beim Anlegen der Anlage im Projekt
-  werden sie aus dem Katalogsatz übernommen und können dort für das Projekt geändert werden.
-  Gerechnet wird mit den Werten der Projektzeile (Anlage), nicht mit dem Katalogsatz.
-* '''Die Energieprobe ist ein Entwickler-Selbsttest.''' Der Lauf rechnet (6) nach — über die
-  Jahressumme mit einer Toleranz von 1&nbsp;kWh und über jede einzelne Stunde mit 0,01&nbsp;kWh.
-  Sie prüft die Bilanz des Moduls gegen sich selbst und sagt über die Konfiguration des Anwenders
-  nichts; ihre Ausgabe geht deshalb auf die Konsole und nicht ins Simulationsprotokoll.
+* '''Die Betriebsart gilt für das ganze Projekt.''' Zwei Module mit unterschiedlicher Fahrweise lassen sich nicht abbilden.
+* '''Die Teillastkennlinie hat zwei Stützstellen.''' Zwischen 50&nbsp;% und Volllast verlaufen beide Wirkungsgrade linear (14), darunter gilt der Wert bei 50&nbsp;%. Ohne gepflegten Teillastwert gilt <math>\eta</math> unabhängig von der Auslastung, und die Stromkennzahl <math>\mathrm{SKZ}</math> bleibt in Teillast unverändert — das ist die Aussage von (4) und (5).
+* '''Das Takten ist eine Zählung''' (18): Unter der Untergrenze zählt der Lauf die Starts, die Mindestläufe der Stunde brauchen, und schlägt je Start den Anfahrverlust auf (19). Ohne Anfahrverlust und Mindestlaufzeit oder ohne Untergrenze bleibt ein Modul unter der Untergrenze aus. Mindestpausen und das Abkühlen zwischen zwei Läufen bildet das Modell nicht ab.
+* '''Keine Bereitschaftsverluste''' im Stillstand — anders als beim Heizkessel gibt es dafür keinen Katalogwert.
+* '''Die fünf Emissionsspalten des BHKW-Katalogs rechnen nicht mit.''' Für alle Erzeuger gilt '''ein''' Faktor: der des Energieträgers. CO₂, SO₂, NOₓ, CO und Staub bleiben am Gerät pflegbar und sind als Herstellerangabe „nur Anzeige"; der Katalogdialog sagt es an.
+* '''Der Faktor folgt dem Berechnungsmodus.''' Steht das Projekt auf „CO₂-Äquivalent", ist <math>f_{\mathrm{E}}</math> für CO₂ die gewichtete Summe der ausgewählten Emissionsarten (<math>\mathrm{GWP}_{100}</math>) statt des reinen CO₂; SO₂, NOₓ und Staub bleiben in beiden Modi unverändert.
+* '''Kein CO in der Bilanz.''' Der Emissionsarten-Katalog führt keine Art „CO", und der Brennstoffkatalog hat keine CO-Spalte; die CO-Emission des BHKW ist deshalb 0.
+* '''`Investition je kW elektrisch` geht in keine Rechnung des Laufs ein.''' Die Investition wird im Katalog wahlweise als '''Gesamtsumme''' [€], als '''Wert je kW elektrisch''' [€/kW] oder als die '''fünf Einzelposten''' eingegeben — die zuletzt bearbeitete Eingabe führt, das jeweils andere Feld folgt aus ihr, und der Ausgleich läuft immer über den Modulpreis. Gespeichert werden die fünf Posten; `Investition_kwel` bleibt ihre Ableitung (Summe / <math>P_{\mathrm{el}}</math>). Gerechnet wird mit den Posten — in der Kostenplanung, nicht im Simulationslauf.
+* '''Vor- und Rücklauf des Katalogs sind die Vorbelegung:''' Beim Anlegen der Anlage im Projekt werden sie aus dem Katalogsatz übernommen und lassen sich dort für das Projekt anpassen. Gerechnet wird mit den Werten der Projektzeile (Anlage), nicht mit dem Katalogsatz.
+* '''Die Energieprobe ist ein Entwickler-Selbsttest.''' Der Lauf rechnet (6) nach — über die Jahressumme mit einer Toleranz von 1&nbsp;kWh und über jede einzelne Stunde mit 0,01&nbsp;kWh. Sie prüft die Bilanz des Moduls gegen sich selbst und sagt über die Konfiguration des Anwenders nichts; ihre Ausgabe geht deshalb auf die Konsole und nicht ins Simulationsprotokoll.
 * '''Höchstens zehn Module''' je Projekt.
-* '''KWKG, Stromsteuer und Energiesteuer''' sind nicht Teil des Laufs. Sie hängen an den hier
-  ermittelten Mengen und Vollbenutzungsstunden und werden in der Wirtschaftlichkeit gerechnet.
+* '''KWKG, Stromsteuer und Energiesteuer''' sind nicht Teil des Laufs. Sie hängen an den hier ermittelten Mengen und Vollbenutzungsstunden und werden in der Wirtschaftlichkeit gerechnet.
 
 == Ergebnisse und wo sie stehen ==
 {{Anker|ergebnisse}}
 
-* '''Simulationsergebnis, Reiter „BHKW"''' — je Modul Wärme- und Stromproduktion,
-  Brennstoffverbrauch, thermische und elektrische Vollbenutzungsstunden, Emissionen; dazu die
-  Ganglinien von Produktion, Direktdeckung, Speicherladung und Überschuss.
+* '''Simulationsergebnis, Reiter „BHKW"''' — je Modul Wärme- und Stromproduktion, Brennstoffverbrauch, thermische und elektrische Vollbenutzungsstunden, Emissionen; rechnet ein Modul mit Teillastkennlinie, der Mehrbrennstoff der Teillast, taktet eines, seine Starts und sein Anfahrverlust; dazu die Einspeisung als Summe der Viertelstundenreihe aus Schritt 4 und die Ganglinien von Produktion, Direktdeckung, Speicherladung und Überschuss.
 * '''Simulationsergebnis, Reiter „Übersicht"''' — der Deckungsanteil des BHKW an der Jahreswärme.
-* '''Simulationsergebnis, Reiter „Ergebnis"''' — der Beitrag zur Stromdeckung und der
-  Stromüberschuss aus (7).
-* '''Simulationsprotokoll''' — Meldungen zu Senken und Ladeaufträgen: der Stromüberschuss des BHKW,
-  „BHKW steht zwischen zwei Erzeugern" der Kaskade, die Warnung zur Speicherstufe, „BHKW-Pendelspeicher:
-  keine Puffer-Senke am BHKW", eine Senkenzeile ohne Puffer, eine Senke ohne Ladeauftrag (Rang und
-  Nachrang), Quelle gleich eigene Senke und die nachgezogene Vorbelegung der Ladepriorität. Die
-  Energieprobe des Moduls ist eine Entwicklerausgabe auf der Konsole und steht '''nicht''' im
-  Protokoll.
-* '''Bericht''' und '''Wirtschaftlichkeit''' — Strommenge, Wärmemenge, Brennstoff und
-  Vollbenutzungsstunden sind die Bezugsgrößen der KWK-Rechnung.
+* '''Simulationsergebnis, Reiter „Ergebnis"''' — der Beitrag zur Stromdeckung und der Stromüberschuss aus (7).
+* '''Simulationsprotokoll''' — Meldungen zu Senken und Ladeaufträgen: der Stromüberschuss des BHKW, „BHKW steht zwischen zwei Erzeugern" der Kaskade, die Warnung zur Speicherstufe, „BHKW-Pendelspeicher: keine Puffer-Senke am BHKW", eine Senkenzeile ohne Puffer, eine Senke ohne Ladeauftrag (Rang und Nachrang), Quelle gleich eigene Senke, die nachgezogene Vorbelegung der Ladepriorität und je Modul die Stunden ohne Betrieb über der Rücklaufgrenze. Die Energieprobe des Moduls ist eine Entwicklerausgabe auf der Konsole und steht '''nicht''' im Protokoll.
+* '''Bericht''' und '''Wirtschaftlichkeit''' — Strommenge, Wärmemenge, Brennstoff und Vollbenutzungsstunden sind die Bezugsgrößen der KWK-Rechnung.
 
 == Bezüge ==
 {{Anker|bezuege}}
 
 * [[Programm Dokumentation/BHKW|BHKW]] — Bedienung des Dialogs, Katalog, Brennstoffvarianten
+* [[Grundlagen/BHKW|Grundlagen: BHKW]] — Kraft-Wärme-Kopplung, Fahrweisen und Kennzahlen
 * [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] — Kaskade, Phasen der Stundenschleife, Betriebsart
 * [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]] — Bilanzraum, Ladeordnung und Speicherentladung
 * [[Programm Dokumentation/Berechnung/Heizkessel|Berechnung: Heizkessel]] — der nachrangige Erzeuger; mit derselben Emissionsquelle

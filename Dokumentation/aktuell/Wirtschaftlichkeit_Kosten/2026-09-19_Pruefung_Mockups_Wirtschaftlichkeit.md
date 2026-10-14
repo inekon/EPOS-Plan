@@ -287,7 +287,7 @@ Konzept § 2.13 und Statuseintrag „Nach #344". Kein Test bricht (`02/§4.1`). 
 | [`../../ueberholt/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md`](../../ueberholt/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md) § 2 | „Zielversion 74" → 94 oder streichen | `02/b‑5` | mittel |
 | [`../Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md`](../Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md) § 10.3 | „Zielstand dieser Etappe" | `02/b‑6` | gering |
 | [`../Konzept_Katalogfilter_EPOS-Plan.md`](../Konzept_Katalogfilter_EPOS-Plan.md) Z. 7–12 | Kopfblock: S1–S3 umgesetzt (wie Kap. 9) | `02/f‑6, j‑2` | hoch |
-| [`../Konzept_Wechselrichter_EPOS-Plan.md`](../Konzept_Wechselrichter_EPOS-Plan.md) Z. 26–27 | „S2 und S3 sind es nicht" berichtigen (Kap. 8: umgesetzt) | `02/f‑7` | hoch |
+| [`../../ueberholt/Konzept_Wechselrichter_EPOS-Plan.md`](../../ueberholt/Konzept_Wechselrichter_EPOS-Plan.md) Z. 26–27 | „S2 und S3 sind es nicht" berichtigen (Kap. 8: umgesetzt) | `02/f‑7` | hoch |
 | [`../Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md`](../Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md) Nachtrag 6 | „Nichts davon ist umgesetzt" und „Migrationsschritte ab 65" berichtigen | `02/f‑8, b‑8` | hoch |
 | [`../Konzept_Stromspeicher_Dialoge_EPOS-Plan.md`](../Konzept_Stromspeicher_Dialoge_EPOS-Plan.md) § 8.4 | „wird auf diesen Stand nachgezogen" → „ist nachgezogen" | `02/j‑5` | mittel |
 | [`../Konzept_Hilfesystem_Wikidokumentation.md`](../Konzept_Hilfesystem_Wikidokumentation.md) | Zeile „Programm Dokumentation/Klimadaten" in die Bedienungsseiten-Tabelle; Regel, dass Beispieldaten aus Mockups vor der Wiki-Übernahme neutralisiert werden | `05/§3, §5.2` | mittel |

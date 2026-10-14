@@ -1,0 +1,19 @@
+<includeonly><div style="overflow-x:auto">{{#if:{{{achse|}}}|<div style="font-size:0.75em;color:var(--epos-text-2);margin-bottom:2px">{{{achse}}}</div>}}<div style="--epos-saeulen-hoehe:{{{höhe|160}}}px;display:flex;align-items:flex-start;padding-top:1.3em;min-width:{{{mindestbreite|0}}}px"></includeonly><noinclude><!-- EPOS-Plan Vorlage | Wikititel: Vorlage:Säulen-Anfang
+     Repo-Quelle dieser Seite: Projekte/Wiki/Vorlage - Säulen-Anfang.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+== Vorlage:Säulen-Anfang ==
+
+Öffnet ein Säulendiagramm. Danach folgt je Säule ein Aufruf von [[Vorlage:Säule]], zum Schluss [[Vorlage:Säulen-Ende]]. Auf schmalen Bildschirmen lässt sich das Diagramm waagerecht verschieben.
+
+{| class="wikitable"
+! Parameter !! Pflicht !! Standard !! Bedeutung
+|-
+| <code>achse</code> || nein || – || Beschriftung der senkrechten Achse, etwa „Heizlast in kW"
+|-
+| <code>höhe</code> || nein || <code>160</code> || Höhe der Säulenfläche in Pixeln
+|-
+| <code>mindestbreite</code> || nein || <code>0</code> || Mindestbreite des Diagramms in Pixeln; darunter wird verschoben statt gestaucht
+|}
+
+Die Höhen der Säulen gibt [[Vorlage:Säule]] in Prozent der Säulenfläche an. Wer ein Diagramm anlegt, rechnet die Werte deshalb auf den größten Wert um: Der größte Wert bekommt 100.
+</noinclude>

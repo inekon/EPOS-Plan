@@ -6,7 +6,7 @@ namespace WindowsFormsApplication1
 {
     /// <summary>
     /// <b>Die Baualtersklassen A bis M</b> (Entscheid E47, Konzept Baualtersklassen 3.1) — Liste, Texte,
-    /// Quelle und die Regel „das Baujahr führt", ohne Datenbank. Eine Klasse ist ein BAUZEITRAUM, für
+    /// Quelle und die Regel „das Baujahr schlägt vor", ohne Datenbank. Eine Klasse ist ein BAUZEITRAUM, für
     /// Wohn- und Nichtwohngebäude gleich; die Grenzen und Buchstaben A bis L folgen der Deutschen
     /// Wohngebäudetypologie des IWU (2015), das Ende von L (2020) und die Klasse M ab 2021 dem
     /// Typgebäudemodell von Stein/Loga (2025). Die Jahresgrenzen selbst stehen bei
@@ -37,8 +37,11 @@ namespace WindowsFormsApplication1
         /// <summary>Der Ressourcenschlüssel der Quellenangabe unter der Klappliste der Klasse.</summary>
         public const string SCHLUESSEL_QUELLE = "GEB_BAK_QUELLE";
 
-        /// <summary>Der Ressourcenschlüssel der Zeile „die Klasse folgt aus dem Baujahr {0}".</summary>
+        /// <summary>Der Ressourcenschlüssel der Zeile „Vorschlag aus dem Baujahr {0}: {1}".</summary>
         public const string SCHLUESSEL_AUS_BAUJAHR = "GEB_BAK_AUS_BAUJAHR";
+
+        /// <summary>Der Ressourcenschlüssel der Zeile „ohne Baujahr frei wählbar".</summary>
+        public const string SCHLUESSEL_OHNE_BAUJAHR = "GEB_BAK_OHNE_BAUJAHR";
 
         /// <summary>Die Texte der 13 Klassen in der Sprache der Oberfläche, Index 0 = A.</summary>
         public static IReadOnlyList<string> Texte()
@@ -92,17 +95,12 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// DAS BAUJAHR FÜHRT (F2): der Listenplatz der Klasse, die aus dem Baujahr folgt
+        /// DAS BAUJAHR SCHLÄGT VOR: der Listenplatz der Klasse, die aus dem Baujahr folgt
         /// (<see cref="Baujahrregel.KlassenIndex"/>, jedes Jahr 1500…2100); <c>null</c> ohne Baujahr oder
-        /// außerhalb des Bereichs — dann ist die Klasse wählbar.
+        /// außerhalb des Bereichs. Die Klasse bleibt immer wählbar — eine abweichende Wahl gilt und wird
+        /// gespeichert (Anwenderwunsch 08.10.2026).
         /// </summary>
         public static int? IndexAusBaujahr(int? baujahr) => Baujahrregel.KlassenIndex(baujahr);
-
-        /// <summary>
-        /// Die WIRKSAME Klasse als Listenplatz: die aus dem Baujahr, sonst die gewählte
-        /// <paramref name="gewaehlt"/> — so speichern Katalogeditor und Gebäudeverwaltung.
-        /// </summary>
-        public static int IndexWirksam(int? baujahr, int gewaehlt) => IndexAusBaujahr(baujahr) ?? gewaehlt;
 
         /// <summary>
         /// Die QUELLE der Einteilung — die Herleitungszeile unter der Klappliste (Konzept Baualtersklassen,
@@ -113,13 +111,20 @@ namespace WindowsFormsApplication1
                          "Einteilung nach der Deutschen Wohngebäudetypologie des IWU (2015), ab 2016 nach Stein/Loga (2025).");
 
         /// <summary>
-        /// Die Zeile, wenn das Baujahr die Klasse führt: „Die Klasse folgt aus dem Baujahr {0}; ohne Baujahr
-        /// ist sie wählbar." Das Jahr steht ohne Tausendertrennzeichen.
+        /// Die Zeile unter der Klappliste, wenn das Baujahr eine Klasse vorschlägt: „Vorschlag aus dem Baujahr
+        /// 1985: 1984 bis 1994 – abweichende Wahl gilt." Das Jahr steht ohne Tausendertrennzeichen; ein Jahr
+        /// außerhalb des Bereichs schlägt nichts vor (<see cref="OhneBaujahrText"/>).
         /// </summary>
         public static string AusBaujahrText(int baujahr)
-            => string.Format(CultureInfo.CurrentCulture,
-                             Ressource(SCHLUESSEL_AUS_BAUJAHR, "Die Klasse folgt aus dem Baujahr {0}; ohne Baujahr ist sie wählbar."),
-                             baujahr.ToString(CultureInfo.InvariantCulture));
+            => IndexAusBaujahr(baujahr) is int index
+                ? string.Format(CultureInfo.CurrentCulture,
+                                Ressource(SCHLUESSEL_AUS_BAUJAHR, "Vorschlag aus dem Baujahr {0}: {1} – abweichende Wahl gilt."),
+                                baujahr.ToString(CultureInfo.InvariantCulture), TextAmPlatz(index))
+                : OhneBaujahrText();
+
+        /// <summary>Die Zeile unter der Klappliste ohne Baujahr: „Ohne Baujahr frei wählbar."</summary>
+        public static string OhneBaujahrText()
+            => Ressource(SCHLUESSEL_OHNE_BAUJAHR, "Ohne Baujahr frei wählbar.");
 
         private static string TextAmPlatz(int index)
             => Ressource("GEB_BAK_" + (char)('A' + index), TEXTE_DE[index]);

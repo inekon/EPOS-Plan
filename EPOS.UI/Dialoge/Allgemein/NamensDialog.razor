@@ -184,7 +184,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _feld.FocusAsync();
+        await _feld.FocusAsync(preventScroll: true);
     }
 
     private void BeiEingabe(ChangeEventArgs e)

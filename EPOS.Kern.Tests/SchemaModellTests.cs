@@ -230,6 +230,41 @@ namespace EPOS.Kern.Tests
             Assert.False(p.Warnung);
         }
 
+        /// <summary>
+        /// KM4-E2 (Konzept Kältemittel als Stammdatum 5.2): Der Knoten der Kältemaschine in der Kältebahn trägt
+        /// <c>Warnung</c> und <c>Warntext</c> aus dem Befund <see cref="Warnkriterien.KAELTEMITTEL_STICHTAG"/> — 1059 mit
+        /// Inbetriebnahmejahr 2027 (Nr. 7 b); ohne Jahr und bei 1063 (zulässig) bleibt der Knoten ohne Warnung. Eigene
+        /// Arbeitskopie, weil das Jahr gesetzt wird.
+        /// </summary>
+        [Fact]
+        public void Der_Kaeltemaschinenknoten_traegt_den_Warntext_der_Kaeltemittelpruefung()
+        {
+            using (var eigene = new TestDatenbank())
+            {
+                if (!eigene.Vorhanden) return;
+                int Anlage(int projekt) => System.Convert.ToInt32(DataRepository.ExecuteScalar(
+                    "SELECT MIN(ID) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                    new DbParam("?", projekt), new DbParam("?", KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE)));
+                SchemaModell.Knoten Knoten(int projekt) => SchemaModell.Aufbauen(projekt, null)
+                    .Finden(SchemaModell.PRAEFIX_KAELTE_ERZEUGER + Anlage(projekt));
+
+                SchemaModell.Knoten ohneJahr = Knoten(1059);
+                Assert.NotNull(ohneJahr);
+                Assert.False(ohneJahr.Warnung);
+
+                foreach (int projekt in new[] { 1059, 1063 })
+                    DataRepository.ExecuteNonQuery("UPDATE Tab_Projekt SET Inbetriebnahmejahr = 2027 WHERE ID = ?",
+                                                   new DbParam("?", projekt));
+                SchemaModell.Knoten k = Knoten(1059);
+                Assert.True(k.Warnung);
+                Warnbefund b = Assert.Single(Warnkriterien.PruefeProjekt(1059),
+                                             x => x.Kriterium == Warnkriterien.KAELTEMITTEL_STICHTAG);
+                Assert.Equal(b.Text, k.Warntext);
+                Assert.Contains("Nr. 7 Buchst. b", k.Warntext);
+                Assert.False(Knoten(1063).Warnung);
+            }
+        }
+
         private static bool Kreuzt(SchemaLayout.Punkt a, SchemaLayout.Punkt b,
                                    SchemaLayout.Rechteck r)
         {

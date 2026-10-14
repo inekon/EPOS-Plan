@@ -63,6 +63,18 @@ public sealed class BauteilschichtenTexte
     /// <summary><c>BTA_SUMME_R</c> — „R = Σ d/λ = {0} m²K/W".</summary>
     public string SummeR { get; set; } = Resource.BTA_SUMME_R;
 
+    /// <summary><c>BTA_SUMME_RSI</c> — „R_si = {0} m²K/W" (aus der Bauteilart).</summary>
+    public string SummeRsi { get; set; } = Resource.BTA_SUMME_RSI;
+
+    /// <summary><c>BTA_SUMME_RSE</c> — „R_se = {0} m²K/W" (an Außenluft).</summary>
+    public string SummeRse { get; set; } = Resource.BTA_SUMME_RSE;
+
+    /// <summary><c>BTA_SUMME_RT</c> — „R_T = R_si + R + R_se = {0} m²K/W".</summary>
+    public string SummeRt { get; set; } = Resource.BTA_SUMME_RT;
+
+    /// <summary><c>BTA_RICHTUNG</c> — die Richtungsangabe innen → außen über dem Raster.</summary>
+    public string Richtung { get; set; } = Resource.BTA_RICHTUNG;
+
     /// <summary><c>BTA_SUMME_U</c> — „U = {0} W/(m²K)".</summary>
     public string SummeU { get; set; } = Resource.BTA_SUMME_U;
 

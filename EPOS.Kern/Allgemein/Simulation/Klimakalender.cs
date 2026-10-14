@@ -77,13 +77,23 @@ namespace WindowsFormsApplication1
         /// <summary>Breitengrad der Klimaregion [°]; NaN = nicht gelesen.</summary>
         internal double Breitengrad { get; set; } = double.NaN;
 
-        /// <summary>Referenzjahr der Zeitbasis (<c>SolardatenCtrl.Referenzjahr</c>); 0 = nicht gelesen.</summary>
-        internal int Referenzjahr { get; set; }
+        /// <summary>
+        /// Das Wochentagsraster des Laufs (E115, <see cref="Konditionierungdatenweg.Raster(int, int)"/>): w₀ der
+        /// Klimaregion, mit Preisreihenjahr der Kalender dieses Jahres — dasselbe Raster, das Zapfkalender und
+        /// Bedarfsprofile lesen.
+        /// </summary>
+        internal Gemeinjahrkalender Raster { get; set; } = Konditionierungdatenweg.Rueckfallraster;
 
         /// <summary>
-        /// Die Wochenendmaske auf dem <b>Ortszeit-Kalender</b> (Entscheid U7, E27; F-Ü8):
-        /// Samstag und Sonntag ab dem 1. Januar des <see cref="Referenzjahr"/>es, 365 Tage.
-        /// Sie gehört dem VDI-Weg; der Tagesbilanz-Weg liest weiter <see cref="WE"/> aus
+        /// Das Jahr der Preisreihe (<c>SolardatenCtrl.Preisreihenjahr</c>), nach dem die beweglichen Feiertage
+        /// liegen; 0 = Regelfall ohne Jahr — die Feiertage liegen dann nach dem Wochentagsraster
+        /// (<see cref="Gemeinjahrkalender"/>). Es ist das Jahr von <see cref="Raster"/> und setzt nie das Raster.
+        /// </summary>
+        internal int Feiertagsjahr { get; set; }
+
+        /// <summary>
+        /// Die Wochenendmaske des Gebäudelaufs: Samstag und Sonntag im Wochentagsraster <see cref="Raster"/>,
+        /// 365 Tage. Sie gehört dem VDI-Weg; der Tagesbilanz-Weg liest weiter <see cref="WE"/> aus
         /// <c>Tab_Klimadaten</c>. <c>null</c>, solange nicht gebildet.
         /// </summary>
         internal bool[] WochenendeOrtszeit { get; set; }
@@ -110,6 +120,17 @@ namespace WindowsFormsApplication1
                 DayOfWeek w = jan1.AddDays(d).DayOfWeek;
                 maske[d] = w == DayOfWeek.Saturday || w == DayOfWeek.Sunday;
             }
+            return maske;
+        }
+
+        /// <summary>
+        /// Bildet die Wochenendmaske eines Wochentagsrasters: Tag d (0 … 364) ist Wochenende, wenn sein Wochentag
+        /// im Raster (<see cref="Gemeinjahrkalender.Wochentag"/>) Samstag oder Sonntag ist. Ohne Datenbank, ohne Uhr.
+        /// </summary>
+        internal static bool[] WochenendmaskeBilden(Gemeinjahrkalender raster)
+        {
+            var maske = new bool[365];
+            for (int d = 0; d < 365; d++) maske[d] = raster.Wochentag(d + 1) >= 5;
             return maske;
         }
 

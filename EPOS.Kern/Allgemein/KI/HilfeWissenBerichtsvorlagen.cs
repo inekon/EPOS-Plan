@@ -424,6 +424,18 @@ namespace WindowsFormsApplication1
                     "die Lage der ersten Stellen. WIKI: Programm Dokumentation/Bericht#vorlage.",
                     WIKI_BERICHT),
 
+                new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_KAPITEL_IM_BLOCK,
+                    "Meldung VF_PRUEF_KAPITEL_IM_BLOCK: Ein Kapitel steht in einem Wiederholblock",
+                    KiChatKontext.B_BERICHT,
+                    "BEDEUTUNG: Ein Kapitelplatzhalter (etwa {{kapitel.ergebnisse}}) steht zwischen {{#je stand}} " +
+                    "(oder {{#je variante}}, {{#je gebaeude}}) und {{/je}}. Ein Kapitel setzt der Bericht nur einmal " +
+                    "ein — in der ersten Wiederholung; in den übrigen bleibt der Platzhalter gelb markiert stehen. " +
+                    "URSACHE: Das Kapitel " +
+                    "wurde in den Block gezogen, damit es je Stand erscheint. ABHILFE: Das Kapitel vor oder hinter den " +
+                    "Block setzen; was je Stand erscheinen soll, als Werte, Tabellen und Bilder in den Block schreiben. " +
+                    "WIKI: Programm Dokumentation/Bericht#vorlage.",
+                    WIKI_BERICHT),
+
                 new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_SPAETER,
                     "Meldung VF_PRUEF_SPAETER: Der Platzhalter wirkt erst in einer späteren Programmfassung",
                     KiChatKontext.B_BERICHT,

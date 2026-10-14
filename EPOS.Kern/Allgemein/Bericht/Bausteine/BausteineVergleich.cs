@@ -127,6 +127,10 @@ namespace WindowsFormsApplication1
             // KU2 Welle 3: die Gruppe „Kälte“ zwischen Effizienz und Emissionen (KennzahlenKatalog.GRUPPEN).
             // BV-E5: dieselben Tafeln wie {{tabelle.vergleich.<gruppe>}} (Berichtstabellen.Vergleichsgruppe),
             // Blockteilung zu drei Varianten mit wiederholter Stammspalte, Δ-Spalte nur bei genau einer Variante.
+            // Anwenderentscheid 29.09.2026: Die Tafeln der Kosten und der Emissionen zeigen die
+            // Einzelzahl; wo die Gruppenregel gewirkt hat, steht ihre Fußzeile unter GENAU DER
+            // Tafel, zu der sie gehört (Kosten in €/a, Emissionen in t/a) — sie trägt die Zahl
+            // dieser Tafel, nicht die der anderen.
             foreach (string gruppe in KennzahlenKatalog.GRUPPEN)
             {
                 Berichtstabelle tafel = Berichtstabellen.Vergleichsgruppe(daten, gruppe, BerichtTexte.Englisch, k.Kultur);
@@ -138,6 +142,7 @@ namespace WindowsFormsApplication1
                     k.Fuege(WordTabellenschreiber.Direkt(k, tafel, block));
                     k.Abstand();
                 }
+                foreach (string fussnote in tafel.Hinweise) k.HinweisRoh(fussnote);
             }
 
             // ---------------- kompakte Delta-Tabelle ----------------
@@ -215,6 +220,23 @@ namespace WindowsFormsApplication1
                     k.Ueberschrift3((v.IstStamm ? "Stamm — " : "Variante — ") + v.Anzeige);
                     // BV-E5: dieselbe Tafel wie {{stand.tabelle.brennstoffmengen}} (hier mit Leerzeile).
                     k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Brennstoffmengen(v, true, BerichtTexte.Englisch, k.Kultur)));
+                }
+            }
+
+            // ---------------- Gebäude je Projekt (KP3 Welle O3b, E58 F3 (c)) ----------------
+            // Dieselbe Tafel wie {{stand.tabelle.gebaeude}} (Berichtstabellen.Gebaeudeergebnisse) je Stand, ohne Δ — das Δ
+            // trägt die Kennzahlgruppe „Gebäude“ darüber. Wie die ausführliche Vorlage nur, wenn ein Stand Lüftungs- oder
+            // Aufheizwerte trägt (die Gruppe also eine Tafel hat); je Stand wie die Erzeugerliste, auch ohne Variante.
+            if (Berichtstabellen.Gruppenzeilen(daten, KennzahlenKatalog.GR_GEBAEUDE).Count > 0)
+            {
+                k.Ueberschrift2Roh(Berichtstabellen.Grund(nameof(MyResource.Resource.BV_VGL_AUFH_GEBAEUDE), k.Kultur));
+                k.HinweisRoh(Berichtstabellen.Grund(nameof(MyResource.Resource.BV_VGL_AUFH_GEBAEUDE_HINWEIS), k.Kultur));
+                foreach (VariantenDaten v in daten.Varianten)
+                {
+                    k.Ueberschrift3((v.IstStamm ? "Stamm — " : "Variante — ") + v.Anzeige);
+                    Berichtstabelle tafel = Berichtstabellen.Gebaeudeergebnisse(v, BerichtTexte.Englisch, k.Kultur);
+                    if (tafel.IstLeer) k.HinweisRoh(tafel.Leergrund);
+                    else k.Fuege(WordTabellenschreiber.Direkt(k, tafel));
                 }
             }
         }

@@ -193,6 +193,16 @@ public static class Seitenschluessel
     /// </remarks>
     public const string StromspeicherAuslegung = "STROMSPEICHER_AUSLEGUNG";
 
+    /// <summary>
+    /// Die Ansicht „Pufferspeicher-Auslegung" (<c>Seiten.Pufferspeicher.PufferAuslegungSeite</c>;
+    /// Konzept Pufferspeicher-Auslegung, Stufe P2) — eine freie Ansicht nach dem Muster der
+    /// Stromspeicher-Auslegung, ohne Menüpunkt und ohne <c>Masken.*</c>-Zwilling. Die Wege hinein:
+    /// „Pufferspeicher auslegen…" in ① Konfiguration, „Auslegen…" in der Pufferverwaltung und in der
+    /// Kachel Pufferspeicher; der Arbeitsgang (Projekt, Zielpuffer) ist vorher bei
+    /// <c>PufferAuslegungHuelle</c> angemeldet.
+    /// </summary>
+    public const string PufferAuslegung = "PUFFER_AUSLEGUNG";
+
     // =====================================================================
     //  K7 (iU9-W16c.0, Entscheid E-2) - die 25 Maskenschluessel des Kerns
     //
@@ -212,6 +222,13 @@ public static class Seitenschluessel
     /// <summary>Lastspitzenkappung; Argument: Projekt-Id (Razor seit W12.6).</summary>
     public const string PeakShaving = WindowsFormsApplication1.Masken.PeakShaving;
 
+    /// <summary>
+    /// Die Gebaeude des offenen Projekts (<c>GebaeudeDialog</c>) mit einem Sprungziel als Argument
+    /// (<c>Sprungziele.Kuehlung</c>). Unter Windows faengt die Schale den Schluessel ab und oeffnet ihr Fenster; die
+    /// Wurzel (iOS) lehnt ihn benannt ab.
+    /// </summary>
+    public const string Projektgebaeude = WindowsFormsApplication1.Masken.Projektgebaeude;
+
     /// <summary>Stammdaten Gebaeude (Razor seit W9.2).</summary>
     public const string GebaeudeAdmin = WindowsFormsApplication1.Masken.GebaeudeAdmin;
 
@@ -224,6 +241,9 @@ public static class Seitenschluessel
     /// <summary>Stammdaten Prozesswaerme (Razor seit W14b.1).</summary>
     public const string ProzesswaermeAdmin = WindowsFormsApplication1.Masken.ProzesswaermeAdmin;
 
+    /// <summary>Stammdaten Kaeltebedarf (K5b): die Bedarfsverwaltung mit der Art Kaelte.</summary>
+    public const string KaeltebedarfAdmin = WindowsFormsApplication1.Masken.KaeltebedarfAdmin;
+
     /// <summary>Stammdaten Stromverbraucher (Razor seit W14b.1).</summary>
     public const string StromverbraucherAdmin = WindowsFormsApplication1.Masken.StromverbraucherAdmin;
 
@@ -233,8 +253,17 @@ public static class Seitenschluessel
     /// <summary>Stammdaten Solarganglinien (Razor seit W14b.2).</summary>
     public const string SolarganglinieAdmin = WindowsFormsApplication1.Masken.SolarganglinieAdmin;
 
+    /// <summary>Stammdaten PV-Ganglinien (PVG, Schemaschritt 206) — der Dialog „Photovoltaik Ganglinie" ohne Projekt.</summary>
+    public const string PvGanglinieAdmin = WindowsFormsApplication1.Masken.PvGanglinieAdmin;
+
     /// <summary>Herstellerdaten Waermepumpen einlesen (Razor seit W13.1).</summary>
     public const string WpImport = WindowsFormsApplication1.Masken.WpImport;
+
+    /// <summary>Herstellerdaten Kälteanlagen einlesen: Wärmepumpen mit Kühlfunktion aus VDI 3805 (E119).</summary>
+    public const string WpKaelteImport = WindowsFormsApplication1.Masken.WpKaelteImport;
+
+    /// <summary>Kältemaschinen einlesen: CSV-Vorlage (Kennfeld, Nennwerte, Ökodesign A–D) oder Copper-Kurvendatei (K-C).</summary>
+    public const string KaeltemaschineImport = WindowsFormsApplication1.Masken.KaeltemaschineImport;
 
     /// <summary>Stammdaten Heizkessel (Razor seit W14a.1).</summary>
     public const string HeizkesselAdmin = WindowsFormsApplication1.Masken.HeizkesselAdmin;
@@ -364,6 +393,36 @@ public static class Seitenschluessel
     /// </summary>
     public const string BauteilaufbauKatalog = "BAUTEILAUFBAU_KATALOG";
 
+    /// <summary>
+    /// Menue „Administration -> Wärme- und Kälteerzeugung -> Kältemaschinen" (<c>KaeltemaschineKatalogDialog</c>,
+    /// KU3-1) — dieselbe Lage wie <see cref="BaustoffKatalog"/>: eine freie Ansicht der Wurzel auf beiden
+    /// Plattformen; der Kern fuehrt dieselbe Zeichenkette als Ziel des Assistenten
+    /// (<c>KiMaskenziele.KAELTEMASCHINE_KATALOG</c>).
+    /// </summary>
+    public const string KaeltemaschineKatalog = "KAELTEMASCHINE_KATALOG";
+
+    /// <summary>
+    /// Der Erzeugerdialog „Kältemaschinen im Projekt" (<c>KaeltemaschineAnlageDialog</c>, KU3-4c) — eine freie
+    /// Ansicht der Wurzel für das offene Projekt auf beiden Plattformen; Einstieg ist der Knopf
+    /// „Kältemaschinen…" im Reiter „Energieerzeuger" der Startseite. Der Kern führt dieselbe Zeichenkette als
+    /// Ziel des Assistenten (<c>KiMaskenziele.KAELTEMASCHINE_ANLAGE</c>).
+    /// </summary>
+    public const string KaeltemaschineAnlage = "KAELTEMASCHINE_ANLAGE";
+
+    /// <summary>
+    /// Menue „Administration -> Wärme- und Kälteerzeugung -> Profile &amp; Lastgänge -> Betriebskalender"
+    /// (<c>BetriebskalenderDialog</c>; Entscheidungsvorlage Modellgrenzen PW2, BW2) — eine freie
+    /// Ansicht der Wurzel wie die Kataloge der Gebäudesimulation.
+    /// </summary>
+    public const string Betriebskalender = "BETRIEBSKALENDER";
+
+    /// <summary>
+    /// Menue „Administration -> Gebäude -> Bauteilkatalog einlesen…" (<c>BauteilkatalogImportDialog</c>, BK-3) —
+    /// eine freie Ansicht der Wurzel auf beiden Plattformen wie <see cref="BaustoffKatalog"/>; der Parametersatz kommt
+    /// aus <c>BauteilkatalogImportHuelle</c> (EPOS.UI.Daten).
+    /// </summary>
+    public const string BauteilkatalogImport = "BAUTEILKATALOG_IMPORT";
+
     /// <summary>Menue „Administration -> Kosten -> Kostenverwaltung…" (<c>KostenKomponenteDialog</c>, W4.2).</summary>
     public const string Kostenverwaltung = "KOSTENVERWALTUNG";
 
@@ -393,6 +452,38 @@ public static class Seitenschluessel
     /// <summary>Menue „Administration -> Katalog-Dubletten" (<c>KatalogDublettenDialog</c>, W14c.5).</summary>
     public const string KatalogDubletten = "KATALOG_DUBLETTEN";
 
+    /// <summary>
+    /// Menue „Administration -> Daten &amp; Import -> Kältemittel…" (<c>KaeltemittelDialog</c>, KM4-E3-c,
+    /// Fachkonzept Kältemittel 7.6; <c>KiMaskenziele.KAELTEMITTEL</c>).
+    /// </summary>
+    /// <remarks>
+    /// Unter Windows oeffnet die Huelle (<c>HauptfensterHuelle.Weg</c>) ein modales Fenster; auf iOS zeigt
+    /// <see cref="AppWurzel"/> den Dialog aus <c>IProjektQuelle.KaeltemittelGaben</c>.
+    /// </remarks>
+    public const string Kaeltemittel = "KAELTEMITTEL";
+
+    /// <summary>
+    /// Menue „Administration -> Daten &amp; Import -> Katalog aktualisieren…"
+    /// (<c>KatalogabgleichDialog</c>, Entscheidungsvorlage Modellgrenzen KU1 Stufe 1).
+    /// </summary>
+    /// <remarks>
+    /// Der Weg fuehrt ueber die Windows-Huelle (<c>HauptfensterHuelle.Weg</c>) in ein modales
+    /// Fenster. Auf iOS faellt der Schluessel durch und <see cref="AppWurzel"/> meldet
+    /// <c>false</c> — dort liegt kein Katalogpaket der Auslieferung.
+    /// </remarks>
+    public const string Katalogabgleich = "KATALOGABGLEICH";
+
+    /// <summary>
+    /// Menue „Administration -> Kosten -> Brennstoffe des Projekts…"
+    /// (<c>ProjektBrennstoffeDialog</c>, Anwenderentscheid 03.10.2026: Projektkopie des Brennstoffkatalogs).
+    /// </summary>
+    /// <remarks>
+    /// Der Weg fuehrt ueber die Windows-Huelle (<c>HauptfensterHuelle.Weg</c>) in ein modales
+    /// Fenster. Auf iOS faellt der Schluessel durch und <see cref="AppWurzel"/> meldet
+    /// <c>false</c> — dort liest das Projekt seine Kopien, gepflegt werden sie unter Windows.
+    /// </remarks>
+    public const string ProjektBrennstoffe = "PROJEKT_BRENNSTOFFE";
+
     /// <summary>Menue „Administration -> Lizenz…" (<c>LizenzVerwaltungDialog</c>, W15c.5).</summary>
     public const string LizenzVerwaltung = "LIZENZ_VERWALTUNG";
 
@@ -405,11 +496,40 @@ public static class Seitenschluessel
     /// <summary>Menue „Hilfe -> Dokumentation" - das Wiki im Browser.</summary>
     public const string Dokumentation = "DOKUMENTATION";
 
+    /// <summary>Menue „Hilfe -> Fernwartung…" - Kontakt, Diagnosedaten und die Fernwartungsseite
+    /// (Konzept Administration und Support, Abschnitt 4.2; nur Windows).</summary>
+    public const string Fernwartung = "FERNWARTUNG";
+
     /// <summary>Menue „Deutsch" - Oberflaechensprache umstellen und neu starten.</summary>
     public const string SpracheDeutsch = "SPRACHE_DEUTSCH";
 
     /// <summary>Menue „Englisch" - Oberflaechensprache umstellen und neu starten.</summary>
     public const string SpracheEnglisch = "SPRACHE_ENGLISCH";
+
+    // ------------------------------------------------------------------
+    //  Menuekopf „Entwicklung" (Administration und Support, Stufe 1;
+    //  Konzept Abschnitte 3.1 bis 3.6). Nur im Entwicklermodus sichtbar
+    //  (Menuetabelle.Sichtbar); die Arbeit macht die Windows-Huelle
+    //  (EntwicklungHuelle). Auf iOS fallen die Schluessel durch.
+    // ------------------------------------------------------------------
+
+    /// <summary>Menue „Entwicklung -> Ausnahmeprotokoll oeffnen" (<c>Logs\Ausnahmen.txt</c> neben der Datenbank).</summary>
+    public const string EntwAusnahmeprotokoll = "ENTW_AUSNAHMEPROTOKOLL";
+
+    /// <summary>Menue „Entwicklung -> Protokollordner oeffnen" (Explorer).</summary>
+    public const string EntwProtokollordner = "ENTW_PROTOKOLLORDNER";
+
+    /// <summary>Menue „Entwicklung -> Datenbankordner oeffnen" (Explorer).</summary>
+    public const string EntwDatenbankordner = "ENTW_DATENBANKORDNER";
+
+    /// <summary>Menue „Entwicklung -> Diagnosedaten kopieren" (<c>Diagnosedaten.Textblock</c> in die Zwischenablage).</summary>
+    public const string EntwDiagnosedaten = "ENTW_DIAGNOSEDATEN";
+
+    /// <summary>Menue „Entwicklung -> Entwicklerwerkzeuge der Oberflaeche" (DevTools der WebView).</summary>
+    public const string EntwWebWerkzeuge = "ENTW_WEBWERKZEUGE";
+
+    /// <summary>Menue „Entwicklung -> Entwicklermodus ausschalten".</summary>
+    public const string EntwModusAus = "ENTW_MODUS_AUS";
 
     /// <summary>
     /// Alle Schluessel dieser Klasse - fuer den Nachweis, dass sie ASCII,
@@ -420,11 +540,11 @@ public static class Seitenschluessel
         Projektliste, Energietraeger, BhkwWirtschaftlichkeit,
         SimulationKonfiguration, SimulationErgebnis, Simulation,
         KiAssistent, Assistent,
-        Startseite, BerichteKosten, Varianten, StromspeicherAuslegung,
-        WpAdministration, StromspeicherAdmin, PeakShaving, GebaeudeAdmin,
-        GebaeudetypenAdmin, WaermebedarfExternAdmin, ProzesswaermeAdmin,
-        StromverbraucherAdmin, StromganglinieAdmin, SolarganglinieAdmin,
-        WpImport, HeizkesselAdmin, BhkwAdmin, SolarkollektorenAdmin, PvAdmin,
+        Startseite, BerichteKosten, Varianten, StromspeicherAuslegung, PufferAuslegung,
+        WpAdministration, StromspeicherAdmin, PeakShaving, GebaeudeAdmin, Projektgebaeude,
+        GebaeudetypenAdmin, WaermebedarfExternAdmin, ProzesswaermeAdmin, KaeltebedarfAdmin,
+        StromverbraucherAdmin, StromganglinieAdmin, SolarganglinieAdmin, PvGanglinieAdmin,
+        WpImport, WpKaelteImport, KaeltemaschineImport, HeizkesselAdmin, BhkwAdmin, SolarkollektorenAdmin, PvAdmin,
         HeizkesselImport, PufferSpImport, PufferSpAdmin, BrauchwasserAdmin,
         BrauchwasserNutzungsarten,
         SolarkollektorenImport, PvImport, WechselrichterAdmin, WechselrichterImport,
@@ -433,9 +553,11 @@ public static class Seitenschluessel
         ProjektAuswahl, ProjektDelete,
         ProjektNeu, ProjektOeffnen, ProjektBearbeiten, ProjektZuletzt,
         ProjektLoeschen, ProjektTransfer, ProjektAlsVariante, Klimadaten,
-        BaustoffKatalog, BauteilaufbauKatalog,
-        Kostenverwaltung, EnergietraegerVerwaltung, NutzungsdauerVerwaltung, Einstellungen,
-        Gesetzeskatalog, KatalogDubletten, LizenzVerwaltung, Lizenztext,
-        Version, Dokumentation, SpracheDeutsch, SpracheEnglisch
+        BaustoffKatalog, BauteilaufbauKatalog, BauteilkatalogImport, Betriebskalender, KaeltemaschineKatalog, KaeltemaschineAnlage,
+        Kostenverwaltung, EnergietraegerVerwaltung, ProjektBrennstoffe, NutzungsdauerVerwaltung, Einstellungen,
+        Gesetzeskatalog, Kaeltemittel, KatalogDubletten, Katalogabgleich, LizenzVerwaltung, Lizenztext,
+        Version, Dokumentation, Fernwartung, SpracheDeutsch, SpracheEnglisch,
+        EntwAusnahmeprotokoll, EntwProtokollordner, EntwDatenbankordner, EntwDiagnosedaten,
+        EntwWebWerkzeuge, EntwModusAus
     };
 }

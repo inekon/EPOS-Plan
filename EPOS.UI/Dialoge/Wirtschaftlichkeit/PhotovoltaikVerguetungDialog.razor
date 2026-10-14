@@ -427,7 +427,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     /// <summary>Die Kultur der Anzeige — dieselbe wie Bericht und Reiter.</summary>

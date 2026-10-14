@@ -52,14 +52,76 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Gegenprobe zu WT-a: Ein Nachbar oeffnet eine Datei gepoolt mit derselben
+        /// <c>immutable</c>-Zeichenfolge, danach wird die Datei gehoben — die Wache liest den
+        /// gehobenen Stand, nicht den des Nachbarn. Auf einer eigenen kleinen Datei, nie auf
+        /// der Repo-Datei.
+        /// </summary>
+        [Fact]
+        public void Die_Wache_liest_den_Stand_der_Platte_auch_nach_einem_gepoolten_Nachbarn()
+        {
+            string ordner = Path.Combine(Path.GetTempPath(), "SchemastandWache_" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(ordner);
+            string datei = Path.Combine(ordner, "Kenndaten.sqlite");
+            try
+            {
+                Schreiben(datei, "CREATE TABLE Tab_Applikation (" + ApplikationCtrl.SPALTE_SCHEMAVERSION +
+                                 " INTEGER); INSERT INTO Tab_Applikation VALUES (183);");
+
+                // Der Nachbar: dieselbe Zeichenfolge wie die Nachbarklassen, MIT Pool.
+                string uri = "file:" + datei.Replace('\\', '/').Replace("?", "%3f") + "?mode=ro&immutable=1";
+                string nachbar = new SqliteConnectionStringBuilder { DataSource = uri }.ToString();
+                using (var c = new SqliteConnection(nachbar))
+                {
+                    c.Open();
+                    using SqliteCommand b = c.CreateCommand();
+                    b.CommandText = "SELECT " + ApplikationCtrl.SPALTE_SCHEMAVERSION + " FROM Tab_Applikation";
+                    Assert.Equal(183L, b.ExecuteScalar());
+                }
+
+                Schreiben(datei, "UPDATE Tab_Applikation SET " + ApplikationCtrl.SPALTE_SCHEMAVERSION + " = 185;");
+
+                Assert.Equal(185, SchemaStandLesen(datei));
+            }
+            finally
+            {
+                SqliteConnection.ClearAllPools();
+                try { Directory.Delete(ordner, true); } catch (IOException) { /* Aufraeumen darf nicht scheitern */ }
+            }
+        }
+
+        private static void Schreiben(string datei, string sql)
+        {
+            using var c = new SqliteConnection(new SqliteConnectionStringBuilder
+            {
+                DataSource = datei,
+                Pooling = false
+            }.ToString());
+            c.Open();
+            using SqliteCommand b = c.CreateCommand();
+            b.CommandText = sql;
+            b.ExecuteNonQuery();
+        }
+
+        /// <summary>
         /// Liest <c>Tab_Applikation.SchemaVersion</c> — dieselbe Ablage, die
         /// <c>ApplikationCtrl.GetSchemaVersion</c> und <c>Erstbereitstellung</c> lesen und
         /// <c>TestDatenbank.SchemaNachziehen</c> schreibt. Hier ueber eine EIGENE,
         /// schreibgeschuetzte Verbindung statt ueber <c>DataRepository</c>: Dessen
         /// <c>PfadUeberschreibung</c> ist prozessweiter Zustand, und dieser Fall soll die
         /// REPO-Datei messen, nie eine Arbeitskopie.
+        ///
+        /// <para><b>Ohne Verbindungspool</b> (Befund WT-a: im breiten Lauf nicht reihenfest).
+        /// Rund dreissig Nachbarklassen oeffnen die Repo-Datei mit DERSELBEN Zeichenfolge
+        /// (<c>file:…?mode=ro&amp;immutable=1</c>); Microsoft.Data.Sqlite poolt nach der
+        /// Zeichenfolge, haelt also nach dem ersten Nachbarn eine offene Verbindung bereit.
+        /// Mit <c>immutable=1</c> prueft SQLite die Datei nie wieder auf Aenderungen — eine
+        /// gepoolte Verbindung liest den Stand, den die Datei beim ERSTEN Oeffnen hatte,
+        /// auch wenn sie danach an Ort und Stelle gehoben oder durch Checkout ersetzt wurde.
+        /// Ob die Wache den Stand der Platte oder einen alten las, hing damit davon ab, ob
+        /// ein Nachbar vor ihr lief. Ohne Pool liest jedes Oeffnen die Datei frisch.</para>
         /// </summary>
-        private static int SchemaStandLesen(string pfad)
+        internal static int SchemaStandLesen(string pfad)
         {
             // Der Pfad geht als URI hinein - Rueckwaertsschraegstriche sind darin
             // Sonderzeichen, und ein '?' im Pfad wuerde die Abfragezeichenfolge
@@ -70,7 +132,8 @@ namespace EPOS.Kern.Tests
 
             using var verbindung = new SqliteConnection(new SqliteConnectionStringBuilder
             {
-                DataSource = uri
+                DataSource = uri,
+                Pooling = false
             }.ToString());
             verbindung.Open();
 

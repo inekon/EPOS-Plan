@@ -37,8 +37,12 @@ namespace EPOS.Kern.Tests
         /// <summary>Der Satz, der in der Testdatenbank einem Projekt zugeordnet ist.</summary>
         private const string ZUGEORDNET = "Lastgang_Strom_NestleLB-05-2010-05-2011";
 
-        /// <summary>Ein Satz ohne Projektzuordnung.</summary>
+        /// <summary>Der Quellsatz der Kopierfälle (Viertelstundenwerte). Seit das Prüfprojekt 1053 ihn
+        /// zugeordnet hat, ist er kein freier Satz mehr.</summary>
         private const string FREI = "test";
+
+        /// <summary>Ein Satz ohne Projektzuordnung (die Projektkopien von 1023 und 1050 tragen keine Zuordnung).</summary>
+        private const string UNZUGEORDNET = "Lastgang_Strom_NestleLB-05-2010-05-2011 - Kopie";
 
         // ==================================================================
         //  1 - ReadAll traegt das Auslieferungskennzeichen
@@ -70,8 +74,8 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die Projektzuordnungssperre: <c>Lastgang_Strom_NestleLB-…</c> haengt in
-        /// <c>Z_ProjektStromganglinie</c> (drei Zeilen, Projekte 1008 und 1030),
-        /// <c>test</c> nicht.
+        /// <c>Z_ProjektStromganglinie</c> (drei Zeilen, Projekte 1008 und 1030), <c>test</c> am
+        /// Prüfprojekt 1053, die Katalogkopie <c>… - Kopie</c> an keinem Projekt.
         /// </summary>
         [Fact]
         public void HatProjektzuordnung_trennt_zugeordnete_von_freien_Ganglinien()
@@ -80,7 +84,8 @@ namespace EPOS.Kern.Tests
 
             StromganglinieStammCtrl ctrl = new StromganglinieStammCtrl();
             Assert.True(ctrl.HatProjektzuordnung(ZUGEORDNET));
-            Assert.False(ctrl.HatProjektzuordnung(FREI));
+            Assert.True(ctrl.HatProjektzuordnung(FREI));
+            Assert.False(ctrl.HatProjektzuordnung(UNZUGEORDNET));
             Assert.False(ctrl.HatProjektzuordnung("gibt es nicht"));
             Assert.False(ctrl.HatProjektzuordnung(null));
         }

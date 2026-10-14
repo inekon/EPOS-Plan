@@ -446,7 +446,15 @@ namespace EPOS.Kern.Tests
             ZapfprofilAuslegungStartDaten start = ZapfprofilHuelle.AuslegungStart(PROJEKT, Zonen(), null, ZapfprofilStufe.Einfach);
             Assert.Equal(TwwSchema.Werte(TwwSchema.BEZUGSART_WERTE), start.Bezugsarten.Select(b => b.Id).ToArray());
             Assert.Equal("Wohneinheiten", start.Bezugsarten.Single(b => b.Id == 2).Name);
-            Assert.Equal(new[] { 1, 2, 3, 4 }, start.Fuellstandbezuege.Select(b => b.Id).ToArray());
+            // Die Wahl „Speichergröße der Füllstandslinie": vier Größen der Auslegung und vier
+            // Verfahren des Vergleichs (N36 (d)) — der Name aus dem Satz des Kerns, das klassische
+            // Verfahren mit dem Zusatz „nachrichtlich".
+            Assert.Equal(TwwSchema.Werte(TwwSchema.FUELLSTAND_BEZUG_WERTE), start.Fuellstandbezuege.Select(b => b.Id).ToArray());
+            Assert.Equal("Nenninhalt des empfohlenen Punkts", start.Fuellstandbezuege.Single(b => b.Id == 1).Name);
+            Assert.Equal("profilbasiert", start.Fuellstandbezuege.Single(b => b.Id == 5).Name);
+            Assert.Equal("DIN 4708", start.Fuellstandbezuege.Single(b => b.Id == 6).Name);
+            Assert.Equal("Faustwert mit Gleichzeitigkeit", start.Fuellstandbezuege.Single(b => b.Id == 7).Name);
+            Assert.Equal("klassischer Faustwert (nachrichtlich)", start.Fuellstandbezuege.Single(b => b.Id == 8).Name);
         }
 
         /// <summary>

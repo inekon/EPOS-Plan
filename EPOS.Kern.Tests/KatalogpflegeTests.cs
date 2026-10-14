@@ -64,7 +64,11 @@ namespace EPOS.Kern.Tests
         {
             // Zapfprofilgenerator, Stufe Z0 (P8): drei Tww-Kataloge dazu - 23.
             // Gebaeudesimulation G3 (Welle B, W21): Baustoff und Bauteilaufbau dazu - 25.
-            Assert.Equal(25, KatalogRegistry.Alle.Count);
+            // KU3-1: die Kaeltemaschine dazu - 26.
+            // Anwenderentscheid 08.10.2026: die Konditionierungsvorlagen dazu (Schloss) - 27.
+            // PVG (Schemaschritt 206): die PV-Ganglinie dazu - 28.
+            // KM4-E1: die Kaeltemitteltabelle dazu - 32.
+            Assert.Equal(32, KatalogRegistry.Alle.Count);   // K1: KAELTEBEDARF, KAELTETYP; K-F1: RUECKKUEHLWERK
         }
 
         /// <summary>Die 23 Schluessel in ihrer Reihenfolge — der Baum des Dublettendialogs
@@ -77,15 +81,23 @@ namespace EPOS.Kern.Tests
                 // W6-E-2: "WECHSELRICHTER" steht NACH "PV" - er gehoert zur
                 // selben Anlage und wird nach dem Modul gepflegt.
                 "WP", "HEIZKESSEL", "PUFFERSPEICHER", "SOLARKOLLEKTOREN", "PV",
-                "WECHSELRICHTER", "BHKW",
+                "WECHSELRICHTER",
+                // KU3-1: die Kaeltemaschine nach den Erzeugern der Waerme- und Stromseite, vor dem BHKW.
+                "KAELTEMASCHINE",
+                // KM4-E1: die Kaeltemitteltabelle, auf die die Kaeltemaschine ueber die ID verweist.
+                "KAELTEMITTEL",
+                // K-F1: das Rueckkuehlwerk als Glied der Kaeltemaschine gleich hinter ihr.
+                "RUECKKUEHLWERK", "BHKW",
                 "STROMSPEICHER", "GEBAEUDE",
                 // Gebaeudesimulation G3 (W21): die zwei Kataloge der Gebaeudehuelle beim Gebaeude.
                 "BAUSTOFF", "BAUTEILAUFBAU",
                 "KLIMAREGION", "BRAUCHWASSER", "BRAUCHWASSERTYP",
                 // Zapfprofilgenerator (P8): die drei Tww-Kataloge beim Brauchwasser.
                 "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG",
-                "STROMVERBRAUCHER", "STROMVERBRAUCHERTYP", "PROZESSWAERME", "PROZESSTYP",
-                "STROMGANGLINIE", "SOLARGANGLINIE", "WAERMEBEDARF", "GEBAEUDETYP"
+                "STROMVERBRAUCHER", "STROMVERBRAUCHERTYP", "PROZESSWAERME", "PROZESSTYP", "KAELTEBEDARF", "KAELTETYP",
+                "STROMGANGLINIE", "SOLARGANGLINIE", "PVGANGLINIE", "WAERMEBEDARF", "GEBAEUDETYP",
+                // Anwenderentscheid 08.10.2026: die Konditionierungsvorlagen (Schloss der Vorlagenverwaltung).
+                "KONDITIONIERUNGSVORLAGE"
             };
             Assert.Equal(erwartet, KatalogRegistry.Alle.Select(k => k.Schluessel).ToArray());
         }
@@ -143,19 +155,25 @@ namespace EPOS.Kern.Tests
                 Assert.False(tww.ImDublettendialog);
                 Assert.Equal(new[] { "Katalogversion" }, tww.SchluesselZusatzSpalten);
             }
-            Assert.Equal(new[] { "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG" },
+            // KM4-E1: eine verwendete Kaeltemittelzeile ist unveraenderlich (Konzept Kaeltemittel 3.2).
+            Assert.Equal(new[] { "KAELTEMITTEL", "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG" },
                          KatalogRegistry.Alle.Where(k => k.VerwendungSperrt).Select(k => k.Schluessel).ToArray());
             // Gebaeudesimulation G3: Baustoff und Bauteilaufbau pflegen ihre eigenen
             // Verwaltungen und stehen nicht im Dublettendialog; der Baustoff fuehrt den
             // Hersteller als zweiten Teil des natuerlichen Schluessels.
-            string[] ohneDialog = { "BAUSTOFF", "BAUTEILAUFBAU" };
+            // KM4-E1: die Kaeltemitteltabelle ohne Oberflaeche bis KM4-E3.
+            string[] ohneDialog = { "KAELTEMITTEL", "BAUSTOFF", "BAUTEILAUFBAU", "KONDITIONIERUNGSVORLAGE" };
             Assert.Equal(KatalogRegistry.Alle.Where(k => !k.Schluessel.StartsWith("TWW_", StringComparison.Ordinal)
                                                          && !ohneDialog.Contains(k.Schluessel))
                                              .Select(k => k.Schluessel).ToArray(),
                          KatalogRegistry.Dublettendialog.Select(k => k.Schluessel).ToArray());
             Assert.All(KatalogRegistry.Alle.Where(k => !k.Schluessel.StartsWith("TWW_", StringComparison.Ordinal)
-                                                       && k.Schluessel != "BAUSTOFF"),
+                                                       && k.Schluessel != "BAUSTOFF"
+                                                       && k.Schluessel != "KONDITIONIERUNGSVORLAGE"),
                        k => Assert.Empty(k.SchluesselZusatzSpalten));
+            // Die Konditionierungsvorlagen: derselbe Name einmal je Groesse.
+            Assert.Equal(new[] { "Groesse" },
+                         KatalogRegistry.Finde("KONDITIONIERUNGSVORLAGE").SchluesselZusatzSpalten);
             Assert.Equal(new[] { BaustoffSchema.SPALTE_HERSTELLER },
                          KatalogRegistry.Finde("BAUSTOFF").SchluesselZusatzSpalten);
         }
@@ -188,8 +206,9 @@ namespace EPOS.Kern.Tests
                 .Where(k => k.VerwendungsPruefungen.Length > 0)
                 .Select(k => k.Schluessel).ToArray();
             // Gebaeudesimulation G3: der Baustoff - eine Katalogschicht zeigt ueber die ID auf ihn.
-            Assert.Equal(new[] { "BAUSTOFF", "BRAUCHWASSERTYP", "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG",
-                                 "STROMVERBRAUCHERTYP", "PROZESSTYP", "GEBAEUDETYP" },
+            // KM4-E1: das Kaeltemittel - Katalog und Projektkopie der Kaeltemaschine zeigen ueber die ID darauf.
+            Assert.Equal(new[] { "KAELTEMITTEL", "BAUSTOFF", "BRAUCHWASSERTYP", "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG",
+                                 "STROMVERBRAUCHERTYP", "PROZESSTYP", "KAELTETYP", "GEBAEUDETYP" },
                          mitPruefung);
         }
 
@@ -220,7 +239,8 @@ namespace EPOS.Kern.Tests
         // Welle #485 (Schritt GebaeudeKatalogReparatur.SCHRITT): acht Testreste geloescht -
         // 269 Saetze, und die Inhaltsgruppe der inhaltsgleichen Testreste "Z2-EFH-A-S*" faellt.
         // E51 (Schemaschritt GebaeudeSaatSchema.SCHRITT): sechs Katalogsätze der Klassen M und A dazu.
-        [InlineData("GEBAEUDE", 275, 0, 9)]
+        // KP3, RP1: der Referenzkatalogbau des Referenzprojekts 1051 (Kopie von Verw_I_40) dazu.
+        [InlineData("GEBAEUDE", 276, 0, 9)]
         [InlineData("KLIMAREGION", 32, 0, 1)]
         [InlineData("BRAUCHWASSER", 16, 0, 0)]
         [InlineData("BRAUCHWASSERTYP", 13, 0, 0)]
@@ -229,16 +249,19 @@ namespace EPOS.Kern.Tests
         // aus VDI 6002 abgeleitete (ZU19; Wohnen gross, Ein- und Zweifamilienhaus,
         // Studentenwohnheim, Seniorenheim, Krankenhaus) und "Hotel (aus Messung, je Zimmer)" (ZU36), sechs
         // Tagesgangsaetze (der fiktive, je einer der vier eigenen abgeleiteten Formen und der des
-        // Hotels), vier Bedarfstage (Konstruktor, Referenztag, Normtag, Ecodesign L), alle Status EIGEN.
-        [InlineData("TWW_NUTZUNGSART", 9, 0, 0)]
-        [InlineData("TWW_TAGESGANGSATZ", 6, 0, 0)]
+        // Hotels), vier Bedarfstage (Konstruktor, Referenztag, Normtag, Ecodesign L), dazu Buero, Schule, Gewerbe (V31) mit je eigenem Satz, alle Status EIGEN.
+        [InlineData("TWW_NUTZUNGSART", 12, 0, 0)]
+        [InlineData("TWW_TAGESGANGSATZ", 9, 0, 0)]
         [InlineData("TWW_BEDARFSTAG", 12, 0, 0)]
-        [InlineData("STROMVERBRAUCHER", 41, 0, 0)]
-        [InlineData("STROMVERBRAUCHERTYP", 40, 0, 1)]
-        [InlineData("PROZESSWAERME", 32, 0, 1)]
-        [InlineData("PROZESSTYP", 20, 0, 2)]
+        // Schritt 193 (StandardlastprofilSchema): die drei BDEW-Standardlastprofile H25, G25, L25 je mit Typprofil dazu;
+        // Schritt 196 (StandardlastprofilPvSchema): die zwei BDEW-Netzbezugsprofile P25, S25 je mit Typprofil dazu.
+        [InlineData("STROMVERBRAUCHER", 46, 0, 0)]
+        [InlineData("STROMVERBRAUCHERTYP", 45, 0, 1)]
+        [InlineData("PROZESSWAERME", 40, 0, 1)]   // 32 + acht Betriebsweisen (PW5)
+        [InlineData("PROZESSTYP", 28, 0, 2)]      // 20 + acht Wochenprofile (PW5)
         [InlineData("STROMGANGLINIE", 3, 0, 0)]
         [InlineData("SOLARGANGLINIE", 1, 0, 0)]
+        [InlineData("PVGANGLINIE", 0, 0, 0)]
         [InlineData("WAERMEBEDARF", 4, 0, 1)]
         [InlineData("GEBAEUDETYP", 12, 0, 0)]
         public void DerScanMeldetDieEingefrorenenZahlen(string schluessel, int saetze,
@@ -278,7 +301,7 @@ namespace EPOS.Kern.Tests
         [InlineData("HEIZKESSEL", 63)]
         [InlineData("BHKW", 79)]
         [InlineData("PV", 6)]
-        [InlineData("GEBAEUDE", 275)]
+        [InlineData("GEBAEUDE", 276)]   // 275 + der Referenzkatalogbau von 1051 (KP3, RP1)
         public void VergebeneNamenZaehltJedenSatz(string schluessel, int anzahl)
         {
             if (!_db.Vorhanden) return;
@@ -327,7 +350,7 @@ namespace EPOS.Kern.Tests
         // ==================================================================
 
         /// <summary>
-        /// <b>227 Zeilen in <c>Tab_Gesetzesparameter</c></b> — der Auslieferungsstand
+        /// <b>240 Zeilen in <c>Tab_Gesetzesparameter</c></b> — der Auslieferungsstand
         /// (226 Zeilen der Vorbelegung und die Generationsmarke). Die Dublettenpruefung der
         /// Maske laedt diese Zeilen heute bei JEDEM Speichern vollstaendig neu (Befund
         /// W14c-B12).
@@ -337,7 +360,8 @@ namespace EPOS.Kern.Tests
         /// erreicht hat. Seit das Werkzeug <c>Testdatenbankschema</c> die Nachsaat mit
         /// zieht, steht sie auf der Zielgeneration — mit Generation 7 vier Zeilen mehr
         /// (<c>STROMST_REDUZIERT_SATZ</c> und die drei UMLAGEN), mit Generation 8 (ETAPPE
-        /// E7c, A20) eine weitere: <c>KWKG_INBETRIEBNAHME_FRISTENDE</c>.</para>
+        /// E7c, A20) eine weitere: <c>KWKG_INBETRIEBNAHME_FRISTENDE</c>, mit Generation 10
+        /// (KM4-E2-a) die dreizehn F-Gas-Regeln nach Anhang IV.</para>
         ///
         /// <para><b>Gezählt wird nach der Nachsaat</b> — dem Stand, den die Maske nach dem
         /// Programmstart zeigt. Sie ist wiederholbar; so zählt der Fall auf einer Kopie, die
@@ -346,29 +370,29 @@ namespace EPOS.Kern.Tests
         /// Arbeitskopie schon nachgesät hat.</para>
         /// </summary>
         [Fact]
-        public void DerGesetzeskatalogFuehrt227Zeilen()
+        public void DerGesetzeskatalogFuehrt240Zeilen()
         {
             if (!_db.Vorhanden) return;
             GesetzKatalog.StelleKatalogSicher();
             object v = DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_Gesetzesparameter");
-            Assert.Equal(227, Convert.ToInt32(v, CultureInfo.InvariantCulture));
+            Assert.Equal(240, Convert.ToInt32(v, CultureInfo.InvariantCulture));
         }
 
         /// <summary>
-        /// <b>Zehn Klassen aus der Datenbank</b> — die technische Klasse <c>SYSTEM</c>
+        /// <b>Elf Klassen aus der Datenbank</b> (KM4-E2-a: dazu <c>FGAS</c>) — die technische Klasse <c>SYSTEM</c>
         /// (Markerzeile der Nachsaat) bleibt aussen vor. <c>EEG</c> ist dabei: Sie steht in
         /// der Datenbank, aber NICHT in der festen Achterliste des Zeilendialogs
         /// (Befund W14c-B5). <c>UMLAGEN</c> kam mit der Generation 7 hinzu (Auftrag US-1).
         /// </summary>
         [Fact]
-        public void DerKatalogMeldetZehnKlassenOhneSystem()
+        public void DerKatalogMeldetElfKlassenOhneSystem()
         {
             if (!_db.Vorhanden) return;
 
             IList<string> klassen = new GesetzKatalog().Klassen();
             Assert.Equal(new[]
             {
-                "CO2_PREIS", "EEG", "EF_BILANZ", "EF_NACHWEIS", "ENERGIESTEUER",
+                "CO2_PREIS", "EEG", "EF_BILANZ", "EF_NACHWEIS", "ENERGIESTEUER", "FGAS",
                 "KWKG", "PEF_NACHWEIS", "STROMSTEUER", "UMLAGEN", "UMSATZSTEUER"
             }, klassen.ToArray());
             Assert.DoesNotContain(DbWerte.GESETZ_KLASSE_SYSTEM, klassen);
@@ -382,6 +406,7 @@ namespace EPOS.Kern.Tests
         [InlineData("EF_BILANZ", 38)]
         [InlineData("EF_NACHWEIS", 30)]
         [InlineData("ENERGIESTEUER", 15)]
+        [InlineData("FGAS", 13)]
         [InlineData("KWKG", 53)]
         [InlineData("PEF_NACHWEIS", 29)]
         [InlineData("STROMSTEUER", 8)]
@@ -463,9 +488,11 @@ namespace EPOS.Kern.Tests
             // ETAPPE E7c3: Generation 8 → 9 ohne neue Zeile — die Generation 9 PFLEGT nur
             // (GesetzKatalog.Nachpflege: Brennstoff 24 mit H_i = H_s = 1,0); die jüngste
             // Saatgeneration bleibt 8.
-            Assert.Equal(226, GesetzKatalog.Vorbelegung().Count);
-            Assert.Equal(9, GesetzKatalog.AktuelleGeneration);
-            Assert.Equal(8, GesetzKatalog.JuengsteSaatgeneration);
+            // KM4-E2-a: 226 → 239 Zeilen, Generation 9 → 10 — die dreizehn F-Gas-Regeln nach
+            // Anhang IV der VO (EU) 2024/573 (Klasse FGAS).
+            Assert.Equal(239, GesetzKatalog.Vorbelegung().Count);
+            Assert.Equal(10, GesetzKatalog.AktuelleGeneration);
+            Assert.Equal(10, GesetzKatalog.JuengsteSaatgeneration);
         }
 
         // ==================================================================
@@ -858,16 +885,17 @@ namespace EPOS.Kern.Tests
         // ==================================================================
 
         /// <summary>
-        /// <b>Der Klassenvorrat des Zeilendialogs: acht Klassen in dieser Reihenfolge.</b>
-        /// Sie standen bisher als Quelltextliste in der Maske (Befund W14c-B5).
+        /// <b>Der Klassenvorrat des Zeilendialogs: neun Klassen in dieser Reihenfolge.</b>
+        /// Sie standen bisher als Quelltextliste in der Maske (Befund W14c-B5). KM4-E2-a hängt
+        /// <c>FGAS</c> an — die Regeln nach Anhang IV pflegt die Hand in der Pflegemaske (KM4-Q4 b).
         /// </summary>
         [Fact]
-        public void DerKlassenvorratFuehrtAchtKlassenInFesterReihenfolge()
+        public void DerKlassenvorratFuehrtNeunKlassenInFesterReihenfolge()
         {
             Assert.Equal(new[]
             {
                 "KWKG", "STROMSTEUER", "ENERGIESTEUER", "CO2_PREIS",
-                "EF_NACHWEIS", "EF_BILANZ", "PEF_NACHWEIS", "UMSATZSTEUER"
+                "EF_NACHWEIS", "EF_BILANZ", "PEF_NACHWEIS", "UMSATZSTEUER", "FGAS"
             }, GesetzKatalog.KlassenVorrat().ToArray());
         }
 
@@ -920,6 +948,7 @@ namespace EPOS.Kern.Tests
 
                 Assert.Equal("KWK-Gesetz", GesetzKatalog.KlasseAnzeige(DbWerte.GESETZ_KLASSE_KWKG));
                 Assert.Equal("Stromsteuer", GesetzKatalog.KlasseAnzeige(DbWerte.GESETZ_KLASSE_STROMSTEUER));
+                Assert.Equal("F-Gase (VO 2024/573, Anhang IV)", GesetzKatalog.KlasseAnzeige(DbWerte.GESETZ_KLASSE_FGAS));
                 Assert.Equal("EEG", GesetzKatalog.KlasseAnzeige(DbWerte.GESETZ_KLASSE_EEG));   // unbekannt = Rohwert
                 Assert.Equal("", GesetzKatalog.KlasseAnzeige(null));
 

@@ -200,7 +200,7 @@ namespace WindowsFormsApplication1
         /// <param name="flotte">Der Lesestand der Flotte.</param>
         /// <param name="kopfformat">
         /// Das Format des Kopfsatzes mit <c>{0}</c> = Betriebsziel und <c>{1}</c> =
-        /// Einheitenzahl (<c>SIM_SP_HERKUNFT</c> bzw. <c>SP_KONTEXT_FLOTTE</c>).
+        /// Einheitenzahl samt Wort, „1 Einheit“ bzw. „2 Einheiten“ (<see cref="Einheitentext"/>; <c>SIM_SP_HERKUNFT</c> bzw. <c>SP_KONTEXT_FLOTTE</c>).
         /// </param>
         public static string FlottenKontextText(FlottenStudieKonfiguration flotte, string kopfformat)
         {
@@ -210,7 +210,7 @@ namespace WindowsFormsApplication1
 
             string zeile = string.Format(kultur, kopfformat,
                 SpeicherFlottenAnzeigeCtrl.Zieltext(o.Betriebsziel),
-                flotte.Einheiten == null ? 0 : flotte.Einheiten.Count);
+                Einheitentext(flotte.Einheiten == null ? 0 : flotte.Einheiten.Count, kultur));
 
             if ((o.Betriebsziel == FlottenBetriebsziel.PeakShaving ||
                  o.Betriebsziel == FlottenBetriebsziel.MultiUse) &&
@@ -222,6 +222,17 @@ namespace WindowsFormsApplication1
                                       : MyResource.Resource.FLOTTE_PEAKMODUS_FEST);
             }
             return zeile;
+        }
+
+        /// <summary>
+        /// Die Einheitenzahl einer Flotte mit richtiger Ein- und Mehrzahl: „1 Einheit“,
+        /// „2 Einheiten“ (<c>SP_EINHEIT_EINS</c>, <c>SP_EINHEITEN_N</c>).
+        /// </summary>
+        public static string Einheitentext(int anzahl, CultureInfo kultur)
+        {
+            return anzahl == 1
+                ? MyResource.Resource.SP_EINHEIT_EINS
+                : string.Format(kultur, MyResource.Resource.SP_EINHEITEN_N, anzahl);
         }
 
         /// <summary>

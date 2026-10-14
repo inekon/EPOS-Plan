@@ -1,0 +1,45 @@
+# Protokoll KM3-E1 — Schemaschritt 210, Katalog, Import der Teillastkurve (09.10.2026)
+
+**Sitzung:** Gebäudesimulation, Statuszeile **#876**. Commits E1-a `62cf8611c`, E1-b `10cfef908`, E1-c `e43f346c5`. **Entscheid:** E116 (KM3-Q1 bis Q11). Konzepte: [`Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md) und [`Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md).
+
+## 1 Auftrag und Entscheidlage
+
+- **E116** (Anwender, 09.10.2026): Startfreigabe KM3 mit den Entscheiden KM3-Q1 bis Q11 nach Empfehlung a.
+- Schemanummer: angemeldet als 209, mit Anwenderentscheid vom 09.10.2026 (Weg B) auf 208 gesetzt (`8cbda3b97`); nach dem Bau von 208 `KatalogkostenUrsprungSchema` und 209 `KatalogkostenInvestitionSchema` durch KA1 (Konto 2, #873) mit Anwenderentscheid 09.10.2026 19:55 UTC auf **210** verschoben, hängt an 209 `KatalogkostenInvestitionSchema` (KM3-M2).
+- Entscheid der Orchestrierung: Die Plausibilitätsgrenze des Gütemaßes sinkt auf 0,3, weil sieben Festdrehzahl-Sätze physikalisch plausibel sind.
+
+## 2 Wellen
+
+| Welle | Commits | Ergebnis |
+|---|---|---|
+| E1-a | `62cf8611c` | Schemaschritt `KaeltemaschineTeillastSchema`: acht Eingabespalten an `Tab_Kaeltemaschine_STAMM`/`Tab_Kaeltemaschine` (`Teillast_Weg`, `Teillastkurve_a`/`_b`/`_c`, `Teillastkurve_Lastgrad_Min`, `Taktverlustfaktor_Cd`, `Verdichterregelung`, `Kennfeld_Randweg`), fünf Ergebnisspalten an `Tab_ErgebnisKaeltemaschine` (`Taktstrom_MWh`, `Starts`, `Teillaststunden`, `Lastgrad_Mittel`, `Stunden_Extrapoliert`), Modell, `KaeltemaschineStammCtrl` (`TeillastSchreiben`, `TeillastPruefen`, `ZahlLesen`), Projektkopie, Prüfsummenliste, 14 Ressourcen, vier Leser |
+| E1-b | `10cfef908` | Import der Teillastkurve aus Copper `eir-f-plr` (quadratisch, normiert auf EIRFPLR(1) = 1; kubisch angepasst) und aus CSV-Teillastzeilen (Kleinste Quadrate); `Verdichterregelung` aus `compressor_speed`/`compressor_type`; `KaeltemaschinenTypkennfelder.Ergaenzen` (idempotent, Prüfsumme neu); Vorgabekurven je Regelung in `KaelteFestwerte`; Hinweis `NennEerHinweis` bei mehr als 10 % Abweichung |
+| E1-c | `e43f346c5` | Gütemaß-Grenze 0,3 statt 0,5; Vorgabekurve STUFEN aus Copper-Satz 146 |
+
+## 3 Dateien
+
+- Kern: Schemaschritt `KaeltemaschineTeillastSchema` (`SchemaMigration`), `KaeltemaschineStammCtrl`, `KaeltemaschinenTypkennfelder`, `KaelteFestwerte`, Import (Copper, CSV).
+- Testdatenbank: `Referenzlaeufe/Kenndaten_Test.sqlite` (Schemastand 210).
+- Ressourcen in beiden Sprachen (14 Schlüssel).
+
+## 4 Proben
+
+| Probe | Ergebnis |
+|---|---|
+| Typkennfelder der Testdatenbank | alle 34 mit Weg: 31 KURVE, 3 LINEAR |
+| Beispielgeräte | Teillastfelder leer |
+| Ergänzen | idempotent, Prüfsumme neu |
+
+## 5 Festlegungen
+
+Das Opt-in bleibt: ohne `Teillast_Weg` rechnet die Kältemaschine wie zuvor. Der Import normiert die Kurve auf EIRFPLR(1) = 1; weicht der Nenn-EER um mehr als 10 % ab, steht der Hinweis `NennEerHinweis`.
+
+## 6 Offen
+
+E3 (Dialoggruppe, Bericht, Kennzahlen, Vorlagen), E4 (Wiki, Logbuch).
+
+## 7 Gate und CI
+
+**Gate:** Rest-Gate auf a848bc157 grün (UI 8042/8042, KiKern 549, SpeicherEngine 397, SpeicherPlanung 27, Doku-Wachen 35, Werkzeugtests 124/61/24/39, Schale, Designer, SQL 2708/0); Referenzlauf 28/28 PASS, 911/911 byte-gleich gegen R49; Kern-Blöcke AB 1902/1903, CD 283, EF 1122/1122 nach Einheiten-Fix, GH 1453, IJ 447/452, LM 360, NO 228, PQ 920, R 310, S 1440, TUVWXYZ 1941 (K per CI-Lauf 38007278194: 12 841/12 849 bestanden, allein EinheitenWache rot, behoben).
+
+**CI:** Kern-Lauf 38017823690 grün auf `9349afe65` (Sitzungszweig `claude/gebaeudesimulation-ub`, enthält den Einheiten-Fix `f70ba1b12`).

@@ -58,6 +58,8 @@
 @using EPOS.UI.Dienste
 @using SpeicherEngine
 @using WindowsFormsApplication1
+@using KiKern
+@implements IDisposable
 
 <div class="epos-dialog epos-projekttransfer" tabindex="-1" @onkeydown="BeiTaste">
 
@@ -456,6 +458,50 @@
 
     private void ModusGewaehlt(int? wert)
         => _modus = (ProjektExportImportCtrl.BeiVorhandenem)(wert ?? 0);
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Freigabe der Masken, Teil C)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private ProjektTransferKiSicht? _kiSicht;
+
+    protected override void OnInitialized()
+    {
+        _kiSicht = new ProjektTransferKiSicht
+        {
+            ZielnameLesen = () => _zielname,
+            ZielnameSetzen = w => { _zielname = w; _ = InvokeAsync(StateHasChanged); },
+            KonfliktLesen = () => (int)_modus,
+            KonfliktSetzen = w => { ModusGewaehlt(w); _ = InvokeAsync(StateHasChanged); },
+            KonfliktEintraege = () => KiMaskenanmeldung.Eintraege(Konfliktmodi, z => z.Id, z => z.Text),
+            SicherungLesen = () => _sicherung,
+            SicherungSetzen = w => { _sicherung = w; _ = InvokeAsync(StateHasChanged); }
+        };
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PROJEKT_TRANSFER, () => _kiSicht, KiHaken());
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf. <b>Kein Speicherweg und keine
+    /// Prüfung:</b> „Importieren…" schreibt Projekte in die Datenbank und fragt vor dem
+    /// Überschreiben nach — beides bleibt beim Anwender. Während eines Laufs ist die Maske
+    /// gesperrt; ohne Mehrfachwahl gilt der Zielname, ohne Sicherungsweg gibt es keinen Haken.
+    /// </summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => _laeuft,
+        Schreibschutzgrund = () => WindowsFormsApplication1.MyResource.Resource.KI_PTR_LAEUFT,
+        Sperrgrund = f => f switch
+        {
+            "zielname" when _pakete.Count > 1 => Texte.MeldungZielnameMehrere,
+            "sicherung" when Daten?.SicherungAnlegen is null => WindowsFormsApplication1.MyResource.Resource.KI_PTR_KEINE_SICHERUNG,
+            _ => null
+        }
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     // =============================================================================
     //  Exportblatt: Liste, Wahl, Gruppen

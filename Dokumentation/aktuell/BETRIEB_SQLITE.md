@@ -144,6 +144,78 @@ viele gelöscht und wie viele abhängige Zeilen mitgenommen wurden.
 
 ---
 
+## 2b. Änderungsstempel: Trigger als Teil des Schemas
+
+Zwei Spalten setzt nicht die Anwendung, sondern **die Datenbank selbst** — über Trigger
+(Schemaschritt 159, Quelle `EPOS.Kern/Allgemein/Update/KostenStempelSchema.cs`):
+
+| Spalte | Was sie festhält |
+|---|---|
+| `Tab_Projekt.Kosten_Geaendert` | die letzte Änderung an Kosten, Preisen oder Wirtschaftlichkeitsparametern **dieses Projekts** |
+| `Tab_Applikation.Kostenkatalog_Geaendert` | die letzte Änderung am **Kostenkatalog**, der in jedem Projekt gilt |
+
+Beide sind nullbares `TEXT`; leer heißt „keine Änderung festgehalten". Die Trigger schreiben
+`datetime('now','localtime')` — Ortszeit `JJJJ-MM-TT hh:mm:ss`, dasselbe Format wie der
+Zeitstempel eines gespeicherten Wirtschaftlichkeitsergebnisses
+(`Tab_ErgebnisWirtschaftlichkeit.Zeitstempel`, gesetzt am Ende der Rechnung). Ist der jüngste
+Stempel der Vergleichsgruppe (Stamm und Varianten über `Tab_Variante.ID_ProjektRef`) oder der
+Katalogstempel **strikt jünger** als das Ergebnis, gilt es als veraltet, und die Seiten Kosten und
+Wirtschaftlichkeit zeigen das Band „bitte neu berechnen" mit dem Grund
+(`KostenAenderungsstempel`, `WirtschaftlichkeitCtrl.Veraltung`). Eine Änderung in derselben Sekunde
+wie das Speichern des Ergebnisses zählt als davor.
+
+**Was stempelt** — Anlegen, Ändern und Löschen einer Zeile, je Zeile:
+
+| Stempel | Tabellen |
+|---|---|
+| das Projekt der Zeile | `Tab_ProjektWerte`, `Tab_ProjektWirtschaftlichkeit`, `Tab_ProjektTarif`, `energy_project_settings`, `energy_price`, `Tab_ProjektPhotovoltaik` |
+| Variante **und** Stamm | `Tab_Variante` |
+| das Projekt der Anlage | `Tab_Energieanlagen` — Anlegen und Löschen immer, Ändern nur an den Kostenspalten (`ID_Carrier`, die elf `KWKG_*`, `Energiesteuer_Wahl`, `Aufteilung_Methode`, `Hilfsenergie_Anteil`, `Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler`) |
+| das Projekt selbst | `Tab_Projekt` — nur ein geänderter `Emission_Berechnungsmodus` |
+| das Projekt, als Stammreihe der Katalog | `Tab_Preisreihe`, `Tab_PreisreiheDaten` — eine Reihe ohne Projekt gilt in jedem Projekt |
+| der Katalog | `energy_carrier`, `pricing_model`, `energy_conversion`, `Tab_Brennstoff_Stamm`, `Tab_BrennstoffKategorien`, `emissionswert`, `Tab_Gesetzesparameter`, `Tab_Kostenfaktor`, `Tab_KostenKomponente`, `Tab_Nutzungsdauer`; `emissionsart` nur bei geändertem `co2_aequivalent`, `Tab_Applikation` nur bei geändertem `Emission_Berechnungsmodus` |
+
+**Was nicht stempelt**, mit Absicht: Geräte-, Gebäude- und Einstellungstabellen — sie wirken über
+die Simulation, deren Lauf die Frage nach dem Ergebnis ohnehin prüft —, `Tab_Kraftwerkspark`,
+`Tab_ProjektWirkung`, die Kostenvorlagen, `Tab_KostenGruppenKatalog` und alle Ergebnistabellen.
+Die Trigger an `Tab_Projekt` und `Tab_Applikation` lösen sich nicht selbst aus: Sie hören nur auf
+den Emissionsmodus, ihr eigenes `UPDATE` setzt allein die Stempelspalte.
+
+**Pflege ohne Kostenänderung stempelt nicht.** Die Selbstheilung der Anlagenzuordnung
+(`KostenProjektPositionenCtrl.ZuordnungReparieren`) schlüsselt Kostenpositionen einer gelöschten
+oder neu angelegten Anlage um; sie läuft vor jeder Rechnung und beim Aufbau der Kostenseite und
+stellt nur nach, was das gestempelte Löschen oder Anlegen der Anlage verursacht hat. Sie läuft
+deshalb in `KostenAenderungsstempel.OhneProjektstempel`: Der Projektstempel wird vorher gelesen und
+danach unverändert zurückgeschrieben. Die Simulation schreibt an der Anlage nur Spalten außerhalb
+der Liste von `UPDATE OF` (`WQ_*`, `WS_*`) und stempelt nicht.
+
+**Bearbeitet, nicht „Wert geändert“.** Ein `UPDATE`, das eine Zeile mit denselben Werten
+zurückschreibt, stempelt. Ein `WHEN` mit Wertvergleich steht nur an den drei Einspalten-Triggern
+(`Tab_Projekt`, `Tab_Applikation`, `emissionsart`). An den übrigen Tabellen müsste es jede Spalte
+im Trigger nennen: Ein späteres `DROP COLUMN` scheiterte dann („no such column: OLD.…“), und eine
+neue Spalte bliebe ohne Vergleich.
+
+**Trigger sind Teil des Schemas.** Die 63 Trigger (`trg_Kostenstempel_*`, `trg_Katalogstempel_*`)
+stehen in `sqlite_master` neben Tabellen und Indizes; sie reisen mit jeder Dateikopie, mit
+`VACUUM INTO` (Abschnitt 3.2) und mit der Auslieferungsvorlage. Daraus folgt:
+
+* **Wer eine der Tabellen oben neu baut** (umbenennen, neu anlegen, umkopieren, löschen — der Weg
+  der Schemaschritte für Spaltentypen und Fremdschlüssel), verliert ihre Trigger mit der alten
+  Tabelle. Danach legt `KostenStempelSchema.Ausfuehren` bzw. dessen Anweisungen sie wieder an
+  (`CREATE TRIGGER IF NOT EXISTS`); die Wache `EPOS.Kern.Tests/KostenStempelSchemaTests` hält die
+  Testdatenbank gegen die volle Liste. Ein Neubau von `Tab_Projekt`, `Tab_Applikation` oder
+  `Tab_Preisreihe` ohne `PRAGMA legacy_alter_table = ON` scheitert mit „error in trigger …: no such
+  table“, weil die Trigger der anderen Tabellen diese Namen nennen — die bestehenden Neubauten laufen
+  mit `legacy_alter_table`, allein `SpeicherAuslegungStrict` (Schritt 74) ohne, und keine Trigger
+  nennt `Tab_SpeicherAuslegung`.
+* **Wer eine der genannten Spalten entfernt oder umbenennt**, prüft die Trigger mit — ihre
+  Spaltenlisten (`UPDATE OF …`) und Rümpfe stehen im Text des Triggers.
+* **Eine Änderung von Hand** (etwa mit `sqlite3` in einer der Tabellen oben) stempelt genauso;
+  die Seiten zeigen danach das Band. Eine reine Abfrage stempelt nicht.
+* Nachsehen: `SELECT name, tbl_name FROM sqlite_master WHERE type = 'trigger';`
+
+---
+
 ## 3. Sicherung
 
 Gesichert wird immer die **ganze Datei**: Kataloge und Projektdaten stehen in derselben
@@ -351,7 +423,7 @@ hier auf, nicht erst beim Anwender.
 
 ### 6.5 Die Messlatte selbst — `Referenzlaeufe/Kenndaten_Test.sqlite`
 
-**Stand 15.09.2026: Schemastand 76** (`Tab_Applikation.SchemaVersion`; 65 Wechselrichterkatalog,
+**Schemastand 176** (`Tab_Applikation.SchemaVersion`; jüngste Schritte 156 Kessel-Kennlinie, 157 Saat der Konditionierungsvorlagen, 158 Brennwert in Projekten, 159 Änderungsstempel — Abschnitt 2b, 160 und 161 Aufheizoptimierung (Projekteinstellung, Ergebnisspalten), 162 Einheit des Bereitschaftsverlusts am Heizkessel (`Bereitschaft_Einheit`, kW oder %, Vorgabe kW), 163 Bodenalbedo je Photovoltaik- und Solarthermie-Anlage (`Tab_Energieanlagen.Albedo`, 0 bis 1, leer = 0,2), 164 Temperaturpaar je Prozess (`Vorlauf`, `Ruecklauf` an `Tab_Prozesswaerme(_STAMM)`, REAL, nullbar, 0 … 250 °C, paarweise) samt Saat der acht ausgelieferten Betriebsweisen (`Tab_Prozesswaerme_STAMM`, `Tab_Prozesstyp_STAMM`, `ReadOnly = 1`), 165 Felder des Kollektorfelds an `Tab_Energieanlagen` (`Pumpenleistung_W`, `Solarkreisverluste_Prozent`, `Uebertrager_Graedigkeit_K`, `Kollektor_Spreizung_K`, `Arbeitstemperatur_Weg`, nullbar mit Prüfklausel) und Bezugsfläche der Kennwerte an `Tab_Solarkollektoren(_STAMM)` (`Bezugsflaeche`, apertur oder brutto, Vorgabe apertur), 166 Netzverluste je Kanal und Zirkulation im Bestandsweg (acht nullbare Spalten `Netzverluste_Heizung`/`_Brauchwasser`/`_Prozess` samt `…_Einheit`, `Zirkulation_Leistung_kW`, `Zirkulation_Laufzeit_h_d` an `Tab_Einstellungen`) und Betriebskalender der Bedarfsprofile (`Tab_Betriebskalender`, STRICT, und `ID_Betriebskalender` an `Z_Projekt_Brauchwasser`, `Z_Projekt_Prozesswaerme`, `Z_Projekt_Stromverbraucher`, nullbar, `ON DELETE SET NULL`), 167 Teillastfelder der Wärmepumpe an `Tab_WP(_STAMM)` (`Mindestleistung_kW` 0 … 1 000, `Taktverlustfaktor_Cd` 0 … 1) und des BHKW an `Tab_BHKW(_STAMM)` (`Wirkungsgrad_el_Teillast50`, `Wirkungsgrad_th_Teillast50` als Faktor 0 … 1, `Anfahrverlust_kWh` 0 … 100, `Mindestlaufzeit_min` 0 … 60), nullbar mit Prüfklausel, leer = Rechnung wie zuvor, 168 Einspeisegrenze des Projekts an `Tab_Einstellungen` (`Einspeisegrenze_Wert` ≥ 0, `Einspeisegrenze_Einheit` kW oder %, beide nullbar, leer = keine Grenze) und Selbstentladung an `Tab_Stromspeicher(_STAMM)` (`Selbstentladung_Prozent_Monat`, 0 … 20, leer = keine), 169 Pufferspeicher-Auslegung (`Tab_PufferAuslegung`, STRICT, leer, und `Tab_PufferAuslegungParameter_STAMM`, STRICT, mit gesäten Vorgabewerten), 170 Katalogempfehlung der Hilfsenergie von BHKW und Heizkessel auf Weg B (reines DML an `Tab_KostenVorlagePosition` der Auslieferungsvorlagen, `ReadOnly = 1`), 171 Optionen des Pufferspeichers an `Tab_Pufferspeicher` (`Bereitschaft_Weg` tag oder temperatur, `Aufstellraum_Temperatur_C` 0 … 35, `Schicht_Anteile` als Text, `Frischwassermodul` 0/1, `FWM_Graedigkeit_K` 0 … 20) und thermische Desinfektion an `Tab_Einstellungen` (`Desinfektion_Aktiv` 0/1, `Desinfektion_Intervall_Tage` 1 … 31, `Desinfektion_Stunde` 0 … 23, `Desinfektion_Zieltemperatur_C` 55 … 90, `Desinfektion_Volumen_l` 0 … 100 000), nullbar mit Prüfklausel, leer = Rechnung wie zuvor, 172 Katalogfassung der ausgelieferten Sätze (`Katalog_Schluessel`, `Katalog_Pruefsumme`, `Katalog_Ausgelaufen` an acht Katalogtabellen, `Tab_Applikation.Katalogfassung`) samt Protokoll des Abgleichs (`Tab_Katalogabgleich`, STRICT) und gespeicherter Erdreichprüfung (`Tab_ErgebnisErdreich`, STRICT), 173 dieselben Katalogspalten an den sechzehn Katalogen der Stufe 2 samt Saat, 174 Aufschlag und manuelle Aufheizzeit der Aufheizoptimierung samt Aufheizwerten im Ergebnis (`AufheizManuellSchema`), 175 Projektkopien der Brennstoffe (`Tab_Brennstoff`) und der Vorgaben der Pufferauslegung (`Tab_PufferAuslegungParameter`), STRICT, wertgleich gesät — Abschnitt 8a, 176 Nutzung der Konditionierungsvorlage am Kalender des Projekts (`Tab_Konditionierungskalender.Nutzung`, nullbar mit Prüfklausel, gesät aus der Herkunft in `Bemerkung`) — Abschnitt 8a; die Schritte bis 76 im Einzelnen: 65 Wechselrichterkatalog,
 66 Stränge, 67 BHKW-Leistungsgrenze, 68 `Firma` im Stromspeicherkatalog, 69 PV-Koeffizienten
 repariert, 70 PV-Strangprüfung — Kurzschlussstrom je MPPT, `Ausleg_T_Kalt`/`Ausleg_T_Heiss` an
 `Tab_Einstellungen` —, 71 zwölf nullbare Szenario-Spalten an `Tab_ProjektWirtschaftlichkeit`,
@@ -515,6 +587,90 @@ nächste Start von EPOS-Plan (oder ein SQLite-Werkzeug) spielt es von selbst ein
 noch gibt**: Die Deinstallation fragt seit Auftrag #161 (09.09.2026), ob
 `%ProgramData%\EPOS_PLAN` samt `DB-Backup` gelöscht werden soll (Vorgabe *Nein*, aber
 ein bestätigtes *Ja* nimmt Datenbank und Sicherungsordner unwiederbringlich mit).
+
+---
+
+## 8a. Katalogabgleich nach einem Update
+
+**Schemaschritt 172** (`KatalogfassungSchema`, nach 170 Katalogempfehlung der Hilfsenergie und 171 Optionen des Pufferspeichers): An den acht Katalogen der Stufe 1 — Wärmepumpen
+(`Tab_WP_STAMM` samt `Tab_Kenndaten_STAMM` und `Tab_Kenndaten_Kuehlung_STAMM`), Heizkessel, BHKW,
+PV-Module, Brauchwasser- und Prozesswärmeprofile samt Typen — stehen `Katalog_Schluessel` (TEXT,
+eindeutig über einen Teilindex `UX_<Tabelle>_Katalog_Schluessel … WHERE Katalog_Schluessel IS NOT
+NULL`), `Katalog_Pruefsumme` (TEXT, 64 Hexzeichen) und `Katalog_Ausgelaufen` (INTEGER 0/1, Vorgabe 0);
+an `Tab_Applikation` die `Katalogfassung` (INTEGER, leer = noch nie abgeglichen); dazu die
+STRICT-Tabellen `Tab_Katalogabgleich` (Protokoll) und `Tab_ErgebnisErdreich` (gespeicherte
+Erdreichprüfung je Lauf und Anlage, am Projekt und an der Energieanlage mit `ON DELETE CASCADE`).
+Die Saat des Schritts belegt Schlüssel und Prüfsumme jedes gesperrten Satzes (`ReadOnly = 1`); ein
+eigener Satz (`ReadOnly = 0`) bleibt ohne Schlüssel. Kein Fachwert ändert sich, der Referenzlauf
+bleibt byte-gleich. Die Messlatte aus 6.5 hebt `Werkzeuge/Testdatenbankschema` wie jeden Schritt.
+
+**Schemaschritt 173** (`KatalogfassungStufe2Schema`): dieselben drei Spalten samt Teilindex und
+dieselbe Saat an den sechzehn Katalogen der Stufe 2 — Baustoffe, Bauteilaufbauten, Brennstoffe
+(`Tab_Brennstoff_Stamm`), Tagesverteilungen, Gebäude, Konditionierungsvorlagen, Pufferspeicher,
+Vorgaben der Pufferauslegung, Solarkollektoren, Solar-, Strom- und Wärmebedarfsganglinien,
+Stromspeicher, Stromverbraucherprofile samt Wochenprofilen, Wechselrichter. Ihre Kindtabellen
+(Synonyme, Schichten, Ganglinien- und Verteilungswerte, Konditionierungsvorgaben, -kalender und
+-perioden) bekommen keine Spalte; ihre Zeilen gehören über den Fremdschlüssel zum Kopfsatz. Nicht
+abgeglichen werden der **Klimakatalog** (`Tab_Klimaregion_STAMM`, `Tab_Klimadaten_STAMM`,
+`Tab_Solar_STAMM` — Pflege über den Klimaimport) und der **Zapfprofilkatalog** (`Tab_Tww*_STAMM` —
+Pflege über sein eigenes Paket mit Katalogversion). Kein Fachwert ändert sich, der Referenzlauf
+bleibt byte-gleich.
+
+**Schemaschritt 175** (`ProjektkopienKatalogeSchema`): die Projektkopien `Tab_Brennstoff` (je Projekt
+und Brennstoffart, alle Fachspalten des Stamms samt `Katalogfassung_Herkunft`, eindeutig über
+`ID_Projekt` und `ID_Brennstoff`) und `Tab_PufferAuslegungParameter` (je Projekt mit Auslegung und
+Schlüssel), beide STRICT und mit dem Projekt gelöscht (`ON DELETE CASCADE`), samt wertgleicher Saat
+— je Projekt jede Brennstoffart, je Projekt mit Auslegung jede Vorgabe. Die Verweise der
+Projekttabellen (`Tab_Heizkessel.Brennstoff`, `Tab_BHKW.Brennstoff`, `energy_carrier.ID_Brennstoff`,
+`RefKessel_ID_Brennstoff`) nennen weiter die Brennstoffart; gelesen werden die Werte aus der Kopie
+des Projekts. Die Konditionierungsvorlagen brauchen keine Tabelle: „Vorlage übernehmen" kopiert ihren
+Inhalt in das Projektgebäude. Wiederholbar, der Referenzlauf bleibt byte-gleich.
+
+**Schemaschritt 176** (`KonditionierungNutzungSchema`): die Spalte `Nutzung` an
+`Tab_Konditionierungskalender` (TEXT, nullbar, Prüfklausel auf `WOHNEN`, `BUERO`, `SCHULE`, `SONSTIGE`
+wie an `Tab_Konditionierungsvorlage_STAMM`; `ADD COLUMN`, kein Neubau) samt Saat: Je Kalender ohne
+Nutzung, dessen `Bemerkung` eine Herkunftsvorlage nennt, die Nutzung der Vorlage gleichen Namens und
+gleicher Größe; ohne Treffer bleibt sie leer. „Vorlage übernehmen" setzt sie danach an der Kopie, die
+Vorbelegung der Pufferauslegung liest nur noch sie. Wiederholbar, der Referenzlauf bleibt byte-gleich.
+
+**Das Paket.** Die Auslieferung legt neben `{app}\Vorlage\Kenndaten.sqlite` die Datei
+`{app}\Vorlage\Katalogpaket.json` (geschrieben von `Werkzeuge/Auslieferungsvorlage`, Fassung über
+`--katalogfassung`): alle ausgelieferten Sätze der Stufen 1 und 2 mit Schlüssel, Prüfsumme und
+Werten, Ganglinien als Wertelisten (Formatversion 2; Größe im Bericht des Werkzeugs, Warnung ab
+20 MB). Sie liegt nicht im Repository (`.gitignore: Setup/Vorlage/Katalogpaket.json`).
+
+Brennstoffe, Konditionierungsvorlagen und die Vorgaben der Pufferauslegung haben wie die
+Gerätekataloge eine Projektkopie (`Tab_Brennstoff`, die Konditionierung am Projektgebäude,
+`Tab_PufferAuslegungParameter`; Konzept Simulationsablauf Abschnitt 22): Der Abgleich legt fehlende
+Kopien vor dem ersten Schreiben wertgleich an und ändert danach nur den Katalog. Ein Projekt übernimmt
+einen neuen Auslieferungsstand erst mit „Auf Katalog zurücksetzen" im Dialog „Brennstoffe des
+Projekts".
+
+**Ablauf beim Start.** Nach einer erfolgreichen Schemamigration vergleicht EPOS-Plan die Fassung
+des Pakets mit `Tab_Applikation.Katalogfassung`. Ist das Paket neuer:
+
+1. Sicherung per `VACUUM INTO` (Abschnitt 3.2) als `Kenndaten_Katalogabgleich_<Zeitstempel>.sqlite`
+   in `DB-Backup` neben der Datenbank (gibt es den Ordner nicht: daneben). Scheitert die Sicherung,
+   gleicht EPOS-Plan nicht ab.
+2. Abgleich in EINER Transaktion: fehlender Satz eingefügt, unveränderter ausgelieferter Satz
+   aktualisiert, angepasster oder entsperrter Satz behalten, entfallener Satz als ausgelaufen
+   gekennzeichnet (nie gelöscht). Projektkopien und eigene Sätze fasst er nicht an.
+3. Je Aktion eine Zeile in `Tab_Katalogabgleich`, dazu die Zusammenfassung; danach steht die
+   Fassung des Pakets in `Tab_Applikation.Katalogfassung`. Ein Fenster nennt das Ergebnis.
+
+Ohne Paket oder mit einem unlesbaren Paket bleibt der Katalog, wie er ist (beim unlesbaren Paket mit
+der Zeile `KEIN_PAKET` im Protokoll).
+
+**Nachsehen und wiederherstellen.**
+
+```sql
+SELECT Zeitpunkt, Fassung, Tabelle, Schluessel, Aktion, Hinweis FROM Tab_Katalogabgleich ORDER BY ID DESC;
+SELECT Katalogfassung FROM Tab_Applikation;
+```
+
+Den Auslieferungsstand EINES behaltenen Satzes stellt Administration → Daten & Import → „Katalog
+aktualisieren…" wieder her (Aktion `WIEDERHERGESTELLT`). Den Stand VOR dem Abgleich insgesamt holt
+die Sicherung aus Schritt 1 zurück (Abschnitt 8); beim nächsten Start gleicht EPOS-Plan dann erneut ab.
 
 ---
 

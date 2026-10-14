@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kalenderbedienung Konditionierung</title>
+<meta name="description" content="Spielbares Mockup zweier Varianten einer einfachen Kalenderbedienung im Reiter Konditionierung des Gebäudedialogs: V1 Jahreskalender mit Tagesarten und Tagesprofilen, V2 Wochenprofile mit Zuordnung nach Datumsbereichen.">
+<!--
+  MOCKUP "Kalenderbedienung Konditionierung" zum Befund
+  Dokumentation/ueberholt/2026-10-09_Befund_Kalenderbedienung_Konditionierung.md
+  und zum Konzept Dokumentation/aktuell/Konzept_Konditionierungsprofile_EPOS-Plan.md (3.2, 3.3, 5.1, 7.1-7.5).
+
+  ANLASS: Anwenderwunsch vom 08.10.2026 - ein einfach bedienbarer Kalender: (1) fertige Profile verwenden,
+  (2) Wochenende, Ferien und Saison schnell festlegen, und zwar als DATUMSBEREICHE, nicht als Zeilen einer
+  Matrix - sie vereinfachen nur die Konfiguration (alle Groessen einheitlich), (3) einzelne Tage konfigurierbar
+  (Ausnahmetage, Feiertage), (4) Wochen- und Monatsprofile kopierbar; dazu die Frage nach einer GRAFISCHEN
+  Bearbeitung.
+
+  ZWEI VARIANTEN auf denselben Ausgangsdaten (Beispielgebaeude "Buero", fuenf Groessen Heizen, Kuehlen,
+  Lueftung, Geraete, Personen; Bezugsjahr 2025 als Gemeinjahr, gespeichert wird nur Tag und Monat):
+    V1 "Jahreskalender": ein Monatsraster des Jahres, Tagesarten farbig; Klick oder Ziehen weist eine
+       Tagesart zu (Ausnahme vom Regelwerk); oben Schnellfelder; rechts das Tagesprofil der gewaehlten
+       Tagesart als 24 ziehbare Balken.
+    V2 "Wochenprofile": links die Wochenprofile (je ein 7 x 24-Raster), rechts die Zuordnung
+       Datumsbereich -> Wochenprofil als Tabelle mit Datumsfeldern und einem Jahresband, dazu Woche
+       kopieren, Monat kopieren und Einzeltag-Ausnahmen als Liste.
+  Beide mit "Vorlage uebernehmen" (fertige Profile) und einer Mini-Jahresvorschau (Teppichbild).
+
+  DAS MOCKUP RECHNET NICHTS: Die Jahresvorschau zeigt nur, welcher Wert in welcher Stunde gilt. Es schreibt
+  nichts; "OK" und "Abbrechen" melden nur. FARBEN woertlich aus EPOS.UI/wwwroot/epos-ui.css (:root), keine
+  neue Farbe. Mockup-Zeichen: der rot gestrichelte Streifen oben und die Randnotiz. Eigenstaendig, kein CDN.
+-->
+<style>
+:root {
+    --epos-schrift: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    --epos-schriftgroesse: 13px;
+    --epos-schriftgroesse-kartentitel: 16px;
+    --epos-rahmen: #b4b2a9;
+    --epos-rahmen-leise: #d9d7cf;
+    --epos-text: #2c2c2a;
+    --epos-text-leise: #5f5e5a;
+    --epos-text-sehr-leise: #888780;
+    --epos-flaeche: #f5f4ef;
+    --epos-quelle-rahmen: #378ADD;
+    --epos-quelle-text: #185FA5;
+    --epos-senke-rahmen: #D85A30;
+    --epos-senke-text: #993C1D;
+    --epos-badge-flaeche: #FAECE7;
+    --epos-badge-text: #712B13;
+    --epos-schema-versorgung: #1D9E75;
+    --epos-stufe-fehler: rgb(176, 0, 32);
+    --epos-ampel-gruen-flaeche: rgb(236, 248, 239);
+    --epos-karte-rahmen: #D1D5DB;
+    --epos-karte-flaeche: #ffffff;
+    --epos-karte-flaeche-hover: #EFF6FF;
+    --epos-karte-titel: #0F1F3D;
+    --epos-gruppenkopf-text: #ffffff;
+    --epos-rand: 10px;
+    --epos-ecke: 6px;
+    --epos-karte-rand: 16px;
+    --epos-touchziel: 44px;
+    --epos-flaeche-gedaempft: #efefef;
+    --epos-menue-marke: #d9e8f7;
+    /* Tagesarten - Verweise auf vorhandene Token, keine neuen Farben */
+    --ta-werktag: var(--epos-menue-marke);
+    --ta-wochenende: var(--epos-quelle-rahmen);
+    --ta-ferien: var(--epos-schema-versorgung);
+    --ta-feiertag: var(--epos-senke-rahmen);
+    --ta-saison: var(--epos-flaeche-gedaempft);
+    --ta-ausnahme: var(--epos-badge-text);
+    --mk-streifen: 34px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font: var(--epos-schriftgroesse)/1.4 var(--epos-schrift); color: var(--epos-text); background: var(--epos-flaeche); }
+button, input, select { font: inherit; }
+
+/* ---- Mockup-Streifen ---- */
+.mk-streifen { min-height: var(--mk-streifen); display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 4px 16px;
+    border-bottom: 1px dashed var(--epos-stufe-fehler); background: var(--epos-flaeche-gedaempft); font-size: 12px; }
+.mk-streifen b { color: var(--epos-stufe-fehler); }
+.mk-variante { display: inline-flex; gap: 4px; }
+.mk-variante button, .mk-sk { padding: 2px 10px; border: 1px dashed var(--epos-stufe-fehler); background: var(--epos-karte-flaeche);
+    border-radius: var(--epos-ecke); cursor: pointer; font-size: 12px; }
+.mk-variante button[aria-pressed="true"] { background: var(--epos-karte-titel); color: var(--epos-gruppenkopf-text); border-style: solid; }
+.mk-fueller { flex: 1 1 auto; }
+.mk-notiz { display: none; position: fixed; z-index: 50; top: calc(var(--mk-streifen) + 8px); right: 16px; width: min(460px, calc(100vw - 32px));
+    max-height: calc(100vh - 80px); overflow: auto; padding: 10px 14px; background: var(--epos-karte-flaeche);
+    border: 1px dashed var(--epos-stufe-fehler); border-radius: var(--epos-ecke); box-shadow: 0 6px 24px rgba(15, 31, 61, 0.25); }
+body.mk-notiz-offen .mk-notiz { display: block; }
+.mk-notiz h2 { font-size: 13px; margin: 4px 0 6px; color: var(--epos-stufe-fehler); }
+.mk-notiz ul { margin: 0; padding-left: 18px; } .mk-notiz li { margin: 3px 0; }
+
+/* ---- Dialog ---- */
+.epos-dialog { max-width: 1400px; margin: 12px auto; padding: 10px var(--epos-karte-rand) 12px; background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke); }
+.epos-dialog-kopf { display: flex; align-items: center; gap: var(--epos-rand); padding-bottom: 6px; border-bottom: 1px solid var(--epos-rahmen-leise); }
+.epos-dialog-titel { margin: 0; font-size: var(--epos-schriftgroesse-kartentitel); font-weight: 700; color: var(--epos-karte-titel); flex: 1 1 auto; }
+.mk-rund { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--epos-rahmen); background: var(--epos-karte-flaeche); cursor: pointer;
+    color: var(--epos-quelle-text); font-weight: 700; }
+.mk-zu { width: 44px; height: 44px; border-radius: var(--epos-ecke); border: 1px solid var(--epos-rahmen); background: var(--epos-flaeche); cursor: pointer; }
+.mk-reiter { display: flex; gap: 2px; margin: 8px 0 10px; border-bottom: 1px solid var(--epos-rahmen); flex-wrap: wrap; }
+.mk-reiter span { padding: 10px 16px; color: var(--epos-text-leise); }
+.mk-reiter span[aria-selected="true"] { color: var(--epos-karte-titel); font-weight: 700; border-bottom: 3px solid var(--epos-quelle-rahmen); background: var(--epos-karte-flaeche-hover); }
+.epos-dialog-fuss { display: flex; gap: 8px; justify-content: flex-end; align-items: center; padding-top: 10px; margin-top: 12px; border-top: 1px solid var(--epos-rahmen-leise); flex-wrap: wrap; }
+.epos-knopf { min-height: var(--epos-touchziel); padding: 4px 12px; color: var(--epos-text); background: var(--epos-flaeche);
+    border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke); cursor: pointer; }
+.epos-knopf:hover { border-color: var(--epos-quelle-rahmen); }
+.epos-knopf--primaer { color: var(--epos-gruppenkopf-text); background: var(--epos-karte-titel); border-color: var(--epos-karte-titel); min-width: 96px; }
+.epos-knopf--klein { min-height: 32px; padding: 2px 8px; }
+.epos-knopf[aria-pressed="true"] { background: var(--epos-karte-titel); color: var(--epos-gruppenkopf-text); border-color: var(--epos-karte-titel); }
+.epos-eingabe { min-height: 36px; padding: 4px 8px; border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke); background: var(--epos-karte-flaeche); color: var(--epos-text); }
+.epos-leisezeile { color: var(--epos-text-leise); margin: 4px 0; }
+.mk-meldung { margin: 8px 0; padding: 6px 10px; border-left: 4px solid var(--epos-schema-versorgung); background: var(--epos-ampel-gruen-flaeche); }
+.mk-meldung:empty { display: none; }
+
+/* ---- gemeinsame Kopfzeile: Groessen und Vorlage ---- */
+.mk-kopfzeile { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-bottom: 8px; }
+.mk-groessen { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.mk-gruppe { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.mk-gruppe > label { color: var(--epos-text-leise); }
+
+/* ---- Karten ---- */
+.mk-karte { border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke); padding: 8px 12px; background: var(--epos-karte-flaeche); min-width: 0; }
+.mk-karte h3 { margin: 0 0 6px; font-size: 13px; color: var(--epos-karte-titel); }
+.mk-schnell { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: var(--epos-rand); margin-bottom: var(--epos-rand); }
+.mk-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.mk-chip { min-width: 40px; min-height: 36px; border: 1px solid var(--epos-rahmen); border-radius: 18px; background: var(--epos-karte-flaeche); cursor: pointer; }
+.mk-chip[aria-pressed="true"] { background: var(--ta-wochenende); color: var(--epos-gruppenkopf-text); border-color: var(--ta-wochenende); }
+.mk-bereichliste { list-style: none; margin: 4px 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.mk-bereichliste li { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.mk-bereichliste input[type=text] { width: 9em; }
+.mk-bereichliste input[type=date] { width: 9.5em; }
+.mk-x { min-width: 32px; min-height: 32px; border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke); background: var(--epos-flaeche); cursor: pointer; }
+
+/* ---- V1: Jahreskalender ---- */
+.v1-haupt { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 380px); gap: var(--epos-rand); align-items: start; }
+@media (max-width: 980px) { .v1-haupt { grid-template-columns: minmax(0, 1fr); } }
+.mk-pinsel { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+.mk-pinsel button { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 2px 10px; border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke); background: var(--epos-karte-flaeche); cursor: pointer; }
+.mk-pinsel button[aria-pressed="true"] { outline: 3px solid var(--epos-karte-titel); outline-offset: 1px; }
+.mk-farbe { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--epos-rahmen); }
+.mk-jahr { overflow-x: auto; user-select: none; touch-action: none; }
+.mk-jahr table { border-collapse: separate; border-spacing: 2px; }
+.mk-jahr th { font-weight: 600; color: var(--epos-text-leise); font-size: 11px; padding: 0 4px; text-align: right; white-space: nowrap; }
+.mk-jahr td { width: 22px; height: 22px; min-width: 22px; border-radius: 3px; font-size: 10px; text-align: center; vertical-align: middle; cursor: crosshair;
+    border: 1px solid transparent; color: var(--epos-karte-titel); }
+.mk-jahr td.leer { background: transparent; cursor: default; }
+.mk-jahr td.hand { border-color: var(--epos-karte-titel); font-weight: 700; }
+.mk-jahr td.weiss { color: var(--epos-gruppenkopf-text); }
+.mk-legende { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px; font-size: 12px; color: var(--epos-text-leise); }
+.mk-balken { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 4px; }
+.mk-achse { display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; color: var(--epos-text-leise); height: 180px; text-align: right; }
+.mk-stunden { position: relative; height: 180px; display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 2px; align-items: end;
+    border-bottom: 1px solid var(--epos-rahmen); touch-action: none; user-select: none; cursor: ns-resize; }
+.mk-stunde { position: relative; height: 100%; display: flex; align-items: flex-end; }
+.mk-stunde i { display: block; width: 100%; background: var(--epos-quelle-rahmen); border-radius: 2px 2px 0 0; }
+.mk-stunde.aus i { height: 100% !important; background: repeating-linear-gradient(135deg, var(--epos-flaeche-gedaempft) 0 4px, var(--epos-karte-flaeche) 4px 8px); }
+.mk-stundenzahlen { display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 2px; font-size: 10px; color: var(--epos-text-leise); text-align: center; margin-left: 38px; }
+.mk-werkzeuge { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
+
+/* ---- V2: Wochenprofile ---- */
+.v2-haupt { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--epos-rand); align-items: start; }
+@media (max-width: 1100px) { .v2-haupt { grid-template-columns: minmax(0, 1fr); } }
+.mk-profilliste { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; }
+.mk-profilliste button { display: inline-flex; gap: 6px; align-items: center; min-height: 40px; padding: 2px 10px; border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke); background: var(--epos-karte-flaeche); cursor: pointer; }
+.mk-profilliste button[aria-pressed="true"] { outline: 3px solid var(--epos-karte-titel); outline-offset: 1px; }
+.mk-raster { overflow-x: auto; user-select: none; touch-action: none; }
+.mk-raster table { border-collapse: separate; border-spacing: 1px; width: 100%; table-layout: fixed; min-width: 520px; }
+.mk-raster th { font-size: 10px; font-weight: 600; color: var(--epos-text-leise); padding: 0; }
+.mk-raster th:first-child { width: 28px; text-align: left; }
+.mk-raster td { height: 26px; font-size: 9px; text-align: center; cursor: crosshair; border-radius: 2px; color: var(--epos-karte-titel); }
+.mk-raster td.aus { background: repeating-linear-gradient(135deg, var(--epos-flaeche-gedaempft) 0 4px, var(--epos-karte-flaeche) 4px 8px) !important; color: var(--epos-text-sehr-leise); }
+.mk-raster td.weiss { color: var(--epos-gruppenkopf-text); }
+.mk-rolle { overflow-x: auto; max-width: 100%; }
+.mk-tabelle { width: 100%; border-collapse: collapse; }
+.mk-tabelle th, .mk-tabelle td { border-bottom: 1px solid var(--epos-rahmen-leise); padding: 4px; text-align: left; vertical-align: middle; }
+.mk-tabelle th { font-size: 12px; color: var(--epos-text-leise); font-weight: 600; }
+.mk-tabelle td.zahl { width: 2.5em; color: var(--epos-text-leise); }
+.mk-tabelle input[type=date] { width: 8.8em; }
+.mk-tabelle select { max-width: 10.5em; }
+.mk-tabelle input[type=text] { width: 100%; min-width: 8em; }
+.mk-tabelle tr.gewaehlt td { background: var(--epos-karte-flaeche-hover); }
+.mk-band { position: relative; height: 36px; margin: 6px 0 10px; border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke); background: var(--epos-karte-flaeche); overflow: hidden; }
+.mk-band div { position: absolute; top: 0; bottom: 0; cursor: pointer; border-right: 1px solid var(--epos-karte-flaeche); font-size: 10px; color: var(--epos-gruppenkopf-text);
+    overflow: hidden; white-space: nowrap; padding: 2px 3px; }
+.mk-band span.monat { position: absolute; bottom: 1px; font-size: 9px; color: var(--epos-text-leise); pointer-events: none; }
+.mk-gross { font-size: 11px; color: var(--epos-text-leise); }
+
+/* ---- Teppich ---- */
+.mk-teppich { margin-top: var(--epos-rand); }
+.mk-teppich canvas { width: 100%; height: 96px; image-rendering: pixelated; border: 1px solid var(--epos-rahmen-leise); border-radius: var(--epos-ecke); display: block; }
+.mk-teppich-zeile { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; font-size: 12px; color: var(--epos-text-leise); }
+.mk-skala { display: inline-flex; align-items: center; gap: 4px; }
+.mk-skala i { display: inline-block; width: 90px; height: 10px; border: 1px solid var(--epos-rahmen-leise); }
+
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="mk-streifen">
+  <b>Mockup · Kalenderbedienung Konditionierung</b>
+  <span class="mk-variante" role="group" aria-label="Variante">
+    <button type="button" data-variante="v1" aria-pressed="true" title="V1 · Jahreskalender mit Tagesarten">V1 Jahreskalender</button>
+    <button type="button" data-variante="v2" aria-pressed="false" title="V2 · Wochenprofile mit Zuordnung nach Datum">V2 Wochenprofile</button>
+  </span>
+  <span class="mk-fueller"></span>
+  <button type="button" class="mk-sk" id="mk-zurueck" title="Ausgangsbestand wiederherstellen">Zurücksetzen</button>
+  <button type="button" class="mk-sk" id="mk-notizknopf">Randnotiz</button>
+</div>
+<aside class="mk-notiz" aria-label="Randnotiz">
+  <h2>Was das Mockup zeigt</h2>
+  <ul>
+    <li><b>Beide Varianten</b> starten mit demselben Büro: Wochenende Sa+So, Betriebsruhe 23.12.–02.01. und Sommerpause 04.08.–15.08., Heizsaison 01.10.–30.04., Kühlsaison 01.05.–30.09., Feiertage Baden-Württemberg.</li>
+    <li><b>V1</b>: Die Schnellfelder setzen Tage im Jahr <i>für alle Größen</i>; je Größe gibt es nur noch ein Tagesprofil je Tagesart. Ein Klick oder Ziehen im Jahresraster macht Tage zu Ausnahmen (Rahmen), „Radierer“ gibt sie der Regel zurück.</li>
+    <li><b>V2</b>: Je Größe Wochenprofile (7 × 24); die Zuordnung „von–bis → Wochenprofil“ gilt für die angehakten Größen (Vorgabe: alle). Spätere Zeilen gehen vor, Einzeltage gehen allem vor.</li>
+    <li><b>Grafisch</b> sind in V1 das Jahresraster (Pinsel) und die Balken des Tagesprofils, in V2 das Wochenraster (Pinsel) und das Jahresband der Zuordnung.</li>
+    <li><b>Nicht gezeigt</b>: Nacht als eigene Zeile (sie steckt im Tagesprofil), Aufheizoptimierung, Zonen, Prüfmeldungen, Zurücknehmen.</li>
+  </ul>
+</aside>
+
+<div class="epos-dialog" role="dialog" aria-labelledby="mk-titel">
+  <div class="epos-dialog-kopf">
+    <h1 class="epos-dialog-titel" id="mk-titel">Gebäude in DB ändern… · Büro (Beispiel)</h1>
+    <button type="button" class="mk-rund" title="Hilfe">i</button>
+    <button type="button" class="mk-rund" title="KI-Assistent">KI</button>
+    <button type="button" class="mk-zu" title="Schließen (Esc)" data-melde="Abbrechen: nichts gespeichert (Mockup).">✕</button>
+  </div>
+  <div class="mk-reiter" role="tablist"><span>Gebäude und Hülle</span><span aria-selected="true">Konditionierung</span><span>Zonen</span></div>
+
+  <div class="mk-kopfzeile">
+    <div class="mk-gruppe"><label>Größe</label><span class="mk-groessen" id="mk-groessen" role="group" aria-label="Größe"></span></div>
+    <div class="mk-gruppe">
+      <label for="mk-vorlage">Vorlage</label>
+      <select id="mk-vorlage" class="epos-eingabe" title="Fertige Profile: setzt die Profile aller Größen nach der Nutzung"></select>
+      <button type="button" class="epos-knopf" id="mk-vorlage-ueber" title="Übernimmt die Profile der Vorlage in alle fünf Größen; Ferien, Feiertage und Saison des Gebäudes bleiben">Vorlage übernehmen</button>
+    </div>
+  </div>
+  <div class="mk-meldung" id="mk-meldung" role="status" aria-live="polite"></div>
+
+  <!-- ===================================================== V1 ===================================================== -->
+  <section id="v1" aria-label="Variante V1 Jahreskalender">
+    <div class="mk-schnell">
+      <div class="mk-karte">
+        <h3>Wochenende</h3>
+        <div class="mk-chips" id="v1-we"></div>
+        <div class="mk-werkzeuge"><button type="button" class="epos-knopf epos-knopf--klein" id="v1-we-sasu">Wochenende = Sa+So</button>
+          <button type="button" class="epos-knopf epos-knopf--klein" id="v1-we-keins" title="Wohnen, Hotel: kein Wochenende">keines</button></div>
+        <p class="epos-leisezeile">gilt für alle Größen</p>
+      </div>
+      <div class="mk-karte">
+        <h3>Ferien und Betriebsruhe</h3>
+        <ul class="mk-bereichliste" id="v1-ferien"></ul>
+        <button type="button" class="epos-knopf epos-knopf--klein" id="v1-ferien-neu">+ Zeitraum</button>
+        <p class="epos-leisezeile">Datumsbereiche, gelten für alle Größen</p>
+      </div>
+      <div class="mk-karte">
+        <h3>Saison <span class="mk-gross" id="v1-saison-groesse"></span></h3>
+        <div class="mk-bereichliste"><li>
+          <input type="date" class="epos-eingabe" id="v1-saison-von" min="2025-01-01" max="2025-12-31" aria-label="Saison von">
+          – <input type="date" class="epos-eingabe" id="v1-saison-bis" min="2025-01-01" max="2025-12-31" aria-label="Saison bis"></li></div>
+        <label><input type="checkbox" id="v1-saison-ganz"> ganzjährig</label>
+        <p class="epos-leisezeile">je Größe; außerhalb gilt die Tagesart „Saison aus“</p>
+      </div>
+      <div class="mk-karte">
+        <h3>Feiertage</h3>
+        <div class="mk-werkzeuge" style="margin-top:0">
+          <select class="epos-eingabe" id="v1-land" aria-label="Bundesland"></select>
+          <button type="button" class="epos-knopf epos-knopf--klein" id="v1-land-laden">Bundesland laden</button>
+        </div>
+        <p class="epos-leisezeile" id="v1-feiertage-text"></p>
+      </div>
+    </div>
+
+    <div class="v1-haupt">
+      <div class="mk-karte">
+        <h3>Jahr 2025 · Tagesarten</h3>
+        <div class="mk-pinsel" id="v1-pinsel" role="group" aria-label="Pinsel"></div>
+        <div class="mk-jahr" id="v1-jahr" aria-label="Jahreskalender"></div>
+        <div class="mk-legende"><span>Klick oder Ziehen weist die Tagesart des Pinsels zu (Rahmen = Ausnahme); „Radierer“ gibt den Tag der Regel zurück. Zeigen nennt Datum und Herkunft.</span></div>
+        <p class="epos-leisezeile" id="v1-tagzeile">&nbsp;</p>
+      </div>
+      <div class="mk-karte">
+        <h3 id="v1-profil-titel">Tagesprofil</h3>
+        <div class="mk-pinsel" id="v1-profilwahl" role="group" aria-label="Tagesart des Profils"></div>
+        <div class="mk-balken"><div class="mk-achse" id="v1-achse"></div><div class="mk-stunden" id="v1-stunden" aria-label="24 Stunden, ziehen setzt den Wert"></div></div>
+        <div class="mk-stundenzahlen" id="v1-stundenzahlen"></div>
+        <div class="mk-werkzeuge">
+          <label>Ganzer Tag <input type="number" class="epos-eingabe" id="v1-ganz-wert" step="0.5" style="width:5.5em"></label>
+          <button type="button" class="epos-knopf epos-knopf--klein" id="v1-ganz">setzen</button>
+          <button type="button" class="epos-knopf epos-knopf--klein" id="v1-ausmodus" aria-pressed="false" title="Ziehen setzt „aus“ statt eines Werts (nur Heizen und Kühlen)">Pinsel „aus“</button>
+        </div>
+        <div class="mk-werkzeuge">
+          <select class="epos-eingabe" id="v1-profilvorlage" aria-label="Profil aus Vorlage"></select>
+          <button type="button" class="epos-knopf epos-knopf--klein" id="v1-profilvorlage-ueber">Profil aus Vorlage</button>
+        </div>
+        <div class="mk-werkzeuge">
+          <select class="epos-eingabe" id="v1-kopierziel" aria-label="Kopieren nach"></select>
+          <button type="button" class="epos-knopf epos-knopf--klein" id="v1-kopieren">Tagesprofil kopieren nach …</button>
+        </div>
+        <p class="epos-leisezeile" id="v1-profilzeile"></p>
+      </div>
+    </div>
+    <div class="mk-karte mk-teppich"><h3>Jahresvorschau · <span class="v-groesse"></span></h3><canvas id="v1-teppich" width="365" height="24" aria-label="Teppichbild"></canvas>
+      <div class="mk-teppich-zeile"><span>Tage × Stunden, Farbe = Wert, schraffiert = aus. Zeigen nennt Tag, Stunde und Wert.</span><span class="mk-skala"><span class="v-min"></span><i class="v-skala"></i><span class="v-max"></span></span></div>
+      <p class="epos-leisezeile v-zeiger">&nbsp;</p></div>
+  </section>
+
+  <!-- ===================================================== V2 ===================================================== -->
+  <section id="v2" aria-label="Variante V2 Wochenprofile" hidden>
+    <div class="v2-haupt">
+      <div class="mk-karte">
+        <h3>Wochenprofile <span class="mk-gross v-groesse"></span></h3>
+        <ul class="mk-profilliste" id="v2-profile"></ul>
+        <div class="mk-werkzeuge" style="margin-top:0">
+          <label>Pinsel <input type="number" class="epos-eingabe" id="v2-pinselwert" step="0.5" style="width:5.5em"></label>
+          <button type="button" class="epos-knopf epos-knopf--klein" id="v2-ausmodus" aria-pressed="false">Pinsel „aus“</button>
+          <span class="epos-leisezeile">Klick oder Ziehen im Raster malt.</span>
+        </div>
+        <div class="mk-raster" id="v2-raster"></div>
+        <div class="mk-werkzeuge">
+          <button type="button" class="epos-knopf epos-knopf--klein" id="v2-mo-di-fr">Montag nach Di–Fr kopieren</button>
+          <button type="button" class="epos-knopf epos-knopf--klein" id="v2-sa-so">Samstag nach Sonntag kopieren</button>
+        </div>
+        <div class="mk-werkzeuge">
+          <input type="text" class="epos-eingabe" id="v2-kopie-name" aria-label="Name der Kopie" placeholder="Name der Kopie">
+          <select class="epos-eingabe" id="v2-kopie-groesse" aria-label="Zielgröße"></select>
+          <button type="button" class="epos-knopf" id="v2-woche-kopieren">Woche kopieren</button>
+          <button type="button" class="epos-knopf" id="v2-profil-loeschen">Löschen</button>
+        </div>
+      </div>
+      <div class="mk-karte">
+        <h3>Zuordnung im Jahr</h3>
+        <div class="mk-band" id="v2-band" aria-label="Jahresband der Zuordnung"></div>
+        <div class="mk-rolle"><table class="mk-tabelle" id="v2-zuordnung">
+          <thead><tr><th>Rang</th><th>von</th><th>bis</th><th>Wochenprofil</th><th>gilt für</th><th></th></tr></thead><tbody></tbody>
+        </table></div>
+        <div class="mk-werkzeuge">
+          <button type="button" class="epos-knopf epos-knopf--klein" id="v2-zeile-neu">+ Zeitraum</button>
+          <span class="epos-leisezeile">Ohne Zeile gilt die Standardwoche; spätere Zeilen gehen vor.</span>
+        </div>
+        <div class="mk-werkzeuge">
+          <label>Monat <select class="epos-eingabe" id="v2-monat-von" aria-label="Quellmonat"></select></label>
+          <label>nach <select class="epos-eingabe" id="v2-monat-nach" aria-label="Zielmonat"></select></label>
+          <button type="button" class="epos-knopf epos-knopf--klein" id="v2-monat-kopieren" title="Kopiert Zuordnung und Einzeltage des Quellmonats in den Zielmonat (Tag für Tag)">Monat kopieren</button>
+        </div>
+        <h3 style="margin-top:12px">Einzeltage (Feiertage, Ausnahmen)</h3>
+        <div class="mk-rolle"><table class="mk-tabelle" id="v2-tage">
+          <thead><tr><th>Datum</th><th>Bezeichnung</th><th>gilt wie</th><th></th></tr></thead><tbody></tbody>
+        </table></div>
+        <div class="mk-werkzeuge">
+          <button type="button" class="epos-knopf epos-knopf--klein" id="v2-tag-neu">+ Einzeltag</button>
+          <select class="epos-eingabe" id="v2-land" aria-label="Bundesland"></select>
+          <button type="button" class="epos-knopf epos-knopf--klein" id="v2-land-laden">Feiertage laden</button>
+        </div>
+      </div>
+    </div>
+    <div class="mk-karte mk-teppich"><h3>Jahresvorschau · <span class="v-groesse"></span></h3><canvas id="v2-teppich" width="365" height="24" aria-label="Teppichbild"></canvas>
+      <div class="mk-teppich-zeile"><span>Tage × Stunden, Farbe = Wert, schraffiert = aus. Zeigen nennt Tag, Stunde, Wert und Quelle.</span><span class="mk-skala"><span class="v-min"></span><i class="v-skala"></i><span class="v-max"></span></span></div>
+      <p class="epos-leisezeile v-zeiger">&nbsp;</p></div>
+  </section>
+
+  <div class="epos-dialog-fuss">
+    <span class="epos-leisezeile" style="flex:1 1 auto">Mockup: geschrieben wird nichts.</span>
+    <button type="button" class="epos-knopf" data-melde="Abbrechen: nichts gespeichert (Mockup).">Abbrechen</button>
+    <button type="button" class="epos-knopf epos-knopf--primaer" data-melde="OK: würde die Kalender aller fünf Größen speichern (Mockup).">OK</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+// ============================================================ Grunddaten
+const JAHR = 2025;                       // Bezugsjahr (Gemeinjahr); der 01.01.2025 ist ein Mittwoch
+const MONATE = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
+const MONATSNAMEN = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+const TAGE_JE_MONAT = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+const WT = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+const GROESSEN = [
+  { id: "heizen", name: "Heizen", einheit: "°C", min: 10, max: 26, aus: true, schritt: 0.5 },
+  { id: "kuehlen", name: "Kühlen", einheit: "°C", min: 20, max: 32, aus: true, schritt: 0.5 },
+  { id: "lueftung", name: "Lüftung", einheit: "1/h", min: 0, max: 3, aus: false, schritt: 0.1 },
+  { id: "geraete", name: "Geräte", einheit: "%", min: 0, max: 100, aus: false, schritt: 5 },
+  { id: "personen", name: "Personen", einheit: "%", min: 0, max: 100, aus: false, schritt: 5 },
+];
+const TAGESARTEN = [
+  { id: "WT", name: "Werktag", farbe: "--ta-werktag" },
+  { id: "WE", name: "Wochenende", farbe: "--ta-wochenende", weiss: true },
+  { id: "FE", name: "Ferien", farbe: "--ta-ferien", weiss: true },
+  { id: "FT", name: "Feiertag", farbe: "--ta-feiertag", weiss: true },
+  { id: "SA", name: "Saison aus", farbe: "--ta-saison" },
+  { id: "AU", name: "Ausnahme", farbe: "--ta-ausnahme", weiss: true },
+];
+const FEIERTAGE_BUND = [["01-01", "Neujahr"], ["04-18", "Karfreitag"], ["04-21", "Ostermontag"], ["05-01", "1. Mai"], ["05-29", "Christi Himmelfahrt"],
+  ["06-09", "Pfingstmontag"], ["10-03", "Tag der Deutschen Einheit"], ["12-25", "1. Weihnachtstag"], ["12-26", "2. Weihnachtstag"]];
+const LAENDER = {
+  "Baden-Württemberg": [["01-06", "Heilige Drei Könige"], ["06-19", "Fronleichnam"], ["11-01", "Allerheiligen"]],
+  "Bayern": [["01-06", "Heilige Drei Könige"], ["06-19", "Fronleichnam"], ["08-15", "Mariä Himmelfahrt"], ["11-01", "Allerheiligen"]],
+  "Berlin": [["03-08", "Frauentag"]],
+  "Nordrhein-Westfalen": [["06-19", "Fronleichnam"], ["11-01", "Allerheiligen"]],
+  "Sachsen": [["10-31", "Reformationstag"], ["11-19", "Buß- und Bettag"]],
+  "nur bundeseinheitlich": [],
+};
+const cssWert = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+// Tag im Jahr (0..364) <-> Datum
+const TAG0 = (() => { const a = [0]; for (let m = 0; m < 12; m++) a.push(a[m] + TAGE_JE_MONAT[m]); return a; })();
+const tagAus = (m, t) => TAG0[m] + t - 1;                     // m 0..11, t 1..
+const tagAusIso = iso => { if (!iso) return null; const [, mm, dd] = iso.split("-").map(Number); return tagAus(mm - 1, dd); };
+const tagAusMmTt = s => { const [mm, dd] = s.split("-").map(Number); return tagAus(mm - 1, dd); };
+const isoAusTag = d => { let m = 0; while (d >= TAG0[m + 1]) m++; const t = d - TAG0[m] + 1; return `${JAHR}-${String(m + 1).padStart(2, "0")}-${String(t).padStart(2, "0")}`; };
+const textAusTag = d => { const i = isoAusTag(d); return `${WT[wochentag(d)]} ${i.slice(8)}.${i.slice(5, 7)}.`; };
+const wochentag = d => (d + 2) % 7;                           // 0 = Mo; 01.01.2025 = Mi
+const imBereich = (d, von, bis) => von <= bis ? d >= von && d <= bis : d >= von || d <= bis;   // über den Jahreswechsel
+const zahl = (v, g) => v == null ? "aus" : (Math.round(v / g.schritt) * g.schritt).toLocaleString("de-DE", { maximumFractionDigits: 1 });
+
+// ============================================================ Profile und Vorlagen
+// Ein Tagesprofil: 24 Werte, null = aus. Helfer: Grundwert, Fenster (von, bis, Wert).
+function profil(grund, ...fenster) { const p = new Array(24).fill(grund); for (const [v, b, w] of fenster) for (let h = v; h < b; h++) p[h] = w; return p; }
+const VORLAGEN = {
+  "Büro": {
+    heizen: { WT: profil(17, [6, 18, 21]), WE: profil(16), FE: profil(16), FT: profil(16), SA: profil(null), AU: profil(17, [6, 18, 21]) },
+    kuehlen: { WT: profil(null, [8, 18, 26]), WE: profil(null), FE: profil(null), FT: profil(null), SA: profil(null), AU: profil(null, [8, 18, 26]) },
+    lueftung: { WT: profil(0.2, [7, 18, 1.0]), WE: profil(0.2), FE: profil(0.2), FT: profil(0.2), SA: profil(0.2), AU: profil(0.2, [7, 18, 1.0]) },
+    geraete: { WT: profil(10, [8, 18, 100]), WE: profil(10), FE: profil(10), FT: profil(10), SA: profil(10, [8, 18, 100]), AU: profil(10, [8, 18, 100]) },
+    personen: { WT: profil(0, [8, 12, 100], [12, 13, 50], [13, 17, 100], [17, 18, 50]), WE: profil(0), FE: profil(0), FT: profil(0),
+      SA: profil(0, [8, 12, 100], [12, 13, 50], [13, 17, 100], [17, 18, 50]), AU: profil(0, [8, 12, 100], [13, 17, 100]) },
+  },
+  "Schule": {
+    heizen: { WT: profil(16, [6, 16, 20]), WE: profil(15), FE: profil(15), FT: profil(15), SA: profil(null), AU: profil(16, [6, 16, 20]) },
+    kuehlen: { WT: profil(null), WE: profil(null), FE: profil(null), FT: profil(null), SA: profil(null), AU: profil(null) },
+    lueftung: { WT: profil(0.1, [7, 16, 2.0]), WE: profil(0.1), FE: profil(0.1), FT: profil(0.1), SA: profil(0.1, [7, 16, 2.0]), AU: profil(0.1) },
+    geraete: { WT: profil(5, [7, 16, 60]), WE: profil(5), FE: profil(5), FT: profil(5), SA: profil(5, [7, 16, 60]), AU: profil(5) },
+    personen: { WT: profil(0, [8, 13, 100], [13, 16, 40]), WE: profil(0), FE: profil(0), FT: profil(0), SA: profil(0, [8, 13, 100], [13, 16, 40]), AU: profil(0) },
+  },
+  "Wohnen": {
+    heizen: { WT: profil(18, [6, 22, 20]), WE: profil(18, [7, 23, 20]), FE: profil(18, [6, 22, 20]), FT: profil(18, [7, 23, 20]), SA: profil(null), AU: profil(18, [6, 22, 20]) },
+    kuehlen: { WT: profil(null), WE: profil(null), FE: profil(null), FT: profil(null), SA: profil(null), AU: profil(null) },
+    lueftung: { WT: profil(0.4), WE: profil(0.4), FE: profil(0.4), FT: profil(0.4), SA: profil(0.4), AU: profil(0.4) },
+    geraete: { WT: profil(40, [6, 9, 80], [17, 23, 100]), WE: profil(40, [8, 23, 90]), FE: profil(40, [8, 23, 90]), FT: profil(40, [8, 23, 90]), SA: profil(40, [17, 23, 100]), AU: profil(40) },
+    personen: { WT: profil(100, [8, 17, 30]), WE: profil(100, [10, 16, 70]), FE: profil(100), FT: profil(100, [10, 16, 70]), SA: profil(100, [8, 17, 30]), AU: profil(100) },
+  },
+  "Hotel": {
+    heizen: { WT: profil(20, [0, 6, 19]), WE: profil(20, [0, 6, 19]), FE: profil(20, [0, 6, 19]), FT: profil(20, [0, 6, 19]), SA: profil(null), AU: profil(20) },
+    kuehlen: { WT: profil(25), WE: profil(25), FE: profil(25), FT: profil(25), SA: profil(null), AU: profil(25) },
+    lueftung: { WT: profil(0.6), WE: profil(0.6), FE: profil(0.6), FT: profil(0.6), SA: profil(0.6), AU: profil(0.6) },
+    geraete: { WT: profil(60), WE: profil(60), FE: profil(60), FT: profil(60), SA: profil(60), AU: profil(60) },
+    personen: { WT: profil(80, [9, 16, 30]), WE: profil(80, [9, 16, 40]), FE: profil(90, [9, 16, 40]), FT: profil(80, [9, 16, 40]), SA: profil(80, [9, 16, 30]), AU: profil(80) },
+  },
+};
+const kopie = o => JSON.parse(JSON.stringify(o));
+
+// ============================================================ gemeinsamer Zustand
+let zustand;
+function ausgangsbestand() {
+  return {
+    variante: "v1", groesse: "heizen",
+    // V1 - das Regelwerk des Gebäudes (alle Größen) und die Profile je Größe und Tagesart
+    v1: {
+      wochenende: [5, 6],
+      ferien: [{ name: "Betriebsruhe", von: "2025-12-23", bis: "2025-01-02" }, { name: "Sommerpause", von: "2025-08-04", bis: "2025-08-15" }],
+      saison: { heizen: { von: "2025-10-01", bis: "2025-04-30" }, kuehlen: { von: "2025-05-01", bis: "2025-09-30" }, lueftung: null, geraete: null, personen: null },
+      land: "Baden-Württemberg", feiertage: feiertageFuer("Baden-Württemberg"),
+      hand: {},                    // Tag -> Tagesart (Ausnahme von der Regel)
+      profile: kopie(VORLAGEN["Büro"]),
+      pinsel: "AU", profilArt: "WT", ausModus: false,
+    },
+    // V2 - Wochenprofile je Größe, Zuordnung und Einzeltage gelten für angehakte Größen
+    v2: {
+      profile: Object.fromEntries(GROESSEN.map(g => [g.id, wochenprofileAus(VORLAGEN["Büro"][g.id])])),
+      gewaehlt: "std",
+      zuordnung: [
+        { von: "2025-08-04", bis: "2025-08-15", profil: "fer", fuer: "alle" },
+        { von: "2025-12-23", bis: "2025-01-02", profil: "fer", fuer: "alle" },
+        { von: "2025-05-01", bis: "2025-09-30", profil: "aus", fuer: "heizen" },
+        { von: "2025-10-01", bis: "2025-04-30", profil: "aus", fuer: "kuehlen" },
+      ],
+      tage: feiertageFuer("Baden-Württemberg").map(f => ({ datum: f.datum, name: f.name, wie: "So" })),
+      land: "Baden-Württemberg", pinselwert: 21, ausModus: false, zeile: -1,
+    },
+  };
+}
+function feiertageFuer(land) {
+  return FEIERTAGE_BUND.concat(LAENDER[land] || []).map(([mt, name]) => ({ datum: `${JAHR}-${mt}`, name }))
+    .sort((a, b) => a.datum.localeCompare(b.datum));
+}
+// Vier Wochenprofile aus den Tagesprofilen einer Vorlage
+function wochenprofileAus(t) {
+  const woche = (werktag, sa, so) => [0, 1, 2, 3, 4].map(() => werktag.slice()).concat([sa.slice(), so.slice()]);
+  return [
+    { id: "std", name: "Standardwoche", werte: woche(t.WT, t.WE, t.WE) },
+    { id: "fer", name: "Ferienwoche", werte: woche(t.FE, t.FE, t.FE) },
+    { id: "aus", name: "Saison-aus-Woche", werte: woche(t.SA, t.SA, t.SA) },
+    { id: "aun", name: "Ausnahme", werte: woche(t.AU, t.WE, t.WE) },
+  ];
+}
+const G = () => GROESSEN.find(g => g.id === zustand.groesse);
+
+// ============================================================ Meldung
+let meldungsUhr;
+function melde(text) { const m = document.getElementById("mk-meldung"); m.textContent = text; clearTimeout(meldungsUhr); meldungsUhr = setTimeout(() => m.textContent = "", 6000); }
+
+// ============================================================ Farben für Werte
+function wertfarbe(v, g) {
+  if (v == null) return null;
+  const a = [0xEF, 0xF6, 0xFF], b = [0x0F, 0x1F, 0x3D];          // --epos-karte-flaeche-hover -> --epos-karte-titel
+  const t = Math.max(0, Math.min(1, (v - g.min) / (g.max - g.min)));
+  const c = a.map((x, i) => Math.round(x + (b[i] - x) * t));
+  return { css: `rgb(${c[0]},${c[1]},${c[2]})`, rgb: c, dunkel: t > 0.5 };
+}
+
+// ============================================================ V1: Tagesart eines Tages
+function v1Tagesart(d, groesse) {
+  const s = zustand.v1;
+  if (s.hand[d]) return { art: s.hand[d], quelle: "von Hand" };
+  const sa = s.saison[groesse];
+  if (sa && sa.von && sa.bis && !imBereich(d, tagAusIso(sa.von), tagAusIso(sa.bis))) return { art: "SA", quelle: "außerhalb der Saison" };
+  const ft = s.feiertage.find(f => tagAusIso(f.datum) === d);
+  if (ft) return { art: "FT", quelle: ft.name };
+  const fe = s.ferien.find(f => f.von && f.bis && imBereich(d, tagAusIso(f.von), tagAusIso(f.bis)));
+  if (fe) return { art: "FE", quelle: fe.name || "Ferien" };
+  if (s.wochenende.includes(wochentag(d))) return { art: "WE", quelle: "Wochenende" };
+  return { art: "WT", quelle: "Werktag" };
+}
+function v1Wert(d, h, groesse) { const a = v1Tagesart(d, groesse); return { wert: zustand.v1.profile[groesse][a.art][h], quelle: TAGESARTEN.find(t => t.id === a.art).name + " · " + a.quelle }; }
+
+// ============================================================ V2: Wert einer Stunde
+function v2Gilt(fuer, groesse) { return fuer === "alle" || fuer === groesse; }
+function v2Wert(d, h, groesse) {
+  const s = zustand.v2, wps = s.profile[groesse], w = wochentag(d);
+  const tag = s.tage.slice().reverse().find(t => tagAusIso(t.datum) === d && v2Gilt(t.fuer || "alle", groesse));
+  const std = wps.find(p => p.id === "std") || wps[0];
+  if (tag) {
+    if (tag.wie === "aus") return { wert: null, quelle: tag.name + " (aus)" };
+    const wi = WT.indexOf(tag.wie);
+    return { wert: std.werte[wi][h], quelle: `${tag.name} (wie ${tag.wie} der Standardwoche)` };
+  }
+  for (let i = s.zuordnung.length - 1; i >= 0; i--) {
+    const z = s.zuordnung[i];
+    if (!z.von || !z.bis || !v2Gilt(z.fuer, groesse)) continue;
+    if (imBereich(d, tagAusIso(z.von), tagAusIso(z.bis))) {
+      const p = wps.find(x => x.id === z.profil);
+      if (p) return { wert: p.werte[w][h], quelle: `${p.name} (Zeile ${i + 1})` };
+    }
+  }
+  return { wert: std.werte[w][h], quelle: std.name };
+}
+
+// ============================================================ Teppich
+function teppich(canvasId, wertFn) {
+  const cv = document.getElementById(canvasId), ctx = cv.getContext("2d"), g = G();
+  const bild = ctx.createImageData(365, 24);
+  for (let d = 0; d < 365; d++) for (let h = 0; h < 24; h++) {
+    const v = wertFn(d, h, g.id).wert, f = wertfarbe(v, g), i = (h * 365 + d) * 4;
+    const rgb = f ? f.rgb : ((d + h) % 2 ? [0xef, 0xef, 0xef] : [0xff, 0xff, 0xff]);
+    bild.data[i] = rgb[0]; bild.data[i + 1] = rgb[1]; bild.data[i + 2] = rgb[2]; bild.data[i + 3] = 255;
+  }
+  ctx.putImageData(bild, 0, 0);
+  const karte = cv.closest(".mk-teppich");
+  karte.querySelector(".v-groesse").textContent = g.name;
+  karte.querySelector(".v-min").textContent = zahl(g.min, g) + " " + g.einheit;
+  karte.querySelector(".v-max").textContent = zahl(g.max, g) + " " + g.einheit;
+  karte.querySelector(".v-skala").style.background = `linear-gradient(90deg, ${cssWert("--epos-karte-flaeche-hover")}, ${cssWert("--epos-karte-titel")})`;
+  cv.onpointermove = e => {
+    const r = cv.getBoundingClientRect(), d = Math.min(364, Math.floor((e.clientX - r.left) / r.width * 365)), h = Math.min(23, Math.floor((e.clientY - r.top) / r.height * 24));
+    const x = wertFn(d, h, g.id);
+    karte.querySelector(".v-zeiger").textContent = `${textAusTag(d)}, ${h}–${h + 1} Uhr: ${zahl(x.wert, g)}${x.wert == null ? "" : " " + g.einheit} · ${x.quelle}`;
+  };
+}
+
+// ============================================================ Kopfzeile: Größen und Vorlage
+function kopfZeichnen() {
+  const box = document.getElementById("mk-groessen"); box.innerHTML = "";
+  for (const g of GROESSEN) {
+    const b = document.createElement("button"); b.type = "button"; b.className = "epos-knopf epos-knopf--klein"; b.textContent = g.name;
+    b.setAttribute("aria-pressed", String(g.id === zustand.groesse));
+    b.onclick = () => { zustand.groesse = g.id; alles(); };
+    box.appendChild(b);
+  }
+  const sel = document.getElementById("mk-vorlage");
+  if (!sel.options.length) for (const n of Object.keys(VORLAGEN)) sel.add(new Option(n, n));
+}
+document.getElementById("mk-vorlage-ueber").onclick = () => {
+  const n = document.getElementById("mk-vorlage").value;
+  if (!confirm(`Die Vorlage „${n}“ in allen fünf Größen übernehmen? Ferien, Feiertage und Saison des Gebäudes bleiben; Ausnahmetage bleiben.`)) return;
+  zustand.v1.profile = kopie(VORLAGEN[n]);
+  for (const g of GROESSEN) {
+    const neu = wochenprofileAus(VORLAGEN[n][g.id]), alt = zustand.v2.profile[g.id];
+    // eigene Wochenprofile (ohne Kennung der vier) bleiben
+    zustand.v2.profile[g.id] = neu.concat(alt.filter(p => !["std", "fer", "aus", "aun"].includes(p.id)));
+  }
+  if (n === "Wohnen" || n === "Hotel") zustand.v1.wochenende = [];
+  else zustand.v1.wochenende = [5, 6];
+  melde(`Vorlage „${n}“ in allen Größen übernommen (Tagesprofile in V1, Wochenprofile in V2).`);
+  alles();
+};
+
+// ============================================================ V1 zeichnen
+function v1Zeichnen() {
+  const s = zustand.v1, g = G();
+  // Wochenende
+  const we = document.getElementById("v1-we"); we.innerHTML = "";
+  WT.forEach((n, i) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "mk-chip"; b.textContent = n;
+    b.setAttribute("aria-pressed", String(s.wochenende.includes(i)));
+    b.onclick = () => { s.wochenende = s.wochenende.includes(i) ? s.wochenende.filter(x => x !== i) : s.wochenende.concat(i); v1Zeichnen(); };
+    we.appendChild(b);
+  });
+  // Ferien
+  const fl = document.getElementById("v1-ferien"); fl.innerHTML = "";
+  s.ferien.forEach((f, i) => {
+    const li = document.createElement("li");
+    li.innerHTML = `<input type="text" class="epos-eingabe" aria-label="Bezeichnung" value="${f.name}">
+      <input type="date" class="epos-eingabe" min="2025-01-01" max="2025-12-31" aria-label="von" value="${f.von}"> –
+      <input type="date" class="epos-eingabe" min="2025-01-01" max="2025-12-31" aria-label="bis" value="${f.bis}">
+      <button type="button" class="mk-x" title="Zeitraum entfernen">✕</button>`;
+    const [n, v, b] = li.querySelectorAll("input");
+    n.oninput = () => f.name = n.value;
+    v.onchange = () => { f.von = v.value; v1Zeichnen(); };
+    b.onchange = () => { f.bis = b.value; v1Zeichnen(); };
+    li.querySelector("button").onclick = () => { s.ferien.splice(i, 1); v1Zeichnen(); };
+    fl.appendChild(li);
+  });
+  // Saison
+  document.getElementById("v1-saison-groesse").textContent = "· " + g.name;
+  const sa = s.saison[g.id];
+  document.getElementById("v1-saison-ganz").checked = !sa;
+  document.getElementById("v1-saison-von").value = sa ? sa.von : "";
+  document.getElementById("v1-saison-bis").value = sa ? sa.bis : "";
+  document.getElementById("v1-saison-von").disabled = document.getElementById("v1-saison-bis").disabled = !sa;
+  // Feiertage
+  const land = document.getElementById("v1-land");
+  if (!land.options.length) for (const n of Object.keys(LAENDER)) land.add(new Option(n, n));
+  land.value = s.land;
+  document.getElementById("v1-feiertage-text").textContent = `${s.feiertage.length} Feiertage (${s.land}): ` + s.feiertage.map(f => f.name).join(", ");
+  // Pinsel
+  const pin = document.getElementById("v1-pinsel"); pin.innerHTML = "";
+  for (const t of TAGESARTEN.concat([{ id: "RADIER", name: "Radierer" }])) {
+    const b = document.createElement("button"); b.type = "button"; b.setAttribute("aria-pressed", String(s.pinsel === t.id));
+    b.innerHTML = (t.farbe ? `<span class="mk-farbe" style="background:var(${t.farbe})"></span>` : "⌫ ") + t.name;
+    b.title = t.id === "RADIER" ? "Gibt Tage der Regel zurück" : `Weist „${t.name}“ zu`;
+    b.onclick = () => { s.pinsel = t.id; if (t.id !== "RADIER") s.profilArt = t.id; v1Zeichnen(); };
+    pin.appendChild(b);
+  }
+  // Jahresraster
+  const jahr = document.getElementById("v1-jahr");
+  let html = "<table><thead><tr><th></th>";
+  for (let t = 1; t <= 31; t++) html += `<th style="text-align:center">${t}</th>`;
+  html += "</tr></thead><tbody>";
+  for (let m = 0; m < 12; m++) {
+    html += `<tr><th>${MONATE[m]}</th>`;
+    for (let t = 1; t <= 31; t++) {
+      if (t > TAGE_JE_MONAT[m]) { html += `<td class="leer"></td>`; continue; }
+      const d = tagAus(m, t), a = v1Tagesart(d, g.id), ta = TAGESARTEN.find(x => x.id === a.art);
+      const st = a.art === "SA" ? `background:repeating-linear-gradient(135deg,var(--ta-saison) 0 4px,var(--epos-karte-flaeche) 4px 8px)` : `background:var(${ta.farbe})`;
+      html += `<td data-tag="${d}" class="${s.hand[d] ? "hand" : ""} ${ta.weiss ? "weiss" : ""}" style="${st}" title="${textAusTag(d)} · ${ta.name} · ${a.quelle}">${WT[wochentag(d)][0]}</td>`;
+    }
+    html += "</tr>";
+  }
+  jahr.innerHTML = html + "</tbody></table>";
+  // Profil
+  v1ProfilZeichnen();
+  teppich("v1-teppich", v1Wert);
+}
+let v1Malt = false;
+function v1Malen(td) {
+  const s = zustand.v1, d = +td.dataset.tag;
+  if (s.pinsel === "RADIER") delete s.hand[d]; else s.hand[d] = s.pinsel;
+  const g = G(), a = v1Tagesart(d, g.id), ta = TAGESARTEN.find(x => x.id === a.art);
+  td.className = (s.hand[d] ? "hand " : "") + (ta.weiss ? "weiss" : "");
+  td.style.background = a.art === "SA" ? "repeating-linear-gradient(135deg,var(--ta-saison) 0 4px,var(--epos-karte-flaeche) 4px 8px)" : `var(${ta.farbe})`;
+  td.title = `${textAusTag(d)} · ${ta.name} · ${a.quelle}`;
+}
+const jahrBox = document.getElementById("v1-jahr");
+jahrBox.addEventListener("pointerdown", e => { const td = e.target.closest("td[data-tag]"); if (!td) return; v1Malt = true; jahrBox.setPointerCapture(e.pointerId); v1Malen(td); e.preventDefault(); });
+jahrBox.addEventListener("pointermove", e => {
+  const el = document.elementFromPoint(e.clientX, e.clientY), td = el && el.closest ? el.closest("#v1-jahr td[data-tag]") : null;
+  if (td) document.getElementById("v1-tagzeile").textContent = td.title;
+  if (v1Malt && td) v1Malen(td);
+});
+const v1Ende = () => { if (v1Malt) { v1Malt = false; const n = Object.keys(zustand.v1.hand).length; melde(`${n} Ausnahmetag${n === 1 ? "" : "e"} von Hand.`); teppich("v1-teppich", v1Wert); } };
+jahrBox.addEventListener("pointerup", v1Ende); jahrBox.addEventListener("pointercancel", v1Ende);
+
+function v1ProfilZeichnen() {
+  const s = zustand.v1, g = G(), p = s.profile[g.id][s.profilArt], ta = TAGESARTEN.find(t => t.id === s.profilArt);
+  document.getElementById("v1-profil-titel").textContent = `Tagesprofil · ${g.name} · ${ta.name}`;
+  const wahl = document.getElementById("v1-profilwahl"); wahl.innerHTML = "";
+  for (const t of TAGESARTEN) {
+    const b = document.createElement("button"); b.type = "button"; b.setAttribute("aria-pressed", String(s.profilArt === t.id));
+    b.innerHTML = `<span class="mk-farbe" style="background:var(${t.farbe})"></span>${t.name}`;
+    b.onclick = () => { s.profilArt = t.id; v1ProfilZeichnen(); };
+    wahl.appendChild(b);
+  }
+  document.getElementById("v1-achse").innerHTML = `<span>${zahl(g.max, g)}</span><span>${zahl((g.max + g.min) / 2, g)}</span><span>${zahl(g.min, g)}</span>`;
+  const box = document.getElementById("v1-stunden"); box.innerHTML = "";
+  p.forEach((v, h) => {
+    const d = document.createElement("div"); d.className = "mk-stunde" + (v == null ? " aus" : ""); d.dataset.h = h;
+    d.title = `${h}–${h + 1} Uhr: ${zahl(v, g)}${v == null ? "" : " " + g.einheit}`;
+    const i = document.createElement("i"); i.style.height = v == null ? "100%" : Math.max(2, (v - g.min) / (g.max - g.min) * 100) + "%";
+    d.appendChild(i); box.appendChild(d);
+  });
+  const sz = document.getElementById("v1-stundenzahlen");
+  if (!sz.childElementCount) for (let h = 0; h < 24; h++) sz.insertAdjacentHTML("beforeend", `<span>${h % 3 === 0 ? h : ""}</span>`);
+  const aus = document.getElementById("v1-ausmodus"); aus.hidden = !g.aus; aus.setAttribute("aria-pressed", String(s.ausModus && g.aus));
+  document.getElementById("v1-ganz-wert").step = g.schritt;
+  const pv = document.getElementById("v1-profilvorlage");
+  if (!pv.options.length) for (const n of Object.keys(VORLAGEN)) pv.add(new Option(`Vorlage ${n}`, n));
+  const ziel = document.getElementById("v1-kopierziel"); const alt = ziel.value; ziel.innerHTML = "";
+  for (const t of TAGESARTEN) if (t.id !== s.profilArt) ziel.add(new Option(`${g.name} · ${t.name}`, `${g.id}|${t.id}`));
+  ziel.add(new Option(`alle übrigen Tagesarten (${g.name})`, `${g.id}|*`));
+  for (const og of GROESSEN) if (og.id !== g.id && og.einheit === g.einheit) ziel.add(new Option(`${og.name} · ${ta.name}`, `${og.id}|${s.profilArt}`));
+  if ([...ziel.options].some(o => o.value === alt)) ziel.value = alt;
+  const mittel = p.filter(v => v != null), m = mittel.length ? mittel.reduce((a, b) => a + b, 0) / mittel.length : null;
+  document.getElementById("v1-profilzeile").textContent = `${p.filter(v => v == null).length} Stunden aus, Mittel ${zahl(m, g)}${m == null ? "" : " " + g.einheit}. Ziehen setzt die Stunden unter dem Zeiger.`;
+}
+let v1Zieht = false;
+const stundenBox = document.getElementById("v1-stunden");
+function v1Stunde(e) {
+  const r = stundenBox.getBoundingClientRect(), h = Math.max(0, Math.min(23, Math.floor((e.clientX - r.left) / r.width * 24)));
+  const s = zustand.v1, g = G();
+  let v = g.min + (1 - (e.clientY - r.top) / r.height) * (g.max - g.min);
+  v = Math.max(g.min, Math.min(g.max, Math.round(v / g.schritt) * g.schritt));
+  s.profile[g.id][s.profilArt][h] = s.ausModus && g.aus ? null : v;
+  v1ProfilZeichnen();
+}
+stundenBox.addEventListener("pointerdown", e => { v1Zieht = true; stundenBox.setPointerCapture(e.pointerId); v1Stunde(e); });
+stundenBox.addEventListener("pointermove", e => { if (v1Zieht) v1Stunde(e); });
+const v1ZiehEnde = () => { if (v1Zieht) { v1Zieht = false; teppich("v1-teppich", v1Wert); } };
+stundenBox.addEventListener("pointerup", v1ZiehEnde); stundenBox.addEventListener("pointercancel", v1ZiehEnde);
+
+document.getElementById("v1-we-sasu").onclick = () => { zustand.v1.wochenende = [5, 6]; v1Zeichnen(); };
+document.getElementById("v1-we-keins").onclick = () => { zustand.v1.wochenende = []; v1Zeichnen(); };
+document.getElementById("v1-ferien-neu").onclick = () => { zustand.v1.ferien.push({ name: "Zeitraum", von: "", bis: "" }); v1Zeichnen(); };
+document.getElementById("v1-saison-ganz").onchange = e => {
+  zustand.v1.saison[zustand.groesse] = e.target.checked ? null : { von: "2025-10-01", bis: "2025-04-30" }; v1Zeichnen();
+};
+document.getElementById("v1-saison-von").onchange = e => { zustand.v1.saison[zustand.groesse].von = e.target.value; v1Zeichnen(); };
+document.getElementById("v1-saison-bis").onchange = e => { zustand.v1.saison[zustand.groesse].bis = e.target.value; v1Zeichnen(); };
+document.getElementById("v1-land-laden").onclick = () => {
+  const s = zustand.v1; s.land = document.getElementById("v1-land").value; s.feiertage = feiertageFuer(s.land);
+  melde(`${s.feiertage.length} Feiertage für ${s.land} geladen (Bezugsjahr ${JAHR}; im Lauf rechnet die Regel das Jahr).`); v1Zeichnen();
+};
+document.getElementById("v1-ganz").onclick = () => {
+  const s = zustand.v1, g = G(), w = parseFloat(String(document.getElementById("v1-ganz-wert").value).replace(",", "."));
+  if (isNaN(w)) { melde("Erst einen Wert eintragen."); return; }
+  s.profile[g.id][s.profilArt] = new Array(24).fill(Math.max(g.min, Math.min(g.max, w))); v1ProfilZeichnen(); teppich("v1-teppich", v1Wert);
+};
+document.getElementById("v1-ausmodus").onclick = () => { zustand.v1.ausModus = !zustand.v1.ausModus; v1ProfilZeichnen(); };
+document.getElementById("v1-profilvorlage-ueber").onclick = () => {
+  const s = zustand.v1, g = G(), n = document.getElementById("v1-profilvorlage").value;
+  s.profile[g.id][s.profilArt] = VORLAGEN[n][g.id][s.profilArt].slice();
+  melde(`Tagesprofil ${g.name} · ${TAGESARTEN.find(t => t.id === s.profilArt).name} aus Vorlage „${n}“.`); v1ProfilZeichnen(); teppich("v1-teppich", v1Wert);
+};
+document.getElementById("v1-kopieren").onclick = () => {
+  const s = zustand.v1, g = G(), [zg, za] = document.getElementById("v1-kopierziel").value.split("|"), quelle = s.profile[g.id][s.profilArt];
+  const ziele = za === "*" ? TAGESARTEN.map(t => t.id).filter(x => x !== s.profilArt) : [za];
+  for (const z of ziele) s.profile[zg][z] = quelle.slice();
+  const gz = GROESSEN.find(x => x.id === zg);
+  melde(`Tagesprofil kopiert nach ${gz.name} · ${ziele.map(z => TAGESARTEN.find(t => t.id === z).name).join(", ")}.`); v1Zeichnen();
+};
+
+// ============================================================ V2 zeichnen
+function v2Profile() { return zustand.v2.profile[zustand.groesse]; }
+function v2Zeichnen() {
+  const s = zustand.v2, g = G(), wps = v2Profile();
+  if (!wps.some(p => p.id === s.gewaehlt)) s.gewaehlt = wps[0].id;
+  document.querySelectorAll("#v2 .v-groesse").forEach(e => e.textContent = "· " + g.name);
+  // Profilliste
+  const pl = document.getElementById("v2-profile"); pl.innerHTML = "";
+  wps.forEach((p, i) => {
+    const li = document.createElement("li"), b = document.createElement("button"); b.type = "button";
+    b.setAttribute("aria-pressed", String(p.id === s.gewaehlt));
+    b.innerHTML = `<span class="mk-farbe" style="background:${bandfarbe(i)}"></span>${p.name}`;
+    b.onclick = () => { s.gewaehlt = p.id; v2Zeichnen(); };
+    li.appendChild(b); pl.appendChild(li);
+  });
+  const neu = document.createElement("li"); neu.innerHTML = `<button type="button">+ Neues Wochenprofil</button>`;
+  neu.firstChild.onclick = () => { const id = "w" + Date.now(); wps.push({ id, name: "Wochenprofil " + (wps.length + 1), werte: wps[0].werte.map(r => r.slice()) }); s.gewaehlt = id; v2Zeichnen(); };
+  pl.appendChild(neu);
+  // Raster
+  const p = wps.find(x => x.id === s.gewaehlt);
+  let html = "<table><thead><tr><th></th>";
+  for (let h = 0; h < 24; h++) html += `<th>${h}</th>`;
+  html += "</tr></thead><tbody>";
+  p.werte.forEach((zeile, w) => {
+    html += `<tr><th>${WT[w]}</th>`;
+    zeile.forEach((v, h) => {
+      const f = wertfarbe(v, g);
+      html += `<td data-w="${w}" data-h="${h}" class="${v == null ? "aus" : ""} ${f && f.dunkel ? "weiss" : ""}" style="${f ? "background:" + f.css : ""}" title="${WT[w]} ${h}–${h + 1} Uhr: ${zahl(v, g)}">${v == null ? "" : zahl(v, g)}</td>`;
+    });
+    html += "</tr>";
+  });
+  document.getElementById("v2-raster").innerHTML = html + "</tbody></table>";
+  document.getElementById("v2-ausmodus").hidden = !g.aus;
+  document.getElementById("v2-ausmodus").setAttribute("aria-pressed", String(s.ausModus && g.aus));
+  const pw = document.getElementById("v2-pinselwert"); pw.step = g.schritt; if (pw.value === "") pw.value = s.pinselwert;
+  const kg = document.getElementById("v2-kopie-groesse"); const kalt = kg.value; kg.innerHTML = "";
+  kg.add(new Option(`in ${g.name}`, g.id));
+  for (const og of GROESSEN) if (og.id !== g.id && og.einheit === g.einheit) kg.add(new Option(`nach ${og.name}`, og.id));
+  if ([...kg.options].some(o => o.value === kalt)) kg.value = kalt;
+  document.getElementById("v2-profil-loeschen").setAttribute("aria-disabled", String(["std", "fer", "aus", "aun"].includes(p.id)));
+  // Zuordnung
+  const tb = document.querySelector("#v2-zuordnung tbody"); tb.innerHTML = "";
+  s.zuordnung.forEach((z, i) => {
+    const tr = document.createElement("tr"); if (i === s.zeile) tr.className = "gewaehlt";
+    const optP = wps.map(x => `<option value="${x.id}" ${x.id === z.profil ? "selected" : ""}>${x.name}</option>`).join("");
+    const optG = [`<option value="alle" ${z.fuer === "alle" ? "selected" : ""}>alle Größen</option>`].concat(GROESSEN.map(x => `<option value="${x.id}" ${x.id === z.fuer ? "selected" : ""}>${x.name}</option>`)).join("");
+    tr.innerHTML = `<td class="zahl">${i + 1}</td><td><input type="date" class="epos-eingabe" min="2025-01-01" max="2025-12-31" value="${z.von}" aria-label="von"></td>
+      <td><input type="date" class="epos-eingabe" min="2025-01-01" max="2025-12-31" value="${z.bis}" aria-label="bis"></td>
+      <td><select class="epos-eingabe" aria-label="Wochenprofil">${optP}</select></td><td><select class="epos-eingabe" aria-label="gilt für">${optG}</select></td>
+      <td><button type="button" class="mk-x" title="Zeile entfernen">✕</button></td>`;
+    const [v, b] = tr.querySelectorAll("input"), [sp, sg] = tr.querySelectorAll("select");
+    v.onchange = () => { z.von = v.value; v2Zeichnen(); }; b.onchange = () => { z.bis = b.value; v2Zeichnen(); };
+    sp.onchange = () => { z.profil = sp.value; v2Zeichnen(); }; sg.onchange = () => { z.fuer = sg.value; v2Zeichnen(); };
+    tr.querySelector("button").onclick = () => { s.zuordnung.splice(i, 1); s.zeile = -1; v2Zeichnen(); };
+    tr.onclick = e => { if (e.target.closest("input,select,button")) return; s.zeile = i; v2Zeichnen(); };
+    tb.appendChild(tr);
+  });
+  v2BandZeichnen();
+  // Einzeltage
+  const tt = document.querySelector("#v2-tage tbody"); tt.innerHTML = "";
+  s.tage.slice().sort((a, b) => (a.datum || "9").localeCompare(b.datum || "9")).forEach(t => {
+    const tr = document.createElement("tr");
+    const optW = ["aus"].concat(WT).map(w => `<option value="${w}" ${w === t.wie ? "selected" : ""}>${w === "aus" ? "aus (Heizen, Kühlen)" : "wie " + w}</option>`).join("");
+    tr.innerHTML = `<td><input type="date" class="epos-eingabe" min="2025-01-01" max="2025-12-31" value="${t.datum}" aria-label="Datum"></td>
+      <td><input type="text" class="epos-eingabe" value="${t.name}" aria-label="Bezeichnung"></td>
+      <td><select class="epos-eingabe" aria-label="gilt wie">${optW}</select></td><td><button type="button" class="mk-x" title="Einzeltag entfernen">✕</button></td>`;
+    const [dt, nm] = tr.querySelectorAll("input"), sw = tr.querySelector("select");
+    dt.onchange = () => { t.datum = dt.value; v2Zeichnen(); }; nm.oninput = () => t.name = nm.value;
+    sw.onchange = () => { t.wie = sw.value; teppich("v2-teppich", v2Wert); };
+    tr.querySelector("button").onclick = () => { s.tage.splice(s.tage.indexOf(t), 1); v2Zeichnen(); };
+    tt.appendChild(tr);
+  });
+  const land = document.getElementById("v2-land");
+  if (!land.options.length) for (const n of Object.keys(LAENDER)) land.add(new Option(n, n));
+  land.value = s.land;
+  const mv = document.getElementById("v2-monat-von"), mn = document.getElementById("v2-monat-nach");
+  if (!mv.options.length) MONATSNAMEN.forEach((n, i) => { mv.add(new Option(n, i)); mn.add(new Option(n, i)); });
+  teppich("v2-teppich", v2Wert);
+}
+function bandfarbe(i) { return [cssWert("--epos-quelle-rahmen"), cssWert("--epos-schema-versorgung"), cssWert("--epos-text-sehr-leise"), cssWert("--epos-senke-rahmen"), cssWert("--epos-badge-text"), cssWert("--epos-quelle-text")][i % 6]; }
+function v2BandZeichnen() {
+  const s = zustand.v2, wps = v2Profile(), band = document.getElementById("v2-band"); band.innerHTML = "";
+  // je Tag die geltende Zeile für die gewählte Größe, zu Segmenten zusammengefasst
+  let start = 0, alt = null;
+  const zeileAm = d => { for (let i = s.zuordnung.length - 1; i >= 0; i--) { const z = s.zuordnung[i]; if (z.von && z.bis && v2Gilt(z.fuer, zustand.groesse) && imBereich(d, tagAusIso(z.von), tagAusIso(z.bis))) return i; } return -1; };
+  for (let d = 0; d <= 365; d++) {
+    const z = d < 365 ? zeileAm(d) : "ende";
+    if (z !== alt) {
+      if (d > 0) {
+        const pid = alt === -1 ? "std" : s.zuordnung[alt].profil, pi = wps.findIndex(p => p.id === pid), p = wps[pi];
+        const div = document.createElement("div");
+        div.style.left = (start / 365 * 100) + "%"; div.style.width = ((d - start) / 365 * 100) + "%"; div.style.background = bandfarbe(Math.max(0, pi));
+        div.textContent = p ? p.name : "?"; div.title = `${textAusTag(start)}–${textAusTag(d - 1)}: ${p ? p.name : "?"}${alt === -1 ? " (ohne Zeile)" : " · Zeile " + (alt + 1)}`;
+        const zeile = alt; div.onclick = () => { s.zeile = zeile; if (zeile >= 0) s.gewaehlt = s.zuordnung[zeile].profil; v2Zeichnen(); };
+        if (alt === s.zeile && alt >= 0) div.style.outline = `3px solid ${cssWert("--epos-karte-titel")}`;
+        band.appendChild(div);
+      }
+      start = d; alt = z;
+    }
+  }
+  MONATE.forEach((m, i) => band.insertAdjacentHTML("beforeend", `<span class="monat" style="left:${TAG0[i] / 365 * 100 + 0.3}%">${m}</span>`));
+}
+let v2Malt = false;
+const rasterBox = document.getElementById("v2-raster");
+function v2Malen(td) {
+  const s = zustand.v2, g = G(), p = v2Profile().find(x => x.id === s.gewaehlt);
+  let w = parseFloat(String(document.getElementById("v2-pinselwert").value).replace(",", "."));
+  if (isNaN(w)) w = g.min;
+  const v = s.ausModus && g.aus ? null : Math.max(g.min, Math.min(g.max, w));
+  p.werte[+td.dataset.w][+td.dataset.h] = v;
+  const f = wertfarbe(v, g);
+  td.className = (v == null ? "aus " : "") + (f && f.dunkel ? "weiss" : ""); td.style.background = f ? f.css : ""; td.textContent = v == null ? "" : zahl(v, g);
+}
+rasterBox.addEventListener("pointerdown", e => { const td = e.target.closest("td[data-w]"); if (!td) return; v2Malt = true; rasterBox.setPointerCapture(e.pointerId); v2Malen(td); e.preventDefault(); });
+rasterBox.addEventListener("pointermove", e => { if (!v2Malt) return; const el = document.elementFromPoint(e.clientX, e.clientY), td = el && el.closest ? el.closest("#v2-raster td[data-w]") : null; if (td) v2Malen(td); });
+const v2Ende = () => { if (v2Malt) { v2Malt = false; teppich("v2-teppich", v2Wert); } };
+rasterBox.addEventListener("pointerup", v2Ende); rasterBox.addEventListener("pointercancel", v2Ende);
+document.getElementById("v2-pinselwert").oninput = e => zustand.v2.pinselwert = e.target.value;
+document.getElementById("v2-ausmodus").onclick = () => { zustand.v2.ausModus = !zustand.v2.ausModus; v2Zeichnen(); };
+document.getElementById("v2-mo-di-fr").onclick = () => { const p = v2Profile().find(x => x.id === zustand.v2.gewaehlt); for (let w = 1; w < 5; w++) p.werte[w] = p.werte[0].slice(); melde(`${p.name}: Montag nach Dienstag bis Freitag kopiert.`); v2Zeichnen(); };
+document.getElementById("v2-sa-so").onclick = () => { const p = v2Profile().find(x => x.id === zustand.v2.gewaehlt); p.werte[6] = p.werte[5].slice(); melde(`${p.name}: Samstag nach Sonntag kopiert.`); v2Zeichnen(); };
+document.getElementById("v2-woche-kopieren").onclick = () => {
+  const s = zustand.v2, quelle = v2Profile().find(x => x.id === s.gewaehlt), ziel = document.getElementById("v2-kopie-groesse").value;
+  const name = document.getElementById("v2-kopie-name").value.trim() || `Kopie von ${quelle.name}`;
+  if (s.profile[ziel].some(p => p.name === name)) { melde(`„${name}“ gibt es in ${GROESSEN.find(g => g.id === ziel).name} schon – bitte anders benennen.`); return; }
+  const id = "w" + Date.now();
+  s.profile[ziel].push({ id, name, werte: quelle.werte.map(r => r.slice()) });
+  if (ziel === zustand.groesse) s.gewaehlt = id;
+  document.getElementById("v2-kopie-name").value = "";
+  melde(`Woche „${quelle.name}“ als „${name}“ nach ${GROESSEN.find(g => g.id === ziel).name} kopiert.`); v2Zeichnen();
+};
+document.getElementById("v2-profil-loeschen").onclick = () => {
+  const s = zustand.v2, wps = v2Profile(), p = wps.find(x => x.id === s.gewaehlt);
+  if (["std", "fer", "aus", "aun"].includes(p.id)) { melde(`„${p.name}“ gehört zum Grundbestand und bleibt.`); return; }
+  wps.splice(wps.indexOf(p), 1); s.zuordnung.forEach(z => { if (z.profil === p.id) z.profil = "std"; }); s.gewaehlt = "std"; v2Zeichnen();
+};
+document.getElementById("v2-zeile-neu").onclick = () => { const s = zustand.v2; s.zuordnung.push({ von: "", bis: "", profil: s.gewaehlt, fuer: "alle" }); s.zeile = s.zuordnung.length - 1; v2Zeichnen(); };
+document.getElementById("v2-tag-neu").onclick = () => { zustand.v2.tage.push({ datum: "", name: "Ausnahme", wie: "So" }); v2Zeichnen(); };
+document.getElementById("v2-land-laden").onclick = () => {
+  const s = zustand.v2; s.land = document.getElementById("v2-land").value;
+  const namen = new Set(FEIERTAGE_BUND.map(f => f[1]).concat(...Object.values(LAENDER).map(l => l.map(f => f[1]))));
+  s.tage = s.tage.filter(t => !namen.has(t.name)).concat(feiertageFuer(s.land).map(f => ({ datum: f.datum, name: f.name, wie: "So" })));
+  melde(`Feiertage für ${s.land} geladen: gelten wie Sonntag der Standardwoche.`); v2Zeichnen();
+};
+document.getElementById("v2-monat-kopieren").onclick = () => {
+  const s = zustand.v2, von = +document.getElementById("v2-monat-von").value, nach = +document.getElementById("v2-monat-nach").value;
+  if (von === nach) { melde("Quell- und Zielmonat sind gleich."); return; }
+  const n = Math.min(TAGE_JE_MONAT[von], TAGE_JE_MONAT[nach]);
+  // je Tag des Quellmonats die geltende Zeile; gleiche Folgen werden ein Zeitraum im Zielmonat
+  const zeileAm = (d, g) => { for (let i = s.zuordnung.length - 1; i >= 0; i--) { const z = s.zuordnung[i]; if (z.von && z.bis && v2Gilt(z.fuer, g) && imBereich(d, tagAusIso(z.von), tagAusIso(z.bis))) return i; } return -1; };
+  // Kopiert wird für die gewählte Größe - die übrigen Größen behalten ihren Zielmonat.
+  let neu = 0, start = 1, alt = zeileAm(tagAus(von, 1), zustand.groesse);
+  for (let t = 2; t <= n + 1; t++) {
+    const z = t <= n ? zeileAm(tagAus(von, t), zustand.groesse) : "ende";
+    if (z !== alt) {
+      const profilId = alt === -1 ? "std" : s.zuordnung[alt].profil;
+      s.zuordnung.push({ von: isoAusTag(tagAus(nach, start)), bis: isoAusTag(tagAus(nach, t - 1)), profil: profilId, fuer: zustand.groesse });
+      neu++; start = t; alt = z;
+    }
+  }
+  const tage = s.tage.filter(t => t.datum && +t.datum.slice(5, 7) - 1 === von && +t.datum.slice(8) <= n)
+    .map(t => ({ datum: isoAusTag(tagAus(nach, +t.datum.slice(8))), name: t.name + " (Kopie)", wie: t.wie }));
+  s.tage.push(...tage);
+  melde(`${MONATSNAMEN[von]} nach ${MONATSNAMEN[nach]} kopiert (${G().name}): ${neu} Zeitr${neu === 1 ? "aum" : "äume"}, ${tage.length} Einzeltag${tage.length === 1 ? "" : "e"} (am Ende der Tabelle, sie gehen vor).`);
+  v2Zeichnen();
+};
+
+// ============================================================ Rahmen
+function alles() {
+  kopfZeichnen();
+  document.getElementById("v1").hidden = zustand.variante !== "v1";
+  document.getElementById("v2").hidden = zustand.variante !== "v2";
+  document.querySelectorAll(".mk-variante button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.variante === zustand.variante)));
+  if (zustand.variante === "v1") v1Zeichnen(); else v2Zeichnen();
+}
+document.querySelectorAll(".mk-variante button").forEach(b => b.onclick = () => { zustand.variante = b.dataset.variante; alles(); });
+document.getElementById("mk-zurueck").onclick = () => { const v = zustand.variante; zustand = ausgangsbestand(); zustand.variante = v; melde("Ausgangsbestand wiederhergestellt."); alles(); };
+document.getElementById("mk-notizknopf").onclick = () => document.body.classList.toggle("mk-notiz-offen");
+document.querySelectorAll("[data-melde]").forEach(b => b.addEventListener("click", () => melde(b.dataset.melde)));
+document.addEventListener("keydown", e => { if (e.key === "Escape") { if (document.body.classList.contains("mk-notiz-offen")) document.body.classList.remove("mk-notiz-offen"); else melde("Esc: wie Abbrechen (Mockup)."); } });
+
+zustand = ausgangsbestand();
+alles();
+</script>
+</body>
+</html>

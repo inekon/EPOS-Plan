@@ -1,4 +1,7 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -8,10 +11,10 @@ namespace EPOS.Kern.Tests
     /// <see cref="Ferienzeit"/> nach iU9-W9.0c — die Umrechnung Tag/Monat ↔ Jahrestag und
     /// die vier Pruefregeln, die bis dahin in <c>Form_Gebaeude2</c> standen.
     ///
-    /// <para>Kein Datenbankzugriff: Die Klasse rechnet nur. Sie rechnet allerdings im
-    /// LAUFENDEN Jahr (Bestand), deshalb pruefen die Faelle den Hin- und den Rueckweg
-    /// gegeneinander statt gegen feste Zahlen — nur der 1. Januar ist in jedem Jahr
-    /// Tag 1.</para>
+    /// <para>Kein Datenbankzugriff: Die Klasse rechnet nur — im GEMEINJAHR (365 Tage, kein
+    /// 29. Februar), wie Kalender und Lauf die Jahrestage deuten (Befund B13, Entwurf KP2
+    /// Festlegung 12). Deshalb pruefen die Faelle feste Zahlen, unabhaengig vom laufenden Jahr;
+    /// die Wache gegen die Uhr haelt die Klasse davon frei.</para>
     /// </summary>
     public class FerienzeitTests
     {
@@ -21,16 +24,68 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1, Ferienzeit.Jahrestag("1", "1"));
         }
 
+        /// <summary>
+        /// Feste Faelle im Gemeinjahr (B13): Der 1. Maerz ist Tag 60 und der 31. Dezember Tag 365 in
+        /// JEDEM Jahr — im Schaltjahr lagen sie mit der Uhr einen Tag spaeter.
+        /// </summary>
+        [Theory]
+        [InlineData(1, 1, 1)]
+        [InlineData(2, 28, 59)]
+        [InlineData(3, 1, 60)]
+        [InlineData(3, 15, 74)]
+        [InlineData(12, 31, 365)]
+        public void Jahrestag_rechnet_im_Gemeinjahr(int monat, int tag, int erwartet)
+        {
+            Assert.Equal(erwartet, Ferienzeit.Jahrestag(monat, tag));
+            Assert.Equal(erwartet, Ferienzeit.Jahrestag(monat.ToString(), tag.ToString()));
+            (int? t, int? m) = Ferienzeit.TagUndMonat(erwartet);
+            Assert.Equal(tag, t);
+            Assert.Equal(monat, m);
+        }
+
+        /// <summary>Der 29. Februar kommt im Gemeinjahr nicht vor — eine Fehleingabe, 0 wie ein unmoegliches Datum.</summary>
+        [Fact]
+        public void Der_29_Februar_ist_kein_Ferientag()
+        {
+            Assert.Equal(0, Ferienzeit.Jahrestag("2", "29"));
+            Assert.Equal(0, Ferienzeit.Jahrestag(2, 29));
+        }
+
+        /// <summary>Hin und zurueck fuer alle 365 Tage — dieselbe Umrechnung wie die Feiertagsregeln (<see cref="Feiertage"/>).</summary>
         [Fact]
         public void Jahrestag_und_TagUndMonat_sind_zueinander_umkehrbar()
         {
-            // Der 15. Maerz liegt im Schaltjahr einen Tag spaeter - deshalb hin und zurueck
-            // statt gegen eine feste Zahl.
-            int tagimjahr = Ferienzeit.Jahrestag("3", "15");
-            (int? tag, int? monat) = Ferienzeit.TagUndMonat(tagimjahr);
+            for (int jahrestag = 1; jahrestag <= 365; jahrestag++)
+            {
+                (int? tag, int? monat) = Ferienzeit.TagUndMonat(jahrestag);
+                Assert.True(tag.HasValue && monat.HasValue, "Tag " + jahrestag);
+                Assert.Equal(jahrestag, Ferienzeit.Jahrestag(monat, tag));
+                Assert.Equal(Feiertage.Gemeinjahrestag(monat.Value, tag.Value), jahrestag);
+            }
+        }
 
-            Assert.Equal(15, tag);
-            Assert.Equal(3, monat);
+        /// <summary>
+        /// <b>Wache gegen die Uhr</b> (B13): Die Umrechnung liest kein laufendes Jahr — sonst
+        /// wanderte jedes Datum ab dem 1. Maerz im Schaltjahr um einen Tag.
+        /// </summary>
+        [Fact]
+        public void Ferienzeit_rechnet_ohne_Uhr()
+        {
+            string quelltext = File.ReadAllText(Path.Combine(Wurzel(), "EPOS.Kern", "Allgemein", "Ferienzeit.cs"));
+            string[] code = quelltext.Split('\n').Select(z => z.Trim())
+                                     .Where(z => !z.StartsWith("//", StringComparison.Ordinal)).ToArray();
+            Assert.DoesNotContain(code, z => z.Contains("DateTime.Now", StringComparison.Ordinal)
+                                             || z.Contains("DateTime.Today", StringComparison.Ordinal)
+                                             || z.Contains("DateTime.UtcNow", StringComparison.Ordinal));
+        }
+
+        private static string Wurzel([CallerFilePath] string eigeneDatei = "")
+        {
+            string ordner = Path.GetDirectoryName(eigeneDatei);
+            while (ordner != null && !File.Exists(Path.Combine(ordner, "WP-Plan.Kern.slnf")))
+                ordner = Path.GetDirectoryName(ordner);
+            Assert.True(ordner != null, "Die Wurzel des Arbeitsbaums ist nicht zu finden.");
+            return ordner;
         }
 
         [Theory]
@@ -44,6 +99,18 @@ namespace EPOS.Kern.Tests
         public void Jahrestag_liefert_bei_ungueltiger_Angabe_null(string monat, string tag)
         {
             Assert.Equal(0, Ferienzeit.Jahrestag(monat, tag));
+        }
+
+        /// <summary>Ausserhalb 1 … 365 gibt es im Gemeinjahr kein Datum — kein Uebertrag ins Folgejahr.</summary>
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(367)]
+        public void TagUndMonat_ausserhalb_des_Gemeinjahres_liefert_zwei_leere_Felder(int jahrestag)
+        {
+            (int? tag, int? monat) = Ferienzeit.TagUndMonat(jahrestag);
+
+            Assert.Null(tag);
+            Assert.Null(monat);
         }
 
         [Theory]

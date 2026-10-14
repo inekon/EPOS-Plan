@@ -93,7 +93,7 @@ public class KatalogfilterImportTests
             .Select(a => KatalogImportProfil.Finde(a, Text).Listenprofil.Schluessel)
             .ToArray();
 
-        Assert.Equal(5, schluessel.Length);
+        Assert.Equal(7, schluessel.Length);
         Assert.Equal(schluessel.Length, schluessel.Distinct().Count());
         Assert.All(schluessel, s => Assert.StartsWith("IMPORT_", s));
     }

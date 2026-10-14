@@ -1,0 +1,69 @@
+﻿# EPOS-Plan – offene Vorlage „Ökodesign-Datenblatt A–D“ für Kältemaschinen (Importart „Kältemaschine“, Form OEKODESIGN)
+#
+# Für Geräte, deren Produktdatenblatt nach Ökodesign-Verordnung die Teillastpunkte A bis D nennt. Die Werte trägt
+# der Anwender aus dem Datenblatt ab; EPOS setzt keinen Punkt und keine Prüfbedingung selbst ein.
+#
+# Was EPOS daraus macht:
+#   Kennfeld     Ein eingebautes Typkennfeld (gewählt wie in der Nennwertvorlage) wird so skaliert, dass es am
+#                Punkt A (ohne A: am Punkt mit dem größten Teillastverhältnis) dessen Leistung und EER trägt.
+#                Nennkälteleistung und Nenn-EER liest EPOS danach am Nennpunkt aus diesem Kennfeld.
+#   Teillast     Je Punkt Lastgrad = Pdc / Volllast des Kennfelds und EER-Verhältnis = EERd / Volllast-EER, jeweils
+#                bei der Außen- bzw. Rückkühltemperatur des Punkts. Ab drei verschiedenen Lastgraden passt EPOS die
+#                Teillastkurve EIRFPLR(x) = a + b·x + c·x² an (Teillast_Weg = KURVE).
+#   Takten       Liegt Pdc über der Last der Prüfung (Teillastverhältnis × Pdesignc), taktet das Gerät dort: Die
+#                kleinste solche Leistung wird die Mindestteillast, den Taktverlust trägt Cdc.
+#   Grenze       Aus A–D lassen sich Temperatur- und Teillasteinfluss nicht trennen; die Temperaturabhängigkeit
+#                kommt aus dem Typkennfeld, der Rest geht in die Teillastkurve. SEER bzw. ηs,c sind nur Angabe.
+#
+# Zeilen mit # sind Kommentare. Trennzeichen: Semikolon, Tabulator oder Komma (wird erkannt).
+# Dezimalzeichen: bei Semikolon und Tabulator Komma oder Punkt, bei Komma als Trennzeichen der Punkt.
+#
+# KOPFZEILEN (Schlüssel;Wert) – jede Zeile „Bezeichner“ beginnt ein neues Gerät:
+#   Bezeichner             Name des Katalogsatzes (Pflicht)
+#   Form                   OEKODESIGN (darf fehlen: Teillastpunkte ohne Kennfeldzeilen ergeben diese Form)
+#   Rückkühlart            LUFT, TROCKENKUEHLER, NASSKUEHLER oder WASSER
+#   Geräteart, Verdichter, Verdichterregelung, Firma, Typ, Beschreibung, Kältemittel, GWP, Füllmenge
+#                          wie in der Nennwertvorlage
+#   Pdesignc               Auslegungskälteleistung in kW (für das Teillastverhältnis der Punkte)
+#   SEER oder ETA_S_C      saisonale Kennzahl des Datenblatts (nur Angabe)
+#   Kaltwassertemperatur   Kaltwasser-Vorlauf der Prüfung in °C (Pflicht)
+#   Cdc                    Taktverlustfaktor des Datenblatts, 0 bis 1; leer = 0,9
+#
+# TEILLASTPUNKTE: je Zeile Punkt; Name; Tj [°C]; Pdc [kW]; EERd [-]; Teillastverhältnis [%]; Rückkühltemperatur [°C]
+#   Tj                     Außentemperatur des Punkts
+#   Pdc, EERd              deklarierte Kälteleistung und deklarierter EER des Punkts
+#   Teillastverhältnis     optional; ohne Angabe beurteilt EPOS das Takten nicht
+#   Rückkühltemperatur     Eintritt des Rückkühlmediums. Luftgekühlt darf sie fehlen (dann Tj + 5 K, der Bezug
+#                          des Kennfelds); wassergekühlt ist sie Pflicht (Kühlwasser-Eintritt der Prüfung).
+#
+# Die Beispiele unten sind neutrale Rechenbeispiele mit runden Werten, keine Geräte eines Herstellers.
+#
+Bezeichner;Beispiel Kältemaschine Ökodesign 120 kW Luft
+Form;OEKODESIGN
+Rückkühlart;LUFT
+Geräteart;KWS_LUFT
+Verdichter;SCROLL
+Pdesignc;120
+SEER;4,6
+Kaltwassertemperatur;7
+Cdc;0,9
+Kältemittel;R290
+Punkt;Name;Tj;Pdc;EERd;Teillastverhältnis;Rückkühltemperatur
+Punkt;A;35;120;3,0;100
+Punkt;B;30;90;3,8;75
+Punkt;C;25;60;4,6;50
+Punkt;D;20;36;5,0;25
+
+Bezeichner;Beispiel Kältemaschine Ökodesign 300 kW Wasser
+Form;OEKODESIGN
+Rückkühlart;WASSER
+Geräteart;KWS_WASSER
+Verdichter;SCHRAUBE
+Pdesignc;300
+SEER;6,0
+Kaltwassertemperatur;7
+Cdc;0,9
+Punkt;A;35;300;5,0;100;30
+Punkt;B;30;225;6,0;75;26
+Punkt;C;25;150;6,8;50;22
+Punkt;D;20;100;7,0;25;18

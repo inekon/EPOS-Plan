@@ -129,10 +129,13 @@ namespace WindowsFormsApplication1
                 ProjektflotteAktiv = _ctrl.ProjektflotteAktiv,
                 ProjektflotteAktivieren = ProjektflotteAktivieren,
                 ProjektflotteDeaktivieren = ProjektflotteDeaktivieren,
+                BesteVarianteUebernehmen = BesteVarianteUebernehmen,
 
                 Vorpruefen = eingaben => _ctrl.Vorpruefen(eingaben),
                 VorpruefenSchnell = eingaben => _ctrl.VorpruefenSchnell(eingaben),
                 PeakZielVorschlag = eingaben => _ctrl.PeakZielVorschlag(eingaben),
+                // PV3 (Welle M5): die Einspeisegrenze der Projekteinstellung fuer die Zeile im Netzblock.
+                ProjektEinspeisegrenzeKw = () => KonfigurationCtrl.EinspeisegrenzeKwLesen(_ctrl.ProjektId),
                 PeakZielBestimmen = PeakZielBestimmen,
 
                 // „Speicher hinzufuegen" aus einer Projektanlage oder aus dem Katalog
@@ -440,6 +443,13 @@ namespace WindowsFormsApplication1
         private Task<string> ProjektflotteAktivieren(SpeicherFlottenErgebnis ergebnis)
         {
             string fehler = _ctrl.ProjektflotteAktivieren(ergebnis);
+            Nachziehen();
+            return Task.FromResult(fehler);
+        }
+
+        private Task<string> BesteVarianteUebernehmen(SpeicherFlottenErgebnis ergebnis)
+        {
+            string fehler = _ctrl.BesteVarianteUebernehmen(ergebnis);
             Nachziehen();
             return Task.FromResult(fehler);
         }

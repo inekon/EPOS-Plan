@@ -70,6 +70,12 @@
                       NurLesen="@(!Setzbar(feld))"
                       Mehrzeilig="@(feld.Art == BrowserFeldArt.Mehrzeilig)" Zeilen="2" />
         }
+        @* Ein Zusatz des Wirts je setzbarem Feld - die Mehrfachbearbeitung setzt hier
+           „fuer alle gewaehlten setzen" (Konzept Katalogauswahl 4.6). *@
+        @if (Feldzusatz is not null && Setzbar(feld))
+        {
+            @Feldzusatz(feld)
+        }
     }
     </KindInhalt>
 </Formularraster>
@@ -88,6 +94,9 @@
     /// die niemand von Hand setzt). Gesetzt wird nur, wo BEIDE es zulassen.
     /// </remarks>
     [Parameter] public bool NurLesen { get; set; }
+
+    /// <summary>Ein Zusatz nach jedem setzbaren Feld (über die volle Rasterbreite); ohne ihn nichts.</summary>
+    [Parameter] public RenderFragment<BrowserFeldwert>? Feldzusatz { get; set; }
 
     /// <summary>
     /// Ein Feld hat sich geändert. Der Wirt führt daraufhin seinen „geändert"-Zustand

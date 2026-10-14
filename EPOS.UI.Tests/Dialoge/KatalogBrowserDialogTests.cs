@@ -139,7 +139,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
             Detail = name => Felder(art, name),
             Existiert = _ => false,
             Loeschen = n => new KatalogSpeicherErgebnis(true, "", n),
-            Speichern = (n, _, __) => new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n)
+            Speichern = (n, _) => new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n)
         };
 
         return Render<KatalogBrowserDialog>(p => p
@@ -160,12 +160,14 @@ public class KatalogBrowserDialogTests : EposBunitContext
     // Katalogsatzes — jede fachliche Spalte der Stammtabelle ausser ID und ReadOnly
     // (21 / 27 / 14 / 6). Bis dahin waren es 8 / 8 / 8 / 6: der Detailblock der vier
     // Vorlaeufer-Masken. Beim BHKW kamen mit dem Entscheid vom 20.09.2026 die zwei
-    // Wirkungsgradanteile dazu. Die Quelle ist KatalogBrowserProfil; hier steht nur
-    // die Zahl.
+    // Wirkungsgradanteile dazu, beim Heizkessel mit der Gruppe „Kennlinie" (Konzept
+    // Kesselkennlinie, Etappe E1) fuenf Felder: 21 -> 26, mit der Einheit des
+    // Bereitschaftsverlusts (Anwenderentscheid 02.10.2026) 27. Die Quelle ist
+    // KatalogBrowserProfil; hier steht nur die Zahl.
     [Theory]
-    [InlineData(KatalogBrowserArt.Heizkessel, "Administration Heizkessel", 21)]
-    [InlineData(KatalogBrowserArt.Bhkw, "BHKW Verwaltung", 27)]
-    [InlineData(KatalogBrowserArt.Solarkollektoren, "Administration Solarkollektoren", 12)]
+    [InlineData(KatalogBrowserArt.Heizkessel, "Administration Heizkessel", 27)]
+    [InlineData(KatalogBrowserArt.Bhkw, "BHKW Verwaltung", 32)]   // mit Teillast und Takten (Welle M4) und Ruecklauf_Max (UB-E3)
+    [InlineData(KatalogBrowserArt.Solarkollektoren, "Administration Solarkollektoren", 13)]   // mit der Bezugsfläche (Welle M2)
     [InlineData(KatalogBrowserArt.Pufferspeicher, "Administration Pufferspeicher", 6)]
     public void Jede_Auspraegung_zeigt_ihren_Titel_und_ihre_Detailfelder(
         KatalogBrowserArt art, string titel, int felder)
@@ -422,6 +424,28 @@ public class KatalogBrowserDialogTests : EposBunitContext
         Assert.Equal(name, geloescht);
     }
 
+    /// <summary>KT-4: Wirft der Löschweg, bleibt der Satz in der Liste und das Warnband nennt den Grund.</summary>
+    [Fact]
+    public void Wirft_Loeschen_bleibt_der_Satz_und_das_Warnband_nennt_den_Grund()
+    {
+        const KatalogBrowserArt art = KatalogBrowserArt.Heizkessel;
+        var wege = new KatalogBrowserWege
+        {
+            Katalogzeilen = () => Zeilen(art),
+            Detail = name => Felder(art, name),
+            Loeschen = _ => throw new InvalidOperationException("Datenbank gesperrt")
+        };
+        var cut = Aufbauen(art, wege: wege);
+        string name = cut.Instance.Zeilen[0].Bezeichner;
+        int vorher = cut.Instance.Zeilen.Count;
+
+        Loeschknopf(cut, art).Click();
+        cut.FindAll(".epos-rueckfrage button")[0].Click();
+
+        Assert.Contains(string.Format(WindowsFormsApplication1.MyResource.Resource.WURZEL_LOESCHEN_FEHLER, name, "Datenbank gesperrt"), cut.Instance.Meldung);
+        Assert.Equal(vorher, cut.Instance.Zeilen.Count);
+    }
+
     [Fact]
     public void Nein_in_der_Rueckfrage_loescht_nicht()
     {
@@ -602,7 +626,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         {
             Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
             Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
-            Speichern = (n, f, _) => { gesehen = f; return new KatalogSpeicherErgebnis(true, "ok", n); }
+            Speichern = (n, f) => { gesehen = f; return new KatalogSpeicherErgebnis(true, "ok", n); }
         };
         var cut = Aufbauen(wege: wege);
 
@@ -655,7 +679,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         {
             Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
             Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
-            Speichern = (n, _, __) => { geschrieben = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
+            Speichern = (n, _) => { geschrieben = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
         };
         var cut = Aufbauen(wege: wege);
 
@@ -688,7 +712,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         {
             Katalogzeilen = () => Zeilen(KatalogBrowserArt.Bhkw),
             Detail = name => Felder(KatalogBrowserArt.Bhkw, name),
-            Speichern = (n, _, __) => { gerufen = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
+            Speichern = (n, _) => { gerufen = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
         };
         var cut = Aufbauen(KatalogBrowserArt.Bhkw, wege: wege);
 
@@ -717,18 +741,17 @@ public class KatalogBrowserDialogTests : EposBunitContext
 
     /// <summary>
     /// Ein EIGENER Satz desselben Katalogs bleibt bearbeitbar — die Sperre hängt am
-    /// Satz, nicht an der Ausprägung. Der Schreibweg bekommt nie die Erlaubnis, den
-    /// Schutz zu übergehen.
+    /// Satz, nicht an der Ausprägung. Gespeichert wird über den Schreibweg.
     /// </summary>
     [Fact]
-    public void Ein_eigener_Satz_bleibt_bearbeitbar_und_uebergeht_nie_den_Schutz()
+    public void Ein_eigener_Satz_bleibt_bearbeitbar()
     {
-        bool? uebergangen = null;
+        bool gerufen = false;
         var wege = new KatalogBrowserWege
         {
             Katalogzeilen = () => Zeilen(KatalogBrowserArt.Bhkw),
             Detail = name => Felder(KatalogBrowserArt.Bhkw, name),
-            Speichern = (n, _, u) => { uebergangen = u; return new KatalogSpeicherErgebnis(true, "gespeichert", n); }
+            Speichern = (n, _) => { gerufen = true; return new KatalogSpeicherErgebnis(true, "gespeichert", n); }
         };
         var cut = Aufbauen(KatalogBrowserArt.Bhkw, wege: wege);
 
@@ -740,7 +763,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         Assert.Null(speichern.GetAttribute("aria-disabled"));
         speichern.Click();
 
-        Assert.False(uebergangen);
+        Assert.True(gerufen);
         Assert.Equal("gespeichert", cut.Instance.Status);
         Assert.Equal("", cut.Instance.Meldung);
     }
@@ -753,7 +776,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         {
             Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
             Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
-            Speichern = (n, _, __) => { gerufen = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
+            Speichern = (n, _) => { gerufen = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
         };
         var cut = Aufbauen(wege: wege);
 
@@ -802,7 +825,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         {
             Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
             Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
-            Speichern = (n, _, __) => { geschrieben = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
+            Speichern = (n, _) => { geschrieben = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
         };
         var cut = Aufbauen(wege: wege, geschlossen: e => ergebnis = e);
 
@@ -992,7 +1015,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         {
             Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
             Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
-            Speichern = (n, _, __) => new KatalogSpeicherErgebnis(true, "", n),
+            Speichern = (n, _) => new KatalogSpeicherErgebnis(true, "", n),
             Duplizieren = (id, name) => new KatalogSpeicherErgebnis(true, "", name)
         };
         var cut = Aufbauen(wege: wege);
@@ -1693,7 +1716,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         {
             Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
             Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
-            Speichern = (n, f, _) => { geschrieben = f; return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n); }
+            Speichern = (n, f) => { geschrieben = f; return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n); }
         };
         var cut = Aufbauen(wege: wege);
         const string maske = KiMaskennamen.HEIZKESSEL_ADMIN;
@@ -1843,7 +1866,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         {
             Katalogzeilen = () => schloss.Markieren(Zeilen(KatalogBrowserArt.Bhkw)),
             Detail = name => Felder(KatalogBrowserArt.Bhkw, name),
-            Speichern = (n, _, __) => { gespeichert = n; return new KatalogSpeicherErgebnis(true, "gespeichert", n); },
+            Speichern = (n, _) => { gespeichert = n; return new KatalogSpeicherErgebnis(true, "gespeichert", n); },
             Duplizieren = (id, name) => new KatalogSpeicherErgebnis(true, "", name),
             Schloss = schloss.Weg()
         };

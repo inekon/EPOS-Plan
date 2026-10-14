@@ -139,26 +139,36 @@ namespace WindowsFormsApplication1
                 bool mitNominal = !string.Equals(schluessel, Zahlungsgliederung.INVESTITION, StringComparison.Ordinal);
                 var zellen = new List<string>();
                 var unter = new List<string>();
+                var unterTitel = new List<string>();
                 foreach (Zahlungsgliederung g in gliederungen)
                 {
                     Zahlungsbestandteil b = g == null ? null : g.Bestandteil(schluessel);
                     zellen.Add(b == null ? "—" : b.Barwert.ToString(GELD, kultur));
-                    unter.Add(b == null || !mitNominal ? ""
+                    // Anwenderentscheid 30.09.2026: Die Nominalsumme trägt DASSELBE Vorzeichen wie
+                    // der Barwert darüber (Ausgaben negativ, Einnahmen positiv, echtes Minuszeichen)
+                    // — ohne Vorzeichen stand eine positive Zahl unter einer negativen.
+                    bool nominal = b != null && mitNominal;
+                    unter.Add(!nominal ? ""
                               : string.Format(kultur, MyResource.Resource.WIRT_GL_NOMINAL,
-                                              Math.Abs(b.Nominal).ToString("N0", kultur)));
+                                              b.Nominal.ToString(GELD, kultur)));
+                    unterTitel.Add(!nominal ? ""
+                                   : string.Format(kultur, MyResource.Resource.WIRT_GL_NOMINAL_TIPP,
+                                                   g.Jahre.ToString(kultur)));
                 }
                 if (differenz != null)
                 {
                     Zahlungsbestandteil db = differenz.Bestandteil(schluessel);
                     zellen.Add((db == null ? 0.0 : db.Barwert).ToString(GELD, kultur));
                     unter.Add("");
+                    unterTitel.Add("");
                 }
                 zeilen.Add(new MatrixZeile
                 {
                     Titel = Zahlungsgliederung.Titel(schluessel),
                     Kennzeichen = Unterschrift(schluessel),
                     Zellen = zellen,
-                    Unterwerte = unter
+                    Unterwerte = unter,
+                    Unterwerttitel = unterTitel
                 });
             }
 

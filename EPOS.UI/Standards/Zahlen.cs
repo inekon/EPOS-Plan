@@ -23,14 +23,20 @@ public static class Zahlen
 {
     /// <summary>
     /// Parst eine Dezimalzahl mit Komma oder Punkt. Ein Text mit
-    /// Tausendertrennzeichen ("1.234,5") ist ungueltig.
+    /// Tausendertrennzeichen ("1.234,5") ist ungueltig, ebenso alles, was keine
+    /// ENDLICHE Zahl ist: "NaN", "Infinity" und ein Ueberlauf wie "1e400" (Stufe
+    /// KP2, Welle U1). Der Zustand "aus" einer Zelle laeuft allein ueber den
+    /// <c>AusText</c> des Zahlenfelds.
     /// </summary>
     public static bool ZahlParsen(string? szText, out double dWert)
     {
         dWert = 0.0;
         if (string.IsNullOrEmpty(szText)) return false;
         string sz = szText.Trim().Replace(',', '.');
-        return double.TryParse(sz, NumberStyles.Float, CultureInfo.InvariantCulture, out dWert);
+        if (!double.TryParse(sz, NumberStyles.Float, CultureInfo.InvariantCulture, out double d) || !double.IsFinite(d))
+            return false;
+        dWert = d;
+        return true;
     }
 
     /// <summary>
@@ -91,6 +97,16 @@ public static class Zahlen
     /// </remarks>
     private static readonly string Hoechstformat =
         "0." + new string('#', HOECHSTE_NACHKOMMASTELLEN);
+
+    /// <summary>
+    /// Eine Leistung in Watt fuer eine TEXTZEILE (nicht fuer ein Eingabefeld): ohne Nachkommastellen, mit
+    /// Tausendertrennung der aktuellen Kultur, etwa „3.595"; leer = „—". Ein Eingabefeld zeigt nie
+    /// Tausendertrennzeichen, denn der Parser liest den Punkt als Dezimalzeichen.
+    /// </summary>
+    public static string Watt(double? dWert)
+        => dWert is double d && !double.IsNaN(d) && !double.IsInfinity(d)
+            ? Math.Round(d, 0, MidpointRounding.AwayFromZero).ToString("N0", CultureInfo.CurrentCulture)
+            : "—";
 
     /// <summary>Anzeigetext einer Ganzzahl - ohne jedes Trennzeichen.</summary>
     public static string Anzeigetext(int? nWert)

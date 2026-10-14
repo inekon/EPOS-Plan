@@ -139,6 +139,16 @@ namespace WindowsFormsApplication1
             public const string STROMSTEUER_ENTLASTUNG = "STROMSTEUER_ENTLASTUNG";
 
             /// <summary>
+            /// Die <b>entgangene</b> Stromsteuer-Entlastung nach § 9b StromStG auf den im Projekt
+            /// verbrauchten BHKW-Strom — eine <b>negative</b> Reihe
+            /// (<see cref="Waermegestehung.Entgangene9bReihe"/>). Sie steht allein im
+            /// Zahlungsgerüst der Wärmegestehungskosten und mindert dort die Stromgutschrift, nie
+            /// im Zahlungsbild des Projekts; Mehrjahrestafel, Zahlungsstrombild und Erlösrubrik
+            /// führen sie deshalb nicht.
+            /// </summary>
+            public const string STROMSTEUER_ENTLASTUNG_ENTGANGEN = "STROMSTEUER_ENTLASTUNG_ENTGANGEN";
+
+            /// <summary>
             /// ETAPPE K6 — pauschale Vorauszahlung nach § 9 KWKG für Anlagen bis
             /// 2 kW<sub>el</sub>. Die einzige Reihe des Programms, deren Betrag im
             /// <b>Index 0</b> steht: Das Gesetz zahlt einmalig aus, binnen zwei Monaten

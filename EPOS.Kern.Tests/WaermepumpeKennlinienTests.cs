@@ -176,6 +176,70 @@ namespace EPOS.Kern.Tests
             finally { KopieLoeschen(kopie); }
         }
 
+        /// <summary>
+        /// <b>Fall 5b — allein die Kühlkennlinie fehlt.</b> Die Wärmekennlinien stehen im
+        /// Projekt, die Kühlkennlinie nicht, der Katalogsatz führt eine: Die Quelle bleibt
+        /// „Projekt", meldet aber <c>KuehlNachholbar</c>; der Knopfweg schreibt NUR die
+        /// Kühlstützstellen, die Wärmekennlinien bleiben, wie sie sind. Danach ist nichts
+        /// mehr nachzuholen, und der Sperrgrund des Kühlbetriebs fällt auf den Fall „mit
+        /// Kennlinie" zurück.
+        /// </summary>
+        [Fact]
+        public void Fehlt_allein_die_Kuehlkennlinie_holt_der_Knopf_nur_sie()
+        {
+            if (!_db.Vorhanden) return;
+
+            // Ein Katalogsatz mit Wärme- UND Kühlkennlinie (36 + 4 Stützstellen).
+            const string GERAET = "WP BWL-1S-05/230V, mit Heizelement";
+            int kopie = KopieOhneKennlinienAnlegen(GERAET);
+            try
+            {
+                int alles = new WPCtrl().KennlinienAusKatalog(kopie);
+                int kuehl = Zeilen("SELECT COUNT(*) FROM Tab_Kenndaten_Kuehlung WHERE ID_WP = ?", kopie);
+                int waerme = Zeilen("SELECT COUNT(*) FROM Tab_Kenndaten WHERE ID_WP = ?", kopie);
+                Assert.True(kuehl > 0, "Der Katalogsatz führt keine Kühlkennlinie mehr.");
+                Assert.Equal(alles, kuehl + waerme);
+
+                // Die Lage des Befunds: Wärme da, Kühlung weg.
+                DataRepository.ExecuteSQL("DELETE FROM Tab_Kenndaten_Kuehlung WHERE ID_WP = ?", new DbParam("@id", kopie));
+
+                WaermepumpeKennlinienCtrl.Quelle q = WaermepumpeKennlinienCtrl.FuerAnlage(kopie);
+                Assert.Equal(WaermepumpeKennlinienCtrl.Herkunft.Projekt, q.Woher);
+                Assert.False(q.Nachholbar);
+                Assert.True(q.KuehlNachholbar);
+                Assert.True(WPCtrl.KuehlkennlinieNachholbar(kopie));
+                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WP_PROJ_MSG_KUEHL_KENNLINIE_NACHHOLEN,
+                             WPCtrl.KuehlbetriebSperrgrund(kopie, TESTPROJEKT));
+
+                Assert.Equal(kuehl, new WPCtrl().KennlinienAusKatalog(kopie));
+                Assert.Equal(waerme, Zeilen("SELECT COUNT(*) FROM Tab_Kenndaten WHERE ID_WP = ?", kopie));
+                Assert.Equal(kuehl, Zeilen("SELECT COUNT(*) FROM Tab_Kenndaten_Kuehlung WHERE ID_WP = ?", kopie));
+
+                Assert.False(WaermepumpeKennlinienCtrl.FuerAnlage(kopie).KuehlNachholbar);
+                Assert.Null(WPCtrl.KuehlbetriebSperrgrund(kopie, TESTPROJEKT));
+            }
+            finally { KopieLoeschen(kopie); }
+        }
+
+        /// <summary>
+        /// <b>Fall 5c</b>: Ein Projektgerät mit gepflegter Kühlkennlinie (Referenzprojekt
+        /// 1017) bietet nichts zum Nachholen an — seine Kühlkennlinie bleibt unberührt.
+        /// </summary>
+        [Fact]
+        public void Eine_vorhandene_Kuehlkennlinie_ist_nicht_nachholbar()
+        {
+            if (!_db.Vorhanden) return;
+
+            object id = DataRepository.ExecuteScalar(
+                "SELECT ID_WP FROM Tab_Kenndaten_Kuehlung k JOIN Tab_WP w ON w.ID = k.ID_WP WHERE w.ID_Projekt = ? LIMIT 1",
+                new DbParam("@p", 1017));
+            Assert.True(id != null && id != DBNull.Value, "Projekt 1017 führt keine Kühlkennlinie mehr.");
+            int idWp = Convert.ToInt32(id);
+
+            Assert.False(WPCtrl.KuehlkennlinieNachholbar(idWp));
+            Assert.False(WaermepumpeKennlinienCtrl.FuerAnlage(idWp).KuehlNachholbar);
+        }
+
         // =================================================================================
         // 6-8 — Die Ränder
         // =================================================================================

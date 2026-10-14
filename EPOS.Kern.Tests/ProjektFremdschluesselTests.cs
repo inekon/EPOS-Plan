@@ -38,13 +38,13 @@ namespace EPOS.Kern.Tests
 
         /// <summary>Der Zielstand ist 96, und der Katalog führt achtundzwanzig Tabellen.</summary>
         [Fact]
-        public void Der_Zielstand_ist_96_und_der_Katalog_fuehrt_28_Tabellen()
+        public void Der_Zielstand_ist_96_und_der_Katalog_fuehrt_30_Tabellen()
         {
             using var _ = new Kulturvorrichtung();
 
             Assert.True(SchemaStand.Zielversion >= 96,
                         "Zielstand " + SchemaStand.Zielversion + " liegt unter 96.");
-            Assert.Equal(28, ProjektFremdschluessel.Katalog.Length);
+            Assert.Equal(30, ProjektFremdschluessel.Katalog.Length);   // K1: Tab_Kaeltebedarf, Tab_Kaeltetyp
 
             // Kein Name doppelt - ein zweiter Eintrag baute dieselbe Tabelle zweimal um.
             var namen = ProjektFremdschluessel.Katalog.Select(e => e.Tabelle).ToList();
@@ -54,7 +54,7 @@ namespace EPOS.Kern.Tests
             ProjektFremdschluessel.Eintrag variante = ProjektFremdschluessel.Finde("Tab_Variante");
             Assert.NotNull(variante);
             Assert.Equal(new[] { "ID_Projekt", "ID_ProjektRef" }, variante.Spalten);
-            Assert.Equal(29, ProjektFremdschluessel.Katalog.Sum(e => e.Spalten.Length));
+            Assert.Equal(31, ProjektFremdschluessel.Katalog.Sum(e => e.Spalten.Length));
         }
 
         /// <summary>
@@ -259,7 +259,7 @@ namespace EPOS.Kern.Tests
 
             var bericht = new List<string>();
             Assert.Equal(0, ProjektFremdschluessel.Alle(bericht));
-            Assert.Equal(28, bericht.Count);
+            Assert.Equal(30, bericht.Count);   // K1: + Tab_Kaeltebedarf, Tab_Kaeltetyp
             Assert.All(bericht, z => Assert.Contains("uebersprungen", z, StringComparison.Ordinal));
             Assert.Equal(0, ProjektFremdschluessel.Offen());
         }
@@ -281,7 +281,7 @@ namespace EPOS.Kern.Tests
             var bericht = new List<string>();
             Assert.Equal(1, ProjektFremdschluessel.Alle(bericht));
 
-            Assert.Equal(27, bericht.Count(z => z.Contains("uebersprungen", StringComparison.Ordinal)));
+            Assert.Equal(29, bericht.Count(z => z.Contains("uebersprungen", StringComparison.Ordinal)));
             Assert.Single(bericht, z => z.StartsWith("Tab_Heizkessel:", StringComparison.Ordinal) &&
                                         z.Contains("gesetzt", StringComparison.Ordinal));
             Assert.Equal(0, ProjektFremdschluessel.Offen());

@@ -63,13 +63,18 @@
                   WertChanged="@(w => { _bedarfslinie = w; Merken(); })" />
     </div>
 
-    <div class="epos-simerg-spalten">
+    @* REIHENSCHALTER NEBENEINANDER (Anwenderwunsch 05.10.2026): Erzeuger- und
+       Speicherwahl stehen je als umbrechende ZEILE uebereinander (Waagerecht),
+       dieselbe Bauart wie die Schalter des Waermepumpenreiters - nicht mehr als
+       zwei senkrechte Listen in Spalten. *@
+    <div class="epos-simerg-block">
         @* DIE SUMMENLINIE STEHT UEBER IHREN SUMMANDEN (Anwenderwunsch 15.09.2026):
            „Summe Waermeerzeugung" ist der erste Eintrag der Erzeugerliste, durch eine
            Trennlinie abgesetzt (AbsatzNach) - und damit abschaltbar wie jeder einzelne
            Erzeuger. Sie liegt in DERSELBEN Liste, also fassen „Alle" und „Keine" sie
            mit, und das Sitzungsgedaechtnis merkt sie wie jede andere Reihe. *@
         <Mehrfachauswahl Bezeichnung="@Resource.SIMERG_LBL_ERZEUGERAUSWAHL"
+                         Waagerecht="true"
                          Eintraege="@Eintraege(Vorhandene(Daten.Erzeuger))"
                          AbsatzNach="@AbsatzNach"
                          Gewaehlt="@_erzeuger" GewaehltChanged="@(w => { _erzeuger = w; Merken(); })" />
@@ -77,6 +82,7 @@
         @if (Vorhandene(Daten.Speicher).Count > 0)
         {
             <Mehrfachauswahl Bezeichnung="@Resource.SIMERG_LBL_SPEICHERAUSWAHL"
+                             Waagerecht="true"
                              Eintraege="@Eintraege(Vorhandene(Daten.Speicher))"
                              Gewaehlt="@_speicher" GewaehltChanged="@(w => { _speicher = w; Merken(); })" />
         }
@@ -86,7 +92,7 @@
        die Tasten + − 0 verschieben die viewBox der Zeichenflaeche; „1:1" holt das
        ganze Jahr zurueck. Die SPEICHERFUELLSTAENDE stehen auf der zweiten Achse in
        kWh, alles andere in kW. *@
-    <DiagrammSvg Modell="@ModellGang" Kennung="simerg-waermegang"
+    <DiagrammSvg Modell="@ModellGang" Kennung="simerg-waermegang" CsvExport="@(Csv.HasDelegate ? EventCallback.Factory.Create(this, CsvGewuenscht) : default)"
                  Vorlagenfeld="stand.bild.waerme_jahresverlauf" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
                  VorlagenfeldHinweis="@Resource.VF_ORT_WAERMEGANG"
                  Bezeichnung="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
@@ -95,13 +101,6 @@
                  FarbwahlErlaubt="@Farbwahl"
                  FarbeGewaehlt="FarbeUebernehmen"
                  FarbeZurueckgesetzt="FarbeVerwerfen" />
-
-    @if (Csv.HasDelegate)
-    {
-        <button type="button" class="epos-simerg-knopf" @onclick="CsvGewuenscht">
-            @Resource.SIM_BTN_CSV_EXPORT
-        </button>
-    }
 
 </div>
 

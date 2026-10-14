@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using EPOS.UI.Bausteine;
 
 namespace WindowsFormsApplication1
 {
@@ -143,6 +144,11 @@ namespace WindowsFormsApplication1
 
                 ["Speichern"] = new Func<(string Text, string Titel)?>(() =>
                 {
+                    // K5c: „Split ohne EER“ nennt der Assistent mit dem Wortlaut des Dialogs, bevor der Kern schreibt
+                    // (sonst meldete nur der Kern „Add_WaermebedarfExtern“).
+                    string deckung = DeckungsgrundWaermebedarf(ctrl);
+                    if (deckung != null) return (deckung, Text_("WIZ_TITEL", "Projektassistent"));
+
                     AssistentErgebnis e = ctrl.Speichern();
                     if (!e.Erfolg)
                         return (AssistentCtrl.Meldungstext(e), AssistentCtrl.Meldungstitel(e));
@@ -193,7 +199,23 @@ namespace WindowsFormsApplication1
                 // W15a-E-1: Das linke Band zeigt nur den Namen; die Variantenherkunft
                 // steht dort als leise Zeile darunter (keine Artspalte, kein Platz).
                 ["ArtVarianteText"] = Text_("PRJ_LIST_ART_VARIANTE", "Variante"),
-                ["VarianteVonFormat"] = Text_("PRJ_LIST_VARIANTE_VON", "Variante von {0}")
+                ["VarianteVonFormat"] = Text_("PRJ_LIST_VARIANTE_VON", "Variante von {0}"),
+
+                // Der Steckbrief des markierten Projekts (Anwenderwunsch 06.10.2026).
+                ["SteckbriefLaden"] = new Func<int, ProjektSteckbrief>(Steckbrief),
+                ["SteckbriefTexte"] = new ProjektSteckbriefTexte
+                {
+                    Titel = Text_("WIZ_STECKBRIEF_TITEL", "Projektdaten"),
+                    Beschreibung = Text_("WIZ_STECKBRIEF_BESCHREIBUNG", "Beschreibung"),
+                    Kunde = Text_("WIZ_STECKBRIEF_KUNDE", "Kunde"),
+                    Bearbeiter = Text_("WIZ_STECKBRIEF_BEARBEITER", "Bearbeiter"),
+                    Erstellt = Text_("WIZ_STECKBRIEF_ERSTELLT", "Erstellt am"),
+                    Geaendert = Text_("WIZ_STECKBRIEF_GEAENDERT", "Geändert am"),
+                    Klima = Text_("WIZ_STECKBRIEF_KLIMA", "Klimaregion"),
+                    VarianteVon = Text_("WIZ_STECKBRIEF_VARIANTE_VON", "Variante von"),
+                    Varianten = Text_("WIZ_STECKBRIEF_VARIANTEN", "Varianten"),
+                    Simulation = Text_("WIZ_STECKBRIEF_SIMULATION", "Letzte Simulation")
+                }
             };
         }
 
@@ -209,6 +231,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static string SeitePruefen(AssistentCtrl ctrl, int nr)
         {
+            // K5c: die Seite Wärmebedarf prüft beim Verlassen jede Kühlzeile mit der Regel des Kerns — der Grund steht
+            // als Banner des Assistenten, die Seite bleibt stehen.
+            if (nr == WizardItemClass.WAERMEBEDARF_ITEM) return DeckungsgrundWaermebedarf(ctrl);
             if (nr != WizardItemClass.PROJEKT_ITEM || ctrl.Kopf.Count == 0) return null;
             switch (ProjektKopfRegeln.Pruefe(ctrl.Kopf[0], ProjektKopfHuelle.VergebeneNamen()))
             {
@@ -222,6 +247,15 @@ namespace WindowsFormsApplication1
                     return null;
             }
         }
+
+        /// <summary>
+        /// „Split ohne EER“ auf der Seite Wärmebedarf (K5c, Konzept Kältebedarf 3.4): nur, wenn die Seite aktiv ist —
+        /// eine abgewählte Seite schreibt keine Zuordnung (<c>EntferneNichtAktiveZuordnungen</c>).
+        /// </summary>
+        internal static string DeckungsgrundWaermebedarf(AssistentCtrl ctrl)
+            => ctrl.SeiteAktiv(WizardItemClass.WAERMEBEDARF_ITEM)
+                ? WaermebedarfExternAbbildung.Deckungsgrund(ctrl.Waermebedarf)
+                : null;
 
         /// <summary>
         /// Ein Schritt wird verlassen — wörtlich <c>WizardParent.Next</c> (:275-283):
@@ -379,6 +413,17 @@ namespace WindowsFormsApplication1
             {
                 Console.WriteLine("Projektliste konnte nicht gelesen werden: " + ex.Message);
                 return new List<ProjektKopfZeile>();
+            }
+        }
+
+        /// <summary>Der Steckbrief zum markierten Projekt; <c>null</c> bei einem Lesefehler.</summary>
+        private static ProjektSteckbrief Steckbrief(int idProjekt)
+        {
+            try { return ProjektCtrl.Steckbrief(idProjekt); }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Projektsteckbrief konnte nicht gelesen werden: " + ex.Message);
+                return null;
             }
         }
 

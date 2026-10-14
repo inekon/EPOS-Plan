@@ -83,6 +83,8 @@ namespace WindowsFormsApplication1
                 ["MinimaleSchwelle"] = new Func<double[], PeakShavingEingaben, Task<double>>(Minimal),
                 ["Modell"] = new Func<PeakShavingErgebnis, bool, Zeichnung.Zeichenmodell>(Modell),
                 ["CsvSpeichern"] = new Func<PeakShavingErgebnis, Task<bool>>(Csv),
+                // „CSV…“ am Vorschaubild des Optionendialogs - dieselbe Naht wie an jeder Zeitreihe.
+                ["BildCsvSpeichern"] = Diagrammexportnaht.Fuer(_projektId),
 
                 // DER AUSGANG IN DIE SPEICHERVARIANTE (Entscheid LS-E-1 (a)). OHNE
                 // Projekt gibt es ihn nicht - es gaebe keine Variante, in die zu
@@ -144,11 +146,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static Task<GanglinienImportErgebnis> Einlesen(
             string pfad, GanglinienImportRueckrufe rueckrufe)
-            => Kulturweitergabe.StartenAsync(() => GanglinienImportAblauf.OhneAblage(pfad, rueckrufe));
+            => Importfang.StartenAsync(pfad, () => GanglinienImportAblauf.OhneAblage(pfad, rueckrufe),
+                                       Importfang.AlsGanglinienimport);
 
         /// <summary>Neuzerlegung mit den gewählten Optionen (für den Optionendialog).</summary>
         private static Task<GanglinienVorschau> Vorschau(string pfad, GanglinienImportOptionen optionen)
-            => Kulturweitergabe.Starten(() => GanglinienDatei.Vorschau(pfad, optionen));
+            => Importfang.Starten(pfad, () => GanglinienDatei.Vorschau(pfad, optionen), Importfang.AlsVorschau);
 
         // =====================================================================
         // Die zwei Rechenläufe

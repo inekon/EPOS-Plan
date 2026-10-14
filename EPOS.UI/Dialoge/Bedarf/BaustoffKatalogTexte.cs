@@ -42,6 +42,24 @@ public sealed class BaustoffKatalogTexte
     /// <summary><c>BST_LBL_GRUPPE</c></summary>
     public string LabelGruppe { get; set; } = Resource.BST_LBL_GRUPPE;
 
+    /// <summary><c>BKAT_LBL_KLASSE</c> — die Klasse unter der Gruppe (BK-2b).</summary>
+    public string LabelKlasse { get; set; } = Resource.BKAT_LBL_KLASSE;
+
+    /// <summary><c>BKAT_KLASSE_KEINE</c> — die leere Zeile der Klassenwahl.</summary>
+    public string KlasseKeine { get; set; } = Resource.BKAT_KLASSE_KEINE;
+
+    /// <summary><c>BKAT_IMPORT_QUELLE</c> — die Herleitung unter der festen Quelle eines Importsatzes.</summary>
+    public string ImportQuelle { get; set; } = Resource.BKAT_IMPORT_QUELLE;
+
+    /// <summary><c>BKAT_HERKUNFT_IMPORT</c> — die Marke „Import" im Stammblattkopf.</summary>
+    public string MarkeImport { get; set; } = Resource.BKAT_HERKUNFT_IMPORT;
+
+    /// <summary><c>BST_GRUPPE_KEINE</c> — die leere Zeile der Gruppenwahl.</summary>
+    public string GruppeKeine { get; set; } = Resource.BST_GRUPPE_KEINE;
+
+    /// <summary><c>BST_GRUPPE_FREI_EINTRAG</c> — „{0} (freie Angabe)": eine Gruppe, die keiner festen entspricht.</summary>
+    public string GruppeFreiEintrag { get; set; } = Resource.BST_GRUPPE_FREI_EINTRAG;
+
     /// <summary><c>BST_LBL_HERSTELLER</c></summary>
     public string LabelHersteller { get; set; } = Resource.BST_LBL_HERSTELLER;
 

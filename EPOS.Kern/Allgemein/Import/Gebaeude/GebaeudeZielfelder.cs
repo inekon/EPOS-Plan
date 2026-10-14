@@ -120,7 +120,8 @@ namespace WindowsFormsApplication1
         public const string BAUALTERSKLASSE = "BAUALTERSKLASSE";
         /// <summary>
         /// Baujahr, Jahreszahl 1500 … 2100 (<c>Baujahr</c>, Schemaschritt <c>BaujahrSchema.SCHRITT</c>) —
-        /// IFC liefert es aus <c>Pset_BuildingCommon.YearOfConstruction</c>, gbXML nicht; steuert keine Vorgabe.
+        /// IFC liefert es aus <c>Pset_BuildingCommon.YearOfConstruction</c> (sonst aus dem Baujahr-Rückfall
+        /// des Lesers), gbXML nicht; steuert keine Vorgabe.
         /// </summary>
         public const string BAUJAHR = "BAUJAHR";
         /// <summary>Bauart <see cref="BAUART_LEICHT"/>/<see cref="BAUART_SCHWER"/>/<see cref="BAUART_SEHR_SCHWER"/>; der Editor bildet daraus die <c>Bauweise</c>.</summary>
@@ -175,6 +176,10 @@ namespace WindowsFormsApplication1
         public const string U_GRUND = "U_GRUND";
         /// <summary>Randbedingung der Grundfläche, <c>DbWerte.GRUND_*</c> (<c>Grundflaeche_Randbedingung</c>).</summary>
         public const string GRUND_RANDBEDINGUNG = "GRUND_RANDBEDINGUNG";
+        /// <summary>Welle DA-4: der wirksame U-Wert am Erdreich (<c>Erdreich_U_Wirksam</c>, Inventar G4).</summary>
+        public const string ERDREICH_U_WIRKSAM = "ERDREICH_U_WIRKSAM";
+        /// <summary>Welle DA-4: die Kellertemperatur (<c>Kellertemperatur</c>, Inventar G4).</summary>
+        public const string KELLERTEMPERATUR = "KELLERTEMPERATUR";
 
         // ------------------------------------------------------------------ Sonstige
 
@@ -303,6 +308,8 @@ namespace WindowsFormsApplication1
                 F(FLAECHE_GRUND, GRUPPE_GRUND, "m²"),
                 F(U_GRUND, GRUPPE_GRUND, "W/(m²K)"),
                 F(GRUND_RANDBEDINGUNG, GRUPPE_GRUND, "", text: true),
+                F(ERDREICH_U_WIRKSAM, GRUPPE_GRUND, "W/(m²K)"),
+                F(KELLERTEMPERATUR, GRUPPE_GRUND, "°C"),
 
                 F(FLAECHE_SONSTIGE, GRUPPE_SONSTIGE, "m²"),
                 F(U_SONSTIGE, GRUPPE_SONSTIGE, "W/(m²K)"),

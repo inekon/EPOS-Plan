@@ -51,6 +51,32 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        /// <summary>
+        /// <b>Das Jahr im Dateinamen</b> — nur als Hinweis, nie als Baujahr übernommen (ein Dateiname wie
+        /// „…EG55-2026" nennt das Planungsjahr, nicht das Baujahr): Steht im Namen (ohne Pfad und Endung) GENAU eine
+        /// Folge aus vier Ziffern im Bereich 1500…2100, die nicht Teil einer längeren Ziffernfolge ist, ist sie es;
+        /// sonst — keine oder mehrere — <c>null</c>.
+        /// </summary>
+        public static int? JahrImDateinamen(string dateiname)
+        {
+            if (string.IsNullOrWhiteSpace(dateiname)) return null;
+            string text = System.IO.Path.GetFileNameWithoutExtension(GebaeudeQuelle.NurName(dateiname.Trim()));
+            int? fund = null;
+            int zahl = 0, i = 0;
+            while (i < text.Length)
+            {
+                if (!IstZiffer(text[i])) { i++; continue; }
+                int anfang = i;
+                while (i < text.Length && IstZiffer(text[i])) i++;
+                if (i - anfang != 4) continue;
+                int jahr = int.Parse(text.Substring(anfang, 4), NumberStyles.None, CultureInfo.InvariantCulture);
+                if (jahr < JAHR_MIN || jahr > JAHR_MAX) continue;
+                fund = jahr;
+                zahl++;
+            }
+            return zahl == 1 ? fund : null;
+        }
+
         /// <summary>Die Baualtersklasse A…M zu einem Baujahr; <c>null</c> außerhalb 1500…2100.</summary>
         public static char? Klasse(int jahr)
         {
@@ -58,6 +84,31 @@ namespace WindowsFormsApplication1
             for (int k = 0; k < OBERGRENZEN.Count; k++)
                 if (jahr <= OBERGRENZEN[k]) return (char)('A' + k);
             return (char)('A' + OBERGRENZEN.Count);
+        }
+
+        /// <summary>
+        /// <b>Die wirksame Baualtersklasse — die EINE Regel</b> für den Kopf des Imports, die Zuordnung und die Vorbelegung des
+        /// Gebäudeeditors (Entwurf Gebäudedialog 2.2, GD-2): Eine ausdrückliche Wahl gilt (<paramref name="gewaehltGilt"/>);
+        /// sonst die Klasse des Baujahrs (<see cref="Klasse"/>, <paramref name="ausBaujahr"/> = <c>true</c>); ohne Baujahr die
+        /// Vorgabe <paramref name="gewaehlt"/>.
+        /// </summary>
+        public static char? KlasseWirksam(char? gewaehlt, bool gewaehltGilt, int? baujahr, out bool ausBaujahr)
+        {
+            ausBaujahr = false;
+            if (gewaehltGilt && gewaehlt.HasValue) return gewaehlt;
+            if (baujahr is int jahr && Klasse(jahr) is char k)
+            {
+                ausBaujahr = true;
+                return k;
+            }
+            return gewaehlt;
+        }
+
+        /// <summary>Wie <see cref="KlasseWirksam(char?, bool, int?, out bool)"/>, als Index der Klappliste (0 = A … 12 = M); <c>null</c> = keine.</summary>
+        public static int? KlassenIndexWirksam(int? gewaehlt, bool gewaehltGilt, int? baujahr)
+        {
+            char? g = gewaehlt is int i && i >= 0 && i < Gebaeudeklassen.Anzahl ? (char)('A' + i) : null;
+            return KlasseWirksam(g, gewaehltGilt, baujahr, out _) is char k ? k - 'A' : null;
         }
 
         /// <summary>Der Listenindex der Klasse zu einem Baujahr (0 = A … 12 = M); <c>null</c> ohne Jahr oder außerhalb 1500…2100.</summary>

@@ -211,6 +211,22 @@ namespace WindowsFormsApplication1
                       T(nameof(R.VF_PRUEF_POSITION_TUN)), f.Platzhalter.Normalform);
             }
 
+            /// <summary>
+            /// Ein Kapitel in einem Wiederholblock (<c>{{#je …}}</c>, auch mit <c>|block n</c>): Die Engine erweitert die
+            /// Blöcke vor dem Sammeln der Kapitelstellen — gefüllt wird das Kapitel nur in der ersten Wiederholung, in den
+            /// übrigen bleibt es wie eine doppelte Stelle gelb stehen. Ein Hinweis je Stelle; genannt wird ein umschließender Block.
+            /// </summary>
+            private void PruefeKapitelImBlock(Vorlagenfund f, Vorlagenfeld feld)
+            {
+                if (feld?.Art != Vorlagenfeldart.Kapitel) return;
+                Blockbereich block = Umschliessend(f).FirstOrDefault(b => b.Marke.Art == Platzhalterart.BlockAnfang);
+                if (block == null) return;
+                string anfang = block.Marke.Normalform;
+                Melde(Befundstufe.Hinweis, nameof(R.VF_PRUEF_KAPITEL_IM_BLOCK),
+                      T(nameof(R.VF_PRUEF_KAPITEL_IM_BLOCK), f.Platzhalter.Normalform, anfang), Fundort(f),
+                      T(nameof(R.VF_PRUEF_KAPITEL_IM_BLOCK_TUN), anfang, "{{/je}}"), f.Platzhalter.Normalform);
+            }
+
             /// <summary><c>|block n</c> gilt nur an <c>{{#je variante}}</c> um ganze Absätze und Tabellen (Konzept 4.8, 6.4 Nr. 3).</summary>
             private static bool BlockangabeErlaubt(Vorlagenfund f)
             {

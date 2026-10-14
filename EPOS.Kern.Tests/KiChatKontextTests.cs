@@ -69,13 +69,13 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// 27 Bereiche plus der Ersatzwert. Die Zahl steht hier, damit ein Zuwachs
+        /// 28 Bereiche plus der Ersatzwert. Die Zahl steht hier, damit ein Zuwachs
         /// auffällt: Jeder neue Bereich ist eine Angabe mehr, die hinausgeht.
         /// </summary>
         [Fact]
-        public void Es_sind_achtundzwanzig_freigegebene_Bezeichnungen()
+        public void Es_sind_neunundzwanzig_freigegebene_Bezeichnungen()
         {
-            Assert.Equal(28, KiChatKontext.Bereiche.Count);
+            Assert.Equal(29, KiChatKontext.Bereiche.Count);
             Assert.Contains(KiChatKontext.BEREICH_UNBEKANNT, KiChatKontext.Bereiche);
         }
 

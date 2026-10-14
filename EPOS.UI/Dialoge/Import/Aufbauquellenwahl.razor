@@ -1,0 +1,140 @@
+﻿@* DIE WAHL DER AUFBAUQUELLE (Anwenderentscheid vom 08.10.2026): Beim Weg "Gebaeudedatei + Projektdatei" fragt der Import,
+   sobald die Standpruefung anschlaegt, jedes Mal, ob die Aufbauten und U-Werte der Projektdatei oder der Gebaeudedatei gelten -
+   ohne Vorgabe: kein Weg vorgewaehlt, kein Hauptknopf. Der dritte Weg beendet den Import, damit beide Dateien aus demselben
+   Projektstand neu exportiert werden.
+
+   OFFEN steht die Rueckfrage als Abschnitt oberhalb der Zuordnung (role="group"): ein Satz mit dem Flaechenanteil, die belegten
+   Anzeichen als Liste, je Bauteilart die Mediane beider Seiten, bis zu fuenf Beispiele zum Aufklappen und die drei Wege. Die
+   Sperre am OK traegt der Dialog (OkSperrgrund, derselbe Text wie die Pruefung der Huelle).
+
+   GEWAEHLT bleibt eine leise Zeile "Aufbauten: ..." mit dem Knopf fuer die andere Quelle - aenderbar, solange nicht
+   uebernommen ist. Die Texte kommen aus den Ressourcen; der Quelltext nennt kein Format. *@
+
+@namespace EPOS.UI.Dialoge.Import
+@using System.Globalization
+
+@if (Pruefung is { Angeschlagen: true } p)
+{
+    bool offen = Wahl == GebaeudeAufbauquelleSchluessel.OFFEN;
+    <section class="epos-gebimport-aufbauquelle" data-wahl="@Wahl" role="group" aria-label="@Texte.AqTitel">
+        @if (offen)
+        {
+            <Gruppenkopf Titel="@Texte.AqTitel" />
+            <p class="epos-gebimport-aqsatz">@Format(Texte.AqSatz, Prozent(p.AnteilProzent))</p>
+            @if (p.Anzeichen.Count > 0)
+            {
+                <p class="epos-gebimport-aqanzeichenkopf">@Texte.AqAnzeichen</p>
+                <ul class="epos-gebimport-aqanzeichen">
+                    @foreach (GebaeudeStandanzeichenDaten a in p.Anzeichen)
+                    {
+                        <li data-anzeichen="@a.Schluessel">@a.Text</li>
+                    }
+                </ul>
+            }
+            @if (p.JeArt.Count > 0)
+            {
+                <table class="epos-raster epos-gebimport-aqarten" aria-label="@Texte.AqTabelle">
+                    <thead>
+                        <tr>
+                            <th scope="col">@Texte.AqSpalteArt</th>
+                            <th scope="col">@Texte.AqSpalteZahl</th>
+                            <th scope="col">@Texte.AqSpalteDatei</th>
+                            <th scope="col">@Texte.AqSpalteProjektdatei</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (GebaeudeStandpruefungArtDaten art in p.JeArt)
+                        {
+                            <tr data-art="@art.Art">
+                                <td>@art.Art</td>
+                                <td>@Format(Texte.AqZahlWert, art.Abweichend, art.Verglichen)</td>
+                                <td data-wert="datei">@U(art.MedianUDatei)</td>
+                                <td data-wert="projektdatei">@U(art.MedianUProjektdatei)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            @if (p.Beispiele.Count > 0)
+            {
+                <details class="epos-gebimport-aqbeispiele">
+                    <summary>@Format(Texte.AqBeispiele, p.Beispiele.Count)</summary>
+                    <table class="epos-raster">
+                        <thead>
+                            <tr>
+                                <th scope="col">@Texte.AqSpalteBauteil</th>
+                                <th scope="col">@Texte.AqSpalteArt</th>
+                                <th scope="col">@Texte.AqSpalteFlaeche</th>
+                                <th scope="col">@Texte.AqSpalteDatei</th>
+                                <th scope="col">@Texte.AqSpalteProjektdatei</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (GebaeudeStandpruefungBeispielDaten b in p.Beispiele)
+                            {
+                                <tr>
+                                    <td>@b.Bauteil</td>
+                                    <td>@b.Art</td>
+                                    <td>@b.FlaecheM2.ToString("0.#", CultureInfo.CurrentCulture)</td>
+                                    <td>@MitAufbau(b.UDatei, b.AufbauDatei)</td>
+                                    <td>@MitAufbau(b.UProjektdatei, b.AufbauProjektdatei)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </details>
+            }
+            <div class="epos-gebimport-aqwege">
+                <button type="button" class="epos-knopf" data-aktion="aufbauquelle-projektdatei" disabled="@(!Aktiv)"
+                        @onclick="() => Waehlen(GebaeudeAufbauquelleSchluessel.PROJEKTDATEI)">@Texte.AqProjektdatei</button>
+                <button type="button" class="epos-knopf" data-aktion="aufbauquelle-datei" disabled="@(!Aktiv)"
+                        @onclick="() => Waehlen(GebaeudeAufbauquelleSchluessel.DATEI)">@Texte.AqDatei</button>
+                <button type="button" class="epos-knopf" data-aktion="aufbauquelle-neu-exportieren" disabled="@(!Aktiv)"
+                        @onclick="NeuExportieren">@Texte.AqNeuExport</button>
+            </div>
+        }
+        else
+        {
+            bool projektdatei = Wahl == GebaeudeAufbauquelleSchluessel.PROJEKTDATEI;
+            string andere = projektdatei ? GebaeudeAufbauquelleSchluessel.DATEI : GebaeudeAufbauquelleSchluessel.PROJEKTDATEI;
+            <div class="epos-gebimport-aqgewaehlt">
+                <span class="epos-gebimport-aqquelle">@(projektdatei ? Texte.AqGewaehltProjektdatei : Texte.AqGewaehltDatei)</span>
+                <button type="button" class="epos-knopf" data-aktion="aufbauquelle-@andere" disabled="@(!Aktiv)"
+                        @onclick="() => Waehlen(andere)">@(projektdatei ? Texte.AqDatei : Texte.AqProjektdatei)</button>
+            </div>
+        }
+    </section>
+}
+
+@code {
+    /// <summary>Die Standprüfung der Projektdatei; ohne Anschlag zeichnet der Baustein nichts.</summary>
+    [Parameter] public GebaeudeStandpruefungDaten? Pruefung { get; set; }
+
+    /// <summary>Die Wahl (<see cref="GebaeudeAufbauquelleSchluessel"/>): „offen“ zeigt die Rückfrage, sonst die leise Zeile.</summary>
+    [Parameter] public string Wahl { get; set; } = GebaeudeAufbauquelleSchluessel.OFFEN;
+
+    /// <summary>Sind die Knöpfe bedienbar (nicht während eines Laufs)?</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>Die Texte des Gebäudeimports.</summary>
+    [Parameter] public GebaeudeImportTexte Texte { get; set; } = new();
+
+    /// <summary>Die Wahl einer Quelle (Schlüssel „projektdatei“ oder „datei“).</summary>
+    [Parameter] public EventCallback<string> Gewaehlt { get; set; }
+
+    /// <summary>„Abbrechen und neu exportieren“.</summary>
+    [Parameter] public EventCallback NeuExportierenGewaehlt { get; set; }
+
+    private Task Waehlen(string schluessel) => Gewaehlt.InvokeAsync(schluessel);
+
+    private Task NeuExportieren() => NeuExportierenGewaehlt.InvokeAsync();
+
+    private static string Prozent(double wert) => Math.Round(wert, 1).ToString(CultureInfo.CurrentCulture);
+
+    private static string U(double wert) => wert.ToString("0.00#", CultureInfo.CurrentCulture);
+
+    private string MitAufbau(double u, string aufbau)
+        => string.IsNullOrEmpty(aufbau) ? U(u) : Format(Texte.AqUAufbau, U(u), aufbau);
+
+    private static string Format(string muster, params object[] werte) => string.Format(CultureInfo.CurrentCulture, muster, werte);
+}

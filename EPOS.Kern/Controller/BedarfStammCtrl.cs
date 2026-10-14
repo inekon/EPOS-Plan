@@ -52,6 +52,8 @@ namespace WindowsFormsApplication1
                     return (StromverbraucherStammCtrl.TYP_STAMM, "Typname");
                 case BedarfsArt.Prozesswaerme:
                     return (ProzesswaermeStammCtrl.TYP_STAMM, "Bezeichner");
+                case BedarfsArt.Kaelte:
+                    return (KaeltebedarfStammCtrl.TYP_STAMM, "Bezeichner");
                 default:
                     return (BrauchwasserStammCtrl.TYP_STAMM, "Bezeichner");
             }
@@ -64,6 +66,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return StromverbraucherStammCtrl.TABLE;
                 case BedarfsArt.Prozesswaerme:    return ProzesswaermeStammCtrl.TABLE;
+                case BedarfsArt.Kaelte:           return KaeltebedarfStammCtrl.TABLE;
                 default:                          return BrauchwasserStammCtrl.TABLE;
             }
         }
@@ -156,6 +159,13 @@ namespace WindowsFormsApplication1
                 case BedarfsArt.Prozesswaerme:
                     {
                         var ctrl = new ProzesswaermeStammCtrl();
+                        ctrl.ReadAll();
+                        for (int i = 0; i < ctrl.rows; i++) liste.Add(ctrl.items[i].m_szProzessname ?? "");
+                        return liste;
+                    }
+                case BedarfsArt.Kaelte:
+                    {
+                        var ctrl = new KaeltebedarfStammCtrl();
                         ctrl.ReadAll();
                         for (int i = 0; i < ctrl.rows; i++) liste.Add(ctrl.items[i].m_szProzessname ?? "");
                         return liste;
@@ -297,19 +307,35 @@ namespace WindowsFormsApplication1
                                 t("KFLT_SP_MONAT") + " " + (i + 1).ToString(CultureInfo.InvariantCulture),
                                 "MWh", monat == null ? null : Text(monat[i])));
 
+            // PW1 Stufe 1: Vorlauf und Rücklauf der Prozesswärme - der Lauf liest sie
+            // (Prozesstemperatur), also Stufe Simulation wie die Monatswerte.
+            // K1: Das Paar der Kaelte ist eine Angabe ohne Wirkung (E-K3) - keine Zeile der Simulationsstufe.
+            if (art == BedarfsArt.Prozesswaerme)
+            {
+                (double? vl, double? rl) = Temperaturpaar(art, bezeichner);
+                liste.Add(Zeile(ProzesswaermeTemperaturSchema.SPALTE_VORLAUF, t("PW_LBL_VORLAUF"), "°C", Grad(vl),
+                                "Prozesstemperatur (SimulationWaermebedarf.Prozesswaerme_berechnen)"));
+                liste.Add(Zeile(ProzesswaermeTemperaturSchema.SPALTE_RUECKLAUF, t("PW_LBL_RUECKLAUF"), "°C", Grad(rl),
+                                "Prozesstemperatur (SimulationWaermebedarf.Prozesswaerme_berechnen)"));
+            }
+
             return liste;
         }
 
-        private static Parameterwert Zeile(string spalte, string anzeige, string einheit, string wert)
+        private static Parameterwert Zeile(string spalte, string anzeige, string einheit, string wert,
+                                           string fundstelle = "SimulationWaermebedarf / SimulationStrombedarf (BedarfStammCtrl.Monatswerte)")
         {
             var eintrag = new ParameterEintrag(
                 spalte, anzeige, einheit,
                 new[] { Verwendung.Simulation },
-                "SimulationWaermebedarf / SimulationStrombedarf (BedarfStammCtrl.Monatswerte)");
+                fundstelle);
 
             return new Parameterwert(eintrag,
                                      string.IsNullOrWhiteSpace(wert) ? ParameterVerwendung.LEER : wert);
         }
+
+        private static string Grad(double? wert)
+            => wert == null ? null : wert.Value.ToString("0.#", CultureInfo.CurrentCulture);
 
         private static string Text(double? wert)
         {
@@ -335,6 +361,13 @@ namespace WindowsFormsApplication1
                 case BedarfsArt.Prozesswaerme:
                     {
                         var ctrl = new ProzesswaermeStammCtrl();
+                        ctrl.ReadSingle(bezeichner);
+                        if (ctrl.rows == 0) return null;
+                        return (ctrl.m_szBeschreibung ?? "", ctrl.m_szTyp ?? "");
+                    }
+                case BedarfsArt.Kaelte:
+                    {
+                        var ctrl = new KaeltebedarfStammCtrl();
                         ctrl.ReadSingle(bezeichner);
                         if (ctrl.rows == 0) return null;
                         return (ctrl.m_szBeschreibung ?? "", ctrl.m_szTyp ?? "");
@@ -367,6 +400,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: weg = new StromverbraucherStammCtrl().Delete(bezeichner); break;
                 case BedarfsArt.Prozesswaerme:    weg = new ProzesswaermeStammCtrl().Delete(bezeichner); break;
+                case BedarfsArt.Kaelte:           weg = new KaeltebedarfStammCtrl().Delete(bezeichner); break;
                 default:                          weg = new BrauchwasserStammCtrl().Delete(bezeichner); break;
             }
             return weg ? BedarfLoeschErgebnis.Geloescht : BedarfLoeschErgebnis.Fehlgeschlagen;
@@ -401,6 +435,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return new StromverbraucherStammCtrl().Exists(bezeichner);
                 case BedarfsArt.Prozesswaerme:    return new ProzesswaermeStammCtrl().Exists(bezeichner);
+                case BedarfsArt.Kaelte:           return new KaeltebedarfStammCtrl().Exists(bezeichner);
                 default:                          return new BrauchwasserStammCtrl().Exists(bezeichner);
             }
         }
@@ -412,6 +447,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return new StromverbraucherStammCtrl().IsReadOnly(bezeichner);
                 case BedarfsArt.Prozesswaerme:    return new ProzesswaermeStammCtrl().IsReadOnly(bezeichner);
+                case BedarfsArt.Kaelte:           return new KaeltebedarfStammCtrl().IsReadOnly(bezeichner);
                 default:                          return new BrauchwasserStammCtrl().IsReadOnly(bezeichner);
             }
         }
@@ -424,6 +460,119 @@ namespace WindowsFormsApplication1
         /// sonst ueber <c>Meldung.Hinweis</c>, und das waere in einer WebView ein modaler
         /// Kasten ueber dem Dialog statt eines Warnbanners darin.</para>
         /// </summary>
+        /// <summary>
+        /// Das Temperaturpaar eines Katalogsatzes (PW1 Stufe 1) — nur die Prozesswärme führt eines;
+        /// sonst und ohne Paar <c>(null, null)</c>.
+        /// </summary>
+        /// <summary>
+        /// Die Projekttabellen einer Art: Kopf der Projektkopie, Typprofil der Kopie samt Spalte, die auf
+        /// den Kopf zeigt, und die Zuordnungstabelle samt Spalte, die auf die Kopie zeigt.
+        /// </summary>
+        internal static (string Kopf, string Typ, string Zuordnung, string Bezug) ProjektTabellen(BedarfsArt art)
+        {
+            switch (art)
+            {
+                case BedarfsArt.Stromverbraucher:
+                    return (StromverbraucherStammCtrl.TABLE_PROJ, StromverbraucherStammCtrl.TYP_PROJ,
+                            "Z_Projekt_Stromverbraucher", "ID_Stromverbraucher");
+                case BedarfsArt.Prozesswaerme:
+                    return (ProzesswaermeStammCtrl.TABLE_PROJ, ProzesswaermeStammCtrl.TYP_PROJ,
+                            "Z_Projekt_Prozesswaerme", "ID_Prozesswaerme");
+                case BedarfsArt.Kaelte:
+                    return (KaeltebedarfStammCtrl.TABLE_PROJ, KaeltebedarfStammCtrl.TYP_PROJ,
+                            "Z_Projekt_Kaeltebedarf", "ID_Kaeltebedarf");
+                default:
+                    return (BrauchwasserStammCtrl.TABLE_PROJ, BrauchwasserStammCtrl.TYP_PROJ,
+                            "Z_Projekt_Brauchwasser", "ID_Brauchwasser");
+            }
+        }
+
+        /// <summary>Die Projektkopie mit diesem Namen im Projekt; 0, wenn es keine gibt.</summary>
+        internal static int ProjektkopieId(BedarfsArt art, string bezeichner, int idProjekt)
+        {
+            switch (art)
+            {
+                case BedarfsArt.Stromverbraucher: return StromverbraucherStammCtrl.GetProjektId(bezeichner, idProjekt);
+                case BedarfsArt.Prozesswaerme:    return ProzesswaermeStammCtrl.GetProjektId(bezeichner, idProjekt);
+                case BedarfsArt.Kaelte:           return KaeltebedarfStammCtrl.GetProjektId(bezeichner, idProjekt);
+                default:                          return BrauchwasserStammCtrl.GetProjektId(bezeichner, idProjekt);
+            }
+        }
+
+        /// <summary>
+        /// „In das Projekt übernehmen" (Stufe 4 der Katalogauswahl): kopiert den Katalogsatz samt Typprofil
+        /// sofort ins Projekt; die Kopie trägt <c>ID_Stamm</c>. Eine gleichnamige Kopie des Projekts wird
+        /// wiederverwendet. Rückgabe: ID der Kopie, −1 bei Fehler.
+        /// </summary>
+        internal static int CopyFromStamm(BedarfsArt art, string bezeichner, int idProjekt)
+        {
+            switch (art)
+            {
+                case BedarfsArt.Stromverbraucher: return StromverbraucherStammCtrl.CopyFromStamm(bezeichner, idProjekt);
+                case BedarfsArt.Prozesswaerme:    return ProzesswaermeStammCtrl.CopyFromStamm(bezeichner, idProjekt);
+                case BedarfsArt.Kaelte:           return KaeltebedarfStammCtrl.CopyFromStamm(bezeichner, idProjekt);
+                default:                          return BrauchwasserStammCtrl.CopyFromStamm(bezeichner, idProjekt);
+            }
+        }
+
+        /// <summary>
+        /// Räumt eine Projektkopie samt Typprofil ab — nur, wenn keine Zuordnung des Projekts mehr auf sie
+        /// zeigt (Abbrechen nach „In das Projekt übernehmen", <c>Projektkopievormerkung</c>). Eine Transaktion.
+        /// Rückgabe: <c>true</c>, wenn gelöscht wurde.
+        /// </summary>
+        internal static bool ProjektkopieEntfernen(BedarfsArt art, int idKopie, int idProjekt)
+        {
+            if (idKopie <= 0 || idProjekt <= 0) return false;
+            (string kopf, string typ, string zuordnung, string bezug) = ProjektTabellen(art);
+            if (!DataRepository.TabelleVorhanden(kopf)) return false;
+
+            if (DataRepository.TabelleVorhanden(zuordnung))
+            {
+                object n = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM " + zuordnung + " WHERE " + bezug + " = ? AND ID_Projekt = ?",
+                    new DbParam("@id", idKopie), new DbParam("@proj", idProjekt));
+                if (n != null && n != DBNull.Value && Convert.ToInt64(n, CultureInfo.InvariantCulture) > 0) return false;
+            }
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    if (DataRepository.TabelleVorhanden(typ))
+                        v.Ausfuehren("DELETE FROM " + typ + " WHERE " + bezug + " = ? AND ID_Projekt = ?",
+                                     new DbParam("@id", idKopie), new DbParam("@proj", idProjekt));
+                    v.Ausfuehren("DELETE FROM " + kopf + " WHERE ID = ? AND ID_Projekt = ?",
+                                 new DbParam("@id", idKopie), new DbParam("@proj", idProjekt));
+                    v.Commit();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    try { v.Rollback(); } catch { }
+                    Console.WriteLine("Fehler beim Entfernen der Projektkopie: " + ex.Message);
+                    return false;
+                }
+            }
+        }
+
+        internal static (double? Vorlauf, double? Ruecklauf) Temperaturpaar(BedarfsArt art, string bezeichner)
+            => art == BedarfsArt.Prozesswaerme ? ProzesswaermeStammCtrl.Temperaturpaar(bezeichner)
+             : art == BedarfsArt.Kaelte ? KaeltebedarfStammCtrl.Temperaturpaar(bezeichner) : (null, null);
+
+        /// <summary>
+        /// Schreibt den Kopf samt Temperaturpaar (PW1 Stufe 1) — das Paar nur bei der Prozesswärme;
+        /// die beiden anderen Ausprägungen schreiben wie <see cref="SaveHead(BedarfsArt, string, string, string, double[], bool)"/>.
+        /// </summary>
+        internal static bool SaveHead(BedarfsArt art, string bez, string typ, string beschr,
+                                      double[] monat, bool isNew, double? vorlauf, double? ruecklauf)
+        {
+            if (art == BedarfsArt.Prozesswaerme)
+                return new ProzesswaermeStammCtrl().SaveHead(bez, typ, beschr, monat, isNew, vorlauf, ruecklauf, true);
+            if (art == BedarfsArt.Kaelte)
+                return new KaeltebedarfStammCtrl().SaveHead(bez, typ, beschr, monat, isNew, vorlauf, ruecklauf, true);
+            return SaveHead(art, bez, typ, beschr, monat, isNew);
+        }
+
         internal static bool SaveHead(BedarfsArt art, string bez, string typ, string beschr,
                                       double[] monat, bool isNew)
         {
@@ -433,6 +582,8 @@ namespace WindowsFormsApplication1
                     return new StromverbraucherStammCtrl().SaveHead(bez, typ, beschr, monat, isNew);
                 case BedarfsArt.Prozesswaerme:
                     return new ProzesswaermeStammCtrl().SaveHead(bez, typ, beschr, monat, isNew);
+                case BedarfsArt.Kaelte:
+                    return new KaeltebedarfStammCtrl().SaveHead(bez, typ, beschr, monat, isNew);
                 default:
                     return new BrauchwasserStammCtrl().SaveHead(bez, typ, beschr, monat, isNew);
             }

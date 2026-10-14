@@ -12,7 +12,7 @@ namespace WindowsFormsApplication1.Referenzlauf
     ///
     /// <para>Modi:</para>
     /// <code>
-    ///   lauf      --quelle &lt;sqlite&gt; [--projekte 1030,1007] [--ziel &lt;ordner&gt;]
+    ///   lauf      --quelle &lt;sqlite&gt; [--projekte 1030,1007] [--ziel &lt;ordner&gt;] [--stoerung ulp]
     ///   projekt   &lt;id&gt; &lt;zielordner&gt;
     ///   vergleich &lt;refOrdner&gt; &lt;neuOrdner&gt; [--ohne &lt;a,b&gt;]
     ///   pruefen   &lt;ordner&gt;
@@ -115,7 +115,7 @@ namespace WindowsFormsApplication1.Referenzlauf
         {
             Console.WriteLine("EPOS.Referenzlauf - Referenzlauf ohne Windows (iU3)");
             Console.WriteLine();
-            Console.WriteLine("  EPOS.Referenzlauf lauf --quelle <sqlite> [--projekte 1030,1007] [--ziel <ordner>]");
+            Console.WriteLine("  EPOS.Referenzlauf lauf --quelle <sqlite> [--projekte 1030,1007] [--ziel <ordner>] [--stoerung ulp] [--ak3 ein|alle]");
             Console.WriteLine("  EPOS.Referenzlauf projekt <id> <zielordner>");
             Console.WriteLine("  EPOS.Referenzlauf vergleich <refOrdner> <neuOrdner> [--ohne <a,b>]");
             Console.WriteLine("  EPOS.Referenzlauf pruefen <ordner>");
@@ -129,6 +129,25 @@ namespace WindowsFormsApplication1.Referenzlauf
         {
             var log = new Protokoll();
             var start = DateTime.Now;
+
+            // --- 0. Stoerung (nur fuer den Plattformnachweis, nie fuer eine Basis) ---------
+            string stoerung = StoerungEinschalten(Argument(args, "--stoerung"));
+            if (stoerung == null) return 2;
+
+            // --- 0b. Kernstufe AK3 (AK3-W3b; Messlauf, nie fuer eine Basis) -----------------------
+            string ak3 = Argument(args, "--ak3");
+            if (ak3 != null)
+            {
+                if (string.Equals(ak3, "aus", StringComparison.OrdinalIgnoreCase)) Ak3Kernstufe.Modus = Ak3Kernmodus.Aus;
+                else if (string.Equals(ak3, "ein", StringComparison.OrdinalIgnoreCase)) Ak3Kernstufe.Modus = Ak3Kernmodus.GespeicherteStufe;
+                else if (string.Equals(ak3, "alle", StringComparison.OrdinalIgnoreCase)) Ak3Kernstufe.Modus = Ak3Kernmodus.AlleGekoppelten;
+                else
+                {
+                    Console.WriteLine("ABBRUCH: --ak3 kennt nur \"aus\", \"ein\" (gespeicherte Stufe AK3) und \"alle\" (jedes gekoppelte Projekt).");
+                    return 2;
+                }
+                Console.WriteLine("Kernstufe AK3: " + Ak3Kernstufe.Modus + " (Messlauf, keine Basis)");
+            }
 
             string wurzel = ProjektWurzelFinden();
             string basis = Path.Combine(wurzel, ORDNER_REFERENZLAEUFE);
@@ -242,17 +261,21 @@ namespace WindowsFormsApplication1.Referenzlauf
             log.Zeile("Fertig. Gesamtdauer " + gesamt.ToString(@"hh\:mm\:ss"));
             log.Zeile("Erfolgreich: " + erfolge + " von " + auswahl.Count);
 
+            var kopf = new List<string>
+            {
+                "Quelle:        " + quelle,
+                "Arbeitskopie:  " + DbUmgebung.ArbeitskopieDatei(arbeitskopieOrdner),
+                "Kultur:        " + CultureInfo.CurrentCulture.Name,
+                "Zielordner:    " + zielWurzel,
+                "Projekte:      " + string.Join(", ", auswahl.Select(a => a.Item1.ID.ToString(CultureInfo.InvariantCulture))),
+                "Dauer:         " + gesamt.ToString(@"hh\:mm\:ss")
+            };
+            // Nur der gestoerte Lauf traegt die Zeile; der Kopf des Normallaufs bleibt, wie er war.
+            if (Plattformrundung.UlpStoerung) kopf.Insert(3, "Stoerung:      " + stoerung);
+
             log.Speichern(Path.Combine(zielWurzel, "protokoll.txt"),
                           "Referenzlauf (Kern) vom " + start.ToString("dd.MM.yyyy HH:mm", CultureInfo.InvariantCulture),
-                          new[]
-                          {
-                              "Quelle:        " + quelle,
-                              "Arbeitskopie:  " + DbUmgebung.ArbeitskopieDatei(arbeitskopieOrdner),
-                              "Kultur:        " + CultureInfo.CurrentCulture.Name,
-                              "Zielordner:    " + zielWurzel,
-                              "Projekte:      " + string.Join(", ", auswahl.Select(a => a.Item1.ID.ToString(CultureInfo.InvariantCulture))),
-                              "Dauer:         " + gesamt.ToString(@"hh\:mm\:ss")
-                          });
+                          kopf.ToArray());
 
             return erfolge == auswahl.Count ? 0 : 1;
         }
@@ -284,6 +307,42 @@ namespace WindowsFormsApplication1.Referenzlauf
         // =================================================================================
         // Kleinigkeiten
         // =================================================================================
+
+        /// <summary>
+        /// <b>Der Plattformnachweis</b> (<c>lauf … --stoerung ulp</c>): schaltet die
+        /// ±1‑ulp‑Störung der Naht <c>Plattformrundung</c> ein — Exp, Sin, Cos, Asin und Acos
+        /// an Gebäudematrix, Sonnenstand, Erdreich, Kollektor und Tagesbilanz runden dann wie
+        /// eine andere C‑Bibliothek. Der gestörte Lauf wird mit dem ungestörten verglichen und
+        /// muss innerhalb der Toleranz gleich sein; eingefroren wird er nie.
+        ///
+        /// <para>Der Schalter wird VOR der ersten Rechnung gesetzt und danach geprüft: Die Naht
+        /// liest ihn einmal, beim ersten Zugriff. Hätte sie ihn schon gelesen, bräche der Lauf
+        /// hier ab, statt ungestört zu rechnen und als gestört zu gelten.</para>
+        /// </summary>
+        /// <returns>Die Zeile fürs Protokoll, oder <c>null</c> bei einem Fehler.</returns>
+        private static string StoerungEinschalten(string wert)
+        {
+            if (wert == null) return "keine";
+
+            if (!string.Equals(wert, "ulp", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine("ABBRUCH: --stoerung kennt nur \"ulp\", nicht \"" + wert + "\".");
+                return null;
+            }
+
+            AppContext.SetSwitch(Plattformrundung.SCHALTER_ULP, true);
+            if (!Plattformrundung.UlpStoerung)
+            {
+                Console.WriteLine("ABBRUCH: Die Naht Plattformrundung hatte ihren Schalter schon gelesen - " +
+                                  "der Lauf waere ungestoert.");
+                return null;
+            }
+
+            const string zeile = "ulp (±1 ulp an Exp, Sin, Cos, Asin, Acos der Naht Plattformrundung; " +
+                                 "Plattformnachweis, keine Basis)";
+            Console.WriteLine("Stoerung: " + zeile);
+            return zeile;
+        }
 
         private static string Argument(string[] args, string name)
         {

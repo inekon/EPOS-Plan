@@ -113,4 +113,38 @@ public class PvModellFelderTests : EposBunitContext
         Assert.Contains("Hay-Davies", cut.Instance.Modellzeile, StringComparison.Ordinal);
         Assert.Contains("in beiden Modellen", cut.Instance.Modellzeile, StringComparison.Ordinal);
     }
+
+    // =================================================================================
+    // Bodenalbedo (Entscheidungsvorlage Modellgrenzen, PV4)
+    // =================================================================================
+
+    /// <summary>
+    /// Das dritte Zahlenfeld ist die Albedo: 0 … 1 wird übernommen (0 eingeschlossen), leer und
+    /// außerhalb heißen NULL (= 0,2); jede Eingabe meldet. Die Auswahlhilfe steht darunter.
+    /// </summary>
+    [Fact]
+    public async Task Die_Albedo_nimmt_0_bis_1_leer_und_ausserhalb_heissen_NULL()
+    {
+        int gemeldet = 0;
+        var zeile = Zeile();
+        var cut = Aufbauen(zeile, () => gemeldet++);
+
+        Zahlenfeld albedo = cut.FindComponents<Zahlenfeld>()[2].Instance;
+        Assert.Equal("Albedo", albedo.Feldname);
+        Assert.Null(albedo.Wert);
+
+        await cut.InvokeAsync(() => albedo.WertChanged.InvokeAsync(0.6));
+        Assert.Equal(0.6, zeile.Albedo);
+        await cut.InvokeAsync(() => albedo.WertChanged.InvokeAsync(0.0));
+        Assert.Equal(0.0, zeile.Albedo);
+        await cut.InvokeAsync(() => albedo.WertChanged.InvokeAsync(1.4));
+        Assert.Null(zeile.Albedo);
+        await cut.InvokeAsync(() => albedo.WertChanged.InvokeAsync(null));
+        Assert.Null(zeile.Albedo);
+        Assert.Equal(4, gemeldet);
+
+        string hinweis = cut.Find(".epos-pvmodell-albedo").TextContent;
+        Assert.Contains("0,2", hinweis, StringComparison.Ordinal);
+        Assert.Contains("0,7", hinweis, StringComparison.Ordinal);
+    }
 }

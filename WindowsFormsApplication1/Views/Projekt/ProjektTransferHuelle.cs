@@ -154,16 +154,70 @@ namespace WindowsFormsApplication1
                 Exportieren: (projekt, varianten, ziel, melder) =>
                     new ProjektExportImportCtrl().Exportieren(
                         projekt, new List<string>(varianten), ziel, Brueckenmelder(melder, tabellenformat)),
+                // ---- THREAD-SAFETY FIX FOR BLAZOR/RAZOR WEBVIEW (STA REQ) ----
+                // Das Razor-Fenster ruft diesen Callback asynchron auf einem MTA-Hintergrundthread auf.
+                // Der native Windows-Dialog 'DateiOeffnen' verlangt jedoch zwingend ein Single-Threaded 
+                // Apartment (STA). Ein direkter Aufruf würde eine ThreadStateException auslösen.
+                // 
+                // LÖSUNG: Wir kapseln den Dialog über 'Task.Run' in einen Worker-Task und starten darin 
+                // einen dedizierten, isolierten 'STA-Thread'. Über 'GetResult()' übergeben wir das Ergebnis 
+                // synchron an die Objektstruktur zurück, ohne das Razor-UI-Event-Handling einzufrieren 
+                // (Deadlock-Prävention).
                 PaketLesen: () =>
                 {
-                    string pfad = Dienste.Datei.DateiOeffnen(
-                        Text_("PTR_BTN_DATEI", "Datei wählen…"), filter, "");
+                    // Wir lagern das Öffnen des Dialogs in einen Hintergrund-Task aus
+                    var task = System.Threading.Tasks.Task.Run(() =>
+                    {
+                        string gewaehlterPfad = null;
+
+                        // Wir starten einen isolierten STA-Thread für den Datei-Öffnen-Dialog
+                        var staThread = new System.Threading.Thread(() =>
+                        {
+                            gewaehlterPfad = Dienste.Datei.DateiOeffnen(
+                                Text_("PTR_BTN_DATEI", "Datei wählen…"), filter, "");
+                        });
+
+                        staThread.SetApartmentState(System.Threading.ApartmentState.STA);
+                        staThread.Start();
+                        staThread.Join(); // Wartet auf dem Worker-Thread, blockiert NICHT das Razor-Fenster
+
+                        return gewaehlterPfad;
+                    });
+
+                    // Holt das Ergebnis ab, ohne die asynchrone Razor-Oberfläche einzufrieren
+                    string pfad = task.GetAwaiter().GetResult();
                     return string.IsNullOrEmpty(pfad) ? null : pfad;
                 },
+                // ---- THREAD-SAFETY FIX FOR BLAZOR/RAZOR WEBVIEW (STA REQ) ----
+                // Analog zum Import-Dialog wird auch hier der Speichern-Dialog entkoppelt.
+                // Durch die Kombination aus unbeteiligtem Worker-Thread (Task.Run) und explizitem 
+                // STA-Apartment-State wird die Erzeugung des nativen Fensters absolut stabilisiert.
+                // 
+                // Das Verwenden von 'task.GetAwaiter().GetResult()' stellt sicher, dass der String 
+                // passend zum synchronen 'Func<string, string>'-Delegate der Steuerungskomponente 
+                // zurückgegeben wird, während die Blazor-Webansicht im Hintergrund flüssig weiteratmet.
                 PaketSchreiben: vorschlag =>
                 {
-                    string pfad = Dienste.Datei.DateiSpeichern(
-                        Text_("PTR_BTN_EXPORT", "Exportieren…"), filter, vorschlag);
+                    // Wir lagern den STA-Thread in einen Hintergrund-Task aus
+                    var task = System.Threading.Tasks.Task.Run(() =>
+                    {
+                        string gewaehlterPfad = null;
+
+                        var staThread = new System.Threading.Thread(() =>
+                        {
+                            gewaehlterPfad = Dienste.Datei.DateiSpeichern(
+                                Text_("PTR_BTN_EXPORT", "Exportieren…"), filter, vorschlag);
+                        });
+
+                        staThread.SetApartmentState(System.Threading.ApartmentState.STA);
+                        staThread.Start();
+                        staThread.Join(); // Wartet im Hintergrund-Thread, blockiert NICHT die UI
+
+                        return gewaehlterPfad;
+                    });
+
+                    // Das ist der Schlüssel: Wir warten auf das Ergebnis, ohne das Razor-Fenster einzufrieren!
+                    string pfad = task.GetAwaiter().GetResult();
                     return string.IsNullOrEmpty(pfad) ? null : pfad;
                 },
                 Vorschau: Vorschau,

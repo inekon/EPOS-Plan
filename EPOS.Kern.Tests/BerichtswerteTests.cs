@@ -282,7 +282,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal("—", jaz.Text);
             Assert.Equal("für dieses Projekt nicht verfügbar", jaz.Grund);
 
-            Assert.Equal("Jahresarbeitszahl (JAZ) WP", Text(w, "{{kennzahl.eff.jaz.beschriftung}}"));
+            Assert.Equal("Jahresarbeitszahl (JAZ) Wärmepumpe mit Heizstab", Text(w, "{{kennzahl.eff.jaz.beschriftung}}"));
             Assert.Equal("–", Text(w, "{{kennzahl.eff.jaz.einheit}}"));
             Assert.Equal("€/a", Text(w, "{{kennzahl.ko.energie.einheit}}"));
         }
@@ -313,7 +313,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal("12,000 €/a", Text(w, "{{stamm.kennzahl.ko.energie}}"));
             Assert.Equal("62.0 °C", Text(w, "{{stamm.kennzahl.eff.t_oben_mittel}}"));
             Assert.Equal("not available for this project", Wert(w, "{{stamm.kennzahl.eff.jaz}}").Grund);
-            Assert.Equal("Heat pump SPF", Text(w, "{{kennzahl.eff.jaz.beschriftung}}"));
+            Assert.Equal("Heat pump system SPF incl. backup heater", Text(w, "{{kennzahl.eff.jaz.beschriftung}}"));
         }
 
         [Fact]

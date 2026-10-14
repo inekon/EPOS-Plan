@@ -121,7 +121,7 @@ namespace Auslieferungsvorlage.Tests
             File.Copy(Werkzeuglauf.Testdatenbank, quelle);
             string ziel = o.Datei("Kenndaten.sqlite");
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "alle", "--trocken");
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--kataloge", "alle", "--trocken");
 
             Assert.True(e.Code == 0, e.Alles);
             Assert.Contains("Schritt 2 — Projektdaten entfernen", e.Ausgabe);
@@ -150,8 +150,8 @@ namespace Auslieferungsvorlage.Tests
 
             string a = o.Datei("a.sqlite");
             string b = o.Datei("b.sqlite");
-            Assert.Equal(0, Werkzeuglauf.Starten(quelle, a, "--kataloge", "alle").Code);
-            Assert.Equal(0, Werkzeuglauf.Starten(quelle, b, "--kataloge", "alle").Code);
+            Assert.Equal(0, Werkzeuglauf.StartenMitAusnahmen(quelle, a, "--kataloge", "alle").Code);
+            Assert.Equal(0, Werkzeuglauf.StartenMitAusnahmen(quelle, b, "--kataloge", "alle").Code);
 
             Dictionary<string, long> za = Zeilenzahlen(a);
             Dictionary<string, long> zb = Zeilenzahlen(b);
@@ -175,7 +175,7 @@ namespace Auslieferungsvorlage.Tests
             string ziel = o.Datei("Kenndaten.sqlite");
             File.WriteAllText(ziel, "kein gueltiger Datenbankinhalt");
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "alle");
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--kataloge", "alle");
 
             Assert.True(e.Code == 0, e.Alles);
             Assert.True(new FileInfo(ziel).Length > 1_000_000);
@@ -203,7 +203,7 @@ namespace Auslieferungsvorlage.Tests
 
             Dictionary<string, long> vorher = StammZeilenzahlen(quelle);
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel);   // KEIN --kataloge
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel);   // KEIN --kataloge
 
             Assert.True(e.Code == 0, e.Alles);
             Assert.Contains("Modus: alle", e.Ausgabe);
@@ -280,10 +280,10 @@ namespace Auslieferungsvorlage.Tests
 
             string quelldatei = o.Datei("quelle.sqlite");
             File.Copy(Werkzeuglauf.Testdatenbank, quelldatei);
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelldatei, o.Datei("Kenndaten.sqlite"),
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelldatei, o.Datei("Kenndaten.sqlite"),
                                                            "--beispiele", paket, "--trocken");
             Assert.True(e.Code == 5, e.Alles);
-            Assert.Contains("FEHLER  Importablage leer (Tab_Importquelle 1, Tab_Importzuordnung 1)", e.Ausgabe);
+            Assert.Contains("FEHLER  Importablage leer (Tab_Importquelle 1, Tab_Importzuordnung 1, Tab_Raumgrundriss 0)", e.Ausgabe);
         }
 
         // =============================================================================
@@ -321,7 +321,7 @@ namespace Auslieferungsvorlage.Tests
             }
 
             string ziel = o.Datei("Kenndaten.sqlite");
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel);
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel);
             Assert.True(e.Code == 0, e.Alles);
 
             try
@@ -413,7 +413,7 @@ namespace Auslieferungsvorlage.Tests
                 foreach (DataRow r in t.Rows)
                 {
                     string name = Convert.ToString(r["name"]);
-                    if (!name.EndsWith("_STAMM", StringComparison.Ordinal)) continue;
+                    if (!name.EndsWith("_STAMM", StringComparison.OrdinalIgnoreCase)) continue;
                     d[name] = Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"" + name + "\""));
                 }
                 return d;
@@ -423,6 +423,85 @@ namespace Auslieferungsvorlage.Tests
                 DataRepository.PfadUeberschreibung = vorher;
                 try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
             }
+        }
+
+        // =============================================================================
+        //  A12 — Die Nachpflege des Kesselkatalogs (--kesselkatalog)
+        // =============================================================================
+        /// <summary>
+        /// <b>Konzept Kesselkennlinie, Etappe E1, Entscheid F2.</b> Mit <c>--kesselkatalog</c> pflegt
+        /// das Werkzeug <c>Tab_Heizkessel_STAMM</c> der Arbeitskopie aus den Kesseldateien nach: Ein
+        /// Katalogsatz, dem die Quelle Kennlinie und Brennwertkennzeichen nimmt, steht in der Vorlage
+        /// mit η₃₀, η₁₀₀ aus Satz 710.01, kleinster Leistung und Brennwert. Die Kesseldatei ist die
+        /// Importprobe des Repositoriums, damit der Fall auch ohne Git LFS läuft.
+        /// </summary>
+        [Fact]
+        public void A12_Der_Kesselkatalog_wird_aus_VDI_3805_nachgepflegt()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            const string KESSEL = "ecoVIT VKK 186/5";
+
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string vorher = DataRepository.PfadUeberschreibung;
+            Func<bool> schreibrecht = Schreibnaht.Schreibrecht;
+            try
+            {
+                DataRepository.PfadUeberschreibung = quelle;
+                Schreibnaht.WerkzeugFreigabe("Auslieferungsvorlage.Tests (Kesselkatalog)");
+                Assert.True(DataRepository.ExecuteSQL(
+                    "UPDATE Tab_Heizkessel_STAMM SET Brennwert = 0, Wirkungsgrad_Teillast30 = NULL, " +
+                    "Mindestleistung = NULL, Wirkungsgrad_Gas = 0.874 WHERE Bezeichner = ?", new DbParam("?", KESSEL)));
+            }
+            finally
+            {
+                DataRepository.PfadUeberschreibung = vorher;
+                Schreibnaht.Schreibrecht = schreibrecht;
+                try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
+            }
+
+            string vdi = o.Datei("vdi");
+            Directory.CreateDirectory(vdi);
+            File.Copy(Path.Combine(Werkzeuglauf.Repowurzel, "Referenzlaeufe", "Importproben", "heizkessel_vaillant.vdi"),
+                      Path.Combine(vdi, "heizkessel_vaillant.vdi"));
+
+            string ziel = o.Datei("Kenndaten.sqlite");
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelle, ziel, "--kesselkatalog", vdi);
+            Assert.True(e.Code == 0, e.Alles);
+            Assert.Contains("Schritt 3b — Kesselkatalog aus VDI 3805 Blatt 3", e.Ausgabe);
+
+            try
+            {
+                DataRepository.PfadUeberschreibung = ziel;
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT Brennwert, Wirkungsgrad_Teillast30, Mindestleistung, Wirkungsgrad_Gas, Kennlinie_Brennwert " +
+                    "FROM Tab_Heizkessel_STAMM WHERE Bezeichner = ?", new DbParam("?", KESSEL));
+                Assert.Equal(1, dt.Rows.Count);
+                DataRow r = dt.Rows[0];
+                Assert.Equal(1L, Convert.ToInt64(r[0]));
+                Assert.Equal(1.079, Convert.ToDouble(r[1]), 9);
+                Assert.Equal(6.0, Convert.ToDouble(r[2]), 9);
+                Assert.Equal(0.96, Convert.ToDouble(r[3]), 9);
+                Assert.Equal(0L, Convert.ToInt64(r[4]));
+            }
+            finally
+            {
+                DataRepository.PfadUeberschreibung = vorher;
+                try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
+            }
+        }
+
+        /// <summary>Ein Kesselkatalog, den es nicht gibt, ist ein Aufruffehler (Rückgabe 2) mit Grund.</summary>
+        [Fact]
+        public void A13_Ein_fehlender_Kesselkatalog_meldet_2()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(Werkzeuglauf.Testdatenbank, o.Datei("Kenndaten.sqlite"),
+                                                           "--kesselkatalog", o.Datei("gibt-es-nicht"), "--trocken");
+            Assert.Equal(2, e.Code);
+            Assert.Contains("Kesselkatalog nicht gefunden", e.Fehlerausgabe);
         }
     }
 
@@ -462,7 +541,7 @@ namespace Auslieferungsvorlage.Tests
                 foreach (DataRow r in t.Rows)
                 {
                     string name = Convert.ToString(r["name"]);
-                    if (!name.EndsWith("_STAMM", StringComparison.Ordinal)) continue;
+                    if (!name.EndsWith("_STAMM", StringComparison.OrdinalIgnoreCase)) continue;
                     if (!DataRepository.SpalteVorhanden(name, "ReadOnly")) continue;
                     // Tww-Kataloge: eigene Regel ueber Status (TwwVorlageTests.T1).
                     if (name.StartsWith("Tab_Tww", StringComparison.Ordinal)) continue;
@@ -473,6 +552,42 @@ namespace Auslieferungsvorlage.Tests
                 }
                 Assert.True(gepruefte.Count >= 20,
                             "Es wurden nur " + gepruefte.Count + " Katalogtabellen geprueft — zu wenige.");
+            }
+            finally
+            {
+                DataRepository.PfadUeberschreibung = vorher;
+                try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
+            }
+        }
+
+        /// <summary>
+        /// <b>Die Endung <c>_Stamm</c> zaehlt wie <c>_STAMM</c>.</b> <c>Tab_Brennstoff_Stamm</c> ist Katalog des
+        /// Registers (<see cref="Katalogfassung.Alle"/>) und faellt unter die ReadOnly-Regel: Im Modus
+        /// <c>readonly</c> bleibt dort keine ungesperrte Zeile, und weil damit kein Registerkatalog mit Zeilen
+        /// ohne gesperrten Satz uebrig ist, laeuft der Modus gegen die Testdatenbank OHNE benannte Ausnahme
+        /// durch (kein Code 6).
+        /// </summary>
+        [Fact]
+        public void K2_Die_Endung_Stamm_in_gemischter_Schreibweise_faellt_unter_die_ReadOnly_Regel()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string ziel = o.Datei("Kenndaten.sqlite");
+
+            Assert.Contains(Katalogfassung.Alle, t => t.Tabelle == "Tab_Brennstoff_Stamm");
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly", "--katalogleerung-zulassen");
+            Assert.True(e.Code == 0, e.Alles);
+            Assert.DoesNotContain("leerer Paketteil", e.Ausgabe);
+
+            string vorher = DataRepository.PfadUeberschreibung;
+            try
+            {
+                DataRepository.PfadUeberschreibung = ziel;
+                long ungesperrt = Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM \"Tab_Brennstoff_Stamm\" WHERE \"ReadOnly\" IS NULL OR \"ReadOnly\" = 0"));
+                Assert.Equal(0L, ungesperrt);
             }
             finally
             {

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -341,8 +343,10 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
-            string sql = "DELETE FROM [" + TABLE + "] WHERE ID = ?";
-            return DataRepository.ExecuteSQL(sql, new DbParam("@id", id));
+            // KA-E-16: der Katalogsatz geht samt seinen Satzvorlagen, in EINEM Vorgang.
+            KatalogsatzLoeschung l = KatalogsatzLoeschen(id);
+            if (l.Ok && l.Meldung.Length > 0) Meldung.Hinweis(l.Meldung, MyResource.Resource.KATRUECK_TITEL_LOESCHEN);
+            return l.Ok;
         }
 
         // --- MAPPING ---
@@ -616,8 +620,28 @@ namespace WindowsFormsApplication1
                 " WHERE Bezeichner = ? ORDER BY ID",
                 new DbParam("@nam", szName ?? ""));
             if (dt == null || dt.Rows.Count == 0) return null;
+            return DetailAus(dt.Rows[0]);
+        }
 
-            DataRow r = dt.Rows[0];
+        /// <summary>
+        /// Der Detailsatz des Satzes <paramref name="id"/> — der Projektkopie (<paramref name="projektkopie"/>) oder des
+        /// Katalogs; dieselbe Abbildung wie <see cref="Detail"/>. Die Projektzeile liest ueber die Geraete-ID, nicht ueber
+        /// den Namen der Anlage (er darf vom Modul abweichen). <c>null</c> = kein Satz.
+        /// </summary>
+        public static ModulDetail SatzDetail(bool projektkopie, int id)
+        {
+            if (id <= 0) return null;
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT Bezeichner, Beschreibung, Firma, Leistung, Wirkungsgrad, U_Mpp, U_Leerlauf, " +
+                "I_Mpp, I_Kurzschluss, alpha_SC, beta_OC, gamma_PMP, T_NOCT, Laenge, Breite, " +
+                "Modulkosten, Technologie FROM " + Tabelle(projektkopie) + " WHERE ID = ?",
+                new DbParam("@id", id));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            return DetailAus(dt.Rows[0]);
+        }
+
+        private static ModulDetail DetailAus(DataRow r)
+        {
             return new ModulDetail(
                 r["Bezeichner"] == DBNull.Value ? "" : r["Bezeichner"].ToString(),
                 r["Beschreibung"] == DBNull.Value ? "" : r["Beschreibung"].ToString(),
@@ -890,6 +914,282 @@ namespace WindowsFormsApplication1
             {
                 return new SpeicherErgebnis(false,
                     string.Format(MyResource.Resource.PSP_MELDUNG_FEHLER_AUFGETRETEN, ex.Message), "");
+            }
+        }
+
+        // =================================================================================
+        // Katalogauswahl V1, Stufe 3: Bearbeiten je Bereich und Mehrfach-Bearbeiten (KA-E-8)
+        // =================================================================================
+
+        /// <summary>Die Projektkopien der Module — <c>Tab_Energieanlagen.ID_PV</c> zeigt hierher.</summary>
+        public const string TABELLE_PROJEKT = "Tab_PV";
+
+        private static string Tabelle(bool projektkopie) => projektkopie ? TABELLE_PROJEKT : TABLE;
+
+        /// <summary>
+        /// Die Anzeigefelder eines Modulsatzes nach den Schluesseln des Modulkatalogs
+        /// (<see cref="ModulKatalogProfil"/>) — Katalog und Projektkopie fuehren dieselben Spalten.
+        /// <c>null</c> = kein Satz.
+        /// </summary>
+        public static IReadOnlyDictionary<string, string> Anzeige(PhotovoltaikModel m)
+        {
+            if (m == null) return null;
+            return new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                [ModulKatalogProfil.FeldBezeichner] = m.m_szName ?? "",
+                [ModulKatalogProfil.FeldFirma] = m.m_szFirma ?? "",
+                [ModulKatalogProfil.FeldBeschreibung] = m.m_szBeschreibung ?? "",
+                [ModulKatalogProfil.FeldLeistung] = m.m_Leistung.ToString("F2"),
+                [ModulKatalogProfil.FeldWirkungsgrad] = m.m_Wirkungsgrad.ToString("F2"),
+                [ModulKatalogProfil.FeldUMpp] = m.m_U_Mpp.ToString(),
+                [ModulKatalogProfil.FeldULeerlauf] = m.m_U_Leerlauf.ToString(),
+                [ModulKatalogProfil.FeldIMpp] = m.m_I_Mpp.ToString(),
+                [ModulKatalogProfil.FeldIKurzschluss] = m.m_I_Kurzschluss.ToString(),
+                [ModulKatalogProfil.FeldTempKoeff] = m.m_Temp_Coeff_Pmax.ToString(),
+                [ModulKatalogProfil.FeldLaenge] = m.m_Laenge.ToString(),
+                [ModulKatalogProfil.FeldBreite] = m.m_Breite.ToString(),
+                [ModulKatalogProfil.FeldModulkosten] = m.m_Modulkosten.ToString(),
+                [ModulKatalogProfil.FeldTNoct] = m.m_T_NOCT.ToString(),
+                [ModulKatalogProfil.FeldTechnologie] = m.m_Technologie ?? ""
+            };
+        }
+
+        /// <summary>Die Anzeigefelder des Satzes <paramref name="id"/> (Projektkopie oder Katalog); <c>null</c> = kein Satz.</summary>
+        public static IReadOnlyDictionary<string, string> SatzAnzeige(bool projektkopie, int id) => Anzeige(Satz(projektkopie, id));
+
+        /// <summary>Der Satz <paramref name="id"/> als Modell (Projektkopie oder Katalog); <c>null</c> = kein Satz.</summary>
+        public static PhotovoltaikModel Satz(bool projektkopie, int id)
+        {
+            if (id <= 0) return null;
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + Tabelle(projektkopie) + "] WHERE ID = ?", new DbParam("@id", id));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            var m = new PhotovoltaikModel();
+            FillFromRow(m, dt.Rows[0]);
+            return m;
+        }
+
+        /// <summary>
+        /// <b>Die Pruefregel eines Modulsatzes</b> — beim Sammelspeichern und beim Rueckweg dieselbe: Leistung,
+        /// Spannungen, Stroeme, Abmessungen, Modulkosten und NOCT nicht negativ, der Wirkungsgrad zwischen 0 und 100 %.
+        /// Der Temperaturkoeffizient der Leistung ist frei (er ist negativ). <c>null</c> = in Ordnung.
+        /// </summary>
+        public static string Pruefen(PhotovoltaikModel m)
+        {
+            if (m == null) return null;
+            return KatalogFeldPruefung.ErsterGrund(
+                Negativ(ModulKatalogProfil.FeldLeistung, m.m_Leistung),
+                Bereich(ModulKatalogProfil.FeldWirkungsgrad, m.m_Wirkungsgrad, 0, 100),
+                Negativ(ModulKatalogProfil.FeldUMpp, m.m_U_Mpp),
+                Negativ(ModulKatalogProfil.FeldULeerlauf, m.m_U_Leerlauf),
+                Negativ(ModulKatalogProfil.FeldIMpp, m.m_I_Mpp),
+                Negativ(ModulKatalogProfil.FeldIKurzschluss, m.m_I_Kurzschluss),
+                Negativ(ModulKatalogProfil.FeldLaenge, m.m_Laenge),
+                Negativ(ModulKatalogProfil.FeldBreite, m.m_Breite),
+                Negativ(ModulKatalogProfil.FeldModulkosten, m.m_Modulkosten),
+                Negativ(ModulKatalogProfil.FeldTNoct, m.m_T_NOCT));
+        }
+
+        private static string Feldname(string schluessel)
+        {
+            foreach (ModulKatalogFeld f in ModulKatalogProfil.Finde(ModulKatalogArt.Photovoltaik, s => Text(s, s)).Felder)
+                if (string.Equals(f.Schluessel, schluessel, StringComparison.Ordinal)) return f.Bezeichnung.TrimEnd(':', ' ');
+            return schluessel;
+        }
+
+        private static string Negativ(string schluessel, double wert)
+            => wert >= 0 ? null
+               : string.Format(Text("KBROW_MSG_WERT_NEGATIV", "„{0}“ darf nicht negativ sein."), Feldname(schluessel));
+
+        private static string Bereich(string schluessel, double wert, double von, double bis)
+            => wert >= von && wert <= bis ? null
+               : string.Format(Text("KBROW_MSG_WERT_BEREICH", "„{0}“ muss zwischen {1} und {2} liegen."), Feldname(schluessel),
+                               von.ToString(CultureInfo.CurrentCulture), bis.ToString(CultureInfo.CurrentCulture));
+
+        /// <summary>Die Felder eines Satzes, benannt ueber seine ID — der volle Satz, nicht nur die Aenderung.</summary>
+        public sealed record Satzaenderung(int Id, PhotovoltaikModel Daten);
+
+        /// <summary>
+        /// <b>Schreibt alle geaenderten Saetze einer Mehrfachbearbeitung — alle oder keiner</b> (Konzept Projektdialoge mit
+        /// Katalogauswahl 4.6). <paramref name="projektkopie"/> waehlt die Tabelle: die Projektkopien
+        /// (<see cref="TABELLE_PROJEKT"/>) oder den Katalog.
+        /// </summary>
+        /// <remarks>
+        /// Jede Zeile durchlaeuft <see cref="Pruefen"/>; ein gesperrter Katalogsatz, eine fehlende ID oder ein Verstoss rollt
+        /// die ganze Transaktion zurueck und nennt den Satz. <b>Der Name bleibt</b> — der Bezeichner ist der Schluessel der
+        /// Verwendung und wird hier nie geschrieben. <b>Die Koeffizienten <c>alpha_SC</c> und <c>beta_OC</c> bleiben</b>:
+        /// Die Feldliste des Modulkatalogs fuehrt sie nicht, sie kommen allein aus dem Import. Eine Spalte, die leer
+        /// (<c>NULL</c>) war und als 0 zurueckkommt, bleibt leer (leer heisst im Rechenweg „nicht gepflegt“).
+        /// </remarks>
+        public static SpeicherErgebnis SchreibenAlle(bool projektkopie, IReadOnlyList<Satzaenderung> saetze)
+        {
+            if (saetze == null || saetze.Count == 0)
+                return new SpeicherErgebnis(true, Text("KAT_MSG_SAMMEL_KEINE", "Keine Änderung."), "");
+            string tabelle = Tabelle(projektkopie);
+            try
+            {
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    foreach (Satzaenderung s in saetze)
+                    {
+                        if (s == null || s.Daten == null) continue;
+                        DataTable dt = v.Lese("SELECT * FROM [" + tabelle + "] WHERE ID = ?", new DbParam("@id", s.Id));
+                        if (dt == null || dt.Rows.Count == 0)
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("KAT_MSG_SAMMEL_FEHLT", "Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert."),
+                                s.Id), "");
+                        }
+                        DataRow alt = dt.Rows[0];
+                        string name = alt["Bezeichner"] == DBNull.Value ? "" : alt["Bezeichner"].ToString();
+                        if (!projektkopie && ReadOnlyOf(alt))
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("KAT_MSG_SAMMEL_GESPERRT", "„{0}“ ist gesperrt. Es wurde nichts gespeichert."), name), name);
+                        }
+                        string grund = Pruefen(s.Daten);
+                        if (!string.IsNullOrEmpty(grund))
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("KAT_MSG_SAMMEL_VERSTOSS", "„{0}“: {1} Es wurde nichts gespeichert."), name, grund), name);
+                        }
+                        (string sql, DbParam[] ps) = Aktualisierung(s.Daten, alt, tabelle, s.Id);
+                        v.Ausfuehren(sql, ps);
+                    }
+                    v.Commit();
+                }
+                return new SpeicherErgebnis(true, string.Format(
+                    Text("KAT_MSG_SAMMEL_GESPEICHERT", "{0} Sätze gespeichert."), saetze.Count), "");
+            }
+            catch (Exception)
+            {
+                // DbVorgang.Dispose rollt ohne Commit zurueck.
+                return new SpeicherErgebnis(false, MyResource.Resource.PSP_MELDUNG_SPEICHERN_FEHLER, "");
+            }
+        }
+
+        /// <summary>Das UPDATE eines Satzes ueber seine ID — die Spalten der Feldliste ohne Bezeichner und Koeffizienten.</summary>
+        private static (string Sql, DbParam[] Ps) Aktualisierung(PhotovoltaikModel m, DataRow alt, string tabelle, int id)
+        {
+            object Wert(string spalte, double neu)
+                => alt.Table.Columns.Contains(spalte) && alt[spalte] == DBNull.Value && neu == 0 ? DBNull.Value : (object)neu;
+            object Text_(string spalte, string neu)
+                => string.IsNullOrWhiteSpace(neu) && alt.Table.Columns.Contains(spalte) && alt[spalte] == DBNull.Value
+                    ? DBNull.Value : (object)(neu ?? "");
+
+            string sql = "UPDATE [" + tabelle + @"] SET
+                            Firma = ?, Beschreibung = ?, Leistung = ?, Wirkungsgrad = ?, U_Mpp = ?, U_Leerlauf = ?,
+                            I_Mpp = ?, I_Kurzschluss = ?, gamma_PMP = ?, T_NOCT = ?, Laenge = ?, Breite = ?,
+                            Modulkosten = ?, Technologie = ?
+                          WHERE ID = ?";
+            DbParam[] ps =
+            {
+                new DbParam("@fir", Text_("Firma", m.m_szFirma)),
+                new DbParam("@bes", Text_("Beschreibung", m.m_szBeschreibung)),
+                new DbParam("@lei", Wert("Leistung", m.m_Leistung)),
+                new DbParam("@wir", Wert("Wirkungsgrad", m.m_Wirkungsgrad)),
+                new DbParam("@ump", Wert("U_Mpp", m.m_U_Mpp)),
+                new DbParam("@ule", Wert("U_Leerlauf", m.m_U_Leerlauf)),
+                new DbParam("@imp", Wert("I_Mpp", m.m_I_Mpp)),
+                new DbParam("@iks", Wert("I_Kurzschluss", m.m_I_Kurzschluss)),
+                new DbParam("@gam", Wert("gamma_PMP", m.m_Temp_Coeff_Pmax)),
+                new DbParam("@noc", Wert("T_NOCT", m.m_T_NOCT)),
+                new DbParam("@lae", Wert("Laenge", m.m_Laenge)),
+                new DbParam("@bre", Wert("Breite", m.m_Breite)),
+                new DbParam("@mod", Wert("Modulkosten", m.m_Modulkosten)),
+                // Technologie: leer = NULL (unbekannt), wie TechnologieParam beim Katalogspeichern.
+                new DbParam("@tec", string.IsNullOrWhiteSpace(m.m_Technologie) ? (object)DBNull.Value : m.m_Technologie.Trim()),
+                new DbParam("@id", id)
+            };
+            return (sql, ps);
+        }
+
+        // =================================================================================
+        // Katalogauswahl V1, Stufe 3: Rückweg Projekt → Datenbank (KA-E-9, KA-E-14 bis KA-E-16)
+        // =================================================================================
+
+        /// <summary><c>Tab_KostenKomponente.ID</c> der Photovoltaik.</summary>
+        public const int KOMPONENTE_KOSTEN = 3;
+
+        /// <summary>
+        /// <b>Das Gewerk des Rückwegs „In die Datenbank übernehmen…"</b> (Konzept Katalogauswahl 5.2, KA‑E‑9): Kopie
+        /// <see cref="TABELLE_PROJEKT"/>, Katalog <see cref="TABLE"/>, Anlage über <c>ID_PV</c>, Kostenkomponente 3.
+        /// <b>Keine Kindtabellen</b> — alle Modulwerte samt den Temperaturkoeffizienten <c>alpha_SC</c>, <c>beta_OC</c>,
+        /// <c>gamma_PMP</c>, <c>T_NOCT</c>, der Technologie und den <c>Modulkosten</c> sind Spalten des Satzes und gehen mit
+        /// der Schnittmenge. <b>Anlagenbezogen und damit im Projekt</b> bleiben die Stränge und ihre Wechselrichterzuordnung
+        /// (<c>Z_AnlageStrang</c> hängt an der Anlage), Neigung, Azimut, Anzahl Module, Ertragsmodell und Energieträger
+        /// (Spalten von <c>Tab_Energieanlagen</c>). Prüfregel wie beim Sammelspeichern (<see cref="Pruefen"/>).
+        /// </summary>
+        public static Rueckweggewerk Rueckweg() => new Rueckweggewerk
+        {
+            Kopietabelle = TABELLE_PROJEKT,
+            Katalogtabelle = TABLE,
+            Anlagenverweis = "ID_PV",
+            KomponentenId = KOMPONENTE_KOSTEN,
+            Pruefung = zeile =>
+            {
+                var m = new PhotovoltaikModel();
+                FillFromRow(m, zeile);
+                return Pruefen(m);
+            },
+        };
+
+        /// <summary>Die Zeilen der Rückfrage zu den Projektkopien <paramref name="idsKopie"/> (<see cref="Katalogrueckweg.Vorschau"/>).</summary>
+        public static IReadOnlyList<Rueckwegzeile> RueckwegVorschau(IReadOnlyList<int> idsKopie)
+            => Katalogrueckweg.Vorschau(Rueckweg(), idsKopie);
+
+        /// <summary>
+        /// <b>„In die Datenbank übernehmen…"</b> — die Projektkopien als neue Katalogsätze oder als Ersatz ihres Ursprungs,
+        /// alles oder nichts (<see cref="Katalogrueckweg.Uebernehmen"/>): alle Modulspalten samt Koeffizienten und
+        /// Modulkosten, Betriebs- und Investitionspositionen der Anlage als Satzvorlagen. Der Name der Kopie bleibt (KA‑E‑15).
+        /// </summary>
+        public static Rueckwegergebnis AusProjektUebernehmen(IReadOnlyList<Rueckwegauftrag> auftraege)
+            => Katalogrueckweg.Uebernehmen(Rueckweg(), auftraege);
+
+        /// <summary>Ist der Name im Modulkatalog vergeben?</summary>
+        public static bool RueckwegNameBelegt(string name) => Katalogrueckweg.NameBelegt(Rueckweg(), name);
+
+        /// <summary>Ausgang von <see cref="KatalogsatzLoeschen"/>.</summary>
+        public sealed record KatalogsatzLoeschung(bool Ok, Satzvorlagenabbau Vorlage, string Meldung);
+
+        /// <summary>
+        /// <b>Löscht den Katalogsatz <paramref name="id"/> samt seinen Satzvorlagen</b> (KA‑E‑16, beide Verweise,
+        /// <see cref="Katalogrueckweg.SatzvorlageBeimLoeschen"/>) in einem Vorgang — scheitert eines, bleibt beides. Ein
+        /// gesperrter Satz wird nicht gelöscht. Die Meldung nennt eine Vorlage, die Projektzeilen noch brauchen. Die
+        /// Projektkopien verlieren ihren Ursprung (<c>ON DELETE SET NULL</c>), sie selbst bleiben.
+        /// </summary>
+        public static KatalogsatzLoeschung KatalogsatzLoeschen(int id)
+        {
+            string[] verweise = new[] { KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE,
+                                        KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION }
+                .Where(sp => DataRepository.SpalteVorhanden(TABLE, sp)).ToArray();
+            try
+            {
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    DataTable satz = v.Lese("SELECT \"Bezeichner\", \"ReadOnly\"" + string.Concat(verweise.Select(sp => ", \"" + sp + "\"")) +
+                                            " FROM \"" + TABLE + "\" WHERE \"ID\" = ?", new DbParam("@id", id));
+                    if (satz == null || satz.Rows.Count == 0) return new KatalogsatzLoeschung(false, Satzvorlagenabbau.KeineVorlage, "");
+                    DataRow z = satz.Rows[0];
+                    if (ReadOnlyOf(z)) return new KatalogsatzLoeschung(false, Satzvorlagenabbau.KeineVorlage, "");
+                    string name = Convert.ToString(z["Bezeichner"], CultureInfo.InvariantCulture) ?? "";
+                    int? Lies(string sp) => satz.Columns.Contains(sp) && z[sp] != DBNull.Value
+                        ? Convert.ToInt32(z[sp], CultureInfo.InvariantCulture) : (int?)null;
+                    v.Ausfuehren("DELETE FROM \"" + TABLE + "\" WHERE \"ID\" = ?", new DbParam("@id", id));
+                    Satzvorlagenabbau abbau = Katalogrueckweg.SatzvorlageBeimLoeschen(
+                        v, Lies(KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE),
+                        Lies(KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION));
+                    v.Commit();
+                    return new KatalogsatzLoeschung(true, abbau, Katalogrueckweg.SatzvorlagenMeldung(abbau, name));
+                }
+            }
+            catch (Exception)
+            {
+                // DbVorgang.Dispose rollt ohne Commit zurück.
+                return new KatalogsatzLoeschung(false, Satzvorlagenabbau.KeineVorlage, "");
             }
         }
 

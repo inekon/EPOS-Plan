@@ -148,7 +148,8 @@ namespace WindowsFormsApplication1
 
             // Die Füllstandsserien entstehen aus der Speicherliste des Laufs - ohne sie
             // gibt es nichts anzuzeigen, unabhängig vom Anlagenbestand.
-            p.Speicher = (sim.AlleSpeicher() != null && sim.AlleSpeicher().Count > 0);
+            // KU3-4d: Ein Kältespeicher hat ebenso eine Füllstandsserie.
+            p.Speicher = sim.SpeicherSamtKaelte().Count > 0;
 
             // Der Stromspeicher zählt allein über das Engine-Ergebnis (AP3b) - es ist
             // die einzige Quelle der Entladeenergie, aus der das Donut-Segment entsteht.

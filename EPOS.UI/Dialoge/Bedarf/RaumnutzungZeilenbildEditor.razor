@@ -1,0 +1,161 @@
+﻿@* DER ZEILENBILD-EDITOR EINER GROESSE (Stufe NP4c; Konzept Nutzungsprofile 6.1, 4.1, NP-F7) - die
+   Vorgabezeilen, die ein Profil je Groesse woertlich mitbringt, in der Form von Tab_Raumnutzungszeile:
+   Tag, Nacht mit Nachtfenster, Wochenende, Ferien - dieselben Zeilenarten und Grenzen wie die Vorgabe-
+   Matrix der Konditionierung (KonditionierungMatrix), dieselben Bausteine: Zahlenfeld mit "aus" an Heizen
+   und Kuehlen, Stundenfenster an der Nacht, Delta T der Nachtauskuehlung nur an Lueftung/Nacht.
+
+   SCHREIBT NUR DEN ENTWURF. Jede Eingabe setzt die Zeile im Feldsatz des Blatts (RaumnutzungBild); in den
+   Katalog geht sie erst mit "Speichern" des Blatts. Eine Zeile ohne Wert, "aus", Fenster und Delta T
+   entfaellt - eine leere Zeile gilt nicht. Werte stehen in der Einheit der Anzeige (Anteile in Prozent).
+   Im Lesemodus (ausgeliefertes Profil) nur Text. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using EPOS.UI.Bausteine
+@using EPOS.UI.Standards
+
+<div class="epos-raumnutzung-zeilenbildeditor" data-groesse="@((int)Groesse)">
+    <div class="epos-raster-huelle epos-raster-huelle--frei">
+        <table class="epos-raster epos-raumnutzung-zeilenbildraster">
+            <thead>
+                <tr>
+                    <th scope="col">@KonditionierungBearbeitung.Groessenname(GroessenTexte, Groesse)</th>
+                    <th scope="col">@G.Einheit</th>
+                    <th scope="col">@GroessenTexte.LabelNachtfenster</th>
+                    @if (MitDeltaT)
+                    {
+                        <th scope="col">@GroessenTexte.LabelAussenabstand</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (KonditionierungZeile z in RaumnutzungBild.Zeilen)
+                {
+                    KonditionierungZeile zeile = z;
+                    RaumnutzungZeilenbildDaten? d = RaumnutzungBild.Zeile(Profil, Groesse, zeile);
+                    string feld = KonditionierungBearbeitung.Feldname(GroessenTexte, Groesse, zeile);
+                    <tr @key="zeile" data-zeile="@RaumnutzungBild.Kennung(zeile)">
+                        <th scope="row">@Zeilenname(zeile)</th>
+                        <td>
+                            @if (NurLesen)
+                            {
+                                <span class="epos-kond-text" data-feld="@feld">@Werttext(d)</span>
+                            }
+                            else
+                            {
+                                <Zahlenfeld Bezeichnung="@feld" Feldname="@feld" Einheit="@G.Einheit"
+                                            Min="@G.Min" Max="@G.Max"
+                                            AusText="@(G.MitAus ? GroessenTexte.ZelleAus : "")"
+                                            Wert="@Anzeigewert(d)" WertChanged="w => WertSetzen(zeile, w)" />
+                            }
+                        </td>
+                        <td>
+                            @if (zeile == KonditionierungZeile.Nacht)
+                            {
+                                string fenster = KonditionierungBearbeitung.Fensterfeldname(GroessenTexte, Groesse);
+                                @if (NurLesen)
+                                {
+                                    <span class="epos-kond-text" data-feld="@fenster">@Fenstertext(d)</span>
+                                }
+                                else
+                                {
+                                    <Stundenfenster Bezeichnung="@fenster" Feldname="@fenster" Von="@d?.Von" Bis="@d?.Bis"
+                                                    Titel="@GroessenTexte.HinweisNachtfensterLeer"
+                                                    FensterChanged="f => FensterSetzen(f.Von, f.Bis)" />
+                                }
+                            }
+                        </td>
+                        @if (MitDeltaT)
+                        {
+                            <td>
+                                @if (zeile == KonditionierungZeile.Nacht)
+                                {
+                                    string dt = KonditionierungBearbeitung.DeltaTFeldname(GroessenTexte);
+                                    @if (NurLesen)
+                                    {
+                                        <span class="epos-kond-text" data-feld="@dt">@Zahltext(d?.DeltaT, "K")</span>
+                                    }
+                                    else
+                                    {
+                                        <Zahlenfeld Bezeichnung="@dt" Feldname="@dt" Einheit="K" Min="0" Max="5"
+                                                    Titel="@GroessenTexte.HinweisNachtauskuehlung"
+                                                    Wert="@d?.DeltaT" WertChanged="DeltaTSetzen" />
+                                    }
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    /// <summary>Der Entwurf des Blatts — der Editor setzt seine Zeilen an Ort und Stelle.</summary>
+    [Parameter, EditorRequired] public RaumnutzungProfilDaten Profil { get; set; } = new();
+
+    /// <summary>Die Größe, deren Zeilen der Editor zeigt.</summary>
+    [Parameter] public KonditionierungGroesse Groesse { get; set; }
+
+    /// <summary>Einheit und Grenzen der Größe in der Anzeige.</summary>
+    [Parameter] public RaumnutzungBildgrenzen? Grenzen { get; set; }
+
+    /// <summary>Die Namen der Größen und Zeilen — dasselbe Bündel wie die Vorgabe-Matrix.</summary>
+    [Parameter] public KonditionierungTexte GroessenTexte { get; set; } = new();
+
+    /// <summary>Lesemodus (ausgeliefertes Profil): nur Text.</summary>
+    [Parameter] public bool NurLesen { get; set; }
+
+    /// <summary>Meldet jede Änderung des Entwurfs — der Wirt frischt Vorschau und Blatt auf.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    private RaumnutzungBildgrenzen G => Grenzen ?? RaumnutzungBildgrenzen.Offen(Groesse);
+
+    private bool MitDeltaT => Groesse == KonditionierungGroesse.Lueftung;
+
+    private string Zeilenname(KonditionierungZeile z) => z switch
+    {
+        KonditionierungZeile.Tag => GroessenTexte.ZeileTag,
+        KonditionierungZeile.Nacht => GroessenTexte.ZeileNacht,
+        KonditionierungZeile.Wochenende => GroessenTexte.ZeileWochenende,
+        _ => GroessenTexte.ZeileFerien,
+    };
+
+    /// <summary>Der Wert im Feld: „aus" als NaN, sonst in der Einheit der Anzeige.</summary>
+    private double? Anzeigewert(RaumnutzungZeilenbildDaten? d)
+        => d is null ? null : d.Aus ? double.NaN : RaumnutzungBild.Anzeige(d.Wert, G);
+
+    private string Werttext(RaumnutzungZeilenbildDaten? d)
+        => d is null ? "—" : d.Aus ? GroessenTexte.ZelleAus : Zahltext(RaumnutzungBild.Anzeige(d.Wert, G), G.Einheit);
+
+    private static string Fenstertext(RaumnutzungZeilenbildDaten? d)
+        => d is { Von: int von, Bis: int bis }
+           ? von.ToString(CultureInfo.CurrentCulture) + " – " + bis.ToString(CultureInfo.CurrentCulture)
+           : "—";
+
+    private static string Zahltext(double? w, string einheit)
+        => w is double z ? z.ToString("0.####", CultureInfo.CurrentCulture) + " " + einheit : "—";
+
+    private async Task WertSetzen(KonditionierungZeile z, double? w)
+    {
+        RaumnutzungZeilenbildDaten? d = RaumnutzungBild.Zeile(Profil, Groesse, z);
+        bool aus = w is double a && double.IsNaN(a);
+        RaumnutzungBild.ZeileSetzen(Profil, Groesse, z, aus ? null : RaumnutzungBild.Profilwert(w, G), aus, d?.Von, d?.Bis, d?.DeltaT);
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task FensterSetzen(int? von, int? bis)
+    {
+        RaumnutzungZeilenbildDaten? d = RaumnutzungBild.Zeile(Profil, Groesse, KonditionierungZeile.Nacht);
+        RaumnutzungBild.ZeileSetzen(Profil, Groesse, KonditionierungZeile.Nacht, d?.Wert, d?.Aus ?? false, von, bis, d?.DeltaT);
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task DeltaTSetzen(double? k)
+    {
+        RaumnutzungZeilenbildDaten? d = RaumnutzungBild.Zeile(Profil, Groesse, KonditionierungZeile.Nacht);
+        RaumnutzungBild.ZeileSetzen(Profil, Groesse, KonditionierungZeile.Nacht, d?.Wert, d?.Aus ?? false, d?.Von, d?.Bis, k);
+        await Geaendert.InvokeAsync();
+    }
+}

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -280,8 +282,11 @@ namespace WindowsFormsApplication1
         /// Rueckgabewert geworden, damit der Aufrufer die Meldung waehlt.</para>
         ///
         /// <para>Die Spaltenliste bleibt die des Imports: <c>Wartungskosten_Einheit</c>,
-        /// <c>Brennwert</c>, <c>Vorlauf</c> und <c>Ruecklauf</c> schreibt er NICHT
-        /// (anders als <see cref="Insert"/>) — sie sind Anwenderfelder.</para>
+        /// <c>Vorlauf</c> und <c>Ruecklauf</c> schreibt er NICHT (anders als
+        /// <see cref="Insert"/>) — sie sind Anwenderfelder. <c>Brennwert</c> (aus der
+        /// Bauart), <c>Wirkungsgrad_Teillast30</c> und <c>Mindestleistung</c> (aus Satz
+        /// 710.01) liefert die Datei seit dem Konzept Kesselkennlinie 3.4; die
+        /// Brennwertkennlinie bleibt 0.</para>
         /// </summary>
         /// <param name="model">Die Importwerte; <c>Name</c> ist der Bezeichner.</param>
         /// <param name="nameOverride">Beim Umbenennen der vom Anwender vergebene Bezeichner.</param>
@@ -309,11 +314,15 @@ namespace WindowsFormsApplication1
                     object mx = v.Skalar("SELECT MAX(ID) FROM [" + TABLE + "]");
                     int neueId = (mx == null || mx == DBNull.Value) ? 1 : Convert.ToInt32(mx) + 1;
 
+                    // Konzept Kesselkennlinie 3.4 (Etappe E1): dazu Brennwert aus der Bauart und
+                    // eta30 und Mindestleistung aus Satz 710.01. Die Brennwertkennlinie bleibt 0
+                    // (Spaltenvorgabe), Anfahrverlust und Mindestlaufzeit leer.
                     string sql = @"INSERT INTO [" + TABLE + @"]
                             (ID, Bezeichner, Beschreibung, Firma, Ptherm, Brennstoff, Wirkungsgrad_Gas, Wirkungsgrad_Öl,
                              Investitionskosten, Raumbedarf, Wartungskosten, Nutzungsdauer, CO2, SO2, NOx, CO, Staub,
-                             Betriebsbereitschaftverlust, ReadOnly)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                             Betriebsbereitschaftverlust, Bereitschaft_Einheit, ReadOnly, Brennwert,
+                             Wirkungsgrad_Teillast30, Mindestleistung)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                     DbParam[] ps = {
                         new DbParam("@id", neueId),
@@ -334,7 +343,12 @@ namespace WindowsFormsApplication1
                         new DbParam("@co", model.CO),
                         new DbParam("@sta", model.Staub),
                         new DbParam("@bbv", model.Betriebsbereitschaftverlust),
-                        new DbParam("@ro", false)
+                        // Die Einheit, die der Import liefert (VDI 3805: die Bereitschaftsleistung in kW).
+                        new DbParam("@bbe", KesselBereitschaft.Einheit(model.Bereitschaft_Einheit)),
+                        new DbParam("@ro", false),
+                        new DbParam("@brn", model.Brennwert),
+                        new DbParam("@eta30", KesselKennlinieWerte.Wert(model.Wirkungsgrad_Teillast30)),
+                        new DbParam("@pmin", KesselKennlinieWerte.Wert(model.Mindestleistung))
                     };
 
                     v.Ausfuehren(sql, ps);
@@ -360,10 +374,16 @@ namespace WindowsFormsApplication1
                             (ID, Bezeichner, Beschreibung, Firma, Ptherm, Brennstoff,
                              Wirkungsgrad_Gas, Wirkungsgrad_Öl, Investitionskosten, Raumbedarf,
                              Wartungskosten, Wartungskosten_Einheit, Nutzungsdauer, CO2, SO2, NOx, CO, Staub,
-                             Betriebsbereitschaftverlust, Brennwert, Vorlauf, Ruecklauf, ReadOnly)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                             Betriebsbereitschaftverlust, Bereitschaft_Einheit, Brennwert, Vorlauf, Ruecklauf, ReadOnly,
+                             Wirkungsgrad_Teillast30, Kennlinie_Brennwert, Mindestleistung,
+                             Anfahrverlust_kWh, Mindestlaufzeit_min)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                                   ?, ?, ?, ?, ?)";
 
-            DbParam[] ps = {
+            // Die fuenf Kennlinienfelder (Konzept Kesselkennlinie 3.1) haengen hinten an, in der
+            // Reihenfolge von KesselKennlinieSchema.SPALTEN - leer bleibt leer, der Schalter nur
+            // mit Brennwert (KesselKennlinieWerte).
+            var ps = new List<DbParam> {
                 new DbParam("@id", neueId),
                 new DbParam("@bez", this.Name ?? ""),
                 new DbParam("@bes", this.Beschreibung ?? ""),
@@ -383,13 +403,15 @@ namespace WindowsFormsApplication1
                 new DbParam("@co", this.CO),
                 new DbParam("@sta", this.Staub),
                 new DbParam("@bbv", this.Betriebsbereitschaftverlust),
+                new DbParam("@bbe", KesselBereitschaft.Einheit(this.Bereitschaft_Einheit)),
                 new DbParam("@brn", this.Brennwert),
                 new DbParam("@vl", this.Vorlauf),
                 new DbParam("@tl", this.Ruecklauf),
                 new DbParam("@ro", false)
             };
+            ps.AddRange(KesselKennlinieWerte.Parameter(this));
 
-            bool ok = DataRepository.ExecuteSQL(sql, ps);
+            bool ok = DataRepository.ExecuteSQL(sql, ps.ToArray());
             if (ok) this.ID = neueId;
             return ok;
         }
@@ -448,15 +470,24 @@ namespace WindowsFormsApplication1
         /// <summary>Die UPDATE-Anweisung selbst, ohne Pruefungen.</summary>
         private bool Schreiben()
         {
-            string sql = @"UPDATE [" + TABLE + @"] SET
+            (string sql, DbParam[] ps) = Aktualisierung(TABLE);
+            return DataRepository.ExecuteSQL(sql, ps);
+        }
+
+        /// <summary>Die UPDATE-Anweisung samt Parametern für <paramref name="tabelle"/> (Katalog oder Projektkopie).</summary>
+        private (string Sql, DbParam[] Parameter) Aktualisierung(string tabelle)
+        {
+            string sql = @"UPDATE [" + tabelle + @"] SET
                             Bezeichner = ?, Beschreibung = ?, Firma = ?, Ptherm = ?, Brennstoff = ?,
                             Wirkungsgrad_Gas = ?, Wirkungsgrad_Öl = ?, Investitionskosten = ?,
                             Raumbedarf = ?, Wartungskosten = ?, Wartungskosten_Einheit = ?, Nutzungsdauer = ?,
                             CO2 = ?, SO2 = ?, NOx = ?, CO = ?, Staub = ?,
-                            Betriebsbereitschaftverlust = ?, Brennwert = ?, Vorlauf=?, Ruecklauf=?
+                            Betriebsbereitschaftverlust = ?, Bereitschaft_Einheit = ?, Brennwert = ?, Vorlauf=?, Ruecklauf=?,
+                            Wirkungsgrad_Teillast30 = ?, Kennlinie_Brennwert = ?, Mindestleistung = ?,
+                            Anfahrverlust_kWh = ?, Mindestlaufzeit_min = ?
                           WHERE ID = ?";
 
-            DbParam[] ps = {
+            var ps = new List<DbParam> {
                 new DbParam("@bez", this.Name ?? ""),
                 new DbParam("@bes", this.Beschreibung ?? ""),
                 new DbParam("@fir", this.Firma ?? ""),
@@ -475,26 +506,34 @@ namespace WindowsFormsApplication1
                 new DbParam("@co", this.CO),
                 new DbParam("@sta", this.Staub),
                 new DbParam("@bbv", this.Betriebsbereitschaftverlust),
+                new DbParam("@bbe", KesselBereitschaft.Einheit(this.Bereitschaft_Einheit)),
                 new DbParam("@brn", this.Brennwert),
                 new DbParam("@vl", this.Vorlauf),
-                new DbParam("@rl", this.Ruecklauf),
-                new DbParam("@id", this.ID)
+                new DbParam("@rl", this.Ruecklauf)
             };
+            ps.AddRange(KesselKennlinieWerte.Parameter(this));
+            ps.Add(new DbParam("@id", this.ID));
 
-            return DataRepository.ExecuteSQL(sql, ps);
+            return (sql, ps.ToArray());
         }
 
         /// <summary>
         /// Import-Ueberschreiben (Dublettenkonzept 4.2): aktualisiert GENAU die Felder,
         /// die der VDI-Import liefert, adressiert per ID. Vom Anwender gepflegte Felder
         /// (Bezeichner, Beschreibung, Investitionskosten, Wartungskosten(_Einheit),
-        /// Nutzungsdauer, Brennwert, Vorlauf, Ruecklauf, ReadOnly) bleiben unangetastet -
-        /// der Import befuellt sie nicht.
+        /// Nutzungsdauer, Vorlauf, Ruecklauf, Anfahrverlust, Mindestlaufzeit, ReadOnly)
+        /// bleiben unangetastet - der Import befuellt sie nicht.
         /// </summary>
         /// <remarks>
-        /// Bewusst OHNE ReadOnly-Sperre: Das Ueberschreiben eines ReadOnly-Satzes ist
+        /// <para>Bewusst OHNE ReadOnly-Sperre: Das Ueberschreiben eines ReadOnly-Satzes ist
         /// erlaubt und wird vorher im Konfliktdialog bestaetigt (Entscheidung 9.2 -
-        /// erlauben mit Hinweis).
+        /// erlauben mit Hinweis).</para>
+        /// <para><b>Kennlinie (Konzept Kesselkennlinie 3.4).</b> <c>Brennwert</c> folgt der
+        /// Bauart der Datei; faellt er auf 0, faellt der Schalter der Brennwertkennlinie mit
+        /// (<c>Kennlinie_Brennwert * ?</c>), sonst bleibt er, wie der Anwender ihn gesetzt hat.
+        /// eta30 und Mindestleistung ueberschreiben nur, wenn die Datei einen Wert fuehrt
+        /// (<c>COALESCE</c>) - ein gepflegter Wert geht nicht an eine Luecke der Datei
+        /// verloren.</para>
         /// </remarks>
         public bool UpdateImport(int id)
         {
@@ -504,7 +543,10 @@ namespace WindowsFormsApplication1
                             Firma = ?, Ptherm = ?, Brennstoff = ?,
                             Wirkungsgrad_Gas = ?, Wirkungsgrad_Öl = ?, Raumbedarf = ?,
                             CO2 = ?, SO2 = ?, NOx = ?, CO = ?, Staub = ?,
-                            Betriebsbereitschaftverlust = ?
+                            Betriebsbereitschaftverlust = ?, Bereitschaft_Einheit = ?,
+                            Brennwert = ?, Kennlinie_Brennwert = Kennlinie_Brennwert * ?,
+                            Wirkungsgrad_Teillast30 = COALESCE(?, Wirkungsgrad_Teillast30),
+                            Mindestleistung = COALESCE(?, Mindestleistung)
                           WHERE ID = ?";
 
             DbParam[] ps = {
@@ -520,6 +562,13 @@ namespace WindowsFormsApplication1
                 new DbParam("@co", this.CO),
                 new DbParam("@sta", this.Staub),
                 new DbParam("@bbv", this.Betriebsbereitschaftverlust),
+                // Der Wert der Datei kommt in IHRER Einheit - ein vorher in Prozent gepflegter
+                // Satz bekommt mit dem kW-Wert des Imports auch die Einheit kW zurueck.
+                new DbParam("@bbe", KesselBereitschaft.Einheit(this.Bereitschaft_Einheit)),
+                new DbParam("@brn", this.Brennwert ? 1 : 0),
+                new DbParam("@kbw", this.Brennwert ? 1 : 0),
+                new DbParam("@eta30", KesselKennlinieWerte.Wert(this.Wirkungsgrad_Teillast30)),
+                new DbParam("@pmin", KesselKennlinieWerte.Wert(this.Mindestleistung)),
                 new DbParam("@id", id)
             };
 
@@ -600,8 +649,49 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
-            string sql = "DELETE FROM [" + TABLE + "] WHERE ID = ?";
-            return DataRepository.ExecuteSQL(sql, new DbParam("@id", id));
+            KatalogsatzLoeschung l = KatalogsatzLoeschen(id);
+            if (l.Ok && l.Meldung.Length > 0) Meldung.Hinweis(l.Meldung, MyResource.Resource.KATRUECK_TITEL_LOESCHEN);
+            return l.Ok;
+        }
+
+        /// <summary>Ausgang von <see cref="KatalogsatzLoeschen"/>.</summary>
+        public sealed record KatalogsatzLoeschung(bool Ok, Satzvorlagenabbau Vorlage, string Meldung);
+
+        /// <summary>
+        /// <b>Löscht den Katalogsatz <paramref name="id"/> samt seinen Satzvorlagen</b> (KA‑E‑16, beide Verweise,
+        /// <see cref="Katalogrueckweg.SatzvorlageBeimLoeschen"/>) in einem Vorgang — scheitert eines, bleibt beides. Ein
+        /// gesperrter Satz wird nicht gelöscht. Die Meldung nennt eine Vorlage, die Projektzeilen noch brauchen.
+        /// </summary>
+        public static KatalogsatzLoeschung KatalogsatzLoeschen(int id)
+        {
+            if (IsReadOnlyById(id)) return new KatalogsatzLoeschung(false, Satzvorlagenabbau.KeineVorlage, "");
+            string[] verweise = new[] { KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE,
+                                        KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION }
+                .Where(sp => DataRepository.SpalteVorhanden(TABLE, sp)).ToArray();
+            try
+            {
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    DataTable satz = v.Lese("SELECT \"Bezeichner\"" + string.Concat(verweise.Select(sp => ", \"" + sp + "\"")) +
+                                            " FROM \"" + TABLE + "\" WHERE \"ID\" = ?", new DbParam("@id", id));
+                    if (satz == null || satz.Rows.Count == 0) return new KatalogsatzLoeschung(false, Satzvorlagenabbau.KeineVorlage, "");
+                    DataRow z = satz.Rows[0];
+                    string name = Convert.ToString(z[0], CultureInfo.InvariantCulture) ?? "";
+                    int? Lies(string sp) => satz.Columns.Contains(sp) && z[sp] != DBNull.Value
+                        ? Convert.ToInt32(z[sp], CultureInfo.InvariantCulture) : (int?)null;
+                    v.Ausfuehren("DELETE FROM \"" + TABLE + "\" WHERE \"ID\" = ?", new DbParam("@id", id));
+                    Satzvorlagenabbau abbau = Katalogrueckweg.SatzvorlageBeimLoeschen(
+                        v, Lies(KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE),
+                        Lies(KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION));
+                    v.Commit();
+                    return new KatalogsatzLoeschung(true, abbau, Katalogrueckweg.SatzvorlagenMeldung(abbau, name));
+                }
+            }
+            catch (Exception)
+            {
+                // DbVorgang.Dispose rollt ohne Commit zurück.
+                return new KatalogsatzLoeschung(false, Satzvorlagenabbau.KeineVorlage, "");
+            }
         }
 
         // --- MAPPING ---
@@ -630,9 +720,15 @@ namespace WindowsFormsApplication1
             target.CO = row["CO"] != DBNull.Value ? Convert.ToDouble(row["CO"]) : 0.0;
             target.Staub = row["Staub"] != DBNull.Value ? Convert.ToDouble(row["Staub"]) : 0.0;
             target.Betriebsbereitschaftverlust = row["Betriebsbereitschaftverlust"] != DBNull.Value ? Convert.ToDouble(row["Betriebsbereitschaftverlust"]) : 0.0;
+            // Ohne Spalte (nicht migriert) und bei NULL gilt kW - die Einheit des Bestands.
+            target.Bereitschaft_Einheit = KesselBereitschaft.Einheit(
+                row.Table.Columns.Contains(KesselBereitschaftEinheitSchema.SPALTE)
+                    ? row[KesselBereitschaftEinheitSchema.SPALTE] as string : null);
             target.Brennwert = row["Brennwert"] != DBNull.Value ? Convert.ToBoolean(row["Brennwert"]) : false;
             target.Vorlauf = row["Vorlauf"] != DBNull.Value ? Convert.ToInt32(row["Vorlauf"]) : 0;
             target.Ruecklauf = row["Ruecklauf"] != DBNull.Value ? Convert.ToInt32(row["Ruecklauf"]) : 0;
+            // Die fuenf Kennlinienfelder; eine noch nicht migrierte Datenbank liefert sie leer.
+            KesselKennlinieWerte.AusZeile(target, row);
 
             if (ReferenceEquals(target, this))
             {
@@ -997,6 +1093,15 @@ namespace WindowsFormsApplication1
                     return new SpeicherErgebnis(false, Text("HZKK_MSG_NAME_BELEGT",
                         "Name existiert bereits!"), "");
 
+                // Dieselbe Pruefung der Kennlinienfelder wie beim Ueberschreiben (UpdateMitGrund).
+                string kennlinie = KesselKennlinieWerte.Verstoss(ctrl);
+                if (!string.IsNullOrEmpty(kennlinie))
+                    return new SpeicherErgebnis(false, kennlinie, "");
+
+                string bereitschaft = BereitschaftVerstoss(ctrl);
+                if (!string.IsNullOrEmpty(bereitschaft))
+                    return new SpeicherErgebnis(false, bereitschaft, "");
+
                 if (!ctrl.Insert())
                     return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER_ANLEGEN",
                         "Fehler beim Speichern des Datensatzes!"), "");
@@ -1045,6 +1150,136 @@ namespace WindowsFormsApplication1
         /// die Technik seiner Zeilen in der Nutzungsdauertabelle.</summary>
         private const int KOSTENKOMPONENTE_HEIZKESSEL = 2;
 
+        // =================================================================================
+        // Katalogauswahl V1, Stufe 2: Mehrfach-Bearbeiten in EINER Transaktion (KA-E-8)
+        // =================================================================================
+
+        /// <summary>Die sechs Grundfelder und der volle Feldbestand auf einen geladenen Satz.</summary>
+        private static string Anwenden(HeizkesselStammCtrl satz, AnzeigefelderHeizkessel felder)
+        {
+            satz.Beschreibung = felder.Beschreibung ?? "";
+            satz.Ptherm = felder.Ptherm;
+            satz.Investitionskosten = felder.Investitionskosten;
+            satz.Brennwert = felder.Brennwert;
+            satz.Vorlauf = felder.Vorlauf;
+            satz.Ruecklauf = felder.Ruecklauf;
+            // --- Der volle Feldbestand (Anwenderentscheid 15.09.2026) ---
+            return FelderUebernehmen(satz, felder);
+        }
+
+        /// <summary>Die geänderten Felder eines Satzes, benannt über seine ID.</summary>
+        public sealed record Satzaenderung(int Id, AnzeigefelderHeizkessel Felder);
+
+        /// <summary>
+        /// <b>Das Gewerk des Rückwegs „In die Datenbank übernehmen…"</b> (Konzept Katalogauswahl 5.2, KA‑E‑9): Kopie
+        /// <see cref="TABELLE_PROJEKT"/>, Katalog <see cref="TABLE"/>, Anlage über <c>ID_Kessel</c>, Kostenkomponente 2.
+        /// <b>Keine Kindtabellen</b> — Kennlinie (η₃₀, Brennwertkennlinie, Mindestleistung, Anfahrverlust, Mindestlaufzeit)
+        /// und Bereitschaft stehen als Spalten am Satz und gehen mit der Schnittmenge. Prüfregel wie beim Speichern
+        /// (<see cref="KesselKennlinieWerte.Verstoss"/>, <see cref="BereitschaftVerstoss"/>).
+        /// </summary>
+        public static Rueckweggewerk Rueckweg() => new Rueckweggewerk
+        {
+            Kopietabelle = TABELLE_PROJEKT,
+            Katalogtabelle = TABLE,
+            Anlagenverweis = "ID_Kessel",
+            KomponentenId = KOMPONENTE_KOSTEN,
+            Pruefung = zeile =>
+            {
+                var satz = new HeizkesselStammCtrl();
+                satz.FillModelFromRow(satz, zeile);
+                string grund = KesselKennlinieWerte.Verstoss(satz);
+                return string.IsNullOrEmpty(grund) ? BereitschaftVerstoss(satz) : grund;
+            },
+        };
+
+        /// <summary><c>Tab_KostenKomponente.ID</c> des Heizkessels.</summary>
+        public const int KOMPONENTE_KOSTEN = 2;
+
+        /// <summary>Die Zeilen der Rückfrage zu den Projektkopien <paramref name="idsKopie"/> (<see cref="Katalogrueckweg.Vorschau"/>).</summary>
+        public static IReadOnlyList<Rueckwegzeile> RueckwegVorschau(IReadOnlyList<int> idsKopie)
+            => Katalogrueckweg.Vorschau(Rueckweg(), idsKopie);
+
+        /// <summary>
+        /// <b>„In die Datenbank übernehmen…"</b> — die Projektkopien als neue Katalogsätze oder als Ersatz ihres Ursprungs,
+        /// alles oder nichts (<see cref="Katalogrueckweg.Uebernehmen"/>). Die Oberfläche fragt nur.
+        /// </summary>
+        public static Rueckwegergebnis AusProjektUebernehmen(IReadOnlyList<Rueckwegauftrag> auftraege)
+            => Katalogrueckweg.Uebernehmen(Rueckweg(), auftraege);
+
+        /// <summary>Ist der Name im Kesselkatalog vergeben?</summary>
+        public static bool RueckwegNameBelegt(string name) => Katalogrueckweg.NameBelegt(Rueckweg(), name);
+
+        /// <summary>
+        /// <b>Schreibt alle geänderten Sätze einer Mehrfachbearbeitung — alle oder keiner</b>
+        /// (Konzept Projektdialoge mit Katalogauswahl 4.6). <paramref name="projektkopie"/> wählt
+        /// die Tabelle: die Projektkopien (<see cref="TABELLE_PROJEKT"/>) oder den Katalog.
+        /// </summary>
+        /// <remarks>
+        /// Jede Zeile durchläuft dieselbe Prüfung wie <see cref="AnzeigefelderSchreiben"/>
+        /// (Zahlenbereiche, Nachschlagewerte, Kennlinie, Bereitschaftsverlust). Ein gesperrter
+        /// Katalogsatz, eine fehlende ID oder ein Verstoß rollt die ganze Transaktion zurück und
+        /// nennt den Satz — kein Teilstand. Die Oberfläche lässt gesperrte Sätze schon vorher aus;
+        /// die Prüfung hier ist die zweite Verteidigungslinie.
+        /// </remarks>
+        public static SpeicherErgebnis AnzeigefelderSchreibenAlle(bool projektkopie,
+                                                                  IReadOnlyList<Satzaenderung> saetze)
+        {
+            if (saetze == null || saetze.Count == 0)
+                return new SpeicherErgebnis(true, Text("KAT_MSG_SAMMEL_KEINE", "Keine Änderung."), "");
+            string tabelle = Tabelle(projektkopie);
+            // Die Nachschlagelisten (Brennstoffe) VOR der Transaktion lesen.
+            var satz = new HeizkesselStammCtrl();
+            try
+            {
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    foreach (Satzaenderung s in saetze)
+                    {
+                        if (s == null || s.Felder == null) continue;
+                        DataTable dt = v.Lese("SELECT * FROM [" + tabelle + "] WHERE ID = ?",
+                                              new DbParam("@id", s.Id));
+                        if (dt == null || dt.Rows.Count == 0)
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("KAT_MSG_SAMMEL_FEHLT", "Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert."),
+                                s.Id), "");
+                        }
+                        satz.FillModelFromRow(satz, dt.Rows[0]);
+                        string name = satz.Name ?? "";
+                        if (!projektkopie && satz.m_bReadOnly)
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("KAT_MSG_SAMMEL_GESPERRT", "„{0}“ ist gesperrt. Es wurde nichts gespeichert."),
+                                name), name);
+                        }
+                        string grund = Anwenden(satz, s.Felder);
+                        if (string.IsNullOrEmpty(grund)) grund = KesselKennlinieWerte.Verstoss(satz);
+                        if (string.IsNullOrEmpty(grund)) grund = BereitschaftVerstoss(satz);
+                        if (!string.IsNullOrEmpty(grund))
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("KAT_MSG_SAMMEL_VERSTOSS", "„{0}“: {1} Es wurde nichts gespeichert."),
+                                name, grund), name);
+                        }
+                        (string sql, DbParam[] ps) = satz.Aktualisierung(tabelle);
+                        v.Ausfuehren(sql, ps);
+                    }
+                    v.Commit();
+                }
+                return new SpeicherErgebnis(true, string.Format(
+                    Text("KAT_MSG_SAMMEL_GESPEICHERT", "{0} Sätze gespeichert."), saetze.Count), "");
+            }
+            catch (Exception)
+            {
+                // DbVorgang.Dispose rollt ohne Commit zurueck.
+                return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER",
+                    "Fehler beim Überschreiben des Datensatzes!"), "");
+            }
+        }
+
         /// <summary>
         /// Die drei Ablehnungsgruende von <see cref="Update"/> als RUECKGABE statt als
         /// Meldung. <see cref="Update"/> ruft die Methode und zeigt den Grund selbst -
@@ -1069,10 +1304,30 @@ namespace WindowsFormsApplication1
                 return (false, "Ein anderer Katalogeintrag trägt bereits den Namen \"" + (this.Name ?? "") +
                                "\". Bitte einen eindeutigen Namen vergeben.");
 
+            // Die Kennlinienfelder (Konzept Kesselkennlinie 3.1): Bereich, und der Schalter der
+            // Brennwertkennlinie nur beim Brennwertkessel - benannt abgelehnt, nie still verworfen.
+            string kennlinie = KesselKennlinieWerte.Verstoss(this);
+            if (!string.IsNullOrEmpty(kennlinie)) return (false, kennlinie);
+
+            // Der Bereitschaftsverlust in den Grenzen seiner Einheit (kW: 0 … Nennleistung,
+            // %: 0 … 100) - Anwenderentscheid 02.10.2026.
+            string bereitschaft = BereitschaftVerstoss(this);
+            if (!string.IsNullOrEmpty(bereitschaft)) return (false, bereitschaft);
+
             return (Schreiben(), "");
         }
 
-        /// <summary>Uebernimmt die 21 Felder eines Modells in diesen Controller.</summary>
+        /// <summary>
+        /// Die Prüfgrenzen des Bereitschaftsverlusts je Einheit (<see cref="KesselBereitschaft.Verstoss"/>)
+        /// gegen die Nennleistung des Satzes; <c>null</c> = in Ordnung.
+        /// </summary>
+        internal static string BereitschaftVerstoss(HeizkesselModel m)
+            => m == null ? null
+             : KesselBereitschaft.Verstoss(m.Betriebsbereitschaftverlust, m.Bereitschaft_Einheit,
+                                           m.Ptherm > 0 ? m.Ptherm : (double?)null,
+                                           MyResource.Resource.HZKK_FELD_BBVERLUST);
+
+        /// <summary>Uebernimmt die Felder eines Modells in diesen Controller (samt Kennlinie).</summary>
         private void Uebernehmen(HeizkesselModel m)
         {
             this.ID = m.ID;
@@ -1094,9 +1349,11 @@ namespace WindowsFormsApplication1
             this.CO = m.CO;
             this.Staub = m.Staub;
             this.Betriebsbereitschaftverlust = m.Betriebsbereitschaftverlust;
+            this.Bereitschaft_Einheit = m.Bereitschaft_Einheit;
             this.Brennwert = m.Brennwert;
             this.Vorlauf = m.Vorlauf;
             this.Ruecklauf = m.Ruecklauf;
+            KesselKennlinieWerte.Uebertragen(m, this);
         }
 
         private static string Text(string schluessel, string rueckfall)
@@ -1179,8 +1436,32 @@ namespace WindowsFormsApplication1
                 "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID",
                 new DbParam("@nam", name ?? ""));
             if (dt == null || dt.Rows.Count == 0) return null;
+            return AnzeigeAusZeile(dt.Rows[0]);
+        }
 
-            DataRow r = dt.Rows[0];
+        /// <summary>
+        /// <b>Die Anzeigefelder eines Satzes nach seiner ID</b> (Katalogauswahl V1, Stufe 2,
+        /// „Bearbeiten…" je Bereich, KA‑E‑8): <paramref name="projektkopie"/> = <c>true</c> liest
+        /// die Projektkopie aus <see cref="TABELLE_PROJEKT"/>, sonst den Katalogsatz. Dieselben
+        /// Schlüssel wie <see cref="KatalogsatzAnzeige"/>; <c>null</c>, wenn es die ID nicht gibt.
+        /// </summary>
+        public IReadOnlyDictionary<string, string> SatzAnzeige(bool projektkopie, int id)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + Tabelle(projektkopie) + "] WHERE ID = ?",
+                new DbParam("@id", id));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            return AnzeigeAusZeile(dt.Rows[0]);
+        }
+
+        /// <summary>Die Projektkopien der Heizkessel (alle Projekte, Spalte <c>ID_Projekt</c>).</summary>
+        public const string TABELLE_PROJEKT = "Tab_Heizkessel";
+
+        private static string Tabelle(bool projektkopie) => projektkopie ? TABELLE_PROJEKT : TABLE;
+
+        /// <summary>Die Anzeigefelder einer Zeile aus Katalog oder Projektkopie (gleiche Spalten).</summary>
+        private IReadOnlyDictionary<string, string> AnzeigeAusZeile(DataRow r)
+        {
             var werte = new Dictionary<string, string>(StringComparer.Ordinal);
 
             werte[KatalogBrowserProfil.FeldBezeichner] = Feld(r, "Bezeichner");
@@ -1215,6 +1496,9 @@ namespace WindowsFormsApplication1
             werte[KatalogBrowserProfil.FeldWirkungsgradGas] = Feld(r, "Wirkungsgrad_Gas");
             werte[KatalogBrowserProfil.FeldWirkungsgradOel] = Feld(r, "Wirkungsgrad_Öl");
             werte[KatalogBrowserProfil.FeldBBVerlust] = Feld(r, "Betriebsbereitschaftverlust");
+            // Die Einheit (Anwenderentscheid 02.10.2026): ohne Spalte und bei NULL kW.
+            werte[KatalogBrowserProfil.FeldBBEinheit] =
+                KesselBereitschaft.Einheit(Feld(r, KesselBereitschaftEinheitSchema.SPALTE));
             werte[KatalogBrowserProfil.FeldRaumbedarf] = Feld(r, "Raumbedarf");
             werte[KatalogBrowserProfil.FeldWartungskosten] = Feld(r, "Wartungskosten");
             werte[KatalogBrowserProfil.FeldWartungEinheit] =
@@ -1225,6 +1509,15 @@ namespace WindowsFormsApplication1
             werte[KatalogBrowserProfil.FeldNox] = Feld(r, "NOx");
             werte[KatalogBrowserProfil.FeldCo] = Feld(r, "CO");
             werte[KatalogBrowserProfil.FeldStaub] = Feld(r, "Staub");
+
+            // Die Kennlinie (Konzept Kesselkennlinie 3.1): roh, leer bleibt leer (= Vorgabe); der
+            // Schalter sprachneutral als „1"/„0" wie „Brennwertkessel".
+            werte[KatalogBrowserProfil.FeldTeillast30] = Feld(r, KesselKennlinieSchema.SPALTE_TEILLAST30);
+            werte[KatalogBrowserProfil.FeldKennlinieBrennwert] =
+                Feld(r, KesselKennlinieSchema.SPALTE_KENNLINIE_BRENNWERT) == "1" ? "1" : "0";
+            werte[KatalogBrowserProfil.FeldMindestleistung] = Feld(r, KesselKennlinieSchema.SPALTE_MINDESTLEISTUNG);
+            werte[KatalogBrowserProfil.FeldAnfahrverlust] = Feld(r, KesselKennlinieSchema.SPALTE_ANFAHRVERLUST);
+            werte[KatalogBrowserProfil.FeldMindestlaufzeit] = Feld(r, KesselKennlinieSchema.SPALTE_MINDESTLAUFZEIT);
 
             return werte;
         }
@@ -1254,6 +1547,13 @@ namespace WindowsFormsApplication1
         /// nicht Bequemlichkeit, sondern Datenschutz im Wortsinn: Der Schreibweg liest
         /// den Satz, aendert die mitgegebenen Felder und schreibt ihn ganz zurueck; ein
         /// vergessenes Feld wuerde sonst als 0 ueber einen gepflegten Wert laufen.</para>
+        /// <para><b>Die Einheit des Bereitschaftsverlusts</b> (<c>BereitschaftEinheit</c>, „kW" oder
+        /// „%", Anwenderentscheid 02.10.2026) steht als Nachschlagewert ganz am Ende; <c>null</c>
+        /// oder leer laesst die gespeicherte Einheit stehen.</para>
+        /// <para><b>Die fuenf Felder der Kennlinie</b> (Konzept Kesselkennlinie 3.1) stehen
+        /// ganz hinten; die vier Zahlen kommen als TEXT, weil bei ihnen ein leeres Feld etwas
+        /// anderes heisst als ein fehlendes: <c>null</c> laesst die Spalte stehen, <c>""</c>
+        /// schreibt NULL (= Vorgabe).</para>
         /// </remarks>
         public sealed record AnzeigefelderHeizkessel(string Beschreibung, double Ptherm,
                                                      double Investitionskosten, bool Brennwert,
@@ -1269,7 +1569,13 @@ namespace WindowsFormsApplication1
                                                      double? Nutzungsdauer = null,
                                                      double? CO2 = null, double? SO2 = null,
                                                      double? NOx = null, double? CO = null,
-                                                     double? Staub = null);
+                                                     double? Staub = null,
+                                                     string Teillast30 = null,
+                                                     bool? KennlinieBrennwert = null,
+                                                     string Mindestleistung = null,
+                                                     string Anfahrverlust = null,
+                                                     string Mindestlaufzeit = null,
+                                                     string BereitschaftEinheit = null);
 
         /// <summary>
         /// Die drei zulaessigen Bezugsgroessen der Wartungskosten, in Anzeigereihenfolge
@@ -1336,15 +1642,7 @@ namespace WindowsFormsApplication1
                     return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER",
                         "Fehler beim Überschreiben des Datensatzes!"), "");
 
-                schreiber.Beschreibung = felder.Beschreibung ?? "";
-                schreiber.Ptherm = felder.Ptherm;
-                schreiber.Investitionskosten = felder.Investitionskosten;
-                schreiber.Brennwert = felder.Brennwert;
-                schreiber.Vorlauf = felder.Vorlauf;
-                schreiber.Ruecklauf = felder.Ruecklauf;
-
-                // --- Der volle Feldbestand (Anwenderentscheid 15.09.2026) ---
-                string verstoss = FelderUebernehmen(schreiber, felder);
+                string verstoss = Anwenden(schreiber, felder);
                 if (!string.IsNullOrEmpty(verstoss))
                     return new SpeicherErgebnis(false, verstoss, "");
 
@@ -1394,14 +1692,30 @@ namespace WindowsFormsApplication1
                 Nichtnegativ(KatalogBrowserProfil.FeldSo2, f.SO2),
                 Nichtnegativ(KatalogBrowserProfil.FeldNox, f.NOx),
                 Nichtnegativ(KatalogBrowserProfil.FeldCo, f.CO),
-                Nichtnegativ(KatalogBrowserProfil.FeldStaub, f.Staub),
-                f.Betriebsbereitschaftverlust.HasValue
-                    ? KatalogFeldPruefung.ImBereich(art, KatalogBrowserProfil.FeldBBVerlust,
-                                                    f.Betriebsbereitschaftverlust.Value, 0, 100)
-                    : null);
+                Nichtnegativ(KatalogBrowserProfil.FeldStaub, f.Staub));
             if (!string.IsNullOrEmpty(grund)) return grund;
 
-            // 2. Die zwei Nachschlagewerte.
+            // 2. Die drei Nachschlagewerte - zuerst die Einheit des Bereitschaftsverlusts, weil
+            //    die Grenze seines Werts an ihr haengt.
+            string bbEinheit;
+            grund = KatalogFeldPruefung.AusListe(art, KatalogBrowserProfil.FeldBBEinheit,
+                                                 f.BereitschaftEinheit, KesselBereitschaft.EINHEITEN,
+                                                 out bbEinheit);
+            if (!string.IsNullOrEmpty(grund)) return grund;
+
+            // Die Grenzen je Einheit (kW: 0 … Nennleistung, %: 0 … 100) gegen den Stand NACH dem
+            // Speichern: der neue Wert oder der gespeicherte, die neue Einheit oder die gespeicherte,
+            // die mitgegebene Nennleistung.
+            double bbWert = f.Betriebsbereitschaftverlust ?? satz.Betriebsbereitschaftverlust;
+            string bbWirksam = bbEinheit ?? satz.Bereitschaft_Einheit;
+            if (f.Betriebsbereitschaftverlust.HasValue || bbEinheit != null)
+            {
+                grund = KesselBereitschaft.Verstoss(bbWert, bbWirksam,
+                    f.Ptherm > 0 ? f.Ptherm : (double?)null,
+                    KatalogFeldPruefung.Feldname(art, KatalogBrowserProfil.FeldBBVerlust));
+                if (!string.IsNullOrEmpty(grund)) return grund;
+            }
+
             string einheit;
             grund = KatalogFeldPruefung.AusListe(art, KatalogBrowserProfil.FeldWartungEinheit,
                                                  f.WartungskostenEinheit, WARTUNGSEINHEITEN,
@@ -1413,6 +1727,17 @@ namespace WindowsFormsApplication1
                                                  f.Brennstoff, satz.Brennstoffart, out brennstoff);
             if (!string.IsNullOrEmpty(grund)) return grund;
 
+            // 2b. Die Kennlinie (Konzept Kesselkennlinie 3.1): Hier heisst ein LEERES Feld nicht
+            //     „unveraendert", sondern „Vorgabe" (NULL) - sonst liesse sich ein gepflegter Wert
+            //     nie wieder zuruecknehmen. null (nicht uebergeben) laesst die Spalte stehen.
+            //     Bereich und Brennwertregel prueft UpdateMitGrund (KesselKennlinieWerte.Verstoss).
+            grund = KatalogFeldPruefung.ErsterGrund(
+                Leerbar(KatalogBrowserProfil.FeldTeillast30, f.Teillast30, false, out var teillast30),
+                Leerbar(KatalogBrowserProfil.FeldMindestleistung, f.Mindestleistung, false, out var mindestleistung),
+                Leerbar(KatalogBrowserProfil.FeldAnfahrverlust, f.Anfahrverlust, false, out var anfahrverlust),
+                Leerbar(KatalogBrowserProfil.FeldMindestlaufzeit, f.Mindestlaufzeit, true, out var mindestlaufzeit));
+            if (!string.IsNullOrEmpty(grund)) return grund;
+
             // 3. Uebernehmen.
             if (brennstoff != null) satz.Brennstoff = satz.Brennstoffart.IndexOf(brennstoff) + 1;
             if (f.Firma != null) satz.Firma = f.Firma;
@@ -1420,6 +1745,7 @@ namespace WindowsFormsApplication1
             if (f.WirkungsgradOel.HasValue) satz.Wirkungsgrad_Oel = f.WirkungsgradOel.Value;
             if (f.Betriebsbereitschaftverlust.HasValue)
                 satz.Betriebsbereitschaftverlust = f.Betriebsbereitschaftverlust.Value;
+            if (bbEinheit != null) satz.Bereitschaft_Einheit = KesselBereitschaft.Einheit(bbEinheit);
             if (f.Raumbedarf.HasValue) satz.Raumbedarf = f.Raumbedarf.Value;
             if (f.Wartungskosten.HasValue) satz.Wartungskosten = f.Wartungskosten.Value;
             if (einheit != null) satz.Wartungskosten_Einheit = einheit;
@@ -1429,8 +1755,35 @@ namespace WindowsFormsApplication1
             if (f.NOx.HasValue) satz.NOx = f.NOx.Value;
             if (f.CO.HasValue) satz.CO = f.CO.Value;
             if (f.Staub.HasValue) satz.Staub = f.Staub.Value;
+            if (teillast30.Gesetzt) satz.Wirkungsgrad_Teillast30 = teillast30.Wert;
+            if (mindestleistung.Gesetzt) satz.Mindestleistung = mindestleistung.Wert;
+            if (anfahrverlust.Gesetzt) satz.Anfahrverlust_kWh = anfahrverlust.Wert;
+            if (mindestlaufzeit.Gesetzt)
+                satz.Mindestlaufzeit_min = mindestlaufzeit.Wert.HasValue
+                    ? (int?)Convert.ToInt32(mindestlaufzeit.Wert.Value) : null;
+            if (f.KennlinieBrennwert.HasValue) satz.Kennlinie_Brennwert = f.KennlinieBrennwert.Value;
 
             return null;
+
+            // Ein Feld, dessen Leere „Vorgabe" heisst: null = nicht uebergeben (Gesetzt = false),
+            // "" = leeren (Wert = null), sonst eine Zahl (Komma oder Punkt) - ein unlesbarer
+            // Text wird benannt abgelehnt.
+            static string Leerbar(string schluessel, string text, bool ganzzahlig,
+                                  out (bool Gesetzt, double? Wert) ergebnis)
+            {
+                ergebnis = (false, null);
+                if (text == null) return null;
+                string s = text.Trim();
+                if (s.Length == 0) { ergebnis = (true, null); return null; }
+                double wert;
+                if (!ZahlText.Parsen(s, out wert) || !double.IsFinite(wert) ||
+                    (ganzzahlig && (Math.Abs(wert - Math.Round(wert)) > 1e-9 || Math.Abs(wert) > int.MaxValue)))
+                    return string.Format(
+                        Text("KBROW_MSG_WERT_KEINE_ZAHL", "„{0}“: „{1}“ ist keine gültige Zahl."),
+                        KatalogFeldPruefung.Feldname(KatalogBrowserArt.Heizkessel, schluessel), s);
+                ergebnis = (true, wert);
+                return null;
+            }
 
             static string Nichtnegativ(string schluessel, double? wert)
                 => wert.HasValue

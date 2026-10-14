@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Berichte;
@@ -47,6 +48,19 @@ namespace WindowsFormsApplication1
         /// <summary>Die geteilte Vergleichswahl der drei Seiten (W5‑B‑5); die Rahmenhülle setzt sie.</summary>
         internal Vergleichsauswahl Vergleich { get; set; } = new Vergleichsauswahl();
 
+        /// <summary>
+        /// Der Rechenweg des Knopfes „Neu berechnen" — gesetzt von der Rahmenhülle
+        /// (<c>BerichteKostenHuelle</c>): DERSELBE Lauf wie „Neu berechnen" der
+        /// Wirtschaftlichkeitsseite derselben Gruppe, keine zweite Rechnung. Die Seite reicht die
+        /// gewählten Versionen der geteilten Vergleichswahl ohne Stamm hinein.
+        /// <c>null</c> (eine Seite ohne Rahmen, ein Prüfstand) oder eine Seite ohne Gruppe heißt:
+        /// kein Knopf — der Parameter bleibt dann aus dem Satz.
+        /// </summary>
+        internal Func<IReadOnlyList<int>, Action<Laufschritt>, Task<LaufErgebnis>> Berechnen { get; set; }
+
+        /// <summary>Bricht den laufenden Rechenweg ab (<see cref="Berechnen"/>); <c>null</c> = kein Abbrechen.</summary>
+        internal Action Abbrechen { get; set; }
+
         // Befundlisten der Fußzeile — wortgleich zum Vorläufer.
         private readonly List<string> _ohnePosition = new List<string>();
         private readonly List<string> _nichtVerbaut = new List<string>();
@@ -58,6 +72,17 @@ namespace WindowsFormsApplication1
         private readonly Dictionary<int, ProjektEnergietraegerCtrl.AnlagenEintrag> _anlagen =
             new Dictionary<int, ProjektEnergietraegerCtrl.AnlagenEintrag>();
         private readonly Dictionary<int, string> _loseKomponenten = new Dictionary<int, string>();
+
+        /// <summary>
+        /// Die Seite ist geladen: Projekt, Zahl der angezeigten Energieträger und Zahl der
+        /// Befunde der Fußzeile (Positionen, Träger ohne Preis, Zuordnung oder Heizwert). Der
+        /// Wirt nennt es in der Statuszeile des Reiters (Konzept Navigation Berichte &amp; Kosten,
+        /// A2); ohne Projekt meldet sie die Trägerzahl -1.
+        /// </summary>
+        internal event Action<int, int, int> Geladen;
+
+        /// <summary>Die Zahl der Befunde des letzten Ladens (siehe <see cref="Statuszeile"/>).</summary>
+        private int _befunde;
 
         /// <summary>Setzt das anzuzeigende Projekt (Stamm ODER Variante).</summary>
         internal void SetzeProjekt(int idProjekt, string projektname)
@@ -76,7 +101,7 @@ namespace WindowsFormsApplication1
         /// <summary>Der Parametersatz der Seite.</summary>
         internal IReadOnlyDictionary<string, object> Gaben()
         {
-            return new Dictionary<string, object>
+            var gaben = new Dictionary<string, object>
             {
                 ["Laden"] = new Func<KostenStand>(Laden),
                 ["VerwaltungGaben"] = new Func<KostenZeile, IReadOnlyDictionary<string, object>>(
@@ -86,6 +111,12 @@ namespace WindowsFormsApplication1
                 ["LoeschFrage"] = new Func<KostenZeile, string>(LoeschFrage),
                 ["LoeschNichts"] = new Func<KostenZeile, string>(LoeschNichts),
                 ["Loeschen"] = new Func<KostenZeile, string>(Loeschen),
+
+                // KB-3 (Anwenderentscheid 13.10.2026): der Abgleich einer Anlage mit dem zentralen
+                // Kostenkatalog - dieselbe Vorschau und dasselbe Ausfuehren wie im Kostendialog.
+                ["AbgleichFrage"] = new Func<KostenZeile, string>(AbgleichFrage),
+                ["Abgleichen"] = new Func<KostenZeile, string>(Abgleichen),
+                ["AbgleichKurztext"] = T("BK_KOSTEN_ABGLEICH_KURZTEXT", "Mit dem Kostenkatalog abgleichen…"),
                 ["VergleichGewaehlt"] = new Action<IReadOnlyList<int>>(VergleichSetzen),
                 ["LabelVergleich"] = MyResource.Resource.BK_LBL_VERGLEICHSWAHL,
                 ["StammFestTipp"] = MyResource.Resource.BK_BER_MSG_STAMM_REFERENZ,
@@ -109,6 +140,15 @@ namespace WindowsFormsApplication1
                 ["NeinText"] = T("BKS_BTN_NEIN", "Nein"),
                 ["HilfeSchluessel"] = "UcBkKosten.btn_Help"
             };
+
+            // „Neu berechnen" nur mit Rahmenhülle UND Gruppe: Gerechnet wird die
+            // Wirtschaftlichkeit der Vergleichsgruppe, und ohne Stamm gibt es keine.
+            if (Berechnen != null && _idStamm > 0)
+            {
+                gaben["Berechnen"] = Berechnen;
+                if (Abbrechen != null) gaben["Abbrechen"] = Abbrechen;
+            }
+            return gaben;
         }
 
         // =====================================================================
@@ -127,6 +167,7 @@ namespace WindowsFormsApplication1
                 stand.Bedienbar = false;
                 stand.Kacheln = LeereKacheln();
                 stand.TraegerSpalten = Traegerspalten();
+                Geladen?.Invoke(_idProjekt, -1, 0);
                 return stand;
             }
 
@@ -180,11 +221,21 @@ namespace WindowsFormsApplication1
 
             stand.Kacheln = new List<KachelZeile> { kInvest, kBetrieb, kEnergie };
             stand.Vorlagenfeldposition = VorlagenfeldpositionHuelle.Von(_idProjekt);
+
+            // Das Band „… bitte neu berechnen": das Projekt der Kacheln hier, jede Version
+            // im Vergleich in der Gegenueberstellung.
+            stand.Nachrechnen = w.Veraltet;
+            stand.NachrechnenGrund = w.Grund;
             Gegenueberstellung(stand, kultur, w);
             stand.Komponenten = Komponenten(kultur);
             stand.TraegerSpalten = Traegerspalten();
             stand.Traeger = Traeger(kultur);
             stand.Statuszeile = Statuszeile(investPositionen, energieHinweis, energieNull);
+
+            int traeger = 0;
+            foreach (TraegerZeile z in stand.Traeger)
+                if (z.Art == ZeilenArt.Normal) traeger++;
+            Geladen?.Invoke(_idProjekt, traeger, _befunde);
             return stand;
         }
 
@@ -240,6 +291,11 @@ namespace WindowsFormsApplication1
                             : (string.IsNullOrEmpty(v.Bezeichner) ? v.Projektname : v.Bezeichner));
                 speicher.Add(v.Speicher ?? "");
                 Kostenwerte w = v.IdProjekt == _idProjekt ? werteProjekt : Kostenwerte.Lies(_wirt, v.IdProjekt);
+                if (w.Veraltet)
+                {
+                    stand.Nachrechnen = true;
+                    stand.NachrechnenGrund = KostenAenderungsstempel.Vorrang(stand.NachrechnenGrund, w.Grund);
+                }
                 invest.Add(w.InvestText(kultur));
                 betrieb.Add(w.BetriebText(kultur));
                 energie.Add(w.EnergieText(kultur));
@@ -301,6 +357,21 @@ namespace WindowsFormsApplication1
             internal string EnergieHinweis = "";
             internal bool EnergieNull = true;
 
+            /// <summary>
+            /// Das gespeicherte Ergebnis gilt nicht mehr — dieselbe Frage
+            /// (<see cref="WirtschaftlichkeitCtrl.ErgebnisAktuell"/>), mit der die
+            /// Wirtschaftlichkeitsseite ihr Band „… bitte neu berechnen" und die Reiterzeile ihr
+            /// „veraltet" stellen. Ohne gespeichertes Ergebnis ist nichts veraltet, es fehlt.
+            /// </summary>
+            internal bool Veraltet;
+
+            /// <summary>
+            /// Warum (<see cref="WirtschaftlichkeitCtrl.Veraltung"/>): jüngerer Simulationslauf,
+            /// geänderte Kosten der Gruppe oder geänderter Kostenkatalog; sonst
+            /// <see cref="Ergebnisveraltung.Keine"/>.
+            /// </summary>
+            internal Ergebnisveraltung Grund;
+
             internal static Kostenwerte Lies(WirtschaftlichkeitCtrl wirt, int idProjekt)
             {
                 var w = new Kostenwerte();
@@ -342,6 +413,10 @@ namespace WindowsFormsApplication1
                     {
                         w.Energie = erg.EnergiekostenJahr.Value;
                         w.EnergieNull = Math.Abs(erg.EnergiekostenJahr.Value) < 0.005;
+                        // EINE Kernfrage: Veraltung ist die Regel hinter ErgebnisAktuell - für ein
+                        // gelesenes Ergebnis ist „nicht aktuell" genau „ein Grund steht".
+                        w.Grund = wirt.Veraltung(erg);
+                        w.Veraltet = w.Grund != Ergebnisveraltung.Keine;
                         w.EnergieHinweis = string.Format(MyResource.Resource.BK_KOSTEN_STAND,
                             erg.Zeitstempel.ToString("dd.MM.yyyy HH:mm"));
                     }
@@ -397,6 +472,12 @@ namespace WindowsFormsApplication1
         {
             string status = string.Format(MyResource.Resource.BK_KOSTEN_STATUS,
                                           investPositionen, energieHinweis).Trim();
+
+            // Die Befunde dieser Zeile, einzeln gezählt — die Statuszeile des Reiters nennt
+            // ihre Zahl (A2); jeder ist eine Eingabe, die der Anwender nachholen kann.
+            _befunde = _ohnePosition.Count + _nichtVerbaut.Count
+                     + (energieNull ? _traegerOhnePreis.Count : 0)
+                     + _traegerNichtZugeordnet.Count + _traegerOhneHeizwert.Count;
 
             if (_ohnePosition.Count > 0)
                 status += "  ·  " + string.Format(MyResource.Resource.BK_KOSTEN_OHNE_POSITION,
@@ -471,6 +552,11 @@ namespace WindowsFormsApplication1
                     };
                     _anlagen[z.Schluessel] = a;
 
+                    // KB-3: Fuehrt der Katalogsatz des Geraets eine Satzvorlage, ist die Zeile
+                    // abgleichbar - dann traegt die Aktionenspalte den Abgleich.
+                    z.Abgleichbar = a.AnlageId > 0 &&
+                                    Katalogkostenabgleich.Abgleichbar(a.AnlageId, a.Komponente);
+
                     if (!mitPositionen.Contains(a.Komponente))
                     {
                         // Die KOMPONENTE hat nirgends eine Position: FEHLENDE
@@ -478,6 +564,18 @@ namespace WindowsFormsApplication1
                         z.Art = ZeilenArt.OhnePosition;
                         z.Kurztext = string.Format(
                             MyResource.Resource.BK_KOSTEN_OHNE_POSITION_HINT, a.Komponente);
+                        // KB-3: Statt "-" steht in der leeren Wertzelle, DASS Katalogkosten
+                        // vorliegen; die Zahl entsteht erst mit dem Abgleich.
+                        if (z.Abgleichbar)
+                        {
+                            string hinweis = T("BK_KOSTEN_KATALOGKOSTEN", "Katalogkosten vorhanden");
+                            if (!hatI) z.Summe = hinweis;
+                            if (!hatB) z.Betrieb = hinweis;
+                            z.Kurztext = string.Format(
+                                T("BK_KOSTEN_KATALOGKOSTEN_HINT",
+                                  "„{0}“ führt keine Kostenposition, der Katalogsatz des Geräts aber Kosten — über „Mit dem Kostenkatalog abgleichen…“ entstehen daraus Positionen."),
+                                a.Komponente);
+                        }
                         if (!rotGemeldet.Contains(a.Komponente))
                         {
                             rotGemeldet.Add(a.Komponente);
@@ -996,6 +1094,45 @@ namespace WindowsFormsApplication1
         /// sagt es dann in der Fußzeile, statt den Papierkorb still verpuffen zu
         /// lassen.</para>
         /// </summary>
+        /// <summary>
+        /// KB-3: Die Vorschau des Abgleichs dieser Anlagenzeile — der fertige Fragetext; leer heißt
+        /// „nichts abzugleichen". Gerechnet wird im Kern (<c>Katalogkostenabgleich</c>), in Text
+        /// gesetzt mit denselben Bausteinen wie im Kostendialog (eine Formulierung, nicht zwei).
+        /// </summary>
+        private string AbgleichFrage(KostenZeile zeile)
+        {
+            ProjektEnergietraegerCtrl.AnlagenEintrag a = Anlage(zeile);
+            if (a == null || a.AnlageId <= 0) return "";
+            Abgleichbefund befund = Katalogkostenabgleich.Vorschau(_idProjekt, a.AnlageId, a.Komponente);
+            if (befund.Absage != Abgleichabsage.Keine || !befund.Handlungsbedarf) return "";
+            return string.Format(MyResource.Resource.Culture,
+                                 T("KAT_ABGLEICH_FRAGE", "{0} fehlen, {1} weichen ab:\n{2}\nAbgleichen?"),
+                                 befund.Fehlt, befund.WeichtAb, KostenKomponenteHuelle.Vorschautext(befund));
+        }
+
+        /// <summary>KB-3: Führt den Abgleich aus und liefert die Meldung der Fußzeile.</summary>
+        private string Abgleichen(KostenZeile zeile)
+        {
+            ProjektEnergietraegerCtrl.AnlagenEintrag a = Anlage(zeile);
+            if (a == null || a.AnlageId <= 0) return "";
+            Abgleichergebnis e = Katalogkostenabgleich.Ausfuehren(_idProjekt, a.AnlageId, a.Komponente);
+            if (e.Absage != Abgleichabsage.Keine) return KostenKomponenteHuelle.Absagetext(e.Absage);
+            string meldung = string.Format(MyResource.Resource.Culture,
+                T("KAT_ABGLEICH_STATUS", "Abgleich: {0} Position(en) angelegt, {1} auf den Katalogwert gesetzt."),
+                e.Angelegt, e.Gesetzt);
+            if (e.Fehler)
+                meldung += " " + T("KAT_ABGLEICH_FEHLER",
+                    "Mindestens eine Position konnte nicht geschrieben werden; der Abgleich ist unvollständig.");
+            return meldung;
+        }
+
+        /// <summary>Die Anlagenzeile zu einem Zeilenschlüssel; <c>null</c> = keine.</summary>
+        private ProjektEnergietraegerCtrl.AnlagenEintrag Anlage(KostenZeile zeile)
+        {
+            ProjektEnergietraegerCtrl.AnlagenEintrag a;
+            return zeile != null && _anlagen.TryGetValue(zeile.Schluessel, out a) ? a : null;
+        }
+
         private string LoeschFrage(KostenZeile zeile)
         {
             string komponente;

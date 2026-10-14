@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
+using WindowsFormsApplication1;
 using WindowsFormsApplication1.MyResource;
 
 namespace EPOS.UI.Bausteine;
@@ -41,7 +42,8 @@ public sealed class Menuepunkt : IEnumerable<Menuepunkt>
     /// <summary>Ein gewoehnlicher Punkt, gegebenenfalls mit Untereintraegen.</summary>
     public Menuepunkt(string name, string textSchluessel, string ziel,
                       string argument = "", string bild = "", string kuerzel = "",
-                      bool rechtsBuendig = false, bool katalog = false)
+                      bool rechtsBuendig = false, bool katalog = false,
+                      Freigabestufe stufe = Freigabestufe.Anwender)
     {
         Name = name;
         TextSchluessel = textSchluessel;
@@ -51,6 +53,7 @@ public sealed class Menuepunkt : IEnumerable<Menuepunkt>
         Kuerzel = kuerzel;
         RechtsBuendig = rechtsBuendig;
         Katalog = katalog;
+        Stufe = stufe;
     }
 
     /// <summary>Ein Trennstrich — er traegt weder Text noch Ziel.</summary>
@@ -110,6 +113,42 @@ public sealed class Menuepunkt : IEnumerable<Menuepunkt>
     /// die Wurzel seinen Schluessel fuehrt — ohne eine zweite Liste.</para>
     /// </summary>
     public bool Katalog { get; }
+
+    /// <summary>
+    /// Ab welcher Freigabestufe der Punkt sichtbar ist (Konzept Administration und
+    /// Support, Abschnitt 3.1). Vorgabe <see cref="Freigabestufe.Anwender"/>; ein
+    /// Trennstrich ist immer Anwender. Zugeschnitten wird in
+    /// <see cref="Menuetabelle.Sichtbar"/>, nicht im Band.
+    /// </summary>
+    public Freigabestufe Stufe { get; }
+
+    /// <summary>
+    /// Warum der Punkt GESPERRT ist (Konzept Administration und Support, Abschnitt 4.2) —
+    /// leer heisst frei. Ein gesperrter Punkt bleibt sichtbar, das Band zeichnet ihn
+    /// gedaempft mit dem Grund als Tooltip und meldet keinen Klick. Gesetzt wird der Grund
+    /// nur beim Zuschnitt (<see cref="Menuetabelle.Sichtbar(Freigabestufe, Func{string, string})"/>)
+    /// ueber <see cref="MitSperrgrund"/>; die Tabelle selbst kennt keine Sperre.
+    /// </summary>
+    public string Sperrgrund { get; private init; } = "";
+
+    /// <summary>Ist der Punkt gesperrt?</summary>
+    public bool Gesperrt => !string.IsNullOrEmpty(Sperrgrund);
+
+    /// <summary>
+    /// Eine Kopie dieses Punktes mit dem Sperrgrund <paramref name="grund"/> (leer = frei);
+    /// Untereintraege werden mitgenommen. Der Punkt selbst bleibt unveraendert.
+    /// </summary>
+    public Menuepunkt MitSperrgrund(string grund)
+    {
+        var kopie = new Menuepunkt(Name, TextSchluessel, Ziel, Argument, Bild, Kuerzel,
+                                   RechtsBuendig, Katalog, Stufe)
+        {
+            Trenner = Trenner,
+            Sperrgrund = grund ?? "",
+        };
+        foreach (Menuepunkt k in _kinder) kopie.Add(k);
+        return kopie;
+    }
 
     /// <summary>Das Untermenue; leer, wenn der Punkt unmittelbar handelt.</summary>
     public IReadOnlyList<Menuepunkt> Untereintraege => _kinder;

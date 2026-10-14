@@ -76,6 +76,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static readonly SKColor R_REST_GRAU = SKColor.Parse("#D9DEE5");
 
+        // K6b: das Segment „dezentral (Split)“ des Kälterings - der Ton der Hausfarbe der Rolle KAELTE_DEZENTRAL.
+        private static readonly SKColor R_KAELTE_DEZENTRAL = SKColor.Parse("#4BACC6");
+
         // =================================================================
         // Ein Bild
         // =================================================================
@@ -124,12 +127,14 @@ namespace WindowsFormsApplication1
                     case Bilder.Heizkessel: return ModellKessel(a);
                     case Bilder.Solarthermie: return ModellSolar(a);
                     case Bilder.Bhkw: return ModellBhkw(a);
+                    case Bilder.BhkwStrom: return ModellBhkwStrom(a);
                     case Bilder.Photovoltaik: return ModellPv(a);
                     case Bilder.SpeicherBetrieb: return ModellSpeicherBetrieb(a);
                     case Bilder.AutarkieMonate: return ModellAutarkie(a.Zahl);
                     case Bilder.WaermeAutarkieMonate: return ModellWaermeAutarkie();
                     case Bilder.Waermegang: return ModellWaermegang(a);
                     case Bilder.Stromgang: return ModellStromgang(a);
+                    case Bilder.Kaeltegang: return ModellKaeltegang(a);
                     default: return null;
                 }
             }
@@ -220,6 +225,7 @@ namespace WindowsFormsApplication1
         {
             SimulationErgebnisCtrl.KaelteErgebnis k = SimulationErgebnisCtrl.Kaelte(_waermebedarf);
             if (k == null) return null;
+            if (k.MitDezentral) return ModellBedarfKaelteHerkunft(k, a);
 
             var reihen = new List<ChartRenderer.Reihe>
             {
@@ -231,6 +237,37 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.CHART_ACHSE_KAELTELAST,
                 a.Sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
                 a.Sortiert);
+        }
+
+        /// <summary>
+        /// K6b (Konzept Kältebedarf 4.3): die Kältelast MIT Split-Zeile — die Herkunft als gestapelte Flächen (Gebäude,
+        /// Lastgänge, Kältebedarfsprofile; je nur mit Bedarf), die Summe als Linie darüber und die dezentral (Split)
+        /// gedeckte Kälte als eigene Linie. 100 % ist der Jahreshöchstwert der Summe, wie im Wärmebild. Ohne Split-Zeile
+        /// zeichnet <see cref="ModellBedarfKaelte"/> das Bild, wie es war.
+        /// </summary>
+        private static Zeichenmodell ModellBedarfKaelteHerkunft(SimulationErgebnisCtrl.KaelteErgebnis k, Bildauftrag a)
+        {
+            var reihen = new List<ChartRenderer.Reihe>
+            {
+                Reihe(MyResource.Resource.CHART_ACHSE_KAELTELAST, k.KaeltebedarfKwh, Farbrolle.BEDARF, breite: 3f)
+            };
+            void Flaeche(string name, double[] werte, Farbrolle rolle)
+            {
+                if (werte != null && werte.Sum() > 0)
+                    reihen.Add(Reihe(name, werte, rolle, ChartRenderer.Stapelart.Flaeche));
+            }
+            Flaeche(MyResource.Resource.CHART_LEGENDE_KAELTE_GEBAEUDE, k.GebaeudeKwh, Farbrolle.SERIE_3);
+            Flaeche(MyResource.Resource.CHART_LEGENDE_KAELTE_LASTGANG, k.ExternKwh, Farbrolle.SERIE_6);
+            Flaeche(MyResource.Resource.CHART_LEGENDE_KAELTE_PROFIL, k.ProfilKwh, Farbrolle.SERIE_5);
+            reihen.Add(Reihe(MyResource.Resource.CHART_LEGENDE_KAELTE_DEZENTRAL, k.DezentralKwh, Farbrolle.KAELTE_DEZENTRAL,
+                             breite: 2f));
+
+            double bezug = k.KaeltebedarfKwh != null && k.KaeltebedarfKwh.Length > 0 ? k.KaeltebedarfKwh.Max() : 0;
+            return ChartRenderer.GanglinieNormiertModell(
+                MyResource.Resource.CHART_TITEL_KAELTELAST_JAHRESGANGLINIE, reihen,
+                MyResource.Resource.CHART_ACHSE_KAELTELAST,
+                a.Sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
+                a.Sortiert, null, bezug);
         }
 
         private Zeichenmodell ModellBedarfStrom(Bildauftrag a)
@@ -320,6 +357,10 @@ namespace WindowsFormsApplication1
                     string.IsNullOrEmpty(z.Bezeichner) ? MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE : z.Bezeichner,
                     z.KaelteMwh, farben[i % farben.Length]));
             }
+            // K6b: die dezentral (Split) gedeckte Kälte - ein eigenes Segment, nur mit Split-Zeile.
+            if (k.MitDezentral)
+                segmente.Add(new ChartRenderer.Ringsegment(
+                    MyResource.Resource.CHART_LEGENDE_KAELTE_DEZENTRAL, k.DezentralMwh, R_KAELTE_DEZENTRAL));
             segmente.Add(new ChartRenderer.Ringsegment(
                 MyResource.Resource.SIMUEB_LEGENDE_REST, k.KaelterestbedarfMwh, R_REST_GRAU));
             return segmente;
@@ -332,10 +373,11 @@ namespace WindowsFormsApplication1
         private Zeichenmodell ModellRingKaelte()
         {
             SimulationErgebnisCtrl.KaelteErgebnis k = SimulationErgebnisCtrl.Kaelte(_waermebedarf);
-            if (k == null || k.Erzeuger.Count == 0 || !(k.KaeltebedarfMwh > 0)) return null;
+            // K6b: mit Split-Zeile auch ohne Kälteerzeuger, in der Mitte die Hauptzahl nach KaelteDeckungsgrad.
+            if (k == null || (k.Erzeuger.Count == 0 && !k.MitDezentral) || !(k.KaeltebedarfMwh > 0)) return null;
 
             return ChartRenderer.RingModell(MyResource.Resource.SIMUEB_RING_KAELTE_TITEL,
-                                            SegmenteKaelte(k), k.DeckungsgradProzent ?? 0.0, "%",
+                                            SegmenteKaelte(k), (k.MitDezentral ? k.DeckungsgradGesamtProzent : k.DeckungsgradProzent) ?? 0.0, "%",
                                             MyResource.Resource.SIMUEB_RING_GEDECKT, false);
         }
 
@@ -664,6 +706,47 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die „Stromlast Jahresganglinie“ des BHKW — das Gegenstück zur Wärmelast
+        /// (<see cref="ModellBhkw"/>) mit denselben Regeln: die Stromproduktion als Säule
+        /// unten, Einspeisung, Reststrombedarf und Strombedarf als Linien darüber; jede Reihe
+        /// abwählbar (<c>null</c> heißt „alle“, eine LEERE Liste „keine“), „sortiert“ zeichnet
+        /// die Dauerlinie über Jahresstunden. Die Reihen bildet der Kern
+        /// (<see cref="SimulationErgebnisCtrl.BhkwStromStunden"/>) aus den Reihen des Laufs —
+        /// keine Rechnung in der Hülle. Die Farben folgen dem Stromgang: BHKW-Strom, Überschuss,
+        /// Rest, Bedarf.
+        /// </summary>
+        private Zeichenmodell ModellBhkwStrom(Bildauftrag a)
+        {
+            SimulationErgebnisCtrl.BhkwStromreihen r = SimulationErgebnisCtrl.BhkwStromStunden(sim);
+            if (r == null) return null;
+            bool sortiert = a != null && a.Sortiert;
+            bool alle = Alle(a);
+
+            var stapel = new List<ChartRenderer.Reihe>();
+            if (Gewaehlt(a, alle, "STROMPRODUKTION"))
+                stapel.Add(Reihe(MyResource.Resource.SIMDET_BHKW_SERIE_STROMPRODUKTION, r.Stromproduktion,
+                                 Farbrolle.STROM_BHKW, ChartRenderer.Stapelart.Saeule,
+                                 sortiert ? 4f : 0f));
+
+            var linien = new List<ChartRenderer.Reihe>();
+            if (Gewaehlt(a, alle, "EINSPEISUNG"))
+                linien.Add(Reihe(MyResource.Resource.SIMDET_BHKW_SERIE_EINSPEISUNG, r.Einspeisung,
+                                 Farbrolle.UEBERSCHUSS));
+            if (Gewaehlt(a, alle, "RESTSTROM"))
+                linien.Add(Reihe(MyResource.Resource.SIMDET_BHKW_SERIE_RESTSTROM, r.Reststrombedarf,
+                                 Farbrolle.REST));
+            if (Gewaehlt(a, alle, "STROMBEDARF"))
+                linien.Add(Reihe(MyResource.Resource.SIMDET_BHKW_SERIE_STROMBEDARF, r.Strombedarf,
+                                 Farbrolle.BEDARF));
+
+            return ChartRenderer.ErzeugerStapelModell(
+                MyResource.Resource.SIMDET_BHKW_TITEL_STROMLAST,
+                stapel, linien, null, MyResource.Resource.CHART_ACHSE_LEISTUNG,
+                sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
+                sortiert);
+        }
+
+        /// <summary>
         /// B2 + B3 auf der PV-Seite: vier Reihen im Viertelstundenraster; der
         /// Speicherfüllstand geht in kWh auf die ZWEITE Y-Achse.
         ///
@@ -697,11 +780,17 @@ namespace WindowsFormsApplication1
             // genutzte Anteil - der lag ohne Strombedarf auf 0, die Kurve war leer, und
             // die Tabelle darunter wies 13 MWh aus. Der Vorlaeufer (:4574) zeichnete
             // dieselbe genutzte Reihe; das war seine Schwaeche, nicht die des Ports.
-            // Die Viertelstunden kommen aus derselben Umrechnung wie die Bestandsreihen.
-            if (Gewaehlt(a, alle, "PHOTOVOLTAIK"))
+            // SB1 (a): die glatte Viertelstundenreihe, mit der die Bilanz rechnet.
+            // Schalter „PV aufteilen" (Anwenderentscheid 13.10.2026): die Erzeugung als STAPEL
+            // aus Eigenverbrauch, Einspeisung und - wo die Einspeisegrenze greift - Abregelung.
+            // Die Schichten rechnet der Kern (SimulationControl.PvErzeugungAufteilen); ihre
+            // Summe ist je Viertelstunde die Erzeugung.
+            var stapel = new List<ChartRenderer.Reihe>();
+            if (Gewaehlt(a, alle, "PHOTOVOLTAIK") && a != null && a.PvAufgeteilt)
+                stapel.AddRange(PvSchichten());
+            else if (Gewaehlt(a, alle, "PHOTOVOLTAIK"))
                 linien.Add(Reihe(MyResource.Resource.SIM_PHOTOVOLTAIK,
-                                 sim.simulation_pv.Stundenwerte_zu_viertelstunden(
-                                     sim.simulation_pv.Stromproduktion_Theoretisch), Farbrolle.STROM_PV));
+                                 sim.simulation_pv.Stromproduktion_Theoretisch_viertelstunde, Farbrolle.STROM_PV));
 
             // #234: Die zweite Achse nimmt seither eine LISTE; hier steht genau eine
             // Reihe darauf — der eine Stromspeicher des Projekts.
@@ -713,11 +802,33 @@ namespace WindowsFormsApplication1
 
             return ChartRenderer.ErzeugerStapelModell(
                 MyResource.Resource.CHART_TITEL_STROMBEDARF_PV_JAHRESGANGLINIE,
-                new List<ChartRenderer.Reihe>(), linien, null,
+                stapel, linien, null,
                 MyResource.Resource.CHART_ACHSE_LEISTUNG,
                 sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
                 sortiert,
-                zweite, MyResource.Resource.CHART_ACHSE_SPEICHER_KWH);
+                zweite, MyResource.Resource.CHART_ACHSE_SPEICHER_KWH,
+                stufenNachStapel: stapel.Count > 0);
+        }
+
+        /// <summary>
+        /// Die Schichten der aufgeteilten PV-Erzeugung von unten nach oben: Eigenverbrauch
+        /// (direkt genutzt und Speicherladung), Einspeisung (Überschuss) und — nur wenn die
+        /// Einspeisegrenze im Jahr greift — Abregelung. Gestapelte Flächen.
+        /// </summary>
+        internal IReadOnlyList<ChartRenderer.Reihe> PvSchichten()
+        {
+            sim.PvErzeugungAufteilen(out double[] eigen, out double[] einspeisung, out double[] abregelung);
+            var schichten = new List<ChartRenderer.Reihe>
+            {
+                Reihe(MyResource.Resource.CHART_LEGENDE_PV_EIGENVERBRAUCH, eigen, Farbrolle.STROM_PV,
+                      ChartRenderer.Stapelart.Flaeche),
+                Reihe(MyResource.Resource.CHART_LEGENDE_PV_EINSPEISUNG, einspeisung, Farbrolle.UEBERSCHUSS,
+                      ChartRenderer.Stapelart.Flaeche)
+            };
+            if (abregelung.Any(w => w > 0.0))
+                schichten.Add(Reihe(MyResource.Resource.CHART_LEGENDE_PV_ABREGELUNG, abregelung, Farbrolle.REST,
+                                    ChartRenderer.Stapelart.Flaeche));
+            return schichten;
         }
 
         /// <summary>
@@ -764,8 +875,10 @@ namespace WindowsFormsApplication1
         // ---- B6: der Monatsstapel der Autarkie-Analyse -------------------
 
         /// <summary>
-        /// Die zwölf Monatssäulen — wörtlich <c>FillMonthlyChart</c> :431-474: feste
-        /// 730-h-Monate, im Viertelstundenraster also 2 920 Intervalle je Monat.
+        /// Die zwölf Monatssäulen je KALENDERMONAT im 365-Tage-Raster ohne Schaltjahr
+        /// (<see cref="Netzbezugsspitze.TageJeMonat"/>): Januar 31 Tage, Februar 28 … —
+        /// im Viertelstundenraster 96 Intervalle je Tag. Die Säulen stehen damit auf
+        /// denselben Monaten wie jede andere Monatssumme des Programms.
         ///
         /// <para><b>Seit der Etappe DG-E3, Gruppe (c), ein ZEICHENMODELL.</b> Zwölf
         /// starre Fächer sind keine Zeitachse: Der Stapel trägt keine Zeichenfläche
@@ -777,27 +890,9 @@ namespace WindowsFormsApplication1
             if (_autarkieSpeicher == null || _autarkieLast == null) AutarkieRechnen(kwh);
             if (_autarkieSpeicher == null) return null;
 
-            double[] direkt = new double[12];
-            double[] ausSpeicher = new double[12];
-            double[] luecke = new double[12];
-
-            for (int m = 0; m < 12; m++)
-            {
-                for (int v = 0; v < 2920; v++)
-                {
-                    int i = m * 2920 + v;
-                    if (i >= _autarkieLast.Length) break;
-
-                    IntervallEnergien e = Vorverarbeitung.Berechne(
-                        _autarkieLast[i], _autarkiePv[i], 0.0,
-                        StromspeicherSimCtrl.INTERVALL_H, true, false);
-
-                    direkt[m] += e.EDirektKwh;
-                    double entnahme = _autarkieSpeicher.EntladungAcKwh[i];
-                    ausSpeicher[m] += entnahme;
-                    luecke[m] += e.EDefizitKwh - entnahme;
-                }
-            }
+            double[] direkt, ausSpeicher, luecke;
+            AutarkieMonate(_autarkieLast, _autarkiePv, _autarkieSpeicher.EntladungAcKwh,
+                           out direkt, out ausSpeicher, out luecke);
 
             var reihen = new List<ChartRenderer.Reihe>
             {
@@ -813,6 +908,43 @@ namespace WindowsFormsApplication1
             // trägt sie nicht mehr („(kWh) [kWh]").
             return ChartRenderer.MonatsStapelModell(
                 MyResource.Resource.CHART_ACHSE_ENERGIEBEDARF_DECKUNG, "kWh", reihen);
+        }
+
+        /// <summary>
+        /// Die Monatssummen des Autarkie-Stapels je KALENDERMONAT (365-Tage-Raster ohne
+        /// Schaltjahr, <see cref="Netzbezugsspitze.TageJeMonat"/>) aus den
+        /// Viertelstundenreihen: direkt gedeckter Eigenverbrauch, Entnahme aus dem Speicher
+        /// und die verbleibende Autarkielücke [kWh]. Eine kürzere Reihe endet im Monat, in
+        /// dem sie endet.
+        /// </summary>
+        internal static void AutarkieMonate(double[] last, double[] pv, double[] entladung,
+                                            out double[] direkt, out double[] ausSpeicher,
+                                            out double[] luecke)
+        {
+            direkt = new double[12];
+            ausSpeicher = new double[12];
+            luecke = new double[12];
+
+            int jeTag = (int)Math.Round(24.0 / StromspeicherSimCtrl.INTERVALL_H);
+            int anfang = 0;
+            for (int m = 0; m < 12; m++)
+            {
+                int ende = anfang + Netzbezugsspitze.TageJeMonat[m] * jeTag;
+                for (int i = anfang; i < ende; i++)
+                {
+                    if (i >= last.Length) break;
+
+                    IntervallEnergien e = Vorverarbeitung.Berechne(
+                        last[i], pv[i], 0.0,
+                        StromspeicherSimCtrl.INTERVALL_H, true, false);
+
+                    direkt[m] += e.EDirektKwh;
+                    double entnahme = entladung[i];
+                    ausSpeicher[m] += entnahme;
+                    luecke[m] += e.EDefizitKwh - entnahme;
+                }
+                anfang = ende;
+            }
         }
 
         // ---- B6b: der Wärme-Monatsstapel der Autarkie-Analyse --------------
@@ -898,7 +1030,7 @@ namespace WindowsFormsApplication1
             // Wahrheit. Bis dahin lagen sie auf der PRIMÄRachse und der Wärmebedarf
             // (kW!) auf der zweiten; es war genau verkehrt herum.
             var speicherreihen = new List<ChartRenderer.Reihe>();
-            List<SimulationPufferspeicher> speicher = sim.AlleSpeicher();
+            List<SimulationPufferspeicher> speicher = sim.SpeicherSamtKaelte();   // KU3-4d: samt Kältespeicher
             int nummer = 0;
             for (int i = 0; i < speicher.Count; i++)
             {
@@ -906,7 +1038,7 @@ namespace WindowsFormsApplication1
                 if (sp == null) continue;
                 string schluessel = sp.Schluessel(i);
                 if (wahl.Contains(schluessel))
-                    speicherreihen.Add(Reihe(sp.BezeichnerAnzeige(), sp.SOC_stuendlich,
+                    speicherreihen.Add(Reihe(SpeicherLegende(sp), sp.SOC_stuendlich,
                                              R_SPEICHERREIHEN[nummer % R_SPEICHERREIHEN.Length]));
                 nummer++;
             }
@@ -961,6 +1093,27 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Kälteproduktion (Unterreiter „Kälte Produktion Chart"): je Kälteerzeuger die
+        /// gedeckte Kälte als Säule, darauf die ungedeckte Kälte, darüber der Kältebedarf — die
+        /// Stundenreihen des Laufs, gebildet in <see cref="KaelteProduktionBild"/>. Rechnet das
+        /// Projekt keine Kälte, gibt es kein Bild.
+        /// </summary>
+        private Zeichenmodell ModellKaeltegang(Bildauftrag a)
+        {
+            KaelteProduktionBild.Reihen r = KaelteProduktionBild.AusLauf(_waermebedarf?.Kaelteseite);
+            if (r == null) return null;
+            return KaelteProduktionBild.Modell(r, new KaelteProduktionBild.Texte
+            {
+                Titel = MyResource.Resource.CHART_TITEL_KAELTEPRODUKTION_JAHRESGANGLINIE,
+                Achse = MyResource.Resource.CHART_ACHSE_LEISTUNG,
+                Bedarf = MyResource.Resource.CHART_LEGENDE_KAELTEBEDARF,
+                Rest = MyResource.Resource.CHART_LEGENDE_KAELTE_UNGEDECKT,
+                Erzeuger = MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE,
+                Dezentral = MyResource.Resource.CHART_LEGENDE_KAELTE_DEZENTRAL
+            }, a.Sortiert);
+        }
+
+        /// <summary>
         /// Der Stromgang (B2): der Verbrauchsstapel, die Erzeugungslinien darüber und
         /// die Kontrolllinie „Summe Stromverbrauch" — im Viertelstundenraster.
         /// </summary>
@@ -971,6 +1124,9 @@ namespace WindowsFormsApplication1
         /// Strom-Stufeneingang des Kessels, der Rest aller Verbraucher davor (1030: 4.790 MWh
         /// statt 0, 1017: 635,2 statt 20,12). Bild, Summenlinie und CSV lesen diese eine Stelle.
         /// </summary>
+        /// <summary>K6b: der Reihenschlüssel des Postens „Kühlung dezentral“ im Stromgang (Bild und CSV).</summary>
+        internal const string REIHE_KUEHLUNG_DEZENTRAL = "KUEHLUNG_DEZENTRAL";
+
         internal static double[] StromverbrauchKessel(SimulationControl sim)
             => sim.simulation_spk.Stromverbrauch_stuendlich;
 
@@ -996,6 +1152,11 @@ namespace WindowsFormsApplication1
                    Viertel(sim.simulation_wp.Heizstab_stuendlich), Farbrolle.HEIZSTAB);
             Stapel("HEIZKESSEL", MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL,
                    Viertel(StromverbrauchKessel(sim)), Farbrolle.WAERME_KESSEL);
+            // K6b: der Posten „Kühlung dezentral“ - die ganze Split-Reihe; ohne Split-Zeile ist sie null.
+            double[] dezentral = sim.Kaeltestrom_Dezentral_stuendlich;
+            if (dezentral != null)
+                Stapel(REIHE_KUEHLUNG_DEZENTRAL, MyResource.Resource.SIMUEB_LBL_KUEHLUNG_DEZENTRAL,
+                       Viertel(dezentral), Farbrolle.KAELTE_DEZENTRAL);
 
             var linien = new List<ChartRenderer.Reihe>();
             if (wahl.Contains("BHKW_STROM"))
@@ -1017,6 +1178,8 @@ namespace WindowsFormsApplication1
                                             Viertel(sim.simulation_wp.WP_Strombedarf_stuendlich)),
                     _strombedarf.AddVectors(Viertel(sim.simulation_wp.Heizstab_stuendlich),
                                             Viertel(StromverbrauchKessel(sim))));   // E29 (#536, N9)
+                // K6b: mit Split-Zeile gehört ihr Strom zur Summe des Verbrauchs - ohne sie bleibt die Linie, wie sie war.
+                if (dezentral != null) gesamt = _strombedarf.AddVectors(gesamt, Viertel(dezentral));
 
                 kontur = new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_SUMME_STROMVERBRAUCH,
                                                  Kopie(gesamt), Farbrolle.VERBRAUCH_GESAMT,

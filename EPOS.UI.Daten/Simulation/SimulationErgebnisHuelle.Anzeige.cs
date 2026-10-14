@@ -109,19 +109,54 @@ namespace WindowsFormsApplication1
                     zeilen.Add(new KaelteerzeugerAnzeige(z.Bezeichner, z.Vorlauf, z.KaelteMwh, z.StromMwh, z.Eer,
                                                          z.NetzbezugMwh, KuehltraegerText(z)));
                 d.Erzeuger = zeilen;
+                // KM3-E3-b: die Kachelzeile je Kaeltemaschine mit Teillastweg - die Formeln des Kerns.
+                d.Teillast = k.Erzeuger.Where(z => z.Teillast != null).Select(z => new KaeltemaschineTeillastKachel(
+                    z.Bezeichner, z.TaktstromKwh, z.Teillast.Starts,
+                    KaeltemaschineTeillastKennzahlen.TeillastanteilProzent(z.Teillast.Teillaststunden, z.Verdichterstunden),
+                    z.Teillast.Lastgrad_Mittel, KaeltemaschineTeillastKennzahlen.JazVerdichter(z.Teillast))).ToList();
                 d.Legende = Legende(SegmenteKaelte(k));
+            }
+
+            // K6b (Konzept Kältebedarf 4.3; Frage 1 des Plans K6): die dezentrale (Split-)Deckung - nur mit Split-Zeile.
+            // Der Deckungsgrad wird die Hauptzahl samt Split, darunter steht die Kältefolge am zentral gedeckten Bedarf.
+            if (k.MitDezentral)
+            {
+                d.MitDezentral = true;
+                d.GebaeudeMwh = k.GebaeudeMwh;
+                d.ExternMwh = k.ExternMwh;
+                d.ProfilMwh = k.ProfilMwh;
+                d.DezentralMwh = k.DezentralMwh;
+                d.DezentralStromMwh = k.DezentralStromMwh;
+                d.DezentralNetzbezugMwh = k.DezentralNetzbezugMwh;
+                d.JahresEerDezentral = k.JahresEerDezentral;
+                d.DeckungsgradProzent = k.DeckungsgradGesamtProzent;
+                d.DeckungsgradKaeltefolgeProzent = k.Erzeuger.Count > 0 ? k.DeckungsgradKaeltefolgeProzent : null;
+                d.Dezentral = k.Dezentral.Select(z => new KaelteerzeugerAnzeige(
+                    z.Bezeichner, 0, z.KaelteMwh, z.StromMwh, z.Eer, z.NetzbezugMwh, KuehltraegerText(z.Kuehltraeger, z.EigenerZaehler)))
+                    .ToList();
+                d.Legende = Legende(SegmenteKaelte(k));
+                string satz = string.Format(kultur, MyResource.Resource.SIMERG_HRL_KAELTE_DEZENTRAL,
+                                            k.DezentralMwh.ToString("N2", kultur),
+                                            SimulationRunner.DeckungProzent(k.DezentralMwh, k.KaeltebedarfMwh).ToString("N1", kultur),
+                                            k.DezentralStromMwh.ToString("N2", kultur));
+                d.Hinweise = hinweise.Concat(new[] { satz }).ToList();
+                d.DezentralHinweis = satz;
             }
             return d;
         }
 
         /// <summary>Der Stromträger des Kältestroms einer Zeile: der des Projekts, oder ein abweichender samt Abrechnungsart (E34).</summary>
         private static string KuehltraegerText(SimulationErgebnisCtrl.KaelteerzeugerZeile z)
+            => z == null ? MyResource.Resource.BER_KAELTE_TRAEGER_PROJEKT : KuehltraegerText(z.Kuehltraeger, z.EigenerZaehler);
+
+        /// <summary>Derselbe Text aus abweichendem Kühlträger (0 = Projektträger) und Abrechnungsart — auch für Split-Zeilen (K6b).</summary>
+        private static string KuehltraegerText(int kuehltraeger, bool eigenerZaehler)
         {
-            if (z == null || z.Kuehltraeger <= 0) return MyResource.Resource.BER_KAELTE_TRAEGER_PROJEKT;
+            if (kuehltraeger <= 0) return MyResource.Resource.BER_KAELTE_TRAEGER_PROJEKT;
             return string.Format(CultureInfo.CurrentCulture,
-                                 z.EigenerZaehler ? MyResource.Resource.BER_KAELTE_TRAEGER_ZAEHLER
-                                                  : MyResource.Resource.BER_KAELTE_TRAEGER_ANTEILIG,
-                                 Emissionsquelle.TraegerName(z.Kuehltraeger));
+                                 eigenerZaehler ? MyResource.Resource.BER_KAELTE_TRAEGER_ZAEHLER
+                                                : MyResource.Resource.BER_KAELTE_TRAEGER_ANTEILIG,
+                                 Emissionsquelle.TraegerName(kuehltraeger));
         }
 
         /// <summary>
@@ -853,8 +888,10 @@ namespace WindowsFormsApplication1
             d.HatPv = p.Photovoltaik;
             d.HatSolarthermie = p.Solarthermie;
 
-            double[] pvProd = sim.simulation_pv.pvPotentialGesamt_stuendlich;
-            double[] stromBedarf = sim.simulation_pv.Strombedarf_stuendlich;
+            // SB1 (a): Die Was-wäre-wenn-Rechnung nimmt dieselben Viertelstundenreihen wie der Lauf -
+            // die glatte PV-Reihe und den Viertelstundenbedarf der PV-Stufe.
+            double[] pvProd = sim.simulation_pv.Stromproduktion_Theoretisch_viertelstunde;
+            double[] stromBedarf = sim.simulation_pv.Strombedarf;
 
             // Der Kollektorertrag: nutzbarer Ertrag (Direktdeckung + Speicherladung) plus
             // der verworfene Überschuss.
@@ -963,17 +1000,22 @@ namespace WindowsFormsApplication1
             return d;
         }
 
+        /// <summary>Die Legende einer Füllstandsreihe: der Name, beim Kältespeicher mit seiner Rolle (KU3-4d).</summary>
+        internal static string SpeicherLegende(SimulationPufferspeicher sp)
+            => sp.Verwendung == SimulationPufferspeicher.VERWENDUNG_KAELTE ? sp.Anzeige() : sp.BezeichnerAnzeige();
+
         /// <summary>Je Speicher eine Füllstandsreihe — Schlüssel wie im Vorläufer.</summary>
         private List<Ganglinienreihe> Speicherreihen()
         {
             var liste = new List<Ganglinienreihe>();
-            List<SimulationPufferspeicher> speicher = sim.AlleSpeicher();
+            // KU3-4d: die Kältespeicher hinter den Wärmespeichern, gekennzeichnet „Name (Kältespeicher)".
+            List<SimulationPufferspeicher> speicher = sim.SpeicherSamtKaelte();
 
             for (int i = 0; i < speicher.Count; i++)
             {
                 SimulationPufferspeicher sp = speicher[i];
                 if (sp == null) continue;
-                liste.Add(new Ganglinienreihe(sp.Schluessel(i), sp.BezeichnerAnzeige(), true));
+                liste.Add(new Ganglinienreihe(sp.Schluessel(i), SpeicherLegende(sp), true));
             }
             return liste;
         }
@@ -1004,7 +1046,7 @@ namespace WindowsFormsApplication1
 
         private StromgangDaten StromgangDaten(ErgebnisPraesenz p)
         {
-            return new StromgangDaten
+            var d = new StromgangDaten
             {
                 Reihen = new[]
                 {
@@ -1017,6 +1059,14 @@ namespace WindowsFormsApplication1
                     new Ganglinienreihe("PV", MyResource.Resource.SIM_PHOTOVOLTAIK, p.Photovoltaik)
                 }
             };
+            // K6b: der Posten „Kühlung dezentral“ - die Wahl steht nur mit Split-Zeile da; ohne sie bleibt die Liste, wie sie war.
+            if (sim?.Kaeltestrom_Dezentral_stuendlich != null)
+            {
+                var reihen = d.Reihen.ToList();
+                reihen.Insert(5, new Ganglinienreihe(REIHE_KUEHLUNG_DEZENTRAL, MyResource.Resource.SIMUEB_LBL_KUEHLUNG_DEZENTRAL, true));
+                d.Reihen = reihen;
+            }
+            return d;
         }
 
         // =================================================================

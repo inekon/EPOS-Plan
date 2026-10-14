@@ -1,13 +1,12 @@
 ﻿namespace EPOS.UI.Dialoge.Bedarf;
 
 /// <summary>
-/// Die drei Betriebsarten des Gebäude-Katalogeditors (iU9-W9.1) — wörtlich aus
-/// <c>Form_Gebaeude1_Load</c>:21-44, wo sie über die beiden Schalter <c>m_bNeu</c> und
-/// <c>m_bAdmin</c> aufgespannt wurden.
+/// Die drei Betriebsarten des Gebäude-Katalogeditors: einen Katalogsatz bearbeiten, einen neuen
+/// anlegen (Gebäudedialog, Import, „Neu…" der Verwaltung) und ein Gebäude im Projekt bearbeiten.
 ///
-/// <para>Ein Aufzählungstyp statt zweier Schalter: Von den vier Kombinationen der beiden
-/// Schalter waren nur drei gemeint, und die vierte (<c>m_bNeu &amp;&amp; m_bAdmin</c>)
-/// hätte sich selbst widersprochen.</para>
+/// <para>Die Gebäudeverwaltung (Menü Administration › Gebäude) ist eine eigene Komponente
+/// (<c>GebaeudeAdminDialog</c>) und bearbeitet im Stammblatt; den Editor ruft sie nur für „Neu…"
+/// in der Betriebsart <see cref="Neu"/>.</para>
 /// </summary>
 public enum GebaeudeKatalogModus
 {
@@ -22,12 +21,6 @@ public enum GebaeudeKatalogModus
     /// Knopf wie „Speichern unter", mit anderem Text.
     /// </summary>
     Neu,
-
-    /// <summary>
-    /// Katalogverwaltung (Menü → Gebäudeverwaltung). Der Name wird zur Klappliste ALLER
-    /// Katalogsätze, „Überschreiben" ist frei und „Speichern" gesperrt.
-    /// </summary>
-    Admin,
 
     /// <summary>
     /// Ein Gebäude IM PROJEKT (Gebäudesimulation G3, Welle D2; Knopf „Hülle und Zonen…" des

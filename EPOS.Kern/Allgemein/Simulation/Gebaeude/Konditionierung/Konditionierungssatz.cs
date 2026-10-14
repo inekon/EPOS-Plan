@@ -16,9 +16,9 @@ namespace WindowsFormsApplication1
     /// „Bauvorschrift der Byte-Gleichheit"). Deshalb <b>legt der Datenweg einen Satz nur an, wenn
     /// wirklich ein Kalender gilt</b>.</para>
     ///
-    /// <para>Unveränderlich, ohne Datenbank. Das <b>Referenzjahr</b> ist Pflicht: Ohne es ließe sich
-    /// eine Feiertagsregel nicht auflösen, und eine stille Auslassung wäre eine erfundene
-    /// Betriebszeit (F11).</para>
+    /// <para>Unveränderlich, ohne Datenbank. Die Feiertagsregeln liegen nach der Konvention
+    /// <see cref="Feiertagskalender"/> (E114): im Regelfall ohne Jahr nach dem Wochentagsraster w₀, mit einer
+    /// Preisreihe nach dem Kalender ihres Jahres (E115).</para>
     /// </summary>
     public sealed class Konditionierungssatz
     {
@@ -28,31 +28,115 @@ namespace WindowsFormsApplication1
         /// Baut den Satz.
         /// </summary>
         /// <param name="wochentagDesErstenTags">w₀ aus der Wochenendmaske des Ortszeit-Kalenders (U7), 0 = Montag.</param>
-        /// <param name="referenzjahr">Das Jahr, gegen das die Feiertagsregeln aufgelöst werden.</param>
+        /// <param name="referenzjahr">Das Jahr der Preisreihe; 0 = Regelfall ohne Jahr (E114). Mit Jahr ist w₀ das
+        /// dieses Jahres (E115, <see cref="Gemeinjahrkalender.Aus"/>).</param>
         /// <exception cref="ArgumentOutOfRangeException">w₀ außerhalb 0 … 6 oder ein unmögliches Jahr.</exception>
+        /// <exception cref="ArgumentException">Ein Jahr mit fremdem w₀.</exception>
         public Konditionierungssatz(int wochentagDesErstenTags, int referenzjahr)
         {
             if (wochentagDesErstenTags < 0 || wochentagDesErstenTags > 6)
                 throw new ArgumentOutOfRangeException(nameof(wochentagDesErstenTags),
                     "w₀ liegt zwischen 0 (Montag) und 6 (Sonntag).");
-            if (referenzjahr < 1583 || referenzjahr > 9999)
+            if (referenzjahr != 0 && (referenzjahr < 1583 || referenzjahr > 9999))
                 throw new ArgumentOutOfRangeException(nameof(referenzjahr),
-                    "Das Referenzjahr liegt zwischen 1583 und 9999 (das Osterdatum ist gregorianisch).");
+                    "Das Referenzjahr ist 0 (kein Jahr) oder liegt zwischen 1583 und 9999 (das Osterdatum ist gregorianisch).");
+            if (referenzjahr != 0) Gemeinjahrkalender.Aus(wochentagDesErstenTags, referenzjahr);   // prüft das Raster des Jahres
             WochentagDesErstenTags = wochentagDesErstenTags;
             Referenzjahr = referenzjahr;
         }
 
         /// <summary>Der leere Satz — kein Kalender, der Bestandszweig gilt.</summary>
-        public static Konditionierungssatz Leer { get; } = new Konditionierungssatz(0, 2025);
+        public static Konditionierungssatz Leer { get; } = new Konditionierungssatz(0, 0);
 
         /// <summary>w₀: 0 = Montag … 6 = Sonntag für den 1. Januar.</summary>
         public int WochentagDesErstenTags { get; }
 
-        /// <summary>Das Referenzjahr des Laufs — es löst die Feiertagsregeln auf (F11).</summary>
+        /// <summary>Das Jahr der Preisreihe des Laufs; 0 = Regelfall ohne Jahr (E114).</summary>
         public int Referenzjahr { get; }
+
+        /// <summary>Die Konvention der Feiertagslage: Raster w₀ und Jahr (<see cref="Gemeinjahrkalender"/>).</summary>
+        public Gemeinjahrkalender Feiertagskalender => Gemeinjahrkalender.Aus(WochentagDesErstenTags, Referenzjahr);
 
         /// <summary>Trägt der Satz überhaupt einen Kalender? <c>false</c> heißt: wörtlich der Bestandszweig.</summary>
         public bool Wirksam { get; private set; }
+
+        /// <summary>
+        /// <b>Die Vorgabe der Nachtauskühlung</b> (Stufe KP1b, Konzept 3.7, P9 (b)) — Nachtfenster,
+        /// Tagwert n_T und ΔT aus der Matrix des Eigentümers, dessen Lüftungskalender gilt.
+        /// <c>null</c> heißt: keine Teilung der Nutzerreihe, alles wirkt unbedingt wie in KP1a.
+        /// </summary>
+        public Nachtauskuehlvorgabe Nachtauskuehlung { get; private set; }
+
+        /// <summary>
+        /// Legt die Vorgabe der Nachtauskühlung ab; <c>null</c> entfernt sie. Wie
+        /// <see cref="Setzen"/> nur für den Datenweg gedacht — danach wird der Satz nur gelesen.
+        /// </summary>
+        public void NachtauskuehlungSetzen(Nachtauskuehlvorgabe vorgabe) => Nachtauskuehlung = vorgabe;
+
+        /// <summary>
+        /// <b>Die Infiltration</b> [1/h] (Stufe KP1b, Konzept 3.1, 3.3, F15): die wirksame
+        /// Matrixzelle Lüftung/<c>NENNWERT</c> des Eigentümers, dessen Lüftungskalender gilt. Sie
+        /// bleibt konstant <b>unter</b> der Nutzerreihe des Kalenders und ist nie bedingt.
+        ///
+        /// <para><c>null</c> heißt 0 1/h — so wie der Bestand ohne getrennte Angabe rechnet: Trägt
+        /// das Gebäude nur die Gesamtangabe <c>Luftwechselrate</c>, gibt es keine Infiltration
+        /// unter der Reihe (der Generator lehnt dort jede Lüftungsvorgabe ohnehin ab,
+        /// <see cref="Fahrplanbefund.LuftwechselOhneTrennung"/>).</para>
+        ///
+        /// <para><b>Nicht der Nennwert des Kalenders:</b> Ein Lüftungskalender führt keinen
+        /// (<see cref="Konditionierungsgroessen.HatNennwert"/>), und sein Konstruktor lehnt ihn ab.
+        /// Die Infiltration ist eine Eigenschaft des Objekts, kein Wert der Kalenderzeile.</para>
+        /// </summary>
+        public double? InfiltrationH { get; private set; }
+
+        /// <summary>
+        /// <b>Der Tagwert der Heizspalte</b> [°C] (Stufe KP1b, Konzept 3.6, E53): die wirksame
+        /// Matrixzelle Heizen/<c>TAG</c> des Eigentümers, dessen Heizkalender gilt. Gegen ihn hält
+        /// der Lauf die Raumluft an den Tagen <b>außerhalb</b> der Heizperiode (Hinweis auf
+        /// Untertemperatur). <c>null</c> heißt: kein Tagwert (Zelle leer oder „aus") — dann gibt es
+        /// nichts zu vergleichen.
+        /// </summary>
+        public double? HeizTagwertC { get; private set; }
+
+        /// <summary>
+        /// Legt die zwei Werte ab, die der Lauf <b>neben</b> den Reihen aus der Matrix braucht
+        /// (Stufe KP1b): die Infiltration der Lüftungsspalte und den Tagwert der Heizspalte. Wie
+        /// <see cref="Setzen"/> nur für den Datenweg gedacht — danach wird der Satz nur gelesen.
+        /// </summary>
+        public void MatrixwerteSetzen(double? infiltrationH, double? heizTagwertC)
+        {
+            InfiltrationH = infiltrationH;
+            HeizTagwertC = heizTagwertC;
+        }
+
+        /// <summary>
+        /// <b>Die Tage außerhalb der Heizperiode</b> (Stufe KP1b, E53, Konzept 3.6): 365 Merker —
+        /// wahr, wo die <b>Saisonperiode</b> des Heizkalenders den Tag bestimmt (Art
+        /// <see cref="DbWerte.KOND_ART_BETRIEBSPAUSE"/>, <see cref="Standardfahrplan.RANG_SAISON"/>).
+        /// <c>null</c> ohne Heizkalender und ohne wirkende Saisonperiode — dann gibt es kein
+        /// „außerhalb", und der Hinweis entfällt.
+        ///
+        /// <para>Entschieden wird über <see cref="Konditionierungskalender.Quellperiode"/>, also über
+        /// <b>dieselbe</b> Wahl, die der Lauf rechnet: Ein Tag zählt nur, wenn die Saisonperiode ihn
+        /// auch wirklich gewinnt.</para>
+        /// </summary>
+        public bool[] HeizperiodeAussen()
+        {
+            Konditionierungskalender k = _kalender[(int)Konditionierungsgroesse.Heizsoll];
+            if (k == null) return null;
+            bool[] aussen = null;
+            for (int tag = 0; tag < 365; tag++)
+            {
+                Kalenderregel r = k.Quellperiode(tag, Feiertagskalender);
+                // Außerhalb heißt: die Saisonperiode (Rang 900) trägt den Tag — eine eigene
+                // Betriebspause des Anwenders ist gewolltes „aus", keine Grenze der Heizperiode.
+                if (r == null || r.Rang != Standardfahrplan.RANG_SAISON
+                    || !string.Equals(r.Art, DbWerte.KOND_ART_BETRIEBSPAUSE, StringComparison.Ordinal)) continue;
+                aussen ??= new bool[365];
+                aussen[tag] = true;
+            }
+            return aussen;
+        }
 
         /// <summary>Der Kalender einer Größe oder <c>null</c> — dann gilt für diese Größe der Bestandszweig.</summary>
         public Konditionierungskalender Kalender(Konditionierungsgroesse g) => _kalender[(int)g];
@@ -83,7 +167,7 @@ namespace WindowsFormsApplication1
         /// Deterministisch: dieselbe Reihe bei denselben Eingaben.
         /// </summary>
         public double[] Reihe(Konditionierungsgroesse g)
-            => _kalender[(int)g]?.Auswerten(WochentagDesErstenTags, Referenzjahr);
+            => _kalender[(int)g]?.Auswerten(Feiertagskalender);
 
         /// <summary>
         /// <b>Die Lastreihe einer Anteilsgröße</b> [W]: Anteil × Nennwert. Der Nennwert kommt aus dem
@@ -99,7 +183,7 @@ namespace WindowsFormsApplication1
                 throw new ArgumentException("Die Größe " + Konditionierungsgroessen.Kennwort(g) +
                                            " führt keine Anteile.", nameof(g));
             double nennwert = k.Nennwert ?? nennwertRueckfall;
-            double[] anteil = k.Auswerten(WochentagDesErstenTags, Referenzjahr);
+            double[] anteil = k.Auswerten(Feiertagskalender);
             var last = new double[anteil.Length];
             for (int h = 0; h < anteil.Length; h++) last[h] = anteil[h] * nennwert;
             return last;

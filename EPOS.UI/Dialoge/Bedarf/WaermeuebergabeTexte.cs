@@ -59,6 +59,13 @@ public sealed class WaermeuebergabeTexte
     /// <summary><c>GEBK_LBL_HEIZKURVE_STEILHEIT</c></summary>
     public string LabelHeizkurveSteilheit { get; set; } = "Steilheit der Heizkurve :";
 
+    /// <summary><c>AK3_GEBK_LBL_RAUMEINFLUSS</c></summary>
+    public string LabelHeizkurveRaumeinfluss { get; set; } = "Raumeinfluss der Heizkurve :";
+
+    /// <summary><c>AK3_GEBK_HRL_RAUMEINFLUSS</c> — „{0}" größter Wert [K/K].</summary>
+    public string ZeileRaumeinfluss { get; set; }
+        = "Raumeinfluss: Der Vorlauf steigt je Kelvin, um das die Raumtemperatur unter dem Sollwert liegt, um den eingetragenen Wert (0 bis {0} K/K; leer oder 0 = aus). Er wirkt nur mit der Anlagenkopplung „geschlossener Kreis (AK3)“.";
+
     /// <summary><c>GEBK_LBL_PROPORTIONALBAND</c></summary>
     public string LabelProportionalband { get; set; } = "Proportionalband des Raumreglers :";
 
@@ -132,7 +139,7 @@ public sealed class WaermeuebergabeTexte
 
     /// <summary><c>GEBK_ZEILE_UEBERGABE_PROJEKT</c></summary>
     public string ZeileProjekt { get; set; }
-        = "Gerechnet wird die Wärmeübergabe nur in Projekten mit der Projekteinstellung Anlagenkopplung „Heizkreis (AK1)“ (Simulationskonfiguration).";
+        = "Gerechnet wird die Wärmeübergabe nur in Projekten mit der Projekteinstellung Anlagenkopplung „Heizkreis (AK1)“ oder „geschlossener Kreis (AK3)“ (Simulationskonfiguration).";
 
     /// <summary><c>GEBK_ZEILE_UEBERGABE_BESTANDSWEG</c> — bis zur Stufe GA (Löschliste).</summary>
     public string ZeileBestandsweg { get; set; }

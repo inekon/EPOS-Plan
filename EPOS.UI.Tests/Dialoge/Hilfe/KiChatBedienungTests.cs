@@ -90,6 +90,7 @@ public class KiChatBedienungTests : EposBunitContext
     {
         return Render<KiChatDialog>(p =>
         {
+            p.Add(x => x.Entwickler, true);   // Entwicklerbereich: der Bestand prüft mit Kennzeichen
             p.Add(x => x.Texte, Texte())
              .Add(x => x.Kontext, "Detaillierte Simulation")
              .Add(x => x.Dialogname, "Simulation")
@@ -258,6 +259,7 @@ public class KiChatBedienungTests : EposBunitContext
         ohne.DokuAdresse = "";
 
         var cut = Render<KiChatDialog>(p => p
+            .Add(x => x.Entwickler, true)   // Entwicklerbereich: der Bestand prüft mit Kennzeichen
             .Add(x => x.Texte, ohne)
             .Add(x => x.Kontext, "Detaillierte Simulation")
             .Add(x => x.Eingerichtet, true)
@@ -455,6 +457,7 @@ public class KiChatBedienungTests : EposBunitContext
     public void Der_Zaehler_steht_in_der_Fussleiste()
     {
         var cut = Render<KiChatDialog>(p => p
+            .Add(x => x.Entwickler, true)   // Entwicklerbereich: der Bestand prüft mit Kennzeichen
             .Add(x => x.Texte, Texte())
             .Add(x => x.Kontext, "Detaillierte Simulation")
             .Add(x => x.Eingerichtet, true)

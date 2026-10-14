@@ -1,4 +1,4 @@
-﻿# CLAUDE.md — `EPOS.iOS`, die iOS-Hülle
+# CLAUDE.md — `EPOS.iOS`, die iOS-Hülle
 
 MAUI-App (`net10.0-ios`, `Microsoft.NET.Sdk.Razor`, `UseMaui`) mit **einer** `ContentPage` und
 darin **einer** `BlazorWebView`. Der Rechenweg liegt in [`EPOS.Kern`](../EPOS.Kern/CLAUDE.md), die

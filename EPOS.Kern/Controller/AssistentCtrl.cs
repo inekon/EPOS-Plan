@@ -26,6 +26,9 @@ namespace WindowsFormsApplication1
         /// <summary>Pflichtprüfung: kein Projektname eingegeben.</summary>
         ProjektnameFehlt,
 
+        /// <summary>Pflichtprüfung: Das Inbetriebnahmejahr liegt nicht in 2000 bis 2100 (KM4-E3-b); nichts geschrieben.</summary>
+        InbetriebnahmejahrAusserhalb,
+
         /// <summary>Ein Schreibschritt ist fehlgeschlagen; <c>Schritt</c> nennt ihn.</summary>
         Fehlgeschlagen,
 
@@ -328,7 +331,8 @@ namespace WindowsFormsApplication1
                 k.Erstelldatum.ToString("O", CultureInfo.InvariantCulture),
                 k.Aenderungsdatum.ToString("O", CultureInfo.InvariantCulture),
                 k.IdKlimaregion.ToString(CultureInfo.InvariantCulture),
-                k.Klimaname ?? ""
+                k.Klimaname ?? "",
+                k.Inbetriebnahmejahr?.ToString(CultureInfo.InvariantCulture) ?? "-"
             });
         }
 
@@ -596,28 +600,38 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Die Prozesswärmezuordnungen.</summary>
+        /// <summary>
+        /// Die Prozesswärmezuordnungen.
+        ///
+        /// <para><b>Über die ID</b> (Auftrag SV2, wie <see cref="LadeStromverbraucher"/>): Der Name
+        /// je Zeile ist der der Projektkopie, auf die die Zeile per <c>ID_Prozesswaerme</c> zeigt
+        /// (<see cref="Z_ProjektProzesswaermeCtrl.LiesProjekt"/>, wie die Kachel der Startseite)
+        /// — nicht der Bezeichner der Zuordnungszeile, der ein anderer sein kann. Nur so trifft
+        /// das Sichern der Jahressumme (<see cref="Z_ProjektProzesswaermeCtrl.UpdateSumme"/>) die
+        /// Zeile, und das Speichern bleibt bei derselben Kopie
+        /// (<see cref="ProzesswaermeStammCtrl.GetProjektIdUeberId"/>).</para>
+        /// </summary>
         public void LadeProzess(string projekt)
         {
             if (string.IsNullOrEmpty(projekt)) return;
 
             ProjektCtrl projctrl = new ProjektCtrl();
-            Z_ProjektProzesswaermeCtrl prozctrl = new Z_ProjektProzesswaermeCtrl();
-
             projctrl.ReadSingle(projekt);
-            prozctrl.ReadAll("select * from Z_Projekt_Prozesswaerme where ID_Projekt=" + projctrl.m_ID);
 
             Prozess.Clear();
 
-            for (int n = 0; n < prozctrl.rows; n++)
+            foreach (Z_ProjektProzesswaermeModel zeile in Z_ProjektProzesswaermeCtrl.LiesProjekt(projctrl.m_ID))
             {
                 Z_ProjektProzesswaermeModel item = new Z_ProjektProzesswaermeModel();
 
-                item.ID_Z = prozctrl.items[n].ID_Z;
+                item.ID_Z = zeile.ID_Z;
                 item.ID_Projekt = projctrl.m_ID;
-                item.szProzessname = prozctrl.items[n].szProzessname;
-                item.ID_Prozesswaerme = prozctrl.items[n].ID_Prozesswaerme;
-                item.Summe = prozctrl.items[n].Summe;
+                item.szProzessname = zeile.szProzessname;
+                item.ID_Prozesswaerme = zeile.ID_Prozesswaerme;
+                item.Summe = zeile.Summe;
+                item.Vorlauf = zeile.Vorlauf;          // PW1 Stufe 1: Anzeige; geschrieben nur nach Änderung
+                item.Ruecklauf = zeile.Ruecklauf;
+                item.ID_Betriebskalender = zeile.ID_Betriebskalender;   // PW2: reist mit
 
                 Prozess.Add(item);
             }
@@ -687,28 +701,37 @@ namespace WindowsFormsApplication1
             Z_ProjektGebGanglinieCtrl.KanaeleNachladen(projctrl.m_ID, Waermebedarf);
         }
 
-        /// <summary>Die Stromverbraucherzuordnungen (Standardprofile).</summary>
+        /// <summary>
+        /// Die Stromverbraucherzuordnungen (Standardprofile).
+        ///
+        /// <para><b>Über die ID</b> (Auftrag SV1 vom 30.09.2026): Der Name je Zeile ist der
+        /// der Projektkopie, auf die die Zeile per <c>ID_Stromverbraucher</c> zeigt
+        /// (<see cref="Z_ProjektStromverbraucherCtrl.LiesProjekt"/>, wie die Kachel der
+        /// Startseite) — nicht der Bezeichner der Zuordnungszeile, der vielfach noch der
+        /// Katalogname ist. Nur so trifft das Sichern der Jahressumme
+        /// (<see cref="Z_ProjektStromverbraucherCtrl.UpdateSumme"/>) die Zeile, und das
+        /// Speichern bleibt bei derselben Kopie
+        /// (<see cref="StromverbraucherStammCtrl.GetProjektIdUeberId"/>).</para>
+        /// </summary>
         public void LadeStromverbraucher(string projekt)
         {
             if (string.IsNullOrEmpty(projekt)) return;
 
             ProjektCtrl projctrl = new ProjektCtrl();
-            Z_ProjektStromverbraucherCtrl svctrl = new Z_ProjektStromverbraucherCtrl();
-
             projctrl.ReadSingle(projekt);
-            svctrl.ReadAll("select * from Z_Projekt_Stromverbraucher where ID_Projekt=" + projctrl.m_ID);
 
             Stromverbraucher.Clear();
 
-            for (int n = 0; n < svctrl.rows; n++)
+            foreach (Z_ProjektStromverbraucherModel zeile in Z_ProjektStromverbraucherCtrl.LiesProjekt(projctrl.m_ID))
             {
                 Z_ProjektStromverbraucherModel item = new Z_ProjektStromverbraucherModel();
 
-                item.m_ID_Z = svctrl.items[n].m_ID_Z;
+                item.m_ID_Z = zeile.m_ID_Z;
                 item.m_ID_Projekt = projctrl.m_ID;
-                item.m_szVerbraucher = svctrl.items[n].m_szVerbraucher;
-                item.m_ID_Stromverbraucher = svctrl.items[n].m_ID_Stromverbraucher;
-                item.m_Summe = svctrl.items[n].m_Summe;
+                item.m_szVerbraucher = zeile.m_szVerbraucher;
+                item.m_ID_Stromverbraucher = zeile.m_ID_Stromverbraucher;
+                item.m_Summe = zeile.m_Summe;
+                item.ID_Betriebskalender = zeile.ID_Betriebskalender;   // PW2: reist mit
 
                 Stromverbraucher.Add(item);
             }
@@ -819,6 +842,10 @@ namespace WindowsFormsApplication1
             if (ctrl.Projektname == "")
                 return new AssistentErgebnis(AssistentAusgang.ProjektnameFehlt, "");
 
+            // KM4-E3-b: ein Jahr ausserhalb des CHECK-Bereichs wird benannt abgelehnt, nie gekappt.
+            if (!ProjektKopfRegeln.JahrGueltig(Kopf[0].Inbetriebnahmejahr))
+                return new AssistentErgebnis(AssistentAusgang.InbetriebnahmejahrAusserhalb, "");
+
             // #497: Der Bearbeiten-Zweig schreibt die Listen als Stand DES Projekts, fuer
             // das sie geladen wurden. Gehoeren sie einem anderen (Projektwechsel ohne
             // neues Laden) oder keinem, wird BENANNT abgelehnt - nichts geschrieben,
@@ -913,6 +940,9 @@ namespace WindowsFormsApplication1
             if (!ctrl.Add_Projekt(ref id, Projekt, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt");
             ProjektId = id;
+
+            if (!InbetriebnahmejahrSchreiben(vorgang, false))
+                return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Inbetriebnahmejahr");
 
             if (!ctrl.Add_Projekt_ZuordungGebäude(ProjektId, Gebaeude, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_ZuordungGebaeude");
@@ -1097,6 +1127,10 @@ namespace WindowsFormsApplication1
                     return Fehler("Update_Projekt");
             }
 
+            // KM4-E3-b: das Inbetriebnahmejahr nur, wenn es sich vom gespeicherten unterscheidet.
+            if (!InbetriebnahmejahrSchreiben(vorgang, true))
+                return Fehler("Inbetriebnahmejahr");
+
             Gespeichert = true;
             return new AssistentErgebnis(AssistentAusgang.Gespeichert, "");
         }
@@ -1110,6 +1144,21 @@ namespace WindowsFormsApplication1
             if (_gewerkStand == null) return true;
             return !string.Equals(_gewerkStand[(int)gewerk], AssistentAbgleich.Abdruck(this, gewerk),
                                   StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Schreibt das Inbetriebnahmejahr des Kopfs in den Projektsatz (KM4-E3-b, <see cref="ProjektCtrl.InbetriebnahmejahrSetzen"/>)
+        /// im Vorgang des Laufs; mit <paramref name="nurGeaendert"/> nur, wenn es vom gespeicherten abweicht.
+        /// </summary>
+        private bool InbetriebnahmejahrSchreiben(DbVorgang vorgang, bool nurGeaendert)
+        {
+            int? jahr = Kopf[0].Inbetriebnahmejahr;
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang))
+            {
+                if (nurGeaendert && ProjektCtrl.Inbetriebnahmejahr(ProjektId) == jahr) return true;
+                if (!jahr.HasValue && !nurGeaendert) return true;   // ein neues Projekt steht ohnehin leer
+                return ProjektCtrl.InbetriebnahmejahrSetzen(ProjektId, jahr);
+            }
         }
 
         private static AssistentErgebnis Fehler(string schritt)
@@ -1140,6 +1189,11 @@ namespace WindowsFormsApplication1
                     return Text("WIZ_KLIMA_FEHLT", "Bitte eine Klimazone auswählen!");
                 case AssistentAusgang.ProjektnameFehlt:
                     return Text("WIZ_NAME_FEHLT", "Bitte einen Projektnamen eingeben!");
+                case AssistentAusgang.InbetriebnahmejahrAusserhalb:
+                    return string.Format(CultureInfo.CurrentCulture,
+                        Text("WZP_JAHR_AUSSERHALB",
+                             "Das Inbetriebnahmejahr muss zwischen {0} und {1} liegen; leer bleibt die Zulässigkeitsprüfung der Kältemittel aus."),
+                        KaeltemittelSchema.INBETRIEBNAHMEJAHR_MIN, KaeltemittelSchema.INBETRIEBNAHMEJAHR_MAX);
                 case AssistentAusgang.Fehlgeschlagen:
                     return string.Format(
                         Text("WIZ_SPEICHERN_FEHLER",
@@ -1169,6 +1223,8 @@ namespace WindowsFormsApplication1
                     return Text("WIZ_KLIMA_FEHLT_TITEL", "Klimazone fehlt");
                 case AssistentAusgang.ProjektnameFehlt:
                     return Text("WIZ_NAME_FEHLT_TITEL", "Projektname fehlt");
+                case AssistentAusgang.InbetriebnahmejahrAusserhalb:
+                    return Text("WIZ_JAHR_TITEL", "Inbetriebnahmejahr ungültig");
                 case AssistentAusgang.Fehlgeschlagen:
                     return Text("WIZ_SPEICHERN_FEHLER_TITEL", "Speichern fehlgeschlagen");
                 case AssistentAusgang.ProjektGewechselt:

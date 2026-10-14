@@ -52,6 +52,19 @@ namespace EPOS.Kern.Tests
             Assert.Null(leer.UebertragerWerkstoff);
             Assert.True(leer.PersonenAuto);
             Assert.Null(leer.FuellstandBezug);
+
+            // Seit dem Schritt der Verfahrensvolumina (N36 (d)) trägt die Spalte auch 5 … 8.
+            foreach (ZapfFuellstandbezug b in new[] { ZapfFuellstandbezug.VerfahrenProfilbasiert,
+                                                      ZapfFuellstandbezug.VerfahrenDin4708,
+                                                      ZapfFuellstandbezug.VerfahrenGleichzeitigkeit,
+                                                      ZapfFuellstandbezug.VerfahrenKlassisch })
+            {
+                ZapfprofilCtrl.Speichern(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Generator, new ZonenStand[0],
+                    leer with { FuellstandBezug = b }));
+                Assert.Equal(b, ZapfprofilCtrl.Lies(PROJEKT).Projekt.FuellstandBezug);
+                Assert.Equal((long)b, Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT Fuellstand_Bezug FROM Tab_TwwProjekt WHERE ID_Projekt = ?", new DbParam("@p", PROJEKT))));
+            }
         }
 
         [Fact]
@@ -64,7 +77,7 @@ namespace EPOS.Kern.Tests
             {
                 (p with { Erzeugerart = (ZapfErzeugerart)3 }, "BEGRIFF_ERZEUGERART"),
                 (p with { UebertragerWerkstoff = (ZapfUebertragerwerkstoff)0 }, "BEGRIFF_WERKSTOFF"),
-                (p with { FuellstandBezug = (ZapfFuellstandbezug)5 }, "BEGRIFF_FUELLSTAND_BEZUG"),
+                (p with { FuellstandBezug = (ZapfFuellstandbezug)9 }, "BEGRIFF_FUELLSTAND_BEZUG"),
                 (p with { PersonenAuto = false, PersonenManuell = -1.0 }, "BEGRIFF_PERSONEN")
             };
             foreach (var (stand, begriff) in faelle)

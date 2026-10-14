@@ -61,16 +61,27 @@ namespace WindowsFormsApplication1
         private readonly string _wer;
         private readonly double[] _luft;
         private readonly bool[] _sommer;
+        private readonly bool[] _nacht;
         private readonly Stundenergebnis[] _ergebnis;
         private readonly Stundenmuster[] _muster;
         private readonly double[] _sicherAw, _sicherIw, _vorAir, _vorH, _vorC;
         private readonly bool[] _gehalten, _nichtHaltbar;
         private readonly int[] _musterJeZone, _durchlaeufeMaxJeZone;
 
+        // Der Stundenanfang für den Probeschritt des Gebäude-Steppers (Entwurf AK3, 2.2): Massen,
+        // Lufttemperaturen und Zähler der Schleife, gesichert in StundeBeginnen.
+        private readonly double[] _stundeAw, _stundeIw, _stundeLuft;
+        private readonly int[] _stundeMusterJeZone, _stundeDurchlaeufeMaxJeZone;
+        private long _stundeIterierte, _stundeDurchlaeufeSumme;
+        private int _stundeDurchlaeufeMax, _stundeMusterwechsel, _stundeMusterNichtHaltbar;
+        private Randanpassung _anpassung;                  // nur während StundeRechnen; null = der Rand des Eingangs
+
         private readonly bool[] _umschaltung = new bool[8760];
         private readonly bool[] _heizen = new bool[8760];
         private readonly bool[] _kuehlen = new bool[8760];
         private readonly bool[] _sommerStunde = new bool[8760];
+        private readonly bool[] _nachtStunde = new bool[8760];
+        private bool _nachtauskuehlungGesetzt;
 
         /// <param name="zonen">Die Zonen des Gebäudes in der Rechenreihenfolge (<see cref="ZonenEingang.Bauen"/>).</param>
         /// <param name="wer">Das Gebäude für Meldungen.</param>
@@ -89,7 +100,12 @@ namespace WindowsFormsApplication1
             _gruppen = Teilgruppen(zonen);
             _luft = new double[n];
             _sommer = new bool[n];
+            _nacht = new bool[n];
             _ergebnis = new Stundenergebnis[n];
+            // Stufe KP1b (Konzept 3.7): Traegt KEINE Zone eine Nachtauskuehlung, bleibt die
+            // Kennzahl des Gebaeudes NULL (Muster E30).
+            for (int i = 0; i < n; i++)
+                if (zonen[i].Eingang.NachtauskuehlungWK != null) { _nachtauskuehlungGesetzt = true; break; }
             _muster = new Stundenmuster[n];
             _sicherAw = new double[n];
             _sicherIw = new double[n];
@@ -101,6 +117,11 @@ namespace WindowsFormsApplication1
             _musterJeZone = new int[n];
             _durchlaeufeMaxJeZone = new int[n];
             for (int i = 0; i < n; i++) _durchlaeufeMaxJeZone[i] = 1;
+            _stundeAw = new double[n];
+            _stundeIw = new double[n];
+            _stundeLuft = new double[n];
+            _stundeMusterJeZone = new int[n];
+            _stundeDurchlaeufeMaxJeZone = new int[n];
         }
 
         /// <summary>Zonenstunden mit gehaltenem oder nicht haltbarem Muster, je Zone (Tab_ErgebnisZone).</summary>
@@ -186,6 +207,15 @@ namespace WindowsFormsApplication1
         /// <summary>Jahresstunden, in denen mindestens eine beheizte Zone sommerlich lüftete.</summary>
         internal IReadOnlyList<bool> StundenMitSommerlueftung => _sommerStunde;
 
+        /// <summary>
+        /// Jahresstunden, in denen mindestens eine beheizte Zone nachtauskühlte (Stufe KP1b,
+        /// Konzept 3.7) — Regel an <em>und</em> bedingter Anteil in dieser Stunde.
+        /// </summary>
+        internal IReadOnlyList<bool> StundenMitNachtauskuehlung => _nachtStunde;
+
+        /// <summary>Trägt wenigstens eine Zone eine Nachtauskühlung? Sonst bleibt die Kennzahl NULL (E30).</summary>
+        internal bool NachtauskuehlungGesetzt => _nachtauskuehlungGesetzt;
+
         // =====================================================================
         //  Vorlauf und Jahr
         // =====================================================================
@@ -237,37 +267,172 @@ namespace WindowsFormsApplication1
             for (int h = start; h < 8760; h++) Stunde(h, jahr);
         }
 
-        /// <summary>Eine Stunde aller Zonen (Klassenkopf).</summary>
+        /// <summary>
+        /// Eine Stunde aller Zonen (Klassenkopf) — aus den drei Teilen des Gebäude-Steppers:
+        /// <see cref="StundeBeginnen"/>, <see cref="StundeRechnen"/>, <see cref="StundeUebernehmen"/>.
+        /// </summary>
         private void Stunde(int h, bool jahr)
         {
-            int n = _laeufe.Length;
-            for (int z = 0; z < n; z++) _sommer[z] = _laeufe[z].Sommerlueftung();
+            StundeBeginnen(h);
+            StundeRechnen(h, null);
+            StundeUebernehmen(h, jahr);
+        }
 
-            foreach (int[] gruppe in _gruppen)
+        /// <summary>
+        /// <b>Öffnet die Stunde <paramref name="h"/></b> (Gebäude-Stepper, Entwurf AK3 2.2): die
+        /// Sommerlüftungs- und die Nachtauskühlregel jeder Zone einmal vor den Durchläufen, dann der
+        /// Stundenanfang gesichert — Massen, Lufttemperaturen und Zähler der Schleife.
+        /// </summary>
+        internal void StundeBeginnen(int h)
+        {
+            int n = _laeufe.Length;
+            for (int z = 0; z < n; z++)
             {
-                if (VorstundeFuerProbe && gruppe.Length > 1)
+                _sommer[z] = _laeufe[z].Sommerlueftung(h);
+                _nacht[z] = _laeufe[z].Nachtauskuehlung(h);
+            }
+            for (int z = 0; z < n; z++)
+            {
+                _stundeAw[z] = _laeufe[z].Modell.ThetaMAw;
+                _stundeIw[z] = _laeufe[z].Modell.ThetaMIw;
+            }
+            Array.Copy(_luft, _stundeLuft, n);
+            Array.Copy(_musterJeZone, _stundeMusterJeZone, n);
+            Array.Copy(_durchlaeufeMaxJeZone, _stundeDurchlaeufeMaxJeZone, n);
+            _stundeIterierte = IterierteStunden;
+            _stundeDurchlaeufeSumme = DurchlaeufeSumme;
+            _stundeDurchlaeufeMax = DurchlaeufeMax;
+            _stundeMusterwechsel = Musterwechsel;
+            _stundeMusterNichtHaltbar = MusterNichtHaltbar;
+        }
+
+        /// <summary>
+        /// <b>Setzt die geöffnete Stunde auf ihren Anfang zurück</b> — Massen, Lufttemperaturen und
+        /// Zähler, wie <see cref="StundeBeginnen"/> sie gesichert hat; die Regeln der Stunde bleiben
+        /// ausgewertet.
+        /// </summary>
+        internal void StundeZuruecksetzen()
+        {
+            int n = _laeufe.Length;
+            for (int z = 0; z < n; z++) _laeufe[z].Modell.Zuruecksetzen(_stundeAw[z], _stundeIw[z]);
+            Array.Copy(_stundeLuft, _luft, n);
+            Array.Copy(_stundeMusterJeZone, _musterJeZone, n);
+            Array.Copy(_stundeDurchlaeufeMaxJeZone, _durchlaeufeMaxJeZone, n);
+            IterierteStunden = _stundeIterierte;
+            DurchlaeufeSumme = _stundeDurchlaeufeSumme;
+            DurchlaeufeMax = _stundeDurchlaeufeMax;
+            Musterwechsel = _stundeMusterwechsel;
+            MusterNichtHaltbar = _stundeMusterNichtHaltbar;
+        }
+
+        /// <summary>Der Tagesstand der Schleife (Zonensperre, Entwurf AK3-K 3.2): die Läufe, die Lufttemperaturen und die Zähler.</summary>
+        internal sealed class Tagesstand
+        {
+            internal Zonenlauf.Tagesstand[] Laeufe;
+            internal double[] Luft;
+            internal int[] MusterJeZone, DurchlaeufeMaxJeZone;
+            internal long Iterierte, DurchlaeufeSumme;
+            internal int DurchlaeufeMax, Musterwechsel, MusterNichtHaltbar;
+        }
+
+        /// <summary>Sichert den Stand am Tagesbeginn (zwischen zwei Stunden, keine Stunde geöffnet).</summary>
+        internal Tagesstand TagSichern()
+        {
+            int n = _laeufe.Length;
+            var t = new Tagesstand
+            {
+                Laeufe = new Zonenlauf.Tagesstand[n],
+                Luft = (double[])_luft.Clone(),
+                MusterJeZone = (int[])_musterJeZone.Clone(),
+                DurchlaeufeMaxJeZone = (int[])_durchlaeufeMaxJeZone.Clone(),
+                Iterierte = IterierteStunden, DurchlaeufeSumme = DurchlaeufeSumme, DurchlaeufeMax = DurchlaeufeMax,
+                Musterwechsel = Musterwechsel, MusterNichtHaltbar = MusterNichtHaltbar,
+            };
+            for (int z = 0; z < n; z++) t.Laeufe[z] = _laeufe[z].Sichern();
+            return t;
+        }
+
+        /// <summary>
+        /// Stellt einen mit <see cref="TagSichern"/> gesicherten Stand wieder her und löscht die Stundenmerkmale des
+        /// Gebäudes ab Stunde <paramref name="t0"/> für <paramref name="stunden"/> Stunden (sie werden nur gesetzt, nie gelöscht).
+        /// </summary>
+        internal void TagHerstellen(Tagesstand t, int t0, int stunden)
+        {
+            if (t == null) throw new ArgumentNullException(nameof(t));
+            int n = _laeufe.Length;
+            for (int z = 0; z < n; z++) _laeufe[z].Herstellen(t.Laeufe[z]);
+            Array.Copy(t.Luft, _luft, n);
+            Array.Copy(t.MusterJeZone, _musterJeZone, n);
+            Array.Copy(t.DurchlaeufeMaxJeZone, _durchlaeufeMaxJeZone, n);
+            IterierteStunden = t.Iterierte;
+            DurchlaeufeSumme = t.DurchlaeufeSumme;
+            DurchlaeufeMax = t.DurchlaeufeMax;
+            Musterwechsel = t.Musterwechsel;
+            MusterNichtHaltbar = t.MusterNichtHaltbar;
+            Array.Clear(_umschaltung, t0, stunden);
+            Array.Clear(_heizen, t0, stunden);
+            Array.Clear(_kuehlen, t0, stunden);
+            Array.Clear(_sommerStunde, t0, stunden);
+            Array.Clear(_nachtStunde, t0, stunden);
+        }
+
+        /// <summary>
+        /// <b>Rechnet die geöffnete Stunde <paramref name="h"/></b> — je Teilgruppe der Löser bzw. der
+        /// Gauß-Seidel, nichts übernommen. <paramref name="anpassung"/> passt den Rand jeder Zone an
+        /// (<c>null</c> = der Rand des Eingangs, Zeichen für Zeichen der Bestand).
+        /// </summary>
+        /// <returns>Die Stundenergebnisse je Zone (gültig bis zum nächsten Rechnen).</returns>
+        internal IReadOnlyList<Stundenergebnis> StundeRechnen(int h, Randanpassung anpassung)
+        {
+            _anpassung = anpassung;
+            try
+            {
+                foreach (int[] gruppe in _gruppen)
                 {
-                    var vorstunde = (double[])_luft.Clone();
-                    foreach (int z in gruppe)
+                    if (VorstundeFuerProbe && gruppe.Length > 1)
                     {
-                        Stundenrand r = _zonen[z].Rand(h, _sommer[z], vorstunde);
+                        var vorstunde = (double[])_luft.Clone();
+                        foreach (int z in gruppe)
+                        {
+                            Stundenrand r = Rand(z, h, vorstunde);
+                            Stundenergebnis s = _laeufe[z].Modell.Schritt(in r);
+                            _ergebnis[z] = s;
+                            _luft[z] = s.ThetaAirMittel;
+                        }
+                    }
+                    else if (gruppe.Length == 1)
+                    {
+                        int z = gruppe[0];
+                        Stundenrand r = Rand(z, h, _luft);
                         Stundenergebnis s = _laeufe[z].Modell.Schritt(in r);
                         _ergebnis[z] = s;
-                        _luft[z] = s.ThetaAirMittel;
+                        _luft[z] = Vorgabe(z, h, s.ThetaAirMittel);
                     }
+                    else
+                        Iterieren(h, gruppe);
                 }
-                else if (gruppe.Length == 1)
-                {
-                    int z = gruppe[0];
-                    Stundenrand r = _zonen[z].Rand(h, _sommer[z], _luft);
-                    Stundenergebnis s = _laeufe[z].Modell.Schritt(in r);
-                    _ergebnis[z] = s;
-                    _luft[z] = Vorgabe(z, h, s.ThetaAirMittel);
-                }
-                else
-                    Iterieren(h, gruppe);
             }
+            finally
+            {
+                _anpassung = null;
+            }
+            return _ergebnis;
+        }
 
+        /// <summary>Der Rand der Zone <paramref name="z"/> in der Stunde <paramref name="h"/>, mit der Anpassung des Steppers.</summary>
+        private Stundenrand Rand(int z, int h, ReadOnlySpan<double> luft)
+        {
+            Stundenrand r = _zonen[z].Rand(h, _sommer[z], luft, _nacht[z]);
+            return _anpassung == null ? r : _anpassung(z, h, in r);
+        }
+
+        /// <summary>
+        /// <b>Übernimmt die gerechnete Stunde <paramref name="h"/></b> — im Vorlauf nur den Zustand der
+        /// Vorstunde, im Jahr Reihen, Zähler und Kreise der Zonenläufe samt den Stundenmerkmalen des Gebäudes.
+        /// </summary>
+        internal void StundeUebernehmen(int h, bool jahr)
+        {
+            int n = _laeufe.Length;
             for (int z = 0; z < n; z++)
             {
                 Stundenergebnis s = _ergebnis[z];
@@ -276,12 +441,14 @@ namespace WindowsFormsApplication1
                     _laeufe[z].VorlaufUebernehmen(h, in s);
                     continue;
                 }
-                _laeufe[z].Uebernehmen(h, _sommer[z], in s);
+                _laeufe[z].Uebernehmen(h, _sommer[z], _nacht[z], in s);
                 BeobachterFuerProbe?.Invoke(z, h, s);
                 if (s.Abschnitte > 1) _umschaltung[h] = true;
                 if (s.HeizleistungW > 0.0) _heizen[h] = true;
                 if (s.KuehlleistungW > 0.0) _kuehlen[h] = true;
                 if (_sommer[z] && _zonen[z].IstBeheizt) _sommerStunde[h] = true;
+                if (_zonen[z].IstBeheizt && _zonen[z].Eingang.Nachtauskuehlstunde(h, _nacht[z]))
+                    _nachtStunde[h] = true;
             }
         }
 
@@ -314,19 +481,22 @@ namespace WindowsFormsApplication1
                 {
                     Zonenmodell2K m = _laeufe[z].Modell;
                     if (k > 1) m.Zuruecksetzen(_sicherAw[z], _sicherIw[z]);
-                    Stundenrand r = _zonen[z].Rand(h, _sommer[z], _luft);
+                    Stundenrand r = Rand(z, h, _luft);
                     Stundenergebnis s = m.Schritt(in r);
                     if (k == 1) _muster[z] = m.LetztesMuster;
                     else if (!m.LetzteFolgeGleich(_muster[z]))
                     {
-                        // Das Muster des ersten Durchlaufs festhalten (Mehrzonenkonzept 2.4).
+                        // Das Muster des ersten Durchlaufs festhalten (Mehrzonenkonzept 2.4). Hält es nicht, ist das
+                        // ein regulärer Ausgang, keine Ausnahme: die Stunde rechnet dann frei. Entwurf KK (KZ1): eine
+                        // Stunde mit Kühlübergabe je Zone hält kein Muster (Schritt K im festen Muster gibt es nicht) -
+                        // sie rechnet frei wie ein nicht haltbares Muster; ohne Kühlübergabe Zeile für Zeile wie bisher.
                         m.Zuruecksetzen(_sicherAw[z], _sicherIw[z]);
-                        try
+                        if (!r.MitKuehluebergabe && m.VersucheSchrittMitMuster(in r, _muster[z], out Stundenergebnis gehalten, out _))
                         {
-                            s = m.SchrittMitMuster(in r, _muster[z]);
+                            s = gehalten;
                             _gehalten[z] = true;
                         }
-                        catch (GebaeudeModellException ex) when (ex.Grund == GebaeudeModellFehler.AbschnittsregelVerletzt)
+                        else
                         {
                             m.Zuruecksetzen(_sicherAw[z], _sicherIw[z]);
                             s = m.Schritt(in r);
@@ -380,22 +550,42 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Startwerte (Festlegung 7): beheizt der Sollwert der ersten Vorlaufstunde, unbeheizt das
-        /// Mittel von θ_eq über die 720 Vorlaufstunden — mit den Startwerten der Nachbarn in den
-        /// Nachbargliedern, für unbeheizte Nachbarn in wenigen Jacobi-Schritten ab dem Mittel der
-        /// Außenluft (EPOS-Regel).
+        /// Die Startwerte des Vorlaufs (Festlegung 7) samt dem Hinweis auf eine beheizte Zone mit „aus" in
+        /// der ersten Vorlaufstunde — einmal je Zone; die Werte selbst bildet <see cref="StartwerteRechnen"/>.
         /// </summary>
         private double[] StartwerteBilden(int start)
         {
-            int n = _zonen.Count;
+            // Stufe KP1b (G1): eine beheizte Zone mit "aus" in der ersten Vorlaufstunde startet wie
+            // eine unbeheizte - der Lauf nennt es.
+            for (int z = 0; z < _zonen.Count; z++)
+                if (_zonen[z].IstBeheizt && !MitStartsollwert(_zonen, z)) Vdi6007Rechenweg.HinweisVorlaufstartAus(_zonen[z].Eingang);
+            return StartwerteRechnen(_zonen, start);
+        }
+
+        /// <summary>
+        /// <b>Die Startwerte</b> (Festlegung 7, N1.56 Nr. 7) — rein, ohne Hinweis: beheizt der Sollwert
+        /// der ersten Vorlaufstunde, unbeheizt das Mittel von θ_eq über die Vorlaufstunden ab
+        /// <paramref name="start"/> — mit den Startwerten der Nachbarn in den Nachbargliedern, für
+        /// unbeheizte Nachbarn in wenigen Jacobi-Schritten ab dem Mittel der Außenluft (EPOS-Regel).
+        /// Dieselbe Zahl nimmt die Aufheizplanung für unbeheizte und „aus"-Nachbarn (Entwurf KP3,
+        /// Festlegungen 13 und 14).
+        ///
+        /// <para><b>„Beheizt" heißt hier: beheizt UND endlich</b> (Stufe KP1b, G1): Steht der
+        /// Heizsollwert der ersten Vorlaufstunde auf „aus" (NaN, Konzept 3.6), gilt der Zone die
+        /// Regel der unbeheizten — auch in den Jacobi-Schritten der Nachbarn, in die das NaN sonst
+        /// weiterliefe. Ohne „aus" steht jeder Ausdruck wörtlich wie im Bestand.</para>
+        /// </summary>
+        internal static double[] StartwerteRechnen(IReadOnlyList<ZonenEingang> zonen, int start)
+        {
+            int n = zonen.Count;
             var s = new double[n];
             double aussen = 0.0;
-            for (int h = start; h < 8760; h++) aussen += _zonen[0].Eingang.ThetaOut[h];
+            for (int h = start; h < 8760; h++) aussen += zonen[0].Eingang.ThetaOut[h];
             aussen /= 8760 - start;
             bool unbeheizt = false;
             for (int z = 0; z < n; z++)
             {
-                if (_zonen[z].IstBeheizt) s[z] = _zonen[z].Eingang.ThetaSoll[start];
+                if (MitStartsollwert(zonen, z)) s[z] = zonen[z].Eingang.ThetaSoll[start];
                 else
                 {
                     s[z] = aussen;
@@ -410,14 +600,27 @@ namespace WindowsFormsApplication1
                 Array.Copy(s, neu, n);
                 for (int z = 0; z < n; z++)
                 {
-                    if (_zonen[z].IstBeheizt) continue;
+                    if (MitStartsollwert(zonen, z)) continue;
                     double summe = 0.0;
-                    for (int h = start; h < 8760; h++) summe += _zonen[z].ThetaEq(h, s);
+                    for (int h = start; h < 8760; h++) summe += zonen[z].ThetaEq(h, s);
                     neu[z] = summe / (8760 - start);
                 }
                 Array.Copy(neu, s, n);
             }
             return s;
+        }
+
+        /// <summary>
+        /// Startet die Zone <paramref name="z"/> am Heizsollwert der ersten Vorlaufstunde? Nur, wenn
+        /// sie beheizt ist <b>und</b> dieser Sollwert endlich ist — „aus" (NaN) heißt Regel der
+        /// unbeheizten Zone (Stufe KP1b, G1; Konzept 3.6, N1.56 Festlegung 7). Ohne Nebenwirkung:
+        /// Den Hinweis gibt <see cref="StartwerteBilden"/> einmal.
+        /// </summary>
+        internal static bool MitStartsollwert(IReadOnlyList<ZonenEingang> zonen, int z)
+        {
+            if (!zonen[z].IstBeheizt) return false;
+            double soll = zonen[z].Eingang.ThetaSoll[8760 - Vdi6007Rechenweg.VORLAUF_H];
+            return !double.IsNaN(soll) && !double.IsInfinity(soll);
         }
 
         /// <summary>Die Teilgruppen über Trennflächen der Außengruppe und Luftströme (Union-Find), deterministisch geordnet.</summary>

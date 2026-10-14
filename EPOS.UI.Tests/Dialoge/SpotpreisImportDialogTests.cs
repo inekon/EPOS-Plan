@@ -35,7 +35,8 @@ public class SpotpreisImportDialogTests : BunitContext
     {
         return Render<SpotpreisImportDialog>(p => p
             .Add(x => x.Waehlen, waehlen ?? (f => Task.FromResult<string?>(@"C:\Daten\spot2026.csv")))
-            .Add(x => x.Pruefen, pruefen ?? (pfad => Task.FromResult(Gut())))
+            .Add(x => x.Pruefen, (Func<string, int, Task<SpotpreisPruefung>>)((pfad, jahr) =>
+                (pruefen ?? (q => Task.FromResult(Gut())))(pfad)))
             .Add(x => x.Speichern, speichern ??
                 ((b, s, f) => Task.FromResult(new SpotpreisSpeicherung(42, 8760))))
             .Add(x => x.Geschlossen, (bool ok) => geschlossen?.Invoke(ok)));
@@ -334,7 +335,7 @@ public class SpotpreisImportDialogTests : BunitContext
     {
         var cut = Render<SpotpreisImportDialog>(p => p
             .Add(x => x.Waehlen, (Func<string, Task<string?>>)(f => Task.FromResult<string?>(@"C:\Daten\spot2026.csv")))
-            .Add(x => x.Pruefen, (Func<string, Task<SpotpreisPruefung>>)(pfad => Task.FromResult(Gut())))
+            .Add(x => x.Pruefen, (Func<string, int, Task<SpotpreisPruefung>>)((pfad, jahr) => Task.FromResult(Gut())))
             .Add(x => x.TitelText, ""));
 
         Assert.Empty(cut.FindAll(".epos-dialog-titel"));

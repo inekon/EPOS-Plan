@@ -500,6 +500,187 @@ public sealed class StromspeicherAuslegungCtrlTests
     }
 
     // =====================================================================
+    //  „Beste Variante übernehmen" (Entscheidungsvorlage Modellgrenzen, SP2)
+    // =====================================================================
+
+    /// <summary>
+    /// Ohne Auslegungssuche und mit der Nullvariante als Bestem gibt es nichts zu übernehmen:
+    /// Der Kern nennt den Grund und schreibt nichts — die Projektflotte bleibt, wie sie war.
+    /// </summary>
+    [Fact]
+    public void Beste_Variante_ohne_Suche_oder_als_Nullvariante_schreibt_nichts()
+    {
+        using var testDb = new TestDatenbank();
+        Assert.True(testDb.Vorhanden, "Die Testdatenbank ist für diesen Integrationstest erforderlich.");
+
+        var ctrl = new StromspeicherAuslegungCtrl(Pruefprojekt);
+        Assert.True(ctrl.ProjektflotteAktiv());
+
+        StromspeicherOptimierungVorbereitung v = ctrl.FlotteVorbereiten(Dateistand(ctrl), out string meldung);
+        Assert.True(v is not null, "Die Vorbereitung ist gescheitert: " + meldung);
+        SpeicherFlottenErgebnis nurBewertet = ctrl.FlotteRechnen(v!, null, CancellationToken.None);
+        Assert.True(nurBewertet.Erfolg, nurBewertet.Meldung);
+        Assert.Null(nurBewertet.Auslegung);
+
+        // Die Vorbereitung sichert den Arbeitsstand selbst; gemessen wird ab hier, mit einem
+        // frischen Controller.
+        ctrl = new StromspeicherAuslegungCtrl(Pruefprojekt);
+        string vorher = Auslegungszeilen();
+
+        Assert.Equal(MyResourceText("FLOTTE_BESTE_MSG_KEINE_SUCHE"), ctrl.BesteVarianteUebernehmen(nurBewertet));
+        Assert.Equal(MyResourceText("FLOTTE_BESTE_MSG_KEINE_SUCHE"), ctrl.BesteVarianteUebernehmen(null!));
+
+        var nullvariante = new SpeicherFlottenErgebnis
+        {
+            Erfolg = true,
+            Auslegung = new FlottenAuslegungErgebnis { NullvarianteGewonnen = true }
+        };
+        Assert.Equal(MyResourceText("FLOTTE_BESTE_MSG_NULLVARIANTE"), ctrl.BesteVarianteUebernehmen(nullvariante));
+
+        Assert.False(ctrl.ProjektflotteGeaendert);
+        Assert.True(ctrl.ProjektflotteAktiv());
+        Assert.Equal(vorher, Auslegungszeilen());
+    }
+
+    /// <summary>
+    /// <b>Der beste Rasterpunkt wird die Flotte des Projekts</b> — im Arbeitsstand als feste
+    /// Flotte ohne Suchachsen und für den Projektlauf aktiviert. Ins Simulationsergebnis und in
+    /// die Anlagen- und Variantenzeilen schreibt der Weg nichts; ein Ergebnis aus Dateireihen
+    /// weist er mit Grund ab, wie die Aktivierung.
+    /// </summary>
+    [Fact]
+    public void Beste_Variante_uebernehmen_setzt_den_besten_Rasterpunkt_als_Projektflotte()
+    {
+        using var testDb = new TestDatenbank();
+        Assert.True(testDb.Vorhanden, "Die Testdatenbank ist für diesen Integrationstest erforderlich.");
+
+        var ctrl = new StromspeicherAuslegungCtrl(Pruefprojekt);
+
+        // Eine Suche über DATEIREIHEN darf nicht zur Projektflotte werden.
+        SpeicherOptimierungEingaben dateisuche = Dateistand(ctrl);
+        SuchachseSetzen(dateisuche);
+        StromspeicherOptimierungVorbereitung vDatei = ctrl.FlotteVorbereiten(dateisuche, out string mDatei);
+        Assert.True(vDatei is not null, "Die Vorbereitung ist gescheitert: " + mDatei);
+        SpeicherFlottenErgebnis ausDatei = ctrl.FlotteRechnen(vDatei!, null, CancellationToken.None);
+        Assert.True(ausDatei.Erfolg, ausDatei.Meldung);
+        Assert.NotNull(ausDatei.Auslegung);
+        if (!ausDatei.Auslegung!.NullvarianteGewonnen)
+            Assert.NotEqual("", ctrl.BesteVarianteUebernehmen(ausDatei));
+
+        // Die Suche über den EIGENEN Simulationslauf.
+        string fehler = ctrl.SimulationslaufVorbereiten(
+            new SimulationWaermebedarf(), new SimulationStrombedarf(), out SimulationControl lauf);
+        Assert.True(fehler == null, "Der Simulationslauf liess sich nicht vorbereiten: " + fehler);
+        Assert.Null(ctrl.SimulationslaufRechnen(lauf, null, CancellationToken.None));
+        ctrl.LaufUebernehmen(lauf);
+
+        SpeicherOptimierungEingaben eingaben = Eposstand(ctrl);
+        SuchachseSetzen(eingaben);
+        // Fast kostenlose Speicher: Der Prüffall braucht einen Besten MIT Speicher, nicht die
+        // Nullvariante.
+        eingaben.Auslegung!.DirekteKosten.InvestEurProKwh = 1.0;
+        eingaben.Auslegung.DirekteKosten.InvestEurProKw = 1.0;
+        eingaben.Auslegung.DirekteKosten.BetriebEurProKwJahr = 0.0;
+        StromspeicherOptimierungVorbereitung v = ctrl.FlotteVorbereiten(eingaben, out string meldung);
+        Assert.True(v is not null, "Die Vorbereitung ist gescheitert: " + meldung);
+        SpeicherFlottenErgebnis ergebnis = ctrl.FlotteRechnen(v!, null, CancellationToken.None);
+        Assert.True(ergebnis.Erfolg, ergebnis.Meldung);
+        FlottenAuslegungErgebnis auslegung = Assert.IsType<FlottenAuslegungErgebnis>(ergebnis.Auslegung);
+        Assert.False(auslegung.NullvarianteGewonnen, "Der Prüffall braucht einen besten Rasterpunkt mit Speicher.");
+
+        string ergebnisVorher = Ergebniszeilen();
+        string anlagenVorher = Anlagenzeilen();
+
+        Assert.Equal("", ctrl.BesteVarianteUebernehmen(ergebnis));
+        Assert.True(ctrl.ProjektflotteGeaendert);
+        Assert.True(ctrl.ProjektflotteAktiv());
+
+        // Aktiviert ist genau der beste Rasterpunkt.
+        FlottenStudieKonfiguration aktiv = SpeicherFlottenProjektCtrl.AktiveKonfiguration(Pruefprojekt);
+        Assert.Equal(Einheitenabdruck(auslegung.BesteKonfiguration!), Einheitenabdruck(aktiv));
+
+        // Der Arbeitsstand ist dieselbe Flotte, fest: keine Achsen, „Nur bewerten".
+        SpeicherAuslegungKonfiguration stand = new StromspeicherAuslegungCtrl(Pruefprojekt).Vorgaben().Eingaben.Auslegung;
+        Assert.Equal(Einheitenabdruck(auslegung.BesteKonfiguration!), Einheitenabdruck(stand.Flotte));
+        Assert.Empty(stand.Flotte.Auslegung.Achsen);
+        Assert.Equal(FlottenSuchmethode.Bewerten, stand.Flotte.Auslegung.Suchmethode);
+        Assert.False(stand.FlottenGroessenOptimieren);
+
+        // Kein Simulationsergebnis, keine Anlage, keine Variante.
+        Assert.Equal(ergebnisVorher, Ergebniszeilen());
+        Assert.Equal(anlagenVorher, Anlagenzeilen());
+    }
+
+    /// <summary>
+    /// Eine Stückzahlachse (1 bis 2) auf der ersten Einheit — der Suchraum der Station 4. Die
+    /// Stückzahlsuche braucht keinen Gerätebestand; Kapazität und Leistung bleiben die der
+    /// Vorlage.
+    /// </summary>
+    private static void SuchachseSetzen(SpeicherOptimierungEingaben eingaben)
+    {
+        SpeicherAuslegungKonfiguration a = eingaben.Auslegung!;
+        FlottenStudieKonfiguration flotte = a.Flotte!;
+        a.FlottenGroessenOptimieren = true;
+        flotte.Auslegung.Suchmethode = FlottenSuchmethode.Stueckzahl;
+        flotte.Auslegung.Achsen.Clear();
+        FlottenEinheit vorlage = SpeicherAuslegungKopie.Von(flotte.Einheiten[0]);
+        flotte.Auslegung.Achsen.Add(new FlottenAuslegungsAchse
+        {
+            Aktiv = true,
+            Vorlage = vorlage,
+            ErsetztEinheitId = vorlage.Id,
+            Modus = FlottenAuslegungsmodus.KapazitaetUndLeistung,
+            AnzahlVon = 1,
+            AnzahlBis = 2
+        });
+    }
+
+    private static string MyResourceText(string schluessel)
+        => WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(schluessel)!;
+
+    /// <summary>Die Einheiten einer Flotte als Abdruck: Kapazität, Leistungen, Kennung.</summary>
+    private static string Einheitenabdruck(FlottenStudieKonfiguration flotte)
+        => string.Join(";", flotte.Einheiten.Select(e => string.Join("|",
+               e.KapazitaetKWh.ToString("R", System.Globalization.CultureInfo.InvariantCulture),
+               e.LadeleistungKw.ToString("R", System.Globalization.CultureInfo.InvariantCulture),
+               e.EntladeleistungKw.ToString("R", System.Globalization.CultureInfo.InvariantCulture),
+               e.Id)));
+
+    /// <summary>Alle Zeilen der Auslegungstabelle des Prüfprojekts als Text.</summary>
+    private static string Auslegungszeilen()
+        => Tabellenabdruck("SELECT * FROM Tab_SpeicherAuslegung WHERE ID_Projekt = " + Pruefprojekt + " ORDER BY ID");
+
+    /// <summary>Die Anlagen- und Variantenzeilen des Prüfprojekts.</summary>
+    private static string Anlagenzeilen()
+        => Tabellenabdruck("SELECT * FROM Tab_Energieanlagen WHERE ID_Projekt = " + Pruefprojekt + " ORDER BY ID") +
+           Tabellenabdruck("SELECT v.* FROM Tab_StromspeicherVariante AS v INNER JOIN Tab_Energieanlagen AS a " +
+                           "ON v.ID_Energieanlage = a.ID WHERE a.ID_Projekt = " + Pruefprojekt + " ORDER BY v.ID");
+
+    /// <summary>Die Zeilenzahl jeder Ergebnistabelle der Datenbank.</summary>
+    private static string Ergebniszeilen()
+    {
+        var teile = new List<string>();
+        System.Data.DataTable namen = DataRepository.GetDataTable(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE 'Tab_Ergebnis%' ORDER BY name");
+        foreach (System.Data.DataRow r in namen.Rows)
+        {
+            string name = Convert.ToString(r[0], System.Globalization.CultureInfo.InvariantCulture)!;
+            teile.Add(name + "=" + Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM \"" + name + "\""), System.Globalization.CultureInfo.InvariantCulture));
+        }
+        return string.Join(";", teile);
+    }
+
+    private static string Tabellenabdruck(string sql)
+    {
+        System.Data.DataTable dt = DataRepository.GetDataTable(sql);
+        var zeilen = new List<string>();
+        foreach (System.Data.DataRow r in dt.Rows)
+            zeilen.Add(string.Join("|", r.ItemArray.Select(x => Convert.ToString(x, System.Globalization.CultureInfo.InvariantCulture))));
+        return string.Join("\n", zeilen);
+    }
+
+    // =====================================================================
     //  Hilfen
     // =====================================================================
 

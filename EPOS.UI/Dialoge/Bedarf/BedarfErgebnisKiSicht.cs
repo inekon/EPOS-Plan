@@ -44,6 +44,24 @@ public sealed class BedarfErgebnisKiSicht
     /// <summary>Liefert die Sichten, zwischen denen die Maske umschaltet.</summary>
     public Func<IReadOnlyList<KiWahleintrag>>? SichtEintraege { get; init; }
 
+    public Func<int?>? ZeitstufeLesen { get; init; }
+    public Action<int?>? ZeitstufeSetzen { get; init; }
+    public Func<IReadOnlyList<KiWahleintrag>>? ZeitstufeEintraege { get; init; }
+
+    /// <summary>Die Wahl des Feldes <c>Zeitstufe</c>: das Zeitraster Jahr, Monat, Woche, Tag.</summary>
+    public IReadOnlyList<KiWahleintrag> ZeitstufeWahl
+        => ZeitstufeEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>
+    /// Das Zeitraster der GRAFIK (Jahr, Monat, Woche, Tag) — die zweite Knopfgruppe des
+    /// Grafikreiters; <c>null</c>, solange der Grafikreiter keine Reihe zeichnet.
+    /// </summary>
+    public int? Zeitstufe
+    {
+        get => ZeitstufeLesen?.Invoke();
+        set => (ZeitstufeSetzen ?? throw new InvalidOperationException(nameof(Zeitstufe)))(value);
+    }
+
     /// <summary>Die Energieeinheiten der Klappliste (KI‑D‑Q6).</summary>
     public IReadOnlyList<KiWahleintrag> EinheitWahl
         => EinheitEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();

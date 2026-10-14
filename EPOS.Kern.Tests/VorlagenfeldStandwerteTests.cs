@@ -58,7 +58,9 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Der_Katalog_v3_fuehrt_die_Standwerte_und_ihre_Zwillinge()
         {
-            List<Kennzahl> kennzahlen = KennzahlenKatalog.Alle();
+            // Die Kennzahlen der Kältemaschine (Schritt 183) führt erst Fassung 12.
+            List<Kennzahl> kennzahlen = KennzahlenKatalog.Alle()
+                .Where(x => Vorlagenfeldkatalog.SeitDerKennzahl(x.Schluessel) <= 3).ToList();
             int k = kennzahlen.Count, d = kennzahlen.Count(x => x.DeltaAnzeigen);
             int zeilen = Vorlagenfeldkatalog.Wirtschaftszeilen.Count;
             int zahlzeilen = Vorlagenfeldkatalog.Wirtschaftszeilen.Count(z => !z.Text);
@@ -642,7 +644,7 @@ namespace EPOS.Kern.Tests
                 {
                     Vorlagenfeld f = Vorlagenfeldkatalog.Finde("vergleich." + art + "." + k.Schluessel);
                     Assert.True(f != null, art + " " + k.Schluessel);
-                    Assert.Equal(3, f.Seit);
+                    Assert.Equal(Math.Max(3, Vorlagenfeldkatalog.SeitDerKennzahl(k.Schluessel)), f.Seit);
                     Assert.Equal(Vorlagenfeldkontext.Gruppe, f.Kontext);
                     Assert.Equal(spanneFeld.Format, f.Format);
                     Assert.Equal(spanneFeld.Einheit, f.Einheit);

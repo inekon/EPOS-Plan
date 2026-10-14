@@ -42,6 +42,29 @@ namespace WindowsFormsApplication1
         /// <summary>Excel: Name des zu lesenden Tabellenblatts. Leer = erstes Blatt.</summary>
         public string Blattname = "";
 
+        /// <summary>
+        /// Die 1-basierte Nummer der ersten Datenzeile, gezählt über die nicht leeren Zeilen der Datei
+        /// (dieselbe Zählung wie die Vorschautabelle); die Zeilen davor werden übersprungen.
+        /// <c>0</c> = aus <see cref="Kopfzeile"/> abgeleitet (2 mit, 1 ohne Kopfzeile).
+        /// </summary>
+        public int ErsteDatenzeile = 0;
+
+        /// <summary>
+        /// Wie viele Datenzeilen ab der ersten gelesen werden; <c>0</c> = bis zum Dateiende. Stehen
+        /// weniger Zeilen in der Datei, benennt das Protokoll den Fehlbestand; bleiben Zeilen übrig,
+        /// nennt es sie als Hinweis.
+        /// </summary>
+        public int Zeilenzahl = 0;
+
+        /// <summary>
+        /// Das Jahr der Reihe aus dem Jahresfeld des Optionendialogs (IM-4, Formate mit
+        /// <see cref="GanglinienImportFormat.Jahresfeld"/>); 0 = keines.
+        /// </summary>
+        public int Jahr = 0;
+
+        /// <summary>Die wirksame erste Datenzeile (1-basiert): <see cref="ErsteDatenzeile"/> oder die aus der Kopfzeile.</summary>
+        public int ErsteDatenzeileWirksam => ErsteDatenzeile > 0 ? ErsteDatenzeile : (Kopfzeile ? 2 : 1);
+
         /// <summary>Flache Kopie - der Dialog arbeitet auf einer Arbeitsfassung.</summary>
         public GanglinienImportOptionen Kopie()
         {
@@ -55,7 +78,10 @@ namespace WindowsFormsApplication1
                 Einheit = Einheit,
                 Raster = Raster,
                 Konvention = Konvention,
-                Blattname = Blattname
+                Blattname = Blattname,
+                ErsteDatenzeile = ErsteDatenzeile,
+                Zeilenzahl = Zeilenzahl,
+                Jahr = Jahr
             };
         }
     }
@@ -86,11 +112,41 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Datei konnte gelesen werden.</summary>
         public bool Lesbar = false;
+
+        private Func<GanglinienProbe> _probeQuelle;
+        private GanglinienProbe _probe;
+
+        /// <summary>
+        /// <b>Die Probelesung der ganzen Datei</b> unter den Optionen dieser Vorschau (Datenzeilen,
+        /// Raster, Jahresbild) — erst beim ersten Zugriff gelesen, denn die Erkennung allein braucht
+        /// nur die ersten Zeilen. <c>null</c> ohne lesbare Datei.
+        /// </summary>
+        public GanglinienProbe Probe
+        {
+            get
+            {
+                if (_probe == null && _probeQuelle != null) _probe = _probeQuelle();
+                return _probe;
+            }
+        }
+
+        /// <summary>Merkt die Probelesung vor; gelesen wird sie erst beim Zugriff auf <see cref="Probe"/>.</summary>
+        internal void ProbeVormerken(Func<GanglinienProbe> quelle)
+        {
+            _probeQuelle = quelle;
+            _probe = null;
+        }
     }
 
     /// <summary>Rohdaten einer Quelldatei, Eingang der <see cref="GanglinienPruefung"/>.</summary>
     public sealed class GanglinienRohdaten
     {
+        /// <summary>
+        /// Die nicht leeren Zeilen ab der ersten Datenzeile bis zum Dateiende — gelesen oder nicht.
+        /// Die Vorgabe der Zeilenzahl im Optionendialog.
+        /// </summary>
+        public int ZeilenAbStart;
+
         /// <summary>Gelesene Werte in Dateireihenfolge.</summary>
         public double[] Werte = new double[0];
 
@@ -150,10 +206,8 @@ namespace WindowsFormsApplication1
     /// <para>
     /// <b>Altweg.</b> Eine <c>.txt</c>-Datei mit einem Wert je Zeile ist der
     /// Sonderfall "kein Trennzeichen, eine Spalte, keine Kopfzeile" und laeuft
-    /// durch dieselbe Kette. Die beiden anderen Ganglinienimporte (Waermebedarf
-    /// seit W13.2, Solarthermie seit W14b.2) lesen ueber
-    /// <see cref="GanglinienTextDatei"/>; die frueher dafuer zustaendige
-    /// <c>ToolsClass.OpenText</c> ist mit Welle 14b geloescht.
+    /// durch dieselbe Kette. Die Solarthermie-Ganglinie liest ueber
+    /// <see cref="StundenganglinieDatei"/>, die auf dieser Klasse aufsetzt.
     /// </para>
     /// </remarks>
     public static class GanglinienDatei
@@ -177,6 +231,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Datei nicht lesbar. {0} = Meldung des Betriebssystems.</summary>
         public const string SchluesselLesefehler = "IMPORT_PROT_LESEFEHLER";
+
+        /// <summary>Zu wenig Zeilen. {0} = erste Datenzeile, {1} = vorhandene Zeilen ab dort, {2} = verlangte Zeilenzahl.</summary>
+        public const string SchluesselZeilenFehlen = "IMPORT_PROT_ZEILEN_FEHLEN";
+
+        /// <summary>Zeilen bleiben übrig. {0} = übrige Zeilen, {1} = gelesene Zeilenzahl, {2} = erste Datenzeile.</summary>
+        public const string SchluesselZeilenUebrig = "IMPORT_PROT_ZEILEN_UEBRIG";
 
         /// <summary>Format erkannt. {0} = Trennzeichen, {1} = Dezimaltrenner, {2} = Spalten, {3} = Kopfzeile ja/nein.</summary>
         public const string SchluesselFormatErkannt = "IMPORT_PROT_FORMAT_ERKANNT";
@@ -204,6 +264,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Anzahl gelesener Werte. {0} = Werte, {1} = Zeitstempel.</summary>
         public const string SchluesselGelesen = "IMPORT_PROT_GELESEN";
+
+        /// <summary>Meldung: Die Datei ist keine Textdatei (Binärinhalt); {0} = Dateiname.</summary>
+        public const string SchluesselKeinText = "IMPORT_PROT_KEIN_TEXT";
 
         // --- Zeitformate -----------------------------------------------------
 
@@ -260,7 +323,27 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="pfad">Quelldatei.</param>
         /// <returns>Vorschau samt Vorbelegung; nie <c>null</c>.</returns>
-        public static GanglinienVorschau Erkenne(string pfad)
+        public static GanglinienVorschau Erkenne(string pfad) => Erkenne(pfad, null);
+
+        /// <summary>
+        /// Das vorgeschlagene Jahr eines Formats mit Jahresfeld (<see cref="GanglinienImportFormat.Jahrvorschlag"/>);
+        /// 0 ohne Jahresfeld, ohne Vorschlag oder wenn die Datei keines hergibt — die Erkennung
+        /// bricht daran nicht.
+        /// </summary>
+        private static int Jahrvorschlag(string pfad, GanglinienImportFormat format)
+        {
+            if (format == null || !format.Jahresfeld || format.Jahrvorschlag == null) return 0;
+            try { return Math.Max(0, format.Jahrvorschlag(pfad)); }
+            catch (Exception) { return 0; }
+        }
+
+        /// <summary>
+        /// Wie <see cref="Erkenne(string)"/>; die Probelesung prüft und zeichnet nach dem
+        /// <paramref name="format"/> (IM-4). <c>null</c> = die Ganglinie der Importkette.
+        /// </summary>
+        /// <param name="pfad">Quelldatei.</param>
+        /// <param name="format">Die Formatbeschreibung.</param>
+        public static GanglinienVorschau Erkenne(string pfad, GanglinienImportFormat format)
         {
             GanglinienVorschau v = new GanglinienVorschau();
 
@@ -273,6 +356,11 @@ namespace WindowsFormsApplication1
             try
             {
                 v.IstExcel = IstExcelDatei(pfad);
+                if (!v.IstExcel && IstBinaer(pfad))
+                {
+                    v.Meldungen.Add(new PruefMeldung(PruefStufe.Fehler, SchluesselKeinText, Path.GetFileName(pfad)));
+                    return v;
+                }
                 char trenn = v.IstExcel ? '\0' : ErkanntesTrennzeichen(pfad);
                 List<string[]> zeilen = v.IstExcel
                     ? ExcelZeilen(pfad, "", ErkennungsZeilen, v)
@@ -292,7 +380,17 @@ namespace WindowsFormsApplication1
                 o.Trennzeichen = trenn;
                 o.Dezimaltrenner = ErkannterDezimaltrenner(zeilen, o.Trennzeichen);
                 o.Kopfzeile = IstKopfzeile(zeilen[0], o.Dezimaltrenner);
-                SpaltenWaehlen(zeilen, o);
+                // Mehrere Kopfzeilen (Spaltennamen, darunter eine Einheitenzeile) zählen alle als Kopf.
+                int kopfzeilen = o.Kopfzeile ? Kopfzeilenzahl(zeilen, o.Dezimaltrenner) : 0;
+                // Nach der Kopfzeilenwahl zählen nur die DATENzeilen: Ein Komma im Beschreibungstext der
+                // Kopfzeile („Sued 45 Grad, Leistung") entschiede sonst gegen Werte wie 51.470, deren drei
+                // Nachkommastellen für sich nichts entscheiden - aus 51,47 würde 51 470 (Strom- und Wärmeimport).
+                if (o.Kopfzeile && zeilen.Count > kopfzeilen)
+                    o.Dezimaltrenner = ErkannterDezimaltrenner(
+                        zeilen.GetRange(kopfzeilen, zeilen.Count - kopfzeilen), o.Trennzeichen);
+                SpaltenWaehlen(zeilen, o, kopfzeilen);
+                o.ErsteDatenzeile = ErsteZahlzeile(zeilen, o, kopfzeilen);
+                o.Jahr = Jahrvorschlag(pfad, format);
 
                 for (int i = 0; i < zeilen.Count && i < VorschauZeilen; i++) v.Zeilen.Add(zeilen[i]);
 
@@ -306,6 +404,9 @@ namespace WindowsFormsApplication1
                     (o.ZeitSpalte + 1).ToString(CultureInfo.InvariantCulture)));
 
                 v.Lesbar = true;
+                // Die Probe liest mit der Vorbelegung, die zum Zeitpunkt des Zugriffs gilt - eine
+                // nachgezogene Vorbelegung (StundenganglinieDatei.Erkenne) gilt damit auch fuer sie.
+                v.ProbeVormerken(() => GanglinienProbe.Lies(pfad, v.Vorschlag, format));
                 return v;
             }
             catch (Exception ex)
@@ -325,6 +426,17 @@ namespace WindowsFormsApplication1
         /// <param name="optionen">Vom Anwender gesetzte Optionen.</param>
         /// <returns>Vorschau mit unveraendert uebernommenen Optionen; nie <c>null</c>.</returns>
         public static GanglinienVorschau Vorschau(string pfad, GanglinienImportOptionen optionen)
+            => Vorschau(pfad, optionen, null);
+
+        /// <summary>
+        /// Wie <see cref="Vorschau(string, GanglinienImportOptionen)"/>; die Probelesung prüft und
+        /// zeichnet nach dem <paramref name="format"/> (IM-4). <c>null</c> = die Ganglinie.
+        /// </summary>
+        /// <param name="pfad">Quelldatei.</param>
+        /// <param name="optionen">Vom Anwender gesetzte Optionen.</param>
+        /// <param name="format">Die Formatbeschreibung.</param>
+        public static GanglinienVorschau Vorschau(string pfad, GanglinienImportOptionen optionen,
+                                                  GanglinienImportFormat format)
         {
             GanglinienVorschau v = new GanglinienVorschau();
             v.Vorschlag = optionen ?? new GanglinienImportOptionen();
@@ -338,6 +450,11 @@ namespace WindowsFormsApplication1
             try
             {
                 v.IstExcel = IstExcelDatei(pfad);
+                if (!v.IstExcel && IstBinaer(pfad))
+                {
+                    v.Meldungen.Add(new PruefMeldung(PruefStufe.Fehler, SchluesselKeinText, Path.GetFileName(pfad)));
+                    return v;
+                }
                 List<string[]> zeilen = v.IstExcel
                     ? ExcelZeilen(pfad, v.Vorschlag.Blattname, ErkennungsZeilen, v)
                     : TextZeilen(pfad, v.Vorschlag.Trennzeichen, ErkennungsZeilen);
@@ -347,6 +464,11 @@ namespace WindowsFormsApplication1
                     if (z.Length > v.Spaltenzahl) v.Spaltenzahl = z.Length;
                 for (int i = 0; i < zeilen.Count && i < VorschauZeilen; i++) v.Zeilen.Add(zeilen[i]);
                 v.Lesbar = zeilen.Count > 0;
+                if (v.Lesbar)
+                {
+                    GanglinienImportOptionen gewaehlt = v.Vorschlag.Kopie();
+                    v.ProbeVormerken(() => GanglinienProbe.Lies(pfad, gewaehlt, format));
+                }
                 return v;
             }
             catch (Exception ex)
@@ -376,6 +498,8 @@ namespace WindowsFormsApplication1
             try
             {
                 if (IstExcelDatei(pfad)) LiesExcel(pfad, optionen, r);
+                else if (IstBinaer(pfad))
+                    r.Meldungen.Add(new PruefMeldung(PruefStufe.Fehler, SchluesselKeinText, Path.GetFileName(pfad)));
                 else LiesText(pfad, optionen, r);
             }
             catch (Exception ex)
@@ -416,8 +540,14 @@ namespace WindowsFormsApplication1
             }
             if (sb.Length == 0) return false;
 
-            return double.TryParse(sb.ToString(), NumberStyles.Float,
-                                   CultureInfo.InvariantCulture, out wert);
+            // „NaN“, „Infinity“ und Überläufe wie 1e400 liest TryParse als Zahl - für eine
+            // Ganglinie sind sie keine: Sie gälten sonst als gelesen und brächen erst beim
+            // Schreiben (REAL ohne NaN) oder in der Rechnung.
+            if (!double.TryParse(sb.ToString(), NumberStyles.Float,
+                                 CultureInfo.InvariantCulture, out wert)) return false;
+            if (double.IsFinite(wert)) return true;
+            wert = 0.0;
+            return false;
         }
 
         /// <summary>
@@ -482,36 +612,109 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Dezimaltrenner aus den Zahlenfeldern: gezaehlt wird, welches Zeichen in
-        /// den Feldern zuletzt steht. Ist das Komma bereits Feldtrennzeichen,
-        /// kann es kein Dezimaltrenner sein.
+        /// <b>Dezimaltrenner aus den Zahlenfeldern.</b> Gezählt werden nur Felder, die eine Zahl sind
+        /// (Ziffern, Vorzeichen, Punkt, Komma, Exponent) — ein Komma im Text einer Kopf- oder
+        /// Beschreibungszeile entscheidet nichts. Je Feld:
+        /// <list type="bullet">
+        /// <item>beide Zeichen („1.234,5“, „1,234.5“): das letzte ist der Dezimaltrenner — sicher;</item>
+        /// <item>ein Zeichen mehrfach („1.234.567“): Tausendertrenner, das andere ist der Dezimaltrenner — sicher;</item>
+        /// <item>ein Zeichen einmal, ohne Tausendermuster („0.0“, „0.013“, „1234.5“, „11,5“): es ist der Dezimaltrenner — sicher;</item>
+        /// <item>ein Zeichen einmal mit Tausendermuster (ein- bis dreistellige Ganzzahl ungleich 0, genau drei
+        /// Ziffern danach: „11.013“, „11,013“): im Zweifel der Dezimaltrenner.</item>
+        /// </list>
+        /// Es entscheiden die sicheren Felder der Spalten; nur ohne sie die Zweifelsfälle; bei Gleichstand
+        /// der Punkt. Ist das Komma bereits Feldtrennzeichen, kann es kein Dezimaltrenner sein.
         /// </summary>
-        private static char ErkannterDezimaltrenner(List<string[]> zeilen, char trennzeichen)
+        internal static char ErkannterDezimaltrenner(List<string[]> zeilen, char trennzeichen)
         {
             if (trennzeichen == ',') return '.';
 
-            int komma = 0, punkt = 0;
+            int kommaSicher = 0, punktSicher = 0, kommaZweifel = 0, punktZweifel = 0;
             for (int z = 0; z < zeilen.Count; z++)
             {
                 string[] felder = zeilen[z];
                 for (int s = 0; s < felder.Length; s++)
                 {
-                    string f = felder[s];
-                    if (string.IsNullOrEmpty(f)) continue;
+                    string f = (felder[s] ?? "").Trim();
+                    if (f.Length == 0 || !IstZahlfeld(f)) continue;
                     if (SiehtNachZeitAus(f)) continue;          // 01.01.2024 ist kein Dezimalpunkt
 
-                    int iK = f.LastIndexOf(',');
-                    int iP = f.LastIndexOf('.');
-                    if (iK < 0 && iP < 0) continue;
+                    int nK = 0, nP = 0;
+                    foreach (char c in f) { if (c == ',') nK++; else if (c == '.') nP++; }
+                    if (nK == 0 && nP == 0) continue;
 
-                    // Ein Trenner mit genau drei Folgeziffern ist ein Tausendertrenner.
-                    if (iK > iP) { if (!DreiZiffernDanach(f, iK)) komma++; }
-                    else if (iP > iK) { if (!DreiZiffernDanach(f, iP)) punkt++; }
+                    if (nK > 0 && nP > 0)
+                    {
+                        if (f.LastIndexOf(',') > f.LastIndexOf('.')) kommaSicher++; else punktSicher++;
+                        continue;
+                    }
+
+                    bool komma = nK > 0;
+                    if (Math.Max(nK, nP) > 1)
+                    {
+                        // Ein mehrfaches Zeichen gruppiert Tausender - Dezimaltrenner ist das andere.
+                        if (komma) punktSicher++; else kommaSicher++;
+                        continue;
+                    }
+
+                    if (Tausendermuster(f, f.IndexOf(komma ? ',' : '.')))
+                    {
+                        if (komma) kommaZweifel++; else punktZweifel++;
+                    }
+                    else
+                    {
+                        if (komma) kommaSicher++; else punktSicher++;
+                    }
                 }
             }
-            if (komma > punkt) return ',';
-            if (punkt > komma) return '.';
+            if (kommaSicher > punktSicher) return ',';
+            if (punktSicher > kommaSicher) return '.';
+            if (kommaZweifel > punktZweifel) return ',';
             return '.';                                          // Gleichstand: invariant wie der Altweg
+        }
+
+        /// <summary>Besteht das Feld nur aus Zeichen einer Zahl (mindestens eine Ziffer)?</summary>
+        private static bool IstZahlfeld(string f)
+        {
+            bool ziffer = false;
+            foreach (char c in f)
+            {
+                if (c >= '0' && c <= '9') ziffer = true;
+                else if (c != '.' && c != ',' && c != '-' && c != '+' && c != 'e' && c != 'E') return false;
+            }
+            return ziffer;
+        }
+
+        /// <summary>
+        /// Könnte das einzige Trennzeichen an <paramref name="pos"/> Tausender gruppieren? Davor eine ein- bis
+        /// dreistellige Ganzzahl ungleich 0 (Vorzeichen erlaubt), danach genau drei Ziffern.
+        /// </summary>
+        private static bool Tausendermuster(string f, int pos)
+        {
+            if (pos < 0 || !DreiZiffernDanach(f, pos)) return false;
+            int anfang = f.Length > 0 && (f[0] == '-' || f[0] == '+') ? 1 : 0;
+            int stellen = pos - anfang;
+            if (stellen < 1 || stellen > 3) return false;
+            for (int i = anfang; i < pos; i++) if (!char.IsDigit(f[i])) return false;
+            return !(stellen == 1 && f[anfang] == '0');
+        }
+
+        /// <summary>Steht in der Spalte eine laufende Nummer (ganze Zahlen, je Zeile um eins höher)?</summary>
+        private static bool IstLaufendeNummer(List<string[]> zeilen, int von, int spalte, char dezimal)
+        {
+            double vorher = double.NaN;
+            int gezaehlt = 0;
+            for (int z = von; z < zeilen.Count; z++)
+            {
+                string[] f = zeilen[z];
+                if (spalte >= f.Length || string.IsNullOrEmpty(f[spalte])) return false;
+                foreach (char c in f[spalte].Trim()) if (!char.IsDigit(c)) return false;
+                if (!VersucheZahl(f[spalte], dezimal, out double w)) return false;
+                if (!double.IsNaN(vorher) && w != vorher + 1) return false;
+                vorher = w;
+                gezaehlt++;
+            }
+            return gezaehlt >= 2;
         }
 
         private static bool DreiZiffernDanach(string f, int pos)
@@ -549,13 +752,40 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Zahl der Kopfzeilen über den Daten: die führenden Zeilen, die Kopfzeilen sind
+        /// (<see cref="IstKopfzeile"/>). Sind es alle Zeilen der Erkennung — eine Textspalte in jeder
+        /// Zeile —, bleibt es bei der einen Kopfzeile.
+        /// </summary>
+        private static int Kopfzeilenzahl(List<string[]> zeilen, char dezimaltrenner)
+        {
+            int n = 0;
+            while (n < zeilen.Count && IstKopfzeile(zeilen[n], dezimaltrenner)) n++;
+            return n >= zeilen.Count ? 1 : Math.Max(n, 1);
+        }
+
+        /// <summary>
+        /// Die erste Datenzeile der Erkennung (1-basiert, Zählung der Vorschautabelle): die erste Zeile
+        /// nach den Kopfzeilen, deren Wertspalte als Zahl lesbar ist; ohne solche die Zeile nach dem Kopf.
+        /// </summary>
+        private static int ErsteZahlzeile(List<string[]> zeilen, GanglinienImportOptionen o, int kopfzeilen)
+        {
+            for (int z = kopfzeilen; z < zeilen.Count; z++)
+            {
+                string[] f = zeilen[z];
+                double d;
+                if (o.WertSpalte < f.Length && VersucheZahl(f[o.WertSpalte], o.Dezimaltrenner, out d))
+                    return z + 1;
+            }
+            return kopfzeilen + 1;
+        }
+
+        /// <summary>
         /// Waehlt Zeit- und Wertspalte: erste durchgaengig als Zeitstempel lesbare
         /// Spalte wird zur Zeitspalte, erste durchgaengig numerische Spalte
         /// daneben zur Wertspalte.
         /// </summary>
-        private static void SpaltenWaehlen(List<string[]> zeilen, GanglinienImportOptionen o)
+        private static void SpaltenWaehlen(List<string[]> zeilen, GanglinienImportOptionen o, int von)
         {
-            int von = o.Kopfzeile ? 1 : 0;
             int spalten = 0;
             for (int z = von; z < zeilen.Count; z++)
                 if (zeilen[z].Length > spalten) spalten = zeilen[z].Length;
@@ -586,6 +816,11 @@ namespace WindowsFormsApplication1
             for (int s = 0; s < spalten; s++)
                 if (istZeit[s]) { o.ZeitSpalte = s; break; }
 
+            // Eine laufende Nummer (1, 2, 3 ... - die erste Spalte der Zeitreihenexporte) ist keine
+            // Wertspalte, solange eine andere Zahlenspalte dasteht: der Rueckweg eines Exports.
+            for (int s = 0; s < spalten; s++)
+                if (istZahl[s] && s != o.ZeitSpalte && !IstLaufendeNummer(zeilen, von, s, o.Dezimaltrenner))
+                { o.WertSpalte = s; return; }
             for (int s = 0; s < spalten; s++)
                 if (istZahl[s] && s != o.ZeitSpalte) { o.WertSpalte = s; return; }
 
@@ -658,7 +893,7 @@ namespace WindowsFormsApplication1
             List<DateTime> zeiten = o.ZeitSpalte >= 0 ? new List<DateTime>(35040) : null;
             int fehler = 0;
             int zeilennummer = 0;
-            bool erste = true;
+            Zeilenfenster fenster = new Zeilenfenster(o);
 
             using (StreamReader sr = LeserOeffnen(pfad))
             {
@@ -670,8 +905,7 @@ namespace WindowsFormsApplication1
                         zeilennummer++;
                         string t = z.Trim();
                         if (t.Length == 0) continue;
-                        if (erste && o.Kopfzeile) { erste = false; continue; }
-                        erste = false;
+                        if (!fenster.Nimmt()) continue;
                         ZeileUebernehmen(new string[] { t }, zeilennummer, o, werte, zeiten, r, ref fehler);
                     }
                 }
@@ -683,8 +917,7 @@ namespace WindowsFormsApplication1
                     while (csv.Read())
                     {
                         zeilennummer++;
-                        if (erste && o.Kopfzeile) { erste = false; continue; }
-                        erste = false;
+                        if (!fenster.Nimmt()) continue;
                         string[] felder = new string[csv.FieldsCount];
                         for (int i = 0; i < csv.FieldsCount; i++) felder[i] = csv[i] ?? "";
                         ZeileUebernehmen(felder, zeilennummer, o, werte, zeiten, r, ref fehler);
@@ -692,7 +925,53 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            fenster.Abschluss(r);
             Abschluss(werte, zeiten, r, fehler);
+        }
+
+        /// <summary>
+        /// <b>Das Lesefenster</b> aus erster Datenzeile und Zeilenzahl: zählt die nicht leeren Zeilen
+        /// (die Zählung der Vorschautabelle), lässt die Zeilen vor der ersten Datenzeile und die nach der
+        /// verlangten Zahl aus und benennt am Ende Fehlbestand (Fehler) und Überschuss (Hinweis).
+        /// </summary>
+        private sealed class Zeilenfenster
+        {
+            private readonly int _start;
+            private readonly int _grenze;
+            private int _satz;
+            private int _genommen;
+            private int _uebrig;
+
+            public Zeilenfenster(GanglinienImportOptionen o)
+            {
+                _start = Math.Max(1, o.ErsteDatenzeileWirksam);
+                _grenze = Math.Max(0, o.Zeilenzahl);
+            }
+
+            /// <summary>Zählt eine nicht leere Zeile; <c>true</c>, wenn sie gelesen wird.</summary>
+            public bool Nimmt()
+            {
+                _satz++;
+                if (_satz < _start) return false;
+                if (_grenze > 0 && _genommen >= _grenze) { _uebrig++; return false; }
+                _genommen++;
+                return true;
+            }
+
+            /// <summary>Trägt die Zeilen ab dem Start ein und benennt Fehlbestand und Überschuss.</summary>
+            public void Abschluss(GanglinienRohdaten r)
+            {
+                r.ZeilenAbStart = _genommen + _uebrig;
+                string start = _start.ToString(CultureInfo.InvariantCulture);
+                if (_grenze > 0 && _genommen < _grenze)
+                    r.Meldungen.Add(new PruefMeldung(PruefStufe.Fehler, SchluesselZeilenFehlen, start,
+                        _genommen.ToString(CultureInfo.InvariantCulture),
+                        _grenze.ToString(CultureInfo.InvariantCulture)));
+                else if (_uebrig > 0)
+                    r.Meldungen.Add(new PruefMeldung(PruefStufe.Info, SchluesselZeilenUebrig,
+                        _uebrig.ToString(CultureInfo.InvariantCulture),
+                        _grenze.ToString(CultureInfo.InvariantCulture), start));
+            }
         }
 
         /// <summary>Ein Datensatz aus zerlegten Feldern.</summary>
@@ -713,7 +992,7 @@ namespace WindowsFormsApplication1
             if (!VersucheZahl(felder[o.WertSpalte], o.Dezimaltrenner, out w))
             {
                 Fehler(r, ref fehler, SchluesselZahlUnlesbar,
-                       zeilennummer.ToString(CultureInfo.InvariantCulture), felder[o.WertSpalte]);
+                       zeilennummer.ToString(CultureInfo.InvariantCulture), Feldtext(felder[o.WertSpalte]));
                 return;
             }
 
@@ -723,7 +1002,7 @@ namespace WindowsFormsApplication1
                 if (!VersucheZeit(felder[o.ZeitSpalte], out t))
                 {
                     Fehler(r, ref fehler, SchluesselZeitUnlesbar,
-                           zeilennummer.ToString(CultureInfo.InvariantCulture), felder[o.ZeitSpalte]);
+                           zeilennummer.ToString(CultureInfo.InvariantCulture), Feldtext(felder[o.ZeitSpalte]));
                     return;
                 }
                 zeiten.Add(t);
@@ -734,18 +1013,51 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Oeffnet den Leser mit Kodierungserkennung (BOM schlaegt die Vorgabe).
         /// Vorgabe ist Windows-1252 - deutsche Zaehlerexporte sind fast nie UTF-8,
-        /// und Umlaute stehen ohnehin nur in der Kopfzeile. Unter .NET 8 ist die
-        /// Codepage 1252 nur nach Registrierung des
-        /// <c>CodePagesEncodingProvider</c> verfuegbar; der Rueckfall ist deshalb
-        /// <see cref="Encoding.Latin1"/>, das fuer alle deutschen Umlaute
-        /// byteidentisch ist.
+        /// und Umlaute stehen ohnehin nur in der Kopfzeile. Die Codepage kommt aus
+        /// <see cref="AnsiEncoding"/>, das den <c>CodePagesEncodingProvider</c> einmal
+        /// registriert (keine Ausnahme je Lesevorgang mehr); dessen Rueckfall ist
+        /// Latin-1, fuer alle deutschen Umlaute byteidentisch.
         /// </summary>
         private static StreamReader LeserOeffnen(string pfad)
+            => new StreamReader(pfad, AnsiEncoding.Get(), true);
+
+        /// <summary>
+        /// Ist die Datei offensichtlich keine Textdatei? Gesehen werden die ersten
+        /// 4 096 Byte: Ein Nullbyte (ohne UTF-16/32-BOM) oder mehr als ein Zehntel
+        /// Steuerzeichen außer Tabulator, Zeilenvorschub und Wagenrücklauf heißt
+        /// Binärinhalt — eine Excel-, ZIP- oder Bilddatei mit falscher Endung.
+        /// </summary>
+        internal static bool IstBinaer(string pfad)
         {
-            Encoding vorgabe;
-            try { vorgabe = Encoding.GetEncoding(1252); }
-            catch (Exception) { vorgabe = Encoding.Latin1; }
-            return new StreamReader(pfad, vorgabe, true);
+            byte[] puffer = new byte[4096];
+            int n;
+            using (FileStream fs = new FileStream(pfad, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                n = fs.Read(puffer, 0, puffer.Length);
+            if (n == 0) return false;
+            if (n >= 2 && ((puffer[0] == 0xFF && puffer[1] == 0xFE) || (puffer[0] == 0xFE && puffer[1] == 0xFF)))
+                return false;   // UTF-16/32 mit BOM: Nullbytes gehören dazu
+            int steuer = 0;
+            for (int i = 0; i < n; i++)
+            {
+                byte b = puffer[i];
+                if (b == 0) return true;
+                if (b < 0x20 && b != 0x09 && b != 0x0A && b != 0x0D && b != 0x0C) steuer++;
+            }
+            return steuer * 10 > n;
+        }
+
+        /// <summary>
+        /// Ein Feldinhalt für eine Meldung: Steuerzeichen werden zu „·“, mehr als
+        /// 40 Zeichen werden mit „…“ gekürzt — ein Binärfeld soll das Banner nicht füllen.
+        /// </summary>
+        internal static string Feldtext(string feld)
+        {
+            if (string.IsNullOrEmpty(feld)) return "";
+            StringBuilder sb = new StringBuilder(Math.Min(feld.Length, 41));
+            for (int i = 0; i < feld.Length && sb.Length < 40; i++)
+                sb.Append(char.IsControl(feld[i]) ? '\u00B7' : feld[i]);
+            if (feld.Length > 40) sb.Append('\u2026');
+            return sb.ToString();
         }
 
         // =====================================================================
@@ -879,7 +1191,7 @@ namespace WindowsFormsApplication1
             List<double> werte = new List<double>(35040);
             List<DateTime> zeiten = o.ZeitSpalte >= 0 ? new List<DateTime>(35040) : null;
             int fehler = 0;
-            bool erste = true;
+            Zeilenfenster fenster = new Zeilenfenster(o);
 
             for (int z = 1; z <= zeilen; z++)
             {
@@ -889,8 +1201,7 @@ namespace WindowsFormsApplication1
                     if (daten[z, s] != null && ZelleAlsText(daten[z, s]).Length > 0) leer = false;
                 if (leer) continue;
 
-                if (erste && o.Kopfzeile) { erste = false; continue; }
-                erste = false;
+                if (!fenster.Nimmt()) continue;
 
                 int wertSpalte = o.WertSpalte + 1;
                 int zeitSpalte = o.ZeitSpalte + 1;
@@ -924,6 +1235,7 @@ namespace WindowsFormsApplication1
                 werte.Add(w);
             }
 
+            fenster.Abschluss(r);
             Abschluss(werte, zeiten, r, fehler);
         }
 

@@ -73,7 +73,16 @@ namespace WindowsFormsApplication1
                     zeile.MitZahl(Katalogfilterprofil.SpZeitintervall,
                                   Katalogfeld.Zahl(r, "Zeitinterval"), 0);
 
-                if (art == Zeitreihenart.Solarganglinie)
+                if (art == Zeitreihenart.PvGanglinie)
+                {
+                    zeile.MitZahl(Katalogfilterprofil.SpZeitintervall,
+                                  Katalogfeld.Zahl(r, "Raster_Minuten"), 0);
+                    // Die gepflegte Nennleistung (Tab_PvGanglinie_STAMM.Nennleistung_kWp); leer = nicht gepflegt.
+                    object nenn = r.Table.Columns.Contains("Nennleistung_kWp") ? r["Nennleistung_kWp"] : null;
+                    zeile.MitZahl(Katalogfilterprofil.SpNennleistungKwp,
+                                  nenn == null || nenn == DBNull.Value ? (double?)null : Convert.ToDouble(nenn), 2);
+                }
+                if (art == Zeitreihenart.Solarganglinie || art == Zeitreihenart.PvGanglinie)
                     zeile.MitText(Katalogfilterprofil.SpBeschreibung,
                                   Katalogfeld.Text(r, "Beschreibung"));
 
@@ -163,6 +172,10 @@ namespace WindowsFormsApplication1
                            "ORDER BY Z.Bezeichner, P.Projektname";
                 case Zeitreihenart.Solarganglinie:
                     return "SELECT Z.Bezeichner, P.Projektname FROM Z_ProjektSolarganglinie Z " +
+                           "INNER JOIN Tab_Projekt P ON P.ID = Z.ID_Projekt " +
+                           "ORDER BY Z.Bezeichner, P.Projektname";
+                case Zeitreihenart.PvGanglinie:
+                    return "SELECT Z.Bezeichner, P.Projektname FROM Z_ProjektPvGanglinie Z " +
                            "INNER JOIN Tab_Projekt P ON P.ID = Z.ID_Projekt " +
                            "ORDER BY Z.Bezeichner, P.Projektname";
                 default:

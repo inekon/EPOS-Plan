@@ -1,0 +1,70 @@
+<!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen/Wärmequelle Erdreich
+     Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen - Wärmequelle Erdreich.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Das '''Erdreich''' ist neben der Außenluft die wichtigste Wärmequelle für Wärmepumpen: Ab einigen Metern Tiefe schwankt seine Temperatur über das Jahr kaum noch, sodass eine erdgekoppelte Wärmepumpe auch in kalten Nächten eine vergleichsweise milde Quelle vorfindet. Erschlossen wird es über eine Erdwärmesonde (senkrechte Bohrung) oder einen Erdwärmekollektor (flächige Verlegung nahe der Oberfläche); beide entziehen dem Untergrund Wärme und kühlen ihn dabei ab, weshalb Auslegung und Regeneration über die Nutzungsdauer entscheiden.
+
+== Funktionsprinzip ==
+{{Anker|funktionsprinzip}}
+
+Die {{Anker|erdwaermesonde}}'''Erdwärmesonde''' reicht meist 40 bis 100 m tief in den Untergrund; unterhalb von etwa 20 m ist der jahreszeitliche Einfluss der Oberfläche abgeklungen, sodass das ungestörte Erdreich an ihr über das Jahr nahezu dieselbe Temperatur hat, die mit der Tiefe langsam durch den geothermischen Gradienten ansteigt. Die Soletemperatur liegt im Betrieb darunter: Jeder Entzug kühlt den Boden um die Bohrung ab, umso stärker, je kürzer die Sonde, je dichter das Sondenfeld und je schlechter der Boden die Wärme nachleitet; über viele Betriebsjahre sinkt sie weiter, wenn der Boden nicht regeneriert. Der {{Anker|erdwaermekollektor}}'''Erdwärmekollektor''' verlegt dagegen Rohrschlangen flächig in 1 bis 2 m Tiefe; dort folgt die Temperatur, gedämpft und zeitversetzt, noch dem Jahresgang der Außenluft – im Winter kälter, im Sommer wärmer als die Sonde, dafür ohne Bohrung und mit geringeren Erschließungskosten. Beide Systeme entziehen dem Untergrund über den Winter Wärme, die sich im Sommer aus Niederschlag, Sonneneinstrahlung und – bei tieferen Sonden – aus der Erdwärme selbst wieder auffüllt: die {{Anker|regeneration}}'''Regeneration'''.
+
+<!-- Modell Kollektor: Kusuda-Gleichung nach VDI 4640 Blatt 1, Jahresmittel 9,5 °C und Amplitude 8,5 K (Ersatzwerte der Norm), Verlegetiefe 1,5 m, Bodenart Sand feucht (Dämpfungstiefe 2,72 m). Modell Sonde: ungestörte Erdreichtemperatur ohne Entzug, Jahresmittel + 1,5 K Oberflächenoffset + 0,03 K/m geothermischer Gradient ab 20 m Tiefe, Sondenlänge 100 m, deshalb ganzjährig konstant. Außenluft zum Vergleich: Jahresmittel ± Amplitude. Rechenbeispiel, keine Messreihe. -->
+{{Diagramm-Anfang|titel=Quelltemperatur im Jahresverlauf (Prinzip)}}
+{{Säulen-Anfang|achse=Quelltemperatur in °C, Prinzipwerte}}
+{{Säule|Sonde, Winter|umwelt=66|wert=11,9 °C}}
+{{Säule|Sonde, Sommer|umwelt=66|wert=11,9 °C}}
+{{Säule|Kollektor, Winter|umwelt=26|wert=4,6 °C}}
+{{Säule|Kollektor, Sommer|umwelt=80|wert=14,4 °C}}
+{{Säule|Außenluft, Winter|umwelt=6|wert=1,0 °C}}
+{{Säule|Außenluft, Sommer|umwelt=100|wert=18,0 °C}}
+{{Säulen-Ende|je System und Jahreszeit}}
+{{Diagramm-Ende|Rechenbeispiel nach VDI 4640 Blatt 1 mit den Ersatzwerten der Norm; keine Messreihe. Für die Sonde ist die ungestörte Erdreichtemperatur ohne Entzug dargestellt.}}
+
+== Kennzahlen ==
+{{Anker|kennzahlen}}
+
+{| class="wikitable"
+! Kennzahl !! Bedeutung !! typischer Bereich
+|-
+| Entzugsleistung Kollektor {{Anker|entzugsleistung}} || dauerhaft entziehbare Leistung je Quadratmeter Fläche || rund 5 – 40 W/m²
+|-
+| Entzugsleistung Sonde || dauerhaft entziehbare Leistung je Meter Sondenlänge || grob 20 – 50 W/m
+|-
+| Sondenabstand || Mindestabstand zweier Sonden gegen gegenseitige Auskühlung || üblich 5 – 6 m
+|-
+| Verlegetiefe Kollektor || unterhalb der Frostgrenze, oberhalb spürbarer Störung von der Oberfläche || rund 1,2 – 1,5 m
+|}
+
+== Typische Größen ==
+{{Anker|typische-groessen}}
+
+{| class="wikitable"
+! Einsatzfall !! Erdwärmesonde !! Erdwärmekollektor
+|-
+| Einfamilienhaus || 1 Sonde, 60 – 100 m || Fläche etwa das 1,5- bis 2-fache der beheizten Wohnfläche
+|-
+| Mehrfamilienhaus || Sondenfeld aus mehreren Sonden à 80 – 100 m || meist zu wenig Grundstücksfläche verfügbar
+|-
+| Gewerbe || Sondenfeld nach Lastprofil, ggf. mit sommerlicher Rückspeisung || selten, hoher Flächenbedarf
+|}
+
+== Einsatz und Grenzen ==
+{{Anker|einsatz-und-grenzen}}
+
+Welches System sich eignet, entscheidet vor allem das Grundstück: Der Kollektor braucht eine unbebaute, unbewachsene Fläche und verträgt sich nicht mit Bäumen oder späterer Bebauung darüber; die Sonde kommt mit wenig Standfläche aus, verlangt aber eine Bohrung und, je nach Bundesland und Tiefe, eine wasserrechtliche Erlaubnis. Wärmeleitfähigkeit und Wärmekapazität des {{Anker|bodentyp}}Untergrunds bestimmen, wie schnell er Wärme nachleitet – ein feuchter, sandiger Boden deutlich besser als trockener Ton oder Kies; die {{Anker|klimazone}}Klimazone des Standorts bestimmt die ungestörte Bodentemperatur und die zulässige Jahresentzugsarbeit. Wird dem Untergrund über die Nutzungsdauer mehr entzogen, als er regenerieren kann, sinkt seine Temperatur von Jahr zu Jahr und mit ihr die Leistungszahl der angeschlossenen Wärmepumpe; die {{Anker|auslegung}}Auslegung nach {{Anker|vdi-4640}}'''VDI 4640''' hält deshalb Entzugsleistung und Jahresentzugsarbeit gegen normierte Grenzwerte, die von Klimazone und Bodenart abhängen.
+
+== In EPOS-Plan ==
+{{Anker|in-epos-plan}}
+
+EPOS-Plan öffnet die Erdreich-Auslegung aus der Simulationskonfiguration (Menü ''Projekt → Simulation…''): Wählen Sie bei einer erdgekoppelten Wärmepumpe als Wärmequelle ''Erdreich (VDI 4640)'', erscheint der Dialog ''Wärmequelle Erdreich'' mit Quellsystem, Bodentyp, Klimazone und nutzbarer Spreizung. Einbindung, ein durchgerechnetes Beispiel, das Zusammenspiel mit der Wärmepumpe und die Fallstricke stehen auf [[Programm Dokumentation/Wärmequelle Erdreich]], Abschnitte [[Programm Dokumentation/Wärmequelle Erdreich#einbindung|Einbindung]], [[Programm Dokumentation/Wärmequelle Erdreich#beispiel|Beispiel]], [[Programm Dokumentation/Wärmequelle Erdreich#zusammenspiel|Zusammenspiel]] und [[Programm Dokumentation/Wärmequelle Erdreich#fallstricke|Fallstricke]].
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Grundlagen/Wärmepumpe]] – Wärmequellen, Kennfeld und Jahresarbeitszahl
+* [[Grundlagen/Bauteile am Erdreich]] – das Erdreich als Widerstand unter dem Gebäude
+* [[Programm Dokumentation/Klimadaten]] – Herkunft der Außentemperaturreihe
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]

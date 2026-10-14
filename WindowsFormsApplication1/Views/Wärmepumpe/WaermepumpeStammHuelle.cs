@@ -84,7 +84,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static IReadOnlyDictionary<string, object> Gaben()
         {
-            var daten = new WaermepumpeStammDaten();
+            // UB-E3-b: die Klappliste der Kaeltemittel samt Vorgaben der Klasse (Schnellwahl im Stammblatt).
+            var daten = new WaermepumpeStammDaten { Kaeltemittelliste = BivalenzAbbildung.Kaeltemittelliste() };
 
             return new Dictionary<string, object>
             {
@@ -208,6 +209,8 @@ namespace WindowsFormsApplication1
             if (ctrl.rows == 0) return null;
 
             WPModel m = ctrl.items[0];
+            // UB-E3-b: die acht Geraetespalten des Katalogsatzes; ohne Spalten leer.
+            Geraetespalten g = GeraetegrenzWerte.WpLesen(WPStammCtrl.TABLE, m.ID) ?? Geraetespalten.Leer;
             return new WaermepumpeStammDaten
             {
                 Id = m.ID,
@@ -226,6 +229,18 @@ namespace WindowsFormsApplication1
                 Modulkosten = m.Modulkosten,
                 MaxPtherm = m.maxPTherm,
                 Bauart = m.Bauart ?? "",
+                // Welle M4 (WP1): leer bleibt leer - keine Taktrechnung bzw. C_d = 0,9.
+                MindestleistungKw = m.MindestleistungKw,
+                TaktverlustfaktorCd = m.TaktverlustfaktorCd,
+                Kaeltemittel = g.Kaeltemittel ?? "",
+                SpreizungAuslegungK = g.SpreizungAuslegungK,
+                SpreizungMaxK = g.SpreizungMaxK,
+                SpreizungMinK = g.SpreizungMinK,
+                MindestvolumenstromProzent = g.MindestvolumenstromProzent,
+                RuecklaufMaxC = g.RuecklaufMaxC,
+                RuecklaufBezugC = g.RuecklaufBezugC,
+                RuecklaufAbwertungProzentJeK = g.RuecklaufAbwertungProzentJeK,
+                Kaeltemittelliste = BivalenzAbbildung.Kaeltemittelliste(),
                 NurLesen = m.m_bReadOnly
             };
         }
@@ -317,7 +332,14 @@ namespace WindowsFormsApplication1
                 Regelung = daten.Regelung,
                 Modulkosten = daten.Modulkosten,
                 Bauart = daten.Bauart,
-                Kuehlleistung = daten.Kuehlleistung
+                Kuehlleistung = daten.Kuehlleistung,
+                // Welle M4 (WP1): NULL-treu, der Kern prüft das Band und schreibt.
+                MindestleistungKw = daten.MindestleistungKw,
+                TaktverlustfaktorCd = daten.TaktverlustfaktorCd,
+                // UB-E3-b: die acht Geraetespalten - NULL-treu, der Kern prueft die Bereiche und schreibt.
+                Grenzspalten = new Geraetespalten(daten.SpreizungAuslegungK, daten.SpreizungMaxK, daten.SpreizungMinK,
+                    daten.MindestvolumenstromProzent, daten.RuecklaufMaxC, daten.RuecklaufBezugC,
+                    daten.RuecklaufAbwertungProzentJeK, string.IsNullOrWhiteSpace(daten.Kaeltemittel) ? null : daten.Kaeltemittel.Trim())
             };
 
             WPStammCtrl.SpeicherErgebnis ergebnis = ctrl.Speichern(modell, neu);

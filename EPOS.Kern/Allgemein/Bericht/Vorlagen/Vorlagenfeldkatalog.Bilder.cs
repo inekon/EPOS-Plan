@@ -29,6 +29,19 @@ namespace WindowsFormsApplication1
         /// <summary>Die Fassung der Bildplatzhalter (Etappe BV-E5, Katalog v4).</summary>
         private const int FASSUNG_BILDER = 4;
 
+        /// <summary>
+        /// Die Fassung der Bivalenz (Katalog v17, UB‑E4): das Bild <c>stand.bild.wp_bivalenz</c>, die Tafel
+        /// <c>stand.tabelle.bivalenz</c> und die Kennzahlen <c>wp.bivalenz.*</c>.
+        /// </summary>
+        internal const int FASSUNG_BIVALENZ = 17;
+
+        /// <summary>
+        /// Die Fassung „Teillast und Takten der Kältemaschinen“ (Katalog v18, KM3‑E3‑b): die Tafel
+        /// <c>stand.tabelle.km_teillast</c> und die Kennzahlen <c>kaelte.km.taktstrom</c>, <c>.starts</c>,
+        /// <c>.teillastanteil</c>, <c>.lastgrad</c>, <c>.jaz_verdichter</c>.
+        /// </summary>
+        internal const int FASSUNG_KM_TEILLAST = 18;
+
         /// <summary>Vorsilbe der Bildschalter.</summary>
         public const string PRAEFIX_BILDSCHALTER = "hat.bild.";
 
@@ -121,6 +134,11 @@ namespace WindowsFormsApplication1
                 w => MitStand(w, v => Deckungsbild(w, v, false))));
             l.AddRange(Bild("stand.bild.zahlungsstrom", S, Vorlagenbedarf.Verlauf, true,
                 w => MitStand(w, v => Zahlungsstrombild(w, v))));
+
+            // ---- je Stand, Katalog v17 (UB-E4): das Bivalenzdiagramm der Waermepumpe, Word als Bild (wie die Streuwolke) ----
+            l.AddRange(Bild("stand.bild.wp_bivalenz", S, Vorlagenbedarf.Keiner, true,
+                w => MitStand(w, v => Bivalenzbild(w, v)), FASSUNG_BIVALENZ));
+            _bildgroessen["stand.bild.wp_bivalenz"] = (FAKTOR_BREIT, Bildmass.MIN_BREITE);
 
             // ---- Stammprojekt ----
             l.AddRange(Bild("stamm.bild.speichertemperaturen", Vorlagenfeldkontext.Stamm, Vorlagenbedarf.Zeitreihen, false,
@@ -240,6 +258,20 @@ namespace WindowsFormsApplication1
             if (z == null) return Grund(w, nameof(R.BV_GRUND_KEINE_ZEITREIHEN));
             return new Diagrammbild(m => bau(z, m), FAKTOR_BREIT, Bildmass.MIN_BREITE,
                                     w.Text(nameof(R.BV_GRUND_BILD_OHNE_DATEN)));
+        }
+
+        /// <summary>
+        /// Das Bivalenzdiagramm eines Stands (UB‑E4, Fachkonzept 7.2): aus den Bivalenzwerten des Sammlers, dazu die
+        /// Stundenpunkte des Laufs, wenn der Zeitreihensatz sie hergibt. Ohne Wärmepumpe mit Einbindung der Grund; ohne
+        /// Übergabedaten der Platzhalter „kein Bivalenzdiagramm — Kopplung aus“.
+        /// </summary>
+        private static object Bivalenzbild(Berichtswerte w, VariantenDaten v)
+        {
+            BivalenzBerichtswerte b = v.Bivalenz;
+            if (b == null) return Grund(w, nameof(R.BV_GRUND_KEINE_BIVALENZ));
+            IReadOnlyList<BivalenzStundenpunkt> punkte = BivalenzBerichtswerte.Stundenpunkte(v.Zeitreihen);
+            return new Diagrammbild(m => ChartRenderer.BivalenzdiagrammZeichnung(b.Diagramm(punkte)), FAKTOR_BREIT,
+                                    Bildmass.MIN_BREITE, w.Text(nameof(R.BV_GRUND_BILD_OHNE_DATEN)));
         }
 
         /// <summary>Der Deckungskuchen eines Stands (Wärme oder Strom); ohne Ergebnis oder Anteil mit Grund.</summary>

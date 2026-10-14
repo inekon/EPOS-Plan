@@ -130,10 +130,31 @@ namespace WindowsFormsApplication1
         /// pflegbar.</para>
         /// </remarks>
         private static KatalogSpeicherErgebnis Schreiben(string name,
-                                                         IReadOnlyList<BrowserFeldwert> felder,
-                                                         bool schutzUebergehen)
+                                                         IReadOnlyList<BrowserFeldwert> felder)
         {
-            var werte = new BHKWStammCtrl.AnzeigefelderBhkw(
+            BHKWStammCtrl.SpeicherErgebnis e =
+                BHKWStammCtrl.AnzeigefelderSchreiben(name, Werte(felder));
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        /// <summary>
+        /// Schreibt die Sätze einer Mehrfachbearbeitung (Katalogauswahl V1, KA‑E‑8) in EINER Transaktion — die
+        /// Projektkopien oder die Katalogsätze, alle oder keiner (<c>BHKWStammCtrl.AnzeigefelderSchreibenAlle</c>).
+        /// </summary>
+        internal static KatalogSpeicherErgebnis SammelSchreiben(
+            bool projektkopie, IReadOnlyList<(int Id, IReadOnlyList<BrowserFeldwert> Felder)> saetze)
+        {
+            var liste = new List<BHKWStammCtrl.Satzaenderung>();
+            foreach (var (id, felder) in saetze)
+                liste.Add(new BHKWStammCtrl.Satzaenderung(id, Werte(felder)));
+            BHKWStammCtrl.SpeicherErgebnis e = BHKWStammCtrl.AnzeigefelderSchreibenAlle(projektkopie, liste);
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        /// <summary>Die Felder des Aufklappers als Anzeigefelder des Kerns.</summary>
+        internal static BHKWStammCtrl.AnzeigefelderBhkw Werte(IReadOnlyList<BrowserFeldwert> felder)
+        {
+            return new BHKWStammCtrl.AnzeigefelderBhkw(
                 KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldFirma),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldPtherm),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldPel),
@@ -166,11 +187,15 @@ namespace WindowsFormsApplication1
                 WirkungsgradEl:
                     KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldWirkungsgradEl),
                 WirkungsgradTh:
-                    KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldWirkungsgradTh));
-
-            BHKWStammCtrl.SpeicherErgebnis e =
-                BHKWStammCtrl.AnzeigefelderSchreiben(name, werte, schutzUebergehen);
-            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+                    KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldWirkungsgradTh),
+                // Teillast und Takten (Welle M4: BH1, BH2): als Text, denn leer heißt hier
+                // „nicht gepflegt" und wird als NULL geschrieben, nicht „unverändert".
+                WirkungsgradEl50: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldTeillastEl50),
+                WirkungsgradTh50: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldTeillastTh50),
+                AnfahrverlustKwh: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldAnfahrverlust),
+                MindestlaufzeitMin: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldMindestlaufzeit),
+                // Abschaltgrenze des Ruecklaufs (UB-E3): als Text, leer heißt „keine Grenze".
+                RuecklaufMaxC: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldRuecklaufMax));
         }
 
         private static IReadOnlyDictionary<string, object> EditorGaben(string name, bool neu,

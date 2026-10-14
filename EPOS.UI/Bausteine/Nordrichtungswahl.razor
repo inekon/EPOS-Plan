@@ -1,0 +1,256 @@
+﻿@* DIE NORDRICHTUNGSWAHL (Abstimmungspapier G5, Abschnitt 7): Wohin zeigt die Planoberseite (+y der Datei)?
+   Eingabe in Grad, 0 Grad = Nord, im Uhrzeigersinn, 0 <= alpha < 360, Komma oder Punkt, gerundet auf 0,1 Grad.
+   Dazu die Schnellwahl N/NO/O/SO/S/SW/W/NW und eine kleine Nordpfeil-Vorschau: Die N-Marke steht oben, der Pfeil
+   "Planoberseite" dreht mit dem Wert (rotate im SVG). Unter dem Feld stehen, was die Datei nennt, und die Herkunft
+   des wirksamen Werts.
+
+   GEMELDET wird nur ein BESTAETIGTER gueltiger Wert (OnWert): Enter im Feld, Verlassen des geaenderten Felds, ein
+   Knopf der Schnellwahl oder "Uebernehmen". Tippen allein dreht nur die Vorschau. Ein Wert, der schon gemeldet ist,
+   wird nicht noch einmal gemeldet (Enter und change kaemen sonst doppelt) - ausser "Unbestaetigt": Dann gilt der Wert
+   im Feld noch nicht (Annahme oder Vorschlag der Datei), und jede Bestaetigung meldet ihn.
+
+   VORSCHLAG (gbXML, CADModelAzimuth): Das Feld zeigt den Dateiwert, der Hinweis sagt "aus der Datei, noch nicht
+   angewandt", und "Uebernehmen" wendet ihn an. Eine Fehleingabe FAERBT das Feld (epos-fehleingabe, aria-invalid,
+   Grund im title), sie meldet nicht. Kein Delegat noetig: ohne OnWert ist die Wahl eine Anzeige. *@
+
+@using System.Globalization
+@using EPOS.UI.Dialoge.Import
+
+<div class="epos-nordwahl @(Hervorgehoben ? "epos-nordwahl--warnung" : "")" role="group" aria-labelledby="@(_id)-titel"
+     data-herkunft="@Herkunft">
+    <div class="epos-nordwahl-kopf">
+        <label class="epos-feld epos-feld--kurz epos-nordwahl-feld">
+            <span class="epos-feld-text" id="@(_id)-titel">@Beschriftung</span>
+            <span class="epos-feld-zeile">
+                <input class="epos-eingabe epos-nordwahl-wert @(_fehler is null ? "" : "epos-fehleingabe")"
+                       type="text" inputmode="decimal" value="@_text"
+                       aria-invalid="@(_fehler is null ? null : "true")" aria-describedby="@(_id)-frage"
+                       title="@_fehler" disabled="@(!Aktiv)"
+                       @oninput="BeiEingabe" @onchange="BeiAenderung" @onkeydown="BeiTaste" />
+                <span class="epos-einheit">°</span>
+            </span>
+        </label>
+        @if (Vorschlag && Aktiv)
+        {
+            <button type="button" class="epos-knopf epos-nordwahl-uebernehmen" title="@VorschlagText"
+                    @onclick="BeiUebernehmen">@UebernehmenText</button>
+        }
+        <svg class="epos-nordwahl-vorschau" viewBox="0 0 100 100" role="img" aria-label="@Vorschautext">
+            <circle class="epos-nordwahl-ring" cx="50" cy="50" r="40" />
+            <text class="epos-nordwahl-nord" x="50" y="8" text-anchor="middle" dominant-baseline="middle">N</text>
+            <line class="epos-nordwahl-marke" x1="50" y1="10" x2="50" y2="18" />
+            <g class="epos-nordwahl-pfeil" transform="@Drehung">
+                <line x1="50" y1="64" x2="50" y2="26" />
+                <polygon points="50,16 42,30 58,30" />
+            </g>
+        </svg>
+    </div>
+    <p class="epos-leisezeile epos-nordwahl-frage" id="@(_id)-frage">@Frage</p>
+    <div class="epos-nordwahl-schnellwahl" role="group" aria-label="@SchnellwahlText">
+        @foreach (GebaeudeNordSchnellwahl s in Richtungen)
+        {
+            GebaeudeNordSchnellwahl richtung = s;
+            <button type="button" class="epos-knopf epos-nordwahl-richtung" data-kuerzel="@richtung.Kuerzel"
+                    aria-label="@richtung.Name" title="@richtung.Name" disabled="@(!Aktiv)"
+                    aria-pressed="@(Gleich(Vorschauwert, richtung.PlanoberseiteGrad) ? "true" : "false")"
+                    @onclick="() => BeiSchnellwahl(richtung)">@Kurztext(richtung)</button>
+        }
+    </div>
+    @if (DateiText.Length > 0)
+    {
+        <p class="epos-leisezeile epos-nordwahl-datei">
+            @DateiText
+            @if (Vorschlag)
+            {
+                <span class="epos-nordwahl-vorschlag"> (@VorschlagText)</span>
+            }
+        </p>
+    }
+    @if (HerkunftText.Length > 0)
+    {
+        <p class="epos-leisezeile epos-nordwahl-herkunft">@string.Format(CultureInfo.CurrentCulture, HerkunftFormat, HerkunftText)</p>
+    }
+    @if (!Aktiv && Hinweis.Length > 0)
+    {
+        <p class="epos-leisezeile epos-nordwahl-hinweis">@Hinweis</p>
+    }
+</div>
+
+@code {
+    /// <summary>Die angezeigte Richtung der Planoberseite [°]; <c>null</c> = leeres Feld.</summary>
+    [Parameter] public double? Wert { get; set; }
+
+    /// <summary>Meldet einen BESTÄTIGTEN gültigen Wert, gerundet auf 0,1° und normiert auf [0, 360).</summary>
+    [Parameter] public EventCallback<double> OnWert { get; set; }
+
+    /// <summary>Die Schnellwahl der Hülle; leer = die acht Himmelsrichtungen aus den Ressourcen.</summary>
+    [Parameter] public IReadOnlyList<GebaeudeNordSchnellwahl>? Schnellwahl { get; set; }
+
+    /// <summary>Die Feldbeschriftung (GEB_AUSRICHTUNG_PLANOBERSEITE).</summary>
+    [Parameter] public string Beschriftung { get; set; } = Resource.GEB_AUSRICHTUNG_PLANOBERSEITE;
+
+    /// <summary>Die Erläuterung unter dem Feld, zugleich seine Beschreibung (GEB_AUSRICHTUNG_FRAGE_FELD).</summary>
+    [Parameter] public string Frage { get; set; } = Resource.GEB_AUSRICHTUNG_FRAGE_FELD;
+
+    /// <summary>Was die Datei nennt (GEB_AUSRICHTUNG_DATEI_NENNT/_OHNE); leer = keine Zeile.</summary>
+    [Parameter] public string DateiText { get; set; } = "";
+
+    /// <summary>Sprachneutraler Schlüssel der Herkunft (DATEI, EINGABE, ANNAHME) — nur als <c>data-herkunft</c>.</summary>
+    [Parameter] public string Herkunft { get; set; } = "";
+
+    /// <summary>Die Herkunft als Anzeigetext; leer = keine Zeile.</summary>
+    [Parameter] public string HerkunftText { get; set; } = "";
+
+    /// <summary>Der Wert ist ein Vorschlag der Datei, noch nicht angewandt: Hinweis und Knopf „Übernehmen“.</summary>
+    [Parameter] public bool Vorschlag { get; set; }
+
+    /// <summary>Der Wert im Feld gilt noch nicht (Annahme oder Vorschlag) — jede Bestätigung meldet ihn.</summary>
+    [Parameter] public bool Unbestaetigt { get; set; }
+
+    /// <summary>Warnstil: Die Richtung ist nur angenommen oder nur vorgeschlagen.</summary>
+    [Parameter] public bool Hervorgehoben { get; set; }
+
+    /// <summary>Eingabe möglich? Ohne steht <see cref="Hinweis"/> unter der Wahl.</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>Der Grund der Sperre; leer = keiner.</summary>
+    [Parameter] public string Hinweis { get; set; } = "";
+
+    /// <summary>GEB_AUSRICHTUNG_UEBERNEHMEN</summary>
+    [Parameter] public string UebernehmenText { get; set; } = Resource.GEB_AUSRICHTUNG_UEBERNEHMEN;
+
+    /// <summary>GEB_AUSRICHTUNG_VORSCHLAG</summary>
+    [Parameter] public string VorschlagText { get; set; } = Resource.GEB_AUSRICHTUNG_VORSCHLAG;
+
+    /// <summary>GEB_AUSRICHTUNG_SCHNELLWAHL</summary>
+    [Parameter] public string SchnellwahlText { get; set; } = Resource.GEB_AUSRICHTUNG_SCHNELLWAHL;
+
+    /// <summary>GEB_AUSRICHTUNG_VORSCHAU (mit {0} = Grad)</summary>
+    [Parameter] public string VorschauFormat { get; set; } = Resource.GEB_AUSRICHTUNG_VORSCHAU;
+
+    /// <summary>GEB_AUSRICHTUNG_HERKUNFT (mit {0} = Herkunft)</summary>
+    [Parameter] public string HerkunftFormat { get; set; } = Resource.GEB_AUSRICHTUNG_HERKUNFT;
+
+    /// <summary>GEB_AUSRICHTUNG_UNGUELTIG</summary>
+    [Parameter] public string UngueltigText { get; set; } = Resource.GEB_AUSRICHTUNG_UNGUELTIG;
+
+    /// <summary>GEB_AUSRICHTUNG_BEREICH</summary>
+    [Parameter] public string BereichText { get; set; } = Resource.GEB_AUSRICHTUNG_BEREICH;
+
+    private readonly string _id = "epos-nordwahl-" + Guid.NewGuid().ToString("N")[..8];
+    private string _text = "";
+    private string? _fehler;
+    private double? _eingabe;
+    private double? _wertParameter;
+    private bool _erstesSetzen = true;
+    private bool _unbestaetigtParameter;
+
+    /// <summary>Der zuletzt gemeldete bzw. geltende Wert — er wird nicht noch einmal gemeldet.</summary>
+    private double? _gemeldet;
+
+    /// <summary>Der Wert der Eingabe, wie die Vorschau ihn zeigt (Prüfhilfe für Tests).</summary>
+    public double Vorschauwert => _eingabe ?? Wert ?? 0.0;
+
+    private string Drehung => "rotate(" + Vorschauwert.ToString("0.#", CultureInfo.InvariantCulture) + " 50 50)";
+
+    private string Vorschautext => string.Format(CultureInfo.CurrentCulture, VorschauFormat, Zahlen.Anzeigetext(Vorschauwert));
+
+    private IReadOnlyList<GebaeudeNordSchnellwahl> Richtungen
+        => Schnellwahl is { Count: > 0 } s ? s : Vorgabe();
+
+    protected override void OnParametersSet()
+    {
+        bool neuerWert = _erstesSetzen || !Nullgleich(Wert, _wertParameter);
+        if (neuerWert)
+        {
+            _wertParameter = Wert;
+            _text = Zahlen.Anzeigetext(Wert);
+            _fehler = null;
+            _eingabe = Wert;
+        }
+        if (neuerWert || Unbestaetigt != _unbestaetigtParameter)
+        {
+            _unbestaetigtParameter = Unbestaetigt;
+            _gemeldet = Unbestaetigt ? null : Wert;
+        }
+        _erstesSetzen = false;
+    }
+
+    /// <summary>
+    /// Prüft einen Text: leer = keine Eingabe; sonst Komma oder Punkt, 0 ≤ α &lt; 360, gerundet auf 0,1° (359,96 wird 0).
+    /// </summary>
+    public static bool Pruefen(string? text, out double? wert, out bool bereichsfehler)
+    {
+        wert = null;
+        bereichsfehler = false;
+        if (string.IsNullOrWhiteSpace(text)) return true;
+        if (!Zahlen.ZahlParsen(text, out double d)) return false;
+        if (d < 0.0 || d >= 360.0) { bereichsfehler = true; return false; }
+        double r = Math.Round(d, 1, MidpointRounding.AwayFromZero);
+        wert = r >= 360.0 ? 0.0 : r;
+        return true;
+    }
+
+    private void BeiEingabe(ChangeEventArgs e)
+    {
+        _text = e.Value?.ToString() ?? "";
+        if (Pruefen(_text, out double? w, out bool bereich))
+        {
+            _fehler = null;
+            _eingabe = w;
+        }
+        else
+        {
+            _fehler = bereich ? BereichText : UngueltigText;
+            _eingabe = null;
+        }
+    }
+
+    private Task BeiAenderung(ChangeEventArgs e)
+    {
+        BeiEingabe(e);
+        return Bestaetigen(false);
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+        => e.Key == "Enter" ? Bestaetigen(false) : Task.CompletedTask;
+
+    private Task BeiUebernehmen() => Bestaetigen(true);
+
+    private Task BeiSchnellwahl(GebaeudeNordSchnellwahl richtung)
+    {
+        if (!Aktiv) return Task.CompletedTask;
+        _text = Zahlen.Anzeigetext(richtung.PlanoberseiteGrad);
+        _fehler = null;
+        _eingabe = richtung.PlanoberseiteGrad;
+        return Bestaetigen(false);
+    }
+
+    /// <summary>Meldet die gültige Eingabe — eine schon gemeldete nur mit <paramref name="erzwingen"/>.</summary>
+    private async Task Bestaetigen(bool erzwingen)
+    {
+        if (!Aktiv || _fehler is not null || _eingabe is not double v) return;
+        if (!erzwingen && Nullgleich(_gemeldet, v)) return;
+        _gemeldet = v;
+        _text = Zahlen.Anzeigetext(v);
+        await OnWert.InvokeAsync(v);
+    }
+
+    private static bool Gleich(double a, double b) => Math.Abs(a - b) <= 1e-9;
+
+    private static bool Nullgleich(double? a, double? b)
+        => a.HasValue == b.HasValue && (!a.HasValue || Gleich(a.Value, b!.Value));
+
+    /// <summary>Das Kürzel eines Knopfs in der Anzeigesprache (GEB_AUSRICHTUNG_KURZ_*), sonst das neutrale Kürzel.</summary>
+    private static string Kurztext(GebaeudeNordSchnellwahl s)
+        => Resource.ResourceManager.GetString("GEB_AUSRICHTUNG_KURZ_" + s.Kuerzel, CultureInfo.CurrentUICulture) is { Length: > 0 } t
+            ? t : s.Kuerzel;
+
+    /// <summary>Die acht Himmelsrichtungen ohne Gabe der Hülle.</summary>
+    private static IReadOnlyList<GebaeudeNordSchnellwahl> Vorgabe()
+    {
+        string[] k = { "N", "NO", "O", "SO", "S", "SW", "W", "NW" };
+        return k.Select((x, i) => new GebaeudeNordSchnellwahl(
+            x, Resource.ResourceManager.GetString("GEB_AUSRICHTUNG_" + x, CultureInfo.CurrentUICulture) ?? x, i * 45.0)).ToList();
+    }
+}

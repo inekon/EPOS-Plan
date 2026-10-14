@@ -37,7 +37,15 @@
         /// <summary>Spezifische Wärmekapazität [J/(kg·K)] — Kopie; <c>null</c> = nicht angegeben.</summary>
         public double? Cp;
 
+        /// <summary>Die Felder der Quelle (Spalten aus <c>BauteilkatalogSchema.SCHICHT_SPALTEN</c>), roh je Spaltenname.</summary>
+        public System.Collections.Generic.Dictionary<string, object> Zusatz = new System.Collections.Generic.Dictionary<string, object>();
+
         /// <summary>Eine entkoppelte Kopie.</summary>
-        public BauteilschichtModel Kopie() => (BauteilschichtModel)MemberwiseClone();
+        public BauteilschichtModel Kopie()
+        {
+            var k = (BauteilschichtModel)MemberwiseClone();
+            k.Zusatz = new System.Collections.Generic.Dictionary<string, object>(Zusatz ?? new System.Collections.Generic.Dictionary<string, object>());
+            return k;
+        }
     }
 }

@@ -24,7 +24,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <item><c>Form_ErgProzesswaerme</c>: sieben Kennzahlen, ZWEI Sichten, Reiter
 /// „Wärmebedarf Ergebnisse / Übersicht monatlich / Grafik".</item>
 /// <item><c>Form_ErgBrauchwasserwaerme</c>: dieselben sieben Kennzahlen, DREI Sichten
-/// und der Schalter „Jahresverlauf".</item>
+/// und die Knopfgruppen des Grafikreiters.</item>
 /// </list>
 /// </summary>
 public class BedarfErgebnisDialogTests : EposBunitContext
@@ -53,27 +53,6 @@ public class BedarfErgebnisDialogTests : EposBunitContext
                                                  ChartRenderer.C_BEDARF, einheit);
     }
 
-    /// <summary>
-    /// Der JAHRESVERLAUF des Brauchwassers als Zeichenmodell — EINE Instanz, EINMAL
-    /// gebaut: Der Baustein <c>DiagrammSvg</c> vergleicht die Modellreferenz, und ein
-    /// je Zeichenlauf neu gebautes Modell setzte seinen Baum jedes Mal neu.
-    /// </summary>
-    private static readonly Zeichenmodell JAHRESVERLAUF = Jahresverlauf();
-
-    /// <summary>Das Fenstermodell des Navigators (Woche bzw. Tag).</summary>
-    private static readonly Zeichenmodell FENSTER = Jahresverlauf();
-
-    /// <summary>Eine kurze, echte Reihe (eine Woche) statt eines vollen Jahres.</summary>
-    private static Zeichenmodell Jahresverlauf()
-    {
-        var werte = new double[168];
-        for (int i = 0; i < werte.Length; i++)
-            werte[i] = 12.0 + 8.0 * Math.Sin(2 * Math.PI * i / 24.0);
-
-        return ChartRenderer.JahresverlaufModell("Brauchwasser Jahresverlauf", werte,
-                                                 "kW", ChartRenderer.C_BEDARF);
-    }
-
     private static string[] Reihe(double start)
     {
         var w = new string[12];
@@ -90,7 +69,7 @@ public class BedarfErgebnisDialogTests : EposBunitContext
     /// Leistung" und „Strombedarf Gebäude" heißt „Strombedarf aus Profil".
     /// </summary>
     private static BedarfErgebnisDaten Strom(int startReiter = 0,
-                                             Ganglinienquelle? ganglinie = null) => new()
+                                             Bedarfsgrafikquelle? grafik = null) => new()
     {
         Sicht = ErgebnisSicht.Strom,
         StartReiter = startReiter,
@@ -103,7 +82,7 @@ public class BedarfErgebnisDialogTests : EposBunitContext
                 { Art = Kennzahlart.Summe }
         },
         Sichten = new[] { new Monatssicht("Strombedarf", Reihe(10), SAEULEN) },
-        Ganglinie = ganglinie
+        Grafik = grafik
     };
 
     private static BedarfErgebnisDaten Waerme(bool mitBrauchwasser, int startReiter = 0,
@@ -122,7 +101,6 @@ public class BedarfErgebnisDialogTests : EposBunitContext
             MitBrauchwasser = mitBrauchwasser,
             StartReiter = startReiter,
             TitelZusatz = titelZusatz,
-            JahresverlaufModell = mitBrauchwasser ? JAHRESVERLAUF : null,
             // Dieselbe Gliederung wie beim Strom (W8-E-2): Leistung, Posten, Summe.
             Kennzahlen = new[]
             {
@@ -149,8 +127,10 @@ public class BedarfErgebnisDialogTests : EposBunitContext
         Action<bool>? geschlossen = null,
         Energieeinheit? einheit = null,
         Action<Energieeinheit>? einheitGewaehlt = null,
-        bool titelAnzeigen = true)
+        bool titelAnzeigen = true,
+        Func<string, IReadOnlyList<ZeitreihenSpalte>, Task>? csv = null)
         => Render<BedarfErgebnisDialog>(p => p
+            .Add(x => x.CsvSpeichern, csv)
             .Add(x => x.Daten, daten)
             .Add(x => x.TitelAnzeigen, titelAnzeigen)
             .Add(x => x.ReiterKennzahlen, reiterKennzahlen)
@@ -209,10 +189,10 @@ public class BedarfErgebnisDialogTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-kennzahlen tfoot tr"));
         Assert.Contains("davon Brauchwasser:", cut.Markup);
 
-        // ZWEI Optionen, kein Jahresverlauf-Schalter.
+        // ZWEI Bedarfsarten als Schaltknoepfe, kein Kaestchen.
         Reiterknopf(cut, "Grafik").Click();
-        Assert.Equal(2, cut.FindAll(".epos-option").Count);
-        Assert.DoesNotContain("Brauchwasser", cut.Find(".epos-optionsgruppe").TextContent);
+        Assert.Equal(2, cut.FindAll(".epos-bedarfgrafik-reihen button").Count);
+        Assert.DoesNotContain("Brauchwasser", cut.Find(".epos-bedarfgrafik-reihen").TextContent);
         Assert.Empty(cut.FindAll("input[type=checkbox]"));
     }
 
@@ -299,74 +279,6 @@ public class BedarfErgebnisDialogTests : EposBunitContext
 
         Reiterknopf(cut, "Grafik").Click();
         Assert.Equal(0, cut.Instance.Grafiksicht);
-    }
-
-    // =================================================================================
-    // Jahresverlauf
-    // =================================================================================
-
-    [Fact]
-    public void Der_Jahresverlauf_Schalter_steht_nur_bei_der_Brauchwassersicht()
-    {
-        var cut = Aufbauen(Waerme(true));
-        Reiterknopf(cut, "Grafik").Click();
-
-        Assert.Empty(cut.FindAll("input[type=checkbox]"));   // Sicht 0 = Prozesse
-
-        cut.FindAll(".epos-option input")[2].Change(true);
-        Assert.Single(cut.FindAll("input[type=checkbox]"));
-
-        // Zurueck auf Gebaeude: der Schalter verschwindet UND faellt zurueck.
-        cut.Find("input[type=checkbox]").Change(true);
-        Assert.True(cut.Instance.JahresverlaufGewaehlt);
-
-        cut.FindAll(".epos-option input")[1].Change(true);
-        Assert.Empty(cut.FindAll("input[type=checkbox]"));
-        Assert.False(cut.Instance.JahresverlaufGewaehlt);
-    }
-
-    /// <summary>
-    /// <b>Zwei Bilder auf einem Blatt, beide als SVG</b> (Etappe DG-E3): Solange der
-    /// Schalter „Jahresverlauf" NICHT steht, zeigt das Blatt die MONATSSÄULEN. Zwölf
-    /// starre Fächer tragen keine Zeitachse — es gibt dort nichts zu zoomen, und der
-    /// Baustein lässt die Leiste von selbst weg. Was er zeigt, ist der Wert der Säule
-    /// unter dem Zeiger (DG-E3-10).
-    /// </summary>
-    [Fact]
-    public void Ohne_Jahresverlauf_stehen_die_Monatssaeulen_als_Svg()
-    {
-        var cut = Aufbauen(Waerme(true));
-        Reiterknopf(cut, "Grafik").Click();
-        cut.FindAll(".epos-option input")[2].Change(true);      // Brauchwassersicht
-
-        DiagrammSvg bild = cut.FindComponents<DiagrammSvg>().Single().Instance;
-
-        Assert.Equal("bedarf-monate", bild.Kennung);
-        Assert.False(bild.OhneZoom);
-        Assert.True(bild.ZeigtWertAmElement);
-        Assert.Empty(cut.FindAll(".epos-diagramm-leiste"));
-        Assert.Empty(cut.FindAll("img"));
-    }
-
-    /// <summary>
-    /// <b>Mit dem Schalter kommt der Jahresverlauf.</b> Er trägt eine ZEITachse und
-    /// damit den Zoom, unter der Kennung <c>bedarf-jahresverlauf</c> — die
-    /// Monatssäulen weichen ihm; zwei Bilder auf einem Blatt teilten sich sonst ihre
-    /// <c>clipPath</c>-Kennungen.
-    /// </summary>
-    [Fact]
-    public void Der_Jahresverlauf_steht_als_DiagrammSvg()
-    {
-        var cut = Aufbauen(Waerme(true));
-        Reiterknopf(cut, "Grafik").Click();
-        cut.FindAll(".epos-option input")[2].Change(true);      // Brauchwassersicht
-        cut.Find("input[type=checkbox]").Change(true);          // „Jahresverlauf"
-
-        Assert.Single(cut.FindComponents<DiagrammSvg>());
-        Assert.Equal("bedarf-jahresverlauf",
-                     cut.FindComponent<DiagrammSvg>().Instance.Kennung);
-        Assert.Equal("kW", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
-        Assert.Single(cut.FindAll(".epos-diagramm-leiste"));
     }
 
     // =================================================================================
@@ -664,224 +576,288 @@ public class BedarfErgebnisDialogTests : EposBunitContext
     }
 
     // =================================================================================
-    // Der Zeitumschalter Jahr | Woche | Tag (W8-E-2)
+    // Der Grafikreiter: Bedarfsart und Zeitraster als Knopfgruppen (Anwenderwunsch WG)
     // =================================================================================
 
-    /// <summary>Eine Quelle, die ihre Aufrufe mitschreibt.</summary>
-    private static Ganglinienquelle Gangquelle(List<(Gangstufe Stufe, int Nummer)> ruf)
+    /// <summary>Die Fächerzahl je Raster — 8 760 Stunden, 12 Monate, 52 Wochen, 365 Tage.</summary>
+    private static int Zeilen(Bedarfsraster raster) => raster switch
+    {
+        Bedarfsraster.Monat => 12,
+        Bedarfsraster.Woche => 52,
+        Bedarfsraster.Tag => 365,
+        _ => 8760
+    };
+
+    /// <summary>
+    /// Eine Bildquelle wie die der Hülle, die ihre Aufrufe mitschreibt: das Jahr als Ganglinie mit
+    /// Zeitachse, die Summen als Säulenstapel — echte Modelle des Kerns, je Aufruf ein neues.
+    /// </summary>
+    private static Bedarfsgrafikquelle Grafikquelle(
+        List<(IReadOnlyList<int> Wahl, Bedarfsraster Raster, Energieeinheit Einheit)> ruf)
         => new()
         {
-            Wochen = 52,
-            Tage = 365,
-            Modell = (stufe, nummer) => { ruf.Add((stufe, nummer)); return FENSTER; }
+            MitReihe = new[] { 0, 1, 2 },
+            Titel = (wahl, raster) => "Wärmebedarf " + raster,
+            Modell = (wahl, raster, einheit) =>
+            {
+                ruf.Add((wahl, raster, einheit));
+                int n = Zeilen(raster);
+                if (raster == Bedarfsraster.Jahr)
+                    return ChartRenderer.JahresverlaufModell("Jahr", Enumerable.Repeat(5.0, n).ToArray(),
+                                                             "kW", ChartRenderer.C_BEDARF);
+                string[] namen = Enumerable.Range(1, n).Select(i => "Fach " + i).ToArray();
+                return ChartRenderer.SaeulenstapelModell("Summen", einheit.Text,
+                    wahl.Select(i => new ChartRenderer.Reihe("Reihe " + i, Enumerable.Repeat(1.0, n).ToArray(),
+                                                             Farbrolle.HEIZWAERME)).ToList(),
+                    namen, namen);
+            },
+            Spalten = (wahl, raster, einheit) => wahl
+                .Select(i => new ZeitreihenSpalte("Reihe " + i, einheit.Text, new double[Zeilen(raster)]))
+                .ToList()
         };
 
-    [Fact]
-    public void Der_Grafikreiter_zeigt_Jahr_Woche_und_Tag()
-    {
-        var ruf = new List<(Gangstufe, int)>();
-        var cut = Aufbauen(Strom(2, Gangquelle(ruf)), "Strombedarf Ergebnisse",
-                           "Strombedarf monatlich", "Grafik Strombedarf");
-
-        var stufen = cut.FindAll(".epos-gang-stufen .epos-option")
-                        .Select(e => e.TextContent.Trim()).ToList();
-        Assert.Equal(new[] { "Jahr", "Woche", "Tag" }, stufen);
-
-        // JAHR ist die Vorgabe und zeigt UNVERAENDERT das Saeulenbild des Bestands -
-        // kein Navigator, kein Aufruf der Ganglinienquelle.
-        Assert.Equal(Gangstufe.Jahr, cut.FindComponent<BedarfGangGrafik>().Instance.Stufe);
-        Assert.Empty(cut.FindAll(".epos-gang-navigator"));
-        Assert.Empty(ruf);
-        Assert.Equal("bedarf-monate", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
-    }
-
-    [Fact]
-    public void Woche_und_Tag_holen_ihr_Bild_beim_Kern()
-    {
-        var ruf = new List<(Gangstufe Stufe, int Nummer)>();
-        var cut = Aufbauen(Strom(2, Gangquelle(ruf)), "Strombedarf Ergebnisse",
-                           "Strombedarf monatlich", "Grafik Strombedarf");
-
-        cut.FindAll(".epos-gang-stufen input[type=radio]")[1].Change(true);
-
-        var gang = cut.FindComponent<BedarfGangGrafik>().Instance;
-        Assert.Equal(Gangstufe.Woche, gang.Stufe);
-        Assert.Equal(1, gang.Nummer);
-        Assert.Contains("Woche 1 von 52", cut.Find(".epos-gang-marke").TextContent);
-        Assert.Contains((Gangstufe.Woche, 0), ruf);
-
-        cut.FindAll(".epos-gang-stufen input[type=radio]")[2].Change(true);
-        Assert.Equal(Gangstufe.Tag, cut.FindComponent<BedarfGangGrafik>().Instance.Stufe);
-        Assert.Contains("Tag 1 von 365", cut.Find(".epos-gang-marke").TextContent);
-        Assert.Contains((Gangstufe.Tag, 0), ruf);
-    }
-
     /// <summary>
-    /// <b>Der Navigator ist eine Schleife</b> — hinter Woche 52 kommt Woche 1, und vor
-    /// Woche 1 steht Woche 52. Wer den Jahreswechsel ansehen will, soll nicht durch
-    /// 51 Wochen zurückgehen müssen.
+    /// Das Zeitraster des Grafikreiters ist das Feld „zeitstufe" des Ergebnisdialogs (Freigabe der
+    /// Masken, Teil C): über <c>feld_setzen</c> mit seinem Text gesetzt, wechselt es das Bild wie der
+    /// Klick auf den Schaltknopf; ohne Bildquelle sagt der Sperrgrund ab.
     /// </summary>
     [Fact]
-    public void Der_Navigator_schaltet_vor_zurueck_und_im_Ring()
+    public async Task Der_Assistent_setzt_das_Zeitraster_ueber_das_Feld_des_Wirts()
     {
-        var ruf = new List<(Gangstufe Stufe, int Nummer)>();
-        var cut = Aufbauen(Strom(2, Gangquelle(ruf)), "Strombedarf Ergebnisse",
-                           "Strombedarf monatlich", "Grafik Strombedarf");
-        cut.FindAll(".epos-gang-stufen input[type=radio]")[1].Change(true);
-
-        // Nach jedem Klick neu suchen: Der Zeichenlauf tauscht die Knoepfe aus.
-        IElement Knopf(int i) => cut.FindAll(".epos-gang-knopf")[i];
-
-        Knopf(1).Click();                                        // vor
-        Assert.Equal(2, cut.FindComponent<BedarfGangGrafik>().Instance.Nummer);
-        Assert.Contains((Gangstufe.Woche, 1), ruf);
-
-        Knopf(0).Click();                                        // zurueck
-        Assert.Equal(1, cut.FindComponent<BedarfGangGrafik>().Instance.Nummer);
-
-        Knopf(0).Click();                                        // ueber den Anfang hinaus
-        Assert.Equal(52, cut.FindComponent<BedarfGangGrafik>().Instance.Nummer);
-        Assert.Contains((Gangstufe.Woche, 51), ruf);
-
-        Knopf(1).Click();                                        // und wieder herum
-        Assert.Equal(1, cut.FindComponent<BedarfGangGrafik>().Instance.Nummer);
-    }
-
-    /// <summary>
-    /// <b>Der Ausschnitt des Navigators steht als SVG im Baum</b> (Etappe DG-E3,
-    /// Gruppe (a)). Seine Kennung trägt Stufe und Nummer — so baut der Baustein
-    /// seinen Baum bei jedem Schritt neu und behält keinen Zoom aus der Woche davor.
-    /// </summary>
-    [Fact]
-    public void Der_Ausschnitt_des_Navigators_traegt_Stufe_und_Nummer_in_der_Kennung()
-    {
-        var ruf = new List<(Gangstufe Stufe, int Nummer)>();
-        var cut = Aufbauen(Strom(2, Gangquelle(ruf)), "Strombedarf Ergebnisse",
-                           "Strombedarf monatlich", "Grafik Strombedarf");
-
-        // JAHR zeigt die Monatssaeulen - eigenes Bild, eigene Kennung.
-        Assert.Equal("bedarf-monate", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
-
-        cut.FindAll(".epos-gang-stufen input[type=radio]")[1].Change(true);   // Woche
-
-        Assert.Single(cut.FindComponents<DiagrammSvg>());
-        Assert.Equal("bedarf-gang-1-0", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
-
-        cut.FindAll(".epos-gang-knopf")[1].Click();                           // eine Woche vor
-        Assert.Equal("bedarf-gang-1-1", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
-
-        cut.FindAll(".epos-gang-stufen input[type=radio]")[2].Change(true);   // Tag
-        Assert.Equal("bedarf-gang-2-0", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
-    }
-
-    /// <summary>
-    /// <b>Die Wärmeausprägungen dürfen sich nicht verschlechtern</b> (W9‑B‑4/B‑5): Ohne
-    /// Ganglinienquelle gibt es weder Umschalter noch Navigator, und der Grafikreiter
-    /// sieht aus wie zuvor — samt Sichtwahl und Jahresverlauf-Schalter.
-    /// </summary>
-    [Fact]
-    public void Ohne_Ganglinienquelle_bleibt_der_Grafikreiter_unveraendert()
-    {
-        var cut = Aufbauen(Waerme(true, 2));
-
-        Assert.Empty(cut.FindAll(".epos-gang-stufen"));
-        Assert.Empty(cut.FindAll(".epos-gang-navigator"));
-
-        // Die drei Sichten und der Schalter „Jahresverlauf" stehen unveraendert da.
-        Assert.Equal(3, cut.FindAll(".epos-option").Count);
-        Assert.Single(cut.FindAll("input[type=checkbox]"));
-    }
-
-    // =================================================================================
-    // Die Prozesswärme als Jahresganglinie mit Woche und Tag
-    // =================================================================================
-
-    /// <summary>
-    /// Der Wärmesatz, wie ihn die Hülle baut: Prozesse und Gebäude tragen je ihre
-    /// Stundenreihe als Jahresverlauf und als Quelle für Woche und Tag; die Aufrufe
-    /// der beiden Quellen werden getrennt mitgeschrieben.
-    /// </summary>
-    private static BedarfErgebnisDaten WaermeMitGanglinien(
-        List<(Gangstufe Stufe, int Nummer)> prozess, List<(Gangstufe Stufe, int Nummer)> gebaeude)
-    {
-        BedarfErgebnisDaten daten = Waerme(false, 2);
-        daten.Sichten = new[]
+        Func<bool> vorher = Schreibnaht.Schreibrecht;
+        Schreibnaht.Schreibrecht = Schreibnaht.ImmerErlaubt;
+        try
         {
-            daten.Sichten[0] with { Jahresverlauf = JAHRESVERLAUF, Ganglinie = Gangquelle(prozess) },
-            daten.Sichten[1] with { Jahresverlauf = Jahresverlauf(), Ganglinie = Gangquelle(gebaeude) }
-        };
+            var ruf = new List<(IReadOnlyList<int> Wahl, Bedarfsraster Raster, Energieeinheit Einheit)>();
+            var cut = Aufbauen(WaermeMitGrafik(ruf));
+
+            KiKern.KiErgebnis woche = await cut.InvokeAsync(() => EPOS.UI.Tests.Dialoge.Hilfe.KiSetzweg.Setzen(
+                KiMaskennamen.BEDARF_ERGEBNIS, "zeitstufe", "Woche"));
+
+            Assert.True(woche.Status == KiKern.KiStatus.Ausgefuehrt, woche.Text);
+            Assert.Equal(Bedarfsraster.Woche, cut.Instance.Raster);
+            cut.WaitForAssertion(() => Assert.Equal(Bedarfsraster.Woche, ruf[^1].Raster));
+            cut.WaitForAssertion(() => Assert.Equal("true", Rasterknopf(cut, Bedarfsraster.Woche).GetAttribute("aria-pressed")));
+            cut.Instance.Dispose();
+
+            var ohne = Aufbauen(Waerme(true, 2));
+            KiVorbereitung abgesagt = await ohne.InvokeAsync(() => EPOS.UI.Tests.Dialoge.Hilfe.KiSetzweg.Vorbereiten(
+                KiMaskennamen.BEDARF_ERGEBNIS, "zeitstufe", "Woche"));
+            Assert.Null(abgesagt.Freigabe);
+        }
+        finally
+        {
+            Schreibnaht.Schreibrecht = vorher;
+        }
+    }
+
+    private static BedarfErgebnisDaten WaermeMitGrafik(
+        List<(IReadOnlyList<int> Wahl, Bedarfsraster Raster, Energieeinheit Einheit)> ruf)
+    {
+        BedarfErgebnisDaten daten = Waerme(true, 2);
+        daten.Grafik = Grafikquelle(ruf);
         return daten;
     }
 
+    private static IElement Rasterknopf(IRenderedComponent<BedarfErgebnisDialog> cut, Bedarfsraster raster)
+        => cut.Find($".epos-bedarfgrafik-raster button[data-raster={raster}]");
+
+    private static IElement Reihenknopf(IRenderedComponent<BedarfErgebnisDialog> cut, int nr)
+        => cut.Find($".epos-bedarfgrafik-reihen button[data-sicht=\"{nr}\"]");
+
     /// <summary>
-    /// <b>Die Prozesswärme im Grafikreiter:</b> Sichtwahl über den Zeitstufen, Jahr |
-    /// Woche | Tag, und in der Jahressicht der Schalter „Jahresverlauf" — dahinter die
-    /// Jahresganglinie mit Zeitachse und Zoomleiste (Bereich · 1:1).
+    /// <b>Kompakt und waagerecht:</b> Beide Knopfgruppen stehen in EINER Leiste über dem Bild —
+    /// Schaltknöpfe mit <c>aria-pressed</c>, keine Radioliste, kein Kästchen „Jahresverlauf“ —, und die
+    /// Leiste ist im Stilblatt eine umbrechende Zeile (bunit misst kein Layout, geprüft wird die Regel).
     /// </summary>
     [Fact]
-    public void Die_Prozesswaerme_zeigt_Jahresganglinie_mit_Zoom()
+    public void Die_Knopfgruppen_stehen_waagerecht_in_einer_Leiste()
     {
-        var prozess = new List<(Gangstufe, int)>();
-        var cut = Aufbauen(WaermeMitGanglinien(prozess, new List<(Gangstufe, int)>()));
+        var cut = Aufbauen(WaermeMitGrafik(new()));
 
-        Assert.Equal(0, cut.Instance.Grafiksicht);                 // Prozesse
-        var stufen = cut.FindAll(".epos-gang-stufen .epos-option")
-                        .Select(e => e.TextContent.Trim()).ToList();
-        Assert.Equal(new[] { "Jahr", "Woche", "Tag" }, stufen);
+        IElement leiste = cut.Find(".epos-bedarfgrafik-leiste");
+        Assert.Equal(new[] { "epos-bedarfgrafik-reihen", "epos-bedarfgrafik-raster" },
+                     leiste.Children.Where(k => k.TagName == "DIV").Select(k => k.ClassList.Last()).ToArray());
+        Assert.Equal(new[] { "Prozesse", "Gebäude (incl. ext. Wärmebedarf)", "Brauchwasser" },
+                     leiste.QuerySelectorAll(".epos-bedarfgrafik-reihen button").Select(b => b.TextContent.Trim()));
+        Assert.Equal(new[] { "Jahr", "Monat", "Woche", "Tag" },
+                     leiste.QuerySelectorAll(".epos-bedarfgrafik-raster button").Select(b => b.TextContent.Trim()));
+        Assert.Equal("true", Rasterknopf(cut, Bedarfsraster.Jahr).GetAttribute("aria-pressed"));
+        Assert.Equal("true", Reihenknopf(cut, 2).GetAttribute("aria-pressed"));   // Startsicht Brauchwasser
+        Assert.Equal("false", Reihenknopf(cut, 0).GetAttribute("aria-pressed"));
 
-        cut.Find("input[type=checkbox]").Change(true);              // „Jahresverlauf"
+        IElement blatt = cut.Find(".epos-bedarfgrafik");
+        Assert.Empty(blatt.QuerySelectorAll("input[type=radio]"));
+        Assert.Empty(blatt.QuerySelectorAll("input[type=checkbox]"));
+
+        string css = Stilblatt();
+        string regel = css[css.IndexOf(".epos-bedarfgrafik-leiste {", StringComparison.Ordinal)..];
+        regel = regel[..regel.IndexOf('}')];
+        Assert.Contains("display: flex", regel);
+        Assert.Contains("flex-wrap: wrap", regel);
+        Assert.DoesNotContain("flex-direction", regel);
+    }
+
+    private static string Stilblatt()
+    {
+        DirectoryInfo? d = new DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null && !File.Exists(Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+        Assert.NotNull(d);
+        return File.ReadAllText(Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"));
+    }
+
+    /// <summary>
+    /// <b>Das Jahr zuerst:</b> die Ganglinie mit Zeitachse und Zoomleiste, Einheit kW am Zeiger; jedes
+    /// Raster holt sein Bild bei der Hülle — die Summen in der gewählten Einheit — und trägt eine eigene
+    /// Kennung.
+    /// </summary>
+    [Theory]
+    [InlineData(Bedarfsraster.Monat, "bedarf-grafik-monat")]
+    [InlineData(Bedarfsraster.Woche, "bedarf-grafik-woche")]
+    [InlineData(Bedarfsraster.Tag, "bedarf-grafik-tag")]
+    public void Der_Rasterwechsel_zeichnet_das_jeweilige_Bild(Bedarfsraster raster, string kennung)
+    {
+        var ruf = new List<(IReadOnlyList<int> Wahl, Bedarfsraster Raster, Energieeinheit Einheit)>();
+        var cut = Aufbauen(WaermeMitGrafik(ruf), einheit: Energieeinheit.KWh);
+
+        DiagrammSvg jahr = cut.FindComponent<DiagrammSvg>().Instance;
+        Assert.Equal(Bedarfsraster.Jahr, cut.Instance.Raster);
+        Assert.Equal("bedarf-grafik-jahr", jahr.Kennung);
+        Assert.Equal("kW", jahr.Einheit);
+        Assert.NotNull(jahr.Modell?.Flaeche);
+        Assert.Single(cut.FindAll(".epos-diagramm-leiste"));
+        Assert.Equal(new[] { 2 }, ruf[^1].Wahl);
+        Assert.Equal(Bedarfsraster.Jahr, ruf[^1].Raster);
+
+        Rasterknopf(cut, raster).Click();
 
         DiagrammSvg bild = cut.FindComponent<DiagrammSvg>().Instance;
-        Assert.Equal("bedarf-jahresverlauf", bild.Kennung);
-        Assert.Same(JAHRESVERLAUF, bild.Modell);
-        Assert.Equal("kW", bild.Einheit);
-        Assert.Single(cut.FindAll(".epos-diagramm-leiste"));
-        Assert.Contains("1:1", cut.Find(".epos-diagramm-leiste").TextContent);
+        Assert.Equal(raster, cut.Instance.Raster);
+        Assert.Equal(kennung, bild.Kennung);
+        Assert.Equal("kWh", bild.Einheit);
+        Assert.Null(bild.Modell?.Flaeche);                                   // Säulen: Fächer, kein Zoom
+        Assert.Equal(raster, ruf[^1].Raster);
+        Assert.Same(Energieeinheit.KWh, ruf[^1].Einheit);
+        Assert.Equal("true", Rasterknopf(cut, raster).GetAttribute("aria-pressed"));
+        Assert.Equal("false", Rasterknopf(cut, Bedarfsraster.Jahr).GetAttribute("aria-pressed"));
     }
 
     /// <summary>
-    /// <b>Woche und Tag der gewählten Sicht:</b> Die Sichtwahl steht über den Zeitstufen
-    /// und gilt für alle drei — der Wechsel auf Gebäude holt dieselbe Woche aus der
-    /// Gebäudequelle, nicht aus der der Prozesse.
+    /// Die Bilder werden je Wahl, Raster und Einheit EINMAL geholt: Zurück auf ein schon gezeigtes Raster
+    /// bekommt der Baustein dieselbe Modellreferenz — Zoom und Zeigerstelle bleiben.
     /// </summary>
     [Fact]
-    public void Woche_und_Tag_folgen_der_Sichtwahl()
+    public void Ein_schon_gezeigtes_Bild_wird_nicht_neu_geholt()
     {
-        var prozess = new List<(Gangstufe Stufe, int Nummer)>();
-        var gebaeude = new List<(Gangstufe Stufe, int Nummer)>();
-        var cut = Aufbauen(WaermeMitGanglinien(prozess, gebaeude));
+        var ruf = new List<(IReadOnlyList<int> Wahl, Bedarfsraster Raster, Energieeinheit Einheit)>();
+        var cut = Aufbauen(WaermeMitGrafik(ruf));
+        Zeichenmodell? jahr = cut.FindComponent<DiagrammSvg>().Instance.Modell;
 
-        cut.FindAll(".epos-gang-stufen input[type=radio]")[1].Change(true);   // Woche
-        Assert.Contains((Gangstufe.Woche, 0), prozess);
-        Assert.Empty(gebaeude);
-        Assert.Contains("Woche 1 von 52", cut.Find(".epos-gang-marke").TextContent);
+        Rasterknopf(cut, Bedarfsraster.Woche).Click();
+        int nachWoche = ruf.Count;
+        Rasterknopf(cut, Bedarfsraster.Jahr).Click();
 
-        // Die Sichtwahl bleibt in der Wochenansicht stehen.
-        cut.FindAll(".epos-option input")[1].Change(true);                   // Gebäude
-        Assert.Equal(1, cut.Instance.Grafiksicht);
-        Assert.Equal(Gangstufe.Woche, cut.FindComponent<BedarfGangGrafik>().Instance.Stufe);
-        Assert.Contains((Gangstufe.Woche, 0), gebaeude);
-
-        cut.FindAll(".epos-gang-stufen input[type=radio]")[2].Change(true);   // Tag
-        Assert.Contains((Gangstufe.Tag, 0), gebaeude);
-        Assert.Contains("Tag 1 von 365", cut.Find(".epos-gang-marke").TextContent);
+        Assert.Same(jahr, cut.FindComponent<DiagrammSvg>().Instance.Modell);
+        Assert.Equal(nachWoche, ruf.Count);
     }
 
     /// <summary>
-    /// Der Schalter „Jahresverlauf" bleibt beim Wechsel zwischen zwei Sichten mit
-    /// Stundenreihe stehen und zeigt dann den Jahresverlauf der neuen Sicht.
+    /// <b>Mehrfachwahl der Bedarfsarten:</b> Ein Klick nimmt eine Art hinzu oder heraus; die letzte
+    /// gewählte bleibt stehen. Die Hülle bekommt die Wahl aufsteigend.
     /// </summary>
     [Fact]
-    public void Der_Jahresverlauf_wechselt_mit_der_Sicht()
+    public void Die_Reihenwahl_wirkt_und_laesst_nie_eine_leere_Wahl()
     {
-        var cut = Aufbauen(WaermeMitGanglinien(new List<(Gangstufe, int)>(), new List<(Gangstufe, int)>()));
-        cut.Find("input[type=checkbox]").Change(true);
-        Zeichenmodell? prozessbild = cut.FindComponent<DiagrammSvg>().Instance.Modell;
+        var ruf = new List<(IReadOnlyList<int> Wahl, Bedarfsraster Raster, Energieeinheit Einheit)>();
+        var cut = Aufbauen(WaermeMitGrafik(ruf));
 
-        cut.FindAll(".epos-option input")[1].Change(true);                   // Gebäude
+        Reihenknopf(cut, 0).Click();
+        Assert.Equal(new[] { 0, 2 }, cut.Instance.Grafikreihen);
+        Assert.Equal(new[] { 0, 2 }, ruf[^1].Wahl);
+        Assert.Equal("true", Reihenknopf(cut, 0).GetAttribute("aria-pressed"));
 
-        Assert.True(cut.Instance.JahresverlaufGewaehlt);
-        Assert.NotSame(prozessbild, cut.FindComponent<DiagrammSvg>().Instance.Modell);
+        Reihenknopf(cut, 2).Click();
+        Assert.Equal(new[] { 0 }, cut.Instance.Grafikreihen);
+        Assert.Equal(0, cut.Instance.Grafiksicht);
+
+        Reihenknopf(cut, 0).Click();                                          // die letzte bleibt
+        Assert.Equal(new[] { 0 }, cut.Instance.Grafikreihen);
+        Assert.Equal("true", Reihenknopf(cut, 0).GetAttribute("aria-pressed"));
+    }
+
+    /// <summary>
+    /// <b>„CSV…“ an jedem Bild</b> ruft die Naht der Plattform mit Bildtitel und Spalten: die Ganglinie
+    /// über den Ganglinienexport der Kaskade (8 760 Zeilen), die Summen über den eigenen Export der
+    /// Säulen (12, 52, 365 Zeilen) in der gewählten Einheit.
+    /// </summary>
+    [Theory]
+    [InlineData(Bedarfsraster.Jahr, 8760)]
+    [InlineData(Bedarfsraster.Monat, 12)]
+    [InlineData(Bedarfsraster.Woche, 52)]
+    [InlineData(Bedarfsraster.Tag, 365)]
+    public void CSV_ruft_die_Naht_mit_der_Zeilenzahl_des_Rasters(Bedarfsraster raster, int zeilen)
+    {
+        var exporte = new List<(string Titel, IReadOnlyList<ZeitreihenSpalte> Spalten)>();
+        var cut = Aufbauen(WaermeMitGrafik(new()),
+                           csv: (t, s) => { exporte.Add((t, s)); return Task.CompletedTask; });
+
+        Rasterknopf(cut, raster).Click();
+        Assert.Single(cut.FindAll("button.epos-diagramm-csv"));
+        // Ganglinie wie Säulen: „CSV…“ steht in der Leiste des Bildes, nicht mehr in der Knopfzeile.
+        cut.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
+        Assert.Empty(cut.FindAll(".epos-bedarfgrafik-leiste button.epos-diagramm-csv"));
+
+        var (titel, spalten) = Assert.Single(exporte);
+        Assert.Single(spalten);
+        Assert.Equal(zeilen, spalten[0].Werte.Length);
+        if (raster != Bedarfsraster.Jahr)
+        {
+            Assert.Equal("Wärmebedarf " + raster, titel);
+            Assert.Equal("MWh", spalten[0].Einheit);
+        }
+    }
+
+    [Fact]
+    public void Ohne_Naht_gibt_es_keinen_CSV_Knopf()
+    {
+        var cut = Aufbauen(WaermeMitGrafik(new()));
+        Assert.Empty(cut.FindAll("button.epos-diagramm-csv"));
+        Rasterknopf(cut, Bedarfsraster.Woche).Click();
+        Assert.Empty(cut.FindAll("button.epos-diagramm-csv"));
+    }
+
+    /// <summary>
+    /// Die Stromkarte hat EINE Sicht: keine Gruppe der Bedarfsarten, wohl aber das Zeitraster.
+    /// </summary>
+    [Fact]
+    public void Die_Stromkarte_zeigt_nur_das_Zeitraster()
+    {
+        var ruf = new List<(IReadOnlyList<int> Wahl, Bedarfsraster Raster, Energieeinheit Einheit)>();
+        var cut = Aufbauen(Strom(2, Grafikquelle(ruf)), "Strombedarf Ergebnisse",
+                           "Strombedarf monatlich", "Grafik Strombedarf");
+
+        Assert.Empty(cut.FindAll(".epos-bedarfgrafik-reihen"));
+        Assert.Equal(4, cut.FindAll(".epos-bedarfgrafik-raster button").Count);
+        Assert.Equal(new[] { 0 }, ruf[^1].Wahl);
+    }
+
+    /// <summary>
+    /// Ohne Bildquelle (keine Stundenreihen) bleibt das Zeitraster weg, und das Blatt zeigt die
+    /// Monatssäulen der ersten gewählten Sicht als Pixelbild ohne Zoom.
+    /// </summary>
+    [Fact]
+    public void Ohne_Bildquelle_stehen_die_Monatssaeulen_ohne_Raster()
+    {
+        var cut = Aufbauen(Waerme(true));
+        Reiterknopf(cut, "Grafik").Click();
+
+        Assert.Empty(cut.FindAll(".epos-bedarfgrafik-raster"));
+        DiagrammSvg bild = cut.FindComponents<DiagrammSvg>().Single().Instance;
+        Assert.Equal("bedarf-monate", bild.Kennung);
+        Assert.True(bild.ZeigtWertAmElement);
+        Assert.Empty(cut.FindAll(".epos-diagramm-leiste"));
+        Assert.Empty(cut.FindAll("img"));
     }
 
     // =================================================================================
@@ -982,7 +958,7 @@ public class BedarfErgebnisDialogTests : EposBunitContext
     /// <summary>
     /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
     /// Sichtklasse <c>BedarfErgebnisKiSicht</c>: Die vier Schalter der Anzeige sind
-    /// setzbar, und ein Sichtwechsel nimmt den Jahresverlauf mit.
+    /// setzbar; „jahresverlauf“ ist das Zeitraster Jahr.
     /// </summary>
     [Fact]
     public void Die_Maske_meldet_sich_beim_Assistenten_an_und_wechselt_die_Sicht()
@@ -1007,7 +983,7 @@ public class BedarfErgebnisDialogTests : EposBunitContext
             KiMaskenbruecke.Feldzugang(KiMaskennamen.BEDARF_ERGEBNIS, "jahresverlauf");
         Assert.NotNull(jahr);
         Assert.True(jahr.Setzbar);
-        Assert.Equal(false, jahr.Lesen());
+        Assert.Equal(false, jahr.Lesen());                 // ohne Bildquelle kein Jahr
     }
 
     /// <summary>

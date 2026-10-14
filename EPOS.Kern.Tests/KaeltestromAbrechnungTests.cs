@@ -78,7 +78,11 @@ namespace EPOS.Kern.Tests
         {
             Assert.Contains("Kuehl_EigenerZaehler", AnlagenSql.SQL_ANLAGE_INSERT, StringComparison.Ordinal);
             int platzhalter = AnlagenSql.SQL_ANLAGE_INSERT.Count(c => c == '?');
-            Assert.Equal(66, platzhalter);
+            // 72: 66 + die fuenf Felder des Kollektorfelds (Welle M2) + die Bodenalbedo der Anlage
+            // (AlbedoSchema.SCHRITT); 74 mit Zeitprogramm und Vorlauf_Max (AnlagenfahrplanSchema.SCHRITT);
+            // 77 mit Kuehl_Frei, Kuehl_Frei_Graedigkeit_K und Kuehl_Frei_Leistung_kW (FreieKuehlungSoleSchema.SCHRITT);
+            // 79 mit Einbindung und Vorwaermbetrieb (UebergabegrenzeSchema, UB-E2).
+            Assert.Equal(79, platzhalter);
             Assert.Equal(platzhalter, AnlagenSql.AnlagenParameter(1, new WErzeugerModel()).Length);
 
             Assert.Null(AnlagenSql.EigenerZaehlerOderNull(null));
@@ -169,7 +173,9 @@ namespace EPOS.Kern.Tests
             Assert.True(Zahl("SELECT SchemaVersion FROM Tab_Applikation") >= 119);
             Assert.True(KuehlungSchema.Schritt119Vollstaendig());
             foreach (SchemaSpalte s in KuehlungSchema.Schritt119Spalten())
-                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL"));
+                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL" +
+                                      // Die Kältemaschinen der Referenzprojekte 1055 (KU3-4b), 1059 (AK3-K-K5a) und 1063 (KM3) tragen Kühlträger und eigenen Zähler.
+                                      (s.Tabelle == "Tab_Energieanlagen" ? " AND ID_Projekt NOT IN (1055, 1059, 1063)" : "")));
 
             try
             {
@@ -509,6 +515,9 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             Einrichten();
+            // Fallbildung: Mit der Zonensperre deckt die eingerichtete Wärmepumpe die Kälte von 1045 ganz (R43); die
+            // Legende braucht den ungedeckten Rest, er kommt aus ihrer geminderten Leistungsgrenze.
+            KaelteUnterdeckung.WaermepumpeMindern(PROJEKT);
             Assert.True(WErzeugerCtrl.KonfigurationSchreiben(ANLAGE, PROJEKT,
                 new WErzeugerCtrl.KonfigurationFelder(KuehlIdCarrier: KUEHLTRAEGER)).Ok);
             Stand s = Rechnen();

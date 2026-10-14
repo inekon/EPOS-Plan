@@ -218,7 +218,7 @@ namespace WindowsFormsApplication1
                     a.Ruecklauf = StilleDb.Zahl(StilleDb.Feld(r, "Ruecklauf"));
                 }
                 a.WpTyp = StilleDb.Text(StilleDb.Feld(r, "WPTyp"));
-                a.WQ_Typ = StilleDb.Text(StilleDb.Feld(r, "WQ_Typ"));
+                a.WQ_Typ = ErdreichLaufvorgabe.Quelltyp(a.ID, StilleDb.Text(StilleDb.Feld(r, "WQ_Typ")));
                 a.WQ_Temp = StilleDb.Kommazahl(StilleDb.Feld(r, "WQ_Temp"));
                 a.WQ_ID_Puffer = StilleDb.Zahl(StilleDb.Feld(r, "WQ_ID_Puffer"));
                 a.WQ_Puffer = StilleDb.Text(StilleDb.Feld(r, "WQ_Puffer"));

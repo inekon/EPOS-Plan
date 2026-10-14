@@ -57,8 +57,7 @@ namespace EPOS.Kern.Tests
             PersonenJeWe = 2.5,
             Topologie = ZapfTopologie.Frischwasserstation,
             Zirkulation = false,
-            Ferienbeginn = new int?[] { 200, null, null, null },
-            Ferienende = new int?[] { 220, null, null, null },
+            Ferien = Zonenferienprobe.Liste(new int?[] { 200, null, null, null }, new int?[] { 220, null, null, null }),
             Jahresmesswert = 30000.0,
             JahresmesswertEinheit = ZapfMesswerteinheit.KwhJeJahr,
             JahresmesswertBilanzgrenze = ZapfBilanzgrenze.Zapfstelle,
@@ -102,9 +101,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(8.0, kopie.Bezugsmenge);
             Assert.Equal(ZapfNiveau.Mittel, kopie.Niveau);
             Assert.Equal(2.5, kopie.PersonenJeWe);
-            Assert.Equal(200, kopie.Ferienbeginn[0]);
+            Assert.Equal(200, kopie.Ferien[0].Beginn);
             Assert.All(kopie.Wohnungen, w => Assert.Equal(0, w.Id));
-            Assert.NotSame(stand.Zonen[0].Ferienbeginn, kopie.Ferienbeginn);
+            Assert.NotSame(stand.Zonen[0].Ferien, kopie.Ferien);
 
             // Die bestehende Zone: Id und alles Übrige bleiben, die vier Felder und die
             // Reihenfolge sind neu, der Name ist getrimmt.
@@ -171,6 +170,8 @@ namespace EPOS.Kern.Tests
                          m.Select(x => x.Kennung).ToArray());
             Assert.All(m, x => Assert.Equal(ZapfprofilMeldungsart.Fehler, x.Art));
             Assert.Equal("Zone „Büro“: Bitte eine Nutzungsart wählen.", m[1].Text);
+            // ZB2: Jede Meldung einer Zone trägt deren Position — der Dialog nennt sie dort als nächsten Schritt.
+            Assert.Equal(new int?[] { 0, 1, 1 }, m.Select(x => x.Position).ToArray());
 
             e.Zonen.RemoveRange(0, 2);
             Assert.Empty(ZapfprofilHuelle.Pruefen(e));
@@ -182,6 +183,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal("ZPG_MSG_ZONE_NAME_DOPPELT", doppelt.Kennung);
             Assert.Equal("Wohnen", doppelt.Zone);
             Assert.StartsWith("Zone „Wohnen“: Der Name ist mehrfach vergeben", doppelt.Text);
+            Assert.Null(doppelt.Position);   // der doppelte Name betrifft mehrere Zonen
         }
 
         // =================================================================================
@@ -224,7 +226,7 @@ namespace EPOS.Kern.Tests
                 schluessel.Add("ZPG_BEZUG_" + ZapfprofilHuelle.Gross(b.ToString()));
                 schluessel.Add("ZPG_EINHEIT_" + ZapfprofilHuelle.Gross(b.ToString()));
             }
-            Assert.Equal(14, schluessel.Count);
+            Assert.Equal(16, schluessel.Count);                 // acht Bezugsarten, 8 = Zimmer
 
             string[] fehlend = schluessel.Where(k => string.IsNullOrEmpty(Text(k, DE)) || string.IsNullOrEmpty(Text(k, EN))).ToArray();
             Assert.True(fehlend.Length == 0, "Ohne Text in beiden Sprachen: " + string.Join(", ", fehlend));
@@ -255,12 +257,13 @@ namespace EPOS.Kern.Tests
                 ZapfSatz.Neu("EINGABE_ZIRKULATION_METHODE")));
             Assert.Equal("Die Zirkulation trägt 0: Unbekannte Methode der Zirkulation.", z.Text);
 
-            // Ein Begriff am Satzanfang beginnt groß — in beiden Sprachen; die Nutzungsart steht mit Namen, nie als Id.
+            // Ein Begriff am Satzanfang beginnt groß — in beiden Sprachen; die Zone steht mit Namen, die
+            // fehlende Nutzungsart mit ihrer Nummer (es gibt zu ihr keinen Namen mehr).
             Assert.Equal("Die Speichertemperatur ist negativ.",
                          ZapfSatz.Neu("AUSLEGUNG_NEGATIV", ZapfSatz.Neu("BEGRIFF_SPEICHERTEMPERATUR")).Klartext);
-            Assert.Equal("Die Nutzungsart der Zone „Büro“ steht nicht (mehr) im Katalog — bitte eine Nutzungsart wählen.",
+            Assert.Equal("Die Nutzungsart Nr. 17 der Zone „Büro“ steht nicht (mehr) im Katalog — bitte eine Nutzungsart wählen.",
                          ZapfprofilHuelle.Meldung(new ZapfAblehnung("Büro", ZapfEingabefehler.NutzungsartFehlt,
-                             ZapfSatz.Neu("EINGABE_NUTZUNGSART_FEHLT", "Büro"))).Text);
+                             ZapfSatz.Neu("EINGABE_NUTZUNGSART_FEHLT", "Büro", 17))).Text);
 
             var hinweis = new ZapfHinweis("Wohnen", Mengengeruest.HINWEIS_BANDBREITE,
                 ZapfSatz.Neu("HINWEIS_BEDARF_AUSSERHALB_BANDBREITE", "Wohnen", 1.5, 0.25, "–"));

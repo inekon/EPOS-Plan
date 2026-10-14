@@ -245,10 +245,13 @@ namespace ChartProben
                 List<SvgKnoten> alle = baum.Alle().ToList();
                 e.Knoten = alle.Count.ToString(CultureInfo.InvariantCulture);
 
-                // (2) DG-E3-7: ein reines Pixelbild - kein Zoom, keine Datenreihe.
+                // (2) DG-E3-7: ein reines Pixelbild - kein Zoom, keine GEZEICHNETE Datenreihe.
+                //     Saeulenbilder fuehren ihre Schichten als Datenreihen ohne Strich (CSV am
+                //     Bild); gezeichnet wird keine - das halten die Pruefungen auf inneres svg
+                //     und Reihenpfad darunter.
                 if (m.Flaeche != null) e.Maengel.Add("das Modell fuehrt eine Zeichenflaeche");
-                if (m.Reihen.Count != 0)
-                    e.Maengel.Add("das Modell fuehrt " + m.Reihen.Count + " Datenreihen");
+                if (m.Reihen.Any(r => r.Staerke != 0f))
+                    e.Maengel.Add("das Modell fuehrt eine gezeichnete Datenreihe");
                 if (alle.Any(k => k.Name == "svg" && Attributwert(k, "class") == "epos-flaeche"))
                     e.Maengel.Add("es gibt ein inneres svg");
                 if (alle.Any(k => Attributwert(k, "class") == "epos-reihe"))

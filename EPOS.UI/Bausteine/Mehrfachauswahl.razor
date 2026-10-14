@@ -26,7 +26,7 @@
 
 @namespace EPOS.UI.Bausteine
 
-<div class="epos-mehrfachauswahl">
+<div class="@(Waagerecht ? "epos-mehrfachauswahl epos-mehrfachauswahl--zeile" : "epos-mehrfachauswahl")">
     @if (!string.IsNullOrEmpty(Bezeichnung))
     {
         <p class="epos-untergruppe">@Bezeichnung</p>
@@ -104,6 +104,15 @@
     /// Eintrag wird nicht getrennt.
     /// </summary>
     [Parameter] public int AbsatzNach { get; set; }
+
+    /// <summary>
+    /// Stellt die Eintraege NEBENEINANDER in eine umbrechende Zeile statt untereinander
+    /// in einen rollenden Bereich — die Bauart der Reihenschalter ueber einem Diagramm
+    /// (wie <c>.epos-simerg-schalter</c>). Die Trennlinie nach <see cref="AbsatzNach"/>
+    /// steht dann senkrecht zwischen den Eintraegen. Ohne den Schalter bleibt die Liste
+    /// senkrecht, wie es Formulare und Dialoge brauchen.
+    /// </summary>
+    [Parameter] public bool Waagerecht { get; set; }
 
     /// <summary>Zeigt „Alle" und „Keine" ueber der Liste.</summary>
     [Parameter] public bool MitSammelknoepfen { get; set; } = true;

@@ -38,6 +38,9 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Zeilen"] = ProjektCtrl.NamenListe(),
+                // Das offene Projekt ist die erste Wahl - auf beiden Plattformen ueber
+                // Dienste.Projekt (unter Windows kennt nur er das Projekt).
+                ["AktivesProjekt"] = AktivesProjekt(),
                 ["Quellfelder"] = new Func<string, ProjektKopfDaten>(ProjektCtrl.Kopf),
                 ["Pruefen"] = new Func<string, string, DuplizierBefund>(
                     (quelle, neu) => new ProjektDuplizierenCtrl().PruefeNamen(quelle, neu)),
@@ -99,6 +102,13 @@ namespace WindowsFormsApplication1
         /// <c>Progress&lt;T&gt;</c> erzeugt und bekommt die Meldungen deshalb auf sich
         /// zurück (Hausmuster <c>Form_SpeicherOptimierung</c>).
         /// </summary>
+        /// <summary>Id des offenen Projekts; <c>0</c>, wenn keins offen ist.</summary>
+        private static int AktivesProjekt()
+        {
+            try { return Dienste.Projekt?.Id ?? 0; }
+            catch { return 0; }
+        }
+
         private static Task<int> Duplizieren(string quelle, string neu,
                                              IProgress<KopierStand> melder, CancellationToken abbruch)
         {

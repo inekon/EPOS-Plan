@@ -22,8 +22,42 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// <para><b>Sie hält keinen Zustand</b> (Muster <c>QuelleErdreichKiSicht</c>): Jede
 /// Eigenschaft ruft bei jedem Zugriff ihren Delegaten.</para>
 /// </summary>
-public sealed class GebaeudeKiSicht
+public sealed class GebaeudeKiSicht : EPOS.UI.Dienste.IKiFeldtafel
 {
+    // =====================================================================
+    //  Das Blatt „Nutzungsprofile" des Gebäudeimports (NP2b-5a)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Zugang zum Blatt „Nutzungsprofile", das der Importdialog als Überlagerung trägt — der Gebäudedialog reicht
+    /// ihn über den Importdialog weiter (wie der Gebäudeeditor). Ohne offenes Blatt lesen die Felder <c>np_*</c> leer und
+    /// Setzen nennt den Weg zum Blatt.
+    /// </summary>
+    public RaumnutzungKiZugang? Nutzungsprofile { get; init; }
+
+    /// <summary>Die Zeilen der Zuordnungstabelle des offenen Blatts als Raster zum Lesen.</summary>
+    public IReadOnlyList<RaumnutzungZuordnungKiZeile> Nutzungsprofilzuordnungen
+        => Nutzungsprofile?.Zuordnungen ?? Array.Empty<RaumnutzungZuordnungKiZeile>();
+
+    /// <summary>Das Zeilenbild im Entwurf des offenen Blatts als Raster zum Lesen (NP4c).</summary>
+    public IReadOnlyList<RaumnutzungZeilenbildKiZeile> Nutzungsprofilzeilenbild
+        => Nutzungsprofile?.Zeilenbildzeilen ?? Array.Empty<RaumnutzungZeilenbildKiZeile>();
+
+    /// <summary>Die Stundenprofile im Entwurf des offenen Blatts als Raster zum Lesen (NP4c).</summary>
+    public IReadOnlyList<RaumnutzungStundenKiZeile> Nutzungsprofilstunden
+        => Nutzungsprofile?.Stundenzeilen ?? Array.Empty<RaumnutzungStundenKiZeile>();
+
+    /// <inheritdoc />
+    public object? Lesen(string schluessel) => RaumnutzungKiZugang.IstFeld(schluessel) ? Nutzungsprofile?.Lesen(schluessel) : null;
+
+    /// <inheritdoc />
+    public void Setzen(string schluessel, object? wert)
+    {
+        if (!RaumnutzungKiZugang.IstFeld(schluessel)) return;
+        if (Nutzungsprofile is null) throw new InvalidOperationException(WindowsFormsApplication1.KiNutzungsprofilfelder.GrundOhneBlatt);
+        Nutzungsprofile.Setzen(schluessel, wert);
+    }
+
     // =====================================================================
     //  Die Zugriffswege — der Dialog setzt sie beim Anmelden
     // =====================================================================

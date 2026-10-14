@@ -96,6 +96,9 @@ namespace WindowsFormsApplication1
             if (monat != null)
                 for (int m = 0; m < 12; m++) daten.Monat[m] = monat[m];
 
+            // PW1 Stufe 1: das Temperaturpaar - nur die Prozesswärme führt eines.
+            (daten.Vorlauf, daten.Ruecklauf) = BedarfStammCtrl.Temperaturpaar(art, daten.Name);
+
             return new Dictionary<string, object>
             {
                 ["Daten"] = daten,
@@ -104,6 +107,10 @@ namespace WindowsFormsApplication1
                 ["Exists"] = new Func<string, bool>(n => BedarfStammCtrl.Exists(art, n)),
                 ["Speichern"] = new Func<TypStammDaten, bool, string, KatalogSpeicherErgebnis>(
                     (d, istNeu, bez) => Schreiben(art, d, istNeu, bez)),
+                // Kälte prüft ihr Paar nach der eigenen Regel (Kaltwasser, auch unter 0 °C).
+                ["TemperaturPruefen"] = art == BedarfsArt.Kaelte
+                    ? new Func<double?, double?, string>(KaeltebedarfSchema.Paarpruefung)
+                    : new Func<double?, double?, string>(Prozesstemperatur.Paarpruefung),
 
                 ["TitelText"] = Titel(art),
                 ["GruppeKopf"] = Text_("BTYP_GRP_KOPF", "Bezeichnung"),
@@ -145,7 +152,7 @@ namespace WindowsFormsApplication1
                     bezeichner);
 
             bool ok = BedarfStammCtrl.SaveHead(art, bezeichner, daten.Typ, daten.Beschreibung,
-                                               daten.MonatWerte(), istNeu);
+                                               daten.MonatWerte(), istNeu, daten.Vorlauf, daten.Ruecklauf);
             return new KatalogSpeicherErgebnis(ok,
                 ok ? "" : Text_("BTYP_MSG_FEHLER", "Fehler beim Aktualisieren der Daten!"),
                 bezeichner);
@@ -294,6 +301,8 @@ namespace WindowsFormsApplication1
                     return Text_("BPRO_TITEL_STROM", "Stromverbrauchertyp Stundenverteilung");
                 case BedarfsArt.Prozesswaerme:
                     return Text_("BPRO_TITEL_PROZESS", "Prozesstypen Stundenverteilung");
+                case BedarfsArt.Kaelte:
+                    return Text_("BPRO_TITEL_KAELTE", "Kältetypen Stundenverteilung");
                 default:
                     return Text_("BPRO_TITEL_BRAUCHWASSER", "Brauchwassertypen Stundenverteilung");
             }
@@ -307,6 +316,8 @@ namespace WindowsFormsApplication1
                     return Text_("BPRO_LBL_LISTE_STROM", "Liste der Typen in der DB:");
                 case BedarfsArt.Prozesswaerme:
                     return Text_("BPRO_LBL_LISTE_PROZESS", "Liste der Prozesstypen in der DB:");
+                case BedarfsArt.Kaelte:
+                    return Text_("BPRO_LBL_LISTE_KAELTE", "Liste der Kältetypen in der DB:");
                 default:
                     return Text_("BPRO_LBL_LISTE_BRAUCHWASSER", "Brauchwassertypen in der DB:");
             }
@@ -320,6 +331,8 @@ namespace WindowsFormsApplication1
                     return Text_("BPRO_LBL_BESCHR_STROM", "Beschreibung des ausgewählten Typs:");
                 case BedarfsArt.Prozesswaerme:
                     return Text_("BPRO_LBL_BESCHR_PROZESS", "Beschreibung des ausgewählten Prozesstyps:");
+                case BedarfsArt.Kaelte:
+                    return Text_("BPRO_LBL_BESCHR_KAELTE", "Beschreibung des ausgewählten Kältetyps:");
                 default:
                     return Text_("BPRO_LBL_BESCHR_BRAUCHWASSER",
                                  "Beschreibung des ausgewählten Brauchwassertyps:");
@@ -337,6 +350,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return 2;
                 case BedarfsArt.Prozesswaerme:    return null;
+                case BedarfsArt.Kaelte:           return null;
                 default:                          return 4;
             }
         }
@@ -362,6 +376,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return "Form_EingStromTyp.btn_Help";
                 case BedarfsArt.Prozesswaerme:    return "Form_EingProzTyp.btn_Help";
+                case BedarfsArt.Kaelte:           return "Form_EingProzTyp.btn_Help";
                 default:                          return "Form_EingBrauchwasserTyp.btn_Help";
             }
         }
@@ -393,6 +408,8 @@ namespace WindowsFormsApplication1
                     return Text_("BTYP_TITEL_STROM", "Eingabe Stromverbraucher");
                 case BedarfsArt.Prozesswaerme:
                     return Text_("BTYP_TITEL_PROZESS", "Eingabe Prozess");
+                case BedarfsArt.Kaelte:
+                    return Text_("BTYP_TITEL_KAELTE", "Eingabe Kältebedarf");
                 default:
                     return Text_("BTYP_TITEL_BRAUCHWASSER", "Eingabe Brauchwasser Daten");
             }
@@ -404,6 +421,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return Text_("BTYP_LBL_TYP_STROM", "Verbrauchertyp:");
                 case BedarfsArt.Prozesswaerme:    return Text_("BTYP_LBL_TYP_PROZESS", "Prozesstyp:");
+                case BedarfsArt.Kaelte:           return Text_("BTYP_LBL_TYP_KAELTE", "Kältetyp:");
                 default:                          return Text_("BTYP_LBL_TYP_BRAUCHWASSER", "Brauchwassertyp:");
             }
         }
@@ -414,6 +432,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return Text_("BTYP_MSG_TYP_STROM", "Verbrauchertyp auswählen!");
                 case BedarfsArt.Prozesswaerme:    return Text_("BTYP_MSG_TYP_PROZESS", "Prozesstyp auswählen!");
+                case BedarfsArt.Kaelte:           return Text_("BTYP_MSG_TYP_KAELTE", "Kältetyp auswählen!");
                 default:                          return Text_("BTYP_MSG_TYP_BRAUCHWASSER", "Brauchwassertyp auswählen!");
             }
         }
@@ -424,6 +443,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return "Form_EingDBStromverbraucher.btn_Help";
                 case BedarfsArt.Prozesswaerme:    return "Form_EingDBProzess.btn_Help";
+                case BedarfsArt.Kaelte:           return "Form_EingDBProzess.btn_Help";
                 default:                          return "Form_EingDBBrauchwasser.btn_Help";
             }
         }
