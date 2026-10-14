@@ -86,7 +86,6 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(wohnen ? RaumnutzungSchema.EINHEIT_JE_STUNDE : RaumnutzungSchema.EINHEIT_JE_FLAECHE, p.Aussenluft_Einheit);
                 Assert.Equal(wohnen, p.Betrieb_Von.HasValue && p.Betrieb_Bis.HasValue);
                 Assert.Equal(wohnen, p.Heiz_Aus_Ausserhalb.HasValue);
-                Assert.True(p.Nutzungstage_Woche == null || p.Nutzungstage_Woche == "1111111", p.ToString());
                 Assert.Null(p.Aussenluft_Person);                              // die Fassung 2025-10 führt keine
                 Assert.Null(p.Feiertage_Wie_Sonntag);
                 Assert.True(new object[] { p.Personen_Flaeche, p.Personen_Waerme, p.Personen_Anteil, p.Geraete_Leistung,
@@ -107,6 +106,47 @@ namespace EPOS.Kern.Tests
             zeilen[1] = string.Join(";", felder);
             string kaputt = string.Join("\n", zeilen);
             Assert.Equal(RaumnutzungDinSaat.ANZAHL - 1, RaumnutzungCsv.Lesen(kaputt).Uebernehmbare.Count());
+        }
+
+        /// <summary>
+        /// <b>E143:</b> Das Wochenmuster folgt aus den Nutzungstagen je Jahr der Beschreibung (Montag bis Sonntag): 365 alle
+        /// sieben Tage, 300 Montag bis Samstag, weniger Montag bis Freitag; ohne Angabe leer, die Wohnprofile alle Tage.
+        /// </summary>
+        [Fact]
+        public void Das_Wochenmuster_folgt_aus_den_Nutzungstagen_der_Beschreibung()
+        {
+            var muster = new Dictionary<string, int>();
+            int leer = 0;
+            foreach (Raumnutzungsprofil p in RaumnutzungDinSaat.Profile)
+            {
+                System.Text.RegularExpressions.MatchCollection m =
+                    System.Text.RegularExpressions.Regex.Matches(p.Beschreibung, @"d_nutz,a=(\d+) d/a");
+                string erwartet;
+                if (p.Nummer == null)
+                {
+                    Assert.Empty(m);
+                    erwartet = "1111111";
+                }
+                else if (m.Count == 0) erwartet = null;
+                else
+                {
+                    Assert.Single(m);
+                    int tage = int.Parse(m[0].Groups[1].Value, CultureInfo.InvariantCulture);
+                    Assert.True(RaumnutzungDinSaat.WOCHENMUSTER_REGEL.ContainsKey(tage), p + ": " + tage);
+                    erwartet = RaumnutzungDinSaat.WOCHENMUSTER_REGEL[tage];
+                    // Gegenprobe: die Zahl der Tage im Muster passt zur Jahreszahl.
+                    int wochentage = erwartet.Count(c => c == '1');
+                    Assert.Equal(tage == 365 ? 7 : tage == 300 ? 6 : 5, wochentage);
+                }
+                Assert.Equal(erwartet, p.Nutzungstage_Woche);
+                if (erwartet == null) leer++;
+                else muster[erwartet] = muster.TryGetValue(erwartet, out int n) ? n + 1 : 1;
+            }
+            Assert.Equal(5, leer);
+            Assert.Equal(new[] { "1111100", "1111110", "1111111" }, muster.Keys.OrderBy(k => k, StringComparer.Ordinal));
+            Assert.Equal(RaumnutzungDinSaat.ANZAHL, leer + muster.Values.Sum());
+            // Montag steht vorn: ein Muster mit Samstag frei und Montag genutzt gibt es nicht, Montag bis Freitag heißt 1111100.
+            Assert.DoesNotContain(RaumnutzungDinSaat.Profile, p => p.Nutzungstage_Woche != null && p.Nutzungstage_Woche[0] == '0');
         }
 
         // =============================================================================

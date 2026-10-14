@@ -17,12 +17,18 @@ namespace WindowsFormsApplication1
     // nach dem offenen Entscheid ueber das Wochenmuster - ist reine Datenpflege an der Konstanten TABELLE (dazu PRUEFSUMME
     // neu); Schritt, Abgleich und Ruecknahme lesen allein von hier.
     //
-    // WAS DIE TABELLE TRAEGT. Nutzungs- und (Wohnen) Betriebszeit, Nutzungstage der Woche nur bei 365 Nutzungstagen (fuer
-    // weniger Tage nennt die Norm kein Wochenmuster - offener Anwenderentscheid; die Zellen bleiben leer), Heiz- und
+    // WAS DIE TABELLE TRAEGT. Nutzungs- und (Wohnen) Betriebszeit, Nutzungstage der Woche (siehe WOCHENMUSTER), Heiz- und
     // Kuehlsollwert, Absenkung (der Leser bildet daraus Heiz_Soll_Ausserhalb), Aussenluft mit Einheit, beim Einfamilienhaus
     // "Heizung ausserhalb aus". Leer, weil die Norm sie nicht hergibt: Betriebszeiten Nichtwohnen, Feiertage, die uebrigen
     // Werte ausserhalb, Aussenluft je Person (die Fassung 2025-10 fuehrt keine), Personen, Geraete, Beleuchtung (die Norm
     // nennt Wh/(m2*d) bzw. lx - das steht als Vermerk in der Beschreibung). Die Beschreibung je Profil ist der Quellenvermerk.
+    //
+    // WOCHENMUSTER (Entscheid E143, 14.10.2026, Variante a). Die Norm nennt Nutzungstage je Jahr (d_nutz,a, Quellenvermerk
+    // in der Beschreibung), kein Wochenmuster. Die Spalte Nutzungstage_Woche ist daraus abgeleitet, in der Schreibweise des
+    // Lesers (sieben Ziffern 0/1, Montag bis Sonntag): 365 -> 1111111, 300 -> 1111110 (Montag bis Samstag), 250/230/200/150
+    // -> 1111100 (Montag bis Freitag); ohne d_nutz,a (Zeiten der uebergeordneten Nutzung) leer, die Wohnprofile 1111111. Die
+    // Regel steht in WOCHENMUSTER_REGEL; eine Wache haelt jede Zeile gegen ihre Beschreibung. Sonst ist die Tabelle wie
+    // geliefert.
     //
     // EINFAMILIENHAUS. "Heizung ausserhalb aus" und die Absenkung (-> Heiz_Soll_Ausserhalb) stehen zusammen: Die Profilpruefung
     // laesst beides zu, und der Generator gibt "aus" den Vorrang (Raumnutzungsgenerator: aus vor Sollwert ausserhalb). Der
@@ -52,7 +58,7 @@ namespace WindowsFormsApplication1
         /// SHA-256 (klein, hex) der <see cref="TABELLE"/> in UTF-8 — der Zeilenumbruch der Quelltextdatei wirkt nicht
         /// (<see cref="Pruefsumme"/> vereinheitlicht ihn auf LF).
         /// </summary>
-        public const string PRUEFSUMME = "391984120b9d1e4e4c4b30ea056866ab367c762a16733bdbe285705de2bd978b";
+        public const string PRUEFSUMME = "528d1c599b8cf1a16e9a303e3ce45446fea9ee499b0706750f29ff4e9aeb00a4";
 
         /// <summary>
         /// Der Quellenhinweis, den die Kategorie DIN bis zur Saat trug (Schritte 189/190, eingefroren) — der Schritt
@@ -66,51 +72,63 @@ namespace WindowsFormsApplication1
         /// <summary>Die Beschreibung, die die Kategorie DIN bis zur Saat trug (eingefroren; folgt: <see cref="RaumnutzungSaat.BESCHREIBUNG_DIN"/>).</summary>
         public const string BESCHREIBUNG_VOR_SAAT = "Nutzungsprofile nach DIN/TS 18599-10 mit Nummer und Name, ohne Werte";
 
-        /// <summary>Die gelieferte Tabelle, wörtlich (CSV-Format 6.4, Trenner Semikolon, Dezimalpunkt).</summary>
+        /// <summary>
+        /// Die Regel des Wochenmusters (E143): Nutzungstage je Jahr der Norm (<c>d_nutz,a</c> in der Beschreibung) →
+        /// <c>Nutzungstage_Woche</c> (Montag bis Sonntag). Ohne Angabe bleibt das Muster leer, die Wohnprofile tragen alle Tage.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<int, string> WOCHENMUSTER_REGEL = new Dictionary<int, string>
+        {
+            [365] = "1111111", [300] = "1111110", [250] = "1111100", [230] = "1111100", [200] = "1111100", [150] = "1111100",
+        };
+
+        /// <summary>
+        /// Die gelieferte Tabelle (CSV-Format 6.4, Trenner Semikolon, Dezimalpunkt), wörtlich bis auf die Spalte
+        /// <c>Nutzungstage_Woche</c>, die nach <see cref="WOCHENMUSTER_REGEL"/> abgeleitet ist (E143).
+        /// </summary>
         public const string TABELLE = """
 Nummer;Bezeichner;Beschreibung;Nutzung_Von;Nutzung_Bis;Betrieb_Von;Betrieb_Bis;Nutzungstage_Woche;Feiertage_Wie_Sonntag;Heiz_Soll;Heiz_Soll_Ausserhalb;Heiz_Aus_Ausserhalb;Kuehl_Soll;Kuehl_Soll_Ausserhalb;Kuehl_Aus_Ausserhalb;Aussenluft;Aussenluft_Einheit;Aussenluft_Ausserhalb;Aussenluft_Person;Personen_Flaeche;Personen_Waerme;Personen_Anteil;Personen_Anteil_Ausserhalb;Geraete_Leistung;Geraete_Anteil;Geraete_Anteil_Ausserhalb;Beleuchtung_Leistung;Beleuchtung_Anteil;Heiz_Absenkung_K
-1;Einzelbüro;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=11 h/d; d_nutz,a=250 d/a; t_v,op,d=13 h/d; d_op,a=250 d/a; t_h,op,d=13 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=30 Wh/(m²·d); q_I,app=39 Wh/(m²·d)";7;18;;;;;21;;;24;;;4;m3/hm2;;;;;;;;;;;;4
-2;Gruppenbüro (zwei bis sechs Arbeitsplätze);"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=11 h/d; d_nutz,a=250 d/a; t_v,op,d=13 h/d; d_op,a=250 d/a; t_h,op,d=13 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=30 Wh/(m²·d); q_I,app=70 Wh/(m²·d)";7;18;;;;;21;;;24;;;4;m3/hm2;;;;;;;;;;;;4
-3;Großraumbüro (ab sieben Arbeitsplätze);"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=11 h/d; d_nutz,a=250 d/a; t_v,op,d=13 h/d; d_op,a=250 d/a; t_h,op,d=13 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=42 Wh/(m²·d); q_I,app=60 Wh/(m²·d)";7;18;;;;;21;;;24;;;6;m3/hm2;;;;;;;;;;;;4
-4;Besprechung, Sitzung, Seminar;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=11 h/d; d_nutz,a=250 d/a; t_v,op,d=13 h/d; d_op,a=250 d/a; t_h,op,d=13 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=93 Wh/(m²·d); q_I,app=5 Wh/(m²·d)";7;18;;;;;21;;;24;;;15;m3/hm2;;;;;;;;;;;;4
-5;Schalterhalle;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=11 h/d; d_nutz,a=250 d/a; t_v,op,d=13 h/d; d_op,a=250 d/a; t_h,op,d=13 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=35 Wh/(m²·d); q_I,app=24 Wh/(m²·d)";7;18;;;;;21;;;24;;;2;m3/hm2;;;;;;;;;;;;4
-6;Einzelhandel/Kaufhaus;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=12 h/d; d_nutz,a=300 d/a; t_v,op,d=14 h/d; d_op,a=300 d/a; t_h,op,d=14 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=84 Wh/(m²·d); q_I,app=24 Wh/(m²·d)";8;20;;;;;21;;;24;;;4;m3/hm2;;;;;;;;;;;;4
-7;Einzelhandel/Kaufhaus (Lebensmittelabteilung mit Kühlprodukten);"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=12 h/d; d_nutz,a=300 d/a; t_v,op,d=14 h/d; d_op,a=300 d/a; t_h,op,d=14 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=84 Wh/(m²·d); q_I,app=-170 Wh/(m²·d)";8;20;;;;;21;;;24;;;4;m3/hm2;;;;;;;;;;;;4
-8;Klassenzimmer (Schule), Gruppenraum (Kindergarten);"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=7 h/d; d_nutz,a=200 d/a; t_v,op,d=9 h/d; d_op,a=200 d/a; t_h,op,d=9 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=100 Wh/(m²·d); q_I,app=27 Wh/(m²·d)";8;15;;;;;21;;;24;;;10;m3/hm2;;;;;;;;;;;;4
-9;Hörsaal, Auditorium;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=10 h/d; d_nutz,a=150 d/a; t_v,op,d=12 h/d; d_op,a=150 d/a; t_h,op,d=12 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=420 Wh/(m²·d); q_I,app=1 Wh/(m²·d)";8;18;;;;;21;;;24;;;30;m3/hm2;;;;;;;;;;;;4
+1;Einzelbüro;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=11 h/d; d_nutz,a=250 d/a; t_v,op,d=13 h/d; d_op,a=250 d/a; t_h,op,d=13 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=30 Wh/(m²·d); q_I,app=39 Wh/(m²·d)";7;18;;;1111100;;21;;;24;;;4;m3/hm2;;;;;;;;;;;;4
+2;Gruppenbüro (zwei bis sechs Arbeitsplätze);"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=11 h/d; d_nutz,a=250 d/a; t_v,op,d=13 h/d; d_op,a=250 d/a; t_h,op,d=13 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=30 Wh/(m²·d); q_I,app=70 Wh/(m²·d)";7;18;;;1111100;;21;;;24;;;4;m3/hm2;;;;;;;;;;;;4
+3;Großraumbüro (ab sieben Arbeitsplätze);"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=11 h/d; d_nutz,a=250 d/a; t_v,op,d=13 h/d; d_op,a=250 d/a; t_h,op,d=13 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=42 Wh/(m²·d); q_I,app=60 Wh/(m²·d)";7;18;;;1111100;;21;;;24;;;6;m3/hm2;;;;;;;;;;;;4
+4;Besprechung, Sitzung, Seminar;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=11 h/d; d_nutz,a=250 d/a; t_v,op,d=13 h/d; d_op,a=250 d/a; t_h,op,d=13 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=93 Wh/(m²·d); q_I,app=5 Wh/(m²·d)";7;18;;;1111100;;21;;;24;;;15;m3/hm2;;;;;;;;;;;;4
+5;Schalterhalle;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=11 h/d; d_nutz,a=250 d/a; t_v,op,d=13 h/d; d_op,a=250 d/a; t_h,op,d=13 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=35 Wh/(m²·d); q_I,app=24 Wh/(m²·d)";7;18;;;1111100;;21;;;24;;;2;m3/hm2;;;;;;;;;;;;4
+6;Einzelhandel/Kaufhaus;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=12 h/d; d_nutz,a=300 d/a; t_v,op,d=14 h/d; d_op,a=300 d/a; t_h,op,d=14 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=84 Wh/(m²·d); q_I,app=24 Wh/(m²·d)";8;20;;;1111110;;21;;;24;;;4;m3/hm2;;;;;;;;;;;;4
+7;Einzelhandel/Kaufhaus (Lebensmittelabteilung mit Kühlprodukten);"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=12 h/d; d_nutz,a=300 d/a; t_v,op,d=14 h/d; d_op,a=300 d/a; t_h,op,d=14 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=84 Wh/(m²·d); q_I,app=-170 Wh/(m²·d)";8;20;;;1111110;;21;;;24;;;4;m3/hm2;;;;;;;;;;;;4
+8;Klassenzimmer (Schule), Gruppenraum (Kindergarten);"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=7 h/d; d_nutz,a=200 d/a; t_v,op,d=9 h/d; d_op,a=200 d/a; t_h,op,d=9 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=100 Wh/(m²·d); q_I,app=27 Wh/(m²·d)";8;15;;;1111100;;21;;;24;;;10;m3/hm2;;;;;;;;;;;;4
+9;Hörsaal, Auditorium;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=10 h/d; d_nutz,a=150 d/a; t_v,op,d=12 h/d; d_op,a=150 d/a; t_h,op,d=12 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=420 Wh/(m²·d); q_I,app=1 Wh/(m²·d)";8;18;;;1111100;;21;;;24;;;30;m3/hm2;;;;;;;;;;;;4
 10;Bettenzimmer;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=24 h/d; d_nutz,a=365 d/a; t_v,op,d=24 h/d; d_op,a=365 d/a; t_h,op,d=24 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=120 Wh/(m²·d); q_I,app=24 Wh/(m²·d)";0;24;;;1111111;;22;;;24;;;5;m3/hm2;;;;;;;;;;;;
 11;Hotelzimmer;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=11 h/d; d_nutz,a=365 d/a; t_v,op,d=24 h/d; d_op,a=365 d/a; t_h,op,d=24 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=70 Wh/(m²·d); q_I,app=44 Wh/(m²·d)";21;8;;;1111111;;21;;;24;;;3;m3/hm2;;;;;;;;;;;;
-12;Kantine;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=7 h/d; d_nutz,a=250 d/a; t_v,op,d=9 h/d; d_op,a=250 d/a; t_h,op,d=9 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=175 Wh/(m²·d); q_I,app=3 Wh/(m²·d)";8;15;;;;;21;;;24;;;18;m3/hm2;;;;;;;;;;;;4
-13;Restaurant;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=14 h/d; d_nutz,a=300 d/a; t_v,op,d=16 h/d; d_op,a=300 d/a; t_h,op,d=16 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=233 Wh/(m²·d); q_I,app=14 Wh/(m²·d)";10;24;;;;;21;;;24;;;18;m3/hm2;;;;;;;;;;;;4
-14;Küchen in Nichtwohngebäuden;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=13 h/d; d_nutz,a=300 d/a; t_v,op,d=15 h/d; d_op,a=300 d/a; t_h,op,d=15 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=56 Wh/(m²·d); q_I,app=1800 Wh/(m²·d)";10;23;;;;;21;;;24;;;90;m3/hm2;;;;;;;;;;;;4
-15;Küche – Vorbereitung, Lager;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=13 h/d; d_nutz,a=300 d/a; t_v,op,d=15 h/d; d_op,a=300 d/a; t_h,op,d=15 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=56 Wh/(m²·d); q_I,app=304 Wh/(m²·d)";10;23;;;;;21;;;24;;;15;m3/hm2;;;;;;;;;;;;4
+12;Kantine;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=7 h/d; d_nutz,a=250 d/a; t_v,op,d=9 h/d; d_op,a=250 d/a; t_h,op,d=9 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=175 Wh/(m²·d); q_I,app=3 Wh/(m²·d)";8;15;;;1111100;;21;;;24;;;18;m3/hm2;;;;;;;;;;;;4
+13;Restaurant;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=14 h/d; d_nutz,a=300 d/a; t_v,op,d=16 h/d; d_op,a=300 d/a; t_h,op,d=16 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=233 Wh/(m²·d); q_I,app=14 Wh/(m²·d)";10;24;;;1111110;;21;;;24;;;18;m3/hm2;;;;;;;;;;;;4
+14;Küchen in Nichtwohngebäuden;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=13 h/d; d_nutz,a=300 d/a; t_v,op,d=15 h/d; d_op,a=300 d/a; t_h,op,d=15 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=56 Wh/(m²·d); q_I,app=1800 Wh/(m²·d)";10;23;;;1111110;;21;;;24;;;90;m3/hm2;;;;;;;;;;;;4
+15;Küche – Vorbereitung, Lager;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=13 h/d; d_nutz,a=300 d/a; t_v,op,d=15 h/d; d_op,a=300 d/a; t_h,op,d=15 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=56 Wh/(m²·d); q_I,app=304 Wh/(m²·d)";10;23;;;1111110;;21;;;24;;;15;m3/hm2;;;;;;;;;;;;4
 16;WC und Sanitärräume in Nichtwohngebäuden;"DIN/TS 18599-10:2025-10 Tab. 6/7; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=0 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";;;;;;;21;;;24;;;15;m3/hm2;;;;;;;;;;;;4
-17;Sonstige Aufenthaltsräume;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=11 h/d; d_nutz,a=250 d/a; t_v,op,d=13 h/d; d_op,a=250 d/a; t_h,op,d=13 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=93 Wh/(m²·d); q_I,app=3 Wh/(m²·d)";7;18;;;;;21;;;24;;;7;m3/hm2;;;;;;;;;;;;4
+17;Sonstige Aufenthaltsräume;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=11 h/d; d_nutz,a=250 d/a; t_v,op,d=13 h/d; d_op,a=250 d/a; t_h,op,d=13 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=93 Wh/(m²·d); q_I,app=3 Wh/(m²·d)";7;18;;;1111100;;21;;;24;;;7;m3/hm2;;;;;;;;;;;;4
 18;Nebenflächen (ohne Aufenthaltsräume);"DIN/TS 18599-10:2025-10 Tab. 6/7; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=0 Wh/(m²·d); q_I,app=5 Wh/(m²·d)";;;;;;;21;;;24;;;0.15;m3/hm2;;;;;;;;;;;;4
 19;Verkehrsflächen;"DIN/TS 18599-10:2025-10 Tab. 6/7; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=0 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";;;;;;;21;;;24;;;0;m3/hm2;;;;;;;;;;;;4
 20;Lager, Technik, Archiv;"DIN/TS 18599-10:2025-10 Tab. 6/7; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=0 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";;;;;;;21;;;24;;;0.15;m3/hm2;;;;;;;;;;;;4
 21;Rechenzentrum;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=24 h/d; d_nutz,a=365 d/a; t_v,op,d=24 h/d; d_op,a=365 d/a; t_h,op,d=24 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=14 Wh/(m²·d); q_I,app=1800 Wh/(m²·d)";0;24;;;1111111;;21;;;24;;;1.3;m3/hm2;;;;;;;;;;;;4
-22;Gewerbliche und industrielle Hallen – schwere Arbeit, stehende Tätigkeit;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=9 h/d; d_nutz,a=230 d/a; t_v,op,d=10 h/d; d_op,a=230 d/a; t_h,op,d=10 h/d; θ_i,h,min=15 °C; θ_i,c,max=30 °C; q_I,p=48 Wh/(m²·d); q_I,app=280 Wh/(m²·d)";7;16;;;;;15;;;28;;;3.5;m3/hm2;;;;;;;;;;;;4
-23;Gewerbliche und industrielle Hallen – mittelschwere Arbeit;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=9 h/d; d_nutz,a=230 d/a; t_v,op,d=10 h/d; d_op,a=230 d/a; t_h,op,d=10 h/d; θ_i,h,min=15 °C; θ_i,c,max=28 °C; q_I,p=40 Wh/(m²·d); q_I,app=280 Wh/(m²·d)";7;16;;;;;17;;;26;;;2.5;m3/hm2;;;;;;;;;;;;4
-24;Gewerbliche und industrielle Hallen – leichte Arbeit;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=9 h/d; d_nutz,a=230 d/a; t_v,op,d=10 h/d; d_op,a=230 d/a; t_h,op,d=10 h/d; θ_i,h,min=18 °C; θ_i,c,max=26 °C; q_I,p=32 Wh/(m²·d); q_I,app=280 Wh/(m²·d)";7;16;;;;;20;;;24;;;1.5;m3/hm2;;;;;;;;;;;;4
-25;Zuschauerbereich (Theater und Veranstaltungsbauten);"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=4 h/d; d_nutz,a=250 d/a; t_v,op,d=6 h/d; d_op,a=250 d/a; t_h,op,d=6 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=187 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";19;23;;;;;21;;;24;;;40;m3/hm2;;;;;;;;;;;;4
-26;Foyer (Theater und Veranstaltungsbauten);"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=4 h/d; d_nutz,a=250 d/a; t_v,op,d=6 h/d; d_op,a=250 d/a; t_h,op,d=6 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=88 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";19;23;;;;;21;;;24;;;25;m3/hm2;;;;;;;;;;;;4
-27;Bühne (Theater und Veranstaltungsbauten);"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=10 h/d; d_nutz,a=250 d/a; t_v,op,d=12 h/d; d_op,a=250 d/a; t_h,op,d=12 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=0 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";13;23;;;;;21;;;24;;;0.3;m3/hm2;;;;;;;;;;;;4
-28;Messe/Kongress;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=9 h/d; d_nutz,a=150 d/a; t_v,op,d=11 h/d; d_op,a=150 d/a; t_h,op,d=11 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=140 Wh/(m²·d); q_I,app=12 Wh/(m²·d)";9;18;;;;;21;;;24;;;7;m3/hm2;;;;;;;;;;;;4
-29;Ausstellungsräume und Museum mit konservatorischen Anforderungen;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=8 h/d; d_nutz,a=250 d/a; t_v,op,d=24 h/d; d_op,a=365 d/a; t_h,op,d=24 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=28 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";10;18;;;;;21;;;24;;;2;m3/hm2;;;;;;;;;;;;4
-30;Bibliothek – Lesesaal;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=12 h/d; d_nutz,a=300 d/a; t_v,op,d=14 h/d; d_op,a=300 d/a; t_h,op,d=14 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=168 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";8;20;;;;;21;;;24;;;8;m3/hm2;;;;;;;;;;;;4
-31;Bibliothek – Freihandbereich;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=12 h/d; d_nutz,a=300 d/a; t_v,op,d=14 h/d; d_op,a=300 d/a; t_h,op,d=14 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=42 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";8;20;;;;;21;;;24;;;2;m3/hm2;;;;;;;;;;;;4
-32;Bibliothek – Magazin und Depot;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=12 h/d; d_nutz,a=300 d/a; t_v,op,d=14 h/d; d_op,a=300 d/a; t_h,op,d=14 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=0 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";8;20;;;;;21;;;24;;;3;m3/hm2;;;;;;;;;;;;4
-33;Turnhalle (ohne Zuschauerbereich);"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=15 h/d; d_nutz,a=250 d/a; t_v,op,d=17 h/d; d_op,a=250 d/a; t_h,op,d=17 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=63 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";8;23;;;;;19;;;24;;;3;m3/hm2;;;;;;;;;;;;4
-34;Parkhäuser (Büro- und Privatnutzung);"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=11 h/d; d_nutz,a=250 d/a; t_v,op,d=13 h/d; d_op,a=250 d/a; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=0 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";7;18;;;;;21;;;24;;;8;m3/hm2;;;;;;;;;;;;4
+22;Gewerbliche und industrielle Hallen – schwere Arbeit, stehende Tätigkeit;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=9 h/d; d_nutz,a=230 d/a; t_v,op,d=10 h/d; d_op,a=230 d/a; t_h,op,d=10 h/d; θ_i,h,min=15 °C; θ_i,c,max=30 °C; q_I,p=48 Wh/(m²·d); q_I,app=280 Wh/(m²·d)";7;16;;;1111100;;15;;;28;;;3.5;m3/hm2;;;;;;;;;;;;4
+23;Gewerbliche und industrielle Hallen – mittelschwere Arbeit;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=9 h/d; d_nutz,a=230 d/a; t_v,op,d=10 h/d; d_op,a=230 d/a; t_h,op,d=10 h/d; θ_i,h,min=15 °C; θ_i,c,max=28 °C; q_I,p=40 Wh/(m²·d); q_I,app=280 Wh/(m²·d)";7;16;;;1111100;;17;;;26;;;2.5;m3/hm2;;;;;;;;;;;;4
+24;Gewerbliche und industrielle Hallen – leichte Arbeit;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=9 h/d; d_nutz,a=230 d/a; t_v,op,d=10 h/d; d_op,a=230 d/a; t_h,op,d=10 h/d; θ_i,h,min=18 °C; θ_i,c,max=26 °C; q_I,p=32 Wh/(m²·d); q_I,app=280 Wh/(m²·d)";7;16;;;1111100;;20;;;24;;;1.5;m3/hm2;;;;;;;;;;;;4
+25;Zuschauerbereich (Theater und Veranstaltungsbauten);"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=4 h/d; d_nutz,a=250 d/a; t_v,op,d=6 h/d; d_op,a=250 d/a; t_h,op,d=6 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=187 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";19;23;;;1111100;;21;;;24;;;40;m3/hm2;;;;;;;;;;;;4
+26;Foyer (Theater und Veranstaltungsbauten);"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=4 h/d; d_nutz,a=250 d/a; t_v,op,d=6 h/d; d_op,a=250 d/a; t_h,op,d=6 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=88 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";19;23;;;1111100;;21;;;24;;;25;m3/hm2;;;;;;;;;;;;4
+27;Bühne (Theater und Veranstaltungsbauten);"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=10 h/d; d_nutz,a=250 d/a; t_v,op,d=12 h/d; d_op,a=250 d/a; t_h,op,d=12 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=0 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";13;23;;;1111100;;21;;;24;;;0.3;m3/hm2;;;;;;;;;;;;4
+28;Messe/Kongress;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=9 h/d; d_nutz,a=150 d/a; t_v,op,d=11 h/d; d_op,a=150 d/a; t_h,op,d=11 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=140 Wh/(m²·d); q_I,app=12 Wh/(m²·d)";9;18;;;1111100;;21;;;24;;;7;m3/hm2;;;;;;;;;;;;4
+29;Ausstellungsräume und Museum mit konservatorischen Anforderungen;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=8 h/d; d_nutz,a=250 d/a; t_v,op,d=24 h/d; d_op,a=365 d/a; t_h,op,d=24 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=28 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";10;18;;;1111100;;21;;;24;;;2;m3/hm2;;;;;;;;;;;;4
+30;Bibliothek – Lesesaal;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=12 h/d; d_nutz,a=300 d/a; t_v,op,d=14 h/d; d_op,a=300 d/a; t_h,op,d=14 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=168 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";8;20;;;1111110;;21;;;24;;;8;m3/hm2;;;;;;;;;;;;4
+31;Bibliothek – Freihandbereich;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=12 h/d; d_nutz,a=300 d/a; t_v,op,d=14 h/d; d_op,a=300 d/a; t_h,op,d=14 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=42 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";8;20;;;1111110;;21;;;24;;;2;m3/hm2;;;;;;;;;;;;4
+32;Bibliothek – Magazin und Depot;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=12 h/d; d_nutz,a=300 d/a; t_v,op,d=14 h/d; d_op,a=300 d/a; t_h,op,d=14 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=0 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";8;20;;;1111110;;21;;;24;;;3;m3/hm2;;;;;;;;;;;;4
+33;Turnhalle (ohne Zuschauerbereich);"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=15 h/d; d_nutz,a=250 d/a; t_v,op,d=17 h/d; d_op,a=250 d/a; t_h,op,d=17 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=63 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";8;23;;;1111100;;19;;;24;;;3;m3/hm2;;;;;;;;;;;;4
+34;Parkhäuser (Büro- und Privatnutzung);"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=11 h/d; d_nutz,a=250 d/a; t_v,op,d=13 h/d; d_op,a=250 d/a; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=0 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";7;18;;;1111100;;21;;;24;;;8;m3/hm2;;;;;;;;;;;;4
 35;Parkhäuser (öffentliche Nutzung);"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=15 h/d; d_nutz,a=365 d/a; t_v,op,d=17 h/d; d_op,a=365 d/a; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=0 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";9;24;;;1111111;;21;;;24;;;8;m3/hm2;;;;;;;;;;;;4
 36;Saunabereich;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=12 h/d; d_nutz,a=365 d/a; t_v,op,d=14 h/d; d_op,a=365 d/a; t_h,op,d=14 h/d; θ_i,h,min=23 °C; q_I,p=58 Wh/(m²·d); q_I,app=500 Wh/(m²·d)";10;22;;;1111111;;24;;;;;;15;m3/hm2;;;;;;;;;;;;4
 37;Fitnessraum;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=15 h/d; d_nutz,a=365 d/a; t_v,op,d=17 h/d; d_op,a=365 d/a; t_h,op,d=17 h/d; θ_i,h,min=18 °C; θ_i,c,max=26 °C; q_I,p=264 Wh/(m²·d); q_I,app=24 Wh/(m²·d)";8;23;;;1111111;;20;;;24;;;12;m3/hm2;;;;;;;;;;;;4
-38;Labor;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=11 h/d; d_nutz,a=250 d/a; t_v,op,d=24 h/d; d_op,a=250 d/a; t_h,op,d=13 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=39 Wh/(m²·d); q_I,app=108 Wh/(m²·d)";7;18;;;;;22;;;24;;;25;m3/hm2;;;;;;;;;;;;4
-39;Untersuchungs- und Behandlungsräume;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=11 h/d; d_nutz,a=250 d/a; t_v,op,d=13 h/d; d_op,a=250 d/a; t_h,op,d=13 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=82 Wh/(m²·d); q_I,app=35 Wh/(m²·d)";7;18;;;;;22;;;24;;;10;m3/hm2;;;;;;;;;;;;
+38;Labor;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=11 h/d; d_nutz,a=250 d/a; t_v,op,d=24 h/d; d_op,a=250 d/a; t_h,op,d=13 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=39 Wh/(m²·d); q_I,app=108 Wh/(m²·d)";7;18;;;1111100;;22;;;24;;;25;m3/hm2;;;;;;;;;;;;4
+39;Untersuchungs- und Behandlungsräume;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=11 h/d; d_nutz,a=250 d/a; t_v,op,d=13 h/d; d_op,a=250 d/a; t_h,op,d=13 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=82 Wh/(m²·d); q_I,app=35 Wh/(m²·d)";7;18;;;1111100;;22;;;24;;;10;m3/hm2;;;;;;;;;;;;
 40;Spezialpflegebereiche;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=24 h/d; d_nutz,a=365 d/a; t_v,op,d=24 h/d; d_op,a=365 d/a; t_h,op,d=24 h/d; θ_i,h,min=22 °C; θ_i,c,max=26 °C; q_I,p=112 Wh/(m²·d); q_I,app=228 Wh/(m²·d)";0;24;;;1111111;;24;;;24;;;30;m3/hm2;;;;;;;;;;;;
 41;Flure des allgemeinen Pflegebereichs;"DIN/TS 18599-10:2025-10 Tab. 6/7; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=0 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";;;;;;;22;;;24;;;10;m3/hm2;;;;;;;;;;;;
-42;Arztpraxen und Therapeutische Praxen;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=10 h/d; d_nutz,a=250 d/a; t_v,op,d=12 h/d; d_op,a=250 d/a; t_h,op,d=12 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=53 Wh/(m²·d); q_I,app=25 Wh/(m²·d)";8;18;;;;;22;;;24;;;10;m3/hm2;;;;;;;;;;;;4
+42;Arztpraxen und Therapeutische Praxen;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=10 h/d; d_nutz,a=250 d/a; t_v,op,d=12 h/d; d_op,a=250 d/a; t_h,op,d=12 h/d; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I,p=53 Wh/(m²·d); q_I,app=25 Wh/(m²·d)";8;18;;;1111100;;22;;;24;;;10;m3/hm2;;;;;;;;;;;;4
 43;Lagerhallen, Logistikhallen;"DIN/TS 18599-10:2025-10 Tab. 6/7; t_nutz,d=24 h/d; d_nutz,a=365 d/a; t_v,op,d=24 h/d; d_op,a=365 d/a; t_h,op,d=24 h/d; θ_i,h,min=12 °C; θ_i,c,max=28 °C; q_I,p=0 Wh/(m²·d); q_I,app=0 Wh/(m²·d)";0;24;;;1111111;;12;;;26;;;1;m3/hm2;;;;;;;;;;;;
 ;Wohngebäude – Einfamilienhaus;"DIN/TS 18599-10:2025-10 Tab. 5; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I=45 Wh/(m²·d); Betrieb=Heizung 06–23 (WLA 00–24); n_nutz=0.5 1/h nicht bedarfsgeführt";0;24;6;23;1111111;;20;;1;25;;;0.5;1/h;;;;;;;;;;;;4
 ;Wohngebäude – Mehrfamilienhaus;"DIN/TS 18599-10:2025-10 Tab. 5; θ_i,h,min=20 °C; θ_i,c,max=26 °C; q_I=90 Wh/(m²·d); Betrieb=Heizung 06–23 (WLA 00–24); n_nutz=0.5 1/h nicht bedarfsgeführt";0;24;6;23;1111111;;20;;0;25;;;0.5;1/h;;;;;;;;;;;;4
