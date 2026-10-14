@@ -69,7 +69,7 @@
    uebrigen vier Ueberlagerungen - gegen das Blatt (siehe unten); das haelt die Ebenen
    flach (Gebaeudekatalog -> "Brauchwasser..." -> Zapfprofil statt einer dritten
    verschachtelten Ueberlagerung, Befund #572) und zeigt zugleich nur EINE Fussleiste. *@
-@if (!ZapfprofilOffen)
+@if (!BlattOffen)
 {
     <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
         @if (!string.IsNullOrEmpty(TitelText))
@@ -346,20 +346,22 @@
         </Gruppenkopf>
     }
 
-    @if (Betriebskalender is not null)
-    {
-        <Gruppenkopf Titel="@GruppeKalender">
-            <KindInhalt>
-                <Formularraster>
-                    <KindInhalt>
-                <Auswahlfeld Bezeichnung="@LabelKalender" Eintraege="@KalenderWahlEintraege"
-                             Auswahl="@(_gewaehlt?.KalenderId ?? 0)" AuswahlChanged="KalenderGewaehlt" />
-                    </KindInhalt>
-                </Formularraster>
-                <Herleitungszeile Text="@HinweisKalender" />
-            </KindInhalt>
-        </Gruppenkopf>
     }
+
+    @* KBP-1 (Konzept Kaeltebedarfsprofile 7.1): der Baustein Betriebskalenderwahl - Wahl, Knopf
+       „Betriebskalender…" (das BLATT unten) und der Hinweis zur Lage; er steht auch ohne markierte
+       Projektzeile da und sagt dann, dass Kalender je Zeile gelten. *@
+    @if (KalenderListe is not null)
+    {
+        <Betriebskalenderwahl Eintraege="@KalenderListe" Auswahl="@_gewaehlt?.KalenderId"
+                              AuswahlChanged="KalenderGewaehlt" ZeileGewaehlt="@(_gewaehlt is not null)"
+                              Oeffnen="@(BetriebskalenderGaben is null ? default(EventCallback) : EventCallback.Factory.Create(this, KalenderblattOeffnen))"
+                              Titel="@GruppeKalender" Bezeichnung="@LabelKalender"
+                              TextOhneKalender="@TextOhneKalender" HinweisNormal="@HinweisKalender" />
+    }
+
+    @if (_gewaehlt is not null)
+    {
 
     @* K5b (Konzept Kaeltebedarf 3.4, Anwenderentscheid: wie der Waermepumpendialog alle Einzelheiten in der EINEN
        Bearbeiten-Ueberlagerung): die Feldgruppe „Deckung" der Kaeltezeile als Klappgruppe unter den Projektfeldern.
@@ -443,6 +445,21 @@
             {
                 <ZapfprofilDialog @attributes="_zapfprofilGaben" TitelAnzeigen="false"
                                   Geschlossen="ZapfprofilGeschlossen" />
+            }
+        </KindInhalt>
+    </Blattwechsel>
+
+    @* --- Das BLATT „Betriebskalender…" (KBP-1, Konzept Kaeltebedarfsprofile 7.1) ---
+       derselbe Tausch wie beim Zapfprofil: keine dritte Ueberlagerungsebene. OK (oder ein Schreiben im Blatt)
+       liest die Liste neu und waehlt einen neu angelegten Kalender fuer die markierte Zeile vor; danach geht die
+       Satz-Ueberlagerung mit ihrem Stand beim Oeffnen (Merker) wieder auf. *@
+    <Blattwechsel Offen="@KalenderblattOffen" WirtTitel="@KopfbandText"
+                  Titel="@Resource.BKAL_TITEL" Zurueck="KalenderblattZurueck">
+        <KindInhalt>
+            @if (_kalenderGaben is not null)
+            {
+                <BetriebskalenderDialog @attributes="_kalenderGaben" TitelAnzeigen="false"
+                                        Geschlossen="KalenderblattGeschlossen" />
             }
         </KindInhalt>
     </Blattwechsel>
@@ -538,6 +555,15 @@
     /// Hülle bietet die Wahl nicht an, dann steht die Gruppe nicht da.
     /// </summary>
     [Parameter] public IReadOnlyList<(int Id, string Text)>? Betriebskalender { get; set; }
+
+    /// <summary>
+    /// KBP-1: liest die Kalender nach dem Blatt „Betriebskalender…“ neu (<c>BetriebskalenderHuelle.WahlEinhaengen</c>);
+    /// <c>null</c> = die Liste bleibt, wie sie hereinkam.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<(int Id, string Text)>>? BetriebskalenderNeuLesen { get; set; }
+
+    /// <summary>KBP-1: der Parametersatz des <see cref="BetriebskalenderDialog"/> im Blatt; <c>null</c> = kein Knopf.</summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? BetriebskalenderGaben { get; set; }
 
     /// <summary><c>BPF_GRP_KALENDER</c></summary>
     [Parameter] public string GruppeKalender { get; set; } = Resource.BPF_GRP_KALENDER;
@@ -899,6 +925,21 @@
     /// <summary>Steht das Zapfprofil? Prüfhilfe für die Tests.</summary>
     public bool ZapfprofilOffen => _zapfprofilGaben is not null;
 
+    /// <summary>Steht das Blatt „Betriebskalender…“? Prüfhilfe für die Tests.</summary>
+    public bool KalenderblattOffen => _kalenderGaben is not null;
+
+    /// <summary>Steht ein Blatt (Zapfprofil oder Betriebskalender)? Dann zeichnet der Dialog seinen Haupt-Inhalt nicht.</summary>
+    private bool BlattOffen => ZapfprofilOffen || KalenderblattOffen;
+
+    /// <summary>Die Kalender der Wahl — nach dem Blatt die neu gelesenen, sonst die Gabe der Hülle. Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<(int Id, string Text)>? KalenderListe => _kalenderGelesen ?? Betriebskalender;
+
+    private IReadOnlyDictionary<string, object>? _kalenderGaben;
+    private IReadOnlyList<(int Id, string Text)>? _kalenderGelesen;
+    private IReadOnlyList<(int Id, string Text)>? _kalenderVorher;
+    private bool _satzWiederOeffnen;
+    private bool _satzRueckkehr;
+
     /// <summary>Der gewählte Rechenweg des Brauchwassers — Prüfhilfe für die Tests.</summary>
     public ZapfprofilWeg Rechenweg => _rechenweg;
 
@@ -1097,7 +1138,18 @@
             return;
         }
 
-        if (_fokusZurueckNoetig && !ZapfprofilOffen)
+        if (_satzWiederOeffnen && !BlattOffen && _zweispalten is not null)
+        {
+            // KBP-1: Die Satz-Ueberlagerung stand vor dem Kalenderblatt offen; sie geht mit ihrem Merker wieder auf.
+            _satzWiederOeffnen = false;
+            _fokusZurueckNoetig = false;
+            _satzRueckkehr = _satzGross;
+            _satzGross = false;
+            await _zweispalten.SatzUeberlagerungOeffnen();
+            return;
+        }
+
+        if (_fokusZurueckNoetig && !BlattOffen)
         {
             // Ohne Rollen: Den Rollstand stellt der Blattwechsel wieder her; ein Fokus auf die
             // (hohe) Wurzel liesse den Browser ihn sonst neu bestimmen.
@@ -1199,7 +1251,7 @@
         get
         {
             var l = new List<(int, string)> { (0, TextOhneKalender) };
-            if (Betriebskalender is not null) l.AddRange(Betriebskalender);
+            if (KalenderListe is not null) l.AddRange(KalenderListe);
             return l;
         }
     }
@@ -1464,6 +1516,12 @@
     {
         _satzGross = true;
         _satzUeberlagerungFehler = null;
+        if (_satzRueckkehr)
+        {
+            // KBP-1: zurück vom Kalenderblatt - Merker, angefangene Eingaben und Deckung bleiben, wie sie waren.
+            _satzRueckkehr = false;
+            return;
+        }
         _merker = _gewaehlt is not null ? Satzmerker.Von(_gewaehlt) : null;
         if (_gewaehlt is not null) { _neuVorlauf = _gewaehlt.Vorlauf; _neuRuecklauf = _gewaehlt.Ruecklauf; }
         _deckungArbeit = DeckungSichtbar ? _gewaehlt!.Deckung!.Kopie() : null;
@@ -1896,6 +1954,41 @@
     /// „der Wirt schließt dafür selbst"): kein Übernehmen, kein Rechenweg-Wechsel.
     /// </summary>
     private void ZapfprofilZurueck() => ZapfprofilGeschlossen(null);
+
+    /// <summary>
+    /// KBP-1: „Betriebskalender…“ des Bausteins — der Dialog tauscht seinen Inhalt gegen das Blatt; die Liste davor
+    /// merkt er sich für die Vorwahl eines neu angelegten Kalenders.
+    /// </summary>
+    private void KalenderblattOeffnen()
+    {
+        if (BetriebskalenderGaben is null) return;
+        _kalenderVorher = KalenderListe ?? Array.Empty<(int, string)>();
+        _satzWiederOeffnen = _satzGross;
+        _kalenderGaben = BetriebskalenderGaben();
+    }
+
+    /// <summary>
+    /// KBP-1: das Blatt schließt. Nach OK (oder einem Schreiben im Blatt) liest der Dialog die Liste neu und wählt
+    /// einen neu angelegten Kalender für die markierte Zeile vor (<see cref="Betriebskalenderwahl.NeuerKalender"/>) —
+    /// in den Arbeitsstand, geschrieben wird mit OK.
+    /// </summary>
+    private void KalenderblattGeschlossen(bool geschrieben)
+    {
+        _kalenderGaben = null;
+        _fokusZurueckNoetig = true;
+        // Auch der Rueckknopf liest neu: „Speichern“ im Blatt hat dann schon geschrieben.
+        if (BetriebskalenderNeuLesen is null) return;
+        IReadOnlyList<(int Id, string Text)> neu = BetriebskalenderNeuLesen();
+        int? vorwahl = Betriebskalenderwahl.NeuerKalender(_kalenderVorher, neu);
+        _kalenderGelesen = neu;
+        // Ein geloeschter Kalender steht danach an keiner Zeile mehr (ON DELETE SET NULL) - der Arbeitsstand folgt.
+        foreach (BedarfsProfilZeile z in Zeilen)
+            if (z.KalenderId is int id && !neu.Any(k => k.Id == id)) z.KalenderId = null;
+        if (geschrieben && vorwahl is int v && _gewaehlt is not null) KalenderGewaehlt(v);
+    }
+
+    /// <summary>KBP-1: Rückknopf und Esc des Kalenderblattes — zurück; die Liste wird neu gelesen, vorgewählt wird nichts.</summary>
+    private void KalenderblattZurueck() => KalenderblattGeschlossen(false);
 
     /// <summary>Die Optionsgruppe: stellt nur den Weg um, die Zonen bleiben (ZU4).</summary>
     private void RechenwegWaehlen(int? id)
