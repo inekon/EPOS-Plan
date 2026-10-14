@@ -892,7 +892,7 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
 
             Katalogpaket paket = Katalogpaket.Lesen(Probe);
-            DataRepository.ExecuteNonQuery("UPDATE Tab_Wechselrichter_STAMM SET \"ReadOnly\" = 0, Kosten = 1 WHERE Bezeichner = 'Muster 2500TL'");
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Wechselrichter_STAMM SET \"ReadOnly\" = 0, P_Standby = 1 WHERE Bezeichner = 'Muster 2500TL'");
             KatalogabgleichErgebnis plan = Katalogabgleich.Ausfuehren(paket, nurPruefen: true);
             KatalogabgleichEintrag z = plan.Eintraege.Single(x => x.Tabelle == "Tab_Wechselrichter_STAMM");
             Assert.Equal(Katalogabgleich.AKTION_BEHALTEN, z.Aktion);
@@ -901,7 +901,7 @@ namespace EPOS.Kern.Tests
             (bool ok, string meldung) = Katalogabgleich.Wiederherstellen(paket, "Tab_Wechselrichter_STAMM", z.Schluessel);
             Assert.True(ok, meldung);
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Wechselrichter_STAMM WHERE Bezeichner = 'Muster 2500TL' AND \"ReadOnly\" = 1 " +
-                                  "AND COALESCE(Kosten, -1) <> 1"));
+                                  "AND COALESCE(P_Standby, -1) <> 1"));
         }
 
         // =============================================================================

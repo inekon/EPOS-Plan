@@ -49,8 +49,12 @@ namespace EPOS.Kern.Tests
             // Die Einheit des Bereitschaftsverlusts (Anwenderentscheid 02.10.2026) nennt ihre zwei Werte.
             Assert.All(profil.Detailfelder.Where(f => f.Schluessel != KatalogBrowserProfil.FeldNutzungsdauer &&
                                                       f.Schluessel != KatalogBrowserProfil.FeldBBEinheit &&
+                                                      f.Schluessel != KatalogBrowserProfil.FeldGeraetekosten &&
                                                       !kennlinie.Contains(f.Schluessel)),
                        f => Assert.Equal("", f.Hinweis));
+            // Der Lesewert der Satzvorlage verweist auf die Kostenverwaltung.
+            Assert.All(profil.Detailfelder.Where(f => f.Schluessel == KatalogBrowserProfil.FeldGeraetekosten),
+                       f => Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KBROW_HINT_KOSTENVERWALTUNG, f.Hinweis));
             Assert.All(profil.Detailfelder.Where(f => f.Schluessel == KatalogBrowserProfil.FeldBBEinheit),
                        f => Assert.Equal("kW oder % (der Nennleistung)", f.Hinweis));
             Assert.All(profil.Detailfelder.Where(f => kennlinie.Contains(f.Schluessel)),

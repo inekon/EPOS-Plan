@@ -3543,7 +3543,7 @@
       "Saetze": [
         {
           "Schluessel": "WR:MUSTER_2500TL",
-          "Pruefsumme": "911570ea10053c1846914397455c48bf3e977789ed1869856526ce50d83f4b05",
+          "Pruefsumme": "425bc816a83f947708dee2399899d869c52614bd973ccc5a9f0f4c93a9369808",
           "Werte": {
             "Bezeichner": "Muster 2500TL",
             "Firma": "Muster",
@@ -3568,7 +3568,6 @@
             "Eta_Max": 0.975,
             "P_Standby": 10,
             "P_Nacht": 2,
-            "Kosten": 1200,
             "Sandia_Pdco": null,
             "Sandia_Vdco": null,
             "Sandia_Pso": null,
