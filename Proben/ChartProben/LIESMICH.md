@@ -58,7 +58,7 @@ gegen diese Datei.
 - **Warum alle Bilder und nicht nur die 51 Maßproben.** Was die Messlatte nicht nennt, kann
   sich beim Umbau unbemerkt ändern. Deshalb stehen auch die Bilder der Gegen- und
   Versatzproben darin, die im Bestand nur miteinander verglichen und nie geschrieben werden.
-- **Umfang.** Ein Lauf prüft **254 Bilder**; **225** davon zeichnen ein PNG — Maßproben, die
+- **Umfang.** Ein Lauf prüft **257 Bilder**; **225** davon zeichnen ein PNG — Maßproben, die
   beiden Bilder jeder Gegenprobe und die der Versatzprobe — und stehen als Zeilen in der Messlatte.
   Die SVG-Gegenproben und die Schriftproben der Bildgröße Stufe 2 (`stufe2_…_schrift`) zeichnen
   kein PNG und stehen deshalb nicht darin. `Messlatte_2026-10-14.sha256` nennt alle 225 Bilder
