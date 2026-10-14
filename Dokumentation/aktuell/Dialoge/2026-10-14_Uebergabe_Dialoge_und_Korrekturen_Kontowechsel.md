@@ -43,7 +43,9 @@ Commits mit `[skip ci]`, weil die Testdatenbank dort noch auf 227 steht).
 **Schemakette** (Kopf der Statusdatei, abgestimmt 14.10.2026 07:14 UTC): 228 `GeraetekostenEntfallSchema`
 (Sitzung Kältemaschinen, KB-4) → 229 `StromspeicherKostenSchema` (Sitzung Kältemaschinen, KB-5) → **230
 `KaeltebedarfsprofilVorlagenSchema` (diese Sitzung)** → 231 `RaumnutzungDinWerteSchema` (Gebäudesimulation)
-→ 232 `BauteilkatalogAbschnittSchema` (Gebäudesimulation). Referenzbasis zuletzt
+→ 232 `BauteilkatalogAbschnittSchema` (Gebäudesimulation). Stand 14.10.2026 12:27 UTC: 228 liegt auf origin (`fce4b4c63`, Testdatenbank 228, #1095);
+229 liegt auf dem Zweig `origin/kb5` und wird von der Nachfolgesitzung der Kältemaschinen-Sitzung (neues Konto,
+neue Kennung) gemergt und gehoben, angekündigt in der Kopfzeile der Statusdatei. Referenzbasis zuletzt
 `2026-10-14_R55_KaeltebedarfDezentral` (Referenzlauf byte-gleich in allen Wellen dieser Sitzung).
 
 ## 2 Geltende Entscheide des Anwenders (13./14.10.2026)
