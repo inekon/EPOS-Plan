@@ -15337,6 +15337,24 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
     background: var(--epos-karte-flaeche);
 }
 
+/* Beschriftung UEBER dem Feld: die rechte Spalte ist mit 420 bis 480 px zu
+schmal fuer Beschriftungsspalte plus Pfadfeld plus "Durchsuchen...".
+Dieselben Regeln wie beim Projektkopf. */
+.epos-bericht-karte .epos-formularraster .epos-feld {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 4px;
+    min-height: 0;
+}
+
+.epos-bericht-karte .epos-formularraster .epos-feld > .epos-feld-zeile,
+.epos-bericht-karte .epos-formularraster .epos-feld > .epos-eingabe {
+    grid-column: 1;
+}
+
+.epos-bericht-karte .epos-formularraster .epos-schalter {
+    padding-left: 0;
+}
+
 .epos-bericht-kartentitel {
     margin: 0;
     font-size: var(--epos-schriftgroesse-kartentitel);
