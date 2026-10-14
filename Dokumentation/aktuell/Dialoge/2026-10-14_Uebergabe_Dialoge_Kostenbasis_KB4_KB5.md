@@ -5,12 +5,10 @@ Dieses Papier bereitet den Wechsel der Sitzung auf ein anderes Konto vor. Es lö
 ab (dort stehen die erledigten Punkte 1–9 der Vorgängerübergabe). Regelquelle bleibt [`CLAUDE.md`](../../../CLAUDE.md);
 dieses Papier nennt nur, was die neue Sitzung darüber hinaus wissen muss. Abschnitt 6 ist der Einstiegs-Prompt.
 
-**Geeigneter Zeitpunkt für den Wechsel:** nach dem Push der Welle KB-5 (Schemaschritt 229) mit CI-Vermerk — dann liegt alles auf
-`origin/ios_migration_september`, es gibt keine lokalen Zweige und keine laufenden Agenten mehr. Ein früherer Wechsel ist nach dem
-Push von KB-4 (228) möglich; dann müssen die lokalen Zweige `kb5` (und, falls noch offen, `kb5b`) mit Freigabe des Anwenders als
-Sitzungszweige auf origin gepusht werden, weil die neue Sitzung frisch klont. Scratchpad-Dateien der alten Sitzung gehen beim
-Wechsel verloren; alles, was die neue Sitzung braucht, steht deshalb in diesem Papier und im Inventar
-[`2026-10-14_Uebergabe_KB5_Inventar.md`](2026-10-14_Uebergabe_KB5_Inventar.md).
+**Zeitpunkt des Wechsels:** nach dem Push von KB-4 (#1095, Schemaschritt 228) und des Sitzungszweigs `kb5` am 14.10.2026 — alles
+Übergebene liegt auf origin, kein Agent läuft mehr. Erste Aufgaben der neuen Sitzung: CI-Vermerk #1095 nach grünem Kern-Lauf, dann
+KB-5b und die KB-5-Merge-Welle (Abschnitte 5.3 und 5.4). Scratchpad-Dateien der alten Sitzung sind verloren; alles Nötige steht in
+diesem Papier und im Inventar [`2026-10-14_Uebergabe_KB5_Inventar.md`](2026-10-14_Uebergabe_KB5_Inventar.md).
 
 
 ## 1 Stand (14.10.2026, 07:30 UTC)
@@ -19,12 +17,13 @@ Wechsel verloren; alles, was die neue Sitzung braucht, steht deshalb in diesem P
 |---|---|---|
 | KM‑K2, NK3, WK1, ZI1, KD1, KN1 (#1034–#1042) | fertig, gepusht, CI grün | Statusdatei |
 | KB-3 Saat der Katalogkosten-Satzvorlagen (226), KB-2 Brennstoffpreise in der Trägerkarte (227) | fertig: #1079/#1080, Push `b67d9995`, CI-Lauf 38502511137 grün, Vermerk `c959f451`; Testdatenbank 227 | origin |
-| KB-4 eine Kostenbasis (228 `GeraetekostenEntfallSchema`): KB-4a Heizkessel/BHKW, KB-4b Wärmepumpe/PV/Wechselrichter, KB-4c Solar/Puffer/Kältemaschine, KB-4d eine Leseklasse `KatalogkostensatzCtrl`, Prosa, Konzept; KB-4e sieben Wiki-Seiten | erledigt #1095: Merge `771603419`/`e8b0ec4ba`, Testdatenbank 228 `bba9ebff9`, Vollgate grün (24 841 Tests, Referenzlauf 37/37 gegen R55 PASS); Vorlagenplatzhalter des Berichts geprüft, ohne Gerätespalte | Hauptbaum, Push ausstehend |
-| KB-5 Stromspeicher-Kosten auf Position (229 `StromspeicherKostenSchema`) | Inventar fertig; KB-5a (Rechenwege, Schema, Flotte) in Arbeit auf dem lokalen Zweig `kb5` (auf `kb4`); KB-5b (Masken, Hüllen, Register, Wiki) offen | lokal |
+| KB-4 eine Kostenbasis (228 `GeraetekostenEntfallSchema`): KB-4a Heizkessel/BHKW, KB-4b Wärmepumpe/PV/Wechselrichter, KB-4c Solar/Puffer/Kältemaschine, KB-4d eine Leseklasse `KatalogkostensatzCtrl`, Prosa, Konzept; KB-4e sieben Wiki-Seiten | erledigt #1095: Merge `771603419`/`e8b0ec4ba`, Testdatenbank 228 `bba9ebff9`, Vollgate grün (24 841 Tests, Referenzlauf 37/37 gegen R55 PASS); Vorlagenplatzhalter des Berichts geprüft, ohne Gerätespalte | origin (Push 14.10.2026, CI-Vermerk offen) |
+| KB-5 Stromspeicher-Kosten auf Position (229 `StromspeicherKostenSchema`) | KB-5a fertig und als Sitzungszweig `kb5` auf origin gepusht (Commits `6632a120c`, `a8220c221`, `b72fccff8`, `96fb796ea`, `4912b1643`: Schritt 229, Satzleser für vier Sätze, Rechenwege, Flotte, Tests; Kern-Filter und Windows-Schale 0 Fehler, SQL-Prüfer 0 gegen die 229-Kopie, Referenzlauf der 18 CI-Projekte gegen R55 PASS, Filterlauf grün bis auf die Schemastand-Wache); KB-5b (Abschnitt 5.3) und die Merge-Welle (Abschnitt 5.4) offen | origin, Zweig `kb5` (`git fetch origin kb5 && git worktree add .claude/worktrees/kb5 kb5`) |
 | Schemakette (Kopfzeile der Statusdatei, gepusht `788c0c92d`) | 228 KB-4 (wir) → 229 KB-5 (wir) → 230 `KaeltebedarfsprofilVorlagenSchema` (KBP-2, Sitzung Dialoge/Cloud) → 231 `RaumnutzungDinWerteSchema` (DA-6, Gebäudesimulation) → 232 `BauteilkatalogAbschnittSchema` (BK-5/BK-6, Gebäudesimulation); 233 frei | origin |
 | Referenzbasen | aktuell R55 `2026-10-14_R55_KaeltebedarfDezentral` (37 Projekte, Anlagendialog); R56 ist für KB-5 reserviert und nur nötig, wenn sich ein Wert ändert (die Testdatenbank trägt außer `Modulkosten` keine Stromspeicher-Kosten) — sonst bleibt R55; danach R57 SA4 | `Referenzlaeufe/` |
 
-Lokale Zweige und Worktrees der alten Sitzung (nicht auf origin): `kb4` (`.claude/worktrees/kb4`), `kb4w`, `kb5`. Erledigte und
+Die Zweige `kb4` und `kb4w` sind gemergt und gepusht; `kb5` liegt als Sitzungszweig auf origin (Stand oben). Weitere lokale Stände
+der alten Sitzung gibt es nicht. Erledigte und
 gemergte Zweige `kb2`, `kb3`, `kb4a`, `kb4b`, `kb4c` sind als Worktrees entfernt.
 
 
@@ -43,6 +42,13 @@ gemergte Zweige `kb2`, `kb3`, `kb4a`, `kb4b`, `kb4c` sind als Worktrees entfernt
   geht weiterhin nicht in die Speicherauslegung ein (heute `IFixEur = 0`); der Testwert 3999,5 €/kWh wird ergebnisneutral übernommen,
   obwohl er wie ein Absolutpreis aussieht; die Flotte liest ihre Einheit aus der Satzvorlage und schreibt bei der Übernahme
   Kostenpositionen der Anlage statt Katalogspalten; der Flottenstand `@Projektflotte` von 1046 bleibt unberührt.
+- **Aus KB-5a und der Hebung auf 228, ebenfalls vom Anwender zu bestätigen:** (a) Die Flotten-Übernahme schreibt Kostenpositionen nur
+  noch bei „eigene Kosten“ der Einheit (vorher schrieb sie die Katalogspalten immer); (b) die Verweise `ID_KostenVorlage` und
+  `ID_KostenVorlageInvestition` gehen den Rückweg Kopie → Katalog nicht mit — ein aus einer Kopie angelegter Katalogsatz hat damit
+  keine Kosten; Entscheid in KB-5b, analog zum Wechselrichter in KB-4b; (c) die Saat der Schritte 226/228 setzt an den gesäten
+  Positionen keine `NutzungsdauerID`; Schritt 75 holt das nur nach, wenn eine Datenbank in einem Lauf gehoben wird (Testdatenbank 228:
+  125 Positionen aus 226 tragen die Nutzungsdauer, die 8 Wechselrichter-Positionen aus 228 nicht; ohne Rechenwirkung) — Empfehlung:
+  die Saat setzt die Nutzungsdauer selbst, als kleiner Nachzug in KB-5b.
 
 
 ## 3 Regeln und Fallstricke dieser Sitzung (über `CLAUDE.md` hinaus)
@@ -68,14 +74,18 @@ gemergte Zweige `kb2`, `kb3`, `kb4a`, `kb4b`, `kb4c` sind als Worktrees entfernt
   war `send_message` der Cloud-Werkzeuge; aus einem anderen Konto erreicht man die Sitzungen vermutlich nicht — dann gilt die
   Konvention: Kopfzeile „Schemaschritt angemeldet“ und die Commits auf origin sind die Meldung, Pushs mit Datenbankanhebung werden in
   der Kopfzeile mit Zeitfenster angekündigt.
+- **Nachbarsitzungen wechseln ebenfalls das Konto** (Gebäudesimulation angekündigt am 14.10.2026): Die Kennung einer Sitzung steht im
+  Commit-Trailer `Claude-Session:` ihrer Commits auf origin; die jüngste Kennung je Thema ist die gültige. Nachrichten per
+  `send_message` erreichen nur Sitzungen desselben Kontos — sonst gilt die Kopfzeilen-Konvention.
 - **Testdatenbank-Anhebungen** immer auf der Datei aufsetzen, die zuletzt auf origin liegt (andere Sitzungen ändern sie für ihre
   Basen); vor dem Heben origin mergen, die Datei dabei nie aus dem eigenen Zweig nehmen.
 
 
 ## 4 Offene Punkte (mit Empfehlung)
 
-1. **KB-4 Merge-Welle** (Abschnitt 5.1): erledigt #1095 (lokal); offen: Push mit Ankündigung, Meldung mit SHA an Gebäudesimulation
-   und Anlagendialog, CI-Vermerk.
+1. **KB-4** ist gepusht (#1095); offen ist allein der CI-Vermerk: Kern-Lauf (kern.yml) auf dem Push abwarten, bei Grün in der
+   Statuszeile #1095 „CI-Kern-Lauf: ausstehend (Vermerk folgt)“ durch „CI-Kern-Lauf [<run-id>](https://github.com/inekon/EPOS-Plan/actions/runs/<run-id>) grün auf `<sha>`.“
+   ersetzen, Commit allein mit `[skip ci]`, Push.
 2. **KB-5b** (Abschnitt 5.3) und **KB-5 Merge-Welle** (Abschnitt 5.4): Hebung auf 229, Vollgate gegen R55; R56 nur bei Wertänderung.
 3. **KB-6:** Konzept und Wiki-Quellen sind je Welle nachgeführt; Logbuchsätze ohne Version liegen im Entwurf; Bilder neu ziehen
    (`wikibilder.mjs`), Upload erst ab 16.10.2026 nach Freigabe und Versionsnummer.
@@ -279,7 +289,7 @@ Vorgehen:
    „Schemaschritt angemeldet“ und die letzten Statuszeilen in Dokumentation/aktuell/Status_iOS_Migration.md, die aktuelle Basis unter
    Referenzlaeufe/, den Schemastand der Testdatenbank (Python sqlite3: SELECT SchemaVersion FROM Tab_Applikation). Prüfe, ob KB-4 (228)
    und KB-5 (229) schon auf origin liegen (Statuszeilen, Klassen EPOS.Kern/Allgemein/Update/GeraetekostenEntfallSchema.cs und
-   StromspeicherKostenSchema.cs) und ob Sitzungszweige kb4, kb4w, kb5, kb5b auf origin existieren (git branch -r).
+   StromspeicherKostenSchema.cs) und hole den Sitzungszweig kb5 (git fetch origin kb5; git worktree add .claude/worktrees/kb5 kb5) — er trägt KB-5a fertig.
 2. Umgebung einrichten, falls dotnet fehlt (Abschnitt 3 des Übergabepapiers: SDK aus Ubuntu-Paketen nach /root/dotnet, Symlink
    ~/.dotnet, Alias sdk/10.0.400); git lfs prüfen (Referenzlaeufe/Kenndaten_Test.sqlite > 100 MB, keine Zeigerdatei).
 3. Arbeite die offenen Punkte in der Reihenfolge von Abschnitt 4 ab, mit den Aufträgen aus Abschnitt 5: Agenten nach CLAUDE.md
