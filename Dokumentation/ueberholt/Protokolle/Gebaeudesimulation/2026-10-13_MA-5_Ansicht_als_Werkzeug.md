@@ -101,3 +101,15 @@ schreibt nur über den Bestandsweg der Modellprüfung. Referenzprojekte werden n
 
 „Aus ‚Modell prüfen‘ öffnet ‚Ansicht…‘ die Gebäudeansicht mit den betroffenen Flächen und Zonen hervorgehoben, Vorschläge lassen
 sich an der Legende übernehmen oder verwerfen, und der neue Farbmodus ‚Nutzung‘ zeigt die Nutzungsprofile der Zonen.“
+
+## Nachzug N1 (14.10.2026)
+
+- **Befund:** `GebaeudeNeulesenHuelle.MitNutzung` ordnete die Zonen der Ansicht über den Zonennamen zu; eine nach dem Import
+  umbenannte Zone wurde weder hervorgehoben noch in „Nutzung“ gefärbt.
+- **Ergebnis:** Die Hülle liest die Paarungen der Quelle (`GebaeudeImportCtrl.LesenZuordnungen`, Ziel Zone ohne Bauteil:
+  Kennung → `Tab_Zone.ID`) und ordnet je Zone der Ansicht zuerst über die Kennung zu — die Zone selbst, sonst die Mehrheit
+  ihrer Räume —, erst danach über den Namen. `ZonenIds` tragen damit `Tab_Zone.ID` auch für umbenannte Zonen.
+- **Dateien:** `EPOS.UI.Daten/Bedarf/GebaeudeNeulesenHuelle.cs`.
+- **Tests:** `ModellpruefungAuswahlTests.Neulesen_ordnet_eine_umbenannte_Zone_ueber_die_Kennung_der_Datei_zu` (ohne Paarung
+  fehlt die umbenannte Zone, mit Paarung des Raums wird sie zugeordnet, die Kennung der Zone geht vor dem Namen).
+- **Logbuch:** keiner (Korrektur ohne neue Bedienung).
