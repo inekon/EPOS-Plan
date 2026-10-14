@@ -632,6 +632,34 @@ Heizwärme, Spitze, Nächte ohne Absenkung und damit Erzeuger und Emissionen.
 > Vorlage 1051 bleibt bei der Sollwertrampe; für 1065 gelten daneben die Regeln „gesäte Gebäudedaten“ und „gesäte
 > Konditionierungsdaten“ wie für 1051.
 
+## Die Einfrierregel „gesäte Kältebedarfs-Zuordnungen“ (Referenzprojekt 1072)
+
+Weiterer Ort derselben Falle. Projekt 1072 „Referenzprojekt Kältebedarf dezentral“ ist das einzige Referenzprojekt mit
+Kältebedarfsprofilen: eines zentral über die Kältefolge, zwei dezentral über Split-Geräte neben der Kältefolge — mit festem
+EER anteilig über den Stromträger des Projekts und mit linearem EER über einen eigenen Zähler auf einem abweichenden
+Kühlträger. Summe, Typprofil, Deckungsart, EER-Weg und -Werte, Träger und Zähler verschieben Kältebedarf, Kälteerzeugung,
+Split-Strom, Netzbezug, Strombilanz, Kosten und Emissionen.
+
+> **Wer gesäte Kältebedarfs-Zuordnungen eines Referenzprojekts in der Testdatenbank ändert, friert im selben Schritt die
+> Basis neu ein und begründet den Wechsel hier.**
+>
+> Betroffen sind die Zuordnungszeilen `Z_Projekt_Kaeltebedarf` (ID der Projektkopie, `Summe`, `ID_Betriebskalender`,
+> `Kaelte_Art` und die Deckungsspalten `Deckung`, `Split_EER_Weg`, `Split_EER_1`, `Split_Taussen_1`, `Split_EER_2`,
+> `Split_Taussen_2`, `Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler`), die Projektkopien `Tab_Kaeltebedarf` (Monatsanteile,
+> `ID_Stamm`) und `Tab_Kaeltetyp` (168 Wochenstunden), die Katalogzeilen `Tab_Kaeltebedarf_STAMM` und
+> `Tab_Kaeltetyp_STAMM`, die sie benutzen („Raumkühlung Büro“, „Serverraum“), und der Festwert
+> `KaeltebedarfFestwerte.EER_MIN`. Ebenso betroffen ist das Anlegen oder Entfernen eines Referenzprojekts mit
+> Kältebedarfsprofil oder Split-Zeile; deckt ein Referenzprojekt einen Kühllastgang dezentral, gilt die Regel auch für die
+> Deckungsspalten seiner Kühlzeilen in `Z_ProjektWaermebedarf`. Neue Vorlagen des Kältebedarfskatalogs kommen als neue
+> Katalogzeilen mit neuen IDs; die benutzten Zeilen bleiben unverändert.
+>
+> Die Zeilen legt [`Skripte/referenzprojekt_1072_kaeltebedarf.cs`](Skripte/referenzprojekt_1072_kaeltebedarf.cs) an
+> (unten); gehalten werden sie von `EPOS.Kern.Tests/KaelteDezentralReferenzprojektWacheTests` (jede gesäte Zelle, die Kopie
+> von 1055, ein Lauf mit dem zentralen Profil in der Kältefolge, zwei Zeilen in `Tab_ErgebnisKaelteDezentral`, eigener
+> Zähler neben der Stufenrechnung, Hauptzahl des Deckungsgrads, eingefrorene Jahreswerte). Die Vorlage 1055 bleibt
+> unverändert; für 1072 gelten daneben die Regeln „gesäte Kältemaschinendaten“, „gesäte Gebäudedaten“ und „gesäte
+> Kältedaten“ wie für 1055.
+
 ## Die Einfrierregel „Freigabe der Konditionierung“ (Zonensperre)
 
 Die Gebäude heizen und kühlen eine Zone nie am selben Tag: Die Tagesbetriebsart je Zone wählt innerhalb der
@@ -780,7 +808,7 @@ lehnt die Prüfung sie benannt ab; `EPOS.Kern.Tests/TwwTyptagVorlageTests` hält
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-10-14_R54_Dachflaechen`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-10-14_R55_KaeltebedarfDezentral`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Katalogpaket_Vorlage_DIN4708`,
 `Typtagpaket_Vorlage_VDI4655`, `Skripte` und `LIESMICH.md`
 stehen.**
@@ -810,10 +838,10 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-10-14_R54_Dachflaechen/`** — **sechsunddreißig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
-1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065, 1066, 1067, 1068, 1069, 1070, 1071), **1 171 CSV**, **7 983 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 14.10.2026, Stand `b67d99952`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **227**, 107 864 064 Byte, LFS-SHA-256 `1f2cf95f…`, mit den Projekten 1053 bis 1071,
+**`2026-10-14_R55_KaeltebedarfDezentral/`** — **siebenunddreißig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065, 1066, 1067, 1068, 1069, 1070, 1071, 1072), **1 205 CSV**, **8 259 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 14.10.2026, Stand `d66bc09cc`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **227**, 108 720 128 Byte, LFS-SHA-256 `aee043d0…`, mit den Projekten 1053 bis 1072,
 dem erfundenen Typtagsatz und den Satteldächern von 1052 und 1054; die Nachträge der Schemaschritte unten sind darin
 enthalten). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065 und 1066 bis 1071) jeden Push und rechnet dieselben Projekte
@@ -846,40 +874,48 @@ Rücklaufstufe „Vorwärmer“ von Projekt 1060 samt Rücklauf- und Spreizungsg
 Kältemaschine von Projekt 1063 und `EPOS.Kern.Tests/FreieKuehlungReferenzprojektWacheTests` die freie Kühlung über die
 Wärmequelle von Projekt 1064, `EPOS.Kern.Tests/VorheizReferenzprojektWacheTests` die berechnete Vorheizzeit von
 Projekt 1065 und `EPOS.Kern.Tests/ZapfprofilOptionenReferenzprojekteWacheTests` die Zapfprofile der Projekte 1066 bis
-1071 samt Generator-Bilanz und den eingefrorenen Auslegungswerten von 1071. 1050, 1052, 1054,
-1055, 1056, 1057, 1059, 1061, 1062 und 1064 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle
-sechsunddreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
+1071 samt Generator-Bilanz und den eingefrorenen Auslegungswerten von 1071 und
+`EPOS.Kern.Tests/KaelteDezentralReferenzprojektWacheTests` die Kältebedarfsprofile und die dezentrale Deckung von
+Projekt 1072. 1050, 1052, 1054, 1055, 1056, 1057, 1059, 1061, 1062, 1064 und 1072 stehen nicht in der CI-Auswahl;
+`Werkzeuge/Gate/gate_linux.sh` rechnet alle siebenunddreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: die Dachflächen der Zonenprojekte 1052 und 1054 (Anwenderentscheid E141).** Die Übernahme des
-> Gebäudes 1018 als eine Zone liefert die geneigte Dachfläche mit Neigung 0°; so trugen die Dächer der beheizten Zonen
-> (Gästezimmer 428,28 m², Gastronomie und Verwaltung 285,52 m²) die geneigte Fläche waagerecht über Kellerdecken von
-> 318,93 bzw. 212,62 m² — Verhältnis 0,745 = cos 41,9°, ein Satteldach mit rund 42°. Die Modellprüfung meldete dort 26 %
-> offene Hülle. Ein geneigtes Bauteil an Außenluft braucht einen Azimut (`GebaeudeZonenCtrl.BrauchtAzimut`; ohne ihn
-> lehnen Zonendialog, Modellprüfung und Gebäudelauf benannt ab), darum ist jedes der vier Dächer in zwei Hälften geteilt:
-> „Dach Nord“ (die bisherige Zeile, halbe Fläche, Neigung 42°, Azimut 0°) und „Dach Süd“ (neue Zeile, ID 80 bis 83,
-> halbe Fläche, Neigung 42°, Azimut 180°, übrige Spalten gleich, Rang direkt hinter der Nordhälfte). Die Hüllbilanz
-> schließt danach je beheizte Zone bis auf 0,2 % (Σ A·cos β 318,27 gegen 318,93 m² bzw. 212,18 gegen 212,62 m²). Es
-> gilt die Einfrierregel „gesäte Zonendaten“ (Neigung und Azimut der Bauteile eines Zonen-Referenzprojekts).
-> Der Bauplan [`Skripte/referenzprojekt_1052_bauplan.cs`](Skripte/referenzprojekt_1052_bauplan.cs) teilt das Dach
-> ebenso (`DACHNEIGUNG`), die Wachen von 1052 und 1054 zählen 16/15/2 bzw. 33 Bauteile.
+> **Anlass: das Referenzprojekt 1072 „Referenzprojekt Kältebedarf dezentral“ (Stufe K6 des Konzepts Kältebedarf).**
+> Bis dahin rechnete kein Referenzprojekt ein Kältebedarfsprofil oder eine dezentrale Deckung: Profilbuchung, Split-Buchung
+> neben der Kältefolge mit EER fest und linear, anteiliger Netzbezug des Split-Stroms, eigener Zähler auf einem abweichenden
+> Kühlträger und die Ergebniszeilen je Split-Zeile (`Tab_ErgebnisKaelteDezentral`) standen außerhalb des Regressionsnetzes.
+> 1072 ist eine Kopie von 1055 mit drei Kältebedarfsprofilen (Abschnitt „Das Referenzprojekt 1072“ unten) und steht nicht
+> in der CI-Auswahl. Die Testdatenbank wächst um die Kopie; der Schemastand bleibt 227. Es gilt die Einfrierregel „gesäte
+> Kältebedarfs-Zuordnungen“ (oben).
 >
-> **Gegen R53 sind alle sechsunddreißig Projekte byte-gleich (1 171/1 171 CSV, `vergleich` GESAMT PASS), auch 1052 und
-> 1054.** Grund: Beide Gebäude rechnen ohne den Schalter „Strahlung auf Außenbauteile“ (`Aussenbauteile_Strahlung` = 0);
-> ein opakes Bauteil an Außenluft geht dann allein mit U·A gegen θ_out ein, und Fläche und U-Wert des Dachs sind
-> unverändert (zwei Hälften = die alte Fläche). Neigung und Azimut wirken erst über die Einstrahlung opaker Flächen
-> (Gl. (32)) und bleiben für die Kennzahlen der Zonen ohne Wirkung. Die neue Basis hält den berichtigten Datenstand fest;
-> wer an 1052 oder 1054 den Schalter setzt, rechnet mit dem geneigten Dach. Zwei Läufe sind byte-gleich.
+> **Gegen R54 sind alle sechsunddreißig Projekte byte-gleich (1 171/1 171 CSV; einziger Befund des `vergleich`: 1072 nur
+> im Vergleichslauf)** — ohne Split-Zeile bleibt jeder Rechenweg unberührt. Hinzu kommt 1072 mit 34 CSV (die 32 von 1055
+> und die Reihen `kaeltebedarf_dezentral` und `strom_kaelte_dezentral`) und 276 Skalaren. Die Kälteseite (MWh/a):
+>
+> | Größe | 1055 (zum Vergleich) | 1072 |
+> |---|---|---|
+> | Kältebedarf gesamt | 4,05 | 10,05 |
+> | davon Kältefolge (Gebäude, „Büro Kälteprofil“) | 4,05 | 5,05 |
+> | davon dezentral (Split) | – | 5,00 |
+> | Kältestrom der Kältemaschine | 1,25 | 1,51 |
+> | Strom dezentral (Jahres-EER 3,27) | – | 1,53 |
+> | Deckungsgrad: Hauptzahl / davon Kältefolge | 100 % | 100 % / 100 % |
+>
+> Je Split-Zeile: „Split Büro“ 3,00 MWh Kälte und 1,00 MWh Strom (EER fest 3,0), davon 0,88 MWh Netzbezug anteilig über
+> den Stromträger des Projekts (den Rest decken Photovoltaik und Stromspeicher); „Split Serverraum“ 2,00 MWh Kälte und
+> 0,53 MWh Strom (EER linear, Jahreswert 3,78), Netzbezug 0,53 MWh vollständig über den eigenen Zähler mit Träger 58. Die
+> gespeicherte Größe `Kaelte.DeckungsgradProzent` behält ihre Bedeutung (Kälte der Kältefolge am gesamten Kältebedarf) und
+> steht für 1072 bei 50,25 %; die Hauptzahl mit der Split-Deckung entsteht nur mit Split-Zeile. Zwei Läufe sind byte-gleich
+> (1 205/1 205 CSV).
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
->   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064,1065,1066,1067,1068,1069,1070,1071 \
->   --ziel Referenzlaeufe/2026-10-14_R54_Dachflaechen
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064,1065,1066,1067,1068,1069,1070,1071,1072 \
+>   --ziel Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral
 > ```
 >
-> Befund, Berichtigung und Vergleich stehen im
-> [Protokoll R54](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-14_R54_Dachflaechen.md).
+> Die Regel steht im [Konzept Kältebedarf](../Dokumentation/aktuell/Konzept_Kaeltebedarf_EPOS-Plan.md), Abschnitt 8.1.
 
 
 > **Nachtrag — Schemaschritte 177 bis 179 (Sperrfenster der Wärmepumpe, Nutzungsprofile, Ergänzungen der
@@ -1341,13 +1377,13 @@ sechsunddreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `fb42e2f3b6cf1a010ec3bac6bb654523e5d9701c3bd5a57fa676b03052911f46`**. Die achtzehn Projekte der CI-Auswahl rechnen gegen R53
 > GESAMT PASS.
 
-### Die Vorgängerbasis R53 (Zapfprofiloptionen)
+### Die Vorgängerbasis R54 (Dachflächen)
 
-Sechsunddreißig Projekte, 1 171 CSV, 7 983 Skalare, auf Linux eingefroren gegen die Testdatenbank `6ef7aa68…`
-(Schemastand 224); mit R54 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Referenzprojekte 1066 bis 1071 der
-Zapfprofil-Optionen) unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R54 sind
-die Satteldächer der Zonenprojekte 1052 und 1054 (E141); alle sechsunddreißig Projekte von R53 sind byte-gleich.
+Sechsunddreißig Projekte, 1 171 CSV, 7 983 Skalare, auf Linux eingefroren gegen die Testdatenbank `1f2cf95f…`
+(Schemastand 227); mit R55 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Satteldächer 42° der Zonenprojekte 1052
+und 1054, E141) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R55 ist
+das Referenzprojekt 1072 (Kältebedarf dezentral); alle sechsunddreißig Projekte von R54 sind byte-gleich.
 
 ## Was hier liegt
 
@@ -1359,7 +1395,7 @@ die Satteldächer der Zonenprojekte 1052 und 1054 (E141); alle sechsunddreißig 
 | `Arbeitskopie/` | Die Kopie der Datenbank, auf der gerechnet wird. Wird bei jedem `lauf` neu angelegt. Nicht im Git (`Kenndaten.accdb` ist in `.gitignore`) |
 | `Katalogpaket_frei/` | Der freie Paketteil des Zapfprofilgenerators (CSV im Paketformat N2): Quelle der freien Zeilen der Auslieferungsvorlage und der Testdatenbank |
 | `Kenndaten_Test.sqlite` | Die reduzierte Testdatenbank, gegen die der plattformfreie `EPOS.Referenzlauf` und der SQL-Dialektprüfer laufen. **Versioniert** — eine Änderung daran gehört in einen eigenen Commit |
-| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `anlagenkopplung_1047_referenzprojekt.py` (Referenzprojekt der Anlagenkopplung, Kopie von 1017), `pruefprojekt_1048_pv_preise.cs` (dotnet-Dateiskript: Prüfprojekt 1048 „PV mit Preisen“, ohne Referenzrolle), `pruefprojekt_1053_bhkw_pv.cs` (dotnet-Dateiskript: Prüfprojekt 1053 „Test BHKW mit PV ohne Kaskade“, Kopie von 1018 mit Viertelstunden-Lastgang, ohne Referenzrolle), `referenzprojekt_1049_solarthermie.cs` (dotnet-Dateiskript: Referenzprojekt 1049 „Solarthermie“, Kopie von 1018; die Einfrierregel „gesäte Solardaten“ oben), `referenzprojekt_1050_kesselkennlinie.cs` (dotnet-Dateiskript: Referenzprojekt 1050 „Kesselkennlinie“, Kopie von 1023; die Einfrierregel „gesäte Kesseldaten“ oben), `referenzprojekt_1052_zonen.cs` mit `referenzprojekt_1052_bauplan.cs` (dotnet-Dateiskript samt Bauplan: Zonenprojekt 1052, Kopie von 1018, noch nicht in der Basis; die Einfrierregel „gesäte Zonendaten“ oben), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) `referenzprojekt_1055_kaeltemaschine.py` (Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“, Kopie von 1017; die Einfrierregel „gesäte Kältemaschinendaten“ oben), `referenzprojekt_1056_fahrplan.py` (Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“, Kopie von 1047; die Einfrierregel „gesäte Auslegungsdaten der Übergabe“ oben), `referenzprojekt_1058_ak3.py` (Referenzprojekt 1058 „Referenzprojekt AK3“, Kopie von 1056 auf Stufe AK3 mit Heizungspuffer; dieselbe Einfrierregel) `referenzprojekt_zapfprofil.py` (stellt Projekt 1045 auf den Zapfprofilgenerator um, ZU7; die Einfrierregel „gesäte Zapfprofil-Eingaben" oben), `referenzprojekte_zapfprofil_optionen.cs` (dotnet-Dateiskript: die Referenzprojekte 1066 bis 1071 der Zapfprofil-Optionen samt erfundenem Typtagsatz, ZB12; dieselbe Einfrierregel) und `erdreichquellen_referenzprojekte.py` (Erdsonden an den Sole-Wärmepumpen der Referenzprojekte, Klimazone 6, Referenzprojekt 1057 als Kopie von 1029; die Einfrierregel „gesäte Erdreichquellen“ oben) |
+| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `anlagenkopplung_1047_referenzprojekt.py` (Referenzprojekt der Anlagenkopplung, Kopie von 1017), `pruefprojekt_1048_pv_preise.cs` (dotnet-Dateiskript: Prüfprojekt 1048 „PV mit Preisen“, ohne Referenzrolle), `pruefprojekt_1053_bhkw_pv.cs` (dotnet-Dateiskript: Prüfprojekt 1053 „Test BHKW mit PV ohne Kaskade“, Kopie von 1018 mit Viertelstunden-Lastgang, ohne Referenzrolle), `referenzprojekt_1049_solarthermie.cs` (dotnet-Dateiskript: Referenzprojekt 1049 „Solarthermie“, Kopie von 1018; die Einfrierregel „gesäte Solardaten“ oben), `referenzprojekt_1050_kesselkennlinie.cs` (dotnet-Dateiskript: Referenzprojekt 1050 „Kesselkennlinie“, Kopie von 1023; die Einfrierregel „gesäte Kesseldaten“ oben), `referenzprojekt_1052_zonen.cs` mit `referenzprojekt_1052_bauplan.cs` (dotnet-Dateiskript samt Bauplan: Zonenprojekt 1052, Kopie von 1018, noch nicht in der Basis; die Einfrierregel „gesäte Zonendaten“ oben), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) `referenzprojekt_1055_kaeltemaschine.py` (Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“, Kopie von 1017; die Einfrierregel „gesäte Kältemaschinendaten“ oben), `referenzprojekt_1056_fahrplan.py` (Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“, Kopie von 1047; die Einfrierregel „gesäte Auslegungsdaten der Übergabe“ oben), `referenzprojekt_1058_ak3.py` (Referenzprojekt 1058 „Referenzprojekt AK3“, Kopie von 1056 auf Stufe AK3 mit Heizungspuffer; dieselbe Einfrierregel) `referenzprojekt_zapfprofil.py` (stellt Projekt 1045 auf den Zapfprofilgenerator um, ZU7; die Einfrierregel „gesäte Zapfprofil-Eingaben" oben), `referenzprojekte_zapfprofil_optionen.cs` (dotnet-Dateiskript: die Referenzprojekte 1066 bis 1071 der Zapfprofil-Optionen samt erfundenem Typtagsatz, ZB12; dieselbe Einfrierregel), `referenzprojekt_1072_kaeltebedarf.cs` (dotnet-Dateiskript: Referenzprojekt 1072 „Referenzprojekt Kältebedarf dezentral“, Kopie von 1055 mit drei Kältebedarfsprofilen, K6c; die Einfrierregel „gesäte Kältebedarfs-Zuordnungen“ oben) und `erdreichquellen_referenzprojekte.py` (Erdsonden an den Sole-Wärmepumpen der Referenzprojekte, Klimazone 6, Referenzprojekt 1057 als Kopie von 1029; die Einfrierregel „gesäte Erdreichquellen“ oben) |
 
 Der Werkzeugcode liegt in `../Referenzlauf/`.
 
@@ -1898,6 +1934,41 @@ dass jede Katalogzeile genau einmal steht. Es schreibt in eine Arbeitsdatei, rec
 Brauchwasserweg des Laufs und 1071 die Auslegung, prüft `integrity_check` und `foreign_key_check` und ersetzt erst dann
 die Datenbank. Für einen zweiten Lauf die Sicherung zurücklegen; nach einer Neufassung der Testdatenbank wird es nach
 `referenzprojekt_1065_vorheizen.cs` gezogen.
+
+### Das Referenzprojekt 1072 „Referenzprojekt Kältebedarf dezentral“
+
+Projekt **1072** ist die Kopie des Referenzprojekts 1055 „Kältemaschine mit Kältespeicher“ auf dem Kopierweg des Programms
+(`ProjektDuplizierenCtrl`, Zeilenzahlen je Projekttabelle gleich der Vorlage) — dasselbe Gebäude mit Kühlung, dieselbe
+Kältemaschine 20 kW mit Trockenkühler und eigenem Zähler auf Träger 58, derselbe Kaltwasserspeicher; die Wärmepumpe heizt
+nur, `Tab_Einstellungen.Kuehlbetrieb` = 1. Dazu drei Kältebedarfsprofile, je als Projektkopie des Katalogsatzes samt
+Typprofil über den Programmweg (`KaeltebedarfStammCtrl.CopyFromStamm`, `ID_Stamm` = Katalogsatz), umbenannt und über
+`WizardCtrl.Add_Projekt_Kaelte` zugeordnet:
+
+| `Z_Projekt_Kaeltebedarf` | Projektkopie `Tab_Kaeltebedarf` | Katalogsatz | `Summe` | `Deckung` | EER | `Kuehl_ID_Carrier` / `Kuehl_EigenerZaehler` |
+|---|---|---|---|---|---|---|
+| 1 | 1 „Büro Kälteprofil“ | 1 „Raumkühlung Büro“ | 1,0 MWh/a | `zentral` | – | leer / 0 |
+| 2 | 2 „Split Büro“ | 1 „Raumkühlung Büro“ | 3,0 MWh/a | `split` | `fest` 3,0 (Bemessung 35 °C) | leer = Stromträger des Projekts / 0 |
+| 3 | 3 „Split Serverraum“ | 6 „Serverraum“ | 2,0 MWh/a | `split` | `linear` 4,0 bei 10 °C, 2,5 bei 35 °C | 58 „Elektrische Energie 2“ / 1 |
+
+Art aller drei Zeilen Raum, kein Betriebskalender; die Temperaturpaare der Kopien (16/19 °C bzw. 18/24 °C) reisen mit und
+sind Angabe ohne Wirkung (E-K3). Die Summen bleiben klein: Die Kältefolge deckt Gebäude und zentrales Profil voll, die
+Split-Zeilen laufen ohne Leistungsgrenze neben ihr. Gerechnet: Kältebedarf 10,05 MWh, davon Kältefolge 5,05 MWh (1055:
+4,05) und dezentral 5,00 MWh (Spitze 4,8 kW); Kälte der Maschine 5,14 MWh, Kältestrom 1,51 MWh, 478 Taktstunden;
+Split-Strom 1,53 MWh (Jahres-EER 3,27), Netzbezug des Split-Stroms 0,88 MWh anteilig („Split Büro“) und 0,53 MWh über den
+eigenen Zähler mit Träger 58 („Split Serverraum“); Deckungsgrad 100 % (Hauptzahl), davon Kältefolge 100 %; kein Befund
+der dezentralen Kälte.
+
+```bash
+dotnet run Referenzlaeufe/Skripte/referenzprojekt_1072_kaeltebedarf.cs -- Referenzlaeufe/Kenndaten_Test.sqlite
+```
+
+Das Skript ist wiederholbar (steht 1072 schon mit allen Zellen, Rückgabe 0 ohne Schreiben), schreibt in eine Arbeitsdatei
+neben der Datenbank, prüft Vorlage, Katalogsätze, Kühlträger, jede gesäte Zelle, die Zeilenzahlen der Kopie,
+`integrity_check` und `foreign_key_check`, rechnet einen Probelauf auf einer Wegwerfkopie (Kältefolge voll gedeckt, zwei
+Zeilen in `Tab_ErgebnisKaelteDezentral`, Hauptzahl gesetzt, kein Befund der dezentralen Kälte) und ersetzt erst dann das
+Original. Vorausgesetzt ist 1071 als höchste Projekt-ID; nach einer Neufassung der Testdatenbank wird es nach
+`referenzprojekte_zapfprofil_optionen.cs` gezogen. 1072 steht in der Basis R55 und nicht in der CI-Auswahl; es gilt die
+Einfrierregel „gesäte Kältebedarfs-Zuordnungen“ oben.
 
 ## Die wichtigste Regel
 
