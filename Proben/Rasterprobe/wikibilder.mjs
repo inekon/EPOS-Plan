@@ -37,6 +37,14 @@ const GROESSE_MAX = 300 * 1024;
 
 // Name der Gabe -> Maske im Dateinamen (ASCII).
 const BILDER = [
+  // Die Kostenbasis (Komponente WikibildKosten im Wirt).
+  ['energietraeger', 'Energietraeger'],
+  ['brennstoffe', 'Brennstoffe'],
+  ['kostenverwaltung', 'Kostenverwaltung'],
+  ['wirtschaftlichkeit', 'Wirtschaftlichkeit'],
+  ['tarifstruktur', 'Tarifstruktur'],
+  ['emissionen', 'Emissionen'],
+  ['gesetzesparameter', 'Gesetzesparameter'],
   ['heizkessel', 'Heizkessel'],
   ['bhkw', 'BHKW'],
   ['waermepumpe', 'Waermepumpe'],
@@ -58,7 +66,7 @@ const BILDER = [
 
 // Bei diesen Bildern steht der Bereich "Gewaehlter Satz" aufgeklappt - die Wiki-Seite
 // beschreibt seine Felder.
-const BREIT = new Set(['brauchwasser', 'prozesswaerme', 'waermepumpe', 'stromspeicher']);
+const BREIT = new Set(['brauchwasser', 'prozesswaerme', 'waermepumpe', 'stromspeicher', 'brennstoffe']);
 const SATZ_OFFEN = new Set(['heizkessel', 'bhkw', 'solarkollektoren', 'brauchwasser', 'prozesswaerme']);
 
 if (!ZIEL) {

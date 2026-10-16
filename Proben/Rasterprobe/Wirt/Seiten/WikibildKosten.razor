@@ -1,0 +1,99 @@
+﻿@using EPOS.UI.Dialoge.Kosten
+@using EPOS.UI.Dialoge.Wirtschaftlichkeit
+
+@*  DIE BILDER DER KOSTENBASIS fuer die Wiki-Seite /wikibild.
+
+    Je Gabe ein echter Dialog der Kosten-, Energietraeger- und Wirtschaftlichkeitsmasken,
+    befuellt mit den neutralen Beispielsaetzen aus WikibeispieleKosten (runde Werte,
+    keine Norm- oder Gesetzeswerte, keine Hersteller). Keine Datenbank: Die Delegaten
+    liefern die Saetze, Speichern und Schliessen tun nichts.
+
+    Gaben: energietraeger|brennstoffe|kostenverwaltung|wirtschaftlichkeit|tarifstruktur|
+           emissionen|gesetzesparameter
+*@
+
+@switch (Bild)
+{
+    case "energietraeger":
+        <EnergietraegerDialog Liste="@WikibeispieleKosten.Traegerliste"
+                              Katalogkontext="false"
+                              TraegerVorwahl="3"
+                              TraegerLaden="@(_ => _traeger)"
+                              Nachrechnen="@(() => _traeger)"
+                              Speichern="@(() => true)"
+                              Geschlossen="@(b => { })" />
+        break;
+
+    case "brennstoffe":
+        <ProjektBrennstoffeDialog Stand="@WikibeispieleKosten.Brennstoffe()"
+                                  Speichern="@((_, _) => Task.FromResult(new ProjektBrennstoffeAntwort(true, "", null)))"
+                                  Zuruecksetzen="@(_ => Task.FromResult(new ProjektBrennstoffeAntwort(true, "", null)))"
+                                  Uebernehmen="@(_ => Task.FromResult(new ProjektBrennstoffeAntwort(true, "", null)))"
+                                  Geschlossen="@(b => { })" />
+        break;
+
+    case "kostenverwaltung":
+        <KostenKomponenteDialog Eintraege="@WikibeispieleKosten.Komponenten"
+                                EintragVorwahl="0"
+                                Laden="@(_ => _kosten)"
+                                Summen="@(() => _kosten.Summen)"
+                                Speichern="@(() => true)"
+                                Geschlossen="@(b => { })" />
+        break;
+
+    case "wirtschaftlichkeit":
+        <WirtschaftlichkeitParameterDialog Parameter="@WikibeispieleKosten.Wirtschaftlichkeit()"
+                                           Kraftwerksparks="@(new[] { (0, "(keine Emissionsbilanz)") })"
+                                           ReferenzkesselZeile="Referenzkessel (aus Projekt): Kessel 1 — η 90 %, Erdgas"
+                                           Co2PrognoseAb="2028"
+                                           Speichern="@(() => true)"
+                                           Geschlossen="@(e => { })" />
+        break;
+
+    case "tarifstruktur":
+        <TarifstrukturDialog Tarif="@WikibeispieleKosten.Tarif()"
+                             Sicht="TarifSicht.Bhkw"
+                             Speichern="@(() => true)"
+                             Geschlossen="@(b => { })" />
+        break;
+
+    case "emissionen":
+        <EmissionskatalogDialog Arten="@WikibeispieleKosten.Emissionsarten"
+                                ArtVorwahl="CO2"
+                                MitTraeger="true"
+                                KontextText="Energieträger: Erdgas"
+                                ArtenLaden="@(() => WikibeispieleKosten.Emissionsarten)"
+                                WerteLaden="@(id => WikibeispieleKosten.Emissionswerte(id))"
+                                Geschlossen="@(e => { })" />
+        break;
+
+    case "gesetzesparameter":
+        <GesetzeskatalogDialog Klassen="@(() => Task.FromResult(WikibeispieleKosten.Gesetzesklassen))"
+                               Zeilen="@(k => Task.FromResult(WikibeispieleKosten.Gesetzeszeilen(k)))"
+                               Klassenvorrat="@WikibeispieleKosten.Gesetzesklassen"
+                               Einheiten="@(new[] { "€/t", "ct/kWh" })"
+                               Statuswerte="@(new[] { "Prognose", "gültig" })"
+                               Vorwahl="CO2_PREIS"
+                               AktuellesJahr="2026"
+                               Geschlossen="@(b => { })" />
+        break;
+
+    default:
+        <p>Unbekanntes Bild „@Bild“.</p>
+        break;
+}
+
+@code {
+    /// <summary>Der Name der Gabe (<c>?bild=</c>).</summary>
+    [Parameter] public string Bild { get; set; } = "";
+
+    /// <summary>Die Namen, die diese Komponente zeichnet.</summary>
+    public static readonly IReadOnlySet<string> Namen = new HashSet<string>
+    {
+        "energietraeger", "brennstoffe", "kostenverwaltung", "wirtschaftlichkeit",
+        "tarifstruktur", "emissionen", "gesetzesparameter"
+    };
+
+    private readonly EnergietraegerAnsicht _traeger = WikibeispieleKosten.Wasser();
+    private readonly KostenKomponenteStand _kosten = WikibeispieleKosten.Kosten();
+}
