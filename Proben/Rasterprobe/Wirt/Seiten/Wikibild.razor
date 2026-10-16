@@ -32,10 +32,19 @@
 <style>
     .epos-wikibild[data-breit] .epos-dialog { max-width: 1380px; }
     .epos-wikibild[data-breit] .epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 0 14rem !important; }
+    /* Brennstoffe des Projekts: zwölf Spalten samt Aktionen stehen erst mit schmalerem Zellenrand ganz im Bild. */
+    .epos-wikibild[data-bild="brennstoffe"] .epos-pbrs-liste :is(th, td) { padding-inline: 0.35rem; }
+    .epos-wikibild[data-bild="brennstoffe"] .epos-pbrs-liste .epos-pbrs-bearbeiten { white-space: nowrap; }
 </style>
 <div class="epos-probe-wirt epos-wikibild" data-bild="@_bild" data-breit="@(Breit ? "" : null)">
     @switch (_bild)
     {
+        // Die Bilder der Kostenbasis (Energieträger, Brennstoffe, Kostenverwaltung,
+        // Wirtschaftlichkeit, Tarifstruktur, Emissionen, Gesetzesparameter) zeichnet WikibildKosten.
+        case var kosten when WikibildKosten.Namen.Contains(kosten):
+            <WikibildKosten Bild="@kosten" />
+            break;
+
         case "heizkessel":
             <HeizkesselDialog Zeilen="@_kessel"
                               Katalogprofil="@Profil(Anlagenart.Heizkessel)"
@@ -361,7 +370,8 @@
     private string _bild = "";
 
     // Die Bilder, deren Katalog-Kopfzeile erst im breiten Dialog ungekürzt steht (wikibilder.mjs: BREIT).
-    private bool Breit => _bild is "brauchwasser" or "prozesswaerme" or "waermepumpe" or "stromspeicher" or "kaeltebedarf" or "waermebedarf" or "strombedarf";
+    private bool Breit => _bild is "brauchwasser" or "prozesswaerme" or "waermepumpe" or "stromspeicher" or "kaeltebedarf" or "waermebedarf" or "strombedarf"
+                         or "brennstoffe";
     private readonly Katalogfilterstand _filterstand = new();
     private BedarfsArt _bedarfArt = BedarfsArt.Brauchwasser;
 
