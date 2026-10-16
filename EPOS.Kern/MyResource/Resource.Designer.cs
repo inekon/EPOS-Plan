@@ -99369,7 +99369,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherauslegung.Nenninhalt.* ({0}) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nenninhaltsliste der Speicherauslegung ({0}) ähnelt.
         /// </summary>
         public static string PAUS_HERK_NENNINHALTE_PARAMETER {
             get {
@@ -99612,7 +99612,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmespeicher-Tool (Quellen/Waermespeicher-Tool), Lastgang-Simulation ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmespeicher-Tool, Lastgang-Simulation ähnelt.
         /// </summary>
         public static string PAUS_HERK_Q_TOOL {
             get {

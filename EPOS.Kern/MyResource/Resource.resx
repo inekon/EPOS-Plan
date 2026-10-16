@@ -44837,7 +44837,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Fachportale zur Taktung (Sekundärquelle)</value>
   </data>
   <data name="PAUS_HERK_Q_TOOL" xml:space="preserve">
-    <value>Wärmespeicher-Tool (Quellen/Waermespeicher-Tool), Lastgang-Simulation</value>
+    <value>Wärmespeicher-Tool, Lastgang-Simulation</value>
   </data>
   <data name="PAUS_HERK_Q_EN15450" xml:space="preserve">
     <value>DIN EN 15450</value>
@@ -45026,7 +45026,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>, Nenninhalt {0} l</value>
   </data>
   <data name="PAUS_HERK_NENNINHALTE_PARAMETER" xml:space="preserve">
-    <value>Speicherauslegung.Nenninhalt.* ({0})</value>
+    <value>Nenninhaltsliste der Speicherauslegung ({0})</value>
   </data>
   <data name="PAUS_HERK_NENNINHALTE_VORGABE" xml:space="preserve">
     <value>feste Liste 100 … 10 000 l, darüber Raster 1 000 l</value>

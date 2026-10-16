@@ -44830,7 +44830,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Technical portals on cycling (secondary source)</value>
   </data>
   <data name="PAUS_HERK_Q_TOOL" xml:space="preserve">
-    <value>Heat storage tool (Quellen/Waermespeicher-Tool), load profile simulation</value>
+    <value>Heat storage tool, load profile simulation</value>
   </data>
   <data name="PAUS_HERK_Q_EN15450" xml:space="preserve">
     <value>DIN EN 15450</value>
@@ -45019,7 +45019,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>, nominal volume {0} l</value>
   </data>
   <data name="PAUS_HERK_NENNINHALTE_PARAMETER" xml:space="preserve">
-    <value>Speicherauslegung.Nenninhalt.* ({0})</value>
+    <value>Nominal volume list of the storage sizing ({0})</value>
   </data>
   <data name="PAUS_HERK_NENNINHALTE_VORGABE" xml:space="preserve">
     <value>fixed list 100 … 10,000 l, above that a 1,000 l grid</value>

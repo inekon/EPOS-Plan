@@ -985,7 +985,7 @@ namespace WindowsFormsApplication1
             if (w.Liste != null)
             {
                 h.Add(new PufferAuslegungHerkunft(nameof(PufferAuslegungEingang.Nenninhalte), PufferHerkunftsquelle.PARAMETER,
-                                                  T("PAUS_HERK_NENNINHALTE_PARAMETER", "Speicherauslegung.Nenninhalt.* ({0})", w.Quelle)));
+                                                  T("PAUS_HERK_NENNINHALTE_PARAMETER", "Nenninhaltsliste der Speicherauslegung ({0})", w.Quelle)));
                 return w.Liste.WerteL;
             }
             h.Add(new PufferAuslegungHerkunft(nameof(PufferAuslegungEingang.Nenninhalte), PufferHerkunftsquelle.VORGABE,
