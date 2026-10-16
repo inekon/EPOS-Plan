@@ -144051,6 +144051,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} m³/a × {1} €/m³ ähnelt.
+        /// </summary>
+        public static string WIRT_WASSER_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("WIRT_WASSER_HERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Amortisation, dynamisch [a] ähnelt.
         /// </summary>
         public static string WIRT_ZEILE_AMORTISATION {
@@ -144479,6 +144488,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ZEILE_VERMIEDEN_LEISTUNG {
             get {
                 return ResourceManager.GetString("WIRT_ZEILE_VERMIEDEN_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Wasser Rückkühlwerk ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_WASSER_RKW {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_WASSER_RKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wasser Rückkühlwerk: Menge × Preis ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_WASSER_RKW_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_WASSER_RKW_HERLEITUNG", resourceCulture);
             }
         }
         

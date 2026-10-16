@@ -7148,6 +7148,15 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_ZEILE_INVESTITION" xml:space="preserve">
     <value>Investition I₀ [€]</value>
   </data>
+  <data name="WIRT_WASSER_HERLEITUNG" xml:space="preserve">
+    <value>{0} m³/a × {1} €/m³</value>
+  </data>
+  <data name="WIRT_ZEILE_WASSER_RKW" xml:space="preserve">
+    <value>davon Wasser Rückkühlwerk</value>
+  </data>
+  <data name="WIRT_ZEILE_WASSER_RKW_HERLEITUNG" xml:space="preserve">
+    <value>Wasser Rückkühlwerk: Menge × Preis</value>
+  </data>
   <data name="WIRT_ZEILE_BETRIEBSKOSTEN" xml:space="preserve">
     <value>Betriebskosten [€/a]</value>
   </data>
