@@ -212,6 +212,31 @@
                                                          FarbeZurueckgesetzt="FarbeVerwerfen" />
                                         </KindInhalt>
                                     </Reiterblatt>
+                                    @* WEITERE REIHEN (KD-8 Teil A, KD-Q13): die gespeicherten
+                                       Rechenspalten der Region ausser Temperatur und Sonnenwinkel,
+                                       eine Einheit je Bild, bis zu drei Reihen (KD-Q11). Jede neue
+                                       Wahl ist ein neues Modell - DiagrammSvg baut neu, der Zoom
+                                       kehrt auf x1 zurueck. *@
+                                    <Reiterblatt Schluessel="WEITERE" Titel="@ReiterWeitereText">
+                                        <KindInhalt>
+                                            @if (_reihenbestand.Count > 0)
+                                            {
+                                                <Reihenwahl Kennung="klima-jahr" Bezeichnung="@WahlJahrText"
+                                                            Kopf="@KopfJahrText"
+                                                            Kopfhinweis="@string.Format(CultureInfo.CurrentCulture, HinweisJahrText, JahrEinheit)"
+                                                            Leise="@GleicheEinheitText"
+                                                            Chips="@JahrChips" Umschalten="JahrUmschalten" />
+                                            }
+                                            <DiagrammSvg Modell="@_modellReihen" Kennung="klima-reihen"
+                                                         Bezeichnung="@DiagrammReihenText"
+                                                         PlatzhalterText="@KeineDatenText"
+                                                         Einheit="@JahrEinheit"
+                                                         Palette="@Farbpalette.Aktuell"
+                                                         FarbwahlErlaubt="@FarbwahlMoeglich"
+                                                         FarbeGewaehlt="FarbeUebernehmen"
+                                                         FarbeZurueckgesetzt="FarbeVerwerfen" />
+                                        </KindInhalt>
+                                    </Reiterblatt>
                                 </KindInhalt>
                             </Reiter>
                         </KindInhalt>
@@ -467,6 +492,12 @@
                                 <DiagrammSvg Modell="@_vorschaubild" Kennung="klima-vorschau"
                                              Bezeichnung="@BildBezeichnungText"
                                              PlatzhalterText="@KeineDatenText" />
+                                @* KD-8 Teil A: die Reihenwahl des Monatsbilds; hoechstens zwei
+                                   Einheiten, eine dritte ist weich gesperrt (KD-Q10). *@
+                                <Reihenwahl Kennung="klima-vorschau" Bezeichnung="@WahlVorschauText"
+                                            Kopf="@KopfVorschauText" Kopfhinweis="@HinweisVorschauText"
+                                            Chips="@VorschauChips(kz)" Umschalten="VorschauUmschalten"
+                                            Vorgabe="VorschauVorgabe" />
                             }
 
                             @if (_vorschau.Parameterbestand.Count > 0)
@@ -519,7 +550,7 @@
             {
                 <DiagrammSvg Modell="@GrossModell" Kennung="@("klima-gross-" + _reiter.ToLowerInvariant())"
                              Bezeichnung="@GrossTitel" PlatzhalterText="@KeineDatenText"
-                             Einheit="@(_reiter == "SONNENWINKEL" ? EinheitWinkelText : EinheitTemperaturText)"
+                             Einheit="@(_reiter == "SONNENWINKEL" ? EinheitWinkelText : _reiter == "WEITERE" ? JahrEinheit : EinheitTemperaturText)"
                              Palette="@Farbpalette.Aktuell"
                              FarbwahlErlaubt="@FarbwahlMoeglich"
                              FarbeGewaehlt="FarbeUebernehmen"
@@ -575,6 +606,12 @@
 
         /// <summary>Der Höchstwert der Außentemperatur [°C]; <c>null</c> = keine Stundenwerte.</summary>
         public double? Hoechstwert { get; init; }
+
+        /// <summary>
+        /// Die gespeicherten Reihen der Region für den Reiter „Weitere Reihen“ (KD-8 Teil A,
+        /// <c>KlimaReihenkatalog.AusRechenspalten</c>); leer = kein Reiterinhalt.
+        /// </summary>
+        public IReadOnlyList<KlimaReihenwerte> Reihenbestand { get; init; } = Array.Empty<KlimaReihenwerte>();
     }
 
     // =====================================================================
@@ -713,6 +750,15 @@
 
     [Parameter] public string ReiterTemperaturText { get; set; } = Resource.KLIMA_REITER_TEMPERATUR;
     [Parameter] public string ReiterSonnenwinkelText { get; set; } = Resource.KLIMA_REITER_SONNENWINKEL;
+    [Parameter] public string ReiterWeitereText { get; set; } = Resource.KLIMA_RW_REITER;
+    [Parameter] public string DiagrammReihenText { get; set; } = Resource.KLIMA_RW_DIA_BEZEICHNUNG;
+    [Parameter] public string WahlJahrText { get; set; } = Resource.KLIMA_RW_WAHL_JAHR;
+    [Parameter] public string KopfJahrText { get; set; } = Resource.KLIMA_RW_KOPF_JAHR;
+    [Parameter] public string HinweisJahrText { get; set; } = Resource.KLIMA_RW_HINWEIS_JAHR;
+    [Parameter] public string GleicheEinheitText { get; set; } = Resource.KLIMA_RW_GLEICHE_EINHEIT;
+    [Parameter] public string WahlVorschauText { get; set; } = Resource.KLIMA_RW_WAHL_VORSCHAU;
+    [Parameter] public string KopfVorschauText { get; set; } = Resource.KLIMA_RW_KOPF_VORSCHAU;
+    [Parameter] public string HinweisVorschauText { get; set; } = Resource.KLIMA_RW_HINWEIS_VORSCHAU;
     [Parameter] public string DiagrammTemperaturText { get; set; } = Resource.KLIMA_DIA_TEMPERATUR;
     [Parameter] public string DiagrammSonnenwinkelText { get; set; } = Resource.KLIMA_DIA_SONNENWINKEL;
     [Parameter] public string KeineDatenText { get; set; } = Resource.KLIMA_MSG_KEINE_DATEN;
@@ -828,6 +874,12 @@
     private string _details = "";
     private Zeichenmodell? _modellTemperatur;
     private Zeichenmodell? _modellSonnenwinkel;
+
+    // KD-8 Teil A: Reiter „Weitere Reihen“ und Reihenwahl der Vorschau.
+    private IReadOnlyList<KlimaReihenwerte> _reihenbestand = Array.Empty<KlimaReihenwerte>();
+    private IReadOnlyList<string> _jahrWahl = KlimaReihenkatalog.VORGABE_JAHRESVERLAUF;
+    private Zeichenmodell? _modellReihen;
+    private List<string> _vorschauWahl = new(KlimaReihenkatalog.VORGABE_VORSCHAU);
     private double? _jahresmittel;
     private double? _tiefstwert;
     private double? _hoechstwert;
@@ -1147,7 +1199,12 @@
     /// <summary>Gibt es ein Bild zum Vergrößern?</summary>
     private bool HatBild => _modellTemperatur is not null || _modellSonnenwinkel is not null;
 
-    private Zeichenmodell? GrossModell => _reiter == "SONNENWINKEL" ? _modellSonnenwinkel : _modellTemperatur;
+    private Zeichenmodell? GrossModell => _reiter switch
+    {
+        "SONNENWINKEL" => _modellSonnenwinkel,
+        "WEITERE" => _modellReihen,
+        _ => _modellTemperatur
+    };
 
     private string GrossTitel => _gewaehlt.Length == 0
         ? GruppeJahresverlaufText
@@ -1412,6 +1469,8 @@
         _details = "";
         _modellTemperatur = null;
         _modellSonnenwinkel = null;
+        _reihenbestand = Array.Empty<KlimaReihenwerte>();
+        _modellReihen = null;
         _jahresmittel = _tiefstwert = _hoechstwert = null;
         _grossOffen = false;
     }
@@ -1452,6 +1511,8 @@
         _details = a.Details ?? "";
         _modellTemperatur = a.ModellTemperatur;
         _modellSonnenwinkel = a.ModellSonnenwinkel;
+        _reihenbestand = a.Reihenbestand ?? Array.Empty<KlimaReihenwerte>();
+        JahrWahlPruefen();
         _jahresmittel = a.Jahresmittel;
         _tiefstwert = a.Tiefstwert;
         _hoechstwert = a.Hoechstwert;
@@ -1680,7 +1741,8 @@
         {
             KlimaVorschauErgebnis erg = await RegionErmitteln!(auftrag);
             _vorschau = erg;
-            _vorschaubild = erg.Kennzahlen is { Stunden: > 0 } ? KlimaVorschaubild.Modell(erg.Kennzahlen) : null;
+            VorschauWahlPruefen();
+            VorschaubildBauen();
             if (erg.Erfolgreich) FelderAusVorschau(erg);
             _vorschauSchluessel = Eingabeschluessel();
         }
@@ -2018,5 +2080,158 @@
             return Task.CompletedTask;
         }
         return BeiSchliessen();
+    }
+
+    // =====================================================================
+    // KD-8 Teil A: weitere Reihen (Konzept Klimadatenimport § 4a)
+    // =====================================================================
+
+    /// <summary>Die CSS-Farbe einer Reihe aus der aktuellen Palette (Punkt am Chip).</summary>
+    private static string Chipfarbe(KlimaReihe r)
+    {
+        if (r.Rolle == Farbrolle.UNBENANNT || !Farbpalette.Aktuell.Kennt(r.Rolle)) return "";
+        Farbe f = Farbpalette.Aktuell[r.Rolle];
+        return string.Create(CultureInfo.InvariantCulture, $"rgb({f.R},{f.G},{f.B})");
+    }
+
+    /// <summary>Die Größen der Vorschau mit Monatsreihe, die der Parameterbestand nicht als „fehlt“ führt.</summary>
+    private IEnumerable<KlimaReihe> VorschauReihen(KlimaKennzahlen kz)
+    {
+        var fehlt = new HashSet<KlimaParameter>((_vorschau?.Parameterbestand ?? Array.Empty<KlimaParameterEintrag>())
+            .Where(p => p.Stand == KlimaParameterStand.Fehlt).Select(p => p.Parameter));
+        return KlimaReihenkatalog.Reihen.Where(r => r.InVorschau && r.Freigeschaltet &&
+                                                    kz.Monatsreihe(r.Schluessel) != null &&
+                                                    !(r.Parameter is { } p && fehlt.Contains(p)));
+    }
+
+    /// <summary>Die Chips der Vorschau: Achsenregel und letzte Reihe aus dem Kern.</summary>
+    private IReadOnlyList<Reihenwahl.Reihenchip> VorschauChips(KlimaKennzahlen kz)
+    {
+        var liste = new List<Reihenwahl.Reihenchip>();
+        foreach (KlimaReihe r in VorschauReihen(kz))
+        {
+            bool an = _vorschauWahl.Contains(r.Schluessel);
+            string titel = an ? Resource.KLIMA_RW_ABWAEHLEN : Resource.KLIMA_RW_ZUSCHALTEN;
+            if (kz.Reihenstunden.TryGetValue(r.Schluessel, out int n) && n < kz.Stunden)
+                titel += " · " + string.Format(CultureInfo.CurrentCulture, Resource.KLIMA_RW_TEILFUELLUNG,
+                                               n.ToString(CultureInfo.CurrentCulture),
+                                               kz.Stunden.ToString(CultureInfo.CurrentCulture));
+            liste.Add(new Reihenwahl.Reihenchip(r.Schluessel, r.Kurzname(), r.Monatseinheit,
+                                                KlimaReihenkatalog.Gruppenname(r.Gruppe))
+            {
+                Gewaehlt = an,
+                Sperrgrund = KlimaReihenkatalog.SperrgrundMonatsbild(r.Schluessel, _vorschauWahl),
+                Titel = titel,
+                Rohwert = r.Herkunft == KlimaReihenherkunft.Rohwert,
+                Farbe = Chipfarbe(r)
+            });
+        }
+        return liste;
+    }
+
+    /// <summary>Hält die Wahl der Vorschau auf Größen, die der gelesene Satz trägt; leer → Vorgabe.</summary>
+    private void VorschauWahlPruefen()
+    {
+        if (_vorschau?.Kennzahlen is not { Stunden: > 0 } kz) return;
+        var da = VorschauReihen(kz).Select(r => r.Schluessel).ToHashSet();
+        _vorschauWahl = _vorschauWahl.Where(da.Contains).ToList();
+        if (_vorschauWahl.Count == 0)
+            _vorschauWahl = new List<string>(KlimaReihenkatalog.VORGABE_VORSCHAU);
+    }
+
+    private void VorschaubildBauen()
+    {
+        _vorschaubild = _vorschau?.Kennzahlen is { Stunden: > 0 } kz
+            ? KlimaVorschaubild.Modell(kz, _vorschauWahl)
+            : null;
+    }
+
+    private void VorschauUmschalten(string schluessel)
+    {
+        if (_vorschauWahl.Contains(schluessel))
+        {
+            if (_vorschauWahl.Count <= 1) return;
+            _vorschauWahl = _vorschauWahl.Where(k => k != schluessel).ToList();
+        }
+        else if (KlimaReihenkatalog.SperrgrundMonatsbild(schluessel, _vorschauWahl).Length == 0)
+        {
+            _vorschauWahl = _vorschauWahl.Append(schluessel).ToList();
+        }
+        VorschaubildBauen();
+    }
+
+    private void VorschauVorgabe()
+    {
+        _vorschauWahl = new List<string>(KlimaReihenkatalog.VORGABE_VORSCHAU);
+        VorschauWahlPruefen();
+        VorschaubildBauen();
+    }
+
+    /// <summary>Die Einheit des Bildes „Weitere Reihen“ (die der ersten gewählten Reihe).</summary>
+    private string JahrEinheit => _jahrWahl.Count > 0 ? KlimaReihenkatalog.Reihe(_jahrWahl[0])?.Einheit ?? "" : "";
+
+    /// <summary>Die Chips des Reiters „Weitere Reihen“ (KD-Q11).</summary>
+    private IReadOnlyList<Reihenwahl.Reihenchip> JahrChips
+    {
+        get
+        {
+            string einheit = JahrEinheit;
+            var liste = new List<Reihenwahl.Reihenchip>();
+            foreach (KlimaReihenwerte w in _reihenbestand)
+            {
+                KlimaReihe r = w.Reihe;
+                bool an = _jahrWahl.Contains(r.Schluessel);
+                bool fremd = r.Einheit != einheit;
+                string grund = !w.Gefuehrt ? Resource.KLIMA_RW_FUEHRT_NICHT
+                    : an && _jahrWahl.Count <= 1 ? Resource.KLIMA_RW_LETZTE_BLEIBT
+                    : !an && !fremd && _jahrWahl.Count >= KlimaReihenkatalog.JAHRESVERLAUF_REIHEN_MAX
+                        ? Resource.KLIMA_RW_DREI_REIHEN : "";
+                string titel = an ? Resource.KLIMA_RW_ABWAEHLEN
+                    : fremd ? string.Format(CultureInfo.CurrentCulture, Resource.KLIMA_RW_ANDERE_EINHEIT, r.Name())
+                    : Resource.KLIMA_RW_HINZUFUEGEN;
+                liste.Add(new Reihenwahl.Reihenchip(r.Schluessel, r.Kurzname(), r.Einheit,
+                                                    KlimaReihenkatalog.Gruppenname(r.Gruppe))
+                {
+                    Gewaehlt = an,
+                    Sperrgrund = grund,
+                    Titel = titel,
+                    Rohwert = r.Herkunft == KlimaReihenherkunft.Rohwert,
+                    Farbe = Chipfarbe(r)
+                });
+            }
+            return liste;
+        }
+    }
+
+    /// <summary>
+    /// Wechselt die Region, bleibt die Wahl, soweit die neue Region die Reihen führt; fällt alles
+    /// weg, gilt die Vorgabe (sonst die erste geführte Reihe). Danach ein neues Modell.
+    /// </summary>
+    private void JahrWahlPruefen()
+    {
+        var gefuehrt = _reihenbestand.Where(w => w.Gefuehrt).Select(w => w.Reihe.Schluessel).ToList();
+        var wahl = _jahrWahl.Where(gefuehrt.Contains).ToList();
+        if (wahl.Count == 0)
+            wahl = KlimaReihenkatalog.VORGABE_JAHRESVERLAUF.Where(gefuehrt.Contains).ToList();
+        if (wahl.Count == 0 && gefuehrt.Count > 0) wahl.Add(gefuehrt[0]);
+        _jahrWahl = wahl.Count > 0 ? wahl : KlimaReihenkatalog.VORGABE_JAHRESVERLAUF;
+        ReihenbildBauen();
+    }
+
+    private void ReihenbildBauen()
+    {
+        var gewaehlt = _jahrWahl.Select(k => _reihenbestand.FirstOrDefault(w => w.Reihe.Schluessel == k && w.Gefuehrt))
+                                .Where(w => w is not null).Select(w => w!).ToList();
+        _modellReihen = gewaehlt.Count > 0 ? KlimaVorschaubild.Jahresverlauf(gewaehlt) : null;
+    }
+
+    private void JahrUmschalten(string schluessel)
+    {
+        KlimaReihenwerte? w = _reihenbestand.FirstOrDefault(x => x.Reihe.Schluessel == schluessel);
+        if (w is null || !w.Gefuehrt) return;
+        IReadOnlyList<string> neu = KlimaReihenkatalog.JahresverlaufKlick(_jahrWahl, schluessel, out string grund);
+        if (grund.Length > 0) return;
+        _jahrWahl = neu;
+        ReihenbildBauen();
     }
 }

@@ -1,0 +1,135 @@
+﻿@* Die REIHENWAHL (Auftrag KD-8 Teil A, Konzept Klimadatenimport § 4a; Mockup
+   Klimadatenreihen_Mockup.html): Schaltknoepfe (Chips) je Groesse, gruppiert,
+   fuer die Wahl der Reihen eines Bildes. Kein <datalist>, keine Auswahlliste.
+
+   WAS ER TUT. Er zeigt die Chips, die ihm der Wirt gibt, in ihren Gruppen (in
+   der Reihenfolge des ersten Auftretens), traegt aria-pressed, die Einheit und
+   bei Rohwerten die Marke "R". Ein Chip mit Sperrgrund ist WEICH gesperrt
+   (aria-disabled, bleibt fokussierbar): Er nennt den Grund im Titel, und ein
+   Klick schreibt ihn in die leise Zeile unter der Wahl, statt zu schalten.
+   Ein gewaehlter Chip mit Sperrgrund (die letzte Reihe) bleibt gedrueckt und
+   meldet beim Klick ebenso nur den Grund. "Vorgabe" stellt die Wahl des
+   Wirts wieder her.
+
+   WAS ER NICHT TUT. Er kennt keine Regel - welche Reihe welche Einheit hat,
+   was gesperrt ist und was ein Klick bewirkt, entscheidet der Wirt (aus dem
+   KlimaReihenkatalog des Kerns). Er meldet nur den Schluessel des Chips. *@
+
+<div class="epos-reihenwahl" role="group" aria-label="@Bezeichnung" data-kennung="@Kennung">
+    <div class="epos-reihenwahl-kopf">
+        <b>@Kopf</b>
+        @if (!string.IsNullOrEmpty(Kopfhinweis))
+        {
+            <span>· @Kopfhinweis</span>
+        }
+        <span class="epos-reihenwahl-fueller"></span>
+        @if (Vorgabe.HasDelegate)
+        {
+            <button type="button" class="epos-textknopf epos-reihenwahl-vorgabe"
+                    @onclick="BeiVorgabe">@VorgabeText</button>
+        }
+    </div>
+    @foreach (string gruppe in Gruppen)
+    {
+        <div class="epos-reihenwahl-gruppe">
+            @if (gruppe.Length > 0)
+            {
+                <span class="epos-reihenwahl-gruppenname">@gruppe</span>
+            }
+            @foreach (Reihenchip c in Chips.Where(c => (c.Gruppe ?? "") == gruppe))
+            {
+                bool gesperrt = c.Sperrgrund.Length > 0 && !c.Gewaehlt;
+                <button type="button" class="epos-reihenwahl-chip" data-schluessel="@c.Schluessel"
+                        aria-pressed="@(c.Gewaehlt ? "true" : "false")"
+                        aria-disabled="@(gesperrt ? "true" : null)"
+                        title="@(c.Sperrgrund.Length > 0 ? c.Sperrgrund : c.Titel)"
+                        style="@(string.IsNullOrEmpty(c.Farbe) ? null : "--epos-reihenwahl-farbe:" + c.Farbe)"
+                        @onclick="() => BeiChip(c)">
+                    <span class="epos-reihenwahl-punkt" aria-hidden="true"></span>
+                    @c.Name
+                    @if (c.Einheit.Length > 0)
+                    {
+                        <span class="epos-reihenwahl-einheit">@c.Einheit</span>
+                    }
+                    @if (c.Rohwert)
+                    {
+                        <span class="epos-reihenwahl-marke" title="@RohwertText">R</span>
+                    }
+                </button>
+            }
+        </div>
+    }
+    @{ string leise = _hinweis.Length > 0 ? _hinweis : Leise ?? ""; }
+    <p class="@("epos-reihenwahl-leise" + (_hinweis.Length > 0 ? " epos-reihenwahl-leise--warn" : ""))"
+       role="status">@leise</p>
+</div>
+
+@code {
+    /// <summary>Ein Chip der Wahl.</summary>
+    public sealed record Reihenchip(string Schluessel, string Name, string Einheit, string Gruppe)
+    {
+        /// <summary>Gewählt (aria-pressed)?</summary>
+        public bool Gewaehlt { get; init; }
+
+        /// <summary>Warum der Chip nicht schaltet; leer = er schaltet.</summary>
+        public string Sperrgrund { get; init; } = "";
+
+        /// <summary>Der Titel eines schaltbaren Chips (was ein Klick bewirkt).</summary>
+        public string Titel { get; init; } = "";
+
+        /// <summary>Ein Rohwert (Marke „R“).</summary>
+        public bool Rohwert { get; init; }
+
+        /// <summary>Die Farbe der Reihe als CSS-Wert aus der Palette; leer = ohne Punktfarbe.</summary>
+        public string Farbe { get; init; } = "";
+    }
+
+    /// <summary>Die Chips in ihrer Reihenfolge.</summary>
+    [Parameter] public IReadOnlyList<Reihenchip> Chips { get; set; } = Array.Empty<Reihenchip>();
+
+    /// <summary>Der fette Kopf („Reihen im Bild“).</summary>
+    [Parameter] public string Kopf { get; set; } = "";
+
+    /// <summary>Die leise Erläuterung neben dem Kopf.</summary>
+    [Parameter] public string Kopfhinweis { get; set; } = "";
+
+    /// <summary>Die leise Zeile unter der Wahl, solange kein Sperrgrund gemeldet ist.</summary>
+    [Parameter] public string? Leise { get; set; }
+
+    /// <summary>Die Gruppenbezeichnung für Bildschirmleser.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Unterscheidet zwei Wahlen in einem Dialog (Tests, Proben).</summary>
+    [Parameter] public string Kennung { get; set; } = "";
+
+    /// <summary>Ein schaltbarer Chip wurde geklickt (Schlüssel).</summary>
+    [Parameter] public EventCallback<string> Umschalten { get; set; }
+
+    /// <summary>„Vorgabe“; ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback Vorgabe { get; set; }
+
+    [Parameter] public string VorgabeText { get; set; } = Resource.KLIMA_RW_VORGABE;
+
+    [Parameter] public string RohwertText { get; set; } = "";
+
+    private string _hinweis = "";
+
+    private IEnumerable<string> Gruppen => Chips.Select(c => c.Gruppe ?? "").Distinct();
+
+    private async Task BeiChip(Reihenchip c)
+    {
+        if (c.Sperrgrund.Length > 0)
+        {
+            _hinweis = c.Sperrgrund;
+            return;
+        }
+        _hinweis = "";
+        await Umschalten.InvokeAsync(c.Schluessel);
+    }
+
+    private async Task BeiVorgabe()
+    {
+        _hinweis = "";
+        await Vorgabe.InvokeAsync();
+    }
+}
