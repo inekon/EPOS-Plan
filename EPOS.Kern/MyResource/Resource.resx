@@ -57446,5 +57446,17 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="EF_HERKUNFT_BILANZIERT" xml:space="preserve">
     <value>bilanziert</value>
   </data>
+  <data name="EF_SP_QUELLEN" xml:space="preserve">
+    <value>Quellen</value>
+  </data>
+  <data name="EF_SP_WANDLER" xml:space="preserve">
+    <value>Wandler</value>
+  </data>
+  <data name="EF_SP_SPEICHER" xml:space="preserve">
+    <value>Speicher</value>
+  </data>
+  <data name="EF_SP_BEDARF" xml:space="preserve">
+    <value>Bedarf</value>
+  </data>
 </root>
 

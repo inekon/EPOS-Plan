@@ -25547,6 +25547,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf ähnelt.
+        /// </summary>
+        public static string EF_SP_BEDARF {
+            get {
+                return ResourceManager.GetString("EF_SP_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellen ähnelt.
+        /// </summary>
+        public static string EF_SP_QUELLEN {
+            get {
+                return ResourceManager.GetString("EF_SP_QUELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher ähnelt.
+        /// </summary>
+        public static string EF_SP_SPEICHER {
+            get {
+                return ResourceManager.GetString("EF_SP_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wandler ähnelt.
+        /// </summary>
+        public static string EF_SP_WANDLER {
+            get {
+                return ResourceManager.GetString("EF_SP_WANDLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die abgeleitet: {0} ähnelt.
         /// </summary>
         public static string EF_ZEIGER_ABGELEITET {

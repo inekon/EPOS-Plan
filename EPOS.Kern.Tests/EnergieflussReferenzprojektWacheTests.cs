@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -12,7 +13,8 @@ namespace EPOS.Kern.Tests
     /// 1058 (AK3: Wärmepumpe heizt und kühlt, BHKW, Elektrokessel, Puffer, Stromspeicher) und 1063 (Kältemaschine mit
     /// Kältespeicher und eigenem Zähler, BHKW, Elektrokessel, Stromspeicher) auf der Testdatenbank, lädt das Flussmodell
     /// über <see cref="EnergieflussCtrl.Lade"/> aus dem gespeicherten Ergebnis und hält die Bänder gegen die Zahlen der
-    /// Bilanztabelle 1.2 (Toleranz 0,01 MWh/a), jeden geprüften Knoten geschlossen.
+    /// Bilanztabelle 1.2 (Toleranz 0,01 MWh/a), jeden geprüften Knoten geschlossen; danach zeichnet sie jede Bilanz über
+    /// <see cref="EnergieflussAbbildung.Bild"/> in allen drei Fassungen (SK-12, <see cref="Gezeichnet"/>).
     /// <para><b>Abweichung von der Tabelle 1.2:</b> Bei 1058 und 1063 rechnet der Flussbau den Stromspeicher mit
     /// (Ladung, Verlust, Füllstandsänderung), bei 1063 den Kältestrom des eigenen Zählers neben dem Stromknoten
     /// (<c>Kaeltekaskade.NebenDerStufenrechnung</c>); die bilanzierte BHKW-Einspeisung trifft damit die Einspeisung der
@@ -35,12 +37,12 @@ namespace EPOS.Kern.Tests
 
         private const double TOL = 0.01;
 
-        private (EnergieflussModell m, VariantenDaten v) Rechne(int projekt)
+        private (EnergieflussBilanz m, VariantenDaten v) Rechne(int projekt)
         {
             var lauf = new SimulationRunner();
             int k = lauf.SimuliereUndSpeichere(projekt, out string fehler);
             Assert.True(k > 0, "Lauf " + projekt + " gescheitert: " + fehler);
-            EnergieflussModell m = EnergieflussCtrl.Lade(projekt, true, false);
+            EnergieflussBilanz m = EnergieflussCtrl.Lade(projekt, true, false);
             Assert.True(m.Simuliert);
             Assert.False(m.Leer);
             foreach (EnergieflussFluss f in m.Fluesse) _aus.WriteLine(f.Zeigertext);
@@ -48,16 +50,69 @@ namespace EPOS.Kern.Tests
             // Jeder geprüfte Knoten schließt (samt Ausgleichsband).
             foreach (EnergieflussKnoten n in m.Knoten.Where(n => n.Geprueft))
                 Assert.True(Math.Abs(n.ZuflussMwh - n.AbflussMwh) <= Energiefluss.Toleranz(n.ZuflussMwh), n.Id);
+            Gezeichnet(m, projekt);
             return (m, EnergievergleichCtrl.Lade(projekt, true));
         }
 
-        private static string Id(EnergieflussModell m, string anfang)
+        /// <summary>Die Umgebungsvariable, unter deren Ordner die Wache die Bilder (PNG) zur Sichtprüfung ablegt; leer = keine Ablage.</summary>
+        public const string PNG_ORDNER = "EPOS_ENERGIEFLUSS_PNG_ORDNER";
+
+        /// <summary>
+        /// Bilanz → Bilddaten → Zeichenmodell in breit, schmal und Bericht (SK-12): ohne Ausnahme, deterministisch, jedes
+        /// Band und jeder Knoten gezeichnet, jedes Band schließt an seine Knoten an, jeder Verlustknoten steht in der Lücke
+        /// rechts neben seinem Eigentümer. Ist <see cref="PNG_ORDNER"/> gesetzt, liegen die PNG danach dort.
+        /// </summary>
+        private static void Gezeichnet(EnergieflussBilanz m, int projekt)
+        {
+            const float KB = ChartRenderer.EF_KNOTENBREITE;
+            EnergieflussBildDaten d = EnergieflussAbbildung.Bild(m);
+            Assert.Equal(m.Knoten.Count, d.Knoten.Count);
+            Assert.Equal(m.Fluesse.Count, d.Baender.Count);
+            string ordner = Environment.GetEnvironmentVariable(PNG_ORDNER);
+            foreach (var (name, mass, werte) in new[] { ("breit", ChartRenderer.ENERGIEFLUSS_BREIT, false),
+                                                       ("schmal", ChartRenderer.ENERGIEFLUSS_SCHMAL, false),
+                                                       ("bericht", ChartRenderer.ENERGIEFLUSS_BERICHT, true) })
+            {
+                Zeichenmodell z = ChartRenderer.EnergieflussModell(d, mass, werte);
+                Assert.True(z.Gleicht(ChartRenderer.EnergieflussModell(d, mass, werte)), projekt + " " + name + " deterministisch");
+                var rechtecke = z.Befehle.OfType<Rechteck>().Where(r => r.Marke != null && r.Marke.StartsWith("knoten:", StringComparison.Ordinal))
+                                 .ToDictionary(r => r.Marke.Substring("knoten:".Length), r => r);
+                var baender = z.Befehle.OfType<Pfad>().Where(p => p.Marke != null && p.Marke.StartsWith("fluss:", StringComparison.Ordinal)).ToList();
+                Assert.Equal(m.Knoten.Count, rechtecke.Count);
+                Assert.Equal(m.Fluesse.Count, baender.Count);
+                int n = ChartRenderer.EF_STUETZSTELLEN;
+                foreach (EnergieflussFluss f in m.Fluesse)
+                {
+                    Pfad p = Assert.Single(baender, x => x.Marke == f.Marke);
+                    Rechteck von = rechtecke[f.Von], nach = rechtecke[f.Nach];
+                    Assert.Equal(von.X + KB, p.Punkte[0].X, 3);
+                    Assert.Equal(nach.X, p.Punkte[n - 1].X, 3);
+                    Assert.InRange(p.Punkte[0].Y, von.Y - 0.01f, von.Y + von.Hoehe + 0.01f);
+                    Assert.InRange(p.Punkte[n - 1].Y, nach.Y - 0.01f, nach.Y + nach.Hoehe + 0.01f);
+                }
+                foreach (EnergieflussKnoten k in m.Knoten.Where(k => k.Art == EnergieflussKnotenart.Verlust))
+                {
+                    string eigentuemer = Assert.Single(m.Fluesse, f => f.Nach == k.Id).Von;
+                    Rechteck o = rechtecke[eigentuemer], v = rechtecke[k.Id];
+                    float naechste = rechtecke.Where(r => m.KnotenMit(r.Key).Art != EnergieflussKnotenart.Verlust && r.Value.X > o.X + KB)
+                                              .Select(r => r.Value.X).DefaultIfEmpty(z.Breite).Min();
+                    Assert.True(v.X > o.X + KB && v.X + v.Breite < naechste, projekt + " " + name + ": " + k.Id + " in der Lücke");
+                }
+                if (!string.IsNullOrEmpty(ordner))
+                {
+                    System.IO.Directory.CreateDirectory(ordner);
+                    System.IO.File.WriteAllBytes(System.IO.Path.Combine(ordner, projekt + "_" + name + ".png"), ChartRenderer.EnergieflussBild(d, mass, werte));
+                }
+            }
+        }
+
+        private static string Id(EnergieflussBilanz m, string anfang)
             => Assert.Single(m.Knoten, k => k.Id.StartsWith(anfang, StringComparison.Ordinal)).Id;
 
         private static void Nahe(double erwartet, double ist, string was)
             => Assert.True(Math.Abs(erwartet - ist) <= TOL, was + ": erwartet " + erwartet + ", ist " + ist);
 
-        private static void AlleGeschlossen(EnergieflussModell m)
+        private static void AlleGeschlossen(EnergieflussBilanz m)
         {
             Assert.All(m.Knoten.Where(k => k.Geprueft), k => Assert.True(k.Geschlossen, k.Id));
             Assert.Empty(m.Hinweise);
