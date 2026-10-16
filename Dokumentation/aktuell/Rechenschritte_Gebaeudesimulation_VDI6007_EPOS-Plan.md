@@ -600,6 +600,27 @@ B1 bis B7 wie für jeden homogenen Aufbau.
 
 **Aufbauten ohne Abschnitt** laufen nicht über B0a bis B0d; ihr Weg ist unverändert.
 
+**Gemeinsame Schichtgrenzen beim Katalogimport.** Eine Quelle kann je Abschnitt eine eigene Schichtfolge mit eigener
+Schichtzahl führen. B0a verlangt in jeder inhomogenen Ebene jeden Abschnitt genau einmal; der Import
+(`BauteilkatalogImport.AbschnittePruefen`) bringt die Folgen deshalb auf gemeinsame Ebenen, wie es der untere Grenzwert nach
+DIN EN ISO 6946, 6.7.2.3 voraussetzt (jede Ebene parallel zur Oberfläche isotherm, Schichten an den Grenzen der übrigen
+Abschnitte unterteilt):
+
+```
+D_m      = Σ_i d_mi                                    Gesamtdicke des Abschnitts m             [m]
+Annahme  max D_m − min D_m ≤ max(0,001 m; 0,01 · max D_m)
+t_mi     = (Σ_{k≤i} d_mk) / D_m                        genormte Lage der Grenzen               [–]
+T        = ⋃_m { t_mi }                                gemeinsame Grenzen, Ende 1
+Teil     d = d_mi · Δt / (t_mi − t_m,i−1)              je Stück zwischen zwei Grenzen aus T      [m]
+```
+
+Jeder Abschnitt behält Dicke und Widerstand (R'_T unverändert); jede Ebene j führt danach in jedem Abschnitt genau ein Stück.
+Eine ruhende Luftschicht (Widerstand nach Tabelle, nicht anteilig zur Dicke) wird nicht geteilt; fiele eine Grenze in sie, wird
+der Aufbau verworfen, ebenso bei einer Schicht ohne Dicke oder bei Gesamtdicken außerhalb der Toleranz. Folgen gleicher
+Schichtzahl bleiben, wie sie sind (Schicht k neben Schicht k). Fehlt der Flächenanteil genau eines Abschnitts und bleibt bis 1
+mehr als 0,01 offen, setzt der Import f = 1 − Σ der übrigen. Protokoll:
+[`2026-10-16_BK-8_Inhomogene_Aufbauten.md`](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-16_BK-8_Inhomogene_Aufbauten.md).
+
 **Fensteraufbauten.** Ein Aufbau der Art Fenster oder Vorhangfassade führt die Fensterwerte U_g und U_f
 [W/(m²K)], den g-Wert, den Rahmenanteil f = A_f/(A_g + A_f) und ψ_g des Glasrands [W/(mK)] (`Fensterkennwerte`).
 Daraus folgt U_w nach DIN EN ISO 10077-1:
