@@ -136,8 +136,8 @@ jobs:
           filter=${filter#|}
           echo "Filter: $filter"
           dotnet test EPOS.Kern.Tests/EPOS.Kern.Tests.csproj -c Release --no-build --filter "$filter" \
-            -- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2 | tee testausgabe.txt
-          if grep -q 'No test matches the given testcase filter' testausgabe.txt; then
+            -- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2 | tee "$RUNNER_TEMP/testausgabe.txt"
+          if grep -q 'No test matches the given testcase filter' "$RUNNER_TEMP/testausgabe.txt"; then
             echo "::error::Block ${{ matrix.block.name }} hat keinen Test gefunden - Filter pruefen."
             exit 1
           fi
