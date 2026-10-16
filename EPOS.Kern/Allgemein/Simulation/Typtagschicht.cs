@@ -11,10 +11,9 @@ namespace WindowsFormsApplication1
     /// <code>
     /// t(d)  = Sonntag    an einem Feiertag des Betriebskalenders oder am Sonntag des Rasters
     ///         Samstag    am Samstag des Rasters
-    ///         Werktag    sonst — auch an einem Ferientag (mit Ferienfaktor f)
-    /// T     = Matrix[m(d), t(d)]
-    /// a(h)  = g_T · f_T[s] / Σ f_T                       h = 24 d + s; Ferientag mit f = 1
-    /// b(h)  = a(h), an einem Ferientag f · a(h)
+    ///         Werktag    sonst
+    /// a(h)  = g_T · f_T[s] / Σ f_T,  T = Matrix[m(d), t(d)]            h = 24 d + s (der Tag ohne Ferien)
+    /// b(h)  = a(h), an einem Ferientag f · g_W · f_W[s] / Σ f_W,  W = Matrix[m(d), Werktag]
     /// q(h)  = b(h) / Σ_Jahr b · S · 1000                  Ferien verteilen um (Vorgabe)
     /// q(h)  = b(h) / Σ_Jahr a · S · 1000                  „Ferien kürzen die Menge“
     /// </code>
@@ -96,37 +95,14 @@ namespace WindowsFormsApplication1
                 byte art = tagesarten != null ? tagesarten[d] : Betriebskalender.TAG_NORMAL;
                 bool ferien = art == Betriebskalender.TAG_FERIEN;
                 int wochentag = (w0 + d) % 7;
-                int spalte;
-                if (ferien) spalte = 0;
-                else if (art == Betriebskalender.TAG_FEIERTAG || wochentag == 6) spalte = 2;
-                else if (wochentag == 5) spalte = 1;
-                else spalte = 0;
+                int spalte = art == Betriebskalender.TAG_FEIERTAG || wochentag == 6 ? 2 : wochentag == 5 ? 1 : 0;
 
-                int nr = eingabe.Matrix[monat, spalte];
-                Kaeltetyptag t = nr != 0 ? eingabe.Typtag(nr) : null;
-                if (t == null)
-                {
-                    fehlend.Add(monat * 3 + spalte);
-                    erg.TageOhneTyptag++;
-                    continue;
-                }
-                double form = t.Formsumme();
-                if (!(form > 0))
-                {
-                    if (t.Tagesmenge > 0)
-                    {
-                        leer.Add(t.Nr);
-                        erg.TageOhneTyptag++;
-                    }
-                    continue;
-                }
-                double f = ferien ? ferienfaktor : 1.0;
-                for (int s = 0; s < TAG; s++)
-                {
-                    double wert = t.Tagesmenge * t.Stunden[s] / form;
-                    a[d * TAG + s] = wert;
-                    b[d * TAG + s] = f * wert;
-                }
+                // a: der Tag ohne Ferien (Typtag seines Wochentags), b: mit Ferien (Werktag · f).
+                Tagesform(eingabe, monat, spalte, d, a, 1.0, true, fehlend, leer, erg);
+                if (ferien)
+                    Tagesform(eingabe, monat, 0, d, b, ferienfaktor, false, fehlend, leer, erg);
+                else
+                    Array.Copy(a, d * TAG, b, d * TAG, TAG);
             }
 
             foreach (int z in fehlend)
@@ -153,6 +129,35 @@ namespace WindowsFormsApplication1
             for (int h = 0; h < STUNDEN; h++) outJahr[h] = reihe[h] * faktor;
             erg.Gerechnet = true;
             return erg;
+        }
+
+        /// <summary>
+        /// Schreibt den Tag <paramref name="d"/> mit dem Typtag der Zelle [<paramref name="monat"/>, <paramref name="spalte"/>]
+        /// · <paramref name="faktor"/> nach <paramref name="ziel"/>; eine Lücke bleibt 0 und wird vermerkt.
+        /// </summary>
+        private static void Tagesform(KaeltetyptagEingabe eingabe, int monat, int spalte, int d, double[] ziel, double faktor, bool zaehlen,
+                                      SortedSet<int> fehlend, SortedSet<int> leer, Ergebnis erg)
+        {
+            int nr = eingabe.Matrix[monat, spalte];
+            Kaeltetyptag t = nr != 0 ? eingabe.Typtag(nr) : null;
+            if (t == null)
+            {
+                fehlend.Add(monat * 3 + spalte);
+                if (zaehlen) erg.TageOhneTyptag++;
+                return;
+            }
+            double form = t.Formsumme();
+            if (!(form > 0))
+            {
+                if (t.Tagesmenge > 0)
+                {
+                    leer.Add(t.Nr);
+                    if (zaehlen) erg.TageOhneTyptag++;
+                }
+                return;
+            }
+            for (int s = 0; s < TAG; s++)
+                ziel[d * TAG + s] = faktor * t.Tagesmenge * t.Stunden[s] / form;
         }
     }
 }
