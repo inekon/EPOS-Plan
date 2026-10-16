@@ -416,6 +416,44 @@ public class PeakShavingDialogTests : EposBunitContext
         Assert.True(letzterSoc);
     }
 
+    /// <summary>
+    /// <b>Welle RZ: Lade-/Entladeleistung und Schwelle zuschaltbar</b> — zwei Schalter unter dem Ladezustand,
+    /// beide ab Werk AUS (das Modell bekommt die Wahl ohne sie, wie bisher); an, nennen Modell UND CSV sie.
+    /// </summary>
+    [Fact]
+    public void Leistung_und_Schwelle_stehen_ab_Werk_aus_und_folgen_an_Bild_und_CSV()
+    {
+        var wahlen = new List<PeakShavingBildwahl>();
+        var csvWahlen = new List<PeakShavingBildwahl>();
+        var reihen = new List<ChartRenderer.Reihe>
+        {
+            new ChartRenderer.Reihe("Last", Enumerable.Repeat(1.0, 12).ToArray(), SkiaSharp.SKColors.Gold)
+        };
+        Zeichenmodell bild = ChartRenderer.MonatsStapelModell("Lastgang", "kW", reihen);
+        var cut = Zeige(modell: (r, w) => { wahlen.Add(w); return bild; },
+                        csv: (r, w) => { csvWahlen.Add(w); return Task.FromResult(true); });
+
+        Rechenknopf(cut).Click();
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.Instance.Kennzahlen));
+        Assert.Equal(new PeakShavingBildwahl(false, false, false), wahlen.Last());
+
+        cut.FindAll("button[role=tab]").First(b => b.TextContent.Trim() == Resource.PEAK_TAB_CHART).Click();
+        var kaesten = cut.FindAll("[role=tabpanel] input[type=checkbox]");
+        Assert.Equal(3, kaesten.Count);
+        Assert.All(kaesten, k => Assert.False(k.HasAttribute("checked")));
+        string[] texte = cut.FindAll("[role=tabpanel] label.epos-schalter").Select(l => l.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { Resource.PEAK_CHK_SOC, Resource.PEAK_CHK_LEISTUNG, Resource.PEAK_CHK_SCHWELLE }, texte);
+
+        cut.FindAll("[role=tabpanel] input[type=checkbox]")[1].Change(true);
+        Assert.Equal(new PeakShavingBildwahl(false, true, false), wahlen.Last());
+        cut.FindAll("[role=tabpanel] input[type=checkbox]")[2].Change(true);
+        Assert.Equal(new PeakShavingBildwahl(false, true, true), wahlen.Last());
+
+        cut.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
+        cut.WaitForAssertion(() => Assert.Single(csvWahlen));
+        Assert.Equal(new PeakShavingBildwahl(false, true, true), csvWahlen[0]);
+    }
+
     /// <summary>Ein Zeilenwechsel verwirft das Ergebnis — wörtlich <c>QuelleGeaendert</c> (:275-277).</summary>
     [Fact]
     public void Ein_Zeilenwechsel_verwirft_das_Ergebnis()

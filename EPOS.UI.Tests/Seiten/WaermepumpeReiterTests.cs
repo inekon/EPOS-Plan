@@ -759,4 +759,34 @@ public class WaermepumpeReiterTests : EposBunitContext
         Tabellenausrichtung.TextkopfLinks(raster[1], 0);
         Tabellenausrichtung.TextkopfLinks(raster[1], 1);
     }
+    /// <summary>
+    /// <b>Welle RZ: Strom von Wärmepumpe und Heizstab getrennt</b> — ein Schalter im Unterblatt „Strom“, ab Werk
+    /// AUS: Dann geht der Auftrag ohne Reihenliste hinaus wie bisher (die eine Linie). An, nennt er die drei
+    /// Reihen Wärmepumpe, Heizstab und Summe.
+    /// </summary>
+    [Fact]
+    public void Das_Strombild_trennt_Waermepumpe_und_Heizstab_nur_auf_Wahl()
+    {
+        var seite = Zeichnen(Erg());
+        seite.FindAll("button[role='tab']")[1].Click();
+
+        AngleSharp.Dom.IElement Getrennt() => seite.FindAll("div.epos-simerg-schalter")
+            .Single(d => d.TextContent.Contains("Wärmepumpe und Heizstab getrennt"))
+            .QuerySelector("input[type=checkbox]")!;
+        AngleSharp.Dom.IElement kasten = Getrennt();
+        Assert.False(kasten.HasAttribute("checked"));
+        Assert.Null(seite.Instance.GewaehlteReihenStrom);
+        Bildauftrag vorgabe = _auftraege.Last(a => a.Bild == Bilder.WpStromverbrauch);
+        Assert.Null(vorgabe.Reihen);
+        Assert.Equal(new Bildauftrag(Bilder.WpStromverbrauch).Schluessel, vorgabe.Schluessel);
+
+        kasten.Change(true);
+        Assert.Equal(new[] { "WP_STROM", "HEIZSTAB_STROM", "WP_STROM_SUMME" },
+                     seite.Instance.GewaehlteReihenStrom!.ToArray());
+        Bildauftrag getrennt = _auftraege.Last(a => a.Bild == Bilder.WpStromverbrauch);
+        Assert.Equal(new[] { "WP_STROM", "HEIZSTAB_STROM", "WP_STROM_SUMME" }, getrennt.Reihen!.ToArray());
+
+        Getrennt().Change(false);
+        Assert.Null(_auftraege.Last(a => a.Bild == Bilder.WpStromverbrauch).Reihen);
+    }
 }

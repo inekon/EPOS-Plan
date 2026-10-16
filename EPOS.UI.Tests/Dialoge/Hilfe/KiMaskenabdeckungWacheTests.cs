@@ -535,7 +535,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("LeistungspreisReiheDialog", 2),
         new("ModulKatalogDialog", 4, "der Feldsatz des Profils, gebaut über den RenderTreeBuilder"),
         new("OptimierungBlock", 9),
-        new("PeakShavingDialog", 17),
+        new("PeakShavingDialog", 19),
         new("PhotovoltaikDialog", 5, "„Alle Daten“ über die Feldtafel des Modulprofils"),
         new("PhotovoltaikReiter", 6),
         new("PhotovoltaikVerguetungDialog", 16),
@@ -659,7 +659,8 @@ public sealed class KiMaskenabdeckungWacheTests
             "„Sperrzeiten vorhanden“ ist derselbe Wert wie „sperrfenster“ leer oder nicht leer; Einbindung, Vorwärmbetrieb und " +
             "Kältemittel stehen als „einbindung“, „vorwaermbetrieb“ und „kaeltemittel“ in der KI-Sicht"),
         new("WaermepumpeKuehlbetriebGruppe", 9, "die Gruppe „Kühlbetrieb“ (KB-B) unter der Karte der Wärmepumpen-Konfiguration; die zwei nackten inputs sind der weich gesperrte Kühlschalter und der Schalter „freie Kühlung“ (Grund im title) - dieselben Werte wie die Katalogfelder der Maske"),
-        new("WaermepumpeReiter", 9, "der Schalter „Heizstab in die JAZ einrechnen“ steht als Anzeigeschalter im Katalog"),
+        new("WaermepumpeReiter", 10, "der Schalter „Heizstab in die JAZ einrechnen“ steht als Anzeigeschalter im Katalog; " +
+            "„Wärmepumpe und Heizstab getrennt“ (Welle RZ) ebenso, solange das Unterblatt „Strom“ vorn steht"),
         new("WaermesenkeDialog", 9),
         // WirtschaftlichkeitParameterDialog: siehe Block ETAPPE E9b oben.
         new("WirtschaftlichkeitSeite", 8, "der Schalter der Vergleichsgruppe ist eine Menge von Verweisen, kein Feldwert; " +
