@@ -10230,7 +10230,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der Stromspeicher-Katalog — die vierzehn Felder der Auspraegung
+        /// Der Stromspeicher-Katalog — die zwoelf Felder der Auspraegung
         /// <c>Stromspeicher</c>, in zwei Gruppen: die Bestandsfelder und die
         /// Geraetetechnik nach Fachkonzept Stromspeicher 5.1.
         /// </summary>
@@ -10273,10 +10273,14 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.ModkDegradationName, KiParameterTyp.Zahl,
                                      KiDialogTexte.ModkDegradationErl,
                                      einheit: KiDialogTexte.EINHEIT_PROZENT),
-                    new KiDialogFeld("modulkosten", "ModulKatalogKiSicht.Modulkosten",
-                                     KiDialogTexte.ModkKostenName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.ModkKostenErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH),
+                    // Welle KB-5: Die Kostenspalten des Speichers sind entfallen; der Kostensatz je
+                    // kWh Nennkapazitaet steht in der Satzvorlage, die Maske zeigt ihn GESPERRT -
+                    // hier deshalb nur lesend, gepflegt wird er in der Kostenverwaltung.
+                    new KiDialogFeld("kostensatz", "ModulKatalogKiSicht.Kostensatz",
+                                     KiDialogTexte.ModkKostensatzName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkKostensatzErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true,
+                                     nurLesen: true),
 
                     // ---- Geraetetechnik: leer heisst „nicht gepflegt" ---------------
                     new KiDialogFeld("wirkungsgrad_rt", "ModulKatalogKiSicht.WirkungsgradRt",
@@ -10286,18 +10290,6 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("zyklen", "ModulKatalogKiSicht.Zyklen",
                                      KiDialogTexte.ModkZyklenName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.ModkZyklenErl, leerErlaubt: true),
-                    new KiDialogFeld("verschleisskosten", "ModulKatalogKiSicht.Verschleisskosten",
-                                     KiDialogTexte.ModkVerschleissName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.ModkVerschleissErl,
-                                     einheit: KiDialogTexte.EinheitZykluskosten, leerErlaubt: true),
-                    new KiDialogFeld("leistungskosten", "ModulKatalogKiSicht.Leistungskosten",
-                                     KiDialogTexte.ModkLeistungskostenName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.ModkLeistungskostenErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO_KW, leerErlaubt: true),
-                    new KiDialogFeld("investition_fix", "ModulKatalogKiSicht.InvestitionFix",
-                                     KiDialogTexte.ModkInvestFixName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.ModkInvestFixErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: true),
                     new KiDialogFeld("standby", "ModulKatalogKiSicht.Standby",
                                      KiDialogTexte.ModkStandbyName, KiParameterTyp.Zahl,
                                      KiDialogTexte.ModkStandbyErl,

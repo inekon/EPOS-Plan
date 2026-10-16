@@ -78,10 +78,10 @@ namespace WindowsFormsApplication1
             int neueId = DataRepository.GetMaxID(TABLE) + 1;
 
             string sql = @"INSERT INTO [" + TABLE + @"]
-                            (ID, Bezeichner, Firma, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten, ReadOnly,
-                             Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch,
+                            (ID, Bezeichner, Firma, Typ, Leistung, Energie, Degradation, Ladezustand, ReadOnly,
+                             Wirkungsgrad_RT, Zyklen_Zugesichert, Standby_Verbrauch,
                              Selbstentladung_Prozent_Monat)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             DbParam[] ps = {
                 new DbParam("@id", neueId),
@@ -92,13 +92,9 @@ namespace WindowsFormsApplication1
                 new DbParam("@ene", this.m_Energie),
                 new DbParam("@deg", this.m_Degradation),
                 new DbParam("@lad", this.m_Ladezustand),
-                new DbParam("@mod", this.m_Modulkosten),
                 new DbParam("@ro", false),
                 new DbParam("@eta", this.m_WirkungsgradRT),
                 new DbParam("@nzyk", this.m_ZyklenZugesichert),
-                new DbParam("@cver", this.m_Verschleisskosten),
-                new DbParam("@cpow", this.m_Leistungskosten),
-                new DbParam("@ifix", this.m_InvestitionFix),
                 new DbParam("@stby", this.m_StandbyVerbrauch),
                 new DbParam("@selbst", this.m_Selbstentladung)
             };
@@ -123,9 +119,8 @@ namespace WindowsFormsApplication1
 
             string sql = @"UPDATE [" + TABLE + @"] SET
                             Bezeichner = ?, Firma = ?, Typ = ?, Leistung = ?, Energie = ?,
-                            Degradation = ?, Ladezustand = ?, Modulkosten = ?,
-                            Wirkungsgrad_RT = ?, Zyklen_Zugesichert = ?, Verschleisskosten = ?,
-                            Leistungskosten = ?, Investition_Fix = ?, Standby_Verbrauch = ?,
+                            Degradation = ?, Ladezustand = ?,
+                            Wirkungsgrad_RT = ?, Zyklen_Zugesichert = ?, Standby_Verbrauch = ?,
                             Selbstentladung_Prozent_Monat = ?
                           WHERE Bezeichner = ?";
 
@@ -137,12 +132,8 @@ namespace WindowsFormsApplication1
                 new DbParam("@ene", this.m_Energie),
                 new DbParam("@deg", this.m_Degradation),
                 new DbParam("@lad", this.m_Ladezustand),
-                new DbParam("@mod", this.m_Modulkosten),
                 new DbParam("@eta", this.m_WirkungsgradRT),
                 new DbParam("@nzyk", this.m_ZyklenZugesichert),
-                new DbParam("@cver", this.m_Verschleisskosten),
-                new DbParam("@cpow", this.m_Leistungskosten),
-                new DbParam("@ifix", this.m_InvestitionFix),
                 new DbParam("@stby", this.m_StandbyVerbrauch),
                 new DbParam("@selbst", this.m_Selbstentladung),
                 new DbParam("@key", szKey ?? "")
@@ -198,10 +189,10 @@ namespace WindowsFormsApplication1
                     int neueId = (mx == null || mx == DBNull.Value) ? 1 : Convert.ToInt32(mx) + 1;
 
                     string sql = @"INSERT INTO [" + TABLE + @"]
-                            (ID, Bezeichner, Firma, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten, ReadOnly,
-                             Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch,
+                            (ID, Bezeichner, Firma, Typ, Leistung, Energie, Degradation, Ladezustand, ReadOnly,
+                             Wirkungsgrad_RT, Zyklen_Zugesichert, Standby_Verbrauch,
                              Selbstentladung_Prozent_Monat)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                     DbParam[] ps = {
                         new DbParam("@id", neueId),
@@ -212,13 +203,9 @@ namespace WindowsFormsApplication1
                         new DbParam("@ene", model.m_Energie),
                         new DbParam("@deg", model.m_Degradation),
                         new DbParam("@lad", model.m_Ladezustand),
-                        new DbParam("@mod", model.m_Modulkosten),
                         new DbParam("@ro", false),
                         new DbParam("@eta", model.m_WirkungsgradRT),
                         new DbParam("@nzyk", model.m_ZyklenZugesichert),
-                        new DbParam("@cver", model.m_Verschleisskosten),
-                        new DbParam("@cpow", model.m_Leistungskosten),
-                        new DbParam("@ifix", model.m_InvestitionFix),
                         new DbParam("@stby", model.m_StandbyVerbrauch),
                         new DbParam("@selbst", model.m_Selbstentladung)
                     };
@@ -301,9 +288,9 @@ namespace WindowsFormsApplication1
         private void Reset()
         {
             m_ID = 0; m_szBezeichner = string.Empty; m_szTyp = string.Empty;
-            m_Leistung = 0; m_Energie = 0; m_Degradation = 0; m_Ladezustand = 0; m_Modulkosten = 0;
-            m_WirkungsgradRT = 0; m_ZyklenZugesichert = 0; m_Verschleisskosten = 0;
-            m_Leistungskosten = 0; m_InvestitionFix = 0; m_StandbyVerbrauch = 0; m_Selbstentladung = 0;
+            m_Leistung = 0; m_Energie = 0; m_Degradation = 0; m_Ladezustand = 0;
+            m_WirkungsgradRT = 0; m_ZyklenZugesichert = 0;
+            m_StandbyVerbrauch = 0; m_Selbstentladung = 0;
             m_bReadOnly = false;
         }
 
@@ -326,16 +313,12 @@ namespace WindowsFormsApplication1
             if (row.Table.Columns.Contains("Energie") && row["Energie"] != DBNull.Value) t.m_Energie = Convert.ToDouble(row["Energie"]);
             if (row.Table.Columns.Contains("Degradation") && row["Degradation"] != DBNull.Value) t.m_Degradation = Convert.ToDouble(row["Degradation"]);
             if (row.Table.Columns.Contains("Ladezustand") && row["Ladezustand"] != DBNull.Value) t.m_Ladezustand = Convert.ToDouble(row["Ladezustand"]);
-            if (row.Table.Columns.Contains("Modulkosten") && row["Modulkosten"] != DBNull.Value) t.m_Modulkosten = Convert.ToDouble(row["Modulkosten"]);
 
             // AP3-Geraetetechnik (Fachkonzept 5.1) - dieselbe Columns.Contains-Wache wie
             // darueber: auf einer Datenbank vor Migrationsschritt 11 fehlen die Spalten,
             // die Felder behalten dann ihre 0.
             if (row.Table.Columns.Contains("Wirkungsgrad_RT") && row["Wirkungsgrad_RT"] != DBNull.Value) t.m_WirkungsgradRT = Convert.ToDouble(row["Wirkungsgrad_RT"]);
             if (row.Table.Columns.Contains("Zyklen_Zugesichert") && row["Zyklen_Zugesichert"] != DBNull.Value) t.m_ZyklenZugesichert = Convert.ToInt32(row["Zyklen_Zugesichert"]);
-            if (row.Table.Columns.Contains("Verschleisskosten") && row["Verschleisskosten"] != DBNull.Value) t.m_Verschleisskosten = Convert.ToDouble(row["Verschleisskosten"]);
-            if (row.Table.Columns.Contains("Leistungskosten") && row["Leistungskosten"] != DBNull.Value) t.m_Leistungskosten = Convert.ToDouble(row["Leistungskosten"]);
-            if (row.Table.Columns.Contains("Investition_Fix") && row["Investition_Fix"] != DBNull.Value) t.m_InvestitionFix = Convert.ToDouble(row["Investition_Fix"]);
             if (row.Table.Columns.Contains("Standby_Verbrauch") && row["Standby_Verbrauch"] != DBNull.Value) t.m_StandbyVerbrauch = Convert.ToDouble(row["Standby_Verbrauch"]);
             // Welle M5 (SP1): dieselbe Wache - vor dem Schemaschritt fehlt die Spalte.
             if (row.Table.Columns.Contains(StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG) &&
@@ -822,12 +805,8 @@ namespace WindowsFormsApplication1
             ziel.m_Energie = m.m_Energie;
             ziel.m_Degradation = m.m_Degradation;
             ziel.m_Ladezustand = m.m_Ladezustand;
-            ziel.m_Modulkosten = m.m_Modulkosten;
             ziel.m_WirkungsgradRT = m.m_WirkungsgradRT;
             ziel.m_ZyklenZugesichert = m.m_ZyklenZugesichert;
-            ziel.m_Verschleisskosten = m.m_Verschleisskosten;
-            ziel.m_Leistungskosten = m.m_Leistungskosten;
-            ziel.m_InvestitionFix = m.m_InvestitionFix;
             ziel.m_StandbyVerbrauch = m.m_StandbyVerbrauch;
             ziel.m_Selbstentladung = m.m_Selbstentladung;
         }
@@ -866,17 +845,40 @@ namespace WindowsFormsApplication1
             werte[ModulKatalogProfil.FeldLeistung] = Spaltentext(r, "Leistung");
             werte[ModulKatalogProfil.FeldDegradation] = Spaltentext(r, "Degradation");
             werte[ModulKatalogProfil.FeldLadezustand] = Spaltentext(r, "Ladezustand");
-            werte[ModulKatalogProfil.FeldModulkosten] = Spaltentext(r, "Modulkosten");
+            // Welle KB-5: der Kostensatz je kWh Nennkapazitaet aus der Satzvorlage (Projektkopie, dann
+            // Katalogsatz) - ein LESEWERT, gepflegt wird er in der Kostenverwaltung.
+            werte[ModulKatalogProfil.FeldKostensatz] = KostensatzText(r);
 
             werte[ModulKatalogProfil.FeldWirkungsgradRt] = Spaltentext(r, "Wirkungsgrad_RT");
             werte[ModulKatalogProfil.FeldZyklen] = Spaltentext(r, "Zyklen_Zugesichert");
-            werte[ModulKatalogProfil.FeldVerschleisskosten] = Spaltentext(r, "Verschleisskosten");
-            werte[ModulKatalogProfil.FeldLeistungskosten] = Spaltentext(r, "Leistungskosten");
-            werte[ModulKatalogProfil.FeldInvestitionFix] = Spaltentext(r, "Investition_Fix");
             werte[ModulKatalogProfil.FeldStandby] = Spaltentext(r, "Standby_Verbrauch");
             werte[ModulKatalogProfil.FeldSelbstentladung] = Spaltentext(r, StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG);
 
             return werte;
+        }
+
+        /// <summary>
+        /// Der Satz c_cap [€/kWh] der Satzvorlage dieses Satzes als Text in der Kultur des Anwenders;
+        /// leer = keine Satzvorlage mit Kapazitaetssatz (der Vermerk der Maske nennt die Kostenverwaltung).
+        /// Eine Zeile mit <c>ID_Stamm</c> ist eine Projektkopie, sonst ein Katalogsatz.
+        /// </summary>
+        private static string KostensatzText(DataRow r)
+        {
+            if (!r.Table.Columns.Contains("ID") || r["ID"] == DBNull.Value) return "";
+            return KostensatzText(r.Table.Columns.Contains(KatalogkostenUrsprungSchema.SPALTE_ID_STAMM),
+                                  Convert.ToInt32(r["ID"], CultureInfo.InvariantCulture));
+        }
+
+        /// <summary>
+        /// <b>Der Kostensatz c_cap [€/kWh] des Satzes <paramref name="id"/></b> (Projektkopie oder Katalog) als Text in
+        /// der Kultur des Anwenders — Satzvorlage der Projektkopie, dann des Katalogsatzes
+        /// (<see cref="KatalogkostensatzCtrl.Stromspeicher"/>); leer = nicht gepflegt. Ein LESEWERT der Masken.
+        /// </summary>
+        public static string KostensatzText(bool projektkopie, int id)
+        {
+            if (id <= 0) return "";
+            double? satz = KatalogkostensatzCtrl.Stromspeicher(Tabelle(projektkopie), id).CCapEurProKwh;
+            return satz.HasValue ? satz.Value.ToString(CultureInfo.CurrentCulture) : "";
         }
 
         /// <summary>Feldwert als Text; fehlende Spalte und <c>NULL</c> ergeben „".</summary>
@@ -938,12 +940,8 @@ namespace WindowsFormsApplication1
                 Negativ(ModulKatalogProfil.FeldLeistung, m.m_Leistung),
                 Bereich(ModulKatalogProfil.FeldDegradation, m.m_Degradation, 0, 100),
                 Bereich(ModulKatalogProfil.FeldLadezustand, m.m_Ladezustand, 0, 100),
-                Negativ(ModulKatalogProfil.FeldModulkosten, m.m_Modulkosten),
                 Bereich(ModulKatalogProfil.FeldWirkungsgradRt, m.m_WirkungsgradRT, 0, 1),
                 Negativ(ModulKatalogProfil.FeldZyklen, m.m_ZyklenZugesichert),
-                Negativ(ModulKatalogProfil.FeldVerschleisskosten, m.m_Verschleisskosten),
-                Negativ(ModulKatalogProfil.FeldLeistungskosten, m.m_Leistungskosten),
-                Negativ(ModulKatalogProfil.FeldInvestitionFix, m.m_InvestitionFix),
                 Negativ(ModulKatalogProfil.FeldStandby, m.m_StandbyVerbrauch),
                 Bereich(ModulKatalogProfil.FeldSelbstentladung, m.m_Selbstentladung, 0, 100));
         }
@@ -1040,8 +1038,7 @@ namespace WindowsFormsApplication1
 
             string sql = "UPDATE [" + tabelle + @"] SET
                             Firma = ?, Typ = ?, Leistung = ?, Energie = ?, Degradation = ?, Ladezustand = ?,
-                            Modulkosten = ?, Wirkungsgrad_RT = ?, Zyklen_Zugesichert = ?, Verschleisskosten = ?,
-                            Leistungskosten = ?, Investition_Fix = ?, Standby_Verbrauch = ?,
+                            Wirkungsgrad_RT = ?, Zyklen_Zugesichert = ?, Standby_Verbrauch = ?,
                             Selbstentladung_Prozent_Monat = ?
                           WHERE ID = ?";
             DbParam[] ps =
@@ -1052,12 +1049,8 @@ namespace WindowsFormsApplication1
                 new DbParam("@ene", Wert("Energie", m.m_Energie)),
                 new DbParam("@deg", Wert("Degradation", m.m_Degradation)),
                 new DbParam("@lad", Wert("Ladezustand", m.m_Ladezustand)),
-                new DbParam("@mod", Wert("Modulkosten", m.m_Modulkosten)),
                 new DbParam("@eta", Wert("Wirkungsgrad_RT", m.m_WirkungsgradRT)),
                 new DbParam("@nzyk", Wert("Zyklen_Zugesichert", m.m_ZyklenZugesichert)),
-                new DbParam("@cver", Wert("Verschleisskosten", m.m_Verschleisskosten)),
-                new DbParam("@cpow", Wert("Leistungskosten", m.m_Leistungskosten)),
-                new DbParam("@ifix", Wert("Investition_Fix", m.m_InvestitionFix)),
                 new DbParam("@stby", Wert("Standby_Verbrauch", m.m_StandbyVerbrauch)),
                 new DbParam("@selbst", Wert(StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG, m.m_Selbstentladung)),
                 new DbParam("@id", id)
@@ -1074,9 +1067,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Das Gewerk des Rückwegs „In die Datenbank übernehmen…"</b> (Konzept Katalogauswahl 5.2, KA‑E‑9): Kopie
         /// <see cref="TABELLE_PROJEKT"/>, Katalog <see cref="TABLE"/>, Anlage über <c>ID_SP</c>, Kostenkomponente 5.
-        /// <b>Keine Kindtabellen</b> — Kapazität, Leistung, Gerätewerte und die vier Kostenposten (<c>Modulkosten</c>,
-        /// <c>Leistungskosten</c>, <c>Investition_Fix</c>, <c>Verschleisskosten</c>) stehen als Spalten am Satz und gehen
-        /// mit der Schnittmenge. Anlagenbezogen und damit im Projekt bleiben Energieträger und Betriebsführung
+        /// <b>Keine Kindtabellen</b> — Kapazität, Leistung und Gerätewerte stehen als Spalten am Satz und gehen
+        /// mit der Schnittmenge. Die Kosten gehen als Kostenpositionen der Anlage: Sie werden Satzvorlagen des Satzes;
+        /// die Verweise der Kopie gehen nicht mit (eine Anlage ohne Position ergibt einen Satz ohne Kosten). Anlagenbezogen und damit im Projekt bleiben Energieträger und Betriebsführung
         /// (<c>Tab_StromspeicherVariante</c> hängt an der Anlage, nicht an der Kopie). Prüfregel wie beim Speichern
         /// (<see cref="Pruefen"/>).
         /// </summary>
@@ -1086,6 +1079,8 @@ namespace WindowsFormsApplication1
             Katalogtabelle = TABLE,
             Anlagenverweis = "ID_SP",
             KomponentenId = KOMPONENTE_KOSTEN,
+            // Welle KB-5: Die Kosten stehen nur in den Satzvorlagen - der Verweis der Kopie geht mit.
+            KostenverweisMitnehmen = true,
             Pruefung = zeile =>
             {
                 var m = new StromspeicherModel();
@@ -1100,7 +1095,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>„In die Datenbank übernehmen…"</b> — die Projektkopien als neue Katalogsätze oder als Ersatz ihres Ursprungs,
-        /// alles oder nichts (<see cref="Katalogrueckweg.Uebernehmen"/>): Gerätespalten samt den vier Kostenposten,
+        /// alles oder nichts (<see cref="Katalogrueckweg.Uebernehmen"/>): Gerätespalten,
         /// Betriebs- und Investitionspositionen der Anlage als Satzvorlagen. Der Name der Kopie bleibt (KA‑E‑15).
         /// </summary>
         public static Rueckwegergebnis AusProjektUebernehmen(IReadOnlyList<Rueckwegauftrag> auftraege)

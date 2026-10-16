@@ -2969,11 +2969,6 @@
         /// <summary>Einheit des quadratischen Waermeverlustbeiwerts k2.</summary>
         internal const string EINHEIT_W_M2K2 = "W/(m²·K²)";
 
-        /// <summary>
-        /// Einheit der Verschleisskosten eines Stromspeichers - sie traegt ein WORT
-        /// und kommt deshalb aus der Ressource.
-        /// </summary>
-        internal static string EinheitZykluskosten => MyResource.Resource.SP_EINHEIT_ZYKLUSKOSTEN;
 
         // ============================================== Masken der Welle KI-F5
 
@@ -3079,18 +3074,10 @@
         internal static string ModkLadezustandErl => MyResource.Resource.KI_DLG_MODK_LADEZUSTAND_ERL;
         internal static string ModkDegradationName => MyResource.Resource.MODK_LBL_DEGRADATION;
         internal static string ModkDegradationErl => MyResource.Resource.KI_DLG_MODK_DEGRADATION_ERL;
-        internal static string ModkKostenName => MyResource.Resource.MODK_LBL_MODULKOSTEN;
-        internal static string ModkKostenErl => MyResource.Resource.KI_DLG_MODK_KOSTEN_ERL;
         internal static string ModkWirkungsgradRtName => MyResource.Resource.SP_LABEL_WIRKUNGSGRAD_RT;
         internal static string ModkWirkungsgradRtErl => MyResource.Resource.KI_DLG_MODK_WG_RT_ERL;
         internal static string ModkZyklenName => MyResource.Resource.SP_LABEL_ZYKLEN;
         internal static string ModkZyklenErl => MyResource.Resource.KI_DLG_MODK_ZYKLEN_ERL;
-        internal static string ModkVerschleissName => MyResource.Resource.SP_LABEL_VERSCHLEISSKOSTEN;
-        internal static string ModkVerschleissErl => MyResource.Resource.KI_DLG_MODK_VERSCHLEISS_ERL;
-        internal static string ModkLeistungskostenName => MyResource.Resource.SP_LABEL_LEISTUNGSKOSTEN;
-        internal static string ModkLeistungskostenErl => MyResource.Resource.KI_DLG_MODK_LEISTUNGSKOSTEN_ERL;
-        internal static string ModkInvestFixName => MyResource.Resource.SP_LABEL_INVESTITION_FIX;
-        internal static string ModkInvestFixErl => MyResource.Resource.KI_DLG_MODK_INVEST_FIX_ERL;
         internal static string ModkStandbyName => MyResource.Resource.SP_LABEL_STANDBY;
         internal static string ModkStandbyErl => MyResource.Resource.KI_DLG_MODK_STANDBY_ERL;
         // Welle M5 (SP1): Name = Beschriftung des Katalogfelds.

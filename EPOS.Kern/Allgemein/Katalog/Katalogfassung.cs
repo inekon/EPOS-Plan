@@ -433,9 +433,8 @@ namespace WindowsFormsApplication1
             new Katalogtabelle("Tab_Stromspeicher_STAMM", "SSP",
                 new[]
                 {
-                    "Bezeichner", "Typ", "Leistung", "Energie", "Degradation", "Ladezustand", "Modulkosten",
-                    "Wirkungsgrad_RT", "Zyklen_Zugesichert", "Verschleisskosten", "Leistungskosten",
-                    "Investition_Fix", "Standby_Verbrauch", "Firma", "Selbstentladung_Prozent_Monat"
+                    "Bezeichner", "Typ", "Leistung", "Energie", "Degradation", "Ladezustand",
+                    "Wirkungsgrad_RT", "Zyklen_Zugesichert", "Standby_Verbrauch", "Firma", "Selbstentladung_Prozent_Monat"
                 })
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_STROMSPEICHER" },
             new Katalogtabelle("Tab_Stromverbrauchertyp_STAMM", "SVT",

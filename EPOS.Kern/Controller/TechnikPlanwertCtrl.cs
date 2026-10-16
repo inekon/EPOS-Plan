@@ -441,14 +441,9 @@ namespace WindowsFormsApplication1
         /// schon gelesen werden.
         /// </para>
         /// <para>
-        /// <b>Stromspeicher</b> führt drei Kostenfelder, die zusammen EINE Formel bilden:
-        /// <c>Modulkosten</c> ist entgegen dem Namen ein SPEZIFISCHER Preis in €/kWh
-        /// (AP0-Entscheid vom 16.08.2026, umgesetzt in
-        /// <c>Form_AdminStromspeicher.EinheitenBeschriftungKorrigieren</c>),
-        /// <c>Leistungskosten</c> €/kW und <c>Investition_Fix</c> ein fester Anteil —
-        /// genau die Aufteilung, mit der <c>StromspeicherSimCtrl</c> rechnet. Der alte Weg
-        /// summierte <c>Modulkosten</c> als Euro-Betrag und war damit dimensional falsch;
-        /// hier entsteht nur EINE Basis, aber die richtige.
+        /// <b>Stromspeicher</b> führt drei Investitionssätze der Satzvorlage, die zusammen EINE Formel
+        /// bilden: Kapazitätssatz €/kWh, Leistungssatz €/kW und ein fester Betrag — genau die
+        /// Aufteilung, mit der <c>StromspeicherSimCtrl</c> rechnet; hier entsteht nur EINE Basis.
         /// </para>
         /// <para>
         /// <b>Die übrigen fünf Gewerke</b> führen genau ein Kostenfeld und bleiben einfeldrig
@@ -459,15 +454,18 @@ namespace WindowsFormsApplication1
         /// </remarks>
         private static void BasenFuellen(string komponente, DataRow r, Anlage a, Plan plan)
         {
-            // Der Stromspeicher behält seine drei Spalten, bis Welle KB-5 sie ablöst: sein RECHENWEG
-            // liest sie (StromspeicherSimCtrl), und die Flotte des Referenzprojekts 1046 hängt daran.
+            // Welle KB-5: Der Stromspeicher führt keine Kostenspalten mehr (StromspeicherKostenSchema). Die drei
+            // Investitionssätze kommen aus der Satzvorlage der Projektkopie bzw. ihres Katalogsatzes — OHNE die
+            // Positionsstufe: Der Planwert ist die Vorbelegung genau dieser Position und darf sich nicht selbst lesen.
             if (string.Equals(komponente, DbWerte.ERZEUGER_STROMSPEICHER, StringComparison.Ordinal))
             {
-                double cCap = Zahl(r, "Modulkosten");        // €/kWh
+                KatalogkostensatzCtrl.Stromspeichersaetze kosten =
+                    KatalogkostensatzCtrl.Stromspeicher(StromspeicherKostenSchema.TAB_KOPIE, Ganz(r, "ID"));
+                double cCap = kosten.CCapEurProKwh ?? 0.0;  // €/kWh
                 double energie = Zahl(r, "Energie");         // kWh
-                double cPow = Zahl(r, "Leistungskosten");    // €/kW
+                double cPow = kosten.CPowEurProKw ?? 0.0;    // €/kW
                 double leistung = Zahl(r, "Leistung");       // kW
-                double fix = Zahl(r, "Investition_Fix");     // €
+                double fix = kosten.IFixEur ?? 0.0;          // €
 
                 Basis(a, BASIS_SPEZIFISCH, cCap * energie + cPow * leistung + fix,
                       Herleitung(MyResource.Resource.KOSTEN_PLANWERT_HERL_SPEICHER,
@@ -1466,9 +1464,10 @@ namespace WindowsFormsApplication1
         /// <para>
         /// Die übrigen Gewerke führen überhaupt kein Wartungsfeld in der Gerätetabelle
         /// (Wärmepumpe, PV, Solarthermie, Pufferspeicher). Der Stromspeicher führt
-        /// <c>Verschleisskosten</c>; die rechnet <c>StromspeicherSimCtrl</c> bereits selbst
-        /// in seine eigene Wirtschaftlichkeit ein — eine zweite, zusätzlich addierte
-        /// Kostenposition wäre Doppelzählung.
+        /// seinen Verschleiß als Betriebsposition „je entladener kWh" (Welle KB-5): Diese Position ist
+        /// die QUELLE von c_ver, gebucht wird sie vom Lauf (<c>StromspeicherSimCtrl</c>, eigene
+        /// Betriebskostenzeile); die Kostenrechnung bucht sie nicht ein zweites Mal
+        /// (<see cref="WirtschaftlichkeitCtrl.VomLaufGebucht(int,int,string,bool)"/>).
         /// </para>
         /// </remarks>
         /// <param name="komponentenID">
@@ -1486,7 +1485,10 @@ namespace WindowsFormsApplication1
 
             if (!string.Equals(komponente, DbWerte.ERZEUGER_BHKW, StringComparison.Ordinal))
             {
-                erg.Hinweis = MyResource.Resource.KOSTEN_BETRIEB_OHNE_WARTUNGSFELD;
+                // Welle KB-5: Am Stromspeicher ist die Verschleißposition die Quelle von c_ver, gebucht vom Lauf.
+                erg.Hinweis = string.Equals(komponente, DbWerte.ERZEUGER_STROMSPEICHER, StringComparison.Ordinal)
+                    ? MyResource.Resource.KOSTEN_BETRIEB_SPEICHER_VERSCHLEISS_QUELLE
+                    : MyResource.Resource.KOSTEN_BETRIEB_OHNE_WARTUNGSFELD;
                 return erg;
             }
 

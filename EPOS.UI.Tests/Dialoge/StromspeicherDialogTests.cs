@@ -67,7 +67,7 @@ public class StromspeicherDialogTests : EposBunitContext
         name, "",
         new[] { ("Typ:", "Lithium"), ("Leistung [kW]:", "10"),
                 ("Energie (Kapazität) [kWh]:", "20"), ("Degradation [%/a]:", "0,1"),
-                ("Ladezustand [%]:", "50"), ("Modulkosten [€/kWh]:", "400") });
+                ("Ladezustand [%]:", "50"), ("Kostensatz [€/kWh]:", "400") });
 
     /// <summary>Das PROFIL des Modulkatalogs — daraus baut die Hülle die Felder des Aufklappers.</summary>
     private static readonly ModulKatalogProfil Modulprofil =
@@ -295,8 +295,9 @@ public class StromspeicherDialogTests : EposBunitContext
 
         Assert.True(cut.Instance.ParameterOffen);
         var felder = cut.FindComponent<Katalogfelder>();
-        Assert.Contains(felder.Instance.Felder, f => f.Schluessel == ModulKatalogProfil.FeldModulkosten && f.Editierbar);
-        Assert.Contains(felder.Instance.Felder, f => f.Schluessel == ModulKatalogProfil.FeldInvestitionFix && f.Editierbar);
+        // Welle KB-5: der Kostensatz steht GESPERRT da - gepflegt wird er in der Kostenverwaltung.
+        Assert.Contains(felder.Instance.Felder, f => f.Schluessel == ModulKatalogProfil.FeldKostensatz && !f.Editierbar);
+        Assert.DoesNotContain(felder.Instance.Felder, f => f.Schluessel == "INVESTITION_FIX");
 
         cut.FindAll(".epos-modulparameter input[inputmode=decimal]")[0].Input("42");
         cut.Find(".epos-satzueberlagerung-ok").Click();
@@ -622,7 +623,7 @@ public class StromspeicherDialogTests : EposBunitContext
         Assert.Contains("ausgewählte Stromspeicher:", cut.Markup);
         Assert.Contains("Stromspeicher aus Datenbank:", cut.Markup);
 
-        // Sieben NUR LESBARE Anzeigefelder: Name, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten.
+        // Sieben NUR LESBARE Anzeigefelder: Name, Typ, Leistung, Energie, Degradation, Ladezustand, Kostensatz.
         Assert.Equal(7, cut.FindAll(".epos-formularraster input[readonly]").Count);
     }
 
@@ -634,7 +635,7 @@ public class StromspeicherDialogTests : EposBunitContext
 
         var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
         Assert.Contains("Energie (Kapazität) [kWh]:", texte);
-        Assert.Contains("Modulkosten [€/kWh]:", texte);
+        Assert.Contains("Kostensatz [€/kWh]:", texte);
         Assert.DoesNotContain("Energie [kW]:", texte);
     }
 

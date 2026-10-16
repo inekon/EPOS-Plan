@@ -9,7 +9,7 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Mehrfach-Bearbeiten der Stromspeicher in EINER Transaktion</b> (Konzept Projektdialoge mit Katalogauswahl
     /// 4.6, Entscheid KA‑E‑8, Stufe 3): <see cref="StromspeicherStammCtrl.SchreibenAlle"/> schreibt alle geänderten
-    /// Sätze — Projektkopien oder Katalogsätze — oder keinen; die vier Kostenposten gehen mit, der Name bleibt, eine
+    /// Sätze — Projektkopien oder Katalogsätze — oder keinen; die Kosten stehen nicht am Gerät, der Name bleibt, eine
     /// leere Gerätespalte bleibt leer. Geschrieben wird in der Kopie der Testdatenbank (<see cref="TestDatenbank"/>).
     /// </summary>
     [Collection("Testdatenbank")]
@@ -27,12 +27,10 @@ namespace EPOS.Kern.Tests
             return ids;
         }
 
-        private static StromspeicherModel Daten(bool projektkopie, int id, string firma, double modulkosten = 300,
-                                                double leistung = 10)
+        private static StromspeicherModel Daten(bool projektkopie, int id, string firma, double leistung = 10)
         {
             StromspeicherModel m = StromspeicherStammCtrl.Satz(projektkopie, id);
             m.m_szFirma = firma;
-            m.m_Modulkosten = modulkosten;
             m.m_Leistung = leistung;
             m.m_szBezeichner = "Umbenannt";      // wird nie geschrieben
             return m;
@@ -61,15 +59,19 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Convert.ToString(Roh("Tab_Stromspeicher_STAMM", k, "Bezeichner"), CultureInfo.InvariantCulture),
                          Feld(false, k, ModulKatalogProfil.FeldBezeichner));
             var anzeige = StromspeicherStammCtrl.SatzAnzeige(true, p);
-            foreach (string f in new[] { ModulKatalogProfil.FeldModulkosten, ModulKatalogProfil.FeldLeistungskosten,
-                                         ModulKatalogProfil.FeldInvestitionFix, ModulKatalogProfil.FeldVerschleisskosten })
-                Assert.True(anzeige.ContainsKey(f), f);
+            // Welle KB-5: der Kostensatz der Satzvorlage als Lesewert - derselbe Wert wie der Satzleser.
+            double? satz = KatalogkostensatzCtrl.Stromspeicher(StromspeicherStammCtrl.TABELLE_PROJEKT, p).CCapEurProKwh;
+            Assert.Equal(satz.HasValue ? satz.Value.ToString(CultureInfo.CurrentCulture) : "",
+                         anzeige[ModulKatalogProfil.FeldKostensatz]);
+            Assert.Equal(anzeige[ModulKatalogProfil.FeldKostensatz], StromspeicherStammCtrl.KostensatzText(true, p));
+            foreach (string f in new[] { "MODULKOSTEN", "LEISTUNGSKOSTEN", "INVESTITION_FIX", "VERSCHLEISSKOSTEN" })
+                Assert.False(anzeige.ContainsKey(f), f);
             Assert.Null(StromspeicherStammCtrl.SatzAnzeige(true, 987654));
             Assert.Null(StromspeicherStammCtrl.Satz(false, 987654));
         }
 
         [Fact]
-        public void Alle_Projektkopien_werden_samt_Kostenposten_geschrieben_Name_und_Katalog_bleiben()
+        public void Alle_Projektkopien_werden_geschrieben_Name_und_Katalog_bleiben()
         {
             if (!_db.Vorhanden) return;
             var ids = Ids(StromspeicherStammCtrl.TABELLE_PROJEKT, 2);
@@ -78,8 +80,7 @@ namespace EPOS.Kern.Tests
             string katalogVorher = Feld(false, katalog, ModulKatalogProfil.FeldFirma);
             string name0 = Feld(true, ids[0], ModulKatalogProfil.FeldBezeichner);
 
-            StromspeicherModel a = Daten(true, ids[0], "Sammel 1", modulkosten: 333);
-            a.m_Leistungskosten = 111; a.m_InvestitionFix = 2222; a.m_Verschleisskosten = 0.05;
+            StromspeicherModel a = Daten(true, ids[0], "Sammel 1");
             var e = StromspeicherStammCtrl.SchreibenAlle(true, new[]
             {
                 new StromspeicherStammCtrl.Satzaenderung(ids[0], a),
@@ -89,10 +90,10 @@ namespace EPOS.Kern.Tests
             Assert.True(e.Ok, e.Meldung);
             Assert.Equal("Sammel 1", Feld(true, ids[0], ModulKatalogProfil.FeldFirma));
             Assert.Equal("Sammel 2", Feld(true, ids[1], ModulKatalogProfil.FeldFirma));
-            Assert.Equal(333, Convert.ToDouble(Roh("Tab_Stromspeicher", ids[0], "Modulkosten"), CultureInfo.InvariantCulture));
-            Assert.Equal(111, Convert.ToDouble(Roh("Tab_Stromspeicher", ids[0], "Leistungskosten"), CultureInfo.InvariantCulture));
-            Assert.Equal(2222, Convert.ToDouble(Roh("Tab_Stromspeicher", ids[0], "Investition_Fix"), CultureInfo.InvariantCulture));
-            Assert.Equal(0.05, Convert.ToDouble(Roh("Tab_Stromspeicher", ids[0], "Verschleisskosten"), CultureInfo.InvariantCulture), 9);
+            // Das Modell fuehrt keine Kostenfelder: Die Spalten sind entfallen (StromspeicherKostenSchema),
+            // die Kosten laufen über Satzvorlage und Kostenposition.
+            foreach (string entfallen in StromspeicherKostenSchema.Kostenspalten)
+                Assert.False(DataRepository.SpalteVorhanden("Tab_Stromspeicher", entfallen));
             Assert.Equal(name0, Feld(true, ids[0], ModulKatalogProfil.FeldBezeichner));
             Assert.Equal(katalogVorher, Feld(false, katalog, ModulKatalogProfil.FeldFirma));
         }

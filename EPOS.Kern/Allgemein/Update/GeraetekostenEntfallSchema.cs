@@ -384,11 +384,19 @@ namespace WindowsFormsApplication1
         /// <c>(null, null)</c>, wenn der Katalog nicht im Register steht oder die Kostenspalten schon fort sind.
         /// </summary>
         internal static (Katalogtabelle Tabelle, List<string> Spalten) AlteSicht(string katalog)
+            => AlteSicht(katalog, ALTE_FOLGE);
+
+        /// <summary>
+        /// <see cref="AlteSicht(string)"/> mit der alten Folge eines anderen Schritts — der Weg, auf dem
+        /// eine spätere Welle (<see cref="StromspeicherKostenSchema"/>) dieselbe Neubildung fährt.
+        /// </summary>
+        internal static (Katalogtabelle Tabelle, List<string> Spalten) AlteSicht(
+            string katalog, IReadOnlyDictionary<string, IReadOnlyList<(string Spalte, int Platz)>> folge)
         {
             Katalogtabelle neu = Katalogfassung.Tabelle(katalog);
             if (neu == null || !Katalogfassung.SpaltenVorhanden(katalog)) return (null, null);
             IReadOnlyList<(string Spalte, int Platz)> plaetze;
-            if (!ALTE_FOLGE.TryGetValue(katalog, out plaetze)) return (null, null);
+            if (!folge.TryGetValue(katalog, out plaetze)) return (null, null);
 
             var alt = new List<string>(neu.Fachspalten);
             foreach ((string spalte, int platz) in plaetze.OrderBy(p => p.Platz))
@@ -412,13 +420,17 @@ namespace WindowsFormsApplication1
         /// Die Sätze je Katalog, deren gespeicherte Prüfsumme VOR dem Entfall stimmte — gebildet über
         /// <see cref="ALTE_FOLGE"/>. Nur sie bekommen danach eine neue Summe.
         /// </summary>
-        internal static Dictionary<string, List<long>> StimmigeSaetze()
+        internal static Dictionary<string, List<long>> StimmigeSaetze() => StimmigeSaetze(ALTE_FOLGE);
+
+        /// <summary><see cref="StimmigeSaetze()"/> mit der alten Folge eines anderen Schritts.</summary>
+        internal static Dictionary<string, List<long>> StimmigeSaetze(
+            IReadOnlyDictionary<string, IReadOnlyList<(string Spalte, int Platz)>> folge)
         {
             var je = new Dictionary<string, List<long>>(StringComparer.Ordinal);
-            foreach (string katalog in ALTE_FOLGE.Keys)
+            foreach (string katalog in folge.Keys)
             {
                 var ids = new List<long>();
-                (Katalogtabelle tAlt, List<string> alt) = AlteSicht(katalog);
+                (Katalogtabelle tAlt, List<string> alt) = AlteSicht(katalog, folge);
                 if (tAlt == null) { je[katalog] = ids; continue; }
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT \"ID\", \"" + Katalogfassung.SPALTE_PRUEFSUMME + "\", " + Katalogfassung.Spaltentext(alt) +
@@ -435,7 +447,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Bildet die Prüfsumme der übergebenen Sätze mit der NEUEN Spaltenfolge neu.</summary>
-        private static int PruefsummenNeuBilden(Dictionary<string, List<long>> je, IList<string> bericht)
+        internal static int PruefsummenNeuBilden(Dictionary<string, List<long>> je, IList<string> bericht)
         {
             int gesamt = 0;
             if (je == null) return 0;
