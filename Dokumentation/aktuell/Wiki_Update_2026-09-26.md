@@ -181,8 +181,9 @@ ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
 Version beim Anwender zu erfragen; die Wiki-Quellen (Prozesswärme, Brauchwasser, Kältebedarf) sind fortgeschrieben, ins Wiki geladen ist noch nichts.
 
-- Seit 16.10.2026: Prozesswärme- und Brauchwasserprofile lassen sich wie Kältebedarfsprofile als Jahressumme mit Vorlage, mit Monatswerten oder mit einem Wochenprofil eingeben.
-- Seit 16.10.2026: Wer die Kältevorlage „Prozesskälte einschichtig“ übernimmt, bekommt den Betriebskalender „Norm 230 Tage“ mit dem Bundesland im Namen und 230 Nutzungstagen vorgewählt.
+- Seit 16.10.2026: Prozesswärme- und Brauchwasserprofile lassen sich wie Kältebedarfsprofile als Jahressumme mit Vorlage, mit Monatswerten oder mit einem Wochenprofil eingeben. (#1116)
+- Seit 16.10.2026: Wer die Kältevorlage „Prozesskälte einschichtig“ übernimmt, bekommt den Betriebskalender „Norm 230 Tage“ mit dem Bundesland im Namen und 230 Nutzungstagen vorgewählt. (#1117, #1118)
+- Seit 16.10.2026: Der Betriebskalender hat den Schalter „Ferien wie Sonntag“; ein Ferientag rechnet dann mit Tagesmenge und Stundengang des Sonntags, der Ferienfaktor ist gesperrt. (#1119)
 
 ### Version 1.2.0.12 — Entwurf, Versionsnummer beim Anwender zu bestätigen — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
