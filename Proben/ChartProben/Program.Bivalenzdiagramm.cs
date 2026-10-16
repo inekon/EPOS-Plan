@@ -73,7 +73,7 @@ namespace ChartProben
         private static BivalenzdiagrammTexte BivalenzWikitexte() => new BivalenzdiagrammTexte
         {
             ErsterBivalenzpunkt = "Kessel hilft unter {0} °C",
-            ZweiterBivalenzpunkt = "Kessel allein {0} °C",
+            ZweiterBivalenzpunkt = "Kessel allein unter {0} °C",
             NachKennfeld = "Kennfeld {0} °C",
         };
 

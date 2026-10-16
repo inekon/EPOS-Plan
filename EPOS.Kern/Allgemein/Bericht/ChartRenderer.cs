@@ -6960,8 +6960,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Der Trennstrich als Ausweg des Umbruchs:</b> Jedes Wort, das auch allein breiter ist als
-        /// <paramref name="breite"/>, wird mit „-“ zerlegt — an der Silbenfuge (<see cref="Silbenfuge"/>), deren
-        /// breiterer Teil am schmalsten ist („Ersatz-“ / „beschaffungen“), ohne Fuge am längsten Anfang, der passt;
+        /// <paramref name="breite"/>, wird mit „-“ zerlegt — gierig von hinten an der spätesten Fuge, deren Anfang samt „-“
+        /// noch passt — eine Kompositionsfuge (<see cref="Kompositionsfuge"/>) vor einer Silbenfuge (<see cref="Silbenfuge"/>),
+        /// „Energie-“ / „kosten“ —, ohne Fuge am längsten Anfang, der passt;
         /// mindestens drei Zeichen vorn und hinten. Passt jedes Wort, kommt der Text unverändert zurück.
         /// </summary>
         private static string Zerlegt(string text, Schriftmass f, float breite)
@@ -6975,20 +6976,36 @@ namespace WindowsFormsApplication1
                 {
                     int laengster = rest.Length - 3;
                     while (laengster > 3 && f.MeasureText(rest.Substring(0, laengster) + "-") > breite) laengster--;
-                    int schnitt = laengster;
-                    float bester = float.MaxValue;
-                    for (int s = 3; s <= laengster; s++)
-                    {
-                        if (!Silbenfuge(rest, s)) continue;
-                        float breiter = Math.Max(f.MeasureText(rest.Substring(0, s) + "-"), f.MeasureText(rest.Substring(s)));
-                        if (breiter < bester) { bester = breiter; schnitt = s; }
-                    }
+                    // Gierig von hinten: die späteste Kompositionsfuge, die passt, sonst die späteste
+                    // Silbenfuge, sonst der längste Anfang („Energie-“ / „kosten“, nicht „Ener-“ / „giekosten“).
+                    int schnitt = -1;
+                    for (int s = laengster; s >= 3 && schnitt < 0; s--)
+                        if (Kompositionsfuge(rest, s)) schnitt = s;
+                    for (int s = laengster; s >= 3 && schnitt < 0; s--)
+                        if (Silbenfuge(rest, s)) schnitt = s;
+                    if (schnitt < 0) schnitt = laengster;
                     teile.Add(rest.Substring(0, schnitt) + "-");
                     rest = rest.Substring(schnitt);
                 }
                 teile.Add(rest);
             }
             return string.Join(" ", teile);
+        }
+
+        /// <summary>Grundwörter, vor denen ein Kompositum der Diagrammnamen getrennt wird („Energie|kosten“, „Ersatz|beschaffungen“).</summary>
+        private static readonly string[] GRUNDWOERTER =
+        {
+            "kosten", "beschaffung", "erlös", "investition", "wert", "betrieb", "vergütung", "förderung", "zuschlag",
+            "abgabe", "verbrauch", "bedarf", "leistung", "speicher", "pumpe", "kessel", "strom", "wärme", "energie"
+        };
+
+        /// <summary>Ein Schnitt vor <paramref name="i"/> liegt an einer Kompositionsfuge: dahinter beginnt ein Grundwort, davor stehen mindestens drei Zeichen.</summary>
+        private static bool Kompositionsfuge(string w, int i)
+        {
+            if (i < 3 || i > w.Length - 3 || !char.IsLetter(w[i - 1])) return false;
+            foreach (string g in GRUNDWOERTER)
+                if (w.Length - i >= g.Length && string.Compare(w, i, g, 0, g.Length, StringComparison.OrdinalIgnoreCase) == 0) return true;
+            return false;
         }
 
         /// <summary>Ein Schnitt vor <paramref name="i"/> trennt zwei Konsonanten, deren zweiter vor einem Vokal steht.</summary>

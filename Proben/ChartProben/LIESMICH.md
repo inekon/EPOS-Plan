@@ -654,14 +654,17 @@ Die Stufen einer dichten Dauerlinie zählen Ränge, keine Tage; sie trägt desha
 **Abstände.** Steht ein Achsentitel im Bild, beginnt die Kopflegende der Zeitreihenbilder (Erzeugerstapel,
 normierte Ganglinie, Verlaufsbild) bei 58 statt 66 Bildpunkten (`LegendeOben`) und berührt den Achsentitel nicht
 mehr. Die Kennlinienlegende schreibt „35 °C“ mit Abstand. Die Namen der Kapitalwert-Brücke trennt ein Wort, das
-allein breiter ist als seine Spalte, an einer Silbenfuge („Ersatz-“ / „beschaffungen“, `Zerlegt`); ein Name steht
+allein breiter ist als seine Spalte, gierig von hinten an der spätesten Fuge, die noch passt, eine Kompositionsfuge
+vor einer Silbenfuge („Energie-“ / „kosten“, „Ersatz-“ / „beschaffungen“, `Zerlegt`); ein Name steht
 in höchstens drei Zeilen, die Schrift bleibt 15 pt, und braucht ein Name die dritte Zeile, wächst das Bild um so
 viel, wie Fuß und Legende tiefer rücken. Ein Minderungsbetrag steht unter seiner Säule, nie auf der Nulllinie.
 
 **Bivalenzmarken.** Die Vorgabetexte (`BivalenzdiagrammTexte`, `BER_BILD_BIVALENZ_MARKE_*`) sprechen wie die
 Wiki-Fassung: „Kessel hilft unter … °C“, „Kessel allein unter … °C“, „Kennfeld … °C“; die Kennzahl- und
-Tabellentexte der Bivalenzpunkte ebenso; die Probebilder des Bivalenzdiagramms tragen die neuen Marken. Die
-Wiki-Fassung (`--wiki`) bleibt unverändert.
+Tabellentexte der Bivalenzpunkte ebenso; die Probebilder und die Wiki-Fassung (`--wiki`) lauten gleich. Eine
+Markenbeschriftung kreuzt keine Linie: Liegt ihr Platz auf Heizlast, Kennfeld, Übergabegrenze, Wärmepumpenfläche,
+einer fremden Marke oder einer anderen Beschriftung, nimmt sie die andere Seite, sonst die nächste freie Zeile;
+kreuzt jeder Platz eine fremde Marke, steht sie hell hinterlegt über ihr.
 
 | Art | Probe | Aussage |
 |---|---|---|
