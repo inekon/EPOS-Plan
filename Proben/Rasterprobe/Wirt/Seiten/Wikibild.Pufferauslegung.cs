@@ -139,7 +139,7 @@ public partial class Wikibild
             Sperrfenster = PufferSperrprofil.Fenster(PufferSperrprofilWert.Keine),
             Zapfprofil = new PufferZapfprofil
             {
-                Topologie = PufferBwTopologie.Frischwasser, DmaxKwh = 20, Personen = 40, TagesbedarfL = 1600
+                Topologie = PufferBwTopologie.Frischwasser, DmaxKwh = 20, LadeleistungKw = 20, Personen = 40, TagesbedarfL = 1600
             },
             Katalog = volumen.Select((v, i) => new PufferKatalogsatz(i + 1, $"Pufferspeicher {i + 1}", v, null, true)).ToList(),
             Parameter = PufferAuslegungParameter.Vorgabe()
