@@ -187,7 +187,7 @@ Version beim Anwender zu erfragen; die Wiki-Quellen (Prozesswärme, Brauchwasser
 
 ### Version 1.2.0.12 — Entwurf, Versionsnummer beim Anwender zu bestätigen — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
-Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5, MA-7; Statuszeilen #1002 bis #1057, #1076 bis #1083, #1085, #1091, #1092, #1094, #1110, #1111, #1114, #1115). Die Wiki-Quellen (Gebäude, Gebäudeimport, Nutzungsprofile, Baustoffe und Bauteilaufbauten, Datenexport, Index der Hilfeschlüssel) sind fortgeschrieben, ins Wiki geladen ist noch nichts. Nach dem Anwenderentscheid vom 13.10.2026 gilt die Nummer bis zum 16.10.2026 nur als Vorschlag; es gibt keinen Upload.
+Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5, MA-7; Statuszeilen #1002 bis #1057, #1076 bis #1083, #1085, #1091, #1092, #1094, #1110, #1111, #1114, #1115, #1126 bis #1128). Die Wiki-Quellen (Gebäude, Gebäudeimport, Nutzungsprofile, Baustoffe und Bauteilaufbauten, Datenexport, Index der Hilfeschlüssel) sind fortgeschrieben, ins Wiki geladen ist noch nichts. Nach dem Anwenderentscheid vom 13.10.2026 gilt die Nummer bis zum 16.10.2026 nur als Vorschlag; es gibt keinen Upload.
 
 - Seit 13.10.2026: Der Gebäudedialog prüft ein Gebäude mit „Modell prüfen…“ auf Rechenfähigkeit, zeigt je Prüfgruppe eine Ampel und übernimmt die Vorschläge mit einem Klick; nach einem Import öffnet die Prüfung von selbst.
 - Seit 13.10.2026: Die Modellprüfung meldet je Zone eine nicht geschlossene Hülle und schlägt das fehlende Dach, die fehlende Bodenplatte oder Geschossdecke mit passender Fläche vor.
@@ -205,6 +205,9 @@ Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5
 - Seit 16.10.2026: Fensteraufbauten führen U_g, U_f, g-Wert, Rahmenanteil und ψ des Glasrands; beim Zuweisen an ein Fenster übernimmt das Bauteil U_w, g-Wert und Rahmenanteil.
 - Seit 16.10.2026: Bauteilkatalog einlesen nennt den Teilkatalog in der Quelle und liest auch den Unterordner Export.
 - Seit 16.10.2026: Der Bauteildialog zeigt unter dem U-Wert die Herkunft des Werts, und der Hilfe-Assistent liest Fensterwerte und Abschnitte der Bauteilaufbauten mit.
+- Seit 16.10.2026: Der Bauteilkatalog-Import liest die Teilkataloge aus der Datei Katalog_Zuordnung.csv des Exports und zeigt in der Vorschau, wie viele Baustoffe und Aufbauten einen, mehrere oder keinen Teilkatalog tragen.
+- Seit 16.10.2026: Der Bauteilkatalog-Import übernimmt inhomogene Aufbauten auch mit verschiedener Schichtzahl je Abschnitt und ergänzt einen einzelnen fehlenden Flächenanteil.
+- Seit 16.10.2026: Der Bauteilkatalog-Import teilt inhomogene Aufbauten an allen gemeinsamen Schichtgrenzen nach DIN EN ISO 6946, und der Summenfuß nennt die Fehlerschranke des U-Werts.
 - Seit 16.10.2026: Die Nutzungsprofile der Kategorie DIN/TS 18599-10 werden mit den Werten der Fassung 2025-10 ausgeliefert; „Normwerte einlesen…“ gleicht eigene Werte dagegen ab, und die Rücknahme stellt die ausgelieferten Werte wieder her.
 - Seit 14.10.2026: Beim Gebäudeimport ordnet EPOS-Plan jeder Zone das Nutzungsprofil der DIN/TS 18599-10 zu, wenn die Datei eine Profilnummer oder einen gbXML-Raumtyp trägt, und die Modellprüfung zeigt mit einer Ampel, woher das Profil jeder Zone kommt.
 - Seit 14.10.2026: Im Reiter „Zonen“ des Gebäudeeditors zeigt eine Ampelleiste den Stand der Modellprüfung; ein Klick öffnet die Prüfung auf der Gruppe.
@@ -420,6 +423,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - 13.10.2026: Arbeits-, Grund- und Leistungspreis eines Brennstoffs stehen allein in der Karte seines Energieträgers. (#1080)
 - 14.10.2026: Die Gerätekataloge führen keine Kostenfelder mehr; die Kosten eines Geräts stehen allein in der Kostenverwaltung, die Maske zeigt die Gerätekosten bzw. den Kostensatz aus der Satzvorlage des Katalogsatzes. (#1095)
 - 16.10.2026: Auch die Kosten des Stromspeichers stehen wie bei den übrigen Gewerken allein in der Kostenverwaltung; der Katalogsatz führt keine Kostenfelder mehr. (#1100)
+- 16.10.2026: Die Wasserkosten des Rückkühlwerks werden mit dem Preis des Trägers Wasser als Betriebskosten gerechnet. (#1125)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 
@@ -1107,6 +1111,11 @@ Der Sammel-Upload 1.2.0.11 lief am 14.10.2026 (Seite Brauchwasser-Zapfprofil Rev
 
 - Seit 14.10.2026: Die mitgelieferten Brauchwasser-Nutzungsarten rechnen im Zapfprofil-Dialog in der Stufe „Einfach“ ohne zusätzlichen Katalog. (#1096)
 - Seit 16.10.2026: In der Stufe Einfach empfiehlt die Speicherauslegung im Brauchwasser-Zapfprofil auch ohne externes Katalogpaket einen Speicher-Nenninhalt, gekennzeichnet als Schnellauslegung nach Vorlage V4. (#1112)
+
+### Entwurf, Version offen (Klimadaten-Import, Einlesen-Dialoge)
+
+- Seit 16.10.2026: Der Klimadaten-Import zeigt vor dem Einlesen den gefundenen Datensatz mit Treffer, Standort und Kennzahlen. (#1123, #1124)
+- Seit 16.10.2026: Die Knöpfe der Einlesen-Dialoge bleiben am unteren Fensterrand sichtbar. (#1122)
 
 ## 3 Offene Punkte
 

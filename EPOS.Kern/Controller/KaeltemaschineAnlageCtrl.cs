@@ -46,12 +46,6 @@ namespace WindowsFormsApplication1
         /// </summary>
         public int? IdRueckkuehlwerk { get; set; }
 
-        /// <summary>
-        /// Wasserpreis der Anlage [€/m³] (<c>Wasserpreis_EUR_m3</c>, Frage KD-Q8); <c>null</c> = keine Wasserkosten. Nur
-        /// gelesen — geschrieben über <see cref="KaeltemaschineAnlageCtrl.WasserpreisSetzen"/>.
-        /// </summary>
-        public double? WasserpreisEurM3 { get; set; }
-
         /// <summary>Rückkühlart der Projektkopie der Kältemaschine (Anzeige und Verträglichkeitsprüfung).</summary>
         public string Rueckkuehlart { get; set; }
     }
@@ -68,8 +62,11 @@ namespace WindowsFormsApplication1
             "SELECT a.ID, a.ID_Projekt, a.Bezeichner, a.ID_Kaeltemaschine, a.Kaeltemaschine_Anzahl, a.Kuehl_ID_Carrier, " +
             "a.Kuehl_EigenerZaehler, k.Kuehl_Vorlauf, k.Kuehl_Hilfsstromanteil, k.Rueckkuehlart";
 
-        /// <summary>Die zwei Spalten des Rückkühlwerks (Schritt <see cref="RueckkuehlwerkSchema.SCHRITT"/>), wenn sie stehen.</summary>
-        private const string SQL_LISTE_RUECKKUEHLWERK = ", a.ID_Rueckkuehlwerk, a.Wasserpreis_EUR_m3";
+        /// <summary>
+        /// Der Verweis auf das Rückkühlwerk (Schritt <see cref="RueckkuehlwerkSchema.SCHRITT"/>), wenn er steht. Der Wasserpreis
+        /// steht nicht an der Anlage, sondern in der Trägerkarte (<see cref="WasserpreisTraegerkarteSchema"/>).
+        /// </summary>
+        private const string SQL_LISTE_RUECKKUEHLWERK = ", a.ID_Rueckkuehlwerk";
 
         private const string SQL_LISTE_FUSS =
             " FROM Tab_Energieanlagen a LEFT JOIN Tab_Kaeltemaschine k ON k.ID = a.ID_Kaeltemaschine ";
@@ -193,7 +190,7 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        //  Rückkühlwerk und Wasserpreis (K-F1)
+        //  Rückkühlwerk (K-F1)
         // =================================================================
 
         /// <summary>
@@ -244,22 +241,6 @@ namespace WindowsFormsApplication1
                     throw;
                 }
             }
-            return null;
-        }
-
-        /// <summary>
-        /// Setzt den Wasserpreis einer Anlage [€/m³]; <c>null</c> = keine Wasserkosten. Liefert <c>null</c> oder den
-        /// Meldungstext.
-        /// </summary>
-        public static string WasserpreisSetzen(int anlagenId, double? preisEurM3)
-        {
-            if (!RueckkuehlwerkSchema.AnlagenspaltenVorhanden())
-                return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.RKW_MSG_SCHEMA_FEHLT, RueckkuehlwerkSchema.SCHRITT);
-            if (preisEurM3.HasValue && (double.IsNaN(preisEurM3.Value) || double.IsInfinity(preisEurM3.Value) || preisEurM3.Value < 0))
-                return MyResource.Resource.RKW_MSG_WERT_UNGUELTIG;
-            DataRepository.ExecuteNonQuery("UPDATE Tab_Energieanlagen SET Wasserpreis_EUR_m3 = ? WHERE ID = ? AND ID_Type = ?",
-                new DbParam("?", preisEurM3.HasValue ? (object)preisEurM3.Value : DBNull.Value), new DbParam("?", anlagenId),
-                new DbParam("?", KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE));
             return null;
         }
 
@@ -325,7 +306,6 @@ namespace WindowsFormsApplication1
                 KuehlHilfsstromanteil = Z("Kuehl_Hilfsstromanteil"),
                 Rueckkuehlart = KaeltemaschineStammCtrl.Text(r[KaeltemaschineSchema.SPALTE_RUECKKUEHLART]),
                 IdRueckkuehlwerk = rkw.HasValue ? (int?)(int)rkw.Value : null,
-                WasserpreisEurM3 = mitRkw ? Z(RueckkuehlwerkSchema.SPALTE_WASSERPREIS) : null,
             };
         }
     }

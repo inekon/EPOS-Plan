@@ -112,6 +112,8 @@ Die '''Kältemaschine''' ist ein eigener Kälteerzeuger neben der Wärmepumpe im
 {{Anker|rueckkuehlung}}
 '''Rückkühlung und freie Kühlung.''' Die Abwärme der Kältemaschine geht über ihre ''Rückkühlart'' an die Umgebung: luftgekühlt direkt an die Außenluft, wassergekühlt über einen Trocken- oder Nasskühler. Die Kennlinie trägt die Rückkühltemperatur als zweite Achse; die Rückkühlung ist darin enthalten. Freie Kühlung ist ein Betriebsfall der Rückkühlung, kein eigener Erzeuger. Sie ist ein Betriebsfall der Rückkühlung, kein eigener Erzeuger. Bei Trocken- und Nasskühler gilt sie, wenn die Rückkühltemperatur mindestens 3 K unter der Kaltwassertemperatur liegt: Die Maschine deckt dann bis zur Nennkälteleistung mit einem festen Ersatz-EER von 15 plus Hilfsstrom, der Verdichter steht. Stunden und Kälte der freien Kühlung zählt der Lauf. Bei der luftgekühlten Maschine gibt es keine freie Kühlung.
 
+'''Wasser des Rückkühlwerks.''' Die Simulation ermittelt die Wassermenge des Rückkühlwerks; das Laufprotokoll nennt Menge und Nassstunden und verweist auf die Betriebskosten der Wirtschaftlichkeit. Ein Preisfeld am Rückkühlwerk oder an der Anlage gibt es nicht: Der Preis steht in der Karte des [[Programm Dokumentation/Kosten#wassertraeger|Trägers Wasser]], die [[Programm Dokumentation/Wirtschaftlichkeit#wasserkosten|Wasserkosten]] rechnet die Wirtschaftlichkeit. Der Bericht führt die Menge als Kennzahl ''kaelte.rk.wasser_m3'' und die Kosten des ersten Jahres in €/a als ''kaelte.rk.wasser_kosten''; ohne Rückkühlwerk oder ohne Preis bleibt die Kostenkennzahl leer.
+
 === Teillast und Takten ===
 {{Anker|kaeltemaschine-teillast}}
 

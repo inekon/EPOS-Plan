@@ -7132,6 +7132,15 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WIRT_ZEILE_INVESTITION" xml:space="preserve">
     <value>Investment I₀ [€]</value>
   </data>
+  <data name="WIRT_WASSER_HERLEITUNG" xml:space="preserve">
+    <value>{0} m³/a × {1} €/m³</value>
+  </data>
+  <data name="WIRT_ZEILE_WASSER_RKW" xml:space="preserve">
+    <value>thereof heat rejection water</value>
+  </data>
+  <data name="WIRT_ZEILE_WASSER_RKW_HERLEITUNG" xml:space="preserve">
+    <value>Heat rejection water: quantity × price</value>
+  </data>
   <data name="WIRT_ZEILE_BETRIEBSKOSTEN" xml:space="preserve">
     <value>Operating cost [€/a]</value>
   </data>
@@ -10735,6 +10744,9 @@ To deactivate it, set its rate or amount to 0.</value>
   </data>
   <data name="KDLG_ET_NICHT_ZUGEORDNET" xml:space="preserve">
     <value>not assigned</value>
+  </data>
+  <data name="KDLG_ET_WASSER_RUECKKUEHLWERK" xml:space="preserve">
+    <value>Water of the cooling towers</value>
   </data>
   <data name="KDLG_ET_PASST_NICHT" xml:space="preserve">
     <value>does not match the component</value>
@@ -22746,7 +22758,7 @@ Do you want to allow this?</value>
     <value>The location of file “{0}” cannot be read — please enter longitude and latitude.</value>
   </data>
   <data name="KLIMA_TRY_BTN_REGION" xml:space="preserve">
-    <value>Determine region</value>
+    <value>Find data set</value>
   </data>
   <data name="KLIMA_TRY_VORSCHAU" xml:space="preserve">
     <value>Region {0}, station {1}, distance {2} km</value>
@@ -22755,7 +22767,7 @@ Do you want to allow this?</value>
     <value>available: {0}</value>
   </data>
   <data name="KLIMA_TRY_VORSCHAU_LAEUFT" xml:space="preserve">
-    <value>Determining region …</value>
+    <value>Searching data set …</value>
   </data>
   <data name="ADM_SET_RUBRIK_KLIMA" xml:space="preserve">
     <value>Climate data</value>
@@ -22873,6 +22885,12 @@ Do you want to allow this?</value>
   </data>
   <data name="TRANSFER_ANHEBUNG_FEHLER" xml:space="preserve">
     <value>The package (version {0}) could not be upgraded to version {1} — step {2}: {3}. The database is unchanged.</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_WASSERPREIS" xml:space="preserve">
+    <value>water price(s) of the systems transferred to the “Water” carrier card</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_WASSERPREIS_OFFEN" xml:space="preserve">
+    <value>Water price {0} EUR/m³ of system {1} not transferred — please set it in the “Water” carrier card</value>
   </data>
   <data name="TRANSFER_ANHEBUNG_S67" xml:space="preserve">
     <value>Project setting(s) without a CHP minimum output set to {0} %</value>
@@ -28775,11 +28793,14 @@ Do you want to allow this?</value>
   <data name="SIMENG_KAELTE_RKW_UEBERLAST" xml:space="preserve">
     <value>Chiller "{0}": the heat rejection unit "{1}" exceeded its rated capacity in {2} hours — the fan ran at full speed, a load-dependent approach rose above its rated value.</value>
   </data>
-  <data name="SIMENG_KAELTE_RKW_WASSER_KOSTEN" xml:space="preserve">
-    <value>Chiller "{0}": the heat rejection unit "{1}" uses {2} m³ of water in {3} wet hours; water cost {4} €/a (quantity × water price, not included in the operating costs of the economic analysis).</value>
+  <data name="SIMENG_KAELTE_RKW_WASSER" xml:space="preserve">
+    <value>Chiller "{0}": the heat rejection unit "{1}" uses {2} m³ of water in {3} wet hours; the water cost (quantity × price of the water carrier) is part of the operating costs of the economic analysis.</value>
   </data>
-  <data name="SIMENG_KAELTE_RKW_WASSER_OHNE_PREIS" xml:space="preserve">
-    <value>Chiller "{0}": the heat rejection unit "{1}" uses {2} m³ of water in {3} wet hours; no water price at the plant, so no water cost.</value>
+  <data name="WIRT_BK_WASSER_RKW" xml:space="preserve">
+    <value>Heat rejection water: {0} m³ × {1} €/m³</value>
+  </data>
+  <data name="WIRT_HINWEIS_WASSER_OHNE_PREIS" xml:space="preserve">
+    <value>Heat rejection water {0} m³/a without price: the water carrier has no energy charge — the operating costs contain no water cost.</value>
   </data>
   <data name="SIMENG_KAELTE_KM_RANDWERT" xml:space="preserve">
     <value>Chiller "{0}": in {1} hours the operating point lay outside the performance map (heat rejection {2} to {3} °C, chilled water {4} °C) — the boundary value was used.</value>
@@ -56617,6 +56638,15 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="KI_DLG_BT_UHERKUNFT_ERL" xml:space="preserve">
     <value>Where the U-value of the component comes from, as it would be saved with OK – read only: KATALOG = from the construction build-up, MANUELL = entered by hand, IFC, GBXML or SQPROJ = from the import file, VORGABE = default by component type; empty = unknown. A U-value entered by hand is kept on re-import.</value>
   </data>
+  <data name="KLIMA_VORSCHAU_LEER" xml:space="preserve">
+    <value>The source returned no hourly values.</value>
+  </data>
+  <data name="KLIMA_VORSCHAU_REPRAESENTANZ" xml:space="preserve">
+    <value>Nearest representative station, not the official climate region.</value>
+  </data>
+  <data name="KLIMA_VORSCHAU_NICHT_ORTSTYPISCH" xml:space="preserve">
+    <value>Reference point not typical of the site; for site-specific values, import the DWD TRY file for this location.</value>
+  </data>
   <data name="KBP_HINW_EINGABEART_ZAPFPROFIL" xml:space="preserve">
     <value>Domestic hot water is calculated with the draw-off profile generator – the input type (monthly values, weekly profile) applies only to the profile method.</value>
   </data>
@@ -56640,6 +56670,168 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="BKAL_HRL_FAKTOR_GESPERRT" xml:space="preserve">
     <value>The holiday factor is locked: “Company holidays like Sunday” is set, a holiday day carries Sunday of the weekly profile.</value>
+  </data>
+  <data name="KLIMA_VK_SUCHHINWEIS" xml:space="preserve">
+    <value>Finds the data set and reads it for the preview. Nothing is saved.</value>
+  </data>
+  <data name="KLIMA_VK_TITEL" xml:space="preserve">
+    <value>Preview of the data set</value>
+  </data>
+  <data name="KLIMA_VK_GEFUNDEN" xml:space="preserve">
+    <value>Data set found: {0}</value>
+  </data>
+  <data name="KLIMA_VK_NICHT_IM_PAKET" xml:space="preserve">
+    <value>{0} is not in the package.</value>
+  </data>
+  <data name="KLIMA_VK_VORHANDEN" xml:space="preserve">
+    <value>Available:</value>
+  </data>
+  <data name="KLIMA_VK_AUSFUEHRUNG_TRY" xml:space="preserve">
+    <value>TRY {0} · {1}</value>
+  </data>
+  <data name="KLIMA_VK_AUSFUEHRUNG_DATEI" xml:space="preserve">
+    <value>TRY file {0}</value>
+  </data>
+  <data name="KLIMA_VK_AUSFUEHRUNG_PVGIS" xml:space="preserve">
+    <value>PVGIS TMY (typical year)</value>
+  </data>
+  <data name="KLIMA_VK_STANDORT" xml:space="preserve">
+    <value>Site</value>
+  </data>
+  <data name="KLIMA_VK_ORT" xml:space="preserve">
+    <value>Place</value>
+  </data>
+  <data name="KLIMA_VK_KOORDINATE" xml:space="preserve">
+    <value>Coordinate</value>
+  </data>
+  <data name="KLIMA_VK_HOEHE" xml:space="preserve">
+    <value>Altitude</value>
+  </data>
+  <data name="KLIMA_VK_UNBEKANNT" xml:space="preserve">
+    <value>unknown</value>
+  </data>
+  <data name="KLIMA_VK_BEZUG_STATION" xml:space="preserve">
+    <value>Reference point: nearest representative station</value>
+  </data>
+  <data name="KLIMA_VK_BEZUG_DATEI" xml:space="preserve">
+    <value>Reference point: location of the file</value>
+  </data>
+  <data name="KLIMA_VK_BEZUG_PVGIS" xml:space="preserve">
+    <value>Reference point: PVGIS grid point</value>
+  </data>
+  <data name="KLIMA_VK_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KLIMA_VK_ENTFERNUNG" xml:space="preserve">
+    <value>Distance</value>
+  </data>
+  <data name="KLIMA_VK_HOEHENUNTERSCHIED" xml:space="preserve">
+    <value>Altitude difference</value>
+  </data>
+  <data name="KLIMA_VK_KZ_MITTEL" xml:space="preserve">
+    <value>Annual mean air temperature</value>
+  </data>
+  <data name="KLIMA_VK_KZ_MINMAX" xml:space="preserve">
+    <value>Minimum / maximum (hour)</value>
+  </data>
+  <data name="KLIMA_VK_KZ_GLOBAL" xml:space="preserve">
+    <value>Global radiation, annual total</value>
+  </data>
+  <data name="KLIMA_VK_KZ_GRADTAG" xml:space="preserve">
+    <value>Degree days G20/15</value>
+  </data>
+  <data name="KLIMA_VK_KZ_HEIZTAGE" xml:space="preserve">
+    <value>Heating days (θm &lt; 15 °C)</value>
+  </data>
+  <data name="KLIMA_VK_BILD_TITEL" xml:space="preserve">
+    <value>Monthly values</value>
+  </data>
+  <data name="KLIMA_VK_BILD_MONAT" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="KLIMA_VK_BILD_STRAHLUNG" xml:space="preserve">
+    <value>Global radiation [kWh/m²]</value>
+  </data>
+  <data name="KLIMA_VK_BILD_TEMPERATUR" xml:space="preserve">
+    <value>Monthly mean temperature [°C]</value>
+  </data>
+  <data name="KLIMA_VK_BILD_BEZEICHNUNG" xml:space="preserve">
+    <value>Monthly mean temperature and monthly total global radiation</value>
+  </data>
+  <data name="KLIMA_VK_BESTAND" xml:space="preserve">
+    <value>Parameters of the source</value>
+  </data>
+  <data name="KLIMA_VK_GEFUEHRT" xml:space="preserve">
+    <value>provided</value>
+  </data>
+  <data name="KLIMA_VK_GERECHNET" xml:space="preserve">
+    <value>calculated</value>
+  </data>
+  <data name="KLIMA_VK_FEHLT" xml:space="preserve">
+    <value>missing</value>
+  </data>
+  <data name="KLIMA_VK_VERFALLEN" xml:space="preserve">
+    <value>Input changed, the preview has expired. Please "Find data set" again.</value>
+  </data>
+  <data name="KLIMA_VK_ERST_SUCHEN" xml:space="preserve">
+    <value>First "Find data set" – nothing is taken over without a valid preview.</value>
+  </data>
+  <data name="KLIMA_VK_NICHT_IMPORTIERBAR" xml:space="preserve">
+    <value>The preview has no data set to take over – please choose an available version or check the inputs.</value>
+  </data>
+  <data name="KLIMA_VK_FELDHERKUNFT" xml:space="preserve">
+    <value>Longitude, latitude and name pre-filled from the search; editable. They are taken over only with "Read data".</value>
+  </data>
+  <data name="KLIMA_LBL_HOEHE" xml:space="preserve">
+    <value>Altitude of the site (m):</value>
+  </data>
+  <data name="KLIMA_FELD_HOEHE" xml:space="preserve">
+    <value>Altitude of the site</value>
+  </data>
+  <data name="KLIMA_PAR_LUFTTEMPERATUR" xml:space="preserve">
+    <value>Temperature</value>
+  </data>
+  <data name="KLIMA_PAR_LUFTFEUCHTE" xml:space="preserve">
+    <value>Humidity</value>
+  </data>
+  <data name="KLIMA_PAR_GLOBALSTRAHLUNG" xml:space="preserve">
+    <value>Global</value>
+  </data>
+  <data name="KLIMA_PAR_DIREKTSTRAHLUNGNORMAL" xml:space="preserve">
+    <value>Direct normal</value>
+  </data>
+  <data name="KLIMA_PAR_DIREKTSTRAHLUNGHORIZONTAL" xml:space="preserve">
+    <value>Direct horizontal</value>
+  </data>
+  <data name="KLIMA_PAR_DIFFUSSTRAHLUNG" xml:space="preserve">
+    <value>Diffuse</value>
+  </data>
+  <data name="KLIMA_PAR_GEGENSTRAHLUNG" xml:space="preserve">
+    <value>Atmospheric counter-radiation</value>
+  </data>
+  <data name="KLIMA_PAR_BEDECKUNGSGRAD" xml:space="preserve">
+    <value>Cloud cover</value>
+  </data>
+  <data name="KLIMA_PAR_LUFTDRUCK" xml:space="preserve">
+    <value>Air pressure</value>
+  </data>
+  <data name="KLIMA_PAR_WINDGESCHWINDIGKEIT" xml:space="preserve">
+    <value>Wind</value>
+  </data>
+  <data name="KLIMA_PAR_WINDRICHTUNG" xml:space="preserve">
+    <value>Wind direction</value>
+  </data>
+  <data name="KLIMA_PAR_WASSERDAMPFGEHALT" xml:space="preserve">
+    <value>Water vapour</value>
+  </data>
+  <data name="KLIMA_PAR_AUSSTRAHLUNG" xml:space="preserve">
+    <value>Outgoing radiation</value>
+  </data>
+  <data name="KLIMA_PAR_QUALITAETSTRAHLUNG" xml:space="preserve">
+    <value>Quality</value>
+  </data>
+  <data name="KI_DLG_KLIMA_HOEHE_ERL" xml:space="preserve">
+    <value>The altitude of the site above sea level, in metres. It enters the preview: the altitude difference to the reference point decides the note "not typical for the site". Empty = unknown; for PVGIS and a TRY file with header data it comes from the source.</value>
   </data>
 </root>
 

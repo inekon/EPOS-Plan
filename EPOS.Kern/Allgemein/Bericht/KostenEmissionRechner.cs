@@ -182,6 +182,22 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// KB-7c2: Der Ausweis der Wasserkosten der Rückkühlwerke [€/a] für die Kennzahl
+        /// <see cref="KennzahlenKatalog.SCHLUESSEL_RK_WASSER_KOSTEN"/> — genau die Rechnung der Wirtschaftlichkeit
+        /// (<see cref="Wasserkosten.Rechne"/>, Menge des Standes × Arbeitspreis des Wasserträgers im Szenario).
+        /// <c>null</c> ohne Wasser, ohne Preis oder bei einem Lesefehler — nie still 0.
+        /// </summary>
+        private static double? WasserkostenAusweis(VariantenDaten v, string szenario)
+        {
+            try
+            {
+                Wasserkosten.Ergebnis w = Wasserkosten.Rechne(v.IdProjekt, v, szenario);
+                return w.MengeM3 > 0 && w.PreisEurM3.HasValue ? w.KostenEur : (double?)null;
+            }
+            catch (Exception) { return null; }
+        }
+
         /// <summary>Setzt die Ausweisfelder des Kältestroms auf „nicht gerechnet" (KU2 Welle 3, E34).</summary>
         private static void KaeltestromZuruecksetzen(VariantenDaten v)
         {
@@ -344,6 +360,7 @@ namespace WindowsFormsApplication1
                 v.LeistungspreisNichtAngesetztTraeger = null;
                 v.LeistungspreisNichtAngesetztMonatssatz = null;
                 KaeltestromZuruecksetzen(v);
+                v.WasserkostenRueckkuehlwerk = null;             // KB-7c2
                 v.EnergiekostenJeTraeger = new List<EnergieTraegerNachweis>();
                 v.EnergiekostenGrund = GRUND_RECHENFEHLER;
             }
@@ -365,6 +382,7 @@ namespace WindowsFormsApplication1
             v.LeistungspreisNichtAngesetztTraeger = null;
             v.LeistungspreisNichtAngesetztMonatssatz = null;
             KaeltestromZuruecksetzen(v);              // KU2 Welle 3, E34
+            v.WasserkostenRueckkuehlwerk = WasserkostenAusweis(v, szenario);   // KB-7c2
             v.EnergiekostenJeTraeger = new List<EnergieTraegerNachweis>();
 
             // DIE AUFSTELLUNG JE TRÄGER (Herleitungszeile „Menge × Preis" unter den Energiekosten,

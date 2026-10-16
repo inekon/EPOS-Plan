@@ -104,7 +104,7 @@ namespace WindowsFormsApplication1
         /// <summary>Zapfperiode z [h].</summary>
         internal const string DIN4708_Z = "DIN4708.z";
 
-        /// <summary>Belegung der Einheitswohnung p_b [Personen].</summary>
+        /// <summary>Belegung der Einheitswohnung p_b [P].</summary>
         internal const string DIN4708_PB = "DIN4708.p_b";
 
         /// <summary>Zapfstellenbedarf der Einheitswohnung w_b [Wh].</summary>
