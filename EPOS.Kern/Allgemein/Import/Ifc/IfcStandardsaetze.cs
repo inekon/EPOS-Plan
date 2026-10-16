@@ -71,6 +71,10 @@ namespace WindowsFormsApplication1
         internal const string EPOS_GERAETE = "GeraeteWm2";
         internal const string EPOS_LICHT = "LichtWm2";
         internal const string EPOS_WAERMEBRUECKE = "WaermebrueckeUA";
+        /// <summary>DA-8: Absorptionsgrad solar und Emissionsgrad des Bauteils in <c>EPOS_Bauteil</c> (der Standardsatz
+        /// <c>Pset_MaterialOptical</c> gilt je Baustoff, nicht je Bauteil).</summary>
+        internal const string EPOS_ABSORPTION = "AbsorptionsgradSolar";
+        internal const string EPOS_EMISSION = "Emissionsgrad";
         internal const string EPOS_WIDERSTAND = "Waermedurchlasswiderstand";
         internal const string EPOS_GEBAEUDEART = "Gebaeudeart";
 

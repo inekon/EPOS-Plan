@@ -78,6 +78,15 @@ namespace EPOS.Kern.Tests
             Assert.Equal(16, zaehlung[Austauschweg.OhneElement]);
         }
 
+        // DA-8: ein Bauteil mit eigenem Absorptions- und Emissionsgrad - nur dann stehen sie in EPOS_Bauteil.
+        private static GebaeudeAbbild MitStrahlung(GebaeudeAbbild a)
+        {
+            AbbildBauteil b = a.Gebaeude[0].Bauteile.First();
+            b.AbsorptionsgradSolar = 0.35;
+            b.Emissionsgrad = 0.85;
+            return a;
+        }
+
         [Fact]
         public void Die_Einstufung_fuer_IFC_passt_zu_Schreiber_und_Leser()
         {
@@ -85,7 +94,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(DatenaustauschInventar.Alle.Select(d => d.Nr), DatenaustauschInventar.Ifc.Select(d => d.Nr));
             // Dazu die Restdaten (DA-4, EPOS_Zone/EPOS_Gebaeude) aus dem Abbild des Restdatenrundlaufs.
             string step = Encoding.UTF8.GetString(IfcExportProbe.Schreiben(IfcExportRundlaufTests.Abbild()))
-                          + Encoding.UTF8.GetString(IfcExportProbe.Schreiben(MitDinNummer(RestdatenRundlaufTests.Abbild())));
+                          + Encoding.UTF8.GetString(IfcExportProbe.Schreiben(MitDinNummer(RestdatenRundlaufTests.Abbild())))
+                          + Encoding.UTF8.GetString(IfcExportProbe.Schreiben(MitStrahlung(IfcExportRundlaufTests.Abbild())));
             string kern = Path.Combine(Repowurzel(), "EPOS.Kern", "Allgemein");
             // Der Leser: die Dateien des IFC-Imports und die gemeinsame Festlegung der Konditionierungssätze.
             string leser = string.Concat(Directory.GetFiles(Path.Combine(kern, "Import", "Ifc"), "*.cs")
@@ -120,10 +130,11 @@ namespace EPOS.Kern.Tests
             Assert.True(fehler.Count == 0, string.Join(" | ", fehler));
             // Die Zählung je Einstufung (Protokoll DA-3) - eine Änderung der Tafel zeigt sich hier.
             var zaehlung = DatenaustauschInventar.Ifc.GroupBy(d => d.Weg).ToDictionary(g => g.Key, g => g.Count());
-            Assert.Equal(31, zaehlung[Austauschweg.BeideRichtungen]);
+            // DA-8: F8 und F9 gehen von BeideRichtungen (Pset_MaterialOptical) nach NurEpos (EPOS_Bauteil je Bauteil).
+            Assert.Equal(29, zaehlung[Austauschweg.BeideRichtungen]);
             Assert.Equal(1, zaehlung[Austauschweg.NurGelesen]);
             Assert.False(zaehlung.ContainsKey(Austauschweg.NurGeschrieben));
-            Assert.Equal(26, zaehlung[Austauschweg.NurEpos]);
+            Assert.Equal(28, zaehlung[Austauschweg.NurEpos]);
             Assert.Equal(13, zaehlung[Austauschweg.OhneElement]);
             // gbXML trägt den eigenen Weg nur für die Restdaten (DA-4, Rückfall Weg 2) — dieselben Daten wie IFC über EPOS_*.
             Assert.Equal(DatenaustauschInventar.Alle.Where(d => d.Gbxml == Austauschweg.NurEpos).Select(d => d.Nr),

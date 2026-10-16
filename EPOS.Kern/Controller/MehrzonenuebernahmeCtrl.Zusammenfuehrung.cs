@@ -254,6 +254,10 @@ namespace WindowsFormsApplication1
             }
             m.Vorheizzeit_H ??= alt.Vorheizzeit_H;
             m.Nutzungsprofil ??= alt.Nutzungsprofil;
+            // Nachzug N6: die Profilwerte der Zone (Außenluft je Person, Licht, Personenwärme) trägt keine Datei - sie bleiben.
+            m.Aussenluft_Person ??= alt.Aussenluft_Person;
+            m.Licht_W_m2 ??= alt.Licht_W_m2;
+            m.Personen_Waerme_W ??= alt.Personen_Waerme_W;
             return m;
         }
 
@@ -270,6 +274,9 @@ namespace WindowsFormsApplication1
             m.Quellkennung = neu.Quellkennung ?? alt.Quellkennung;
             if (HandFlaeche(alt, neu)) { m.Flaeche = alt.Flaeche; m.Flaechenherkunft = null; }
             if (HandAufbau(bestand, alt) || HandU(alt)) { m.ID_Aufbau = alt.ID_Aufbau; m.U_Wert = alt.U_Wert; m.U_Herkunft = alt.U_Herkunft; }
+            // DA-8: Absorptions- und Emissionsgrad - ein Wert der Datei gilt, sonst bleibt der des Bestands.
+            m.Absorptionsgrad_Solar = neu.Absorptionsgrad_Solar ?? alt.Absorptionsgrad_Solar;
+            m.Emissionsgrad = neu.Emissionsgrad ?? alt.Emissionsgrad;
             if (Hand(alt))
             {
                 m.g_Wert = alt.g_Wert;

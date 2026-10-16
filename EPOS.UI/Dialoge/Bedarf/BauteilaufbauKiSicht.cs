@@ -183,6 +183,20 @@ public sealed class BauteilaufbauKiSicht
     /// <summary>BK-5: R''_T [m²K/W] eines inhomogenen Aufbaus; leer = homogen.</summary>
     public double? SummeRtUnten => KennwerteLesen?.Invoke()?.RT_Unten_M2KW;
 
+    /// <summary>DA-8: Absorptionsgrad solar der Außenfläche (0…1); leer = Vorgabe.</summary>
+    public double? AbsorptionsgradSolar
+    {
+        get => StandLesen?.Invoke()?.Arbeit.AbsorptionsgradSolar;
+        set => Kopf(a => a.AbsorptionsgradSolar = value);
+    }
+
+    /// <summary>DA-8: langwelliger Emissionsgrad der Außenfläche (0…1); leer = Vorgabe.</summary>
+    public double? Emissionsgrad
+    {
+        get => StandLesen?.Invoke()?.Arbeit.Emissionsgrad;
+        set => Kopf(a => a.Emissionsgrad = value);
+    }
+
     /// <summary>Die Schichten, innen → außen — je Zugriff neu über dem Arbeitsstand.</summary>
     public IReadOnlyList<BauteilschichtKiZeile> Schichten
     {

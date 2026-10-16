@@ -88,3 +88,10 @@ einzelnen fehlenden Flächenanteil.“
 
 - Gleiche Schichtzahl mit versetzten Grenzen (Schicht k neben Schicht k) bleibt die bisherige Näherung.
 - Die Fehlerschranke e = (R'_T − R''_T)/(2 R_T) rechnet der Kern nicht.
+
+## Nachtrag BK-8c (16.10.2026)
+
+- Normausgabe beim Anwender: DIN EN ISO 6946:2018-03 (EN ISO 6946:2017) mit Berichtigung 1:2023-04. Die Verweise auf 6.7
+  und 6.7.2.3 oben gelten für diese Ausgabe; die Anwendungsgrenze R'_T/R''_T ≤ 1,5 steht in 6.7.2.2, die
+  Fehlerabschätzung in 6.7.2.5. Protokoll:
+  [`2026-10-16_BK-8c_Wiederimport_Vergleich.md`](2026-10-16_BK-8c_Wiederimport_Vergleich.md).

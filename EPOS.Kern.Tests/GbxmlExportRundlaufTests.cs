@@ -151,14 +151,36 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Der_Import_meldet_abweichende_Absorptionsgrade_und_schweigt_bei_den_Konstanten()
+        public void Der_Import_fuehrt_abweichende_Absorptionsgrade_am_Bauteil_und_schweigt_bei_den_Vorgaben()
         {
+            // DA-8: Vorgabe bleibt leer, ein abweichender Wert der Datei kommt ans Bauteil, ein Wert außerhalb 0 … 1 wird gemeldet.
             byte[] datei = GbxmlExportProbe.Schreiben(Abbild());
-            Assert.DoesNotContain(GbxmlExportProbe.Lesen(datei).Meldungen,
-                                  m => m.Schluessel.EndsWith("ABSORPTION_ABWEICHUNG", StringComparison.Ordinal));
+            GebaeudeAbbild vorgabe = GbxmlExportProbe.Lesen(datei);
+            Assert.DoesNotContain(vorgabe.Meldungen, m => m.Schluessel.EndsWith("ABSORPTION_ABWEICHUNG", StringComparison.Ordinal));
+            Assert.All(vorgabe.Gebaeude.SelectMany(g => g.Bauteile), b => Assert.Null(b.AbsorptionsgradSolar));
             string xml = Encoding.UTF8.GetString(datei).Replace(">0.6</Absorptance>", ">0.8</Absorptance>");
-            var meldungen = GbxmlExportProbe.Lesen(Encoding.UTF8.GetBytes(xml)).Meldungen.ToList();
-            Assert.Contains(meldungen, m => m.Schluessel.EndsWith("ABSORPTION_ABWEICHUNG", StringComparison.Ordinal));
+            GebaeudeAbbild fremd = GbxmlExportProbe.Lesen(Encoding.UTF8.GetBytes(xml));
+            Assert.DoesNotContain(fremd.Meldungen, m => m.Schluessel.EndsWith("ABSORPTION_ABWEICHUNG", StringComparison.Ordinal));
+            Assert.Contains(fremd.Gebaeude.SelectMany(g => g.Bauteile), b => b.AbsorptionsgradSolar == 0.8);
+            string falsch = Encoding.UTF8.GetString(datei).Replace(">0.6</Absorptance>", ">1.5</Absorptance>");
+            GebaeudeAbbild verworfen = GbxmlExportProbe.Lesen(Encoding.UTF8.GetBytes(falsch));
+            Assert.Contains(verworfen.Meldungen, m => m.Schluessel.EndsWith("ABSORPTION_ABWEICHUNG", StringComparison.Ordinal));
+            Assert.All(verworfen.Gebaeude.SelectMany(g => g.Bauteile), b => Assert.Null(b.AbsorptionsgradSolar));
+        }
+
+        [Fact]
+        public void Absorptions_und_Emissionsgrad_eines_Bauteils_laufen_verlustfrei_rund()
+        {
+            // DA-8: ein Bauteil mit eigenen Werten bekommt eine eigene Construction; die übrigen bleiben bei der Vorgabe.
+            GebaeudeAbbild q = Abbild();
+            AbbildBauteil eigen = q.Gebaeude[0].Bauteile.First(b => b.Aufbau != null);
+            eigen.AbsorptionsgradSolar = 0.35;
+            eigen.Emissionsgrad = 0.85;
+            GebaeudeAbbild l = GbxmlExportProbe.Lesen(GbxmlExportProbe.Schreiben(q));
+            AbbildBauteil zurueck = l.Gebaeude.SelectMany(g => g.Bauteile).Single(b => b.Name == eigen.Name);
+            Assert.Equal(0.35, zurueck.AbsorptionsgradSolar);
+            Assert.Equal(0.85, zurueck.Emissionsgrad);
+            Assert.All(l.Gebaeude.SelectMany(g => g.Bauteile).Where(b => b.Name != eigen.Name), b => Assert.Null(b.Emissionsgrad));
         }
 
         private static bool Gleich(double x, double y)

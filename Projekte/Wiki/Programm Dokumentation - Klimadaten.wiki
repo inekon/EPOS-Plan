@@ -8,6 +8,8 @@ Der Dialog '''Klimadaten''' legt die Klimaregionen an, mit denen EPOS-Plan rechn
 
 Links steht die Liste der vorhandenen Klimaregionen – mit Suchfeld über alle Spalten, einem Trichter je Spalte und dem Sortierpfeil im Spaltenkopf, wie Sie es aus den Gerätekatalogen kennen. Über der Liste steht, wie viele Sätze die Einengung übrig lässt.
 
+[[Datei:Bildschirmfoto_Klimadaten.png|mini|zentriert|800px|Dialog Klimadaten – Bildschirmfoto mit Beispieldaten.]]
+
 Die Spalten sind: ''Klimaregion'', ''Quelle'', ''Standort'' (der Ortsname, sonst das Koordinatenpaar), ''Longitude'', ''Latitude'' und ''Importdatum''; eine Region der Auslieferung trägt hinter ihrem Namen ein Schloss. Das Importdatum steht als Jahr-Monat-Tag; „2026-09" im Trichter zeigt deshalb alles, was in diesem Monat eingelesen wurde. Führt eine Region keine Angabe zu Quelle und Importdatum, bleiben die beiden Spalten leer.
 
 Die Spalte ''Quelle'' nennt neben der Herkunft auch das '''Bezugsjahr''' und das '''Szenario''' der Daten, etwa „TRY-Regionaldaten (Deutschland) · 2045 · sommerwarm“. Weil das Suchfeld über alle Spalten sucht, engt „2045“ die Liste auf die Regionen dieses Bezugsjahres ein. Ein PVGIS-Abruf kennt kein Szenario; dort steht die Quelle allein.

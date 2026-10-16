@@ -407,7 +407,23 @@ namespace WindowsFormsApplication1
             var sb = new StringBuilder();
             if (!string.IsNullOrWhiteSpace(text)) sb.Append(text.TrimEnd()).Append('\n');
             sb.Append(BLOCK);
-            foreach ((string s, string w) in werte) sb.Append('\n').Append(s).Append('=').Append(w);
+            // Nachzug N6: Jedes Paar steht auf genau einer Zeile - ein Bezeichner mit Zeilenumbruch oder Steuerzeichen (Name einer
+            // Woche, einer Periode, einer Partnerzone) bekommt dafür Leerzeichen, sonst bräche er den Block.
+            foreach ((string s, string w) in werte) sb.Append('\n').Append(Einzeilig(s)).Append('=').Append(Einzeilig(w));
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Ein Wert des Blocks auf einer Zeile (Nachzug N6): Zeilenumbrüche (auch U+0085, U+2028, U+2029) und Steuerzeichen werden
+        /// zu Leerzeichen; sonst bleibt der Text, wie er ist.
+        /// </summary>
+        internal static string Einzeilig(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return text;
+            static bool Bricht(char c) => char.IsControl(c) || c == '\u2028' || c == '\u2029';
+            if (!text.Any(Bricht)) return text;
+            var sb = new StringBuilder(text.Length);
+            foreach (char c in text) sb.Append(Bricht(c) ? ' ' : c);
             return sb.ToString();
         }
 
@@ -422,7 +438,14 @@ namespace WindowsFormsApplication1
             for (int i = kopf + 1; i < zeilen.Length; i++)
             {
                 int gleich = zeilen[i].IndexOf('=');
-                if (gleich <= 0) continue;
+                if (gleich <= 0)
+                {
+                    // Nachzug N6: Eine Zeile ohne Schlüssel setzt den Wert davor fort (ein Bezeichner mit Zeilenumbruch aus einer
+                    // fremden oder älteren Datei) - mit Leerzeichen angehängt, statt ihn abzuschneiden.
+                    if (werte.Count > 0 && zeilen[i].Trim().Length > 0)
+                        werte[^1] = (werte[^1].Item1, werte[^1].Item2.TrimEnd() + " " + zeilen[i].Trim());
+                    continue;
+                }
                 werte.Add((zeilen[i].Substring(0, gleich).Trim(), zeilen[i].Substring(gleich + 1)));
             }
             string davor = string.Join("\n", zeilen.Take(kopf)).TrimEnd();

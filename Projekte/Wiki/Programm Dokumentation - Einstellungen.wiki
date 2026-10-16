@@ -1,5 +1,7 @@
 Der Dialog '''Einstellungen''' fasst die globalen Anwendungseinstellungen zusammen. Er ist in die Rubriken ''VDI Datensätze'', ''Datenbank'', ''Web-Schnittstellen (API)'', ''Klimadaten'', ''Zapfprofil'', ''Diagramme'', ''Bericht'' und ''Anwendung'' gegliedert; die Werte gelten programmweit, nicht je Projekt, und werden mit ''OK'' übernommen.
 
+[[Datei:Bildschirmfoto_Einstellungen.png|mini|zentriert|800px|Einstellungen mit der Rubrik Datenbank – Bildschirmfoto mit Beispieldaten.]]
+
 == Eingaben ==
 
 * '''VDI Datensätze''' – der Ordner, unter dem die VDI-3805-Herstellerdaten abgelegt sind.

@@ -20,6 +20,8 @@ Gespeichert werden Zapfprofil und Wahl zusammen mit den Profilzuordnungen, mit '
 
 Die Kopfzeile nennt Projekt, Klimaregion, den Kalender des Jahres und die Bilanzgrenze: Gerechnet wird die Zapfenergie an der Zapfstelle, die Zirkulation als eigene Teilreihe. {{Anker|stufen}}Daneben steht der Umschalter der Stufen ''Einfach · Erweitert · Experte''. Wahlen aus zwei oder drei Werten – Stufe, Bedarfsniveau, Zirkulation ja/nein, Einheit des Jahresmesswerts und der Rechenweg der Jahresreihe – stehen nebeneinander in einer Zeile; die gewählte ist umrahmt. Die Stufe blendet nur Felder ein und aus: Was in einer höheren Stufe eingegeben ist, bleibt beim Zurückschalten erhalten und rechnet weiter; die Zeile ''n Werte überschrieben'' zählt alle Angaben, die von ihrer Vorgabe abweichen.
 
+[[Datei:Bildschirmfoto_Zapfprofil.png|mini|zentriert|800px|Dialog Brauchwasser-Zapfprofil in der Stufe Einfach mit Vorschau – Bildschirmfoto mit Beispieldaten.]]
+
 Links stehen die Eingaben in zwei Ebenen, rechts die [[#vorschau|Vorschau]], die beim Rollen stehen bleibt:
 
 * die '''Nutzungszonen''' und darunter der Block der markierten Zone mit der Karte ''Nutzung'' und – ab der Stufe ''Erweitert'' – den Karten ''Belegung'', ''Kalender'', ''Messwert'' und ''Tagesbedarf'', in der Stufe ''Experte'' dazu ''Fachwerte der Zone'';

@@ -21,6 +21,9 @@ namespace EPOS.Kern.Tests
     {
         private readonly TestDatenbank _db = new TestDatenbank();
 
+        /// <summary>Das Referenzprojekt der Schnellaufheizung (SA4, SchnellaufheizungReferenzprojektWacheTests): die einzige gesäte Zeile.</summary>
+        private const int REFERENZPROJEKT = 1073;
+
         public void Dispose() => _db.Dispose();
 
         // =================================================================
@@ -106,9 +109,11 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             Assert.True(SchnellaufheizungSchema.Vollstaendig());
-            Assert.Equal(0, SchnellaufheizungSchema.ZeilenMitSchalter());
+            // Gesät ist allein das Referenzprojekt 1073; jede andere Zelle steht leer.
+            Assert.Equal(1, SchnellaufheizungSchema.ZeilenMitSchalter());
             foreach (var s in SchnellaufheizungSchema.SPALTEN)
-                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + s.Tabelle + "\" WHERE \"" + s.Spalte + "\" IS NOT NULL"));
+                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + s.Tabelle + "\" WHERE \"" + s.Spalte + "\" IS NOT NULL" +
+                                      (s.Tabelle == SchnellaufheizungSchema.TAB_EINSTELLUNGEN ? " AND ID_Projekt <> " + REFERENZPROJEKT : "")));
             Assert.Equal(SchnellaufheizungSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE,
                          DataRepository.SpaltenVonTabelle(SchnellaufheizungSchema.TAB_ERGEBNIS_GEBAEUDE).Count);
             Assert.Equal(SchnellaufheizungSchema.SPALTENZAHL_ERGEBNIS_ZONE,
@@ -163,19 +168,19 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1L, Zahl("SELECT Aufheiz_Schnellaufheizung FROM Tab_Einstellungen WHERE ID_Projekt = 1065"));
             Assert.Equal(3.5, Convert.ToDouble(DataRepository.ExecuteScalar(
                 "SELECT Aufheiz_Ueberhoehung_K FROM Tab_Einstellungen WHERE ID_Projekt = 1065"), CultureInfo.InvariantCulture));
-            Assert.Equal(1, SchnellaufheizungSchema.ZeilenMitSchalter());
+            Assert.Equal(2, SchnellaufheizungSchema.ZeilenMitSchalter());   // 1065 und das Referenzprojekt 1073
 
             // Schalter an mit Kern-Vorgabe: die Überhöhung bleibt NULL.
             Vorheizvorgabe vorgabe = bestand.Vorheizen.MitSchnellaufheizung(true);
             Assert.True(KonfigurationCtrl.AufheizvorgabeSetzen(projekt, bestand with { Vorheizen = vorgabe }));
             Assert.Equal(vorgabe, KonfigurationCtrl.VorheizvorgabeLesen(projekt));
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE Aufheiz_Ueberhoehung_K IS NOT NULL"));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE Aufheiz_Ueberhoehung_K IS NOT NULL AND ID_Projekt <> " + REFERENZPROJEKT));
             Assert.Equal(Vorheizvorgabe.UEBERHOEHUNG_VORGABE_K, KonfigurationCtrl.VorheizvorgabeLesen(projekt).UeberhoehungWirksamK);
 
             // Zurück auf aus: beide Spalten wieder NULL, der Bestand ist wieder gleich.
             Assert.True(KonfigurationCtrl.AufheizvorgabeSetzen(projekt, bestand));
             foreach (var s in SchnellaufheizungSchema.SPALTEN_EINSTELLUNG)
-                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE \"" + s.Spalte + "\" IS NOT NULL"));
+                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE \"" + s.Spalte + "\" IS NOT NULL AND ID_Projekt <> " + REFERENZPROJEKT));
             Assert.Equal(bestand, KonfigurationCtrl.AufheizvorgabeLesen(projekt));
         }
 

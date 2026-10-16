@@ -621,6 +621,10 @@
                     <Herleitungszeile Text="@Resource.MPB_KLIMA_TEXT" />
                     <Suchauswahl Bezeichnung="@Resource.MPB_KLIMA_LABEL" Kurzname="@Resource.MPB_KLIMA_LABEL"
                                  Eintraege="@_klimaregion.Eintraege" Auswahl="@_klimaWahl" AuswahlChanged="KlimaregionGewaehlt" />
+                    @if (KlimaHerkunftZeile.Length > 0)
+                    {
+                        <div class="epos-klimawahl-herkunft"><Herleitungszeile Text="@KlimaHerkunftZeile" /></div>
+                    }
                     @if (_klimaMeldung.Length > 0)
                     {
                         <p class="epos-kond-feldmeldung epos-klimawahl-meldung" role="alert">@_klimaMeldung</p>
@@ -674,7 +678,7 @@
         <KindInhalt>
             @if (_bedarfGaben is not null)
             {
-                <GebaeudeBedarfDialog @attributes="_bedarfGaben" TitelText=""
+                <GebaeudeBedarfDialog @key="_bedarfFassung" @attributes="_bedarfGaben" TitelText=""
                                       Geschlossen="_ => BedarfFertig()" />
             }
         </KindInhalt>
@@ -1444,6 +1448,9 @@
         // Der Filterstand je Katalog ueber die Sitzung - derselbe Eintrag wie in der
         // Gebaeudeverwaltung (Schluessel des Profils, "GEBAEUDE").
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Profil.Schluessel);
+        // Nachzug N6: ein Wechsel des Projektkontexts (etwa der Klimaregion) liest die offene Wärmebedarfsansicht neu.
+        _kontext = WindowsFormsApplication1.Dienste.Projekt;
+        if (_kontext is not null) _kontext.Gewechselt += BeiKontextwechsel;
 
         KatalogLaden();
         ProjektauswahlNachziehen();
@@ -1518,7 +1525,12 @@
     };
 
     /// <inheritdoc/>
-    public void Dispose() => _kiMaske?.Dispose();
+    public void Dispose()
+    {
+        _kiMaske?.Dispose();
+        if (_kontext is not null) _kontext.Gewechselt -= BeiKontextwechsel;
+        _kontext = null;
+    }
 
     /// <summary>
     /// Zieht die Markierung der Projektliste nach, sobald der Wirt eine ANDERE
@@ -2375,6 +2387,7 @@
             return;
         }
         _bedarfGaben = gaben;
+        _bedarfZeile = zeile;
     }
 
     /// <summary>
@@ -2690,7 +2703,31 @@
         _klimaregion = null;
         _klimaWahl = null;
         _klimaMeldung = "";
+        _klimaHerkunftFuer = -1;
+        _klimaHerkunftZeile = "";
     }
+
+    /// <summary>
+    /// Nachzug N6: die Herkunftszeile der gewählten Region unter der Liste (wie im Projektassistenten); gefragt wird nur, wenn
+    /// die Wahl wechselt. Leer ohne Wahl oder ohne Auskunft.
+    /// </summary>
+    private string KlimaHerkunftZeile
+    {
+        get
+        {
+            int id = _klimaWahl ?? 0;
+            if (id != _klimaHerkunftFuer)
+            {
+                _klimaHerkunftFuer = id;
+                try { _klimaHerkunftZeile = id > 0 && _klimaregion is not null ? _klimaregion.Herkunftszeile(id) ?? "" : ""; }
+                catch (Exception ex) when (ex is not OutOfMemoryException) { _klimaHerkunftZeile = ""; }
+            }
+            return _klimaHerkunftZeile;
+        }
+    }
+
+    private int _klimaHerkunftFuer = -1;
+    private string _klimaHerkunftZeile = "";
 
     /// <summary>
     /// OK der Klimaregionwahl: schreibt die Region an das Projekt (unverändert = nur schließen); ein benannter Grund bleibt am
@@ -2701,8 +2738,10 @@
         if (_klimaregion is not { } weg || _klimaWahl is not int id) return;
         if (id == weg.Gewaehlt) { KlimaregionFertig(); return; }
         string? grund;
+        _klimaSpeichert = true;
         try { grund = weg.Speichern(id); }
         catch (Exception ex) when (ex is not OutOfMemoryException) { grund = ex.Message; }
+        finally { _klimaSpeichert = false; }
         if (grund is not null) { _klimaMeldung = grund; return; }
         string name = weg.Eintraege.FirstOrDefault(e => e.Id == id).Text ?? "";
         KlimaregionFertig();
@@ -2729,6 +2768,7 @@
         _pruefFassung++;
         _modellpruefungsblatt?.Auffrischen();
         if (_modellpruefungZeile is { } z) ZeileAuffrischen?.Invoke(z);
+        BedarfNeuLesen();
     }
 
     /// <summary>Eine Übernahme oder Rücknahme hat geschrieben: die Kennwerte der Zeile neu lesen.</summary>
@@ -2847,7 +2887,55 @@
         ModellpruefungGeaendert();
     }
 
-    private void BedarfFertig() => _bedarfGaben = null;
+    private void BedarfFertig()
+    {
+        _bedarfGaben = null;
+        _bedarfZeile = null;
+    }
+
+    /// <summary>Die Zeile der offenen Wärmebedarfsansicht (Nachzug N6); <c>null</c>, wenn keine offen steht.</summary>
+    private GebaeudeProjektZeile? _bedarfZeile;
+
+    /// <summary>Zählt bei jedem Neulesen der Wärmebedarfsansicht hoch; als Schlüssel baut die Ansicht dann neu auf.</summary>
+    private int _bedarfFassung;
+
+    /// <summary>Wie oft die offene Wärmebedarfsansicht neu gelesen wurde (Prüfhilfe für Tests).</summary>
+    public int BedarfFassung => _bedarfFassung;
+
+    /// <summary>
+    /// Nachzug N6: Steht die Wärmebedarfsansicht offen, liest sie ihren Parametersatz neu — nach einem Wechsel der Klimaregion
+    /// (eigene Wahl oder Ereignis <c>IProjektKontext.Gewechselt</c>) rechnet sie mit der neuen Region, nicht erst beim nächsten
+    /// Öffnen. Ohne Zahl schließt sie mit dem benannten Grund.
+    /// </summary>
+    private void BedarfNeuLesen()
+    {
+        if (_bedarfGaben is null || _bedarfZeile is not { } zeile || BedarfGaben is null) return;
+        IReadOnlyDictionary<string, object>? gaben;
+        string grund;
+        bool gemeldet;
+        try { gaben = BedarfGabenFuer(zeile, out grund, out gemeldet); }
+        catch (Exception ex) when (ex is not OutOfMemoryException) { gaben = null; grund = ex.Message; gemeldet = false; }
+        if (gaben is null)
+        {
+            BedarfFertig();
+            if (!gemeldet && grund.Length > 0) Melden(grund, WarnStufe.Warnung);
+            return;
+        }
+        _bedarfGaben = gaben;
+        _bedarfFassung++;
+    }
+
+    /// <summary>Der Projektkontext hat gewechselt (Klimaregion der Kopfleiste oder dieses Dialogs): offene Ansicht neu lesen.</summary>
+    private void BeiKontextwechsel()
+    {
+        if (_klimaSpeichert || _bedarfGaben is null) return;
+        _ = InvokeAsync(() => { BedarfNeuLesen(); StateHasChanged(); });
+    }
+
+    /// <summary>Während der eigene OK-Weg der Klimaregion schreibt, liest <see cref="KlimaregionNachziehen"/> nach, nicht das Ereignis.</summary>
+    private bool _klimaSpeichert;
+
+    private WindowsFormsApplication1.IProjektKontext? _kontext;
 
     /// <summary>
     /// „Gebäude in DB löschen" — ohne markierten Katalogsatz die Bitte um eine Wahl; ist
