@@ -576,8 +576,19 @@ Wärmedurchgangswiderstand   R_T = (R'_T + R''_T) / 2,      U = 1 / R_T         
 
 Der obere Grenzwert schaltet die Streifen über den ganzen Aufbau parallel, der untere bildet je
 inhomogener Ebene den flächengewichteten Leitwert und schaltet die Ebenen in Reihe. Der Summenfuß des
-Aufbaueditors zeigt R'_T, R''_T und R_T. Eine Fehlerabschätzung aus dem Abstand der Grenzwerte
-rechnet der Kern nicht; das Verhältnis R'_T/R''_T wird weder geprüft noch begrenzt.
+Aufbaueditors zeigt R'_T, R''_T und R_T.
+
+**Fehlerschranke** (DIN EN ISO 6946, 6.7.2.5). Aus dem Abstand der Grenzwerte folgt die größte mögliche relative
+Abweichung des Mittels vom wahren Wert:
+
+```
+e = (R'_T − R''_T) / (2 · R_T)                                                               [–]
+Hinweis, wenn e > 0,20   (gleichbedeutend R'_T / R''_T > 1,5)
+```
+
+Der Kern rechnet e je inhomogenem Aufbau (`Abschnittsgrenzen.Fehlerschranke`), der Summenfuß zeigt sie. Über 20 % — dem
+Verhältnis 1,5, das die Norm als Grenze des vereinfachten Verfahrens nennt — steht im Summenfuß ein Hinweis
+(`InhomogeneSchichten.FEHLERSCHRANKE_GRENZE`); abgelehnt wird nichts, und R_T bleibt das Mittel, auch in der Simulation.
 
 **B0d — Ersatzschichten.** Die Kettenmatrix (B2, B3) kennt nur homogene Schichten. Jede inhomogene Ebene
 wird deshalb **eine homogene Ersatzschicht**; die homogenen Ebenen gehen unverändert durch:
@@ -601,25 +612,32 @@ B1 bis B7 wie für jeden homogenen Aufbau.
 **Aufbauten ohne Abschnitt** laufen nicht über B0a bis B0d; ihr Weg ist unverändert.
 
 **Gemeinsame Schichtgrenzen beim Katalogimport.** Eine Quelle kann je Abschnitt eine eigene Schichtfolge mit eigener
-Schichtzahl führen. B0a verlangt in jeder inhomogenen Ebene jeden Abschnitt genau einmal; der Import
-(`BauteilkatalogImport.AbschnittePruefen`) bringt die Folgen deshalb auf gemeinsame Ebenen, wie es der untere Grenzwert nach
-DIN EN ISO 6946, 6.7.2.3 voraussetzt (jede Ebene parallel zur Oberfläche isotherm, Schichten an den Grenzen der übrigen
-Abschnitte unterteilt):
+Schichtzahl führen, auch bei gleicher Schichtzahl mit versetzten Grenzen. B0a verlangt in jeder inhomogenen Ebene jeden
+Abschnitt genau einmal, und der untere Grenzwert nach DIN EN ISO 6946, 6.7.2.3 setzt voraus, dass jede Ebene parallel zur
+Oberfläche isotherm ist und die Schichten an den Grenzen aller übrigen Abschnitte unterteilt sind. Der Import
+(`BauteilkatalogImport.AbschnittePruefen`) bringt die Folgen deshalb immer auf gemeinsame Ebenen:
 
 ```
 D_m      = Σ_i d_mi                                    Gesamtdicke des Abschnitts m             [m]
 Annahme  max D_m − min D_m ≤ max(0,001 m; 0,01 · max D_m)
 t_mi     = (Σ_{k≤i} d_mk) / D_m                        genormte Lage der Grenzen               [–]
-T        = ⋃_m { t_mi }                                gemeinsame Grenzen, Ende 1
+T        = ⋃_m { t_mi }                                gemeinsame Grenzen, Ende 1; Grenzen verschiedener
+                                                       Abschnitte mit |Δt| ≤ max(0,001 m; 0,01 · max D_m) / max D_m
+                                                       sind eine Grenze an ihrem Mittel
 Teil     d = d_mi · Δt / (t_mi − t_m,i−1)              je Stück zwischen zwei Grenzen aus T      [m]
 ```
 
 Jeder Abschnitt behält Dicke und Widerstand (R'_T unverändert); jede Ebene j führt danach in jedem Abschnitt genau ein Stück.
 Eine ruhende Luftschicht (Widerstand nach Tabelle, nicht anteilig zur Dicke) wird nicht geteilt; fiele eine Grenze in sie, wird
-der Aufbau verworfen, ebenso bei einer Schicht ohne Dicke oder bei Gesamtdicken außerhalb der Toleranz. Folgen gleicher
-Schichtzahl bleiben, wie sie sind (Schicht k neben Schicht k). Fehlt der Flächenanteil genau eines Abschnitts und bleibt bis 1
+der Aufbau verworfen, ebenso bei Gesamtdicken außerhalb der Toleranz und bei einer Schicht ohne Dicke neben verschiedener
+Schichtzahl. Zwei Grenzen desselben Abschnitts bleiben getrennt (eine dünne Folie bleibt eine Schicht). Nur wenn bei gleicher
+Schichtzahl alle Grenzen innerhalb der Toleranz übereinanderliegen, bleibt der Aufbau, wie er ist; ebenso bei gleicher
+Schichtzahl mit einer Schicht ohne Dicke, deren Lage unbestimmt ist. Für Aufbauten, die schon als Importsatz im Katalog
+stehen und durch die Teilung andere Schichten bekämen, zählt die Vorschau, wie viele ihren U-Wert um mehr als 1 % ändern,
+und nennt die größte Änderung (`BauteilkatalogImport.WiederimportVergleichen`). Fehlt der Flächenanteil genau eines Abschnitts und bleibt bis 1
 mehr als 0,01 offen, setzt der Import f = 1 − Σ der übrigen. Protokoll:
-[`2026-10-16_BK-8_Inhomogene_Aufbauten.md`](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-16_BK-8_Inhomogene_Aufbauten.md).
+[`2026-10-16_BK-8_Inhomogene_Aufbauten.md`](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-16_BK-8_Inhomogene_Aufbauten.md),
+[`2026-10-16_BK-8b_Normgerechte_Teilung.md`](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-16_BK-8b_Normgerechte_Teilung.md).
 
 **Fensteraufbauten.** Ein Aufbau der Art Fenster oder Vorhangfassade führt die Fensterwerte U_g und U_f
 [W/(m²K)], den g-Wert, den Rahmenanteil f = A_f/(A_g + A_f) und ψ_g des Glasrands [W/(mK)] (`Fensterkennwerte`).

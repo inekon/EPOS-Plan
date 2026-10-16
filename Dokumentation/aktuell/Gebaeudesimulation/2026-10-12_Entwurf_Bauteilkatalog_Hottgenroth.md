@@ -331,16 +331,20 @@ wird; dann gilt die Regel „gesäte Zonendaten“ (Bauteile samt Aufbau).
 - BK-5 (inhomogene Schicht) ist eine Rechenwegänderung des Bauteilwegs: R_T als Mittel aus oberem und unterem Grenzwert,
   die Kapazität flächengewichtet. Sie wirkt nur auf Aufbauten mit Abschnitten und lässt die Basis byte-gleich, was der
   Referenzlauf der CI-Auswahl nachweist.
-- Der Import liest einen Aufbau mit Abschnitten als Ebenen (BK-8): Führen alle Abschnitte gleich viele Schichten,
-  bildet die k-te Schicht jedes Abschnitts die Ebene k. Führen sie verschieden viele und sind sie gleich dick (Toleranz
-  max(1 mm; 1 % der größten Gesamtdicke)), werden die Schichtgrenzen aller Abschnitte vereinigt — je Abschnitt in der auf
+- Der Import liest einen Aufbau mit Abschnitten als Ebenen (BK-8, BK-8b): Liegen bei gleicher Schichtzahl alle
+  Schichtgrenzen innerhalb der Toleranz max(1 mm; 1 % der größten Gesamtdicke) übereinander, bildet die k-te Schicht jedes
+  Abschnitts die Ebene k. Sonst — verschiedene Schichtzahl oder versetzte Grenzen — und bei gleicher Dicke (dieselbe
+  Toleranz) werden die Schichtgrenzen aller Abschnitte vereinigt (Grenzen verschiedener Abschnitte innerhalb der Toleranz
+  sind eine Grenze) — je Abschnitt in der auf
   seine Gesamtdicke genormten Lage — und jede Schicht an den fremden Grenzen geteilt (DIN EN ISO 6946, 6.7.2.3: der untere
   Grenzwert setzt jede Ebene parallel zur Oberfläche isotherm, eine Schicht wird dafür an den Grenzen der übrigen Abschnitte
   unterteilt). Jeder Abschnitt behält Dicke und Widerstand, der obere Grenzwert bleibt gleich. Verworfen wird bei
   verschiedenen Dicken, einer Schicht ohne Dicke und einer ruhenden Luftschicht, die geteilt werden müsste (Widerstand nach
   Tabelle 8, nicht dickenproportional). Fehlt der Flächenanteil genau eines Abschnitts und bleibt bis 1 mehr als die
-  Toleranz 0,01 offen, trägt er den Rest 1 − Σ; sonst wird verworfen. Beides zählt die Vorschau als Hinweis. Der
-  Rechenweg des Kerns bleibt unverändert.
+  Toleranz 0,01 offen, trägt er den Rest 1 − Σ; sonst wird verworfen. Beides zählt die Vorschau als Hinweis, dazu beim
+  Wiederimport die Katalogaufbauten, die andere Schichten bekämen, und wie viele davon ihren U-Wert um mehr als 1 % ändern.
+- Der Kern rechnet je inhomogenem Aufbau die Fehlerschranke e = (R'_T − R''_T)/(2 R_T) nach DIN EN ISO 6946, 6.7.2.5 und
+  nennt über 20 % (R'_T/R''_T > 1,5) einen Hinweis im Summenfuß (BK-8b). Der Rechenweg des Kerns bleibt unverändert.
 
 ## 6 Fragen an den Anwender
 
