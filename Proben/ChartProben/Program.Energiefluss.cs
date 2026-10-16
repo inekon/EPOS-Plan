@@ -8,10 +8,12 @@ using WindowsFormsApplication1.Zeichnung;
 namespace ChartProben
 {
     /// <summary>
-    /// <b>DAS ENERGIEFLUSSBILD (SANKEY)</b> (Konzept Energieflussbild 3 und 6, Schritte SK-2 und SK-2c, Variante A):
-    /// <c>ChartRenderer.EnergieflussModell</c> — Strom, Wärme und Kälte eines Jahres als gestraffte Kette mit Spuren nach
-    /// Energieform, Bänder als S-Kurven-Polygone über Wegpunkte, Wandler als Kästen, Verluste als Abzweige, Legende unter
-    /// dem Bild.
+    /// <b>DAS ENERGIEFLUSSBILD (SANKEY)</b> (Konzept Energieflussbild 3 und 6, Schritte SK-2, SK-2c und SK-2d):
+    /// <c>ChartRenderer.EnergieflussModell</c> — Strom, Wärme und Kälte eines Jahres als gestraffte Kette (Variante A) mit
+    /// Spuren nach Energieform, Bänder als S-Kurven-Polygone über Wegpunkte, Wandler als Kästen, Verluste als Abzweige,
+    /// Legende unter dem Bild; dazu die Darstellung Stufen (Variante B: vier feste Spalten mit Titeln, Strom an die
+    /// Wandler als Verbinder), die schmale Fassung mit derselben Verbinderregel und der Formfilter
+    /// (<c>EnergieflussAbbildung.Gefiltert</c>).
     ///
     /// <para><b>Die Gaben sind synthetisch</b> und fest verdrahtet — keine Datenbank, kein Zufall: ein Objekt mit Netz,
     /// Photovoltaik, BHKW und Kessel am Erdgas, einer Wärmepumpe, einem Heizstab, einer Kältemaschine, Wärme- und
@@ -19,9 +21,10 @@ namespace ChartProben
     /// Strombus. Jeder Bus schließt.</para>
     ///
     /// <para><b>Die Gegenproben</b> halten fest, was Maß-, Farb- und Determinismusprüfung nicht sehen: dass der Speicher
-    /// am Bus, das Band „nicht zugeordnet“, die schmale Fassung und die Knotenwerte des Berichts im Bild ankommen. Die
-    /// SVG-Probe zählt Bänder und Knoten mit ihren Marken und Werten, prüft die Legende und hält die Bildschirmfassung
-    /// frei von Zahlen (SK-Q12).</para>
+    /// am Bus, das Band „nicht zugeordnet“, die schmale Fassung, die Knotenwerte des Berichts, die Stufen und der Formfilter
+    /// im Bild ankommen. Die SVG-Probe zählt Bänder und Knoten mit ihren Marken und Werten, prüft die Legende, hält die
+    /// Bildschirmfassung frei von Zahlen (SK-Q12) und prüft in den Stufen die vier Titel, die Verbinder (drei Pfade unter
+    /// einer Marke mit demselben Wert) und die Kreuzungsfreiheit.</para>
     /// </summary>
     internal static partial class Program
     {
@@ -108,11 +111,20 @@ namespace ChartProben
                 new EnergieflussBildLegende { Rolle = Farbrolle.VERLUST, Text = "Verlust" },
             };
             if (rest) legende.Add(new EnergieflussBildLegende { Rolle = Farbrolle.REST, Text = "nicht zugeordnet / ungedeckt", Gestrichelt = true });
-            return new EnergieflussBildDaten { Knoten = knoten, Baender = baender, Legende = legende };
+            return new EnergieflussBildDaten
+            {
+                Knoten = knoten, Baender = baender, Legende = legende,
+                Stufentitel = new[] { "Einsatz", "Anlagen", "Energieform", "Nutzen" },
+            };
         }
 
-        private static byte[] Energieflussbild(EnergieflussBildDaten d, Bildmass mass, bool knotenwerte = false)
-            => ChartRenderer.EnergieflussBild(d, mass, knotenwerte);
+        private static byte[] Energieflussbild(EnergieflussBildDaten d, Bildmass mass, bool knotenwerte = false,
+                                               EnergieflussDarstellung darstellung = EnergieflussDarstellung.Kette)
+            => ChartRenderer.EnergieflussBild(d, mass, knotenwerte, darstellung);
+
+        /// <summary>Die Gaben auf eine Energieform gefiltert (deutsch).</summary>
+        private static EnergieflussBildDaten Gefiltert(EnergieflussFilter filter, bool split = false)
+            => EnergieflussAbbildung.Gefiltert(Energieflussgaben(split: split), filter, false);
 
         private static void EnergieflussProben(string ziel)
         {
@@ -130,6 +142,15 @@ namespace ChartProben
                    () => Energieflussbild(Energieflussgaben(), bericht, true));
             Pruefe(ziel, "energiefluss_kaelte_split", breit.Breite, breit.Hoehe, farben,
                    () => Energieflussbild(Energieflussgaben(split: true), breit));
+            // Stufen (Variante B) breit und schmal, der Formfilter Strom in der Kette, der leere Filter mit Hinweis.
+            Pruefe(ziel, "energiefluss_stufen", breit.Breite, breit.Hoehe, farben,
+                   () => Energieflussbild(Energieflussgaben(), breit, false, EnergieflussDarstellung.Stufen));
+            Pruefe(ziel, "energiefluss_stufen_schmal", schmal.Breite, schmal.Hoehe, farben,
+                   () => Energieflussbild(Energieflussgaben(), schmal, false, EnergieflussDarstellung.Stufen));
+            Pruefe(ziel, "energiefluss_filter_strom", breit.Breite, breit.Hoehe, farben,
+                   () => Energieflussbild(Gefiltert(EnergieflussFilter.Strom), breit));
+            Pruefe(ziel, "energiefluss_filter_leer", breit.Breite, breit.Hoehe, new[] { Rollenfarbe(Farbrolle.TEXT) },
+                   () => Energieflussbild(EnergieflussAbbildung.Gefiltert(Gefiltert(EnergieflussFilter.Strom), EnergieflussFilter.Kaelte, false), breit));
 
             // Gegenproben: Speicher am Bus, Band „nicht zugeordnet“, schmale Fassung und Knotenwerte kommen im Bild an.
             Unterschiedlich("energiefluss_speicher_wirkt",
@@ -144,6 +165,16 @@ namespace ChartProben
             Unterschiedlich("energiefluss_knotenwerte_wirkt",
                             () => Energieflussbild(Energieflussgaben(), bericht, false),
                             () => Energieflussbild(Energieflussgaben(), bericht, true));
+            // Stufen gegen Kette, Filter gegen Alle, Verbinder der schmalen Fassung gegen die Kette ohne Bus → Wandler.
+            Unterschiedlich("energiefluss_stufen_wirkt",
+                            () => Energieflussbild(Energieflussgaben(), breit),
+                            () => Energieflussbild(Energieflussgaben(), breit, false, EnergieflussDarstellung.Stufen));
+            Unterschiedlich("energiefluss_filter_wirkt",
+                            () => Energieflussbild(Energieflussgaben(), breit),
+                            () => Energieflussbild(Gefiltert(EnergieflussFilter.Strom), breit));
+            Unterschiedlich("energiefluss_filter_waerme_wirkt",
+                            () => Energieflussbild(Gefiltert(EnergieflussFilter.Strom), breit),
+                            () => Energieflussbild(Gefiltert(EnergieflussFilter.Waerme), breit));
 
             // SVG-Probe: je Band ein Pfad mit Marke und Wert, je Knoten (ohne Verluste) ein Rechteck mit Marke und Wert, die
             // Legende je Energieform, keine Zeichenfläche, byte-gleich; die Bildschirmfassung ohne Zahl im Bild, die
@@ -186,6 +217,38 @@ namespace ChartProben
                 Zeichenmodell b = ChartRenderer.EnergieflussModell(d, bericht, true);
                 if (!b.Befehle.OfType<WindowsFormsApplication1.Zeichnung.Text>().Any(t => t.Inhalt == "Wärme · Speicher · 73,5"))
                     e.Maengel.Add("die Berichtsfassung nennt die Jahressumme des Waermebusses nicht");
+
+                // Stufen: vier Titel, Strom an WP, Heizstab und Kältemaschine als Verbinder (drei Pfade und ein Kreis unter
+                // einer Marke, derselbe Wert an allen), jedes andere Band ein Pfad, keine Kreuzung; schmal dieselben Verbinder.
+                Zeichenmodell st = ChartRenderer.EnergieflussModell(d, breit, false, EnergieflussDarstellung.Stufen);
+                List<SvgKnoten> stAlle = SvgSchreiber.Baum(st).Alle().ToList();
+                var titel = stAlle.Where(k => (Attributwert(k, "data-marke") ?? "").StartsWith("stufe:", StringComparison.Ordinal) && k.Name == "text").ToList();
+                if (titel.Count != 4) e.Maengel.Add("Stufentitel " + titel.Count + " statt 4");
+                foreach (string v in new[] { "fluss:strom:wp", "fluss:strom:heizstab", "fluss:strom:km" })
+                {
+                    var teile = stAlle.Where(k => Attributwert(k, "data-marke") == v).ToList();
+                    if (teile.Count(k => k.Name == "path") != 3 || teile.Count(k => k.Name == "circle") != 1)
+                        e.Maengel.Add("Verbinder " + v + ": " + teile.Count(k => k.Name == "path") + " Pfade, " + teile.Count(k => k.Name == "circle") + " Kreise");
+                    if (teile.Select(k => Attributwert(k, "data-wert")).Distinct().Count() != 1)
+                        e.Maengel.Add("Verbinder " + v + " traegt verschiedene Werte");
+                }
+                int stBaender = stAlle.Count(k => (Attributwert(k, "data-marke") ?? "").StartsWith("fluss:", StringComparison.Ordinal) && k.Name == "path");
+                if (stBaender != d.Baender.Count + 2 * 3) e.Maengel.Add("Stufen: " + stBaender + " Pfade statt " + (d.Baender.Count + 6));
+                var stKreuzungen = ChartRenderer.EnergieflussKreuzungspaare(st);
+                if (stKreuzungen.Count != 0) e.Maengel.Add("die Stufen der Gaben kreuzen sich " + stKreuzungen.Count + "-mal: " + string.Join("; ", stKreuzungen.Select(k => k.A + " x " + k.B)));
+                Zeichenmodell sm = ChartRenderer.EnergieflussModell(d, schmal);
+                if (sm.Befehle.OfType<Pfad>().Count(p => p.Marke == "fluss:strom:wp") != 3) e.Maengel.Add("schmal: Strom → WP ist kein Verbinder");
+                if (sm.Befehle.Any(x => x.Marke != null && x.Marke.StartsWith("stufe:", StringComparison.Ordinal))) e.Maengel.Add("schmal traegt Stufentitel");
+                // Filter: nur Bänder der Form und ihrer Erzeuger und Verbraucher, Legende passt sich an, der leere Filter ist benannt.
+                EnergieflussBildDaten fs = Gefiltert(EnergieflussFilter.Strom);
+                if (fs.Baender.Any(x => x.Von == "kessel" || x.Nach == "kessel" || x.Von == "waerme" || x.Von == "kaelte"))
+                    e.Maengel.Add("Filter Strom fuehrt Kessel, Waerme- oder Kaeltebus-Abgaben");
+                if (!fs.Baender.Any(x => x.Von == "strom" && x.Nach == "wp") || !fs.Baender.Any(x => x.Von == "bhkw" && x.Nach == "waerme"))
+                    e.Maengel.Add("Filter Strom fehlt Strom → WP oder BHKW → Waerme");
+                if (fs.Legende.Any(l => l.Rolle == Farbrolle.KAELTE || l.Rolle == Farbrolle.UMWELTWAERME)) e.Maengel.Add("Filter Strom: Legende nennt Kaelte oder Umwelt");
+                EnergieflussBildDaten leer = EnergieflussAbbildung.Gefiltert(fs, EnergieflussFilter.Kaelte, false);
+                if (leer.Baender.Count != 0 || leer.Hinweis != "Kälte: keine Flüsse in dieser Version") e.Maengel.Add("der leere Filter ist nicht benannt: " + leer.Hinweis);
+                e.Knoten += "/" + titel.Count + "/" + fs.Baender.Count;
             });
         }
     }

@@ -398,14 +398,134 @@ namespace EPOS.Kern.Tests
             Assert.Null(Knoten(m, "strom").Fuellung.Ton.Deckung);
         }
 
+        // =====================================================================
+        // Stufen, Verbinder, schmale Fassung, Rückfall, Hinweis (SK-2d)
+        // =====================================================================
+
+        private static EnergieflussBildDaten MitTiteln(EnergieflussBildDaten d)
+        {
+            d.Stufentitel = new[] { "Einsatz", "Anlagen", "Energieform", "Nutzen" };
+            return d;
+        }
+
+        /// <summary>Die Pfade unter der Marke eines Bandes — bei einem Verbinder drei (Stummel am Bus, Pfeilspitze, Stummel am Gerät).</summary>
+        private static List<Pfad> Pfade(Zeichenmodell m, string von, string nach) => Unter(m, "fluss:" + von + ":" + nach).OfType<Pfad>().ToList();
+
+        /// <summary>Die Zahl der Spalten: verschiedene Mitten der Knotenbalken und Kästen.</summary>
+        private static int Spaltenzahl(Zeichenmodell m)
+            => m.Befehle.OfType<Rechteck>().Where(r => r.Marke != null && r.Marke.StartsWith("knoten:", StringComparison.Ordinal))
+                .Select(r => (float)Math.Round(r.X + r.Breite / 2f)).Distinct().Count();
+
         [Fact]
-        public void Darstellung_Kette_ist_die_Vorgabe_Stufen_wird_bis_SK2d_benannt_abgelehnt()
+        public void Darstellung_Kette_ist_die_Vorgabe()
         {
             Assert.True(ChartRenderer.EnergieflussModell(Gaben()).Gleicht(
                 ChartRenderer.EnergieflussModell(Gaben(), null, false, EnergieflussDarstellung.Kette)));
-            var ex = Assert.Throws<NotSupportedException>(() => ChartRenderer.EnergieflussModell(Gaben(), null, false, EnergieflussDarstellung.Stufen));
-            Assert.Contains("Stufen", ex.Message);
-            Assert.Throws<NotSupportedException>(() => ChartRenderer.EnergieflussBild(Gaben(), null, false, EnergieflussDarstellung.Stufen));
+            Assert.Equal(6, Spaltenzahl(ChartRenderer.EnergieflussModell(Gaben())));
+        }
+
+        [Fact]
+        public void Stufen_hat_vier_feste_Spalten_mit_Titeln_Quellen_Wandler_Busse_Senken()
+        {
+            Zeichenmodell m = ChartRenderer.EnergieflussModell(MitTiteln(Gaben()), null, false, EnergieflussDarstellung.Stufen);
+            Rechteck bhkw = Knoten(m, "bhkw"), wp = Knoten(m, "wp");
+            float xQ = Knoten(m, "netz").X, xW = bhkw.X + bhkw.Breite / 2f, xB = Knoten(m, "strom").X, xS = Knoten(m, "bedarf").X;
+            Assert.True(xQ < xW && xW < xB && xB < xS);
+            Assert.Equal(xQ, Knoten(m, "gas").X);
+            Assert.Equal(xQ, Knoten(m, "umwelt").X);
+            Assert.Equal(xW, wp.X + wp.Breite / 2f, 1);
+            Assert.Equal(xB, Knoten(m, "waerme").X);
+            foreach (string s in new[] { "einsp", "rest", "heizung" }) Assert.Equal(xS, Knoten(m, s).X);
+            Assert.Equal(4, Spaltenzahl(m));
+            // Titel über den Spalten unter der Marke stufe:<Spalte>, von links nach rechts.
+            List<Text> titel = Enumerable.Range(0, 4).Select(c => Unter(m, "stufe:" + c).OfType<Text>().Single()).ToList();
+            Assert.Equal(new[] { "Einsatz", "Anlagen", "Energieform", "Nutzen" }, titel.Select(t => t.Inhalt));
+            Assert.All(titel, t => Assert.True(t.Y < Knoten(m, "netz").Y));
+            Assert.True(titel[0].X < titel[1].X && titel[1].X < titel[2].X && titel[2].X < titel[3].X);
+            // Netzbezug → Strom läuft über die Anlagenspalte hinweg und bleibt ein Pfad; nichts kreuzt sich.
+            Assert.Equal(2 * 2 * N, Band(m, "netz", "strom").Punkte.Count);
+            Assert.Equal(0, ChartRenderer.EnergieflussKreuzungen(m));
+            // Ohne Titel in den Bilddaten keine Titel; die Kette zeichnet nie welche.
+            Assert.DoesNotContain(ChartRenderer.EnergieflussModell(Gaben(), null, false, EnergieflussDarstellung.Stufen).Befehle, b => b.Marke != null && b.Marke.StartsWith("stufe:", StringComparison.Ordinal));
+            Assert.DoesNotContain(ChartRenderer.EnergieflussModell(MitTiteln(Gaben())).Befehle, b => b.Marke != null && b.Marke.StartsWith("stufe:", StringComparison.Ordinal));
+            Assert.True(m.Gleicht(ChartRenderer.EnergieflussModell(MitTiteln(Gaben()), null, false, EnergieflussDarstellung.Stufen)));
+        }
+
+        [Fact]
+        public void Verbinder_Strom_an_Waermepumpe_sind_zwei_Stummel_unter_einer_Marke_mit_Pfeil_Kreis_und_Beschriftung()
+        {
+            Zeichenmodell m = ChartRenderer.EnergieflussModell(Gaben(), null, false, EnergieflussDarstellung.Stufen);
+            List<Zeichenbefehl> alle = Unter(m, "fluss:strom:wp");
+            List<Pfad> pfade = alle.OfType<Pfad>().ToList();
+            Rechteck strom = Knoten(m, "strom"), wp = Knoten(m, "wp");
+            Assert.Equal(3, pfade.Count);
+            Pfad aus = Assert.Single(pfade, p => p.Punkte.Count == 2 * N && Math.Abs(p.Punkte[0].X - (strom.X + strom.Breite)) < 0.01f);
+            Pfad ein = Assert.Single(pfade, p => p.Punkte.Count == 2 * N && Math.Abs(p.Punkte[N - 1].X - wp.X) < 0.01f);
+            Pfad pfeil = Assert.Single(pfade, p => p.Punkte.Count == 3);
+            Assert.InRange(aus.Punkte[0].Y, strom.Y - 0.01f, strom.Y + strom.Hoehe + 0.01f);
+            Assert.InRange(ein.Punkte[N - 1].Y, wp.Y - 0.01f, wp.Y + wp.Hoehe + 0.01f);
+            Assert.True(aus.Punkte[N - 1].X - aus.Punkte[0].X <= ChartRenderer.EF_STUMMEL_MAX + 0.01f);
+            Assert.Equal(aus.Punkte[N - 1].X, pfeil.Punkte[0].X, 2);
+            Kreis kreis = Assert.Single(alle.OfType<Kreis>());
+            Assert.True(kreis.X < ein.Punkte[0].X);
+            Assert.Equal(Farbrolle.STROM, kreis.Rand.Ton.Rolle);
+            Assert.Equal(new[] { "→ Wärmepumpe (Heizen)", "Strom" }, alle.OfType<Text>().Select(t => t.Inhalt));
+            string zahl(double w) => w.ToString("N1", BerichtTexte.Kultur);
+            Assert.All(alle, b => Assert.Equal("Strom → Wärmepumpe (Heizen): " + zahl(8.0) + " MWh/a", b.Wert));
+            // Dasselbe Band ist in der breiten Kette ein Pfad; ein Verbinder zählt nie als Kreuzung.
+            Assert.Single(Pfade(ChartRenderer.EnergieflussModell(Gaben()), "strom", "wp"));
+            Assert.DoesNotContain(ChartRenderer.EnergieflussKreuzungspaare(m), p => p.A == "fluss:strom:wp" || p.B == "fluss:strom:wp");
+            // Die Berichtsfassung nennt den Wert an beiden Stummeln; die schmale Fassung die Kurzform des Geräts.
+            Zeichenmodell bericht = ChartRenderer.EnergieflussModell(Gaben(), ChartRenderer.ENERGIEFLUSS_BERICHT, true, EnergieflussDarstellung.Stufen);
+            Assert.Equal(new[] { "→ Wärmepumpe (Heizen) " + zahl(8.0), "Strom " + zahl(8.0) }, Unter(bericht, "fluss:strom:wp").OfType<Text>().Select(t => t.Inhalt));
+            Zeichenmodell schmal = ChartRenderer.EnergieflussModell(Gaben(), ChartRenderer.ENERGIEFLUSS_SCHMAL, false, EnergieflussDarstellung.Stufen);
+            Assert.Equal(new[] { "→ WP Heizen", "Strom" }, Unter(schmal, "fluss:strom:wp").OfType<Text>().Select(t => t.Inhalt));
+        }
+
+        [Fact]
+        public void Schmal_zeichnet_Strom_an_Wandler_als_Verbinder_und_die_Kette_wird_kuerzer()
+        {
+            Zeichenmodell schmal = ChartRenderer.EnergieflussModell(Gaben(), ChartRenderer.ENERGIEFLUSS_SCHMAL);
+            Assert.Equal(3, Pfade(schmal, "strom", "wp").Count);
+            Assert.Single(Pfade(schmal, "bhkw", "strom"));
+            Assert.Single(Pfade(schmal, "gas", "bhkw"));
+            // Ohne das Band Strom → Wärmepumpe im längsten Weg rückt der Strombus vor die Senken: vier statt sechs Spalten.
+            Assert.Equal(4, Spaltenzahl(schmal));
+            Assert.True(Knoten(schmal, "wp").X < Knoten(schmal, "strom").X);
+            Assert.Equal(0, ChartRenderer.EnergieflussKreuzungen(schmal));
+            Assert.DoesNotContain(schmal.Befehle, b => b.Marke != null && b.Marke.StartsWith("stufe:", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void Kette_faellt_ueber_sechs_Spalten_auf_die_Verbinderregel_zurueck()
+        {
+            // Ein Vorwärmer zwischen Erdgas und BHKW macht die Kette sieben Spalten lang; der Rückfall macht Strom → Wärmepumpe
+            // zum Verbinder, und die Kette wird fünf Spalten kurz.
+            EnergieflussBildDaten d = Gaben();
+            List<EnergieflussBildKnoten> knoten = d.Knoten.ToList();
+            knoten.Add(new EnergieflussBildKnoten { Kennung = "vor", Spur = EnergieflussSpur.Gemischt, Name = "Vorwärmer", Kurzname = "Vor", Art = EnergieflussKnotenart.Wandler });
+            List<EnergieflussBildBand> baender = d.Baender.ToList();
+            baender.Single(b => b.Von == "gas" && b.Nach == "bhkw").Nach = "vor";
+            baender.Add(new EnergieflussBildBand { Von = "vor", Nach = "bhkw", Mwh = 30.0, Rolle = Farbrolle.BRENNSTOFF });
+            d.Knoten = knoten;
+            d.Baender = baender;
+            Zeichenmodell m = ChartRenderer.EnergieflussModell(d);
+            Assert.Equal(3, Pfade(m, "strom", "wp").Count);
+            Assert.Single(Pfade(m, "vor", "bhkw"));
+            Assert.Equal(5, Spaltenzahl(m));
+            Assert.True(Spaltenzahl(m) <= ChartRenderer.EF_MAX_SPALTEN_KETTE);
+        }
+
+        [Fact]
+        public void Leere_Bilddaten_mit_Hinweis_zeigen_nur_den_Hinweis()
+        {
+            Zeichenmodell m = ChartRenderer.EnergieflussModell(new EnergieflussBildDaten { Hinweis = "Kälte: keine Flüsse in dieser Version" });
+            Zeichenbefehl einzig = Assert.Single(m.Befehle);
+            Text t = Assert.IsType<Text>(einzig);
+            Assert.Equal("hinweis", t.Marke);
+            Assert.Equal("Kälte: keine Flüsse in dieser Version", t.Inhalt);
+            Assert.InRange(t.X, 0f, m.Breite);
+            Assert.NotEmpty(ChartRenderer.EnergieflussBild(new EnergieflussBildDaten { Hinweis = "leer" }, ChartRenderer.ENERGIEFLUSS_SCHMAL, false, EnergieflussDarstellung.Stufen));
         }
 
         [Fact]

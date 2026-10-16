@@ -45,13 +45,28 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// Die Darstellungsart des Bildes (Anwenderentscheid SK-Q17): <see cref="Kette"/> ist Variante A „Gestraffte Kette“
     /// (Spalten nach Bedarf, Vorgabe, auch im Wortbericht); <see cref="Stufen"/> ist Variante B „Einsatz | Anlagen |
-    /// Energieform | Nutzen“ mit Verbindern für den Strom an die Wärme- und Kälteerzeuger — sie kommt mit SK-2d und wird
-    /// bis dahin benannt abgelehnt. Dieselben Bilddaten tragen beide Darstellungen; die Abbildung kennt keine.
+    /// Energieform | Nutzen“ — vier feste Spalten mit Titeln (<see cref="EnergieflussBildDaten.Stufentitel"/>) und Verbindern
+    /// für den Strom an die Wärme- und Kälteerzeuger. Dieselben Bilddaten tragen beide Darstellungen; die Abbildung kennt keine.
     /// </summary>
     public enum EnergieflussDarstellung
     {
         Kette = 0,
         Stufen = 1
+    }
+
+    /// <summary>
+    /// Der Formfilter des Bildes (Konzept 3.5, SK-2d): <see cref="Alle"/> zeigt jeden Fluss; <see cref="Strom"/>,
+    /// <see cref="Waerme"/> und <see cref="Kaelte"/> behalten die Bänder dieser Energieform und die Wandler, die sie erzeugen
+    /// oder verbrauchen, samt deren Bändern — alles andere entfällt (nicht abgeblendet). Je Filter entstehen eigene Bilddaten
+    /// (<see cref="EnergieflussAbbildung.Gefiltert"/>); die Legende nennt nur die verbliebenen Formen, ein Filter ohne Fluss
+    /// trägt den Hinweis <see cref="EnergieflussBildDaten.Hinweis"/>.
+    /// </summary>
+    public enum EnergieflussFilter
+    {
+        Alle = 0,
+        Strom = 1,
+        Waerme = 2,
+        Kaelte = 3
     }
 
     /// <summary>Ein Knoten des Energieflussbilds.</summary>
@@ -139,5 +154,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Legende der vorkommenden Energieformen unter dem Bild; leer = keine Legende.</summary>
         public IReadOnlyList<EnergieflussBildLegende> Legende { get; set; } = Array.Empty<EnergieflussBildLegende>();
+
+        /// <summary>
+        /// Die vier Spaltentitel der Darstellung <see cref="EnergieflussDarstellung.Stufen"/> in der Kultur des Bildes
+        /// (Einsatz | Anlagen | Energieform | Nutzen); leer = keine Titel. Die Kette zeichnet keine.
+        /// </summary>
+        public IReadOnlyList<string> Stufentitel { get; set; } = Array.Empty<string>();
+
+        /// <summary>Der Formfilter, aus dem diese Bilddaten entstanden sind (<see cref="EnergieflussFilter.Alle"/> = ungefiltert).</summary>
+        public EnergieflussFilter Filter { get; set; } = EnergieflussFilter.Alle;
+
+        /// <summary>
+        /// Ein benannter Grund für ein leeres Bild — etwa „Kälte: keine Flüsse in dieser Version“ bei einem Formfilter ohne
+        /// Fluss dieser Form; <c>null</c> = keiner. Der Renderer zeichnet ihn mittig in das sonst leere Bild (Marke <c>hinweis</c>),
+        /// die Oberfläche kann ihn als Zeile nennen.
+        /// </summary>
+        public string Hinweis { get; set; }
     }
 }

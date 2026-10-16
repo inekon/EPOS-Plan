@@ -57479,17 +57479,8 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="EF_HERKUNFT_BILANZIERT" xml:space="preserve">
     <value>bilanziert</value>
   </data>
-  <data name="EF_SP_QUELLEN" xml:space="preserve">
-    <value>Quellen</value>
-  </data>
-  <data name="EF_SP_WANDLER" xml:space="preserve">
-    <value>Wandler</value>
-  </data>
   <data name="EF_SP_SPEICHER" xml:space="preserve">
     <value>Speicher</value>
-  </data>
-  <data name="EF_SP_BEDARF" xml:space="preserve">
-    <value>Bedarf</value>
   </data>
   <data name="DGF_ROLLE_STROM" xml:space="preserve">
     <value>Strom (Energiefluss)</value>
@@ -57526,6 +57517,30 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="EF_ZEIGER_KLEINVERLUST" xml:space="preserve">
     <value>{0} {1} MWh/a (unter 1 %, nicht gezeichnet)</value>
+  </data>
+  <data name="EF_ST_EINSATZ" xml:space="preserve">
+    <value>Einsatz</value>
+  </data>
+  <data name="EF_ST_ANLAGEN" xml:space="preserve">
+    <value>Anlagen</value>
+  </data>
+  <data name="EF_ST_ENERGIEFORM" xml:space="preserve">
+    <value>Energieform</value>
+  </data>
+  <data name="EF_ST_NUTZEN" xml:space="preserve">
+    <value>Nutzen</value>
+  </data>
+  <data name="EF_FILTER_ALLE" xml:space="preserve">
+    <value>Alle</value>
+  </data>
+  <data name="EF_FILTER_LEER" xml:space="preserve">
+    <value>{0}: keine Flüsse in dieser Version</value>
+  </data>
+  <data name="EF_DARSTELLUNG_KETTE" xml:space="preserve">
+    <value>Kette</value>
+  </data>
+  <data name="EF_DARSTELLUNG_STUFEN" xml:space="preserve">
+    <value>Stufen</value>
   </data>
 </root>
 

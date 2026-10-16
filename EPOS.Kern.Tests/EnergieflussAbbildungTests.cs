@@ -379,27 +379,50 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Jedes Band der Bilddaten ist genau ein Pfad, der an seinem Quellknoten beginnt und — außer einem Verlustabzweig —
-        /// an seinem Zielknoten endet; jeder Knoten außer den Verlustknoten ist genau ein Rechteck; Zeigertexte wörtlich.
+        /// an seinem Zielknoten endet, oder ein Verbinder (SK-2d): drei Pfade unter einer Marke — ein Stummel, der am Bus
+        /// beginnt, eine Pfeilspitze und ein Stummel, der am Gerät endet — mit demselben Wert; jeder Knoten außer den
+        /// Verlustknoten ist genau ein Rechteck; Zeigertexte wörtlich. Gibt die Marken der Verbinder zurück.
         /// </summary>
-        internal static void Gezeichnet(EnergieflussBildDaten d, Zeichenmodell z, string wo)
+        internal static List<string> Gezeichnet(EnergieflussBildDaten d, Zeichenmodell z, string wo)
         {
+            const int N = ChartRenderer.EF_STUETZSTELLEN;
             var rechtecke = z.Befehle.OfType<Rechteck>().Where(r => r.Marke != null && r.Marke.StartsWith("knoten:", StringComparison.Ordinal))
                              .ToDictionary(r => r.Marke.Substring("knoten:".Length), r => r);
             var baender = z.Befehle.OfType<Pfad>().Where(p => p.Marke != null && p.Marke.StartsWith("fluss:", StringComparison.Ordinal)).ToList();
             var verluste = new HashSet<string>(d.Knoten.Where(k => k.Art == EnergieflussKnotenart.Verlust).Select(k => k.Kennung), StringComparer.Ordinal);
+            var verbinder = new List<string>();
             Assert.Equal(d.Knoten.Count(k => k.Art != EnergieflussKnotenart.Verlust), rechtecke.Count);
-            Assert.Equal(d.Baender.Count, baender.Count);
+            Assert.Equal(d.Baender.Count, baender.Select(p => p.Marke).Distinct().Count());
             foreach (EnergieflussBildBand f in d.Baender)
             {
-                Pfad p = Assert.Single(baender, x => x.Marke == "fluss:" + f.Von + ":" + f.Nach);
-                int n = p.Punkte.Count / 2;
+                string marke = "fluss:" + f.Von + ":" + f.Nach;
+                List<Pfad> pfade = baender.Where(x => x.Marke == marke).ToList();
+                Assert.NotEmpty(pfade);
                 Rechteck von = rechtecke[f.Von];
+                if (pfade.Count > 1)
+                {
+                    verbinder.Add(marke);
+                    Assert.False(verluste.Contains(f.Nach), wo + " " + marke + " ist ein Verbinder ohne Verlust");
+                    Assert.Equal(3, pfade.Count);
+                    Rechteck nach = rechtecke[f.Nach];
+                    Pfad aus = Assert.Single(pfade, p => p.Punkte.Count == 2 * N && Math.Abs(p.Punkte[0].X - (von.X + von.Breite)) < 0.01f);
+                    Pfad ein = Assert.Single(pfade, p => p.Punkte.Count == 2 * N && Math.Abs(p.Punkte[N - 1].X - nach.X) < 0.01f);
+                    Assert.Single(pfade, p => p.Punkte.Count == 3);
+                    Assert.InRange(aus.Punkte[0].Y, von.Y - 0.01f, von.Y + von.Hoehe + 0.01f);
+                    Assert.InRange(ein.Punkte[N - 1].Y, nach.Y - 0.01f, nach.Y + nach.Hoehe + 0.01f);
+                    Assert.True(aus.Punkte[N - 1].X - aus.Punkte[0].X <= ChartRenderer.EF_STUMMEL_MAX + 0.01f, wo + " Stummel kurz");
+                    Assert.All(pfade, p => Assert.Equal(pfade[0].Wert, p.Wert));
+                    if (f.Zeigertext != null) Assert.Equal(f.Zeigertext, pfade[0].Wert);
+                    continue;
+                }
+                Pfad p = pfade[0];
+                int n = p.Punkte.Count / 2;
                 Assert.Equal(von.X + von.Breite, p.Punkte[0].X, 3);
                 Assert.InRange(p.Punkte[0].Y, von.Y - 0.01f, von.Y + von.Hoehe + 0.01f);
                 if (verluste.Contains(f.Nach))
                 {
                     Assert.False(rechtecke.ContainsKey(f.Nach), wo + " " + f.Nach + " hat keinen Balken");
-                    Assert.Equal(2 * ChartRenderer.EF_STUETZSTELLEN, p.Punkte.Count);
+                    Assert.Equal(2 * N, p.Punkte.Count);
                     Assert.True(p.Punkte[n - 1].X - p.Punkte[0].X <= 44f + 0.01f, wo + " Abzweig kurz");
                 }
                 else
@@ -414,6 +437,130 @@ namespace EPOS.Kern.Tests
                 if (k.Zeigertext != null) Assert.Equal(k.Zeigertext, rechtecke[k.Kennung].Wert);
             foreach (Rechteck r in rechtecke.Values)
                 Assert.True(r.X >= 0 && r.Y >= 0 && r.X + r.Breite <= z.Breite && r.Y + r.Hoehe <= z.Hoehe - ChartRenderer.EF_LEGENDE_HOEHE, wo + " " + r.Marke + " im Bild");
+            return verbinder;
+        }
+
+        // =====================================================================
+        //  Stufentitel und Formfilter (SK-2d)
+        // =====================================================================
+
+        [Fact]
+        public void Stufentitel_Filter_und_Darstellungsnamen_stehen_in_der_Sprache_der_Bilanz()
+        {
+            Assert.Equal(new[] { "Einsatz", "Anlagen", "Energieform", "Nutzen" }, EnergieflussAbbildung.Bild(VonHand()).Stufentitel);
+            Assert.Equal(new[] { "Input", "Plant", "Energy form", "Use" }, EnergieflussAbbildung.Bild(VonHand(englisch: true)).Stufentitel);
+            Assert.Equal(new[] { "Alle", "Strom", "Wärme", "Kälte" },
+                         new[] { EnergieflussFilter.Alle, EnergieflussFilter.Strom, EnergieflussFilter.Waerme, EnergieflussFilter.Kaelte }
+                             .Select(f => EnergieflussAbbildung.Filtertext(f, false)));
+            Assert.Equal("All", EnergieflussAbbildung.Filtertext(EnergieflussFilter.Alle, true));
+            Assert.Equal("Cooling", EnergieflussAbbildung.Filtertext(EnergieflussFilter.Kaelte, true));
+            Assert.Equal("Kette", EnergieflussAbbildung.Darstellungstext(EnergieflussDarstellung.Kette, false));
+            Assert.Equal("Stufen", EnergieflussAbbildung.Darstellungstext(EnergieflussDarstellung.Stufen, false));
+            Assert.Equal("Stages", EnergieflussAbbildung.Darstellungstext(EnergieflussDarstellung.Stufen, true));
+            Assert.Empty(EnergieflussAbbildung.Bild(null).Stufentitel);
+        }
+
+        [Fact]
+        public void Formfilter_Strom_behaelt_Strombaender_und_die_Wandler_die_Strom_erzeugen_oder_verbrauchen_samt_ihren_Baendern()
+        {
+            EnergieflussBildDaten alle = EnergieflussAbbildung.Bild(VonHand());
+            EnergieflussBildDaten strom = EnergieflussAbbildung.Bild(VonHand(), EnergieflussFilter.Strom);
+            Assert.Equal(EnergieflussFilter.Alle, alle.Filter);
+            Assert.Equal(EnergieflussFilter.Strom, strom.Filter);
+            Assert.Null(strom.Hinweis);
+            Assert.Same(alle, EnergieflussAbbildung.Gefiltert(alle, EnergieflussFilter.Alle, false));
+            // Jedes Stromband bleibt — auch Strom → Wärmepumpe; von der Wärmepumpe (sie erzeugt Wärme) sonst nichts.
+            Band(strom, Energiefluss.NETZBEZUG, Energiefluss.STROM);
+            Band(strom, Energiefluss.STROM, Energiefluss.WP_HEIZEN);
+            Band(strom, Energiefluss.STROM, Energiefluss.STROMBEDARF);
+            Band(strom, Energiefluss.STROM, Energiefluss.EINSPEISUNG_BHKW);
+            Band(strom, Energiefluss.KUEHLSTROM_EIGEN, "kaeltemaschine:1");
+            Assert.DoesNotContain(strom.Baender, b => b.Von == Energiefluss.WP_HEIZEN || b.Von == Energiefluss.UMWELTWAERME);
+            // Das BHKW erzeugt Strom: Brennstoff, Wärme und Verlust des BHKW bleiben; der Kessel entfällt mit allem.
+            Band(strom, "traeger:7", Energiefluss.BHKW);
+            Band(strom, Energiefluss.BHKW, Energiefluss.WAERME);
+            Band(strom, Energiefluss.BHKW, Energiefluss.VERLUST + Energiefluss.BHKW);
+            Assert.DoesNotContain(strom.Baender, b => b.Von == Energiefluss.HEIZKESSEL || b.Nach == Energiefluss.HEIZKESSEL);
+            Assert.DoesNotContain(strom.Knoten, k => k.Kennung == Energiefluss.HEIZKESSEL || k.Kennung == Energiefluss.KONDENSATION);
+            // Die Abzweige am Strombus bleiben (Speicherverlust, nicht zugeordnet), die am Wärmebus entfallen.
+            Band(strom, Energiefluss.STROM, "verlust:stromspeicher:1");
+            Band(strom, Energiefluss.STROM, Energiefluss.NICHT_ZUGEORDNET);
+            Assert.DoesNotContain(strom.Baender, b => b.Von == Energiefluss.WAERME || b.Von == Energiefluss.KAELTE);
+            // Die Form entscheidet, nicht der Name: nur Bänder der Form, ihrer Erzeuger und Verbraucher.
+            foreach (EnergieflussBildBand b in alle.Baender)
+            {
+                bool erwartet = b.Rolle == Farbrolle.STROM
+                                || b.Von == Energiefluss.BHKW || b.Von == Energiefluss.STROM
+                                || b.Nach == Energiefluss.BHKW || b.Nach == Energiefluss.STROM
+                                || b.Nach == "kaeltemaschine:1" || b.Nach == "split:1" || b.Nach == "weitere:split";
+                Assert.True(erwartet == strom.Baender.Any(x => x.Von == b.Von && x.Nach == b.Nach), b.Von + "→" + b.Nach);
+            }
+            // Kein Knoten ohne Band, Legende nur mit den verbliebenen Formen, Stufentitel bleiben; gezeichnet in allen Fassungen.
+            var mitBand = new HashSet<string>(strom.Baender.Select(b => b.Von).Concat(strom.Baender.Select(b => b.Nach)));
+            Assert.All(strom.Knoten, k => Assert.Contains(k.Kennung, mitBand));
+            Assert.Equal(new[] { "Strom", "Wärme", "Brennstoff", "Verlust", "nicht zugeordnet / ungedeckt" }, strom.Legende.Select(l => l.Text));
+            Assert.Equal(alle.Stufentitel, strom.Stufentitel);
+            foreach (var (mass, darstellung) in new[] { (ChartRenderer.ENERGIEFLUSS_BREIT, EnergieflussDarstellung.Kette), (ChartRenderer.ENERGIEFLUSS_SCHMAL, EnergieflussDarstellung.Kette),
+                                                        (ChartRenderer.ENERGIEFLUSS_BREIT, EnergieflussDarstellung.Stufen) })
+                Gezeichnet(strom, ChartRenderer.EnergieflussModell(strom, mass, false, darstellung), "Strom " + mass.Breite + " " + darstellung);
+        }
+
+        [Fact]
+        public void Formfilter_Waerme_und_Kaelte_behalten_ihre_Erzeuger_mit_Einsatz_und_Abgabe()
+        {
+            EnergieflussBildDaten waerme = EnergieflussAbbildung.Bild(VonHand(), EnergieflussFilter.Waerme);
+            // Wärmepumpe und Kessel mit Einsatz (Strom, Umweltwärme, Brennstoff, Kondensationswärme) und Abgabe; BHKW samt Strom.
+            Band(waerme, Energiefluss.STROM, Energiefluss.WP_HEIZEN);
+            Band(waerme, Energiefluss.UMWELTWAERME, Energiefluss.WP_HEIZEN);
+            Band(waerme, Energiefluss.WP_HEIZEN, Energiefluss.WAERME);
+            Band(waerme, Energiefluss.KONDENSATION, Energiefluss.HEIZKESSEL);
+            Band(waerme, Energiefluss.BHKW, Energiefluss.STROM);
+            Band(waerme, Energiefluss.WAERME, Energiefluss.HEIZUNG);
+            Band(waerme, Energiefluss.WAERME, "verlust:puffer:3:0");
+            Band(waerme, Energiefluss.UNGEDECKT, Energiefluss.HEIZUNG);
+            Assert.DoesNotContain(waerme.Baender, b => b.Nach == Energiefluss.STROMBEDARF || b.Nach == Energiefluss.KUEHLUNG || b.Nach == Energiefluss.WP_KUEHLEN);
+            Assert.DoesNotContain(waerme.Knoten, k => k.Kennung == Energiefluss.NETZBEZUG || k.Kennung == Energiefluss.KAELTE);
+            Assert.Equal(new[] { "Strom", "Wärme", "Brennstoff", "Umweltwärme / Umwelt (Kälte)", "Verlust", "nicht zugeordnet / ungedeckt" }, waerme.Legende.Select(l => l.Text));
+
+            EnergieflussBildDaten kaelte = EnergieflussAbbildung.Bild(VonHand(), EnergieflussFilter.Kaelte);
+            Band(kaelte, Energiefluss.STROM, Energiefluss.WP_KUEHLEN);
+            Band(kaelte, Energiefluss.UMWELTKAELTE, Energiefluss.WP_KUEHLEN);
+            Band(kaelte, Energiefluss.KUEHLSTROM_EIGEN, "kaeltemaschine:1");
+            Band(kaelte, "kaeltemaschine:1", Energiefluss.KAELTE);
+            Band(kaelte, Energiefluss.FREIE_KUEHLUNG, Energiefluss.KAELTE);
+            Band(kaelte, Energiefluss.KAELTE, Energiefluss.KUEHLUNG);
+            Assert.DoesNotContain(kaelte.Baender, b => b.Nach == Energiefluss.WAERME || b.Nach == Energiefluss.HEIZUNG || b.Von == Energiefluss.BHKW);
+            Assert.DoesNotContain(kaelte.Knoten, k => k.Kennung == Energiefluss.WAERME);
+            Assert.Equal(new[] { "Strom", "Kälte", "Umweltwärme / Umwelt (Kälte)" }, kaelte.Legende.Select(l => l.Text));
+            foreach (EnergieflussBildDaten d in new[] { waerme, kaelte })
+                foreach (EnergieflussDarstellung darstellung in new[] { EnergieflussDarstellung.Kette, EnergieflussDarstellung.Stufen })
+                    Gezeichnet(d, ChartRenderer.EnergieflussModell(d, null, false, darstellung), d.Filter + " " + darstellung);
+        }
+
+        [Fact]
+        public void Ein_Filter_ohne_Fluss_der_Form_ist_leer_und_benannt()
+        {
+            var b = new EnergieflussBilanz { Simuliert = true };
+            b.Knoten.Add(new EnergieflussKnoten { Id = Energiefluss.NETZBEZUG, Name = "Netzbezug", Art = EnergieflussKnotenart.Quelle, AbflussMwh = 10.0 });
+            b.Knoten.Add(new EnergieflussKnoten { Id = Energiefluss.STROM, Name = "Strom", Art = EnergieflussKnotenart.Bus, ZuflussMwh = 10.0, AbflussMwh = 10.0 });
+            b.Knoten.Add(new EnergieflussKnoten { Id = Energiefluss.STROMBEDARF, Name = "Strombedarf", Art = EnergieflussKnotenart.Senke, ZuflussMwh = 10.0 });
+            b.Fluesse.Add(new EnergieflussFluss { Von = Energiefluss.NETZBEZUG, Nach = Energiefluss.STROM, Mwh = 10.0, Form = EnergieflussForm.Strom });
+            b.Fluesse.Add(new EnergieflussFluss { Von = Energiefluss.STROM, Nach = Energiefluss.STROMBEDARF, Mwh = 10.0, Form = EnergieflussForm.Strom });
+            EnergieflussBildDaten kaelte = EnergieflussAbbildung.Bild(b, EnergieflussFilter.Kaelte);
+            Assert.Empty(kaelte.Baender);
+            Assert.Empty(kaelte.Knoten);
+            Assert.Empty(kaelte.Legende);
+            Assert.Equal(EnergieflussFilter.Kaelte, kaelte.Filter);
+            Assert.Equal("Kälte: keine Flüsse in dieser Version", kaelte.Hinweis);
+            Assert.NotEmpty(kaelte.Stufentitel);
+            b.Englisch = true;
+            Assert.Equal("Heat: no flows in this version", EnergieflussAbbildung.Bild(b, EnergieflussFilter.Waerme).Hinweis);
+            Assert.Equal(2, EnergieflussAbbildung.Bild(b, EnergieflussFilter.Strom).Baender.Count);
+            Assert.Null(EnergieflussAbbildung.Bild(b, EnergieflussFilter.Strom).Hinweis);
+            // Das Bild des leeren Filters trägt nur den Hinweis; ohne Bilddaten ein leerer Filter ohne Ausnahme.
+            Text t = Assert.IsType<Text>(Assert.Single(ChartRenderer.EnergieflussModell(kaelte).Befehle));
+            Assert.Equal("Kälte: keine Flüsse in dieser Version", t.Inhalt);
+            Assert.Empty(EnergieflussAbbildung.Gefiltert(null, EnergieflussFilter.Strom, false).Baender);
         }
     }
 }

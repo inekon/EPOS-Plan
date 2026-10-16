@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using WindowsFormsApplication1;
 using WindowsFormsApplication1.Zeichnung;
@@ -37,7 +38,7 @@ namespace EPOS.Kern.Tests
 
         private const double TOL = 0.01;
 
-        private (EnergieflussBilanz m, VariantenDaten v) Rechne(int projekt, int maxKreuzungen)
+        private (EnergieflussBilanz m, VariantenDaten v) Rechne(int projekt, int maxKreuzungen, bool kaelte)
         {
             var lauf = new SimulationRunner();
             int k = lauf.SimuliereUndSpeichere(projekt, out string fehler);
@@ -51,6 +52,7 @@ namespace EPOS.Kern.Tests
             foreach (EnergieflussKnoten n in m.Knoten.Where(n => n.Geprueft))
                 Assert.True(Math.Abs(n.ZuflussMwh - n.AbflussMwh) <= Energiefluss.Toleranz(n.ZuflussMwh), n.Id);
             Gezeichnet(m, projekt, maxKreuzungen);
+            Gefiltert(m, projekt, kaelte);
             return (m, EnergievergleichCtrl.Lade(projekt, true));
         }
 
@@ -58,39 +60,95 @@ namespace EPOS.Kern.Tests
         public const string PNG_ORDNER = "EPOS_ENERGIEFLUSS_PNG_ORDNER";
 
         /// <summary>
-        /// Bilanz → Bilddaten → Zeichenmodell in breit, schmal und Bericht (SK-12, SK-2c): ohne Ausnahme, deterministisch,
-        /// kein Speicherknoten im Bild (gefaltet in seinen Bus), jedes Band und jeder Knoten gezeichnet, jedes Band schließt
-        /// an seine Knoten an, Verluste als Abzweige ohne Balken, die Kreuzungszahl der breiten Fassung höchstens
-        /// <paramref name="maxKreuzungen"/> — Paare sich schneidender Bandmittellinien (Recherche 16.10.2026: 1018 und 1046
-        /// kreuzungsfrei; 1058 zwei topologisch unvermeidbare: das 0,7-MWh/a-Band Strom → Wärmepumpe (Kühlen) muss von der
-        /// Stromspur durch die Wärmespur — Umweltwärme → Wärmepumpe (Heizen) und BHKW → Wärme — in die Kältespur; 1063
-        /// höchstens zwei). Ist <see cref="PNG_ORDNER"/> gesetzt, liegen die PNG danach dort.
+        /// Bilanz → Bilddaten → Zeichenmodell in breit, schmal und Bericht (Kette) und in den Stufen (SK-12, SK-2c, SK-2d):
+        /// ohne Ausnahme, deterministisch, kein Speicherknoten im Bild (gefaltet in seinen Bus), jedes Band und jeder Knoten
+        /// gezeichnet, jedes Band schließt an seine Knoten an, Verluste als Abzweige ohne Balken, die Kreuzungszahl der breiten
+        /// Kette höchstens <paramref name="maxKreuzungen"/> — Paare sich schneidender Bandmittellinien (Recherche 16.10.2026:
+        /// 1018 und 1046 kreuzungsfrei; 1058 zwei topologisch unvermeidbare: das 0,7-MWh/a-Band Strom → Wärmepumpe (Kühlen)
+        /// muss von der Stromspur durch die Wärmespur — Umweltwärme → Wärmepumpe (Heizen) und BHKW → Wärme — in die Kältespur;
+        /// 1063 höchstens zwei) —, die Stufen kreuzungsfrei; in den Stufen und in der schmalen Fassung ist jedes Band aus einem
+        /// Bus in einen Wandler ein Verbinder, in der breiten Kette und im Bericht keines. Ist <see cref="PNG_ORDNER"/> gesetzt,
+        /// liegen die PNG danach dort.
         /// </summary>
         private void Gezeichnet(EnergieflussBilanz m, int projekt, int maxKreuzungen)
         {
             EnergieflussBildDaten d = EnergieflussAbbildung.Bild(m);
             Assert.DoesNotContain(d.Knoten, k => k.Art == EnergieflussKnotenart.Speicher);
             Assert.NotEmpty(d.Legende);
+            Assert.Equal(4, d.Stufentitel.Count);
+            var art = d.Knoten.ToDictionary(k => k.Kennung, k => k.Art);
+            var busAnWandler = d.Baender.Where(b => art[b.Von] == EnergieflussKnotenart.Bus && art[b.Nach] == EnergieflussKnotenart.Wandler)
+                                        .Select(b => "fluss:" + b.Von + ":" + b.Nach).OrderBy(s => s, StringComparer.Ordinal).ToList();
             string ordner = Environment.GetEnvironmentVariable(PNG_ORDNER);
-            int breit = 0;
-            foreach (var (name, mass, werte) in new[] { ("breit", ChartRenderer.ENERGIEFLUSS_BREIT, false),
-                                                       ("schmal", ChartRenderer.ENERGIEFLUSS_SCHMAL, false),
-                                                       ("bericht", ChartRenderer.ENERGIEFLUSS_BERICHT, true) })
+            int breit = 0, stufen = 0;
+            foreach (var (name, mass, werte, darstellung) in new[] { ("breit", ChartRenderer.ENERGIEFLUSS_BREIT, false, EnergieflussDarstellung.Kette),
+                                                                    ("schmal", ChartRenderer.ENERGIEFLUSS_SCHMAL, false, EnergieflussDarstellung.Kette),
+                                                                    ("bericht", ChartRenderer.ENERGIEFLUSS_BERICHT, true, EnergieflussDarstellung.Kette),
+                                                                    ("stufen", ChartRenderer.ENERGIEFLUSS_BREIT, false, EnergieflussDarstellung.Stufen),
+                                                                    ("stufen_schmal", ChartRenderer.ENERGIEFLUSS_SCHMAL, false, EnergieflussDarstellung.Stufen) })
             {
-                Zeichenmodell z = ChartRenderer.EnergieflussModell(d, mass, werte);
-                Assert.True(z.Gleicht(ChartRenderer.EnergieflussModell(d, mass, werte)), projekt + " " + name + " deterministisch");
-                EnergieflussAbbildungTests.Gezeichnet(d, z, projekt + " " + name);
+                Zeichenmodell z = ChartRenderer.EnergieflussModell(d, mass, werte, darstellung);
+                Assert.True(z.Gleicht(ChartRenderer.EnergieflussModell(d, mass, werte, darstellung)), projekt + " " + name + " deterministisch");
+                List<string> verbinder = EnergieflussAbbildungTests.Gezeichnet(d, z, projekt + " " + name);
+                verbinder.Sort(StringComparer.Ordinal);
+                bool mitVerbinder = name != "breit" && name != "bericht";
+                Assert.Equal(mitVerbinder ? busAnWandler : new List<string>(), verbinder);
+                Assert.Equal(darstellung == EnergieflussDarstellung.Stufen ? 4 : 0, z.Befehle.Count(b => b.Marke != null && b.Marke.StartsWith("stufe:", StringComparison.Ordinal)));
                 if (!string.IsNullOrEmpty(ordner))
                 {
                     System.IO.Directory.CreateDirectory(ordner);
-                    System.IO.File.WriteAllBytes(System.IO.Path.Combine(ordner, projekt + "_" + name + ".png"), ChartRenderer.EnergieflussBild(d, mass, werte));
+                    System.IO.File.WriteAllBytes(System.IO.Path.Combine(ordner, projekt + "_" + name + ".png"), ChartRenderer.EnergieflussBild(d, mass, werte, darstellung));
                 }
                 var paare = ChartRenderer.EnergieflussKreuzungspaare(z);
                 int kreuzungen = paare.Count;
-                _aus.WriteLine("Kreuzungen " + projekt + " " + name + ": " + kreuzungen + (kreuzungen > 0 ? " (" + string.Join("; ", paare.Select(p => p.A + " x " + p.B)) + ")" : ""));
+                _aus.WriteLine("Kreuzungen " + projekt + " " + name + ": " + kreuzungen + (kreuzungen > 0 ? " (" + string.Join("; ", paare.Select(p => p.A + " x " + p.B)) + ")" : "")
+                               + (verbinder.Count > 0 ? " · Verbinder " + string.Join(", ", verbinder) : ""));
                 if (name == "breit") breit = kreuzungen;
+                if (name == "stufen") stufen = kreuzungen;
             }
             Assert.True(breit <= maxKreuzungen, projekt + " breit: " + breit + " Kreuzungen, erlaubt " + maxKreuzungen);
+            Assert.True(stufen == 0, projekt + " Stufen: " + stufen + " Kreuzungen, erlaubt 0");
+        }
+
+        /// <summary>
+        /// Die Formfilter (SK-2d): Strom und Wärme sind in jedem Referenzprojekt belegt, Kälte nur bei <paramref name="kaelte"/>;
+        /// ein belegter Filter wird in Kette und Stufen vollständig gezeichnet, ein leerer trägt den Hinweis. Die PNG der Filter
+        /// liegen unter <see cref="PNG_ORDNER"/> als <c>&lt;Projekt&gt;_filter_&lt;Form&gt;.png</c>.
+        /// </summary>
+        private void Gefiltert(EnergieflussBilanz m, int projekt, bool kaelte)
+        {
+            string ordner = Environment.GetEnvironmentVariable(PNG_ORDNER);
+            foreach (EnergieflussFilter filter in new[] { EnergieflussFilter.Strom, EnergieflussFilter.Waerme, EnergieflussFilter.Kaelte })
+            {
+                EnergieflussBildDaten d = EnergieflussAbbildung.Bild(m, filter);
+                Assert.Equal(filter, d.Filter);
+                bool belegt = filter != EnergieflussFilter.Kaelte || kaelte;
+                _aus.WriteLine("Filter " + projekt + " " + filter + ": " + d.Baender.Count + " Bänder, " + d.Knoten.Count + " Knoten" + (d.Hinweis != null ? " · " + d.Hinweis : ""));
+                if (!belegt)
+                {
+                    Assert.Empty(d.Baender);
+                    Assert.Equal(EnergieflussAbbildung.Legendentext(EnergieflussForm.Kaelte, false) + ": keine Flüsse in dieser Version", d.Hinweis);
+                    Assert.Single(ChartRenderer.EnergieflussModell(d).Befehle);
+                    continue;
+                }
+                Assert.NotEmpty(d.Baender);
+                Assert.Null(d.Hinweis);
+                // Jedes Band der Form bleibt, kein Band kommt hinzu, die Legende nennt die Form.
+                EnergieflussBildDaten alle = EnergieflussAbbildung.Bild(m);
+                foreach (EnergieflussBildBand b in alle.Baender.Where(b => EnergieflussAbbildung.Form(b) == EnergieflussAbbildung.FormDesFilters(filter)))
+                    Assert.Contains(d.Baender, x => x.Von == b.Von && x.Nach == b.Nach);
+                Assert.All(d.Baender, b => Assert.Contains(alle.Baender, x => x.Von == b.Von && x.Nach == b.Nach));
+                Assert.Contains(d.Legende, l => l.Rolle == EnergieflussAbbildung.Rolle(EnergieflussAbbildung.FormDesFilters(filter)));
+                foreach (var (name, darstellung) in new[] { ("", EnergieflussDarstellung.Kette), ("_stufen", EnergieflussDarstellung.Stufen) })
+                {
+                    Zeichenmodell z = ChartRenderer.EnergieflussModell(d, null, false, darstellung);
+                    Assert.True(z.Gleicht(ChartRenderer.EnergieflussModell(d, null, false, darstellung)));
+                    EnergieflussAbbildungTests.Gezeichnet(d, z, projekt + " " + filter + name);
+                    if (!string.IsNullOrEmpty(ordner))
+                        System.IO.File.WriteAllBytes(System.IO.Path.Combine(ordner, projekt + "_filter_" + filter.ToString().ToLowerInvariant() + name + ".png"),
+                                                     ChartRenderer.EnergieflussBild(d, null, false, darstellung));
+                }
+            }
         }
 
         private static string Id(EnergieflussBilanz m, string anfang)
@@ -111,7 +169,7 @@ namespace EPOS.Kern.Tests
         public void Projekt_1018_BHKW_Kessel_Puffer_schliesst_mit_bilanzierter_Einspeisung()
         {
             if (!_db.Vorhanden) return;
-            var (m, _) = Rechne(1018, 0);
+            var (m, _) = Rechne(1018, 0, kaelte: false);
             Nahe(53.890, m.KnotenMit(Energiefluss.WAERME).ZuflussMwh, "Wärme Zufluss");
             string p = Id(m, Energiefluss.PUFFER);
             Nahe(38.949, m.Fluss(Energiefluss.WAERME, p), "Puffer Ladung");
@@ -129,7 +187,7 @@ namespace EPOS.Kern.Tests
         public void Projekt_1046_Waermepumpe_Flotte_zeigt_den_Eigenverbrauch_als_nicht_zugeordnet()
         {
             if (!_db.Vorhanden) return;
-            var (m, _) = Rechne(1046, 0);
+            var (m, _) = Rechne(1046, 0, kaelte: false);
             Nahe(71.410, m.KnotenMit(Energiefluss.WAERME).ZuflussMwh, "Wärme Zufluss");
             Nahe(37.810, m.Fluss(Energiefluss.HEIZSTAB, Energiefluss.WAERME), "Heizstab 1:1");
             Nahe(37.810, m.Fluss(Energiefluss.STROM, Energiefluss.HEIZSTAB), "Heizstab Strom");
@@ -155,7 +213,7 @@ namespace EPOS.Kern.Tests
         public void Projekt_1058_AK3_belegt_die_Umweltwaerme_und_schliesst_Waerme_Kaelte_Strom()
         {
             if (!_db.Vorhanden) return;
-            var (m, v) = Rechne(1058, 2);
+            var (m, v) = Rechne(1058, 2, kaelte: true);
             Nahe(72.030, m.KnotenMit(Energiefluss.WAERME).ZuflussMwh, "Wärme Zufluss");
             EnergieflussFluss u = m.FlussMit(Energiefluss.UMWELTWAERME, Energiefluss.WP_HEIZEN);
             Nahe(43.090, u.Mwh, "Umweltwärme");
@@ -181,7 +239,7 @@ namespace EPOS.Kern.Tests
         public void Projekt_1063_Kaeltemaschine_mit_Kaeltespeicher_und_eigenem_Zaehler_schliesst()
         {
             if (!_db.Vorhanden) return;
-            var (m, v) = Rechne(1063, 2);
+            var (m, v) = Rechne(1063, 2, kaelte: true);
             Nahe(75.320, m.KnotenMit(Energiefluss.WAERME).ZuflussMwh, "Wärme Zufluss");
             Nahe(0.06, m.Fluss(Energiefluss.UNGEDECKT, Energiefluss.HEIZUNG), "ungedeckt");
             Nahe(4.153, m.KnotenMit(Energiefluss.KAELTE).ZuflussMwh, "Kälte Zufluss");

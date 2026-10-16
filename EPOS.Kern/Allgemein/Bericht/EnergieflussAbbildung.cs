@@ -31,6 +31,9 @@ namespace WindowsFormsApplication1
     /// <see cref="Farbrolle.KAELTE"/>, <see cref="Farbrolle.BRENNSTOFF"/>, <see cref="Farbrolle.UMWELTWAERME"/>,
     /// <see cref="Farbrolle.VERLUST"/>, <see cref="Farbrolle.REST"/> (gestrichelt); Knoten <see cref="Farbrolle.KNOTEN"/>.</item>
     /// <item><b>Legende:</b> die vorkommenden Energieformen in fester Reihenfolge, Texte in der Sprache der Bilanz.</item>
+    /// <item><b>Stufentitel:</b> die vier Spaltentitel der Darstellung Stufen (SK-Q17) in der Sprache der Bilanz.</item>
+    /// <item><b>Formfilter (SK-2d):</b> <see cref="Gefiltert"/> behält die Bänder einer Energieform und die Wandler, die sie
+    /// erzeugen oder verbrauchen, samt deren Bändern; der Rest entfällt, die Legende folgt, ein leerer Filter ist benannt.</item>
     /// </list>
     /// </summary>
     public static class EnergieflussAbbildung
@@ -71,15 +74,18 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Bilddaten zur Bilanz nach den Regeln der Klassenbeschreibung. Eine leere oder fehlende Bilanz ergibt leere
-        /// Bilddaten (der Renderer zeichnet dann ein leeres Bild).
+        /// Die Bilddaten zur Bilanz nach den Regeln der Klassenbeschreibung, wahlweise auf eine Energieform gefiltert
+        /// (<see cref="Gefiltert"/>). Eine leere oder fehlende Bilanz ergibt leere Bilddaten (der Renderer zeichnet dann ein
+        /// leeres Bild). Die Oberfläche hält je Version und Filter ein Ergebnis fest — die Abbildung ist günstig, das Zeichnen
+        /// nicht.
         /// </summary>
-        public static EnergieflussBildDaten Bild(EnergieflussBilanz bilanz)
+        public static EnergieflussBildDaten Bild(EnergieflussBilanz bilanz, EnergieflussFilter filter = EnergieflussFilter.Alle)
         {
             var daten = new EnergieflussBildDaten();
             if (bilanz == null) return daten;
             bool en = bilanz.Englisch;
             CultureInfo kultur = Energiefluss.Kultur(en);
+            daten.Stufentitel = Stufentitel(en);
 
             var knoten = new Dictionary<string, AKnoten>(StringComparer.Ordinal);
             var folge = new List<AKnoten>();
@@ -121,7 +127,108 @@ namespace WindowsFormsApplication1
             daten.Knoten = folge.Select(Bildknoten).ToList();
             daten.Baender = baender.Select(Bildband).ToList();
             daten.Legende = Legende(baender, en);
-            return daten;
+            return filter == EnergieflussFilter.Alle ? daten : Gefiltert(daten, filter, en);
+        }
+
+        /// <summary>Die vier Spaltentitel der Darstellung Stufen: Einsatz | Anlagen | Energieform | Nutzen.</summary>
+        public static IReadOnlyList<string> Stufentitel(bool englisch)
+            => new[]
+            {
+                Energiefluss.T(nameof(MyResource.Resource.EF_ST_EINSATZ), englisch),
+                Energiefluss.T(nameof(MyResource.Resource.EF_ST_ANLAGEN), englisch),
+                Energiefluss.T(nameof(MyResource.Resource.EF_ST_ENERGIEFORM), englisch),
+                Energiefluss.T(nameof(MyResource.Resource.EF_ST_NUTZEN), englisch),
+            };
+
+        /// <summary>Der Name eines Filters für die Oberfläche: „Alle“ bzw. der Legendentext der Energieform.</summary>
+        public static string Filtertext(EnergieflussFilter filter, bool englisch)
+            => filter == EnergieflussFilter.Alle ? Energiefluss.T(nameof(MyResource.Resource.EF_FILTER_ALLE), englisch)
+                                                 : Legendentext(FormDesFilters(filter), englisch);
+
+        /// <summary>Der Name einer Darstellung für die Oberfläche: „Kette“ bzw. „Stufen“.</summary>
+        public static string Darstellungstext(EnergieflussDarstellung darstellung, bool englisch)
+            => Energiefluss.T(darstellung == EnergieflussDarstellung.Stufen ? nameof(MyResource.Resource.EF_DARSTELLUNG_STUFEN)
+                                                                            : nameof(MyResource.Resource.EF_DARSTELLUNG_KETTE), englisch);
+
+        // ---------------------------------------------------------------- Formfilter
+
+        /// <summary>Die Energieform, die ein Filter behält (<see cref="EnergieflussFilter.Alle"/> hat keine: Wärme als Rückfall).</summary>
+        public static EnergieflussForm FormDesFilters(EnergieflussFilter filter)
+            => filter == EnergieflussFilter.Strom ? EnergieflussForm.Strom
+             : filter == EnergieflussFilter.Kaelte ? EnergieflussForm.Kaelte
+             : EnergieflussForm.Waerme;
+
+        /// <summary>Die Energieform eines Bandes aus seiner Rolle (Umkehrung von <see cref="Rolle"/>), sonst aus seiner Bandart; <c>null</c> = unbenannt.</summary>
+        public static EnergieflussForm? Form(EnergieflussBildBand b)
+        {
+            if (b == null) return null;
+            if (b.Rolle == Farbrolle.STROM) return EnergieflussForm.Strom;
+            if (b.Rolle == Farbrolle.WAERME) return EnergieflussForm.Waerme;
+            if (b.Rolle == Farbrolle.KAELTE) return EnergieflussForm.Kaelte;
+            if (b.Rolle == Farbrolle.BRENNSTOFF) return EnergieflussForm.Brennstoff;
+            if (b.Rolle == Farbrolle.UMWELTWAERME) return EnergieflussForm.Umwelt;
+            if (b.Rolle == Farbrolle.VERLUST || b.Art == EnergieflussBandart.Verlust) return EnergieflussForm.Verlust;
+            if (b.Rolle == Farbrolle.REST || b.Art == EnergieflussBandart.NichtZugeordnet) return EnergieflussForm.Rest;
+            return null;
+        }
+
+        /// <summary>
+        /// <b>Der Formfilter</b> (SK-2d, wie der Filter der Recherche-Anschauung): Aus Bilddaten entstehen die Bilddaten einer
+        /// Energieform. Ein Knoten trägt Formen — ein Wandler die Formen seiner Abgabe, jeder andere Knoten die Formen aller
+        /// seiner Bänder (ohne Verluste). Es bleibt jedes Band, das die Form trägt oder dessen Quell- oder Zielknoten sie trägt;
+        /// ein Verlustabzweig bleibt, wenn sein Eigentümer sie trägt. So bleibt ein Wandler, der die Form erzeugt oder
+        /// verbraucht, mit allen seinen Bändern im Bild (Einsatz, Abgabe, Verlust) — alles andere entfällt. Knoten ohne Band
+        /// entfallen, die Legende nennt nur die verbliebenen Formen, Stufentitel bleiben. Bleibt kein Band, sind die Bilddaten
+        /// leer und <see cref="EnergieflussBildDaten.Hinweis"/> nennt den Grund („Kälte: keine Flüsse in dieser Version“).
+        /// <see cref="EnergieflussFilter.Alle"/> gibt die Bilddaten unverändert zurück (dieselbe Instanz).
+        /// </summary>
+        public static EnergieflussBildDaten Gefiltert(EnergieflussBildDaten daten, EnergieflussFilter filter, bool englisch)
+        {
+            if (daten == null) return new EnergieflussBildDaten { Filter = filter };
+            if (filter == EnergieflussFilter.Alle) return daten;
+            EnergieflussForm form = FormDesFilters(filter);
+            var ziel = new EnergieflussBildDaten { Filter = filter, Stufentitel = daten.Stufentitel };
+
+            var art = new Dictionary<string, EnergieflussKnotenart>(StringComparer.Ordinal);
+            foreach (EnergieflussBildKnoten k in daten.Knoten ?? Array.Empty<EnergieflussBildKnoten>())
+                if (k != null && !string.IsNullOrEmpty(k.Kennung) && !art.ContainsKey(k.Kennung)) art[k.Kennung] = k.Art;
+            List<EnergieflussBildBand> gueltig = (daten.Baender ?? Array.Empty<EnergieflussBildBand>())
+                .Where(b => b != null && double.IsFinite(b.Mwh) && b.Mwh > 0.0 && b.Von != null && b.Nach != null && b.Von != b.Nach
+                            && art.ContainsKey(b.Von) && art.ContainsKey(b.Nach))
+                .ToList();
+            bool IstVerlust(EnergieflussBildBand b) => b.Art == EnergieflussBandart.Verlust || art[b.Nach] == EnergieflussKnotenart.Verlust;
+
+            var formen = new Dictionary<string, HashSet<EnergieflussForm>>(StringComparer.Ordinal);
+            void Merke(string id, EnergieflussForm f)
+            {
+                if (!formen.TryGetValue(id, out HashSet<EnergieflussForm> s)) formen[id] = s = new HashSet<EnergieflussForm>();
+                s.Add(f);
+            }
+            foreach (EnergieflussBildBand b in gueltig)
+            {
+                if (IstVerlust(b)) continue;
+                EnergieflussForm? f = Form(b);
+                if (!f.HasValue) continue;
+                Merke(b.Von, f.Value);                                                   // Abgabe zählt bei jedem Knoten
+                if (art[b.Nach] != EnergieflussKnotenart.Wandler) Merke(b.Nach, f.Value); // Einsatz nur bei Nicht-Wandlern
+            }
+            bool Traegt(string id) => formen.TryGetValue(id, out HashSet<EnergieflussForm> s) && s.Contains(form);
+            bool Sichtbar(EnergieflussBildBand b)
+                => IstVerlust(b) ? Traegt(b.Von) : Form(b) == form || Traegt(b.Von) || Traegt(b.Nach);
+
+            List<EnergieflussBildBand> baender = gueltig.Where(Sichtbar).ToList();
+            if (baender.Count == 0)
+            {
+                ziel.Hinweis = string.Format(Energiefluss.Kultur(englisch), Energiefluss.T(nameof(MyResource.Resource.EF_FILTER_LEER), englisch),
+                                             Legendentext(form, englisch));
+                return ziel;
+            }
+            var mitBand = new HashSet<string>(baender.Select(b => b.Von).Concat(baender.Select(b => b.Nach)), StringComparer.Ordinal);
+            ziel.Knoten = daten.Knoten.Where(k => k != null && mitBand.Contains(k.Kennung)).ToList();
+            ziel.Baender = baender;
+            var rollen = new HashSet<Farbrolle>(baender.Select(b => b.Rolle ?? Rolle(Form(b) ?? EnergieflussForm.Rest)));
+            ziel.Legende = (daten.Legende ?? Array.Empty<EnergieflussBildLegende>()).Where(l => l != null && rollen.Contains(l.Rolle)).ToList();
+            return ziel;
         }
 
         // ---------------------------------------------------------------- Speicher falten

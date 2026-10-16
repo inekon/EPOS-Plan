@@ -24890,6 +24890,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kette ähnelt.
+        /// </summary>
+        public static string EF_DARSTELLUNG_KETTE {
+            get {
+                return ResourceManager.GetString("EF_DARSTELLUNG_KETTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufen ähnelt.
+        /// </summary>
+        public static string EF_DARSTELLUNG_STUFEN {
+            get {
+                return ResourceManager.GetString("EF_DARSTELLUNG_STUFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle ähnelt.
+        /// </summary>
+        public static string EF_FILTER_ALLE {
+            get {
+                return ResourceManager.GetString("EF_FILTER_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: keine Flüsse in dieser Version ähnelt.
+        /// </summary>
+        public static string EF_FILTER_LEER {
+            get {
+                return ResourceManager.GetString("EF_FILTER_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf − Speicherentladung − ungedeckt ähnelt.
         /// </summary>
         public static string EF_FORMEL_DIREKT {
@@ -25727,24 +25763,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf ähnelt.
-        /// </summary>
-        public static string EF_SP_BEDARF {
-            get {
-                return ResourceManager.GetString("EF_SP_BEDARF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Quellen ähnelt.
-        /// </summary>
-        public static string EF_SP_QUELLEN {
-            get {
-                return ResourceManager.GetString("EF_SP_QUELLEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speicher ähnelt.
         /// </summary>
         public static string EF_SP_SPEICHER {
@@ -25754,11 +25772,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wandler ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagen ähnelt.
         /// </summary>
-        public static string EF_SP_WANDLER {
+        public static string EF_ST_ANLAGEN {
             get {
-                return ResourceManager.GetString("EF_SP_WANDLER", resourceCulture);
+                return ResourceManager.GetString("EF_ST_ANLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einsatz ähnelt.
+        /// </summary>
+        public static string EF_ST_EINSATZ {
+            get {
+                return ResourceManager.GetString("EF_ST_EINSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieform ähnelt.
+        /// </summary>
+        public static string EF_ST_ENERGIEFORM {
+            get {
+                return ResourceManager.GetString("EF_ST_ENERGIEFORM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzen ähnelt.
+        /// </summary>
+        public static string EF_ST_NUTZEN {
+            get {
+                return ResourceManager.GetString("EF_ST_NUTZEN", resourceCulture);
             }
         }
         

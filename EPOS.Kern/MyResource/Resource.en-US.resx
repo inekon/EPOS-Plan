@@ -57472,17 +57472,8 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="EF_HERKUNFT_BILANZIERT" xml:space="preserve">
     <value>balanced</value>
   </data>
-  <data name="EF_SP_QUELLEN" xml:space="preserve">
-    <value>Sources</value>
-  </data>
-  <data name="EF_SP_WANDLER" xml:space="preserve">
-    <value>Converters</value>
-  </data>
   <data name="EF_SP_SPEICHER" xml:space="preserve">
     <value>Storage</value>
-  </data>
-  <data name="EF_SP_BEDARF" xml:space="preserve">
-    <value>Demand</value>
   </data>
   <data name="DGF_ROLLE_STROM" xml:space="preserve">
     <value>Electricity (energy flow)</value>
@@ -57519,6 +57510,30 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="EF_ZEIGER_KLEINVERLUST" xml:space="preserve">
     <value>{0} {1} MWh/a (below 1 %, not drawn)</value>
+  </data>
+  <data name="EF_ST_EINSATZ" xml:space="preserve">
+    <value>Input</value>
+  </data>
+  <data name="EF_ST_ANLAGEN" xml:space="preserve">
+    <value>Plant</value>
+  </data>
+  <data name="EF_ST_ENERGIEFORM" xml:space="preserve">
+    <value>Energy form</value>
+  </data>
+  <data name="EF_ST_NUTZEN" xml:space="preserve">
+    <value>Use</value>
+  </data>
+  <data name="EF_FILTER_ALLE" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="EF_FILTER_LEER" xml:space="preserve">
+    <value>{0}: no flows in this version</value>
+  </data>
+  <data name="EF_DARSTELLUNG_KETTE" xml:space="preserve">
+    <value>Chain</value>
+  </data>
+  <data name="EF_DARSTELLUNG_STUFEN" xml:space="preserve">
+    <value>Stages</value>
   </data>
 </root>
 

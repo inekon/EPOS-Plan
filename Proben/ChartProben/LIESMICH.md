@@ -690,30 +690,45 @@ Rechner (`--hashes` zweimal, Windows wie Linux), dazu `EPOS.Kern.Tests/Oberflaec
 
 ---
 
-## Energieflussbild (Sankey, Schritte SK-2 und SK-2c)
+## Energieflussbild (Sankey, Schritte SK-2, SK-2c und SK-2d)
 
 `ChartRenderer.EnergieflussModell` zeichnet Strom, Wärme und Kälte eines Jahres als gestraffte Kette (Variante A,
 Konzept Energieflussbild 3): so viele Spalten, wie die Anlage braucht (längster Weg zur Senke), in jeder Spalte die
 Spuren Strom, Gemischt, Wärme, Kälte, Bänder über Wegpunkte, Wandler als beschriftete Kästen, Verluste als kurze
-Abzweige ohne Knotenbalken, Farbe nach Energieform, Legende unter dem Bild. Die Gaben (`Program.Energiefluss.cs`) sind
-synthetisch und fest verdrahtet: Netz, Photovoltaik, BHKW und Kessel am Erdgas, Wärmepumpe, Heizstab, Kältemaschine,
-Wärme-, Kälte- und Strombus mit Speicherverlust (die Speicher sind in ihren Bus gefaltet), ein Band „nicht zugeordnet“
-am Strombus. Erwartete Farben: `KNOTEN`, `TEXT` (die Bänder sind halbdurchsichtig, Verluste haben keinen Balken).
+Abzweige ohne Knotenbalken, Farbe nach Energieform, Legende unter dem Bild — und als Darstellung „Stufen“ (Variante B,
+SK-Q17) vier feste Spalten Einsatz | Anlagen | Energieform | Nutzen mit Titeln, in denen der Strom an Wärmepumpe,
+Heizstab und Kältemaschine ein Verbinder ist (Stummel „→ Gerät“ am Bus, Stummel „Strom“ am Gerät, beide unter einer
+Marke). Dieselbe Verbinderregel gilt in der schmalen Fassung. Der Formfilter (`EnergieflussAbbildung.Gefiltert`) macht
+aus den Gaben die Bilddaten einer Energieform; ein Filter ohne Fluss trägt nur seinen Hinweis. Die Gaben
+(`Program.Energiefluss.cs`) sind synthetisch und fest verdrahtet: Netz, Photovoltaik, BHKW und Kessel am Erdgas,
+Wärmepumpe, Heizstab, Kältemaschine, Wärme-, Kälte- und Strombus mit Speicherverlust (die Speicher sind in ihren Bus
+gefaltet), ein Band „nicht zugeordnet“ am Strombus, die vier Stufentitel. Erwartete Farben: `KNOTEN`, `TEXT` (die Bänder
+sind halbdurchsichtig, Verluste haben keinen Balken); der leere Filter nur `TEXT`.
 
 | Art | Probe | Aussage |
 |---|---|---|
 | Maßprobe | `energiefluss` | breite Fassung 1180 × 460, nur Namen an den Knoten, Legende |
-| Maßprobe | `energiefluss_schmal` | schmale Fassung 680 × 560, Kurznamen (vorläufig die verkleinerte Kette) |
+| Maßprobe | `energiefluss_schmal` | schmale Fassung 680 × 560, Kurznamen, Strom an die Wandler als Verbinder (die Kette wird vier Spalten kurz) |
 | Maßprobe | `energiefluss_bericht` | Berichtsfassung 1240 × 490, Jahressumme an Knoten, Kästen und Verlusten |
 | Maßprobe | `energiefluss_kaelte_split` | ein Split-Gerät neben der Kältemaschine |
+| Maßprobe | `energiefluss_stufen` | Darstellung Stufen breit: vier Spalten mit Titeln, drei Verbinder am Strombus |
+| Maßprobe | `energiefluss_stufen_schmal` | Darstellung Stufen schmal 680 × 560 |
+| Maßprobe | `energiefluss_filter_strom` | Formfilter Strom in der Kette: Strombänder, BHKW mit Einsatz, Wärme und Verlust, Wärmepumpe, Heizstab und Kältemaschine nur mit ihrem Strom |
+| Maßprobe | `energiefluss_filter_leer` | Formfilter Kälte auf den Stromgaben: leeres Bild mit dem Hinweis „Kälte: keine Flüsse in dieser Version“ |
 | Gegenprobe | `energiefluss_speicher_wirkt` | Wärmebus mit und ohne Speicher (Zusatz „· Speicher“, Speicherverlust) |
 | Gegenprobe | `energiefluss_rest_wirkt` | geschlossen und mit Band „nicht zugeordnet“ |
 | Gegenprobe | `energiefluss_schmal_wirkt` | breit und schmal |
 | Gegenprobe | `energiefluss_knotenwerte_wirkt` | Bericht ohne und mit Knotenwerten |
-| SVG | `svg_energiefluss` | je Band und Knoten Marke und `data-wert`, je Energieform ein Legendenfeld, byte-gleich, keine Zahl im Bildschirmbild, nur die drei topologisch unvermeidbaren Kreuzungen (Strom → Kältemaschine durch die Wärmespur) |
+| Gegenprobe | `energiefluss_stufen_wirkt` | Kette und Stufen |
+| Gegenprobe | `energiefluss_filter_wirkt` | Alle und Filter Strom |
+| Gegenprobe | `energiefluss_filter_waerme_wirkt` | Filter Strom und Filter Wärme |
+| SVG | `svg_energiefluss` | je Band und Knoten Marke und `data-wert`, je Energieform ein Legendenfeld, byte-gleich, keine Zahl im Bildschirmbild, nur die drei topologisch unvermeidbaren Kreuzungen der Kette (Strom → Kältemaschine durch die Wärmespur); in den Stufen vier Titel (`stufe:<Spalte>`), die drei Verbinder als je drei Pfade und ein Kreis unter einer Marke mit einem Wert, keine Kreuzung; schmal derselbe Verbinder ohne Titel; der Filter Strom ohne Kessel und ohne Abgaben des Wärme- und Kältebusses, der leere Filter benannt |
 
-Das sind **12 Zeilen** am Ende von `Messlatte_2026-10-16.sha256`; die bisherigen 226 Zeilen bleiben unverändert.
-Schritt SK-12 hatte zehn dieser zwölf Zeilen ersetzt (innere Beschriftung bis 1,5 Spaltenabstände); Schritt SK-2c
-ersetzt alle zwölf: Das Bild ist nach Variante A neu gezeichnet (Spalten nach Bedarf statt sieben feste, Speicher am
-Bus, Verlustabzweige, Farbe nach Energieform mit den Rollen `STROM` und `WAERME`, Legende, neue Maße 1180 × 460,
-680 × 560 und 1240 × 490). Die 226 älteren Zeilen sind unverändert.
+Das sind **22 Zeilen** am Ende von `Messlatte_2026-10-16.sha256`; die 226 älteren Zeilen bleiben unverändert.
+Schritt SK-12 hatte zehn der damals zwölf Zeilen ersetzt (innere Beschriftung bis 1,5 Spaltenabstände), Schritt SK-2c
+alle zwölf (Variante A: Spalten nach Bedarf statt sieben feste, Speicher am Bus, Verlustabzweige, Farbe nach Energieform
+mit den Rollen `STROM` und `WAERME`, Legende, Maße 1180 × 460, 680 × 560 und 1240 × 490). Schritt SK-2d ersetzt
+`energiefluss_schmal` und `energiefluss_schmal_wirkt_b` (Verbinderregel der schmalen Fassung) sowie
+`energiefluss_kaelte_split` (Balken sind Beschriftungsplätze, Verlustziel nach der Spaltenlücke) und fügt zehn Zeilen
+hinzu (Stufen breit und schmal, Filter Strom, leerer Filter, drei Gegenproben); `energiefluss`, `energiefluss_bericht`
+und die übrigen Gegenproben der Kette sind byte-gleich geblieben.
