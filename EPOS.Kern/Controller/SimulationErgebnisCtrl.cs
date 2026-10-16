@@ -1296,6 +1296,51 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die zwei Netzreihen des Stromgangs [kW je Viertelstunde] — Netzbezug und Netzeinspeisung, wie der
+        /// Lauf sie schon führt (Welle RZ, zuschaltbare Reihen). Keine neue Rechnung, nur das Lesen.
+        /// </summary>
+        public sealed class Netzreihen
+        {
+            /// <summary>Der Netzbezug: der Reststrom des Laufs (<see cref="SimulationControl.Rest_Strombedarf_viertelstuendlich"/>),
+            /// dieselbe Reihe wie <c>ZeitreihenSatz.NETZBEZUG</c> und die Bezugsspitze.</summary>
+            public double[] NetzbezugKw;
+
+            /// <summary>
+            /// Die Netzeinspeisung: mit Speicherflotte deren gesamte Netzeinspeisung, sonst die PV-Einspeisung nach
+            /// Speicherladung und Einspeisegrenze (<see cref="SimulationControl.PvEinspeisungAufteilen"/>) plus die
+            /// BHKW-Einspeisung der Viertelstundenbilanz; <c>null</c>, wenn der Lauf weder Photovoltaik noch BHKW noch
+            /// Flotte führt.
+            /// </summary>
+            public double[] EinspeisungKw;
+        }
+
+        /// <summary>Die Netzreihen des Laufs (<see cref="Netzreihen"/>); <c>null</c> ohne Lauf.</summary>
+        public static Netzreihen NetzreihenViertelstunde(SimulationControl sim)
+        {
+            if (sim == null) return null;
+            var r = new Netzreihen { NetzbezugKw = sim.Rest_Strombedarf_viertelstuendlich };
+            if (sim.Speicherflottennetzbilanz != null)
+            {
+                r.EinspeisungKw = sim.Speicherflottennetzbilanz.NetzeinspeisungKw;
+                return r;
+            }
+
+            double[] pv = null;
+            if (sim.bSimulationPV && sim.simulation_pv != null)
+                sim.PvEinspeisungAufteilen(out pv, out _);
+            double[] bhkw = sim.bSimulationBHKW ? sim.BhkwEinspeisung_viertelstuendlich : null;
+            if (pv == null && bhkw == null) return r;
+
+            int n = Math.Max(pv?.Length ?? 0, bhkw?.Length ?? 0);
+            var summe = new double[n];
+            for (int q = 0; q < n; q++)
+                summe[q] = (pv != null && q < pv.Length ? pv[q] : 0.0)
+                         + (bhkw != null && q < bhkw.Length ? bhkw[q] : 0.0);
+            r.EinspeisungKw = summe;
+            return r;
+        }
+
+        /// <summary>
         /// E30/3 (#548, N10) — der <b>Strombedarf aller Verbraucher</b> [MWh/a] vor jeder
         /// Eigenerzeugung (<see cref="SimulationControl.Strombedarf_Verbraucher_viertelstuendlich"/>,
         /// dieselbe Reihe wie <c>STROMBEDARF_GESAMT</c> der Strommatrix): Projektlast,

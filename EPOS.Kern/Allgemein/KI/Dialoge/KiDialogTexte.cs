@@ -1825,6 +1825,13 @@
         internal static string BtRahmenErl => MyResource.Resource.KI_DLG_BT_RAHMEN_ERL;
         internal static string BtVerschattungName => MyResource.Resource.BTDLG_LBL_VERSCHATTUNG;
         internal static string BtVerschattungErl => MyResource.Resource.KI_DLG_BT_VERSCHATTUNG_ERL;
+        internal static string BtAbsorptionName => MyResource.Resource.BTDLG_LBL_ABSORPTION;
+        internal static string BtAbsorptionErl => MyResource.Resource.KI_DLG_BT_ABSORPTION_ERL;
+        internal static string BtEmissionName => MyResource.Resource.BTDLG_LBL_EMISSION;
+        internal static string BtEmissionErl => MyResource.Resource.KI_DLG_BT_EMISSION_ERL;
+        internal static string BtaAbsorptionName => MyResource.Resource.BTA_LBL_ABSORPTION;
+        internal static string BtaEmissionName => MyResource.Resource.BTA_LBL_EMISSION;
+        internal static string BtaStrahlungErl => MyResource.Resource.KI_DLG_BTA_STRAHLUNG_ERL;
         internal static string BtPsiLName => MyResource.Resource.BTDLG_LBL_PSIL;
         internal static string BtPsiLErl => MyResource.Resource.KI_DLG_BT_PSIL_ERL;
         internal static string BtUWertName => MyResource.Resource.BTDLG_LBL_UWERT;
@@ -3390,6 +3397,10 @@
         internal static string PeakNutzungsdauerErl => MyResource.Resource.KI_DLG_PEAK_NUTZUNGSDAUER_ERL;
         internal static string PeakSocName => MyResource.Resource.PEAK_CHK_SOC;
         internal static string PeakSocErl => MyResource.Resource.KI_DLG_PEAK_SOC_ERL;
+        internal static string PeakLeistungName => MyResource.Resource.PEAK_CHK_LEISTUNG;
+        internal static string PeakLeistungErl => MyResource.Resource.KI_DLG_PEAK_LEISTUNG_ERL;
+        internal static string PeakSchwelleName => MyResource.Resource.PEAK_CHK_SCHWELLE;
+        internal static string PeakSchwelleErl => MyResource.Resource.KI_DLG_PEAK_SCHWELLE_ERL;
         internal static string PeakReiterName => MyResource.Resource.KI_DLG_PEAK_REITER_NAME;
         internal static string PeakReiterErl => MyResource.Resource.KI_DLG_PEAK_REITER_ERL;
         internal static string PeakReiheName => MyResource.Resource.KI_DLG_PEAK_REIHE_NAME;

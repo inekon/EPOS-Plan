@@ -92,6 +92,15 @@
             <Zahlenfeld Bezeichnung="@Texte.LabelPsiL" Einheit="W/K" Min="0"
                         Feldname="@Texte.LabelPsiL" FehlerZustand="FehlerMelden"
                         Wert="@_stand.PsiL" WertChanged="w => _stand.PsiL = w" />
+            @* DA-8: Absorptions- und Emissionsgrad der Aussenflaeche; leer = der Wert des Aufbaus, sonst die Vorgabe. *@
+            <Zahlenfeld Bezeichnung="@Texte.LabelAbsorption" Min="0" Max="1" Nachkommastellen="2"
+                        Platzhalter="@Strahlungsplatzhalter(WindowsFormsApplication1.BauteilStrahlungSchema.VORGABE_ABSORPTION)"
+                        Feldname="@Texte.LabelAbsorption" FehlerZustand="FehlerMelden"
+                        Wert="@_stand.AbsorptionsgradSolar" WertChanged="w => _stand.AbsorptionsgradSolar = w" />
+            <Zahlenfeld Bezeichnung="@Texte.LabelEmission" Min="0" Max="1" Nachkommastellen="2"
+                        Platzhalter="@Strahlungsplatzhalter(WindowsFormsApplication1.BauteilStrahlungSchema.VORGABE_EMISSION)"
+                        Feldname="@Texte.LabelEmission" FehlerZustand="FehlerMelden"
+                        Wert="@_stand.Emissionsgrad" WertChanged="w => _stand.Emissionsgrad = w" />
             <Zahlenfeld Bezeichnung="@Texte.LabelUWert" Einheit="W/(m²K)" Min="0"
                         Platzhalter="@UPlatzhalter"
                         Feldname="@Texte.LabelUWert" FehlerZustand="FehlerMelden"
@@ -307,6 +316,10 @@
             VerschattungSetzen = w => _stand.Verschattung = w,
             PsiLLesen = () => _stand.PsiL,
             PsiLSetzen = w => _stand.PsiL = w,
+            AbsorptionLesen = () => _stand.AbsorptionsgradSolar,
+            AbsorptionSetzen = w => _stand.AbsorptionsgradSolar = w,
+            EmissionLesen = () => _stand.Emissionsgrad,
+            EmissionSetzen = w => _stand.Emissionsgrad = w,
             UWertLesen = () => _stand.UWert,
             UWertSetzen = w => _stand.UWert = w,
             AufbauLesen = () => Projektauswahl,
@@ -481,6 +494,10 @@
     private string NeigungPlatzhalter
         => string.Format(CultureInfo.CurrentCulture, Texte.PlatzhalterNeigung,
                          GebaeudeZonenCtrl.NeigungVorgabe(_stand.Bauteilart).ToString("0", CultureInfo.CurrentCulture));
+
+    /// <summary>DA-8: Platzhalter eines leeren Strahlungsfelds — der Wert des Aufbaus, sonst die Vorgabe.</summary>
+    private string Strahlungsplatzhalter(double vorgabe)
+        => string.Format(CultureInfo.CurrentCulture, Texte.PlatzhalterStrahlung, vorgabe.ToString("0.0#", CultureInfo.CurrentCulture));
 
     private string UPlatzhalter
         => _stand.UAufbau is double u ? u.ToString("0.###", CultureInfo.CurrentCulture) : Texte.PlatzhalterU;

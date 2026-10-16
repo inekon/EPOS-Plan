@@ -132,7 +132,7 @@ namespace EPOS.Kern.Tests
                 Konditionierungsprojekt1051.FERIEN[0].Beginn, Konditionierungsprojekt1051.FERIEN[0].Ende));
             Assert.Equal(new long[] { PROJEKT, KOPIE_VORHEIZEN }, Liste(
                 "SELECT ID_Projekt FROM Tab_Gebaeude WHERE ID_Gebaeude_Stamm = ? ORDER BY 1", KATALOGBAU));
-            Assert.Equal(new long[] { 1051, 1052, 1054, KOPIE_VORHEIZEN }, Liste(   // 1054: Kopie von 1052 (AK1z); 1065: Kopie von 1051
+            Assert.Equal(new long[] { 1051, 1052, 1054, KOPIE_VORHEIZEN, 1073 }, Liste(   // 1054: Kopie von 1052 (AK1z); 1065: Kopie von 1051; 1073: Kopie von 1054 (SA4)
                 "SELECT ID_Projekt FROM Tab_Einstellungen WHERE Aufheizoptimierung = 1 ORDER BY 1"));
         }
 

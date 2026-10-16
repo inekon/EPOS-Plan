@@ -122,8 +122,8 @@ namespace WindowsFormsApplication1
             new Inventardatum("F5", "Lichttransmission", O),
             new Inventardatum("F6", "winkelabhängiger g-Wert", L, "SolarHeatGainCoeff"),
             new Inventardatum("F7", "Emissionsgrad der Verglasung", O),
-            new Inventardatum("F8", "Absorptionsgrad opaker Außenflächen (Konstante, durchgereicht)", B, "Absorptance"),
-            new Inventardatum("F9", "langwelliger Emissionsgrad außen (Konstante, durchgereicht)", B, "Absorptance"),
+            new Inventardatum("F8", "Absorptionsgrad solar der Außenflächen je Bauteil (leer = Vorgabe)", B, "Absorptance"),
+            new Inventardatum("F9", "langwelliger Emissionsgrad der Außenflächen je Bauteil (leer = Vorgabe)", B, "Absorptance"),
             new Inventardatum("F10", "Albedo der Umgebung", O),
 
             new Inventardatum("G1", "Luftströme zwischen Zonen", E, "Luftstrom_"),
@@ -134,7 +134,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die Einstufung für IFC</b> (Welle DA-3), in derselben Reihenfolge: Standardsatz vor <c>EPOS_*</c>; die Zeitpläne bleiben
-        /// in <c>EPOS_Kalender_*</c> (E138 F6 a), Absorptions- und Emissionsgrad werden nur durchgereicht (F8 b).
+        /// in <c>EPOS_Kalender_*</c> (E138 F6 a), Absorptions- und Emissionsgrad je Bauteil stehen in
+        /// <c>EPOS_Bauteil</c> (DA-8; <c>Pset_MaterialOptical</c> gilt je Baustoff und reicht die Vorgabe durch).
         /// </summary>
         internal static readonly IReadOnlyList<IfcEinstufung> Ifc = new[]
         {
@@ -207,8 +208,8 @@ namespace WindowsFormsApplication1
             new IfcEinstufung("F5", L, "VisibleLightTransmittance"),
             new IfcEinstufung("F6", O),
             new IfcEinstufung("F7", O),
-            new IfcEinstufung("F8", B, "SolarReflectanceFront"),
-            new IfcEinstufung("F9", B, "ThermalIrEmissivityFront"),
+            new IfcEinstufung("F8", E, "AbsorptionsgradSolar"),
+            new IfcEinstufung("F9", E, "Emissionsgrad"),
             new IfcEinstufung("F10", O),
 
             new IfcEinstufung("G1", E, "Luftstrom_"),

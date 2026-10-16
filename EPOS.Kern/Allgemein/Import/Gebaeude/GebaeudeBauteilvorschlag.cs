@@ -1211,7 +1211,7 @@ namespace WindowsFormsApplication1
                     hn = _datei;
                 }
 
-                GebaeudeBauteilzeile z = NeueZeile(Lesename(s), art, flaeche, rand, p.Summenfeld, s.Quelltyp, s.Kennung, null);
+                GebaeudeBauteilzeile z = NeueZeile(Lesename(s), art, flaeche, rand, p.Summenfeld, s.Quelltyp, s.Kennung, null, quelle: s);
                 z.HerkunftFlaeche = herkunftFlaeche;
                 z.Flaechenherkunft = ImportherkunftWerte.IstVorgabe(herkunftFlaeche) ? Flaechenherkunft.Schematisch : s.Flaechenherkunft;
                 Setzen(z, neigung, hn, azimut, ha);
@@ -1246,7 +1246,7 @@ namespace WindowsFormsApplication1
                 (double? azimut, Importherkunft ha) = Azimut(s.AzimutGrad, gespiegelt);
 
                 GebaeudeBauteilzeile z = NeueZeile(Lesename(s), Bauteilart.Vorhangfassade, flaeche, rand, p.Summenfeld,
-                                                   s.Quelltyp, s.Kennung, null);
+                                                   s.Quelltyp, s.Kennung, null, quelle: s);
                 z.HerkunftFlaeche = herkunftFlaeche;
                 z.Flaechenherkunft = ImportherkunftWerte.IstVorgabe(herkunftFlaeche) ? Flaechenherkunft.Schematisch : s.Flaechenherkunft;
                 Setzen(z, neigung, hn, azimut, ha);
@@ -1280,7 +1280,7 @@ namespace WindowsFormsApplication1
                 }
 
                 GebaeudeBauteilzeile z = NeueZeile(Lesename(f), Bauteilart.Fenster, f.BruttoflaecheM2.Value, rand,
-                                                   GebaeudeZielfelder.FENSTER_GESAMT, f.Quelltyp, f.Kennung, null);
+                                                   GebaeudeZielfelder.FENSTER_GESAMT, f.Quelltyp, f.Kennung, null, quelle: f);
                 z.HerkunftFlaeche = _datei;
                 z.Flaechenherkunft = f.Flaechenherkunft;
                 Setzen(z, neigung, hn, azimut, ha);
@@ -1310,7 +1310,7 @@ namespace WindowsFormsApplication1
                 }
 
                 GebaeudeBauteilzeile z = NeueZeile(Lesename(t), Bauteilart.Tuer, t.BruttoflaecheM2.Value, rand,
-                                                   GebaeudeZielfelder.FLAECHE_SONSTIGE, t.Quelltyp, t.Kennung, null);
+                                                   GebaeudeZielfelder.FLAECHE_SONSTIGE, t.Quelltyp, t.Kennung, null, quelle: t);
                 z.HerkunftFlaeche = _datei;
                 z.Flaechenherkunft = t.Flaechenherkunft;
                 Setzen(z, neigung, hn, azimut, ha);
@@ -1707,7 +1707,7 @@ namespace WindowsFormsApplication1
                     hn = _datei;
                 }
                 (double? azimut, Importherkunft ha) = seite != null ? Azimut(seite.AzimutGrad, false) : Azimut(s.AzimutGrad, gespiegelt);
-                GebaeudeBauteilzeile z = NeueZeile(Lesename(s), art, flaeche, rand, feld, s.Quelltyp, s.Kennung, null);
+                GebaeudeBauteilzeile z = NeueZeile(Lesename(s), art, flaeche, rand, feld, s.Quelltyp, s.Kennung, null, quelle: s);
                 z.Bauteil.ID_Nachbarzone = nachbar;
                 z.HerkunftFlaeche = _datei;
                 z.Flaechenherkunft = weg;
@@ -1744,7 +1744,7 @@ namespace WindowsFormsApplication1
                 (double? neigung, Importherkunft hn) = seite != null ? Neigung(seite.NeigungGrad, false) : Neigung(o.NeigungGrad ?? wirt.NeigungGrad, gespiegelt);
                 (double? azimut, Importherkunft ha) = seite != null ? Azimut(seite.AzimutGrad, false) : Azimut(wirt.AzimutGrad ?? o.AzimutGrad, gespiegelt);
                 string feld = fenster ? GebaeudeZielfelder.FENSTER_GESAMT : GebaeudeZielfelder.FLAECHE_SONSTIGE;
-                GebaeudeBauteilzeile z = NeueZeile(Lesename(o), o.Art, flaeche, rand, feld, o.Quelltyp, o.Kennung, null);
+                GebaeudeBauteilzeile z = NeueZeile(Lesename(o), o.Art, flaeche, rand, feld, o.Quelltyp, o.Kennung, null, quelle: o);
                 z.Bauteil.ID_Nachbarzone = nachbar;
                 z.HerkunftFlaeche = _datei;
                 z.Flaechenherkunft = o.Flaechenherkunft;
@@ -2494,10 +2494,13 @@ namespace WindowsFormsApplication1
             // ------------------------------------------------------------------
 
             private GebaeudeBauteilzeile NeueZeile(string name, Bauteilart art, double flaeche, Bauteilrand rand, string summenfeld,
-                                                  string quelltyp, string kennung, string seite)
+                                                  string quelltyp, string kennung, string seite, AbbildBauteil quelle = null)
             {
                 var b = new BauteilModel
                 {
+                    // DA-8: Absorptions- und Emissionsgrad der Datei (leer = Vorgabe).
+                    Absorptionsgrad_Solar = quelle?.AbsorptionsgradSolar,
+                    Emissionsgrad = quelle?.Emissionsgrad,
                     ID = _naechsteZeile--,
                     Bezeichner = Kuerzen(name, BaustoffSchema.LAENGE_BEZEICHNER),
                     Bauteilart = GebaeudeZonenabbildung.ArtFuerZeile(art),

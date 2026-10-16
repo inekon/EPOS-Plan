@@ -138,6 +138,12 @@ public sealed class PeakShavingKiSicht
     /// <summary>Schalterschlüssel der Ladezustandskurve im Bild.</summary>
     public const string S_LADEZUSTAND = "ladezustand";
 
+    /// <summary>Schalterschlüssel der Lade- und Entladeleistung im Bild (Welle RZ).</summary>
+    public const string S_LEISTUNG = "leistungsreihen";
+
+    /// <summary>Schalterschlüssel der Schwelle im Bild (Welle RZ).</summary>
+    public const string S_SCHWELLE = "schwellenlinie";
+
     // =====================================================================
     //  Was der Katalog sieht
     // =====================================================================
@@ -297,6 +303,20 @@ public sealed class PeakShavingKiSicht
     {
         get => Schalter(S_LADEZUSTAND);
         set => Setze(S_LADEZUSTAND, value);
+    }
+
+    /// <summary>Zeigt Lade- und Entladeleistung im Diagramm.</summary>
+    public bool Leistungsreihen
+    {
+        get => Schalter(S_LEISTUNG);
+        set => Setze(S_LEISTUNG, value);
+    }
+
+    /// <summary>Zeigt die erreichte Schwelle im Diagramm.</summary>
+    public bool Schwellenlinie
+    {
+        get => Schalter(S_SCHWELLE);
+        set => Setze(S_SCHWELLE, value);
     }
 
     // ---- Hilfen ------------------------------------------------------------

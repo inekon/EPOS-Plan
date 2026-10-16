@@ -43,6 +43,10 @@
 //    Leiste ohne Statusspanne) - ihre Schlussleiste steht oben wie am Ende ganz im Bild am Boden der
 //    Ueberlagerung, auch bei 787 x 520 (1 180 x 780 bei 150 %); gemessen MIT Vorschaukarte (KD-3: Ort
 //    eintragen, "Datensatz suchen"); Gegenprobe: Leiste position: static.
+//  KLIMAREIHEN (KD-8 Teil A, --nur klimareihen): der Reiter "Weitere Reihen" der Detailkarte - die
+//    Reihenwahl bricht in ihrem Kasten um (kein Chip ragt heraus, nichts rollt quer), das Bild darunter
+//    steht, die Schlussleiste des Dialogs steht ganz im Fenster; im Fenster bis 600 px steht das Bild UEBER
+//    der Wahl, breiter die Wahl ueber dem Bild. Gegenproben: Gruppen ohne Umbruch; Reihenfolge ohne die Regel.
 //
 //  IPAD 11 ZOLL (1 194 x 834 quer): dieselben Faelle MIT den sicheren Abstaenden
 //    des iPads (Statusleiste oben 24 px, Home-Anzeige unten 20 px, gesetzt ueber die
@@ -532,6 +536,64 @@ async function katalog(browser, f, marke) {
   if (FOTOS && marke) await seite.screenshot({ path: `${FOTOS}/katalog_${f.breite}.png` });
   await seite.close();
   return m;
+}
+
+/**
+ * KD-8 Teil A: der Reiter „Weitere Reihen" des Klimadaten-Dialogs. Die Reihenwahl (Chips je Groesse,
+ * gruppiert) bricht in ihrem Kasten um: Kein Chip und kein Gruppenname ragt rechts heraus, kein Vorfahr
+ * rollt quer, das Dokument rollt nicht quer. Das Bild der gewaehlten Reihen steht darunter, die
+ * Schlussleiste des Dialogs ganz im Fenster. Mit `stil` (Gegenprobe) wird eine Stilzeile eingeschoben.
+ */
+async function klimareihen(browser, f, stil = '') {
+  const seite = await oeffnen(browser, 'klimareihen', f);
+  if (stil) await seite.addStyleTag({ content: stil });
+  // Schmal (Rahmen unter 900 px) steht die Liste allein; „Stammblatt ›" schiebt das Blatt ueber sie.
+  const blatt = seite.locator('.epos-auswahlleiste-knopf.epos-nur-schmal');
+  await seite.waitForTimeout(300);
+  if (await blatt.count() && await blatt.first().isVisible()) await blatt.first().click();
+  await seite.waitForSelector('.epos-stammblatt .epos-reiter-knopf', { timeout: 20000 });
+  await seite.locator('.epos-stammblatt .epos-reiter-knopf', { hasText: 'Weitere Reihen' }).click();
+  await seite.waitForSelector('[data-kennung=klima-jahr] button.epos-reihenwahl-chip', { timeout: 20000 });
+  await seite.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+  const m = await seite.evaluate(() => {
+    const wahl = document.querySelector('[data-kennung=klima-jahr]');
+    const d = document.querySelector('body > #app > .epos-dialog');
+    const leiste = d.querySelector(':scope > .epos-leiste');
+    const kasten = wahl.getBoundingClientRect();
+    let ragt = 0, chips = 0, gesperrt = 0;
+    for (const c of wahl.querySelectorAll('button.epos-reihenwahl-chip, .epos-reihenwahl-gruppenname')) {
+      const b = c.getBoundingClientRect();
+      ragt = Math.max(ragt, b.right - kasten.right, kasten.left - b.left);
+      if (c.tagName === 'BUTTON') { chips++; if (c.getAttribute('aria-disabled') === 'true') gesperrt++; }
+    }
+    let querVorfahr = 0;
+    for (let e = wahl; e && e !== document.body; e = e.parentElement)
+      if (getComputedStyle(e).overflowX !== 'visible') querVorfahr = Math.max(querVorfahr, e.scrollWidth - e.clientWidth);
+    const bild = wahl.parentElement.querySelector(':scope > * svg, :scope svg');
+    const lb = leiste.getBoundingClientRect();
+    const bildOben = bild ? bild.getBoundingClientRect().top : NaN;
+    return {
+      bildZuerst: bildOben < kasten.top, schmal: innerWidth <= 600,
+      ragt: Math.round(ragt * 10) / 10, chips, gesperrt, querVorfahr,
+      dokQuer: document.scrollingElement.scrollWidth - innerWidth,
+      bildHoehe: bild ? Math.round(bild.getBoundingClientRect().height) : 0,
+      wahlHoehe: Math.round(kasten.height), leiste: [Math.round(lb.top * 10) / 10, Math.round(lb.bottom * 10) / 10],
+      innen: innerHeight,
+    };
+  });
+  const fehler = [];
+  if (m.ragt > TOL) fehler.push(`ein Chip ragt ${m.ragt} px aus der Reihenwahl`);
+  if (m.querVorfahr > TOL) fehler.push(`ein Vorfahr der Reihenwahl rollt quer (${m.querVorfahr} px)`);
+  if (m.dokQuer > TOL) fehler.push(`das Dokument rollt quer (${m.dokQuer} px)`);
+  if (m.bildHoehe < 50) fehler.push(`kein Bild bei der Reihenwahl (${m.bildHoehe} px)`);
+  if (m.bildZuerst !== m.schmal)
+    fehler.push(m.schmal ? 'schmales Fenster: die Reihenwahl steht ueber dem Bild statt darunter'
+                         : 'breites Fenster: das Bild steht ueber der Reihenwahl statt darunter');
+  if (m.leiste[0] < rand(f).oben - TOL || m.leiste[1] > m.innen - rand(f).unten + TOL)
+    fehler.push(`Schlussleiste ${m.leiste[0]}..${m.leiste[1]} px nicht ganz im Fenster`);
+  if (FOTOS && !stil) await seite.screenshot({ path: `${FOTOS}/klimareihen_${f.breite}x${f.hoehe}.png` });
+  await seite.close();
+  return { fehler, n: fehler.length, m };
 }
 
 /**
@@ -1129,6 +1191,19 @@ try {
     }
   }
 
+  // ----------------------------------------- KD-8 Teil A: Reihenwahl im Reiter „Weitere Reihen"
+  if (!NUR || NUR === 'klimareihen') {
+    for (const f of KLIMA_FENSTER) {
+      const name = `klimareihen ${f.breite}x${f.hoehe}${f.ipad ? ' iPad' : ''}`;
+      console.log(`- ${name}`);
+      const r = await klimareihen(browser, f);
+      for (const t of r.fehler) melde(name, t);
+      console.log(`    ${r.m.chips} Chips (${r.m.gesperrt} gesperrt), ${r.m.bildZuerst ? 'Bild zuerst' : 'Wahl zuerst'}, `
+        + `Wahl ${r.m.wahlHoehe} px hoch, ragt ${r.m.ragt} px; `
+        + `Bild ${r.m.bildHoehe} px; Leiste ${JSON.stringify(r.m.leiste)}`);
+    }
+  }
+
   // ----------------------------------------- Nacharbeit KBP-3b: Tagesarten der Kalenderwoche als Hintergrund
   if (!NUR || NUR === 'kaeltegrafik') {
     for (const f of FENSTER.slice(0, 2)) {
@@ -1278,6 +1353,20 @@ try {
       for (const f of KLIMA_FENSTER) {
         const g = await klimaimport(browser, f, '.epos-ueberlagerung-inhalt > .epos-einlesen > .epos-leiste { position: static !important; margin-bottom: 0 !important; }');
         console.log(`    Gegenprobe klimaimport ohne Haftregel ${f.breite}x${f.hoehe}: ${g.n} Verstoesse`);
+        if (g.n === 0) gegenGruen++;
+      }
+    }
+    if (MIT_GEGENPROBE && (!NUR || NUR === 'klimareihen')) {
+      // KD-8 Teil A: Ohne Umbruch der Gruppen ragen die Chips im schmalen Fenster (520 px) aus der Reihenwahl.
+      for (const f of KLIMA_FENSTER.filter(f => f.breite <= 600)) {
+        const g = await klimareihen(browser, f, '.epos-reihenwahl-gruppe { flex-wrap: nowrap !important; }');
+        console.log(`    Gegenprobe klimareihen ohne Umbruch ${f.breite}x${f.hoehe}: ${g.n} Verstoesse`);
+        if (g.n === 0) gegenGruen++;
+      }
+      // Anwenderentscheid 16.10.2026: Ohne die Reihenfolgeregel steht im schmalen Fenster die Wahl ueber dem Bild.
+      for (const f of KLIMA_FENSTER.filter(f => f.breite <= 600)) {
+        const g = await klimareihen(browser, f, '.epos-reihenbild > .epos-reihenwahl { order: 0 !important; }');
+        console.log(`    Gegenprobe klimareihen ohne Reihenfolgeregel ${f.breite}x${f.hoehe}: ${g.n} Verstoesse`);
         if (g.n === 0) gegenGruen++;
       }
     }

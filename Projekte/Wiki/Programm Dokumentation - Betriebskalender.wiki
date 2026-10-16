@@ -10,6 +10,8 @@ Die Kalender pflegen Sie über das Menü '''Administration''' › ''Wärme- und 
 
 Oben steht die Auswahl ''Kalender'' mit den Knöpfen ''Neu'', ''Löschen'' und – im Projekt – ''Aus Gebäude übernehmen…'', darunter die Felder des gewählten Kalenders:
 
+[[Datei:Bildschirmfoto_Betriebskalender.png|mini|zentriert|800px|Dialog Betriebskalender – Bildschirmfoto mit Beispieldaten.]]
+
 {| class="wikitable"
 ! Feld !! Bedeutung
 |-

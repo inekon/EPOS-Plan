@@ -21,6 +21,11 @@ namespace EPOS.Kern.Tests
         /// <summary>Das Referenzprojekt mit berechneter Vorheizzeit (<see cref="VorheizReferenzprojektWacheTests"/>).</summary>
         private const int REFERENZPROJEKT_VORHEIZEN = 1065;
 
+        /// <summary>Das Referenzprojekt der Schnellaufheizung (SA4), Kopie von 1054 mit „Vorheizzeit berechnet“.</summary>
+        private const int REFERENZPROJEKT_SCHNELLAUFHEIZUNG = 1073;
+
+        private static readonly string OHNE_REFERENZPROJEKTE = " AND ID_Projekt NOT IN (" + REFERENZPROJEKT_VORHEIZEN + ", " + REFERENZPROJEKT_SCHNELLAUFHEIZUNG + ")";
+
         public void Dispose() => _db.Dispose();
 
         // =================================================================
@@ -133,11 +138,12 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             Assert.True(VorheizenSchema.Vollstaendig());
-            // Allein das Referenzprojekt 1065 (Vorheizen, VorheizReferenzprojektWacheTests) trägt ein Verfahren.
-            Assert.Equal(1, VorheizenSchema.ZeilenMitVerfahren());
+            // Allein die Referenzprojekte 1065 (Vorheizen, VorheizReferenzprojektWacheTests) und 1073 (Schnellaufheizung,
+            // SchnellaufheizungReferenzprojektWacheTests) tragen ein Verfahren.
+            Assert.Equal(2, VorheizenSchema.ZeilenMitVerfahren());
             foreach (var s in VorheizenSchema.SPALTEN)
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + s.Tabelle + "\" WHERE \"" + s.Spalte + "\" IS NOT NULL" +
-                                      (s.Tabelle == VorheizenSchema.TAB_EINSTELLUNGEN ? " AND ID_Projekt <> " + REFERENZPROJEKT_VORHEIZEN : "")));
+                                      (s.Tabelle == VorheizenSchema.TAB_EINSTELLUNGEN ? OHNE_REFERENZPROJEKTE : "")));
             Assert.Equal(SchnellaufheizungSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, DataRepository.SpaltenVonTabelle(VorheizenSchema.TAB_ERGEBNIS_GEBAEUDE).Count);
             Assert.Equal(SchnellaufheizungSchema.SPALTENZAHL_ERGEBNIS_ZONE, DataRepository.SpaltenVonTabelle(VorheizenSchema.TAB_ERGEBNIS_ZONE).Count);
             Assert.Equal((long)SchemaStand.Zielversion, Zahl("SELECT SchemaVersion FROM Tab_Applikation"));
@@ -187,13 +193,12 @@ namespace EPOS.Kern.Tests
             var berechnet = new Vorheizvorgabe(Aufheizverfahren.Berechnet);
             Assert.True(KonfigurationCtrl.AufheizvorgabeSetzen(projekt, bestand with { Vorheizen = berechnet }));
             Assert.Equal(berechnet, KonfigurationCtrl.AufheizvorgabeLesen(projekt).Vorheizen);
-            Assert.Equal(2, VorheizenSchema.ZeilenMitVerfahren());   // 1051 und das Referenzprojekt 1065
+            Assert.Equal(3, VorheizenSchema.ZeilenMitVerfahren());   // 1051 und die Referenzprojekte 1065 und 1073
 
             // Zurück auf die Sollwertrampe: jede Spalte wieder NULL, der Bestand ist wieder gleich.
             Assert.True(KonfigurationCtrl.AufheizvorgabeSetzen(projekt, bestand));
             foreach (var s in VorheizenSchema.SPALTEN_EINSTELLUNG)
-                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE \"" + s.Spalte + "\" IS NOT NULL AND ID_Projekt <> " +
-                                      REFERENZPROJEKT_VORHEIZEN));
+                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE \"" + s.Spalte + "\" IS NOT NULL" + OHNE_REFERENZPROJEKTE));
             Assert.Equal(bestand, KonfigurationCtrl.AufheizvorgabeLesen(projekt));
         }
 

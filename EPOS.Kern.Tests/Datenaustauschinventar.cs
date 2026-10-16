@@ -20,6 +20,9 @@ namespace EPOS.Kern.Tests
         /// <summary>Nachzug N2 zu DA-4/DA-7: Höchsttemperatur (B10) über dieselben Restdaten, beide Richtungen — die der Zone (N2) und
         /// die des Gebäudes (Nachzug N4).</summary>
         N2 = 5,
+        /// <summary>Absorptions- und Emissionsgrad je Bauteil (F8, F9): gbXML <c>Absorptance</c> der Konstruktion, IFC
+        /// <c>EPOS_Bauteil</c> — beide Richtungen.</summary>
+        DA8 = 6,
         /// <summary>Kein Element und noch keine Welle im Auftrag (Rückfall nach Konzept 3.3 offen).</summary>
         Offen = 8,
         /// <summary>EPOS führt kein Feld (Konstante, Klimadatensatz oder nicht gerechnet) — es gibt nichts zu übertragen.</summary>
@@ -75,6 +78,7 @@ namespace EPOS.Kern.Tests
         private const Traegerwelle D3 = Traegerwelle.DA3;
         private const Traegerwelle D4 = Traegerwelle.DA4;
         private const Traegerwelle N2 = Traegerwelle.N2;
+        private const Traegerwelle D8 = Traegerwelle.DA8;
         private const Traegerwelle OF = Traegerwelle.Offen;
         private const Traegerwelle KF = Traegerwelle.KeinFeld;
 
@@ -190,8 +194,8 @@ namespace EPOS.Kern.Tests
             new Inventarzeile("F6", BE, "nur gelesen: SolarHeatGainCoeff bei 0°; die übrigen Winkel werden verworfen, EPOS führt kein Feld",
                               KF, KEIN_FELD + " (nicht abbildbar)"),
             new Inventarzeile("F7", KF, KEIN_FELD + " (nicht gerechnet)", KF, KEIN_FELD + " (nicht gerechnet)"),
-            new Inventarzeile("F8", D2, null, D3, null, G("Aussenbauteile_Strahlung")),
-            new Inventarzeile("F9", D2, null, D3, null),
+            new Inventarzeile("F8", D8, null, D8, null, B("Absorptionsgrad_Solar"), A("Absorptionsgrad_Solar"), G("Aussenbauteile_Strahlung")),
+            new Inventarzeile("F9", D8, null, D8, null, B("Emissionsgrad"), A("Emissionsgrad")),
             new Inventarzeile("F10", KF, KEIN_FELD + " (Konstante im Klimaweg, nicht Gegenstand eines Bauteils)", KF,
                               KEIN_FELD + " (Konstante im Klimaweg, nicht Gegenstand eines Bauteils)"),
 

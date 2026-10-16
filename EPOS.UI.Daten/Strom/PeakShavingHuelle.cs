@@ -81,8 +81,8 @@ namespace WindowsFormsApplication1
                 ["Rechnen"] = new Func<double[], PeakShavingEingaben,
                                        Task<PeakShavingErgebnis>>(Rechnen),
                 ["MinimaleSchwelle"] = new Func<double[], PeakShavingEingaben, Task<double>>(Minimal),
-                ["Modell"] = new Func<PeakShavingErgebnis, bool, Zeichnung.Zeichenmodell>(Modell),
-                ["CsvSpeichern"] = new Func<PeakShavingErgebnis, Task<bool>>(Csv),
+                ["Modell"] = new Func<PeakShavingErgebnis, PeakShavingBildwahl, Zeichnung.Zeichenmodell>(Modell),
+                ["CsvSpeichern"] = new Func<PeakShavingErgebnis, PeakShavingBildwahl, Task<bool>>(Csv),
                 // „CSV…“ am Vorschaubild des Optionendialogs - dieselbe Naht wie an jeder Zeitreihe.
                 ["BildCsvSpeichern"] = Diagrammexportnaht.Fuer(_projektId),
 
@@ -173,9 +173,14 @@ namespace WindowsFormsApplication1
         /// geschah. Das Modell ist die BESCHREIBUNG des Bildes: Reihen, Achsen, Farbrollen
         /// — kein Pixel. Es entsteht in Bruchteilen dieser Zeit, und ein Fadenwechsel
         /// dafür kostete mehr, als er spart.</para>
+        ///
+        /// <para>Welle RZ: Die Reihenwahl schaltet Lade- und Entladeleistung und die Schwelle zu, ab Werk aus.</para>
         /// </summary>
-        private static Zeichnung.Zeichenmodell Modell(PeakShavingErgebnis r, bool mitSoC)
-            => PeakShavingBild.Modell(r, mitSoC);
+        internal static Zeichnung.Zeichenmodell Modell(PeakShavingErgebnis r, PeakShavingBildwahl wahl)
+        {
+            wahl ??= new PeakShavingBildwahl(false);
+            return PeakShavingBild.Modell(r, wahl.Ladezustand, wahl.Leistung, wahl.Schwelle);
+        }
 
         // =====================================================================
         // CSV
@@ -186,10 +191,23 @@ namespace WindowsFormsApplication1
         /// <see cref="CsvExportClass.Export"/> — der Speichern-Dialog kommt aus
         /// <c>Dienste.Datei</c>.
         /// </summary>
-        private static Task<bool> Csv(PeakShavingErgebnis r)
+        private static Task<bool> Csv(PeakShavingErgebnis r, PeakShavingBildwahl wahl)
         {
             if (r == null) return Task.FromResult(false);
 
+            List<CsvSpalte> spalten = CsvSpalten(r, wahl);
+
+            CsvExportClass.Export(MyResource.Resource.PEAK_DATEI, null, spalten,
+                                  r.Anzahl > RasterAdapter.StundenJahr);
+            return Task.FromResult(true);
+        }
+
+        /// <summary>
+        /// Die Spalten der CSV: die fünf des Vorläufers, dahinter — nur gewählt (Welle RZ) — Lade- und
+        /// Entladeleistung und die Schwelle, dieselben Reihen wie im Bild. Ohne Wahl genau die fünf.
+        /// </summary>
+        internal static List<CsvSpalte> CsvSpalten(PeakShavingErgebnis r, PeakShavingBildwahl wahl)
+        {
             List<CsvSpalte> spalten = new List<CsvSpalte>
             {
                 new CsvSpalte(MyResource.Resource.PEAK_CSV_PALT, r.PAltKw),
@@ -198,10 +216,15 @@ namespace WindowsFormsApplication1
                 new CsvSpalte(MyResource.Resource.PEAK_CSV_LADUNG, r.LadungAcKwh),
                 new CsvSpalte(MyResource.Resource.PEAK_CSV_ENTLADUNG, r.EntladungAcKwh)
             };
-
-            CsvExportClass.Export(MyResource.Resource.PEAK_DATEI, null, spalten,
-                                  r.Anzahl > RasterAdapter.StundenJahr);
-            return Task.FromResult(true);
+            if (wahl != null && wahl.Leistung)
+            {
+                spalten.Add(new CsvSpalte(MyResource.Resource.PEAK_CSV_LADELEISTUNG, PeakShavingBild.LadeleistungKw(r)));
+                spalten.Add(new CsvSpalte(MyResource.Resource.PEAK_CSV_ENTLADELEISTUNG,
+                                          PeakShavingBild.EntladeleistungKw(r)));
+            }
+            if (wahl != null && wahl.Schwelle)
+                spalten.Add(new CsvSpalte(MyResource.Resource.PEAK_CSV_SCHWELLE, PeakShavingBild.SchwelleKw(r)));
+            return spalten;
         }
     }
 }

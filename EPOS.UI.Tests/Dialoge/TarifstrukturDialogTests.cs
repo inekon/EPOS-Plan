@@ -134,7 +134,7 @@ public class TarifstrukturDialogTests : EposBunitContext
         var titel = cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent).ToList();
 
         Assert.Contains("Winterspanne (Sommer- und Wintermaximum des Leistungspreismodells „Staffel“)", titel);
-        Assert.Contains("Rollenmodell (Etappe E5) — Differenzmethode „vermiedene Kosten“", titel);
+        Assert.Contains("Rollenmodell — Differenzmethode „vermiedene Kosten“", titel);
         Assert.Equal(2, titel.Count);
     }
 

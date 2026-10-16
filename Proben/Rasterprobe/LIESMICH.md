@@ -1095,6 +1095,7 @@ Datenbank. bunit misst weder Lage noch Rollstand; die Voraussetzungen der Regel 
 | `…?fall=katalog` | `BedarfAdminDialog` (Katalogdialog, `.epos-katalog-dialog`) |
 | `…?fall=kaelteprofile` | `BedarfsProfileDialog` der Art Kälte mit dem Baustein `Betriebskalenderwahl`; „Betriebskalender…“ öffnet das Blatt mit dem `BetriebskalenderDialog` samt „Aus Gebäude übernehmen…“ (Ablage im Speicher); `&kalender=leer` ohne Kalender, `&gebaeude=0` ohne Gebäude; die Bearbeiten-Überlagerung einer Projektzeile zeigt die Eingabeart samt den Editoren Monatswerte und Wochenprofil (KBP-3a) und die Kältegrafik (KBP-3b: Kennzahlen, Jahresgang, Monate, Woche mit Wahl der Kalenderwoche und Tagesarten als Hintergrund, Dauerlinie) aus einer synthetischen Reihe, die dem Arbeitsstand folgt; in der Fallliste der Katalogauswahl und Gegenstand des Falls `kaeltegrafik` |
 | `…?fall=klimaimport` | `KlimadatenDialog` (Katalogdialog); „Import…“ öffnet die Überlagerung „Klimadaten einlesen“ (`.epos-einlesen`, Leiste ohne Statusspanne) — Gegenstand des Falls `klimaimport` |
+| `…?fall=klimareihen` | derselbe `KlimadatenDialog` mit einer Region samt gespeicherten Rechenspalten (Bedeckungsgrad leer) — Reiter „Weitere Reihen“ mit der Reihenwahl, Gegenstand des Falls `klimareihen` |
 | `…&lizenz=1` | das Lizenzbanner der `AppWurzel` (Baustein `Lizenzbanner`, Lesemodus-Satz) als erstes Kind von `#app` vor dem Dialog |
 | `…&marke=0` | ohne Fenstermarke — der Dialog steht wie ohne die Regel |
 | `…?meldung=liste` | statt des Falls ein langer Dialog aus Hausbausteinen, dessen `Warnbanner` 30 Hinweise aufgeklappt zeigt (Fall „Meldungsliste" unten) |
@@ -1146,6 +1147,20 @@ Ende bis 483 px; Gegenprobe 4 Verstöße je Fenster. Zugleich misst der Fall `du
 der Wurzel (`gap`) zwischen Schlussleiste und Protokoll: Die Gegenprobe „Fuß mit negativem Rand“ blieb vorher bei
 1 088 und 520 px grün (der Rand rückt das Protokoll nur 16 px in die 20-px-Lücke, es überdeckt nichts), jetzt
 1, 1 und 3 Verstöße.
+
+**Fall `klimareihen`** (`--nur klimareihen`, in denselben vier Fenstern wie `klimaimport`; KD-8 Teil A):
+`?fall=klimareihen`, im schmalen Rahmen „Stammblatt ›“, dann der Reiter „Weitere Reihen“. Gemessen: Kein Chip und
+kein Gruppenname der Reihenwahl ragt aus ihrem Kasten, kein Vorfahr und nicht das Dokument rollt quer, das Bild ist
+mindestens 50 px hoch, die Schlussleiste des Dialogs steht ganz im Fenster, und die Reihenfolge stimmt: im Fenster
+bis 600 px Breite steht das Bild über der Wahl (Medienregel `.epos-reihenbild`, `order`), breiter die Wahl über dem
+Bild. Foto `klimareihen_*`. Gegenproben im Fenster 520 × 624: die Gruppen ohne Umbruch (`flex-wrap: nowrap`) und die
+Wahl ohne Reihenfolgeregel (`order: 0`) müssen rot sein. **Ergebnis vom 16.10.2026:** 0 Verstöße; 10 Chips (1 weich
+gesperrt: Bedeckungsgrad „Quelle führt die Größe nicht“; die Rohwerte haben bis zur Rohwerttabelle keinen Chip), Wahl
+476/449/472/331 px hoch, ragt 0 px, Bild 113/150/126/240 px, im Fenster 520 × 624 Bild zuerst, Leiste 564–608 px (iPad
+754–798, 787 × 520 460–504); Gegenproben 2 bzw. 1 Verstoß. Der Fall `klimaimport` misst seitdem die Vorschaukarte mit
+der Reihenwahl unter dem Bild (der Wirt liefert alle Monatsreihen von Teil A): Rollhöhe 2 008/560 px (520 px breit
+2 530/560, iPad 2 008/749, 787 × 520 2 327/466), Leiste oben wie am Ende haftend, 0 Verstöße, Gegenprobe 4 Verstöße je
+Fenster.
 
 **Fall `wp-steckbrief`** (`--nur wp-steckbrief`, bei **1 280 × 800** und **1 194 × 834** mit sicheren Abständen):
 die Satz-Überlagerung der Wärmepumpe („Bearbeiten…" der Projektkopie) mit dem Gerätesteckbrief links unter

@@ -1,5 +1,7 @@
 Der Dialog '''Lizenz und rechtliche Hinweise''' hält den Vertragstext, die rechtlichen Hinweise und die Liste der verwendeten Fremdkomponenten bereit. Beim ersten Programmstart wird die Vereinbarung zur Bestätigung vorgelegt, später ist sie über {{Menü|Hilfe|Lizenz}} jederzeit wieder abrufbar. Die Aktivierung dieses Arbeitsplatzes erledigt derselbe Dialog im Reiter ''Status & Aktivierung''; einen zweiten Einstieg gibt es nicht.
 
+[[Datei:Bildschirmfoto_Lizenz.png|mini|zentriert|800px|Lizenz und rechtliche Hinweise, Reiter Status & Aktivierung – Bildschirmfoto mit Beispieldaten.]]
+
 == Eingaben ==
 
 * '''Status & Aktivierung, Lizenzvereinbarung, Rechtliche Hinweise und Komponenten''' – die vier Reiter des Dialogs. In den drei Textreitern springt ''Im Text suchen'' zur Fundstelle, ''A+'' und ''A-'' ändern die Schriftgröße, ''Datei wählen…'' öffnet eine eigene Vertragsfassung.

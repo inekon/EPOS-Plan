@@ -37,6 +37,14 @@ const GROESSE_MAX = 300 * 1024;
 
 // Name der Gabe -> Maske im Dateinamen (ASCII).
 const BILDER = [
+  // Die Kostenbasis (Komponente WikibildKosten im Wirt).
+  ['energietraeger', 'Energietraeger'],
+  ['brennstoffe', 'Brennstoffe'],
+  ['kostenverwaltung', 'Kostenverwaltung'],
+  ['wirtschaftlichkeit', 'Wirtschaftlichkeit'],
+  ['tarifstruktur', 'Tarifstruktur'],
+  ['emissionen', 'Emissionen'],
+  ['gesetzesparameter', 'Gesetzesparameter'],
   ['heizkessel', 'Heizkessel'],
   ['bhkw', 'BHKW'],
   ['waermepumpe', 'Waermepumpe'],
@@ -54,12 +62,29 @@ const BILDER = [
   ['konditionierung', 'Konditionierung', { seite: '/konditionierungsprobe?fall=vorlagen', reiter: 'Konditionierung', hoehe: 2600 }],
   ['zonen', 'Zonen', { seite: '/konditionierungsprobe?fall=projekt', reiter: 'Zonen', hoehe: 1000 }],
   ['zonendialog', 'Zonendialog', { seite: '/konditionierungsprobe?fall=projekt', reiter: 'Zonen', klick: 'Öffnen…', hoehe: 3000 }],
+  // Die zweite Reihe (Beispieldaten in Wirt/Seiten/Wikibild.Weitere.cs). Hohe Dialoge in einem hohen Fenster;
+  // der Betriebskalender steht als eigener Dialog, wie ihn der Knopf "Betriebskalender…" oeffnet.
+  ['klimadaten', 'Klimadaten'],
+  ['kaeltebedarf', 'Kaeltebedarf'],
+  ['betriebskalender', 'Betriebskalender', { seite: '/wikibild?bild=betriebskalender', wahl: '.epos-wikibild .epos-dialog', hoehe: 1300 }],
+  ['waermebedarf', 'Waermebedarf'],
+  ['strombedarf', 'Strombedarf', { seite: '/wikibild?bild=strombedarf', wahl: '.epos-wikibild .epos-dialog', zeile: ['.epos-projektzeile', 'Messung Bürogebäude'], breite: 1400, hoehe: 800 }],
+  ['zapfprofil', 'Zapfprofil', { seite: '/wikibild?bild=zapfprofil', wahl: '.epos-wikibild .epos-dialog', hoehe: 1500 }],
+  ['baustoffe', 'Baustoffe'],
+  // Die uebrigen Bilder (Beispieldaten in Wirt/Seiten/Wikibild.Uebrige.cs).
+  ['einstellungen', 'Einstellungen', { seite: '/wikibild?bild=einstellungen', wahl: '.epos-wikibild .epos-dialog', reiter: 'Datenbank', hoehe: 900 }],
+  ['lizenz', 'Lizenz', { seite: '/wikibild?bild=lizenz', wahl: '.epos-wikibild .epos-lizenz', hoehe: 1200 }],
+  ['projektverwaltung', 'Projektverwaltung', { seite: '/wikibild?bild=projektverwaltung', wahl: '.epos-wikibild .epos-dialog', hoehe: 800 }],
+  ['varianten', 'Varianten', { seite: '/wikibild?bild=varianten', wahl: '.epos-wikibild .epos-dialog', hoehe: 800 }],
+  ['projekttransfer', 'Projekttransfer', { seite: '/wikibild?bild=projekttransfer', wahl: '.epos-wikibild .epos-dialog', hoehe: 900 }],
+  ['erdreich', 'Erdreich', { seite: '/wikibild?bild=erdreich', wahl: '.epos-wikibild .epos-dialog', hoehe: 1600 }],
+  ['simulation', 'Simulation', { seite: '/wikibild?bild=simulation', wahl: '.epos-wikibild .epos-dialog', hoehe: 1600 }],
 ];
 
 // Bei diesen Bildern steht der Bereich "Gewaehlter Satz" aufgeklappt - die Wiki-Seite
 // beschreibt seine Felder.
-const BREIT = new Set(['brauchwasser', 'prozesswaerme', 'waermepumpe', 'stromspeicher']);
-const SATZ_OFFEN = new Set(['heizkessel', 'bhkw', 'solarkollektoren', 'brauchwasser', 'prozesswaerme']);
+const BREIT = new Set(['brauchwasser', 'prozesswaerme', 'waermepumpe', 'stromspeicher', 'kaeltebedarf', 'waermebedarf', 'strombedarf', 'brennstoffe']);
+const SATZ_OFFEN = new Set(['heizkessel', 'bhkw', 'solarkollektoren', 'brauchwasser', 'prozesswaerme', 'kaeltebedarf', 'waermebedarf']);
 
 if (!ZIEL) {
   console.error('Aufruf: node wikibilder.mjs --ziel <ordner> [--url <adresse>] [--nur <name>]');
@@ -70,7 +95,13 @@ await mkdir(ZIEL, { recursive: true });
 let browser;
 let fehler = 0;
 try {
-  browser = await chromium.launch();
+  // Die Oberflaechensprache des Browsers: locale allein formatiert im headless Chromium die
+  // Datumsfelder (<input type=date>) nicht deutsch ("01/01/2026"), --lang allein auch nicht;
+  // erst die Sprachumgebung des Browserprozesses (LANGUAGE/LANG/LC_ALL) ergibt "01.01.2026".
+  browser = await chromium.launch({
+    args: ['--lang=de-DE'],
+    env: { ...process.env, LANGUAGE: 'de', LANG: 'de_DE.UTF-8', LC_ALL: 'de_DE.UTF-8' },
+  });
   for (const [name, maske, fremd] of BILDER) {
     if (NUR && name !== NUR) continue;
     // Erst im ueblichen Fenster; ist das Bild zu gross, im kleineren noch einmal.
@@ -78,21 +109,31 @@ try {
     // Brauchwasser, Prozesswaerme, Waermepumpe, Stromspeicher: die Kopfzeile der Katalogliste (Titel, Suchfeld, Zaehler,
     // Spalten..., Uebernehmen) steht erst ab rund 1380 px in EINER Zeile (darunter bricht sie um); die Seite
     // /wikibild laesst den Dialog dafuer breiter werden (Bildbreite bleibt <= 1400 px).
-    const fenster = fremd ? [[1280, fremd.hoehe], [1100, fremd.hoehe]]
+    const fenster = fremd ? [[fremd.breite ?? 1280, fremd.hoehe], [1100, fremd.hoehe]]
       : BREIT.has(name) ? [[1400, 800]] : [[1280, 800], [1100, 720]];
     for (const [w, h] of fenster) {
       const kontext = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, locale: 'de-DE' });
       const seite = await kontext.newPage();
       const adresse = fremd ? `${WURZEL}${fremd.seite}&kultur=de-DE` : `${WURZEL}/wikibild?bild=${name}&kultur=de-DE`;
       await seite.goto(adresse, { waitUntil: 'networkidle' });
-      const dialog = seite.locator(fremd ? '.epos-ueberlagerung' : '.epos-wikibild .epos-dialog').first();
+      let dialog = seite.locator(fremd ? (fremd.wahl ?? '.epos-ueberlagerung') : '.epos-wikibild .epos-dialog').first();
       await dialog.waitFor({ state: 'visible', timeout: 15000 });
       if (fremd) {
         await seite.waitForTimeout(800);
-        await dialog.locator('[role=tab]', { hasText: new RegExp('^' + fremd.reiter + '$') }).first().click();
+        if (fremd.reiter) await dialog.locator('[role=tab]', { hasText: new RegExp('^' + fremd.reiter + '$') }).first().click();
+        if (fremd.zeile) {
+          // Eine Zeile der Liste waehlen (Text der Zeile), damit Satz und Bild dazu stehen.
+          await seite.waitForTimeout(500);
+          await dialog.locator(fremd.zeile[0], { hasText: fremd.zeile[1] }).first().click();
+        }
         if (fremd.klick) {
           await seite.waitForTimeout(500);
           await dialog.locator('button', { hasText: fremd.klick }).first().click();
+        }
+        if (fremd.bild) {
+          // Aufgenommen wird, was der Klick geoeffnet hat (z. B. das Blatt ueber dem Dialog).
+          dialog = seite.locator(fremd.bild).last();
+          await dialog.waitFor({ state: 'visible', timeout: 15000 });
         }
       }
       if (SATZ_OFFEN.has(name)) {

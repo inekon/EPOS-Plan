@@ -414,6 +414,7 @@ namespace EPOS.Kern.Tests
             Assert.True(BauteilaufbauCtrl.Kennwerte(alt).Gerechnet, BauteilaufbauCtrl.Kennwerte(alt).Grund);
             double uAlt = BauteilaufbauCtrl.Kennwerte(alt).U_WM2K!.Value, uNeu = BauteilaufbauCtrl.Kennwerte(Modell(p)).U_WM2K!.Value;
             Assert.Equal((1, 1), (v.WiederimportGeteilt, v.WiederimportUGeaendert));
+            Assert.Equal((1, 0, 0), (v.WiederimportVerglichen, v.WiederimportGegenQuelle, v.WiederimportOhneVergleichswert));
             Assert.Equal(Math.Abs(uNeu - uAlt) / uAlt * 100.0, v.WiederimportUMaxProzent!.Value, 9);
             Assert.Equal(6.73, v.WiederimportUMaxProzent!.Value, 2);
             EPOS.UI.Dialoge.Bedarf.BauteilkatalogVorschauDaten d = BauteilkatalogImportHuelle.AlsDaten(v);
@@ -425,6 +426,109 @@ namespace EPOS.Kern.Tests
             BauteilkatalogImport.WiederimportVergleichen(q, _ => Modell(q));
             Assert.Equal((0, 0, (double?)null), (q.Vorschau.WiederimportGeteilt, q.Vorschau.WiederimportUGeaendert, q.Vorschau.WiederimportUMaxProzent));
             Assert.Null(BauteilkatalogImportHuelle.AlsDaten(q.Vorschau).Wiederimport);
+        }
+
+        // ---- Wiederimport-Vergleich (BK-8c) ----------------------------------------------------
+
+        /// <summary>Ein Plan der Probe mit versetzten Grenzen gegen einen Importsatz 4711 des Katalogs.</summary>
+        private BauteilkatalogImport.Plan PlanGegenImportsatz()
+        {
+            var stand = new BauteilkatalogStand();
+            stand.Aufbauten.Add(new BauteilkatalogBestand
+            {
+                Id = 4711, Bezeichner = "Probewand", Herkunft = BauteilkatalogSchema.HERKUNFT_IMPORT, Quellkennung = G(101)
+            });
+            BauteilkatalogImport.Plan p = BauteilkatalogImport.Planen(BauteilkatalogQuelle.Lesen(Ordner(80, 20, VERSETZT)), stand);
+            Assert.Equal(BauteilkatalogImport.AKTUALISIEREN, p.Aufbauten.Single().Aktion);
+            return p;
+        }
+
+        /// <summary>
+        /// Handrechnung nach 6.7 für <see cref="VERSETZT"/> (Außenwand, R_si 0,13, R_se 0,04): R'_T aus den Abschnitten,
+        /// R''_T aus den Ebenen 0–50, 50–100, 100–200 mm mit λ'' = Σ f·λ; U = 2/(R'_T + R''_T).
+        /// </summary>
+        private static double UVersetztVonHand()
+        {
+            double rT1 = 0.17 + 0.1 / 0.04 + 0.1 / 0.035, rT2 = 0.17 + 0.05 / 0.5 + 0.15 / 0.13;
+            double oben = 1.0 / (0.8 / rT1 + 0.2 / rT2);
+            double unten = 0.17 + 0.05 / (0.8 * 0.04 + 0.2 * 0.5) + 0.05 / (0.8 * 0.04 + 0.2 * 0.13) + 0.1 / (0.8 * 0.035 + 0.2 * 0.13);
+            return 2.0 / (oben + unten);
+        }
+
+        [Fact]
+        public void Ein_Katalogsatz_ohne_Abschnitte_wird_beim_Wiederimport_mit_dem_U_des_Kerns_verglichen()
+        {
+            BauteilkatalogImport.Plan p = PlanGegenImportsatz();
+            // Alter Stand: der Satz ohne Abschnitte, nur die Schichten von Abschnitt 1 (100 mm λ 0,04 + 100 mm λ 0,035).
+            BauteilaufbauModel alt = new BauteilaufbauModel
+            {
+                Bezeichner = "Probewand", Bauteilart = (string)p.Aufbauten.Single().Werte["Bauteilart"],
+                Schichten = new List<BauteilschichtModel>
+                {
+                    new BauteilschichtModel { Reihenfolge = 1, Dicke = 0.1, Lambda = 0.04, Rho = 500, Cp = 1000 },
+                    new BauteilschichtModel { Reihenfolge = 2, Dicke = 0.1, Lambda = 0.035, Rho = 500, Cp = 1000 }
+                }
+            };
+            BauteilkatalogImport.WiederimportVergleichen(p, id => id == 4711 ? alt : null);
+            BauteilkatalogVorschau v = p.Vorschau;
+
+            double uAlt = 1.0 / (0.17 + 0.1 / 0.04 + 0.1 / 0.035), uNeu = UVersetztVonHand();
+            Assert.Equal(0.295466, uNeu, 6);
+            Assert.Equal((1, 1, 0, 1, 0), (v.WiederimportGeteilt, v.WiederimportVerglichen, v.WiederimportGegenQuelle,
+                                           v.WiederimportUGeaendert, v.WiederimportOhneVergleichswert));
+            Assert.Equal(Math.Abs(uNeu - uAlt) / uAlt * 100.0, v.WiederimportUMaxProzent!.Value, 6);
+            Assert.Equal(63.31, v.WiederimportUMaxProzent!.Value, 2);
+        }
+
+        [Fact]
+        public void Ein_Katalogsatz_ohne_berechenbares_U_zaehlt_ohne_Vergleichswert_oder_gegen_das_U_der_Quelle()
+        {
+            using var _ = new Kulturvorrichtung("de-DE");
+            // Alter Stand eines frühen Imports: Abschnitte mit verschiedener Schichtzahl, die die Abschnittsprüfung ablehnt.
+            BauteilaufbauModel Alt(BauteilkatalogImport.Plan p, double? uQuelle)
+            {
+                var m = new BauteilaufbauModel
+                {
+                    Bezeichner = "Probewand", Bauteilart = (string)p.Aufbauten.Single().Werte["Bauteilart"],
+                    Schichten = new List<BauteilschichtModel>
+                    {
+                        new BauteilschichtModel { Reihenfolge = 1, Dicke = 0.1, Lambda = 0.04, Rho = 500, Cp = 1000, Abschnitt = 1 },
+                        new BauteilschichtModel { Reihenfolge = 1, Dicke = 0.2, Lambda = 0.5, Rho = 500, Cp = 1000, Abschnitt = 2 },
+                        new BauteilschichtModel { Reihenfolge = 2, Dicke = 0.1, Lambda = 0.035, Rho = 500, Cp = 1000, Abschnitt = 1 }
+                    },
+                    Abschnitte = new List<BauteilabschnittModel>
+                    {
+                        new BauteilabschnittModel { Nummer = 1, Flaechenanteil = 0.8 }, new BauteilabschnittModel { Nummer = 2, Flaechenanteil = 0.2 }
+                    }
+                };
+                if (uQuelle.HasValue) m.Zusatz[BauteilkatalogSchema.SPALTE_U_QUELLE] = uQuelle.Value;
+                return m;
+            }
+
+            // Ohne U-Wert der Quelle: gezählt als „ohne Vergleichswert“, nicht still ausgelassen.
+            BauteilkatalogImport.Plan p = PlanGegenImportsatz();
+            BauteilaufbauModel ohne = Alt(p, null);
+            Assert.False(BauteilaufbauCtrl.Kennwerte(ohne, false).U_WM2K.HasValue);
+            BauteilkatalogImport.WiederimportVergleichen(p, _ => ohne);
+            BauteilkatalogVorschau v = p.Vorschau;
+            Assert.Equal((1, 0, 0, 0, 1), (v.WiederimportGeteilt, v.WiederimportVerglichen, v.WiederimportGegenQuelle,
+                                           v.WiederimportUGeaendert, v.WiederimportOhneVergleichswert));
+            Assert.Null(v.WiederimportUMaxProzent);
+            string zeile = BauteilkatalogImportHuelle.AlsDaten(v).Wiederimport;
+            Assert.Contains("verglichen 0", zeile);
+            Assert.Contains("größte Änderung – %", zeile);
+            Assert.Contains("ohne Vergleichswert 1", zeile);
+
+            // Mit gespeichertem U-Wert der Quelle 0,3: verglichen gegen ihn.
+            BauteilkatalogImport.Plan q = PlanGegenImportsatz();
+            BauteilaufbauModel mitQuelle = Alt(q, 0.3);
+            BauteilkatalogImport.WiederimportVergleichen(q, _ => mitQuelle);
+            BauteilkatalogVorschau w = q.Vorschau;
+            Assert.Equal((1, 1, 1, 1, 0), (w.WiederimportGeteilt, w.WiederimportVerglichen, w.WiederimportGegenQuelle,
+                                           w.WiederimportUGeaendert, w.WiederimportOhneVergleichswert));
+            Assert.Equal(Math.Abs(UVersetztVonHand() - 0.3) / 0.3 * 100.0, w.WiederimportUMaxProzent!.Value, 6);
+            Assert.Equal(1.51, w.WiederimportUMaxProzent!.Value, 2);
+            Assert.Contains("größte Änderung 1,5 %", BauteilkatalogImportHuelle.AlsDaten(w).Wiederimport);
         }
 
         [Fact]

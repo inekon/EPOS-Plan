@@ -955,6 +955,9 @@ namespace WindowsFormsApplication1
                     HoeheM = h,
                     AzimutGrad = Endlich(e.AzimutGrad),
                     NeigungGrad = e.NeigungWirksamGrad,
+                    // DA-8: Absorptions- und Emissionsgrad des Bauteils bzw. seines Aufbaus; leer = Vorgabe.
+                    AbsorptionsgradSolar = Endlich(e.AbsorptionsgradSolar),
+                    Emissionsgrad = Endlich(e.Emissionsgrad),
                 };
             }
 

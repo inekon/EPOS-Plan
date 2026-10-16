@@ -30,8 +30,8 @@ namespace EPOS.Kern.Tests
             {
                 Pruefen(z.Nr + " gbXML", z.Gbxml, z.WelleGbxml, z.GrundGbxml, fehler);
                 Pruefen(z.Nr + " IFC", z.Ifc, z.WelleIfc, z.GrundIfc, fehler);
-                // Ein Datum mit Feld hat Felder; ohne Feld (KeinFeld in beiden Formaten oder Konstante F9) keine.
-                if (z.Felder.Length == 0 && !(z.WelleGbxml == Traegerwelle.KeinFeld || z.WelleIfc == Traegerwelle.KeinFeld || z.Nr == "F9"))
+                // Ein Datum mit Feld hat Felder; ohne Feld (KeinFeld in beiden Formaten) keine.
+                if (z.Felder.Length == 0 && !(z.WelleGbxml == Traegerwelle.KeinFeld || z.WelleIfc == Traegerwelle.KeinFeld))
                     fehler.Add(z.Nr + ": ohne Feld, aber nicht als „kein Feld“ eingestuft");
             }
             // Kein Feld zugleich in der Tafel und in einer Ausnahme, keines doppelt in den Ausnahmen.
@@ -43,11 +43,11 @@ namespace EPOS.Kern.Tests
             Assert.True(fehler.Count == 0, string.Join(" | ", fehler));
 
             // Die Zählung je Welle (Protokoll DA-7) — eine Änderung der Tafel zeigt sich hier.
-            Assert.Equal("Bestand 26, DA2 19, DA4 9, N2 1, Offen 11, KeinFeld 5", Zaehlung(z => z.WelleGbxml));
-            Assert.Equal("Bestand 31, DA3 17, DA4 9, N2 1, Offen 8, KeinFeld 5", Zaehlung(z => z.WelleIfc));
+            Assert.Equal("Bestand 26, DA2 17, DA4 9, N2 1, DA8 2, Offen 11, KeinFeld 5", Zaehlung(z => z.WelleGbxml));
+            Assert.Equal("Bestand 31, DA3 15, DA4 9, N2 1, DA8 2, Offen 8, KeinFeld 5", Zaehlung(z => z.WelleIfc));
             Assert.Equal("Standard 45, Eigen 10, NichtUebertragbar 16",
                          Zaehlung(z => Datenaustauschinventar.KlasseGbxml(z.Gbxml)));
-            Assert.Equal("Standard 32, Eigen 26, NichtUebertragbar 13",
+            Assert.Equal("Standard 30, Eigen 28, NichtUebertragbar 13",
                          Zaehlung(z => Datenaustauschinventar.KlasseIfc(z.Ifc)));
         }
 
@@ -59,7 +59,7 @@ namespace EPOS.Kern.Tests
         {
             bool getragen = weg != Austauschweg.OhneElement;
             bool traegerwelle = welle == Traegerwelle.Bestand || welle == Traegerwelle.DA2 || welle == Traegerwelle.DA3
-                                || welle == Traegerwelle.DA4 || welle == Traegerwelle.N2;
+                                || welle == Traegerwelle.DA4 || welle == Traegerwelle.N2 || welle == Traegerwelle.DA8;
             if (getragen != traegerwelle) fehler.Add(was + ": Weg " + weg + " passt nicht zur Welle " + welle);
             bool ganz = Datenaustauschinventar.Rundlaeufig(weg);
             if (ganz == !string.IsNullOrWhiteSpace(grund))
@@ -240,6 +240,10 @@ namespace EPOS.Kern.Tests
             AbbildRaum r = a.Gebaeude[0].Raeume.Single(x => x.Name == "Zone 1");
             r.Personen = 5.25;
             r.GeraeteWm2 = 5.0;
+            // DA-8: ein Bauteil mit eigenem Absorptions- und Emissionsgrad (die übrigen bleiben bei der Vorgabe).
+            AbbildBauteil strahlend = a.Gebaeude[0].Bauteile.First(b => b.Aufbau != null && b.Name != null);
+            strahlend.AbsorptionsgradSolar = 0.35;
+            strahlend.Emissionsgrad = 0.85;
             return a;
         }
 
@@ -350,8 +354,16 @@ namespace EPOS.Kern.Tests
             ["F2"] = (x, v) => { foreach (var (q, l) in Bauteile(x).Where(b => b.Q.Art == Bauteilart.Fenster)) v.Wert(q.GWert, l?.GWert); },
             ["F3"] = (x, v) => { foreach (var (q, l) in Bauteile(x).Where(b => b.Q.Art == Bauteilart.Fenster)) v.Wert(q.Rahmenanteil, l?.Rahmenanteil); },
             // Die Konstanten (F8 b): der Import schweigt, wenn die Datei sie trägt; fehlen sie, ist es kein Rundlauf.
-            ["F8"] = (x, v) => Konstante(x, v, "Absorptance", "SolarReflectanceFront"),
-            ["F9"] = (x, v) => Konstante(x, v, "Absorptance", "ThermalIrEmissivityFront"),
+            ["F8"] = (x, v) =>
+            {
+                Konstante(x, v, "Absorptance", "AbsorptionsgradSolar");
+                foreach (var (q, l) in Bauteile(x)) { v.Kontext = q.Name; v.Wert(q.AbsorptionsgradSolar, l?.AbsorptionsgradSolar); }
+            },
+            ["F9"] = (x, v) =>
+            {
+                Konstante(x, v, "Absorptance", "Emissionsgrad");
+                foreach (var (q, l) in Bauteile(x)) { v.Kontext = q.Name; v.Wert(q.Emissionsgrad, l?.Emissionsgrad); }
+            },
             // Die Restdaten (DA-4): gbXML über den Block EPOS: in Description, IFC über EPOS_Zone/EPOS_Gebaeude.
             ["B11"] = (x, v) => { foreach (var (q, l) in Raeume(x)) { v.Wert(q.Rest?.HeizleistungMax, l?.Rest?.HeizleistungMax); v.Wert(q.Rest?.KuehlleistungMax, l?.Rest?.KuehlleistungMax); } },
             ["B20"] = (x, v) => { foreach (var (q, l) in Raeume(x)) v.Wert(q.Rest?.VorheizzeitH, l?.Rest?.VorheizzeitH); },
@@ -507,10 +519,10 @@ namespace EPOS.Kern.Tests
             Assert.True(erledigt.Length == 0, "Grenze behoben, aus der Liste nehmen: " + string.Join(", ", erledigt));
             // Die Zählung des Rundlaufs (Protokoll DA-7, mit den Restdaten der DA-4) — eine Änderung zeigt sich hier.
             // gbXML: abweichend genau die Daten, die gbXML nicht oder nur lesend trägt und die das Abbild führt.
-            Assert.Equal("Gleich 52, Abweichend 5, OhneTraeger 14; Felder 70665; abweichend A1 A5 B5 D8 F3; ohne Träger, aber getragen: keins",
+            Assert.Equal("Gleich 52, Abweichend 5, OhneTraeger 14; Felder 70667; abweichend A1 A5 B5 D8 F3; ohne Träger, aber getragen: keins",
                          bericht["gbXML"]);
             // IFC: abweichend nur an den benannten Grenzen der Bauteillage (Rundlaufgrenzen).
-            Assert.Equal("Gleich 54, Abweichend 3, OhneTraeger 14; Felder 70665; abweichend D3 D4 D6; ohne Träger, aber getragen: keins",
+            Assert.Equal("Gleich 54, Abweichend 3, OhneTraeger 14; Felder 70667; abweichend D3 D4 D6; ohne Träger, aber getragen: keins",
                          bericht["IFC"]);
         }
 

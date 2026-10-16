@@ -11,7 +11,7 @@ ab, dessen Entscheide weitergelten (Abschnitt 2). Die parallelen Sitzungen führ
 
 ## 1 Stand 14.10.2026
 
-Stand 16.10.2026: Übernahme durch Sitzung `session_019JuX7JfD2tStDzd3CiStwf`; #1105/#1106 gepusht, CI grün (Lauf 38863988800).
+Stand 16.10.2026: Übernahme durch Sitzung `session_019JuX7JfD2tStDzd3CiStwf`; #1105/#1106 gepusht, CI grün (Lauf 38863988800). Aufräumen #1109 (Konzept Kältebedarf und Katalogauswahl-Mockups nach `ueberholt/`). Die Basis R56 `2026-10-16_R56_Wasserkosten` (KB-7) ist eingefroren und enthält die zwei Kälteschlüssel von #1105; das `--ohne` der Gate-Skripte ist gestrichen.
 
 - Zweig: Arbeitszweig `ios_migration_september`; alle Wellen dieser Sitzung sind gepusht und mit CI-Vermerk versehen, keine Agenten, keine offenen Worktrees. Letzter eigener Commit vor diesem Papier: `d40c38cd0` (LIESMICH-Bildzahl 257).
 - Wellen und Statuszeilen: KR1/KR1b runde Wahlkästchen (#1037); K6 Kältebedarf dezentral/Split mit Schemaschritt 223 und Referenzprojekt 1072 (#1056/#1057); K6d (#1066); K6d-N (#1078); K6c (#1089, `8bf550004`); K6c-N Laufmeldung nennt die Hauptzahl (#1090, `bd7abe18a`).
@@ -38,6 +38,8 @@ Stand 16.10.2026: Übernahme durch Sitzung `session_019JuX7JfD2tStDzd3CiStwf`; #
 - Anwenderentscheid 14.10.: Die Verantwortung für Stromspeicher und Speicherflotte (Schemaschritt 229, KB-5) liegt bei der Kältemaschinen-Sitzung.
 - Anwenderentscheid 14.10.: Modellregel — Fable orchestriert nur, sonst Opus 5.5 bzw. Sonnet/Haiku; Check-ins löst ein Sonnet-Agent aus; Fable macht keine GitHub-Abfragen und keine Dateiänderungen.
 - Anwenderentscheid 14.10.: Die ChartProben-Messlatte wird über die Hashliste im CI-Protokoll umgesetzt (erledigt, `Messlatte_2026-10-14.sha256`).
+- Anwenderentscheid 16.10.: Die Kästchen der Liste „Im Projekt“ bleiben ein Kreis mit ☐/☑ (KA-E-28); die Wiki-Bilder stimmen.
+- Anwenderentscheid 16.10.: Der Vorlauf der Wärmepumpe liegt in Wiki-Bildern und -Beispielen nicht über 55 °C (Booster-Beispiel „etwa 55 °C“, `012aa4adb`; Bildprobe „VL max“ 55, `81c19266f`); das Prozesswärme-Beispiel „bis 70 °C“ bleibt.
 - Anwenderentscheid 16.10.: Die Hauptzahl wird jetzt gemergt und gegen R55 mit `--ohne` verglichen, bis die nächste Basis sie aufnimmt.
 - Anwenderentscheid 16.10.: Die Abbruchregel von `kern.yml` bleibt.
 - Anwenderentscheid 16.10.: Kein Kern-Lauf für Pull Requests aus dem eigenen Repository.
@@ -53,7 +55,7 @@ Die Regeln der Sitzung über `CLAUDE.md` hinaus stehen im Einstiegs-Prompt (Absc
 1. ~~Nachweis Messlatte~~ erledigt: Kern-Lauf [38550151112](https://github.com/inekon/EPOS-Plan/actions/runs/38550151112) grün auf `ae1f65a24` (enthält `683bc2cac`), Schritt „ChartProben-Messlatte (nur ubuntu)“: 225 von 225 Zeilen unverändert.
 2. Beim Anwender: Versionsnummer des Logbuchs für die zwei Entwurfsblöcke in [`../Wiki_Update_2026-09-26.md`](../Wiki_Update_2026-09-26.md); Wiki-Upload nur nach Freigabe; der Wiki-Sammel-Upload 1.2.0.11 folgt in der Woche ab 19.10., nach Freigabe; Sichtabnahme unter Windows (runde Wahlkästchen, Kältebedarf-Dialoge, Laufmeldung).
 3. Erledigt: Hauptzahl in `aggregate.csv` (#1105) und CI-Kern-Lauf in parallelen Jobs (#1106), Wandzeit rund 19,5 statt 84 min.
-4. Beobachten: Schemakette 228 KB-4, 229 KB-5 (Stromspeicher/Speicherflotte bei der Sitzung „Dialoge und Korrekturen (Konto Übernahme)“/Kältemaschinen), 230 KBP-2, 231 DA-6, 232 BK-5/BK-6; Basen R56 KB-5, R57 SA4. Die Sitzung „Dialoge Cloud“ arbeitet am Konzept Kältebedarfsprofile (KBP) mit unseren drei Bitten: Deckungsgruppe und Naht `SimulationPlattformwege.KaelteDezentralBearbeiten` unverändert, neue Vorlagen nur als neue Katalogzeilen, Kalenderhinweis als Baustein.
+4. Beobachten (R56 eingefroren, siehe Abschnitt 1): Schemakette 228 KB-4, 229 KB-5 (Stromspeicher/Speicherflotte bei der Sitzung „Dialoge und Korrekturen (Konto Übernahme)“/Kältemaschinen), 230 KBP-2, 231 DA-6, 232 BK-5/BK-6; Basen R56 KB-5, R57 SA4. Die Sitzung „Dialoge Cloud“ arbeitet am Konzept Kältebedarfsprofile (KBP) mit unseren drei Bitten: Deckungsgruppe und Naht `SimulationPlattformwege.KaelteDezentralBearbeiten` unverändert, neue Vorlagen nur als neue Katalogzeilen, Kalenderhinweis als Baustein.
 5. Erledigt: ~~Kältebedarf K6~~ erledigt (#1056/#1057, #1066, #1078, #1089, #1090); ~~Sichtabnahme der Katalogauswahl-Wirte~~ in Punkt 2 aufgegangen; ~~Nachzüge Katalogauswahl, KM-K2, Kostenbasis KB-2/KB-3~~ erledigt (Statuszeilen #1034, #1038, #1079, #1080).
 
 ## 5 Einstiegs-Prompt für die Übernahme (14.10.2026)

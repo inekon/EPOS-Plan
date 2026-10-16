@@ -5,6 +5,8 @@ Der Dialog '''Projekt exportieren / importieren''' gibt Projekte an einen andere
 
 Ein Paket trägt den Schemastand des Programms, mit dem es geschrieben wurde. Ein Paket eines älteren Programmstands wird beim Import auf den Stand dieses Programms gehoben: Die Projektdaten werden so umgerechnet, wie es die Datenbank beim Programmupdate selbst erfahren hat. Die Vorschau nennt, auf welchen Stand das Paket gehoben wird und wie viele Schritte Projektdaten umrechnen; das Importergebnis nennt jeden umrechnenden Schritt. Bei einem Paket mit Schemastand unter 61 wird eingelesen, aber die Umrechnung der Schritte bis Schemastand 61 entfällt; das Importergebnis weist darauf hin. Ein Paket eines neueren Programmstands wird benannt abgelehnt – dann zuerst das Programm aktualisieren.
 
+[[Datei:Bildschirmfoto_Projekttransfer.png|mini|zentriert|800px|Projekt exportieren / importieren, Reiter Exportieren – Bildschirmfoto mit Beispieldaten.]]
+
 == Exportieren ==
 
 * '''Projektliste''' – die Liste führt alle Projekte mit Kästchen; ein Klick setzt den Haken, ein weiterer nimmt ihn weg, und '''Umschalt''' nimmt den Bereich ab der zuletzt angeklickten Zeile dazu. Über der Liste steht ein Suchfeld, jede Spalte trägt einen Sortierpfeil, und die Spaltenköpfe ''Projekt'', ''Art'', ''Varianten'', ''Kunde'' und ''Geändert'' tragen einen Trichter. Die Spalte '''Art''' sagt, ob eine Zeile ein Stammprojekt ist oder die Variante eines anderen.

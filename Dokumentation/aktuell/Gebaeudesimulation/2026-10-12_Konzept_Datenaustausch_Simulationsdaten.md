@@ -288,7 +288,7 @@ Kürzel je Format und Richtung: **✓** Standardelement, gelesen und geschrieben
 | F5 | `Transmittance` (`surfaceType` sichtbar, prüfen) | – | durchreichen (F8 der Fragen) |
 | F6 | `SolarHeatGainCoeff@solarIncidentAngle` | L (nur 0°) | übrige Winkel benannt verwerfen, bis ein Feld besteht |
 | F7 | `WindowType/Emittance` | – | durchreichen |
-| F8 | `Construction/Absorptance`, `Material/Absorptance` | – | Export schreibt die Konstante, Import meldet Abweichung (F8 der Fragen) |
+| F8 | `Construction/Absorptance`, `Material/Absorptance` | – | **umgesetzt (DA-8):** Export schreibt den Wert des Bauteils, sonst die Vorgabe (eigene `Construction` je abweichendem Wertepaar); Import führt einen abweichenden Wert am Bauteil |
 | F9 | `Construction/Emittance` | – | wie F8 |
 | F10 | — | – | nicht Gegenstand eines Bauteils |
 | G1 | — (`AirLoop` ist Anlagentechnik) | – | Rückfall 3.3 |
@@ -342,7 +342,7 @@ Kürzel je Format und Richtung: **✓** Standardelement, gelesen und geschrieben
 | F5 | `Pset_DoorWindowGlazingType.VisibleLightTransmittance` | – | durchreichen |
 | F6 | — | – | nicht abbildbar |
 | F7 | `Pset_MaterialOptical` (Emissionsgrade, prüfen) | – | durchreichen |
-| F8, F9 | `Pset_MaterialOptical` (solare Reflexion, langwellige Emission, prüfen) | – | wie gbXML F8 |
+| F8, F9 | `Pset_MaterialOptical` (solare Reflexion, langwellige Emission, prüfen) | – | **umgesetzt (DA-8):** je Bauteil in `EPOS_Bauteil` (`AbsorptionsgradSolar`, `Emissionsgrad`), beide Richtungen; `Pset_MaterialOptical` gilt je Baustoff und reicht die Vorgabe durch |
 | F10 | — | – | nicht Gegenstand |
 | G1 | — | – | `EPOS_Zone` (Partner und Volumenstrom) |
 | G2 | `Pset_SlabCommon.IsExternal`, Lage, Raumgrenze zum Erdreich | ✓ | — |
@@ -508,7 +508,7 @@ Vorschlag mit Rücknahme („Alle Vorschläge übernehmen“).
 | **DA-5** Profilprüfung beim Import (E135) | Rangfolge 4.3, gbXML-Raumtyptafel, DIN-Nummer in IFC, Ampel in Prüfgruppe 3 der Modellprüfung | 1,5–2 PT | Kern-Tests je Rangstufe und Ampelfarbe; nach MA-1 |
 | **DA-6** DIN-Saat (E135) | Saatklasse und Schemaschritt (Schritt **231**), Herkunftsmarke, Auslieferungsvorlage 3d, NP7 als Abgleich, Wachen (5) | 2–3 PT | Saat zählt 45 Profile mit Werten; SQL-Dialekt-Prüfer; Testdatenbankschema; Auslieferungsvorlage-Tests; Referenzlauf byte-gleich. **Hängt an der Lieferung der Werte (F1)** |
 | **DA-7** Round-Trip-Wache | Inventar als Tafel im Testprojekt, Wache „jedes Feld eingestuft“, gemeinsamer Rundlauf beider Formate | 1,5–2 PT | Wache rot bei neuem, nicht eingestuftem Feld (Gegenprobe) |
-| **DA-8** Absorptions- und Emissionsgrad je Bauteil (optional, nur bei F8 (a)) | **Schemabedarf:** zwei nullbare Spalten (Absorptionsgrad, Emissionsgrad, `CHECK` 0…1) an `Tab_Bauteilaufbau` und `Tab_Bauteilaufbau_STAMM`, ggf. an `Tab_Bauteil`; Rechenweg liest das Feld statt der Konstanten, leer = Konstante. Nummer nicht vergeben | 2–3 PT | Referenzlauf byte-gleich, solange kein Referenzprojekt ein Feld füllt; sonst neue Basis mit Einfrierregel |
+| **DA-8** Absorptions- und Emissionsgrad je Bauteil — **umgesetzt** (Schritt 237 `BauteilStrahlungSchema`, Protokoll [DA-8](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-16_DA-8_Absorption_Emission.md)) | **Schemabedarf:** zwei nullbare Spalten (Absorptionsgrad, Emissionsgrad, `CHECK` 0…1) an `Tab_Bauteilaufbau` und `Tab_Bauteilaufbau_STAMM`, ggf. an `Tab_Bauteil`; Rechenweg liest das Feld statt der Konstanten, leer = Konstante. Nummer nicht vergeben | 2–3 PT | Referenzlauf byte-gleich, solange kein Referenzprojekt ein Feld füllt; sonst neue Basis mit Einfrierregel |
 | **DA-9** Wiki und Logbuch | Seiten „Gebäudeimport“, „Gebäudeexport“, „Nutzungsprofile“; Logbuch-Entwurf | 0,5 PT | Gegenlesemuster der Wurzel-`CLAUDE.md` ohne Treffer |
 
 **Summe rund 17,5–24,5 PT**, ohne DA-8 15,5–21,5 PT. MA-8 des Entwurfs Geführter Modellaufbau (3–4 PT) geht in DA-2 und DA-3 auf.
