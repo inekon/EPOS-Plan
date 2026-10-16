@@ -642,6 +642,11 @@ namespace WindowsFormsApplication1
             try { v.Bivalenz = BivalenzBerichtsquelle.Lade(v.IdProjekt); }
             catch { v.Bivalenz = null; }
 
+            // 6d. SK-4: die Energieflussbilanz (Jahresbilanz Strom, Wärme, Kälte) aus Ergebnisbaum und Trägernachweis, in der
+            //     Sprache des Berichts — Bild und Schalter stand.bild.energiefluss lesen nur sie.
+            try { v.Energieflussbilanz = Energiefluss.Aus(v, BerichtTexte.Englisch); }
+            catch { v.Energieflussbilanz = null; }
+
             // 6c. KM3-E3-b: die Lesewerte der Teillastrechnung der Kaeltemaschinen (Projektkopien) fuer die Tafel.
             v.KaeltemaschineTeillast = KaeltemaschineTeillastBerichtsquelle.Lade(v.IdProjekt);
 

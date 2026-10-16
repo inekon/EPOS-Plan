@@ -356,6 +356,56 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
+        //  Energieflussbild (SK-4, Konzept Energieflussbild 5)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Energieflussbilanz eines Stands in der Sprache <paramref name="englisch"/>: die beim Sammeln gebaute
+        /// (<see cref="VariantenDaten.Energieflussbilanz"/>), wenn sie in dieser Sprache vorliegt, sonst aus dem Ergebnisbaum
+        /// des Stands neu gebaut — beides ohne Datenbank. <c>null</c> ohne Stand.
+        /// </summary>
+        public static EnergieflussBilanz EnergieflussbilanzDes(VariantenDaten v, bool englisch)
+        {
+            if (v == null) return null;
+            EnergieflussBilanz b = v.Energieflussbilanz;
+            if (b != null && b.Englisch == englisch) return b;
+            return WindowsFormsApplication1.Energiefluss.Aus(v, englisch);
+        }
+
+        /// <summary>
+        /// <b>Das Energieflussbild eines Stands für den Bericht</b> (Baustein „Ergebnisse je Variante“ und Platzhalter
+        /// <c>stand.bild.energiefluss</c>): Bilanz → <see cref="EnergieflussAbbildung.Bild"/> →
+        /// <see cref="ChartRenderer.EnergieflussModell"/> in der Berichtsfassung — die Knoten tragen ihre Jahressumme
+        /// (MWh/a), die Bänder keine Zahl (SK-Q12), die Legende steht im Bild (SK-Q14). <c>null</c> ohne Ergebnis oder ohne
+        /// Fluss (<see cref="EnergieflussBilanz.Leer"/>; der Grund steht in <see cref="EnergieflussBilanz.Grund"/>).
+        /// </summary>
+        /// <param name="v">Der Stand.</param>
+        /// <param name="mass">Das Zielmaß; <c>null</c> = <see cref="ChartRenderer.ENERGIEFLUSS_BERICHT"/>. Fehlt eine Seite
+        /// (0), folgt sie dem Seitenverhältnis der Berichtsfassung.</param>
+        /// <param name="englisch">Die Sprache des Bildes; <c>null</c> = die des Berichts (<see cref="BerichtTexte.Englisch"/>).</param>
+        public static Zeichenmodell Energiefluss(VariantenDaten v, Bildmass? mass = null, bool? englisch = null)
+        {
+            EnergieflussBilanz b = EnergieflussbilanzDes(v, englisch ?? BerichtTexte.Englisch);
+            if (b == null || b.Leer) return null;
+            return ChartRenderer.EnergieflussModell(EnergieflussAbbildung.Bild(b), EnergieflussMass(mass), knotenwerte: true);
+        }
+
+        /// <summary>
+        /// Das Zielmaß des Energieflussbilds: ohne Maß die Berichtsfassung, eine fehlende Seite im Seitenverhältnis der
+        /// Berichtsfassung (<see cref="ChartRenderer.ENERGIEFLUSS_BERICHT"/>) ergänzt.
+        /// </summary>
+        public static Bildmass EnergieflussMass(Bildmass? mass)
+        {
+            Bildmass bericht = ChartRenderer.ENERGIEFLUSS_BERICHT;
+            if (mass == null) return bericht;
+            int b = mass.Value.Breite, h = mass.Value.Hoehe;
+            if (b <= 0 && h <= 0) return bericht;
+            if (h <= 0) h = (int)Math.Round(b * (double)bericht.Hoehe / bericht.Breite, MidpointRounding.AwayFromZero);
+            if (b <= 0) b = (int)Math.Round(h * (double)bericht.Breite / bericht.Hoehe, MidpointRounding.AwayFromZero);
+            return new Bildmass(b, h);
+        }
+
+        // =====================================================================
         //  Helfer
         // =====================================================================
 

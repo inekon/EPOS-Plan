@@ -57784,5 +57784,20 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="EF_SP_BEDARF" xml:space="preserve">
     <value>Demand</value>
   </data>
+  <data name="VF_STAND__BILD__ENERGIEFLUSS" xml:space="preserve">
+    <value>Image per state: energy flow diagram — annual balance of electricity, heat and cooling from the sources via the generators to the demands; the nodes carry their annual total (MWh/a), the bands no number; Word only.</value>
+  </data>
+  <data name="VF_HAT__BILD__ENERGIEFLUSS" xml:space="preserve">
+    <value>Image switch: is there an energy flow diagram (state or any state)?</value>
+  </data>
+  <data name="EF_BER_BESCHRIFTUNG" xml:space="preserve">
+    <value>Energy flow (annual balance of electricity, heat, cooling; ambient share from the seasonal performance factor)</value>
+  </data>
+  <data name="EF_BER_OHNE_BILD" xml:space="preserve">
+    <value>No energy flow diagram — {0}</value>
+  </data>
+  <data name="VF_ORT_ENERGIEFLUSS" xml:space="preserve">
+    <value>in the report the nodes carry their annual total (MWh/a); the bands carry no number, here the values are in the tooltip</value>
+  </data>
 </root>
 

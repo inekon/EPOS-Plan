@@ -57791,5 +57791,20 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="EF_SP_BEDARF" xml:space="preserve">
     <value>Bedarf</value>
   </data>
+  <data name="VF_STAND__BILD__ENERGIEFLUSS" xml:space="preserve">
+    <value>Bild je Stand: Energieflussbild — Jahresbilanz von Strom, Wärme und Kälte von den Quellen über die Erzeuger zu den Bedarfen; die Knoten tragen ihre Jahressumme (MWh/a), die Bänder keine Zahl; nur Word.</value>
+  </data>
+  <data name="VF_HAT__BILD__ENERGIEFLUSS" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Energieflussbild (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="EF_BER_BESCHRIFTUNG" xml:space="preserve">
+    <value>Energiefluss (Jahresbilanz Strom, Wärme, Kälte; Umweltanteil nach Jahresarbeitszahl)</value>
+  </data>
+  <data name="EF_BER_OHNE_BILD" xml:space="preserve">
+    <value>Kein Energieflussbild — {0}</value>
+  </data>
+  <data name="VF_ORT_ENERGIEFLUSS" xml:space="preserve">
+    <value>im Bericht tragen die Knoten ihre Jahressumme (MWh/a); die Bänder bleiben ohne Zahl, die Werte stehen hier im Zeigertext</value>
+  </data>
 </root>
 

@@ -24872,6 +24872,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiefluss (Jahresbilanz Strom, Wärme, Kälte; Umweltanteil nach Jahresarbeitszahl) ähnelt.
+        /// </summary>
+        public static string EF_BER_BESCHRIFTUNG {
+            get {
+                return ResourceManager.GetString("EF_BER_BESCHRIFTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Energieflussbild — {0} ähnelt.
+        /// </summary>
+        public static string EF_BER_OHNE_BILD {
+            get {
+                return ResourceManager.GetString("EF_BER_OHNE_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf − Speicherentladung − ungedeckt ähnelt.
         /// </summary>
         public static string EF_FORMEL_DIREKT {
@@ -137751,6 +137769,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Energieflussbild (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__ENERGIEFLUSS {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__ENERGIEFLUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild der Heizkessel (Stand bzw. irgendein Stand)? ähnelt.
         /// </summary>
         public static string VF_HAT__BILD__HEIZKESSEL {
@@ -139070,6 +139097,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_ORT_AUTARKIE_MONATE {
             get {
                 return ResourceManager.GetString("VF_ORT_AUTARKIE_MONATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht tragen die Knoten ihre Jahressumme (MWh/a); die Bänder bleiben ohne Zahl, die Werte stehen hier im Zeigertext ähnelt.
+        /// </summary>
+        public static string VF_ORT_ENERGIEFLUSS {
+            get {
+                return ResourceManager.GetString("VF_ORT_ENERGIEFLUSS", resourceCulture);
             }
         }
         
@@ -140942,6 +140978,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_STAND__BILD__DECKUNG_WAERME {
             get {
                 return ResourceManager.GetString("VF_STAND__BILD__DECKUNG_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Energieflussbild — Jahresbilanz von Strom, Wärme und Kälte von den Quellen über die Erzeuger zu den Bedarfen; die Knoten tragen ihre Jahressumme (MWh/a), die Bänder keine Zahl; nur Word. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__ENERGIEFLUSS {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__ENERGIEFLUSS", resourceCulture);
             }
         }
         
