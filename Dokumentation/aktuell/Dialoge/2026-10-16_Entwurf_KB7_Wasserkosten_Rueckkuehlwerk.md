@@ -124,12 +124,12 @@ Wasserträger ist eine Katalogzeile ohne Zuordnung zu einem Referenzprojekt und 
 
 KB-7a vor KB-7b; KB-7c nach KB-7b; KB-7d zuletzt. Gate einmal nach dem Merge.
 
-## 9 Offene Fragen an den Anwender
+## 9 Entscheide des Anwenders (16.10.2026)
 
-| Nr. | Frage | Empfehlung |
+| Nr. | Frage | Entscheid (Anwender 16.10.2026, jeweils nach Empfehlung) |
 |---|---|---|
-| F1 | Abrechnungseinheit `m³` neu in der Preiskarte zulassen (nur für den Wasserträger, ohne Heizwert)? | **Ja**, nur am Träger `WATER`; Gasträger bleiben bei `Nm³` |
+| F1 | Abrechnungseinheit `m³` neu in der Preiskarte zulassen (nur für den Wasserträger, ohne Heizwert)? | **Ja** — Preis je m³ (Entscheid „Kostenbasis übernimmt“), nur am Träger `WATER`; Gasträger bleiben bei `Nm³` |
 | F2 | Ein Wasserpreis je Projekt oder je Anlage (eigener Trägerverweis an der Anlage wie `Kuehl_ID_Carrier`)? | **Je Projekt**; abweichende Altpreise nach Regel 3c mit Hinweis |
 | F3 | Preissteigerung der Wasserkosten: Betrieb (p_B) oder Energie (p_E)? | **p_B** — Wasser ist Betriebsmittel, keine Endenergie |
 | F4 | Wasserkosten als eigene Berichtskennzahl? | **Ja**, neben `kaelte.rk.wasser_m3` |
-| F5 | Abwasser (Absalzung) als zweiter Preis, und Grundpreis des Wasserträgers ansetzen? | **Nein** für jetzt: ein Arbeitspreis, der Abwasseranteil wird im Preis je m³ mitgeführt; Grundpreis-Feld am Wasserträger ausblenden |
+| F5 | Abwasser (Absalzung) als zweiter Preis, und Grundpreis des Wasserträgers ansetzen? | **Nein**: ein Arbeitspreis, der Abwasseranteil wird im Preis je m³ mitgeführt; Grundpreis-Feld am Wasserträger ausblenden |
