@@ -199,7 +199,7 @@ public static class Wikibeispiele
 
     private static Satz Wpsatz(string name, string firma, string quelle, double kw, double cop, double kuehl) => new(name,
         (Katalogfilterprofil.SpHersteller, firma), (Katalogfilterprofil.SpQuelle, quelle),
-        (Katalogfilterprofil.SpNennleistung, kw), (Katalogfilterprofil.SpVlMin, 25), (Katalogfilterprofil.SpVlMax, 60),
+        (Katalogfilterprofil.SpNennleistung, kw), (Katalogfilterprofil.SpVlMin, 25), (Katalogfilterprofil.SpVlMax, 55),
         (Katalogfilterprofil.SpZuheizung, 6.0), (Katalogfilterprofil.SpKuehlleistung, kuehl), (Katalogfilterprofil.SpCop, cop));
 
     public static WaermepumpeAnlageDaten WaermepumpeAnlage() => new()
