@@ -35,6 +35,9 @@
                            Betriebsferien); Blatt Woche mit Wahl der Kalenderwoche (fensterprobe.mjs, Fall kaeltegrafik)
       ?fall=klimaimport    KlimadatenDialog (Katalogdialog); "Import..." oeffnet die Ueberlagerung "Klimadaten
                            einlesen" (.epos-einlesen) - ihre Schlussleiste haftet am Boden (KD-1)
+      ?fall=klimareihen    derselbe KlimadatenDialog mit einer Region samt gespeicherten Reihen (KD-8 Teil A):
+                           Reiter "Weitere Reihen" mit der Reihenwahl ueber dem Bild (fensterprobe.mjs, Fall
+                           klimareihen)
       ?meldung=1          fuer die Bannerprobe (bannerprobe.mjs): Heizkessel und BHKW melden bei
                            "Hinzufuegen" einen Fehler der Traegerwahl, der Gebaeudedialog traegt
                            "In DB uebernehmen" (weich gesperrt - der Versuch meldet den Grund);
@@ -224,6 +227,20 @@
                 Geschlossen="@(b => Beendet(b))" />
             break;
 
+        case "klimareihen":
+            @* KD-8 Teil A: der Reiter "Weitere Reihen" der Detailkarte - die Reihenwahl bricht um, statt
+               quer zu rollen, und die Schlussleiste bleibt im Fenster. *@
+            <EPOS.UI.Dialoge.Klimadaten.KlimadatenDialog
+                Regionen="@(() => Task.FromResult<IReadOnlyList<Katalogfilterzeile>>(new[] { new Katalogfilterzeile(1, "Region 1") }))"
+                Filterstandvorgabe="@_filterstand"
+                Ansicht="@KlimaReihenAnsicht"
+                Importieren="@((_, _) => Task.FromResult(new KlimaImportErgebnis()))"
+                DateiWaehlen="@(_ => Task.FromResult<string?>(null))"
+                RegionErmitteln="@KlimaVorschau"
+                Loeschen="@(_ => Task.FromResult(true))"
+                Geschlossen="@(b => Beendet(b))" />
+            break;
+
         default:
             <p>unbekannter Fall: @_fall</p>
             break;
@@ -254,6 +271,12 @@
             kz.MonatsmittelTemperatur[m] = 10 - 9 * Math.Cos(2 * Math.PI * (m + 0.5) / 12);
             kz.MonatssummeGlobalstrahlungKwhM2[m] = 95 - 70 * Math.Cos(2 * Math.PI * (m + 0.5) / 12);
         }
+        // KD-8 Teil A: die weiteren Monatsreihen, damit die Reihenwahl unter dem Bild voll steht.
+        kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.R_LUFTFEUCHTE] = Enumerable.Repeat(75.0, 12).ToArray();
+        kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.R_DIREKT_NORMAL] = kz.MonatssummeGlobalstrahlungKwhM2.Select(w => w * 0.6).ToArray();
+        kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.R_DIFFUS] = kz.MonatssummeGlobalstrahlungKwhM2.Select(w => w * 0.4).ToArray();
+        kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.R_GEGENSTRAHLUNG] = Enumerable.Repeat(220.0, 12).ToArray();
+        kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.R_BEDECKUNG] = Enumerable.Repeat(5.0, 12).ToArray();
         var bestand = new List<WindowsFormsApplication1.KlimaParameterEintrag>();
         foreach (WindowsFormsApplication1.KlimaParameter p in Enum.GetValues<WindowsFormsApplication1.KlimaParameter>())
             bestand.Add(new() { Parameter = p, Stand = WindowsFormsApplication1.KlimaParameterStand.Gefuehrt });
@@ -278,6 +301,29 @@
             Parameterbestand = bestand,
             Repraesentanzhinweis = true,
             Ortshinweis = true
+        });
+    }
+
+    /// <summary>
+    /// KD-8 Teil A: eine Region mit gespeicherten Rechenspalten - neutrale Tagesgaenge, Bedeckungsgrad
+    /// leer (die Quelle fuehrt ihn nicht, sein Chip ist weich gesperrt).
+    /// </summary>
+    private static Task<EPOS.UI.Dialoge.Klimadaten.KlimadatenDialog.Regionsansicht> KlimaReihenAnsicht(string name)
+    {
+        var zeilen = Enumerable.Range(0, 8760).Select(i => new WindowsFormsApplication1.SolardatenModel
+        {
+            Außen_Temp = 10 - 9 * Math.Cos(2 * Math.PI * i / 8760.0), Luftfeuchte = 70 + 10 * Math.Sin(2 * Math.PI * i / 24.0),
+            Globalstrahlung = Math.Max(0, 600 * Math.Sin(Math.PI * (i % 24 - 6) / 12.0)),
+            Direktstrahlung = Math.Max(0, 400 * Math.Sin(Math.PI * (i % 24 - 6) / 12.0)),
+            Diffusstrahlung = Math.Max(0, 200 * Math.Sin(Math.PI * (i % 24 - 6) / 12.0)),
+            Gegenstrahlung = 300, Sol_Sued = Math.Max(0, 300 * Math.Sin(Math.PI * (i % 24 - 6) / 12.0)),
+            Sol_West = 150, Sol_Ost = 150, Sol_Nord = 60
+        }).ToList();
+        return Task.FromResult(new EPOS.UI.Dialoge.Klimadaten.KlimadatenDialog.Regionsansicht(
+            "TRY-Datensatz " + name + ", Quelle 1, Bezugsjahr 2015", 9.18, 48.77, null, null, "")
+        {
+            Jahresmittel = 9.9, Tiefstwert = -12.4, Hoechstwert = 34.3,
+            Reihenbestand = WindowsFormsApplication1.KlimaReihenkatalog.AusRechenspalten(zeilen)
         });
     }
 

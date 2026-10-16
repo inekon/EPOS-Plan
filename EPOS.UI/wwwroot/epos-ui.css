@@ -19313,9 +19313,11 @@ td.epos-vorlage-katalogbeschreibung {
     align-items: center;
     margin: 4px 0;
 }
+/* Der Gruppenname steht als eigene Zeile ueber seinen Chips: Im Stammblatt (340-440 px) nimmt ein
+   Name links daneben den Chips die halbe Breite, und jeder Chip stuende in einer eigenen Zeile. */
 .epos-reihenwahl-gruppenname {
     color: var(--epos-text-leise);
-    min-width: 8.5rem;
+    flex-basis: 100%;
 }
 .epos-reihenwahl-chip {
     display: inline-flex;
