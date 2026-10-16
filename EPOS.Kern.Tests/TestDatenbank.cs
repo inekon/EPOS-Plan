@@ -1071,6 +1071,9 @@ namespace EPOS.Kern.Tests
                 // Schritt StromspeicherKostenSchema.SCHRITT (KB-5): Sicherheitslauf der Saat und Entfall der vier
                 // Kostenspalten des Stromspeichers. Wiederholbar, ergebnisgleich.
                 StromspeicherKostenSchema.Ausfuehren(null);
+                // Schritt KaeltebedarfsprofilVorlagenSchema.SCHRITT (KBP-2): Eingabeart der Kaeltebedarfszuordnung, Art-Vorschlag am
+                // Kaeltekatalog und Saat der Vorlagen 7-16. Wiederholbar, ergebnisneutral.
+                KaeltebedarfsprofilVorlagenSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

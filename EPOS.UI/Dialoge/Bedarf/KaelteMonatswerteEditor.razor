@@ -1,0 +1,86 @@
+﻿@* KBP-3a (Konzept Kaeltebedarfsprofile 3.2): die zwoelf Monatswerte einer Kaeltezeile in MWh oder in Prozent der
+   Jahressumme, umschaltbar. Der Editor schreibt in den Arbeitsstand des Wirts (Werte, in place) und meldet jede
+   Aenderung; geprueft und uebernommen wird mit dem OK der Bearbeiten-Ueberlagerung (Kaelteprofileingabe im Kern).
+   In Prozent muss die Summe 100 ergeben, in MWh ist die Summe die Jahressumme. *@
+@using WindowsFormsApplication1
+
+<div class="epos-kbp-monate" data-kbp="monate">
+    <Formularraster>
+        <KindInhalt>
+            <Auswahlfeld Bezeichnung="@Resource.KBP_LBL_MONATSEINHEIT" Eintraege="@Einheiten"
+                         Auswahl="@(Prozent ? 1 : 0)" AuswahlChanged="EinheitGewaehlt" />
+        </KindInhalt>
+    </Formularraster>
+    <div class="epos-stundenraster epos-kbp-monatsraster">
+        @for (int i = 0; i < Kaelteprofileingabe.MONATE; i++)
+        {
+            int monat = i;
+            <Zahlenfeld Bezeichnung="@Monatsname(monat)" Einheit="@(Prozent ? "%" : "MWh")"
+                        Feldname="@("kbp_monat_" + (monat + 1))" Nachkommastellen="3" Min="0"
+                        Wert="@Wert(monat)" WertChanged="w => Setzen(monat, w)" />
+        }
+    </div>
+    <Herleitungszeile Text="@Summenzeile" />
+    @if (Prozent && !SummeStimmt)
+    {
+        <p class="epos-kbp-summenfehler" role="status">@Summenfehler</p>
+    }
+</div>
+
+@code {
+    /// <summary>Die zwölf Werte in der gewählten Einheit — der Arbeitsstand des Wirts, hier in place beschrieben.</summary>
+    [Parameter] public double?[] Werte { get; set; } = new double?[Kaelteprofileingabe.MONATE];
+
+    /// <summary><c>true</c> = Prozent der Jahressumme, <c>false</c> = MWh.</summary>
+    [Parameter] public bool Prozent { get; set; }
+
+    /// <summary>Die Umschaltung MWh ↔ %; der Wirt rechnet die Werte um.</summary>
+    [Parameter] public EventCallback<bool> ProzentChanged { get; set; }
+
+    /// <summary>Die Jahressumme der Zeile [MWh] — Bezug der Prozentansicht.</summary>
+    [Parameter] public double JahressummeMwh { get; set; }
+
+    /// <summary>Ein Wert hat sich geändert.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    private static readonly IReadOnlyList<(int Id, string Text)> Einheiten = new[]
+    {
+        (0, "MWh"),
+        (1, Resource.KBP_EINHEIT_PROZENT),
+    };
+
+    private static string Monatsname(int m)
+    {
+        string[] namen = (Resource.KBP_MONATE ?? "").Split(';');
+        return m < namen.Length ? namen[m] : (m + 1).ToString(System.Globalization.CultureInfo.CurrentCulture);
+    }
+
+    private double? Wert(int m) => Werte is not null && m < Werte.Length ? Werte[m] : null;
+
+    private double Summe => Kaelteprofileingabe.Summe(Werte);
+
+    private bool SummeStimmt => Math.Abs(Summe - 100.0) <= Kaelteprofileingabe.PROZENT_TOLERANZ;
+
+    private string Summenzeile => Prozent
+        ? string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.KBP_SUMME_PROZENT,
+                        Summe.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture),
+                        JahressummeMwh.ToString("0.###", System.Globalization.CultureInfo.CurrentCulture))
+        : string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.KBP_SUMME_MWH,
+                        Summe.ToString("0.###", System.Globalization.CultureInfo.CurrentCulture));
+
+    private string Summenfehler => string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.KBP_MSG_SUMME_PROZENT,
+                                                 Summe.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture));
+
+    private async Task Setzen(int m, double? w)
+    {
+        if (Werte is null || m >= Werte.Length) return;
+        Werte[m] = w;
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task EinheitGewaehlt(int? id)
+    {
+        bool prozent = id == 1;
+        if (prozent != Prozent) await ProzentChanged.InvokeAsync(prozent);
+    }
+}

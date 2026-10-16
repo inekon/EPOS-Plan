@@ -295,6 +295,26 @@
        den Stand beim Oeffnen wieder her. Geschrieben wird mit dem OK des Dialogs. *@
     @if (_gewaehlt is not null)
     {
+    @* KBP-3a (Konzept Kaeltebedarfsprofile 3): die Eingabeart der Kaeltezeile ueber den Eingabefeldern - Jahressumme
+       mit Vorlage (Vorgabe), Monatswerte, Wochenprofil; Typtage ausgegraut („folgt“, KBP-4). Arbeitsstand bis OK. *@
+    @if (_eingabeartArbeit is not null)
+    {
+        <Gruppenkopf Titel="@Resource.KBP_GRUPPE_EINGABEART">
+            <KindInhalt>
+                <Formularraster>
+                    <KindInhalt>
+                <Auswahlfeld Bezeichnung="@Resource.KBP_LBL_EINGABEART" Eintraege="@EingabeartEintraege"
+                             Auswahl="@EingabeartIndex" AuswahlChanged="EingabeartGewaehlt"
+                             GesperrteEintraege="@EingabeartGesperrt" GesperrtHinweis="@Resource.KBP_HINW_TYPTAG_FOLGT" />
+                    </KindInhalt>
+                </Formularraster>
+                <Herleitungszeile Text="@Resource.KBP_HINW_EINGABEART" />
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    @if (VerbrauchSichtbar)
+    {
     <Gruppenkopf Titel="@GruppeVerbrauch">
         <KindInhalt>
             <Formularraster>
@@ -310,6 +330,29 @@
                     @onclick="BeiUebernehmen">@BtnUebernehmenText</button>
         </KindInhalt>
     </Gruppenkopf>
+    }
+
+    @if (_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_MONAT && _monateArbeit is not null)
+    {
+        <Gruppenkopf Titel="@Resource.KBP_GRUPPE_MONATE">
+            <KindInhalt>
+                <KaelteMonatswerteEditor Werte="@_monateArbeit" Prozent="@_monateProzent"
+                                         ProzentChanged="MonatseinheitGewaehlt" JahressummeMwh="@AktuelleSummeMwh"
+                                         Geaendert="() => _monateBearbeitet = true" />
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    @if (_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_WOCHE && _wocheArbeit is not null)
+    {
+        <Gruppenkopf Titel="@Resource.KBP_GRUPPE_WOCHE">
+            <KindInhalt>
+                <KaelteWochenprofilEditor Werte="@_wocheArbeit" DreiTage="@_wocheDreiTage"
+                                          DreiTageChanged="d => _wocheDreiTage = d"
+                                          Geaendert="() => _wocheBearbeitet = true" />
+            </KindInhalt>
+        </Gruppenkopf>
+    }
 
     @if (MitTemperatur)
     {
@@ -370,6 +413,18 @@
     @if (DeckungSichtbar && _deckungArbeit is not null)
     {
         <DeckungsartFelder Daten="@_deckungArbeit" Stromtraeger="@Stromtraeger" ProjektStromtraeger="@ProjektStromtraeger" Klappbar="true" />
+    }
+
+    @* KBP-3b (Konzept Kaeltebedarfsprofile 5): die Kennzahlenzeile und die vier Blaetter der markierten Kaeltezeile.
+       Gerechnet wird im Kern ueber den Weg der Huelle (KaelteGrafik), mit den Jahressummen und Kalendern, wie der Dialog
+       sie gerade zeigt; das Ergebnis bleibt liegen, bis sich dieser Stand aendert (eine Referenz je Rechenstand). *@
+    @if (GrafikSichtbar)
+    {
+        <Gruppenkopf Titel="@Resource.KBP_GRAFIK_GRUPPE">
+            <KindInhalt>
+                <KaelteProfilgrafik Bilder="@GrafikBilder()" />
+            </KindInhalt>
+        </Gruppenkopf>
     }
     }
     </div>
@@ -591,6 +646,43 @@
 
     /// <summary><c>KAELTE_ART_HINWEIS</c></summary>
     [Parameter] public string HinweisKaelteArt { get; set; } = Resource.KAELTE_ART_HINWEIS;
+
+    /// <summary>
+    /// KBP-3b (Konzept Kältebedarfsprofile 5): Kennzahlen und die vier Bilder der markierten Kältezeile — der Weg der
+    /// Hülle in den Kern (<c>KaelteprofilgrafikCtrl</c>) mit der markierten Zeile und allen Zeilen des Dialogs;
+    /// <c>null</c> = keine Grafik (andere Bedarfsarten).
+    /// </summary>
+    [Parameter] public Func<BedarfsProfilZeile, IReadOnlyList<BedarfsProfilZeile>, WindowsFormsApplication1.Kaelteprofilbilder?>? KaelteGrafik { get; set; }
+
+    /// <summary>Steht die Grafik der markierten Kältezeile in der Bearbeiten-Überlagerung?</summary>
+    private bool GrafikSichtbar => Art == BedarfsArt.Kaelte && KaelteGrafik is not null && _gewaehlt is not null;
+
+    private WindowsFormsApplication1.Kaelteprofilbilder? _grafik;
+    private string? _grafikStand;
+
+    /// <summary>
+    /// Die Bilder zum gegenwärtigen Stand: neu gerechnet nur, wenn sich markierte Zeile, Namen, Jahressummen oder
+    /// Kalender geändert haben — sonst dieselbe Referenz (DiagrammSvg baut seinen Baum nur bei neuer Referenz neu und
+    /// behält Zoom, Zeigerstelle und abgewählte Reihen). Ein Fehler des Wegs zeigt „kein Profil“.
+    /// </summary>
+    private WindowsFormsApplication1.Kaelteprofilbilder? GrafikBilder()
+    {
+        if (KaelteGrafik is null || _gewaehlt is null) return null;
+        var stand = new System.Text.StringBuilder();
+        stand.Append(Zeilen.IndexOf(_gewaehlt)).Append('|');
+        foreach (BedarfsProfilZeile z in Zeilen)
+            stand.Append(z.Name).Append('\u001f').Append(z.Summe.ToString("R", System.Globalization.CultureInfo.InvariantCulture))
+                 .Append('\u001f').Append(z.KalenderId).Append('\u001e');
+        string schluessel = stand.ToString();
+        if (schluessel == _grafikStand) return _grafik;
+        _grafikStand = schluessel;
+        try { _grafik = KaelteGrafik(_gewaehlt, Zeilen); }
+        catch (Exception) { _grafik = null; }
+        return _grafik;
+    }
+
+    /// <summary>Die Bilder des letzten Rechenstands — Prüfhilfe für die Tests.</summary>
+    public WindowsFormsApplication1.Kaelteprofilbilder? Grafikstand => _grafik;
 
     /// <summary><c>BPF_LBL_KALENDER</c></summary>
     [Parameter] public string LabelKalender { get; set; } = Resource.BPF_LBL_KALENDER;
@@ -1057,6 +1149,11 @@
             KaelteArtSetzen = KaelteArtGewaehlt,
             KaelteArtEintraege = () => KiMaskenanmeldung.Eintraege(
                 KaelteArtEintraege, e => e.Id, e => e.Text),
+            // KBP-3a: die Eingabeart der markierten Kaeltezeile - derselbe Weg wie die Wahl der Ueberlagerung.
+            EingabeartLesen = () => EingabeartIndex,
+            EingabeartSetzen = EingabeartGewaehlt,
+            EingabeartEintraege = () => KiMaskenanmeldung.Eintraege(
+                EingabeartEintraege.Where(e => !EingabeartGesperrt.Contains(e.Id)).ToList(), e => e.Id, e => e.Text),
             KalenderEintraege = () => KiMaskenanmeldung.Eintraege(
                 KalenderWahlEintraege, e => e.Id, e => e.Text),
             // K5b: die Feldgruppe „Deckung" der markierten Kaeltezeile - dieselben Felder wie die Ueberlagerung.
@@ -1525,6 +1622,122 @@
         _merker = _gewaehlt is not null ? Satzmerker.Von(_gewaehlt) : null;
         if (_gewaehlt is not null) { _neuVorlauf = _gewaehlt.Vorlauf; _neuRuecklauf = _gewaehlt.Ruecklauf; }
         _deckungArbeit = DeckungSichtbar ? _gewaehlt!.Deckung!.Kopie() : null;
+        EingabeArbeitsstandSetzen();
+    }
+
+    // ---- KBP-3a: Eingabeart, Monatswerte und Wochenprofil der Kaeltezeile (Arbeitsstand bis OK) -----------------
+
+    private string? _eingabeartArbeit;
+    private double?[]? _monateArbeit;
+    private bool _monateProzent;
+    private bool _monateBearbeitet;
+    private double[]? _wocheArbeit;
+    private bool _wocheDreiTage;
+    private bool _wocheBearbeitet;
+
+    private static readonly string[] EINGABEARTEN =
+    {
+        WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_JAHR, WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_MONAT,
+        WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_WOCHE, WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG,
+    };
+
+    private static readonly IReadOnlyList<(int Id, string Text)> EingabeartEintraege = new[]
+    {
+        (0, Resource.KBP_EINGABE_JAHR), (1, Resource.KBP_EINGABE_MONAT),
+        (2, Resource.KBP_EINGABE_WOCHE), (3, Resource.KBP_EINGABE_TYPTAG),
+    };
+
+    /// <summary>Typtage folgen mit KBP-4 — ausgegraut, solange die aktuelle Zeile nicht schon so steht.</summary>
+    private IReadOnlyCollection<int> EingabeartGesperrt => _eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG
+        ? Array.Empty<int>() : new[] { 3 };
+
+    private int? EingabeartIndex => _eingabeartArbeit is null ? null : Math.Max(0, Array.IndexOf(EINGABEARTEN, _eingabeartArbeit));
+
+    /// <summary>Die Jahressumme gilt als Eingabe nicht bei Monatswerten in MWh — dort ist sie die Summe der Monate.</summary>
+    private bool VerbrauchSichtbar => !(_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_MONAT && !_monateProzent);
+
+    /// <summary>Die Jahressumme der Zeile [MWh] samt angefangener Eingabe im Feld „neuer Wert“.</summary>
+    private double AktuelleSummeMwh => _neuerWert is double w && w >= 0 ? _einheit.NachMWh(w) : _gewaehlt?.Summe ?? 0.0;
+
+    /// <summary>Der Arbeitsstand der Überlagerung aus der Zeile: Monate in MWh (Vorlage · Summe), Woche als Kopie.</summary>
+    private void EingabeArbeitsstandSetzen()
+    {
+        _eingabeartArbeit = _gewaehlt?.Eingabeart;
+        _monateProzent = false;
+        _monateBearbeitet = false;
+        _wocheBearbeitet = false;
+        if (_eingabeartArbeit is null) { _monateArbeit = null; _wocheArbeit = null; return; }
+        _monateArbeit = WindowsFormsApplication1.Kaelteprofileingabe.NachMwh(
+            _gewaehlt!.Monatsanteile ?? new double[WindowsFormsApplication1.Kaelteprofileingabe.MONATE], _gewaehlt.Summe);
+        _wocheArbeit = (double[])(_gewaehlt.Wochenprofil ?? new double[WindowsFormsApplication1.Kaelteprofileingabe.WOCHE]).Clone();
+        _wocheDreiTage = WindowsFormsApplication1.Kaelteprofileingabe.WerktageGleich(_wocheArbeit);
+    }
+
+    private void EingabeArbeitsstandVerwerfen()
+    {
+        _eingabeartArbeit = null; _monateArbeit = null; _wocheArbeit = null;
+        _monateBearbeitet = false; _wocheBearbeitet = false;
+    }
+
+    /// <summary>Die Wahl der Eingabeart — in den Arbeitsstand; Typtage sind gesperrt.</summary>
+    private void EingabeartGewaehlt(int? index)
+    {
+        if (_gewaehlt is null || _eingabeartArbeit is null || index is not int i || i < 0 || i >= EINGABEARTEN.Length) return;
+        if (EINGABEARTEN[i] == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG &&
+            _eingabeartArbeit != WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG) return;
+        _eingabeartArbeit = EINGABEARTEN[i];
+    }
+
+    /// <summary>MWh ↔ %: die Werte werden umgerechnet (Bezug: Jahressumme der Zeile bzw. Summe der Monate).</summary>
+    private void MonatseinheitGewaehlt(bool prozent)
+    {
+        if (_monateArbeit is null || prozent == _monateProzent) return;
+        _monateArbeit = prozent
+            ? WindowsFormsApplication1.Kaelteprofileingabe.AusMwh(_monateArbeit).Anteile.Select(a => (double?)a).ToArray()
+            : WindowsFormsApplication1.Kaelteprofileingabe.NachMwh(
+                  _monateArbeit.Select(a => a ?? 0.0).ToArray(), AktuelleSummeMwh);
+        _monateProzent = prozent;
+    }
+
+    /// <summary>
+    /// OK der Überlagerung, Teil KBP-3a: prüft und übernimmt Monatswerte und Wochenprofil in die Zeile (die Kopie schreibt
+    /// erst das OK des Dialogs) und setzt die Eingabeart. Leer = übernommen, sonst der Grund.
+    /// </summary>
+    private string EingabeAnwenden(BedarfsProfilZeile z)
+    {
+        if (_eingabeartArbeit is null) return "";
+        if (_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_MONAT && _monateArbeit is not null && _monateBearbeitet)
+        {
+            string? g = WindowsFormsApplication1.Kaelteprofileingabe.PruefeMonate(_monateArbeit, _monateProzent);
+            if (g is not null) return g;
+            if (_monateProzent)
+                z.Monatsanteile = _monateArbeit.Select(a => a ?? 0.0).ToArray();
+            else
+            {
+                (double summe, double[] anteile) = WindowsFormsApplication1.Kaelteprofileingabe.AusMwh(_monateArbeit);
+                z.Monatsanteile = anteile;
+                z.Summe = summe;
+                _jahresverbrauchMWh = summe;
+            }
+            z.ProfilGeaendert = true;
+            _monateBearbeitet = false;
+            Geaendert?.Invoke();
+        }
+        if (_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_WOCHE && _wocheArbeit is not null && _wocheBearbeitet)
+        {
+            string? g = WindowsFormsApplication1.Kaelteprofileingabe.PruefeWoche(_wocheArbeit);
+            if (g is not null) return g;
+            z.Wochenprofil = (double[])_wocheArbeit.Clone();
+            z.ProfilGeaendert = true;
+            _wocheBearbeitet = false;
+            Geaendert?.Invoke();
+        }
+        if (!string.Equals(z.Eingabeart, _eingabeartArbeit, StringComparison.Ordinal))
+        {
+            z.Eingabeart = _eingabeartArbeit;
+            Geaendert?.Invoke();
+        }
+        return "";
     }
 
     /// <summary>
@@ -1548,6 +1761,7 @@
         _satzUeberlagerungFehler = null;
         _merker = null;
         _deckungArbeit = null;
+        EingabeArbeitsstandVerwerfen();
     }
 
     /// <summary>Die angefangenen Eingaben der Überlagerung; leer = übernommen, sonst der Grund.</summary>
@@ -1575,7 +1789,8 @@
             if (_deckungArbeit.Pruefgrund() is not null) return MeldungDeckungOhneEer;
             if (!DeckungGleich(z.Deckung, _deckungArbeit)) { z.Deckung.Uebernehmen(_deckungArbeit); Geaendert?.Invoke(); }
         }
-        return "";
+        // KBP-3a: Eingabeart, Monatswerte und Wochenprofil - eine verletzte Regel haelt die Ueberlagerung offen.
+        return EingabeAnwenden(z);
     }
 
     /// <summary>Abbrechen, ✕, Esc oder Schließen: der Stand beim Öffnen kommt zurück (Merker).</summary>
@@ -1591,6 +1806,7 @@
         _merker = null;
         _neuerWert = null;
         _deckungArbeit = null;
+        EingabeArbeitsstandVerwerfen();
     }
 
     /// <summary>„Bearbeiten…" der Projekt-Kopfleiste: EINE Projektzeile in der Satz-Überlagerung.</summary>

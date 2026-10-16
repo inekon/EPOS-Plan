@@ -1,0 +1,127 @@
+﻿@* KBP-3a (Konzept Kaeltebedarfsprofile 3.3): das Wochenprofil einer Kaeltezeile (168 Stunden der Projektkopie) in zwei
+   Ansichten desselben Datensatzes - „Werktag | Samstag | Sonntag“ (Werktag schreibt Montag bis Freitag gleich; nur
+   angeboten, wenn die Werktage gleich sind) und „168 h“ (sieben Tage, Tag kopieren und einfuegen wie der
+   TypProfilDialog). Der Editor schreibt in den Arbeitsstand des Wirts (Werte, in place); uebernommen wird mit OK. *@
+@using WindowsFormsApplication1
+
+<div class="epos-kbp-woche" data-kbp="woche">
+    <Formularraster>
+        <KindInhalt>
+            <Auswahlfeld Bezeichnung="@Resource.KBP_LBL_ANSICHT" Eintraege="@Ansichten"
+                         Auswahl="@(DreiTage ? 0 : 1)" AuswahlChanged="AnsichtGewaehlt"
+                         GesperrteEintraege="@(DreiTageMoeglich ? Array.Empty<int>() : new[] { 0 })"
+                         GesperrtHinweis="@Resource.KBP_HINW_WERKTAGE_UNGLEICH" />
+            <Auswahlfeld Bezeichnung="@Resource.KBP_LBL_TAG" Eintraege="@Tage" Auswahl="@_tag"
+                         AuswahlChanged="TagGewaehlt" />
+        </KindInhalt>
+    </Formularraster>
+    @if (!DreiTageMoeglich)
+    {
+        <Herleitungszeile Text="@Resource.KBP_HINW_WERKTAGE_UNGLEICH" />
+    }
+    <div class="epos-stundenraster epos-kbp-stundenraster">
+        @for (int i = 0; i < Kaelteprofileingabe.STUNDEN; i++)
+        {
+            int stunde = i;
+            <Zahlenfeld Bezeichnung="@((stunde + 1).ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                        Titel="@string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.KBP_STUNDE, stunde)"
+                        Feldname="@("kbp_stunde_" + (stunde + 1))" Nachkommastellen="3" Min="0"
+                        Wert="@Wert(stunde)" WertChanged="w => Setzen(stunde, w)" />
+        }
+    </div>
+    @if (!DreiTage)
+    {
+        <div class="epos-leiste">
+            <button type="button" class="epos-knopf" @onclick="TagKopieren">@Resource.KBP_BTN_TAG_KOPIEREN</button>
+            <button type="button" class="epos-knopf" disabled="@(_puffer is null)"
+                    @onclick="TagEinfuegen">@Resource.KBP_BTN_TAG_EINFUEGEN</button>
+        </div>
+    }
+    <Herleitungszeile Text="@Resource.KBP_HINW_WOCHE" />
+</div>
+
+@code {
+    /// <summary>Die 168 Stunden (Montag 0 Uhr zuerst) — der Arbeitsstand des Wirts, hier in place beschrieben.</summary>
+    [Parameter] public double[] Werte { get; set; } = new double[Kaelteprofileingabe.WOCHE];
+
+    /// <summary><c>true</c> = Ansicht „Werktag | Samstag | Sonntag“, <c>false</c> = „168 h“.</summary>
+    [Parameter] public bool DreiTage { get; set; }
+
+    /// <summary>Die Wahl der Ansicht.</summary>
+    [Parameter] public EventCallback<bool> DreiTageChanged { get; set; }
+
+    /// <summary>Ein Wert hat sich geändert.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    private int _tag;
+    private double[]? _puffer;
+    private bool _dreiVorher;
+
+    private static readonly IReadOnlyList<(int Id, string Text)> Ansichten = new[]
+    {
+        (0, Resource.KBP_ANSICHT_DREI),
+        (1, Resource.KBP_ANSICHT_168),
+    };
+
+    private bool DreiTageMoeglich => Kaelteprofileingabe.WerktageGleich(Werte);
+
+    private IReadOnlyList<(int Id, string Text)> Tage
+    {
+        get
+        {
+            string[] namen = ((DreiTage ? Resource.KBP_TAGE_DREI : Resource.KBP_WOCHENTAGE) ?? "").Split(';');
+            return namen.Select((n, i) => (i, n)).ToList();
+        }
+    }
+
+    /// <summary>Der Wochentag (Montag = 0 … Sonntag = 6), den die Stunden zeigen.</summary>
+    private int Wochentag => DreiTage
+        ? (_tag == 0 ? 0 : _tag == 1 ? Kaelteprofileingabe.SAMSTAG : Kaelteprofileingabe.SONNTAG)
+        : _tag;
+
+    protected override void OnParametersSet()
+    {
+        // Beim Wechsel der Ansicht zeigt die Tagwahl den entsprechenden Tag weiter (Samstag bleibt Samstag).
+        if (DreiTage != _dreiVorher)
+        {
+            _tag = DreiTage
+                ? (_tag == Kaelteprofileingabe.SAMSTAG ? 1 : _tag == Kaelteprofileingabe.SONNTAG ? 2 : 0)
+                : (_tag == 1 ? Kaelteprofileingabe.SAMSTAG : _tag == 2 ? Kaelteprofileingabe.SONNTAG : 0);
+            _dreiVorher = DreiTage;
+        }
+    }
+
+    private double? Wert(int s) => Werte is not null ? Werte[Wochentag * Kaelteprofileingabe.STUNDEN + s] : null;
+
+    private async Task Setzen(int s, double? w)
+    {
+        if (Werte is null) return;
+        double v = w ?? 0.0;
+        if (DreiTage && _tag == 0)
+            for (int d = 0; d < Kaelteprofileingabe.SAMSTAG; d++) Werte[d * Kaelteprofileingabe.STUNDEN + s] = v;
+        else
+            Werte[Wochentag * Kaelteprofileingabe.STUNDEN + s] = v;
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task AnsichtGewaehlt(int? id)
+    {
+        bool drei = id == 0;
+        if (drei && !DreiTageMoeglich) return;
+        if (drei != DreiTage) await DreiTageChanged.InvokeAsync(drei);
+    }
+
+    private void TagGewaehlt(int? id)
+    {
+        if (id is int t && t >= 0 && t < Tage.Count) _tag = t;
+    }
+
+    private void TagKopieren() => _puffer = Kaelteprofileingabe.Tag(Werte, Wochentag);
+
+    private async Task TagEinfuegen()
+    {
+        if (_puffer is null || Werte is null) return;
+        Kaelteprofileingabe.TagSetzen(Werte, Wochentag, _puffer);
+        await Geaendert.InvokeAsync();
+    }
+}
