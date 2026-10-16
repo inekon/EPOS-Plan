@@ -60,7 +60,7 @@ Fragen F1–F8 am 13.10.2026 nach Empfehlung entschieden (E138).
   die Simulationswerkzeuge lesen. IFC trägt dieselben Daten nur in Sätzen, die diese Werkzeuge selten auswerten.
 - **E135, DIN-Profile mit Werten:** Die Kategorie DIN des Katalogs der Nutzungsprofile (45 Profile, heute ohne Werte) wird mit
   Werten gesät und ausgeliefert, **sobald der Anwender die Werte liefert**. Die Sitzung schreibt keinen Wert aus dem Gedächtnis.
-  Dafür ist ein Schemaschritt nötig: angemeldet wird die nächste freie Nummer, heute **222**, vergeben ist sie damit nicht.
+  Dafür ist ein Schemaschritt nötig: angemeldet wird die nächste freie Nummer; vergeben wurde für DA-6 die **231**.
   „Normwerte einlesen…“ (NP7) bleibt als Abgleichweg.
 - **Wellen DA-1 bis DA-9, rund 17,5–24,5 PT.** gbXML Lasten und Zeitpläne kommen zuerst (DA-1 Import, DA-2 Export), dann IFC
   (DA-3), dann die Restdaten (DA-4) und die Profilprüfung (DA-5). Die DIN-Saat (DA-6) hängt an der Lieferung der Werte. DA-8
@@ -506,7 +506,7 @@ Vorschlag mit Rücknahme („Alle Vorschläge übernehmen“).
 | **DA-3** IFC Standardsätze lesen und schreiben | 4.2; `EPOS_Zone`/`EPOS_Gebaeude` um Rückfalldaten; G7d ersetzt statt doppelt; Lesen von `RefLatitude`, `WaermebrueckeUA`, `Waermedurchlasswiderstand`, `LuftwechselInfiltration` | 2,5–3,5 PT | Rundlauf IFC (Schreiber und Anreicherung); xBIM-Protokoll ohne Verlust; Importproben |
 | **DA-4** Restdaten beider Formate | `Tab_Zonenluftstrom`, Vorheizzeit, Übergabe je Zone, Höchstleistungen, Erdreich (G3, G4), Zeilenbild und Wochennamen | 2–3 PT | Rundlauf beider Formate um die Felder erweitert |
 | **DA-5** Profilprüfung beim Import (E135) | Rangfolge 4.3, gbXML-Raumtyptafel, DIN-Nummer in IFC, Ampel in Prüfgruppe 3 der Modellprüfung | 1,5–2 PT | Kern-Tests je Rangstufe und Ampelfarbe; nach MA-1 |
-| **DA-6** DIN-Saat (E135) | Saatklasse und Schemaschritt (Nummer bei Baubeginn anmelden, heute 222), Herkunftsmarke, Auslieferungsvorlage 3d, NP7 als Abgleich, Wachen (5) | 2–3 PT | Saat zählt 45 Profile mit Werten; SQL-Dialekt-Prüfer; Testdatenbankschema; Auslieferungsvorlage-Tests; Referenzlauf byte-gleich. **Hängt an der Lieferung der Werte (F1)** |
+| **DA-6** DIN-Saat (E135) | Saatklasse und Schemaschritt (Schritt **231**), Herkunftsmarke, Auslieferungsvorlage 3d, NP7 als Abgleich, Wachen (5) | 2–3 PT | Saat zählt 45 Profile mit Werten; SQL-Dialekt-Prüfer; Testdatenbankschema; Auslieferungsvorlage-Tests; Referenzlauf byte-gleich. **Hängt an der Lieferung der Werte (F1)** |
 | **DA-7** Round-Trip-Wache | Inventar als Tafel im Testprojekt, Wache „jedes Feld eingestuft“, gemeinsamer Rundlauf beider Formate | 1,5–2 PT | Wache rot bei neuem, nicht eingestuftem Feld (Gegenprobe) |
 | **DA-8** Absorptions- und Emissionsgrad je Bauteil (optional, nur bei F8 (a)) | **Schemabedarf:** zwei nullbare Spalten (Absorptionsgrad, Emissionsgrad, `CHECK` 0…1) an `Tab_Bauteilaufbau` und `Tab_Bauteilaufbau_STAMM`, ggf. an `Tab_Bauteil`; Rechenweg liest das Feld statt der Konstanten, leer = Konstante. Nummer nicht vergeben | 2–3 PT | Referenzlauf byte-gleich, solange kein Referenzprojekt ein Feld füllt; sonst neue Basis mit Einfrierregel |
 | **DA-9** Wiki und Logbuch | Seiten „Gebäudeimport“, „Gebäudeexport“, „Nutzungsprofile“; Logbuch-Entwurf | 0,5 PT | Gegenlesemuster der Wurzel-`CLAUDE.md` ohne Treffer |

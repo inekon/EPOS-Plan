@@ -12860,7 +12860,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogkosten vorhanden ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satzvorlage vorhanden ähnelt.
         /// </summary>
         public static string BK_KOSTEN_KATALOGKOSTEN {
             get {
@@ -12869,7 +12869,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}&quot; führt keine Kostenposition, der Katalogsatz des Geräts aber Kosten — über „Mit dem Kostenkatalog abgleichen…&quot; entstehen daraus Positionen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}&quot; führt keine Kostenposition, der Katalogsatz des Geräts aber eine Satzvorlage — über „Mit dem Kostenkatalog abgleichen…&quot; entstehen daraus Positionen. ähnelt.
         /// </summary>
         public static string BK_KOSTEN_KATALOGKOSTEN_HINT {
             get {
@@ -17002,7 +17002,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollständigkeit ähnelt.
         /// </summary>
         public static string BTSB_BEFUND {
             get {
@@ -20111,7 +20111,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die geprüft, {0} Platzhalter, 1 Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die geprüft, {0} Platzhalter, 1 Meldung ähnelt.
         /// </summary>
         public static string BV_VORLAGEN_PRUEFZEILE_BEFUND {
             get {
@@ -20120,7 +20120,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die geprüft, {0} Platzhalter, {1} Befunde ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die geprüft, {0} Platzhalter, {1} Meldungen ähnelt.
         /// </summary>
         public static string BV_VORLAGEN_PRUEFZEILE_BEFUNDE {
             get {
@@ -20129,7 +20129,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die geprüft, {0} Platzhalter, keine Befunde ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die geprüft, {0} Platzhalter, keine Meldungen ähnelt.
         /// </summary>
         public static string BV_VORLAGEN_PRUEFZEILE_OK {
             get {
@@ -32138,7 +32138,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Befund je Bauteil ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollständigkeit je Bauteil ähnelt.
         /// </summary>
         public static string GANS_BEFUND_LEGENDE {
             get {
@@ -32147,7 +32147,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „Befund“ ist gesperrt: Es liegen keine Befunde der Bauteile vor (kein Bauteilvorschlag). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Vollständigkeit“ ist gesperrt: Es liegt kein Bauteilvorschlag vor. ähnelt.
         /// </summary>
         public static string GANS_BEFUND_OHNE {
             get {
@@ -32156,7 +32156,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „Befund“ ist gesperrt: Es liegt kein Bauteilvorschlag vor. {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Vollständigkeit“ ist gesperrt: Es liegt kein Bauteilvorschlag vor. {0} ähnelt.
         /// </summary>
         public static string GANS_BEFUND_OHNE_VORSCHLAG {
             get {
@@ -32219,7 +32219,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollständigkeit ähnelt.
         /// </summary>
         public static string GANS_FARBMODUS_BEFUND {
             get {
@@ -32453,7 +32453,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Kein Befund dieser Gruppe liegt auf einer Fläche oder Zone der Ansicht. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Keine Meldung dieser Gruppe liegt auf einer Fläche oder Zone der Ansicht. ähnelt.
         /// </summary>
         public static string GANS_PRUEF_OHNE {
             get {
@@ -32489,7 +32489,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: die Vorschläge verwerfen — die Befunde bleiben ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: die Vorschläge verwerfen — die Meldungen bleiben ähnelt.
         /// </summary>
         public static string GANS_PRUEF_VERWERFEN_HINWEIS {
             get {
@@ -37215,7 +37215,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis ähnelt.
         /// </summary>
         public static string GEBSIM_SP_BEFUND {
             get {
@@ -40172,6 +40172,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_SPERRE_LOESCHEN_ASSISTENT {
             get {
                 return ResourceManager.GetString("GEB_SPERRE_LOESCHEN_ASSISTENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst die geänderten Gebäudedaten (Feiertagsland, Konditionierung) mit OK speichern — eine Übernahme der Modellprüfung schreibt dort. ähnelt.
+        /// </summary>
+        public static string GEB_SPERRE_PRUEFFELDER {
+            get {
+                return ResourceManager.GetString("GEB_SPERRE_PRUEFFELDER", resourceCulture);
             }
         }
         
@@ -44259,7 +44268,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Bauteile mit Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur unvollständige Bauteile ähnelt.
         /// </summary>
         public static string GIMP_DLG_FILTER_BAUTEILBEFUND {
             get {
@@ -44268,7 +44277,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt nur Flächen, deren Bauteil im Farbmodus „Befund“ orange oder rot steht: Körper unlesbar oder ohne Eigenschaften (U-Wert oder Fläche). Wirkt nur auf die Anzeige; gespeichert wird alles. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt nur Flächen, deren Bauteil im Farbmodus „Vollständigkeit“ orange oder rot steht: Körper unlesbar oder ohne Eigenschaften (U-Wert oder Fläche). Wirkt nur auf die Anzeige; gespeichert wird alles. ähnelt.
         /// </summary>
         public static string GIMP_DLG_FILTER_BAUTEILBEFUND_HINWEIS {
             get {
@@ -44286,7 +44295,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Flächen mit Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Flächen mit Hinweis ähnelt.
         /// </summary>
         public static string GIMP_DLG_FILTER_FEHLER {
             get {
@@ -44295,7 +44304,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt nur Flächen, bei denen die Spalte „Befund“ etwas nennt: ohne Nachbarfläche, ohne U-Wert, geschätzte Fläche oder ein Beleg aus Raumkörpern. Wirkt nur auf die Anzeige; gespeichert wird alles. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt nur Flächen, bei denen die Spalte „Hinweis“ etwas nennt: ohne Nachbarfläche, ohne U-Wert, geschätzte Fläche oder ein Beleg aus Raumkörpern. Wirkt nur auf die Anzeige; gespeichert wird alles. ähnelt.
         /// </summary>
         public static string GIMP_DLG_FILTER_FEHLER_HINWEIS {
             get {
@@ -44340,7 +44349,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte „Befund“ nennt, was an einer Fläche fehlt: ohne Gegenstück (gerechnet gegen unbeheizt), ohne U-Wert oder eine geschätzte Fläche. Die Filter zeigen nur diese Flächen; die Suche findet in allen Spalten. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte „Hinweis“ nennt, was an einer Fläche fehlt: ohne Gegenstück (gerechnet gegen unbeheizt), ohne U-Wert oder eine geschätzte Fläche. Die Filter zeigen nur diese Flächen; die Suche findet in allen Spalten. ähnelt.
         /// </summary>
         public static string GIMP_DLG_FLAECHEN_HINWEIS {
             get {
@@ -45951,6 +45960,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximale Raumtemperatur ähnelt.
+        /// </summary>
+        public static string GIMP_FELD_MAX_RAUMTEMPERATUR {
+            get {
+                return ResourceManager.GetString("GIMP_FELD_MAX_RAUMTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nachtabsenkung von ähnelt.
         /// </summary>
         public static string GIMP_FELD_NACHT_BEGINN {
@@ -46167,7 +46185,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis ähnelt.
         /// </summary>
         public static string GIMP_FL_SP_BEFUND {
             get {
@@ -50001,7 +50019,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die vollständig ähnelt.
         /// </summary>
         public static string IMP_BEFUND_OHNE {
             get {
@@ -54051,7 +54069,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis ähnelt.
         /// </summary>
         public static string IMP_KONFLIKT_SPALTE_BEFUND {
             get {
@@ -56807,6 +56825,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätekosten laufen über die Kostenverwaltung ähnelt.
+        /// </summary>
+        public static string KBROW_HINT_KOSTENVERWALTUNG {
+            get {
+                return ResourceManager.GetString("KBROW_HINT_KOSTENVERWALTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die leer = Vorgabe ähnelt.
         /// </summary>
         public static string KBROW_HINT_LEER_VORGABE {
@@ -56861,6 +56888,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätekosten: ähnelt.
+        /// </summary>
+        public static string KBROW_LBL_GERAETEKOSTEN {
+            get {
+                return ResourceManager.GetString("KBROW_LBL_GERAETEKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Untere Grenzleistung des ausgewählten Moduls: ähnelt.
         /// </summary>
         public static string KBROW_LBL_GRENZLEISTUNG {
@@ -56875,15 +56911,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KBROW_LBL_HERSTELLER {
             get {
                 return ResourceManager.GetString("KBROW_LBL_HERSTELLER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten: ähnelt.
-        /// </summary>
-        public static string KBROW_LBL_INVEST {
-            get {
-                return ResourceManager.GetString("KBROW_LBL_INVEST", resourceCulture);
             }
         }
         
@@ -59225,6 +59252,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_UNTERTITEL_INVEST {
             get {
                 return ResourceManager.GetString("KDLG_UNTERTITEL_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — Katalogsätze — ähnelt.
+        /// </summary>
+        public static string KDLG_VARIANTEN_GRUPPE_KATALOG {
+            get {
+                return ResourceManager.GetString("KDLG_VARIANTEN_GRUPPE_KATALOG", resourceCulture);
             }
         }
         
@@ -66829,7 +66865,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Was mit dem Eintrag geschieht: importieren, auslassen, überschreiben oder umbenennen; welche Aktionen erlaubt sind, hängt vom Befund der Zeile ab. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was mit dem Eintrag geschieht: importieren, auslassen, überschreiben oder umbenennen; welche Aktionen erlaubt sind, hängt von der Meldung der Zeile ab. ähnelt.
         /// </summary>
         public static string KI_DLG_IKF_AKTION_ERL {
             get {
@@ -66892,29 +66928,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Investitionskosten des Geräts laut Katalog in Euro. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gerätekosten in Euro aus der Satzvorlage dieses Katalogsatzes — nur Anzeige; gepflegt werden sie in der Kostenverwaltung. ähnelt.
         /// </summary>
-        public static string KI_DLG_KBROW_INVEST_ERL {
+        public static string KI_DLG_KBROW_GERAETEKOSTEN_ERL {
             get {
-                return ResourceManager.GetString("KI_DLG_KBROW_INVEST_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Investition je Kilowatt elektrischer Leistung; sie wird aus den fünf Kostenposten gerechnet und ist deshalb nur lesbar. ähnelt.
-        /// </summary>
-        public static string KI_DLG_KBROW_INVEST_KWEL_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_KBROW_INVEST_KWEL_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kostenposten „{0}“ des Moduls in Euro; die fünf Posten zusammen ergeben die Investition, aus der die Investition je kWel gerechnet wird. ähnelt.
-        /// </summary>
-        public static string KI_DLG_KBROW_KOSTENPOSTEN_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_KBROW_KOSTENPOSTEN_ERL", resourceCulture);
+                return ResourceManager.GetString("KI_DLG_KBROW_GERAETEKOSTEN_ERL", resourceCulture);
             }
         }
         
@@ -66960,33 +66978,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_KBROW_SATZ_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_KBROW_SATZ_NAME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bezugsgröße der Wartungskosten, wie sie im Katalog steht (freier Text). ähnelt.
-        /// </summary>
-        public static string KI_DLG_KBROW_WARTUNG_EINHEIT_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_KBROW_WARTUNG_EINHEIT_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wartungskosten des Kessels; worauf sie sich beziehen, sagt das Feld „Einheit“. ähnelt.
-        /// </summary>
-        public static string KI_DLG_KBROW_WARTUNG_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_KBROW_WARTUNG_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wartungskosten je erzeugter Kilowattstunde Strom in Euro. ähnelt.
-        /// </summary>
-        public static string KI_DLG_KBROW_WARTUNG_KWHEL_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_KBROW_WARTUNG_KWHEL_ERL", resourceCulture);
             }
         }
         
@@ -67513,15 +67504,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätepreis in Euro; nicht negativ. ähnelt.
-        /// </summary>
-        public static string KI_DLG_KM_MODULKOSTEN_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_KM_MODULKOSTEN_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kälteleistung im Nennpunkt in kW; größer als null. ähnelt.
         /// </summary>
         public static string KI_DLG_KM_NENNKAELTELEISTUNG_ERL {
@@ -67846,7 +67828,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fußzeile mit den Befunden der Seite — fehlende Positionen, lose Zuordnungen, Hinweise zur Vergleichsgruppe. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fußzeile mit den Meldungen der Seite — fehlende Positionen, lose Zuordnungen, Hinweise zur Vergleichsgruppe. ähnelt.
         /// </summary>
         public static string KI_DLG_KSE_STATUS_ERL {
             get {
@@ -69156,15 +69138,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MODK_PV_BEZEICHNER_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_MODK_PV_BEZEICHNER_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Preis eines Moduls; die Anlagenkosten entstehen daraus über die Modulzahl. ähnelt.
-        /// </summary>
-        public static string KI_DLG_MODK_PV_KOSTEN_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_MODK_PV_KOSTEN_ERL", resourceCulture);
             }
         }
         
@@ -74812,15 +74785,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gerätekosten in Euro — Anzeige; gepflegt werden sie in der Kostenverwaltung, nicht auf dieser Maske. ähnelt.
-        /// </summary>
-        public static string KI_DLG_WPA_MODULKOSTEN_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_WPA_MODULKOSTEN_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Liegt ein Nachhaltigkeitsnachweis für die eingesetzte Biomasse vor? Ohne ihn gilt der Nullansatz nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_NACHWEIS_ERL {
@@ -75226,24 +75190,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Anschaffungskosten der Wärmepumpe in Euro — Anzeige; die Maske zeigt sie mit ihrer Herleitung, gepflegt werden sie in der Kostenverwaltung. ähnelt.
-        /// </summary>
-        public static string KI_DLG_WP_MODULKOSTEN_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_WP_MODULKOSTEN_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Modulkosten ähnelt.
-        /// </summary>
-        public static string KI_DLG_WP_MODULKOSTEN_NAME {
-            get {
-                return ResourceManager.GetString("KI_DLG_WP_MODULKOSTEN_NAME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Name der Wärmepumpe im Katalog. ähnelt.
         /// </summary>
         public static string KI_DLG_WP_NAME_ERL {
@@ -75447,15 +75393,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WRK_I_SC_MAX_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WRK_I_SC_MAX_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Preis eines Geräts; er geht in die Investition der Anlage ein. ähnelt.
-        /// </summary>
-        public static string KI_DLG_WRK_KOSTEN_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_WRK_KOSTEN_ERL", resourceCulture);
             }
         }
         
@@ -80080,7 +80017,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Einheiten-Konsistenz {1}: {0} Befund(e). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheiten-Konsistenz {1}: {0} Meldung(en). ähnelt.
         /// </summary>
         public static string KI_REG_EINHEITEN_BEFUNDE {
             get {
@@ -80098,7 +80035,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Einheiten-Konsistenz {0}: kein Befund — jeder aktive Energieträger erreicht kWh. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheiten-Konsistenz {0}: keine Meldung — jeder aktive Energieträger erreicht kWh. ähnelt.
         /// </summary>
         public static string KI_REG_EINHEITEN_OHNE_BEFUND {
             get {
@@ -82018,7 +81955,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Prüft die Energieträger auf Einheiten-Konsistenz: Erreicht jeder aktive Träger kWh — unmittelbar, über Heizwert bzw. Brennwert oder über eine aktive Umrechnungsregel? Liefert die Befundliste, ändert nichts. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prüft die Energieträger auf Einheiten-Konsistenz: Erreicht jeder aktive Träger kWh — unmittelbar, über Heizwert bzw. Brennwert oder über eine aktive Umrechnungsregel? Liefert die Meldungsliste, ändert nichts. ähnelt.
         /// </summary>
         public static string KI_REG_ZWECK_ENERGIETRAEGER_PRUEFEN {
             get {
@@ -85499,15 +85436,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_LBL_MINDESTTEILLAST {
             get {
                 return ResourceManager.GetString("KM_LBL_MINDESTTEILLAST", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätepreis ähnelt.
-        /// </summary>
-        public static string KM_LBL_MODULKOSTEN {
-            get {
-                return ResourceManager.GetString("KM_LBL_MODULKOSTEN", resourceCulture);
             }
         }
         
@@ -91790,7 +91718,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kessel dieses Projekts führen unterschiedliche Einheiten für die Wartungskosten — keine Vorbelegung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Betriebs-Satzvorlagen der Kessel dieses Projekts bemessen die Wartung unterschiedlich — keine Vorbelegung. ähnelt.
         /// </summary>
         public static string KOSTEN_BETRIEB_EINHEIT_GEMISCHT {
             get {
@@ -91817,7 +91745,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt: {0} €/a — fester Jahresbetrag aus der Kesseltechnik. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt: {0} €/a — fester Jahresbetrag aus der Betriebs-Satzvorlage des Kessels. ähnelt.
         /// </summary>
         public static string KOSTEN_BETRIEB_HERL_KESSEL_JAHR {
             get {
@@ -91871,7 +91799,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Gewerk sind keine Wartungsangaben hinterlegt — keine Vorbelegung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Gewerk führt keine Betriebs-Satzvorlage einen Wartungssatz — keine Vorbelegung. ähnelt.
         /// </summary>
         public static string KOSTEN_BETRIEB_OHNE_WARTUNGSFELD {
             get {
@@ -91979,7 +91907,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Modulpreis ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stückpreis ähnelt.
         /// </summary>
         public static string KOSTEN_PLANWERT_BASIS_MODUL {
             get {
@@ -92029,6 +91957,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOSTEN_PLANWERT_HERL_SPEICHER {
             get {
                 return ResourceManager.GetString("KOSTEN_PLANWERT_HERL_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satzvorlage {0} ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_HERL_VORLAGE {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_HERL_VORLAGE", resourceCulture);
             }
         }
         
@@ -94127,6 +94064,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus der Satzvorlage; Gerätekosten werden in der Kostenverwaltung gepflegt ähnelt.
+        /// </summary>
+        public static string MODK_HERL_KOSTENSATZ {
+            get {
+                return ResourceManager.GetString("MODK_HERL_KOSTENSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung: ähnelt.
         /// </summary>
         public static string MODK_LBL_BESCHREIBUNG {
@@ -94199,6 +94145,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostensatz ähnelt.
+        /// </summary>
+        public static string MODK_LBL_KOSTENSATZ {
+            get {
+                return ResourceManager.GetString("MODK_LBL_KOSTENSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand ähnelt.
         /// </summary>
         public static string MODK_LBL_LADEZUSTAND {
@@ -94231,15 +94186,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MODK_LBL_MODULKOSTEN {
             get {
                 return ResourceManager.GetString("MODK_LBL_MODULKOSTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Modulkosten: ähnelt.
-        /// </summary>
-        public static string MODK_LBL_MODULKOSTEN_PV {
-            get {
-                return ResourceManager.GetString("MODK_LBL_MODULKOSTEN_PV", resourceCulture);
             }
         }
         
@@ -94388,7 +94334,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die grün – ohne Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die grün – ohne Meldung ähnelt.
         /// </summary>
         public static string MPB_AMPEL_GRUEN {
             get {
@@ -94460,7 +94406,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Befunde dieser Prüfgruppe zeigen oder verbergen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Meldungen dieser Prüfgruppe zeigen oder verbergen ähnelt.
         /// </summary>
         public static string MPB_BTN_BEFUNDE_HINWEIS {
             get {
@@ -94604,7 +94550,43 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} Befunde, {2} Vorschläge – öffnet „Modell prüfen“ auf dieser Gruppe. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimaregion „{0}“ ist für das Projekt gespeichert. ähnelt.
+        /// </summary>
+        public static string MPB_KLIMA_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("MPB_KLIMA_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimaregion ähnelt.
+        /// </summary>
+        public static string MPB_KLIMA_LABEL {
+            get {
+                return ResourceManager.GetString("MPB_KLIMA_LABEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimaregion gilt für alle Gebäude des Projekts; die Liste ist dieselbe wie in der Kopfleiste. ähnelt.
+        /// </summary>
+        public static string MPB_KLIMA_TEXT {
+            get {
+                return ResourceManager.GetString("MPB_KLIMA_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimaregion des Projekts ähnelt.
+        /// </summary>
+        public static string MPB_KLIMA_TITEL {
+            get {
+                return ResourceManager.GetString("MPB_KLIMA_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} Meldungen, {2} Vorschläge – öffnet „Modell prüfen“ auf dieser Gruppe. ähnelt.
         /// </summary>
         public static string MPB_LEISTE_GRUPPE_HINWEIS {
             get {
@@ -94640,7 +94622,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Vorschläge übernommen, {1} Befunde brauchen eine Eingabe. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Vorschläge übernommen, {1} Meldungen brauchen eine Eingabe. ähnelt.
         /// </summary>
         public static string MPB_MSG_UEBERNOMMEN {
             get {
@@ -94658,7 +94640,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Vorschlag – die Befunde brauchen eine Eingabe. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Vorschlag – die Meldungen brauchen eine Eingabe. ähnelt.
         /// </summary>
         public static string MPB_SPERRE_KEIN_VORSCHLAG {
             get {
@@ -94694,7 +94676,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Befunde, {1} Vorschläge ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Meldungen, {1} Vorschläge ähnelt.
         /// </summary>
         public static string MPB_ZAEHLUNG {
             get {
@@ -95234,7 +95216,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Vorschläge verworfen — die Befunde bleiben. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Vorschläge verworfen — die Meldungen bleiben. ähnelt.
         /// </summary>
         public static string MP_MSG_VERWORFEN_ZAHL {
             get {
@@ -106786,7 +106768,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Stränge und Wechselrichterzuordnung, Neigung, Azimut, Anzahl Module, Ertragsmodell und Energieträger der Anlage. Alle Modulwerte samt den Temperaturkoeffizienten und den Modulkosten gehen mit. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Stränge und Wechselrichterzuordnung, Neigung, Azimut, Anzahl Module, Ertragsmodell und Energieträger der Anlage. Alle Modulwerte samt den Temperaturkoeffizienten gehen mit. ähnelt.
         /// </summary>
         public static string PVD_RUECK_BLEIBT {
             get {
@@ -127318,7 +127300,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Modulanzahl, Neigung, Azimut, Albedo, der Solarkreis (Pumpe, Verluste, Arbeitstemperatur, Grädigkeit, Spreizung) und die Senken der Anlage. Kennwerte, Flächen und Investitionskosten gehen mit. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Modulanzahl, Neigung, Azimut, Albedo, der Solarkreis (Pumpe, Verluste, Arbeitstemperatur, Grädigkeit, Spreizung) und die Senken der Anlage. Kennwerte und Flächen gehen mit. ähnelt.
         /// </summary>
         public static string SKV_RUECK_BLEIBT {
             get {
@@ -136032,7 +136014,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Befunde – die Vorlage lässt sich füllen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Meldungen – die Vorlage lässt sich füllen. ähnelt.
         /// </summary>
         public static string VF_PRUEF_KEINE_BEFUNDE {
             get {
@@ -147889,11 +147871,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die aus dem Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus der Satzvorlage; Gerätekosten werden in der Kostenverwaltung gepflegt ähnelt.
         /// </summary>
-        public static string WPS_HERL_MODULKOSTEN {
+        public static string WPS_HERL_KOSTENSATZ {
             get {
-                return ResourceManager.GetString("WPS_HERL_MODULKOSTEN", resourceCulture);
+                return ResourceManager.GetString("WPS_HERL_KOSTENSATZ", resourceCulture);
             }
         }
         
@@ -147943,11 +147925,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die kein Planwert im Datenbestand ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Kostensatz in der Kostenverwaltung ähnelt.
         /// </summary>
-        public static string WPS_HINWEIS_MODULKOSTEN_LEER {
+        public static string WPS_HINWEIS_KOSTENSATZ_LEER {
             get {
-                return ResourceManager.GetString("WPS_HINWEIS_MODULKOSTEN_LEER", resourceCulture);
+                return ResourceManager.GetString("WPS_HINWEIS_KOSTENSATZ_LEER", resourceCulture);
             }
         }
         
@@ -148443,15 +148425,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPV_MSG_ANLAGE_PRUEFEN {
             get {
                 return ResourceManager.GetString("WPV_MSG_ANLAGE_PRUEFEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Modulkosten dürfen nicht negativ sein. ähnelt.
-        /// </summary>
-        public static string WPV_MSG_MODULKOSTEN_NEGATIV {
-            get {
-                return ResourceManager.GetString("WPV_MSG_MODULKOSTEN_NEGATIV", resourceCulture);
             }
         }
         
@@ -149140,15 +149113,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätepreis: ähnelt.
-        /// </summary>
-        public static string WRK_LBL_KOSTEN {
-            get {
-                return ResourceManager.GetString("WRK_LBL_KOSTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die AC-Nennleistung: ähnelt.
         /// </summary>
         public static string WRK_LBL_P_AC_NENN {
@@ -149424,15 +149388,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WRK_PLAUSI_KOPF_HINWEIS {
             get {
                 return ResourceManager.GetString("WRK_PLAUSI_KOPF_HINWEIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gerätepreis ist negativ ({0} €). ähnelt.
-        /// </summary>
-        public static string WRK_PLAUSI_KOSTEN_NEGATIV {
-            get {
-                return ResourceManager.GetString("WRK_PLAUSI_KOSTEN_NEGATIV", resourceCulture);
             }
         }
         
@@ -150526,7 +150481,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis ähnelt.
         /// </summary>
         public static string ZNB_SPALTE_BEFUND {
             get {
@@ -166185,6 +166140,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_PAKETTEIL_NACHLADEN_FEHLGESCHLAGEN {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_PAKETTEIL_NACHLADEN_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zapfprofilgenerator hat fehlende frei verfügbare Parameter in die Katalogversion „{0}“ nachgetragen: {1} Parameter ({2}). ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_PAKETTEIL_PARAMETER_NACHGETRAGEN {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_PAKETTEIL_PARAMETER_NACHGETRAGEN", resourceCulture);
             }
         }
         

@@ -503,51 +503,10 @@ namespace EPOS.Kern.Tests
                 PROJEKT, WirtschaftlichkeitSzenario.ERWARTET), 6);
         }
 
-        /// <summary>
-        /// Gerätekataloge (ND‑Q7 b, E10‑Q2 a): Nur ein NEUER Kesseleintrag in „%/a" ohne
-        /// Betrag nimmt den Wartungssatz der Kessel-Standardzeile; ein Betrag bleibt, und
-        /// „€/a" hat keinen Gegenwert in der Tabelle.
-        /// </summary>
-        [Fact]
-        public void Ein_neuer_Kesseleintrag_in_Prozent_nimmt_den_Wartungssatz_der_Tabelle()
-        {
-            using var db = new TestDatenbank();
-            if (!db.Vorhanden) return;
-            NutzungsdauerCtrl.ProbeVergessen();
-
-            // Ausgeliefert ist kein Wartungssatz — dann bleibt es beim leeren Wert.
-            var ohneTabelle = new HeizkesselStammCtrl
-            {
-                Wartungskosten = 0.0, Wartungskosten_Einheit = DbWerte.KESSEL_WARTUNG_EINHEIT_PROZENT
-            };
-            ohneTabelle.WartungAusNutzungsdauertabelle();
-            Assert.Equal(0.0, ohneTabelle.Wartungskosten);
-
-            NutzungsdauerZeile kessel = NutzungsdauerCtrl.Zeile(ZEILE_KESSEL);
-            kessel.WartungProzent = 1.5;
-            Assert.True(NutzungsdauerCtrl.Speichern(kessel, out string grund), grund);
-
-            var prozent = new HeizkesselStammCtrl
-            {
-                Wartungskosten = 0.0, Wartungskosten_Einheit = DbWerte.KESSEL_WARTUNG_EINHEIT_PROZENT
-            };
-            prozent.WartungAusNutzungsdauertabelle();
-            Assert.Equal(1.5, prozent.Wartungskosten, 9);
-
-            var gepflegt = new HeizkesselStammCtrl
-            {
-                Wartungskosten = 2.25, Wartungskosten_Einheit = DbWerte.KESSEL_WARTUNG_EINHEIT_PROZENT
-            };
-            gepflegt.WartungAusNutzungsdauertabelle();
-            Assert.Equal(2.25, gepflegt.Wartungskosten, 9);
-
-            var jahresbetrag = new HeizkesselStammCtrl
-            {
-                Wartungskosten = 0.0, Wartungskosten_Einheit = DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR
-            };
-            jahresbetrag.WartungAusNutzungsdauertabelle();
-            Assert.Equal(0.0, jahresbetrag.Wartungskosten);
-        }
+        // HIER STAND die Probe „ein neuer Kesseleintrag in %/a nimmt den Wartungssatz der
+        // Tabelle". Die Spalte Wartungskosten des Kessels ist mit Welle KB-4 entfallen
+        // (GeraetekostenEntfallSchema); vorbelegt wird der Satz jetzt in der Betriebsposition
+        // der Satzvorlage - gehalten von den Proben der Kostenverwaltung.
 
         // =====================================================================
         //  Rechenweg, Herleitung, Formelmappe

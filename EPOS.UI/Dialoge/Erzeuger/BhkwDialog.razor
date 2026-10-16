@@ -15,8 +15,8 @@
    * Die UNTERE GRENZLEISTUNG steht beim Projektsatz mit ihrer Herleitung (0 = Projekt-
      vorgabe, W6-E-7). Sie ist zugleich Spalte des Moduls (Tab_BHKW.Grenzleistung,
      Rangfolge Anlage, Katalog, Projekt) und geht mit dem Rueckweg in den Katalog.
-   * Die Investition hat FUENF Posten (Modul, Montage, Lieferung, Schallschutzhaube,
-     Abgasreinigung); die Investition je kWel ist ihre Ableitung und nur Anzeige - in
+   * Die Geraetekosten haben seit Welle KB-4 EINE Basis (Satzvorlage des Katalogsatzes,
+     gepflegt in der Kostenverwaltung); die Anlage zeigt ihre Summen - in
      „Alle Daten" und in der Satzbearbeitung, gerechnet vom Kern.
    * „Neu…" fragt zuerst den Namen und oeffnet dann den Katalogeditor (BhkwKatalogDialog
      braucht ihn), dieselbe Ueberlagerung wie bisher.
@@ -297,8 +297,8 @@
 
             @* ALLE DATEN DES GEWAEHLTEN SATZES, aufklappbar und BEARBEITBAR (15./16.09.2026):
                beim Katalogsatz der Katalog (gesperrt nur lesen), beim Projektsatz die
-               Projektkopie - dieselben Felder samt den fuenf Kostenposten, der abgeleiteten
-               Investition je kWel und der Wartung je kWhel. *@
+               Projektkopie - dieselben Felder; Kostenspalten fuehrt der Satz seit Welle
+               KB-4 nicht mehr. *@
             @if (AlleDatenDa)
             {
                 <div class="epos-modulparameter">

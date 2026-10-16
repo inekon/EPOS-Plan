@@ -1075,6 +1075,13 @@ namespace WindowsFormsApplication1
         /// (<see cref="BrennstoffpreiseTraegerkarteSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg liest die
         /// drei Spalten; sie waren allein Saat der Energieträger-Variante. <b>Neue Katalogfassung:</b> Die
         /// Prüfsumme jedes Brennstoffs ändert sich, der Schritt bildet sie für unveränderte Sätze neu.
+        /// Danach, mit dem ENTFALL DER GERÄTEKOSTENSPALTEN (KB-4), steht das Ziel auf
+        /// <see cref="GeraetekostenEntfallSchema.SCHRITT"/>: der Investitionsverweis und die Saat am
+        /// Wechselrichter, dann der Entfall der 32 Kostenspalten an den acht Investitionsgewerken und ihren
+        /// Projektkopien (<see cref="GeraetekostenEntfallSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg
+        /// dieser Gewerke liest eine der Spalten; Planwert, Dialoge und Berichte lesen die Satzvorlage.
+        /// <b>Neue Katalogfassung:</b> Die Prüfsumme jedes Satzes der acht Kataloge ändert sich, der Schritt
+        /// bildet sie für unveränderte Sätze neu.
         /// Danach, mit SCHEMASCHRITT A DER KÄLTEBEDARFSPROFILE (KBP-2), steht das Ziel auf
         /// <see cref="KaeltebedarfsprofilVorlagenSchema.SCHRITT"/>: <c>Z_Projekt_Kaeltebedarf.Eingabeart</c> (Vorgabe 'jahr'), der
         /// Art-Vorschlag <c>Kaelte_Art</c> an <c>Tab_Kaeltebedarf_STAMM</c> und <c>Tab_Kaeltebedarf</c> und die Saat der

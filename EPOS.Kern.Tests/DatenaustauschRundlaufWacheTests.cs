@@ -135,7 +135,6 @@ namespace EPOS.Kern.Tests
             ["Gebaeude.Luftwechsel_Nutzer"] = "B13 am Gebäude: wie die Zone",
             ["Gebaeude.Heizleistung_Max"] = "B11 trägt DA-4 je Zone (Restdaten); das Gebäudefeld bleibt benannter Verlust",
             ["Gebaeude.Kuehlleistung_Max"] = "B11 trägt DA-4 je Zone (Restdaten); das Gebäudefeld bleibt benannter Verlust",
-            ["Gebaeude.Maximaleraumtemperatur"] = "B10 trägt N2 je Zone (Restdaten); das Gebäudefeld bleibt benannter Verlust",
             ["Gebaeude.Aufheizzeit_Manuell_H"] = "B20 trägt DA-4 je Zone (Vorheizzeit_H); die manuelle Aufheizzeit des Gebäudes bleibt benannter Verlust",
             ["Gebaeude.Interne_Waermegewinne"] = "B17 am Gebäude: wie die Zone",
             ["Gebaeude.Wohngebaeude_Nicht_Wohngebaeude"] = "A6 trägt gbXML (buildingType); Verlustliste noch „Verlust“",
@@ -357,7 +356,12 @@ namespace EPOS.Kern.Tests
             ["B11"] = (x, v) => { foreach (var (q, l) in Raeume(x)) { v.Wert(q.Rest?.HeizleistungMax, l?.Rest?.HeizleistungMax); v.Wert(q.Rest?.KuehlleistungMax, l?.Rest?.KuehlleistungMax); } },
             ["B20"] = (x, v) => { foreach (var (q, l) in Raeume(x)) v.Wert(q.Rest?.VorheizzeitH, l?.Rest?.VorheizzeitH); },
             // Nachzug N2: die Höchsttemperatur der Zone über dieselben Restdaten.
-            ["B10"] = (x, v) => { foreach (var (q, l) in Raeume(x)) v.Wert(q.Rest?.Maximaleraumtemperatur, l?.Rest?.Maximaleraumtemperatur); },
+            ["B10"] = (x, v) =>
+            {
+                foreach (var (q, l) in Raeume(x)) v.Wert(q.Rest?.Maximaleraumtemperatur, l?.Rest?.Maximaleraumtemperatur);
+                // Nachzug N4: dazu die des Gebäudes (neben dem Erdreich).
+                v.Wert(x.Quelle.Gebaeude[0].Erdreich?.MaximaleraumtemperaturC, x.Gelesen.Gebaeude.FirstOrDefault()?.Erdreich?.MaximaleraumtemperaturC);
+            },
             ["B21"] = (x, v) =>
             {
                 foreach (var (q, l) in Raeume(x))
@@ -503,10 +507,10 @@ namespace EPOS.Kern.Tests
             Assert.True(erledigt.Length == 0, "Grenze behoben, aus der Liste nehmen: " + string.Join(", ", erledigt));
             // Die Zählung des Rundlaufs (Protokoll DA-7, mit den Restdaten der DA-4) — eine Änderung zeigt sich hier.
             // gbXML: abweichend genau die Daten, die gbXML nicht oder nur lesend trägt und die das Abbild führt.
-            Assert.Equal("Gleich 52, Abweichend 5, OhneTraeger 14; Felder 70663; abweichend A1 A5 B5 D8 F3; ohne Träger, aber getragen: keins",
+            Assert.Equal("Gleich 52, Abweichend 5, OhneTraeger 14; Felder 70665; abweichend A1 A5 B5 D8 F3; ohne Träger, aber getragen: keins",
                          bericht["gbXML"]);
             // IFC: abweichend nur an den benannten Grenzen der Bauteillage (Rundlaufgrenzen).
-            Assert.Equal("Gleich 54, Abweichend 3, OhneTraeger 14; Felder 70663; abweichend D3 D4 D6; ohne Träger, aber getragen: keins",
+            Assert.Equal("Gleich 54, Abweichend 3, OhneTraeger 14; Felder 70665; abweichend D3 D4 D6; ohne Träger, aber getragen: keins",
                          bericht["IFC"]);
         }
 

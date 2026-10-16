@@ -175,9 +175,9 @@ Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
-### Version 1.2.0.12 — Entwurf, Versionsnummer beim Anwender zu bestätigen
+### Version 1.2.0.12 — Entwurf, Versionsnummer beim Anwender zu bestätigen — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
-Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5, MA-7; Statuszeilen #1002 bis #1057, #1076 bis #1083, #1085, #1091, #1092). Die Wiki-Quellen (Gebäude, Gebäudeimport, Nutzungsprofile, Baustoffe und Bauteilaufbauten, Datenexport, Index der Hilfeschlüssel) sind fortgeschrieben, ins Wiki geladen ist noch nichts. Nach dem Anwenderentscheid vom 13.10.2026 gilt die Nummer bis zum 16.10.2026 nur als Vorschlag; es gibt keinen Upload.
+Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5, MA-7; Statuszeilen #1002 bis #1057, #1076 bis #1083, #1085, #1091, #1092, #1094). Die Wiki-Quellen (Gebäude, Gebäudeimport, Nutzungsprofile, Baustoffe und Bauteilaufbauten, Datenexport, Index der Hilfeschlüssel) sind fortgeschrieben, ins Wiki geladen ist noch nichts. Nach dem Anwenderentscheid vom 13.10.2026 gilt die Nummer bis zum 16.10.2026 nur als Vorschlag; es gibt keinen Upload.
 
 - Seit 13.10.2026: Der Gebäudedialog prüft ein Gebäude mit „Modell prüfen…“ auf Rechenfähigkeit, zeigt je Prüfgruppe eine Ampel und übernimmt die Vorschläge mit einem Klick; nach einem Import öffnet die Prüfung von selbst.
 - Seit 13.10.2026: Die Modellprüfung meldet je Zone eine nicht geschlossene Hülle und schlägt das fehlende Dach, die fehlende Bodenplatte oder Geschossdecke mit passender Fläche vor.
@@ -189,6 +189,8 @@ Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5
 - Seit 13.10.2026: Der gbXML-Import liest je Raum Lasten, Sollwerte und Zeitpläne und legt daraus die Konditionierungskalender der Zonen an; Werte der Datei gehen dem Nutzungsprofil vor.
 - Seit 13.10.2026: Der gbXML-Export schreibt die Kalender der Zonen als Zeitpläne sowie Personen, Geräte, Licht, Außenluft und Luftwechsel je Zone, der IFC-Export dieselben Lasten, Auslegungstemperaturen, den Glasanteil der Fenster und thermische Zonen in den IFC-Standardsätzen; der Import beider Formate liest sie wieder ein.
 - Seit 14.10.2026: Der Gebäudeexport in gbXML und IFC nimmt Vorheizzeit, Höchstleistungen, Wärmeübergabe je Zone, Luftströme zwischen Zonen, Erdreichangaben sowie Zeilenbild und benannte Wochen der Kalender, die Zuordnung von Kalenderzeiträumen zu benannten Wochen und die Höchsttemperatur der Zonen mit, der Import liest sie wieder ein. Die Anreicherung einer IFC-Datei schreibt auch Vorheizzeit, Übergabe, Luftströme und Erdreichangaben.
+- Seit 16.10.2026: Der Gebäudeexport in gbXML und IFC nimmt die obere Raumtemperatur des Gebäudes und die Zuordnung von Feiertagen zu benannten Wochen mit, der Import liest sie wieder ein.
+- Seit 16.10.2026: Im Blatt „Modell prüfen“ lässt sich die Klimaregion des Projekts direkt wählen.
 - Seit 14.10.2026: Beim Gebäudeimport ordnet EPOS-Plan jeder Zone das Nutzungsprofil der DIN/TS 18599-10 zu, wenn die Datei eine Profilnummer oder einen gbXML-Raumtyp trägt, und die Modellprüfung zeigt mit einer Ampel, woher das Profil jeder Zone kommt.
 - Seit 14.10.2026: Im Reiter „Zonen“ des Gebäudeeditors zeigt eine Ampelleiste den Stand der Modellprüfung; ein Klick öffnet die Prüfung auf der Gruppe.
 - Seit 14.10.2026: Das Blatt „Nutzung und Kalender“ zeigt je Zone ein Kurzbild der Woche; „Sollwerte setzen…“ wirkt auch auf den Heizkalender einer Zone.
@@ -197,6 +199,7 @@ Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5
 - Seit 13.10.2026: Im Gebäudedialog lassen sich alle oder die gewählten Gebäude des Projekts aus der Kopfleiste simulieren; die Baustoff-Zuordnungen stehen im Gebäudeimport und im Gebäudeeditor.
 - Seit 13.10.2026: Beim erneuten Mehrzonenimport wird der gespeicherte Zonenplan vorgelegt und die Projektdatei mitgeprüft, die Zusammenfassung des Gebäudedialogs zeigt den Jahreswärmebedarf des letzten Laufs, und die Kachel Gebäudekühlung springt auf das zuletzt gewählte Gebäude.
 - Seit 13.10.2026: Der Bauteilkatalog-Import ordnet Stoffgruppen nach der Code-Tafel zu, führt Haustechnik-Werkstoffe und Luftdurchlässe in einer eigenen Klasse und korrigiert Skalenfehler der Wärmeleitfähigkeit.
+- Seit 14.10.2026: Der Wiederimport des Bauteilkatalogs erkennt zusammengeführte Baustoffe schon im ersten Lauf wieder; die Vorschau zählt namensgleiche Sätze.
 - Seit 12.10.2026: „Administration › Gebäude › Bauteilkatalog einlesen…“ liest einen Bauteilkatalog aus CSV-Dateien in Baustoff- und Aufbaukatalog ein; Gruppe, Klasse und Herkunft gliedern die Sätze, und für die Gebäudesimulation meist ungeeignete Aufbauten sind gekennzeichnet.
 - Seit 12.10.2026: Der Gebäudeeditor trennt „Beschreibung und Einordnung“ von den „Rechengrößen“ und kennzeichnet an jedem Wert, woher er kommt oder dass der Rechenweg ihn nicht liest.
 - Seit 12.10.2026: Der Import aus einer Projektdatei übernimmt Verwendung, Gebäudeart, Energiestandard und Bauweise, platziert Räume ohne Zone selbst und belegt die Zonen mit dem Profil der DIN-Nummer oder der Gebäudeart vor.
@@ -204,14 +207,14 @@ Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5
 - Seit 12.10.2026: Die leeren Kategorien SIA 2024 und VDI 2078 sind aus dem Katalog der Nutzungsprofile entfernt; vorhandene Profile bleiben in einer eigenen Kategorie.
 - Seit 11.10.2026: Saison, Ferien, Zeiträume und Einzeltage der Kalender nehmen Tag und Monat als „TT.MM.“ an und prüfen die Eingabe erst beim Verlassen des Feldes.
 
-### Version ‹Version› — Kältebedarf dezentral (Split) (Entwurf, Upload ausstehend)
+### Version ‹Version› — Kältebedarf dezentral (Split) (Entwurf, Upload ausstehend) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
 Version beim Anwender zu erfragen (Empfehlung: Sammelversion mit K4/K5); Wiki-Quelle „Programm Dokumentation - Kältebedarf“ fortgeschrieben, Upload ausstehend.
 
 - Seit 13.10.2026: Kältebedarf, der dezentral über Split-Geräte gedeckt wird, erscheint im Kältegang, in der Kältelast, in der Strombilanz als „Kühlung dezentral“, im Deckungsgrad Kälte, im Anlagenschema, in der Simulationskonfiguration und im Bericht; der Strom wird je Kühlträger und Zähler abgerechnet.
 - Seit 13.10.2026: Die Berichtsvorlagen bieten Platzhalter für den Kältebedarf aus Profilen und die dezentrale Kühlung mit Split-Geräten (Kälte, Strom, Jahres-EER, Deckungsgrad gesamt und Anteil der Kälteerzeuger).
 
-### Version 1.2.0.11 — Brauchwasser-Zapfprofil (Entwurf, Upload am 20.10.2026)
+### Version 1.2.0.11 — Brauchwasser-Zapfprofil (Entwurf, Upload am 20.10.2026) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
 Version laut Anwender (13.10.2026); die Wiki-Quellen (Programm Dokumentation/Brauchwasser-Zapfprofil, Brauchwasser) sind fortgeschrieben, ins Wiki (wiki.epos-plan.de) wird am 20.10.2026 geladen.
 
@@ -222,14 +225,15 @@ Version laut Anwender (13.10.2026); die Wiki-Quellen (Programm Dokumentation/Bra
 - Seit 13.10.2026: Temperatur der Literanzeige und Schwelle der Stundenzählung stehen nur noch in den Einstellungen, Rubrik „Zapfprofil“.
 - Seit 13.10.2026: Der Katalogimport der Brauchwasser-Nutzungsarten spielt auch die Kennwerte nach DIN 4708 ein (Belegung je Raumzahl, Ausstattungsklassen); eine Paketvorlage liegt im Ordner „Vorlage\Katalogpaket_DIN4708“ bei.
 - Seit 13.10.2026: Für die Typtage nach VDI 4655 liegt eine Paketvorlage im Ordner „Vorlage\Typtagpaket_VDI4655“ bei.
+- Seit 14.10.2026: Die mitgelieferten Brauchwasser-Nutzungsarten rechnen im Zapfprofil-Dialog in der Stufe „Einfach“ ohne zusätzlichen Katalog.
 
-### Version ‹Version› — Dialoge mit Katalogauswahl (Entwurf, Upload ausstehend)
+### Version ‹Version› — Dialoge mit Katalogauswahl (Entwurf, Upload ausstehend) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
 Version beim Anwender zu erfragen; keine Wiki-Quelle geändert (die Quellen beschreiben nur die Funktion, sie stimmt).
 
 - Seit 13.10.2026: In den Dialogen mit Katalogauswahl sind die Kästchen der Liste „Im Projekt“ und das Kästchen im Spaltenkopf runde Knöpfe, angekreuzt dunkelblau mit weißem Haken.
 
-### Version 1.2.0.9 (laut Auftrag; die Version ist schon veröffentlicht, beim Anwender bestätigen) — Übersicht unter Berichte & Kosten (Entwurf, Upload ausstehend)
+### Version 1.2.0.9 (laut Auftrag; die Version ist schon veröffentlicht, beim Anwender bestätigen) — Übersicht unter Berichte & Kosten (Entwurf, Upload ausstehend) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
 Die Wiki-Quelle (Programm Dokumentation/Varianten) ist fortgeschrieben, ins Wiki geladen ist noch nichts.
 
@@ -246,14 +250,14 @@ Die Wiki-Quelle (Programm Dokumentation/Varianten) ist fortgeschrieben, ins Wiki
 - Seit 13.10.2026: Im Reiter Photovoltaik zeigt der Schalter ‚PV aufteilen‘ die Erzeugung als Stapel aus Eigenverbrauch, Einspeisung und Abregelung.
 - Seit 13.10.2026: Der Arbeitspreis eines Energieträgers wird bei neuer Auswahl in €/kWh angezeigt und mit dem Heizwert umgerechnet; gespeicherte Einheiten bleiben erhalten.
 
-### Version ‹Version› — Kältemittel als Stammdatum (Entwurf, Upload ausstehend)
+### Version ‹Version› — Kältemittel als Stammdatum (Entwurf, Upload ausstehend) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
 Version beim Anwender zu erfragen; die Wiki-Quellen (Gerätekataloge, Kälteerzeugung, Wärmepumpe, Kurzanleitung) sind fortgeschrieben, ins Wiki geladen ist noch nichts.
 
 - Seit 11.10.2026: Kältemaschine und Wärmepumpe wählen ihr Kältemittel aus einer Kältemitteltabelle mit GWP und Kennzeichen, die sich unter „Daten & Import → Kältemittel…“ pflegen lässt.
 - Seit 11.10.2026: Mit einem Inbetriebnahmejahr im Projekt weist EPOS-Plan hin, wenn ein Stichtag der F-Gas-Verordnung Geräteart und Kältemittel betrifft.
 
-### Version offen — Aufheizen vor Nutzungsbeginn (Entwurf, Upload ausstehend)
+### Version offen — Aufheizen vor Nutzungsbeginn (Entwurf, Upload ausstehend) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
 Version beim Anwender zu erfragen; die Wiki-Quellen (Simulation, Gebäude, Mehrzonenmodell, Einstellungen, Gebäudemodell VDI 6007, Simulationsergebnisse, Berichtsvorlagen) sind fortgeschrieben, ins Wiki geladen ist noch nichts.
 
@@ -397,6 +401,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 14.10.2026: Im Bedarfsprofil-Dialog öffnet der Knopf „Betriebskalender…“ die Kalenderverwaltung direkt im Dialog, ein dort neu angelegter Kalender ist vorgewählt, und „Aus Gebäude übernehmen…“ kopiert Bundesland und Ferien eines Projektgebäudes in einen Betriebskalender. (#1088)
 - 13.10.2026: Der Kostendialog und die Kostenseite gleichen die Kosten einer Anlage mit dem zentralen Kostenkatalog ab („Mit dem Kostenkatalog abgleichen…“). (#1079)
 - 13.10.2026: Arbeits-, Grund- und Leistungspreis eines Brennstoffs stehen allein in der Karte seines Energieträgers. (#1080)
+- 14.10.2026: Die Gerätekataloge führen keine Kostenfelder mehr; die Kosten eines Geräts stehen allein in der Kostenverwaltung, die Maske zeigt die Gerätekosten bzw. den Kostensatz aus der Satzvorlage des Katalogsatzes. (#1095)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 
@@ -470,7 +475,7 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Beim Gebäudeimport lassen sich IFC-Datei und Projektdatei (.sqproj) zusammen einlesen; enthält die Projektdatei beide Zonierungen, wählen Sie im Feld „DIN-V-18599-Zonen | Simulationszonen“, welche gilt. (#731, #736; Entwurf, Version bestätigt der Anwender beim Upload)
 - Beim IFC-Import ermittelt EPOS-Plan Bauteilflächen und Ausrichtung auch aus den Bauteilkörpern und zieht Fenster, Türen und Durchbrüche von der Wand- und Dachfläche ab. (#814; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt)
 - Nennt eine IFC- oder gbXML-Datei keine Nordrichtung, fragt der Gebäudeimport danach; die Ausrichtung eines importierten Gebäudes lässt sich im Gebäudedialog nachträglich ändern. (#813; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt)
-- Die Gebäudeansicht zeigt im Farbmodus „Befund“, welche Bauteile beim Import auffällig sind. (#814; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt; Bedienbegriff vor dem Upload klären, siehe Abschnitt 3)
+- Die Gebäudeansicht zeigt im Farbmodus „Vollständigkeit“, welche Bauteile beim Import unvollständig sind. (#814; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt; Bedienbegriff seit E145 „Vollständigkeit“)
 - Gebäude lassen sich jetzt allein aus der Projektdatei (.sqproj) importieren; die Quelle wählen Sie im Importdialog. (#815; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt)
 - Die Gebäudeansicht zeigt Gebäude aus Projektdatei und gbXML jetzt mit Raum- und Bauteilkörpern wie bei IFC, mit allen Farbmodi und dem Bauteil-Steckbrief. (#816; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt)
 - Passen beim Import von IFC und Projektdatei die Aufbauten beider Dateien nicht zusammen, fragt EPOS-Plan, welche gelten sollen. (#825; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt)

@@ -4,8 +4,8 @@
 /// Eine Zeile des AUSLIEFERUNGSKATALOGS, so weit der Projektdialog sie braucht:
 /// Der Bezeichner steht in der Klappliste, die drei übrigen Felder wandern beim
 /// Auswählen in die Eingabefelder (<c>cbKatalog_SelectedIndexChanged</c>:1566-1591).
-/// Hersteller, Speichertyp und Investitionskosten bleiben in der Hülle — sie werden
-/// gespeichert, aber nie angezeigt.
+/// Hersteller und Speichertyp bleiben in der Hülle — sie werden gespeichert, aber nie
+/// angezeigt.
 /// </summary>
 public sealed record PspKatalogzeile(int Id, string Bezeichner, int Gesamtvolumen,
                                      double Bereitschaftsverluste);
@@ -86,8 +86,8 @@ public sealed record PspPufferstand(
 /// Fachwissen des Kerns und bleibt deshalb in der Hülle.</para>
 ///
 /// <para><b><see cref="Katalogzeile"/> ist der Listenplatz, nicht die Id.</b>
-/// <c>-1</c> heißt „freie Eingabe"; die Hülle holt sich Hersteller, Speichertyp und
-/// Investitionskosten daraus bzw. aus dem Bestand (<c>KatalogfelderLesen</c>).</para>
+/// <c>-1</c> heißt „freie Eingabe"; die Hülle holt sich Hersteller und Speichertyp
+/// daraus bzw. aus dem Bestand (<c>KatalogfelderLesen</c>).</para>
 /// </summary>
 public sealed record PspEingaben(
     string Bezeichner,

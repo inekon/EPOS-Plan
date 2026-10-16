@@ -71,7 +71,16 @@ die drei Setzungen des Bandkriteriums der Validierung (Anwenderentscheid ZU35, S
 Zapfprofil.Validierung.Band.Unten 0,95, .Band.Oben 0,999 und .Band.MindestEinheiten 10, dazu die
 eigenen Quantile der Spitzenstreuung Zapfprofil.Validierung.Streuung.Unten 0,85 und .Streuung.Oben 0,95
 (Folge V10) und die zwei Setzungen der Speicherauslegung ohne Wert in V4 (Speicherauslegung.Ladefenster.
-Beginn 22 h, .GLF_Gueltigkeitsgrenze 30; beide Anwenderentscheid 26.09.2026, Statuszeile #561).
+Beginn 22 h, .GLF_Gueltigkeitsgrenze 30; beide Anwenderentscheid 26.09.2026, Statuszeile #561) und der
+Jahresgang des Kaltwassers der Bilanz (Kaltwasser.Bilanz.Amplitude 3 K, .MonatMaximum 8; Anwenderentscheid
+14.10.2026).
+
+KALTWASSER UND ZIRKULATION DER STUFE EINFACH (Anwenderentscheid 14.10.2026). Damit die mitgelieferten
+Nutzungsarten allein mit dem freien Paketteil rechnen, fuehrt er Kaltwasser.Bilanz.Mittel (10 °C) und
+Zirkulation.Laufzeit (24 h), .Anteil (0,2) und .VerlustJeMeter (10 W/m) aus der Vorlage V4
+(speicherauslegung_v4.json) und die zwei Setzungen des Kaltwasser-Jahresgangs (oben). Dieselben
+Schluessel fuehrt der fiktive Testkatalog mit eigenen Werten (PARAMETER unten): In der Testdatenbank
+bleiben die fiktiven Zeilen, die des Paketteils treten zurueck (FIKTIV_VOR_PAKETTEIL).
 
 DER FREIE PAKETTEIL (Stufe Z3). Die Zapfkategorien (Jordan/Vajen, IEA SHC Task 26;
 Modellannahme), die fuenf Parameter Zapfprofil.Stochastik.*, die drei Setzungen der Stufe Z4
@@ -401,6 +410,15 @@ PARAMETER += [
     # INEKON-Setzung aus zapfprofil_setzungen_inekon.json (freier Paketteil, Folgeposten #546).
 ]
 
+# Die Schluessel, die der freie Paketteil UND der fiktive Testkatalog fuehren (Anwenderentscheid
+# 14.10.2026: Kaltwasser und Zirkulation der Stufe Einfach - die Werte der Vorlage V4 und zwei
+# INEKON-Setzungen). In der Testdatenbank bleiben die fiktiven Zeilen; die gleichen Zeilen des
+# Paketteils treten zurueck (dieselbe Regel wie fuer eine gleiche Zeile beim Nachladen des Kerns).
+FIKTIV_VOR_PAKETTEIL = frozenset([
+    "Kaltwasser.Bilanz.Mittel", "Kaltwasser.Bilanz.Amplitude", "Kaltwasser.Bilanz.MonatMaximum",
+    "Zirkulation.Laufzeit", "Zirkulation.Anteil", "Zirkulation.VerlustJeMeter",
+])
+
 # Die Schluessel der Auslegung (ZapfAuslegungParameter, Stufe Z2) - Werte rund und ERFUNDEN,
 # bewusst neben jeder Normvorgabe und jedem Wert der Vorlage gewaehlt (Kapitel 6 (a)).
 PARAMETER += [
@@ -544,7 +562,8 @@ def v4_zeilen():
     schluessel = [z[0] for z in zeilen]
     assert len(set(schluessel)) == len(schluessel), "speicherauslegung_v4.json: Schluessel doppelt"
     assert not set(schluessel) & set(kopf["offen"]), "speicherauslegung_v4.json: Schluessel zugleich offen"
-    assert not set(schluessel) & {p[0] for p in PARAMETER}, "Schluessel der Vorlage V4 auch im fiktiven Testkatalog"
+    assert not (set(schluessel) & {p[0] for p in PARAMETER}) - FIKTIV_VOR_PAKETTEIL, \
+        "Schluessel der Vorlage V4 auch im fiktiven Testkatalog"
     return zeilen
 
 
@@ -558,9 +577,19 @@ def inekon_zeilen():
                        VERSION_PAKETTEIL, kopf["herkunftsart"], STATUS_PAKET, 1])
     schluessel = [z[0] for z in zeilen]
     assert len(set(schluessel)) == len(schluessel), "zapfprofil_setzungen_inekon.json: Schluessel doppelt"
-    assert not set(schluessel) & {p[0] for p in PARAMETER}, "INEKON-Setzung auch im fiktiven Testkatalog"
+    assert not (set(schluessel) & {p[0] for p in PARAMETER}) - FIKTIV_VOR_PAKETTEIL, \
+        "INEKON-Setzung auch im fiktiven Testkatalog"
     assert not set(schluessel) & {z[0] for z in v4_zeilen()}, "INEKON-Setzung zugleich Zeile der Vorlage V4"
     return zeilen
+
+
+def pruefe_vorrang():
+    """Die Ausnahmeliste FIKTIV_VOR_PAKETTEIL nennt genau die Schluessel, die Paketteil und fiktiver
+    Testkatalog zugleich fuehren - keinen mehr (verwaiste Ausnahme) und keinen weniger."""
+    paket = {z[0] for z in v4_zeilen() + inekon_zeilen()}
+    fiktiv = {p[0] for p in PARAMETER}
+    assert paket & fiktiv == FIKTIV_VOR_PAKETTEIL, \
+        "FIKTIV_VOR_PAKETTEIL weicht ab: " + ", ".join(sorted((paket & fiktiv) ^ FIKTIV_VOR_PAKETTEIL))
 
 
 def parameter_traeger():
@@ -570,6 +599,7 @@ def parameter_traeger():
     with open(pfad, encoding="utf-8-sig", newline="") as f:
         zeilen = [z for z in csv.reader(io.StringIO(f.read()), delimiter=";") if z and any(s.strip() for s in z)]
     assert zeilen[0] == PARAMETERKOPF, T_PARAMETER + ".csv: Kopfzeile " + ";".join(zeilen[0])
+    pruefe_vorrang()
     v4 = v4_zeilen() + inekon_zeilen()
     erzeugt = {z[0] for z in v4}
     uebrige = [z for z in zeilen[1:] if z[0] not in erzeugt]
@@ -715,7 +745,8 @@ ERWARTET = {
     "Tab_TwwNutzungsart_STAMM": len(ALLE_NUTZUNGSARTEN),
     "Tab_TwwBedarfstag_STAMM": len(BEDARFSTAGE) + len(PAKET[T_BEDARFSTAG]),
     "Tab_TwwBedarfstagEreignis_STAMM": sum(len(t[3]) for t in BEDARFSTAGE) + len(PAKET[T_EREIGNIS]),
-    "Tab_TwwParameter_STAMM": len(PARAMETER) + len(PAKET[T_PARAMETER]),
+    "Tab_TwwParameter_STAMM": len(PARAMETER) + sum(1 for z in PAKET[T_PARAMETER]
+                                                   if z["Schluessel"] not in FIKTIV_VOR_PAKETTEIL),
     "Tab_TwwDin4708Wert_STAMM": len(DIN4708_WERTE),
     # Die Referenzprojekte auf dem Generator: 1045 mit einer Zone ohne Wohnungstypen
     # (referenzprojekt_zapfprofil.py) und 1066 bis 1071 mit 14 Zonen und 8 Wohnungstypen
@@ -822,7 +853,8 @@ def main():
         PAKET.clear()
         PAKET.update(paketteil_lesen())
         pruefe_paketteil(PAKET)
-        ERWARTET["Tab_TwwParameter_STAMM"] = len(PARAMETER) + len(PAKET[T_PARAMETER])
+        ERWARTET["Tab_TwwParameter_STAMM"] = len(PARAMETER) + sum(1 for z in PAKET[T_PARAMETER]
+                                                              if z["Schluessel"] not in FIKTIV_VOR_PAKETTEIL)
 
     con = sqlite3.connect(sys.argv[1])
     try:
@@ -925,6 +957,8 @@ def main():
                                 "Herkunftsart": HERKUNFT, "Status": STATUS, "Beleg": None, "ReadOnly": 0}))
             frei_parameter = []
             for z in PAKET[T_PARAMETER]:
+                if z["Schluessel"] in FIKTIV_VOR_PAKETTEIL:
+                    continue                    # die fiktive Zeile bleibt, die des Paketteils tritt zurueck
                 w = paketwerte(con, T_PARAMETER, z, ohne=("ID", "Schluessel"))
                 w.update(testdb)
                 zaehlen(upsert(con, T_PARAMETER, {"Schluessel": z["Schluessel"], "Katalogversion": VERSION}, w))

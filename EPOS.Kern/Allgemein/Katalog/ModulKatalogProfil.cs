@@ -239,6 +239,14 @@ namespace WindowsFormsApplication1
         public const string FeldDegradation = "DEGRADATION";
         public const string FeldLadezustand = "LADEZUSTAND";
         public const string FeldModulkosten = "MODULKOSTEN";
+
+        /// <summary>
+        /// <b>Der Kostensatz aus der Satzvorlage</b> (Welle KB-4, Anwenderentscheid 13.10.2026): Ein
+        /// LESEWERT, keine Eingabe — die Kostenspalten der Geraete sind mit Schemaschritt 228
+        /// entfallen, gepflegt wird der Satz in der Kostenverwaltung. Photovoltaik und
+        /// Wechselrichter fuehren ihn; der Stromspeicher behaelt seine drei Spalten (KB-5).
+        /// </summary>
+        public const string FeldKostensatz = "KOSTENSATZ";
         public const string FeldWirkungsgradRt = "WIRKUNGSGRAD_RT";
         public const string FeldZyklen = "ZYKLEN";
         public const string FeldVerschleisskosten = "VERSCHLEISSKOSTEN";
@@ -288,7 +296,6 @@ namespace WindowsFormsApplication1
         public const string FeldEtaMax = WechselrichterSchema.SPALTE_ETA_MAX;
         public const string FeldPStandby = WechselrichterSchema.SPALTE_P_STANDBY;
         public const string FeldPNacht = WechselrichterSchema.SPALTE_P_NACHT;
-        public const string FeldKosten = WechselrichterSchema.SPALTE_KOSTEN;
         public const string FeldHerkunft = WechselrichterSchema.SPALTE_HERKUNFT;
 
         // -----------------------------------------------------------------
@@ -299,14 +306,14 @@ namespace WindowsFormsApplication1
 
         private static readonly HashSet<string> KOSTENFELDER = new HashSet<string>(StringComparer.Ordinal)
         {
-            FeldModulkosten, FeldVerschleisskosten, FeldLeistungskosten, FeldInvestitionFix, FeldKosten
+            FeldModulkosten, FeldVerschleisskosten, FeldLeistungskosten, FeldInvestitionFix, FeldKostensatz
         };
 
         /// <summary>
         /// <b>Gehoert das Feld in die Gruppe „Kosten" des Stammblatts?</b> (Stufe 3, V9) —
-        /// Modulkosten, beim Stromspeicher dazu Verschleiss-, Leistungs- und Fixkosten,
-        /// beim Wechselrichter die Kosten. Alle uebrigen Felder stehen unter „Kenndaten"
-        /// in den Gruppen des Profils.
+        /// der Kostensatz der Satzvorlage (Photovoltaik, Wechselrichter), beim Stromspeicher
+        /// seine Modul-, Verschleiss-, Leistungs- und Fixkosten. Alle uebrigen Felder stehen
+        /// unter „Kenndaten" in den Gruppen des Profils.
         /// </summary>
         public static bool IstKostenfeld(string schluessel)
             => schluessel != null && KOSTENFELDER.Contains(schluessel);
@@ -436,7 +443,11 @@ namespace WindowsFormsApplication1
                             new ModulKatalogFeld(FeldTempKoeff, t("MODK_LBL_TEMPKOEFF"), "%/K"),
                             new ModulKatalogFeld(FeldLaenge, t("MODK_LBL_LAENGE"), "m"),
                             new ModulKatalogFeld(FeldBreite, t("MODK_LBL_BREITE"), "m"),
-                            new ModulKatalogFeld(FeldModulkosten, t("MODK_LBL_MODULKOSTEN_PV"), "€"),
+                            // Welle KB-4: der Kostensatz der Satzvorlage - GESPERRT, denn gepflegt
+                            // wird er in der Kostenverwaltung (die Geraetespalte ist entfallen).
+                            new ModulKatalogFeld(FeldKostensatz, t("MODK_LBL_KOSTENSATZ"), "€/kWp",
+                                                 BrowserFeldArt.Zahl, true, 0, gesperrt: true,
+                                                 hinweis: t("MODK_HERL_KOSTENSATZ")),
                             // PAKET A/B des PV-Ertragsmodells (mit Merge 5 aus Form_AdminPV
                             // nachgezogen): die NOCT-Zelltemperatur (leer = 0 = nicht gepflegt)
                             // und die Zelltechnologie als Auswahl (leer = NULL).
@@ -482,7 +493,11 @@ namespace WindowsFormsApplication1
                                                  BrowserFeldArt.Zahl, leerErlaubt: false),
                             new ModulKatalogFeld(FeldSAcMax, t("WRK_LBL_S_AC_MAX"), "kVA"),
                             new ModulKatalogFeld(FeldPDcMax, t("WRK_LBL_P_DC_MAX"), "kW"),
-                            new ModulKatalogFeld(FeldKosten, t("WRK_LBL_KOSTEN"), "€"),
+                            // Welle KB-4: der Kostensatz der Satzvorlage - GESPERRT, denn gepflegt
+                            // wird er in der Kostenverwaltung (die Geraetespalte ist entfallen).
+                            new ModulKatalogFeld(FeldKostensatz, t("MODK_LBL_KOSTENSATZ"), "€/kW",
+                                                 BrowserFeldArt.Zahl, true, 0, gesperrt: true,
+                                                 hinweis: t("MODK_HERL_KOSTENSATZ")),
                             // Woher der Satz stammt - Auskunft, nicht Eingabe: Der
                             // Import setzt sie, die Handpflege bekommt "HAND".
                             new ModulKatalogFeld(FeldHerkunft, t("WRK_LBL_HERKUNFT"), "",

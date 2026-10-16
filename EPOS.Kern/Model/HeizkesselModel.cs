@@ -15,20 +15,12 @@ namespace WindowsFormsApplication1
         public int Brennstoff;
         public double Wirkungsgrad_Gas;
         public double Wirkungsgrad_Oel;
-        public double Investitionskosten;
+        // KEINE KOSTENFELDER (Welle KB-4, Anwenderentscheid 13.10.2026 „eine Kostenbasis,
+        // keine Doppelhaltung"): Investitionskosten, Wartungskosten und ihr Zeitbezug
+        // Wartungskosten_Einheit sind mit Schemaschritt GeraetekostenEntfallSchema entfallen.
+        // Die eine Basis ist die Satzvorlage des Katalogsatzes; den Zeitbezug trägt dort die
+        // BEMESSUNG der Betriebsposition (TechnikPlanwertCtrl.KesselEinheit).
         public double Raumbedarf;
-        public double Wartungskosten;
-
-        /// <summary>
-        /// Bezugsgröße von <see cref="Wartungskosten"/> — einer der drei Persistenzwerte
-        /// <see cref="DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR"/>,
-        /// <see cref="DbWerte.KESSEL_WARTUNG_EINHEIT_ARBEIT"/> oder
-        /// <see cref="DbWerte.KESSEL_WARTUNG_EINHEIT_PROZENT"/>
-        /// (Entscheidung des Anwenders 18.08.2026, Migrationsschritt 15).
-        /// Vorgabe ist der feste Jahresbetrag — Begründung bei
-        /// <see cref="DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR"/>.
-        /// </summary>
-        public string Wartungskosten_Einheit;
 
         /// <summary>
         /// Nutzungsdauer laut Gerätekatalog [a] — Gerätedaten, NICHT rechenwirksam; maßgeblich
@@ -91,10 +83,7 @@ namespace WindowsFormsApplication1
             Brennstoff = 0;
             Wirkungsgrad_Gas = 0;
             Wirkungsgrad_Oel = 0;
-            Investitionskosten = 0;
             Raumbedarf = 0;
-            Wartungskosten = 0;
-            Wartungskosten_Einheit = DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR;
             Nutzungsdauer = 0;
             CO2 = 0;    
             SO2 = 0;    

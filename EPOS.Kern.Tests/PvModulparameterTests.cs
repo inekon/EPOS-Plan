@@ -148,7 +148,7 @@ namespace EPOS.Kern.Tests
                         ModulKatalogProfil.FeldIKurzschluss, "ALPHA_SC", "BETA_OC",
                         ModulKatalogProfil.FeldTempKoeff, ModulKatalogProfil.FeldTNoct,
                         ModulKatalogProfil.FeldLaenge, ModulKatalogProfil.FeldBreite,
-                        ModulKatalogProfil.FeldModulkosten, ModulKatalogProfil.FeldTechnologie
+                        ModulKatalogProfil.FeldKostensatz, ModulKatalogProfil.FeldTechnologie
                     },
                     zeilen.Select(z => z.Schluessel).ToArray());
             });
@@ -192,8 +192,9 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// <b>Nicht gepflegt heißt „– nicht gepflegt", nicht 0.</b> Der Katalog führt
-        /// beides — NULL (LG 320: alpha_SC, beta_OC, T_NOCT) und die 0 des Bestands
-        /// (Modulkosten, Technologie leer) —, und beides ist dieselbe Aussage: Der Wert
+        /// beides — NULL (LG 320: alpha_SC, beta_OC, T_NOCT) und den fehlenden Wert des
+        /// Bestands (ohne Satzvorlage kein Kostensatz, Technologie leer) —, und beides ist
+        /// dieselbe Aussage: Der Wert
         /// steht nicht in der Datenbank. Eine angezeigte 0 wäre eine Behauptung.
         ///
         /// <para><b>Seit W6‑B‑4 trägt die Zeile das WORT dazu</b> (Windows-Abnahme
@@ -217,8 +218,8 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(Strich(), Wert(lg, "BETA_OC"));
                 Assert.Equal(Strich(), Wert(lg, ModulKatalogProfil.FeldTNoct));
 
-                // 0 in der Datenbank - dieselbe Aussage
-                Assert.Equal(Strich(), Wert(lg, ModulKatalogProfil.FeldModulkosten));
+                // Ohne Satzvorlage kein Kostensatz - dieselbe Aussage
+                Assert.Equal(Strich(), Wert(lg, ModulKatalogProfil.FeldKostensatz));
 
                 // leere Technologie
                 Assert.Equal(Strich(), Wert(lg, ModulKatalogProfil.FeldTechnologie));
@@ -389,7 +390,7 @@ namespace EPOS.Kern.Tests
                 Assert.Equal("-0.4509", Wert(zeilen, ModulKatalogProfil.FeldTempKoeff));
 
                 // Der Strich ist sprachneutral.
-                Assert.Equal(Strich(), Wert(zeilen, ModulKatalogProfil.FeldModulkosten));
+                Assert.Equal(Strich(), Wert(zeilen, ModulKatalogProfil.FeldKostensatz));
             });
         }
 

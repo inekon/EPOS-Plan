@@ -254,8 +254,7 @@ namespace EPOS.Kern.Tests
             {
                 ID = q.ID, Name = q.Name, Firma = q.Firma, Beschreibung = q.Beschreibung, Ptherm = q.Ptherm,
                 Brennstoff = q.Brennstoff, Wirkungsgrad_Gas = q.Wirkungsgrad_Gas, Wirkungsgrad_Oel = q.Wirkungsgrad_Oel,
-                Investitionskosten = q.Investitionskosten, Raumbedarf = q.Raumbedarf, Wartungskosten = q.Wartungskosten,
-                Wartungskosten_Einheit = q.Wartungskosten_Einheit, Nutzungsdauer = q.Nutzungsdauer, CO2 = q.CO2,
+                Raumbedarf = q.Raumbedarf, Nutzungsdauer = q.Nutzungsdauer, CO2 = q.CO2,
                 SO2 = q.SO2, NOx = q.NOx, CO = q.CO, Staub = q.Staub,
                 Betriebsbereitschaftverlust = q.Betriebsbereitschaftverlust, Brennwert = q.Brennwert,
                 Vorlauf = q.Vorlauf, Ruecklauf = q.Ruecklauf

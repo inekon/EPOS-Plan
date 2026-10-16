@@ -141,7 +141,7 @@ namespace WindowsFormsApplication1
         /// je Vorgang fuehren statt einmal je Kandidat (Befund W13-B17).</para>
         ///
         /// <para><b>Nicht gesetzt und deshalb Modell-Vorgabewert 0:</b> Raumbedarf,
-        /// SO2, Staub, Investitionskosten, Wartungskosten, Nutzungsdauer
+        /// SO2, Staub, Nutzungsdauer
         /// (<c>DbWerte.cs:337</c>). Das bleibt so.</para>
         /// </summary>
         public HeizkesselModel NachModell(string bezeichner, int maxBrennstoff)

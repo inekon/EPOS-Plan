@@ -52,8 +52,13 @@ public sealed class KaeltemaschineDaten
     /// <summary>Kleinster zulässiger Kaltwasservorlauf [°C].</summary>
     public double? KaltwasserMin { get; set; }
 
-    /// <summary>Gerätepreis [€].</summary>
-    public double? Modulkosten { get; set; }
+    /// <summary>
+    /// <b>Die Gerätekosten als LESEWERT</b> [€] — die Investitionssumme der Satzvorlage
+    /// (<c>KaeltemaschineModel.Geraetekosten</c>); <c>null</c> ohne Vorlage. Die Spalte
+    /// <c>Modulkosten</c> ist mit Welle KB-4 entfallen; gepflegt wird der Wert in der
+    /// Kostenverwaltung, der Dialog zeigt ihn nur im Stammblatt und schreibt ihn nie.
+    /// </summary>
+    public double? Geraetekosten { get; set; }
 
     // ------------------------------------------------------------ Katalogfelder (K-A)
 
@@ -131,7 +136,6 @@ public sealed class KaeltemaschineDaten
         if (Mindestteillast != anderer.Mindestteillast) n++;
         if (Hilfsstrom != anderer.Hilfsstrom) n++;
         if (KaltwasserMin != anderer.KaltwasserMin) n++;
-        if (Modulkosten != anderer.Modulkosten) n++;
         if (GeraeteartIndex != anderer.GeraeteartIndex) n++;
         if (Gwp != anderer.Gwp) n++;
         if (Fuellmenge != anderer.Fuellmenge) n++;

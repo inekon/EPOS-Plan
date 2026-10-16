@@ -677,8 +677,8 @@
   <data name="KBROW_LBL_HERSTELLER" xml:space="preserve">
     <value>Manufacturer:</value>
   </data>
-  <data name="KBROW_LBL_INVEST" xml:space="preserve">
-    <value>Investment costs:</value>
+  <data name="KBROW_LBL_GERAETEKOSTEN" xml:space="preserve">
+    <value>Device cost:</value>
   </data>
   <data name="KBROW_LBL_KOLLEKTOR" xml:space="preserve">
     <value>Collector:</value>
@@ -1130,8 +1130,11 @@
   <data name="MODK_LBL_MODULKOSTEN" xml:space="preserve">
     <value>Module costs</value>
   </data>
-  <data name="MODK_LBL_MODULKOSTEN_PV" xml:space="preserve">
-    <value>Module costs:</value>
+  <data name="MODK_LBL_KOSTENSATZ" xml:space="preserve">
+    <value>Cost rate</value>
+  </data>
+  <data name="MODK_HERL_KOSTENSATZ" xml:space="preserve">
+    <value>from the rate template; equipment costs are maintained in cost management</value>
   </data>
   <data name="MODK_LBL_PMAX" xml:space="preserve">
     <value>Rated power (Pmax):</value>
@@ -4745,7 +4748,7 @@ Please run the simulation with photovoltaics first.</value>
     <value>Entry (edit the name when renaming)</value>
   </data>
   <data name="IMP_KONFLIKT_SPALTE_BEFUND" xml:space="preserve">
-    <value>Finding</value>
+    <value>Note</value>
   </data>
   <data name="IMP_KONFLIKT_SPALTE_AKTION" xml:space="preserve">
     <value>Action</value>
@@ -6592,13 +6595,16 @@ Depending on the project size this takes several minutes. Continue?</value>
     <value>Not part of the chiller trade and left unchanged: the cascade of the project, a cold storage tank and the cooling sequence of the other cooling generators — the rank of the transferred machines comes from the source. Please check the cooling sequence in the cooling section.</value>
   </data>
   <data name="KOSTEN_PLANWERT_BASIS_MODUL" xml:space="preserve">
-    <value>Module price</value>
+    <value>Unit price</value>
   </data>
   <data name="KOSTEN_PLANWERT_BASIS_SPEZ" xml:space="preserve">
     <value>specific price × size</value>
   </data>
   <data name="KOSTEN_PLANWERT_BASIS_KEINE" xml:space="preserve">
     <value>do not apply</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_HERL_VORLAGE" xml:space="preserve">
+    <value>Rate template {0}</value>
   </data>
   <data name="KOSTEN_PLANWERT_HERL_FELD" xml:space="preserve">
     <value>field {0}</value>
@@ -6622,7 +6628,7 @@ Depending on the project size this takes several minutes. Continue?</value>
     <value>Operating cost defaults are available only after a simulation run.</value>
   </data>
   <data name="KOSTEN_BETRIEB_OHNE_WARTUNGSFELD" xml:space="preserve">
-    <value>No maintenance data is stored for this trade — no default value.</value>
+    <value>No operating rate template of this trade holds a maintenance rate — no default value.</value>
   </data>
   <data name="KOSTEN_BETRIEB_OHNE_MENGE" xml:space="preserve">
     <value>The simulation run reports no annual quantity for this trade — no default value.</value>
@@ -6631,13 +6637,13 @@ Depending on the project size this takes several minutes. Continue?</value>
     <value>Maintenance rates cannot be matched unambiguously to the modules of the run — no default value.</value>
   </data>
   <data name="KOSTEN_BETRIEB_EINHEIT_GEMISCHT" xml:space="preserve">
-    <value>The boilers of this project use different units for their maintenance costs — no default value.</value>
+    <value>The operating rate templates of the boilers of this project rate maintenance in different units — no default value.</value>
   </data>
   <data name="KOSTEN_BETRIEB_OHNE_INVESTITION" xml:space="preserve">
     <value>The maintenance costs are given as a share of the investment, but no investment item has been recorded yet — no default value.</value>
   </data>
   <data name="KOSTEN_BETRIEB_HERL_KESSEL_JAHR" xml:space="preserve">
-    <value>Default: {0} €/a — fixed annual amount from the boiler data.</value>
+    <value>Default: {0} €/a — fixed annual amount from the operating rate template of the boiler.</value>
   </data>
   <data name="KOSTEN_BETRIEB_HERL_KESSEL_ARBEIT" xml:space="preserve">
     <value>Default: {0} €/kWh × {1} kWh of heat from the run of {2}.</value>
@@ -6840,10 +6846,10 @@ Add the missing ones and set the differing ones to the catalogue value?</value>
     <value>At least one item could not be written; the reconciliation is incomplete.</value>
   </data>
   <data name="BK_KOSTEN_KATALOGKOSTEN" xml:space="preserve">
-    <value>catalogue costs available</value>
+    <value>rate template available</value>
   </data>
   <data name="BK_KOSTEN_KATALOGKOSTEN_HINT" xml:space="preserve">
-    <value>“{0}” carries no cost item, but the catalogue record of the device does carry costs — “Reconcile with the cost catalogue…” turns them into items.</value>
+    <value>“{0}” carries no cost item, but the catalogue record of the device does carry a rate template — “Reconcile with the cost catalogue…” turns it into items.</value>
   </data>
   <data name="BK_KOSTEN_ABGLEICH_KURZTEXT" xml:space="preserve">
     <value>Reconcile with the cost catalogue…</value>
@@ -8756,7 +8762,7 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
     <value>The energy carrier was NOT saved: {0}</value>
   </data>
   <data name="KI_REG_ZWECK_ENERGIETRAEGER_PRUEFEN" xml:space="preserve">
-    <value>Checks the energy carriers for unit consistency: does every active carrier reach kWh — directly, via net or gross calorific value, or via an active conversion rule? Returns the list of findings; changes nothing.</value>
+    <value>Checks the energy carriers for unit consistency: does every active carrier reach kWh — directly, via net or gross calorific value, or via an active conversion rule? Returns the list of messages; changes nothing.</value>
   </data>
   <data name="KI_REG_ERL_PROJEKT_FUER_EINHEITEN" xml:space="preserve">
     <value>Name of the project. If omitted, the catalogue is checked (all active carriers with catalogue values); if given, only the carriers used in that project, with its project-level overrides. Pass it on unchanged from the user's question — name, partial name, ID or placeholder “Name n”; it is resolved locally in the program.</value>
@@ -8765,10 +8771,10 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
     <value>catalogue</value>
   </data>
   <data name="KI_REG_EINHEITEN_OHNE_BEFUND" xml:space="preserve">
-    <value>Unit consistency {0}: no findings — every active energy carrier reaches kWh.</value>
+    <value>Unit consistency {0}: no messages — every active energy carrier reaches kWh.</value>
   </data>
   <data name="KI_REG_EINHEITEN_BEFUNDE" xml:space="preserve">
-    <value>Unit consistency {1}: {0} finding(s).</value>
+    <value>Unit consistency {1}: {0} message(s).</value>
   </data>
   <data name="KPROF_TAB_TITEL" xml:space="preserve">
     <value>Cost profile</value>
@@ -9772,12 +9778,6 @@ The seat becomes available for another device; a new activation is required to c
   <data name="KI_DLG_PSP_VOLUMEN_ERL" xml:space="preserve">
     <value>Storage capacity of the buffer tank.</value>
   </data>
-  <data name="KI_DLG_WP_MODULKOSTEN_NAME" xml:space="preserve">
-    <value>Module cost</value>
-  </data>
-  <data name="KI_DLG_WP_MODULKOSTEN_ERL" xml:space="preserve">
-    <value>Purchase cost of the heat pump in euros — display only; the form shows it with its derivation, it is maintained in the cost management.</value>
-  </data>
   <data name="KI_DLG_MASKE_UNBEKANNT" xml:space="preserve">
     <value>The form “{0}” is not released for the assistant. Released are: {1}.</value>
   </data>
@@ -10056,6 +10056,9 @@ The seat becomes available for another device; a new activation is required to c
   </data>
   <data name="KDLG_KAT_BETRIEB" xml:space="preserve">
     <value>Operating costs</value>
+  </data>
+  <data name="KDLG_VARIANTEN_GRUPPE_KATALOG" xml:space="preserve">
+    <value>— Catalogue entries —</value>
   </data>
   <data name="KDLG_LBL_VARIANTE" xml:space="preserve">
     <value>Variant:</value>
@@ -12671,6 +12674,9 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="KBROW_HINT_BB_EINHEIT" xml:space="preserve">
     <value>kW or % (of rated output)</value>
+  </data>
+  <data name="KBROW_HINT_KOSTENVERWALTUNG" xml:space="preserve">
+    <value>Device costs are maintained in the cost management</value>
   </data>
   <data name="HZKK_LBL_BRENNWERT" xml:space="preserve">
     <value>Condensing boiler</value>
@@ -17390,11 +17396,11 @@ Please go through the project page again so that the data of the selected projec
   <data name="PARV_LBL_GEWICHT" xml:space="preserve">
     <value>Weight:</value>
   </data>
-  <data name="WPS_HERL_MODULKOSTEN" xml:space="preserve">
-    <value>from the stored catalogue; equipment costs are maintained in cost management</value>
+  <data name="WPS_HERL_KOSTENSATZ" xml:space="preserve">
+    <value>from the rate template; equipment costs are maintained in cost management</value>
   </data>
-  <data name="WPS_HINWEIS_MODULKOSTEN_LEER" xml:space="preserve">
-    <value>no planned value in the stored catalogue</value>
+  <data name="WPS_HINWEIS_KOSTENSATZ_LEER" xml:space="preserve">
+    <value>no cost rate in cost management</value>
   </data>
   <data name="WRK_TITEL_VERWALTUNG" xml:space="preserve">
     <value>Inverter management</value>
@@ -17431,9 +17437,6 @@ Please go through the project page again so that the data of the selected projec
   </data>
   <data name="WRK_LBL_P_DC_MAX" xml:space="preserve">
     <value>max. DC power:</value>
-  </data>
-  <data name="WRK_LBL_KOSTEN" xml:space="preserve">
-    <value>Device price:</value>
   </data>
   <data name="WRK_LBL_HERKUNFT" xml:space="preserve">
     <value>Origin:</value>
@@ -17578,9 +17581,6 @@ Please go through the project page again so that the data of the selected projec
   </data>
   <data name="WRK_PLAUSI_STANDBY_NEGATIV" xml:space="preserve">
     <value>{0} is negative ({1} W).</value>
-  </data>
-  <data name="WRK_PLAUSI_KOSTEN_NEGATIV" xml:space="preserve">
-    <value>The device price is negative ({0} EUR).</value>
   </data>
   <data name="WRK_PLAUSI_KOPF_FEHLER" xml:space="preserve">
     <value>Errors:</value>
@@ -23354,9 +23354,6 @@ Do you want to allow this?</value>
   <data name="KI_DLG_WPA_KUEHLLEISTUNG_ERL" xml:space="preserve">
     <value>The cooling capacity of the device in kW; decimals are allowed, empty means “not maintained”.</value>
   </data>
-  <data name="KI_DLG_WPA_MODULKOSTEN_ERL" xml:space="preserve">
-    <value>The device costs in euros — display only; they are maintained in the cost management, not on this form.</value>
-  </data>
   <data name="KI_DLG_PV_MODELL_ERL" xml:space="preserve">
     <value>The two entries of the drop-down list: “Simple” = isotropic irradiance and linear temperature response, “Extended” = Hay-Davies, low-light model and inverter characteristic curve. The inverter is calculated in both models.</value>
   </data>
@@ -25104,7 +25101,7 @@ Do you want to allow this?</value>
     <value>Status line</value>
   </data>
   <data name="KI_DLG_KSE_STATUS_ERL" xml:space="preserve">
-    <value>The footer with the page's findings — missing positions, unassigned entries, notes on the comparison group.</value>
+    <value>The footer with the page's messages — missing positions, unassigned entries, notes on the comparison group.</value>
   </data>
   <data name="KI_DLG_MASKE_WSE" xml:space="preserve">
     <value>Economics (reports and costs)</value>
@@ -25301,9 +25298,6 @@ Do you want to allow this?</value>
   <data name="KI_DLG_MODK_BREITE_ERL" xml:space="preserve">
     <value>The width of the module.</value>
   </data>
-  <data name="KI_DLG_MODK_PV_KOSTEN_ERL" xml:space="preserve">
-    <value>The price of one module; the plant cost follows from it via the module count.</value>
-  </data>
   <data name="KI_DLG_MODK_TNOCT_ERL" xml:space="preserve">
     <value>The cell temperature under nominal operating conditions; it drives the heating in the yield model.</value>
   </data>
@@ -25327,9 +25321,6 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_WRK_P_DC_MAX_ERL" xml:space="preserve">
     <value>The maximum generator power the inverter accepts on the DC side.</value>
-  </data>
-  <data name="KI_DLG_WRK_KOSTEN_ERL" xml:space="preserve">
-    <value>The price of one device; it enters the investment of the plant.</value>
   </data>
   <data name="KI_DLG_WRK_HERKUNFT_ERL" xml:space="preserve">
     <value>Where the record comes from: the device import sets the source, a hand-maintained record carries „HAND“. The entry is information, not input.</value>
@@ -28574,32 +28565,17 @@ Do you want to allow this?</value>
   <data name="KI_DLG_KBROW_BEZEICHNER_ERL" xml:space="preserve">
     <value>The name of the selected catalogue record; it is the key of the record and read-only here – a record gets a different name via “Duplicate…”.</value>
   </data>
-  <data name="KI_DLG_KBROW_INVEST_ERL" xml:space="preserve">
-    <value>The investment cost of the unit according to the catalogue, in euros.</value>
+  <data name="KI_DLG_KBROW_GERAETEKOSTEN_ERL" xml:space="preserve">
+    <value>The device cost in euros taken from this catalogue record's cost template — display only; it is maintained in the cost management.</value>
   </data>
   <data name="KI_DLG_KBROW_RAUMBEDARF_ERL" xml:space="preserve">
     <value>The space the unit needs in the installation room, in cubic metres.</value>
-  </data>
-  <data name="KI_DLG_KBROW_WARTUNG_ERL" xml:space="preserve">
-    <value>The maintenance costs of the boiler; the field “Unit” states what they refer to.</value>
-  </data>
-  <data name="KI_DLG_KBROW_WARTUNG_EINHEIT_ERL" xml:space="preserve">
-    <value>What the maintenance costs refer to, as stated in the catalogue (free text).</value>
   </data>
   <data name="KI_DLG_KBROW_NUTZUNGSDAUER_ERL" xml:space="preserve">
     <value>The service life of the unit according to the catalogue, in years — device data, not used in the calculation; the service life table (Service lives (depreciation)) governs.</value>
   </data>
   <data name="KI_DLG_KBROW_EMISSION_ERL" xml:space="preserve">
     <value>The manufacturer’s figure for the emission of {0} per MWh; it is maintained here, calculations use the emission catalogue of the energy carrier.</value>
-  </data>
-  <data name="KI_DLG_KBROW_KOSTENPOSTEN_ERL" xml:space="preserve">
-    <value>The cost item “{0}” of the module in euros; the five items together make up the investment from which the investment per kWel is calculated.</value>
-  </data>
-  <data name="KI_DLG_KBROW_INVEST_KWEL_ERL" xml:space="preserve">
-    <value>The investment per kilowatt of electrical output; it is calculated from the five cost items and is therefore read-only.</value>
-  </data>
-  <data name="KI_DLG_KBROW_WARTUNG_KWHEL_ERL" xml:space="preserve">
-    <value>The maintenance costs per kilowatt-hour of electricity generated, in euros.</value>
   </data>
   <data name="KI_DLG_KBROW_FELD_ERL" xml:space="preserve">
     <value>The catalogue value “{0}” of the selected record.</value>
@@ -29578,6 +29554,9 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_SATZ_PAKETTEIL_NACHGELADEN" xml:space="preserve">
     <value>The draw-off profile generator has loaded its freely available catalogue data into this database (catalogue version “{0}”): {1} parameters, {2} domestic hot water types of use, {3} design days.</value>
+  </data>
+  <data name="ZPG_SATZ_PAKETTEIL_PARAMETER_NACHGETRAGEN" xml:space="preserve">
+    <value>The draw-off profile generator has added missing freely available parameters to catalogue version “{0}”: {1} parameters ({2}).</value>
   </data>
   <data name="ZPG_SATZ_PAKETTEIL_NACHLADEN_FEHLGESCHLAGEN" xml:space="preserve">
     <value>The freely available catalogue data of the draw-off profile generator could not be loaded ({0}) — nothing changed.</value>
@@ -34425,7 +34404,7 @@ Do you want to allow this?</value>
     <value>Surfaces per zone</value>
   </data>
   <data name="GIMP_DLG_FILTER_FEHLER" xml:space="preserve">
-    <value>Only surfaces with a finding</value>
+    <value>Only surfaces with a note</value>
   </data>
   <data name="GIMP_DLG_FILTER_OHNE_GEGENSTUECK" xml:space="preserve">
     <value>Only surfaces without an adjacent surface</value>
@@ -34437,7 +34416,7 @@ Do you want to allow this?</value>
     <value>The filters only narrow the displayed list; together they apply as “and”. Everything is always saved.</value>
   </data>
   <data name="GIMP_DLG_FILTER_FEHLER_HINWEIS" xml:space="preserve">
-    <value>Shows only surfaces for which the “Finding” column states something: no adjacent surface, no U-value, estimated area or a record from room bodies. Affects the display only; everything is saved.</value>
+    <value>Shows only surfaces for which the “Note” column states something: no adjacent surface, no U-value, estimated area or a record from room bodies. Affects the display only; everything is saved.</value>
   </data>
   <data name="GIMP_DLG_FILTER_OHNE_GEGENSTUECK_HINWEIS" xml:space="preserve">
     <value>Shows only partition surfaces for which the import found no counterpart in the neighbouring zone. They are calculated against an unheated room. Affects the display only; everything is saved.</value>
@@ -34446,7 +34425,7 @@ Do you want to allow this?</value>
     <value>Shows only surfaces that have neither a U-value nor a layer build-up (from the file or assigned). Affects the display only; everything is saved.</value>
   </data>
   <data name="GIMP_DLG_FLAECHEN_HINWEIS" xml:space="preserve">
-    <value>The “Finding” column states what a surface lacks: no counterpart (calculated against unheated), no U-value or an estimated area. The filters show only these surfaces; the search looks in all columns.</value>
+    <value>The “Note” column states what a surface lacks: no counterpart (calculated against unheated), no U-value or an estimated area. The filters show only these surfaces; the search looks in all columns.</value>
   </data>
   <data name="GIMP_BT_KOPF_ZONEN" xml:space="preserve">
     <value>{0} zones · usable area {1} m² · {2} components · {3} constructions</value>
@@ -34458,7 +34437,7 @@ Do you want to allow this?</value>
     <value>Construction</value>
   </data>
   <data name="GIMP_FL_SP_BEFUND" xml:space="preserve">
-    <value>Finding</value>
+    <value>Note</value>
   </data>
   <data name="GIMP_FL_BEFUND_OHNE_GEGENSTUECK" xml:space="preserve">
     <value>no counterpart</value>
@@ -37861,13 +37840,13 @@ This folder holds the standard template, the short report, the detailed template
     <value>With the standard template</value>
   </data>
   <data name="BV_VORLAGEN_PRUEFZEILE_BEFUND" xml:space="preserve">
-    <value>checked, {0} placeholders, 1 finding</value>
+    <value>checked, {0} placeholders, 1 message</value>
   </data>
   <data name="BV_VORLAGEN_PRUEFZEILE_BEFUNDE" xml:space="preserve">
-    <value>checked, {0} placeholders, {1} findings</value>
+    <value>checked, {0} placeholders, {1} messages</value>
   </data>
   <data name="BV_VORLAGEN_PRUEFZEILE_OK" xml:space="preserve">
-    <value>checked, {0} placeholders, no findings</value>
+    <value>checked, {0} placeholders, no messages</value>
   </data>
   <data name="EIN_BERICHT_HINT_FIRMA" xml:space="preserve">
     <value>Appears in the report at {{ersteller.firma}}; pre-filled from the licence.</value>
@@ -38017,7 +37996,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Warnings ({0})</value>
   </data>
   <data name="VF_PRUEF_KEINE_BEFUNDE" xml:space="preserve">
-    <value>No findings – the template can be filled.</value>
+    <value>No messages – the template can be filled.</value>
   </data>
   <data name="VF_PRUEF_KOPF" xml:space="preserve">
     <value>Checked: {0} placeholders, template “{1}”</value>
@@ -46065,9 +46044,6 @@ chart</value>
   <data name="KM_LBL_KALTWASSER_MIN" xml:space="preserve">
     <value>Lowest chilled water supply</value>
   </data>
-  <data name="KM_LBL_MODULKOSTEN" xml:space="preserve">
-    <value>Unit price</value>
-  </data>
   <data name="KM_RUECKKUEHLART_KEINE" xml:space="preserve">
     <value>(not specified)</value>
   </data>
@@ -46205,9 +46181,6 @@ chart</value>
   </data>
   <data name="KI_DLG_KM_KALTWASSER_MIN_ERL" xml:space="preserve">
     <value>Lowest permissible chilled water supply in °C.</value>
-  </data>
-  <data name="KI_DLG_KM_MODULKOSTEN_ERL" xml:space="preserve">
-    <value>Unit price in euros; not negative.</value>
   </data>
   <data name="KI_DLG_KM_RUECKKUEHLTEMPERATUR_ERL" xml:space="preserve">
     <value>Inlet temperature of the heat rejection medium at the curve point in °C (air-cooled: outdoor air).</value>
@@ -48658,7 +48631,7 @@ chart</value>
     <value>“Construction” is unavailable: there is no component proposal. {0}</value>
   </data>
   <data name="GANS_BEFUND_OHNE_VORSCHLAG" xml:space="preserve">
-    <value>“Findings” is unavailable: there is no component proposal. {0}</value>
+    <value>“Completeness” is unavailable: there is no component proposal. {0}</value>
   </data>
   <data name="GANS_OHNE_BAUTEILBEZUG" xml:space="preserve">
     <value>without component reference ({0})</value>
@@ -49389,7 +49362,7 @@ chart</value>
     <value>{0} components omitted: completely occupied by openings ({1}).</value>
   </data>
   <data name="IMP_BEFUND_OHNE" xml:space="preserve">
-    <value>No finding</value>
+    <value>complete</value>
   </data>
   <data name="IMP_BEFUND_KOERPER_UNLESBAR" xml:space="preserve">
     <value>Body unreadable</value>
@@ -49419,7 +49392,7 @@ chart</value>
     <value>Body degenerate: it yields no relevant area.</value>
   </data>
   <data name="BTSB_BEFUND" xml:space="preserve">
-    <value>Finding</value>
+    <value>Completeness</value>
   </data>
   <data name="IMP_GEB_PROT_NORD_VORGABE" xml:space="preserve">
     <value>North direction as entered: the top of the plan (+y of the file) points to {0}°, the north angle is {1}°; the orientations of all components and floor plans follow it.</value>
@@ -49542,7 +49515,7 @@ chart</value>
     <value>NW</value>
   </data>
   <data name="GANS_FARBMODUS_BEFUND" xml:space="preserve">
-    <value>Findings</value>
+    <value>Completeness</value>
   </data>
   <data name="GANS_FARBMODUS_NUTZUNG" xml:space="preserve">
     <value>Usage</value>
@@ -49563,7 +49536,7 @@ chart</value>
     <value>Highlighted: {0} — {1} components, {2} zones</value>
   </data>
   <data name="GANS_PRUEF_OHNE" xml:space="preserve">
-    <value>{0}: No finding of this group lies on a surface or zone of the view.</value>
+    <value>{0}: No message of this group lies on a surface or zone of the view.</value>
   </data>
   <data name="GANS_PRUEF_VORSCHLAEGE" xml:space="preserve">
     <value>Proposals</value>
@@ -49581,13 +49554,13 @@ chart</value>
     <value>{0}: apply the proposals — undo in the “Check model” sheet</value>
   </data>
   <data name="GANS_PRUEF_VERWERFEN_HINWEIS" xml:space="preserve">
-    <value>{0}: discard the proposals — the findings remain</value>
+    <value>{0}: discard the proposals — the messages remain</value>
   </data>
   <data name="GANS_BEFUND_OHNE" xml:space="preserve">
-    <value>“Findings” is unavailable: there are no findings for the components (no component proposal).</value>
+    <value>“Completeness” is unavailable: there is no component proposal.</value>
   </data>
   <data name="GANS_BEFUND_LEGENDE" xml:space="preserve">
-    <value>Findings per component</value>
+    <value>Completeness per component</value>
   </data>
   <data name="GANS_BEFUND_BAUTEILE" xml:space="preserve">
     <value>Components</value>
@@ -49617,10 +49590,10 @@ chart</value>
     <value>The “Area from” column names how the area was obtained: quantity set of the file, polygon of the space boundary, component solid or schematic default.</value>
   </data>
   <data name="GIMP_DLG_FILTER_BAUTEILBEFUND" xml:space="preserve">
-    <value>Only components with findings</value>
+    <value>Only incomplete components</value>
   </data>
   <data name="GIMP_DLG_FILTER_BAUTEILBEFUND_HINWEIS" xml:space="preserve">
-    <value>Shows only areas whose component is orange or red in the “Findings” colour mode: solid unreadable or without properties (U-value or area). Affects the display only; everything is saved.</value>
+    <value>Shows only areas whose component is orange or red in the “Completeness” colour mode: solid unreadable or without properties (U-value or area). Affects the display only; everything is saved.</value>
   </data>
   <data name="IMP_IFC_PROT_KOERPERFLAECHEN" xml:space="preserve">
     <value>Building "{0}" has neither space boundaries nor spatial references; {1} components are assigned to the spaces through their bodies — {2} areas per space totalling {3} m² (origin: body).</value>
@@ -51858,16 +51831,13 @@ chart</value>
     <value>The catalogue entry "{0}" will be deleted for ALL projects. Continue?</value>
   </data>
   <data name="SKV_RUECK_BLEIBT" xml:space="preserve">
-    <value>Remaining in the project: number of modules, tilt, azimuth, albedo, the solar circuit (pump, losses, working temperature, approach, spread) and the sinks of the plant. Coefficients, areas and investment costs are transferred.</value>
+    <value>Remaining in the project: number of modules, tilt, azimuth, albedo, the solar circuit (pump, losses, working temperature, approach, spread) and the sinks of the plant. Coefficients and areas are transferred.</value>
   </data>
   <data name="WPV_TIP_UMSTELLEN_EINER" xml:space="preserve">
     <value>Switching needs exactly one heat pump in the project and exactly one catalogue entry.</value>
   </data>
   <data name="WPV_MSG_ANLAGE_PRUEFEN" xml:space="preserve">
     <value>Please check the system and confirm with OK.</value>
-  </data>
-  <data name="WPV_MSG_MODULKOSTEN_NEGATIV" xml:space="preserve">
-    <value>The module costs must not be negative.</value>
   </data>
   <data name="WPV_MSG_NENNLEISTUNG_NEGATIV" xml:space="preserve">
     <value>The rated output must not be negative.</value>
@@ -51930,7 +51900,7 @@ chart</value>
     <value>{0} strings</value>
   </data>
   <data name="PVD_RUECK_BLEIBT" xml:space="preserve">
-    <value>Remaining in the project: strings and inverter assignment, tilt, azimuth, number of modules, yield model and energy carrier of the system. All module values including the temperature coefficients and the module costs are transferred.</value>
+    <value>Remaining in the project: strings and inverter assignment, tilt, azimuth, number of modules, yield model and energy carrier of the system. All module values including the temperature coefficients are transferred.</value>
   </data>
   <data name="CHART_TITEL_SOLARERTRAG_JAHRESGANGLINIE" xml:space="preserve">
     <value>Solar yield, annual profile</value>
@@ -52089,7 +52059,7 @@ chart</value>
     <value>The name under which the entry is created; changeable only with the action “Rename”.</value>
   </data>
   <data name="KI_DLG_IKF_AKTION_ERL" xml:space="preserve">
-    <value>What happens to the entry: import, skip, overwrite or rename; which actions are allowed depends on the finding of the row.</value>
+    <value>What happens to the entry: import, skip, overwrite or rename; which actions are allowed depends on the message of the row.</value>
   </data>
   <data name="KI_IKF_NAME_NUR_UMBENENNEN" xml:space="preserve">
     <value>The name can only be changed with the action “Rename” – please switch the action of the row first.</value>
@@ -55196,7 +55166,7 @@ chart</value>
     <value>Peak load [kW]</value>
   </data>
   <data name="GEBSIM_SP_BEFUND" xml:space="preserve">
-    <value>Finding</value>
+    <value>Note</value>
   </data>
   <data name="GEBSIM_BEFUND_GERECHNET" xml:space="preserve">
     <value>calculated</value>
@@ -55523,7 +55493,7 @@ chart</value>
     <value>Proposal discarded: {0}</value>
   </data>
   <data name="MP_MSG_VERWORFEN_ZAHL" xml:space="preserve">
-    <value>{0} proposals discarded — the findings remain.</value>
+    <value>{0} proposals discarded — the messages remain.</value>
   </data>
   <data name="MP_MSG_UNBEKANNT" xml:space="preserve">
     <value>Unknown kind of proposal.</value>
@@ -55580,7 +55550,7 @@ chart</value>
     <value>The building could not be read.</value>
   </data>
   <data name="MPB_MSG_UEBERNOMMEN" xml:space="preserve">
-    <value>{0} suggestions applied, {1} findings need an input.</value>
+    <value>{0} suggestions applied, {1} messages need an input.</value>
   </data>
   <data name="MPB_MSG_NORD_BESTAETIGT" xml:space="preserve">
     <value>The north direction is confirmed.</value>
@@ -55592,10 +55562,10 @@ chart</value>
     <value>The climate region applies to the project: it is selected in the project data.</value>
   </data>
   <data name="MPB_ZAEHLUNG" xml:space="preserve">
-    <value>{0} findings, {1} suggestions</value>
+    <value>{0} messages, {1} suggestions</value>
   </data>
   <data name="MPB_AMPEL_GRUEN" xml:space="preserve">
-    <value>green – no finding</value>
+    <value>green – no message</value>
   </data>
   <data name="MPB_AMPEL_GELB" xml:space="preserve">
     <value>yellow – computes with defaults</value>
@@ -55604,7 +55574,7 @@ chart</value>
     <value>red – not computable</value>
   </data>
   <data name="MPB_BTN_BEFUNDE_HINWEIS" xml:space="preserve">
-    <value>Show or hide the findings of this check group</value>
+    <value>Show or hide the messages of this check group</value>
   </data>
   <data name="MPB_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Apply suggestion</value>
@@ -55613,7 +55583,7 @@ chart</value>
     <value>Apply all suggestions of this check group in one step and check again</value>
   </data>
   <data name="MPB_SPERRE_KEIN_VORSCHLAG" xml:space="preserve">
-    <value>No suggestion – the findings need an input.</value>
+    <value>No suggestion – the messages need an input.</value>
   </data>
   <data name="MPB_BTN_ZURUECKNEHMEN" xml:space="preserve">
     <value>Undo</value>
@@ -55635,6 +55605,18 @@ chart</value>
   </data>
   <data name="MPB_BTN_KLIMA_HINWEIS" xml:space="preserve">
     <value>Select the climate region of the project</value>
+  </data>
+  <data name="MPB_KLIMA_TITEL" xml:space="preserve">
+    <value>Project climate region</value>
+  </data>
+  <data name="MPB_KLIMA_TEXT" xml:space="preserve">
+    <value>The climate region applies to all buildings of the project; the list is the same as in the header bar.</value>
+  </data>
+  <data name="MPB_KLIMA_LABEL" xml:space="preserve">
+    <value>Climate region</value>
+  </data>
+  <data name="MPB_KLIMA_GESPEICHERT" xml:space="preserve">
+    <value>The climate region “{0}” has been saved for the project.</value>
   </data>
   <data name="MPB_BTN_NORD" xml:space="preserve">
     <value>Confirm north direction</value>
@@ -55742,7 +55724,7 @@ Replace these holidays with the project default? With “No” these zones remai
     <value>Holidays / heating period</value>
   </data>
   <data name="ZNB_SPALTE_BEFUND" xml:space="preserve">
-    <value>Finding</value>
+    <value>Note</value>
   </data>
   <data name="ZNB_SPALTE_AKTION" xml:space="preserve">
     <value>Details</value>
@@ -55917,6 +55899,9 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="GEB_SPERRE_ZONENNUTZUNG" xml:space="preserve">
     <value>Save the changed zones with OK first.</value>
+  </data>
+  <data name="GEB_SPERRE_PRUEFFELDER" xml:space="preserve">
+    <value>Save the changed building data (public holiday state, conditioning) with OK first — a model check takeover writes there.</value>
   </data>
   <data name="MPB_BTN_BEARBEITEN" xml:space="preserve">
     <value>Edit…</value>
@@ -56182,6 +56167,9 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="GIMP_FELD_ERDREICH_U_WIRKSAM" xml:space="preserve">
     <value>Effective U-value to ground</value>
   </data>
+  <data name="GIMP_FELD_MAX_RAUMTEMPERATUR" xml:space="preserve">
+    <value>Maximum room temperature</value>
+  </data>
   <data name="GIMP_FELD_KELLERTEMPERATUR" xml:space="preserve">
     <value>Basement temperature</value>
   </data>
@@ -56246,7 +56234,7 @@ Replace these holidays with the project default? With “No” these zones remai
     <value>Model check of the saved building</value>
   </data>
   <data name="MPB_LEISTE_GRUPPE_HINWEIS" xml:space="preserve">
-    <value>{0}: {1} findings, {2} proposals – opens “Check model” on this group.</value>
+    <value>{0}: {1} messages, {2} proposals – opens “Check model” on this group.</value>
   </data>
   <data name="ZNB_WOCHE_BILD" xml:space="preserve">
     <value>Week of zone {0} per quantity</value>

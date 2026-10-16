@@ -81,10 +81,10 @@ namespace WindowsFormsApplication1
                                             (
                                                 Bezeichner, ID_Projekt, Firma, Beschreibung, Typ, 
                                                 Baujahr, Aufstellung, Nennleistung, maxPTherm, 
-                                                Heizung, Regelung, Modulkosten, Bauart, Kuehlleistung,
+                                                Heizung, Regelung, Bauart, Kuehlleistung,
                                                 Kuehlbetrieb, Kuehl_Vorlauf, Kuehl_Hilfsstromanteil
                                             ) 
-                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                         DbParam[] ps = {
                             new DbParam("@nam", WPName ?? (object)DBNull.Value),
@@ -98,7 +98,6 @@ namespace WindowsFormsApplication1
                             new DbParam("@max", maxPTherm),
                             new DbParam("@hei", Heizung),
                             new DbParam("@reg", Regelung ?? (object)DBNull.Value),
-                            new DbParam("@mod", Modulkosten),
                             new DbParam("@bart", Bauart ?? (object)DBNull.Value),
                             new DbParam("@kuehl", Kuehlleistung),
                             // KU-S3 (Schemaschritt 114): NULL-treu, nie 0 fuer ein leeres Feld
@@ -169,7 +168,6 @@ namespace WindowsFormsApplication1
                 if (row["Nennleistung"] != DBNull.Value) Nennleistung = Convert.ToInt32(row["Nennleistung"]);
                 if (row["Heizung"] != DBNull.Value) Heizung = Convert.ToInt32(row["Heizung"]);
                 if (row["Regelung"] != DBNull.Value) Regelung = row["Regelung"].ToString();
-                if (row["Modulkosten"] != DBNull.Value) Modulkosten = Convert.ToInt32(row["Modulkosten"]);
                 if (dt.Columns.Contains("Kuehlleistung") && row["Kuehlleistung"] != DBNull.Value) Kuehlleistung = Convert.ToDouble(row["Kuehlleistung"]);
                 if (dt.Columns.Contains("Bauart") && row["Bauart"] != DBNull.Value) Bauart = row["Bauart"].ToString();
                 KuehlfelderLesen(dt, row, this);
@@ -879,10 +877,10 @@ namespace WindowsFormsApplication1
                         // zerreisst die Klammer dann nicht mehr.
                         string hsql = @"INSERT INTO Tab_WP
                         (ID, ID_Projekt, ID_Stamm, Bezeichner, Firma, Beschreibung, Typ, Baujahr, Aufstellung,
-                         Nennleistung, maxPtherm, Heizung, Regelung, Modulkosten, Laenge, Breite, Hoehe,
+                         Nennleistung, maxPtherm, Heizung, Regelung, Laenge, Breite, Hoehe,
                          Gewicht, Raum, Kuehlleistung, Bauart,
                          Kuehlbetrieb, Kuehl_Vorlauf, Kuehl_Hilfsstromanteil)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", neueId));
@@ -898,7 +896,6 @@ namespace WindowsFormsApplication1
                             p.Add(P(sHead, "maxPtherm"));
                             p.Add(P(sHead, "Heizung"));
                             p.Add(P(sHead, "Regelung"));
-                            p.Add(P(sHead, "Modulkosten"));
                             p.Add(P(sHead, "Laenge"));
                             p.Add(P(sHead, "Breite"));
                             p.Add(P(sHead, "Hoehe"));
@@ -1242,7 +1239,6 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("maxPTherm") && row["maxPTherm"] != DBNull.Value) item.maxPTherm = Convert.ToInt32(row["maxPTherm"]);
                 if (dt.Columns.Contains("Heizung") && row["Heizung"] != DBNull.Value) item.Heizung = Convert.ToInt32(row["Heizung"]);
                 if (dt.Columns.Contains("Regelung") && row["Regelung"] != DBNull.Value) item.Regelung = row["Regelung"].ToString();
-                if (dt.Columns.Contains("Modulkosten") && row["Modulkosten"] != DBNull.Value) item.Modulkosten = Convert.ToInt32(row["Modulkosten"]);
                 if (dt.Columns.Contains("Kuehlleistung") && row["Kuehlleistung"] != DBNull.Value) item.Kuehlleistung = Convert.ToDouble(row["Kuehlleistung"]);
                 if (dt.Columns.Contains("Bauart") && row["Bauart"] != DBNull.Value) item.Bauart = row["Bauart"].ToString();
                 KuehlfelderLesen(dt, row, item);

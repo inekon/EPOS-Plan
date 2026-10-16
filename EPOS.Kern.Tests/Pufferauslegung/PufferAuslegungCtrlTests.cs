@@ -324,8 +324,10 @@ namespace EPOS.Kern.Tests.Pufferauslegung
             Assert.Equal(1500, Convert.ToDouble(r["Gesamtvolumen"]));
             Assert.Equal(2.5, Convert.ToDouble(r["Bereitschaftsverluste"]), 9);
             foreach (string spalte in new[] { "Bezeichner", "Vorlauf", "Ruecklauf", "Schwelle_Ein", "Schwelle_Aus", "Schwelle_Aus_Nachrang",
-                                              "Entladeprio", "Schwelle_Reserve", "Hersteller", "Speichertyp", "Investitionskosten" })
+                                              "Entladeprio", "Schwelle_Reserve", "Hersteller", "Speichertyp" })
                 Assert.True(Equals(alt[spalte], r[spalte]), spalte + ": " + alt[spalte] + " → " + r[spalte]);
+            // Welle KB-4: Der Puffer fuehrt keine Investition mehr - die Auslegung schreibt keinen Betrag.
+            Assert.False(r.Table.Columns.Contains("Investitionskosten"));
             Assert.Equal(1, Convert.ToInt32(r["Nutzung_Heizung"]));
             Assert.Equal(0, Convert.ToInt32(r["Nutzung_Brauchwasser"]));
 

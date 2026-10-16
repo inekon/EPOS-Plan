@@ -12,7 +12,7 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Rückweg „In die Datenbank übernehmen…" des Pufferspeichers</b> (Konzept Projektdialoge mit Katalogauswahl 5.2,
     /// 5.5, KA‑E‑9; Kernweg <see cref="Katalogrueckweg"/>, Gewerk <see cref="PufferSpStammCtrl.Rueckweg"/>): neu,
-    /// überschreiben, die drei Sperrgründe, Namenszusatz, Gerätewerte samt Investitionskosten, keine Kindtabellen,
+    /// überschreiben, die drei Sperrgründe, Namenszusatz, Gerätewerte (ohne Kostenspalte, Welle KB-4), keine Kindtabellen,
     /// Anlagenzeile, Senken und Projektspalten der Kopie bleiben im Projekt, Kosten als Satzvorlagen samt
     /// Investitionspositionen (KA‑E‑14) und Vorrang, Name der Kopie bleibt (KA‑E‑15), Löschen mit Satzvorlage
     /// (KA‑E‑16), Katalogpaket und die Transaktion. Nach dem Muster der <c>BhkwRueckwegTests</c>; jeder Test läuft
@@ -273,7 +273,8 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             IReadOnlyList<string> spalten = Katalogrueckweg.Spalten(PufferSpStammCtrl.Rueckweg());
-            Assert.Equal(new[] { "Hersteller", "Speichertyp", "Bereitschaftsverluste", "Gesamtvolumen", "Investitionskosten" },
+            // Welle KB-4: Die Investitionskosten sind als Spalte entfallen - die Kosten gehen als Satzvorlage mit.
+            Assert.Equal(new[] { "Hersteller", "Speichertyp", "Bereitschaftsverluste", "Gesamtvolumen" },
                          spalten.ToArray());
             Assert.Empty(PufferSpStammCtrl.Rueckweg().Kinder);
         }
@@ -413,12 +414,12 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Geraetewerte_und_Investitionskosten_gehen_mit_der_Name_der_Kopie_bleibt()
+        public void Geraetewerte_gehen_mit_der_Name_der_Kopie_bleibt()
         {
             if (!_db.Vorhanden) return;
             var k = Kopie();
             Sql("UPDATE Tab_Pufferspeicher SET Hersteller = 'Werk P', Speichertyp = ?, Bereitschaftsverluste = 2.75, " +
-                "Gesamtvolumen = 1250, Investitionskosten = 3456.5 WHERE ID = ?", DbWerte.PSP_SPEICHERTYP_KOMBI, k.Id);
+                "Gesamtvolumen = 1250 WHERE ID = ?", DbWerte.PSP_SPEICHERTYP_KOMBI, k.Id);
 
             Rueckwegergebnis e = Neu(k.Id, "Rueckweg Geraet");
             Assert.True(e.Ok, e.Meldung);
@@ -429,7 +430,6 @@ namespace EPOS.Kern.Tests
             Assert.Equal(DbWerte.PSP_SPEICHERTYP_KOMBI, Wert("SELECT Speichertyp FROM Tab_Pufferspeicher_STAMM WHERE ID = ?", satz));
             Assert.Equal(2.75, Z("Bereitschaftsverluste"), 9);
             Assert.Equal(1250, Z("Gesamtvolumen"));
-            Assert.Equal(3456.5, Z("Investitionskosten"), 9);
             // KA-E-15: Der Name der Projektkopie bleibt, auch wenn der Katalogsatz anders heisst.
             Assert.Equal(k.Name, Wert("SELECT Bezeichner FROM Tab_Pufferspeicher WHERE ID = ?", k.Id));
         }

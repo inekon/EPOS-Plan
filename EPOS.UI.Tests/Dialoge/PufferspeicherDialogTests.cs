@@ -95,8 +95,10 @@ public class PufferspeicherDialogTests : EposBunitContext
         },
         new BrowserFeldwert
         {
-            Schluessel = KatalogBrowserProfil.FeldInvestitionskosten,
-            Bezeichnung = "Investitionskosten:", Einheit = "€",
+            // Welle KB-4: die Investitionskosten sind als Spalte entfallen - das Zahlenfeld der Probe
+            // ist die Bereitschaftsverlustzahl.
+            Schluessel = KatalogBrowserProfil.FeldVerluste,
+            Bezeichnung = "Bereitschaftsverluste:", Einheit = "kWh/d",
             Art = BrowserFeldArt.Zahl, Editierbar = true, Wert = "2500"
         }
     };
@@ -439,7 +441,7 @@ public class PufferspeicherDialogTests : EposBunitContext
         Assert.Equal("Speicher 600 Ltr", name);
         Assert.NotNull(gesehen);
         Assert.Equal("3000",
-            gesehen!.First(f => f.Schluessel == KatalogBrowserProfil.FeldInvestitionskosten).Wert);
+            gesehen!.First(f => f.Schluessel == KatalogBrowserProfil.FeldVerluste).Wert);
         // Kein Band im Dialogkopf; die Ueberlagerung schliesst.
         Assert.Equal("", cut.Instance.Meldung);
         Assert.False(cut.Instance.SatzUeberlagerungOffen);
@@ -1016,7 +1018,7 @@ public class PufferspeicherDialogTests : EposBunitContext
 
         Assert.True(cut.Instance.ParameterOffen);
         var felder = cut.FindComponent<EPOS.UI.Bausteine.Katalogfelder>();
-        Assert.Contains(felder.Instance.Felder, f => f.Schluessel == KatalogBrowserProfil.FeldInvestitionskosten && f.Editierbar);
+        Assert.Contains(felder.Instance.Felder, f => f.Schluessel == KatalogBrowserProfil.FeldVerluste && f.Editierbar);
 
         cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("3100");
         cut.Find(".epos-satzueberlagerung-ok").Click();

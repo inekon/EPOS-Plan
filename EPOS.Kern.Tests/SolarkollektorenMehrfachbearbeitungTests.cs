@@ -9,8 +9,8 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Mehrfach-Bearbeiten der Solarkollektoren in EINER Transaktion</b> (Konzept Projektdialoge mit
     /// Katalogauswahl 4.6, Entscheid KA‑E‑8, Stufe 3): <see cref="SolarkollektorenStammCtrl.AnzeigefelderSchreibenAlle"/>
-    /// schreibt alle geänderten Sätze — Projektkopien oder Katalogsätze — oder keinen; die Investitionskosten gehen mit,
-    /// der Name bleibt. Gearbeitet wird nur an eigens angelegten Kopien auf einer Kopie der Testdatenbank — der
+    /// schreibt alle geänderten Sätze — Projektkopien oder Katalogsätze — oder keinen; die Kennwerte gehen mit,
+    /// der Name bleibt (die Investitionskosten sind mit Welle KB-4 als Spalte entfallen). Gearbeitet wird nur an eigens angelegten Kopien auf einer Kopie der Testdatenbank — der
     /// Kollektorsatz des Referenzprojekts 1049 bleibt unberührt.
     /// </summary>
     [Collection("Testdatenbank")]
@@ -23,9 +23,9 @@ namespace EPOS.Kern.Tests
         private const int PROJEKT = 1030;
 
         private static SolarkollektorenStammCtrl.AnzeigefelderSolarkollektor Satz(string beschreibung, double h0 = 0.8,
-                                                                               double invest = 900)
+                                                                               double kdiff = 0.9)
             => new SolarkollektorenStammCtrl.AnzeigefelderSolarkollektor("Flach", "Musterwerk", beschreibung,
-                                                                       2.5, 2.3, h0, 3.5, 0.015, 0.95, 0.9, invest);
+                                                                       2.5, 2.3, h0, 3.5, 0.015, 0.95, kdiff);
 
         private static List<int> StammIds(int anzahl)
         {
@@ -62,19 +62,19 @@ namespace EPOS.Kern.Tests
 
         private static string Satz1049()
             => Convert.ToString(DataRepository.ExecuteScalar(
-                   "SELECT Bezeichner || '|' || Kdfu || '|' || Bezugsflaeche || '|' || Investitionskosten FROM Tab_Solarkollektoren WHERE ID_Projekt = 1049"),
+                   "SELECT Bezeichner || '|' || Kdfu || '|' || Bezugsflaeche || '|' || h0 FROM Tab_Solarkollektoren WHERE ID_Projekt = 1049"),
                    CultureInfo.InvariantCulture);
 
         [Fact]
-        public void SatzAnzeige_liest_Projektkopie_und_Katalogsatz_nach_ID_samt_Investition()
+        public void SatzAnzeige_liest_Projektkopie_und_Katalogsatz_nach_ID_samt_Geraetekosten()
         {
             if (!_db.Vorhanden) return;
             int k = StammIds(1)[0];
             int p = EigeneKopien()[0];
             Assert.StartsWith("Mehrfachprobe", Feld(true, p, KatalogBrowserProfil.FeldBezeichner));
             Assert.Equal(SolarkollektorenStammCtrl.KatalogsatzAnzeige(Feld(false, k, KatalogBrowserProfil.FeldBezeichner))
-                             [KatalogBrowserProfil.FeldInvestitionskosten],
-                         Feld(false, k, KatalogBrowserProfil.FeldInvestitionskosten));
+                             [KatalogBrowserProfil.FeldGeraetekosten],
+                         Feld(false, k, KatalogBrowserProfil.FeldGeraetekosten));
             Assert.True(SolarkollektorenStammCtrl.SatzAnzeige(true, p).ContainsKey(KatalogBrowserProfil.FeldBezugsflaeche));
             Assert.Null(SolarkollektorenStammCtrl.SatzAnzeige(true, 987654321));
         }
@@ -91,14 +91,14 @@ namespace EPOS.Kern.Tests
 
             var e = SolarkollektorenStammCtrl.AnzeigefelderSchreibenAlle(true, new[]
             {
-                new SolarkollektorenStammCtrl.Satzaenderung(ids[0], Satz("Kopie A", invest: 1111)),
-                new SolarkollektorenStammCtrl.Satzaenderung(ids[1], Satz("Kopie B", invest: 2222)),
+                new SolarkollektorenStammCtrl.Satzaenderung(ids[0], Satz("Kopie A", kdiff: 0.81)),
+                new SolarkollektorenStammCtrl.Satzaenderung(ids[1], Satz("Kopie B", kdiff: 0.77)),
             });
 
             Assert.True(e.Ok, e.Meldung);
             Assert.Equal("Kopie A", Feld(true, ids[0], KatalogBrowserProfil.FeldBeschreibung));
             Assert.Equal("Kopie B", Feld(true, ids[1], KatalogBrowserProfil.FeldBeschreibung));
-            Assert.Equal(2222, double.Parse(Feld(true, ids[1], KatalogBrowserProfil.FeldInvestitionskosten), CultureInfo.CurrentCulture));
+            Assert.Equal(0.77, double.Parse(Feld(true, ids[1], KatalogBrowserProfil.FeldKdiff), CultureInfo.CurrentCulture), 9);
             Assert.Equal(name0, Feld(true, ids[0], KatalogBrowserProfil.FeldBezeichner));   // der Name bleibt
             Assert.Equal(katalogVorher, Feld(false, katalog, KatalogBrowserProfil.FeldBeschreibung));
             Assert.Equal(vorher1049, Satz1049());

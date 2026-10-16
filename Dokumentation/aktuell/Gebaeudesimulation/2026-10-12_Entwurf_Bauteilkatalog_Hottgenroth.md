@@ -1,6 +1,6 @@
 # Entwurf BK — Baustoff- und Bauteilkatalog vervollständigen, Importweg aus dem Hottgenroth-Katalog
 
-**Stand 12.10.2026 · Befund und Entwurf, Fragen F1–F8 mit E132 entschieden (Abschnitt 6a), nichts gebaut.** Gelesen auf `23ca3798d` (Zweig `ios_migration_september`,
+**Stand 12.10.2026 · Befund und Entwurf, Fragen F1–F8 mit E132 entschieden (Abschnitt 6a). Stand 16.10.2026: BK-1 bis BK-3d gebaut (Schritte 221 und 222), BK-5/BK-6 als Schritt 232 im Zweig `claude/gebaeudesimulation-bk5`, BK-7 offen.** Gelesen auf `23ca3798d` (Zweig `ios_migration_september`,
 Basis R52). Auftrag BK der Sitzung Gebäudesimulation. Grundlage sind der Code, die Testdatenbank, ein Strukturbericht des
 Hottgenroth-Gesamtkatalogs und eine Recherche offener Quellen. Beide Papiere liegen als Protokolle vor:
 [Strukturbericht](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-12_BK_Strukturbericht_Hottgenroth.md) und

@@ -17,7 +17,8 @@ namespace EPOS.Kern.Tests
         /// <summary>Restdaten beider Formate: gbXML über den Rückfall Weg 2 (Block <c>EPOS:</c> in <c>Description</c>), IFC über
         /// <c>EPOS_Zone</c>/<c>EPOS_Gebaeude</c> — beide Richtungen.</summary>
         DA4 = 4,
-        /// <summary>Nachzug N2 zu DA-4/DA-7: Höchsttemperatur der Zone (B10) über dieselben Restdaten, beide Richtungen.</summary>
+        /// <summary>Nachzug N2 zu DA-4/DA-7: Höchsttemperatur (B10) über dieselben Restdaten, beide Richtungen — die der Zone (N2) und
+        /// die des Gebäudes (Nachzug N4).</summary>
         N2 = 5,
         /// <summary>Kein Element und noch keine Welle im Auftrag (Rückfall nach Konzept 3.3 offen).</summary>
         Offen = 8,

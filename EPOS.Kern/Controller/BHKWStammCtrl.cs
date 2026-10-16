@@ -210,7 +210,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die UPDATE-Anweisung der Fachspalten samt Parametern für <paramref name="tabelle"/> — den Katalog
         /// (<see cref="TABLE"/>, Schlüssel <c>Bezeichner</c>) oder die Projektkopien (<see cref="TABELLE_PROJEKT"/>,
-        /// Schlüssel <c>ID</c>). Zieht den Gesamtwirkungsgrad und die Investition je kWel nach (eine Wahrheit).
+        /// Schlüssel <c>ID</c>). Zieht den Gesamtwirkungsgrad nach (eine Wahrheit).
         /// Teillast und Rücklaufgrenze schreibt der Aufrufer in eigenen Schritten.
         /// </summary>
         private static (string Sql, DbParam[] Parameter) Aktualisierung(BHKWStammModel m, string tabelle,
@@ -219,33 +219,25 @@ namespace WindowsFormsApplication1
             string sql = @"UPDATE [" + tabelle + @"] SET
                            Beschreibung=?, Firma=?, Motortyp=?, Ptherm=?, Pel=?,
                            Brennstoff=?, Wirkungsgrad=?, Wirkungsgrad_el=?, Wirkungsgrad_th=?,
-                           Investition_kwel=?, Raumbedarf=?,
-                           Wartungskosten_kwhel=?, Nutzungsdauer=?, NOx=?, SO2=?, CO=?,
-                           CO2=?, Staub=?, Grenzleistung=?, Kosten_Modul=?, Kosten_Montage=?,
-                           Kosten_Lieferung=?, Kosten_Schallschutzhaube=?, Kosten_Abgasreinigung=?,
+                           Raumbedarf=?, Nutzungsdauer=?, NOx=?, SO2=?, CO=?,
+                           CO2=?, Staub=?, Grenzleistung=?,
                            Vorlauf=?, Ruecklauf=?
                            WHERE [" + schluesselspalte + "]=?";
 
             // EINE WAHRHEIT (Schemaschritt 99, Anwenderentscheid 20.09.2026): Der
             // Gesamtwirkungsgrad ist die SUMME der zwei Anteile und wird hier
-            // nachgezogen - wie Investition_kwel aus den fuenf Kostenposten. Sind
+            // nachgezogen. Sind
             // die Anteile nicht gepflegt (Altbestand vor Schritt 99), bleibt der
             // Gesamtwert stehen, wie er war; SimulationBHKW liest ihn unveraendert.
             m.m_Wirkungsgrad = BhkwWirkungsgrad.GesamtZumSchreiben(
                 m.m_Wirkungsgrad_el, m.m_Wirkungsgrad_th, m.m_Wirkungsgrad);
 
-            // Die Einzelposten fuehren (Regel in BHKWKosten, Nutzerentscheid
-            // 22.08.2026): der spezifische Wert wird hier aus den Posten und Pel
-            // abgeleitet. Damit kann kein Schreibweg die beiden Groessen
-            // auseinanderlaufen lassen - auch Form_BHKWAdmin nicht, das nur Pel
-            // aendert und den vollstaendig gelesenen Satz sonst unveraendert
-            // zurueckschreibt. Der Bestand wird dadurch erst beim Speichern
-            // angeglichen, nicht schon beim Lesen oder Kopieren.
-            m.m_Investition_KWel = BHKWKosten.JeKWel(
-                BHKWKosten.Summe(m.m_Kosten_Modul, m.m_Kosten_Montage,
-                                 m.m_Kosten_Lieferung, m.m_Kosten_Schallschutzhaube,
-                                 m.m_Kosten_Abgasreinigung),
-                m.m_Pel);
+            // KEINE KOSTEN MEHR AM GERAET (Welle KB-4, Anwenderentscheid 13.10.2026
+            // „eine Kostenbasis, keine Doppelhaltung"): Die fuenf Kostenposten, die Wartung
+            // je kWhel und die daraus abgeleitete Investition je kWel sind mit
+            // Schemaschritt GeraetekostenEntfallSchema entfallen. Die eine Basis ist die
+            // Investitions- bzw. Betriebsvorlage des Katalogsatzes; kein Schreibweg kann sie
+            // mehr gegen eine Geraetespalte laufen lassen, weil es keine zweite Zahl gibt.
 
             // ARBEITSPAKET iU6: Die Parametersammlung des DBCommand war hier nur
             // ZWISCHENSPEICHER - unten wurde sie sofort in ein Array kopiert und an
@@ -264,9 +256,7 @@ namespace WindowsFormsApplication1
             werte.Add(new DbParam("@wirk", m.m_Wirkungsgrad));
             werte.Add(Anteil("@wirkEl", m.m_Wirkungsgrad_el));
             werte.Add(Anteil("@wirkTh", m.m_Wirkungsgrad_th));
-            werte.Add(new DbParam("@inv", m.m_Investition_KWel));
             werte.Add(new DbParam("@raum", m.m_Raumbedarf));
-            werte.Add(new DbParam("@wart", m.m_Wartungskosten_kWhel));
             werte.Add(new DbParam("@nutz", m.m_Nutzungsdauer));
             werte.Add(new DbParam("@nox", m.m_NOx));
             werte.Add(new DbParam("@so2", m.m_SO2));
@@ -274,11 +264,6 @@ namespace WindowsFormsApplication1
             werte.Add(new DbParam("@co2", m.m_CO2));
             werte.Add(new DbParam("@staub", m.m_Staub));
             werte.Add(new DbParam("@grenz", m.m_Grenzleistung));
-            werte.Add(new DbParam("@modul", m.m_Kosten_Modul));
-            werte.Add(new DbParam("@mont", m.m_Kosten_Montage));
-            werte.Add(new DbParam("@lief", m.m_Kosten_Lieferung));
-            werte.Add(new DbParam("@schall", m.m_Kosten_Schallschutzhaube));
-            werte.Add(new DbParam("@abgas", m.m_Kosten_Abgasreinigung));
             werte.Add(new DbParam("@vl", m.m_Vorlauf));
             werte.Add(new DbParam("@rl", m.m_Ruecklauf));
             werte.Add(new DbParam("@key", schluessel));
@@ -325,9 +310,7 @@ namespace WindowsFormsApplication1
             m.m_Wirkungsgrad = row["Wirkungsgrad"] != DBNull.Value ? Convert.ToDouble(row["Wirkungsgrad"]) : 0;
             m.m_Wirkungsgrad_el = AnteilAus(row, BhkwWirkungsgrad.SPALTE_EL);
             m.m_Wirkungsgrad_th = AnteilAus(row, BhkwWirkungsgrad.SPALTE_TH);
-            m.m_Investition_KWel = row["Investition_kwel"] != DBNull.Value ? Convert.ToDouble(row["Investition_kwel"]) : 0;
             m.m_Raumbedarf = row["Raumbedarf"] != DBNull.Value ? Convert.ToDouble(row["Raumbedarf"]) : 0;
-            m.m_Wartungskosten_kWhel = row["Wartungskosten_kwhel"] != DBNull.Value ? Convert.ToDouble(row["Wartungskosten_kwhel"]) : 0;
             m.m_Nutzungsdauer = row["Nutzungsdauer"] != DBNull.Value ? Convert.ToInt32(row["Nutzungsdauer"]) : 0;
             m.m_NOx = row["NOx"] != DBNull.Value ? Convert.ToInt32(row["NOx"]) : 0;
             m.m_SO2 = row["SO2"] != DBNull.Value ? Convert.ToInt32(row["SO2"]) : 0;
@@ -336,11 +319,6 @@ namespace WindowsFormsApplication1
             m.m_Staub = row["Staub"] != DBNull.Value ? Convert.ToInt32(row["Staub"]) : 0;
             m.m_szMotortyp = row["Motortyp"].ToString();
             m.m_Grenzleistung = row["Grenzleistung"] != DBNull.Value ? Convert.ToDouble(row["Grenzleistung"]) : 0;
-            m.m_Kosten_Modul = row["Kosten_Modul"] != DBNull.Value ? Convert.ToDouble(row["Kosten_Modul"]) : 0;
-            m.m_Kosten_Montage = row["Kosten_Montage"] != DBNull.Value ? Convert.ToDouble(row["Kosten_Montage"]) : 0;
-            m.m_Kosten_Lieferung = row["Kosten_Lieferung"] != DBNull.Value ? Convert.ToDouble(row["Kosten_Lieferung"]) : 0;
-            m.m_Kosten_Schallschutzhaube = row["Kosten_Schallschutzhaube"] != DBNull.Value ? Convert.ToDouble(row["Kosten_Schallschutzhaube"]) : 0;
-            m.m_Kosten_Abgasreinigung = row["Kosten_Abgasreinigung"] != DBNull.Value ? Convert.ToDouble(row["Kosten_Abgasreinigung"]) : 0;
             m.m_bReadOnly = row.Table.Columns.Contains("ReadOnly") && row["ReadOnly"] != DBNull.Value && Convert.ToBoolean(row["ReadOnly"]);
             m.m_Vorlauf = row["Vorlauf"] != DBNull.Value ? Convert.ToInt32(row["Vorlauf"]) : 0;
             m.m_Ruecklauf = row["Ruecklauf"] != DBNull.Value ? Convert.ToInt32(row["Ruecklauf"]) : 0;
@@ -386,9 +364,7 @@ namespace WindowsFormsApplication1
             this.m_Wirkungsgrad = m.m_Wirkungsgrad;
             this.m_Wirkungsgrad_el = m.m_Wirkungsgrad_el;
             this.m_Wirkungsgrad_th = m.m_Wirkungsgrad_th;
-            this.m_Investition_KWel = m.m_Investition_KWel;
             this.m_Raumbedarf = m.m_Raumbedarf;
-            this.m_Wartungskosten_kWhel = m.m_Wartungskosten_kWhel;
             this.m_Nutzungsdauer = m.m_Nutzungsdauer;
             this.m_NOx = m.m_NOx;
             this.m_SO2 = m.m_SO2;
@@ -397,11 +373,6 @@ namespace WindowsFormsApplication1
             this.m_Staub = m.m_Staub;
             this.m_szMotortyp = m.m_szMotortyp;
             this.m_Grenzleistung = m.m_Grenzleistung;
-            this.m_Kosten_Modul = m.m_Kosten_Modul;
-            this.m_Kosten_Montage = m.m_Kosten_Montage;
-            this.m_Kosten_Lieferung = m.m_Kosten_Lieferung;
-            this.m_Kosten_Schallschutzhaube = m.m_Kosten_Schallschutzhaube;
-            this.m_Kosten_Abgasreinigung = m.m_Kosten_Abgasreinigung;
             this.m_Vorlauf = m.m_Vorlauf;
             this.m_Ruecklauf = m.m_Ruecklauf;
             this.m_bReadOnly = m.m_bReadOnly;
@@ -797,15 +768,15 @@ namespace WindowsFormsApplication1
                 "SELECT * FROM " + TABLE + " WHERE Bezeichner = ? ORDER BY ID",
                 new DbParam("@name", szName ?? ""));
             if (dt == null || dt.Rows.Count == 0) return null;
-            return AnzeigeAusZeile(dt.Rows[0]);
+            return AnzeigeAusZeile(dt.Rows[0], TABLE);
         }
 
         /// <summary>
         /// <b>Die Anzeigefelder eines Satzes nach seiner ID</b> (Katalogauswahl V1, Stufe 3, „Bearbeiten…" je
         /// Bereich, KA‑E‑8): <paramref name="projektkopie"/> = <c>true</c> liest die Projektkopie aus
         /// <see cref="TABELLE_PROJEKT"/>, sonst den Katalogsatz. Dieselben Schlüssel wie
-        /// <see cref="KatalogsatzAnzeige"/> — samt den fünf Kostenposten, der abgeleiteten Investition je kWel und der
-        /// Wartung je kWhel; <c>null</c>, wenn es die ID nicht gibt.
+        /// <see cref="KatalogsatzAnzeige"/> — samt dem Lesewert der Gerätekosten aus der Satzvorlage;
+        /// <c>null</c>, wenn es die ID nicht gibt.
         /// </summary>
         public static IReadOnlyDictionary<string, string> SatzAnzeige(bool projektkopie, int id)
         {
@@ -813,7 +784,7 @@ namespace WindowsFormsApplication1
                 "SELECT * FROM [" + Tabelle(projektkopie) + "] WHERE ID = ?",
                 new DbParam("@id", id));
             if (dt == null || dt.Rows.Count == 0) return null;
-            return AnzeigeAusZeile(dt.Rows[0]);
+            return AnzeigeAusZeile(dt.Rows[0], Tabelle(projektkopie));
         }
 
         /// <summary>Die Projektkopien der BHKW-Module (alle Projekte, Spalte <c>ID_Projekt</c>).</summary>
@@ -822,7 +793,7 @@ namespace WindowsFormsApplication1
         private static string Tabelle(bool projektkopie) => projektkopie ? TABELLE_PROJEKT : TABLE;
 
         /// <summary>Die Anzeigefelder einer Zeile aus Katalog oder Projektkopie (gleiche Fachspalten).</summary>
-        private static IReadOnlyDictionary<string, string> AnzeigeAusZeile(DataRow r)
+        private static IReadOnlyDictionary<string, string> AnzeigeAusZeile(DataRow r, string tabelle)
         {
             var werte = new Dictionary<string, string>(StringComparer.Ordinal);
 
@@ -869,21 +840,12 @@ namespace WindowsFormsApplication1
             werte[KatalogBrowserProfil.FeldMindestlaufzeit] = Feld(r, "Mindestlaufzeit_min");
             werte[KatalogBrowserProfil.FeldMotortyp] = Feld(r, "Motortyp");
             werte[KatalogBrowserProfil.FeldRaumbedarf] = Feld(r, "Raumbedarf");
-            werte[KatalogBrowserProfil.FeldKostenModul] = Feld(r, "Kosten_Modul");
-            werte[KatalogBrowserProfil.FeldKostenMontage] = Feld(r, "Kosten_Montage");
-            werte[KatalogBrowserProfil.FeldKostenLieferung] = Feld(r, "Kosten_Lieferung");
-            werte[KatalogBrowserProfil.FeldKostenSchallschutz] = Feld(r, "Kosten_Schallschutzhaube");
-            werte[KatalogBrowserProfil.FeldKostenAbgasreinigung] = Feld(r, "Kosten_Abgasreinigung");
-
-            // ABGELEITET (W14a-E-8-B3): nicht die gespeicherte Spalte, sondern die
-            // Umrechnung der fuenf Posten. Wer die Posten aendert, sieht hier sofort,
-            // was daraus folgt - und die Spalte selbst zieht der Schreibweg nach.
-            werte[KatalogBrowserProfil.FeldInvestitionJeKwel] =
-                JeKWelText(Zahl(r, "Kosten_Modul"), Zahl(r, "Kosten_Montage"),
-                           Zahl(r, "Kosten_Lieferung"), Zahl(r, "Kosten_Schallschutzhaube"),
-                           Zahl(r, "Kosten_Abgasreinigung"), Zahl(r, "Pel"));
-
-            werte[KatalogBrowserProfil.FeldWartungJeKwhel] = Feld(r, "Wartungskosten_kwhel");
+            // DIE EINE KOSTENBASIS (Welle KB-4): An der Stelle der fuenf Kostenposten, der
+            // Investition je kWel und der Wartung je kWhel steht EIN Lesewert - die
+            // Investitionssumme der Satzvorlage dieses Satzes. Gepflegt wird sie in der
+            // Kostenverwaltung, deshalb ist das Feld nicht editierbar (Muster Waermepumpe).
+            werte[KatalogBrowserProfil.FeldGeraetekosten] =
+                KatalogkostensatzCtrl.BetragText(tabelle, r);
             werte[KatalogBrowserProfil.FeldNutzungsdauer] = Feld(r, "Nutzungsdauer");
             werte[KatalogBrowserProfil.FeldNox] = Feld(r, "NOX");
             werte[KatalogBrowserProfil.FeldSo2] = Feld(r, "SO2");
@@ -900,22 +862,6 @@ namespace WindowsFormsApplication1
             if (!row.Table.Columns.Contains(spalte)) return 0;
             object v = row[spalte];
             return (v == null || v == DBNull.Value) ? 0 : Convert.ToDouble(v);
-        }
-
-        /// <summary>
-        /// Die Investition je kWel als Anzeigetext — leer, solange sich keine bilden
-        /// laesst (<c>Pel</c> = 0). Eine 0 stuende dort sonst fuer „umsonst" und
-        /// verschwiege die erfasste Summe (<see cref="BHKWKosten.JeKWelBestimmbar"/>).
-        /// </summary>
-        private static string JeKWelText(double modul, double montage, double lieferung,
-                                         double schallschutz, double abgas, double pel)
-        {
-            if (!BHKWKosten.JeKWelBestimmbar(pel)) return "";
-
-            // UNGERUNDET, also genau der Wert, den der Schreibweg in die Spalte
-            // zurueckrechnet - Anzeige und Speicher fallen damit nie auseinander.
-            double summe = BHKWKosten.Summe(modul, montage, lieferung, schallschutz, abgas);
-            return BHKWKosten.JeKWel(summe, pel).ToString();
         }
 
         /// <summary>Feldwert als Text; fehlende Spalte und <c>NULL</c> ergeben „".</summary>
@@ -954,10 +900,10 @@ namespace WindowsFormsApplication1
         /// (<c>Form_BHKWAdmin.Speicherfelder</c> Z. 338-345); die siebzehn neuen haengen
         /// hinten an und sind Leerstellen: <c>null</c> heisst „unveraendert lassen"
         /// (Begruendung bei <c>HeizkesselStammCtrl.AnzeigefelderHeizkessel</c>).</para>
-        /// <para><b>Die Investition je kWel fehlt mit Absicht.</b> Sie ist seit
-        /// W14a-E-8-B3 abgeleitet (<see cref="BHKWKosten.JeKWel"/> aus den fuenf Posten);
-        /// gespeichert wird, was in den Posten steht, und der Schreibweg rechnet die
-        /// Spalte daraus nach.</para>
+        /// <para><b>Die Kostenfelder fehlen ganz</b> (Welle KB-4): Die fuenf Posten, die
+        /// Investition je kWel und die Wartung je kWhel sind als Spalten entfallen; die
+        /// Geraetekosten stehen im Aufklapper nur noch als Lesewert aus der Satzvorlage und
+        /// werden in der Kostenverwaltung gepflegt.</para>
         /// <para><b>Der GESAMTwirkungsgrad fehlt ebenso mit Absicht</b>
         /// (Anwenderentscheid 20.09.2026): Gepflegt werden seine zwei Anteile
         /// <see cref="AnzeigefelderBhkw.WirkungsgradEl"/> und
@@ -971,12 +917,6 @@ namespace WindowsFormsApplication1
                                                string Brennstoff = null,
                                                string Motortyp = null,
                                                double? Raumbedarf = null,
-                                               double? KostenModul = null,
-                                               double? KostenMontage = null,
-                                               double? KostenLieferung = null,
-                                               double? KostenSchallschutzhaube = null,
-                                               double? KostenAbgasreinigung = null,
-                                               double? WartungskostenJeKWhel = null,
                                                int? Nutzungsdauer = null,
                                                int? NOx = null, int? SO2 = null,
                                                int? CO = null, int? CO2 = null,
@@ -1235,12 +1175,6 @@ namespace WindowsFormsApplication1
                 KatalogFeldPruefung.ImBereich(art, KatalogBrowserProfil.FeldGrenzleistung,
                                               f.Grenzleistung, 0, 100),
                 Nichtnegativ(KatalogBrowserProfil.FeldRaumbedarf, f.Raumbedarf),
-                Nichtnegativ(KatalogBrowserProfil.FeldKostenModul, f.KostenModul),
-                Nichtnegativ(KatalogBrowserProfil.FeldKostenMontage, f.KostenMontage),
-                Nichtnegativ(KatalogBrowserProfil.FeldKostenLieferung, f.KostenLieferung),
-                Nichtnegativ(KatalogBrowserProfil.FeldKostenSchallschutz, f.KostenSchallschutzhaube),
-                Nichtnegativ(KatalogBrowserProfil.FeldKostenAbgasreinigung, f.KostenAbgasreinigung),
-                Nichtnegativ(KatalogBrowserProfil.FeldWartungJeKwhel, f.WartungskostenJeKWhel),
                 Nichtnegativ(KatalogBrowserProfil.FeldNutzungsdauer, f.Nutzungsdauer),
                 Nichtnegativ(KatalogBrowserProfil.FeldNox, f.NOx),
                 Nichtnegativ(KatalogBrowserProfil.FeldSo2, f.SO2),
@@ -1302,15 +1236,6 @@ namespace WindowsFormsApplication1
             if (f.Beschreibung != null) satz.m_szBeschreibung = f.Beschreibung;
             if (f.Motortyp != null) satz.m_szMotortyp = f.Motortyp;
             if (f.Raumbedarf.HasValue) satz.m_Raumbedarf = f.Raumbedarf.Value;
-            if (f.KostenModul.HasValue) satz.m_Kosten_Modul = f.KostenModul.Value;
-            if (f.KostenMontage.HasValue) satz.m_Kosten_Montage = f.KostenMontage.Value;
-            if (f.KostenLieferung.HasValue) satz.m_Kosten_Lieferung = f.KostenLieferung.Value;
-            if (f.KostenSchallschutzhaube.HasValue)
-                satz.m_Kosten_Schallschutzhaube = f.KostenSchallschutzhaube.Value;
-            if (f.KostenAbgasreinigung.HasValue)
-                satz.m_Kosten_Abgasreinigung = f.KostenAbgasreinigung.Value;
-            if (f.WartungskostenJeKWhel.HasValue)
-                satz.m_Wartungskosten_kWhel = f.WartungskostenJeKWhel.Value;
             if (f.Nutzungsdauer.HasValue) satz.m_Nutzungsdauer = f.Nutzungsdauer.Value;
             if (f.NOx.HasValue) satz.m_NOx = f.NOx.Value;
             if (f.SO2.HasValue) satz.m_SO2 = f.SO2.Value;
@@ -1321,13 +1246,6 @@ namespace WindowsFormsApplication1
             satz.m_Wirkungsgrad_th = wirkTh;
             ErzeugerTeillastWerte.Setzen(satz, teillast);
             satz.m_Ruecklauf_Max = ruecklaufMaxNeu;
-
-            // 4. Die abgeleitete Spalte nachziehen.
-            satz.m_Investition_KWel = BHKWKosten.JeKWel(
-                BHKWKosten.Summe(satz.m_Kosten_Modul, satz.m_Kosten_Montage,
-                                 satz.m_Kosten_Lieferung, satz.m_Kosten_Schallschutzhaube,
-                                 satz.m_Kosten_Abgasreinigung),
-                satz.m_Pel);
 
             // 5. DEN GESAMTWIRKUNGSGRAD NACHZIEHEN (Schemaschritt 99,
             //    Anwenderentscheid 20.09.2026). Der Aufklapper nimmt ihn NICHT mehr

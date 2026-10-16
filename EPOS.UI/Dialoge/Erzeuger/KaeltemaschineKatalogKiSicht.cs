@@ -131,7 +131,8 @@ public sealed class KaeltemaschineKatalogKiSicht
 
     public double? KaltwasserMin { get => ArbeitLesen?.Invoke()?.KaltwasserMin; set => Setzen(d => d.KaltwasserMin = value); }
 
-    public double? Modulkosten { get => ArbeitLesen?.Invoke()?.Modulkosten; set => Setzen(d => d.Modulkosten = value); }
+    // HIER STAND Modulkosten - die Spalte ist mit Welle KB-4 entfallen; die Geraetekosten
+    // laufen ueber die Kostenverwaltung und sind fuer den Assistenten kein Feld.
 
     // =====================================================================
     //  Katalogfelder (K-A)

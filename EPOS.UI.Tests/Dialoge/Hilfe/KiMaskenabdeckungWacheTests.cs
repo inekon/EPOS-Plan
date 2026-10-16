@@ -287,7 +287,7 @@ public sealed class KiMaskenabdeckungWacheTests
         // Zahlen je Punkt (die Spalten punkt_* der Feldkarte).
         // KM3-E3-a: dazu die acht Felder der Gruppe „Teillast und Takten“ (drei Auswahlen, fünf Zahlen).
         new("KaeltemaschineKonfiguration", 6, "die Betriebseingaben der Kältemaschine (KB-B) - im Dialog unter der Karte „KaeltemaschineAnlage“, im Bereich „Kälte“ der Simulationskonfiguration als Überlagerung derselben Felder"),
-        new("KaeltemaschineKatalogDialog", 35, "der Werkzeugschalter „Typkennfelder ausblenden“ setzt den Filter der Liste; die Typkennfeldwahl der Schnellwahlen (eine Auswahl, Nennkälteleistung und Nenn-EER der Skalierung) und die Paare der Auskunft „Teillastpunkte prüfen…“ sind Eingaben einer Rechnung ohne Speicherung, keine Werte der Maske"),
+        new("KaeltemaschineKatalogDialog", 34, "der Werkzeugschalter „Typkennfelder ausblenden“ setzt den Filter der Liste; die Typkennfeldwahl der Schnellwahlen (eine Auswahl, Nennkälteleistung und Nenn-EER der Skalierung) und die Paare der Auskunft „Teillastpunkte prüfen…“ sind Eingaben einer Rechnung ohne Speicherung, keine Werte der Maske"),
         // KU3-4c: der Erzeugerdialog der Kaeltemaschinen - Name, Anzahl, Kaltwasservorlauf, Hilfsstrom,
         // Kuehltraeger und eigener Zaehler der gewaehlten Anlage (die Felder der Feldkarte); die Katalogliste
         // der Geraetewahl ist eine Auswahl, kein Wert.
@@ -398,9 +398,12 @@ public sealed class KiMaskenabdeckungWacheTests
         // einen Katalogsatz schreibt — kein Einstellwert der Maske: 0 → 1.
         // Stufe 4 (Katalogauswahl V1): die Namensabfrage weicht der Rückfrage des Rückwegs (Baustein Rueckwegfrage,
         // eigene Komponente mit eigenem Übernehmen) - im Dialog bleibt keine Eingabestelle: 1 → 0.
-        new("GebaeudeDialog", 0, "Suche und Trichter der Katalogliste (Baustein); Katalogfelder verwendung, " +
+        // N5: „Klimaregion wählen…“ aus Gruppe 4 des Ampelblatts - die Suchauswahl der Region gehört zur Handlung, die mit
+        // eigenem OK sofort an das Projekt schreibt (wie die Kopfleiste) - kein Einstellwert der Maske: 0 → 1.
+        new("GebaeudeDialog", 1, "Suche und Trichter der Katalogliste (Baustein); Katalogfelder verwendung, " +
             "filter_gebaeudeart, filter_baujahr, suche über den Filterstand; der Name der Rückfrage „In die Datenbank " +
-            "übernehmen…“ steht im Baustein Rueckwegfrage und gehört zur Handlung, die mit eigenem Übernehmen sofort schreibt"),
+            "übernehmen…“ steht im Baustein Rueckwegfrage und gehört zur Handlung, die mit eigenem Übernehmen sofort schreibt; " +
+            "die Suchauswahl „Klimaregion wählen…“ (N5) schreibt mit eigenem OK sofort an das Projekt, wie die Kopfleiste"),
         // G4a Welle 3: das Baujahr neben der Baualtersklasse (Katalogfeld baujahr): 45 → 46.
         // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 46 → 48.
         // E47: der Energiestandard (Katalogfeld energiestandard): 48 → 49.

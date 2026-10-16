@@ -415,7 +415,9 @@ namespace WindowsFormsApplication1
                 Heizstab = (int)m.Heizung,
                 Regelung = m.Regelung ?? "",
                 Kuehlleistung = m.Kuehlleistung,
-                Modulkosten = m.Modulkosten,
+                // Welle KB-4: der Kostensatz steht in der Satzvorlage der Projektkopie.
+                Kostensatz = KatalogkostensatzCtrl.SatzText(WPStammCtrl.TABELLE_PROJEKT, m.ID),
+                KostensatzEinheit = KatalogkostensatzCtrl.Einheit(WPStammCtrl.TABELLE_PROJEKT),
                 MaxPtherm = m.maxPTherm,
                 Bauart = m.Bauart ?? "",
                 // Welle M4 (WP1): die Taktwerte des Geräts - im Anlagendialog nur lesend.
@@ -514,7 +516,6 @@ namespace WindowsFormsApplication1
             // gehen von hier aus weiter in die Projektkopie (ProjektgeraetNachziehen).
             m.Regelung = d.Regelung;
             m.Nennleistung = d.Nennleistung;
-            m.Modulkosten = d.Modulkosten;
             m.Baujahr = d.Baujahr;
             m.Beschreibung = d.Beschreibung;
             m.Firma = d.Firma;

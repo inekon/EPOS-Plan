@@ -347,7 +347,10 @@ public class FormularrasterTests : EposBunitContext
     {
         string css = Stilblatt();
 
-        int a = css.IndexOf(selektor, StringComparison.Ordinal);
+        // Nur am Zeilenanfang: Ein Nachfahrenselektor wie „.epos-bericht-karte .epos-formularraster
+        // .epos-feld {“ enthält den gesuchten Selektor als Teilzeichenkette.
+        int a = css.StartsWith(selektor, StringComparison.Ordinal) ? 0 : css.IndexOf("\n" + selektor, StringComparison.Ordinal);
+        if (a > 0 || (a == 0 && css[0] == '\n')) a++;
         Assert.True(a >= 0, $"Regel {selektor} steht nicht im Stilblatt");
         int e = css.IndexOf('}', a);
         Assert.True(e > a);

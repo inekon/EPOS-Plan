@@ -16,7 +16,6 @@
         public int maxPTherm;
         public double Heizung;
         public string Regelung;
-        public int Modulkosten;
         public string Leistungsstufen;
         public double Kuehlleistung;
         public int MaxVorlauf;
@@ -84,7 +83,6 @@
             maxPTherm = 0;
             Heizung = 0;
             Regelung = "";
-            Modulkosten = 0;
             Leistungsstufen = "";
             Kuehlleistung = 0;
             MaxVorlauf = 0;

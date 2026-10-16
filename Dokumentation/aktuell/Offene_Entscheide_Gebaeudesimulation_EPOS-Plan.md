@@ -68,12 +68,11 @@ Entscheid um den betroffenen Punkt gekürzt; die mit **E27** und **E28** (22.09.
   Umsetzungskonzept, **M** Mehrzonenmodell, **D** Datenaustausch, **A** Softwarearchitektur, **H** Anlagenkopplung,
   **K** Kühlung, **P** Konditionierungsprofile.
 
-**Umfang in Zahlen.** **2 offene Punkte** (Stand 03.10.2026): im Mehrzonenkonzept M11 (fällig vor G6d), im
-Teilkonzept Konditionierungsprofile P14 (Aufheizreserve ρ nach der Messung in RP1, fällig vor dem Einfrieren von KP3);
+**Umfang in Zahlen.** **0 offene Punkte** (Stand 16.10.2026): M11 ist erledigt (Referenzprojekt 1052 als Kopie von 1018 mit G6d, Basis R34), P14 ist erledigt (E64, 03.10.2026: keine pauschale Programmvorgabe, die Reserve ist Nutzereingabe, leer heißt 20 %);
 Konzept, Umsetzungskonzept, Datenaustauschkonzept, Softwarearchitektur und Kühlkonzept haben keinen offenen Punkt mehr.
-**E90 bis E92** (05.10.2026, Konzept N1.71) sind entschieden — Q37 mit E90, Q38 bis Q47 des Konzepts Nutzungsprofile mit E91 nach Empfehlung, die Zuständigkeit der Stufe NP mit E92 —; die Zählung bleibt bei 2. **P15 bis P17** (03.10.2026, Konzept N1.68) sind entschieden: der Aufschlag nur kalenderbezogen auf Rampen mit n > 1
+**E90 bis E92** (05.10.2026, Konzept N1.71) sind entschieden — Q37 mit E90, Q38 bis Q47 des Konzepts Nutzungsprofile mit E91 nach Empfehlung, die Zuständigkeit der Stufe NP mit E92 —; die Zählung bleibt bei 2 (inzwischen 0, siehe oben). **P15 bis P17** (03.10.2026, Konzept N1.68) sind entschieden: der Aufschlag nur kalenderbezogen auf Rampen mit n > 1
 (P16), die Auslegungsgröße als Auslegungsheizlast plus Aufheizzuschlag P_auf − Φ_stat (P17 (b)), die Vorschlagsspanne
-der manuellen Aufheizzeit aus τ₂ des Gebäudes (P15 (b), abweichend von der Empfehlung); die Zählung ist wieder bei 2.
+der manuellen Aufheizzeit aus τ₂ des Gebäudes (P15 (b), abweichend von der Empfehlung); die Zählung war damals wieder bei 2, M11 und P14 sind inzwischen erledigt.
 **E59** (02.10.2026, Konzept N1.68) nimmt eine Vorgabe des Anwenders auf — die Rampe je Gebäude, ein Aufschlag in
 Stunden und Prozent (es gilt das Maximum), eine manuelle Aufheizzeit je Gebäude mit Vorschlägen, Umsetzung nach D2 und
 vor RP1 —; **E60** (03.10.2026, Konzept N1.68) legt die Auslegungsgröße fest (stationäre Auslegungsheizlast plus P_auf,
@@ -908,6 +907,8 @@ stehen und wird mit einer Warnung gemeldet, nicht zugeschlagen.
   [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md).
 
 ### M11 — Referenzprojekt mit Zonen: umstellen oder neu anlegen
+
+**Erledigt** — durch G6d: Referenzprojekt 1052 als Kopie von 1018 neu angelegt (Basis R34).
 
 - **Frage:** Wird für die Mehrzonenrechnung ein **bestehendes** Referenzprojekt umgestellt — oder
   ein vierzehntes angelegt?
@@ -2136,7 +2137,7 @@ Erläuterung die Begründung der Stufenaufträge trägt und drei von ihnen eine 
 wird nach der Hausregel ein Eintrag im Wiki-Update-Logbuch **entworfen** und die Versionsnummer
 beim Anwender erfragt; die Veröffentlichung läuft gebündelt.
 
-## 10. Konditionierungsprofile — P1 bis P13, P15 bis P17 (entschieden), P14 (offen)
+## 10. Konditionierungsprofile — P1 bis P13, P14 und P15 bis P17 (entschieden)
 
 Quelle: [`Konzept_Konditionierungsprofile_EPOS-Plan.md`](Konzept_Konditionierungsprofile_EPOS-Plan.md), Kapitel 9
 (Rev. 3, 26.09.2026). Die Stufen sind KP0 (Konzept, Entscheid, Probe der Aufheizreserve, Glossar, Nachzug der
@@ -2391,7 +2392,7 @@ abweichend von der Empfehlung.
 
 ### P14 — Aufheizreserve ρ nach der Messung in RP1
 
-**Offen — Entscheid nach der Messung** (E58 zu F7, 02.10.2026, Konzept N1.67). Bis dahin gilt ρ = 20 %.
+**Erledigt — mit E64** (03.10.2026): keine pauschale Programmvorgabe, die Reserve ist Nutzereingabe, leer heißt 20 % (E58 zu F7, 02.10.2026, Konzept N1.67).
 
 - **Frage:** Bleibt der Startwert der Aufheizreserve ρ bei 20 %, wenn die Messung mit dem echten Kern vorliegt?
 - **Hintergrund:** Die Probe KP0 rechnete konvektiv und fand an keinem Bestandsbau eine Rampe in Bemessung (a). Der

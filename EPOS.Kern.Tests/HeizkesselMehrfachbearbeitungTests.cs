@@ -18,7 +18,7 @@ namespace EPOS.Kern.Tests
         public void Dispose() => _db.Dispose();
 
         private static HeizkesselStammCtrl.AnzeigefelderHeizkessel Satz(string beschreibung, double ptherm = 30)
-            => new HeizkesselStammCtrl.AnzeigefelderHeizkessel(beschreibung, ptherm, 100, false, 70, 50);
+            => new HeizkesselStammCtrl.AnzeigefelderHeizkessel(beschreibung, ptherm, false, 70, 50);
 
         private static List<int> Ids(string tabelle, int anzahl)
         {
