@@ -97,3 +97,11 @@ Summenfuß nennt die Fehlerschranke des U-Werts.“
 
 - Wortlaut der Anwendungsgrenze (Verhältnis 1,5) gegen die beim Anwender gültige Normausgabe prüfen.
 - Der Wiederimport-Vergleich steht nur in der Vorschau; ein Echtlauf auf dem Katalog des Anwenders nennt die Zahlen.
+
+## Nachtrag BK-8c (16.10.2026)
+
+- Normausgabe beim Anwender: DIN EN ISO 6946:2018-03 (EN ISO 6946:2017) mit Berichtigung 1:2023-04. Die
+  Anwendungsgrenze „oberer zu unterer Grenzwert höchstens 1,5“ steht in **6.7.2.2** (nicht 6.7.1), die Fehlerabschätzung
+  (bei 1,5 höchstens 20 %) in **6.7.2.5**; der erste offene Punkt ist damit erledigt.
+- Der Echtlauf der Vorschau zählte 43 Aufbauten mit anderen Schichten, verglich aber keinen; Ursache und Behebung im
+  Protokoll [`2026-10-16_BK-8c_Wiederimport_Vergleich.md`](2026-10-16_BK-8c_Wiederimport_Vergleich.md).

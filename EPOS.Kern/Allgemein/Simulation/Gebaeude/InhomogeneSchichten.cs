@@ -15,7 +15,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die größte mögliche relative Abweichung e = (R'_T − R''_T) / (2 R_T) des Mittels R_T vom wahren Wert
-        /// (DIN EN ISO 6946, 6.7.2.5) — eine Schranke, kein Zuschlag: R_T bleibt das Mittel.
+        /// (DIN EN ISO 6946:2018-03, 6.7.2.5) — eine Schranke, kein Zuschlag: R_T bleibt das Mittel.
         /// </summary>
         public double Fehlerschranke => RT_M2KW > 0 ? (RT_Oben_M2KW - RT_Unten_M2KW) / (2.0 * RT_M2KW) : 0.0;
 
@@ -55,8 +55,9 @@ namespace WindowsFormsApplication1
         public const double ANTEIL_TOLERANZ = 0.01;
 
         /// <summary>
-        /// Die Höchstgrenze der relativen Abweichung e für den Hinweis (DIN EN ISO 6946, 6.7.2.5): 20 %. Sie entspricht dem
-        /// Verhältnis R'_T / R''_T = 1,5 — bis dahin gilt das vereinfachte Verfahren nach 6.7 als anwendbar; darüber (etwa
+        /// Die Höchstgrenze der relativen Abweichung e für den Hinweis: 20 % — die Fehlerabschätzung bei R'_T / R''_T = 1,5
+        /// (DIN EN ISO 6946:2018-03 mit Berichtigung 1:2023-04, 6.7.2.5). Das Verhältnis 1,5 ist die Anwendungsgrenze des
+        /// vereinfachten Verfahrens (6.7.2.2); darüber (etwa
         /// Metall, das die Dämmung durchdringt) verweist die Norm auf eine numerische Rechnung nach DIN EN ISO 10211.
         /// </summary>
         public const double FEHLERSCHRANKE_GRENZE = 0.20;
