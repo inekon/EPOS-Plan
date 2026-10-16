@@ -71,7 +71,7 @@ namespace EPOS.Kern.Tests
             if (id == 0) return;
             DataRepository.ExecuteNonQuery("UPDATE \"Tab_Bauteil\" SET \"U_Herkunft\" = ? WHERE \"ID\" = ?",
                                            new DbParam("@h", DbWerte.HERKUNFT_MANUELL), new DbParam("@i", id));
-            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM \"Tab_Bauteil\" WHERE \"U_Herkunft\" = 'MANUELL'"));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM \"Tab_Bauteil\" WHERE \"U_Herkunft\" = 'MANUELL' AND \"ID\" = " + id.ToString(CultureInfo.InvariantCulture)));
             Assert.ThrowsAny<Exception>(() =>
             {
                 using DbVorgang v = DataRepository.Vorgang();
