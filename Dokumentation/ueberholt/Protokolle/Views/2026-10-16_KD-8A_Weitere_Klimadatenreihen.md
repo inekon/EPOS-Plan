@@ -43,3 +43,23 @@ ein Schalter im Kern (`KlimaReihenkatalog.RohwerteFreigeschaltet`), dazu kommt m
   620 px hoch; das Bild steht darunter im rollenden Stammblatt, breit über „groß…“.
 - Teil B (Rohwerte) hängt am Schemaschritt der Rohwerttabelle und dessen Abnahme.
 - Export (KD-5) setzt beim Zusammenführen auf den Katalog auf.
+
+## Nachzug Anwenderentscheide (16.10.2026)
+
+- **Stand:** `origin/ios_migration_september` (`3bfe1b75b`, KBP-4, Schritt 236) in `kd8a` gemergt, ohne Konflikt.
+- **Rohwert-Reihen bis Schritt 238 ohne Chip** (Konzept § 4a.3 gilt; ersetzt den Abschnitt „Nicht verfügbar bis zur
+  Rohwerttabelle“): Wasserdampfgehalt, Direktstrahlung horizontal, Ausstrahlung, Luftdruck und Wind erscheinen weder in
+  der Vorschau noch im Reiter „Weitere Reihen“. `KlimaReihenkatalog.RohwerteFreigeschaltet` ist eine Eigenschaft mit
+  internem Setzer (Teil B, Tests; `EPOS.UI.Tests` sieht dafür die Interna des Kerns). `KLIMA_RW_NICHT_VERFUEGBAR` ist
+  in beiden Sprachen entfernt; die Marke „R“ bleibt für freigeschaltete Rohwerte; eine nicht geführte Größe nennt nach
+  der Freischaltung `KLIMA_RW_FUEHRT_NICHT`. Gegenprobe in Kern- und UI-Test: freigeschaltet erscheinen die fünf Chips.
+- **Schmales Fenster: Bild zuerst.** Unter 600 px Fensterbreite steht im Reiter „Weitere Reihen“ das Bild über der
+  Wahl (Medienregel und `order` an `.epos-reihenbild`, ein Markup); breiter bleibt die Wahl über dem Bild. Eine
+  Medien- statt Containerregel, weil das Stammblatt auch im breiten Fenster nur 340–440 px breit ist. Die
+  Vorschaukarte zeigt die Wahl ohnehin unter dem Bild.
+- **Abnahme:** Kern-Filter und Windows-Schale 0 Fehler; Kern-Tests gefiltert (`Klima|Reihenwahl|Wache`) 709/709,
+  davon `KlimaReihenkatalogTests` 31; UI-Tests gefiltert (`Klima|Reihenwahl`, dazu `CsvAmBildWache`,
+  `KiMaskenabdeckungWache`) 161/161; ChartProben 257 Bilder, 0 Verstöße, alle 225 Zeilen der Messlatte unverändert.
+  Fensterprobe: `klimareihen` 0 Verstöße in vier Fenstern (10 Chips, 1 gesperrt; 520 × 624 Bild zuerst, sonst Wahl
+  zuerst; Wahl 476/449/472/331 px hoch), Gegenproben 520 × 624 ohne Umbruch 2 und ohne Reihenfolgeregel 1 Verstoß;
+  `klimaimport` 0 Verstöße, Rollhöhe 2 008/560 px, Gegenprobe 4 je Fenster; `dubletten` 0 Verstöße, Gegenprobe rot.
