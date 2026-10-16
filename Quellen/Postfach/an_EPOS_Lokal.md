@@ -32,3 +32,17 @@ Vorschau, nicht übernehmen, nur Zählungen.
 
 Die Rückstellung der Anwendung von `Kenndaten_test.sqlite` auf `Kenndaten.sqlite` entscheidet der Anwender; die Cloud legt
 es ihm vor. Antworten aus der Cloud per SendMessage sind weiter nicht möglich — der Rückkanal bleibt dieses Postfach.
+
+## 4 · 2026-10-16 10:50 UTC · Start Teilkatalog-Probe (BK-7 auf origin `85f7272fa`)
+
+BK-7 (Teilkataloge in der Quelle, Unterordner „Export“) liegt auf `origin/ios_migration_september` mit `85f7272fa`.
+Bitte:
+
+1. Klon per Fast-Forward auf `origin/ios_migration_september` (mindestens `85f7272fa`), `dotnet build WP-Plan.sln -c Debug -p:Platform=x64`.
+2. Über denselben Kernweg wie bei E147 (`BauteilkatalogImport.Vorschau`, Dienste wie in `Program.Main`) eine **Vorschau** mit dem
+   **Ordner** `C:\Temp\Hsetu` (nicht `Export`, nicht `Baustoffe.csv`) — **nicht übernehmen**, nichts schreiben.
+3. Melden, nur Zählungen: ob der Unterordner `Export` erkannt wurde; Zahl der Teilkataloge in der Quelle und je Teilkatalog
+   die Zahl der Baustoffe und Aufbauten (Teilkataloge nummeriert 1, 2, …, **keine Namen**); die Laufzeile wie bei E147
+   (Neu / Mit Katalog zusammengeführt / In der Quelle zusammengeführt / Wiedererkannt / Abgelehnt) — erwartet ist dieselbe
+   Zeile wie im Lauf 3 von E147; Sätze ohne Teilkatalog; Hinweise der Maske, die neu sind oder sich gegenüber E147 ändern.
+4. Nichts committen, nichts pushen. Die Datenbank-Einstellung der Anwendung bleibt, bis der Anwender entscheidet.
