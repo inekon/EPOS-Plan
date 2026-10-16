@@ -27342,6 +27342,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_AUS_SCHNELLAUSLEGUNG" xml:space="preserve">
     <value>Schnellauslegung</value>
   </data>
+  <data name="ZPG_AUS_SCHNELLAUSLEGUNG_V4" xml:space="preserve">
+    <value>Schnellauslegung V4</value>
+  </data>
   <data name="ZPG_AUS_ENTWURFSSTAND" xml:space="preserve">
     <value>Entwurfsstand — A100/A1 sind Entwürfe, Anwendung besonders zu vereinbaren.</value>
   </data>
@@ -30426,11 +30429,17 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_AUSHINWEIS_TEMPERATUR_GROSSANLAGE" xml:space="preserve">
     <value>Mit {0:0.###} °C ergibt die Auslegung {1:0} l — eine Großanlage nach DVGW W 551; die Gruppe rechnet deshalb mit der Mindesttemperatur {2:0.###} °C.</value>
   </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_EMPFEHLUNG_V4" xml:space="preserve">
+    <value>Schnellauslegung nach Vorlage V4, ohne Summenlinie: Die Auslegungswerte der A100 fehlen im Katalog; empfohlen ist der Nenninhalt {0:0} l des Verfahrensvergleichs (Band bis {1:0} l). Die Summenlinie rechnet erst mit einem Katalogpaket, das diese Werte führt.</value>
+  </data>
   <data name="ZPG_SATZ_AUSHINWEIS_TEMPERATUR_GROSSANLAGE_BLEIBT" xml:space="preserve">
     <value>{0} Die Gruppe bleibt bei {1:0.###} °C.</value>
   </data>
   <data name="ZPG_SATZ_AUSTEXT_VERMERK_SCHNELLAUSLEGUNG" xml:space="preserve">
     <value>Schnellauslegung</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_VERMERK_VORLAGE_V4" xml:space="preserve">
+    <value>Schnellauslegung nach Vorlage V4, ohne Summenlinie</value>
   </data>
   <data name="ZPG_SATZ_AUSTEXT_VERMERK_SPITZEN" xml:space="preserve">
     <value>Spitzen unterschätzt</value>
@@ -31352,6 +31361,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_SATZ_HERKUNFT_BEDARFSTAGFAKTOR" xml:space="preserve">
     <value>(θ_Zapf − θ_KW,A) / (θ_Zapf − θ_KW,A,Katalog) = ({0:0.###} − {1:0.###}) / ({0:0.###} − {2:0.###})</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_EMPFEHLUNG_V4" xml:space="preserve">
+    <value>Schnellauslegung nach Vorlage V4, ohne Summenlinie: Nenninhalt {0:0} l des Bandes bis {1:0} l</value>
   </data>
   <data name="ZPG_SATZ_HERKUNFT_GEWICHT_FLAECHE" xml:space="preserve">
     <value>flächengewichtet</value>
@@ -38772,6 +38784,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="ZPG_GROESSE_AUSLEGUNG_LADEFENSTER" xml:space="preserve">
     <value>Auslegung, Ladefenster</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_EMPFEHLUNG" xml:space="preserve">
+    <value>Auslegung, Empfehlung</value>
   </data>
   <data name="ZPGK_IMPORT_DATEI_ZIP" xml:space="preserve">
     <value>ZIP-Paket wählen…</value>

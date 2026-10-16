@@ -216,7 +216,7 @@ namespace EPOS.Kern.Tests
             // Jede Zeile steht schon so im Katalog - nichts angelegt, nichts ersetzt.
             Assert.Equal(9, b.ZeilenVon(TwwImportbereich.Nutzungsart).Count);
             Assert.Equal(9, b.ZeilenVon(TwwImportbereich.Bedarfstag).Count);
-            Assert.Equal(48, b.ZeilenVon(TwwImportbereich.Parameter).Count);
+            Assert.Equal(49, b.ZeilenVon(TwwImportbereich.Parameter).Count);
             Assert.Equal(0, b.Angelegt);
             NurFiktivVorPaketteilErsetzt(b);
 
@@ -280,10 +280,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(b.Zeilen.Count, b.Angelegt);
             Assert.All(b.Zeilen, z => Assert.Equal(RUECKFALL, z.Katalogversion));
 
-            // Die neun Nutzungsarten (sechs, dazu Büro/Schule/Gewerbe, V31), die neun Ecodesign-Bedarfstage und die 48 Parameter.
+            // Die neun Nutzungsarten (sechs, dazu Büro/Schule/Gewerbe, V31), die neun Ecodesign-Bedarfstage und die 49 Parameter.
             Assert.Equal(9, b.ZeilenVon(TwwImportbereich.Nutzungsart).Count);
             Assert.Equal(9, b.ZeilenVon(TwwImportbereich.Bedarfstag).Count);
-            Assert.Equal(48, b.ZeilenVon(TwwImportbereich.Parameter).Count);
+            Assert.Equal(49, b.ZeilenVon(TwwImportbereich.Parameter).Count);
             Assert.Equal(8L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM));
             Assert.Equal(32L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_TAGESGANG_STAMM));
             Assert.Equal(161L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM));

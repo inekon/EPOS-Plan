@@ -441,7 +441,9 @@ namespace WindowsFormsApplication1
                 d.Empfehlung = new ZapfprofilEmpfehlungDaten
                 {
                     Rechenbar = e.Rechenbar,
-                    Speicher = e.Verfahren == ZapfAuslegungsverfahren.Summenlinie,
+                    Speicher = e.Verfahren == ZapfAuslegungsverfahren.Summenlinie
+                               || e.Verfahren == ZapfAuslegungsverfahren.VorlageV4,
+                    VorlageV4 = e.Rechenbar && e.Verfahren == ZapfAuslegungsverfahren.VorlageV4,
                     VolumenL = e.VolumenL,
                     LeistungKw = e.LeistungKw,
                     NenninhaltL = e.NenninhaltL,
@@ -1166,6 +1168,7 @@ namespace WindowsFormsApplication1
             t.PunktMinutenspitze = Text_("ZPG_AUS_PUNKT_MINUTENSPITZE", t.PunktMinutenspitze);
             t.EmpfehlungKeine = Text_("ZPG_AUS_EMPFEHLUNG_KEINE", t.EmpfehlungKeine);
             t.Schnellauslegung = Text_("ZPG_AUS_SCHNELLAUSLEGUNG", t.Schnellauslegung);
+            t.SchnellauslegungV4 = Text_("ZPG_AUS_SCHNELLAUSLEGUNG_V4", t.SchnellauslegungV4);
             t.Entwurfsstand = Text_("ZPG_AUS_ENTWURFSSTAND", t.Entwurfsstand);
             t.Nachrichtlich = Text_("ZPG_AUS_NACHRICHTLICH", t.Nachrichtlich);
             t.PunktBleibt = Text_("ZPG_AUS_PUNKT_BLEIBT", t.PunktBleibt);

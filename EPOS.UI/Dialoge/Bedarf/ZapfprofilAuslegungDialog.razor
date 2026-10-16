@@ -413,11 +413,17 @@
                             {
                                 <span> · @Format(Texte.PunktNenninhalt, Zahl(nenn, "N0"))</span>
                             }
-                            if (g.Empfehlung.Schnellauslegung)
+                            if (g.Empfehlung.VorlageV4)
+                            {
+                                @* Die Herkunft der Schnellauslegung nach V4 steht sichtbar am Punkt, der Vermerk im Tooltip *@
+                                <span class="epos-zapfausl-marke epos-zapfausl-marke--schnell epos-zapfausl-marke--v4"
+                                      title="@g.Empfehlung.Vermerk">@Texte.SchnellauslegungV4</span>
+                            }
+                            else if (g.Empfehlung.Schnellauslegung)
                             {
                                 <span class="epos-zapfausl-marke epos-zapfausl-marke--schnell">@Texte.Schnellauslegung</span>
                             }
-                            if (g.Speicher)
+                            if (g.Speicher && !g.Empfehlung.VorlageV4)
                             {
                                 <span class="epos-leisezeile epos-zapfausl-entwurf"> @Texte.Entwurfsstand</span>
                             }

@@ -214,7 +214,7 @@ Version beim Anwender zu erfragen (Empfehlung: Sammelversion mit K4/K5); Wiki-Qu
 - Seit 13.10.2026: Kältebedarf, der dezentral über Split-Geräte gedeckt wird, erscheint im Kältegang, in der Kältelast, in der Strombilanz als „Kühlung dezentral“, im Deckungsgrad Kälte, im Anlagenschema, in der Simulationskonfiguration und im Bericht; der Strom wird je Kühlträger und Zähler abgerechnet.
 - Seit 13.10.2026: Die Berichtsvorlagen bieten Platzhalter für den Kältebedarf aus Profilen und die dezentrale Kühlung mit Split-Geräten (Kälte, Strom, Jahres-EER, Deckungsgrad gesamt und Anteil der Kälteerzeuger).
 
-### Version 1.2.0.11 — Brauchwasser-Zapfprofil (Entwurf, Upload am 20.10.2026) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
+### Version 1.2.0.11 — Brauchwasser-Zapfprofil (veröffentlicht am 14.10.2026, Sammel-Upload) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
 Version laut Anwender (13.10.2026); die Wiki-Quellen (Programm Dokumentation/Brauchwasser-Zapfprofil, Brauchwasser) sind fortgeschrieben, ins Wiki (wiki.epos-plan.de) wird am 20.10.2026 geladen.
 
@@ -225,7 +225,6 @@ Version laut Anwender (13.10.2026); die Wiki-Quellen (Programm Dokumentation/Bra
 - Seit 13.10.2026: Temperatur der Literanzeige und Schwelle der Stundenzählung stehen nur noch in den Einstellungen, Rubrik „Zapfprofil“.
 - Seit 13.10.2026: Der Katalogimport der Brauchwasser-Nutzungsarten spielt auch die Kennwerte nach DIN 4708 ein (Belegung je Raumzahl, Ausstattungsklassen); eine Paketvorlage liegt im Ordner „Vorlage\Katalogpaket_DIN4708“ bei.
 - Seit 13.10.2026: Für die Typtage nach VDI 4655 liegt eine Paketvorlage im Ordner „Vorlage\Typtagpaket_VDI4655“ bei.
-- Seit 14.10.2026: Die mitgelieferten Brauchwasser-Nutzungsarten rechnen im Zapfprofil-Dialog in der Stufe „Einfach“ ohne zusätzlichen Katalog.
 
 ### Version ‹Version› — Dialoge mit Katalogauswahl (Entwurf, Upload ausstehend) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
@@ -1086,6 +1085,13 @@ mehr abgeschnitten) lag in der Statusdatei kein ausformulierter Satz vor — der
 vorgeschlagenen Wortlaut, damit ist die frühere Rückfrage an den Anwender erledigt.
 *Zurückgestellt:* der engere Klimadiagramm-Satz aus #396 — er geht in der Sache im Satz zu
 #404/#413 (oben) auf.
+
+### Nachtrag zu Version 1.2.0.11 (Entwurf, Upload ausstehend, Version beim Anwender erfragen)
+
+Der Sammel-Upload 1.2.0.11 lief am 14.10.2026 (Seite Brauchwasser-Zapfprofil Revision 1000, Update-Logbuch Revision 1023) vor dem Push von #1096; deshalb fehlen live der berichtigte Absatz `katalog-frei` der Zapfprofil-Seite und der folgende Satz. Quelle der Seite: `Projekte/Wiki/Programm Dokumentation - Brauchwasser-Zapfprofil.wiki`.
+
+- Seit 14.10.2026: Die mitgelieferten Brauchwasser-Nutzungsarten rechnen im Zapfprofil-Dialog in der Stufe „Einfach“ ohne zusätzlichen Katalog. (#1096)
+- Seit 16.10.2026: In der Stufe Einfach empfiehlt die Speicherauslegung im Brauchwasser-Zapfprofil auch ohne externes Katalogpaket einen Speicher-Nenninhalt, gekennzeichnet als Schnellauslegung nach Vorlage V4. (#1107)
 
 ## 3 Offene Punkte
 
