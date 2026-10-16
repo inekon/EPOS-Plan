@@ -272,6 +272,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static bool IstZulaessig(string erzeugerart, int geraeteId, int carrierId)
         {
+            // Welle KB-7b: Der Wasserträger (Preismodell WATER) ist Betriebsmittel, nie der Träger eines
+            // Erzeugers — am Preismodell erkannt, auch ohne Einengung.
+            if (Wasserkosten.IstWasserTraeger(carrierId)) return false;
             IReadOnlyList<string> gruppen = ZulaessigeGruppen(erzeugerart, geraeteId);
             if (gruppen == null) return true;
             if (gruppen.Count == 0 || carrierId <= 0) return false;
@@ -288,6 +291,8 @@ namespace WindowsFormsApplication1
             List<EnergyCarrier> alle;
             try { alle = KostenSummenCtrl.GetAllCarriers(0); }
             catch { alle = new List<EnergyCarrier>(); }
+            // Welle KB-7b: Der Wasserträger steht in keiner Erzeugerauswahl (Betriebsmittel, keine Endenergie).
+            alle = alle.FindAll(c => c != null && !Wasserkosten.IstWasserPreismodell(c.PricingModel));
 
             IReadOnlyList<string> gruppen = ZulaessigeGruppen(erzeugerart, geraeteId);
             List<EnergyCarrier> liste;

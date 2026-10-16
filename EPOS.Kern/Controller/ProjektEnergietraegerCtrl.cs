@@ -847,6 +847,10 @@ namespace WindowsFormsApplication1
                                   string gewerk, string bezeichner)
         {
             if (carrierId <= 0) return;
+            // Welle KB-7b: Der Wasserträger (Preismodell WATER) ist Betriebsmittel, keine Endenergie —
+            // die Wirtschaftlichkeit bucht ihn als Betriebskosten (Wasserkosten). Er ist nie ein
+            // verwendeter Energieträger; erkannt am Preismodell, nie am Namen.
+            if (IstWasserTraeger(Zeile(katalog, carrierId))) return;
 
             Verwendung v;
             if (!gefunden.TryGetValue(carrierId, out v))
@@ -865,6 +869,11 @@ namespace WindowsFormsApplication1
                             ? gewerk : gewerk + " „" + bezeichner + "“";
             if (!v.Beitraeger.Contains(klartext)) v.Beitraeger.Add(klartext);
         }
+
+        /// <summary>Welle KB-7b: Ist die Katalogzeile der Wasserträger (<c>pricing_model = 'WATER'</c>)?</summary>
+        private static bool IstWasserTraeger(Traeger t) =>
+            t != null && string.Equals(t.Preismodell, WasserpreisTraegerkarteSchema.PREISMODELL_WASSER,
+                                       StringComparison.OrdinalIgnoreCase);
 
         private static Traeger Zeile(List<Traeger> katalog, int id)
         {
