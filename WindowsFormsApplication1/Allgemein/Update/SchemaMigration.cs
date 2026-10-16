@@ -16273,7 +16273,7 @@ namespace WindowsFormsApplication1
         /// <see cref="BedarfsprofilEingabeartSchema.SCHRITT"/>) — die Anweisungen bei <see cref="BedarfsprofilEingabeartSchema"/>.
         /// <b>Wiederholbar, ergebnisneutral.</b> GEPARKT: noch nicht in <see cref="SCHRITTE_SQLITE"/> (KETTE).
         /// </summary>
-        internal static bool Schritt_BedarfsEingabeart(Lauf l)
+        private static bool Schritt_BedarfsEingabeart(Lauf l)
         {
             string nr = BedarfsprofilEingabeartSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
             foreach (string tabelle in BedarfsprofilEingabeartSchema.Voraussetzungen())

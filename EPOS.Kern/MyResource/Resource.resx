@@ -56423,5 +56423,8 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KBP_GRAFIK_ERL" xml:space="preserve">
     <value>Grafik der markierten Kältezeile: Jahresgang, Monate, Woche und Dauerlinie samt Kennzahlen (nur Anzeige).</value>
   </data>
+  <data name="KBP_HINW_EINGABEART_ZAPFPROFIL" xml:space="preserve">
+    <value>Das Brauchwasser rechnet mit dem Zapfprofilgenerator – die Eingabeart (Monatswerte, Wochenprofil) gilt nur für den Profilweg.</value>
+  </data>
 </root>
 

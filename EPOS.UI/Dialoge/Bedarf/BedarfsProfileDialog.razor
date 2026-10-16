@@ -297,7 +297,13 @@
     {
     @* KBP-3a (Konzept Kaeltebedarfsprofile 3): die Eingabeart der Kaeltezeile ueber den Eingabefeldern - Jahressumme
        mit Vorlage (Vorgabe), Monatswerte, Wochenprofil; Typtage ausgegraut („folgt“, KBP-4). Arbeitsstand bis OK. *@
-    @if (_eingabeartArbeit is not null)
+    @* KBP-5a (Entscheid OE-5): dieselbe Wahl fuer Prozesswaerme und Brauchwasser. Rechnet das Brauchwasser mit dem
+       Zapfprofilgenerator, gilt die Eingabeart nicht - statt der Wahl steht der Grund. *@
+    @if (_eingabeartArbeit is not null && Zapfprofilweg)
+    {
+        <Herleitungszeile Text="@Resource.KBP_HINW_EINGABEART_ZAPFPROFIL" />
+    }
+    @if (EingabeartAngeboten)
     {
         <Gruppenkopf Titel="@Resource.KBP_GRUPPE_EINGABEART">
             <KindInhalt>
@@ -332,7 +338,7 @@
     </Gruppenkopf>
     }
 
-    @if (_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_MONAT && _monateArbeit is not null)
+    @if (EingabeartAngeboten && _eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_MONAT && _monateArbeit is not null)
     {
         <Gruppenkopf Titel="@Resource.KBP_GRUPPE_MONATE">
             <KindInhalt>
@@ -343,7 +349,7 @@
         </Gruppenkopf>
     }
 
-    @if (_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_WOCHE && _wocheArbeit is not null)
+    @if (EingabeartAngeboten && _eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_WOCHE && _wocheArbeit is not null)
     {
         <Gruppenkopf Titel="@Resource.KBP_GRUPPE_WOCHE">
             <KindInhalt>
@@ -1653,8 +1659,14 @@
 
     private int? EingabeartIndex => _eingabeartArbeit is null ? null : Math.Max(0, Array.IndexOf(EINGABEARTEN, _eingabeartArbeit));
 
+    /// <summary>
+    /// KBP-5a: Die Wahl steht, wenn die Zeile eine Eingabeart führt (Kälte, Prozesswärme, Brauchwasser mit Projektkopie)
+    /// und das Brauchwasser nicht mit dem Zapfprofilgenerator rechnet — dort gilt die Eingabeart nicht.
+    /// </summary>
+    private bool EingabeartAngeboten => _eingabeartArbeit is not null && !Zapfprofilweg;
+
     /// <summary>Die Jahressumme gilt als Eingabe nicht bei Monatswerten in MWh — dort ist sie die Summe der Monate.</summary>
-    private bool VerbrauchSichtbar => !(_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_MONAT && !_monateProzent);
+    private bool VerbrauchSichtbar => !(EingabeartAngeboten && _eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_MONAT && !_monateProzent);
 
     /// <summary>Die Jahressumme der Zeile [MWh] samt angefangener Eingabe im Feld „neuer Wert“.</summary>
     private double AktuelleSummeMwh => _neuerWert is double w && w >= 0 ? _einheit.NachMWh(w) : _gewaehlt?.Summe ?? 0.0;
@@ -1682,7 +1694,7 @@
     /// <summary>Die Wahl der Eingabeart — in den Arbeitsstand; Typtage sind gesperrt.</summary>
     private void EingabeartGewaehlt(int? index)
     {
-        if (_gewaehlt is null || _eingabeartArbeit is null || index is not int i || i < 0 || i >= EINGABEARTEN.Length) return;
+        if (_gewaehlt is null || !EingabeartAngeboten || index is not int i || i < 0 || i >= EINGABEARTEN.Length) return;
         if (EINGABEARTEN[i] == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG &&
             _eingabeartArbeit != WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG) return;
         _eingabeartArbeit = EINGABEARTEN[i];
@@ -1705,7 +1717,8 @@
     /// </summary>
     private string EingabeAnwenden(BedarfsProfilZeile z)
     {
-        if (_eingabeartArbeit is null) return "";
+        // KBP-5a: beim Zapfprofilgenerator gilt die Eingabeart nicht - nichts zu übernehmen.
+        if (!EingabeartAngeboten) return "";
         if (_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_MONAT && _monateArbeit is not null && _monateBearbeitet)
         {
             string? g = WindowsFormsApplication1.Kaelteprofileingabe.PruefeMonate(_monateArbeit, _monateProzent);

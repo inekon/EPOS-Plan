@@ -26,17 +26,26 @@ namespace WindowsFormsApplication1
 
         private static string Q(string s) => "\"" + s + "\"";
 
+        private static bool ImProjekt(DataRow r, int idProjekt)
+            => idProjekt <= 0 || (r.Table.Columns.Contains("ID_Projekt") && r["ID_Projekt"] != DBNull.Value &&
+                                  Convert.ToInt32(r["ID_Projekt"], CultureInfo.InvariantCulture) == idProjekt);
+
         private static double? Zahl(DataRow r, string spalte)
         {
             if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return null;
             return Convert.ToDouble(r[spalte], CultureInfo.InvariantCulture);
         }
 
-        /// <summary>Die Monatsanteile [%] der Kopie <paramref name="idKopie"/>; <c>null</c> ohne Kopie. Leer zählt 0.</summary>
-        public static double[] Monate(Tabellen t, int idKopie)
+        /// <summary>
+        /// Die Monatsanteile [%] der Kopie <paramref name="idKopie"/>; <c>null</c> ohne Kopie. Leer zählt 0. Mit
+        /// <paramref name="idProjekt"/> &gt; 0 nur, wenn die Kopie zu diesem Projekt gehört (eine Katalog-ID des Assistenten
+        /// trifft so nie die Kopie eines fremden Projekts).
+        /// </summary>
+        public static double[] Monate(Tabellen t, int idKopie, int idProjekt = 0)
         {
             if (t == null || idKopie <= 0 || !DataRepository.TabelleVorhanden(t.Kopf)) return null;
             DataTable dt = DataRepository.GetDataTable("SELECT * FROM " + Q(t.Kopf) + " WHERE \"ID\" = ?", new DbParam("@id", idKopie));
+            if (dt != null && dt.Rows.Count > 0 && !ImProjekt(dt.Rows[0], idProjekt)) return null;
             if (dt == null || dt.Rows.Count == 0) return null;
             var m = new double[Kaelteprofileingabe.MONATE];
             for (int i = 0; i < m.Length; i++)
@@ -44,10 +53,14 @@ namespace WindowsFormsApplication1
             return m;
         }
 
-        /// <summary>Das Wochenprofil (168 Werte) der ersten Typzeile der Kopie; <c>null</c> ohne Typzeile. Leer zählt 0.</summary>
-        public static double[] Woche(Tabellen t, int idKopie)
+        /// <summary>
+        /// Das Wochenprofil (168 Werte) der ersten Typzeile der Kopie; <c>null</c> ohne Typzeile. Leer zählt 0. Mit
+        /// <paramref name="idProjekt"/> &gt; 0 nur, wenn die Kopie zu diesem Projekt gehört.
+        /// </summary>
+        public static double[] Woche(Tabellen t, int idKopie, int idProjekt = 0)
         {
             if (t == null || idKopie <= 0 || !DataRepository.TabelleVorhanden(t.Typ)) return null;
+            if (idProjekt > 0 && Monate(t, idKopie, idProjekt) == null) return null;
             DataTable dt = DataRepository.GetDataTable("SELECT * FROM " + Q(t.Typ) + " WHERE " + Q(t.TypKopfId) + " = ? ORDER BY \"ID\"",
                                                        new DbParam("@id", idKopie));
             if (dt == null || dt.Rows.Count == 0) return null;

@@ -56416,5 +56416,8 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="KBP_GRAFIK_ERL" xml:space="preserve">
     <value>Chart of the selected cooling row: annual profile, months, week and duration curve with key figures (display only).</value>
   </data>
+  <data name="KBP_HINW_EINGABEART_ZAPFPROFIL" xml:space="preserve">
+    <value>Domestic hot water is calculated with the draw-off profile generator – the input type (monthly values, weekly profile) applies only to the profile method.</value>
+  </data>
 </root>
 

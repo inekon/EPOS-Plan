@@ -226,6 +226,28 @@ namespace EPOS.Kern.Tests
             Assert.Empty(BedarfsprofilEingabeartSchema.EingabeartenDerZuordnungen("Tab_Projekt", PROJEKT));
         }
 
+        [Fact]
+        public void Die_Abbildung_der_Huelle_liest_die_Kopie_nur_im_eigenen_Projekt()
+        {
+            if (!_db.Vorhanden) return;
+            Art a = Waehle("PW");
+            (int kopie, string name) = Bestand(a);
+            var zeile = new EPOS.UI.Dialoge.Bedarf.BedarfsProfilZeile { IdStamm = kopie, Name = name };
+            BedarfsprofilEingabeAbbildung.InZeile(zeile, BedarfsArt.Prozesswaerme, PROJEKT,
+                                                  DbWerte.KAELTE_EINGABE_WOCHE, null, null);
+            Assert.Equal(DbWerte.KAELTE_EINGABE_WOCHE, zeile.Eingabeart);
+            Assert.Equal(Bedarfsprofilkopie.Monate(a.Tabellen, kopie), zeile.Monatsanteile);
+            Assert.Equal(168, zeile.Wochenprofil!.Length);
+            Assert.False(zeile.ProfilGeaendert);
+            Assert.Equal((DbWerte.KAELTE_EINGABE_WOCHE, (double[])null, (double[])null), BedarfsprofilEingabeAbbildung.AusZeile(zeile));
+
+            // Eine Kopie eines fremden Projekts (oder eine Katalog-ID im Assistenten) bietet keine Eingabeart an.
+            var fremd = new EPOS.UI.Dialoge.Bedarf.BedarfsProfilZeile { IdStamm = kopie, Name = name };
+            BedarfsprofilEingabeAbbildung.InZeile(fremd, BedarfsArt.Prozesswaerme, 1017, null, null, null);
+            Assert.Null(fremd.Eingabeart);
+            Assert.Equal(DbWerte.KAELTE_EINGABE_JAHR, BedarfsprofilEingabeAbbildung.AusZeile(fremd).Eingabeart);
+        }
+
         // ---- Helfer ---------------------------------------------------------------------------------------------------
 
         private static (double[] reihe, double[] monate, int[] a, int[] e) Rechnen(Art art)

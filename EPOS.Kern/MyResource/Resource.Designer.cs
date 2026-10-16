@@ -56420,6 +56420,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Brauchwasser rechnet mit dem Zapfprofilgenerator – die Eingabeart (Monatswerte, Wochenprofil) gilt nur für den Profilweg. ähnelt.
+        /// </summary>
+        public static string KBP_HINW_EINGABEART_ZAPFPROFIL {
+            get {
+                return ResourceManager.GetString("KBP_HINW_EINGABEART_ZAPFPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Typtage folgen in einer späteren Fassung. ähnelt.
         /// </summary>
         public static string KBP_HINW_TYPTAG_FOLGT {

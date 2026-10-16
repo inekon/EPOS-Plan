@@ -1568,12 +1568,17 @@ namespace WindowsFormsApplication1
         {
             var liste = new List<Z_ProjektBrauchwasserModel>();
             foreach (BedarfsProfilZeile z in zeilen ?? Enumerable.Empty<BedarfsProfilZeile>())
+            {
+                // KBP-5a: Eingabeart immer, Monate und Woche nur nach einer Bearbeitung (Kopie bei Bearbeitung im Kern).
+                (string eingabeart, double[] monate, double[] woche) = BedarfsprofilEingabeAbbildung.AusZeile(z);
                 liste.Add(new Z_ProjektBrauchwasserModel
                 {
                     ID_Z = z.IdZ, ID_Projekt = idProjekt, ID_Brauchwasser = z.IdStamm,
                     szBezeichner = z.Name, Summe = z.Summe,
-                    ID_Betriebskalender = z.KalenderId
+                    ID_Betriebskalender = z.KalenderId,
+                    Eingabeart = eingabeart, Monatsanteile = monate, Wochenprofil = woche
                 });
+            }
 
             ZapfprofilSpeicherergebnis e;
             string[] datenbank;
