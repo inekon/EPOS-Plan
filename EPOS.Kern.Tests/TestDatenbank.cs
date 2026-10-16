@@ -1074,6 +1074,10 @@ namespace EPOS.Kern.Tests
                 // Schritt KaeltebedarfsprofilVorlagenSchema.SCHRITT (KBP-2): Eingabeart der Kaeltebedarfszuordnung, Art-Vorschlag am
                 // Kaeltekatalog und Saat der Vorlagen 7-16. Wiederholbar, ergebnisneutral.
                 KaeltebedarfsprofilVorlagenSchema.Ausfuehren(null);
+                // Schritt BedarfsprofilEingabeartSchema.SCHRITT (KBP-5a, GEPARKT auf 234): Eingabeart an Prozesswaerme und
+                // Brauchwasser, Nutzungstage nach Norm an den Kaeltevorlagen (Saat Vorlage 8). Wiederholbar, ergebnisneutral.
+                // KETTE: steht hinter 231 bis 233, sobald diese hier eingetragen sind.
+                BedarfsprofilEingabeartSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

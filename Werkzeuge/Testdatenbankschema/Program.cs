@@ -3737,6 +3737,29 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt BedarfsprofilEingabeartSchema.SCHRITT (KBP-5a): Z_Projekt_Prozesswaerme.Eingabeart und
+            //      Z_Projekt_Brauchwasser.Eingabeart (Vorgabe 'jahr'), Nutzungstage_Norm an Tab_Kaeltebedarf_STAMM/
+            //      Tab_Kaeltebedarf, Saat allein an Vorlage 8 (230 Tage). Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_BedarfsEingabeart. Wiederholbar.
+            //      KETTE: GEPARKT auf 234 - dieser Block bleibt HINTER den Bloecken von 231 bis 233; die Hebung der
+            //      Testdatenbank folgt erst nach dem Umhaengen (BauteilUHerkunftSchema.SCHRITT + 1).
+            //
+            //      REFERENZLAUF UNVERAENDERT: jede Zuordnung rechnet weiter mit der Jahressumme; die Nutzungstage liest
+            //      kein Rechenweg, die Kaeltezeilen 1-6 bleiben samt Pruefsumme bytegleich.
+            string nrKbp5 = BedarfsprofilEingabeartSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKbp5 + " - Eingabeart Prozesswaerme/Brauchwasser und Nutzungstage: " +
+                              (BedarfsprofilEingabeartSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKbp5 = new List<string>();
+                angelegt += BedarfsprofilEingabeartSchema.Ausfuehren(berichtKbp5);
+                foreach (string zeile in berichtKbp5)
+                    Console.WriteLine("Schritt " + nrKbp5 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKbp5 + " - vollstaendig: " + BedarfsprofilEingabeartSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

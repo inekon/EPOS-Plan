@@ -478,6 +478,9 @@ namespace WindowsFormsApplication1
             // Art-Vorschlag; der Schritt legt die Spalten am Ziel an (Vorgabe 'jahr' bzw. leer).
             new Stufe(KaeltebedarfsprofilVorlagenSchema.SCHRITT, Art.Ddl,
                       "Eingabeart der Kältebedarfszuordnung, Art-Vorschlag und Vorlagen 7–16 des Kältekatalogs (KBP-2)"),
+            // KBP-5a (BedarfsprofilEingabeartSchema), KETTE: GEPARKT auf 234 - die Stufe folgt mit dem Umhaengen hinter 233:
+            //   new Stufe(BedarfsprofilEingabeartSchema.SCHRITT, Art.Ddl,
+            //             "Eingabeart an Prozesswärme und Brauchwasser, Nutzungstage nach Norm an den Kältevorlagen (KBP-5a)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

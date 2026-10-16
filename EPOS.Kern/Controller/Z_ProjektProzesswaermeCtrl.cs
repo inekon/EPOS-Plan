@@ -81,6 +81,8 @@ namespace WindowsFormsApplication1
             if (dt == null) return liste;
             // PW2/BW2: der Betriebskalender je Zuordnungszeile (spaltentolerant).
             Dictionary<int, int?> kalender = BetriebskalenderCtrl.KalenderDerZuordnungen("Z_Projekt_Prozesswaerme", idProjekt);
+            // KBP-5a: die Eingabeart je Zuordnungszeile (spaltentolerant; ohne Schritt heisst jede Zeile 'jahr').
+            Dictionary<int, string> eingabearten = BedarfsprofilEingabeartSchema.EingabeartenDerZuordnungen("Z_Projekt_Prozesswaerme", idProjekt);
 
             foreach (DataRow row in dt.Rows)
             {
@@ -93,6 +95,7 @@ namespace WindowsFormsApplication1
                 // PW1 Stufe 1: das Temperaturpaar der Projektkopie (spaltentolerant).
                 (item.Vorlauf, item.Ruecklauf) = ProzesswaermeStammCtrl.ProjektTemperaturpaar(item.ID_Prozesswaerme);
                 item.ID_Betriebskalender = kalender.TryGetValue(item.ID_Z, out int? k) ? k : null;
+                item.Eingabeart = eingabearten.TryGetValue(item.ID_Z, out string e) ? e : KaeltebedarfsprofilVorlagenSchema.EINGABE_JAHR;
                 liste.Add(item);
             }
             return liste;

@@ -1093,6 +1093,8 @@ namespace WindowsFormsApplication1
         /// Art-Vorschlag <c>Kaelte_Art</c> an <c>Tab_Kaeltebedarf_STAMM</c> und <c>Tab_Kaeltebedarf</c> und die Saat der
         /// Vorlagen 7–16 (<see cref="KaeltebedarfsprofilVorlagenSchema"/>). <b>Ergebnisneutral:</b> Jede Zuordnung rechnet weiter mit
         /// der Jahressumme, die Zeilen 1–6 bleiben bytegleich samt Prüfsumme.
+        // KETTE: BedarfsprofilEingabeartSchema (KBP-5a) ist auf 234 GEPARKT; das Ziel wandert erst dorthin, wenn 231 bis 233
+        // in der Kette stehen und der Schritt umgehaengt ist (BauteilUHerkunftSchema.SCHRITT + 1).
         public const int Zielversion = KaeltebedarfsprofilVorlagenSchema.SCHRITT;
 
         /// <summary>

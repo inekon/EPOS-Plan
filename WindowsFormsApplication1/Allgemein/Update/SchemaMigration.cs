@@ -8208,6 +8208,16 @@ namespace WindowsFormsApplication1
                         "Rechenergebnis aendert sich - jede Zuordnung rechnet mit Eingabeart 'jahr', die Zeilen 1-6 " +
                         "bleiben unberuehrt.",
                         Schritt_Kaeltevorlagen),
+            // KBP-5a: Eingabeart an Prozesswaerme und Brauchwasser, Nutzungstage nach Norm an den Kaeltevorlagen. Quelle
+            // ist BedarfsprofilEingabeartSchema, die Nummer steht allein dort.
+            // KETTE: GEPARKT auf 234 - der Eintrag folgt erst, wenn 231 bis 233 hier stehen (sonst sprang ein Lauf ueber
+            // die Luecke und setzte den Stand auf 234). Dann so eintragen:
+            //   new Schritt(BedarfsprofilEingabeartSchema.SCHRITT,
+            //               "Z_Projekt_Prozesswaerme und Z_Projekt_Brauchwasser: Eingabeart; Tab_Kaeltebedarf_STAMM und " +
+            //               "Tab_Kaeltebedarf: Nutzungstage_Norm (Saat allein an Vorlage 8)",
+            //               "Prozesswaerme und Brauchwasser kannten allein die Jahressumme mit Vorlage. KEIN Rechenergebnis " +
+            //               "aendert sich - jede Zuordnung rechnet mit Eingabeart 'jahr'.",
+            //               Schritt_BedarfsEingabeart),
         };
 
         /// <summary>
@@ -16253,6 +16263,61 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Kaeltebedarfsvorlagen und Eingabeart - " +
+                    (angelegt == 0 ? "Spalten standen bereits." : angelegt + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Eingabeart an Prozesswärme und Brauchwasser" (KBP-5a, Schritt
+        /// <see cref="BedarfsprofilEingabeartSchema.SCHRITT"/>) — die Anweisungen bei <see cref="BedarfsprofilEingabeartSchema"/>.
+        /// <b>Wiederholbar, ergebnisneutral.</b> GEPARKT: noch nicht in <see cref="SCHRITTE_SQLITE"/> (KETTE).
+        /// </summary>
+        internal static bool Schritt_BedarfsEingabeart(Lauf l)
+        {
+            string nr = BedarfsprofilEingabeartSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in BedarfsprofilEingabeartSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int angelegt;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    angelegt = BedarfsprofilEingabeartSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!BedarfsprofilEingabeartSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Eingabeart oder Nutzungstage fehlen nach dem Schritt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Eingabeart und Nutzungstage - " +
                     (angelegt == 0 ? "Spalten standen bereits." : angelegt + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;

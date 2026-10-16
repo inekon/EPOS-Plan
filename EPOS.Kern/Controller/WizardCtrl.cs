@@ -448,6 +448,49 @@ namespace WindowsFormsApplication1
             return true;
         }
 
+        /// <summary>
+        /// KBP-5a (Konzept Kaeltebedarfsprofile 3.5, OE-5): schreibt bearbeitete Monatsanteile und Wochenprofil einer
+        /// Prozesswaerme- oder Brauchwasserzeile in ihre Projektkopie <paramref name="kopie"/> — nach demselben Muster wie
+        /// die Kaelte (<see cref="Add_Projekt_Kaelte"/>): Teilt sie sich die Kopie mit einer anderen Zeile, bekommt sie
+        /// zuerst eine eigene (Kopie bei Bearbeitung). Ohne Bearbeitung geschieht nichts. Scheitert ein Schritt, meldet
+        /// der Weg benannt und gibt <c>false</c> zurueck.
+        /// </summary>
+        private static bool ProfilInKopie<T>(Bedarfsprofilkopie.Tabellen t, List<T> list, T item, ref int kopie, int projektID,
+                                             Func<T, double[]> monate, Func<T, double[]> woche,
+                                             Func<T, int> kopieUeberId, Func<T, int> kopieUeberName, string name)
+            where T : class
+        {
+            bool Bearbeitet(T z) => z != null && (monate(z) != null || woche(z) != null);
+            if (!Bearbeitet(item)) return true;
+            int eigene = list.IndexOf(item), k = kopie;
+            int KopieVon(int i)
+            {
+                T andere = list[i];
+                if (andere == null) return 0;
+                int ihre = kopieUeberId(andere);
+                if (ihre <= 0 && i > eigene) ihre = kopieUeberName(andere);
+                return ihre;
+            }
+            if (Bedarfsprofilkopie.AbspaltenNoetig(list.Count, eigene, k, KopieVon, i => Bearbeitet(list[i])))
+            {
+                int neu = Bedarfsprofilkopie.Abspalten(t, k, projektID);
+                if (neu <= 0)
+                {
+                    DataRepository.FehlerMelden("Die eigene Projektkopie \"" + (name ?? "") + "\" (" + t.Kopf +
+                                                ") konnte nicht angelegt werden. Die Zuordnung wurde nicht gespeichert.");
+                    return false;
+                }
+                kopie = neu;
+            }
+            if (!Bedarfsprofilkopie.Schreiben(t, kopie, monate(item), woche(item)))
+            {
+                DataRepository.FehlerMelden("Monatswerte oder Wochenprofil \"" + (name ?? "") + "\" (" + t.Kopf +
+                                            ") konnten nicht gespeichert werden. Die Zuordnung wurde nicht gespeichert.");
+                return false;
+            }
+            return true;
+        }
+
         /// <summary>KBP-3a: Trägt die Zeile bearbeitete Monatswerte oder ein bearbeitetes Wochenprofil?</summary>
         private static bool ProfilBearbeitet(Z_ProjektKaeltebedarfModel z) => z != null && (z.Monatsanteile != null || z.Wochenprofil != null);
 
@@ -3627,6 +3670,15 @@ namespace WindowsFormsApplication1
                     return false;
                 }
 
+                // KBP-5a (Konzept Kaeltebedarfsprofile 3.2, 3.3, 3.5; OE-5): bearbeitete Monatswerte und Wochenprofil gehen
+                // in die PROJEKTKOPIE, nie in den Katalog; eine mit anderen Zeilen geteilte Kopie wird erst hier abgespalten.
+                if (!ProfilInKopie(Bedarfsprofilkopie.Prozesswaerme, list, item, ref projPwId, projektID,
+                                   z => z.Monatsanteile, z => z.Wochenprofil,
+                                   z => ProzesswaermeStammCtrl.GetProjektIdUeberId(z.ID_Prozesswaerme, z.szProzessname, projektID),
+                                   z => ProzesswaermeStammCtrl.GetProjektId(z.szProzessname, projektID), item.szProzessname))
+                    return false;
+                item.ID_Prozesswaerme = projPwId;
+
                 string sql = "INSERT INTO Z_Projekt_Prozesswaerme (ID, ID_Projekt, ID_Prozesswaerme, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)";
 
                 int idZ = nextID++;
@@ -3641,6 +3693,9 @@ namespace WindowsFormsApplication1
                 if (!DataRepository.ExecuteSQL(sql, ps)) return false;
                 // PW2/BW2: der Betriebskalender der Zeile reist mit (nur gesetzt, spaltentolerant).
                 if (!BetriebskalenderCtrl.ZuordnungKalenderSetzen("Z_Projekt_Prozesswaerme", idZ, item.ID_Betriebskalender))
+                    return false;
+                // KBP-5a: die Eingabeart der Zeile ('jahr' ist die Vorgabe der Spalte und wird nicht geschrieben).
+                if (!BedarfsprofilEingabeartSchema.EingabeartSetzen(BedarfsprofilEingabeartSchema.TAB_PROZESS, idZ, item.Eingabeart))
                     return false;
 
                 Z_ProjektProzesswaermeModel zeile = item;
@@ -3833,6 +3888,14 @@ namespace WindowsFormsApplication1
                 }
                 item.ID_Brauchwasser = projBwId;
 
+                // KBP-5a: wie bei der Prozesswaerme - bearbeitete Monatswerte und Wochenprofil in die Projektkopie.
+                if (!ProfilInKopie(Bedarfsprofilkopie.Brauchwasser, list, item, ref projBwId, projektID,
+                                   z => z.Monatsanteile, z => z.Wochenprofil,
+                                   z => BrauchwasserStammCtrl.GetProjektIdUeberId(z.ID_Brauchwasser, z.szBezeichner, projektID),
+                                   z => BrauchwasserStammCtrl.GetProjektId(z.szBezeichner, projektID), item.szBezeichner))
+                    return false;
+                item.ID_Brauchwasser = projBwId;
+
                 string sql = "INSERT INTO Z_Projekt_Brauchwasser (ID, ID_Projekt, ID_Brauchwasser, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)";
 
                 int idZ = nextID++;
@@ -3848,6 +3911,9 @@ namespace WindowsFormsApplication1
 
                 // PW2/BW2: der Betriebskalender der Zeile reist mit (nur gesetzt, spaltentolerant).
                 if (!BetriebskalenderCtrl.ZuordnungKalenderSetzen("Z_Projekt_Brauchwasser", idZ, item.ID_Betriebskalender))
+                    return false;
+                // KBP-5a: die Eingabeart der Zeile ('jahr' ist die Vorgabe der Spalte und wird nicht geschrieben).
+                if (!BedarfsprofilEingabeartSchema.EingabeartSetzen(BedarfsprofilEingabeartSchema.TAB_BRAUCHWASSER, idZ, item.Eingabeart))
                     return false;
             }
             return true;
