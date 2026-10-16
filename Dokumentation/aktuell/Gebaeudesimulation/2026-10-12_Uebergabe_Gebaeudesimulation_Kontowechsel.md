@@ -1,4 +1,4 @@
-# Übergabe der Sitzung „Gebäudesimulation“ — Stand 16.10.2026, 00:30 UTC
+# Übergabe der Sitzung „Gebäudesimulation“ — Stand 16.10.2026, 02:40 UTC
 
 Dieses Papier hält, was die fortführende Cloud-Sitzung braucht, um die Sitzung „Gebäudesimulation“ ohne Verlust weiterzuführen:
 Stand, laufende und nächste Arbeit, offene Anwenderpunkte, Arbeitsweise und am Ende den Einstiegs-Prompt. Regelquelle bleibt
@@ -17,12 +17,12 @@ Das Papier führt den gültigen Stand und wird bei jedem Push nachgeführt.
 | Arbeitszweig | `ios_migration_september` (Remote `origin`), Stand der Wellen vom 16.10.2026: `3a8f1bcb0` |
 | Sitzungen | fortführend `session_01E52sMc6SB7AA3KC4X4AMMG` (Sitzungszweig `claude/wiki-help-assistant-docs-jllq1r`); `session_01NPHEwQvnQDiWMWnQbMmEou` ist stillgelegt |
 | Fertige Wellen auf origin | als Zweige: `claude/gebaeudesimulation-da6` (`fdb7c7072`, DA-6, Schritt 231) und `claude/gebaeudesimulation-bk5` (`9407ae602`, BK-5/BK-6, Schritt 232); ihre Kern-Läufe sind gegen die ungehobene Testdatenbank rot und ohne Bedeutung |
-| Laufende Wellen | **VS** (Zweig `vs`: Farbmodus „Vollständigkeit“ und übrige „Befund“-Texte, E145), **N4** (Feiertagsperioden mit Wochenverweis, Gebäudefeld Maximaleraumtemperatur im Austausch), **N5** („Klimaregion wählen…“ im Gebäudedialog, Wochenvorschau nach Neulesen), **PAP** (Papierpflege, dieses Papier) |
+| Laufende Wellen | **VS** (Farbmodus „Vollständigkeit“, E145, #1099), **N4** (Feiertagsperioden mit Wochenverweis, Gebäude-Höchsttemperatur im Austausch, #1097) und **N5** („Klimaregion wählen…“, Wochenvorschau nach Neulesen, #1098) sind gebaut und im Gate grün auf `7721492ff` (Integrationszweig `integ7`; Push folgt, CI-Vermerk folgt); **PAP** (Papierpflege) gepusht (`7c1bd049b`) |
 | Referenzbasis | **R55** `Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral`, 37 Projekte; nächste Basen R56 KB-5, R57 SA4; CI-Auswahl laut `CLAUDE.md` |
 | Testdatenbank | Schemastand **228** (Git LFS) |
 | Schemakette | 228 `GeraetekostenEntfallSchema` (KB-4, auf origin, #1095) → 229 `StromspeicherKostenSchema` (KB-5a, **nur im Zweig `kb5`, nicht auf origin**) → 230 `KaeltebedarfsprofilVorlagenSchema` (KBP-2, **noch nicht auf origin**) → 231 `RaumnutzungDinWerteSchema` (DA-6) → 232 `BauteilkatalogAbschnittSchema` (BK-5/BK-6); 231 und 232 warten auf 229/230; **233 `BauteilUHerkunftSchema`** (MA-6 (b), E149) angemeldet 16.10.2026 (`3a8f1bcb0`), Bau nach der Runde 231/232. Die Kette hängt immer über `+ 1` an der Vorgängerklasse |
-| Statuszeilen | höchste vergebene #1095 laut Stand bei der Übergabe; vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E149**, **E150 frei** |
-| Nachbarsitzungen | Kennungen stehen in den Commit-Trailern `Claude-Session` auf origin: Kältebedarf (KB-4/KB-5, Schritt 229) seit 16.10.2026 `session_01LxWpn8bgrFYtFBXppoeoCL` (Hebung 229 angekündigt im Statuskopf; zuvor `session_0178YLFEbS4xWdGaXFaZqG1r`), Dialoge und Korrekturen Cloud (KBP-2) `session_01Mt7MsJGzcGr77yqBsxwpLj`, Anlagendialog/ChartProben (R55) `session_01UNeGChCYZu2EpgFx4P3q1q`. Abfrage: `git log --format='%(trailers:key=Claude-Session,valueonly)' -n 80 origin/ios_migration_september | sort | uniq -c` |
+| Statuszeilen | höchste vergebene **#1099** (N4 #1097, N5 #1098, VS #1099); vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E149**, **E150 frei** |
+| Nachbarsitzungen | Kennungen stehen in den Commit-Trailern `Claude-Session` auf origin: Kältebedarf (KB-4/KB-5, Schritt 229) seit 16.10.2026 `session_01LxWpn8bgrFYtFBXppoeoCL` (Hebung 229 angekündigt im Statuskopf ab 02:00 UTC, 230 noch nicht auf origin; zuvor `session_0178YLFEbS4xWdGaXFaZqG1r`), Dialoge und Korrekturen Cloud (KBP-2) `session_01Mt7MsJGzcGr77yqBsxwpLj`, Anlagendialog/ChartProben (R55) `session_01UNeGChCYZu2EpgFx4P3q1q`. Abfrage: `git log --format='%(trailers:key=Claude-Session,valueonly)' -n 80 origin/ios_migration_september | sort | uniq -c` |
 | Lokale Sitzung | „Epos Lokal“ auf dem Rechner des Anwenders (Rechner, HSETU-Daten, Normen); der Anwender startet sie, Importlauf und DA-6-Lieferung sind geliefert |
 
 ## 2. Gebaute Wellen
@@ -42,6 +42,7 @@ die Stufenübersicht in der [Statusdatei Gebäudesimulation](../Status_Gebaeudes
 | DA-1 bis DA-5, DA-7, DA-9 | #1049, #1076 bis #1085 | gbXML/IFC-Austausch aller Simulationsdaten, Profilprüfung, Round-Trip-Wache, Wiki-Quellen |
 | R54 | #1084 | Basis Dachflächen (E141) |
 | N1 bis N3, BK-3d | #1091 bis #1094 | Nachzüge Oberfläche und Kern |
+| N4, N5, VS | #1097 bis #1099 | Feiertagsverweis und Gebäude-Höchsttemperatur im Austausch; Wochenvorschau nach Neulesen und „Klimaregion wählen…“; Bedienbegriff „Vollständigkeit“ statt „Befund“ (E145); gebaut, Push folgt |
 | Wiki | #1061, #1085 | Wiki-Quellen und Logbuch-Entwurf; **kein Upload** |
 
 ## 3. Laufende Arbeit
@@ -80,7 +81,7 @@ Festlegungen, die Folgewellen kennen müssen:
 
 1. Runde 231/232 wie in Abschnitt 3, dann CI-Vermerke.
 2. Schritt 233 `BauteilUHerkunftSchema` (MA-6 (b) Hand-U, E149); weitere Nachzüge aus MA-6: ein nur im Kalendereditor geänderter Kalender markiert die Zone nicht; Zonenfelder im Zonendialog ohne MANUELL nimmt die Datei.
-3. Laufende Wellen VS, N4, N5 abnehmen und mergen (Abschnitt 1); danach Nachzugsliste: KI-Sicht für Fensterwerte und Abschnitte, Importdialog Unterordner `Export`, DA-8 nur auf eigenen Entscheid (F8 (a)).
+3. Nachzugsliste (erledigt mit N4/N5: Klimaregion wählen, Wochenvorschau, Maximaleraumtemperatur, Feiertagsperioden): KI-Sicht für Fensterwerte und Abschnitte, Importdialog Unterordner `Export`, DA-8 nur auf eigenen Entscheid (F8 (a)); offen aus N4/N5/VS: Herkunftszeile in der Klimaregion-Überlagerung; eine offene Wärmebedarfsansicht liest die neue Region erst beim nächsten Öffnen; Bezeichner mit Zeilenumbruch bricht den gbXML-Block; gbXML führt Feiertage nur als Tagtyp `Holiday`; nicht umbenannte „Befund“-Texte `ADM_DUBLETTEN_BAUM`, `BHW_K_LEER`.
 4. BK-7 (Teilkatalognamen `Katalog_Inhalt.csv`, Hilfeschlüssel des Importdialogs); BK-4 (LocalDB-Werkzeug) nur für einen neuen Katalogstand.
 5. Wiki-Quellen für BK-5/BK-6 und DA-6; Sammel-Upload nur auf Zuruf (E144, Version 1.2.0.12 laut Empfehlung). Der am 14.10.2026 vorbereitete Upload (Logbuch „Version 1.2.0.11“ in `Werkzeuge/WikiUpload/logbuch.wiki`, 33 abweichende Seiten) ist nicht geladen; vor dem Upload die Versionsnummer gegen das Wiki bestätigen. Aus der Cloud nur, wenn `WIKI_BOT_USER`/`WIKI_BOT_PASS` als Umgebungsgeheimnisse hinterlegt sind, sonst lokal über „Epos Lokal“ (`py -3 Werkzeuge\WikiUpload\wiki_upload.py --seiten`, dann `--logbuch`); danach Statuszeile und `Wiki_Update_2026-09-26.md` nachführen.
 6. SA4 (Referenzprojekt Schnellaufheizung, Basis R57 nach R56).
@@ -90,6 +91,8 @@ Festlegungen, die Folgewellen kennen müssen:
 - „Epos Lokal“ starten (Rechner, HSETU-Daten, Normen), wenn die Runde 231/232 gepusht ist.
 - Gemeinsame Sichtabnahme unter Windows nach dem Push von 232 (E146): Ampelleiste, Fensterteil, Abschnitte, Gebäudedialoge, IFC-Punkte.
 - Zweiter Importlauf des Bauteilkatalogs nach dem Push von 232 (E147), Sicherung vorher; dabei Bereinigung des einen Importsatzes mit Name und Gruppe eines Auslieferungssatzes (E148).
+- Windows-Sichtabnahme N5 (A-N5-1 bis A-N5-4, Protokoll N5, Abschnitt „Sichtabnahme Windows“).
+- Anwenderprobe N4 unter Windows: Export eines Gebäudes mit Feiertagsverweis und oberer Raumtemperatur, Wiedereinlesen im Importdialog (Zeile „Maximale Raumtemperatur“).
 - Wiki-Upload nur auf Zuruf (E144).
 
 Alle Entscheide des Anwenders vom 14.10.2026 (E144 bis E149) stehen mit Wortlaut im Register der Statusdatei Gebäudesimulation.
@@ -121,7 +124,7 @@ Alle Entscheide des Anwenders vom 14.10.2026 (E144 bis E149) stehen mit Wortlaut
 ```text
 Sitzung „Gebäudesimulation“ (EPOS-Plan, inekon/EPOS-Plan) fortsetzen. Arbeitszweig ios_migration_september; der eigene Sitzungszweig wird bei jedem Push mitgezogen. Antworten auf Deutsch, knapp; Stände als Tabelle.
 
-1. Lies CLAUDE.md ganz und das Übergabepapier Dokumentation/aktuell/Gebaeudesimulation/2026-10-12_Uebergabe_Gebaeudesimulation_Kontowechsel.md ganz (Stand 16.10.2026, 00:30 UTC). Aus Dokumentation/aktuell/Status_iOS_Migration.md nur den Kopf („Schemaschritt angemeldet“, Referenzbasis) und die Zeilen ab #1091; aus Dokumentation/aktuell/Status_Gebaeudesimulation_VDI6007.md die Entscheide E135 bis E149. Weitere Papiere nur gezielt per grep.
+1. Lies CLAUDE.md ganz und das Übergabepapier Dokumentation/aktuell/Gebaeudesimulation/2026-10-12_Uebergabe_Gebaeudesimulation_Kontowechsel.md ganz (Stand 16.10.2026, 02:40 UTC). Aus Dokumentation/aktuell/Status_iOS_Migration.md nur den Kopf („Schemaschritt angemeldet“, Referenzbasis) und die Zeilen ab #1091; aus Dokumentation/aktuell/Status_Gebaeudesimulation_VDI6007.md die Entscheide E135 bis E149. Weitere Papiere nur gezielt per grep.
 2. git fetch origin ios_migration_september; git log --format='%h %<(72,trunc)%s' -n 30 origin/ios_migration_september: was seit 3a8f1bcb0 hinzukam. Den Statuskopf auf origin gegen Abschnitt 1 des Papiers halten (Schemakette 228 bis 233, Basis R55).
 3. Die zwei fertigen Wellen holen: git fetch origin claude/gebaeudesimulation-da6:da6 claude/gebaeudesimulation-bk5:bk5 (erwartet fdb7c7072 und 9407ae602). Sobald die Schritte 229 und 230 auf origin liegen: Opus-Runde nach Abschnitt 3 (merge, Kette umhängen, Tests, Testdatenbank auf 232 heben, Nachgate mit Referenzlauf, zwei Statuszeilen, Push, CI-Vermerk). Danach Schritt 233 und Abschnitt 4 der Reihe nach. Die laufenden Wellen VS, N4, N5 und PAP (Abschnitt 1) abnehmen.
 4. Nachbarsitzungen: Kennungen aus den Commit-Trailern Claude-Session (Abschnitt 1). Den Sitzungen Kältebedarf (229) und Dialoge/Cloud (230) per send_message die eigene Kennung mitteilen und um Ankündigung ihrer Pushes bitten. Schemaschritte nur über die Kopfzeile anmelden und allein diese Zeile sofort pushen; vor macOS-, iOS- oder Setup-Läufen, Wiki-Upload, Pull Requests und Force-Push immer Rückfrage.

@@ -28,8 +28,8 @@ Die Dialoge im Einzelnen beschreibt [[Programm Dokumentation/Projekttransfer|Pro
 
 Bringt das Paket Datensätze mit, die in der Zieldatenbank bereits vorhanden sein können, prüft der Import jeden einzeln:
 
-* '''Konfliktliste beim Import''' – je geprüftem Datensatz stehen Name, Befund und Aktion nebeneinander.
-* '''Befund''' – ob der Datensatz neu ist, identisch vorliegt, denselben Inhalt unter anderem Namen hat, ob der Name bereits vergeben ist oder in der Auswahl mehrfach vorkommt.
+* '''Konfliktliste beim Import''' – je geprüftem Datensatz stehen Name, Hinweis und Aktion nebeneinander.
+* '''Hinweis''' – ob der Datensatz neu ist, identisch vorliegt, denselben Inhalt unter anderem Namen hat, ob der Name bereits vergeben ist oder in der Auswahl mehrfach vorkommt.
 * '''Aktion''' – importieren, auslassen, überschreiben oder unter neuem Namen umbenennen; ''Alle auslassen'' setzt jede Konfliktzeile auf ''auslassen''.
 * '''Schreibgeschützte Datensätze''' – mitgelieferte Katalogeinträge werden nicht überschrieben; der Dialog weist darauf hin.
 

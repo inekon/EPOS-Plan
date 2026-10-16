@@ -67,7 +67,9 @@ namespace WindowsFormsApplication1
         {
             // Welle DA-4: das Erdreich (G3, G4) aus den Text-Werten von EPOS_Gebaeude.
             var werte = new List<(string, string)>();
-            foreach (string name in new[] { GebaeudeRestdaten.ERDREICH_UMFANG, GebaeudeRestdaten.ERDREICH_U_WIRKSAM, GebaeudeRestdaten.KELLERTEMPERATUR })
+            // Nachzug N4: dazu die obere Raumtemperatur des Gebäudes (B10).
+            foreach (string name in new[] { GebaeudeRestdaten.ERDREICH_UMFANG, GebaeudeRestdaten.ERDREICH_U_WIRKSAM, GebaeudeRestdaten.KELLERTEMPERATUR,
+                                            GebaeudeRestdaten.GEBAEUDE_MAXIMALERAUMTEMPERATUR })
                 if (IfcEigenschaften.Finden(_bezuege, b, IfcSchreiber.EPOS_GEBAEUDE, name) is IfcFund fund && Textwert(fund) is string t)
                     werte.Add((name, t));
             var uebersprungen = new List<string>();

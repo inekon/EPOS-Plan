@@ -268,7 +268,7 @@ public partial class GebaeudeImportZonenDialogTests : EposBunitContext
         Assert.Equal(2, cut.Instance.Flaechenzeilen.Count);           // 0 und 15
         Schalter(cut, "Nur Flächen ohne Nachbarfläche").WechselAbgewartet(false);
         Schalter(cut, "Nur Flächen ohne U-Wert und Aufbau").WechselAbgewartet(false);
-        Schalter(cut, "Nur Flächen mit Befund").WechselAbgewartet(true);
+        Schalter(cut, "Nur Flächen mit Hinweis").WechselAbgewartet(true);
         Assert.Equal(14, cut.Instance.Flaechenzeilen.Count);          // Vielfache von 3 oder 5 unter 30
         Assert.Equal(14, cut.FindComponent<Katalogliste>().Instance.Angezeigt.Count);
 
@@ -301,7 +301,7 @@ public partial class GebaeudeImportZonenDialogTests : EposBunitContext
         Assert.Equal("Take over as zones with components", englisch.AlsZonen);
         Assert.Equal("Zones", englisch.GruppeZonen);
         Assert.Equal("Surfaces per zone", englisch.GruppeFlaechen);
-        Assert.Equal("Only surfaces with a finding", englisch.FilterFehler);
+        Assert.Equal("Only surfaces with a note", englisch.FilterFehler);
         Assert.Equal("Only surfaces without an adjacent surface", englisch.FilterOhneGegenstueck);
         Assert.Equal("Only surfaces without U-value and build-up", englisch.FilterOhneUWert);
         Assert.Equal("Use the coarser rule: {0}", englisch.GroebereRegel);
@@ -312,7 +312,7 @@ public partial class GebaeudeImportZonenDialogTests : EposBunitContext
         Einlesen(cut, englisch.DateiKnopf.TrimEnd('…', '.'));
         Assert.Contains("Take over as zones with components", cut.Find(".epos-gebimport-bauteile").TextContent);
         Assert.Contains("Surfaces per zone", cut.Markup);
-        Assert.Contains("Only surfaces with a finding", cut.Markup);
+        Assert.Contains("Only surfaces with a note", cut.Markup);
     }
 
     [Fact]
