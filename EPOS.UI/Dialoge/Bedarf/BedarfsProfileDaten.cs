@@ -58,7 +58,7 @@ public sealed class BedarfsProfilZeile
     public DeckungsartDaten? Deckung { get; set; }
 
     /// <summary>
-    /// KBP-3a: die Eingabeart einer Kältebedarfszeile als Steuerwert ('jahr', 'monat', 'woche'; 'typtag' folgt mit KBP-4),
+    /// KBP-3a: die Eingabeart einer Kältebedarfszeile als Steuerwert ('jahr', 'monat', 'woche', 'typtag' — KBP-4b),
     /// <c>null</c> außerhalb der Kältebedarfsprofile. Gewählt in der Bearbeiten-Überlagerung, geschrieben mit OK.
     /// </summary>
     public string? Eingabeart { get; set; }
@@ -74,6 +74,17 @@ public sealed class BedarfsProfilZeile
     /// dann schreibt das OK sie in die Projektkopie (bei geteilter Kopie in eine eigene).
     /// </summary>
     public bool ProfilGeaendert { get; set; }
+
+    /// <summary>
+    /// KBP-4b: die Typtage samt Zuordnungsmatrix der Projektkopie (nur Kälte); <c>null</c> = keine bekannt (leer).
+    /// </summary>
+    public WindowsFormsApplication1.KaeltetyptagEingabe? Typtage { get; set; }
+
+    /// <summary>
+    /// KBP-4b: <c>true</c>, sobald der Anwender Typtage in der Überlagerung übernommen hat — erst dann schreibt das OK sie
+    /// in die Projektkopie (bei geteilter Kopie in eine eigene).
+    /// </summary>
+    public bool TyptageGeaendert { get; set; }
 
     /// <summary>
     /// KBP-5b: die Nutzungstage nach Norm der Vorlage, die die Kältezeile trägt (Vorlage 8: 230); <c>null</c> = keine.

@@ -296,7 +296,8 @@
     @if (_gewaehlt is not null)
     {
     @* KBP-3a (Konzept Kaeltebedarfsprofile 3): die Eingabeart der Kaeltezeile ueber den Eingabefeldern - Jahressumme
-       mit Vorlage (Vorgabe), Monatswerte, Wochenprofil; Typtage ausgegraut („folgt“, KBP-4). Arbeitsstand bis OK. *@
+       mit Vorlage (Vorgabe), Monatswerte, Wochenprofil, Typtage (KBP-4b; nur Kaelte, sobald die Datenbank sie fuehrt,
+       sonst benannt gesperrt). Arbeitsstand bis OK. *@
     @* KBP-5a (Entscheid OE-5): dieselbe Wahl fuer Prozesswaerme und Brauchwasser. Rechnet das Brauchwasser mit dem
        Zapfprofilgenerator, gilt die Eingabeart nicht - statt der Wahl steht der Grund. *@
     @if (_eingabeartArbeit is not null && Zapfprofilweg)
@@ -311,7 +312,7 @@
                     <KindInhalt>
                 <Auswahlfeld Bezeichnung="@Resource.KBP_LBL_EINGABEART" Eintraege="@EingabeartEintraege"
                              Auswahl="@EingabeartIndex" AuswahlChanged="EingabeartGewaehlt"
-                             GesperrteEintraege="@EingabeartGesperrt" GesperrtHinweis="@Resource.KBP_HINW_TYPTAG_FOLGT" />
+                             GesperrteEintraege="@EingabeartGesperrt" GesperrtHinweis="@TyptagSperrgrund" />
                     </KindInhalt>
                 </Formularraster>
                 <Herleitungszeile Text="@Resource.KBP_HINW_EINGABEART" />
@@ -356,6 +357,16 @@
                 <KaelteWochenprofilEditor Werte="@_wocheArbeit" DreiTage="@_wocheDreiTage"
                                           DreiTageChanged="d => _wocheDreiTage = d"
                                           Geaendert="() => _wocheBearbeitet = true" />
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    @if (EingabeartAngeboten && _eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG && _typtageArbeit is not null)
+    {
+        <Gruppenkopf Titel="@Resource.KBP_GRUPPE_TYPTAGE">
+            <KindInhalt>
+                <KaelteTyptagEditor Werte="@_typtageArbeit" Name="@(_gewaehlt?.Name ?? "")" Vorbelegt="@_typtageVorbelegt"
+                                    Geaendert="() => _typtageBearbeitet = true" />
             </KindInhalt>
         </Gruppenkopf>
     }
@@ -667,6 +678,12 @@
     /// </summary>
     [Parameter] public Func<BedarfsProfilZeile, IReadOnlyList<BedarfsProfilZeile>, WindowsFormsApplication1.Kaelteprofilbilder?>? KaelteGrafik { get; set; }
 
+    /// <summary>
+    /// KBP-4b: Führt die Datenbank die Typtage (Schemaschritt <c>KaeltetyptagSchema</c>)? Nur dann ist die Eingabeart
+    /// Typtage bei Kältezeilen wählbar; sonst benannt gesperrt. Gesetzt von der Hülle.
+    /// </summary>
+    [Parameter] public bool TyptageVerfuegbar { get; set; }
+
     /// <summary>Steht die Grafik der markierten Kältezeile in der Bearbeiten-Überlagerung?</summary>
     private bool GrafikSichtbar => Art == BedarfsArt.Kaelte && KaelteGrafik is not null && _gewaehlt is not null;
 
@@ -690,10 +707,12 @@
         foreach (BedarfsProfilZeile z in zeilen)
         {
             stand.Append(z.Name).Append('\u001f').Append(z.Summe.ToString("R", inv))
-                 .Append('\u001f').Append(z.KalenderId).Append('\u001f').Append(z.ProfilGeaendert);
+                 .Append('\u001f').Append(z.KalenderId).Append('\u001f').Append(z.ProfilGeaendert)
+                 .Append('\u001f').Append(z.Eingabeart).Append('\u001f').Append(z.TyptageGeaendert);
             if (z.ProfilGeaendert)
                 foreach (double w in (z.Monatsanteile ?? Array.Empty<double>()).Concat(z.Wochenprofil ?? Array.Empty<double>()))
                     stand.Append(';').Append(w.ToString("R", inv));
+            if (z.TyptageGeaendert && z.Typtage is not null) TyptageSchluessel(stand, z.Typtage);
             stand.Append('\u001e');
         }
         string schluessel = stand.ToString();
@@ -702,6 +721,18 @@
         try { _grafik = KaelteGrafik(markiert, zeilen); }
         catch (Exception) { _grafik = null; }
         return _grafik;
+    }
+
+    /// <summary>KBP-4b: Typtage und Matrix in den Schlüssel des Rechenstands.</summary>
+    private static void TyptageSchluessel(System.Text.StringBuilder stand, WindowsFormsApplication1.KaeltetyptagEingabe e)
+    {
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+        foreach (WindowsFormsApplication1.Kaeltetyptag t in e.Typtage)
+        {
+            stand.Append('|').Append(t.Nr).Append(':').Append(t.Bezeichner).Append(':').Append(t.Tagesmenge.ToString("R", inv));
+            foreach (double f in t.Stunden ?? Array.Empty<double>()) stand.Append(',').Append(f.ToString("R", inv));
+        }
+        foreach (int nr in e.Matrix) stand.Append('#').Append(nr);
     }
 
     /// <summary>
@@ -722,13 +753,23 @@
         if (_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_WOCHE && _wocheArbeit is not null &&
             _wocheBearbeitet && WindowsFormsApplication1.Kaelteprofileingabe.PruefeWoche(_wocheArbeit) is null)
             woche = (double[])_wocheArbeit.Clone();
-        if (monate is null && woche is null) return z;
+        // KBP-4b: die Typtage des Arbeitsstands, sobald sie bearbeitet (oder vorbelegt) und zulässig sind.
+        WindowsFormsApplication1.KaeltetyptagEingabe? typtage = null;
+        if (_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG && _typtageArbeit is not null &&
+            _typtageBearbeitet && _typtageArbeit.Pruefen() is null)
+            typtage = WindowsFormsApplication1.Kaeltetyptageingabe.Kopie(_typtageArbeit);
+        // Der Wechsel von oder zu Typtagen ändert den Rechenweg der Zeile; die übrigen Wechsel rechnen gleich.
+        bool artAnders = _eingabeartArbeit is not null &&
+                         (_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG) !=
+                         (z.Eingabeart == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG);
+        if (monate is null && woche is null && typtage is null && !artAnders) return z;
         return new BedarfsProfilZeile
         {
             IdZ = z.IdZ, IdStamm = z.IdStamm, Name = z.Name, Summe = summe, KalenderId = z.KalenderId, KaelteArt = z.KaelteArt,
-            Eingabeart = _eingabeartArbeit, ProfilGeaendert = true,
+            Eingabeart = _eingabeartArbeit ?? z.Eingabeart, ProfilGeaendert = monate is not null || woche is not null || z.ProfilGeaendert,
             Monatsanteile = monate ?? (z.ProfilGeaendert ? z.Monatsanteile : null),
-            Wochenprofil = woche ?? (z.ProfilGeaendert ? z.Wochenprofil : null)
+            Wochenprofil = woche ?? (z.ProfilGeaendert ? z.Wochenprofil : null),
+            Typtage = typtage ?? z.Typtage, TyptageGeaendert = typtage is not null || z.TyptageGeaendert
         };
     }
 
@@ -1685,6 +1726,12 @@
     private double[]? _wocheArbeit;
     private bool _wocheDreiTage;
     private bool _wocheBearbeitet;
+    private WindowsFormsApplication1.KaeltetyptagEingabe? _typtageArbeit;
+    private bool _typtageBearbeitet;
+    private bool _typtageVorbelegt;
+
+    /// <summary>KBP-4b: der Arbeitsstand der Typtage in der Überlagerung (Prüfhilfe); <c>null</c> = keiner.</summary>
+    public WindowsFormsApplication1.KaeltetyptagEingabe? TyptageArbeitsstand => _typtageArbeit;
 
     private static readonly string[] EINGABEARTEN =
     {
@@ -1698,9 +1745,19 @@
         (2, Resource.KBP_EINGABE_WOCHE), (3, Resource.KBP_EINGABE_TYPTAG),
     };
 
-    /// <summary>Typtage folgen mit KBP-4 — ausgegraut, solange die aktuelle Zeile nicht schon so steht.</summary>
-    private IReadOnlyCollection<int> EingabeartGesperrt => _eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG
-        ? Array.Empty<int>() : new[] { 3 };
+    /// <summary>
+    /// KBP-4b: Typtage gibt es für Kältezeilen, sobald die Datenbank sie führt (<see cref="TyptageVerfuegbar"/>); sonst
+    /// ausgegraut mit Grund, solange die aktuelle Zeile nicht schon so steht.
+    /// </summary>
+    private IReadOnlyCollection<int> EingabeartGesperrt
+        => TyptageAngeboten || _eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG
+            ? Array.Empty<int>() : new[] { 3 };
+
+    /// <summary>KBP-4b: Typtage sind wählbar — Kältezeile und Datenbank mit Typtagen.</summary>
+    private bool TyptageAngeboten => Art == BedarfsArt.Kaelte && TyptageVerfuegbar;
+
+    /// <summary>KBP-4b: der Grund der Sperre der Typtage.</summary>
+    private string TyptagSperrgrund => Art == BedarfsArt.Kaelte ? Resource.KBP_HINW_TYPTAG_FOLGT : Resource.KBP_HINW_TYPTAG_NUR_KAELTE;
 
     private int? EingabeartIndex => _eingabeartArbeit is null ? null : Math.Max(0, Array.IndexOf(EINGABEARTEN, _eingabeartArbeit));
 
@@ -1738,7 +1795,12 @@
         _monateProzent = false;
         _monateBearbeitet = false;
         _wocheBearbeitet = false;
+        _typtageBearbeitet = false;
+        _typtageVorbelegt = false;
+        _typtageArbeit = null;
         if (_eingabeartArbeit is null) { _monateArbeit = null; _wocheArbeit = null; return; }
+        // KBP-4b: die Typtage als Kopie (nur Kälte).
+        if (Art == BedarfsArt.Kaelte) _typtageArbeit = WindowsFormsApplication1.Kaeltetyptageingabe.Kopie(_gewaehlt!.Typtage);
         _monateArbeit = WindowsFormsApplication1.Kaelteprofileingabe.NachMwh(
             _gewaehlt!.Monatsanteile ?? new double[WindowsFormsApplication1.Kaelteprofileingabe.MONATE], _gewaehlt.Summe);
         _wocheArbeit = (double[])(_gewaehlt.Wochenprofil ?? new double[WindowsFormsApplication1.Kaelteprofileingabe.WOCHE]).Clone();
@@ -1747,16 +1809,33 @@
 
     private void EingabeArbeitsstandVerwerfen()
     {
-        _eingabeartArbeit = null; _monateArbeit = null; _wocheArbeit = null;
-        _monateBearbeitet = false; _wocheBearbeitet = false;
+        _eingabeartArbeit = null; _monateArbeit = null; _wocheArbeit = null; _typtageArbeit = null;
+        _monateBearbeitet = false; _wocheBearbeitet = false; _typtageBearbeitet = false; _typtageVorbelegt = false;
     }
 
-    /// <summary>Die Wahl der Eingabeart — in den Arbeitsstand; Typtage sind gesperrt.</summary>
+    /// <summary>
+    /// Die Wahl der Eingabeart — in den Arbeitsstand. KBP-4b: Typtage nur, wenn angeboten; führt die Zeile noch keine,
+    /// belegt der erste Wechsel sie aus dem Wochenprofil vor (Werktag, Samstag, Sonn-/Feiertag als drei Typtage, in
+    /// allen Monaten gleich zugeordnet — <see cref="WindowsFormsApplication1.Kaeltetyptageingabe.AusWoche"/>).
+    /// </summary>
     private void EingabeartGewaehlt(int? index)
     {
         if (_gewaehlt is null || !EingabeartAngeboten || index is not int i || i < 0 || i >= EINGABEARTEN.Length) return;
         if (EINGABEARTEN[i] == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG &&
-            _eingabeartArbeit != WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG) return;
+            _eingabeartArbeit != WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG)
+        {
+            if (!TyptageAngeboten) return;
+            _typtageArbeit ??= new WindowsFormsApplication1.KaeltetyptagEingabe();
+            if (_typtageArbeit.Typtage.Count == 0)
+            {
+                double[]? woche = _wocheArbeit is not null && WindowsFormsApplication1.Kaelteprofileingabe.PruefeWoche(_wocheArbeit) is null
+                    ? _wocheArbeit : _gewaehlt.Wochenprofil;
+                _typtageArbeit = WindowsFormsApplication1.Kaeltetyptageingabe.AusWoche(
+                    woche, (Resource.KBP_TYPTAG_TAGESARTEN ?? "").Split(';'));
+                _typtageBearbeitet = true;
+                _typtageVorbelegt = true;
+            }
+        }
         _eingabeartArbeit = EINGABEARTEN[i];
     }
 
@@ -1804,6 +1883,21 @@
             z.ProfilGeaendert = true;
             _wocheBearbeitet = false;
             Geaendert?.Invoke();
+        }
+        // KBP-4b: Typtage samt Matrix - die Regeln des Schemas halten die Ueberlagerung offen; leere Zellen und Typtage
+        // ohne Stunden sind erlaubt (Hinweis im Editor wie im Lauf).
+        if (_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG && _typtageArbeit is not null && _typtageBearbeitet)
+        {
+            string? g = _typtageArbeit.Pruefen();
+            if (g is not null) return string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.KBP_MSG_TYPTAGE, g);
+            if (!z.TyptageGeaendert || !WindowsFormsApplication1.Kaeltetyptageingabe.Gleich(z.Typtage, _typtageArbeit))
+            {
+                z.Typtage = WindowsFormsApplication1.Kaeltetyptageingabe.Kopie(_typtageArbeit);
+                z.TyptageGeaendert = true;
+                Geaendert?.Invoke();
+            }
+            _typtageBearbeitet = false;
+            _typtageVorbelegt = false;
         }
         if (!string.Equals(z.Eingabeart, _eingabeartArbeit, StringComparison.Ordinal))
         {

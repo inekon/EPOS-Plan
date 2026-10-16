@@ -27360,9 +27360,6 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_AUS_SCHNELLAUSLEGUNG" xml:space="preserve">
     <value>Schnellauslegung</value>
   </data>
-  <data name="ZPG_AUS_SCHNELLAUSLEGUNG_V4" xml:space="preserve">
-    <value>Schnellauslegung V4</value>
-  </data>
   <data name="ZPG_AUS_ENTWURFSSTAND" xml:space="preserve">
     <value>Entwurfsstand — A100/A1 sind Entwürfe, Anwendung besonders zu vereinbaren.</value>
   </data>
@@ -30450,17 +30447,11 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_AUSHINWEIS_TEMPERATUR_GROSSANLAGE" xml:space="preserve">
     <value>Mit {0:0.###} °C ergibt die Auslegung {1:0} l — eine Großanlage nach DVGW W 551; die Gruppe rechnet deshalb mit der Mindesttemperatur {2:0.###} °C.</value>
   </data>
-  <data name="ZPG_SATZ_AUSHINWEIS_EMPFEHLUNG_V4" xml:space="preserve">
-    <value>Schnellauslegung nach Vorlage V4, ohne Summenlinie: Die Auslegungswerte der A100 fehlen im Katalog; empfohlen ist der Nenninhalt {0:0} l des Verfahrensvergleichs (Band bis {1:0} l). Die Summenlinie rechnet erst mit einem Katalogpaket, das diese Werte führt.</value>
-  </data>
   <data name="ZPG_SATZ_AUSHINWEIS_TEMPERATUR_GROSSANLAGE_BLEIBT" xml:space="preserve">
     <value>{0} Die Gruppe bleibt bei {1:0.###} °C.</value>
   </data>
   <data name="ZPG_SATZ_AUSTEXT_VERMERK_SCHNELLAUSLEGUNG" xml:space="preserve">
     <value>Schnellauslegung</value>
-  </data>
-  <data name="ZPG_SATZ_AUSTEXT_VERMERK_VORLAGE_V4" xml:space="preserve">
-    <value>Schnellauslegung nach Vorlage V4, ohne Summenlinie</value>
   </data>
   <data name="ZPG_SATZ_AUSTEXT_VERMERK_SPITZEN" xml:space="preserve">
     <value>Spitzen unterschätzt</value>
@@ -31382,9 +31373,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_SATZ_HERKUNFT_BEDARFSTAGFAKTOR" xml:space="preserve">
     <value>(θ_Zapf − θ_KW,A) / (θ_Zapf − θ_KW,A,Katalog) = ({0:0.###} − {1:0.###}) / ({0:0.###} − {2:0.###})</value>
-  </data>
-  <data name="ZPG_SATZ_HERKUNFT_EMPFEHLUNG_V4" xml:space="preserve">
-    <value>Schnellauslegung nach Vorlage V4, ohne Summenlinie: Nenninhalt {0:0} l des Bandes bis {1:0} l</value>
   </data>
   <data name="ZPG_SATZ_HERKUNFT_GEWICHT_FLAECHE" xml:space="preserve">
     <value>flächengewichtet</value>
@@ -38805,9 +38793,6 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="ZPG_GROESSE_AUSLEGUNG_LADEFENSTER" xml:space="preserve">
     <value>Auslegung, Ladefenster</value>
-  </data>
-  <data name="ZPG_GROESSE_AUSLEGUNG_EMPFEHLUNG" xml:space="preserve">
-    <value>Auslegung, Empfehlung</value>
   </data>
   <data name="ZPGK_IMPORT_DATEI_ZIP" xml:space="preserve">
     <value>ZIP-Paket wählen…</value>
@@ -56430,13 +56415,13 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
     <value>Wochenprofil</value>
   </data>
   <data name="KBP_EINGABE_TYPTAG" xml:space="preserve">
-    <value>Typtage (folgt)</value>
+    <value>Typtage</value>
   </data>
   <data name="KBP_HINW_TYPTAG_FOLGT" xml:space="preserve">
-    <value>Typtage folgen in einer späteren Fassung.</value>
+    <value>Typtage stehen zur Verfügung, sobald die Datenbank auf den Stand mit Typtagen gehoben ist.</value>
   </data>
   <data name="KBP_HINW_EINGABEART" xml:space="preserve">
-    <value>Monatswerte und Wochenprofil ändern die Projektkopie dieser Zuordnung, nie den Katalog. Teilen sich zwei Zuordnungen eine Kopie, erhält die bearbeitete beim OK eine eigene.</value>
+    <value>Monatswerte, Wochenprofil und Typtage ändern die Projektkopie dieser Zuordnung, nie den Katalog. Teilen sich zwei Zuordnungen eine Kopie, erhält die bearbeitete beim OK eine eigene.</value>
   </data>
   <data name="KBP_GRUPPE_MONATE" xml:space="preserve">
     <value>Monatswerte</value>
@@ -56505,7 +56490,7 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
     <value>{0} Uhr</value>
   </data>
   <data name="KBP_KI_EINGABEART_ERL" xml:space="preserve">
-    <value>Eingabeart der markierten Zeile (Kälte, Prozesswärme, Brauchwasser): Jahressumme mit Vorlage, Monatswerte oder Wochenprofil; Typtage folgen.</value>
+    <value>Eingabeart der markierten Zeile (Kälte, Prozesswärme, Brauchwasser): Jahressumme mit Vorlage, Monatswerte oder Wochenprofil; Typtage nur bei Kälte.</value>
   </data>
   <data name="KBP_GRAFIK_GRUPPE" xml:space="preserve">
     <value>Grafik der markierten Zeile</value>
@@ -56564,6 +56549,21 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KBP_GRAFIK_ERL" xml:space="preserve">
     <value>Grafik der markierten Kältezeile: Jahresgang, Monate, Woche und Dauerlinie samt Kennzahlen (nur Anzeige).</value>
   </data>
+  <data name="KBP_HINW_EINGABEART_ZAPFPROFIL" xml:space="preserve">
+    <value>Das Brauchwasser rechnet mit dem Zapfprofilgenerator – die Eingabeart (Monatswerte, Wochenprofil) gilt nur für den Profilweg.</value>
+  </data>
+  <data name="KBP_KALENDER_NORM_NAME" xml:space="preserve">
+    <value>Norm {0} Tage ({1})</value>
+  </data>
+  <data name="KBP_HINW_NORMKALENDER" xml:space="preserve">
+    <value>Die Vorlage rechnet nach Norm mit {0} Nutzungstagen; der Betriebskalender „{1}“ bildet sie ab und ist bei der Übernahme vorgewählt (Feiertage und Betriebsferien wie Sonntag, Betriebsferien um den Jahreswechsel und im Sommer).</value>
+  </data>
+  <data name="KBP_KALENDER_NORM_BUNDESWEIT" xml:space="preserve">
+    <value>bundesweit</value>
+  </data>
+  <data name="KBP_KALENDER_NORM_NAME_TAG" xml:space="preserve">
+    <value>Norm {0} Tage ({1}, 1.1. {2})</value>
+  </data>
   <data name="KBP_WOCHE_EINTRAG" xml:space="preserve">
     <value>KW {0} ({1}–{2})</value>
   </data>
@@ -56592,7 +56592,10 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
     <value>Hintergrund nach Tagesart des Betriebskalenders; Kalenderwochen nach DIN EN ISO 8601 im Jahresraster, zuerst die Woche mit der Spitze.</value>
   </data>
   <data name="KBP_GRAFIK_HERLEITUNG_ARBEIT" xml:space="preserve">
-    <value>Gerechnet wird der Arbeitsstand dieses Dialogs – Jahressumme, Monatswerte, Wochenprofil und Betriebskalender, auch ungespeichert. Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile, die Monate stapeln alle Zeilen.</value>
+    <value>Gerechnet wird der Arbeitsstand dieses Dialogs – Jahressumme, Monatswerte, Wochenprofil, Typtage und Betriebskalender, auch ungespeichert. Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile, die Monate stapeln alle Zeilen.</value>
+  </data>
+  <data name="SIMENG_TYPTAG_ZELLEN_LEER" xml:space="preserve">
+    <value>{0}Profil „{1}“: Für {2} Zelle(n) der Typtagmatrix ist kein Typtag gesetzt ({3}); diese Tage tragen keinen Bedarf, die Jahressumme verteilt sich auf die übrigen Tage.</value>
   </data>
   <data name="KI_DLG_BTA_FENSTER_UG_ERL" xml:space="preserve">
     <value>Der Wärmedurchgangskoeffizient U_g der Verglasung in W/(m²K); leer = keiner. Nur bei Bauteilart Fenster oder Vorhangfassade.</value>
@@ -56654,20 +56657,77 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KLIMA_VORSCHAU_NICHT_ORTSTYPISCH" xml:space="preserve">
     <value>Bezugspunkt nicht ortstypisch; für ortsgenaue Werte die TRY-Datei des DWD für diesen Standort einlesen.</value>
   </data>
-  <data name="KBP_HINW_EINGABEART_ZAPFPROFIL" xml:space="preserve">
-    <value>Das Brauchwasser rechnet mit dem Zapfprofilgenerator – die Eingabeart (Monatswerte, Wochenprofil) gilt nur für den Profilweg.</value>
+  <data name="SIMENG_TYPTAG_OHNE_STUNDEN" xml:space="preserve">
+    <value>{0}Profil „{1}“: Typtag {2} hat keine Stundenwerte; die Tage mit diesem Typtag tragen keinen Bedarf.</value>
   </data>
-  <data name="KBP_KALENDER_NORM_NAME" xml:space="preserve">
-    <value>Norm {0} Tage ({1})</value>
+  <data name="SIMENG_TYPTAG_OHNE_BEDARF" xml:space="preserve">
+    <value>{0}Profil „{1}“: Die Typtage ergeben im ganzen Jahr keinen Bedarf; die Rechnung entfällt und der Anteil bleibt 0.</value>
   </data>
-  <data name="KBP_HINW_NORMKALENDER" xml:space="preserve">
-    <value>Die Vorlage rechnet nach Norm mit {0} Nutzungstagen; der Betriebskalender „{1}“ bildet sie ab und ist bei der Übernahme vorgewählt (Feiertage und Betriebsferien wie Sonntag, Betriebsferien um den Jahreswechsel und im Sommer).</value>
+  <data name="SIMENG_TYPTAG_FERIEN_OHNE_WIRKUNG" xml:space="preserve">
+    <value>{0}Profil „{1}“: Im Betriebskalender „{2}“ bleibt mit den Betriebsferien keine Stunde mit Bedarf; das Jahr rechnet ohne Betriebsferien.</value>
   </data>
-  <data name="KBP_KALENDER_NORM_BUNDESWEIT" xml:space="preserve">
-    <value>bundesweit</value>
+  <data name="KBP_GRUPPE_TYPTAGE" xml:space="preserve">
+    <value>Typtage</value>
   </data>
-  <data name="KBP_KALENDER_NORM_NAME_TAG" xml:space="preserve">
-    <value>Norm {0} Tage ({1}, 1.1. {2})</value>
+  <data name="KBP_LBL_TYPTAG" xml:space="preserve">
+    <value>Typtag</value>
+  </data>
+  <data name="KBP_LBL_TYPTAG_NAME" xml:space="preserve">
+    <value>Bezeichner</value>
+  </data>
+  <data name="KBP_LBL_TAGESMENGE" xml:space="preserve">
+    <value>Tagesmenge (relativ)</value>
+  </data>
+  <data name="KBP_BTN_TYPTAG_NEU" xml:space="preserve">
+    <value>Typtag hinzufügen</value>
+  </data>
+  <data name="KBP_BTN_TYPTAG_ENTFERNEN" xml:space="preserve">
+    <value>Typtag entfernen</value>
+  </data>
+  <data name="KBP_TYPTAG_NEU_NAME" xml:space="preserve">
+    <value>Typtag {0}</value>
+  </data>
+  <data name="KBP_GRUPPE_TYPTAG_MATRIX" xml:space="preserve">
+    <value>Zuordnung Monat × Tagesart</value>
+  </data>
+  <data name="KBP_TYPTAG_TAGESARTEN" xml:space="preserve">
+    <value>Werktag;Samstag;Sonn-/Feiertag</value>
+  </data>
+  <data name="KBP_TYPTAG_ZELLE_LEER" xml:space="preserve">
+    <value>(keiner)</value>
+  </data>
+  <data name="KBP_HINW_TYPTAG_STUNDEN" xml:space="preserve">
+    <value>Stundenwerte in % der Tagesspitze, Tagesmenge relativ zu den übrigen Typtagen; nur das Verhältnis zählt. Die Reihe wird über das Jahr auf die Jahressumme normiert, Monatsanteile entfallen.</value>
+  </data>
+  <data name="KBP_HINW_TYPTAG_MATRIX" xml:space="preserve">
+    <value>Jeder Tag nimmt den Typtag seines Monats und seiner Tagesart. Mit einem Betriebskalender zählen Feiertage wie Sonntag und Betriebsferien wie Werktag mit dem Ferienfaktor.</value>
+  </data>
+  <data name="KBP_HINW_TYPTAG_VORBELEGT" xml:space="preserve">
+    <value>Vorbelegt aus dem Wochenprofil: Werktag, Samstag und Sonn-/Feiertag als drei Typtage, in allen Monaten gleich zugeordnet.</value>
+  </data>
+  <data name="KBP_HINW_TYPTAG_NUR_KAELTE" xml:space="preserve">
+    <value>Typtage gibt es nur für Kältebedarfsprofile.</value>
+  </data>
+  <data name="KBP_MSG_TYPTAGE" xml:space="preserve">
+    <value>Die Typtage sind unzulässig: {0}.</value>
+  </data>
+  <data name="KBP_MONATE_KURZ" xml:space="preserve">
+    <value>Jan;Feb;Mär;Apr;Mai;Jun;Jul;Aug;Sep;Okt;Nov;Dez</value>
+  </data>
+  <data name="ZPG_AUS_SCHNELLAUSLEGUNG_V4" xml:space="preserve">
+    <value>Schnellauslegung V4</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_EMPFEHLUNG_V4" xml:space="preserve">
+    <value>Schnellauslegung nach Vorlage V4, ohne Summenlinie: Die Auslegungswerte der A100 fehlen im Katalog; empfohlen ist der Nenninhalt {0:0} l des Verfahrensvergleichs (Band bis {1:0} l). Die Summenlinie rechnet erst mit einem Katalogpaket, das diese Werte führt.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_VERMERK_VORLAGE_V4" xml:space="preserve">
+    <value>Schnellauslegung nach Vorlage V4, ohne Summenlinie</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_EMPFEHLUNG_V4" xml:space="preserve">
+    <value>Schnellauslegung nach Vorlage V4, ohne Summenlinie: Nenninhalt {0:0} l des Bandes bis {1:0} l</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_EMPFEHLUNG" xml:space="preserve">
+    <value>Auslegung, Empfehlung</value>
   </data>
   <data name="BKAL_LBL_FERIEN_SONNTAG" xml:space="preserve">
     <value>Ferien wie Sonntag</value>

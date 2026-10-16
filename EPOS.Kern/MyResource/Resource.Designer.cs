@@ -56672,6 +56672,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typtag entfernen ähnelt.
+        /// </summary>
+        public static string KBP_BTN_TYPTAG_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("KBP_BTN_TYPTAG_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typtag hinzufügen ähnelt.
+        /// </summary>
+        public static string KBP_BTN_TYPTAG_NEU {
+            get {
+                return ResourceManager.GetString("KBP_BTN_TYPTAG_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jahressumme mit Vorlage ähnelt.
         /// </summary>
         public static string KBP_EINGABE_JAHR {
@@ -56690,7 +56708,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Typtage (folgt) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typtage ähnelt.
         /// </summary>
         public static string KBP_EINGABE_TYPTAG {
             get {
@@ -56735,7 +56753,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gerechnet wird der Arbeitsstand dieses Dialogs – Jahressumme, Monatswerte, Wochenprofil und Betriebskalender, auch ungespeichert. Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile, die Monate stapeln alle Zeilen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerechnet wird der Arbeitsstand dieses Dialogs – Jahressumme, Monatswerte, Wochenprofil, Typtage und Betriebskalender, auch ungespeichert. Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile, die Monate stapeln alle Zeilen. ähnelt.
         /// </summary>
         public static string KBP_GRAFIK_HERLEITUNG_ARBEIT {
             get {
@@ -56771,6 +56789,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typtage ähnelt.
+        /// </summary>
+        public static string KBP_GRUPPE_TYPTAGE {
+            get {
+                return ResourceManager.GetString("KBP_GRUPPE_TYPTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnung Monat × Tagesart ähnelt.
+        /// </summary>
+        public static string KBP_GRUPPE_TYPTAG_MATRIX {
+            get {
+                return ResourceManager.GetString("KBP_GRUPPE_TYPTAG_MATRIX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wochenprofil ähnelt.
         /// </summary>
         public static string KBP_GRUPPE_WOCHE {
@@ -56780,7 +56816,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Monatswerte und Wochenprofil ändern die Projektkopie dieser Zuordnung, nie den Katalog. Teilen sich zwei Zuordnungen eine Kopie, erhält die bearbeitete beim OK eine eigene. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monatswerte, Wochenprofil und Typtage ändern die Projektkopie dieser Zuordnung, nie den Katalog. Teilen sich zwei Zuordnungen eine Kopie, erhält die bearbeitete beim OK eine eigene. ähnelt.
         /// </summary>
         public static string KBP_HINW_EINGABEART {
             get {
@@ -56816,11 +56852,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Typtage folgen in einer späteren Fassung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typtage stehen zur Verfügung, sobald die Datenbank auf den Stand mit Typtagen gehoben ist. ähnelt.
         /// </summary>
         public static string KBP_HINW_TYPTAG_FOLGT {
             get {
                 return ResourceManager.GetString("KBP_HINW_TYPTAG_FOLGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jeder Tag nimmt den Typtag seines Monats und seiner Tagesart. Mit einem Betriebskalender zählen Feiertage wie Sonntag und Betriebsferien wie Werktag mit dem Ferienfaktor. ähnelt.
+        /// </summary>
+        public static string KBP_HINW_TYPTAG_MATRIX {
+            get {
+                return ResourceManager.GetString("KBP_HINW_TYPTAG_MATRIX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typtage gibt es nur für Kältebedarfsprofile. ähnelt.
+        /// </summary>
+        public static string KBP_HINW_TYPTAG_NUR_KAELTE {
+            get {
+                return ResourceManager.GetString("KBP_HINW_TYPTAG_NUR_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenwerte in % der Tagesspitze, Tagesmenge relativ zu den übrigen Typtagen; nur das Verhältnis zählt. Die Reihe wird über das Jahr auf die Jahressumme normiert, Monatsanteile entfallen. ähnelt.
+        /// </summary>
+        public static string KBP_HINW_TYPTAG_STUNDEN {
+            get {
+                return ResourceManager.GetString("KBP_HINW_TYPTAG_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegt aus dem Wochenprofil: Werktag, Samstag und Sonn-/Feiertag als drei Typtage, in allen Monaten gleich zugeordnet. ähnelt.
+        /// </summary>
+        public static string KBP_HINW_TYPTAG_VORBELEGT {
+            get {
+                return ResourceManager.GetString("KBP_HINW_TYPTAG_VORBELEGT", resourceCulture);
             }
         }
         
@@ -56870,7 +56942,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabeart der markierten Zeile (Kälte, Prozesswärme, Brauchwasser): Jahressumme mit Vorlage, Monatswerte oder Wochenprofil; Typtage folgen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabeart der markierten Zeile (Kälte, Prozesswärme, Brauchwasser): Jahressumme mit Vorlage, Monatswerte oder Wochenprofil; Typtage nur bei Kälte. ähnelt.
         /// </summary>
         public static string KBP_KI_EINGABEART_ERL {
             get {
@@ -56960,11 +57032,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesmenge (relativ) ähnelt.
+        /// </summary>
+        public static string KBP_LBL_TAGESMENGE {
+            get {
+                return ResourceManager.GetString("KBP_LBL_TAGESMENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typtag ähnelt.
+        /// </summary>
+        public static string KBP_LBL_TYPTAG {
+            get {
+                return ResourceManager.GetString("KBP_LBL_TYPTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner ähnelt.
+        /// </summary>
+        public static string KBP_LBL_TYPTAG_NAME {
+            get {
+                return ResourceManager.GetString("KBP_LBL_TYPTAG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Januar;Februar;März;April;Mai;Juni;Juli;August;September;Oktober;November;Dezember ähnelt.
         /// </summary>
         public static string KBP_MONATE {
             get {
                 return ResourceManager.GetString("KBP_MONATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jan;Feb;Mär;Apr;Mai;Jun;Jul;Aug;Sep;Okt;Nov;Dez ähnelt.
+        /// </summary>
+        public static string KBP_MONATE_KURZ {
+            get {
+                return ResourceManager.GetString("KBP_MONATE_KURZ", resourceCulture);
             }
         }
         
@@ -56992,6 +57100,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KBP_MSG_SUMME_PROZENT {
             get {
                 return ResourceManager.GetString("KBP_MSG_SUMME_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Typtage sind unzulässig: {0}. ähnelt.
+        /// </summary>
+        public static string KBP_MSG_TYPTAGE {
+            get {
+                return ResourceManager.GetString("KBP_MSG_TYPTAGE", resourceCulture);
             }
         }
         
@@ -57172,6 +57289,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KBP_TITEL_WOCHE {
             get {
                 return ResourceManager.GetString("KBP_TITEL_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typtag {0} ähnelt.
+        /// </summary>
+        public static string KBP_TYPTAG_NEU_NAME {
+            get {
+                return ResourceManager.GetString("KBP_TYPTAG_NEU_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werktag;Samstag;Sonn-/Feiertag ähnelt.
+        /// </summary>
+        public static string KBP_TYPTAG_TAGESARTEN {
+            get {
+                return ResourceManager.GetString("KBP_TYPTAG_TAGESARTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (keiner) ähnelt.
+        /// </summary>
+        public static string KBP_TYPTAG_ZELLE_LEER {
+            get {
+                return ResourceManager.GetString("KBP_TYPTAG_ZELLE_LEER", resourceCulture);
             }
         }
         
@@ -118008,6 +118152,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_TWW_ZAPF_VORGABE {
             get {
                 return ResourceManager.GetString("SIMENG_TWW_ZAPF_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}Profil „{1}“: Im Betriebskalender „{2}“ bleibt mit den Betriebsferien keine Stunde mit Bedarf; das Jahr rechnet ohne Betriebsferien. ähnelt.
+        /// </summary>
+        public static string SIMENG_TYPTAG_FERIEN_OHNE_WIRKUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_TYPTAG_FERIEN_OHNE_WIRKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}Profil „{1}“: Die Typtage ergeben im ganzen Jahr keinen Bedarf; die Rechnung entfällt und der Anteil bleibt 0. ähnelt.
+        /// </summary>
+        public static string SIMENG_TYPTAG_OHNE_BEDARF {
+            get {
+                return ResourceManager.GetString("SIMENG_TYPTAG_OHNE_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}Profil „{1}“: Typtag {2} hat keine Stundenwerte; die Tage mit diesem Typtag tragen keinen Bedarf. ähnelt.
+        /// </summary>
+        public static string SIMENG_TYPTAG_OHNE_STUNDEN {
+            get {
+                return ResourceManager.GetString("SIMENG_TYPTAG_OHNE_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}Profil „{1}“: Für {2} Zelle(n) der Typtagmatrix ist kein Typtag gesetzt ({3}); diese Tage tragen keinen Bedarf, die Jahressumme verteilt sich auf die übrigen Tage. ähnelt.
+        /// </summary>
+        public static string SIMENG_TYPTAG_ZELLEN_LEER {
+            get {
+                return ResourceManager.GetString("SIMENG_TYPTAG_ZELLEN_LEER", resourceCulture);
             }
         }
         

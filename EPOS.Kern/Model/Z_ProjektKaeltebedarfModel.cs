@@ -85,6 +85,12 @@
         public double[] Wochenprofil;
 
         /// <summary>
+        /// KBP-4b: bearbeitete Typtage samt Zuordnungsmatrix der Projektkopie (Konzept 3.4); <c>null</c> = unverändert.
+        /// Geschrieben von <see cref="WizardCtrl.Add_Projekt_Kaelte"/> über <see cref="KaeltetyptagCtrl.Schreiben"/>.
+        /// </summary>
+        public KaeltetyptagEingabe Typtage;
+
+        /// <summary>
         /// KBP-5a: die Nutzungstage nach Norm der Projektkopie (<c>Tab_Kaeltebedarf.Nutzungstage_Norm</c>, Schritt
         /// <see cref="BedarfsprofilEingabeartSchema.SCHRITT"/>); <c>null</c> = keine Angabe. Nur gelesen — Grundlage des
         /// Kalendervorschlags beim Übernehmen (KBP-5b), kein Rechenweg liest sie.

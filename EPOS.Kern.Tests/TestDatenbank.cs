@@ -1090,6 +1090,9 @@ namespace EPOS.Kern.Tests
                 // Schritt WasserpreisTraegerkarteSchema.SCHRITT (KB-7a): Traeger Wasser, Uebernahme der Anlagenpreise in
                 // die Traegerkarte, Entfall von Wasserpreis_EUR_m3. Wiederholbar, ergebnisneutral.
                 WasserpreisTraegerkarteSchema.Ausfuehren(null);
+                // Schritt KaeltetyptagSchema.SCHRITT (KBP-4a): Typtage und Matrix der Kaeltebedarfszuordnung,
+                // zwei leere Tabellen. Wiederholbar, ergebnisneutral.
+                KaeltetyptagSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

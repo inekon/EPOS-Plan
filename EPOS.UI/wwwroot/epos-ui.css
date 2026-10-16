@@ -12830,6 +12830,37 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
     margin: 4px 0 0;
 }
 
+/* KBP-4b: der Typtage-Editor der Kaeltezeile - die Zuordnungsmatrix steht */
+/* je Tagesart im Monatsraster der Monatswerte (drei Quartalsspalten, auch  */
+/* in der Kompaktstufe KB1); Kopf und Tagesart als schmale Zwischenzeilen.  */
+.epos-kbp-matrixkopf {
+    font-size: inherit;
+    margin: 12px 0 4px;
+}
+
+.epos-kbp-matrix-tagesart {
+    font-weight: 600;
+    margin: 8px 0 4px;
+}
+
+/* KBP-4b: Im schmalen Fenster (520 px) hielten die Eingaben der 24      */
+/* Stunden ihre Eigenbreite (rund 166 px) und schoben das Stundenraster  */
+/* von Wochenprofil und Typtagen ueber den Rand; sie schrumpfen jetzt    */
+/* mit ihrer Spalte (fensterprobe.mjs, Fall kaeltetyptage).              */
+.epos-kbp-stundenraster .epos-eingabe,
+.epos-kbp-matrixraster .epos-eingabe {
+    min-width: 0;
+    width: 100%;
+}
+
+/* KBP-4b: Die Matrixzellen tragen den kurzen Monatsnamen (der volle     */
+/* steht im Titel); die Namensspalte ist schmal, damit die Wahl in drei  */
+/* Spalten auch im schmalen Fenster Platz hat.                           */
+.epos-stundenraster.epos-kbp-monatsraster.epos-kbp-matrixraster .epos-feld-text {
+    flex: 0 0 2.5rem;
+    min-width: 2.5rem;
+}
+
 /* Nacharbeit KBP-3b: das Blatt Woche der Kaeltegrafik - die Tagesarten der */
 /* gewaehlten Kalenderwoche als farbige Streifen UNTER der Zeichenflaeche.  */
 /* Das Bild ist durchsichtig; Verlauf, Hoehe und Lage der Streifen setzt    */

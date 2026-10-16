@@ -1,7 +1,7 @@
 # KBP-5 — Eingabearten, Normkalender, Ferien wie Sonntag
 
 Sitzung Dialoge und Korrekturen (Übersicht Berichte & Kosten), 16.10.2026, Zweig `kbp5`. Konzept:
-[`Konzept_Kaeltebedarfsprofile_EPOS-Plan.md`](../../../aktuell/Konzept_Kaeltebedarfsprofile_EPOS-Plan.md), Abschnitt 10.
+[`Konzept_Kaeltebedarfsprofile_EPOS-Plan.md`](../../Konzept_Kaeltebedarfsprofile_EPOS-Plan.md), Abschnitt 10.
 
 ## Stand
 

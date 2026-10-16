@@ -139,6 +139,9 @@ namespace WindowsFormsApplication1
             {"ID_Brauchwasser","Tab_Brauchwasser"},
             // K1: Zuordnung und Typkopie des Kaeltebedarfs zeigen auf die Kopfkopie DESSELBEN Projekts.
             {"ID_Kaeltebedarf","Tab_Kaeltebedarf"},
+            // KBP-4a: die Matrixzelle zeigt auf den Typtag DERSELBEN Projektkopie (Tab_Kaeltetyptag_Matrix haengt ueber
+            // ihren Fremdschluessel auf Tab_Kaeltebedarf am Plan).
+            {KaeltetyptagSchema.SPALTE_ID_TYPTAG, KaeltetyptagSchema.TAB_TYPTAG},
             // Ä20: Anlagenbezug der Kostenpositionen (Tab_ProjektWerte.ID_Anlage,
             // Migrationsschritt 45). Ohne Versatz zeigten die Positionen einer
             // Variante auf die Anlagen des QUELLprojekts und stünden dort als
@@ -263,6 +266,9 @@ namespace WindowsFormsApplication1
             {"Tab_SolarganglinieDaten","ID_Ganglinie IN (SELECT ID FROM Tab_Solarganglinie WHERE ID_Projekt = {0})"},
             {"Tab_PvGanglinieDaten",   "ID_Ganglinie IN (SELECT ID FROM Tab_PvGanglinie WHERE ID_Projekt = {0})"},
             {"Tab_Stromverbrauchertyp","ID_Stromverbraucher IN (SELECT ID FROM Tab_Stromverbraucher WHERE ID_Projekt = {0})"},
+            // KBP-4a: Die Matrixzelle traegt zwei Fremdschluessel auf Plantabellen (Typtag und Projektkopie); gefiltert wird
+            // ausdruecklich ueber die Projektkopie, versetzt werden beide (FK_MAP).
+            {KaeltetyptagSchema.TAB_MATRIX, "ID_Kaeltebedarf IN (SELECT ID FROM Tab_Kaeltebedarf WHERE ID_Projekt = {0})"},
 
             // S1 (Migrationsschritt 50): Die Senkenliste und der Parallelverbund
             // haengen an der ANLAGE und fuehren bewusst kein eigenes ID_Projekt.
