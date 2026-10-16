@@ -75,8 +75,10 @@ namespace WindowsFormsApplication1
                                                    // BK-8b: was der Wiederimport an Aufbauten des Katalogs ändert (ohne Namen).
                                                    v.WiederimportGeteilt > 0
                                                        ? string.Format(CultureInfo.CurrentCulture, R.BKI_WIEDERIMPORT, Zahl(v.WiederimportGeteilt),
-                                                                       Zahl(v.WiederimportUGeaendert),
-                                                                       (v.WiederimportUMaxProzent ?? 0.0).ToString("0.0", CultureInfo.CurrentCulture))
+                                                                       Zahl(v.WiederimportVerglichen), Zahl(v.WiederimportUGeaendert),
+                                                                       // BK-8c: ohne Vergleich keine Zahl, sondern ein Strich.
+                                                                       v.WiederimportUMaxProzent?.ToString("0.0", CultureInfo.CurrentCulture) ?? "–",
+                                                                       Zahl(v.WiederimportOhneVergleichswert))
                                                        : null);
         }
 

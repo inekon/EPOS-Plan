@@ -10590,7 +10590,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wiederimport: {0} Aufbauten im Katalog bekommen durch die Teilung an gemeinsamen Schichtgrenzen andere Schichten; {1} davon ändern ihren U-Wert um mehr als 1 % (größte Änderung {2} %). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wiederimport: {0} Aufbauten im Katalog bekommen durch die Teilung an gemeinsamen Schichtgrenzen andere Schichten; verglichen {1}, davon {2} mit einer Änderung des U-Werts um mehr als 1 % (größte Änderung {3} %); ohne Vergleichswert {4}. ähnelt.
         /// </summary>
         public static string BKI_WIEDERIMPORT {
             get {
