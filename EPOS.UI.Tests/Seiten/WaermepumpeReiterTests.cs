@@ -73,12 +73,14 @@ public class WaermepumpeReiterTests : EposBunitContext
 
     private IRenderedComponent<WaermepumpeReiter> Zeichnen(
         SimulationErgebnisCtrl.WaermepumpeErgebnis? erg,
-        bool temperaturen = false, Action? modul = null, Action? csv = null)
+        bool temperaturen = false, Action? modul = null, Action? csv = null,
+        IReadOnlyList<(string Schluessel, string Name)>? speicherwahl = null)
         => Render<WaermepumpeReiter>(p =>
         {
             p.Add(x => x.Daten, erg);
             p.Add(x => x.Modell, Modell);
             p.Add(x => x.Speichertemperaturen, temperaturen);
+            if (speicherwahl is not null) p.Add(x => x.Speicherwahl, speicherwahl);
             if (modul is not null) p.Add(x => x.ModulOeffnen, EventCallback.Factory.Create(this, modul));
             if (csv is not null) p.Add(x => x.Csv, EventCallback.Factory.Create(this, csv));
         });
@@ -758,5 +760,65 @@ public class WaermepumpeReiterTests : EposBunitContext
         Tabellenausrichtung.TextkopfLinks(raster[0], 0);
         Tabellenausrichtung.TextkopfLinks(raster[1], 0);
         Tabellenausrichtung.TextkopfLinks(raster[1], 1);
+    }
+
+    // =====================================================================
+    //  Welle RZ (Teil b) — die Auswahl je Speicher im Temperaturbild
+    // =====================================================================
+
+    private static readonly (string Schluessel, string Name)[] ZWEI_SPEICHER =
+        { ("PUFFER_1", "Puffer A"), ("PUFFER_2", "Puffer B") };
+
+    private static IRenderedComponent<WaermepumpeReiter> Temperaturblatt(IRenderedComponent<WaermepumpeReiter> seite)
+    {
+        seite.FindAll("button[role='tab']")[2].Click();
+        return seite;
+    }
+
+    private static AngleSharp.Dom.IElement Speicherkasten(IRenderedComponent<WaermepumpeReiter> seite, string name)
+        => seite.FindAll("label.epos-schalter")
+                .First(l => l.TextContent.Trim() == name)
+                .QuerySelector("input[type=checkbox]")!;
+
+    /// <summary>Ab zwei Speichern je Speicher ein Schalter, alle an; der Auftrag trägt dann KEINE Liste.</summary>
+    [Fact]
+    public void Speichertemperaturen_tragen_je_Speicher_einen_Schalter_ab_Werk_alle_an()
+    {
+        var seite = Temperaturblatt(Zeichnen(Erg(), temperaturen: true, speicherwahl: ZWEI_SPEICHER));
+
+        Assert.All(new[] { "Puffer A", "Puffer B" },
+                   n => Assert.True(Speicherkasten(seite, n).HasAttribute("checked")));
+        Assert.Null(seite.Instance.GewaehlteReihenTemperaturen);
+        Bildauftrag t = _auftraege.Last(a => a.Bild == Bilder.Speichertemperaturen);
+        Assert.Null(t.Reihen);
+        Assert.Equal(new Bildauftrag(Bilder.Speichertemperaturen).Schluessel, t.Schluessel);
+    }
+
+    /// <summary>Die Abwahl eines Speichers nimmt ihn aus dem Auftrag; die Wiederwahl stellt ab Werk her.</summary>
+    [Fact]
+    public void Die_Abwahl_eines_Speichers_nimmt_ihn_aus_dem_Temperaturbild()
+    {
+        var seite = Temperaturblatt(Zeichnen(Erg(), temperaturen: true, speicherwahl: ZWEI_SPEICHER));
+        _auftraege.Clear();
+
+        Speicherkasten(seite, "Puffer A").Change(false);
+        Bildauftrag t = _auftraege.Last(a => a.Bild == Bilder.Speichertemperaturen);
+        Assert.Equal(new[] { "PUFFER_2" }, t.Reihen!.ToArray());
+
+        Speicherkasten(seite, "Puffer B").Change(false);
+        Assert.Empty(_auftraege.Last(a => a.Bild == Bilder.Speichertemperaturen).Reihen!);
+
+        Speicherkasten(seite, "Puffer A").Change(true);
+        Speicherkasten(seite, "Puffer B").Change(true);
+        Assert.Null(_auftraege.Last(a => a.Bild == Bilder.Speichertemperaturen).Reihen);
+    }
+
+    /// <summary>Mit einem Speicher gibt es nichts zu wählen — kein Schalter.</summary>
+    [Fact]
+    public void Mit_einem_Speicher_steht_kein_Speicherschalter()
+    {
+        var seite = Temperaturblatt(Zeichnen(Erg(), temperaturen: true,
+                                             speicherwahl: new[] { ("PUFFER_1", "Puffer A") }));
+        Assert.DoesNotContain(seite.FindAll("label.epos-schalter"), l => l.TextContent.Trim() == "Puffer A");
     }
 }

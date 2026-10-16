@@ -1216,4 +1216,76 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
 
         Assert.Single(Aufbauen(KomfortSatz(erhoben: true)).FindAll("svg.epos-flaeche"));
     }
+
+    // =================================================================================
+    // Welle RZ (Teil b) — die Außentemperatur im Raumtemperaturbild zuschaltbar
+    // =================================================================================
+
+    /// <summary>Das Raumtemperaturbild einer Woche — mit oder ohne Außentemperatur.</summary>
+    private static Zeichenmodell Raumbild(bool mitAussen)
+    {
+        var luft = new double[168];
+        for (int i = 0; i < luft.Length; i++) luft[i] = 21.0 + Math.Sin(i / 12.0);
+        var reihen = new List<ChartRenderer.Reihe>
+        {
+            new("Raumluft", luft, Farbrolle.SERIE_1)
+        };
+        if (mitAussen) reihen.Add(new("Außentemperatur", luft.Select(x => x - 20.0).ToArray(), Farbrolle.AUSSENTEMPERATUR));
+        return ChartRenderer.TemperaturverlaufModell("Raumtemperatur", reihen, true);
+    }
+
+    private static IElement Aussenkasten(IRenderedComponent<GebaeudeBedarfDialog> cut)
+        => cut.FindAll("label.epos-schalter")
+              .First(l => l.TextContent.Contains("Außentemperatur"))
+              .QuerySelector("input[type=checkbox]")!;
+
+    [Fact]
+    public void Raumtemperatur_ohne_Reihendelegat_traegt_keinen_Schalter_Aussentemperatur()
+    {
+        var cut = Render<GebaeudeBedarfDialog>(p => p
+            .Add(x => x.Daten, VdiSatz())
+            .Add(x => x.Bildauftrag, s => s ? DAUER : GANG)
+            .Add(x => x.BildauftragRaumtemperatur, () => Raumbild(false)));
+
+        Assert.DoesNotContain(cut.FindAll("label.epos-schalter"), l => l.TextContent.Contains("Außentemperatur"));
+        Assert.False(cut.Instance.RaumAussentemperatur);
+    }
+
+    [Fact]
+    public void Raumtemperatur_Aussentemperatur_ab_Werk_aus_und_zuschaltbar()
+    {
+        Zeichenmodell bestand = Raumbild(false), mit = Raumbild(true);
+        var auftraege = new List<(int Platz, string[] Reihen)>();
+        var cut = Render<GebaeudeBedarfDialog>(p => p
+            .Add(x => x.Daten, VdiSatz())
+            .Add(x => x.Bildauftrag, s => s ? DAUER : GANG)
+            .Add(x => x.BildauftragRaumtemperatur, () => bestand)
+            .Add(x => x.BildauftragRaumtemperaturReihen, (k, r) => { auftraege.Add((k, r.ToArray())); return mit; })
+            .Add(x => x.LabelAussentemperatur, "Außentemperatur"));
+
+        // Ab Werk aus: das Bestandsbild, kein Auftrag mit Reihen.
+        IElement kasten = Aussenkasten(cut);
+        Assert.False(kasten.HasAttribute("checked"));
+        Assert.Empty(auftraege);
+        Assert.Same(bestand, Raumsvg(cut));
+
+        // An: der Auftrag nennt das Gebäude (-1) und die Außentemperatur - einmal gerechnet.
+        kasten.Change(true);
+        Assert.True(cut.Instance.RaumAussentemperatur);
+        var a = Assert.Single(auftraege);
+        Assert.Equal(-1, a.Platz);
+        Assert.Equal(new[] { "AUSSENTEMPERATUR" }, a.Reihen);
+        Assert.Same(mit, Raumsvg(cut));
+        cut.Render();
+        Assert.Single(auftraege);
+
+        // Wieder aus: zurück zum Bestandsbild.
+        Aussenkasten(cut).Change(false);
+        Assert.False(cut.Instance.RaumAussentemperatur);
+        Assert.Same(bestand, Raumsvg(cut));
+    }
+
+    /// <summary>Das Modell des Raumtemperaturbilds (das zweite Diagramm des Dialogs).</summary>
+    private static Zeichenmodell? Raumsvg(IRenderedComponent<GebaeudeBedarfDialog> cut)
+        => cut.FindComponents<DiagrammSvg>()[1].Instance.Modell;
 }
