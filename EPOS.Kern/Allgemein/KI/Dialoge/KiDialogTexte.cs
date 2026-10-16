@@ -2575,6 +2575,8 @@
         internal static string BkalBundeslandErl => MyResource.Resource.KI_DLG_BKAL_BUNDESLAND_ERL;
         internal static string BkalFeiertagName => MyResource.Resource.BKAL_LBL_FEIERTAG;
         internal static string BkalFeiertagErl => MyResource.Resource.BKAL_HRL_FEIERTAG;
+        internal static string BkalFerienSonntagName => MyResource.Resource.BKAL_LBL_FERIEN_SONNTAG;
+        internal static string BkalFerienSonntagErl => MyResource.Resource.BKAL_HRL_FERIEN_SONNTAG;
         internal static string BkalVonName => MyResource.Resource.BKAL_LBL_FERIEN_VON;
         internal static string BkalBisName => MyResource.Resource.BKAL_LBL_FERIEN_BIS;
         internal static string BkalFerienErl => MyResource.Resource.KI_DLG_BKAL_FERIEN_ERL;

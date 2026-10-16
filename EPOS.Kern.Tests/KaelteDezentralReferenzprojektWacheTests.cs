@@ -227,6 +227,20 @@ namespace EPOS.Kern.Tests
             Assert.Contains(KaelteErgebnisexport.Skalare(k), s => s.Key == "Kaelte.DeckungsgradProzent" &&
                             Math.Abs(s.Value - SimulationRunner.DeckungProzent(kaskade.DeckungGesamtKwh / 1000.0, k.Kaeltebedarf_Gesamt)) < 1e-12);
 
+            // aggregate.csv führt mit Split-Zeile die Hauptzahl und „davon Kältefolge“ der Laufmeldung — dieselbe Stelle.
+            var skalare = KaelteErgebnisexport.Skalare(k);
+            double? hauptzahl = KaelteDeckungsgrad.Hauptzahl(kaskade.DeckungGesamtKwh / 1000.0, k.Kaeltebedarf_Dezentral_Gesamt,
+                                                             k.Kaeltebedarf_Gesamt);
+            double? davon = KaelteDeckungsgrad.DavonKaeltefolge(kaskade.DeckungGesamtKwh / 1000.0, k.Kaeltebedarf_Dezentral_Gesamt,
+                                                                k.Kaeltebedarf_Gesamt);
+            Assert.NotNull(hauptzahl);
+            Assert.NotNull(davon);
+            Assert.Equal(hauptzahl.Value, Assert.Single(skalare, s => s.Key == "Kaelte.DeckungsgradGesamtProzent").Value);
+            Assert.Equal(davon.Value, Assert.Single(skalare, s => s.Key == "Kaelte.DeckungsgradKaeltefolgeProzent").Value);
+            Assert.Contains("(" + hauptzahl.Value.ToString("N1", CultureInfo.CurrentCulture) + " %; davon Kältefolge " +
+                            davon.Value.ToString("N1", CultureInfo.CurrentCulture) + " %", meldung, StringComparison.Ordinal);
+            Assert.Equal(e.DeckungsgradGesamtProzent.Value, hauptzahl.Value, 9);
+
             // Kein Befund der dezentralen Kälte; die Warnkriterien wie in der Vorlage.
             List<Warnbefund> befunde = Warnkriterien.PruefeProjekt(PROJEKT);
             Assert.DoesNotContain(befunde, b => b.Kriterium == Warnkriterien.DEZENTRALE_KAELTE_OHNE_EER ||
@@ -298,6 +312,8 @@ namespace EPOS.Kern.Tests
                              kaskade.AnzahlKuehltage),
                          meldung);
             Assert.DoesNotContain("davon Kältefolge", meldung, StringComparison.Ordinal);
+            Assert.DoesNotContain(KaelteErgebnisexport.Skalare(k), s => s.Key == "Kaelte.DeckungsgradGesamtProzent" ||
+                                                                       s.Key == "Kaelte.DeckungsgradKaeltefolgeProzent");
         }
     }
 }

@@ -16,11 +16,13 @@ namespace WindowsFormsApplication1
     //   Z_Projekt_Brauchwasser   Eingabeart        (dieselbe Spalte, derselbe CHECK wie Z_Projekt_Kaeltebedarf)
     //   Tab_Kaeltebedarf_STAMM   Nutzungstage_Norm INTEGER nullbar, CHECK 1 ... 365
     //   Tab_Kaeltebedarf         Nutzungstage_Norm (dieselbe Spalte an der Projektkopie; CopyFromStamm traegt sie mit)
+    //   Tab_Betriebskalender     Ferien_wie_Sonntag INTEGER NOT NULL DEFAULT 0 CHECK IN (0,1) (KBP-5d, Entscheid des
+    //                            Anwenders 16.10.2026: ein Ferientag rechnet wie ein Sonntag - Tagesmenge und Stundengang)
     //   Saat: allein Vorlage 8 "Prozesskaelte einschichtig" = 230 Nutzungstage (DIN/TS 18599-10:2025-10, Hallenprofile
     //   22-24), danach die Pruefsumme dieser einen Zeile neu, wenn sie vorher stimmte.
     //
     // ERGEBNISNEUTRAL. ADD COLUMN mit Vorgabe setzt jede Bestandszuordnung auf 'jahr' - der heutige Weg -, kein UPDATE
-    // einer Zuordnung. Die Nutzungstage sind eine Angabe fuer den Kalendervorschlag (KBP-5b), kein Rechenweg liest sie.
+    // einer Zuordnung und keines Kalenders - jeder Bestandskalender rechnet mit Ferien_wie_Sonntag = 0 wie heute. Die Nutzungstage sind eine Angabe fuer den Kalendervorschlag (KBP-5b), kein Rechenweg liest sie.
     // Die Zeilen 1-6 des Kaeltekatalogs bleiben leer und damit bytegleich samt Pruefsumme (eine leere Fachspalte traegt
     // zur Pruefsumme nichts bei). Wiederholbar.
     //
@@ -59,6 +61,12 @@ namespace WindowsFormsApplication1
         /// <summary>Die Spalte der Nutzungstage nach Norm an den Kältevorlagen.</summary>
         public const string SPALTE_NUTZUNGSTAGE = "Nutzungstage_Norm";
 
+        /// <summary>Der Betriebskalender (KBP-5d).</summary>
+        public const string TAB_KALENDER = BedarfNetzKalenderSchema.TAB_KALENDER;
+
+        /// <summary>Die Spalte „Ferien wie Sonntag“ am Betriebskalender (KBP-5d), neben „Feiertag wie Sonntag“.</summary>
+        public const string SPALTE_FERIEN_WIE_SONNTAG = "Ferien_wie_Sonntag";
+
         /// <summary>Kleinster zulässiger Wert der Nutzungstage.</summary>
         public const int NUTZUNGSTAGE_MIN = 1;
 
@@ -85,13 +93,18 @@ namespace WindowsFormsApplication1
             NUTZUNGSTAGE_MIN.ToString(CultureInfo.InvariantCulture) + " AND " + Q(SPALTE_NUTZUNGSTAGE) + " <= " +
             NUTZUNGSTAGE_MAX.ToString(CultureInfo.InvariantCulture) + "))";
 
-        /// <summary>Die vier Spalten in Tabellenfolge.</summary>
+        /// <summary>Der Spaltentyp von „Ferien wie Sonntag“: 0/1, Vorgabe 0 (Ferientag wie bisher über den Ferienfaktor).</summary>
+        public static readonly string TYP_FERIEN_WIE_SONNTAG =
+            "INTEGER NOT NULL DEFAULT 0 CHECK (" + Q(SPALTE_FERIEN_WIE_SONNTAG) + " IN (0,1))";
+
+        /// <summary>Die fünf Spalten in Tabellenfolge.</summary>
         public static readonly IReadOnlyList<(string Tabelle, string Spalte, string Typ)> SPALTEN = new[]
         {
             (TAB_PROZESS, SPALTE_EINGABEART, TYP_EINGABEART),
             (TAB_BRAUCHWASSER, SPALTE_EINGABEART, TYP_EINGABEART),
             (TAB_KAELTE_STAMM, SPALTE_NUTZUNGSTAGE, TYP_NUTZUNGSTAGE),
             (TAB_KAELTE, SPALTE_NUTZUNGSTAGE, TYP_NUTZUNGSTAGE),
+            (TAB_KALENDER, SPALTE_FERIEN_WIE_SONNTAG, TYP_FERIEN_WIE_SONNTAG),
         };
 
         /// <summary>Der Persistenzwert einer gelesenen Eingabeart: einer der vier Werte, sonst 'jahr'.</summary>
@@ -108,7 +121,10 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Tabellen, die ein früherer Schritt angelegt haben muss.</summary>
-        public static IReadOnlyList<string> Voraussetzungen() => new[] { TAB_PROZESS, TAB_BRAUCHWASSER, TAB_KAELTE_STAMM, TAB_KAELTE };
+        public static IReadOnlyList<string> Voraussetzungen() => new[] { TAB_PROZESS, TAB_BRAUCHWASSER, TAB_KAELTE_STAMM, TAB_KAELTE, TAB_KALENDER };
+
+        /// <summary>Steht „Ferien wie Sonntag“ am Betriebskalender?</summary>
+        public static bool FerienWieSonntagLesbar() => DataRepository.SpalteVorhanden(TAB_KALENDER, SPALTE_FERIEN_WIE_SONNTAG);
 
         /// <summary>Die Anweisung, die eine Spalte anlegt.</summary>
         public static string Anlegen((string Tabelle, string Spalte, string Typ) s)
@@ -120,7 +136,7 @@ namespace WindowsFormsApplication1
         /// <summary>Stehen die Nutzungstage am Kältekatalog?</summary>
         public static bool NutzungstageLesbar() => DataRepository.SpalteVorhanden(TAB_KAELTE_STAMM, SPALTE_NUTZUNGSTAGE);
 
-        /// <summary>Stehen die vier Spalten?</summary>
+        /// <summary>Stehen die fünf Spalten?</summary>
         public static bool SchemaVollstaendig() => SPALTEN.All(s => DataRepository.SpalteVorhanden(s.Tabelle, s.Spalte));
 
         /// <summary>Schema vollständig und die Saat der Vorlage 8 gesetzt (oder die Vorlage fehlt)?</summary>
@@ -167,11 +183,12 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                bericht?.Add("Eingabeart und Nutzungstage stehen bereits");
+                bericht?.Add("Eingabeart, Nutzungstage und Ferien wie Sonntag stehen bereits");
             }
 
             Saeen(bericht);
-            bericht?.Add("KEIN UPDATE an Zuordnungen; jede Prozesswaerme- und Brauchwasserzuordnung rechnet mit Eingabeart '" +
+            bericht?.Add("KEIN UPDATE an Zuordnungen und Kalendern; jeder Betriebskalender rechnet mit " +
+                         SPALTE_FERIEN_WIE_SONNTAG + " = 0 wie bisher, jede Prozesswaerme- und Brauchwasserzuordnung rechnet mit Eingabeart '" +
                          KaeltebedarfsprofilVorlagenSchema.EINGABE_JAHR + "', die Kaeltezeilen 1-6 bleiben unberuehrt, " +
                          "der Referenzlauf bleibt byte-gleich");
             return offen.Count;

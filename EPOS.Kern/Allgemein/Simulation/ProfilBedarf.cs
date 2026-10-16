@@ -914,7 +914,8 @@ namespace WindowsFormsApplication1
                     }
                     if (!Betriebskalenderschicht.WocheZuJahr(wochenwerte, monatswerte, jahreswerte,
                                                              moAnfang, moEnde, wochentagJan1,
-                                                             arten, kal.Ferienfaktor, kal.FerienKuerzen))
+                                                             arten, kal.Ferienfaktor, kal.FerienKuerzen,
+                                                             kal.FerienWieSonntag))
                         SimulationProtokoll.Aktuell.Hinweis(string.Format(
                             MyResource.Resource.SIMENG_KALENDER_MONAT_OHNE_BETRIEB,
                             quelle.Praefix, name, kal.Bezeichner));

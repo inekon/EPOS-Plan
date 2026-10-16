@@ -82,7 +82,7 @@ vom 24.09.2026 bestätigt.
 | Programm Dokumentation/Brauchwasser-Zapfprofil | `Projekte/Wiki/Programm Dokumentation - Brauchwasser-Zapfprofil.wiki` | **neue Seite** (Repo-Quelle seit der Stufe Z1 des Zapfprofilgenerators, nie hochgeladen): Rechenweg Brauchwasser, Eingaben je Stufe (Einfach, Erweitert, Experte), Vorschau, Hinweise und Prüfung, Stochastik, Auslegung, Katalog der Brauchwasser-Nutzungsarten, Typtage nach VDI 4655, Messdaten, Vergleich und Kalibrierung, Katalog-Import mit Paketvorlage A100 und Steuerspalte „Gruppe“, Karte „Herkunft“ des Ergebnisbereichs; 35 Anker; mit #546 die Ecodesign-Zapfprofile nach Wohneinheiten skaliert samt Hinweis über zehn Wohneinheiten (Anker `bedarfstag`) und der ausgelieferte Katalog mit dem Hoteltyp aus Messung (Anker `katalog`); mit #553 im Vergleich das Band P95 bis P99,9 ab zehn Einheiten, darunter „nicht bewertbar" (Anker `vergleich`) | Statuszeilen #443, #451, #453, #464, #486, #495, #504, #508, #516, #517, #522, #524, #540, #546, #553 |
 | Programm Dokumentation/Berichtsvorlagen | `Projekte/Wiki/Programm Dokumentation - Berichtsvorlagen.wiki` | **neue Seite** (Neuanlage beim Upload): die Gruppe „Vorlage“ der Berichtsseite — Auswahl mit Schloss der Standardvorlage, „Neue Vorlage…“, „Hinzufügen…“, „Prüfen“, „Platzhalter…“, Menü „…“ je Plattform —, die Prüfung vor jedem Bericht mit der Rückfrage und ihren drei Wegen, die Schreibweise der Platzhalter, Prüfzeile und Prüfliste, der Platzhalterkatalog, die Standardvorlage und im Abschnitt „Bericht“ der Einstellungen Firma und Vorlagenordner; Anker `vorlage`, `neue-vorlage`, `erstellen`, `schreibweise`, `pruefliste`, `platzhalterkatalog`, `standardvorlage`, `einstellungen`; `help_mapping.txt` zeigt mit `UcBericht.btn_Help_Pruefliste`, `UcBericht.btn_Help_Platzhalterkatalog` und `Form_AdminSettings.btn_Help_Bericht` auf `pruefliste`, `platzhalterkatalog` und `einstellungen`; neutrale Beispiele, keine Hersteller- oder Produktdaten; mit BV-E2 der Abschnitt „Kapitel“ (neue Anker `kapitel`, `haekchen`) — die Kapitelplatzhalter `{{kapitel.…}}` mit `\|ohne titel` und `\|ebene`, der Kapitelkopf im Format „EPOS Kapitelkopf“ und sein Entfall, die Stelle der Anhang-E-Checkliste, ausgegraute Häkchen mit Grund und die Zeile „Den Inhalt bestimmt die Vorlage“ —, das Bild als Platzhalter, die Standardvorlage im vollen Aufbau und in den Einstellungen das Feld „Logo“ (neuer Anker `logo`); die Anker der Hilfeschlüssel bleiben | Statuszeilen #512 (BV-E1), #520 (BV-E2) |
 | Programm Dokumentation/Gerätekataloge, Kälteerzeugung, Wärmepumpe, Kurzanleitung | `Projekte/Wiki/Programm Dokumentation - Gerätekataloge.wiki`, `… - Kälteerzeugung.wiki`, `… - Wärmepumpe.wiki`, `… - Kurzanleitung.wiki` | Kältemittel als Klappliste mit Lesezeilen an Kältemaschine und Wärmepumpe, Verwaltung „Kältemittel“, Inbetriebnahmejahr, Zulässigkeit des Kältemittels, ausstehend | KM4‑E4‑a |
-| Programm Dokumentation/Prozesswärme, Brauchwasser, Kältebedarf | `Projekte/Wiki/Programm Dokumentation - Prozesswärme.wiki`, `… - Brauchwasser.wiki`, `… - Kältebedarf.wiki` | Eingabeart (Jahressumme mit Vorlage, Monatswerte, Wochenprofil) an Prozesswärme- und Brauchwasserzeilen (neuer Anker `eingabeart`, beim Brauchwasser mit Zapfprofilgenerator nicht wirksam); Normkalender „Norm 230 Tage“ der Vorlage „Prozesskälte einschichtig“ (neuer Anker `normkalender`); Eingabeart und Typtage der Kältebedarfsprofile (neue Anker `eingabeart`, `typtage` in Kältebedarf), ausstehend | KBP-5, KBP-4b |
+| Programm Dokumentation/Prozesswärme, Brauchwasser, Kältebedarf | `Projekte/Wiki/Programm Dokumentation - Prozesswärme.wiki`, `… - Brauchwasser.wiki`, `… - Kältebedarf.wiki` | Eingabeart (Jahressumme mit Vorlage, Monatswerte, Wochenprofil) an Prozesswärme- und Brauchwasserzeilen (neuer Anker `eingabeart`, beim Brauchwasser mit Zapfprofilgenerator nicht wirksam); Normkalender „Norm 230 Tage“ der Vorlage „Prozesskälte einschichtig“ (neuer Anker `normkalender`); Eingabeart und Typtage der Kältebedarfsprofile (neue Anker `eingabeart`, `typtage` in Kältebedarf); Schalter „Ferien wie Sonntag“ im Betriebskalender (`… - Betriebskalender.wiki`), ausstehend | KBP-5, KBP-4b |
 
 Die Liste folgt der zusammenfassenden Aussage der Statuszeile #413: „Die Seiten Klimadaten,
 Simulationsergebnisse, Stromspeicher und Wirtschaftlichkeit sind in den Repo-Quellen
@@ -170,7 +170,7 @@ Brauchwasser-Zapfprofil, Berichtsvorlagen, Mehrzonenmodell und Projekttransfer.
 ## 2 Logbuch-Einträge für die Wiki-Seite „Update-Logbuch“
 
 Die Abschnitte 1.2.6 und 1.2.0.5 stehen seit dem 29.09.2026 im Wiki (Revision 723). Die Blöcke 1.2.0.6 bis 1.2.0.9 und "Version offen" sind am 10.10.2026 (#889, Revision 827) veröffentlicht, zusammengefasst nach Regel 13.4 (70 Sätze) und unter den Versionsnummern laut Anwenderentscheid 10.10.2026 "letzte Stelle um eins erhöhen": 1.2.0.10 (29 Sätze aus den Blöcken 1.2.0.9 und „Version offen“), 1.2.0.9 (1 Satz: BDEW-Standardlastprofile Strom 2025), 1.2.0.8 (4 Sätze: Berichtsseite mit vier Karten, Wirtschaftlichkeitsbericht mit drei Szenarien, Pufferspeicher-Auslegung, Sperrfenster der Wärmepumpe), 1.2.0.7 (36 Sätze: Block 1.2.0.6 und die nie veröffentlichten Sätze aus 1.2.0.5). Die Entwürfe unten bleiben als Geschichte stehen. Ein neuer Satz gehört in einen
-neuen Abschnitt; seine Version erfragt die Sitzung beim Anwender. **Anwenderentscheid 13.10.2026:** Bis zum 16.10.2026 wird keine neue Versionsnummer vergeben; neue Sätze bleiben bis dahin ohne Version im Entwurf, und es gibt keinen Upload.
+neuen Abschnitt; seine Version erfragt die Sitzung beim Anwender. **Anwenderentscheid 13.10.2026:** Bis zum 16.10.2026 wird keine neue Versionsnummer vergeben; neue Sätze bleiben bis dahin ohne Version im Entwurf, und es gibt keinen Upload. **Anwenderentscheid 16.10.2026:** Der Sammel-Upload 1.2.0.11 folgt in der Woche ab dem 19.10.2026, hochgeladen wird nach Freigabe des Anwenders.
 
 Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung, ohne
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
@@ -223,7 +223,7 @@ Version beim Anwender zu erfragen (Empfehlung: Sammelversion mit K4/K5); Wiki-Qu
 - Seit 13.10.2026: Kältebedarf, der dezentral über Split-Geräte gedeckt wird, erscheint im Kältegang, in der Kältelast, in der Strombilanz als „Kühlung dezentral“, im Deckungsgrad Kälte, im Anlagenschema, in der Simulationskonfiguration und im Bericht; der Strom wird je Kühlträger und Zähler abgerechnet.
 - Seit 13.10.2026: Die Berichtsvorlagen bieten Platzhalter für den Kältebedarf aus Profilen und die dezentrale Kühlung mit Split-Geräten (Kälte, Strom, Jahres-EER, Deckungsgrad gesamt und Anteil der Kälteerzeuger).
 
-### Version 1.2.0.11 — Brauchwasser-Zapfprofil (Entwurf, Upload am 20.10.2026) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
+### Version 1.2.0.11 — Brauchwasser-Zapfprofil (veröffentlicht am 14.10.2026, Sammel-Upload) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
 Version laut Anwender (13.10.2026); die Wiki-Quellen (Programm Dokumentation/Brauchwasser-Zapfprofil, Brauchwasser) sind fortgeschrieben, ins Wiki (wiki.epos-plan.de) wird am 20.10.2026 geladen.
 
@@ -234,7 +234,6 @@ Version laut Anwender (13.10.2026); die Wiki-Quellen (Programm Dokumentation/Bra
 - Seit 13.10.2026: Temperatur der Literanzeige und Schwelle der Stundenzählung stehen nur noch in den Einstellungen, Rubrik „Zapfprofil“.
 - Seit 13.10.2026: Der Katalogimport der Brauchwasser-Nutzungsarten spielt auch die Kennwerte nach DIN 4708 ein (Belegung je Raumzahl, Ausstattungsklassen); eine Paketvorlage liegt im Ordner „Vorlage\Katalogpaket_DIN4708“ bei.
 - Seit 13.10.2026: Für die Typtage nach VDI 4655 liegt eine Paketvorlage im Ordner „Vorlage\Typtagpaket_VDI4655“ bei.
-- Seit 14.10.2026: Die mitgelieferten Brauchwasser-Nutzungsarten rechnen im Zapfprofil-Dialog in der Stufe „Einfach“ ohne zusätzlichen Katalog.
 
 ### Version ‹Version› — Dialoge mit Katalogauswahl (Entwurf, Upload ausstehend) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
@@ -410,7 +409,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 14.10.2026: Im Bedarfsprofil-Dialog öffnet der Knopf „Betriebskalender…“ die Kalenderverwaltung direkt im Dialog, ein dort neu angelegter Kalender ist vorgewählt, und „Aus Gebäude übernehmen…“ kopiert Bundesland und Ferien eines Projektgebäudes in einen Betriebskalender. (#1088)
 - Seit 16.10.2026: Die Kältezeile im Bedarfsprofil-Dialog nimmt die Eingabeart Monatswerte (MWh oder Prozent) oder Wochenprofil (Werktag, Samstag, Sonntag und 168 Stunden) an. (#1102)
 - Seit 16.10.2026: Zehn weitere Vorlagen für Kältebedarfsprofile mit belegten Nutzungszeiten (DIN/TS 18599-10:2025-10) stehen im Katalog; jedes Profil trägt einen Art-Vorschlag. (#1101)
-- Seit 16.10.2026: Die Kältezeile zeigt Jahresgang, Monate, Woche und Dauerlinie als Blätter mit einer Kennzahlenzeile (Jahressumme, Spitze, Vollbenutzungsstunden, Grundlast-Anteil). (#1103)
+- Seit 16.10.2026: Die Kältezeile zeigt Jahresgang, Monate, Woche und Dauerlinie als Blätter mit einer Kennzahlenzeile (Jahressumme, Spitze, Vollbenutzungsstunden, Grundlast-Anteil); das Blatt Woche wählt die Kalenderwoche und zeigt die Tagesarten als Hintergrund, die Grafik folgt dem ungespeicherten Stand der Zeile. (#1103, #1108)
 - 13.10.2026: Der Kostendialog und die Kostenseite gleichen die Kosten einer Anlage mit dem zentralen Kostenkatalog ab („Mit dem Kostenkatalog abgleichen…“). (#1079)
 - 13.10.2026: Arbeits-, Grund- und Leistungspreis eines Brennstoffs stehen allein in der Karte seines Energieträgers. (#1080)
 - 14.10.2026: Die Gerätekataloge führen keine Kostenfelder mehr; die Kosten eines Geräts stehen allein in der Kostenverwaltung, die Maske zeigt die Gerätekosten bzw. den Kostensatz aus der Satzvorlage des Katalogsatzes. (#1095)
@@ -1095,6 +1094,13 @@ mehr abgeschnitten) lag in der Statusdatei kein ausformulierter Satz vor — der
 vorgeschlagenen Wortlaut, damit ist die frühere Rückfrage an den Anwender erledigt.
 *Zurückgestellt:* der engere Klimadiagramm-Satz aus #396 — er geht in der Sache im Satz zu
 #404/#413 (oben) auf.
+
+### Nachtrag zu Version 1.2.0.11 (Entwurf, Upload ausstehend, Version beim Anwender erfragen)
+
+Der Sammel-Upload 1.2.0.11 lief am 14.10.2026 (Seite Brauchwasser-Zapfprofil Revision 1000, Update-Logbuch Revision 1023) vor dem Push von #1096; deshalb fehlen live der berichtigte Absatz `katalog-frei` der Zapfprofil-Seite und der folgende Satz. Quelle der Seite: `Projekte/Wiki/Programm Dokumentation - Brauchwasser-Zapfprofil.wiki`.
+
+- Seit 14.10.2026: Die mitgelieferten Brauchwasser-Nutzungsarten rechnen im Zapfprofil-Dialog in der Stufe „Einfach“ ohne zusätzlichen Katalog. (#1096)
+- Seit 16.10.2026: In der Stufe Einfach empfiehlt die Speicherauslegung im Brauchwasser-Zapfprofil auch ohne externes Katalogpaket einen Speicher-Nenninhalt, gekennzeichnet als Schnellauslegung nach Vorlage V4. (#1107)
 
 ## 3 Offene Punkte
 

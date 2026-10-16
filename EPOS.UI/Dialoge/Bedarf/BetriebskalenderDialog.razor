@@ -72,6 +72,8 @@
                          Auswahl="@LandIndex" AuswahlChanged="LandGewaehlt" />
             <Schalter Bezeichnung="@Resource.BKAL_LBL_FEIERTAG" Wert="@_satz.FeiertagWieSonntag"
                       WertChanged="@(w => Feld(() => _satz.FeiertagWieSonntag = w))" />
+            <Schalter Bezeichnung="@Resource.BKAL_LBL_FERIEN_SONNTAG" Wert="@_satz.FerienWieSonntag"
+                      WertChanged="@(w => Feld(() => _satz.FerienWieSonntag = w))" />
             @for (int i = 0; i < FERIEN; i++)
             {
                 int ii = i;
@@ -88,13 +90,15 @@
             }
             <Zahlenfeld Bezeichnung="@Resource.BKAL_LBL_FAKTOR" Feldname="@Resource.BKAL_LBL_FAKTOR" Einheit="%"
                         Min="0" Max="100" Nachkommastellen="0" Wert="@_satz.FerienfaktorProzent"
+                        Aktiv="@(!_satz.FerienWieSonntag)"
                         WertChanged="@(w => Feld(() => _satz.FerienfaktorProzent = w ?? 0))" />
             <Schalter Bezeichnung="@Resource.BKAL_LBL_KUERZEN" Wert="@_satz.FerienKuerzen"
                       WertChanged="@(w => Feld(() => _satz.FerienKuerzen = w))" />
         </KindInhalt>
     </Formularraster>
     <Herleitungszeile Text="@Resource.BKAL_HRL_FEIERTAG" />
-    <Herleitungszeile Text="@Resource.BKAL_HRL_FAKTOR" />
+    <Herleitungszeile Text="@Resource.BKAL_HRL_FERIEN_SONNTAG" />
+    <Herleitungszeile Text="@(_satz.FerienWieSonntag ? Resource.BKAL_HRL_FAKTOR_GESPERRT : Resource.BKAL_HRL_FAKTOR)" />
     <Herleitungszeile Text="@Resource.BKAL_HRL_KUERZEN" />
     @if (Herleitung is not null)
     {
@@ -249,6 +253,8 @@
                 LaenderEintraege, z => z.Id == 0 ? "" : Laender[z.Id - 1].Kennung, z => z.Text),
             FeiertagLesen = () => _satz.FeiertagWieSonntag,
             FeiertagSetzen = w => Feld(() => _satz.FeiertagWieSonntag = w),
+            FerienSonntagLesen = () => _satz.FerienWieSonntag,
+            FerienSonntagSetzen = w => Feld(() => _satz.FerienWieSonntag = w),
             VonLesen = i => _satz.Von[i],
             VonSetzen = (i, w) => Feld(() => _satz.Von[i] = w),
             BisLesen = i => _satz.Bis[i],

@@ -103,6 +103,30 @@ public class BetriebskalenderDialogTests : EposBunitContext
         Assert.True(s.FeiertagWieSonntag);
     }
 
+    /// <summary>KBP-5d: „Ferien wie Sonntag“ steht neben „Feiertag wie Sonntag“, sperrt den Ferienfaktor und nennt es.</summary>
+    [Fact]
+    public void Ferien_wie_Sonntag_sperrt_den_Ferienfaktor_und_wird_gespeichert()
+    {
+        var a = new Ablage();
+        var cut = Verwaltung(a);
+        var schalter = cut.FindAll("label.epos-schalter").Select(l => l.TextContent.Trim()).ToList();
+        int feiertag = schalter.IndexOf("Feiertag wie Sonntag");
+        Assert.True(feiertag >= 0);
+        Assert.Equal(feiertag + 1, schalter.IndexOf("Ferien wie Sonntag"));
+        Assert.Empty(cut.FindAll("input[disabled]"));
+        Assert.DoesNotContain("Der Ferienfaktor ist gesperrt", cut.Markup);
+
+        cut.Find("input[type=text]").Input("Werk Nord");
+        cut.FindAll("label.epos-schalter").First(l => l.TextContent.Trim() == "Ferien wie Sonntag")
+           .QuerySelector("input")!.Change(true);
+
+        var gesperrt = Assert.Single(cut.FindAll("input[disabled]"));
+        Assert.NotEqual("checkbox", gesperrt.GetAttribute("type"));
+        Assert.Contains("Der Ferienfaktor ist gesperrt", cut.Markup);
+        Knopf(cut, "OK").Click();
+        Assert.True(Assert.Single(a.Saetze).FerienWieSonntag);
+    }
+
     [Fact]
     public void Ein_halber_Zeitraum_und_ein_fehlender_Name_halten_den_Dialog_offen()
     {

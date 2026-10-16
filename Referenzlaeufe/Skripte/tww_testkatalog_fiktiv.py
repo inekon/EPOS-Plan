@@ -80,7 +80,10 @@ Nutzungsarten allein mit dem freien Paketteil rechnen, fuehrt er Kaltwasser.Bila
 Zirkulation.Laufzeit (24 h), .Anteil (0,2) und .VerlustJeMeter (10 W/m) aus der Vorlage V4
 (speicherauslegung_v4.json) und die zwei Setzungen des Kaltwasser-Jahresgangs (oben). Dieselben
 Schluessel fuehrt der fiktive Testkatalog mit eigenen Werten (PARAMETER unten): In der Testdatenbank
-bleiben die fiktiven Zeilen, die des Paketteils treten zurueck (FIKTIV_VOR_PAKETTEIL).
+bleiben die fiktiven Zeilen, die des Paketteils treten zurueck (FIKTIV_VOR_PAKETTEIL). Ebenso das
+Kaltwasser der Auslegung A100.Kaltwasser.Auslegung (10 °C aus V4, Berechnung Zeile 389, Spalte B,
+dieselbe Zelle wie der Bezug Kaltwasser der Spreizung; Anwenderauftrag 16.10.2026), damit auch die
+Speicherauslegung der Stufe Einfach ohne externes Katalogpaket rechnet.
 
 DER FREIE PAKETTEIL (Stufe Z3). Die Zapfkategorien (Jordan/Vajen, IEA SHC Task 26;
 Modellannahme), die fuenf Parameter Zapfprofil.Stochastik.*, die drei Setzungen der Stufe Z4
@@ -417,6 +420,8 @@ PARAMETER += [
 FIKTIV_VOR_PAKETTEIL = frozenset([
     "Kaltwasser.Bilanz.Mittel", "Kaltwasser.Bilanz.Amplitude", "Kaltwasser.Bilanz.MonatMaximum",
     "Zirkulation.Laufzeit", "Zirkulation.Anteil", "Zirkulation.VerlustJeMeter",
+    # Anwenderauftrag 16.10.2026: das Kaltwasser der Auslegung aus V4 (Berechnung B389, 10 °C).
+    "A100.Kaltwasser.Auslegung",
 ])
 
 # Die Schluessel der Auslegung (ZapfAuslegungParameter, Stufe Z2) - Werte rund und ERFUNDEN,

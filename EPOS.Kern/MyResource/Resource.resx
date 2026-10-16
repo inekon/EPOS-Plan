@@ -56396,12 +56396,6 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KBP_REIHE_KAELTE" xml:space="preserve">
     <value>Kältebedarf</value>
   </data>
-  <data name="KBP_REIHE_WOCHE" xml:space="preserve">
-    <value>Werktag, Samstag, Sonntag bzw. Feiertag</value>
-  </data>
-  <data name="KBP_REIHE_FERIEN" xml:space="preserve">
-    <value>Ferientag</value>
-  </data>
   <data name="KBP_KZ_SUMME" xml:space="preserve">
     <value>Jahressumme</value>
   </data>
@@ -56413,9 +56407,6 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="KBP_KZ_GRUNDLAST" xml:space="preserve">
     <value>Grundlast-Anteil</value>
-  </data>
-  <data name="KBP_GRAFIK_HERLEITUNG" xml:space="preserve">
-    <value>Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile mit der Jahressumme dieses Dialogs; die Monate stapeln alle Zeilen.</value>
   </data>
   <data name="KBP_GRAFIK_OHNE" xml:space="preserve">
     <value>Für die markierte Zeile liegt kein Profil vor.</value>
@@ -56430,7 +56421,7 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
     <value>Norm {0} Tage ({1})</value>
   </data>
   <data name="KBP_HINW_NORMKALENDER" xml:space="preserve">
-    <value>Die Vorlage rechnet nach Norm mit {0} Nutzungstagen; der Betriebskalender „{1}“ bildet sie ab und ist bei der Übernahme vorgewählt (Feiertage wie Sonntag, Betriebsferien um den Jahreswechsel und im Sommer).</value>
+    <value>Die Vorlage rechnet nach Norm mit {0} Nutzungstagen; der Betriebskalender „{1}“ bildet sie ab und ist bei der Übernahme vorgewählt (Feiertage und Betriebsferien wie Sonntag, Betriebsferien um den Jahreswechsel und im Sommer).</value>
   </data>
   <data name="KBP_KALENDER_NORM_BUNDESWEIT" xml:space="preserve">
     <value>bundesweit</value>
@@ -56527,6 +56518,30 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="KBP_MONATE_KURZ" xml:space="preserve">
     <value>Jan;Feb;Mär;Apr;Mai;Jun;Jul;Aug;Sep;Okt;Nov;Dez</value>
+  </data>
+  <data name="ZPG_AUS_SCHNELLAUSLEGUNG_V4" xml:space="preserve">
+    <value>Schnellauslegung V4</value>
+  </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_EMPFEHLUNG_V4" xml:space="preserve">
+    <value>Schnellauslegung nach Vorlage V4, ohne Summenlinie: Die Auslegungswerte der A100 fehlen im Katalog; empfohlen ist der Nenninhalt {0:0} l des Verfahrensvergleichs (Band bis {1:0} l). Die Summenlinie rechnet erst mit einem Katalogpaket, das diese Werte führt.</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_VERMERK_VORLAGE_V4" xml:space="preserve">
+    <value>Schnellauslegung nach Vorlage V4, ohne Summenlinie</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_EMPFEHLUNG_V4" xml:space="preserve">
+    <value>Schnellauslegung nach Vorlage V4, ohne Summenlinie: Nenninhalt {0:0} l des Bandes bis {1:0} l</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_EMPFEHLUNG" xml:space="preserve">
+    <value>Auslegung, Empfehlung</value>
+  </data>
+  <data name="BKAL_LBL_FERIEN_SONNTAG" xml:space="preserve">
+    <value>Ferien wie Sonntag</value>
+  </data>
+  <data name="BKAL_HRL_FERIEN_SONNTAG" xml:space="preserve">
+    <value>Ein Ferientag trägt Tagesmenge und Stundengang des Sonntags aus dem Wochenprofil; der Ferienfaktor wirkt dann nicht, „Ferien kürzen“ bleibt wirksam.</value>
+  </data>
+  <data name="BKAL_HRL_FAKTOR_GESPERRT" xml:space="preserve">
+    <value>Der Ferienfaktor ist gesperrt: „Ferien wie Sonntag“ ist gesetzt, ein Ferientag trägt den Sonntag des Wochenprofils.</value>
   </data>
 </root>
 
