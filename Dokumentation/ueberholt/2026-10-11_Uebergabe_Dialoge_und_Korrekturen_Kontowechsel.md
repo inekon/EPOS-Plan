@@ -30,7 +30,7 @@ bleibt `CLAUDE.md`. Es löst das Papier vom 08.10.2026
   Zeitreihen, Bedarfsprofile, Gebäude, Kältemaschine) samt Satz-Überlagerung (ÜS1) und Stift und
   Zusammenfassung (ÜS2).
 - **Kältebedarf:** Konzept
-  [`Konzept_Kaeltebedarf_EPOS-Plan.md`](../aktuell/Konzept_Kaeltebedarf_EPOS-Plan.md) (K0); K1 bis K4 gebaut
+  [`Konzept_Kaeltebedarf_EPOS-Plan.md`](Konzept_Kaeltebedarf_EPOS-Plan.md) (K0); K1 bis K4 gebaut
   (#944, #980–#982), K5 und K6 offen.
 - **Basis:** R51 `2026-10-10_R51_FreieKuehlung` (Sitzung Gebäudesimulation).
 - **Schemaschritte:** 213 (unser, K1) gebaut; 214 (K-F1) und 215 (AH-V4) gebaut von anderen
@@ -61,7 +61,7 @@ bleibt `CLAUDE.md`. Es löst das Papier vom 08.10.2026
   Gebäude-Verwaltung bleibt im Gerüst der Verwaltungen (Anwender „ja“, 10.10.).
 
 **Kältebedarf** (Konzept
-[`Konzept_Kaeltebedarf_EPOS-Plan.md`](../aktuell/Konzept_Kaeltebedarf_EPOS-Plan.md))
+[`Konzept_Kaeltebedarf_EPOS-Plan.md`](Konzept_Kaeltebedarf_EPOS-Plan.md))
 
 - **E-K1:** siebter Reiter „Kältebedarf“ mit drei Kacheln.
 - **E-K2:** Deckungsart je Zuordnungszeile, zentral oder dezentral (Split) mit EER fest oder

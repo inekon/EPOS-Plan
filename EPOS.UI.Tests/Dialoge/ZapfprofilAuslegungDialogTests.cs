@@ -200,6 +200,30 @@ public partial class ZapfprofilAuslegungDialogTests : EposBunitContext
     /// Stufe Z3: Vor „Stochastisch rechnen" ist das Perzentil offen — nicht mehr gesperrt, sondern
     /// mit dem Weg dorthin; die Übergabe bleibt benannt gesperrt.
     /// </summary>
+    /// <summary>
+    /// <b>Schnellauslegung nach Vorlage V4</b> (Stufe Einfach ohne die Auslegungswerte der A100): Der Punkt
+    /// trägt die sichtbare Marke „Schnellauslegung V4" mit dem Vermerk im Tooltip statt der Marke
+    /// „Schnellauslegung" und ohne den Entwurfsstand der Summenlinie.
+    /// </summary>
+    [Fact]
+    public void Die_Schnellauslegung_V4_zeigt_ihre_Herkunft_am_Punkt()
+    {
+        ZapfprofilAuslegungsgruppeDaten g = Speichergruppe();
+        g.Empfehlung = new ZapfprofilEmpfehlungDaten
+        {
+            Rechenbar = true, Speicher = true, VolumenL = 400, LeistungKw = 25, NenninhaltL = 400, Schnellauslegung = true,
+            VorlageV4 = true, Vermerk = "Schnellauslegung; Schnellauslegung nach Vorlage V4, ohne Summenlinie"
+        };
+        var cut = Aufbauen(Start(Ergebnis(g)));
+
+        IElement empfehlung = Assert.Single(cut.FindAll(".epos-zapfausl-empfehlung"));
+        IElement marke = Assert.Single(empfehlung.QuerySelectorAll(".epos-zapfausl-marke--schnell"));
+        Assert.Equal("Schnellauslegung V4", marke.TextContent);
+        Assert.Contains("ohne Summenlinie", marke.GetAttribute("title"));
+        Assert.Null(empfehlung.QuerySelector(".epos-zapfausl-entwurf"));
+        Assert.Contains("Speicher 400 l", empfehlung.TextContent);
+    }
+
     [Fact]
     public void Ohne_Lauf_ist_das_Perzentil_offen_und_die_Uebergabe_benannt_gesperrt()
     {

@@ -137,6 +137,7 @@ namespace WindowsFormsApplication1
         internal const string AUSLEGUNG_BEDARFSTAGFAKTOR = "Auslegung.Bedarfstagfaktor";
         internal const string AUSLEGUNG_LADEFENSTER_BEGINN = "Auslegung.LadefensterBeginn";
         internal const string AUSLEGUNG_LADEFENSTER = "Auslegung.Ladefenster";
+        internal const string AUSLEGUNG_EMPFEHLUNG = "Auslegung.Empfehlung";
 
         // ---- Die Namenstafel: Größenname → Ressourcenschlüssel ------------------------------
 

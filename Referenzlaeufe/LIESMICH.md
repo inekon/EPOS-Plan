@@ -879,6 +879,12 @@ Projekt 1065 und `EPOS.Kern.Tests/ZapfprofilOptionenReferenzprojekteWacheTests` 
 Projekt 1072. 1050, 1052, 1054, 1055, 1056, 1057, 1059, 1061, 1062, 1064 und 1072 stehen nicht in der CI-Auswahl;
 `Werkzeuge/Gate/gate_linux.sh` rechnet alle siebenunddreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
+**Zwei Schlüssel, die R55 nicht führt.** Mit Split-Zeile schreibt der Referenzlauf in `aggregate.csv` die Hauptzahl des
+Kältedeckungsgrads `Kaelte.DeckungsgradGesamtProzent` und „davon Kältefolge“ `Kaelte.DeckungsgradKaeltefolgeProzent`
+(dieselbe Stelle `KaelteDeckungsgrad` wie die Laufmeldung der Kälteerzeugung; `Kaelte.DeckungsgradProzent` bleibt).
+R55 enthält sie nicht; die Vergleiche gegen R55 in `Werkzeuge/Gate/` nehmen sie deshalb mit `--ohne` aus. Wer die
+nächste Basis einfriert, nimmt die beiden Schlüssel auf und streicht `--ohne` aus den Gate-Skripten.
+
 > **Anlass: das Referenzprojekt 1072 „Referenzprojekt Kältebedarf dezentral“ (Stufe K6 des Konzepts Kältebedarf).**
 > Bis dahin rechnete kein Referenzprojekt ein Kältebedarfsprofil oder eine dezentrale Deckung: Profilbuchung, Split-Buchung
 > neben der Kältefolge mit EER fest und linear, anteiliger Netzbezug des Split-Stroms, eigener Zähler auf einem abweichenden
@@ -915,7 +921,7 @@ Projekt 1072. 1050, 1052, 1054, 1055, 1056, 1057, 1059, 1061, 1062, 1064 und 107
 >   --ziel Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral
 > ```
 >
-> Die Regel steht im [Konzept Kältebedarf](../Dokumentation/aktuell/Konzept_Kaeltebedarf_EPOS-Plan.md), Abschnitt 8.1.
+> Die Regel steht im [Konzept Kältebedarf](../Dokumentation/ueberholt/Konzept_Kaeltebedarf_EPOS-Plan.md), Abschnitt 8.1.
 
 
 > **Nachtrag — Schemaschritte 177 bis 179 (Sperrfenster der Wärmepumpe, Nutzungsprofile, Ergänzungen der

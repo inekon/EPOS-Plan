@@ -70,6 +70,15 @@
 //    Gegenprobe: ohne Hoehengrenze der Liste, mit position: static am Banner, ohne
 //    Fenstermarke und mit dem Token auf eine Bannerzeile muss die Messung rot werden.
 //
+//  KAELTEGRAFIK (Nacharbeit KBP-3b, Fall "kaeltegrafik"): /fensterprobe?fall=kaelteprofile, Bearbeiten-
+//    Ueberlagerung der ersten Kaeltezeile, Blatt Woche. Die Wahl der Kalenderwoche fuehrt 53 Wochen
+//    (1. Januar ein Donnerstag); gewaehlt wird KW 1 (29.12. bis 04.01.: drei Tage ausserhalb des
+//    Jahres, Donnerstag und Freitag Werktag, Samstag, Sonntag). Je Tag wird ein Bildpunkt im oberen
+//    Zehntel der Zeichenflaeche (inneres <svg>) um 6 Uhr aus dem Bildschirmfoto gelesen; er muss die
+//    Farbe der Tagesart tragen (--epos-kalb-grundwoche, -wochenende, -feiertag, -saison, Toleranz 3).
+//    Gegenprobe: ohne den Hintergrund (background-image: none) muss die Messung rot werden.
+//    Dazu steht "kaelteprofile" in der Fallliste der Katalogauswahl (nichts rollt ausser den Listen).
+//
 //  GEGENPROBE (laeuft mit, abschaltbar mit --ohne-gegenprobe): dieselben
 //  Fensterdialoge OHNE Fenstermarke (?marke=0) muessen die Haft-Kriterien
 //  verfehlen, und MIT Marke, aber ohne scroll-padding muss der Tabulator
@@ -85,6 +94,7 @@
 import { mkdir } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { execSync } from 'node:child_process';
+import { inflateSync } from 'node:zlib';
 
 const { chromium } = await (async () => {
   try { return await import('playwright'); } catch { /* nicht lokal installiert */ }
@@ -113,9 +123,9 @@ const FENSTERDIALOGE = ['dubletten'];
 // Projektdialoge mit Katalogauswahl (Baustein Zweispaltenauswahl, Konzept Projektdialoge mit
 // Katalogauswahl 4.1): Sie fuellen ihr Fenster, die Haftregel ist fuer sie gegenstandslos. Die
 // Probe misst hier "nichts rollt ausser den Listen und der Detailzeile".
-const KATALOGAUSWAHL = ['heizkessel', 'bhkw', 'waermepumpen', 'gebaeude', 'kaeltemaschine'];
+const KATALOGAUSWAHL = ['heizkessel', 'bhkw', 'waermepumpen', 'gebaeude', 'kaeltemaschine', 'kaelteprofile'];
 // UeS2: Wirte mit Zusammenfassung - ihre Detailzeile hat keinen Vorrang (DZ1 entfaellt).
-const ZUSAMMENFASSUNG = new Set(['heizkessel', 'bhkw', 'waermepumpen', 'photovoltaik', 'solarkollektoren', 'kaeltemaschine', 'bedarfsprofile', 'gebaeude']);   // Gebäude: Stufe 4
+const ZUSAMMENFASSUNG = new Set(['heizkessel', 'bhkw', 'waermepumpen', 'photovoltaik', 'solarkollektoren', 'kaeltemaschine', 'bedarfsprofile', 'kaelteprofile', 'gebaeude']);   // Gebäude: Stufe 4; Kaelteprofile: BedarfsProfileDialog wie bedarfsprofile
 // Dialoge mit Inhalt UNTER der Schlussleiste (Protokoll der Dublettenpruefung): Am Ende steht
 // der Fuss an seinem Platz ueber dem Nachlauf, nicht am Fensterrand - und er ueberdeckt ihn nicht.
 const NACHLAUF = new Set(['dubletten']);
@@ -230,6 +240,81 @@ async function oeffnen(browser, fall, f, zusatz = '') {
   });
   await seite.waitForTimeout(800);
   return seite;
+}
+
+/** Ein Bildpunkt des Fensters als [r, g, b] - Bildschirmfoto 1 x 1 px, PNG ohne Zusatzbibliothek gelesen. */
+async function bildpunkt(seite, x, y) {
+  const png = await seite.screenshot({ clip: { x: Math.round(x), y: Math.round(y), width: 1, height: 1 } });
+  let i = 8, art = 0;
+  const idat = [];
+  while (i < png.length) {
+    const laenge = png.readUInt32BE(i), typ = png.toString('ascii', i + 4, i + 8);
+    if (typ === 'IHDR') art = png[i + 8 + 9];
+    if (typ === 'IDAT') idat.push(png.subarray(i + 8, i + 8 + laenge));
+    i += 12 + laenge;
+  }
+  // Eine Zeile mit einem Bildpunkt: Jeder Filter (Sub, Up, Avg, Paeth) gibt ohne Nachbarn den Rohwert.
+  const roh = inflateSync(Buffer.concat(idat));
+  if (art !== 2 && art !== 6) throw new Error('PNG-Farbart ' + art + ' nicht gelesen');
+  return [roh[1], roh[2], roh[3]];
+}
+
+/**
+ * Nacharbeit KBP-3b: die Tagesarten der Kalenderwoche als farbiger Hintergrund unter der Zeichenflaeche des Blatts
+ * Woche. Liefert { n, fehler, zahlen } - n = Zahl der Verstoesse.
+ */
+async function kaeltegrafik(browser, f, stil = '') {
+  const seite = await oeffnen(browser, 'kaelteprofile', f);
+  if (stil) await seite.addStyleTag({ content: stil });
+  const fehler = [];
+  await seite.locator('.epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt').first().click();
+  await seite.waitForSelector('.epos-kbp-grafik button[role="tab"]', { timeout: 10000 });
+  await seite.locator('.epos-kbp-grafik button[role="tab"]').nth(2).click();
+  await seite.waitForSelector('.epos-kbp-woche svg', { timeout: 10000 });
+  const wahl = seite.locator('.epos-kbp-grafik select');
+  const optionen = await wahl.locator('option').count();
+  if (optionen !== 53) fehler.push(`Wahl der Kalenderwoche mit ${optionen} statt 53 Wochen`);
+  await wahl.selectOption('1');
+  await seite.waitForSelector('.epos-kbp-woche[data-kw="1"] svg', { timeout: 10000 });
+  await seite.locator('.epos-kbp-woche').scrollIntoViewIfNeeded();
+  await seite.waitForTimeout(400);
+  const m = await seite.evaluate(() => {
+    const flaeche = document.querySelector('.epos-kbp-woche .epos-diagramm-svg-flaeche');
+    const aussen = flaeche.querySelector(':scope > svg');
+    const innen = aussen.querySelector('svg');
+    const r = innen.getBoundingClientRect();
+    const farbe = v => {
+      const e = document.createElement('div');
+      e.style.backgroundColor = `var(${v})`;
+      document.body.appendChild(e);
+      const c = getComputedStyle(e).backgroundColor;
+      e.remove();
+      return (c.match(/\d+/g) || []).slice(0, 3).map(Number);
+    };
+    return {
+      zeichenflaeche: [r.left, r.top, r.width, r.height], innen: innerHeight,
+      farben: {
+        werktag: farbe('--epos-kalb-grundwoche'), samstag: farbe('--epos-kalb-wochenende'),
+        sonntag: farbe('--epos-kalb-feiertag'), ausserhalb: farbe('--epos-kalb-saison')
+      }
+    };
+  });
+  // KW 1 bei Donnerstag als 1. Januar: Mo-Mi ausserhalb, Do-Fr Werktag, Sa, So.
+  const soll = ['ausserhalb', 'ausserhalb', 'ausserhalb', 'werktag', 'werktag', 'samstag', 'sonntag'];
+  const [x0, y0, b, h] = m.zeichenflaeche;
+  const gelesen = [];
+  for (let t = 0; t < 7; t++) {
+    const x = x0 + b * (t + 0.25) / 7, y = y0 + h * 0.06;
+    if (y < 0 || y >= m.innen) { fehler.push(`Zeichenflaeche nicht im Fenster (y ${Math.round(y)})`); break; }
+    const ist = await bildpunkt(seite, x, y);
+    const erwartet = m.farben[soll[t]];
+    gelesen.push(`${soll[t]} ${ist.join('/')}`);
+    if (ist.some((c, k) => Math.abs(c - erwartet[k]) > 3))
+      fehler.push(`Tag ${t + 1} (${soll[t]}): Bildpunkt ${ist.join('/')} statt ${erwartet.join('/')}`);
+  }
+  if (FOTOS && !stil) await seite.screenshot({ path: `${FOTOS}/kaeltegrafik_${f.breite}.png` });
+  await seite.close();
+  return { n: fehler.length, fehler, zahlen: { optionen, zeichenflaeche: m.zeichenflaeche.map(v => Math.round(v)), gelesen } };
 }
 
 /** Die Haft-Kriterien; liefert die Zahl der Verstoesse (fuer die Gegenprobe). */
@@ -904,8 +989,25 @@ try {
     }
   }
 
+  // ----------------------------------------- Nacharbeit KBP-3b: Tagesarten der Kalenderwoche als Hintergrund
+  if (!NUR || NUR === 'kaeltegrafik') {
+    for (const f of FENSTER.slice(0, 2)) {
+      const name = `kaeltegrafik ${f.breite}x${f.hoehe}`;
+      console.log(`- ${name}`);
+      const r = await kaeltegrafik(browser, f);
+      for (const t of r.fehler) melde(name, t);
+      console.log(`    ${r.zahlen.optionen} Wochen; Zeichenflaeche ${JSON.stringify(r.zahlen.zeichenflaeche)}; KW 1: ${r.zahlen.gelesen.join(', ')}`);
+    }
+  }
+
   // -------------------------------------------------------------- Gegenprobe
   let gegenGruen = 0;
+  if (MIT_GEGENPROBE && (!NUR || NUR === 'kaeltegrafik')) {
+    // Ohne den Hintergrund der Tagesarten muss die Woche rot sein.
+    const g = await kaeltegrafik(browser, FENSTER[0], '.epos-kbp-woche .epos-diagramm-svg-flaeche { background-image: none !important; }');
+    console.log(`    Gegenprobe kaeltegrafik ohne Hintergrund: ${g.n} Verstoesse`);
+    if (g.n === 0) gegenGruen++;
+  }
   if (MIT_GEGENPROBE && (!NUR || NUR === 'satz-steckbrief')) {
     // WP1b: ein Steckbrief, der nicht umbricht und breiter ist als seine Spalte, muss je Wirt rot sein.
     for (const w of SATZ_WIRTE) {

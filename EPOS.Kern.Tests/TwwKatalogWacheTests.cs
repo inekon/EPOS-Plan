@@ -1008,7 +1008,8 @@ namespace EPOS.Kern.Tests
         internal static readonly string[] FIKTIV_VOR_PAKETTEIL =
         {
             "Kaltwasser.Bilanz.Mittel", "Kaltwasser.Bilanz.Amplitude", "Kaltwasser.Bilanz.MonatMaximum",
-            "Zirkulation.Laufzeit", "Zirkulation.Anteil", "Zirkulation.VerlustJeMeter"
+            "Zirkulation.Laufzeit", "Zirkulation.Anteil", "Zirkulation.VerlustJeMeter",
+            "A100.Kaltwasser.Auslegung"
         };
 
         /// <summary>Die Abweichungen der freien Zeilen einer Datenbank vom Paketteil (leer = gleich).</summary>

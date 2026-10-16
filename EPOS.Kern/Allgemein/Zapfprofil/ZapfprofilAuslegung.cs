@@ -278,6 +278,12 @@ namespace WindowsFormsApplication1
         internal const string HINWEIS_ECODESIGN_SKALIERT = "ECODESIGN_SKALIERT";
 
         /// <summary>
+        /// Kennung: Schnellauslegung nach Vorlage V4, ohne Summenlinie — in der Stufe Einfach fehlen die
+        /// Auslegungswerte der A100, empfohlen ist der Nenninhalt des Bandes der Speicherauslegung (4.5).
+        /// </summary>
+        internal const string HINWEIS_EMPFEHLUNG_V4 = "EMPFEHLUNG_VORLAGE_V4";
+
+        /// <summary>
         /// <b>Die Grenze des Skalierungshinweises</b> [Wohneinheiten] (numerische Setzung, Folgeposten
         /// #546): Ein Ecodesign-Zapfprofil beschreibt einen Haushalt bzw. den Bruchteil
         /// <c>Q_ref / Q_ref(L)</c> eines Haushalts; die Auslegung skaliert es linear auf die
@@ -506,8 +512,9 @@ namespace WindowsFormsApplication1
                 {
                     haupt = new Auslegungswert(ZapfAuslegungsverfahren.Summenlinie, Auslegungsstatus.NichtRechenbar, null, null,
                                                false, slGrund);
-                    empfehlung = new Auslegungsempfehlung(ZapfAuslegungsverfahren.Summenlinie, false, null, null, null, false,
-                                                          new ZapfSatz[0], slGrund);
+                    empfehlung = SchnellauslegungV4(a, ps, sa, prot, h)
+                                 ?? new Auslegungsempfehlung(ZapfAuslegungsverfahren.Summenlinie, false, null, null, null, false,
+                                                             new ZapfSatz[0], slGrund);
                 }
 
                 // --- Großanlage ------------------------------------------------------------------
@@ -710,6 +717,34 @@ namespace WindowsFormsApplication1
             {
                 Ablehnung = ablehnung
             };
+        }
+
+        /// <summary>
+        /// <b>Die Schnellauslegung nach Vorlage V4</b> (4.5, Anwenderentscheid 16.10.2026): nur in der Stufe
+        /// Einfach, nur ohne Summenlinie und nur, wenn der Katalogversion die Auslegungswerte der A100 fehlen
+        /// (<see cref="ZapfAuslegungParameter.A100Fehlt"/>). Dann ist der Nenninhalt des Bandes der
+        /// Speicherauslegung nach V4 die Empfehlung — mit der angesetzten Ladeleistung, dem Vermerk
+        /// „Schnellauslegung nach Vorlage V4, ohne Summenlinie", dem Hinweis <see cref="HINWEIS_EMPFEHLUNG_V4"/>
+        /// und einem Eintrag im Herkunftsprotokoll. Sonst <c>null</c>: Die Empfehlung bleibt benannt offen.
+        /// </summary>
+        private static Auslegungsempfehlung SchnellauslegungV4(Auslegungseingang a, Parametersatz ps,
+                                                               Speicherauslegungsergebnis sa, Herkunftsprotokoll prot,
+                                                               List<Auslegungshinweis> h)
+        {
+            if (a.Stufe != ZapfStufe.Einfach || !ZapfAuslegungParameter.A100Fehlt(ps)) return null;
+            if (sa?.NenninhaltL is not double nenn || !(nenn > 0) || sa.BandMaxL is not double band) return null;
+            double leistung = sa.Ladeleistung.Angesetzt;
+            Provenienz quelle = ps.Enthaelt(ZapfAuslegungParameter.NUTZANTEIL)
+                ? ps.Lies(ZapfAuslegungParameter.NUTZANTEIL).Herkunft : null;
+            prot?.Vermerken("", ZapfFeld.AUSLEGUNG_EMPFEHLUNG, nenn, "l", Wertstatus.Vorgabe, quelle,
+                            ZapfSatz.Neu("HERKUNFT_EMPFEHLUNG_V4", nenn, band));
+            h.Add(new Auslegungshinweis(HINWEIS_EMPFEHLUNG_V4, ZapfSatz.Neu("AUSHINWEIS_EMPFEHLUNG_V4", nenn, band)));
+            var vermerke = new List<ZapfSatz>
+            {
+                ZapfSatz.Neu("AUSTEXT_VERMERK_SCHNELLAUSLEGUNG"), ZapfSatz.Neu("AUSTEXT_VERMERK_VORLAGE_V4")
+            };
+            return new Auslegungsempfehlung(ZapfAuslegungsverfahren.VorlageV4, true, nenn, leistung, nenn, true,
+                                            vermerke.AsReadOnly(), null);
         }
 
         /// <summary>

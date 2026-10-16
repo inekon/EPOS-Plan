@@ -320,6 +320,9 @@ public sealed class ZapfprofilAuslegungTexte
     /// <summary><c>ZPG_AUS_SCHNELLAUSLEGUNG</c></summary>
     public string Schnellauslegung { get; set; } = "Schnellauslegung";
 
+    /// <summary><c>ZPG_AUS_SCHNELLAUSLEGUNG_V4</c></summary>
+    public string SchnellauslegungV4 { get; set; } = "Schnellauslegung V4";
+
     /// <summary><c>ZPG_AUS_ENTWURFSSTAND</c></summary>
     public string Entwurfsstand { get; set; } = "Entwurfsstand — A100/A1 sind Entwürfe, Anwendung besonders zu vereinbaren.";
 

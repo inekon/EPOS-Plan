@@ -56546,6 +56546,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerechnet wird der Arbeitsstand dieses Dialogs – Jahressumme, Monatswerte, Wochenprofil und Betriebskalender, auch ungespeichert. Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile, die Monate stapeln alle Zeilen. ähnelt.
+        /// </summary>
+        public static string KBP_GRAFIK_HERLEITUNG_ARBEIT {
+            get {
+                return ResourceManager.GetString("KBP_GRAFIK_HERLEITUNG_ARBEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Für die markierte Zeile liegt kein Profil vor. ähnelt.
         /// </summary>
         public static string KBP_GRAFIK_OHNE {
@@ -56587,6 +56596,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KBP_HINW_EINGABEART {
             get {
                 return ResourceManager.GetString("KBP_HINW_EINGABEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hintergrund nach Tagesart des Betriebskalenders; Kalenderwochen nach DIN EN ISO 8601 im Jahresraster, zuerst die Woche mit der Spitze. ähnelt.
+        /// </summary>
+        public static string KBP_HINW_GRAFIKWOCHE {
+            get {
+                return ResourceManager.GetString("KBP_HINW_GRAFIKWOCHE", resourceCulture);
             }
         }
         
@@ -56677,6 +56695,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KBP_LBL_EINGABEART {
             get {
                 return ResourceManager.GetString("KBP_LBL_EINGABEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalenderwoche ähnelt.
+        /// </summary>
+        public static string KBP_LBL_KALENDERWOCHE {
+            get {
+                return ResourceManager.GetString("KBP_LBL_KALENDERWOCHE", resourceCulture);
             }
         }
         
@@ -56834,6 +56861,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die außerhalb des Jahres ähnelt.
+        /// </summary>
+        public static string KBP_TAGESART_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("KBP_TAGESART_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien ähnelt.
+        /// </summary>
+        public static string KBP_TAGESART_FERIEN {
+            get {
+                return ResourceManager.GetString("KBP_TAGESART_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Samstag ähnelt.
+        /// </summary>
+        public static string KBP_TAGESART_SAMSTAG {
+            get {
+                return ResourceManager.GetString("KBP_TAGESART_SAMSTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonntag/Feiertag ähnelt.
+        /// </summary>
+        public static string KBP_TAGESART_SONNTAG {
+            get {
+                return ResourceManager.GetString("KBP_TAGESART_SONNTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werktag ähnelt.
+        /// </summary>
+        public static string KBP_TAGESART_WERKTAG {
+            get {
+                return ResourceManager.GetString("KBP_TAGESART_WERKTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Werktag (Mo–Fr);Samstag;Sonntag ähnelt.
         /// </summary>
         public static string KBP_TAGE_DREI {
@@ -56861,6 +56933,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf {0} ähnelt.
+        /// </summary>
+        public static string KBP_TITEL_KALENDERWOCHE {
+            get {
+                return ResourceManager.GetString("KBP_TITEL_KALENDERWOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf je Monat ähnelt.
         /// </summary>
         public static string KBP_TITEL_MONATE {
@@ -56884,6 +56965,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KBP_WOCHENTAGE {
             get {
                 return ResourceManager.GetString("KBP_WOCHENTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KW {0} ({1}–{2}) ähnelt.
+        /// </summary>
+        public static string KBP_WOCHE_EINTRAG {
+            get {
+                return ResourceManager.GetString("KBP_WOCHE_EINTRAG", resourceCulture);
             }
         }
         
@@ -156298,6 +156388,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellauslegung V4 ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_SCHNELLAUSLEGUNG_V4 {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_SCHNELLAUSLEGUNG_V4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Spannweite (min – max) ähnelt.
         /// </summary>
         public static string ZPG_AUS_SPANNWEITE {
@@ -157266,6 +157365,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_GROESSE_AUSLEGUNG_BEDARFSTAGFAKTOR {
             get {
                 return ResourceManager.GetString("ZPG_GROESSE_AUSLEGUNG_BEDARFSTAGFAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung, Empfehlung ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_AUSLEGUNG_EMPFEHLUNG {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_AUSLEGUNG_EMPFEHLUNG", resourceCulture);
             }
         }
         
@@ -160654,6 +160762,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellauslegung nach Vorlage V4, ohne Summenlinie: Die Auslegungswerte der A100 fehlen im Katalog; empfohlen ist der Nenninhalt {0:0} l des Verfahrensvergleichs (Band bis {1:0} l). Die Summenlinie rechnet erst mit einem Katalogpaket, das diese Werte führt. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_AUSHINWEIS_EMPFEHLUNG_V4 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_AUSHINWEIS_EMPFEHLUNG_V4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der gewählte Bezug des Füllstands ({0}) ist nicht bestimmbar; es gilt die Vorgabe. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSHINWEIS_FUELLSTAND_BEZUG_VORGABE {
@@ -161766,6 +161883,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_AUSTEXT_VERMERK_SPITZEN {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_AUSTEXT_VERMERK_SPITZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellauslegung nach Vorlage V4, ohne Summenlinie ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_AUSTEXT_VERMERK_VORLAGE_V4 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_AUSTEXT_VERMERK_VORLAGE_V4", resourceCulture);
             }
         }
         
@@ -164043,6 +164169,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_HERKUNFT_BEZUGSTEMPERATUR_NUTZUNGSART {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_BEZUGSTEMPERATUR_NUTZUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellauslegung nach Vorlage V4, ohne Summenlinie: Nenninhalt {0:0} l des Bandes bis {1:0} l ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_EMPFEHLUNG_V4 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_EMPFEHLUNG_V4", resourceCulture);
             }
         }
         

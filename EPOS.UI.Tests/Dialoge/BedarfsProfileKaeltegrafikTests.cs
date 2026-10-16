@@ -45,18 +45,22 @@ public class BedarfsProfileKaeltegrafikTests : EposBunitContext
     }
 
     private int _aufrufe;
+    private BedarfsProfilZeile? _markiert;
+    private IReadOnlyList<BedarfsProfilZeile>? _alle;
 
     private Kaelteprofilbilder? Rechnen(BedarfsProfilZeile markiert, IReadOnlyList<BedarfsProfilZeile> alle)
     {
         _aufrufe++;
+        _markiert = markiert;
+        _alle = alle;
         return Kaelteprofilgrafik.Bilder(Reihe(markiert.Summe), alle.Select(z => (z.Name, Reihe(z.Summe))).ToList(), 3, null);
     }
 
-    private IRenderedComponent<BedarfsProfileDialog> Aufbauen(bool mitGrafik = true)
+    private IRenderedComponent<BedarfsProfileDialog> Aufbauen(bool mitGrafik = true, List<BedarfsProfilZeile>? zeilen = null)
         => Render<BedarfsProfileDialog>(p => p
             .Add(x => x.Art, BedarfsArt.Kaelte)
             .Add(x => x.TitelText, "Kältebedarf")
-            .Add(x => x.Zeilen, Zeilen())
+            .Add(x => x.Zeilen, zeilen ?? Zeilen())
             .Add(x => x.Katalogzeilen, () => new List<Katalogfilterzeile>())
             .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerBedarf(BedarfsArt.Kaelte, s => s))
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
@@ -119,7 +123,7 @@ public class BedarfsProfileKaeltegrafikTests : EposBunitContext
         Assert.Equal(2, Bild(cut).Instance.Modell!.Reihen.Count);         // zwei Zeilen: Stapel je Zeile
 
         Reiterknopf(cut, Resource.KBP_REITER_WOCHE).Click();
-        Assert.Equal("kbp-woche", Bild(cut).Instance.Kennung);
+        Assert.StartsWith("kbp-woche-", Bild(cut).Instance.Kennung);
         Assert.Equal(168, Bild(cut).Instance.Modell!.Reihen[0].Werte.Length);
         Assert.Empty(cut.FindAll(".epos-kbp-grafik button[data-einheit]"));
 
@@ -159,5 +163,102 @@ public class BedarfsProfileKaeltegrafikTests : EposBunitContext
         IElement satz = Ueberlagerung(cut);
         Assert.Empty(cut.FindAll(".epos-kbp-grafik"));
         Assert.DoesNotContain(Resource.KBP_GRAFIK_GRUPPE, satz.TextContent);
+    }
+
+    // ---- Nacharbeit KBP-3b: Arbeitsstand ohne Speichern, Kalenderwoche mit Tagesarten als Hintergrund -------------
+
+    private static readonly double[] ANTEILE = { 2, 3, 5, 8, 10, 14, 16, 15, 12, 8, 4, 3 };
+
+    private static List<BedarfsProfilZeile> ZeilenMitEingabe(string eingabeart)
+    {
+        List<BedarfsProfilZeile> z = Zeilen();
+        z[0].Eingabeart = eingabeart;
+        z[0].Monatsanteile = (double[])ANTEILE.Clone();
+        z[0].Wochenprofil = Kaelteprofileingabe.WocheAusTagen(Enumerable.Repeat(1.0, 24).ToArray(),
+            Enumerable.Repeat(0.5, 24).ToArray(), Enumerable.Repeat(0.2, 24).ToArray());
+        return z;
+    }
+
+    private static IRenderedComponent<Auswahlfeld> Wahl(IRenderedComponent<BedarfsProfileDialog> cut, string bezeichnung)
+        => cut.FindComponents<Auswahlfeld>().Single(f => f.Instance.Bezeichnung == bezeichnung);
+
+    [Fact]
+    public void Ungespeicherte_Monatswerte_gehen_ohne_OK_in_die_Grafik_die_Zeile_bleibt()
+    {
+        List<BedarfsProfilZeile> zeilen = ZeilenMitEingabe(DbWerte.KAELTE_EINGABE_MONAT);
+        var cut = Aufbauen(zeilen: zeilen);
+        Ueberlagerung(cut);
+        Kaelteprofilbilder? erst = cut.Instance.Grafikstand;
+        Assert.False(_markiert!.ProfilGeaendert);                         // noch nichts bearbeitet: die Zeile selbst
+        Assert.Same(zeilen[0], _markiert);
+
+        // Januar in MWh von 0,4 auf 4 - ohne OK der Überlagerung.
+        cut.FindComponent<KaelteMonatswerteEditor>().FindComponents<Zahlenfeld>()[0].Find("input").Input("4");
+        Assert.NotSame(erst, cut.Instance.Grafikstand);
+        Assert.True(_markiert.ProfilGeaendert);
+        Assert.NotSame(zeilen[0], _markiert);
+        Assert.Contains(_markiert, _alle!);
+        Assert.Equal(23.6, _markiert.Summe, 9);                            // Summe der Monate: 20 - 0,4 + 4
+        Assert.Equal(400.0 / 23.6, _markiert.Monatsanteile![0], 9);
+        Assert.Equal(23.6, cut.Instance.Grafikstand!.Kennzahlen.JahressummeMwh, 6);
+        // Die Zeile selbst bleibt bis zum OK unangetastet.
+        Assert.False(zeilen[0].ProfilGeaendert);
+        Assert.Equal(20.0, zeilen[0].Summe);
+        Assert.Equal(ANTEILE, zeilen[0].Monatsanteile);
+    }
+
+    [Fact]
+    public void Ein_ungespeichertes_Wochenprofil_geht_ohne_OK_in_die_Grafik()
+    {
+        List<BedarfsProfilZeile> zeilen = ZeilenMitEingabe(DbWerte.KAELTE_EINGABE_JAHR);
+        var cut = Aufbauen(zeilen: zeilen);
+        Ueberlagerung(cut);
+        Wahl(cut, Resource.KBP_LBL_EINGABEART).Find("select").Change("2");
+        int aufrufe = _aufrufe;
+        cut.FindComponent<KaelteWochenprofilEditor>().FindComponents<Zahlenfeld>()[8].Find("input").Input("4");
+        Assert.True(_aufrufe > aufrufe);
+        Assert.True(_markiert!.ProfilGeaendert);
+        Assert.Equal(DbWerte.KAELTE_EINGABE_WOCHE, _markiert.Eingabeart);
+        for (int d = 0; d < 5; d++) Assert.Equal(4.0, _markiert.Wochenprofil![d * 24 + 8]);
+        Assert.Equal(1.0, zeilen[0].Wochenprofil![8]);                      // die Zeile bleibt bis zum OK
+        Assert.Null(zeilen[0].Eingabeart == DbWerte.KAELTE_EINGABE_WOCHE ? "geändert" : null);
+    }
+
+    [Fact]
+    public void Die_Woche_ist_waehlbar_und_zeigt_die_Tagesarten_als_Hintergrund()
+    {
+        var cut = Aufbauen();
+        Ueberlagerung(cut);
+        Reiterknopf(cut, Resource.KBP_REITER_WOCHE).Click();
+        Kaelteprofilbilder bilder = cut.Instance.Grafikstand!;
+        IRenderedComponent<Auswahlfeld> wahl = Wahl(cut, Resource.KBP_LBL_KALENDERWOCHE);
+        Assert.Equal(53, wahl.FindAll("option").Count);                   // 1. Januar ein Donnerstag: 53 Kalenderwochen
+        Assert.Equal(bilder.Vorgabewoche, wahl.Instance.Auswahl);
+        Assert.Equal("kbp-woche-" + bilder.Vorgabewoche, Bild(cut).Instance.Kennung);
+        Assert.Equal(1, Bild(cut).Instance.Modell!.Reihen.Count);         // die Tagesarten sind keine Reihen
+        Assert.True(Bild(cut).Instance.OhneZoom);
+
+        int aufrufe = _aufrufe;
+        wahl.Find("select").Change("27");
+        Assert.Equal(aufrufe, _aufrufe);                                   // die Wahl rechnet nicht neu
+        IElement woche = cut.Find(".epos-kbp-woche");
+        Assert.Equal("27", woche.GetAttribute("data-kw"));
+        Assert.Equal("kbp-woche-27", Bild(cut).Instance.Kennung);
+        Assert.Same(bilder.Wochenbild(27).Modell, Bild(cut).Instance.Modell);
+        Assert.Equal(Reihe(20).Skip(179 * 24).Take(168).ToArray(), Bild(cut).Instance.Modell!.Reihen[0].Werte);
+
+        string stil = woche.GetAttribute("style") ?? "";
+        Assert.Contains("--epos-kbp-tagesarten: linear-gradient(to right", stil, StringComparison.Ordinal);
+        Assert.Contains("var(--epos-kalb-grundwoche)", stil, StringComparison.Ordinal);
+        Assert.Contains("var(--epos-kalb-wochenende)", stil, StringComparison.Ordinal);
+        Assert.Contains("var(--epos-kalb-feiertag)", stil, StringComparison.Ordinal);
+        Assert.DoesNotContain("#", stil, StringComparison.Ordinal);
+        Assert.Equal(3, cut.FindAll(".epos-kbp-tagesart").Count);          // Werktag, Samstag, Sonntag/Feiertag
+
+        // KW 1 beginnt am 29.12. - drei Tage außerhalb des Jahres.
+        wahl.Find("select").Change("1");
+        Assert.Contains("var(--epos-kalb-saison)", cut.Find(".epos-kbp-woche").GetAttribute("style"), StringComparison.Ordinal);
+        Assert.Contains(cut.FindAll(".epos-kbp-tagesart"), e => e.ClassList.Contains("epos-kbp-tagesart--ausserhalb"));
+        Assert.Contains(Resource.KBP_GRAFIK_HERLEITUNG_ARBEIT, cut.Find(".epos-kbp-grafik").TextContent);
     }
 }

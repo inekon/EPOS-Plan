@@ -49,6 +49,10 @@ CI-grün.
 | Wiki | Upload am **20.10.2026** auf wiki.epos-plan.de; keine Erinnerung in der alten Sitzung |
 | Preiseinheiten | die Vorbelegung €/kWh, €/kW … gehört der Sitzung „Dialoge und Korrekturen“, nicht dieser |
 | Modellwahl | Fable 5 nur für sehr komplexe Aufgaben und die Orchestrierung; sonst Opus 5.5, Sonnet und Haiku je nach Aufgabe, auch für Agenten |
+| K5 (16.10.2026) | eigene Messobjekte vorerst zurückgestellt |
+| Datenanfragen (16.10.2026) | die vorbereiteten Anfragen werden nicht vorgenommen |
+| iOS-Lauf #524/#540 (16.10.2026) | freigegeben für einen Lauf am 16.10.2026, 22:00 Uhr (geplant) |
+| Speicherauslegung „Einfach“ (16.10.2026) | Variante 1: ohne A100-Werte Schnellauslegung nach Vorlage V4 (#1107) |
 
 Stehende Anweisungen des Anwenders, wörtlich: „nach grünem Gate auf ios_migration_september ohne Rückfrage
 committen, mergen und pushen (kein Force, keine Tags, nie main); iOS-, macOS- und Setup-Läufe nie ohne meine
