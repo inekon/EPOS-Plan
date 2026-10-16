@@ -32,7 +32,7 @@ auf den Auftrag „In die Excel-Berichtsausgabe sollen die Grafiken (als Excel-G
 
 Nicht Gegenstand sind Rechenweg, Simulation, Wirtschaftlichkeitsrechnung, Datenbankschema und
 Referenzbasis; keine Etappe friert eine Basis neu ein.
-**Mockup:** `Dokumentation/aktuell/Mockups/Berichtsvorlagen_Platzhaltermarke.html` (Abschnitt 9.8).
+**Mockup:** `Dokumentation/ueberholt/Mockups/Berichtsvorlagen_Platzhaltermarke.html` (Abschnitt 9.8).
 
 
 ## 1 Die Frage und das Ziel
@@ -913,7 +913,7 @@ Katalog und `Deckt`), sonst mit dem Zusatz „bezogen auf die Standardvorlage“
 
 ### 9.8 Mockup
 
-`Dokumentation/aktuell/Mockups/Berichtsvorlagen_Platzhaltermarke.html` ist ein eigenständiges Schema mit den
+`Dokumentation/ueberholt/Mockups/Berichtsvorlagen_Platzhaltermarke.html` ist ein eigenständiges Schema mit den
 Tokens aus `epos-ui.css` und neutralen Werten. Teil 1 zeigt eine Beispielansicht (Projektstammdaten mit
 `projekt.*`, Kachel „JAZ Wärmepumpe“ des Stamms mit `stamm.kennzahl.eff.jaz`, Vergleichstabelle mit
 `tabelle.vergleich.effizienz` und Blockhinweis für Werte je Stand, Diagrammrahmen mit
