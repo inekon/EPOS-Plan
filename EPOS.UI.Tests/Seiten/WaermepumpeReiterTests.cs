@@ -790,6 +790,7 @@ public class WaermepumpeReiterTests : EposBunitContext
 
         Getrennt().Change(false);
         Assert.Null(_auftraege.Last(a => a.Bild == Bilder.WpStromverbrauch).Reihen);
+    }
 
 
     // ==============================================================
