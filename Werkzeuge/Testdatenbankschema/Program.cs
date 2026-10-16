@@ -3789,6 +3789,36 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Saat zu Schritt BauteilUHerkunftSchema.SCHRITT (Fehlerbehebung FX): die Herkunft des U-Werts an den
+            //      gesaeten Bauteilen der Zonen-Referenzprojekte 1052, 1054 (Kopie von 1052) und 1062 - genau der Wert,
+            //      den ihre Bauplaene ueber die Programmwege schreiben (Referenzlaeufe/Skripte/referenzprojekt_1052_bauplan.cs,
+            //      referenzprojekt_1062_kkz.cs): Die Kopien der Uebernahme ("Gebaeude als eine Zone uebernehmen",
+            //      GebaeudeZonenabbildung.AlsBauteilModel) tragen VORGABE, die von Hand angelegten Zeilen MANUELL
+            //      (GebaeudeZonenCtrl.UHerkunftNeu). Nur diese Projekte und nur U_Herkunft; KEINE Datenmigration fuer
+            //      Anwenderdatenbanken (der Bestand bleibt NULL). Wiederholbar.
+            //      REFERENZLAUF BYTE-GLEICH: Der Rechenweg liest U_Herkunft nicht.
+            if (!trocken && BauteilUHerkunftSchema.Vollstaendig())
+            {
+                const string ZEILEN = "ID_Aufbau IS NULL AND U_Wert IS NOT NULL AND ID_Zone IN (SELECT z.ID FROM Tab_Zone z " +
+                                      "JOIN Tab_Gebaeude g ON g.ID = z.ID_Gebaeude WHERE g.ID_Projekt IN (1052, 1054, 1062))";
+                const string VON_HAND = "Bezeichner IN (?, ?, ?, ?, ?)";
+                DbParam[] Parameter(string herkunft) => new[]
+                {
+                    new DbParam("@h", herkunft),
+                    new DbParam("@b1", "Kellerdecke"), new DbParam("@b2", "Trennwand Gastronomie"),
+                    new DbParam("@b3", "Kellerboden"), new DbParam("@b4", "Kellerwände"),
+                    new DbParam("@b5", "Trennwand Nord/Ost"),
+                };
+                int manuell = DataRepository.ExecuteNonQuery(
+                    "UPDATE Tab_Bauteil SET U_Herkunft = ? WHERE " + ZEILEN + " AND " + VON_HAND,
+                    Parameter(DbWerte.HERKUNFT_MANUELL));
+                int vorgabe = DataRepository.ExecuteNonQuery(
+                    "UPDATE Tab_Bauteil SET U_Herkunft = ? WHERE " + ZEILEN + " AND NOT " + VON_HAND,
+                    Parameter(DbWerte.HERKUNFT_VORGABE));
+                Console.WriteLine("Schritt " + nrMa6b + " - Saat der Zonen-Referenzprojekte: " + vorgabe + " Bauteil(e) VORGABE, " +
+                                  manuell + " Bauteil(e) MANUELL (erwartet 72 und 11).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

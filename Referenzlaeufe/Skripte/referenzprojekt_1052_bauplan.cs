@@ -162,6 +162,10 @@ namespace EPOS.Referenzlaeufe.Skripte
             if (!v.Zone.Nutzflaeche.HasValue) { meldung = "Die Übernahme trägt keine Nutzfläche."; return null; }
             double nutz = v.Zone.Nutzflaeche.Value;
 
+            // Herkunft des U-Werts (MA-6b): Die Kopien der Uebernahme tragen VORGABE aus der Zonenabbildung, die von
+            // Hand angelegten Zeilen (Kellerdecke, Trennwand, Kellerboden, Kellerwaende) MANUELL - so, wie der OK-Weg
+            // (GebaeudeZonenCtrl.UHerkunftNeu) sie schreibt; der Plan nennt es ausdruecklich, damit Pruefen und Saat
+            // dieselbe Zelle sehen.
             List<BauteilModel> Aussen(double anteil, int nachbarKeller)
             {
                 var l = new List<BauteilModel>();
@@ -186,6 +190,7 @@ namespace EPOS.Referenzlaeufe.Skripte
                 {
                     Bezeichner = KELLERDECKE, Bauteilart = DbWerte.BAUTEILART_DECKE, Flaeche = anteil * boden.Flaeche,
                     U_Wert = boden.U_Wert, Neigung = 180.0, Randbedingung = DbWerte.RANDBEDINGUNG_ZONE,
+                    U_Herkunft = DbWerte.HERKUNFT_MANUELL,
                     ID_Nachbarzone = nachbarKeller,
                 });
                 return l;
@@ -196,6 +201,7 @@ namespace EPOS.Referenzlaeufe.Skripte
             {
                 Bezeichner = TRENNWAND, Bauteilart = DbWerte.BAUTEILART_INNENWAND, Flaeche = TRENNWAND_FLAECHE,
                 U_Wert = TRENNWAND_U, Neigung = 90.0, Randbedingung = DbWerte.RANDBEDINGUNG_ZONE, ID_Nachbarzone = Z_GASTRO,
+                U_Herkunft = DbWerte.HERKUNFT_MANUELL,
             });
             List<BauteilModel> gastro = Aussen(ANTEIL_GASTRO, Z_KELLER);
             var keller = new List<BauteilModel>
@@ -204,12 +210,14 @@ namespace EPOS.Referenzlaeufe.Skripte
                 {
                     Bezeichner = KELLERBODEN, Bauteilart = DbWerte.BAUTEILART_BODENPLATTE, Flaeche = boden.Flaeche,
                     U_Wert = boden.U_Wert, Neigung = 180.0, Randbedingung = DbWerte.RANDBEDINGUNG_ERDREICH,
+                    U_Herkunft = DbWerte.HERKUNFT_MANUELL,
                 },
                 new BauteilModel
                 {
                     Bezeichner = KELLERWAENDE, Bauteilart = DbWerte.BAUTEILART_AUSSENWAND,
                     Flaeche = 4.0 * Math.Sqrt(boden.Flaeche) * KELLERHOEHE,
                     U_Wert = boden.U_Wert, Neigung = 90.0, Randbedingung = DbWerte.RANDBEDINGUNG_ERDREICH,
+                    U_Herkunft = DbWerte.HERKUNFT_MANUELL,
                 },
             };
 
