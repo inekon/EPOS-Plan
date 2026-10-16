@@ -5942,7 +5942,13 @@ It then feeds the overview and the overall simulation. The existing simulation r
     <value>Balance per node</value>
   </data>
   <data name="BK_ERG_FLUSS_ZEIGER" xml:space="preserve">
-    <value>Values appear when you hover over or tap a band or node; the figures are in the “Table” view.</value>
+    <value>Values appear when you hover over or tap a band or node, and its surroundings are highlighted; the figures are in the “Table” view.</value>
+  </data>
+  <data name="BK_ERG_FLUSS_DARSTELLUNG" xml:space="preserve">
+    <value>Layout of the energy flow diagram</value>
+  </data>
+  <data name="BK_ERG_FLUSS_FILTER" xml:space="preserve">
+    <value>Energy form</value>
   </data>
   <data name="BK_ERG_FLUSS_HINWEIS_UMWELT" xml:space="preserve">
     <value>Ambient heat and ambient cooling are shown as the ambient share: useful energy of the generator minus its electricity.</value>

@@ -102,7 +102,11 @@ public class UebersichtErgebnisFlussTests : EposBunitContext
             if (mitFluss)
                 p.Add(x => x.FlussLaden, h.FlussLaden)
                  .Add(x => x.FlussVersionLesen, () => ablage.TryGetValue("version", out string? v) ? int.Parse(v) : null)
-                 .Add(x => x.FlussVersionGewechselt, id => ablage["version"] = id.ToString());
+                 .Add(x => x.FlussVersionGewechselt, id => ablage["version"] = id.ToString())
+                 .Add(x => x.FlussDarstellungLesen, () => ablage.TryGetValue("darstellung", out string? d) ? d : ErgebnisFlussWahl.KETTE)
+                 .Add(x => x.FlussDarstellungGewechselt, d => ablage["darstellung"] = d)
+                 .Add(x => x.FlussFilterLesen, () => ablage.TryGetValue("filter", out string? f) ? f : ErgebnisFlussWahl.ALLE)
+                 .Add(x => x.FlussFilterGewechselt, f => ablage["filter"] = f);
         });
     }
 
@@ -273,7 +277,7 @@ public class UebersichtErgebnisFlussTests : EposBunitContext
     {
         var cut = Zeige(Flussablage());
         string text = cut.Instance.Text();
-        Assert.StartsWith("Ansicht: Fluss (Energieflussbild der Version Stamm)\n", text);
+        Assert.StartsWith("Ansicht: Fluss (Energieflussbild der Version Stamm; Darstellung Kette; Energieform Alle)\n", text);
         // Danach die Gruppen der Tabelle wie in allen Ansichten, dann der Block des Bildes.
         Assert.Contains("[bedarf] Bedarf", text);
         int block = text.IndexOf("[fluss] Energiefluss — Stamm", StringComparison.Ordinal);
@@ -283,7 +287,7 @@ public class UebersichtErgebnisFlussTests : EposBunitContext
 
         Waehle(cut, 3);
         string ohne = cut.Instance.Text();
-        Assert.StartsWith("Ansicht: Fluss (Energieflussbild der Version Variante 3)\n", ohne);
+        Assert.StartsWith("Ansicht: Fluss (Energieflussbild der Version Variante 3; Darstellung Kette; Energieform Alle)\n", ohne);
         Assert.EndsWith(WindowsFormsApplication1.MyResource.Resource.BK_ERG_FLUSS_NICHT_SIMULIERT, ohne);
     }
 
@@ -307,6 +311,189 @@ public class UebersichtErgebnisFlussTests : EposBunitContext
         Assert.True(fremd.NichtSimuliert);
         Assert.False(fremd.HatBild);
         setzen(1);
+    }
+
+    // ---- SK-2d-2: Darstellung, Formfilter, Hervorhebung ------------------
+
+    private static void Knopf(IRenderedComponent<UebersichtErgebnisse> cut, string gruppe, string wahl)
+        => cut.Find($".epos-ergebnis-fluss-wahl[data-gruppe={gruppe}] button[data-wahl={wahl}]").Click();
+
+    [Fact]
+    public void SK2d2_Schalter_Kette_Stufen_ist_je_Benutzer_gemerkt_Vorgabe_Kette()
+    {
+        var ablage = Flussablage();
+        var cut = Zeige(ablage);
+        UebersichtErgebnisFluss fluss = cut.Instance.Fluss!;
+        Assert.Equal(ErgebnisFlussWahl.KETTE, fluss.Darstellung);
+        var gruppe = cut.Find(".epos-ergebnis-fluss-wahl[data-gruppe=darstellung]");
+        Assert.Equal("radiogroup", gruppe.GetAttribute("role"));
+        Assert.Equal("Darstellung des Energieflussbilds", gruppe.GetAttribute("aria-label"));
+        Assert.Equal(new[] { "Kette", "Stufen" }, gruppe.QuerySelectorAll("button").Select(b => b.TextContent).ToArray());
+        Assert.Equal("true", gruppe.QuerySelector("button[data-wahl=kette]")!.GetAttribute("aria-checked"));
+        Assert.Same(fluss.Stand!.Breit, fluss.Bild!.Breit);
+
+        Knopf(cut, "darstellung", "stufen");
+        Assert.Equal("stufen", ablage["darstellung"]);
+        fluss = cut.Instance.Fluss!;
+        Assert.Equal(ErgebnisFlussWahl.STUFEN, fluss.Darstellung);
+        Assert.NotSame(fluss.Stand!.Breit, fluss.Bild!.Breit);
+        Assert.Same(fluss.Bild.Breit, cut.FindComponents<DiagrammSvg>()[0].Instance.Modell);
+        Assert.Same(fluss.Bild.Schmal, cut.FindComponents<DiagrammSvg>()[1].Instance.Modell);
+        Assert.Equal(4, cut.FindAll(".epos-ergebnis-fluss-mass--breit svg [data-marke^='stufe:']").Count);
+        Assert.Equal("stufen", cut.Find("figure.epos-ergebnis-fluss-bild").GetAttribute("data-darstellung"));
+
+        // Gemerkt: ein neuer Abschnitt mit derselben Ablage zeigt die Stufen.
+        var neu = Zeige(ablage);
+        Assert.Equal(ErgebnisFlussWahl.STUFEN, neu.Instance.Fluss!.Darstellung);
+
+        // Die Hülle legt die Wahl je Benutzer ab; ein unbekannter Wert gilt als Kette.
+        var einstellungen = new FluechtigeEinstellungen();
+        Assert.Equal("kette", UebersichtErgebnisGaben.FlussDarstellungLesen(einstellungen));
+        UebersichtErgebnisGaben.FlussDarstellungSchreiben("stufen", einstellungen);
+        Assert.Equal("stufen", einstellungen.Lies(UebersichtErgebnisGaben.EINSTELLUNG_FLUSS_DARSTELLUNG, ""));
+        Assert.Equal("stufen", UebersichtErgebnisGaben.FlussDarstellungLesen(einstellungen));
+        einstellungen.Schreib(UebersichtErgebnisGaben.EINSTELLUNG_FLUSS_DARSTELLUNG, "quer");
+        Assert.Equal("kette", UebersichtErgebnisGaben.FlussDarstellungLesen(einstellungen));
+        Assert.Equal("Uebersicht.Ergebnisse.Fluss.Darstellung", UebersichtErgebnisGaben.EINSTELLUNG_FLUSS_DARSTELLUNG);
+
+        var huelle = new UebersichtErgebnisGaben(Daten, einstellungen);
+        IReadOnlyDictionary<string, object> gaben = huelle.Gaben();
+        ((Action<string>)gaben["FlussDarstellungGewechselt"])("stufen");
+        Assert.Equal("stufen", ((Func<string>)gaben["FlussDarstellungLesen"])());
+    }
+
+    [Fact]
+    public void SK2d2_Formfilter_je_Sitzung_wechselt_das_Bild()
+    {
+        var ablage = Flussablage();
+        var cut = Zeige(ablage);
+        var gruppe = cut.Find(".epos-ergebnis-fluss-wahl[data-gruppe=filter]");
+        Assert.Equal(new[] { "Alle", "Strom", "Wärme", "Kälte" }, gruppe.QuerySelectorAll("button").Select(b => b.TextContent).ToArray());
+        int alle = cut.FindAll(".epos-ergebnis-fluss-mass--breit svg [data-marke^='fluss:']")
+                      .Select(e => e.GetAttribute("data-marke")).Distinct().Count();
+
+        Knopf(cut, "filter", "strom");
+        Assert.Equal("strom", ablage["filter"]);
+        Assert.Equal(ErgebnisFlussWahl.STROM, cut.Instance.Fluss!.Filter);
+        int strom = cut.FindAll(".epos-ergebnis-fluss-mass--breit svg [data-marke^='fluss:']")
+                       .Select(e => e.GetAttribute("data-marke")).Distinct().Count();
+        Assert.InRange(strom, 1, alle - 1);
+        Assert.Empty(cut.FindAll(".epos-ergebnis-fluss-filterhinweis"));
+
+        // Die Hülle führt den Filter je Sitzung (nicht in der Einstellungsablage).
+        var einstellungen = new FluechtigeEinstellungen();
+        var huelle = new UebersichtErgebnisGaben(Daten, einstellungen);
+        IReadOnlyDictionary<string, object> gaben = huelle.Gaben();
+        ((Action<string>)gaben["FlussFilterGewechselt"])("waerme");
+        Assert.Equal("waerme", ((Func<string>)gaben["FlussFilterLesen"])());
+        ((Action<string>)gaben["FlussFilterGewechselt"])("unbekannt");
+        Assert.Equal("alle", ((Func<string>)gaben["FlussFilterLesen"])());
+    }
+
+    [Fact]
+    public void SK2d2_Leerer_Filter_nennt_den_Grund_im_Bild_und_als_Zeile()
+    {
+        var cut = Zeige(Flussablage());
+        Knopf(cut, "filter", "kaelte");
+        IElement zeile = cut.Find(".epos-ergebnis-fluss-filterhinweis");
+        Assert.Equal("Kälte: keine Flüsse in dieser Version", zeile.TextContent);
+        Assert.Contains("epos-leisezeile", zeile.ClassList);
+        Assert.Equal(zeile.TextContent, cut.Instance.Fluss!.Bild!.Hinweis);
+        Assert.Single(cut.FindAll(".epos-ergebnis-fluss-mass--breit svg [data-marke=hinweis]"));
+        Assert.Empty(cut.FindAll(".epos-ergebnis-fluss-mass--breit svg [data-marke^='fluss:']"));
+        // Die Knöpfe bleiben, der Weg zurück ist ein Klick.
+        Knopf(cut, "filter", "alle");
+        Assert.Empty(cut.FindAll(".epos-ergebnis-fluss-filterhinweis"));
+    }
+
+    [Fact]
+    public void SK2d2_Puffer_baut_jedes_Bild_einmal_und_nie_je_Rendern()
+    {
+        var huelle = new UebersichtErgebnisGaben(Daten, new FluechtigeEinstellungen());
+        var cut = Zeige(Flussablage(), huelle);
+        ErgebnisFlussStand stand = cut.Instance.Fluss!.Stand!;
+        int geladen = _geladen;
+        Assert.Equal(1, stand.GebauteBilder);   // nur Kette/Alle, fertig aus dem Stand
+
+        Knopf(cut, "darstellung", "stufen");
+        ErgebnisFlussBild stufen = cut.Instance.Fluss!.Bild!;
+        Knopf(cut, "filter", "strom");
+        ErgebnisFlussBild stufenStrom = cut.Instance.Fluss!.Bild!;
+        Assert.Equal(3, stand.GebauteBilder);
+
+        cut.Render();
+        Knopf(cut, "filter", "alle");
+        Assert.Same(stufen, cut.Instance.Fluss!.Bild);
+        Knopf(cut, "filter", "strom");
+        Assert.Same(stufenStrom, cut.Instance.Fluss!.Bild);
+        Assert.Equal(3, stand.GebauteBilder);
+
+        // Der Stand selbst bleibt im Puffer der Hülle, die Kennzahlen werden nicht neu geladen.
+        Assert.Same(stand, huelle.FlussLaden(1));
+        Assert.Same(stufenStrom, huelle.FlussLaden(1).Bild("stufen", "strom"));
+        Assert.Equal(geladen, _geladen);
+
+        // Alle 16 Bilder je Version entstehen höchstens einmal.
+        foreach (string d in ErgebnisFlussWahl.DARSTELLUNGEN)
+            foreach (string f in ErgebnisFlussWahl.FILTER)
+                Assert.Same(stand.Bild(d, f), stand.Bild(d, f));
+        Assert.Equal(8, stand.GebauteBilder);
+    }
+
+    [Fact]
+    public void SK2d2_Kanten_und_Busse_stehen_als_JSON_am_Bild()
+    {
+        var cut = Zeige(Flussablage());
+        IElement figur = cut.Find("figure.epos-ergebnis-fluss-bild");
+        var kanten = System.Text.Json.JsonSerializer.Deserialize<string[][]>(figur.GetAttribute("data-kanten")!)!;
+        var busse = System.Text.Json.JsonSerializer.Deserialize<string[]>(figur.GetAttribute("data-busse")!)!;
+        Assert.NotEmpty(kanten);
+        Assert.All(kanten, k => { Assert.Equal(3, k.Length); Assert.Equal("fluss:" + k[1] + ":" + k[2], k[0]); });
+        // Jede Bandmarke des ungefilterten Bildes ist eine Kante; jeder Bus ist ein gezeichneter Knoten.
+        var marken = cut.FindAll(".epos-ergebnis-fluss-mass--breit svg [data-marke^='fluss:']").Select(e => e.GetAttribute("data-marke")!).ToHashSet();
+        Assert.Subset(kanten.Select(k => k[0]).ToHashSet(), marken);
+        Assert.Contains("strom", busse);
+        var knotenmarken = cut.FindAll(".epos-ergebnis-fluss-mass--breit svg [data-marke^='knoten:']").Select(e => e.GetAttribute("data-marke")!).ToHashSet();
+        Assert.All(busse, b => Assert.Contains("knoten:" + b, knotenmarken));
+
+        // Die Kanten bleiben die ungefilterten, auch wenn das Bild gefiltert ist (Teilmenge, Konzept 3.3).
+        Knopf(cut, "filter", "strom");
+        Assert.Equal(figur.GetAttribute("data-kanten"), cut.Find("figure.epos-ergebnis-fluss-bild").GetAttribute("data-kanten"));
+
+        // Die Regel des Moduls ist die Referenz des Kerns: auf denselben Kanten gerechnet stimmt ein Bus mit Umfeld überein.
+        ErgebnisFlussStand stand = cut.Instance.Fluss!.Stand!;
+        Assert.Equal(stand.KantenJson, cut.Find("figure.epos-ergebnis-fluss-bild").GetAttribute("data-kanten"));
+    }
+
+    [Fact]
+    public void SK2d2_Pfeiltasten_laufen_in_jeder_Gruppe_mit_Pos1_und_Ende()
+    {
+        var ablage = Flussablage();
+        var cut = Zeige(ablage);
+        cut.Find(".epos-ergebnis-fluss-wahl[data-gruppe=darstellung]").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        Assert.Equal("stufen", ablage["darstellung"]);
+        cut.Find(".epos-ergebnis-fluss-wahl[data-gruppe=darstellung]").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        Assert.Equal("kette", ablage["darstellung"]);
+        cut.Find(".epos-ergebnis-fluss-wahl[data-gruppe=filter]").KeyDown(new KeyboardEventArgs { Key = "End" });
+        Assert.Equal("kaelte", ablage["filter"]);
+        cut.Find(".epos-ergebnis-fluss-wahl[data-gruppe=filter]").KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
+        Assert.Equal("waerme", ablage["filter"]);
+        cut.Find(".epos-ergebnis-fluss-wahl[data-gruppe=filter]").KeyDown(new KeyboardEventArgs { Key = "Home" });
+        Assert.Equal("alle", ablage["filter"]);
+        // Ein Tabulatorhalt je Gruppe: nur der gewählte Knopf ist erreichbar.
+        var tab = cut.FindAll(".epos-ergebnis-fluss-wahl[data-gruppe=filter] button").Select(b => b.GetAttribute("tabindex")).ToArray();
+        Assert.Equal(new[] { "0", "-1", "-1", "-1" }, tab);
+    }
+
+    [Fact]
+    public void SK2d2_Der_Assistent_nennt_Darstellung_und_Filter()
+    {
+        var cut = Zeige(Flussablage());
+        Knopf(cut, "darstellung", "stufen");
+        Knopf(cut, "filter", "waerme");
+        Assert.StartsWith("Ansicht: Fluss (Energieflussbild der Version Stamm; Darstellung Stufen; Energieform Wärme)\n", cut.Instance.Text());
+        // Die Flussliste bleibt die der ganzen Version (die Zahlen hängen nicht an der Darstellung).
+        Assert.Contains("[fluss] Energiefluss — Stamm", cut.Instance.Text());
     }
 
     [Fact]

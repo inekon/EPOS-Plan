@@ -32,7 +32,8 @@
    die Huelle durch; ein unbekannter Wert faellt auf die Tabelle). Die Grafik
    (UebersichtErgebnisGrafik) bekommt dieselben Gruppen wie die Tafel, gefiltert nach
    Zustand und "nur Unterschiede". Der Fluss (UebersichtErgebnisFluss) zeigt das
-   Energieflussbild EINER Version (Wahl darueber); "nur Unterschiede" und "Anzeige
+   Energieflussbild EINER Version (Wahl darueber, daneben "Kette | Stufen" je Benutzer und
+   der Formfilter je Sitzung); "nur Unterschiede" und "Anzeige
    anpassen..." wirken nicht auf ihn. Ohne Ladeweg des Bildes (FlussLaden) gibt es
    die Stellung nicht.
 
@@ -79,6 +80,8 @@
         {
             <UebersichtErgebnisFluss @ref="_fluss" Versionen="@_ergebnis.FlussVersionen" FlussLaden="@FlussLaden"
                                      FlussVersionLesen="@FlussVersionLesen" FlussVersionGewechselt="@FlussVersionGewechselt"
+                                     FlussDarstellungLesen="@FlussDarstellungLesen" FlussDarstellungGewechselt="@FlussDarstellungGewechselt"
+                                     FlussFilterLesen="@FlussFilterLesen" FlussFilterGewechselt="@FlussFilterGewechselt"
                                      Texte="@FlussTexte" />
             <p class="epos-leisezeile epos-ergebnis-quelle">@HinweisQuelle</p>
         }
@@ -257,8 +260,8 @@
     /// <summary>Der Ablagewert der Flussansicht (Energieflussbild einer Version).</summary>
     public const string ANSICHT_FLUSS = "fluss";
 
-    /// <summary>Die erste Zeile des Assistententextes in der Flussansicht; {0} = gewählte Version.</summary>
-    public const string KI_ANSICHT_FLUSS = "Ansicht: Fluss (Energieflussbild der Version {0})";
+    /// <summary>Die erste Zeile des Assistententextes in der Flussansicht; {0} = gewählte Version, {1} = Darstellung, {2} = Formfilter.</summary>
+    public const string KI_ANSICHT_FLUSS = "Ansicht: Fluss (Energieflussbild der Version {0}; Darstellung {1}; Energieform {2})";
 
     /// <summary>Die erste Zeile des Assistententextes in der Tabellenansicht.</summary>
     public const string KI_ANSICHT_TABELLE = "Ansicht: Tabelle";
@@ -296,6 +299,18 @@
 
     /// <summary>Meldet die neu gewählte Version des Bildes an die Hülle.</summary>
     [Parameter] public Action<int>? FlussVersionGewechselt { get; set; }
+
+    /// <summary>Liest die gemerkte Darstellung des Bildes („kette“ | „stufen“; je Benutzer über die Hülle).</summary>
+    [Parameter] public Func<string>? FlussDarstellungLesen { get; set; }
+
+    /// <summary>Meldet die neue Darstellung an die Hülle, die sie je Benutzer ablegt.</summary>
+    [Parameter] public Action<string>? FlussDarstellungGewechselt { get; set; }
+
+    /// <summary>Liest den Formfilter des Bildes (je Sitzung über die Hülle).</summary>
+    [Parameter] public Func<string>? FlussFilterLesen { get; set; }
+
+    /// <summary>Meldet den neuen Formfilter an die Sitzungsablage der Hülle.</summary>
+    [Parameter] public Action<string>? FlussFilterGewechselt { get; set; }
 
     /// <summary>Die Beschriftungen der Ansicht „Fluss“ samt Stellung des Umschalters.</summary>
     [Parameter] public ErgebnisFlussTexte FlussTexte { get; set; } = new();
@@ -515,7 +530,7 @@
         if (_ergebnis.KeineSimulation || _ergebnis.Gruppen.Count == 0) return KeineSimulationText;
         var zeilen = new List<string>
         {
-            IstFluss ? string.Format(KI_ANSICHT_FLUSS, _fluss?.VersionName ?? "")
+            IstFluss ? string.Format(KI_ANSICHT_FLUSS, _fluss?.VersionName ?? "", _fluss?.DarstellungName ?? "", _fluss?.FilterName ?? "")
             : IstGrafik ? KI_ANSICHT_GRAFIK : KI_ANSICHT_TABELLE
         };
         foreach (ErgebnisVergleichGruppe g in _ergebnis.Gruppen)

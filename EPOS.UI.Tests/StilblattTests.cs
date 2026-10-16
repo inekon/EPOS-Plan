@@ -1190,6 +1190,29 @@ public sealed class StilblattTests
     }
 
     /// <summary>
+    /// <b>SK-2d-2: Knopfgruppen und Abblendregel des Energieflussbilds.</b> Der Kopf hat keine Höchstbreite mehr (Version,
+    /// „Kette | Stufen“ und Filter stehen nebeneinander und brechen um); die Hervorhebung blendet über die Deckkraft ab — nur
+    /// Bänder und Knoten ohne <c>epos-fluss-an</c>, solange die figure markiert ist; keine Farbe, Legende und Stufentitel
+    /// bleiben unberührt (die Regel nennt nur <c>fluss:</c> und <c>knoten:</c>).
+    /// </summary>
+    [Fact]
+    public void SK2d2_Die_Hervorhebung_blendet_nur_Baender_und_Knoten_ab()
+    {
+        Assert.DoesNotContain("max-width", Regelblock(".epos-ergebnis-fluss-kopf {"), StringComparison.Ordinal);
+        Assert.Contains("flex-wrap: wrap", Regelblock(".epos-ergebnis-fluss-wahl {"), StringComparison.Ordinal);
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        const string kopf = ".epos-ergebnis-fluss-bild--hervor [data-marke^=\"fluss:\"]:not(.epos-fluss-an),\n"
+                          + ".epos-ergebnis-fluss-bild--hervor [data-marke^=\"knoten:\"]:not(.epos-fluss-an) {";
+        int i = css.IndexOf(kopf, StringComparison.Ordinal);
+        Assert.True(i > 0, "Abblendregel fehlt");
+        string regel = css.Substring(i, css.IndexOf('}', i) - i);
+        Assert.Contains("opacity: 0.18", regel, StringComparison.Ordinal);
+        Assert.DoesNotContain("#", regel, StringComparison.Ordinal);
+        Assert.DoesNotContain("legende", regel, StringComparison.Ordinal);
+        Assert.DoesNotContain("stufe:", regel, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// <b>Kästchen und Kopfhäkchen der Projektliste im Schema des runden Wahlknopfs</b> (KA‑E‑28): ein Kreis mit
     /// Rand, angekreuzt — auch ▣, eine Teilwahl — in den Farben des Primärknopfs, Schwebe und Fokus eigen, im
     /// Hochkontrast die Systemfarben der Wahl. Die Zeile trägt die Berührungsgröße, das Kopfhäkchen ist kleiner
