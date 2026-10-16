@@ -38,8 +38,7 @@ namespace WindowsFormsApplication1
         /// Die Nummer des Schritts — angemeldet als 232; hängt an <see cref="RaumnutzungDinWerteSchema"/> (231) und ist
         /// das Ende der Kette. Die Nummer steht allein hier.
         /// </summary>
-        // vorläufig (230, solange 229/230 nicht auf origin liegen); das Umhängen geschieht allein am Vorgänger
-        // RaumnutzungDinWerteSchema — nach Schritt 230 dort auf `KaeltebedarfsprofilVorlagenSchema.SCHRITT + 1` umhängen
+        // KETTE: hängt über RaumnutzungDinWerteSchema.SCHRITT + 1 an 231 (DA-6).
         public const int SCHRITT = RaumnutzungDinWerteSchema.SCHRITT + 1;
 
         /// <summary>ψ des Glasrands [W/(m·K)] (DIN EN ISO 10077-1, ψ_g); NULL = nicht angegeben.</summary>

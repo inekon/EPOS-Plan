@@ -44,8 +44,8 @@ namespace WindowsFormsApplication1
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht. Angemeldet ist 231; der Nachfolger
         /// <see cref="BauteilkatalogAbschnittSchema"/> (232) hängt über <c>+ 1</c> hier an.
         /// </summary>
-        // vorläufig; nach Schritt 230 auf `KaeltebedarfsprofilVorlagenSchema.SCHRITT + 1` umhängen
-        public const int SCHRITT = GeraetekostenEntfallSchema.SCHRITT + 1;
+        // KETTE: hängt über KaeltebedarfsprofilVorlagenSchema.SCHRITT + 1 an 230 (KBP-2).
+        public const int SCHRITT = KaeltebedarfsprofilVorlagenSchema.SCHRITT + 1;
 
         private static readonly string Q_PROFIL = "\"" + RaumnutzungSchema.TAB_PROFIL + "\"";
         private static readonly string Q_KATALOG = "\"" + RaumnutzungSchema.TAB_KATALOG + "\"";
