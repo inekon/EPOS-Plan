@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
@@ -172,10 +173,28 @@ namespace WindowsFormsApplication1
                 zonenraumbild = k => k >= 0 && k < ergebnis.Zonen.Count ? Raumtemperaturmodell(ergebnis.Zonen[k]) : null;
             }
 
+            // Welle RZ (Teil b): das Raumtemperaturbild mit zuschaltbarer Außentemperatur - nur, wo es das
+            // Bild gibt und der Lauf die Reihe führt. Platz -1 ist das ganze Gebäude, sonst die Zone.
+            Func<int, IReadOnlyList<string>, Zeichenmodell> raumbildReihen = null;
+            if (ergebnis.RaumtemperaturC != null && ergebnis.AussentemperaturC != null)
+                raumbildReihen = (k, reihen) =>
+                {
+                    double[] aussen = reihen != null && reihen.Contains(EPOS.UI.Seiten.Simulation.Zusatzreihen.Aussentemperatur)
+                        ? ergebnis.AussentemperaturC : null;
+                    if (k < 0) return Raumtemperaturmodell(ergebnis.RaumtemperaturC, ergebnis.OperativeTemperaturC,
+                                                           ergebnis.HeizsollwertC, ergebnis.ObereRaumtemperaturC, aussen);
+                    if (k >= ergebnis.Zonen.Count) return null;
+                    GebaeudeBedarfZone zone = ergebnis.Zonen[k];
+                    return Raumtemperaturmodell(zone.RaumtemperaturC, zone.OperativeTemperaturC,
+                                                zone.HeizsollwertC, zone.ObereRaumtemperaturC, aussen);
+                };
+
             return new Dictionary<string, object>
             {
                 ["Daten"] = daten,
                 ["CsvSpeichern"] = Diagrammexportnaht.Fuer(projektId),
+                ["BildauftragRaumtemperaturReihen"] = raumbildReihen,
+                ["LabelAussentemperatur"] = Text_("CHART_SERIE_AUSSENTEMPERATUR", "Außentemperatur"),
                 ["BildauftragZone"] = zonenbild,
                 ["BildauftragRaumtemperaturZone"] = zonenraumbild,
                 ["Bildauftrag"] = new Func<bool, Zeichenmodell>(
@@ -735,6 +754,48 @@ namespace WindowsFormsApplication1
                     ObereGrenze = Text_("GEBB_REIHE_OBERE_GRENZE", "obere Raumtemperatur"),
                     Achse = "°C"
                 });
+        }
+
+        /// <summary>
+        /// Welle RZ (Teil b): dasselbe Bild mit der ZUSCHALTBAREN Außentemperatur. Ohne Reihe
+        /// (<paramref name="aussen"/> <c>null</c>) ist es Bild für Bild das Bestandsbild
+        /// (<see cref="ChartRenderer.RaumtemperaturModell"/>).
+        ///
+        /// <para>Mit der Reihe baut die Hülle die Reihen des Bestandsbilds nach — dieselben Namen,
+        /// Rollen und Strichfolgen — und hängt die Außentemperatur mit ihrer Rolle an. Gezeichnet wird
+        /// über <see cref="ChartRenderer.SpeicherbetriebModell"/>, den öffentlichen Weg desselben
+        /// Verlaufsbilds MIT Achsentitel (der Renderer bleibt unberührt); seine Mindestspanne 0
+        /// statt 5 K wirkt nicht, weil die Außentemperatur das Band ohnehin weit über 5 K spannt.</para>
+        /// </summary>
+        private static Zeichenmodell Raumtemperaturmodell(double[] raumluft, double[] operativ, double[] heizsollwert,
+                                                          double? obere, double[] aussen)
+        {
+            if (aussen == null) return Raumtemperaturmodell(raumluft, operativ, heizsollwert, obere);
+
+            var reihen = new List<ChartRenderer.Reihe>();
+            if (raumluft != null)
+                reihen.Add(new ChartRenderer.Reihe(Text_("GEBB_REIHE_RAUMLUFT", "Raumluft"), raumluft, Farbrolle.SERIE_1));
+            if (operativ != null)
+                reihen.Add(new ChartRenderer.Reihe(Text_("GEBB_REIHE_OPERATIV", "operative Temperatur"), operativ,
+                                                   Farbrolle.SERIE_2));
+            if (heizsollwert != null)
+                reihen.Add(new ChartRenderer.Reihe(Text_("GEBB_REIHE_HEIZSOLLWERT", "Heizsollwert"), heizsollwert,
+                                                   Farbrolle.SERIE_3, ChartRenderer.Stapelart.Keine,
+                                                   ChartRenderer.Strichart.Gestrichelt));
+            int laenge = raumluft?.Length ?? operativ?.Length ?? heizsollwert?.Length ?? 0;
+            if (obere is double oben && !double.IsNaN(oben) && !double.IsInfinity(oben) && laenge > 0)
+            {
+                var konstant = new double[laenge];
+                for (int i = 0; i < laenge; i++) konstant[i] = oben;
+                reihen.Add(new ChartRenderer.Reihe(Text_("GEBB_REIHE_OBERE_GRENZE", "obere Raumtemperatur"), konstant,
+                                                   Farbrolle.SERIE_4, ChartRenderer.Stapelart.Keine,
+                                                   ChartRenderer.Strichart.Gestrichelt));
+            }
+            reihen.Add(new ChartRenderer.Reihe(Text_("CHART_SERIE_AUSSENTEMPERATUR", "Außentemperatur"),
+                                               (double[])aussen.Clone(), Farbrolle.AUSSENTEMPERATUR));
+
+            return ChartRenderer.SpeicherbetriebModell(Text_("GEBB_BILD_RAUMTEMPERATUR", "Raumtemperatur"),
+                                                       reihen, "°C");
         }
 
         /// <summary>

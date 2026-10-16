@@ -295,6 +295,21 @@
                 {
                     <Reiterblatt Schluessel="TEMPERATUREN" Titel="@Resource.SIM_TAB_SPEICHERTEMPERATUR">
                         <KindInhalt>
+                            @* Welle RZ (Teil b): je Speicher ein Schalter - dieselbe Bauart wie die
+                               Reihen der Jahresganglinie (W11b‑B‑17). Ab Werk alle an; erst ab zwei
+                               Speichern, denn mit einem gibt es nichts zu waehlen. *@
+                            @if (Speicherwahl.Count >= 2)
+                            {
+                                <div class="epos-simerg-schalter">
+                                    @foreach (var sp in Speicherwahl)
+                                    {
+                                        string schluessel = sp.Schluessel;
+                                        <Schalter @key="schluessel" Bezeichnung="@sp.Name"
+                                                  Wert="@(!_speicherAus.Contains(schluessel))"
+                                                  WertChanged="@(w => SpeicherSchalten(schluessel, w))" />
+                                    }
+                                </div>
+                            }
                             <DiagrammSvg Modell="@ModellTemperaturen"
                                          Kennung="simerg-wp-temperaturen"
                                          Bezeichnung="@Resource.CHART_TITEL_SPEICHERTEMPERATUR"
@@ -408,6 +423,13 @@
     [Parameter] public bool Speichertemperaturen { get; set; }
 
     /// <summary>
+    /// Welle RZ (Teil b): die Speicher des Temperaturbilds zur Auswahl (Schlüssel, Name); ab zwei
+    /// Speichern steht je Speicher ein Schalter. Leer = keine Wahl.
+    /// </summary>
+    [Parameter] public IReadOnlyList<(string Schluessel, string Name)> Speicherwahl { get; set; }
+        = Array.Empty<(string Schluessel, string Name)>();
+
+    /// <summary>
     /// BV-E6: der Platzhalter des Temperaturbilds (<c>stamm.bild.speichertemperaturen</c>, nur beim
     /// Stammprojekt, „ähnlich im Bericht“); leer = keine Marke. Die Hülle setzt ihn.
     /// </summary>
@@ -487,7 +509,33 @@
         Modell?.Invoke(new Bildauftrag(Bilder.WpStromverbrauch));
 
     private Zeichenmodell? ModellTemperaturen =>
-        Modell?.Invoke(new Bildauftrag(Bilder.Speichertemperaturen));
+        Modell?.Invoke(new Bildauftrag(Bilder.Speichertemperaturen, false, -1, ReihenTemperaturen()));
+
+    /// <summary>Welle RZ: die abgewählten Speicher des Temperaturbilds; ab Werk keiner.</summary>
+    private readonly HashSet<string> _speicherAus = new(StringComparer.Ordinal);
+
+    private void SpeicherSchalten(string schluessel, bool an)
+    {
+        if (an) _speicherAus.Remove(schluessel);
+        else _speicherAus.Add(schluessel);
+    }
+
+    /// <summary>Die gewählten Speicher des Temperaturbilds (Prüfhilfe); <c>null</c> = alle.</summary>
+    public IReadOnlyList<string>? GewaehlteReihenTemperaturen => ReihenTemperaturen();
+
+    /// <summary>
+    /// Welle RZ: die Speicherschlüssel des Temperaturbilds. Sind ALLE gewählt (ab Werk), bleibt die
+    /// Liste <c>null</c> — dann zeichnet die Hülle wie zuvor; eine leere Liste heißt „kein Speicher"
+    /// (die Quelltemperaturen bleiben).
+    /// </summary>
+    private IReadOnlyList<string>? ReihenTemperaturen()
+    {
+        if (_speicherAus.Count == 0) return null;
+        var liste = new List<string>();
+        foreach (var sp in Speicherwahl)
+            if (!_speicherAus.Contains(sp.Schluessel)) liste.Add(sp.Schluessel);
+        return liste;
+    }
 
     /// <summary>
     /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch

@@ -1081,6 +1081,9 @@ namespace WindowsFormsApplication1
             internal Farbrolle Rolle;
             internal bool Gestrichelt;
             internal string Schluessel;
+
+            /// <summary>Welle RZ: der Speicherschlüssel des Paars (<c>PUFFER_…</c>); <c>null</c> bei einer Quelltemperatur.</summary>
+            internal string Speicher;
         }
 
         /// <summary>
@@ -1121,6 +1124,7 @@ namespace WindowsFormsApplication1
                 liste.Add(new Temperaturreihe
                 {
                     Schluessel = schluessel + ZeitreihenSatz.SUFFIX_T_OBEN,
+                    Speicher = schluessel,
                     Legende = sp.BezeichnerAnzeige() + " " + MyResource.Resource.SIM_REIHE_T_OBEN,
                     Werte = sp.T_oben_stuendlich,
                     Rolle = rolle
@@ -1128,6 +1132,7 @@ namespace WindowsFormsApplication1
                 liste.Add(new Temperaturreihe
                 {
                     Schluessel = schluessel + ZeitreihenSatz.SUFFIX_T_UNTEN,
+                    Speicher = schluessel,
                     Legende = sp.BezeichnerAnzeige() + " " + MyResource.Resource.SIM_REIHE_T_UNTEN,
                     Werte = sp.T_unten_stuendlich,
                     Rolle = rolle,
@@ -1158,6 +1163,25 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            return liste;
+        }
+
+        /// <summary>
+        /// Welle RZ (Teil b): die Speicher des Temperaturbilds zur Auswahl — je Senkenspeicher mit
+        /// Temperaturreihe einmal, in der Reihenfolge des Bildes.
+        /// </summary>
+        private List<(string Schluessel, string Name)> Speicherwahl()
+        {
+            var liste = new List<(string Schluessel, string Name)>();
+            if (!ErgebnisIstGueltig) return liste;
+            List<SimulationPufferspeicher> speicher = sim.AlleSpeicher();
+            for (int i = 0; i < speicher.Count; i++)
+            {
+                SimulationPufferspeicher sp = speicher[i];
+                if (sp == null || sp.IstQuelle || !sp.T_oben_Mittel.HasValue) continue;
+                if (sp.T_oben_stuendlich == null || sp.T_unten_stuendlich == null) continue;
+                liste.Add((sp.Schluessel(i), sp.BezeichnerAnzeige()));
+            }
             return liste;
         }
 
