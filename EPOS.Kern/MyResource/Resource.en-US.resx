@@ -28778,11 +28778,14 @@ Do you want to allow this?</value>
   <data name="SIMENG_KAELTE_RKW_UEBERLAST" xml:space="preserve">
     <value>Chiller "{0}": the heat rejection unit "{1}" exceeded its rated capacity in {2} hours — the fan ran at full speed, a load-dependent approach rose above its rated value.</value>
   </data>
-  <data name="SIMENG_KAELTE_RKW_WASSER_KOSTEN" xml:space="preserve">
-    <value>Chiller "{0}": the heat rejection unit "{1}" uses {2} m³ of water in {3} wet hours; water cost {4} €/a (quantity × water price, not included in the operating costs of the economic analysis).</value>
+  <data name="SIMENG_KAELTE_RKW_WASSER" xml:space="preserve">
+    <value>Chiller "{0}": the heat rejection unit "{1}" uses {2} m³ of water in {3} wet hours; the water cost (quantity × price of the water carrier) is part of the operating costs of the economic analysis.</value>
   </data>
-  <data name="SIMENG_KAELTE_RKW_WASSER_OHNE_PREIS" xml:space="preserve">
-    <value>Chiller "{0}": the heat rejection unit "{1}" uses {2} m³ of water in {3} wet hours; no water price at the plant, so no water cost.</value>
+  <data name="WIRT_BK_WASSER_RKW" xml:space="preserve">
+    <value>Heat rejection water: {0} m³ × {1} €/m³</value>
+  </data>
+  <data name="WIRT_HINWEIS_WASSER_OHNE_PREIS" xml:space="preserve">
+    <value>Heat rejection water {0} m³/a without price: the water carrier has no energy charge — the operating costs contain no water cost.</value>
   </data>
   <data name="SIMENG_KAELTE_KM_RANDWERT" xml:space="preserve">
     <value>Chiller "{0}": in {1} hours the operating point lay outside the performance map (heat rejection {2} to {3} °C, chilled water {4} °C) — the boundary value was used.</value>

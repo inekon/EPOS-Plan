@@ -543,8 +543,8 @@ namespace WindowsFormsApplication1
                                   k.Bezeichner, r.Bezeichner));
                 return;
             }
-            // Der Wasserpreis steht nicht mehr an der Anlage (WasserpreisTraegerkarteSchema): Er kommt mit KB-7b aus der
-            // Traegerkarte (Traeger mit Preismodell WATER). Bis dahin bleibt er leer - der Hinweis nennt nur die Menge.
+            // Welle KB-7b: Der Lauf liest keinen Wasserpreis - die Wasserkosten (Menge x Preis des Wassertraegers, Preismodell
+            // WATER) bucht allein die Wirtschaftlichkeit in die Betriebskosten (Wasserkosten).
             k.RueckkuehlwerkSetzen(r);
             // K-F3 (Entwurf 5.5): Teil-Freikühlung in Reihe - die Auslegungsspreizung der Kühlübergabe, sonst die Vorgabe, benannt.
             if (r.Reihe)
@@ -579,8 +579,8 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// K-F2 (Entwurf 5.3, 5.8, Frage KD-Q8): die Meldungen des Rückkühlwerks nach der Kaskade — Wasser samt Kosten (leer
-        /// Preis = keine Kosten, benannt) und die Stunden über der Nennleistung.
+        /// K-F2 (Entwurf 5.3, 5.8, Frage KD-Q8): die Meldungen des Rückkühlwerks nach der Kaskade — Wassermenge und
+        /// Nassstunden (die Kosten stehen in der Wirtschaftlichkeit, Welle KB-7b) und die Stunden über der Nennleistung.
         /// </summary>
         private void RueckkuehlwerkMelden(Kaelteerzeuger e)
         {
@@ -589,13 +589,9 @@ namespace WindowsFormsApplication1
             if (r.Verdunstungskuehlanlage && e.RkWasserM3 > 0)
             {
                 string menge = e.RkWasserM3.ToString("N1", CultureInfo.CurrentCulture);
-                double? kosten = Rueckkuehlwerk.WasserkostenEur(e.RkWasserM3, r.WasserpreisEurM3);
-                Protokoll.HinweisEinmal("kuehl-rkw-wasser-" + e.AnlagenID, kosten.HasValue
-                    ? string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_WASSER_KOSTEN,
-                                    e.Bezeichner, r.Bezeichner, menge, e.RkStundenNass,
-                                    kosten.Value.ToString("N0", CultureInfo.CurrentCulture))
-                    : string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_WASSER_OHNE_PREIS,
-                                    e.Bezeichner, r.Bezeichner, menge, e.RkStundenNass));
+                Protokoll.HinweisEinmal("kuehl-rkw-wasser-" + e.AnlagenID,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_WASSER,
+                                  e.Bezeichner, r.Bezeichner, menge, e.RkStundenNass));
             }
             if (e.RkStundenUeberlast > 0)
                 Protokoll.HinweisEinmal("kuehl-rkw-ueberlast-" + e.AnlagenID,

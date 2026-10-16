@@ -205,12 +205,14 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_TEILFREIKUEHLUNG_STUNDEN));
             Assert.True(KaelteSumme(projekt, "Kaelteproduktion_MWh") > 0);
 
-            // Die Hinweise je einmal: Ausweichweg ohne Feuchte, 42. BImSchV, Wasser, Reihe mit Spreizung (K-F3). Der Wasserpreis
-            // steht in der Traegerkarte (WasserpreisTraegerkarteSchema); bis der Lauf ihn dort liest (KB-7b), nennt der
-            // Hinweis nur die Menge.
+            // Die Hinweise je einmal: Ausweichweg ohne Feuchte, 42. BImSchV, Wasser, Reihe mit Spreizung (K-F3). Welle KB-7b:
+            // Der Lauf liest keinen Wasserpreis - der Hinweis SIMENG_KAELTE_RKW_WASSER nennt Menge und Nassstunden und verweist
+            // auf die Betriebskosten der Wirtschaftlichkeit; ein Betrag steht nicht darin.
             Assert.Single(lauf.Protokoll.Hinweise, h => h.Contains("RK Kuehlturm", StringComparison.Ordinal) && h.Contains("BImSchV", StringComparison.Ordinal));
             string w = Assert.Single(lauf.Protokoll.Hinweise, h => h.Contains("RK Kuehlturm", StringComparison.Ordinal) && h.Contains("m³", StringComparison.Ordinal));
             Assert.DoesNotContain("€/a", w, StringComparison.Ordinal);
+            Assert.Contains(wasser.ToString("N1", CultureInfo.CurrentCulture) + " m³ Wasser in " + nass + " Nassstunden", w, StringComparison.Ordinal);
+            Assert.Contains("Betriebskosten der Wirtschaftlichkeit", w, StringComparison.Ordinal);
             Assert.Single(lauf.Protokoll.Hinweise, h => h.Contains("RK Kuehlturm", StringComparison.Ordinal) &&
                                                        h.Contains("Teil-Freikühlung", StringComparison.Ordinal));
             Assert.DoesNotContain(lauf.Protokoll.Hinweise, h => h.Contains("noch nicht gerechnet", StringComparison.Ordinal));

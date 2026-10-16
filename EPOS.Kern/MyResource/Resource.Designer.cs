@@ -115177,20 +115177,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ verbraucht {2} m³ Wasser in {3} Nassstunden; Wasserkosten {4} €/a (Menge × Wasserpreis, nicht in den Betriebskosten der Wirtschaftlichkeit). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ verbraucht {2} m³ Wasser in {3} Nassstunden; die Wasserkosten (Menge × Preis des Wasserträgers) stehen in den Betriebskosten der Wirtschaftlichkeit. ähnelt.
         /// </summary>
-        public static string SIMENG_KAELTE_RKW_WASSER_KOSTEN {
+        public static string SIMENG_KAELTE_RKW_WASSER {
             get {
-                return ResourceManager.GetString("SIMENG_KAELTE_RKW_WASSER_KOSTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ verbraucht {2} m³ Wasser in {3} Nassstunden; ohne Wasserpreis an der Anlage keine Wasserkosten. ähnelt.
-        /// </summary>
-        public static string SIMENG_KAELTE_RKW_WASSER_OHNE_PREIS {
-            get {
-                return ResourceManager.GetString("SIMENG_KAELTE_RKW_WASSER_OHNE_PREIS", resourceCulture);
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_WASSER", resourceCulture);
             }
         }
         
@@ -139371,6 +139362,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wasser Rückkühlwerk: {0} m³ × {1} €/m³ ähnelt.
+        /// </summary>
+        public static string WIRT_BK_WASSER_RKW {
+            get {
+                return ResourceManager.GetString("WIRT_BK_WASSER_RKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ΔKW ähnelt.
         /// </summary>
         public static string WIRT_BR_ERGEBNIS {
@@ -141149,6 +141149,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_HINWEIS_STROM_GRUPPENREGEL {
             get {
                 return ResourceManager.GetString("WIRT_HINWEIS_STROM_GRUPPENREGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wasser Rückkühlwerk {0} m³/a ohne Preis: Der Wasserträger hat keinen Arbeitspreis — die Betriebskosten enthalten keine Wasserkosten. ähnelt.
+        /// </summary>
+        public static string WIRT_HINWEIS_WASSER_OHNE_PREIS {
+            get {
+                return ResourceManager.GetString("WIRT_HINWEIS_WASSER_OHNE_PREIS", resourceCulture);
             }
         }
         

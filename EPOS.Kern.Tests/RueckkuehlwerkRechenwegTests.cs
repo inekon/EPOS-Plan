@@ -10,8 +10,8 @@ namespace EPOS.Kern.Tests
     /// <b>Rechenproben des Rückkühlwerks ohne Datenbank</b> (K-F2; Entwurf Split/VRF/Rückkühlwerk 5.3, 5.4, 5.6): je Bauart
     /// die Bezugstemperatur (trocken, Kühlturm über die Feuchtkugel, adiabat und hybrid unter und über der Schaltgrenze, ohne
     /// Feuchte), die lastabhängige Annäherung (Nennpunkt, Teillast 0, Überlast, ein Schritt), der Ventilator je Regelung samt
-    /// kleinster Drehzahl und Stufen, keine Doppelzählung des Hilfsstroms, die Wasserbilanz gegen die Handrechnung und die
-    /// Wasserkosten mit und ohne Preis.
+    /// kleinster Drehzahl und Stufen, keine Doppelzählung des Hilfsstroms, die Wasserbilanz gegen die Handrechnung. Die
+    /// Wasserkosten rechnet die Wirtschaftlichkeit (Welle KB-7b, <c>WasserkostenWirtschaftlichkeitTests</c>).
     /// </summary>
     public class RueckkuehlwerkRechenwegTests
     {
@@ -360,14 +360,6 @@ namespace EPOS.Kern.Tests
             RueckkuehlwerkStunde s = Rk(new RueckkuehlwerkModel { Bauart = "TROCKEN", Drift_Anteil = 0.1 }).Stunde(0, 100.0, 80.0, 120.0, 30.0);
             Assert.False(s.Nass);
             Assert.Equal(0.0, s.WasserM3);
-        }
-
-        [Fact]
-        public void Wasserkosten_mit_und_ohne_Preis()
-        {
-            Assert.Equal(25.0, Rueckkuehlwerk.WasserkostenEur(10.0, 2.5));
-            Assert.Null(Rueckkuehlwerk.WasserkostenEur(10.0, null));
-            Assert.Null(Rueckkuehlwerk.WasserkostenEur(10.0, double.NaN));
         }
 
         [Fact]
