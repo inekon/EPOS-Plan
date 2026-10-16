@@ -24,7 +24,8 @@ public sealed record BauteilkatalogVorschauDaten(
     string? Haustechnik = null,
     IReadOnlyList<string>? Gliederung = null,
     string? Ordner = null,
-    string? Teilkataloge = null);
+    string? Teilkataloge = null,
+    string? Inhomogen = null);
 
 /// <summary>Das Ergebnis von „Übernehmen“: geschrieben oder nicht, und die Meldung mit Zahlen.</summary>
 public sealed record BauteilkatalogImportErgebnis(bool Erfolg, string Meldung);

@@ -62,6 +62,10 @@ namespace WindowsFormsApplication1
                                                    v.Teilkataloge > 0
                                                        ? string.Format(CultureInfo.CurrentCulture, R.BKI_TEILKATALOGE, Zahl(v.Teilkataloge),
                                                                        Zahl(v.BaustoffeMitTeilkatalog), Zahl(v.AufbautenMitTeilkatalog))
+                                                       : null,
+                                                   v.SchichtzahlAngeglichen + v.AnteilErgaenzt > 0
+                                                       ? string.Format(CultureInfo.CurrentCulture, R.BKI_INHOMOGEN, Zahl(v.SchichtzahlAngeglichen),
+                                                                       Zahl(v.Teilschichten), Zahl(v.AnteilErgaenzt))
                                                        : null);
         }
 

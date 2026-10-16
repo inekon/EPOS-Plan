@@ -54802,6 +54802,24 @@ chart</value>
   <data name="BKI_TEILKATALOGE" xml:space="preserve">
     <value>Sub-catalogues: {0}; the source names them on {1} materials and {2} constructions.</value>
   </data>
+  <data name="BKI_GRUND_DICKEN" xml:space="preserve">
+    <value>inhomogeneous: sections with different layer counts and different total thickness</value>
+  </data>
+  <data name="BKI_GRUND_LUFTSCHICHT" xml:space="preserve">
+    <value>inhomogeneous: an unventilated air layer would have to be split at a layer boundary</value>
+  </data>
+  <data name="BKI_GRUND_OHNE_DICKE" xml:space="preserve">
+    <value>inhomogeneous: layer without thickness in sections with different layer counts</value>
+  </data>
+  <data name="BKI_INHOMOGEN" xml:space="preserve">
+    <value>Inhomogeneous constructions: {0} with different layer counts per section split at common layer boundaries ({1} additional sub-layers); {2} missing area fractions set to the remainder of 1.</value>
+  </data>
+  <data name="BKI_PROT_ANTEIL" xml:space="preserve">
+    <value>Area fraction set to the remainder of 1 (section {0}: {1}): {2}</value>
+  </data>
+  <data name="BKI_PROT_GETEILT" xml:space="preserve">
+    <value>Layers split at common layer boundaries ({0} → {1} layers): {2}</value>
+  </data>
   <data name="BKI_UEBERNEHMEN" xml:space="preserve">
     <value>Import</value>
   </data>

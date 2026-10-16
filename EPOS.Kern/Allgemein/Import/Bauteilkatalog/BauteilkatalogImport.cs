@@ -95,6 +95,12 @@ namespace WindowsFormsApplication1
         public int SchichtenMitBaustoff { get; internal set; }
         /// <summary>Baustoffe, deren λ als Skalenfehler der Quelle durch 1 000 geteilt wurde (E134; je Zeile im Protokoll).</summary>
         public int LambdaSkaliert { get; internal set; }
+        /// <summary>Aufbauten mit verschiedener Schichtzahl je Abschnitt, an gemeinsamen Schichtgrenzen geteilt (BK-8).</summary>
+        public int SchichtzahlAngeglichen { get; internal set; }
+        /// <summary>Schichten, die das Teilen an gemeinsamen Schichtgrenzen zusätzlich anlegt (BK-8).</summary>
+        public int Teilschichten { get; internal set; }
+        /// <summary>Abschnitte, deren fehlender Flächenanteil als Rest zu 1 eingesetzt wurde (BK-8).</summary>
+        public int AnteilErgaenzt { get; internal set; }
         /// <summary>
         /// Importsätze (<c>IMPORT</c>) des Katalogs mit Name und Gruppe eines Auslieferungssatzes (<c>VORGABE</c>) — vermutete
         /// Dubletten, nur gezählt (BK-3d); die Vorschau nennt die Zahl im Protokoll, gelöscht wird nichts.
@@ -907,10 +913,28 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>BK-5: Aufbauten mit Abschnitten</b> werden übernommen, wenn sie sich als Ebenen lesen lassen: jede Schicht liegt in
-        /// einem Abschnitt (ein Abschnitt ist ein Streifen mit eigener Schichtfolge, nummeriert je Abschnitt), alle Abschnitte
-        /// führen gleich viele Schichten — die k-te Schicht jedes Abschnitts bildet die Ebene k —, und die Flächenanteile der
-        /// Abschnitte ergeben 1 ± 0,01. Sonst wird der Aufbau samt Abschnitten und Schichten benannt verworfen.
+        /// Die zulässige Abweichung der Gesamtdicken der Abschnitte eines Aufbaus mit verschiedener Schichtzahl (BK-8):
+        /// höchstens 1 mm oder 1 % der größten Gesamtdicke, das größere Maß — die Quelle führt Dicken in Millimetern, und 1 %
+        /// entspricht der Toleranz der Flächenanteile (<see cref="InhomogeneSchichten.ANTEIL_TOLERANZ"/>).
+        /// </summary>
+        internal const double DICKE_TOLERANZ_M = 0.001, DICKE_TOLERANZ_ANTEIL = 0.01;
+
+        /// <summary>Schichtgrenzen, die in der genormten Lage (0…1) näher als dieses Maß liegen, sind dieselbe Grenze.</summary>
+        private const double GRENZE_GLEICH = 1e-9;
+
+        /// <summary>
+        /// <b>BK-5/BK-8: Aufbauten mit Abschnitten</b> werden übernommen, wenn sie sich als Ebenen lesen lassen: jede Schicht liegt in
+        /// einem Abschnitt (ein Abschnitt ist ein Streifen mit eigener Schichtfolge, nummeriert je Abschnitt), die k-te Schicht jedes
+        /// Abschnitts bildet die Ebene k, und die Flächenanteile der Abschnitte ergeben 1 ± 0,01.
+        /// <para><b>Fehlender Flächenanteil (BK-8).</b> Fehlt er (leer oder 0) bei genau einem Abschnitt und lassen die übrigen mehr
+        /// als die Toleranz bis 1 offen, trägt dieser Abschnitt den Rest 1 − Σ (Hinweis); sonst wird verworfen.</para>
+        /// <para><b>Verschiedene Schichtzahl (BK-8, DIN EN ISO 6946, 6.7.2.3).</b> Haben alle Abschnitte dieselbe Gesamtdicke
+        /// (<see cref="DICKE_TOLERANZ_M"/>), werden die Schichtgrenzen aller Abschnitte vereinigt und jede Schicht an den Grenzen der
+        /// übrigen geteilt — in der auf die eigene Gesamtdicke genormten Lage, so behält jeder Abschnitt seine Dicke und seinen
+        /// Widerstand, und der obere Grenzwert bleibt gleich; danach führt jeder Abschnitt gleich viele Schichten. Verworfen wird,
+        /// wenn die Dicken nicht zusammenpassen, eine Schicht keine Dicke hat oder eine ruhende Luftschicht (Widerstand nach
+        /// Tabelle, nicht dickenproportional) geteilt werden müsste. Aufbauten mit gleicher Schichtzahl bleiben unverändert.</para>
+        /// Sonst wird der Aufbau samt Abschnitten und Schichten benannt verworfen.
         /// </summary>
         private static void AbschnittePruefen(Plan p, BauteilkatalogVorschau v)
         {
@@ -918,20 +942,42 @@ namespace WindowsFormsApplication1
             {
                 if (a.Aktion == ERGAENZEN || !a.Schichten.Any(s => s.Abschnitt != null)) continue;
                 string grund = null;
-                List<Satz> streifen = a.Schichten.Where(s => s.Abschnitt != null).Select(s => s.Abschnitt).Distinct().ToList();
+                Satz ergaenzt = null;
+                double rest = 0.0;
+                List<Satz> teile = null;
+                List<Satz> streifen = a.Schichten.Where(s => s.Abschnitt != null).Select(s => s.Abschnitt).Distinct()
+                                       .OrderBy(x => (int)x.Werte["Nummer"]).ToList();
                 if (a.Schichten.Any(s => s.Abschnitt == null))
                     grund = "inhomogen: durchgehende Schicht neben Abschnitten, Lage unbestimmt";
-                else if (streifen.Select(x => a.Schichten.Count(s => s.Abschnitt == x)).Distinct().Count() > 1)
-                    grund = "inhomogen: Abschnitte mit verschiedener Schichtzahl";
                 else
                 {
-                    double summe = streifen.Sum(x => x.W("Flaechenanteil") ?? double.NaN);
-                    if (double.IsNaN(summe) || streifen.Any(x => !(x.W("Flaechenanteil") > 0)))
-                        grund = "inhomogen: Abschnitt ohne Flächenanteil";
-                    else if (Math.Abs(summe - 1.0) > InhomogeneSchichten.ANTEIL_TOLERANZ + 1e-12)
-                        grund = "inhomogen: Flächenanteile ergeben nicht 1 ± 0,01";
+                    grund = AnteilePruefen(streifen, out ergaenzt, out rest);
+                    if (grund == null && streifen.Select(x => a.Schichten.Count(s => s.Abschnitt == x)).Distinct().Count() > 1)
+                        grund = Angleichen(a, streifen, out teile);
                 }
-                if (grund == null) continue;
+                if (grund == null)
+                {
+                    if (ergaenzt != null)
+                    {
+                        ergaenzt.Werte["Flaechenanteil"] = rest;
+                        v.AnteilErgaenzt++;
+                        v.Protokoll.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BKI_PROT_ANTEIL,
+                                                      (int)ergaenzt.Werte["Nummer"], rest.ToString("0.###", CultureInfo.CurrentCulture), a.Kennung));
+                    }
+                    if (teile != null)
+                    {
+                        int vorher = a.Schichten.Count;
+                        HashSet<Satz> alt = a.Schichten.ToHashSet();
+                        p.Schichten.RemoveAll(alt.Contains);
+                        a.Schichten = teile;
+                        p.Schichten.AddRange(teile);
+                        v.SchichtzahlAngeglichen++;
+                        v.Teilschichten += teile.Count - vorher;
+                        v.Protokoll.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BKI_PROT_GETEILT,
+                                                      Zahl(vorher), Zahl(teile.Count), a.Kennung));
+                    }
+                    continue;
+                }
                 v.Aufbauten.Ablehnen(grund);
                 if (a.Aktion == NEU) v.Aufbauten.Neu--; else v.Aufbauten.Wiedererkannt--;
                 p.Aufbauten.Remove(a);
@@ -939,6 +985,107 @@ namespace WindowsFormsApplication1
                 p.Schichten.RemoveAll(x => x.Vertreter == a);
                 v.Protokoll.Add("Aufbau verworfen (" + grund + "): " + a.Kennung);
             }
+        }
+
+        /// <summary>
+        /// Die Flächenanteile der Abschnitte (BK-8): <c>null</c> = in Ordnung; fehlt der Anteil (leer oder 0) bei genau einem
+        /// Abschnitt und bleibt bis 1 mehr als die Toleranz offen, nennt <paramref name="ergaenzt"/> ihn und
+        /// <paramref name="rest"/> den Rest 1 − Σ. Bleibt höchstens die Toleranz offen, ist der fehlende Anteil unbestimmt.
+        /// </summary>
+        private static string AnteilePruefen(List<Satz> streifen, out Satz ergaenzt, out double rest)
+        {
+            ergaenzt = null;
+            rest = 0.0;
+            List<Satz> fehlend = streifen.Where(x => !(x.W("Flaechenanteil") > 0)).ToList();
+            double summe = streifen.Where(x => x.W("Flaechenanteil") > 0).Sum(x => x.W("Flaechenanteil").Value);
+            if (fehlend.Count == 1 && 1.0 - summe > InhomogeneSchichten.ANTEIL_TOLERANZ + 1e-12)
+            {
+                ergaenzt = fehlend[0];
+                rest = 1.0 - summe;
+                return null;
+            }
+            if (fehlend.Count > 0) return "inhomogen: Abschnitt ohne Flächenanteil";
+            return Math.Abs(summe - 1.0) > InhomogeneSchichten.ANTEIL_TOLERANZ + 1e-12 ? "inhomogen: Flächenanteile ergeben nicht 1 ± 0,01" : null;
+        }
+
+        /// <summary>
+        /// <b>Gemeinsame Schichtgrenzen</b> (BK-8, DIN EN ISO 6946, 6.7.2.3) für Abschnitte mit verschiedener Schichtzahl:
+        /// <c>null</c> und in <paramref name="teile"/> die Schichten aller Abschnitte, geteilt an der Vereinigung der Grenzen
+        /// (Lage je Abschnitt auf seine Gesamtdicke genormt), mit der Ebene als <c>Reihenfolge</c>; sonst der Ablehnungsgrund.
+        /// Ein Teil trägt den Anteil der Dicke und, wo die Quelle ihn nennt, denselben Anteil von <c>R_Quelle</c>.
+        /// </summary>
+        private static string Angleichen(Satz a, List<Satz> streifen, out List<Satz> teile)
+        {
+            teile = null;
+            var folgen = streifen.ToDictionary(x => x, x => a.Schichten.Where(s => s.Abschnitt == x)
+                                                                   .OrderBy(s => (int)s.Werte["Reihenfolge"]).ToList());
+            if (folgen.Values.SelectMany(f => f).Any(s => !(s.W("Dicke") > 0))) return MyResource.Resource.BKI_GRUND_OHNE_DICKE;
+            var dicke = folgen.ToDictionary(f => f.Key, f => f.Value.Sum(s => s.W("Dicke").Value));
+            double groesste = dicke.Values.Max(), kleinste = dicke.Values.Min();
+            if (groesste - kleinste > Math.Max(DICKE_TOLERANZ_M, DICKE_TOLERANZ_ANTEIL * groesste) + 1e-12)
+                return MyResource.Resource.BKI_GRUND_DICKEN;
+
+            // Die Vereinigung der inneren Grenzen in genormter Lage, dazu das Ende 1.
+            var grenzen = new List<double>();
+            foreach (KeyValuePair<Satz, List<Satz>> f in folgen)
+            {
+                double z = 0.0;
+                for (int i = 0; i < f.Value.Count - 1; i++)
+                {
+                    z += f.Value[i].W("Dicke").Value;
+                    grenzen.Add(z / dicke[f.Key]);
+                }
+            }
+            grenzen.Sort();
+            var ebenen = new List<double>();
+            foreach (double g in grenzen)
+                if (g > GRENZE_GLEICH && g < 1.0 - GRENZE_GLEICH && (ebenen.Count == 0 || g - ebenen[ebenen.Count - 1] > GRENZE_GLEICH))
+                    ebenen.Add(g);
+            ebenen.Add(1.0);
+
+            var ergebnis = new List<Satz>();
+            foreach (KeyValuePair<Satz, List<Satz>> f in folgen)
+            {
+                double z = 0.0;
+                int ebene = 0;
+                for (int i = 0; i < f.Value.Count; i++)
+                {
+                    Satz s = f.Value[i];
+                    double d = s.W("Dicke").Value;
+                    double t0 = z / dicke[f.Key];
+                    z += d;
+                    double t1 = i == f.Value.Count - 1 ? 1.0 : z / dicke[f.Key];
+                    var stuecke = new List<double> { t0 };
+                    stuecke.AddRange(ebenen.Where(g => g > t0 + GRENZE_GLEICH && g < t1 - GRENZE_GLEICH));
+                    stuecke.Add(t1);
+                    bool ruhendeLuft = (int)s.Werte["IstLuftschicht"] == 1 && !(s.Lambda > 0);
+                    if (stuecke.Count > 2 && ruhendeLuft) return MyResource.Resource.BKI_GRUND_LUFTSCHICHT;
+                    for (int k = 0; k < stuecke.Count - 1; k++)
+                    {
+                        double anteil = (stuecke[k + 1] - stuecke[k]) / (t1 - t0);
+                        Satz t = stuecke.Count == 2 ? s : Teil(s, anteil);
+                        while (ebenen[ebene] < stuecke[k + 1] - GRENZE_GLEICH) ebene++;
+                        t.Werte["Reihenfolge"] = ++ebene;
+                        ergebnis.Add(t);
+                    }
+                }
+                if (ebene != ebenen.Count) throw new InvalidOperationException("Ebenen des Abschnitts unvollständig: " + a.Kennung);
+            }
+            teile = ergebnis.OrderBy(s => (int)s.Werte["Reihenfolge"]).ThenBy(s => (int)s.Abschnitt.Werte["Nummer"]).ToList();
+            return null;
+        }
+
+        /// <summary>Ein Teil einer Schicht: dieselben Werte, Dicke und <c>R_Quelle</c> mit <paramref name="anteil"/>.</summary>
+        private static Satz Teil(Satz s, double anteil)
+        {
+            var t = new Satz
+            {
+                Kennung = s.Kennung, Schluessel = s.Schluessel, Gruppe = s.Gruppe, Quellcode = s.Quellcode, Vertreter = s.Vertreter,
+                Abschnitt = s.Abschnitt, Werte = new Dictionary<string, object>(s.Werte, StringComparer.Ordinal)
+            };
+            t.Werte["Dicke"] = s.W("Dicke").Value * anteil;
+            if (s.W("R_Quelle") is double r) t.Werte["R_Quelle"] = r * anteil;
+            return t;
         }
 
         /// <summary>Regel 7: Dämmlage hinter tragender Schicht (Außenwände) und U aus Schichten gegen U der Quelle.</summary>

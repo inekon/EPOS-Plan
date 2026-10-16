@@ -54809,6 +54809,24 @@ Chart</value>
   <data name="BKI_TEILKATALOGE" xml:space="preserve">
     <value>Teilkataloge: {0}; die Quelle nennt sie an {1} Baustoffen und {2} Aufbauten.</value>
   </data>
+  <data name="BKI_GRUND_DICKEN" xml:space="preserve">
+    <value>inhomogen: Abschnitte verschiedener Schichtzahl mit verschiedener Gesamtdicke</value>
+  </data>
+  <data name="BKI_GRUND_LUFTSCHICHT" xml:space="preserve">
+    <value>inhomogen: ruhende Luftschicht müsste an einer Schichtgrenze geteilt werden</value>
+  </data>
+  <data name="BKI_GRUND_OHNE_DICKE" xml:space="preserve">
+    <value>inhomogen: Schicht ohne Dicke in Abschnitten verschiedener Schichtzahl</value>
+  </data>
+  <data name="BKI_INHOMOGEN" xml:space="preserve">
+    <value>Inhomogene Aufbauten: {0} mit verschiedener Schichtzahl je Abschnitt an gemeinsamen Schichtgrenzen geteilt ({1} Teilschichten zusätzlich); {2} fehlende Flächenanteile als Rest zu 1 eingesetzt.</value>
+  </data>
+  <data name="BKI_PROT_ANTEIL" xml:space="preserve">
+    <value>Flächenanteil als Rest zu 1 eingesetzt (Abschnitt {0}: {1}): {2}</value>
+  </data>
+  <data name="BKI_PROT_GETEILT" xml:space="preserve">
+    <value>Schichten an gemeinsamen Schichtgrenzen geteilt ({0} → {1} Schichten): {2}</value>
+  </data>
   <data name="BKI_UEBERNEHMEN" xml:space="preserve">
     <value>Übernehmen</value>
   </data>

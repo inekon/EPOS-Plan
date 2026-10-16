@@ -10311,6 +10311,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die inhomogen: Abschnitte verschiedener Schichtzahl mit verschiedener Gesamtdicke ähnelt.
+        /// </summary>
+        public static string BKI_GRUND_DICKEN {
+            get {
+                return ResourceManager.GetString("BKI_GRUND_DICKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die inhomogen: ruhende Luftschicht müsste an einer Schichtgrenze geteilt werden ähnelt.
+        /// </summary>
+        public static string BKI_GRUND_LUFTSCHICHT {
+            get {
+                return ResourceManager.GetString("BKI_GRUND_LUFTSCHICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die inhomogen: Schicht ohne Dicke in Abschnitten verschiedener Schichtzahl ähnelt.
+        /// </summary>
+        public static string BKI_GRUND_OHNE_DICKE {
+            get {
+                return ResourceManager.GetString("BKI_GRUND_OHNE_DICKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Haustechnik: {0} Baustoffe und {1} Aufbauten in der Gruppe „Sonstige“, davon {2} Luftdurchlässe (gekennzeichnet). ähnelt.
         /// </summary>
         public static string BKI_HAUSTECHNIK {
@@ -10325,6 +10352,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BKI_HINWEIS {
             get {
                 return ResourceManager.GetString("BKI_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Inhomogene Aufbauten: {0} mit verschiedener Schichtzahl je Abschnitt an gemeinsamen Schichtgrenzen geteilt ({1} Teilschichten zusätzlich); {2} fehlende Flächenanteile als Rest zu 1 eingesetzt. ähnelt.
+        /// </summary>
+        public static string BKI_INHOMOGEN {
+            get {
+                return ResourceManager.GetString("BKI_INHOMOGEN", resourceCulture);
             }
         }
         
@@ -10388,6 +10424,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BKI_PROTOKOLL {
             get {
                 return ResourceManager.GetString("BKI_PROTOKOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flächenanteil als Rest zu 1 eingesetzt (Abschnitt {0}: {1}): {2} ähnelt.
+        /// </summary>
+        public static string BKI_PROT_ANTEIL {
+            get {
+                return ResourceManager.GetString("BKI_PROT_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichten an gemeinsamen Schichtgrenzen geteilt ({0} → {1} Schichten): {2} ähnelt.
+        /// </summary>
+        public static string BKI_PROT_GETEILT {
+            get {
+                return ResourceManager.GetString("BKI_PROT_GETEILT", resourceCulture);
             }
         }
         
