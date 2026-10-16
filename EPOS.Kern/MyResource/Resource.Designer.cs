@@ -12482,6 +12482,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Darstellung des Energieflussbilds ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_DARSTELLUNG {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_DARSTELLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieform ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_FILTER {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_FILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} kleine Knoten zusammengefasst ähnelt.
         /// </summary>
         public static string BK_ERG_FLUSS_HINWEIS_GEBUENDELT {
@@ -12545,7 +12563,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Werte erscheinen beim Überfahren oder Antippen eines Bandes oder Knotens; die Zahlen stehen im Reiter „Tabelle“. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Werte erscheinen beim Überfahren oder Antippen eines Bandes oder Knotens, sein Umfeld wird hervorgehoben; die Zahlen stehen im Reiter „Tabelle“. ähnelt.
         /// </summary>
         public static string BK_ERG_FLUSS_ZEIGER {
             get {

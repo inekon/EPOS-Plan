@@ -22,17 +22,43 @@
    HINWEISE. Leise Zeilen unter dem Bild: wie die Werte erscheinen, nicht geschlossene
    Knoten, gebuendelte Knoten, die Konvention Umweltanteil.
 
+   DARSTELLUNG UND FILTER (SK-2d-2). Neben der Versionswahl stehen zwei Knopfgruppen im
+   Muster des Umschalters "Tabelle | Grafik | Fluss" (role="radiogroup", Pfeiltasten,
+   Pos1/Ende, ein Tabulatorhalt je Gruppe): "Kette | Stufen" (Vorgabe Kette, je Benutzer
+   gemerkt ueber die Huelle; der Bericht zeigt immer die Kette) und "Alle | Strom | Waerme |
+   Kaelte" (je Sitzung wie die Versionswahl). Jede Wahl ist ein eigenes Bildpaar breit/schmal
+   aus dem Stand (ErgebnisFlussStand.Bild, beim ersten Bedarf gebaut und dort gehalten); ein
+   Filter ohne Fluss nennt seinen Grund im Bild und als leise Zeile darueber.
+
+   HERVORHEBUNG (Konzept 3.3). Beim Ueberfahren oder Antippen eines Knotens bleibt sein
+   Umfeld bis zum naechsten Bus voll, der Rest wird abgeblendet; ein Band hebt sich selbst
+   hervor (beide Stummel eines Verbinders gemeinsam). Das macht das eigene kleine Modul
+   epos-energiefluss.js an der figure - aus den Kanten und Bussen der Huelle (data-kanten,
+   data-busse), ohne Rundlauf und OHNE Aenderung am Baustein DiagrammSvg, dessen Zeigerzeile
+   unberuehrt bleibt. Ohne Modul steht das Bild unverhervorgehoben da. Nichts davon im Bericht.
+
    WOHER. Der Stand kommt fertig aus der Huelle (FlussLaden: Kern EnergieflussCtrl/
    Energiefluss -> EnergieflussAbbildung -> ChartRenderer.EnergieflussModell), je Version
    und Simulationsstand zwischengespeichert; die Komponente baut ihren Baum nur bei einer
    neuen Referenz. Ohne Versionen zeichnet sie nichts. *@
 
+@using Microsoft.JSInterop
+@implements IAsyncDisposable
+@inject IJSRuntime Js
+
 @if (Versionen.Count > 0)
 {
     <div class="epos-ergebnis-fluss" data-version="@_gewaehlt">
         <div class="epos-ergebnis-fluss-kopf">
-            <Auswahlfeld Bezeichnung="@Texte.Version" Eintraege="@_eintraege" Auswahl="@_gewaehlt"
-                         AuswahlChanged="BeiVersion" />
+            <div class="epos-ergebnis-fluss-version">
+                <Auswahlfeld Bezeichnung="@Texte.Version" Eintraege="@_eintraege" Auswahl="@_gewaehlt"
+                             AuswahlChanged="BeiVersion" />
+            </div>
+            @if (_stand is not null && _stand.HatBild)
+            {
+                @Gruppe(GRUPPE_DARSTELLUNG, Texte.Darstellung, ErgebnisFlussWahl.DARSTELLUNGEN, Darstellung, Texte.Darstellungen, _darstellungKnoepfe)
+                @Gruppe(GRUPPE_FILTER, Texte.Filter, ErgebnisFlussWahl.FILTER, Filter, Texte.Filterknoepfe, _filterKnoepfe)
+            }
         </div>
         @if (_stand is null || _stand.NichtSimuliert)
         {
@@ -44,15 +70,21 @@
         }
         else
         {
-            <figure class="epos-ergebnis-fluss-bild" aria-label="@Bildtext" aria-describedby="@TextId">
+            @if (!string.IsNullOrEmpty(_bild?.Hinweis))
+            {
+                <p class="epos-leisezeile epos-ergebnis-fluss-filterhinweis" role="status">@_bild!.Hinweis</p>
+            }
+            <figure class="epos-ergebnis-fluss-bild" aria-label="@Bildtext" aria-describedby="@TextId" @ref="_figur"
+                    data-darstellung="@Darstellung" data-filter="@Filter"
+                    data-kanten="@_stand.KantenJson" data-busse="@_stand.BusseJson">
                 <div class="epos-ergebnis-fluss-mass epos-ergebnis-fluss-mass--breit">
-                    <DiagrammSvg Modell="@_stand.Breit" Kennung="@("ergebnis-fluss-" + _stand.IdProjekt + "-breit")"
+                    <DiagrammSvg Modell="@_bild?.Breit" Kennung="@("ergebnis-fluss-" + _stand.IdProjekt + "-breit")"
                                  Vorlagenfeld="stand.bild.energiefluss" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
                                  VorlagenfeldHinweis="@Resource.VF_ORT_ENERGIEFLUSS"
                                  Bezeichnung="@Bildtext" OhneZoom="true" LegendeSchaltbar="false" />
                 </div>
                 <div class="epos-ergebnis-fluss-mass epos-ergebnis-fluss-mass--schmal">
-                    <DiagrammSvg Modell="@_stand.Schmal" Kennung="@("ergebnis-fluss-" + _stand.IdProjekt + "-schmal")"
+                    <DiagrammSvg Modell="@_bild?.Schmal" Kennung="@("ergebnis-fluss-" + _stand.IdProjekt + "-schmal")"
                                  Vorlagenfeld="stand.bild.energiefluss" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
                                  VorlagenfeldHinweis="@Resource.VF_ORT_ENERGIEFLUSS"
                                  Bezeichnung="@Bildtext" OhneZoom="true" LegendeSchaltbar="false" />
@@ -84,6 +116,12 @@
 }
 
 @code {
+    /// <summary>Das Modul der Hervorhebung (eigenes kleines Modul der Komponente; der Baustein bleibt unberührt).</summary>
+    private const string MODUL = "./_content/EPOS.UI/epos-energiefluss.js";
+
+    private const string GRUPPE_DARSTELLUNG = "darstellung";
+    private const string GRUPPE_FILTER = "filter";
+
     /// <summary>Die Versionen der Wahl in der Reihenfolge der Spalten, der Stamm zuerst.</summary>
     [Parameter] public IReadOnlyList<ErgebnisFlussVersion> Versionen { get; set; } = Array.Empty<ErgebnisFlussVersion>();
 
@@ -96,6 +134,18 @@
     /// <summary>Meldet die neu gewählte Version an die Hülle.</summary>
     [Parameter] public Action<int>? FlussVersionGewechselt { get; set; }
 
+    /// <summary>Liest die gemerkte Darstellung („kette“ | „stufen“) aus der Einstellungsnaht der Hülle; ohne Leseweg die Kette.</summary>
+    [Parameter] public Func<string>? FlussDarstellungLesen { get; set; }
+
+    /// <summary>Meldet die neue Darstellung an die Hülle, die sie je Benutzer ablegt.</summary>
+    [Parameter] public Action<string>? FlussDarstellungGewechselt { get; set; }
+
+    /// <summary>Liest den Formfilter der Sitzung („alle“, „strom“, „waerme“, „kaelte“); ohne Leseweg „alle“.</summary>
+    [Parameter] public Func<string>? FlussFilterLesen { get; set; }
+
+    /// <summary>Meldet den neuen Formfilter an die Sitzungsablage der Hülle.</summary>
+    [Parameter] public Action<string>? FlussFilterGewechselt { get; set; }
+
     /// <summary>Die Beschriftungen der Ansicht.</summary>
     [Parameter] public ErgebnisFlussTexte Texte { get; set; } = new();
 
@@ -104,6 +154,32 @@
     private IReadOnlyList<(int Id, string Text)> _eintraege = Array.Empty<(int, string)>();
     private int? _gewaehlt;
     private ErgebnisFlussStand? _stand;
+    private ErgebnisFlussBild? _bild;
+    private string? _darstellung;
+    private string? _filter;
+    private readonly ElementReference[] _darstellungKnoepfe = new ElementReference[2];
+    private readonly ElementReference[] _filterKnoepfe = new ElementReference[4];
+    private string? _fokusGruppe;
+    private ElementReference _figur;
+    private IJSObjectReference? _modul;
+    private bool _modulVersucht;
+    private string? _figurGebunden;
+    private ErgebnisFlussBild? _bildGebunden;
+
+    /// <summary>Die gezeigte Darstellung („kette“ oder „stufen“; Prüfhilfe). Gelesen einmal aus der Hülle, Vorgabe Kette.</summary>
+    public string Darstellung => _darstellung ??= ErgebnisFlussWahl.Darstellung(FlussDarstellungLesen?.Invoke());
+
+    /// <summary>Der gezeigte Formfilter („alle“, „strom“, „waerme“, „kaelte“; Prüfhilfe). Gelesen einmal aus der Hülle, Vorgabe „alle“.</summary>
+    public string Filter => _filter ??= ErgebnisFlussWahl.Filter(FlussFilterLesen?.Invoke());
+
+    /// <summary>Das gezeigte Bildpaar der Wahl (Prüfhilfe); <c>null</c> ohne Bild.</summary>
+    public ErgebnisFlussBild? Bild => _bild;
+
+    /// <summary>Der Name der gezeigten Darstellung, wie ihr Knopf ihn trägt.</summary>
+    public string DarstellungName => Texte.Darstellungen.TryGetValue(Darstellung, out string? t) ? t : Darstellung;
+
+    /// <summary>Der Name des gezeigten Filters, wie sein Knopf ihn trägt.</summary>
+    public string FilterName => Texte.Filterknoepfe.TryGetValue(Filter, out string? t) ? t : Filter;
 
     /// <summary>Die gewählte Version (Projekt-Id; Prüfhilfe).</summary>
     public int? Gewaehlt => _gewaehlt;
@@ -130,7 +206,118 @@
     }
 
     private void Laden()
-        => _stand = _gewaehlt is int id && FlussLaden is not null ? FlussLaden(id) : null;
+    {
+        _stand = _gewaehlt is int id && FlussLaden is not null ? FlussLaden(id) : null;
+        BildWaehlen();
+    }
+
+    /// <summary>Das Bildpaar der Wahl aus dem Stand — dort gebaut beim ersten Bedarf, sonst dieselbe Referenz.</summary>
+    private void BildWaehlen()
+        => _bild = _stand is { HatBild: true } ? _stand.Bild(Darstellung, Filter) : null;
+
+    /// <summary>Eine Knopfgruppe im Muster des Umschalters „Tabelle | Grafik | Fluss“: ein Tabulatorhalt, Pfeile, Pos1, Ende.</summary>
+    private RenderFragment Gruppe(string gruppe, string bezeichnung, IReadOnlyList<string> stellungen, string gewaehlt,
+                                  IReadOnlyDictionary<string, string> texte, ElementReference[] knoepfe) => __builder =>
+    {
+        <span class="epos-ergebnis-ansicht epos-ergebnis-fluss-wahl" role="radiogroup" aria-label="@bezeichnung" title="@bezeichnung"
+              data-gruppe="@gruppe" @onkeydown="e => BeiTaste(gruppe, stellungen, e)">
+            @for (int k = 0; k < stellungen.Count; k++)
+            {
+                int i = k;
+                string stellung = stellungen[i];
+                bool an = stellung == gewaehlt;
+                <button type="button" role="radio" aria-checked="@(an ? "true" : "false")" tabindex="@(an ? 0 : -1)"
+                        class="@(an ? "epos-ergebnis-ansicht-stellung epos-ergebnis-ansicht-stellung--an" : "epos-ergebnis-ansicht-stellung")"
+                        data-wahl="@stellung" @ref="knoepfe[i]"
+                        @onclick="() => Setzen(gruppe, stellung)">@(texte.TryGetValue(stellung, out string? t) ? t : stellung)</button>
+            }
+        </span>
+    };
+
+    private void Setzen(string gruppe, string wert)
+    {
+        if (gruppe == GRUPPE_DARSTELLUNG)
+        {
+            if (wert == Darstellung) return;
+            _darstellung = ErgebnisFlussWahl.Darstellung(wert);
+            FlussDarstellungGewechselt?.Invoke(_darstellung);
+        }
+        else
+        {
+            if (wert == Filter) return;
+            _filter = ErgebnisFlussWahl.Filter(wert);
+            FlussFilterGewechselt?.Invoke(_filter);
+        }
+        BildWaehlen();
+    }
+
+    private void BeiTaste(string gruppe, IReadOnlyList<string> st, KeyboardEventArgs e)
+    {
+        string jetzt = gruppe == GRUPPE_DARSTELLUNG ? Darstellung : Filter;
+        int i = 0;
+        for (int k = 0; k < st.Count; k++) if (st[k] == jetzt) i = k;
+        string? neu = e.Key switch
+        {
+            "ArrowRight" or "ArrowDown" => st[(i + 1) % st.Count],
+            "ArrowLeft" or "ArrowUp" => st[(i + st.Count - 1) % st.Count],
+            "Home" => st[0],
+            "End" => st[st.Count - 1],
+            _ => null
+        };
+        if (neu is null || neu == jetzt) return;
+        Setzen(gruppe, neu);
+        _fokusGruppe = gruppe;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_fokusGruppe is string g)
+        {
+            _fokusGruppe = null;
+            IReadOnlyList<string> st = g == GRUPPE_DARSTELLUNG ? ErgebnisFlussWahl.DARSTELLUNGEN : ErgebnisFlussWahl.FILTER;
+            ElementReference[] knoepfe = g == GRUPPE_DARSTELLUNG ? _darstellungKnoepfe : _filterKnoepfe;
+            string jetzt = g == GRUPPE_DARSTELLUNG ? Darstellung : Filter;
+            int i = 0;
+            for (int k = 0; k < st.Count; k++) if (st[k] == jetzt) i = k;
+            try { await knoepfe[i].FocusAsync(preventScroll: true); }
+            catch (Exception) { /* Ohne Browser (Prüfstand) gibt es keinen Fokus. */ }
+        }
+
+        // DIE HERVORHEBUNG bindet sich EINMAL je figure an das Element (Ereignisdelegation); das Modul liest Kanten und
+        // Busse bei jedem Ereignis vom Attribut. Ein neues Bildpaar im selben Element hebt eine stehende Hervorhebung auf
+        // (seine Elemente sind neu und trügen sonst alle die Abblendung).
+        if (_bild is null || string.IsNullOrEmpty(_figur.Id)) return;
+        bool neueFigur = _figurGebunden != _figur.Id, neuesBild = !ReferenceEquals(_bild, _bildGebunden);
+        if (!neueFigur && !neuesBild) return;
+        _bildGebunden = _bild;
+        try
+        {
+            if (!_modulVersucht)
+            {
+                _modulVersucht = true;
+                _modul = await Js.InvokeAsync<IJSObjectReference>("import", MODUL);
+            }
+            if (_modul is null) return;
+            if (neueFigur)
+            {
+                _figurGebunden = _figur.Id;
+                await _modul.InvokeVoidAsync("binden", _figur);
+            }
+            else await _modul.InvokeVoidAsync("aufheben", _figur);
+        }
+        catch (Exception)
+        {
+            // Ohne Modul steht das Bild ohne Hervorhebung da - kein Fehlschlag.
+            _modul = null;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_modul is null) return;
+        try { await _modul.DisposeAsync(); }
+        catch (Exception) { /* Die Verbindung ist schon fort. */ }
+    }
 
     private void BeiVersion(int? id)
     {

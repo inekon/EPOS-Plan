@@ -507,6 +507,32 @@ im Kopf, seine Einstellung bleibt für Tabelle und Grafik gültig.
   `-wertetabelle` (sichtbar, nicht nur Sprachausgabe — die Tabelle ist die Textalternative und
   zugleich die Nachprüfung der Zahlen); Prüfung in `StilblattTests`.
 
+### 4.3a Darstellung, Formfilter, Hervorhebung (SK-2d-2)
+
+- **Kopf:** neben der Versionswahl zwei Knopfgruppen im Muster des Umschalters (`role="radiogroup"`, ein Tabulatorhalt
+  je Gruppe, Pfeiltasten, Pos1/Ende, Klassen `.epos-ergebnis-ansicht` + `.epos-ergebnis-fluss-wahl`, `data-gruppe`
+  `darstellung` bzw. `filter`, `data-wahl` je Knopf): „Kette | Stufen“ (`EF_DARSTELLUNG_*`, Sprachausgabe
+  `BK_ERG_FLUSS_DARSTELLUNG`) und „Alle | Strom | Wärme | Kälte“ (`EF_FILTER_ALLE`, `EF_LEG_*`, Sprachausgabe
+  `BK_ERG_FLUSS_FILTER`). Die Ablagewerte sind sprachneutral (`ErgebnisFlussWahl`: `kette`/`stufen`,
+  `alle`/`strom`/`waerme`/`kaelte`); die Hülle bildet sie auf `EnergieflussDarstellung` und `EnergieflussFilter` ab.
+- **Merken:** die Darstellung je Benutzer unter `Uebersicht.Ergebnisse.Fluss.Darstellung` (Lesen/Schreiben über die Hülle,
+  ein unbekannter Wert gilt als Kette), der Filter je Sitzung in der Hülle wie die Versionswahl.
+- **Puffer:** `ErgebnisFlussStand.Bild(darstellung, filter)` liefert das Bildpaar breit/schmal samt `Hinweis`; Kette/„Alle“
+  sind `Breit`/`Schmal` des Standes, jede andere Wahl baut der Delegat `Bildbau` der Hülle (`EnergieflussAbbildung.Gefiltert`
+  → `ChartRenderer.EnergieflussModell` zweimal) beim ersten Bedarf, danach dieselbe Referenz. Der Stand liegt im Puffer der
+  Hülle je Version, Simulationsstand und Sprache; die Komponente wählt das Bild nur bei einem Wechsel, nie je Rendern.
+- **Leerer Filter:** der Renderer schreibt den Hinweis ins Bild, die Komponente nennt ihn zusätzlich als leise Zeile
+  `.epos-ergebnis-fluss-filterhinweis` über dem Bild; die Knöpfe bleiben.
+- **Hervorhebung:** eigenes kleines Modul `EPOS.UI/wwwroot/epos-energiefluss.js` der Komponente, gebunden an die `figure`
+  (Ereignisdelegation `pointerover`/`pointerdown`, `pointerleave` der Maus hebt auf); `DiagrammSvg` und `epos-diagramm.js`
+  bleiben unberührt (Vertrag 3.3), die Zeigerzeile zeigt den Wert wie bisher. Kanten und Busse als JSON an der `figure`
+  (`data-kanten`, `data-busse`, aus den ungefilterten Bilddaten); hervorgehoben werden die Marken des Umfelds samt den Knoten
+  an diesen Bändern (Klasse `epos-fluss-an`), die `figure` trägt `epos-ergebnis-fluss-bild--hervor`, das Stilblatt blendet
+  übrige Bänder und Knoten auf Deckkraft 0,18 ab. Ein neues Bildpaar hebt eine stehende Hervorhebung auf. Ohne Modul steht
+  das Bild ohne Hervorhebung; Tastatur und Fokus wie die Zeigerzeile (keine Elementfokusse im Bild).
+- **KI-Sicht:** die Ansichtszeile lautet „Ansicht: Fluss (Energieflussbild der Version …; Darstellung …; Energieform …)“; die
+  Flussliste bleibt die der ganzen Version.
+
 ### 4.4 Textalternative, Zeigerzeile, Hinweise
 
 - **Keine sichtbare Wertetabelle unter dem Bild** (SK-Q12): Die Werte stehen im Reiter
@@ -602,7 +628,7 @@ dem Merge. Kein Schemaschritt (Abschnitt 1.7).
 | **SK-3** Oberfläche | dritte Stellung, `UebersichtErgebnisFluss.razor` + Daten, Hülle `FlussLaden`, Stilblatt, Versionswahl, Textalternative verborgen, Hinweise, KI-Text, Wiki-Quelle „Varianten“ | `UebersichtErgebnisseTests`, `UebersichtErgebnisFlussTests`, `StilblattTests`, `KiMaskenabdeckungWacheTests`, `WikiProduktdatenWacheTests`; Windows-Schale mit `EnableWindowsTargeting=true` gebaut (keine Hülle der Schale betroffen, Nachweis trotzdem); `diagrammprobe.mjs` Fall `fluss` |
 | **SK-2c** Variante A | Abbildung (Speicher falten, Kleinstverluste, Nullbänder, Spur, Rolle = Energieform, Legende), Renderer (Spalten aus dem längsten Weg zur Senke, Spuren, Relaxation und Tausch, Wegpunkte, Kästen, Verlustabzweige, Tönung und Saum, Legende, Maße, Kreuzungszahl), Rollen `STROM` und `WAERME`, Ressourcen beider Sprachen, Konzept 3, 5, 10 und 12 | `EnergieflussModellTests`, `EnergieflussAbbildungTests`, `EnergieflussReferenzprojektWacheTests` (Kreuzungszahlen), `ChartRendererRollenTests`, `FarbpaletteTests`, UI-Tests der Ansicht Fluss; ChartProben 0 Verstöße, die zwölf `energiefluss*`-Zeilen der Messlatte ersetzt; Sichtprüfung der vier Referenzprojekte gegen die Vorlage der Recherche |
 | **SK-2d-1** Stufen, schmale Fassung, Filter (Kern) | Darstellung Stufen (Variante B, SK-Q17): vier feste Spalten Einsatz \| Anlagen \| Energieform \| Nutzen mit Titeln (`EF_ST_*`), Verbinder (Stummel „→ Gerät“ am Bus, „Strom“ am Gerät, gemeinsame Marke, Pfeilspitze und Kreis) über die Naht `Verbinderregel` und `EfBand.Verbinder`; dieselbe Verbinderregel für die schmale Fassung und als Rückfall der Kette über sechs Spalten; Formfilter als eigene Bilddaten (`EnergieflussFilter`, `EnergieflussAbbildung.Gefiltert`, leerer Filter benannt); Hervorhebungsregel als Vertrag (3.3) mit Referenz `EnergieflussAbbildung.Umfeld`; Schnittstelle 3.5; `EF_SP_QUELLEN/WANDLER/BEDARF` entfernt | `EnergieflussModellTests` (Stufen, Verbinder, schmal, Rückfall, Hinweis), `EnergieflussAbbildungTests` (Titel, Filter, Umfeld), `EnergieflussReferenzprojektWacheTests` (Stufen kreuzungsfrei, Verbinder schmal, Filter), ChartProben (Stufen, Filter, Gegenproben, SVG), Messlatte `energiefluss*` 22 Zeilen |
-| **SK-2d-2** Oberfläche: Schalter, Filter, Hervorhebung | Schalter „Kette \| Stufen“ in der Ansicht Fluss (Vorgabe Kette, je Benutzer gemerkt wie `Uebersicht.Ergebnisse.Ansicht`, der Bericht zeigt die Kette), Filterknöpfe Alle \| Strom \| Wärme \| Kälte (je Sitzung), Hülle hält 16 Modelle je Version (3.5), Hinweiszeile des leeren Filters; Pfad-Hervorhebung bis zum nächsten Bus im Modul von `DiagrammSvg` aus Kanten und Bussen der Hülle (Vertrag 3.3), Stilblatt | `UebersichtErgebnisFlussTests`, `StilblattTests`, `diagrammprobe.mjs` Fall `fluss` samt Gegenprobe (Hervorhebung gegen `Umfeld`), Windows-Schale mit `EnableWindowsTargeting=true` gebaut |
+| **SK-2d-2** Oberfläche: Schalter, Filter, Hervorhebung | Schalter „Kette \| Stufen“ in der Ansicht Fluss (Vorgabe Kette, je Benutzer gemerkt unter `Uebersicht.Ergebnisse.Fluss.Darstellung`, der Bericht zeigt die Kette), Filterknöpfe Alle \| Strom \| Wärme \| Kälte (je Sitzung), der Stand im Puffer der Hülle hält die 16 Modelle je Version, gebaut beim ersten Bedarf (4.3a), Hinweiszeile des leeren Filters; Pfad-Hervorhebung bis zum nächsten Bus im eigenen Modul `epos-energiefluss.js` der Komponente aus Kanten und Bussen der Hülle (Vertrag 3.3, `DiagrammSvg` unberührt), Stilblatt, KI-Ansichtszeile, Wiki-Quelle „Varianten“ | `UebersichtErgebnisFlussTests`, `StilblattTests`, `KiMaskenabdeckungWacheTests`; `diagrammprobe.mjs` Fälle `fluss`, `hervorhebung` (gegen `Umfeld`, Gegenproben ohne Modul und ohne Regel) und `wahl`, `zoom` unverändert; Windows-Schale mit `EnableWindowsTargeting=true` gebaut |
 | **SK-4** Bericht | `Berichtsbilder.Energiefluss`, Vorlagenfeld und Schalter, Katalogfassung 25 mit Messlatte v25, Baustein „Ergebnisse je Variante“, Wiki-Quelle Bericht | `VorlagenfeldkatalogWacheTests`, `VorlagenprueferTests`, `WordBaukastenTests`, Wortbericht eines Referenzprojekts mit Bild (Sichtprobe) |
 | **SK-5** Abschluss | Statuszeile, Protokoll unter `ueberholt/Protokolle/`, Logbuch-Entwurf, Konzept Diagramme Abschnitt 9 um die fünf Rollen ergänzt, dieses Papier nach `ueberholt/` mit Indexzeile | `DokumentationLinkWacheTests`, `RepositoryOrdnungWacheTests` |
 

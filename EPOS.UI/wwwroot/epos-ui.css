@@ -5956,10 +5956,33 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 .epos-ergebnis-fluss-kopf {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-end;
     gap: 8px 18px;
     margin: 0 0 8px 0;
-    max-width: 480px;
+}
+
+/* Die Versionswahl behaelt ihre Breite; daneben die beiden Knopfgruppen "Kette | Stufen" und
+   "Alle | Strom | Waerme | Kaelte" im Muster des Umschalters (.epos-ergebnis-ansicht), die auf
+   schmaler Flaeche unter die Wahl brechen (SK-2d-2). */
+.epos-ergebnis-fluss-version {
+    flex: 0 1 320px;
+    min-width: 0;
+}
+
+.epos-ergebnis-fluss-wahl {
+    flex-wrap: wrap;
+}
+
+/* Die Hervorhebung (Konzept 3.3): Solange das Modul epos-energiefluss.js die figure markiert,
+   bleiben Umfeld und Knoten mit epos-fluss-an voll, die uebrigen Baender und Knoten werden
+   abgeblendet; Stufentitel, Legende und Hinweis bleiben unberuehrt. Keine Farbe - nur Deckkraft. */
+.epos-ergebnis-fluss-bild--hervor [data-marke^="fluss:"]:not(.epos-fluss-an),
+.epos-ergebnis-fluss-bild--hervor [data-marke^="knoten:"]:not(.epos-fluss-an) {
+    opacity: 0.18;
+}
+
+.epos-ergebnis-fluss-filterhinweis {
+    margin: 0 0 4px 0;
 }
 
 .epos-ergebnis-fluss-bild {

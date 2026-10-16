@@ -5958,7 +5958,13 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
     <value>Bilanz je Knoten</value>
   </data>
   <data name="BK_ERG_FLUSS_ZEIGER" xml:space="preserve">
-    <value>Die Werte erscheinen beim Überfahren oder Antippen eines Bandes oder Knotens; die Zahlen stehen im Reiter „Tabelle“.</value>
+    <value>Die Werte erscheinen beim Überfahren oder Antippen eines Bandes oder Knotens, sein Umfeld wird hervorgehoben; die Zahlen stehen im Reiter „Tabelle“.</value>
+  </data>
+  <data name="BK_ERG_FLUSS_DARSTELLUNG" xml:space="preserve">
+    <value>Darstellung des Energieflussbilds</value>
+  </data>
+  <data name="BK_ERG_FLUSS_FILTER" xml:space="preserve">
+    <value>Energieform</value>
   </data>
   <data name="BK_ERG_FLUSS_HINWEIS_UMWELT" xml:space="preserve">
     <value>Umweltwärme und Umweltkälte sind als Umweltanteil gezeigt: Nutzenergie des Erzeugers abzüglich seines Stroms.</value>

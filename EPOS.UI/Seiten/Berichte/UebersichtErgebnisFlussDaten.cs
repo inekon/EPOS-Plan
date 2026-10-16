@@ -93,6 +93,99 @@ public sealed class ErgebnisFlussStand
 
     /// <summary>Steht ein Bild?</summary>
     public bool HatBild => Breit is not null && Schmal is not null;
+
+    /// <summary>
+    /// Die Kanten des ungefilterten Bildes als JSON für die Hervorhebung (Konzept 3.3): je Band
+    /// <c>["fluss:&lt;von&gt;:&lt;nach&gt;", "&lt;von&gt;", "&lt;nach&gt;"]</c>. Das Modul zerlegt die Marke nicht; ein gefiltertes
+    /// Bild ist eine Teilmenge, eine Marke ohne Element wird übergangen. Leer = keine Hervorhebung.
+    /// </summary>
+    public string KantenJson { get; init; } = "[]";
+
+    /// <summary>Die Kennungen der Busse des ungefilterten Bildes als JSON (<c>["strom", …]</c>) — ein Bus beendet den Weg.</summary>
+    public string BusseJson { get; init; } = "[]";
+
+    /// <summary>
+    /// Baut das Bild einer Darstellung und eines Formfilters (Hülle, Kern <c>EnergieflussAbbildung.Gefiltert</c> →
+    /// <c>ChartRenderer.EnergieflussModell</c> breit und schmal). Gerufen nur beim ersten Bedarf über <see cref="Bild"/>.
+    /// </summary>
+    public Func<string, string, ErgebnisFlussBild>? Bildbau { get; init; }
+
+    private readonly Dictionary<string, ErgebnisFlussBild> _bilder = new(StringComparer.Ordinal);
+    private readonly object _sperre = new();
+
+    /// <summary>Wie viele Bilder dieser Stand schon gebaut hat (Prüfhilfe des Puffers).</summary>
+    public int GebauteBilder { get { lock (_sperre) return _bilder.Count; } }
+
+    /// <summary>
+    /// <b>Das Bild einer Darstellung und eines Filters</b> (Konzept 3.5) — je Stand höchstens einmal gebaut und dann
+    /// dieselbe Referenz, nie je Rendern. Kette und „Alle“ sind <see cref="Breit"/> und <see cref="Schmal"/>; ohne
+    /// <see cref="Bildbau"/> gilt für jede Wahl dieses Bild. Unbekannte Werte gelten als Kette bzw. „Alle“.
+    /// </summary>
+    public ErgebnisFlussBild Bild(string? darstellung, string? filter)
+    {
+        string d = ErgebnisFlussWahl.Darstellung(darstellung), f = ErgebnisFlussWahl.Filter(filter);
+        string schluessel = d + "|" + f;
+        lock (_sperre)
+        {
+            if (_bilder.TryGetValue(schluessel, out ErgebnisFlussBild? da)) return da;
+            ErgebnisFlussBild neu;
+            if (d == ErgebnisFlussWahl.KETTE && f == ErgebnisFlussWahl.ALLE) neu = new ErgebnisFlussBild { Breit = Breit, Schmal = Schmal };
+            else if (Bildbau is null) neu = Bild(ErgebnisFlussWahl.KETTE, ErgebnisFlussWahl.ALLE);   // die Sperre ist wiedereintrittsfähig
+            else neu = Bildbau(d, f);
+            _bilder[schluessel] = neu;
+            return neu;
+        }
+    }
+}
+
+/// <summary>Ein Bild der Ansicht „Fluss“ zu einer Darstellung und einem Filter: breit, schmal und der Hinweis eines leeren Filters.</summary>
+public sealed class ErgebnisFlussBild
+{
+    /// <summary>Das Zeichenmodell für die breite Fläche (1 180 px).</summary>
+    public Zeichenmodell? Breit { get; init; }
+
+    /// <summary>Das Zeichenmodell für die schmale Fläche (680 px).</summary>
+    public Zeichenmodell? Schmal { get; init; }
+
+    /// <summary>Der benannte Grund eines leeren Filters („Kälte: keine Flüsse in dieser Version“); leer = keiner.</summary>
+    public string Hinweis { get; init; } = "";
+}
+
+/// <summary>
+/// Die Ablagewerte der beiden Wahlen über dem Energieflussbild: Darstellung „Kette | Stufen“ (je Benutzer gemerkt, SK-Q17)
+/// und Formfilter „Alle | Strom | Wärme | Kälte“ (je Sitzung). Sprachneutral; die Hülle bildet sie auf den Kern ab.
+/// </summary>
+public static class ErgebnisFlussWahl
+{
+    /// <summary>Die gestraffte Kette (Vorgabe, auch im Wortbericht).</summary>
+    public const string KETTE = "kette";
+
+    /// <summary>Die vier Stufen mit Verbindern.</summary>
+    public const string STUFEN = "stufen";
+
+    /// <summary>Jeder Fluss (Vorgabe).</summary>
+    public const string ALLE = "alle";
+
+    /// <summary>Nur der Strom und die Wandler, die ihn erzeugen oder verbrauchen.</summary>
+    public const string STROM = "strom";
+
+    /// <summary>Nur die Wärme und die Wandler, die sie erzeugen oder verbrauchen.</summary>
+    public const string WAERME = "waerme";
+
+    /// <summary>Nur die Kälte und die Wandler, die sie erzeugen oder verbrauchen.</summary>
+    public const string KAELTE = "kaelte";
+
+    /// <summary>Die Stellungen der Darstellung in Reihenfolge.</summary>
+    public static readonly IReadOnlyList<string> DARSTELLUNGEN = new[] { KETTE, STUFEN };
+
+    /// <summary>Die Stellungen des Filters in Reihenfolge.</summary>
+    public static readonly IReadOnlyList<string> FILTER = new[] { ALLE, STROM, WAERME, KAELTE };
+
+    /// <summary>Ein gültiger Wert der Darstellung; unbekannt oder leer = Kette.</summary>
+    public static string Darstellung(string? wert) => wert == STUFEN ? STUFEN : KETTE;
+
+    /// <summary>Ein gültiger Wert des Filters; unbekannt oder leer = „Alle“.</summary>
+    public static string Filter(string? wert) => wert is STROM or WAERME or KAELTE ? wert : ALLE;
 }
 
 /// <summary>
@@ -129,7 +222,26 @@ public sealed class ErgebnisFlussTexte
     /// <summary>Die Überschrift der Knotenbilanz der Textalternative (<c>BK_ERG_FLUSS_TEXT_KNOTEN</c>).</summary>
     public string TextKnoten { get; init; } = "Bilanz je Knoten";
 
+    /// <summary>Die Sprachausgabe der Wahl „Kette | Stufen“ (<c>BK_ERG_FLUSS_DARSTELLUNG</c>).</summary>
+    public string Darstellung { get; init; } = "Darstellung des Energieflussbilds";
+
+    /// <summary>Die Sprachausgabe der Filterknöpfe (<c>BK_ERG_FLUSS_FILTER</c>).</summary>
+    public string Filter { get; init; } = "Energieform";
+
+    /// <summary>Die Beschriftung je Stellung der Darstellung (Schlüssel <see cref="ErgebnisFlussWahl.KETTE"/>, <see cref="ErgebnisFlussWahl.STUFEN"/>; <c>EF_DARSTELLUNG_*</c>).</summary>
+    public IReadOnlyDictionary<string, string> Darstellungen { get; init; } = new Dictionary<string, string>
+    {
+        [ErgebnisFlussWahl.KETTE] = "Kette", [ErgebnisFlussWahl.STUFEN] = "Stufen"
+    };
+
+    /// <summary>Die Beschriftung je Filterknopf (Schlüssel aus <see cref="ErgebnisFlussWahl.FILTER"/>; <c>EF_FILTER_ALLE</c>, <c>EF_LEG_*</c>).</summary>
+    public IReadOnlyDictionary<string, string> Filterknoepfe { get; init; } = new Dictionary<string, string>
+    {
+        [ErgebnisFlussWahl.ALLE] = "Alle", [ErgebnisFlussWahl.STROM] = "Strom",
+        [ErgebnisFlussWahl.WAERME] = "Wärme", [ErgebnisFlussWahl.KAELTE] = "Kälte"
+    };
+
     /// <summary>Die leise Zeile zur Bedienung des Zeigers (<c>BK_ERG_FLUSS_ZEIGER</c>).</summary>
     public string Zeiger { get; init; } =
-        "Die Werte erscheinen beim Überfahren oder Antippen eines Bandes oder Knotens; die Zahlen stehen im Reiter „Tabelle“.";
+        "Die Werte erscheinen beim Überfahren oder Antippen eines Bandes oder Knotens, sein Umfeld wird hervorgehoben; die Zahlen stehen im Reiter „Tabelle“.";
 }

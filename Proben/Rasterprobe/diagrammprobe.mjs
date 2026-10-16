@@ -43,8 +43,25 @@
 //  pointer-events: none auf den Elementen des Bildes - die Zeile bleibt leer, die
 //  Probe muss verfehlen.
 //
+//  Abgetastet werden nur Elemente mit einer Marke "fluss:" oder "knoten:" - die Farbfelder
+//  der Legende (Marke "legende:", ohne Wert) und die Stufentitel tragen keinen Zeigertext.
+//
+//  FALL "hervorhebung" (--fall hervorhebung, SK-2d-2): das Umfeld beim Ueberfahren. Fuer
+//  einen Wandler und einen Bus des Stamms stimmt die Menge der hervorgehobenen Baender
+//  (Klasse epos-fluss-an, Marke "fluss:") mit dem Soll des Kerns ueberein
+//  (EnergieflussAbbildung.Umfeld, vom Wirt verborgen in #uep-umfeld-soll), ein Band
+//  ausserhalb ist abgeblendet (Deckkraft < 0,5), eines im Umfeld voll; in der Darstellung
+//  "Stufen" leuchtet ein Verbinderband allein, mit beiden Stummeln. Maus aus dem Bild -
+//  nichts mehr abgeblendet. GEGENPROBEN: ohne das Modul epos-energiefluss.js (Abruf
+//  verweigert) und ohne die Abblendregel des Stilblatts - beide muessen verfehlen.
+//
+//  FALL "wahl" (--fall wahl, SK-2d-2): die Knopfgruppen ueber dem Bild. Kette ohne
+//  Stufentitel; "Stufen" zeichnet die vier Titel; Filter "Strom" behaelt weniger Baender;
+//  "Kaelte" (die Probe kennt keine Kaelte) zeigt den Hinweis im Bild (Marke "hinweis") und
+//  als leise Zeile; Pfeil links geht auf "Waerme" und behaelt den Fokus in der Gruppe.
+//
 //  AUFRUF (der Wirt muss laufen, siehe LIESMICH.md):
-//    node diagrammprobe.mjs --url http://127.0.0.1:5299 [--fall zoom|fluss] [--fotos <ordner>] [--ohne-gegenprobe]
+//    node diagrammprobe.mjs --url http://127.0.0.1:5299 [--fall zoom|fluss|hervorhebung|wahl] [--fotos <ordner>] [--ohne-gegenprobe]
 //
 //  Rueckgabe 0 = alle Sollwerte erfuellt (und Gegenprobe verfehlt), 1 = Verstoss,
 //  2 = Aufbaufehler.
@@ -204,6 +221,9 @@ async function laufFluss(browser, ohneZeiger) {
           const x = r.x + 4 + (r.width - 8) * gx / 79, y = r.y + 4 + (r.height - 8) * gy / 39;
           const el = document.elementFromPoint(x, y);
           if (!el || !svg.contains(el) || el === svg || !['path', 'rect'].includes(el.tagName)) continue;
+          const markiert = el.closest('[data-marke]');
+          const marke = markiert && svg.contains(markiert) ? markiert.getAttribute('data-marke') : '';
+          if (!marke.startsWith('fluss:') && !marke.startsWith('knoten:')) continue;
           const b = el.getBoundingClientRect();
           if (b.width >= r.width * 0.95 && b.height >= r.height * 0.95) continue;   // Hintergrund
           if (gesehen.has(el)) continue;
@@ -285,6 +305,195 @@ async function laufFluss(browser, ohneZeiger) {
   }
 }
 
+const BREIT = '.epos-ergebnis-fluss-mass--breit';
+
+/** Ein Punkt im breiten Bild, an dem das oberste Element die Marke traegt (das n-te Element dieser Marke zuerst). */
+async function punktFuer(seite, marke, n = 0) {
+  return seite.evaluate(({ marke, n, BREIT }) => {
+    const svg = document.querySelector(BREIT + ' svg');
+    const els = [...svg.querySelectorAll('[data-marke]')].filter(e => e.getAttribute('data-marke') === marke);
+    const reihe = els.slice(n).concat(els.slice(0, n));
+    for (const el of reihe) {
+      const b = el.getBoundingClientRect();
+      for (let gy = 1; gy < 12; gy++)
+        for (let gx = 1; gx < 12; gx++) {
+          const x = b.x + b.width * gx / 12, y = b.y + b.height * gy / 12;
+          const t = document.elementFromPoint(x, y);
+          const m = t && t.closest('[data-marke]');
+          if (m === el) return { x, y };
+        }
+    }
+    return null;
+  }, { marke, n, BREIT });
+}
+
+/** Der Zustand der Hervorhebung im breiten Bild. */
+async function hervorStand(seite) {
+  return seite.evaluate(BREIT => {
+    const figur = document.querySelector('.epos-ergebnis-fluss-bild');
+    const svg = document.querySelector(BREIT + ' svg');
+    const alle = [...svg.querySelectorAll('[data-marke^="fluss:"], [data-marke^="knoten:"]')];
+    const deck = el => parseFloat(getComputedStyle(el).opacity);
+    const an = alle.filter(e => e.classList.contains('epos-fluss-an'));
+    const flussAn = [...new Set(an.map(e => e.getAttribute('data-marke')).filter(m => m.startsWith('fluss:')))].sort();
+    const gezeichnet = [...new Set(alle.map(e => e.getAttribute('data-marke')).filter(m => m.startsWith('fluss:')))];
+    const aus = alle.filter(e => !e.classList.contains('epos-fluss-an') && e.getAttribute('data-marke').startsWith('fluss:'));
+    const abgeblendet = aus.length > 0 && aus.every(e => deck(e) < 0.5);
+    const voll = an.length > 0 && an.every(e => deck(e) > 0.99);
+    const stufen = svg.querySelectorAll('[data-marke^="stufe:"]').length;
+    const stufenVoll = [...svg.querySelectorAll('[data-marke^="stufe:"], [data-marke^="legende:"]')].every(e => deck(e) > 0.99);
+    return { hervor: figur.classList.contains('epos-ergebnis-fluss-bild--hervor'), flussAn, gezeichnet, abgeblendet, voll,
+             ausZahl: aus.length, stufen, stufenVoll, minDeck: alle.length ? Math.min(...alle.map(deck)) : 1 };
+  }, BREIT);
+}
+
+/**
+ * FALL "hervorhebung": das Umfeld eines Wandlers, eines Busses und eines Verbinderbandes gegen das Soll des Kerns.
+ * gegen = null | 'ohne-modul' | 'ohne-regel'.
+ */
+async function laufHervorhebung(browser, gegen) {
+  const seite = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+  const befunde = [];
+  const faelle = [];
+  try {
+    if (gegen === 'ohne-modul') await seite.route('**/epos-energiefluss.js', route => route.abort());
+    await seite.goto(WURZEL + '/uebersichtprobe?ansicht=fluss', { waitUntil: 'networkidle' });
+    await seite.waitForSelector(BREIT + ' svg', { timeout: 20000 });
+    await seite.locator('.epos-ergebnis-fluss-bild').scrollIntoViewIfNeeded();
+    if (gegen === 'ohne-regel')
+      await seite.addStyleTag({ content: '.epos-ergebnis-fluss-bild [data-marke] { opacity: 1 !important; }' });
+    await seite.waitForTimeout(300);
+
+    const soll = await seite.evaluate(() => JSON.parse(document.getElementById('uep-umfeld-soll').getAttribute('data-soll')));
+    const frei = await seite.evaluate(() => {
+      const r = document.querySelector('.epos-ergebnis-fluss-bild').getBoundingClientRect();
+      return { x: r.x + r.width / 2, y: r.bottom + 40 };
+    });
+
+    // Je ein Wandler und ein Bus mit Element im Bild; der Wandler mit dem groessten Umfeld (der Weg reicht ueber Nachbarn).
+    const imBild = await seite.evaluate(BREIT => [...document.querySelectorAll(BREIT + ' svg [data-marke^="knoten:"]')]
+      .map(e => e.getAttribute('data-marke').substring(7)), BREIT);
+    const kandidat = art => Object.entries(soll).filter(([id, s]) => s.art === art && imBild.includes(id))
+      .sort((a, b) => b[1].umfeld.length - a[1].umfeld.length)[0];
+    const knoten = [['Wandler', kandidat('Wandler')], ['Bus', kandidat('Bus')]];
+    for (const [art, k] of knoten) {
+      if (!k) { befunde.push(`kein ${art} im Bild`); continue; }
+      const [id, s] = k;
+      const p = await punktFuer(seite, 'knoten:' + id);
+      if (!p) { befunde.push(`${art} ${id}: kein freier Punkt`); continue; }
+      await seite.mouse.move(frei.x, frei.y);
+      await seite.mouse.move(p.x, p.y);
+      await seite.waitForTimeout(150);
+      const st = await hervorStand(seite);
+      const sollGezeichnet = s.umfeld.filter(m => st.gezeichnet.includes(m)).sort();
+      const gleich = JSON.stringify(sollGezeichnet) === JSON.stringify(st.flussAn);
+      faelle.push(`${art} ${id}: ${st.flussAn.length}/${sollGezeichnet.length} Baender`);
+      if (sollGezeichnet.length === 0) befunde.push(`${art} ${id}: Soll ohne gezeichnetes Band`);
+      if (!gleich) befunde.push(`${art} ${id}: hervorgehoben [${st.flussAn.join(', ')}] statt [${sollGezeichnet.join(', ')}]`);
+      if (st.ausZahl === 0) befunde.push(`${art} ${id}: kein Band ausserhalb des Umfelds`);
+      else if (!st.abgeblendet) befunde.push(`${art} ${id}: Baender ausserhalb nicht abgeblendet`);
+      if (!st.voll) befunde.push(`${art} ${id}: Umfeld nicht voll`);
+      if (!st.stufenVoll) befunde.push(`${art} ${id}: Legende oder Stufentitel abgeblendet`);
+    }
+
+    // Maus aus dem Bild: nichts mehr abgeblendet.
+    await seite.mouse.move(frei.x, frei.y);
+    await seite.waitForTimeout(150);
+    const leer = await hervorStand(seite);
+    if (leer.hervor || leer.minDeck < 0.99) befunde.push('nach dem Verlassen bleibt etwas abgeblendet');
+
+    // Stufen: ein Verbinderband (eine Marke, mehrere Pfade) leuchtet allein, mit beiden Stummeln.
+    await seite.click('[data-gruppe="darstellung"] [data-wahl="stufen"]');
+    await seite.waitForFunction(B => document.querySelectorAll(B + ' svg [data-marke^="stufe:"]').length > 0, BREIT, { timeout: 10000 })
+      .catch(() => befunde.push('Stufen erscheinen nicht'));
+    await seite.waitForTimeout(300);
+    const verbinder = await seite.evaluate(BREIT => {
+      const zahl = new Map();
+      for (const e of document.querySelectorAll(BREIT + ' svg path[data-marke^="fluss:"]'))
+        zahl.set(e.getAttribute('data-marke'), (zahl.get(e.getAttribute('data-marke')) || 0) + 1);
+      return [...zahl.entries()].filter(([, n]) => n > 1).map(([m, n]) => ({ m, n }));
+    }, BREIT);
+    if (verbinder.length === 0) befunde.push('kein Verbinderband in den Stufen');
+    else {
+      const v = verbinder[0];
+      const p = await punktFuer(seite, v.m, 0);
+      if (!p) befunde.push(`Verbinder ${v.m}: kein freier Punkt`);
+      else {
+        await seite.mouse.move(frei.x, frei.y);
+        await seite.mouse.move(p.x, p.y);
+        await seite.waitForTimeout(150);
+        const st = await hervorStand(seite);
+        const pfadeAn = await seite.evaluate(({ BREIT, m }) => [...document.querySelectorAll(BREIT + ' svg path[data-marke]')]
+          .filter(e => e.getAttribute('data-marke') === m && e.classList.contains('epos-fluss-an')).length, { BREIT, m: v.m });
+        faelle.push(`Verbinder ${v.m}: ${pfadeAn}/${v.n} Pfade`);
+        if (JSON.stringify(st.flussAn) !== JSON.stringify([v.m])) befunde.push(`Verbinder ${v.m}: hervorgehoben [${st.flussAn.join(', ')}]`);
+        if (pfadeAn !== v.n) befunde.push(`Verbinder ${v.m}: ${pfadeAn} von ${v.n} Pfaden hervorgehoben`);
+        if (!st.abgeblendet) befunde.push(`Verbinder ${v.m}: Rest nicht abgeblendet`);
+      }
+    }
+    if (FOTOS) {
+      await mkdir(FOTOS, { recursive: true });
+      await seite.locator('.epos-ergebnis-fluss').screenshot({ path: `${FOTOS}/hervorhebung_${gegen || 'probe'}.png` });
+    }
+    return { faelle, befunde };
+  } finally {
+    await seite.close();
+  }
+}
+
+/** FALL "wahl": Darstellung und Formfilter wechseln das Bild, ein leerer Filter nennt seinen Grund. */
+async function laufWahl(browser) {
+  const seite = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+  const befunde = [];
+  try {
+    await seite.goto(WURZEL + '/uebersichtprobe?ansicht=fluss', { waitUntil: 'networkidle' });
+    await seite.waitForSelector(BREIT + ' svg', { timeout: 20000 });
+    const zaehle = () => seite.evaluate(BREIT => {
+      const svg = document.querySelector(BREIT + ' svg');
+      const marken = new Set([...svg.querySelectorAll('[data-marke^="fluss:"]')].map(e => e.getAttribute('data-marke')));
+      return { baender: marken.size, stufen: svg.querySelectorAll('[data-marke^="stufe:"]').length,
+               hinweis: svg.querySelectorAll('[data-marke="hinweis"]').length,
+               zeile: (document.querySelector('.epos-ergebnis-fluss-filterhinweis') || {}).textContent || '',
+               darstellung: document.querySelector('.epos-ergebnis-fluss-bild').getAttribute('data-darstellung'),
+               filter: document.querySelector('.epos-ergebnis-fluss-bild').getAttribute('data-filter') };
+    }, BREIT);
+    const warte = async (bed) => { const ende = Date.now() + 5000; let z = await zaehle();
+      while (!bed(z) && Date.now() < ende) { await seite.waitForTimeout(50); z = await zaehle(); } return z; };
+
+    const kette = await zaehle();
+    if (kette.darstellung !== 'kette' || kette.filter !== 'alle') befunde.push(`Vorgabe ${kette.darstellung}/${kette.filter}`);
+    if (kette.stufen !== 0) befunde.push('die Kette traegt Stufentitel');
+    if (kette.baender < 3) befunde.push(`nur ${kette.baender} Baender in der Kette`);
+
+    await seite.click('[data-gruppe="darstellung"] [data-wahl="stufen"]');
+    const stufen = await warte(z => z.stufen > 0);
+    if (stufen.stufen !== 4) befunde.push(`Stufen: ${stufen.stufen} Titel statt 4`);
+
+    await seite.click('[data-gruppe="filter"] [data-wahl="strom"]');
+    const strom = await warte(z => z.filter === 'strom');
+    if (!(strom.baender > 0 && strom.baender < kette.baender)) befunde.push(`Strom: ${strom.baender} Baender (Alle ${kette.baender})`);
+
+    await seite.click('[data-gruppe="filter"] [data-wahl="kaelte"]');
+    const kaelte = await warte(z => z.filter === 'kaelte');
+    if (kaelte.baender !== 0) befunde.push(`Kaelte: ${kaelte.baender} Baender`);
+    if (kaelte.hinweis !== 1) befunde.push('Kaelte: kein Hinweis im Bild');
+    if (!/K(ä|ae)lte/.test(kaelte.zeile)) befunde.push(`Kaelte: Hinweiszeile "${kaelte.zeile}"`);
+
+    await seite.keyboard.press('ArrowLeft');
+    const waerme = await warte(z => z.filter === 'waerme');
+    const fokus = await seite.evaluate(() => document.activeElement && document.activeElement.getAttribute('data-wahl'));
+    if (waerme.filter !== 'waerme') befunde.push(`Pfeil links: Filter ${waerme.filter}`);
+    if (fokus !== 'waerme') befunde.push(`Pfeil links: Fokus auf ${fokus}`);
+    if (FOTOS) {
+      await mkdir(FOTOS, { recursive: true });
+      await seite.locator('.epos-ergebnis-fluss').screenshot({ path: `${FOTOS}/wahl_waerme_stufen.png` });
+    }
+    return { zahlen: `Kette ${kette.baender} · Stufen ${stufen.stufen} Titel · Strom ${strom.baender} · Kaelte Hinweis ${kaelte.hinweis}`, befunde };
+  } finally {
+    await seite.close();
+  }
+}
+
 let browser;
 try {
   browser = await chromium.launch();
@@ -295,7 +504,26 @@ try {
 
 let rc = 0;
 try {
-  if (FALL === 'fluss') {
+  if (FALL === 'hervorhebung') {
+    const p = await laufHervorhebung(browser, null);
+    console.log(`PROBE   Hervorhebung · ${p.faelle.join(' · ')}`);
+    for (const b of p.befunde) console.log('  VERSTOSS: ' + b);
+    if (p.befunde.length > 0) rc = 1;
+    if (MIT_GEGENPROBE) {
+      for (const gegen of ['ohne-modul', 'ohne-regel']) {
+        const g = await laufHervorhebung(browser, gegen);
+        const verfehlt = g.befunde.length > 0;
+        console.log(`GEGEN   ${gegen}: ${verfehlt ? 'verfehlt (richtig)' : 'erfuellt (FALSCH)'}` +
+                    (g.befunde.length ? ' - ' + g.befunde.slice(0, 3).join('; ') : ''));
+        if (!verfehlt) rc = 1;
+      }
+    }
+  } else if (FALL === 'wahl') {
+    const p = await laufWahl(browser);
+    console.log(`PROBE   Wahl · ${p.zahlen}`);
+    for (const b of p.befunde) console.log('  VERSTOSS: ' + b);
+    if (p.befunde.length > 0) rc = 1;
+  } else if (FALL === 'fluss') {
     const p = await laufFluss(browser, false);
     console.log(`PROBE   Fluss · ${p.elemente} Elemente · ${p.baender} Baender und ${p.knoten} Knoten mit Zeigertext · ` +
                 `${p.alternative} Zeilen Textalternative`);
