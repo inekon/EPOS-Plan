@@ -106,6 +106,8 @@ Der Ergebnisreiter ''Stromspeicher'' zeigt selbst nur '''Ergebnisse'''. Über se
 * {{Anker|extrapolation}}'''Extrapolation der WP-Kennlinie''' – der Schalter ''Extrapolation der WP-Kennlinie erlauben'' steht in der Detailansicht der Wärmepumpe unter ''Kenndaten Kennlinien''; siehe [[Programm Dokumentation/Wärmepumpe#extrapolation|Wärmepumpe: Extrapolation]]. Er ist eine Projekteinstellung für alle Wärmepumpen des Projekts.
 * '''Konfiguration speichern''' – die Konfiguration bleibt dem Projekt erhalten; eine Statuszeile bestätigt das Speichern.
 
+[[Datei:Bildschirmfoto_Simulation.png|mini|zentriert|800px|Konfiguration einer Wärmepumpe – Bildschirmfoto mit Beispieldaten.]]
+
 === Wärmequelle Erdreich ===
 
 * {{Anker|quelle-erdreich}}'''Wärmequelle Erdreich''' – der Dialog gehört zu einer Wärmepumpe, die ihre Wärme aus dem Erdreich holt: Doppelklick auf den Quellen-Eintrag der Anlage, dann ''Erdreich'' in der Quellenwahl.

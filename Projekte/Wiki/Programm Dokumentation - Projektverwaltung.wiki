@@ -1,5 +1,7 @@
 Die '''Projektverwaltung''' hält alle Daten eines Vorhabens zusammen. Fünf Dialoge teilen sich diese Seite: die Projektliste hinter {{Menü|Projekt|Öffnen…}}, ''Projekt Speichern unter'' für die Kopie unter neuem Namen, das Detailformular ''Konfiguration Projekt'', der Austauschdialog ''Projekt exportieren / importieren'' und dessen Konfliktliste.
 
+[[Datei:Bildschirmfoto_Projektverwaltung.png|mini|zentriert|800px|Projekt öffnen mit Projektliste – Bildschirmfoto mit Beispieldaten.]]
+
 == Eingaben ==
 
 * '''Projektliste''' – der Dialog ''Projekt öffnen'' führt die Spalten ''Projektname'', ''Kunde'' und ''Geändert''. Ein Klick auf einen Spaltenkopf sortiert um, ein zweiter kehrt die Richtung um; unter der Liste steht die Anzahl der angezeigten Projekte.
