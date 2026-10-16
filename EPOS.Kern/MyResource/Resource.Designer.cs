@@ -94064,6 +94064,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimaregion „{0}“ ist für das Projekt gespeichert. ähnelt.
+        /// </summary>
+        public static string MPB_KLIMA_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("MPB_KLIMA_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimaregion ähnelt.
+        /// </summary>
+        public static string MPB_KLIMA_LABEL {
+            get {
+                return ResourceManager.GetString("MPB_KLIMA_LABEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimaregion gilt für alle Gebäude des Projekts; die Liste ist dieselbe wie in der Kopfleiste. ähnelt.
+        /// </summary>
+        public static string MPB_KLIMA_TEXT {
+            get {
+                return ResourceManager.GetString("MPB_KLIMA_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimaregion des Projekts ähnelt.
+        /// </summary>
+        public static string MPB_KLIMA_TITEL {
+            get {
+                return ResourceManager.GetString("MPB_KLIMA_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} Befunde, {2} Vorschläge – öffnet „Modell prüfen“ auf dieser Gruppe. ähnelt.
         /// </summary>
         public static string MPB_LEISTE_GRUPPE_HINWEIS {

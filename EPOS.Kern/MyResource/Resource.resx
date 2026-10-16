@@ -55613,6 +55613,18 @@ Chart</value>
   <data name="MPB_BTN_KLIMA_HINWEIS" xml:space="preserve">
     <value>Die Klimaregion des Projekts wählen</value>
   </data>
+  <data name="MPB_KLIMA_TITEL" xml:space="preserve">
+    <value>Klimaregion des Projekts</value>
+  </data>
+  <data name="MPB_KLIMA_TEXT" xml:space="preserve">
+    <value>Die Klimaregion gilt für alle Gebäude des Projekts; die Liste ist dieselbe wie in der Kopfleiste.</value>
+  </data>
+  <data name="MPB_KLIMA_LABEL" xml:space="preserve">
+    <value>Klimaregion</value>
+  </data>
+  <data name="MPB_KLIMA_GESPEICHERT" xml:space="preserve">
+    <value>Die Klimaregion „{0}“ ist für das Projekt gespeichert.</value>
+  </data>
   <data name="MPB_BTN_NORD" xml:space="preserve">
     <value>Nordrichtung bestätigen</value>
   </data>

@@ -215,6 +215,9 @@ namespace WindowsFormsApplication1
                 // eine Zeile ohne gespeicherte Projektkopie hat keinen Weg.
                 ["ZonenNutzungGaben"] = new Func<GebaeudeProjektZeile, ZonenNutzungWeg>(
                     z => { idsNachziehen(); return ZonenNutzungHuelle.Weg(AusrichtungsGebaeude(z), z?.Name ?? ""); }),
+                // N5: „Klimaregion wählen…" aus Gruppe 4 des Ampelblatts - die Liste der Kopfleiste, der Speicherweg der
+                // Kopfleiste; im Assistenten kein Weg (dort gibt es kein Ampelblatt).
+                ["KlimaregionGaben"] = new Func<GebaeudeKlimaregionWeg>(() => wizard ? null : KlimaregionWeg(projektId)),
                 // Stufe G6a: der benannte Grund des letzten Aufrufs ohne Zahl (etwa mehrere Zonen).
                 ["BedarfBefund"] = new Func<string>(() => bedarfBefund),
                 // GD-N: der Jahreswärmebedarf des letzten Laufs je Gebäude (sonst der Projektwert mit Hinweis) für die
@@ -722,6 +725,50 @@ namespace WindowsFormsApplication1
             if (z == null) return null;
             GebaeudeJahresbedarf b = GebaeudeJahresbedarfCtrl.Letzter(projektId, z.HatProjektkopie ? z.IdGebaeude : 0);
             return b == null ? null : new GebaeudeJahreswaermebedarf(b.HeizwaermeMwh, b.Zeitpunkt, b.Projektwert);
+        }
+
+        /// <summary>
+        /// N5: „Klimaregion wählen…" im Ampelblatt — die Liste der Kopfleiste (<see cref="StartseiteCtrl.KlimaregionAuswahlzeilen"/>,
+        /// die eine Quelle wie im Projektassistenten, #527), vorbelegt mit der Stammregion des Projekts
+        /// (<see cref="StartseiteCtrl.ProjektKlimaregionStammId"/>), und der Speicherweg der Kopfleiste
+        /// (<see cref="StartseiteCtrl.KlimaregionSpeichern(int, string, int)"/>). Nach dem Speichern zieht der Projektkontext nach
+        /// (Kopfband, Klimaregion) — über die bestehende Methode <c>Uebernehmen</c>, keine neue Schnittstelle. <c>null</c> ohne Projekt.
+        /// </summary>
+        internal static GebaeudeKlimaregionWeg KlimaregionWeg(int projektId)
+        {
+            if (projektId <= 0) return null;
+            var eintraege = new List<(int Id, string Text)>();
+            foreach ((int Id, string Name, string Anzeige) z in StartseiteCtrl.KlimaregionAuswahlzeilen())
+                eintraege.Add((z.Id, z.Anzeige));
+            int stamm = StartseiteCtrl.ProjektKlimaregionStammId(projektId);
+            return new GebaeudeKlimaregionWeg
+            {
+                Eintraege = eintraege,
+                Gewaehlt = stamm > 0 ? stamm : (int?)null,
+                Speichern = id => KlimaregionSpeichern(projektId, id),
+            };
+        }
+
+        /// <summary>Schreibt die Stammregion an das Projekt; <c>null</c> = gespeichert, sonst der Grund (Texte der Kopfleiste).</summary>
+        internal static string KlimaregionSpeichern(int projektId, int stammRegionId)
+        {
+            string name = StartseiteCtrl.Projektname(projektId);
+            switch (StartseiteCtrl.KlimaregionSpeichern(projektId, name, stammRegionId))
+            {
+                case KlimaStand.Gespeichert:
+                    // Der Kontext fuehrt die Klimazone (Kopfband); nur das offene Projekt zieht nach.
+                    if (Dienste.Projekt.Id == projektId) Dienste.Projekt.Uebernehmen(projektId, name);
+                    return null;
+                case KlimaStand.KeinProjekt:
+                    return Text_("Text_Form_Start_MessageBox1", "Bitte zuerst ein Projekt auswählen!");
+                case KlimaStand.KeineRegion:
+                    return Text_("Text_Form_Start_KlimaregionAuswaehlen", "Bitte eine Klimaregion auswählen.");
+                case KlimaStand.RegionNichtGefunden:
+                    return Text_("Text_Form_Start_KlimaregionNichtGefunden", "Die gewählte Klimaregion wurde nicht gefunden.");
+                default:
+                    return Text_("Text_Form_Start_KlimaregionNichtUebernommen",
+                                 "Die Klimaregion konnte nicht in das Projekt übernommen werden.");
+            }
         }
 
         /// <summary>
