@@ -99,8 +99,7 @@ gemergte Zweige `kb2`, `kb3`, `kb4a`, `kb4b`, `kb4c` sind als Worktrees entfernt
 6. **Variantenliste:** **entschieden 16.10.2026 nach Empfehlung — die Gruppe „Katalogsätze“ bleibt** (umkehrbar über `KostenVorlagenCtrl.KATALOGSAETZE_GRUPPIEREN`); vormals: Anwenderentscheid
    nach Sichtabnahme.
 7. **Sichtabnahme unter Windows** der Dialoge aus #1034–#1042 und der Kostenmasken aus KB-4 (Lesewert „Gerätekosten“/„Kostensatz“).
-8. **`CLAUDE.md`, Abschnitt Regressionsnetz:** nennt noch R54 mit 36 Projekten, im Ordner liegt R55 mit 37 — die Sitzung Anlagendialog
-   zieht das nach; nicht selbst ändern, um Konflikte zu vermeiden.
+8. **`CLAUDE.md`, Abschnitt Regressionsnetz:** **erledigt #1125** — nennt die aktuelle Basis R56 `2026-10-16_R56_Wasserkosten` mit 37 Projekten.
 9. **Setup-Skript der Cloud-Umgebung** (SDK, siehe Abschnitt 3) — beim Anwender.
 10. **Kältebedarfsprofile wie Wärmebedarfsprofile:** läuft als KBP-2 (230) in der Sitzung Dialoge und Korrekturen Cloud; die
     Projektkopie-Vormerkung aus NK3 (`Projektkopievormerkung`, `BedarfsProfileHuelle`) dabei erhalten.
