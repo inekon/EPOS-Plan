@@ -21279,9 +21279,6 @@ Möchten Sie das zulassen?</value>
   <data name="FLOTTE_OPT_MARKE_FEIN" xml:space="preserve">
     <value>Feinraster</value>
   </data>
-  <data name="FLOTTE_OPT_KEIN_ERGEBNIS" xml:space="preserve">
-    <value>Noch keine Suche gerechnet.</value>
-  </data>
   <data name="FLOTTE_ED_KOSTEN_EINHEIT" xml:space="preserve">
     <value>Kosten dieser Einheit</value>
   </data>

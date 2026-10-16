@@ -30950,15 +30950,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Noch keine Suche gerechnet. ähnelt.
-        /// </summary>
-        public static string FLOTTE_OPT_KEIN_ERGEBNIS {
-            get {
-                return ResourceManager.GetString("FLOTTE_OPT_KEIN_ERGEBNIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Feinraster ähnelt.
         /// </summary>
         public static string FLOTTE_OPT_MARKE_FEIN {

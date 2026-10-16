@@ -21272,9 +21272,6 @@ Do you want to allow this?</value>
   <data name="FLOTTE_OPT_MARKE_FEIN" xml:space="preserve">
     <value>Fine grid</value>
   </data>
-  <data name="FLOTTE_OPT_KEIN_ERGEBNIS" xml:space="preserve">
-    <value>No search computed yet.</value>
-  </data>
   <data name="FLOTTE_ED_KOSTEN_EINHEIT" xml:space="preserve">
     <value>Costs of this unit</value>
   </data>
