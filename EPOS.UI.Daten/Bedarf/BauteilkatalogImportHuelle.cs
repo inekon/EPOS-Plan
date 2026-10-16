@@ -61,7 +61,12 @@ namespace WindowsFormsApplication1
                                                        : string.Format(CultureInfo.CurrentCulture, v.UnterordnerExport ? R.BKI_ORDNER_EXPORT : R.BKI_ORDNER, v.Ordner),
                                                    v.Teilkataloge > 0
                                                        ? string.Format(CultureInfo.CurrentCulture, R.BKI_TEILKATALOGE, Zahl(v.Teilkataloge),
-                                                                       Zahl(v.BaustoffeMitTeilkatalog), Zahl(v.AufbautenMitTeilkatalog))
+                                                                       Zahl(v.TeilkatalogeInQuelle),
+                                                                       v.TeilkatalogeAusZuordnung ? BauteilkatalogQuelle.DATEI_KATALOG_ZUORDNUNG
+                                                                                                  : BauteilkatalogQuelle.DATEI_KATALOG_INHALT,
+                                                                       Zahl(v.BaustoffeMitTeilkatalog), Zahl(v.AufbautenMitTeilkatalog),
+                                                                       Zahl(v.BaustoffeMitMehrerenTeilkatalogen), Zahl(v.AufbautenMitMehrerenTeilkatalogen),
+                                                                       Zahl(v.BaustoffeOhneTeilkatalog), Zahl(v.AufbautenOhneTeilkatalog))
                                                        : null,
                                                    v.SchichtzahlAngeglichen + v.AnteilErgaenzt > 0
                                                        ? string.Format(CultureInfo.CurrentCulture, R.BKI_INHOMOGEN, Zahl(v.SchichtzahlAngeglichen),

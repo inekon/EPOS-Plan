@@ -54725,7 +54725,7 @@ chart</value>
     <value>Browse…</value>
   </data>
   <data name="BKI_HINWEIS" xml:space="preserve">
-    <value>Select the file Baustoffe.csv of the CSV export; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv and Basis_Auszug.csv lie next to it, Katalog.csv and Katalog_Inhalt.csv add the sub-catalogues. If Baustoffe.csv lies in the subfolder Export, the folder above it is enough. The preview writes nothing.</value>
+    <value>Select the file Baustoffe.csv of the CSV export; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv and Basis_Auszug.csv lie next to it, Katalog.csv and Katalog_Zuordnung.csv add the sub-catalogues (without Katalog_Zuordnung.csv, Katalog_Inhalt.csv applies). If Baustoffe.csv lies in the subfolder Export, the folder above it is enough. The preview writes nothing.</value>
   </data>
   <data name="BKI_FILTER" xml:space="preserve">
     <value>Baustoffe.csv|Baustoffe.csv|CSV files (*.csv)|*.csv</value>
@@ -54800,7 +54800,7 @@ chart</value>
     <value>Baustoffe.csv lies in the subfolder Export; this folder is read: {0}</value>
   </data>
   <data name="BKI_TEILKATALOGE" xml:space="preserve">
-    <value>Sub-catalogues: {0}; the source names them on {1} materials and {2} constructions.</value>
+    <value>Sub-catalogues: {0} of {1} in the source, assigned via {2}; the source names them on {3} materials and {4} constructions, two or more on {5} materials and {6} constructions; {7} materials and {8} constructions remain without sub-catalogue.</value>
   </data>
   <data name="BKI_GRUND_DICKEN" xml:space="preserve">
     <value>inhomogeneous: sections with different layer counts and different total thickness</value>
