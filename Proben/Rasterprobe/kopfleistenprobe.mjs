@@ -18,11 +18,10 @@
 //    - sein Text (auch der Knopftext darin) ist nicht gekuerzt (scrollWidth);
 //    - der Platzhalter des Suchfelds steht ganz (Probe: Wert = Platzhalter);
 //    - keine zwei Elemente ueberlappen.
-//  Fenster: 1 400 x 820 (Dialog 1 160 px breit), 1 088 x 624 (Fenstermass des
-//  Anwenders, Kompaktstufe) - beide Kopfleisten; 520 x 624
-//  (Fenstermass.MindestBreite) - nur die des Katalogs: Die Kopfleiste des
-//  Projekts kuerzt unter 800 px Bereichsbreite ihre Knopftexte mit Auslassung
-//  (Regel 4.8, title nennt den vollen Text).
+//  Fenster: 1 400 x 820 und 1 280 x 800 (Normalmass; Dialog 1 160 px breit) -
+//  beide Kopfleisten. In der Kompaktstufe (unter 1 280 x 800) gilt 4.8: die
+//  Kopfleisten bleiben einzeilig, Knopftexte kuerzen mit Auslassung (title nennt
+//  den vollen Text), das Suchfeld gibt Breite ab - dort misst diese Probe nicht.
 //
 //  GEGENPROBE (laeuft mit, --ohne-gegenprobe laesst sie aus): dieselben Faelle
 //  mit den Regeln von vorher (Kopfleiste des Katalogs ohne Umbruch, Suchfeld
@@ -54,7 +53,7 @@ const OHNE_GEGENPROBE = process.argv.includes('--ohne-gegenprobe');
 // Die Regeln von vorher, fuer die Gegenprobe ueber die geltenden gelegt.
 const VORHER_CSS = `
 .epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste { flex-wrap: nowrap !important; }
-.epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 3 16rem !important; min-width: 7rem !important; }`;
+.epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 3 16rem !important; min-width: 7rem !important; }`;
 
 const FAELLE = [
   ...['heizkessel', 'bhkw', 'waermepumpe', 'pufferspeicher', 'stromspeicher', 'photovoltaik', 'solarkollektoren',
@@ -62,7 +61,7 @@ const FAELLE = [
   ...['heizkessel', 'bhkw', 'waermepumpen', 'gebaeude', 'kaelteprofile'].map(f => [`fenster-${f}`, `/fensterprobe?fall=${f}&kultur=de-DE`]),
   ...['heizkessel', 'bhkw', 'waermepumpen'].map(f => [`fenster-${f}-en`, `/fensterprobe?fall=${f}&kultur=en-US`]),
 ];
-const FENSTER = [[1400, 820, false], [1088, 624, false], [520, 624, true]];
+const FENSTER = [[1400, 820, false], [1280, 800, false]];
 
 async function messen(browser, vorher) {
   let verstoesse = 0;
@@ -75,6 +74,10 @@ async function messen(browser, vorher) {
       await seite.locator('.epos-zweispalten-kopfleiste').first().waitFor({ state: 'visible', timeout: 15000 });
       // Die Bildseite verbreitert einzelne Dialoge fuers Wiki-Bild - gemessen wird die Hausbreite.
       await seite.evaluate(() => document.querySelectorAll('[data-breit]').forEach(e => e.removeAttribute('data-breit')));
+      // Der Filterstand lebt im Wirt ueber die Sitzung (Katalogfilterregister): ein Suchtext
+      // aus einem frueheren Lauf verdeckte den Platzhalter - die Probe misst mit leerem Feld.
+      for (const feld of await seite.locator('.epos-zweispalten-kopfleiste input[type=search]').all())
+        if (await feld.inputValue()) await feld.fill('');
       if (vorher) await seite.addStyleTag({ content: VORHER_CSS });
       await seite.waitForTimeout(700);
       const r = await seite.evaluate((nurKatalog) => {

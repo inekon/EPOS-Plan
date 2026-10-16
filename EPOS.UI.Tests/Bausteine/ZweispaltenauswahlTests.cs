@@ -656,8 +656,9 @@ public class ZweispaltenauswahlTests : EposBunitContext
     /// <summary>
     /// Die Kopfleiste des KATALOGS schneidet bei der festen Dialogbreite (1160 px) nichts ab: Sie
     /// bricht zwischen ihren Kindern um, statt Überschrift, Platzhalter oder Knöpfe zu kürzen, und
-    /// das Suchfeld trägt seinen Platzhalter ganz. Die Regel steht NACH der Grundregel (die Wache
-    /// oben liest den ersten Block). Gemessen im Browser: Proben/Rasterprobe.
+    /// das Suchfeld trägt seinen Platzhalter ganz — außerhalb der Kompaktstufe. Die Regel steht NACH
+    /// der Grundregel (die Wache oben liest den ersten Block). Gemessen im Browser:
+    /// Proben/Rasterprobe/kopfleistenprobe.mjs.
     /// </summary>
     [Fact]
     public void Die_Kopfleiste_des_Katalogs_bricht_um_statt_abzuschneiden()
@@ -669,8 +670,11 @@ public class ZweispaltenauswahlTests : EposBunitContext
         string katalog = Stilblock(regel);
         Assert.Contains("flex-wrap: wrap", katalog);
         Assert.DoesNotContain("overflow", katalog);
+        // Nur außerhalb der Kompaktstufe: im kleineren Fenster fehlt die Höhe für eine zweite Zeile.
+        Assert.Contains("@media (min-width: 1280px) and (min-height: 800px) {\n    " + regel, css);
+        Assert.Contains("@media (max-width: 1279.98px), (max-height: 799.98px) {", css);
 
-        string suchfeld = Stilblock(".epos-zweispalten-kopfleiste .epos-katalog-suchfeld {");
+        string suchfeld = Stilblock(".epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste .epos-katalog-suchfeld {");
         Assert.Contains("flex: 0 0 12.5rem !important", suchfeld);
         Assert.Contains("min-width: 12.5rem", suchfeld);
     }

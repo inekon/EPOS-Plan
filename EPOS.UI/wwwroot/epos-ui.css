@@ -3767,8 +3767,9 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 
 /* SUCHE IN DER KOPFLEISTE (4.2, 4.8): Die Katalogliste reicht ihre Suchzeile in die
    Kopfleiste des Katalogs. Sie bricht in sich nicht um, das Suchfeld traegt nur den
-   Platzhalter (die Beschriftung steht als aria-label am Feld), und zwar ganz; die
-   Trefferzahl kuerzt nie mit Auslassung, zuerst faellt ihr Hauptwort weg. */
+   Platzhalter (die Beschriftung steht als aria-label am Feld) - ausserhalb der Kompaktstufe
+   ganz, in ihr gibt es als Erstes Breite ab; die Trefferzahl kuerzt nie mit Auslassung,
+   zuerst faellt ihr Hauptwort weg. */
 .epos-zweispalten-kopfleiste > .epos-katalog-suchzeile {
     flex: 0 1 auto !important;
     flex-wrap: nowrap;
@@ -3778,7 +3779,7 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 }
 .epos-zweispalten-kopfleiste > .epos-katalog-suchzeile > * { flex: 0 0 auto; white-space: nowrap; }
 .epos-zweispalten-kopfleiste > .epos-katalog-suchzeile > .epos-leiste-fueller { display: none; }
-.epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 0 12.5rem !important; min-width: 12.5rem; }   /* traegt den Platzhalter ganz (189 px); statt zu kuerzen bricht die Kopfleiste des Katalogs um (4.10) */
+.epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 3 16rem !important; min-width: 7rem; }   /* gibt vor Trefferzahl und Legende nach (4.10); ausserhalb der Kompaktstufe siehe unten */
 .epos-zweispalten-kopfleiste .epos-katalog-suchbeschriftung {
     position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
 }
@@ -3801,11 +3802,18 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
    Dialogbreite (1160 px) nicht in jedem Dialog in eine Zeile. Die Leiste bricht dann zwischen
    ihren Kindern um - die Suchzeile wandert als Ganzes in die zweite Zeile, der Uebernehmen-Knopf
    bleibt rechts (Fueller) -, statt Ueberschrift und Platzhalter zu kuerzen oder Knoepfe unter den
-   Rand zu schieben. Wo alles passt, bleibt sie EINE Zeile. Die Kopfleiste des Projekts bleibt
-   ohne Umbruch (4.8). Gemessen: Proben/Rasterprobe (Kopfleisten der Katalogauswahl). */
-.epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste {
-    flex-wrap: wrap;
-    row-gap: 4px;
+   Rand zu schieben; das Suchfeld traegt seinen Platzhalter ganz (189 px). Wo alles passt, bleibt
+   sie EINE Zeile. Das gilt nur ausserhalb der Kompaktstufe (Fenster ab 1280 x 800, das
+   Gegenstueck der KOMPAKTSTUFE weiter unten): Im kleineren Fenster bleibt sie
+   einzeilig nach 4.8 - eine zweite Zeile kostete dort die Hoehe der Listen (rollbereichprobe,
+   fensterprobe Fall lizenzbanner 520 x 624). Die Kopfleiste des Projekts bleibt ohne Umbruch
+   (4.8). Gemessen: Proben/Rasterprobe/kopfleistenprobe.mjs. */
+@media (min-width: 1280px) and (min-height: 800px) {
+    .epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste {
+        flex-wrap: wrap;
+        row-gap: 4px;
+    }
+    .epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 0 12.5rem !important; min-width: 12.5rem; }
 }
 
 /* DER HINWEIS DER SPALTENWAHL (Konzept 4.10, DZ1): neben einer angehakten Spalte mit Rang, die bei

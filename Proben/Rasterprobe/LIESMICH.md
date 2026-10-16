@@ -1933,7 +1933,11 @@ Kältegruppe des Bedarfsreiters und Stromgang.
 übernehmen“. Bei der festen Dialogbreite (`.epos-dialog { max-width: 1160px }`) passt das nicht in jedem
 Dialog in eine Zeile; die Kopfleiste des Katalogs bricht dann zwischen ihren Kindern um, und das Suchfeld
 trägt seinen Platzhalter ganz (`epos-ui.css`, Regel `.epos-zweispalten-bereich--katalog >
-.epos-zweispalten-kopfleiste`). bunit misst keine Breite; die Regel hält
+.epos-zweispalten-kopfleiste` in `@media (min-width: 1280px) and (min-height: 800px)`). In der Kompaktstufe
+(unter 1 280 × 800) bleibt sie einzeilig nach 4.8, weil eine zweite Zeile dort die Listenhöhe kostet
+(`rollbereichprobe.mjs`; Fall „lizenzbanner“ der `fensterprobe.mjs` bei 520 × 624). Die
+`rollbereichprobe.mjs` lässt deshalb nur für die Kopfleiste des Katalogs ab 1 280 × 800 zwei Zeilen zu
+(höchstens 93 px). bunit misst keine Breite; die Regel hält
 `ZweispaltenauswahlTests.Die_Kopfleiste_des_Katalogs_bricht_um_statt_abzuschneiden`.
 
 ```bash
@@ -1942,9 +1946,7 @@ node kopfleistenprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner außerhal
 
 Fälle: die elf Projektdialoge der Seite `/wikibild` (ohne `data-breit`, also in der Hausbreite) und die
 Katalogauswahl der `/fensterprobe` (Heizkessel, BHKW, Wärmepumpen, Gebäude, Kälteprofile; die ersten drei
-auch en-US), je bei 1 400 × 820 (Dialog 1 160 px), 1 088 × 624 (Kompaktstufe) und 520 × 624 (nur die
-Kopfleiste des Katalogs — die des Projekts kürzt unter 800 px Bereichsbreite ihre Knopftexte mit
-Auslassung, 4.8). Je Knopf, Feld, Überschrift, Marke und Zähler: ganz in der Leiste und im clippenden
+auch en-US), je bei 1 400 × 820 und 1 280 × 800 (Normalmaß, Dialog 1 160 px). Je Knopf, Feld, Überschrift, Marke und Zähler: ganz in der Leiste und im clippenden
 Vorfahren, Text nicht gekürzt, Platzhalter ganz, keine Überlappung. Die Gegenprobe läuft mit (die Regeln
 von vorher: Katalogleiste ohne Umbruch, Suchfeld `0 3 16rem`, Untergrenze 7rem) und muss rot sein.
 Rückgabe `0` = alles steht und die Gegenprobe ist rot, `1` = Verstoß, `2` = Aufruf- oder Verbindungsfehler.
@@ -1952,8 +1954,8 @@ Rückgabe `0` = alles steht und die Gegenprobe ist rot, `1` = Verstoß, `2` = Au
 Ergebnis vom 16.10.2026: vorher bei 1 160 px Dialogbreite gekürzte Überschriften („Wärmepumpen aus
 Datenbank“ 231 > 218 px, „Stromspeicher aus Datenbank“ 227 > 215 px, „Kältemaschinen in der Datenbank“
 254 > 174 px), der Suchplatzhalter in allen Dialogen gekürzt (189 px Bedarf, 94 bis 186 px Platz) und
-bei der Kältemaschine „Spalten…“ 69 px unter „Katalogverwaltung…“ und abgeschnitten; nachher 57 von 57
-Fällen ohne Verstoß, die Gegenprobe rot (143 Verstöße). Wärmepumpe, Stromspeicher, Prozesswärme und
+bei der Kältemaschine „Spalten…“ 69 px unter „Katalogverwaltung…“ und abgeschnitten; nachher 38 von 38
+Fällen ohne Verstoß, die Gegenprobe rot (48 Verstöße). Wärmepumpe, Stromspeicher, Prozesswärme und
 Kältemaschine stehen bei 1 160 px zweizeilig (92 statt 44 px), die übrigen einzeilig.
 
 ## Bildschirmfotos fürs Wiki: Seite `/wikibild` und `wikibilder.mjs`
