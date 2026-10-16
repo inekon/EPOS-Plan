@@ -244,6 +244,9 @@ namespace EPOS.Kern.Tests
                 F(Ids("Tab_Bauteilaufbau", "Hinterlueftet", "Psi_Gesamt", "Psi_System", "Psi_Geometrie", "OI3_Rahmen_AP", "OI3_Rahmen_PEI", "OI3_Rahmen_GWP"),
                   Ids("Tab_Bauteilschicht", "Emissionsgrad", "Mue_Min", "Mue_Max", "Rauheit", "Elastizitaet", "Laengenausdehnung", "Hinterlueftet",
                       "Kapillaraktiv", "Dampfdicht", "Feuchtegehalt", "OI3_AP", "OI3_PEI", "OI3_GWP"))),
+            new Austauschausnahme("Eingangswert der U_w-Bildung des Fensteraufbaus (ψ des Glasrands, DIN EN ISO 10077-1); der Austausch trägt " +
+                                  "das Ergebnis U_Wert des Bauteils",
+                F(Ids("Tab_Bauteilaufbau", "Psi_Glasrand"))),
             new Austauschausnahme("Summenfeld des Klassenwegs: der Import bildet es aus den Bauteilen (D1–D7) neu",
                 F(Ids("Tab_Gebaeude", "Fensterflaeche_Sued", "Fensterflaeche_Ost_West", "Fensterflaeche_Nord", "Fensterflaeche_Ost", "Fensterflaeche_West",
                       "k_Wert_Außenwand", "k_Wert_Fenster", "k_Wert_Dachflaeche", "k_Wert_Grundflaeche", "k_Wert_Sonstiges", "Flaeche_Außenwand",
