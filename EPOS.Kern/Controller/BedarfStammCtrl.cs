@@ -237,7 +237,8 @@ namespace WindowsFormsApplication1
                 liste.Add(zeile
                     .MitText(Katalogfilterprofil.SpBezeichner, bezeichner)
                     .MitText(Katalogfilterprofil.SpTyp, Katalogfeld.Text(r, "Typ"))
-                    .MitZahl(Katalogfilterprofil.SpJahressummeMwh, summe, 3)
+                    .MitZahl(Katalogfilterprofil.SpJahressummeMwh, summe,
+                             Energieeinheit.JAHRESWERT_MWH_NACHKOMMASTELLEN)
                     .MitText(Katalogfilterprofil.SpBeschreibung,
                              Einzeilig(Katalogfeld.Text(r, "Beschreibung")))
                     .MitKennzeichen(Katalogfilterprofil.SpAuslieferung, zeile.Geschuetzt));

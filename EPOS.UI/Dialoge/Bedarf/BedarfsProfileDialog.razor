@@ -1109,6 +1109,13 @@
     public string Jahresverbrauch => _jahresverbrauchMWh is null
         ? "" : _einheit.Formatiere(_einheit.AusMWh(_jahresverbrauchMWh.Value));
 
+    /// <summary>
+    /// Der Jahresverbrauch in der Satzzeile (Projekt- wie Katalogsatz) — Format der Jahreswerte
+    /// (BP-3: MWh ganzzahlig mit Tausendertrennung). Der Lesewert der Überlagerung bleibt genau.
+    /// </summary>
+    public string JahresverbrauchSatz => _jahresverbrauchMWh is null
+        ? "" : _einheit.FormatiereJahreswert(_einheit.AusMWh(_jahresverbrauchMWh.Value));
+
     /// <summary>Die gewählte Anzeigeeinheit — Prüfhilfe für die Tests.</summary>
     public Energieeinheit Anzeigeeinheit => _einheit;
 
@@ -1142,7 +1149,8 @@
     /// <summary>Der gewählte Rechenweg des Brauchwassers — Prüfhilfe für die Tests.</summary>
     public ZapfprofilWeg Rechenweg => _rechenweg;
 
-    private string Gesamtsumme => _einheit.Formatiere(_einheit.AusMWh(Summe()));
+    /// <summary>Die Summe im Listenkopf — Format der Jahreswerte (BP-3: MWh ganzzahlig mit Tausendertrennung).</summary>
+    public string Gesamtsumme => _einheit.FormatiereJahreswert(_einheit.AusMWh(Summe()));
 
     private string Loeschfrage
     {
@@ -1246,7 +1254,7 @@
             TypLesen = () => _infoTyp,
             BeschreibungLesen = () => _infoBeschreibung,
             JahresverbrauchLesen = () => Jahresverbrauch,
-            SummeLesen = () => Gesamtsumme,
+            SummeLesen = () => _einheit.Formatiere(_einheit.AusMWh(Summe())),
             BedarfsartLesen = () => Art.ToString(),
 
             RechenwegLesen = () => MitRechenweg ? (int)_rechenweg : null,
@@ -1738,7 +1746,8 @@
         _katalogKaestchen = new List<string>();
     }
 
-    private string SummeText(double mwh) => _einheit.Formatiere(_einheit.AusMWh(mwh));
+    /// <summary>Die Jahressumme einer Projektzeile in der Liste — Format der Jahreswerte (BP-3).</summary>
+    internal string SummeText(double mwh) => _einheit.FormatiereJahreswert(_einheit.AusMWh(mwh));
 
     /// <summary>Die Kenndaten der zugeklappten Zeile: Typ und Jahressumme, beim gesperrten Satz der Hinweis.</summary>
     private string? SatzKenndaten
@@ -1764,7 +1773,7 @@
         var l = new List<Satzangabe>();
         if (SatzArt == Satzmarke.Keiner) return l;
         if (_infoTyp.Length > 0) l.Add(new(Resource.BPF_ZF_TYP, _infoTyp));
-        l.Add(new(Resource.BPF_ZF_JAHRESSUMME, Jahresverbrauch));
+        l.Add(new(Resource.BPF_ZF_JAHRESSUMME, JahresverbrauchSatz));
         if (MitTemperatur && _infoTemperatur.Length > 0 && _infoTemperatur != TextOhneTemperatur)
             l.Add(new(Resource.AUSWAHL_ZF_VORLAUF_RUECKLAUF, _infoTemperatur));
         if (_gewaehlt is not null && Betriebskalender is not null)
