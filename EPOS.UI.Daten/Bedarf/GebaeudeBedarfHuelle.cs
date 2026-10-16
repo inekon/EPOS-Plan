@@ -207,14 +207,14 @@ namespace WindowsFormsApplication1
                 ["KachelAk3Schranke"] = Text_("AK3_GEBB_KACHEL_SCHRANKE", "Stunden an der Schranke"),
                 ["KachelAk3SpeicherLeer"] = Text_("AK3_GEBB_KACHEL_SPEICHER_LEER", "Stunden mit leerem Speicher"),
                 ["KachelAk3Restbedarf"] = Text_("AK3_GEBB_KACHEL_RESTBEDARF", "Stunden mit Restbedarf"),
-                ["QuelleAk3"] = Text_("AK3_GEBB_QUELLE", "Geschlossener Kreis (AK3), Projekt, letzter Lauf"),
+                ["QuelleAk3"] = Text_("AK3_GEBB_QUELLE", "Geschlossener Kreis, Projekt, letzter Lauf"),
                 ["KachelZonensperreTage"] = Text_("AK3K_GEBB_KACHEL_SPERRTAGE", "Tage mit Sperre der Gegenseite"),
                 ["KachelZonensperreGesperrt"] = Text_("AK3K_GEBB_KACHEL_GESPERRT", "Gesperrte Energie (Heizen / Kühlen)"),
                 ["QuelleZonensperre"] = Text_("AK3K_GEBB_QUELLE_ZONENSPERRE", "Zonensperre, Projekt, letzter Lauf"),
                 ["KachelAk3Kaelteschranke"] = Text_("AK3K_GEBB_KACHEL_KAELTESCHRANKE", "Stunden an der Kälteschranke"),
                 ["KachelAk3Umschaltung"] = Text_("AK3K_GEBB_KACHEL_UMSCHALTUNG", "Umschaltstunden"),
                 ["KachelAk3Kaelterest"] = Text_("AK3K_GEBB_KACHEL_KAELTEREST", "Kälte-Restbedarf"),
-                ["QuelleAk3Kaelte"] = Text_("AK3K_GEBB_QUELLE_KREIS", "Kälteseite im Kreis (AK3), Projekt, letzter Lauf"),
+                ["QuelleAk3Kaelte"] = Text_("AK3K_GEBB_QUELLE_KREIS", "Kälteseite im geschlossenen Kreis, Projekt, letzter Lauf"),
                 ["KachelKuehlkurveVorlauf"] = Text_("KK_GEBB_KACHEL_VORLAUF_MITTEL", "Mittlerer Kühlvorlauf (Kühlkurve)"),
                 ["KachelKuehlkurveAbsenkung"] = Text_("KK_GEBB_KACHEL_ABSENKUNG", "Absenkung durch Raumeinfluss"),
                 ["KachelKuehlkurveGrenze"] = Text_("KK_GEBB_KACHEL_VORLAUFGRENZE", "Stunden an der Vorlaufgrenze"),
@@ -411,7 +411,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Rechenweg samt Ausweis der Kopplung (Anlagenkopplung 9.4): auf dem VDI-Weg mit
-        /// wirksamer Kopplung einer Seite (Heiz- oder Kälteseite, E37) „VDI 6007, gekoppelt (AK1)",
+        /// wirksamer Kopplung einer Seite (Heiz- oder Kälteseite, E37) „VDI 6007, mit Anlagenkopplung",
         /// sonst der Rechenweg allein.
         /// </summary>
         /// <summary>
@@ -538,7 +538,7 @@ namespace WindowsFormsApplication1
         internal static string Rechenweg(GebaeudeBedarfErgebnis e)
         {
             string text = GebaeudeHuelle.Rechenwegtext(e.Modell, vorgabe: false);
-            return e.Gekoppelt || e.KuehlGekoppelt ? text + ", " + Text_("GEB_RECHENWEG_GEKOPPELT", "gekoppelt (AK1)") : text;
+            return e.Gekoppelt || e.KuehlGekoppelt ? text + ", " + Text_("GEB_RECHENWEG_GEKOPPELT", "mit Anlagenkopplung") : text;
         }
 
         /// <summary>Die Zeile unter der Kühlvorlaufkachel: Kühlübergabeart, Auslegungspunkt und „sensibel" (K5).</summary>

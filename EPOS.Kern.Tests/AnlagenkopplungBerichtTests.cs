@@ -13,7 +13,7 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Die Anlagenkopplung im Bericht und im Variantenvergleich, Stufe AK1 Welle 3</b> (Konzept
     /// Anlagenkopplung 9.4): der Abschnitt „Heizkreis und Übergabe" je gekoppeltem Gebäude — nur
-    /// dann —, der Ausweis „gekoppelt (AK1)" am Rechenweg, der eine Satz am Produktausweis nach E10
+    /// dann —, der Ausweis „mit Anlagenkopplung" am Rechenweg, der eine Satz am Produktausweis nach E10
     /// (B-A3) und Übergabeart und Kopplungsstufe im <c>AbweichungsErmittler</c>, gezeigt und
     /// verglichen über den Anzeigenamen (NULL heißt „aus" bzw. „ideal").
     ///

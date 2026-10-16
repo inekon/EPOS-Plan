@@ -876,7 +876,7 @@
     <value>η₀</value>
   </data>
   <data name="KFLT_SP_ETART" xml:space="preserve">
-    <value>η_RT</value>
+    <value>Wirkungsgrad Laden/Entladen</value>
   </data>
   <data name="KFLT_SP_HERKUNFT" xml:space="preserve">
     <value>Herkunft</value>
@@ -918,7 +918,7 @@
     <value>MPPT</value>
   </data>
   <data name="KFLT_SP_NENNLEISTUNG" xml:space="preserve">
-    <value>P_N</value>
+    <value>Nennleistung</value>
   </data>
   <data name="KFLT_SP_PAC" xml:space="preserve">
     <value>P_AC</value>
@@ -5103,7 +5103,7 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
     <value>Kapazität [kWh]</value>
   </data>
   <data name="PEAK_LBL_ETA" xml:space="preserve">
-    <value>Wirkungsgrad η_RT [-]</value>
+    <value>Wirkungsgrad Laden/Entladen [-]</value>
   </data>
   <data name="PEAK_LBL_SOCMIN" xml:space="preserve">
     <value>Ladezustand min. [%]</value>
@@ -10968,7 +10968,7 @@ Nutzung trotzdem ändern?</value>
     <value>Schichten:</value>
   </data>
   <data name="PSP_HINWEIS_SCHICHTEN" xml:space="preserve">
-    <value>1 = ein Vorrat wie bisher; ab 2 rechnet der Speicher geschichtet.</value>
+    <value>1 = ein Vorrat ohne Schichtung; ab 2 rechnet der Speicher geschichtet.</value>
   </data>
   <data name="PSP_LABEL_HOEHE" xml:space="preserve">
     <value>Höhe [m]:</value>
@@ -18043,7 +18043,7 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>Leistung [kW]</value>
   </data>
   <data name="IMP_KAT_SP_ETA" xml:space="preserve">
-    <value>η_RT</value>
+    <value>Wirkungsgrad Laden/Entladen</value>
   </data>
   <data name="IMP_KAT_EINH_KWH" xml:space="preserve">
     <value>kWh</value>
@@ -31498,13 +31498,13 @@ Möchten Sie das zulassen?</value>
     <value>Anlagenkopplung: {0} — die Wärmeübergabe ist eingeschaltet, die Übergabeart ist aber „ideal“ oder leer; gerechnet wird mit idealer Regelung.</value>
   </data>
   <data name="SIMENG_AK_STUFE_NICHT_GEBAUT" xml:space="preserve">
-    <value>Anlagenkopplung: Das Projekt steht auf der Stufe {0}; gebaut ist die Stufe AK1 — gerechnet wird der Heizkreis als Randbedingung (AK1).</value>
+    <value>Anlagenkopplung: Das Projekt steht auf der Stufe „{0}“, die noch nicht verfügbar ist — gerechnet wird der Heizkreis als Randbedingung.</value>
   </data>
   <data name="SIMENG_AK3K_KREIS_MIT_KAELTESEITE" xml:space="preserve">
-    <value>Anlagenkopplung AK3 (Kernstufe): Gebäude und Kaskade rechnen je Stunde im geschlossenen Kreis mit Kälteseite — der Kühlkanal folgt dem Kreis, die Kältekaskade rechnet je Stunde nach der Wärmestunde.</value>
+    <value>Anlagenkopplung „geschlossener Kreis“: Gebäude und Kaskade rechnen je Stunde im geschlossenen Kreis mit Kälteseite — der Kühlkanal folgt dem Kreis, die Kältekaskade rechnet je Stunde nach der Wärmestunde.</value>
   </data>
   <data name="SIMENG_AK3K_KREISZAEHLER" xml:space="preserve">
-    <value>Anlagenkopplung AK3 mit Kälteseite: Kälteschranke gegriffen in {0} h, Umschaltstunden {1} h, Kälte-Restbedarf {2:0.###} kWh in {3} h, Fallwechsel {4}; Vorrangschätzung zu knapp in {5} h ({6:0.###} kWh), zu weit in {7} h.</value>
+    <value>Anlagenkopplung „geschlossener Kreis“ mit Kälteseite: Kälteschranke gegriffen in {0} h, Umschaltstunden {1} h, Kälte-Restbedarf {2:0.###} kWh in {3} h, Fallwechsel {4}; Vorrangschätzung zu knapp in {5} h ({6:0.###} kWh), zu weit in {7} h.</value>
   </data>
   <data name="SIMENG_AK_UEBERGABE_BEGRENZT" xml:space="preserve">
     <value>Anlagenkopplung: {0} — die Wärmeübergabe reicht in {1} Stunden nicht; die Raumtemperatur liegt dort bis zu {2} K unter dem Sollwert.</value>
@@ -33313,16 +33313,16 @@ Möchten Sie das zulassen?</value>
     <value>Anlagenkopplung:</value>
   </data>
   <data name="SIMKONF_ANLAGENKOPPLUNG_AUS" xml:space="preserve">
-    <value>aus</value>
+    <value>ohne Kopplung</value>
   </data>
   <data name="SIMKONF_ANLAGENKOPPLUNG_AK1" xml:space="preserve">
-    <value>Heizkreis (AK1)</value>
+    <value>Heizkreis</value>
   </data>
   <data name="SIMKONF_ANLAGENKOPPLUNG_AK2" xml:space="preserve">
-    <value>Fahrplan (AK2)</value>
+    <value>Fahrplan</value>
   </data>
   <data name="SIMKONF_ANLAGENKOPPLUNG_AK3" xml:space="preserve">
-    <value>geschlossener Kreis (AK3)</value>
+    <value>geschlossener Kreis</value>
   </data>
   <data name="SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR" xml:space="preserve">
     <value>noch nicht verfügbar</value>
@@ -33331,19 +33331,19 @@ Möchten Sie das zulassen?</value>
     <value>Aus: Jedes Gebäude rechnet mit idealer Regelung; die Eingaben der Wärmeübergabe am Gebäude ruhen. Die Einstellung gilt für das ganze Projekt.</value>
   </data>
   <data name="SIMKONF_HRL_ANLAGENKOPPLUNG_AK1" xml:space="preserve">
-    <value>Heizkreis (AK1): Gebäude mit eingeschalteter Wärmeübergabe rechnen Vorlauf, Rücklauf und die Grenze der Übergabe; die Wärmepumpe wählt ihre Kennlinie am gerechneten Vorlauf. Die Einstellung gilt für das ganze Projekt.</value>
+    <value>Heizkreis: Gebäude mit eingeschalteter Wärmeübergabe rechnen Vorlauf, Rücklauf und die Grenze der Übergabe; die Wärmepumpe wählt ihre Kennlinie am gerechneten Vorlauf. Die Einstellung gilt für das ganze Projekt.</value>
   </data>
   <data name="SIMKONF_HRL_ANLAGENKOPPLUNG_NICHT_GEBAUT" xml:space="preserve">
-    <value>Gespeichert ist „{0}“ — diese Stufe ist noch nicht verfügbar; der Lauf rechnet den Heizkreis (AK1) und nennt es.</value>
+    <value>Gespeichert ist „{0}“ — diese Stufe ist noch nicht verfügbar; der Lauf rechnet den Heizkreis und nennt es.</value>
   </data>
   <data name="SIMKONF_MSG_ANLAGENKOPPLUNG_FEHLER" xml:space="preserve">
     <value>Die Anlagenkopplung konnte nicht gespeichert werden.</value>
   </data>
   <data name="KI_DLG_SIM_ANLAGENKOPPLUNG_ERL" xml:space="preserve">
-    <value>Projekteinstellung Anlagenkopplung: AUS (ideale Regelung), AK1 (Heizkreis als Randbedingung) oder AK3 (geschlossener Kreis: die verfügbare Leistung wirkt je Stunde auf die Gebäude zurück, Rechenzeit höher); AK2 ist noch nicht verfügbar. Wird sofort gespeichert.</value>
+    <value>Projekteinstellung Anlagenkopplung als Steuerwert: AUS (ohne Kopplung, ideale Regelung), AK1 (Heizkreis als Randbedingung) oder AK3 (geschlossener Kreis: die verfügbare Leistung wirkt je Stunde auf die Gebäude zurück, Rechenzeit höher); AK2 (Fahrplan) ist noch nicht verfügbar. Wird sofort gespeichert.</value>
   </data>
   <data name="KI_DLG_SIM_ANLAGENKOPPLUNG_UNBEKANNT" xml:space="preserve">
-    <value>Die Stufe „{0}“ gibt es nicht; bekannt sind AUS, AK1, AK2 und AK3.</value>
+    <value>Die Stufe „{0}“ gibt es nicht; bekannt sind die Steuerwerte AUS (ohne Kopplung), AK1 (Heizkreis), AK2 (Fahrplan) und AK3 (geschlossener Kreis).</value>
   </data>
   <data name="GEBK_GRP_WAERMEUEBERGABE" xml:space="preserve">
     <value>Wärmeübergabe</value>
@@ -33445,7 +33445,7 @@ Möchten Sie das zulassen?</value>
     <value>Proportionalband: Schnellwahl 0,5 / 1 / 2 K oder frei von 0 bis {1} K; 0 K ist die ideale Regelung mit Grenze. Leer gilt die Vorgabe {0} K.</value>
   </data>
   <data name="GEBK_ZEILE_UEBERGABE_PROJEKT" xml:space="preserve">
-    <value>Gerechnet wird die Wärmeübergabe nur in Projekten mit der Projekteinstellung Anlagenkopplung „Heizkreis (AK1)“ oder „geschlossener Kreis (AK3)“ (Simulationskonfiguration).</value>
+    <value>Gerechnet wird die Wärmeübergabe nur in Projekten mit der Projekteinstellung Anlagenkopplung „Heizkreis“ oder „geschlossener Kreis“ (Simulationskonfiguration).</value>
   </data>
   <data name="GEBK_ZEILE_UEBERGABE_BESTANDSWEG" xml:space="preserve">
     <value>Tagesbilanz (Bestandsweg) rechnet keine Anlagenkopplung — diese Eingaben gelten, sobald das Gebäude auf VDI 6007 rechnet.</value>
@@ -33526,7 +33526,7 @@ Möchten Sie das zulassen?</value>
     <value>Wochenstunde (1..168)</value>
   </data>
   <data name="KI_DLG_GEBK_HEIZKREIS_AKTIV_ERL" xml:space="preserve">
-    <value>Wärmeübergabe rechnen statt idealer Regelung (Anlagenkopplung AK1); wirkt nur mit einer Übergabeart und in einem Projekt mit Anlagenkopplung AK1. Beim ersten Einschalten schlägt der Dialog die Heizkurve vor.</value>
+    <value>Wärmeübergabe rechnen statt idealer Regelung (Anlagenkopplung „Heizkreis“); wirkt nur mit einer Übergabeart und in einem Projekt mit Anlagenkopplung „Heizkreis“. Beim ersten Einschalten schlägt der Dialog die Heizkurve vor.</value>
   </data>
   <data name="KI_DLG_GEBK_UEBERGABE_ART_ERL" xml:space="preserve">
     <value>Übergabeart: IDEAL (keine Übergabe), RADIATOR, FLAECHE (Flächenheizung) oder KONVEKTOR; die Art bringt Exponent, Auslegung und Strahlungsanteil als Vorgaben mit.</value>
@@ -33565,7 +33565,7 @@ Möchten Sie das zulassen?</value>
     <value>Sollwert-Zeitprogramm: genau 168 Werte in °C (0 bis 30), Montag 00 Uhr bis Sonntag 23 Uhr, getrennt durch „;“, Dezimalpunkt; leer = die Sollwerte des Gebäudes. Eine falsche Wertzahl wird abgelehnt, nicht aufgefüllt.</value>
   </data>
   <data name="GEB_RECHENWEG_GEKOPPELT" xml:space="preserve">
-    <value>gekoppelt (AK1)</value>
+    <value>mit Anlagenkopplung</value>
   </data>
   <data name="GEBB_KACHEL_VORLAUF_RUECKLAUF" xml:space="preserve">
     <value>Vorlauf / Rücklauf</value>
@@ -34987,7 +34987,7 @@ Möchten Sie das zulassen?</value>
     <value>In diesem Projekt nicht wirksam: Es rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ aus).</value>
   </data>
   <data name="GEBK_ZEILE_KUEHL_PROJEKT" xml:space="preserve">
-    <value>Gerechnet wird die Kühlübergabe nur in Projekten mit Anlagenkopplung „Heizkreis (AK1)“ und der Projekteinstellung „Kühlung rechnen“ (Simulationskonfiguration).</value>
+    <value>Gerechnet wird die Kühlübergabe nur in Projekten mit Anlagenkopplung „Heizkreis“ und der Projekteinstellung „Kühlung rechnen“ (Simulationskonfiguration).</value>
   </data>
   <data name="GEBK_MSG_KUEHL_ART_UNBEKANNT" xml:space="preserve">
     <value>Die Kühlübergabeart „{0}“ ist unbekannt; bitte Kühldecke, Flächenkühlung, Gebläsekonvektor oder ideal wählen.</value>
@@ -34999,7 +34999,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Auslegungspunkt der Kühlübergabe muss aufsteigen: Vorlauf {0} °C unter Rücklauf {1} °C unter Raumtemperatur {2} °C.</value>
   </data>
   <data name="KI_DLG_GEBK_KUEHLUEBERGABE_AKTIV_ERL" xml:space="preserve">
-    <value>Kühlübergabe rechnen statt idealer Kühlung (Anlagenkopplung AK1); wirkt nur mit Kühlung, Kühlsollwert, einer Kühlübergabeart und in einem Projekt mit Anlagenkopplung AK1 und Kühlbetrieb. Beim Abschalten bleibt die Art stehen.</value>
+    <value>Kühlübergabe rechnen statt idealer Kühlung (Anlagenkopplung „Heizkreis“); wirkt nur mit Kühlung, Kühlsollwert, einer Kühlübergabeart und in einem Projekt mit Anlagenkopplung „Heizkreis“ und Kühlbetrieb. Beim Abschalten bleibt die Art stehen.</value>
   </data>
   <data name="KI_DLG_GEBK_KUEHL_UEBERGABE_ART_ERL" xml:space="preserve">
     <value>Kühlübergabeart: IDEAL (keine Kühlübergabe), KUEHLDECKE, FLAECHENKUEHLUNG oder GEBLAESEKONVEKTOR; die Art bringt Exponent, Auslegung, Strahlungsanteil und Vorlaufgrenze als Vorgaben mit.</value>
@@ -35680,7 +35680,7 @@ Möchten Sie das zulassen?</value>
     <value>Ohne Wirkung, solange der Heizkreis des Gebäudes aus ist — die Werte bleiben erhalten.</value>
   </data>
   <data name="ZONDLG_UEBERGABE_ZEILE_PROJEKT_AUS" xml:space="preserve">
-    <value>Ohne Wirkung, solange das Projekt keine Anlagenkopplung (AK1) rechnet — die Werte bleiben erhalten.</value>
+    <value>Ohne Wirkung, solange das Projekt ohne Anlagenkopplung rechnet — die Werte bleiben erhalten.</value>
   </data>
   <data name="ZONDLG_UEBERGABE_ZEILE_UNBEHEIZT" xml:space="preserve">
     <value>Eine unbeheizte Zone hat keine Wärmeübergabe; ihre Werte bleiben erhalten.</value>
@@ -35689,7 +35689,7 @@ Möchten Sie das zulassen?</value>
     <value>Die Datenbank kennt die Übergabe je Zone nicht (Schemaschritt {0} fehlt); die Zone übernimmt die Übergabe des Gebäudes.</value>
   </data>
   <data name="ZONDLG_UEBERGABE_KI_ERL" xml:space="preserve">
-    <value>Wärmeübergabe der Zone; leer = wie Gebäude (Wert des Gebäudes, sonst Vorgabe der wirksamen Art). Wirkt nur bei beheizter Zone, eingeschaltetem Heizkreis des Gebäudes und Anlagenkopplung AK1 im Projekt.</value>
+    <value>Wärmeübergabe der Zone; leer = wie Gebäude (Wert des Gebäudes, sonst Vorgabe der wirksamen Art). Wirkt nur bei beheizter Zone, eingeschaltetem Heizkreis des Gebäudes und Anlagenkopplung „Heizkreis“ im Projekt.</value>
   </data>
   <data name="ZONDLG_UEBERGABE_KI_ART_ERL" xml:space="preserve">
     <value>Übergabeart der Zone: IDEAL, RADIATOR, FLAECHE oder KONVEKTOR; leer = wie Gebäude. IDEAL heißt: diese Zone rechnet ideal, auch wenn das Gebäude gekoppelt ist.</value>
@@ -42770,7 +42770,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Ohne Eingabe gilt die Vorgabe von 20 %, und der Lauf meldet das als Hinweis; zulässig sind 1 bis 100 %.</value>
   </data>
   <data name="SIMKONF_AUFH_HRL_GEKOPPELT" xml:space="preserve">
-    <value>Mit der Anlagenkopplung „Heizkreis (AK1)“ wird ein Gebäude ohne Zonen nicht optimiert; der Lauf nennt es. Gebäude mit Zonen bekommen die Rampe.</value>
+    <value>Mit der Anlagenkopplung „Heizkreis“ wird ein Gebäude ohne Zonen nicht optimiert; der Lauf nennt es. Gebäude mit Zonen bekommen die Rampe.</value>
   </data>
   <data name="SIMKONF_AUFH_MSG_FEHLER" xml:space="preserve">
     <value>Die Projekteinstellung „Aufheizoptimierung“ ließ sich nicht speichern.</value>
@@ -43895,7 +43895,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>{0}: Die Aufheizleistung reicht nicht — bei {1} °C ({2}) hält keine Rampe bis 48 h · P_auf {3} kW {4}</value>
   </data>
   <data name="SIMKONF_AUFH_HRL_ZEILE_GEKOPPELT" xml:space="preserve">
-    <value>{0}: Heizkreis gekoppelt (AK1) — wird nicht optimiert</value>
+    <value>{0}: Heizkreis gekoppelt — wird nicht optimiert</value>
   </data>
   <data name="SIMKONF_AUFH_HRL_ZEILE_TAGESBILANZ" xml:space="preserve">
     <value>{0}: Tagesbilanz — ohne Aufheizoptimierung</value>
@@ -46142,7 +46142,7 @@ Chart</value>
     <value>Kältemaschinen</value>
   </data>
   <data name="KFLT_SP_NENNKAELTELEISTUNG" xml:space="preserve">
-    <value>P_N</value>
+    <value>Nennkälteleistung</value>
   </data>
   <data name="KFLT_SP_EER" xml:space="preserve">
     <value>EER</value>
@@ -49246,22 +49246,22 @@ Chart</value>
     <value>Anordnung der Erdsonden: quadratisches Raster oder Reihe; leer = Vorgabe quadratisch.</value>
   </data>
   <data name="AK3_SIMKONF_HRL_ANLAGENKOPPLUNG" xml:space="preserve">
-    <value>Geschlossener Kreis (AK3): Je Stunde wirkt die verfügbare Leistung der Erzeuger und Speicher auf die Gebäude zurück — Raumtemperatur, Bedarf und Vorlauf werden im Kreis abgeglichen. Gebäude mit eingeschalteter Wärmeübergabe rechnen den Heizkreis wie bei AK1. Die Rechenzeit ist höher; Auskünfte (Bedarf eines Gebäudes, Aufheizung) rechnen ohne geschlossenen Kreis. Die Einstellung gilt für das ganze Projekt.</value>
+    <value>Geschlossener Kreis: Je Stunde wirkt die verfügbare Leistung der Erzeuger und Speicher auf die Gebäude zurück — Raumtemperatur, Bedarf und Vorlauf werden im Kreis abgeglichen. Gebäude mit eingeschalteter Wärmeübergabe rechnen den Heizkreis wie auf der Stufe „Heizkreis“. Die Rechenzeit ist höher; Auskünfte (Bedarf eines Gebäudes, Aufheizung) rechnen ohne geschlossenen Kreis. Die Einstellung gilt für das ganze Projekt.</value>
   </data>
   <data name="AK3_RUECKSTUFE" xml:space="preserve">
-    <value>Berechnet ohne geschlossenen Kreis (Profilweg): Diese Auskunft rechnet die Anlagenkopplung AK3 wie AK2; der Projektlauf rechnet den geschlossenen Kreis.</value>
+    <value>Berechnet ohne geschlossenen Kreis (Profilweg): Diese Auskunft rechnet die Anlagenkopplung „geschlossener Kreis“ ohne Rückwirkung der Anlage auf das Gebäude; der Projektlauf rechnet den geschlossenen Kreis.</value>
   </data>
   <data name="AK3_MSG_KONVERGENZ" xml:space="preserve">
-    <value>Anlagenkopplung AK3: Der geschlossene Kreis findet in Jahresstunde {1} keine stabile Lösung (Gebäude {0}; beteiligt {2}; größte Abweichung {3}; letzter Stand {4}). Der Lauf bricht ab, statt zu nähern. Prüfen Sie Leistung und Kennlinien der Erzeuger, den Raumeinfluss der Heizkurve und die Wärmeübergabe — oder rechnen Sie das Projekt mit der Anlagenkopplung „Heizkreis (AK1)“.</value>
+    <value>Anlagenkopplung „geschlossener Kreis“: Der Kreis findet in Jahresstunde {1} keine stabile Lösung (Gebäude {0}; beteiligt {2}; größte Abweichung {3}; letzter Stand {4}). Der Lauf bricht ab, statt zu nähern. Prüfen Sie Leistung und Kennlinien der Erzeuger, den Raumeinfluss der Heizkurve und die Wärmeübergabe — oder rechnen Sie das Projekt mit der Anlagenkopplung „Heizkreis“.</value>
   </data>
   <data name="AK3_GEBK_LBL_RAUMEINFLUSS" xml:space="preserve">
     <value>Raumeinfluss der Heizkurve :</value>
   </data>
   <data name="AK3_GEBK_HRL_RAUMEINFLUSS" xml:space="preserve">
-    <value>Raumeinfluss: Der Vorlauf steigt je Kelvin, um das die Raumtemperatur unter dem Sollwert liegt, um den eingetragenen Wert (0 bis {0} K/K; leer oder 0 = aus). Er wirkt nur mit der Anlagenkopplung „geschlossener Kreis (AK3)“.</value>
+    <value>Raumeinfluss: Der Vorlauf steigt je Kelvin, um das die Raumtemperatur unter dem Sollwert liegt, um den eingetragenen Wert (0 bis {0} K/K; leer oder 0 = aus). Er wirkt nur mit der Anlagenkopplung „geschlossener Kreis“.</value>
   </data>
   <data name="AK3_KI_GEBK_RAUMEINFLUSS_ERL" xml:space="preserve">
-    <value>Raumeinfluss der Heizkurve in K/K, 0 bis 10; leer oder 0 = aus. Wirkt nur mit eingeschalteter Heizkurve und der Anlagenkopplung AK3.</value>
+    <value>Raumeinfluss der Heizkurve in K/K, 0 bis 10; leer oder 0 = aus. Wirkt nur mit eingeschalteter Heizkurve und der Anlagenkopplung „geschlossener Kreis“.</value>
   </data>
   <data name="AK3_GEBB_KACHEL_DURCHLAEUFE" xml:space="preserve">
     <value>Durchläufe je Stunde (Mittel / Höchstwert)</value>
@@ -49279,7 +49279,7 @@ Chart</value>
     <value>Stunden mit Restbedarf</value>
   </data>
   <data name="AK3_GEBB_QUELLE" xml:space="preserve">
-    <value>Geschlossener Kreis (AK3), Projekt, letzter Lauf</value>
+    <value>Geschlossener Kreis, Projekt, letzter Lauf</value>
   </data>
   <data name="AK3K_GEBB_KACHEL_SPERRTAGE" xml:space="preserve">
     <value>Tage mit Sperre der Gegenseite</value>
@@ -49300,7 +49300,7 @@ Chart</value>
     <value>Zonensperre, Projekt, letzter Lauf</value>
   </data>
   <data name="AK3K_GEBB_QUELLE_KREIS" xml:space="preserve">
-    <value>Kälteseite im Kreis (AK3), Projekt, letzter Lauf</value>
+    <value>Kälteseite im geschlossenen Kreis, Projekt, letzter Lauf</value>
   </data>
   <data name="KK_GEBB_KACHEL_VORLAUF_MITTEL" xml:space="preserve">
     <value>Mittlerer Kühlvorlauf (Kühlkurve)</value>
@@ -49315,19 +49315,19 @@ Chart</value>
     <value>Kühlkurve, Projekt, letzter Lauf</value>
   </data>
   <data name="AK3_KI_GEBB_DURCHLAEUFE_MITTEL" xml:space="preserve">
-    <value>Durchläufe je Stunde im Mittel (AK3)</value>
+    <value>Durchläufe je Stunde im Mittel (geschlossener Kreis)</value>
   </data>
   <data name="AK3_KI_GEBB_DURCHLAEUFE_MAX" xml:space="preserve">
-    <value>Durchläufe je Stunde, Höchstwert (AK3)</value>
+    <value>Durchläufe je Stunde, Höchstwert (geschlossener Kreis)</value>
   </data>
   <data name="AK3_KI_GEBB_ERL" xml:space="preserve">
-    <value>Kennzahl des geschlossenen Kreises (Anlagenkopplung AK3) aus dem letzten Projektlauf; leer ohne Lauf mit AK3. Nur Anzeige.</value>
+    <value>Kennzahl des geschlossenen Kreises (Anlagenkopplung) aus dem letzten Projektlauf; leer ohne Lauf im geschlossenen Kreis. Nur Anzeige.</value>
   </data>
   <data name="AK3_KI_GEBB_RUECKSTUFE" xml:space="preserve">
-    <value>Hinweis der Rückstufe (AK3)</value>
+    <value>Hinweis der Rückstufe (geschlossener Kreis)</value>
   </data>
   <data name="AK3_KI_GEBB_RUECKSTUFE_ERL" xml:space="preserve">
-    <value>Bei der Anlagenkopplung AK3 rechnet die Auskunft ohne geschlossenen Kreis auf dem Profilweg; leer sonst. Nur Anzeige.</value>
+    <value>Bei der Anlagenkopplung „geschlossener Kreis“ rechnet die Auskunft ohne geschlossenen Kreis auf dem Profilweg; leer sonst. Nur Anzeige.</value>
   </data>
   <data name="SIMENG_ZONENSPERRE" xml:space="preserve">
     <value>Gebäudemodell VDI 6007: {0} – Tagesbetriebsart je Zone: an {1} Tagen wurde die Gegenseite gesperrt ({2} Kühltage ohne Raumheizung, {3} Heiztage ohne Raumkühlung); der Probetag zeigte dort {4} Stunden und {5} kWh auf der gesperrten Seite (Raumheizung {6} kWh, Raumkühlung {7} kWh). An {8} Tagen waren Heizen und Kühlen freigegeben.</value>
@@ -49795,13 +49795,13 @@ Chart</value>
     <value>Auslegungs-Außentemperatur (Eingabe) :</value>
   </data>
   <data name="GEBK_ZEILE_KUEHLKURVE" xml:space="preserve">
-    <value>Kühlkurve: Fußpunkt {0} °C bei Außenluft am Kühlsollwert und darunter, Auslegungsvorlauf {1} °C bei der Auslegungs-Außentemperatur ({2}), dazwischen linear, nie unter der Vorlaufgrenze; der Raumeinfluss senkt den Vorlauf um k · Überschreitung des Kühlsollwerts. Gerechnet wird sie auf Stufe AK3, sonst gilt der feste Vorlauf.</value>
+    <value>Kühlkurve: Fußpunkt {0} °C bei Außenluft am Kühlsollwert und darunter, Auslegungsvorlauf {1} °C bei der Auslegungs-Außentemperatur ({2}), dazwischen linear, nie unter der Vorlaufgrenze; der Raumeinfluss senkt den Vorlauf um k · Überschreitung des Kühlsollwerts. Gerechnet wird sie auf der Stufe „geschlossener Kreis“, sonst gilt der feste Vorlauf.</value>
   </data>
   <data name="GEBK_MSG_KUEHLKURVE_FUSSPUNKT" xml:space="preserve">
     <value>Der Fußpunkt der Kühlkurve ({0} °C) liegt unter dem Auslegungsvorlauf ({1} °C): Der Vorlauf stiege mit der Außentemperatur. Bitte einen Fußpunkt ab dem Auslegungsvorlauf eintragen oder das Feld leeren.</value>
   </data>
   <data name="KI_DLG_GEBK_KUEHLKURVE_AKTIV_ERL" xml:space="preserve">
-    <value>Kühlkurve ein oder aus: Der Kühlvorlauf gleitet über die Außentemperatur vom Fußpunkt zum Auslegungsvorlauf; gerechnet auf Stufe AK3 mit Kühlübergabe. Beim Einschalten wird ein leerer Raumeinfluss mit dem Vorgabewert gefüllt.</value>
+    <value>Kühlkurve ein oder aus: Der Kühlvorlauf gleitet über die Außentemperatur vom Fußpunkt zum Auslegungsvorlauf; gerechnet auf der Stufe „geschlossener Kreis“ mit Kühlübergabe. Beim Einschalten wird ein leerer Raumeinfluss mit dem Vorgabewert gefüllt.</value>
   </data>
   <data name="KI_DLG_GEBK_KUEHLKURVE_FUSSPUNKT_ERL" xml:space="preserve">
     <value>Fußpunkt der Kühlkurve in °C, 4 bis 22, nicht unter dem Auslegungsvorlauf; leer = der Auslegungsrücklauf der Kühlübergabe.</value>
