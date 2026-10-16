@@ -5942,6 +5942,53 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     margin: 0;
 }
 
+/* Der Fluss: das Energieflussbild EINER Version (Konzept Energieflussbild 4.3). Ueber
+   dem Bild die Versionswahl, darunter leise Hinweiszeilen. Zwei Zeichenmodelle stehen
+   im Baum - breit (1 180 px) und schmal (680 px); unter 900 px Fensterbreite zeigt das
+   Stilblatt das schmale, darueber das breite, ohne JS und ohne Breitenmessung (SK-Q8).
+   Werte nur im Zeigertext (SK-Q12); die Textalternative ist Sprachausgabe
+   (.epos-komponenten-sprachausgabe), keine sichtbare Wertetabelle. */
+.epos-ergebnis-fluss {
+    position: relative;
+    min-width: 0;
+}
+
+.epos-ergebnis-fluss-kopf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 18px;
+    margin: 0 0 8px 0;
+    max-width: 480px;
+}
+
+.epos-ergebnis-fluss-bild {
+    position: relative;
+    min-width: 0;
+    max-width: 1180px;
+    margin: 0;
+}
+
+.epos-ergebnis-fluss-mass--schmal {
+    display: none;
+    max-width: 680px;
+}
+
+.epos-ergebnis-fluss-zeiger,
+.epos-ergebnis-fluss-hinweis {
+    margin: 4px 0 0 0;
+}
+
+@media (max-width: 899.98px) {
+    .epos-ergebnis-fluss-mass--breit {
+        display: none;
+    }
+
+    .epos-ergebnis-fluss-mass--schmal {
+        display: block;
+    }
+}
+
 @media (forced-colors: active) {
     .epos-ergebnis-grafik-farbe {
         forced-color-adjust: none;

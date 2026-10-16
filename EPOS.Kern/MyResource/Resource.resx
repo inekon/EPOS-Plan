@@ -5933,6 +5933,39 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_ERG_GRAFIK_HINWEIS" xml:space="preserve">
     <value>Randstrich: weicht vom Stammprojekt ab; am Balken Wert und Abweichung zum Stammprojekt in Prozent</value>
   </data>
+  <data name="BK_ERG_ANSICHT_FLUSS" xml:space="preserve">
+    <value>Fluss</value>
+  </data>
+  <data name="BK_ERG_FLUSS_VERSION" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="BK_ERG_FLUSS_NICHT_SIMULIERT" xml:space="preserve">
+    <value>Für diese Version liegt kein Simulationsergebnis vor. Starten Sie die Simulation, um ihr Energieflussbild zu sehen.</value>
+  </data>
+  <data name="BK_ERG_FLUSS_BILD" xml:space="preserve">
+    <value>Energieflussbild der Version {0}</value>
+  </data>
+  <data name="BK_ERG_FLUSS_ZEILE" xml:space="preserve">
+    <value>{0} → {1}: {2} MWh/a ({3} %) · {4}</value>
+  </data>
+  <data name="BK_ERG_FLUSS_KNOTEN" xml:space="preserve">
+    <value>{0}: Zufluss {1} · Abfluss {2} · Rest {3} MWh/a</value>
+  </data>
+  <data name="BK_ERG_FLUSS_TEXT_FLUESSE" xml:space="preserve">
+    <value>Energieflüsse</value>
+  </data>
+  <data name="BK_ERG_FLUSS_TEXT_KNOTEN" xml:space="preserve">
+    <value>Bilanz je Knoten</value>
+  </data>
+  <data name="BK_ERG_FLUSS_ZEIGER" xml:space="preserve">
+    <value>Die Werte erscheinen beim Überfahren oder Antippen eines Bandes oder Knotens; die Zahlen stehen im Reiter „Tabelle“.</value>
+  </data>
+  <data name="BK_ERG_FLUSS_HINWEIS_UMWELT" xml:space="preserve">
+    <value>Umweltwärme und Umweltkälte sind als Umweltanteil gezeigt: Nutzenergie des Erzeugers abzüglich seines Stroms.</value>
+  </data>
+  <data name="BK_ERG_FLUSS_HINWEIS_GEBUENDELT" xml:space="preserve">
+    <value>{0}: {1} kleine Knoten zusammengefasst</value>
+  </data>
   <data name="BK_STATUS_SIMULIERT" xml:space="preserve">
     <value>{0} · simuliert</value>
   </data>

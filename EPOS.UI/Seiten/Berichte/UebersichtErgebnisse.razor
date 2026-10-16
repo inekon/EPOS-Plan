@@ -25,11 +25,16 @@
    abgewaehlte Kennzahlen, "Zeilen ohne Wert ausblenden") wirkt in der Huelle auf die
    Gruppenliste; die Komponente reicht sie bei OK an AnzeigeSpeichern und laedt neu. Was
    "ohne Wert" ausblendet, nennt eine leise Zeile unter der Tabelle. Kein Delegat, kein Knopf.
-   TABELLE ODER GRAFIK. Im Kopf des Abschnitts steht der Umschalter "Tabelle |
-   Grafik" (Vorgabe Tabelle); die Wahl gilt je Benutzer ueber die Einstellungsnaht
+   TABELLE, GRAFIK ODER FLUSS. Im Kopf des Abschnitts steht der Umschalter "Tabelle |
+   Grafik | Fluss" (Vorgabe Tabelle; Pfeiltasten laufen ueber alle Stellungen, Pos1 und
+   Ende auf die erste und letzte); die Wahl gilt je Benutzer ueber die Einstellungsnaht
    des Kerns (Schluessel Uebersicht.Ergebnisse.Ansicht, Lesen und Schreiben reicht
-   die Huelle durch). Die Grafik (UebersichtErgebnisGrafik) bekommt dieselben
-   Gruppen wie die Tafel, gefiltert nach Zustand und "nur Unterschiede".
+   die Huelle durch; ein unbekannter Wert faellt auf die Tabelle). Die Grafik
+   (UebersichtErgebnisGrafik) bekommt dieselben Gruppen wie die Tafel, gefiltert nach
+   Zustand und "nur Unterschiede". Der Fluss (UebersichtErgebnisFluss) zeigt das
+   Energieflussbild EINER Version (Wahl darueber); "nur Unterschiede" und "Anzeige
+   anpassen..." wirken nicht auf ihn. Ohne Ladeweg des Bildes (FlussLaden) gibt es
+   die Stellung nicht.
 
    LEERE FAELLE. Eine nicht simulierte Version zeigt leise "—", ihr Spaltenkopf sagt
    deutlich "nicht simuliert"; ist keine Version simuliert, steht ein Hinweis statt
@@ -47,15 +52,16 @@
             {
                 <span class="epos-ergebnis-ansicht" role="radiogroup" aria-label="@AnsichtText" title="@AnsichtText"
                       @onkeydown="BeiAnsichtTaste">
-                    @for (int i = 0; i < 2; i++)
+                    @for (int i = 0; i < Stellungen.Count; i++)
                     {
                         int k = i;
-                        bool an = (k == 1) == IstGrafik;
+                        string stellung = Stellungen[k];
+                        bool an = stellung == Ansicht;
                         <button type="button" role="radio" aria-checked="@(an ? "true" : "false")" tabindex="@(an ? 0 : -1)"
                                 class="@(an ? "epos-ergebnis-ansicht-stellung epos-ergebnis-ansicht-stellung--an" : "epos-ergebnis-ansicht-stellung")"
-                                data-ansicht="@(k == 1 ? ANSICHT_GRAFIK : ANSICHT_TABELLE)"
+                                data-ansicht="@stellung"
                                 @ref="_ansichtKnoepfe[k]"
-                                @onclick="() => AnsichtSetzen(k == 1 ? ANSICHT_GRAFIK : ANSICHT_TABELLE)">@(k == 1 ? AnsichtGrafikText : AnsichtTabelleText)</button>
+                                @onclick="() => AnsichtSetzen(stellung)">@StellungText(stellung)</button>
                     }
                 </span>
             }
@@ -68,6 +74,13 @@
         @if (!mitDaten)
         {
             <p class="epos-komponenten-leer epos-ergebnis-leer">@KeineSimulationText</p>
+        }
+        else if (IstFluss)
+        {
+            <UebersichtErgebnisFluss @ref="_fluss" Versionen="@_ergebnis.FlussVersionen" FlussLaden="@FlussLaden"
+                                     FlussVersionLesen="@FlussVersionLesen" FlussVersionGewechselt="@FlussVersionGewechselt"
+                                     Texte="@FlussTexte" />
+            <p class="epos-leisezeile epos-ergebnis-quelle">@HinweisQuelle</p>
         }
         else if (IstGrafik)
         {
@@ -241,13 +254,19 @@
     /// <summary>Der Ablagewert der Grafikansicht.</summary>
     public const string ANSICHT_GRAFIK = "grafik";
 
+    /// <summary>Der Ablagewert der Flussansicht (Energieflussbild einer Version).</summary>
+    public const string ANSICHT_FLUSS = "fluss";
+
+    /// <summary>Die erste Zeile des Assistententextes in der Flussansicht; {0} = gewählte Version.</summary>
+    public const string KI_ANSICHT_FLUSS = "Ansicht: Fluss (Energieflussbild der Version {0})";
+
     /// <summary>Die erste Zeile des Assistententextes in der Tabellenansicht.</summary>
     public const string KI_ANSICHT_TABELLE = "Ansicht: Tabelle";
 
     /// <summary>Die erste Zeile des Assistententextes in der Grafikansicht.</summary>
     public const string KI_ANSICHT_GRAFIK = "Ansicht: Grafik (Balken je Version, je Gruppe und Einheit ein Diagramm)";
 
-    /// <summary>Liest die gewählte Ansicht („tabelle“, „grafik“) aus der Einstellungsnaht der Hülle; ohne Leseweg gilt die Tabelle.</summary>
+    /// <summary>Liest die gewählte Ansicht („tabelle“, „grafik“, „fluss“) aus der Einstellungsnaht der Hülle; ohne Leseweg gilt die Tabelle.</summary>
     [Parameter] public Func<string>? AnsichtLesen { get; set; }
 
     /// <summary>Meldet die neue Ansicht an die Hülle, die sie je Benutzer ablegt.</summary>
@@ -269,14 +288,55 @@
     [Parameter] public string GrafikHinweisText { get; set; } =
         "Randstrich: weicht vom Stammprojekt ab; am Balken Wert und Abweichung zum Stammprojekt in Prozent";
 
-    private string? _ansicht;
-    private readonly ElementReference[] _ansichtKnoepfe = new ElementReference[2];
-    private bool _ansichtFokus;
+    /// <summary>Baut das Energieflussbild einer Version (Hülle <c>UebersichtErgebnisGaben.FlussLaden</c>); ohne Delegat keine Stellung „Fluss“.</summary>
+    [Parameter] public Func<int, ErgebnisFlussStand>? FlussLaden { get; set; }
 
-    /// <summary>Die gezeigte Ansicht („tabelle“ oder „grafik“; Prüfhilfe).</summary>
-    public string Ansicht => _ansicht ??= AnsichtLesen?.Invoke() == ANSICHT_GRAFIK ? ANSICHT_GRAFIK : ANSICHT_TABELLE;
+    /// <summary>Liest die gewählte Version des Bildes aus der Sitzungsablage der Hülle.</summary>
+    [Parameter] public Func<int?>? FlussVersionLesen { get; set; }
+
+    /// <summary>Meldet die neu gewählte Version des Bildes an die Hülle.</summary>
+    [Parameter] public Action<int>? FlussVersionGewechselt { get; set; }
+
+    /// <summary>Die Beschriftungen der Ansicht „Fluss“ samt Stellung des Umschalters.</summary>
+    [Parameter] public ErgebnisFlussTexte FlussTexte { get; set; } = new();
+
+    private string? _ansicht;
+    private readonly ElementReference[] _ansichtKnoepfe = new ElementReference[3];
+    private bool _ansichtFokus;
+    private UebersichtErgebnisFluss? _fluss;
+
+    private static readonly string[] s_zweiStellungen = { ANSICHT_TABELLE, ANSICHT_GRAFIK };
+    private static readonly string[] s_dreiStellungen = { ANSICHT_TABELLE, ANSICHT_GRAFIK, ANSICHT_FLUSS };
+
+    /// <summary>Die Stellungen des Umschalters in Reihenfolge; „Fluss“ nur mit Ladeweg (kein Delegat, kein Knopf).</summary>
+    private IReadOnlyList<string> Stellungen => FlussLaden is null ? s_zweiStellungen : s_dreiStellungen;
+
+    private string StellungText(string stellung)
+        => stellung == ANSICHT_GRAFIK ? AnsichtGrafikText : stellung == ANSICHT_FLUSS ? FlussTexte.Ansicht : AnsichtTabelleText;
+
+    /// <summary>
+    /// Die gezeigte Ansicht („tabelle“, „grafik“ oder „fluss“; Prüfhilfe). Ein unbekannter Wert — oder „fluss“ ohne
+    /// Ladeweg — fällt auf die Tabelle.
+    /// </summary>
+    public string Ansicht
+    {
+        get
+        {
+            if (_ansicht is null)
+            {
+                string? gelesen = AnsichtLesen?.Invoke();
+                _ansicht = gelesen is not null && Stellungen.Contains(gelesen) ? gelesen : ANSICHT_TABELLE;
+            }
+            return _ansicht;
+        }
+    }
 
     private bool IstGrafik => Ansicht == ANSICHT_GRAFIK;
+
+    private bool IstFluss => Ansicht == ANSICHT_FLUSS;
+
+    /// <summary>Die Komponente des Bildes, solange die Ansicht „Fluss“ steht (Prüfhilfe).</summary>
+    public UebersichtErgebnisFluss? Fluss => IstFluss ? _fluss : null;
 
     private void AnsichtSetzen(string ansicht)
     {
@@ -287,11 +347,14 @@
 
     private void BeiAnsichtTaste(KeyboardEventArgs e)
     {
+        IReadOnlyList<string> st = Stellungen;
+        int i = Math.Max(0, IndexOf(st, Ansicht));
         string? neu = e.Key switch
         {
-            "ArrowRight" or "ArrowDown" or "ArrowLeft" or "ArrowUp" => IstGrafik ? ANSICHT_TABELLE : ANSICHT_GRAFIK,
-            "Home" => ANSICHT_TABELLE,
-            "End" => ANSICHT_GRAFIK,
+            "ArrowRight" or "ArrowDown" => st[(i + 1) % st.Count],
+            "ArrowLeft" or "ArrowUp" => st[(i + st.Count - 1) % st.Count],
+            "Home" => st[0],
+            "End" => st[st.Count - 1],
             _ => null
         };
         if (neu is null || neu == Ansicht) return;
@@ -299,11 +362,17 @@
         _ansichtFokus = true;
     }
 
+    private static int IndexOf(IReadOnlyList<string> liste, string wert)
+    {
+        for (int i = 0; i < liste.Count; i++) if (liste[i] == wert) return i;
+        return -1;
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!_ansichtFokus) return;
         _ansichtFokus = false;
-        try { await _ansichtKnoepfe[IstGrafik ? 1 : 0].FocusAsync(preventScroll: true); }
+        try { await _ansichtKnoepfe[Math.Max(0, IndexOf(Stellungen, Ansicht))].FocusAsync(preventScroll: true); }
         catch (Exception) { /* Ohne Browser (Prüfstand) gibt es keinen Fokus. */ }
     }
 
@@ -436,13 +505,19 @@
     /// Die Tabelle als Text für den Assistenten: alle Gruppen, auch die zugeklappten, je Gruppe eine Kopfzeile
     /// „[Gruppenschlüssel] Titel“, darunter je Zeile „Gruppe · Kennzahl: Version = Wert (Abweichung); …“; leer ohne
     /// Tabelle, der Hinweis, wenn keine Version simuliert ist. Die erste Zeile nennt die gezeigte Ansicht
-    /// („Ansicht: Tabelle“ oder „Ansicht: Grafik …“); die Zahlen sind in beiden Ansichten die der Tabelle.
+    /// („Ansicht: Tabelle“, „Ansicht: Grafik …“ oder „Ansicht: Fluss …“); die Zahlen sind in allen Ansichten die der
+    /// Tabelle. In der Ansicht „Fluss“ folgt der Block „[fluss] Energiefluss — Version“ mit je Band einer Zeile und den
+    /// Hinweisen (Flussliste des Kerns).
     /// </summary>
     public string Text()
     {
         if (_ergebnis is null || _ergebnis.Versionsspalten.Count == 0) return "";
         if (_ergebnis.KeineSimulation || _ergebnis.Gruppen.Count == 0) return KeineSimulationText;
-        var zeilen = new List<string> { IstGrafik ? KI_ANSICHT_GRAFIK : KI_ANSICHT_TABELLE };
+        var zeilen = new List<string>
+        {
+            IstFluss ? string.Format(KI_ANSICHT_FLUSS, _fluss?.VersionName ?? "")
+            : IstGrafik ? KI_ANSICHT_GRAFIK : KI_ANSICHT_TABELLE
+        };
         foreach (ErgebnisVergleichGruppe g in _ergebnis.Gruppen)
         {
             zeilen.Add("[" + g.Schluessel + "] " + g.Titel);
@@ -461,6 +536,8 @@
                 zeilen.Add(g.Titel + " · " + z.Bezeichnung + ": " + string.Join("; ", teile));
             }
         }
+        if (IstFluss && _fluss?.Stand is ErgebnisFlussStand f)
+            zeilen.Add(f.KiText.Length > 0 ? f.KiText : FlussTexte.NichtSimuliert);
         return string.Join("\n", zeilen);
     }
 }

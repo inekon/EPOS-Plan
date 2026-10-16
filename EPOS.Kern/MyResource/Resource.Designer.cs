@@ -12410,6 +12410,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fluss ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANSICHT_FLUSS {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANSICHT_FLUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Grafik ähnelt.
         /// </summary>
         public static string BK_ERG_ANSICHT_GRAFIK {
@@ -12460,6 +12469,96 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_ERG_ENDENERGIE_TRAEGER {
             get {
                 return ResourceManager.GetString("BK_ERG_ENDENERGIE_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieflussbild der Version {0} ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_BILD {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} kleine Knoten zusammengefasst ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_HINWEIS_GEBUENDELT {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_HINWEIS_GEBUENDELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umweltwärme und Umweltkälte sind als Umweltanteil gezeigt: Nutzenergie des Erzeugers abzüglich seines Stroms. ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_HINWEIS_UMWELT {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_HINWEIS_UMWELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Zufluss {1} · Abfluss {2} · Rest {3} MWh/a ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_KNOTEN {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_KNOTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diese Version liegt kein Simulationsergebnis vor. Starten Sie die Simulation, um ihr Energieflussbild zu sehen. ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_NICHT_SIMULIERT {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_NICHT_SIMULIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieflüsse ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_TEXT_FLUESSE {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_TEXT_FLUESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bilanz je Knoten ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_TEXT_KNOTEN {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_TEXT_KNOTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Version ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_VERSION {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_VERSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Werte erscheinen beim Überfahren oder Antippen eines Bandes oder Knotens; die Zahlen stehen im Reiter „Tabelle“. ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_ZEIGER {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_ZEIGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} → {1}: {2} MWh/a ({3} %) · {4} ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_ZEILE {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_ZEILE", resourceCulture);
             }
         }
         

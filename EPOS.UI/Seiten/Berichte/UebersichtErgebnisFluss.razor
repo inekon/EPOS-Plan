@@ -1,0 +1,138 @@
+﻿@* Die Ansicht "Fluss" des Abschnitts "Ergebnisse — Energie" der Uebersicht (Konzept
+   Energieflussbild, Abschnitt 4; Anwenderentscheide 16.10.2026): das Energieflussbild
+   (Sankey) EINER Version, neben "Tabelle" und "Grafik" ueber den Umschalter im Kopf.
+
+   VERSIONSWAHL. Ueber dem Bild steht das Auswahlfeld "Version" mit den Versionen der
+   Vergleichswahl in der Reihenfolge der Spalten (Stamm zuerst, Vorgabe Stamm; SK-Q11).
+   Die Wahl gilt je Sitzung (Ablage der Huelle). Eine nicht simulierte Version steht mit
+   dem Zusatz "(nicht simuliert)" im Feld, ist waehlbar und zeigt statt des Bildes eine
+   benannte Karte; eine simulierte Version ohne Fluesse nennt den Grund des Kerns.
+
+   DAS BILD. Zwei Zeichenmodelle des Kerns im Baustein DiagrammSvg (ohne Zoom, Legende
+   nicht schaltbar): breit (1 180 px) und schmal (680 px). Beide stehen im Baum, das
+   Stilblatt zeigt unter 900 px Fensterbreite das schmale, darueber das breite - kein JS,
+   keine Breitenmessung (SK-Q8). Die Kennungen sind verschieden (Clip-Pfade). Werte stehen
+   nur im Zeigertext beim Ueberfahren oder Antippen von Band und Knoten (SK-Q12): keine
+   Zahlen im Bild, keine sichtbare Wertetabelle - die Zahlen stehen im Reiter "Tabelle".
+
+   TEXTALTERNATIVE. Fuer Bildschirmleser traegt das Bild ueber aria-describedby eine
+   visuell verborgene Liste: je Band Von -> Nach, MWh/a, Anteil und Herkunft, danach die
+   Bilanz je Knoten (Zufluss, Abfluss, Rest).
+
+   HINWEISE. Leise Zeilen unter dem Bild: wie die Werte erscheinen, nicht geschlossene
+   Knoten, gebuendelte Knoten, die Konvention Umweltanteil.
+
+   WOHER. Der Stand kommt fertig aus der Huelle (FlussLaden: Kern EnergieflussCtrl/
+   Energiefluss -> EnergieflussAbbildung -> ChartRenderer.EnergieflussModell), je Version
+   und Simulationsstand zwischengespeichert; die Komponente baut ihren Baum nur bei einer
+   neuen Referenz. Ohne Versionen zeichnet sie nichts. *@
+
+@if (Versionen.Count > 0)
+{
+    <div class="epos-ergebnis-fluss" data-version="@_gewaehlt">
+        <div class="epos-ergebnis-fluss-kopf">
+            <Auswahlfeld Bezeichnung="@Texte.Version" Eintraege="@_eintraege" Auswahl="@_gewaehlt"
+                         AuswahlChanged="BeiVersion" />
+        </div>
+        @if (_stand is null || _stand.NichtSimuliert)
+        {
+            <p class="epos-komponenten-leer epos-ergebnis-fluss-leer">@Texte.NichtSimuliert</p>
+        }
+        else if (!_stand.HatBild)
+        {
+            <p class="epos-komponenten-leer epos-ergebnis-fluss-leer">@_stand.Grund</p>
+        }
+        else
+        {
+            <figure class="epos-ergebnis-fluss-bild" aria-label="@Bildtext" aria-describedby="@TextId">
+                <div class="epos-ergebnis-fluss-mass epos-ergebnis-fluss-mass--breit">
+                    <DiagrammSvg Modell="@_stand.Breit" Kennung="@("ergebnis-fluss-" + _stand.IdProjekt + "-breit")"
+                                 Bezeichnung="@Bildtext" OhneZoom="true" LegendeSchaltbar="false" />
+                </div>
+                <div class="epos-ergebnis-fluss-mass epos-ergebnis-fluss-mass--schmal">
+                    <DiagrammSvg Modell="@_stand.Schmal" Kennung="@("ergebnis-fluss-" + _stand.IdProjekt + "-schmal")"
+                                 Bezeichnung="@Bildtext" OhneZoom="true" LegendeSchaltbar="false" />
+                </div>
+            </figure>
+            <div id="@TextId" class="epos-komponenten-sprachausgabe epos-ergebnis-fluss-text">
+                <p>@Texte.TextFluesse</p>
+                <ul>
+                    @foreach (ErgebnisFlussZeile f in _stand.Fluesse)
+                    {
+                        <li>@string.Format(Texte.Zeile, f.Von, f.Nach, f.Wert, f.Anteil, f.Herkunft)</li>
+                    }
+                </ul>
+                <p>@Texte.TextKnoten</p>
+                <ul>
+                    @foreach (ErgebnisFlussKnotenzeile k in _stand.Knoten)
+                    {
+                        <li>@string.Format(Texte.Knoten, k.Name, k.Zufluss, k.Abfluss, k.Rest)</li>
+                    }
+                </ul>
+            </div>
+            <p class="epos-leisezeile epos-ergebnis-fluss-zeiger">@Texte.Zeiger</p>
+            @foreach (string h in _stand.Hinweise)
+            {
+                <p class="epos-leisezeile epos-ergebnis-fluss-hinweis">@h</p>
+            }
+        }
+    </div>
+}
+
+@code {
+    /// <summary>Die Versionen der Wahl in der Reihenfolge der Spalten, der Stamm zuerst.</summary>
+    [Parameter] public IReadOnlyList<ErgebnisFlussVersion> Versionen { get; set; } = Array.Empty<ErgebnisFlussVersion>();
+
+    /// <summary>Baut den Stand des Bildes einer Version (Hülle <c>UebersichtErgebnisGaben.FlussLaden</c>); ohne Delegat kein Bild.</summary>
+    [Parameter] public Func<int, ErgebnisFlussStand>? FlussLaden { get; set; }
+
+    /// <summary>Liest die gewählte Version aus der Sitzungsablage der Hülle; <c>null</c> oder unbekannt = Stamm.</summary>
+    [Parameter] public Func<int?>? FlussVersionLesen { get; set; }
+
+    /// <summary>Meldet die neu gewählte Version an die Hülle.</summary>
+    [Parameter] public Action<int>? FlussVersionGewechselt { get; set; }
+
+    /// <summary>Die Beschriftungen der Ansicht.</summary>
+    [Parameter] public ErgebnisFlussTexte Texte { get; set; } = new();
+
+    private IReadOnlyList<ErgebnisFlussVersion>? _versionenFuer;
+    private Func<int, ErgebnisFlussStand>? _ladenMit;
+    private IReadOnlyList<(int Id, string Text)> _eintraege = Array.Empty<(int, string)>();
+    private int? _gewaehlt;
+    private ErgebnisFlussStand? _stand;
+
+    /// <summary>Die gewählte Version (Projekt-Id; Prüfhilfe).</summary>
+    public int? Gewaehlt => _gewaehlt;
+
+    /// <summary>Der gezeigte Stand (Prüfhilfe und Text des Assistenten); <c>null</c> ohne Versionen oder Ladeweg.</summary>
+    public ErgebnisFlussStand? Stand => _stand;
+
+    /// <summary>Der Name der gewählten Version.</summary>
+    public string VersionName => Versionen.FirstOrDefault(v => v.IdProjekt == _gewaehlt)?.Name ?? "";
+
+    private string Bildtext => string.Format(Texte.Bild, VersionName);
+
+    private string TextId => "ergebnis-fluss-text-" + (_stand?.IdProjekt ?? 0);
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(Versionen, _versionenFuer) && ReferenceEquals(FlussLaden, _ladenMit)) return;
+        _versionenFuer = Versionen;
+        _ladenMit = FlussLaden;
+        _eintraege = Versionen.Select(v => (v.IdProjekt, v.Simuliert ? v.Name : v.Name + " (" + Texte.NichtSimuliertZusatz + ")")).ToList();
+        int? gemerkt = FlussVersionLesen?.Invoke();
+        _gewaehlt = Versionen.Any(v => v.IdProjekt == gemerkt) ? gemerkt : Versionen.FirstOrDefault()?.IdProjekt;
+        Laden();
+    }
+
+    private void Laden()
+        => _stand = _gewaehlt is int id && FlussLaden is not null ? FlussLaden(id) : null;
+
+    private void BeiVersion(int? id)
+    {
+        if (id is null || id == _gewaehlt || !Versionen.Any(v => v.IdProjekt == id)) return;
+        _gewaehlt = id;
+        FlussVersionGewechselt?.Invoke(id.Value);
+        Laden();
+    }
+}

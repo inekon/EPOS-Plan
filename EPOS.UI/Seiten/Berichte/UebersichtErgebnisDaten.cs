@@ -127,4 +127,10 @@ public sealed class UebersichtErgebnisStand
 
     /// <summary>Wie viele Kennzahlen „Zeilen ohne Wert ausblenden“ aus den gezeigten Gruppen genommen hat.</summary>
     public int OhneWertAusgeblendet { get; set; }
+
+    /// <summary>
+    /// Die Versionen der Wahl über dem Energieflussbild — dieselben und in derselben Reihenfolge wie die Spalten (SK-Q11),
+    /// der Stamm zuerst; leer = keine Stellung „Fluss“ möglich.
+    /// </summary>
+    public IReadOnlyList<ErgebnisFlussVersion> FlussVersionen { get; set; } = Array.Empty<ErgebnisFlussVersion>();
 }

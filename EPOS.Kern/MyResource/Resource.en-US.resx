@@ -5917,6 +5917,39 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_ERG_GRAFIK_HINWEIS" xml:space="preserve">
     <value>Edge mark: differs from the base project; at the bar the value and the deviation from the base project in percent</value>
   </data>
+  <data name="BK_ERG_ANSICHT_FLUSS" xml:space="preserve">
+    <value>Flow</value>
+  </data>
+  <data name="BK_ERG_FLUSS_VERSION" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="BK_ERG_FLUSS_NICHT_SIMULIERT" xml:space="preserve">
+    <value>No simulation result is available for this version. Run the simulation to see its energy flow diagram.</value>
+  </data>
+  <data name="BK_ERG_FLUSS_BILD" xml:space="preserve">
+    <value>Energy flow diagram of version {0}</value>
+  </data>
+  <data name="BK_ERG_FLUSS_ZEILE" xml:space="preserve">
+    <value>{0} → {1}: {2} MWh/a ({3} %) · {4}</value>
+  </data>
+  <data name="BK_ERG_FLUSS_KNOTEN" xml:space="preserve">
+    <value>{0}: inflow {1} · outflow {2} · remainder {3} MWh/a</value>
+  </data>
+  <data name="BK_ERG_FLUSS_TEXT_FLUESSE" xml:space="preserve">
+    <value>Energy flows</value>
+  </data>
+  <data name="BK_ERG_FLUSS_TEXT_KNOTEN" xml:space="preserve">
+    <value>Balance per node</value>
+  </data>
+  <data name="BK_ERG_FLUSS_ZEIGER" xml:space="preserve">
+    <value>Values appear when you hover over or tap a band or node; the figures are in the “Table” view.</value>
+  </data>
+  <data name="BK_ERG_FLUSS_HINWEIS_UMWELT" xml:space="preserve">
+    <value>Ambient heat and ambient cooling are shown as the ambient share: useful energy of the generator minus its electricity.</value>
+  </data>
+  <data name="BK_ERG_FLUSS_HINWEIS_GEBUENDELT" xml:space="preserve">
+    <value>{0}: {1} small nodes combined</value>
+  </data>
   <data name="BK_STATUS_SIMULIERT" xml:space="preserve">
     <value>{0} · simulated</value>
   </data>
