@@ -138,6 +138,15 @@ namespace WindowsFormsApplication1
             var meldungen = new List<PruefMeldung>(Geometriemeldungen(abbild));
             if (meldungen.Count == 0 && abbild != null && abbild.Gebaeude.Count == 1)
                 meldungen.Add(new PruefMeldung(PruefStufe.Info, GEOMETRIE_OHNE));
+            // N7: verschiedene Feiertagsbilder trägt der eine Tagtyp „Holiday“ nicht — vor dem Speichern benannt (Formatgrenze).
+            List<string> feiertage = (abbild?.Gebaeude ?? new List<AbbildGebaeude>()).SelectMany(g => g.Raeume)
+                .Where(r => r.Konditionierung != null)
+                .SelectMany(r => r.Konditionierung.Kalender.Where(k => GbxmlZeitplanschreiber.FeiertageVerschieden(k.Kalender))
+                    .Select(k => (string.IsNullOrWhiteSpace(r.Name) ? r.Kennung : r.Name.Trim()) + " " + Konditionierungsgroessen.Kennwort(k.Kalender.Groesse)))
+                .Distinct(StringComparer.Ordinal).ToList();
+            if (feiertage.Count > 0)
+                meldungen.Add(new PruefMeldung(PruefStufe.Info, FEIERTAGE_EIN_BILD, feiertage.Count.ToString(CultureInfo.InvariantCulture),
+                                               feiertage.Count <= 5 ? string.Join(", ", feiertage) : string.Join(", ", feiertage.Take(5)) + ", …"));
             return meldungen;
         }
 
@@ -159,6 +168,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>HC-5c: I — {0} Zahl, {1} Beispiele: Flächen auf mehreren Prismenkanten; <c>PlanarGeometry</c> zeigt die größte Platte.</summary>
         internal const string FLAECHE_TEILPLATTEN = "GEXP_PROT_FLAECHE_TEILPLATTEN";
+
+        /// <summary>N7: I — {0} Zahl, {1} Beispiele: Kalender mit verschiedenen Feiertagsbildern; gbXML trägt nur das ranghöchste.</summary>
+        internal const string FEIERTAGE_EIN_BILD = "GEXP_PROT_FEIERTAGE_EIN_BILD";
 
         /// <summary>HC-5c: I — {0} Räume: Die Quelle der Grundrisse nennt keinen Nordwinkel; Modell-Nord ist als Nord angenommen.</summary>
         internal const string NORDWINKEL_ANGENOMMEN = "GEXP_PROT_NORDWINKEL_ANGENOMMEN";

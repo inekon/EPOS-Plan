@@ -42603,6 +42603,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kalender führen Feiertage mit verschiedenen Tagesverläufen; gbXML kennt nur den einen Tagtyp „Holiday“ je Wochenplan und trägt das Bild des ranghöchsten Feiertags (die übrigen Feiertage kommen mit diesem Bild zurück, IFC trägt jeden einzeln): {1} ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_FEIERTAGE_EIN_BILD {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_FEIERTAGE_EIN_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Flächen stehen ohne Polygon in der Datei — ihr Raum trägt keinen Körper, oder sie liegen an keiner Kante: {1} ähnelt.
         /// </summary>
         public static string GEXP_PROT_FLAECHE_OHNE_POLYGON {
@@ -49925,6 +49934,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_BAUTEIL_PROT_BAUTEILWEG {
             get {
                 return ResourceManager.GetString("IMP_BAUTEIL_PROT_BAUTEILWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die Datei trägt Zeitpläne bzw. Kalender je Raum; die Übernahme als eine Zone nimmt sie nicht, die Kalender kommen aus dem Nutzungsprofil. Mit einer Zonenregel für mehrere Zonen kommen sie je Zone an. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_EINZONE_ZEITPLAENE {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_EINZONE_ZEITPLAENE", resourceCulture);
             }
         }
         

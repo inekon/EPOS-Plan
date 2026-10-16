@@ -260,6 +260,15 @@ namespace WindowsFormsApplication1
             foreach ((string raum, int idZone) in paarungen ?? Array.Empty<(string, int)>())
                 if (raum != null && eigene.Contains(raum) && jeId.TryGetValue(idZone, out string s) && !plan._zoneJeRaum.ContainsKey(raum))
                     plan._zoneJeRaum[raum] = s;
+            // N7: Der gespeicherte Plan trägt Namen, Nutzung und Räume; Kalender und Zeitpläne der Datei kommen wie im Regelvorschlag
+            // aus den Räumen der Zone (sonst schriebe der Wiederimport an einer Zone ohne Handmarke die Kalender der Datei nicht).
+            foreach (Planzone z in plan._zonen)
+            {
+                var iz = new Importzone();
+                iz.Raeume.AddRange(plan.Gebaeude.Raeume.Where(r => plan._zoneJeRaum.TryGetValue(r.Kennung, out string sz) &&
+                                                                    string.Equals(sz, z.Schluessel, StringComparison.Ordinal)));
+                if (iz.Raeume.Count > 0) z.Projektdatei = GebaeudeZonierung.Dateikonditionierung(z.Name, iz);
+            }
             GebaeudeZonierung vorschlag = GebaeudeZonierung.Bilden(abbild, index, plan.Regel, haken);
             foreach (AbbildRaum r in plan.Gebaeude.Raeume)
                 if (!plan._zoneJeRaum.ContainsKey(r.Kennung) && !vorschlag.Abgelehnt && vorschlag.ZoneVon(r.Kennung) < 0)
@@ -299,18 +308,15 @@ namespace WindowsFormsApplication1
                 // Die Konditionierung aus einer IFC-Datei von EPOS-Plan (EPOS_Zone, EPOS_Kalender_*): die des ersten Raums der
                 // Zone, der sie trägt — Rangfolge Projektdatei (ersetzt die Zonierung, SqprojZonen) vor IFC-EPOS_* vor Profil.
                 // EPOS_Zone.Nutzung: Profilname → Profil, alte Kennung → EPOS-Muster, sonst bleibt der Text (NP-F23).
-                if (iz.Raeume.Select(r => r.Konditionierung).FirstOrDefault(k => k != null) is AbbildKonditionierung k)
+                // Welle DA-1: sonst Lasten und Zeitpläne einer gbXML-Datei je Zone (Datei vor Profil, E138 F2) — derselbe Weg wie die
+                // Regelzonierung (GebaeudeZonierung.Dateikonditionierung, N7), hier mit dem Namen der Planzone.
+                z.Projektdatei = GebaeudeZonierung.Dateikonditionierung(z.Name, iz);
+                if (iz.Raeume.Select(r => r.Konditionierung).FirstOrDefault(k => k != null) is AbbildKonditionierung k &&
+                    z.Profil == null && !string.IsNullOrWhiteSpace(k.Nutzung))
                 {
-                    z.Projektdatei = k.AlsZonenkonditionierung(z.Name);
-                    if (z.Profil == null && !string.IsNullOrWhiteSpace(k.Nutzung))
-                    {
-                        z.Profil = Vorbelegung.AusText(k.Nutzung);
-                        z.Quelle = new Profilquelle(Profilquelle.DATEI);
-                    }
+                    z.Profil = Vorbelegung.AusText(k.Nutzung);
+                    z.Quelle = new Profilquelle(Profilquelle.DATEI);
                 }
-                // Welle DA-1: Lasten und Zeitpläne einer gbXML-Datei je Zone (Datei vor Profil, E138 F2) — nur ohne EPOS_*-Sätze.
-                else if (GbxmlKonditionierung.Bilden(z.Name, iz.Raeume, iz.FlaecheM2, iz.VolumenM3) is Zonenkonditionierung gbxml)
-                    z.Projektdatei = gbxml;
                 DinNummerAnwenden(z, iz);
             }
             foreach (AbbildRaum r in Gebaeude.Raeume)
