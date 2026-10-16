@@ -58,10 +58,10 @@ gegen diese Datei.
 - **Warum alle Bilder und nicht nur die 51 Maßproben.** Was die Messlatte nicht nennt, kann
   sich beim Umbau unbemerkt ändern. Deshalb stehen auch die Bilder der Gegen- und
   Versatzproben darin, die im Bestand nur miteinander verglichen und nie geschrieben werden.
-- **Umfang.** Ein Lauf prüft **260 Bilder**; **226** davon zeichnen ein PNG — Maßproben, die
+- **Umfang.** Ein Lauf prüft **269 Bilder**; **238** davon zeichnen ein PNG — Maßproben, die
   beiden Bilder jeder Gegenprobe und die der Versatzprobe — und stehen als Zeilen in der Messlatte.
   Die SVG-Gegenproben und die Schriftproben der Bildgröße Stufe 2 (`stufe2_…_schrift`) zeichnen
-  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-10-16.sha256` nennt alle 226 Bilder
+  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-10-16.sha256` nennt alle 238 Bilder
   aller Abschnitte unten.
 - **Die Messlatte gilt für die Vorgabe-Palette.** Die Farben der Diagramme sind eine
   Anwendungseinstellung (Rubrik „Diagramme"); die Probe setzt deshalb zu Beginn ausdrücklich
@@ -687,3 +687,26 @@ Druck-SVG zeichnen — ist dieselbe Instanz wie im Berichtsmodell. Deshalb ände
 Messlatte bleibt unberührt; der Nachweis ist ein leerer Diff der Hashlisten vor und nach dem Umbau auf demselben
 Rechner (`--hashes` zweimal, Windows wie Linux), dazu `EPOS.Kern.Tests/OberflaechenregelTests.Der_Berichtsweg_bleibt_unberuehrt`
 (Befehle referenzgleich, Drucktext byte-gleich). Keine Probe kommt hinzu.
+
+---
+
+## Energieflussbild (Sankey, Schritt SK-2)
+
+`ChartRenderer.EnergieflussModell` zeichnet Strom, Wärme und Kälte eines Jahres in sieben Spalten; die Gaben
+(`Program.Energiefluss.cs`) sind synthetisch und fest verdrahtet: Netz, Photovoltaik, BHKW und Kessel am Erdgas,
+Wärmepumpe, Heizstab, Kältemaschine mit Kältespeicher, Puffer- und Stromspeicher mit Verlust, ein Band „nicht
+zugeordnet“ am Strombus. Erwartete Farben: `KNOTEN`, `VERLUST`, `TEXT` (die Bänder sind halbdurchsichtig).
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `energiefluss` | breite Fassung 1180 × 560, nur Namen an den Knoten |
+| Maßprobe | `energiefluss_schmal` | schmale Fassung 680 × 640, Kurznamen |
+| Maßprobe | `energiefluss_bericht` | Berichtsfassung 1240 × 620, Jahressumme an jedem Knoten |
+| Maßprobe | `energiefluss_kaelte_split` | ein Split-Gerät neben der Kältemaschine |
+| Gegenprobe | `energiefluss_speicher_wirkt` | mit und ohne Pufferspeicher |
+| Gegenprobe | `energiefluss_rest_wirkt` | geschlossen und mit Band „nicht zugeordnet“ |
+| Gegenprobe | `energiefluss_schmal_wirkt` | breit und schmal |
+| Gegenprobe | `energiefluss_knotenwerte_wirkt` | Bericht ohne und mit Knotenwerten |
+| SVG | `svg_energiefluss` | je Band und Knoten Marke und `data-wert`, byte-gleich, keine Zahl im Bildschirmbild |
+
+Das sind **12 neue Zeilen** am Ende von `Messlatte_2026-10-16.sha256`; die bisherigen 226 Zeilen bleiben unverändert.
