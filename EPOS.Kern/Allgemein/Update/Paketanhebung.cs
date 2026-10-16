@@ -487,6 +487,10 @@ namespace WindowsFormsApplication1
             // Ein älteres Paket bringt seine Bauteile ohne Herkunft des U-Werts; der Schritt legt die Spalte leer an.
             new Stufe(BauteilUHerkunftSchema.SCHRITT, Art.Ddl,
                       "Herkunft des U-Werts je Bauteil (MA-6b)"),
+            // Ein älteres Paket bringt Prozesswärme und Brauchwasser ohne Eingabeart und die Kältevorlagen ohne Nutzungstage;
+            // der Schritt legt die Spalten an (Vorgabe 'jahr').
+            new Stufe(BedarfsprofilEingabeartSchema.SCHRITT, Art.Ddl,
+                      "Eingabeart an Prozesswärme und Brauchwasser, Nutzungstage nach Norm an den Kältevorlagen (KBP-5a)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

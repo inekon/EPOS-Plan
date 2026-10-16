@@ -56450,7 +56450,7 @@ Replace these holidays with the project default? With “No” these zones remai
     <value>{0}:00</value>
   </data>
   <data name="KBP_KI_EINGABEART_ERL" xml:space="preserve">
-    <value>Input method of the selected cooling row: annual total with template, monthly values or weekly profile; typical days follow.</value>
+    <value>Input method of the selected row (cooling, process heat, domestic hot water): annual total with template, monthly values or weekly profile; typical days follow.</value>
   </data>
   <data name="KBP_GRAFIK_GRUPPE" xml:space="preserve">
     <value>Chart of the selected row</value>
@@ -56491,12 +56491,6 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="KBP_REIHE_KAELTE" xml:space="preserve">
     <value>Cooling demand</value>
   </data>
-  <data name="KBP_REIHE_WOCHE" xml:space="preserve">
-    <value>Working day, Saturday, Sunday or public holiday</value>
-  </data>
-  <data name="KBP_REIHE_FERIEN" xml:space="preserve">
-    <value>Company holiday</value>
-  </data>
   <data name="KBP_KZ_SUMME" xml:space="preserve">
     <value>Annual total</value>
   </data>
@@ -56508,9 +56502,6 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="KBP_KZ_GRUNDLAST" xml:space="preserve">
     <value>Base-load share</value>
-  </data>
-  <data name="KBP_GRAFIK_HERLEITUNG" xml:space="preserve">
-    <value>Annual profile, week and duration curve show the selected row with the annual total of this dialog; the months stack all rows.</value>
   </data>
   <data name="KBP_GRAFIK_OHNE" xml:space="preserve">
     <value>There is no profile for the selected row.</value>
@@ -56607,6 +56598,30 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="KLIMA_VORSCHAU_NICHT_ORTSTYPISCH" xml:space="preserve">
     <value>Reference point not typical of the site; for site-specific values, import the DWD TRY file for this location.</value>
+  </data>
+  <data name="KBP_HINW_EINGABEART_ZAPFPROFIL" xml:space="preserve">
+    <value>Domestic hot water is calculated with the draw-off profile generator – the input type (monthly values, weekly profile) applies only to the profile method.</value>
+  </data>
+  <data name="KBP_KALENDER_NORM_NAME" xml:space="preserve">
+    <value>Standard {0} days ({1})</value>
+  </data>
+  <data name="KBP_HINW_NORMKALENDER" xml:space="preserve">
+    <value>The template counts {0} days of use according to the standard; the operating calendar “{1}” reproduces them and is preselected on adoption (public holidays and company holidays like Sunday, company holidays around New Year and in summer).</value>
+  </data>
+  <data name="KBP_KALENDER_NORM_BUNDESWEIT" xml:space="preserve">
+    <value>nationwide</value>
+  </data>
+  <data name="KBP_KALENDER_NORM_NAME_TAG" xml:space="preserve">
+    <value>Standard {0} days ({1}, 1 Jan {2})</value>
+  </data>
+  <data name="BKAL_LBL_FERIEN_SONNTAG" xml:space="preserve">
+    <value>Company holidays like Sunday</value>
+  </data>
+  <data name="BKAL_HRL_FERIEN_SONNTAG" xml:space="preserve">
+    <value>A holiday day carries the daily amount and hourly pattern of Sunday from the weekly profile; the holiday factor then has no effect, “Holidays reduce the monthly amount” stays in effect.</value>
+  </data>
+  <data name="BKAL_HRL_FAKTOR_GESPERRT" xml:space="preserve">
+    <value>The holiday factor is locked: “Company holidays like Sunday” is set, a holiday day carries Sunday of the weekly profile.</value>
   </data>
 </root>
 

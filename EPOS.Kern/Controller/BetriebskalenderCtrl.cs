@@ -69,6 +69,20 @@ namespace WindowsFormsApplication1
             werte.Add(new DbParam("?", k.Ferienfaktor));
             werte.Add(new DbParam("?", k.FeiertagWieSonntag ? 1 : 0));
             werte.Add(new DbParam("?", k.FerienKuerzen ? 1 : 0));
+            // „Ferien wie Sonntag“ entsteht erst im Schemaschritt 234 (KBP-5d): ohne Spalte nur „nein“ zulässig -
+            // ein gesetzter Schalter wird benannt abgelehnt, statt still zu entfallen.
+            if (BedarfsprofilEingabeartSchema.FerienWieSonntagLesbar())
+            {
+                spalten.Add(BedarfsprofilEingabeartSchema.SPALTE_FERIEN_WIE_SONNTAG);
+                werte.Add(new DbParam("?", k.FerienWieSonntag ? 1 : 0));
+            }
+            else if (k.FerienWieSonntag)
+            {
+                DataRepository.FehlerMelden("\"Ferien wie Sonntag\" laesst sich erst nach Schemaschritt " +
+                                            BedarfsprofilEingabeartSchema.SCHRITT.ToString(CultureInfo.InvariantCulture) +
+                                            " speichern (" + TAB + ").");
+                return 0;
+            }
 
             if (k.ID > 0)
             {
@@ -177,6 +191,9 @@ namespace WindowsFormsApplication1
                 FerienKuerzen = r[BedarfNetzKalenderSchema.SPALTE_FERIEN_KUERZEN] != DBNull.Value &&
                                 Convert.ToInt32(r[BedarfNetzKalenderSchema.SPALTE_FERIEN_KUERZEN], CultureInfo.InvariantCulture) != 0
             };
+            string fws = BedarfsprofilEingabeartSchema.SPALTE_FERIEN_WIE_SONNTAG;
+            k.FerienWieSonntag = r.Table.Columns.Contains(fws) && r[fws] != DBNull.Value &&
+                                 Convert.ToInt32(r[fws], CultureInfo.InvariantCulture) != 0;
             for (int i = 1; i <= BedarfNetzKalenderSchema.FERIEN_ANZAHL; i++)
             {
                 object von = r[BedarfNetzKalenderSchema.SpalteFerienVon(i)];

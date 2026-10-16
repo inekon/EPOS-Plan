@@ -8979,11 +8979,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ferienfaktor ist gesperrt: „Ferien wie Sonntag“ ist gesetzt, ein Ferientag trägt den Sonntag des Wochenprofils. ähnelt.
+        /// </summary>
+        public static string BKAL_HRL_FAKTOR_GESPERRT {
+            get {
+                return ResourceManager.GetString("BKAL_HRL_FAKTOR_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ein Feiertag außerhalb der Ferien trägt den Sonntag des Wochenprofils; aus = Feiertage wirken nicht. ähnelt.
         /// </summary>
         public static string BKAL_HRL_FEIERTAG {
             get {
                 return ResourceManager.GetString("BKAL_HRL_FEIERTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Ferientag trägt Tagesmenge und Stundengang des Sonntags aus dem Wochenprofil; der Ferienfaktor wirkt dann nicht, „Ferien kürzen“ bleibt wirksam. ähnelt.
+        /// </summary>
+        public static string BKAL_HRL_FERIEN_SONNTAG {
+            get {
+                return ResourceManager.GetString("BKAL_HRL_FERIEN_SONNTAG", resourceCulture);
             }
         }
         
@@ -9209,6 +9227,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BKAL_LBL_FERIEN_BIS {
             get {
                 return ResourceManager.GetString("BKAL_LBL_FERIEN_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien wie Sonntag ähnelt.
+        /// </summary>
+        public static string BKAL_LBL_FERIEN_SONNTAG {
+            get {
+                return ResourceManager.GetString("BKAL_LBL_FERIEN_SONNTAG", resourceCulture);
             }
         }
         
@@ -56627,15 +56654,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile mit der Jahressumme dieses Dialogs; die Monate stapeln alle Zeilen. ähnelt.
-        /// </summary>
-        public static string KBP_GRAFIK_HERLEITUNG {
-            get {
-                return ResourceManager.GetString("KBP_GRAFIK_HERLEITUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gerechnet wird der Arbeitsstand dieses Dialogs – Jahressumme, Monatswerte, Wochenprofil und Betriebskalender, auch ungespeichert. Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile, die Monate stapeln alle Zeilen. ähnelt.
         /// </summary>
         public static string KBP_GRAFIK_HERLEITUNG_ARBEIT {
@@ -56690,11 +56708,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Brauchwasser rechnet mit dem Zapfprofilgenerator – die Eingabeart (Monatswerte, Wochenprofil) gilt nur für den Profilweg. ähnelt.
+        /// </summary>
+        public static string KBP_HINW_EINGABEART_ZAPFPROFIL {
+            get {
+                return ResourceManager.GetString("KBP_HINW_EINGABEART_ZAPFPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Hintergrund nach Tagesart des Betriebskalenders; Kalenderwochen nach DIN EN ISO 8601 im Jahresraster, zuerst die Woche mit der Spitze. ähnelt.
         /// </summary>
         public static string KBP_HINW_GRAFIKWOCHE {
             get {
                 return ResourceManager.GetString("KBP_HINW_GRAFIKWOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage rechnet nach Norm mit {0} Nutzungstagen; der Betriebskalender „{1}“ bildet sie ab und ist bei der Übernahme vorgewählt (Feiertage und Betriebsferien wie Sonntag, Betriebsferien um den Jahreswechsel und im Sommer). ähnelt.
+        /// </summary>
+        public static string KBP_HINW_NORMKALENDER {
+            get {
+                return ResourceManager.GetString("KBP_HINW_NORMKALENDER", resourceCulture);
             }
         }
         
@@ -56726,7 +56762,34 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabeart der markierten Kältezeile: Jahressumme mit Vorlage, Monatswerte oder Wochenprofil; Typtage folgen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die bundesweit ähnelt.
+        /// </summary>
+        public static string KBP_KALENDER_NORM_BUNDESWEIT {
+            get {
+                return ResourceManager.GetString("KBP_KALENDER_NORM_BUNDESWEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Norm {0} Tage ({1}) ähnelt.
+        /// </summary>
+        public static string KBP_KALENDER_NORM_NAME {
+            get {
+                return ResourceManager.GetString("KBP_KALENDER_NORM_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Norm {0} Tage ({1}, 1.1. {2}) ähnelt.
+        /// </summary>
+        public static string KBP_KALENDER_NORM_NAME_TAG {
+            get {
+                return ResourceManager.GetString("KBP_KALENDER_NORM_NAME_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabeart der markierten Zeile (Kälte, Prozesswärme, Brauchwasser): Jahressumme mit Vorlage, Monatswerte oder Wochenprofil; Typtage folgen. ähnelt.
         /// </summary>
         public static string KBP_KI_EINGABEART_ERL {
             get {
@@ -56861,29 +56924,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ferientag ähnelt.
-        /// </summary>
-        public static string KBP_REIHE_FERIEN {
-            get {
-                return ResourceManager.GetString("KBP_REIHE_FERIEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf ähnelt.
         /// </summary>
         public static string KBP_REIHE_KAELTE {
             get {
                 return ResourceManager.GetString("KBP_REIHE_KAELTE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Werktag, Samstag, Sonntag bzw. Feiertag ähnelt.
-        /// </summary>
-        public static string KBP_REIHE_WOCHE {
-            get {
-                return ResourceManager.GetString("KBP_REIHE_WOCHE", resourceCulture);
             }
         }
         

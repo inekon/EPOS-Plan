@@ -1458,6 +1458,18 @@ nächste Basis einfriert, nimmt die beiden Schlüssel auf und streicht `--ohne` 
 > gegen R55 bleibt PASS und byte-gleich (1 205 CSV; in `Projekt_1072/aggregate.csv` allein die zwei Schlüssel, die R55
 > nicht führt).
 
+> **Nachtrag — Schema 234 (KBP-5a bis KBP-5d Eingabeart der Bedarfsprofile, 16.10.2026, hängt an 233
+> `BauteilUHerkunftSchema`), Basis R55 unverändert.** `BedarfsprofilEingabeartSchema` (234 =
+> `BauteilUHerkunftSchema.SCHRITT + 1`) legt `Eingabeart` an `Z_Projekt_Prozesswaerme` und `Z_Projekt_Brauchwasser`
+> (Vorgabe `'jahr'`), `Nutzungstage_Norm` an `Tab_Kaeltebedarf_STAMM` und `Tab_Kaeltebedarf` und `Ferien_wie_Sonntag` an
+> `Tab_Betriebskalender` an und sät allein an der Kältevorlage 8 230 Nutzungstage (ihre Prüfsumme neu gebildet). Gehoben
+> aus der Fassung 233 (108 728 320 Byte, `6cb9f52c…`) mit `Werkzeuge/Testdatenbankschema`; der Inhaltsvergleich aller
+> Tabellen zeigt allein die fünf neuen Spalten (Zuordnungen durchweg `'jahr'`, 28 Brauchwasser, 1 Prozesswärme), die
+> Zeile 8 von `Tab_Kaeltebedarf_STAMM` und `Tab_Applikation.SchemaVersion` (189 von 195 Tabellen unberührt, die
+> Kältevorlagen 1–6 bytegleich, die Einheit „P“ von `DIN4708.p_b` erhalten). Die Testdatenbank steht auf **234**
+> (`integrity_check` ok, `foreign_key_check` leer): **108 728 320 Byte, LFS-SHA-256
+> `b2b4e116659076d866bec69d8b25e1443d697e33186550d9562643429e18fbfe`**. Der Referenzlauf der CI-Auswahl gegen R55 bleibt PASS (18 Projekte, 601 CSV byte-gleich).
+
 ### Die Vorgängerbasis R54 (Dachflächen)
 
 Sechsunddreißig Projekte, 1 171 CSV, 7 983 Skalare, auf Linux eingefroren gegen die Testdatenbank `1f2cf95f…`

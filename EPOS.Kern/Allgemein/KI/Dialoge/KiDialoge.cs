@@ -3328,6 +3328,9 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.BkalFaktorName, KiParameterTyp.Zahl,
                                      KiDialogTexte.BkalFaktorErl, einheit: KiDialogTexte.EINHEIT_PROZENT,
                                      leerErlaubt: true, min: 0, max: 100),
+                    new KiDialogFeld("ferien_wie_sonntag", "BetriebskalenderKiSicht.FerienWieSonntag",
+                                     KiDialogTexte.BkalFerienSonntagName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.BkalFerienSonntagErl),
                     new KiDialogFeld("ferien_kuerzen", "BetriebskalenderKiSicht.FerienKuerzen",
                                      KiDialogTexte.BkalKuerzenName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.BkalKuerzenErl)
@@ -4292,7 +4295,7 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kaelte_art", "BedarfsProfileKiSicht.KaelteArt",
                                      KiDialogTexte.KaelteArtName, KiParameterTyp.Wahl,
                                      KiDialogTexte.KaelteArtErl, leerErlaubt: true),
-                    // KBP-3a: die Eingabeart der markierten Kaeltezeile (Jahressumme, Monatswerte, Wochenprofil).
+                    // KBP-3a, KBP-5b: die Eingabeart der markierten Zeile (Kaelte, Prozesswaerme, Brauchwasser; Jahressumme, Monatswerte, Wochenprofil).
                     new KiDialogFeld("eingabeart", "BedarfsProfileKiSicht.Eingabeart",
                                      KiDialogTexte.KbpEingabeartName, KiParameterTyp.Wahl,
                                      KiDialogTexte.KbpEingabeartErl, leerErlaubt: true),

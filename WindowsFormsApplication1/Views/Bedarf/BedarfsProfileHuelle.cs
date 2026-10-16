@@ -68,7 +68,7 @@ namespace WindowsFormsApplication1
                                      List<Z_ProjektProzesswaermeModel> modelle,
                                      Action zuordnungenSchreiben)
         {
-            List<BedarfsProfilZeile> zeilen = ProzessZeilen(modelle);
+            List<BedarfsProfilZeile> zeilen = ProzessZeilen(modelle, projektId);
             Action geaendert = ProzessRueckweg(projektId, zeilen, modelle);
 
             return Zeigen(besitzer, BedarfsArt.Prozesswaerme, projektId, zeilen, geaendert,
@@ -121,23 +121,34 @@ namespace WindowsFormsApplication1
         {
             var zeilen = new List<BedarfsProfilZeile>();
             foreach (Z_ProjektBrauchwasserModel m in modelle)
-                zeilen.Add(new BedarfsProfilZeile
+            {
+                var z = new BedarfsProfilZeile
                 {
                     IdZ = m.ID_Z, IdStamm = m.ID_Brauchwasser,
                     Name = m.szBezeichner ?? "", Summe = m.Summe,
                     KalenderId = m.ID_Betriebskalender
-                });
+                };
+                // KBP-5a: Eingabeart, Monatsanteile und Wochenprofil der Projektkopie (OE-5).
+                BedarfsprofilEingabeAbbildung.InZeile(z, BedarfsArt.Brauchwasser, projektId, m.Eingabeart,
+                                                      m.Monatsanteile, m.Wochenprofil);
+                zeilen.Add(z);
+            }
 
             Action geaendert = () =>
             {
                 modelle.Clear();
                 foreach (BedarfsProfilZeile z in zeilen)
+                {
+                    // KBP-5a: die Eingabeart immer, Monate und Woche nur nach einer Bearbeitung.
+                    (string eingabeart, double[] monate, double[] woche) = BedarfsprofilEingabeAbbildung.AusZeile(z);
                     modelle.Add(new Z_ProjektBrauchwasserModel
                     {
                         ID_Z = z.IdZ, ID_Projekt = projektId, ID_Brauchwasser = z.IdStamm,
                         szBezeichner = z.Name, Summe = z.Summe,
-                        ID_Betriebskalender = z.KalenderId
+                        ID_Betriebskalender = z.KalenderId,
+                        Eingabeart = eingabeart, Monatsanteile = monate, Wochenprofil = woche
                     });
+                }
             };
 
             return Zeigen(besitzer, BedarfsArt.Brauchwasser, projektId, zeilen, geaendert,
@@ -174,7 +185,7 @@ namespace WindowsFormsApplication1
         internal static IReadOnlyDictionary<string, object> AssistentGabenProzess(
             int projektId, List<Z_ProjektProzesswaermeModel> modelle)
         {
-            List<BedarfsProfilZeile> zeilen = ProzessZeilen(modelle);
+            List<BedarfsProfilZeile> zeilen = ProzessZeilen(modelle, projektId);
             Action geaendert = ProzessRueckweg(projektId, zeilen, modelle);
 
             return Gaben(null, BedarfsArt.Prozesswaerme, projektId, zeilen, geaendert,
@@ -185,18 +196,24 @@ namespace WindowsFormsApplication1
         /// Die Zeilen der Prozesswärme samt Temperaturpaar der Projektkopie (PW1 Stufe 1) — EINE
         /// Stelle für Verwaltung und Assistent.
         /// </summary>
-        private static List<BedarfsProfilZeile> ProzessZeilen(List<Z_ProjektProzesswaermeModel> modelle)
+        private static List<BedarfsProfilZeile> ProzessZeilen(List<Z_ProjektProzesswaermeModel> modelle, int projektId)
         {
             var zeilen = new List<BedarfsProfilZeile>();
             foreach (Z_ProjektProzesswaermeModel m in modelle)
-                zeilen.Add(new BedarfsProfilZeile
+            {
+                var z = new BedarfsProfilZeile
                 {
                     IdZ = m.ID_Z, IdStamm = m.ID_Prozesswaerme,
                     Name = m.szProzessname ?? "", Summe = m.Summe,
                     Vorlauf = m.Vorlauf, Ruecklauf = m.Ruecklauf,
                     TemperaturGeaendert = m.TemperaturGeaendert,
                     KalenderId = m.ID_Betriebskalender
-                });
+                };
+                // KBP-5a: Eingabeart, Monatsanteile und Wochenprofil der Projektkopie (OE-5).
+                BedarfsprofilEingabeAbbildung.InZeile(z, BedarfsArt.Prozesswaerme, projektId, m.Eingabeart,
+                                                      m.Monatsanteile, m.Wochenprofil);
+                zeilen.Add(z);
+            }
             return zeilen;
         }
 
@@ -212,6 +229,9 @@ namespace WindowsFormsApplication1
             {
                 modelle.Clear();
                 foreach (BedarfsProfilZeile z in zeilen)
+                {
+                    // KBP-5a: die Eingabeart immer, Monate und Woche nur nach einer Bearbeitung.
+                    (string eingabeart, double[] monate, double[] woche) = BedarfsprofilEingabeAbbildung.AusZeile(z);
                     modelle.Add(new Z_ProjektProzesswaermeModel
                     {
                         ID_Z = z.IdZ, ID_Projekt = projektId,
@@ -219,8 +239,10 @@ namespace WindowsFormsApplication1
                         szProzessname = z.Name, Summe = z.Summe,
                         Vorlauf = z.Vorlauf, Ruecklauf = z.Ruecklauf,
                         TemperaturGeaendert = z.TemperaturGeaendert,
-                        ID_Betriebskalender = z.KalenderId
+                        ID_Betriebskalender = z.KalenderId,
+                        Eingabeart = eingabeart, Monatsanteile = monate, Wochenprofil = woche
                     });
+                }
             };
         }
 
@@ -690,7 +712,10 @@ namespace WindowsFormsApplication1
                 Vorlauf = vorlauf,
                 Ruecklauf = ruecklauf
             };
-            if (art == BedarfsArt.Kaelte) KaeltebedarfsprofilAbbildung.Aufgenommen(zeile, name);
+            // KBP-5b: im gespeicherten Projekt waehlt eine Vorlage mit Normtagen ihren Normkalender vor.
+            if (art == BedarfsArt.Kaelte) KaeltebedarfsprofilAbbildung.Aufgenommen(zeile, name, wizard ? 0 : projektId);
+            // KBP-5a: Prozesswaerme und Brauchwasser - Eingabeart 'jahr' und das Profil der neuen Projektkopie.
+            else if (!wizard) BedarfsprofilEingabeAbbildung.Aufgenommen(zeile, art, projektId);
             return zeile;
         }
 

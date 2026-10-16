@@ -33,6 +33,8 @@ public sealed class BetriebskalenderKiSicht
 
     public Func<bool>? FeiertagLesen { get; init; }
     public Action<bool>? FeiertagSetzen { get; init; }
+    public Func<bool>? FerienSonntagLesen { get; init; }
+    public Action<bool>? FerienSonntagSetzen { get; init; }
 
     public Func<int, int?>? VonLesen { get; init; }
     public Action<int, int?>? VonSetzen { get; init; }
@@ -97,6 +99,13 @@ public sealed class BetriebskalenderKiSicht
     {
         get => FaktorLesen?.Invoke();
         set => FaktorSetzen?.Invoke(value);
+    }
+
+    /// <summary>Ferientage rechnen wie ein Sonntag des Wochenprofils (der Ferienfaktor wirkt dann nicht).</summary>
+    public bool FerienWieSonntag
+    {
+        get => FerienSonntagLesen?.Invoke() ?? false;
+        set => FerienSonntagSetzen?.Invoke(value);
     }
 
     /// <summary>Kürzen die Ferien die Monatsmenge?</summary>

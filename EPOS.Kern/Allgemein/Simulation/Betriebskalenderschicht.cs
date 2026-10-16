@@ -11,6 +11,7 @@ namespace WindowsFormsApplication1
     /// t(h)  = w((24 · w₀ + h) mod 168)                       Kachelung ab dem Wochentag des 1. Januar
     /// a(h)  = w(144 + s)        an einem Feiertag (Sonntag des Wochenprofils), sonst t(h)
     /// b(h)  = f · m_s           an einem Ferientag,   m_s = (1/7) Σ_d w(24 d + s), sonst a(h)
+    /// b(h)  = w(144 + s)        an einem Ferientag mit „Ferien wie Sonntag“ (der Ferienfaktor entfällt)
     /// q(h)  = b(h) / Σ_M b · M_m · 1000                      Ferien verteilen um (Vorgabe)
     /// q(h)  = b(h) / Σ_M a · M_m · 1000                      „Ferien kürzen die Monatsmenge"
     /// </code>
@@ -37,10 +38,15 @@ namespace WindowsFormsApplication1
         /// normiert je Monat auf <paramref name="monatsverbrauch"/> [MWh] · 1000 = kWh.
         /// </summary>
         /// <param name="tagesarten">365 Tagesarten (<see cref="Betriebskalender.Tagesarten"/>).</param>
+        /// <param name="ferienWieSonntag">
+        /// Ein Ferientag trägt Tagesmenge und Stundengang des Sonntags (<see cref="Betriebskalender.FerienWieSonntag"/>);
+        /// <paramref name="ferienfaktor"/> wirkt dann nicht. Vorgabe nein: der Weg wie zuvor, Zeichen für Zeichen.
+        /// </param>
         /// <returns><c>false</c>, wenn mindestens ein Monat wegen des Randfalls ohne Ferien rechnete.</returns>
         public static bool WocheZuJahr(double[] wo, double[] monatsverbrauch, double[] outJahr,
                                        int[] moAnfang, int[] moEnde, int wochentagJan1,
-                                       byte[] tagesarten, double ferienfaktor, bool ferienKuerzen)
+                                       byte[] tagesarten, double ferienfaktor, bool ferienKuerzen,
+                                       bool ferienWieSonntag = false)
         {
             if (wo == null) throw new ArgumentNullException(nameof(wo));
             if (tagesarten == null || tagesarten.Length < 365) throw new ArgumentException("365 Tagesarten erwartet.", nameof(tagesarten));
@@ -64,11 +70,12 @@ namespace WindowsFormsApplication1
                 if (tagesarten[d] == Betriebskalender.TAG_FEIERTAG)
                     for (int s = 0; s < TAG; s++) a[d * TAG + s] = wo[6 * TAG + s];
 
-            // Ferien: f · Tagesmittel.
+            // Ferien: f · Tagesmittel, mit „Ferien wie Sonntag“ der Sonntag des Wochenprofils.
             var b = (double[])a.Clone();
             for (int d = 0; d < 365; d++)
                 if (tagesarten[d] == Betriebskalender.TAG_FERIEN)
-                    for (int s = 0; s < TAG; s++) b[d * TAG + s] = ferienfaktor * mittel[s];
+                    for (int s = 0; s < TAG; s++)
+                        b[d * TAG + s] = ferienWieSonntag ? wo[6 * TAG + s] : ferienfaktor * mittel[s];
 
             bool vollstaendig = true;
             for (int m = 0; m < MONATE; m++)

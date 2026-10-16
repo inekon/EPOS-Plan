@@ -34,6 +34,9 @@ public sealed class BetriebskalenderDaten
     /// <summary>Feiertag wie Sonntag (Vorgabe ja).</summary>
     public bool FeiertagWieSonntag { get; set; } = true;
 
+    /// <summary>Ferien wie Sonntag (Vorgabe nein); gesetzt wirkt der Ferienfaktor nicht.</summary>
+    public bool FerienWieSonntag { get; set; }
+
     /// <summary>Ferien kürzen die Monatsmenge.</summary>
     public bool FerienKuerzen { get; set; }
 
@@ -47,6 +50,7 @@ public sealed class BetriebskalenderDaten
         Bis = (int?[])Bis.Clone(),
         FerienfaktorProzent = FerienfaktorProzent,
         FeiertagWieSonntag = FeiertagWieSonntag,
+        FerienWieSonntag = FerienWieSonntag,
         FerienKuerzen = FerienKuerzen
     };
 }

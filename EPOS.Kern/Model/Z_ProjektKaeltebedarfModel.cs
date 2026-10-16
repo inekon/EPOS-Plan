@@ -83,5 +83,12 @@
         /// Geschrieben in <c>Tab_Kaeltetyp."1"…"168"</c> der Kopie (Konzept 3.3).
         /// </summary>
         public double[] Wochenprofil;
+
+        /// <summary>
+        /// KBP-5a: die Nutzungstage nach Norm der Projektkopie (<c>Tab_Kaeltebedarf.Nutzungstage_Norm</c>, Schritt
+        /// <see cref="BedarfsprofilEingabeartSchema.SCHRITT"/>); <c>null</c> = keine Angabe. Nur gelesen — Grundlage des
+        /// Kalendervorschlags beim Übernehmen (KBP-5b), kein Rechenweg liest sie.
+        /// </summary>
+        public int? NutzungstageNorm;
     }
 }

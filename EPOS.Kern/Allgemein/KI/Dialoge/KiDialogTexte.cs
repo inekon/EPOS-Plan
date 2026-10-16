@@ -2605,6 +2605,8 @@
         internal static string BkalBundeslandErl => MyResource.Resource.KI_DLG_BKAL_BUNDESLAND_ERL;
         internal static string BkalFeiertagName => MyResource.Resource.BKAL_LBL_FEIERTAG;
         internal static string BkalFeiertagErl => MyResource.Resource.BKAL_HRL_FEIERTAG;
+        internal static string BkalFerienSonntagName => MyResource.Resource.BKAL_LBL_FERIEN_SONNTAG;
+        internal static string BkalFerienSonntagErl => MyResource.Resource.BKAL_HRL_FERIEN_SONNTAG;
         internal static string BkalVonName => MyResource.Resource.BKAL_LBL_FERIEN_VON;
         internal static string BkalBisName => MyResource.Resource.BKAL_LBL_FERIEN_BIS;
         internal static string BkalFerienErl => MyResource.Resource.KI_DLG_BKAL_FERIEN_ERL;
@@ -2620,7 +2622,7 @@
         internal static string BpfDeckungName => MyResource.Resource.KI_DLG_BPF_DECKUNG_NAME;
         internal static string BpfDeckungErl => MyResource.Resource.KI_DLG_BPF_DECKUNG_ERL;
         internal static string KaelteArtErl => MyResource.Resource.KAELTE_ART_HINWEIS;
-        // KBP-3a: die Eingabeart der Kaeltezeile in den Bedarfsprofilen.
+        // KBP-3a, KBP-5b: die Eingabeart der Kaelte-, Prozesswaerme- und Brauchwasserzeile in den Bedarfsprofilen.
         internal static string KbpEingabeartName => MyResource.Resource.KBP_LBL_EINGABEART;
         internal static string KbpEingabeartErl => MyResource.Resource.KBP_KI_EINGABEART_ERL;
         internal static string NudSucheName => MyResource.Resource.IMP_KAT_FILTER_SUCHE;

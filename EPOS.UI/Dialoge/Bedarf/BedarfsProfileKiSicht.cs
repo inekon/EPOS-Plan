@@ -143,7 +143,7 @@ public sealed class BedarfsProfileKiSicht
         set => KaelteArtSetzen?.Invoke(value);
     }
 
-    // ---- KBP-3a: die Eingabeart der markierten Kältezeile (Konzept Kältebedarfsprofile 3) ---------------------------
+    // ---- KBP-3a, KBP-5b: die Eingabeart der markierten Zeile (Kälte, Prozesswärme, Brauchwasser) ---------------------------
 
     public Func<int?>? EingabeartLesen { get; init; }
     public Action<int?>? EingabeartSetzen { get; init; }
@@ -156,8 +156,8 @@ public sealed class BedarfsProfileKiSicht
         => EingabeartEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
     /// <summary>
-    /// Die Eingabeart der markierten Kältezeile in der Bearbeiten-Überlagerung; leer ohne offene Überlagerung oder außerhalb
-    /// der Kältebedarfsprofile. Derselbe Weg wie die Wahl, geschrieben mit OK. Monatswerte und Wochenprofil setzt der
+    /// Die Eingabeart der markierten Zeile (Kälte, Prozesswärme, Brauchwasser mit Projektkopie); leer ohne Angebot oder außerhalb
+    /// dieser drei Arten (Strom, Brauchwasser mit Zapfprofilgenerator). Derselbe Weg wie die Wahl, geschrieben mit OK. Monatswerte und Wochenprofil setzt der
     /// Assistent nicht (Editoren, bewusst draußen).
     /// </summary>
     public int? Eingabeart

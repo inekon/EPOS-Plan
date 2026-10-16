@@ -1083,6 +1083,10 @@ namespace EPOS.Kern.Tests
                 // Schritt BauteilUHerkunftSchema.SCHRITT (MA-6b, E149): U_Herkunft an Tab_Bauteil(_STAMM), leer, reines DDL.
                 // Wiederholbar, ergebnisneutral.
                 BauteilUHerkunftSchema.Ausfuehren(null);
+                // Schritt BedarfsprofilEingabeartSchema.SCHRITT (KBP-5a bis KBP-5d): Eingabeart an Prozesswaerme und
+                // Brauchwasser, Nutzungstage nach Norm an den Kaeltevorlagen (Saat Vorlage 8), Ferien wie Sonntag am
+                // Betriebskalender. Wiederholbar, ergebnisneutral.
+                BedarfsprofilEingabeartSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
