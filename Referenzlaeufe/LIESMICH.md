@@ -1390,6 +1390,18 @@ Projekt 1072. 1050, 1052, 1054, 1055, 1056, 1057, 1059, 1061, 1062, 1064 und 107
 > Testdatenbank steht auf **228** (`integrity_check` ok, `foreign_key_check` leer): **108 687 360 Byte, LFS-SHA-256
 > `04080c4e53b1b1c2956cf25cb7f58320023142173846bf4d576898c813dbf6e3`**.
 
+> **Nachtrag — Schema 229 (KB-5 Stromspeicher-Kosten auf Position, 16.10.2026, hängt an 228
+> `GeraetekostenEntfallSchema`), Basis R55 unverändert.** `StromspeicherKostenSchema` (229 =
+> `GeraetekostenEntfallSchema.SCHRITT + 1`) nimmt die Kosten der Stromspeicher von den vier Spalten `Modulkosten`,
+> `Leistungskosten`, `Investition_Fix` und `Verschleisskosten` auf Position und Satzvorlage; die acht Spalten an
+> `Tab_Stromspeicher` und `Tab_Stromspeicher_STAMM` entfallen. Die Saat der Satzvorlagen stand schon mit Schritt 226; die
+> Nutzungsdauer der gesäten Positionen ist gesetzt (8 Positionen, `NutzungsdauerID` 18). Gehoben aus der Fassung 228
+> (108 687 360 Byte) mit `Werkzeuge/Testdatenbankschema`; der Inhaltsvergleich aller Tabellen zeigt allein den Wegfall der acht
+> Spalten, die acht Nutzungsdauer-Zuordnungen und `Tab_Applikation.SchemaVersion`, alle übrigen Spalten und Zeilen sind
+> wertgleich. Die Testdatenbank steht auf **229** (`integrity_check` ok, `foreign_key_check` leer): **108 687 360 Byte,
+> LFS-SHA-256 `7ef1762a5e89c365d195ccd48085d7c670b4a05a7b1ce904ae2bf4b273253823`**. Der Referenzlauf aller siebenunddreißig
+> Projekte gegen R55 bleibt PASS.
+
 ### Die Vorgängerbasis R54 (Dachflächen)
 
 Sechsunddreißig Projekte, 1 171 CSV, 7 983 Skalare, auf Linux eingefroren gegen die Testdatenbank `1f2cf95f…`
