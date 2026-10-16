@@ -45960,6 +45960,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximale Raumtemperatur ähnelt.
+        /// </summary>
+        public static string GIMP_FELD_MAX_RAUMTEMPERATUR {
+            get {
+                return ResourceManager.GetString("GIMP_FELD_MAX_RAUMTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nachtabsenkung von ähnelt.
         /// </summary>
         public static string GIMP_FELD_NACHT_BEGINN {

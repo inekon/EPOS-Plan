@@ -12,9 +12,15 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// Der Verweis einer Periode auf eine benannte Woche der Zone (<c>Tab_Konditionierungsperiode.ID_Woche</c>, Nachzug N2 zu DA-4):
-    /// die Periode über Größe, Beginn, Ende und Bezeichner, die Woche über ihren Namen. Feiertagsperioden reisen ohne Verweis.
+    /// die Periode über Größe, Beginn, Ende und Bezeichner, die Woche über ihren Namen. Eine Feiertagsperiode (Nachzug N4) führt
+    /// statt Beginn und Ende (beide 0) ihre <paramref name="Feiertagsregel"/>; <c>null</c> heißt Zeitraum.
     /// </summary>
-    internal sealed record AbbildPeriodenwoche(Konditionierungsgroesse Groesse, int Beginn, int Ende, string Bezeichner, string Woche);
+    internal sealed record AbbildPeriodenwoche(Konditionierungsgroesse Groesse, int Beginn, int Ende, string Bezeichner, string Woche,
+                                               string Feiertagsregel = null)
+    {
+        /// <summary>Ist der Verweis der einer Feiertagsperiode?</summary>
+        internal bool IstFeiertag => Feiertagsregel != null;
+    }
 
     /// <summary>
     /// <b>Die Restdaten einer Zone</b> (Welle DA-4 des Konzepts Datenaustausch): was keine Standardgröße eines Formats trägt und
@@ -66,7 +72,8 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// <b>Das Erdreich des Gebäudes</b> (Inventar G3, G4): Umfang P der Bodenplatte nach DIN EN ISO 13370
-    /// (<c>Abmessung_Anschluß_Außenwand_Kellerdecke</c>), wirksamer U-Wert am Erdreich und Kellertemperatur. gbXML trägt es im
+    /// (<c>Abmessung_Anschluß_Außenwand_Kellerdecke</c>), wirksamer U-Wert am Erdreich und Kellertemperatur, dazu die obere
+    /// Raumtemperatur des Gebäudes (Inventar B10, das Gebäudefeld neben dem der Zonen). gbXML trägt es im
     /// Block <c>EPOS:</c> der <c>Building/Description</c>, IFC als Werte von <c>EPOS_Gebaeude</c>.
     /// </summary>
     internal sealed class AbbildErdreich
@@ -74,7 +81,9 @@ namespace WindowsFormsApplication1
         public double? UmfangM { get; set; }
         public double? UWirksam { get; set; }
         public double? KellertemperaturC { get; set; }
-        internal bool Traegt => UmfangM.HasValue || UWirksam.HasValue || KellertemperaturC.HasValue;
+        /// <summary>Die obere Raumtemperatur des Gebäudes (<c>Tab_Gebaeude.Maximaleraumtemperatur</c>, Inventar B10, Nachzug N4) [°C].</summary>
+        public double? MaximaleraumtemperaturC { get; set; }
+        internal bool Traegt => UmfangM.HasValue || UWirksam.HasValue || KellertemperaturC.HasValue || MaximaleraumtemperaturC.HasValue;
     }
 
     /// <summary>
@@ -106,10 +115,12 @@ namespace WindowsFormsApplication1
         internal const string ZEILE = "Zeile_";
         internal const string WOCHE = "Woche_";
         internal const string PERIODENWOCHE = "Periodenwoche_";
+        internal const string FEIERTAGSWOCHE = "Feiertagswoche_";
         internal const string MAXIMALERAUMTEMPERATUR = "Maximaleraumtemperatur";
         internal const string ERDREICH_UMFANG = "Erdreich_Umfang";
         internal const string ERDREICH_U_WIRKSAM = "Erdreich_U_Wirksam";
         internal const string KELLERTEMPERATUR = "Kellertemperatur";
+        internal const string GEBAEUDE_MAXIMALERAUMTEMPERATUR = "Gebaeude_Maximaleraumtemperatur";
 
         /// <summary>Die höchste Vorheizzeit [h] (CHECK der Spalte, Fenstergrenze des Rechenwegs).</summary>
         private const int VORHEIZZEIT_MAX = 47;
@@ -152,9 +163,10 @@ namespace WindowsFormsApplication1
                 foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
                     foreach (Kalenderregel p in (IEnumerable<Kalenderregel>)stand.Kalender(g)?.Perioden ?? Array.Empty<Kalenderregel>())
                     {
-                        if (p.IstFeiertag || !(p.Angabe?.IdWoche is long id)) continue;
+                        if (!(p.Angabe?.IdWoche is long id)) continue;
                         BenannteWoche w = stand.Wochen.FirstOrDefault(x => x.Id == id && x.Groesse == g);
-                        if (w != null) r.Periodenwochen.Add(new AbbildPeriodenwoche(g, p.Beginn, p.Ende, p.Bezeichner, w.Name));
+                        // Nachzug N4: eine Feiertagsperiode verweist über ihre Feiertagsregel (Beginn und Ende sind 0).
+                        if (w != null) r.Periodenwochen.Add(new AbbildPeriodenwoche(g, p.Beginn, p.Ende, p.Bezeichner, w.Name, p.Feiertagsregel));
                     }
             }
             return r.Traegt ? r : null;
@@ -169,6 +181,8 @@ namespace WindowsFormsApplication1
                 UmfangM = g.Abmessung_Anschluß_Außenwand_Kellerdecke > 0.0 ? g.Abmessung_Anschluß_Außenwand_Kellerdecke : null,
                 UWirksam = g.Erdreich_U_Wirksam,
                 KellertemperaturC = g.Kellertemperatur,
+                // Nachzug N4: 0 ist der Vorgabewert der Modellzeile (nicht gepflegt).
+                MaximaleraumtemperaturC = g.Maximaleraumtemperatur > 0.0 && double.IsFinite(g.Maximaleraumtemperatur) ? g.Maximaleraumtemperatur : null,
             };
             return e.Traegt ? e : null;
         }
@@ -262,13 +276,19 @@ namespace WindowsFormsApplication1
                                      + TRENNER + w.Name);
             }
             // Nachzug N2: Periode → benannte Woche, die Woche über ihre Nummer im Block (Woche_<n>), der Bezeichner zuletzt.
+            // Nachzug N4: eine Feiertagsperiode über ihre Regel (Feiertagswoche_<n>=GRÖSSE;Regel;Woche;Bezeichner), eigene Zählung.
+            int zeitraeume = 0, feiertage = 0;
             for (int i = 0; i < r.Periodenwochen.Count; i++)
             {
                 AbbildPeriodenwoche p = r.Periodenwochen[i];
                 int n = r.Wochen.FindIndex(w => w.Groesse == p.Groesse && w.Name == p.Woche);
                 if (n < 0) continue;
-                T(PERIODENWOCHE + Nummer(i), Konditionierungsgroessen.Kennwort(p.Groesse) + TRENNER + p.Beginn.ToString(CultureInfo.InvariantCulture)
-                                             + TRENNER + p.Ende.ToString(CultureInfo.InvariantCulture) + TRENNER + Nummer(n) + TRENNER + p.Bezeichner);
+                if (p.IstFeiertag)
+                    T(FEIERTAGSWOCHE + Nummer(feiertage++), Konditionierungsgroessen.Kennwort(p.Groesse) + TRENNER + p.Feiertagsregel
+                                                             + TRENNER + Nummer(n) + TRENNER + p.Bezeichner);
+                else
+                    T(PERIODENWOCHE + Nummer(zeitraeume++), Konditionierungsgroessen.Kennwort(p.Groesse) + TRENNER + p.Beginn.ToString(CultureInfo.InvariantCulture)
+                                                            + TRENNER + p.Ende.ToString(CultureInfo.InvariantCulture) + TRENNER + Nummer(n) + TRENNER + p.Bezeichner);
             }
             return l;
         }
@@ -281,6 +301,7 @@ namespace WindowsFormsApplication1
             if (e.UmfangM is double u && double.IsFinite(u)) l.Add((ERDREICH_UMFANG, Zahl(u)));
             if (e.UWirksam is double w && double.IsFinite(w)) l.Add((ERDREICH_U_WIRKSAM, Zahl(w)));
             if (e.KellertemperaturC is double k && double.IsFinite(k)) l.Add((KELLERTEMPERATUR, Zahl(k)));
+            if (e.MaximaleraumtemperaturC is double t && double.IsFinite(t)) l.Add((GEBAEUDE_MAXIMALERAUMTEMPERATUR, Zahl(t)));
             return l;
         }
 
@@ -290,11 +311,13 @@ namespace WindowsFormsApplication1
                              || s == UEBERGABE_EXPONENT || s == UEBERGABE_LEISTUNG || s == AUSLEGUNG_VORLAUF || s == AUSLEGUNG_RUECKLAUF
                              || s == AUSLEGUNG_RAUM || s == PROPORTIONALBAND || s == KUEHL_UEBERGABE_ART || s == KUEHL_UEBERGABE_EXPONENT
                              || s == KUEHL_UEBERGABE_LEISTUNG || s == MAXIMALERAUMTEMPERATUR || s.StartsWith(PERIODENWOCHE, StringComparison.Ordinal)
+                             || s.StartsWith(FEIERTAGSWOCHE, StringComparison.Ordinal)
                              || s.StartsWith(LUFTSTROM, StringComparison.Ordinal)
                              || s.StartsWith(ZEILE, StringComparison.Ordinal) || s.StartsWith(WOCHE, StringComparison.Ordinal));
 
         /// <summary>Ist der Schlüssel einer des Erdreichs?</summary>
-        internal static bool IstErdreichschluessel(string s) => s == ERDREICH_UMFANG || s == ERDREICH_U_WIRKSAM || s == KELLERTEMPERATUR;
+        internal static bool IstErdreichschluessel(string s) => s == ERDREICH_UMFANG || s == ERDREICH_U_WIRKSAM || s == KELLERTEMPERATUR
+                                                                 || s == GEBAEUDE_MAXIMALERAUMTEMPERATUR;
 
         /// <summary>Liest einen Zonenrest; nicht lesbare oder unzulässige Werte stehen in <paramref name="uebersprungen"/>. <c>null</c> = nichts.</summary>
         internal static AbbildZonenrest ZoneLesen(IEnumerable<(string Schluessel, string Wert)> werte, List<string> uebersprungen)
@@ -335,7 +358,8 @@ namespace WindowsFormsApplication1
                     case KUEHL_UEBERGABE_LEISTUNG: ok = Lesen(w, 0.0, out double? kn); r.KuehlUebergabeLeistungNenn = kn; break;
                     case MAXIMALERAUMTEMPERATUR: ok = Lesen(w, null, out double? mt); r.Maximaleraumtemperatur = mt; break;
                     default:
-                        if (s.StartsWith(PERIODENWOCHE, StringComparison.Ordinal)) periodenwochen.Add((s, w));
+                        if (s.StartsWith(PERIODENWOCHE, StringComparison.Ordinal) || s.StartsWith(FEIERTAGSWOCHE, StringComparison.Ordinal))
+                            periodenwochen.Add((s, w));
                         else if (s.StartsWith(LUFTSTROM, StringComparison.Ordinal)) ok = LuftstromLesen(w, r);
                         else if (s.StartsWith(ZEILE, StringComparison.Ordinal)) ok = ZeileLesen(s.Substring(ZEILE.Length), w, r);
                         else ok = WocheLesen(w, r, --wochen);
@@ -345,7 +369,8 @@ namespace WindowsFormsApplication1
             }
             // Die Verweise erst nach allen Wochen: die Nummer zeigt auf Woche_<n> des Blocks.
             foreach ((string s, string w) in periodenwochen)
-                if (!PeriodenwocheLesen(w, r)) uebersprungen?.Add(s);
+                if (!(s.StartsWith(FEIERTAGSWOCHE, StringComparison.Ordinal) ? FeiertagswocheLesen(w, r) : PeriodenwocheLesen(w, r)))
+                    uebersprungen?.Add(s);
             return r.Traegt || r.Zone != null ? r : null;
         }
 
@@ -362,6 +387,10 @@ namespace WindowsFormsApplication1
                 {
                     case ERDREICH_UMFANG: ok = Lesen(w, 0.0, out double? u) && u > 0.0; if (ok) e.UmfangM = u; break;
                     case ERDREICH_U_WIRKSAM: ok = Lesen(w, 0.0, out double? uw) && uw > 0.0; if (ok) e.UWirksam = uw; break;
+                    case GEBAEUDE_MAXIMALERAUMTEMPERATUR:
+                        ok = Lesen(w, null, out double? mt) && mt > 0.0;
+                        if (ok) e.MaximaleraumtemperaturC = mt;
+                        break;
                     default: ok = Lesen(w, null, out double? k); e.KellertemperaturC = k; break;
                 }
                 if (!ok) uebersprungen?.Add(s);
@@ -487,6 +516,21 @@ namespace WindowsFormsApplication1
             string bezeichner = teile[4].Trim();
             if (bezeichner.Length == 0) return false;
             r.Periodenwochen.Add(new AbbildPeriodenwoche(g, beginn, ende, bezeichner, r.Wochen[nummer - 1].Name));
+            return true;
+        }
+
+        /// <summary>Nachzug N4: <c>GRÖSSE;Feiertagsregel;Wochennummer;Bezeichner</c> — die Regel muss eine der neun sein.</summary>
+        private static bool FeiertagswocheLesen(string text, AbbildZonenrest r)
+        {
+            string[] teile = text?.Split(TRENNER, 4);
+            if (teile == null || teile.Length != 4 || !Konditionierungsgroessen.AusKennwort(teile[0].Trim(), out Konditionierungsgroesse g)) return false;
+            string regel = teile[1].Trim();
+            if (!Feiertage.Bekannt(regel)) return false;
+            if (!int.TryParse(teile[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out int nummer)) return false;
+            if (nummer < 1 || nummer > r.Wochen.Count || r.Wochen[nummer - 1].Groesse != g) return false;
+            string bezeichner = teile[3].Trim();
+            if (bezeichner.Length == 0) return false;
+            r.Periodenwochen.Add(new AbbildPeriodenwoche(g, 0, 0, bezeichner, r.Wochen[nummer - 1].Name, regel));
             return true;
         }
 

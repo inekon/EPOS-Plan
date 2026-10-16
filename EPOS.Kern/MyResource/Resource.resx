@@ -56162,6 +56162,9 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="GIMP_FELD_ERDREICH_U_WIRKSAM" xml:space="preserve">
     <value>Wirksamer U-Wert am Erdreich</value>
   </data>
+  <data name="GIMP_FELD_MAX_RAUMTEMPERATUR" xml:space="preserve">
+    <value>Maximale Raumtemperatur</value>
+  </data>
   <data name="GIMP_FELD_KELLERTEMPERATUR" xml:space="preserve">
     <value>Kellertemperatur</value>
   </data>

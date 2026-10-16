@@ -37,7 +37,7 @@ namespace EPOS.Kern.Tests
         {
             GebaeudeAbbild a = IfcExportRundlaufTests.Abbild();
             AbbildGebaeude g = a.Gebaeude[0];
-            g.Erdreich = new AbbildErdreich { UmfangM = 40.0, UWirksam = 0.3, KellertemperaturC = 10.0 };
+            g.Erdreich = new AbbildErdreich { UmfangM = 40.0, UWirksam = 0.3, KellertemperaturC = 10.0, MaximaleraumtemperaturC = 28.0 };
             AbbildRaum r1 = g.Raeume.Single(x => x.Kennung == GebaeudeExportKennung.Raum(ZONE1));
             AbbildRaum r2 = g.Raeume.Single(x => x.Kennung == GebaeudeExportKennung.Raum(ZONE2));
             r1.Rest = new AbbildZonenrest
@@ -57,6 +57,9 @@ namespace EPOS.Kern.Tests
             r1.Rest.Wochen.Add(new BenannteWoche(0, Konditionierungsgroesse.Lueftung, "Umbau", Woche(1.5, 0.5)));
             // Nachzug N2: eine Periode verweist auf die benannte Woche (der Bezeichner darf das Trennzeichen tragen).
             r1.Rest.Periodenwochen.Add(new AbbildPeriodenwoche(Konditionierungsgroesse.Heizsoll, 100, 110, "Messe; Halle 1", "Messewoche"));
+            // Nachzug N4: eine Feiertagsperiode verweist über ihre Regel auf dieselbe Woche.
+            r1.Rest.Periodenwochen.Add(new AbbildPeriodenwoche(Konditionierungsgroesse.Heizsoll, 0, 0, "Neujahr; Betriebsruhe", "Messewoche",
+                                                               DbWerte.KOND_FEIERTAG_NEUJAHR));
             r2.Rest = new AbbildZonenrest { Zone = GebaeudeExportKennung.Zone(ZONE2), VorheizzeitH = 0, HeizleistungMax = 2000.0 };
             return a;
         }
@@ -113,7 +116,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(gq.Erdreich.UmfangM, gl.Erdreich.UmfangM);
             Assert.Equal(gq.Erdreich.UWirksam, gl.Erdreich.UWirksam);
             Assert.Equal(gq.Erdreich.KellertemperaturC, gl.Erdreich.KellertemperaturC);
-            felder += 3;
+            Assert.Equal(gq.Erdreich.MaximaleraumtemperaturC, gl.Erdreich.MaximaleraumtemperaturC);
+            felder += 4;
             foreach (AbbildRaum q in gq.Raeume.Where(r => r.Rest != null))
                 Gleich(q.Rest, partner(q).Rest, q.Name, ref felder);
             Assert.DoesNotContain(gelesen.Meldungen.Concat(gl.Meldungen), m => m.Schluessel.EndsWith("RESTDATEN_UEBERSPRUNGEN", StringComparison.Ordinal));
@@ -130,8 +134,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(datei, GbxmlExportProbe.Schreiben(Abbild()));
             GbxmlAbbild gelesen = GbxmlExportProbe.Lesen(datei);
             int felder = Vergleichen(quelle, gelesen, q => gelesen.Gebaeude[0].Raeume.Single(r => r.Kennung == q.Kennung));
-            // Erdreich 3; Zone 1: 15 Felder, 1 Luftstrom (2), 4 Zeilen (28), 2 Wochen (2 × 170), 1 Periodenverweis (5); Zone 2: 15 Felder.
-            Assert.Equal(3 + 15 + 2 + 28 + 340 + 5 + 15, felder);
+            // Gebäude 4 (Erdreich 3, Höchsttemperatur 1); Zone 1: 15 Felder, 1 Luftstrom (2), 4 Zeilen (28), 2 Wochen (2 × 170),
+            // 2 Periodenverweise (Zeitraum und Feiertag, 2 × 5); Zone 2: 15 Felder.
+            Assert.Equal(4 + 15 + 2 + 28 + 340 + 10 + 15, felder);
         }
 
         [Fact]
@@ -145,7 +150,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(datei, IfcExportProbe.Schreiben(Abbild()));
             GebaeudeAbbild gelesen = IfcExportProbe.Lesen(datei);
             int felder = Vergleichen(quelle, gelesen, q => gelesen.Gebaeude[0].Raeume.Single(r => r.Name == q.Name));
-            Assert.Equal(3 + 15 + 2 + 28 + 340 + 5 + 15, felder);
+            Assert.Equal(4 + 15 + 2 + 28 + 340 + 10 + 15, felder);
         }
 
         [Fact]
@@ -165,7 +170,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(7, l1.Konditionierung?.DinNummer);
             // Die Restdaten kommen vollständig und ohne übergangenen Wert zurück — die DIN-Nummer stört den Leser der Restdaten nicht.
             int felder = Vergleichen(quelle, gelesen, q => gelesen.Gebaeude[0].Raeume.Single(r => r.Name == q.Name));
-            Assert.Equal(3 + 15 + 2 + 28 + 340 + 5 + 15, felder);
+            Assert.Equal(4 + 15 + 2 + 28 + 340 + 10 + 15, felder);
             // Gegenprobe: ohne Restdaten bleibt die DIN-Nummer allein und kommt ebenso zurück.
             GebaeudeAbbild ohne = IfcExportRundlaufTests.Abbild();
             AbbildRaum o1 = ohne.Gebaeude[0].Raeume.Single(x => x.Kennung == GebaeudeExportKennung.Raum(ZONE1));
@@ -374,6 +379,142 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new AbbildPeriodenwoche(Konditionierungsgroesse.Heizsoll, 100, 110, "Messe", "Messewoche"), p1);
             Assert.Contains(GebaeudeRestdaten.Werte(aus), x => x.Schluessel == GebaeudeRestdaten.PERIODENWOCHE + "1");
             Assert.Contains(GebaeudeRestdaten.Werte(aus), x => x.Schluessel == GebaeudeRestdaten.MAXIMALERAUMTEMPERATUR && x.Wert == "27");
+        }
+
+        /// <summary>
+        /// Nachzug N4: Eine <b>Feiertagsperiode</b>, die auf eine benannte Woche verweist, verweist nach dem Import wieder auf sie
+        /// (<c>ID_Woche</c>) und wird mit ihrer Feiertagsregel wieder exportiert. Der Verweis findet die Periode über die Regel — auch
+        /// mit anderem Bezeichner (gbXML benennt die Feiertage beim Import nach der Saat); die Gegenprobe, ein Feiertag ohne Verweis,
+        /// bleibt eingebettet.
+        /// </summary>
+        [Fact]
+        public void Eine_Feiertagsperiode_mit_Verweis_auf_eine_benannte_Woche_verweist_nach_dem_Import_wieder_auf_sie()
+        {
+            if (!_db.Vorhanden) return;
+            var ctrl = new ProjektGebaeudeCtrl();
+            ctrl.ReadAll(1045);
+            ProjektGebaeudeModel g = ctrl.items[0];
+            Assert.True(g.Zonen == null || g.Zonen.Count == 0, "Das Probengebäude trägt schon eine Zone.");
+            GebaeudeImportAblauf ablauf = BauteilvorschlagProbe.Lesen("ifc4_haus.ifc");
+            double[] ruhe = Woche(16.0, 15.0), mai = Woche(18.0, 16.0);
+            var kalender = new Konditionierungskalender(Konditionierungsgroesse.Heizsoll, Kalenderangabe.AusWert(20.0), null, new[]
+            {
+                Kalenderregel.Feiertag(Standardfahrplan.RANG_FEIERTAG, "Neujahr", DbWerte.KOND_FEIERTAG_NEUJAHR, Kalenderangabe.AusWoche(ruhe)),
+                Kalenderregel.Feiertag(Standardfahrplan.RANG_FEIERTAG + 1, "Tag der Arbeit", DbWerte.KOND_FEIERTAG_ERSTER_MAI, Kalenderangabe.AusWoche(mai)),
+            });
+            var k = new AbbildKonditionierung();
+            k.Kalender.Add(new AbbildKalender(kalender, null));
+            var rest = new AbbildZonenrest { Zone = "EG" };
+            rest.Wochen.Add(new BenannteWoche(0, Konditionierungsgroesse.Heizsoll, "Betriebsruhe", ruhe));
+            // Der Bezeichner der Datei weicht ab: gefunden wird die Periode über die Feiertagsregel.
+            rest.Periodenwochen.Add(new AbbildPeriodenwoche(Konditionierungsgroesse.Heizsoll, 0, 0, "Neujahrstag", "Betriebsruhe",
+                                                            DbWerte.KOND_FEIERTAG_NEUJAHR));
+            foreach (AbbildRaum r in ablauf.Abbild.Gebaeude[0].Raeume.Where(r => r.Beheizt))
+            {
+                r.Konditionierung = k;
+                r.Rest = rest;
+            }
+            GebaeudeZonierung zonierung = Zonenplan.Vorschlag(ablauf.Abbild, 0).Zonieren();
+            GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.Bilden(ablauf, 0, null, zonierung: zonierung);
+            Assert.False(v.Abgelehnt, string.Join(" | ", v.Meldungen.Where(m => m.Stufe == PruefStufe.Fehler)));
+            GebaeudeZonenCtrl.Vorschlagsergebnis e = new GebaeudeZonenCtrl().VorschlagSchreiben(g.ID_Gebaeude, v);
+            Assert.True(e.Ok, e.Meldung);
+
+            ZoneModel z = new GebaeudeZonenCtrl().LesenJeGebaeude(g.ID_Gebaeude).Single(x => x.Bezeichner == "Erdgeschoss");
+            Konditionierungsstand stand = new KonditionierungCtrl().StandLesen(KonditionierungCtrl.Eigner.Zone(g.ID_Gebaeude, z.ID), out string meldung);
+            Assert.True(stand != null, meldung);
+            BenannteWoche w = Assert.Single(stand.Wochen, x => x.Name == "Betriebsruhe");
+            Assert.True(w.Id > 0);
+            Kalenderregel pn = Assert.Single(stand.Kalender(Konditionierungsgroesse.Heizsoll).Perioden, p => p.Feiertagsregel == DbWerte.KOND_FEIERTAG_NEUJAHR);
+            Kalenderregel pm = Assert.Single(stand.Kalender(Konditionierungsgroesse.Heizsoll).Perioden, p => p.Feiertagsregel == DbWerte.KOND_FEIERTAG_ERSTER_MAI);
+            Assert.True(pn.IstFeiertag);
+            Assert.Equal(w.Id, pn.Angabe.IdWoche);
+            Assert.Equal(ruhe, pn.Angabe.Woche.ToArray());
+            // Gegenprobe: der Feiertag ohne Verweis bleibt eine eingebettete Woche.
+            Assert.Null(pm.Angabe.IdWoche);
+            Assert.Equal(mai, pm.Angabe.Woche.ToArray());
+
+            // Wieder exportiert: genau ein Verweis — über die Feiertagsregel, mit dem Bezeichner der Datenbank.
+            AbbildZonenrest aus = GebaeudeRestdaten.AusZone(z, "EG", null, stand);
+            AbbildPeriodenwoche p1 = Assert.Single(aus.Periodenwochen);
+            Assert.Equal(new AbbildPeriodenwoche(Konditionierungsgroesse.Heizsoll, 0, 0, "Neujahr", "Betriebsruhe", DbWerte.KOND_FEIERTAG_NEUJAHR), p1);
+            List<(string Schluessel, string Wert)> werte = GebaeudeRestdaten.Werte(aus);
+            Assert.Contains(werte, x => x.Schluessel == GebaeudeRestdaten.FEIERTAGSWOCHE + "1");
+            Assert.DoesNotContain(werte, x => x.Schluessel.StartsWith(GebaeudeRestdaten.PERIODENWOCHE, StringComparison.Ordinal));
+        }
+
+        /// <summary>
+        /// Nachzug N4: Die <b>obere Raumtemperatur des Gebäudes</b> (<c>Tab_Gebaeude.Maximaleraumtemperatur</c>, Inventar B10) reist in
+        /// beiden Formaten neben dem Erdreich, kommt im Import an das Zielfeld <c>MAX_RAUMTEMPERATUR</c> (mit Haken) und über die Hülle an
+        /// das Editorfeld. Gegenprobe: der Vorgabewert 0 der Modellzeile reist nicht, die Zeile bleibt leer und ohne Haken.
+        /// </summary>
+        [Fact]
+        public void Die_obere_Raumtemperatur_des_Gebaeudes_reist_in_beiden_Formaten_und_kommt_an_das_Zielfeld()
+        {
+            AbbildErdreich e = GebaeudeRestdaten.AusGebaeude(new ProjektGebaeudeModel { Maximaleraumtemperatur = 27.5 });
+            Assert.Equal(27.5, e.MaximaleraumtemperaturC);
+            Assert.Contains((GebaeudeRestdaten.GEBAEUDE_MAXIMALERAUMTEMPERATUR, "27.5"), GebaeudeRestdaten.Werte(e));
+            Assert.Null(GebaeudeRestdaten.AusGebaeude(new ProjektGebaeudeModel { Maximaleraumtemperatur = 0.0 }));
+            Assert.Equal(Exporteinstufung.Rundlaeufig, GebaeudeExportVerluste.Gebaeude["Maximaleraumtemperatur"]);
+            Assert.DoesNotContain("Maximaleraumtemperatur", GebaeudeExportVerluste.Getragen(new ProjektGebaeudeModel { Maximaleraumtemperatur = 27.5 }, null));
+
+            foreach (bool gbxml in new[] { true, false })
+            {
+                GebaeudeAbbild quelle = IfcExportRundlaufTests.Abbild();
+                quelle.Gebaeude[0].Erdreich = e;
+                byte[] datei = gbxml ? GbxmlExportProbe.Schreiben(quelle) : IfcExportProbe.Schreiben(quelle);
+                Assert.Contains(GebaeudeRestdaten.GEBAEUDE_MAXIMALERAUMTEMPERATUR, Encoding.UTF8.GetString(datei), StringComparison.Ordinal);
+                var a = new GebaeudeImportAblauf();
+                using (var s = new System.IO.MemoryStream(datei))
+                    a.Lesen(s, gbxml ? "probe.xml" : "probe.ifc", gbxml ? new GbxmlImportProfil() : new IfcImportProfil());
+                Assert.Equal(27.5, a.Abbild.Gebaeude[0].Erdreich?.MaximaleraumtemperaturC);
+                GebaeudeFeldzeile zeile = a.Zuordnen(0, null).Zeilen.Single(x => x.Zielfeld == GebaeudeZielfelder.MAX_RAUMTEMPERATUR);
+                Assert.Equal(27.5, zeile.Wert);
+                Assert.True(zeile.Uebernehmen, gbxml ? "gbXML" : "IFC");
+            }
+            // Gegenprobe: ohne die Angabe bleibt die Zeile leer und ohne Haken.
+            var ohne = new GebaeudeImportAblauf();
+            using (var s = new System.IO.MemoryStream(GbxmlExportProbe.Schreiben(IfcExportRundlaufTests.Abbild())))
+                ohne.Lesen(s, "probe.xml", new GbxmlImportProfil());
+            GebaeudeFeldzeile leer = ohne.Zuordnen(0, null).Zeilen.Single(x => x.Zielfeld == GebaeudeZielfelder.MAX_RAUMTEMPERATUR);
+            Assert.False(leer.HatWert);
+            Assert.False(leer.Uebernehmen);
+
+            // Die Hülle setzt das Editorfeld aus der Zeile mit Haken.
+            var ergebnis = new EPOS.UI.Dialoge.Import.GebaeudeImportErgebnis(0, null, "Probe", new Dictionary<string, bool>(), new List<EPOS.UI.Dialoge.Import.GebaeudeFeldzeileDaten>
+            {
+                new EPOS.UI.Dialoge.Import.GebaeudeFeldzeileDaten { Zielfeld = GebaeudeZielfelder.MAX_RAUMTEMPERATUR, Wert = 27.5, Haken = true },
+            });
+            Assert.Equal(27.5, GebaeudeImportHuelle.NachKatalogdaten(new EPOS.UI.Dialoge.Bedarf.GebaeudeKatalogDaten { MaxTemperatur = 24.0 }, ergebnis).MaxTemperatur);
+        }
+
+        /// <summary>
+        /// Nachzug N4, rückwärtsverträglich: Ein Block ohne Feiertagsverweis und ohne Höchsttemperatur des Gebäudes (Dateien von vor N4)
+        /// liest wie bisher, ohne übergangenen Wert; ein Feiertagsverweis mit unbekannter Regel wird benannt übergangen.
+        /// </summary>
+        [Fact]
+        public void Ein_Block_ohne_die_Angaben_des_Nachzugs_N4_liest_wie_bisher()
+        {
+            string xml = Encoding.UTF8.GetString(GbxmlExportProbe.Schreiben(Abbild()));
+            // Die Zeilen des Blocks stehen getrennt durch einen Zeilenumbruch (in der Datei auch als Zeichenreferenz).
+            string alt = System.Text.RegularExpressions.Regex.Replace(xml, "(\\r?\\n|&#xA;|&#10;)(" + GebaeudeRestdaten.FEIERTAGSWOCHE + "[0-9]+|"
+                                                                           + GebaeudeRestdaten.GEBAEUDE_MAXIMALERAUMTEMPERATUR + ")=[^\\r\\n&<]*", "");
+            Assert.NotEqual(xml, alt);
+            GbxmlAbbild gelesen = GbxmlExportProbe.Lesen(Encoding.UTF8.GetBytes(alt));
+            AbbildGebaeude g = gelesen.Gebaeude[0];
+            Assert.Null(g.Erdreich.MaximaleraumtemperaturC);
+            Assert.Equal(10.0, g.Erdreich.KellertemperaturC);
+            AbbildZonenrest r = g.Raeume.Single(x => x.Kennung == GebaeudeExportKennung.Raum(ZONE1)).Rest;
+            AbbildPeriodenwoche p = Assert.Single(r.Periodenwochen);
+            Assert.False(p.IstFeiertag);
+            Assert.DoesNotContain(gelesen.Meldungen.Concat(g.Meldungen), m => m.Schluessel.EndsWith("RESTDATEN_UEBERSPRUNGEN", StringComparison.Ordinal));
+            // Gegenprobe: eine unbekannte Feiertagsregel wird benannt übergangen, der Verweis des Zeitraums bleibt.
+            GbxmlAbbild falsch = GbxmlExportProbe.Lesen(Encoding.UTF8.GetBytes(
+                xml.Replace(";" + DbWerte.KOND_FEIERTAG_NEUJAHR + ";", ";KEIN_FEIERTAG;", StringComparison.Ordinal)));
+            AbbildGebaeude gf = falsch.Gebaeude[0];
+            Assert.Single(gf.Raeume.Single(x => x.Kennung == GebaeudeExportKennung.Raum(ZONE1)).Rest.Periodenwochen);
+            Assert.Contains(gf.Meldungen, m => m.Schluessel.EndsWith("RESTDATEN_UEBERSPRUNGEN", StringComparison.Ordinal)
+                                               && m.Werte.Last().Contains(GebaeudeRestdaten.FEIERTAGSWOCHE + "1", StringComparison.Ordinal));
         }
 
         /// <summary>

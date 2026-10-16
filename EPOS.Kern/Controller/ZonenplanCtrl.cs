@@ -165,8 +165,12 @@ namespace WindowsFormsApplication1
                     bool geaendert = false;
                     var perioden = k.Perioden.Select(r =>
                     {
-                        AbbildPeriodenwoche p = r.IstFeiertag ? null
-                            : je.FirstOrDefault(x => x.Beginn == r.Beginn && x.Ende == r.Ende && x.Bezeichner == r.Bezeichner);
+                        // Nachzug N4: eine Feiertagsperiode über ihre Feiertagsregel — zuerst mit gleichem Bezeichner, sonst die Regel
+                        // allein (gbXML führt die Feiertage als Tagtyp Holiday, der Import benennt sie nach der Saat).
+                        AbbildPeriodenwoche p = r.IstFeiertag
+                            ? je.FirstOrDefault(x => x.Feiertagsregel == r.Feiertagsregel && x.Bezeichner == r.Bezeichner)
+                              ?? je.FirstOrDefault(x => x.Feiertagsregel == r.Feiertagsregel)
+                            : je.FirstOrDefault(x => !x.IstFeiertag && x.Beginn == r.Beginn && x.Ende == r.Ende && x.Bezeichner == r.Bezeichner);
                         BenannteWoche w = p == null ? null : ebene.Wochen.FirstOrDefault(x => x.Groesse == je.Key && x.Name == p.Woche);
                         if (w == null) return r;
                         geaendert = true;
