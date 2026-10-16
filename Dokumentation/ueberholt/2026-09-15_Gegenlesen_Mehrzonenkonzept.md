@@ -1,6 +1,6 @@
 # Gegenlesen des Mehrzonenkonzepts (15.09.2026)
 
-**Papier:** [`Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md`](../Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md)
+**Papier:** [`Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md`](../aktuell/Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md)
 — gegengelesen in Rev. 1 (1 133 Zeilen), fortgeschrieben zu **Rev. 2** (1 345 Zeilen).
 
 **Drei Leser, drei Blickwinkel.** Jeder las dasselbe Papier vollständig und gegen eine eigene

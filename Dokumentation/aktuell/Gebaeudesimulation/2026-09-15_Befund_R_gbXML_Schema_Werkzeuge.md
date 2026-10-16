@@ -4,7 +4,7 @@
 [`../Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md`](../Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md),
 Sitzung vom 15.09.2026.
 
-Vertieft Abschnitt 3 von [`2026-09-15_Befund_C_IFC-Recherche.md`](2026-09-15_Befund_C_IFC-Recherche.md)
+Vertieft Abschnitt 3 von [`../../ueberholt/2026-09-15_Befund_C_IFC-Recherche.md`](../../ueberholt/2026-09-15_Befund_C_IFC-Recherche.md)
 und wiederholt ihn nicht. Alle Schema-, Datei- und .NET-Aussagen dieses Befundes sind durch
 tatsächlichen Download, Auszählung, XSD-Validierung und Kompilierlauf auf diesem Rechner belegt;
 die Befehle stehen jeweils dabei. Wo nur Fremddokumentation vorlag, ist das kenntlich gemacht.

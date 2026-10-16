@@ -9,21 +9,21 @@ der Stelle, an der ein Gebäudemodell andockt, die Zustands- und Fadenlage, und 
 Leistungsbudget, in das eine Stundenrechnung passen muss.
 
 **Quellen.** Eigene Lesung am Stand des Zweigs `ios_migration_september` vom 15.09.2026: die vier
-`CLAUDE.md` (Wurzel, [`EPOS.Kern`](../../../EPOS.Kern/CLAUDE.md), [`EPOS.UI`](../../../EPOS.UI/CLAUDE.md),
-[`EPOS.iOS`](../../../EPOS.iOS/CLAUDE.md)), die sieben Projektdateien, `EPOS.Kern/Allgemein/Dienste/`,
+`CLAUDE.md` (Wurzel, [`EPOS.Kern`](../../EPOS.Kern/CLAUDE.md), [`EPOS.UI`](../../EPOS.UI/CLAUDE.md),
+[`EPOS.iOS`](../../EPOS.iOS/CLAUDE.md)), die sieben Projektdateien, `EPOS.Kern/Allgemein/Dienste/`,
 `EPOS.Kern/Allgemein/IDatenzugriff.cs`, `DataRepository.cs`, `Allgemein/Simulation/`,
 `Allgemein/Bericht/`, `Allgemein/Export/`, `SpeicherEngine/FlottenModel.cs`,
 `EPOS.Kern/Controller/FlottenPlanerLage.cs`, `EPOS.UI.Daten/Katalogwege.cs` und
 `EPOS.UI.Daten/Simulation/SimulationPlattformwege.cs`, die Wächtertests in `EPOS.Kern.Tests`
 und `EPOS.UI.Tests`, `WindowsFormsApplication1/Program.cs`, `EPOS.iOS/Datenbankbereitstellung.cs`,
-[`.github/workflows/kern.yml`](../../../.github/workflows/kern.yml) und
+[`.github/workflows/kern.yml`](../../.github/workflows/kern.yml) und
 `Referenzlaeufe/2026-09-11_R7_Speicherflotte/protokoll.txt`. Dazu die Gliederung von
-[`Konzept_Simulationsablauf_EPOS-Plan.md`](../Konzept_Simulationsablauf_EPOS-Plan.md) mit den
+[`Konzept_Simulationsablauf_EPOS-Plan.md`](../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md) mit den
 Abschnitten 1.2–1.4 und 9.3–9.4.
 
-**Abgrenzung.** Was die Befunde [L](2026-09-15_Befund_L_Einbindung_Kern.md) (Einbindung Kern),
+**Abgrenzung.** Was die Befunde [L](../aktuell/Gebaeudesimulation/2026-09-15_Befund_L_Einbindung_Kern.md) (Einbindung Kern),
 [M](2026-09-15_Befund_M_Gebaeudedialog.md) (Gebäudedialog),
-[N](2026-09-15_Befund_N_IFC-Import_Entwurf.md) (IFC-Import) und
+[N](../aktuell/Gebaeudesimulation/2026-09-15_Befund_N_IFC-Import_Entwurf.md) (IFC-Import) und
 [Q](2026-09-15_Befund_Q_Muster_Datenmodell_Dialoge.md) (Muster Datenmodell/Dialoge) bereits
 belegen, wird hier **nicht wiederholt**, sondern verwiesen. Ergänzt ist, was diese vier nicht
 führen: die Schichtung als Ganzes, die Abhängigkeitsregeln und ihre Wächter, der Lauf als

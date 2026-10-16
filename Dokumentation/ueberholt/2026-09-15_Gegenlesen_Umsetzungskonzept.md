@@ -1,6 +1,6 @@
 # Gegenlesen des Umsetzungskonzepts Gebäudesimulation VDI 6007 (15.09.2026)
 
-**Papier:** [`Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+**Papier:** [`Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../aktuell/Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
 — gegengelesen als Rev. 1 (1 341 Zeilen), nach Einarbeitung **Rev. 2** (1 546 Zeilen). Eine
 unabhängige Nachprüfung der Einarbeitung hat sieben kleine Unstimmigkeiten gefunden; sie sind
 nachgebessert (Rev. 2, 1 547 Zeilen) und stehen unten unter **Nachlese**.
@@ -121,14 +121,14 @@ Tabelle:
 ## Was offen ist — Papierführung, beim Orchestrator
 
 Zwei Dinge liegen außerhalb dieses Auftrags und sind **noch nicht erledigt**:
-[`Dokumentation/LIESMICH.md`](../../LIESMICH.md) und die Statusdatei pflegt der Orchestrator.
+[`Dokumentation/LIESMICH.md`](../LIESMICH.md) und die Statusdatei pflegt der Orchestrator.
 
 1. **`DokumentationLinkWacheTests.Der_Index_nennt_jedes_Papier` ist heute rot.** Der Test prüft
    jede Datei unter `aktuell/` (`EPOS.Kern.Tests/DokumentationLinkWacheTests.cs:169-190`); es
    fehlen die Indexzeilen für **dieses Protokoll** und für
    `Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md`. Jenes Papier ist inzwischen abgelegt, der
    Verweis des Umsetzungskonzepts darauf greift also — offen sind allein die zwei Indexzeilen.
-2. **Die Statusdatei** [`Status_Gebaeudesimulation_VDI6007.md`](../Status_Gebaeudesimulation_VDI6007.md)
+2. **Die Statusdatei** [`Status_Gebaeudesimulation_VDI6007.md`](../aktuell/Status_Gebaeudesimulation_VDI6007.md)
    führt noch keine Zeile zu Rev. 2 des Umsetzungskonzepts. E9 und E10 stehen dort als entschieden
    und decken sich wörtlich mit dem Kopf des Papiers.
 

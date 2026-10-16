@@ -1,7 +1,7 @@
 # Protokoll G5-0 — Schemaschritt 197 `FlaechenherkunftSchema`: Herkunft der Bauteilfläche in `Tab_Bauteil` (07.10.2026)
 
 **Sitzung:** IFC / Gebäudeimport, Statuszeile **#805**. Commits: `d18b9f163` (Merge origin mit Schritt 196), `907afcb8c` (Schritt, Schreib- und Leseweg), `25948fa64` (Testdatenbank 197), `87d9c7e1e` (Tests), `b10315524` (Spaltenliste in `GebaeudeG3SchemaTests`); zusammengeführt in `e25217ad8`.
-**Entscheid:** E101; Abstimmung [G5 IFC](../../../aktuell/Gebaeudesimulation/2026-10-07_Abstimmung_G5_IFC.md).
+**Entscheid:** E101; Abstimmung [G5 IFC](../../2026-10-07_Abstimmung_G5_IFC.md).
 
 ## 1 Auftrag
 

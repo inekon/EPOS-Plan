@@ -69,7 +69,7 @@
 >
 > **Rev. 3 — Entscheid E20 eingearbeitet (Trennung der Rechenwege, 16.09.2026), dazu der Zusatz
 > E21 (Kältebedarf) und E19 (Nutzfläche). Rev. 2 — Korrekturen des Gegenlesens vom 15.09.2026,
-> Protokoll: [Gegenlesen](Gebaeudesimulation/2026-09-15_Gegenlesen_Umsetzungskonzept.md)**
+> Protokoll: [Gegenlesen](../ueberholt/2026-09-15_Gegenlesen_Umsetzungskonzept.md)**
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -111,7 +111,7 @@ Die Befunde, auf denen jede Codeaussage dieses Papiers steht:
 | Befund | Gegenstand |
 |---|---|
 | [`Gebaeudesimulation/2026-09-15_Befund_L_Einbindung_Kern.md`](Gebaeudesimulation/2026-09-15_Befund_L_Einbindung_Kern.md) | Einbindung in den Rechenkern: Naht, Klima, Persistenz, Migration, Referenzlauf, Tests, Merge-Folge |
-| [`Gebaeudesimulation/2026-09-15_Befund_M_Gebaeudedialog.md`](Gebaeudesimulation/2026-09-15_Befund_M_Gebaeudedialog.md) | Gebäudeeditor und Bedarfsdialog: Ist-Inventar, Soll-Entwurf, Hülle, Texte, bunit-Fälle |
+| [`../ueberholt/2026-09-15_Befund_M_Gebaeudedialog.md`](../ueberholt/2026-09-15_Befund_M_Gebaeudedialog.md) | Gebäudeeditor und Bedarfsdialog: Ist-Inventar, Soll-Entwurf, Hülle, Texte, bunit-Fälle |
 | [`Gebaeudesimulation/2026-09-15_Befund_N_IFC-Import_Entwurf.md`](Gebaeudesimulation/2026-09-15_Befund_N_IFC-Import_Entwurf.md) | IFC-Import: Importmuster, xBIM-Paket und Lizenz, Klassen, Abbildungsregeln, Sonderfälle, Plattform |
 | [`Gebaeudesimulation/2026-09-15_Befund_R_gbXML_Schema_Werkzeuge.md`](Gebaeudesimulation/2026-09-15_Befund_R_gbXML_Schema_Werkzeuge.md) | gbXML: Schema und Versionswert, was die Autorensysteme liefern, LINQ to XML statt `XmlSerializer`, Aufwand von Import und Export (E9) |
 | [`Gebaeudesimulation/2026-09-15_Befund_S_IFC-Export_ohne_Geometriekernel.md`](Gebaeudesimulation/2026-09-15_Befund_S_IFC-Export_ohne_Geometriekernel.md) | IFC-Export ohne Geometriekernel, Rückgabe angereicherter Dateien — und die daraus folgende Auflage an **diesen** Import (3.2) |
@@ -2247,4 +2247,4 @@ das Neu-Einfrieren der teuerste Nachweis (Befund X 4).
   derselbe Vorbereitungsschritt, dieselbe Gebäuderechnung, kein Altweg auf der Kälteseite; 1.1 und
   1.4). Kanal, Senkenzuordnung, Kälteerzeuger, Dialoge, Schema und Bericht der Kühlung stehen im
   [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) (Stufen KU0–KU3, E12) und in
-  [Befund W](Gebaeudesimulation/2026-09-16_Befund_W_Kuehlung_Bestand.md).
+  [Befund W](../ueberholt/2026-09-16_Befund_W_Kuehlung_Bestand.md).

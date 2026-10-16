@@ -1,7 +1,7 @@
 # Befund A — das VDI-6007-Material auf Z: (15.09.2026)
 
 **Protokoll.** Befund eines Analyse-Agenten (Modell Opus) im Auftrag des Konzepts
-[`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
+[`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
 Sitzung vom 15.09.2026. Gegenstand: die fünf Dateien unter
 `Z:\…\15-Anleitungen_Literatur\Simulation-Gebäudemodell` (Python-Modell, C#-Projekt, zwei
 Docx, Ergebnisbild). Wortlaut wie geliefert; bei Widerspruch gilt das Konzept.

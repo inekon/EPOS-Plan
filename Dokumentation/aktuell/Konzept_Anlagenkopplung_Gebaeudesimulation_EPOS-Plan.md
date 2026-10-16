@@ -2749,11 +2749,11 @@ Widerspruch bleibt möglich, solange die zugehörige Stufe nicht beauftragt ist.
 [BETRIEB_SQLITE.md](BETRIEB_SQLITE.md) (§ 6).
 
 **Befunde.**
-[Befund B — Rechenweg im Bestand](Gebaeudesimulation/2026-09-15_Befund_B_Rechenweg_Kern.md),
+[Befund B — Rechenweg im Bestand](../ueberholt/2026-09-15_Befund_B_Rechenweg_Kern.md),
 [Befund L — Einbindung in den Kern](Gebaeudesimulation/2026-09-15_Befund_L_Einbindung_Kern.md),
-[Befund W — Kühlung im Bestand](Gebaeudesimulation/2026-09-16_Befund_W_Kuehlung_Bestand.md),
+[Befund W — Kühlung im Bestand](../ueberholt/2026-09-16_Befund_W_Kuehlung_Bestand.md),
 [Befund X — Feldzuordnung Altweg/VDI 6007](Gebaeudesimulation/2026-09-16_Befund_X_Feldzuordnung_Altweg_VDI6007.md),
-[Befund D — Testdatenbank](Gebaeudesimulation/2026-09-15_Befund_D_Testdatenbank.md).
+[Befund D — Testdatenbank](../ueberholt/2026-09-15_Befund_D_Testdatenbank.md).
 
 **Quelltext** (für dieses Papier selbst nachgezählt; Belege im Text mit `Datei:Zeile`).
 
