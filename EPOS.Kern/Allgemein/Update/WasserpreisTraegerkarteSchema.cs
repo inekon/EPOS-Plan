@@ -56,7 +56,7 @@ namespace WindowsFormsApplication1
     // Anweisung zwangslaeufig "no such column".
     //
     // NUMMER. Angemeldet als 235 (Statuskopf); haengt endgueltig an 234 (KBP-5, Sitzung Dialoge/Cloud),
-    // sobald 231-234 auf origin liegen. Bis dahin haengt die Kette vorlaeufig an 230.
+    // sobald 231-234 auf origin liegen. Bis dahin haengt die Kette vorlaeufig an 233.
     //
     // VIER LESER: SchemaMigration (Schale), Werkzeuge/Testdatenbankschema, die Testvorrichtung in
     // EPOS.Kern.Tests und die Paketanhebung (Umformung: ein aelteres Paket uebergibt den Preis an
@@ -73,9 +73,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die Nummer des Schemaschritts</b> — angemeldet als 235 (Statuskopf); hängt endgültig an 234 (KBP-5,
         /// Sitzung Dialoge/Cloud), sobald 231–234 auf origin liegen. Vorläufig hängt sie an
-        /// <see cref="KaeltebedarfsprofilVorlagenSchema.SCHRITT"/>.
+        /// <see cref="BauteilUHerkunftSchema.SCHRITT"/>.
         /// </summary>
-        public const int SCHRITT = KaeltebedarfsprofilVorlagenSchema.SCHRITT + 1;
+        public const int SCHRITT = BauteilUHerkunftSchema.SCHRITT + 1;
 
         /// <summary>Der zentrale Trägerkatalog.</summary>
         public const string TAB_TRAEGER = "energy_carrier";

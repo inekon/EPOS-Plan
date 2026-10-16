@@ -102,7 +102,8 @@ namespace EPOS.Kern.Tests
             Assert.True(FlaechenherkunftSchema.Vollstaendig());
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Bauteil WHERE Flaechenherkunft IS NOT NULL"));
             List<string> spalten = DataRepository.SpaltenVonTabelle(FlaechenherkunftSchema.TAB_BAUTEIL);
-            Assert.Equal(FlaechenherkunftSchema.SPALTE, spalten[spalten.Count - 1]);
+            // Die Spalte folgt auf die Spalten von S-G; danach steht allein U_Herkunft (BauteilUHerkunftSchema, MA-6b).
+            Assert.Equal(FlaechenherkunftSchema.SPALTE, spalten.Last(s => s != BauteilUHerkunftSchema.SPALTE));
             string ddl = Convert.ToString(DataRepository.ExecuteScalar("SELECT sql FROM sqlite_master WHERE name = ?",
                                                                        new DbParam("@n", FlaechenherkunftSchema.TAB_BAUTEIL)),
                                           CultureInfo.InvariantCulture);

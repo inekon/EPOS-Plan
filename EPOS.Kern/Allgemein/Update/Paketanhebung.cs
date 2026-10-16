@@ -478,6 +478,15 @@ namespace WindowsFormsApplication1
             // Art-Vorschlag; der Schritt legt die Spalten am Ziel an (Vorgabe 'jahr' bzw. leer).
             new Stufe(KaeltebedarfsprofilVorlagenSchema.SCHRITT, Art.Ddl,
                       "Eingabeart der Kältebedarfszuordnung, Art-Vorschlag und Vorlagen 7–16 des Kältekatalogs (KBP-2)"),
+            // Ein Paket führt keinen Katalog der Nutzungsprofile (er bleibt im Ziel); der Schritt sät die DIN-Profile am Ziel.
+            new Stufe(RaumnutzungDinWerteSchema.SCHRITT, Art.Katalog,
+                      "Werte der DIN-Nutzungsprofile nach DIN/TS 18599-10:2025-10 (DA-6, E135)"),
+            // Ein älteres Paket bringt seine Fensteraufbauten ohne ψ des Glasrands; der Schritt legt die Spalte leer an.
+            new Stufe(BauteilkatalogAbschnittSchema.SCHRITT, Art.Ddl,
+                      "ψ des Glasrands am Aufbaukatalog (BK-6)"),
+            // Ein älteres Paket bringt seine Bauteile ohne Herkunft des U-Werts; der Schritt legt die Spalte leer an.
+            new Stufe(BauteilUHerkunftSchema.SCHRITT, Art.Ddl,
+                      "Herkunft des U-Werts je Bauteil (MA-6b)"),
             // KB-7a: Ein älteres Paket bringt den Wasserpreis noch an seinen Anlagenzeilen; die Stufe übergibt ihn an
             // die Trägerkarte des Projekts (energy_project_settings des Wasserträgers am Ziel), danach fällt die
             // Spalte mit der Schnittmenge des Imports fort.

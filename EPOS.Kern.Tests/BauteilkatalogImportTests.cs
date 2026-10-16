@@ -135,6 +135,22 @@ namespace EPOS.Kern.Tests
             return p;
         }
 
+        [Fact]
+        public void Ein_Aufbau_mit_falscher_Anteilsumme_wird_benannt_verworfen()
+        {
+            // BK-5: dieselbe Probe, die Anteile der inhomogenen Wand A5 ergeben 70 % + 20 % = 0,9 statt 1 ± 0,01.
+            Probe probe = Hauptprobe();
+            probe.X[0] = new[] { G(401), G(105), "1", "70", "Gefach" };
+            BauteilkatalogImport.Plan p = BauteilkatalogImport.Planen(BauteilkatalogQuelle.Lesen(Schreiben(probe)), new BauteilkatalogStand());
+            BauteilkatalogVorschau v = p.Vorschau;
+            Assert.Null(v.Abgelehnt);
+            Assert.Equal(4, v.Aufbauten.Neu);
+            Assert.Equal(1, v.Aufbauten.Gruende["inhomogen: Flächenanteile ergeben nicht 1 ± 0,01"]);
+            Assert.DoesNotContain(p.Aufbauten, a => a.Kennung == G(105));
+            Assert.Empty(p.Abschnitte);
+            Assert.Contains(v.Protokoll, z => z.StartsWith("Aufbau verworfen (inhomogen", StringComparison.Ordinal));
+        }
+
         // ---- Leser -------------------------------------------------------------------------
 
         [Fact]

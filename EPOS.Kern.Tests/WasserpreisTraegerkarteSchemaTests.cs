@@ -28,8 +28,8 @@ namespace EPOS.Kern.Tests
         public void Die_Nummer_haengt_an_der_Vorgaengerklasse_und_steht_in_den_Registern()
         {
             // Angemeldet als 235; haengt endgueltig an 234 (KBP-5, Sitzung Dialoge/Cloud), sobald 231 bis 234 auf origin
-            // liegen. Vorlaeufig haengt die Kette an 230 (KaeltebedarfsprofilVorlagenSchema).
-            Assert.Equal(KaeltebedarfsprofilVorlagenSchema.SCHRITT + 1, WasserpreisTraegerkarteSchema.SCHRITT);
+            // liegen. Vorlaeufig haengt die Kette an 233 (BauteilUHerkunftSchema).
+            Assert.Equal(BauteilUHerkunftSchema.SCHRITT + 1, WasserpreisTraegerkarteSchema.SCHRITT);
             Assert.Equal(WasserpreisTraegerkarteSchema.SCHRITT, SchemaStand.Zielversion);
             Assert.Contains(Paketanhebung.Stufen, s => s.Nr == WasserpreisTraegerkarteSchema.SCHRITT &&
                                                        s.Wirkung == Paketanhebung.Art.Umformung);
@@ -185,7 +185,7 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
             long traeger = WasserpreisTraegerkarteSchema.TraegerId().Value;
             var baum = Baum();
-            List<string> bericht = Paketanhebung.Anheben(KaeltebedarfsprofilVorlagenSchema.SCHRITT, new[] { baum }, null,
+            List<string> bericht = Paketanhebung.Anheben(BauteilUHerkunftSchema.SCHRITT, new[] { baum }, null,
                                                          out List<List<string>> neu);
 
             Assert.Contains(WasserpreisTraegerkarteSchema.TAB_EINSTELLUNG, neu[0]);
@@ -214,7 +214,7 @@ namespace EPOS.Kern.Tests
                     Paketzeile(("id", traeger), ("name", "Erdgas fremd"))
                 }
             };
-            List<string> bericht = Paketanhebung.Anheben(KaeltebedarfsprofilVorlagenSchema.SCHRITT, new[] { baum }, katalog,
+            List<string> bericht = Paketanhebung.Anheben(BauteilUHerkunftSchema.SCHRITT, new[] { baum }, katalog,
                                                          out List<List<string>> neu);
             Assert.DoesNotContain(WasserpreisTraegerkarteSchema.TAB_EINSTELLUNG, neu[0]);
             Assert.Contains(bericht, b => b.Contains("2.5", StringComparison.Ordinal));

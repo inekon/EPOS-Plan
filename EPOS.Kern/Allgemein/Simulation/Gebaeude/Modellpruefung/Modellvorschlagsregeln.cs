@@ -305,6 +305,7 @@ namespace WindowsFormsApplication1
             Bauteilart = v.Name,
             Flaeche = v.Flaeche ?? 0.0,
             U_Wert = v.U,
+            U_Herkunft = v.U.HasValue ? DbWerte.HERKUNFT_VORGABE : null,
             Neigung = v.Neigung,
             Randbedingung = v.Randbedingung,
             ID_Nachbarzone = v.IdNachbarzone,

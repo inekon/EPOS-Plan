@@ -1093,6 +1093,18 @@ namespace WindowsFormsApplication1
         /// Art-Vorschlag <c>Kaelte_Art</c> an <c>Tab_Kaeltebedarf_STAMM</c> und <c>Tab_Kaeltebedarf</c> und die Saat der
         /// Vorlagen 7–16 (<see cref="KaeltebedarfsprofilVorlagenSchema"/>). <b>Ergebnisneutral:</b> Jede Zuordnung rechnet weiter mit
         /// der Jahressumme, die Zeilen 1–6 bleiben bytegleich samt Prüfsumme.
+        /// Danach, mit der SAAT DER DIN-NUTZUNGSPROFILE (DA-6, E135), steht das Ziel auf <see cref="RaumnutzungDinWerteSchema.SCHRITT"/>:
+        /// Die 45 ausgelieferten Profile der Kategorie DIN/TS 18599-10 tragen die Werte der Fassung 2025-10
+        /// (<see cref="RaumnutzungDinSaat"/>), nur wo kein Wert stand. <b>Ergebnisneutral:</b> Kein Referenzprojekt nutzt ein
+        /// Nutzungsprofil.
+        /// Danach, mit der INHOMOGENEN SCHICHT UND DEN FENSTERN IM AUFBAUKATALOG (BK-5/BK-6), steht das Ziel auf
+        /// <see cref="BauteilkatalogAbschnittSchema.SCHRITT"/>: ψ des Glasrands am Aufbau (<see cref="BauteilkatalogAbschnittSchema"/>).
+        /// <b>Ergebnisneutral:</b> Kein Referenzprojekt führt einen Aufbau.
+        /// Danach, mit der HERKUNFT DES U-WERTS (MA-6b, E149), steht das Ziel auf <see cref="BauteilUHerkunftSchema.SCHRITT"/>:
+        /// <c>U_Herkunft</c> an <c>Tab_Bauteil(_STAMM)</c> (<see cref="BauteilUHerkunftSchema"/>) — ein von Hand gesetzter U-Wert
+        /// bleibt beim Wiederimport. <b>Ergebnisneutral:</b> Die Spalte entsteht leer, der Rechenweg liest sie nicht. Das Ziel ist
+        /// das Ende der Kette; umgehängt wird allein am Vorgänger <see cref="BauteilkatalogAbschnittSchema.SCHRITT"/>.
+        /// </summary>
         /// Danach, mit dem WASSERPREIS IN DER TRÄGERKARTE (KB-7a), steht das Ziel auf
         /// <see cref="WasserpreisTraegerkarteSchema.SCHRITT"/>: Träger „Wasser“ (Preismodell <c>WATER</c>, Einheit m³),
         /// Übernahme der Anlagenpreise in <c>energy_project_settings</c> (je Projekt die Anlage mit der kleinsten ID,

@@ -122,9 +122,10 @@ namespace Auslieferungsvorlage
         /// <summary>
         /// <b>Was der Katalog der Nutzungsprofile in der Vorlage trägt.</b> Gezählt werden je Kategorie die Profile
         /// (gesperrt und eigen) und die Zuordnungen; geprüft wird dreierlei: die ausgelieferte Saat steht vollständig
-        /// (<see cref="RaumnutzungSchema.OffeneSaat"/>), <b>kein Kennwert, kein Zeilenbild, kein Stundenprofil in einer
-        /// Normkategorie</b> (DIN/TS 18599-10 — Normwerte werden nie ausgeliefert; SIA 2024 und VDI 2078 entfallen, E129) und in jedem Modus
-        /// keine eigene Zeile mehr (NP-F21, Q46). Steht der Schemaschritt nicht, ist das ein Hinweis.
+        /// (<see cref="RaumnutzungSchema.OffeneSaat"/>), <b>die Normkategorie DIN/TS 18599-10 trägt genau die gesäten Werte</b>
+        /// (DA-6, E135: jedes DIN-Profil wie <see cref="RaumnutzungDinSaat"/>, kein eingelesener Wert, kein Zeilenbild, kein
+        /// Stundenprofil; SIA 2024 und VDI 2078 entfallen, E129) und in jedem Modus keine eigene Zeile mehr (NP-F21, Q46). Steht
+        /// der Schemaschritt nicht, ist das ein Hinweis.
         /// </summary>
         private bool Nutzungsprofile()
         {
@@ -158,16 +159,22 @@ namespace Auslieferungsvorlage
             string norm = string.Join(", ", RaumnutzungSchema.ARTEN_NORM.Select(a => "'" + a + "'"));
             string normProfile = "SELECT p.\"ID\" FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" p JOIN \"" +
                                  RaumnutzungSchema.TAB_KATALOG + "\" k ON k.\"ID\" = p.\"ID_Katalog\" WHERE k.\"Art\" IN (" + norm + ")";
-            long kennwerte = Vorlagenbau.Zaehle2(
-                "SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" WHERE \"ID\" IN (" + normProfile + ") AND (" +
-                string.Join(" OR ", RaumnutzungSchema.SPALTEN_KENNWERTE.Select(s => s.Spalte)
-                    .Concat(RaumnutzungNormwerteSchema.Lesbar() ? RaumnutzungNormwerteSchema.SPALTEN.Select(s => s.Spalte) : Enumerable.Empty<string>())
-                    .Select(s => "\"" + s + "\" IS NOT NULL")) + ")");
+            // DA-6 (E135): Die DIN-Profile tragen die gesaeten Werte - geprueft wird die Gleichheit mit der Saat, nicht die Leere.
+            bool saatLesbar = RaumnutzungNormwerteSchema.Lesbar();
+            long eingelesen = saatLesbar
+                ? Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" WHERE \"ID\" IN (" + normProfile +
+                                      ") AND \"" + RaumnutzungNormwerteSchema.SPALTE_HERKUNFT + "\" IS NOT NULL")
+                : 0;
+            int saatOffen = saatLesbar ? RaumnutzungDinWerteSchema.Offen() : -1;
+            IReadOnlyList<string> abweichend = RaumnutzungDinWerteSchema.Abweichungen();
+            ok &= Befund(saatOffen == 0 && abweichend.Count == 0,
+                         "DIN-Profile mit den gesaeten Werten der Fassung " + RaumnutzungDinSaat.FASSUNG + ": offen " + saatOffen +
+                         ", abweichend " + abweichend.Count + (abweichend.Count == 0 ? "" : " (" + string.Join("; ", abweichend.Take(5)) + ")"));
             long zeilen = Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_ZEILE + "\" WHERE \"ID_Profil\" IN (" + normProfile + ")");
             long stunden = Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_STUNDEN + "\" WHERE \"ID_Profil\" IN (" + normProfile + ")");
-            ok &= Befund(kennwerte + zeilen + stunden == 0,
-                         "Werte in Normkategorien: Profile mit Kennwert " + kennwerte + ", Zeilenbild " + zeilen + ", Stundenprofile " +
-                         stunden + "   (Normwerte werden nie ausgeliefert)");
+            ok &= Befund(eingelesen + zeilen + stunden == 0,
+                         "Werte des Anwenders in Normkategorien: eingelesene Profile " + eingelesen + ", Zeilenbild " + zeilen +
+                         ", Stundenprofile " + stunden + "   (eingelesene Normwerte werden nie ausgeliefert)");
 
             long eigene = Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_KATALOG + "\" WHERE \"ReadOnly\" = 0")
                           + Vorlagenbau.Zaehle2("SELECT COUNT(*) FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" WHERE \"ReadOnly\" = 0")

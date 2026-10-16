@@ -280,14 +280,20 @@ namespace WindowsFormsApplication1
         /// <summary>Die Beschreibung des Musters Sonstige.</summary>
         public const string BESCHREIBUNG_SONSTIGE = "Ohne Kennwerte: nur der Name an der Zone";
 
-        /// <summary>Der Quellenhinweis der Kategorie DIN/TS 18599-10 (Konzept 5.2, E96).</summary>
+        /// <summary>
+        /// Der Quellenhinweis der Kategorie DIN/TS 18599-10 (Konzept 5.2, E96) — mit den gesäten Werten der Fassung
+        /// (DA-6, E135; der Text vor der Saat steht in <see cref="RaumnutzungDinSaat.QUELLENHINWEIS_VOR_SAAT"/>).
+        /// </summary>
         public const string QUELLE_DIN =
-            "DIN/TS 18599-10:2025-10, Energetische Bewertung von Gebäuden – Teil 10: Nutzungsrandbedingungen, " +
-            "Klimadaten; ersetzt DIN V 18599-10:2018-09. Werte trägt der Anwender aus seiner lizenzierten Ausgabe ein " +
-            "oder importiert sie.";
+            "DIN/TS 18599-10:" + RaumnutzungDinSaat.FASSUNG + ", Energetische Bewertung von Gebäuden – Teil 10: Nutzungsrandbedingungen, " +
+            "Klimadaten; ersetzt DIN V 18599-10:2018-09. Ausgeliefert mit den Werten der Tabellen 5 bis 7 der Fassung " +
+            RaumnutzungDinSaat.FASSUNG + "; abweichende Werte liest der Anwender über „Normwerte einlesen“ ein.";
 
-        /// <summary>Die Beschreibung der Kategorie DIN/TS 18599-10.</summary>
-        public const string BESCHREIBUNG_DIN = "Nutzungsprofile nach DIN/TS 18599-10 mit Nummer und Name, ohne Werte";
+        /// <summary>
+        /// Die Beschreibung der Kategorie DIN/TS 18599-10 — mit den gesäten Werten (DA-6; der Text vor der Saat steht in
+        /// <see cref="RaumnutzungDinSaat.BESCHREIBUNG_VOR_SAAT"/>).
+        /// </summary>
+        public const string BESCHREIBUNG_DIN = "Nutzungsprofile nach DIN/TS 18599-10:" + RaumnutzungDinSaat.FASSUNG + " mit Nummer, Name und Werten der Norm";
 
         /// <summary>
         /// Die vier Kategorien der Saat des Schritts 189 in Anzeigereihenfolge. SIA 2024 und VDI 2078 sind entfallen (E129):

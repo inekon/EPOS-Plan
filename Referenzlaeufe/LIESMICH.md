@@ -1420,6 +1420,35 @@ nächste Basis einfriert, nimmt die beiden Schlüssel auf und streicht `--ohne` 
 > `a901f445a430231ab6c68c1cc0e3a1ef71a3717cc922bb07c426328b27b3b3f1`**. Der Referenzlauf der CI-Auswahl gegen R55 bleibt PASS
 > (11 Projekte, 373 CSV byte-gleich).
 
+> **Nachtrag — Schema 231 und 232 (DA-6 Werte der DIN-Nutzungsprofile und BK-5/BK-6 Fenster im Aufbaukatalog, 16.10.2026,
+> hängt an 230 `KaeltebedarfsprofilVorlagenSchema`), Basis R55 unverändert.** `RaumnutzungDinWerteSchema` (231 =
+> `KaeltebedarfsprofilVorlagenSchema.SCHRITT + 1`) sät die Werte der 45 ausgelieferten Profile der Kategorie DIN/TS 18599-10
+> in der Fassung 2025-10 in `Tab_Raumnutzungsprofil`, nur wo kein Wert steht; `BauteilkatalogAbschnittSchema` (232 =
+> `RaumnutzungDinWerteSchema.SCHRITT + 1`) legt `Psi_Glasrand` an `Tab_Bauteilaufbau_STAMM` und `Tab_Bauteilaufbau` leer an.
+> Kein Referenzprojekt nutzt ein Nutzungsprofil oder führt einen Aufbau. Gehoben aus der Fassung 230 (108 720 128 Byte) mit
+> `Werkzeuge/Testdatenbankschema` auf **232** (45 Profile gesät, 2 Spalten angelegt, `integrity_check` ok, 108 728 320 Byte).
+> Größe und LFS-SHA-256 der eingecheckten Fassung stehen im Nachtrag des folgenden Schritts, der die Datei in einem Zug weiterhebt.
+
+> **Nachtrag — Schema 233 (MA-6b Herkunft des U-Werts, 16.10.2026, hängt an 232 `BauteilkatalogAbschnittSchema`), Basis
+> R55 unverändert.** Kette 230 `KaeltebedarfsprofilVorlagenSchema` → 231 `RaumnutzungDinWerteSchema` → 232
+> `BauteilkatalogAbschnittSchema` → 233 `BauteilUHerkunftSchema` (233 = `BauteilkatalogAbschnittSchema.SCHRITT + 1`), das
+> `U_Herkunft` an `Tab_Bauteil` und `Tab_Bauteil_STAMM` leer anlegt (kein DML; leer heißt Bestand). Gehoben aus der Fassung
+> 230 (108 720 128 Byte, `a901f445…`) in einem Zug mit `Werkzeuge/Testdatenbankschema` über 231 und 232 auf 233 (45
+> DIN-Profile gesät, 4 Spalten angelegt; ein zweiter Lauf ist inhaltsgleich). Die Testdatenbank steht auf **233**
+> (`integrity_check` ok, `foreign_key_check` leer): **108 728 320 Byte, LFS-SHA-256
+> `95d1dd45028454d9f83cf3db22123beb4d3525f80f0c79c973b865ab188432da`**. Der Referenzlauf gegen R55 läuft im Gate.
+>
+> **Saatstand zu 233 (16.10.2026), Basis R55 unverändert.** Die gesäten Bauteile der Zonen-Referenzprojekte 1052, 1054
+> und 1062 tragen `U_Herkunft` so, wie ihre Baupläne es über die Programmwege schreiben: die Kopien der Übernahme
+> („Gebäude als eine Zone übernehmen“, `GebaeudeZonenabbildung.AlsBauteilModel`) `VORGABE`, die von Hand angelegten
+> Zeilen (Kellerdecke, Trennwand Gastronomie, Kellerboden, Kellerwände; Trennwand Nord/Ost) `MANUELL`
+> (`GebaeudeZonenCtrl.UHerkunftNeu`) — 72 und 11 Zeilen; `Skripte/referenzprojekt_1052_bauplan.cs` nennt die Herkunft
+> der Handzeilen ausdrücklich. Gesät mit `Werkzeuge/Testdatenbankschema` (Block nach Schritt 233, nur diese Projekte,
+> nur `U_Herkunft`, wiederholbar; keine Datenmigration für Anwenderdatenbanken, deren Bestand bleibt leer). Der
+> Rechenweg liest die Spalte nicht. `integrity_check` ok, `foreign_key_check` leer, außer `Tab_Bauteil` jede Tabelle
+> inhaltsgleich: **108 728 320 Byte, LFS-SHA-256
+> `e6aef7ded55a644cab3d70e1f49fd76f63376e6efd035191a96fcfbad5e08562`**.
+
 ### Die Vorgängerbasis R54 (Dachflächen)
 
 Sechsunddreißig Projekte, 1 171 CSV, 7 983 Skalare, auf Linux eingefroren gegen die Testdatenbank `1f2cf95f…`

@@ -1074,6 +1074,15 @@ namespace EPOS.Kern.Tests
                 // Schritt KaeltebedarfsprofilVorlagenSchema.SCHRITT (KBP-2): Eingabeart der Kaeltebedarfszuordnung, Art-Vorschlag am
                 // Kaeltekatalog und Saat der Vorlagen 7-16. Wiederholbar, ergebnisneutral.
                 KaeltebedarfsprofilVorlagenSchema.Ausfuehren(null);
+                // Schritt RaumnutzungDinWerteSchema.SCHRITT (DA-6, E135): die 45 DIN-Nutzungsprofile mit den Werten der
+                // Saat, nur wo kein Wert steht. Wiederholbar, ergebnisneutral.
+                RaumnutzungDinWerteSchema.Ausfuehren(null);
+                // Schritt BauteilkatalogAbschnittSchema.SCHRITT (BK-5/BK-6): Psi_Glasrand am Aufbaukatalog, leer, reines DDL.
+                // Wiederholbar, ergebnisneutral.
+                BauteilkatalogAbschnittSchema.Ausfuehren(null);
+                // Schritt BauteilUHerkunftSchema.SCHRITT (MA-6b, E149): U_Herkunft an Tab_Bauteil(_STAMM), leer, reines DDL.
+                // Wiederholbar, ergebnisneutral.
+                BauteilUHerkunftSchema.Ausfuehren(null);
                 // Schritt WasserpreisTraegerkarteSchema.SCHRITT (KB-7a): Traeger Wasser, Uebernahme der Anlagenpreise in
                 // die Traegerkarte, Entfall von Wasserpreis_EUR_m3. Wiederholbar, ergebnisneutral.
                 WasserpreisTraegerkarteSchema.Ausfuehren(null);

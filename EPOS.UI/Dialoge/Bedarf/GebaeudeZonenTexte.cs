@@ -724,6 +724,9 @@ public sealed class BauteilDialogTexte
     /// <summary><c>BTDLG_BTN_AUFBAU_UEBERNEHMEN</c></summary>
     public string KnopfAufbauUebernehmen { get; set; } = Resource.BTDLG_BTN_AUFBAU_UEBERNEHMEN;
 
+    /// <summary><c>BTDLG_FENSTER_UEBERNOMMEN</c> — „Aus dem Fensteraufbau übernommen: …, U_w = {0} W/(m²K)." (BK-6)</summary>
+    public string FensterUebernommen { get; set; } = Resource.BTDLG_FENSTER_UEBERNOMMEN;
+
     /// <summary><c>BTDLG_HINWEIS_KATALOG</c></summary>
     public string HinweisKatalog { get; set; } = Resource.BTDLG_HINWEIS_KATALOG;
 

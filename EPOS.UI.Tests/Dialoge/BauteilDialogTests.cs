@@ -475,4 +475,50 @@ public class BauteilDialogTests : EposBunitContext
             .Add(x => x.Geschlossen, _ => { }));
         Assert.Contains("also show unsuitable", cut.Markup);
     }
+
+    // =================================================================================
+    // BK-6: Fensterwerte aus dem Fensteraufbau
+    // =================================================================================
+
+    [Fact]
+    public void Ein_Fensteraufbau_uebergibt_g_Rahmenanteil_und_Uw_an_das_Fenster()
+    {
+        var fenster = new Fensteraufbau(Ug: 1.0, Uf: 1.4, GWert: 0.5, Rahmenanteil: 0.3, PsiGlasrand: 0.04);
+        var projekt = new[]
+        {
+            new AufbauWahl(21, false, "Fenster Probe", DbWerte.BAUTEILART_FENSTER, 1.12, Fenster: fenster),
+            new AufbauWahl(22, false, "Außenwand", DbWerte.BAUTEILART_AUSSENWAND, 0.3)
+        };
+        var cut = Render<BauteilDialog>(p => p
+            .Add(x => x.Bauteil, new BauteilDaten { Id = 5, Bezeichner = "Fenster Süd", Bauteilart = DbWerte.BAUTEILART_FENSTER, Flaeche = 2.0 })
+            .Add(x => x.Projektaufbauten, projekt)
+            .Add(x => x.Katalogaufbauten, Array.Empty<AufbauWahl>())
+            .Add(x => x.Nachbarzonen, Array.Empty<NachbarzoneWahl>()));
+
+        Feld(cut, "Aufbau im Projekt")!.Change("21");
+
+        // U_w = 0,7·1,0 + 0,3·1,4 + 4·√1,4·0,04 / 2 = 1,215 (Kern, Fensterkennwerte.Uw).
+        Assert.Equal(0.5, cut.Instance.Arbeitsstand.GWert);
+        Assert.Equal(0.3, cut.Instance.Arbeitsstand.Rahmenanteil);
+        Assert.Equal(1.215, cut.Instance.Arbeitsstand.UWert);
+        Assert.Contains("Aus dem Fensteraufbau übernommen", cut.Markup);
+        Assert.Contains("1,215", cut.Markup);
+    }
+
+    [Fact]
+    public void Eine_Wand_uebernimmt_keine_Fensterwerte()
+    {
+        var fenster = new Fensteraufbau(1.0, 1.4, 0.5, 0.3, 0.04);
+        var cut = Render<BauteilDialog>(p => p
+            .Add(x => x.Bauteil, Wand())
+            .Add(x => x.Projektaufbauten, new[] { new AufbauWahl(21, false, "Fenster Probe", DbWerte.BAUTEILART_FENSTER, 1.12, Fenster: fenster) })
+            .Add(x => x.Katalogaufbauten, Array.Empty<AufbauWahl>())
+            .Add(x => x.Nachbarzonen, Array.Empty<NachbarzoneWahl>()));
+
+        Feld(cut, "Aufbau im Projekt")!.Change("21");
+
+        Assert.Null(cut.Instance.Arbeitsstand.GWert);
+        Assert.Equal(0.3, cut.Instance.Arbeitsstand.UWert);
+        Assert.DoesNotContain("Aus dem Fensteraufbau übernommen", cut.Markup);
+    }
 }
