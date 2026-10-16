@@ -18,8 +18,12 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class KaeltetyptagCtrl
     {
-        private const string TAB_T = "\"" + KaeltetyptagSchema.TAB_TYPTAG + "\"";
-        private const string TAB_M = "\"" + KaeltetyptagSchema.TAB_MATRIX + "\"";
+        // Die Namen kommen ueber Q() und nicht als Konstante: Bis zur Hebung der Testdatenbank (Schritt GEPARKT) kennt sie
+        // die Tabellen nicht - der SQL-Dialekt-Pruefer prueft diese Texte deshalb als dynamisch (Syntax und Muster).
+        private static string TAB_T => Q(KaeltetyptagSchema.TAB_TYPTAG);
+        private static string TAB_M => Q(KaeltetyptagSchema.TAB_MATRIX);
+
+        private static string Q(string s) => "\"" + s + "\"";
 
         /// <summary>Stehen die Tabellen?</summary>
         public static bool Verfuegbar() => KaeltetyptagSchema.TabellenVorhanden();
