@@ -77,7 +77,9 @@ namespace EPOS.Kern.Tests
                                                            // v17 (UB-E4): ebenso der Schalter der Bivalenztafel.
                                                            && f.Schluessel != "hat.tabelle.bivalenz"
                                                            // v18 (KM3-E3-b): ebenso der Schalter der Tafel „Teillast und Takten“.
-                                                           && f.Schluessel != "hat.tabelle.km_teillast"),
+                                                           && f.Schluessel != "hat.tabelle.km_teillast"
+                                                           // v24 (KB-7e): ebenso der Schalter der Kenndatentafel der Kältemaschine.
+                                                           && f.Schluessel != "hat.tabelle.komponenten.kenndaten.kaeltemaschine"),
                        f => Assert.Equal(4, f.Seit));
             // Die Fassung 11 brachte Word-Schlüssel; spätere Fassungen heben die Word-Fassung weiter (v12: Strom- und Kältebild, Pufferauslegungstafel).
             Assert.True(Vorlagenfeldkatalog.KatalogfassungWord >= 11);
