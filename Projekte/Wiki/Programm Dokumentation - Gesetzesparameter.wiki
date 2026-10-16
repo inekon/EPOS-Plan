@@ -1,5 +1,7 @@
 Der Dialog '''Gesetzliche Parameter''' hält die Rechtsgrundlagen der Wirtschaftlichkeits- und der Emissionsrechnung jahresscharf vor: je Schlüssel und Gültigkeitsjahr eine eigene Zeile. Er steht unter {{Menü|Administration|Kosten|Gesetzliche Parameter…}}. Eine Gesetzesänderung ist eine neue Jahreszeile, kein Ändern der alten – nur so liefert eine heute gerechnete Variante in einigen Jahren noch dieselben Zahlen.
 
+[[Datei:Bildschirmfoto_Gesetzesparameter.png|mini|zentriert|800px|Gesetzliche Parameter, Bereich CO₂-Preis – Bildschirmfoto mit Beispieldaten.]]
+
 == Eingaben ==
 
 * '''Bereich''' – schränkt die Liste ein: KWK-Gesetz, EEG, Stromsteuer, Energiesteuer, CO₂-Preis, Umlagen auf den Strompreis, Umsatzsteuer und F-Gase sowie die Emissions- und Primärenergiefaktoren, getrennt nach gesetzlichem Nachweis und realer Bilanz.

@@ -10,6 +10,8 @@ Beide Kataloge öffnen Sie über das Menü '''Administration''' › ''Gebäude''
 
 Der Baustoffkatalog führt je Stoff einen Namen, eine Gruppe (etwa Mauerwerk, Beton, Dämmstoffe), den Hersteller und drei Stoffwerte:
 
+[[Datei:Bildschirmfoto_Baustoffe.png|mini|zentriert|800px|Katalog Baustoffe – Bildschirmfoto mit Beispieldaten.]]
+
 {| class="wikitable"
 ! Wert !! Einheit !! zulässig
 |-

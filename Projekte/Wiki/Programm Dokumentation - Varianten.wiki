@@ -27,6 +27,8 @@ Eine Variante lässt sich auch unmittelbar am Auswahlfeld ''Projekt:'' der Start
 * '''✏️ Variante umbenennen…''' – erscheint nur, wenn das geöffnete Projekt eine Variante ist. Der bestehende Bezeichner ist vorbelegt; mit dem neuen Bezeichner ändern sich auch der Projektname (''Stamm - Bezeichner''), das Kopfband und der Fenstertitel. Ein Stammprojekt bekommt seinen Namen dagegen über ''Speichern unter…''.
 * '''Umbenennen in der Übersicht''' – dieselbe Umbenennung steht im Bereich ''Berichte & Kosten'' auf dem Reiter ''Übersicht'' in der Gruppe ''Variante verwalten'' hinter ''Umbenennen…''; der Dialog dort stellt die Variante zur Wahl.
 
+[[Datei:Bildschirmfoto_Varianten.png|mini|zentriert|800px|Als Variante speichern – Bildschirmfoto mit Beispieldaten.]]
+
 == Reiter „Übersicht“ unter Berichte & Kosten ==
 {{Anker|uebersicht|komponenten-im-vergleich}}
 

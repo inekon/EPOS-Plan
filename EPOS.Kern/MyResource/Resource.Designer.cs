@@ -132556,7 +132556,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Rollenmodell (Etappe E5) — Differenzmethode „vermiedene Kosten“ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rollenmodell — Differenzmethode „vermiedene Kosten“ ähnelt.
         /// </summary>
         public static string TARIF_G_ROLLEN {
             get {

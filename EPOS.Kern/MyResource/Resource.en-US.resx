@@ -12187,7 +12187,7 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>Feed-in (no demand price; shared field for PV and CHP feed-in)</value>
   </data>
   <data name="TARIF_G_ROLLEN" xml:space="preserve">
-    <value>Role model (stage E5) — difference method “avoided cost”</value>
+    <value>Role model — difference method “avoided cost”</value>
   </data>
   <data name="TARIF_G_ZEITZONEN" xml:space="preserve">
     <value>Winter period (summer and winter maximum of the demand charge model “Scale”)</value>
