@@ -170,7 +170,7 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Der Wechsel auf eine Vorlage mit Einzelplatzhaltern bringt beim Nachladen den Stand „ohne
         /// Kapitel" (alles gesperrt, die leise Zeile; <c>{{projekt.kunde}}</c> und <c>{{bericht.datum}}</c>
-        /// sind Deckblattangaben — das Deckblatt kommt aus der Vorlage), der auf eine mit
+        /// allein sind kein Deckblatt — erst mit <c>{{bericht.titel}}</c> kommt es aus der Vorlage), der auf eine mit
         /// <c>{{bericht.inhalt}}</c> einen freien, der auf eine ohne Platzhalter keinen — dann gilt die Liste
         /// wie bisher.
         /// </summary>
@@ -182,6 +182,7 @@ namespace EPOS.Kern.Tests
             if (!db.Vorhanden) return;
             Konfig();
             Hinzu("Einzeln.docx", Probevorlagen.AusAbsaetzen("Angebot für {{projekt.kunde}}", "Stand {{bericht.datum}}"));
+            Hinzu("Titel.docx", Probevorlagen.AusAbsaetzen("{{bericht.titel}}", "Angebot für {{projekt.kunde}}"));
             Hinzu("Sammel.docx", Probevorlagen.AusAbsaetzen("Einleitung", "{{bericht.inhalt}}"));
             Hinzu("Leer.docx", Probevorlagen.AusAbsaetzen("Nur Text ohne Platzhalter"));
             BerichtsvorlagenGaben gruppe = Gruppe();
@@ -191,8 +192,15 @@ namespace EPOS.Kern.Tests
             Kapitelstand einzeln = gruppe.Stand().Kapitelstand;
             Assert.NotNull(einzeln);
             Assert.True(einzeln.InhaltAusVorlage);
-            Assert.Equal(ALLE.Where(s => s != BerichtsKonfiguration.B_DECKBLATT), einzeln.NichtEnthalten);
-            Assert.Equal(BerichtsKonfiguration.B_DECKBLATT, einzeln.DeckblattAusVorlage);
+            Assert.Equal(ALLE, einzeln.NichtEnthalten);
+            Assert.Null(einzeln.DeckblattAusVorlage);
+
+            await gruppe.VorlageGewaehlt(Id(stand, "Titel"));
+            Kapitelstand titel = gruppe.Stand().Kapitelstand;
+            Assert.NotNull(titel);
+            Assert.True(titel.InhaltAusVorlage);
+            Assert.Equal(ALLE.Where(s => s != BerichtsKonfiguration.B_DECKBLATT), titel.NichtEnthalten);
+            Assert.Equal(BerichtsKonfiguration.B_DECKBLATT, titel.DeckblattAusVorlage);
 
             await gruppe.VorlageGewaehlt(Id(stand, "Sammel"));
             Kapitelstand sammel = gruppe.Stand().Kapitelstand;

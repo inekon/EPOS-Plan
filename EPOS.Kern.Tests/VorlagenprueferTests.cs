@@ -993,6 +993,25 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Ein eigenes Deckblatt trägt eine Vorlage nur mit dem Berichtstitel <c>{{bericht.titel}}</c> im Rumpf
+        /// (<see cref="Vorlagenfeldkatalog.Deckblattmerkmal"/>): ein Datum, der Kunde oder der Bearbeiter allein
+        /// genügen nicht, der Titel in der Kopfzeile auch nicht; der englische Alias zählt wie der Schlüssel.
+        /// </summary>
+        [Fact]
+        public void Das_eigene_Deckblatt_verlangt_den_Berichtstitel()
+        {
+            Assert.False(Schnell(Probevorlagen.AusAbsaetzen("{{bericht.datum}}", "{{kapitel.anhang}}")).DeckblattAusPlatzhaltern);
+            Assert.False(Schnell(Probevorlagen.AusAbsaetzen("{{projekt.kunde}}", "{{projekt.bearbeiter}}", "{{bericht.untertitel}}",
+                                                            "{{kapitel.anhang}}")).DeckblattAusPlatzhaltern);
+            Assert.True(Schnell(Probevorlagen.AusAbsaetzen("{{bericht.titel}}", "{{kapitel.anhang}}")).DeckblattAusPlatzhaltern);
+            Assert.True(Schnell(Probevorlagen.AusAbsaetzen("{{bericht.datum}}", "{{bericht.titel}}")).DeckblattAusPlatzhaltern);
+            Assert.True(Vorlagenfeldkatalog.IstDeckblattmerkmal("bericht.titel"));
+            Assert.False(Vorlagenfeldkatalog.IstDeckblattmerkmal("bericht.datum"));
+            Assert.False(Vorlagenfeldkatalog.IstDeckblattmerkmal(null));
+            Assert.Contains(Vorlagenfeldkatalog.Deckblattmerkmal, Vorlagenfeldkatalog.Deckblattangaben);
+        }
+
+        /// <summary>
         /// Die Stellen der Kapitel (Konzept 11 Nr. 3): der Kapitelkopf unmittelbar vor dem Anker, Platzhalter
         /// darin aufgelöst (<c>{{text.kapitel_wirtschaftlichkeit}}</c>, in der Sprache des Berichts); mit
         /// <c>|ohne titel</c> ohne Kapitelkopf die nächste Überschrift davor; sonst die eigene Überschrift des

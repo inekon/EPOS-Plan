@@ -1536,6 +1536,27 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>Ein Absatz ohne Format mit einem Text.</summary>
+        /// <summary>
+        /// Gegenprobe zur Deckblatt-Regel: Eine Vorlage mit Datum und Kunde, aber ohne <c>{{bericht.titel}}</c>, trägt
+        /// kein eigenes Deckblatt — ohne Häkchen „Deckblatt“ steht es nicht im Bericht; mit dem Titel steht es da.
+        /// </summary>
+        [Fact]
+        public void Ohne_Berichtstitel_traegt_die_Vorlage_kein_Deckblatt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            byte[] ohneTitel = KapitelVorlage(TextAbsatz("{{bericht.datum}}"), TextAbsatz("{{projekt.kunde}}"),
+                                              TextAbsatz("{{kapitel.anhang}}"));
+            Fuellergebnis ohne = Fuelle(ohneTitel, Berichtsdatenproben.Gruppendaten(), Konfig(BerichtsKonfiguration.B_ANHANG),
+                                        Ziel("ohne_titel.docx"));
+            Assert.Null(ohne.Kapitelstellen[BerichtsKonfiguration.B_DECKBLATT]);
+
+            byte[] mitTitel = KapitelVorlage(TextAbsatz("{{bericht.titel}}"), TextAbsatz("{{kapitel.anhang}}"));
+            Fuellergebnis mit = Fuelle(mitTitel, Berichtsdatenproben.Gruppendaten(), Konfig(BerichtsKonfiguration.B_ANHANG),
+                                       Ziel("mit_titel.docx"));
+            Assert.Equal("Deckblatt", mit.Kapitelstellen[BerichtsKonfiguration.B_DECKBLATT]);
+        }
+
         private static string TextAbsatz(string text)
         {
             return "<w:p><w:r><w:t xml:space=\"preserve\">" + text + "</w:t></w:r></w:p>";

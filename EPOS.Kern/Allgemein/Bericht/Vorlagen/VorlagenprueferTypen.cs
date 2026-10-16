@@ -294,7 +294,7 @@ namespace WindowsFormsApplication1
         public IReadOnlyDictionary<string, string> Kapitelstellen { get; }
 
         /// <summary>
-        /// Trägt der Rumpf Deckblattangaben aus Platzhaltern (<c>{{bericht.titel}}</c> …)? Dann steht ein
+        /// Trägt der Rumpf sein eigenes Deckblatt — den Berichtstitel <c>{{bericht.titel}}</c> als Platzhalter? Dann steht ein
         /// Deckblatt im Bericht, auch ohne das Kapitel Deckblatt und ohne sein Häkchen.
         /// </summary>
         public bool DeckblattAusPlatzhaltern { get; }
