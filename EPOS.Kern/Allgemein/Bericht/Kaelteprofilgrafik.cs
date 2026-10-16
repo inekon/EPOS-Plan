@@ -390,7 +390,8 @@ namespace WindowsFormsApplication1
         {
             var kopie = new Zeichenmodell(m.Breite, m.Hoehe, new Farbton(Farbrolle.HINTERGRUND, null, 0))
             {
-                Flaeche = m.Flaeche, Darstellung = m.Darstellung, Tafel = m.Tafel
+                Flaeche = m.Flaeche, Darstellung = m.Darstellung, Tafel = m.Tafel,
+                Schriftmassstab = m.Schriftmassstab
             };
             foreach (Zeichenbefehl b in m.Befehle) kopie.Fuege(b);
             foreach (Datenreihe r in m.Reihen) kopie.FuegeReihe(r);

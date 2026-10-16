@@ -2348,6 +2348,33 @@ public class DiagrammSvgTests : EposBunitContext
         Assert.Empty(cut.FindAll("button[data-einheit]"));
     }
 
+    /// <summary>
+    /// <b>Die nachgezeichnete Achse schreibt in der Schrift des Bildes</b> (Stromganglinie im
+    /// aufgeklappten Satz): Ein Ganglinienbild im Behältermaß schreibt jeden Text in der Schrift
+    /// der Oberfläche (13 px, kompakt 12 px); die Achsenteilung, die der Baustein selbst zeichnet,
+    /// stand in 20 px darunter. Sie nimmt jetzt den <c>Schriftmassstab</c> des Modells — im
+    /// Vorgabebild ohne Maß bleiben 20 px.
+    /// </summary>
+    [Theory]
+    [InlineData(1200, 600, "13px")]
+    [InlineData(1200, 200, "12px")]
+    [InlineData(0, 0, "20px")]
+    public void DS13_Nachgezeichnete_Achse_in_der_Schrift_des_Bildes(int breite, int hoehe, string soll)
+    {
+        var werte = new double[8760];
+        for (int i = 0; i < werte.Length; i++) werte[i] = 20.0 - 12.0 * Math.Cos(2 * Math.PI * i / 8760.0);
+        Zeichenmodell modell = ChartRenderer.GanglinieNormiertModell("Jahresganglinie",
+            new[] { new ChartRenderer.Reihe("Leistung", werte, ChartRenderer.C_BEDARF) },
+            "kW", ChartRenderer.Achse.Monate, false, breite: breite, hoehe: hoehe);
+
+        var cut = Zeige(modell);
+
+        Assert.True(cut.Instance.AchseNachgezeichnet);
+        var ticks = cut.FindAll(".epos-diagramm-ticks text");
+        Assert.NotEmpty(ticks);
+        Assert.All(ticks, t => Assert.Equal(soll, t.GetAttribute("font-size")));
+    }
+
     /// <summary>Das PV-Bild der Simulation: drei Linien über Viertelstunden, der Speicher rechts.</summary>
     private static Zeichenmodell PvModell()
     {

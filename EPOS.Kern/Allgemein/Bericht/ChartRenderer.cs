@@ -4728,6 +4728,8 @@ namespace WindowsFormsApplication1
             Behaeltersatz satz = !mitMass ? null
                 : new Behaeltersatz(kompakt ? Behaeltersatz.PUNKT_KOMPAKT : Behaeltersatz.PUNKT_DIALOG);
             var z = Modell(W, H);
+            // Die Achsenteilung, die DiagrammSvg selbst nachzeichnet, nimmt denselben Maßstab.
+            if (satz != null) z.Schriftmassstab = satz.Faktor;
             if (!kompakt)
             {
                 if (satz == null) z.Markiert("titel", zt => Titel(zt, titel ?? "", W));

@@ -22,10 +22,15 @@
             bedarfsprofile|kaelteprofile|waermebedarf|kaeltebedarf|stromganglinie|solarganglinie|pvganglinie|kaeltemaschine
       ?modus=alle  nur bei kaeltebedarf: der Dialog im Modus „Alle" mit einer Kuehlzeile vorn (OP-2-Hinweis)
       ?zeilen=40   Katalogzeilen
-      ?projekt=2   Projektzeilen *@
+      ?projekt=2   Projektzeilen
+      ?huelle=assistent  der Dialog als Kind von .epos-assistent-inhalt wie im Projektassistenten *@
 
-<div id="app">
-    @switch (_fall)
+@* ?huelle=assistent: der Dialog wie im Projektassistenten als Kind von .epos-assistent-inhalt, nicht als Wurzel
+   in #app - ohne Fenstermarke (Gegenprobe der Diagrammschrift im Projektsatz). *@
+@{
+    void Inhalt()
+    {
+    switch (_fall)
     {
         case "pufferspeicher":
             <PufferspeicherDialog Zeilen="@Erzeuger("Puffer")" Katalogprofil="@Profil(Anlagenart.Pufferspeicher)"
@@ -163,7 +168,18 @@
             <p>unbekannter Fall: @_fall</p>
             break;
     }
-    <Fenstermarke />
+    }
+}
+<div id="app">
+    @if (_huelle == "assistent")
+    {
+        <div class="epos-assistent"><div class="epos-assistent-inhalt">@{ Inhalt(); }</div></div>
+    }
+    else
+    {
+        Inhalt();
+        <Fenstermarke />
+    }
 </div>
 <p id="probe-ausgang" hidden data-ausgang="@_ausgang"></p>
 
@@ -182,6 +198,7 @@
     };
 
     private string _fall = "pufferspeicher";
+    private string _huelle = "";
     private int _anzahl = 40;
     private int _projekt = 2;
     private string _ausgang = "";
@@ -191,6 +208,7 @@
     {
         var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
         if (abfrage.TryGetValue("fall", out var f)) _fall = f.ToString();
+        if (abfrage.TryGetValue("huelle", out var hu)) _huelle = hu.ToString();
         _steckbrief = abfrage.TryGetValue("steckbrief", out var sb) && sb == "1";   // WP1b: voller Feldsatz
         if (abfrage.TryGetValue("zeilen", out var z) && int.TryParse(z, out int n)) _anzahl = n;
         if (abfrage.TryGetValue("projekt", out var p) && int.TryParse(p, out int m)) _projekt = m;

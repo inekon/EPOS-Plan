@@ -1034,6 +1034,13 @@ else
         string rasterfarbe = Hex(Farbrolle.RASTER);
         string textfarbe = Hex(Farbrolle.ACHSE);
         float unten = bild.Unten;
+        // DIE SCHRIFT DES BILDES: Ein Bild im Behaeltermass schreibt JEDEN Text in der
+        // Schrift der Oberflaeche (Zeichenmodell.Schriftmassstab, 20 px x Massstab), die
+        // Abstaende schrumpfen im selben Massstab - wie ChartRenderer.XAchseFenster mit
+        // Behaeltersatz. Sonst stuende die nachgezeichnete Achse in 20 px unter einem Bild
+        // in 12 bis 13 px. Im Bestand (Massstab 1) bleiben 20/17/20/16 px.
+        float s = Bild.Schriftmassstab > 0f ? Bild.Schriftmassstab : 1f;
+        string Schrift(float bestand) => Px(s == 1f ? bestand : 20f * s) + "px";
 
         builder.OpenElement(0, "g");
         builder.AddAttribute(1, "class", "epos-diagramm-ticks");
@@ -1058,8 +1065,8 @@ else
 
             builder.OpenElement(10, "text");
             builder.AddAttribute(11, "x", Px(x));
-            builder.AddAttribute(12, "y", Px(unten + 8f));
-            builder.AddAttribute(13, "font-size", "20px");
+            builder.AddAttribute(12, "y", Px(unten + 8f * s));
+            builder.AddAttribute(13, "font-size", Schrift(20f));
             builder.AddAttribute(14, "text-anchor", "middle");
             builder.AddAttribute(15, "dominant-baseline", "text-before-edge");
             builder.AddAttribute(16, "fill", textfarbe);
@@ -1075,8 +1082,8 @@ else
                 builder.OpenElement(20, "text");
                 builder.AddAttribute(21, "class", "epos-diagramm-datum");
                 builder.AddAttribute(22, "x", Px(x));
-                builder.AddAttribute(23, "y", Px(unten + 26f));
-                builder.AddAttribute(24, "font-size", "17px");
+                builder.AddAttribute(23, "y", Px(unten + 26f * s));
+                builder.AddAttribute(24, "font-size", Schrift(17f));
                 builder.AddAttribute(25, "text-anchor", "middle");
                 builder.AddAttribute(26, "dominant-baseline", "text-before-edge");
                 builder.AddAttribute(27, "fill", textfarbe);
@@ -1088,7 +1095,7 @@ else
             builder.CloseRegion();
             i++;
         }
-        float versatz = mitDatum ? ChartRenderer.DATUMSZEILE_VERSATZ : 0f;
+        float versatz = mitDatum ? ChartRenderer.DATUMSZEILE_VERSATZ * s : 0f;
 
         // Im Fenster zaehlt die Achse das, was die Achsenart sagt - auch wenn das
         // Bild sonst Monatsgrenzen traegt. Ohne Titel bleibt die Zeile weg.
@@ -1103,8 +1110,8 @@ else
             builder.OpenElement(0, "text");
             builder.AddAttribute(1, "class", "epos-diagramm-achsentitel");
             builder.AddAttribute(2, "x", Px(bild.X + bild.Breite / 2f));
-            builder.AddAttribute(3, "y", Px(unten + 30f + versatz));
-            builder.AddAttribute(4, "font-size", "20px");
+            builder.AddAttribute(3, "y", Px(unten + 30f * s + versatz));
+            builder.AddAttribute(4, "font-size", Schrift(20f));
             builder.AddAttribute(5, "text-anchor", "middle");
             builder.AddAttribute(6, "dominant-baseline", "text-before-edge");
             builder.AddAttribute(7, "fill", textfarbe);
@@ -1123,8 +1130,8 @@ else
             builder.OpenElement(0, "text");
             builder.AddAttribute(1, "class", "epos-diagramm-stufenhinweis");
             builder.AddAttribute(2, "x", Px(bild.X + bild.Breite / 2f));
-            builder.AddAttribute(3, "y", Px(unten + 56f + versatz));
-            builder.AddAttribute(4, "font-size", "16px");
+            builder.AddAttribute(3, "y", Px(unten + 56f * s + versatz));
+            builder.AddAttribute(4, "font-size", Schrift(16f));
             builder.AddAttribute(5, "text-anchor", "middle");
             builder.AddAttribute(6, "dominant-baseline", "text-before-edge");
             builder.AddAttribute(7, "fill", textfarbe);
