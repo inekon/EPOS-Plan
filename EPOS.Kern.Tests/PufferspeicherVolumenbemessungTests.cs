@@ -187,7 +187,7 @@ namespace EPOS.Kern.Tests
         /// aus Art und Gewerk antwortet in beiden Rastern gleich.
         /// </summary>
         [Fact]
-        public void Die_Raster_unterscheiden_sich_nur_in_je_kW_elektrisch_an_der_Waermepumpe()
+        public void Die_Raster_unterscheiden_sich_nur_in_Leistungsarten_an_Waermepumpe_und_Bhkw()
         {
             var abweichend = new List<string>();
             foreach (BemessungKatalog.Info i in BemessungKatalog.Alle)
@@ -196,7 +196,16 @@ namespace EPOS.Kern.Tests
                         BemessungKatalog.PasstZuGewerk(i.Persistenz, k, false))
                         abweichend.Add(k + " " + i.Persistenz);
 
-            Assert.Equal(new[] { "1 " + DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH }, abweichend);
+            // 29c (Anwenderentscheid 16.10.2026): dazu die Leistungsarten, die im
+            // Betriebsraster an Wärmepumpe und BHKW gesperrt sind.
+            Assert.Equal(new[]
+                         {
+                             "1 " + DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,
+                             "7 " + DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,
+                             "1 " + DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG,
+                             "7 " + DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG,
+                             "1 " + DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH,
+                         }, abweichend);
             Assert.True(BemessungKatalog.PasstZuGewerk(DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, 1, true));
             Assert.False(BemessungKatalog.PasstZuGewerk(DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, 1, false));
         }

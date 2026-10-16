@@ -335,7 +335,10 @@ namespace WindowsFormsApplication1
                     z.BasisHerkunft = !z.Basis.HasValue ? ""
                         : WirtschaftlichkeitCtrl.IstProzentInvest(z.Raster.Bemessung)
                             ? KostenHerleitung.HERKUNFT_INVEST
-                            : TechnikPlanwertCtrl.KenntBaugroesse(komponentenId, z.Raster.Bemessung)
+                            : TechnikPlanwertCtrl.KenntBaugroesse(komponentenId, z.Raster.Bemessung) ||
+                              // 29c: eine Bestandszeile einer gesperrten Leistungsart
+                              // rechnet weiter mit der Baugröße der Anlage.
+                              TechnikPlanwertCtrl.IstGesperrteBetriebsleistung(komponentenId, z.Raster.Bemessung)
                                 ? KostenHerleitung.HERKUNFT_ANLAGE
                                 : KostenHerleitung.HERKUNFT_LAUF;
                 }
