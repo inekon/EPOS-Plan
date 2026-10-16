@@ -131,6 +131,50 @@ namespace EPOS.Kern.Tests
             Assert.Contains(Hinweistext(MENGE), null0.Hinweis ?? "", StringComparison.Ordinal);
         }
 
+        /// <summary>Welle KB-7c1: Die Zeilen der Wirtschaftlichkeit (Seite, Wortbericht, Excel) führen unter den
+        /// Betriebskosten die Unterzeile „davon Wasser Rückkühlwerk" mit Menge × Preis — nur, wenn ein Stand Wasserkosten
+        /// hat; der gespeicherte Umschlag findet sie über die Satzherkunft wieder.</summary>
+        [Fact]
+        public void Die_Zeilen_fuehren_die_Wasserkosten_unter_den_Betriebskosten()
+        {
+            if (!_db.Vorhanden) return;
+            List<WirtschaftlichkeitErgebnis> ohne = Gruppe(MENGE).Where(x => x.Szenario == ERWARTET).ToList();
+            Assert.DoesNotContain(WirtschaftlichkeitZeilen.Kennzahlen(ohne, null, 0, true),
+                                  z => z.Schluessel.StartsWith("BETRIEBSKOSTEN_WASSER", StringComparison.Ordinal));
+
+            Zuordnen(VARIANTE, Katalogtraeger(), PREIS);
+            List<WirtschaftlichkeitErgebnis> mit = Gruppe(MENGE).Where(x => x.Szenario == ERWARTET).ToList();
+            WirtschaftlichkeitErgebnis variante = mit.Single(x => x.IdProjekt == VARIANTE);
+            KostenPositionNachweis n = Wasserkosten.NachweisIn(variante);
+            Assert.NotNull(n);
+            Assert.Equal(Wasserkosten.HERKUNFT_WASSERTRAEGER, n.SatzHerkunft);
+
+            List<WirtZeile> zeilen = WirtschaftlichkeitZeilen.Kennzahlen(mit, null, 0, true);
+            int bk = zeilen.FindIndex(z => z.Schluessel == "BETRIEBSKOSTEN");
+            WirtZeile wasser = zeilen.Single(z => z.Schluessel == "BETRIEBSKOSTEN_WASSER_RKW");
+            Assert.Equal(bk + 1, zeilen.IndexOf(wasser));
+            Assert.Equal(R.WIRT_ZEILE_WASSER_RKW, wasser.Titel);
+            Assert.Equal("davon Wasser Rückkühlwerk", wasser.Titel);
+            Assert.Equal(MENGE * PREIS, wasser.Wert(variante).Value, 9);
+            Assert.Null(wasser.Wert(mit.Single(x => x.IdProjekt == STAMM)));
+
+            WirtZeile herleitung = zeilen.Single(z => z.Schluessel == "BETRIEBSKOSTEN_WASSER_RKW_HERLEITUNG");
+            Assert.Equal("1.000,0 m³/a × 2,50 €/m³", herleitung.Text(variante));
+            Assert.Equal("", herleitung.Text(mit.Single(x => x.IdProjekt == STAMM)));
+
+            // Die Berichtsfassung ohne Herleitung behält die Geldzeile.
+            List<WirtZeile> bericht = WirtschaftlichkeitZeilen.Kennzahlen(mit, null, 0, false);
+            Assert.Contains(bericht, z => z.Schluessel == "BETRIEBSKOSTEN_WASSER_RKW");
+            Assert.DoesNotContain(bericht, z => z.Schluessel == "BETRIEBSKOSTEN_WASSER_RKW_HERLEITUNG");
+
+            // Der Nachweisumschlag (gespeicherter Lauf) trägt die Satzherkunft weiter.
+            string json = ErgebnisNachweisUmschlag.Schreiben(variante, out string grund);
+            Assert.False(string.IsNullOrEmpty(json), grund);
+            ErgebnisNachweisUmschlag zurueck = ErgebnisNachweisUmschlag.Lesen(json);
+            Assert.Contains(zurueck.Betriebskosten, x => x.SatzHerkunft == Wasserkosten.HERKUNFT_WASSERTRAEGER &&
+                                                         Math.Abs(x.BetragJahr - MENGE * PREIS) < 1e-9);
+        }
+
         /// <summary>Der Szenariopreis des Wasserträgers wirkt im Best-Fall; die Menge folgt dem Mengenfaktor des
         /// Szenarios, der Erwartungsfall bleibt beim Projektpreis.</summary>
         [Fact]
