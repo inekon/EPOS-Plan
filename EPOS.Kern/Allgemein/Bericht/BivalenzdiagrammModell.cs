@@ -70,10 +70,10 @@ namespace WindowsFormsApplication1
         public string Vorwaermung { get; init; } = "Vorwärmung";
         public string Parallel { get; init; } = "parallel";
         public string WaermepumpeAllein { get; init; } = "Wärmepumpe allein";
-        public string ErsterBivalenzpunkt { get; init; } = "θ_biv,1 = {0} °C";
-        public string ZweiterBivalenzpunkt { get; init; } = "θ_biv,2 = {0} °C";
+        public string ErsterBivalenzpunkt { get; init; } = "Kessel hilft unter {0} °C";
+        public string ZweiterBivalenzpunkt { get; init; } = "Kessel allein unter {0} °C";
         public string Abschaltpunkt { get; init; } = "Abschaltpunkt {0} °C";
-        public string NachKennfeld { get; init; } = "nach Kennfeld {0} °C";
+        public string NachKennfeld { get; init; } = "Kennfeld {0} °C";
         public string Platzhalter { get; init; } = "kein Bivalenzdiagramm — Kopplung aus";
 
         /// <summary>Dieselben Texte aus den Ressourcen <c>BER_BILD_BIVALENZ_*</c>.</summary>
