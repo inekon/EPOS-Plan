@@ -5890,6 +5890,11 @@ namespace WindowsFormsApplication1
                                      KiParameterTyp.Text, KiDialogTexte.BtaBeschreibungErl, leerErlaubt: true),
                     new KiDialogFeld("quelle", SICHT + "Quelle", KiDialogTexte.BtaQuelleName,
                                      KiParameterTyp.Text, KiDialogTexte.BtaQuelleErl, leerErlaubt: true),
+                    // DA-8: Absorptions- und Emissionsgrad der Außenfläche; leer = Vorgabe.
+                    new KiDialogFeld("absorptionsgrad", SICHT + "AbsorptionsgradSolar", KiDialogTexte.BtaAbsorptionName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtaStrahlungErl, leerErlaubt: true, min: 0.0, max: 1.0),
+                    new KiDialogFeld("emissionsgrad", SICHT + "Emissionsgrad", KiDialogTexte.BtaEmissionName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtaStrahlungErl, leerErlaubt: true, min: 0.0, max: 1.0),
                     new KiDialogFeld("schicht_baustoff", schicht + "Baustoff", KiDialogTexte.BtaSchichtBaustoffName,
                                      KiParameterTyp.Wahl, KiDialogTexte.BtaSchichtBaustoffErl,
                                      leerErlaubt: true, zeilenkennzeichen: NUMMER),
@@ -6136,6 +6141,11 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("psil", SICHT + "PsiL", KiDialogTexte.BtPsiLName,
                                      KiParameterTyp.Zahl, KiDialogTexte.BtPsiLErl,
                                      einheit: KiDialogTexte.EINHEIT_W_K, leerErlaubt: true, min: 0.0),
+                    // DA-8: Absorptions- und Emissionsgrad der Außenfläche; leer = der Wert des Aufbaus, sonst die Vorgabe.
+                    new KiDialogFeld("absorptionsgrad", SICHT + "AbsorptionsgradSolar", KiDialogTexte.BtAbsorptionName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtAbsorptionErl, leerErlaubt: true, min: 0.0, max: 1.0),
+                    new KiDialogFeld("emissionsgrad", SICHT + "Emissionsgrad", KiDialogTexte.BtEmissionName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtEmissionErl, leerErlaubt: true, min: 0.0, max: 1.0),
                     new KiDialogFeld("uwert", SICHT + "UWert", KiDialogTexte.BtUWertName,
                                      KiParameterTyp.Zahl, KiDialogTexte.BtUWertErl,
                                      einheit: KiDialogTexte.EINHEIT_W_M2K, leerErlaubt: true,

@@ -280,7 +280,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // BK-2b: die Klasse des Baustoffs (Katalogfeld klasse, 8 → 9); Gruppe und Klasse des Aufbaus (Katalogfelder
         // gruppe, klasse) und der Werkzeugschalter „nur geeignete“ (Filter der Liste, kein Maskenfeld): 4 → 7.
         new("BaustoffKatalogDialog", 9, "der Werkzeugschalter „nur herstellerneutral“ setzt den Filter der Liste"),
-        new("BauteilaufbauDialog", 12, "der Werkzeugschalter „nur geeignete“ blendet Zeilen der Liste aus; die fünf Fensterwerte (BK-6: U_g, g, Rahmenanteil, U_f, ψ_g) meldet die Sicht noch nicht an"),
+        // DA-8: Absorptions- und Emissionsgrad (Katalogfelder absorptionsgrad, emissionsgrad): 12 → 14.
+        new("BauteilaufbauDialog", 14, "der Werkzeugschalter „nur geeignete“ blendet Zeilen der Liste aus; die fünf Fensterwerte (BK-6: U_g, g, Rahmenanteil, U_f, ψ_g) meldet die Sicht noch nicht an"),
         new("BauteilschichtenFelder", 8, "Abschnitt und Flächenanteil der inhomogenen Schicht (BK-5) meldet die Sicht noch nicht an"),
 
         // KU3-1: die Verwaltung der Kaeltemaschinen - zwoelf Kenndaten als EIN Fragment fuer
@@ -313,7 +314,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // AH-V5: die Vorheizzeit der Zone - Katalogfeld vorheizzeit (22 → 23).
         new("ZonenDialog", 23),
         // BK-2b: der Schalter „auch ungeeignete zeigen“ filtert nur die Aufbauwahl (15 → 16).
-        new("BauteilDialog", 16, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“; der Schalter „auch ungeeignete zeigen“ filtert nur die Wahl"),
+        // DA-8: Absorptions- und Emissionsgrad (Katalogfelder absorptionsgrad, emissionsgrad): 16 → 18.
+        new("BauteilDialog", 18, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“; der Schalter „auch ungeeignete zeigen“ filtert nur die Wahl"),
         // Stufe G6b (W2): der Luftaustausch zwischen den Zonen - ein Raster, je Zeile Zone A, Zone B
         // und V̇; die Zonen liest der Assistent nur.
         new("LuftaustauschDialog", 3, "Zone A und Zone B wählt der Anwender; der Assistent liest sie und setzt den Volumenstrom"),

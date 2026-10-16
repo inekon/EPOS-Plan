@@ -236,9 +236,20 @@ namespace WindowsFormsApplication1
                 }
         }
 
-        /// <summary>Der Wärmebrückenzuschlag eines Bauteils aus <c>EPOS_Bauteil.WaermebrueckeUA</c> [W/K].</summary>
+        /// <summary>
+        /// Der Wärmebrückenzuschlag eines Bauteils aus <c>EPOS_Bauteil.WaermebrueckeUA</c> [W/K]; dazu (DA-8) Absorptions- und
+        /// Emissionsgrad aus <c>EPOS_Bauteil</c>, nur im Bereich 0 … 1.
+        /// </summary>
         private void EposBauteilLesen(IIfcElement e, AbbildBauteil b)
         {
+            double? Grad(string name)
+            {
+                IfcFund g = IfcEigenschaften.Finden(_bezuege, e, IfcSchreiber.EPOS_BAUTEIL, name);
+                double? w = g == null ? null : Zahl(g);
+                return w >= 0.0 && w <= 1.0 ? w : null;
+            }
+            b.AbsorptionsgradSolar ??= Grad(S.EPOS_ABSORPTION);
+            b.Emissionsgrad ??= Grad(S.EPOS_EMISSION);
             if (b.WaermebrueckeWK.HasValue) return;
             IfcFund f = IfcEigenschaften.Finden(_bezuege, e, IfcSchreiber.EPOS_BAUTEIL, S.EPOS_WAERMEBRUECKE);
             if (f != null) b.WaermebrueckeWK = NichtNegativ(Zahl(f));

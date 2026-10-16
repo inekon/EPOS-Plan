@@ -236,6 +236,12 @@ public sealed class BauteilDaten
     /// <summary>Wärmebrücke ψ·L [W/K]; <c>null</c> = keine.</summary>
     public double? PsiL { get; set; }
 
+    /// <summary>DA-8: Absorptionsgrad der Außenfläche für Solarstrahlung [–]; <c>null</c> = der des Aufbaus, sonst die Vorgabe.</summary>
+    public double? AbsorptionsgradSolar { get; set; }
+
+    /// <summary>DA-8: langwelliger Emissionsgrad der Außenfläche [–]; <c>null</c> = der des Aufbaus, sonst die Vorgabe.</summary>
+    public double? Emissionsgrad { get; set; }
+
     /// <summary>Aufbau des Projekts (<c>Tab_Bauteilaufbau.ID</c>); <c>null</c> = keiner bzw. einer aus dem Katalog.</summary>
     public int? IdAufbau { get; set; }
 
@@ -282,7 +288,8 @@ public sealed class BauteilDaten
            && Verschattung == b.Verschattung && Azimut == b.Azimut && Neigung == b.Neigung
            && Randbedingung == b.Randbedingung && PsiL == b.PsiL && IdAufbau == b.IdAufbau
            && IdAufbauStamm == b.IdAufbauStamm && IdNachbarzone == b.IdNachbarzone
-           && TrennflaecheZuordnung == b.TrennflaecheZuordnung;
+           && TrennflaecheZuordnung == b.TrennflaecheZuordnung
+           && AbsorptionsgradSolar == b.AbsorptionsgradSolar && Emissionsgrad == b.Emissionsgrad;
 
     /// <summary>Die Angaben für die Prüfregeln des Kerns (<c>GebaeudeZonenCtrl.BauteilPruefen</c>).</summary>
     public Bauteilangabe Angabe()

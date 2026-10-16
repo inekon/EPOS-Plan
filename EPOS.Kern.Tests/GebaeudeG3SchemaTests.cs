@@ -283,7 +283,9 @@ namespace EPOS.Kern.Tests
                          Spalten(SchemaKatalog.TAB_BAUSTOFF_STAMM));
             Assert.Equal(new[] { "ID", "Bezeichner" }.Concat(BauteilaufbauSchema.Fachspalten).Concat(new[] { "ReadOnly" }).Concat(new[] { TypaufbauSchema.SPALTE })
                              .Concat(BauteilkatalogSchema.AUFBAU_SPALTEN.Select(s => s.Name))
-                             .Concat(BauteilkatalogAbschnittSchema.AUFBAU_SPALTEN.Select(s => s.Name)),
+                             .Concat(BauteilkatalogAbschnittSchema.AUFBAU_SPALTEN.Select(s => s.Name))
+                             // DA-8: dahinter Absorptions- und Emissionsgrad (BauteilStrahlungSchema).
+                             .Concat(BauteilStrahlungSchema.SPALTEN.Select(s => s.Name)),
                          Spalten(SchemaKatalog.TAB_BAUTEILAUFBAU_STAMM));
             Assert.Equal(new[] { "ID" }.Concat(BauteilaufbauSchema.Schichtspalten)
                              .Concat(BauteilkatalogSchema.SpaltenVon(SchemaKatalog.TAB_BAUTEILSCHICHT).Select(s => s.Name)),

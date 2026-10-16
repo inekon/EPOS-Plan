@@ -42,6 +42,12 @@ namespace WindowsFormsApplication1
         /// <summary>Langwelliger Emissionsgrad der Außenfläche ε_F [–]; NULL = Vorgabe.</summary>
         public const string SPALTE_EMISSION = "Emissionsgrad";
 
+        /// <summary>Die Vorgabe des Absorptionsgrads, wenn Bauteil und Aufbau leer sind (der Festwert des Rechenwegs).</summary>
+        public const double VORGABE_ABSORPTION = GebaeudeFestwerte.ABSORPTIONSGRAD_OPAK;
+
+        /// <summary>Die Vorgabe des Emissionsgrads, wenn Bauteil und Aufbau leer sind (der Festwert des Rechenwegs).</summary>
+        public const double VORGABE_EMISSION = GebaeudeFestwerte.EMISSIONSGRAD_AUSSEN;
+
         private static string Q(string s) => "\"" + s + "\"";
 
         /// <summary>Der Typ einer Spalte samt <c>CHECK</c> (nullbar, Bereich 0 … 1).</summary>

@@ -890,6 +890,8 @@ namespace WindowsFormsApplication1
                      Wert("IstZusammenfassung", new IfcBoolean(zusammen)),
                      zusammen ? null : Wert("AnzahlTeilflaechen", new IfcInteger(1)),
                      Zahl("WaermebrueckeUA", b.WaermebrueckeWK, "GEXP_IFC_WAERMEBRUECKE"),
+                     Zahl(IfcStandardsaetze.EPOS_ABSORPTION, b.AbsorptionsgradSolar, null),
+                     Zahl(IfcStandardsaetze.EPOS_EMISSION, b.Emissionsgrad, null),
                      a != null && a.Schichten.Count > 0 ? Wert("Schichtrichtung", new IfcLabel(SCHICHTRICHTUNG_AUSSEN_INNEN), null, "GEXP_IFC_SCHICHTRICHTUNG") : null,
                      a != null ? Wert("Ersatzschichtung", new IfcBoolean(a.IstErsatz)) : null,
                      b.Nachbarn.Count > 0 ? Wert("Raumgrenze", new IfcLabel(RAUMGRENZE_LOGISCH), null, "GEXP_IFC_RAUMGRENZE") : null);

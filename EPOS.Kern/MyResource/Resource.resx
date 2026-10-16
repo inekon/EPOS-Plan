@@ -55299,7 +55299,7 @@ Chart</value>
     <value>Zone „{0}“, Raum „{1}“: latente Wärmeabgabe je Person ({2} W) verworfen — gerechnet wird die sensible Wärme.</value>
   </data>
   <data name="IMP_GBXML_PROT_ABSORPTION_ABWEICHUNG" xml:space="preserve">
-    <value>Aufbau „{0}“: Der Grad {1} der Datei ({2}) weicht von der Konstante des Rechenwegs ({3}) ab — es gilt die Konstante.</value>
+    <value>Aufbau „{0}“: Der Grad {1} der Datei ({2}) liegt nicht zwischen 0 und 1 — es gilt die Vorgabe ({3}).</value>
   </data>
   <data name="IMP_GBXML_PROT_AUSSENLUFT_PERSON" xml:space="preserve">
     <value>Zone „{0}“: Außenluft je Person in den Luftwechsel der Nutzer umgerechnet ({1} 1/h); der Wert je Person steht zusätzlich an der Zone.</value>
@@ -56524,6 +56524,39 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="KBP_GRAFIK_HERLEITUNG_ARBEIT" xml:space="preserve">
     <value>Gerechnet wird der Arbeitsstand dieses Dialogs – Jahressumme, Monatswerte, Wochenprofil und Betriebskalender, auch ungespeichert. Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile, die Monate stapeln alle Zeilen.</value>
+  </data>
+  <data name="BTA_GRUPPE_STRAHLUNG" xml:space="preserve">
+    <value>Strahlung der Außenfläche</value>
+  </data>
+  <data name="BTA_LBL_ABSORPTION" xml:space="preserve">
+    <value>Absorptionsgrad solar</value>
+  </data>
+  <data name="BTA_LBL_EMISSION" xml:space="preserve">
+    <value>Emissionsgrad langwellig</value>
+  </data>
+  <data name="BTA_PLATZHALTER_STRAHLUNG" xml:space="preserve">
+    <value>Vorgabe {0}</value>
+  </data>
+  <data name="BTA_STRAHLUNG_HINWEIS" xml:space="preserve">
+    <value>Absorptionsgrad (Solarstrahlung) und Emissionsgrad (langwellig) der Außenfläche gehen in die äquivalente Außentemperatur ein. Leer gilt die Vorgabe; ein Bauteil kann einen eigenen Wert tragen.</value>
+  </data>
+  <data name="BTDLG_LBL_ABSORPTION" xml:space="preserve">
+    <value>Absorptionsgrad solar :</value>
+  </data>
+  <data name="BTDLG_LBL_EMISSION" xml:space="preserve">
+    <value>Emissionsgrad :</value>
+  </data>
+  <data name="BTDLG_PLATZHALTER_STRAHLUNG" xml:space="preserve">
+    <value>Aufbau, sonst {0}</value>
+  </data>
+  <data name="KI_DLG_BT_ABSORPTION_ERL" xml:space="preserve">
+    <value>Der Absorptionsgrad der Außenfläche für Solarstrahlung zwischen 0 und 1; leer = der Wert des Aufbaus, sonst die Vorgabe 0,6.</value>
+  </data>
+  <data name="KI_DLG_BT_EMISSION_ERL" xml:space="preserve">
+    <value>Der langwellige Emissionsgrad der Außenfläche zwischen 0 und 1; leer = der Wert des Aufbaus, sonst die Vorgabe 0,9.</value>
+  </data>
+  <data name="KI_DLG_BTA_STRAHLUNG_ERL" xml:space="preserve">
+    <value>Absorptionsgrad (Solarstrahlung) bzw. Emissionsgrad (langwellig) der Außenfläche des Aufbaus zwischen 0 und 1; leer = Vorgabe. Ein Bauteil kann einen eigenen Wert tragen.</value>
   </data>
 </root>
 

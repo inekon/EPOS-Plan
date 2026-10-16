@@ -44,6 +44,12 @@ public sealed class BauteilKiSicht
     public Func<double?>? PsiLLesen { get; init; }
     public Action<double?>? PsiLSetzen { get; init; }
 
+    public Func<double?>? AbsorptionLesen { get; init; }
+    public Action<double?>? AbsorptionSetzen { get; init; }
+
+    public Func<double?>? EmissionLesen { get; init; }
+    public Action<double?>? EmissionSetzen { get; init; }
+
     public Func<double?>? UWertLesen { get; init; }
     public Action<double?>? UWertSetzen { get; init; }
 
@@ -109,6 +115,12 @@ public sealed class BauteilKiSicht
 
     /// <summary>Wärmebrücke ψ·L [W/K].</summary>
     public double? PsiL { get => PsiLLesen?.Invoke(); set => PsiLSetzen?.Invoke(value); }
+
+    /// <summary>Absorptionsgrad solar der Außenfläche (0…1); leer = der des Aufbaus, sonst die Vorgabe.</summary>
+    public double? AbsorptionsgradSolar { get => AbsorptionLesen?.Invoke(); set => AbsorptionSetzen?.Invoke(value); }
+
+    /// <summary>Emissionsgrad (langwellig) der Außenfläche (0…1); leer = der des Aufbaus, sonst die Vorgabe.</summary>
+    public double? Emissionsgrad { get => EmissionLesen?.Invoke(); set => EmissionSetzen?.Invoke(value); }
 
     /// <summary>U-Wert [W/(m²K)]; leer = aus dem Aufbau.</summary>
     public double? UWert { get => UWertLesen?.Invoke(); set => UWertSetzen?.Invoke(value); }

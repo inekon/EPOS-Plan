@@ -68,6 +68,16 @@ public sealed class BauteilaufbauDaten
     /// <summary>BK-6: ψ_g des Glasrands [W/(m·K)].</summary>
     public double? FensterPsiGlasrand { get; set; }
 
+    /// <summary>DA-8: Absorptionsgrad der Außenfläche für Solarstrahlung (0…1); <c>null</c> = Vorgabe.</summary>
+    public double? AbsorptionsgradSolar { get; set; }
+
+    /// <summary>DA-8: langwelliger Emissionsgrad der Außenfläche (0…1); <c>null</c> = Vorgabe.</summary>
+    public double? Emissionsgrad { get; set; }
+
+    /// <summary>DA-8: Weichen die Strahlungswerte voneinander ab?</summary>
+    public int StrahlungUnterschiede(BauteilaufbauDaten andere)
+        => (AbsorptionsgradSolar != andere.AbsorptionsgradSolar ? 1 : 0) + (Emissionsgrad != andere.Emissionsgrad ? 1 : 0);
+
     /// <summary>BK-6: Weichen die Fensterwerte voneinander ab?</summary>
     public int FensterUnterschiede(BauteilaufbauDaten andere)
         => (FensterUg != andere.FensterUg ? 1 : 0) + (FensterUf != andere.FensterUf ? 1 : 0) + (FensterG != andere.FensterG ? 1 : 0)

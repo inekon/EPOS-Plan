@@ -691,6 +691,15 @@ public sealed class BauteilDialogTexte
     /// <summary><c>BTDLG_LBL_PSIL</c></summary>
     public string LabelPsiL { get; set; } = Resource.BTDLG_LBL_PSIL;
 
+    /// <summary><c>BTDLG_LBL_ABSORPTION</c> (DA-8)</summary>
+    public string LabelAbsorption { get; set; } = Resource.BTDLG_LBL_ABSORPTION;
+
+    /// <summary><c>BTDLG_LBL_EMISSION</c> (DA-8)</summary>
+    public string LabelEmission { get; set; } = Resource.BTDLG_LBL_EMISSION;
+
+    /// <summary><c>BTDLG_PLATZHALTER_STRAHLUNG</c> (DA-8) — {0} ist die Vorgabe.</summary>
+    public string PlatzhalterStrahlung { get; set; } = Resource.BTDLG_PLATZHALTER_STRAHLUNG;
+
     /// <summary><c>BTDLG_LBL_UWERT</c></summary>
     public string LabelUWert { get; set; } = Resource.BTDLG_LBL_UWERT;
 

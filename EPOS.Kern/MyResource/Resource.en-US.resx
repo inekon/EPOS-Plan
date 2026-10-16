@@ -55292,7 +55292,7 @@ chart</value>
     <value>Zone "{0}", space "{1}": latent heat gain per person ({2} W) discarded — the sensible heat is used.</value>
   </data>
   <data name="IMP_GBXML_PROT_ABSORPTION_ABWEICHUNG" xml:space="preserve">
-    <value>Construction "{0}": the {1} value of the file ({2}) differs from the constant of the calculation ({3}) — the constant applies.</value>
+    <value>Construction "{0}": the {1} value of the file ({2}) is not between 0 and 1 — the default ({3}) applies.</value>
   </data>
   <data name="IMP_GBXML_PROT_AUSSENLUFT_PERSON" xml:space="preserve">
     <value>Zone "{0}": outdoor air per person converted into the user air change ({1} 1/h); the per-person value is also kept at the zone.</value>
@@ -56517,6 +56517,39 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="KBP_GRAFIK_HERLEITUNG_ARBEIT" xml:space="preserve">
     <value>The working state of this dialog is calculated – annual total, monthly values, weekly profile and operating calendar, unsaved ones included. Annual profile, week and duration curve show the selected row; the months stack all rows.</value>
+  </data>
+  <data name="BTA_GRUPPE_STRAHLUNG" xml:space="preserve">
+    <value>Radiation of the outer surface</value>
+  </data>
+  <data name="BTA_LBL_ABSORPTION" xml:space="preserve">
+    <value>Solar absorptance</value>
+  </data>
+  <data name="BTA_LBL_EMISSION" xml:space="preserve">
+    <value>Long-wave emissivity</value>
+  </data>
+  <data name="BTA_PLATZHALTER_STRAHLUNG" xml:space="preserve">
+    <value>Default {0}</value>
+  </data>
+  <data name="BTA_STRAHLUNG_HINWEIS" xml:space="preserve">
+    <value>Absorptance (solar radiation) and emissivity (long-wave) of the outer surface enter the equivalent outdoor temperature. Empty means the default; a building element can carry its own value.</value>
+  </data>
+  <data name="BTDLG_LBL_ABSORPTION" xml:space="preserve">
+    <value>Solar absorptance :</value>
+  </data>
+  <data name="BTDLG_LBL_EMISSION" xml:space="preserve">
+    <value>Emissivity :</value>
+  </data>
+  <data name="BTDLG_PLATZHALTER_STRAHLUNG" xml:space="preserve">
+    <value>Construction, else {0}</value>
+  </data>
+  <data name="KI_DLG_BT_ABSORPTION_ERL" xml:space="preserve">
+    <value>The solar absorptance of the outer surface between 0 and 1; empty = the value of the construction, else the default 0.6.</value>
+  </data>
+  <data name="KI_DLG_BT_EMISSION_ERL" xml:space="preserve">
+    <value>The long-wave emissivity of the outer surface between 0 and 1; empty = the value of the construction, else the default 0.9.</value>
+  </data>
+  <data name="KI_DLG_BTA_STRAHLUNG_ERL" xml:space="preserve">
+    <value>Absorptance (solar radiation) or emissivity (long-wave) of the outer surface of the construction between 0 and 1; empty = default. A building element can carry its own value.</value>
   </data>
 </root>
 
