@@ -10743,6 +10743,9 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
   <data name="KDLG_ET_NICHT_ZUGEORDNET" xml:space="preserve">
     <value>nicht zugeordnet</value>
   </data>
+  <data name="KDLG_ET_WASSER_RUECKKUEHLWERK" xml:space="preserve">
+    <value>Wasser der Rückkühlwerke</value>
+  </data>
   <data name="KDLG_ET_PASST_NICHT" xml:space="preserve">
     <value>passt nicht zur Komponente</value>
   </data>

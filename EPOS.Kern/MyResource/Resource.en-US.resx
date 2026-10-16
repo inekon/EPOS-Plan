@@ -10736,6 +10736,9 @@ To deactivate it, set its rate or amount to 0.</value>
   <data name="KDLG_ET_NICHT_ZUGEORDNET" xml:space="preserve">
     <value>not assigned</value>
   </data>
+  <data name="KDLG_ET_WASSER_RUECKKUEHLWERK" xml:space="preserve">
+    <value>Water of the cooling towers</value>
+  </data>
   <data name="KDLG_ET_PASST_NICHT" xml:space="preserve">
     <value>does not match the component</value>
   </data>

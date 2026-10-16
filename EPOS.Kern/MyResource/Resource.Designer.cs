@@ -57797,6 +57797,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wasser der Rückkühlwerke ähnelt.
+        /// </summary>
+        public static string KDLG_ET_WASSER_RUECKKUEHLWERK {
+            get {
+                return ResourceManager.GetString("KDLG_ET_WASSER_RUECKKUEHLWERK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Träger ließ sich dem Projekt nicht zuordnen. ähnelt.
         /// </summary>
         public static string KDLG_ET_ZUORDNUNG_FEHLGESCHLAGEN {
