@@ -35974,7 +35974,7 @@ Möchten Sie das zulassen?</value>
     <value>Der U-Wert in W/(m²K); leer = aus dem Aufbau. Fenster und Vorhangfassade brauchen ihn immer.</value>
   </data>
   <data name="KI_DLG_BT_AUFBAU_ERL" xml:space="preserve">
-    <value>Der Bauteilaufbau des Projekts, 0 = ohne Aufbau. Ein Aufbau aus dem Katalog wird von Hand übernommen und beim OK des Gebäudeeditors in das Projekt kopiert.</value>
+    <value>Der Bauteilaufbau des Projekts, 0 = ohne Aufbau. Ein Aufbau aus dem Katalog wird von Hand übernommen und beim OK des Gebäudeeditors in das Projekt kopiert. Wählt ein Fenster oder eine Vorhangfassade einen Fensteraufbau, übernimmt das Bauteil dessen g-Wert und Rahmenanteil und als U-Wert U_w nach DIN EN ISO 10077-1; danach bleiben die drei Werte änderbar.</value>
   </data>
   <data name="ZPG_SATZ_MESSREIHE_AUFLOESUNG_UNBEKANNT" xml:space="preserve">
     <value>{0}: Der kleinste Abstand zweier Zeitstempel ist {1:0.###} min — zugelassen sind {2} min.</value>
@@ -56479,6 +56479,57 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="KBP_GRAFIK_ERL" xml:space="preserve">
     <value>Grafik der markierten Kältezeile: Jahresgang, Monate, Woche und Dauerlinie samt Kennzahlen (nur Anzeige).</value>
+  </data>
+  <data name="KI_DLG_BTA_FENSTER_UG_ERL" xml:space="preserve">
+    <value>Der Wärmedurchgangskoeffizient U_g der Verglasung in W/(m²K); leer = keiner. Nur bei Bauteilart Fenster oder Vorhangfassade.</value>
+  </data>
+  <data name="KI_DLG_BTA_FENSTER_G_ERL" xml:space="preserve">
+    <value>Der Gesamtenergiedurchlassgrad g der Verglasung (0 bis 1); er geht beim Zuweisen an das Bauteil über. Nur bei Fenster oder Vorhangfassade.</value>
+  </data>
+  <data name="KI_DLG_BTA_FENSTER_RAHMEN_ERL" xml:space="preserve">
+    <value>Der Rahmenanteil f an der Fensterfläche (0 bis 1); er geht beim Zuweisen an das Bauteil über. Nur bei Fenster oder Vorhangfassade.</value>
+  </data>
+  <data name="KI_DLG_BTA_FENSTER_UF_ERL" xml:space="preserve">
+    <value>Der Wärmedurchgangskoeffizient U_f des Rahmens in W/(m²K); leer = keiner. Nur bei Fenster oder Vorhangfassade.</value>
+  </data>
+  <data name="KI_DLG_BTA_FENSTER_PSI_ERL" xml:space="preserve">
+    <value>Der längenbezogene Wärmedurchgangskoeffizient ψ_g des Glasrands in W/(mK). Mit U_g, U_f und f ergibt er beim Zuweisen den U-Wert U_w des Bauteils nach DIN EN ISO 10077-1.</value>
+  </data>
+  <data name="KI_DLG_BTA_SUMME_U_NAME" xml:space="preserve">
+    <value>U-Wert des Aufbaus</value>
+  </data>
+  <data name="KI_DLG_BTA_SUMME_U_ERL" xml:space="preserve">
+    <value>Der U-Wert des Aufbaus in W/(m²K) aus dem Summenfuß, gerechnet nach DIN EN ISO 6946 – nur lesbar; leer, wenn der Aufbau ihn nicht trägt.</value>
+  </data>
+  <data name="KI_DLG_BTA_RT_OBEN_NAME" xml:space="preserve">
+    <value>R'_T oberer Grenzwert</value>
+  </data>
+  <data name="KI_DLG_BTA_RT_OBEN_ERL" xml:space="preserve">
+    <value>Der obere Grenzwert R'_T des Wärmedurchgangswiderstands eines Aufbaus mit inhomogener Schicht in m²K/W (DIN EN ISO 6946, 6.7) – nur lesbar; leer bei homogenem Aufbau.</value>
+  </data>
+  <data name="KI_DLG_BTA_RT_UNTEN_NAME" xml:space="preserve">
+    <value>R''_T unterer Grenzwert</value>
+  </data>
+  <data name="KI_DLG_BTA_RT_UNTEN_ERL" xml:space="preserve">
+    <value>Der untere Grenzwert R''_T des Wärmedurchgangswiderstands eines Aufbaus mit inhomogener Schicht in m²K/W; R_T ist das Mittel beider Grenzwerte – nur lesbar; leer bei homogenem Aufbau.</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_ABSCHNITT_ERL" xml:space="preserve">
+    <value>Die Nummer des Abschnitts einer inhomogenen Schicht; leer = homogene Schicht. Abschnitte mit aufsteigender Nummer, die aufeinander folgen, liegen in derselben Ebene nebeneinander. Einen Abschnitt daneben legt der Anwender mit einem Klick an.</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_ANTEIL_ERL" xml:space="preserve">
+    <value>Der Flächenanteil des Abschnitts (0 bis 1); er gilt für alle Schichten desselben Abschnitts. Die Anteile einer Ebene ergeben zusammen 1 (zulässig 0,99 bis 1,01).</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_EBENENSUMME_NAME" xml:space="preserve">
+    <value>Σ Flächenanteile der Ebene</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_EBENENSUMME_ERL" xml:space="preserve">
+    <value>Die Summe der Flächenanteile einer inhomogenen Ebene, angezeigt an ihrer letzten Schicht – nur lesbar; leer an allen anderen Schichten.</value>
+  </data>
+  <data name="KI_DLG_BT_UHERKUNFT_NAME" xml:space="preserve">
+    <value>Herkunft des U-Werts</value>
+  </data>
+  <data name="KI_DLG_BT_UHERKUNFT_ERL" xml:space="preserve">
+    <value>Woher der U-Wert des Bauteils stammt, wie er mit OK gespeichert würde – nur lesbar: KATALOG = aus dem Aufbau, MANUELL = von Hand, IFC, GBXML oder SQPROJ = aus der Importdatei, VORGABE = Vorgabe nach Bauteilart; leer = unbekannt. Ein U-Wert von Hand bleibt beim Wiederimport stehen.</value>
   </data>
 </root>
 

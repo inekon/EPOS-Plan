@@ -35967,7 +35967,7 @@ Do you want to allow this?</value>
     <value>The U-value in W/(m²K); empty = from the construction build-up. Windows and curtain walls always need it.</value>
   </data>
   <data name="KI_DLG_BT_AUFBAU_ERL" xml:space="preserve">
-    <value>The project construction build-up, 0 = without construction build-up. A construction build-up from the catalogue is taken over by hand and copied into the project with the OK of the building editor.</value>
+    <value>The project construction build-up, 0 = without construction build-up. A construction build-up from the catalogue is taken over by hand and copied into the project with the OK of the building editor. If a window or curtain wall selects a window build-up, the component takes over its g-value and frame fraction and, as U-value, U_w according to EN ISO 10077-1; afterwards the three values remain editable.</value>
   </data>
   <data name="ZPG_SATZ_MESSREIHE_AUFLOESUNG_UNBEKANNT" xml:space="preserve">
     <value>{0}: the smallest interval between two time stamps is {1:0.###} min — allowed are {2} min.</value>
@@ -56472,6 +56472,57 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="KBP_GRAFIK_ERL" xml:space="preserve">
     <value>Chart of the selected cooling row: annual profile, months, week and duration curve with key figures (display only).</value>
+  </data>
+  <data name="KI_DLG_BTA_FENSTER_UG_ERL" xml:space="preserve">
+    <value>The thermal transmittance U_g of the glazing in W/(m²K); empty = none. Only for the component types window and curtain wall.</value>
+  </data>
+  <data name="KI_DLG_BTA_FENSTER_G_ERL" xml:space="preserve">
+    <value>The total solar energy transmittance g of the glazing (0 to 1); it is passed to the component on assignment. Only for window or curtain wall.</value>
+  </data>
+  <data name="KI_DLG_BTA_FENSTER_RAHMEN_ERL" xml:space="preserve">
+    <value>The frame fraction f of the window area (0 to 1); it is passed to the component on assignment. Only for window or curtain wall.</value>
+  </data>
+  <data name="KI_DLG_BTA_FENSTER_UF_ERL" xml:space="preserve">
+    <value>The thermal transmittance U_f of the frame in W/(m²K); empty = none. Only for window or curtain wall.</value>
+  </data>
+  <data name="KI_DLG_BTA_FENSTER_PSI_ERL" xml:space="preserve">
+    <value>The linear thermal transmittance ψ_g of the glazing edge in W/(mK). Together with U_g, U_f and f it gives the U-value U_w of the component on assignment according to EN ISO 10077-1.</value>
+  </data>
+  <data name="KI_DLG_BTA_SUMME_U_NAME" xml:space="preserve">
+    <value>U-value of the construction build-up</value>
+  </data>
+  <data name="KI_DLG_BTA_SUMME_U_ERL" xml:space="preserve">
+    <value>The U-value of the construction build-up in W/(m²K) from the summary row, calculated according to EN ISO 6946 – read only; empty if the build-up does not provide it.</value>
+  </data>
+  <data name="KI_DLG_BTA_RT_OBEN_NAME" xml:space="preserve">
+    <value>R'_T upper limit</value>
+  </data>
+  <data name="KI_DLG_BTA_RT_OBEN_ERL" xml:space="preserve">
+    <value>The upper limit R'_T of the total thermal resistance of a build-up with an inhomogeneous layer in m²K/W (EN ISO 6946, 6.7) – read only; empty for a homogeneous build-up.</value>
+  </data>
+  <data name="KI_DLG_BTA_RT_UNTEN_NAME" xml:space="preserve">
+    <value>R''_T lower limit</value>
+  </data>
+  <data name="KI_DLG_BTA_RT_UNTEN_ERL" xml:space="preserve">
+    <value>The lower limit R''_T of the total thermal resistance of a build-up with an inhomogeneous layer in m²K/W; R_T is the mean of both limits – read only; empty for a homogeneous build-up.</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_ABSCHNITT_ERL" xml:space="preserve">
+    <value>The section number of an inhomogeneous layer; empty = homogeneous layer. Consecutive sections with ascending numbers lie side by side in the same plane. The user adds a section alongside with a click.</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_ANTEIL_ERL" xml:space="preserve">
+    <value>The area fraction of the section (0 to 1); it applies to all layers of the same section. The fractions of a plane add up to 1 (permitted 0.99 to 1.01).</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_EBENENSUMME_NAME" xml:space="preserve">
+    <value>Σ area fractions of the plane</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_EBENENSUMME_ERL" xml:space="preserve">
+    <value>The sum of the area fractions of an inhomogeneous plane, shown at its last layer – read only; empty at all other layers.</value>
+  </data>
+  <data name="KI_DLG_BT_UHERKUNFT_NAME" xml:space="preserve">
+    <value>Origin of the U-value</value>
+  </data>
+  <data name="KI_DLG_BT_UHERKUNFT_ERL" xml:space="preserve">
+    <value>Where the U-value of the component comes from, as it would be saved with OK – read only: KATALOG = from the construction build-up, MANUELL = entered by hand, IFC, GBXML or SQPROJ = from the import file, VORGABE = default by component type; empty = unknown. A U-value entered by hand is kept on re-import.</value>
   </data>
 </root>
 

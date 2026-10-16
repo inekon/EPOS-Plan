@@ -521,4 +521,75 @@ public class BauteilDialogTests : EposBunitContext
         Assert.Equal(0.3, cut.Instance.Arbeitsstand.UWert);
         Assert.DoesNotContain("Aus dem Fensteraufbau übernommen", cut.Markup);
     }
+
+    // =================================================================================
+    // Nachzug KIS: Fensterwerte und Herkunft des U-Werts beim Assistenten
+    // =================================================================================
+
+    private static void KiSetzen(string feld, string text)
+    {
+        KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(KiMaskennamen.BAUTEIL, feld);
+        Assert.NotNull(zugang);
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, text);
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        zugang.Setzen(umsetzung.Wert);
+    }
+
+    [Fact]
+    public void Der_Assistent_waehlt_einen_Fensteraufbau_und_das_Fenster_uebernimmt_die_Fensterwerte()
+    {
+        var fenster = new Fensteraufbau(1.0, 1.4, 0.5, 0.3, 0.04);
+        BauteilDaten b = Wand();
+        b.Bauteilart = DbWerte.BAUTEILART_FENSTER;
+        b.Flaeche = 2.0;
+        var cut = Render<BauteilDialog>(p => p
+            .Add(x => x.Bauteil, b)
+            .Add(x => x.Projektaufbauten, new[] { new AufbauWahl(21, false, "Fenster Probe", DbWerte.BAUTEILART_FENSTER, 1.12, Fenster: fenster) })
+            .Add(x => x.Katalogaufbauten, Array.Empty<AufbauWahl>())
+            .Add(x => x.Nachbarzonen, Array.Empty<NachbarzoneWahl>()));
+
+        KiSetzen("aufbau", "Fenster Probe");
+        cut.Render();
+
+        Assert.Equal(21, cut.Instance.Arbeitsstand.IdAufbau);
+        Assert.Equal(0.5, cut.Instance.Arbeitsstand.GWert);
+        Assert.Equal(0.3, cut.Instance.Arbeitsstand.Rahmenanteil);
+        Assert.Equal(Math.Round(Fensterkennwerte.Uw(fenster, 2.0)!.Value, 3), cut.Instance.Arbeitsstand.UWert);
+        Assert.Contains("Aus dem Fensteraufbau übernommen", cut.Markup);
+    }
+
+    [Fact]
+    public void Die_Herkunft_des_U_Werts_liest_der_Assistent_nach_der_Regel_des_Schreibwegs()
+    {
+        BauteilDaten b = Wand();
+        b.UHerkunft = DbWerte.HERKUNFT_IFC;
+        var cut = Aufbauen(b);
+
+        KiFeldzugang herkunft = KiMaskenbruecke.Feldzugang(KiMaskennamen.BAUTEIL, "u_herkunft");
+        Assert.NotNull(herkunft);
+        Assert.False(herkunft.Setzbar);
+        Assert.Equal(DbWerte.HERKUNFT_IFC, herkunft.Lesen());          // unverändert: die gespeicherte Herkunft
+
+        KiSetzen("uwert", "0,28");
+        Assert.Equal(DbWerte.HERKUNFT_MANUELL, herkunft.Lesen());       // von Hand geändert
+
+        KiSetzen("aufbau", "Außenwand gedämmt");
+        Assert.Equal(DbWerte.HERKUNFT_KATALOG, herkunft.Lesen());       // anderer Aufbau
+        cut.Render();
+    }
+
+    [Fact]
+    public void Ein_neues_Bauteil_bringt_keine_Herkunft_mit()
+    {
+        BauteilDaten b = Wand();
+        b.Id = -5;
+        b.UHerkunft = DbWerte.HERKUNFT_IFC;
+        b.UWert = null;
+        Aufbauen(b, neu: true);
+
+        KiFeldzugang herkunft = KiMaskenbruecke.Feldzugang(KiMaskennamen.BAUTEIL, "u_herkunft");
+        Assert.Equal("", herkunft.Lesen());
+        KiSetzen("uwert", "0,3");
+        Assert.Equal(DbWerte.HERKUNFT_MANUELL, herkunft.Lesen());
+    }
 }

@@ -314,8 +314,22 @@
             NachbarzoneEintraege = () => KiMaskenanmeldung.Eintraege(Nachbareintraege, e => e.Id, e => e.Text),
             ZuordnungLesen = () => IstTrennflaeche ? Zuordnungsindex : null,
             ZuordnungSetzen = w => { if (IstTrennflaeche) ZuordnungWaehlen(w); },
-            ZuordnungEintraege = () => KiMaskenanmeldung.Eintraege(Zuordnungseintraege, e => e.Id, e => e.Text)
+            ZuordnungEintraege = () => KiMaskenanmeldung.Eintraege(Zuordnungseintraege, e => e.Id, e => e.Text),
+            // MA-6b: die Herkunft des U-Werts, wie das OK sie schriebe - Regel des Kerns, nur lesbar.
+            UHerkunftLesen = UHerkunftVorschau
         };
+    }
+
+    /// <summary>
+    /// MA-6b: Die Herkunft des U-Werts nach den Regeln des Schreibwegs (Kernregel <c>BauteilUHerkunftVorschau</c>) — ein neues
+    /// Bauteil bringt keine Herkunft mit, ein gespeichertes vergleicht Aufbau und U-Wert mit dem geöffneten Stand.
+    /// </summary>
+    private string? UHerkunftVorschau()
+    {
+        bool neu = (Bauteil?.Id ?? 0) <= 0;
+        return WindowsFormsApplication1.BauteilUHerkunftVorschau.Herkunft(
+            neu ? null : Bauteil?.UHerkunft, neu, Bauteil?.IdAufbau, Bauteil?.UWert,
+            _stand.IdAufbau, _stand.UWert, _stand.IdAufbauStamm.HasValue);
     }
 
     /// <summary>

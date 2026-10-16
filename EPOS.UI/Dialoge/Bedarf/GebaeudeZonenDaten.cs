@@ -254,6 +254,12 @@ public sealed class BauteilDaten
     /// <summary>Herkunft (Persistenzwert) — reist unverändert mit.</summary>
     public string? Herkunft { get; set; }
 
+    /// <summary>
+    /// MA-6b: Die gespeicherte Herkunft des U-Werts (Persistenzwert, <c>Tab_Bauteil.U_Herkunft</c>) — nur gelesen; der
+    /// Schreibweg leitet sie im Kern neu ab. Der Hilfe-Assistent zeigt sie im Bauteildialog.
+    /// </summary>
+    public string? UHerkunft { get; set; }
+
     /// <summary>Kennung eines Imports — reist unverändert mit.</summary>
     public string? Quellkennung { get; set; }
 
