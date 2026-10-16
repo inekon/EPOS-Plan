@@ -441,14 +441,9 @@ namespace WindowsFormsApplication1
         /// schon gelesen werden.
         /// </para>
         /// <para>
-        /// <b>Stromspeicher</b> führt drei Kostenfelder, die zusammen EINE Formel bilden:
-        /// <c>Modulkosten</c> ist entgegen dem Namen ein SPEZIFISCHER Preis in €/kWh
-        /// (AP0-Entscheid vom 16.08.2026, umgesetzt in
-        /// <c>Form_AdminStromspeicher.EinheitenBeschriftungKorrigieren</c>),
-        /// <c>Leistungskosten</c> €/kW und <c>Investition_Fix</c> ein fester Anteil —
-        /// genau die Aufteilung, mit der <c>StromspeicherSimCtrl</c> rechnet. Der alte Weg
-        /// summierte <c>Modulkosten</c> als Euro-Betrag und war damit dimensional falsch;
-        /// hier entsteht nur EINE Basis, aber die richtige.
+        /// <b>Stromspeicher</b> führt drei Investitionssätze der Satzvorlage, die zusammen EINE Formel
+        /// bilden: Kapazitätssatz €/kWh, Leistungssatz €/kW und ein fester Betrag — genau die
+        /// Aufteilung, mit der <c>StromspeicherSimCtrl</c> rechnet; hier entsteht nur EINE Basis.
         /// </para>
         /// <para>
         /// <b>Die übrigen fünf Gewerke</b> führen genau ein Kostenfeld und bleiben einfeldrig

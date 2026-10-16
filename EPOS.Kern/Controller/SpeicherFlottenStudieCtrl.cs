@@ -263,8 +263,8 @@ public static partial class SpeicherFlottenStudieCtrl
     ///   <item><term><c>Standby_Verbrauch</c> [W]</term><description>→ <see cref="FlottenEinheit.HilfsverbrauchKw"/> (W / 1000)</description></item>
     ///   <item><term><c>Selbstentladung_Prozent_Monat</c> [%/Monat]</term><description>→ <see cref="FlottenEinheit.SelbstentladungProzentProMonat"/> (außerhalb 0 … 20: 0)</description></item>
     /// </list>
-    /// <para><b>Was bewusst NICHT abgebildet wird.</b> <c>Verschleisskosten</c> steht im
-    /// Katalog in €/(kWh·Zyklus) und bezieht sich auf die NENNkapazität; die zwei
+    /// <para><b>Was bewusst NICHT abgebildet wird.</b> Der Verschleißsatz c_ver steht in der
+    /// Betriebs-Satzvorlage in €/(kWh·Zyklus) und bezieht sich auf die NENNkapazität; die zwei
     /// Kostenfelder der Flotte (<c>GrenzverschleissEuroProKWhEntladung</c>,
     /// <c>DurchsatzkostenEuroProKWhEntladung</c>) rechnen je abgegebener AC-kWh. Die
     /// Umrechnung hängt am nutzbaren Band und am Entladewirkungsgrad

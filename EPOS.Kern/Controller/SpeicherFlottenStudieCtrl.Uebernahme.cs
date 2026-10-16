@@ -89,12 +89,11 @@ public static partial class SpeicherFlottenStudieCtrl
     /// <c>Energie</c> ← Kapazität, <c>Leistung</c> ← die GRÖSSERE der zwei
     /// Richtungsleistungen (die Anlage trägt EINEN Wert), <c>Wirkungsgrad_RT</c> ←
     /// <c>eta_lade · eta_entlade</c> (die Leserichtung zieht die Wurzel),
-    /// <c>Ladezustand</c> ← Start-SoC in Prozent, <c>Modulkosten</c>/<c>Leistungskosten</c>/
-    /// <c>Investition_Fix</c> ← die drei Investitionssätze, <c>Standby_Verbrauch</c> ←
-    /// Hilfsverbrauch in W.</para>
+    /// <c>Ladezustand</c> ← Start-SoC in Prozent, <c>Standby_Verbrauch</c> ←
+    /// Hilfsverbrauch in W; die drei Investitionssätze gehen als Kostenpositionen an die Anlage.</para>
     /// <para><b>Was NICHT geschrieben wird</b>, ist die Gegenseite dessen, was
     /// <c>EinheitAusKatalog</c> nicht liest: <c>Typ</c>, <c>Firma</c>, <c>Degradation</c>,
-    /// <c>Zyklen_Zugesichert</c> und <c>Verschleisskosten</c> haben in
+    /// und <c>Zyklen_Zugesichert</c> haben in
     /// <see cref="FlottenEinheit"/> kein Gegenstück. Beim RÜCKSCHREIBEN in eine vorhandene
     /// Anlage bleiben sie deshalb stehen, statt von Nullen überschrieben zu werden.</para>
     /// </remarks>

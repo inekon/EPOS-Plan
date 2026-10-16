@@ -10226,7 +10226,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der Stromspeicher-Katalog — die vierzehn Felder der Auspraegung
+        /// Der Stromspeicher-Katalog — die zwoelf Felder der Auspraegung
         /// <c>Stromspeicher</c>, in zwei Gruppen: die Bestandsfelder und die
         /// Geraetetechnik nach Fachkonzept Stromspeicher 5.1.
         /// </summary>

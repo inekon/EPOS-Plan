@@ -1251,8 +1251,8 @@ namespace WindowsFormsApplication1
         /// </para>
         /// <para>
         /// Feldbedeutungen nach Entscheid AP0 (16.08.2026): <c>Ladezustand</c> ist der
-        /// Start-SoC in Prozent der Nennkapazität, <c>Modulkosten</c> sind bereits
-        /// EUR/kWh und werden ohne Umrechnung zu c_cap, <c>Degradation</c> steht in
+        /// Start-SoC in Prozent der Nennkapazität, der Kapazitätssatz der Satzvorlage ist
+        /// EUR/kWh und wird ohne Umrechnung zu c_cap, <c>Degradation</c> steht in
         /// Prozent pro Jahr (UI-Label "%") und wird zum Bruch.
         /// </para>
         /// <para>
