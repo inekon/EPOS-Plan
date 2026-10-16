@@ -53,15 +53,15 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Jede der vierundfünfzig Rollen hat in der Vorgabe eine Farbe — eine Rolle
+        /// Jede der sechzig Rollen hat in der Vorgabe eine Farbe — eine Rolle
         /// ohne Palettenfarbe wäre im Bild schwarz, und im Einstellungsdialog stünde
         /// ein leeres Muster.
         /// </summary>
         [Fact]
         public void JedeAenderbareRolleHatEineHausfarbe()
         {
-            // K6b: die Rolle KAELTE_DEZENTRAL ist die 55.
-            Assert.Equal(55, Diagrammfarben.Rollen.Count);
+            // K6b: KAELTE_DEZENTRAL ist die 55.; SK-2: die fünf Rollen des Energieflussbilds bringen 60.
+            Assert.Equal(60, Diagrammfarben.Rollen.Count);
             foreach (Farbrolle rolle in Diagrammfarben.Rollen)
                 Assert.True(Farbpalette.Vorgabe.Kennt(rolle), "ohne Hausfarbe: " + rolle.Name);
         }

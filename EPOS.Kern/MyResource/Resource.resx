@@ -55124,6 +55124,21 @@ Chart</value>
   <data name="DGF_ROLLE_KAELTE_DEZENTRAL" xml:space="preserve">
     <value>Kälte dezentral (Split)</value>
   </data>
+  <data name="DGF_ROLLE_KNOTEN" xml:space="preserve">
+    <value>Knoten (Energiefluss)</value>
+  </data>
+  <data name="DGF_ROLLE_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoff</value>
+  </data>
+  <data name="DGF_ROLLE_UMWELTWAERME" xml:space="preserve">
+    <value>Umweltwärme</value>
+  </data>
+  <data name="DGF_ROLLE_KAELTE" xml:space="preserve">
+    <value>Kälte</value>
+  </data>
+  <data name="DGF_ROLLE_VERLUST" xml:space="preserve">
+    <value>Verlust</value>
+  </data>
   <data name="CHART_LEGENDE_KAELTE_DEZENTRAL" xml:space="preserve">
     <value>dezentral (Split)</value>
   </data>
