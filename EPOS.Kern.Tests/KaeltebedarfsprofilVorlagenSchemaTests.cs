@@ -197,6 +197,8 @@ namespace EPOS.Kern.Tests
                 DataTable dt = DataRepository.GetDataTable("SELECT * FROM \"" + tabelle + "\" WHERE ID <= 6 ORDER BY ID", null);
                 List<string> spalten = dt.Columns.Cast<DataColumn>().Select(c => c.ColumnName)
                                          .Where(c => c != KaeltebedarfsprofilVorlagenSchema.SPALTE_ART)
+                                         // KBP-5a: die Nutzungstage nach Norm (Schritt 234) sind eine spaetere neue Spalte.
+                                         .Where(c => c != BedarfsprofilEingabeartSchema.SPALTE_NUTZUNGSTAGE)
                                          .OrderBy(c => c, StringComparer.Ordinal).ToList();
                 foreach (DataRow r in dt.Rows)
                 {

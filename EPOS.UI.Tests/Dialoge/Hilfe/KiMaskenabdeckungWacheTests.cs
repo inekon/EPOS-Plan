@@ -81,7 +81,7 @@ public sealed class KiMaskenabdeckungWacheTests
         // KBP-1: die Wahl des Betriebskalenders der markierten Zuordnung - Katalogfeld betriebskalender der Feldkarte
         // Form_Bedarfsprofile, gebunden ueber BedarfsProfileKiSicht (KalenderLesen/KalenderSetzen) des Wirts.
         new("Betriebskalenderwahl",           "BedarfsProfileDialog",        KiMaskennamen.BEDARFSPROFILE),
-        // KBP-3a: die Editoren der Eingabearten Monatswerte und Wochenprofil in der Bearbeiten-Ueberlagerung der Kaeltezeile.
+        // KBP-3a, KBP-5b: die Editoren der Eingabearten Monatswerte und Wochenprofil in der Bearbeiten-Ueberlagerung der Kaelte-, Prozesswaerme- und Brauchwasserzeile.
         new("KaelteMonatswerteEditor",        "BedarfsProfileDialog",        KiMaskennamen.BEDARFSPROFILE),
         new("KaelteWochenprofilEditor",       "BedarfsProfileDialog",        KiMaskennamen.BEDARFSPROFILE),
         new("KaelteProfilgrafik",             "BedarfsProfileDialog",        KiMaskennamen.BEDARFSPROFILE),
@@ -280,8 +280,12 @@ public sealed class KiMaskenabdeckungWacheTests
         // BK-2b: die Klasse des Baustoffs (Katalogfeld klasse, 8 → 9); Gruppe und Klasse des Aufbaus (Katalogfelder
         // gruppe, klasse) und der Werkzeugschalter „nur geeignete“ (Filter der Liste, kein Maskenfeld): 4 → 7.
         new("BaustoffKatalogDialog", 9, "der Werkzeugschalter „nur herstellerneutral“ setzt den Filter der Liste"),
-        new("BauteilaufbauDialog", 12, "der Werkzeugschalter „nur geeignete“ blendet Zeilen der Liste aus; die fünf Fensterwerte (BK-6: U_g, g, Rahmenanteil, U_f, ψ_g) meldet die Sicht noch nicht an"),
-        new("BauteilschichtenFelder", 8, "Abschnitt und Flächenanteil der inhomogenen Schicht (BK-5) meldet die Sicht noch nicht an"),
+        // BK-6 (Nachzug KIS): die fünf Fensterwerte (U_g, g, Rahmenanteil, U_f, ψ_g) stehen als Katalogfelder fenster_* in der
+        // Feldkarte; sie stehen im Stammblatt und in „Neu…“ aus EINEM Fragment (12 bleibt, der Vermerk nennt nur noch den Schalter).
+        new("BauteilaufbauDialog", 12, "der Werkzeugschalter „nur geeignete“ blendet Zeilen der Liste aus"),
+        // BK-5 (Nachzug KIS): Abschnitt und Flächenanteil der inhomogenen Schicht stehen als Spalten schicht_abschnitt und
+        // schicht_flaechenanteil in der Feldkarte (8 bleibt, kein Vermerk mehr); die Ebenensumme ist ein Lesewert.
+        new("BauteilschichtenFelder", 8),
 
         // KU3-1: die Verwaltung der Kaeltemaschinen - zwoelf Kenndaten als EIN Fragment fuer
         // Stammblatt und „Neu…" (Rueckkuehlart als Auswahlfeld) und das Kennlinienraster mit vier
@@ -355,7 +359,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("KaelteProfilgrafik", 1, "Nacharbeit KBP-3b: die Wahl der Kalenderwoche ist Anzeige des Blatts Woche (kein Einstellwert, nichts wird gespeichert)"),
         // PW2/BW2: die Verwaltung der Betriebskalender - Kalender, Bezeichnung, Bundesland, Feiertagsregel, die
         // Ferienfelder (eine Schleife über vier Paare), Ferienfaktor und Kürzen; Katalog Form_Betriebskalender.
-        new("BetriebskalenderDialog", 8),
+        new("BetriebskalenderDialog", 9),
         new("BedarfstagKonstruktor", 10, "Zapfprofil Z4, Gruppe 2b: Bezugsart und Bezugsmenge des Tags (Felder bezugsart, bezugsmenge)"),
         // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): die Anzeigestufe der Platzhalter in der Kopfzeile.
         new("BerichteKostenSeite", 1, "die Anzeigestufe der Platzhalter (Vorlagenfeldumschalter) ist eine Sitzungseinstellung der Ansicht — kein Katalogfeld"),

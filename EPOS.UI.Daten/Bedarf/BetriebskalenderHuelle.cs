@@ -150,6 +150,7 @@ namespace WindowsFormsApplication1
                 Bundesland = k.Bundesland,
                 FerienfaktorProzent = Math.Round(k.Ferienfaktor * 100.0, 9),
                 FeiertagWieSonntag = k.FeiertagWieSonntag,
+                FerienWieSonntag = k.FerienWieSonntag,
                 FerienKuerzen = k.FerienKuerzen
             };
             for (int i = 0; i < BetriebskalenderDaten.FERIEN && i < k.Ferien.Count; i++)
@@ -170,6 +171,7 @@ namespace WindowsFormsApplication1
                 Bundesland = string.IsNullOrWhiteSpace(d.Bundesland) ? null : d.Bundesland.Trim(),
                 Ferienfaktor = d.FerienfaktorProzent / 100.0,
                 FeiertagWieSonntag = d.FeiertagWieSonntag,
+                FerienWieSonntag = d.FerienWieSonntag,
                 FerienKuerzen = d.FerienKuerzen
             };
             for (int i = 0; i < BetriebskalenderDaten.FERIEN; i++)

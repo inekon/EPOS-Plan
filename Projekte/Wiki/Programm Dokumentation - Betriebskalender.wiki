@@ -19,9 +19,11 @@ Oben steht die Auswahl ''Kalender'' mit den Knöpfen ''Neu'', ''Löschen'' und �
 |-
 | ''Feiertag wie Sonntag'' || Ein Feiertag trägt die 24 Stunden des Sonntags im Wochenprofil. Aus: Feiertage wirken nicht.
 |-
+| ''Ferien wie Sonntag'' || Ein: Ein Ferientag trägt wie ein Feiertag die 24 Stunden des Sonntags im Wochenprofil – Tagesmenge und Stundengang –, der Ferienfaktor ist dann gesperrt. Aus: Der Ferienfaktor bestimmt den Ferientag.
+|-
 | ''Betriebsferien 1 bis 4 von / bis'' || Bis zu vier Zeiträume als Datum ohne Jahr (TT.MM.). Liegt der Beginn nach dem Ende, reicht der Zeitraum über den Jahreswechsel. Der 29. Februar ist kein gültiges Datum.
 |-
-| ''Ferienfaktor'' || Anteil des Tagesmittels des Wochenprofils, den ein Ferientag je Stunde trägt; 0 % heißt Stillstand.
+| ''Ferienfaktor'' || Anteil des Tagesmittels des Wochenprofils, den ein Ferientag je Stunde trägt; 0 % heißt Stillstand. Gesperrt, solange ''Ferien wie Sonntag'' gesetzt ist.
 |-
 | ''Ferien kürzen die Monatsmenge'' || Aus: Die Monatsmenge bleibt und verteilt sich auf die übrigen Tage des Monats. Ein: Die Monatsmenge sinkt im Verhältnis der Ferienstunden.
 |}
@@ -43,4 +45,4 @@ Rechts neben der Auswahl öffnet ''Betriebskalender…'' die Verwaltung als Blat
 == Wie gerechnet wird ==
 {{Anker|rechenweg}}
 
-Das Wochenprofil wird nach dem Wochentagsraster der Klimaregion des Projekts über das Jahr gelegt; danach ersetzt der Kalender ganze Tage: Feiertage durch den Sonntag des Wochenprofils, Ferientage durch den Ferienfaktor mal dem Tagesmittel. Ferien gehen Feiertagen vor. Die Feiertage liegen im Gemeinjahr nach festen Regeln; eine Preisreihe mit Jahr setzt die Feiertage dieses Jahres. Anschließend wird jeder Monat auf seinen Monatswert gebracht. Feiertage verschieben deshalb nur Bedarf innerhalb des Monats; Ferien ebenso, außer der Schalter ''Ferien kürzen die Monatsmenge'' ist gesetzt. Hat ein Monat ohne diesen Schalter keine Stunde mit Bedarf mehr, rechnet er ohne Ferien, und das Laufprotokoll nennt es. Die Formeln stehen unter [[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]], Schritt 3.
+Das Wochenprofil wird nach dem Wochentagsraster der Klimaregion des Projekts über das Jahr gelegt; danach ersetzt der Kalender ganze Tage: Feiertage durch den Sonntag des Wochenprofils, Ferientage durch den Ferienfaktor mal dem Tagesmittel, mit ''Ferien wie Sonntag'' ebenfalls durch den Sonntag. Ferien gehen Feiertagen vor. Die Feiertage liegen im Gemeinjahr nach festen Regeln; eine Preisreihe mit Jahr setzt die Feiertage dieses Jahres. Anschließend wird jeder Monat auf seinen Monatswert gebracht. Feiertage verschieben deshalb nur Bedarf innerhalb des Monats; Ferien ebenso, außer der Schalter ''Ferien kürzen die Monatsmenge'' ist gesetzt. Hat ein Monat ohne diesen Schalter keine Stunde mit Bedarf mehr, rechnet er ohne Ferien, und das Laufprotokoll nennt es. Die Formeln stehen unter [[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]], Schritt 3.

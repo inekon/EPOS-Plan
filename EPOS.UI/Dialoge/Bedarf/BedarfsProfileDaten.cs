@@ -74,6 +74,18 @@ public sealed class BedarfsProfilZeile
     /// dann schreibt das OK sie in die Projektkopie (bei geteilter Kopie in eine eigene).
     /// </summary>
     public bool ProfilGeaendert { get; set; }
+
+    /// <summary>
+    /// KBP-5b: die Nutzungstage nach Norm der Vorlage, die die Kältezeile trägt (Vorlage 8: 230); <c>null</c> = keine.
+    /// Nur Anzeige — die Herleitungszeile am Kalender nennt sie samt Normkalender.
+    /// </summary>
+    public int? Normtage { get; set; }
+
+    /// <summary>
+    /// KBP-5c: der tatsächliche Name des Normkalenders der Zeile („Norm 230 Tage (BY)“), wie ihn die Hülle vorgewählt
+    /// hat oder vorwählen würde; <c>null</c> = keiner bekannt (die Herleitungszeile bildet dann den bundesweiten Namen).
+    /// </summary>
+    public string? Normkalender { get; set; }
 }
 
 /// <summary>

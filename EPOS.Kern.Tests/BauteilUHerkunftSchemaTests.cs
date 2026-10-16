@@ -19,11 +19,10 @@ namespace EPOS.Kern.Tests
             => Convert.ToInt64(DataRepository.ExecuteScalar(sql, p), CultureInfo.InvariantCulture);
 
         [Fact]
-        public void Die_Nummer_haengt_an_BK5_und_ist_das_Ziel()
+        public void Die_Nummer_haengt_an_BK5_und_steht_im_Ziel()
         {
             // Keine feste Nummer: die Kette haengt ueber + 1 an der Vorgaengerklasse.
             Assert.Equal(BauteilkatalogAbschnittSchema.SCHRITT + 1, BauteilUHerkunftSchema.SCHRITT);
-            // Das Ziel steht eine Nummer weiter (WasserpreisTraegerkarteSchema, KB-7a); dieser Schritt bleibt in der Kette.
             Assert.True(SchemaStand.Zielversion >= BauteilUHerkunftSchema.SCHRITT);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == BauteilUHerkunftSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);

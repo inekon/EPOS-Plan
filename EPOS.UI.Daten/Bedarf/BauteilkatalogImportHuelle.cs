@@ -12,7 +12,7 @@ namespace WindowsFormsApplication1
     /// Die HÜLLE von „Bauteilkatalog einlesen…“ (BK-3, E133) — plattformfrei: Sie baut den Parametersatz des
     /// <see cref="BauteilkatalogImportDialog"/> aus <see cref="BauteilkatalogImport"/> (Kern) und übersetzt Vorschau und
     /// Ergebnis in die Records der Oberfläche. Die Dateiwahl geht über <c>Dienste.Datei</c>; gewählt wird
-    /// <c>Baustoffe.csv</c>, die übrigen Dateien liegen daneben. Beide Schalen nehmen dieselbe Hülle (Windows als Delegat
+    /// <c>Baustoffe.csv</c>, die übrigen Dateien liegen daneben (oder im Unterordner <c>Export</c>, BK-7). Beide Schalen nehmen dieselbe Hülle (Windows als Delegat
     /// der Hauptfensterhülle, iOS über die Projektquelle).
     /// </summary>
     internal static class BauteilkatalogImportHuelle
@@ -55,7 +55,14 @@ namespace WindowsFormsApplication1
                                                        ? string.Format(CultureInfo.CurrentCulture, R.BKI_HAUSTECHNIK, Zahl(v.HaustechnikBaustoffe),
                                                                        Zahl(v.HaustechnikAufbauten), Zahl(v.Luftdurchlaesse))
                                                        : null,
-                                                   Gliederung(v));
+                                                   Gliederung(v),
+                                                   string.IsNullOrEmpty(v.Ordner)
+                                                       ? null
+                                                       : string.Format(CultureInfo.CurrentCulture, v.UnterordnerExport ? R.BKI_ORDNER_EXPORT : R.BKI_ORDNER, v.Ordner),
+                                                   v.Teilkataloge > 0
+                                                       ? string.Format(CultureInfo.CurrentCulture, R.BKI_TEILKATALOGE, Zahl(v.Teilkataloge),
+                                                                       Zahl(v.BaustoffeMitTeilkatalog), Zahl(v.AufbautenMitTeilkatalog))
+                                                       : null);
         }
 
         /// <summary>Das Ergebnis des Übernehmens als Meldung mit Zahlen.</summary>

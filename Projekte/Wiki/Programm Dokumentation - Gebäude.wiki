@@ -235,6 +235,7 @@ Der '''Bauteildialog''' erscheint als Überlagerung über dem Zonendialog und be
 * '''g-Wert''', '''Rahmenanteil''' und '''Verschattungsfaktor''' – nur bei Fenster und Vorhangfassade; leer gilt der Wert des Gebäudes.
 * '''Wärmebrücke <math>\psi \cdot L</math>''' in W/K.
 * '''U-Wert''' in W/(m²·K) – leer gilt der U-Wert des Aufbaus.
+* '''Herkunft des U-Werts''' – nur zum Lesen: ''von Hand'', ''Katalog'', ''Datei (IFC)'', ''Datei (gbXML)'', ''Datei (Projektdatei)'' oder ''Vorgabe''; ändern Sie den U-Wert oder den Aufbau, zeigt die Zeile sofort, welche Herkunft das Bauteil beim ''OK'' erhält, ohne Herkunft steht ein Strich.
 
 Die Gruppe '''Aufbau''' ordnet dem Bauteil einen Schichtaufbau zu:
 

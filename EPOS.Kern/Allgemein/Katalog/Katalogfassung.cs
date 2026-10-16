@@ -530,7 +530,10 @@ namespace WindowsFormsApplication1
                           new[] { KaeltebedarfSchema.SPALTE_VORLAUF, KaeltebedarfSchema.SPALTE_RUECKLAUF,
                                   // KBP-2 (KaeltebedarfsprofilVorlagenSchema): der Art-Vorschlag; leer an den Zeilen 1-6, eine leere
                                   // Fachspalte traegt nichts zur Pruefsumme bei - deren Summen bleiben.
-                                  KaeltebedarfsprofilVorlagenSchema.SPALTE_ART }))
+                                  KaeltebedarfsprofilVorlagenSchema.SPALTE_ART,
+                                  // KBP-5a (BedarfsprofilEingabeartSchema): die Nutzungstage nach Norm; gesetzt allein an
+                                  // Vorlage 8 (der Schritt bildet deren Pruefsumme neu), leer an allen anderen Zeilen.
+                                  BedarfsprofilEingabeartSchema.SPALTE_NUTZUNGSTAGE }))
             { Stufe = 4, Anzeigeschluessel = "KABG_KATALOG_KB" },
             new Katalogtabelle(KaeltebedarfSchema.TAB_TYP_STAMM, "KBT",
                 Verbinden(new[] { "Bezeichner", "Beschreibung" }, Stunden168()))

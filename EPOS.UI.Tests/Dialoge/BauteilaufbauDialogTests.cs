@@ -650,6 +650,93 @@ public class BauteilaufbauDialogTests : EposBunitContext
         Assert.True(cut.Instance.Arbeitsstand.Geaendert);
         Assert.Contains("U_w", blatt.TextContent);
     }
+
+    // =================================================================================
+    // Nachzug KIS: Abschnitte, Fensterteil und Summenfuß beim Assistenten
+    // =================================================================================
+
+    private static KiFeldzugang Ki(string feld)
+    {
+        KiFeldzugang? zugang = KiMaskenbruecke.Feldzugang(KiMaskennamen.BAUTEILAUFBAU, feld);
+        Assert.NotNull(zugang);
+        return zugang!;
+    }
+
+    private static void KiSetzen(string feld, string text)
+    {
+        KiFeldzugang zugang = Ki(feld);
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, text);
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        zugang.Setzen(umsetzung.Wert);
+    }
+
+    [Fact]
+    public void Der_Assistent_setzt_Abschnitt_und_Flaechenanteil_und_liest_Ebenensumme_und_Summenfuss()
+    {
+        var k = new Katalog();
+        var cut = Aufbauen(k);
+        Zeilenklick.Zeile(cut, 1);                                   // Außenwand gedämmt, drei Schichten
+
+        KiSetzen("schicht_abschnitt_3", "1");
+        KiSetzen("schicht_flaechenanteil_3", "0,85");
+        KiSetzen("schicht_flaechenanteil_1", "0,5");                 // homogene Schicht: ohne Wirkung
+        cut.Render();
+
+        var schichten = cut.Instance.Arbeitsstand.Schichten;
+        Assert.Equal(new int?[] { null, null, 1 }, schichten.Select(s => s.Abschnitt).ToArray());
+        Assert.Equal(new double?[] { null, null, 0.85 }, schichten.Select(s => s.Flaechenanteil).ToArray());
+        Assert.True(cut.Instance.Arbeitsstand.Geaendert);
+        Assert.Equal(1, k.Gerechnet.Last().Schichten[2].Abschnitt);  // der Summenfuß kommt neu
+
+        KiFeldzugang summe = Ki("schicht_ebenensumme_3");
+        Assert.False(summe.Setzbar);
+        Assert.Equal(0.85, (double)summe.Lesen()!, 6);
+        Assert.Null(Ki("schicht_ebenensumme_1").Lesen());
+
+        Assert.False(Ki("summe_u").Setzbar);
+        Assert.Equal(0.25, Ki("summe_u").Lesen());
+        Assert.Null(Ki("summe_rt_oben").Lesen());
+        Assert.False(Ki("summe_rt_unten").Setzbar);
+
+        KiSetzen("fenster_ug", "1,1");                               // keine Fensterart: ohne Wirkung
+        Assert.Null(cut.Instance.Arbeitsstand.Arbeit.FensterUg);
+    }
+
+    [Fact]
+    public void Der_Assistent_setzt_den_Fensterteil_eines_Fensteraufbaus()
+    {
+        var k = new Katalog();
+        k.Saetze.Add(new BauteilaufbauDaten
+        {
+            Id = 9, Bezeichner = "Fenster Probe", Bauteilart = "FENSTER", Herkunft = "Manuell",
+            FensterUg = 1.0, FensterUf = 1.4, FensterG = 0.5, FensterRahmenanteil = 0.3, FensterPsiGlasrand = 0.04
+        });
+        var cut = Render<BauteilaufbauDialog>(b => b
+            .Add(x => x.Katalogzeilen, () => k.Saetze.Select(s => new Katalogfilterzeile(s.Id, s.Bezeichner)
+                { Schluessel = s.Id.ToString(System.Globalization.CultureInfo.InvariantCulture) }
+                .MitText(Katalogfilterprofil.SpBezeichner, s.Bezeichner)).ToList())
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerBauteilaufbau(
+                s => WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(s) ?? s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Lies, id => k.Saetze.FirstOrDefault(s => s.Id == id)?.Kopie())
+            .Add(x => x.Baustoffe, () => STOFFE)
+            .Add(x => x.Bauteilarten, ARTEN.Append(("FENSTER", "Fenster")).ToList())
+            .Add(x => x.Kennwerte, d => Fuss(d))
+            .Add(x => x.Pruefen, d => "")
+            .Add(x => x.Speichern, k.Speichern));
+        Zeilenklick.Zeile(cut, 2);                                   // Fenster Probe
+
+        Assert.Equal(1.4, Ki("fenster_uf").Lesen());
+        KiSetzen("fenster_psi_glasrand", "0,06");
+        KiSetzen("fenster_g", "0,6");
+        cut.Render();
+
+        Assert.Equal(0.06, cut.Instance.Arbeitsstand.Arbeit.FensterPsiGlasrand);
+        Assert.Equal(0.6, cut.Instance.Arbeitsstand.Arbeit.FensterG);
+        Assert.True(cut.Instance.Arbeitsstand.Geaendert);
+        Assert.Equal("0,60", Feld(Stammblatt(cut), "g-Wert").GetAttribute("value"));
+        Assert.False(KiFeldwandler.Wandle(Ki("fenster_rahmenanteil"), "1,5").Ok);   // die Grenze der Maske
+    }
 }
 
 /// <summary>

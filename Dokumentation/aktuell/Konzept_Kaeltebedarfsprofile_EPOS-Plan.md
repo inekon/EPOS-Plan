@@ -62,7 +62,7 @@ Gemeinjahr-Konvention des Kerns. Kein neuer Kalenderweg, keine neue Feiertagsreg
 1. Das Wochenprofil `w[1…168]` wird auf die 365 Tage des Rasters gelegt; Tag `d` nimmt den Wochentag
    `(Wochentag(1. Januar) + d − 1) mod 7`.
 2. Mit Betriebskalender ersetzt die Kalenderschicht Feiertage durch den Sonntag (`Feiertag_wie_Sonntag`) und gewichtet
-   Ferientage mit dem Ferienfaktor; ohne Kalender bleibt die Woche unberührt.
+   Ferientage mit dem Ferienfaktor oder legt sie mit `Ferien_wie_Sonntag` ebenfalls auf den Sonntag; ohne Kalender bleibt die Woche unberührt.
 3. Je Monat `m` werden die Stunden auf `Summe · a_m / 100 · 1000` kWh normiert (`a_m` = Monatsanteil in %).
 
 ### 3.1 Jahressumme mit Vorlage (Vorgabe, heutiger Weg)
@@ -164,7 +164,7 @@ und hält sie mit einer Saatwache.
 | Nr. | Vorlage | Art | Nutzungszeit · Nutzungstage | Wochen- und Tagesgang (Typ) | Monatsverteilung (Kopf) | Grundlast-Anteil | Quelle |
 |---|---|---|---|---|---|---|---|
 | 7 | Krankenhaus | Raum | 0–24 h · 365 d (Profil 10 Bettenzimmer) | ganztägig; Tag 7–20 Uhr Faktor 1,0, Nacht 0,6; Wochenende wie Werktag | Grundlast ganzjährig, Spitze Juni–August | 40 % | Nutzungszeit DIN/TS 18599-10:2025-10, Tab. 6/7, Profil 10 Bettenzimmer; Gang, Monate, Grundlast: Richtwert, Quelle prüfen |
-| 8 | Industrie Prozesskälte einschichtig | Prozess | Mo–Fr 7–16 Uhr · 230 d | Mo–Fr 7–16 Uhr 1,0; sonst Grundlast; Sa/So Grundlast | zwölf Monate fast gleich, leichter Sommeranstieg (+10 % Juli/August) | 10 % | Nutzungszeit DIN/TS 18599-10:2025-10, Tab. 6/7, Hallenprofile 22–24 (gewerbliche und industrielle Hallen); gewählt Mo–Fr; Gang, Monate, Grundlast: Richtwert, Quelle prüfen |
+| 8 | Industrie Prozesskälte einschichtig | Prozess | Mo–Fr 7–16 Uhr · 230 d | Mo–Fr 7–16 Uhr 1,0; sonst Grundlast; Sa/So Grundlast | zwölf Monate fast gleich, leichter Sommeranstieg (+10 % Juli/August) | 10 % | Nutzungszeit DIN/TS 18599-10:2025-10, Tab. 6/7, Hallenprofile 22–24 (gewerbliche und industrielle Hallen); gewählt Mo–Fr; Gang, Monate, Grundlast: Richtwert, Quelle prüfen; Normtage 230 in `Nutzungstage_Norm`, beim Übernehmen Betriebskalender „Norm 230 Tage“ vorgewählt (7.4) |
 | 9 | Industrie Prozesskälte zweischichtig | Prozess | Mo–Fr 6–22 Uhr | Mo–Fr 6–22 Uhr 1,0; sonst Grundlast | wie Nr. 8 | 15 % | Richtwert, Quelle prüfen (die Norm kennt keinen Mehrschichtbetrieb; Tagesgrenzen auf Grundlage der Hallenprofile 22–24) |
 | 10 | Industrie Prozesskälte dreischichtig | Prozess | Mo–Fr 0–24 Uhr | Mo–Fr ganztägig 1,0; Sa/So Grundlast | wie Nr. 8 | 20 % | Richtwert, Quelle prüfen (die Norm kennt keinen Mehrschichtbetrieb; Tagesgrenzen auf Grundlage der Hallenprofile 22–24) |
 | 11 | Rechenzentrum | Prozess | 0–24 h · 365 d (Profil 21) | IT-Last nahezu gleich; Mo–Fr 8–18 Uhr Aufschlag 15 % | zwölf Monate gleich | 85 % | Nutzungszeit DIN/TS 18599-10:2025-10, Tab. 6/7, Profil 21 Rechenzentrum; Aufschlag und Grundlast: Richtwert, Quelle prüfen |
@@ -191,6 +191,11 @@ Gang, Monate und Grundlast Richtwert, bei Nr. 9 und 10 auch die Nutzungszeit. De
 trägt die Katalogspalte `Kaelte_Art` (Werte wie an der Zuordnung, `RAUM`/`PROZESS`; leer an den Zeilen 1–6). Die
 Saatwache `KaeltebedarfsprofilVorlagenSchemaTests` hält Zeilen, Monatssummen 100, vollständige Tagesgänge, die Quelle je Vorlage und die
 Zeilen 1–6 bytegleich gegen einen eingefrorenen Abdruck.
+
+**Normtage und Normkalender (Welle KBP-5).** Allein Nr. 8 trägt ihre Normtage als Zahl: `Nutzungstage_Norm = 230` an
+Katalogkopf und Projektkopie (8.3a). Wer sie übernimmt, bekommt im Projekt den Betriebskalender „Norm 230 Tage (BY)“
+(Feiertagsland im Namen) vorgewählt, der im Gemeinjahr-Raster des Projekts genau 230 Nutzungstage lässt (7.4); die übrigen Vorlagen nennen ihre
+Nutzungstage nur in der Beschreibung und bleiben ohne Vorwahl.
 
 Temperaturpaare der neuen Köpfe bleiben Angabe ohne Wirkung (E-K3): Raumkühlung 16/19 °C, Prozesskälte 6/12 °C,
 Rechenzentrum 18/24 °C, Gewerbekälte −2/+4 °C — runde Ordnungswerte wie im Bestand.
@@ -228,7 +233,7 @@ dort ebenso als Blatt.
 | | Betriebskalender (Bedarfsprofile) | Konditionierungskalender (Gebäude, `KalenderbedienungSchema`) |
 |---|---|---|
 | Wofür | Tagesart je Tag für Profilzeilen: normal, Feiertag, Ferien | Sollwerte, Nutzung, Lüftung je Größe, Gebäude und Zone |
-| Daten | `Tab_Betriebskalender`: Bundesland, vier Ferienzeiträume, Ferienfaktor, „Feiertag wie Sonntag“, „Ferien kürzen“ | Gemeinschaftsperioden, benannte Wochen, `Wochenendtage`, `Feiertagsland` am Gebäude |
+| Daten | `Tab_Betriebskalender`: Bundesland, vier Ferienzeiträume, Ferienfaktor, „Feiertag wie Sonntag“, „Ferien wie Sonntag“, „Ferien kürzen“ | Gemeinschaftsperioden, benannte Wochen, `Wochenendtage`, `Feiertagsland` am Gebäude |
 | Verweis | `ID_Betriebskalender` an der Zuordnung | am Gebäude bzw. an der Zone |
 
 Beide bleiben getrennt: ein Profil gehört nicht zu einem Gebäude, und die Gebäudekalender steuern Sollwerte, keine
@@ -242,8 +247,49 @@ Projektgebäudes **als Kopie** in den Kalender schreibt — nie als Verweis (Fes
   Jahr setzt die echten Daten. Keine neue Regel.
 - Ferien: die vier Zeiträume des Betriebskalenders. Mehr als vier Zeiträume folgen der Ferienliste der Kalenderbedienung
   (offener Punkt K2-U), nicht diesem Konzept.
+- Ferientag: ohne Schalter trägt er je Stunde `f · m_s` (Ferienfaktor mal Tagesmittel des Wochenprofils). Mit „Ferien wie
+  Sonntag“ (`Tab_Betriebskalender.Ferien_wie_Sonntag`, Entscheid des Anwenders 16.10.2026) trägt er Tagesmenge und
+  Stundengang des Sonntags aus dem Wochenprofil wie ein Feiertag; der Ferienfaktor wirkt dann nicht und ist im Dialog
+  gesperrt, „Ferien kürzen“ wirkt weiter. Ferien gehen Feiertagen vor.
 - Wochenende: die Profile rechnen mit dem Wochenprofil (Samstag und Sonntag sind Tage des Profils); die Wochenmaske
   `Wochenendtage` der Gebäude wirkt nicht auf Profile.
+
+### 7.4 Normkalender der Vorlagen mit Normtagen (Entscheid 16.10.2026)
+
+Übernimmt der Anwender eine Kältevorlage mit `Nutzungstage_Norm` (heute nur Nr. 8, 230 Tage), legt der Kern
+(`NormkalenderCtrl.Vorwahl`) den Betriebskalender „Norm {Normtage} Tage ({Land})“ an und wählt ihn für die übernommene
+Zeile vor.
+
+- **Name:** Die Kalender sind projektübergreifend sichtbar, deshalb trägt der Name das Feiertagsland als Länderkürzel des
+  Kerns — „Norm 230 Tage (BY)“, ohne Land „Norm 230 Tage (bundesweit)“; englisch „Standard 230 days (BY)“ bzw.
+  „Standard 230 days (nationwide)“ (Ressourcen `KBP_KALENDER_NORM_NAME`, `KBP_KALENDER_NORM_BUNDESWEIT`).
+- **Wiederverwendung:** genommen wird zuerst ein Kalender dieses Namens, den eine Zuordnung des Projekts schon nutzt, dann
+  einer dieses Namens mit gleichem Inhalt (Land, Ferien, Ferienfaktor, die drei Schalter), erst sonst entsteht ein neuer. Zwei
+  Projekte im selben Land und mit gleichem Wochentagsraster teilen so einen Kalender, Projekte verschiedener Länder
+  bekommen verschieden benannte.
+- **Kein Doppelname:** Steht der Name schon mit anderem Inhalt (etwa ein anderes Wochentagsraster der Klimaregion), heißt
+  der neue Kalender nach dem Wochentag des 1. Januar im Raster — „Norm 230 Tage (BY, 1.1. Do)“, englisch
+  „Standard 230 days (BY, 1 Jan Thu)“ (`KBP_KALENDER_NORM_NAME_TAG`); ist auch dieser Name mit anderem Inhalt belegt,
+  folgt eine laufende Nummer („… #2“). Für jeden dieser Namen gilt dieselbe Wiederverwendung (`NormkalenderCtrl.Wahl`,
+  Namensfolge `NormkalenderCtrl.Namensfolge`).
+
+- **Tage:** Feiertage wie Sonntag; Betriebsferien in zwei der vier Ferienzeiträume — ab dem 24.12. über den Jahreswechsel
+  bis höchstens zum 6.1., dann ab dem ersten Montag ab dem 1.8. —, Tag für Tag so bemessen, dass im Gemeinjahr-Raster
+  der Klimaregion des Projekts genau die Normtage als Nutzungstage bleiben (Werktage Montag bis Freitag ohne Feiertage
+  und ohne Ferien). Beispiel Testdatenbank (1. Januar Donnerstag, 261 Werktage): Bayern 9 Feiertage auf Werktagen,
+  Ferien 24.12.–5.1. und 3.8.–21.8.; Nordrhein-Westfalen 8, Ferien 24.12.–6.1. und 3.8.–21.8.; nur bundeseinheitlich 7,
+  Ferien 24.12.–6.1. und 3.8.–24.8.
+- **Feiertagsland:** aus dem ersten Gebäude des Projekts (nach Name), das eines führt; sonst die Vorgabe
+  `NormkalenderCtrl.LAND_VORGABE` = nur die neun bundeseinheitlichen Feiertage.
+- **Ferientag wie Sonntag:** Der Normkalender setzt „Ferien wie Sonntag“ (7.3): Ein Ferientag trägt Tagesmenge und
+  Stundengang des Sonntags aus dem Wochenprofil. Der Ferienfaktor steht neutral auf 1 (`NormkalenderCtrl.FERIENFAKTOR_NEUTRAL`)
+  und wirkt nicht; der Kalender hängt damit nicht vom Wochenprofil der Vorlage ab. „Ferien kürzen“ bleibt aus:
+  Monatsmengen und Jahressumme bleiben.
+- **Wahl frei:** Der Baustein `Betriebskalenderwahl` bleibt frei (anderer Kalender oder „ohne Kalender“, dann 260/261
+  Werktage). Der Dialog zeigt an Zeilen mit Normtagen eine Herleitungszeile mit den Normtagen und dem tatsächlichen
+  Namen des Normkalenders (`BedarfsProfilZeile.Normkalender`, von der Hülle gesetzt).
+- **Nachweis:** `NormkalenderTests` (alle Länder und Wochentage 230 Tage, Testdatenbank zwei Länder, Jahressumme,
+  Ferientag gleich Sonntag, Wiederverwendung nach Inhalt samt Schalter, Name mit Land in beiden Sprachen, gemeinsamer Kalender je Land, kein Doppelname), bunit `BedarfsProfileDialogTests` (Vorwahl bei Nr. 8, keine bei anderen Vorlagen).
 
 ## 8. Datenhaltung
 
@@ -269,6 +315,20 @@ SQL-Dialekt-Prüfer.
 
 Kein Katalog-Gegenstück (`_STAMM`): Vorlagen bleiben Monate × Woche; Typtage sind eine Projekteingabe. Mitzuziehen:
 Duplizieren, Projektpaket, `.wpx`, Projektkopievormerkung, Testdatenbankschema, `sql/schema`, SQL-Dialekt-Prüfer.
+
+### 8.3a Schemaschritt C — Eingabeart für Prozesswärme und Brauchwasser, Normtage (Welle KBP-5)
+
+Klasse `BedarfsprofilEingabeartSchema`, Kette über `+ 1` hinter der Vorgängerklasse (ohne Nummer in diesem Papier, 8.3).
+
+| Tabelle | Änderung |
+|---|---|
+| `Z_Projekt_Prozesswaerme`, `Z_Projekt_Brauchwasser` | neue Spalte `Eingabeart` TEXT NOT NULL DEFAULT 'jahr', dieselbe Prüfklausel wie an `Z_Projekt_Kaeltebedarf`; kein `UPDATE` |
+| `Tab_Kaeltebedarf_STAMM`, `Tab_Kaeltebedarf` | neue Spalte `Nutzungstage_Norm` INTEGER nullbar CHECK 1…365; gesät allein an Nr. 8 = 230 (DIN/TS 18599-10:2025-10), Zeilen 1–6 bytegleich |
+| `Tab_Betriebskalender` | neue Spalte `Ferien_wie_Sonntag` INTEGER NOT NULL DEFAULT 0 CHECK IN (0,1) (7.3); kein `UPDATE`, jeder Bestandskalender rechnet wie bisher |
+
+Monatswerte und Wochenprofil von Prozesswärme und Brauchwasser stehen in den bestehenden Wertespalten ihrer Projektkopien
+(Kopie bei Bearbeitung wie bei der Kälte). Der Normkalender (7.4) braucht darüber hinaus kein Schema: Er ist eine Zeile in
+`Tab_Betriebskalender` mit `Ferien_wie_Sonntag` = 1, die Zuordnung zeigt über `ID_Betriebskalender` auf ihn.
 
 ### 8.3 Nummern und Migration
 
@@ -307,7 +367,7 @@ Spalte erst mit Entscheid OE-5.
 | **KBP-2** Vorlagen | Schemaschritt A (Eingabeart, Art-Vorschlag, Saat 7–16); Quellen der Richtwerte belegt oder ersetzt | Saatwache (Zeilen, Summen der Monatsanteile = 100, Bestandszeilen 1–6 bytegleich gegen eingefrorenen Abdruck); `KatalogfassungWache`, `AuslieferungsvorlagenWacheTests`; SQL-Dialekt-Prüfer; Referenzlauf der CI-Auswahl byte-gleich; `WikiProduktdatenWacheTests` |
 | **KBP-3** Eingabearten und Grafik | Eingabeart-Wahl in der Bearbeiten-Überlagerung; Monatswerte (MWh/%), Wochenprofil (Werktag/Sa/So und 168 h); Kopie bei Bearbeitung über die Vormerkung; Blätter Jahresgang, Monate, Woche, Dauerlinie über `DiagrammSvg`; Kennzahlenzeile | bunit; Kern-Tests `BedarfsProfilVorschauTests`, `KaeltebedarfKernwegeTests`; Vormerkungswachen grün; `diagrammprobe.mjs`; ChartProben unverändert; Referenzlauf byte-gleich |
 | **KBP-4** Typtage (nur nach OE-1) | Schemaschritt B; `Typtagschicht` in `ProfilBedarf`; Editor (sechs Typtage, Matrix) | Kern-Tests der Schicht (Summe, Monat × Tagesart, Feiertag = Sonntag, Ferienfaktor); SQL-Dialekt-Prüfer; Referenzlauf byte-gleich |
-| **KBP-5** Angleichung und Doku | Eingabearten auch für Prozesswärme und Brauchwasser (nur nach OE-5); Wiki-Quellen der Bedienungsseite, Logbuch-Entwurf | Wiki-Gegenlesemuster aus `CLAUDE.md`; `DokumentationLinkWacheTests`; Konzept nach `ueberholt/`, wenn umgesetzt |
+| **KBP-5** Angleichung und Doku — *umgesetzt* | Schemaschritt C (8.3a); Eingabearten auch für Prozesswärme und Brauchwasser (OE-5); Normkalender der Vorlage 8 (7.4, OE-7); Wiki-Quelle der Bedienungsseite, Logbuch-Entwurf | Wiki-Gegenlesemuster aus `CLAUDE.md`; `DokumentationLinkWacheTests`; `NormkalenderTests`; Referenzlauf byte-gleich; das Konzept bleibt in `aktuell/`, bis KBP-4 (Typtage) umgesetzt ist |
 
 ## 11. Entscheide
 
@@ -319,3 +379,4 @@ Spalte erst mit Entscheid OE-5.
 | **OE-4** | Gemeinsamer Kalenderbaustein zuerst (KBP-1 vor allem anderen)? | **Ja.** Er beantwortet die Anwenderfrage sofort, braucht kein Schema, wirkt für alle Bedarfsarten und ändert keinen Rechenweg. — *entschieden 14.10.2026: Empfehlung übernommen* |
 | **OE-5** | Eingabearten Monatswerte/Wochenprofil auch für Prozesswärme und Brauchwasser? | **Ja, nach KBP-3**, mit derselben Spalte `Eingabeart` an deren Zuordnungen; der Dialog ist derselbe. — *entschieden 14.10.2026: Empfehlung übernommen* |
 | **OE-6** | „Aus Gebäude übernehmen…“ im Betriebskalender (Kopie von Feiertagsland und Ferien eines Projektgebäudes)? | **Ja, als Kopie** (KP1b 6), in KBP-1. — *entschieden 14.10.2026: Empfehlung übernommen* |
+| **OE-7** | Wie bildet das Projekt die Normtage der Vorlage 8 (230 Tage) ab? | **Normkalender „Norm 230 Tage (BY)“** mit dem Feiertagsland im Namen (ohne Land „bundesweit“) beim Übernehmen anlegen (oder einen vorhandenen gleichen Namens nehmen) und vorwählen: Feiertage wie Sonntag, Betriebsferien um den Jahreswechsel und im Sommer, bemessen auf genau 230 Nutzungstage im Raster des Projekts; Wahl bleibt frei (7.4). — *entschieden 16.10.2026* |

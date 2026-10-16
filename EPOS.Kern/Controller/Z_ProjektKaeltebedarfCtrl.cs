@@ -61,6 +61,8 @@ namespace WindowsFormsApplication1
                         : KaeltebedarfsprofilVorlagenSchema.EINGABE_JAHR,
                     Vorlauf = Zahl(r["Vorlauf"]),
                     Ruecklauf = Zahl(r["Ruecklauf"]),
+                    // KBP-5a: die Nutzungstage nach Norm der Projektkopie (Kalendervorschlag, KBP-5b).
+                    NutzungstageNorm = KaeltebedarfStammCtrl.ProjektNutzungstage(Ganz(r["ID_Kaeltebedarf"]) ?? 0),
                 });
             }
             return liste;

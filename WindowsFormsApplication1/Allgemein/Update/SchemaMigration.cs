@@ -5605,6 +5605,17 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_BAUTEIL_U_HERKUNFT = BauteilUHerkunftSchema.SCHRITT;
 
         /// <summary>
+        /// Schritt <see cref="BedarfsprofilEingabeartSchema.SCHRITT"/> — <b>Eingabeart der Bedarfsprofile</b> (KBP-5a bis KBP-5d):
+        /// <c>Eingabeart</c> an <c>Z_Projekt_Prozesswaerme</c> und <c>Z_Projekt_Brauchwasser</c> (Vorgabe 'jahr'),
+        /// <c>Nutzungstage_Norm</c> an <c>Tab_Kaeltebedarf(_STAMM)</c> (Saat allein an Vorlage 8) und <c>Ferien_wie_Sonntag</c>
+        /// am Betriebskalender. Schritt 234, hängt an 233.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Jede Zuordnung rechnet mit Eingabeart 'jahr', die Nutzungstage liest kein
+        /// Rechenweg.</para>
+        /// </summary>
+        public const int SCHRITT_BEDARFS_EINGABEART = BedarfsprofilEingabeartSchema.SCHRITT;
+
+        /// <summary>
         /// Schritt <see cref="WasserpreisTraegerkarteSchema.SCHRITT"/> — <b>der Wasserpreis wandert in die
         /// Trägerkarte</b> (KB-7a, Anwenderentscheide 16.10.2026): Träger „Wasser“ (Preismodell <c>WATER</c>, m³),
         /// Übernahme der Anlagenpreise in <c>energy_project_settings</c>, Entfall von
@@ -8263,6 +8274,14 @@ namespace WindowsFormsApplication1
                         "Ein von Hand gesetzter U-Wert ohne Aufbauwechsel waere beim Wiederimport nicht erkennbar und fiele an den " +
                         "Wert der Datei (E149). KEIN Rechenergebnis aendert sich - die Spalte bleibt leer.",
                         Schritt_BauteilUHerkunft),
+            // KBP-5a: Eingabeart an Prozesswaerme und Brauchwasser, Nutzungstage nach Norm an den Kaeltevorlagen. Quelle
+            // ist BedarfsprofilEingabeartSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_BEDARFS_EINGABEART,
+                        "Z_Projekt_Prozesswaerme und Z_Projekt_Brauchwasser: Eingabeart; Tab_Kaeltebedarf_STAMM und " +
+                        "Tab_Kaeltebedarf: Nutzungstage_Norm (Saat allein an Vorlage 8); Tab_Betriebskalender: Ferien_wie_Sonntag",
+                        "Prozesswaerme und Brauchwasser kannten allein die Jahressumme mit Vorlage. KEIN Rechenergebnis " +
+                        "aendert sich - jede Zuordnung rechnet mit Eingabeart 'jahr'.",
+                        Schritt_BedarfsEingabeart),
             // KB-7a: Der Wasserpreis wandert in die Traegerkarte. Quelle ist WasserpreisTraegerkarteSchema, die
             // Nummer steht allein dort.
             new Schritt(SCHRITT_WASSERPREIS_TRAEGERKARTE,
@@ -16535,6 +16554,61 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": U_Herkunft an Tab_Bauteil(_STAMM) - " + (handgriffe == 0 ? "stand bereits." : "Spalten angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Eingabeart an Prozesswärme und Brauchwasser" (KBP-5a, Schritt
+        /// <see cref="BedarfsprofilEingabeartSchema.SCHRITT"/>) — die Anweisungen bei <see cref="BedarfsprofilEingabeartSchema"/>.
+        /// <b>Wiederholbar, ergebnisneutral.</b>
+        /// </summary>
+        private static bool Schritt_BedarfsEingabeart(Lauf l)
+        {
+            string nr = BedarfsprofilEingabeartSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in BedarfsprofilEingabeartSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int angelegt;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    angelegt = BedarfsprofilEingabeartSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!BedarfsprofilEingabeartSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Eingabeart oder Nutzungstage fehlen nach dem Schritt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Eingabeart und Nutzungstage - " +
+                    (angelegt == 0 ? "Spalten standen bereits." : angelegt + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

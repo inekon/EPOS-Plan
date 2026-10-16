@@ -1108,8 +1108,8 @@ Je Fensterdialog: die Marke steht in `#app` hinter dem Dialog, der Dialog ist h�
 Mitte und Ende steht der Kopf bei `top 0` und die Schlussleiste mit `bottom` = Fensterhöhe (± 1 px), beide
 über die volle Breite der Wurzel; am Ende steht alles, was im Markup vor der Leiste kommt, über ihr; keine
 andere Leiste haftet, genau ein haftender Kopf; der Tabulator durch den ganzen Dialog legt kein Feld unter
-Kopf oder Fuß und rollt nicht, wenn er in Kopf oder Fuß landet. Dublettenprüfung: oben haftet der Fuß, am Ende steht er ganz im Bild und das Protokoll
-frei darunter. Überlagerung (Gebäude → „Simulation…"): sie rollt nicht als Ganzes, nur ihr Rollkörper
+Kopf oder Fuß und rollt nicht, wenn er in Kopf oder Fuß landet. Dublettenprüfung: oben haftet der Fuß, am Ende steht er ganz im Bild an seinem Platz und das Protokoll
+frei darunter, im Zeilenabstand der Wurzel. Überlagerung (Gebäude → „Simulation…"): sie rollt nicht als Ganzes, nur ihr Rollkörper
 (`.epos-dialog-rollkoerper`) rollt, ihr Fuß steht oben wie nach dem Rollen an ihrem Boden, der Kopf des
 Unterdialogs haftet nicht, Kopf und Fuß des Fensters liegen unter der Abdunkelung, das Dokument rollt nicht —
 und jede Zahl ist dieselbe wie mit `marke=0`. Katalogdialog: Kopf und Fuß statisch, das Dokument rollt nicht,
@@ -1149,8 +1149,10 @@ Gegenprobe: je Wirt ein Steckbrief mit `min-width: 1600px` ohne Umbruch muss rot
 
 **Gegenprobe** (läuft mit): dieselben Fensterdialoge mit `marke=0` müssen die Haft-Kriterien verfehlen; mit
 Marke, aber `scroll-padding: 0` muss der Tabulator Felder unter Kopf oder Fuß legen; das eingebettete
-Warnband mit `bottom: 0` muss verdeckt sein; der Fuß der Dublettenprüfung mit negativem Rand muss das
-Protokoll überdecken. Rückgabe `0` = kein Verstoß **und** Gegenprobe rot, `1` = Verstoß oder Gegenprobe
+Warnband mit `bottom: 0` muss verdeckt sein; der Fuß der Dublettenprüfung mit negativem Rand muss rot sein. Er
+überdeckt das Protokoll nicht (Zeilenabstand der Wurzel 20 px, Kartenrand 16 px: es bleiben 4 px), rückt aber aus
+seinem Platz — deshalb verlangt die Probe am Ende zwischen Fuß und Protokoll genau den Zeilenabstand (`row-gap`)
+der Wurzel (± 1 px), nicht nur, dass nichts überdeckt ist. Rückgabe `0` = kein Verstoß **und** Gegenprobe rot, `1` = Verstoß oder Gegenprobe
 grün, `2` = Aufbaufehler. Die Probe steht in keiner CI.
 
 **Ergebnis vom 30.09.2026** (Wirt Release auf Port 5299, Chromium headless über das globale Playwright,

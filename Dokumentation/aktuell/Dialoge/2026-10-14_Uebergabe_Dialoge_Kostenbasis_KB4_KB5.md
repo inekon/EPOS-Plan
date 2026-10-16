@@ -37,12 +37,12 @@ gemergte Zweige `kb2`, `kb3`, `kb4a`, `kb4b`, `kb4c` sind als Worktrees entfernt
   Sätze stehen ohne Version im Entwurf `Dokumentation/aktuell/Wiki_Update_2026-09-26.md`.
 - **Modellwahl:** Fable 5.1 nur für Orchestrierung und sehr komplexe Analyse; Umsetzung Opus 5.5 (`opus-umsetzung`), Mechanik
   Sonnet (`sonnet-mechanik`), Prüfungen Haiku (`haiku-pruefung`); wöchentliche Nutzung sparsam.
-- **KB-5, nach Empfehlung entschieden, vom Anwender zu bestätigen:** Verschleiß als Betriebsposition je entladener kWh
+- **KB-5, nach Empfehlung entschieden, vom Anwender bestätigt (16.10.2026):** Verschleiß als Betriebsposition je entladener kWh
   (`EUR_PRO_KWH_ELEKTRISCH`; €/(kWh Nennkapazität · Vollzyklus) ist dieselbe Größe), eine Quelle und eine Buchung; der Fixanteil
   geht weiterhin nicht in die Speicherauslegung ein (heute `IFixEur = 0`); der Testwert 3999,5 €/kWh wird ergebnisneutral übernommen,
   obwohl er wie ein Absolutpreis aussieht; die Flotte liest ihre Einheit aus der Satzvorlage und schreibt bei der Übernahme
   Kostenpositionen der Anlage statt Katalogspalten; der Flottenstand `@Projektflotte` von 1046 bleibt unberührt.
-- **Aus KB-5a und der Hebung auf 228, ebenfalls vom Anwender zu bestätigen:** (a) Die Flotten-Übernahme schreibt Kostenpositionen nur
+- **Aus KB-5a und der Hebung auf 228, vom Anwender bestätigt (16.10.2026), umgesetzt mit #1100:** (a) Die Flotten-Übernahme schreibt Kostenpositionen nur
   noch bei „eigene Kosten“ der Einheit (vorher schrieb sie die Katalogspalten immer); (b) die Verweise `ID_KostenVorlage` und
   `ID_KostenVorlageInvestition` gehen den Rückweg Kopie → Katalog nicht mit — ein aus einer Kopie angelegter Katalogsatz hat damit
   keine Kosten; Entscheid in KB-5b, analog zum Wechselrichter in KB-4b; (c) die Saat der Schritte 226/228 setzt an den gesäten

@@ -71,11 +71,9 @@ namespace WindowsFormsApplication1
     public static class WasserpreisTraegerkarteSchema
     {
         /// <summary>
-        /// <b>Die Nummer des Schemaschritts</b> — angemeldet als 235 (Statuskopf); hängt endgültig an 234 (KBP-5,
-        /// Sitzung Dialoge/Cloud), sobald 231–234 auf origin liegen. Vorläufig hängt sie an
-        /// <see cref="BauteilUHerkunftSchema.SCHRITT"/>.
+        /// <b>Die Nummer des Schemaschritts</b> — Schritt 235, hängt an 234 <see cref="BedarfsprofilEingabeartSchema"/> (KBP-5).
         /// </summary>
-        public const int SCHRITT = BauteilUHerkunftSchema.SCHRITT + 1;
+        public const int SCHRITT = BedarfsprofilEingabeartSchema.SCHRITT + 1;
 
         /// <summary>Der zentrale Trägerkatalog.</summary>
         public const string TAB_TRAEGER = "energy_carrier";

@@ -3328,6 +3328,9 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.BkalFaktorName, KiParameterTyp.Zahl,
                                      KiDialogTexte.BkalFaktorErl, einheit: KiDialogTexte.EINHEIT_PROZENT,
                                      leerErlaubt: true, min: 0, max: 100),
+                    new KiDialogFeld("ferien_wie_sonntag", "BetriebskalenderKiSicht.FerienWieSonntag",
+                                     KiDialogTexte.BkalFerienSonntagName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.BkalFerienSonntagErl),
                     new KiDialogFeld("ferien_kuerzen", "BetriebskalenderKiSicht.FerienKuerzen",
                                      KiDialogTexte.BkalKuerzenName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.BkalKuerzenErl)
@@ -4292,7 +4295,7 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kaelte_art", "BedarfsProfileKiSicht.KaelteArt",
                                      KiDialogTexte.KaelteArtName, KiParameterTyp.Wahl,
                                      KiDialogTexte.KaelteArtErl, leerErlaubt: true),
-                    // KBP-3a: die Eingabeart der markierten Kaeltezeile (Jahressumme, Monatswerte, Wochenprofil).
+                    // KBP-3a, KBP-5b: die Eingabeart der markierten Zeile (Kaelte, Prozesswaerme, Brauchwasser; Jahressumme, Monatswerte, Wochenprofil).
                     new KiDialogFeld("eingabeart", "BedarfsProfileKiSicht.Eingabeart",
                                      KiDialogTexte.KbpEingabeartName, KiParameterTyp.Wahl,
                                      KiDialogTexte.KbpEingabeartErl, leerErlaubt: true),
@@ -5855,8 +5858,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Verwaltung „Bauteilaufbauten" — die Satzwahl, vier Kopffelder und das Raster der
-        /// Schichten aus <c>EPOS.UI.Dialoge.Bedarf.BauteilaufbauKiSicht</c>.
+        /// Die Verwaltung „Bauteilaufbauten" — die Satzwahl, sechs Kopffelder, der Fensterteil (fünf Felder),
+        /// das Raster der Schichten und drei Lesewerte des Summenfußes aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.BauteilaufbauKiSicht</c>.
         /// </summary>
         /// <remarks>
         /// Die Schichten sind ein RASTER (<c>Schichten[]</c>, Kennzeichen die Nummer innen = 1):
@@ -5864,6 +5868,11 @@ namespace WindowsFormsApplication1
         /// c_p und der Schalter Luftschicht. Anlegen, Verschieben und Entfernen einer Schicht
         /// bleiben Klicks des Anwenders. Geschrieben wird der Aufbau als EIN Aggregat mit
         /// „Speichern"; die Pruefregeln sind die des Knopfes (<c>BauteilaufbauCtrl.EingabePruefen</c>).
+        /// <para>BK-5: Je Schicht dazu Abschnitt und Flächenanteil einer inhomogenen Schicht (der Anteil gilt
+        /// für alle Schichten des Abschnitts) und die Summe der Anteile an der letzten Schicht einer Ebene
+        /// (nur lesbar); „Abschnitt daneben anlegen" bleibt ein Klick. BK-6: Der Fensterteil (U_g, g-Wert,
+        /// Rahmenanteil, U_f, ψ_g) wirkt nur bei Fenster und Vorhangfassade. U, R'_T und R''_T des
+        /// Summenfußes rechnet der Kern — der Assistent liest sie nur.</para>
         /// </remarks>
         private static KiDialog Bauteilaufbau()
         {
@@ -5890,6 +5899,22 @@ namespace WindowsFormsApplication1
                                      KiParameterTyp.Text, KiDialogTexte.BtaBeschreibungErl, leerErlaubt: true),
                     new KiDialogFeld("quelle", SICHT + "Quelle", KiDialogTexte.BtaQuelleName,
                                      KiParameterTyp.Text, KiDialogTexte.BtaQuelleErl, leerErlaubt: true),
+                    // BK-6: der Fensterteil - nur bei Fenster und Vorhangfassade (Grenzen wie die Zahlenfelder der Maske).
+                    new KiDialogFeld("fenster_ug", SICHT + "FensterUg", KiDialogTexte.BtaFensterUgName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtaFensterUgErl,
+                                     einheit: KiDialogTexte.EINHEIT_W_M2K, leerErlaubt: true, min: 0.0),
+                    new KiDialogFeld("fenster_g", SICHT + "FensterG", KiDialogTexte.BtaFensterGName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtaFensterGErl,
+                                     leerErlaubt: true, min: 0.0, max: 1.0),
+                    new KiDialogFeld("fenster_rahmenanteil", SICHT + "FensterRahmenanteil", KiDialogTexte.BtaFensterRahmenName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtaFensterRahmenErl,
+                                     leerErlaubt: true, min: 0.0, max: 1.0),
+                    new KiDialogFeld("fenster_uf", SICHT + "FensterUf", KiDialogTexte.BtaFensterUfName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtaFensterUfErl,
+                                     einheit: KiDialogTexte.EINHEIT_W_M2K, leerErlaubt: true, min: 0.0),
+                    new KiDialogFeld("fenster_psi_glasrand", SICHT + "FensterPsiGlasrand", KiDialogTexte.BtaFensterPsiName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtaFensterPsiErl,
+                                     einheit: KiDialogTexte.EINHEIT_W_MK, leerErlaubt: true, min: 0.0),
                     new KiDialogFeld("schicht_baustoff", schicht + "Baustoff", KiDialogTexte.BtaSchichtBaustoffName,
                                      KiParameterTyp.Wahl, KiDialogTexte.BtaSchichtBaustoffErl,
                                      leerErlaubt: true, zeilenkennzeichen: NUMMER),
@@ -5916,6 +5941,26 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("schicht_luftschicht", schicht + "IstLuftschicht",
                                      KiDialogTexte.BtaSchichtLuftschichtName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.BtaSchichtLuftschichtErl, zeilenkennzeichen: NUMMER),
+                    // BK-5: der Abschnitt einer inhomogenen Schicht und sein Flächenanteil; die Summe der Ebene nur lesbar.
+                    new KiDialogFeld("schicht_abschnitt", schicht + "Abschnitt", KiDialogTexte.BtaSchichtAbschnittName,
+                                     KiParameterTyp.Ganzzahl, KiDialogTexte.BtaSchichtAbschnittErl,
+                                     leerErlaubt: true, zeilenkennzeichen: NUMMER, min: 1),
+                    new KiDialogFeld("schicht_flaechenanteil", schicht + "Flaechenanteil", KiDialogTexte.BtaSchichtAnteilName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtaSchichtAnteilErl,
+                                     leerErlaubt: true, zeilenkennzeichen: NUMMER, min: 0.0, max: 1.0),
+                    new KiDialogFeld("schicht_ebenensumme", schicht + "Ebenensumme", KiDialogTexte.BtaSchichtEbenensummeName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtaSchichtEbenensummeErl,
+                                     leerErlaubt: true, zeilenkennzeichen: NUMMER, nurLesen: true),
+                    // Der Summenfuß aus dem Kern - nur lesbar.
+                    new KiDialogFeld("summe_u", SICHT + "SummeU", KiDialogTexte.BtaSummeUName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtaSummeUErl,
+                                     einheit: KiDialogTexte.EINHEIT_W_M2K, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("summe_rt_oben", SICHT + "SummeRtOben", KiDialogTexte.BtaRtObenName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtaRtObenErl,
+                                     einheit: KiDialogTexte.EINHEIT_M2K_W, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("summe_rt_unten", SICHT + "SummeRtUnten", KiDialogTexte.BtaRtUntenName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.BtaRtUntenErl,
+                                     einheit: KiDialogTexte.EINHEIT_M2K_W, leerErlaubt: true, nurLesen: true),
                     Ladestandfeld(SICHT)
                 },
                 knoepfe: new[]
@@ -6084,8 +6129,8 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der Bauteildialog (Gebaeudesimulation G3, Welle D2; Stufe G6b W2) — vierzehn Felder aus
-        /// <c>EPOS.UI.Dialoge.Bedarf.BauteilKiSicht</c>.
+        /// Der Bauteildialog (Gebaeudesimulation G3, Welle D2; Stufe G6b W2) — vierzehn Felder und die
+        /// Herkunft des U-Werts zum Lesen (MA-6b) aus <c>EPOS.UI.Dialoge.Bedarf.BauteilKiSicht</c>.
         /// </summary>
         /// <remarks>
         /// Bauteilart, Randbedingung, Nachbarzone, Zuordnung und Aufbau sind WAHLFELDER (Listenplätze
@@ -6141,7 +6186,11 @@ namespace WindowsFormsApplication1
                                      einheit: KiDialogTexte.EINHEIT_W_M2K, leerErlaubt: true,
                                      min: GebaeudeFestwerte.U_MIN, max: GebaeudeFestwerte.U_MAX),
                     new KiDialogFeld("aufbau", SICHT + "Aufbau", KiDialogTexte.BtAufbauName,
-                                     KiParameterTyp.Wahl, KiDialogTexte.BtAufbauErl)
+                                     KiParameterTyp.Wahl, KiDialogTexte.BtAufbauErl),
+                    // MA-6b: die Herkunft des U-Werts, wie das OK sie schriebe - nur lesbar.
+                    new KiDialogFeld("u_herkunft", SICHT + "UHerkunft", KiDialogTexte.BtUHerkunftName,
+                                     KiParameterTyp.Text, KiDialogTexte.BtUHerkunftErl,
+                                     leerErlaubt: true, nurLesen: true)
                 },
                 knoepfe: new[]
                 {

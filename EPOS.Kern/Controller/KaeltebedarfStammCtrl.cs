@@ -79,6 +79,31 @@ namespace WindowsFormsApplication1
             return KaeltebedarfsprofilVorlagenSchema.ArtVorschlag(ColOrNull(dt.Rows[0], KaeltebedarfsprofilVorlagenSchema.SPALTE_ART));
         }
 
+        /// <summary>
+        /// KBP-5a: die Nutzungstage nach Norm eines Katalogsatzes (<c>Tab_Kaeltebedarf_STAMM.Nutzungstage_Norm</c>,
+        /// Schritt <see cref="BedarfsprofilEingabeartSchema.SCHRITT"/>); <c>null</c>, wenn der Satz keine trägt oder der
+        /// Schritt noch nicht steht. Grundlage des Kalendervorschlags (KBP-5b).
+        /// </summary>
+        public static int? Nutzungstage(string szBezeichner)
+        {
+            if (!Da || !BedarfsprofilEingabeartSchema.NutzungstageLesbar()) return null;
+            // Ganze Zeile lesen: Die Spalte entsteht erst im Schemaschritt.
+            DataTable dt = DataRepository.GetDataTable("SELECT * FROM " + TABLE + " WHERE Bezeichner = ?",
+                                                       new DbParam("@bez", szBezeichner ?? ""));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            return BedarfsprofilEingabeartSchema.Nutzungstage(ColOrNull(dt.Rows[0], BedarfsprofilEingabeartSchema.SPALTE_NUTZUNGSTAGE));
+        }
+
+        /// <summary>KBP-5a: die Nutzungstage nach Norm einer PROJEKTKOPIE (<c>Tab_Kaeltebedarf.ID</c>); <c>null</c> = keine.</summary>
+        public static int? ProjektNutzungstage(int idKopie)
+        {
+            if (idKopie <= 0 || !DataRepository.SpalteVorhanden(TABLE_PROJ, BedarfsprofilEingabeartSchema.SPALTE_NUTZUNGSTAGE))
+                return null;
+            DataTable dt = DataRepository.GetDataTable("SELECT * FROM " + TABLE_PROJ + " WHERE ID = ?", new DbParam("@id", idKopie));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            return BedarfsprofilEingabeartSchema.Nutzungstage(ColOrNull(dt.Rows[0], BedarfsprofilEingabeartSchema.SPALTE_NUTZUNGSTAGE));
+        }
+
         public static (double? Vorlauf, double? Ruecklauf) ProjektTemperaturpaar(int idKopie)
         {
             if (idKopie <= 0 || !DataRepository.TabelleVorhanden(TABLE_PROJ)) return (null, null);
@@ -322,6 +347,7 @@ namespace WindowsFormsApplication1
             DataTable dtTyp = string.IsNullOrEmpty(typName) ? null
                 : DataRepository.GetDataTable("SELECT * FROM " + TYP_STAMM + " WHERE Bezeichner = ?", new DbParam("@bez", typName));
             bool artProj = DataRepository.SpalteVorhanden(TABLE_PROJ, KaeltebedarfsprofilVorlagenSchema.SPALTE_ART);
+            bool tageProj = DataRepository.SpalteVorhanden(TABLE_PROJ, BedarfsprofilEingabeartSchema.SPALTE_NUTZUNGSTAGE);
 
             using (DbVorgang v = DataRepository.Vorgang())
             {
@@ -351,6 +377,12 @@ namespace WindowsFormsApplication1
                     {
                         cols.Append(", " + KaeltebedarfsprofilVorlagenSchema.SPALTE_ART); vals.Append(", ?");
                         p.Add(new DbParam("@hart", ColOrNull(h, KaeltebedarfsprofilVorlagenSchema.SPALTE_ART)));
+                    }
+                    // KBP-5a: die Nutzungstage nach Norm reisen ebenso mit der Kopie.
+                    if (tageProj && h.Table.Columns.Contains(BedarfsprofilEingabeartSchema.SPALTE_NUTZUNGSTAGE))
+                    {
+                        cols.Append(", " + BedarfsprofilEingabeartSchema.SPALTE_NUTZUNGSTAGE); vals.Append(", ?");
+                        p.Add(new DbParam("@htage", ColOrNull(h, BedarfsprofilEingabeartSchema.SPALTE_NUTZUNGSTAGE)));
                     }
                     v.Ausfuehren("INSERT INTO " + TABLE_PROJ + " (" + cols + ") VALUES (" + vals + ")", p.ToArray());
 

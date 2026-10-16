@@ -351,6 +351,8 @@ namespace WindowsFormsApplication1
                         AufbauText = a?.Text ?? "",
                         UAufbau = a?.UWert,
                         Herkunft = b.Herkunft,
+                        // MA-6b: die Herkunft des U-Werts nur zum Lesen (Assistent); der Schreibweg leitet sie neu ab.
+                        UHerkunft = b.U_Herkunft,
                         Quellkennung = b.Quellkennung,
                         IdNachbarzone = b.ID_Nachbarzone,
                         TrennflaecheZuordnung = b.Trennflaeche_Zuordnung
@@ -1156,23 +1158,34 @@ namespace WindowsFormsApplication1
 
             var zeilen = new List<BedarfsProfilZeile>();
             foreach (Z_ProjektBrauchwasserModel m in ziel)
-                zeilen.Add(new BedarfsProfilZeile
+            {
+                var z = new BedarfsProfilZeile
                 {
                     IdZ = m.ID_Z, IdStamm = m.ID_Brauchwasser,
                     Name = m.szBezeichner ?? "", Summe = m.Summe,
                     KalenderId = m.ID_Betriebskalender
-                });
+                };
+                // KBP-5a: Eingabeart, Monatsanteile und Wochenprofil der Projektkopie (OE-5).
+                BedarfsprofilEingabeAbbildung.InZeile(z, BedarfsArt.Brauchwasser, projektId, m.Eingabeart,
+                                                      m.Monatsanteile, m.Wochenprofil);
+                zeilen.Add(z);
+            }
 
             Action geaendert = () =>
             {
                 ziel.Clear();
                 foreach (BedarfsProfilZeile z in zeilen)
+                {
+                    // KBP-5a: die Eingabeart immer, Monate und Woche nur nach einer Bearbeitung.
+                    (string eingabeart, double[] monate, double[] woche) = BedarfsprofilEingabeAbbildung.AusZeile(z);
                     ziel.Add(new Z_ProjektBrauchwasserModel
                     {
                         ID_Z = z.IdZ, ID_Projekt = projektId, ID_Brauchwasser = z.IdStamm,
                         szBezeichner = z.Name, Summe = z.Summe,
-                        ID_Betriebskalender = z.KalenderId
+                        ID_Betriebskalender = z.KalenderId,
+                        Eingabeart = eingabeart, Monatsanteile = monate, Wochenprofil = woche
                     });
+                }
             };
 
             return Gebaeudewege.BrauchwasserGaben?.Invoke(projektId, zeilen, geaendert, zapfprofil);

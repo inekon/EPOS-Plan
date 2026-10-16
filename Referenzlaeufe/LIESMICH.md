@@ -810,7 +810,7 @@ lehnt die Prüfung sie benannt ab; `EPOS.Kern.Tests/TwwTyptagVorlageTests` hält
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
 Basen aufräumt, lässt `2026-10-14_R55_KaeltebedarfDezentral`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Katalogpaket_Vorlage_DIN4708`,
-`Typtagpaket_Vorlage_VDI4655`, `Skripte` und `LIESMICH.md`
+`Typtagpaket_Vorlage_VDI4655`, `Messreihen_INEKON`, `Normzahlen`, `Schemakopien`, `Skripte` und `LIESMICH.md`
 stehen.**
 
 Außer der aktuellen liegt hier keine Basis mehr: Die 24 historischen Referenzbasen (7 731
@@ -824,11 +824,11 @@ gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-26_R22_Solarthermie` am 26.09.2026, `2026-09-26_R23_KesselBereitschaft`, `2026-09-27_R24_Heizgrenze` und `2026-09-29_R25_Plattformrand` am 29.09.2026,
 `2026-09-29_R26_Kesselrest`, `2026-09-30_R27_Kesselteillast`, `2026-09-30_R28_Kesselbrennwert` und
 `2026-09-30_R29_Kesseltakten` am 30.09.2026, `2026-09-30_R30_Stromverbraucher`,
-`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026, die Basis R39 (Auslegungsheizlast), die Basis R40 (Erdreichquellen), die Basis R41 (Erdreichprüfung) und die Basis R42 (Vorlaufinterpolation AK3) am 07.10.2026, die Basis R43 (Kälteseite AK3K) am 08.10.2026, die Basis R44 (Kühlkurve), die Basis R45 (Übergabegrenze), die Basis R46 (Gerätegrenzen) und die Basis R47 (Zapffeiertage) am 09.10.2026**
-(64 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026, die Basis R39 (Auslegungsheizlast), die Basis R40 (Erdreichquellen), die Basis R41 (Erdreichprüfung) und die Basis R42 (Vorlaufinterpolation AK3) am 07.10.2026, die Basis R43 (Kälteseite AK3K) am 08.10.2026, die Basis R44 (Kühlkurve), die Basis R45 (Übergabegrenze), die Basis R46 (Gerätegrenzen) und die Basis R47 (Zapffeiertage) am 09.10.2026, die Basis R48 (Gemeinjahr), die Basis R49 (Kältemaschine Teillast) und die Basis R50 (Wochentagsraster) am 10.10.2026, die Basis R51 (freie Kühlung) am 11.10.2026, die Basis R52 (Vorheizen) am 13.10.2026, die Basis R53 (Zapfprofiloptionen) und die Basis R54 (Dachflächen) am 14.10.2026**
+(71 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 64 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 71 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -1448,6 +1448,27 @@ nächste Basis einfriert, nimmt die beiden Schlüssel auf und streicht `--ohne` 
 > Rechenweg liest die Spalte nicht. `integrity_check` ok, `foreign_key_check` leer, außer `Tab_Bauteil` jede Tabelle
 > inhaltsgleich: **108 728 320 Byte, LFS-SHA-256
 > `e6aef7ded55a644cab3d70e1f49fd76f63376e6efd035191a96fcfbad5e08562`**.
+
+> **Nachtrag — Einheit von `DIN4708.p_b` im Testkatalog (16.10.2026, Schemastand 233), Basis R55 unverändert.** Der
+> fiktive Parameter `DIN4708.p_b` trägt die Einheit „P“ wie in `TwwParameterschluessel` statt „Personen“; nachgezogen in
+> `Skripte/tww_testkatalog_fiktiv.py` und darüber gesät (ein zweiter Lauf meldet 0 nachgeführt). Der Zellvergleich aller
+> Tabellen zeigt allein diese Zelle in `Tab_TwwParameter_STAMM`. Die Einheit ist Beschreibung, kein Rechenwert — deshalb
+> kein Neueinfrieren. Die Testdatenbank: **108 728 320 Byte, LFS-SHA-256
+> `6cb9f52c7e14d2d835434e10850374b7a4a549b5e84e70cd8974e4d11ccf9b00`** (auf der Fassung des Saatstands zu 233 gesät). Der Referenzlauf aller siebenunddreißig Projekte
+> gegen R55 bleibt PASS und byte-gleich (1 205 CSV; in `Projekt_1072/aggregate.csv` allein die zwei Schlüssel, die R55
+> nicht führt).
+
+> **Nachtrag — Schema 234 (KBP-5a bis KBP-5d Eingabeart der Bedarfsprofile, 16.10.2026, hängt an 233
+> `BauteilUHerkunftSchema`), Basis R55 unverändert.** `BedarfsprofilEingabeartSchema` (234 =
+> `BauteilUHerkunftSchema.SCHRITT + 1`) legt `Eingabeart` an `Z_Projekt_Prozesswaerme` und `Z_Projekt_Brauchwasser`
+> (Vorgabe `'jahr'`), `Nutzungstage_Norm` an `Tab_Kaeltebedarf_STAMM` und `Tab_Kaeltebedarf` und `Ferien_wie_Sonntag` an
+> `Tab_Betriebskalender` an und sät allein an der Kältevorlage 8 230 Nutzungstage (ihre Prüfsumme neu gebildet). Gehoben
+> aus der Fassung 233 (108 728 320 Byte, `6cb9f52c…`) mit `Werkzeuge/Testdatenbankschema`; der Inhaltsvergleich aller
+> Tabellen zeigt allein die fünf neuen Spalten (Zuordnungen durchweg `'jahr'`, 28 Brauchwasser, 1 Prozesswärme), die
+> Zeile 8 von `Tab_Kaeltebedarf_STAMM` und `Tab_Applikation.SchemaVersion` (189 von 195 Tabellen unberührt, die
+> Kältevorlagen 1–6 bytegleich, die Einheit „P“ von `DIN4708.p_b` erhalten). Die Testdatenbank steht auf **234**
+> (`integrity_check` ok, `foreign_key_check` leer): **108 728 320 Byte, LFS-SHA-256
+> `b2b4e116659076d866bec69d8b25e1443d697e33186550d9562643429e18fbfe`**. Der Referenzlauf der CI-Auswahl gegen R55 bleibt PASS (18 Projekte, 601 CSV byte-gleich).
 
 ### Die Vorgängerbasis R54 (Dachflächen)
 
