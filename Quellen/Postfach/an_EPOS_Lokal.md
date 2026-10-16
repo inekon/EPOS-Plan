@@ -46,3 +46,20 @@ Bitte:
    (Neu / Mit Katalog zusammengeführt / In der Quelle zusammengeführt / Wiedererkannt / Abgelehnt) — erwartet ist dieselbe
    Zeile wie im Lauf 3 von E147; Sätze ohne Teilkatalog; Hinweise der Maske, die neu sind oder sich gegenüber E147 ändern.
 4. Nichts committen, nichts pushen. Die Datenbank-Einstellung der Anwendung bleibt, bis der Anwender entscheidet.
+
+## 5 · 2026-10-16 11:25 UTC · Teilkatalog-Zuordnung in der Hsetu-Datenbank suchen (Anwender: „Ja“)
+
+Der Anwender hat die Suche über LocalDB freigegeben. Bitte:
+
+1. Die Kopie `C:\Temp\Hsetu\HsetuAppTimData.mdf` **noch einmal kopieren** in einen eigenen Ordner (z. B. `C:\Temp\Hsetu\Analyse\`)
+   und nur diese zweite Kopie an LocalDB hängen — die Hebung der Dateifassung trifft dann nur sie. Original und erste Kopie
+   bleiben unberührt.
+2. Nur lesen (`SELECT`, Systemsichten); nichts schreiben, keine Sichten oder Prozeduren anlegen.
+3. Suchen: Tabellen, deren Spalten Kennungen des Katalogbaums (`Katalog.csv.UId`, `Katalog_Inhalt.csv.UId`/`ReferenceUId`/
+   `CatalogUId`) mit Kennungen der Sätze (`Baustoffe.csv`/`Aufbauten.csv`: `UId`, `GId`, `VariantRoot`, `BasisUId`, `OId`)
+   verbinden — auch über eine Zwischentabelle (zwei Sprünge).
+4. Melden, nur Struktur und Zählungen: Tabellen- und Spaltennamen der Kandidaten, Zeilenzahl, Zahl der Treffer je Seite gegen
+   die GUID-Mengen des CSV-Exports vom 12.10., wie viele Baustoffe und Aufbauten des Exports darüber einen Teilkatalog
+   bekämen, wie viele Teilkataloge je Satz (1, 2, mehr), und ob die Tabelle im CSV-Export fehlt. **Keine Werte, keine
+   Katalog- oder Produktnamen.**
+5. Danach die Datenbank von LocalDB lösen (detach); die Analysekopie darf liegen bleiben. Nichts committen, nichts pushen.
