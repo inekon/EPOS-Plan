@@ -471,8 +471,14 @@ namespace WindowsFormsApplication1
         /// <para><b>Wann es keine Beilage gibt</b> — jedes Mal ohne Verlust: das Projekt
         /// ist kein Variantenstand; sein Stamm reist mit (Variantenbaum, die Wahl löst
         /// sich am Ziel von selbst auf); die Variante führt EIGENE Werte (sie hängt nicht
-        /// am Stamm); dem Stamm fehlt eine aktive Zeile (beide rechnen Flat — es ist
-        /// nichts zu übernehmen).</para>
+        /// am Stamm).</para>
+        ///
+        /// <para><b>28b (Anwenderentscheid 16.10.2026):</b> Auch eine nicht aktive
+        /// Stammzeile reist als Beilage mit, und ein Stamm OHNE Zeile hinterlässt eine
+        /// leere Beilage — der Import legt in beiden Fällen eine eigene Zeile mit den
+        /// Stammwerten an (ohne Stammzeile die Vorbelegung, nicht aktiv), damit die
+        /// Variante am Ziel nicht von einem Projekt ohne Photovoltaik ununterscheidbar
+        /// bleibt.</para>
         /// </summary>
         private static List<PvStammMeta> PvStammBeilagenSchreiben(
             ZipArchive zip, List<KeyValuePair<string, int>> imPaket)
@@ -494,7 +500,7 @@ namespace WindowsFormsApplication1
                 PvVerguetungStand stand;
                 try { stand = new ProjektPhotovoltaikCtrl().LiesAufgeloest(kv.Value); }
                 catch { continue; }
-                if (!stand.Uebernommen || !stand.Aktiv) continue;       // eigene Werte bzw. nichts Aktives
+                if (!stand.Uebernommen) continue;                       // eigene Werte
 
                 DataTable pv;
                 try
@@ -504,8 +510,9 @@ namespace WindowsFormsApplication1
                         new DbParam("@p", idStamm));
                 }
                 catch { continue; }
-                if (pv == null || pv.Rows.Count == 0) continue;
+                if (pv == null) continue;
 
+                // 28b: auch ohne Zeile — die leere Beilage sagt „der Stamm führt keine".
                 WriteEntry(zip, "pvstamm/" + beilagen.Count + ".json", RowsToJson(pv));
                 beilagen.Add(new PvStammMeta
                 {
@@ -887,9 +894,14 @@ namespace WindowsFormsApplication1
         ///     zur EIGENEN Zeile der Variante (<c>Uebernahme_Stamm = 0</c>, umgeschlüsselt
         ///     auf die neue Projekt-Id, alle Spalten der Schnittmenge); der Bericht nennt
         ///     es.</description></item>
-        ///   <item><description>Das Paket führt <b>keine</b> Beilage → die Variante bleibt
-        ///     ohne Zeile, und der Bericht nennt den Flat-Pfad. Die Kohärenzprüfung
-        ///     (§ 3.9) wiederholt ihn bei jedem Lauf.</description></item>
+        ///   <item><description>28b: Die Beilage ist <b>leer</b> (der Stamm führte keine
+        ///     Zeile) → die Variante bekommt die Vorbelegung als eigene, nicht aktive
+        ///     Zeile — dieselben Werte, die „eigene Vergütung" ohne Stammzeile vorlegt
+        ///     (<see cref="ProjektPhotovoltaikCtrl.VorlageAusStamm"/>); gerechnet wird wie
+        ///     am Stamm der flache Einspeisesatz.</description></item>
+        ///   <item><description>Das Paket führt <b>keine</b> Beilage (Altpaket) → die
+        ///     Variante bleibt ohne Zeile, und der Bericht nennt den Flat-Pfad. Die
+        ///     Kohärenzprüfung (§ 3.9) wiederholt ihn bei jedem Lauf.</description></item>
         /// </list>
         ///
         /// <para><b>Eine eigene, geltende Zeile bleibt unberührt.</b> Sie hing nie am
@@ -932,10 +944,39 @@ namespace WindowsFormsApplication1
 
             Dictionary<string, JsonElement> zeile = null;
             string stammName = null;
+            bool leereBeilage = false;
             for (int i = 0; beilagen != null && i < beilagen.Count && i < zeilen.Count; i++)
-                if (string.Equals(beilagen[i].projekt ?? "", quellName ?? "", StringComparison.OrdinalIgnoreCase)
-                    && zeilen[i].Count > 0)
-                { zeile = zeilen[i][0]; stammName = beilagen[i].stamm; break; }
+                if (string.Equals(beilagen[i].projekt ?? "", quellName ?? "", StringComparison.OrdinalIgnoreCase))
+                {
+                    stammName = beilagen[i].stamm;
+                    if (zeilen[i].Count > 0) zeile = zeilen[i][0];
+                    else leereBeilage = true;
+                    break;
+                }
+
+            // 28b: Der Stamm führte keine Zeile — die Vorbelegung als eigene, nicht aktive
+            // Zeile (Uebernahme_Stamm = 0), damit die Variante ihre Spur behält.
+            if (zeile == null && leereBeilage)
+            {
+                try
+                {
+                    v.Ausfuehren("DELETE FROM [" + tab + "] WHERE ID_Projekt = ?",
+                                 new DbParam("@p", idProjekt));
+                    ProjektPhotovoltaikModel m = ProjektPhotovoltaikCtrl.Vorbelegung(idProjekt);
+                    m.UebernahmeStamm = false;
+                    ProjektPhotovoltaikCtrl.Einfuegen(v, m);
+                    berichte.Add(string.Format(
+                        T("TRANSFER_PV_BEILAGE",
+                          "Vergütung des Stammprojekts \u201E{0}\u201C als eigene Werte übernommen."),
+                        stammName ?? ""));
+                }
+                catch (Exception ex)
+                {
+                    berichte.Add("Hinweis: Die Vergütung des Stammprojekts konnte nicht " +
+                                 "übernommen werden: " + ex.Message);
+                }
+                return;
+            }
 
             if (zeile == null)
             {
