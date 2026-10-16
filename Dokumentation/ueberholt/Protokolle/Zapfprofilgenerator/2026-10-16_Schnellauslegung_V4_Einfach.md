@@ -20,7 +20,7 @@ Sechs Commits `a7e9ff02e` bis `f54ef607f`.
 
 ## Nachweise
 
-Gate #1101 auf `a000cc6f0` grün (Linux, Exit 0): Tests EPOS.Kern 14 328/0, EPOS.UI 9 562/0, KiKern 553/0, SpeicherEngine 397/0, SpeicherPlanung 27/0, Dokumentationswachen 35/0, ChartProben 225 Hashes gleich, Referenzlauf 37/37 PASS (1045 und 1066 bis 1071 PASS, 1071 unverändert), Testdatenbank byte-gleich. Windows-Schale und `Werkzeuge/Testdatenbankschema` 0 Fehler. Statuszeile #1105.
+Gate #1101 auf `a000cc6f0` grün (Linux, Exit 0): Tests EPOS.Kern 14 328/0, EPOS.UI 9 562/0, KiKern 553/0, SpeicherEngine 397/0, SpeicherPlanung 27/0, Dokumentationswachen 35/0, ChartProben 225 Hashes gleich, Referenzlauf 37/37 PASS (1045 und 1066 bis 1071 PASS, 1071 unverändert), Testdatenbank byte-gleich. Windows-Schale und `Werkzeuge/Testdatenbankschema` 0 Fehler. Statuszeile #1107.
 
 ## Offen
 

@@ -1091,7 +1091,7 @@ vorgeschlagenen Wortlaut, damit ist die frühere Rückfrage an den Anwender erle
 Der Sammel-Upload 1.2.0.11 lief am 14.10.2026 (Seite Brauchwasser-Zapfprofil Revision 1000, Update-Logbuch Revision 1023) vor dem Push von #1096; deshalb fehlen live der berichtigte Absatz `katalog-frei` der Zapfprofil-Seite und der folgende Satz. Quelle der Seite: `Projekte/Wiki/Programm Dokumentation - Brauchwasser-Zapfprofil.wiki`.
 
 - Seit 14.10.2026: Die mitgelieferten Brauchwasser-Nutzungsarten rechnen im Zapfprofil-Dialog in der Stufe „Einfach“ ohne zusätzlichen Katalog. (#1096)
-- Seit 16.10.2026: In der Stufe Einfach empfiehlt die Speicherauslegung im Brauchwasser-Zapfprofil auch ohne externes Katalogpaket einen Speicher-Nenninhalt, gekennzeichnet als Schnellauslegung nach Vorlage V4. (#1105)
+- Seit 16.10.2026: In der Stufe Einfach empfiehlt die Speicherauslegung im Brauchwasser-Zapfprofil auch ohne externes Katalogpaket einen Speicher-Nenninhalt, gekennzeichnet als Schnellauslegung nach Vorlage V4. (#1107)
 
 ## 3 Offene Punkte
 
