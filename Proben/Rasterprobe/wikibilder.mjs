@@ -54,20 +54,21 @@ const BILDER = [
   ['konditionierung', 'Konditionierung', { seite: '/konditionierungsprobe?fall=vorlagen', reiter: 'Konditionierung', hoehe: 2600 }],
   ['zonen', 'Zonen', { seite: '/konditionierungsprobe?fall=projekt', reiter: 'Zonen', hoehe: 1000 }],
   ['zonendialog', 'Zonendialog', { seite: '/konditionierungsprobe?fall=projekt', reiter: 'Zonen', klick: 'Öffnen…', hoehe: 3000 }],
-  // Weitere Dialoge aus den Probeseiten des Wirtes (wahl = der aufgenommene Dialog, bild = was ein Klick oeffnet).
-  ['klimadaten', 'Klimadaten', { seite: '/katalogprobe?maske=klima&zeilen=8&bilder=1', wahl: '.epos-dialog', hoehe: 800 }],
-  ['kaeltebedarf', 'Kaeltebedarf', { seite: '/fensterprobe?fall=kaelteprofile', wahl: '.epos-dialog', hoehe: 800 }],
-  ['betriebskalender', 'Betriebskalender', { seite: '/fensterprobe?fall=kaelteprofile', wahl: '.epos-dialog', klick: 'Betriebskalender', bild: '.epos-ueberlagerung', hoehe: 900 }],
-  ['waermebedarf', 'Waermebedarf', { seite: '/rollbereichprobe?fall=waermebedarf&projekt=2&zeilen=8', wahl: '.epos-dialog', hoehe: 800 }],
-  ['strombedarf', 'Strombedarf', { seite: '/rollbereichprobe?fall=stromganglinie&projekt=2&zeilen=8', wahl: '.epos-dialog', hoehe: 800 }],
-  ['zapfprofil', 'Zapfprofil', { seite: '/katalogprobe?maske=wohnungen', wahl: '.epos-dialog', hoehe: 1400 }],
-  ['baustoffe', 'Baustoffe', { seite: '/katalogprobe?maske=baustoff&zeilen=12', wahl: '.epos-dialog', hoehe: 800 }],
+  // Die zweite Reihe (Beispieldaten in Wirt/Seiten/Wikibild.Weitere.cs). Hohe Dialoge in einem hohen Fenster;
+  // der Betriebskalender steht als eigener Dialog, wie ihn der Knopf "Betriebskalender…" oeffnet.
+  ['klimadaten', 'Klimadaten'],
+  ['kaeltebedarf', 'Kaeltebedarf'],
+  ['betriebskalender', 'Betriebskalender', { seite: '/wikibild?bild=betriebskalender', wahl: '.epos-wikibild .epos-dialog', hoehe: 1300 }],
+  ['waermebedarf', 'Waermebedarf'],
+  ['strombedarf', 'Strombedarf', { seite: '/wikibild?bild=strombedarf', wahl: '.epos-wikibild .epos-dialog', zeile: ['.epos-projektzeile', 'Messung Bürogebäude'], breite: 1400, hoehe: 800 }],
+  ['zapfprofil', 'Zapfprofil', { seite: '/wikibild?bild=zapfprofil', wahl: '.epos-wikibild .epos-dialog', hoehe: 1500 }],
+  ['baustoffe', 'Baustoffe'],
 ];
 
 // Bei diesen Bildern steht der Bereich "Gewaehlter Satz" aufgeklappt - die Wiki-Seite
 // beschreibt seine Felder.
-const BREIT = new Set(['brauchwasser', 'prozesswaerme', 'waermepumpe', 'stromspeicher']);
-const SATZ_OFFEN = new Set(['heizkessel', 'bhkw', 'solarkollektoren', 'brauchwasser', 'prozesswaerme']);
+const BREIT = new Set(['brauchwasser', 'prozesswaerme', 'waermepumpe', 'stromspeicher', 'kaeltebedarf', 'waermebedarf', 'strombedarf']);
+const SATZ_OFFEN = new Set(['heizkessel', 'bhkw', 'solarkollektoren', 'brauchwasser', 'prozesswaerme', 'kaeltebedarf', 'waermebedarf']);
 
 if (!ZIEL) {
   console.error('Aufruf: node wikibilder.mjs --ziel <ordner> [--url <adresse>] [--nur <name>]');
