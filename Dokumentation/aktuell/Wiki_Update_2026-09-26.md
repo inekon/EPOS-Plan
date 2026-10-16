@@ -402,7 +402,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - 13.10.2026: Der Kostendialog und die Kostenseite gleichen die Kosten einer Anlage mit dem zentralen Kostenkatalog ab („Mit dem Kostenkatalog abgleichen…“). (#1079)
 - 13.10.2026: Arbeits-, Grund- und Leistungspreis eines Brennstoffs stehen allein in der Karte seines Energieträgers. (#1080)
 - 14.10.2026: Die Gerätekataloge führen keine Kostenfelder mehr; die Kosten eines Geräts stehen allein in der Kostenverwaltung, die Maske zeigt die Gerätekosten bzw. den Kostensatz aus der Satzvorlage des Katalogsatzes. (#1095)
-- 16.10.2026: Auch die Kosten des Stromspeichers stehen wie bei den übrigen Gewerken allein in der Kostenverwaltung; der Katalogsatz führt keine Kostenfelder mehr. (#1097)
+- 16.10.2026: Auch die Kosten des Stromspeichers stehen wie bei den übrigen Gewerken allein in der Kostenverwaltung; der Katalogsatz führt keine Kostenfelder mehr. (#1100)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 
