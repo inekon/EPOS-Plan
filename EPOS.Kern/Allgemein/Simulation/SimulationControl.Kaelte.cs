@@ -543,7 +543,8 @@ namespace WindowsFormsApplication1
                                   k.Bezeichner, r.Bezeichner));
                 return;
             }
-            r.WasserpreisEurM3 = a.WasserpreisEurM3;
+            // Der Wasserpreis steht nicht mehr an der Anlage (WasserpreisTraegerkarteSchema): Er kommt mit KB-7b aus der
+            // Traegerkarte (Traeger mit Preismodell WATER). Bis dahin bleibt er leer - der Hinweis nennt nur die Menge.
             k.RueckkuehlwerkSetzen(r);
             // K-F3 (Entwurf 5.5): Teil-Freikühlung in Reihe - die Auslegungsspreizung der Kühlübergabe, sonst die Vorgabe, benannt.
             if (r.Reihe)

@@ -1088,7 +1088,13 @@ namespace WindowsFormsApplication1
         /// Katalog und Projektkopie (<see cref="StromspeicherKostenSchema"/>). <b>Ergebnisgleich:</b> Der Rechenweg
         /// liest dieselben Sätze aus Position und Satzvorlage. <b>Neue Katalogfassung:</b> Die Prüfsumme jedes
         /// Stromspeichers ändert sich, der Schritt bildet sie für unveränderte Sätze neu.
-        public const int Zielversion = StromspeicherKostenSchema.SCHRITT;
+        /// Danach, mit dem WASSERPREIS IN DER TRÄGERKARTE (KB-7a), steht das Ziel auf
+        /// <see cref="WasserpreisTraegerkarteSchema.SCHRITT"/>: Träger „Wasser“ (Preismodell <c>WATER</c>, Einheit m³),
+        /// Übernahme der Anlagenpreise in <c>energy_project_settings</c> (je Projekt die Anlage mit der kleinsten ID,
+        /// ein gepflegter Kartenpreis bleibt), dann der Entfall von <c>Tab_Energieanlagen.Wasserpreis_EUR_m3</c>
+        /// (<see cref="WasserpreisTraegerkarteSchema"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt rechnet ein
+        /// Rückkühlwerk; keine neue Katalogfassung.
+        public const int Zielversion = WasserpreisTraegerkarteSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

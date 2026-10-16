@@ -22881,6 +22881,12 @@ Möchten Sie das zulassen?</value>
   <data name="TRANSFER_ANHEBUNG_FEHLER" xml:space="preserve">
     <value>Das Paket (Stand {0}) ließ sich nicht auf Stand {1} heben — Schritt {2}: {3}. Die Datenbank ist unverändert.</value>
   </data>
+  <data name="TRANSFER_ANHEBUNG_WASSERPREIS" xml:space="preserve">
+    <value>Wasserpreis(e) der Anlagen in die Trägerkarte „Wasser“ übernommen</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_WASSERPREIS_OFFEN" xml:space="preserve">
+    <value>Wasserpreis {0} EUR/m³ der Anlage {1} nicht übernommen — bitte in der Trägerkarte „Wasser“ setzen</value>
+  </data>
   <data name="TRANSFER_ANHEBUNG_S67" xml:space="preserve">
     <value>Projekteinstellung(en) ohne BHKW-Leistungsuntergrenze auf {0} % gesetzt</value>
   </data>

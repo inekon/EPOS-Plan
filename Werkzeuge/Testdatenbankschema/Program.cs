@@ -3406,7 +3406,8 @@ namespace Testdatenbankschema
             }
 
             // ---- Schritt RueckkuehlwerkSchema.SCHRITT (K-F1): Rueckkuehlwerk als eigenes Glied - Katalog und Projektkopie
-            //      (leer, keine Saat), ID_Rueckkuehlwerk und Wasserpreis_EUR_m3 an Tab_Energieanlagen, sechs Kennzahlen an
+            //      (leer, keine Saat), ID_Rueckkuehlwerk an Tab_Energieanlagen (der Wasserpreis steht in der
+            //      Traegerkarte, WasserpreisTraegerkarteSchema), sechs Kennzahlen an
             //      Tab_ErgebnisKaeltemaschine. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_Rueckkuehlwerk.
             //
             //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest die Tabellen oder Spalten, jede Zeile steht auf NULL.
@@ -3714,6 +3715,24 @@ namespace Testdatenbankschema
                 foreach (string zeile in berichtKb5)
                     Console.WriteLine("Schritt " + nrKb5 + " - " + zeile + ".");
                 Console.WriteLine("Schritt " + nrKb5 + " - vollstaendig: " + StromspeicherKostenSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt WasserpreisTraegerkarteSchema.SCHRITT (KB-7a): Traeger Wasser (WATER, m3), Uebernahme der
+            //      Anlagenpreise in energy_project_settings, Entfall von Tab_Energieanlagen.Wasserpreis_EUR_m3. Aus
+            //      DERSELBEN Quelle wie SchemaMigration.Schritt_WasserpreisTraegerkarte. Wiederholbar, ergebnisneutral.
+            string nrKb7 = WasserpreisTraegerkarteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKb7 + " - Wasserpreis in der Traegerkarte: " +
+                              (WasserpreisTraegerkarteSchema.Vollstaendig() ? "steht bereits" : "offen") +
+                              " (" + WasserpreisTraegerkarteSchema.Offen() + " Teil(e) offen).");
+            if (!trocken)
+            {
+                var berichtKb7 = new List<string>();
+                angelegt += WasserpreisTraegerkarteSchema.Ausfuehren(berichtKb7);
+                foreach (string zeile in berichtKb7)
+                    Console.WriteLine("Schritt " + nrKb7 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKb7 + " - vollstaendig: " + WasserpreisTraegerkarteSchema.Vollstaendig() +
                                   " (erwartet True).");
             }
 

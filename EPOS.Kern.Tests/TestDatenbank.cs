@@ -1023,8 +1023,8 @@ namespace EPOS.Kern.Tests
                 // Schritt KaeltebedarfSchema.SCHRITT (K1): Kaeltebedarfsprofile, Typkatalog, Zuordnung mit Deckungsart,
                 // Deckungsspalten an Z_ProjektWaermebedarf ('zentral'), Saat der sechs Typsaetze. Wiederholbar.
                 KaeltebedarfSchema.Ausfuehren(null);
-                // Schritt RueckkuehlwerkSchema.SCHRITT (K-F1): Katalog und Projektkopie des Rueckkuehlwerks, Verweis und
-                // Wasserpreis an der Anlage, Kennzahlen am Ergebnis der Kaeltemaschine, leer, reines DDL. Wiederholbar.
+                // Schritt RueckkuehlwerkSchema.SCHRITT (K-F1): Katalog und Projektkopie des Rueckkuehlwerks, Verweis an der
+                // Anlage, Kennzahlen am Ergebnis der Kaeltemaschine, leer, reines DDL. Wiederholbar.
                 RueckkuehlwerkSchema.Ausfuehren(null);
                 // Schritt VorheizenSchema.SCHRITT (AH-V4): sieben Einstellungsspalten, Vorheizzeit der Zone, achtzehn
                 // Ergebnisspalten je Gebaeude und Zone, leer, reines DDL. Wiederholbar.
@@ -1071,6 +1071,9 @@ namespace EPOS.Kern.Tests
                 // Schritt StromspeicherKostenSchema.SCHRITT (KB-5): Sicherheitslauf der Saat und Entfall der vier
                 // Kostenspalten des Stromspeichers. Wiederholbar, ergebnisgleich.
                 StromspeicherKostenSchema.Ausfuehren(null);
+                // Schritt WasserpreisTraegerkarteSchema.SCHRITT (KB-7a): Traeger Wasser, Uebernahme der Anlagenpreise in
+                // die Traegerkarte, Entfall von Wasserpreis_EUR_m3. Wiederholbar, ergebnisneutral.
+                WasserpreisTraegerkarteSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

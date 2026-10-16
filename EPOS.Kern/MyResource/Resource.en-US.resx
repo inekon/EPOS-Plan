@@ -22874,6 +22874,12 @@ Do you want to allow this?</value>
   <data name="TRANSFER_ANHEBUNG_FEHLER" xml:space="preserve">
     <value>The package (version {0}) could not be upgraded to version {1} — step {2}: {3}. The database is unchanged.</value>
   </data>
+  <data name="TRANSFER_ANHEBUNG_WASSERPREIS" xml:space="preserve">
+    <value>water price(s) of the systems transferred to the “Water” carrier card</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_WASSERPREIS_OFFEN" xml:space="preserve">
+    <value>Water price {0} EUR/m³ of system {1} not transferred — please set it in the “Water” carrier card</value>
+  </data>
   <data name="TRANSFER_ANHEBUNG_S67" xml:space="preserve">
     <value>Project setting(s) without a CHP minimum output set to {0} %</value>
   </data>

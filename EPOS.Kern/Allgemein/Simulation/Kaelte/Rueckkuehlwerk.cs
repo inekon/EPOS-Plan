@@ -156,7 +156,7 @@ namespace WindowsFormsApplication1
         /// <summary>Gepflegter Driftanteil; <c>null</c> = Vorgabe der Bauart.</summary>
         public double? DriftAnteilGepflegt;
 
-        /// <summary>Wasserpreis der Anlagenzeile [€/m³] (<c>Wasserpreis_EUR_m3</c>); <c>null</c> = keine Wasserkosten.</summary>
+        /// <summary>Wasserpreis [€/m³] aus der Trägerkarte (Träger mit Preismodell <c>WATER</c>); <c>null</c> = keine Wasserkosten.</summary>
         public double? WasserpreisEurM3;
 
         private readonly List<string> _nichtGerechnet = new List<string>();

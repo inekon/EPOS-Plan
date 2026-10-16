@@ -131233,6 +131233,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wasserpreis(e) der Anlagen in die Trägerkarte „Wasser“ übernommen ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_WASSERPREIS {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_WASSERPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wasserpreis {0} EUR/m³ der Anlage {1} nicht übernommen — bitte in der Trägerkarte „Wasser“ setzen ähnelt.
+        /// </summary>
+        public static string TRANSFER_ANHEBUNG_WASSERPREIS_OFFEN {
+            get {
+                return ResourceManager.GetString("TRANSFER_ANHEBUNG_WASSERPREIS_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ferienzeitraum/-räume der Zonen in die Liste der Zonenferien übertragen ähnelt.
         /// </summary>
         public static string TRANSFER_ANHEBUNG_ZONENFERIEN {

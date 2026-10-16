@@ -30,7 +30,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(229, StromspeicherKostenSchema.SCHRITT);
             Assert.Equal(GeraetekostenEntfallSchema.SCHRITT + 1, StromspeicherKostenSchema.SCHRITT);
-            Assert.Equal(StromspeicherKostenSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= StromspeicherKostenSchema.SCHRITT);
             Assert.Contains(Paketanhebung.Stufen,
                             s => s.Nr == StromspeicherKostenSchema.SCHRITT && s.Wirkung == Paketanhebung.Art.Ddl);
         }
