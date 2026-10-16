@@ -1110,6 +1110,8 @@ namespace WindowsFormsApplication1
         /// Jede Zuordnung rechnet mit Eingabeart 'jahr', die Nutzungstage liest kein Rechenweg. Das Ziel ist das Ende der Kette;
         /// umgehängt wird allein am Vorgänger <see cref="BauteilUHerkunftSchema.SCHRITT"/>.
         /// </summary>
+        // KETTE: KlimaRohwerteSchema (KD-4) ist auf 238 GEPARKT; das Ziel wandert erst dorthin, wenn 235 bis 237 in der
+        // Kette stehen und der Schritt umgehaengt ist (BauteilStrahlungSchema.SCHRITT + 1).
         public const int Zielversion = BedarfsprofilEingabeartSchema.SCHRITT;
 
         /// <summary>

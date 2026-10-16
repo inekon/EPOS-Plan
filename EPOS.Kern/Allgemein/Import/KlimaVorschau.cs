@@ -169,6 +169,12 @@ namespace WindowsFormsApplication1
     {
         public KlimaParameter Parameter;
         public KlimaParameterStand Stand;
+
+        /// <summary>
+        /// Wird die Größe beim Import gespeichert (KD-4)? Als Rechenspalte (<c>Tab_Solar_STAMM</c>) oder, sobald die
+        /// Rohtabelle steht, als Rohwert. Eine Größe, die die Quelle nicht führt, wird nie gespeichert.
+        /// </summary>
+        public bool Gespeichert;
     }
 
     /// <summary>
@@ -184,7 +190,8 @@ namespace WindowsFormsApplication1
         /// der Satz aber keinen einzigen Wert, steht sie auf <see cref="KlimaParameterStand.Fehlt"/>.
         /// </summary>
         public static IReadOnlyList<KlimaParameterEintrag> Fuer(KlimaQuelle quelle,
-                                                                 IReadOnlyList<TmyHourlyData> stunden = null)
+                                                                 IReadOnlyList<TmyHourlyData> stunden = null,
+                                                                 bool rohtabelle = false)
         {
             var liste = new List<KlimaParameterEintrag>();
             foreach (KlimaParameter p in Enum.GetValues(typeof(KlimaParameter)))
@@ -194,9 +201,35 @@ namespace WindowsFormsApplication1
                     !WertVorhanden(p, stunden))
                     stand = KlimaParameterStand.Fehlt;
 
-                liste.Add(new KlimaParameterEintrag { Parameter = p, Stand = stand });
+                liste.Add(new KlimaParameterEintrag
+                {
+                    Parameter = p,
+                    Stand = stand,
+                    Gespeichert = stand != KlimaParameterStand.Fehlt && (Rechenspalte(p) || rohtabelle)
+                });
             }
             return liste;
+        }
+
+        /// <summary>
+        /// Hat die Größe eine Rechenspalte in <c>Tab_Solar(_STAMM)</c>? Die übrigen — Direktstrahlung horizontal,
+        /// Luftdruck, Wind, Wasserdampfgehalt, Ausstrahlung, Qualitätskennung — gibt es nur als Rohwert (KD-4).
+        /// </summary>
+        public static bool Rechenspalte(KlimaParameter p)
+        {
+            switch (p)
+            {
+                case KlimaParameter.Lufttemperatur:
+                case KlimaParameter.Luftfeuchte:
+                case KlimaParameter.Globalstrahlung:
+                case KlimaParameter.DirektstrahlungNormal:
+                case KlimaParameter.Diffusstrahlung:
+                case KlimaParameter.Gegenstrahlung:
+                case KlimaParameter.Bedeckungsgrad:
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         /// <summary>Der Stand dem FORMAT der Quelle nach (Konzept § 2).</summary>

@@ -491,6 +491,9 @@ namespace WindowsFormsApplication1
             // der Schritt legt die Spalten an (Vorgabe 'jahr').
             new Stufe(BedarfsprofilEingabeartSchema.SCHRITT, Art.Ddl,
                       "Eingabeart an Prozesswärme und Brauchwasser, Nutzungstage nach Norm an den Kältevorlagen (KBP-5a)"),
+            // KD-4 (KlimaRohwerteSchema), KETTE: GEPARKT auf 238 - die Stufe folgt mit dem Umhaengen hinter 237:
+            //   new Stufe(KlimaRohwerteSchema.SCHRITT, Art.Ddl,
+            //             "Rohwerte des Klimaimports und Herkunft der Klimaregion (KD-4)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

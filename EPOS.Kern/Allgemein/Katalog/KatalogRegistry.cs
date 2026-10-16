@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -375,7 +376,11 @@ namespace WindowsFormsApplication1
                 Tabelle = "Tab_Klimaregion_STAMM",
                 IdSpalte = "ID_Klimaregion",
                 NamensSpalte = "Name",
-                AusschlussSpalten = new[] { "Details" },
+                // KD-4: Die Herkunftsspalten (Standorthoehe, Bezugspunkt, Ausfuehrung, Zeitbezug, Rohdaten) sind wie
+                // Details ein Vermerk und kein Vergleichsmerkmal; die Rohtabelle ist kein Datenblock (nur Export).
+                AusschlussSpalten = new[] { "Details" }
+                    .Concat(KlimaRohwerteSchema.REGIONSSPALTEN.Select(s => s.Spalte))
+                    .Concat(KlimaRohwerteSchema.KATALOGSPALTEN.Select(s => s.Spalte)).ToArray(),
                 Datenbloecke = new[]
                 {
                     new KatalogDatenblock

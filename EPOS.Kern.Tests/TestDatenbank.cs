@@ -1087,6 +1087,10 @@ namespace EPOS.Kern.Tests
                 // Brauchwasser, Nutzungstage nach Norm an den Kaeltevorlagen (Saat Vorlage 8), Ferien wie Sonntag am
                 // Betriebskalender. Wiederholbar, ergebnisneutral.
                 BedarfsprofilEingabeartSchema.Ausfuehren(null);
+                // Schritt KlimaRohwerteSchema.SCHRITT (KD-4, GEPARKT auf 238): Tab_Klimastunde_STAMM (leer) und die
+                // Herkunftsspalten der Klimaregion. Wiederholbar, ergebnisneutral.
+                // KETTE: steht hinter 235 bis 237, sobald diese hier eingetragen sind.
+                KlimaRohwerteSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

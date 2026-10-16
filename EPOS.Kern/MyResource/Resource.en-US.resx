@@ -56785,5 +56785,14 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="KI_DLG_KLIMA_HOEHE_ERL" xml:space="preserve">
     <value>The altitude of the site above sea level, in metres. It enters the preview: the altitude difference to the reference point decides the note "not typical for the site". Empty = unknown; for PVGIS and a TRY file with header data it comes from the source.</value>
   </data>
+  <data name="KLIMA_TRY_ROHWERTE_GESPEICHERT" xml:space="preserve">
+    <value>all fields stored as raw values</value>
+  </data>
+  <data name="KLIMA_VK_GESPEICHERT" xml:space="preserve">
+    <value>stored</value>
+  </data>
+  <data name="KLIMA_VK_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>not stored</value>
+  </data>
 </root>
 

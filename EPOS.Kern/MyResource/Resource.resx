@@ -56792,5 +56792,14 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KI_DLG_KLIMA_HOEHE_ERL" xml:space="preserve">
     <value>Die Höhe des Standorts über dem Meer, in Metern. Sie geht in die Vorschau ein: Der Höhenunterschied zum Bezugspunkt entscheidet über den Hinweis „nicht ortstypisch“. Leer = unbekannt; bei PVGIS und einer TRY-Datei mit Kopfangabe kommt sie aus der Quelle.</value>
   </data>
+  <data name="KLIMA_TRY_ROHWERTE_GESPEICHERT" xml:space="preserve">
+    <value>alle Felder als Rohwerte gespeichert</value>
+  </data>
+  <data name="KLIMA_VK_GESPEICHERT" xml:space="preserve">
+    <value>wird gespeichert</value>
+  </data>
+  <data name="KLIMA_VK_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>wird nicht gespeichert</value>
+  </data>
 </root>
 

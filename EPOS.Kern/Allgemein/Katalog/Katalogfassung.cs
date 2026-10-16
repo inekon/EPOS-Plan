@@ -604,7 +604,9 @@ namespace WindowsFormsApplication1
         private static IReadOnlyDictionary<string, string> AusnahmenBauen()
         {
             var d = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (string t in new[] { "Tab_Klimaregion_STAMM", "Tab_Klimadaten_STAMM", "Tab_Solar_STAMM" })
+            // KD-4: die Rohtabelle der Klimaregion gehoert zum Klimakatalog (gleicher Grund).
+            foreach (string t in new[] { "Tab_Klimaregion_STAMM", "Tab_Klimadaten_STAMM", "Tab_Solar_STAMM",
+                                         KlimaRohwerteSchema.TAB_ROH })
                 d[t] = GRUND_KLIMA;
             foreach (string t in new[]
                      {

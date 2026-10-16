@@ -84054,6 +84054,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die alle Felder als Rohwerte gespeichert ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_ROHWERTE_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_ROHWERTE_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zeile {0}: erwartet werden {1} Spalten, gelesen wurden {2}. ähnelt.
         /// </summary>
         public static string KLIMA_TRY_SPALTENZAHL {
@@ -84369,6 +84378,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wird gespeichert ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Höhe ähnelt.
         /// </summary>
         public static string KLIMA_VK_HOEHE {
@@ -84446,6 +84464,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KLIMA_VK_NAME {
             get {
                 return ResourceManager.GetString("KLIMA_VK_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wird nicht gespeichert ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_NICHT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_NICHT_GESPEICHERT", resourceCulture);
             }
         }
         
