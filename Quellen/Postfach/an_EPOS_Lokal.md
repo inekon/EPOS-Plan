@@ -130,3 +130,31 @@ Reihenfolge:
    Abschnitten, Sätze mit Teilkatalog in der Quelle-Angabe, Aufbauten mit Absorptions-/Emissionsgrad = 0 erwartet).
 9. Danach darf der Anwender EPOS-Plan wieder starten. Nichts committen, nichts pushen; nur Zählungen, keine Werte, keine Namen.
    Bei einem Fehler in Schritt 4–7: Datenbank aus der Sicherung zurückspielen und melden.
+
+## 9 · 2026-10-16 20:05 UTC · Probe N4 unter Windows (obere Raumtemperatur, Feiertagsverweis)
+
+Der Anwender hat beauftragt: Die Probe N4 läuft bei dir ohne Bildschirm; er selbst prüft danach nur die Vorschauzeile im
+Importdialog. Gegenstand (Protokoll `Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-16_N4_Austausch_Nachzuege.md`):
+die obere Raumtemperatur des Gebäudes (`Tab_Gebaeude.Maximaleraumtemperatur`, Schlüssel `Gebaeude_Maximaleraumtemperatur`) und
+der Verweis einer Feiertagsperiode auf eine benannte Woche (`Feiertagswoche_<n>`) im Rundlauf über gbXML und IFC.
+
+**Nur auf einer Kopie der Testdatenbank arbeiten** — `Kenndaten.sqlite` des Anwenders bleibt unberührt.
+
+1. Klon per Fast-Forward auf `origin/ios_migration_september` (mindestens `d772afc80`), Bau wie gewohnt (`-p:OutDir` außerhalb,
+   falls EPOS-Plan läuft).
+2. **Tests unter Windows:** `dotnet test EPOS.Kern.Tests/EPOS.Kern.Tests.csproj -c Release --filter "FullyQualifiedName~RestdatenRundlaufTests|FullyQualifiedName~GebaeudeExportAblaufTests|FullyQualifiedName~GebaeudeImport" -- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2`
+   — Zahl bestanden/rot melden (bei Rot Testname und erste Zeile der Meldung).
+3. **Dateiprobe:** `Referenzlaeufe\Kenndaten_Test.sqlite` nach `C:\Temp\N4\Kenndaten_N4.sqlite` kopieren und nur diese Kopie benutzen
+   (`DataRepository.PfadUeberschreibung`). Im Projekt **1045**: am Gebäude eine obere Raumtemperatur von **26 °C** setzen und prüfen,
+   dass eine Feiertagsperiode einer Zone auf eine benannte Woche verweist (so wie in `RestdatenRundlaufTests`, Projekt 1045; fehlt
+   der Verweis, ihn auf dieselbe Weise setzen wie der Test). Dann über den Kernweg des Exports (`GebaeudeExportAblauf` bzw. die
+   Hülle, wie der Dialog) das Gebäude als **gbXML** und als **IFC** nach `C:\Temp\N4\` schreiben.
+4. Beide Dateien über den Kernweg des Imports (`GebaeudeImportCtrl`, wie der Importdialog) in die Kopie einlesen, erst die Vorschau,
+   dann die Übernahme in ein neues Gebäude. Melden je Format:
+   - steht die obere Raumtemperatur in der Vorschau (Gruppe Sollwerte) und nach der Übernahme mit 26 °C am Gebäude?
+   - verweist die Feiertagsperiode nach der Übernahme auf die benannte Woche (nicht auf eine eingebettete Kopie)?
+   - Hinweise oder Verluste, die der Import nennt (nur Anzahl und Art).
+5. Die beiden Exportdateien in `C:\Temp\N4\` **liegen lassen** — der Anwender liest eine davon im Gebäudeimport ein, um die
+   Vorschauzeile „Maximale Raumtemperatur“ anzusehen (Abbruch vor der Übernahme). Melde die Dateinamen.
+6. Nichts committen, nichts pushen. Nur Zählungen und Ja/Nein, keine Werte aus der Datenbank des Anwenders (die Testdatenbank ist
+   neutral; ihre Werte dürfen genannt werden).
