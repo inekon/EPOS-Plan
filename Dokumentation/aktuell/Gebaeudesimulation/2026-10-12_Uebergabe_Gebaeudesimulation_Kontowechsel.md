@@ -88,6 +88,7 @@ Festlegungen, die Folgewellen kennen müssen:
 7. Zweiter Importlauf des Bauteilkatalogs: erledigt (E147/E148); Vorschau BK-7b/BK-8/BK-8b über das Postfach.
 8. N7 (#1153): erledigt — die Kalender der Zonen aus gbXML und IFC kommen auch ohne gespeicherten Zonenplan an; gbXML trägt je Wochenplan nur einen Feiertagstyp (Grenze in der Exportvorschau und im Wiki „Datenexport“); Testklasse `GebaeudeImportZonenkalenderDialogwegTests` ([Protokoll N7](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-16_N7_Import_Zonenkalender.md)).
 9. Testschutz (#1154): erledigt — `EPOS.Kern.Tests` sieht nie die Anwenderdatenbank des Rechners (Modulinitialisierer `OhneAnwenderdatenbank.cs`, Wache `OhneAnwenderdatenbankTests`).
+10. N8 (#1161): erledigt — der Einzonenweg übernimmt den gemeinsamen Kalender der Räume (E160), die Regel X1 steht für gbXML mit Zonen zur Wahl und die Einzonenwarnung steht in der Meldungsliste (E161); Testklasse `GebaeudeImportZonenkalenderDialogwegTests` ([Protokoll N8](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-17_N8_Einzone_Zonenregel.md)).
 
 ## 5. Offen beim Anwender
 
@@ -97,7 +98,8 @@ Festlegungen, die Folgewellen kennen müssen:
 - Windows-Sichtabnahme N5 (A-N5-1 bis A-N5-4, Protokoll N5, Abschnitt „Sichtabnahme Windows“).
 - Anwenderprobe N4 unter Windows: Export eines Gebäudes mit Feiertagsverweis und oberer Raumtemperatur, Wiedereinlesen im Importdialog (Zeile „Maximale Raumtemperatur“).
   - Ergebnis der Windows-Probe: die obere Raumtemperatur reist; die Zonenkalender fehlten auf dem Dialogweg, behoben mit N7 (#1153). Die Probe wird über EPOS Lokal wiederholt.
-  - Offen: ob der gbXML-Export die Zonenzuordnung der Räume trägt, die die Zonenregel „nach Zone“ braucht; der Dialog bot sie für eine von EPOS-Plan geschriebene gbXML-Datei nicht an.
+  - Erledigt mit N8 (#1161): Die Regel X1 und der Einzonenweg mit Kalender sind behoben, die Meldungsliste trägt die Einzonenwarnung.
+  - Offen: Wiederholung der Windows-Probe (Einzonenweg beider Formate, X1 für eigene gbXML, Meldungsliste) durch EPOS Lokal (Postfach 11).
 - Wiki-Upload nur auf Zuruf (E144).
 
 Alle Entscheide des Anwenders vom 14.10.2026 (E144 bis E149) stehen mit Wortlaut im Register der Statusdatei Gebäudesimulation.
