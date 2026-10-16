@@ -266,6 +266,9 @@ namespace WindowsFormsApplication1
             {"Tab_SolarganglinieDaten","ID_Ganglinie IN (SELECT ID FROM Tab_Solarganglinie WHERE ID_Projekt = {0})"},
             {"Tab_PvGanglinieDaten",   "ID_Ganglinie IN (SELECT ID FROM Tab_PvGanglinie WHERE ID_Projekt = {0})"},
             {"Tab_Stromverbrauchertyp","ID_Stromverbraucher IN (SELECT ID FROM Tab_Stromverbraucher WHERE ID_Projekt = {0})"},
+            // KBP-4a: Die Matrixzelle traegt zwei Fremdschluessel auf Plantabellen (Typtag und Projektkopie); gefiltert wird
+            // ausdruecklich ueber die Projektkopie, versetzt werden beide (FK_MAP).
+            {KaeltetyptagSchema.TAB_MATRIX, "ID_Kaeltebedarf IN (SELECT ID FROM Tab_Kaeltebedarf WHERE ID_Projekt = {0})"},
 
             // S1 (Migrationsschritt 50): Die Senkenliste und der Parallelverbund
             // haengen an der ANLAGE und fuehren bewusst kein eigenes ID_Projekt.
