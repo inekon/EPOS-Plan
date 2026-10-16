@@ -10320,7 +10320,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wählen Sie die Datei Baustoffe.csv des CSV-Exports; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv und Basis_Auszug.csv liegen daneben, Katalog.csv und Katalog_Inhalt.csv ergänzen die Teilkataloge. Liegt Baustoffe.csv im Unterordner Export, genügt der Ordner darüber. Die Vorschau schreibt nichts. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wählen Sie die Datei Baustoffe.csv des CSV-Exports; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv und Basis_Auszug.csv liegen daneben, Katalog.csv und Katalog_Zuordnung.csv ergänzen die Teilkataloge (fehlt Katalog_Zuordnung.csv, gilt Katalog_Inhalt.csv). Liegt Baustoffe.csv im Unterordner Export, genügt der Ordner darüber. Die Vorschau schreibt nichts. ähnelt.
         /// </summary>
         public static string BKI_HINWEIS {
             get {
@@ -10473,7 +10473,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Teilkataloge: {0}; die Quelle nennt sie an {1} Baustoffen und {2} Aufbauten. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teilkataloge: {0} von {1} der Quelle, zugeordnet über {2}; die Quelle nennt sie an {3} Baustoffen und {4} Aufbauten, zwei oder mehr an {5} Baustoffen und {6} Aufbauten; ohne Teilkatalog bleiben {7} Baustoffe und {8} Aufbauten. ähnelt.
         /// </summary>
         public static string BKI_TEILKATALOGE {
             get {

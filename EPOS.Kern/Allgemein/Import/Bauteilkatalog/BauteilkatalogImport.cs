@@ -81,6 +81,18 @@ namespace WindowsFormsApplication1
         public int BaustoffeMitTeilkatalog { get; internal set; }
         /// <summary>Geplante Aufbauten mit Teilkatalog in der Quelle (BK-7).</summary>
         public int AufbautenMitTeilkatalog { get; internal set; }
+        /// <summary>Die Teilkataloge mit Kennung und Name in <c>Katalog.csv</c> (BK-7b).</summary>
+        public int TeilkatalogeInQuelle { get; internal set; }
+        /// <summary>Wahr, wenn die Teilkataloge aus <c>Katalog_Zuordnung.csv</c> stammen, sonst aus <c>Katalog_Inhalt.csv</c> (BK-7b).</summary>
+        public bool TeilkatalogeAusZuordnung { get; internal set; }
+        /// <summary>Geplante Baustoffe mit zwei oder mehr Teilkatalogen (BK-7b; die Quelle nennt alle).</summary>
+        public int BaustoffeMitMehrerenTeilkatalogen { get; internal set; }
+        /// <summary>Geplante Aufbauten mit zwei oder mehr Teilkatalogen (BK-7b).</summary>
+        public int AufbautenMitMehrerenTeilkatalogen { get; internal set; }
+        /// <summary>Geplante Baustoffe ohne Teilkatalog (BK-7b).</summary>
+        public int BaustoffeOhneTeilkatalog { get; internal set; }
+        /// <summary>Geplante Aufbauten ohne Teilkatalog (BK-7b).</summary>
+        public int AufbautenOhneTeilkatalog { get; internal set; }
         /// <summary>Zahlen der Baustoffe.</summary>
         public BauteilkatalogZaehlung Baustoffe { get; } = new BauteilkatalogZaehlung();
         /// <summary>Zahlen der Aufbauten.</summary>
@@ -510,7 +522,8 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            // BK-7: Teilkataloge - Kennung (Satz oder Basiszeile) -> Saetze, dann die Zuordnung aus Katalog_Inhalt.csv.
+            // BK-7: Teilkataloge - Kennung (Satz oder Basiszeile) -> Saetze, dann die Zuordnung aus Katalog_Zuordnung.csv
+            // (BK-7b) oder Katalog_Inhalt.csv.
             var ziele = new Dictionary<string, List<string>>(StringComparer.Ordinal);
             void Ziel(string von, string satz)
             {
@@ -526,7 +539,12 @@ namespace WindowsFormsApplication1
                 Ziel(ta.Kennung(z, "BasisUId"), k);
             }
             foreach (string[] z in tz.Zeilen) Ziel(tz.Kennung(z, "UId"), tz.Kennung(z, "MaterialUId"));
-            Dictionary<string, SortedSet<string>> teil = BauteilkatalogTeilkataloge.Zuordnen(q, ziele, v.Protokoll);
+            // BK-7b: Katalog_Zuordnung.csv trifft mit BasisUId und DimensionUId dieselben Ziele (Basiszeile -> Baustoff,
+            // Aufbau-BasisUId -> Aufbau, UId -> Satz).
+            BauteilkatalogTeilkataloge.Ergebnis zuordnung = BauteilkatalogTeilkataloge.Zuordnen(q, ziele, v.Protokoll);
+            Dictionary<string, SortedSet<string>> teil = zuordnung.Saetze;
+            v.TeilkatalogeInQuelle = zuordnung.InQuelle;
+            v.TeilkatalogeAusZuordnung = zuordnung.AusZuordnung;
             void TeilkatalogeSetzen(Satz s)
             {
                 if (teil.TryGetValue(s.Kennung, out SortedSet<string> namen)) s.Teilkataloge.UnionWith(namen);
@@ -733,9 +751,20 @@ namespace WindowsFormsApplication1
             v.BaustoffeMitTeilkatalog = p.Baustoffe.Count(x => x.Teilkataloge.Count > 0);
             v.AufbautenMitTeilkatalog = p.Aufbauten.Count(x => x.Teilkataloge.Count > 0);
             v.Teilkataloge = p.Baustoffe.Concat(p.Aufbauten).SelectMany(x => x.Teilkataloge).Distinct(StringComparer.Ordinal).Count();
+            v.BaustoffeMitMehrerenTeilkatalogen = p.Baustoffe.Count(x => x.Teilkataloge.Count > 1);
+            v.AufbautenMitMehrerenTeilkatalogen = p.Aufbauten.Count(x => x.Teilkataloge.Count > 1);
+            v.BaustoffeOhneTeilkatalog = p.Baustoffe.Count - v.BaustoffeMitTeilkatalog;
+            v.AufbautenOhneTeilkatalog = p.Aufbauten.Count - v.AufbautenMitTeilkatalog;
             if (v.Teilkataloge > 0)
+            {
                 v.Protokoll.Add("Teilkataloge: " + Zahl(v.Teilkataloge) + ", in der Quelle genannt an " + Zahl(v.BaustoffeMitTeilkatalog) +
                                 " Baustoffen und " + Zahl(v.AufbautenMitTeilkatalog) + " Aufbauten");
+                v.Protokoll.Add("Teilkataloge in " + BauteilkatalogQuelle.DATEI_KATALOG + ": " + Zahl(v.TeilkatalogeInQuelle) + "; aus " +
+                                (v.TeilkatalogeAusZuordnung ? BauteilkatalogQuelle.DATEI_KATALOG_ZUORDNUNG : BauteilkatalogQuelle.DATEI_KATALOG_INHALT) +
+                                "; mit zwei oder mehr Teilkatalogen " + Zahl(v.BaustoffeMitMehrerenTeilkatalogen) + " Baustoffe und " +
+                                Zahl(v.AufbautenMitMehrerenTeilkatalogen) + " Aufbauten; ohne Teilkatalog " + Zahl(v.BaustoffeOhneTeilkatalog) +
+                                " Baustoffe und " + Zahl(v.AufbautenOhneTeilkatalog) + " Aufbauten");
+            }
 
             // ---- Abschnitte ----
             var abschnitte = new Dictionary<string, Satz>(StringComparer.Ordinal);

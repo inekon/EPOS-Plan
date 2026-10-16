@@ -54732,7 +54732,7 @@ Chart</value>
     <value>Durchsuchen…</value>
   </data>
   <data name="BKI_HINWEIS" xml:space="preserve">
-    <value>Wählen Sie die Datei Baustoffe.csv des CSV-Exports; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv und Basis_Auszug.csv liegen daneben, Katalog.csv und Katalog_Inhalt.csv ergänzen die Teilkataloge. Liegt Baustoffe.csv im Unterordner Export, genügt der Ordner darüber. Die Vorschau schreibt nichts.</value>
+    <value>Wählen Sie die Datei Baustoffe.csv des CSV-Exports; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv und Basis_Auszug.csv liegen daneben, Katalog.csv und Katalog_Zuordnung.csv ergänzen die Teilkataloge (fehlt Katalog_Zuordnung.csv, gilt Katalog_Inhalt.csv). Liegt Baustoffe.csv im Unterordner Export, genügt der Ordner darüber. Die Vorschau schreibt nichts.</value>
   </data>
   <data name="BKI_FILTER" xml:space="preserve">
     <value>Baustoffe.csv|Baustoffe.csv|CSV-Dateien (*.csv)|*.csv</value>
@@ -54807,7 +54807,7 @@ Chart</value>
     <value>Baustoffe.csv liegt im Unterordner Export; gelesen wird dieser Ordner: {0}</value>
   </data>
   <data name="BKI_TEILKATALOGE" xml:space="preserve">
-    <value>Teilkataloge: {0}; die Quelle nennt sie an {1} Baustoffen und {2} Aufbauten.</value>
+    <value>Teilkataloge: {0} von {1} der Quelle, zugeordnet über {2}; die Quelle nennt sie an {3} Baustoffen und {4} Aufbauten, zwei oder mehr an {5} Baustoffen und {6} Aufbauten; ohne Teilkatalog bleiben {7} Baustoffe und {8} Aufbauten.</value>
   </data>
   <data name="BKI_UEBERNEHMEN" xml:space="preserve">
     <value>Übernehmen</value>
