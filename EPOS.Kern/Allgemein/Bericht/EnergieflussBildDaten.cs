@@ -8,36 +8,12 @@ namespace WindowsFormsApplication1
     // DER EINGABETYP DES ENERGIEFLUSSBILDS (Konzept Energieflussbild 3, Schritt SK-2).
     //
     // Rein darstellungsbezogen: Knoten mit Spalte, Name, Wert und Farbrolle, Bänder
-    // mit Von, Nach, Wert, Rolle und fertigem Zeigertext. Er kennt das Domänenmodell
-    // des Flussbaus nicht; die Abbildung Flussmodell → Bilddaten ist Sache der Hülle
-    // bzw. des Berichtsbilds (SK-3, SK-4). Der Renderer rechnet nichts Fachliches:
-    // Er setzt Knoten in Spalten, misst Bänder nach ihrem Wert und zeichnet.
+    // mit Von, Nach, Wert, Rolle und fertigem Zeigertext. Mit der Bilanz
+    // (EnergieflussBilanz) teilt er nur die Knotenart (EnergieflussKnotenart);
+    // die Abbildung Bilanz → Bilddaten ist EnergieflussAbbildung.Bild. Der Renderer
+    // rechnet nichts Fachliches: Er setzt Knoten in Spalten, misst Bänder nach
+    // ihrem Wert und zeichnet.
     // =========================================================================
-
-    /// <summary>Was ein Knoten des Energieflussbilds ist — bestimmt Lage der Beschriftung und Rückfallrolle.</summary>
-    public enum EnergieflussKnotenart
-    {
-        /// <summary>Eine Quelle (Netzbezug, Photovoltaik, Brennstoffträger, Umweltwärme …); Beschriftung links.</summary>
-        Quelle = 0,
-
-        /// <summary>Ein Wandler (BHKW, Kessel, Wärmepumpe, Kältemaschine …); Beschriftung über dem Knoten.</summary>
-        Wandler = 1,
-
-        /// <summary>Ein Sammelknoten (Strom, Wärme, Kälte); Beschriftung über dem Knoten, auch wenn er flach ist.</summary>
-        Bus = 2,
-
-        /// <summary>Ein Speicher (Puffer, Kältespeicher, Stromspeicher); Beschriftung über dem Knoten.</summary>
-        Speicher = 3,
-
-        /// <summary>Eine Senke (Heizung, Warmwasser, Strombedarf, Einspeisung …); Beschriftung rechts.</summary>
-        Senke = 4,
-
-        /// <summary>
-        /// Ein Verlustknoten: steht in der Lücke rechts neben dem Knoten, aus dem sein Band kommt (Spalte + ½), unter
-        /// dessen Fuß; Beschriftung darunter. Seine <see cref="EnergieflussBildKnoten.Spalte"/> ist die des Erzeugers.
-        /// </summary>
-        Verlust = 5
-    }
 
     /// <summary>Wie ein Band gezeichnet wird.</summary>
     public enum EnergieflussBandart
@@ -58,7 +34,11 @@ namespace WindowsFormsApplication1
         /// <summary>Die eindeutige Kennung (sprachneutral, etwa „strom“, „wp_heizen“); Teil der Marke <c>knoten:&lt;Kennung&gt;</c>.</summary>
         public string Kennung { get; set; } = "";
 
-        /// <summary>Die Spalte 0 … 6 (Quellen, Wandler I, Bus Strom, Wandler II, Busse Wärme/Kälte, Speicher, Senken).</summary>
+        /// <summary>
+        /// Die Spalte 0 … 6 (Quellen, Wandler I, Bus Strom, Wandler II, Busse Wärme/Kälte, Speicher, Senken). Ein
+        /// Verlustknoten (<see cref="EnergieflussKnotenart.Verlust"/>) trägt die Spalte seines Erzeugers; der Renderer
+        /// setzt ihn in die Lücke dahinter.
+        /// </summary>
         public int Spalte { get; set; }
 
         /// <summary>Der Anzeigename in der Kultur des Bildes.</summary>

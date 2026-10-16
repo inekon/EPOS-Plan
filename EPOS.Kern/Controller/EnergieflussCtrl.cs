@@ -8,10 +8,10 @@
     public static class EnergieflussCtrl
     {
         /// <summary>
-        /// Das Flussmodell der Version <paramref name="idProjekt"/>; ohne gespeicherten Lauf ein Modell ohne Knoten mit
-        /// benanntem <see cref="EnergieflussModell.Grund"/>. <paramref name="versionsname"/> leer = Name aus den Daten.
+        /// Die Energieflussbilanz der Version <paramref name="idProjekt"/>; ohne gespeicherten Lauf eine Bilanz ohne Knoten mit
+        /// benanntem <see cref="EnergieflussBilanz.Grund"/>. <paramref name="versionsname"/> leer = Name aus den Daten.
         /// </summary>
-        public static EnergieflussModell Lade(int idProjekt, bool istStamm, bool englisch, string versionsname = null)
+        public static EnergieflussBilanz Lade(int idProjekt, bool istStamm, bool englisch, string versionsname = null)
         {
             VariantenDaten v = EnergievergleichCtrl.Lade(idProjekt, istStamm);
             return Energiefluss.Aus(v, englisch, string.IsNullOrWhiteSpace(versionsname) ? null : versionsname);

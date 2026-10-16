@@ -6,21 +6,29 @@ using System.Text;
 
 namespace WindowsFormsApplication1
 {
-    /// <summary>Die Rolle eines Knotens im Energieflussbild (Konzept Energieflussbild, Abschnitt 2.2).</summary>
-    public enum EnergieflussKnotenArt
+    /// <summary>
+    /// Die Art eines Knotens im Energieflussbild (Konzept Energieflussbild, Abschnitte 2.2 und 3.1) — das eine Wort, das
+    /// Bilanz (<see cref="EnergieflussBilanz"/>), Abbildung (<see cref="EnergieflussAbbildung"/>) und Renderer
+    /// (<see cref="EnergieflussBildKnoten"/>) teilen. Sie bestimmt die Bilanzprüfung und im Bild die Lage der Beschriftung.
+    /// </summary>
+    public enum EnergieflussKnotenart
     {
-        /// <summary>Spalte 0: Netzbezug, Photovoltaik, Brennstoffträger, Umweltanteile, Kondensationswärme, Solarthermie, ungedeckt.</summary>
-        Quelle,
-        /// <summary>Spalten 1 und 3: BHKW, Heizkessel; Wärmepumpe, Heizstab, Elektrokessel, Kälteerzeuger.</summary>
-        Wandler,
-        /// <summary>Spalten 2 und 4: die Sammelknoten Strom, Wärme, Kälte.</summary>
-        Bus,
-        /// <summary>Spalte 5: Puffer-, Kälte- und Stromspeicher.</summary>
-        Speicher,
-        /// <summary>Spalte 6: Bedarfe, Einspeisungen, nicht zugeordnet.</summary>
-        Senke,
-        /// <summary>Halbe Spalte neben einem Wandler oder Speicher: Verlust bzw. Füllstandsänderung.</summary>
-        Verlust,
+        /// <summary>Spalte 0: Netzbezug, Photovoltaik, Brennstoffträger, Umweltanteile, Kondensationswärme, Solarthermie, ungedeckt; Beschriftung links.</summary>
+        Quelle = 0,
+        /// <summary>Spalten 1 und 3: BHKW, Heizkessel; Wärmepumpe, Heizstab, Elektrokessel, Kälteerzeuger; Beschriftung über dem Knoten.</summary>
+        Wandler = 1,
+        /// <summary>Spalten 2 und 4: die Sammelknoten Strom, Wärme, Kälte; Beschriftung über dem Knoten, auch wenn er flach ist.</summary>
+        Bus = 2,
+        /// <summary>Spalte 5: Puffer-, Kälte- und Stromspeicher; Beschriftung über dem Knoten.</summary>
+        Speicher = 3,
+        /// <summary>Spalte 6: Bedarfe, Einspeisungen, nicht zugeordnet; Beschriftung rechts.</summary>
+        Senke = 4,
+        /// <summary>
+        /// Verlust bzw. Füllstandsänderung eines Wandlers oder Speichers. Trägt die Spalte seines Eigentümers (des Knotens,
+        /// aus dem sein Band kommt); in die Lücke zur nächsten Spalte (Spalte + ½, unter dem Fuß des Eigentümers) setzt ihn
+        /// allein der Renderer — die Lage ist Zeichenregel, kein Datum. Beschriftung darunter.
+        /// </summary>
+        Verlust = 5,
     }
 
     /// <summary>Die Energieform eines Bandes — fachlich, keine Farbe (die Farbrolle vergibt erst die Abbildung auf den Renderer).</summary>
@@ -56,9 +64,9 @@ namespace WindowsFormsApplication1
         public string Name = "";
         /// <summary>Kurzform für die schmale Ansicht.</summary>
         public string Kurzname = "";
-        public EnergieflussKnotenArt Art;
-        /// <summary>Spalte 0 … 6; Verlustknoten stehen in der Lücke (Spalte des Eigentümers + 0,5).</summary>
-        public double Spalte;
+        public EnergieflussKnotenart Art;
+        /// <summary>Spalte 0 … 6 (Tabelle 2.2); ein Verlust- oder Füllstandsknoten trägt die Spalte seines Eigentümers.</summary>
+        public int Spalte;
         /// <summary>Reihenfolge von oben innerhalb der Spalte (Tabelle 2.2).</summary>
         public int Rang;
         public double ZuflussMwh;
@@ -100,8 +108,13 @@ namespace WindowsFormsApplication1
         public string Marke => "fluss:" + Von + ":" + Nach;
     }
 
-    /// <summary>Das Flussmodell einer Version: Knoten, Bänder, Bilanz je Knoten, Hinweise.</summary>
-    public sealed class EnergieflussModell
+    /// <summary>
+    /// <b>Die Energieflussbilanz einer Version</b> — das Domänenmodell des Energieflussbilds: Knoten, Bänder, Bilanz je
+    /// Knoten (Zufluss, Abfluss, Rest, geschlossen), Hinweiszeilen und die Flussliste des Assistenten. Keine Farbe, kein
+    /// Bildpunkt: Das Bild entsteht über <see cref="EnergieflussAbbildung.Bild"/> (→ <see cref="EnergieflussBildDaten"/>)
+    /// und <c>ChartRenderer.EnergieflussModell</c> (→ <c>Zeichenmodell</c>); die Hinweise bleiben hier.
+    /// </summary>
+    public sealed class EnergieflussBilanz
     {
         public int IdProjekt;
         /// <summary>Anzeigename der Version.</summary>
@@ -198,7 +211,7 @@ namespace WindowsFormsApplication1
                             EINSPEISUNG_BHKW = "einspeisung_bhkw", NICHT_ZUGEORDNET = "nicht_zugeordnet",
                             VERLUST = "verlust:", FUELLSTAND = "fuellstand:", WEITERE = "weitere:";
 
-        private const string GRUPPE_TRAEGER = "traeger", GRUPPE_SPLIT = "split", GRUPPE_PUFFER = "puffer";
+        internal const string GRUPPE_TRAEGER = "traeger", GRUPPE_SPLIT = "split", GRUPPE_PUFFER = "puffer";
         private const string BRENNSTOFF_STROM = "Strom";
 
         /// <summary>Die Bilanztoleranz eines Knotens: max(0,05 MWh; 0,5 % des Zuflusses).</summary>
@@ -237,21 +250,21 @@ namespace WindowsFormsApplication1
             return v.IdProjekt.ToString(CultureInfo.InvariantCulture);
         }
 
-        /// <summary>Das Flussmodell einer Version aus den Daten des Energievergleichs.</summary>
-        public static EnergieflussModell Aus(VariantenDaten v, bool englisch, string version = null)
+        /// <summary>Die Energieflussbilanz einer Version aus den Daten des Energievergleichs.</summary>
+        public static EnergieflussBilanz Aus(VariantenDaten v, bool englisch, string version = null)
         {
             string name = version ?? Versionsname(v);
             return Aus(v?.Ergebnis, v?.EnergiekostenJeTraeger, englisch, name, v?.IdProjekt ?? 0);
         }
 
         /// <summary>
-        /// Das Flussmodell aus einem Ergebnisbaum; <paramref name="traeger"/> liefert die Namen der Brennstoffträger
+        /// Die Energieflussbilanz aus einem Ergebnisbaum; <paramref name="traeger"/> liefert die Namen der Brennstoffträger
         /// (<see cref="VariantenDaten.EnergiekostenJeTraeger"/>), ohne sie gilt das Brennstoffwort des Moduls.
         /// </summary>
-        public static EnergieflussModell Aus(ErgebnisModel e, IReadOnlyList<EnergieTraegerNachweis> traeger, bool englisch,
+        public static EnergieflussBilanz Aus(ErgebnisModel e, IReadOnlyList<EnergieTraegerNachweis> traeger, bool englisch,
                                              string version, int idProjekt = 0)
         {
-            var m = new EnergieflussModell { IdProjekt = idProjekt, Version = version ?? "", Englisch = englisch, Simuliert = e != null };
+            var m = new EnergieflussBilanz { IdProjekt = idProjekt, Version = version ?? "", Englisch = englisch, Simuliert = e != null };
             if (e == null)
             {
                 m.Grund = string.Format(Kultur(englisch), T(nameof(MyResource.Resource.EF_NICHT_SIMULIERT), englisch), m.Version);
@@ -269,7 +282,7 @@ namespace WindowsFormsApplication1
 
         private sealed class Bau
         {
-            private readonly EnergieflussModell _m;
+            private readonly EnergieflussBilanz _m;
             private readonly ErgebnisModel _e;
             private readonly IReadOnlyList<EnergieTraegerNachweis> _traeger;
             private readonly bool _en;
@@ -279,7 +292,7 @@ namespace WindowsFormsApplication1
             private int _folge;
             private double _bhkwStromMwh;
 
-            public Bau(EnergieflussModell m, ErgebnisModel e, IReadOnlyList<EnergieTraegerNachweis> traeger, bool englisch)
+            public Bau(EnergieflussBilanz m, ErgebnisModel e, IReadOnlyList<EnergieTraegerNachweis> traeger, bool englisch)
             {
                 _m = m; _e = e; _traeger = traeger; _en = englisch; _k = Kultur(englisch);
             }
@@ -287,21 +300,21 @@ namespace WindowsFormsApplication1
             private string T(string s) => Energiefluss.T(s, _en);
 
             // Rang: Grundrang der Art (Reihenfolge der Tabelle 2.2) und Einfügefolge.
-            private EnergieflussKnoten K(string id, string name, string kurz, EnergieflussKnotenArt art, double spalte, int grundrang,
+            private EnergieflussKnoten K(string id, string name, string kurz, EnergieflussKnotenart art, int spalte, int grundrang,
                                          string gruppe = null, bool bedarf = false)
             {
                 if (_knoten.TryGetValue(id, out EnergieflussKnoten k)) return k;
                 k = new EnergieflussKnoten
                 {
                     Id = id, Name = name, Kurzname = kurz, Art = art, Spalte = spalte, Rang = grundrang * 1000 + (_folge++),
-                    Geprueft = art == EnergieflussKnotenArt.Wandler || art == EnergieflussKnotenArt.Bus || art == EnergieflussKnotenArt.Speicher,
+                    Geprueft = art == EnergieflussKnotenart.Wandler || art == EnergieflussKnotenart.Bus || art == EnergieflussKnotenart.Speicher,
                     Gruppe = gruppe, IstBedarf = bedarf,
                 };
                 _knoten[id] = k;
                 return k;
             }
 
-            private EnergieflussKnoten KR(string id, string schluesselName, string schluesselKurz, EnergieflussKnotenArt art, double spalte,
+            private EnergieflussKnoten KR(string id, string schluesselName, string schluesselKurz, EnergieflussKnotenart art, int spalte,
                                           int grundrang, bool bedarf = false)
                 => K(id, T(schluesselName), T(schluesselKurz), art, spalte, grundrang, null, bedarf);
 
@@ -332,26 +345,26 @@ namespace WindowsFormsApplication1
                 bool heizenWp = _e.Waermepumpe != null && _e.Waermepumpe.Waermeproduktion_WP >= MINDEST_MWH;
 
                 // ---- Busse und Senken (nur angelegt; erscheinen, wenn ein Band an ihnen hängt) ----
-                KR(STROM, nameof(MyResource.Resource.EF_KN_STROM), nameof(MyResource.Resource.EF_KK_STROM), EnergieflussKnotenArt.Bus, SPALTE_STROM, R_STROM);
-                KR(WAERME, nameof(MyResource.Resource.EF_KN_WAERME), nameof(MyResource.Resource.EF_KK_WAERME), EnergieflussKnotenArt.Bus, SPALTE_BUSSE, R_WAERME);
-                KR(KAELTE, nameof(MyResource.Resource.EF_KN_KAELTE), nameof(MyResource.Resource.EF_KK_KAELTE), EnergieflussKnotenArt.Bus, SPALTE_BUSSE, R_KAELTE);
+                KR(STROM, nameof(MyResource.Resource.EF_KN_STROM), nameof(MyResource.Resource.EF_KK_STROM), EnergieflussKnotenart.Bus, SPALTE_STROM, R_STROM);
+                KR(WAERME, nameof(MyResource.Resource.EF_KN_WAERME), nameof(MyResource.Resource.EF_KK_WAERME), EnergieflussKnotenart.Bus, SPALTE_BUSSE, R_WAERME);
+                KR(KAELTE, nameof(MyResource.Resource.EF_KN_KAELTE), nameof(MyResource.Resource.EF_KK_KAELTE), EnergieflussKnotenart.Bus, SPALTE_BUSSE, R_KAELTE);
 
                 // ---- Quellen am Strom ----
                 if (eb != null)
                 {
-                    KR(NETZBEZUG, nameof(MyResource.Resource.EF_KN_NETZBEZUG), nameof(MyResource.Resource.EF_KK_NETZBEZUG), EnergieflussKnotenArt.Quelle, SPALTE_QUELLEN, R_NETZ);
+                    KR(NETZBEZUG, nameof(MyResource.Resource.EF_KN_NETZBEZUG), nameof(MyResource.Resource.EF_KK_NETZBEZUG), EnergieflussKnotenart.Quelle, SPALTE_QUELLEN, R_NETZ);
                     F(NETZBEZUG, STROM, eb.Stromrestbedarf, EnergieflussForm.Strom);
                 }
                 if (_e.Photovoltaik != null)
                 {
-                    KR(PHOTOVOLTAIK, nameof(MyResource.Resource.EF_KN_PHOTOVOLTAIK), nameof(MyResource.Resource.EF_KK_PHOTOVOLTAIK), EnergieflussKnotenArt.Quelle, SPALTE_QUELLEN, R_PV);
+                    KR(PHOTOVOLTAIK, nameof(MyResource.Resource.EF_KN_PHOTOVOLTAIK), nameof(MyResource.Resource.EF_KK_PHOTOVOLTAIK), EnergieflussKnotenart.Quelle, SPALTE_QUELLEN, R_PV);
                     F(PHOTOVOLTAIK, STROM, _e.Photovoltaik.Stromproduktion, EnergieflussForm.Strom);
                 }
 
                 // ---- Wandler I: BHKW ----
                 if (_e.BHKW != null)
                 {
-                    KR(BHKW, nameof(MyResource.Resource.EF_KN_BHKW), nameof(MyResource.Resource.EF_KK_BHKW), EnergieflussKnotenArt.Wandler, SPALTE_WANDLER_I, R_BHKW);
+                    KR(BHKW, nameof(MyResource.Resource.EF_KN_BHKW), nameof(MyResource.Resource.EF_KK_BHKW), EnergieflussKnotenart.Wandler, SPALTE_WANDLER_I, R_BHKW);
                     foreach (ErgebnisBHKWModulModel mo in _e.BHKW.Module ?? new List<ErgebnisBHKWModulModel>())
                         if (mo != null && mo.Verbrauch >= MINDEST_MWH)
                             F(Traeger(mo.CarrierId, mo.Brennstoff), BHKW, mo.Verbrauch, EnergieflussForm.Brennstoff);
@@ -371,16 +384,16 @@ namespace WindowsFormsApplication1
                     if (heizenWp)
                     {
                         if (kuehlenWp)
-                            KR(WP_HEIZEN, nameof(MyResource.Resource.EF_KN_WP_HEIZEN), nameof(MyResource.Resource.EF_KK_WP_HEIZEN), EnergieflussKnotenArt.Wandler, SPALTE_WANDLER_II, R_WP);
+                            KR(WP_HEIZEN, nameof(MyResource.Resource.EF_KN_WP_HEIZEN), nameof(MyResource.Resource.EF_KK_WP_HEIZEN), EnergieflussKnotenart.Wandler, SPALTE_WANDLER_II, R_WP);
                         else
-                            KR(WP_HEIZEN, nameof(MyResource.Resource.EF_KN_WAERMEPUMPE), nameof(MyResource.Resource.EF_KK_WAERMEPUMPE), EnergieflussKnotenArt.Wandler, SPALTE_WANDLER_II, R_WP);
+                            KR(WP_HEIZEN, nameof(MyResource.Resource.EF_KN_WAERMEPUMPE), nameof(MyResource.Resource.EF_KK_WAERMEPUMPE), EnergieflussKnotenart.Wandler, SPALTE_WANDLER_II, R_WP);
                         F(STROM, WP_HEIZEN, w.Stromverbrauch_WP, EnergieflussForm.Strom);
                         F(WP_HEIZEN, WAERME, w.Waermeproduktion_WP, EnergieflussForm.Waerme);
                         Umweltanteil(WP_HEIZEN, UMWELTWAERME, SPALTE_WANDLER_II, R_WP, waerme: true);
                     }
                     if (w.Stromverbrauch_Heizstab >= MINDEST_MWH)
                     {
-                        KR(HEIZSTAB, nameof(MyResource.Resource.EF_KN_HEIZSTAB), nameof(MyResource.Resource.EF_KK_HEIZSTAB), EnergieflussKnotenArt.Wandler, SPALTE_WANDLER_II, R_HEIZSTAB);
+                        KR(HEIZSTAB, nameof(MyResource.Resource.EF_KN_HEIZSTAB), nameof(MyResource.Resource.EF_KK_HEIZSTAB), EnergieflussKnotenart.Wandler, SPALTE_WANDLER_II, R_HEIZSTAB);
                         F(STROM, HEIZSTAB, w.Stromverbrauch_Heizstab, EnergieflussForm.Strom);
                         F(HEIZSTAB, WAERME, w.Stromverbrauch_Heizstab, EnergieflussForm.Waerme);
                     }
@@ -389,7 +402,7 @@ namespace WindowsFormsApplication1
                 // ---- Solarthermie (Quelle direkt an den Wärmebus) ----
                 if (_e.Solarthermie != null)
                 {
-                    EnergieflussKnoten s = KR(SOLARTHERMIE, nameof(MyResource.Resource.EF_KN_SOLARTHERMIE), nameof(MyResource.Resource.EF_KK_SOLARTHERMIE), EnergieflussKnotenArt.Quelle, SPALTE_QUELLEN, R_SOLAR);
+                    EnergieflussKnoten s = KR(SOLARTHERMIE, nameof(MyResource.Resource.EF_KN_SOLARTHERMIE), nameof(MyResource.Resource.EF_KK_SOLARTHERMIE), EnergieflussKnotenart.Quelle, SPALTE_QUELLEN, R_SOLAR);
                     F(SOLARTHERMIE, WAERME, _e.Solarthermie.Waermeproduktion, EnergieflussForm.Waerme);
                     if (_e.Solarthermie.Ueberschuss >= MINDEST_MWH)
                         s.Zusatz = string.Format(_k, T(nameof(MyResource.Resource.EF_ZEIGER_SOLARUEBERSCHUSS)), Zahl(_e.Solarthermie.Ueberschuss, _k));
@@ -407,7 +420,7 @@ namespace WindowsFormsApplication1
                 BilanzStrom();
                 Bilanz(WAERME);
                 Bilanz(KAELTE);
-                foreach (EnergieflussKnoten k in _knoten.Values.Where(k => k.Geprueft && k.Art != EnergieflussKnotenArt.Bus).ToList())
+                foreach (EnergieflussKnoten k in _knoten.Values.Where(k => k.Geprueft && k.Art != EnergieflussKnotenart.Bus).ToList())
                     Bilanz(k.Id);
 
                 Buendeln();
@@ -433,7 +446,7 @@ namespace WindowsFormsApplication1
                     id = TRAEGER + (wort.Length == 0 ? "0" : wort.ToLowerInvariant());
                     name = wort.Length == 0 ? T(nameof(MyResource.Resource.EF_KN_BRENNSTOFF)) : wort;
                 }
-                K(id, name, name, EnergieflussKnotenArt.Quelle, SPALTE_QUELLEN, R_TRAEGER, GRUPPE_TRAEGER);
+                K(id, name, name, EnergieflussKnotenart.Quelle, SPALTE_QUELLEN, R_TRAEGER, GRUPPE_TRAEGER);
                 return id;
             }
 
@@ -442,12 +455,12 @@ namespace WindowsFormsApplication1
             // ---------------------------------------------------------------
 
             /// <summary>Verlust eines Wandlers = Zufluss − Abfluss, nie negativ (ein Defizit bleibt Bilanzrest).</summary>
-            private void VerlustWandler(string id, double spalte, int rang)
+            private void VerlustWandler(string id, int spalte, int rang)
             {
                 double v = Zu(id) - Ab(id);
                 if (v < MINDEST_MWH) return;
                 string vid = VERLUST + id;
-                KR(vid, nameof(MyResource.Resource.EF_KN_VERLUST), nameof(MyResource.Resource.EF_KK_VERLUST), EnergieflussKnotenArt.Verlust, spalte + 0.5, rang);
+                KR(vid, nameof(MyResource.Resource.EF_KN_VERLUST), nameof(MyResource.Resource.EF_KK_VERLUST), EnergieflussKnotenart.Verlust, spalte, rang);
                 F(id, vid, v, EnergieflussForm.Verlust, EnergieflussHerkunft.Abgeleitet, T(nameof(MyResource.Resource.EF_FORMEL_VERLUST)));
             }
 
@@ -455,14 +468,14 @@ namespace WindowsFormsApplication1
             /// Umweltanteil (SK-Q6): Abfluss − Strom tritt als Umweltwärme bzw. Umwelt (Kälte) ein; ein Wandler mit
             /// Arbeitszahl unter 1 bekommt statt dessen ein Verlustband.
             /// </summary>
-            private void Umweltanteil(string id, string quelle, double spalte, int rang, bool waerme)
+            private void Umweltanteil(string id, string quelle, int spalte, int rang, bool waerme)
             {
                 double u = Ab(id) - Zu(id);
                 if (u >= MINDEST_MWH)
                 {
                     EnergieflussKnoten q = waerme
-                        ? KR(UMWELTWAERME, nameof(MyResource.Resource.EF_KN_UMWELTWAERME), nameof(MyResource.Resource.EF_KK_UMWELTWAERME), EnergieflussKnotenArt.Quelle, SPALTE_QUELLEN, R_UMWELT_W)
-                        : KR(UMWELTKAELTE, nameof(MyResource.Resource.EF_KN_UMWELTKAELTE), nameof(MyResource.Resource.EF_KK_UMWELTKAELTE), EnergieflussKnotenArt.Quelle, SPALTE_QUELLEN, R_UMWELT_K);
+                        ? KR(UMWELTWAERME, nameof(MyResource.Resource.EF_KN_UMWELTWAERME), nameof(MyResource.Resource.EF_KK_UMWELTWAERME), EnergieflussKnotenart.Quelle, SPALTE_QUELLEN, R_UMWELT_W)
+                        : KR(UMWELTKAELTE, nameof(MyResource.Resource.EF_KN_UMWELTKAELTE), nameof(MyResource.Resource.EF_KK_UMWELTKAELTE), EnergieflussKnotenart.Quelle, SPALTE_QUELLEN, R_UMWELT_K);
                     q.Zusatz = T(nameof(MyResource.Resource.EF_ZEIGER_UMWELT));
                     F(quelle, id, u, EnergieflussForm.Umwelt, EnergieflussHerkunft.Abgeleitet,
                       T(waerme ? nameof(MyResource.Resource.EF_FORMEL_UMWELT_WAERME) : nameof(MyResource.Resource.EF_FORMEL_UMWELT_KAELTE)));
@@ -495,7 +508,7 @@ namespace WindowsFormsApplication1
                     waermeBrennstoff += mo.Waermeproduktion;
                     if (mo.Verbrauch >= MINDEST_MWH)
                     {
-                        KR(HEIZKESSEL, nameof(MyResource.Resource.EF_KN_HEIZKESSEL), nameof(MyResource.Resource.EF_KK_HEIZKESSEL), EnergieflussKnotenArt.Wandler, SPALTE_WANDLER_I, R_KESSEL);
+                        KR(HEIZKESSEL, nameof(MyResource.Resource.EF_KN_HEIZKESSEL), nameof(MyResource.Resource.EF_KK_HEIZKESSEL), EnergieflussKnotenart.Wandler, SPALTE_WANDLER_I, R_KESSEL);
                         F(Traeger(mo.CarrierId, mo.Brennstoff), HEIZKESSEL, mo.Verbrauch, EnergieflussForm.Brennstoff);
                         // SK-Q4: Brennwert über 100 % (Heizwert) — die Mehrwärme tritt als Kondensationswärme ein.
                         kond += Math.Max(0.0, mo.Waermeproduktion - mo.Verbrauch);
@@ -504,23 +517,23 @@ namespace WindowsFormsApplication1
                 }
                 if (brennstoffKessel && waermeBrennstoff >= MINDEST_MWH)
                 {
-                    KR(HEIZKESSEL, nameof(MyResource.Resource.EF_KN_HEIZKESSEL), nameof(MyResource.Resource.EF_KK_HEIZKESSEL), EnergieflussKnotenArt.Wandler, SPALTE_WANDLER_I, R_KESSEL);
+                    KR(HEIZKESSEL, nameof(MyResource.Resource.EF_KN_HEIZKESSEL), nameof(MyResource.Resource.EF_KK_HEIZKESSEL), EnergieflussKnotenart.Wandler, SPALTE_WANDLER_I, R_KESSEL);
                     F(HEIZKESSEL, WAERME, waermeBrennstoff, EnergieflussForm.Waerme);
                     if (kond >= MINDEST_MWH)
                     {
-                        KR(KONDENSATION, nameof(MyResource.Resource.EF_KN_KONDENSATION), nameof(MyResource.Resource.EF_KK_KONDENSATION), EnergieflussKnotenArt.Quelle, SPALTE_QUELLEN, R_KOND);
+                        KR(KONDENSATION, nameof(MyResource.Resource.EF_KN_KONDENSATION), nameof(MyResource.Resource.EF_KK_KONDENSATION), EnergieflussKnotenart.Quelle, SPALTE_QUELLEN, R_KOND);
                         F(KONDENSATION, HEIZKESSEL, kond, EnergieflussForm.Umwelt, EnergieflussHerkunft.Abgeleitet, T(nameof(MyResource.Resource.EF_FORMEL_KONDENSATION)));
                     }
                     if (verlust >= MINDEST_MWH)
                     {
                         string vid = VERLUST + HEIZKESSEL;
-                        KR(vid, nameof(MyResource.Resource.EF_KN_VERLUST), nameof(MyResource.Resource.EF_KK_VERLUST), EnergieflussKnotenArt.Verlust, SPALTE_WANDLER_I + 0.5, R_KESSEL);
+                        KR(vid, nameof(MyResource.Resource.EF_KN_VERLUST), nameof(MyResource.Resource.EF_KK_VERLUST), EnergieflussKnotenart.Verlust, SPALTE_WANDLER_I, R_KESSEL);
                         F(HEIZKESSEL, vid, verlust, EnergieflussForm.Verlust, EnergieflussHerkunft.Abgeleitet, T(nameof(MyResource.Resource.EF_FORMEL_VERLUST)));
                     }
                 }
                 if (waermeStrom >= MINDEST_MWH)
                 {
-                    KR(ELEKTROKESSEL, nameof(MyResource.Resource.EF_KN_ELEKTROKESSEL), nameof(MyResource.Resource.EF_KK_ELEKTROKESSEL), EnergieflussKnotenArt.Wandler, SPALTE_WANDLER_II, R_EKESSEL);
+                    KR(ELEKTROKESSEL, nameof(MyResource.Resource.EF_KN_ELEKTROKESSEL), nameof(MyResource.Resource.EF_KK_ELEKTROKESSEL), EnergieflussKnotenart.Wandler, SPALTE_WANDLER_II, R_EKESSEL);
                     F(STROM, ELEKTROKESSEL, h.Stromverbrauch, EnergieflussForm.Strom);
                     F(ELEKTROKESSEL, WAERME, waermeStrom, EnergieflussForm.Waerme);
                     VerlustWandler(ELEKTROKESSEL, SPALTE_WANDLER_II, R_EKESSEL);
@@ -538,7 +551,7 @@ namespace WindowsFormsApplication1
             private string StromquelleKaelte(bool? eigenerZaehler, int? kuehlCarrierId)
             {
                 if (!EigenerZaehler(kuehlCarrierId, eigenerZaehler)) return STROM;
-                KR(KUEHLSTROM_EIGEN, nameof(MyResource.Resource.EF_KN_KUEHLSTROM_EIGEN), nameof(MyResource.Resource.EF_KK_KUEHLSTROM_EIGEN), EnergieflussKnotenArt.Quelle, SPALTE_QUELLEN, R_KSTROM);
+                KR(KUEHLSTROM_EIGEN, nameof(MyResource.Resource.EF_KN_KUEHLSTROM_EIGEN), nameof(MyResource.Resource.EF_KK_KUEHLSTROM_EIGEN), EnergieflussKnotenart.Quelle, SPALTE_QUELLEN, R_KSTROM);
                 return KUEHLSTROM_EIGEN;
             }
 
@@ -550,7 +563,7 @@ namespace WindowsFormsApplication1
                     ErgebnisWaermepumpeModel w = _e.Waermepumpe;
                     double freiWp = Math.Max(0.0, w.FreieKuehlung_MWh ?? 0.0);
                     frei += freiWp;
-                    KR(WP_KUEHLEN, nameof(MyResource.Resource.EF_KN_WP_KUEHLEN), nameof(MyResource.Resource.EF_KK_WP_KUEHLEN), EnergieflussKnotenArt.Wandler, SPALTE_WANDLER_II, R_WPK);
+                    KR(WP_KUEHLEN, nameof(MyResource.Resource.EF_KN_WP_KUEHLEN), nameof(MyResource.Resource.EF_KK_WP_KUEHLEN), EnergieflussKnotenart.Wandler, SPALTE_WANDLER_II, R_WPK);
                     // Kältestrom eines Moduls mit eigenem Zähler läuft neben der Stufenrechnung (nicht im Netzbezug).
                     double eigen = (w.Module ?? new List<ErgebnisWaermepumpeModulModel>())
                         .Where(mo => mo != null && EigenerZaehler(mo.Kuehl_CarrierId, mo.Kuehl_EigenerZaehler))
@@ -569,7 +582,7 @@ namespace WindowsFormsApplication1
                     if (km == null) continue;
                     string id = KAELTEMASCHINE + i.ToString(CultureInfo.InvariantCulture);
                     string name = string.IsNullOrWhiteSpace(km.Bezeichner) ? T(nameof(MyResource.Resource.EF_KN_KAELTEMASCHINE)) : km.Bezeichner.Trim();
-                    K(id, name, T(nameof(MyResource.Resource.EF_KK_KAELTEMASCHINE)), EnergieflussKnotenArt.Wandler, SPALTE_WANDLER_II, R_KM);
+                    K(id, name, T(nameof(MyResource.Resource.EF_KK_KAELTEMASCHINE)), EnergieflussKnotenart.Wandler, SPALTE_WANDLER_II, R_KM);
                     double freiKm = Math.Max(0.0, km.FreieKuehlung_MWh);
                     frei += freiKm;
                     F(StromquelleKaelte(km.Kuehl_EigenerZaehler, km.Kuehl_CarrierId), id, km.Stromverbrauch_MWh + km.Hilfsstrom_MWh, EnergieflussForm.Strom);
@@ -578,7 +591,7 @@ namespace WindowsFormsApplication1
                 }
                 if (frei >= MINDEST_MWH)
                 {
-                    KR(FREIE_KUEHLUNG, nameof(MyResource.Resource.EF_KN_FREIE_KUEHLUNG), nameof(MyResource.Resource.EF_KK_FREIE_KUEHLUNG), EnergieflussKnotenArt.Wandler, SPALTE_WANDLER_II, R_FREI);
+                    KR(FREIE_KUEHLUNG, nameof(MyResource.Resource.EF_KN_FREIE_KUEHLUNG), nameof(MyResource.Resource.EF_KK_FREIE_KUEHLUNG), EnergieflussKnotenart.Wandler, SPALTE_WANDLER_II, R_FREI);
                     F(FREIE_KUEHLUNG, KAELTE, frei, EnergieflussForm.Kaelte);
                     Umweltanteil(FREIE_KUEHLUNG, UMWELTKAELTE, SPALTE_WANDLER_II, R_FREI, waerme: false);
                 }
@@ -589,7 +602,7 @@ namespace WindowsFormsApplication1
                     if (s == null) continue;
                     string id = SPLIT + i.ToString(CultureInfo.InvariantCulture);
                     string name = string.IsNullOrWhiteSpace(s.Bezeichner) ? T(nameof(MyResource.Resource.EF_KN_SPLIT)) : s.Bezeichner.Trim();
-                    K(id, name, T(nameof(MyResource.Resource.EF_KK_SPLIT)), EnergieflussKnotenArt.Wandler, SPALTE_WANDLER_II, R_SPLIT, GRUPPE_SPLIT);
+                    K(id, name, T(nameof(MyResource.Resource.EF_KK_SPLIT)), EnergieflussKnotenart.Wandler, SPALTE_WANDLER_II, R_SPLIT, GRUPPE_SPLIT);
                     F(StromquelleKaelte(s.Kuehl_EigenerZaehler, s.Kuehl_CarrierId), id, s.Strom_MWh, EnergieflussForm.Strom);
                     F(id, KAELTE, s.Kaelte_MWh, EnergieflussForm.Kaelte);
                     if (Hat(id)) Umweltanteil(id, UMWELTKAELTE, SPALTE_WANDLER_II, R_SPLIT, waerme: false);
@@ -617,12 +630,12 @@ namespace WindowsFormsApplication1
                 fuellstand = Math.Max(0.0, fuellstand);
                 bool eigenesBand = fuellstand >= FUELLSTAND_EIGENES_BAND_ANTEIL * ladung && fuellstand >= MINDEST_MWH;
                 string vid = VERLUST + id;
-                KR(vid, nameof(MyResource.Resource.EF_KN_VERLUST), nameof(MyResource.Resource.EF_KK_VERLUST), EnergieflussKnotenArt.Verlust, SPALTE_SPEICHER + 0.5, rang);
+                KR(vid, nameof(MyResource.Resource.EF_KN_VERLUST), nameof(MyResource.Resource.EF_KK_VERLUST), EnergieflussKnotenart.Verlust, SPALTE_SPEICHER, rang);
                 if (eigenesBand)
                 {
                     F(id, vid, verlust, EnergieflussForm.Verlust);
                     string fid = FUELLSTAND + id;
-                    KR(fid, nameof(MyResource.Resource.EF_KN_FUELLSTAND), nameof(MyResource.Resource.EF_KK_FUELLSTAND), EnergieflussKnotenArt.Verlust, SPALTE_SPEICHER + 0.5, rang);
+                    KR(fid, nameof(MyResource.Resource.EF_KN_FUELLSTAND), nameof(MyResource.Resource.EF_KK_FUELLSTAND), EnergieflussKnotenart.Verlust, SPALTE_SPEICHER, rang);
                     F(id, fid, fuellstand, form, EnergieflussHerkunft.Abgeleitet, T(nameof(MyResource.Resource.EF_FORMEL_FUELLSTAND)));
                 }
                 else F(id, vid, verlust + fuellstand, EnergieflussForm.Verlust);
@@ -650,7 +663,7 @@ namespace WindowsFormsApplication1
                     if (ladung < MINDEST_MWH) continue;
                     string id = PUFFER + p.ID_Pufferspeicher.ToString(CultureInfo.InvariantCulture) + ":" + p.ID_Anlage.ToString(CultureInfo.InvariantCulture);
                     string name = string.IsNullOrWhiteSpace(p.Bezeichner) ? T(nameof(MyResource.Resource.EF_KN_PUFFERSPEICHER)) : p.Bezeichner.Trim();
-                    K(id, name, T(nameof(MyResource.Resource.EF_KK_PUFFERSPEICHER)), EnergieflussKnotenArt.Speicher, SPALTE_SPEICHER, R_PUFFER, GRUPPE_PUFFER);
+                    K(id, name, T(nameof(MyResource.Resource.EF_KK_PUFFERSPEICHER)), EnergieflussKnotenart.Speicher, SPALTE_SPEICHER, R_PUFFER, GRUPPE_PUFFER);
                     double summeKanal = 0.0;
                     foreach (int k in Kanal.KANAELE_WAERME) summeKanal += Math.Max(0.0, p.Entladung_Kanal?[k] ?? 0.0);
                     foreach (int k in Kanal.KANAELE_WAERME)
@@ -660,7 +673,7 @@ namespace WindowsFormsApplication1
                                  : (k == Kanal.HEIZUNG ? AusKwh(p.Entladung_gesamt) : 0.0);
                         if (e < MINDEST_MWH) continue;
                         var s = Senke(k);
-                        KR(s.id, s.name, s.kurz, EnergieflussKnotenArt.Senke, SPALTE_SENKEN, s.rang, bedarf: true);
+                        KR(s.id, s.name, s.kurz, EnergieflussKnotenart.Senke, SPALTE_SENKEN, s.rang, bedarf: true);
                         F(id, s.id, e, EnergieflussForm.Waerme);
                         entladung[k] += e;
                     }
@@ -675,7 +688,7 @@ namespace WindowsFormsApplication1
                     double b = Math.Max(0.0, eb.Waermebedarf_Kanal?[k] ?? 0.0);
                     if (b < MINDEST_MWH) continue;
                     var s = Senke(k);
-                    KR(s.id, s.name, s.kurz, EnergieflussKnotenArt.Senke, SPALTE_SENKEN, s.rang, bedarf: true);
+                    KR(s.id, s.name, s.kurz, EnergieflussKnotenart.Senke, SPALTE_SENKEN, s.rang, bedarf: true);
                     double ungedeckt = bedarf > 0.0 ? rest * b / bedarf : 0.0;
                     Ungedeckt(s.id, ungedeckt, EnergieflussForm.Waerme);
                     F(WAERME, s.id, b - entladung[k] - ungedeckt, EnergieflussForm.Waerme, EnergieflussHerkunft.Abgeleitet,
@@ -686,7 +699,7 @@ namespace WindowsFormsApplication1
             private void Ungedeckt(string senke, double mwh, EnergieflussForm form)
             {
                 if (mwh < MINDEST_MWH) return;
-                KR(UNGEDECKT, nameof(MyResource.Resource.EF_KN_UNGEDECKT), nameof(MyResource.Resource.EF_KK_UNGEDECKT), EnergieflussKnotenArt.Quelle, SPALTE_QUELLEN, R_UNGEDECKT);
+                KR(UNGEDECKT, nameof(MyResource.Resource.EF_KN_UNGEDECKT), nameof(MyResource.Resource.EF_KK_UNGEDECKT), EnergieflussKnotenart.Quelle, SPALTE_QUELLEN, R_UNGEDECKT);
                 F(UNGEDECKT, senke, mwh, EnergieflussForm.Rest, EnergieflussHerkunft.Abgeleitet, T(nameof(MyResource.Resource.EF_FORMEL_UNGEDECKT)));
             }
 
@@ -705,12 +718,12 @@ namespace WindowsFormsApplication1
                     if (ladung < MINDEST_MWH) continue;
                     string id = KAELTESPEICHER + p.ID_Pufferspeicher.ToString(CultureInfo.InvariantCulture) + ":" + p.ID_Anlage.ToString(CultureInfo.InvariantCulture);
                     string name = string.IsNullOrWhiteSpace(p.Bezeichner) ? T(nameof(MyResource.Resource.EF_KN_KAELTESPEICHER)) : p.Bezeichner.Trim();
-                    K(id, name, T(nameof(MyResource.Resource.EF_KK_KAELTESPEICHER)), EnergieflussKnotenArt.Speicher, SPALTE_SPEICHER, R_KSPEICHER);
+                    K(id, name, T(nameof(MyResource.Resource.EF_KK_KAELTESPEICHER)), EnergieflussKnotenart.Speicher, SPALTE_SPEICHER, R_KSPEICHER);
                     double kanal = Math.Max(0.0, p.Entladung_Kanal?[Kanal.KUEHLUNG] ?? 0.0);
                     double e = AusKwh(kanal > 0.0 ? kanal : p.Entladung_gesamt);
                     if (e >= MINDEST_MWH)
                     {
-                        KR(s.id, s.name, s.kurz, EnergieflussKnotenArt.Senke, SPALTE_SENKEN, s.rang, bedarf: true);
+                        KR(s.id, s.name, s.kurz, EnergieflussKnotenart.Senke, SPALTE_SENKEN, s.rang, bedarf: true);
                         F(id, s.id, e, EnergieflussForm.Kaelte);
                         entladung += e;
                     }
@@ -719,7 +732,7 @@ namespace WindowsFormsApplication1
                 if (eb == null || !eb.KaelteErhoben) return;
                 double b = Math.Max(0.0, eb.Kaeltebedarf_Gesamt ?? 0.0);
                 if (b < MINDEST_MWH) return;
-                KR(s.id, s.name, s.kurz, EnergieflussKnotenArt.Senke, SPALTE_SENKEN, s.rang, bedarf: true);
+                KR(s.id, s.name, s.kurz, EnergieflussKnotenart.Senke, SPALTE_SENKEN, s.rang, bedarf: true);
                 double ungedeckt = Math.Max(0.0, eb.Kaelterestbedarf ?? 0.0);
                 Ungedeckt(s.id, ungedeckt, EnergieflussForm.Kaelte);
                 F(KAELTE, s.id, b - entladung - ungedeckt, EnergieflussForm.Kaelte, EnergieflussHerkunft.Abgeleitet,
@@ -745,9 +758,9 @@ namespace WindowsFormsApplication1
                     if (ladung < MINDEST_MWH) continue;
                     string id = STROMSPEICHER + i.ToString(CultureInfo.InvariantCulture);
                     string name = string.IsNullOrWhiteSpace(sp.Bezeichner) ? T(nameof(MyResource.Resource.EF_KN_STROMSPEICHER)) : sp.Bezeichner.Trim();
-                    K(id, name, T(nameof(MyResource.Resource.EF_KK_STROMSPEICHER)), EnergieflussKnotenArt.Speicher, SPALTE_SPEICHER, R_SSPEICHER);
+                    K(id, name, T(nameof(MyResource.Resource.EF_KK_STROMSPEICHER)), EnergieflussKnotenart.Speicher, SPALTE_SPEICHER, R_SSPEICHER);
                     double e = AusKwh(sp.Entladung_Gesamt), v = AusKwh(sp.Verluste_Gesamt);
-                    KR(STROMBEDARF, nameof(MyResource.Resource.EF_KN_STROMBEDARF), nameof(MyResource.Resource.EF_KK_STROMBEDARF), EnergieflussKnotenArt.Senke, SPALTE_SENKEN, R_STROMBEDARF, bedarf: true);
+                    KR(STROMBEDARF, nameof(MyResource.Resource.EF_KN_STROMBEDARF), nameof(MyResource.Resource.EF_KK_STROMBEDARF), EnergieflussKnotenart.Senke, SPALTE_SENKEN, R_STROMBEDARF, bedarf: true);
                     F(id, STROMBEDARF, e, EnergieflussForm.Strom);
                     entladung += e >= MINDEST_MWH ? e : 0.0;
                     Speicher(id, STROM, ladung, v, ladung - e - v, EnergieflussForm.Strom, R_SSPEICHER);
@@ -755,7 +768,7 @@ namespace WindowsFormsApplication1
                 }
                 if (eb != null && eb.Strombedarf_Gesamt >= MINDEST_MWH)
                 {
-                    KR(STROMBEDARF, nameof(MyResource.Resource.EF_KN_STROMBEDARF), nameof(MyResource.Resource.EF_KK_STROMBEDARF), EnergieflussKnotenArt.Senke, SPALTE_SENKEN, R_STROMBEDARF, bedarf: true);
+                    KR(STROMBEDARF, nameof(MyResource.Resource.EF_KN_STROMBEDARF), nameof(MyResource.Resource.EF_KK_STROMBEDARF), EnergieflussKnotenart.Senke, SPALTE_SENKEN, R_STROMBEDARF, bedarf: true);
                     F(STROM, STROMBEDARF, eb.Strombedarf_Gesamt - entladung, EnergieflussForm.Strom, entladung > 0.0 ? EnergieflussHerkunft.Abgeleitet : EnergieflussHerkunft.Direkt,
                       entladung > 0.0 ? T(nameof(MyResource.Resource.EF_FORMEL_DIREKT)) : "");
                 }
@@ -767,7 +780,7 @@ namespace WindowsFormsApplication1
                                  : _e.BHKW != null ? Math.Min(einspeisungMit, _e.Photovoltaik.Ueberschuss) : einspeisungMit;
                     if (einsp >= MINDEST_MWH)
                     {
-                        KR(EINSPEISUNG_PV, nameof(MyResource.Resource.EF_KN_EINSPEISUNG_PV), nameof(MyResource.Resource.EF_KK_EINSPEISUNG_PV), EnergieflussKnotenArt.Senke, SPALTE_SENKEN, R_EINSP_PV);
+                        KR(EINSPEISUNG_PV, nameof(MyResource.Resource.EF_KN_EINSPEISUNG_PV), nameof(MyResource.Resource.EF_KK_EINSPEISUNG_PV), EnergieflussKnotenart.Senke, SPALTE_SENKEN, R_EINSP_PV);
                         F(STROM, EINSPEISUNG_PV, einsp, EnergieflussForm.Strom);
                     }
                 }
@@ -783,7 +796,7 @@ namespace WindowsFormsApplication1
                 double rest = Zu(STROM) - Ab(STROM);
                 if (_bhkwStromMwh >= MINDEST_MWH && rest >= MINDEST_MWH && rest <= _bhkwStromMwh + Toleranz(Zu(STROM)))
                 {
-                    KR(EINSPEISUNG_BHKW, nameof(MyResource.Resource.EF_KN_EINSPEISUNG_BHKW), nameof(MyResource.Resource.EF_KK_EINSPEISUNG_BHKW), EnergieflussKnotenArt.Senke, SPALTE_SENKEN, R_EINSP_BHKW);
+                    KR(EINSPEISUNG_BHKW, nameof(MyResource.Resource.EF_KN_EINSPEISUNG_BHKW), nameof(MyResource.Resource.EF_KK_EINSPEISUNG_BHKW), EnergieflussKnotenart.Senke, SPALTE_SENKEN, R_EINSP_BHKW);
                     F(STROM, EINSPEISUNG_BHKW, rest, EnergieflussForm.Strom, EnergieflussHerkunft.Bilanziert);
                     _knoten[STROM].RestMwh = rest;
                     return;
@@ -805,12 +818,12 @@ namespace WindowsFormsApplication1
                 string formel = string.Format(_k, T(nameof(MyResource.Resource.EF_ZEIGER_NICHT_ZUGEORDNET)), k.Name);
                 if (rest > 0.0)
                 {
-                    KR(NICHT_ZUGEORDNET, nameof(MyResource.Resource.EF_KN_NICHT_ZUGEORDNET), nameof(MyResource.Resource.EF_KK_NICHT_ZUGEORDNET), EnergieflussKnotenArt.Senke, SPALTE_SENKEN, R_NZ);
+                    KR(NICHT_ZUGEORDNET, nameof(MyResource.Resource.EF_KN_NICHT_ZUGEORDNET), nameof(MyResource.Resource.EF_KK_NICHT_ZUGEORDNET), EnergieflussKnotenart.Senke, SPALTE_SENKEN, R_NZ);
                     F(id, NICHT_ZUGEORDNET, rest, EnergieflussForm.Rest, EnergieflussHerkunft.Bilanziert, formel);
                 }
                 else
                 {
-                    KR(NICHT_ZUGEORDNET_QUELLE, nameof(MyResource.Resource.EF_KN_NICHT_ZUGEORDNET), nameof(MyResource.Resource.EF_KK_NICHT_ZUGEORDNET), EnergieflussKnotenArt.Quelle, SPALTE_QUELLEN, R_NZ_QUELLE);
+                    KR(NICHT_ZUGEORDNET_QUELLE, nameof(MyResource.Resource.EF_KN_NICHT_ZUGEORDNET), nameof(MyResource.Resource.EF_KK_NICHT_ZUGEORDNET), EnergieflussKnotenart.Quelle, SPALTE_QUELLEN, R_NZ_QUELLE);
                     F(NICHT_ZUGEORDNET_QUELLE, id, -rest, EnergieflussForm.Rest, EnergieflussHerkunft.Bilanziert, formel);
                 }
                 _m.Hinweise.Add(string.Format(_k, T(nameof(MyResource.Resource.EF_HINWEIS_BILANZ)), k.Name, Zahl(Math.Abs(rest), _k)));
@@ -904,9 +917,9 @@ namespace WindowsFormsApplication1
                 foreach (EnergieflussFluss f in _fluesse)
                 {
                     EnergieflussKnoten von = _knoten[f.Von], nach = _knoten[f.Nach];
-                    bool amZiel = nach.IstBedarf || nach.Art == EnergieflussKnotenArt.Wandler || nach.Art == EnergieflussKnotenArt.Bus
-                                  || nach.Art == EnergieflussKnotenArt.Speicher;
-                    double bezug = amZiel ? nach.ZuflussMwh : (von.Art == EnergieflussKnotenArt.Quelle ? von.AbflussMwh : von.ZuflussMwh);
+                    bool amZiel = nach.IstBedarf || nach.Art == EnergieflussKnotenart.Wandler || nach.Art == EnergieflussKnotenart.Bus
+                                  || nach.Art == EnergieflussKnotenart.Speicher;
+                    double bezug = amZiel ? nach.ZuflussMwh : (von.Art == EnergieflussKnotenart.Quelle ? von.AbflussMwh : von.ZuflussMwh);
                     f.AnteilProzent = bezug > 0.0 ? 100.0 * f.Mwh / bezug : 0.0;
                     string z = string.Format(_k, T(nameof(MyResource.Resource.EF_ZEIGER_FLUSS)), von.Name, nach.Name, Zahl(f.Mwh, _k), Prozent(f.AnteilProzent, _k));
                     if (f.Herkunft == EnergieflussHerkunft.Bilanziert)
@@ -917,9 +930,9 @@ namespace WindowsFormsApplication1
                 }
                 foreach (EnergieflussKnoten k in knoten)
                 {
-                    string z = k.Art == EnergieflussKnotenArt.Quelle
+                    string z = k.Art == EnergieflussKnotenart.Quelle
                         ? string.Format(_k, T(nameof(MyResource.Resource.EF_ZEIGER_MENGE)), k.Name, Zahl(k.AbflussMwh, _k))
-                        : k.Art == EnergieflussKnotenArt.Senke || k.Art == EnergieflussKnotenArt.Verlust
+                        : k.Art == EnergieflussKnotenart.Senke || k.Art == EnergieflussKnotenart.Verlust
                             ? string.Format(_k, T(nameof(MyResource.Resource.EF_ZEIGER_MENGE)), k.Name, Zahl(k.ZuflussMwh, _k))
                             : string.Format(_k, T(nameof(MyResource.Resource.EF_ZEIGER_KNOTEN)), k.Name, Zahl(k.ZuflussMwh, _k), Zahl(k.AbflussMwh, _k));
                     if (!string.IsNullOrEmpty(k.Zusatz)) z += " · " + k.Zusatz;

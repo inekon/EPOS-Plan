@@ -36,11 +36,11 @@ namespace EPOS.Kern.Tests
             return e;
         }
 
-        private static EnergieflussModell Aus(ErgebnisModel e, bool englisch = false, IReadOnlyList<EnergieTraegerNachweis> traeger = null)
+        private static EnergieflussBilanz Aus(ErgebnisModel e, bool englisch = false, IReadOnlyList<EnergieTraegerNachweis> traeger = null)
             => Energiefluss.Aus(e, traeger, englisch, "Stamm", 4711);
 
         /// <summary>Jeder geprüfte Knoten schließt: Zufluss = Abfluss (die Ausgleichsbänder eingerechnet).</summary>
-        private static void AlleKnotenGeschlossen(EnergieflussModell m)
+        private static void AlleKnotenGeschlossen(EnergieflussBilanz m)
         {
             foreach (EnergieflussKnoten k in m.Knoten.Where(k => k.Geprueft))
                 Assert.True(Math.Abs(k.ZuflussMwh - k.AbflussMwh) <= Energiefluss.Toleranz(k.ZuflussMwh),
@@ -72,14 +72,14 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Nicht_simulierte_Version_hat_kein_Bild_und_einen_benannten_Grund()
         {
-            EnergieflussModell m = Energiefluss.Aus((VariantenDaten)null, false, "Variante B");
+            EnergieflussBilanz m = Energiefluss.Aus((VariantenDaten)null, false, "Variante B");
             Assert.False(m.Simuliert);
             Assert.True(m.Leer);
             Assert.Empty(m.Knoten);
             Assert.Equal("Für die Version „Variante B“ liegt kein Simulationsergebnis vor.", m.Grund);
 
             var v = new VariantenDaten { IdProjekt = 12, Variantenname = "Variante C" };
-            EnergieflussModell m2 = Energiefluss.Aus(v, true);
+            EnergieflussBilanz m2 = Energiefluss.Aus(v, true);
             Assert.False(m2.Simuliert);
             Assert.Equal("There is no simulation result for version “Variante C”.", m2.Grund);
             Assert.Contains("[flow] Energy flow — Variante C", m2.KiText());
@@ -88,7 +88,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Leere_Version_ist_simuliert_hat_aber_keine_Fluesse()
         {
-            EnergieflussModell m = Aus(new ErgebnisModel());
+            EnergieflussBilanz m = Aus(new ErgebnisModel());
             Assert.True(m.Simuliert);
             Assert.True(m.Leer);
             Assert.Empty(m.Knoten);
@@ -102,7 +102,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Waermepumpe_Heizstab_Kessel_und_Puffer_schliessen()
         {
-            EnergieflussModell m = Aus(WaermepumpeMitPuffer(socEndeKwh: 100.0));
+            EnergieflussBilanz m = Aus(WaermepumpeMitPuffer(socEndeKwh: 100.0));
 
             Assert.Equal(40.0, m.Fluss(Energiefluss.NETZBEZUG, Energiefluss.STROM), 9);
             Assert.Equal(15.0, m.Fluss(Energiefluss.STROM, Energiefluss.WP_HEIZEN), 9);
@@ -145,23 +145,23 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Fuellstandsaenderung_ab_einem_Prozent_der_Ladung_bekommt_ein_eigenes_Band()
         {
-            EnergieflussModell m = Aus(WaermepumpeMitPuffer(socEndeKwh: 600.0));
+            EnergieflussBilanz m = Aus(WaermepumpeMitPuffer(socEndeKwh: 600.0));
             string puffer = Energiefluss.PUFFER + "3:0";
             EnergieflussFluss f = m.FlussMit(puffer, Energiefluss.FUELLSTAND + puffer);
             Assert.NotNull(f);
             Assert.Equal(0.6, f.Mwh, 9);
             Assert.Equal(1.4, m.Fluss(puffer, Energiefluss.VERLUST + puffer), 9);
-            Assert.Equal(Energiefluss.SPALTE_SPEICHER + 0.5, m.KnotenMit(Energiefluss.FUELLSTAND + puffer).Spalte);
+            Assert.Equal(Energiefluss.SPALTE_SPEICHER, m.KnotenMit(Energiefluss.FUELLSTAND + puffer).Spalte);
             AlleKnotenGeschlossen(m);
         }
 
         [Fact]
         public void Verlustknoten_stehen_in_der_Luecke_neben_ihrem_Wandler()
         {
-            EnergieflussModell m = Aus(WaermepumpeMitPuffer(100.0));
+            EnergieflussBilanz m = Aus(WaermepumpeMitPuffer(100.0));
             EnergieflussKnoten v = m.KnotenMit(Energiefluss.VERLUST + Energiefluss.HEIZKESSEL);
-            Assert.Equal(EnergieflussKnotenArt.Verlust, v.Art);
-            Assert.Equal(Energiefluss.SPALTE_WANDLER_I + 0.5, v.Spalte);
+            Assert.Equal(EnergieflussKnotenart.Verlust, v.Art);
+            Assert.Equal(Energiefluss.SPALTE_WANDLER_I, v.Spalte);
         }
 
         // =====================================================================
@@ -175,7 +175,7 @@ namespace EPOS.Kern.Tests
             e.Heizkessel = new ErgebnisHeizkesselModel();
             e.Heizkessel.Module.Add(new ErgebnisHeizkesselModulModel { Brennstoff = "Gas", CarrierId = 3, Verbrauch = 10.0, Waermeproduktion = 10.5 });
             var traeger = new List<EnergieTraegerNachweis> { new EnergieTraegerNachweis { CarrierId = 3, Traeger = "Erdgas H" } };
-            EnergieflussModell m = Aus(e, traeger: traeger);
+            EnergieflussBilanz m = Aus(e, traeger: traeger);
             EnergieflussFluss k = m.FlussMit(Energiefluss.KONDENSATION, Energiefluss.HEIZKESSEL);
             Assert.Equal(0.5, k.Mwh, 9);
             Assert.Equal(EnergieflussHerkunft.Abgeleitet, k.Herkunft);
@@ -191,7 +191,7 @@ namespace EPOS.Kern.Tests
             ErgebnisModel e = Baum(netz: 8.0, heizung: 7.8);
             e.Heizkessel = new ErgebnisHeizkesselModel { Stromverbrauch = 8.0 };
             e.Heizkessel.Module.Add(new ErgebnisHeizkesselModulModel { Brennstoff = "Strom", Waermeproduktion = 7.8 });
-            EnergieflussModell m = Aus(e);
+            EnergieflussBilanz m = Aus(e);
             Assert.Equal(8.0, m.Fluss(Energiefluss.STROM, Energiefluss.ELEKTROKESSEL), 9);
             Assert.Equal(7.8, m.Fluss(Energiefluss.ELEKTROKESSEL, Energiefluss.WAERME), 9);
             Assert.Equal(0.2, m.Fluss(Energiefluss.ELEKTROKESSEL, Energiefluss.VERLUST + Energiefluss.ELEKTROKESSEL), 9);
@@ -215,7 +215,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void BHKW_Einspeisung_wird_am_Stromknoten_bilanziert()
         {
-            EnergieflussModell m = Aus(Bhkw(strombedarf: 6.0, netz: 1.0));
+            EnergieflussBilanz m = Aus(Bhkw(strombedarf: 6.0, netz: 1.0));
             EnergieflussFluss f = m.FlussMit(Energiefluss.STROM, Energiefluss.EINSPEISUNG_BHKW);
             Assert.Equal(5.0, f.Mwh, 9);
             Assert.Equal(EnergieflussHerkunft.Bilanziert, f.Herkunft);
@@ -231,7 +231,7 @@ namespace EPOS.Kern.Tests
         public void Rest_ueber_dem_BHKW_Strom_ist_nicht_zugeordnet_mit_Hinweis()
         {
             // Rest 15 > BHKW-Strom 10 + Toleranz: kein Einspeiseband, sondern „nicht zugeordnet“.
-            EnergieflussModell m = Aus(Bhkw(strombedarf: 5.0, netz: 10.0));
+            EnergieflussBilanz m = Aus(Bhkw(strombedarf: 5.0, netz: 10.0));
             Assert.Null(m.KnotenMit(Energiefluss.EINSPEISUNG_BHKW));
             EnergieflussFluss f = m.FlussMit(Energiefluss.STROM, Energiefluss.NICHT_ZUGEORDNET);
             Assert.Equal(15.0, f.Mwh, 9);
@@ -246,10 +246,10 @@ namespace EPOS.Kern.Tests
         public void Negativer_Rest_kommt_aus_der_Quellenspalte()
         {
             // Abfluss 12 bei Zufluss 10: 2 MWh fehlen auf der Zuflussseite.
-            EnergieflussModell m = Aus(Baum(strombedarf: 12.0, netz: 10.0));
+            EnergieflussBilanz m = Aus(Baum(strombedarf: 12.0, netz: 10.0));
             EnergieflussFluss f = m.FlussMit(Energiefluss.NICHT_ZUGEORDNET_QUELLE, Energiefluss.STROM);
             Assert.Equal(2.0, f.Mwh, 9);
-            Assert.Equal(EnergieflussKnotenArt.Quelle, m.KnotenMit(Energiefluss.NICHT_ZUGEORDNET_QUELLE).Art);
+            Assert.Equal(EnergieflussKnotenart.Quelle, m.KnotenMit(Energiefluss.NICHT_ZUGEORDNET_QUELLE).Art);
             Assert.Equal(-2.0, m.KnotenMit(Energiefluss.STROM).RestMwh, 9);
             Assert.Single(m.Hinweise);
         }
@@ -261,7 +261,7 @@ namespace EPOS.Kern.Tests
         [InlineData(100.0, 100.6, false)]  // 0,6 > 0,5 %
         public void Toleranz_ist_das_Groessere_aus_fuenf_Hundertstel_und_einem_halben_Prozent(double netz, double bedarf, bool geschlossen)
         {
-            EnergieflussModell m = Aus(Baum(strombedarf: bedarf, netz: netz));
+            EnergieflussBilanz m = Aus(Baum(strombedarf: bedarf, netz: netz));
             Assert.Equal(geschlossen, m.KnotenMit(Energiefluss.STROM).Geschlossen);
             Assert.Equal(geschlossen, m.Hinweise.Count == 0);
             Assert.Equal(geschlossen, m.KnotenMit(Energiefluss.NICHT_ZUGEORDNET_QUELLE) == null);
@@ -283,11 +283,11 @@ namespace EPOS.Kern.Tests
         {
             ErgebnisModel e = Baum(heizung: 30.0, warmwasser: 10.0, waermerest: 4.0);
             e.Solarthermie = new ErgebnisSolarthermieModel { Waermeproduktion = 36.0, Ueberschuss = 21.0 };
-            EnergieflussModell m = Aus(e);
+            EnergieflussBilanz m = Aus(e);
             Assert.Equal(3.0, m.Fluss(Energiefluss.UNGEDECKT, Energiefluss.HEIZUNG), 9);
             Assert.Equal(1.0, m.Fluss(Energiefluss.UNGEDECKT, Energiefluss.WARMWASSER), 9);
             Assert.Equal(27.0, m.Fluss(Energiefluss.WAERME, Energiefluss.HEIZUNG), 9);
-            Assert.Equal(EnergieflussKnotenArt.Quelle, m.KnotenMit(Energiefluss.UNGEDECKT).Art);
+            Assert.Equal(EnergieflussKnotenart.Quelle, m.KnotenMit(Energiefluss.UNGEDECKT).Art);
             Assert.Equal(30.0, m.KnotenMit(Energiefluss.HEIZUNG).ZuflussMwh, 9);
             // SK-Q3: Der Solarüberschuss ist kein Band, nur Zeigertext.
             Assert.Equal(36.0, m.KnotenMit(Energiefluss.SOLARTHERMIE).AbflussMwh, 9);
@@ -320,7 +320,7 @@ namespace EPOS.Kern.Tests
             };
             ks.Entladung_Kanal[Kanal.KUEHLUNG] = 3900.0;
             e.Pufferspeicher.Add(ks);
-            EnergieflussModell m = Aus(e);
+            EnergieflussBilanz m = Aus(e);
 
             Assert.Equal("Wärmepumpe (Heizen)", m.KnotenMit(Energiefluss.WP_HEIZEN).Name);
             Assert.Equal("Wärmepumpe (Kühlen)", m.KnotenMit(Energiefluss.WP_KUEHLEN).Name);
@@ -363,7 +363,7 @@ namespace EPOS.Kern.Tests
             {
                 Bezeichner = "Batterie", Ladung_Gesamt = 1200.0, Entladung_Gesamt = 1000.0, Verluste_Gesamt = 150.0, Einspeisung_Mit = 1800.0,
             });
-            EnergieflussModell m = Aus(e);
+            EnergieflussBilanz m = Aus(e);
             string sp = Energiefluss.STROMSPEICHER + "1";
             Assert.Equal(1.2, m.Fluss(Energiefluss.STROM, sp), 9);
             Assert.Equal(1.0, m.Fluss(sp, Energiefluss.STROMBEDARF), 9);
@@ -396,7 +396,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Kleine_Brennstofftraeger_werden_ab_vier_gebuendelt()
         {
-            EnergieflussModell m = Aus(Traeger(4));
+            EnergieflussBilanz m = Aus(Traeger(4));
             EnergieflussKnoten b = m.KnotenMit(Energiefluss.WEITERE + "traeger");
             Assert.NotNull(b);
             Assert.Equal("weitere (4)", b.Name);
@@ -411,7 +411,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Drei_kleine_Traeger_bleiben_einzeln_stehen()
         {
-            EnergieflussModell m = Aus(Traeger(3));
+            EnergieflussBilanz m = Aus(Traeger(3));
             Assert.Null(m.KnotenMit(Energiefluss.WEITERE + "traeger"));
             Assert.Equal(4, m.Knoten.Count(k => k.Id.StartsWith(Energiefluss.TRAEGER, StringComparison.Ordinal)));
         }
@@ -425,10 +425,10 @@ namespace EPOS.Kern.Tests
         {
             ErgebnisModel e = Bhkw(strombedarf: 6.0, netz: 1.0);
             e.Photovoltaik = new ErgebnisPhotovoltaikModel { Stromproduktion = 2.0, Ueberschuss = 0.0 };
-            EnergieflussModell m = Aus(e);
+            EnergieflussBilanz m = Aus(e);
             var spalten = m.Knoten.Select(k => k.Spalte).ToList();
             Assert.Equal(spalten.OrderBy(s => s).ToList(), spalten);
-            var quellen = m.Knoten.Where(k => k.Art == EnergieflussKnotenArt.Quelle).Select(k => k.Id).ToList();
+            var quellen = m.Knoten.Where(k => k.Art == EnergieflussKnotenart.Quelle).Select(k => k.Id).ToList();
             Assert.Equal(new[] { Energiefluss.NETZBEZUG, Energiefluss.PHOTOVOLTAIK, "traeger:5" }, quellen);
             // Bänder in der Reihenfolge ihrer Quellknoten.
             Assert.Equal(Energiefluss.NETZBEZUG, m.Fluesse[0].Von);
@@ -437,7 +437,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Englische_Namen_und_Zeigertexte()
         {
-            EnergieflussModell m = Aus(WaermepumpeMitPuffer(100.0), englisch: true);
+            EnergieflussBilanz m = Aus(WaermepumpeMitPuffer(100.0), englisch: true);
             Assert.Equal("Electricity", m.KnotenMit(Energiefluss.STROM).Name);
             Assert.Equal("Heat pump", m.KnotenMit(Energiefluss.WP_HEIZEN).Name);
             Assert.Equal("HP", m.KnotenMit(Energiefluss.WP_HEIZEN).Kurzname);
@@ -448,7 +448,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Zeigertexte_Marken_und_Kurznamen()
         {
-            EnergieflussModell m = Aus(WaermepumpeMitPuffer(100.0));
+            EnergieflussBilanz m = Aus(WaermepumpeMitPuffer(100.0));
             EnergieflussFluss f = m.FlussMit(Energiefluss.NETZBEZUG, Energiefluss.STROM);
             Assert.Equal("Netzbezug → Strom: 40,0 MWh/a (100 %)", f.Zeigertext);
             Assert.Equal("fluss:netzbezug:strom", f.Marke);
@@ -466,7 +466,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void KI_Flussliste_nennt_jedes_Band_mit_Herkunft()
         {
-            EnergieflussModell m = Aus(Bhkw(strombedarf: 6.0, netz: 1.0));
+            EnergieflussBilanz m = Aus(Bhkw(strombedarf: 6.0, netz: 1.0));
             string ki = m.KiText();
             Assert.StartsWith("[fluss] Energiefluss — Stamm", ki);
             Assert.Contains("Netzbezug → Strom: 1,00 MWh/a (9 %) · direkt", ki);
