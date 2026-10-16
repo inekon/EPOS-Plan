@@ -21,7 +21,7 @@ Das Papier führt den gültigen Stand und wird bei jedem Push nachgeführt.
 | Referenzbasis | **R55** `Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral`, 37 Projekte; nächste Basen R56 KB-5, R57 SA4; CI-Auswahl laut `CLAUDE.md` |
 | Testdatenbank | Schemastand **233** (Git LFS, 108 728 320 Byte, SHA-256 `e6aef7ded55a644cab3d70e1f49fd76f63376e6efd035191a96fcfbad5e08562`) |
 | Schemakette | 228 `GeraetekostenEntfallSchema` → 229 `StromspeicherKostenSchema` → 230 `KaeltebedarfsprofilVorlagenSchema` → 231 `RaumnutzungDinWerteSchema` (DA-6) → 232 `BauteilkatalogAbschnittSchema` (BK-5/BK-6) → 233 `BauteilUHerkunftSchema` (MA-6b, E149); 234 KBP-5, 235 KB-7 und 236 KBP-4 anderer Sitzungen hängen an 233. Die Kette hängt immer über `+ 1` an der Vorgängerklasse |
-| Statuszeilen | höchste vergebene **#1115** (N4 #1097, N5 #1098, VS #1099, DA-6 #1110, BK-5/BK-6 #1111, MA-6b #1112, BK-7 #1114, KIS #1115; #1100–#1104 anderer Sitzungen); vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E153**, **E154 frei** |
+| Statuszeilen | höchste vergebene **#1129** (BK-7b #1126, BK-8 #1127, BK-8b #1128, Papierpflege #1129); davor **#1115** (N4 #1097, N5 #1098, VS #1099, DA-6 #1110, BK-5/BK-6 #1111, MA-6b #1112, BK-7 #1114, KIS #1115; #1100–#1104 anderer Sitzungen); vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E158** |
 | Nachbarsitzungen | Kennungen stehen in den Commit-Trailern `Claude-Session` auf origin: Kältebedarf (KB-4/KB-5, Schritt 229) seit 16.10.2026 `session_01LxWpn8bgrFYtFBXppoeoCL` (Hebung 229 angekündigt im Statuskopf ab 02:00 UTC, 230 noch nicht auf origin; zuvor `session_0178YLFEbS4xWdGaXFaZqG1r`), Dialoge und Korrekturen Cloud (KBP-2) `session_01Mt7MsJGzcGr77yqBsxwpLj`, Anlagendialog/ChartProben (R55) `session_01UNeGChCYZu2EpgFx4P3q1q`. Abfrage: `git log --format='%(trailers:key=Claude-Session,valueonly)' -n 80 origin/ios_migration_september | sort | uniq -c` |
 | Lokale Sitzung | „Epos Lokal“ auf dem Rechner des Anwenders (Rechner, HSETU-Daten, Normen); der Anwender startet sie, Importlauf und DA-6-Lieferung sind geliefert |
 | Rückkanal an Epos Lokal | Git-Postfach auf dem verwaisten Zweig `claude/postfach-epos-lokal`, Datei `Quellen/Postfach/an_EPOS_Lokal.md`; je Nachricht eine Überschrift `## <Nr> · <UTC> · <Betreff>`, unten anhängen, Commit mit `[skip ci]`, der Zweig wird nie gemergt. Epos Lokal holt alle 10 Minuten und antwortet per SendMessage. Nachricht 1 (`46d252dc8`) ist bestätigt; der offene Auftrag E147/E148 (zweiter Importlauf und Bereinigung) startet mit Nachricht 2 nach dem Push |
@@ -46,6 +46,7 @@ die Stufenübersicht in der [Statusdatei Gebäudesimulation](../Status_Gebaeudes
 | N1 bis N3, BK-3d | #1091 bis #1094 | Nachzüge Oberfläche und Kern |
 | N4, N5, VS | #1097 bis #1099 | Feiertagsverweis und Gebäude-Höchsttemperatur im Austausch; Wochenvorschau nach Neulesen und „Klimaregion wählen…“; Bedienbegriff „Vollständigkeit“ statt „Befund“ (E145); gebaut, Push folgt |
 | DA-6, BK-5/BK-6, MA-6b | #1110 bis #1112 | DIN-Nutzungsprofile mit Werten (Schritt 231); Abschnitte und Fensteraufbauten im Bauteilkatalog (Schritt 232); Hand-U beim Wiederimport (Schritt 233); gebaut, Push folgt |
+| BK-7b, BK-8, BK-8b, Papierpflege | #1126 bis #1129 | Teilkataloge aus `Katalog_Zuordnung.csv`; inhomogene Aufbauten nach DIN EN ISO 6946 6.7 (Schichtzahl, Restanteil), normgerechte Teilung, Fehlerschranke e, Vorschau zählt U-Änderungen; 25 erledigte Papiere nach `ueberholt/`; umgesetzt |
 | BK-7, KIS | #1114, #1115 | Teilkatalog in der Quelle und Unterordner `Export` beim Bauteilkatalog-Import; KI-Sicht für Fensterwerte, Abschnitte und U-Herkunft, Herkunftszeile im Bauteildialog; gebaut, Push folgt |
 | Wiki | #1061, #1085 | Wiki-Quellen und Logbuch-Entwurf; **kein Upload** |
 
@@ -78,17 +79,17 @@ Festlegungen, die Folgewellen kennen müssen:
 
 ## 4. Nächste Arbeit (Reihenfolge)
 
-1. Erledigt: Runde 231/232 und 233 (#1110–#1112, CI-Vermerke eingetragen), BK-7 (#1114) und KIS (#1115); als Nächstes Push, dann DA-8 (E151) nach 236 und SA4 (E153) nach R56.
+1. Erledigt: BK-7b, BK-8, BK-8b, Papierpflege (#1126–#1129); Runde 231/232 und 233 (#1110–#1112, CI-Vermerke eingetragen), BK-7 (#1114) und KIS (#1115); als Nächstes Push, dann DA-8 (E151) nach 236 und SA4 (E153) nach R56.
 2. Nachzüge aus MA-6: ein nur im Kalendereditor geänderter Kalender markiert die Zone nicht; Zonenfelder im Zonendialog ohne MANUELL nimmt die Datei.
 3. Nachzugsliste (erledigt mit N4/N5: Klimaregion wählen, Wochenvorschau, Maximaleraumtemperatur, Feiertagsperioden): KI-Sicht für Fensterwerte und Abschnitte, Importdialog Unterordner `Export`, DA-8 nur auf eigenen Entscheid (F8 (a)); offen aus N4/N5/VS: Herkunftszeile in der Klimaregion-Überlagerung; eine offene Wärmebedarfsansicht liest die neue Region erst beim nächsten Öffnen; Bezeichner mit Zeilenumbruch bricht den gbXML-Block; gbXML führt Feiertage nur als Tagtyp `Holiday`; nicht umbenannte „Befund“-Texte `ADM_DUBLETTEN_BAUM`, `BHW_K_LEER`.
 4. BK-7 und KI-Sicht sind erledigt (#1114, #1115); BK-4 (LocalDB-Werkzeug) nur für einen neuen Katalogstand.
 5. Wiki-Quellen für BK-5/BK-6 und DA-6; Sammel-Upload nur auf Zuruf (E144, Version 1.2.0.12 laut Empfehlung). Der am 14.10.2026 vorbereitete Upload (Logbuch „Version 1.2.0.11“ in `Werkzeuge/WikiUpload/logbuch.wiki`, 33 abweichende Seiten) ist nicht geladen; vor dem Upload die Versionsnummer gegen das Wiki bestätigen. Aus der Cloud nur, wenn `WIKI_BOT_USER`/`WIKI_BOT_PASS` als Umgebungsgeheimnisse hinterlegt sind, sonst lokal über „Epos Lokal“ (`py -3 Werkzeuge\WikiUpload\wiki_upload.py --seiten`, dann `--logbuch`); danach Statuszeile und `Wiki_Update_2026-09-26.md` nachführen.
-6. SA4 (Referenzprojekt Schnellaufheizung): Basis-Abstimmung offen — die Kältebedarf-Sitzung meldet für KB-5 „Basis bleibt R55“, ob R56 noch kommt, ist offen.
-7. Zweiter Importlauf des Bauteilkatalogs (Epos Lokal, E147/E148) nach dem Push über das Postfach.
+6. SA4 (Referenzprojekt Schnellaufheizung): R56 liegt (`f33367c39`), SA4 in Arbeit (E153), Basis wird R57.
+7. Zweiter Importlauf des Bauteilkatalogs: erledigt (E147/E148); Vorschau BK-7b/BK-8/BK-8b über das Postfach.
 
 ## 5. Offen beim Anwender
 
-- „Epos Lokal“ starten (Rechner, HSETU-Daten, Normen), wenn die Runde 231/232 gepusht ist.
+- „Epos Lokal“ starten (Rechner, HSETU-Daten, Normen), wenn die Runde 231/232 gepusht ist. Die Datenbank-Einstellung beim Anwender ist erledigt.
 - Gemeinsame Sichtabnahme unter Windows nach dem Push von 232 (E146): Ampelleiste, Fensterteil, Abschnitte, Gebäudedialoge, IFC-Punkte.
 - Zweiter Importlauf des Bauteilkatalogs nach dem Push von 232 (E147), Sicherung vorher; dabei Bereinigung des einen Importsatzes mit Name und Gruppe eines Auslieferungssatzes (E148).
 - Windows-Sichtabnahme N5 (A-N5-1 bis A-N5-4, Protokoll N5, Abschnitt „Sichtabnahme Windows“).
