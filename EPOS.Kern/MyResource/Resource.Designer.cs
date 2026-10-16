@@ -7368,7 +7368,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Angaben stehen seit Etappe B5 im eigenen Dialog „BHKW-Wirtschaftlichkeit“ — dort zusammen mit den Werten je BHKW-Modul, den Herleitungen und der Vorschau. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Angaben stehen im eigenen Dialog „BHKW-Wirtschaftlichkeit“ — dort zusammen mit den Werten je BHKW-Modul, den Herleitungen und der Vorschau. ähnelt.
         /// </summary>
         public static string BHW_PARAM_VERWEIS {
             get {

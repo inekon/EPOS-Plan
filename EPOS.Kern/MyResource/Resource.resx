@@ -11984,7 +11984,7 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>BHKW — KWKG, Energie- und Stromsteuer</value>
   </data>
   <data name="BHW_PARAM_VERWEIS" xml:space="preserve">
-    <value>Diese Angaben stehen seit Etappe B5 im eigenen Dialog „BHKW-Wirtschaftlichkeit“ — dort zusammen mit den Werten je BHKW-Modul, den Herleitungen und der Vorschau.</value>
+    <value>Diese Angaben stehen im eigenen Dialog „BHKW-Wirtschaftlichkeit“ — dort zusammen mit den Werten je BHKW-Modul, den Herleitungen und der Vorschau.</value>
   </data>
   <data name="VPOS_TITEL" xml:space="preserve">
     <value>Position bearbeiten</value>
