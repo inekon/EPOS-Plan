@@ -282,6 +282,13 @@ namespace WindowsFormsApplication1
                     U_WM2K = 1.0 / grenzen.RT_M2KW,
                     RT_Oben_M2KW = grenzen.RT_Oben_M2KW,
                     RT_Unten_M2KW = grenzen.RT_Unten_M2KW,
+                    Fehlerschranke = grenzen.Fehlerschranke,
+                    // BK-8b: über der Höchstgrenze nach 6.7.2.5 ein Hinweis, der Rechenweg bleibt das Mittel.
+                    Hinweis = grenzen.FehlerschrankeUeberschritten
+                        ? string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BTA_HINWEIS_FEHLERSCHRANKE,
+                                        (grenzen.Fehlerschranke * 100.0).ToString("0.0", CultureInfo.CurrentCulture),
+                                        (InhomogeneSchichten.FEHLERSCHRANKE_GRENZE * 100.0).ToString("0", CultureInfo.CurrentCulture))
+                        : "",
                     Kapazitaet_KJM2K = k.Kapazitaet_JM2K / JE_KILO
                 };
             if (!mitBezugsperiode) return ergebnis;

@@ -54452,6 +54452,12 @@ Chart</value>
   <data name="BTA_SUMME_RT_MITTEL" xml:space="preserve">
     <value>R_T = (R'_T + R''_T) / 2 = {0} m²K/W</value>
   </data>
+  <data name="BTA_SUMME_FEHLERSCHRANKE" xml:space="preserve">
+    <value>Fehlerschranke e = (R'_T − R''_T) / (2 R_T) = {0} %</value>
+  </data>
+  <data name="BTA_HINWEIS_FEHLERSCHRANKE" xml:space="preserve">
+    <value>Die Fehlerschranke e = {0} % liegt über {1} % (R'_T / R''_T über 1,5): Das vereinfachte Verfahren nach DIN EN ISO 6946, 6.7 ist für diesen Aufbau ungenau; gerechnet wird weiter mit dem Mittel R_T.</value>
+  </data>
   <data name="BTA_GRUPPE_FENSTER" xml:space="preserve">
     <value>Fenster</value>
   </data>
@@ -54732,7 +54738,7 @@ Chart</value>
     <value>Durchsuchen…</value>
   </data>
   <data name="BKI_HINWEIS" xml:space="preserve">
-    <value>Wählen Sie die Datei Baustoffe.csv des CSV-Exports; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv und Basis_Auszug.csv liegen daneben, Katalog.csv und Katalog_Inhalt.csv ergänzen die Teilkataloge. Liegt Baustoffe.csv im Unterordner Export, genügt der Ordner darüber. Die Vorschau schreibt nichts.</value>
+    <value>Wählen Sie die Datei Baustoffe.csv des CSV-Exports; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv und Basis_Auszug.csv liegen daneben, Katalog.csv und Katalog_Zuordnung.csv ergänzen die Teilkataloge (fehlt Katalog_Zuordnung.csv, gilt Katalog_Inhalt.csv). Liegt Baustoffe.csv im Unterordner Export, genügt der Ordner darüber. Die Vorschau schreibt nichts.</value>
   </data>
   <data name="BKI_FILTER" xml:space="preserve">
     <value>Baustoffe.csv|Baustoffe.csv|CSV-Dateien (*.csv)|*.csv</value>
@@ -54807,7 +54813,28 @@ Chart</value>
     <value>Baustoffe.csv liegt im Unterordner Export; gelesen wird dieser Ordner: {0}</value>
   </data>
   <data name="BKI_TEILKATALOGE" xml:space="preserve">
-    <value>Teilkataloge: {0}; die Quelle nennt sie an {1} Baustoffen und {2} Aufbauten.</value>
+    <value>Teilkataloge: {0} von {1} der Quelle, zugeordnet über {2}; die Quelle nennt sie an {3} Baustoffen und {4} Aufbauten, zwei oder mehr an {5} Baustoffen und {6} Aufbauten; ohne Teilkatalog bleiben {7} Baustoffe und {8} Aufbauten.</value>
+  </data>
+  <data name="BKI_GRUND_DICKEN" xml:space="preserve">
+    <value>inhomogen: Abschnitte verschiedener Schichtzahl mit verschiedener Gesamtdicke</value>
+  </data>
+  <data name="BKI_GRUND_LUFTSCHICHT" xml:space="preserve">
+    <value>inhomogen: ruhende Luftschicht müsste an einer Schichtgrenze geteilt werden</value>
+  </data>
+  <data name="BKI_GRUND_OHNE_DICKE" xml:space="preserve">
+    <value>inhomogen: Schicht ohne Dicke in Abschnitten verschiedener Schichtzahl</value>
+  </data>
+  <data name="BKI_INHOMOGEN" xml:space="preserve">
+    <value>Inhomogene Aufbauten: {0} an gemeinsamen Schichtgrenzen geteilt (verschiedene Schichtzahl oder versetzte Grenzen je Abschnitt, {1} Teilschichten zusätzlich); {2} fehlende Flächenanteile als Rest zu 1 eingesetzt.</value>
+  </data>
+  <data name="BKI_PROT_ANTEIL" xml:space="preserve">
+    <value>Flächenanteil als Rest zu 1 eingesetzt (Abschnitt {0}: {1}): {2}</value>
+  </data>
+  <data name="BKI_PROT_GETEILT" xml:space="preserve">
+    <value>Schichten an gemeinsamen Schichtgrenzen geteilt ({0} → {1} Schichten): {2}</value>
+  </data>
+  <data name="BKI_WIEDERIMPORT" xml:space="preserve">
+    <value>Wiederimport: {0} Aufbauten im Katalog bekommen durch die Teilung an gemeinsamen Schichtgrenzen andere Schichten; {1} davon ändern ihren U-Wert um mehr als 1 % (größte Änderung {2} %).</value>
   </data>
   <data name="BKI_UEBERNEHMEN" xml:space="preserve">
     <value>Übernehmen</value>
