@@ -159,7 +159,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Stehen die Satzvorlagen der Katalogsätze als eigene Gruppe hinter den Varianten?</b>
-        /// (Welle KB-4, Empfehlung der Orchestrierung — der Anwenderentscheid steht aus.) <c>false</c>
+        /// (Welle KB-4; Anwenderentscheid 16.10.2026: die Gruppe bleibt.) <c>false</c>
         /// mischt sie wieder zwischen die Varianten: <b>die Umkehr ist diese eine Zeile.</b>
         /// </summary>
         public const bool KATALOGSAETZE_GRUPPIEREN = true;
