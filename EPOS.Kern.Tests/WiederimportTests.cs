@@ -379,6 +379,103 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain("Handwoche", Wochen(idGebaeude, buero.ID));
         }
 
+        /// <summary>
+        /// Nachzug N6 (MA-6 a und c): Ein Knopf des Kalendereditors, der allein an der Konditionierung einer Projektzone schreibt
+        /// (<see cref="KonditionierungCtrl.Vorgabe"/>, Schrittweg), markiert die Zone MANUELL; ebenso ändern Beheizung, Luftwechsel
+        /// und Bewohner im Zonendialog. Der Wiederimport bewahrt dann Kalender und Felder. Gegenproben: eine Vorgabe am Gebäude
+        /// markiert keine Zone; eine unberührte Zone nimmt die Beheizung der Datei.
+        /// </summary>
+        [Fact]
+        public async Task Kalenderknopf_und_uebrige_Zonenfelder_markieren_die_Zone_und_ueberstehen_den_Wiederimport()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            var ctrl = new ProjektGebaeudeCtrl();
+            ctrl.ReadAll(1045);
+            int idGebaeude = ctrl.items[0].ID_Gebaeude;
+            string v1 = Probehaus("ma6n6_v1", false);
+            var h = new GebaeudeMehrzonenHuelle(() => idGebaeude, 1045, ios: false);
+            Assert.Null(await Vormerken(h, v1, QuelleVon(v1)));
+            Assert.Null(h.Schreiben());
+            List<ZoneModel> erst = Zonen(idGebaeude);
+            Assert.Equal(3, erst.Count);
+            ZoneModel halle = erst.OrderByDescending(z => z.Nutzflaeche ?? 0).First();
+            ZoneModel buero = erst.Single(z => z.ID != halle.ID && z.Bauteile.Any(b => b.Neigung is double n && Math.Abs(n - 90.0) < 1e-6));
+            ZoneModel lager = erst.Single(z => z.ID != halle.ID && z.ID != buero.ID);
+            Assert.All(erst, z => Assert.NotEqual(DbWerte.HERKUNFT_MANUELL, z.Herkunft));
+            Assert.All(erst, z => Assert.True(z.IstBeheizt));
+
+            // Gegenprobe: eine Vorgabe am Gebäude markiert keine Zone.
+            var kond = new KonditionierungCtrl();
+            KonditionierungCtrl.Ergebnis g = kond.Vorgabe(KonditionierungCtrl.Eigner.Gebaeude(idGebaeude), Konditionierungsgroesse.Geraete,
+                                                          DbWerte.KOND_ZEILE_WOCHENENDE, Matrixzelle.AusWert(0.2));
+            Assert.True(g.Ok, g.Meldung);
+            Assert.All(Zonen(idGebaeude), z => Assert.NotEqual(DbWerte.HERKUNFT_MANUELL, z.Herkunft));
+
+            // (a) Ein Knopf des Kalendereditors an der Halle, ohne den OK-Weg des Zonendialogs.
+            KonditionierungCtrl.Ergebnis k = kond.Vorgabe(KonditionierungCtrl.Eigner.Zone(idGebaeude, halle.ID), Konditionierungsgroesse.Geraete,
+                                                          DbWerte.KOND_ZEILE_WOCHENENDE, Matrixzelle.AusWert(0.3));
+            Assert.True(k.Ok, k.Meldung);
+            Dictionary<int, ZoneModel> markiert = Zonen(idGebaeude).ToDictionary(z => z.ID);
+            Assert.Equal(DbWerte.HERKUNFT_MANUELL, markiert[halle.ID].Herkunft);
+            string halleVorgaben = Vorgabetext(idGebaeude, halle.ID);
+            Assert.Contains("WOCHENENDE", halleVorgaben);
+
+            // (c) Beheizung, Luftwechsel und Bewohner am Lager im OK-Weg des Zonendialogs.
+            List<ZoneModel> dialog = Zonen(idGebaeude);
+            ZoneModel l = dialog.Single(z => z.ID == lager.ID);
+            l.IstBeheizt = false;
+            l.Luftwechsel_Infiltration = 0.35;
+            l.Bewohner = 3.0;
+            GebaeudeZonenCtrl.Schreibergebnis ok = new GebaeudeZonenCtrl().Schreiben(idGebaeude, dialog, null,
+                new Dictionary<int, Konditionierungsstand>());
+            Assert.True(ok.Ok, ok.Meldung);
+            markiert = Zonen(idGebaeude).ToDictionary(z => z.ID);
+            Assert.Equal(DbWerte.HERKUNFT_MANUELL, markiert[lager.ID].Herkunft);
+            Assert.NotEqual(DbWerte.HERKUNFT_MANUELL, markiert[buero.ID].Herkunft);
+
+            // Wiederimport der geänderten Fassung.
+            string v2 = Probehaus("ma6n6_v2", true);
+            Assert.NotNull(await Vormerken(h, v2, MehrzonenuebernahmeCtrl.Quelle(idGebaeude)));
+            Assert.Null(h.Schreiben());
+            Dictionary<int, ZoneModel> zweit = Zonen(idGebaeude).ToDictionary(z => z.ID);
+            Assert.Equal(halleVorgaben, Vorgabetext(idGebaeude, halle.ID));
+            Assert.False(zweit[lager.ID].IstBeheizt);
+            Assert.Equal(0.35, zweit[lager.ID].Luftwechsel_Infiltration!.Value, 9);
+            Assert.Equal(3.0, zweit[lager.ID].Bewohner!.Value, 9);
+            Assert.True(zweit[buero.ID].IstBeheizt);
+        }
+
+        /// <summary>Die Vorgabezeilen einer Zone als Text (Größe, Zeile, Wert, aus).</summary>
+        private static string Vorgabetext(int idGebaeude, int idZone)
+            => string.Join(";", DataRepository.GetDataTable(
+                "SELECT \"Groesse\", \"Zeile\", COALESCE(\"Wert\", -1), \"Aus\" FROM \"Tab_Konditionierungsvorgabe\" WHERE \"ID_Gebaeude\" = ? AND \"ID_Zone\" = ? ORDER BY \"Groesse\", \"Zeile\"",
+                new DbParam("@g", idGebaeude), new DbParam("@z", idZone)).Rows.Cast<DataRow>()
+                .Select(r => string.Join(",", r.ItemArray.Select(o => Convert.ToString(o, CultureInfo.InvariantCulture)))));
+
+        /// <summary>Nachzug N6 (MA-6 c): jedes weitere Feld des Zonendialogs, das eine Datei tragen kann, zählt als Handänderung.</summary>
+        [Fact]
+        public void Handfelder_erkennen_die_uebrigen_Felder_des_Zonendialogs()
+        {
+            var alt = new ZoneModel { ID = 1, IstBeheizt = true, Nutzungsprofil = "Büro", Luftwechsel_Infiltration = 0.2, Bewohner = 2.0 };
+            Assert.False(GebaeudeZonenCtrl.HandfelderGeaendert(alt, alt.Kopie()));
+            var aenderungen = new List<Action<ZoneModel>>
+            {
+                z => z.IstBeheizt = false, z => z.Kuehlung_Aktiv = true, z => z.Heizung_Strahlungsanteil = 0.4,
+                z => z.Luftwechsel_Infiltration = 0.3, z => z.Luftwechsel_Nutzer = 1.0, z => z.Interne_Waermegewinne = 5.0,
+                z => z.Bewohner = 4.0, z => z.Aussenluft_Person = 30.0, z => z.Licht_W_m2 = 8.0, z => z.Personen_Waerme_W = 80.0,
+                z => z.Nutzungsprofil = "Lager",
+            };
+            foreach (Action<ZoneModel> a in aenderungen)
+            {
+                ZoneModel neu = alt.Kopie();
+                a(neu);
+                Assert.True(GebaeudeZonenCtrl.HandfelderGeaendert(alt, neu));
+            }
+            Assert.False(GebaeudeZonenCtrl.HandfelderGeaendert(alt, new ZoneModel { ID = 1, IstBeheizt = true, Nutzungsprofil = " Büro ",
+                                                                                     Luftwechsel_Infiltration = 0.2, Bewohner = 2.0 }));
+        }
+
         /// <summary>Alle Zonen und Bauteile des Gebäudes als Text (Id und Felder).</summary>
         private static string Abbild(int idGebaeude)
             => string.Join("|", Zonen(idGebaeude).OrderBy(z => z.ID).Select(z =>
