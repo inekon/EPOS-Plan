@@ -605,7 +605,33 @@
                                       Simulation="ModellpruefungSimulation" Ansicht="ModellpruefungAnsicht"
                                       AnsichtGruppe="ModellpruefungAnsichtGruppe"
                                       Bearbeiten="@ModellpruefungBearbeitenWirt" Geaendert="ModellpruefungGeaendert"
+                                      Klimaregion="@KlimaregionWirt"
                                       StartGruppe="@_modellpruefungStartGruppe" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- N5: „Klimaregion waehlen…" aus Gruppe 4 des Ampelblatts - die Klimaregion des Projekts aus derselben Liste wie die
+       Kopfleiste; steht ueber dem Ampelblatt. Nach dem Speichern prueft das Blatt neu, der Editor liest nach (Prueffassung). *@
+    <Ueberlagerung Offen="@(_klimaregion is not null)" Titel="@Resource.MPB_KLIMA_TITEL" Geschlossen="KlimaregionFertig">
+        <KindInhalt>
+            @if (_klimaregion is not null)
+            {
+                <div class="epos-klimawahl">
+                    <Herleitungszeile Text="@Resource.MPB_KLIMA_TEXT" />
+                    <Suchauswahl Bezeichnung="@Resource.MPB_KLIMA_LABEL" Kurzname="@Resource.MPB_KLIMA_LABEL"
+                                 Eintraege="@_klimaregion.Eintraege" Auswahl="@_klimaWahl" AuswahlChanged="KlimaregionGewaehlt" />
+                    @if (_klimaMeldung.Length > 0)
+                    {
+                        <p class="epos-kond-feldmeldung epos-klimawahl-meldung" role="alert">@_klimaMeldung</p>
+                    }
+                    <div class="epos-leiste">
+                        <button type="button" class="epos-knopf epos-knopf--primaer epos-klimawahl-uebernehmen"
+                                disabled="@(_klimaWahl is null)" @onclick="KlimaregionUebernehmen">@Resource.ALLG_BTN_OK</button>
+                        <button type="button" class="epos-knopf epos-klimawahl-abbrechen"
+                                @onclick="KlimaregionFertig">@Resource.ALLG_BTN_ABBRECHEN</button>
+                    </div>
+                </div>
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -2618,6 +2644,92 @@
     /// <summary>„Nutzung und Kalender…" im Reiter „Zonen" des Editors für die Projektzeile des offenen Editors.</summary>
     private Func<ZonenNutzungWeg?>? ZonenNutzungEditorWirt
         => Wizard || ZonenNutzungGaben is null || _projektZeile is null ? null : () => ZonenNutzungGaben(_projektZeile);
+
+    // =====================================================================
+    //  N5: „Klimaregion wählen…" aus Gruppe 4 des Ampelblatts
+    // =====================================================================
+
+    /// <summary>
+    /// N5: der Weg der Klimaregionwahl (Hülle <c>GebaeudeHuelle.KlimaregionWeg</c>) — Liste der Kopfleiste, Region des Projekts,
+    /// Speicherweg; <c>null</c> als Ergebnis = kein Projekt. Ohne Delegat nennt der Knopf, wo die Region gewählt wird; im
+    /// Assistenten nie.
+    /// </summary>
+    [Parameter] public Func<GebaeudeKlimaregionWeg?>? KlimaregionGaben { get; set; }
+
+    private GebaeudeKlimaregionWeg? _klimaregion;
+    private int? _klimaWahl;
+    private string _klimaMeldung = "";
+
+    /// <summary>Steht die Klimaregionwahl offen? (Prüfhilfe für Tests)</summary>
+    public bool KlimaregionOffen => _klimaregion is not null;
+
+    /// <summary>Der Weg des Knopfs im Ampelblatt — nicht im Assistenten, nur mit Delegat.</summary>
+    private EventCallback KlimaregionWirt
+        => Wizard || KlimaregionGaben is null ? default : EventCallback.Factory.Create(this, KlimaregionOeffnen);
+
+    private void KlimaregionOeffnen()
+    {
+        if (KlimaregionGaben is null) return;
+        GebaeudeKlimaregionWeg? weg;
+        try { weg = KlimaregionGaben(); }
+        catch (Exception ex) when (ex is not OutOfMemoryException) { Melden(ex.Message, WarnStufe.Warnung); return; }
+        if (weg is null) { Melden(Resource.MPB_HINWEIS_KLIMA, WarnStufe.Hinweis); return; }
+        _klimaregion = weg;
+        _klimaWahl = weg.Gewaehlt;
+        _klimaMeldung = "";
+    }
+
+    private void KlimaregionGewaehlt(int? id)
+    {
+        _klimaWahl = id;
+        _klimaMeldung = "";
+    }
+
+    private void KlimaregionFertig()
+    {
+        _klimaregion = null;
+        _klimaWahl = null;
+        _klimaMeldung = "";
+    }
+
+    /// <summary>
+    /// OK der Klimaregionwahl: schreibt die Region an das Projekt (unverändert = nur schließen); ein benannter Grund bleibt am
+    /// Feld stehen. Danach liest der Dialog die abhängigen Werte neu (<see cref="KlimaregionNachziehen"/>).
+    /// </summary>
+    private void KlimaregionUebernehmen()
+    {
+        if (_klimaregion is not { } weg || _klimaWahl is not int id) return;
+        if (id == weg.Gewaehlt) { KlimaregionFertig(); return; }
+        string? grund;
+        try { grund = weg.Speichern(id); }
+        catch (Exception ex) when (ex is not OutOfMemoryException) { grund = ex.Message; }
+        if (grund is not null) { _klimaMeldung = grund; return; }
+        string name = weg.Eintraege.FirstOrDefault(e => e.Id == id).Text ?? "";
+        KlimaregionFertig();
+        KlimaregionNachziehen();
+        Melden(Format(Resource.MPB_KLIMA_GESPEICHERT, name), WarnStufe.Hinweis);
+    }
+
+    /// <summary>
+    /// Nach dem Wechsel der Klimaregion: Das Ampelblatt prüft neu; der Editor bekommt den Konditionierungsweg mit dem Raster der
+    /// neuen Region (Wochentag des 1. Januar, Feiertagsjahr) und liest über die Prüffassung die Gebäudefelder (Feiertagsland,
+    /// Konditionierung) und Zonen neu — wie nach einer Übernahme (N3), mit ungespeicherten Änderungen daran nicht.
+    /// </summary>
+    private void KlimaregionNachziehen()
+    {
+        if (_projektGaben is not null && _projektZeile is not null && ProjektGaben is not null)
+        {
+            try
+            {
+                if (ProjektGaben(_projektZeile) is { } frisch && frisch.TryGetValue("Konditionierung", out object? k))
+                    _projektGaben = new Dictionary<string, object>(_projektGaben) { ["Konditionierung"] = k };
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException) { Melden(ex.Message, WarnStufe.Warnung); }
+        }
+        _pruefFassung++;
+        _modellpruefungsblatt?.Auffrischen();
+        if (_modellpruefungZeile is { } z) ZeileAuffrischen?.Invoke(z);
+    }
 
     /// <summary>Eine Übernahme oder Rücknahme hat geschrieben: die Kennwerte der Zeile neu lesen.</summary>
     private void ModellpruefungGeaendert()
