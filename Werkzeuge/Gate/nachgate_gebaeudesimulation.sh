@@ -5,7 +5,7 @@
 set -u
 export DOTNET_ROOT=/usr/lib/dotnet DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1 PYTHONIOENCODING=utf-8
 WT="$1"; GATELOG="$2"; LOG="$(dirname "$WT")/nachgate_$(basename "$WT").log"
-REFBASIS="${REFBASIS:-Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral}"  # aktuelle Basis aus Referenzlaeufe/LIESMICH.md
+REFBASIS="${REFBASIS:-Referenzlaeufe/2026-10-16_R56_Wasserkosten}"  # aktuelle Basis aus Referenzlaeufe/LIESMICH.md
 XU='-- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2'
 until grep -q 'GATE-ENDE' "$GATELOG"; do sleep 30; done
 cd "$WT" || exit 2
@@ -47,10 +47,9 @@ fi
 if [ "${REF:-0}" = 1 ]; then
   schritt "7 Referenzlauf 12 CI-Projekte gegen $(basename "$REFBASIS")"
   ZIEL="${ZIEL:-${TMPDIR:-/tmp}/referenzlauf_nachgate}"; rm -rf "$ZIEL"; mkdir -p "$ZIEL"
-  # --ohne: zwei Kaelteschluessel, die die Basis noch nicht fuehrt (Referenzlaeufe/LIESMICH.md, aktuelle Basis).
   if dotnet build EPOS.Referenzlauf -c Release -nologo -v q -clp:ErrorsOnly >> "$LOG" 2>&1 \
      && dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017,1045,1046,1047,1049,1051,1058,1060,1063,1065 --ziel "$ZIEL" >> "$LOG" 2>&1 \
-     && { dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich "$REFBASIS" "$ZIEL" --ohne Kaelte.DeckungsgradGesamtProzent,Kaelte.DeckungsgradKaeltefolgeProzent > "$ZIEL/vergleich.txt" 2>&1 || true; } && grep -q 'Projekt_[0-9]*: PASS' "$ZIEL/vergleich.txt"; then
+     && { dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich "$REFBASIS" "$ZIEL" > "$ZIEL/vergleich.txt" 2>&1 || true; } && grep -q 'Projekt_[0-9]*: PASS' "$ZIEL/vergleich.txt"; then
     cat "$ZIEL/vergleich.txt" >> "$LOG"
     echt=$(grep -E '^Projekt_[0-9]+: FAIL' "$ZIEL/vergleich.txt" | grep -vc 'nicht vorhanden')
     if [ "$echt" = 0 ]; then ergebnis "7 Referenzlauf" "PASS ($(grep -c ': PASS' "$ZIEL/vergleich.txt") Projekte PASS, $(grep -o '[0-9]* Werte' "$ZIEL/vergleich.txt" | awk '{s+=$1} END {print s}') Werte)"; else ergebnis "7 Referenzlauf" "FAIL ($echt echte FAIL-Zeilen)"; fi
