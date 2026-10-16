@@ -5615,6 +5615,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_BEDARFS_EINGABEART = BedarfsprofilEingabeartSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="WasserpreisTraegerkarteSchema.SCHRITT"/> — <b>der Wasserpreis wandert in die
+        /// Trägerkarte</b> (KB-7a, Anwenderentscheide 16.10.2026): Träger „Wasser“ (Preismodell <c>WATER</c>, m³),
+        /// Übernahme der Anlagenpreise in <c>energy_project_settings</c>, Entfall von
+        /// <c>Tab_Energieanlagen.Wasserpreis_EUR_m3</c>. <b>Wiederholbar, ergebnisneutral.</b>
+        /// </summary>
+        public const int SCHRITT_WASSERPREIS_TRAEGERKARTE = WasserpreisTraegerkarteSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -8274,6 +8282,14 @@ namespace WindowsFormsApplication1
                         "Prozesswaerme und Brauchwasser kannten allein die Jahressumme mit Vorlage. KEIN Rechenergebnis " +
                         "aendert sich - jede Zuordnung rechnet mit Eingabeart 'jahr'.",
                         Schritt_BedarfsEingabeart),
+            // KB-7a: Der Wasserpreis wandert in die Traegerkarte. Quelle ist WasserpreisTraegerkarteSchema, die
+            // Nummer steht allein dort.
+            new Schritt(SCHRITT_WASSERPREIS_TRAEGERKARTE,
+                        "energy_carrier: Traeger Wasser (WATER, m3); Tab_Energieanlagen: Wasserpreis je Projekt " +
+                        "nach energy_project_settings, die Spalte entfaellt",
+                        "Der Wasserpreis stuende als zweite Kostenbasis an der Anlage neben der Traegerkarte. " +
+                        "KEIN Rechenergebnis der Referenzprojekte aendert sich - keines rechnet ein Rueckkuehlwerk.",
+                        Schritt_WasserpreisTraegerkarte),
         };
 
         /// <summary>
@@ -16209,6 +16225,65 @@ namespace WindowsFormsApplication1
                         : ergebnis.Gesaet + " Satzvorlage(n) gesaet, " + ergebnis.Entfernt + " Spalte(n) entfernt, " +
                           ergebnis.PruefsummenNeu + " Pruefsumme(n) neu.") +
                     " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Der Wasserpreis wandert in die Trägerkarte" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_WASSERPREIS_TRAEGERKARTE"/>, die Anweisungen bei <see cref="WasserpreisTraegerkarteSchema"/>.
+        /// <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_WasserpreisTraegerkarte(Lauf l)
+        {
+            string nr = WasserpreisTraegerkarteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in WasserpreisTraegerkarteSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            WasserpreisTraegerkarteSchema.Laufergebnis ergebnis;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                try
+                {
+                    ergebnis = WasserpreisTraegerkarteSchema.Lauf(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!WasserpreisTraegerkarteSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Wassertraeger oder Preisspalte an der Anlage stehen nach dem Schritt nicht wie verlangt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Wasserpreis in der Traegerkarte - " +
+                    (ergebnis.Handgriffe == 0
+                        ? "stand bereits."
+                        : ergebnis.TraegerAngelegt + " Traeger angelegt, " + ergebnis.Uebernommen + " Preis(e) uebernommen, " +
+                          ergebnis.Verworfen + " verworfen, " + ergebnis.Behalten + " gepflegt belassen, " +
+                          ergebnis.Entfernt + " Spalte(n) entfernt.") +
+                    " KEIN Rechenergebnis der Referenzprojekte aendert sich.");
             return true;
         }
 

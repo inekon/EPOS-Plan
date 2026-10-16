@@ -63,6 +63,8 @@ Kaelte.DezentralMwh;5
 Kaelte.DezentralSpitzeKw;4.81417716
 Kaelte.DezentralStromMwh;1.52919445
 Kaelte.DezentralJahresEer;3.26969537
+Kaelte.DeckungsgradGesamtProzent;100
+Kaelte.DeckungsgradKaeltefolgeProzent;100
 KaelteDezentral[0].StromMwh;1
 KaelteDezentral[0].NetzbezugMwh;0.884362971
 KaelteDezentral[0].Kuehltraeger;0

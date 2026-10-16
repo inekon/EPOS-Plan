@@ -51,6 +51,45 @@ namespace WindowsFormsApplication1
             return einheit.Length == 0 ? "€" : "€/" + einheit;
         }
 
+        // -----------------------------------------------------------------
+        // Welle KB-7c1: der Wasserträger in der Karte (Anwenderentscheide 16.10.2026, F1 und F5)
+        // -----------------------------------------------------------------
+
+        /// <summary>
+        /// Ist das Preismodell das des Wasserträgers (<c>WATER</c>)? Erkannt am Preismodell, nie am Namen.
+        /// Der Wasserträger führt einen Arbeitspreis je m³ (samt Abwasseranteil) und seine Szenariopreise —
+        /// keinen Heizwert, keine Umrechnung nach kWh, keinen Leistungs- und keinen Grundpreis, keine Emissionen.
+        /// </summary>
+        public static bool IstWasser(string preismodell) => Wasserkosten.IstWasserPreismodell(preismodell);
+
+        /// <summary>Führt die Karte einen Grundpreis? Nein am Wasserträger (F5), sonst ja.</summary>
+        public static bool MitGrundpreis(string preismodell) => !IstWasser(preismodell);
+
+        /// <summary>Führt die Karte den Emissionsblock? Nein am Wasserträger (Betriebsmittel), sonst ja.</summary>
+        public static bool MitEmissionen(string preismodell) => !IstWasser(preismodell);
+
+        /// <summary>
+        /// Gilt für den Träger die Einheitenkette bis zur kWh (Block „Einheiten und Umrechnung", Prüfung
+        /// beim Speichern)? Nein am Wasserträger: Er wird je m³ abgerechnet und erreicht nie kWh.
+        /// </summary>
+        public static bool MitKwhKette(string preismodell) => !IstWasser(preismodell);
+
+        /// <summary>
+        /// Die Abrechnungseinheit der Karte: am Wasserträger immer <c>m³</c> (F1 — Gasträger bleiben bei
+        /// <c>Nm³</c>), sonst die Einheit des Katalogs.
+        /// </summary>
+        public static string Abrechnungseinheit(string preismodell, string billingUnit)
+            => IstWasser(preismodell) ? WasserpreisTraegerkarteSchema.EINHEIT_WASSER : (billingUnit ?? "");
+
+        /// <summary>
+        /// Die Einheit des Arbeitspreises mit Blick auf das Preismodell: Der Wasserträger rechnet ohne Heizwert
+        /// unmittelbar je m³ ab (<c>€/m³</c>), jeder andere Träger wie <see cref="ArbeitspreisEinheit(string, bool)"/>.
+        /// </summary>
+        public static string ArbeitspreisEinheit(string preisbasis, bool mitHeizwert, string preismodell)
+            => IstWasser(preismodell)
+                ? "€/" + WasserpreisTraegerkarteSchema.EINHEIT_WASSER
+                : ArbeitspreisEinheit(preisbasis, mitHeizwert);
+
         /// <summary>Die Einheit des Leistungspreises — sie folgt dem Modus, nicht der Preisbasis.</summary>
         public static string LeistungspreisEinheit(bool monat)
         {

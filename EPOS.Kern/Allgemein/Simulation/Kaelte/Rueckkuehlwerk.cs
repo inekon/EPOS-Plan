@@ -156,9 +156,6 @@ namespace WindowsFormsApplication1
         /// <summary>Gepflegter Driftanteil; <c>null</c> = Vorgabe der Bauart.</summary>
         public double? DriftAnteilGepflegt;
 
-        /// <summary>Wasserpreis der Anlagenzeile [€/m³] (<c>Wasserpreis_EUR_m3</c>); <c>null</c> = keine Wasserkosten.</summary>
-        public double? WasserpreisEurM3;
-
         private readonly List<string> _nichtGerechnet = new List<string>();
 
         private bool[] _befeuchtet;
@@ -484,9 +481,5 @@ namespace WindowsFormsApplication1
         public static double UmlaufM3(double kwh) =>
             kwh * 3600.0 / (KaelteFestwerte.RKW_WASSER_CP_KJ_KGK * KaelteFestwerte.RKW_UMLAUF_SPREIZUNG_K)
             / KaelteFestwerte.RKW_WASSER_DICHTE_KG_M3;
-
-        /// <summary>Wasserkosten [€/a] = Menge × Preis; <c>null</c> ohne Preis (keine Kosten, Hinweis).</summary>
-        public static double? WasserkostenEur(double wasserM3, double? preisEurM3) =>
-            preisEurM3.HasValue && !double.IsNaN(preisEurM3.Value) && preisEurM3.Value >= 0 ? wasserM3 * preisEurM3.Value : (double?)null;
     }
 }

@@ -2352,6 +2352,8 @@
         internal static string KlimaLaengeErl => MyResource.Resource.KI_DLG_KLIMA_LAENGE_ERL;
         internal static string KlimaBreiteName => MyResource.Resource.KLIMA_LBL_LATITUDE;
         internal static string KlimaBreiteErl => MyResource.Resource.KI_DLG_KLIMA_BREITE_ERL;
+        internal static string KlimaHoeheName => MyResource.Resource.KLIMA_LBL_HOEHE;
+        internal static string KlimaHoeheErl => MyResource.Resource.KI_DLG_KLIMA_HOEHE_ERL;
         internal static string KlimaBezeichnungName => MyResource.Resource.KLIMA_LBL_BEZEICHNUNG;
         internal static string KlimaBezeichnungErl => MyResource.Resource.KI_DLG_KLIMA_BEZEICHNUNG_ERL;
         internal static string KlimaJahrName => MyResource.Resource.KLIMA_TRY_JAHR;

@@ -4167,14 +4167,14 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Klimadatenverwaltung — neun Felder aus
+        /// Die Klimadatenverwaltung — zehn Felder aus
         /// <c>EPOS.UI.Dialoge.Klimadaten.KlimadatenKiSicht</c>.
         /// </summary>
         /// <remarks>
         /// <para>
         /// <b>Die QUELLE fuehrt die Maske.</b> Sie entscheidet, ob der Standort aus dem
         /// PVGIS-Dienst kommt, aus einer einzelnen TRY-Datei oder aus einem TRY-Paket —
-        /// und damit, welche Felder darunter ueberhaupt dastehen. Drei der neun sind
+        /// und damit, welche Felder darunter ueberhaupt dastehen. Drei der zehn sind
         /// deshalb Wahlfelder (Quelle, Jahr, Szenario).
         /// </para>
         /// <para>
@@ -4212,6 +4212,10 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.KlimaBreiteName, KiParameterTyp.Zahl,
                                      KiDialogTexte.KlimaBreiteErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true),
+                    new KiDialogFeld("hoehe", "KlimadatenKiSicht.Hoehe",
+                                     KiDialogTexte.KlimaHoeheName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.KlimaHoeheErl,
+                                     einheit: KiDialogTexte.EINHEIT_METER, leerErlaubt: true),
                     new KiDialogFeld("bezeichnung", "KlimadatenKiSicht.Bezeichnung",
                                      KiDialogTexte.KlimaBezeichnungName, KiParameterTyp.Text,
                                      KiDialogTexte.KlimaBezeichnungErl, leerErlaubt: true),

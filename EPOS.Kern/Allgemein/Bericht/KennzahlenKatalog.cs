@@ -336,6 +336,13 @@ namespace WindowsFormsApplication1
         /// <summary>Wasser der Rückkühlwerke [m³/a] — Verdunstung, Abflutung, Drift (K-F2, Katalog v20).</summary>
         public const string SCHLUESSEL_RK_WASSER = "kaelte.rk.wasser_m3";
 
+        /// <summary>
+        /// Wasserkosten der Rückkühlwerke [€/a] im ersten Betrachtungsjahr = Wasser × Arbeitspreis des Wasserträgers
+        /// (<see cref="VariantenDaten.WasserkostenRueckkuehlwerk"/>, gerechnet von <see cref="Wasserkosten.Rechne"/>);
+        /// null ohne Wasser und ohne Preis (KB-7c2, Katalog v24).
+        /// </summary>
+        public const string SCHLUESSEL_RK_WASSER_KOSTEN = "kaelte.rk.wasser_kosten";
+
         /// <summary>Kälte der Teil-Freikühlung in Reihe [MWh/a] — der vorgekühlte Anteil der Mischstunden (K-F3, Katalog v22).</summary>
         public const string SCHLUESSEL_RK_TEILFREI = "kaelte.rk.teilfrei";
 
@@ -874,6 +881,15 @@ namespace WindowsFormsApplication1
                 l.Add(R(new Kennzahl(SCHLUESSEL_RK_WASSER, "Wasser Rückkühlwerke (sensibel)",
                     "Heat rejection water use (sensible)", "m³/a", GR_KAELTE, "N1", true,
                     v => RkSumme(v, k => k.Wasser_m3))));
+            }
+            // KB-7c2 (Entwurf KB7 Wasserkosten 5 und 9, Anwenderentscheid F4, Katalog v24): die Kosten des Wassers
+            // neben der Menge — dieselbe Rechnung wie die Nachweiszeile der Wirtschaftlichkeit, mit den Trägerpreisen
+            // des Szenarios, dessen Stand gerechnet wird; ohne Wasser oder ohne Preis null (kein „0 €“).
+            {
+                Kennzahl W(Kennzahl k) { k.Seit = Vorlagenfeldkatalog.FASSUNG_WASSERKOSTEN_RUECKKUEHLWERK; return k; }
+                l.Add(W(new Kennzahl(SCHLUESSEL_RK_WASSER_KOSTEN, "Wasserkosten Rückkühlwerke (sensibel)",
+                    "Heat rejection water cost (sensible)", "€/a", GR_KAELTE, "N0", true,
+                    v => v.WasserkostenRueckkuehlwerk)));
             }
             // K-F3 (Entwurf Split/VRF/Rückkühlwerk 5.5, 5.8, Katalog v22): nur Maschinen mit Rückkühlwerk in Reihe; ohne sie null.
             {

@@ -2553,9 +2553,27 @@ html:has(.epos-ueberlagerung) {
     background: var(--epos-karte-flaeche);
 }
 
+/* DIE SCHLUSSLEISTE DES EINLESENS HAFTET GENAUSO (KD-1, Anwenderbefund Klimadaten-
+   Import 16.10.2026). Die Ueberlagerungen "Daten einlesen" tragen statt eines
+   .epos-dialog den Block .epos-einlesen, und ihre Knopfleiste (Abbrechen -
+   Einlesen) hat keine Statusspanne - die Regel oben griff nicht, die Leiste lag
+   am Ende des Rollbereichs unter dem Fensterrand. Erkennungszeichen ist hier die
+   Stellung: Die Knopfleiste ist das LETZTE Kind des Blocks (Klimadaten, Ganglinien-
+   katalog, Waermebedarf, Stromganglinie, Nutzungsarten, Lastspitzenkappung). */
+.epos-ueberlagerung-inhalt > .epos-einlesen > .epos-leiste:last-child {
+    position: sticky;
+    bottom: calc(-1 * var(--epos-karte-rand));
+    z-index: 2;
+    margin-bottom: calc(-1 * var(--epos-karte-rand));
+    padding: 8px 0 var(--epos-karte-rand);
+    border-top: 1px solid var(--epos-rahmen-leise);
+    background: var(--epos-karte-flaeche);
+}
+
 /* Was ueber der haftenden Fussleiste haften will, steht um ihre Hoehe hoeher:
    Knopfhoehe plus obere Polsterung und Linie (die untere Polsterung liegt im
    Rand der Ueberlagerung). */
+.epos-ueberlagerung:has(> .epos-ueberlagerung-inhalt > .epos-einlesen > .epos-leiste:last-child),
 .epos-ueberlagerung:has(> .epos-ueberlagerung-inhalt > .epos-dialog > .epos-leiste > .epos-status) {
     --epos-ueberlagerung-fuss: calc(var(--epos-touchziel) + 9px);
 }
@@ -2735,7 +2753,8 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
 /* In den unteren Rand der Wurzel reicht der Fuss nur, wenn nach ihm nichts mehr im
    Fluss steht - verborgene Anker und Ueberlagerungen stehen ausserhalb. Die
    Dublettenpruefung zeigt ihr Protokoll UNTER der Schlussleiste; mit dem negativen
-   Rand laege deren Flaeche 6 px ueber dessen Beschriftung. */
+   Rand rueckte es um den Kartenrand (16 px) in den Abstand der Wurzel (gap 20 px)
+   an den Fuss heran - es blieben 4 px. */
 #app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-leiste:has(> .epos-knopf--primaer):not(:has(~ :not([hidden], .epos-ueberlagerung, .epos-ueberlagerung-hintergrund))),
 #app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-dialog-fuss:not(:has(~ :not([hidden], .epos-ueberlagerung, .epos-ueberlagerung-hintergrund))) {
     margin-bottom: calc(-1 * var(--epos-karte-rand));
@@ -19157,6 +19176,120 @@ td.epos-vorlage-katalogbeschreibung {
 
 /* Gesetzeskatalog: Pflichtwahl der Einheit (ENERGIESTEUER) in Warnfarbe. */
 .epos-gesetz-einheit-hinweis--pflicht { color: var(--epos-warn-text); }
+
+/* DIE VORSCHAUKARTE DES KLIMADATENIMPORTS (KD-3, Konzept Klimadatenimport § 4,
+   Mockup Klimadatenimport_Mockup.html). Suchzeile mit leiser Erklaerung; die Karte
+   mit Treffer-Kennzeichen, zwei Bloecken (Standort, Bezugspunkt), Kennzahlen, Bild und
+   Parameterbestand. Die zwei Bloecke stehen nebeneinander, solange die Karte breit
+   genug ist, sonst untereinander (Behaelterabfrage, auch in der Kompaktstufe KB1). */
+.epos-klimavorschau-suche {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-top: 12px;
+}
+.epos-klimavorschau-leise {
+    font-size: 13px;
+    color: var(--epos-text-leise);
+}
+.epos-klimavorschau-verfallen { margin: 12px 0 0; }
+.epos-klimavorschau {
+    container: epos-klimavorschau / inline-size;
+    margin-top: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+}
+.epos-klimavorschau-titel {
+    margin: 0 0 8px;
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    color: var(--epos-karte-titel);
+}
+.epos-klimavorschau-treffer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    align-items: center;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    border-radius: var(--epos-ecke);
+    font-weight: 600;
+}
+.epos-klimavorschau-treffer--ja {
+    background: var(--epos-ampel-gruen-flaeche);
+    color: var(--epos-text);
+    border: 1px solid var(--epos-ampel-gruen);
+}
+.epos-klimavorschau-treffer--nein {
+    background: var(--epos-ampel-rot-flaeche);
+    color: var(--epos-text);
+    border: 1px solid var(--epos-ampel-rot);
+}
+.epos-klimavorschau-zeichen {
+    display: inline-grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    color: var(--epos-karte-flaeche);
+    font-size: 13px;
+}
+.epos-klimavorschau-treffer--ja .epos-klimavorschau-zeichen { background: var(--epos-ampel-gruen); }
+.epos-klimavorschau-treffer--nein .epos-klimavorschau-zeichen { background: var(--epos-ampel-rot); }
+.epos-klimavorschau-wahl { font-weight: normal; }
+.epos-klimavorschau-raster {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+}
+@container epos-klimavorschau (min-width: 560px) {
+    .epos-klimavorschau-raster { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.epos-klimavorschau-block dl {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 2px 10px;
+    margin: 4px 0 0;
+}
+.epos-klimavorschau-block dt { color: var(--epos-text-leise); }
+.epos-klimavorschau-block dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+}
+.epos-klimavorschau-kennzahlen {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
+    margin: 10px 0;
+}
+.epos-klimavorschau-kennzahlen > div {
+    display: flex;
+    flex-direction: column;
+    padding: 6px 8px;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+}
+.epos-klimavorschau-kennzahlen b { font-variant-numeric: tabular-nums; }
+.epos-klimavorschau-kennzahlen span {
+    font-size: 13px;
+    color: var(--epos-text-leise);
+}
+/* Das Bild ist eine Uebersicht, kein Arbeitsbild: hoechstens 640 px breit, sonst nimmt
+   es der Karte die halbe Hoehe. */
+.epos-klimavorschau > .epos-diagramm-svg { max-width: 640px; }
+.epos-klimavorschau-bestand ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+}
+.epos-klimavorschau-bestand li span { color: var(--epos-text-leise); }
+.epos-klimavorschau-stand--fehlt { color: var(--epos-text-sehr-leise); }
 
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */

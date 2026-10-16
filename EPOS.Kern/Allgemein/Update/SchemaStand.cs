@@ -1107,10 +1107,16 @@ namespace WindowsFormsApplication1
         /// <see cref="BedarfsprofilEingabeartSchema.SCHRITT"/>: <c>Eingabeart</c> an <c>Z_Projekt_Prozesswaerme</c> und
         /// <c>Z_Projekt_Brauchwasser</c>, <c>Nutzungstage_Norm</c> an <c>Tab_Kaeltebedarf(_STAMM)</c> (Saat allein an Vorlage 8),
         /// <c>Ferien_wie_Sonntag</c> am Betriebskalender (<see cref="BedarfsprofilEingabeartSchema"/>). <b>Ergebnisneutral:</b>
-        /// Jede Zuordnung rechnet mit Eingabeart 'jahr', die Nutzungstage liest kein Rechenweg. Das Ziel ist das Ende der Kette;
-        /// umgehängt wird allein am Vorgänger <see cref="BauteilUHerkunftSchema.SCHRITT"/>.
+        /// Jede Zuordnung rechnet mit Eingabeart 'jahr', die Nutzungstage liest kein Rechenweg.
+        /// Danach, mit dem WASSERPREIS IN DER TRÄGERKARTE (KB-7a), steht das Ziel auf
+        /// <see cref="WasserpreisTraegerkarteSchema.SCHRITT"/>: Träger „Wasser“ (Preismodell <c>WATER</c>, Einheit m³),
+        /// Übernahme der Anlagenpreise in <c>energy_project_settings</c> (je Projekt die Anlage mit der kleinsten ID,
+        /// ein gepflegter Kartenpreis bleibt), dann der Entfall von <c>Tab_Energieanlagen.Wasserpreis_EUR_m3</c>
+        /// (<see cref="WasserpreisTraegerkarteSchema"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt rechnet ein
+        /// Rückkühlwerk; keine neue Katalogfassung. Das Ziel ist das Ende der Kette; umgehängt wird allein am Vorgänger
+        /// <see cref="BedarfsprofilEingabeartSchema.SCHRITT"/>.
         /// </summary>
-        public const int Zielversion = BedarfsprofilEingabeartSchema.SCHRITT;
+        public const int Zielversion = WasserpreisTraegerkarteSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -10,8 +10,8 @@ namespace EPOS.Kern.Tests
     /// <b>Rechenproben des Rückkühlwerks ohne Datenbank</b> (K-F2; Entwurf Split/VRF/Rückkühlwerk 5.3, 5.4, 5.6): je Bauart
     /// die Bezugstemperatur (trocken, Kühlturm über die Feuchtkugel, adiabat und hybrid unter und über der Schaltgrenze, ohne
     /// Feuchte), die lastabhängige Annäherung (Nennpunkt, Teillast 0, Überlast, ein Schritt), der Ventilator je Regelung samt
-    /// kleinster Drehzahl und Stufen, keine Doppelzählung des Hilfsstroms, die Wasserbilanz gegen die Handrechnung und die
-    /// Wasserkosten mit und ohne Preis.
+    /// kleinster Drehzahl und Stufen, keine Doppelzählung des Hilfsstroms, die Wasserbilanz gegen die Handrechnung. Die
+    /// Wasserkosten rechnet die Wirtschaftlichkeit (Welle KB-7b, <c>WasserkostenWirtschaftlichkeitTests</c>).
     /// </summary>
     public class RueckkuehlwerkRechenwegTests
     {
@@ -363,14 +363,6 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Wasserkosten_mit_und_ohne_Preis()
-        {
-            Assert.Equal(25.0, Rueckkuehlwerk.WasserkostenEur(10.0, 2.5));
-            Assert.Null(Rueckkuehlwerk.WasserkostenEur(10.0, null));
-            Assert.Null(Rueckkuehlwerk.WasserkostenEur(10.0, double.NaN));
-        }
-
-        [Fact]
         public void Freie_Kuehlung_rechnet_die_Nenn_Annaeherung_und_fuehrt_die_Kaelte_ab()
         {
             var aussen = new[] { -5.0 };
@@ -406,7 +398,10 @@ namespace EPOS.Kern.Tests
             foreach (Kennzahl k in KennzahlenKatalog.Alle().Where(k => k.Schluessel.StartsWith("kaelte.rk.", StringComparison.Ordinal)))
             {
                 Assert.NotEqual(k.LabelDe, k.LabelEn);
-                Assert.Equal(k.Schluessel.StartsWith("kaelte.rk.teilfrei", StringComparison.Ordinal) ? 22 : 20, k.Seit);
+                // K-F3 (v22) die Teil-Freikühlung, KB-7c2 (v24) die Wasserkosten, alle übrigen K-F2 (v20).
+                int seit = k.Schluessel.StartsWith("kaelte.rk.teilfrei", StringComparison.Ordinal) ? 22
+                         : k.Schluessel == KennzahlenKatalog.SCHLUESSEL_RK_WASSER_KOSTEN ? 24 : 20;
+                Assert.Equal(seit, k.Seit);
                 Assert.False(string.IsNullOrEmpty(k.Einheit));
             }
         }

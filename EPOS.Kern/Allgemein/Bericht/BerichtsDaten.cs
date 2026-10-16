@@ -667,6 +667,15 @@ namespace WindowsFormsApplication1
         public double? KaeltestromCO2t;
 
         /// <summary>
+        /// Die Wasserkosten der Rückkühlwerke [€/a] im ersten Betrachtungsjahr (KB-7c2): Wasser des Laufs ×
+        /// Arbeitspreis des Wasserträgers mit den Trägerpreisen des gerechneten Szenarios — dieselbe Rechnung
+        /// (<c>Wasserkosten.Rechne</c>) wie die Nachweiszeile der Wirtschaftlichkeit. Ein AUSWEIS: Die Kosten
+        /// stehen in den Betriebskosten, nicht in <see cref="Energiekosten"/>. <c>null</c> = kein Wasser oder
+        /// kein Preis (ohne Preis fehlen die Kosten benannt, im Hinweis der Wirtschaftlichkeit).
+        /// </summary>
+        public double? WasserkostenRueckkuehlwerk;
+
+        /// <summary>
         /// Die Kosten der ABWEICHENDEN Kühlträger [€/a] (E34) — ihr Arbeitspreis und, bei eigenem
         /// Zähler, Grund- und Leistungspreis je Zähler (E35) — der Teil von
         /// <see cref="Energiekosten"/>, der NICHT in <see cref="StromkostenNetz"/> steht. Ein

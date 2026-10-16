@@ -209,9 +209,17 @@ namespace WindowsFormsApplication1
             }
             catch { }
 
+            // Welle KB-7c1: Der Wasserträger (Preismodell WATER) wird nur angeboten, wo er in die Karte gehört —
+            // im Projekt mit Kältemaschine samt Rückkühlwerk (ProjektEnergietraegerCtrl.WasserTraegerInKarte).
+            bool wasser = ProjektEnergietraegerCtrl.WasserTraegerInKarte(projektId) > 0;
+
             var frei = new List<EnergyCarrier>();
             foreach (EnergyCarrier c in KostenSummenCtrl.GetAllCarriers(0))
-                if (!zugeordnet.Contains(c.ID)) frei.Add(c);
+            {
+                if (zugeordnet.Contains(c.ID)) continue;
+                if (!wasser && Wasserkosten.IstWasserPreismodell(c.PricingModel)) continue;
+                frei.Add(c);
+            }
             return frei;
         }
 

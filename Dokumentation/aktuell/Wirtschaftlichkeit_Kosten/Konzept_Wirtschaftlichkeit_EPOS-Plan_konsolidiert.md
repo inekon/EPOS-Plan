@@ -2237,6 +2237,8 @@ offen E8c‑Q1 und E8c‑Q2, → Register R‑E8c):
   Umschlag liest seine Positionen als „ab dem ersten Jahr", die Probe vergleicht dort alle Positionen; das betrifft nur
   den Rückfall des Berichts auf den gespeicherten Stand, denn der Bericht rechnet frisch.
 
+**Wasserkosten des Rückkühlwerks.** Wasserkosten = Wassermenge der Rückkühlwerke im Jahr × Arbeitspreis des Trägers Wasser (€/m³, Abwasseranteil im Preis; der Preis gilt je Projekt und steht in der Trägerkarte, nicht am Gerät). Sie zählen zum bedarfsgebundenen Betriebs-Topf p_B, steigen mit der Preissteigerung der Betriebskosten und werden einmal gebucht: im Kapitalwert, nicht in Energiekosten, CO₂ oder CO₂-Abgabe. Unter den Betriebskosten steht die Unterzeile „davon Wasser Rückkühlwerk“ mit Menge × Preis. Ohne Preis entstehen keine Kosten; ein Hinweis nennt die Wassermenge.
+
 ## 3.5 Energiekosten und CO₂
 
 **Mengen:** `verbrauchJeTraeger[carrier] += Verbrauch [MWh/a]` je BHKW- und Kesselmodul; Menge ≤ 0
