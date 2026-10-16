@@ -372,10 +372,23 @@ namespace WindowsFormsApplication1
             }
 
             var spalten = new List<CsvSpalte>();
+            SimulationErgebnisCtrl.Netzreihen netz = null;   // Welle RZ: erst gelesen, wenn eine Netzreihe gewählt ist
             foreach (string s in reihen ?? new List<string>())
             {
                 switch (s)
                 {
+                    case REIHE_NETZBEZUG:
+                        // Welle RZ: dieselbe Reihe wie im Bild - nur, wenn gewählt.
+                        netz ??= SimulationErgebnisCtrl.NetzreihenViertelstunde(sim);
+                        if (netz?.NetzbezugKw != null)
+                            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_LEGENDE_NETZBEZUG, netz.NetzbezugKw));
+                        break;
+                    case REIHE_NETZEINSPEISUNG:
+                        netz ??= SimulationErgebnisCtrl.NetzreihenViertelstunde(sim);
+                        if (netz?.EinspeisungKw != null)
+                            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_LEGENDE_NETZEINSPEISUNG,
+                                                      netz.EinspeisungKw));
+                        break;
                     case "PROFIL_LASTGANG":
                         spalten.Add(new CsvSpalte(MyResource.Resource.CHART_LEGENDE_PROFIL_LASTGANG,
                                                   _strombedarf.Strombedarf_viertelStundenwerte));

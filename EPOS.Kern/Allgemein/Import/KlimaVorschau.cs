@@ -53,6 +53,31 @@ namespace WindowsFormsApplication1
         /// <summary>Monatssumme der Globalstrahlung [kWh/m²], Januar … Dezember.</summary>
         public double[] MonatssummeGlobalstrahlungKwhM2 = new double[12];
 
+        /// <summary>
+        /// Die MONATSREIHEN je Größe des <see cref="KlimaReihenkatalog"/> (Auftrag KD-8 Teil A):
+        /// Schlüssel → zwölf Monatswerte, Summen in kWh/m², Mittel in der Einheit der Stunden;
+        /// ein Monat ohne Stunde dieser Größe ist <c>NaN</c>. Eine Größe ohne eine einzige Stunde
+        /// steht nicht darin. Temperatur und Globalstrahlung sind dieselben Zahlen wie
+        /// <see cref="MonatsmittelTemperatur"/> und <see cref="MonatssummeGlobalstrahlungKwhM2"/>.
+        /// </summary>
+        public Dictionary<string, double[]> Monatsreihen = new Dictionary<string, double[]>();
+
+        /// <summary>
+        /// Die Monatsreihe einer Größe; <c>null</c> = der Satz trägt sie nicht. Temperatur und
+        /// Globalstrahlung kommen auch ohne <see cref="Monatsreihen"/> aus den Feldern des Bildes.
+        /// </summary>
+        public double[] Monatsreihe(string schluessel)
+        {
+            if (schluessel != null && Monatsreihen != null && Monatsreihen.TryGetValue(schluessel, out double[] w)) return w;
+            if (schluessel == KlimaReihenkatalog.R_TEMPERATUR && MonatsmittelTemperatur?.Length == 12) return MonatsmittelTemperatur;
+            if (schluessel == KlimaReihenkatalog.R_GLOBAL && MonatssummeGlobalstrahlungKwhM2?.Length == 12)
+                return MonatssummeGlobalstrahlungKwhM2;
+            return null;
+        }
+
+        /// <summary>Die Zahl der Stunden mit Wert je Größe (Titel des Chips bei Teilfüllung).</summary>
+        public Dictionary<string, int> Reihenstunden = new Dictionary<string, int>();
+
         /// <summary>Innentemperatur der Gradtagzahl G20/15 [°C].</summary>
         public const double GRADTAG_INNEN = 20.0;
 
@@ -63,7 +88,12 @@ namespace WindowsFormsApplication1
         /// Rechnet die Kennzahlen aus einer Stundenreihe; <c>null</c>, wenn die Reihe
         /// leer ist oder keinen lesbaren Zeitstempel trägt.
         /// </summary>
-        public static KlimaKennzahlen Rechnen(IReadOnlyList<TmyHourlyData> stunden)
+        /// <param name="stunden">Die Stunden wie gelesen.</param>
+        /// <param name="direktNormal">Wahlweise dieselben Stunden mit Direkt-Normalstrahlung
+        /// (TRY: nach <c>DwdTryLeser.DirektNormal</c>); <c>null</c> = <paramref name="stunden"/>
+        /// führen sie schon (PVGIS).</param>
+        public static KlimaKennzahlen Rechnen(IReadOnlyList<TmyHourlyData> stunden,
+                                              IReadOnlyList<TmyHourlyData> direktNormal = null)
         {
             if (stunden == null || stunden.Count == 0) return null;
 
@@ -121,6 +151,8 @@ namespace WindowsFormsApplication1
             for (int m = 0; m < 12; m++)
                 k.MonatsmittelTemperatur[m] = monatN[m] > 0 ? monatT[m] / monatN[m] : double.NaN;
 
+            MonatsreihenRechnen(k, stunden, direktNormal);
+
             k.Tage = tagSumme.Count;
             for (int i = 0; i < tagSumme.Count; i++)
             {
@@ -131,6 +163,52 @@ namespace WindowsFormsApplication1
             }
 
             return k;
+        }
+
+        /// <summary>
+        /// Die Monatsreihen je Größe der Vorschau (Konzept § 4a.1): Monatsmittel bzw. Monatssumme
+        /// ∑ W/m² · 1 h / 1 000 über die vorhandenen Stunden; Monatsgrenzen aus dem Zeitstempel.
+        /// </summary>
+        private static void MonatsreihenRechnen(KlimaKennzahlen k, IReadOnlyList<TmyHourlyData> stunden,
+                                                IReadOnlyList<TmyHourlyData> direktNormal)
+        {
+            foreach (KlimaReihe r in KlimaReihenkatalog.Reihen)
+            {
+                if (!r.InVorschau || r.Herkunft == KlimaReihenherkunft.Rohwert) continue;
+                IReadOnlyList<TmyHourlyData> quelle =
+                    r.Schluessel == KlimaReihenkatalog.R_DIREKT_NORMAL && direktNormal != null ? direktNormal : stunden;
+
+                var summe = new double[12];
+                var zahl = new int[12];
+                int gesamt = 0;
+                foreach (TmyHourlyData s in quelle)
+                {
+                    if (s == null) continue;
+                    double? w = KlimaReihenkatalog.Stundenwert(s, r.Schluessel);
+                    if (!w.HasValue || double.IsNaN(w.Value)) continue;
+                    if (!DateTime.TryParseExact(s.TimeString ?? "", "yyyyMMdd:HHmm",
+                            CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt))
+                        continue;
+                    int m = dt.Month - 1;
+                    summe[m] += w.Value;
+                    zahl[m]++;
+                    gesamt++;
+                }
+                if (gesamt == 0) continue;
+
+                var monate = new double[12];
+                for (int m = 0; m < 12; m++)
+                    monate[m] = zahl[m] == 0 ? double.NaN
+                        : r.Monatsregel == KlimaMonatsregel.Summe ? summe[m] / 1000.0 : summe[m] / zahl[m];
+                k.Monatsreihen[r.Schluessel] = monate;
+                k.Reihenstunden[r.Schluessel] = gesamt;
+            }
+
+            // Die beiden Reihen des heutigen Bildes bleiben dieselben Zahlen.
+            if (k.Monatsreihen.ContainsKey(KlimaReihenkatalog.R_TEMPERATUR))
+                k.Monatsreihen[KlimaReihenkatalog.R_TEMPERATUR] = (double[])k.MonatsmittelTemperatur.Clone();
+            if (k.Monatsreihen.ContainsKey(KlimaReihenkatalog.R_GLOBAL))
+                k.Monatsreihen[KlimaReihenkatalog.R_GLOBAL] = (double[])k.MonatssummeGlobalstrahlungKwhM2.Clone();
         }
     }
 
