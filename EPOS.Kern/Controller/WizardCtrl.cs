@@ -406,6 +406,15 @@ namespace WindowsFormsApplication1
                                                     "\" konnten nicht gespeichert werden. Die Zuordnung wurde nicht gespeichert.");
                         return false;
                     }
+                    // KBP-4b (Konzept 3.4, 3.5): bearbeitete Typtage samt Matrix in dieselbe Projektkopie, im Vorgang des
+                    // Aufrufers (Unterpunkt) - nach der Kopie bei Bearbeitung.
+                    if (item.Typtage != null && !KaeltetyptagCtrl.Schreiben(projektID, kopie, item.Typtage, out string grundTyptage))
+                    {
+                        DataRepository.FehlerMelden("Die Typtage des Kaeltebedarfs \"" + (item.Bezeichner ?? "") +
+                                                    "\" konnten nicht gespeichert werden (" + grundTyptage +
+                                                    "). Die Zuordnung wurde nicht gespeichert.");
+                        return false;
+                    }
                 }
 
                 int idZ = nextID++;
@@ -491,8 +500,9 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        /// <summary>KBP-3a: Trägt die Zeile bearbeitete Monatswerte oder ein bearbeitetes Wochenprofil?</summary>
-        private static bool ProfilBearbeitet(Z_ProjektKaeltebedarfModel z) => z != null && (z.Monatsanteile != null || z.Wochenprofil != null);
+        /// <summary>KBP-3a, KBP-4b: Trägt die Zeile bearbeitete Monatswerte, ein bearbeitetes Wochenprofil oder bearbeitete Typtage?</summary>
+        private static bool ProfilBearbeitet(Z_ProjektKaeltebedarfModel z)
+            => z != null && (z.Monatsanteile != null || z.Wochenprofil != null || z.Typtage != null);
 
         /// <summary>
         /// KBP-3a, Kopie bei Bearbeitung (Konzept Kaeltebedarfsprofile 3.5): Braucht die bearbeitete Zeile

@@ -56273,13 +56273,13 @@ Replace these holidays with the project default? With “No” these zones remai
     <value>Weekly profile</value>
   </data>
   <data name="KBP_EINGABE_TYPTAG" xml:space="preserve">
-    <value>Typical days (to follow)</value>
+    <value>Typical days</value>
   </data>
   <data name="KBP_HINW_TYPTAG_FOLGT" xml:space="preserve">
-    <value>Typical days will follow in a later version.</value>
+    <value>Typical days become available once the database has been upgraded to the version with typical days.</value>
   </data>
   <data name="KBP_HINW_EINGABEART" xml:space="preserve">
-    <value>Monthly values and weekly profile change the project copy of this assignment, never the catalogue. If two assignments share one copy, the edited one gets its own copy on OK.</value>
+    <value>Monthly values, weekly profile and typical days change the project copy of this assignment, never the catalogue. If two assignments share one copy, the edited one gets its own copy on OK.</value>
   </data>
   <data name="KBP_GRUPPE_MONATE" xml:space="preserve">
     <value>Monthly values</value>
@@ -56348,7 +56348,7 @@ Replace these holidays with the project default? With “No” these zones remai
     <value>{0}:00</value>
   </data>
   <data name="KBP_KI_EINGABEART_ERL" xml:space="preserve">
-    <value>Input method of the selected row (cooling, process heat, domestic hot water): annual total with template, monthly values or weekly profile; typical days follow.</value>
+    <value>Input method of the selected row (cooling, process heat, domestic hot water): annual total with template, monthly values or weekly profile; typical days for cooling only.</value>
   </data>
   <data name="KBP_GRAFIK_GRUPPE" xml:space="preserve">
     <value>Chart of the selected row</value>
@@ -56459,7 +56459,7 @@ Replace these holidays with the project default? With “No” these zones remai
     <value>Background by day type of the operating calendar; calendar weeks per ISO 8601 within the year grid, starting with the week of the peak.</value>
   </data>
   <data name="KBP_GRAFIK_HERLEITUNG_ARBEIT" xml:space="preserve">
-    <value>The working state of this dialog is calculated – annual total, monthly values, weekly profile and operating calendar, unsaved ones included. Annual profile, week and duration curve show the selected row; the months stack all rows.</value>
+    <value>The working state of this dialog is calculated – annual total, monthly values, weekly profile, typical days and operating calendar, unsaved ones included. Annual profile, week and duration curve show the selected row; the months stack all rows.</value>
   </data>
   <data name="SIMENG_TYPTAG_ZELLEN_LEER" xml:space="preserve">
     <value>{0}profile "{1}": no typical day is assigned to {2} cell(s) of the typical-day matrix ({3}); these days carry no demand, the annual total is distributed over the remaining days.</value>
@@ -56472,6 +56472,51 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="SIMENG_TYPTAG_FERIEN_OHNE_WIRKUNG" xml:space="preserve">
     <value>{0}profile "{1}": with the company holidays of operating calendar "{2}" no hour with demand remains; the year is calculated without company holidays.</value>
+  </data>
+  <data name="KBP_GRUPPE_TYPTAGE" xml:space="preserve">
+    <value>Typical days</value>
+  </data>
+  <data name="KBP_LBL_TYPTAG" xml:space="preserve">
+    <value>Typical day</value>
+  </data>
+  <data name="KBP_LBL_TYPTAG_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KBP_LBL_TAGESMENGE" xml:space="preserve">
+    <value>Daily amount (relative)</value>
+  </data>
+  <data name="KBP_BTN_TYPTAG_NEU" xml:space="preserve">
+    <value>Add typical day</value>
+  </data>
+  <data name="KBP_BTN_TYPTAG_ENTFERNEN" xml:space="preserve">
+    <value>Remove typical day</value>
+  </data>
+  <data name="KBP_TYPTAG_NEU_NAME" xml:space="preserve">
+    <value>Typical day {0}</value>
+  </data>
+  <data name="KBP_GRUPPE_TYPTAG_MATRIX" xml:space="preserve">
+    <value>Assignment month × day type</value>
+  </data>
+  <data name="KBP_TYPTAG_TAGESARTEN" xml:space="preserve">
+    <value>Weekday;Saturday;Sunday/holiday</value>
+  </data>
+  <data name="KBP_TYPTAG_ZELLE_LEER" xml:space="preserve">
+    <value>(none)</value>
+  </data>
+  <data name="KBP_HINW_TYPTAG_STUNDEN" xml:space="preserve">
+    <value>Hourly values in % of the daily peak, daily amount relative to the other typical days; only the ratio counts. The series is scaled to the annual total over the year; monthly shares do not apply.</value>
+  </data>
+  <data name="KBP_HINW_TYPTAG_MATRIX" xml:space="preserve">
+    <value>Each day takes the typical day of its month and day type. With an operating calendar, public holidays count as Sunday and company holidays as weekday with the holiday factor.</value>
+  </data>
+  <data name="KBP_HINW_TYPTAG_VORBELEGT" xml:space="preserve">
+    <value>Pre-filled from the weekly profile: weekday, Saturday and Sunday/holiday as three typical days, assigned alike in all months.</value>
+  </data>
+  <data name="KBP_HINW_TYPTAG_NUR_KAELTE" xml:space="preserve">
+    <value>Typical days are available for cooling demand profiles only.</value>
+  </data>
+  <data name="KBP_MSG_TYPTAGE" xml:space="preserve">
+    <value>The typical days are invalid: {0}.</value>
   </data>
 </root>
 

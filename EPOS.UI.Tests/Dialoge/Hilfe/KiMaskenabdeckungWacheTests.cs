@@ -84,6 +84,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // KBP-3a, KBP-5b: die Editoren der Eingabearten Monatswerte und Wochenprofil in der Bearbeiten-Ueberlagerung der Kaelte-, Prozesswaerme- und Brauchwasserzeile.
         new("KaelteMonatswerteEditor",        "BedarfsProfileDialog",        KiMaskennamen.BEDARFSPROFILE),
         new("KaelteWochenprofilEditor",       "BedarfsProfileDialog",        KiMaskennamen.BEDARFSPROFILE),
+        // KBP-4b: der Editor der Eingabeart Typtage (nur Kaelte) in derselben Bearbeiten-Ueberlagerung.
+        new("KaelteTyptagEditor",             "BedarfsProfileDialog",        KiMaskennamen.BEDARFSPROFILE),
         new("KaelteProfilgrafik",             "BedarfsProfileDialog",        KiMaskennamen.BEDARFSPROFILE),
         // Die Rueckfrage „In die Datenbank übernehmen…“ (Stufe 2b) steht ebenso als Ueberlagerung im Projektdialog;
         // sie fragt nur (Wahl und Name), der Assistent arbeitet ueber denselben Wirt.
@@ -352,6 +354,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("BedarfsProfileDialog", 7, "die beiden Temperaturfelder der Prozesswärme (PW1 Stufe 1) sind Eingaben des Knopfes „Temperaturen übernehmen“ an der gewählten Projektzeile, wie der neue Jahresverbrauch; die Werte führt die Zeile, nicht die Maske; die Wahl der Eingabeart (KBP-3a) ist das Katalogfeld eingabeart"),
         new("KaelteMonatswerteEditor", 2, "KBP-3a: die zwölf Monatswerte und ihre Einheit sind ein Editor der Bearbeiten-Überlagerung; der Assistent setzt die Eingabeart, die Werte gibt der Anwender ein"),
         new("KaelteWochenprofilEditor", 3, "KBP-3a: Ansicht, Tag und die 24 Stundenwerte sind ein Editor der Bearbeiten-Überlagerung; der Assistent setzt die Eingabeart, die Werte gibt der Anwender ein"),
+        new("KaelteTyptagEditor", 5, "KBP-4b: Typtagwahl, Bezeichner, Tagesmenge, die 24 Stundenwerte und die 36 Zellen der Zuordnungsmatrix sind ein Editor der Bearbeiten-Überlagerung; der Assistent setzt die Eingabeart (Typtage nur bei Kälte), die Werte gibt der Anwender ein"),
         new("KaelteProfilgrafik", 1, "Nacharbeit KBP-3b: die Wahl der Kalenderwoche ist Anzeige des Blatts Woche (kein Einstellwert, nichts wird gespeichert)"),
         // PW2/BW2: die Verwaltung der Betriebskalender - Kalender, Bezeichnung, Bundesland, Feiertagsregel, die
         // Ferienfelder (eine Schleife über vier Paare), Ferienfaktor und Kürzen; Katalog Form_Betriebskalender.

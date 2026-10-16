@@ -56280,13 +56280,13 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
     <value>Wochenprofil</value>
   </data>
   <data name="KBP_EINGABE_TYPTAG" xml:space="preserve">
-    <value>Typtage (folgt)</value>
+    <value>Typtage</value>
   </data>
   <data name="KBP_HINW_TYPTAG_FOLGT" xml:space="preserve">
-    <value>Typtage folgen in einer späteren Fassung.</value>
+    <value>Typtage stehen zur Verfügung, sobald die Datenbank auf den Stand mit Typtagen gehoben ist.</value>
   </data>
   <data name="KBP_HINW_EINGABEART" xml:space="preserve">
-    <value>Monatswerte und Wochenprofil ändern die Projektkopie dieser Zuordnung, nie den Katalog. Teilen sich zwei Zuordnungen eine Kopie, erhält die bearbeitete beim OK eine eigene.</value>
+    <value>Monatswerte, Wochenprofil und Typtage ändern die Projektkopie dieser Zuordnung, nie den Katalog. Teilen sich zwei Zuordnungen eine Kopie, erhält die bearbeitete beim OK eine eigene.</value>
   </data>
   <data name="KBP_GRUPPE_MONATE" xml:space="preserve">
     <value>Monatswerte</value>
@@ -56355,7 +56355,7 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
     <value>{0} Uhr</value>
   </data>
   <data name="KBP_KI_EINGABEART_ERL" xml:space="preserve">
-    <value>Eingabeart der markierten Zeile (Kälte, Prozesswärme, Brauchwasser): Jahressumme mit Vorlage, Monatswerte oder Wochenprofil; Typtage folgen.</value>
+    <value>Eingabeart der markierten Zeile (Kälte, Prozesswärme, Brauchwasser): Jahressumme mit Vorlage, Monatswerte oder Wochenprofil; Typtage nur bei Kälte.</value>
   </data>
   <data name="KBP_GRAFIK_GRUPPE" xml:space="preserve">
     <value>Grafik der markierten Zeile</value>
@@ -56466,7 +56466,7 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
     <value>Hintergrund nach Tagesart des Betriebskalenders; Kalenderwochen nach DIN EN ISO 8601 im Jahresraster, zuerst die Woche mit der Spitze.</value>
   </data>
   <data name="KBP_GRAFIK_HERLEITUNG_ARBEIT" xml:space="preserve">
-    <value>Gerechnet wird der Arbeitsstand dieses Dialogs – Jahressumme, Monatswerte, Wochenprofil und Betriebskalender, auch ungespeichert. Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile, die Monate stapeln alle Zeilen.</value>
+    <value>Gerechnet wird der Arbeitsstand dieses Dialogs – Jahressumme, Monatswerte, Wochenprofil, Typtage und Betriebskalender, auch ungespeichert. Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile, die Monate stapeln alle Zeilen.</value>
   </data>
   <data name="SIMENG_TYPTAG_ZELLEN_LEER" xml:space="preserve">
     <value>{0}Profil „{1}“: Für {2} Zelle(n) der Typtagmatrix ist kein Typtag gesetzt ({3}); diese Tage tragen keinen Bedarf, die Jahressumme verteilt sich auf die übrigen Tage.</value>
@@ -56479,6 +56479,51 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="SIMENG_TYPTAG_FERIEN_OHNE_WIRKUNG" xml:space="preserve">
     <value>{0}Profil „{1}“: Im Betriebskalender „{2}“ bleibt mit den Betriebsferien keine Stunde mit Bedarf; das Jahr rechnet ohne Betriebsferien.</value>
+  </data>
+  <data name="KBP_GRUPPE_TYPTAGE" xml:space="preserve">
+    <value>Typtage</value>
+  </data>
+  <data name="KBP_LBL_TYPTAG" xml:space="preserve">
+    <value>Typtag</value>
+  </data>
+  <data name="KBP_LBL_TYPTAG_NAME" xml:space="preserve">
+    <value>Bezeichner</value>
+  </data>
+  <data name="KBP_LBL_TAGESMENGE" xml:space="preserve">
+    <value>Tagesmenge (relativ)</value>
+  </data>
+  <data name="KBP_BTN_TYPTAG_NEU" xml:space="preserve">
+    <value>Typtag hinzufügen</value>
+  </data>
+  <data name="KBP_BTN_TYPTAG_ENTFERNEN" xml:space="preserve">
+    <value>Typtag entfernen</value>
+  </data>
+  <data name="KBP_TYPTAG_NEU_NAME" xml:space="preserve">
+    <value>Typtag {0}</value>
+  </data>
+  <data name="KBP_GRUPPE_TYPTAG_MATRIX" xml:space="preserve">
+    <value>Zuordnung Monat × Tagesart</value>
+  </data>
+  <data name="KBP_TYPTAG_TAGESARTEN" xml:space="preserve">
+    <value>Werktag;Samstag;Sonn-/Feiertag</value>
+  </data>
+  <data name="KBP_TYPTAG_ZELLE_LEER" xml:space="preserve">
+    <value>(keiner)</value>
+  </data>
+  <data name="KBP_HINW_TYPTAG_STUNDEN" xml:space="preserve">
+    <value>Stundenwerte in % der Tagesspitze, Tagesmenge relativ zu den übrigen Typtagen; nur das Verhältnis zählt. Die Reihe wird über das Jahr auf die Jahressumme normiert, Monatsanteile entfallen.</value>
+  </data>
+  <data name="KBP_HINW_TYPTAG_MATRIX" xml:space="preserve">
+    <value>Jeder Tag nimmt den Typtag seines Monats und seiner Tagesart. Mit einem Betriebskalender zählen Feiertage wie Sonntag und Betriebsferien wie Werktag mit dem Ferienfaktor.</value>
+  </data>
+  <data name="KBP_HINW_TYPTAG_VORBELEGT" xml:space="preserve">
+    <value>Vorbelegt aus dem Wochenprofil: Werktag, Samstag und Sonn-/Feiertag als drei Typtage, in allen Monaten gleich zugeordnet.</value>
+  </data>
+  <data name="KBP_HINW_TYPTAG_NUR_KAELTE" xml:space="preserve">
+    <value>Typtage gibt es nur für Kältebedarfsprofile.</value>
+  </data>
+  <data name="KBP_MSG_TYPTAGE" xml:space="preserve">
+    <value>Die Typtage sind unzulässig: {0}.</value>
   </data>
 </root>
 

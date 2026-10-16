@@ -31,6 +31,9 @@ namespace WindowsFormsApplication1
                     Monatsanteile = m.Monatsanteile ?? KaeltebedarfStammCtrl.ProjektMonate(m.ID_Kaeltebedarf),
                     Wochenprofil = m.Wochenprofil ?? KaeltebedarfStammCtrl.ProjektWoche(m.ID_Kaeltebedarf),
                     ProfilGeaendert = m.Monatsanteile != null || m.Wochenprofil != null,
+                    // KBP-4b: Typtage und Matrix der Projektkopie (bearbeitet oder gespeichert).
+                    Typtage = m.Typtage ?? KaeltetyptagCtrl.Lies(m.ID_Kaeltebedarf),
+                    TyptageGeaendert = m.Typtage != null,
                     // KBP-5b: die Normtage der Vorlage für die Herleitungszeile am Kalender.
                     Normtage = m.NutzungstageNorm,
                     // KBP-5c: der tatsächliche Name des Normkalenders für die Herleitungszeile (ohne zu schreiben).
@@ -62,6 +65,9 @@ namespace WindowsFormsApplication1
             if (vorschlag != null) zeile.KaelteArt = KaelteArtSchema.Normal(vorschlag);
             zeile.Monatsanteile = KaeltebedarfStammCtrl.ProjektMonate(zeile.IdStamm);
             zeile.Wochenprofil = KaeltebedarfStammCtrl.ProjektWoche(zeile.IdStamm);
+            // KBP-4b: die Typtage der Kopie (eine neue Kopie führt keine).
+            zeile.Typtage = KaeltetyptagCtrl.Lies(zeile.IdStamm);
+            zeile.TyptageGeaendert = false;
         }
 
         /// <summary>
@@ -89,6 +95,8 @@ namespace WindowsFormsApplication1
                     m.Eingabeart = KaeltebedarfsprofilVorlagenSchema.Eingabeart(z.Eingabeart);
                     m.Monatsanteile = z.ProfilGeaendert ? z.Monatsanteile : null;
                     m.Wochenprofil = z.ProfilGeaendert ? z.Wochenprofil : null;
+                    // KBP-4b: Typtage nur, wenn der Anwender sie übernommen hat.
+                    m.Typtage = z.TyptageGeaendert ? z.Typtage : null;
                     (z.Deckung ??= new DeckungsartDaten()).InModell(m);
                     modelle.Add(m);
                 }
