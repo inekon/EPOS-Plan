@@ -56801,5 +56801,269 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KLIMA_VK_NICHT_GESPEICHERT" xml:space="preserve">
     <value>wird nicht gespeichert</value>
   </data>
+  <data name="KEXP_ROH_NAME" xml:space="preserve">
+    <value>{0} (Rohwert)</value>
+  </data>
+  <data name="KEXP_G_TEMPERATUR" xml:space="preserve">
+    <value>Lufttemperatur</value>
+  </data>
+  <data name="KEXP_G_LUFTFEUCHTE" xml:space="preserve">
+    <value>Relative Feuchte</value>
+  </data>
+  <data name="KEXP_G_GLOBAL" xml:space="preserve">
+    <value>Globalstrahlung horizontal</value>
+  </data>
+  <data name="KEXP_G_DIREKT_NORMAL" xml:space="preserve">
+    <value>Direktstrahlung normal</value>
+  </data>
+  <data name="KEXP_G_DIREKT_HORIZONTAL" xml:space="preserve">
+    <value>Direktstrahlung horizontal</value>
+  </data>
+  <data name="KEXP_G_DIFFUS" xml:space="preserve">
+    <value>Diffusstrahlung horizontal</value>
+  </data>
+  <data name="KEXP_G_GEGENSTRAHLUNG" xml:space="preserve">
+    <value>Atmosphärische Gegenstrahlung</value>
+  </data>
+  <data name="KEXP_G_AUSSTRAHLUNG" xml:space="preserve">
+    <value>Terrestrische Ausstrahlung</value>
+  </data>
+  <data name="KEXP_G_BEDECKUNG" xml:space="preserve">
+    <value>Bedeckungsgrad</value>
+  </data>
+  <data name="KEXP_G_SOL_NORD" xml:space="preserve">
+    <value>Fassade Nord</value>
+  </data>
+  <data name="KEXP_G_SOL_OST" xml:space="preserve">
+    <value>Fassade Ost</value>
+  </data>
+  <data name="KEXP_G_SOL_SUED" xml:space="preserve">
+    <value>Fassade Süd</value>
+  </data>
+  <data name="KEXP_G_SOL_WEST" xml:space="preserve">
+    <value>Fassade West</value>
+  </data>
+  <data name="KEXP_G_SONNENWINKEL" xml:space="preserve">
+    <value>Sonnenwinkel</value>
+  </data>
+  <data name="KEXP_G_LUFTDRUCK" xml:space="preserve">
+    <value>Luftdruck</value>
+  </data>
+  <data name="KEXP_G_WINDGESCHWINDIGKEIT" xml:space="preserve">
+    <value>Windgeschwindigkeit</value>
+  </data>
+  <data name="KEXP_G_WINDRICHTUNG" xml:space="preserve">
+    <value>Windrichtung</value>
+  </data>
+  <data name="KEXP_G_WASSERDAMPF" xml:space="preserve">
+    <value>Wasserdampfgehalt</value>
+  </data>
+  <data name="KEXP_G_QUALITAET" xml:space="preserve">
+    <value>Qualitätskennung Strahlung</value>
+  </data>
+  <data name="KEXP_G_TAUPUNKT" xml:space="preserve">
+    <value>Taupunkt</value>
+  </data>
+  <data name="KEXP_GRUND_OHNE_ROHDATEN" xml:space="preserve">
+    <value>Region ohne Rohdaten importiert – nur die Rechenwerte stehen zur Wahl.</value>
+  </data>
+  <data name="KEXP_GRUND_NICHT_GEFUEHRT" xml:space="preserve">
+    <value>Die Quelle führt die Größe nicht.</value>
+  </data>
+  <data name="KEXP_KOPF_EXPORT" xml:space="preserve">
+    <value>EPOS-Plan Klimadatenexport</value>
+  </data>
+  <data name="KEXP_KOPF_REGION" xml:space="preserve">
+    <value>Region</value>
+  </data>
+  <data name="KEXP_KOPF_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="KEXP_KOPF_AUSFUEHRUNG" xml:space="preserve">
+    <value>Ausführung</value>
+  </data>
+  <data name="KEXP_KOPF_KOORDINATEN" xml:space="preserve">
+    <value>Koordinaten (Breite / Länge)</value>
+  </data>
+  <data name="KEXP_KOPF_HOEHE" xml:space="preserve">
+    <value>Höhe</value>
+  </data>
+  <data name="KEXP_KOPF_BEZUGSPUNKT" xml:space="preserve">
+    <value>Bezugspunkt</value>
+  </data>
+  <data name="KEXP_KOPF_ZEITBEZUG" xml:space="preserve">
+    <value>Zeitbezug</value>
+  </data>
+  <data name="KEXP_KOPF_ZEITSTEMPEL" xml:space="preserve">
+    <value>Zeitstempel</value>
+  </data>
+  <data name="KEXP_ZEITSTEMPEL_REGEL" xml:space="preserve">
+    <value>Beginn der Stunde im Gemeinjahr mit 8760 Stunden</value>
+  </data>
+  <data name="KEXP_GERECHNET_KOPF" xml:space="preserve">
+    <value>Gerechnet</value>
+  </data>
+  <data name="KEXP_TAUPUNKT_REGEL" xml:space="preserve">
+    <value>Taupunkt nach Magnus (Sonntag 1990) aus Lufttemperatur und relativer Feuchte</value>
+  </data>
+  <data name="KEXP_KOPF_LIZENZ" xml:space="preserve">
+    <value>Lizenz</value>
+  </data>
+  <data name="KEXP_LIZENZ_DWD" xml:space="preserve">
+    <value>Deutscher Wetterdienst (DWD), Testreferenzjahre, CC BY 4.0</value>
+  </data>
+  <data name="KEXP_LIZENZ_PVGIS" xml:space="preserve">
+    <value>PVGIS © Europäische Union, Gemeinsame Forschungsstelle</value>
+  </data>
+  <data name="KEXP_ZB_MEZ" xml:space="preserve">
+    <value>MEZ ohne Sommerzeit (UTC+1)</value>
+  </data>
+  <data name="KEXP_ZB_UTC" xml:space="preserve">
+    <value>UTC</value>
+  </data>
+  <data name="KEXP_SP_STUNDE" xml:space="preserve">
+    <value>Stunde</value>
+  </data>
+  <data name="KEXP_SP_DATUM" xml:space="preserve">
+    <value>Datum Uhrzeit</value>
+  </data>
+  <data name="KEXP_SP_ISO" xml:space="preserve">
+    <value>Zeitstempel ISO 8601</value>
+  </data>
+  <data name="KEXP_DATEI" xml:space="preserve">
+    <value>Klimadaten_{0}.csv</value>
+  </data>
+  <data name="KEXP_DZ_KONFLIKT" xml:space="preserve">
+    <value>Komma als Dezimalzeichen geht nicht neben dem Trennzeichen Komma.</value>
+  </data>
+  <data name="KEXP_KEINE_PARAMETER" xml:space="preserve">
+    <value>Kein Parameter gewählt.</value>
+  </data>
+  <data name="KEXP_TITEL" xml:space="preserve">
+    <value>Klimadaten exportieren</value>
+  </data>
+  <data name="KEXP_HANDLUNG" xml:space="preserve">
+    <value>Exportieren…</value>
+  </data>
+  <data name="KEXP_HANDLUNG_GRUND" xml:space="preserve">
+    <value>Der Export gilt für genau eine Region.</value>
+  </data>
+  <data name="KEXP_GRP_PARAMETER" xml:space="preserve">
+    <value>Parameter</value>
+  </data>
+  <data name="KEXP_GR_RECHENWERTE" xml:space="preserve">
+    <value>Rechenwerte (wie die Simulation sie liest)</value>
+  </data>
+  <data name="KEXP_GR_FASSADENWERTE" xml:space="preserve">
+    <value>Fassadenwerte und Sonnenwinkel</value>
+  </data>
+  <data name="KEXP_GR_ROHWERTE" xml:space="preserve">
+    <value>Rohwerte der Quelle</value>
+  </data>
+  <data name="KEXP_GR_ABGELEITET" xml:space="preserve">
+    <value>Abgeleitet</value>
+  </data>
+  <data name="KEXP_GERECHNET" xml:space="preserve">
+    <value>gerechnet</value>
+  </data>
+  <data name="KEXP_ALLE" xml:space="preserve">
+    <value>Alle</value>
+  </data>
+  <data name="KEXP_KEINE" xml:space="preserve">
+    <value>Keine</value>
+  </data>
+  <data name="KEXP_GRP_FORMAT" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="KEXP_VORLAGE_HAUS" xml:space="preserve">
+    <value>Haus (wie CSV am Bild)</value>
+  </data>
+  <data name="KEXP_VORLAGE_INTERNATIONAL" xml:space="preserve">
+    <value>International (Komma, Punkt, ISO)</value>
+  </data>
+  <data name="KEXP_TRENNZEICHEN" xml:space="preserve">
+    <value>Trennzeichen</value>
+  </data>
+  <data name="KEXP_TZ_SEMIKOLON" xml:space="preserve">
+    <value>Semikolon</value>
+  </data>
+  <data name="KEXP_TZ_KOMMA" xml:space="preserve">
+    <value>Komma</value>
+  </data>
+  <data name="KEXP_TZ_TABULATOR" xml:space="preserve">
+    <value>Tabulator</value>
+  </data>
+  <data name="KEXP_DEZIMALZEICHEN" xml:space="preserve">
+    <value>Dezimalzeichen</value>
+  </data>
+  <data name="KEXP_DZ_KOMMA" xml:space="preserve">
+    <value>Komma</value>
+  </data>
+  <data name="KEXP_DZ_PUNKT" xml:space="preserve">
+    <value>Punkt</value>
+  </data>
+  <data name="KEXP_ZEITSPALTE" xml:space="preserve">
+    <value>Zeitspalte</value>
+  </data>
+  <data name="KEXP_ZS_STUNDE" xml:space="preserve">
+    <value>Laufende Stunde 1…8760</value>
+  </data>
+  <data name="KEXP_ZS_DATUM" xml:space="preserve">
+    <value>Datum und Uhrzeit (TT.MM. hh:00)</value>
+  </data>
+  <data name="KEXP_ZS_BEIDES" xml:space="preserve">
+    <value>Stunde und Datum</value>
+  </data>
+  <data name="KEXP_ZS_ISO" xml:space="preserve">
+    <value>ISO 8601 mit Bezugsjahr</value>
+  </data>
+  <data name="KEXP_ZS_KEINE" xml:space="preserve">
+    <value>Keine</value>
+  </data>
+  <data name="KEXP_ZEITBEZUG" xml:space="preserve">
+    <value>Zeitbezug</value>
+  </data>
+  <data name="KEXP_KOPFART" xml:space="preserve">
+    <value>Kopf</value>
+  </data>
+  <data name="KEXP_KA_EINE" xml:space="preserve">
+    <value>Name [Einheit] in einer Zeile</value>
+  </data>
+  <data name="KEXP_KA_ZWEI" xml:space="preserve">
+    <value>Name und Einheitenzeile</value>
+  </data>
+  <data name="KEXP_KA_OHNE" xml:space="preserve">
+    <value>Ohne Kopf</value>
+  </data>
+  <data name="KEXP_HERKUNFT" xml:space="preserve">
+    <value>Herkunftsblock mit #-Zeilen</value>
+  </data>
+  <data name="KEXP_VORSCHAU" xml:space="preserve">
+    <value>Vorschau (erste fünf Stunden)</value>
+  </data>
+  <data name="KEXP_BTN_EXPORT" xml:space="preserve">
+    <value>Exportieren …</value>
+  </data>
+  <data name="KEXP_BTN_EXPORT_IOS" xml:space="preserve">
+    <value>Exportieren und teilen …</value>
+  </data>
+  <data name="KEXP_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Die Datei ist gespeichert: {0}</value>
+  </data>
+  <data name="KEXP_MSG_FEHLER" xml:space="preserve">
+    <value>Die Datei ließ sich nicht schreiben: {0}</value>
+  </data>
+  <data name="KEXP_MSG_TEILEN_FEHLER" xml:space="preserve">
+    <value>Die Datei ist gespeichert, ließ sich aber nicht teilen: {0}</value>
+  </data>
+  <data name="KEXP_MSG_KEINE_DATEN" xml:space="preserve">
+    <value>Zu dieser Region stehen keine Stundenwerte in der Datenbank.</value>
+  </data>
+  <data name="KEXP_MSG_LESEN" xml:space="preserve">
+    <value>Die Stundenwerte werden gelesen …</value>
+  </data>
+  <data name="KEXP_DATEIDIALOG_TITEL" xml:space="preserve">
+    <value>Klimadaten exportieren</value>
+  </data>
 </root>
 
