@@ -615,12 +615,19 @@ namespace WindowsFormsApplication1
         /// </summary>
         private Zeichenmodell ModellTemperaturen(Bildauftrag a)
         {
+            // Welle RZ (Teil b): die Auswahl je Speicher. Ohne Reihenliste (ab Werk) alle Speicher;
+            // mit Liste nur die genannten - die Farbrolle bleibt die des Speichers (vergeben über ALLE),
+            // und die Quelltemperaturen sind keine Speicher und bleiben stehen.
+            bool alle = Alle(a);
             var reihen = new List<ChartRenderer.Reihe>();
             foreach (Temperaturreihe r in Temperaturreihen())
+            {
+                if (r.Speicher != null && !Gewaehlt(a, alle, r.Speicher)) continue;
                 reihen.Add(new ChartRenderer.Reihe(r.Legende, Kopie(r.Werte), r.Rolle,
                                                    ChartRenderer.Stapelart.Keine,
                                                    r.Gestrichelt ? ChartRenderer.Strichart.Gestrichelt
                                                                  : ChartRenderer.Strichart.Durchgezogen));
+            }
 
             return ChartRenderer.TemperaturverlaufModell(
                 MyResource.Resource.CHART_TITEL_SPEICHERTEMPERATUR, reihen, true);

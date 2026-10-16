@@ -409,6 +409,16 @@
        mit eigenem Zoom - jede Jahresganglinie fuehrt ihren Ausschnitt selbst. *@
     @if (BildauftragRaumtemperatur is not null)
     {
+        @* Welle RZ (Teil b): die Außentemperatur zuschaltbar, ab Werk aus - Orientierung für
+           Überhitzung und Komfort. Kein Delegat, kein Schalter; die Beschriftung ist der
+           Legendentext der Reihe. *@
+        @if (BildauftragRaumtemperaturReihen is not null)
+        {
+            <div class="epos-leiste">
+                <Schalter Bezeichnung="@LabelAussentemperatur" Wert="@_raumAussen"
+                          WertChanged="@(w => _raumAussen = w)" />
+            </div>
+        }
         <DiagrammSvg Modell="@Raummodell" Kennung="@("gebaeude-raumtemperatur" + Zonenzusatz)" Bezeichnung="@BildtextRaumtemperatur"
                      PlatzhalterText="@PlatzhalterBild" Einheit="°C"
                      Palette="@Farbpalette.Aktuell"
@@ -650,6 +660,20 @@
     /// Sollwertband, gezeichnet im Kern. <c>null</c> = kein Bild (Tagesbilanz-Weg).
     /// </summary>
     [Parameter] public Func<Zeichenmodell?>? BildauftragRaumtemperatur { get; set; }
+
+    /// <summary>
+    /// Welle RZ (Teil b): das Bild „Raumtemperatur" mit ZUSCHALTBAREN Reihen — erster Parameter der
+    /// Platz (−1 = ganzes Gebäude, sonst die Zone), zweiter die gewählten Zusatzreihen
+    /// (<c>Zusatzreihen.Aussentemperatur</c>). Gerufen nur bei gesetztem Schalter; aus bleibt es
+    /// beim Bestandsbild. Ohne Delegat kein Schalter.
+    /// </summary>
+    [Parameter] public Func<int, IReadOnlyList<string>, Zeichenmodell?>? BildauftragRaumtemperaturReihen { get; set; }
+
+    /// <summary>Beschriftung des Schalters „Außentemperatur" — wörtlich der Legendentext der Reihe.</summary>
+    [Parameter] public string LabelAussentemperatur { get; set; } = "Außentemperatur";
+
+    /// <summary>Steht der Schalter „Außentemperatur" am Raumtemperaturbild? Prüfhilfe für die Tests.</summary>
+    public bool RaumAussentemperatur => _raumAussen;
 
     // --- Anlagenkopplung AK1 (Konzept Anlagenkopplung 9.4, 12.1) ---------------------
 
@@ -1316,10 +1340,26 @@
     private Zeichenmodell? _raummodell;
     private bool _raummodellGerechnet;
 
+    /// <summary>Welle RZ: der Schalter „Außentemperatur" am Raumtemperaturbild; ab Werk aus.</summary>
+    private bool _raumAussen;
+
+    /// <summary>Die Raumtemperaturbilder MIT Außentemperatur, je Platz (0 = Gebäude) einmal gerechnet.</summary>
+    private readonly Dictionary<int, Zeichenmodell?> _raummodelleAussen = new();
+
+    private static readonly IReadOnlyList<string> MIT_AUSSEN =
+        new[] { EPOS.UI.Seiten.Simulation.Zusatzreihen.Aussentemperatur };
+
     private Zeichenmodell? Raummodell
     {
         get
         {
+            if (_raumAussen && BildauftragRaumtemperaturReihen is not null)
+            {
+                if (_raummodelleAussen.TryGetValue(_bildzone, out Zeichenmodell? am)) return am;
+                Zeichenmodell? neuA = BildauftragRaumtemperaturReihen(_bildzone - 1, MIT_AUSSEN);
+                _raummodelleAussen[_bildzone] = neuA;
+                return neuA;
+            }
             if (_bildzone > 0)
             {
                 if (BildauftragRaumtemperaturZone is null) return null;

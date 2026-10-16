@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Simulation;
 using Microsoft.AspNetCore.Components;
@@ -34,7 +35,12 @@ namespace WindowsFormsApplication1
         // getrennt gehalten (W10a, "Gaben ohne Geschlossen").
 
         /// <summary>Der PARAMETERSATZ des Dialogs — ohne <c>Geschlossen</c>.</summary>
-        internal static IReadOnlyDictionary<string, object> Gaben(QuellprofilDaten daten)
+        /// <param name="daten">Die Übergabefelder des Dialogs.</param>
+        /// <param name="aussentemperatur">Welle RZ (Teil b): die Außentemperatur des Projekts
+        /// (<c>KlimaregionCtrl.Aussentemperatur</c>, 8 760 Werte) für die zuschaltbare Reihe im
+        /// Jahresbild; <c>null</c> = keine Klimareihe, dann kein Schalter.</param>
+        internal static IReadOnlyDictionary<string, object> Gaben(QuellprofilDaten daten,
+                                                                  double[] aussentemperatur = null)
         {
             int idProjekt = daten?.IdProjekt ?? 0;
 
@@ -48,6 +54,9 @@ namespace WindowsFormsApplication1
                 ["CsvWege"] = GanglinienFormatnaht.Wege(),
                 ["CsvSpeichern"] = Diagrammexportnaht.Fuer(idProjekt),
                 ["Jahresbild"] = Bildzeichner(daten),
+                ["JahresbildReihen"] = aussentemperatur != null && aussentemperatur.Length > 1
+                    ? Bildzeichner(aussentemperatur) : null,
+                ["LabelAussentemperatur"] = MyResource.Resource.CHART_SERIE_AUSSENTEMPERATUR,
                 ["Werteanzahl"] = new Func<string, int>(DbWerte.QuellprofilWerteanzahl),
 
                 // Die drei Steuerwerte der Betriebsart - sprachneutral, nie ein
@@ -196,6 +205,46 @@ namespace WindowsFormsApplication1
                     MyResource.Resource.SIMQ_QUELLPROFIL_TAB_GRAFIK, jahr,
                     MyResource.Resource.CHART_ACHSE_QUELLTEMPERATUR,
                     Farbrolle.QUELLTEMPERATUR);
+            });
+        }
+
+        /// <summary>
+        /// Welle RZ (Teil b): das Jahresbild mit ZUSCHALTBARER Außentemperatur. Ohne den Schlüssel
+        /// <c>Zusatzreihen.Aussentemperatur</c> in der Reihenliste ist es Bild für Bild das Bestandsbild
+        /// (<see cref="Bildzeichner(QuellprofilDaten)"/>); mit ihm stehen Quelltemperatur und
+        /// Außentemperatur im Jahresgang wie im Vorschaubild des Erdreichdialogs
+        /// (<c>QuelleErdreichHuelle.Modellzeichner</c>) — dieselben Rollen, dieselbe Achse.
+        /// </summary>
+        private static Func<string, double[], IReadOnlyList<string>, Task<Zeichenmodell>> Bildzeichner(
+            double[] aussentemperatur)
+        {
+            return (betriebsart, werte, reihen) => SpeicherEngine.Kulturweitergabe.Starten(() =>
+            {
+                double[] profil = QuellprofilCtrl.Jahresprofil(betriebsart, werte);
+                if (profil == null) return null;
+
+                var jahr = new double[profil.Length];
+                for (int i = 0; i < profil.Length; i++) jahr[i] = profil[i];
+
+                bool mitAussen = reihen != null
+                                 && reihen.Contains(EPOS.UI.Seiten.Simulation.Zusatzreihen.Aussentemperatur);
+                if (!mitAussen)
+                    return ChartRenderer.JahresverlaufModell(
+                        MyResource.Resource.SIMQ_QUELLPROFIL_TAB_GRAFIK, jahr,
+                        MyResource.Resource.CHART_ACHSE_QUELLTEMPERATUR,
+                        Farbrolle.QUELLTEMPERATUR);
+
+                var liste = new List<ChartRenderer.Reihe>
+                {
+                    new ChartRenderer.Reihe(MyResource.Resource.CHART_SERIE_QUELLTEMPERATUR, jahr,
+                                            Farbrolle.QUELLTEMPERATUR),
+                    new ChartRenderer.Reihe(MyResource.Resource.CHART_SERIE_AUSSENTEMPERATUR,
+                                            (double[])aussentemperatur.Clone(), Farbrolle.AUSSENTEMPERATUR)
+                };
+                return ChartRenderer.JahresgangModell(
+                    MyResource.Resource.SIMQ_QUELLPROFIL_TAB_GRAFIK, liste,
+                    MyResource.Resource.CHART_ACHSE_MONAT,
+                    MyResource.Resource.CHART_ACHSE_QUELLTEMPERATUR);
             });
         }
 
