@@ -583,7 +583,24 @@ namespace WindowsFormsApplication1
             if (bezug && !z.BeheizteVerbunden())
                 z.Melden(PruefStufe.Warnung, GRENZEN_ENTKOPPELT, z.Regel);
             z.Abschluss();
+            // N7: die Konditionierung der Datei je Zone auch auf dem Regelweg (der Zuordnungsdialog ohne Plan) — wie im Zonenplan.
+            foreach (Importzone zone in z.Zonen)
+                zone.Projektdatei ??= Dateikonditionierung(zone.Name, zone);
             return z;
+        }
+
+        /// <summary>
+        /// <b>Die Konditionierung der Datei an einer Zone</b> (Nachzug N7): die des ersten Raums der Zone, der EPOS_*-Sätze trägt
+        /// (IFC von EPOS-Plan, <see cref="AbbildKonditionierung.AlsZonenkonditionierung"/>), sonst Lasten und Zeitpläne einer
+        /// gbXML-Datei bzw. der IFC-Standardsätze (<see cref="GbxmlKonditionierung.Bilden"/>); <c>null</c> = keine. Derselbe Weg für
+        /// den Zonenplan und die Regelzonierung — so kommen Kalender und Feiertagsperioden der Datei auf beiden Wegen an der Zone an.
+        /// </summary>
+        internal static Zonenkonditionierung Dateikonditionierung(string zone, Importzone iz)
+        {
+            if (iz == null) return null;
+            if (iz.Raeume.Select(r => r.Konditionierung).FirstOrDefault(k => k != null) is AbbildKonditionierung k)
+                return k.AlsZonenkonditionierung(zone);
+            return GbxmlKonditionierung.Bilden(zone, iz.Raeume, iz.FlaecheM2, iz.VolumenM3);
         }
 
         // ------------------------------------------------------------------

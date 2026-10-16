@@ -540,6 +540,8 @@ namespace WindowsFormsApplication1
         internal const string ZU_VIELE_ZONEN = "IMP_BAUTEIL_PROT_ZU_VIELE_ZONEN";
         /// <summary>F — {0} Zone: Ab zwei Zonen trägt jede eine Nutzfläche (N1.56 Nr. 14).</summary>
         internal const string ZONE_OHNE_NUTZFLAECHE = "IMP_BAUTEIL_PROT_ZONE_OHNE_NUTZFLAECHE";
+        /// <summary>W — {0} Zone: Der Einzonenweg übernimmt die Zeitpläne der Datei nicht (N7); als Zonen übernommen kommen sie an.</summary>
+        internal const string EINZONE_ZEITPLAENE = "IMP_BAUTEIL_PROT_EINZONE_ZEITPLAENE";
         /// <summary>F — {0} Σ Zonen [m²], {1} Σ Räume [m²]: Die Zonenflächen summieren nicht die Raumflächen (5.3).</summary>
         internal const string ZONENFLAECHE_ABWEICHUNG = "IMP_BAUTEIL_PROT_ZONENFLAECHE_ABWEICHUNG";
 
@@ -1113,6 +1115,11 @@ namespace WindowsFormsApplication1
                 GebaeudeRestdaten.Setzen(_v.Zone, _g.Raeume.Where(IstBeheizt));
                 _v._zonenreste.Clear();
                 _v._zonenreste.Add(GebaeudeRestdaten.Rest(_g.Raeume.Where(IstBeheizt)));
+                // N7: Die eine Zone nimmt die Zeitpläne der Datei nicht (Kalender kommen aus dem Profil bzw. der Projektdatei) —
+                // benannt statt still, mit dem Weg, auf dem sie ankommen.
+                if (_g.Raeume.Where(IstBeheizt).Any(r => r.Konditionierung != null ||
+                                                         (r.GbxmlLasten is { AusIfc: false } l && l.Plaene.Any())))
+                    Warnung(EINZONE_ZEITPLAENE, _v.Zone.Bezeichner);
             }
 
             /// <summary>

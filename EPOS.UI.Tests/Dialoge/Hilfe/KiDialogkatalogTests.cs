@@ -177,6 +177,9 @@ public class KiDialogkatalogTests : IDisposable
         // die Bestaetigung der Meldungen nur zu lesen.
         { KiMaskennamen.GEBAEUDE_EXPORT,
           typeof(EPOS.UI.Dialoge.Export.GebaeudeExportKiSicht) },
+        // KD-5: der Klimaexport - Formatfelder als Steuerwerte, Parameter als Schluesselliste.
+        { KiMaskennamen.KLIMA_EXPORT,
+          typeof(EPOS.UI.Dialoge.Export.KlimaExportKiSicht) },
         { KiMaskennamen.TYPPROFIL,
           typeof(EPOS.UI.Dialoge.Bedarf.TypProfilKiSicht) },
 
@@ -510,7 +513,7 @@ public class KiDialogkatalogTests : IDisposable
         // Welle M3b (PW2, BW2): die Verwaltung der Betriebskalender. Stufe P2 der
         // Pufferspeicher-Auslegung: ihre Ansicht.
         // KM4-E3-c: + Kältemittel.
-        Assert.Equal(104, katalog.Anzahl);                            // K5b: + Kältebedarf-Katalog;                            // KU3-1: + Kältemaschinen; KU3-4c: + Kältemaschinen im Projekt; PVG: + PV-Ganglinien; Importoptionen: + 4; Teil C: + 4; Teil B: + Gebäudeimport
+        Assert.Equal(105, katalog.Anzahl);  // KD-5: + Klimaexport                            // K5b: + Kältebedarf-Katalog;                            // KU3-1: + Kältemaschinen; KU3-4c: + Kältemaschinen im Projekt; PVG: + PV-Ganglinien; Importoptionen: + 4; Teil C: + 4; Teil B: + Gebäudeimport
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -1795,6 +1798,9 @@ public class KiDialogkatalogTests : IDisposable
         [KiMaskennamen.GEBAEUDE_EXPORT] =
             "bindet über die Sichtklasse GebaeudeExportKiSicht auf die Postleitzahl (setzbar) und die " +
             "Bestätigung der Meldungen (nur zu lesen); Zeuge ist GebaeudeExportDialogTests",
+        [KiMaskennamen.KLIMA_EXPORT] =
+            "bindet über die Sichtklasse KlimaExportKiSicht auf die Formatfelder (Steuerwerte der Optionsgruppen) " +
+            "und die Parameterwahl als Schlüsselliste; Zeuge ist KlimaExportDialogTests",
         [KiMaskennamen.TYPPROFIL] =
             "bindet über die Sichtklasse TypProfilKiSicht auf die Listenwahl der " +
             "Maske; Zeuge ist TypProfilDialogTests",

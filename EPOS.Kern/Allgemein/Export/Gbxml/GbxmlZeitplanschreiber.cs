@@ -65,6 +65,20 @@ namespace WindowsFormsApplication1
             return plan;
         }
 
+        /// <summary>
+        /// <b>Führt der Kalender Feiertage mit verschiedenen Tagesverläufen?</b> (Nachzug N7) gbXML kennt je Wochenplan nur den einen
+        /// Tagtyp <c>Holiday</c>; <see cref="Plan"/> schreibt das Bild des ranghöchsten Feiertags. Weichen die Bilder der Feiertage
+        /// voneinander ab, ist das eine Formatgrenze, die der Export benennt (IFC trägt jeden Feiertag einzeln).
+        /// </summary>
+        internal static bool FeiertageVerschieden(Konditionierungskalender k)
+        {
+            if (k == null) return false;
+            IReadOnlyList<double> standard = k.Standardwoche;
+            List<double[]> bilder = k.Perioden.Where(r => r.IstFeiertag)
+                .Select(r => Woche(r.Angabe, standard, k.Groesse, 1.0).Take(Kalenderwoche.TAGESSTUNDEN).ToArray()).ToList();
+            return bilder.Skip(1).Any(b => !b.SequenceEqual(bilder[0]));
+        }
+
         /// <summary>Der größte endliche Wert des Kalenders über Grundwoche und alle Perioden (0 ohne einen).</summary>
         internal static double Hoechstwert(Konditionierungskalender k)
         {

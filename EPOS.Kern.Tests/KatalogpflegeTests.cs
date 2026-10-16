@@ -1584,7 +1584,12 @@ namespace EPOS.Kern.Tests
 
                     Assert.Contains("CC BY 4.0", details);
                     Assert.Contains("Deutscher Wetterdienst", details);
-                    Assert.Contains("IL", details);                 // die verworfenen Groessen
+                    // die verworfenen Groessen - oder, sobald die Rohtabelle steht (KD-4), der Vermerk, dass alle Felder
+                    // als Rohwerte gespeichert sind
+                    if (KlimaRohwerteSchema.SchemaVollstaendig())
+                        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.KLIMA_TRY_ROHWERTE_GESPEICHERT, details);
+                    else
+                        Assert.Contains("IL", details);
                     Assert.Contains(Path.GetFileName(pfad), details);
                     Assert.Contains("CC BY 4.0", erg.Meldung);
                 }

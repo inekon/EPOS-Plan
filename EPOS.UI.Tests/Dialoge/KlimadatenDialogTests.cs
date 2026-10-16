@@ -2221,27 +2221,30 @@ public class KlimadatenDialogTests : EposBunitContext
         => cut.FindComponents<DiagrammSvg>().Single(d => d.Instance.Kennung == "klima-vorschau").Instance.Modell!;
 
     [Fact]
-    public void KD8_Rohwerte_bekommen_vor_der_Freischaltung_keinen_Chip_Gegenprobe_frei()
+    public void KD8B_Rohwert_Chips_folgen_dem_Datenstand_mit_Marke_R()
     {
-        // Die fünf Rohwert-Größen mit Bild - Monatsreihen und Stundenwerte liegen vor, der
-        // Parameterbestand führt sie; bis Teil B (Rohwerttabelle) bekommen sie dennoch keinen Chip.
-        string[] roh = KlimaReihenkatalog.Reihen
-            .Where(r => r.Herkunft == KlimaReihenherkunft.Rohwert && r.InVorschau).Select(r => r.Schluessel).ToArray();
+        // Teil B: Die fünf Rohwert-Größen mit Bild bekommen ihren Chip aus dem Datenstand - in der Vorschau, wenn der
+        // gelesene Satz die Rohwerte speichert (Schritt 238 steht), im Reiter „Weitere Reihen“, wenn die Hülle sie im
+        // Reihenbestand führt; eine Reihe ohne Werte bleibt weich gesperrt („Quelle führt die Größe nicht“).
+        string[] roh = KlimaReihenkatalog.Reihen.Where(r => r.IstRohwert && r.InVorschau).Select(r => r.Schluessel).ToArray();
         Assert.Equal(5, roh.Length);
+        string druck = KlimaReihenkatalog.ROH_PREFIX + KlimaRohwerteSchema.SPALTE_LUFTDRUCK;
+        string dampf = KlimaReihenkatalog.ROH_PREFIX + KlimaRohwerteSchema.SPALTE_WASSERDAMPF;
 
-        IRenderedComponent<KlimadatenDialog> Vorschau()
+        IRenderedComponent<KlimadatenDialog> Vorschau(bool gespeichert)
         {
             var erg = TrefferMitReihen();
             foreach (string k in roh) erg.Kennzahlen!.Monatsreihen[k] = Enumerable.Repeat(3.0, 12).ToArray();
             erg.Parameterbestand = Enum.GetValues<KlimaParameter>()
                 .Select(p => new KlimaParameterEintrag { Parameter = p, Stand = KlimaParameterStand.Gefuehrt }).ToList();
+            erg.RohwerteGespeichert = gespeichert;
             var cut = ZeigeSuche(_ => Task.FromResult(erg));
             Suchen(cut);
             cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-kennung=klima-vorschau] button.epos-reihenwahl-chip")));
             return cut;
         }
 
-        IRenderedComponent<KlimadatenDialog> Jahr()
+        IRenderedComponent<KlimadatenDialog> Jahr(bool mitRohwerten)
         {
             IReadOnlyList<Katalogfilterzeile> liste = Regionen();
             var cut = Render<KlimadatenDialog>(p => p
@@ -2250,10 +2253,11 @@ public class KlimadatenDialogTests : EposBunitContext
                 .Add(x => x.Ansicht, n =>
                 {
                     var a = AnsichtMitReihen(n);
-                    var bestand = a.Reihenbestand.Concat(roh.Select(k => new KlimaReihenwerte
-                    {
-                        Reihe = KlimaReihenkatalog.Reihe(k), Werte = Enumerable.Repeat(3.0, 8760).ToArray(), Gefuehrt = true
-                    })).ToList();
+                    if (!mitRohwerten) return Task.FromResult(a);
+                    // Wie die Hülle nach dem Schritt 238: Luftdruck geführt, Wasserdampf nur NULL.
+                    var daten = new KlimaExportDaten { IdRegion = 1, Rohdaten = true };
+                    daten.Rohwerte[KlimaRohwerteSchema.SPALTE_LUFTDRUCK] = Enumerable.Repeat(1013.0, 8760).ToArray();
+                    var bestand = a.Reihenbestand.Concat(KlimaReihenkatalog.AusRohwerten(daten)).ToList();
                     return Task.FromResult(a with { Reihenbestand = bestand });
                 })
                 .Add(x => x.Geschlossen, _ => { }));
@@ -2267,26 +2271,35 @@ public class KlimadatenDialogTests : EposBunitContext
             => cut.FindAll($"[data-kennung={kennung}] button.epos-reihenwahl-chip")
                   .Count(c => c.GetAttribute("data-schluessel")!.StartsWith(KlimaReihenkatalog.ROH_PREFIX));
 
-        Assert.False(KlimaReihenkatalog.RohwerteFreigeschaltet);
-        Assert.Equal(0, Rohchips(Vorschau(), "klima-vorschau"));
-        Assert.Equal(0, Rohchips(Jahr(), "klima-jahr"));
+        // Ohne Rohwerttabelle (der Satz speichert nicht, der Bestand führt keine Rohwerte): kein Chip.
+        Assert.Equal(0, Rohchips(Vorschau(false), "klima-vorschau"));
+        Assert.Equal(0, Rohchips(Jahr(false), "klima-jahr"));
 
-        // Gegenprobe: freigeschaltet erscheinen die fünf Chips - frei schaltbar, mit Marke „R“.
-        KlimaReihenkatalog.RohwerteFreigeschaltet = true;
-        try
-        {
-            var v = Vorschau();
-            Assert.Equal(5, Rohchips(v, "klima-vorschau"));
-            var j = Jahr();
-            Assert.Equal(5, Rohchips(j, "klima-jahr"));
-            var druck = Chip(j, "klima-jahr", KlimaReihenkatalog.ROH_PREFIX + "Luftdruck_hPa");
-            Assert.Null(druck.GetAttribute("aria-disabled"));
-            Assert.NotNull(druck.QuerySelector(".epos-reihenwahl-marke"));
-        }
-        finally
-        {
-            KlimaReihenkatalog.RohwerteFreigeschaltet = false;
-        }
+        // Mit dem Schritt 238: die fünf Chips in der Vorschau, frei schaltbar, mit Marke „R“.
+        var v = Vorschau(true);
+        Assert.Equal(5, Rohchips(v, "klima-vorschau"));
+        // Die Ausstrahlung teilt die Einheit der Strahlung und ist frei schaltbar; der Luftdruck wäre neben kWh/m² und °C
+        // die dritte Einheit und ist nach KD-Q10 weich gesperrt - beide tragen die Marke „R“ mit Titel.
+        var vAus = Chip(v, "klima-vorschau", KlimaReihenkatalog.ROH_PREFIX + KlimaRohwerteSchema.SPALTE_AUSSTRAHLUNG);
+        Assert.Null(vAus.GetAttribute("aria-disabled"));
+        Assert.Equal("Rohwert der Quelle aus der Rohwerttabelle (R)", vAus.QuerySelector(".epos-reihenwahl-marke")!.GetAttribute("title"));
+        var vDruck = Chip(v, "klima-vorschau", druck);
+        Assert.Equal("true", vDruck.GetAttribute("aria-disabled"));
+        Assert.NotNull(vDruck.QuerySelector(".epos-reihenwahl-marke"));
+
+        // Im Reiter „Weitere Reihen“: fünf Chips mit Marke; Luftdruck geführt, Wasserdampf weich gesperrt mit Grund.
+        var j = Jahr(true);
+        Assert.Equal(5, Rohchips(j, "klima-jahr"));
+        var jDruck = Chip(j, "klima-jahr", druck);
+        Assert.Null(jDruck.GetAttribute("aria-disabled"));
+        Assert.NotNull(jDruck.QuerySelector(".epos-reihenwahl-marke"));
+        var jDampf = Chip(j, "klima-jahr", dampf);
+        Assert.Equal("true", jDampf.GetAttribute("aria-disabled"));
+        Assert.Equal("Quelle führt die Größe nicht", jDampf.GetAttribute("title"));
+        Assert.NotNull(jDampf.QuerySelector(".epos-reihenwahl-marke"));
+        // Der Luftdruck lässt sich zuschalten (andere Einheit als W/m²: er steht dann allein).
+        jDruck.Click();
+        j.WaitForAssertion(() => Assert.Equal("true", Chip(j, "klima-jahr", druck).GetAttribute("aria-pressed")));
     }
 
     [Fact]

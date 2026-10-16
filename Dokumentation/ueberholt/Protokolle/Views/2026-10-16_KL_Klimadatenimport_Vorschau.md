@@ -1,8 +1,8 @@
 # KL — Klimadatenimport: Vorschau, Schlussleiste, Vorschaukarte
 
 Sitzung Dialoge und Korrekturen (Übersicht Berichte & Kosten), 16.10.2026, Zweig `klima`. Konzept:
-[`2026-10-16_Konzept_Klimadatenimport_Vorschau_und_Vollimport.md`](../../../aktuell/Dialoge/2026-10-16_Konzept_Klimadatenimport_Vorschau_und_Vollimport.md);
-Mockup: [`Klimadatenimport_Mockup.html`](../../../aktuell/Mockups/Klimadatenimport_Mockup.html).
+[`2026-10-16_Konzept_Klimadatenimport_Vorschau_und_Vollimport.md`](../../2026-10-16_Konzept_Klimadatenimport_Vorschau_und_Vollimport.md);
+Mockup: [`Klimadatenimport_Mockup.html`](../../Mockups/Klimadatenimport_Mockup.html).
 
 ## Befund (KL-A)
 

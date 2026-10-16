@@ -1,9 +1,9 @@
 # KD-8 Teil A — weitere Klimadatenreihen in Vorschau und Jahresverlauf
 
 Sitzung Dialoge und Korrekturen (Klimadaten), 16.10.2026, Zweig `kd8a`. Konzept:
-[`2026-10-16_Konzept_Klimadatenimport_Vorschau_und_Vollimport.md`](../../../aktuell/Dialoge/2026-10-16_Konzept_Klimadatenimport_Vorschau_und_Vollimport.md),
+[`2026-10-16_Konzept_Klimadatenimport_Vorschau_und_Vollimport.md`](../../2026-10-16_Konzept_Klimadatenimport_Vorschau_und_Vollimport.md),
 Abschnitt 4a, Entscheide KD-Q10 bis KD-Q14 nach Empfehlung; Mockup:
-[`../../../aktuell/Mockups/Klimadatenreihen_Mockup.html`](../../../aktuell/Mockups/Klimadatenreihen_Mockup.html).
+[`../../Mockups/Klimadatenreihen_Mockup.html`](../../Mockups/Klimadatenreihen_Mockup.html).
 Kein Schemaschritt, keine Änderung an der Testdatenbank, `ChartRenderer` und `DiagrammSvg` unverändert.
 
 ## Stand
