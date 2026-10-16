@@ -1420,6 +1420,15 @@ nächste Basis einfriert, nimmt die beiden Schlüssel auf und streicht `--ohne` 
 > `a901f445a430231ab6c68c1cc0e3a1ef71a3717cc922bb07c426328b27b3b3f1`**. Der Referenzlauf der CI-Auswahl gegen R55 bleibt PASS
 > (11 Projekte, 373 CSV byte-gleich).
 
+> **Nachtrag — Einheit von `DIN4708.p_b` im Testkatalog (16.10.2026, Schemastand 230), Basis R55 unverändert.** Der
+> fiktive Parameter `DIN4708.p_b` trägt die Einheit „P“ wie in `TwwParameterschluessel` statt „Personen“; nachgezogen in
+> `Skripte/tww_testkatalog_fiktiv.py` und darüber gesät (ein zweiter Lauf meldet 0 nachgeführt). Der Zellvergleich aller
+> Tabellen zeigt allein diese Zelle in `Tab_TwwParameter_STAMM`. Die Einheit ist Beschreibung, kein Rechenwert — deshalb
+> kein Neueinfrieren. Die Testdatenbank: **108 720 128 Byte, LFS-SHA-256
+> `49cdc72a001b32518ef532bb178f443217313165e5799ad778affe7c48872a11`**. Der Referenzlauf aller siebenunddreißig Projekte
+> gegen R55 bleibt PASS und byte-gleich (1 205 CSV; in `Projekt_1072/aggregate.csv` allein die zwei Schlüssel, die R55
+> nicht führt).
+
 ### Die Vorgängerbasis R54 (Dachflächen)
 
 Sechsunddreißig Projekte, 1 171 CSV, 7 983 Skalare, auf Linux eingefroren gegen die Testdatenbank `1f2cf95f…`
