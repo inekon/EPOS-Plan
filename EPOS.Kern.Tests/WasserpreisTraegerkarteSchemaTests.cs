@@ -117,6 +117,45 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, WasserpreisTraegerkarteSchema.Lauf(null).Handgriffe);
         }
 
+        /// <summary>
+        /// Die Nachschlagezeile <c>pricing_model</c> 'WATER' wird angelegt, wenn sie fehlt (alle Flaggen 0, Name „Wasser“),
+        /// einmal — der zweite Lauf tut nichts; der Katalogstempel bleibt; die Trägerliste des Katalogs (LEFT JOIN) liest
+        /// für den Wasserträger dieselben Flaggen wie ohne die Zeile.
+        /// </summary>
+        [Fact]
+        public void Die_Nachschlagezeile_des_Preismodells_wird_einmal_angelegt()
+        {
+            if (!_db.Vorhanden) return;
+            const string FLAGGEN = "SELECT pm.has_hi, pm.has_hs, pm.has_powerprice FROM energy_carrier AS ec " +
+                                   "LEFT JOIN pricing_model AS pm ON ec.pricing_model = pm.code WHERE ec.pricing_model = 'WATER'";
+            Assert.True(WasserpreisTraegerkarteSchema.PreismodellVorhanden());
+            DataRepository.ExecuteNonQuery("DELETE FROM pricing_model WHERE code = 'WATER'");
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET Kostenkatalog_Geaendert = NULL");   // Stempel des Loeschens
+            Assert.False(WasserpreisTraegerkarteSchema.PreismodellVorhanden());
+            Assert.Equal(1, WasserpreisTraegerkarteSchema.Offen());
+            DataRow ohne = DataRepository.GetDataTable(FLAGGEN).Rows[0];
+            Assert.All(ohne.ItemArray, w => Assert.Equal(DBNull.Value, w));
+
+            var bericht = new List<string>();
+            WasserpreisTraegerkarteSchema.Laufergebnis e = WasserpreisTraegerkarteSchema.Lauf(bericht);
+            Assert.Equal((0, 0, 0, 0, 0, 1), (e.TraegerAngelegt, e.Uebernommen, e.Verworfen, e.Behalten, e.Entfernt, e.PreismodellAngelegt));
+            Assert.Equal(1, e.Handgriffe);
+            Assert.Contains(bericht, z => z.Contains("pricing_model", StringComparison.Ordinal));
+            Assert.True(WasserpreisTraegerkarteSchema.Vollstaendig());
+            DataTable t = DataRepository.GetDataTable(
+                "SELECT name, has_hi, has_hs, has_powerprice, has_density FROM pricing_model WHERE code = 'WATER'");
+            Assert.Equal(1, t.Rows.Count);
+            Assert.Equal("Wasser", Convert.ToString(t.Rows[0][0], CultureInfo.InvariantCulture));
+            for (int i = 1; i <= 4; i++) Assert.Equal(0L, Convert.ToInt64(t.Rows[0][i], CultureInfo.InvariantCulture));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Applikation WHERE Kostenkatalog_Geaendert IS NOT NULL"));
+            // Der Mapper der Trägerliste liest null wie 0: die Flaggen bleiben „nein“.
+            DataRow mit = DataRepository.GetDataTable(FLAGGEN).Rows[0];
+            Assert.All(mit.ItemArray, w => Assert.Equal(0L, Convert.ToInt64(w, CultureInfo.InvariantCulture)));
+
+            Assert.Equal(0, WasserpreisTraegerkarteSchema.Lauf(null).Handgriffe);
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM pricing_model WHERE code = 'WATER'"));
+        }
+
         [Fact]
         public void Regel_c_haengt_nicht_an_der_Reihenfolge_der_Zeilen()
         {

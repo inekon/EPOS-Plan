@@ -23,6 +23,9 @@ namespace WindowsFormsApplication1
     //      Emissionsfaktoren, ID_Brennstoff 0, aktiv. ERKANNT WIRD ER AM PREISMODELL, NIE AM
     //      NAMEN - ein Anwender darf ihn umbenennen, der zweite Lauf legt keinen zweiten an.
     //      Der Katalogpreis bleibt 0: Eine Saat bewegt nie ein Ergebnis (Muster Schritt 227).
+    //   a2. PREISMODELL. Fehlt die Nachschlagezeile pricing_model 'WATER', wird sie angelegt
+    //      (Name "Wasser", alle vier Flaggen 0); einziger Leser ist die Traegerliste des Katalogs
+    //      per LEFT JOIN - die Werte bleiben gleich, der Katalogstempel bleibt, wie er war.
     //   b. PREISUEBERNAHME. Je Projekt mit einem Wasserpreis > 0 an einer Anlagenzeile geht der
     //      Preis nach energy_project_settings.custom_price_work des Wassertraegers; die Zeile
     //      (Projekt, Traeger) wird angelegt, wenn sie fehlt. Ein dort schon gepflegter Preis
@@ -94,6 +97,9 @@ namespace WindowsFormsApplication1
         /// <summary>Das Preismodell des Wasserträgers — sein Erkennungsmerkmal (nie der Name).</summary>
         public const string PREISMODELL_WASSER = "WATER";
 
+        /// <summary>Die Nachschlagetabelle der Preismodelle (Flaggen Heizwert, Brennwert, Leistungspreis, Dichte).</summary>
+        public const string TAB_PREISMODELL = "pricing_model";
+
         /// <summary>Name, Code und Gruppe des angelegten Trägers.</summary>
         public const string NAME_WASSER = "Wasser";
 
@@ -101,10 +107,11 @@ namespace WindowsFormsApplication1
         public const string EINHEIT_WASSER = DbWerte.EINHEIT_KUBIKMETER;
 
         /// <summary>Was ein Lauf getan hat.</summary>
-        public readonly record struct Laufergebnis(int TraegerAngelegt, int Uebernommen, int Verworfen, int Behalten, int Entfernt)
+        public readonly record struct Laufergebnis(int TraegerAngelegt, int Uebernommen, int Verworfen, int Behalten, int Entfernt,
+                                                   int PreismodellAngelegt = 0)
         {
             /// <summary>Die Summe der Handgriffe — die Zahl, die die Leser melden.</summary>
-            public int Handgriffe => TraegerAngelegt + Uebernommen + Entfernt;
+            public int Handgriffe => TraegerAngelegt + Uebernommen + Entfernt + PreismodellAngelegt;
         }
 
         /// <summary>Ein Preis je Projekt nach Regel c: der Gewinner und die verworfenen Anlagenpreise.</summary>
@@ -148,7 +155,21 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Wie viele Teile stehen noch aus (fehlender Träger, stehende Spalte)? 0 = der Schritt ist gelaufen.</summary>
-        public static int Offen() => (TraegerId().HasValue ? 0 : 1) + (SpalteVorhanden() ? 1 : 0);
+        public static int Offen() => (TraegerId().HasValue ? 0 : 1) + (SpalteVorhanden() ? 1 : 0) +
+                                     (PreismodellVorhanden() ? 0 : 1);
+
+        /// <summary>
+        /// Steht die Nachschlagezeile <c>pricing_model</c> 'WATER'? Ohne die Tabelle gibt es nichts nachzuschlagen
+        /// (<c>true</c>). Einziger Leser ist die Trägerliste des Katalogs (<c>KostenSummenCtrl</c>, LEFT JOIN) — die
+        /// Zeile trägt alle vier Flaggen 0, wie der Join ohne sie; sie ändert keinen Wert.
+        /// </summary>
+        public static bool PreismodellVorhanden()
+        {
+            if (!DataRepository.TabelleVorhanden(TAB_PREISMODELL)) return true;
+            object o = DataRepository.ExecuteScalar("SELECT COUNT(*) FROM " + Q(TAB_PREISMODELL) + " WHERE \"code\" = ?",
+                                                    new DbParam("@c", PREISMODELL_WASSER));
+            return Convert.ToInt64(o, CultureInfo.InvariantCulture) > 0;
+        }
 
         /// <summary>Steht der Schritt vollständig?</summary>
         public static bool Vollstaendig() => Offen() == 0;
@@ -215,6 +236,7 @@ namespace WindowsFormsApplication1
                     throw new InvalidOperationException("Schemaschritt " + SCHRITT.ToString(CultureInfo.InvariantCulture) +
                                                         ": Die Tabelle " + t + " fehlt; ein frueherer Schritt ist nicht gelaufen.");
             int angelegt = TraegerAnlegen(bericht);
+            int preismodell = PreismodellAnlegen(bericht);
             long traeger = TraegerId() ?? throw new InvalidOperationException("Der Wassertraeger fehlt nach dem Anlegen.");
             (int uebernommen, int verworfen, int behalten) = PreiseUebernehmen(traeger, bericht);
             int entfernt = 0;
@@ -224,9 +246,9 @@ namespace WindowsFormsApplication1
                 entfernt = 1;
                 bericht?.Add(TAB_ANLAGEN + "." + ALTSPALTE + " entfernt");
             }
-            if (bericht != null && angelegt + uebernommen + entfernt == 0)
+            if (bericht != null && angelegt + uebernommen + entfernt + preismodell == 0)
                 bericht.Add("steht bereits - Wassertraeger vorhanden, Preisspalte an der Anlage fort; nichts zu tun");
-            return new Laufergebnis(angelegt, uebernommen, verworfen, behalten, entfernt);
+            return new Laufergebnis(angelegt, uebernommen, verworfen, behalten, entfernt, preismodell);
         }
 
         // =================================================================================
@@ -248,6 +270,38 @@ namespace WindowsFormsApplication1
         private static int TraegerAnlegen(IList<string> bericht)
         {
             if (TraegerId().HasValue) return 0;
+            MitStempelErhalt(v => v.Ausfuehren(SqlTraegerAnlegen(),
+                new DbParam("@name", NAME_WASSER), new DbParam("@code", NAME_WASSER), new DbParam("@gruppe", NAME_WASSER),
+                new DbParam("@modell", PREISMODELL_WASSER), new DbParam("@einheit", EINHEIT_WASSER)));
+            bericht?.Add(TAB_TRAEGER + ": Traeger \"" + NAME_WASSER + "\" (" + PREISMODELL_WASSER + ", " + EINHEIT_WASSER +
+                         ") angelegt");
+            return 1;
+        }
+
+        /// <summary>
+        /// Die Nachschlagezeile des Preismodells (Parameter: Code, Name, Code) — nur, wenn sie fehlt; alle Flaggen 0
+        /// (kein Heizwert, kein Brennwert, kein Leistungspreis, keine Dichte).
+        /// </summary>
+        public static string SqlPreismodellAnlegen() =>
+            "INSERT INTO " + Q(TAB_PREISMODELL) + " (\"code\", \"name\", \"has_hi\", \"has_hs\", \"has_powerprice\", \"has_density\") " +
+            "SELECT ?, ?, 0, 0, 0, 0 WHERE NOT EXISTS (SELECT 1 FROM " + Q(TAB_PREISMODELL) + " WHERE \"code\" = ?)";
+
+        /// <summary>
+        /// Legt die Nachschlagezeile 'WATER' an, wenn sie fehlt. Der Katalogstempel bleibt wie beim Träger: Der
+        /// Auslöser an <c>pricing_model</c> stempelt die neue Zeile, eine Flaggenzeile ändert aber keine Wirtschaftlichkeit.
+        /// </summary>
+        private static int PreismodellAnlegen(IList<string> bericht)
+        {
+            if (PreismodellVorhanden()) return 0;
+            MitStempelErhalt(v => v.Ausfuehren(SqlPreismodellAnlegen(),
+                new DbParam("@code", PREISMODELL_WASSER), new DbParam("@name", NAME_WASSER), new DbParam("@code2", PREISMODELL_WASSER)));
+            bericht?.Add(TAB_PREISMODELL + ": Preismodell \"" + PREISMODELL_WASSER + "\" angelegt");
+            return 1;
+        }
+
+        /// <summary>Führt die Schreibung in einem Vorgang aus und setzt den Katalogstempel danach auf seinen Wert davor.</summary>
+        private static void MitStempelErhalt(Action<DbVorgang> schreiben)
+        {
             string tabStempel = KostenStempelSchema.TAB_APPLIKATION, spStempel = KostenStempelSchema.SPALTE_KATALOG;
             bool mitStempel = DataRepository.TabelleVorhanden(tabStempel) && DataRepository.SpalteVorhanden(tabStempel, spStempel);
             using (DbVorgang v = DataRepository.Vorgang())
@@ -257,9 +311,7 @@ namespace WindowsFormsApplication1
                     DataTable stempel = mitStempel
                         ? v.Lese("SELECT rowid, " + Q(spStempel) + " FROM " + Q(tabStempel), Array.Empty<DbParam>())
                         : null;
-                    v.Ausfuehren(SqlTraegerAnlegen(),
-                        new DbParam("@name", NAME_WASSER), new DbParam("@code", NAME_WASSER), new DbParam("@gruppe", NAME_WASSER),
-                        new DbParam("@modell", PREISMODELL_WASSER), new DbParam("@einheit", EINHEIT_WASSER));
+                    schreiben(v);
                     if (stempel != null)
                         foreach (DataRow r in stempel.Rows)
                             v.Ausfuehren("UPDATE " + Q(tabStempel) + " SET " + Q(spStempel) + " = ? WHERE rowid = ?",
@@ -272,9 +324,6 @@ namespace WindowsFormsApplication1
                     throw;
                 }
             }
-            bericht?.Add(TAB_TRAEGER + ": Traeger \"" + NAME_WASSER + "\" (" + PREISMODELL_WASSER + ", " + EINHEIT_WASSER +
-                         ") angelegt");
-            return 1;
         }
 
         // =================================================================================
