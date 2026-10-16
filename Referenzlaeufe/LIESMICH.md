@@ -1423,6 +1423,15 @@ Projekt 1072. 1050, 1052, 1054, 1055, 1056, 1057, 1059, 1061, 1062, 1064 und 107
 > `Werkzeuge/Testdatenbankschema` auf **232** (45 Profile gesät, 2 Spalten angelegt, `integrity_check` ok, 108 728 320 Byte).
 > Größe und LFS-SHA-256 der eingecheckten Fassung stehen im Nachtrag des folgenden Schritts, der die Datei in einem Zug weiterhebt.
 
+> **Nachtrag — Schema 233 (MA-6b Herkunft des U-Werts, 16.10.2026, hängt an 232 `BauteilkatalogAbschnittSchema`), Basis
+> R55 unverändert.** Kette 230 `KaeltebedarfsprofilVorlagenSchema` → 231 `RaumnutzungDinWerteSchema` → 232
+> `BauteilkatalogAbschnittSchema` → 233 `BauteilUHerkunftSchema` (233 = `BauteilkatalogAbschnittSchema.SCHRITT + 1`), das
+> `U_Herkunft` an `Tab_Bauteil` und `Tab_Bauteil_STAMM` leer anlegt (kein DML; leer heißt Bestand). Gehoben aus der Fassung
+> 230 (108 720 128 Byte, `a901f445…`) in einem Zug mit `Werkzeuge/Testdatenbankschema` über 231 und 232 auf 233 (45
+> DIN-Profile gesät, 4 Spalten angelegt; ein zweiter Lauf ist inhaltsgleich). Die Testdatenbank steht auf **233**
+> (`integrity_check` ok, `foreign_key_check` leer): **108 728 320 Byte, LFS-SHA-256
+> `95d1dd45028454d9f83cf3db22123beb4d3525f80f0c79c973b865ab188432da`**. Der Referenzlauf gegen R55 läuft im Gate.
+
 ### Die Vorgängerbasis R54 (Dachflächen)
 
 Sechsunddreißig Projekte, 1 171 CSV, 7 983 Skalare, auf Linux eingefroren gegen die Testdatenbank `1f2cf95f…`
