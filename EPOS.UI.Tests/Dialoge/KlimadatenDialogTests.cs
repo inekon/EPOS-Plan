@@ -1504,10 +1504,10 @@ public class KlimadatenDialogTests : EposBunitContext
         // traegt die Hoechsthoehe (1,3 x --epos-listenhoehe, siehe KatalograhmenTests).
         Assert.Single(cut.FindAll(".epos-katalog-paar > .epos-katalog-liste .epos-raster-huelle"));
 
-        // Die Reiter mit den zwei Diagrammen stehen im STAMMBLATT (Stufe 4), in dessen
+        // Die Reiter mit den drei Diagrammen (KD-8: dazu „Weitere Reihen“) stehen im STAMMBLATT (Stufe 4), in dessen
         // Gruppe Jahresverlauf - nicht neben der Liste.
         Assert.Single(cut.FindAll(".epos-katalog-paar > .epos-katalog-stammblatt .epos-reiter-leiste"));
-        Assert.Equal(2, cut.FindAll(".epos-katalog-paar > .epos-katalog-stammblatt .epos-reiter-knopf").Count);
+        Assert.Equal(3, cut.FindAll(".epos-katalog-paar > .epos-katalog-stammblatt .epos-reiter-knopf").Count);
 
         // Die Fussleiste ist ein direktes Kind der Dialogwurzel und steht damit
         // UNTER dem Rahmen - nie in ihm.
@@ -2153,14 +2153,14 @@ public class KlimadatenDialogTests : EposBunitContext
         cut2.FindAll(".epos-stammblatt .epos-reiter-knopf").First(e => e.TextContent.Trim() == "Weitere Reihen").Click();
 
         var feuchte = Chip(cut2, "klima-jahr", KlimaReihenkatalog.R_LUFTFEUCHTE);
-        Assert.Equal("Andere Einheit: zeigt Feuchte allein", feuchte.GetAttribute("title"));
+        Assert.Equal("Andere Einheit: zeigt Relative Luftfeuchte allein", feuchte.GetAttribute("title"));
         Assert.Null(feuchte.GetAttribute("aria-disabled"));
         feuchte.Click();
 
         Assert.Equal("true", Chip(cut2, "klima-jahr", KlimaReihenkatalog.R_LUFTFEUCHTE).GetAttribute("aria-pressed"));
         Assert.Equal("false", Chip(cut2, "klima-jahr", KlimaReihenkatalog.R_GLOBAL).GetAttribute("aria-pressed"));
         var bild = cut2.FindComponents<DiagrammSvg>().Single(d => d.Instance.Kennung == "klima-reihen").Instance;
-        Assert.Equal("Feuchte", Assert.Single(bild.Modell!.Reihen).Name);
+        Assert.Equal("Relative Luftfeuchte", Assert.Single(bild.Modell!.Reihen).Name);
         Assert.Contains("jetzt: %", cut2.Find("[data-kennung=klima-jahr] .epos-reihenwahl-kopf").TextContent);
     }
 
@@ -2221,11 +2221,49 @@ public class KlimadatenDialogTests : EposBunitContext
         => cut.FindComponents<DiagrammSvg>().Single(d => d.Instance.Kennung == "klima-vorschau").Instance.Modell!;
 
     [Fact]
+    public void KD8_Rohwerte_stehen_benannt_als_nicht_verfuegbar_in_beiden_Wahlen()
+    {
+        // Vorschau: geführte Rohwerte als weich gesperrter Chip mit Grund und Marke „R“; was der
+        // Parameterbestand als „fehlt“ führt, bekommt keinen Chip (er nennt es selbst).
+        var erg = TrefferMitReihen();
+        erg.Parameterbestand = new List<KlimaParameterEintrag>
+        {
+            new() { Parameter = KlimaParameter.Luftdruck, Stand = KlimaParameterStand.Gefuehrt },
+            new() { Parameter = KlimaParameter.Ausstrahlung, Stand = KlimaParameterStand.Fehlt }
+        };
+        var cut = ZeigeSuche(_ => Task.FromResult(erg));
+        Suchen(cut);
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-kennung=klima-vorschau] button.epos-reihenwahl-chip")));
+
+        var druck = Chip(cut, "klima-vorschau", KlimaReihenkatalog.ROH_PREFIX + "Luftdruck_hPa");
+        Assert.Equal("true", druck.GetAttribute("aria-disabled"));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KLIMA_RW_NICHT_VERFUEGBAR, druck.GetAttribute("title"));
+        Assert.NotNull(druck.QuerySelector(".epos-reihenwahl-marke"));
+        Assert.Empty(cut.FindAll("[data-kennung=klima-vorschau] [data-schluessel=ROH_Ausstrahlung_W_m2]"));
+        Assert.Empty(cut.FindAll("[data-kennung=klima-vorschau] [data-schluessel=ROH_Windrichtung_Grad]"));
+        druck.Click();
+        Assert.Equal(2, Vorschaubild(cut).Reihen.Count);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.KLIMA_RW_NICHT_VERFUEGBAR,
+                        cut.Find("[data-kennung=klima-vorschau] .epos-reihenwahl-leise").TextContent);
+
+        // Jahresverlauf: alle Rohwerte mit Bild stehen gesperrt im Reiter „Weitere Reihen“.
+        var jahr = ZeigeWeitere();
+        foreach (KlimaReihe r in KlimaReihenkatalog.NichtVerfuegbar(vorschau: false))
+        {
+            var chip = Chip(jahr, "klima-jahr", r.Schluessel);
+            Assert.Equal("true", chip.GetAttribute("aria-disabled"));
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KLIMA_RW_NICHT_VERFUEGBAR, chip.GetAttribute("title"));
+        }
+        Assert.Empty(jahr.FindAll("[data-kennung=klima-jahr] [data-schluessel=ROH_Qualitaet_Strahlung]"));
+    }
+
+    [Fact]
     public void KD8_Vorschau_Vorgabe_Global_und_Temperatur_unter_dem_Bild()
     {
         var cut = ZeigeVorschau();
 
-        var chips = cut.FindAll("[data-kennung=klima-vorschau] button.epos-reihenwahl-chip");
+        var chips = cut.FindAll("[data-kennung=klima-vorschau] button.epos-reihenwahl-chip")
+                       .Where(c => !c.GetAttribute("data-schluessel")!.StartsWith(KlimaReihenkatalog.ROH_PREFIX)).ToList();
         Assert.Equal(new[] { "R_TEMPERATUR", "R_LUFTFEUCHTE", "R_GLOBAL", "R_DIFFUS", "R_BEDECKUNG" },
                      chips.Select(c => c.GetAttribute("data-schluessel")));
         Assert.Equal(new[] { "R_TEMPERATUR", "R_GLOBAL" },

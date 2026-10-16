@@ -150,7 +150,10 @@ namespace WindowsFormsApplication1
         /// <summary>Die Vorgabe des Reiters „Weitere Reihen“: die Globalstrahlung.</summary>
         public static readonly IReadOnlyList<string> VORGABE_JAHRESVERLAUF = new[] { R_GLOBAL };
 
-        /// <summary>Teil B (KD-4) schaltet die Rohwerte frei; bis dahin bekommen sie keinen Chip.</summary>
+        /// <summary>
+        /// Teil B (KD-4) schaltet die Rohwerte frei; bis dahin stehen sie benannt als weich gesperrter
+        /// Chip „nicht verfügbar“ (<see cref="SperrgrundNichtVerfuegbar"/>), nie still weggelassen.
+        /// </summary>
         public const bool RohwerteFreigeschaltet = false;
 
         private static KlimaReihe Rechen(int nr, string schluessel, KlimaParameter p, Func<string> name, Func<string> kurz,
@@ -186,25 +189,25 @@ namespace WindowsFormsApplication1
         public static readonly IReadOnlyList<KlimaReihe> Reihen = new List<KlimaReihe>
         {
             // ---- Rechenspalten von Tab_Solar(_STAMM) (Teil A) ----
-            Rechen(10, R_TEMPERATUR, KlimaParameter.Lufttemperatur, () => MyResource.Resource.KLIMA_PAR_LUFTTEMPERATUR,
+            Rechen(10, R_TEMPERATUR, KlimaParameter.Lufttemperatur, () => MyResource.Resource.KLIMA_RW_NAME_TEMPERATUR,
                    () => MyResource.Resource.KLIMA_RW_KURZ_TEMPERATUR, "°C", KlimaReihengruppe.TemperaturFeuchte,
                    KlimaMonatsregel.Mittel, "Temperatur", Farbrolle.AUSSENTEMPERATUR, imJahr: false),
-            Rechen(20, R_LUFTFEUCHTE, KlimaParameter.Luftfeuchte, () => MyResource.Resource.KLIMA_PAR_LUFTFEUCHTE,
+            Rechen(20, R_LUFTFEUCHTE, KlimaParameter.Luftfeuchte, () => MyResource.Resource.KLIMA_RW_NAME_FEUCHTE,
                    () => MyResource.Resource.KLIMA_RW_KURZ_FEUCHTE, "%", KlimaReihengruppe.TemperaturFeuchte,
                    KlimaMonatsregel.Mittel, "Luftfeuchte", Farbrolle.SERIE_3),
-            Rechen(40, R_GLOBAL, KlimaParameter.Globalstrahlung, () => MyResource.Resource.KLIMA_PAR_GLOBALSTRAHLUNG,
+            Rechen(40, R_GLOBAL, KlimaParameter.Globalstrahlung, () => MyResource.Resource.KLIMA_RW_NAME_GLOBAL,
                    () => MyResource.Resource.KLIMA_RW_KURZ_GLOBAL, "W/m²", KlimaReihengruppe.Strahlung,
                    KlimaMonatsregel.Summe, "Globalstrahlung", Farbrolle.WAERME_SOLAR),
-            Rechen(50, R_DIREKT_NORMAL, KlimaParameter.DirektstrahlungNormal, () => MyResource.Resource.KLIMA_PAR_DIREKTSTRAHLUNGNORMAL,
+            Rechen(50, R_DIREKT_NORMAL, KlimaParameter.DirektstrahlungNormal, () => MyResource.Resource.KLIMA_RW_NAME_DIREKT_NORMAL,
                    () => MyResource.Resource.KLIMA_RW_KURZ_DIREKT_NORMAL, "W/m²", KlimaReihengruppe.Strahlung,
                    KlimaMonatsregel.Summe, "Direktstrahlung", Farbrolle.SERIE_1),
-            Rechen(70, R_DIFFUS, KlimaParameter.Diffusstrahlung, () => MyResource.Resource.KLIMA_PAR_DIFFUSSTRAHLUNG,
+            Rechen(70, R_DIFFUS, KlimaParameter.Diffusstrahlung, () => MyResource.Resource.KLIMA_RW_NAME_DIFFUS,
                    () => MyResource.Resource.KLIMA_RW_KURZ_DIFFUS, "W/m²", KlimaReihengruppe.Strahlung,
                    KlimaMonatsregel.Summe, "Diffusstrahlung", Farbrolle.SERIE_2),
-            Rechen(80, R_GEGENSTRAHLUNG, KlimaParameter.Gegenstrahlung, () => MyResource.Resource.KLIMA_PAR_GEGENSTRAHLUNG,
+            Rechen(80, R_GEGENSTRAHLUNG, KlimaParameter.Gegenstrahlung, () => MyResource.Resource.KLIMA_RW_NAME_GEGENSTRAHLUNG,
                    () => MyResource.Resource.KLIMA_RW_KURZ_GEGENSTRAHLUNG, "W/m²", KlimaReihengruppe.Strahlung,
                    KlimaMonatsregel.Summe, "Gegenstrahlung", Farbrolle.SERIE_4),
-            Rechen(130, R_BEDECKUNG, KlimaParameter.Bedeckungsgrad, () => MyResource.Resource.KLIMA_PAR_BEDECKUNGSGRAD,
+            Rechen(130, R_BEDECKUNG, KlimaParameter.Bedeckungsgrad, () => MyResource.Resource.KLIMA_RW_NAME_BEDECKUNG,
                    () => MyResource.Resource.KLIMA_RW_KURZ_BEDECKUNG, "Achtel", KlimaReihengruppe.BewoelkungDruckWind,
                    KlimaMonatsregel.Mittel, "Bedeckungsgrad", Farbrolle.SERIE_5),
 
@@ -227,27 +230,27 @@ namespace WindowsFormsApplication1
             },
 
             // ---- Rohwerte (Teil B, mit KD-4); Spalten wie KlimaRohwerteSchema.SPALTE_* ----
-            Roh(30, "Wasserdampfgehalt_g_kg", KlimaParameter.Wasserdampfgehalt, () => MyResource.Resource.KLIMA_PAR_WASSERDAMPFGEHALT,
+            Roh(30, "Wasserdampfgehalt_g_kg", KlimaParameter.Wasserdampfgehalt, () => MyResource.Resource.KLIMA_RW_NAME_WASSERDAMPF,
                 () => MyResource.Resource.KLIMA_PAR_WASSERDAMPFGEHALT, "g/kg", KlimaReihengruppe.TemperaturFeuchte,
                 KlimaMonatsregel.Mittel, Farbrolle.SERIE_3),
             Roh(60, "Direkt_Horizontal_W_m2", KlimaParameter.DirektstrahlungHorizontal,
-                () => MyResource.Resource.KLIMA_PAR_DIREKTSTRAHLUNGHORIZONTAL,
+                () => MyResource.Resource.KLIMA_RW_NAME_DIREKT_HORIZONTAL,
                 () => MyResource.Resource.KLIMA_PAR_DIREKTSTRAHLUNGHORIZONTAL, "W/m²", KlimaReihengruppe.Strahlung,
                 KlimaMonatsregel.Summe, Farbrolle.SERIE_1),
-            Roh(90, "Ausstrahlung_W_m2", KlimaParameter.Ausstrahlung, () => MyResource.Resource.KLIMA_PAR_AUSSTRAHLUNG,
+            Roh(90, "Ausstrahlung_W_m2", KlimaParameter.Ausstrahlung, () => MyResource.Resource.KLIMA_RW_NAME_AUSSTRAHLUNG,
                 () => MyResource.Resource.KLIMA_PAR_AUSSTRAHLUNG, "W/m²", KlimaReihengruppe.Strahlung,
                 KlimaMonatsregel.Summe, Farbrolle.SERIE_4),
-            Roh(140, "Luftdruck_hPa", KlimaParameter.Luftdruck, () => MyResource.Resource.KLIMA_PAR_LUFTDRUCK,
+            Roh(140, "Luftdruck_hPa", KlimaParameter.Luftdruck, () => MyResource.Resource.KLIMA_RW_NAME_LUFTDRUCK,
                 () => MyResource.Resource.KLIMA_PAR_LUFTDRUCK, "hPa", KlimaReihengruppe.BewoelkungDruckWind,
                 KlimaMonatsregel.Mittel, Farbrolle.SERIE_6),
             Roh(150, "Windgeschwindigkeit_m_s", KlimaParameter.Windgeschwindigkeit,
-                () => MyResource.Resource.KLIMA_PAR_WINDGESCHWINDIGKEIT,
+                () => MyResource.Resource.KLIMA_RW_NAME_WIND,
                 () => MyResource.Resource.KLIMA_PAR_WINDGESCHWINDIGKEIT, "m/s", KlimaReihengruppe.BewoelkungDruckWind,
                 KlimaMonatsregel.Mittel, Farbrolle.SERIE_7),
-            Roh(160, "Windrichtung_Grad", KlimaParameter.Windrichtung, () => MyResource.Resource.KLIMA_PAR_WINDRICHTUNG,
+            Roh(160, "Windrichtung_Grad", KlimaParameter.Windrichtung, () => MyResource.Resource.KLIMA_RW_NAME_WINDRICHTUNG,
                 () => MyResource.Resource.KLIMA_PAR_WINDRICHTUNG, "°", KlimaReihengruppe.Ohne,
                 KlimaMonatsregel.KeinBild, Farbrolle.UNBENANNT),
-            Roh(170, "Qualitaet_Strahlung", KlimaParameter.QualitaetStrahlung, () => MyResource.Resource.KLIMA_PAR_QUALITAETSTRAHLUNG,
+            Roh(170, "Qualitaet_Strahlung", KlimaParameter.QualitaetStrahlung, () => MyResource.Resource.KLIMA_RW_NAME_QUALITAET,
                 () => MyResource.Resource.KLIMA_PAR_QUALITAETSTRAHLUNG, "", KlimaReihengruppe.Ohne,
                 KlimaMonatsregel.KeinBild, Farbrolle.UNBENANNT)
         }.OrderBy(r => r.Reihenfolge).ToList();
@@ -299,6 +302,7 @@ namespace WindowsFormsApplication1
         {
             KlimaReihe r = Reihe(schluessel);
             if (r == null) return "";
+            if (!r.Freigeschaltet) return SperrgrundNichtVerfuegbar(r);
             wahl ??= Array.Empty<string>();
             if (wahl.Contains(schluessel))
                 return wahl.Count <= 1 ? MyResource.Resource.KLIMA_RW_LETZTE_BLEIBT : "";
@@ -308,6 +312,21 @@ namespace WindowsFormsApplication1
                                      string.Join(", ", einheiten));
             return "";
         }
+
+        /// <summary>
+        /// Warum eine Größe in dieser Fassung gar nicht wählbar ist; leer = verfügbar. Rohwerte vor
+        /// ihrer Freischaltung (<see cref="RohwerteFreigeschaltet"/>) sind „nicht verfügbar“.
+        /// </summary>
+        public static string SperrgrundNichtVerfuegbar(KlimaReihe r)
+            => r == null || r.Freigeschaltet ? "" : MyResource.Resource.KLIMA_RW_NICHT_VERFUEGBAR;
+
+        /// <summary>
+        /// Die Größen mit Bild, die diese Fassung noch nicht liefert — für die Vorschau
+        /// (<paramref name="vorschau"/>) bzw. den Reiter „Weitere Reihen“. Sie stehen als weich
+        /// gesperrte Chips mit Grund in der Wahl.
+        /// </summary>
+        public static IReadOnlyList<KlimaReihe> NichtVerfuegbar(bool vorschau)
+            => Reihen.Where(r => !r.Freigeschaltet && (vorschau ? r.InVorschau : r.ImJahresverlauf)).ToList();
 
         // =====================================================================
         // Regel des Jahresverlaufs (KD-Q11)

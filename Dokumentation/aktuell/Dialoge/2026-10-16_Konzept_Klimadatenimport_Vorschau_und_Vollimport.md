@@ -286,7 +286,7 @@ Verfall, weiche Sperre, Felder, Höhe im Auftrag, Hinweis ab 50 km/200 m, Fehlsc
 **Anwenderwunsch (16.10.2026, zwei Bildschirmfotos).** Die übrigen Datenreihen sollen sich
 wahlweise zeigen lassen: (1) im Monatsbild der Vorschaukarte beim Import und (2) im Jahresverlauf
 der Detailkarte einer Region im Klimadaten-Dialog. Mockup:
-[`Klimadatenreihen_Mockup.html`](../Mockups/Klimadatenreihen_Mockup.html), mit beiden Stellen
+[`../Mockups/Klimadatenreihen_Mockup.html`](../Mockups/Klimadatenreihen_Mockup.html), mit beiden Stellen
 spielbar, Quelle TRY oder PVGIS, Ausbaustand „Teil A“ oder „mit Rohwerten“ und einer Region ohne
 Rohdaten.
 

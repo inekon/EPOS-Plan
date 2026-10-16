@@ -56956,5 +56956,50 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="KLIMA_RW_DIA_BEZEICHNUNG" xml:space="preserve">
     <value>Annual profile of the selected series</value>
   </data>
+  <data name="KLIMA_RW_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>Not available: this version does not store the raw values of the source</value>
+  </data>
+  <data name="KLIMA_RW_NAME_TEMPERATUR" xml:space="preserve">
+    <value>Air temperature</value>
+  </data>
+  <data name="KLIMA_RW_NAME_FEUCHTE" xml:space="preserve">
+    <value>Relative humidity</value>
+  </data>
+  <data name="KLIMA_RW_NAME_GLOBAL" xml:space="preserve">
+    <value>Global radiation</value>
+  </data>
+  <data name="KLIMA_RW_NAME_DIREKT_NORMAL" xml:space="preserve">
+    <value>Direct normal radiation</value>
+  </data>
+  <data name="KLIMA_RW_NAME_DIFFUS" xml:space="preserve">
+    <value>Diffuse radiation</value>
+  </data>
+  <data name="KLIMA_RW_NAME_GEGENSTRAHLUNG" xml:space="preserve">
+    <value>Atmospheric counter-radiation</value>
+  </data>
+  <data name="KLIMA_RW_NAME_BEDECKUNG" xml:space="preserve">
+    <value>Cloud cover</value>
+  </data>
+  <data name="KLIMA_RW_NAME_WASSERDAMPF" xml:space="preserve">
+    <value>Water vapour content</value>
+  </data>
+  <data name="KLIMA_RW_NAME_DIREKT_HORIZONTAL" xml:space="preserve">
+    <value>Direct horizontal radiation</value>
+  </data>
+  <data name="KLIMA_RW_NAME_AUSSTRAHLUNG" xml:space="preserve">
+    <value>Outgoing longwave radiation</value>
+  </data>
+  <data name="KLIMA_RW_NAME_LUFTDRUCK" xml:space="preserve">
+    <value>Air pressure</value>
+  </data>
+  <data name="KLIMA_RW_NAME_WIND" xml:space="preserve">
+    <value>Wind speed</value>
+  </data>
+  <data name="KLIMA_RW_NAME_WINDRICHTUNG" xml:space="preserve">
+    <value>Wind direction</value>
+  </data>
+  <data name="KLIMA_RW_NAME_QUALITAET" xml:space="preserve">
+    <value>Radiation quality flag</value>
+  </data>
 </root>
 

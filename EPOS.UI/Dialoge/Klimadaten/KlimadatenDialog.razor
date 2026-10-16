@@ -2112,22 +2112,42 @@
         {
             bool an = _vorschauWahl.Contains(r.Schluessel);
             string titel = an ? Resource.KLIMA_RW_ABWAEHLEN : Resource.KLIMA_RW_ZUSCHALTEN;
+            string zusatz = "";
             if (kz.Reihenstunden.TryGetValue(r.Schluessel, out int n) && n < kz.Stunden)
-                titel += " · " + string.Format(CultureInfo.CurrentCulture, Resource.KLIMA_RW_TEILFUELLUNG,
-                                               n.ToString(CultureInfo.CurrentCulture),
-                                               kz.Stunden.ToString(CultureInfo.CurrentCulture));
+                zusatz = string.Format(CultureInfo.CurrentCulture, Resource.KLIMA_RW_TEILFUELLUNG,
+                                               n.ToString("N0", CultureInfo.CurrentCulture),
+                                               kz.Stunden.ToString("N0", CultureInfo.CurrentCulture));
             liste.Add(new Reihenwahl.Reihenchip(r.Schluessel, r.Kurzname(), r.Monatseinheit,
                                                 KlimaReihenkatalog.Gruppenname(r.Gruppe))
             {
                 Gewaehlt = an,
                 Sperrgrund = KlimaReihenkatalog.SperrgrundMonatsbild(r.Schluessel, _vorschauWahl),
                 Titel = titel,
+                Zusatz = zusatz,
                 Rohwert = r.Herkunft == KlimaReihenherkunft.Rohwert,
                 Farbe = Chipfarbe(r)
             });
         }
-        return liste;
+        // Rohwerte, die die Quelle führt, diese Fassung aber nicht liefert: benannt als weich
+        // gesperrter Chip „nicht verfügbar“, nie still weggelassen (§ 4a.3). Was die Quelle
+        // gar nicht führt, nennt der Parameterbestand darunter.
+        var fehlt = new HashSet<KlimaParameter>((_vorschau?.Parameterbestand ?? Array.Empty<KlimaParameterEintrag>())
+            .Where(p => p.Stand == KlimaParameterStand.Fehlt).Select(p => p.Parameter));
+        foreach (KlimaReihe r in KlimaReihenkatalog.NichtVerfuegbar(vorschau: true))
+        {
+            if (r.Parameter is { } p && fehlt.Contains(p)) continue;
+            liste.Add(NichtVerfuegbarChip(r, r.Monatseinheit));
+        }
+        return liste.OrderBy(c => KlimaReihenkatalog.Reihe(c.Schluessel)?.Reihenfolge ?? int.MaxValue).ToList();
     }
+
+    /// <summary>Ein weich gesperrter Chip einer Größe, die diese Fassung nicht liefert.</summary>
+    private static Reihenwahl.Reihenchip NichtVerfuegbarChip(KlimaReihe r, string einheit)
+        => new(r.Schluessel, r.Kurzname(), einheit, KlimaReihenkatalog.Gruppenname(r.Gruppe))
+        {
+            Sperrgrund = KlimaReihenkatalog.SperrgrundNichtVerfuegbar(r),
+            Rohwert = r.Herkunft == KlimaReihenherkunft.Rohwert
+        };
 
     /// <summary>Hält die Wahl der Vorschau auf Größen, die der gelesene Satz trägt; leer → Vorgabe.</summary>
     private void VorschauWahlPruefen()
@@ -2199,7 +2219,9 @@
                     Farbe = Chipfarbe(r)
                 });
             }
-            return liste;
+            foreach (KlimaReihe r in KlimaReihenkatalog.NichtVerfuegbar(vorschau: false))
+                liste.Add(NichtVerfuegbarChip(r, r.Einheit));
+            return liste.OrderBy(c => KlimaReihenkatalog.Reihe(c.Schluessel)?.Reihenfolge ?? int.MaxValue).ToList();
         }
     }
 

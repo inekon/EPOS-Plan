@@ -56963,5 +56963,50 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KLIMA_RW_DIA_BEZEICHNUNG" xml:space="preserve">
     <value>Jahresverlauf der gewählten Reihen</value>
   </data>
+  <data name="KLIMA_RW_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>Nicht verfügbar: Diese Fassung speichert die Rohwerte der Quelle nicht</value>
+  </data>
+  <data name="KLIMA_RW_NAME_TEMPERATUR" xml:space="preserve">
+    <value>Lufttemperatur</value>
+  </data>
+  <data name="KLIMA_RW_NAME_FEUCHTE" xml:space="preserve">
+    <value>Relative Luftfeuchte</value>
+  </data>
+  <data name="KLIMA_RW_NAME_GLOBAL" xml:space="preserve">
+    <value>Globalstrahlung</value>
+  </data>
+  <data name="KLIMA_RW_NAME_DIREKT_NORMAL" xml:space="preserve">
+    <value>Direktstrahlung normal</value>
+  </data>
+  <data name="KLIMA_RW_NAME_DIFFUS" xml:space="preserve">
+    <value>Diffusstrahlung</value>
+  </data>
+  <data name="KLIMA_RW_NAME_GEGENSTRAHLUNG" xml:space="preserve">
+    <value>Gegenstrahlung</value>
+  </data>
+  <data name="KLIMA_RW_NAME_BEDECKUNG" xml:space="preserve">
+    <value>Bedeckungsgrad</value>
+  </data>
+  <data name="KLIMA_RW_NAME_WASSERDAMPF" xml:space="preserve">
+    <value>Wasserdampfgehalt</value>
+  </data>
+  <data name="KLIMA_RW_NAME_DIREKT_HORIZONTAL" xml:space="preserve">
+    <value>Direktstrahlung horizontal</value>
+  </data>
+  <data name="KLIMA_RW_NAME_AUSSTRAHLUNG" xml:space="preserve">
+    <value>Ausstrahlung</value>
+  </data>
+  <data name="KLIMA_RW_NAME_LUFTDRUCK" xml:space="preserve">
+    <value>Luftdruck</value>
+  </data>
+  <data name="KLIMA_RW_NAME_WIND" xml:space="preserve">
+    <value>Windgeschwindigkeit</value>
+  </data>
+  <data name="KLIMA_RW_NAME_WINDRICHTUNG" xml:space="preserve">
+    <value>Windrichtung</value>
+  </data>
+  <data name="KLIMA_RW_NAME_QUALITAET" xml:space="preserve">
+    <value>Qualitätskennung der Strahlung</value>
+  </data>
 </root>
 

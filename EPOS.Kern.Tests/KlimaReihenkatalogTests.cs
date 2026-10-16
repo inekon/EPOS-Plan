@@ -110,6 +110,29 @@ namespace EPOS.Kern.Tests
             Assert.False(KlimaReihenkatalog.Reihe(KlimaReihenkatalog.F_SUED).InVorschau);
         }
 
+        [Fact]
+        public void Rohwerte_stehen_vor_der_Freischaltung_benannt_als_nicht_verfuegbar()
+        {
+            string[] erwartet =
+            {
+                "ROH_Wasserdampfgehalt_g_kg", "ROH_Direkt_Horizontal_W_m2", "ROH_Ausstrahlung_W_m2",
+                "ROH_Luftdruck_hPa", "ROH_Windgeschwindigkeit_m_s"
+            };
+            // Windrichtung und Qualitätskennung haben kein Bild (KD-Q12) und stehen in keiner Wahl.
+            Assert.Equal(erwartet, KlimaReihenkatalog.NichtVerfuegbar(vorschau: true).Select(r => r.Schluessel));
+            Assert.Equal(erwartet, KlimaReihenkatalog.NichtVerfuegbar(vorschau: false).Select(r => r.Schluessel));
+            foreach (string k in erwartet)
+            {
+                KlimaReihe r = KlimaReihenkatalog.Reihe(k);
+                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KLIMA_RW_NICHT_VERFUEGBAR, KlimaReihenkatalog.SperrgrundNichtVerfuegbar(r));
+                // Auch die Achsenregel nimmt sie nicht an, selbst wenn noch Platz für eine Einheit ist.
+                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KLIMA_RW_NICHT_VERFUEGBAR,
+                             KlimaReihenkatalog.SperrgrundMonatsbild(k, new[] { KlimaReihenkatalog.R_GLOBAL }));
+            }
+            Assert.Equal("", KlimaReihenkatalog.SperrgrundNichtVerfuegbar(KlimaReihenkatalog.Reihe(KlimaReihenkatalog.R_GLOBAL)));
+            Assert.Equal("", KlimaReihenkatalog.SperrgrundNichtVerfuegbar(null));
+        }
+
         // =====================================================================
         // Monatsreihen der Vorschau
         // =====================================================================
@@ -235,7 +258,7 @@ namespace EPOS.Kern.Tests
             var rechts = bild.Reihen.Where(r => r.Achsenseite != Achsenseite.Links).Select(r => r.Name).ToList();
             Assert.Equal(2, links.Count);                     // Diffus und Global (kWh/m²) links
             Assert.Single(rechts);                            // Feuchte rechts, Temperatur fällt weg
-            Assert.Equal("Feuchte [%]", rechts[0]);
+            Assert.Equal("Relative Luftfeuchte [%]", rechts[0]);
         }
 
         // =====================================================================

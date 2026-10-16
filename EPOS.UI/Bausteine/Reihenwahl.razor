@@ -42,7 +42,7 @@
                 <button type="button" class="epos-reihenwahl-chip" data-schluessel="@c.Schluessel"
                         aria-pressed="@(c.Gewaehlt ? "true" : "false")"
                         aria-disabled="@(gesperrt ? "true" : null)"
-                        title="@(c.Sperrgrund.Length > 0 ? c.Sperrgrund : c.Titel)"
+                        title="@ChipTitel(c)"
                         style="@(string.IsNullOrEmpty(c.Farbe) ? null : "--epos-reihenwahl-farbe:" + c.Farbe)"
                         @onclick="() => BeiChip(c)">
                     <span class="epos-reihenwahl-punkt" aria-hidden="true"></span>
@@ -80,6 +80,9 @@
         /// <summary>Ein Rohwert (Marke „R“).</summary>
         public bool Rohwert { get; init; }
 
+        /// <summary>Ein Zusatz am Titel, gleich ob gesperrt oder nicht (etwa die Zahl der Stunden).</summary>
+        public string Zusatz { get; init; } = "";
+
         /// <summary>Die Farbe der Reihe als CSS-Wert aus der Palette; leer = ohne Punktfarbe.</summary>
         public string Farbe { get; init; } = "";
     }
@@ -113,6 +116,12 @@
     [Parameter] public string RohwertText { get; set; } = "";
 
     private string _hinweis = "";
+
+    private static string ChipTitel(Reihenchip c)
+    {
+        string t = c.Sperrgrund.Length > 0 ? c.Sperrgrund : c.Titel;
+        return c.Zusatz.Length == 0 ? t : t.Length == 0 ? c.Zusatz : t + " · " + c.Zusatz;
+    }
 
     private IEnumerable<string> Gruppen => Chips.Select(c => c.Gruppe ?? "").Distinct();
 
