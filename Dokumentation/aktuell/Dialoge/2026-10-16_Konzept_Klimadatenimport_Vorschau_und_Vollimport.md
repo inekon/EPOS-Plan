@@ -248,6 +248,18 @@ Höhe), Bezugspunkt, `AusfuehrungGefunden`, Kennzahlen, Monatsreihen, Parameterb
 gelesenen Stundensatz (intern, für den Import). Die Regionswahl bleibt **eine** Funktion. Die
 Kennzahlen rechnet der Kern (`KlimaKennzahlen`), nie die Razor-Seite.
 
+**Umgesetzt (KD-2):** `KlimaImportAblauf.RegionErmittelnAsync` liest für alle drei Quellen über
+denselben Leseweg wie der Import (`DatensatzLesen`). Das Ergebnis trägt `Standort`
+(`KlimaStandort`), `Bezugspunkt` (`KlimaBezugspunkt`: Repräsentanzstation, Dateistandort oder
+PVGIS-Punkt mit Höhe aus Kopf bzw. `inputs.location` und Entfernung), `AusfuehrungGefunden` mit
+`Grund`, `HoehenunterschiedM`, `Kennzahlen` (`KlimaKennzahlen`, G20/15 nach VDI 3807 Blatt 1, mit
+Monatsreihen), `Parameterbestand` und die Hinweise (`KlimaVorschauFestwerte`: 50 km, 200 m,
+einschließlich). Die Standorthöhe kommt aus `KlimaImportAuftrag.StandortHoeheM`, bei PVGIS aus der
+Antwort, bei einer TRY-Datei ohne Koordinaten aus dem Kopf; eine Höhenabfrage über das Netz gibt
+es nicht. `Laufen` übernimmt eine passende, importierbare Vorschau ohne zweiten Abruf und ohne
+zweite Geokodierung (`PasstZu`: Ort bzw. Koordinaten, Quelle, Datei, Jahr, Szenario); die Hülle
+hält die letzte Vorschau. Nachweis: `KlimaImportAblaufTests`, `TryPaketLeserTests`.
+
 ---
 
 ## 5. CSV-Export
@@ -317,7 +329,7 @@ Jeder Schritt umfasst höchstens rund 150 Werkzeugaufrufe, Bau mit `WP-Plan.Kern
 | Schritt | Inhalt | Abnahme |
 |---|---|---|
 | **KD-1** Schlussleiste — *umgesetzt 16.10.2026* | Haftregel der Überlagerung auf die Leiste mit Primärknopf in `.epos-einlesen` erweitern (oder Leiste mit Statusspanne), Fenstermaß Klimadaten über `Fenstermass.MitUeberlagerung`, kein Schemaschritt | `StilblattTests`, `FensterrahmenTests`, neuer Fall in `fensterprobe.mjs` mit Gegenprobe, Bau der Windows-Schale mit `EnableWindowsTargeting=true` |
-| **KD-2** Vorschau Kern | `KlimaVorschauErgebnis` erweitern, Vorschau liest den Datensatz für alle drei Quellen, `AusfuehrungGefunden`, `KlimaKennzahlen`, Höhe aus Kopf bzw. PVGIS, Hinweis nach KD-Q1, Import übernimmt den Vorschausatz | `TryPaketLeserTests`, `KlimaImportAblaufTests` mit lokaler Probe-`data.zip`, Gegenprobe Szenario fehlt, Nachrechnung Stuttgart-Vaihingen (56 km, Stötten) als fester Fall |
+| **KD-2** Vorschau Kern — *umgesetzt 16.10.2026* | `KlimaVorschauErgebnis` erweitern, Vorschau liest den Datensatz für alle drei Quellen, `AusfuehrungGefunden`, `KlimaKennzahlen`, Höhe aus Kopf bzw. PVGIS, Hinweis nach KD-Q1, Import übernimmt den Vorschausatz | `TryPaketLeserTests`, `KlimaImportAblaufTests` mit lokaler Probe-`data.zip`, Gegenprobe Szenario fehlt, Nachrechnung Stuttgart-Vaihingen (56 km, Stötten) als fester Fall |
 | **KD-3** Vorschau Dialog | Vorschaukarte, Felder befüllen, Grafik, Kennzeichen, Parameterbestand, Ressourcen in beiden Sprachen, KI-Feldliste (`KiDialoge`) nachziehen | `KlimadatenDialogTests` (Treffer, kein Treffer, Verfall bei Eingabe, Import ohne Vorschau weich gesperrt), `KiMaskenabdeckungWacheTests`, `designer_neu.py` |
 | **KD-4** Rohdaten | Schemaschritt (Nummer anmelden): `Tab_Klimastunde_STAMM`, Spalten an `Tab_Klimaregion(_STAMM)`; `DwdTryLeser` und PVGIS-Leser liefern alle Felder, Schreibweg füllt sie, `SchemaKatalog`, Katalogregister | `SqlDialektPruefer`, Schematests, Wache „Rechenweg liest Rohtabelle nicht“, Referenzlauf 18 Projekte `PASS` |
 | **KD-5** Export | `KlimaCsv`, `KlimaExportOptionen`, Exportdialog, Handlung in der Auswahlleiste, Taupunkt abgeleitet | Kern-Tests (Trennzeichen × Dezimal × Zeitspalte, Einheitenzeile, Altbestand ohne Rohdaten), bunit Exportdialog, `CsvAmBildWacheTests` unberührt |
