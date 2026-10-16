@@ -1,7 +1,7 @@
 # Protokoll G5-A — Abnahme der Stufe G5 am Rechenweg (08.10.2026)
 
 **Sitzung:** Gebäudesimulation. Zweig `claude/inspiring-bell-b8wq90` auf `da03e5333` (= `ios_migration_september`). Commit der Wache `e75aa6871`.
-**Entscheid:** E101; Abstimmung [G5 IFC](../../../aktuell/Gebaeudesimulation/2026-10-07_Abstimmung_G5_IFC.md), Abschnitte 2 (A1–A6), 4, 6 und 8.
+**Entscheid:** E101; Abstimmung [G5 IFC](../../2026-10-07_Abstimmung_G5_IFC.md), Abschnitte 2 (A1–A6), 4, 6 und 8.
 
 ## 1 Gegenstand
 

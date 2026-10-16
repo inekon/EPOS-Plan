@@ -7,7 +7,7 @@ Raumgrenzen), M8 (Mindestgröße max(2 m², 2 %) mit Zuschlag zum Nachbarn), M12
 Warnung mit Rückfrage) und M13 (Nachbarschaften vollständig über die Geometrie) nach Empfehlung. Nach D16
 (E27) gehören die gbXML-Regeln X1…X3 dazu. Grundlage sind Mehrzonenkonzept 6 und 9 und
 Datenaustauschkonzept 3.3; der Wellenplan steht in der
-[Übergabe](../../../aktuell/Gebaeudesimulation/2026-09-26_Uebergabe_G6c_Katalog_M_A.md) 2.1. Nicht in G6c:
+[Übergabe](../../2026-09-26_Uebergabe_G6c_Katalog_M_A.md) 2.1. Nicht in G6c:
 das Referenzprojekt mit Zonen und der unbeheizte Keller gegen Erdreich (G6d).
 
 Dieses Protokoll wird je Welle fortgeschrieben; **Stand: Welle D.**

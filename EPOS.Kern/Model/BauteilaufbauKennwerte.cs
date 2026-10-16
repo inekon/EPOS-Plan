@@ -44,6 +44,18 @@ namespace WindowsFormsApplication1
         public double? RT_Unten_M2KW { get; init; }
 
         /// <summary>
+        /// Inhomogener Aufbau (BK-8b): die Fehlerschranke e = (R'_T − R''_T) / (2 R_T) [–] nach DIN EN ISO 6946, 6.7.2.5;
+        /// <c>null</c> = homogen oder nicht gerechnet.
+        /// </summary>
+        public double? Fehlerschranke { get; init; }
+
+        /// <summary>
+        /// Der Hinweis zur Fehlerschranke, wenn sie <see cref="InhomogeneSchichten.FEHLERSCHRANKE_GRENZE"/> übersteigt
+        /// (übersetzt); leer sonst. Ein Hinweis, keine Ablehnung — U bleibt 1 / R_T.
+        /// </summary>
+        public string Hinweis { get; init; } = "";
+
+        /// <summary>
         /// Wärmedurchgangswiderstand R_T = R_si + R + R_se [m²K/W] — der Nenner von U, für den
         /// Summenfuß; <c>null</c>, solange R nicht steht.
         /// </summary>

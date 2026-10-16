@@ -1,6 +1,6 @@
 # Befund Q — Mehrzonenmodell: vorhandene Muster für Datenmodell, Kataloge und Listendialoge (15.09.2026)
 
-**Protokoll.** Befund Q eines Erkundungs-Agenten (Modell Opus, nur lesend) im Auftrag des Konzepts [`../Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md`](../Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md), Sitzung vom 15.09.2026.
+**Protokoll.** Befund Q eines Erkundungs-Agenten (Modell Opus, nur lesend) im Auftrag des Konzepts [`../aktuell/Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md`](../aktuell/Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md), Sitzung vom 15.09.2026.
 
 Gefragt war: Welche Muster trägt das Repositorium schon für eine Kette
 Gebäude → Zonen → Bauteile → Aufbau → Schichten → Baustoff und für deren Pflege? Der Befund
@@ -139,7 +139,7 @@ S4-Beginn eingefroren." Entsprechend fehlen dort alle jüngeren Tabellen —
 `Tab_Wechselrichter`, `Z_AnlageStrang`, `Tab_SpeicherAuslegung`, `Tab_Nutzungsdauer` stehen in
 keiner Zeile von 001.
 
-**Der Weg ist ADR-001** ([`../ADR-001_Schema-Ausrollung.md`](../ADR-001_Schema-Ausrollung.md),
+**Der Weg ist ADR-001** ([`../aktuell/ADR-001_Schema-Ausrollung.md`](../aktuell/ADR-001_Schema-Ausrollung.md),
 Option C, `:145`): nummerierte C#-Schritte in
 `WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs` mit Versionsmarker. **Das
 Muster eines Schrittes, der Tabellen anlegt UND sät, ist Schritt 75**
@@ -272,7 +272,7 @@ Liste dort und nicht im Dublettendialog steht.
 | `KatalogBrowserProfil` | `EPOS.Kern/Allgemein/Katalog/KatalogBrowserProfil.cs:129`, Feldart `:35`, `BrowserDetailfeld` `:75` | Titel, Listenbeschriftung, Detailüberschrift, Hilfeschlüssel, Detailfelder mit `Schluessel`/`Bezeichnung`/`Einheit`/`Art`/`Editierbar` |
 | `Katalogfeld` | `EPOS.Kern/Allgemein/Katalog/Katalogfeld.cs:20` | Leseregeln: **NULL bleibt `null`** (anders als `StilleDb`), weil „NULL etwas anderes ist als eine gemessene Null" (`:12-17`) |
 | `Katalogfilterregister` | `EPOS.Kern/Allgemein/Katalog/Katalogfilterregister.cs` | je Katalog EIN Filterstand für die Sitzung |
-| Konzept | [`../Konzept_Katalogfilter_EPOS-Plan.md`](../Konzept_Katalogfilter_EPOS-Plan.md), Kapitel 3.2 „Was in einem Filterprofil steht" (`:349`), 5.6 | Herleitung und Hausregeln |
+| Konzept | [`../aktuell/Konzept_Katalogfilter_EPOS-Plan.md`](../aktuell/Konzept_Katalogfilter_EPOS-Plan.md), Kapitel 3.2 „Was in einem Filterprofil steht" (`:349`), 5.6 | Herleitung und Hausregeln |
 
 **Die eine Katalogliste des Hauses** ist `EPOS.UI/Bausteine/Katalogliste.razor` (942 Zeilen,
 23 Wirte). Drei Dinge daran sind für einen neuen Katalog wichtig:

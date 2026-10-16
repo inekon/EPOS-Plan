@@ -26,6 +26,8 @@ namespace WindowsFormsApplication1
     // Ihre Spalten nennt das Feldinventar nicht; beide werden deshalb DEFENSIV gelesen: Fehlt eine Datei,
     // ist sie unlesbar oder fehlt eine Spalte, steht ein benannter Hinweis im Protokoll und der Import
     // laeuft ohne Teilkatalognamen weiter. Die Zuordnung selbst plant BauteilkatalogTeilkataloge.
+    // Katalog_Zuordnung.csv (BK-7b) verknuepft Teilkatalog, Inhaltsknoten und Satz; sie wird ebenso defensiv
+    // gelesen, im gelesenen Ordner oder in dessen Unterordner Export, und gilt vor Katalog_Inhalt.csv.
     //
     // UNTERORDNER "Export": Liegt Baustoffe.csv nicht im gewaehlten Ordner, aber in dessen Unterordner
     // Export, wird dieser gelesen (Ordner nennt den gelesenen Ordner, Hinweis im Protokoll).
@@ -122,6 +124,11 @@ namespace WindowsFormsApplication1
         public const string DATEI_KATALOG = "Katalog.csv";
         /// <summary>Die Zuordnung der Sätze zu den Teilkatalogen (Kann-Datei, defensiv gelesen; BK-7).</summary>
         public const string DATEI_KATALOG_INHALT = "Katalog_Inhalt.csv";
+        /// <summary>
+        /// Die Verknüpfung von Teilkatalog, Inhaltsknoten und Satz (Kann-Datei, defensiv gelesen; BK-7b). Liegt sie vor,
+        /// gilt sie vor <see cref="DATEI_KATALOG_INHALT"/>.
+        /// </summary>
+        public const string DATEI_KATALOG_ZUORDNUNG = "Katalog_Zuordnung.csv";
         /// <summary>Der Unterordner des Exports, der gelesen wird, wenn <see cref="DATEI_BAUSTOFFE"/> im gewählten Ordner fehlt.</summary>
         public const string UNTERORDNER_EXPORT = "Export";
 
@@ -203,6 +210,7 @@ namespace WindowsFormsApplication1
                 if (fehler != null) { q.Abgelehnt = fehler; return q; }
             }
             foreach (string datei in new[] { DATEI_KATALOG, DATEI_KATALOG_INHALT }) DefensivLesen(q, ordner, datei);
+            ZuordnungLesen(q, ordner);
             return q;
         }
 
@@ -218,6 +226,31 @@ namespace WindowsFormsApplication1
             try { text = File.ReadAllText(voll, new UTF8Encoding(false)); }
             catch (Exception ex) { q.Hinweise.Add(datei + ": nicht lesbar (" + ex.Message + "), ohne Teilkatalognamen weiter"); return; }
             KannAusText(q, datei, text);
+        }
+
+        /// <summary>
+        /// Liest <see cref="DATEI_KATALOG_ZUORDNUNG"/> (BK-7b): im gelesenen Ordner, sonst in dessen Unterordner
+        /// <see cref="UNTERORDNER_EXPORT"/>. Fehlt sie, gilt der Weg über <see cref="DATEI_KATALOG_INHALT"/> (Hinweis).
+        /// </summary>
+        private static void ZuordnungLesen(BauteilkatalogQuelle q, string ordner)
+        {
+            string unter = Path.Combine(ordner, UNTERORDNER_EXPORT);
+            string gefunden = new[] { ordner, unter }.FirstOrDefault(o => File.Exists(Path.Combine(o, DATEI_KATALOG_ZUORDNUNG)));
+            if (gefunden == null)
+            {
+                q.Hinweise.Add("Datei fehlt, Teilkataloge aus " + DATEI_KATALOG_INHALT + ": " + DATEI_KATALOG_ZUORDNUNG);
+                return;
+            }
+            if (gefunden == unter) q.Hinweise.Add(DATEI_KATALOG_ZUORDNUNG + " gelesen aus dem Unterordner " + UNTERORDNER_EXPORT);
+            string text;
+            try { text = File.ReadAllText(Path.Combine(gefunden, DATEI_KATALOG_ZUORDNUNG), new UTF8Encoding(false)); }
+            catch (Exception ex)
+            {
+                q.Hinweise.Add(DATEI_KATALOG_ZUORDNUNG + ": nicht lesbar (" + ex.Message + "), Teilkataloge aus " + DATEI_KATALOG_INHALT);
+                return;
+            }
+            string fehler = AusText(q, DATEI_KATALOG_ZUORDNUNG, text, Array.Empty<string>());
+            if (fehler != null) q.Hinweise.Add(fehler + ", Teilkataloge aus " + DATEI_KATALOG_INHALT);
         }
 
         /// <summary>Nimmt den Text einer Kann-Datei auf; ein Fehler wird zum Hinweis, nie zur Ablehnung.</summary>

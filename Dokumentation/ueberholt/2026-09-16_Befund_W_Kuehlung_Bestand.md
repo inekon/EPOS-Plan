@@ -2,7 +2,7 @@
 
 **Anlass.** Anwenderentscheid **E12** vom 16.09.2026: „Q8: Kühlung aufnehmen, Konzept dazu
 erweitern." Damit fällt die bisherige Empfehlung zu Q8 („Kühlung als vierter Kanal? **Nein —
-informativ**", [Konzept](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Kapitel 13) und
+informativ**", [Konzept](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Kapitel 13) und
 die Abgrenzung in Kapitel 15 („Kühlung als Kanal und Kältemaschinen") ist in diesem Punkt
 überholt. Dieser Befund erhebt den **Bestand**, bevor das Konzept fortgeschrieben wird: Was
 gibt es an Kühlung schon, was hängt an der Zahl drei, und was kostet ein vierter Kanal von
@@ -206,7 +206,7 @@ Softwarearchitektur führt `gebaeude.kuehlbedarf` in MWh/a mit Aggregationsregel
 (`Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md:1738`) und benennt ausdrücklich, dass
 zwei der sieben Größen **keinen** Katalogeintrag bekommen (`:1744`) — „Stunden mit Kühlbedarf"
 ist eine davon, weil eine Summe über Gebäude sinnlos wäre
-([Systementwurf](../Systementwurf_Gebaeudesimulation_EPOS-Plan.md) F7, `:94`).
+([Systementwurf](../aktuell/Systementwurf_Gebaeudesimulation_EPOS-Plan.md) F7, `:94`).
 
 `ChartRenderer.cs` kennt heute keine Kühlreihe; geplant ist ein Bild „Raumtemperatur"
 (Konzept 9) und im Bedarfsdialog ein Monatsstapel mit Heiz- und Kühlanteil
@@ -503,12 +503,12 @@ Quelltext: `EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs`,
 `Referenzlauf/Ergebnisexport.cs`, `Vergleich.cs`; `sql/schema/001_grundschema.sql`;
 `EPOS.Kern.Tests/SimulationErgebnisCtrlTests.cs`, `BhkwLeistungsgrenzeTests.cs`.
 
-Papiere: [Konzept](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (4.5, 4.6, 9, 13, 14, 15),
-[Umsetzungskonzept](../Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (1.4),
-[Systementwurf](../Systementwurf_Gebaeudesimulation_EPOS-Plan.md) (F6, F7, B9, Abwägung 10),
-[Softwarearchitektur](../Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md),
-[Rechenschritte](../Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
-[Mehrzonenmodell](../Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md),
+Papiere: [Konzept](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (4.5, 4.6, 9, 13, 14, 15),
+[Umsetzungskonzept](../aktuell/Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (1.4),
+[Systementwurf](../aktuell/Systementwurf_Gebaeudesimulation_EPOS-Plan.md) (F6, F7, B9, Abwägung 10),
+[Softwarearchitektur](../aktuell/Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md),
+[Rechenschritte](../aktuell/Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
+[Mehrzonenmodell](../aktuell/Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md),
 [Befund D](2026-09-15_Befund_D_Testdatenbank.md),
 [Befund T](2026-09-15_Befund_T_Softwarearchitektur_Bestand.md).
 
@@ -549,6 +549,6 @@ Repositoriums, `Mode=ReadOnly`; die Datenbank ist unverändert).
    durch Auswahl, sondern durch **Saat** — und gehört damit unter eine Einfrierregel „gesäte
    Kältedaten".
 
-Die Zahlen sind im [Kühlkonzept](../Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 5.0.2
+Die Zahlen sind im [Kühlkonzept](../aktuell/Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 5.0.2
 zitiert und dort ausgewertet; das Protokoll der Messung steht im
 [Gegenlesen des Kühlkonzepts](2026-09-16_Gegenlesen_Kuehlkonzept.md).

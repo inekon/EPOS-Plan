@@ -1,7 +1,7 @@
 # Protokoll G5-1 und G5-2 — Bauteilkörper als Rechengröße und Abzug der Öffnungen beim IFC-Import (07.10.2026)
 
 **Sitzung:** IFC / Gebäudeimport, Statuszeilen **#801** (G5-1) und **#802** (G5-2). Commits G5-1: `b6d6f9e6`, `0b04240a`, `a4313ace`, zusammengeführt in `a7a7f5c16`; G5-2: `2e2067d7b`, `e97a886b5`, zusammengeführt in `519e1db54`.
-**Entscheid:** E101; Abstimmung [G5 IFC](../../../aktuell/Gebaeudesimulation/2026-10-07_Abstimmung_G5_IFC.md), Anforderungen A1 bis A5.
+**Entscheid:** E101; Abstimmung [G5 IFC](../../2026-10-07_Abstimmung_G5_IFC.md), Anforderungen A1 bis A5.
 
 ## 1 Auftrag
 

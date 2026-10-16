@@ -1,6 +1,6 @@
 # Gegenlesen des Datenaustauschkonzepts (15.09.2026)
 
-**Papier:** [`Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md`](../Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md)
+**Papier:** [`Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md`](../aktuell/Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md)
 — gegengelesen in Rev. 1 (1 187 Zeilen), fortgeschrieben zu **Rev. 2** (1 423 Zeilen).
 
 **Drei Leser, drei Messlatten.** Jeder las dasselbe Papier vollständig gegen eine eigene Messlatte:

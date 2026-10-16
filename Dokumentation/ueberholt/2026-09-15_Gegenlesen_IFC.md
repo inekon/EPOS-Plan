@@ -1,6 +1,6 @@
 # Gegenlesen des Konzepts — Blickwinkel IFC, Bibliotheken, Lizenzen (15.09.2026)
 
-**Protokoll.** Einzelbefund des Workflows ‚konzept-gegenlesen‘ (Modell Opus, mit Quellenprüfung im Netz) im Auftrag des Konzepts [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md), Sitzung vom 15.09.2026. Wortlaut wie geliefert; Zeilenbelege und Zahlen sind im Konzept nach dem Gegenlesen korrigiert, bei Widerspruch gilt das Konzept. Pfade unter `C:\Users\…pos-spike\` bezeichnen die Prüfwerkzeuge außerhalb des Repositoriums.
+**Protokoll.** Einzelbefund des Workflows ‚konzept-gegenlesen‘ (Modell Opus, mit Quellenprüfung im Netz) im Auftrag des Konzepts [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md), Sitzung vom 15.09.2026. Wortlaut wie geliefert; Zeilenbelege und Zahlen sind im Konzept nach dem Gegenlesen korrigiert, bei Widerspruch gilt das Konzept. Pfade unter `C:\Users\…pos-spike\` bezeichnen die Prüfwerkzeuge außerhalb des Repositoriums.
 
 ---
 

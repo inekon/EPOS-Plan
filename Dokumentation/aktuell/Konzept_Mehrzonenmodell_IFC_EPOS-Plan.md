@@ -63,7 +63,7 @@
 > M3, M5–M8 und M11–M13 sind nicht Gegenstand von E27 und bleiben mit ihrer Stufe zu entscheiden.
 
 > **Rev. 2 — Korrekturen des Gegenlesens vom 15.09.2026 eingearbeitet, Protokoll:
-> [Gegenlesen](Gebaeudesimulation/2026-09-15_Gegenlesen_Mehrzonenkonzept.md)** — dort auch die
+> [Gegenlesen](../ueberholt/2026-09-15_Gegenlesen_Mehrzonenkonzept.md)** — dort auch die
 > Nachbesserung nach der unabhängigen Prüfung (Probe 3, adiabater Vorlauf in den
 > Rechenzeitangaben, Aufwandsverschiebung in Kapitel 9, Kriterium von Probe 1).
 
@@ -80,13 +80,13 @@ Grundlage: das Konzept
 Mehrzonen über IFC — und **E8** — die Skalierung bleibt), das
 [`Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
 (Einbindung in den Kern, Stufen G0 und G1) sowie die Befunde
-[C](Gebaeudesimulation/2026-09-15_Befund_C_IFC-Recherche.md) (IFC-Recherche),
+[C](../ueberholt/2026-09-15_Befund_C_IFC-Recherche.md) (IFC-Recherche),
 [N](Gebaeudesimulation/2026-09-15_Befund_N_IFC-Import_Entwurf.md) (Entwurf des Einzonen-Imports),
 [O](Gebaeudesimulation/2026-09-15_Befund_O_Zonenkopplung_VDI6007.md) (Zonenkopplung nach
 VDI 6007 Blatt 1 und VDI 2078),
 [P](Gebaeudesimulation/2026-09-15_Befund_P_IFC_Zonen_Materialien.md) (Zonen, Flächen und
 Materialdaten aus IFC, an vier Beispieldateien gemessen) und
-[Q](Gebaeudesimulation/2026-09-15_Befund_Q_Muster_Datenmodell_Dialoge.md) (vorhandene Muster für
+[Q](../ueberholt/2026-09-15_Befund_Q_Muster_Datenmodell_Dialoge.md) (vorhandene Muster für
 Datenmodell, Kataloge und Listendialoge). Für die Nähte nach außen kommen
 [S](Gebaeudesimulation/2026-09-15_Befund_S_IFC-Export_ohne_Geometriekernel.md) (IFC-Export ohne
 Geometriekernel, Kapitel 6) und das

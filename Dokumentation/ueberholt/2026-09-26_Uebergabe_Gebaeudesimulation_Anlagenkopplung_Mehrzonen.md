@@ -4,7 +4,7 @@
 fertig ist, was offen ist und wie es weitergeht. Maßgeblich für den Stand bleiben die
 [Statusdatei](../aktuell/Status_Gebaeudesimulation_VDI6007.md), das [Register](../aktuell/Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)
 und `git log origin/ios_migration_september`; die Parallelübergabe zu G6c und Klasse M/A steht in
-[`2026-09-26_Uebergabe_G6c_Katalog_M_A.md`](../aktuell/Gebaeudesimulation/2026-09-26_Uebergabe_G6c_Katalog_M_A.md).
+[`2026-09-26_Uebergabe_G6c_Katalog_M_A.md`](2026-09-26_Uebergabe_G6c_Katalog_M_A.md).
 
 ## 1. Fertig und gepusht
 
@@ -48,7 +48,7 @@ freie Schritt ist 151 — Nummern immer unmittelbar vor dem Eintrag gegen origin
 
 | Stufe | Inhalt | Voraussetzung |
 |---|---|---|
-| G6c Rest | Welle D Zonengeometrie-Modell und 2D-Grundriss (E11), Welle E Wiki; offen außerdem Trenndecke ohne Raumgrenzen (heute Zonenregel Z4 nur mit Warnung, Vorgabe Z5), Zonen von Hand zusammenlegen oder trennen (Kern-Erweiterung), Messdateien M10 (Proben 13–16 und 18); Register: M11 offen | Wellenplan und Stand in [`2026-09-26_Uebergabe_G6c_Katalog_M_A.md`](../aktuell/Gebaeudesimulation/2026-09-26_Uebergabe_G6c_Katalog_M_A.md), Abschnitt 2.1 |
+| G6c Rest | Welle D Zonengeometrie-Modell und 2D-Grundriss (E11), Welle E Wiki; offen außerdem Trenndecke ohne Raumgrenzen (heute Zonenregel Z4 nur mit Warnung, Vorgabe Z5), Zonen von Hand zusammenlegen oder trennen (Kern-Erweiterung), Messdateien M10 (Proben 13–16 und 18); Register: M11 offen | Wellenplan und Stand in [`2026-09-26_Uebergabe_G6c_Katalog_M_A.md`](2026-09-26_Uebergabe_G6c_Katalog_M_A.md), Abschnitt 2.1 |
 | G6d | Referenzprojekt mit Zonen, Einfrierregel „gesäte Zonendaten“, neue Basis (2–3 PT). Befund aus G6c: Ein unbeheizter Betonkeller ohne Dämmung gegen Erdreich ergibt nach Gl. (28) R_Rest < 0 und wird abgelehnt — vermutlich fehlt eine Erdreichschicht im Rechenweg | G6b fertig |
 | G7b | gbXML-Geometrie, Einstieg im Bedarfsdialog; danach Auslieferung von G7a | Probe 20 braucht einen macOS-Lauf, nur nach Rückfrage |
 | KU3, AK2, AK3 | Kältemaschine und freie Kühlung; Erzeugerfahrplan; geschlossener Kreis | nach der Feldphase (E27) |

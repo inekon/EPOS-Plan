@@ -10338,6 +10338,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die inhomogen: Abschnitte verschiedener Schichtzahl mit verschiedener Gesamtdicke ähnelt.
+        /// </summary>
+        public static string BKI_GRUND_DICKEN {
+            get {
+                return ResourceManager.GetString("BKI_GRUND_DICKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die inhomogen: ruhende Luftschicht müsste an einer Schichtgrenze geteilt werden ähnelt.
+        /// </summary>
+        public static string BKI_GRUND_LUFTSCHICHT {
+            get {
+                return ResourceManager.GetString("BKI_GRUND_LUFTSCHICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die inhomogen: Schicht ohne Dicke in Abschnitten verschiedener Schichtzahl ähnelt.
+        /// </summary>
+        public static string BKI_GRUND_OHNE_DICKE {
+            get {
+                return ResourceManager.GetString("BKI_GRUND_OHNE_DICKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Haustechnik: {0} Baustoffe und {1} Aufbauten in der Gruppe „Sonstige“, davon {2} Luftdurchlässe (gekennzeichnet). ähnelt.
         /// </summary>
         public static string BKI_HAUSTECHNIK {
@@ -10347,11 +10374,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wählen Sie die Datei Baustoffe.csv des CSV-Exports; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv und Basis_Auszug.csv liegen daneben, Katalog.csv und Katalog_Inhalt.csv ergänzen die Teilkataloge. Liegt Baustoffe.csv im Unterordner Export, genügt der Ordner darüber. Die Vorschau schreibt nichts. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wählen Sie die Datei Baustoffe.csv des CSV-Exports; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv und Basis_Auszug.csv liegen daneben, Katalog.csv und Katalog_Zuordnung.csv ergänzen die Teilkataloge (fehlt Katalog_Zuordnung.csv, gilt Katalog_Inhalt.csv). Liegt Baustoffe.csv im Unterordner Export, genügt der Ordner darüber. Die Vorschau schreibt nichts. ähnelt.
         /// </summary>
         public static string BKI_HINWEIS {
             get {
                 return ResourceManager.GetString("BKI_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Inhomogene Aufbauten: {0} an gemeinsamen Schichtgrenzen geteilt (verschiedene Schichtzahl oder versetzte Grenzen je Abschnitt, {1} Teilschichten zusätzlich); {2} fehlende Flächenanteile als Rest zu 1 eingesetzt. ähnelt.
+        /// </summary>
+        public static string BKI_INHOMOGEN {
+            get {
+                return ResourceManager.GetString("BKI_INHOMOGEN", resourceCulture);
             }
         }
         
@@ -10415,6 +10451,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BKI_PROTOKOLL {
             get {
                 return ResourceManager.GetString("BKI_PROTOKOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flächenanteil als Rest zu 1 eingesetzt (Abschnitt {0}: {1}): {2} ähnelt.
+        /// </summary>
+        public static string BKI_PROT_ANTEIL {
+            get {
+                return ResourceManager.GetString("BKI_PROT_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichten an gemeinsamen Schichtgrenzen geteilt ({0} → {1} Schichten): {2} ähnelt.
+        /// </summary>
+        public static string BKI_PROT_GETEILT {
+            get {
+                return ResourceManager.GetString("BKI_PROT_GETEILT", resourceCulture);
             }
         }
         
@@ -10500,7 +10554,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Teilkataloge: {0}; die Quelle nennt sie an {1} Baustoffen und {2} Aufbauten. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teilkataloge: {0} von {1} der Quelle, zugeordnet über {2}; die Quelle nennt sie an {3} Baustoffen und {4} Aufbauten, zwei oder mehr an {5} Baustoffen und {6} Aufbauten; ohne Teilkatalog bleiben {7} Baustoffe und {8} Aufbauten. ähnelt.
         /// </summary>
         public static string BKI_TEILKATALOGE {
             get {
@@ -10532,6 +10586,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BKI_VORSCHAU {
             get {
                 return ResourceManager.GetString("BKI_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wiederimport: {0} Aufbauten im Katalog bekommen durch die Teilung an gemeinsamen Schichtgrenzen andere Schichten; {1} davon ändern ihren U-Wert um mehr als 1 % (größte Änderung {2} %). ähnelt.
+        /// </summary>
+        public static string BKI_WIEDERIMPORT {
+            get {
+                return ResourceManager.GetString("BKI_WIEDERIMPORT", resourceCulture);
             }
         }
         
@@ -16336,6 +16399,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fehlerschranke e = {0} % liegt über {1} % (R'_T / R''_T über 1,5): Das vereinfachte Verfahren nach DIN EN ISO 6946, 6.7 ist für diesen Aufbau ungenau; gerechnet wird weiter mit dem Mittel R_T. ähnelt.
+        /// </summary>
+        public static string BTA_HINWEIS_FEHLERSCHRANKE {
+            get {
+                return ResourceManager.GetString("BTA_HINWEIS_FEHLERSCHRANKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ohne λ ist die Luftschicht eine ruhende Luftschicht: Ihr Widerstand folgt DIN EN ISO 6946, Tabelle 8, und sie trägt keine Speichermasse. ähnelt.
         /// </summary>
         public static string BTA_HINWEIS_LUFTSCHICHT {
@@ -16674,6 +16746,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BTA_SUMME_C {
             get {
                 return ResourceManager.GetString("BTA_SUMME_C", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehlerschranke e = (R'_T − R''_T) / (2 R_T) = {0} % ähnelt.
+        /// </summary>
+        public static string BTA_SUMME_FEHLERSCHRANKE {
+            get {
+                return ResourceManager.GetString("BTA_SUMME_FEHLERSCHRANKE", resourceCulture);
             }
         }
         
