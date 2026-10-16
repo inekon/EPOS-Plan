@@ -481,6 +481,10 @@ namespace WindowsFormsApplication1
             // KBP-5a (BedarfsprofilEingabeartSchema), KETTE: GEPARKT auf 234 - die Stufe folgt mit dem Umhaengen hinter 233:
             //   new Stufe(BedarfsprofilEingabeartSchema.SCHRITT, Art.Ddl,
             //             "Eingabeart an Prozesswärme und Brauchwasser, Nutzungstage nach Norm an den Kältevorlagen (KBP-5a)"),
+            // KBP-4a (KaeltetyptagSchema), KETTE: GEPARKT auf 236 - die Stufe folgt mit dem Umhaengen hinter 235. Ein älteres
+            // Paket bringt keine Typtage; der Schritt legt die zwei leeren Tabellen am Ziel an:
+            //   new Stufe(KaeltetyptagSchema.SCHRITT, Art.Ddl,
+            //             "Typtage und Zuordnungsmatrix der Kältebedarfszuordnung (KBP-4a)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

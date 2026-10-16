@@ -1095,6 +1095,8 @@ namespace WindowsFormsApplication1
         /// der Jahressumme, die Zeilen 1–6 bleiben bytegleich samt Prüfsumme.
         // KETTE: BedarfsprofilEingabeartSchema (KBP-5a) ist auf 234 GEPARKT; das Ziel wandert erst dorthin, wenn 231 bis 233
         // in der Kette stehen und der Schritt umgehaengt ist (BauteilUHerkunftSchema.SCHRITT + 1).
+        // KETTE: KaeltetyptagSchema (KBP-4a) ist auf 236 GEPARKT; das Ziel wandert erst dorthin, wenn 235
+        // (WasserpreisTraegerkarteSchema) in der Kette steht und der Schritt umgehaengt ist (WasserpreisTraegerkarteSchema.SCHRITT + 1).
         public const int Zielversion = KaeltebedarfsprofilVorlagenSchema.SCHRITT;
 
         /// <summary>

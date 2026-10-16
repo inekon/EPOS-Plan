@@ -3760,6 +3760,27 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt KaeltetyptagSchema.SCHRITT (KBP-4a): Tab_Kaeltetyptag und Tab_Kaeltetyptag_Matrix (leer, STRICT,
+            //      Fremdschluessel auf Tab_Projekt und die Projektkopie Tab_Kaeltebedarf). Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_Kaeltetyptag. Wiederholbar.
+            //      KETTE: GEPARKT auf 236 - dieser Block bleibt HINTER dem Block von 235 (WasserpreisTraegerkarteSchema);
+            //      die Hebung der Testdatenbank folgt erst nach dem Umhaengen (WasserpreisTraegerkarteSchema.SCHRITT + 1).
+            //
+            //      REFERENZLAUF UNVERAENDERT: keine Zuordnung traegt Eingabeart 'typtag'.
+            string nrKbp4 = KaeltetyptagSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKbp4 + " - Typtage der Kaeltebedarfszuordnung: " +
+                              (KaeltetyptagSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKbp4 = new List<string>();
+                tabellen += KaeltetyptagSchema.Ausfuehren(berichtKbp4);
+                foreach (string zeile in berichtKbp4)
+                    Console.WriteLine("Schritt " + nrKbp4 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKbp4 + " - vollstaendig: " + KaeltetyptagSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

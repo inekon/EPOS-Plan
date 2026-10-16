@@ -1078,6 +1078,10 @@ namespace EPOS.Kern.Tests
                 // Brauchwasser, Nutzungstage nach Norm an den Kaeltevorlagen (Saat Vorlage 8). Wiederholbar, ergebnisneutral.
                 // KETTE: steht hinter 231 bis 233, sobald diese hier eingetragen sind.
                 BedarfsprofilEingabeartSchema.Ausfuehren(null);
+                // Schritt KaeltetyptagSchema.SCHRITT (KBP-4a, GEPARKT auf 236): Typtage und Matrix der Kaeltebedarfszuordnung,
+                // zwei leere Tabellen. Wiederholbar, ergebnisneutral.
+                // KETTE: steht hinter 235 (WasserpreisTraegerkarteSchema), sobald dieser hier eingetragen ist.
+                KaeltetyptagSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

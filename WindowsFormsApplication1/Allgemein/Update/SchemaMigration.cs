@@ -8218,6 +8218,14 @@ namespace WindowsFormsApplication1
             //               "Prozesswaerme und Brauchwasser kannten allein die Jahressumme mit Vorlage. KEIN Rechenergebnis " +
             //               "aendert sich - jede Zuordnung rechnet mit Eingabeart 'jahr'.",
             //               Schritt_BedarfsEingabeart),
+            // KBP-4a: Typtage und Matrix der Kaeltebedarfszuordnung. Quelle ist KaeltetyptagSchema, die Nummer steht allein dort.
+            // KETTE: GEPARKT auf 236 - der Eintrag folgt erst, wenn 234 und 235 (WasserpreisTraegerkarteSchema) hier stehen
+            // (sonst sprang ein Lauf ueber die Luecke und setzte den Stand auf 236). Dann so eintragen:
+            //   new Schritt(KaeltetyptagSchema.SCHRITT,
+            //               "Tab_Kaeltetyptag und Tab_Kaeltetyptag_Matrix: Typtage und Zuordnungsmatrix der Kaeltebedarfszuordnung",
+            //               "Die Kaeltezuordnung kannte Jahressumme, Monatswerte und Wochenprofil, aber keine Typtage. KEIN " +
+            //               "Rechenergebnis aendert sich - zwei leere Tabellen, keine Zuordnung traegt Eingabeart 'typtag'.",
+            //               Schritt_Kaeltetyptag),
         };
 
         /// <summary>
@@ -16319,6 +16327,61 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Eingabeart und Nutzungstage - " +
                     (angelegt == 0 ? "Spalten standen bereits." : angelegt + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Typtage der Kältebedarfszuordnung" (KBP-4a, Schritt <see cref="KaeltetyptagSchema.SCHRITT"/>) — die
+        /// Anweisungen bei <see cref="KaeltetyptagSchema"/>. <b>Wiederholbar, ergebnisneutral.</b> GEPARKT: noch nicht in
+        /// <see cref="SCHRITTE_SQLITE"/> (KETTE).
+        /// </summary>
+        private static bool Schritt_Kaeltetyptag(Lauf l)
+        {
+            string nr = KaeltetyptagSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KaeltetyptagSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int angelegt;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    angelegt = KaeltetyptagSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KaeltetyptagSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Typtage oder Matrix fehlen nach dem Schritt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Typtage und Matrix - " +
+                    (angelegt == 0 ? "Tabellen standen bereits." : angelegt + " Anweisung(en) ausgefuehrt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }
