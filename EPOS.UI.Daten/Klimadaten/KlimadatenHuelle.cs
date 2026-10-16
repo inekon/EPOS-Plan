@@ -77,6 +77,34 @@ namespace WindowsFormsApplication1
         /// <summary>Der Fenstertitel und zugleich die Dialogüberschrift.</summary>
         internal static string Titel() => MyResource.Resource.KLIMA_TITEL;
 
+        /// <summary>Das Wunschmaß der Klimadatenverwaltung selbst (Vorläufer: 757 × 641).</summary>
+        internal const int FENSTER_BREITE = 1180;
+
+        /// <summary>Siehe <see cref="FENSTER_BREITE"/>.</summary>
+        internal const int FENSTER_HOEHE = 780;
+
+        /// <summary>
+        /// Das Wunschmaß der Überlagerung „Klimadaten einlesen“ als eigenes Fenster (KD-1):
+        /// so breit wie eine Überlagerung (900 px), so hoch, dass sie (gemessen 776 px
+        /// in der <c>fensterprobe.mjs</c>, Fall „klimaimport“) in 90 % der Fensterhöhe steht,
+        /// ohne zu rollen. Reicht der Schirm nicht, rollt der Inhalt, und die Schlussleiste
+        /// haftet am Boden der Überlagerung (<c>epos-ui.css</c>, „Die Schlussleiste des
+        /// Einlesens haftet genauso“).
+        /// </summary>
+        internal const int EINLESEN_BREITE = 900;
+
+        /// <summary>Siehe <see cref="EINLESEN_BREITE"/>.</summary>
+        internal const int EINLESEN_HOEHE = 870;
+
+        /// <summary>
+        /// Das Wunschmaß des Fensters: mindestens das der getragenen Überlagerung
+        /// (<see cref="EPOS.UI.Dienste.Fenstermass.MitUeberlagerung"/>), wie bei jedem Fenster,
+        /// das einen Import als Überlagerung trägt.
+        /// </summary>
+        internal static (int Breite, int Hoehe) Wunschmass()
+            => EPOS.UI.Dienste.Fenstermass.MitUeberlagerung(
+                FENSTER_BREITE, FENSTER_HOEHE, EINLESEN_BREITE, EINLESEN_HOEHE);
+
         /// <summary>Der PARAMETERSATZ der Komponente — ohne <c>Geschlossen</c>.</summary>
         internal static IReadOnlyDictionary<string, object> Gaben()
         {

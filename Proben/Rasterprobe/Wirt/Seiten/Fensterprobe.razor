@@ -33,7 +33,9 @@
                            Die Bearbeiten-Ueberlagerung einer Zeile zeigt die Kaeltegrafik (KBP-3b) aus einer
                            synthetischen Reihe, die dem Arbeitsstand folgt (Jahressumme, Monatsanteile, Kalender 2 =
                            Betriebsferien); Blatt Woche mit Wahl der Kalenderwoche (fensterprobe.mjs, Fall kaeltegrafik)
-      ?meldung=1           fuer die Bannerprobe (bannerprobe.mjs): Heizkessel und BHKW melden bei
+      ?fall=klimaimport    KlimadatenDialog (Katalogdialog); "Import..." oeffnet die Ueberlagerung "Klimadaten
+                           einlesen" (.epos-einlesen) - ihre Schlussleiste haftet am Boden (KD-1)
+      ?meldung=1          fuer die Bannerprobe (bannerprobe.mjs): Heizkessel und BHKW melden bei
                            "Hinzufuegen" einen Fehler der Traegerwahl, der Gebaeudedialog traegt
                            "In DB uebernehmen" (weich gesperrt - der Versuch meldet den Grund);
                            ohne den Schalter steht alles wie fuer die Fensterprobe
@@ -206,6 +208,19 @@
                                   TypProfilGaben="@(() => new Dictionary<string, object>())"
                                   KaelteGrafik="@KpGrafik"
                                   Geschlossen="@(b => Beendet(b))" />
+            break;
+
+        case "klimaimport":
+            @* KD-1: Die Ueberlagerung "Klimadaten einlesen" traegt .epos-einlesen statt eines
+               .epos-dialog und eine Leiste ohne Statusspanne - die Probe misst, dass ihre
+               Schlussleiste dennoch am Boden der Ueberlagerung haftet. *@
+            <EPOS.UI.Dialoge.Klimadaten.KlimadatenDialog
+                Regionen="@(() => Task.FromResult<IReadOnlyList<Katalogfilterzeile>>(new[] { new Katalogfilterzeile(1, "Region 1") }))"
+                Filterstandvorgabe="@_filterstand"
+                Importieren="@((_, _) => Task.FromResult(new KlimaImportErgebnis()))"
+                DateiWaehlen="@(_ => Task.FromResult<string?>(null))"
+                Loeschen="@(_ => Task.FromResult(true))"
+                Geschlossen="@(b => Beendet(b))" />
             break;
 
         default:

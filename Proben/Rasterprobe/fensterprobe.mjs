@@ -39,6 +39,9 @@
 //    Dokument rollt nicht - und jede Zahl ist dieselbe wie ohne Fenstermarke.
 //  KATALOGDIALOG (Bedarfsverwaltung): Kopf und Fuss statisch, das Dokument
 //    rollt nicht, jede Zahl dieselbe wie ohne Fenstermarke.
+//  KLIMAIMPORT (KD-1, --nur klimaimport): die Ueberlagerung "Klimadaten einlesen" (.epos-einlesen,
+//    Leiste ohne Statusspanne) - ihre Schlussleiste steht oben wie am Ende ganz im Bild am Boden der
+//    Ueberlagerung, auch bei 787 x 520 (1 180 x 780 bei 150 %); Gegenprobe: Leiste position: static.
 //
 //  IPAD 11 ZOLL (1 194 x 834 quer): dieselben Faelle MIT den sicheren Abstaenden
 //    des iPads (Statusleiste oben 24 px, Home-Anzeige unten 20 px, gesetzt ueber die
@@ -129,6 +132,9 @@ const ZUSAMMENFASSUNG = new Set(['heizkessel', 'bhkw', 'waermepumpen', 'photovol
 // Dialoge mit Inhalt UNTER der Schlussleiste (Protokoll der Dublettenpruefung): Am Ende steht
 // der Fuss an seinem Platz ueber dem Nachlauf, nicht am Fensterrand - und er ueberdeckt ihn nicht.
 const NACHLAUF = new Set(['dubletten']);
+// KD-1: die Fenster der Klimadaten-Importueberlagerung - dazu 787 x 520, das Fenstermass 1 180 x 780 bei
+// 150 % Anzeigeskalierung (Befund). In allen vier ist die Ueberlagerung hoeher als ihr Fenster.
+const KLIMA_FENSTER = [...FENSTER, { breite: 787, hoehe: 520 }];
 
 const verstoesse = [];
 const melde = (fall, text) => { verstoesse.push(fall + ': ' + text); console.log('  VERSTOSS ' + fall + ': ' + text); };
@@ -151,6 +157,8 @@ function lage() {
     y: scrollY, innen: innerHeight, dokument: document.documentElement.scrollHeight,
     wurzel: r(d), kopf: r(kopf), fuss: r(fuss), nachfolger: r(nach),
     kopfPos: kopf ? getComputedStyle(kopf).position : '', fussPos: fuss ? getComputedStyle(fuss).position : '',
+    // Der Abstand der Wurzel (gap) zwischen Schlussleiste und Nachlauf - er bleibt ganz (KD-1).
+    luecke: d ? parseFloat(getComputedStyle(d).rowGap) || 0 : 0,
   };
 }
 
@@ -332,9 +340,10 @@ async function haften(seite, name, melden, nachlauf = false, r = { oben: 0, unte
       // sein Platz darunter laege, sonst an seinem Platz ueber dem Nachlauf ...
       if (m.fuss.top < (stand === 'oben' ? r.oben : m.kopf.bottom) - 0.5 || m.fuss.bottom > m.innen - r.unten + TOL)
         fehler(`${stand}: Fussleiste ${zahl(m.fuss.top)}..${zahl(m.fuss.bottom)} px nicht ganz im Bild (Kopf bis ${zahl(m.kopf.bottom)})`);
-      // ... und am Ende steht der Nachlauf frei darunter.
-      if (stand === 'Ende' && (!m.nachfolger || m.nachfolger.top < m.fuss.bottom - 0.5 || m.nachfolger.bottom > m.innen - r.unten + TOL))
-        fehler(`Ende: Nachlauf ${m.nachfolger ? zahl(m.nachfolger.top) + '..' + zahl(m.nachfolger.bottom) : 'fehlt'} px, Fussleiste bis ${zahl(m.fuss.bottom)} px - ueberdeckt oder abgeschnitten`);
+      // ... und am Ende steht der Nachlauf frei darunter, mit dem ganzen Abstand der Wurzel (gap):
+      // Mit dem negativen Rand rueckte er um den Kartenrand an die Leiste heran.
+      if (stand === 'Ende' && (!m.nachfolger || m.nachfolger.top < m.fuss.bottom + m.luecke - TOL || m.nachfolger.bottom > m.innen - r.unten + TOL))
+        fehler(`Ende: Nachlauf ${m.nachfolger ? zahl(m.nachfolger.top) + '..' + zahl(m.nachfolger.bottom) : 'fehlt'} px, Fussleiste bis ${zahl(m.fuss.bottom)} px, Abstand ${m.luecke} px - ueberdeckt, herangerueckt oder abgeschnitten`);
     } else {
       if (Math.abs(m.fuss.bottom - (m.innen - r.unten)) > TOL) fehler(`${stand}: Fussleiste endet bei ${zahl(m.fuss.bottom)} statt ${m.innen - r.unten} px (Rollstand ${zahl(m.y)})`);
       if (m.fuss.top >= m.innen) fehler(`${stand}: Fussleiste ausserhalb des Bildes`);
@@ -475,6 +484,65 @@ async function katalog(browser, f, marke) {
  * steht in der linken Spalte unter den Projektfeldern, bricht um statt quer zu rollen und ueberlappt die Kenndaten
  * nicht. Mit `stil` (Gegenprobe) wird eine Stilzeile eingeschoben; liefert die Zahl der Verstoesse und die Masse.
  */
+/**
+ * KD-1: die Ueberlagerung „Klimadaten einlesen" im Katalogdialog der Klimadaten. Ihr Inhalt ist
+ * .epos-einlesen (kein .epos-dialog), ihre Schlussleiste traegt keine Statusspanne. Gemessen bei
+ * Rollstand oben und Ende der Ueberlagerung: Sie steht zwischen den sicheren Abstaenden, die
+ * Schlussleiste (letztes Kind von .epos-einlesen) steht ganz in ihr und schliesst mit ihrem Boden
+ * ab (haftet), der Primaerknopf steht ganz im Fenster, am Ende steht alles davor ueber der Leiste.
+ * Mit `stil` (Gegenprobe) wird eine Stilzeile eingeschoben; liefert die Zahl der Verstoesse, die
+ * Texte und die Zahlen.
+ */
+async function klimaimport(browser, f, stil = '') {
+  const seite = await oeffnen(browser, 'klimaimport', f);
+  if (stil) await seite.addStyleTag({ content: stil });
+  await seite.click('button.epos-importknopf');
+  await seite.waitForSelector('.epos-ueberlagerung-inhalt > .epos-einlesen > .epos-leiste:last-child', { timeout: 20000 });
+  const messen = async unten => {
+    await seite.evaluate(unten => {
+      const ue = document.querySelector('.epos-ueberlagerung:has(> .epos-ueberlagerung-inhalt > .epos-einlesen)');
+      ue.scrollTop = unten ? ue.scrollHeight : 0;
+    }, unten);
+    await seite.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+    return seite.evaluate(() => {
+      const ue = document.querySelector('.epos-ueberlagerung:has(> .epos-ueberlagerung-inhalt > .epos-einlesen)');
+      const ein = ue.querySelector(':scope > .epos-ueberlagerung-inhalt > .epos-einlesen');
+      const leiste = ein.lastElementChild;
+      const primaer = leiste.querySelector(':scope > .epos-knopf--primaer');
+      const r = e => { const b = e.getBoundingClientRect(); return [Math.round(b.top * 10) / 10, Math.round(b.bottom * 10) / 10]; };
+      const s = getComputedStyle(ue);
+      let boden = -Infinity;
+      for (let e = leiste.previousElementSibling; e; e = e.previousElementSibling) {
+        const b = e.getBoundingClientRect();
+        if (b.height > 0) boden = Math.max(boden, b.bottom);
+      }
+      return {
+        ueberlagerung: r(ue), leiste: r(leiste), primaer: primaer ? r(primaer) : null,
+        rand: [parseFloat(s.borderTopWidth), parseFloat(s.borderBottomWidth)],
+        rollhoehe: ue.scrollHeight, fenster: ue.clientHeight, stand: Math.round(ue.scrollTop),
+        boden: Math.round(boden * 10) / 10, innen: innerHeight, leistePos: getComputedStyle(leiste).position,
+      };
+    });
+  };
+  const oben = await messen(false), ende = await messen(true);
+  const fehler = [];
+  for (const [stand, m] of [['oben', oben], ['Ende', ende]]) {
+    const deckel = m.ueberlagerung[0] + m.rand[0], grund = m.ueberlagerung[1] - m.rand[1];
+    if (m.ueberlagerung[0] < rand(f).oben - TOL || m.ueberlagerung[1] > f.hoehe - rand(f).unten + TOL)
+      fehler.push(`${stand}: Ueberlagerung ${m.ueberlagerung[0]}..${m.ueberlagerung[1]} px nicht zwischen den sicheren Abstaenden`);
+    if (m.leiste[0] < deckel - TOL || m.leiste[1] > grund + TOL)
+      fehler.push(`${stand}: Schlussleiste ${m.leiste[0]}..${m.leiste[1]} px nicht ganz in der Ueberlagerung (${deckel}..${grund})`);
+    if (Math.abs(m.leiste[1] - grund) > TOL)
+      fehler.push(`${stand}: Schlussleiste endet bei ${m.leiste[1]} statt am Boden der Ueberlagerung (${grund})`);
+    if (!m.primaer || m.primaer[0] < deckel - TOL || m.primaer[1] > Math.min(grund, m.innen - rand(f).unten) + TOL)
+      fehler.push(`${stand}: Primaerknopf ${JSON.stringify(m.primaer)} nicht ganz im Bild`);
+  }
+  if (ende.boden > ende.leiste[0] + TOL) fehler.push(`Ende: Inhalt bis ${ende.boden} px reicht unter die Schlussleiste (${ende.leiste[0]})`);
+  if (FOTOS && !stil) await seite.screenshot({ path: `${FOTOS}/klimaimport_${f.breite}x${f.hoehe}.png` });
+  await seite.close();
+  return { n: fehler.length, fehler, oben, ende };
+}
+
 const SATZ_WIRTE = [
   { wirt: 'heizkessel', seite: 'fensterprobe', klasse: 'hk', ipad: true },
   { wirt: 'bhkw', seite: 'fensterprobe', klasse: 'bhkw' },
@@ -989,6 +1057,18 @@ try {
     }
   }
 
+  // ----------------------------------------- KD-1: Schlussleiste der Klimadaten-Importueberlagerung
+  if (!NUR || NUR === 'klimaimport') {
+    for (const f of KLIMA_FENSTER) {
+      const name = `klimaimport ${f.breite}x${f.hoehe}${f.ipad ? ' iPad' : ''}`;
+      console.log(`- ${name}`);
+      const r = await klimaimport(browser, f);
+      for (const t of r.fehler) melde(name, t);
+      console.log(`    Ueberlagerung ${JSON.stringify(r.oben.ueberlagerung)}, Rollhoehe ${r.oben.rollhoehe}/${r.oben.fenster} px (gerollt ${r.ende.stand} px); `
+        + `Leiste oben ${JSON.stringify(r.oben.leiste)}, Ende ${JSON.stringify(r.ende.leiste)} (${r.oben.leistePos}); Inhalt am Ende bis ${r.ende.boden} px`);
+    }
+  }
+
   // ----------------------------------------- Nacharbeit KBP-3b: Tagesarten der Kalenderwoche als Hintergrund
   if (!NUR || NUR === 'kaeltegrafik') {
     for (const f of FENSTER.slice(0, 2)) {
@@ -1035,7 +1115,8 @@ try {
       if (h.n === 0) gegenGruen++;
       await seite.close();
       if (NACHLAUF.has(fall)) {
-        // Der Fuss mit negativem Rand trotz Nachlauf: er laege ueber dessen Beschriftung.
+        // Der Fuss mit negativem Rand trotz Nachlauf: der Nachlauf rueckte um den Kartenrand (16 px)
+        // in den Abstand der Wurzel (gap 20 px) an die Leiste heran - es blieben 4 px.
         const s4 = await oeffnen(browser, fall, f);
         await s4.addStyleTag({ content: '#app > .epos-dialog > .epos-leiste { margin-bottom: calc(-1 * var(--epos-karte-rand)) !important; }' });
         const h4 = await haften(s4, '', false, true);
@@ -1113,6 +1194,14 @@ try {
       ]) {
         const g = await meldungsliste(browser, f, false, zusatz, stil);
         console.log(`    Meldungsliste ${was} ${f.breite}x${f.hoehe}: ${g.n} Verstoesse (Tabulator: ${g.unterBanner} von ${g.schritte} Feldern verdeckt)`);
+        if (g.n === 0) gegenGruen++;
+      }
+    }
+    if (MIT_GEGENPROBE && (!NUR || NUR === 'klimaimport')) {
+      // KD-1: Ohne die Haftregel liegt die Schlussleiste im rollenden Fenster unter dem Boden der Ueberlagerung.
+      for (const f of KLIMA_FENSTER) {
+        const g = await klimaimport(browser, f, '.epos-ueberlagerung-inhalt > .epos-einlesen > .epos-leiste { position: static !important; margin-bottom: 0 !important; }');
+        console.log(`    Gegenprobe klimaimport ohne Haftregel ${f.breite}x${f.hoehe}: ${g.n} Verstoesse`);
         if (g.n === 0) gegenGruen++;
       }
     }

@@ -2553,9 +2553,27 @@ html:has(.epos-ueberlagerung) {
     background: var(--epos-karte-flaeche);
 }
 
+/* DIE SCHLUSSLEISTE DES EINLESENS HAFTET GENAUSO (KD-1, Anwenderbefund Klimadaten-
+   Import 16.10.2026). Die Ueberlagerungen "Daten einlesen" tragen statt eines
+   .epos-dialog den Block .epos-einlesen, und ihre Knopfleiste (Abbrechen -
+   Einlesen) hat keine Statusspanne - die Regel oben griff nicht, die Leiste lag
+   am Ende des Rollbereichs unter dem Fensterrand. Erkennungszeichen ist hier die
+   Stellung: Die Knopfleiste ist das LETZTE Kind des Blocks (Klimadaten, Ganglinien-
+   katalog, Waermebedarf, Stromganglinie, Nutzungsarten, Lastspitzenkappung). */
+.epos-ueberlagerung-inhalt > .epos-einlesen > .epos-leiste:last-child {
+    position: sticky;
+    bottom: calc(-1 * var(--epos-karte-rand));
+    z-index: 2;
+    margin-bottom: calc(-1 * var(--epos-karte-rand));
+    padding: 8px 0 var(--epos-karte-rand);
+    border-top: 1px solid var(--epos-rahmen-leise);
+    background: var(--epos-karte-flaeche);
+}
+
 /* Was ueber der haftenden Fussleiste haften will, steht um ihre Hoehe hoeher:
    Knopfhoehe plus obere Polsterung und Linie (die untere Polsterung liegt im
    Rand der Ueberlagerung). */
+.epos-ueberlagerung:has(> .epos-ueberlagerung-inhalt > .epos-einlesen > .epos-leiste:last-child),
 .epos-ueberlagerung:has(> .epos-ueberlagerung-inhalt > .epos-dialog > .epos-leiste > .epos-status) {
     --epos-ueberlagerung-fuss: calc(var(--epos-touchziel) + 9px);
 }
@@ -2735,7 +2753,8 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
 /* In den unteren Rand der Wurzel reicht der Fuss nur, wenn nach ihm nichts mehr im
    Fluss steht - verborgene Anker und Ueberlagerungen stehen ausserhalb. Die
    Dublettenpruefung zeigt ihr Protokoll UNTER der Schlussleiste; mit dem negativen
-   Rand laege deren Flaeche 6 px ueber dessen Beschriftung. */
+   Rand rueckte es um den Kartenrand (16 px) in den Abstand der Wurzel (gap 20 px)
+   an den Fuss heran - es blieben 4 px. */
 #app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-leiste:has(> .epos-knopf--primaer):not(:has(~ :not([hidden], .epos-ueberlagerung, .epos-ueberlagerung-hintergrund))),
 #app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-dialog-fuss:not(:has(~ :not([hidden], .epos-ueberlagerung, .epos-ueberlagerung-hintergrund))) {
     margin-bottom: calc(-1 * var(--epos-karte-rand));

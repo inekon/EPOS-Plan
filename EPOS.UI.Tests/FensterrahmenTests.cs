@@ -335,6 +335,49 @@ public sealed class FensterrahmenTests : EposBunitContext
         Assert.Empty(fremd);
     }
 
+    /// <summary>
+    /// KD-1 (Anwenderbefund 16.10.2026, Klimadaten-Import im eigenen Fenster: Knöpfe
+    /// abgeschnitten): Die Überlagerungen „Daten einlesen“ tragen <c>.epos-einlesen</c> statt
+    /// eines <c>.epos-dialog</c> und eine Knopfleiste ohne Statusspanne. Ihre Schlussleiste
+    /// haftet am Boden der Überlagerung wie die SpeichernLeiste eines eingebetteten Dialogs —
+    /// erkannt an ihrer Stellung als LETZTES Kind des Blocks. Deshalb endet jeder Block
+    /// <c>.epos-einlesen</c> mit seiner Leiste. Die Lage misst die Fensterprobe (Fall
+    /// „klimaimport“).
+    /// </summary>
+    [Fact]
+    public void Die_Schlussleiste_des_Einlesens_haftet_am_Boden_der_Ueberlagerung()
+    {
+        string fuss = Regelblock(".epos-ueberlagerung-inhalt > .epos-einlesen > .epos-leiste:last-child {");
+        Assert.Contains("position: sticky;", fuss);
+        Assert.Contains("bottom: calc(-1 * var(--epos-karte-rand));", fuss);
+        Assert.Contains("margin-bottom: calc(-1 * var(--epos-karte-rand));", fuss);
+        Assert.Contains("background: var(--epos-karte-flaeche);", fuss);
+        Assert.Contains("border-top: 1px solid var(--epos-rahmen-leise);", fuss);
+        Assert.InRange(ZIndex(fuss), 1, 39);
+
+        var bloecke = new List<string>();
+        var ohneLeiste = new List<string>();
+        foreach (string datei in Directory.EnumerateFiles(Path.Combine(Wurzel(), "EPOS.UI"), "*.razor", SearchOption.AllDirectories)
+                     .Where(p => !p.Replace('\\', '/').Contains("/obj/", StringComparison.Ordinal)))
+        {
+            string markup = Markup(File.ReadAllText(datei));
+            foreach (Match m in Regex.Matches(markup, @"<div class=""epos-einlesen\b"))
+            {
+                string name = Path.GetRelativePath(Wurzel(), datei);
+                bloecke.Add(name);
+                // Der Block reicht bis zum Ende der Ueberlagerung (ein Formularraster darin hat
+                // einen eigenen KindInhalt).
+                int ende = markup.IndexOf("</Ueberlagerung>", m.Index, StringComparison.Ordinal);
+                string block = ende > 0 ? markup[m.Index..ende] : "";
+                if (!Regex.IsMatch(block, @"<div class=""epos-leiste"">(?:(?!<div\b).)*?</div>\s*</div>\s*\}?\s*</KindInhalt>\s*$", RegexOptions.Singleline))
+                    ohneLeiste.Add(name);
+            }
+        }
+
+        Assert.True(bloecke.Count >= 6, "nur " + bloecke.Count + " Bloecke .epos-einlesen gefunden");
+        Assert.Empty(ohneLeiste);
+    }
+
     // =====================================================================
     //  4 - Die Fensterdialoge
     // =====================================================================
