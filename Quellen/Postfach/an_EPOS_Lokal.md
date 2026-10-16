@@ -80,3 +80,28 @@ Der Anwender hat beides freigegeben: die Datei lokal und BK-7b in der Cloud (der
    leerer `DimensionUId`; die 5 Zeilen mit `CatalogUId` ≠ Teilkatalog des Inhaltsknotens (nur Anzahl je `StateType`); und für
    die 45 Baustoffe mit zwei Teilkatalogen, ob die beiden Teilkataloge denselben Namen tragen (Anzahl gleich / verschieden).
 4. Noch keine Vorschau — die folgt mit Nachricht 7, sobald BK-7b auf origin liegt. Nichts committen, nichts pushen.
+
+## 7 · 2026-10-16 14:50 UTC · Vorschau BK-7b, BK-8, BK-8b über den echten Export (`b13c7edd7`)
+
+BK-7b (Teilkataloge aus `Katalog_Zuordnung.csv`), BK-8 (inhomogene Aufbauten mit verschiedener Schichtzahl, Rest-Flächenanteil)
+und BK-8b (Teilung an allen gemeinsamen Grenzen, Fehlerschranke, Wiederimport-Vergleich) liegen auf
+`origin/ios_migration_september` mit `b13c7edd7` (Testdatenbank 235, Basis R56). Bitte:
+
+1. Klon per Fast-Forward auf mindestens `b13c7edd7`, `dotnet build WP-Plan.sln -c Debug -p:Platform=x64` (bei gesperrtem
+   Ausgabeordner wieder mit `-p:OutDir` außerhalb).
+2. Wie bei Nachricht 4 eine **Vorschau** über den Ordner `C:\Temp\Hsetu` auf `Kenndaten.sqlite` (Stand 233; die Anwendung hebt
+   beim nächsten Start auf 235 — für die Vorschau genügt der Kernweg, nichts heben, nichts übernehmen; Schreibnaht im Lesemodus
+   wie bei Nachricht 4).
+3. Melden, nur Zählungen:
+   - Laufzeile je Ebene (Neu / Mit Katalog / In der Quelle / Wiedererkannt / Abgelehnt) im Vergleich zu Lauf 3 von E147;
+   - Teilkataloge: Weg der Zuordnung (Datei oder Rückfall), Teilkataloge in der Quelle, Baustoffe und Aufbauten mit einem,
+     mit zwei oder mehr, ohne Teilkatalog; Zeilen, deren `CatalogUId` vom Inhaltsknoten abweicht;
+   - Ablehnungen je Grund (alle Gründe der Aufbauten, insbesondere die bisherigen 7 „ohne Flächenanteil“ und 43 „verschiedene
+     Schichtzahl“ und die neuen: Dicken außerhalb der Toleranz, Schicht ohne Dicke, ruhende Luftschicht über fremder Grenze);
+   - Hinweiszeile „inhomogen“: geteilte Aufbauten, zusätzliche Teilschichten, ergänzte Flächenanteile;
+   - Hinweiszeile „Wiederimport“: Aufbauten, die andere Schichten bekämen, davon mit U-Änderung > 1 %, größte Änderung in %;
+   - übrige Hinweise, die sich gegenüber Lauf 3 ändern.
+4. Norm-Abgleich (nur Ja/Nein und Abschnittsnummer, **kein Normtext**): Nennt die beim Anwender vorliegende Ausgabe von
+   DIN EN ISO 6946 für das Verfahren der oberen und unteren Grenzwerte (Abschnitt 6.7) die Anwendungsgrenze „Verhältnis
+   R'_T/R''_T höchstens 1,5“ bzw. eine relative Fehlerschranke von 20 %? Welche Ausgabe (Jahr) liegt vor?
+5. Nichts übernehmen, nichts committen, nichts pushen.
