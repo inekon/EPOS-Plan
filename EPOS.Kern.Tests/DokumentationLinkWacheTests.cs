@@ -235,6 +235,9 @@ namespace EPOS.Kern.Tests
         /// <summary>Der eine Ort aller HTML-Mockups.</summary>
         private const string Mockupordner = "Dokumentation/aktuell/Mockups";
 
+        /// <summary>Der zweite erlaubte Ort: Mockups überholter Konzepte.</summary>
+        private const string MockupordnerAlt = "Dokumentation/ueberholt/Mockups";
+
         /// <summary>
         /// Eine Code-Spanne, die einen Mockup-Pfad trägt: <c>`…Mockups/&lt;name&gt;.html…`</c>.
         /// Der Bestand nennt die Mockups NICHT als Markdown-Link, sondern in Backticks —
@@ -244,7 +247,7 @@ namespace EPOS.Kern.Tests
             new Regex(@"`([^`]*Mockups/[^`]*\.html[^`]*)`", RegexOptions.Compiled);
 
         /// <summary>
-        /// <b>Die Regel.</b> Alle HTML-Mockups liegen unter <c>Dokumentation/aktuell/Mockups/</c>;
+        /// <b>Die Regel.</b> Alle HTML-Mockups liegen unter <c>Dokumentation/aktuell/Mockups/</c> oder, wenn ihr Konzept überholt ist, unter <c>Dokumentation/ueberholt/Mockups/</c>;
         /// die Repowurzel führt keinen eigenen Ordner <c>Mockups/</c> mehr. Jede
         /// Code-Spanne mit einem Mockup-Pfad in <c>Dokumentation/aktuell/**/*.md</c>, im
         /// Index und in der Wurzel-<c>CLAUDE.md</c> trifft eine Datei DORT — gelesen vom
@@ -274,7 +277,7 @@ namespace EPOS.Kern.Tests
             }
 
             Assert.True(funde.Count == 0,
-                "Diese Mockup-Verweise treffen keine Datei unter " + Mockupordner + ". " +
+                "Diese Mockup-Verweise treffen keine Datei unter " + Mockupordner + " oder " + MockupordnerAlt + ". " +
                 "Wer ein Mockup bewegt, zieht seine Verweise im selben Schritt nach:\n" +
                 string.Join("\n", funde));
 
@@ -396,6 +399,7 @@ namespace EPOS.Kern.Tests
             Assert.True(TrifftMockup(wurzel, rechenweg, "../../Mockups/Dialog_Formel_Zahlenprobe.html#invest"));
             Assert.True(TrifftMockup(wurzel, wegweiser, "../Mockups/Dialog_Formel_Zahlenprobe.html"));
             Assert.True(TrifftMockup(wurzel, "CLAUDE.md", Mockupordner + "/Katalogfilter_Vorschlag.html"));
+            Assert.True(TrifftMockup(wurzel, "CLAUDE.md", MockupordnerAlt + "/Kaeltebedarfsprofil_Mockup.html"));
 
             Assert.False(TrifftMockup(wurzel, rechenweg, "../Mockups/Dialog_Formel_Zahlenprobe.html"));
             Assert.False(TrifftMockup(wurzel, wegweiser, "Mockups/Dialog_Formel_Zahlenprobe.html"));
@@ -480,15 +484,17 @@ namespace EPOS.Kern.Tests
 
             string pfad = ziel.Replace('/', Path.DirectorySeparatorChar);
             string ordner = Path.GetDirectoryName(Path.Combine(wurzel, datei.Replace('/', Path.DirectorySeparatorChar)));
-            string erlaubt = Path.GetFullPath(Path.Combine(wurzel, Mockupordner.Replace('/', Path.DirectorySeparatorChar)));
+            string[] erlaubt = new[] { Mockupordner, MockupordnerAlt }
+                .Select(o => Path.GetFullPath(Path.Combine(wurzel, o.Replace('/', Path.DirectorySeparatorChar))))
+                .ToArray();
 
             return ImMockupordner(Path.GetFullPath(Path.Combine(ordner, pfad)), erlaubt)
                 || ImMockupordner(Path.GetFullPath(Path.Combine(wurzel, pfad)), erlaubt);
         }
 
-        private static bool ImMockupordner(string voll, string erlaubt)
+        private static bool ImMockupordner(string voll, string[] erlaubt)
             => File.Exists(voll)
-               && string.Equals(Path.GetDirectoryName(voll), erlaubt, StringComparison.Ordinal);
+               && erlaubt.Contains(Path.GetDirectoryName(voll), StringComparer.Ordinal);
 
         /// <summary>Alle Markdown-Papiere unter <c>Dokumentation/</c>, repo-relativ.</summary>
         private static string[] Dokumentationspapiere()
