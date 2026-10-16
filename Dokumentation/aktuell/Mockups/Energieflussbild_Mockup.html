@@ -19,12 +19,12 @@
 
   LAYOUT: Die Datei rechnet das Bild selbst nach den Regeln des Konzepts (Abschnitt 2.5 und 3):
   sieben Spalten, Verlustknoten in der Lücke, Mindestband 2 px, Bänder als abgetastete
-  S-Kurven-Polygone (keine Bézierkurve — das Zeichenmodell des Kerns kennt keine), Werte am
-  Band erst ab 8 px, schmale Fassung ohne Bandwerte und mit Kurznamen.
+  S-Kurven-Polygone (keine Bézierkurve — das Zeichenmodell des Kerns kennt keine), Werte nur
+  im Zeigertext (SK-Q12), Knoten tragen am Bildschirm nur ihren Namen, schmale Fassung mit Kurznamen.
 
   BEDIENBAR: Umschalter „Tabelle | Grafik | Fluss“, Versionswahl (eine Version ist nicht
   simuliert), Zeiger über Band oder Knoten → Zeigerzeile, Tab-Taste über die Bänder,
-  Wertetabelle aufklappbar, unten die schmale Ansicht (680 px) derselben Version.
+  Werte nur im Zeigertext (Mouse-over, Tippen), verborgene Textalternative, unten die schmale Ansicht (680 px) derselben Version.
 -->
 <style>
 :root{
@@ -133,6 +133,7 @@ table.werte tr.offen td{background:var(--epos-warn-flaeche)}
 .beschr.wert{fill:#4A5769}
 .beschr.klein{font-size:10px}
 .spaltentitel{font-size:11px;fill:#4A5769;text-transform:uppercase;letter-spacing:.04em}
+.nur-leser{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .bandwert{font-size:10px;fill:#1f2a3a;pointer-events:none;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
 
 /* Schmale Ansicht: ein Rahmen in iPad-Breite */
@@ -148,7 +149,7 @@ table.werte tr.offen td{background:var(--epos-warn-flaeche)}
   <h1>Energieflussbild im Abschnitt „Ergebnisse – Energie“</h1>
   <p class="unterzeile">Dritte Stellung „Fluss“ neben Tabelle und Grafik: ein Sankey über Strom, Wärme und Kälte
     einer gewählten Version aus den Jahresaggregaten des gespeicherten Laufs. Bedienbar — Umschalter, Versionswahl,
-    Zeiger über Band oder Knoten, Tab-Taste über die Bänder, Wertetabelle. Zahlen gerundet aus dem Bilanzbefund, Namen neutral.</p>
+    Zeiger über Band oder Knoten, Tab-Taste über die Bänder, Werte im Zeigertext. Zahlen gerundet aus dem Bilanzbefund, Namen neutral.</p>
 
   <div class="raster">
     <div>
@@ -193,7 +194,7 @@ table.werte tr.offen td{background:var(--epos-warn-flaeche)}
 
       <!-- ===================== Schmale Ansicht (iPad, 700 px) ===================== -->
       <h2 style="font-size:17px;margin:8px 0 2px">Schmale Ansicht (Fenster unter 900 px, iPad rund 700 px)</h2>
-      <p class="unterzeile" style="margin-bottom:6px">Dasselbe Ergebnis als zweites Modell für 680 px: Kurznamen, Werte nur an Quellen und Senken, keine Werte am Band; die Wertetabelle bleibt vollständig. Das Stilblatt zeigt unter 900 px dieses Modell statt des breiten (SK-Q8).</p>
+      <p class="unterzeile" style="margin-bottom:6px">Dasselbe Ergebnis als zweites Modell für 680 px: Kurznamen, Werte wie in der breiten Fassung nur im Zeigertext. Das Stilblatt zeigt unter 900 px dieses Modell statt des breiten (SK-Q8).</p>
       <div class="schmal-rahmen" aria-label="Berichte & Kosten – Übersicht (schmal)">
         <div class="fenster-titel"><span>EPOS-Plan — Übersicht</span><span>700 px</span></div>
         <div class="inhalt">
@@ -225,7 +226,7 @@ table.werte tr.offen td{background:var(--epos-warn-flaeche)}
           <li><b>Umweltwärme</b> und <b>Umwelt (Kälte)</b> sind abgeleitet (Wärme − Strom bzw. Kälte − Strom); die Konvention steht im Zeigertext (SK-Q6).</li>
           <li><b>Einspeisung BHKW</b> ist am Stromknoten bilanziert (kein Aggregat im Ergebnisbaum, SK-Q1).</li>
           <li><b>nicht zugeordnet</b> (gestrichelt) in Variante 1: der Eigenverbrauch des Speichersystems, den der Ergebnisbaum nicht führt — Band plus Hinweiszeile (SK-Q5).</li>
-          <li>Ein Band unter 2 px wird 2 px breit gezeichnet; Werte am Band erst ab 8 px; alles steht in der Wertetabelle.</li>
+          <li>Ein Band unter 2 px wird 2 px breit gezeichnet; Zahlen stehen nicht im Bild, sondern im Zeigertext und im Reiter „Tabelle“.</li>
         </ul>
         <h2 style="margin-top:14px">Farbrollen</h2>
         <p>Vorhandene Rollen der Hauspalette und die fünf neuen des Konzepts:
@@ -415,12 +416,6 @@ function baue(version, breite, schmal){
     p.appendChild(el("title", {}, b.wert));
     svg.appendChild(p);
     b.el = p;
-    // Wert am Band nahe der Quelle, wo die Bänder noch in ihren Lagen liegen (keine Überdeckung
-    // durch kreuzende Bänder); erst ab 10 px Banddicke
-    if (!schmal && t >= 10 && Math.abs(x1 - x0) > 40) {
-      const xl = x0 + Math.max(28, 0.18 * (x1 - x0)), s = (xl - x0) / (x1 - x0), e = 3*s*s - 2*s*s*s;
-      svg.appendChild(el("text", {x: xl, y: yo0 + (yo1 - yo0) * e + t / 2 + 3.5, "text-anchor": "middle", class: "bandwert"}, fmt(b.mwh)));
-    }
   });
 
   // Knoten und Beschriftung
@@ -429,18 +424,16 @@ function baue(version, breite, schmal){
     const wert = kk.verlust ? `Verlust ${kn[kk.quelle].name}: ${fmt(kk.inS)} MWh/a`
                : `${kk.name}: Zufluss ${fmt(kk.inS || kk.outS)} · Abfluss ${fmt(kk.outS || kk.inS)} MWh/a`;
     r.setAttribute("data-wert", wert); r.appendChild(el("title", {}, wert)); svg.appendChild(r);
-    const name = schmal ? kk.kurz : kk.name, v = fmt(Math.max(kk.inS, kk.outS));
+    const name = schmal ? kk.kurz : kk.name;
     if (kk.verlust) {
       // unter dem Verlustknoten, damit die Beschriftung der Senken frei bleibt
-      svg.appendChild(el("text", {x: kk.x + knotenB / 2, y: kk.y + kk.h + 11, "text-anchor": "middle", class: "beschr klein"}, "Verlust " + v));
+      svg.appendChild(el("text", {x: kk.x + knotenB / 2, y: kk.y + kk.h + 11, "text-anchor": "middle", class: "beschr klein"}, "Verlust"));
     } else if (kk.sp === 0) {
       svg.appendChild(el("text", {x: kk.x - 6, y: kk.y + kk.h / 2 - 1, "text-anchor": "end", class: "beschr"}, name));
-      svg.appendChild(el("text", {x: kk.x - 6, y: kk.y + kk.h / 2 + 11, "text-anchor": "end", class: "beschr wert"}, v + " MWh/a"));
     } else if (kk.sp === 6) {
       svg.appendChild(el("text", {x: kk.x + knotenB + 6, y: kk.y + kk.h / 2 - 1, class: "beschr"}, name));
-      svg.appendChild(el("text", {x: kk.x + knotenB + 6, y: kk.y + kk.h / 2 + 11, class: "beschr wert"}, v + " MWh/a"));
     } else if (kk.h >= 12 || kk.bus) {
-      svg.appendChild(el("text", {x: kk.x + knotenB / 2, y: kk.y - 5, "text-anchor": "middle", class: "beschr" + (schmal ? " klein" : "")}, name + (schmal ? "" : " · " + v)));
+      svg.appendChild(el("text", {x: kk.x + knotenB / 2, y: kk.y - 5, "text-anchor": "middle", class: "beschr" + (schmal ? " klein" : "")}, name));
     }
   });
   return {svg, bänder, kn};
@@ -456,22 +449,24 @@ function zeichne(ziel, version, breite, schmal){
   const {svg, bänder, kn} = baue(version, breite, schmal);
   const bild = document.createElement("div"); bild.className = "fluss-bild"; bild.appendChild(svg);
   const zeile = document.createElement("div"); zeile.className = "zeigerzeile"; zeile.setAttribute("aria-live", "polite");
-  const ruhe = "Zeiger über ein Band oder einen Knoten führen — die Zeile nennt Von, Nach, Wert und Herkunft.";
+  const ruhe = "Zeiger über ein Band oder einen Knoten führen (am Tablet tippen) — die Zeile nennt Von → Nach, MWh/a, Anteil und Herkunft.";
   zeile.textContent = ruhe; bild.appendChild(zeile); ziel.appendChild(bild);
   svg.querySelectorAll("[data-wert]").forEach(e => {
     const an = () => { zeile.textContent = e.getAttribute("data-wert"); e.classList.add("aktiv"); };
     const aus = () => { zeile.textContent = ruhe; e.classList.remove("aktiv"); };
     e.addEventListener("mouseenter", an); e.addEventListener("focus", an);
     e.addEventListener("mouseleave", aus); e.addEventListener("blur", aus);
+    e.addEventListener("click", an);
   });
   version.hinweise.forEach(h => { const p = document.createElement("p"); p.className = h.includes("schließt nicht") ? "hinweiszeile" : "leisezeile"; p.textContent = h; ziel.appendChild(p); });
   const q = document.createElement("p"); q.className = "leisezeile";
   q.textContent = "Umweltwärme und Umwelt (Kälte) sind Nutzenergie-Konvention (Wärme − Strom bzw. Kälte − Strom). Werte aus dem letzten gespeicherten Simulationslauf; Kosten stehen unter Wirtschaftlichkeit.";
   ziel.appendChild(q);
 
-  // Wertetabelle (Textalternative; in der Anwendung als Klappgruppe, Vorgabe zu — hier offen zur Abnahme)
-  const det = document.createElement("details"); det.className = "klapp"; det.open = !schmal;
-  det.innerHTML = `<summary>Werte des Flussbilds (${bänder.length} Flüsse)</summary>`;
+  // Textalternative für Bildschirmleser: visuell verborgen, per aria-describedby am Bild (die Werte
+  // stehen am Bildschirm im Zeigertext und im Reiter „Tabelle“, nicht unter dem Bild)
+  const det = document.createElement("div"); det.className = "nur-leser"; det.id = "fluss-alt-" + (schmal ? "schmal" : "breit");
+  svg.setAttribute("aria-describedby", det.id);
   const t = document.createElement("table"); t.className = "werte";
   t.innerHTML = `<thead><tr><th>Von</th><th>Nach</th><th class="zahl">MWh/a</th><th class="zahl">Anteil</th><th>Herkunft</th></tr></thead>`;
   const tb = document.createElement("tbody");

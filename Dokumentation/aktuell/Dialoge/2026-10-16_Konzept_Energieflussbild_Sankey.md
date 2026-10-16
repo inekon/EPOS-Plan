@@ -22,7 +22,7 @@ und Schritte fest. Kein Produktcode ist Teil dieses Auftrags.
 festgelegt (Abschnitte 6 und 9); dieses Papier nimmt sie als gegeben. Die Kennzahlen des
 Abschnitts und ihre Gruppen stehen im Kern (`Energievergleich`, `KennzahlenKatalog`) und bleiben
 unverändert. Mockup: `Dokumentation/aktuell/Mockups/Energieflussbild_Mockup.html` (Umschalter,
-Versionswahl, Bild mit Strom, Wärme und Kälte, Speicher mit Verlustband, Zeigertext, Wertetabelle,
+Versionswahl, Bild mit Strom, Wärme und Kälte, Speicher mit Verlustband, Zeigertext, verborgene Textalternative,
 schmale Ansicht). Ist das Bild umgesetzt, wandert dieses Papier nach `ueberholt/`; der gültige
 Stand steht dann im Code, in der Wiki-Quelle „Varianten“ und im Konzept Diagramme (Abschnitt 9,
 Farbrollen).
@@ -160,7 +160,7 @@ Alle vier Kälteprojekte schließen auf ≤ 0,001 MWh. Der Strom der Kälte lieg
 | Strom → Einspeisung BHKW | **bilanziert** | Rest am Stromknoten, wenn ein BHKW rechnet und 0 ≤ Rest ≤ BHKW-Strom (Abschnitt 2.4) |
 | Strom → Eigenverbrauch Speichersystem | **fehlt** | nur im Lauf; erscheint als „nicht zugeordnet“ (1046: 0,6 %) |
 | Strom → PV-Abregelung | **fehlt** | nur im Lauf; mit Einspeisegrenze erscheint der Betrag als „nicht zugeordnet“ |
-| Solarthermie: nicht nutzbarer Überschuss | nicht gezeichnet | `Solarthermie.Ueberschuss` nur in Zeigertext und Wertetabelle (SK-Q3) |
+| Solarthermie: nicht nutzbarer Überschuss | nicht gezeichnet | `Solarthermie.Ueberschuss` nur in Zeigertext und Textalternative (SK-Q3) |
 
 ### 1.7 Folgerung
 
@@ -246,7 +246,7 @@ Rest innerhalb der Toleranz wird nicht gezeichnet, der Knoten nimmt die Zuflussh
 
 Ungedeckter Wärme- oder Kältebedarf (`Waermerestbedarf`, `Kaelterestbedarf`) ist kein
 Bilanzfehler, sondern ein Band „ungedeckt“ (Rolle `REST`) aus der Quellenspalte in die Senke —
-nur, wenn es die Mindestbandbreite erreicht; sonst nennt es die Wertetabelle (SK-Q2).
+nur, wenn es die Mindestbandbreite erreicht; sonst nennt es der Reiter „Tabelle“ (SK-Q2).
 
 ### 2.5 Kleine Flüsse, Mindestbandbreite, Bündelung
 
@@ -254,10 +254,10 @@ nur, wenn es die Mindestbandbreite erreicht; sonst nennt es die Wertetabelle (SK
   unter **2 px** wird 2 px breit gezeichnet und zählt mit 2 px in die Knotenhöhe (die Zahl steht
   im Zeigertext).
 - Ein Band unter **8 px** trägt keine Wertbeschriftung; ein Knoten unter 12 px keine Beschriftung
-  im Bild (beide stehen in der Wertetabelle).
+  im Bild (beide stehen im Reiter „Tabelle“).
 - **Bündelung:** Quellknoten (Brennstoffträger, Split-Zeilen, Pufferspeicher), deren Summe unter
   1 % des zugehörigen Busses liegt und von denen es mehr als drei gibt, werden zu „weitere
-  (n)“ gebündelt; die Wertetabelle führt sie einzeln. Ein einzelner kleiner Knoten bleibt stehen.
+  (n)“ gebündelt; der Reiter „Tabelle“ führt sie einzeln. Ein einzelner kleiner Knoten bleibt stehen.
 - Ein Fluss von 0 erscheint nicht; eine Version ohne Wärme, Strom oder Kälte lässt den Bus weg.
 
 ---
@@ -292,11 +292,12 @@ Verlustknoten (Spalte + ½) mit derselben Kurve. Knoten sind `Rechteck` in `KNOT
 
 ### 3.3 Beschriftung, Zeiger, Marken
 
-- Quellen beschriften links des Knotens, Senken rechts, innere Spalten über dem Knoten
-  (Name, darunter der Wert „56,3 MWh/a“), 11 pt / schmal 10 pt; ein Wert am Band nur ab 8 px
-  Bandhöhe, in der Bandmitte in `TEXT`.
-- Schmal: Namen in Kurzform (`EnergieflussKnoten.Kurzname`, Ressource), Werte nur an Quellen
-  und Senken, keine Werte am Band; die Wertetabelle bleibt vollständig.
+- Quellen beschriften links des Knotens, Senken rechts, innere Spalten über dem Knoten,
+  11 pt / schmal 10 pt. **Am Bildschirm tragen Knoten nur ihren Namen, Bänder keine Zahlen**
+  (SK-Q12); die Werte erscheinen im Zeigertext. Im Word-Bericht (kein Überfahren) trägt jeder
+  Knoten unter dem Namen seine Jahressumme „56,3 MWh/a“; Bänder bleiben ohne Zahlen.
+- Schmal: Namen in Kurzform (`EnergieflussKnoten.Kurzname`, Ressource); die Werte stehen auch
+  hier nur im Zeigertext, der Reiter „Tabelle“ bleibt vollständig.
 - Jedes Band trägt `Marke = "fluss:<von>:<nach>"` und `Wert = "<Von> → <Nach>: 38,4 MWh/a
   (71 % des Wärmebedarfs)"`; ein bilanziertes Band ergänzt „· bilanziert“, ein abgeleitetes
   „· abgeleitet: Wärme − Strom“. Jeder Knoten trägt `Marke = "knoten:<id>"` und `Wert =
@@ -361,7 +362,7 @@ im Kopf, seine Einstellung bleibt für Tabelle und Grafik gültig.
 
 - `EPOS.UI/Seiten/Berichte/UebersichtErgebnisFluss.razor` — zeichnet Versionswahl, `DiagrammSvg`
   (`Modell`, `Kennung = "ergebnis-fluss-<idProjekt>-<breit|schmal>"`, `OhneZoom="true"`,
-  `LegendeSchaltbar="false"`), die Wertetabelle, die Hinweiszeile und die Quelle.
+  `LegendeSchaltbar="false"`), die verborgene Textalternative, die Hinweiszeile und die Quelle.
 - `UebersichtErgebnisFlussDaten.cs` — DTO `ErgebnisFlussStand` (Version, Zeichenmodell breit und
   schmal, Flussliste `ErgebnisFlussZeile(Von, Nach, Wert, Anteil, Herkunft)`, Hinweise,
   `NichtSimuliert`); die Komponente kennt keine Kernfachklasse außer dem Zeichenmodell (wie die
@@ -381,12 +382,13 @@ im Kopf, seine Einstellung bleibt für Tabelle und Grafik gültig.
 
 ### 4.4 Textalternative, Zeigerzeile, Hinweise
 
-- Die **Wertetabelle** unter dem Bild (zugeklappt als `Klappgruppe` „Werte des Flussbilds“,
-  Vorgabe zu): Spalten Von · Nach · MWh/a · Anteil · Herkunft; sie führt auch gebündelte und
-  nicht beschriftete Flüsse, den Solarüberschuss, die Füllstandsänderung je Speicher und die
-  Bilanz je Knoten (Zufluss, Abfluss, Rest). Mit `aria-describedby` am Bild.
-- Die **Zeigerzeile** des Bausteins nennt beim Überfahren Band oder Knoten (Abschnitt 3.3); auf
-  Berührgeräten ein Tipp.
+- **Keine sichtbare Wertetabelle unter dem Bild** (SK-Q12): Die Werte stehen im Reiter
+  „Tabelle“. Für Bildschirmleser trägt das Bild eine **visuell verborgene Textalternative**
+  (`aria-describedby`, wie bei der Grafik der Versionsbalken) mit Von · Nach · MWh/a · Anteil
+  · Herkunft, auch zu gebündelten und nicht beschrifteten Flüssen, zum Solarüberschuss, zur
+  Füllstandsänderung je Speicher und zur Bilanz je Knoten (Zufluss, Abfluss, Rest).
+- Die **Zeigerzeile** des Bausteins zeigt die Werte beim Überfahren von Band oder Knoten
+  (Abschnitt 3.3: Von → Nach, MWh/a, Anteil); auf Berührgeräten beim Tippen.
 - **Hinweise** als leise Zeilen unter dem Bild: nicht geschlossene Knoten (2.4), gebündelte
   Knoten („3 Träger gebündelt“), die Konvention Umweltanteil, die Quelle („Werte aus dem letzten
   gespeicherten Simulationslauf“).
@@ -406,7 +408,8 @@ Versionswahl ist ein Anzeigezustand, kein Einstellwert der Seite (kein Feld in d
 
 - `Berichtsbilder.Energiefluss(VariantenDaten v, Bildmass? mass)` in `Berichtsbilder.Ergebnis.cs`:
   `Energiefluss.Aus(v, BerichtTexte.Englisch)` → `ChartRenderer.EnergieflussModell`; `null` ohne
-  Ergebnis oder ohne Fluss.
+  Ergebnis oder ohne Fluss. Knoten tragen ihre Jahressumme in MWh/a, Bänder keine Zahlen
+  (SK-Q12).
 - **Vorlagenfeld** `stand.bild.energiefluss` (Kontext Stand, `Vorlagenbedarf.Keiner` — das Bild
   braucht keine Zeitreihen) und Schalter `hat.bild.energiefluss`, beide `Seit =
   FASSUNG_ENERGIEFLUSS = 25`; `Vorlagenfeldkatalog.KATALOGFASSUNG` auf **25**;
@@ -435,7 +438,7 @@ Versionswahl ist ein Anzeigezustand, kein Einstellwert der Seite (kein Feld in d
 | Kern | `VorlagenfeldkatalogWacheTests`, `VorlagenprueferTests` | Fassung 25, Platzhalter und Schalter, Excel „nur Word“ |
 | Kern | `EnergieflussBerichtTests` (neu), `WordBaukastenTests` | Bild im Baustein, Bild aus Platzhalter, ohne Ergebnis kein Bild mit Grund, Excel „nur Word“ |
 | UI | `UebersichtErgebnisseTests` | drei Stellungen, Tastatur über drei, Ablage „fluss“, unbekannter Wert → Tabelle, KI-Text mit Flussblock |
-| UI | `UebersichtErgebnisFlussTests` (neu) | Versionswahl mit Vorgabe Stamm, Wechsel lädt neu, nicht simulierte Version benannt ohne Bild, Wertetabelle vollständig, Hinweiszeilen, zwei `DiagrammSvg` mit verschiedenen Kennungen, ohne Gaben nichts |
+| UI | `UebersichtErgebnisFlussTests` (neu) | Versionswahl mit Vorgabe Stamm, Wechsel lädt neu, nicht simulierte Version benannt ohne Bild, Textalternative vollständig und verborgen, keine sichtbare Wertetabelle, Hinweiszeilen, zwei `DiagrammSvg` mit verschiedenen Kennungen, ohne Gaben nichts |
 | UI | `StilblattTests` | neue Regeln, Medienregel 900 px, kein Nesting |
 | Proben | `Proben/ChartProben/Program.Energiefluss.cs` (neu) | Maßproben `energiefluss`, `energiefluss_schmal`, `energiefluss_kaelte_split`; Gegenproben `energiefluss_speicher_wirkt` (mit/ohne Puffer), `energiefluss_rest_wirkt` (geschlossen/nicht zugeordnet), `energiefluss_schmal_wirkt` (breit/schmal); `svg_energiefluss` (Knotenzahl, `data-wert` an Bändern); neue Zeilen in einer neuen `Messlatte_<Datum>.sha256` (die alten Zeilen bleiben unverändert) |
 | Browser | `Proben/Rasterprobe/diagrammprobe.mjs` | unverändert, weil `DiagrammSvg` nicht angefasst wird; ein neuer Fall `fluss` misst, dass die Zeigerzeile beim Überfahren eines Bandes den `data-wert` zeigt und die schmale Fassung bei 700 px ohne Querrollen steht — **vor der Abnahme von SK-3 ziehen** |
@@ -447,7 +450,7 @@ Versionswahl ist ein Anzeigezustand, kein Einstellwert der Seite (kein Feld in d
 
 - Wiki-Quelle `Projekte/Wiki/Programm Dokumentation - Varianten.wiki`, Abschnitt „Tabelle oder
   Grafik“ wird „Tabelle, Grafik oder Fluss“: ein Absatz zum Bild (Version wählen, Busse, Speicher
-  mit Verlust, Umweltanteil als Konvention, bilanzierte Einspeisung, Wertetabelle, nicht
+  mit Verlust, Umweltanteil als Konvention, bilanzierte Einspeisung, Textalternative, nicht
   simulierte Version). Keine Hersteller- oder Produktnamen; Beispiele neutral.
 - Wiki-Quelle des Berichts (Platzhalterliste): `stand.bild.energiefluss`.
 - Logbuch-Entwurf (Versionsnummer beim Anwender erfragen): „Seit <Version> zeigt der Abschnitt
@@ -466,7 +469,7 @@ dem Merge. Kein Schemaschritt (Abschnitt 1.7).
 |---|---|---|
 | **SK-1** Flussmodell im Kern | `Energiefluss.cs` (Knoten, Flüsse, Bilanz, Bündelung, Herkunft, Zeigertexte), `EnergieflussCtrl`, Ressourcen der Knotennamen samt Kurznamen in beiden Sprachen, `designer_neu.py` | `EnergieflussTests`, `EnergieflussReferenzprojektWacheTests` (1018, 1046, 1058, 1063) grün |
 | **SK-2** Renderer | `ChartRenderer.Energiefluss.cs` (Layout, S-Kurven-Polygone, Verlustknoten, breit/schmal, Marken/Werte), fünf Farbrollen in `Farbpalette`, `Diagrammfarben` und Einstellungsdialog (Ressourcen), `Program.Energiefluss.cs` der ChartProben samt neuer Messlatte | `EnergieflussModellTests`, `ChartRendererRollenTests`, ChartProben 0 Verstöße, Messlatte alte Zeilen unverändert |
-| **SK-3** Oberfläche | dritte Stellung, `UebersichtErgebnisFluss.razor` + Daten, Hülle `FlussLaden`, Stilblatt, Versionswahl, Wertetabelle, Hinweise, KI-Text, Wiki-Quelle „Varianten“ | `UebersichtErgebnisseTests`, `UebersichtErgebnisFlussTests`, `StilblattTests`, `KiMaskenabdeckungWacheTests`, `WikiProduktdatenWacheTests`; Windows-Schale mit `EnableWindowsTargeting=true` gebaut (keine Hülle der Schale betroffen, Nachweis trotzdem); `diagrammprobe.mjs` Fall `fluss` |
+| **SK-3** Oberfläche | dritte Stellung, `UebersichtErgebnisFluss.razor` + Daten, Hülle `FlussLaden`, Stilblatt, Versionswahl, Textalternative verborgen, Hinweise, KI-Text, Wiki-Quelle „Varianten“ | `UebersichtErgebnisseTests`, `UebersichtErgebnisFlussTests`, `StilblattTests`, `KiMaskenabdeckungWacheTests`, `WikiProduktdatenWacheTests`; Windows-Schale mit `EnableWindowsTargeting=true` gebaut (keine Hülle der Schale betroffen, Nachweis trotzdem); `diagrammprobe.mjs` Fall `fluss` |
 | **SK-4** Bericht | `Berichtsbilder.Energiefluss`, Vorlagenfeld und Schalter, Katalogfassung 25 mit Messlatte v25, Baustein „Ergebnisse je Variante“, Wiki-Quelle Bericht | `VorlagenfeldkatalogWacheTests`, `VorlagenprueferTests`, `WordBaukastenTests`, Wortbericht eines Referenzprojekts mit Bild (Sichtprobe) |
 | **SK-5** Abschluss | Statuszeile, Protokoll unter `ueberholt/Protokolle/`, Logbuch-Entwurf, Konzept Diagramme Abschnitt 9 um die fünf Rollen ergänzt, dieses Papier nach `ueberholt/` mit Indexzeile | `DokumentationLinkWacheTests`, `RepositoryOrdnungWacheTests` |
 
@@ -500,17 +503,18 @@ Standby und Abregelung will.
 
 | Kennung | Frage | Empfehlung |
 |---|---|---|
-| **SK-Q1** | BHKW-Einspeisung, Standby und PV-Abregelung: (a) am Stromknoten bilanzieren bzw. als „nicht zugeordnet“ zeigen, kein Schemaschritt; (b) drei Ergebnisspalten (Schemaschritt 239) mit neuer Basis R58 | **(a).** Die Bilanz ist im Lauf geschlossen, der Rest exakt bis auf Rundung; (b) kostet Schemaschritt, Basis und Referenzvergleich für 0,6 % eines Projekts. (b) bleibt vorgemerkt. |
-| **SK-Q2** | Ungedeckter Bedarf: (a) Band „ungedeckt“ aus der Quellenspalte in die Senke; (b) nur Wertetabelle und Hinweis | **(a) ab Mindestbandbreite, sonst (b).** Ein Senkenknoten, der kleiner ist als der Bedarf, täuscht sonst eine vollständige Deckung vor. |
-| **SK-Q3** | Solarüberschuss (nicht abgenommene Kollektorwärme): (a) nicht zeichnen, nur Zeigertext und Tabelle; (b) als Band Solarthermie → „nicht nutzbar“ | **(a).** Der Überschuss ist Potenzial, keine Energie im System; als Band verdoppelte er die Solarquelle (1049: 21 gegen 7,8 MWh) und verzerrte den Maßstab. |
-| **SK-Q4** | Brennwertkessel mit Nutzungsgrad über 100 % (Heizwert): (a) Zufluss „Kondensationswärme“ = Wärme − Brennstoff, Verlust 0; (b) Brennstoff im Bild in Brennwert (Hs) | **(a).** Der Katalog und die Trägerzeilen rechnen in Heizwert; (b) widerspräche der Tabelle darüber. Das Band ist klein und benannt. |
-| **SK-Q5** | Nicht geschlossener Knoten: (a) benanntes Band „nicht zugeordnet“ plus Hinweiszeile; (b) nur Hinweiszeile, Knoten auf Zuflusshöhe | **(a).** Ein sichtbar offener Knoten wird als Fehler gelesen; das Band sagt, wie viel fehlt. |
-| **SK-Q6** | Kälte: (a) Nutzenergie-Konvention mit Zufluss „Umwelt (Kälte)“ = Kälte − Strom, spiegelbildlich zur Wärmepumpe; (b) physikalische Sicht mit Senke „Abwärme an Umgebung“ = Kälte + Strom und Kälte als Zufluss aus dem Gebäude | **(a).** Die Senke „Kühlung“ bleibt ein Bedarf wie Heizung; (b) ließe die Kälte als Quelle erscheinen. Die Konvention steht im Zeigertext und in der Wiki-Quelle. |
-| **SK-Q7** | Verluste: (a) Verlustknoten in der Lücke neben dem Wandler bzw. Speicher; (b) Sammelsenke „Verluste“ rechts | **(a).** Keine Bänder, die die Busse kreuzen; der Verlust steht dort, wo er entsteht. |
-| **SK-Q8** | Schmale Ansicht: (a) zwei Modelle (breit 1 180 px, schmal 680 px), Stilblatt wählt unter 900 px; (b) ein Modell, Browser skaliert | **(a).** Bei (b) wäre die Schrift auf dem iPad rund 6 px; (a) braucht kein JS. |
-| **SK-Q9** | Speicher: (a) Füllstandsänderung im Verlustband, aufgeschlüsselt im Zeigertext, eigenes Band erst ab 1 % der Ladung; (b) immer eigenes Band | **(a).** Die Füllstandsänderung ist in allen Referenzprojekten unter 0,3 % der Ladung; ein eigenes Band wäre fast immer 2 px. |
-| **SK-Q10** | Bericht: (a) Bild im Baustein „Ergebnisse je Variante“ nach der Kennzahlentafel, 620 × 310 pt; (b) eigener Baustein „Energiefluss“ | **(a).** Das Bild gehört zu den Ergebnissen der Variante; ein eigener Baustein brächte nur eine weitere Kapitelwahl. |
-| **SK-Q11** | Versionswahl: (a) Versionen der Vergleichswahl (Stamm und „Im Vergleich“); (b) alle Versionen der Gruppe | **(a).** Dieselben Versionen wie Tabelle und Grafik; eine Version, die nicht im Vergleich ist, nimmt der Anwender über die Vergleichswahl hinzu. |
+| **SK-Q1** | BHKW-Einspeisung, Standby und PV-Abregelung: (a) am Stromknoten bilanzieren bzw. als „nicht zugeordnet“ zeigen, kein Schemaschritt; (b) drei Ergebnisspalten (Schemaschritt 239) mit neuer Basis R58 | **(a).** Die Bilanz ist im Lauf geschlossen, der Rest exakt bis auf Rundung; (b) kostet Schemaschritt, Basis und Referenzvergleich für 0,6 % eines Projekts. (b) bleibt vorgemerkt. — *entschieden 16.10.2026 nach Empfehlung* |
+| **SK-Q2** | Ungedeckter Bedarf: (a) Band „ungedeckt“ aus der Quellenspalte in die Senke; (b) nur Zeigertext und Hinweis | **(a) ab Mindestbandbreite, sonst (b).** Ein Senkenknoten, der kleiner ist als der Bedarf, täuscht sonst eine vollständige Deckung vor. — *entschieden 16.10.2026 nach Empfehlung* |
+| **SK-Q3** | Solarüberschuss (nicht abgenommene Kollektorwärme): (a) nicht zeichnen, nur Zeigertext und Tabelle; (b) als Band Solarthermie → „nicht nutzbar“ | **(a).** Der Überschuss ist Potenzial, keine Energie im System; als Band verdoppelte er die Solarquelle (1049: 21 gegen 7,8 MWh) und verzerrte den Maßstab. — *entschieden 16.10.2026 nach Empfehlung* |
+| **SK-Q4** | Brennwertkessel mit Nutzungsgrad über 100 % (Heizwert): (a) Zufluss „Kondensationswärme“ = Wärme − Brennstoff, Verlust 0; (b) Brennstoff im Bild in Brennwert (Hs) | **(a).** Der Katalog und die Trägerzeilen rechnen in Heizwert; (b) widerspräche der Tabelle darüber. Das Band ist klein und benannt. — *entschieden 16.10.2026 nach Empfehlung* |
+| **SK-Q5** | Nicht geschlossener Knoten: (a) benanntes Band „nicht zugeordnet“ plus Hinweiszeile; (b) nur Hinweiszeile, Knoten auf Zuflusshöhe | **(a).** Ein sichtbar offener Knoten wird als Fehler gelesen; das Band sagt, wie viel fehlt. — *entschieden 16.10.2026 nach Empfehlung* |
+| **SK-Q6** | Kälte: (a) Nutzenergie-Konvention mit Zufluss „Umwelt (Kälte)“ = Kälte − Strom, spiegelbildlich zur Wärmepumpe; (b) physikalische Sicht mit Senke „Abwärme an Umgebung“ = Kälte + Strom und Kälte als Zufluss aus dem Gebäude | **(a).** Die Senke „Kühlung“ bleibt ein Bedarf wie Heizung; (b) ließe die Kälte als Quelle erscheinen. Die Konvention steht im Zeigertext und in der Wiki-Quelle. — *entschieden 16.10.2026 nach Empfehlung* |
+| **SK-Q7** | Verluste: (a) Verlustknoten in der Lücke neben dem Wandler bzw. Speicher; (b) Sammelsenke „Verluste“ rechts | **(a).** Keine Bänder, die die Busse kreuzen; der Verlust steht dort, wo er entsteht. — *entschieden 16.10.2026 nach Empfehlung* |
+| **SK-Q8** | Schmale Ansicht: (a) zwei Modelle (breit 1 180 px, schmal 680 px), Stilblatt wählt unter 900 px; (b) ein Modell, Browser skaliert | **(a).** Bei (b) wäre die Schrift auf dem iPad rund 6 px; (a) braucht kein JS. — *entschieden 16.10.2026 nach Empfehlung* |
+| **SK-Q9** | Speicher: (a) Füllstandsänderung im Verlustband, aufgeschlüsselt im Zeigertext, eigenes Band erst ab 1 % der Ladung; (b) immer eigenes Band | **(a).** Die Füllstandsänderung ist in allen Referenzprojekten unter 0,3 % der Ladung; ein eigenes Band wäre fast immer 2 px. — *entschieden 16.10.2026 nach Empfehlung* |
+| **SK-Q10** | Bericht: (a) Bild im Baustein „Ergebnisse je Variante“ nach der Kennzahlentafel, 620 × 310 pt; (b) eigener Baustein „Energiefluss“ | **(a).** Das Bild gehört zu den Ergebnissen der Variante; ein eigener Baustein brächte nur eine weitere Kapitelwahl. — *entschieden 16.10.2026 nach Empfehlung* |
+| **SK-Q11** | Versionswahl: (a) Versionen der Vergleichswahl (Stamm und „Im Vergleich“); (b) alle Versionen der Gruppe | **(a).** Dieselben Versionen wie Tabelle und Grafik; eine Version, die nicht im Vergleich ist, nimmt der Anwender über die Vergleichswahl hinzu. — *entschieden 16.10.2026 nach Empfehlung* |
+| **SK-Q12** | Werte am Bildschirm: (a) im Bild an Bändern und Knoten bzw. als Tabelle darunter; (b) nur im Zeigertext | **(b).** Anwendervorgabe: „Werte mit Mouse-over anzeigen, nicht darunter (die Werte stehen schon im Tab Tabelle).“ Knoten tragen am Bildschirm nur den Namen; Textalternative für Bildschirmleser verborgen; Hinweiszeilen bleiben; im Word-Bericht tragen Knoten ihre Jahressumme. — *entschieden 16.10.2026, Anwendervorgabe* |
 
 ---
 
