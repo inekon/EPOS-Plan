@@ -155,6 +155,7 @@ namespace WindowsFormsApplication1
         private static C.ChartSpace Diagrammraum(Exceldiagramm d, Datenbereich bereich, bool englisch)
         {
             const uint KATEGORIEACHSE = 500000001u, WERTEACHSE = 500000002u;
+            const uint ZWEIT_KATEGORIEACHSE = 500000003u, ZWEIT_WERTEACHSE = 500000004u;
             List<Excelreihe> reihen = d.Reihen.Where(r => !r.NurDaten).ToList();
             bool kreis = reihen.Any(r => r.Art == Excelreihenart.Kreis);
             bool waagerecht = reihen.Any(r => r.Art == Excelreihenart.Balken);
@@ -185,7 +186,8 @@ namespace WindowsFormsApplication1
                     flaeche.Append(gruppe);
                 }
 
-                List<Excelreihe> saeulen = reihen.Where(r => r.Art == Excelreihenart.Saeule || r.Art == Excelreihenart.Balken).ToList();
+                List<Excelreihe> saeulen = reihen.Where(r => (r.Art == Excelreihenart.Saeule || r.Art == Excelreihenart.Balken)
+                                                             && !r.Zweitachse).ToList();
                 if (saeulen.Count > 0)
                 {
                     var gruppe = new C.BarChart(
@@ -193,7 +195,7 @@ namespace WindowsFormsApplication1
                         new C.BarGrouping { Val = d.Gestapelt ? C.BarGroupingValues.Stacked : C.BarGroupingValues.Clustered },
                         new C.VaryColors { Val = false });
                     foreach (Excelreihe r in saeulen) gruppe.Append(Saeulenreihe(r, index[r], d, bereich));
-                    gruppe.Append(new C.GapWidth { Val = (UInt16Value)(d.Ueberdeckt ? 60 : 80) });
+                    gruppe.Append(new C.GapWidth { Val = (UInt16Value)(d.Luecke ?? (d.Ueberdeckt ? 60 : 80)) });
                     if (d.Gestapelt || d.Ueberdeckt) gruppe.Append(new C.Overlap { Val = 100 });
                     gruppe.Append(new C.AxisId { Val = KATEGORIEACHSE }, new C.AxisId { Val = WERTEACHSE });
                     flaeche.Append(gruppe);
@@ -211,8 +213,30 @@ namespace WindowsFormsApplication1
                     flaeche.Append(gruppe);
                 }
 
+                // Die Zweitachse: eine eigene, nicht gestapelte Säulengruppe über unsichtbaren Achsen — der Nebenbalken neben
+                // einem Stapel oder das Band hinter einem Jahr. Ihre Achsen tragen feste Grenzen, damit die Säulen zur
+                // sichtbaren Achse passen.
+                List<Excelreihe> zweit = reihen.Where(r => (r.Art == Excelreihenart.Saeule || r.Art == Excelreihenart.Balken)
+                                                           && r.Zweitachse).ToList();
+                if (zweit.Count > 0)
+                {
+                    var gruppe = new C.BarChart(
+                        new C.BarDirection { Val = waagerecht ? C.BarDirectionValues.Bar : C.BarDirectionValues.Column },
+                        new C.BarGrouping { Val = C.BarGroupingValues.Clustered },
+                        new C.VaryColors { Val = false });
+                    foreach (Excelreihe r in zweit) gruppe.Append(Saeulenreihe(r, index[r], d, bereich));
+                    gruppe.Append(new C.GapWidth { Val = (UInt16Value)d.ZweitLuecke });
+                    gruppe.Append(new C.AxisId { Val = ZWEIT_KATEGORIEACHSE }, new C.AxisId { Val = ZWEIT_WERTEACHSE });
+                    flaeche.Append(gruppe);
+                }
+
                 flaeche.Append(Kategorienachse(d, KATEGORIEACHSE, WERTEACHSE, waagerecht));
                 flaeche.Append(Wertachse(d, WERTEACHSE, KATEGORIEACHSE, waagerecht));
+                if (zweit.Count > 0)
+                {
+                    flaeche.Append(Zweitkategorienachse(ZWEIT_KATEGORIEACHSE, ZWEIT_WERTEACHSE, waagerecht));
+                    flaeche.Append(Zweitwertachse(d, ZWEIT_WERTEACHSE, ZWEIT_KATEGORIEACHSE, waagerecht));
+                }
             }
 
             var legende = new C.Legend(new C.LegendPosition { Val = C.LegendPositionValues.Bottom });
@@ -273,8 +297,47 @@ namespace WindowsFormsApplication1
                                                      new C.Bubble3D { Val = false },
                                                      new C.ChartShapeProperties(Fuellung(r.Punktfarben[p], r.Deckung, false),
                                                                                 new A.Outline(new A.NoFill()))));
+            C.DataLabels beschriftungen = Beschriftungen(r);
+            if (beschriftungen != null) reihe.Append(beschriftungen);
             reihe.Append(Kategorien(d, b), Werte(r, d, b));
             return reihe;
+        }
+
+        /// <summary>
+        /// Die Beschriftungen einer Reihe als feste Texte je Punkt (<see cref="Excelreihe.Beschriftungen"/>) — der Betrag, den das
+        /// Wortbild an den Balken schreibt; die übrigen Punkte ohne Beschriftung. <c>null</c> ohne Beschriftung.
+        /// </summary>
+        private static C.DataLabels Beschriftungen(Excelreihe r)
+        {
+            if (r.Beschriftungen == null || r.Unsichtbar) return null;
+            var dl = new C.DataLabels();
+            for (int p = 0; p < r.Beschriftungen.Length; p++)
+            {
+                string text = r.Beschriftungen[p];
+                if (string.IsNullOrEmpty(text) || p >= r.Werte.Length || !r.Werte[p].HasValue) continue;
+                Excelbeschriftungslage lage = r.Beschriftungslagen != null && p < r.Beschriftungslagen.Length
+                    ? r.Beschriftungslagen[p] : Excelbeschriftungslage.Mitte;
+                dl.Append(new C.DataLabel(
+                    new C.Index { Val = (uint)p },
+                    new C.ChartText(new C.RichText(
+                        new A.BodyProperties(),
+                        new A.ListStyle(),
+                        new A.Paragraph(
+                            new A.ParagraphProperties(new A.DefaultRunProperties { FontSize = 900 }),
+                            new A.Run(new A.RunProperties { FontSize = 900 }, new A.Text(text))))),
+                    new C.DataLabelPosition
+                    {
+                        Val = lage == Excelbeschriftungslage.InnenEnde ? C.DataLabelPositionValues.InsideEnd
+                            : lage == Excelbeschriftungslage.InnenBasis ? C.DataLabelPositionValues.InsideBase
+                            : C.DataLabelPositionValues.Center,
+                    },
+                    new C.ShowLegendKey { Val = false }, new C.ShowValue { Val = true }, new C.ShowCategoryName { Val = false },
+                    new C.ShowSeriesName { Val = false }, new C.ShowPercent { Val = false }, new C.ShowBubbleSize { Val = false }));
+            }
+            if (!dl.Elements<C.DataLabel>().Any()) return null;
+            dl.Append(new C.ShowLegendKey { Val = false }, new C.ShowValue { Val = false }, new C.ShowCategoryName { Val = false },
+                      new C.ShowSeriesName { Val = false }, new C.ShowPercent { Val = false }, new C.ShowBubbleSize { Val = false });
+            return dl;
         }
 
         private static C.PieChartSeries Kreisreihe(Excelreihe r, uint index, Exceldiagramm d, Datenbereich b)
@@ -361,11 +424,56 @@ namespace WindowsFormsApplication1
             return achse;
         }
 
+        /// <summary>Die Skalierung einer Wertachse, mit festen Grenzen, wo angegeben.</summary>
+        private static C.Scaling Skalierung(double? min, double? max)
+        {
+            var skalierung = new C.Scaling(new C.Orientation { Val = C.OrientationValues.MinMax });
+            if (max.HasValue) skalierung.Append(new C.MaxAxisValue { Val = max.Value });
+            if (min.HasValue) skalierung.Append(new C.MinAxisValue { Val = min.Value });
+            return skalierung;
+        }
+
+        /// <summary>Die unsichtbare Rubrikenachse der Zweitachse (gelöscht, gleiche Kategorien).</summary>
+        private static C.CategoryAxis Zweitkategorienachse(uint id, uint gegen, bool waagerecht)
+        {
+            return new C.CategoryAxis(
+                new C.AxisId { Val = id },
+                new C.Scaling(new C.Orientation { Val = C.OrientationValues.MinMax }),
+                new C.Delete { Val = true },
+                new C.AxisPosition { Val = waagerecht ? C.AxisPositionValues.Left : C.AxisPositionValues.Bottom },
+                new C.MajorTickMark { Val = C.TickMarkValues.None },
+                new C.MinorTickMark { Val = C.TickMarkValues.None },
+                new C.TickLabelPosition { Val = C.TickLabelPositionValues.None },
+                new C.CrossingAxis { Val = gegen },
+                new C.Crosses { Val = C.CrossesValues.AutoZero },
+                new C.AutoLabeled { Val = true },
+                new C.LabelAlignment { Val = C.LabelAlignmentValues.Center },
+                new C.LabelOffset { Val = (UInt16Value)100 },
+                new C.NoMultiLevelLabels { Val = true });
+        }
+
+        /// <summary>Die unsichtbare Wertachse der Zweitachse (gelöscht, feste Grenzen).</summary>
+        private static C.ValueAxis Zweitwertachse(Exceldiagramm d, uint id, uint gegen, bool waagerecht)
+        {
+            return new C.ValueAxis(
+                new C.AxisId { Val = id },
+                Skalierung(d.ZweitMin, d.ZweitMax),
+                new C.Delete { Val = true },
+                new C.AxisPosition { Val = waagerecht ? C.AxisPositionValues.Top : C.AxisPositionValues.Right },
+                new C.NumberingFormat { FormatCode = "General", SourceLinked = false },
+                new C.MajorTickMark { Val = C.TickMarkValues.None },
+                new C.MinorTickMark { Val = C.TickMarkValues.None },
+                new C.TickLabelPosition { Val = C.TickLabelPositionValues.None },
+                new C.CrossingAxis { Val = gegen },
+                new C.Crosses { Val = C.CrossesValues.Maximum },
+                new C.CrossBetween { Val = C.CrossBetweenValues.Between });
+        }
+
         private static C.ValueAxis Wertachse(Exceldiagramm d, uint id, uint gegen, bool waagerecht)
         {
             var achse = new C.ValueAxis(
                 new C.AxisId { Val = id },
-                new C.Scaling(new C.Orientation { Val = C.OrientationValues.MinMax }),
+                Skalierung(d.Wertmin, d.Wertmax),
                 new C.Delete { Val = false },
                 new C.AxisPosition { Val = waagerecht ? C.AxisPositionValues.Bottom : C.AxisPositionValues.Left },
                 new C.MajorGridlines(new C.ChartShapeProperties(new A.Outline(new A.SolidFill(Farbe("D9D9D9", 255))) { Width = 9525 })));

@@ -40482,6 +40482,9 @@ This folder holds the standard template, the short report, the detailed template
   <data name="BV_XL_DG_BASIS" xml:space="preserve">
     <value>Base (helper column)</value>
   </data>
+  <data name="BV_XL_DG_ABSTAND" xml:space="preserve">
+    <value>Spacing (helper column)</value>
+  </data>
   <data name="BV_XL_DG_UEBER_NULL" xml:space="preserve">
     <value>{0} (above zero)</value>
   </data>

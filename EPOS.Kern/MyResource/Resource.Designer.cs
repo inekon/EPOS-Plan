@@ -21524,6 +21524,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abstand (Hilfsspalte) ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_ABSTAND {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_ABSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ab dem Erwartungsfall ähnelt.
         /// </summary>
         public static string BV_XL_DG_AB_ERWARTET {

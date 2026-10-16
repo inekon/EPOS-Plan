@@ -40489,6 +40489,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="BV_XL_DG_BASIS" xml:space="preserve">
     <value>Basis (Hilfsspalte)</value>
   </data>
+  <data name="BV_XL_DG_ABSTAND" xml:space="preserve">
+    <value>Abstand (Hilfsspalte)</value>
+  </data>
   <data name="BV_XL_DG_UEBER_NULL" xml:space="preserve">
     <value>{0} (über null)</value>
   </data>
