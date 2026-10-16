@@ -408,10 +408,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(q, v.Quelle);
             string Quelle(List<BauteilkatalogImport.Satz> l, int n) => (string)l.Single(s => s.Kennung == G(n)).Werte["Quelle"];
             Assert.Equal(q + ", Teilkataloge Teilkatalog A / Teilkatalog B", Quelle(p.Baustoffe, 2));   // B3 zusammengeführt
-            Assert.Equal(q + ", Teilkatalog B", Quelle(p.Baustoffe, 4));
+            Assert.Equal(q + ", Teilkatalog Teilkatalog B", Quelle(p.Baustoffe, 4));
             Assert.Equal(q, Quelle(p.Baustoffe, 1));
-            Assert.Equal(q + ", Teilkatalog A", Quelle(p.Aufbauten, 101));
-            Assert.Equal(q + ", Teilkatalog A", Quelle(p.Aufbauten, 105));
+            Assert.Equal(q + ", Teilkatalog Teilkatalog A", Quelle(p.Aufbauten, 101));
+            Assert.Equal(q + ", Teilkatalog Teilkatalog A", Quelle(p.Aufbauten, 105));
             Assert.Equal(q, Quelle(p.Aufbauten, 102));                                                 // Teilkatalog ohne Namen
             Assert.Equal(2, v.Teilkataloge);
             Assert.Equal(2, v.BaustoffeMitTeilkatalog);
@@ -510,10 +510,10 @@ namespace EPOS.Kern.Tests
             string Quelle(string tabelle, int n) => DataRepository.ExecuteScalar(
                 "SELECT \"Quelle\" FROM \"" + tabelle + "\" WHERE \"Quellkennung\" = ?", new DbParam("@k", G(n))) as string;
             Assert.Equal(q + ", Teilkataloge Teilkatalog A / Teilkatalog B", Quelle("Tab_Baustoff_STAMM", 2));
-            Assert.Equal(q + ", Teilkatalog A", Quelle("Tab_Bauteilaufbau_STAMM", 101));
+            Assert.Equal(q + ", Teilkatalog Teilkatalog A", Quelle("Tab_Bauteilaufbau_STAMM", 101));
             Assert.Equal(q, Quelle("Tab_Bauteilaufbau_STAMM", 102));
             string katalog = DataRepository.ExecuteScalar("SELECT \"Quelle\" FROM \"Tab_Baustoff_STAMM\" WHERE \"ID\" = ?", new DbParam("@id", k.Id)) as string;
-            Assert.EndsWith(q + ", Teilkatalog A", katalog);
+            Assert.EndsWith(q + ", Teilkatalog Teilkatalog A", katalog);
         }
 
         // ---- Nachzug E134 (BK-3b) -----------------------------------------------------------
