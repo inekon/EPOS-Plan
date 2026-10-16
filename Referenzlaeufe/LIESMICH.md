@@ -1457,6 +1457,18 @@ Projekt 1072. 1050, 1052, 1054, 1055, 1056, 1057, 1059, 1061, 1062, 1064 und 107
 > Projekte gegen R55 bleibt PASS und byte-gleich (1 205 CSV; in `Projekt_1072/aggregate.csv` allein die zwei Schlüssel,
 > die R55 nicht führt).
 
+> **Nachtrag — Schema 236 (KBP-4a Typtage der Kältebedarfszuordnung, 16.10.2026, hängt an 235
+> `WasserpreisTraegerkarteSchema`), Basis R56 unverändert.** `KaeltetyptagSchema` (236 =
+> `WasserpreisTraegerkarteSchema.SCHRITT + 1`) legt `Tab_Kaeltetyptag` (bis zu sechs Typtage je Projektkopie
+> `Tab_Kaeltebedarf`) und `Tab_Kaeltetyptag_Matrix` (Zuordnung Monat × Tagesart → Typtag) an, beide `STRICT` und leer,
+> samt zwei Indizes; kein DML. Gehoben aus der Fassung 235 (108 744 704 Byte, `3478881f…`) mit
+> `Werkzeuge/Testdatenbankschema`; der Inhaltsvergleich aller Tabellen zeigt allein die zwei neuen Tabellen mit ihren
+> Indizes und `Tab_Applikation.SchemaVersion` (195 von 196 gemeinsamen Tabellen wertgleich, die Einheit „P“ von
+> `DIN4708.p_b` in `Tab_TwwParameter_STAMM` erhalten). Keine Zuordnung trägt Eingabeart `'typtag'`; der Schritt wirkt
+> auf kein Rechenergebnis. Die Testdatenbank steht auf **236** (`integrity_check` ok, `foreign_key_check` leer):
+> **108 773 376 Byte, LFS-SHA-256 `c403eb645c9a9731e32cb49d74f2339516b1d6c3efd4a0914bae09118f6f9cfe`**. Der Referenzlauf
+> der CI-Auswahl gegen R56 bleibt PASS (18 Projekte, 601 CSV byte-gleich).
+
 ### Die Vorgängerbasis R55 (Kältebedarf dezentral)
 
 Siebenunddreißig Projekte, 1 205 CSV, 8 259 Skalare, auf Linux eingefroren gegen die Testdatenbank `aee043d0…`
