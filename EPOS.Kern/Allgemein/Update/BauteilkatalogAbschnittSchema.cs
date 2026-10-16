@@ -35,8 +35,8 @@ namespace WindowsFormsApplication1
     public static class BauteilkatalogAbschnittSchema
     {
         /// <summary>
-        /// Die Nummer des Schritts — angemeldet als 232; hängt an <see cref="RaumnutzungDinWerteSchema"/> (231) und ist
-        /// das Ende der Kette. Die Nummer steht allein hier.
+        /// Die Nummer des Schritts — angemeldet als 232; hängt an <see cref="RaumnutzungDinWerteSchema"/> (231);
+        /// <see cref="BauteilUHerkunftSchema"/> (233) hängt über <c>+ 1</c> hier an. Die Nummer steht allein hier.
         /// </summary>
         // vorläufig (230, solange 229/230 nicht auf origin liegen); das Umhängen geschieht allein am Vorgänger
         // RaumnutzungDinWerteSchema — nach Schritt 230 dort auf `KaeltebedarfsprofilVorlagenSchema.SCHRITT + 1` umhängen

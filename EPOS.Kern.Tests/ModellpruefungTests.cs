@@ -95,6 +95,12 @@ namespace EPOS.Kern.Tests
             // Das U der Datei bleibt (E95 Nr. 1).
             Assert.Equal(0, Zahl("SELECT COUNT(*) FROM \"Tab_Bauteil\" b INNER JOIN \"Tab_Zone\" z ON z.\"ID\" = b.\"ID_Zone\" WHERE z.\"ID_Gebaeude\" = ? AND b.\"U_Wert\" IS NULL",
                                  new DbParam("@g", g)));
+            // MA-6b: die Herkunft des U-Werts - Katalogaufbau KATALOG, Typaufbau VORGABE; die Rücknahme stellt NULL zurück.
+            foreach (Modellbefund b in nurU)
+                Assert.Equal(b.Vorschlag.Herkunft == Vorschlagsherkunft.Typaufbau || b.Vorschlag.UBauteil.HasValue
+                                 ? DbWerte.HERKUNFT_VORGABE : DbWerte.HERKUNFT_KATALOG,
+                             Convert.ToString(DataRepository.GetDataTable("SELECT \"U_Herkunft\" FROM \"Tab_Bauteil\" WHERE \"ID\" = ?",
+                                 new DbParam("@i", b.IdBauteil.Value)).Rows[0][0], CultureInfo.InvariantCulture));
 
             Uebernahmeergebnis r = ctrl.Zuruecknehmen(Pruefgruppe.AufbautenStoffwerte);
             Assert.True(r.Ok, r.Meldung);
@@ -102,6 +108,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ohneVor, Zahl(OHNE, new DbParam("@g", g)));
             Assert.Equal(aufbautenVor, Zahl("SELECT COUNT(*) FROM \"Tab_Bauteilaufbau\""));
             Assert.Equal(nurU.Count, r.Neu.Befunde.Count(b => b.Code == "NUR_U_WERT"));
+            Assert.All(nurU, b => Assert.Equal(DBNull.Value, DataRepository.GetDataTable(
+                "SELECT \"U_Herkunft\" FROM \"Tab_Bauteil\" WHERE \"ID\" = ?", new DbParam("@i", b.IdBauteil.Value)).Rows[0][0]));
         }
 
         private static double Zahl1(string sql, int id)

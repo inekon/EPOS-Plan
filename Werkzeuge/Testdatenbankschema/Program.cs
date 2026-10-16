@@ -3732,6 +3732,23 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt BauteilUHerkunftSchema.SCHRITT (MA-6b, E149): U_Herkunft an Tab_Bauteil(_STAMM). Aus DERSELBEN
+            //      Quelle wie SchemaMigration.Schritt_BauteilUHerkunft. Wiederholbar.
+            //      REFERENZLAUF UNVERAENDERT: Die Spalte bleibt leer, der Rechenweg liest sie nicht.
+            string nrMa6b = BauteilUHerkunftSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrMa6b + " - Herkunft des U-Werts je Bauteil: " +
+                              (BauteilUHerkunftSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtMa6b = new List<string>();
+                angelegt += BauteilUHerkunftSchema.Ausfuehren(berichtMa6b);
+                foreach (string zeile in berichtMa6b)
+                    Console.WriteLine("Schritt " + nrMa6b + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrMa6b + " - vollstaendig: " + BauteilUHerkunftSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

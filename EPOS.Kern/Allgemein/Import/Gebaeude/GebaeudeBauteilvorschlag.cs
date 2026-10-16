@@ -61,8 +61,22 @@ namespace WindowsFormsApplication1
 
         private Flaechenherkunft? _flaechenherkunft;
 
-        /// <summary>Herkunft des U-Werts — auch, wenn er aus den Schichten folgt (die Schichten stammen aus der Datei).</summary>
-        internal Importherkunft HerkunftU { get; set; }
+        /// <summary>
+        /// Herkunft des U-Werts — auch, wenn er aus den Schichten folgt (die Schichten stammen aus der Datei). Das Setzen schreibt
+        /// den gespeicherten Wert (<see cref="ImportherkunftWerte.Wert"/>) zugleich in <see cref="BauteilModel.U_Herkunft"/> der
+        /// Zeile — so schreibt die Übernahme ihn nach <c>Tab_Bauteil.U_Herkunft</c> (Schemaschritt <see cref="BauteilUHerkunftSchema"/>).
+        /// </summary>
+        internal Importherkunft HerkunftU
+        {
+            get => _herkunftU;
+            set
+            {
+                _herkunftU = value;
+                if (Bauteil != null) Bauteil.U_Herkunft = ImportherkunftWerte.Wert(value);
+            }
+        }
+
+        private Importherkunft _herkunftU;
 
         /// <summary>Herkunft des g-Werts; <see cref="Importherkunft.Leer"/> = Wert des Gebäudes.</summary>
         internal Importherkunft HerkunftG { get; set; }

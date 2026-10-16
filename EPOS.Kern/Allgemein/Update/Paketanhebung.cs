@@ -476,6 +476,9 @@ namespace WindowsFormsApplication1
             // Ein älteres Paket bringt seine Fensteraufbauten ohne ψ des Glasrands; der Schritt legt die Spalte leer an.
             new Stufe(BauteilkatalogAbschnittSchema.SCHRITT, Art.Ddl,
                       "ψ des Glasrands am Aufbaukatalog (BK-6)"),
+            // Ein älteres Paket bringt seine Bauteile ohne Herkunft des U-Werts; der Schritt legt die Spalte leer an.
+            new Stufe(BauteilUHerkunftSchema.SCHRITT, Art.Ddl,
+                      "Herkunft des U-Werts je Bauteil (MA-6b)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
