@@ -6623,9 +6623,9 @@ namespace WindowsFormsApplication1
         /// <param name="fusszeile">Der Hinweis unter dem Bild; leer oder <c>null</c> = keine
         /// Zeile und ein Bild wie zuvor.</param>
         /// <param name="fusszeileZusatz">Ein ZWEITER Hinweis, der auf einer EIGENEN Zeile
-        /// unter <paramref name="fusszeile"/> steht; leer oder <c>null</c> = kein Zusatz und
-        /// ein Bild wie zuvor. Mit Zusatz wächst das Bild so weit, dass beide Texte
-        /// vollständig darin stehen (siehe <see cref="Fussblock"/>).</param>
+        /// unter <paramref name="fusszeile"/> steht; leer oder <c>null</c> = kein Zusatz.
+        /// Das Bild wächst nach dem gemessenen Fußblock so weit, dass alle Zeilen — mit und
+        /// ohne Zusatz — vollständig darin stehen (siehe <see cref="Fussblock"/>).</param>
         public static byte[] Optimierungsraster(string titel, string xTitel, string yTitel,
                                                 string skalaTitel,
                                                 IReadOnlyList<double> cRaten,
@@ -6682,12 +6682,16 @@ namespace WindowsFormsApplication1
             // UNTER dem Bildrand gezeichnet worden - sichtbar nur als Anschnitt und auf
             // manchen Schriftarten gar nicht. Deshalb wird der Block zuerst umgebrochen
             // und vermessen; das Bild bekommt danach die Hoehe, die er braucht.
+            // 28d: Das gilt auch OHNE Zusatz — der Hinweis allein wird ebenso vermessen, und das
+            // Bild wächst, sobald seine Zeilen auf einer Schrift mit hoher Zeile tiefer reichen.
             List<string> fussBlock = null;
             float fussZeilenhoehe = 0f;
-            if (!string.IsNullOrWhiteSpace(fusszeile) && !string.IsNullOrWhiteSpace(fusszeileZusatz))
+            if (!string.IsNullOrWhiteSpace(fusszeile))
                 using (var f = Schrift(13f))
                 {
-                    fussBlock = Fussblock(fusszeile, fusszeileZusatz, f, fussBreite);
+                    fussBlock = string.IsNullOrWhiteSpace(fusszeileZusatz)
+                        ? Umbruchzeilen(fusszeile, f, fussBreite, FUSS_ZEILEN_JE_TEIL)
+                        : Fussblock(fusszeile, fusszeileZusatz, f, fussBreite);
                     fussZeilenhoehe = TextHoehe(f) + FUSS_ZEILENABSTAND;
                     float unterkante = fussOben + (fussBlock.Count - 1) * fussZeilenhoehe
                                      + TextHoehe(f) + FUSS_UNTERRAND;
@@ -6815,19 +6819,14 @@ namespace WindowsFormsApplication1
                           min, max, skalaTitel));
 
             // DIE FUSSZEILE (SP-O-4): Sie steht unter der Achsenbeschriftung und
-            // bricht bei Bedarf um; ohne Text aendert sie nichts. MIT ZUSATZ ist der
-            // Block oben schon vermessen - er wird Zeile fuer Zeile gesetzt und passt
-            // in die dafuer gewachsene Bildhoehe. OHNE Zusatz bleibt es beim Bestand:
-            // zwei Zeilen im Bild von 860 x 560.
+            // bricht bei Bedarf um; ohne Text aendert sie nichts. Der Block ist oben
+            // schon vermessen - er wird Zeile fuer Zeile gesetzt und passt in die
+            // dafuer gewachsene Bildhoehe, mit und ohne Zusatz (28d).
             if (fussBlock != null)
                 using (var f = Schrift(13f))
                     for (int i = 0; i < fussBlock.Count; i++)
                         Text(z, fussBlock[i], f, Farbrolle.ACHSE,
                              rc.Left, fussOben + i * fussZeilenhoehe);
-            else if (!string.IsNullOrWhiteSpace(fusszeile))
-                using (var f = Schrift(13f))
-                    Umbruchtext(z, fusszeile, f, Farbrolle.ACHSE, rc.Left, fussOben,
-                                fussBreite);
 
             return z;
         }
@@ -6935,11 +6934,6 @@ namespace WindowsFormsApplication1
         /// nach Schriftart zwei bis drei.
         /// </summary>
         private const int FUSS_ZEILEN_JE_TEIL = 4;
-
-        /// <summary>
-        /// Zeilen der Fußzeile OHNE Zusatz — der Bestand: zwei Zeilen im Bild von 860 × 560.
-        /// </summary>
-        private const int FUSS_ZEILEN_BESTAND = 2;
 
         /// <summary>
         /// Die Zeilen eines zweiteiligen Fußtextes: erst der Grundtext, dann — auf einer
@@ -7064,6 +7058,9 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < zeilen.Count; i++)
                 Text(z, zeilen[i], f, rolle, x, y + i * (TextHoehe(f) + FUSS_ZEILENABSTAND));
         }
+
+        /// <summary>Höchstens so viele Zeilen setzt <see cref="Umbruchtext"/> (Kalenderteppich).</summary>
+        private const int FUSS_ZEILEN_BESTAND = 2;
 
         /// <summary>
         /// Die Dreifarbskala eines Rasterwerts: Rot für den schlechtesten, Gold für den

@@ -483,6 +483,29 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// 28d: <b>Die Rasterkarte wächst nach der gemessenen Fußzeile</b> — auch ohne Zusatz. Ein Hinweis über
+        /// drei Zeilen steht ganz im Bild: Das Bild ist höher als 560, und die letzte Zeile endet über der Kante.
+        /// Ein kurzer Hinweis lässt das Maß 860 breit.
+        /// </summary>
+        [Fact]
+        public void DieRasterkarteWaechstNachDerFusszeile()
+        {
+            string lang = string.Join(" ", Enumerable.Repeat(
+                "Die Aussage gilt nur für das geprüfte endliche Raster; zwischen zwei Stützstellen ist nichts gerechnet.", 3))
+                + " Schlusswort.";
+            Zeichenmodell m = ChartRenderer.OptimierungsrasterModell("J", "C-Rate [1/h]", "Kapazität [kWh]",
+                "Kapitalwert [€]", CRATEN, KAPAZITAETEN, Rasterwerte(), 1, 2, null, lang);
+
+            Assert.Equal(860, m.Breite);
+            Assert.True(m.Hoehe > 560, "Höhe " + m.Hoehe);
+            List<Text> fuss = Alle(m.Befehle).OfType<Text>()
+                .Where(t => t.Y > 520f && lang.Contains(t.Inhalt, System.StringComparison.Ordinal)).ToList();   // unter dem Achsentitel
+            Assert.True(fuss.Count >= 3, "Fußzeilen " + fuss.Count);
+            Assert.EndsWith("Schlusswort.", fuss[^1].Inhalt, System.StringComparison.Ordinal);
+            Assert.True(fuss[^1].Y + 13f < m.Hoehe, "letzte Zeile bei " + fuss[^1].Y + " von " + m.Hoehe);
+        }
+
+        /// <summary>
         /// <b>Ein LOCH nennt seinen Grund, eine SPERRE ihre Sperre.</b> Beides sagt
         /// das Bild schon — das eine durch die Lochfarbe (#226), das andere durch die
         /// Schraffur (#193) —, und der Zeigetext sagt es in Worten. Die Schraffur
