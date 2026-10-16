@@ -876,7 +876,7 @@
     <value>η₀</value>
   </data>
   <data name="KFLT_SP_ETART" xml:space="preserve">
-    <value>η_RT</value>
+    <value>Round-trip efficiency</value>
   </data>
   <data name="KFLT_SP_HERKUNFT" xml:space="preserve">
     <value>Origin</value>
@@ -918,7 +918,7 @@
     <value>MPPT</value>
   </data>
   <data name="KFLT_SP_NENNLEISTUNG" xml:space="preserve">
-    <value>P_N</value>
+    <value>Rated output</value>
   </data>
   <data name="KFLT_SP_PAC" xml:space="preserve">
     <value>P_AC</value>
@@ -5087,7 +5087,7 @@ Please run the simulation with photovoltaics first.</value>
     <value>Capacity [kWh]</value>
   </data>
   <data name="PEAK_LBL_ETA" xml:space="preserve">
-    <value>Efficiency η_RT [-]</value>
+    <value>Round-trip efficiency [-]</value>
   </data>
   <data name="PEAK_LBL_SOCMIN" xml:space="preserve">
     <value>State of charge min. [%]</value>
@@ -10949,7 +10949,7 @@ Change the usage anyway?</value>
     <value>Layers:</value>
   </data>
   <data name="PSP_HINWEIS_SCHICHTEN" xml:space="preserve">
-    <value>1 = one single store as before; from 2 on the tank is calculated stratified.</value>
+    <value>1 = one store without stratification; from 2 on the tank is calculated stratified.</value>
   </data>
   <data name="PSP_LABEL_HOEHE" xml:space="preserve">
     <value>Height [m]:</value>
@@ -18042,7 +18042,7 @@ Please go through the project page again so that the data of the selected projec
     <value>Power [kW]</value>
   </data>
   <data name="IMP_KAT_SP_ETA" xml:space="preserve">
-    <value>η_RT</value>
+    <value>Round-trip efficiency</value>
   </data>
   <data name="IMP_KAT_EINH_KWH" xml:space="preserve">
     <value>kWh</value>
@@ -31470,13 +31470,13 @@ Do you want to allow this?</value>
     <value>System coupling: {0} — heat emission is switched on, but the heat emitter type is “ideal” or empty; the calculation uses ideal control.</value>
   </data>
   <data name="SIMENG_AK_STUFE_NICHT_GEBAUT" xml:space="preserve">
-    <value>System coupling: the project is set to level {0}; level AK1 is implemented — the heating circuit is calculated as a boundary condition (AK1).</value>
+    <value>System coupling: the project is set to the level “{0}”, which is not yet available — the heating circuit is calculated as a boundary condition.</value>
   </data>
   <data name="SIMENG_AK3K_KREIS_MIT_KAELTESEITE" xml:space="preserve">
-    <value>System coupling AK3 (core level): building and cascade are calculated hour by hour in a closed loop with the cooling side — the cooling channel follows the loop, the cooling cascade is calculated each hour after the heating hour.</value>
+    <value>System coupling “closed loop”: building and cascade are calculated hour by hour in a closed loop with the cooling side — the cooling channel follows the loop, the cooling cascade is calculated each hour after the heating hour.</value>
   </data>
   <data name="SIMENG_AK3K_KREISZAEHLER" xml:space="preserve">
-    <value>System coupling AK3 with cooling side: cooling limit reached in {0} h, changeover hours {1} h, unmet cooling demand {2:0.###} kWh in {3} h, case changes {4}; priority estimate too tight in {5} h ({6:0.###} kWh), too wide in {7} h.</value>
+    <value>System coupling “closed loop” with cooling side: cooling limit reached in {0} h, changeover hours {1} h, unmet cooling demand {2:0.###} kWh in {3} h, case changes {4}; priority estimate too tight in {5} h ({6:0.###} kWh), too wide in {7} h.</value>
   </data>
   <data name="SIMENG_AK_UEBERGABE_BEGRENZT" xml:space="preserve">
     <value>System coupling: {0} — the heat emitter is insufficient in {1} hours; the room temperature there is up to {2} K below the set point.</value>
@@ -33285,16 +33285,16 @@ Do you want to allow this?</value>
     <value>System coupling:</value>
   </data>
   <data name="SIMKONF_ANLAGENKOPPLUNG_AUS" xml:space="preserve">
-    <value>off</value>
+    <value>No coupling</value>
   </data>
   <data name="SIMKONF_ANLAGENKOPPLUNG_AK1" xml:space="preserve">
-    <value>Heating circuit (AK1)</value>
+    <value>Heating circuit</value>
   </data>
   <data name="SIMKONF_ANLAGENKOPPLUNG_AK2" xml:space="preserve">
-    <value>Operating schedule (AK2)</value>
+    <value>Operating schedule</value>
   </data>
   <data name="SIMKONF_ANLAGENKOPPLUNG_AK3" xml:space="preserve">
-    <value>Closed loop (AK3)</value>
+    <value>Closed loop</value>
   </data>
   <data name="SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR" xml:space="preserve">
     <value>not yet available</value>
@@ -33303,19 +33303,19 @@ Do you want to allow this?</value>
     <value>Off: every building is calculated with ideal control; the heat emission inputs of the buildings are inactive. The setting applies to the whole project.</value>
   </data>
   <data name="SIMKONF_HRL_ANLAGENKOPPLUNG_AK1" xml:space="preserve">
-    <value>Heating circuit (AK1): buildings with heat emission switched on calculate flow, return and the limit of the heat emitter; the heat pump chooses its characteristic curve at the calculated flow temperature. The setting applies to the whole project.</value>
+    <value>Heating circuit: buildings with heat emission switched on calculate flow, return and the limit of the heat emitter; the heat pump chooses its characteristic curve at the calculated flow temperature. The setting applies to the whole project.</value>
   </data>
   <data name="SIMKONF_HRL_ANLAGENKOPPLUNG_NICHT_GEBAUT" xml:space="preserve">
-    <value>The stored level is “{0}” — this level is not yet available; the run calculates the heating circuit (AK1) and says so.</value>
+    <value>The stored level is “{0}” — this level is not yet available; the run calculates the heating circuit and says so.</value>
   </data>
   <data name="SIMKONF_MSG_ANLAGENKOPPLUNG_FEHLER" xml:space="preserve">
     <value>The system coupling level could not be saved.</value>
   </data>
   <data name="KI_DLG_SIM_ANLAGENKOPPLUNG_ERL" xml:space="preserve">
-    <value>Project setting system coupling: AUS (ideal control), AK1 (heating circuit as boundary condition) or AK3 (closed loop: the available output acts back on the buildings each hour, longer calculation time); AK2 is not yet available. Saved immediately.</value>
+    <value>Project setting system coupling as control value: AUS (no coupling, ideal control), AK1 (heating circuit as boundary condition) or AK3 (closed loop: the available output acts back on the buildings each hour, longer calculation time); AK2 (operating schedule) is not yet available. Saved immediately.</value>
   </data>
   <data name="KI_DLG_SIM_ANLAGENKOPPLUNG_UNBEKANNT" xml:space="preserve">
-    <value>The level “{0}” does not exist; known levels are AUS, AK1, AK2 and AK3.</value>
+    <value>The level “{0}” does not exist; known control values are AUS (no coupling), AK1 (heating circuit), AK2 (operating schedule) and AK3 (closed loop).</value>
   </data>
   <data name="GEBK_GRP_WAERMEUEBERGABE" xml:space="preserve">
     <value>Heat emission</value>
@@ -33417,7 +33417,7 @@ Do you want to allow this?</value>
     <value>Proportional band: quick choice 0.5 / 1 / 2 K or custom from 0 to {1} K; 0 K is ideal control with a limit. Empty means the default {0} K.</value>
   </data>
   <data name="GEBK_ZEILE_UEBERGABE_PROJEKT" xml:space="preserve">
-    <value>Heat emission is only calculated in projects with the project setting system coupling “Heating circuit (AK1)” or “Closed loop (AK3)” (simulation configuration).</value>
+    <value>Heat emission is only calculated in projects with the project setting system coupling “Heating circuit” or “Closed loop” (simulation configuration).</value>
   </data>
   <data name="GEBK_ZEILE_UEBERGABE_BESTANDSWEG" xml:space="preserve">
     <value>The daily balance (legacy method) does not calculate system coupling — these inputs take effect once the building is calculated to VDI 6007.</value>
@@ -33498,7 +33498,7 @@ Do you want to allow this?</value>
     <value>Hour of the week (1..168)</value>
   </data>
   <data name="KI_DLG_GEBK_HEIZKREIS_AKTIV_ERL" xml:space="preserve">
-    <value>Calculate heat emission instead of ideal control (system coupling AK1); effective only with a heat emitter type and in a project with system coupling AK1. When first switched on the dialog proposes the heating curve.</value>
+    <value>Calculate heat emission instead of ideal control (system coupling “heating circuit”); effective only with a heat emitter type and in a project with system coupling “heating circuit”. When first switched on the dialog proposes the heating curve.</value>
   </data>
   <data name="KI_DLG_GEBK_UEBERGABE_ART_ERL" xml:space="preserve">
     <value>Heat emitter type: IDEAL (no heat emitter), RADIATOR, FLAECHE (panel heating) or KONVEKTOR; the type brings exponent, design point and radiant share as defaults.</value>
@@ -33537,7 +33537,7 @@ Do you want to allow this?</value>
     <value>Set point schedule: exactly 168 values in °C (0 to 30), Monday 00:00 to Sunday 23:00, separated by “;”, decimal point; empty = the building's set points. A wrong number of values is rejected, not padded.</value>
   </data>
   <data name="GEB_RECHENWEG_GEKOPPELT" xml:space="preserve">
-    <value>coupled (AK1)</value>
+    <value>with system coupling</value>
   </data>
   <data name="GEBB_KACHEL_VORLAUF_RUECKLAUF" xml:space="preserve">
     <value>Flow / return</value>
@@ -34959,7 +34959,7 @@ Do you want to allow this?</value>
     <value>Not effective in this project: it does not calculate cooling (project setting “Calculate cooling” off).</value>
   </data>
   <data name="GEBK_ZEILE_KUEHL_PROJEKT" xml:space="preserve">
-    <value>The cooling emission is only calculated in projects with system coupling “Heating circuit (AK1)” and the project setting “Calculate cooling” (simulation configuration).</value>
+    <value>The cooling emission is only calculated in projects with system coupling “Heating circuit” and the project setting “Calculate cooling” (simulation configuration).</value>
   </data>
   <data name="GEBK_MSG_KUEHL_ART_UNBEKANNT" xml:space="preserve">
     <value>The cooling emitter type “{0}” is unknown; please choose chilled ceiling, surface cooling, fan coil or ideal.</value>
@@ -34971,7 +34971,7 @@ Do you want to allow this?</value>
     <value>The design point of the cooling emitter must ascend: flow {0} °C below return {1} °C below room temperature {2} °C.</value>
   </data>
   <data name="KI_DLG_GEBK_KUEHLUEBERGABE_AKTIV_ERL" xml:space="preserve">
-    <value>Calculate the cooling emission instead of ideal cooling (system coupling AK1); only effective with cooling, a cooling set point, a cooling emitter type and in a project with system coupling AK1 and cooling mode. Switching off keeps the type.</value>
+    <value>Calculate the cooling emission instead of ideal cooling (system coupling “heating circuit”); only effective with cooling, a cooling set point, a cooling emitter type and in a project with system coupling “heating circuit” and cooling mode. Switching off keeps the type.</value>
   </data>
   <data name="KI_DLG_GEBK_KUEHL_UEBERGABE_ART_ERL" xml:space="preserve">
     <value>Cooling emitter type: IDEAL (no cooling emitter), KUEHLDECKE (chilled ceiling), FLAECHENKUEHLUNG (surface cooling) or GEBLAESEKONVEKTOR (fan coil); the type brings exponent, design point, radiant share and flow temperature limit as defaults.</value>
@@ -35652,7 +35652,7 @@ Do you want to allow this?</value>
     <value>No effect as long as the heating circuit of the building is off — the values are kept.</value>
   </data>
   <data name="ZONDLG_UEBERGABE_ZEILE_PROJEKT_AUS" xml:space="preserve">
-    <value>No effect as long as the project does not calculate a system coupling (AK1) — the values are kept.</value>
+    <value>No effect as long as the project calculates without system coupling — the values are kept.</value>
   </data>
   <data name="ZONDLG_UEBERGABE_ZEILE_UNBEHEIZT" xml:space="preserve">
     <value>An unheated zone has no heat emission; its values are kept.</value>
@@ -35661,7 +35661,7 @@ Do you want to allow this?</value>
     <value>The database does not know the heat emission per zone (schema step {0} is missing); the zone takes the heat emission of the building.</value>
   </data>
   <data name="ZONDLG_UEBERGABE_KI_ERL" xml:space="preserve">
-    <value>Heat emission of the zone; empty = from the building (value of the building, otherwise default of the effective type). Effective only for a heated zone, with the heating circuit of the building switched on and system coupling AK1 in the project.</value>
+    <value>Heat emission of the zone; empty = from the building (value of the building, otherwise default of the effective type). Effective only for a heated zone, with the heating circuit of the building switched on and system coupling “heating circuit” in the project.</value>
   </data>
   <data name="ZONDLG_UEBERGABE_KI_ART_ERL" xml:space="preserve">
     <value>Heat emitter type of the zone: IDEAL, RADIATOR, FLAECHE or KONVEKTOR; empty = from the building. IDEAL means: this zone is calculated ideally even if the building is coupled.</value>
@@ -42742,7 +42742,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Without an entry the default of 20 % applies, and the run reports this as a note; allowed are 1 to 100 %.</value>
   </data>
   <data name="SIMKONF_AUFH_HRL_GEKOPPELT" xml:space="preserve">
-    <value>With system coupling “Heating circuit (AK1)”, a building without zones is not optimised; the run names it. Buildings with zones receive the ramp.</value>
+    <value>With system coupling “Heating circuit”, a building without zones is not optimised; the run names it. Buildings with zones receive the ramp.</value>
   </data>
   <data name="SIMKONF_AUFH_MSG_FEHLER" xml:space="preserve">
     <value>The project setting “Preheat optimisation” could not be saved.</value>
@@ -43867,7 +43867,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>{0}: The preheat power is insufficient — at {1} °C ({2}) no ramp of up to 48 h holds · preheat power {3} kW {4}</value>
   </data>
   <data name="SIMKONF_AUFH_HRL_ZEILE_GEKOPPELT" xml:space="preserve">
-    <value>{0}: heating circuit coupled (AK1) — not optimised</value>
+    <value>{0}: heating circuit coupled — not optimised</value>
   </data>
   <data name="SIMKONF_AUFH_HRL_ZEILE_TAGESBILANZ" xml:space="preserve">
     <value>{0}: daily balance — no preheat optimisation</value>
@@ -46114,7 +46114,7 @@ chart</value>
     <value>Chillers</value>
   </data>
   <data name="KFLT_SP_NENNKAELTELEISTUNG" xml:space="preserve">
-    <value>P_N</value>
+    <value>Rated cooling capacity</value>
   </data>
   <data name="KFLT_SP_EER" xml:space="preserve">
     <value>EER</value>
@@ -49218,22 +49218,22 @@ chart</value>
     <value>Arrangement of the borehole heat exchangers: square grid or row; empty = default square.</value>
   </data>
   <data name="AK3_SIMKONF_HRL_ANLAGENKOPPLUNG" xml:space="preserve">
-    <value>Closed loop (AK3): each hour, the available output of the generators and storage acts back on the buildings — room temperature, demand and flow temperature are balanced in the loop. Buildings with heat emission switched on calculate the heating circuit as with AK1. The calculation time is longer; information views (demand of a building, preheating) calculate without the closed loop. The setting applies to the whole project.</value>
+    <value>Closed loop: each hour, the available output of the generators and storage acts back on the buildings — room temperature, demand and flow temperature are balanced in the loop. Buildings with heat emission switched on calculate the heating circuit as on the level “Heating circuit”. The calculation time is longer; information views (demand of a building, preheating) calculate without the closed loop. The setting applies to the whole project.</value>
   </data>
   <data name="AK3_RUECKSTUFE" xml:space="preserve">
-    <value>Calculated without the closed loop (profile path): this information calculates system coupling AK3 like AK2; the project run calculates the closed loop.</value>
+    <value>Calculated without the closed loop (profile path): this information calculates system coupling “closed loop” without the plant acting back on the building; the project run calculates the closed loop.</value>
   </data>
   <data name="AK3_MSG_KONVERGENZ" xml:space="preserve">
-    <value>System coupling AK3: the closed loop finds no stable solution in hour {1} of the year (building {0}; involved {2}; largest deviation {3}; last state {4}). The run stops instead of approximating. Check the output and characteristic curves of the generators, the room influence of the heating curve and the heat emission — or calculate the project with system coupling “Heating circuit (AK1)”.</value>
+    <value>System coupling “closed loop”: the loop finds no stable solution in hour {1} of the year (building {0}; involved {2}; largest deviation {3}; last state {4}). The run stops instead of approximating. Check the output and characteristic curves of the generators, the room influence of the heating curve and the heat emission — or calculate the project with system coupling “Heating circuit”.</value>
   </data>
   <data name="AK3_GEBK_LBL_RAUMEINFLUSS" xml:space="preserve">
     <value>Room influence of heating curve :</value>
   </data>
   <data name="AK3_GEBK_HRL_RAUMEINFLUSS" xml:space="preserve">
-    <value>Room influence: the flow temperature rises by the entered value for each kelvin the room temperature lies below the set point (0 to {0} K/K; empty or 0 = off). It only acts with system coupling “Closed loop (AK3)”.</value>
+    <value>Room influence: the flow temperature rises by the entered value for each kelvin the room temperature lies below the set point (0 to {0} K/K; empty or 0 = off). It only acts with system coupling “Closed loop”.</value>
   </data>
   <data name="AK3_KI_GEBK_RAUMEINFLUSS_ERL" xml:space="preserve">
-    <value>Room influence of the heating curve in K/K, 0 to 10; empty or 0 = off. Only acts with the heating curve switched on and system coupling AK3.</value>
+    <value>Room influence of the heating curve in K/K, 0 to 10; empty or 0 = off. Only acts with the heating curve switched on and system coupling “closed loop”.</value>
   </data>
   <data name="AK3_GEBB_KACHEL_DURCHLAEUFE" xml:space="preserve">
     <value>Iterations per hour (mean / maximum)</value>
@@ -49251,7 +49251,7 @@ chart</value>
     <value>Hours with residual demand</value>
   </data>
   <data name="AK3_GEBB_QUELLE" xml:space="preserve">
-    <value>Closed loop (AK3), project, last run</value>
+    <value>Closed loop, project, last run</value>
   </data>
   <data name="AK3K_GEBB_KACHEL_SPERRTAGE" xml:space="preserve">
     <value>Days with the opposite side blocked</value>
@@ -49272,7 +49272,7 @@ chart</value>
     <value>Zone lock, project, last run</value>
   </data>
   <data name="AK3K_GEBB_QUELLE_KREIS" xml:space="preserve">
-    <value>Cooling side in the loop (AK3), project, last run</value>
+    <value>Cooling side in the closed loop, project, last run</value>
   </data>
   <data name="KK_GEBB_KACHEL_VORLAUF_MITTEL" xml:space="preserve">
     <value>Mean cooling flow temperature (cooling curve)</value>
@@ -49287,19 +49287,19 @@ chart</value>
     <value>Cooling curve, project, last run</value>
   </data>
   <data name="AK3_KI_GEBB_DURCHLAEUFE_MITTEL" xml:space="preserve">
-    <value>Mean iterations per hour (AK3)</value>
+    <value>Mean iterations per hour (closed loop)</value>
   </data>
   <data name="AK3_KI_GEBB_DURCHLAEUFE_MAX" xml:space="preserve">
-    <value>Maximum iterations per hour (AK3)</value>
+    <value>Maximum iterations per hour (closed loop)</value>
   </data>
   <data name="AK3_KI_GEBB_ERL" xml:space="preserve">
-    <value>Indicator of the closed loop (system coupling AK3) from the last project run; empty without a run with AK3. Display only.</value>
+    <value>Indicator of the closed loop (system coupling) from the last project run; empty without a run in the closed loop. Display only.</value>
   </data>
   <data name="AK3_KI_GEBB_RUECKSTUFE" xml:space="preserve">
-    <value>Fallback note (AK3)</value>
+    <value>Fallback note (closed loop)</value>
   </data>
   <data name="AK3_KI_GEBB_RUECKSTUFE_ERL" xml:space="preserve">
-    <value>With system coupling AK3 the information calculates without the closed loop on the profile path; empty otherwise. Display only.</value>
+    <value>With system coupling “closed loop” the information calculates without the closed loop on the profile path; empty otherwise. Display only.</value>
   </data>
   <data name="SIMENG_ZONENSPERRE" xml:space="preserve">
     <value>VDI 6007 building model: {0} – daily operating mode per zone: on {1} days the opposite side was locked ({2} cooling days without space heating, {3} heating days without space cooling); the trial day showed {4} hours and {5} kWh on the locked side there (space heating {6} kWh, space cooling {7} kWh). On {8} days heating and cooling were both released.</value>
@@ -49767,13 +49767,13 @@ chart</value>
     <value>Design outdoor temperature (entered) :</value>
   </data>
   <data name="GEBK_ZEILE_KUEHLKURVE" xml:space="preserve">
-    <value>Cooling curve: base point {0} °C with outdoor air at the cooling setpoint and below, design flow {1} °C at the design outdoor temperature ({2}), linear in between, never below the flow limit; the room influence lowers the flow by k · excess over the cooling setpoint. It is calculated at level AK3, otherwise the fixed flow applies.</value>
+    <value>Cooling curve: base point {0} °C with outdoor air at the cooling setpoint and below, design flow {1} °C at the design outdoor temperature ({2}), linear in between, never below the flow limit; the room influence lowers the flow by k · excess over the cooling setpoint. It is calculated at the level “closed loop”, otherwise the fixed flow applies.</value>
   </data>
   <data name="GEBK_MSG_KUEHLKURVE_FUSSPUNKT" xml:space="preserve">
     <value>The cooling curve base point ({0} °C) is below the design flow ({1} °C): the flow would rise with the outdoor temperature. Please enter a base point from the design flow upwards or clear the field.</value>
   </data>
   <data name="KI_DLG_GEBK_KUEHLKURVE_AKTIV_ERL" xml:space="preserve">
-    <value>Cooling curve on or off: the chilled water flow slides with the outdoor temperature from the base point to the design flow; calculated at level AK3 with cooling emission. Switching on fills an empty room influence with the default value.</value>
+    <value>Cooling curve on or off: the chilled water flow slides with the outdoor temperature from the base point to the design flow; calculated at the level “closed loop” with cooling emission. Switching on fills an empty room influence with the default value.</value>
   </data>
   <data name="KI_DLG_GEBK_KUEHLKURVE_FUSSPUNKT_ERL" xml:space="preserve">
     <value>Cooling curve base point in °C, 4 to 22, not below the design flow; empty = the design return of the cooling emission.</value>

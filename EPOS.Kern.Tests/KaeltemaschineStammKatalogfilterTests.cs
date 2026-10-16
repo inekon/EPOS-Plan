@@ -68,7 +68,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Rückk.", p.Spalte(Katalogfilterprofil.SpRueckkuehlart).Titel);
             Assert.Equal("Geräteart", p.Spalte(Katalogfilterprofil.SpGeraeteart).Langtext);
             Assert.Equal("Art", p.Spalte(Katalogfilterprofil.SpGeraeteart).Titel);
-            Assert.Equal("P_N [kW]", p.Spalte(Katalogfilterprofil.SpNennkaelteleistung).Kopftext);
+            Assert.Equal("Nennkälteleistung [kW]", p.Spalte(Katalogfilterprofil.SpNennkaelteleistung).Kopftext);
             foreach (string ohne in new[] { Katalogfilterprofil.SpHersteller, Katalogfilterprofil.SpBezeichner,
                                             Katalogfilterprofil.SpHerkunft, Katalogfilterprofil.SpTyp })
             {

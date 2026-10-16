@@ -253,18 +253,18 @@ public class KaeltemaschineKatalogDialogTests : EposBunitContext
 
         Dictionary<string, int> stufen = Spaltenraenge.Stufen(profil, Spaltenraenge.Laengen(profil, zeilen), _ => false);
 
-        // KD-4: mit den kurzen Köpfen „P_N [kW]" und „Rückk." (voller Name im Tooltip) stehen bei 640 px
-        // Bezeichner, P_N, Hersteller und EER, ab 720 px dazu die Rückkühlart, ab 880 px die Herkunft, ab 1040 px
-        // die Geräteart, ab 1120 px der Typ.
+        // Mit den Köpfen „Nennkälteleistung [kW]" und „Rückk." (voller Name im Tooltip) stehen immer Bezeichner
+        // und Nennkälteleistung, ab 640 px dazu der Hersteller, ab 720 px der EER, ab 800 px die Rückkühlart, ab
+        // 960 px die Herkunft, ab 1200 px die Geräteart, ab 1280 px der Typ.
         Assert.Equal(0, stufen[Katalogfilterprofil.SpBezeichner]);
         Assert.Equal(0, stufen[Katalogfilterprofil.SpNennkaelteleistung]);
-        Assert.Equal(560, stufen[Katalogfilterprofil.SpHersteller]);
-        Assert.Equal(640, stufen[Katalogfilterprofil.SpEer]);
-        Assert.Equal(720, stufen[Katalogfilterprofil.SpRueckkuehlart]);
-        Assert.Equal(880, stufen[Katalogfilterprofil.SpHerkunft]);
+        Assert.Equal(640, stufen[Katalogfilterprofil.SpHersteller]);
+        Assert.Equal(720, stufen[Katalogfilterprofil.SpEer]);
+        Assert.Equal(800, stufen[Katalogfilterprofil.SpRueckkuehlart]);
+        Assert.Equal(960, stufen[Katalogfilterprofil.SpHerkunft]);
         // K-A: die Geräteart (lange Texte) kommt nach der Herkunft, vor dem Typ.
-        Assert.Equal(1040, stufen[Katalogfilterprofil.SpGeraeteart]);
-        Assert.Equal(1120, stufen[Katalogfilterprofil.SpTyp]);
+        Assert.Equal(1200, stufen[Katalogfilterprofil.SpGeraeteart]);
+        Assert.Equal(1280, stufen[Katalogfilterprofil.SpTyp]);
     }
 
     [Fact]
@@ -278,8 +278,8 @@ public class KaeltemaschineKatalogDialogTests : EposBunitContext
         foreach (string spalte in new[] { R.KFLT_SP_BEZEICHNER, R.KFLT_SP_NENNKAELTELEISTUNG, R.KFLT_SP_EER })
             Assert.Contains(spalte, kopf);
         // KD-3: der kurze Kopf der Kälteleistung wie bei der Wärmepumpe.
-        Assert.Equal("P_N", R.KFLT_SP_NENNKAELTELEISTUNG);
-        Assert.Contains("P_N [kW]", kopf);
+        Assert.Equal("Nennkälteleistung", R.KFLT_SP_NENNKAELTELEISTUNG);
+        Assert.Contains("Nennkälteleistung [kW]", kopf);
         Assert.Contains(R.KM_RUECKKUEHLART_LUFT, cut.Find(".epos-katalogliste tbody").TextContent);
         Assert.DoesNotContain("TROCKENKUEHLER", cut.Markup);
         Assert.Equal(new[] { R.ADM_BTN_SPEICHERN, R.ADM_BTN_VERWERFEN, R.ADM_BTN_IMPORT, R.ADM_BTN_NEU, R.ADM_BTN_BEENDEN },

@@ -515,8 +515,8 @@ public class SimulationKonfigSeiteTests : BunitContext
         => Kopplungswahl(seite).QuerySelectorAll("option").First(o => o.GetAttribute("value") == wert);
 
     /// <summary>
-    /// Die Wahl führt die vier Stufen der Wertliste; „aus", „Heizkreis (AK1)" und der geschlossene Kreis (AK3) sind wählbar,
-    /// Fahrplan (AK2) steht gesperrt mit seinem Grund — kein
+    /// Die Wahl führt die vier Stufen der Wertliste; „ohne Kopplung", „Heizkreis" und „geschlossener Kreis" sind wählbar,
+    /// „Fahrplan" steht gesperrt mit seinem Grund — kein
     /// Persistenzwert ohne Rechenweg (Kühlkonzept K7). Zeichnen schreibt nichts.
     /// </summary>
     [Fact]
@@ -544,7 +544,7 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Empty(_kopplungGeschrieben);
     }
 
-    /// <summary>„Heizkreis (AK1)" schreibt SOFORT, wie der Kühlschalter; „aus" schreibt NULL.</summary>
+    /// <summary>„Heizkreis" schreibt SOFORT, wie der Kühlschalter; „ohne Kopplung" schreibt NULL.</summary>
     [Fact]
     public void AK1_schreibt_sofort_und_aus_schreibt_null()
     {
@@ -560,7 +560,7 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Null(seite.Instance.Laufparameter.Anlagenkopplung);
     }
 
-    /// <summary>„geschlossener Kreis (AK3)" schreibt sofort und zeigt seinen Erklärtext (E102 Q-AK3-1, AK3-W4b).</summary>
+    /// <summary>„geschlossener Kreis" schreibt sofort und zeigt seinen Erklärtext (E102 Q-AK3-1, AK3-W4b).</summary>
     [Fact]
     public void AK3_schreibt_sofort_und_zeigt_den_Erklaertext()
     {
@@ -588,7 +588,7 @@ public class SimulationKonfigSeiteTests : BunitContext
 
     /// <summary>
     /// Steht eine nicht gebaute Stufe schon in der Datenbank, zeigt die Wahl sie, und die Zeile
-    /// sagt, dass der Lauf den Heizkreis (AK1) rechnet.
+    /// sagt, dass der Lauf den Heizkreis rechnet.
     /// </summary>
     [Fact]
     public void Eine_gespeicherte_nicht_gebaute_Stufe_steht_da_und_nennt_was_der_Lauf_rechnet()

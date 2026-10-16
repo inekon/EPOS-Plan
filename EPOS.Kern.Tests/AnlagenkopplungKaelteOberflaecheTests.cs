@@ -207,7 +207,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Ohne Kälteseite: keine Kacheln, kein Bild, kein Ausweis. Kühlgekoppelt: der Ausweis
-        /// „…, gekoppelt (AK1)", die Zeile mit Art, Auslegungspunkt und „sensibel", das Bild mit Lücken
+        /// „…, mit Anlagenkopplung", die Zeile mit Art, Auslegungspunkt und „sensibel", das Bild mit Lücken
         /// in den Stunden ohne Kühlbetrieb — und DIESELBEN Zahlen, die der Lauf in
         /// <c>Tab_ErgebnisGebaeude</c> legt.
         /// </summary>

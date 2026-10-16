@@ -124,7 +124,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             string nichtGebaut = string.Format(CultureInfo.CurrentCulture, WindowsFormsApplication1.MyResource.Resource.SIMENG_AK_STUFE_NICHT_GEBAUT,
-                                               DbWerte.ANLAGENKOPPLUNG_AK3);
+                                               Waermeuebergabevorgaben.Stufenname(DbWerte.ANLAGENKOPPLUNG_AK3));
             Rechnen(PROJEKT);
             var mit = SimulationProtokoll.Aktuell.Hinweise.ToList();
             Assert.DoesNotContain(nichtGebaut, mit);
@@ -209,7 +209,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(r.sim.Ak3KaelteRestKwh, kreis.KaelteRestKwh);
             Assert.True(kreis.KaelteschrankeZuKnappStunden + kreis.KaelteschrankeZuWeitStunden <= kreis.StundenAnDerKaelteschranke);
             Assert.Contains(hinweise, t => t.Contains(string.Format(CultureInfo.CurrentCulture, "{0}", kreis.StundenAnDerKaelteschranke))
-                                           && t.Contains("AK3"));
+                                           && t.StartsWith(WindowsFormsApplication1.MyResource.Resource.SIMENG_AK3K_KREISZAEHLER.Split(':')[0], StringComparison.Ordinal));
         }
 
         /// <summary>Kopiert die Zeilen von <paramref name="tabelle"/> mit neuer ID und zwei gesetzten Spalten; gibt die letzte ID zurück.</summary>
