@@ -1470,6 +1470,19 @@ nächste Basis einfriert, nimmt die beiden Schlüssel auf und streicht `--ohne` 
 > (`integrity_check` ok, `foreign_key_check` leer): **108 728 320 Byte, LFS-SHA-256
 > `b2b4e116659076d866bec69d8b25e1443d697e33186550d9562643429e18fbfe`**. Der Referenzlauf der CI-Auswahl gegen R55 bleibt PASS (18 Projekte, 601 CSV byte-gleich).
 
+> **Nachtrag — Schema 235 (KB-7a Wasserpreis in der Trägerkarte, 16.10.2026, hängt an 234
+> `BedarfsprofilEingabeartSchema`), Basis R55 unverändert.** `WasserpreisTraegerkarteSchema` (235 =
+> `BedarfsprofilEingabeartSchema.SCHRITT + 1`) legt den Träger „Wasser“ in `energy_carrier` (Preismodell `WATER`,
+> Einheit m³) und die Zeile `WATER` in `pricing_model` an, übernimmt die Wasserpreise der Anlagen in
+> `energy_project_settings` und lässt `Tab_Energieanlagen.Wasserpreis_EUR_m3` fallen. Gehoben aus der Fassung 234
+> (108 728 320 Byte, `b2b4e116…`) mit `Werkzeuge/Testdatenbankschema`; keine Anlage der Testdatenbank führte einen
+> Wasserpreis, der Inhaltsvergleich aller Tabellen zeigt allein die neue Trägerzeile, die neue Preismodellzeile, den
+> Spaltenwegfall an `Tab_Energieanlagen` (übrige Zellen gleich), `sqlite_sequence` und `Tab_Applikation.SchemaVersion`
+> (die Zapfprofil-Zellen und die Einheit „P“ von `DIN4708.p_b` erhalten). Kein Referenzprojekt rechnet ein Rückkühlwerk;
+> der Schritt wirkt auf kein Rechenergebnis. Die Testdatenbank steht auf **235** (`integrity_check` ok,
+> `foreign_key_check` leer): **108 744 704 Byte, LFS-SHA-256
+> `3478881f3c518127442c49a09b928edeba9b83f520ef100ba08c908ed61d15dc`**.
+
 ### Die Vorgängerbasis R54 (Dachflächen)
 
 Sechsunddreißig Projekte, 1 171 CSV, 7 983 Skalare, auf Linux eingefroren gegen die Testdatenbank `1f2cf95f…`
