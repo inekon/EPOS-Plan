@@ -117004,6 +117004,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}Profil „{1}“: Im Betriebskalender „{2}“ bleibt mit den Betriebsferien keine Stunde mit Bedarf; das Jahr rechnet ohne Betriebsferien. ähnelt.
+        /// </summary>
+        public static string SIMENG_TYPTAG_FERIEN_OHNE_WIRKUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_TYPTAG_FERIEN_OHNE_WIRKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}Profil „{1}“: Die Typtage ergeben im ganzen Jahr keinen Bedarf; die Rechnung entfällt und der Anteil bleibt 0. ähnelt.
+        /// </summary>
+        public static string SIMENG_TYPTAG_OHNE_BEDARF {
+            get {
+                return ResourceManager.GetString("SIMENG_TYPTAG_OHNE_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}Profil „{1}“: Typtag {2} hat keine Stundenwerte; die Tage mit diesem Typtag tragen keinen Bedarf. ähnelt.
+        /// </summary>
+        public static string SIMENG_TYPTAG_OHNE_STUNDEN {
+            get {
+                return ResourceManager.GetString("SIMENG_TYPTAG_OHNE_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}Profil „{1}“: Für {2} Zelle(n) der Typtagmatrix ist kein Typtag gesetzt ({3}); diese Tage tragen keinen Bedarf, die Jahressumme verteilt sich auf die übrigen Tage. ähnelt.
+        /// </summary>
+        public static string SIMENG_TYPTAG_ZELLEN_LEER {
+            get {
+                return ResourceManager.GetString("SIMENG_TYPTAG_ZELLEN_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Parallelverbund: Der Leitspeicher {0} ({1}) ist mit {2} Schichten gepflegt. Ein Verbund rechnet als EIN Wärmevorrat mit der aufsummierten Kapazität aller Behälter - eine aus dem Volumen des Leitspeichers abgeleitete Schichtung wäre falsch. Gerechnet wird ungeschichtet (1 Schicht); bitte entweder den Verbund auflösen oder die Schichtzahl auf 1 setzen. ähnelt.
         /// </summary>
         public static string SIMENG_VERBUND_SCHICHTUNG {

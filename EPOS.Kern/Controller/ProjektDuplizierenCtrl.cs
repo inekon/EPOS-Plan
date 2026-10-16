@@ -139,6 +139,9 @@ namespace WindowsFormsApplication1
             {"ID_Brauchwasser","Tab_Brauchwasser"},
             // K1: Zuordnung und Typkopie des Kaeltebedarfs zeigen auf die Kopfkopie DESSELBEN Projekts.
             {"ID_Kaeltebedarf","Tab_Kaeltebedarf"},
+            // KBP-4a: die Matrixzelle zeigt auf den Typtag DERSELBEN Projektkopie (Tab_Kaeltetyptag_Matrix haengt ueber
+            // ihren Fremdschluessel auf Tab_Kaeltebedarf am Plan).
+            {KaeltetyptagSchema.SPALTE_ID_TYPTAG, KaeltetyptagSchema.TAB_TYPTAG},
             // Ä20: Anlagenbezug der Kostenpositionen (Tab_ProjektWerte.ID_Anlage,
             // Migrationsschritt 45). Ohne Versatz zeigten die Positionen einer
             // Variante auf die Anlagen des QUELLprojekts und stünden dort als

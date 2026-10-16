@@ -222,6 +222,8 @@ namespace WindowsFormsApplication1
                     if (!ZeileKopieren(TYP_PROJ, t, new Dictionary<string, object> { ["ID"] = neuTyp, ["ID_Kaeltebedarf"] = neuId }))
                         return 0;
                 }
+            // KBP-4a (Konzept 3.5, 8.2): Typtage und Matrix reisen mit der eigenen Kopie.
+            if (!KaeltetyptagCtrl.Kopieren(idKopie, neuId, idProjekt)) return 0;
             return neuId;
         }
 

@@ -56461,5 +56461,17 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="KBP_GRAFIK_HERLEITUNG_ARBEIT" xml:space="preserve">
     <value>The working state of this dialog is calculated – annual total, monthly values, weekly profile and operating calendar, unsaved ones included. Annual profile, week and duration curve show the selected row; the months stack all rows.</value>
   </data>
+  <data name="SIMENG_TYPTAG_ZELLEN_LEER" xml:space="preserve">
+    <value>{0}profile "{1}": no typical day is assigned to {2} cell(s) of the typical-day matrix ({3}); these days carry no demand, the annual total is distributed over the remaining days.</value>
+  </data>
+  <data name="SIMENG_TYPTAG_OHNE_STUNDEN" xml:space="preserve">
+    <value>{0}profile "{1}": typical day {2} has no hourly values; the days using it carry no demand.</value>
+  </data>
+  <data name="SIMENG_TYPTAG_OHNE_BEDARF" xml:space="preserve">
+    <value>{0}profile "{1}": the typical days yield no demand over the whole year; the calculation is skipped and the share remains 0.</value>
+  </data>
+  <data name="SIMENG_TYPTAG_FERIEN_OHNE_WIRKUNG" xml:space="preserve">
+    <value>{0}profile "{1}": with the company holidays of operating calendar "{2}" no hour with demand remains; the year is calculated without company holidays.</value>
+  </data>
 </root>
 

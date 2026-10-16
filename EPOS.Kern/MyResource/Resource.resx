@@ -56468,5 +56468,17 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KBP_GRAFIK_HERLEITUNG_ARBEIT" xml:space="preserve">
     <value>Gerechnet wird der Arbeitsstand dieses Dialogs – Jahressumme, Monatswerte, Wochenprofil und Betriebskalender, auch ungespeichert. Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile, die Monate stapeln alle Zeilen.</value>
   </data>
+  <data name="SIMENG_TYPTAG_ZELLEN_LEER" xml:space="preserve">
+    <value>{0}Profil „{1}“: Für {2} Zelle(n) der Typtagmatrix ist kein Typtag gesetzt ({3}); diese Tage tragen keinen Bedarf, die Jahressumme verteilt sich auf die übrigen Tage.</value>
+  </data>
+  <data name="SIMENG_TYPTAG_OHNE_STUNDEN" xml:space="preserve">
+    <value>{0}Profil „{1}“: Typtag {2} hat keine Stundenwerte; die Tage mit diesem Typtag tragen keinen Bedarf.</value>
+  </data>
+  <data name="SIMENG_TYPTAG_OHNE_BEDARF" xml:space="preserve">
+    <value>{0}Profil „{1}“: Die Typtage ergeben im ganzen Jahr keinen Bedarf; die Rechnung entfällt und der Anteil bleibt 0.</value>
+  </data>
+  <data name="SIMENG_TYPTAG_FERIEN_OHNE_WIRKUNG" xml:space="preserve">
+    <value>{0}Profil „{1}“: Im Betriebskalender „{2}“ bleibt mit den Betriebsferien keine Stunde mit Bedarf; das Jahr rechnet ohne Betriebsferien.</value>
+  </data>
 </root>
 
