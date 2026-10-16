@@ -351,6 +351,8 @@ namespace WindowsFormsApplication1
                         AufbauText = a?.Text ?? "",
                         UAufbau = a?.UWert,
                         Herkunft = b.Herkunft,
+                        // MA-6b: die Herkunft des U-Werts nur zum Lesen (Assistent); der Schreibweg leitet sie neu ab.
+                        UHerkunft = b.U_Herkunft,
                         Quellkennung = b.Quellkennung,
                         IdNachbarzone = b.ID_Nachbarzone,
                         TrennflaecheZuordnung = b.Trennflaeche_Zuordnung
