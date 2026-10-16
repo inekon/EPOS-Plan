@@ -270,6 +270,41 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "Stammprojekt", "Variante G" }, tabellen[2]);
         }
 
+        /// <summary>
+        /// Bedingungen <c>hat.*</c> fragen im Rahmen ihres Blocks: in der Gruppe <c>{{#je variante|block 2}}</c> nach den
+        /// Varianten dieser Gruppe, in <c>{{#je variante}}</c> nach der laufenden Variante, außerhalb nach dem ganzen
+        /// Bericht. Gegenprobe: Eine Gruppe ohne den Inhalt bekommt keinen Abschnitt, auch wenn der Stamm oder eine
+        /// Variante einer anderen Gruppe ihn hat.
+        /// </summary>
+        [Fact]
+        public void Bedingungen_im_Gruppenblock_gelten_je_Gruppe()
+        {
+            byte[] v = Vorlage(
+                Absatz("{{#je variante|block 2}}"), Absatz("Gruppe"),
+                Absatz("{{#wenn hat.fehler}}"), Absatz("Gruppe mit Fehler"), Absatz("{{/wenn}}"),
+                Absatz("{{#wenn hat.veraltet}}"), Absatz("Gruppe veraltet"), Absatz("{{/wenn}}"),
+                Absatz("{{/je}}"),
+                Absatz("{{#je variante}}"), Absatz("{{stand.anzeige}}"),
+                Absatz("{{#wenn hat.fehler}}"), Absatz("Variante mit Fehler"), Absatz("{{/wenn}}"),
+                Absatz("{{/je}}"),
+                Absatz("{{#wenn hat.fehler}}"), Absatz("Bericht mit Fehler"), Absatz("{{/wenn}}"),
+                Absatz("{{#wenn hat.veraltet}}"), Absatz("Bericht veraltet"), Absatz("{{/wenn}}"));
+            BerichtsDaten daten = Daten(4);
+            daten.Varianten.Single(x => x.Variantenname == "Variante A").Fehler = "Lauf abgebrochen";
+            daten.Varianten.Single(x => x.IstStamm).ErgebnisVeraltet = true;
+            string ziel = Ziel("gruppe_hat.docx");
+            Fuellergebnis e = Fuelle(v, daten, ziel);
+
+            using WordprocessingDocument doc = Pruefe(ziel, e);
+            Assert.Equal(new[]
+            {
+                "Gruppe", "Gruppe mit Fehler",                 // A, B: A hat den Fehler
+                "Gruppe",                                      // C, D: kein Fehler, der veraltete Stamm zählt nicht
+                "Variante A", "Variante mit Fehler", "Variante B", "Variante C", "Variante D",
+                "Bericht mit Fehler", "Bericht veraltet",
+            }, Absaetze(doc));
+        }
+
         // =====================================================================
         //  Leerfälle, Überschriften, Abschnitte
         // =====================================================================
