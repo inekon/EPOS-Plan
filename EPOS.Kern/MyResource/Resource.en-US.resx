@@ -55117,6 +55117,21 @@ chart</value>
   <data name="DGF_ROLLE_KAELTE_DEZENTRAL" xml:space="preserve">
     <value>Cooling, decentralised (split)</value>
   </data>
+  <data name="DGF_ROLLE_KNOTEN" xml:space="preserve">
+    <value>Nodes (energy flow)</value>
+  </data>
+  <data name="DGF_ROLLE_BRENNSTOFF" xml:space="preserve">
+    <value>Fuel</value>
+  </data>
+  <data name="DGF_ROLLE_UMWELTWAERME" xml:space="preserve">
+    <value>Ambient heat</value>
+  </data>
+  <data name="DGF_ROLLE_KAELTE" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="DGF_ROLLE_VERLUST" xml:space="preserve">
+    <value>Losses</value>
+  </data>
   <data name="CHART_LEGENDE_KAELTE_DEZENTRAL" xml:space="preserve">
     <value>decentralised (split)</value>
   </data>

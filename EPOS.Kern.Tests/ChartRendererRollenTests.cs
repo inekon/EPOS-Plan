@@ -220,6 +220,68 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Das Energieflussbild</b> (SK-2, Konzept Energieflussbild 3.4) hat keine Reihen, sondern Bänder und Knoten:
+        /// Jedes Band trägt genau die Rolle seiner Gabe, jeder Knoten <c>KNOTEN</c> bzw. <c>VERLUST</c> — auch unter einer
+        /// Palette, in der jede dieser Rollen die Hausfarbe der nächsten trägt, sodass die Rückwärtssuche überall eine
+        /// fremde Rolle fände. Im SVG kommt die getauschte Farbe der Rolle an.
+        /// </summary>
+        [Fact]
+        public void Energiefluss_traegt_die_Rolle_jedes_Bandes_und_Knotens()
+        {
+            Farbrolle[] tausch =
+            {
+                Farbrolle.BRENNSTOFF, Farbrolle.UMWELTWAERME, Farbrolle.KAELTE, Farbrolle.VERLUST, Farbrolle.KNOTEN,
+                Farbrolle.STROM_NETZ, Farbrolle.WAERME_WP, Farbrolle.HEIZWAERME
+            };
+            var farben = new Dictionary<Farbrolle, Farbe>();
+            for (int i = 0; i < tausch.Length; i++)
+                farben[tausch[i]] = Farbpalette.Vorgabe[tausch[(i + 1) % tausch.Length]];
+            var palette = new Farbpalette(farben, Farbpalette.Vorgabe);
+
+            var knoten = new List<EnergieflussBildKnoten>
+            {
+                new EnergieflussBildKnoten { Kennung = "gas", Spalte = 0, Name = "Erdgas", Art = EnergieflussKnotenart.Quelle },
+                new EnergieflussBildKnoten { Kennung = "netz", Spalte = 0, Name = "Netz", Art = EnergieflussKnotenart.Quelle },
+                new EnergieflussBildKnoten { Kennung = "umwelt", Spalte = 0, Name = "Umwelt", Art = EnergieflussKnotenart.Quelle },
+                new EnergieflussBildKnoten { Kennung = "kessel", Spalte = 1, Name = "Kessel", Art = EnergieflussKnotenart.Wandler },
+                new EnergieflussBildKnoten { Kennung = "v", Spalte = 1, Name = "Verlust", Art = EnergieflussKnotenart.Verlust },
+                new EnergieflussBildKnoten { Kennung = "wp", Spalte = 3, Name = "WP", Art = EnergieflussKnotenart.Wandler },
+                new EnergieflussBildKnoten { Kennung = "km", Spalte = 3, Name = "KM", Art = EnergieflussKnotenart.Wandler },
+                new EnergieflussBildKnoten { Kennung = "heizung", Spalte = 6, Name = "Heizung", Art = EnergieflussKnotenart.Senke },
+                new EnergieflussBildKnoten { Kennung = "kuehlung", Spalte = 6, Name = "Kühlung", Art = EnergieflussKnotenart.Senke }
+            };
+            var baender = new List<EnergieflussBildBand>
+            {
+                new EnergieflussBildBand { Von = "gas", Nach = "kessel", Mwh = 10, Rolle = Farbrolle.BRENNSTOFF },
+                new EnergieflussBildBand { Von = "kessel", Nach = "v", Mwh = 1, Rolle = Farbrolle.VERLUST, Art = EnergieflussBandart.Verlust },
+                new EnergieflussBildBand { Von = "kessel", Nach = "heizung", Mwh = 9, Rolle = Farbrolle.HEIZWAERME },
+                new EnergieflussBildBand { Von = "netz", Nach = "wp", Mwh = 3, Rolle = Farbrolle.STROM_NETZ },
+                new EnergieflussBildBand { Von = "umwelt", Nach = "wp", Mwh = 6, Rolle = Farbrolle.UMWELTWAERME },
+                new EnergieflussBildBand { Von = "wp", Nach = "heizung", Mwh = 9, Rolle = Farbrolle.WAERME_WP },
+                new EnergieflussBildBand { Von = "umwelt", Nach = "km", Mwh = 4, Rolle = Farbrolle.UMWELTWAERME },
+                new EnergieflussBildBand { Von = "km", Nach = "kuehlung", Mwh = 4, Rolle = Farbrolle.KAELTE }
+            };
+
+            using (new Palettenwahl(palette))
+            {
+                Zeichenmodell m = ChartRenderer.EnergieflussModell(new EnergieflussBildDaten { Knoten = knoten, Baender = baender });
+                foreach (EnergieflussBildBand b in baender)
+                {
+                    Assert.NotEqual(b.Rolle, Farbpalette.Ton(Farbpalette.Aktuell[b.Rolle]).Rolle);
+                    Assert.Equal(new[] { b.Rolle }, Rollen(m, "fluss:" + b.Von + ":" + b.Nach));
+                }
+                foreach (EnergieflussBildKnoten k in knoten)
+                    Assert.Equal(new[] { k.Art == EnergieflussKnotenart.Verlust ? Farbrolle.VERLUST : Farbrolle.KNOTEN },
+                                 Rollen(m, "knoten:" + k.Kennung).Where(r => r != Farbrolle.RAHMEN).ToArray());
+
+                // Im SVG trägt das Rechteck des Knotens die getauschte Farbe der Rolle KNOTEN.
+                SvgKnoten rechteck = SvgSchreiber.Baum(m, palette).Alle()
+                    .First(k => k.Name == "rect" && Attribut(k, "data-marke") == "knoten:kessel");
+                Assert.Equal(Diagrammfarben.Hex(palette[Farbrolle.KNOTEN]), Attribut(rechteck, "fill"));
+            }
+        }
+
+        /// <summary>
         /// Das Bild der Wache samt den Namen und Rollen seiner Reihen und der Rolle der
         /// zweiten Achse (<c>null</c> = ohne).
         /// </summary>

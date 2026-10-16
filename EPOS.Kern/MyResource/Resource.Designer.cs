@@ -24035,6 +24035,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzjahr ähnelt.
         /// </summary>
         public static string DGF_ROLLE_ERSATZJAHR {
@@ -24089,11 +24098,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_KAELTE {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kälte dezentral (Split) ähnelt.
         /// </summary>
         public static string DGF_ROLLE_KAELTE_DEZENTRAL {
             get {
                 return ResourceManager.GetString("DGF_ROLLE_KAELTE_DEZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Knoten (Energiefluss) ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_KNOTEN {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_KNOTEN", resourceCulture);
             }
         }
         
@@ -24449,11 +24476,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umweltwärme ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_UMWELTWAERME {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_UMWELTWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Summe Stromverbrauch ähnelt.
         /// </summary>
         public static string DGF_ROLLE_VERBRAUCH_GESAMT {
             get {
                 return ResourceManager.GetString("DGF_ROLLE_VERBRAUCH_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlust ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_VERLUST {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_VERLUST", resourceCulture);
             }
         }
         
