@@ -68,7 +68,7 @@ Der Speicherkatalog lässt sich auch '''einlesen''' statt nur von Hand zu pflege
 
 Der Bezeichner entsteht als „Hersteller: Modell" und bleibt in der Maske änderbar. Was eine Quelle nicht liefert, bleibt '''leer''' statt erfunden zu werden und fällt im Rechenweg auf die Vorgaben dieser Seite zurück: ein fehlender Umlaufwirkungsgrad auf 0,90, eine fehlende Leistung auf 1 C.
 
-'''Kosten kommen aus keiner der beiden Quellen.''' Der Katalogsatz führt keine Kostenfelder; nach dem Einlesen hat er keinen Verweis auf eine Satzvorlage, die Gerätekosten bleiben leer, und die Maske sagt es in einer Zeile. Sie sind vor der Wirtschaftlichkeitsrechnung in der Kostenverwaltung zu ergänzen — ein Speicher mit 0 €/kWh ist in der Rechnung gratis und damit immer die beste Lösung. Ebenso wenig liefern die Quellen Degradation, Start-Ladezustand und zugesicherte Zyklen.
+'''Kosten kommen aus keiner der beiden Quellen.''' Der Katalogsatz führt keine Kostenfelder; nach dem Einlesen hat er keinen Verweis auf eine Satzvorlage, der Kostensatz bleibt leer, und die Maske sagt es in einer Zeile. Sie sind vor der Wirtschaftlichkeitsrechnung in der Kostenverwaltung zu ergänzen — ein Speicher mit 0 €/kWh ist in der Rechnung gratis und damit immer die beste Lösung. Ebenso wenig liefern die Quellen Degradation, Start-Ladezustand und zugesicherte Zyklen.
 
 Am Rechenweg ändert der Import nichts: Er schreibt in dieselben Katalogfelder, die eine Eingabe von Hand auch beschreibt.
 

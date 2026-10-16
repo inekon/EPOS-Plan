@@ -185,7 +185,7 @@ Der Stromspeicherkatalog führt das Gerät — nicht die im Projekt geplante Spe
 
 '''Gerätetechnik''' (alle Felder dürfen leer bleiben und heißen dann nicht gepflegt): Wirkungsgrad (Round-Trip), Zyklen (zugesichert), Standby-Verbrauch (W), Selbstentladung (%/Monat).
 
-'''Kosten''': Der Satz führt keine Kostenfelder. Die Maske zeigt die Gerätekosten als gesperrten Lesewert mit Vermerk auf die Kostenverwaltung; sie stammen aus der Satzvorlage des Satzes – Investition je kWh Kapazität, je kW Leistung und als fester Betrag, Betrieb als Verschleiß je entladener kWh –, ohne Verweis auf den Kostenkatalog bleibt das Feld leer. Gepflegt werden die Kosten in der Kostenverwaltung.
+'''Kosten''': Der Satz führt keine Kostenfelder. Die Maske zeigt den Kostensatz je kWh als gesperrten Lesewert mit Vermerk auf die Kostenverwaltung; sie stammen aus der Satzvorlage des Satzes – Investition je kWh Kapazität, je kW Leistung und als fester Betrag, Betrieb als Verschleiß je entladener kWh –, ohne Verweis auf den Kostenkatalog bleibt das Feld leer. Gepflegt werden die Kosten in der Kostenverwaltung.
 
 Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Import…'', ''Beenden''; ''Duplizieren…'', ''Schloss aufheben…''/''Schloss setzen…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
