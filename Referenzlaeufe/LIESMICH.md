@@ -848,8 +848,8 @@ danach im Wegweiser desselben Ordners.
 
 **`2026-10-16_R57_Schnellaufheizung/`** — **achtunddreißig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065, 1066, 1067, 1068, 1069, 1070, 1071, 1072, 1073), **1 233 CSV**, **8 596 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 16.10.2026, Stand `b6f0a8276`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **235**, 109 588 480 Byte, LFS-SHA-256 `576fa997…`, mit den Projekten 1053 bis 1073,
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 16.10.2026, Stand `18a3d1d72`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **237**, 109 617 152 Byte, LFS-SHA-256 `75fb0a61…`, mit den Projekten 1053 bis 1073,
 dem erfundenen Typtagsatz und den Satteldächern von 1052 und 1054; die Nachträge der Schemaschritte unten sind darin
 enthalten). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065, 1066 bis 1071 und 1073) jeden Push und rechnet dieselben Projekte
@@ -892,6 +892,10 @@ Projekt 1072 und `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests` di
 > Referenzprojekt 1073“ unten). Der Referenzlauf der siebenunddreißig Projekte von R56 gegen R56 ist PASS (37 von 37,
 > 12 736 541 Werte) und byte-gleich (1 205/1 205 CSV); 1073 bringt 28 CSV und 335 Skalare dazu. Zwei Läufe sind
 > byte-gleich (1 233/1 233 CSV), der gestörte Lauf von 1073 (`--stoerung ulp`) ist gegen den ungestörten PASS.
+> Neu eingefroren auf der Testdatenbank 237 (Fassung 236 von origin, Schritt 237 und die Saat 1073 nachgezogen): die
+> siebenunddreißig Projekte von R56 sind gegen R56 PASS (12 736 541 Werte) und byte-gleich, 1073 ist gegen die erste
+> Fassung von R57 byte-gleich (1 233/1 233 CSV gleich, allein `protokoll.txt` neu); die Schritte 236 und 237 wirken auf
+> kein Rechenergebnis.
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
@@ -1474,6 +1478,15 @@ Projekt 1072 und `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests` di
 > auf kein Rechenergebnis. Die Testdatenbank steht auf **236** (`integrity_check` ok, `foreign_key_check` leer):
 > **108 773 376 Byte, LFS-SHA-256 `c403eb645c9a9731e32cb49d74f2339516b1d6c3efd4a0914bae09118f6f9cfe`**. Der Referenzlauf
 > der CI-Auswahl gegen R56 bleibt PASS (18 Projekte, 601 CSV byte-gleich).
+
+> **Nachtrag — Schema 237 (DA-8 Absorptions- und Emissionsgrad je Bauteil, 16.10.2026, hängt an 236
+> `KaeltetyptagSchema`), Basis R57 unverändert.** `BauteilStrahlungSchema` (237 = `KaeltetyptagSchema.SCHRITT + 1`) legt
+> `Absorptionsgrad_Solar` und `Emissionsgrad` (REAL, `CHECK` 0 bis 1, leer heißt Festwert) an `Tab_Bauteilaufbau(_STAMM)`
+> und `Tab_Bauteil(_STAMM)` an, acht leere Spalten, kein DML. Gehoben aus der origin-Fassung 236 (`c403eb64…`) mit
+> `Werkzeuge/Testdatenbankschema`; Tabellen- und Indexliste und die Zeilenzahl jeder Tabelle bleiben gleich, die Größe
+> ändert sich nicht. Danach ist das Referenzprojekt 1073 mit seinem Skript nachgesät (Abschnitt „Das Referenzprojekt
+> 1073“). Die Testdatenbank steht auf **237** (`integrity_check` ok, `foreign_key_check` leer): **109 617 152 Byte,
+> LFS-SHA-256 `75fb0a61eca6bfad163e5ca3581d2e7bb6a29937169b19c2cb4b8252a0f9d15e`**.
 
 ### Die Vorgängerbasis R56 (Wasserkosten)
 
@@ -2103,9 +2116,9 @@ Das Skript ist wiederholbar (steht 1073 schon, Abbruch ohne Schreiben mit Rückg
 byte-gleich), schreibt in eine Arbeitsdatei neben der Datenbank ohne `VACUUM`, prüft Vorlage (Sollwertrampe, AK1),
 Zeilenzahlen der Kopie, Zonen und Bauteile, jede gesäte Zelle, `foreign_key_check` und `integrity_check` und ersetzt erst
 dann das Original. Die Kopie fällt auf die nächste freie Projekt-ID; vorausgesetzt ist 1072 als höchste. Nach einer
-Neufassung der Testdatenbank wird es nach 1072 gezogen. Die Testdatenbank mit 1073 (Schemastand 235, `integrity_check` ok,
-`foreign_key_check` leer): **109 588 480 Byte, LFS-SHA-256
-`576fa9976ff36a3ff419bb43efd7dca60a773094ea04af146dcdd6ee114a0474`**.
+Neufassung der Testdatenbank wird es nach 1072 gezogen. Die Testdatenbank mit 1073 (Schemastand 237, `integrity_check` ok,
+`foreign_key_check` leer): **109 617 152 Byte, LFS-SHA-256
+`75fb0a61eca6bfad163e5ca3581d2e7bb6a29937169b19c2cb4b8252a0f9d15e`**.
 
 ## Die wichtigste Regel
 

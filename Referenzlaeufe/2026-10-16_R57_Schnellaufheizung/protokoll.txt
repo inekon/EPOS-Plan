@@ -1,24 +1,22 @@
-﻿# Referenzlauf (Kern) vom 16.10.2026 14:42
+﻿# Referenzlauf (Kern) vom 16.10.2026 16:26
 
-Quelle:        /home/user/wt/sa4/Referenzlaeufe/Kenndaten_Test.sqlite
-Arbeitskopie:  /home/user/wt/sa4/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
+Quelle:        /home/user/wt/integ11/Referenzlaeufe/Kenndaten_Test.sqlite
+Arbeitskopie:  /home/user/wt/integ11/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
 Kultur:        de-DE
 Zielordner:    Referenzlaeufe/2026-10-16_R57_Schnellaufheizung
 Projekte:      1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065, 1066, 1067, 1068, 1069, 1070, 1071, 1072, 1073
-Dauer:         00:00:27
+Dauer:         00:00:22
 
 ## Ablauf
 
 ```
 Referenzlauf (Kern) gestartet.
-Projektwurzel: /home/user/wt/sa4
+Projektwurzel: /home/user/wt/integ11
 Zielordner:    Referenzlaeufe/2026-10-16_R57_Schnellaufheizung
 
-Quelle vorgegeben (--quelle): /home/user/wt/sa4/Referenzlaeufe/Kenndaten_Test.sqlite
-WARNUNG: Neben der Quelldatenbank liegt Kenndaten_Test.sqlite-wal. Die Datenbank wurde nicht sauber geschlossen; die Kopie enthaelt nur den eingecheckpointeten Stand.
-WARNUNG: Neben der Quelldatenbank liegt Kenndaten_Test.sqlite-shm. Die Datenbank wurde nicht sauber geschlossen; die Kopie enthaelt nur den eingecheckpointeten Stand.
-Arbeitskopie angelegt: /home/user/wt/sa4/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite (104 MB)
-DB-Pfad der App verifiziert: /home/user/wt/sa4/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
+Quelle vorgegeben (--quelle): /home/user/wt/integ11/Referenzlaeufe/Kenndaten_Test.sqlite
+Arbeitskopie angelegt: /home/user/wt/integ11/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite (104 MB)
+DB-Pfad der App verifiziert: /home/user/wt/integ11/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
 
 Projektlandschaft wird gelesen ...
 52 Projekte in Tab_Projekt.
@@ -148,7 +146,7 @@ Projekt 1008 "Heinestr 15" wird gerechnet ...
 Simulation startet fuer Projekt 1008 ...
 Simulation beendet, Ergebnis-Kopf-ID 214.
 Projekt 1008: 29 CSV-Dateien, 201 Skalare.
-  OK - 29 Dateien in 00:01
+  OK - 29 Dateien in 00:00
 Projekt 1017 "WP_PV-Speicher" wird gerechnet ...
 Simulation startet fuer Projekt 1017 ...
 Simulation beendet, Ergebnis-Kopf-ID 215.
@@ -179,7 +177,7 @@ Projekt 1039 "Mehrgebäude" wird gerechnet ...
 Simulation startet fuer Projekt 1039 ...
 Simulation beendet, Ergebnis-Kopf-ID 220.
 Projekt 1039: 31 CSV-Dateien, 227 Skalare.
-  OK - 31 Dateien in 00:01
+  OK - 31 Dateien in 00:00
 Projekt 1040 "zwei Puffer je Kanal" wird gerechnet ...
 Simulation startet fuer Projekt 1040 ...
 Simulation beendet, Ergebnis-Kopf-ID 221.
@@ -344,6 +342,6 @@ Simulation beendet, Ergebnis-Kopf-ID 250.
 Projekt 1073: 28 CSV-Dateien, 335 Skalare.
   OK - 28 Dateien in 00:01
 
-Fertig. Gesamtdauer 00:00:27
+Fertig. Gesamtdauer 00:00:22
 Erfolgreich: 38 von 38
 ```
