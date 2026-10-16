@@ -1,7 +1,7 @@
 # Befund H — Ost/West-Messung und Rechenzeit des Prototyps (15.09.2026)
 
 **Protokoll.** Befund eines Prüf-Agenten (Modell Opus) im Auftrag des Konzepts
-[`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
+[`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
 Sitzung vom 15.09.2026, als Nachlauf zu den Befunden D bis G (das „billigste fehlende
 Experiment" der Kritik). Wortlaut wie geliefert; Speicherindizes 0-basiert in UTC-Reihenfolge.
 Pfade unter `epos-spike` bezeichnen die Prüfwerkzeuge außerhalb des Repositoriums.

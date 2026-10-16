@@ -1,6 +1,6 @@
 # Befund M — der Gebäudeeditor und die Änderungen für VDI 6007 (15.09.2026)
 
-**Protokoll.** Befund M eines Erkundungs-Agenten (Modell Opus, nur lesend) im Auftrag des Umsetzungskonzepts [`../Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md), Sitzung vom 15.09.2026.
+**Protokoll.** Befund M eines Erkundungs-Agenten (Modell Opus, nur lesend) im Auftrag des Umsetzungskonzepts [`../aktuell/Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../aktuell/Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md), Sitzung vom 15.09.2026.
 
 Grundlage sind die Entscheide E1 (Stundenmodell ist die Vorgabe für alle Gebäude, Konzept
 N1.1) und E2 (Gewichte gestrichen, Dialog auf U·A, Konzept N1.6) sowie die Kapitel 4.4,
@@ -1037,7 +1037,7 @@ G1. Die Sichtabnahme unter Windows und der Wiki-Eintrag kommen aus G2.
 ## 6. Offene Punkte
 
 1. **Die Zieldatei dieses Befundes verweist auf
-   `../Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`, das es noch nicht
+   `../aktuell/Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`, das es noch nicht
    gibt.** `EPOS.Kern.Tests/DokumentationLinkWacheTests` prüft jeden relativen Verweis;
    bis das Umsetzungskonzept angelegt und dieser Befund in `Dokumentation/LIESMICH.md`
    eingetragen ist, ist die Wache rot.

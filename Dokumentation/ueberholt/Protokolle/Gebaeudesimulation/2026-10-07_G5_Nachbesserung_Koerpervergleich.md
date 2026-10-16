@@ -1,7 +1,7 @@
 # Protokoll G5-Nachbesserung — Körpervergleich an echten HottCAD-Dateien (07.10.2026)
 
 **Sitzung:** IFC / Gebäudeimport, Statuszeile **#808**. Commits: `2b0dc69be` (Ohrenschnitt), `cb251e48c` (Bezugsgrößen), `bc247d1fb` (Meldungen je Bauteilart, Aussparung, Körperrest).
-**Entscheid:** E101; Abstimmung [G5 IFC](../../../aktuell/Gebaeudesimulation/2026-10-07_Abstimmung_G5_IFC.md); Vorgänger [G5-1 und G5-2](2026-10-07_G5-1_G5-2_Bauteilkoerper_Oeffnungen.md).
+**Entscheid:** E101; Abstimmung [G5 IFC](../../2026-10-07_Abstimmung_G5_IFC.md); Vorgänger [G5-1 und G5-2](2026-10-07_G5-1_G5-2_Bauteilkoerper_Oeffnungen.md).
 
 ## 1 Anlass
 

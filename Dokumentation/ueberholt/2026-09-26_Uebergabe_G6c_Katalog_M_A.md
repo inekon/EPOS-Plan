@@ -12,8 +12,8 @@ ersetzt kein Konzept; die Sachlage steht in den Papieren selbst.
 ## 1 Was fertig ist
 
 - **G4b samt Namensabgleich** ist abgeschlossen und gepusht bis `01f443e0`, CI grün: Schemaschritt 146
-  (Synonyme), [Protokoll G4b](../../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G4b_Bauteilimport.md),
-  [Leitkonzept](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.49.
+  (Synonyme), [Protokoll G4b](Protokolle/Gebaeudesimulation/2026-09-25_G4b_Bauteilimport.md),
+  [Leitkonzept](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.49.
 - **Nacharbeiten G4b:** erledigt (26.09.2026): Azimut der Bauteilliste auf eine Nachkommastelle gerundet (nur
   Anzeige); vorgemerkte Zuordnungen entfernter Importzeilen — kein Fehler, `GebaeudeHuelle.Vorgemerkt` bildet
   sie je Import aus den verbliebenen Zeilen, jetzt mit Test gehalten; Knopf ‚Baustoff-Zuordnungen…‘ im
@@ -27,15 +27,15 @@ ersetzt kein Konzept; die Sachlage steht in den Papieren selbst.
   größten gemeinsamen Fläche; **M12** (a) 50 Zonen als Vorgabe, Warnung mit Rückfrage und Vorschlag einer
   gröberen Regel; **M13** (a) vollständige Rekonstruktion der Nachbarschaften über die Geometrie. Alle nach
   Empfehlung; vor G6c ist kein Anwenderentscheid mehr offen. Das
-  [Register](../Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) zählt nach dem Merge mit G6b (E49: M3, M5
+  [Register](../aktuell/Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) zählt nach dem Merge mit G6b (E49: M3, M5
   und M6) 1 offenen Punkt (M11, vor G6d).
 - **E51** (26.09.2026, Leitkonzept N1.58): Klassen und Standards ohne Katalogsatz bekommen **freie Werte aus
   Stein/Loga (2025)**, die Klassen **M und A eigene Katalogsätze**; F4 des
-  [Konzepts Baualtersklassen](../Konzept_Baualtersklassen_Energiestandard_EPOS-Plan.md) ist aufgehoben, E27
+  [Konzepts Baualtersklassen](../aktuell/Konzept_Baualtersklassen_Energiestandard_EPOS-Plan.md) ist aufgehoben, E27
   bei U12 geändert.
 - **Nachgezogen:** Leitkonzept N1.57 und N1.58; Register (Kopf, Kapitel 0, U12, M7, M8, M12, M13,
-  Kapitel 9); [Statusdatei](../Status_Gebaeudesimulation_VDI6007.md) (Kopf, E50, E51, G4, G6c, Papiere);
-  [Mehrzonenkonzept](../Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) (Kopf, 2.9, 6.1, 6.2, 6.5, 6.6, 10); Konzept
+  Kapitel 9); [Statusdatei](../aktuell/Status_Gebaeudesimulation_VDI6007.md) (Kopf, E50, E51, G4, G6c, Papiere);
+  [Mehrzonenkonzept](../aktuell/Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) (Kopf, 2.9, 6.1, 6.2, 6.5, 6.6, 10); Konzept
   Baualtersklassen (Kopf, 4, F4).
 - **G6b** (Sitzung AK1, „Gebäudesimulation EPOS-Plan") ist umgesetzt und in diesen Stand gemergt (W0 bis W5,
   Leitkonzept N1.55, N1.56): Schemaschritt 147 (`ID_Nachbarzone`, `Trennflaeche_Zuordnung`,
@@ -58,16 +58,16 @@ auch der Inhalt der Welle B erledigt ist. Welle C ist gebaut — der Zuordnungsd
 Obergrenze samt gröberer Regel, Zonen und Flächen je Zone (virtualisierte `Katalogliste`, Rasterprobe grün);
 gespeichert wird mit der Projektliste in einem Vorgang. Inhalt, sechzehn Festlegungen der Umsetzung, der
 Keller-Befund für G6d und die Nachweise stehen im
-[Protokoll G6c](../../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md) und im
-[Leitkonzept](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.57. Nicht abgedeckt sind die Proben
+[Protokoll G6c](Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md) und im
+[Leitkonzept](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.57. Nicht abgedeckt sind die Proben
 13–16 und 18 (FZK-Haus, DigitalHub, M10); die eigenen Importproben halten die Regeln ersatzweise. Offen aus
 Welle C: die Trenndecke ohne Raumgrenzen (Mehrzonenkonzept 6.5) und Zonen von Hand zusammenlegen oder
 trennen — beide trägt der Kern nicht; die Windows-Sichtabnahme. Welle E (Wiki) ist in dieser Sitzung
-gestoppt; der Logbuch-Satz steht im [Update-Papier](../Wiki_Update_2026-09-26.md) unter 1.2.0.5.
+gestoppt; der Logbuch-Satz steht im [Update-Papier](../aktuell/Wiki_Update_2026-09-26.md) unter 1.2.0.5.
 
 **Grundlage:** Mehrzonenkonzept 6 (Zonierung, Grenzflächen, Materialien, Zuordnungsdialog, Rückfälle,
 Fehlerbilder, Grundriss) und 9 (Stufe G6c, 16–26 PT ohne X1…X3);
-[Datenaustauschkonzept](../Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 3.3 (gbXML-Regeln X1…X4, nach
+[Datenaustauschkonzept](../aktuell/Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 3.3 (gbXML-Regeln X1…X4, nach
 D16 mit G6c); Register M7, M8, M10, M12, M13 (alle entschieden).
 
 **Abhängigkeit von G6b W5 — erfüllt.** W5 ist gemergt: Der Lauf rechnet bis zu 50 Zonen, gespeichert wird
@@ -86,7 +86,7 @@ D16 mit G6c); Register M7, M8, M10, M12, M13 (alle entschieden).
 
 | Welle | Inhalt | Abnahme |
 |---|---|---|
-| **A — Zonierung im Kern** (erledigt, [Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md)) | Regelkette Z1…Z5 mit Vorbelegung **Z4 je Geschoss** und Rückfall Z5 ohne Raumgrenzen (M7, 6.1, 6.5); gbXML X1…X3 neben dem vorhandenen X4 (X2 entspricht Z4); Beheizung B1…B6; **Mindestgröße** nach M8: eine Zone unter max(2 m², 2 % der Gebäudegrundfläche) wird dem Nachbarn mit der größten gemeinsamen Grenzfläche zugeschlagen, ohne Nachbarn bleibt sie mit Warnung stehen (6.1, Fehlerbild „zu klein"); **Obergrenze** nach M12: über 50 Zonen Warnung mit Rückfrage und Vorschlag einer gröberen Regel (auf Geschosse zusammenlegen, 6.6), die Rechnung lehnt darüber benannt ab (2.9), Konstante `GebaeudeZonenregeln.PFLEGEGRENZE` aus E46/A3; **Paarbildung der Raumgrenzen über die Geometrie** nach M13 (6.2: Kandidaten über dasselbe Bauteil, eindeutig bei einem Kandidaten, sonst Flächeninhalt innerhalb 1 % und Schwerpunktabstand kleiner als die Bauteildicke in Weltkoordinaten, sonst „unbekannt"); Randbedingung je Grenze (Tabelle 6.2); Öffnungsabzug je Fläche; **Gegenprobe** der Trennflächen A→B gegen B→A ab **2 %** und geschlossene Hülle je Zone; Fehlerbilder 6.6 mit Schlüsseln in beiden `.resx`. Plattformfrei, ohne Oberfläche | Proben 13, 14, 16 und 18 (Mehrzonenkonzept 8.2), 15 mit angereicherter Datei; gbXML-Probe 9 (Datenaustauschkonzept); der Einzonenfall Z5 bzw. X4 bleibt gleich dem Vorschlag aus G4b |
+| **A — Zonierung im Kern** (erledigt, [Protokoll](Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md)) | Regelkette Z1…Z5 mit Vorbelegung **Z4 je Geschoss** und Rückfall Z5 ohne Raumgrenzen (M7, 6.1, 6.5); gbXML X1…X3 neben dem vorhandenen X4 (X2 entspricht Z4); Beheizung B1…B6; **Mindestgröße** nach M8: eine Zone unter max(2 m², 2 % der Gebäudegrundfläche) wird dem Nachbarn mit der größten gemeinsamen Grenzfläche zugeschlagen, ohne Nachbarn bleibt sie mit Warnung stehen (6.1, Fehlerbild „zu klein"); **Obergrenze** nach M12: über 50 Zonen Warnung mit Rückfrage und Vorschlag einer gröberen Regel (auf Geschosse zusammenlegen, 6.6), die Rechnung lehnt darüber benannt ab (2.9), Konstante `GebaeudeZonenregeln.PFLEGEGRENZE` aus E46/A3; **Paarbildung der Raumgrenzen über die Geometrie** nach M13 (6.2: Kandidaten über dasselbe Bauteil, eindeutig bei einem Kandidaten, sonst Flächeninhalt innerhalb 1 % und Schwerpunktabstand kleiner als die Bauteildicke in Weltkoordinaten, sonst „unbekannt"); Randbedingung je Grenze (Tabelle 6.2); Öffnungsabzug je Fläche; **Gegenprobe** der Trennflächen A→B gegen B→A ab **2 %** und geschlossene Hülle je Zone; Fehlerbilder 6.6 mit Schlüsseln in beiden `.resx`. Plattformfrei, ohne Oberfläche | Proben 13, 14, 16 und 18 (Mehrzonenkonzept 8.2), 15 mit angereicherter Datei; gbXML-Probe 9 (Datenaustauschkonzept); der Einzonenfall Z5 bzw. X4 bleibt gleich dem Vorschlag aus G4b |
 | **B — Vorschlag mehrerer Zonen** (erledigt, in A aufgegangen) | aufbauend auf `GebaeudeBauteilvorschlag` (G4b) und dem Namensabgleich: je Zone Bauteile, Aufbauten und Schichten; Trennflächen mit `ID_Nachbarzone` und Randbedingung `ZONE` aus G6b; `VIRTUAL`-Grenzen als Vorschlag eines Zonen-Luftaustauschs (2.7); Persistenz der Zuordnung Zone ↔ Kennung der Datei (Kapitel 6, Datenaustauschkonzept 7); `GebaeudeZonenabbildung` und `GebaeudeZonensatz` für N Zonen; Speichern über die G6a-Pflege — Abgleich über Ids in einer Transaktion (A6) | Summe der Zonenflächen gegen die Raumflächen (5.3); Rundlauf Import → Pflege → Lauf; Einzonenweg unverändert |
 | **C — Zuordnungsdialog mit mehreren Zonen** (erledigt; zusammenlegen und trennen nicht angeboten) | Mehrzonenkonzept 6.4: Kopf mit Zonenregel und Bilanz, Zonenliste (zusammenlegen, trennen, beheizt), Flächen je Zone mit Filtern, Baustoffe (aus G4b vorhanden); Listen als virtualisierte `Katalogliste`; Texte in beiden Sprachen, danach `ResourceDesigner` | bunit; **Rasterprobe Pflicht** (neue Spaltenart oder Zeilenhöhe, Hinweis unten); Windows-Schale kompiliert; Sichtabnahme unter Windows durch den Anwender |
 | **D — Zonengeometrie-Modell und 2D-Grundriss (E11)** (erledigt, Protokoll Abschnitt 2b) | Kern: `Zonengeometrie` mit `Zonenumriss` (Softwarearchitektur 1.3), Polygone aus den Raumgrenzen, ohne Grenzen die Rechteckherleitung mit sichtbarem „schematisch"; Oberfläche: `GebaeudeAnsicht.razor` als SVG ohne Bibliothek, Klick ordnet einen Raum der gewählten Zone zu (6.7). Dasselbe Modell speist später G7b | bunit der Komponente; Determinismus der Geometrie (6.7) |
@@ -114,8 +114,8 @@ ausdrücklichen Zuruf des Anwenders.
 **Erledigt am 26.09.2026** mit Schemaschritt 149: je drei Katalogsätze für M und A (Schlüssel ist der
 Bezeichner, nicht eine feste Id), Vorrang Standard → Klasse → freier Wert; der freie Rückfall nach
 Stein/Loga (2025) ruht, weil jede Klasse A–M Sätze hat; Referenzlauf byte-gleich, keine neue Basis. Stand
-und Nachweise: [Leitkonzept](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.58 („Umgesetzt“),
-[Protokoll E51](../../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_E51_Katalogsaetze_M_A.md). Offen
+und Nachweise: [Leitkonzept](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.58 („Umgesetzt“),
+[Protokoll E51](Protokolle/Gebaeudesimulation/2026-09-26_E51_Katalogsaetze_M_A.md). Offen
 ist davon nur der Upload der Wiki-Seiten mit dem Sammel-Upload. Die Schritte unten waren der Plan.
 
 **Entscheid** (Leitkonzept N1.58): Hat eine Klasse oder ein Energiestandard eigene Katalogsätze, gilt deren
@@ -173,18 +173,18 @@ Nummer 151 — 150 hat die Solarthermie belegt (spät gegen origin prüfen).
   statt weiterzuarbeiten; vor jedem Agenten den Verbrauch prüfen.
 - **Rasterprobe mit Playwright:** `npm install playwright-core@1.58.0 --prefix <ordner>`, dann
   `NODE_PATH=<ordner>/node_modules node rasterprobe.mjs --kanal msedge`
-  (siehe [`Proben/Rasterprobe/LIESMICH.md`](../../../Proben/Rasterprobe/LIESMICH.md)).
+  (siehe [`Proben/Rasterprobe/LIESMICH.md`](../../Proben/Rasterprobe/LIESMICH.md)).
 
 ## 4 Fundstellen
 
 | Was | Wo |
 |---|---|
-| Entscheide E50 und E51 | [Leitkonzept](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.57, N1.58; [Statusdatei](../Status_Gebaeudesimulation_VDI6007.md) Abschnitt 1 |
-| Zonierung, Grenzflächen, Rekonstruktion, Dialog, Grundriss | [Mehrzonenkonzept](../Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 6.1–6.7, Proben 8.2, Stufen 9, Fragen 10 |
-| gbXML-Zonenregeln X1…X4 | [Datenaustauschkonzept](../Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 3.3; D16 im Register Kapitel 4 |
-| Entschiedene Punkte M7, M8, M12, M13 (G6c, E50) und M3, M5, M6 (G6b, E49); offen M11 (G6d) | [Register](../Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) Kapitel 3 |
-| Bauteilimport und Namensabgleich (G4b) | [Protokoll G4b](../../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G4b_Bauteilimport.md); Leitkonzept N1.49 |
-| Zonenpflege (G6a) | [Protokoll G6a](../../ueberholt/Protokolle/Gebaeudesimulation/2026-09-25_G6a_Zonenpflege.md); Leitkonzept N1.50, N1.51 |
-| Baualtersklassen, Vorgaben, F4 | [Konzept Baualtersklassen](../Konzept_Baualtersklassen_Energiestandard_EPOS-Plan.md) 4 und 8; [Protokoll G4](../../ueberholt/Protokolle/Gebaeudesimulation/2026-09-24_G4_Importe.md) Abschnitt 16 |
+| Entscheide E50 und E51 | [Leitkonzept](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.57, N1.58; [Statusdatei](../aktuell/Status_Gebaeudesimulation_VDI6007.md) Abschnitt 1 |
+| Zonierung, Grenzflächen, Rekonstruktion, Dialog, Grundriss | [Mehrzonenkonzept](../aktuell/Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 6.1–6.7, Proben 8.2, Stufen 9, Fragen 10 |
+| gbXML-Zonenregeln X1…X4 | [Datenaustauschkonzept](../aktuell/Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 3.3; D16 im Register Kapitel 4 |
+| Entschiedene Punkte M7, M8, M12, M13 (G6c, E50) und M3, M5, M6 (G6b, E49); offen M11 (G6d) | [Register](../aktuell/Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) Kapitel 3 |
+| Bauteilimport und Namensabgleich (G4b) | [Protokoll G4b](Protokolle/Gebaeudesimulation/2026-09-25_G4b_Bauteilimport.md); Leitkonzept N1.49 |
+| Zonenpflege (G6a) | [Protokoll G6a](Protokolle/Gebaeudesimulation/2026-09-25_G6a_Zonenpflege.md); Leitkonzept N1.50, N1.51 |
+| Baualtersklassen, Vorgaben, F4 | [Konzept Baualtersklassen](../aktuell/Konzept_Baualtersklassen_Energiestandard_EPOS-Plan.md) 4 und 8; [Protokoll G4](Protokolle/Gebaeudesimulation/2026-09-24_G4_Importe.md) Abschnitt 16 |
 | Vorgaben im Code | `EPOS.Kern/Allgemein/Import/Gebaeude/GebaeudeVorgaben.cs`, `GebaeudeBauteilvorschlag.cs`, `Baujahrregel.cs`; `EPOS.Kern.Tests/GebaeudeVorgabenTests.cs` |
 | Zonen im Code | `EPOS.Kern/Allgemein/Simulation/Gebaeude/GebaeudeZonensatz.cs`, `GebaeudeZonenabbildung.cs`; `EPOS.Kern/Allgemein/Update/ZonenSchema.cs`; `EPOS.Kern/Allgemein/GebaeudeZonenregeln.cs` (W5) |

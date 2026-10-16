@@ -1,6 +1,6 @@
 # Befund D — Gebäude- und Klimadaten der Testdatenbank (15.09.2026)
 
-**Protokoll.** Befund eines Prüf-Agenten (Modell Opus, Workflow ‚gebaeudemodell-pruefen‘, Stufe Daten) im Auftrag des Konzepts [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md), Sitzung vom 15.09.2026. Wortlaut wie geliefert; Zeilenbelege und Zahlen sind im Konzept nach dem Gegenlesen korrigiert, bei Widerspruch gilt das Konzept. Pfade unter `epos-spike` (Temp-Ordner des Rechners) bezeichnen die Prüfwerkzeuge außerhalb des Repositoriums.
+**Protokoll.** Befund eines Prüf-Agenten (Modell Opus, Workflow ‚gebaeudemodell-pruefen‘, Stufe Daten) im Auftrag des Konzepts [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md), Sitzung vom 15.09.2026. Wortlaut wie geliefert; Zeilenbelege und Zahlen sind im Konzept nach dem Gegenlesen korrigiert, bei Widerspruch gilt das Konzept. Pfade unter `epos-spike` (Temp-Ordner des Rechners) bezeichnen die Prüfwerkzeuge außerhalb des Repositoriums.
 
 ---
 

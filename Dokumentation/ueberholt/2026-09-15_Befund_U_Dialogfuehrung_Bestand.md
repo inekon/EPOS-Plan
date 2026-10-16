@@ -13,9 +13,9 @@ Dialogführungs-Architektur ab.
 
 | Befund | Deckt ab | Hier nicht noch einmal |
 |---|---|---|
-| [`Befund L`](2026-09-15_Befund_L_Einbindung_Kern.md) | Rechenweg, Persistenz, Migration, Ergebniskante, Referenzlauf | Kern- und Schemafragen |
+| [`Befund L`](../aktuell/Gebaeudesimulation/2026-09-15_Befund_L_Einbindung_Kern.md) | Rechenweg, Persistenz, Migration, Ergebniskante, Referenzlauf | Kern- und Schemafragen |
 | [`Befund M`](2026-09-15_Befund_M_Gebaeudedialog.md) | Ist-Inventar der fünf Gebäudemasken, ihre DTO, Feldbestand, Ressourcenschlüssel, Soll-Entwurf des Editors, bunit-Testfälle | Feldlisten, Soll-Felder, Textschlüssel |
-| [`Befund N`](2026-09-15_Befund_N_IFC-Import_Entwurf.md) | IFC-Leser, xBIM-Paket, Abbildungsregeln, Ablauf in Schritten, Fehlerbilder | IFC-Fachseite |
+| [`Befund N`](../aktuell/Gebaeudesimulation/2026-09-15_Befund_N_IFC-Import_Entwurf.md) | IFC-Leser, xBIM-Paket, Abbildungsregeln, Ablauf in Schritten, Fehlerbilder | IFC-Fachseite |
 | [`Befund Q`](2026-09-15_Befund_Q_Muster_Datenmodell_Dialoge.md) | Eltern-Kind-Datenmodell, Katalogregister, Listen-/Detaildialoge, Bausteine einer Bauteilliste, Bericht je Teilobjekt | Katalogbauformen, Kindlisten-Vorbilder |
 
 **Quellen** (alle selbst gelesen, Stand Zweig `ios_migration_september`, Arbeitsbaum 15.09.2026):

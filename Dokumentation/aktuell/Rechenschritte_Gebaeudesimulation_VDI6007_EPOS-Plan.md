@@ -2207,15 +2207,15 @@ steht im Inventar der Altweg-Bestandteile (Umsetzungskonzept 6.1).
 
 **Befunde (Protokolle)**
 
-- [`Gebaeudesimulation/2026-09-15_Befund_B_Rechenweg_Kern.md`](Gebaeudesimulation/2026-09-15_Befund_B_Rechenweg_Kern.md)
+- [`../ueberholt/2026-09-15_Befund_B_Rechenweg_Kern.md`](../ueberholt/2026-09-15_Befund_B_Rechenweg_Kern.md)
   — was der Bestand rechnet, Datenmodell, Klimadaten, Andockpunkte.
 - [`Gebaeudesimulation/2026-09-15_Befund_E_Prototyp_Normtestfaelle.md`](Gebaeudesimulation/2026-09-15_Befund_E_Prototyp_Normtestfaelle.md)
   — Aufbau des Lösers, Herleitung der eliminierten Matrix, Validierungstabelle.
-- [`Gebaeudesimulation/2026-09-15_Befund_D_Testdatenbank.md`](Gebaeudesimulation/2026-09-15_Befund_D_Testdatenbank.md)
+- [`../ueberholt/2026-09-15_Befund_D_Testdatenbank.md`](../ueberholt/2026-09-15_Befund_D_Testdatenbank.md)
   — die fünfzehn gesäten Gebäude, Einheiten und Wertebereiche je Spalte, Aus-Marker.
 - [`Gebaeudesimulation/2026-09-15_Befund_F_Prototyp_Vergleich_Tagesmodell.md`](Gebaeudesimulation/2026-09-15_Befund_F_Prototyp_Vergleich_Tagesmodell.md)
   — Sollwertfahrplan und Stundenkonvention des Bestands im Vergleich zum Prototyp.
-- [`Gebaeudesimulation/2026-09-15_Befund_H_OstWest_Rechenzeit.md`](Gebaeudesimulation/2026-09-15_Befund_H_OstWest_Rechenzeit.md)
+- [`../ueberholt/2026-09-15_Befund_H_OstWest_Rechenzeit.md`](../ueberholt/2026-09-15_Befund_H_OstWest_Rechenzeit.md)
   — Wirkung der Ost/West-Trennung, Rechenzeit je Gebäude und Jahr.
 - [`Gebaeudesimulation/2026-09-15_Befund_I_VDI6007_Richtlinie_Abgleich.md`](Gebaeudesimulation/2026-09-15_Befund_I_VDI6007_Richtlinie_Abgleich.md)
   — die Gleichungsnummern und Fundstellen der Blätter 1 bis 3.

@@ -133,7 +133,7 @@ aber erst auf Auftrag des Anwenders.
   `[skip ci]`; den doppelten Lauf auf dem Sitzungszweig nach einem Push beider Zweige abbrechen
   (`gh api -X POST repos/inekon/EPOS-Plan/actions/runs/<id>/cancel`). Warten auf Läufe mit einem einzigen Hintergrundbefehl.
 - **Abgrenzung:** Der Import (`EPOS.Kern/Allgemein/Import/Ifc/`, `…/Import/Gebaeude/`, `…/Import/Sqproj/`) gehört der Sitzung
-  „IFC / Gebäudeimport“; Befunde dorthin über ein Abstimmungspapier (Muster: [Abstimmung G5](../aktuell/Gebaeudesimulation/2026-10-07_Abstimmung_G5_IFC.md)).
+  „IFC / Gebäudeimport“; Befunde dorthin über ein Abstimmungspapier (Muster: [Abstimmung G5](2026-10-07_Abstimmung_G5_IFC.md)).
   Anwenderdateien (`.wpx`, `.sqproj`) werden nie committet; Werte und Namen aus ihnen gehören nicht in Code, Tests oder Protokolle.
 - **Rückfragepflicht:** vor jedem macOS- oder iOS-Lauf und dem Setup-Lauf (jedes Mal), vor Basiswechseln ohne Auftrag, vor
   dem Aufweiten von Testbändern, vor Wiki-Uploads. Keine Pull Requests, kein Force-Push, keine Tags.

@@ -1,7 +1,7 @@
 # Befund B — der heutige Rechenweg des Heizwärmebedarfs im Kern (15.09.2026)
 
 **Protokoll.** Befund eines Erkundungs-Agenten (Modell Opus, nur lesend) im Auftrag des Konzepts
-[`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
+[`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
 Sitzung vom 15.09.2026, Codestand des Zweigs `ios_migration_september`. Wortlaut wie
 geliefert; einzelne Zeilenbelege sind im Konzept nach dem Gegenlesen korrigiert
 (`BhkwPlan.cs`: Heizlastformel `:418`, Solarfaktor `:420/:428`, Kappung `:430`, Rückgabe
