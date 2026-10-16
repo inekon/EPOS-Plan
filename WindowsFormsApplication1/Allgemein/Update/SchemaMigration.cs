@@ -5604,6 +5604,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_BAUTEIL_U_HERKUNFT = BauteilUHerkunftSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="BedarfsprofilEingabeartSchema.SCHRITT"/> — <b>Eingabeart der Bedarfsprofile</b> (KBP-5a bis KBP-5d):
+        /// <c>Eingabeart</c> an <c>Z_Projekt_Prozesswaerme</c> und <c>Z_Projekt_Brauchwasser</c> (Vorgabe 'jahr'),
+        /// <c>Nutzungstage_Norm</c> an <c>Tab_Kaeltebedarf(_STAMM)</c> (Saat allein an Vorlage 8) und <c>Ferien_wie_Sonntag</c>
+        /// am Betriebskalender. Schritt 234, hängt an 233.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Jede Zuordnung rechnet mit Eingabeart 'jahr', die Nutzungstage liest kein
+        /// Rechenweg.</para>
+        /// </summary>
+        public const int SCHRITT_BEDARFS_EINGABEART = BedarfsprofilEingabeartSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -8257,7 +8268,7 @@ namespace WindowsFormsApplication1
                         Schritt_BauteilUHerkunft),
             // KBP-5a: Eingabeart an Prozesswaerme und Brauchwasser, Nutzungstage nach Norm an den Kaeltevorlagen. Quelle
             // ist BedarfsprofilEingabeartSchema, die Nummer steht allein dort.
-            new Schritt(BedarfsprofilEingabeartSchema.SCHRITT,
+            new Schritt(SCHRITT_BEDARFS_EINGABEART,
                         "Z_Projekt_Prozesswaerme und Z_Projekt_Brauchwasser: Eingabeart; Tab_Kaeltebedarf_STAMM und " +
                         "Tab_Kaeltebedarf: Nutzungstage_Norm (Saat allein an Vorlage 8); Tab_Betriebskalender: Ferien_wie_Sonntag",
                         "Prozesswaerme und Brauchwasser kannten allein die Jahressumme mit Vorlage. KEIN Rechenergebnis " +
