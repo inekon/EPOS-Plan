@@ -42,6 +42,7 @@ und `README.md`.
 | [`aktuell/Dialoge/2026-10-14_Uebergabe_Dialoge_Anlagendialog_Kaeltebedarf.md`](aktuell/Dialoge/2026-10-14_Uebergabe_Dialoge_Anlagendialog_Kaeltebedarf.md) | Dialoge und Korrekturen, Übergabe Anlagendialog, Kältebedarf, Katalogauswahl (14.10.2026) auf ein anderes Konto: Stand (K6, Referenzprojekt 1072, Basis R55, Messlatte), Entscheide, offene Punkte, Einstiegs-Prompt | 2026-10-14 |
 | [`aktuell/Dialoge/2026-10-14_Uebergabe_KB5_Inventar.md`](aktuell/Dialoge/2026-10-14_Uebergabe_KB5_Inventar.md) | Inventar KB-5 Stromspeicher-Kosten auf Position: Leser und Schreiber der vier Kostenspalten, Rechenwege, Flotte, Testdatenbank, Tests, offene Fachfragen | 2026-10-14 |
 | [`aktuell/Dialoge/2026-10-16_Entwurf_KB7_Wasserkosten_Rueckkuehlwerk.md`](aktuell/Dialoge/2026-10-16_Entwurf_KB7_Wasserkosten_Rueckkuehlwerk.md) | Entwurf KB-7 Wasserkosten des Rückkühlwerks in der Kostenbasis: Fundstellen von `Wasserpreis_EUR_m3`, Träger „Wasser“ in der Trägerkarte, Schema 235, Buchung als Betriebskosten, Referenzprojekte, Etappen, offene Fragen |
+| [`aktuell/Dialoge/2026-10-16_Konzept_Klimadatenimport_Vorschau_und_Vollimport.md`](aktuell/Dialoge/2026-10-16_Konzept_Klimadatenimport_Vorschau_und_Vollimport.md) | Klimadatenimport (Auftrag KL-A): Befund Regionsermittlung (nächste Repräsentanzstation statt DWD-Klimaregion bzw. ortsgenauem TRY im 1-km-Raster; Stuttgart-Vaihingen → Stötten 56 km), fehlende Trefferanzeige, leere Koordinatenfelder, abgeschnittene Schlussleiste; Inventar Parameter × Quelle × Speicherung, Vorschau vor dem Import, Rohdatentabelle, CSV-Export mit Parameter- und Formatwahl, Schritte KD-1 bis KD-7, Entscheide KD-Q1 bis KD-Q9; Mockup `Klimadatenimport_Mockup.html` | 2026-10-16 |
 | [`aktuell/BETRIEB_SQLITE.md`](aktuell/BETRIEB_SQLITE.md) | Betrieb der SQLite-Datenbank: Ablage, Sicherung, Migration, SQL-Dialektregeln (§ 6) | 2026-09-11 |
 | [`aktuell/Doku_Mehrspeicher_Konzept_und_Umsetzung.md`](aktuell/Doku_Mehrspeicher_Konzept_und_Umsetzung.md) | Mehrspeicher: Konzept, Umsetzung und Prüfumfang — der implementierte Flottenstand | 2026-09-12 |
 | [`aktuell/Doku_PV_Strangauslegung_EPOS-Plan.md`](aktuell/Doku_PV_Strangauslegung_EPOS-Plan.md) | Modul, Strang und Wechselrichter — Regeln, Meldungen, Auslegung | 2026-09-09 |
@@ -211,7 +212,8 @@ Anordnung; die zugehörigen Bilder liegen beim Anwender, nicht im Repository —
 Projekt mit Kundennamen) sowie `Waermepumpe_Bivalenz_Uebergabe.html` (Konzept Übergabegrenze und Bivalenz:
 Gruppe „Bivalenz und Übergabe“ der Wärmepumpen-Konfiguration mit Herleitungszeile, Bivalenzdiagramm und Kacheln
 des Ergebnisreiters) sowie `Konditionierung_Kalender.html` (Befund Kalenderbedienung Konditionierung: V1 Jahreskalender und V2 Wochenprofile,
-umschaltbar, auf denselben Daten). Die Mockups überholter Konzepte liegen unter `ueberholt/Mockups/`
+umschaltbar, auf denselben Daten) sowie `Klimadatenimport_Mockup.html` (Konzept Klimadatenimport: Vorschau des
+Datensatzes vor dem Import mit Treffer, Kennzahlen und Grafik, CSV-Export mit Parameter- und Formatwahl). Die Mockups überholter Konzepte liegen unter `ueberholt/Mockups/`
 (Projektdialog_Katalogauswahl V1 bis V5 samt PNG und Übersicht).
 
 ---
