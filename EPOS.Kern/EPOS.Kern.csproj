@@ -68,6 +68,9 @@
     <!-- Dasselbe fuer das Testprojekt (iU4-6): Init und andere Kerntypen sind
          internal, sollen aber pruefbar sein. -->
     <InternalsVisibleTo Include="EPOS.Kern.Tests" />
+    <!-- Und fuer die Oberflaechentests (KD-8 Teil A): Die Gegenprobe schaltet die Rohwert-Reihen
+         des Klimareihenkatalogs frei (KlimaReihenkatalog.RohwerteFreigeschaltet, internal set). -->
+    <InternalsVisibleTo Include="EPOS.UI.Tests" />
     <!-- Und fuer die iOS-Huelle (iU10-3): Sie belegt dieselben Dienste wie Program.Main
          und laedt fuer die Projektliste ProjektCtrl - beides ist internal, genau wie in
          der Windows-Huelle. -->
