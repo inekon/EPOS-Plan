@@ -38,6 +38,8 @@ Stand 16.10.2026: Übernahme durch Sitzung `session_019JuX7JfD2tStDzd3CiStwf`; #
 - Anwenderentscheid 14.10.: Die Verantwortung für Stromspeicher und Speicherflotte (Schemaschritt 229, KB-5) liegt bei der Kältemaschinen-Sitzung.
 - Anwenderentscheid 14.10.: Modellregel — Fable orchestriert nur, sonst Opus 5.5 bzw. Sonnet/Haiku; Check-ins löst ein Sonnet-Agent aus; Fable macht keine GitHub-Abfragen und keine Dateiänderungen.
 - Anwenderentscheid 14.10.: Die ChartProben-Messlatte wird über die Hashliste im CI-Protokoll umgesetzt (erledigt, `Messlatte_2026-10-14.sha256`).
+- Anwenderentscheid 16.10.: Die Kästchen der Liste „Im Projekt“ bleiben ein Kreis mit ☐/☑ (KA-E-28); die Wiki-Bilder stimmen.
+- Anwenderentscheid 16.10.: Der Vorlauf der Wärmepumpe liegt in Wiki-Bildern und -Beispielen nicht über 55 °C (Booster-Beispiel „etwa 55 °C“, `012aa4adb`; Bildprobe „VL max“ 55, `81c19266f`); das Prozesswärme-Beispiel „bis 70 °C“ bleibt.
 - Anwenderentscheid 16.10.: Die Hauptzahl wird jetzt gemergt und gegen R55 mit `--ohne` verglichen, bis die nächste Basis sie aufnimmt.
 - Anwenderentscheid 16.10.: Die Abbruchregel von `kern.yml` bleibt.
 - Anwenderentscheid 16.10.: Kein Kern-Lauf für Pull Requests aus dem eigenen Repository.
