@@ -1,7 +1,7 @@
 # KBP-3b-N — Kältegrafik: Arbeitsstand, Kalenderwoche, Tagesarten
 
 Sitzung Dialoge und Korrekturen (Übersicht Berichte & Kosten), 16.10.2026, Zweig `kbp3bn`. Fortsetzung von
-[`KBP-2 bis 3b`](2026-10-16_KBP-2_bis_3b_Kaeltebedarfsprofile.md); Statuszeile #1105.
+[`KBP-2 bis 3b`](2026-10-16_KBP-2_bis_3b_Kaeltebedarfsprofile.md); Statuszeile #1107.
 
 ## Stand
 
