@@ -1325,12 +1325,18 @@ freien Paketteil (`Referenzlaeufe/Katalogpaket_frei/`). Dafür führt er neben d
 Kaltwasser- und Zirkulationsschlüssel des Mengengerüsts: aus der INEKON-Vorlage TWW-Auslegung V4
 `Kaltwasser.Bilanz.Mittel` 10 °C, `Zirkulation.Laufzeit` 24 h (Dauerlast), `Zirkulation.Anteil` 0,2 und
 `Zirkulation.VerlustJeMeter` 10 W/m, als INEKON-Setzung `Kaltwasser.Bilanz.Amplitude` 3 K und
-`Kaltwasser.Bilanz.MonatMaximum` 8 (August), alle mit Herkunftsart `EIGENKONSTRUKTION`. Ohne Fläche
+`Kaltwasser.Bilanz.MonatMaximum` 8 (August), dazu für die Auslegung `A100.Kaltwasser.Auslegung` 10 °C aus V4
+(Blatt Berechnung, Zeile 389, „Bezug Kaltwasser", dieselbe Zelle wie der Kaltwasserbezug von
+`Speicherauslegung.Klassisch.Spreizung`), alle mit Herkunftsart `EIGENKONSTRUKTION`. Ohne Fläche
 rechnet die Zirkulation der Projektvorgabe (Flächenkennwert) mit der Methode Anteil. Die Flächenformel
 Wohnen (`DIN18599.Wohnen.*`), Leitungslage und Flächenkennwerte der DIN V 4701-10 sowie die
-Auslegungswerte (A100, DIN 4708, DVGW W 551) sind Normzahlen und bleiben im externen Katalogpaket; eine
-flächenbezogene Zone und die Speicherauslegung lehnen ohne es benannt ab. Eine Datenbank, die den
-Paketteil in einem früheren Stand führt, bekommt diese sechs Schlüssel beim ersten
+übrigen Auslegungswerte (A100, DIN 4708, DVGW W 551) sind Normzahlen und bleiben im externen Katalogpaket;
+eine flächenbezogene Zone lehnt ohne es benannt ab. Die Speicherauslegung rechnet in der Stufe Einfach ohne
+externes Paket den Verfahrensvergleich nach V4 (profilbasiertes Volumen, Band, Nenninhalt; nachrichtlich, 4.7);
+ohne die Kennwerte der DIN 4708 ist der Normvergleich benannt „nicht rechenbar" (nie ein Abbruch), die
+Vorgaberegel des Bedarfstags (4.5) öffnet den Konstruktor, und die Empfehlung — der Punkt der Summenlinie —
+bleibt benannt offen, weil die Summenlinie die Auslegungswerte der A100 braucht. Eine Datenbank, die den
+Paketteil in einem früheren Stand führt, bekommt diese sieben Schlüssel beim ersten
 `ZapfprofilCtrl.Verfuegbar()` in ihre Katalogversion nachgetragen (`TwwPaketteilCtrl.ParameterNachtragen`,
 Liste `PaketteilNachfuehrung.PARAMETER`): nur was fehlt, `AUSLIEFERUNG` und `ReadOnly` 1, eine
 vorhandene Zeile bleibt; das Ergebnis steht im Laufprotokoll. Die Testdatenbank führt dieselben
