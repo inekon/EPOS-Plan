@@ -23382,6 +23382,30 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_PV_STRANG_ERL" xml:space="preserve">
     <value>Der Name dieses Strangs, etwa „Dach Süd“; leer zeigt die Maske als Rangnummer.</value>
   </data>
+  <data name="KI_DLG_PV_STRANG_WR_ERL" xml:space="preserve">
+    <value>Der Wechselrichter des Strangs aus dem Katalog, gewählt über denselben Weg wie in der Klappliste der Strangtabelle. Ein Gerät, das für das Modulfeld der Anlage ungeeignet ist, wird abgelehnt; 0 nimmt das Gerät aus dem Strang.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_MODUL_ERL" xml:space="preserve">
+    <value>Der Modultyp des Strangs aus den Modulen des Projekts; 0 ist das Modul der Anlage. Eine Wahl, mit der die Strangprüfung einen neuen roten Befund meldet, wird abgelehnt.</value>
+  </data>
+  <data name="KI_PVS_WR_UNBEKANNT" xml:space="preserve">
+    <value>Den Wechselrichter {0} führt der Katalog nicht.</value>
+  </data>
+  <data name="KI_PVS_WR_UNGEEIGNET" xml:space="preserve">
+    <value>Der Wechselrichter „{0}“ ist für das Modulfeld dieser Anlage ungeeignet: {1}</value>
+  </data>
+  <data name="KI_PVS_WR_OHNE_BEWERTUNG" xml:space="preserve">
+    <value>Die Eignung des Wechselrichters lässt sich nicht prüfen – die Anlage braucht dafür ein Modul und eine Modulzahl. Ohne Prüfung wählt der Assistent kein Gerät.</value>
+  </data>
+  <data name="KI_PVS_MODUL_UNBEKANNT" xml:space="preserve">
+    <value>Das Modul {0} ist dem Projekt nicht zugeordnet; ein Strang nimmt nur Module des Projekts.</value>
+  </data>
+  <data name="KI_PVS_MODUL_UNVERTRAEGLICH" xml:space="preserve">
+    <value>Das Modul „{0}“ passt nicht zu diesem Strang: {1}</value>
+  </data>
+  <data name="KI_PVS_STRANG_OHNE_ABSCHNITT" xml:space="preserve">
+    <value>Modul und Wechselrichter eines Strangs wählt der Assistent im Abschnitt „Wechselrichter und Stränge“; der Abschnitt steht gerade nicht offen.</value>
+  </data>
   <data name="KI_DLG_PV_STRANG_GERAET_ERL" xml:space="preserve">
     <value>Welches physische Gerät dieses Typs den Strang trägt, ganze Zahl ab 1; leer bedeutet 1.</value>
   </data>

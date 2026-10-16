@@ -72580,6 +72580,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Modultyp des Strangs aus den Modulen des Projekts; 0 ist das Modul der Anlage. Eine Wahl, mit der die Strangprüfung einen neuen roten Befund meldet, wird abgelehnt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_STRANG_MODUL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_STRANG_MODUL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der MPPT-Eingang des Geräts, an dem der Strang hängt, ganze Zahl ab 1; leer bedeutet 1. ähnelt.
         /// </summary>
         public static string KI_DLG_PV_STRANG_MPPT_ERL {
@@ -72612,6 +72621,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PV_STRANG_REIHE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_PV_STRANG_REIHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wechselrichter des Strangs aus dem Katalog, gewählt über denselben Weg wie in der Klappliste der Strangtabelle. Ein Gerät, das für das Modulfeld der Anlage ungeeignet ist, wird abgelehnt; 0 nimmt das Gerät aus dem Strang. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_STRANG_WR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_STRANG_WR_ERL", resourceCulture);
             }
         }
         
@@ -81399,6 +81417,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_PTR_LAEUFT {
             get {
                 return ResourceManager.GetString("KI_PTR_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Modul {0} ist dem Projekt nicht zugeordnet; ein Strang nimmt nur Module des Projekts. ähnelt.
+        /// </summary>
+        public static string KI_PVS_MODUL_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_PVS_MODUL_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Modul „{0}“ passt nicht zu diesem Strang: {1} ähnelt.
+        /// </summary>
+        public static string KI_PVS_MODUL_UNVERTRAEGLICH {
+            get {
+                return ResourceManager.GetString("KI_PVS_MODUL_UNVERTRAEGLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul und Wechselrichter eines Strangs wählt der Assistent im Abschnitt „Wechselrichter und Stränge“; der Abschnitt steht gerade nicht offen. ähnelt.
+        /// </summary>
+        public static string KI_PVS_STRANG_OHNE_ABSCHNITT {
+            get {
+                return ResourceManager.GetString("KI_PVS_STRANG_OHNE_ABSCHNITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Eignung des Wechselrichters lässt sich nicht prüfen – die Anlage braucht dafür ein Modul und eine Modulzahl. Ohne Prüfung wählt der Assistent kein Gerät. ähnelt.
+        /// </summary>
+        public static string KI_PVS_WR_OHNE_BEWERTUNG {
+            get {
+                return ResourceManager.GetString("KI_PVS_WR_OHNE_BEWERTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Wechselrichter {0} führt der Katalog nicht. ähnelt.
+        /// </summary>
+        public static string KI_PVS_WR_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_PVS_WR_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wechselrichter „{0}“ ist für das Modulfeld dieser Anlage ungeeignet: {1} ähnelt.
+        /// </summary>
+        public static string KI_PVS_WR_UNGEEIGNET {
+            get {
+                return ResourceManager.GetString("KI_PVS_WR_UNGEEIGNET", resourceCulture);
             }
         }
         
