@@ -79,6 +79,8 @@ const BILDER = [
   ['projekttransfer', 'Projekttransfer', { seite: '/wikibild?bild=projekttransfer', wahl: '.epos-wikibild .epos-dialog', hoehe: 900 }],
   ['erdreich', 'Erdreich', { seite: '/wikibild?bild=erdreich', wahl: '.epos-wikibild .epos-dialog', hoehe: 1600 }],
   ['simulation', 'Simulation', { seite: '/wikibild?bild=simulation', wahl: '.epos-wikibild .epos-dialog', hoehe: 1600 }],
+  // Die Pufferspeicher-Auslegung ist eine freie Ansicht, kein Dialog; aufgenommen wird Schritt 4 (Vorschlag) mit dem Ergebnis des Kerns.
+  ['pufferauslegung', 'Pufferspeicher_auslegen', { seite: '/wikibild?bild=pufferauslegung', wahl: '.epos-wikibild .epos-pausl', klick: 'Ergebnis und Übernahme', breite: 1400, hoehe: 1400 }],
 ];
 
 // Bei diesen Bildern steht der Bereich "Gewaehlter Satz" aufgeklappt - die Wiki-Seite
