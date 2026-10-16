@@ -47877,6 +47877,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer auf {0} MWh/a Hilfsstrom nicht angesetzt: Der Gesetzkatalog führt keinen Regelsatz der Stromsteuer. ähnelt.
+        /// </summary>
+        public static string HILFS_STROMSTEUER_OHNE_SATZ {
+            get {
+                return ResourceManager.GetString("HILFS_STROMSTEUER_OHNE_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer auf Hilfsstrom ({0} €/MWh, davon {1} €/MWh im Arbeitspreis enthalten) ähnelt.
+        /// </summary>
+        public static string HILFS_STROMSTEUER_POSITION {
+            get {
+                return ResourceManager.GetString("HILFS_STROMSTEUER_POSITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die kW ähnelt.
         /// </summary>
         public static string HZKK_BB_EINHEIT_KW {

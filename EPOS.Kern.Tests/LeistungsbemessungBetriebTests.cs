@@ -148,7 +148,7 @@ namespace EPOS.Kern.Tests
         /// Genau daran hängt die Herkunft <c>HERKUNFT_ANLAGE</c> der Betriebszeile.
         /// </summary>
         [Theory]
-        [InlineData(K_WAERMEPUMPE, DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG)]
+        [InlineData(K_HEIZKESSEL, DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG)]   // 29c: nicht die WP
         [InlineData(K_HEIZKESSEL, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG)]
         [InlineData(K_PHOTOVOLTAIK, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH)]
         [InlineData(K_STROMSPEICHER, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG)]

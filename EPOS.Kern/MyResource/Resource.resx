@@ -11442,6 +11442,12 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="HILFS_ANTEIL_HERKUNFT" xml:space="preserve">
     <value>Satz aus dem Hilfsenergieanteil der Anlage</value>
   </data>
+  <data name="HILFS_STROMSTEUER_POSITION" xml:space="preserve">
+    <value>Stromsteuer auf Hilfsstrom ({0} €/MWh, davon {1} €/MWh im Arbeitspreis enthalten)</value>
+  </data>
+  <data name="HILFS_STROMSTEUER_OHNE_SATZ" xml:space="preserve">
+    <value>Stromsteuer auf {0} MWh/a Hilfsstrom nicht angesetzt: Der Gesetzkatalog führt keinen Regelsatz der Stromsteuer.</value>
+  </data>
   <data name="KOH_HILFSENERGIE_DOPPELT" xml:space="preserve">
     <value>Hilfsenergie doppelt gepflegt (Menge an der Anlage und Kostenposition {0}): {1} führt einen Hilfsenergieanteil von {2} % und zugleich eine aktive Hilfsenergie-Kostenposition. Die Kosten rechnet die Kostenposition; der Anteil an der Anlage mindert nur den KWK-Zuschlag und wird nicht zusätzlich bepreist.</value>
   </data>

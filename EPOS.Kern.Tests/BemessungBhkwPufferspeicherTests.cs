@@ -347,11 +347,13 @@ namespace EPOS.Kern.Tests
         [InlineData(K_PUFFER)]
         public void Beide_Gewerke_kennen_je_kW_Leistung(int komponente)
         {
+            // Im INVESTITIONSraster; im Betriebsraster führt das BHKW allein „je kW
+            // elektrisch" (29c, BetriebLeistungNurBhkwTests).
             Assert.True(TechnikPlanwertCtrl.KenntBaugroesse(
-                komponente, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG));
+                komponente, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, true));
             Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_GERAET,
                          WirtschaftlichkeitCtrl.BasisGrund(
-                             DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, komponente));
+                             DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, komponente, false, true));
         }
 
         /// <summary>Die ÜBRIGEN Erzeugerarten bleiben unverändert — der Entscheid
@@ -364,11 +366,13 @@ namespace EPOS.Kern.Tests
         [InlineData(5)]   // Stromspeicher— Leistung
         public void Die_uebrigen_Gewerke_behalten_je_kW_Leistung(int komponente)
         {
+            // Im INVESTITIONSraster; die Wärmepumpe führt im Betriebsraster keine
+            // Leistungsart (29c, BetriebLeistungNurBhkwTests).
             Assert.True(TechnikPlanwertCtrl.KenntBaugroesse(
-                komponente, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG));
+                komponente, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, true));
             Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_GERAET,
                          WirtschaftlichkeitCtrl.BasisGrund(
-                             DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, komponente));
+                             DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, komponente, false, true));
         }
 
         /// <summary>Und die Arten, die zu keinem der beiden Gewerke gehören, bleiben
