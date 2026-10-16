@@ -210,6 +210,18 @@ namespace WindowsFormsApplication1
             return zeilen.AsReadOnly();
         }
 
+        /// <summary>
+        /// <b>Ohne die Kennwerte der Norm</b> (<c>DIN4708.*</c> fehlt in der Katalogversion, etwa allein mit
+        /// dem freien Paketteil): „nicht rechenbar" mit dem Satz des Parametersatzes — nie ein Abbruch der
+        /// Auslegung. Die Vorgaberegel des Bedarfstags nimmt dann nicht das DIN-4708-Profil (4.5).
+        /// </summary>
+        private static Din4708Ergebnis OhneKennwerte(ParametersatzException ex, List<string> ausserhalb)
+            => new Din4708Ergebnis
+            {
+                Gueltig = false, Fehler = ZapfAuslegungsfehler.ParameterFehlt, Grund = ex.Satz,
+                ZonenAusserhalb = ausserhalb.AsReadOnly()
+            };
+
         /// <summary>Ist die Zone im Gültigkeitsbereich — Nutzungsart Wohnen und Topologie Speicher?</summary>
         internal static bool Gilt(ZonenStand z, Nutzungsart n)
             => z != null && n != null && n.Kalender == ZapfKalenderart.Wohnen && z.Topologie == ZapfTopologie.Speicher;
@@ -263,9 +275,21 @@ namespace WindowsFormsApplication1
                     Gueltig = false, Fehler = ex.Fehler, Grund = ex.Satz, ZonenAusserhalb = ausserhalb.AsReadOnly()
                 };
             }
+            catch (ParametersatzException ex)
+            {
+                return OhneKennwerte(ex, ausserhalb);
+            }
 
-            double n = Kennzahl(zeilen, ps);
-            double wz = WzKwh(n, ps);
+            double n, wz;
+            try
+            {
+                n = Kennzahl(zeilen, ps);
+                wz = WzKwh(n, ps);
+            }
+            catch (ParametersatzException ex)
+            {
+                return OhneKennwerte(ex, ausserhalb);
+            }
             double personen = 0.0;
             int wohnungen = 0;
             foreach (Din4708Zeile z in zeilen)

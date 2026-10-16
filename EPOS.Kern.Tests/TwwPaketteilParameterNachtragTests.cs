@@ -65,6 +65,45 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Die Speicherauslegung der Stufe Einfach allein mit dem freien Paketteil:</b> Jede mitgelieferte
+        /// Nutzungsart ohne Flächenbezug (eine Zone, Bezugsmenge 3, Topologie Speicher) rechnet die Auslegung
+        /// ohne Abbruch — das Kaltwasser der Auslegung steht im Paketteil, und ohne die Kennwerte der DIN 4708
+        /// ist der Normvergleich benannt „nicht rechenbar" statt die Auslegung abzubrechen. Der
+        /// Verfahrensvergleich nach der Vorlage V4 liefert ein Band und einen Nenninhalt über 0. Die
+        /// Empfehlung (der Punkt der Summenlinie) braucht die Auslegungswerte der A100 und einen Bedarfstag;
+        /// sie bleibt ohne externes Katalogpaket benannt offen (Hinweis <c>KONSTRUKTOR_OEFFNEN</c>), nie still.
+        /// </summary>
+        [Fact]
+        public void Jede_mitgelieferte_Nutzungsart_rechnet_in_der_Stufe_Einfach_die_Speicherauslegung_ohne_Abbruch()
+        {
+            using var db = new TwwTestdatenbank();
+            Assert.True(ZapfprofilCtrl.Verfuegbar().Ja);
+            ProjektStand projekt = ZapfprofilCtrl.ProjektVorgabe();
+
+            int gerechnet = 0;
+            foreach (Nutzungsart n in ZapfprofilCtrl.Katalog())
+            {
+                if (n.Bezug == ZapfBezugsart.Flaeche) continue;
+                var zone = new ZonenStand { Id = 1, Name = "Zone 1", IdNutzungsart = n.Id, Bezugsmenge = 3, Reihenfolge = 1 };
+                Auslegungsrechnung r = ZapfprofilCtrl.Auslegung(1, new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { zone }, projekt),
+                                                               3, ZapfprofilTestbau.We(3),
+                                                               new Auslegungslauf(null, null, false, default, ZapfStufe.Einfach));
+                Assert.True(r.Ergebnis.Ablehnungen.Count == 0,
+                            n.Name + ": " + string.Join(" | ", r.Ergebnis.Ablehnungen.Select(a => a.Satz?.Klartext)));
+                Auslegungsgruppe g = Assert.Single(r.Ergebnis.Gruppen);
+                Assert.Equal(ZapfTopologie.Speicher, g.Topologie);
+                Assert.False(g.Normvergleich.Gueltig, n.Name + ": Normvergleich ohne Kennwerte gültig");
+                Speicherauslegungsergebnis sa = g.Speicherauslegung;
+                Assert.True(sa != null, n.Name + ": kein Verfahrensvergleich");
+                Assert.True(sa.BandMaxL > 0 && sa.NenninhaltL > 0, n.Name + ": Verfahrensvergleich ohne Volumen");
+                Assert.False(g.Empfehlung.Rechenbar, n.Name + ": Empfehlung ohne A100-Werte rechenbar");
+                Assert.Contains(g.Hinweise, h => h.Code == "KONSTRUKTOR_OEFFNEN");
+                gerechnet++;
+            }
+            Assert.True(gerechnet >= 5, "nur " + gerechnet + " Nutzungsarten gerechnet");
+        }
+
+        /// <summary>
         /// <b>Eine Datenbank mit dem Paketteil in einem früheren Stand</b> (Katalogversion FREI-1 ohne die
         /// Kaltwasser- und Zirkulationsschlüssel) bekommt beim ersten <see cref="ZapfprofilCtrl.Verfuegbar"/>
         /// genau die fehlenden nachgetragen — <c>AUSLIEFERUNG</c>, <c>ReadOnly</c> 1, die Herkunft des Pakets,
