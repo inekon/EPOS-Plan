@@ -498,7 +498,7 @@ namespace WindowsFormsApplication1
         /// <summary>Ungedeckte Kälte [MWh/a] (<c>Kaelterestbedarf</c>) — Gegenstück zu <c>energie.waermerest</c>.</summary>
         public const string SCHLUESSEL_KAELTE_REST = "kaelte.rest";
 
-        /// <summary>Jahresarbeitszahl Kälte (EER-Jahreswert) = Kälteerzeugung / Kältestrom — Gegenstück zu <c>eff.jaz</c>.</summary>
+        /// <summary>Jahresarbeitszahl Kälte (EER-Jahreswert) = Kälte / Kältestrom der ganzen Kältefolge (<see cref="JahresarbeitszahlKaelte"/>) — Gegenstück zu <c>eff.jaz</c>.</summary>
         public const string SCHLUESSEL_KAELTE_JAZ = "kaelte.jaz";
 
         /// <summary>Kältestrom samt Hilfsstrom [MWh/a] (Kühlkonzept 6.1).</summary>
@@ -514,15 +514,18 @@ namespace WindowsFormsApplication1
         public const string SCHLUESSEL_KAELTE_CO2 = "kaelte.co2";
 
         /// <summary>
-        /// Jahresarbeitszahl Kälte aus dem gespeicherten Ergebnis: Kälteerzeugung / Kältestrom der
-        /// Wärmepumpen; <c>null</c> ohne Kälteerzeugung oder ohne Kältestrom.
+        /// Jahresarbeitszahl Kälte (<c>kaelte.jaz</c>) über die ganze Kältefolge: Kälte / Kältestrom der Wärmepumpen
+        /// und Kältemaschinen nach <see cref="KaelteDeckungsgrad.Jahresarbeitszahl"/> — dieselbe Formel und dieselben
+        /// Summen wie der EER-Jahreswert der Übersicht (die Kältespalten der Ergebnistabellen sind ungerundet
+        /// gespeichert). <c>null</c> ohne Kälteerzeugung oder ohne Kältestrom.
         /// </summary>
         public static double? JahresarbeitszahlKaelte(VariantenDaten v)
         {
+            if (!MitKaelteerzeugung(v)) return null;
             var w = WP(v);
-            if (w == null || !w.Kaelteproduktion_WP.HasValue || !w.Stromverbrauch_Kuehlung.HasValue) return null;
-            return w.Stromverbrauch_Kuehlung.Value > 0
-                ? (double?)(w.Kaelteproduktion_WP.Value / w.Stromverbrauch_Kuehlung.Value) : null;
+            double kaelte = (w?.Kaelteproduktion_WP ?? 0.0) + (KmSumme(v, k => k.Kaelteproduktion_MWh) ?? 0.0);
+            double strom = (w?.Stromverbrauch_Kuehlung ?? 0.0) + (KmSumme(v, k => k.Stromverbrauch_MWh) ?? 0.0);
+            return KaelteDeckungsgrad.Jahresarbeitszahl(kaelte, strom);
         }
 
         /// <summary>Nur mit gerechneter Kälteerzeugung (<c>Kaelteproduktion_WP</c> gesetzt) — sonst keine Kältezahl der Gruppe <see cref="GR_KAELTE"/>.</summary>

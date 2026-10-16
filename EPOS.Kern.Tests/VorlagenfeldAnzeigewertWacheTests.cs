@@ -198,11 +198,12 @@ namespace EPOS.Kern.Tests
             KaelteDaten k = d.Bedarf?.Kaelte;
             if (mitKaelte)
             {
-                // Deckungsgrad und JAZ Kälte rechnet der Katalog aus den gespeicherten Summen — „ähnlich“ mit Hinweis.
-                Assert.Equal(Vorlagenfeldstufe.Aehnlich, k.DeckungStufe);
-                Assert.Equal(Vorlagenfeldstufe.Aehnlich, k.JazStufe);
-                Assert.False(string.IsNullOrEmpty(k.KennzahlHinweis));
+                // 8d: Deckungsgrad und JAZ Kälte kommen in Übersicht und Katalog aus EINER Rechnung — „entspricht“,
+                // ohne Hinweis; die Gleichheit der Zahlen hält KaelteKennzahlGleichheitWache unten.
                 Assert.NotNull(k);
+                Assert.Equal(Vorlagenfeldstufe.Entspricht, k.DeckungStufe);
+                Assert.Equal(Vorlagenfeldstufe.Entspricht, k.JazStufe);
+                Assert.True(string.IsNullOrEmpty(k.KennzahlHinweis));
                 Assert.True(k.KaeltebedarfMwh > 0);
                 Assert.True(k.Erzeuger.Count > 0, "1017 deckt die Kälte mit einer Wärmepumpe");
                 marken.Add((k.BedarfFeld, Vorlagenfeldstufe.Entspricht, Anzeige(k.KaeltebedarfMwh, "N2", MWH), "Kältebedarf"));
@@ -225,11 +226,27 @@ namespace EPOS.Kern.Tests
                 Ergebnis = new ErgebnisCtrl().Load(idProjekt) ?? new ErgebnisModel(),
             };
             KennzahlenKatalog.Berechne(v);
+            if (mitKaelte) KaelteKennzahlGleichheitWache(k, v);
             var daten = new BerichtsDaten { IdStamm = idProjekt, Stammprojektname = v.Projektname };
             daten.Varianten.Add(v);
             Berichtswerte werte = Berichtswerte.Aus(daten, null, false, null);
             // Eine Variante löst ihre stand.*-Schlüssel im Block „je stand“ auf.
             Pruefe(marken, stamm ? werte : werte.MitStand(v));
+        }
+
+        /// <summary>
+        /// 8d: Deckungsgrad und Jahresarbeitszahl der Kälte zeigen Übersicht (Summen des Laufs) und Kennzahlenkatalog
+        /// (gespeichertes Ergebnis) mit demselben Wert — nicht nur in der gezeigten Stelle, sondern numerisch.
+        /// </summary>
+        private static void KaelteKennzahlGleichheitWache(KaelteDaten k, VariantenDaten v)
+        {
+            Assert.True(k.DeckungsgradProzent.HasValue, "Deckungsgrad Kälte der Übersicht fehlt");
+            Assert.True(k.EerJahreswert.HasValue, "EER-Jahreswert der Übersicht fehlt");
+            double? deckung = v.Kennzahlen[KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD];
+            double? jaz = v.Kennzahlen[KennzahlenKatalog.SCHLUESSEL_KAELTE_JAZ];
+            Assert.True(deckung.HasValue && jaz.HasValue, "Katalogwerte der Kälte fehlen");
+            Assert.Equal(k.DeckungsgradProzent.Value, deckung.Value, 9);
+            Assert.Equal(k.EerJahreswert.Value, jaz.Value, 9);
         }
 
         // =====================================================================

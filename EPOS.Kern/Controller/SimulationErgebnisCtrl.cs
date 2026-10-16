@@ -1826,7 +1826,8 @@ namespace WindowsFormsApplication1
                 e.DeckungsgradProzent = k.Kaeltebedarf_Gesamt > 0
                     ? SimulationRunner.DeckungKuehlkanalProzent(k) : (double?)null;
                 e.KaeltestromMwh = kaskade.StromGesamtKwh / 1000.0;
-                e.EerJahreswert = kaskade.StromGesamtKwh > 0 ? kaskade.EerJahreswert : (double?)null;
+                // 8d: dieselbe Formel wie kaelte.jaz im Kennzahlenkatalog (KaelteDeckungsgrad.Jahresarbeitszahl).
+                e.EerJahreswert = KaelteDeckungsgrad.Jahresarbeitszahl(kaskade.DeckungGesamtKwh / 1000.0, kaskade.StromGesamtKwh / 1000.0);
                 double netz = 0.0;
                 foreach (Kaelteerzeuger z in kaskade.Erzeuger)
                 {
