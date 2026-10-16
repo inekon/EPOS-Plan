@@ -16939,6 +16939,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft des U-Werts ähnelt.
+        /// </summary>
+        public static string BTDLG_LBL_UHERKUNFT {
+            get {
+                return ResourceManager.GetString("BTDLG_LBL_UHERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die U-Wert ähnelt.
         /// </summary>
         public static string BTDLG_LBL_UWERT {
@@ -17079,6 +17088,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BTDLG_TITEL_NEU {
             get {
                 return ResourceManager.GetString("BTDLG_TITEL_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei (gbXML) ähnelt.
+        /// </summary>
+        public static string BTDLG_UHK_GBXML {
+            get {
+                return ResourceManager.GetString("BTDLG_UHK_GBXML", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei (IFC) ähnelt.
+        /// </summary>
+        public static string BTDLG_UHK_IFC {
+            get {
+                return ResourceManager.GetString("BTDLG_UHK_IFC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog ähnelt.
+        /// </summary>
+        public static string BTDLG_UHK_KATALOG {
+            get {
+                return ResourceManager.GetString("BTDLG_UHK_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die von Hand ähnelt.
+        /// </summary>
+        public static string BTDLG_UHK_MANUELL {
+            get {
+                return ResourceManager.GetString("BTDLG_UHK_MANUELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei (Projektdatei) ähnelt.
+        /// </summary>
+        public static string BTDLG_UHK_SQPROJ {
+            get {
+                return ResourceManager.GetString("BTDLG_UHK_SQPROJ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe ähnelt.
+        /// </summary>
+        public static string BTDLG_UHK_VORGABE {
+            get {
+                return ResourceManager.GetString("BTDLG_UHK_VORGABE", resourceCulture);
             }
         }
         

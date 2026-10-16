@@ -592,4 +592,36 @@ public class BauteilDialogTests : EposBunitContext
         KiSetzen("uwert", "0,3");
         Assert.Equal(DbWerte.HERKUNFT_MANUELL, herkunft.Lesen());
     }
+
+    /// <summary>Der Wert der nur lesenden Zeile „Herkunft des U-Werts“ im Formular.</summary>
+    private static string HerkunftZeile(IRenderedComponent<BauteilDialog> cut)
+    {
+        IElement feld = cut.FindAll("label.epos-feld")
+            .Single(l => l.TextContent.Contains(WindowsFormsApplication1.MyResource.Resource.BTDLG_LBL_UHERKUNFT));
+        IElement eingabe = feld.QuerySelector("input")!;
+        Assert.True(eingabe.HasAttribute("readonly"));
+        return eingabe.GetAttribute("value") ?? "";
+    }
+
+    [Fact]
+    public void Die_Herkunft_des_U_Werts_steht_lesbar_unter_dem_U_Wert()
+    {
+        BauteilDaten b = Wand();
+        b.UHerkunft = DbWerte.HERKUNFT_IFC;
+        var cut = Aufbauen(b);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.BTDLG_UHK_IFC, HerkunftZeile(cut));   // Datei
+
+        KiSetzen("uwert", "0,28");
+        cut.Render();
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.BTDLG_UHK_MANUELL, HerkunftZeile(cut)); // von Hand
+    }
+
+    [Fact]
+    public void Ohne_Herkunft_zeigt_die_Zeile_einen_Strich()
+    {
+        BauteilDaten b = Wand();
+        b.UHerkunft = null;
+        var cut = Aufbauen(b);
+        Assert.Equal("–", HerkunftZeile(cut));
+    }
 }

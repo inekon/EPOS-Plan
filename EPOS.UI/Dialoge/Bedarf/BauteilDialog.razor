@@ -96,6 +96,10 @@
                         Platzhalter="@UPlatzhalter"
                         Feldname="@Texte.LabelUWert" FehlerZustand="FehlerMelden"
                         Wert="@_stand.UWert" WertChanged="w => _stand.UWert = w" />
+            @* U_HERKUNFT: nur lesend, nach den Regeln des Speicherns (BauteilUHerkunftVorschau) — eine Änderung im
+               offenen Dialog zeigt sofort „von Hand“. Kein Eingabefeld (NurLesen). *@
+            <Textfeld Bezeichnung="@Texte.LabelUHerkunft" NurLesen="true" Kurz="true"
+                      Wert="@Texte.UHerkunftText(UHerkunftVorschau())" />
             @if (!Transparent)
             {
                 @* KAPAZITAET: Lesewert C = Σ ρ·c_p·d des gewaehlten Aufbaus, fertig aus dem Kern

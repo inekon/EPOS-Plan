@@ -54470,6 +54470,27 @@ Chart</value>
   <data name="BTDLG_KAPAZITAET_BAUWEISE" xml:space="preserve">
     <value>aus der Bauweise</value>
   </data>
+  <data name="BTDLG_LBL_UHERKUNFT" xml:space="preserve">
+    <value>Herkunft des U-Werts</value>
+  </data>
+  <data name="BTDLG_UHK_MANUELL" xml:space="preserve">
+    <value>von Hand</value>
+  </data>
+  <data name="BTDLG_UHK_KATALOG" xml:space="preserve">
+    <value>Katalog</value>
+  </data>
+  <data name="BTDLG_UHK_IFC" xml:space="preserve">
+    <value>Datei (IFC)</value>
+  </data>
+  <data name="BTDLG_UHK_GBXML" xml:space="preserve">
+    <value>Datei (gbXML)</value>
+  </data>
+  <data name="BTDLG_UHK_SQPROJ" xml:space="preserve">
+    <value>Datei (Projektdatei)</value>
+  </data>
+  <data name="BTDLG_UHK_VORGABE" xml:space="preserve">
+    <value>Vorgabe</value>
+  </data>
   <data name="GEBMZ_KNOPF" xml:space="preserve">
     <value>Als Mehrzonenmodell übernehmen…</value>
   </data>

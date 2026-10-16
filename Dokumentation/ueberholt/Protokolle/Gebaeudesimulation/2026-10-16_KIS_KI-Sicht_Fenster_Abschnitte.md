@@ -45,3 +45,18 @@ Abschnitt 5.4. Arbeitsort Worktree `kis`, Zweig `kis`, Basis `836407033` (Runde 
 
 - Der Bauteildialog zeigt die Herkunft des U-Werts nicht selbst (nur der Steckbrief der Gebäudeansicht); der Assistent liest
   sie als einziger dort. Eine sichtbare Zeile im Dialog wäre ein eigener Auftrag.
+
+## Nachtrag: Herkunft des U-Werts im Bauteildialog
+
+Anwenderentscheid vom 16.10.2026: Die Herkunft des U-Werts ist im Bauteildialog sichtbar.
+
+- Unter dem U-Wert steht die nur lesende Zeile „Herkunft des U-Werts“ (`Textfeld NurLesen`, kein Eingabefeld; die
+  Eingabebilanz bleibt bei 16). Der Wert kommt aus `BauteilUHerkunftVorschau` — eine Änderung von U-Wert oder Aufbau
+  im offenen Dialog zeigt sofort die Herkunft, die das Speichern schreibt; ohne Herkunft steht „–“.
+- Texte: 7 neue Schlüssel je Sprache (`BTDLG_LBL_UHERKUNFT`, `BTDLG_UHK_MANUELL|KATALOG|IFC|GBXML|SQPROJ|VORGABE`),
+  Designer neu erzeugt; Zuordnung in `BauteilDialogTexte.UHerkunftText`.
+- Wiki-Quelle `Projekte/Wiki/Programm Dokumentation - Gebäude.wiki`: ein Satz im Abschnitt des Bauteildialogs,
+  gegengelesen ohne Treffer.
+- Tests: `EPOS.UI.Tests` (Filter wie oben) 700 grün, darin 2 neue Fälle in `BauteilDialogTests` (Datei → von Hand,
+  ohne Herkunft); `EPOS.Kern.Tests`, Filter `Ressource`/`Resource`, `Wiki`, `Dokumentation`, `Bauteil`: 563 grün,
+  1 übersprungen. Bau 0 Fehler; die Windows-Schale ist nicht berührt.

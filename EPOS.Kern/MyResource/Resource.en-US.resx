@@ -54463,6 +54463,27 @@ chart</value>
   <data name="BTDLG_KAPAZITAET_BAUWEISE" xml:space="preserve">
     <value>from the construction type</value>
   </data>
+  <data name="BTDLG_LBL_UHERKUNFT" xml:space="preserve">
+    <value>Origin of the U-value</value>
+  </data>
+  <data name="BTDLG_UHK_MANUELL" xml:space="preserve">
+    <value>entered by hand</value>
+  </data>
+  <data name="BTDLG_UHK_KATALOG" xml:space="preserve">
+    <value>catalogue</value>
+  </data>
+  <data name="BTDLG_UHK_IFC" xml:space="preserve">
+    <value>file (IFC)</value>
+  </data>
+  <data name="BTDLG_UHK_GBXML" xml:space="preserve">
+    <value>file (gbXML)</value>
+  </data>
+  <data name="BTDLG_UHK_SQPROJ" xml:space="preserve">
+    <value>file (project file)</value>
+  </data>
+  <data name="BTDLG_UHK_VORGABE" xml:space="preserve">
+    <value>default</value>
+  </data>
   <data name="GEBMZ_KNOPF" xml:space="preserve">
     <value>Adopt as multi-zone model…</value>
   </data>
