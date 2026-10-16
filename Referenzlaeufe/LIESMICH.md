@@ -1402,6 +1402,18 @@ Projekt 1072. 1050, 1052, 1054, 1055, 1056, 1057, 1059, 1061, 1062, 1064 und 107
 > LFS-SHA-256 `7ef1762a5e89c365d195ccd48085d7c670b4a05a7b1ce904ae2bf4b273253823`**. Der Referenzlauf aller siebenunddreißig
 > Projekte gegen R55 bleibt PASS.
 
+> **Nachtrag — Schema 230 (KBP-2 Kältebedarfsvorlagen und Eingabeart, 16.10.2026, hängt an 229
+> `StromspeicherKostenSchema`), Basis R55 unverändert.** `KaeltebedarfsprofilVorlagenSchema` (230 =
+> `StromspeicherKostenSchema.SCHRITT + 1`) legt `Z_Projekt_Kaeltebedarf.Eingabeart` (Vorgabe `'jahr'`) und den
+> Art-Vorschlag `Kaelte_Art` an `Tab_Kaeltebedarf_STAMM` und `Tab_Kaeltebedarf` an und sät die Vorlagen 7–16 samt
+> Wochenprofil in `Tab_Kaeltebedarf_STAMM` und `Tab_Kaeltetyp_STAMM` (`ReadOnly` = 1, mit Schlüssel und Prüfsumme). Gehoben
+> aus der Fassung 229 (108 687 360 Byte) mit `Werkzeuge/Testdatenbankschema`; der Inhaltsvergleich aller Tabellen zeigt allein
+> die drei neuen Spalten, die zehn neuen Zeilen je Katalogtabelle und `Tab_Applikation.SchemaVersion`, alle übrigen Spalten
+> und Zeilen sind wertgleich (192 von 195 Tabellen unberührt, die Vorlagen 1–6 bytegleich). Die Testdatenbank steht auf
+> **230** (`integrity_check` ok, `foreign_key_check` leer): **108 720 128 Byte, LFS-SHA-256
+> `a901f445a430231ab6c68c1cc0e3a1ef71a3717cc922bb07c426328b27b3b3f1`**. Der Referenzlauf der CI-Auswahl gegen R55 bleibt PASS
+> (11 Projekte, 373 CSV byte-gleich).
+
 ### Die Vorgängerbasis R54 (Dachflächen)
 
 Sechsunddreißig Projekte, 1 171 CSV, 7 983 Skalare, auf Linux eingefroren gegen die Testdatenbank `1f2cf95f…`
