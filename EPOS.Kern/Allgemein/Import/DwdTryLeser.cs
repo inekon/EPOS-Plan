@@ -59,6 +59,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die verworfenen Größen als ein Text, z. B. „p, WR, WG, …".</summary>
         public string VerworfenText => string.Join(", ", Verworfen);
+
+        /// <summary>
+        /// Die ROHWERTE aller Stundenfelder der Datei (Auftrag KD-4): <c>t p WR WG N x RF B D A E IL</c> je Stunde,
+        /// Stunde 1 … 8760 im Ortszeitraster der Datei (MEZ ohne Sommerzeit), aufsteigend — ungedreht und vor jeder
+        /// Rechnung. Ziel ist <c>Tab_Klimastunde_STAMM</c>, sobald der Schemaschritt steht; die Rechenreihe
+        /// (<c>Tab_Solar_STAMM</c>) bleibt davon unberührt.
+        /// </summary>
+        public KlimaRohreihe Rohwerte = new KlimaRohreihe { Zeitbezug = KlimaRohwerteSchema.ZEITBEZUG_MEZ };
     }
 
     /// <summary>
@@ -163,6 +171,24 @@ namespace WindowsFormsApplication1
             "p", "WR", "WG", "x", "E", "IL"
         };
 
+        /// <summary>Feldindex des Luftdrucks <c>p</c> [hPa] in der Datenzeile (Rohwert, KD-4).</summary>
+        public const int FELD_P = 6;
+
+        /// <summary>Feldindex der Windrichtung <c>WR</c> [Grad] (Rohwert, KD-4).</summary>
+        public const int FELD_WR = 7;
+
+        /// <summary>Feldindex der Windgeschwindigkeit <c>WG</c> [m/s] (Rohwert, KD-4).</summary>
+        public const int FELD_WG = 8;
+
+        /// <summary>Feldindex des Wasserdampfgehalts <c>x</c> [g/kg] (Rohwert, KD-4).</summary>
+        public const int FELD_X = 10;
+
+        /// <summary>Feldindex der terrestrischen Ausstrahlung <c>E</c> [W/m²] (Rohwert, KD-4).</summary>
+        public const int FELD_E = 15;
+
+        /// <summary>Feldindex der Qualitätskennung <c>IL</c> (Rohwert, KD-4).</summary>
+        public const int FELD_IL = 16;
+
         /// <summary>Feldindex des Bedeckungsgrads <c>N</c> [Achtel] in der Datenzeile.</summary>
         public const int FELD_N = 9;
 
@@ -171,6 +197,22 @@ namespace WindowsFormsApplication1
 
         /// <summary>Feldindex der atmosphärischen Gegenstrahlung <c>A</c> [W/m²].</summary>
         public const int FELD_A = 14;
+
+        /// <summary>Ein Rohfeld als Zahl (invariant); nicht lesbar oder nicht endlich = <c>null</c>.</summary>
+        private static double? Roh(string feld)
+        {
+            if (double.TryParse(feld, NumberStyles.Float, CultureInfo.InvariantCulture, out double w) &&
+                !double.IsNaN(w) && !double.IsInfinity(w))
+                return w;
+            return null;
+        }
+
+        /// <summary>Ein ganzzahliges Rohfeld; nicht lesbar = <c>null</c>.</summary>
+        private static int? RohGanz(string feld)
+        {
+            double? w = Roh(feld);
+            return w.HasValue ? (int)Math.Round(w.Value) : (int?)null;
+        }
 
         /// <summary>Tage je Monat im 365-Tage-Raster (kein Schaltjahr).</summary>
         private static readonly int[] TAGE_MONAT =
@@ -340,14 +382,36 @@ namespace WindowsFormsApplication1
                     Humidity = rf,               // RF -> Tab_Solar(_STAMM).Luftfeuchte
                     Gegenstrahlung = a,          // A  -> Tab_Solar(_STAMM).Gegenstrahlung
                     Bedeckungsgrad = n,          // N  -> Tab_Solar(_STAMM).Bedeckungsgrad
-                    WindSpeed = 0                // WG ist benannt verworfen
+                    WindSpeed = 0                // WG: nur Rohwert, nie in der Rechenreihe
                 });
 
-                ortszeit.Add((TagImJahr(monat, tag) - 1) * 24 + (stunde - 1));
+                int l0 = (TagImJahr(monat, tag) - 1) * 24 + (stunde - 1);
+                ortszeit.Add(l0);
+
+                // KD-4: alle Stundenfelder als Rohwert, im Ortszeitraster der Datei. Die sechs Groessen ohne
+                // Rechenspalte sind KEINE Pflichtfelder - ein nicht lesbarer Wert bleibt NULL, nie 0.
+                kopf.Rohwerte.Stunden.Add(new KlimaRohstunde
+                {
+                    Stunde = l0 + 1,
+                    Temperatur = t,
+                    Luftdruck_hPa = Roh(f[FELD_P]),
+                    Windrichtung_Grad = Roh(f[FELD_WR]),
+                    Windgeschwindigkeit_m_s = Roh(f[FELD_WG]),
+                    Bedeckungsgrad_Achtel = n,
+                    Wasserdampfgehalt_g_kg = Roh(f[FELD_X]),
+                    Luftfeuchte_Prozent = rf,
+                    DirektHorizontal = b,
+                    DiffusHorizontal = d,
+                    Gegenstrahlung = a,
+                    Ausstrahlung = Roh(f[FELD_E]),
+                    QualitaetStrahlung = RohGanz(f[FELD_IL])
+                });
             }
 
             if (imKopf)
                 throw new FormatException(MyResource.Resource.KLIMA_TRY_KEIN_KOPFENDE);
+
+            kopf.Rohwerte.Stunden.Sort((x, y) => x.Stunde.CompareTo(y.Stunde));
 
             if (!vollesJahr)
             {

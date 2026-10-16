@@ -266,6 +266,12 @@ namespace WindowsFormsApplication1
         public const string GEBAEUDE_EXPORT = "GebaeudeExport";
 
         /// <summary>
+        /// Der Klimaexport als CSV (<c>KlimaExportDialog</c>, Auftrag KD-5) — eine Ueberlagerung im Katalogdialog der
+        /// Klimadaten, ohne <c>Form_</c>-Vorsilbe wie <see cref="GEBAEUDE_EXPORT"/>.
+        /// </summary>
+        public const string KLIMA_EXPORT = "KlimaExport";
+
+        /// <summary>
         /// Das Wochen-Stundenprofil eines Bedarfstyps (<c>TypProfilDialog</c>).
         /// </summary>
         /// <remarks>
@@ -896,6 +902,7 @@ namespace WindowsFormsApplication1
                 Bauteil(),
                 Luftaustausch(),
                 GebaeudeExport(),
+                KlimaExport(),
                 Typprofil(),
                 Typstamm(),
                 Bedarfsprofile(),
@@ -6240,6 +6247,44 @@ namespace WindowsFormsApplication1
                                      KiParameterTyp.Text, KiDialogTexte.GexpPlzErl, leerErlaubt: true),
                     new KiDialogFeld("bestaetigt", SICHT + "Bestaetigt", KiDialogTexte.GexpBestaetigtName,
                                      KiParameterTyp.Wahrheitswert, KiDialogTexte.GexpBestaetigtErl, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        /// <summary>
+        /// Der Klimaexport als CSV (Auftrag KD-5) — Formatfelder und Parameterwahl aus
+        /// <c>EPOS.UI.Dialoge.Export.KlimaExportKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Die Formatfelder sind Steuerwerte (Position der Optionsgruppe), die Parameter eine Schlüsselliste.
+        /// Exportieren bleibt ein Klick des Anwenders (Dateiwahl der Plattform).
+        /// </remarks>
+        private static KiDialog KlimaExport()
+        {
+            const string SICHT = "KlimaExportKiSicht.";
+            return new KiDialog(
+                maskenname: KiMaskennamen.KLIMA_EXPORT,
+                anzeigename: KiDialogTexte.MaskeKlimaExport,
+                felder: new[]
+                {
+                    new KiDialogFeld("parameter", SICHT + "Parameter", KiDialogTexte.KexpParameterName,
+                                     KiParameterTyp.Text, KiDialogTexte.KexpParameterErl),
+                    new KiDialogFeld("trennzeichen", SICHT + "Trennzeichen", KiDialogTexte.KexpTrennzeichenName,
+                                     KiParameterTyp.Ganzzahl, KiDialogTexte.KexpTrennzeichenErl, min: 0, max: 2),
+                    new KiDialogFeld("dezimalzeichen", SICHT + "Dezimalzeichen", KiDialogTexte.KexpDezimalName,
+                                     KiParameterTyp.Ganzzahl, KiDialogTexte.KexpDezimalErl, min: 0, max: 1),
+                    new KiDialogFeld("zeitspalte", SICHT + "Zeitspalte", KiDialogTexte.KexpZeitspalteName,
+                                     KiParameterTyp.Ganzzahl, KiDialogTexte.KexpZeitspalteErl, min: 0, max: 4),
+                    new KiDialogFeld("zeitbezug", SICHT + "Zeitbezug", KiDialogTexte.KexpZeitbezugName,
+                                     KiParameterTyp.Ganzzahl, KiDialogTexte.KexpZeitbezugErl, min: 0, max: 1),
+                    new KiDialogFeld("kopfart", SICHT + "Kopfart", KiDialogTexte.KexpKopfartName,
+                                     KiParameterTyp.Ganzzahl, KiDialogTexte.KexpKopfartErl, min: 0, max: 2),
+                    new KiDialogFeld("herkunft", SICHT + "Herkunft", KiDialogTexte.KexpHerkunftName,
+                                     KiParameterTyp.Wahrheitswert, KiDialogTexte.KexpHerkunftErl)
                 },
                 knoepfe: new[]
                 {

@@ -305,14 +305,16 @@ namespace EPOS.Kern.Tests
             // K-F1: Tab_Rueckkuehlwerk_STAMM dazu (Register "RKW") - 54.
             // KM4-E1: Tab_Kaeltemittel_STAMM dazu (Register "KMT") - 55.
             // BK-2 (Schritt 221): Tab_Bauteilabschnitt_STAMM dazu (seit BK-5 Kind des Aufbaus) - 56.
-            Assert.Equal(56, stamm.Count);
+            // KD-4: Tab_Klimastunde_STAMM dazu (Klimakatalog, benannt ausgenommen) - 57.
+            Assert.Equal(57, stamm.Count);
             foreach (string s in stamm)
                 Assert.True(erfasst.Contains(s) ^ Katalogfassung.Ausgenommen.ContainsKey(s),
                             s + " steht weder im Register noch in den Ausnahmen (oder in beiden).");
             Assert.All(Katalogfassung.Ausgenommen, kv => Assert.True(kv.Value.Length > 40, kv.Key + ": Grund fehlt."));
             // ZK: die drei Katalogzwillinge der Zonen sind benannt ausgenommen (Kindkataloge am Kopf) - 15.
             // BK-5: die Abschnitte reisen als Kind des Aufbaus, die Ausnahme Tab_Bauteilabschnitt_STAMM entfaellt - 15.
-            Assert.Equal(15, Katalogfassung.Ausgenommen.Count);
+            // KD-4: Tab_Klimastunde_STAMM (Rohwerte des Klimaimports) gehoert zum ausgenommenen Klimakatalog - 16.
+            Assert.Equal(16, Katalogfassung.Ausgenommen.Count);
         }
 
         /// <summary>

@@ -78,7 +78,7 @@ namespace WindowsFormsApplication1
         public const double LAUFZEIT_MIN_H = 16.0, LAUFZEIT_MAX_H = 20.0;
 
         public static readonly Textbaustein HERKUNFT_NACHBARSTUFEN =
-            T("PAUS_HERK_NACHBARSTUFEN", "Konzept Pufferauslegung 6 (Nutzen-Aufwand-Zeile); Durchlauf D1 und Zweipunkt D2 mit festem Volumen, Verlust K11 nach Klasse-C-Grenze");
+            T("PAUS_HERK_NACHBARSTUFEN", "Nachrechnung je Stufe mit festem Volumen (Deckungsgrad und Taktziel); Bereitschaftsverlust nach der Grenze der Effizienzklasse C");
         public static readonly Textbaustein HERKUNFT_KURVE =
             T("PAUS_HERK_KURVE", "Ecosizer (Ecotope 2020), Speicher gegen Leistung: Laufvolumen des Spitzenereignisses ÷ η_s");
 
