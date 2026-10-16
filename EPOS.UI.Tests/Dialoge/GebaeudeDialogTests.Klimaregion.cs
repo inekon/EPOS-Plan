@@ -91,6 +91,76 @@ public partial class GebaeudeDialogTests
         Assert.Equal(2, probe.Herkunft);
     }
 
+    /// <summary>Ein Projektkontext, der seinen Wechsel auf Zuruf meldet (Nachzug N6).</summary>
+    private sealed class Wechselkontext : IProjektKontext
+    {
+        public bool Vorhanden => true;
+        public int Id => 1;
+        public string Name => "Probe";
+        public string Klimazone => "";
+        public bool Uebernehmen(int id, string name) => false;
+        public event Action? Gewechselt;
+        public void Melden() => Gewechselt?.Invoke();
+        public bool Hoert => Gewechselt is not null;
+    }
+
+    /// <summary>
+    /// Nachzug N6: Eine offene Wärmebedarfsansicht liest ihren Parametersatz neu, sobald die Klimaregion wechselt — über die
+    /// eigene Wahl und über das Ereignis des Projektkontexts. Gegenproben: geschlossen wird nichts gelesen; nach dem Schließen
+    /// des Dialogs hört er nicht mehr zu.
+    /// </summary>
+    [Fact]
+    public async Task N6_offene_Waermebedarfsansicht_liest_die_neue_Klimaregion()
+    {
+        using var _ = new Kulturvorrichtung();
+        IProjektKontext vorher = WindowsFormsApplication1.Dienste.Projekt;
+        var kontext = new Wechselkontext();
+        WindowsFormsApplication1.Dienste.Projekt = kontext;
+        try
+        {
+            int gelesen = 0;
+            var probe = new Klimaprobe();
+            var cut = Aufbauen(zeilen: GespeicherteZeilen(), bedarfGaben: z =>
+            {
+                gelesen++;
+                return new Dictionary<string, object> { ["Daten"] = new GebaeudeBedarfDaten { Name = z.Name } };
+            });
+            cut.Render(p => p.Add(x => x.ModellpruefungGaben, _ => new ModellpruefungProbeweg().Weg()).Add(x => x.KlimaregionGaben, probe.Weg));
+            Assert.True(kontext.Hoert);
+
+            // Gegenprobe: ohne offene Ansicht liest der Wechsel nichts.
+            await cut.InvokeAsync(kontext.Melden);
+            Assert.Equal(0, gelesen);
+
+            Knopf(cut, "Simulation...").Click();
+            Assert.True(cut.Instance.BedarfOffen);
+            Assert.Equal(1, gelesen);
+            int fassung = cut.Instance.BedarfFassung;
+
+            // Eigene Wahl der Region.
+            Pruefknopf(cut)!.Click();
+            cut.Find("button.epos-modellpruefung-klima").Click();
+            await Waehlen(cut, 2);
+            cut.Find("button.epos-klimawahl-uebernehmen").Click();
+            Assert.Equal(new[] { 2 }, probe.Gespeichert);
+            Assert.Equal(2, gelesen);
+            Assert.True(cut.Instance.BedarfOffen);
+            Assert.Equal(fassung + 1, cut.Instance.BedarfFassung);
+
+            // Wechsel über die Kopfleiste (Ereignis des Projektkontexts).
+            await cut.InvokeAsync(kontext.Melden);
+            cut.WaitForAssertion(() => Assert.Equal(3, gelesen));
+            Assert.Equal(fassung + 2, cut.Instance.BedarfFassung);
+
+            DisposeComponents();
+            Assert.False(kontext.Hoert);
+        }
+        finally
+        {
+            WindowsFormsApplication1.Dienste.Projekt = vorher;
+        }
+    }
+
     [Fact]
     public async Task N5_Gegenprobe_Grund_bleibt_am_Feld_und_unveraenderte_Wahl_schreibt_nicht()
     {
