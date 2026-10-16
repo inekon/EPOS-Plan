@@ -105,3 +105,28 @@ und BK-8b (Teilung an allen gemeinsamen Grenzen, Fehlerschranke, Wiederimport-Ve
    DIN EN ISO 6946 für das Verfahren der oberen und unteren Grenzwerte (Abschnitt 6.7) die Anwendungsgrenze „Verhältnis
    R'_T/R''_T höchstens 1,5“ bzw. eine relative Fehlerschranke von 20 %? Welche Ausgabe (Jahr) liegt vor?
 5. Nichts übernehmen, nichts committen, nichts pushen.
+
+## 8 · 2026-10-16 17:50 UTC · Übernahme des Bauteilkatalog-Imports in Kenndaten.sqlite (Anwender: E159)
+
+Der Anwender hat entschieden: Der Bauteilkatalog-Import wird jetzt in `C:\ProgramData\EPOS_PLAN\Kenndaten.sqlite` übernommen.
+Stand: `origin/ios_migration_september` `f7e962bc6` (BK-7b, BK-8, BK-8b, BK-8c, N6, SA4, DA-8; Schemaziel **237**). Bitte in dieser
+Reihenfolge:
+
+1. Klon per Fast-Forward auf mindestens `f7e962bc6`, `dotnet build WP-Plan.sln -c Debug -p:Platform=x64` (bei gesperrtem Ausgabeordner
+   mit `-p:OutDir` außerhalb).
+2. Der Anwender hat EPOS-Plan um 16:58 UTC geschlossen. Prüfen, dass kein Prozess `EPOS_Plan` mehr läuft; läuft doch einer,
+   den Anwender bitten, ihn zu beenden, und erst danach weitermachen. Bis zur Meldung „fertig“ EPOS-Plan nicht starten.
+3. **Sicherung:** `VACUUM INTO` nach `C:\ProgramData\EPOS_PLAN\DB-Backup\Kenndaten_vor_Katalogimport_<Datum_Uhrzeit>.sqlite`,
+   `integrity_check` der Kopie ok, Größe melden.
+4. **Schema heben** 235 → 237 über den Kernweg wie bei E147 (`SchemaMigration.Ausfuehren` mit `DataRepository.PfadUeberschreibung`);
+   Schritte 236 und 237 je „OK“, `integrity_check` ok. (Die Sicherung von 18:57 MESZ mit Stand 235 bleibt zusätzlich liegen.)
+5. **Vorschau** über den Ordner `C:\Temp\Hsetu` (mit `Katalog_Zuordnung.csv`), Lizenzablage angebunden (Schreiben erlaubt), noch
+   nichts übernehmen. Melden wie Nachricht 7, dazu die Wiederimport-Zeile (bekämen andere Schichten / verglichen / > 1 % / größte
+   Änderung / ohne Vergleichswert).
+6. **Übernahme** über `BauteilkatalogImport.Uebernehmen` (gleicher Ordner). Dauer und die Laufzeile der Übernahme melden.
+7. **Konvergenzprobe:** zweite Vorschau — erwartet 0 neu, 0 zusammengeführt, alles wiedererkannt; Wiederimport-Zeile: 0 bekämen
+   andere Schichten.
+8. `integrity_check`, `foreign_key_check`; Zählungen wie in E147/E148 (Baustoffe, Aufbauten, Schichten, Abschnitte, Aufbauten mit
+   Abschnitten, Sätze mit Teilkatalog in der Quelle-Angabe, Aufbauten mit Absorptions-/Emissionsgrad = 0 erwartet).
+9. Danach darf der Anwender EPOS-Plan wieder starten. Nichts committen, nichts pushen; nur Zählungen, keine Werte, keine Namen.
+   Bei einem Fehler in Schritt 4–7: Datenbank aus der Sicherung zurückspielen und melden.
