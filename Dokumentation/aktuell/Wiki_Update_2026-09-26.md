@@ -1108,6 +1108,11 @@ Der Sammel-Upload 1.2.0.11 lief am 14.10.2026 (Seite Brauchwasser-Zapfprofil Rev
 - Seit 14.10.2026: Die mitgelieferten Brauchwasser-Nutzungsarten rechnen im Zapfprofil-Dialog in der Stufe „Einfach“ ohne zusätzlichen Katalog. (#1096)
 - Seit 16.10.2026: In der Stufe Einfach empfiehlt die Speicherauslegung im Brauchwasser-Zapfprofil auch ohne externes Katalogpaket einen Speicher-Nenninhalt, gekennzeichnet als Schnellauslegung nach Vorlage V4. (#1112)
 
+### Entwurf, Version offen (Klimadaten-Import, Einlesen-Dialoge)
+
+- Seit 16.10.2026: Der Klimadaten-Import zeigt vor dem Einlesen den gefundenen Datensatz mit Treffer, Standort und Kennzahlen. (#1123, #1124)
+- Seit 16.10.2026: Die Knöpfe der Einlesen-Dialoge bleiben am unteren Fensterrand sichtbar. (#1122)
+
 ## 3 Offene Punkte
 
 **Seiten ohne Wiki-Quelle.** Für folgende Bedienung gibt es keine Repo-Quelle unter
