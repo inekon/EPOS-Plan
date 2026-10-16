@@ -16,12 +16,12 @@ Das Papier führt den gültigen Stand und wird bei jedem Push nachgeführt.
 |---|---|
 | Arbeitszweig | `ios_migration_september` (Remote `origin`), Stand der Wellen vom 16.10.2026: `3a8f1bcb0` |
 | Sitzungen | fortführend `session_01E52sMc6SB7AA3KC4X4AMMG` (Sitzungszweig `claude/wiki-help-assistant-docs-jllq1r`); `session_01NPHEwQvnQDiWMWnQbMmEou` ist stillgelegt |
-| Fertige Wellen | Runde 231–233 gebaut (#1110 DA-6, #1111 BK-5/BK-6, #1112 MA-6b; Zweig `r6`, Merge-Commits `42de7b173`, `5899125c9`), Push folgt; die Zweige `claude/gebaeudesimulation-da6` und `claude/gebaeudesimulation-bk5` sind erledigt |
+| Fertige Wellen | Runde 231–233 gebaut (#1110 DA-6, #1111 BK-5/BK-6, #1112 MA-6b; Zweig `r6`, Merge-Commits `42de7b173`, `5899125c9`), Push folgt; die Zweige `claude/gebaeudesimulation-da6` und `claude/gebaeudesimulation-bk5` sind erledigt. Danach BK-7 (#1114, `3fa37878d`/`048b485e3`, Merge `2b156e3ae`) und KIS (#1115, `842a462d1`/`cf42f7081`/`4180dc1fa`, Merge `3faa1a36d`) gebaut; Testkorrektur `aa5972ea0` (Lauf 38882648396 grün auf `9f4c6d3ce`); DA-8 (Schritt 237, E151) gebaut auf `da8`, wartet auf 236 |
 | Laufende Wellen | **VS** (Farbmodus „Vollständigkeit“, E145, #1099), **N4** (Feiertagsperioden mit Wochenverweis, Gebäude-Höchsttemperatur im Austausch, #1097) und **N5** („Klimaregion wählen…“, Wochenvorschau nach Neulesen, #1098) sind gebaut und im Gate grün auf `7721492ff` (Integrationszweig `integ7`; Push folgt, CI-Vermerk folgt); **PAP** (Papierpflege) gepusht (`7c1bd049b`) |
 | Referenzbasis | **R55** `Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral`, 37 Projekte; nächste Basen R56 KB-5, R57 SA4; CI-Auswahl laut `CLAUDE.md` |
 | Testdatenbank | Schemastand **233** (Git LFS, 108 728 320 Byte, SHA-256 `e6aef7ded55a644cab3d70e1f49fd76f63376e6efd035191a96fcfbad5e08562`) |
 | Schemakette | 228 `GeraetekostenEntfallSchema` → 229 `StromspeicherKostenSchema` → 230 `KaeltebedarfsprofilVorlagenSchema` → 231 `RaumnutzungDinWerteSchema` (DA-6) → 232 `BauteilkatalogAbschnittSchema` (BK-5/BK-6) → 233 `BauteilUHerkunftSchema` (MA-6b, E149); 234 KBP-5, 235 KB-7 und 236 KBP-4 anderer Sitzungen hängen an 233. Die Kette hängt immer über `+ 1` an der Vorgängerklasse |
-| Statuszeilen | höchste vergebene **#1112** (N4 #1097, N5 #1098, VS #1099, DA-6 #1110, BK-5/BK-6 #1111, MA-6b #1112; #1100–#1104 anderer Sitzungen); vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E149**, **E150 frei** |
+| Statuszeilen | höchste vergebene **#1115** (N4 #1097, N5 #1098, VS #1099, DA-6 #1110, BK-5/BK-6 #1111, MA-6b #1112, BK-7 #1114, KIS #1115; #1100–#1104 anderer Sitzungen); vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E153**, **E154 frei** |
 | Nachbarsitzungen | Kennungen stehen in den Commit-Trailern `Claude-Session` auf origin: Kältebedarf (KB-4/KB-5, Schritt 229) seit 16.10.2026 `session_01LxWpn8bgrFYtFBXppoeoCL` (Hebung 229 angekündigt im Statuskopf ab 02:00 UTC, 230 noch nicht auf origin; zuvor `session_0178YLFEbS4xWdGaXFaZqG1r`), Dialoge und Korrekturen Cloud (KBP-2) `session_01Mt7MsJGzcGr77yqBsxwpLj`, Anlagendialog/ChartProben (R55) `session_01UNeGChCYZu2EpgFx4P3q1q`. Abfrage: `git log --format='%(trailers:key=Claude-Session,valueonly)' -n 80 origin/ios_migration_september | sort | uniq -c` |
 | Lokale Sitzung | „Epos Lokal“ auf dem Rechner des Anwenders (Rechner, HSETU-Daten, Normen); der Anwender startet sie, Importlauf und DA-6-Lieferung sind geliefert |
 | Rückkanal an Epos Lokal | Git-Postfach auf dem verwaisten Zweig `claude/postfach-epos-lokal`, Datei `Quellen/Postfach/an_EPOS_Lokal.md`; je Nachricht eine Überschrift `## <Nr> · <UTC> · <Betreff>`, unten anhängen, Commit mit `[skip ci]`, der Zweig wird nie gemergt. Epos Lokal holt alle 10 Minuten und antwortet per SendMessage. Nachricht 1 (`46d252dc8`) ist bestätigt; der offene Auftrag E147/E148 (zweiter Importlauf und Bereinigung) startet mit Nachricht 2 nach dem Push |
@@ -46,6 +46,7 @@ die Stufenübersicht in der [Statusdatei Gebäudesimulation](../Status_Gebaeudes
 | N1 bis N3, BK-3d | #1091 bis #1094 | Nachzüge Oberfläche und Kern |
 | N4, N5, VS | #1097 bis #1099 | Feiertagsverweis und Gebäude-Höchsttemperatur im Austausch; Wochenvorschau nach Neulesen und „Klimaregion wählen…“; Bedienbegriff „Vollständigkeit“ statt „Befund“ (E145); gebaut, Push folgt |
 | DA-6, BK-5/BK-6, MA-6b | #1110 bis #1112 | DIN-Nutzungsprofile mit Werten (Schritt 231); Abschnitte und Fensteraufbauten im Bauteilkatalog (Schritt 232); Hand-U beim Wiederimport (Schritt 233); gebaut, Push folgt |
+| BK-7, KIS | #1114, #1115 | Teilkatalog in der Quelle und Unterordner `Export` beim Bauteilkatalog-Import; KI-Sicht für Fensterwerte, Abschnitte und U-Herkunft, Herkunftszeile im Bauteildialog; gebaut, Push folgt |
 | Wiki | #1061, #1085 | Wiki-Quellen und Logbuch-Entwurf; **kein Upload** |
 
 ## 3. Laufende Arbeit
@@ -77,10 +78,10 @@ Festlegungen, die Folgewellen kennen müssen:
 
 ## 4. Nächste Arbeit (Reihenfolge)
 
-1. Erledigt: Runde 231/232 und 233 (#1110–#1112); als Nächstes Push, Gate-Nachweis und CI-Vermerke.
+1. Erledigt: Runde 231/232 und 233 (#1110–#1112, CI-Vermerke eingetragen), BK-7 (#1114) und KIS (#1115); als Nächstes Push, dann DA-8 (E151) nach 236 und SA4 (E153) nach R56.
 2. Nachzüge aus MA-6: ein nur im Kalendereditor geänderter Kalender markiert die Zone nicht; Zonenfelder im Zonendialog ohne MANUELL nimmt die Datei.
 3. Nachzugsliste (erledigt mit N4/N5: Klimaregion wählen, Wochenvorschau, Maximaleraumtemperatur, Feiertagsperioden): KI-Sicht für Fensterwerte und Abschnitte, Importdialog Unterordner `Export`, DA-8 nur auf eigenen Entscheid (F8 (a)); offen aus N4/N5/VS: Herkunftszeile in der Klimaregion-Überlagerung; eine offene Wärmebedarfsansicht liest die neue Region erst beim nächsten Öffnen; Bezeichner mit Zeilenumbruch bricht den gbXML-Block; gbXML führt Feiertage nur als Tagtyp `Holiday`; nicht umbenannte „Befund“-Texte `ADM_DUBLETTEN_BAUM`, `BHW_K_LEER`.
-4. BK-7 (Teilkatalognamen `Katalog_Inhalt.csv`, Hilfeschlüssel, Unterordner `Export`); KI-Sicht für Fensterwerte und Abschnitte; BK-4 (LocalDB-Werkzeug) nur für einen neuen Katalogstand.
+4. BK-7 und KI-Sicht sind erledigt (#1114, #1115); BK-4 (LocalDB-Werkzeug) nur für einen neuen Katalogstand.
 5. Wiki-Quellen für BK-5/BK-6 und DA-6; Sammel-Upload nur auf Zuruf (E144, Version 1.2.0.12 laut Empfehlung). Der am 14.10.2026 vorbereitete Upload (Logbuch „Version 1.2.0.11“ in `Werkzeuge/WikiUpload/logbuch.wiki`, 33 abweichende Seiten) ist nicht geladen; vor dem Upload die Versionsnummer gegen das Wiki bestätigen. Aus der Cloud nur, wenn `WIKI_BOT_USER`/`WIKI_BOT_PASS` als Umgebungsgeheimnisse hinterlegt sind, sonst lokal über „Epos Lokal“ (`py -3 Werkzeuge\WikiUpload\wiki_upload.py --seiten`, dann `--logbuch`); danach Statuszeile und `Wiki_Update_2026-09-26.md` nachführen.
 6. SA4 (Referenzprojekt Schnellaufheizung): Basis-Abstimmung offen — die Kältebedarf-Sitzung meldet für KB-5 „Basis bleibt R55“, ob R56 noch kommt, ist offen.
 7. Zweiter Importlauf des Bauteilkatalogs (Epos Lokal, E147/E148) nach dem Push über das Postfach.

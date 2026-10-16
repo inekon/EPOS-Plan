@@ -1780,15 +1780,15 @@ public class KiDialogkatalogTests : IDisposable
             "bindet über die Sichtklasse KaeltemaschineAnlageKiSicht auf die Anlagenwahl und den Arbeitsstand der " +
             "gewählten Anlage (Kühlträger über die Id); Zeuge ist KaeltemaschineAnlageDialogTests",
         [KiMaskennamen.BAUTEILAUFBAU] =
-            "bindet über die Sichtklasse BauteilaufbauKiSicht auf die Satzwahl, den Kopf und das " +
-            "Schichtenraster des Arbeitsstands; Zeuge ist BauteilaufbauDialogTests",
+            "bindet über die Sichtklasse BauteilaufbauKiSicht auf die Satzwahl, den Kopf samt Fensterteil, das " +
+            "Schichtenraster samt Abschnitten des Arbeitsstands und den Summenfuß zum Lesen; Zeuge ist BauteilaufbauDialogTests",
         [KiMaskennamen.ZONE] =
             "bindet über die Sichtklasse ZonenKiSicht auf Bezeichnung, Nutzfläche, die Werte der Zone " +
             "und das Bauteilraster zum Lesen; Zeuge ist ZonenDialogTests",
         [KiMaskennamen.BAUTEIL] =
             "bindet über die Sichtklasse BauteilKiSicht auf die Listenplätze von Art, " +
-            "Randbedingung, Nachbarzone, Zuordnung und Aufbau und den Arbeitsstand des Bauteils; " +
-            "Zeuge ist BauteilDialogTests",
+            "Randbedingung, Nachbarzone, Zuordnung und Aufbau, den Arbeitsstand des Bauteils und die " +
+            "Herkunft des U-Werts zum Lesen; Zeuge ist BauteilDialogTests",
         [KiMaskennamen.LUFTAUSTAUSCH] =
             "bindet über die Sichtklasse LuftaustauschKiSicht auf das Raster der Luftströme " +
             "(Zonen zum Lesen, Volumenstrom setzbar); Zeuge ist LuftaustauschDialogTests",

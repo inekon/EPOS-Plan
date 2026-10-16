@@ -61,14 +61,25 @@ namespace EPOS.Kern.Tests
             public List<string[]> B = new List<string[]>(), A = new List<string[]>(), S = new List<string[]>(),
                                   X = new List<string[]>(), F = new List<string[]>(), Z = new List<string[]>();
             public string KopfB = KOPF_B;
+            // BK-7: Teilkataloge; null = Datei fehlt.
+            public string KopfK = KOPF_K, KopfI = KOPF_I;
+            public List<string[]> K, I;
+            public string Unterordner;
         }
+
+        // BK-7: erfundene Spaltennamen der Zuordnung - der Leser haengt an keiner Verweisspalte.
+        private const string KOPF_K = "UId;ShortDesc;Bemerkung";
+        private const string KOPF_I = "UId;KnotenUId;ZielUId;Sortierung";
 
         private string Schreiben(Probe p)
         {
             string o = Path.Combine(Path.GetTempPath(), "epos-bk3-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(o);
             _ordner.Add(o);
+            if (p.Unterordner != null) { o = Path.Combine(o, p.Unterordner); Directory.CreateDirectory(o); }
             var utf8 = new UTF8Encoding(false);
+            if (p.K != null) File.WriteAllText(Path.Combine(o, "Katalog.csv"), Csv(p.KopfK, p.K), utf8);
+            if (p.I != null) File.WriteAllText(Path.Combine(o, "Katalog_Inhalt.csv"), Csv(p.KopfI, p.I), utf8);
             File.WriteAllText(Path.Combine(o, "Baustoffe.csv"), Csv(p.KopfB, p.B), utf8);
             File.WriteAllText(Path.Combine(o, "Aufbauten.csv"), Csv(KOPF_A, p.A), utf8);
             File.WriteAllText(Path.Combine(o, "Schichten.csv"), Csv(KOPF_S, p.S), utf8);
@@ -358,6 +369,151 @@ namespace EPOS.Kern.Tests
             Assert.Equal(aufbauten, Zahl("SELECT COUNT(*) FROM \"Tab_Bauteilaufbau_STAMM\""));
             Assert.Equal(schichten, Zahl("SELECT COUNT(*) FROM \"Tab_Bauteilschicht_STAMM\""));
             Assert.Equal(quelle, DataRepository.ExecuteScalar("SELECT \"Quelle\" FROM \"Tab_Baustoff_STAMM\" WHERE \"ID\" = ?", new DbParam("@id", k.Id)));
+        }
+
+        // ---- BK-7: Teilkataloge und Unterordner Export ---------------------------------------
+
+        /// <summary>
+        /// Die Hauptprobe mit zwei erfundenen Teilkatalogen: B2 direkt in A, seine Dublette B3 in B, B4 über seine
+        /// Basiszeile in B, die Aufbauten mit Basis 901 (A1, A5) über einen Elternknoten in A.
+        /// </summary>
+        private static Probe ProbeTeilkataloge((string Name, int Code, double L, double R, double C)? katalog = null)
+        {
+            Probe p = Hauptprobe(katalog);
+            p.K = new List<string[]>
+            {
+                new[] { G(801), "Teilkatalog A", "" }, new[] { G(802), "Teilkatalog B", "" },
+                new[] { G(803), "", "ohne Namen" }
+            };
+            p.I = new List<string[]>
+            {
+                new[] { G(851), G(801), G(2), "1" },
+                new[] { G(852), G(802), G(3), "2" },
+                new[] { G(853), G(801), "", "3" },                 // Knoten ohne Satz
+                new[] { G(854), G(853), G(901), "4" },             // Kind des Knotens, Basiszeile der Aufbauten A1 und A5
+                new[] { G(855), G(802), G(904), "5" },             // Basiszeile des Baustoffs B4
+                new[] { G(856), G(803), G(102), "6" },             // Teilkatalog ohne Namen
+                new[] { G(857), G(801), G(7), "7" }                // Satz, der den Katalog trifft (nur mit katalog)
+            };
+            return p;
+        }
+
+        [Fact]
+        public void Die_Teilkataloge_gehen_in_die_Quelle_auch_ueber_Basiszeile_Elternknoten_und_Dublette()
+        {
+            BauteilkatalogImport.Plan p = BauteilkatalogImport.Planen(BauteilkatalogQuelle.Lesen(Schreiben(ProbeTeilkataloge())), new BauteilkatalogStand());
+            BauteilkatalogVorschau v = p.Vorschau;
+            Assert.Null(v.Abgelehnt);
+            string q = "Hottgenroth-Katalog, Datenstand 2025-06";
+            Assert.Equal(q, v.Quelle);
+            string Quelle(List<BauteilkatalogImport.Satz> l, int n) => (string)l.Single(s => s.Kennung == G(n)).Werte["Quelle"];
+            Assert.Equal(q + ", Teilkataloge Teilkatalog A / Teilkatalog B", Quelle(p.Baustoffe, 2));   // B3 zusammengeführt
+            Assert.Equal(q + ", Teilkatalog Teilkatalog B", Quelle(p.Baustoffe, 4));
+            Assert.Equal(q, Quelle(p.Baustoffe, 1));
+            Assert.Equal(q + ", Teilkatalog Teilkatalog A", Quelle(p.Aufbauten, 101));
+            Assert.Equal(q + ", Teilkatalog Teilkatalog A", Quelle(p.Aufbauten, 105));
+            Assert.Equal(q, Quelle(p.Aufbauten, 102));                                                 // Teilkatalog ohne Namen
+            Assert.Equal(2, v.Teilkataloge);
+            Assert.Equal(2, v.BaustoffeMitTeilkatalog);
+            Assert.Equal(2, v.AufbautenMitTeilkatalog);
+            Assert.Contains(v.Protokoll, z => z.StartsWith("Teilkataloge: 2", StringComparison.Ordinal));
+            Assert.Contains(v.Protokoll, z => z.StartsWith("Katalog_Inhalt.csv: Zeilen mit Satz, aber ohne Teilkatalog: 1", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void Fehlen_Datei_oder_Spalte_der_Teilkataloge_laeuft_der_Import_benannt_weiter()
+        {
+            string q = "Hottgenroth-Katalog, Datenstand 2025-06";
+            BauteilkatalogVorschau ohne = BauteilkatalogImport.Planen(BauteilkatalogQuelle.Lesen(Schreiben(Hauptprobe())), null).Vorschau;
+            Assert.Null(ohne.Abgelehnt);
+            Assert.Contains(ohne.Protokoll, z => z == "Datei fehlt, ohne Teilkatalognamen weiter: Katalog.csv");
+            Assert.Contains(ohne.Protokoll, z => z == "Datei fehlt, ohne Teilkatalognamen weiter: Katalog_Inhalt.csv");
+            Assert.Equal(0, ohne.Teilkataloge);
+
+            Probe p = ProbeTeilkataloge();
+            p.KopfK = "UId;Kennzeichen;Bemerkung";                                   // keine Namensspalte
+            BauteilkatalogImport.Plan plan = BauteilkatalogImport.Planen(BauteilkatalogQuelle.Lesen(Schreiben(p)), null);
+            Assert.Null(plan.Vorschau.Abgelehnt);
+            Assert.Contains(plan.Vorschau.Protokoll, z => z.StartsWith("Katalog.csv: Spalte fehlt (Name:", StringComparison.Ordinal));
+            Assert.All(plan.Baustoffe, s => Assert.Equal(q, s.Werte["Quelle"]));
+
+            p = ProbeTeilkataloge();
+            p.I.Add(new[] { "nur", "zwei" });                                         // kaputte Zeile
+            plan = BauteilkatalogImport.Planen(BauteilkatalogQuelle.Lesen(Schreiben(p)), null);
+            Assert.Null(plan.Vorschau.Abgelehnt);
+            Assert.Contains(plan.Vorschau.Protokoll, z => z.StartsWith("Katalog_Inhalt.csv: Datensatz", StringComparison.Ordinal) &&
+                                                          z.EndsWith("ohne Teilkatalognamen weiter", StringComparison.Ordinal));
+            Assert.Equal(0, plan.Vorschau.Teilkataloge);
+
+            p = ProbeTeilkataloge();
+            p.I = p.I.Select(z => new[] { z[0], z[1], G(999), z[3] }).ToList();      // trifft keinen Satz
+            plan = BauteilkatalogImport.Planen(BauteilkatalogQuelle.Lesen(Schreiben(p)), null);
+            Assert.Contains(plan.Vorschau.Protokoll, z => z.StartsWith("Katalog_Inhalt.csv: keine Zeile trifft", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void Die_Quelle_mit_Teilkatalogen_bleibt_in_der_Hoechstlaenge()
+        {
+            string q = "Hottgenroth-Katalog, Datenstand 2025-06";
+            Assert.Equal(q, BauteilkatalogTeilkataloge.QuelleMit(q, null));
+            Assert.Equal(q + ", Teilkatalog A", BauteilkatalogTeilkataloge.QuelleMit(q, new[] { "A", "A", " " }));
+            var viele = Enumerable.Range(1, 40).Select(i => "Teilkatalog " + i.ToString("D2", CultureInfo.InvariantCulture) + new string('x', 20)).ToList();
+            string lang = BauteilkatalogTeilkataloge.QuelleMit(q, viele);
+            Assert.True(lang.Length <= 400, lang.Length.ToString(CultureInfo.InvariantCulture));
+            Assert.StartsWith(q + ", Teilkataloge Teilkatalog 01", lang);
+            Assert.EndsWith(" u. a.", lang);
+        }
+
+        [Fact]
+        public void Liegt_Baustoffe_csv_im_Unterordner_Export_wird_dieser_gelesen()
+        {
+            Probe p = ProbeTeilkataloge();
+            p.Unterordner = "Export";
+            string export = Schreiben(p);
+            string oben = Path.GetDirectoryName(export);
+            BauteilkatalogQuelle q = BauteilkatalogQuelle.Lesen(oben);
+            Assert.Null(q.Abgelehnt);
+            Assert.True(q.AusUnterordnerExport);
+            Assert.Equal(export, q.Ordner);
+            BauteilkatalogVorschau v = BauteilkatalogImport.Planen(q, null).Vorschau;
+            Assert.True(v.UnterordnerExport);
+            Assert.Equal(export, v.Ordner);
+            Assert.Equal(2, v.Teilkataloge);
+            Assert.Contains(v.Protokoll, z => z.StartsWith("Gelesen wird der Unterordner Export", StringComparison.Ordinal));
+
+            // Liegt Baustoffe.csv im gewählten Ordner selbst, bleibt es bei ihm.
+            BauteilkatalogQuelle direkt = BauteilkatalogQuelle.Lesen(export);
+            Assert.False(direkt.AusUnterordnerExport);
+            Assert.Equal(export, direkt.Ordner);
+            // Weder hier noch im Unterordner: benannt abgelehnt wie bisher.
+            Assert.Equal("Datei fehlt: Baustoffe.csv", BauteilkatalogQuelle.Lesen(LeererOrdnerMitExport()).Abgelehnt);
+        }
+
+        private string LeererOrdnerMitExport()
+        {
+            string o = Path.Combine(Path.GetTempPath(), "epos-bk7-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(Path.Combine(o, "Export"));
+            _ordner.Add(o);
+            return o;
+        }
+
+        [Fact]
+        public void Uebernehmen_schreibt_die_Teilkataloge_in_die_Quelle_und_haengt_sie_am_Katalogsatz_an()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            var k = Katalogsatz();
+            BauteilkatalogVorschau e = BauteilkatalogImport.Uebernehmen(Schreiben(ProbeTeilkataloge((k.Name, k.Code, k.L, k.R, k.C))));
+            Assert.Null(e.Fehler);
+            Assert.True(e.Geschrieben);
+            string q = "Hottgenroth-Katalog, Datenstand 2025-06";
+            string Quelle(string tabelle, int n) => DataRepository.ExecuteScalar(
+                "SELECT \"Quelle\" FROM \"" + tabelle + "\" WHERE \"Quellkennung\" = ?", new DbParam("@k", G(n))) as string;
+            Assert.Equal(q + ", Teilkataloge Teilkatalog A / Teilkatalog B", Quelle("Tab_Baustoff_STAMM", 2));
+            Assert.Equal(q + ", Teilkatalog Teilkatalog A", Quelle("Tab_Bauteilaufbau_STAMM", 101));
+            Assert.Equal(q, Quelle("Tab_Bauteilaufbau_STAMM", 102));
+            string katalog = DataRepository.ExecuteScalar("SELECT \"Quelle\" FROM \"Tab_Baustoff_STAMM\" WHERE \"ID\" = ?", new DbParam("@id", k.Id)) as string;
+            Assert.EndsWith(q + ", Teilkatalog Teilkatalog A", katalog);
         }
 
         // ---- Nachzug E134 (BK-3b) -----------------------------------------------------------

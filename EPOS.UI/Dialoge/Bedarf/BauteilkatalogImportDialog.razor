@@ -1,7 +1,8 @@
 ﻿@* BAUTEILKATALOG EINLESEN (BK-3, Entscheide E132 und E133) - freie Ansicht der AppWurzel auf beiden
    Plattformen, Menue "Administration -> Gebaeude -> Bauteilkatalog einlesen...".
 
-   ABLAUF: Dateiwahl auf Baustoffe.csv des CSV-Exports (die fuenf uebrigen Dateien liegen daneben) ->
+   ABLAUF: Dateiwahl auf Baustoffe.csv des CSV-Exports (die fuenf uebrigen Dateien liegen daneben; liegt
+   Baustoffe.csv nur im Unterordner Export, wird dieser gelesen und die Vorschau nennt ihn, BK-7) ->
    "Vorschau" (der Kern liest, plant gegen den Katalog und schreibt NICHTS) -> "Uebernehmen" (OK der
    Schlussleiste: EIN Vorgang im Kern, Meldung mit Zahlen). Nach dem Uebernehmen bleibt der Dialog mit der
    Meldung offen; OK ist dann hart gesperrt, damit ein zweites OK nichts wiederholt. "Schliessen" (Abbrechen,
@@ -41,6 +42,10 @@
         @if (_vorschau is not null)
         {
             <div class="epos-bki-vorschau" role="region" aria-label="@Texte.Vorschau">
+                @if (!string.IsNullOrEmpty(_vorschau.Ordner))
+                {
+                    <p class="epos-bki-ordner">@_vorschau.Ordner</p>
+                }
                 @if (_vorschau.Abgelehnt is not null)
                 {
                     <p class="epos-status epos-status--fehler">@string.Format(CultureInfo.CurrentCulture, Texte.Abgelehnt, _vorschau.Abgelehnt)</p>
@@ -48,6 +53,10 @@
                 else
                 {
                     <p>@string.Format(CultureInfo.CurrentCulture, Texte.Quelle, _vorschau.Quelle)</p>
+                    @if (!string.IsNullOrEmpty(_vorschau.Teilkataloge))
+                    {
+                        <p class="epos-bki-teilkataloge">@_vorschau.Teilkataloge</p>
+                    }
                     <table class="epos-raster epos-bki-zahlen">
                         <thead>
                             <tr>
@@ -153,8 +162,8 @@
     /// <summary>Der Titel im Kopf; leer = die Überlagerung trägt ihn.</summary>
     [Parameter] public string TitelText { get; set; } = WindowsFormsApplication1.MyResource.Resource.BKI_TITEL;
 
-    /// <summary>Der Hilfeschlüssel der Kopfpille (Katalog der Baustoffe).</summary>
-    [Parameter] public string HilfeSchluessel { get; set; } = "BaustoffKatalog.btn_Help";
+    /// <summary>Der Hilfeschlüssel der Kopfpille (Abschnitt „Bauteilkatalog einlesen“ der Wiki-Seite, BK-7).</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "BauteilkatalogImport.btn_Help";
 
     private string _pfad = "";
     private BauteilkatalogVorschauDaten? _vorschau;

@@ -10347,7 +10347,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wählen Sie die Datei Baustoffe.csv des CSV-Exports; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv und Basis_Auszug.csv liegen daneben. Die Vorschau schreibt nichts. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wählen Sie die Datei Baustoffe.csv des CSV-Exports; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv und Basis_Auszug.csv liegen daneben, Katalog.csv und Katalog_Inhalt.csv ergänzen die Teilkataloge. Liegt Baustoffe.csv im Unterordner Export, genügt der Ordner darüber. Die Vorschau schreibt nichts. ähnelt.
         /// </summary>
         public static string BKI_HINWEIS {
             get {
@@ -10388,6 +10388,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BKI_OK_SPERRE {
             get {
                 return ResourceManager.GetString("BKI_OK_SPERRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gelesen wird der Ordner: {0} ähnelt.
+        /// </summary>
+        public static string BKI_ORDNER {
+            get {
+                return ResourceManager.GetString("BKI_ORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoffe.csv liegt im Unterordner Export; gelesen wird dieser Ordner: {0} ähnelt.
+        /// </summary>
+        public static string BKI_ORDNER_EXPORT {
+            get {
+                return ResourceManager.GetString("BKI_ORDNER_EXPORT", resourceCulture);
             }
         }
         
@@ -10478,6 +10496,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BKI_SP_WIEDER {
             get {
                 return ResourceManager.GetString("BKI_SP_WIEDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teilkataloge: {0}; die Quelle nennt sie an {1} Baustoffen und {2} Aufbauten. ähnelt.
+        /// </summary>
+        public static string BKI_TEILKATALOGE {
+            get {
+                return ResourceManager.GetString("BKI_TEILKATALOGE", resourceCulture);
             }
         }
         
@@ -16966,6 +16993,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft des U-Werts ähnelt.
+        /// </summary>
+        public static string BTDLG_LBL_UHERKUNFT {
+            get {
+                return ResourceManager.GetString("BTDLG_LBL_UHERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die U-Wert ähnelt.
         /// </summary>
         public static string BTDLG_LBL_UWERT {
@@ -17106,6 +17142,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BTDLG_TITEL_NEU {
             get {
                 return ResourceManager.GetString("BTDLG_TITEL_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei (gbXML) ähnelt.
+        /// </summary>
+        public static string BTDLG_UHK_GBXML {
+            get {
+                return ResourceManager.GetString("BTDLG_UHK_GBXML", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei (IFC) ähnelt.
+        /// </summary>
+        public static string BTDLG_UHK_IFC {
+            get {
+                return ResourceManager.GetString("BTDLG_UHK_IFC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog ähnelt.
+        /// </summary>
+        public static string BTDLG_UHK_KATALOG {
+            get {
+                return ResourceManager.GetString("BTDLG_UHK_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die von Hand ähnelt.
+        /// </summary>
+        public static string BTDLG_UHK_MANUELL {
+            get {
+                return ResourceManager.GetString("BTDLG_UHK_MANUELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei (Projektdatei) ähnelt.
+        /// </summary>
+        public static string BTDLG_UHK_SQPROJ {
+            get {
+                return ResourceManager.GetString("BTDLG_UHK_SQPROJ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe ähnelt.
+        /// </summary>
+        public static string BTDLG_UHK_VORGABE {
+            get {
+                return ResourceManager.GetString("BTDLG_UHK_VORGABE", resourceCulture);
             }
         }
         
@@ -63805,6 +63895,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gesamtenergiedurchlassgrad g der Verglasung (0 bis 1); er geht beim Zuweisen an das Bauteil über. Nur bei Fenster oder Vorhangfassade. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_FENSTER_G_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_FENSTER_G_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der längenbezogene Wärmedurchgangskoeffizient ψ_g des Glasrands in W/(mK). Mit U_g, U_f und f ergibt er beim Zuweisen den U-Wert U_w des Bauteils nach DIN EN ISO 10077-1. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_FENSTER_PSI_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_FENSTER_PSI_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Rahmenanteil f an der Fensterfläche (0 bis 1); er geht beim Zuweisen an das Bauteil über. Nur bei Fenster oder Vorhangfassade. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_FENSTER_RAHMEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_FENSTER_RAHMEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmedurchgangskoeffizient U_f des Rahmens in W/(m²K); leer = keiner. Nur bei Fenster oder Vorhangfassade. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_FENSTER_UF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_FENSTER_UF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmedurchgangskoeffizient U_g der Verglasung in W/(m²K); leer = keiner. Nur bei Bauteilart Fenster oder Vorhangfassade. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_FENSTER_UG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_FENSTER_UG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gruppe des Aufbaus (Wände, Decken, Dächer, Öffnungen, Sonstige); leer = aus der Bauteilart. ähnelt.
         /// </summary>
         public static string KI_DLG_BTA_GRUPPE_ERL {
@@ -63828,6 +63963,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BTA_QUELLE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_BTA_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der obere Grenzwert R'_T des Wärmedurchgangswiderstands eines Aufbaus mit inhomogener Schicht in m²K/W (DIN EN ISO 6946, 6.7) – nur lesbar; leer bei homogenem Aufbau. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_RT_OBEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_RT_OBEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R'_T oberer Grenzwert ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_RT_OBEN_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_RT_OBEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der untere Grenzwert R''_T des Wärmedurchgangswiderstands eines Aufbaus mit inhomogener Schicht in m²K/W; R_T ist das Mittel beider Grenzwerte – nur lesbar; leer bei homogenem Aufbau. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_RT_UNTEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_RT_UNTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R''_T unterer Grenzwert ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_RT_UNTEN_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_RT_UNTEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nummer des Abschnitts einer inhomogenen Schicht; leer = homogene Schicht. Abschnitte mit aufsteigender Nummer, die aufeinander folgen, liegen in derselben Ebene nebeneinander. Einen Abschnitt daneben legt der Anwender mit einem Klick an. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_SCHICHT_ABSCHNITT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_SCHICHT_ABSCHNITT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Flächenanteil des Abschnitts (0 bis 1); er gilt für alle Schichten desselben Abschnitts. Die Anteile einer Ebene ergeben zusammen 1 (zulässig 0,99 bis 1,01). ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_SCHICHT_ANTEIL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_SCHICHT_ANTEIL_ERL", resourceCulture);
             }
         }
         
@@ -63859,6 +64048,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Summe der Flächenanteile einer inhomogenen Ebene, angezeigt an ihrer letzten Schicht – nur lesbar; leer an allen anderen Schichten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_SCHICHT_EBENENSUMME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_SCHICHT_EBENENSUMME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Σ Flächenanteile der Ebene ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_SCHICHT_EBENENSUMME_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_SCHICHT_EBENENSUMME_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmeleitfähigkeit λ der Schicht in W/(mK); leer nur bei einer ruhenden Luftschicht. ähnelt.
         /// </summary>
         public static string KI_DLG_BTA_SCHICHT_LAMBDA_ERL {
@@ -63886,6 +64093,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der U-Wert des Aufbaus in W/(m²K) aus dem Summenfuß, gerechnet nach DIN EN ISO 6946 – nur lesbar; leer, wenn der Aufbau ihn nicht trägt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_SUMME_U_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_SUMME_U_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U-Wert des Aufbaus ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_SUMME_U_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_SUMME_U_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauteilart: Außenwand, Dach, Bodenplatte, Fenster, Tür, Innenwand, Decke, Vorhangfassade oder Sonstiges. Sie bestimmt die Vorgaben für Neigung und Randbedingung; Fenster und Vorhangfassade rechnen aus U-Wert, g-Wert, Rahmenanteil und Verschattung. ähnelt.
         /// </summary>
         public static string KI_DLG_BT_ART_ERL {
@@ -63895,7 +64120,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bauteilaufbau des Projekts, 0 = ohne Aufbau. Ein Aufbau aus dem Katalog wird von Hand übernommen und beim OK des Gebäudeeditors in das Projekt kopiert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bauteilaufbau des Projekts, 0 = ohne Aufbau. Ein Aufbau aus dem Katalog wird von Hand übernommen und beim OK des Gebäudeeditors in das Projekt kopiert. Wählt ein Fenster oder eine Vorhangfassade einen Fensteraufbau, übernimmt das Bauteil dessen g-Wert und Rahmenanteil und als U-Wert U_w nach DIN EN ISO 10077-1; danach bleiben die drei Werte änderbar. ähnelt.
         /// </summary>
         public static string KI_DLG_BT_AUFBAU_ERL {
             get {
@@ -63981,6 +64206,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BT_RAND_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_BT_RAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher der U-Wert des Bauteils stammt, wie er mit OK gespeichert würde – nur lesbar: KATALOG = aus dem Aufbau, MANUELL = von Hand, IFC, GBXML oder SQPROJ = aus der Importdatei, VORGABE = Vorgabe nach Bauteilart; leer = unbekannt. Ein U-Wert von Hand bleibt beim Wiederimport stehen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BT_UHERKUNFT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BT_UHERKUNFT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft des U-Werts ähnelt.
+        /// </summary>
+        public static string KI_DLG_BT_UHERKUNFT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BT_UHERKUNFT_NAME", resourceCulture);
             }
         }
         
