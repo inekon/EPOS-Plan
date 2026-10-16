@@ -221,13 +221,18 @@ Pufferspeicher stehen je als Knoten; die Busse sind je Energieform genau einer.
 ### 2.3 Flüsse
 
 Der Flussbau ist eine Kernklasse `Energiefluss` (`EPOS.Kern/Allgemein/Bericht/Energiefluss.cs`)
-mit `Energiefluss.Aus(VariantenDaten v, bool englisch)` → `EnergieflussModell` (Knoten, Flüsse,
-Bilanz je Knoten, Hinweise). Eingang ist dieselbe `VariantenDaten`, die `EnergievergleichCtrl.Lade`
+mit `Energiefluss.Aus(VariantenDaten v, bool englisch)` → `EnergieflussBilanz` (Knoten, Flüsse,
+Bilanz je Knoten, Hinweise, `KiText()`). Eingang ist dieselbe `VariantenDaten`, die `EnergievergleichCtrl.Lade`
 für den Abschnitt baut (Ergebnisbaum, Brennstoffmengen, Trägernachweise); nichts wird neu
-geladen, nichts simuliert. Jeder Fluss trägt `Von`, `Nach`, `Mwh`, `Rolle` (Farbrolle),
-`Herkunft` (direkt / abgeleitet / bilanziert) und einen fertigen Zeigertext; ein Knoten trägt
-Zufluss, Abfluss, Rest und Spalte. Die Reihenfolge der Knoten ist die der Tabelle 2.2, die der
-Bänder an einem Knoten folgt der Lage des Gegenknotens (weniger Kreuzungen).
+geladen, nichts simuliert. Jeder Fluss trägt `Von`, `Nach`, `Mwh`, `Form` (Energieform: Strom,
+Wärme, Kälte, Brennstoff, Umwelt, Verlust, Rest), `Herkunft` (direkt / abgeleitet / bilanziert) und
+einen fertigen Zeigertext; ein Knoten trägt Art (`EnergieflussKnotenart`), Spalte, Zufluss, Abfluss
+und Rest. Die Reihenfolge der Knoten ist die der Tabelle 2.2, die der Bänder an einem Knoten folgt
+der Lage des Gegenknotens (weniger Kreuzungen). Die Bilanz kennt keine Farbe und keinen Bildpunkt:
+`EnergieflussAbbildung.Bild(EnergieflussBilanz)` (`EnergieflussAbbildung.cs`) bildet sie auf die
+Bilddaten des Renderers ab (`EnergieflussBildDaten`: Knoten, Bänder, Spaltentitel) und vergibt dabei
+Farbrolle und Bandart nach Abschnitt 3.4 — ohne Rechnung und ohne Zeichenlogik; die Hinweiszeilen
+bleiben an der Bilanz.
 
 ### 2.4 Bilanzprüfung und Verhalten bei fehlendem Schluss
 
@@ -268,12 +273,27 @@ nur, wenn es die Mindestbandbreite erreicht; sonst nennt es der Reiter „Tabell
 
 Neue Teildatei `EPOS.Kern/Allgemein/Bericht/ChartRenderer.Energiefluss.cs`, ein reines
 Pixelbild ohne Zeichenfläche (wie Versionsbalken und Kesselkennlinie): kein Zoom, der Zeigertext
-kommt aus `data-wert` des Elements unter dem Zeiger (DG-E3-10). `EnergieflussModell(EnergieflussModell daten, Bildmass mass)`
-→ `Zeichenmodell`, dazu `EnergieflussBild(…)` als PNG für die Proben.
+kommt aus `data-wert` des Elements unter dem Zeiger (DG-E3-10).
+`ChartRenderer.EnergieflussModell(EnergieflussBildDaten daten, Bildmass? mass, bool knotenwerte)`
+→ `Zeichenmodell`, dazu `EnergieflussBild(…)` als PNG für Proben und Bericht; Maße
+`ENERGIEFLUSS_BREIT`, `ENERGIEFLUSS_SCHMAL`, `ENERGIEFLUSS_BERICHT`. Der Weg von der Version zum
+Bild ist immer derselbe: `Energiefluss.Aus` (Bilanz) → `EnergieflussAbbildung.Bild` (Bilddaten) →
+`ChartRenderer.EnergieflussModell` (Zeichenmodell).
+
+**Spalte und Verlustknoten — eine Regel für Bilanz, Abbildung und Renderer:** Die Spalte ist
+überall eine ganze Zahl 0 … 6 (`EnergieflussKnoten.Spalte` wie `EnergieflussBildKnoten.Spalte`).
+Ein Verlust- oder Füllstandsknoten (`EnergieflussKnotenart.Verlust`) trägt die Spalte seines
+Eigentümers, des Knotens, aus dem sein Band kommt; dass er in der Lücke zur nächsten Spalte
+(Spalte + ½) unter dem Fuß des Eigentümers steht, ist Zeichenregel des Renderers und kein Datum.
+Die Knotenart ist genau eine Aufzählung (`EnergieflussKnotenart` in `Energiefluss.cs`), die alle
+drei Stufen teilen.
 
 - Spalten gleichmäßig über die Breite abzüglich Beschriftungsrand links und rechts (je 150 px
-  breit, 100 px schmal); Knotenbreite 14 px; Lücke zwischen Knoten einer Spalte 10 px; jede
-  Spalte vertikal zentriert.
+  breit, 100 px schmal); Knotenbreite 14 px; Lücke zwischen Knoten einer Spalte 30 px (schmal
+  26 px, Platz für die Beschriftung der inneren Knoten über dem Knoten); jede Spalte vertikal
+  zentriert. Eine innere Beschriftung darf bis zu 1,5 Spaltenabstände breit sein, bevor sie
+  gekürzt wird („Wärmepumpe (Heizen)“ und im Bericht „Name · Wert“ bleiben so lesbar); was eine
+  schon gesetzte Beschriftung überdeckte, entfällt (größere Knoten zuerst).
 - Spaltentitel oben („Quellen“, „Wandler“, „Strom“, „Wandler“, „Wärme · Kälte“, „Speicher“,
   „Bedarf“) in `TEXT`, 11 pt.
 - Höhe des Bildes: breit 1 180 × 560, schmal 680 × 640, Bericht 1 240 × 620 (Faktor 2 auf
@@ -368,10 +388,12 @@ im Kopf, seine Einstellung bleibt für Tabelle und Grafik gültig.
   `NichtSimuliert`); die Komponente kennt keine Kernfachklasse außer dem Zeichenmodell (wie die
   Grafik heute).
 - Hülle `UebersichtErgebnisGaben`: neuer Delegat `FlussLaden: Func<int, ErgebnisFlussStand>` →
-  Kern `EnergieflussCtrl.Lade(idProjekt, englisch, kultur)` → `EnergievergleichCtrl.Lade` (aus
-  demselben Puffer je Simulationsstand) → `Energiefluss.Aus` → `ChartRenderer.EnergieflussModell`
-  zweimal (breit, schmal). Das Modell wird je Version und Stand zwischengespeichert; die
-  Komponente baut ihren Baum nur bei neuer Referenz (Hausregel).
+  Kern `EnergieflussCtrl.Lade(idProjekt, istStamm, englisch)` → `EnergievergleichCtrl.Lade` (aus
+  demselben Puffer je Simulationsstand) → `Energiefluss.Aus` (`EnergieflussBilanz`) →
+  `EnergieflussAbbildung.Bild` (`EnergieflussBildDaten`) → `ChartRenderer.EnergieflussModell`
+  zweimal (`ENERGIEFLUSS_BREIT`, `ENERGIEFLUSS_SCHMAL`, `knotenwerte: false`). Das Modell wird je
+  Version und Stand zwischengespeichert; die Komponente baut ihren Baum nur bei neuer Referenz
+  (Hausregel). Hinweise und Flussliste kommen aus der Bilanz (`Hinweise`, `Fluesse`, `KiText()`).
 - **Breit und schmal** (SK-Q8): Beide Modelle stehen im DOM, das Stilblatt zeigt unter 900 px
   Fensterbreite das schmale (`.epos-ergebnis-fluss--schmal`), darüber das breite. Kein JS, keine
   Breitenmessung; auf dem iPad (rund 700 px) steht damit ein für 680 px gesetztes Bild im
@@ -407,9 +429,10 @@ Versionswahl ist ein Anzeigezustand, kein Einstellwert der Seite (kein Feld in d
 ## 5. Bericht (SK-4)
 
 - `Berichtsbilder.Energiefluss(VariantenDaten v, Bildmass? mass)` in `Berichtsbilder.Ergebnis.cs`:
-  `Energiefluss.Aus(v, BerichtTexte.Englisch)` → `ChartRenderer.EnergieflussModell`; `null` ohne
-  Ergebnis oder ohne Fluss. Knoten tragen ihre Jahressumme in MWh/a, Bänder keine Zahlen
-  (SK-Q12).
+  `Energiefluss.Aus(v, BerichtTexte.Englisch)` → `EnergieflussAbbildung.Bild` →
+  `ChartRenderer.EnergieflussModell(daten, ChartRenderer.ENERGIEFLUSS_BERICHT, knotenwerte: true)`;
+  `null` ohne Ergebnis oder ohne Fluss (`EnergieflussBilanz.Leer`, `Grund`). Knoten tragen ihre
+  Jahressumme in MWh/a, Bänder keine Zahlen (SK-Q12).
 - **Vorlagenfeld** `stand.bild.energiefluss` (Kontext Stand, `Vorlagenbedarf.Keiner` — das Bild
   braucht keine Zeitreihen) und Schalter `hat.bild.energiefluss`, beide `Seit =
   FASSUNG_ENERGIEFLUSS = 25`; `Vorlagenfeldkatalog.KATALOGFASSUNG` auf **25**;
@@ -432,7 +455,8 @@ Versionswahl ist ein Anzeigezustand, kein Einstellwert der Seite (kein Feld in d
 | Ebene | Test | Inhalt |
 |---|---|---|
 | Kern | `EnergieflussTests` (neu) | synthetische Ergebnisbäume: Knoten und Bänder je Anlagenart, Bilanz schließt, Toleranz, bilanzierte BHKW-Einspeisung (Plausibilitätsfenster), „nicht zugeordnet“ beidseitig, ungedeckt, Heizstab 1:1, Brennwert mit Kondensationswärme, Kälte mit Speicher und Split, Bündelung ab vier kleinen Trägern, Reihenfolge der Knoten, englische Namen |
-| Kern | `EnergieflussReferenzprojektWacheTests` (neu) | rechnet 1018, 1046, 1058 und 1063 wie die übrigen Wachen (`SimulationRunner.Simuliere` auf der Testdatenbank) und hält die Bänder gegen die Zahlen aus Abschnitt 1.2 (Toleranz 0,01 MWh), jeden Knoten geschlossen, bei 1046 das Band „nicht zugeordnet“ 0,44 |
+| Kern | `EnergieflussReferenzprojektWacheTests` (neu) | rechnet 1018, 1046, 1058 und 1063 wie die übrigen Wachen (`SimulationRunner.Simuliere` auf der Testdatenbank) und hält die Bänder gegen die Zahlen aus Abschnitt 1.2 (Toleranz 0,01 MWh), jeden Knoten geschlossen, bei 1046 das Band „nicht zugeordnet“ 0,44; zeichnet danach jede Bilanz in breit, schmal und Bericht (ohne Ausnahme, deterministisch, jedes Band und jeder Knoten gezeichnet, Bänder schließen an, Verlustknoten in der Lücke) und legt die PNG zur Sichtprüfung ab, wenn `EPOS_ENERGIEFLUSS_PNG_ORDNER` gesetzt ist |
+| Kern | `EnergieflussAbbildungTests` (neu) | Bilanz → Bilddaten: jede Kante ein Band, jeder Knoten ein Bildknoten, nichts verloren; Rollen nach 3.4 an jeder Kantenart, Bandart Verlust / gestrichelt, Rückfall auf die Energieform, Verlustknoten mit der Spalte des Eigentümers, Zeigertexte und Kurznamen wörtlich, Spaltentitel je Sprache und nur mit den Bussen im Bild, leere Bilanz ohne Ausnahme, Bilanz aus dem Flussbau bis ins Zeichenmodell vollständig |
 | Kern | `EnergieflussModellTests` (neu) | Zeichenmodell: Marken und Werte an jedem Band und Knoten, Mindestband 2 px, keine Beschriftung unter 8 px, schmal ohne Bandwerte, Determinismus (zweimal zeichnen byte-gleich), Rollen statt Farbwerten |
 | Kern | `ChartRendererRollenTests` | neue `InlineData("Energiefluss")` |
 | Kern | `VorlagenfeldkatalogWacheTests`, `VorlagenprueferTests` | Fassung 25, Platzhalter und Schalter, Excel „nur Word“ |
@@ -469,13 +493,14 @@ dem Merge. Kein Schemaschritt (Abschnitt 1.7).
 |---|---|---|
 | **SK-1** Flussmodell im Kern | `Energiefluss.cs` (Knoten, Flüsse, Bilanz, Bündelung, Herkunft, Zeigertexte), `EnergieflussCtrl`, Ressourcen der Knotennamen samt Kurznamen in beiden Sprachen, `designer_neu.py` | `EnergieflussTests`, `EnergieflussReferenzprojektWacheTests` (1018, 1046, 1058, 1063) grün |
 | **SK-2** Renderer | `ChartRenderer.Energiefluss.cs` (Layout, S-Kurven-Polygone, Verlustknoten, breit/schmal, Marken/Werte), fünf Farbrollen in `Farbpalette`, `Diagrammfarben` und Einstellungsdialog (Ressourcen), `Program.Energiefluss.cs` der ChartProben samt neuer Messlatte | `EnergieflussModellTests`, `ChartRendererRollenTests`, ChartProben 0 Verstöße, Messlatte alte Zeilen unverändert |
+| **SK-12** Zusammenführung und Abbildung | `sk1` und `sk2` gemergt; eine Knotenart (`EnergieflussKnotenart`), Domänenklasse `EnergieflussBilanz` (statt „Modell“, das der Renderer für das Zeichenmodell führt), Spalte ganzzahlig mit der Regel aus 3.1; `EnergieflussAbbildung.Bild` (Spalten, Spaltentitel, Rollen nach 3.4, Bandarten, Zeigertexte, Kurznamen); innere Beschriftung bis 1,5 Spaltenabstände | `EnergieflussAbbildungTests`, Wache zeichnet die vier Referenzprojekte in drei Fassungen (Sichtprüfung der PNG), ChartProben 0 Verstöße, Messlatte nachgezogen |
 | **SK-3** Oberfläche | dritte Stellung, `UebersichtErgebnisFluss.razor` + Daten, Hülle `FlussLaden`, Stilblatt, Versionswahl, Textalternative verborgen, Hinweise, KI-Text, Wiki-Quelle „Varianten“ | `UebersichtErgebnisseTests`, `UebersichtErgebnisFlussTests`, `StilblattTests`, `KiMaskenabdeckungWacheTests`, `WikiProduktdatenWacheTests`; Windows-Schale mit `EnableWindowsTargeting=true` gebaut (keine Hülle der Schale betroffen, Nachweis trotzdem); `diagrammprobe.mjs` Fall `fluss` |
 | **SK-4** Bericht | `Berichtsbilder.Energiefluss`, Vorlagenfeld und Schalter, Katalogfassung 25 mit Messlatte v25, Baustein „Ergebnisse je Variante“, Wiki-Quelle Bericht | `VorlagenfeldkatalogWacheTests`, `VorlagenprueferTests`, `WordBaukastenTests`, Wortbericht eines Referenzprojekts mit Bild (Sichtprobe) |
 | **SK-5** Abschluss | Statuszeile, Protokoll unter `ueberholt/Protokolle/`, Logbuch-Entwurf, Konzept Diagramme Abschnitt 9 um die fünf Rollen ergänzt, dieses Papier nach `ueberholt/` mit Indexzeile | `DokumentationLinkWacheTests`, `RepositoryOrdnungWacheTests` |
 
-SK-1 und SK-2 sind unabhängig und laufen parallel (der Renderer arbeitet auf dem Modelltyp aus
-SK-1; der Typ wird zuerst als Vertrag festgelegt, ein Agent legt ihn an, der andere baut dagegen).
-SK-3 und SK-4 folgen beiden. Vorgemerkt (nicht in dieser Welle): die drei Ergebnisspalten aus
+SK-1 und SK-2 sind unabhängig und laufen parallel (der Renderer arbeitet auf seinem eigenen
+Eingabetyp `EnergieflussBildDaten`); SK-12 führt beide zusammen, vereinheitlicht die Namen und baut
+die Abbildung. SK-3 und SK-4 folgen SK-12. Vorgemerkt (nicht in dieser Welle): die drei Ergebnisspalten aus
 Abschnitt 1.7 als Schemaschritt mit neuer Basis, falls der Anwender die exakte Ausweisung von
 Standby und Abregelung will.
 

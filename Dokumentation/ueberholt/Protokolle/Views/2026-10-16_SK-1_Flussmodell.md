@@ -11,7 +11,7 @@ Bildschirm nur im Zeigertext (keine Wertetabelle), im Bericht Knoten mit Jahress
 
 | Datei | Inhalt |
 |---|---|
-| `EPOS.Kern/Allgemein/Bericht/Energiefluss.cs` | Domänenmodell (`EnergieflussModell`, `EnergieflussKnoten`, `EnergieflussFluss`, Aufzählungen `EnergieflussKnotenArt`, `EnergieflussForm`, `EnergieflussHerkunft`) und der Flussbau `Energiefluss.Aus(VariantenDaten, bool, string)` bzw. `Aus(ErgebnisModel, Trägernachweise, bool, string, int)` |
+| `EPOS.Kern/Allgemein/Bericht/Energiefluss.cs` | Domänenmodell (`EnergieflussModell`, `EnergieflussKnoten`, `EnergieflussFluss`, Aufzählungen `EnergieflussKnotenArt`, `EnergieflussForm`, `EnergieflussHerkunft`) und der Flussbau `Energiefluss.Aus(VariantenDaten, bool, string)` bzw. `Aus(ErgebnisModel, Trägernachweise, bool, string, int)`. *SK-12 hat umbenannt: `EnergieflussModell` → `EnergieflussBilanz`, `EnergieflussKnotenArt` → `EnergieflussKnotenart` (eine Aufzählung mit dem Renderer); die Spalte ist ganzzahlig, Verlustknoten tragen die Spalte ihres Eigentümers* |
 | `EPOS.Kern/Controller/EnergieflussCtrl.cs` | `Lade(idProjekt, istStamm, englisch, versionsname)` über `EnergievergleichCtrl.Lade` — gespeicherter Ergebnisbaum, kein Lauf, keine neue SQL-Anweisung |
 | `EPOS.Kern/MyResource/Resource(.en-US).resx`, `Resource.Designer.cs` | 97 Schlüssel `EF_*` (Knotennamen `EF_KN_*`, Kurznamen `EF_KK_*`, Zeiger-, Formel-, Hinweis-, Grund-, KI- und Herkunftstexte), Designer mit `designer_neu.py schreiben` (wiederholbar) |
 | `EPOS.Kern.Tests/EnergieflussTests.cs` | 24 Fälle an synthetischen Ergebnisbäumen |
@@ -24,7 +24,8 @@ Nicht berührt: Renderer, Farbrollen, Oberfläche, Bericht, Schema, Rechenweg, R
 - **Einheit MWh/a.** Die kWh der Puffer-, Kälte- und Stromspeicherzeilen rechnet allein `Energiefluss.AusKwh` um, über
   `Energieeinheit.MWh.AusKWh`.
 - **Spalten** 0 Quellen, 1 Wandler I, 2 Strom, 3 Wandler II, 4 Wärme/Kälte, 5 Speicher, 6 Senken; Verlust- und
-  Füllstandsknoten in der Lücke (Spalte des Eigentümers + 0,5). Reihenfolge nach Tabelle 2.2.
+  Füllstandsknoten in der Lücke (Spalte des Eigentümers + 0,5; seit SK-12 tragen sie die ganzzahlige Spalte des
+  Eigentümers, die Lücke setzt der Renderer). Reihenfolge nach Tabelle 2.2.
 - **Bilanz** je Wandler, Bus und Speicher: `|Zufluss − Abfluss| ≤ max(0,05 MWh; 0,5 % des Zuflusses)`. Am Stromknoten
   wird ein positiver Rest bis zum BHKW-Strom (plus Toleranz) zum Band „Einspeisung BHKW“ (Herkunft *bilanziert*) — auch
   unterhalb der Toleranz, weil die Einspeisung eine echte Menge ist. Sonst ein Band „nicht zugeordnet“ (bei negativem Rest

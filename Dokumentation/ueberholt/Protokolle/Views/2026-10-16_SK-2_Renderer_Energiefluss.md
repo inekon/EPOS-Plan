@@ -49,7 +49,10 @@ Bericht: Knoten mit Jahressumme, Bänder ohne Zahlen).
 
 ## 4. Für SK-3 und SK-4
 
-- SK-3 bildet `EnergieflussModell` (SK-1) auf `EnergieflussBildDaten` ab: Spalten laut Konzept 2.2, Rollen laut 3.4,
-  Kurznamen aus den Ressourcen, Verlustknoten je Erzeuger bzw. Speicher mit `Art = Verlust` und der Spalte des
-  Erzeugers, Spaltentitel in der Oberflächensprache. Zwei Modelle (breit, schmal), `knotenwerte = false`.
+- Die Abbildung des Flussmodells (SK-1, seit SK-12 `EnergieflussBilanz`) auf `EnergieflussBildDaten` — Spalten laut
+  Konzept 2.2, Rollen laut 3.4, Kurznamen aus den Ressourcen, Verlustknoten je Erzeuger bzw. Speicher mit
+  `Art = Verlust` und der Spalte des Erzeugers, Spaltentitel in der Oberflächensprache — hat SK-12 als
+  `EnergieflussAbbildung.Bild` in den Kern gelegt (Protokoll
+  [`2026-10-16_SK-12_Abbildung_Energiefluss.md`](2026-10-16_SK-12_Abbildung_Energiefluss.md)). SK-3 ruft sie und
+  zeichnet zwei Modelle (breit, schmal), `knotenwerte = false`.
 - SK-4 ruft `EnergieflussModell(daten, ChartRenderer.ENERGIEFLUSS_BERICHT, knotenwerte: true)`.
