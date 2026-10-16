@@ -279,6 +279,12 @@
 
                 <Reiterblatt Schluessel="STROM" Titel="@Resource.SIMERG_TAB_WP_STROM">
                     <KindInhalt>
+                        @* Welle RZ: Wärmepumpe und Heizstab getrennt — ab Werk aus, dann bleibt es die eine
+                           Linie der Summe. An: beide als Stapel, die Summe als Kontur darüber. *@
+                        <div class="epos-simerg-schalter">
+                            <Schalter Bezeichnung="@Resource.SIMERG_CHK_WP_STROM_GETRENNT"
+                                      Wert="@_stromGetrennt" WertChanged="@(w => _stromGetrennt = w)" />
+                        </div>
                         <DiagrammSvg Modell="@ModellStrom" Kennung="simerg-wp-strom" CsvExport="Csv"
                                      Vorlagenfeld="stand.bild.waermepumpe_strom" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
                                      VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
@@ -433,6 +439,9 @@
     /// <summary>Die gewaehlten Reihen der Jahresganglinie (Pruefhilfe).</summary>
     public IReadOnlyList<string> GewaehlteReihenProduktion => ReihenProduktion();
 
+    /// <summary>Die Reihenwahl des Stromverbrauchsbilds; <c>null</c> = die Vorgabe, eine Linie (Pruefhilfe).</summary>
+    public IReadOnlyList<string>? GewaehlteReihenStrom => ReihenStrom();
+
     private Reiter? _reiter;
     private string _blatt = "";
     private bool _sortiert;
@@ -445,6 +454,9 @@
     private bool _pgWarmwasser = true;
     private bool _pgProduktion = true;
     private bool _pgHeizstab = true;
+
+    // Welle RZ: Strom von Wärmepumpe und Heizstab getrennt - ab Werk AUS.
+    private bool _stromGetrennt;
 
     // Die Spalte JAZ der Modultabelle: Vorgabe OHNE Heizstab; nur fuer die Ansicht.
     private bool _jazMitHeizstab;
@@ -483,8 +495,15 @@
     private Zeichenmodell? ModellProduktion =>
         Modell?.Invoke(new Bildauftrag(Bilder.WpProduktion, _sortiert, -1, ReihenProduktion()));
 
+    /// <summary>
+    /// Welle RZ: die Reihen des Stromverbrauchsbilds. Ohne „getrennt" KEINE Liste (<c>null</c>) — derselbe
+    /// Auftrag wie bisher, das Bild bleibt die eine Linie.
+    /// </summary>
+    private IReadOnlyList<string>? ReihenStrom()
+        => _stromGetrennt ? new[] { "WP_STROM", "HEIZSTAB_STROM", "WP_STROM_SUMME" } : null;
+
     private Zeichenmodell? ModellStrom =>
-        Modell?.Invoke(new Bildauftrag(Bilder.WpStromverbrauch));
+        Modell?.Invoke(new Bildauftrag(Bilder.WpStromverbrauch, false, -1, ReihenStrom()));
 
     private Zeichenmodell? ModellTemperaturen =>
         Modell?.Invoke(new Bildauftrag(Bilder.Speichertemperaturen));
@@ -578,6 +597,9 @@
                                  w => _pgProduktion = w));
             liste.Add(Umschalter(Resource.CHART_SEGMENT_HEIZSTAB, () => _pgHeizstab, w => _pgHeizstab = w));
         }
+        if (AktivesBlatt == "STROM")
+            liste.Add(Umschalter(Resource.SIMERG_CHK_WP_STROM_GETRENNT, () => _stromGetrennt,
+                                 w => _stromGetrennt = w));
         return liste;
     }
 }

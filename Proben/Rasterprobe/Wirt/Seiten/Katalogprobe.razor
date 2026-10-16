@@ -291,7 +291,7 @@
                                DateiWaehlen="@(_ => Task.FromResult<string?>(null))"
                                Einlesen="@((_, _) => Task.FromResult(new GanglinienImportErgebnis()))"
                                Rechnen="@PeakRechnen"
-                               CsvSpeichern="@(_ => Task.FromResult(true))"
+                               CsvSpeichern="@((_, _) => Task.FromResult(true))"
                                VarianteUebernehmen="@((_, _) => Task.FromResult(true))"
                                VariantenBerechnungsart="@(() => Task.FromResult<string?>("PeakShaving"))"
                                Geschlossen="@(b => { })" />

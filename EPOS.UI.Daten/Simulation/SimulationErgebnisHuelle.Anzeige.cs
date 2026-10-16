@@ -1066,6 +1066,16 @@ namespace WindowsFormsApplication1
                 reihen.Insert(5, new Ganglinienreihe(REIHE_KUEHLUNG_DEZENTRAL, MyResource.Resource.SIMUEB_LBL_KUEHLUNG_DEZENTRAL, true));
                 d.Reihen = reihen;
             }
+
+            // Welle RZ: Netzbezug und Netzeinspeisung als zuschaltbare Reihen HINTER allen anderen - ab Werk aus
+            // (die Vorgabe des Reiters ist „nur Summe"), die Einspeisung nur, wenn der Lauf eine führt.
+            SimulationErgebnisCtrl.Netzreihen netz = SimulationErgebnisCtrl.NetzreihenViertelstunde(sim);
+            var mitNetz = d.Reihen.ToList();
+            mitNetz.Add(new Ganglinienreihe(REIHE_NETZBEZUG, MyResource.Resource.CHART_LEGENDE_NETZBEZUG,
+                                            netz?.NetzbezugKw != null));
+            mitNetz.Add(new Ganglinienreihe(REIHE_NETZEINSPEISUNG, MyResource.Resource.CHART_LEGENDE_NETZEINSPEISUNG,
+                                            netz?.EinspeisungKw != null));
+            d.Reihen = mitNetz;
             return d;
         }
 

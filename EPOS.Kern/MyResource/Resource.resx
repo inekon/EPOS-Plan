@@ -56900,5 +56900,47 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KI_DLG_KLIMA_HOEHE_ERL" xml:space="preserve">
     <value>Die Höhe des Standorts über dem Meer, in Metern. Sie geht in die Vorschau ein: Der Höhenunterschied zum Bezugspunkt entscheidet über den Hinweis „nicht ortstypisch“. Leer = unbekannt; bei PVGIS und einer TRY-Datei mit Kopfangabe kommt sie aus der Quelle.</value>
   </data>
+  <data name="CHART_LEGENDE_NETZBEZUG" xml:space="preserve">
+    <value>Netzbezug</value>
+  </data>
+  <data name="CHART_LEGENDE_NETZEINSPEISUNG" xml:space="preserve">
+    <value>Netzeinspeisung</value>
+  </data>
+  <data name="CHART_LEGENDE_SUMME_STROM_WP" xml:space="preserve">
+    <value>Summe Strombedarf Wärmepumpe und Heizstab</value>
+  </data>
+  <data name="SIMERG_CHK_WP_STROM_GETRENNT" xml:space="preserve">
+    <value>Wärmepumpe und Heizstab getrennt</value>
+  </data>
+  <data name="PEAK_CHK_LEISTUNG" xml:space="preserve">
+    <value>Lade- und Entladeleistung im Diagramm zeigen</value>
+  </data>
+  <data name="PEAK_CHK_SCHWELLE" xml:space="preserve">
+    <value>Schwelle im Diagramm zeigen</value>
+  </data>
+  <data name="PEAK_SERIE_LADELEISTUNG" xml:space="preserve">
+    <value>Ladeleistung</value>
+  </data>
+  <data name="PEAK_SERIE_ENTLADELEISTUNG" xml:space="preserve">
+    <value>Entladeleistung</value>
+  </data>
+  <data name="PEAK_SERIE_SCHWELLE" xml:space="preserve">
+    <value>Schwelle</value>
+  </data>
+  <data name="PEAK_CSV_LADELEISTUNG" xml:space="preserve">
+    <value>Ladeleistung [kW]</value>
+  </data>
+  <data name="PEAK_CSV_ENTLADELEISTUNG" xml:space="preserve">
+    <value>Entladeleistung [kW]</value>
+  </data>
+  <data name="PEAK_CSV_SCHWELLE" xml:space="preserve">
+    <value>Schwelle [kW]</value>
+  </data>
+  <data name="KI_DLG_PEAK_LEISTUNG_ERL" xml:space="preserve">
+    <value>Zeigt Lade- und Entladeleistung des Speichers als Linien im Diagramm.</value>
+  </data>
+  <data name="KI_DLG_PEAK_SCHWELLE_ERL" xml:space="preserve">
+    <value>Zeigt die erreichte Schwelle als waagerechte Linie im Diagramm.</value>
+  </data>
 </root>
 

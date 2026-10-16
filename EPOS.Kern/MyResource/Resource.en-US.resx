@@ -56893,5 +56893,47 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="KI_DLG_KLIMA_HOEHE_ERL" xml:space="preserve">
     <value>The altitude of the site above sea level, in metres. It enters the preview: the altitude difference to the reference point decides the note "not typical for the site". Empty = unknown; for PVGIS and a TRY file with header data it comes from the source.</value>
   </data>
+  <data name="CHART_LEGENDE_NETZBEZUG" xml:space="preserve">
+    <value>Grid purchase</value>
+  </data>
+  <data name="CHART_LEGENDE_NETZEINSPEISUNG" xml:space="preserve">
+    <value>Grid feed-in</value>
+  </data>
+  <data name="CHART_LEGENDE_SUMME_STROM_WP" xml:space="preserve">
+    <value>Total power demand heat pump and heating rod</value>
+  </data>
+  <data name="SIMERG_CHK_WP_STROM_GETRENNT" xml:space="preserve">
+    <value>Heat pump and heating rod separately</value>
+  </data>
+  <data name="PEAK_CHK_LEISTUNG" xml:space="preserve">
+    <value>Show charging and discharging power in the chart</value>
+  </data>
+  <data name="PEAK_CHK_SCHWELLE" xml:space="preserve">
+    <value>Show threshold in the chart</value>
+  </data>
+  <data name="PEAK_SERIE_LADELEISTUNG" xml:space="preserve">
+    <value>Charging power</value>
+  </data>
+  <data name="PEAK_SERIE_ENTLADELEISTUNG" xml:space="preserve">
+    <value>Discharging power</value>
+  </data>
+  <data name="PEAK_SERIE_SCHWELLE" xml:space="preserve">
+    <value>Threshold</value>
+  </data>
+  <data name="PEAK_CSV_LADELEISTUNG" xml:space="preserve">
+    <value>Charging power [kW]</value>
+  </data>
+  <data name="PEAK_CSV_ENTLADELEISTUNG" xml:space="preserve">
+    <value>Discharging power [kW]</value>
+  </data>
+  <data name="PEAK_CSV_SCHWELLE" xml:space="preserve">
+    <value>Threshold [kW]</value>
+  </data>
+  <data name="KI_DLG_PEAK_LEISTUNG_ERL" xml:space="preserve">
+    <value>Shows the charging and discharging power of the storage as lines in the chart.</value>
+  </data>
+  <data name="KI_DLG_PEAK_SCHWELLE_ERL" xml:space="preserve">
+    <value>Shows the reached threshold as a horizontal line in the chart.</value>
+  </data>
 </root>
 

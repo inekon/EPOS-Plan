@@ -23162,6 +23162,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_NETZBEZUG {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_NETZBEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzeinspeisung ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_NETZEINSPEISUNG {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_NETZEINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Profil/Lastgang ähnelt.
         /// </summary>
         public static string CHART_LEGENDE_PROFIL_LASTGANG {
@@ -23239,6 +23257,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_LEGENDE_SUMME_STROMVERBRAUCH {
             get {
                 return ResourceManager.GetString("CHART_LEGENDE_SUMME_STROMVERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Strombedarf Wärmepumpe und Heizstab ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_SUMME_STROM_WP {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_SUMME_STROM_WP", resourceCulture);
             }
         }
         
@@ -70483,6 +70510,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt Lade- und Entladeleistung des Speichers als Linien im Diagramm. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_LEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_LEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Leistungspreis des Netzanschlusses; er bewertet die gekappte Spitze. ähnelt.
         /// </summary>
         public static string KI_DLG_PEAK_LP_ERL {
@@ -70551,6 +70587,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PEAK_REITER_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_PEAK_REITER_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt die erreichte Schwelle als waagerechte Linie im Diagramm. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_SCHWELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_SCHWELLE_ERL", resourceCulture);
             }
         }
         
@@ -102886,6 +102931,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lade- und Entladeleistung im Diagramm zeigen ähnelt.
+        /// </summary>
+        public static string PEAK_CHK_LEISTUNG {
+            get {
+                return ResourceManager.GetString("PEAK_CHK_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schwelle im Diagramm zeigen ähnelt.
+        /// </summary>
+        public static string PEAK_CHK_SCHWELLE {
+            get {
+                return ResourceManager.GetString("PEAK_CHK_SCHWELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand im Diagramm zeigen ähnelt.
         /// </summary>
         public static string PEAK_CHK_SOC {
@@ -102895,11 +102958,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entladeleistung [kW] ähnelt.
+        /// </summary>
+        public static string PEAK_CSV_ENTLADELEISTUNG {
+            get {
+                return ResourceManager.GetString("PEAK_CSV_ENTLADELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Entladung [kWh] ähnelt.
         /// </summary>
         public static string PEAK_CSV_ENTLADUNG {
             get {
                 return ResourceManager.GetString("PEAK_CSV_ENTLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladeleistung [kW] ähnelt.
+        /// </summary>
+        public static string PEAK_CSV_LADELEISTUNG {
+            get {
+                return ResourceManager.GetString("PEAK_CSV_LADELEISTUNG", resourceCulture);
             }
         }
         
@@ -102927,6 +103008,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PEAK_CSV_PNEU {
             get {
                 return ResourceManager.GetString("PEAK_CSV_PNEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schwelle [kW] ähnelt.
+        /// </summary>
+        public static string PEAK_CSV_SCHWELLE {
+            get {
+                return ResourceManager.GetString("PEAK_CSV_SCHWELLE", resourceCulture);
             }
         }
         
@@ -103624,11 +103714,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entladeleistung ähnelt.
+        /// </summary>
+        public static string PEAK_SERIE_ENTLADELEISTUNG {
+            get {
+                return ResourceManager.GetString("PEAK_SERIE_ENTLADELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladeleistung ähnelt.
+        /// </summary>
+        public static string PEAK_SERIE_LADELEISTUNG {
+            get {
+                return ResourceManager.GetString("PEAK_SERIE_LADELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Lastgang mit Speicher ähnelt.
         /// </summary>
         public static string PEAK_SERIE_NEU {
             get {
                 return ResourceManager.GetString("PEAK_SERIE_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schwelle ähnelt.
+        /// </summary>
+        public static string PEAK_SERIE_SCHWELLE {
+            get {
+                return ResourceManager.GetString("PEAK_SERIE_SCHWELLE", resourceCulture);
             }
         }
         
@@ -118683,6 +118800,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_CHK_SPEICHERFUELLUNG {
             get {
                 return ResourceManager.GetString("SIMERG_CHK_SPEICHERFUELLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe und Heizstab getrennt ähnelt.
+        /// </summary>
+        public static string SIMERG_CHK_WP_STROM_GETRENNT {
+            get {
+                return ResourceManager.GetString("SIMERG_CHK_WP_STROM_GETRENNT", resourceCulture);
             }
         }
         
