@@ -117,6 +117,14 @@ Standort 450 m“. Empfehlung in Abschnitt 9, KD-Q1.
   Überlagerungen ausdrücklich aus. Zu beheben ist also die **Haftregel der Überlagerung** und nicht
   die Fensterregel. Nachweis: `Proben/Rasterprobe/fensterprobe.mjs` bekommt einen Fall
   „Import-Überlagerung im Katalogdialog“ mit Gegenprobe, dazu ein Fall in `FensterrahmenTests`.
+- **Umgesetzt (KD-1):** Die Haftregel gilt zusätzlich für
+  `.epos-ueberlagerung-inhalt > .epos-einlesen > .epos-leiste:last-child` — erkannt an der Stellung,
+  nicht an Statusspanne oder Primärknopf. Sie erfasst damit alle sechs Einlese-Überlagerungen
+  (Klimadaten, Ganglinienkatalog, Wärmebedarf, Stromganglinie, Nutzungsarten, Lastspitzenkappung;
+  die letzte trägt nur „Abbrechen“). Das Klimadatenfenster wünscht über
+  `KlimadatenHuelle.Wunschmass()` mindestens das Maß der Überlagerung (900 × 870, Ergebnis
+  1 180 × 870). Nachweis: Fall `klimaimport` der `fensterprobe.mjs` (vier Fenster, mit Gegenprobe),
+  `FensterrahmenTests`, `FenstermassTests`.
 
 ---
 
@@ -308,7 +316,7 @@ Jeder Schritt umfasst höchstens rund 150 Werkzeugaufrufe, Bau mit `WP-Plan.Kern
 
 | Schritt | Inhalt | Abnahme |
 |---|---|---|
-| **KD-1** Schlussleiste | Haftregel der Überlagerung auf die Leiste mit Primärknopf in `.epos-einlesen` erweitern (oder Leiste mit Statusspanne), Fenstermaß Klimadaten über `Fenstermass.MitUeberlagerung`, kein Schemaschritt | `StilblattTests`, `FensterrahmenTests`, neuer Fall in `fensterprobe.mjs` mit Gegenprobe, Bau der Windows-Schale mit `EnableWindowsTargeting=true` |
+| **KD-1** Schlussleiste — *umgesetzt 16.10.2026* | Haftregel der Überlagerung auf die Leiste mit Primärknopf in `.epos-einlesen` erweitern (oder Leiste mit Statusspanne), Fenstermaß Klimadaten über `Fenstermass.MitUeberlagerung`, kein Schemaschritt | `StilblattTests`, `FensterrahmenTests`, neuer Fall in `fensterprobe.mjs` mit Gegenprobe, Bau der Windows-Schale mit `EnableWindowsTargeting=true` |
 | **KD-2** Vorschau Kern | `KlimaVorschauErgebnis` erweitern, Vorschau liest den Datensatz für alle drei Quellen, `AusfuehrungGefunden`, `KlimaKennzahlen`, Höhe aus Kopf bzw. PVGIS, Hinweis nach KD-Q1, Import übernimmt den Vorschausatz | `TryPaketLeserTests`, `KlimaImportAblaufTests` mit lokaler Probe-`data.zip`, Gegenprobe Szenario fehlt, Nachrechnung Stuttgart-Vaihingen (56 km, Stötten) als fester Fall |
 | **KD-3** Vorschau Dialog | Vorschaukarte, Felder befüllen, Grafik, Kennzeichen, Parameterbestand, Ressourcen in beiden Sprachen, KI-Feldliste (`KiDialoge`) nachziehen | `KlimadatenDialogTests` (Treffer, kein Treffer, Verfall bei Eingabe, Import ohne Vorschau weich gesperrt), `KiMaskenabdeckungWacheTests`, `designer_neu.py` |
 | **KD-4** Rohdaten | Schemaschritt (Nummer anmelden): `Tab_Klimastunde_STAMM`, Spalten an `Tab_Klimaregion(_STAMM)`; `DwdTryLeser` und PVGIS-Leser liefern alle Felder, Schreibweg füllt sie, `SchemaKatalog`, Katalogregister | `SqlDialektPruefer`, Schematests, Wache „Rechenweg liest Rohtabelle nicht“, Referenzlauf 18 Projekte `PASS` |
@@ -343,15 +351,15 @@ Spalten braucht. KD-5 setzt KD-4 voraus, wenn die Rohwerte exportiert werden sol
 
 | Kennung | Frage | Empfehlung |
 |---|---|---|
-| **KD-Q1** | Regionswahl im Regionalweg: (a) nächste Station belassen, ehrlich benennen, Höhe und Entfernung zeigen und ab 50 km oder 200 m auf die ortsgenaue TRY-Datei hinweisen; (b) Zuordnung über die Regionenkarte des DWD (Polygone mit Höhenstufen; braucht Kartendaten samt Lizenz und Höhenmodell); (c) Regionalweg nur noch als Rückfall, Vorgabe „TRY-Datei“ | **(a), dazu der Hinweis aus (c).** Vorher die Region von Stuttgart in der DWD-Regionenkarte nachsehen (Prüfpunkt aus 1.3). |
-| **KD-Q2** | Rohwerte in eigener Tabelle `Tab_Klimastunde_STAMM` oder als Spalten an `Tab_Solar(_STAMM)` | **Eigene Tabelle.** Keine Spalte ohne Leser in den Rechentabellen, Projektkopie bleibt schlank. |
-| **KD-Q3** | Liest die Vorschau den Datensatz und übernimmt der Import ihn ohne zweiten Abruf? Das ersetzt den Anwenderentscheid 19.09.2026 (b) „kein Eintrag entpackt, zweiter Abruf angenommen“. | **Ja.** Nur so zeigt der Dialog Daten vor dem Import. Rund 155 KB statt 0 sind tragbar. |
-| **KD-Q4** | Rohdaten auch in der Projektkopie (`Tab_Klimastunde`)? | **Nein.** Kein Leser im Lauf, der Export liest den Katalog. |
-| **KD-Q5** | CSV als vierte Importquelle (Rückweg des Exports, Fremddateien)? | **Später**, eigener Schritt KD-6 nach dem Export. |
-| **KD-Q6** | Export einer oder mehrerer Regionen je Lauf? | **Eine Region je Datei**, Mehrfachwahl später als mehrere Dateien. |
-| **KD-Q7** | Rohdaten für Bestands- und Auslieferungsregionen nachladen? | **Nein**, nur Neuimporte. Die Auslieferungsvorlage führt Rohdaten erst nach eigenem Entscheid (Größe). |
-| **KD-Q8** | Zeitbezug des Exports als Vorgabe | **MEZ ohne Sommerzeit** (Raster der TRY und der Anwender), UTC wählbar. |
-| **KD-Q9** | Schwellen des Hinweises (50 km, 200 m) | **Ja**, als Festwerte im Kern, nicht in den Einstellungen. |
+| **KD-Q1** | Regionswahl im Regionalweg: (a) nächste Station belassen, ehrlich benennen, Höhe und Entfernung zeigen und ab 50 km oder 200 m auf die ortsgenaue TRY-Datei hinweisen; (b) Zuordnung über die Regionenkarte des DWD (Polygone mit Höhenstufen; braucht Kartendaten samt Lizenz und Höhenmodell); (c) Regionalweg nur noch als Rückfall, Vorgabe „TRY-Datei“ | **(a), dazu der Hinweis aus (c).** Vorher die Region von Stuttgart in der DWD-Regionenkarte nachsehen (Prüfpunkt aus 1.3). — *entschieden 16.10.2026: Empfehlung übernommen* |
+| **KD-Q2** | Rohwerte in eigener Tabelle `Tab_Klimastunde_STAMM` oder als Spalten an `Tab_Solar(_STAMM)` | **Eigene Tabelle.** Keine Spalte ohne Leser in den Rechentabellen, Projektkopie bleibt schlank. — *entschieden 16.10.2026: Empfehlung übernommen* |
+| **KD-Q3** | Liest die Vorschau den Datensatz und übernimmt der Import ihn ohne zweiten Abruf? Das ersetzt den Anwenderentscheid 19.09.2026 (b) „kein Eintrag entpackt, zweiter Abruf angenommen“. | **Ja.** Nur so zeigt der Dialog Daten vor dem Import. Rund 155 KB statt 0 sind tragbar. — *entschieden 16.10.2026: Empfehlung übernommen* |
+| **KD-Q4** | Rohdaten auch in der Projektkopie (`Tab_Klimastunde`)? | **Nein.** Kein Leser im Lauf, der Export liest den Katalog. — *entschieden 16.10.2026: Empfehlung übernommen* |
+| **KD-Q5** | CSV als vierte Importquelle (Rückweg des Exports, Fremddateien)? | **Später**, eigener Schritt KD-6 nach dem Export. — *entschieden 16.10.2026: Empfehlung übernommen* |
+| **KD-Q6** | Export einer oder mehrerer Regionen je Lauf? | **Eine Region je Datei**, Mehrfachwahl später als mehrere Dateien. — *entschieden 16.10.2026: Empfehlung übernommen* |
+| **KD-Q7** | Rohdaten für Bestands- und Auslieferungsregionen nachladen? | **Nein**, nur Neuimporte. Die Auslieferungsvorlage führt Rohdaten erst nach eigenem Entscheid (Größe). — *entschieden 16.10.2026: Empfehlung übernommen* |
+| **KD-Q8** | Zeitbezug des Exports als Vorgabe | **MEZ ohne Sommerzeit** (Raster der TRY und der Anwender), UTC wählbar. — *entschieden 16.10.2026: Empfehlung übernommen* |
+| **KD-Q9** | Schwellen des Hinweises (50 km, 200 m) | **Ja**, als Festwerte im Kern, nicht in den Einstellungen. — *entschieden 16.10.2026: Empfehlung übernommen* |
 
 ---
 
