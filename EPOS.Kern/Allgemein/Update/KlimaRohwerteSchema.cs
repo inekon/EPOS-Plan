@@ -24,8 +24,9 @@ namespace WindowsFormsApplication1
     // ERGEBNISNEUTRAL. Kein Rechenweg liest die Rohtabelle oder die neuen Regionsspalten (Wache
     // KlimaRohwerteRechenwegWacheTests); Tab_Solar(_STAMM) und Tab_Klimadaten(_STAMM) bleiben unberuehrt. Wiederholbar.
     //
-    // DREI LESER: SchemaMigration (Schale), Werkzeuge/Testdatenbankschema und die Testvorrichtung in EPOS.Kern.Tests;
-    // dazu KlimaImportAblauf (Schreibweg) und KlimaregionStammCtrl (Projektkopie der Regionsspalten) nach Vorhandensein.
+    // VIER LESER: SchemaMigration (Schale), Werkzeuge/Testdatenbankschema, die Testvorrichtung in EPOS.Kern.Tests und die
+    // Paketanhebung (Art Ddl); dazu KlimaImportAblauf (Schreibweg) und KlimaregionStammCtrl (Projektkopie der
+    // Regionsspalten) nach Vorhandensein.
     // ====================================================================================
 
     /// <summary>
@@ -35,11 +36,8 @@ namespace WindowsFormsApplication1
     public static class KlimaRohwerteSchema
     {
         /// <summary><b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht.</summary>
-        // KETTE: geparkt auf 238 - 235 (KB-7), 236 (KBP-4) und 237 BauteilStrahlungSchema liegen noch nicht vor.
-        // Sobald 237 auf origin liegt, umhaengen auf "BauteilStrahlungSchema.SCHRITT + 1" und im selben Schritt
-        // eintragen: SchemaMigration.SCHRITTE_SQLITE, Paketanhebung.STUFEN, SchemaStand.Zielversion; danach die
-        // Testdatenbank heben.
-        public const int SCHRITT = 238;
+        // KETTE: 238 haengt ueber + 1 an 237 (BauteilStrahlungSchema, DA-8).
+        public const int SCHRITT = BauteilStrahlungSchema.SCHRITT + 1;
 
         /// <summary>Die Rohtabelle (nur Katalog).</summary>
         public const string TAB_ROH = "Tab_Klimastunde_STAMM";

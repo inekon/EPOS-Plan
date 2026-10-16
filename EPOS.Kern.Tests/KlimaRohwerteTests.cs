@@ -12,7 +12,7 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>KD-4 — Rohwerte des Klimadatenimports</b>: der (geparkte) Schemaschritt <see cref="KlimaRohwerteSchema"/> auf
+    /// <b>KD-4 — Rohwerte des Klimadatenimports</b>: der Schemaschritt <see cref="KlimaRohwerteSchema"/> auf
     /// einer frisch migrierten Kopie der Testdatenbank (Tabelle, Spalten, Prüfklauseln, Kaskade, Eindeutigkeit), die Leser
     /// beider Quellen mit allen Feldern, der Schreibweg mit und ohne Rohtabelle, die Projektkopie ohne Rohwerte, die
     /// Bezeichnung auf dem Ortsweg und der Parameterbestand der Vorschau.
@@ -34,13 +34,13 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         [Fact]
-        public void Nummer_geparkt_und_noch_nicht_im_Register()
+        public void Nummer_Kette_und_Register()
         {
-            // KETTE: geparkt auf 238; nach dem Umhaengen hinter 237 BauteilStrahlungSchema gelten statt der zwei letzten
-            // Zeilen: SCHRITT == BauteilStrahlungSchema.SCHRITT + 1, Zielversion >= SCHRITT, Stufe in der Paketanhebung.
+            // KETTE: 238 haengt ueber + 1 an 237 (BauteilStrahlungSchema, DA-8).
             Assert.Equal(238, KlimaRohwerteSchema.SCHRITT);
-            Assert.True(SchemaStand.Zielversion < KlimaRohwerteSchema.SCHRITT);
-            Assert.DoesNotContain(Paketanhebung.Stufen, s => s.Nr == KlimaRohwerteSchema.SCHRITT);
+            Assert.Equal(BauteilStrahlungSchema.SCHRITT + 1, KlimaRohwerteSchema.SCHRITT);
+            Assert.True(SchemaStand.Zielversion >= KlimaRohwerteSchema.SCHRITT);
+            Assert.Contains(Paketanhebung.Stufen, s => s.Nr == KlimaRohwerteSchema.SCHRITT && s.Wirkung == Paketanhebung.Art.Ddl);
             Assert.Equal(14, KlimaRohwerteSchema.ROHSPALTEN.Count);
             Assert.Equal(8 + 2 + 8, KlimaRohwerteSchema.Spalten().Count);
             Assert.True(Katalogfassung.Ausgenommen.ContainsKey(KlimaRohwerteSchema.TAB_ROH));

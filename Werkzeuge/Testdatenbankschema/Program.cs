@@ -3899,8 +3899,6 @@ namespace Testdatenbankschema
             // ---- Schritt KlimaRohwerteSchema.SCHRITT (KD-4): Tab_Klimastunde_STAMM (leer, STRICT, Kaskade an der
             //      Region) und die Herkunftsspalten an Tab_Klimaregion(_STAMM). Aus DERSELBEN Quelle wie
             //      SchemaMigration.Schritt_KlimaRohwerte. Wiederholbar.
-            //      KETTE: GEPARKT auf 238 - dieser Block bleibt HINTER den Bloecken von 235 bis 237; die Hebung der
-            //      Testdatenbank folgt erst nach dem Umhaengen (BauteilStrahlungSchema.SCHRITT + 1).
             //
             //      REFERENZLAUF UNVERAENDERT: Die Testregionen bleiben ohne Rohwerte (Rohdaten = 0), kein Rechenweg liest
             //      die Rohtabelle.

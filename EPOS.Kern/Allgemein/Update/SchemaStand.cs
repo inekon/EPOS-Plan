@@ -1119,12 +1119,14 @@ namespace WindowsFormsApplication1
         /// Tabellen (<see cref="KaeltetyptagSchema"/>). <b>Ergebnisneutral:</b> Keine Zuordnung trägt Eingabeart 'typtag'.
         /// Danach, mit ABSORPTIONS- UND EMISSIONSGRAD JE BAUTEIL (DA-8), steht das Ziel auf
         /// <see cref="BauteilStrahlungSchema.SCHRITT"/>: <c>Absorptionsgrad_Solar</c> und <c>Emissionsgrad</c> an Aufbau und Bauteil
-        /// (<see cref="BauteilStrahlungSchema"/>). <b>Ergebnisneutral:</b> Die Spalten entstehen leer, leer heißt Festwert. Das Ziel
-        /// ist das Ende der Kette; umgehängt wird allein am Vorgänger <see cref="KaeltetyptagSchema.SCHRITT"/>.
+        /// (<see cref="BauteilStrahlungSchema"/>). <b>Ergebnisneutral:</b> Die Spalten entstehen leer, leer heißt Festwert.
+        /// Danach, mit den ROHWERTEN DES KLIMAIMPORTS (KD-4), steht das Ziel auf <see cref="KlimaRohwerteSchema.SCHRITT"/>:
+        /// <c>Tab_Klimastunde_STAMM</c> (leer, nur Katalog) und die Herkunftsspalten an <c>Tab_Klimaregion(_STAMM)</c>
+        /// (<see cref="KlimaRohwerteSchema"/>). <b>Ergebnisneutral:</b> Bestandsregionen bleiben ohne Rohwerte, kein
+        /// Rechenweg liest die Rohtabelle. Das Ziel ist das Ende der Kette; umgehängt wird allein am Vorgänger
+        /// <see cref="BauteilStrahlungSchema.SCHRITT"/>.
         /// </summary>
-        // KETTE: KlimaRohwerteSchema (KD-4) ist auf 238 GEPARKT; das Ziel wandert erst dorthin, wenn 235 bis 237 in der
-        // Kette stehen und der Schritt umgehaengt ist (BauteilStrahlungSchema.SCHRITT + 1).
-        public const int Zielversion = BauteilStrahlungSchema.SCHRITT;
+        public const int Zielversion = KlimaRohwerteSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

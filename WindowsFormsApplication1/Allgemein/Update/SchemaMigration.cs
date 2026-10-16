@@ -5638,8 +5638,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Schritt <see cref="KlimaRohwerteSchema.SCHRITT"/> — <b>Rohwerte des Klimaimports</b> (KD-4): eigene Tabelle
-        /// <c>Tab_Klimastunde_STAMM</c> und die Herkunftsspalten der Klimaregion. KETTE: geparkt, noch nicht in
-        /// <c>SCHRITTE_SQLITE</c>.
+        /// <c>Tab_Klimastunde_STAMM</c> und die Herkunftsspalten der Klimaregion. Schritt 238, hängt an 237.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Bestandsregionen bleiben ohne Rohwerte, kein Rechenweg liest die
+        /// Rohtabelle.</para>
         /// </summary>
         public const int SCHRITT_KLIMA_ROHWERTE = KlimaRohwerteSchema.SCHRITT;
 
@@ -8324,11 +8326,13 @@ namespace WindowsFormsApplication1
                         "Absorptions- und Emissionsgrad der Aussenflaechen liessen sich weder je Bauteil eintragen noch aus gbXML oder " +
                         "IFC uebernehmen. KEIN Rechenergebnis aendert sich - die Spalten bleiben leer, leer heisst Festwert.",
                         Schritt_BauteilStrahlung),
-            // KD-4, KETTE: GEPARKT auf 238 - der Eintrag folgt mit dem Umhaengen hinter 237 (BauteilStrahlungSchema):
-            //   Konstante SCHRITT_KLIMA_ROHWERTE, Methode Schritt_KlimaRohwerte; Titel "Tab_Klimastunde_STAMM (neu): Rohwerte
-            //   des Klimaimports; Tab_Klimaregion(_STAMM): Standorthoehe, Bezugspunkt, Ausfuehrung; Tab_Klimaregion_STAMM:
-            //   Zeitbezug, Rohdaten", Anlass "Der Import verwarf Luftdruck, Wind, Wasserdampfgehalt, Ausstrahlung und
-            //   Qualitaetskennung. KEIN Rechenergebnis aendert sich - Bestandsregionen bleiben ohne Rohwerte."
+            // KD-4: Rohwerte des Klimaimports. Quelle ist KlimaRohwerteSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KLIMA_ROHWERTE,
+                        "Tab_Klimastunde_STAMM (neu): Rohwerte des Klimaimports; Tab_Klimaregion(_STAMM): Standorthoehe, " +
+                        "Bezugspunkt, Ausfuehrung; Tab_Klimaregion_STAMM: Zeitbezug, Rohdaten",
+                        "Der Import verwarf Luftdruck, Wind, Wasserdampfgehalt, Ausstrahlung und Qualitaetskennung. " +
+                        "KEIN Rechenergebnis aendert sich - Bestandsregionen bleiben ohne Rohwerte.",
+                        Schritt_KlimaRohwerte),
         };
 
         /// <summary>
@@ -16761,7 +16765,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Schritt „Rohwerte des Klimaimports" (KD-4, Schritt <see cref="KlimaRohwerteSchema.SCHRITT"/>) — die
-        /// Anweisungen bei <see cref="KlimaRohwerteSchema"/>. <b>Wiederholbar, ergebnisneutral.</b> KETTE: geparkt.
+        /// Anweisungen bei <see cref="KlimaRohwerteSchema"/>. <b>Wiederholbar, ergebnisneutral.</b>
         /// </summary>
         private static bool Schritt_KlimaRohwerte(Lauf l)
         {

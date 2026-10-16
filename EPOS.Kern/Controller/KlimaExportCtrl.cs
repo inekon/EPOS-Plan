@@ -8,7 +8,7 @@ namespace WindowsFormsApplication1
     /// <b>Die Datenseite des Klimaexports</b> (Auftrag KD-5): liest EINE Katalogregion (Entscheid KD-Q6) — Herkunft aus
     /// <c>Tab_Klimaregion_STAMM</c>, die Rechenspalten aus <c>Tab_Solar_STAMM</c> und, nur bei <c>Rohdaten = 1</c>, die
     /// Rohwerte aus <see cref="KlimaRohwerteSchema.TAB_ROH"/> (KD-Q4: Rohwerte gibt es nur im Katalog). Alle Texte mit
-    /// <c>?</c>-Parametern. Die Herkunftsspalten des geparkten Schritts 238 werden nur gelesen, wenn sie stehen —
+    /// <c>?</c>-Parametern. Die Herkunftsspalten des Schritts 238 werden nur gelesen, wenn sie stehen —
     /// darum <c>SELECT *</c> auf die Region; die Rohtabelle nur, wenn sie besteht (bis zur Hebung ein dynamischer Text
     /// für den <c>SqlDialektPruefer</c>).
     /// </summary>
@@ -23,7 +23,7 @@ namespace WindowsFormsApplication1
         private const string SQL_REGION = "SELECT * FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?";
 
         /// <summary>
-        /// Die Rohtabelle des geparkten Schritts 238: aus den Namen von <see cref="KlimaRohwerteSchema"/> gebildet (kein
+        /// Die Rohtabelle des Schritts 238: aus den Namen von <see cref="KlimaRohwerteSchema"/> gebildet (kein
         /// Wert im Text) — bis zur Hebung der Testdatenbank fuer den <c>SqlDialektPruefer</c> ein dynamischer Text.
         /// </summary>
         private static readonly string SQL_ROH =
