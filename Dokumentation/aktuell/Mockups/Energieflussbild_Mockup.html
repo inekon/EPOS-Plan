@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Energieflussbild – Mockup</title>
+<!--
+  MOCKUP zur Abnahme: Energieflussbild (Sankey) im Abschnitt „Ergebnisse – Energie“ der Seite
+  „Berichte & Kosten → Übersicht“ (Welle SK).
+  Konzept: Dokumentation/aktuell/Dialoge/2026-10-16_Konzept_Energieflussbild_Sankey.md
+
+  EIGENSTÄNDIG: kein CDN, kein Rahmenwerk, keine Schriftdatei von außen. Seiten-Token und
+  Fensterbild wie Klimadatenimport_Mockup.html (Kopfband #0F1F3D, Berührungsziel 44 px). Das
+  Fenster ist ein Bild der Anwendung und bleibt in beiden Farbmodi hell.
+
+  ZAHLEN: gerundet auf 0,1 MWh/a aus dem Bilanzbefund zweier Referenzprojekte der Basis R57
+  (Stamm nach dem AK3-Referenzprojekt 1058, Variante 1 nach dem Flottenprojekt 1046), so
+  gerundet, dass jeder Knoten schließt. Namen neutral, keine Hersteller- oder Produktdaten.
+
+  LAYOUT: Die Datei rechnet das Bild selbst nach den Regeln des Konzepts (Abschnitt 2.5 und 3):
+  sieben Spalten, Verlustknoten in der Lücke, Mindestband 2 px, Bänder als abgetastete
+  S-Kurven-Polygone (keine Bézierkurve — das Zeichenmodell des Kerns kennt keine), Werte am
+  Band erst ab 8 px, schmale Fassung ohne Bandwerte und mit Kurznamen.
+
+  BEDIENBAR: Umschalter „Tabelle | Grafik | Fluss“, Versionswahl (eine Version ist nicht
+  simuliert), Zeiger über Band oder Knoten → Zeigerzeile, Tab-Taste über die Bänder,
+  Wertetabelle aufklappbar, unten die schmale Ansicht (680 px) derselben Version.
+-->
+<style>
+:root{
+  --papier:#F5F7FA; --karte:#FFFFFF; --tinte:#16202F; --tinte-weich:#4A5769; --tinte-blass:#7C8798;
+  --linie:#DDE3EC; --marine:#0F1F3D; --akzent:#1A3261; --akzent-grund:#EDF3FB;
+  --gut:#0B6B5B; --gut-grund:#E6F2EF; --warn:#8A6100; --warn-grund:#FFF6E0; --warn-kante:#C88A00;
+  --schatten-fenster:0 2px 4px rgba(15,31,61,.12), 0 18px 44px rgba(15,31,61,.18);
+  /* Bausteintoken aus epos-ui.css – im Fenster hell in beiden Modi */
+  --epos-schrift:"Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  --epos-rahmen:#b4b2a9; --epos-rahmen-leise:#d9d7cf; --epos-text:#2c2c2a; --epos-text-leise:#5f5e5a;
+  --epos-flaeche:#f5f4ef; --epos-karte-flaeche:#fffdf7; --epos-karte-flaeche-hover:#f3f0e4;
+  --epos-karte-titel:#0F1F3D; --epos-gruppenkopf-flaeche:#0F1F3D; --epos-gruppenkopf-text:#ffffff;
+  --epos-marke:#005aa0; --epos-touchziel:44px; --epos-rand:10px; --epos-ecke:6px; --epos-wahl:#EFF6FF;
+  --epos-warn-text:#8A5B00; --epos-warn-flaeche:#FFF6E0; --epos-warn-rahmen:#C88A00;
+  /* Farbrollen der Hauspalette (Farbpalette.Vorgabe) und die fünf neuen Rollen des Konzepts */
+  --r-strom-netz:#9E480E; --r-strom-pv:#70AD47; --r-strom-bhkw:#A0522D; --r-strom-speicher:#90EE90;
+  --r-waerme-wp:#4172C4; --r-waerme-bhkw:#ED7D31; --r-waerme-kessel:#808080; --r-waerme-solar:#FFC000;
+  --r-heizstab:#FFFF00; --r-heizwaerme:#FF0000; --r-warmwasser:#00BFFF; --r-prozesswaerme:#7E57A6;
+  --r-kaelte-dezentral:#4BACC6; --r-ueberschuss:#FFD54F; --r-rest:#BFBFBF; --r-speicherladung:#FF8C00;
+  --r-verbrauch-gesamt:#2E8B57; --r-text:#000000; --r-rahmen:#696969;
+  --r-brennstoff:#8B6F47; --r-umweltwaerme:#7FB8A4; --r-kaelte:#2A7FA6; --r-verlust:#B8B8B8; --r-knoten:#4A5769;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papier:#10151E; --karte:#171E2A; --tinte:#E4E9F1; --tinte-weich:#A7B2C3; --tinte-blass:#78849A;
+    --linie:#2A3444; --akzent:#9FBAE6; --akzent-grund:#1B2940; --gut:#4FBFA6; --gut-grund:#12302B;
+    --warn:#E0AE3E; --warn-grund:#33290F;
+    --schatten-fenster:0 2px 4px rgba(0,0,0,.5), 0 18px 44px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --papier:#10151E; --karte:#171E2A; --tinte:#E4E9F1; --tinte-weich:#A7B2C3; --tinte-blass:#78849A;
+  --linie:#2A3444; --akzent:#9FBAE6; --akzent-grund:#1B2940; --gut:#4FBFA6; --gut-grund:#12302B;
+  --warn:#E0AE3E; --warn-grund:#33290F;
+  --schatten-fenster:0 2px 4px rgba(0,0,0,.5), 0 18px 44px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--papier);color:var(--tinte);font:15px/1.5 var(--epos-schrift)}
+.seite{max-width:1360px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:24px;margin:0 0 4px}
+.unterzeile{color:var(--tinte-weich);margin:0 0 20px;max-width:80ch}
+.raster{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:1040px){.raster{grid-template-columns:minmax(0,1fr)}}
+.seitenkarte{background:var(--karte);border:1px solid var(--linie);border-radius:10px;padding:14px 16px}
+.seitenkarte h2{font-size:15px;margin:0 0 8px}
+.seitenkarte p,.seitenkarte li{color:var(--tinte-weich);font-size:14px;margin:0 0 8px}
+.seitenkarte ul{padding-left:18px;margin:0}
+.seitenkarte code{font-size:13px;background:var(--akzent-grund);color:var(--akzent);padding:0 4px;border-radius:3px}
+.marke{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;background:var(--akzent-grund);color:var(--akzent);font-weight:600}
+.farbfeld{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:4px;border:1px solid rgba(0,0,0,.15)}
+
+/* ---------- Fensterbild (hell in beiden Modi) ---------- */
+.fenster{position:relative;background:#fff;color:var(--epos-text);border:1px solid #9aa3b2;border-radius:8px;box-shadow:var(--schatten-fenster);overflow:hidden;display:flex;flex-direction:column;color-scheme:light;margin-bottom:24px}
+.fenster-titel{background:#e9edf3;border-bottom:1px solid #c9d0da;padding:6px 12px;font-size:13px;color:#33404f;display:flex;justify-content:space-between}
+.reiterzeile{display:flex;gap:2px;padding:8px 16px 0;border-bottom:1px solid var(--epos-rahmen-leise);background:var(--epos-flaeche)}
+.reiter{padding:8px 14px;border:1px solid var(--epos-rahmen-leise);border-bottom:0;border-radius:var(--epos-ecke) var(--epos-ecke) 0 0;background:#fff;font-size:14px;color:var(--epos-text-leise)}
+.reiter--an{color:var(--epos-text);font-weight:600;border-color:var(--epos-rahmen);box-shadow:inset 0 3px 0 var(--epos-marke)}
+.inhalt{padding:12px 16px 16px}
+.abschnitt-oben{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:6px 0 10px;border-bottom:1px solid var(--epos-rahmen-leise);margin-bottom:12px;font-size:14px;color:var(--epos-text-leise)}
+.abschnitt-oben b{color:var(--epos-text)}
+.chip{border:1px solid var(--epos-rahmen);border-radius:999px;padding:2px 10px;background:var(--epos-karte-flaeche);color:var(--epos-text);font-size:13px}
+.chip--fest{background:var(--epos-wahl)}
+
+/* Kopf des Abschnitts: Titel, Umschalter (drei Stellungen), Anpassen-Knopf */
+.epos-ergebnis-kopf{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:4px 0 10px}
+.epos-uebersicht-abschnitt{font-size:18px;margin:0;color:var(--epos-karte-titel);flex:1 1 auto}
+.epos-ergebnis-ansicht{display:inline-flex;align-items:stretch;overflow:hidden;border:1px solid var(--epos-rahmen);border-radius:var(--epos-ecke);background:var(--epos-karte-flaeche);color:var(--epos-text)}
+.epos-ergebnis-ansicht-stellung{display:inline-flex;align-items:center;justify-content:center;min-width:var(--epos-touchziel);min-height:var(--epos-touchziel);margin:0;padding:0 12px;border:0;background:transparent;font:inherit;color:var(--epos-text);cursor:pointer}
+.epos-ergebnis-ansicht-stellung + .epos-ergebnis-ansicht-stellung{border-left:1px solid var(--epos-rahmen-leise)}
+.epos-ergebnis-ansicht-stellung:hover:not(.epos-ergebnis-ansicht-stellung--an){background:var(--epos-karte-flaeche-hover)}
+.epos-ergebnis-ansicht-stellung--an{background:var(--epos-marke);color:var(--epos-gruppenkopf-text)}
+.epos-ergebnis-ansicht-stellung:focus-visible{outline:2px solid #7aa7d9;outline-offset:-4px}
+.knopf{min-height:var(--epos-touchziel);padding:0 14px;border:1px solid var(--epos-rahmen);border-radius:var(--epos-ecke);background:var(--epos-karte-flaeche);color:var(--epos-text);font:inherit;cursor:pointer}
+.knopf:hover{background:var(--epos-karte-flaeche-hover)}
+
+/* Der Flussabschnitt */
+.fluss-kopf{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:0 0 8px}
+.fluss-kopf label{font-size:14px;color:var(--epos-text-leise)}
+.fluss-kopf select{min-height:40px;border:1px solid var(--epos-rahmen);border-radius:var(--epos-ecke);padding:0 10px;font:inherit;background:#fff;color:var(--epos-text);min-width:260px}
+.fluss-kopf .stand{font-size:13px;color:var(--epos-text-leise)}
+.fluss-bild{border:1px solid var(--epos-rahmen-leise);border-radius:var(--epos-ecke);background:#fff;overflow:hidden}
+.fluss-bild svg{display:block;width:100%;height:auto;font-family:var(--epos-schrift)}
+.zeigerzeile{min-height:28px;padding:4px 10px;border-top:1px solid var(--epos-rahmen-leise);background:var(--epos-flaeche);font-size:13px;color:var(--epos-text);font-variant-numeric:tabular-nums}
+.leisezeile{font-size:13px;color:var(--epos-text-leise);margin:8px 0 0}
+.hinweiszeile{font-size:13px;color:var(--epos-warn-text);background:var(--epos-warn-flaeche);border-left:3px solid var(--epos-warn-rahmen);padding:6px 10px;margin:8px 0 0;border-radius:4px}
+.leerkarte{border:1px dashed var(--epos-rahmen);border-radius:var(--epos-ecke);padding:28px 16px;text-align:center;color:var(--epos-text-leise);background:var(--epos-flaeche)}
+.leerkarte b{display:block;color:var(--epos-text);margin-bottom:4px}
+details.klapp{margin-top:12px;border:1px solid var(--epos-rahmen-leise);border-radius:var(--epos-ecke)}
+details.klapp summary{cursor:pointer;padding:8px 12px;font-weight:600;font-size:14px;background:var(--epos-flaeche);border-radius:var(--epos-ecke)}
+details.klapp[open] summary{border-bottom:1px solid var(--epos-rahmen-leise);border-radius:var(--epos-ecke) var(--epos-ecke) 0 0}
+table.werte{border-collapse:collapse;width:100%;font-size:13px}
+table.werte th{text-align:left;padding:6px 10px;background:var(--epos-flaeche);border-bottom:1px solid var(--epos-rahmen);white-space:nowrap}
+table.werte td{padding:5px 10px;border-bottom:1px solid var(--epos-rahmen-leise)}
+table.werte td.zahl,table.werte th.zahl{text-align:right;font-variant-numeric:tabular-nums}
+table.werte tr.bilanz td{background:#fcfcfa;color:var(--epos-text-leise);font-style:italic}
+table.werte tr.offen td{background:var(--epos-warn-flaeche)}
+.stellung-platzhalter{padding:18px;border:1px dashed var(--epos-rahmen);border-radius:var(--epos-ecke);color:var(--epos-text-leise);font-size:14px}
+
+/* SVG-Teile */
+.band{fill-opacity:.55;stroke:none;cursor:pointer;transition:fill-opacity .12s}
+.band.aktiv,.band:hover,.band:focus{fill-opacity:.85;outline:none}
+.band.gestrichelt{stroke:#7C8798;stroke-width:1;stroke-dasharray:4 3;fill-opacity:.35}
+.knoten{fill:var(--r-knoten);stroke:var(--r-rahmen);stroke-width:1;cursor:pointer}
+.knoten.verlust{fill:var(--r-verlust);stroke:none}
+.beschr{font-size:11px;fill:var(--r-text);paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
+.beschr.wert{fill:#4A5769}
+.beschr.klein{font-size:10px}
+.spaltentitel{font-size:11px;fill:#4A5769;text-transform:uppercase;letter-spacing:.04em}
+.bandwert{font-size:10px;fill:#1f2a3a;pointer-events:none;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}
+
+/* Schmale Ansicht: ein Rahmen in iPad-Breite */
+.schmal-rahmen{width:700px;max-width:100%;border:1px solid #9aa3b2;border-radius:8px;background:#fff;color:var(--epos-text);color-scheme:light;overflow:hidden;margin-top:6px}
+.schmal-rahmen .fenster-titel{font-size:12px}
+.schmal-rahmen .inhalt{padding:8px 10px 12px}
+.schmal-rahmen .epos-uebersicht-abschnitt{font-size:16px}
+.schmal-rahmen .fluss-kopf select{min-width:0;width:100%}
+</style>
+</head>
+<body>
+<div class="seite">
+  <h1>Energieflussbild im Abschnitt „Ergebnisse – Energie“</h1>
+  <p class="unterzeile">Dritte Stellung „Fluss“ neben Tabelle und Grafik: ein Sankey über Strom, Wärme und Kälte
+    einer gewählten Version aus den Jahresaggregaten des gespeicherten Laufs. Bedienbar — Umschalter, Versionswahl,
+    Zeiger über Band oder Knoten, Tab-Taste über die Bänder, Wertetabelle. Zahlen gerundet aus dem Bilanzbefund, Namen neutral.</p>
+
+  <div class="raster">
+    <div>
+      <!-- ===================== Fensterbild, breite Ansicht ===================== -->
+      <div class="fenster" aria-label="Berichte & Kosten – Übersicht (breit)">
+        <div class="fenster-titel"><span>EPOS-Plan — Berichte &amp; Kosten</span><span>Musterprojekt Gewerbe · 1 180 px</span></div>
+        <div class="reiterzeile">
+          <span class="reiter reiter--an">Übersicht</span><span class="reiter">Wirtschaftlichkeit</span><span class="reiter">Bericht</span><span class="reiter">Kostenbasis</span>
+        </div>
+        <div class="inhalt">
+          <div class="abschnitt-oben">
+            <span>Vergleichsgruppe: <b>Musterprojekt Gewerbe</b></span>
+            <span>Im Vergleich: <span class="chip chip--fest">Stammprojekt</span> <span class="chip">Variante 1 — PV und Stromspeicher</span> <span class="chip">Variante 2 — Kältemaschine</span></span>
+            <span><input type="checkbox" id="nurU"> <label for="nurU">nur Unterschiede</label></span>
+          </div>
+
+          <section class="epos-uebersicht-ergebnisse" aria-label="Ergebnisse – Energie">
+            <div class="epos-ergebnis-kopf">
+              <h2 class="epos-uebersicht-abschnitt">Ergebnisse – Energie</h2>
+              <span class="epos-ergebnis-ansicht" role="radiogroup" aria-label="Darstellung" id="umschalter">
+                <button type="button" role="radio" aria-checked="false" class="epos-ergebnis-ansicht-stellung" data-ansicht="tabelle">Tabelle</button>
+                <button type="button" role="radio" aria-checked="false" class="epos-ergebnis-ansicht-stellung" data-ansicht="grafik">Grafik</button>
+                <button type="button" role="radio" aria-checked="true" class="epos-ergebnis-ansicht-stellung epos-ergebnis-ansicht-stellung--an" data-ansicht="fluss">Fluss</button>
+              </span>
+              <button type="button" class="knopf">Anzeige anpassen…</button>
+            </div>
+
+            <div id="stellung-tabelle" class="stellung-platzhalter" hidden>Tabelle — wie heute (nicht Teil dieses Mockups). „nur Unterschiede“ und „Anzeige anpassen…“ wirken hier.</div>
+            <div id="stellung-grafik" class="stellung-platzhalter" hidden>Grafik — Balken je Version, wie heute (nicht Teil dieses Mockups).</div>
+
+            <div id="stellung-fluss">
+              <div class="fluss-kopf">
+                <label for="version">Version</label>
+                <select id="version"></select>
+                <span class="stand" id="stand"></span>
+              </div>
+              <div id="fluss-breit"></div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- ===================== Schmale Ansicht (iPad, 700 px) ===================== -->
+      <h2 style="font-size:17px;margin:8px 0 2px">Schmale Ansicht (Fenster unter 900 px, iPad rund 700 px)</h2>
+      <p class="unterzeile" style="margin-bottom:6px">Dasselbe Ergebnis als zweites Modell für 680 px: Kurznamen, Werte nur an Quellen und Senken, keine Werte am Band; die Wertetabelle bleibt vollständig. Das Stilblatt zeigt unter 900 px dieses Modell statt des breiten (SK-Q8).</p>
+      <div class="schmal-rahmen" aria-label="Berichte & Kosten – Übersicht (schmal)">
+        <div class="fenster-titel"><span>EPOS-Plan — Übersicht</span><span>700 px</span></div>
+        <div class="inhalt">
+          <div class="epos-ergebnis-kopf">
+            <h2 class="epos-uebersicht-abschnitt">Ergebnisse – Energie</h2>
+            <span class="epos-ergebnis-ansicht" role="radiogroup" aria-label="Darstellung">
+              <span class="epos-ergebnis-ansicht-stellung">Tabelle</span><span class="epos-ergebnis-ansicht-stellung">Grafik</span><span class="epos-ergebnis-ansicht-stellung epos-ergebnis-ansicht-stellung--an">Fluss</span>
+            </span>
+          </div>
+          <div class="fluss-kopf"><label for="version2">Version</label><select id="version2"></select></div>
+          <div id="fluss-schmal"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== Seitenkarte ===================== -->
+    <aside>
+      <div class="seitenkarte">
+        <h2>Was das Mockup zeigt</h2>
+        <ul>
+          <li><span class="marke">SK-1</span> Ein Bild mit Strom, Wärme und Kälte: drei Sammelknoten („Busse“) in der Mitte, links Quellen und Wandler, rechts Speicher und Bedarf.</li>
+          <li><span class="marke">SK-2</span> Dritte Stellung „Fluss“ am Umschalter; die Wahl gilt je Benutzer wie heute.</li>
+          <li><span class="marke">SK-3</span> Versionswahl über dem Bild, Vorgabe Stamm; „Variante 2“ ist nicht simuliert und zeigt die benannte Karte statt eines Bildes.</li>
+          <li><span class="marke">SK-4</span> Dasselbe Modell geht als <code>stand.bild.energiefluss</code> in den Wortbericht (620 × 310 pt).</li>
+        </ul>
+        <h2 style="margin-top:14px">Lesehilfe</h2>
+        <ul>
+          <li><b>Verlustbänder</b> enden im grauen Verlustknoten neben dem Wandler bzw. Speicher (SK-Q7), nicht in einer Sammelsenke rechts.</li>
+          <li><b>Umweltwärme</b> und <b>Umwelt (Kälte)</b> sind abgeleitet (Wärme − Strom bzw. Kälte − Strom); die Konvention steht im Zeigertext (SK-Q6).</li>
+          <li><b>Einspeisung BHKW</b> ist am Stromknoten bilanziert (kein Aggregat im Ergebnisbaum, SK-Q1).</li>
+          <li><b>nicht zugeordnet</b> (gestrichelt) in Variante 1: der Eigenverbrauch des Speichersystems, den der Ergebnisbaum nicht führt — Band plus Hinweiszeile (SK-Q5).</li>
+          <li>Ein Band unter 2 px wird 2 px breit gezeichnet; Werte am Band erst ab 8 px; alles steht in der Wertetabelle.</li>
+        </ul>
+        <h2 style="margin-top:14px">Farbrollen</h2>
+        <p>Vorhandene Rollen der Hauspalette und die fünf neuen des Konzepts:
+          <span class="farbfeld" style="background:var(--r-brennstoff)"></span>Brennstoff ·
+          <span class="farbfeld" style="background:var(--r-umweltwaerme)"></span>Umweltwärme ·
+          <span class="farbfeld" style="background:var(--r-kaelte)"></span>Kälte ·
+          <span class="farbfeld" style="background:var(--r-verlust)"></span>Verlust ·
+          <span class="farbfeld" style="background:var(--r-knoten)"></span>Knoten.
+          Bänder in einen Bus tragen die Rolle der Quelle, Bänder aus einem Bus die Rolle der Verwendung.</p>
+        <p>Alle Zahlen sind gerundete Werte des Bilanzbefunds (Konzept, Abschnitt 1.2); sie dienen der Abnahme der Darstellung, nicht als Ergebnis.</p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+/* =============================== Daten =============================== */
+// Spalten: 0 Quellen · 1 Wandler I · 2 Bus Strom · 3 Wandler II · 4 Busse Wärme/Kälte · 5 Speicher · 6 Bedarf
+const KNOTEN = {
+  netz:        {name:"Netzbezug",            kurz:"Netz",        sp:0},
+  pv:          {name:"Photovoltaik",         kurz:"PV",          sp:0},
+  gas:         {name:"Erdgas",               kurz:"Erdgas",      sp:0},
+  umwelt:      {name:"Umweltwärme",          kurz:"Umwelt",      sp:0},
+  umweltk:     {name:"Umwelt (Kälte)",       kurz:"Umwelt (K)",  sp:0},
+  bhkw:        {name:"BHKW",                 kurz:"BHKW",        sp:1},
+  kessel:      {name:"Heizkessel",           kurz:"Kessel",      sp:1},
+  strom:       {name:"Strom",                kurz:"Strom",       sp:2, bus:true},
+  wp:          {name:"Wärmepumpe (Heizen)",  kurz:"WP Heizen",   sp:3},
+  heizstab:    {name:"Heizstab",             kurz:"Heizstab",    sp:3},
+  ekessel:     {name:"Elektrokessel",        kurz:"E-Kessel",    sp:3},
+  wpk:         {name:"Wärmepumpe (Kühlen)",  kurz:"WP Kühlen",   sp:3},
+  waerme:      {name:"Wärme",                kurz:"Wärme",       sp:4, bus:true},
+  kaelte:      {name:"Kälte",                kurz:"Kälte",       sp:4, bus:true},
+  puffer:      {name:"Heizungspuffer",       kurz:"Puffer",      sp:5},
+  sspeicher:   {name:"Stromspeicher",        kurz:"Batterie",    sp:5},
+  heizung:     {name:"Heizung",              kurz:"Heizung",     sp:6},
+  warmwasser:  {name:"Warmwasser",           kurz:"Warmwasser",  sp:6},
+  kuehlung:    {name:"Kühlung",              kurz:"Kühlung",     sp:6},
+  strombedarf: {name:"Strombedarf",          kurz:"Strombedarf", sp:6},
+  einsp_bhkw:  {name:"Einspeisung BHKW",     kurz:"Einsp. BHKW", sp:6},
+  einsp_pv:    {name:"Einspeisung PV",       kurz:"Einsp. PV",   sp:6},
+  nichtzug:    {name:"nicht zugeordnet",     kurz:"nicht zug.",  sp:6}
+};
+const REIHENFOLGE = ["netz","pv","gas","umwelt","umweltk","bhkw","kessel","strom","wp","heizstab","ekessel","wpk","waerme","kaelte","puffer","sspeicher","heizung","warmwasser","kuehlung","strombedarf","einsp_bhkw","einsp_pv","nichtzug"];
+
+// Fluss: [von, nach, MWh/a, Rolle, Herkunft, Zusatz]
+const VERSIONEN = [
+  { id:"stamm", name:"Stammprojekt", stand:"Simulationsstand 16.10.2026 16:26", simuliert:true, bezug:{waerme:70.2, strom:35.1, kaelte:3.8}, fluesse:[
+      ["netz","strom",28.2,"strom-netz","direkt"],
+      ["gas","bhkw",22.0,"brennstoff","direkt","Heizwert"],
+      ["bhkw","strom",6.9,"strom-bhkw","direkt"],
+      ["bhkw","waerme",13.2,"waerme-bhkw","direkt"],
+      ["bhkw","VERLUST",1.9,"verlust","abgeleitet","Brennstoff − Wärme − Strom"],
+      ["umwelt","wp",43.1,"umweltwaerme","abgeleitet","Wärme − Strom; deckt sich mit dem Erdreichentzug"],
+      ["strom","wp",13.2,"waerme-wp","direkt"],
+      ["wp","waerme",56.3,"waerme-wp","direkt"],
+      ["strom","ekessel",2.6,"waerme-kessel","direkt"],
+      ["ekessel","waerme",2.6,"waerme-kessel","direkt"],
+      ["strom","wpk",0.8,"kaelte","direkt","Verdichter 0,7 + Hilfsstrom 0,1"],
+      ["umweltk","wpk",3.0,"umweltwaerme","abgeleitet","Kälte − Strom (Umweltanteil nach Jahresarbeitszahl)"],
+      ["wpk","kaelte",3.8,"kaelte","direkt"],
+      ["kaelte","kuehlung",3.8,"kaelte","direkt"],
+      ["waerme","puffer",72.1,"speicherladung","direkt","Ladung; im geschlossenen Kreis (AK3) läuft alles über den Puffer"],
+      ["puffer","heizung",70.2,"heizwaerme","direkt","Entladung Heizung"],
+      ["puffer","VERLUST",1.9,"verlust","direkt","Verluste 1,7 + Füllstandsänderung 0,2"],
+      ["strom","strombedarf",15.0,"verbrauch-gesamt","direkt"],
+      ["strom","einsp_bhkw",3.5,"ueberschuss","bilanziert","aus der Strombilanz des Laufs; Ergebnisbaum führt die Einspeisung nicht"]
+    ], hinweise:["Einspeisung BHKW ist am Knoten Strom bilanziert (3,5 MWh/a)."] },
+  { id:"v1", name:"Variante 1 — PV und Stromspeicher", stand:"Simulationsstand 16.10.2026 16:27", simuliert:true, bezug:{waerme:71.4, strom:69.1, kaelte:0}, fluesse:[
+      ["netz","strom",63.1,"strom-netz","direkt"],
+      ["pv","strom",6.0,"strom-pv","direkt"],
+      ["gas","kessel",9.6,"brennstoff","direkt","Heizwert"],
+      ["kessel","waerme",8.5,"waerme-kessel","direkt"],
+      ["kessel","VERLUST",1.1,"verlust","abgeleitet","Brennstoff − Wärme"],
+      ["umwelt","wp",19.3,"umweltwaerme","abgeleitet","Wärme − Strom"],
+      ["strom","wp",5.8,"waerme-wp","direkt"],
+      ["wp","waerme",25.1,"waerme-wp","direkt"],
+      ["strom","heizstab",37.8,"heizstab","direkt"],
+      ["heizstab","waerme",37.8,"heizstab","direkt","Strom 1:1 als Wärme"],
+      ["waerme","heizung",67.3,"heizwaerme","direkt","ohne Speicher: direkt gedeckt"],
+      ["waerme","warmwasser",4.1,"warmwasser","direkt"],
+      ["strom","strombedarf",23.0,"verbrauch-gesamt","direkt","Verbraucher 24,0 abzüglich 1,0 aus dem Speicher"],
+      ["strom","sspeicher",1.2,"speicherladung","direkt","Ladung aus PV-Überschuss"],
+      ["sspeicher","strombedarf",1.0,"strom-speicher","direkt","Entladung in den Rest des Anschlusses"],
+      ["sspeicher","VERLUST",0.2,"verlust","direkt","Verluste 0,15 + Füllstandsänderung 0,01"],
+      ["strom","einsp_pv",0.9,"ueberschuss","direkt","PV-Überschuss"],
+      ["strom","nichtzug",0.4,"rest","bilanziert","Rest am Knoten Strom (Eigenverbrauch des Speichersystems, nicht im Ergebnisbaum)"]
+    ], nurTabelle:[["—","Heizung (ungedeckt)",0.02,"ungedeckt","direkt","unter der Mindestbandbreite"]],
+       hinweise:["Bilanz am Knoten Strom schließt nicht: 0,4 MWh/a nicht zugeordnet.","Ungedeckter Wärmebedarf 0,02 MWh/a (unter der Mindestbandbreite, nur in der Tabelle)."] },
+  { id:"v2", name:"Variante 2 — Kältemaschine (nicht simuliert)", stand:"", simuliert:false, fluesse:[], hinweise:[] }
+];
+
+/* =============================== Layout =============================== */
+const fmt = (v, n) => v.toLocaleString("de-DE", {minimumFractionDigits:n ?? 1, maximumFractionDigits:n ?? 1});
+
+function baue(version, breite, schmal){
+  const W = breite, H = schmal ? 640 : 560;
+  const randL = schmal ? 100 : 150, randR = schmal ? 100 : 150, oben = schmal ? 46 : 34, unten = 28;
+  const knotenB = 14, luecke = schmal ? 26 : 30, minBand = 2;
+  const spalten = 7, spaltAbst = (W - randL - randR - knotenB) / (spalten - 1);
+  const x = sp => randL + sp * spaltAbst;
+
+  // Knoten und Verlustknoten sammeln
+  const kn = {};
+  const bänder = [];
+  version.fluesse.forEach((f, i) => {
+    const [von, nachRoh, mwh, rolle, herkunft, zusatz] = f;
+    let nach = nachRoh;
+    if (nach === "VERLUST") {
+      nach = "verlust_" + von;
+      kn[nach] = kn[nach] || {id:nach, name:"Verlust", kurz:"Verlust", sp:KNOTEN[von].sp + 0.5, verlust:true, quelle:von, ein:[], aus:[], inS:0, outS:0};
+    }
+    [von, nach].forEach(id => {
+      if (!kn[id]) { const k = KNOTEN[id]; kn[id] = {id, name:k.name, kurz:k.kurz, sp:k.sp, bus:!!k.bus, ein:[], aus:[], inS:0, outS:0}; }
+    });
+    const b = {i, von, nach, mwh, rolle, herkunft, zusatz};
+    bänder.push(b);
+    kn[von].aus.push(b); kn[von].outS += mwh;
+    kn[nach].ein.push(b); kn[nach].inS += mwh;
+  });
+
+  // Maßstab aus der höchsten Spaltensumme der ganzen Spalten
+  const proSpalte = {};
+  Object.values(kn).forEach(k => { if (k.verlust) return; (proSpalte[k.sp] = proSpalte[k.sp] || []).push(k); });
+  let maxSumme = 0, maxN = 1;
+  Object.values(proSpalte).forEach(l => { const s = l.reduce((a,k) => a + Math.max(k.inS, k.outS), 0); if (s > maxSumme) { maxSumme = s; maxN = l.length; } });
+  const nutzH = H - oben - unten;
+  const k = (nutzH - luecke * (maxN - 1)) / maxSumme;   // px je MWh
+  const dicke = v => Math.max(v * k, minBand);
+  const hoehe = kk => Math.max(kk.ein.reduce((a,b) => a + dicke(b.mwh), 0), kk.aus.reduce((a,b) => a + dicke(b.mwh), 0), 4);
+
+  // Knoten je Spalte in Reihenfolge platzieren, vertikal zentriert
+  Object.entries(proSpalte).forEach(([sp, liste]) => {
+    liste.sort((a,b) => REIHENFOLGE.indexOf(a.id) - REIHENFOLGE.indexOf(b.id));
+    const gesamt = liste.reduce((a,kk) => a + hoehe(kk), 0) + luecke * (liste.length - 1);
+    let y = oben + (nutzH - gesamt) / 2;
+    liste.forEach(kk => { kk.x = x(+sp); kk.y = y; kk.h = hoehe(kk); y += kk.h + luecke; });
+  });
+  // Verlustknoten: in der Lücke, unter dem Fuß ihres Wandlers
+  Object.values(kn).filter(kk => kk.verlust).forEach(kk => {
+    const q = kn[kk.quelle]; kk.x = x(kk.sp) - knotenB / 2; kk.h = hoehe(kk); kk.y = q.y + q.h + 8;
+  });
+
+  // Bandlagen je Knoten: ausgehend nach Ziel-y, eingehend nach Quell-y
+  Object.values(kn).forEach(kk => {
+    kk.aus.sort((a,b) => (kn[a.nach].y + (kn[a.nach].verlust ? 1e4 : 0)) - (kn[b.nach].y + (kn[b.nach].verlust ? 1e4 : 0)));
+    let y = kk.y; kk.aus.forEach(b => { b.y0 = y; b.t = dicke(b.mwh); y += b.t; });
+    kk.ein.sort((a,b) => kn[a.von].y - kn[b.von].y);
+    y = kk.y; kk.ein.forEach(b => { b.y1 = y; y += dicke(b.mwh); });
+  });
+
+  // SVG schreiben
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("width", W); svg.setAttribute("height", H);
+  svg.setAttribute("role", "img"); svg.setAttribute("aria-label", "Energiefluss " + version.name);
+  const el = (tag, attrs, text) => { const e = document.createElementNS(ns, tag); for (const a in attrs) e.setAttribute(a, attrs[a]); if (text != null) e.textContent = text; return e; };
+
+  // Spaltentitel
+  const titel = ["Quellen","Wandler","Strom","Wandler","Wärme · Kälte","Speicher","Bedarf"];
+  // schmal: Titel abwechselnd in zwei Zeilen, damit sie sich nicht berühren
+  titel.forEach((t, sp) => svg.appendChild(el("text", {x: x(sp) + knotenB/2, y: schmal ? (sp % 2 ? 28 : 14) : 16, "text-anchor":"middle", class:"spaltentitel"}, t)));
+
+  // Bänder als abgetastete S-Kurven-Polygone (24 Stützstellen je Kante)
+  const N = 24;
+  const bezug = version.bezug || {};
+  const bezugVon = b => {
+    const q = kn[b.von], z = kn[b.nach];
+    const form = (q.bus ? q.id : z.bus ? z.id : null);
+    if (form && bezug[form]) return {wert: bezug[form], name: form === "strom" ? "des Stroms" : form === "waerme" ? "des Wärmebedarfs" : "des Kältebedarfs"};
+    return null;
+  };
+  bänder.forEach(b => {
+    const q = kn[b.von], z = kn[b.nach];
+    const x0 = q.x + knotenB, x1 = z.x, yo0 = b.y0, yo1 = b.y1, t = b.t;
+    const pts = [];
+    for (let i = 0; i <= N; i++) { const s = i / N, e = 3*s*s - 2*s*s*s; pts.push([x0 + (x1 - x0) * s, yo0 + (yo1 - yo0) * e]); }
+    for (let i = N; i >= 0; i--) { const s = i / N, e = 3*s*s - 2*s*s*s; pts.push([x0 + (x1 - x0) * s, yo0 + t + (yo1 + t - yo0 - t) * e]); }
+    const p = el("polygon", {points: pts.map(pp => pp[0].toFixed(1) + "," + pp[1].toFixed(1)).join(" "),
+                             class: "band" + (b.rolle === "rest" ? " gestrichelt" : ""), style: "fill:var(--r-" + b.rolle + ")",
+                             tabindex: "0", "data-marke": "fluss:" + b.von + ":" + b.nach});
+    const anteil = bezugVon(b);
+    b.wert = `${q.name} → ${z.verlust ? "Verlust" : z.name}: ${fmt(b.mwh)} MWh/a`
+           + (anteil ? ` (${fmt(100 * b.mwh / anteil.wert, 0)} % ${anteil.name})` : "")
+           + (b.herkunft !== "direkt" ? ` · ${b.herkunft}` : "") + (b.zusatz ? ` · ${b.zusatz}` : "");
+    p.setAttribute("data-wert", b.wert);
+    p.appendChild(el("title", {}, b.wert));
+    svg.appendChild(p);
+    b.el = p;
+    // Wert am Band nahe der Quelle, wo die Bänder noch in ihren Lagen liegen (keine Überdeckung
+    // durch kreuzende Bänder); erst ab 10 px Banddicke
+    if (!schmal && t >= 10 && Math.abs(x1 - x0) > 40) {
+      const xl = x0 + Math.max(28, 0.18 * (x1 - x0)), s = (xl - x0) / (x1 - x0), e = 3*s*s - 2*s*s*s;
+      svg.appendChild(el("text", {x: xl, y: yo0 + (yo1 - yo0) * e + t / 2 + 3.5, "text-anchor": "middle", class: "bandwert"}, fmt(b.mwh)));
+    }
+  });
+
+  // Knoten und Beschriftung
+  Object.values(kn).forEach(kk => {
+    const r = el("rect", {x: kk.x, y: kk.y, width: knotenB, height: kk.h, class: "knoten" + (kk.verlust ? " verlust" : ""), tabindex: "0", "data-marke": "knoten:" + kk.id});
+    const wert = kk.verlust ? `Verlust ${kn[kk.quelle].name}: ${fmt(kk.inS)} MWh/a`
+               : `${kk.name}: Zufluss ${fmt(kk.inS || kk.outS)} · Abfluss ${fmt(kk.outS || kk.inS)} MWh/a`;
+    r.setAttribute("data-wert", wert); r.appendChild(el("title", {}, wert)); svg.appendChild(r);
+    const name = schmal ? kk.kurz : kk.name, v = fmt(Math.max(kk.inS, kk.outS));
+    if (kk.verlust) {
+      // unter dem Verlustknoten, damit die Beschriftung der Senken frei bleibt
+      svg.appendChild(el("text", {x: kk.x + knotenB / 2, y: kk.y + kk.h + 11, "text-anchor": "middle", class: "beschr klein"}, "Verlust " + v));
+    } else if (kk.sp === 0) {
+      svg.appendChild(el("text", {x: kk.x - 6, y: kk.y + kk.h / 2 - 1, "text-anchor": "end", class: "beschr"}, name));
+      svg.appendChild(el("text", {x: kk.x - 6, y: kk.y + kk.h / 2 + 11, "text-anchor": "end", class: "beschr wert"}, v + " MWh/a"));
+    } else if (kk.sp === 6) {
+      svg.appendChild(el("text", {x: kk.x + knotenB + 6, y: kk.y + kk.h / 2 - 1, class: "beschr"}, name));
+      svg.appendChild(el("text", {x: kk.x + knotenB + 6, y: kk.y + kk.h / 2 + 11, class: "beschr wert"}, v + " MWh/a"));
+    } else if (kk.h >= 12 || kk.bus) {
+      svg.appendChild(el("text", {x: kk.x + knotenB / 2, y: kk.y - 5, "text-anchor": "middle", class: "beschr" + (schmal ? " klein" : "")}, name + (schmal ? "" : " · " + v)));
+    }
+  });
+  return {svg, bänder, kn};
+}
+
+/* =============================== Oberfläche =============================== */
+function zeichne(ziel, version, breite, schmal){
+  ziel.innerHTML = "";
+  if (!version.simuliert) {
+    ziel.innerHTML = `<div class="leerkarte"><b>${version.name.replace(" (nicht simuliert)", "")}: nicht simuliert</b>Für diese Version liegt kein Simulationsergebnis vor. Starten Sie die Simulation, um das Energieflussbild zu zeigen.</div>`;
+    return;
+  }
+  const {svg, bänder, kn} = baue(version, breite, schmal);
+  const bild = document.createElement("div"); bild.className = "fluss-bild"; bild.appendChild(svg);
+  const zeile = document.createElement("div"); zeile.className = "zeigerzeile"; zeile.setAttribute("aria-live", "polite");
+  const ruhe = "Zeiger über ein Band oder einen Knoten führen — die Zeile nennt Von, Nach, Wert und Herkunft.";
+  zeile.textContent = ruhe; bild.appendChild(zeile); ziel.appendChild(bild);
+  svg.querySelectorAll("[data-wert]").forEach(e => {
+    const an = () => { zeile.textContent = e.getAttribute("data-wert"); e.classList.add("aktiv"); };
+    const aus = () => { zeile.textContent = ruhe; e.classList.remove("aktiv"); };
+    e.addEventListener("mouseenter", an); e.addEventListener("focus", an);
+    e.addEventListener("mouseleave", aus); e.addEventListener("blur", aus);
+  });
+  version.hinweise.forEach(h => { const p = document.createElement("p"); p.className = h.includes("schließt nicht") ? "hinweiszeile" : "leisezeile"; p.textContent = h; ziel.appendChild(p); });
+  const q = document.createElement("p"); q.className = "leisezeile";
+  q.textContent = "Umweltwärme und Umwelt (Kälte) sind Nutzenergie-Konvention (Wärme − Strom bzw. Kälte − Strom). Werte aus dem letzten gespeicherten Simulationslauf; Kosten stehen unter Wirtschaftlichkeit.";
+  ziel.appendChild(q);
+
+  // Wertetabelle (Textalternative; in der Anwendung als Klappgruppe, Vorgabe zu — hier offen zur Abnahme)
+  const det = document.createElement("details"); det.className = "klapp"; det.open = !schmal;
+  det.innerHTML = `<summary>Werte des Flussbilds (${bänder.length} Flüsse)</summary>`;
+  const t = document.createElement("table"); t.className = "werte";
+  t.innerHTML = `<thead><tr><th>Von</th><th>Nach</th><th class="zahl">MWh/a</th><th class="zahl">Anteil</th><th>Herkunft</th></tr></thead>`;
+  const tb = document.createElement("tbody");
+  const bz = version.bezug;
+  bänder.forEach(b => {
+    const z = kn[b.nach]; const form = kn[b.von].bus ? kn[b.von].id : (z.bus ? z.id : null);
+    const anteil = form && bz[form] ? fmt(100 * b.mwh / bz[form], 0) + " %" : "—";
+    const tr = document.createElement("tr"); if (b.rolle === "rest") tr.className = "offen";
+    tr.innerHTML = `<td>${kn[b.von].name}</td><td>${z.verlust ? "Verlust " + kn[z.quelle].name : z.name}</td><td class="zahl">${fmt(b.mwh)}</td><td class="zahl">${anteil}</td><td>${b.herkunft}${b.zusatz ? " — " + b.zusatz : ""}</td>`;
+    tb.appendChild(tr);
+  });
+  (version.nurTabelle || []).forEach(z => { const tr = document.createElement("tr"); tr.innerHTML = `<td>${z[0]}</td><td>${z[1]}</td><td class="zahl">${fmt(z[2], 2)}</td><td class="zahl">—</td><td>${z[4]} — ${z[5]}</td>`; tb.appendChild(tr); });
+  Object.values(kn).filter(kk => kk.bus).forEach(kk => {
+    const rest = kk.inS - kk.outS, offen = kk.aus.find(b => b.rolle === "rest"); const tr = document.createElement("tr"); tr.className = "bilanz";
+    const urteil = Math.abs(rest) >= 0.05 ? "Rest " + fmt(rest) : offen ? "Rest " + fmt(offen.mwh) + " nicht zugeordnet" : "geschlossen";
+    tr.innerHTML = `<td colspan="2">Bilanz Knoten ${kk.name}</td><td class="zahl">${fmt(kk.inS)} / ${fmt(kk.outS)}</td><td class="zahl">${urteil}</td><td>Zufluss / Abfluss (Toleranz max(0,05 MWh; 0,5 %))</td>`;
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb); det.appendChild(t); ziel.appendChild(det);
+}
+
+// Umschalter (drei Stellungen, Pfeiltasten laufen über alle drei)
+const stellungen = [...document.querySelectorAll("#umschalter [role=radio]")];
+function ansicht(a){
+  stellungen.forEach(b => { const an = b.dataset.ansicht === a; b.setAttribute("aria-checked", an); b.classList.toggle("epos-ergebnis-ansicht-stellung--an", an); b.tabIndex = an ? 0 : -1; });
+  ["tabelle","grafik","fluss"].forEach(s => document.getElementById("stellung-" + s).hidden = s !== a);
+}
+stellungen.forEach(b => b.addEventListener("click", () => ansicht(b.dataset.ansicht)));
+document.getElementById("umschalter").addEventListener("keydown", e => {
+  const i = stellungen.findIndex(b => b.getAttribute("aria-checked") === "true"); let n = i;
+  if (e.key === "ArrowRight" || e.key === "ArrowDown") n = (i + 1) % 3;
+  else if (e.key === "ArrowLeft" || e.key === "ArrowUp") n = (i + 2) % 3;
+  else if (e.key === "Home") n = 0; else if (e.key === "End") n = 2; else return;
+  e.preventDefault(); ansicht(stellungen[n].dataset.ansicht); stellungen[n].focus();
+});
+
+// Versionswahl (breit und schmal, gleichlaufend)
+const sel1 = document.getElementById("version"), sel2 = document.getElementById("version2");
+VERSIONEN.forEach((v, i) => [sel1, sel2].forEach(s => s.appendChild(new Option(v.name, v.id, i === 0, i === 0))));
+function wechsel(id){
+  const v = VERSIONEN.find(x => x.id === id);
+  sel1.value = id; sel2.value = id;
+  document.getElementById("stand").textContent = v.simuliert ? v.stand : "nicht simuliert";
+  zeichne(document.getElementById("fluss-breit"), v, 1180, false);
+  zeichne(document.getElementById("fluss-schmal"), v, 680, true);
+}
+sel1.addEventListener("change", () => wechsel(sel1.value));
+sel2.addEventListener("change", () => wechsel(sel2.value));
+wechsel("stamm");
+</script>
+</body>
+</html>
