@@ -35,11 +35,8 @@ namespace WindowsFormsApplication1
     public static class KaeltetyptagSchema
     {
         /// <summary><b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht.</summary>
-        // KETTE: geparkt auf 236 - 234 BedarfsprofilEingabeartSchema (KBP-5a, selbst geparkt) und 235
-        // WasserpreisTraegerkarteSchema (Sitzung Kostenbasis, KB-7 Wasserkosten) liegen noch nicht in der Kette. Sobald 235
-        // auf origin liegt, umhaengen auf "WasserpreisTraegerkarteSchema.SCHRITT + 1" und im selben Schritt eintragen:
-        // SchemaMigration.SCHRITTE_SQLITE, Paketanhebung.STUFEN, SchemaStand.Zielversion; danach die Testdatenbank heben.
-        public const int SCHRITT = 236;
+        // KETTE: 236 haengt ueber + 1 an 235 (WasserpreisTraegerkarteSchema, KB-7a).
+        public const int SCHRITT = WasserpreisTraegerkarteSchema.SCHRITT + 1;
 
         /// <summary>Die Typtage (Projekteingabe an der Projektkopie des Kältebedarfs).</summary>
         public const string TAB_TYPTAG = "Tab_Kaeltetyptag";

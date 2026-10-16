@@ -27,13 +27,13 @@ namespace EPOS.Kern.Tests
         // ---- Schema ---------------------------------------------------------------------------------------------------
 
         [Fact]
-        public void Nummer_geparkt_und_noch_nicht_im_Register()
+        public void Nummer_Kette_und_Register()
         {
-            // KETTE: geparkt auf 236; nach dem Umhaengen hinter 235 WasserpreisTraegerkarteSchema gelten statt der drei
-            // Zeilen: SCHRITT == WasserpreisTraegerkarteSchema.SCHRITT + 1, Zielversion == SCHRITT, Stufe in der Paketanhebung.
+            // KETTE: 236 haengt ueber + 1 an 235 (WasserpreisTraegerkarteSchema, KB-7a).
             Assert.Equal(236, KaeltetyptagSchema.SCHRITT);
-            Assert.True(SchemaStand.Zielversion < KaeltetyptagSchema.SCHRITT);
-            Assert.DoesNotContain(Paketanhebung.Stufen, s => s.Nr == KaeltetyptagSchema.SCHRITT);
+            Assert.Equal(WasserpreisTraegerkarteSchema.SCHRITT + 1, KaeltetyptagSchema.SCHRITT);
+            Assert.True(SchemaStand.Zielversion >= KaeltetyptagSchema.SCHRITT);
+            Assert.Contains(Paketanhebung.Stufen, s => s.Nr == KaeltetyptagSchema.SCHRITT && s.Wirkung == Paketanhebung.Art.Ddl);
             Assert.Equal(2, KaeltetyptagSchema.Tabellen().Count);
         }
 
