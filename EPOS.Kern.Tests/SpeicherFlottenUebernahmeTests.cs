@@ -138,19 +138,25 @@ namespace EPOS.Kern.Tests
             einheit.InvestitionEuroProKWh = 320.0;
             einheit.InvestitionEuroProKw = 150.0;
             einheit.InvestitionEuro = 4500.0;
+            einheit.EigeneKosten = true;
 
             FlottenUebernahmeErgebnis e = SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen(
                 PROJEKT, new[] { einheit });
             Assert.True(e.Erfolg, e.Meldung);
-            int geraet = Assert.Single(e.Anlagen).GeraeteId;
+            var uebernommen = Assert.Single(e.Anlagen);
+            int geraet = uebernommen.GeraeteId;
 
             Assert.Equal(129.0, Zahl("Energie", geraet), 6);
             Assert.Equal(100.0, Zahl("Leistung", geraet), 6);          // die GRÖSSERE Richtung
             Assert.Equal(0.95 * 0.94, Zahl("Wirkungsgrad_RT", geraet), 6);
             Assert.Equal(42.0, Zahl("Ladezustand", geraet), 6);
-            Assert.Equal(320.0, Zahl("Modulkosten", geraet), 6);
-            Assert.Equal(150.0, Zahl("Leistungskosten", geraet), 6);
-            Assert.Equal(4500.0, Zahl("Investition_Fix", geraet), 6);
+            // Die Investitionssätze gehen als Kostenpositionen an die Anlage (StromspeicherKostenSchema), nicht ans Gerät.
+            KatalogkostensatzCtrl.Stromspeichersaetze s = KatalogkostensatzCtrl.Stromspeicher(
+                StromspeicherKostenSchema.TAB_KOPIE, geraet, uebernommen.AnlageId);
+            Assert.Equal(320.0, s.CCapEurProKwh.Value, 6);
+            Assert.Equal(150.0, s.CPowEurProKw.Value, 6);
+            Assert.Equal(4500.0, s.IFixEur.Value, 6);
+            Assert.Equal(KatalogkostensatzCtrl.QUELLE_POSITION, s.Quelle[KatalogkostensatzCtrl.SATZ_CCAP]);
             Assert.Equal(25.0, Zahl("Standby_Verbrauch", geraet), 6);  // kW → W
         }
 

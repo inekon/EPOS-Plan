@@ -3697,6 +3697,26 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt StromspeicherKostenSchema.SCHRITT (KB-5): Sicherheitslauf der Saat am Stromspeicher, dann
+            //      der Entfall seiner vier Kostenspalten an Katalog und Projektkopie. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_StromspeicherKosten. Wiederholbar; der Rechenweg liest dieselben Saetze
+            //      aus Position und Satzvorlage.
+            string nrKb5 = StromspeicherKostenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKb5 + " - Entfall der Stromspeicher-Kostenspalten: " +
+                              (StromspeicherKostenSchema.Vollstaendig() ? "steht bereits" : "offen") +
+                              " (" + StromspeicherKostenSchema.Offen() + " Kostenspalte(n) noch da, " +
+                              StromspeicherKostenSchema.OhneVerweis().Count + " Zeile(n) ohne Satzvorlage).");
+            if (!trocken)
+            {
+                var berichtKb5 = new List<string>();
+                angelegt += StromspeicherKostenSchema.Ausfuehren(berichtKb5);
+                foreach (string zeile in berichtKb5)
+                    Console.WriteLine("Schritt " + nrKb5 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKb5 + " - vollstaendig: " + StromspeicherKostenSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
