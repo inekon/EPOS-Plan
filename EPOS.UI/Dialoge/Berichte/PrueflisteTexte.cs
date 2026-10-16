@@ -48,7 +48,7 @@ public sealed class PrueflisteTexte
     public string WasTun { get; set; } = T("VF_PRUEF_WAS_TUN", "Was tun: {0}");
 
     /// <summary>VF_PRUEF_KEINE_BEFUNDE — die Zeile einer leeren Prüfliste.</summary>
-    public string KeineBefunde { get; set; } = T("VF_PRUEF_KEINE_BEFUNDE", "Keine Befunde – die Vorlage lässt sich füllen.");
+    public string KeineBefunde { get; set; } = T("VF_PRUEF_KEINE_BEFUNDE", "Keine Meldungen – die Vorlage lässt sich füllen.");
 
     /// <summary>VF_PRUEF_LISTE — der Name der Meldungsliste für die Sprachausgabe.</summary>
     public string Liste { get; set; } = T("VF_PRUEF_LISTE", "Meldungen der Prüfung");

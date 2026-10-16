@@ -8762,7 +8762,7 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
     <value>The energy carrier was NOT saved: {0}</value>
   </data>
   <data name="KI_REG_ZWECK_ENERGIETRAEGER_PRUEFEN" xml:space="preserve">
-    <value>Checks the energy carriers for unit consistency: does every active carrier reach kWh — directly, via net or gross calorific value, or via an active conversion rule? Returns the list of findings; changes nothing.</value>
+    <value>Checks the energy carriers for unit consistency: does every active carrier reach kWh — directly, via net or gross calorific value, or via an active conversion rule? Returns the list of messages; changes nothing.</value>
   </data>
   <data name="KI_REG_ERL_PROJEKT_FUER_EINHEITEN" xml:space="preserve">
     <value>Name of the project. If omitted, the catalogue is checked (all active carriers with catalogue values); if given, only the carriers used in that project, with its project-level overrides. Pass it on unchanged from the user's question — name, partial name, ID or placeholder “Name n”; it is resolved locally in the program.</value>
@@ -8771,10 +8771,10 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
     <value>catalogue</value>
   </data>
   <data name="KI_REG_EINHEITEN_OHNE_BEFUND" xml:space="preserve">
-    <value>Unit consistency {0}: no findings — every active energy carrier reaches kWh.</value>
+    <value>Unit consistency {0}: no messages — every active energy carrier reaches kWh.</value>
   </data>
   <data name="KI_REG_EINHEITEN_BEFUNDE" xml:space="preserve">
-    <value>Unit consistency {1}: {0} finding(s).</value>
+    <value>Unit consistency {1}: {0} message(s).</value>
   </data>
   <data name="KPROF_TAB_TITEL" xml:space="preserve">
     <value>Cost profile</value>
@@ -25101,7 +25101,7 @@ Do you want to allow this?</value>
     <value>Status line</value>
   </data>
   <data name="KI_DLG_KSE_STATUS_ERL" xml:space="preserve">
-    <value>The footer with the page's findings — missing positions, unassigned entries, notes on the comparison group.</value>
+    <value>The footer with the page's messages — missing positions, unassigned entries, notes on the comparison group.</value>
   </data>
   <data name="KI_DLG_MASKE_WSE" xml:space="preserve">
     <value>Economics (reports and costs)</value>
@@ -37840,13 +37840,13 @@ This folder holds the standard template, the short report, the detailed template
     <value>With the standard template</value>
   </data>
   <data name="BV_VORLAGEN_PRUEFZEILE_BEFUND" xml:space="preserve">
-    <value>checked, {0} placeholders, 1 finding</value>
+    <value>checked, {0} placeholders, 1 message</value>
   </data>
   <data name="BV_VORLAGEN_PRUEFZEILE_BEFUNDE" xml:space="preserve">
-    <value>checked, {0} placeholders, {1} findings</value>
+    <value>checked, {0} placeholders, {1} messages</value>
   </data>
   <data name="BV_VORLAGEN_PRUEFZEILE_OK" xml:space="preserve">
-    <value>checked, {0} placeholders, no findings</value>
+    <value>checked, {0} placeholders, no messages</value>
   </data>
   <data name="EIN_BERICHT_HINT_FIRMA" xml:space="preserve">
     <value>Appears in the report at {{ersteller.firma}}; pre-filled from the licence.</value>
@@ -37996,7 +37996,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Warnings ({0})</value>
   </data>
   <data name="VF_PRUEF_KEINE_BEFUNDE" xml:space="preserve">
-    <value>No findings – the template can be filled.</value>
+    <value>No messages – the template can be filled.</value>
   </data>
   <data name="VF_PRUEF_KOPF" xml:space="preserve">
     <value>Checked: {0} placeholders, template “{1}”</value>
@@ -52059,7 +52059,7 @@ chart</value>
     <value>The name under which the entry is created; changeable only with the action “Rename”.</value>
   </data>
   <data name="KI_DLG_IKF_AKTION_ERL" xml:space="preserve">
-    <value>What happens to the entry: import, skip, overwrite or rename; which actions are allowed depends on the finding of the row.</value>
+    <value>What happens to the entry: import, skip, overwrite or rename; which actions are allowed depends on the message of the row.</value>
   </data>
   <data name="KI_IKF_NAME_NUR_UMBENENNEN" xml:space="preserve">
     <value>The name can only be changed with the action “Rename” – please switch the action of the row first.</value>
@@ -55166,7 +55166,7 @@ chart</value>
     <value>Peak load [kW]</value>
   </data>
   <data name="GEBSIM_SP_BEFUND" xml:space="preserve">
-    <value>Finding</value>
+    <value>Note</value>
   </data>
   <data name="GEBSIM_BEFUND_GERECHNET" xml:space="preserve">
     <value>calculated</value>
@@ -55712,7 +55712,7 @@ Replace these holidays with the project default? With “No” these zones remai
     <value>Holidays / heating period</value>
   </data>
   <data name="ZNB_SPALTE_BEFUND" xml:space="preserve">
-    <value>Finding</value>
+    <value>Note</value>
   </data>
   <data name="ZNB_SPALTE_AKTION" xml:space="preserve">
     <value>Details</value>

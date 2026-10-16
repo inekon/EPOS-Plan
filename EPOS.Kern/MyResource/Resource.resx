@@ -8769,7 +8769,7 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
     <value>Der Energieträger wurde NICHT gespeichert: {0}</value>
   </data>
   <data name="KI_REG_ZWECK_ENERGIETRAEGER_PRUEFEN" xml:space="preserve">
-    <value>Prüft die Energieträger auf Einheiten-Konsistenz: Erreicht jeder aktive Träger kWh — unmittelbar, über Heizwert bzw. Brennwert oder über eine aktive Umrechnungsregel? Liefert die Befundliste, ändert nichts.</value>
+    <value>Prüft die Energieträger auf Einheiten-Konsistenz: Erreicht jeder aktive Träger kWh — unmittelbar, über Heizwert bzw. Brennwert oder über eine aktive Umrechnungsregel? Liefert die Meldungsliste, ändert nichts.</value>
   </data>
   <data name="KI_REG_ERL_PROJEKT_FUER_EINHEITEN" xml:space="preserve">
     <value>Name des Projekts. Ohne Angabe wird der Katalog geprüft (alle aktiven Träger mit Katalogwerten); mit Angabe nur die im Projekt verwendeten Träger, mit deren Projektüberschreibungen. Übergib ihn unverändert aus der Anwenderfrage — Name, Teilname, ID oder Platzhalter „Name n“; aufgelöst wird lokal im Programm.</value>
@@ -8778,10 +8778,10 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
     <value>Katalog</value>
   </data>
   <data name="KI_REG_EINHEITEN_OHNE_BEFUND" xml:space="preserve">
-    <value>Einheiten-Konsistenz {0}: kein Befund — jeder aktive Energieträger erreicht kWh.</value>
+    <value>Einheiten-Konsistenz {0}: keine Meldung — jeder aktive Energieträger erreicht kWh.</value>
   </data>
   <data name="KI_REG_EINHEITEN_BEFUNDE" xml:space="preserve">
-    <value>Einheiten-Konsistenz {1}: {0} Befund(e).</value>
+    <value>Einheiten-Konsistenz {1}: {0} Meldung(en).</value>
   </data>
   <data name="KPROF_TAB_TITEL" xml:space="preserve">
     <value>Kostenprofil</value>
@@ -25108,7 +25108,7 @@ Möchten Sie das zulassen?</value>
     <value>Statuszeile</value>
   </data>
   <data name="KI_DLG_KSE_STATUS_ERL" xml:space="preserve">
-    <value>Die Fußzeile mit den Befunden der Seite — fehlende Positionen, lose Zuordnungen, Hinweise zur Vergleichsgruppe.</value>
+    <value>Die Fußzeile mit den Meldungen der Seite — fehlende Positionen, lose Zuordnungen, Hinweise zur Vergleichsgruppe.</value>
   </data>
   <data name="KI_DLG_MASKE_WSE" xml:space="preserve">
     <value>Wirtschaftlichkeit (Berichte und Kosten)</value>
@@ -37847,13 +37847,13 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Mit Standardvorlage</value>
   </data>
   <data name="BV_VORLAGEN_PRUEFZEILE_BEFUND" xml:space="preserve">
-    <value>geprüft, {0} Platzhalter, 1 Befund</value>
+    <value>geprüft, {0} Platzhalter, 1 Meldung</value>
   </data>
   <data name="BV_VORLAGEN_PRUEFZEILE_BEFUNDE" xml:space="preserve">
-    <value>geprüft, {0} Platzhalter, {1} Befunde</value>
+    <value>geprüft, {0} Platzhalter, {1} Meldungen</value>
   </data>
   <data name="BV_VORLAGEN_PRUEFZEILE_OK" xml:space="preserve">
-    <value>geprüft, {0} Platzhalter, keine Befunde</value>
+    <value>geprüft, {0} Platzhalter, keine Meldungen</value>
   </data>
   <data name="EIN_BERICHT_HINT_FIRMA" xml:space="preserve">
     <value>Steht im Bericht an der Stelle {{ersteller.firma}}; vorbelegt aus der Lizenz.</value>
@@ -38003,7 +38003,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Warnungen ({0})</value>
   </data>
   <data name="VF_PRUEF_KEINE_BEFUNDE" xml:space="preserve">
-    <value>Keine Befunde – die Vorlage lässt sich füllen.</value>
+    <value>Keine Meldungen – die Vorlage lässt sich füllen.</value>
   </data>
   <data name="VF_PRUEF_KOPF" xml:space="preserve">
     <value>Geprüft: {0} Platzhalter, Vorlage „{1}“</value>
@@ -52066,7 +52066,7 @@ Chart</value>
     <value>Der Name, unter dem der Eintrag angelegt wird; änderbar nur bei der Aktion „Umbenennen“.</value>
   </data>
   <data name="KI_DLG_IKF_AKTION_ERL" xml:space="preserve">
-    <value>Was mit dem Eintrag geschieht: importieren, auslassen, überschreiben oder umbenennen; welche Aktionen erlaubt sind, hängt vom Befund der Zeile ab.</value>
+    <value>Was mit dem Eintrag geschieht: importieren, auslassen, überschreiben oder umbenennen; welche Aktionen erlaubt sind, hängt von der Meldung der Zeile ab.</value>
   </data>
   <data name="KI_IKF_NAME_NUR_UMBENENNEN" xml:space="preserve">
     <value>Den Namen ändern Sie nur bei der Aktion „Umbenennen“ – bitte zuerst die Aktion der Zeile umstellen.</value>
@@ -55173,7 +55173,7 @@ Chart</value>
     <value>Höchstlast [kW]</value>
   </data>
   <data name="GEBSIM_SP_BEFUND" xml:space="preserve">
-    <value>Befund</value>
+    <value>Hinweis</value>
   </data>
   <data name="GEBSIM_BEFUND_GERECHNET" xml:space="preserve">
     <value>gerechnet</value>
@@ -55719,7 +55719,7 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
     <value>Ferien / Heizperiode</value>
   </data>
   <data name="ZNB_SPALTE_BEFUND" xml:space="preserve">
-    <value>Befund</value>
+    <value>Hinweis</value>
   </data>
   <data name="ZNB_SPALTE_AKTION" xml:space="preserve">
     <value>Einzelheiten</value>

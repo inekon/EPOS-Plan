@@ -20111,7 +20111,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die geprüft, {0} Platzhalter, 1 Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die geprüft, {0} Platzhalter, 1 Meldung ähnelt.
         /// </summary>
         public static string BV_VORLAGEN_PRUEFZEILE_BEFUND {
             get {
@@ -20120,7 +20120,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die geprüft, {0} Platzhalter, {1} Befunde ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die geprüft, {0} Platzhalter, {1} Meldungen ähnelt.
         /// </summary>
         public static string BV_VORLAGEN_PRUEFZEILE_BEFUNDE {
             get {
@@ -20129,7 +20129,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die geprüft, {0} Platzhalter, keine Befunde ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die geprüft, {0} Platzhalter, keine Meldungen ähnelt.
         /// </summary>
         public static string BV_VORLAGEN_PRUEFZEILE_OK {
             get {
@@ -37215,7 +37215,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis ähnelt.
         /// </summary>
         public static string GEBSIM_SP_BEFUND {
             get {
@@ -66379,7 +66379,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Was mit dem Eintrag geschieht: importieren, auslassen, überschreiben oder umbenennen; welche Aktionen erlaubt sind, hängt vom Befund der Zeile ab. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was mit dem Eintrag geschieht: importieren, auslassen, überschreiben oder umbenennen; welche Aktionen erlaubt sind, hängt von der Meldung der Zeile ab. ähnelt.
         /// </summary>
         public static string KI_DLG_IKF_AKTION_ERL {
             get {
@@ -67342,7 +67342,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fußzeile mit den Befunden der Seite — fehlende Positionen, lose Zuordnungen, Hinweise zur Vergleichsgruppe. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fußzeile mit den Meldungen der Seite — fehlende Positionen, lose Zuordnungen, Hinweise zur Vergleichsgruppe. ähnelt.
         /// </summary>
         public static string KI_DLG_KSE_STATUS_ERL {
             get {
@@ -79531,7 +79531,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Einheiten-Konsistenz {1}: {0} Befund(e). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheiten-Konsistenz {1}: {0} Meldung(en). ähnelt.
         /// </summary>
         public static string KI_REG_EINHEITEN_BEFUNDE {
             get {
@@ -79549,7 +79549,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Einheiten-Konsistenz {0}: kein Befund — jeder aktive Energieträger erreicht kWh. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheiten-Konsistenz {0}: keine Meldung — jeder aktive Energieträger erreicht kWh. ähnelt.
         /// </summary>
         public static string KI_REG_EINHEITEN_OHNE_BEFUND {
             get {
@@ -81469,7 +81469,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Prüft die Energieträger auf Einheiten-Konsistenz: Erreicht jeder aktive Träger kWh — unmittelbar, über Heizwert bzw. Brennwert oder über eine aktive Umrechnungsregel? Liefert die Befundliste, ändert nichts. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prüft die Energieträger auf Einheiten-Konsistenz: Erreicht jeder aktive Träger kWh — unmittelbar, über Heizwert bzw. Brennwert oder über eine aktive Umrechnungsregel? Liefert die Meldungsliste, ändert nichts. ähnelt.
         /// </summary>
         public static string KI_REG_ZWECK_ENERGIETRAEGER_PRUEFEN {
             get {
@@ -135492,7 +135492,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Befunde – die Vorlage lässt sich füllen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Meldungen – die Vorlage lässt sich füllen. ähnelt.
         /// </summary>
         public static string VF_PRUEF_KEINE_BEFUNDE {
             get {
@@ -149959,7 +149959,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis ähnelt.
         /// </summary>
         public static string ZNB_SPALTE_BEFUND {
             get {

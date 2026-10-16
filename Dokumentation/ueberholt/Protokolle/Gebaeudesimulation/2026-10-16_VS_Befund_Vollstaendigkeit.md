@@ -23,3 +23,10 @@ Angepasst: `GebaeudeBefundAnsichtTests` (3), `GebaeudeImportZonenDialogTests` (+
 ## Offene Punkte
 
 Nicht umbenannt (im Auftrag nicht genannt): Spalte „Befund“ in `GEBSIM_SP_BEFUND` (Gebäudesimulationsliste) und `ZNB_SPALTE_BEFUND` (Zonen-Nutzungsblatt); Vorlagenprüfer (`BV_VORLAGEN_PRUEFZEILE_*`, `VF_PRUEF_KEINE_BEFUNDE`), Einheiten-Konsistenz (`KI_REG_EINHEITEN_*`), KI-Erläuterungen (`KI_DLG_KSE_STATUS_ERL`, `KI_DLG_IKF_AKTION_ERL`). Die Ausnahme „Befund“ in `BerechnungsHilfeTests` betrifft die Seite Photovoltaik und bleibt.
+
+## Nachzug (Koordination, E145 „alle sichtbaren Texte“)
+
+- Hinweis/Note: `GEBSIM_SP_BEFUND`, `ZNB_SPALTE_BEFUND` (2 Schlüssel).
+- Meldung(en)/Message(s): `BV_VORLAGEN_PRUEFZEILE_BEFUND`, `_BEFUNDE`, `_OK`, `VF_PRUEF_KEINE_BEFUNDE` (samt Standardtext in `PrueflisteTexte.cs`), `KI_REG_EINHEITEN_OHNE_BEFUND`, `KI_REG_EINHEITEN_BEFUNDE`, `KI_REG_ZWECK_ENERGIETRAEGER_PRUEFEN`, `KI_DLG_KSE_STATUS_ERL`, `KI_DLG_IKF_AKTION_ERL` (9 Schlüssel). 22 Einträge in beiden Sprachen, Designer neu.
+- Test: `PrueflisteDialogTests` (1 Zeile). Läufe: UI-Filter 1725, Kern-Filter 561 grün. Wiki ohne „Befund“.
+- Weiter offen: `ADM_DUBLETTEN_BAUM` („Dublettenbefund“/„Duplicate findings“) und `BHW_K_LEER` (en „No findings“), nicht genannt.
