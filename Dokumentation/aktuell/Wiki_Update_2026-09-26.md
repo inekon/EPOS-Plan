@@ -1120,6 +1120,9 @@ Der Sammel-Upload 1.2.0.11 lief am 14.10.2026 (Seite Brauchwasser-Zapfprofil Rev
 - Seit 16.10.2026: Die Übernahme aus der Pufferauslegung setzt beim Kombipuffer jetzt auch die Zonenanteile und legt die Entnahme der Heizung unter die Brauchwasserzone. (#1140)
 - Seit 16.10.2026: Die Stufen der Anlagenkopplung heißen in der Oberfläche „ohne Kopplung“, „Heizkreis“, „Fahrplan“ und „geschlossener Kreis“; die Kataloge zeigen „Nennleistung“, „Nennkälteleistung“ und „Wirkungsgrad Laden/Entladen“ statt Formelzeichen. (#1142)
 - Seit 16.10.2026: Die Jahresdauerlinien ordnen die Stunden nach dem Gesamtbedarf und zeigen die Erzeuger darunter gestapelt; das Bivalenzdiagramm beschriftet seine Bivalenzpunkte mit „Kessel hilft unter …“ und „Kessel allein unter …“. (#1143)
+- Seit 16.10.2026: In den Bedarfsprofilen vergleicht „Vergleichen…“ zwei bis drei Projektzeilen und Katalogsätze nebeneinander; Kopfzeile und Knöpfe folgen den übrigen Dialogen mit Katalogauswahl. (#1155)
+- Seit 16.10.2026: Jahressummen und Jahresarbeit in MWh stehen in Auswahllisten, Katalog und Satzzeile einheitlich als ganze Zahl mit Tausendertrennzeichen. (#1156)
+- Seit 16.10.2026: Achsenbeschriftungen und Texte der Ganglinien in den Bedarfs- und Ganglinien-Dialogen stehen in der Schriftgröße der Oberfläche, auch im Projektassistenten. (#1157)
 
 *Wiki-Quellen dieses Nachtrags (Upload ausstehend):* `Projekte/Wiki/Programm Dokumentation - Pufferspeicher auslegen.wiki`, „Grundlagen - Anlagenkopplung und Regelung“, „Simulation konfigurieren und starten“, `Projekte/Wiki/Dateien/Diagramm_Bivalenz.png`, `Projekte/Wiki/Dateien/Diagramm_Kapitalwert_Bruecke.png`.
 
