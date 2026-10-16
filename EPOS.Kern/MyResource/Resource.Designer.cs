@@ -56708,6 +56708,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jan;Feb;Mär;Apr;Mai;Jun;Jul;Aug;Sep;Okt;Nov;Dez ähnelt.
+        /// </summary>
+        public static string KBP_MONATE_KURZ {
+            get {
+                return ResourceManager.GetString("KBP_MONATE_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Monatswerte ergeben zusammen 0 – mindestens ein Monat muss Bedarf tragen. ähnelt.
         /// </summary>
         public static string KBP_MSG_MONATE_NULL {

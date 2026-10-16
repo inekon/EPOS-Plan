@@ -56525,5 +56525,8 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KBP_MSG_TYPTAGE" xml:space="preserve">
     <value>Die Typtage sind unzulässig: {0}.</value>
   </data>
+  <data name="KBP_MONATE_KURZ" xml:space="preserve">
+    <value>Jan;Feb;Mär;Apr;Mai;Jun;Jul;Aug;Sep;Okt;Nov;Dez</value>
+  </data>
 </root>
 

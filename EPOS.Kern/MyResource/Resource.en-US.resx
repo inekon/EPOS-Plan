@@ -56518,5 +56518,8 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="KBP_MSG_TYPTAGE" xml:space="preserve">
     <value>The typical days are invalid: {0}.</value>
   </data>
+  <data name="KBP_MONATE_KURZ" xml:space="preserve">
+    <value>Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec</value>
+  </data>
 </root>
 

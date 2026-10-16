@@ -32,7 +32,9 @@
                            &kalender=leer: noch kein Kalender angelegt; &gebaeude=0: das Projekt hat kein Gebaeude.
                            Die Bearbeiten-Ueberlagerung einer Zeile zeigt die Kaeltegrafik (KBP-3b) aus einer
                            synthetischen Reihe, die dem Arbeitsstand folgt (Jahressumme, Monatsanteile, Kalender 2 =
-                           Betriebsferien); Blatt Woche mit Wahl der Kalenderwoche (fensterprobe.mjs, Fall kaeltegrafik)
+                           Betriebsferien); Blatt Woche mit Wahl der Kalenderwoche (fensterprobe.mjs, Fall kaeltegrafik).
+                           KBP-4b: Die Eingabeart Typtage ist waehlbar (TyptageVerfuegbar); der Editor mit der Matrix
+                           12 Monate x 3 Tagesarten steht in derselben Ueberlagerung (fensterprobe.mjs, Fall kaeltetyptage)
       ?meldung=1           fuer die Bannerprobe (bannerprobe.mjs): Heizkessel und BHKW melden bei
                            "Hinzufuegen" einen Fehler der Traegerwahl, der Gebaeudedialog traegt
                            "In DB uebernehmen" (weich gesperrt - der Versuch meldet den Grund);
@@ -205,6 +207,7 @@
                                   TypStammGaben="@((n, b, t, neu) => new Dictionary<string, object>())"
                                   TypProfilGaben="@(() => new Dictionary<string, object>())"
                                   KaelteGrafik="@KpGrafik"
+                                  TyptageVerfuegbar="true"
                                   Geschlossen="@(b => Beendet(b))" />
             break;
 

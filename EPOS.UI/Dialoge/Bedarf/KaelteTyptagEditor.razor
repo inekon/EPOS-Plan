@@ -51,11 +51,11 @@
         int art = a;
         <div class="epos-kbp-matrix" data-tagesart="@KaeltetyptagSchema.TAGESARTEN[art]">
             <p class="epos-kbp-matrix-tagesart">@Tagesart(art)</p>
-            <div class="epos-stundenraster epos-kbp-monatsraster">
+            <div class="epos-stundenraster epos-kbp-monatsraster epos-kbp-matrixraster">
                 @for (int m = 0; m < KaeltetyptagSchema.MONATE; m++)
                 {
                     int monat = m;
-                    <Auswahlfeld Bezeichnung="@Monatsname(monat)" Titel="@(Monatsname(monat) + " – " + Tagesart(art))"
+                    <Auswahlfeld Bezeichnung="@Monatskurz(monat)" Titel="@(Monatsname(monat) + " – " + Tagesart(art))"
                                  Eintraege="@ZellenWahl" Auswahl="@Werte.Matrix[monat, art]"
                                  AuswahlChanged="nr => ZelleSetzen(monat, art, nr)" />
                 }
@@ -106,6 +106,13 @@
     {
         string[] namen = (Resource.KBP_MONATE ?? "").Split(';');
         return m < namen.Length ? namen[m] : (m + 1).ToString(System.Globalization.CultureInfo.CurrentCulture);
+    }
+
+    /// <summary>Der kurze Monatsname der Matrixzelle (der volle steht im Titel).</summary>
+    private static string Monatskurz(int m)
+    {
+        string[] namen = (Resource.KBP_MONATE_KURZ ?? "").Split(';');
+        return m < namen.Length ? namen[m] : Monatsname(m);
     }
 
     private void TyptagGewaehlt(int? nr)
