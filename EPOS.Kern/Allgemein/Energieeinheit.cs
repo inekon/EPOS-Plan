@@ -114,6 +114,33 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Nachkommastellen eines JAHRESWERTS in MWh in Projektliste, Katalogliste und
+        /// Satzzeile der Katalogdialoge (BP-3): keine.
+        /// </summary>
+        public const int JAHRESWERT_MWH_NACHKOMMASTELLEN = 0;
+
+        /// <summary>Das Zahlformat eines Jahreswerts in MWh (BP-3): ganze Zahl mit Tausendertrennung der Kultur.</summary>
+        public const string JAHRESWERT_MWH_FORMAT = "N0";
+
+        /// <summary>
+        /// Der Anzeigetext einer Jahressumme oder Jahresarbeit, die bereits in dieser
+        /// Einheit vorliegt, für Projektliste, Katalogliste, Summe im Listenkopf und
+        /// Satzzeile (BP-3): MWh als ganze Zahl mit Tausendertrennung der Kultur
+        /// (de „1.200“, en „1,200“), kWh wie <see cref="Formatiere"/>.
+        /// </summary>
+        /// <remarks>
+        /// Nur die Anzeige wird gerundet — Eingabefelder behalten ihre Genauigkeit,
+        /// gespeichert und gerechnet wird mit dem ungerundeten Wert. Ein Profil unter
+        /// 1 MWh steht als 0 oder 1 (Anwenderentscheid BP-3).
+        /// </remarks>
+        public string FormatiereJahreswert(double wert)
+        {
+            return ReferenceEquals(this, MWh)
+                ? wert.ToString(JAHRESWERT_MWH_FORMAT, CultureInfo.CurrentCulture)
+                : Formatiere(wert);
+        }
+
+        /// <summary>
         /// Die Einheit zu einem abgelegten Kürzel; alles Unbekannte — auch
         /// <c>null</c> — ergibt die <see cref="Vorgabe"/>.
         /// </summary>

@@ -14860,47 +14860,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
-        /// </summary>
-        public static string BPF_BTN_SIMULATION_BW {
-            get {
-                return ResourceManager.GetString("BPF_BTN_SIMULATION_BW", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
-        /// </summary>
-        public static string BPF_BTN_SIMULATION_KAELTE {
-            get {
-                return ResourceManager.GetString("BPF_BTN_SIMULATION_KAELTE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Simulation… ähnelt.
         /// </summary>
         public static string BPF_BTN_SIMULATION_LEISTE {
             get {
                 return ResourceManager.GetString("BPF_BTN_SIMULATION_LEISTE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
-        /// </summary>
-        public static string BPF_BTN_SIMULATION_PROZ {
-            get {
-                return ResourceManager.GetString("BPF_BTN_SIMULATION_PROZ", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation... ähnelt.
-        /// </summary>
-        public static string BPF_BTN_SIMULATION_STROM {
-            get {
-                return ResourceManager.GetString("BPF_BTN_SIMULATION_STROM", resourceCulture);
             }
         }
         
@@ -15090,6 +15054,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BPF_KALENDER_KEINER {
             get {
                 return ResourceManager.GetString("BPF_KALENDER_KEINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geben Sie die Daten der Brauchwasserprofile ein ähnelt.
+        /// </summary>
+        public static string BPF_KOPFBAND_BW {
+            get {
+                return ResourceManager.GetString("BPF_KOPFBAND_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geben Sie die Daten der Kältebedarfsprofile ein ähnelt.
+        /// </summary>
+        public static string BPF_KOPFBAND_KAELTE {
+            get {
+                return ResourceManager.GetString("BPF_KOPFBAND_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geben Sie die Daten der Prozesswärmeprofile ein ähnelt.
+        /// </summary>
+        public static string BPF_KOPFBAND_PROZ {
+            get {
+                return ResourceManager.GetString("BPF_KOPFBAND_PROZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geben Sie die Daten der Stromverbraucher ein ähnelt.
+        /// </summary>
+        public static string BPF_KOPFBAND_STROM {
+            get {
+                return ResourceManager.GetString("BPF_KOPFBAND_STROM", resourceCulture);
             }
         }
         
@@ -43845,6 +43845,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kalender führen Feiertage mit verschiedenen Tagesverläufen; gbXML kennt nur den einen Tagtyp „Holiday“ je Wochenplan und trägt das Bild des ranghöchsten Feiertags (die übrigen Feiertage kommen mit diesem Bild zurück, IFC trägt jeden einzeln): {1} ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_FEIERTAGE_EIN_BILD {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_FEIERTAGE_EIN_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Flächen stehen ohne Polygon in der Datei — ihr Raum trägt keinen Körper, oder sie liegen an keiner Kante: {1} ähnelt.
         /// </summary>
         public static string GEXP_PROT_FLAECHE_OHNE_POLYGON {
@@ -51167,6 +51176,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_BAUTEIL_PROT_BAUTEILWEG {
             get {
                 return ResourceManager.GetString("IMP_BAUTEIL_PROT_BAUTEILWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die Datei trägt Zeitpläne bzw. Kalender je Raum; die Übernahme als eine Zone nimmt sie nicht, die Kalender kommen aus dem Nutzungsprofil. Mit einer Zonenregel für mehrere Zonen kommen sie je Zone an. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_EINZONE_ZEITPLAENE {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_EINZONE_ZEITPLAENE", resourceCulture);
             }
         }
         

@@ -112,6 +112,7 @@ namespace WindowsFormsApplication1.Zeichnung
             {
                 Flaeche = modell.Flaeche,
                 Tafel = modell.Tafel,
+                Schriftmassstab = modell.Schriftmassstab,
                 Darstellung = Darstellung.Interaktiv
             };
             foreach (Zeichenbefehl b in modell.Befehle) neu.Fuege(b);

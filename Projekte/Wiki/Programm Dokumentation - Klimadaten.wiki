@@ -1,7 +1,7 @@
 <!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Klimadaten
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Klimadaten.wiki
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
-Der Dialog '''Klimadaten''' legt die Klimaregionen an, mit denen EPOS-Plan rechnet. Eine Klimaregion umfasst 8.760 Stundenwerte – Außentemperatur, Global-, Direkt- und Diffusstrahlung, Sonnenwinkel und die vier Fassadenwerte – sowie 365 Tageswerte. Die Maske zeigt außerdem die Liste der vorhandenen Regionen und zwei Diagramme (Jahrestemperatur und Sonnenwinkel).
+Der Dialog '''Klimadaten''' legt die Klimaregionen an, mit denen EPOS-Plan rechnet. Eine Klimaregion umfasst 8.760 Stundenwerte – Außentemperatur, Global-, Direkt- und Diffusstrahlung, Sonnenwinkel, die vier Fassadenwerte, Gegenstrahlung, Luftfeuchte und Bedeckungsgrad – sowie 365 Tageswerte; dazu stehen die unveränderten Werte der Quelle als Rohwerte bereit. Die Maske zeigt die Liste der vorhandenen Regionen, die Diagramme der gewählten Region (Temperatur, Sonnenwinkel und weitere Reihen), das Einlesen mit einer Vorschau des Datensatzes und den Export als CSV-Datei.
 
 == Die Liste der Regionen ==
 {{Anker|regionsliste|region}}
@@ -14,16 +14,23 @@ Die Spalten sind: ''Klimaregion'', ''Quelle'', ''Standort'' (der Ortsname, sonst
 
 Die Spalte ''Quelle'' nennt neben der Herkunft auch das '''Bezugsjahr''' und das '''Szenario''' der Daten, etwa „TRY-Regionaldaten (Deutschland) · 2045 · sommerwarm“. Weil das Suchfeld über alle Spalten sucht, engt „2045“ die Liste auf die Regionen dieses Bezugsjahres ein. Ein PVGIS-Abruf kennt kein Szenario; dort steht die Quelle allein.
 
-''Löschen'' entfernt die gewählte Region samt ihren Stunden- und Tageswerten, nach einer Rückfrage. Regionen der Auslieferung sind schreibgeschützt und bleiben stehen, solange ihr Schloss steht: ''Schloss aufheben…'' macht sie nach einer Rückfrage zu eigenen Regionen, die sich löschen lassen — ein Programm-Update stellt eine gelöschte Region nicht wieder her —, ''Schloss setzen…'' sperrt eigene Regionen als Auslieferung. Die Stunden- und Tageswerte bleiben dabei, wie sie sind. Ein Kästchen je Zeile erlaubt die Mehrfachwahl; darüber erscheint eine Leiste mit ''Vergleichen'' (nur die Kennwerte), ''Schloss aufheben…'' bzw. ''Schloss setzen…'' und ''Löschen'' für die gewählten Regionen.
+''Löschen'' entfernt die gewählte Region samt ihren Stunden- und Tageswerten, nach einer Rückfrage. Regionen der Auslieferung sind schreibgeschützt und bleiben stehen, solange ihr Schloss steht: ''Schloss aufheben…'' macht sie nach einer Rückfrage zu eigenen Regionen, die sich löschen lassen — ein Programm-Update stellt eine gelöschte Region nicht wieder her —, ''Schloss setzen…'' sperrt eigene Regionen als Auslieferung. Die Stunden- und Tageswerte bleiben dabei, wie sie sind. Ein Kästchen je Zeile erlaubt die Mehrfachwahl; darüber erscheint eine Leiste mit ''Vergleichen'' (nur die Kennwerte), ''Schloss aufheben…'' bzw. ''Schloss setzen…'', ''Exportieren…'' (für genau eine Region, siehe [[#export|Exportieren]]) und ''Löschen'' für die gewählten Regionen.
 
-== Die zwei Diagramme ==
+== Die Diagramme ==
 {{Anker|diagramme}}
 
-Über den Diagrammen stehen die Kennzahlen der gewählten Region – Jahresmittel, Tiefst- und Höchstwert der Außentemperatur. Darunter stehen die Stundenwerte der gewählten Region als Kurve – im Reiter ''Temperatur'' die Außentemperatur, im Reiter ''Sonnenwinkel'' der Sonnenstand, beide über dem ganzen Jahr; ''groß…'' öffnet das Bild in einer breiten Überlagerung.
+Über den Diagrammen stehen die Kennzahlen der gewählten Region – Jahresmittel, Tiefst- und Höchstwert der Außentemperatur. Darunter stehen die Stundenwerte der gewählten Region als Kurve – im Reiter ''Temperatur'' die Außentemperatur, im Reiter ''Sonnenwinkel'' der Sonnenstand und im Reiter ''Weitere Reihen'' die Größen, die Sie wählen, alle über dem ganzen Jahr; ''groß…'' öffnet das Bild in einer breiten Überlagerung.
 
-Über jedem Bild steht eine kleine Leiste. Mit dem Mausrad, mit Ziehen, mit der Kneifgeste und mit den Tasten ''+'', ''−'' und ''0'' vergrößern und verschieben Sie den Zeitausschnitt; die Werteachse bleibt dabei vollständig, und die Leiste zeigt links die Vergrößerung an. ''Bereich'' schaltet auf das Aufziehen eines Ausschnitts um: Ziehen Sie ein Rechteck über die Stelle, die Sie sehen wollen. Die Achse zählt im Ausschnitt die Stunden des Jahres. ''1:1'' stellt das ganze Jahr wieder her; ein Doppelklick ins Bild tut dasselbe. Beide Reiter führen ihren Ausschnitt getrennt, und ein Wechsel der Region zeigt wieder das ganze Jahr.
+Über jedem Bild steht eine kleine Leiste. Mit dem Mausrad, mit Ziehen, mit der Kneifgeste und mit den Tasten ''+'', ''−'' und ''0'' vergrößern und verschieben Sie den Zeitausschnitt; die Werteachse bleibt dabei vollständig, und die Leiste zeigt links die Vergrößerung an. ''Bereich'' schaltet auf das Aufziehen eines Ausschnitts um: Ziehen Sie ein Rechteck über die Stelle, die Sie sehen wollen. Die Achse zählt im Ausschnitt die Stunden des Jahres. ''1:1'' stellt das ganze Jahr wieder her; ein Doppelklick ins Bild tut dasselbe. Jeder Reiter führt seinen Ausschnitt getrennt, und ein Wechsel der Region zeigt wieder das ganze Jahr.
 
-Unter dem Bild steht eine Zeile mit den Werten an der Stelle, auf die Sie zeigen: die Stunde des Jahres und dazu je Kurve ihr Wert. ''CSV…'' in der Leiste des Bildes speichert die Kurve als CSV-Datei, siehe [[Datenexport]].
+Unter dem Bild steht eine Zeile mit den Werten an der Stelle, auf die Sie zeigen: die Stunde des Jahres und dazu je Kurve ihr Wert. ''CSV…'' in der Leiste des Bildes speichert die Kurven des Bildes als CSV-Datei, siehe [[Datenexport]]; alle Größen einer Region mit Wahl des Formats schreibt ''Exportieren…'' (siehe [[#export|Exportieren]]).
+
+=== Weitere Reihen ===
+{{Anker|weitere-reihen|reihenwahl}}
+
+Im Reiter ''Weitere Reihen'' wählen Sie über Schaltknöpfe, welche Größen das Bild zeigt: Luftfeuchte, Global-, Direkt- und Diffusstrahlung, Gegenstrahlung, Bedeckungsgrad, die vier Fassadenwerte und – soweit die Region sie führt – die Rohwerte Luftdruck, Windgeschwindigkeit, Wasserdampfgehalt, Ausstrahlung und Direktstrahlung auf die waagerechte Fläche. Die Knöpfe stehen in Gruppen; ein Rohwert trägt die Marke „R“. Vorbelegt ist die Globalstrahlung.
+
+Ein Bild zeigt Größen '''einer Einheit''', bis zu drei zugleich. Ein Klick auf eine Größe derselben Einheit nimmt sie hinzu, ein Klick auf eine Größe einer anderen Einheit zeigt diese allein; das sagt der Knopf schon vor dem Klick. Ein Knopf, der nicht geht, ist blass und nennt seinen Grund, etwa „Quelle führt die Größe nicht“. Windrichtung und Qualitätskennung erscheinen nicht als Kurve; sie stehen im Export. Wechseln Sie die Region, bleibt die Wahl, soweit die neue Region die Größen führt.
 
 Die Legende ist bedienbar. Ein Klick auf den '''Namen''' einer Kurve blendet sie aus, ein zweiter holt sie zurück; der ausgeblendete Eintrag bleibt sichtbar, nur blasser. Ein Klick auf das '''Farbfeld''' daneben öffnet den Farbwähler unmittelbar am Bild: Sie wählen die Farbe im Farbfenster oder tragen ihren Hexwert ein, ''Hausfarbe'' nimmt die Wahl wieder zurück. Dieselbe Farbe gilt anschließend in allen Diagrammen des Programms und im Bericht. Mit der Tastatur erreichen Sie beides ebenso: Die Einträge lassen sich anspringen, Eingabe und Leertaste schalten die Kurve, Umschalt + Eingabe öffnet den Farbwähler.
 
@@ -39,7 +46,7 @@ Die Legende ist bedienbar. Ein Klick auf den '''Namen''' einer Kurve blendet sie
 == Standort ==
 {{Anker|standort|koordinaten|bezeichnung}}
 
-Den Standort geben Sie wie gewohnt an: über einen Ortsnamen, den das Programm in Koordinaten auflöst, oder von Hand über Longitude, Latitude und eine Bezeichnung.
+Den Standort geben Sie wie gewohnt an: über einen Ortsnamen, den das Programm in Koordinaten auflöst, oder von Hand über Longitude, Latitude und eine Bezeichnung. Wahlweise tragen Sie die '''Höhe des Ortes''' in Metern ein; mit ihr vergleicht die Vorschau die Höhe der Station, deren Daten gefunden wurden. Bleibt das Feld leer, nimmt das Programm die Höhe aus der PVGIS-Antwort bzw. aus dem Kopf einer Testreferenzjahr-Datei, soweit vorhanden.
 
 Wählen Sie eine '''Testreferenzjahr-Datei''', trägt das Programm den Standort aus dem Kopf dieser Datei ein: Es rechnet die dort angegebenen Lambert-Koordinaten in Längen- und Breitengrad um und füllt auch die Bezeichnung, wenn sie noch leer ist. Unter den Feldern steht, woher die Werte stammen. '''Sie können jedes Feld ändern''' – dann gilt Ihre Eingabe. Nennt der Kopf keine brauchbaren Koordinaten, bleiben die Felder leer, und Sie tragen den Standort selbst ein.
 
@@ -55,12 +62,25 @@ Vorbelegt sind das Bezugsjahr 2015 und das mittlere Jahr.
 
 Bei einer '''Testreferenzjahr-Datei''' entfällt die Wahl: Das Programm übernimmt Jahr und Szenario aus dem Kopf der Datei – das Jahr aus dem dort angegebenen Bezugszeitraum, das Szenario aus der Art des Testreferenzjahres. Nennt der Kopf eines von beidem nicht, bleibt es leer.
 
-''Region ermitteln'' sagt Ihnen schon vor dem Einlesen, welche Region Ihr Standort trifft: Nummer und Name der Bezugsstation, ihre Koordinate und die Entfernung zu Ihrem Standort, dazu die Jahre und Szenarien, die das Archiv für diese Region führt. Dafür wird nur das Inhaltsverzeichnis des Archivs gelesen, kein Datensatz. Trifft der Standort keine Region, steht der Grund an derselben Stelle; einlesen können Sie trotzdem.
+== Datensatz suchen und Vorschau ==
+{{Anker|vorschau|datensatz-suchen}}
+
+''Datensatz suchen'' zeigt Ihnen für jede der drei Quellen schon vor dem Einlesen, welche Daten Sie bekämen. Das Programm löst den Ort auf, wählt den Bezugspunkt und liest den Datensatz; gespeichert wird dabei nichts. Longitude, Latitude und eine leere Bezeichnung trägt es aus dem Ergebnis in die Felder ein; Sie können sie ändern.
+
+Die Vorschau darunter nennt:
+* '''Treffer''' – „Datensatz gefunden“ mit Quelle, Jahr und Szenario. Führt das Archiv das gewählte Jahr oder Szenario für diese Region nicht, steht das dort, und die vorhandenen Jahre und Szenarien erscheinen als Knöpfe; ein Klick wählt sie und sucht neu.
+* '''Standort und Bezugspunkt''' – Ihr Ort mit Koordinate und Höhe, daneben die Station, der Dateistandort oder der PVGIS-Punkt mit Koordinate, Höhe, Entfernung und Höhenunterschied.
+* '''Hinweise''' – bei den Regionaldaten immer, dass es sich um die nächste Station handelt und nicht um die amtliche Klimaregion; ab 50 km Entfernung oder 200 m Höhenunterschied der Rat, für ortsgenaue Werte die Testreferenzjahr-Datei des DWD für Ihren Standort einzulesen.
+* '''Kennzahlen''' – Jahresmittel, tiefste und höchste Außentemperatur, Jahressumme der Globalstrahlung, Gradtagzahl G20/15 und die Zahl der Heiztage.
+* '''Monatsbild''' – die Monatssumme der Globalstrahlung und das Monatsmittel der Temperatur. Über die Knöpfe darunter nehmen Sie weitere Größen hinzu, höchstens zwei Einheiten zugleich; ''Vorgabe'' stellt das Ausgangsbild wieder her. Strahlung erscheint als Monatssumme, alle übrigen Größen als Monatsmittel.
+* '''Parameterbestand''' – jede Größe mit dem Vermerk, ob die Quelle sie führt, ob sie gerechnet wird oder fehlt.
+
+Ändern Sie danach eine Eingabe, verfällt die Vorschau sichtbar. ''Daten einlesen'' übernimmt nur eine gültige Vorschau, die zu den Eingaben passt; ohne sie ist der Knopf gesperrt und nennt den Grund. Schlägt die Suche fehl – etwa weil der Ort unbekannt ist oder weiter als 300 km von der nächsten Region entfernt liegt –, steht der Grund in der Vorschau.
 
 == Einlesen ==
 {{Anker|einlesen|daten-einlesen}}
 
-''Import…'' in der Fußleiste öffnet die Überlagerung ''Klimadaten einlesen'' mit einem Kreuz am Titel zum Schließen. ''Daten einlesen'' darin legt die Region an und wählt sie danach gleich aus. Der Lauf lässt sich abbrechen. Gibt es schon eine Region dieses Namens, bricht das Programm mit einem Hinweis ab.
+''Import…'' in der Fußleiste öffnet die Überlagerung ''Klimadaten einlesen'' mit einem Kreuz am Titel zum Schließen. Darin wählen Sie Quelle und Standort, suchen den Datensatz und prüfen die Vorschau. ''Daten einlesen'' übernimmt genau den Datensatz der Vorschau, ohne ihn ein zweites Mal abzurufen, legt die Region an und wählt sie danach gleich aus. ''Abbrechen'' und ''Daten einlesen'' bleiben am unteren Rand sichtbar, während die Vorschau darüber rollt. Der Lauf lässt sich abbrechen. Gibt es schon eine Region dieses Namens, bricht das Programm mit einem Hinweis ab.
 
 * Bei einer '''Datei''' wählen Sie den Pfad über ''Durchsuchen''; der Dateiwähler zeigt Dateien mit der Endung ''.dat''. Es wird nichts aus dem Netz geholt.
 * Bei den '''Regionaldaten''' genügt der Standort: Das Programm liest über Teilabrufe nur das Inhaltsverzeichnis des Archivs und den einen benötigten Datensatz – wenige hundert Kilobyte statt des gesamten Archivs. Wahlweise geben Sie den Pfad eines bereits heruntergeladenen Archivs an; dann läuft alles ohne Netz.
@@ -79,20 +99,36 @@ Aus einer Testreferenzjahr-Datei übernimmt EPOS-Plan die Außentemperatur sowie
 
 Zu jeder Stunde speichert EPOS-Plan außerdem die '''atmosphärische Gegenstrahlung''', die '''relative Luftfeuchte''' und – soweit die Quelle sie führt – den '''Bedeckungsgrad'''. Die Testreferenzjahre liefern alle drei; ein PVGIS-Abruf liefert Gegenstrahlung und Feuchte, aber keinen Bedeckungsgrad, und dessen Feld bleibt dann leer.
 
-'''Nicht gespeichert''' werden Luftdruck, Windrichtung, Windgeschwindigkeit, Wasserdampfgehalt, langwellige Ausstrahlung und das Qualitätsbit. Dafür gibt es keine Felder. Damit niemand sie in den Daten sucht, stehen sie in den ''Details'' der Region und in der Meldung nach dem Einlesen ausdrücklich als nicht übernommen.
+Darüber hinaus speichert EPOS-Plan jede Größe, die die Quelle führt, unverändert als '''Rohwert''': neben Temperatur, Feuchte und Strahlung auch Luftdruck, Windrichtung, Windgeschwindigkeit, Wasserdampfgehalt, langwellige Ausstrahlung, die Qualitätskennung der Strahlung und die Direktstrahlung auf die waagerechte Fläche. Die Testreferenzjahre führen alle diese Größen außer der Direktstrahlung auf die Sonnenrichtung und der Globalstrahlung, die gerechnet werden; ein PVGIS-Abruf führt Temperatur, Feuchte, Strahlung, Gegenstrahlung, Wind und Luftdruck. Die Berechnung nutzt die Rohwerte nicht; sie stehen für den Reiter ''Weitere Reihen'' und den Export bereit. Die Rohwerte gehören zur Region der Klimadatenverwaltung, die Kopie im Projekt trägt sie nicht. Regionen der Auslieferung und Regionen, die ohne Rohwerte eingelesen wurden, führen nur die Rechenwerte.
 
-Im Stammblatt zeigt die Gruppe ''Herkunft'' Quelle, Importdatum, Standort, Länge und Breite der Region sowie einen Vermerk – bei den Regionaldaten und Testreferenzjahr-Dateien stehen darin auch Koordinate, Entfernung, Szenario, Jahr und der Lizenzvermerk der Daten.
+Im Stammblatt zeigt die Gruppe ''Herkunft'' Quelle, Importdatum, Standort, Länge und Breite der Region sowie einen Vermerk – bei den Regionaldaten und Testreferenzjahr-Dateien stehen darin auch Koordinate, Entfernung, Szenario, Jahr und der Lizenzvermerk der Daten. Zu jeder Region merkt sich das Programm außerdem den Bezugspunkt mit Koordinate, Höhe und Entfernung, die Höhe des Ortes und den gelesenen Datensatz.
 
 Auf der Übersicht wählen Sie die Klimaregion des Projekts aus einem '''durchsuchbaren''' Feld: Tippen engt die Liste ein, die Pfeiltasten wandern darin, Enter übernimmt. Jeder Eintrag nennt in Klammern, welche Daten die Region trägt – etwa „Musterort (TRY 2045 sommerwarm)“ oder „Musterstadt (PVGIS)“; gesucht wird über den ganzen Eintrag, also auch über das Bezugsjahr. Darunter steht eine Zeile, die Quelle samt Bezugsjahr und Szenario, Bezeichnung, Standort und Importdatum der Region nennt, mit der das offene Projekt rechnet.
 
 Dasselbe Feld mit denselben Einträgen steht im Projektassistenten im Schritt ''Projektkonfiguration''; darunter nennt eine Zeile ebenso die Herkunft der gewählten Region. Die dort gewählte Klimaregion erhält das Projekt beim Anlegen bzw. Speichern.
+
+== Exportieren ==
+{{Anker|export|exportieren}}
+
+''Exportieren…'' in der Leiste über der Liste schreibt die Stundenwerte '''einer''' Region als CSV-Datei. Die Überlagerung ''Klimadaten exportieren'' bietet:
+
+* '''Parameter''' – ein Kästchen je Größe, gruppiert nach Rechenwerten (so, wie die Berechnung sie liest), Fassadenwerten und Sonnenwinkel, Rohwerten der Quelle und dem abgeleiteten Taupunkt; ''Alle'' und ''Keine'' setzen die Wahl. Vorbelegt sind Temperatur, Feuchte sowie Global-, Direkt- und Diffusstrahlung. Eine Größe, die die Region nicht führt, ist gesperrt und nennt den Grund.
+* '''Trennzeichen''' – Semikolon, Komma oder Tabulator.
+* '''Dezimalzeichen''' – Komma oder Punkt; das Komma geht nicht zusammen mit dem Trennzeichen Komma.
+* '''Zeitspalte''' – laufende Stunde 1 bis 8.760, Datum und Uhrzeit (Beginn der Stunde), beides, ein Zeitstempel nach ISO 8601 oder keine Zeitspalte.
+* '''Zeitbezug''' – MEZ ohne Sommerzeit (Vorbelegung) oder UTC.
+* '''Kopf''' – Name und Einheit in einer Zeile, Name und Einheit in zwei Zeilen oder ohne Kopf; dazu wahlweise ein Herkunftsblock mit #-Zeilen (Region, Quelle, Datensatz, Koordinaten, Höhe, Bezugspunkt, Zeitbezug, Lizenz).
+* '''Vorlagen''' – ''Haus (wie CSV am Bild)'' und ''International (Komma, Punkt, ISO)'' setzen die Formatfelder in einem Zug.
+* '''Vorschau''' – die ersten fünf Stunden so, wie sie in die Datei geschrieben werden.
+
+''Exportieren …'' in der Schlussleiste fragt nach dem Speicherort und schreibt die Datei; ''Abbrechen'' schließt, ohne etwas zu schreiben. In der iOS-App heißt der Knopf ''Exportieren und teilen …''. Rohwerte stehen nur für Regionen zur Wahl, die mit Rohwerten eingelesen wurden; der Taupunkt wird aus Temperatur und Feuchte gerechnet und im Kopf als gerechnet gekennzeichnet.
 
 == Hinweise zu den Quellen ==
 {{Anker|quellen}}
 
 * '''DWD-Klimaberatungsmodul''' – die Testreferenzjahre beziehen Sie dort selbst; sie gehören nicht zum Lieferumfang von EPOS-Plan. Die Nutzungsbedingungen des Anbieters gelten.
 * '''Offene Regionaldaten''' – sie stehen unter der Lizenz CC BY 4.0 (Rohdaten des Deutschen Wetterdienstes). Der Lizenzvermerk wird bei jeder daraus angelegten Region mitgeschrieben.
-* '''Näherung der Regionszuordnung''' – gewählt wird die Region, deren Bezugspunkt Ihrem Standort am nächsten liegt. Maßgeblich ist die Entfernung, nicht eine amtliche Regionsgrenze; bei einem Standort nahe einer Grenze kann die Nachbarregion die zutreffendere sein.
+* '''Näherung der Regionszuordnung''' – gewählt wird die Region, deren Bezugsstation Ihrem Standort am nächsten liegt. Maßgeblich ist die Entfernung, nicht eine amtliche Regionsgrenze und nicht die Höhenlage; bei einem Standort nahe einer Grenze oder in deutlich anderer Höhe kann eine andere Region die zutreffendere sein. Ortsgenaue Werte liefert eine Testreferenzjahr-Datei des DWD für Ihren Standort.
 
 == Adressen der Klimaquellen ==
 {{Anker|einstellungen}}

@@ -1120,6 +1120,15 @@ namespace WindowsFormsApplication1.Zeichnung
         /// </summary>
         public Tagesstundentafel Tafel { get; set; }
 
+        /// <summary>
+        /// <b>Maßstab der Achsenschrift gegenüber dem Bestand</b> (15 pt = 20 px): <c>1</c> für
+        /// jedes Bild in Bestandsgröße, kleiner für ein Bild im Behältermaß, dessen Schrift der
+        /// Oberfläche folgt (<c>ChartRenderer.GanglinieNormiertModell</c> mit Breite und Höhe).
+        /// Gezeichnet wird er nicht; <c>DiagrammSvg</c> setzt damit die Achsenteilung, die es
+        /// selbst nachzeichnet, in derselben Schrift wie das Bild.
+        /// </summary>
+        public float Schriftmassstab { get; set; } = 1f;
+
         public void Fuege(Zeichenbefehl befehl) { if (befehl != null) _befehle.Add(befehl); }
 
         /// <summary>Eine Reihe in Datenwerten hinzufügen.</summary>

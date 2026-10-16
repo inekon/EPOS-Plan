@@ -599,6 +599,9 @@
     private string _beschreibung = "";
     private string _raster = "";
     private string _jahresarbeit = "";
+
+    /// <summary>Die Jahresarbeit für den Assistenten — genau (eine Nachkommastelle), die Anzeige rundet (BP-3).</summary>
+    private string _jahresarbeitGenau = "";
     private string _nennleistung = "";
 
     /// <summary>Die gewählte Projektzeile — Prüfhilfe für die Tests.</summary>
@@ -749,7 +752,7 @@
             ProjektganglinieLesen = () => _projektZeile?.Bezeichner ?? "",
             QuelleLesen = () => _beschreibung,
             AufloesungLesen = () => _raster,
-            JahressummeLesen = () => _jahresarbeit,
+            JahressummeLesen = () => _jahresarbeitGenau,
             NennleistungLesen = () => _nennleistung,
             ImProjektLesen = () => _name.Length > 0
                 && Zeilen.Any(z => string.Equals(z.Bezeichner, _name, StringComparison.Ordinal)),
@@ -865,11 +868,12 @@
     private void Kennwerte(Katalogfilterzeile? k)
     {
         var kultur = System.Globalization.CultureInfo.CurrentCulture;
-        if (k is null) { _raster = ""; _jahresarbeit = ""; _nennleistung = ""; return; }
+        if (k is null) { _raster = ""; _jahresarbeit = ""; _jahresarbeitGenau = ""; _nennleistung = ""; return; }
         double? raster = k.Zahl(Katalogfilterprofil.SpZeitintervall);
         _raster = raster is null ? "" : raster.Value == 15 ? Resource.PVG_RASTER_VIERTEL : Resource.PVG_RASTER_STUNDE;
         double? mwh = k.Zahl(Katalogfilterprofil.SpJahresarbeitMwh);
-        _jahresarbeit = mwh is null ? "" : mwh.Value.ToString("N1", kultur) + " MWh";
+        _jahresarbeit = mwh is null ? "" : Energieeinheit.MWh.FormatiereJahreswert(mwh.Value) + " " + Energieeinheit.MWh.Text;
+        _jahresarbeitGenau = mwh is null ? "" : mwh.Value.ToString("N1", kultur) + " " + Energieeinheit.MWh.Text;
         double? nenn = k.Zahl(Katalogfilterprofil.SpNennleistungKwp);
         _nennleistung = nenn is null ? Resource.PVG_NENN_NICHT_GEPFLEGT : nenn.Value.ToString("N2", kultur) + " kWp";
     }

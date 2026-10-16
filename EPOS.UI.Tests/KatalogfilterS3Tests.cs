@@ -189,7 +189,7 @@ public class KatalogfilterS3Tests : EposBunitContext
 
         // Die Stundenspitze der Viertelstundenreihe steht als Zahl in der Zelle.
         Assert.Contains("1.513,5", cut.Markup);
-        Assert.Contains("4.790,0", cut.Markup);
+        Assert.Contains(">4.790<", cut.Markup); // BP-3: Jahresarbeit in MWh ganzzahlig
     }
 
     /// <summary>

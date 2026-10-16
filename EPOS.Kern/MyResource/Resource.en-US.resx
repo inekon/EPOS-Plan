@@ -14181,15 +14181,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="BPF_BTN_DB_NEU_STROM" xml:space="preserve">
     <value>Electricity consumer new...</value>
   </data>
-  <data name="BPF_BTN_SIMULATION_BW" xml:space="preserve">
-    <value>Simulation</value>
-  </data>
-  <data name="BPF_BTN_SIMULATION_PROZ" xml:space="preserve">
-    <value>Simulation</value>
-  </data>
-  <data name="BPF_BTN_SIMULATION_STROM" xml:space="preserve">
-    <value>Simulation...</value>
-  </data>
   <data name="BPF_BTN_TYP_AENDERN_BW" xml:space="preserve">
     <value>Change type in DB</value>
   </data>
@@ -40470,6 +40461,12 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_BAUTEIL_PROT_ZU_VIELE_ZONEN" xml:space="preserve">
     <value>The zoning yields {0} zones — the building calculates no more than {1}; nothing adopted. Suggestion: rule {2}.</value>
   </data>
+  <data name="IMP_BAUTEIL_PROT_EINZONE_ZEITPLAENE" xml:space="preserve">
+    <value>Zone "{0}": The file carries schedules or calendars per room; importing as a single zone does not take them, the calendars come from the usage profile. With a zoning rule for several zones they arrive per zone.</value>
+  </data>
+  <data name="GEXP_PROT_FEIERTAGE_EIN_BILD" xml:space="preserve">
+    <value>{0} calendars hold holidays with different daily profiles; gbXML knows only the one day type "Holiday" per week schedule and carries the profile of the highest-ranking holiday (the other holidays come back with this profile, IFC carries each one separately): {1}</value>
+  </data>
   <data name="IMP_BAUTEIL_PROT_ZONE_OHNE_NUTZFLAECHE" xml:space="preserve">
     <value>Zone "{0}" has no usable floor area — it is mandatory from two zones upwards.</value>
   </data>
@@ -53000,6 +52997,18 @@ chart</value>
   <data name="BPF_TITEL_KAELTE" xml:space="preserve">
     <value>Cooling demand profiles</value>
   </data>
+  <data name="BPF_KOPFBAND_PROZ" xml:space="preserve">
+    <value>Enter the data of the process heat profiles</value>
+  </data>
+  <data name="BPF_KOPFBAND_STROM" xml:space="preserve">
+    <value>Enter the data of the electricity consumers</value>
+  </data>
+  <data name="BPF_KOPFBAND_BW" xml:space="preserve">
+    <value>Enter the data of the domestic hot water profiles</value>
+  </data>
+  <data name="BPF_KOPFBAND_KAELTE" xml:space="preserve">
+    <value>Enter the data of the cooling demand profiles</value>
+  </data>
   <data name="BPF_LBL_PROJEKTLISTE_KAELTE" xml:space="preserve">
     <value>Selected cooling demands in the project</value>
   </data>
@@ -53026,9 +53035,6 @@ chart</value>
   </data>
   <data name="BPF_BTN_TYP_AENDERN_KAELTE" xml:space="preserve">
     <value>Edit type in database</value>
-  </data>
-  <data name="BPF_BTN_SIMULATION_KAELTE" xml:space="preserve">
-    <value>Simulation</value>
   </data>
   <data name="BADM_TITEL_KAELTE" xml:space="preserve">
     <value>Cooling demand management</value>

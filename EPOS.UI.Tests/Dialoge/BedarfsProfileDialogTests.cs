@@ -39,7 +39,8 @@ public class BedarfsProfileDialogTests : EposBunitContext
         => new Katalogfilterzeile(id, name)
             .MitText(Katalogfilterprofil.SpBezeichner, name)
             .MitText(Katalogfilterprofil.SpTyp, typ)
-            .MitZahl(Katalogfilterprofil.SpJahressummeMwh, summe, 3)
+            .MitZahl(Katalogfilterprofil.SpJahressummeMwh, summe,
+                     Energieeinheit.JAHRESWERT_MWH_NACHKOMMASTELLEN) // wie BedarfStammCtrl (BP-3)
             .MitText(Katalogfilterprofil.SpBeschreibung, beschreibung)
             .MitKennzeichen(Katalogfilterprofil.SpAuslieferung, false);
 
@@ -274,7 +275,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
             Zeile(1, "Profil A", 10), Zeile(2, "Profil B", 5)
         });
 
-        Assert.Contains("15,00", cut.Markup);
+        Assert.Equal("15", cut.Find(".epos-zweispalten-summe b").TextContent); // BP-3: N0
     }
 
     [Fact]
@@ -504,7 +505,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         };
         var cut = Aufbauen(zeilen: zeilen);
 
-        Assert.Contains("20,00", cut.Markup);
+        Assert.Equal("20", cut.Find(".epos-zweispalten-summe b").TextContent); // BP-3: N0
 
         Einheitenfeld(cut).Change("1");
         Assert.Contains("20000", cut.Markup);
@@ -1450,9 +1451,14 @@ public class BedarfsProfileDialogTests : EposBunitContext
         List<BedarfsProfilZeile> zeilen, IReadOnlyList<Katalogfilterzeile>? katalog = null,
         BedarfsArt art = BedarfsArt.Prozesswaerme, Func<string, bool>? loeschen = null,
         Func<string, string, string, bool, IReadOnlyDictionary<string, object>>? typStamm = null,
-        IReadOnlyList<(int Id, string Text)>? kalender = null, Action? geaendert = null, EPOS.UI.Bausteine.Schlossweg? schloss = null)
+        IReadOnlyList<(int Id, string Text)>? kalender = null, Action? geaendert = null, EPOS.UI.Bausteine.Schlossweg? schloss = null,
+        Func<string, IReadOnlyList<Parameterwert>>? vergleich = null,
+        Func<BedarfsProfilZeile, IReadOnlyList<Parameterwert>>? vergleichProjekt = null, string kopfband = "Geben Sie die Daten ein")
         => Render<BedarfsProfileDialog>(p => p
             .Add(x => x.Schloss, schloss)
+            .Add(x => x.Vergleichsparameter, vergleich)
+            .Add(x => x.VergleichsparameterProjekt, vergleichProjekt)
+            .Add(x => x.KopfbandText, kopfband)
             .Add(x => x.Art, art)
             .Add(x => x.TitelText, "Bedarf")
             .Add(x => x.Zeilen, zeilen)
@@ -1475,7 +1481,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
     {
         var cut = AufbauenS4(new List<BedarfsProfilZeile> { Zeile(1, summe: 12.5), Zeile(2, "Profil B", 7.5) });
 
-        Assert.Contains("20,00", cut.Find(".epos-zweispalten-summe").TextContent);
+        Assert.Equal("20", cut.Find(".epos-zweispalten-summe b").TextContent); // BP-3: N0
         Assert.False(cut.Find(".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt").HasAttribute("disabled"));
         Assert.Null(cut.Find(".epos-zweispalten-bereich--projekt > .epos-zweispalten-kopfleiste").QuerySelector(".epos-knopf--bearbeiten-projekt"));
         Assert.NotNull(cut.Find(".epos-knopf--simulation"));
@@ -1546,7 +1552,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
 
         string zf = cut.Find(".epos-satzzusammenfassung").TextContent;
         Assert.Contains("Typ 1", zf);
-        Assert.Contains("12,50", zf);
+        Assert.Contains("12", cut.FindAll(".epos-satzzusammenfassung dd").Select(e => e.TextContent.Trim())); // BP-3: 12,5 MWh ganzzahlig
         Assert.Contains("Kalender", zf);
         Assert.Contains("Beschreibung Profil A", zf);
         // Ohne Ueberlagerung stehen die Felder nicht im Dialog.
@@ -1720,12 +1726,120 @@ public class BedarfsProfileDialogTests : EposBunitContext
                              schloss: new Schlosspruefung().Weg());
         Assert.Empty(cut.FindAll(".epos-zweispalten-fussleiste"));
         Assert.Empty(cut.FindAll(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten"));
-        string[] folge = { "epos-knopf--typ-aendern", "epos-katalogschloss", "epos-knopf--loeschen",
-                           "epos-knopf--bearbeiten-projekt", "epos-knopf--neu" };
+        // BP-2: die Reihenfolge der Erzeuger - Vergleichen…, Schloss setzen…, Löschen, Bearbeiten…, dann Typ ändern…, Neu….
+        string[] folge = { "epos-knopf--vergleichen", "epos-katalogschloss", "epos-knopf--loeschen",
+                           "epos-knopf--bearbeiten-projekt", "epos-knopf--typ-aendern", "epos-knopf--neu" };
         var namen = cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-satzknoepfe").Children
             .Select(e => folge.FirstOrDefault(f => e.ClassList.Contains(f))).OfType<string>().ToList();
         Assert.Equal(folge, namen.ToArray());
-        Assert.Empty(cut.FindAll(".epos-zweispalten-satzknoepfe .epos-knopf--vergleichen"));   // der Dialog vergleicht nicht
+    }
+
+    // =================================================================================
+    // BP-1/BP-2 (Anwenderentscheide 16.10.2026): Titel einmal, Knopfleiste wie bei den Erzeugern
+    // =================================================================================
+
+    [Fact]
+    public void BP1_Der_Titel_steht_einmal_daneben_die_Hinweiszeile_im_Kopf()
+    {
+        var cut = AufbauenS4(DreiZeilen(), art: BedarfsArt.Kaelte, kopfband: "Geben Sie die Daten der Kältebedarfsprofile ein");
+        Assert.Equal("Bedarf", cut.Find(".epos-dialog-kopf .epos-dialog-titel").TextContent);
+        Assert.Equal("Geben Sie die Daten der Kältebedarfsprofile ein",
+                     cut.Find(".epos-dialog-kopf .epos-dialog-kontext").TextContent);
+        Assert.Empty(cut.FindAll(".epos-kontextzeile"));
+        Assert.Single(cut.FindAll("*").Where(e => e.ChildElementCount == 0 && e.TextContent.Trim() == "Bedarf"));
+    }
+
+    [Fact]
+    public void BP1_Ohne_Gabe_des_Wirtes_steht_die_Hinweiszeile_der_Art()
+    {
+        var cut = AufbauenS4(DreiZeilen(), art: BedarfsArt.Kaelte, kopfband: "");
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.BPF_KOPFBAND_KAELTE,
+                     cut.Find(".epos-dialog-kopf .epos-dialog-kontext").TextContent);
+    }
+
+    [Fact]
+    public void BP1_Die_Hinweiszeile_je_Art_steht_in_beiden_Sprachen()
+    {
+        foreach (string kultur in new[] { "de-DE", "en-US" })
+        {
+            var vorher = WindowsFormsApplication1.MyResource.Resource.Culture;
+            WindowsFormsApplication1.MyResource.Resource.Culture = new CultureInfo(kultur);
+            try
+            {
+                foreach (string s in new[] { "BPF_KOPFBAND_PROZ", "BPF_KOPFBAND_STROM", "BPF_KOPFBAND_BW", "BPF_KOPFBAND_KAELTE" })
+                {
+                    string? text = WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(s, new CultureInfo(kultur));
+                    Assert.False(string.IsNullOrWhiteSpace(text), s + " " + kultur);
+                    Assert.NotEqual(WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
+                        s.Replace("KOPFBAND", "TITEL"), new CultureInfo(kultur)), text);
+                }
+            }
+            finally { WindowsFormsApplication1.MyResource.Resource.Culture = vorher; }
+        }
+    }
+
+    [Fact]
+    public void BP2_Die_Knoepfe_tragen_die_Beschriftungen_der_Erzeuger()
+    {
+        var cut = AufbauenS4(DreiZeilen(), typStamm: (_, _, _, _) => new Dictionary<string, object>(),
+                             schloss: new Schlosspruefung().Weg());
+        KatalogKlick(cut, 0);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.AUSWAHL_BTN_VERGLEICHEN, AmSatz(cut, "epos-knopf--vergleichen").TextContent.Trim());
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.BPF_BTN_KAT_NEU, AmSatz(cut, "epos-knopf--neu").TextContent.Trim());
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.BPF_BTN_KAT_LOESCHEN, AmSatz(cut, "epos-knopf--loeschen").TextContent.Trim());
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.BPF_BTN_KAT_TYP_AENDERN, AmSatz(cut, "epos-knopf--typ-aendern").TextContent.Trim());
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.AUSWAHL_BTN_BEARBEITEN, AmSatz(cut, "epos-knopf--bearbeiten-katalog").TextContent.Trim());
+        string leiste = cut.Find(".epos-zweispalten-satzknoepfe").TextContent;
+        Assert.DoesNotContain("in DB", leiste);
+        Assert.DoesNotContain("DB ändern", leiste);
+    }
+
+    [Fact]
+    public void BP2_Vergleichen_ist_unter_zwei_Saetzen_weich_gesperrt()
+    {
+        var cut = AufbauenS4(DreiZeilen(), vergleich: n => VergleichWirtHilfe.Werte("K:" + n),
+                             vergleichProjekt: z => VergleichWirtHilfe.Werte("P:" + z.IdZ));
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[0].Click();
+        var knopf = AmSatz(cut, "epos-knopf--vergleichen");
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.False(knopf.HasAttribute("disabled"));
+        knopf.Click();
+        Assert.False(cut.FindComponent<EPOS.UI.Bausteine.Zweispaltenauswahl>().Instance.VergleichOffen);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.AUSWAHL_VERGLEICH_SPERRE, cut.Find(".epos-warnbanner-text").TextContent);
+        // Projektzeile und Katalogsatz gewählt: frei (KA-E-24, ohne Kreuze das Paar).
+        KatalogKlick(cut, 0);
+        Assert.Null(AmSatz(cut, "epos-knopf--vergleichen").GetAttribute("aria-disabled"));
+    }
+
+    [Fact]
+    public void BP2_Vergleichen_stellt_Projektzeile_und_Katalogsatz_nebeneinander()
+    {
+        var ids = new List<int>();
+        var cut = AufbauenS4(DreiZeilen(), vergleich: n => VergleichWirtHilfe.Werte("K:" + n),
+                             vergleichProjekt: z => { ids.Add(z.IdZ); return VergleichWirtHilfe.Werte("P:" + z.IdZ); });
+        VergleichWirtHilfe.ProjektzeileGegenKatalogsatz(cut, ids, "Profil A");
+    }
+
+    [Fact]
+    public void BP2_Vergleichen_zeigt_drei_angekreuzte_Saetze_mit_Herkunft()
+    {
+        var cut = AufbauenS4(DreiZeilen(), vergleich: n => VergleichWirtHilfe.Werte("K:" + n),
+                             vergleichProjekt: z => VergleichWirtHilfe.Werte("P:" + z.Name));
+        var projekt = cut.Find(".epos-zweispalten-bereich--projekt").QuerySelectorAll("td .epos-wahlkaestchen");
+        projekt[0].Click();
+        cut.Find(".epos-zweispalten-bereich--projekt").QuerySelectorAll("td .epos-wahlkaestchen")[1].Click();
+        cut.Find(".epos-zweispalten-bereich--katalog").QuerySelectorAll("td .epos-kaestchenzelle input")[1].Change(true);
+        AmSatz(cut, "epos-knopf--vergleichen").Click();
+        var koepfe = cut.FindAll(".epos-vergleich thead th").Skip(1).Select(th => th.TextContent).ToList();
+        Assert.Equal(3, koepfe.Count);
+        Assert.EndsWith("Profil A", koepfe[0]);
+        Assert.EndsWith("Profil B", koepfe[1]);
+        Assert.EndsWith("Profil B", koepfe[2]);
+        Assert.StartsWith(WindowsFormsApplication1.MyResource.Resource.AUSWAHL_VERGLEICH_HERKUNFT_KATALOG, koepfe[2]);
+        // Ein vierter Satz sperrt mit dem Grund der Grenze.
+        cut.Find(".epos-zweispalten-bereich--katalog").QuerySelectorAll("td .epos-kaestchenzelle input")[0].Change(true);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.AUSWAHL_VERGLEICH_GRENZE,
+                     AmSatz(cut, "epos-knopf--vergleichen").GetAttribute("title"));
     }
 
     [Fact]

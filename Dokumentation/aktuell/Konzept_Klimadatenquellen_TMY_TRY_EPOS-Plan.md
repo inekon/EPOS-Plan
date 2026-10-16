@@ -1,9 +1,12 @@
 # Klimadatenquellen: PVGIS-TMY und DWD-Testreferenzjahre
 
-**Gegenstand.** Woher EPOS-Plan die Stundenwerte einer Klimaregion bezieht, was davon
-gespeichert wird und was benannt verworfen wird. Das Papier beschreibt den Klimadaten-Import
-(`EPOS.Kern/Allgemein/Import/`) und die Rubrik „Klimadaten" in den globalen
-Anwendungseinstellungen.
+**Gegenstand.** Woher EPOS-Plan die Stundenwerte einer Klimaregion bezieht, wie der Anwender
+den Datensatz vor dem Import sieht, was davon als Rechenspalte und was als Rohwert gespeichert
+wird und wie die Werte als CSV hinausgehen. Das Papier beschreibt den Klimadaten-Import und
+-Export (`EPOS.Kern/Allgemein/Import/`, `EPOS.Kern/Allgemein/Export/`), den Dialog
+„Klimadaten" und die Rubrik „Klimadaten" in den globalen Anwendungseinstellungen. Befund,
+Herleitung und Mockups von Vorschau, Rohwerten, Export und weiteren Reihen stehen in
+[`2026-10-16_Konzept_Klimadatenimport_Vorschau_und_Vollimport.md`](../ueberholt/2026-10-16_Konzept_Klimadatenimport_Vorschau_und_Vollimport.md).
 
 **Abgrenzung.** Die Rechenwege, die auf den Stundenwerten aufsetzen — Transposition auf
 geneigte Flächen, PV-Ertrag, Gebäudesimulation —, stehen in
@@ -25,6 +28,17 @@ Eine Klimaregion trägt das, was bei ihrem Import geholt wurde; die Quelle steht
 Herkunftsvermerk (`Tab_Klimaregion_STAMM.Details`). Regionen unterschiedlicher Herkunft
 stehen nebeneinander, ohne einander zu beeinflussen.
 
+**Was ein Import speichert:** die Rechenspalten in `Tab_Solar(_STAMM)` und die Tageswerte in
+`Tab_Klimadaten(_STAMM)`, mit denen der Rechenweg arbeitet, und im Katalogsatz **jede Größe, die
+die Quelle führt**, als Rohwert in `Tab_Klimastunde_STAMM` (Abschnitt 6). An der Region stehen
+dazu der **Bezugspunkt** — Repräsentanzstation, Dateistandort oder PVGIS-Punkt mit Name,
+Koordinate, Höhe und Entfernung —, die Höhe des Standorts, die gelesene Ausführung, der Zeitbezug
+der Rohwerte und das Kennzeichen `Rohdaten`. `Longitude` und `Latitude` bleiben der
+Rechenstandort; der Bezugspunkt steht getrennt daneben.
+
+**Weitere Quellen** — EPW, Meteonorm, eine freie CSV — kennt der Import nicht. Ein CSV-Import
+als vierte Quelle ist vorgemerkt (Abschnitt 12).
+
 **Warum jede Quelle Longitude und Latitude braucht:** Sonnengeometrie und die Umrechnung
 auf Direkt-Normal rechnen damit — bei den Regionaldaten kommt die Wahl der nächsten Region
 dazu. Eine TRY-Datei führt in ihrem Kopf **Lambert-Koordinaten**; der Kern rechnet sie in
@@ -33,30 +47,48 @@ Anwender kann sie überschreiben.
 
 ## 2. Bedienweg
 
-Im Dialog **Klimadaten** steht über der Gruppe „Standort" die Gruppe **Klimaquelle**:
+Der Dialog **Klimadaten** ist eine Verwaltung wie die Gerätekataloge: links die Regionsliste
+(2.1), rechts das Stammblatt der gewählten Region mit Kennzahlen, Jahresverlauf (2.4) und
+Herkunft. Die Fußleiste trägt Statuszeile · `Import…` · Beenden. Die Zeilenhandlungen stehen
+in der Auswahlleiste: Vergleichen (ab zwei Zeilen), Schloss aufheben…/Schloss setzen…,
+**Exportieren…** (genau eine Region, 2.5) und Löschen. Eine Region entsteht nur durch Einlesen;
+Duplizieren gibt es nicht.
+
+`Import…` öffnet die Überlagerung **Klimadaten einlesen**:
 
 1. **Quelle wählen** — PVGIS (vorgewählt), TRY-Datei oder TRY-Regionaldaten.
-2. **Standort** — Ortsname oder Longitude/Latitude mit Bezeichnung, wie bei PVGIS.
-3. **Bei TRY-Datei** — die Datei über den Dateiwähler (`*.dat`). Mit der Wahl
-   belegt der Dialog **Longitude, Latitude und — falls leer — die Bezeichnung** aus dem
-   Dateikopf vor (Abschnitt 3.1); darunter steht, woher die Zahlen kommen. Jedes Feld
-   bleibt änderbar.
-4. **Bei Regionaldaten** — Jahr (2015 oder 2045) und Szenario (mittleres Jahr,
-   sommerwarm, winterkalt); Vorgabe **2015, mittleres Jahr**. Ohne Dateipfad läuft der
-   Bereichsabruf über die hinterlegte Adresse; mit Pfad wird die lokale `data.zip` gelesen.
-5. **Daten einlesen** — die Region entsteht mit 8 760 Stundenwerten und 365 Tageswerten;
-   die Meldung nennt die Quelle, bei den Regionaldaten zusätzlich Region, Koordinate,
-   Entfernung, Szenario und Jahr.
+2. **Standort** — Ortsname oder Longitude/Latitude mit Bezeichnung, dazu wahlweise die **Höhe
+   des Ortes** in Metern (`KlimaImportAuftrag.StandortHoeheM`). Sie geht in Suche und Import ein;
+   der Höhenunterschied zum Bezugspunkt entscheidet über den Hinweis „nicht ortstypisch“ (2.3).
+   Leer heißt unbekannt; bei PVGIS kommt die Höhe aus der Antwort, bei einer TRY-Datei ohne
+   eingegebene Koordinaten aus dem Kopf. Eine Höhenabfrage über das Netz gibt es nicht.
+3. **Bei TRY-Datei** — die Datei über den Dateiwähler (`*.dat`). Mit der Wahl belegt der
+   Dialog **Longitude, Latitude und — falls leer — die Bezeichnung** aus dem Dateikopf vor
+   (Abschnitt 3.1); darunter steht, woher die Zahlen kommen. Jedes Feld bleibt änderbar.
+4. **Bei Regionaldaten** — Jahr (2015 oder 2045) und Szenario (mittleres Jahr, sommerwarm,
+   winterkalt); Vorgabe **2015, mittleres Jahr**. Ohne Dateipfad läuft der Bereichsabruf über
+   die hinterlegte Adresse; mit Pfad wird die lokale `data.zip` gelesen.
+5. **Datensatz suchen** — für alle drei Quellen: Der Kern geokodiert, wählt den Bezugspunkt und
+   **liest den Datensatz** über denselben Leseweg wie das Einlesen
+   (`KlimaImportAblauf.RegionErmittelnAsync`; bei TRY ein Eintrag von rund 155 KB, bei PVGIS ein
+   Abruf). Gespeichert wird nichts. Darunter steht die Vorschaukarte (2.3). Longitude, Latitude
+   und eine leere Bezeichnung werden aus dem gefundenen Standort vorbelegt und bleiben änderbar;
+   auf dem Ortsweg heißt die Region wie der Ort.
+6. **Daten einlesen** — übernimmt den gelesenen Vorschausatz **ohne zweiten Abruf und ohne
+   zweite Geokodierung** (`PasstZu`: Ort bzw. Koordinaten, Quelle, Datei, Jahr, Szenario). Die
+   Region entsteht mit 8 760 Stundenwerten, 365 Tageswerten und den Rohwerten der Quelle
+   (Abschnitt 6) und ist danach in der Liste gewählt. Die Meldung nennt die Quelle, bei den
+   Regionaldaten zusätzlich Region, Koordinate, Entfernung, Szenario und Jahr. Ohne gültige,
+   passende Vorschau ist der Knopf **weich gesperrt** mit dem Grund „Erst ‚Datensatz suchen‘“ —
+   überall dort, wo die Hülle eine Vorschau anbietet.
 
-Der Lauf ist abbrechbar. Eine Region desselben Namens wird benannt abgelehnt — und genau
-das ist der Schutz vor einem Doppelimport: Die Eingabefelder bleiben nach einem Erfolg
-stehen, damit „Daten einlesen" für den nächsten Ort bedienbar bleibt.
-
-**Die Knöpfe stehen in EINER Fußleiste** unter dem Rahmen: `Daten einlesen · Füller ·
-Löschen · Beenden`, Beenden hervorgehoben — dasselbe Muster wie in den Katalogdialogen.
-„Durchsuchen" ist kein Knopf der Fußleiste, sondern steht neben seinem Feld: Die Blöcke
-Klimaquelle und Standort stehen im einspaltigen Formularraster, das Beschriftung, Feld und
-Knopf in eine Zeile setzt.
+Die Schlussleiste **Abbrechen · Daten einlesen** haftet am unteren Rand der Überlagerung; die
+Vorschaukarte rollt darüber. Das Fenster wünscht das Maß der Überlagerung
+(`Fenstermass.MitUeberlagerung`; 1 000 px mit Karte, 900 px vor der Suche). Der Lauf ist
+abbrechbar. Eine Region desselben Namens wird benannt abgelehnt — und genau das ist der Schutz
+vor einem Doppelimport: Die Eingabefelder bleiben nach einem Erfolg stehen, damit der nächste
+Ort ohne Neueingabe bedienbar bleibt. Die Blöcke Klimaquelle und Standort stehen im
+einspaltigen Formularraster, das Beschriftung, Feld und „Durchsuchen“ in eine Zeile setzt.
 
 ### 2.1 Die Regionsliste
 
@@ -121,6 +153,90 @@ Klimadaten-Dialog. Den Text baut der Kern (`StartseiteCtrl.KlimaregionenMitId` �
 `KlimaregionStammCtrl.Auswahlzeilen`), nicht die Razor-Seite; gesucht wird über den ganzen
 Eintrag, also auch über das Jahr.
 
+### 2.3 Die Vorschau vor dem Einlesen
+
+Die Vorschaukarte zeigt, was „Daten einlesen“ übernähme:
+
+- **Treffer.** „Datensatz gefunden: TRY 2045 · sommerwarm“ mit grünem Kennzeichen
+  (`AusfuehrungGefunden`). Fehlt die Ausführung im Paket, steht „… ist nicht im Paket“ mit Grund
+  und den vorhandenen Ausführungen als Wahlknöpfen; ein Klick setzt Jahr und Szenario und sucht neu.
+- **Standort und Bezugspunkt.** Anzeigename der Geokodierung, Breite/Länge und Höhe des Ortes;
+  daneben der Bezugspunkt (`KlimaBezugspunkt`: Repräsentanzstation, Dateistandort oder
+  PVGIS-Punkt) mit Koordinate, Höhe, Entfernung und Höhenunterschied zur eingegebenen Höhe.
+- **Hinweise als leise Zeile.** Ab 50 km Entfernung **oder** 200 m Höhenunterschied
+  (einschließlich; Festwerte `KlimaVorschauFestwerte`, nicht in den Einstellungen): „Bezugspunkt
+  nicht ortstypisch; für ortsgenaue Werte die TRY-Datei des DWD für diesen Standort einlesen.“ Im
+  Regionalweg steht immer „Nächste Repräsentanzstation, nicht die amtliche Klimaregion.“
+  (Abschnitt 7).
+- **Kennzahlen** (`KlimaKennzahlen`, im Kern gerechnet): Jahresmittel, Minimum und Maximum der
+  Lufttemperatur, Jahressumme der Globalstrahlung [kWh/m²a], Gradtagzahl G20/15 nach VDI 3807
+  Blatt 1 [Kd/a] und die Zahl der Heiztage.
+- **Monatsbild** (`KlimaVorschaubild` über `ChartRenderer.SummenlinieModell` im Baustein
+  `DiagrammSvg`): Vorgabe Monatssumme der Globalstrahlung (links) und Monatsmittel der
+  Temperatur (rechts); weitere Reihen über die Reihenwahl (2.4).
+- **Parameterbestand.** Jede Größe aus Abschnitt 6 als *geführt*, *gerechnet* oder *fehlt*, so
+  wie die Quelle sie führt, dazu „wird gespeichert“ für die Rohwerte.
+
+Die Karte hält den Eingabeschlüssel der Suche (Ort bzw. Koordinaten, Quelle, Datei, Paket, Jahr,
+Szenario). Weicht eine Eingabe davon ab, ist die Karte **sichtbar verfallen** („Eingabe geändert,
+die Vorschau ist verfallen“), und „Daten einlesen“ ist weich gesperrt, bis neu gesucht ist. Ein
+Fehlschlag der Suche (kein Bereichsabruf, außerhalb der 300-km-Grenze, Ort unbekannt) steht als
+Zeile in der Karte.
+
+### 2.4 Weitere Reihen
+
+Vorschau und Jahresverlauf zeigen außer Temperatur und Globalstrahlung jede weitere Größe der
+Region wahlweise an. Beide Stellen nutzen den Baustein **`Reihenwahl`**: Schaltknöpfe (Chips) je
+Größe, gruppiert nach „Temperatur und Feuchte“, „Strahlung“, „Fassadenwerte“ (nur im
+Jahresverlauf) und „Bewölkung, Druck, Wind“; ein Chip trägt `aria-pressed`, die Einheit und bei
+einem Rohwert die Marke „R“. Ein nicht wählbarer Chip ist weich gesperrt und nennt den Grund im
+Titel und in einer leisen Zeile unter der Wahl. Name, Einheit, Monatsregel, Gruppe und Herkunft
+jeder Größe stehen einmal im Kern im **`KlimaReihenkatalog`**; Oberfläche und Export (2.5) fragen
+nur ab.
+
+| Stelle | Regel |
+|---|---|
+| **Monatsbild der Vorschau** | Chips für jede Größe, die der Parameterbestand als *geführt* oder *gerechnet* meldet. Höchstens **zwei Einheiten** zugleich, je Einheit eine Achse; Strahlung steht links, sonst die zuerst gewählte Einheit. Ein Chip, dessen Einheit eine dritte wäre, ist weich gesperrt (kein stilles Ersetzen). Die letzte gewählte Reihe bleibt. „Vorgabe“ stellt Globalstrahlung und Temperatur wieder her. Strahlung als Monatssumme [kWh/m²] mit eckigen Marken, alle übrigen Größen als Monatsmittel mit runden Marken; fehlen einzelne Stunden, nennt der Titel des Chips die Zahl der Stunden mit Wert |
+| **Reiter „Weitere Reihen“ im Jahresverlauf** | dritter Reiter neben Temperatur und Sonnenwinkel, mit den gespeicherten Größen der Region (Luftfeuchte, Global-, Direkt- und Diffusstrahlung, Gegenstrahlung, Bedeckungsgrad, die vier Fassadenwerte und die Rohwerte). **Eine Einheit je Bild, bis zu drei Reihen**: Eine Reihe derselben Einheit kommt hinzu, eine Reihe anderer Einheit zeigt sich allein, die vierte ist weich gesperrt. Vorgabe Globalstrahlung. Bild `ChartRenderer.JahresgangModell` mit Zoom, Achsenwahl, „groß…“ und „CSV…“ wie in den beiden anderen Reitern. Ein Regionswechsel behält die Wahl, soweit die neue Region die Reihen führt; gespeichert wird die Wahl nicht |
+
+Windrichtung und Qualitätskennung haben kein Bild (ein Winkelmittel täuscht, eine Kennung ist
+keine Größe); sie gehen nur über den Export hinaus. **Rohwert-Chips** (Luftdruck,
+Windgeschwindigkeit, Wasserdampfgehalt, Ausstrahlung, Direktstrahlung horizontal) stehen da,
+sobald die Datenbank die Rohtabelle führt (`KlimaReihenkatalog.RohwerteFreigeschaltet`): in der
+Vorschau aus der Rohreihe des gelesenen Satzes, im Jahresverlauf über
+`KlimaExportCtrl.RohwerteLesen` aus `Tab_Klimastunde_STAMM`. Führt die Region eine Größe nicht —
+eine Spalte, die in allen Stunden leer ist, oder eine Region ohne Rohwerte —, bleibt der Chip
+weich gesperrt mit „Quelle führt die Größe nicht“.
+
+### 2.5 Der CSV-Export
+
+„Exportieren…“ in der Auswahlleiste öffnet für **genau eine Region** die Überlagerung
+**Klimadaten exportieren** (`KlimaExportDialog`); eine Region je Datei. Die Datei heißt
+`Klimadaten_<Region>.csv`.
+
+| Gruppe | Inhalt | Vorgabe |
+|---|---|---|
+| Parameter | Kästchen je Größe in den Gruppen „Rechenwerte (wie die Simulation sie liest)“, „Fassadenwerte und Sonnenwinkel“, „Rohwerte der Quelle“ und „Abgeleitet“ (Taupunkt nach Magnus aus Temperatur und Feuchte, gekennzeichnet, nie gespeichert); „Alle“ und „Keine“. Nicht verfügbare Größen sind weich gesperrt: „Die Quelle führt die Größe nicht.“ bzw. „Region ohne Rohdaten importiert“ | Temperatur, Feuchte, Global-, Direkt- und Diffusstrahlung |
+| Trennzeichen | Semikolon · Komma · Tabulator | Semikolon |
+| Dezimalzeichen | Komma · Punkt; Komma neben dem Trennzeichen Komma ist weich gesperrt | Komma |
+| Zeitspalte | laufende Stunde 1…8 760 · Datum und Uhrzeit `TT.MM. hh:00` (Beginn der Stunde) · Stunde und Datum · ISO 8601 mit Bezugsjahr · keine | laufende Stunde |
+| Zeitbezug | MEZ ohne Sommerzeit (UTC+1) · UTC | MEZ |
+| Kopf | „Name [Einheit]“ in einer Zeile · Name und Einheitenzeile · ohne Kopf; dazu der Herkunftsblock als `#`-Zeilen (Region, Quelle, Ausführung, Koordinaten, Höhe, Bezugspunkt, Zeitbezug, Zeitstempelregel, Lizenz) | eine Zeile, Herkunft ja |
+| Vorlagen | „Haus (wie CSV am Bild)“ und „International (Komma, Punkt, ISO)“ setzen die Formatfelder | – |
+| Vorschau | die ersten fünf Stunden, wie sie geschrieben werden | – |
+
+Gelesen wird der **Katalogsatz**: die zwölf Rechenspalten aus `Tab_Solar_STAMM` und die 14
+Rohspalten aus `Tab_Klimastunde_STAMM`, diese nur bei `Rohdaten = 1`. Rechenwerte stehen in UTC,
+Rohwerte im Raster der Region (`Zeitbezug`); die Ausgabe wird zyklisch im Gemeinjahr auf den
+gewählten Zeitbezug gedreht, `mez[j] = utc[(j − 1) mod 8760]`. Die Schlüssel, Spalten und
+Einheiten der Rechenspalten kommen aus dem `KlimaReihenkatalog`. Im Kern liegen `KlimaCsv` (neben
+`ZeitreihenCsv`, mit dessen Entschärfung der Spaltennamen), `KlimaExportOptionen` und
+`KlimaExportCtrl`; volle Genauigkeit ist ein Schalter des Kerns für den künftigen CSV-Import. Die
+Schlussleiste lautet Abbrechen · Exportieren … (auf iOS „Exportieren und teilen …“) und schreibt
+nur im OK-Weg; die Dateiwahl liefert die Hülle über `CsvExportClass.DateiWaehlenFuerExportAsync`.
+Der Hilfe-Assistent kennt die Maske als `KlimaExport`. Die Bilder des Dialogs exportieren ihre
+Reihen daneben weiter über „CSV…“ am Bild.
+
 ## 3. Das TRY-Format und seine Zuordnung
 
 Eine DWD-TRY-Datei besteht aus einem freien Kopf (34 Zeilen bei den Testreferenzjahren
@@ -142,7 +258,7 @@ RW HW MM DD HH t p WR WG N x RF B D A E IL
 | `A` | atmosphärische Gegenstrahlung [W/m²] | `Tab_Solar_STAMM.Gegenstrahlung` |
 | `RF` | relative Feuchte [%] | `Tab_Solar_STAMM.Luftfeuchte` |
 | `N` | Bedeckungsgrad [Achtel, 0…8] | `Tab_Solar_STAMM.Bedeckungsgrad` |
-| `p WR WG x E IL` | Druck, Windrichtung, Windgeschwindigkeit, Wasserdampfgehalt, langwellige Ausstrahlung, Qualitätsbit | **benannt verworfen** (Abschnitt 6) |
+| `p WR WG x E IL` | Druck, Windrichtung, Windgeschwindigkeit, Wasserdampfgehalt, langwellige Ausstrahlung, Qualitätsbit | nur als **Rohwert** in `Tab_Klimastunde_STAMM` (Abschnitt 6), keine Rechenspalte |
 
 Aus Stundenwerten und Sonnengeometrie entstehen anschließend — über dieselben Methoden wie
 bei PVGIS — die vier Fassadenwerte `Sol_Nord/Ost/Sued/West`, der `Sonnenwinkel` und daraus
@@ -237,20 +353,52 @@ Die Sonnenhöhe liefert `SolarCalculator.Sonnenhoehe` aus Longitude, Latitude, T
 und Stunde — dieselbe Geometrie, die auch die Fassadenwerte rechnet. Nach der Umrechnung
 stimmen die vier Fassadenwerte einer TRY-Region mit denen einer PVGIS-Region überein.
 
-## 6. Das benannte Verwerfen
+## 6. Rechenspalten und Rohwerte
 
-`Tab_Solar` und `Tab_Solar_STAMM` führen je Stunde `Gegenstrahlung` [W/m²], `Luftfeuchte` [%]
-und `Bedeckungsgrad` [Achtel] — die Größen, die die Gebäudesimulation nach VDI 6007 braucht.
-PVGIS füllt die ersten beiden (`IR(h)`, `RH`), TRY alle drei (`A`, `RF`, `N`); **NULL heißt
-„nicht verfügbar", nie 0.** Eine PVGIS-Region trägt deshalb keinen Bedeckungsgrad, und die
-Schätzung aus dem Diffusanteil bleibt das, was sie ist: der Rückfall bei NULL.
+**Die Rechenspalten.** `Tab_Solar` und `Tab_Solar_STAMM` führen je Stunde Temperatur, Global-,
+Direkt-normal- und Diffusstrahlung, die vier Fassadenwerte, den Sonnenwinkel und dazu
+`Gegenstrahlung` [W/m²], `Luftfeuchte` [%] und `Bedeckungsgrad` [Achtel] — die Größen, die die
+Gebäudesimulation nach VDI 6007 braucht. PVGIS füllt die ersten beiden (`IR(h)`, `RH`), TRY alle
+drei (`A`, `RF`, `N`); **NULL heißt „nicht verfügbar", nie 0.** Eine PVGIS-Region trägt deshalb
+keinen Bedeckungsgrad, und die Schätzung aus dem Diffusanteil bleibt das, was sie ist: der
+Rückfall bei NULL. Die Rechenspalten, ihre Werte und Umrechnungen (Direkt-normal, Diffusregel
+unter 5°, UTC-Drehung) sind der einzige Eingang des Rechenwegs.
 
-Für Druck (`p`), Windrichtung (`WR`), Windgeschwindigkeit (`WG`), Wasserdampfgehalt (`x`),
-langwellige Ausstrahlung (`E`) und Qualitätsbit (`IL`) gibt es keine Spalte. Diese sechs Größen
-werden **nicht still übergangen**: Sie stehen im Herkunftsvermerk der Region
-(`Tab_Klimaregion_STAMM.Details`, „nicht übernommen: p, WR, WG, x, E, IL") und in der Meldung
-nach dem Import — damit niemand sie später in der Datenbank sucht. Die **Windgeschwindigkeit**
-bleibt ausdrücklich draußen: keine Spalte ohne Leser (Umsetzungskonzept Gebäudesimulation F-S3).
+**Die Rohwerte.** Jede Größe, die eine Quelle führt, steht zusätzlich als Rohwert der Quelle in
+**`Tab_Klimastunde_STAMM`** (`STRICT`, Schemaschritt 238, Primärschlüssel `ID_Klimaregion` und
+`Stunde` 1…8 760, Fremdschlüssel auf `Tab_Klimaregion_STAMM` mit `ON DELETE CASCADE`). Die
+Spalten tragen die Einheit im Namen und sind alle nullbar — NULL heißt „die Quelle führt die
+Größe nicht“:
+
+| Spalte | TRY | PVGIS |
+|---|---|---|
+| `Temperatur_C`, `Luftfeuchte_Prozent`, `Diffus_Horizontal_W_m2`, `Gegenstrahlung_W_m2` | `t`, `RF`, `D`, `A` | `T2m`, `RH`, `Gd(h)`, `IR(h)` |
+| `Direkt_Horizontal_W_m2` | `B` | – |
+| `Direkt_Normal_W_m2`, `Global_Horizontal_W_m2` | – (gerechnet, nicht geführt) | `Gb(n)`, `G(h)` |
+| `Luftdruck_hPa` | `p` | `SP` (Pa, gespeichert in hPa) |
+| `Windrichtung_Grad`, `Windgeschwindigkeit_m_s` | `WR`, `WG` | `WD10m`, `WS10m` |
+| `Bedeckungsgrad_Achtel`, `Wasserdampfgehalt_g_kg`, `Ausstrahlung_W_m2`, `Qualitaet_Strahlung` | `N`, `x`, `E`, `IL` | – |
+
+Prüfklauseln stehen nur, wo sie sicher sind (Luftdruck > 0, Windrichtung 0 bis 360,
+Windgeschwindigkeit, Wasserdampfgehalt und Feuchte ≥ 0). Die Region trägt dazu `Zeitbezug`
+(PVGIS `UTC`, TRY `MEZ` ohne Sommerzeit, ungedreht) und `Rohdaten` (1 = Rohtabelle gefüllt). Der
+Herkunftsvermerk sagt „alle Felder als Rohwerte gespeichert“. Steht der Schemaschritt in einer
+Datenbank nicht, überspringt der Import die Rohwerte benannt; die Rechenspalten entstehen gleich.
+
+- **Rohwerte gibt es nur im Katalog.** Die Projektkopie `Tab_Klimaregion` übernimmt die
+  Herkunftsspalten, die Rohwerte nicht; der Export liest den Katalogsatz.
+- **Kein Leser im Rechenweg.** Keine Datei unter `Allgemein/Simulation/**` und `BhkwPlan.cs`
+  nennt `Tab_Klimastunde` (Wache in `KlimaRohwerteTests`). Referenzbasis und Einfrierregeln
+  bleiben unberührt; ein künftiger Leser einer Rohgröße braucht eigenen Entscheid, eine
+  Rechenspalte in `Tab_Solar` und eine neue Basis.
+- **Altbestand.** Regionen, die vor dem Schemaschritt eingelesen wurden, tragen `Rohdaten = 0`;
+  nachgeladen wird nichts. Ihr Export bietet nur die Rechenwerte an und nennt den Grund.
+- **Katalog und Auslieferung.** Die Rohtabelle ist wie der übrige Klimakatalog von der
+  Katalogfassung ausgenommen; die Herkunftsspalten stehen im Ausschluss des Eintrags
+  `KLIMAREGION` und ändern keine Prüfsumme. Die Auslieferungsvorlage führt die Rohtabelle als
+  Kindkatalog der Region. Die ausgelieferten Regionen und die Testdatenbank tragen **vorerst
+  keine Rohwerte** (rund 1,5 bis 2 MB je Region); Rohwerte in der Auslieferung folgen später
+  (Abschnitt 12).
 
 ## 7. Regionaldaten: Auswahl, Bereichsabruf, Rückfall
 
@@ -275,13 +423,17 @@ Gebraucht werden zwei Dinge: das Zentralverzeichnis des ZIP am Dateiende und **e
   Volldownload wäre die schlechtere Überraschung.
 - **Rückfall.** Eine lokal abgelegte `data.zip` wird ohne Netz gelesen; derselbe Weg macht
   den Prüfstand netzfrei.
-- **Regionsvorschau.** „Region ermitteln" sagt **vor** dem Einlesen, welche Region der
-  Standort trifft: „Region 14 Stötten, Station 48,6600 / 9,8600, Entfernung 12 km", dazu
-  Bezugsjahre und Szenarien, die das Paket für diese Region führt. Gelesen wird dafür allein
-  das Zentralverzeichnis — **kein Eintrag wird entpackt**. Das Einlesen liest das Paket danach
-  ein zweites Mal; die Regionswahl ist dieselbe Funktion, Vorschau und Lauf können deshalb
-  nicht auseinanderlaufen. Ein Fehlschlag (kein Bereichsabruf, außerhalb der 300-km-Grenze,
-  Ort unbekannt) steht als Zeile da und sperrt nichts.
+- **Datensatzsuche.** „Datensatz suchen“ (Abschnitt 2.3) liest vor dem Einlesen das
+  Zentralverzeichnis **und den einen Eintrag** der getroffenen Region: Region, Station mit
+  Koordinate und Höhe, Entfernung, die Ausführungen, die das Paket für diese Region führt, und die
+  Daten selbst. „Daten einlesen“ übernimmt diesen Satz ohne zweiten Abruf; die Regionswahl ist
+  dieselbe Funktion, Vorschau und Lauf können deshalb nicht auseinanderlaufen. Ein Fehlschlag
+  (kein Bereichsabruf, außerhalb der 300-km-Grenze, Ort unbekannt) steht als Zeile da.
+- **Ehrlich benannt.** Gewählt wird die nächste **Repräsentanzstation**, nicht die amtliche
+  Klimaregion des DWD (Regionen mit Höhenstufen) und nicht der ortsgenaue Datensatz im
+  1-km-Raster, den der DWD für die Bezugsjahre 2015 und 2045 über das Klimaberatungsmodul
+  abgibt. Die Vorschau sagt das im Regionalweg immer und rät ab 50 km Entfernung oder 200 m
+  Höhenunterschied zur TRY-Datei für den Standort (Abschnitt 2.3).
 - **Die Region wird mit Namen genannt.** Region 1 ist Bremerhaven, Region 15
   Garmisch-Partenkirchen; die fünfzehn Namen stehen in `TryRegionsnamen` und sind reine
   Anzeige. Die Zuordnung bleibt der nächste Stationsmittelpunkt aus dem Paket.
@@ -291,9 +443,15 @@ Gebraucht werden zwei Dinge: das Zentralverzeichnis des ZIP am Dateiende und **e
 Jede TRY-Region bekommt ihren Herkunftsvermerk in `Tab_Klimaregion_STAMM.Details` und
 denselben Text in der Importmeldung:
 
-- **TRY-Datei:** Dateiname, Importdatum, Lizenzvermerk, verworfene Größen.
+- **TRY-Datei:** Dateiname, Importdatum, Lizenzvermerk, Vermerk der Rohwerte.
 - **Regionaldaten:** Regionsnummer, Koordinate, Entfernung, Szenario, Jahr, Quelle (Adresse
-  oder Dateiname), Importdatum, Lizenzvermerk, verworfene Größen.
+  oder Dateiname), Importdatum, Lizenzvermerk, Vermerk der Rohwerte.
+
+Der Vermerk der Rohwerte lautet „alle Felder als Rohwerte gespeichert“; in einer Datenbank ohne
+Rohtabelle (Abschnitt 6) nennt er statt dessen die nicht übernommenen Größen. Der Bezugspunkt,
+die Standorthöhe und die Ausführung stehen zusätzlich als Spalten an der Region
+(`Bezugspunkt_*`, `Entfernung_km`, `Standort_Hoehe_m`, `Ausfuehrung`) und wandern mit der
+Projektkopie.
 
 Daneben — und unabhängig vom Freitext — hält `Tab_Klimaregion(_STAMM)` die Herkunft als
 Angabe **für das Programm**: `Quelle` trägt den sprachneutralen Schlüssel `PVGIS`, `TRY_DATEI`
@@ -349,12 +507,25 @@ die zwei TRY-Schlüssel nicht kennt, bekommt die Werksvorgabe.
 |---|---|
 | **E5** (Anwender, fortgeschrieben 19.09.2026) | Die Datenträger der Richtlinien bleiben abgelehnt; **DWD-TRY ist zweite Importquelle** neben PVGIS-TMY. Klimabasis einer Region ist das, was bei ihrem Import geholt wurde. |
 | **KL-Q2** | Beide TRY-Wege: die eigene Datei aus dem DWD-Klimaberatungsmodul **und** die offenen Regionaldaten. |
-| **KL-Q3** | Temperatur, Global/Direkt/Diffus und die Flächenwerte werden übernommen; `p WR WG x E IL` werden benannt verworfen. |
+| **KL-Q3** | Temperatur, Global/Direkt/Diffus und die Flächenwerte sind die Rechenspalten; `p WR WG x E IL` bekommen keine Rechenspalte (sie stehen nur als Rohwerte, KD-Q2). |
 | **Anwender 19.09.2026 (e)** | „Alles Relevante für die Gebäudesimulation aufnehmen": `Gegenstrahlung`, `Luftfeuchte` und `Bedeckungsgrad` an `Tab_Solar(_STAMM)`, dazu `Quelle` und `Importdatum` an `Tab_Klimaregion(_STAMM)` — ein Schemaschritt. Windgeschwindigkeit nicht: keine Spalte ohne Leser. |
-| **Anwender 19.09.2026 (b)** | Regionsvorschau vor dem Import; der zweite Netzabruf ist angenommen. |
 | **KL-Q4** | Jahr und Szenario sind wählbar, Vorgabe 2015, mittleres Jahr. |
 | **KL-Q5** | Eigene Wiki-Seite „Programm Dokumentation/Klimadaten". |
 | **Anwender 19.09.2026 (KL-6)** | „Wird die Quelle und Auswahl (z. B. TRY 2045 sommerwarm …) der Klimadaten angezeigt? Diese sollte auch bei der Klimaregion sichtbar sein." — `Szenario` und `Bezugsjahr` an `Tab_Klimaregion(_STAMM)` (Schemaschritt 97), angezeigt in der Regionsliste **und** bei der Klimaregion auf der Übersicht. |
+| **KD-Q1** | Regionalweg: nächste Station bleiben, ehrlich benennen, Höhe und Entfernung zeigen, ab 50 km oder 200 m auf die ortsgenaue TRY-Datei hinweisen. |
+| **KD-Q2** | Rohwerte in eigener Tabelle `Tab_Klimastunde_STAMM`, nicht als Spalten an `Tab_Solar(_STAMM)`. |
+| **KD-Q3** | Die Vorschau liest den Datensatz; der Import übernimmt ihn ohne zweiten Abruf. |
+| **KD-Q4** | Keine Rohwerte in der Projektkopie. |
+| **KD-Q5** | CSV als vierte Importquelle: später, eigener Schritt KD-6 (Abschnitt 12). |
+| **KD-Q6** | Eine Region je Exportdatei; Mehrfachwahl später als mehrere Dateien. |
+| **KD-Q7** | Rohwerte nur bei Neuimporten; Bestands- und Auslieferungsregionen werden nicht nachgeladen. Rohwerte in der Auslieferung erst nach eigenem Entscheid. |
+| **KD-Q8** | Zeitbezug des Exports: Vorgabe MEZ ohne Sommerzeit, UTC wählbar. |
+| **KD-Q9** | Schwellen 50 km und 200 m als Festwerte im Kern. |
+| **KD-Q10** | Monatsbild: Eine dritte Einheit ist weich gesperrt mit Grund, kein stilles Ersetzen. |
+| **KD-Q11** | Jahresverlauf: eine Einheit je Bild, bis zu drei Reihen. |
+| **KD-Q12** | Windrichtung und Qualitätskennung nur im Export, kein Bild. |
+| **KD-Q13** | Jahresverlauf: dritter Reiter „Weitere Reihen“; Temperatur und Sonnenwinkel bleiben. |
+| **KD-Q14** | Strahlung im Monatsbild als Linie (Summen eckig, Mittel rund markiert). |
 
 ## 11. Nachweise
 
@@ -396,16 +567,43 @@ die zwei TRY-Schlüssel nicht kennt, bekommt die Werksvorgabe.
   (fehlender und fremder Bezugszeitraum), die Projektkopie, der zusammengesetzte Satz der
   Liste, der Halbgeviertstrich des Altbestands, eine Datenbank auf Stand 95 und der Satzbau
   in beiden Kulturen.
+- `KlimaImportAblaufTests`, `TryPaketLeserTests` — Datensatzsuche für alle drei Quellen,
+  Bezugspunkt, Höhe, Hinweise an den Schwellen, Übernahme ohne zweiten Abruf, Stuttgart-Vaihingen
+  (Stötten, 56 km) als fester Fall; `KlimadatenDialogTests` — Treffer, kein Treffer mit
+  Ausführungswahl, Verfall, weiche Sperre, Vorbelegung, Höhe im Auftrag.
+- `KlimaRohwerteTests` — Schemaschritt 238, Leser beider Quellen, Schreibweg mit und ohne
+  Rohtabelle, Projektkopie, Ortsweg, `RohwerteLesen`, Wache „Rechenweg liest Rohtabelle nicht“.
+- `KlimaCsvTests`, `KlimaExportDialogTests` — Trennzeichen × Dezimalzeichen × Zeitspalte,
+  Einheitenzeile, Kopf, Altbestand ohne Rohdaten, UTC↔MEZ, Taupunkt, Rundlauf bitgleich.
+- `KlimaReihenkatalogTests`, `ReihenwahlTests` — Monatsreihen, Achsenregel, Rohreihen,
+  Sichtbarkeit, Export-Aliasse; `CsvAmBildWacheTests`, `KiMaskenabdeckungWacheTests`.
+- `Proben/Rasterprobe/fensterprobe.mjs`, Fälle `klimaimport`, `klimaexport` und `klimareihen`
+  mit Gegenprobe — haftende Schlussleiste, rollende Karte.
 - Referenzlauf der fünf Projekte byte-gleich gegen die geltende Basis; der PVGIS-Weg bleibt
-  unverändert.
+  unverändert. Datensatzsuche, Rohwerte und Export lassen den Rechenweg unberührt (Referenzlauf
+  aller Projekte `PASS`, Schritt 238).
 
 ## 12. Offene Punkte
 
 1. **Sommerstunden einer TRY-Reihe liegen beim Lesen eine Stunde früher** (Abschnitt 4). Die
    Quellenkennung an der Region steht jetzt (`Tab_Klimaregion.Quelle`); das quellenbewusste
    LESEN fehlt noch — kein Leser wertet sie bisher aus.
-2. **`E` (langwellige Ausstrahlung) wird nicht gespeichert** (Abschnitt 6) — sie hätte keinen
-   Leser. Sie kommt, wenn der Rechenweg sie braucht.
+2. **Die Rohwerte haben keinen Leser im Rechenweg** (Abschnitt 6). `E` (Ausstrahlung),
+   Wind und Luftdruck stehen in `Tab_Klimastunde_STAMM` bereit; eine Rechenspalte kommt, wenn der
+   Rechenweg sie braucht, mit eigenem Entscheid und neuer Basis.
 3. **Nach Szenario und Jahr wird über die Spalte „Quelle" gefiltert, nicht sortiert**
    (Abschnitt 2.1). Zwei eigene Spalten wären der andere Weg; sie kosten Breite in einem
    ohnehin schmalen Dialog.
+4. **CSV-Import als vierte Quelle (KD-6), vorgemerkt.** Anwenderentscheid KD-Q5: später. Der
+   Rückweg der eigenen Exportdatei und fremder Dateien mit Pflichtspalten, Spaltenzuordnung über
+   `GanglinienImportOptionen` wie im Dialog „Format und Vorschau“ der Ganglinien. Abnahme: Rundlauf
+   Export → Import bitgleich in den Rechenspalten; der Export hält dafür die volle Genauigkeit als
+   Schalter des Kerns bereit.
+5. **Rohwerte in der Auslieferung später** (KD-Q7). Die ausgelieferten Regionen tragen keine
+   Rohwerte; ob und welche nachgeliefert werden, entscheidet der Anwender mit Blick auf die Größe
+   (rund 1,5 bis 2 MB je Region).
+6. **Zuordnung nach der Regionenkarte des DWD.** Ob Stuttgart nach der Regionenkarte zur
+   Region 12 oder 13 gehört, ist nicht belegt, weil `dwd.de` aus der Arbeitsumgebung nicht
+   erreichbar war; die Datensatzsuche bleibt bei der nächsten Repräsentanzstation mit Hinweis.
+7. **Export mehrerer Regionen** je Lauf als mehrere Dateien (KD-Q6) und eine **Windrose** für die
+   Windrichtung (KD-Q12) folgen erst auf Wunsch.

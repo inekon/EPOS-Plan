@@ -188,7 +188,7 @@ Version beim Anwender zu erfragen; die Wiki-Quellen (Prozesswärme, Brauchwasser
 
 ### Version 1.2.0.12 — Entwurf, Versionsnummer beim Anwender zu bestätigen — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
-Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5, MA-7; Statuszeilen #1002 bis #1057, #1076 bis #1083, #1085, #1091, #1092, #1094, #1110, #1111, #1114, #1115, #1126 bis #1128, #1132 bis #1135). Die Wiki-Quellen (Gebäude, Gebäudeimport, Nutzungsprofile, Baustoffe und Bauteilaufbauten, Gebäudemodell VDI 6007, Programm Dokumentation - Simulation, Simulationsergebnisse, Datenexport, Index der Hilfeschlüssel) sind fortgeschrieben, ins Wiki geladen ist noch nichts. Nach dem Anwenderentscheid vom 13.10.2026 gilt die Nummer bis zum 16.10.2026 nur als Vorschlag; es gibt keinen Upload.
+Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5, MA-7; Statuszeilen #1002 bis #1057, #1076 bis #1083, #1085, #1091, #1092, #1094, #1110, #1111, #1114, #1115, #1126 bis #1128, #1132 bis #1135, #1153). Die Wiki-Quellen (Gebäude, Gebäudeimport, Nutzungsprofile, Baustoffe und Bauteilaufbauten, Gebäudemodell VDI 6007, Programm Dokumentation - Simulation, Simulationsergebnisse, Datenexport, Index der Hilfeschlüssel) sind fortgeschrieben, ins Wiki geladen ist noch nichts. Nach dem Anwenderentscheid vom 13.10.2026 gilt die Nummer bis zum 16.10.2026 nur als Vorschlag; es gibt keinen Upload.
 
 - Seit 13.10.2026: Der Gebäudedialog prüft ein Gebäude mit „Modell prüfen…“ auf Rechenfähigkeit, zeigt je Prüfgruppe eine Ampel und übernimmt die Vorschläge mit einem Klick; nach einem Import öffnet die Prüfung von selbst.
 - Seit 13.10.2026: Die Modellprüfung meldet je Zone eine nicht geschlossene Hülle und schlägt das fehlende Dach, die fehlende Bodenplatte oder Geschossdecke mit passender Fläche vor.
@@ -213,6 +213,7 @@ Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5
 - Seit 16.10.2026: Kalenderänderungen und alle Werte einer Zone, die von Hand bearbeitet wurden, bleiben bei einem erneuten Gebäudeimport erhalten.
 - Seit 16.10.2026: Die Auswahl der Klimaregion im Gebäudedialog zeigt die Herkunft der Klimadaten; eine offene Wärmebedarfsansicht rechnet sofort mit der neu gewählten Region.
 - Seit 16.10.2026: Absorptions- und Emissionsgrad lassen sich je Bauteilaufbau und Bauteil eintragen und reisen mit gbXML und IFC.
+- Seit 16.10.2026: Beim Gebäudeimport kommen die Kalender der Zonen aus einer gbXML- oder IFC-Datei auch ohne gespeicherten Zonenplan an.
 - Entwurf (Version beim Anwender erfragen; gehört zur Veröffentlichung von SA3): Die Aufheizoptimierung kann im Vorheizfenster die Heizkurve anheben (Schnellaufheizung).
 - Seit 14.10.2026: Beim Gebäudeimport ordnet EPOS-Plan jeder Zone das Nutzungsprofil der DIN/TS 18599-10 zu, wenn die Datei eine Profilnummer oder einen gbXML-Raumtyp trägt, und die Modellprüfung zeigt mit einer Ampel, woher das Profil jeder Zone kommt.
 - Seit 14.10.2026: Im Reiter „Zonen“ des Gebäudeeditors zeigt eine Ampelleiste den Stand der Modellprüfung; ein Klick öffnet die Prüfung auf der Gruppe.
@@ -1119,6 +1120,9 @@ Der Sammel-Upload 1.2.0.11 lief am 14.10.2026 (Seite Brauchwasser-Zapfprofil Rev
 - Seit 16.10.2026: Die Übernahme aus der Pufferauslegung setzt beim Kombipuffer jetzt auch die Zonenanteile und legt die Entnahme der Heizung unter die Brauchwasserzone. (#1140)
 - Seit 16.10.2026: Die Stufen der Anlagenkopplung heißen in der Oberfläche „ohne Kopplung“, „Heizkreis“, „Fahrplan“ und „geschlossener Kreis“; die Kataloge zeigen „Nennleistung“, „Nennkälteleistung“ und „Wirkungsgrad Laden/Entladen“ statt Formelzeichen. (#1142)
 - Seit 16.10.2026: Die Jahresdauerlinien ordnen die Stunden nach dem Gesamtbedarf und zeigen die Erzeuger darunter gestapelt; das Bivalenzdiagramm beschriftet seine Bivalenzpunkte mit „Kessel hilft unter …“ und „Kessel allein unter …“. (#1143)
+- Seit 16.10.2026: In den Bedarfsprofilen vergleicht „Vergleichen…“ zwei bis drei Projektzeilen und Katalogsätze nebeneinander; Kopfzeile und Knöpfe folgen den übrigen Dialogen mit Katalogauswahl. (#1155)
+- Seit 16.10.2026: Jahressummen und Jahresarbeit in MWh stehen in Auswahllisten, Katalog und Satzzeile einheitlich als ganze Zahl mit Tausendertrennzeichen. (#1156)
+- Seit 16.10.2026: Achsenbeschriftungen und Texte der Ganglinien in den Bedarfs- und Ganglinien-Dialogen stehen in der Schriftgröße der Oberfläche, auch im Projektassistenten. (#1157)
 
 *Wiki-Quellen dieses Nachtrags (Upload ausstehend):* `Projekte/Wiki/Programm Dokumentation - Pufferspeicher auslegen.wiki`, „Grundlagen - Anlagenkopplung und Regelung“, „Simulation konfigurieren und starten“, `Projekte/Wiki/Dateien/Diagramm_Bivalenz.png`, `Projekte/Wiki/Dateien/Diagramm_Kapitalwert_Bruecke.png`.
 

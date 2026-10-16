@@ -3793,12 +3793,12 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     flex: 0 1 auto !important;
     flex-wrap: nowrap;
     gap: 8px;
-    min-width: 0;
+    min-width: min-content;   /* KA-E-27: nie schmaler als ihre starren Kinder samt Suchfeld an seiner Untergrenze - sonst ragte „Spalten…“ ueber ihren Rand unter den naechsten Knopf; vorher gibt die Ueberschrift nach */
     overflow: clip;
 }
 .epos-zweispalten-kopfleiste > .epos-katalog-suchzeile > * { flex: 0 0 auto; white-space: nowrap; }
 .epos-zweispalten-kopfleiste > .epos-katalog-suchzeile > .epos-leiste-fueller { display: none; }
-.epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 3 16rem !important; min-width: 7rem; }   /* gibt vor Trefferzahl und Legende nach (4.10); ausserhalb der Kompaktstufe siehe unten */
+.epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 3 16rem !important; min-width: 7rem; width: 7rem; }   /* width = Untergrenze: so rechnet die Mindestbreite der Suchzeile das Feld mit 7rem (KA-E-27); gibt vor Trefferzahl und Legende nach (4.10); ausserhalb der Kompaktstufe siehe unten */
 .epos-zweispalten-kopfleiste .epos-katalog-suchbeschriftung {
     position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
 }
@@ -4594,8 +4594,11 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 }
 /* DIE GANGLINIE IN DER SATZ-UEBERLAGERUNG (UeS1c): Dieselben Regeln gelten im Koerper der Satz-Ueberlagerung
    (.epos-satzueberlagerung-koerper) - die Kurve fuellt ihn in voller Breite und nimmt die uebrige Hoehe; ihre
-   Flaeche traegt contain: size, damit DiagrammSvg das Mass beobachtet und meldet (DZ1-N2). */
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik {
+   Flaeche traegt contain: size, damit DiagrammSvg das Mass beobachtet und meldet (DZ1-N2). Ebenso im
+   Projektassistenten, der den Dialog als Kind von .epos-assistent-inhalt zeigt: ohne contain: size meldete
+   DiagrammSvg kein Mass, und das Vorgabebild 1 240 x 560 stuende mit seiner Berichtsschrift (20 bis 29 px)
+   im Satz. */
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik {
     flex: 1 1 0;
     min-height: min-content;
     margin-top: 0;
@@ -4608,71 +4611,88 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     container: ganglinienbild / inline-size;
 }
 /* Was neben der Ganglinie in der Satzflaeche steht (Hinweise, Abweichungszeilen), behaelt seine Hoehe. */
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz:has(.epos-ganglinie-grafik) :is(.epos-zweispalten-satz, .epos-zweispalten-satzblock) > :not(.epos-ganglinie-grafik, .epos-zweispalten-satzblock),
+:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz:has(.epos-ganglinie-grafik) :is(.epos-zweispalten-satz, .epos-zweispalten-satzblock) > :not(.epos-ganglinie-grafik, .epos-zweispalten-satzblock),
 .epos-satzueberlagerung-koerper:has(.epos-ganglinie-grafik) > :not(.epos-ganglinie-grafik, .epos-zweispalten-satzblock),
 .epos-satzueberlagerung-koerper:has(.epos-ganglinie-grafik) .epos-zweispalten-satzblock > :not(.epos-ganglinie-grafik, .epos-zweispalten-satzblock) {
     flex-shrink: 0;
 }
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-kontextzeile {
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-kontextzeile {
     display: none;
 }
 /* Die Kopfzeile: Felder nebeneinander, die Beschreibung breiter, Beschriftung vor dem Feld. */
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf {
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf {
     grid-area: kopf;
     display: flex;
     gap: 4px var(--epos-abstand);
     min-width: 0;
 }
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf > .epos-feld,
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-leiste > .epos-feld {
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf > .epos-feld,
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-leiste > .epos-feld {
     flex-direction: row;
     align-items: center;
     gap: 6px;
     min-width: 0;
 }
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf > .epos-feld { flex: 2 1 0; }
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf > .epos-feld:nth-child(2) { flex-grow: 4; }
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf > .epos-feld { flex: 2 1 0; }
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf > .epos-feld:nth-child(2) { flex-grow: 4; }
 /* Kurze Kennwerte (PV: Raster, Jahresarbeit, Nennleistung) behalten Platz fuer ihren Wert. */
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf > .epos-feld--kurz { flex: 0 1 auto; }
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf > .epos-feld--kurz .epos-eingabe { width: 9em; }
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf .epos-feld-text,
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-leiste .epos-feld-text {
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf > .epos-feld--kurz { flex: 0 1 auto; }
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf > .epos-feld--kurz .epos-eingabe { width: 9em; }
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf .epos-feld-text,
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-leiste .epos-feld-text {
     white-space: nowrap;
 }
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf .epos-feld-zeile { flex: 1 1 0; min-width: 0; }
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf .epos-eingabe {
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf .epos-feld-zeile { flex: 1 1 0; min-width: 0; }
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kopf .epos-eingabe {
     min-width: 0;
     width: 100%;
     min-height: calc(0.7 * var(--epos-touchziel));
     text-overflow: ellipsis;
 }
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kennzahlen {
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kennzahlen {
     grid-area: kennzahlen;
     flex-direction: row;
     gap: 4px 16px;
     min-width: 0;
 }
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-leiste {
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-leiste {
     grid-area: leiste;
     flex-wrap: nowrap;
     align-items: center;
 }
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-knoepfe {
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-knoepfe {
     display: flex;
     gap: 6px;
 }
 /* Die Huelle des Knopfpaars in der Kennzahlenzeile: ohne eigenen Unterrand. */
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-knoepfe > .epos-berechnungshilfe {
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-knoepfe > .epos-berechnungshilfe {
     margin-bottom: 0;
 }
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg {
+/* Unter 1 280 px Breite ruecken Spalten und Bedienelemente der Kennzahlenzeile enger zusammen. Die Infoknoepfe
+   der Solar- und PV-Ganglinie (2 x 39 px, Beruehrungsmass KP2, bleibt) liessen der Kennzahlenspalte bei 1 024 px
+   sonst nur 303 px: Jahresarbeit und Spitze (zusammen 315 px) passten nicht nebeneinander, die drei Kennzahlen
+   brachen in drei Zeilen, der Kopf der Satzflaeche wurde 93 px hoch (DZ1-N1: hoechstens 90 px) und die Satzflaeche
+   rollte bei 1 024 x 700 in sich. Mit den engeren Abstaenden hat die Spalte 327 px, zwei Zeilen und Reserve fuer
+   laengere Werte. Gemessen: rollbereichprobe.mjs. */
+@media (max-width: 1279.98px) {
+    :is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik {
+        column-gap: 6px;
+    }
+    :is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kennzahlen {
+        column-gap: 10px;
+    }
+    :is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-leiste {
+        column-gap: 6px;
+    }
+}
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg {
     display: contents;
 }
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-leiste {
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-leiste {
     grid-area: zoom;
     flex-wrap: nowrap;
 }
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-zeigerzeile {
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-zeigerzeile {
     grid-area: bild;
     align-self: start;
     justify-self: end;
@@ -4684,11 +4704,11 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     pointer-events: none;
     background: color-mix(in srgb, var(--epos-karte-flaeche) 85%, transparent);
 }
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-zeigerzeile:empty {
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-zeigerzeile:empty {
     display: none;
 }
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-svg-flaeche,
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-chartbild-platzhalter {
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-svg-flaeche,
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-chartbild-platzhalter {
     grid-area: bild;
     justify-self: stretch;
     align-self: stretch;
@@ -4697,7 +4717,7 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     width: auto;
     max-width: 100%;
 }
-:is(:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik .epos-diagramm-svg-flaeche > svg {
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik .epos-diagramm-svg-flaeche > svg {
     width: 100%;
     height: 100%;
 }
@@ -16146,6 +16166,13 @@ Dieselben Regeln wie beim Projektkopf. */
    Ohne die Luft bleiben rund 18 px Reserve. */
 .epos-zapfprofil-kategorienraster table.quickgrid {
     --col-gap: 0px;
+}
+
+/* Der Koerper der Gruppe "Zapfkategorien" polstert schmaler als das Hausmass
+   --epos-rand: Die Mindestbreiten des Rasters (970 px) passen so in die Huelle der
+   Ueberlagerung bei 1 088 px Fensterbreite (Rasterprobe Z6). Nur in diesem Dialog. */
+.epos-zapfprofil-kategorien > .epos-gruppenkopf > .epos-gruppenkopf-koerper {
+    padding-inline: 10px;
 }
 
 .epos-zapfprofil-reihenfolge .epos-knopf {

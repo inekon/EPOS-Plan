@@ -60,8 +60,21 @@
 //  "Kaelte" (die Probe kennt keine Kaelte) zeigt den Hinweis im Bild (Marke "hinweis") und
 //  als leise Zeile; Pfeil links geht auf "Waerme" und behaelt den Fokus in der Gruppe.
 //
+//  SCHRIFT IM SATZ (abschaltbar mit --ohne-schrift). Die Ganglinie der aufgeklappten
+//  Satzflaeche (Strom-, Solar-, PV-Ganglinie auf /rollbereichprobe) wird im Behaeltermass
+//  gezeichnet und schreibt in der Schrift der Oberflaeche - auch die Achsenteilung, die
+//  DiagrammSvg selbst nachzeichnet, und auch im Projektassistenten (?huelle=assistent).
+//  Je Fall und Fenster (1 400 x 800, 1 100 x 720): Flaeche mit contain: size, kein
+//  Vorgabebild 1 240 x 560, jeder sichtbare Text am Schirm hoechstens SCHRIFT_MAX_PX und
+//  alle Texte gleich gross (Spanne <= 1 px); dazu die Satz-Ueberlagerung ("Vergroessern")
+//  der Stromganglinie. GEGENPROBE: derselbe Dialog auf /wikibild?bild=strombedarf, wo er
+//  nicht als Wurzel des Fensters steht - dort meldet niemand ein Mass, das Vorgabebild
+//  steht mit seiner Berichtsschrift (20 bis 29 px) im Satz; die Probe muss verfehlen.
+//
+//  Die Schriftmessung gehoert zum Fall "zoom".
+//
 //  AUFRUF (der Wirt muss laufen, siehe LIESMICH.md):
-//    node diagrammprobe.mjs --url http://127.0.0.1:5299 [--fall zoom|fluss|hervorhebung|wahl] [--fotos <ordner>] [--ohne-gegenprobe]
+//    node diagrammprobe.mjs --url http://127.0.0.1:5299 [--fall zoom|fluss|hervorhebung|wahl] [--fotos <ordner>] [--ohne-gegenprobe] [--ohne-schrift]
 //
 //  Rueckgabe 0 = alle Sollwerte erfuellt (und Gegenprobe verfehlt), 1 = Verstoss,
 //  2 = Aufbaufehler.
@@ -86,6 +99,69 @@ const MIT_GEGENPROBE = !process.argv.includes('--ohne-gegenprobe');
 const FALL = arg('fall', 'zoom');
 const SCHRITTE = 40;
 const TOLERANZ_PX = 1;
+const MIT_SCHRIFT = !process.argv.includes('--ohne-schrift');
+/** Schrift der Oberflaeche 13 px (kompakt 12 px), mit Rundungsluft. */
+const SCHRIFT_MAX_PX = 13.5;
+
+/** Schriftgroessen der sichtbaren Texte des ersten sichtbaren Bildes unter `wahl`, am Schirm in px. */
+async function schriftMessen(seite, wahl) {
+  return seite.locator(wahl).first().evaluate(el => {
+    const v = [...el.querySelectorAll('.epos-diagramm-svg-flaeche > svg')].find(x => x.getBoundingClientRect().width > 0);
+    if (!v) return null;
+    const k = v.getScreenCTM().a;
+    const groessen = [...v.querySelectorAll('text')]
+      .filter(t => !t.closest('[display=none]') && t.getBoundingClientRect().width > 0)
+      .map(t => parseFloat(getComputedStyle(t).fontSize) * k);
+    return { viewBox: v.getAttribute('viewBox'), contain: getComputedStyle(v.parentElement).contain, groessen };
+  });
+}
+
+/** Befunde eines gemessenen Bildes gegen die Sollwerte der Satzschrift. */
+function schriftBefunde(name, m) {
+  if (!m) return [`${name}: kein sichtbares Bild`];
+  const f = [];
+  if (!/\bsize\b|strict/.test(m.contain || '')) f.push(`${name}: Flaeche ohne contain: size (${m.contain})`);
+  if (m.viewBox === '0 0 1240 560') f.push(`${name}: Vorgabebild 1 240 x 560 statt Behaeltermass`);
+  if (m.groessen.length === 0) return f.concat(`${name}: keine Texte`);
+  const max = Math.max(...m.groessen), min = Math.min(...m.groessen);
+  if (max > SCHRIFT_MAX_PX) f.push(`${name}: Schrift bis ${max.toFixed(1)} px (Soll <= ${SCHRIFT_MAX_PX})`);
+  if (max - min > 1) f.push(`${name}: Schrift ${min.toFixed(1)} bis ${max.toFixed(1)} px (Spanne > 1 px)`);
+  return f;
+}
+
+/** Ein Fall: Projektzeile waehlen, Satz aufklappen, Bild messen; wahlweise die Satz-Ueberlagerung dazu. */
+async function schriftFall(browser, adresse, wahl, breite, hoehe, mitUeberlagerung) {
+  const kontext = await browser.newContext({ viewport: { width: breite, height: hoehe }, deviceScaleFactor: 1, locale: 'de-DE' });
+  const seite = await kontext.newPage();
+  try {
+    await seite.goto(WURZEL + adresse, { waitUntil: 'networkidle' });
+    const dialog = seite.locator(wahl).first();
+    await dialog.waitFor({ state: 'visible', timeout: 15000 });
+    await seite.waitForTimeout(500);
+    await dialog.locator('.epos-projektzeile').first().click();
+    await dialog.locator('.epos-zweispalten-satzzeile').first().click();
+    // Das Mass kommt nach dem Aufklappen (ResizeObserver, Rundlauf); hoechstens 5 s warten.
+    for (let i = 0; i < 25; i++) {
+      const m = await schriftMessen(seite, wahl);
+      if (m && m.viewBox !== '0 0 1240 560') break;
+      await seite.waitForTimeout(200);
+    }
+    await seite.waitForTimeout(400);
+    const name = `${adresse} ${breite}x${hoehe}`;
+    const satz = await schriftMessen(seite, wahl);
+    const ergebnis = [{ name: name + ' Satz', m: satz }];
+    if (mitUeberlagerung) {
+      await dialog.locator('button.epos-zweispalten-vergroessern:not([disabled])').first().click();
+      await seite.locator('.epos-satzueberlagerung-koerper .epos-diagramm-svg-flaeche > svg').first().waitFor({ timeout: 10000 });
+      await seite.waitForTimeout(1200);
+      ergebnis.push({ name: name + ' Ueberlagerung', m: await schriftMessen(seite, '.epos-satzueberlagerung-koerper') });
+    }
+    if (FOTOS) await dialog.screenshot({ path: `${FOTOS}/schrift_${adresse.replace(/\W+/g, '_')}_${breite}x${hoehe}.png` });
+    return ergebnis;
+  } finally {
+    await kontext.close();
+  }
+}
 
 /**
  * Das Rechteck der Datenflaeche (Viewport des inneren svg) in Fensterkoordinaten.
@@ -549,6 +625,34 @@ try {
     console.log(`GEGEN   ohne Tafel: ${verfehlt ? 'verfehlt (richtig)' : 'erfuellt (FALSCH)'}` +
                 (g.befunde.length ? ' - ' + g.befunde.join('; ') : ''));
     if (!verfehlt) rc = 1;
+  }
+
+  if (MIT_SCHRIFT) {
+    const faelle = [];
+    for (const fall of ['stromganglinie', 'solarganglinie', 'pvganglinie'])
+      for (const huelle of ['', 'assistent'])
+        for (const [b, h] of [[1400, 800], [1100, 720]])
+          faelle.push([`/rollbereichprobe?fall=${fall}${huelle ? '&huelle=' + huelle : ''}&kultur=de-DE`, b, h,
+                       fall === 'stromganglinie' && !huelle]);
+    let n = 0;
+    for (const [adresse, b, h, mitUeb] of faelle) {
+      for (const { name, m } of await schriftFall(browser, adresse, '#app .epos-dialog', b, h, mitUeb)) {
+        n++;
+        const f = schriftBefunde(name, m);
+        const spanne = m && m.groessen.length ? `${Math.min(...m.groessen).toFixed(1)}-${Math.max(...m.groessen).toFixed(1)} px` : '-';
+        console.log(`SCHRIFT ${f.length ? 'VERSTOSS' : 'ok      '} ${name} · ${m ? m.viewBox : '-'} · ${spanne}`);
+        for (const x of f) console.log('  VERSTOSS: ' + x);
+        if (f.length) rc = 1;
+      }
+    }
+    console.log(`SCHRIFT ${n} Bilder gemessen`);
+    if (MIT_GEGENPROBE) {
+      const [{ name, m }] = await schriftFall(browser, '/wikibild?bild=strombedarf&kultur=de-DE', '.epos-wikibild .epos-dialog', 1400, 800, false);
+      const f = schriftBefunde(name, m);
+      console.log(`GEGEN   Satz ausserhalb des Fensters: ${f.length ? 'verfehlt (richtig)' : 'erfuellt (FALSCH)'}` +
+                  (f.length ? ' - ' + f.join('; ') : ''));
+      if (!f.length) rc = 1;
+    }
   }
   }
 } catch (e) {
