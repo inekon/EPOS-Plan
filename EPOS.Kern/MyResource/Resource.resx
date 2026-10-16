@@ -56606,5 +56606,14 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KI_DLG_BT_UHERKUNFT_ERL" xml:space="preserve">
     <value>Woher der U-Wert des Bauteils stammt, wie er mit OK gespeichert würde – nur lesbar: KATALOG = aus dem Aufbau, MANUELL = von Hand, IFC, GBXML oder SQPROJ = aus der Importdatei, VORGABE = Vorgabe nach Bauteilart; leer = unbekannt. Ein U-Wert von Hand bleibt beim Wiederimport stehen.</value>
   </data>
+  <data name="KLIMA_VORSCHAU_LEER" xml:space="preserve">
+    <value>Die Quelle hat keine Stundenwerte geliefert.</value>
+  </data>
+  <data name="KLIMA_VORSCHAU_REPRAESENTANZ" xml:space="preserve">
+    <value>Nächste Repräsentanzstation, nicht die amtliche Klimaregion.</value>
+  </data>
+  <data name="KLIMA_VORSCHAU_NICHT_ORTSTYPISCH" xml:space="preserve">
+    <value>Bezugspunkt nicht ortstypisch; für ortsgenaue Werte die TRY-Datei des DWD für diesen Standort einlesen.</value>
+  </data>
 </root>
 

@@ -56599,5 +56599,14 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="KI_DLG_BT_UHERKUNFT_ERL" xml:space="preserve">
     <value>Where the U-value of the component comes from, as it would be saved with OK – read only: KATALOG = from the construction build-up, MANUELL = entered by hand, IFC, GBXML or SQPROJ = from the import file, VORGABE = default by component type; empty = unknown. A U-value entered by hand is kept on re-import.</value>
   </data>
+  <data name="KLIMA_VORSCHAU_LEER" xml:space="preserve">
+    <value>The source returned no hourly values.</value>
+  </data>
+  <data name="KLIMA_VORSCHAU_REPRAESENTANZ" xml:space="preserve">
+    <value>Nearest representative station, not the official climate region.</value>
+  </data>
+  <data name="KLIMA_VORSCHAU_NICHT_ORTSTYPISCH" xml:space="preserve">
+    <value>Reference point not typical of the site; for site-specific values, import the DWD TRY file for this location.</value>
+  </data>
 </root>
 

@@ -290,17 +290,27 @@ namespace WindowsFormsApplication1
                 ort => PVGIS_EPW_Downloader.GetCoordinatesAsync(ort),
                 melder,
                 marke,
-                Bereich),
+                Bereich,
+                _vorschau),
                 a => new KlimaImportErgebnis { Ausgang = KlimaImportAusgang.Eingabefehler, Meldung = a.Text });
         }
+
+        /// <summary>
+        /// Die zuletzt gelesene VORSCHAU (Auftrag KD-2, Entscheid KD-Q3). Der Import
+        /// übernimmt ihren Satz ohne zweiten Abruf, solange sie zum Auftrag passt
+        /// (<see cref="KlimaVorschauErgebnis.PasstZu"/>); ändert der Anwender Ort, Quelle,
+        /// Jahr oder Szenario, ist sie verfallen und der Import liest selbst.
+        /// </summary>
+        private static KlimaVorschauErgebnis _vorschau;
 
         // =====================================================================
         // Die REGIONSVORSCHAU (Auftrag KL-3)
         // =====================================================================
 
         /// <summary>
-        /// Sagt vor dem Einlesen, welche TRY-Region der Standort trifft — über
-        /// DIESELBEN Nahtstellen wie der Import (Ortsauflösung und Bereichsabruf).
+        /// Sucht und LIEST vor dem Einlesen den Datensatz des Standorts (Auftrag KD-2,
+        /// alle drei Quellen) — über DIESELBEN Nahtstellen wie der Import (Ortsauflösung,
+        /// Bereichsabruf, PVGIS-Abruf samt Kopf). Das Ergebnis bleibt für den Import liegen.
         ///
         /// <para><b>Auch sie läuft nebenher</b>: Sie holt das
         /// Zentralverzeichnis des Pakets über das Netz, und in einer WebView ist der
@@ -309,11 +319,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static async Task<KlimaVorschauErgebnis> RegionErmitteln(KlimaImportAuftrag auftrag)
         {
-            return await Kulturweitergabe.StartenAsync(() => KlimaImportAblauf.RegionErmittelnAsync(
+            _vorschau = null;
+            KlimaVorschauErgebnis erg = await Kulturweitergabe.StartenAsync(() => KlimaImportAblauf.RegionErmittelnAsync(
                 auftrag,
                 ort => PVGIS_EPW_Downloader.GetCoordinatesAsync(ort),
                 CancellationToken.None,
-                Bereich));
+                Bereich,
+                (lon, lat, azimut) => PVGIS_EPW_Downloader.GetTmyAbruf(lon, lat, azimut)));
+            _vorschau = erg;
+            return erg;
         }
 
         // =====================================================================

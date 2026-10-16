@@ -84000,6 +84000,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle hat keine Stundenwerte geliefert. ähnelt.
+        /// </summary>
+        public static string KLIMA_VORSCHAU_LEER {
+            get {
+                return ResourceManager.GetString("KLIMA_VORSCHAU_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugspunkt nicht ortstypisch; für ortsgenaue Werte die TRY-Datei des DWD für diesen Standort einlesen. ähnelt.
+        /// </summary>
+        public static string KLIMA_VORSCHAU_NICHT_ORTSTYPISCH {
+            get {
+                return ResourceManager.GetString("KLIMA_VORSCHAU_NICHT_ORTSTYPISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nächste Repräsentanzstation, nicht die amtliche Klimaregion. ähnelt.
+        /// </summary>
+        public static string KLIMA_VORSCHAU_REPRAESENTANZ {
+            get {
+                return ResourceManager.GetString("KLIMA_VORSCHAU_REPRAESENTANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine ähnelt.
         /// </summary>
         public static string KMA_ART_KAELTEMASCHINE {
