@@ -1629,6 +1629,9 @@
         /// <summary>Einheit der Schichtdicke im Raster — Symbol, keine Uebersetzung.</summary>
         internal const string EINHEIT_MM = "mm";
 
+        /// <summary>Einheit des Wärmedurchgangswiderstands (R'_T, R''_T) — Symbol, keine Uebersetzung.</summary>
+        internal const string EINHEIT_M2K_W = "m²·K/W";
+
         internal static string BstBaustoffName => MyResource.Resource.KI_DLG_BST_BAUSTOFF_NAME;
         internal static string BstBaustoffErl => MyResource.Resource.KI_DLG_BST_BAUSTOFF_ERL;
         internal static string BstBezeichnerName => MyResource.Resource.BST_LBL_BEZEICHNER;
@@ -1674,6 +1677,30 @@
         internal static string BtaSchichtCpErl => MyResource.Resource.KI_DLG_BTA_SCHICHT_CP_ERL;
         internal static string BtaSchichtLuftschichtName => MyResource.Resource.BTA_LBL_LUFTSCHICHT;
         internal static string BtaSchichtLuftschichtErl => MyResource.Resource.KI_DLG_BTA_SCHICHT_LUFTSCHICHT_ERL;
+
+        // BK-5/BK-6 (Nachzug KIS): Abschnitte einer inhomogenen Schicht, Fensterteil und Summenfuß des Aufbaus.
+        internal static string BtaSchichtAbschnittName => MyResource.Resource.BTA_SP_ABSCHNITT;
+        internal static string BtaSchichtAbschnittErl => MyResource.Resource.KI_DLG_BTA_SCHICHT_ABSCHNITT_ERL;
+        internal static string BtaSchichtAnteilName => MyResource.Resource.BTA_SP_FLAECHENANTEIL;
+        internal static string BtaSchichtAnteilErl => MyResource.Resource.KI_DLG_BTA_SCHICHT_ANTEIL_ERL;
+        internal static string BtaSchichtEbenensummeName => MyResource.Resource.KI_DLG_BTA_SCHICHT_EBENENSUMME_NAME;
+        internal static string BtaSchichtEbenensummeErl => MyResource.Resource.KI_DLG_BTA_SCHICHT_EBENENSUMME_ERL;
+        internal static string BtaFensterUgName => MyResource.Resource.BTA_LBL_UG;
+        internal static string BtaFensterUgErl => MyResource.Resource.KI_DLG_BTA_FENSTER_UG_ERL;
+        internal static string BtaFensterGName => MyResource.Resource.BTA_LBL_GWERT;
+        internal static string BtaFensterGErl => MyResource.Resource.KI_DLG_BTA_FENSTER_G_ERL;
+        internal static string BtaFensterRahmenName => MyResource.Resource.BTA_LBL_RAHMENANTEIL;
+        internal static string BtaFensterRahmenErl => MyResource.Resource.KI_DLG_BTA_FENSTER_RAHMEN_ERL;
+        internal static string BtaFensterUfName => MyResource.Resource.BTA_LBL_UF;
+        internal static string BtaFensterUfErl => MyResource.Resource.KI_DLG_BTA_FENSTER_UF_ERL;
+        internal static string BtaFensterPsiName => MyResource.Resource.BTA_LBL_PSI_GLASRAND;
+        internal static string BtaFensterPsiErl => MyResource.Resource.KI_DLG_BTA_FENSTER_PSI_ERL;
+        internal static string BtaSummeUName => MyResource.Resource.KI_DLG_BTA_SUMME_U_NAME;
+        internal static string BtaSummeUErl => MyResource.Resource.KI_DLG_BTA_SUMME_U_ERL;
+        internal static string BtaRtObenName => MyResource.Resource.KI_DLG_BTA_RT_OBEN_NAME;
+        internal static string BtaRtObenErl => MyResource.Resource.KI_DLG_BTA_RT_OBEN_ERL;
+        internal static string BtaRtUntenName => MyResource.Resource.KI_DLG_BTA_RT_UNTEN_NAME;
+        internal static string BtaRtUntenErl => MyResource.Resource.KI_DLG_BTA_RT_UNTEN_ERL;
 
         // ================= Gebaeudesimulation G3, Welle D2: Zone und Bauteil
 
@@ -1804,6 +1831,9 @@
         internal static string BtUWertErl => MyResource.Resource.KI_DLG_BT_UWERT_ERL;
         internal static string BtAufbauName => MyResource.Resource.BTDLG_LBL_AUFBAU_PROJEKT;
         internal static string BtAufbauErl => MyResource.Resource.KI_DLG_BT_AUFBAU_ERL;
+        // MA-6b (Nachzug KIS): die Herkunft des U-Werts am Bauteil - nur lesbar.
+        internal static string BtUHerkunftName => MyResource.Resource.KI_DLG_BT_UHERKUNFT_NAME;
+        internal static string BtUHerkunftErl => MyResource.Resource.KI_DLG_BT_UHERKUNFT_ERL;
 
         internal static string TprofTypName => MyResource.Resource.BPRO_LBL_LISTE_STROM;
         internal static string TprofTypErl => MyResource.Resource.KI_DLG_TPROF_TYP_ERL;

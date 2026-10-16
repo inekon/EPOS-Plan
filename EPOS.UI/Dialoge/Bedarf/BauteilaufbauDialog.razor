@@ -445,6 +445,8 @@
             Bauteilarten = () => Arten,
             Baustoffe = () => _baustoffe,
             Geaendert = Nachziehen,
+            // BK-5: der Summenfuß des Kerns (U, R'_T, R''_T) zum Lesen.
+            KennwerteLesen = () => _stand.Gespeichert.Id > 0 ? _kennwerte : null,
             LadestandLesen = () => KatalogKiSperre.Ladestand(_listeFehler, _satzFehler)
         };
     }

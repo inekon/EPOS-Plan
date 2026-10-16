@@ -115,4 +115,13 @@ public sealed class BauteilKiSicht
 
     /// <summary>Der Aufbau des Projekts als Id (0 = ohne Aufbau).</summary>
     public int? Aufbau { get => AufbauLesen?.Invoke(); set => AufbauSetzen?.Invoke(value); }
+
+    /// <summary>MA-6b: liefert die Herkunft des U-Werts, wie das OK sie schriebe (Persistenzwert).</summary>
+    public Func<string?>? UHerkunftLesen { get; init; }
+
+    /// <summary>
+    /// MA-6b: Die Herkunft des U-Werts (<c>KATALOG</c>, <c>MANUELL</c>, <c>IFC</c>, <c>GBXML</c>, <c>SQPROJ</c>, <c>VORGABE</c>;
+    /// leer = unbekannt) — nur lesbar, der Kern leitet sie beim Schreiben ab.
+    /// </summary>
+    public string UHerkunft => UHerkunftLesen?.Invoke() ?? "";
 }
