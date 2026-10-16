@@ -477,7 +477,7 @@
                                         @foreach (KlimaParameterEintrag p in _vorschau.Parameterbestand)
                                         {
                                             <li class="@("epos-klimavorschau-stand--" + p.Stand.ToString().ToLowerInvariant())">
-                                                @Parametername(p.Parameter) <span>(@Standtext(p.Stand))</span>
+                                                @Parametername(p.Parameter) <span>(@Standtext(p.Stand)@Speichertext(p))</span>
                                             </li>
                                         }
                                     </ul>
@@ -791,6 +791,8 @@
     [Parameter] public string BestandText { get; set; } = Resource.KLIMA_VK_BESTAND;
     [Parameter] public string GefuehrtText { get; set; } = Resource.KLIMA_VK_GEFUEHRT;
     [Parameter] public string GerechnetText { get; set; } = Resource.KLIMA_VK_GERECHNET;
+    [Parameter] public string GespeichertText { get; set; } = Resource.KLIMA_VK_GESPEICHERT;
+    [Parameter] public string NichtGespeichertText { get; set; } = Resource.KLIMA_VK_NICHT_GESPEICHERT;
     [Parameter] public string FehltText { get; set; } = Resource.KLIMA_VK_FEHLT;
     [Parameter] public string VerfallenText { get; set; } = Resource.KLIMA_VK_VERFALLEN;
     [Parameter] public string ErstSuchenText { get; set; } = Resource.KLIMA_VK_ERST_SUCHEN;
@@ -1792,6 +1794,13 @@
     private static string Kilometer(double km) => Zahl(km, km < 10 ? 1 : 0) + " km";
 
     private static string Koordinate(double lat, double lon) => Zahl(lat, 4) + "° / " + Zahl(lon, 4) + "°";
+
+    /// <summary>
+    /// KD-4: Steht die Rohtabelle, sagt die Karte je Größe, ob der Import sie speichert (Rechenspalte oder Rohwert);
+    /// ohne Rohtabelle bleibt die Zeile wie zuvor.
+    /// </summary>
+    private string Speichertext(KlimaParameterEintrag p) =>
+        _vorschau is { RohwerteGespeichert: true } ? " · " + (p.Gespeichert ? GespeichertText : NichtGespeichertText) : "";
 
     private string Standtext(KlimaParameterStand s) => s switch
     {
