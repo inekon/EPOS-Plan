@@ -50614,16 +50614,16 @@ Chart</value>
     <value>Wärmepumpe allein</value>
   </data>
   <data name="BER_BILD_BIVALENZ_MARKE_BIV1" xml:space="preserve">
-    <value>θ_biv,1 = {0} °C</value>
+    <value>Kessel hilft unter {0} °C</value>
   </data>
   <data name="BER_BILD_BIVALENZ_MARKE_BIV2" xml:space="preserve">
-    <value>θ_biv,2 = {0} °C</value>
+    <value>Kessel allein unter {0} °C</value>
   </data>
   <data name="BER_BILD_BIVALENZ_MARKE_ABSCHALT" xml:space="preserve">
     <value>Abschaltpunkt {0} °C</value>
   </data>
   <data name="BER_BILD_BIVALENZ_MARKE_KENNFELD" xml:space="preserve">
-    <value>nach Kennfeld {0} °C</value>
+    <value>Kennfeld {0} °C</value>
   </data>
   <data name="BER_BILD_BIVALENZ_PLATZHALTER" xml:space="preserve">
     <value>kein Bivalenzdiagramm — Kopplung aus</value>
@@ -50644,10 +50644,10 @@ Chart</value>
     <value>nur Kessel</value>
   </data>
   <data name="SIM_LBL_BIVALENZPUNKT_1" xml:space="preserve">
-    <value>Bivalenzpunkt θ_biv,1 (berechnet)</value>
+    <value>Kessel hilft unter (Bivalenzpunkt 1, berechnet)</value>
   </data>
   <data name="SIM_LBL_BIVALENZPUNKT_2" xml:space="preserve">
-    <value>Bivalenzpunkt θ_biv,2 (berechnet)</value>
+    <value>Kessel allein unter (Bivalenzpunkt 2, berechnet)</value>
   </data>
   <data name="SIM_LBL_UEBERGABE_MAX" xml:space="preserve">
     <value>Übergabegrenze bei Auslegung</value>
@@ -50695,10 +50695,10 @@ Chart</value>
     <value>Rücklauf an der Übergabegrenze [°C]</value>
   </data>
   <data name="BER_BIV_PUNKT1" xml:space="preserve">
-    <value>Bivalenzpunkt θ_biv,1 berechnet [°C]</value>
+    <value>Kessel hilft unter, Bivalenzpunkt 1 berechnet [°C]</value>
   </data>
   <data name="BER_BIV_PUNKT2" xml:space="preserve">
-    <value>Bivalenzpunkt θ_biv,2 berechnet [°C]</value>
+    <value>Kessel allein unter, Bivalenzpunkt 2 berechnet [°C]</value>
   </data>
   <data name="BER_BIV_PUNKT_EINGEGEBEN" xml:space="preserve">
     <value>Bivalenzpunkt eingegeben (Abschaltpunkt) [°C]</value>

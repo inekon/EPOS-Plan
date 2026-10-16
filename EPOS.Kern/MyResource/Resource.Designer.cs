@@ -5505,7 +5505,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die θ_biv,1 = {0} °C ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel hilft unter {0} °C ähnelt.
         /// </summary>
         public static string BER_BILD_BIVALENZ_MARKE_BIV1 {
             get {
@@ -5514,7 +5514,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die θ_biv,2 = {0} °C ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel allein unter {0} °C ähnelt.
         /// </summary>
         public static string BER_BILD_BIVALENZ_MARKE_BIV2 {
             get {
@@ -5523,7 +5523,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die nach Kennfeld {0} °C ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennfeld {0} °C ähnelt.
         /// </summary>
         public static string BER_BILD_BIVALENZ_MARKE_KENNFELD {
             get {
@@ -5649,7 +5649,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenzpunkt θ_biv,1 berechnet [°C] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel hilft unter, Bivalenzpunkt 1 berechnet [°C] ähnelt.
         /// </summary>
         public static string BER_BIV_PUNKT1 {
             get {
@@ -5658,7 +5658,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenzpunkt θ_biv,2 berechnet [°C] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel allein unter, Bivalenzpunkt 2 berechnet [°C] ähnelt.
         /// </summary>
         public static string BER_BIV_PUNKT2 {
             get {
@@ -125866,7 +125866,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenzpunkt θ_biv,1 (berechnet) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel hilft unter (Bivalenzpunkt 1, berechnet) ähnelt.
         /// </summary>
         public static string SIM_LBL_BIVALENZPUNKT_1 {
             get {
@@ -125875,7 +125875,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenzpunkt θ_biv,2 (berechnet) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel allein unter (Bivalenzpunkt 2, berechnet) ähnelt.
         /// </summary>
         public static string SIM_LBL_BIVALENZPUNKT_2 {
             get {

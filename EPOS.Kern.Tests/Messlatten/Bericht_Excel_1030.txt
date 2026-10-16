@@ -102,6 +102,6 @@ p_I_Unguenstig = Wirtschaftlichkeit!$D$8:$D$8
 Vergleich · stand.bild.deckung_waerme · Wärmedeckung · pieChart · 'Diagrammdaten'!$J$4:$J$5
 Vergleich · stand.bild.deckung_strom · Stromdeckung · pieChart · 'Diagrammdaten'!$M$4:$M$5
 Stamm · stand.bild.waerme_jahresverlauf · Wärmeerzeugung im Jahresverlauf (Tagesmittel) [kW] · areaChart+lineChart · 'Diagrammdaten'!$P$4:$P$368 'Diagrammdaten'!$Q$4:$Q$368 'Diagrammdaten'!$R$4:$R$368
-Stamm · stand.bild.waerme_dauerlinie · Jahresdauerlinie Wärme [kW] · lineChart · 'Diagrammdaten'!$U$4:$U$8763 'Diagrammdaten'!$V$4:$V$8763 'Diagrammdaten'!$W$4:$W$8763
+Stamm · stand.bild.waerme_dauerlinie · Jahresdauerlinie Wärme [kW] · areaChart+lineChart · 'Diagrammdaten'!$V$4:$V$8763 'Diagrammdaten'!$W$4:$W$8763 'Diagrammdaten'!$U$4:$U$8763
 Stamm · stand.bild.strombilanz_monate · Strombilanz im Monatsverlauf [MWh/Monat] · barChart+lineChart · 'Diagrammdaten'!$Z$4:$Z$15 'Diagrammdaten'!$AA$4:$AA$15 'Diagrammdaten'!$AB$4:$AB$15
 Stamm · stand.bild.speicherverlauf · Speicherverlauf — Füllstand [kWh] · lineChart · 'Diagrammdaten'!$AE$4:$AE$171 'Diagrammdaten'!$AF$4:$AF$171 'Diagrammdaten'!$AG$4:$AG$171

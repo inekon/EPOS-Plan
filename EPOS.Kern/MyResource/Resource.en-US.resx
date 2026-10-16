@@ -50607,16 +50607,16 @@ chart</value>
     <value>heat pump alone</value>
   </data>
   <data name="BER_BILD_BIVALENZ_MARKE_BIV1" xml:space="preserve">
-    <value>θ_biv,1 = {0} °C</value>
+    <value>Boiler assists below {0} °C</value>
   </data>
   <data name="BER_BILD_BIVALENZ_MARKE_BIV2" xml:space="preserve">
-    <value>θ_biv,2 = {0} °C</value>
+    <value>Boiler alone below {0} °C</value>
   </data>
   <data name="BER_BILD_BIVALENZ_MARKE_ABSCHALT" xml:space="preserve">
     <value>Cut-off point {0} °C</value>
   </data>
   <data name="BER_BILD_BIVALENZ_MARKE_KENNFELD" xml:space="preserve">
-    <value>by performance map {0} °C</value>
+    <value>Performance map {0} °C</value>
   </data>
   <data name="BER_BILD_BIVALENZ_PLATZHALTER" xml:space="preserve">
     <value>no bivalence diagram — coupling off</value>
@@ -50637,10 +50637,10 @@ chart</value>
     <value>Boiler only</value>
   </data>
   <data name="SIM_LBL_BIVALENZPUNKT_1" xml:space="preserve">
-    <value>Bivalence point θ_biv,1 (calculated)</value>
+    <value>Boiler assists below (bivalence point 1, calculated)</value>
   </data>
   <data name="SIM_LBL_BIVALENZPUNKT_2" xml:space="preserve">
-    <value>Bivalence point θ_biv,2 (calculated)</value>
+    <value>Boiler alone below (bivalence point 2, calculated)</value>
   </data>
   <data name="SIM_LBL_UEBERGABE_MAX" xml:space="preserve">
     <value>Heat emission limit at design</value>
@@ -50688,10 +50688,10 @@ chart</value>
     <value>Return temperature at the heat emission limit [°C]</value>
   </data>
   <data name="BER_BIV_PUNKT1" xml:space="preserve">
-    <value>Bivalence point θ_biv,1 calculated [°C]</value>
+    <value>Boiler assists below, bivalence point 1 calculated [°C]</value>
   </data>
   <data name="BER_BIV_PUNKT2" xml:space="preserve">
-    <value>Bivalence point θ_biv,2 calculated [°C]</value>
+    <value>Boiler alone below, bivalence point 2 calculated [°C]</value>
   </data>
   <data name="BER_BIV_PUNKT_EINGEGEBEN" xml:space="preserve">
     <value>Bivalence point entered (switch-off point) [°C]</value>

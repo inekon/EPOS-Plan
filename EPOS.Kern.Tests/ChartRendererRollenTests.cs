@@ -385,7 +385,7 @@ namespace EPOS.Kern.Tests
                                     new ChartRenderer.KennlinienReihe(55, new List<(double Temperatur, double Wert)>
                                         { (-10.0, 2.0), (0.0, 2.8), (10.0, 3.5) })
                                 }, ChartRenderer.Kennlinienmarke.Kreis),
-                            new[] { ("35°C", Farbrolle.SERIE_1), ("55°C", Farbrolle.SERIE_2) },
+                            new[] { ("35 °C", Farbrolle.SERIE_1), ("55 °C", Farbrolle.SERIE_2) },
                             null);
 
                 default:
