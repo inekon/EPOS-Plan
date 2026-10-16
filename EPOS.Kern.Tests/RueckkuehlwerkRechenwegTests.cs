@@ -398,7 +398,10 @@ namespace EPOS.Kern.Tests
             foreach (Kennzahl k in KennzahlenKatalog.Alle().Where(k => k.Schluessel.StartsWith("kaelte.rk.", StringComparison.Ordinal)))
             {
                 Assert.NotEqual(k.LabelDe, k.LabelEn);
-                Assert.Equal(k.Schluessel.StartsWith("kaelte.rk.teilfrei", StringComparison.Ordinal) ? 22 : 20, k.Seit);
+                // K-F3 (v22) die Teil-Freikühlung, KB-7c2 (v24) die Wasserkosten, alle übrigen K-F2 (v20).
+                int seit = k.Schluessel.StartsWith("kaelte.rk.teilfrei", StringComparison.Ordinal) ? 22
+                         : k.Schluessel == KennzahlenKatalog.SCHLUESSEL_RK_WASSER_KOSTEN ? 24 : 20;
+                Assert.Equal(seit, k.Seit);
                 Assert.False(string.IsNullOrEmpty(k.Einheit));
             }
         }
