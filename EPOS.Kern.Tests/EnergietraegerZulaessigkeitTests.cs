@@ -241,8 +241,11 @@ namespace EPOS.Kern.Tests
             Assert.True(EnergietraegerZulaessigkeit.IstZulaessig("", TRAEGER_ERDGAS));
             Assert.True(EnergietraegerZulaessigkeit.MitTraeger(""));
 
-            // Der ungefilterte Katalog ist derselbe, den die Verwaltung listet.
-            Assert.Equal(KostenSummenCtrl.GetAllCarriers(0).Count,
+            // Der ungefilterte Katalog ist derselbe, den die Verwaltung listet — ohne den Wasserträger
+            // (Welle KB-7b: Betriebsmittel, nie der Träger eines Erzeugers; erkannt am Preismodell).
+            List<EnergyCarrier> verwaltung = KostenSummenCtrl.GetAllCarriers(0);
+            Assert.Contains(verwaltung, c => Wasserkosten.IstWasserPreismodell(c.PricingModel));
+            Assert.Equal(verwaltung.Count(c => !Wasserkosten.IstWasserPreismodell(c.PricingModel)),
                          EnergietraegerZulaessigkeit.ZulaessigerKatalog(null).Count);
         }
 
