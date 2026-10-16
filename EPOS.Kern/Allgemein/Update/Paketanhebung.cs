@@ -496,6 +496,9 @@ namespace WindowsFormsApplication1
             // Spalte mit der Schnittmenge des Imports fort.
             new Stufe(WasserpreisTraegerkarteSchema.SCHRITT, Art.Umformung,
                       "Wasserpreis der Anlage in die Trägerkarte, Entfall von Wasserpreis_EUR_m3 (KB-7a)", SchrittWasserpreis),
+            // KBP-4a: Ein älteres Paket bringt keine Typtage; der Schritt legt die zwei leeren Tabellen am Ziel an.
+            new Stufe(KaeltetyptagSchema.SCHRITT, Art.Ddl,
+                      "Typtage und Zuordnungsmatrix der Kältebedarfszuordnung (KBP-4a)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

@@ -86,6 +86,12 @@
 //    Gegenprobe: ohne den Hintergrund (background-image: none) muss die Messung rot werden.
 //    Dazu steht "kaelteprofile" in der Fallliste der Katalogauswahl (nichts rollt ausser den Listen).
 //
+//  KAELTETYPTAGE (KBP-4b, Fall "kaeltetyptage"): /fensterprobe?fall=kaelteprofile, Bearbeiten-Ueberlagerung der
+//    ersten Kaeltezeile, Eingabeart Typtage (Vorbelegung aus dem Wochenprofil). Der Editor fuehrt 36 Zellen der
+//    Zuordnungsmatrix als Auswahlfeld, je Tagesart in drei Spalten (Quartale); jede Zelle steht ganz im Koerper der
+//    Ueberlagerung, nichts rollt waagerecht (Editor und Dokument), in allen drei Fenstern samt iPad.
+//    Gegenprobe: das Monatsraster der Matrix in einer Zeile (zwoelf Spalten) muss die Messung rot machen.
+//
 //  GEGENPROBE (laeuft mit, abschaltbar mit --ohne-gegenprobe): dieselben
 //  Fensterdialoge OHNE Fenstermarke (?marke=0) muessen die Haft-Kriterien
 //  verfehlen, und MIT Marke, aber ohne scroll-padding muss der Tabulator
@@ -329,6 +335,49 @@ async function kaeltegrafik(browser, f, stil = '') {
   if (FOTOS && !stil) await seite.screenshot({ path: `${FOTOS}/kaeltegrafik_${f.breite}.png` });
   await seite.close();
   return { n: fehler.length, fehler, zahlen: { optionen, zeichenflaeche: m.zeichenflaeche.map(v => Math.round(v)), gelesen } };
+}
+
+/**
+ * KBP-4b: der Typtage-Editor in der Bearbeiten-Ueberlagerung der Kaeltezeile - Matrix in drei Spalten je Tagesart,
+ * jede Zelle ganz im Koerper, kein waagerechtes Rollen. Liefert { n, fehler, zahlen }.
+ */
+async function kaeltetyptage(browser, f, stil = '') {
+  const seite = await oeffnen(browser, 'kaelteprofile', f);
+  if (stil) await seite.addStyleTag({ content: stil });
+  const fehler = [];
+  await seite.locator('.epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt').first().click();
+  await seite.waitForSelector('.epos-satzueberlagerung-koerper', { timeout: 10000 });
+  await seite.locator('label.epos-feld', { hasText: 'Eingabeart' }).locator('select').first().selectOption('3');
+  await seite.waitForSelector('.epos-kbp-typtage .epos-kbp-matrix select', { timeout: 10000 });
+  await seite.waitForTimeout(300);
+  const m = await seite.evaluate(() => {
+    const editor = document.querySelector('.epos-kbp-typtage');
+    const koerper = editor.closest('.epos-satzueberlagerung-koerper') || document.body;
+    const k = koerper.getBoundingClientRect();
+    const zellen = [...editor.querySelectorAll('.epos-kbp-matrix .epos-feld')].map(e => e.getBoundingClientRect());
+    const spalten = [...editor.querySelectorAll('.epos-kbp-matrix')].map(b =>
+      new Set([...b.querySelectorAll('.epos-feld')].map(e => Math.round(e.getBoundingClientRect().left))).size);
+    return {
+      auswahl: editor.querySelectorAll('.epos-kbp-matrix select').length,
+      datalist: editor.querySelectorAll('datalist').length,
+      koerper: [k.left, k.right],
+      ausserhalb: zellen.filter(r => r.left < k.left - 1 || r.right > k.right + 1).length,
+      spalten,
+      editorRollt: editor.scrollWidth > editor.clientWidth + 1,
+      dokumentRollt: document.documentElement.scrollWidth > innerWidth + 1,
+      schmal: Math.min(...[...editor.querySelectorAll('.epos-kbp-matrix select')].map(s => s.getBoundingClientRect().width))
+    };
+  });
+  if (m.auswahl !== 36) fehler.push(`Matrix mit ${m.auswahl} statt 36 Auswahlfeldern`);
+  if (m.datalist !== 0) fehler.push(`${m.datalist} datalist im Editor`);
+  if (m.spalten.length !== 3 || m.spalten.some(s => s !== 3)) fehler.push(`Spalten je Tagesart ${JSON.stringify(m.spalten)} statt [3,3,3]`);
+  if (m.ausserhalb > 0) fehler.push(`${m.ausserhalb} Matrixzellen ragen aus dem Koerper ${m.koerper.map(Math.round).join('..')} px`);
+  if (m.editorRollt) fehler.push('der Editor rollt waagerecht');
+  if (m.dokumentRollt) fehler.push('das Dokument rollt waagerecht');
+  if (m.schmal < 40) fehler.push(`schmalstes Auswahlfeld ${Math.round(m.schmal)} px`);
+  if (FOTOS && !stil) await seite.screenshot({ path: `${FOTOS}/kaeltetyptage_${f.breite}.png`, fullPage: true });
+  await seite.close();
+  return { n: fehler.length, fehler, zahlen: { auswahl: m.auswahl, spalten: m.spalten, ausserhalb: m.ausserhalb, schmal: Math.round(m.schmal) } };
 }
 
 /** Die Haft-Kriterien; liefert die Zahl der Verstoesse (fuer die Gegenprobe). */
@@ -1159,8 +1208,25 @@ try {
     }
   }
 
+  // ----------------------------------------------------- KBP-4b: Typtage-Editor in der Bearbeiten-Ueberlagerung
+  if (!NUR || NUR === 'kaeltetyptage') {
+    for (const f of FENSTER) {
+      const name = `kaeltetyptage ${f.breite}x${f.hoehe}`;
+      console.log(`- ${name}`);
+      const r = await kaeltetyptage(browser, f);
+      for (const t of r.fehler) melde(name, t);
+      console.log(`    ${r.zahlen.auswahl} Zellen; Spalten ${JSON.stringify(r.zahlen.spalten)}; ausserhalb ${r.zahlen.ausserhalb}; schmalste Wahl ${r.zahlen.schmal} px`);
+    }
+  }
+
   // -------------------------------------------------------------- Gegenprobe
   let gegenGruen = 0;
+  if (MIT_GEGENPROBE && (!NUR || NUR === 'kaeltetyptage')) {
+    // Die Matrix in einer Zeile (zwoelf Spalten) muss rot sein.
+    const g = await kaeltetyptage(browser, FENSTER[0], '.epos-kbp-matrix .epos-stundenraster { grid-template-rows: repeat(1, auto) !important; }');
+    console.log(`    Gegenprobe kaeltetyptage Matrix in einer Zeile: ${g.n} Verstoesse`);
+    if (g.n === 0) gegenGruen++;
+  }
   if (MIT_GEGENPROBE && (!NUR || NUR === 'kaeltegrafik')) {
     // Ohne den Hintergrund der Tagesarten muss die Woche rot sein.
     const g = await kaeltegrafik(browser, FENSTER[0], '.epos-kbp-woche .epos-diagramm-svg-flaeche { background-image: none !important; }');

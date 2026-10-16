@@ -1,7 +1,7 @@
 # KBP-2 bis KBP-3b — Kältebedarfsprofile: Vorlagen, Eingabearten, Grafik
 
 Sitzung Dialoge und Korrekturen (Übersicht Berichte & Kosten), 16.10.2026, Zweig `welle5`. Konzept:
-[`Konzept_Kaeltebedarfsprofile_EPOS-Plan.md`](../../../aktuell/Konzept_Kaeltebedarfsprofile_EPOS-Plan.md), Abschnitt 10.
+[`Konzept_Kaeltebedarfsprofile_EPOS-Plan.md`](../../Konzept_Kaeltebedarfsprofile_EPOS-Plan.md), Abschnitt 10.
 
 ## Stand
 

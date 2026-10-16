@@ -2,9 +2,9 @@
 
 Gegenstand: der Dialog „Kältebedarfsprofile“ (Kachel „Kühlung und Kälteanlagen“ bzw. Reiter „Kältebedarf“ und Menü
 „Profile & Lastgänge → Kältebedarf“) und seine Rechenvorstufe bis zur 8 760-Stunden-Reihe. Grundlage ist das
-[Konzept Kältebedarf](../ueberholt/Konzept_Kaeltebedarf_EPOS-Plan.md), Abschnitte 3.3, 3.4 und 4.1; dieses Papier schreibt den
+[Konzept Kältebedarf](Konzept_Kaeltebedarf_EPOS-Plan.md), Abschnitte 3.3, 3.4 und 4.1; dieses Papier schreibt den
 Profilteil fort und ändert nichts an Deckung, Buchung und Erzeugern. Mockup:
-[`Mockups/Kaeltebedarfsprofil_Mockup.html`](Mockups/Kaeltebedarfsprofil_Mockup.html) (Bild daneben, gleicher Name, `.png`).
+[`Mockups/Kaeltebedarfsprofil_Mockup.html`](../aktuell/Mockups/Kaeltebedarfsprofil_Mockup.html) (Bild daneben, gleicher Name, `.png`).
 
 Anwenderwunsch: „Die Bedarfsprofile sollte ähnlich dem der Wärmebedarfsprofile sein - Funktionalität - Darstellung in
 Grafik, Eingabe mit Monatswerte, Tageswerte, Wochenwerte ... Vorlagen für Bedarfsprofile erweitern (Krankenhaus,
@@ -27,7 +27,7 @@ Dialog.
 | R4 | Kältebilder sind Stapel. Bericht und `Proben/ChartProben` bleiben bitgleich. | Abschnitt 5: Die neuen Bilder entstehen nur im Dialog; kein Berichtsbild, kein Renderer und keine Messlatte ändert sich. |
 | R5 | `BedarfsProfileHuelle.Oeffnen(...)` mit Pflicht-Schreibweg und `Projektkopievormerkung.Schliessen(...)` bleiben; `BedarfsprofilVormerkungWacheTests` und `BedarfsprofilZuordnungVormerkungTests` bleiben grün. | Abschnitt 3.5: Jede Bearbeitung von Monaten, Woche oder Typtagen läuft über die Projektkopie und die Vormerkung; die Signaturen bleiben. |
 | R6 | Neue Diagramme laufen über `DiagrammSvg`. | Abschnitt 5: Jahresgang und Wochenansicht tragen damit die Achswahl „Datum \| Stunde im Jahr“ von selbst. |
-| R7 | Schemaschritte nennen Tabellen und Spalten, aber keine Nummer. | Abschnitt 8 verweist auf die Anmeldung im Kopf von [`Status_iOS_Migration.md`](Status_iOS_Migration.md). |
+| R7 | Schemaschritte nennen Tabellen und Spalten, aber keine Nummer. | Abschnitt 8 verweist auf die Anmeldung im Kopf von [`Status_iOS_Migration.md`](../aktuell/Status_iOS_Migration.md). |
 | R8 | Berührte Einfrierregeln werden ausdrücklich benannt. | Abschnitt 9. |
 
 **Nicht Gegenstand:** Erzeuger, Kältefolge, Split-Deckung, Buchung und Ergebnisgrößen (Konzept Kältebedarf 4.2 ff.), der
@@ -98,13 +98,23 @@ Eingabe: bis zu sechs **Typtage** mit je 24 Stundenwerten und einer Tagesmenge (
 **Zuordnungsmatrix** 12 Monate × 3 Tagesarten (Werktag, Samstag, Sonn-/Feiertag) → Typtag. Damit lassen sich z. B. ein
 Sommerwerktag, ein Übergangswerktag und ein Wintertag mit eigener Form abbilden — was ein einziges Wochenprofil nicht kann.
 
-Reihe: Tag `d` mit Monat `m(d)` und Tagesart `t(d)` (Feiertag = Sonn-/Feiertag; Ferien = Werktag mit Ferienfaktor) nimmt
+Reihe: Tag `d` mit Monat `m(d)` und Tagesart `t(d)` (Feiertag = Sonn-/Feiertag; Ferien = Werktag mit Ferienfaktor, mit „Ferien wie Sonntag“ (7.3) der
+Sonntag-Typtag des Monats ohne Ferienfaktor) nimmt
 Typtag `T = Matrix[m(d), t(d)]`; Stunde `h` erhält `g_T · f_T[h] / Σ f_T`, mit Tagesmenge `g_T`. Danach wird die ganze Reihe auf
 `Summe` normiert. Monatsanteile entfallen in dieser Art, weil die Matrix den Jahresgang trägt; wer zusätzlich Monatswerte
 erzwingen will, wählt 3.2 mit Wochenprofil.
 
 Rechenweg: ein neuer Zweig `Typtagschicht` neben der Kalenderschicht in `ProfilBedarf`, nur für Zeilen mit Eingabeart
 Typtage. Schemabedarf: Abschnitt 8.2.
+
+Editor (KBP-4b, nach dem Mockup): Typtagwahl mit Bezeichner, Tagesmenge und 24 Stundenwerten in Prozent der Tagesspitze
+(Stundenraster des Wochenprofils), Matrix je Tagesart im Monatsraster der Monatswerte, je Zelle ein Auswahlfeld mit
+„(keiner)“. Beim ersten Wechsel auf Typtage belegt der Dialog drei Typtage aus dem Wochenprofil der Zeile vor — Werktag
+(Mittel Montag bis Freitag), Samstag, Sonn-/Feiertag (Sonntag), Stunden in Prozent der Tagesspitze, Tagesmenge als
+Verhältnis der Tagessumme zur Werktagssumme, Matrix in allen Monaten 1/2/3 —, so dass die Reihe die Wochenform
+gleichmäßig über das Jahr zeigt. Leere Zellen und zugeordnete Typtage ohne Stunden nennt der Dialog mit denselben
+Aussagen wie der Lauf. Wählbar ist die Eingabeart nur bei Kältezeilen und erst, wenn die Datenbank die Tabellen des
+Schritts führt; sonst steht sie benannt gesperrt.
 
 ### 3.5 Bearbeitung und Projektkopie
 
@@ -333,7 +343,7 @@ Monatswerte und Wochenprofil von Prozesswärme und Brauchwasser stehen in den be
 ### 8.3 Nummern und Migration
 
 Beide Schritte tragen **keine Nummer in diesem Papier**. Die Nummer meldet die bauende Sitzung vor dem Bau in der Zeile
-„Schemaschritt angemeldet“ im Kopf von [`Status_iOS_Migration.md`](Status_iOS_Migration.md) an; die Kette hängt über `+ 1`
+„Schemaschritt angemeldet“ im Kopf von [`Status_iOS_Migration.md`](../aktuell/Status_iOS_Migration.md) an; die Kette hängt über `+ 1`
 an der Vorgängerklasse (ADR-001). Beim Schreiben dieses Papiers sind 228 und 229 angemeldet und 230 als frei geführt.
 
 Migration: Jede bestehende Zuordnung erhält `Eingabeart = 'jahr'` über die Vorgabe der Spalte — kein `UPDATE`, keine
@@ -366,7 +376,7 @@ Spalte erst mit Entscheid OE-5.
 | **KBP-1** Kalenderbaustein | Baustein `Betriebskalenderwahl` (Auswahl, Knopf „Betriebskalender…“ als Blatt, drei Hinweise, Neulesen, Vorwahl) für alle Bedarfsarten mit Kalenderspalte; Ressourcen beider Sprachen; „Aus Gebäude übernehmen…“ im `BetriebskalenderDialog` | bunit: Baustein, `BedarfsProfileDialogTests`, `BetriebskalenderDialogTests`; `BedarfsprofilVormerkungWacheTests` und `BedarfsprofilZuordnungVormerkungTests` grün; Windows-Schale kompiliert (`EnableWindowsTargeting`); `fensterprobe.mjs` der Rasterprobe; Ressourcen-Designer; kein Schemaschritt |
 | **KBP-2** Vorlagen | Schemaschritt A (Eingabeart, Art-Vorschlag, Saat 7–16); Quellen der Richtwerte belegt oder ersetzt | Saatwache (Zeilen, Summen der Monatsanteile = 100, Bestandszeilen 1–6 bytegleich gegen eingefrorenen Abdruck); `KatalogfassungWache`, `AuslieferungsvorlagenWacheTests`; SQL-Dialekt-Prüfer; Referenzlauf der CI-Auswahl byte-gleich; `WikiProduktdatenWacheTests` |
 | **KBP-3** Eingabearten und Grafik | Eingabeart-Wahl in der Bearbeiten-Überlagerung; Monatswerte (MWh/%), Wochenprofil (Werktag/Sa/So und 168 h); Kopie bei Bearbeitung über die Vormerkung; Blätter Jahresgang, Monate, Woche, Dauerlinie über `DiagrammSvg`; Kennzahlenzeile | bunit; Kern-Tests `BedarfsProfilVorschauTests`, `KaeltebedarfKernwegeTests`; Vormerkungswachen grün; `diagrammprobe.mjs`; ChartProben unverändert; Referenzlauf byte-gleich |
-| **KBP-4** Typtage (nur nach OE-1) | Schemaschritt B; `Typtagschicht` in `ProfilBedarf`; Editor (sechs Typtage, Matrix) | Kern-Tests der Schicht (Summe, Monat × Tagesart, Feiertag = Sonntag, Ferienfaktor); SQL-Dialekt-Prüfer; Referenzlauf byte-gleich |
+| **KBP-4** Typtage — *umgesetzt* | Schemaschritt B (geparkt auf 236, bis zur Hebung der Kette ohne Tabellen benannt gesperrt); `Typtagschicht` in `ProfilBedarf`; Editor `KaelteTyptagEditor` (sechs Typtage, Matrix 12 × 3 je Zelle als Auswahlfeld, Hinweise wie `SIMENG_TYPTAG_*`, Vorbelegung aus dem Wochenprofil); Speicherweg über `WizardCtrl.Add_Projekt_Kaelte` und `KaeltetyptagCtrl.Schreiben` nach der Kopie bei Bearbeitung; Grafik aus dem Arbeitsstand | Kern-Tests der Schicht (Summe, Monat × Tagesart, Feiertag = Sonntag, Ferienfaktor) `TyptagschichtTests`, `KaeltetyptagTests`, Speicherweg `KaeltetyptagSpeicherwegTests`; bunit `BedarfsProfileTyptageTests`; `fensterprobe.mjs` Fall `kaeltetyptage` mit Gegenprobe; SQL-Dialekt-Prüfer; Referenzlauf byte-gleich |
 | **KBP-5** Angleichung und Doku — *umgesetzt* | Schemaschritt C (8.3a); Eingabearten auch für Prozesswärme und Brauchwasser (OE-5); Normkalender der Vorlage 8 (7.4, OE-7); Wiki-Quelle der Bedienungsseite, Logbuch-Entwurf | Wiki-Gegenlesemuster aus `CLAUDE.md`; `DokumentationLinkWacheTests`; `NormkalenderTests`; Referenzlauf byte-gleich; das Konzept bleibt in `aktuell/`, bis KBP-4 (Typtage) umgesetzt ist |
 
 ## 11. Entscheide

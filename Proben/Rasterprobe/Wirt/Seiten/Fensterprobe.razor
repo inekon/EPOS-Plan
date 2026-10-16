@@ -32,7 +32,9 @@
                            &kalender=leer: noch kein Kalender angelegt; &gebaeude=0: das Projekt hat kein Gebaeude.
                            Die Bearbeiten-Ueberlagerung einer Zeile zeigt die Kaeltegrafik (KBP-3b) aus einer
                            synthetischen Reihe, die dem Arbeitsstand folgt (Jahressumme, Monatsanteile, Kalender 2 =
-                           Betriebsferien); Blatt Woche mit Wahl der Kalenderwoche (fensterprobe.mjs, Fall kaeltegrafik)
+                           Betriebsferien); Blatt Woche mit Wahl der Kalenderwoche (fensterprobe.mjs, Fall kaeltegrafik).
+                           KBP-4b: Die Eingabeart Typtage ist waehlbar (TyptageVerfuegbar); der Editor mit der Matrix
+                           12 Monate x 3 Tagesarten steht in derselben Ueberlagerung (fensterprobe.mjs, Fall kaeltetyptage)
       ?fall=klimaimport    KlimadatenDialog (Katalogdialog); "Import..." oeffnet die Ueberlagerung "Klimadaten
                            einlesen" (.epos-einlesen) - ihre Schlussleiste haftet am Boden (KD-1)
       ?fall=klimareihen    derselbe KlimadatenDialog mit einer Region samt gespeicherten Reihen (KD-8 Teil A):
@@ -210,6 +212,7 @@
                                   TypStammGaben="@((n, b, t, neu) => new Dictionary<string, object>())"
                                   TypProfilGaben="@(() => new Dictionary<string, object>())"
                                   KaelteGrafik="@KpGrafik"
+                                  TyptageVerfuegbar="true"
                                   Geschlossen="@(b => Beendet(b))" />
             break;
 

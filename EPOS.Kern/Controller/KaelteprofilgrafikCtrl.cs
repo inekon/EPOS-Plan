@@ -5,10 +5,12 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// Eine Kältezeile, wie sie der Dialog gerade zeigt — der ungespeicherte Arbeitsstand: Name, Jahressumme [MWh],
     /// Betriebskalender (<c>null</c> = keiner) und, sofern im Dialog bearbeitet, Monatsanteile [%] und Wochenprofil
-    /// (168 Werte, Montag 0 Uhr zuerst); <c>null</c> = der Stand der Projektkopie.
+    /// (168 Werte, Montag 0 Uhr zuerst); <c>null</c> = der Stand der Projektkopie. KBP-4b: dazu die Eingabeart des Dialogs
+    /// (<c>null</c> = die gespeicherte) und, sofern bearbeitet, die Typtage samt Matrix (<c>null</c> = die der Projektkopie).
     /// </summary>
     public sealed record Kaeltegrafikzeile(string Name, double SummeMwh, int? KalenderId,
-                                           double[] Monatsanteile = null, double[] Wochenprofil = null);
+                                           double[] Monatsanteile = null, double[] Wochenprofil = null,
+                                           string Eingabeart = null, KaeltetyptagEingabe Typtage = null);
 
     /// <summary>
     /// <b>Die Grafik einer Kältezeile im Dialog der Bedarfsprofile</b> (Konzept Kältebedarfsprofile, Abschnitt 5; Welle
@@ -72,7 +74,10 @@ namespace WindowsFormsApplication1
             Wochenwerte = z.Wochenprofil != null && z.Wochenprofil.Length == ProfilBedarf.WOCHEN_STUNDEN
                 ? (double[])z.Wochenprofil.Clone() : null,
             KalenderGesetzt = true,
-            KalenderId = z.KalenderId is int k && k > 0 ? k : 0
+            KalenderId = z.KalenderId is int k && k > 0 ? k : 0,
+            // KBP-4b: die Eingabeart des Dialogs und die dort bearbeiteten Typtage (ungespeichert).
+            Eingabeart = string.IsNullOrEmpty(z.Eingabeart) ? null : KaeltebedarfsprofilVorlagenSchema.Eingabeart(z.Eingabeart),
+            Typtage = z.Typtage
         };
     }
 }

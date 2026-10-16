@@ -261,7 +261,10 @@ namespace Auslieferungsvorlage.Tests
             // 195 seit dem Schemaschritt 224 (TwwZonenferienSchema, ZB5): Tab_TwwZonenferien, STRICT von ihrer ersten
             // Zeile an und in der Vorlage LEER (Projektdaten).
             //
-            Assert.Equal(195, befund.Strict);
+            // 197 seit dem Schemaschritt 236 (KaeltetyptagSchema, KBP-4): +2 Tab_Kaeltetyptag, Tab_Kaeltetyptag_Matrix
+            // (Projektdaten, in der Vorlage leer).
+            //
+            Assert.Equal(197, befund.Strict);
         }
 
         // =============================================================================

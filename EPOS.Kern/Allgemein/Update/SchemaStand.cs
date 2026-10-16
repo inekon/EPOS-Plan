@@ -1113,10 +1113,13 @@ namespace WindowsFormsApplication1
         /// Übernahme der Anlagenpreise in <c>energy_project_settings</c> (je Projekt die Anlage mit der kleinsten ID,
         /// ein gepflegter Kartenpreis bleibt), dann der Entfall von <c>Tab_Energieanlagen.Wasserpreis_EUR_m3</c>
         /// (<see cref="WasserpreisTraegerkarteSchema"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt rechnet ein
-        /// Rückkühlwerk; keine neue Katalogfassung. Das Ziel ist das Ende der Kette; umgehängt wird allein am Vorgänger
-        /// <see cref="BedarfsprofilEingabeartSchema.SCHRITT"/>.
+        /// Rückkühlwerk; keine neue Katalogfassung.
+        /// Danach, mit den TYPTAGEN DER KÄLTEBEDARFSZUORDNUNG (KBP-4a), steht das Ziel auf
+        /// <see cref="KaeltetyptagSchema.SCHRITT"/>: <c>Tab_Kaeltetyptag</c> und <c>Tab_Kaeltetyptag_Matrix</c>, zwei leere
+        /// Tabellen (<see cref="KaeltetyptagSchema"/>). <b>Ergebnisneutral:</b> Keine Zuordnung trägt Eingabeart 'typtag'. Das
+        /// Ziel ist das Ende der Kette; umgehängt wird allein am Vorgänger <see cref="WasserpreisTraegerkarteSchema.SCHRITT"/>.
         /// </summary>
-        public const int Zielversion = WasserpreisTraegerkarteSchema.SCHRITT;
+        public const int Zielversion = KaeltetyptagSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

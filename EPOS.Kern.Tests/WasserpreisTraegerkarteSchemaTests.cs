@@ -29,7 +29,7 @@ namespace EPOS.Kern.Tests
         {
             // Schritt 235, haengt an 234 (BedarfsprofilEingabeartSchema, KBP-5).
             Assert.Equal(BedarfsprofilEingabeartSchema.SCHRITT + 1, WasserpreisTraegerkarteSchema.SCHRITT);
-            Assert.Equal(WasserpreisTraegerkarteSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= WasserpreisTraegerkarteSchema.SCHRITT);
             Assert.Contains(Paketanhebung.Stufen, s => s.Nr == WasserpreisTraegerkarteSchema.SCHRITT &&
                                                        s.Wirkung == Paketanhebung.Art.Umformung);
             Assert.DoesNotContain(RueckkuehlwerkSchema.SPALTEN_ANLAGE, s => s.Spalte == SPALTE);
