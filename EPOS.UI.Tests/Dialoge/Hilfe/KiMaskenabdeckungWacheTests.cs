@@ -209,6 +209,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // Überlagerung in UebersichtErgebnisse auf der Übersichtsseite; seine Felder sind eine Benutzereinstellung der
         // Ansicht (für alle Projekte), kein Einstellwert der Seite (EINGABESTELLEN).
         new("ErgebnisAnpassenDialog",         "UebersichtSeite",             KiMaskennamen.BERICHTE_UEBERSICHT),
+        // SK-3 (Konzept Energieflussbild 4.5): die Ansicht „Fluss“ steht in UebersichtErgebnisse auf der Übersichtsseite;
+        // ihre Versionswahl ist ein Anzeigezustand je Sitzung, kein Einstellwert der Seite (EINGABESTELLEN). Der Assistent
+        // liest das Bild über UebersichtSeiteKiSicht.ErgebnisseLesen (Ansichtszeile und Flussliste).
+        new("UebersichtErgebnisFluss",        "UebersichtSeite",             KiMaskennamen.BERICHTE_UEBERSICHT),
 
         // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): der Umschalter der Platzhalteranzeige in der
         // Kopfzeile von „Berichte & Kosten" - als Reiterblatt steht die Seite in der Startseite, die
@@ -638,6 +642,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // „Zeilen ohne Wert ausblenden“ sind eine Benutzereinstellung der Ansicht (je Benutzer, für alle Projekte über
         // die Einstellungsnaht), kein Einstellwert der Seite und kein Katalogfeld.
         new("ErgebnisAnpassenDialog", 3, "Gruppenzustände, Kennzahlenhaken und „ohne Wert“ sind eine Benutzereinstellung der Ansicht, kein Einstellwert der Seite"),
+        // SK-3: die Versionswahl über dem Energieflussbild ist ein Anzeigezustand je Sitzung (welche Version das Bild zeigt),
+        // kein Einstellwert der Seite und kein Katalogfeld; das Bild selbst liest der Assistent als Flussliste.
+        new("UebersichtErgebnisFluss", 1, "die Versionswahl ist ein Anzeigezustand der Ansicht „Fluss“ je Sitzung, kein Einstellwert der Seite"),
         // ETAPPE E16 (V-G3): das Ganzzahlfeld „Zahlung alle … Jahre" der Betriebsseite; die
         // Feldkarte (KiDialoge, Maske Form_VorlagenPosition) führt es als wiederholperiode (8 -> 9).
         new("VorlagenPositionDialog", 9),
