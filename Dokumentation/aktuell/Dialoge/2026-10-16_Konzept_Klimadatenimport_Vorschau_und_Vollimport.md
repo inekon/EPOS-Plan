@@ -260,6 +260,24 @@ es nicht. `Laufen` übernimmt eine passende, importierbare Vorschau ohne zweiten
 zweite Geokodierung (`PasstZu`: Ort bzw. Koordinaten, Quelle, Datei, Jahr, Szenario); die Hülle
 hält die letzte Vorschau. Nachweis: `KlimaImportAblaufTests`, `TryPaketLeserTests`.
 
+**Umgesetzt (KD-3):** Die Überlagerung trägt unter dem Standort das Feld „Höhe des Ortes (m)“
+(`StandortHoeheM`, geht in Suche und Import), darunter „Datensatz suchen“ für alle drei Quellen und
+die Vorschaukarte nach dem Mockup: Kennzeichen „Datensatz gefunden: …“ bzw. „… ist nicht im Paket“
+mit Grund und den vorhandenen Ausführungen als Wahlknöpfen (ein Klick setzt Jahr und Szenario und
+sucht neu), Standort- und Bezugspunktblock (Koordinate, Entfernung, Höhe, Höhenunterschied mit der
+aktuellen Höhe des Ortes), die Hinweiszeilen (Schwellen über `KlimaVorschauFestwerte.NichtOrtstypisch`),
+fünf Kennzahlen, das Bild der Monatsreihen (`KlimaVorschaubild` im Kern über
+`ChartRenderer.SummenlinieModell`, Strahlung links, Temperatur rechts, im Baustein `DiagrammSvg`) und
+der Parameterbestand (geführt / gerechnet / fehlt). Longitude, Latitude und eine leere Bezeichnung
+werden aus dem Standort vorbelegt (auf dem Ortsweg heißt die Region wie der Ort). Der Dialog hält den
+Eingabeschlüssel der Suche (Ort bzw. Koordinaten, Quelle, Datei, Paket, Jahr, Szenario); weicht er ab,
+ist die Karte sichtbar verfallen. „Daten einlesen“ ist ohne gültige, passende Vorschau weich gesperrt
+(`aria-disabled`, Grund im Titel und in der Leiste) — nur, wo die Hülle eine Vorschau anbietet. Das
+Wunschmaß der Überlagerung steigt auf 1 000 px (Formular vor der Suche 900 px); die Karte rollt unter
+der haftenden Leiste. Nachweis: `KlimadatenDialogTests` (Treffer, kein Treffer mit Ausführungswahl,
+Verfall, weiche Sperre, Felder, Höhe im Auftrag, Hinweis ab 50 km/200 m, Fehlschlag),
+`KiMaskenabdeckungWacheTests` (Feld `hoehe`), `fensterprobe.mjs` Fall `klimaimport` mit Karte.
+
 ---
 
 ## 5. CSV-Export
@@ -330,7 +348,7 @@ Jeder Schritt umfasst höchstens rund 150 Werkzeugaufrufe, Bau mit `WP-Plan.Kern
 |---|---|---|
 | **KD-1** Schlussleiste — *umgesetzt 16.10.2026* | Haftregel der Überlagerung auf die Leiste mit Primärknopf in `.epos-einlesen` erweitern (oder Leiste mit Statusspanne), Fenstermaß Klimadaten über `Fenstermass.MitUeberlagerung`, kein Schemaschritt | `StilblattTests`, `FensterrahmenTests`, neuer Fall in `fensterprobe.mjs` mit Gegenprobe, Bau der Windows-Schale mit `EnableWindowsTargeting=true` |
 | **KD-2** Vorschau Kern — *umgesetzt 16.10.2026* | `KlimaVorschauErgebnis` erweitern, Vorschau liest den Datensatz für alle drei Quellen, `AusfuehrungGefunden`, `KlimaKennzahlen`, Höhe aus Kopf bzw. PVGIS, Hinweis nach KD-Q1, Import übernimmt den Vorschausatz | `TryPaketLeserTests`, `KlimaImportAblaufTests` mit lokaler Probe-`data.zip`, Gegenprobe Szenario fehlt, Nachrechnung Stuttgart-Vaihingen (56 km, Stötten) als fester Fall |
-| **KD-3** Vorschau Dialog | Vorschaukarte, Felder befüllen, Grafik, Kennzeichen, Parameterbestand, Ressourcen in beiden Sprachen, KI-Feldliste (`KiDialoge`) nachziehen | `KlimadatenDialogTests` (Treffer, kein Treffer, Verfall bei Eingabe, Import ohne Vorschau weich gesperrt), `KiMaskenabdeckungWacheTests`, `designer_neu.py` |
+| **KD-3** Vorschau Dialog — *umgesetzt 16.10.2026* | Vorschaukarte, Felder befüllen, Grafik, Kennzeichen, Parameterbestand, Ressourcen in beiden Sprachen, KI-Feldliste (`KiDialoge`) nachziehen | `KlimadatenDialogTests` (Treffer, kein Treffer, Verfall bei Eingabe, Import ohne Vorschau weich gesperrt), `KiMaskenabdeckungWacheTests`, `designer_neu.py` |
 | **KD-4** Rohdaten | Schemaschritt (Nummer anmelden): `Tab_Klimastunde_STAMM`, Spalten an `Tab_Klimaregion(_STAMM)`; `DwdTryLeser` und PVGIS-Leser liefern alle Felder, Schreibweg füllt sie, `SchemaKatalog`, Katalogregister | `SqlDialektPruefer`, Schematests, Wache „Rechenweg liest Rohtabelle nicht“, Referenzlauf 18 Projekte `PASS` |
 | **KD-5** Export | `KlimaCsv`, `KlimaExportOptionen`, Exportdialog, Handlung in der Auswahlleiste, Taupunkt abgeleitet | Kern-Tests (Trennzeichen × Dezimal × Zeitspalte, Einheitenzeile, Altbestand ohne Rohdaten), bunit Exportdialog, `CsvAmBildWacheTests` unberührt |
 | **KD-6** CSV-Import (nur nach KD-Q5) | vierte Quelle mit Spaltenzuordnung über `GanglinienImportOptionen` | Rundlauf Export → Import bitgleich in den Rechenspalten |
