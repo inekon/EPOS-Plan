@@ -221,6 +221,8 @@
                 DateiWaehlen="@(_ => Task.FromResult<string?>(null))"
                 RegionErmitteln="@KlimaVorschau"
                 Loeschen="@(_ => Task.FromResult(true))"
+                ExportLesen="@KlimaExportProbe"
+                ExportSpeichern="@((_, _) => Task.FromResult(EPOS.UI.Dialoge.Export.KlimaExportErgebnis.Abgebrochen))"
                 Geschlossen="@(b => Beendet(b))" />
             break;
 
@@ -242,6 +244,25 @@
     /// (Station 1, 56 km, 734 m), Kennzahlen mit Monatsreihen, Parameterbestand und Hinweise.
     /// So misst die Probe die Ueberlagerung MIT Vorschaukarte, ihrer hoechsten Gestalt.
     /// </summary>
+    /// <summary>
+    /// KD-5: eine Region MIT Rohdaten fuer "Exportieren..." im Fall klimaimport - erfundene Reihen, die laengste
+    /// Parameterliste (vier Gruppen) und eine volle Vorschau; so misst die Probe den Export in seiner hoechsten Gestalt.
+    /// </summary>
+    private static Task<WindowsFormsApplication1.KlimaExportDaten?> KlimaExportProbe(string region)
+    {
+        var d = new WindowsFormsApplication1.KlimaExportDaten
+        {
+            IdRegion = 1, Name = region, Quelle = "TRY_Datei", Ausfuehrung = "Probe.dat", Latitude = 50.0, Longitude = 10.0,
+            StandortHoeheM = 300, Rohdaten = true, RohZeitbezug = WindowsFormsApplication1.KlimaRohwerteSchema.ZEITBEZUG_MEZ
+        };
+        foreach (var g in WindowsFormsApplication1.KlimaExportOptionen.Groessen)
+            if (g.Art == WindowsFormsApplication1.KlimaWertart.Rechenwert)
+                d.Rechenwerte[g.Spalte] = Enumerable.Range(0, 8760).Select(i => 10.0 + i % 24).ToArray();
+        foreach (string s in WindowsFormsApplication1.KlimaRohwerteSchema.ROHSPALTEN)
+            d.Rohwerte[s] = Enumerable.Range(0, 8760).Select(i => 1000.0 + i % 24).ToArray();
+        return Task.FromResult<WindowsFormsApplication1.KlimaExportDaten?>(d);
+    }
+
     private static Task<WindowsFormsApplication1.KlimaVorschauErgebnis> KlimaVorschau(WindowsFormsApplication1.KlimaImportAuftrag a)
     {
         var kz = new WindowsFormsApplication1.KlimaKennzahlen

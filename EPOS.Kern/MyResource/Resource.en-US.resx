@@ -57058,5 +57058,29 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="KEXP_DATEIDIALOG_TITEL" xml:space="preserve">
     <value>Export climate data</value>
   </data>
+  <data name="KI_DLG_MASKE_KLIMAEXPORT" xml:space="preserve">
+    <value>Export climate data</value>
+  </data>
+  <data name="KEXP_KI_TZ_ERL" xml:space="preserve">
+    <value>Separator of the file: 0 = semicolon, 1 = comma, 2 = tab.</value>
+  </data>
+  <data name="KEXP_KI_DZ_ERL" xml:space="preserve">
+    <value>Decimal separator: 0 = comma, 1 = point. A comma cannot be used with the comma separator.</value>
+  </data>
+  <data name="KEXP_KI_ZS_ERL" xml:space="preserve">
+    <value>Time column: 0 = running hour, 1 = date and time, 2 = both, 3 = ISO 8601, 4 = none.</value>
+  </data>
+  <data name="KEXP_KI_ZB_ERL" xml:space="preserve">
+    <value>Time reference of the output: 0 = CET without daylight saving time (default), 1 = UTC.</value>
+  </data>
+  <data name="KEXP_KI_KA_ERL" xml:space="preserve">
+    <value>Column header: 0 = name [unit] in one line, 1 = name and unit line, 2 = no header.</value>
+  </data>
+  <data name="KEXP_KI_HK_ERL" xml:space="preserve">
+    <value>Writes region, source, data set, coordinates, elevation, time reference and licence as # lines before the header.</value>
+  </data>
+  <data name="KEXP_KI_PAR_ERL" xml:space="preserve">
+    <value>The selected quantities as a comma-separated list of keys (e.g. R_TEMPERATUR,R_GLOBAL,A_TAUPUNKT). Raw values (ROH_…) only for regions with raw data.</value>
+  </data>
 </root>
 

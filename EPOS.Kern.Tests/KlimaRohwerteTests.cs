@@ -325,7 +325,9 @@ namespace EPOS.Kern.Tests
             string[] merkmale = { "Tab_Klimastunde", "KlimaRohwerteSchema.TAB_ROH", "KlimaRohstunde", "KlimaRohreihe", "RohwerteSchreiben" };
             string[] erlaubt =
             {
-                "Allgemein/Update/", "Allgemein/Import/", "Allgemein/Katalog/", "Allgemein/Export/"
+                "Allgemein/Update/", "Allgemein/Import/", "Allgemein/Katalog/", "Allgemein/Export/",
+                // KD-5: der Leser der Rohtabelle ist der Export - seine Datenseite steht als Controller.
+                "Controller/KlimaExportCtrl.cs"
             };
 
             var treffer = new List<string>();

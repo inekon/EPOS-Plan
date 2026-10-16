@@ -57065,5 +57065,29 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KEXP_DATEIDIALOG_TITEL" xml:space="preserve">
     <value>Klimadaten exportieren</value>
   </data>
+  <data name="KI_DLG_MASKE_KLIMAEXPORT" xml:space="preserve">
+    <value>Klimadaten exportieren</value>
+  </data>
+  <data name="KEXP_KI_TZ_ERL" xml:space="preserve">
+    <value>Trennzeichen der Datei: 0 = Semikolon, 1 = Komma, 2 = Tabulator.</value>
+  </data>
+  <data name="KEXP_KI_DZ_ERL" xml:space="preserve">
+    <value>Dezimalzeichen: 0 = Komma, 1 = Punkt. Komma geht nicht neben dem Trennzeichen Komma.</value>
+  </data>
+  <data name="KEXP_KI_ZS_ERL" xml:space="preserve">
+    <value>Zeitspalte: 0 = laufende Stunde, 1 = Datum und Uhrzeit, 2 = beides, 3 = ISO 8601, 4 = keine.</value>
+  </data>
+  <data name="KEXP_KI_ZB_ERL" xml:space="preserve">
+    <value>Zeitbezug der Ausgabe: 0 = MEZ ohne Sommerzeit (Vorgabe), 1 = UTC.</value>
+  </data>
+  <data name="KEXP_KI_KA_ERL" xml:space="preserve">
+    <value>Spaltenkopf: 0 = Name [Einheit] in einer Zeile, 1 = Name und Einheitenzeile, 2 = ohne Kopf.</value>
+  </data>
+  <data name="KEXP_KI_HK_ERL" xml:space="preserve">
+    <value>Schreibt Region, Quelle, Ausführung, Koordinaten, Höhe, Zeitbezug und Lizenz als #-Zeilen vor den Kopf.</value>
+  </data>
+  <data name="KEXP_KI_PAR_ERL" xml:space="preserve">
+    <value>Die gewählten Größen als Schlüsselliste, durch Komma getrennt (etwa R_TEMPERATUR,R_GLOBAL,A_TAUPUNKT). Rohwerte (ROH_…) nur bei Regionen mit Rohdaten.</value>
+  </data>
 </root>
 

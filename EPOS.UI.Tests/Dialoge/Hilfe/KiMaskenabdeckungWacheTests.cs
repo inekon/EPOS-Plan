@@ -345,6 +345,9 @@ public sealed class KiMaskenabdeckungWacheTests
             "für den Rest, Raumwahl im Grundriss, Ausweg-Haken — sie wirken erst mit ihrem Knopf; die Zielzone wählt der " +
             "Anwender als Knopf der Legende, keine Eingabe), die fünf " +
             "Filter der Listen (Anzeige, kein Einstellwert) und die Dateiwahl (Betriebssystemdialog)"),
+        // KD-5: der Klimaexport - fuenf Optionsgruppen (Trennzeichen, Dezimalzeichen, Zeitspalte, Zeitbezug, Kopf) und der
+        // Schalter Herkunft stehen im Katalog; die Parameterwahl (Mehrfachauswahl) als Schluesselliste.
+        new("KlimaExportDialog", 6),
         new("GebaeudeExportDialog", 5, "die Bestätigung der Meldungen ist ein Katalogfeld nur zum Lesen; die Formatwahl gbXML/IFC trifft der Anwender, sie nimmt die Bestätigung zurück; die Wahl „Originaldatei anreichern“ und die Bestätigung des Beipackzettels (fremde Datei verändert weitergeben) sind Handlungen des Anwenders, die eine Dateiwahl voraussetzen"),
         // ---- Ende Gebäudesimulation G3, Welle D2 ----
 

@@ -43,6 +43,9 @@
 //    Leiste ohne Statusspanne) - ihre Schlussleiste steht oben wie am Ende ganz im Bild am Boden der
 //    Ueberlagerung, auch bei 787 x 520 (1 180 x 780 bei 150 %); gemessen MIT Vorschaukarte (KD-3: Ort
 //    eintragen, "Datensatz suchen"); Gegenprobe: Leiste position: static.
+//  KLIMAEXPORT (KD-5, --nur klimaexport): dieselbe Messung fuer die Ueberlagerung "Klimadaten exportieren"
+//    (.epos-klimaexport-dialog, SpeichernLeiste als letztes Kind), geoeffnet ueber "Exportieren..." der
+//    Auswahlleiste, Region mit Rohdaten (laengste Parameterliste); Gegenprobe: Leiste position: static.
 //
 //  IPAD 11 ZOLL (1 194 x 834 quer): dieselben Faelle MIT den sicheren Abstaenden
 //    des iPads (Statusleiste oben 24 px, Home-Anzeige unten 20 px, gesetzt ueber die
@@ -500,24 +503,33 @@ async function katalog(browser, f, marke) {
  * Mit `stil` (Gegenprobe) wird eine Stilzeile eingeschoben; liefert die Zahl der Verstoesse, die
  * Texte und die Zahlen.
  */
-async function klimaimport(browser, f, stil = '') {
+async function klimaimport(browser, f, stil = '', art = 'import') {
+  // KD-5: art 'export' misst die Ueberlagerung des Klimaexports (.epos-klimaexport-dialog, SpeichernLeiste als
+  // letztes Kind) - geoeffnet ueber die Handlung "Exportieren..." der Auswahlleiste, Region mit Rohdaten.
+  const INHALT = art === 'export' ? '.epos-klimaexport-dialog' : '.epos-einlesen';
   const seite = await oeffnen(browser, 'klimaimport', f);
   if (stil) await seite.addStyleTag({ content: stil });
+  if (art === 'export') {
+    await seite.click('.epos-auswahlleiste button:has-text("Exportieren")');
+    await seite.waitForSelector('.epos-ueberlagerung-inhalt > .epos-klimaexport-dialog > .epos-leiste:last-child', { timeout: 20000 });
+    await seite.waitForSelector('.epos-klimaexport-dialog pre.epos-klimaexport-vorschau', { timeout: 20000 });
+  } else {
   await seite.click('button.epos-importknopf');
   await seite.waitForSelector('.epos-ueberlagerung-inhalt > .epos-einlesen > .epos-leiste:last-child', { timeout: 20000 });
   // KD-3: Ort eintragen und "Datensatz suchen" - gemessen wird die Ueberlagerung MIT Vorschaukarte.
   await seite.fill('.epos-einlesen input[list=epos-klimaregion-orte]', 'Ort 1');
   await seite.click('.epos-klimavorschau-suche > button');
   await seite.waitForSelector('.epos-einlesen .epos-klimavorschau svg', { timeout: 20000 });
+  }
   const messen = async unten => {
-    await seite.evaluate(unten => {
-      const ue = document.querySelector('.epos-ueberlagerung:has(> .epos-ueberlagerung-inhalt > .epos-einlesen)');
+    await seite.evaluate(([unten, inhalt]) => {
+      const ue = document.querySelector(`.epos-ueberlagerung:has(> .epos-ueberlagerung-inhalt > ${inhalt})`);
       ue.scrollTop = unten ? ue.scrollHeight : 0;
-    }, unten);
+    }, [unten, INHALT]);
     await seite.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
-    return seite.evaluate(() => {
-      const ue = document.querySelector('.epos-ueberlagerung:has(> .epos-ueberlagerung-inhalt > .epos-einlesen)');
-      const ein = ue.querySelector(':scope > .epos-ueberlagerung-inhalt > .epos-einlesen');
+    return seite.evaluate(inhalt => {
+      const ue = document.querySelector(`.epos-ueberlagerung:has(> .epos-ueberlagerung-inhalt > ${inhalt})`);
+      const ein = ue.querySelector(`:scope > .epos-ueberlagerung-inhalt > ${inhalt}`);
       const leiste = ein.lastElementChild;
       const primaer = leiste.querySelector(':scope > .epos-knopf--primaer');
       const r = e => { const b = e.getBoundingClientRect(); return [Math.round(b.top * 10) / 10, Math.round(b.bottom * 10) / 10]; };
@@ -533,7 +545,7 @@ async function klimaimport(browser, f, stil = '') {
         rollhoehe: ue.scrollHeight, fenster: ue.clientHeight, stand: Math.round(ue.scrollTop),
         boden: Math.round(boden * 10) / 10, innen: innerHeight, leistePos: getComputedStyle(leiste).position,
       };
-    });
+    }, INHALT);
   };
   const oben = await messen(false), ende = await messen(true);
   const fehler = [];
@@ -549,7 +561,7 @@ async function klimaimport(browser, f, stil = '') {
       fehler.push(`${stand}: Primaerknopf ${JSON.stringify(m.primaer)} nicht ganz im Bild`);
   }
   if (ende.boden > ende.leiste[0] + TOL) fehler.push(`Ende: Inhalt bis ${ende.boden} px reicht unter die Schlussleiste (${ende.leiste[0]})`);
-  if (FOTOS && !stil) await seite.screenshot({ path: `${FOTOS}/klimaimport_${f.breite}x${f.hoehe}.png` });
+  if (FOTOS && !stil) await seite.screenshot({ path: `${FOTOS}/klima${art}_${f.breite}x${f.hoehe}.png` });
   await seite.close();
   return { n: fehler.length, fehler, oben, ende };
 }
@@ -1080,6 +1092,18 @@ try {
     }
   }
 
+  // ----------------------------------------- KD-5: Schlussleiste der Klimaexport-Ueberlagerung
+  if (!NUR || NUR === 'klimaexport') {
+    for (const f of KLIMA_FENSTER) {
+      const name = `klimaexport ${f.breite}x${f.hoehe}${f.ipad ? ' iPad' : ''}`;
+      console.log(`- ${name}`);
+      const r = await klimaimport(browser, f, '', 'export');
+      for (const t of r.fehler) melde(name, t);
+      console.log(`    Ueberlagerung ${JSON.stringify(r.oben.ueberlagerung)}, Rollhoehe ${r.oben.rollhoehe}/${r.oben.fenster} px (gerollt ${r.ende.stand} px); `
+        + `Leiste oben ${JSON.stringify(r.oben.leiste)}, Ende ${JSON.stringify(r.ende.leiste)} (${r.oben.leistePos}); Inhalt am Ende bis ${r.ende.boden} px`);
+    }
+  }
+
   // ----------------------------------------- Nacharbeit KBP-3b: Tagesarten der Kalenderwoche als Hintergrund
   if (!NUR || NUR === 'kaeltegrafik') {
     for (const f of FENSTER.slice(0, 2)) {
@@ -1212,6 +1236,14 @@ try {
       for (const f of KLIMA_FENSTER) {
         const g = await klimaimport(browser, f, '.epos-ueberlagerung-inhalt > .epos-einlesen > .epos-leiste { position: static !important; margin-bottom: 0 !important; }');
         console.log(`    Gegenprobe klimaimport ohne Haftregel ${f.breite}x${f.hoehe}: ${g.n} Verstoesse`);
+        if (g.n === 0) gegenGruen++;
+      }
+    }
+    if (MIT_GEGENPROBE && (!NUR || NUR === 'klimaexport')) {
+      // KD-5: Ohne die Haftregel liegt die Schlussleiste des Exports unter dem Boden der Ueberlagerung.
+      for (const f of KLIMA_FENSTER) {
+        const g = await klimaimport(browser, f, '.epos-ueberlagerung-inhalt > .epos-dialog > .epos-leiste { position: static !important; margin-bottom: 0 !important; }', 'export');
+        console.log(`    Gegenprobe klimaexport ohne Haftregel ${f.breite}x${f.hoehe}: ${g.n} Verstoesse`);
         if (g.n === 0) gegenGruen++;
       }
     }

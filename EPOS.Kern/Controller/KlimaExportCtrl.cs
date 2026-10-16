@@ -22,7 +22,16 @@ namespace WindowsFormsApplication1
 
         private const string SQL_REGION = "SELECT * FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?";
 
-        private const string SQL_ROH = "SELECT * FROM Tab_Klimastunde_STAMM WHERE ID_Klimaregion = ? ORDER BY Stunde";
+        /// <summary>
+        /// Die Rohtabelle des geparkten Schritts 238: aus den Namen von <see cref="KlimaRohwerteSchema"/> gebildet (kein
+        /// Wert im Text) — bis zur Hebung der Testdatenbank fuer den <c>SqlDialektPruefer</c> ein dynamischer Text.
+        /// </summary>
+        private static readonly string SQL_ROH =
+            "SELECT * FROM " + Q(KlimaRohwerteSchema.TAB_ROH) + " WHERE " + Q(KlimaRohwerteSchema.SPALTE_REGION) +
+            " = ? ORDER BY " + Q(KlimaRohwerteSchema.SPALTE_STUNDE);
+
+        /// <summary>Ein Bezeichner in Anführungszeichen (wie im Schreibweg von <see cref="KlimaRohwerteSchema"/>).</summary>
+        private static string Q(string name) => "\"" + name + "\"";
 
         /// <summary>Die Daten einer Region über ihren Namen; <c>null</c>, wenn es sie im Katalog nicht gibt.</summary>
         public static KlimaExportDaten Lesen(string regionsname)

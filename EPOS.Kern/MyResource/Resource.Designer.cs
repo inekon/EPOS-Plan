@@ -60201,6 +60201,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezimalzeichen: 0 = Komma, 1 = Punkt. Komma geht nicht neben dem Trennzeichen Komma. ähnelt.
+        /// </summary>
+        public static string KEXP_KI_DZ_ERL {
+            get {
+                return ResourceManager.GetString("KEXP_KI_DZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibt Region, Quelle, Ausführung, Koordinaten, Höhe, Zeitbezug und Lizenz als #-Zeilen vor den Kopf. ähnelt.
+        /// </summary>
+        public static string KEXP_KI_HK_ERL {
+            get {
+                return ResourceManager.GetString("KEXP_KI_HK_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spaltenkopf: 0 = Name [Einheit] in einer Zeile, 1 = Name und Einheitenzeile, 2 = ohne Kopf. ähnelt.
+        /// </summary>
+        public static string KEXP_KI_KA_ERL {
+            get {
+                return ResourceManager.GetString("KEXP_KI_KA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählten Größen als Schlüsselliste, durch Komma getrennt (etwa R_TEMPERATUR,R_GLOBAL,A_TAUPUNKT). Rohwerte (ROH_…) nur bei Regionen mit Rohdaten. ähnelt.
+        /// </summary>
+        public static string KEXP_KI_PAR_ERL {
+            get {
+                return ResourceManager.GetString("KEXP_KI_PAR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trennzeichen der Datei: 0 = Semikolon, 1 = Komma, 2 = Tabulator. ähnelt.
+        /// </summary>
+        public static string KEXP_KI_TZ_ERL {
+            get {
+                return ResourceManager.GetString("KEXP_KI_TZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitbezug der Ausgabe: 0 = MEZ ohne Sommerzeit (Vorgabe), 1 = UTC. ähnelt.
+        /// </summary>
+        public static string KEXP_KI_ZB_ERL {
+            get {
+                return ResourceManager.GetString("KEXP_KI_ZB_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitspalte: 0 = laufende Stunde, 1 = Datum und Uhrzeit, 2 = beides, 3 = ISO 8601, 4 = keine. ähnelt.
+        /// </summary>
+        public static string KEXP_KI_ZS_ERL {
+            get {
+                return ResourceManager.GetString("KEXP_KI_ZS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kopf ähnelt.
         /// </summary>
         public static string KEXP_KOPFART {
@@ -69867,6 +69930,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_KLIMA {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_KLIMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten exportieren ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_KLIMAEXPORT {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_KLIMAEXPORT", resourceCulture);
             }
         }
         
