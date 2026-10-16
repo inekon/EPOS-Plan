@@ -150,6 +150,8 @@ function lage() {
   return {
     y: scrollY, innen: innerHeight, dokument: document.documentElement.scrollHeight,
     wurzel: r(d), kopf: r(kopf), fuss: r(fuss), nachfolger: r(nach),
+    // Zeilenabstand der Wurzel (Flex-gap): Abstand zwischen Fuss und Nachlauf, solange der Fuss an seinem Platz steht.
+    luecke: d ? parseFloat(getComputedStyle(d).rowGap) || 0 : 0,
     kopfPos: kopf ? getComputedStyle(kopf).position : '', fussPos: fuss ? getComputedStyle(fuss).position : '',
   };
 }
@@ -335,6 +337,11 @@ async function haften(seite, name, melden, nachlauf = false, r = { oben: 0, unte
       // ... und am Ende steht der Nachlauf frei darunter.
       if (stand === 'Ende' && (!m.nachfolger || m.nachfolger.top < m.fuss.bottom - 0.5 || m.nachfolger.bottom > m.innen - r.unten + TOL))
         fehler(`Ende: Nachlauf ${m.nachfolger ? zahl(m.nachfolger.top) + '..' + zahl(m.nachfolger.bottom) : 'fehlt'} px, Fussleiste bis ${zahl(m.fuss.bottom)} px - ueberdeckt oder abgeschnitten`);
+      // ... und zwar genau an seinem Platz: Zwischen Fuss und Nachlauf steht der Zeilenabstand der Wurzel. Ein
+      // negativer unterer Rand (der Fuss reicht in den Rand der Wurzel) zieht ihn in diese Luecke - bei gap 20 px
+      // und Kartenrand 16 px ohne Ueberdeckung, deshalb misst die Probe den Abstand, nicht nur die Ueberdeckung.
+      else if (stand === 'Ende' && Math.abs(m.nachfolger.top - m.fuss.bottom - m.luecke) > TOL)
+        fehler(`Ende: Fussleiste bis ${zahl(m.fuss.bottom)} px, Nachlauf ab ${zahl(m.nachfolger.top)} px - Abstand ${zahl(m.nachfolger.top - m.fuss.bottom)} statt ${zahl(m.luecke)} px, der Fuss steht nicht an seinem Platz`);
     } else {
       if (Math.abs(m.fuss.bottom - (m.innen - r.unten)) > TOL) fehler(`${stand}: Fussleiste endet bei ${zahl(m.fuss.bottom)} statt ${m.innen - r.unten} px (Rollstand ${zahl(m.y)})`);
       if (m.fuss.top >= m.innen) fehler(`${stand}: Fussleiste ausserhalb des Bildes`);
@@ -1035,7 +1042,7 @@ try {
       if (h.n === 0) gegenGruen++;
       await seite.close();
       if (NACHLAUF.has(fall)) {
-        // Der Fuss mit negativem Rand trotz Nachlauf: er laege ueber dessen Beschriftung.
+        // Der Fuss mit negativem Rand trotz Nachlauf: er rueckt in die Luecke zum Nachlauf (Abstand gap - Kartenrand).
         const s4 = await oeffnen(browser, fall, f);
         await s4.addStyleTag({ content: '#app > .epos-dialog > .epos-leiste { margin-bottom: calc(-1 * var(--epos-karte-rand)) !important; }' });
         const h4 = await haften(s4, '', false, true);
