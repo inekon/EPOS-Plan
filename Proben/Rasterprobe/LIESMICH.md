@@ -679,6 +679,12 @@ das Maß `--epos-rand` (Commit `27a7fd4b6`, 10 → 20 px): Der Körper der Grupp
 polstert seither 20 px je Seite, die Hülle ist 968 statt 988 px breit, die Summe der
 Mindestbreiten bleibt 970 px. Gemessen mit dem Stilblatt des Vorgängers `14f0764e9`: quer 0.
 
+**Behebung Z6 (örtlich).** `--epos-rand` bleibt im Haus 20 px; allein im Kategoriendialog polstert
+der Körper der Gruppe seitlich 10 px (`.epos-zapfprofil-kategorien > .epos-gruppenkopf >
+.epos-gruppenkopf-koerper { padding-inline: 10px }`), die Hülle ist wieder 988 px breit.
+Ergebnis: **Rasterprobe 0 (29 von 29 Fällen)**, Z6 Hülle quer 0, Z7 Hülle quer 642 px bei
+Überlagerung quer 0, Gegenprobe Z8 rot (Überlagerung quer 330 px); Fensterprobe 0 (Gegenprobe rot).
+
 ## Gebäudesimulation G3, Welle K — die Katalogseite des Gebäudedialogs (GD1–GD3)
 
 Die Katalogseite des Gebäudedialogs ist die virtualisierte `Katalogliste` (Wahlspalte, 53 px,

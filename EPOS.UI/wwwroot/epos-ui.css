@@ -16057,6 +16057,13 @@ Dieselben Regeln wie beim Projektkopf. */
     --col-gap: 0px;
 }
 
+/* Der Koerper der Gruppe "Zapfkategorien" polstert schmaler als das Hausmass
+   --epos-rand: Die Mindestbreiten des Rasters (970 px) passen so in die Huelle der
+   Ueberlagerung bei 1 088 px Fensterbreite (Rasterprobe Z6). Nur in diesem Dialog. */
+.epos-zapfprofil-kategorien > .epos-gruppenkopf > .epos-gruppenkopf-koerper {
+    padding-inline: 10px;
+}
+
 .epos-zapfprofil-reihenfolge .epos-knopf {
     min-width: var(--epos-touchziel);
     padding-inline: 0;
