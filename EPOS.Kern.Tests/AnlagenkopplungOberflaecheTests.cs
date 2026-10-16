@@ -175,7 +175,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Ohne Kopplung: keine Kacheln, kein Bild, kein Ausweis. Gekoppelt: der Ausweis
-        /// „…, gekoppelt (AK1)", die Zeile mit Übergabeart und Auslegungspunkt, das Bild mit Lücken
+        /// „…, mit Anlagenkopplung", die Zeile mit Übergabeart und Auslegungspunkt, das Bild mit Lücken
         /// in den Stunden ohne Heizbetrieb — und DIESELBEN Zahlen, die der Lauf in
         /// <c>Tab_ErgebnisGebaeude</c> legt (Hausregel: eine Auskunft ruft den Rechenweg des Laufs).
         /// </summary>

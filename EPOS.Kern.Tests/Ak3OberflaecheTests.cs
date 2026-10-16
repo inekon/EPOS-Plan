@@ -35,14 +35,14 @@ namespace EPOS.Kern.Tests
                 string de = new AnlagenkopplungException("Haus A (7)", 17, "WP 1, Speicher", "θ 0,2 K", "40 Durchläufe").Message;
                 Assert.Contains("Jahresstunde 17", de);
                 Assert.Contains("Haus A (7)", de);
-                Assert.Contains("„Heizkreis (AK1)“", de);
+                Assert.Contains("„Heizkreis“", de);
                 Assert.Equal(17, new AnlagenkopplungException("x", 17, "y", "z", "w").Stunde);
             }
             using (new Kulturvorrichtung("en-US"))
             {
                 string en = new AnlagenkopplungException("Haus A (7)", 17, "WP 1", "θ 0.2 K", "40 iterations").Message;
                 Assert.Contains("hour 17 of the year", en);
-                Assert.Contains("“Heating circuit (AK1)”", en);
+                Assert.Contains("“Heating circuit”", en);
             }
         }
 

@@ -1095,6 +1095,7 @@ Datenbank. bunit misst weder Lage noch Rollstand; die Voraussetzungen der Regel 
 | `…?fall=katalog` | `BedarfAdminDialog` (Katalogdialog, `.epos-katalog-dialog`) |
 | `…?fall=kaelteprofile` | `BedarfsProfileDialog` der Art Kälte mit dem Baustein `Betriebskalenderwahl`; „Betriebskalender…“ öffnet das Blatt mit dem `BetriebskalenderDialog` samt „Aus Gebäude übernehmen…“ (Ablage im Speicher); `&kalender=leer` ohne Kalender, `&gebaeude=0` ohne Gebäude; die Bearbeiten-Überlagerung einer Projektzeile zeigt die Eingabeart samt den Editoren Monatswerte und Wochenprofil (KBP-3a) und die Kältegrafik (KBP-3b: Kennzahlen, Jahresgang, Monate, Woche mit Wahl der Kalenderwoche und Tagesarten als Hintergrund, Dauerlinie) aus einer synthetischen Reihe, die dem Arbeitsstand folgt; in der Fallliste der Katalogauswahl und Gegenstand des Falls `kaeltegrafik` |
 | `…?fall=klimaimport` | `KlimadatenDialog` (Katalogdialog); „Import…“ öffnet die Überlagerung „Klimadaten einlesen“ (`.epos-einlesen`, Leiste ohne Statusspanne) — Gegenstand des Falls `klimaimport` |
+| `…?fall=klimareihen` | derselbe `KlimadatenDialog` mit einer Region samt gespeicherten Rechenspalten (Bedeckungsgrad leer) — Reiter „Weitere Reihen“ mit der Reihenwahl, Gegenstand des Falls `klimareihen` |
 | `…&lizenz=1` | das Lizenzbanner der `AppWurzel` (Baustein `Lizenzbanner`, Lesemodus-Satz) als erstes Kind von `#app` vor dem Dialog |
 | `…&marke=0` | ohne Fenstermarke — der Dialog steht wie ohne die Regel |
 | `…?meldung=liste` | statt des Falls ein langer Dialog aus Hausbausteinen, dessen `Warnbanner` 30 Hinweise aufgeklappt zeigt (Fall „Meldungsliste" unten) |
@@ -1146,6 +1147,20 @@ Ende bis 483 px; Gegenprobe 4 Verstöße je Fenster. Zugleich misst der Fall `du
 der Wurzel (`gap`) zwischen Schlussleiste und Protokoll: Die Gegenprobe „Fuß mit negativem Rand“ blieb vorher bei
 1 088 und 520 px grün (der Rand rückt das Protokoll nur 16 px in die 20-px-Lücke, es überdeckt nichts), jetzt
 1, 1 und 3 Verstöße.
+
+**Fall `klimareihen`** (`--nur klimareihen`, in denselben vier Fenstern wie `klimaimport`; KD-8 Teil A):
+`?fall=klimareihen`, im schmalen Rahmen „Stammblatt ›“, dann der Reiter „Weitere Reihen“. Gemessen: Kein Chip und
+kein Gruppenname der Reihenwahl ragt aus ihrem Kasten, kein Vorfahr und nicht das Dokument rollt quer, das Bild ist
+mindestens 50 px hoch, die Schlussleiste des Dialogs steht ganz im Fenster, und die Reihenfolge stimmt: im Fenster
+bis 600 px Breite steht das Bild über der Wahl (Medienregel `.epos-reihenbild`, `order`), breiter die Wahl über dem
+Bild. Foto `klimareihen_*`. Gegenproben im Fenster 520 × 624: die Gruppen ohne Umbruch (`flex-wrap: nowrap`) und die
+Wahl ohne Reihenfolgeregel (`order: 0`) müssen rot sein. **Ergebnis vom 16.10.2026:** 0 Verstöße; 10 Chips (1 weich
+gesperrt: Bedeckungsgrad „Quelle führt die Größe nicht“; die Rohwerte haben bis zur Rohwerttabelle keinen Chip), Wahl
+476/449/472/331 px hoch, ragt 0 px, Bild 113/150/126/240 px, im Fenster 520 × 624 Bild zuerst, Leiste 564–608 px (iPad
+754–798, 787 × 520 460–504); Gegenproben 2 bzw. 1 Verstoß. Der Fall `klimaimport` misst seitdem die Vorschaukarte mit
+der Reihenwahl unter dem Bild (der Wirt liefert alle Monatsreihen von Teil A): Rollhöhe 2 008/560 px (520 px breit
+2 530/560, iPad 2 008/749, 787 × 520 2 327/466), Leiste oben wie am Ende haftend, 0 Verstöße, Gegenprobe 4 Verstöße je
+Fenster.
 
 **Fall `wp-steckbrief`** (`--nur wp-steckbrief`, bei **1 280 × 800** und **1 194 × 834** mit sicheren Abständen):
 die Satz-Überlagerung der Wärmepumpe („Bearbeiten…" der Projektkopie) mit dem Gerätesteckbrief links unter
@@ -1946,6 +1961,38 @@ schreibt nur Quelle und Zuordnung unter die Seite), das Anlagenschema aus einem 
 `SchemaLayout` (Kältekreis mit „davon Lastgang/Profil“, Knoten „Kältebedarf dezentral (Split)“), dann Kältegang,
 Kältegruppe des Bedarfsreiters und Stromgang.
 
+## Kopfleistenprobe (Katalogauswahl schneidet nichts ab) — Seiten `/wikibild`, `/fensterprobe`
+
+**Zweck.** Die Kopfleisten der `Zweispaltenauswahl` tragen Marke, Überschrift, die Suchzeile der
+`Katalogliste` (Suchfeld, Trefferzahl, Legende, „Spalten…“), Knöpfe des Wirts und „In das Projekt
+übernehmen“. Bei der festen Dialogbreite (`.epos-dialog { max-width: 1160px }`) passt das nicht in jedem
+Dialog in eine Zeile; die Kopfleiste des Katalogs bricht dann zwischen ihren Kindern um, und das Suchfeld
+trägt seinen Platzhalter ganz (`epos-ui.css`, Regel `.epos-zweispalten-bereich--katalog >
+.epos-zweispalten-kopfleiste` in `@media (min-width: 1280px) and (min-height: 800px)`). In der Kompaktstufe
+(unter 1 280 × 800) bleibt sie einzeilig nach 4.8, weil eine zweite Zeile dort die Listenhöhe kostet
+(`rollbereichprobe.mjs`; Fall „lizenzbanner“ der `fensterprobe.mjs` bei 520 × 624). Die
+`rollbereichprobe.mjs` lässt deshalb nur für die Kopfleiste des Katalogs ab 1 280 × 800 zwei Zeilen zu
+(höchstens 93 px). bunit misst keine Breite; die Regel hält
+`ZweispaltenauswahlTests.Die_Kopfleiste_des_Katalogs_bricht_um_statt_abzuschneiden`.
+
+```bash
+node kopfleistenprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner außerhalb des Repositorys>] [--nur <fall>] [--ohne-gegenprobe]
+```
+
+Fälle: die elf Projektdialoge der Seite `/wikibild` (ohne `data-breit`, also in der Hausbreite) und die
+Katalogauswahl der `/fensterprobe` (Heizkessel, BHKW, Wärmepumpen, Gebäude, Kälteprofile; die ersten drei
+auch en-US), je bei 1 400 × 820 und 1 280 × 800 (Normalmaß, Dialog 1 160 px). Je Knopf, Feld, Überschrift, Marke und Zähler: ganz in der Leiste und im clippenden
+Vorfahren, Text nicht gekürzt, Platzhalter ganz, keine Überlappung. Die Gegenprobe läuft mit (die Regeln
+von vorher: Katalogleiste ohne Umbruch, Suchfeld `0 3 16rem`, Untergrenze 7rem) und muss rot sein.
+Rückgabe `0` = alles steht und die Gegenprobe ist rot, `1` = Verstoß, `2` = Aufruf- oder Verbindungsfehler.
+
+Ergebnis vom 16.10.2026: vorher bei 1 160 px Dialogbreite gekürzte Überschriften („Wärmepumpen aus
+Datenbank“ 231 > 218 px, „Stromspeicher aus Datenbank“ 227 > 215 px, „Kältemaschinen in der Datenbank“
+254 > 174 px), der Suchplatzhalter in allen Dialogen gekürzt (189 px Bedarf, 94 bis 186 px Platz) und
+bei der Kältemaschine „Spalten…“ 69 px unter „Katalogverwaltung…“ und abgeschnitten; nachher 38 von 38
+Fällen ohne Verstoß, die Gegenprobe rot (48 Verstöße). Wärmepumpe, Stromspeicher, Prozesswärme und
+Kältemaschine stehen bei 1 160 px zweizeilig (92 statt 44 px), die übrigen einzeilig.
+
 ## Bildschirmfotos fürs Wiki: Seite `/wikibild` und `wikibilder.mjs`
 
 Keine Messprobe, sondern die Quelle der Bildschirmfotos der Wiki-Seiten (Regel: Konzept
@@ -1959,7 +2006,9 @@ das Skript aus `/konditionierungsprobe`, deren Satz ebenfalls neutral ist. Die A
 
 Gaben von `bild`: `heizkessel`, `bhkw`, `waermepumpe`, `pufferspeicher`, `stromspeicher`,
 `photovoltaik`, `solarkollektoren`, `brauchwasser`, `prozesswaerme`, `gebaeude`,
-`kaeltemaschine`; die Kultur wie überall mit `kultur=de-DE`.
+`kaeltemaschine` (dazu die Gaben der zweiten Reihe und der übrigen Bilder, siehe Kopf von
+`Wirt/Seiten/Wikibild.razor`, darunter `pufferauslegung`: die freie Ansicht der Pufferspeicher-Auslegung in
+Schritt 4, deren Ergebnis der Kern ohne Datenbank aus synthetischen Jahresreihen rechnet); die Kultur wie überall mit `kultur=de-DE`.
 
 ```bash
 # Wirt wie oben bauen und starten, dann:
@@ -1971,7 +2020,7 @@ Das Skript nimmt je Bild das Dialogelement auf (nicht die leere Seite), Fenster 
 bei `deviceScaleFactor` 1 (die Reiter des Gebäudeeditors in einem hohen Fenster, damit ihr
 Inhalt ganz darin steht); Brauchwasser, Prozesswärme, Wärmepumpe und Stromspeicher in 1400 × 800 mit
 einem auf 1380 px verbreiterten Dialog und festem Suchfeld (Attribut `data-breit` der Seite), damit
-Katalogtitel, Suchplatzhalter und alle Knöpfe der Kopfzeile ungekürzt stehen. Bei Brauchwasser und
+die Kopfzeile des Katalogs in einer Zeile steht (bei 1160 px bricht sie um, siehe Kopfleistenprobe). Bei Brauchwasser und
 Prozesswärme gibt die Seite die Delegaten und Texte der Hülle mit Beispielwerten mit („Typ in DB
 ändern“, beim Brauchwasser Rechenweg und „Zapfprofil erzeugen…“), klappt bei den Erzeugern mit Satzbeschreibung und bei Brauchwasser
 und Prozesswärme den Bereich „Gewählter Satz“ auf und schreibt `Bildschirmfoto_<Maske>.png`.

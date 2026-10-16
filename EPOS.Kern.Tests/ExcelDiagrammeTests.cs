@@ -39,7 +39,7 @@ namespace EPOS.Kern.Tests
         private static readonly Dictionary<string, string[]> Arten = new Dictionary<string, string[]>(StringComparer.Ordinal)
         {
             ["stand.bild.waerme_jahresverlauf"] = new[] { "areaChart", "lineChart" },
-            ["stand.bild.waerme_dauerlinie"] = new[] { "lineChart" },
+            ["stand.bild.waerme_dauerlinie"] = new[] { "areaChart", "lineChart" },
             ["stand.bild.strombilanz_monate"] = new[] { "barChart", "lineChart" },
             ["stand.bild.speicherverlauf"] = new[] { "lineChart" },
             ["stamm.bild.speichertemperaturen"] = new[] { "lineChart" },

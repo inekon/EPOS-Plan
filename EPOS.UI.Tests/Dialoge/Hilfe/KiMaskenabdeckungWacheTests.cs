@@ -401,7 +401,7 @@ public sealed class KiMaskenabdeckungWacheTests
         // E47: der Energiestandard (Katalogfeld energiestandard): 8 → 9.
         new("GebaeudeAdminDialog", 9),
         // G6b W5: die Diagrammwahl je Zone (Katalogfeld diagramm): 2 → 3.
-        new("GebaeudeBedarfDialog", 3),
+        new("GebaeudeBedarfDialog", 4, "der Schalter „Außentemperatur“ am Raumtemperaturbild (Welle RZ) wählt nur eine Reihe des Bildes, kein Einstellwert"),
         // G3 Welle K: die vier Filterfelder sind Suche und Trichter der Katalogliste (Baustein) -
         // die Katalogfelder verwendung, filter_gebaeudeart, filter_baujahr und suche binden über
         // GebaeudeKiSicht auf den Filterstand; eigene Eingabestellen trägt die Maske keine mehr: 4 → 0.
@@ -537,7 +537,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("LeistungspreisReiheDialog", 2),
         new("ModulKatalogDialog", 4, "der Feldsatz des Profils, gebaut über den RenderTreeBuilder"),
         new("OptimierungBlock", 9),
-        new("PeakShavingDialog", 17),
+        new("PeakShavingDialog", 19),
         new("PhotovoltaikDialog", 5, "„Alle Daten“ über die Feldtafel des Modulprofils"),
         new("PhotovoltaikReiter", 6),
         new("PhotovoltaikVerguetungDialog", 16),
@@ -562,8 +562,9 @@ public sealed class KiMaskenabdeckungWacheTests
         new("PvModellFelder", 4),
         new("QuelleErdreichDialog", 15),
         new("QuellePufferspeicherDialog", 8),
-        new("QuellprofilDialog", 6, "die Tagwahl des nur lesenden Wochengangs (Altweg) ist ein Anzeigeschalter; die 365 bzw. 8 760 Werte " +
-            "der Betriebsarten Tag und Stunde sind Zeitreihen (Dateiweg) und stehen in keinem Eingabefeld"),
+        new("QuellprofilDialog", 7, "die Tagwahl des nur lesenden Wochengangs (Altweg) ist ein Anzeigeschalter; die 365 bzw. 8 760 Werte " +
+            "der Betriebsarten Tag und Stunde sind Zeitreihen (Dateiweg) und stehen in keinem Eingabefeld; der Schalter " +
+            "„Außentemperatur“ am Jahresbild (Welle RZ) wählt nur eine Reihe des Bildes"),
         // KP3 O1 (Entwurf KP3, Abschnitt 3): der Abschnitt „Aufheizoptimierung" mit Schalter, Bemessung,
         // ΔT_K, Aufheizreserve und Art - die Feldkarte führt sie als aufheizoptimierung, aufheiz_bemessung,
         // aufheiz_abzug, aufheiz_reserve und aufheiz_art (4 → 9).
@@ -661,7 +662,9 @@ public sealed class KiMaskenabdeckungWacheTests
             "„Sperrzeiten vorhanden“ ist derselbe Wert wie „sperrfenster“ leer oder nicht leer; Einbindung, Vorwärmbetrieb und " +
             "Kältemittel stehen als „einbindung“, „vorwaermbetrieb“ und „kaeltemittel“ in der KI-Sicht"),
         new("WaermepumpeKuehlbetriebGruppe", 9, "die Gruppe „Kühlbetrieb“ (KB-B) unter der Karte der Wärmepumpen-Konfiguration; die zwei nackten inputs sind der weich gesperrte Kühlschalter und der Schalter „freie Kühlung“ (Grund im title) - dieselben Werte wie die Katalogfelder der Maske"),
-        new("WaermepumpeReiter", 9, "der Schalter „Heizstab in die JAZ einrechnen“ steht als Anzeigeschalter im Katalog"),
+        new("WaermepumpeReiter", 11, "der Schalter „Heizstab in die JAZ einrechnen“ steht als Anzeigeschalter im Katalog; " +
+            "„Wärmepumpe und Heizstab getrennt“ (Welle RZ) ebenso, solange das Unterblatt „Strom“ vorn steht; die Speicherauswahl " +
+            "des Temperaturbilds (Welle RZ, ein Schalter je Speicher) wählt nur Reihen des Bildes"),
         new("WaermesenkeDialog", 9),
         // WirtschaftlichkeitParameterDialog: siehe Block ETAPPE E9b oben.
         new("WirtschaftlichkeitSeite", 8, "der Schalter der Vergleichsgruppe ist eine Menge von Verweisen, kein Feldwert; " +

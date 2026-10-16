@@ -154,7 +154,11 @@ function messen(KOMPAKT_ABFRAGE) {
   const leistenfehler = [];
   for (const l of leisten) {
     const r = l.getBoundingClientRect();
-    if (r.height > 52) leistenfehler.push('Kopfleiste ' + Math.round(r.height) + ' px hoch (umgebrochen)');
+    // Die Kopfleiste des KATALOGS darf ausserhalb der Kompaktstufe (ab 1280 x 800) in eine zweite Zeile
+    // umbrechen, statt Ueberschrift, Platzhalter oder Knoepfe abzuschneiden (epos-ui.css, kopfleistenprobe.mjs):
+    // hoechstens zwei Zeilen in Touchzielhoehe samt Zeilenabstand.
+    const zweiZeilen = l.closest('.epos-zweispalten-bereich--katalog') && innerWidth >= 1280 && innerHeight >= 800;
+    if (r.height > (zweiZeilen ? 93 : 52)) leistenfehler.push('Kopfleiste ' + Math.round(r.height) + ' px hoch (umgebrochen)');
     // MO3: Die Rasterzeile der Projektliste rechnet bei aufgeklappter Detailzeile mit einer Kopfleiste in
     // Touchzielhoehe; ein Rand an einem Knopf im Leistenzusatz liess sie 6 px ueberlaufen (Waermepumpen).
     else if (l.closest('.epos-zweispalten-bereich--projekt') && d.querySelector('.epos-zweispalten--satz-offen')) {

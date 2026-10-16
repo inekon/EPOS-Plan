@@ -581,7 +581,7 @@ namespace WindowsFormsApplication1
                     "'Weitere Einstellungen', neben Kühlung und Anlagenkopplung; Vorgabe ist aus. Eingeschaltet " +
                     "rechnet der Lauf vor jedem Sprung des Heizsollwerts nach oben eine Aufheizrampe, damit die " +
                     "Heizleistung nach dem Sprung die Aufheizleistung nicht übersteigt. Sie wirkt in Gebäuden nach " +
-                    "VDI 6007; ein Gebäude ohne Zonen mit der Anlagenkopplung 'Heizkreis (AK1)' wird nicht " +
+                    "VDI 6007; ein Gebäude ohne Zonen mit der Anlagenkopplung 'Heizkreis' wird nicht " +
                     "optimiert, der Lauf nennt es. Bei Schalter an stehen vier Felder: 'Bemessung' - 'kälteste " +
                     "Stunde' (Vorgabe) oder 'kälteste Stunde − ΔT_K', die kälter bemisst als das Klimajahr; 'Abzug " +
                     "ΔT_K' nur bei dieser Bemessung, leer 2 K, 0 bis 10 K; 'Aufheizreserve ρ' in Prozent, der " +

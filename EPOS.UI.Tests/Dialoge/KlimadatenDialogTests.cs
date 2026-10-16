@@ -176,7 +176,8 @@ public class KlimadatenDialogTests : EposBunitContext
 
         // Zwei Reiter mit je einem Bild - in der Gruppe Jahresverlauf des Stammblatts.
         var reiter = cut.FindAll(".epos-stammblatt .epos-reiter-knopf").Select(e => e.TextContent.Trim()).ToList();
-        Assert.Equal(new[] { "Temperatur", "Sonnenwinkel" }, reiter);
+        // KD-8 Teil A (KD-Q13): dazu der dritte Reiter „Weitere Reihen“.
+        Assert.Equal(new[] { "Temperatur", "Sonnenwinkel", "Weitere Reihen" }, reiter);
 
         // Die Eingaben des Imports stehen NICHT im Dialog, sondern in der
         // Ueberlagerung hinter "Import..." (V14).
@@ -1503,10 +1504,10 @@ public class KlimadatenDialogTests : EposBunitContext
         // traegt die Hoechsthoehe (1,3 x --epos-listenhoehe, siehe KatalograhmenTests).
         Assert.Single(cut.FindAll(".epos-katalog-paar > .epos-katalog-liste .epos-raster-huelle"));
 
-        // Die Reiter mit den zwei Diagrammen stehen im STAMMBLATT (Stufe 4), in dessen
+        // Die Reiter mit den drei Diagrammen (KD-8: dazu „Weitere Reihen“) stehen im STAMMBLATT (Stufe 4), in dessen
         // Gruppe Jahresverlauf - nicht neben der Liste.
         Assert.Single(cut.FindAll(".epos-katalog-paar > .epos-katalog-stammblatt .epos-reiter-leiste"));
-        Assert.Equal(2, cut.FindAll(".epos-katalog-paar > .epos-katalog-stammblatt .epos-reiter-knopf").Count);
+        Assert.Equal(3, cut.FindAll(".epos-katalog-paar > .epos-katalog-stammblatt .epos-reiter-knopf").Count);
 
         // Die Fussleiste ist ein direktes Kind der Dialogwurzel und steht damit
         // UNTER dem Rahmen - nie in ihm.
@@ -2060,5 +2061,273 @@ public class KlimadatenDialogTests : EposBunitContext
         var loeschen = cut.FindAll(".epos-auswahlleiste button").First(b => b.TextContent.Trim() == "Löschen");
         Assert.Null(loeschen.GetAttribute("aria-disabled"));
         Assert.Equal("Schloss von „Auslieferung Nord“ aufgehoben.", cut.Instance.Status);
+    }
+
+    // =====================================================================
+    //  KD-8 Teil A: weitere Reihen in Vorschau und Jahresverlauf
+    // =====================================================================
+
+    /// <summary>Eine Region mit gespeicherten Rechenspalten: Feuchte und Bedeckung NULL (führt nicht).</summary>
+    private static KlimadatenDialog.Regionsansicht AnsichtMitReihen(string n)
+    {
+        var zeilen = Enumerable.Range(0, 8760).Select(i => new SolardatenModel
+        {
+            Außen_Temp = 5, Globalstrahlung = i % 24 * 10, Direktstrahlung = i % 24 * 6, Diffusstrahlung = i % 24 * 4,
+            Gegenstrahlung = 300, Sol_Sued = i % 24 * 5, Sol_West = i % 24 * 3, Sol_Ost = i % 24 * 2, Sol_Nord = i % 24
+        }).ToList();
+        return new KlimadatenDialog.Regionsansicht("Details " + n, 9.18, 48.77, MODELL, MODELL, "")
+        {
+            Reihenbestand = KlimaReihenkatalog.AusRechenspalten(zeilen)
+        };
+    }
+
+    private IRenderedComponent<KlimadatenDialog> ZeigeWeitere(
+        Func<Zeichenmodell, string, Zeitraster, Task>? csv = null)
+    {
+        IReadOnlyList<Katalogfilterzeile> liste = Regionen();
+        var cut = Render<KlimadatenDialog>(p => p
+            .Add(x => x.Regionen, () => Task.FromResult(liste))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Ansicht, n => Task.FromResult(AnsichtMitReihen(n)))
+            .Add(x => x.CsvSpeichern, csv)
+            .Add(x => x.Geschlossen, _ => { }));
+        cut.WaitForAssertion(() => Assert.Equal("Berlin", cut.Instance.Gewaehlt), TimeSpan.FromSeconds(10));
+        cut.FindAll(".epos-stammblatt .epos-reiter-knopf").First(e => e.TextContent.Trim() == "Weitere Reihen").Click();
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-kennung=klima-jahr] button.epos-reihenwahl-chip")));
+        return cut;
+    }
+
+    private static AngleSharp.Dom.IElement Chip(IRenderedComponent<KlimadatenDialog> cut, string kennung, string schluessel)
+        => cut.Find("[data-kennung=" + kennung + "] button.epos-reihenwahl-chip[data-schluessel=" + schluessel + "]");
+
+    private static DiagrammSvg Reihenbild(IRenderedComponent<KlimadatenDialog> cut)
+        => cut.FindComponents<DiagrammSvg>().Single(d => d.Instance.Kennung == "klima-reihen").Instance;
+
+    [Fact]
+    public void KD8_Weitere_Reihen_Vorgabe_Global_nicht_gefuehrte_Reihen_gesperrt()
+    {
+        var cut = ZeigeWeitere();
+
+        Assert.Equal("true", Chip(cut, "klima-jahr", KlimaReihenkatalog.R_GLOBAL).GetAttribute("aria-pressed"));
+        var feuchte = Chip(cut, "klima-jahr", KlimaReihenkatalog.R_LUFTFEUCHTE);
+        Assert.Equal("true", feuchte.GetAttribute("aria-disabled"));
+        Assert.Equal("Quelle führt die Größe nicht", feuchte.GetAttribute("title"));
+        // Temperatur und Sonnenwinkel haben eigene Reiter.
+        Assert.Empty(cut.FindAll("[data-kennung=klima-jahr] [data-schluessel=R_TEMPERATUR]"));
+        Assert.Empty(cut.FindAll("[data-kennung=klima-jahr] [data-schluessel=F_SONNENWINKEL]"));
+        Assert.Single(Reihenbild(cut).Modell!.Reihen);
+    }
+
+    [Fact]
+    public void KD8_Gleiche_Einheit_fuegt_hinzu_vierte_gesperrt_andere_Einheit_ersetzt()
+    {
+        var cut = ZeigeWeitere();
+
+        Assert.Equal("Reihe hinzufügen", Chip(cut, "klima-jahr", KlimaReihenkatalog.R_GEGENSTRAHLUNG).GetAttribute("title"));
+        Chip(cut, "klima-jahr", KlimaReihenkatalog.R_DIFFUS).Click();
+        Chip(cut, "klima-jahr", KlimaReihenkatalog.F_SUED).Click();
+        Assert.Equal(3, Reihenbild(cut).Modell!.Reihen.Count);
+        Assert.Equal("true", Chip(cut, "klima-jahr", KlimaReihenkatalog.F_NORD).GetAttribute("aria-disabled"));
+        Assert.Equal("Höchstens drei Reihen je Bild; erst eine abwählen.",
+                     Chip(cut, "klima-jahr", KlimaReihenkatalog.F_NORD).GetAttribute("title"));
+    }
+
+    [Fact]
+    public void KD8_Einheitenwechsel_wird_angesagt_und_zeigt_die_Reihe_allein()
+    {
+        // Eine Region mit Feuchte (%) neben der Globalstrahlung (W/m²).
+        IReadOnlyList<Katalogfilterzeile> liste = Regionen();
+        var zeilen = Enumerable.Range(0, 8760).Select(i => new SolardatenModel
+        {
+            Globalstrahlung = i % 24 * 10, Luftfeuchte = 70 + i % 5
+        }).ToList();
+        var cut2 = Render<KlimadatenDialog>(p => p
+            .Add(x => x.Regionen, () => Task.FromResult(liste))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Ansicht, n => Task.FromResult(new KlimadatenDialog.Regionsansicht("", null, null, MODELL, MODELL, "")
+            {
+                Reihenbestand = KlimaReihenkatalog.AusRechenspalten(zeilen)
+            }))
+            .Add(x => x.Geschlossen, _ => { }));
+        cut2.WaitForAssertion(() => Assert.Equal("Berlin", cut2.Instance.Gewaehlt), TimeSpan.FromSeconds(10));
+        cut2.FindAll(".epos-stammblatt .epos-reiter-knopf").First(e => e.TextContent.Trim() == "Weitere Reihen").Click();
+
+        var feuchte = Chip(cut2, "klima-jahr", KlimaReihenkatalog.R_LUFTFEUCHTE);
+        Assert.Equal("Andere Einheit: zeigt Relative Luftfeuchte allein", feuchte.GetAttribute("title"));
+        Assert.Null(feuchte.GetAttribute("aria-disabled"));
+        feuchte.Click();
+
+        Assert.Equal("true", Chip(cut2, "klima-jahr", KlimaReihenkatalog.R_LUFTFEUCHTE).GetAttribute("aria-pressed"));
+        Assert.Equal("false", Chip(cut2, "klima-jahr", KlimaReihenkatalog.R_GLOBAL).GetAttribute("aria-pressed"));
+        var bild = cut2.FindComponents<DiagrammSvg>().Single(d => d.Instance.Kennung == "klima-reihen").Instance;
+        Assert.Equal("Relative Luftfeuchte", Assert.Single(bild.Modell!.Reihen).Name);
+        Assert.Contains("jetzt: %", cut2.Find("[data-kennung=klima-jahr] .epos-reihenwahl-kopf").TextContent);
+    }
+
+    [Fact]
+    public async Task KD8_Neue_Wahl_neues_Modell_Zoom_kehrt_auf_x1_zurueck()
+    {
+        var cut = ZeigeWeitere();
+        var svg = cut.FindComponents<DiagrammSvg>().Single(d => d.Instance.Kennung == "klima-reihen");
+        Zeichenmodell vorher = svg.Instance.Modell!;
+        await cut.InvokeAsync(() => svg.Instance.ZoomGemeldet(4));
+        Assert.Equal(4, svg.Instance.Stufe);
+
+        Chip(cut, "klima-jahr", KlimaReihenkatalog.R_DIFFUS).Click();
+
+        Assert.NotSame(vorher, svg.Instance.Modell);
+        Assert.Equal(1, svg.Instance.Stufe);
+    }
+
+    [Fact]
+    public void KD8_CSV_schreibt_die_gewaehlten_Reihen()
+    {
+        Zeichenmodell? geschrieben = null;
+        var cut = ZeigeWeitere((m, _, _) => { geschrieben = m; return Task.CompletedTask; });
+        Chip(cut, "klima-jahr", KlimaReihenkatalog.R_DIFFUS).Click();
+
+        cut.FindAll("div.epos-diagramm-leiste button.epos-diagramm-csv")
+           .Single(b => b.Closest(".epos-reiterblatt, [role=tabpanel]") is { } blatt && blatt.QuerySelector("[data-kennung=klima-jahr]") is not null)
+           .Click();
+
+        cut.WaitForAssertion(() => Assert.NotNull(geschrieben));
+        Assert.Equal(new[] { "Globalstrahlung", "Diffusstrahlung" }, geschrieben!.Reihen.Select(r => r.Name));
+    }
+
+    // ---- Vorschau ----
+
+    private static KlimaVorschauErgebnis TrefferMitReihen()
+    {
+        KlimaVorschauErgebnis erg = Treffer();
+        var kz = erg.Kennzahlen!;
+        kz.Monatsreihen[KlimaReihenkatalog.R_TEMPERATUR] = kz.MonatsmittelTemperatur;
+        kz.Monatsreihen[KlimaReihenkatalog.R_GLOBAL] = kz.MonatssummeGlobalstrahlungKwhM2;
+        kz.Monatsreihen[KlimaReihenkatalog.R_DIFFUS] = kz.MonatssummeGlobalstrahlungKwhM2.Select(w => w / 2).ToArray();
+        kz.Monatsreihen[KlimaReihenkatalog.R_LUFTFEUCHTE] = Enumerable.Repeat(75.0, 12).ToArray();
+        kz.Monatsreihen[KlimaReihenkatalog.R_BEDECKUNG] = Enumerable.Repeat(5.0, 12).ToArray();
+        kz.Reihenstunden[KlimaReihenkatalog.R_BEDECKUNG] = 4000;
+        return erg;
+    }
+
+    private IRenderedComponent<KlimadatenDialog> ZeigeVorschau()
+    {
+        var cut = ZeigeSuche(_ => Task.FromResult(TrefferMitReihen()));
+        Suchen(cut);
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-kennung=klima-vorschau] button.epos-reihenwahl-chip")));
+        return cut;
+    }
+
+    private static Zeichenmodell Vorschaubild(IRenderedComponent<KlimadatenDialog> cut)
+        => cut.FindComponents<DiagrammSvg>().Single(d => d.Instance.Kennung == "klima-vorschau").Instance.Modell!;
+
+    [Fact]
+    public void KD8_Rohwerte_bekommen_vor_der_Freischaltung_keinen_Chip_Gegenprobe_frei()
+    {
+        // Die fünf Rohwert-Größen mit Bild - Monatsreihen und Stundenwerte liegen vor, der
+        // Parameterbestand führt sie; bis Teil B (Rohwerttabelle) bekommen sie dennoch keinen Chip.
+        string[] roh = KlimaReihenkatalog.Reihen
+            .Where(r => r.Herkunft == KlimaReihenherkunft.Rohwert && r.InVorschau).Select(r => r.Schluessel).ToArray();
+        Assert.Equal(5, roh.Length);
+
+        IRenderedComponent<KlimadatenDialog> Vorschau()
+        {
+            var erg = TrefferMitReihen();
+            foreach (string k in roh) erg.Kennzahlen!.Monatsreihen[k] = Enumerable.Repeat(3.0, 12).ToArray();
+            erg.Parameterbestand = Enum.GetValues<KlimaParameter>()
+                .Select(p => new KlimaParameterEintrag { Parameter = p, Stand = KlimaParameterStand.Gefuehrt }).ToList();
+            var cut = ZeigeSuche(_ => Task.FromResult(erg));
+            Suchen(cut);
+            cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-kennung=klima-vorschau] button.epos-reihenwahl-chip")));
+            return cut;
+        }
+
+        IRenderedComponent<KlimadatenDialog> Jahr()
+        {
+            IReadOnlyList<Katalogfilterzeile> liste = Regionen();
+            var cut = Render<KlimadatenDialog>(p => p
+                .Add(x => x.Regionen, () => Task.FromResult(liste))
+                .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+                .Add(x => x.Ansicht, n =>
+                {
+                    var a = AnsichtMitReihen(n);
+                    var bestand = a.Reihenbestand.Concat(roh.Select(k => new KlimaReihenwerte
+                    {
+                        Reihe = KlimaReihenkatalog.Reihe(k), Werte = Enumerable.Repeat(3.0, 8760).ToArray(), Gefuehrt = true
+                    })).ToList();
+                    return Task.FromResult(a with { Reihenbestand = bestand });
+                })
+                .Add(x => x.Geschlossen, _ => { }));
+            cut.WaitForAssertion(() => Assert.Equal("Berlin", cut.Instance.Gewaehlt), TimeSpan.FromSeconds(10));
+            cut.FindAll(".epos-stammblatt .epos-reiter-knopf").First(e => e.TextContent.Trim() == "Weitere Reihen").Click();
+            cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-kennung=klima-jahr] button.epos-reihenwahl-chip")));
+            return cut;
+        }
+
+        int Rohchips(IRenderedComponent<KlimadatenDialog> cut, string kennung)
+            => cut.FindAll($"[data-kennung={kennung}] button.epos-reihenwahl-chip")
+                  .Count(c => c.GetAttribute("data-schluessel")!.StartsWith(KlimaReihenkatalog.ROH_PREFIX));
+
+        Assert.False(KlimaReihenkatalog.RohwerteFreigeschaltet);
+        Assert.Equal(0, Rohchips(Vorschau(), "klima-vorschau"));
+        Assert.Equal(0, Rohchips(Jahr(), "klima-jahr"));
+
+        // Gegenprobe: freigeschaltet erscheinen die fünf Chips - frei schaltbar, mit Marke „R“.
+        KlimaReihenkatalog.RohwerteFreigeschaltet = true;
+        try
+        {
+            var v = Vorschau();
+            Assert.Equal(5, Rohchips(v, "klima-vorschau"));
+            var j = Jahr();
+            Assert.Equal(5, Rohchips(j, "klima-jahr"));
+            var druck = Chip(j, "klima-jahr", KlimaReihenkatalog.ROH_PREFIX + "Luftdruck_hPa");
+            Assert.Null(druck.GetAttribute("aria-disabled"));
+            Assert.NotNull(druck.QuerySelector(".epos-reihenwahl-marke"));
+        }
+        finally
+        {
+            KlimaReihenkatalog.RohwerteFreigeschaltet = false;
+        }
+    }
+
+    [Fact]
+    public void KD8_Vorschau_Vorgabe_Global_und_Temperatur_unter_dem_Bild()
+    {
+        var cut = ZeigeVorschau();
+
+        var chips = cut.FindAll("[data-kennung=klima-vorschau] button.epos-reihenwahl-chip")
+                       .Where(c => !c.GetAttribute("data-schluessel")!.StartsWith(KlimaReihenkatalog.ROH_PREFIX)).ToList();
+        Assert.Equal(new[] { "R_TEMPERATUR", "R_LUFTFEUCHTE", "R_GLOBAL", "R_DIFFUS", "R_BEDECKUNG" },
+                     chips.Select(c => c.GetAttribute("data-schluessel")));
+        Assert.Equal(new[] { "R_TEMPERATUR", "R_GLOBAL" },
+                     chips.Where(c => c.GetAttribute("aria-pressed") == "true").Select(c => c.GetAttribute("data-schluessel")));
+        Assert.Equal(2, Vorschaubild(cut).Reihen.Count);
+        Assert.Contains("4.000 von 8.760 Stunden", Chip(cut, "klima-vorschau", KlimaReihenkatalog.R_BEDECKUNG).GetAttribute("title"));
+        Assert.Empty(cut.FindAll("datalist[id^=epos-reihen]"));
+    }
+
+    [Fact]
+    public void KD8_Vorschau_Zuschalten_dritte_Einheit_gesperrt_letzte_bleibt_Vorgabe()
+    {
+        var cut = ZeigeVorschau();
+
+        Chip(cut, "klima-vorschau", KlimaReihenkatalog.R_DIFFUS).Click();
+        Assert.Equal(3, Vorschaubild(cut).Reihen.Count);
+
+        var feuchte = Chip(cut, "klima-vorschau", KlimaReihenkatalog.R_LUFTFEUCHTE);
+        Assert.Equal("true", feuchte.GetAttribute("aria-disabled"));
+        Assert.StartsWith("Höchstens zwei Einheiten zugleich (kWh/m², °C)", feuchte.GetAttribute("title"));
+        feuchte.Click();
+        Assert.Equal(3, Vorschaubild(cut).Reihen.Count);
+
+        Chip(cut, "klima-vorschau", KlimaReihenkatalog.R_TEMPERATUR).Click();
+        Chip(cut, "klima-vorschau", KlimaReihenkatalog.R_GLOBAL).Click();
+        Assert.Equal("Diffusstrahlung [kWh/m²]", Assert.Single(Vorschaubild(cut).Reihen).Name);
+        Chip(cut, "klima-vorschau", KlimaReihenkatalog.R_DIFFUS).Click();       // letzte bleibt
+        Assert.Single(Vorschaubild(cut).Reihen);
+        Assert.Equal("Mindestens eine Reihe bleibt gewählt.",
+                     cut.Find("[data-kennung=klima-vorschau] .epos-reihenwahl-leise").TextContent);
+
+        cut.Find("[data-kennung=klima-vorschau] .epos-reihenwahl-vorgabe").Click();
+        Assert.Equal(2, Vorschaubild(cut).Reihen.Count);
     }
 }

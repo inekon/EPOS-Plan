@@ -79,6 +79,8 @@ const BILDER = [
   ['projekttransfer', 'Projekttransfer', { seite: '/wikibild?bild=projekttransfer', wahl: '.epos-wikibild .epos-dialog', hoehe: 900 }],
   ['erdreich', 'Erdreich', { seite: '/wikibild?bild=erdreich', wahl: '.epos-wikibild .epos-dialog', hoehe: 1600 }],
   ['simulation', 'Simulation', { seite: '/wikibild?bild=simulation', wahl: '.epos-wikibild .epos-dialog', hoehe: 1600 }],
+  // Die Pufferspeicher-Auslegung ist eine freie Ansicht, kein Dialog; aufgenommen wird Schritt 4 (Vorschlag) mit dem Ergebnis des Kerns.
+  ['pufferauslegung', 'Pufferspeicher_auslegen', { seite: '/wikibild?bild=pufferauslegung', wahl: '.epos-wikibild .epos-pausl', klick: 'Ergebnis und Übernahme', breite: 1400, hoehe: 1400 }],
 ];
 
 // Bei diesen Bildern steht der Bereich "Gewaehlter Satz" aufgeklappt - die Wiki-Seite
@@ -107,7 +109,7 @@ try {
     // Erst im ueblichen Fenster; ist das Bild zu gross, im kleineren noch einmal.
     let geschrieben = false;
     // Brauchwasser, Prozesswaerme, Waermepumpe, Stromspeicher: die Kopfzeile der Katalogliste (Titel, Suchfeld, Zaehler,
-    // Spalten..., Vergleichen, Uebernehmen) steht erst ab rund 1380 px ungekuerzt; die Seite
+    // Spalten..., Uebernehmen) steht erst ab rund 1380 px in EINER Zeile (darunter bricht sie um); die Seite
     // /wikibild laesst den Dialog dafuer breiter werden (Bildbreite bleibt <= 1400 px).
     const fenster = fremd ? [[fremd.breite ?? 1280, fremd.hoehe], [1100, fremd.hoehe]]
       : BREIT.has(name) ? [[1400, 800]] : [[1280, 800], [1100, 720]];

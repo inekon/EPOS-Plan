@@ -2316,7 +2316,7 @@ namespace WindowsFormsApplication1
                     WaermequelleClass.WertLesen(idAnlage, "WQ_Wochenwerte") as string)
             };
 
-            return QuellprofilHuelle.Gaben(daten);
+            return QuellprofilHuelle.Gaben(daten, AussentemperaturLaden());
         }
 
         private IReadOnlyDictionary<string, object> QuelleErdreichGaben(int idAnlage)

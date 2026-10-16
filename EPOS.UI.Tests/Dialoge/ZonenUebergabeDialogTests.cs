@@ -185,7 +185,7 @@ public class ZonenUebergabeDialogTests : EposBunitContext
     public void Ohne_Kopplungsstufe_im_Projekt_nennt_der_Abschnitt_ohne_Wirkung()
     {
         var cut = Aufbauen(koppelt: false);
-        Assert.Contains("Ohne Wirkung, solange das Projekt keine Anlagenkopplung (AK1) rechnet", cut.Markup);
+        Assert.Contains("Ohne Wirkung, solange das Projekt ohne Anlagenkopplung rechnet", cut.Markup);
 
         var mit = Aufbauen(koppelt: true);
         Assert.DoesNotContain("Ohne Wirkung", mit.Markup);

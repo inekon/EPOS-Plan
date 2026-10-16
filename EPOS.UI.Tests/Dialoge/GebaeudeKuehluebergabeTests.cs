@@ -145,7 +145,7 @@ public class GebaeudeKuehluebergabeTests : EposBunitContext
         Assert.False(Haken(cut, HAKEN).HasAttribute("checked"));
         Assert.Null(FeldOderNull(cut, ART));
         Assert.Contains("Ohne Haken rechnet die Kühlung ideal", Abschnitt(cut));
-        Assert.Contains("Heizkreis (AK1)“ und der Projekteinstellung „Kühlung rechnen“", Abschnitt(cut));
+        Assert.Contains("Heizkreis“ und der Projekteinstellung „Kühlung rechnen“", Abschnitt(cut));
 
         Haken(cut, HAKEN).Change(true);
         IElement liste = FeldOderNull(cut, ART)!.QuerySelector("select")!;

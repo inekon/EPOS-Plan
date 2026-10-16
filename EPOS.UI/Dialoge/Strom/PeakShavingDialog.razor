@@ -224,6 +224,12 @@
                                         <KindInhalt>
                                             <Schalter Bezeichnung="@LabelSoC" Wert="@_socZeigen" WertChanged="SoCGeaendert"
                                                       Aktiv="@(!_laeuft)" />
+                                            @* Welle RZ: zuschaltbare Reihen, ab Werk aus - Lade- und Entladeleistung
+                                               und die erreichte Schwelle; Bild und CSV folgen der Wahl. *@
+                                            <Schalter Bezeichnung="@LabelLeistung" Wert="@_leistungZeigen"
+                                                      WertChanged="LeistungGeaendert" Aktiv="@(!_laeuft)" />
+                                            <Schalter Bezeichnung="@LabelSchwelle" Wert="@_schwelleZeigen"
+                                                      WertChanged="SchwelleGeaendert" Aktiv="@(!_laeuft)" />
                                             @* DER LASTGANG ALS ZEICHENMODELL (Etappe DG-E3): Zoom auf
                                                der Zeitachse, der Ladezustand auf der zweiten Achse. *@
                                             @* "CSV..." steht in der Leiste dieses Bildes: dieselben
@@ -413,11 +419,16 @@
     /// <summary>Die Suche nach der kleinsten haltbaren Schwelle; ebenfalls nebenher.</summary>
     [Parameter] public Func<double[], PeakShavingEingaben, Task<double>>? MinimaleSchwelle { get; set; }
 
-    /// <summary>Das Zeichenmodell des Vorher/Nachher-Bildes (<c>PeakShavingBild.Modell</c>).</summary>
-    [Parameter] public Func<PeakShavingErgebnis, bool, Zeichenmodell?>? Modell { get; set; }
+    /// <summary>
+    /// Das Zeichenmodell des Vorher/Nachher-Bildes (<c>PeakShavingBild.Modell</c>) zur Reihenwahl der drei
+    /// Schalter (Ladezustand, Lade-/Entladeleistung, Schwelle).
+    /// </summary>
+    [Parameter] public Func<PeakShavingErgebnis, PeakShavingBildwahl, Zeichenmodell?>? Modell { get; set; }
 
-    /// <summary>Schreibt die fünf Spalten als CSV; ohne Delegat kein Knopf.</summary>
-    [Parameter] public Func<PeakShavingErgebnis, Task<bool>>? CsvSpeichern { get; set; }
+    /// <summary>
+    /// Schreibt die fünf Spalten als CSV, dahinter die zugeschalteten Reihen der Wahl; ohne Delegat kein Knopf.
+    /// </summary>
+    [Parameter] public Func<PeakShavingErgebnis, PeakShavingBildwahl, Task<bool>>? CsvSpeichern { get; set; }
 
     /// <summary>
     /// „CSV…“ am Vorschaubild des Optionendialogs: der Weg der Hülle (Modell, Bildtitel, Raster der
@@ -478,6 +489,8 @@
     [Parameter] public string LabelAdaptiv { get; set; } = Resource.PEAK_CHK_ADAPTIV;
     [Parameter] public string LabelKompatibel { get; set; } = Resource.PEAK_CHK_KOMPAT;
     [Parameter] public string LabelSoC { get; set; } = Resource.PEAK_CHK_SOC;
+    [Parameter] public string LabelLeistung { get; set; } = Resource.PEAK_CHK_LEISTUNG;
+    [Parameter] public string LabelSchwelle { get; set; } = Resource.PEAK_CHK_SCHWELLE;
     [Parameter] public string MinimalText { get; set; } = Resource.PEAK_BTN_MINIMAL;
     [Parameter] public string RechnenText { get; set; } = Resource.PEAK_BTN_RECHNEN;
 
@@ -567,6 +580,14 @@
     private Zeichenmodell? _modell;
 
     private bool _socZeigen;
+
+    // Welle RZ: die zwei zuschaltbaren Reihen - ab Werk AUS.
+    private bool _leistungZeigen;
+    private bool _schwelleZeigen;
+
+    /// <summary>Die Reihenwahl der drei Schalter des Bildes.</summary>
+    private PeakShavingBildwahl Bildwahl => new PeakShavingBildwahl(_socZeigen, _leistungZeigen, _schwelleZeigen);
+
     private string _reiter = "KENNZAHLEN";
 
     private bool _optionenOffen;
@@ -777,6 +798,8 @@
         PeakShavingKiSicht.S_ADAPTIV     => _adaptiv,
         PeakShavingKiSicht.S_KOMPATIBEL  => _kompatibel,
         PeakShavingKiSicht.S_LADEZUSTAND => _socZeigen,
+        PeakShavingKiSicht.S_LEISTUNG    => _leistungZeigen,
+        PeakShavingKiSicht.S_SCHWELLE    => _schwelleZeigen,
         _                                => false
     };
 
@@ -787,6 +810,8 @@
             case PeakShavingKiSicht.S_ADAPTIV:     AdaptivGeaendert(wert); break;
             case PeakShavingKiSicht.S_KOMPATIBEL:  _kompatibel = wert; ErgebnisLeeren(); break;
             case PeakShavingKiSicht.S_LADEZUSTAND: SoCGeaendert(wert); break;
+            case PeakShavingKiSicht.S_LEISTUNG:    LeistungGeaendert(wert); break;
+            case PeakShavingKiSicht.S_SCHWELLE:    SchwelleGeaendert(wert); break;
         }
     }
 
@@ -1204,10 +1229,22 @@
         ModellHolen();
     }
 
-    /// <summary>Holt das Zeichenmodell — nach einem Lauf und beim Schalter „Ladezustand".</summary>
+    private void LeistungGeaendert(bool an)
+    {
+        _leistungZeigen = an;
+        ModellHolen();
+    }
+
+    private void SchwelleGeaendert(bool an)
+    {
+        _schwelleZeigen = an;
+        ModellHolen();
+    }
+
+    /// <summary>Holt das Zeichenmodell — nach einem Lauf und bei jedem der drei Schalter des Bildes.</summary>
     private void ModellHolen()
     {
-        _modell = _ergebnis is null || Modell is null ? null : Modell(_ergebnis, _socZeigen);
+        _modell = _ergebnis is null || Modell is null ? null : Modell(_ergebnis, Bildwahl);
     }
 
     // =====================================================================
@@ -1249,7 +1286,7 @@
     {
         if (_ergebnis is null) { Melden(TextKeinErgebnis, WarnStufe.Hinweis); return; }
         if (CsvSpeichern is null) return;
-        await CsvSpeichern(_ergebnis);
+        await CsvSpeichern(_ergebnis, Bildwahl);
     }
 
     // =====================================================================

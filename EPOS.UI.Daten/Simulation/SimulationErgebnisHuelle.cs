@@ -624,6 +624,7 @@ namespace WindowsFormsApplication1
                 d.ErdreichWarnung = d.Waermepumpe.ErdreichWarnung;
             }
             d.Speichertemperaturen = Temperaturreihen().Count > 0;
+            d.Speicherwahl = Speicherwahl();
 
             d.Speicher = SpeicherDaten();
             d.Speicher.AktiveFlotte = SpeicherFlottenProjektCtrl.AktiveKonfiguration(m_ID_Projekt);

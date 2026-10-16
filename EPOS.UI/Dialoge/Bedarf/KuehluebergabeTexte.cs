@@ -68,7 +68,7 @@ public sealed class KuehluebergabeTexte
     public string LabelKuehlkurveAussen { get; set; } = "Auslegungs-Außentemperatur (Eingabe) :";
     /// <summary><c>GEBK_ZEILE_KUEHLKURVE</c> — „{0}" Fußpunkt, „{1}" Auslegungsvorlauf [°C], „{2}" der Auslegungsweg.</summary>
     public string ZeileKuehlkurve { get; set; }
-        = "Kühlkurve: Fußpunkt {0} °C bei Außenluft am Kühlsollwert und darunter, Auslegungsvorlauf {1} °C bei der Auslegungs-Außentemperatur ({2}), dazwischen linear, nie unter der Vorlaufgrenze; der Raumeinfluss senkt den Vorlauf um k · Überschreitung des Kühlsollwerts. Gerechnet wird sie auf Stufe AK3, sonst gilt der feste Vorlauf.";
+        = "Kühlkurve: Fußpunkt {0} °C bei Außenluft am Kühlsollwert und darunter, Auslegungsvorlauf {1} °C bei der Auslegungs-Außentemperatur ({2}), dazwischen linear, nie unter der Vorlaufgrenze; der Raumeinfluss senkt den Vorlauf um k · Überschreitung des Kühlsollwerts. Gerechnet wird sie auf der Stufe „geschlossener Kreis“, sonst gilt der feste Vorlauf.";
     /// <summary><c>GEBK_MSG_KUEHLKURVE_FUSSPUNKT</c> — „{0}" Fußpunkt, „{1}" Auslegungsvorlauf [°C].</summary>
     public string MeldungFusspunkt { get; set; }
         = "Der Fußpunkt der Kühlkurve ({0} °C) liegt unter dem Auslegungsvorlauf ({1} °C): Der Vorlauf stiege mit der Außentemperatur. Bitte einen Fußpunkt ab dem Auslegungsvorlauf eintragen oder das Feld leeren.";
@@ -170,7 +170,7 @@ public sealed class KuehluebergabeTexte
 
     /// <summary><c>GEBK_ZEILE_KUEHL_PROJEKT</c></summary>
     public string ZeileProjekt { get; set; }
-        = "Gerechnet wird die Kühlübergabe nur in Projekten mit Anlagenkopplung „Heizkreis (AK1)“ und der Projekteinstellung „Kühlung rechnen“ (Simulationskonfiguration).";
+        = "Gerechnet wird die Kühlübergabe nur in Projekten mit Anlagenkopplung „Heizkreis“ und der Projekteinstellung „Kühlung rechnen“ (Simulationskonfiguration).";
 
     // ---- Meldungen der Prüfung -------------------------------------------------------
 
