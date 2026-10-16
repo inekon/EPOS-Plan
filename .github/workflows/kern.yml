@@ -1,14 +1,23 @@
-# Kern-Lauf: baut und testet die Projekte ohne Windowsbindung (KiKern,
-# KiKern.Tests, SpeicherEngine, SpeicherEngine.Tests, seit iU3 EPOS.Kern und
-# seit iU4 EPOS.Kern.Tests, dazu EPOS.UI und EPOS.UI.Tests, seit dem
-# Stromspeicher-Sync vom 11.09.2026 SpeicherPlanung und SpeicherPlanung.Tests).
-# Ausgewaehlt werden sie ueber den Solution-Filter WP-Plan.Kern.slnf; die
-# WinForms-App und das alte Referenzlauf-Werkzeug bleiben damit aussen vor.
-# Dazu kommen drei Laeufe, die NICHT im Filter stehen: der Referenzlauf (iU3)
-# und seit iU7-7 die ChartProben - beides ausfuehrbare Programme statt
-# Testprojekte, die belegen, dass Rechenkern und Diagramm-Renderer ohne Windows
-# arbeiten - sowie seit iU8-12 die Tests des Formularkarten-Werkzeugs, das eine
-# eigene Projektmappe hat und deshalb im Filter nicht auftaucht (nur ubuntu).
+# Kern-Lauf: baut und testet die Projekte ohne Windowsbindung aus dem Solution-Filter
+# WP-Plan.Kern.slnf (EPOS.Kern, EPOS.UI, EPOS.UI.Daten, KiKern, SpeicherEngine,
+# SpeicherPlanung samt ihren Testprojekten); die WinForms-App und das alte
+# Referenzlauf-Werkzeug bleiben damit aussen vor. Dazu kommen Laeufe, die NICHT im
+# Filter stehen: der Referenzlauf und die ChartProben - ausfuehrbare Programme, die
+# belegen, dass Rechenkern und Diagramm-Renderer ohne Windows arbeiten - sowie die
+# Tests der Werkzeuge mit eigener Projektmappe und der SQL-Dialekt-Pruefer.
+#
+# Jobs auf ubuntu, parallel - die Wandzeit ist die des laengsten Jobs:
+#   kern-tests     EPOS.Kern.Tests in Bloecken nach dem Anfangsbuchstaben der Testklasse
+#                  (Filter FullyQualifiedName~EPOS.Kern.Tests.<Buchstabe>) und ein
+#                  Restblock, der alles faengt, was keinem Buchstaben A-Z gehoert;
+#   weitere-tests  Bau des ganzen Filters, Tests von EPOS.UI, KiKern, SpeicherEngine,
+#                  SpeicherPlanung;
+#   build-test     Werkzeugtests, SQL-Dialekt, ChartProben mit Messlatte, Referenzlauf
+#                  gegen die Basis und Stoerlauf.
+# Der Lauf ist genau dann gruen, wenn alle Jobs gruen sind. Auf macOS (nur auf Abruf)
+# laeuft allein build-test, und zwar wie ein einziger Job: Bau des Filters, alle Tests
+# in einem Aufruf, ChartProben ohne Messlatte, Referenzlauf - die Bloecke gibt es nur
+# auf ubuntu, damit der zehnfach zaehlende Laeufer nicht mehrfach baut.
 #
 # Zweck (Umsetzungskonzept iOS, Paket iU1): fruehzeitig belegen, dass der Kern
 # plattformfrei bleibt. Bricht ein Kernprojekt die Portierbarkeit, faellt das
@@ -48,6 +57,129 @@ env:
   DOTNET_NOLOGO: 1
 
 jobs:
+  # EPOS.Kern.Tests in Bloecken nach dem Anfangsbuchstaben der Testklasse, nur ubuntu. Jeder
+  # Block baut allein EPOS.Kern.Tests (samt Abhaengigkeiten) und testet mit dem Filter
+  # FullyQualifiedName~EPOS.Kern.Tests.<Buchstabe> - wie Werkzeuge/Gate/kern_bloecke.sh.
+  # Lueckenlos durch zwei Regeln: Die Buchstaben aller Bloecke zusammen sind genau A bis Z,
+  # jeder einmal (der Block mit "rest: true" prueft das an dieser Datei), und derselbe Block
+  # testet zusaetzlich mit dem verneinten Filter ueber A bis Z alles uebrige - Umlaute,
+  # Ziffern, Unterstriche, andere Namensraeume; ein eigener Restjob kostete einen Bau mehr.
+  # Der Vergleich ~ ist ohne Gross-/Kleinschreibung, eine Klasse "xyz..." faellt also in den
+  # Block X. Die Einteilung gleicht die Bloecke nach gemessener Testdauer aus;
+  # waechst ein Block deutlich ueber die anderen, Buchstaben umhaengen.
+  kern-tests:
+    name: Kern-Tests ${{ matrix.block.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      # Alle Bloecke laufen zu Ende, auch wenn einer rot ist - so steht jeder Befund im Lauf.
+      fail-fast: false
+      matrix:
+        block:
+          # Gemessene Last je Buchstabe (Anteil an der Gesamtdauer der Kern-Tests): K 19 %,
+          # E 14 %, B 10 %, P 10 %, A 9 %, S 8 %, G 6 %, Z 4 %, W 4 %, R 4 %, alle uebrigen
+          # zusammen 12 %. Fuenf Bloecke zu je rund einem Fuenftel.
+          - { name: "K", buchstaben: "K", rest: false }
+          - { name: "E G", buchstaben: "EG", rest: false }
+          - { name: "B P", buchstaben: "BP", rest: false }
+          - { name: "A R S", buchstaben: "ARS", rest: false }
+          - { name: "C D F H I J L M N O Q T U V W X Y Z und Rest", buchstaben: "CDFHIJLMNOQTUVWXYZ", rest: true }
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Testdatenbank
+        uses: ./.github/actions/testdatenbank
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: NuGet-Zwischenlager
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-kerntests-${{ runner.os }}-${{ hashFiles('global.json', '**/Directory.Packages.props', '**/Directory.Build.props', '**/*.csproj') }}
+          restore-keys: nuget-kerntests-${{ runner.os }}-
+
+      - name: Bauen (EPOS.Kern.Tests)
+        run: dotnet build EPOS.Kern.Tests/EPOS.Kern.Tests.csproj -c Release
+
+      # Der Block mit dem Rest prueft vor dem Test, dass die Buchstaben aller Bloecke dieser
+      # Datei zusammen genau A bis Z ergeben - ein vergessener oder doppelter Buchstabe macht
+      # ihn rot.
+      - name: Blockeinteilung pruefen
+        if: matrix.block.rest
+        run: |
+          alle=$(grep -oE '^ +- \{ name: "[^"]*", buchstaben: "[A-Z]*", rest: (true|false) \}' .github/workflows/kern.yml \
+            | sed -E 's/.*buchstaben: "([A-Z]*)".*/\1/' | tr -d '\n' | grep -o . | sort | tr -d '\n')
+          echo "Buchstaben aller Bloecke: $alle"
+          if [ "$alle" != "ABCDEFGHIJKLMNOPQRSTUVWXYZ" ]; then
+            echo "::error::Die Bloecke der Kern-Tests decken nicht genau A bis Z ab (gefunden: $alle)."
+            exit 1
+          fi
+
+      # Sammlungen laufen NICHT parallel (Kulturpinnung in vielen Testklassen); die Schalter
+      # stehen zur Gleichheit mit windows.yml und dem Gate. Ein Block ohne Test ist rot
+      # (Tippfehler im Filter).
+      - name: Testen (${{ matrix.block.name }})
+        env:
+          BUCHSTABEN: ${{ matrix.block.buchstaben }}
+          REST: ${{ matrix.block.rest }}
+        run: |
+          set -o pipefail
+          filter=""
+          for c in $(echo "$BUCHSTABEN" | grep -o .); do filter="$filter|FullyQualifiedName~EPOS.Kern.Tests.$c"; done
+          if [ "$REST" = "true" ]; then
+            rest=""
+            for c in A B C D E F G H I J K L M N O P Q R S T U V W X Y Z; do rest="$rest&FullyQualifiedName!~EPOS.Kern.Tests.$c"; done
+            filter="$filter|(${rest#&})"
+          fi
+          filter=${filter#|}
+          echo "Filter: $filter"
+          dotnet test EPOS.Kern.Tests/EPOS.Kern.Tests.csproj -c Release --no-build --filter "$filter" \
+            -- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2 | tee "$RUNNER_TEMP/testausgabe.txt"
+          if grep -q 'No test matches the given testcase filter' "$RUNNER_TEMP/testausgabe.txt"; then
+            echo "::error::Block ${{ matrix.block.name }} hat keinen Test gefunden - Filter pruefen."
+            exit 1
+          fi
+
+  # Bau des ganzen Solution-Filters und die Tests der uebrigen vier Testprojekte, nur ubuntu.
+  # Der Bau haelt den Nachweis, dass jedes Projekt des Filters auf Linux uebersetzt - darunter
+  # SpeicherPlanung mit Google.OrTools samt nativer Haelfte; SpeicherPlanung.Tests rechnet die
+  # MILP-Faelle ("27 bestanden, 1 uebersprungen" ist erwartet, der Jahresbenchmark steht auf Skip).
+  weitere-tests:
+    name: Bau und Tests UI, KiKern, Speicher
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Testdatenbank
+        uses: ./.github/actions/testdatenbank
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: NuGet-Zwischenlager
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-filter-${{ runner.os }}-${{ hashFiles('global.json', '**/Directory.Packages.props', '**/Directory.Build.props', '**/*.csproj') }}
+          restore-keys: nuget-filter-${{ runner.os }}-
+
+      - name: Bauen
+        run: dotnet build WP-Plan.Kern.slnf -c Release
+
+      # Alle vier laufen, auch wenn eines rot ist; der Schritt ist dann rot.
+      - name: Testen
+        run: |
+          rc=0
+          for p in EPOS.UI.Tests KiKern.Tests SpeicherEngine.Tests SpeicherPlanung.Tests; do
+            echo "::group::$p"
+            dotnet test "$p/$p.csproj" -c Release --no-build -- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2 || rc=1
+            echo "::endgroup::"
+          done
+          exit $rc
+
   build-test:
     # fail-fast aus: schlaegt ubuntu fehl, soll macos trotzdem zu Ende laufen -
     # nur so wird sichtbar, ob ein Fehler plattformabhaengig ist.
@@ -57,47 +189,14 @@ jobs:
         os: ${{ github.event_name == 'workflow_dispatch' && inputs.macos && fromJSON('["ubuntu-latest","macos-latest"]') || fromJSON('["ubuntu-latest"]') }}
     runs-on: ${{ matrix.os }}
     steps:
-      # OHNE "lfs: true" - das ist Absicht (Auftrag #243, Anwenderentscheid AUF-Q2 vom
-      # 12.09.2026). Seit #243 liegen 69 Dateien in Git LFS: die Testdatenbank
-      # (rund 68 MB) und die 68 VDI-3805-Archive (rund 97 MB). "lfs: true" zoege bei
-      # JEDEM Lauf alle 165 MB und ginge voll auf das LFS-Bandbreitenkontingent des
-      # Kontos. Dieser Lauf braucht davon genau EINE Datei; sie wird unten gezielt
-      # geholt.
+      # OHNE "lfs: true" - das ist Absicht (Auftrag #243, Anwenderentscheid AUF-Q2):
+      # Die Testdatenbank und die VDI-3805-Archive liegen in Git LFS; "lfs: true" zoege bei
+      # JEDEM Lauf alle Dateien und ginge voll auf das LFS-Bandbreitenkontingent. Jeder Job
+      # holt genau die eine Datei, die er braucht, ueber die gemeinsame Aktion unten.
       - uses: actions/checkout@v4
 
-      # Das LFS-Zwischenlager haengt am Hash des ZEIGERS - der aendert sich genau
-      # dann, wenn sich die Testdatenbank aendert. Ein Treffer spart den Download
-      # vollstaendig.
-      - name: LFS-Zwischenlager
-        uses: actions/cache@v4
-        with:
-          path: .git/lfs
-          key: lfs-testdb-${{ hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') }}
-
-      # Gezielt: nur die Testdatenbank, nicht die 68 Herstellerarchive. Danach die
-      # Probe aufs Exempel - ohne sie schluege ein liegengebliebener Zeiger erst
-      # weit unten als "file is not a database" auf, und niemand faende den Grund.
-      # Die Laeufer (ubuntu, macos) bringen git-lfs mit; ein Installationsschritt
-      # ist nicht noetig.
-      - name: Testdatenbank aus LFS
-        run: |
-          git lfs pull --include="Referenzlaeufe/Kenndaten_Test.sqlite" --exclude=""
-          datei=Referenzlaeufe/Kenndaten_Test.sqlite
-          groesse=$(wc -c < "$datei" | tr -d ' ')
-          kopf=$(head -c 40 "$datei")
-          case "$kopf" in
-            "version https://git-lfs"*)
-              echo "FEHLER: $datei ist ein Git-LFS-Zeiger ($groesse Byte) statt der Datenbank."
-              echo "Abhilfe: einmal je Rechner 'git lfs install', danach"
-              echo "         git lfs pull --include=Referenzlaeufe/Kenndaten_Test.sqlite"
-              exit 1
-              ;;
-          esac
-          if [ "$groesse" -lt 1000000 ]; then
-            echo "FEHLER: $datei ist mit $groesse Byte zu klein - der LFS-Abruf ist nicht durchgekommen."
-            exit 1
-          fi
-          echo "Testdatenbank aus LFS: $groesse Byte"
+      - name: Testdatenbank
+        uses: ./.github/actions/testdatenbank
 
       # Die SDK-Fassung kommt aus global.json (10.0.400), damit CI und
       # Arbeitsplatz nicht auseinanderlaufen.
@@ -105,7 +204,19 @@ jobs:
         with:
           global-json-file: global.json
 
+      # NuGet-Zwischenlager nur auf ubuntu; der macOS-Weg bleibt unveraendert.
+      - name: NuGet-Zwischenlager
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-werkzeuge-${{ runner.os }}-${{ hashFiles('global.json', '**/Directory.Packages.props', '**/Directory.Build.props', '**/*.csproj') }}
+          restore-keys: nuget-werkzeuge-${{ runner.os }}-
+
+      # Auf ubuntu bauen und testen die Jobs weitere-tests und kern-tests den Filter; die
+      # Werkzeug- und Referenzlaufschritte unten bauen, was sie brauchen, selbst.
       - name: Bauen
+        if: matrix.os != 'ubuntu-latest'
         run: dotnet build WP-Plan.Kern.slnf -c Release
 
       # 11.09.2026 (Stromspeicher-Sync): Der Filter fuehrt seither ZEHN Projekte,
@@ -132,6 +243,7 @@ jobs:
       # eigene Wirkung, der Schalter steht nur zur Gleichheit mit windows.yml und dem
       # Gate. Die Testdatenbank-Sammlung laeuft ohnehin schon seriell (#106).
       - name: Testen
+        if: matrix.os != 'ubuntu-latest'
         run: dotnet test WP-Plan.Kern.slnf -c Release --no-build -- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2
 
       # iU8-12: Das Formularkarten-Werkzeug hat eine EIGENE Projektmappe und
