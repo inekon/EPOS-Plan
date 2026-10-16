@@ -49,6 +49,13 @@ namespace WindowsFormsApplication1
         /// steht der Platzhaltertext.
         /// </summary>
         public static Zeichenmodell BivalenzdiagrammZeichnung(BivalenzdiagrammModell modell)
+            => BivalenzdiagrammZeichnung(modell, true);
+
+        /// <summary>
+        /// Dasselbe Zeichenmodell; mit <paramref name="markenAusweichen"/> = <c>false</c> stehen die Markenbeschriftungen
+        /// an ihrer Grundlage, ohne Linien auszuweichen — allein für die Gegenprobe der ChartProben.
+        /// </summary>
+        internal static Zeichenmodell BivalenzdiagrammZeichnung(BivalenzdiagrammModell modell, bool markenAusweichen)
         {
             int W = BIVALENZ_BREITE, H = BIVALENZ_HOEHE;
             modell ??= BivalenzdiagrammModell.Platzhalter();
@@ -216,7 +223,7 @@ namespace WindowsFormsApplication1
                     if (!Passt(links)) links = !links;
                     float tx = Anfang(links), ty = zeileY;
                     bool hinterlegt = false, gefunden = false;
-                    foreach (bool auchMarken in new[] { true, false })
+                    foreach (bool auchMarken in markenAusweichen ? new[] { true, false } : new bool[0])
                         foreach (float zy in zeilen)
                             foreach (bool l in new[] { links, !links })
                                 if (!gefunden && Frei(l, zy, auchMarken))
@@ -270,6 +277,46 @@ namespace WindowsFormsApplication1
                 }
             }
             return false;
+        }
+
+        /// <summary>
+        /// <b>Prüfung „Markenbeschriftung kreuzt keine Linie“</b> (ChartProben): je Text einer Marke die Linien und Pfade
+        /// der Reihen und fremder Marken, die sein Rechteck berühren; eine hell hinterlegte Beschriftung darf fremde
+        /// Marken kreuzen. Leer heißt: frei.
+        /// </summary>
+        internal static List<string> BivalenzMarkenKreuzungen(Zeichenmodell z)
+        {
+            var befund = new List<string>();
+            var befehle = z.Befehle.ToList();
+            var zuege = new List<(string Marke, SKPoint[] Punkte)>();
+            foreach (Zeichenbefehl b in befehle)
+            {
+                string mk = b.Marke ?? "";
+                if (!mk.StartsWith("reihe:", StringComparison.Ordinal) && !mk.StartsWith("marke:", StringComparison.Ordinal)) continue;
+                if (b is Zeichnung.Linie l) zuege.Add((mk, new[] { new SKPoint(l.X1, l.Y1), new SKPoint(l.X2, l.Y2) }));
+                else if (b is Zeichnung.Pfad pf && pf.Rand != null)
+                {
+                    var pk = pf.Punkte.Select(q => new SKPoint(q.X, q.Y)).ToList();
+                    if (pf.Geschlossen && pk.Count > 2) pk.Add(pk[0]);
+                    zuege.Add((mk, pk.ToArray()));
+                }
+            }
+            foreach (Zeichenbefehl b in befehle)
+            {
+                if (b is not Zeichnung.Text tx || !(tx.Marke ?? "").StartsWith("marke:", StringComparison.Ordinal)) continue;
+                bool hinterlegt = befehle.Any(o => o is Zeichnung.Pfad hp && hp.Rand == null && hp.Fuellung != null && o.Marke == tx.Marke);
+                using (var f = Schrift(tx.Schrift.Punkt, tx.Schrift.Fett))
+                {
+                    var r = new SKRect(tx.X, tx.Y, tx.X + f.MeasureText(tx.Inhalt), tx.Y + TextHoehe(f));
+                    foreach (var (mk, punkte) in zuege)
+                    {
+                        if (mk == tx.Marke) continue;
+                        if (hinterlegt && mk.StartsWith("marke:", StringComparison.Ordinal)) continue;
+                        if (Kreuzt(punkte, r)) befund.Add("„" + tx.Inhalt + "“ kreuzt " + mk);
+                    }
+                }
+            }
+            return befund;
         }
     }
 }

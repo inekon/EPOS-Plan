@@ -6978,11 +6978,12 @@ namespace WindowsFormsApplication1
                     while (laengster > 3 && f.MeasureText(rest.Substring(0, laengster) + "-") > breite) laengster--;
                     // Gierig von hinten: die späteste Kompositionsfuge, die passt, sonst die späteste
                     // Silbenfuge, sonst der längste Anfang („Energie-“ / „kosten“, nicht „Ener-“ / „giekosten“).
+                    // Eine Fuge lässt hinten mindestens vier Zeichen („beschaf-“ / „fungen“, nicht „beschaffun-“ / „gen“).
                     int schnitt = -1;
                     for (int s = laengster; s >= 3 && schnitt < 0; s--)
-                        if (Kompositionsfuge(rest, s)) schnitt = s;
+                        if (rest.Length - s >= 4 && Kompositionsfuge(rest, s)) schnitt = s;
                     for (int s = laengster; s >= 3 && schnitt < 0; s--)
-                        if (Silbenfuge(rest, s)) schnitt = s;
+                        if (rest.Length - s >= 4 && Silbenfuge(rest, s)) schnitt = s;
                     if (schnitt < 0) schnitt = laengster;
                     teile.Add(rest.Substring(0, schnitt) + "-");
                     rest = rest.Substring(schnitt);

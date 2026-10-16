@@ -106,6 +106,28 @@ namespace ChartProben
             Unterschiedlich("bivalenz_vorwaermung_wirkt", () => Bivalenzbild(), () => Bivalenzbild(vorwaermbetrieb: false));
             Unterschiedlich("bivalenz_stunden_wirkt", () => Bivalenzbild(), () => Bivalenzbild(stunden: true));
             Unterschiedlich("bivalenz_platzhalter_wirkt", () => Bivalenzbild(), BivalenzPlatzhalterbild);
+
+            // Kollisionsprüfung der Markenbeschriftungen: Im Probefall läge „Kessel allein unter …“ an seiner Grundlage
+            // (links der Marke, Zeile 50) auf dem Anfang der Heizlast. Mit Ausweichen kreuzt keine Beschriftung eine
+            // Linie (grün); die Gegenprobe ohne Ausweichen muss dieselbe Prüfung rot machen, sonst prüft sie nichts.
+            BivalenzMarkenFrei("bivalenz_marken_frei", true, false);
+            BivalenzMarkenFrei("bivalenz_marken_frei_gegenprobe", false, true);
+        }
+
+        /// <summary>Prüft „Markenbeschriftung kreuzt keine Linie“; <paramref name="kreuzungErwartet"/> für die Gegenprobe.</summary>
+        private static void BivalenzMarkenFrei(string name, bool ausweichen, bool kreuzungErwartet)
+        {
+            _bilder++;
+            var maengel = new List<string>();
+            try
+            {
+                Zeichenmodell z = ChartRenderer.BivalenzdiagrammZeichnung(BivalenzdiagrammModell.Aus(BivalenzHerleitung(true)), ausweichen);
+                List<string> kreuzungen = ChartRenderer.BivalenzMarkenKreuzungen(z);
+                if (!kreuzungErwartet) maengel.AddRange(kreuzungen);
+                else if (kreuzungen.Count == 0) maengel.Add("Gegenprobe ohne Ausweichen findet keine Kreuzung - die Prüfung greift nicht");
+            }
+            catch (Exception ex) { maengel.Add("Ausnahme: " + ex.GetType().Name + " - " + ex.Message); }
+            Melde(name, "-", "-", "-", "-", maengel);
         }
     }
 }

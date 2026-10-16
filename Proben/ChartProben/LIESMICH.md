@@ -58,7 +58,7 @@ gegen diese Datei.
 - **Warum alle Bilder und nicht nur die 51 Maßproben.** Was die Messlatte nicht nennt, kann
   sich beim Umbau unbemerkt ändern. Deshalb stehen auch die Bilder der Gegen- und
   Versatzproben darin, die im Bestand nur miteinander verglichen und nie geschrieben werden.
-- **Umfang.** Ein Lauf prüft **258 Bilder**; **226** davon zeichnen ein PNG — Maßproben, die
+- **Umfang.** Ein Lauf prüft **260 Bilder**; **226** davon zeichnen ein PNG — Maßproben, die
   beiden Bilder jeder Gegenprobe und die der Versatzprobe — und stehen als Zeilen in der Messlatte.
   Die SVG-Gegenproben und die Schriftproben der Bildgröße Stufe 2 (`stufe2_…_schrift`) zeichnen
   kein PNG und stehen deshalb nicht darin. `Messlatte_2026-10-16.sha256` nennt alle 226 Bilder
@@ -655,7 +655,7 @@ Die Stufen einer dichten Dauerlinie zählen Ränge, keine Tage; sie trägt desha
 normierte Ganglinie, Verlaufsbild) bei 58 statt 66 Bildpunkten (`LegendeOben`) und berührt den Achsentitel nicht
 mehr. Die Kennlinienlegende schreibt „35 °C“ mit Abstand. Die Namen der Kapitalwert-Brücke trennt ein Wort, das
 allein breiter ist als seine Spalte, gierig von hinten an der spätesten Fuge, die noch passt, eine Kompositionsfuge
-vor einer Silbenfuge („Energie-“ / „kosten“, „Ersatz-“ / „beschaffungen“, `Zerlegt`); ein Name steht
+vor einer Silbenfuge („Energie-“ / „kosten“, „Ersatz-“ / „beschaf-“ / „fungen“, `Zerlegt`; hinter einer Fuge bleiben mindestens vier Zeichen); ein Name steht
 in höchstens drei Zeilen, die Schrift bleibt 15 pt, und braucht ein Name die dritte Zeile, wächst das Bild um so
 viel, wie Fuß und Legende tiefer rücken. Ein Minderungsbetrag steht unter seiner Säule, nie auf der Nulllinie.
 
@@ -664,7 +664,8 @@ Wiki-Fassung: „Kessel hilft unter … °C“, „Kessel allein unter … °C�
 Tabellentexte der Bivalenzpunkte ebenso; die Probebilder und die Wiki-Fassung (`--wiki`) lauten gleich. Eine
 Markenbeschriftung kreuzt keine Linie: Liegt ihr Platz auf Heizlast, Kennfeld, Übergabegrenze, Wärmepumpenfläche,
 einer fremden Marke oder einer anderen Beschriftung, nimmt sie die andere Seite, sonst die nächste freie Zeile;
-kreuzt jeder Platz eine fremde Marke, steht sie hell hinterlegt über ihr.
+kreuzt jeder Platz eine fremde Marke, steht sie hell hinterlegt über ihr. Die Probe `bivalenz_marken_frei` prüft das am Zeichenmodell, ihre Gegenprobe
+`bivalenz_marken_frei_gegenprobe` zeichnet ohne Ausweichen und muss dieselbe Prüfung rot machen.
 
 | Art | Probe | Aussage |
 |---|---|---|
