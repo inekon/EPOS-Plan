@@ -8282,12 +8282,10 @@ namespace WindowsFormsApplication1
                         "aendert sich - jede Zuordnung rechnet mit Eingabeart 'jahr'.",
                         Schritt_BedarfsEingabeart),
             // KD-4, KETTE: GEPARKT auf 238 - der Eintrag folgt mit dem Umhaengen hinter 237 (BauteilStrahlungSchema):
-            //   new Schritt(SCHRITT_KLIMA_ROHWERTE,
-            //               "Tab_Klimastunde_STAMM (neu): Rohwerte des Klimaimports; Tab_Klimaregion(_STAMM): Standorthoehe, " +
-            //               "Bezugspunkt, Ausfuehrung; Tab_Klimaregion_STAMM: Zeitbezug, Rohdaten",
-            //               "Der Import verwarf Luftdruck, Wind, Wasserdampfgehalt, Ausstrahlung und Qualitaetskennung. KEIN " +
-            //               "Rechenergebnis aendert sich - Bestandsregionen bleiben ohne Rohwerte.",
-            //               Schritt_KlimaRohwerte),
+            //   Konstante SCHRITT_KLIMA_ROHWERTE, Methode Schritt_KlimaRohwerte; Titel "Tab_Klimastunde_STAMM (neu): Rohwerte
+            //   des Klimaimports; Tab_Klimaregion(_STAMM): Standorthoehe, Bezugspunkt, Ausfuehrung; Tab_Klimaregion_STAMM:
+            //   Zeitbezug, Rohdaten", Anlass "Der Import verwarf Luftdruck, Wind, Wasserdampfgehalt, Ausstrahlung und
+            //   Qualitaetskennung. KEIN Rechenergebnis aendert sich - Bestandsregionen bleiben ohne Rohwerte."
         };
 
         /// <summary>
