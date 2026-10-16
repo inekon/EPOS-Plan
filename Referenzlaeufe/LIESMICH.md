@@ -1431,6 +1431,17 @@ Projekt 1072. 1050, 1052, 1054, 1055, 1056, 1057, 1059, 1061, 1062, 1064 und 107
 > DIN-Profile gesät, 4 Spalten angelegt; ein zweiter Lauf ist inhaltsgleich). Die Testdatenbank steht auf **233**
 > (`integrity_check` ok, `foreign_key_check` leer): **108 728 320 Byte, LFS-SHA-256
 > `95d1dd45028454d9f83cf3db22123beb4d3525f80f0c79c973b865ab188432da`**. Der Referenzlauf gegen R55 läuft im Gate.
+>
+> **Saatstand zu 233 (16.10.2026), Basis R55 unverändert.** Die gesäten Bauteile der Zonen-Referenzprojekte 1052, 1054
+> und 1062 tragen `U_Herkunft` so, wie ihre Baupläne es über die Programmwege schreiben: die Kopien der Übernahme
+> („Gebäude als eine Zone übernehmen“, `GebaeudeZonenabbildung.AlsBauteilModel`) `VORGABE`, die von Hand angelegten
+> Zeilen (Kellerdecke, Trennwand Gastronomie, Kellerboden, Kellerwände; Trennwand Nord/Ost) `MANUELL`
+> (`GebaeudeZonenCtrl.UHerkunftNeu`) — 72 und 11 Zeilen; `Skripte/referenzprojekt_1052_bauplan.cs` nennt die Herkunft
+> der Handzeilen ausdrücklich. Gesät mit `Werkzeuge/Testdatenbankschema` (Block nach Schritt 233, nur diese Projekte,
+> nur `U_Herkunft`, wiederholbar; keine Datenmigration für Anwenderdatenbanken, deren Bestand bleibt leer). Der
+> Rechenweg liest die Spalte nicht. `integrity_check` ok, `foreign_key_check` leer, außer `Tab_Bauteil` jede Tabelle
+> inhaltsgleich: **108 728 320 Byte, LFS-SHA-256
+> `e6aef7ded55a644cab3d70e1f49fd76f63376e6efd035191a96fcfbad5e08562`**.
 
 ### Die Vorgängerbasis R54 (Dachflächen)
 
