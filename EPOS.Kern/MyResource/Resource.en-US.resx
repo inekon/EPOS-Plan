@@ -54833,7 +54833,7 @@ chart</value>
     <value>Layers split at common layer boundaries ({0} → {1} layers): {2}</value>
   </data>
   <data name="BKI_WIEDERIMPORT" xml:space="preserve">
-    <value>Re-import: {0} constructions in the catalogue get different layers from the split at common layer boundaries; {1} of them change their U-value by more than 1 % (largest change {2} %).</value>
+    <value>Re-import: {0} constructions in the catalogue get different layers from the split at common layer boundaries; compared {1}, of which {2} change their U-value by more than 1 % (largest change {3} %); without a reference value {4}.</value>
   </data>
   <data name="BKI_UEBERNEHMEN" xml:space="preserve">
     <value>Import</value>

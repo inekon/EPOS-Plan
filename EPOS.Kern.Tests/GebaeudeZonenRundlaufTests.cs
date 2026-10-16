@@ -90,7 +90,8 @@ namespace EPOS.Kern.Tests
             => Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"" + tabelle + "\""), CultureInfo.InvariantCulture)
                - Zeilen(tabelle, EPOS.Referenzlaeufe.Skripte.Zonenprojekt1052.NEU).Rows.Count
                - Zeilen(tabelle, EPOS.Referenzlaeufe.Skripte.Zonenprojekt1054.NEU).Rows.Count
-               - Zeilen(tabelle, (int)Zonenbestand.KUEHLKURVE).Rows.Count;
+               - Zeilen(tabelle, (int)Zonenbestand.KUEHLKURVE).Rows.Count
+               - Zeilen(tabelle, (int)Zonenbestand.SCHNELLAUFHEIZUNG).Rows.Count;
 
         // =============================================================================
         //  Die Vorrichtung

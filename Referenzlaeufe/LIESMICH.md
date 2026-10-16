@@ -631,6 +631,14 @@ Heizwärme, Spitze, Nächte ohne Absenkung und damit Erzeuger und Emissionen.
 > Lauf mit berechneter Vorheizzeit gegen die Kennzahlen der Basis, die Schlüssel `Geb[0].Vorheiz*` gegen die Basis). Die
 > Vorlage 1051 bleibt bei der Sollwertrampe; für 1065 gelten daneben die Regeln „gesäte Gebäudedaten“ und „gesäte
 > Konditionierungsdaten“ wie für 1051.
+>
+> **Schnellaufheizung (Referenzprojekt 1073).** Dieselbe Regel gilt für die Schnellaufheizung: an `Tab_Einstellungen`
+> `Aufheiz_Schnellaufheizung` und `Aufheiz_Ueberhoehung_K` eines Referenzprojekts, die Vorgabe der Überhöhung 2 K
+> (`Vorheizvorgabe.UEBERHOEHUNG_VORGABE_K`) und das Anlegen oder Entfernen eines Referenzprojekts mit Schnellaufheizung.
+> Projekt 1073 „Referenzprojekt Schnellaufheizung“ (Kopie von 1054, Verfahren `BERECHNET`, Schnellaufheizung an, Δθ 3 K)
+> legt [`Skripte/referenzprojekt_1073_schnellaufheizung.cs`](Skripte/referenzprojekt_1073_schnellaufheizung.cs) an;
+> gehalten wird es von `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests`. Als Kopie von 1054 gelten für 1073
+> daneben „gesäte Zonendaten“ und „gesäte Auslegungsdaten der Übergabe“ wie für 1054.
 
 ## Die Einfrierregel „gesäte Kältebedarfs-Zuordnungen“ (Referenzprojekt 1072)
 
@@ -808,7 +816,7 @@ lehnt die Prüfung sie benannt ab; `EPOS.Kern.Tests/TwwTyptagVorlageTests` hält
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-10-16_R56_Wasserkosten`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-10-16_R57_Schnellaufheizung`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Katalogpaket_Vorlage_DIN4708`,
 `Typtagpaket_Vorlage_VDI4655`, `Messreihen_INEKON`, `Normzahlen`, `Schemakopien`, `Skripte` und `LIESMICH.md`
 stehen.**
@@ -824,11 +832,11 @@ gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-26_R22_Solarthermie` am 26.09.2026, `2026-09-26_R23_KesselBereitschaft`, `2026-09-27_R24_Heizgrenze` und `2026-09-29_R25_Plattformrand` am 29.09.2026,
 `2026-09-29_R26_Kesselrest`, `2026-09-30_R27_Kesselteillast`, `2026-09-30_R28_Kesselbrennwert` und
 `2026-09-30_R29_Kesseltakten` am 30.09.2026, `2026-09-30_R30_Stromverbraucher`,
-`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026, die Basis R39 (Auslegungsheizlast), die Basis R40 (Erdreichquellen), die Basis R41 (Erdreichprüfung) und die Basis R42 (Vorlaufinterpolation AK3) am 07.10.2026, die Basis R43 (Kälteseite AK3K) am 08.10.2026, die Basis R44 (Kühlkurve), die Basis R45 (Übergabegrenze), die Basis R46 (Gerätegrenzen) und die Basis R47 (Zapffeiertage) am 09.10.2026, die Basis R48 (Gemeinjahr), die Basis R49 (Kältemaschine Teillast) und die Basis R50 (Wochentagsraster) am 10.10.2026, die Basis R51 (freie Kühlung) am 11.10.2026, die Basis R52 (Vorheizen) am 13.10.2026, die Basis R53 (Zapfprofiloptionen) und die Basis R54 (Dachflächen) am 14.10.2026, die Basis R55 (Kältebedarf dezentral) am 16.10.2026**
-(72 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026, die Basis R39 (Auslegungsheizlast), die Basis R40 (Erdreichquellen), die Basis R41 (Erdreichprüfung) und die Basis R42 (Vorlaufinterpolation AK3) am 07.10.2026, die Basis R43 (Kälteseite AK3K) am 08.10.2026, die Basis R44 (Kühlkurve), die Basis R45 (Übergabegrenze), die Basis R46 (Gerätegrenzen) und die Basis R47 (Zapffeiertage) am 09.10.2026, die Basis R48 (Gemeinjahr), die Basis R49 (Kältemaschine Teillast) und die Basis R50 (Wochentagsraster) am 10.10.2026, die Basis R51 (freie Kühlung) am 11.10.2026, die Basis R52 (Vorheizen) am 13.10.2026, die Basis R53 (Zapfprofiloptionen) und die Basis R54 (Dachflächen) am 14.10.2026, die Basis R55 (Kältebedarf dezentral) und die Basis R56 (Wasserkosten) am 16.10.2026**
+(73 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 72 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 73 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -838,13 +846,13 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-10-16_R56_Wasserkosten/`** — **siebenunddreißig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
-1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065, 1066, 1067, 1068, 1069, 1070, 1071, 1072), **1 205 CSV**, **8 261 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 16.10.2026, Stand `86e4932fd`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **235**, 108 744 704 Byte, LFS-SHA-256 `3478881f…`, mit den Projekten 1053 bis 1072,
+**`2026-10-16_R57_Schnellaufheizung/`** — **achtunddreißig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065, 1066, 1067, 1068, 1069, 1070, 1071, 1072, 1073), **1 233 CSV**, **8 596 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 16.10.2026, Stand `b6f0a8276`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **235**, 109 588 480 Byte, LFS-SHA-256 `576fa997…`, mit den Projekten 1053 bis 1073,
 dem erfundenen Typtagsatz und den Satteldächern von 1052 und 1054; die Nachträge der Schemaschritte unten sind darin
 enthalten). Gegen diese Basis hält
-`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065 und 1066 bis 1071) jeden Push und rechnet dieselben Projekte
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065, 1066 bis 1071 und 1073) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
 `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045 (Feiertage zählen im
@@ -876,23 +884,21 @@ Wärmequelle von Projekt 1064, `EPOS.Kern.Tests/VorheizReferenzprojektWacheTests
 Projekt 1065 und `EPOS.Kern.Tests/ZapfprofilOptionenReferenzprojekteWacheTests` die Zapfprofile der Projekte 1066 bis
 1071 samt Generator-Bilanz und den eingefrorenen Auslegungswerten von 1071 und
 `EPOS.Kern.Tests/KaelteDezentralReferenzprojektWacheTests` die Kältebedarfsprofile und die dezentrale Deckung von
-Projekt 1072. 1050, 1052, 1054, 1055, 1056, 1057, 1059, 1061, 1062, 1064 und 1072 stehen nicht in der CI-Auswahl;
-`Werkzeuge/Gate/gate_linux.sh` rechnet alle siebenunddreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
+Projekt 1072 und `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests` die Schnellaufheizung von Projekt 1073. 1050, 1052, 1054, 1055, 1056, 1057, 1059, 1061, 1062, 1064 und 1072 stehen nicht in der CI-Auswahl;
+`Werkzeuge/Gate/gate_linux.sh` rechnet alle achtunddreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: Schemaschritt 235 (KB-7, Wasserkosten des Rückkühlwerks) und die zwei Schlüssel des Kältedeckungsgrads.**
-> Schritt 235 und die Schemaschritte 230 bis 234 der Nachbarsitzungen ändern keinen Rechenwert der Referenzprojekte: Der
-> Referenzlauf aller siebenunddreißig Projekte gegen R55 ist PASS (37 von 37, 12 736 541 Werte, 1 205 CSV, byte-verschieden
-> allein `Projekt_1072/aggregate.csv`). Die Basis enthält die Hauptzahl der Kälte mit Split-Zeile (#1105): Mit Split-Zeile
-> schreibt der Referenzlauf in `aggregate.csv` den Kältedeckungsgrad `Kaelte.DeckungsgradGesamtProzent` und „davon
-> Kältefolge“ `Kaelte.DeckungsgradKaeltefolgeProzent` (für 1072 je 100 %; `Kaelte.DeckungsgradProzent` bleibt 50,25 %).
-> Die Vergleiche in `Werkzeuge/Gate/` laufen ohne Ausnahmeliste. Zwei Läufe sind byte-gleich (1 205/1 205 CSV).
+> **Anlass: Referenzprojekt 1073 „Referenzprojekt Schnellaufheizung“ (Stufe SA4, E128, E153).** Neu ist allein das
+> Projekt 1073, die Kopie von 1054 mit „Vorheizzeit berechnet“ und Schnellaufheizung um 3 K (Abschnitt „Das
+> Referenzprojekt 1073“ unten). Der Referenzlauf der siebenunddreißig Projekte von R56 gegen R56 ist PASS (37 von 37,
+> 12 736 541 Werte) und byte-gleich (1 205/1 205 CSV); 1073 bringt 28 CSV und 335 Skalare dazu. Zwei Läufe sind
+> byte-gleich (1 233/1 233 CSV), der gestörte Lauf von 1073 (`--stoerung ulp`) ist gegen den ungestörten PASS.
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
->   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064,1065,1066,1067,1068,1069,1070,1071,1072 \
->   --ziel Referenzlaeufe/2026-10-16_R56_Wasserkosten
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064,1065,1066,1067,1068,1069,1070,1071,1072,1073 \
+>   --ziel Referenzlaeufe/2026-10-16_R57_Schnellaufheizung
 > ```
 
 
@@ -1469,13 +1475,13 @@ Projekt 1072. 1050, 1052, 1054, 1055, 1056, 1057, 1059, 1061, 1062, 1064 und 107
 > **108 773 376 Byte, LFS-SHA-256 `c403eb645c9a9731e32cb49d74f2339516b1d6c3efd4a0914bae09118f6f9cfe`**. Der Referenzlauf
 > der CI-Auswahl gegen R56 bleibt PASS (18 Projekte, 601 CSV byte-gleich).
 
-### Die Vorgängerbasis R55 (Kältebedarf dezentral)
+### Die Vorgängerbasis R56 (Wasserkosten)
 
-Siebenunddreißig Projekte, 1 205 CSV, 8 259 Skalare, auf Linux eingefroren gegen die Testdatenbank `aee043d0…`
-(Schemastand 227); mit R56 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Referenzprojekt 1072, Stufe K6 des
-Konzepts Kältebedarf) unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R56
-nimmt die zwei Schlüssel des Kältedeckungsgrads von 1072 auf; alle Rechenwerte von R55 sind unverändert.
+Siebenunddreißig Projekte, 1 205 CSV, 8 261 Skalare, auf Linux eingefroren gegen die Testdatenbank `3478881f…`
+(Schemastand 235); mit R57 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Schemaschritt 235, KB-7, und die zwei
+Schlüssel des Kältedeckungsgrads von 1072) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R57
+nimmt allein das Referenzprojekt 1073 auf; alle Rechenwerte von R56 sind unverändert.
 
 ## Was hier liegt
 
@@ -2061,6 +2067,45 @@ Zeilen in `Tab_ErgebnisKaelteDezentral`, Hauptzahl gesetzt, kein Befund der deze
 Original. Vorausgesetzt ist 1071 als höchste Projekt-ID; nach einer Neufassung der Testdatenbank wird es nach
 `referenzprojekte_zapfprofil_optionen.cs` gezogen. 1072 steht in der Basis R56 und nicht in der CI-Auswahl; es gilt die
 Einfrierregel „gesäte Kältebedarfs-Zuordnungen“ oben.
+
+### Das Referenzprojekt 1073 „Referenzprojekt Schnellaufheizung“
+
+Projekt **1073 „Referenzprojekt Schnellaufheizung“** ist die Kopie des Zonenprojekts mit Heizkreis 1054 auf dem Kopierweg
+des Programms (`ProjektDuplizierenCtrl`, je Projekttabelle so viele Zeilen wie die Vorlage, drei Zonen mit 33 Bauteilen,
+Luftstrom und Zonenkalendern) — das Hotel in drei Zonen mit Anlagenkopplung AK1, Radiator und Heizkurve am Gebäude, einer
+Zone mit eigener Übergabe und eingeschalteter Aufheizoptimierung, dieselben Erzeuger (Kessel, BHKW). 1054 bleibt bei der
+Sollwertrampe (Verfahren leer). Die Schnellaufheizung wirkt nur an Zonen mit wirksamem Heizkreis und nur mit einem
+Verfahren „Vorheizzeit vorgeben/berechnen“; 1054 ist die Vorlage, an der sie am deutlichsten wirkt (Messung SA1b). Gesät sind:
+
+| Ort | Zelle | Wert |
+|---|---|---|
+| `Tab_Einstellungen` | `Aufheizoptimierung` | 1 (wie 1054) |
+| | `Aufheiz_Verfahren` | `BERECHNET` (1054: leer) |
+| | `Aufheiz_Schnellaufheizung` | 1 |
+| | `Aufheiz_Ueberhoehung_K` | 3 (rund, über der Vorgabe 2 K: prüft den Weg über die Spalte) |
+| | `Aufheiz_Vorheizzeit_H`, `Aufheiz_Toleranz_Art`, `Aufheiz_Toleranz`, `Aufheiz_Regelgenauigkeit_K`, `Aufheiz_Geltung`, `Aufheiz_Heizkreis_Einbeziehen` | leer — Vorgaben: Toleranz 20 % (Prozent), ε 1 K, Geltung Gebäude, Heizkreis einbezogen |
+| `Tab_Projekt` | `Beschreibung`; `Kosten_Geaendert` | Zweck des Projekts; Kostenstempel leer |
+
+Gerechnet: Vorheizzeit t_V 5 h (größter Bedarf 9 h), keine Nacht ohne Absenkung, 302 überhöhte Fensterstunden mit
+höchstem Vorlauf 58 °C (Mittel des Kreises 40,75 °C), keine Stunde an der Vorlaufgrenze, keine wirkungslose; Spitze
+26,37 kW, Heizwärme 50,79 MWh. Gegenlauf derselben Kopie ohne Schalter: t_V 9 h (Bedarf 12 h), 365 Nächte ohne Absenkung,
+Spitze 23,64 kW, Heizwärme 52,28 MWh — die Überhöhung spart 2,85 % Heizwärme und erhält jede Nachtabsenkung, die Spitze
+steigt um 12 %. Gegen die Vorlage 1054 (Sollwertrampe, 47,59 MWh, Spitze 27,47 kW) heizt 1073 mehr, weil es vorheizt. 1073
+steht in der aktuellen Basis und in der CI-Auswahl (kein anderes CI-Projekt rechnet die Überhöhung; Lauf rund 2 s, der
+gestörte Lauf ist PASS); es gilt die Einfrierregel „gesäte Vorheizdaten“ samt Absatz Schnellaufheizung oben, als Kopie von
+1054 dazu „gesäte Zonendaten“ und „gesäte Auslegungsdaten der Übergabe“.
+
+```bash
+dotnet run Referenzlaeufe/Skripte/referenzprojekt_1073_schnellaufheizung.cs -- Referenzlaeufe/Kenndaten_Test.sqlite [--trocken]
+```
+
+Das Skript ist wiederholbar (steht 1073 schon, Abbruch ohne Schreiben mit Rückgabe 0, ein zweiter Lauf lässt die Datei
+byte-gleich), schreibt in eine Arbeitsdatei neben der Datenbank ohne `VACUUM`, prüft Vorlage (Sollwertrampe, AK1),
+Zeilenzahlen der Kopie, Zonen und Bauteile, jede gesäte Zelle, `foreign_key_check` und `integrity_check` und ersetzt erst
+dann das Original. Die Kopie fällt auf die nächste freie Projekt-ID; vorausgesetzt ist 1072 als höchste. Nach einer
+Neufassung der Testdatenbank wird es nach 1072 gezogen. Die Testdatenbank mit 1073 (Schemastand 235, `integrity_check` ok,
+`foreign_key_check` leer): **109 588 480 Byte, LFS-SHA-256
+`576fa9976ff36a3ff419bb43efd7dca60a773094ea04af146dcdd6ee114a0474`**.
 
 ## Die wichtigste Regel
 

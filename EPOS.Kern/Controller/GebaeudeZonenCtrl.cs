@@ -965,7 +965,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Hat der Zonendialog ein Feld von Hand geändert, das auch eine Datei tragen kann?</b> (Nachzug N2, MA-6 c) — Übergabe
-        /// (sieben Spalten), Kühlübergabe (drei), Vorheizzeit, Höchstleistungen, Sollwerte und Höchsttemperatur, verglichen mit
+        /// (sieben Spalten), Kühlübergabe (drei), Vorheizzeit, Höchstleistungen, Sollwerte und Höchsttemperatur, dazu (Nachzug N6)
+        /// Beheizung, Kühlung, Strahlungsanteil, Luftwechsel, interne Gewinne, Bewohner, Nutzungsprofil und Profilwerte, verglichen mit
         /// dem gespeicherten Stand (Zahlen mit dem Rand 1e-9 relativ). Nutzfläche, Raumhöhe und Volumen zählen nicht.
         /// </summary>
         internal static bool HandfelderGeaendert(ZoneModel alt, ZoneModel neu)
@@ -988,7 +989,16 @@ namespace WindowsFormsApplication1
                    || Z(alt.Raumsolltemperatur_Wochenende, neu.Raumsolltemperatur_Wochenende)
                    || Z(alt.Raumsolltemperatur_Ferien, neu.Raumsolltemperatur_Ferien)
                    || Z(alt.Kuehl_Sollwert, neu.Kuehl_Sollwert) || Z(alt.Kuehl_Sollwert_Nacht, neu.Kuehl_Sollwert_Nacht)
-                   || Z(alt.Maximaleraumtemperatur, neu.Maximaleraumtemperatur);
+                   || Z(alt.Maximaleraumtemperatur, neu.Maximaleraumtemperatur)
+                   // Nachzug N6 (MA-6 c): auch die übrigen Felder des Dialogs, die eine Datei tragen kann - Beheizung, Kühlung,
+                   // Strahlungsanteil, Luftwechsel, interne Gewinne, Bewohner, Nutzungsprofil und die Profilwerte.
+                   || alt.IstBeheizt != neu.IstBeheizt || alt.Kuehlung_Aktiv != neu.Kuehlung_Aktiv
+                   || Z(alt.Heizung_Strahlungsanteil, neu.Heizung_Strahlungsanteil)
+                   || Z(alt.Luftwechsel_Infiltration, neu.Luftwechsel_Infiltration) || Z(alt.Luftwechsel_Nutzer, neu.Luftwechsel_Nutzer)
+                   || Z(alt.Interne_Waermegewinne, neu.Interne_Waermegewinne) || Z(alt.Bewohner, neu.Bewohner)
+                   || Z(alt.Aussenluft_Person, neu.Aussenluft_Person) || Z(alt.Licht_W_m2, neu.Licht_W_m2)
+                   || Z(alt.Personen_Waerme_W, neu.Personen_Waerme_W)
+                   || T(alt.Nutzungsprofil, neu.Nutzungsprofil);
         }
 
         /// <summary>

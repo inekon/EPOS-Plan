@@ -18,4 +18,10 @@ public sealed class GebaeudeKlimaregionWeg
     /// samt Nachziehen des Projektkontexts; Rückgabe <c>null</c> = gespeichert, sonst der benannte Grund.
     /// </summary>
     public Func<int, string?> Speichern { get; init; } = _ => null;
+
+    /// <summary>
+    /// Die Herkunftszeile einer Region (Stamm-Id) unter der Liste — derselbe Satz wie unter der Klappliste der Kopfleiste und im
+    /// Projektassistenten (<c>KlimaHerkunftGaben.Zeile</c>); leer ohne Auskunft.
+    /// </summary>
+    public Func<int, string> Herkunftszeile { get; init; } = _ => "";
 }

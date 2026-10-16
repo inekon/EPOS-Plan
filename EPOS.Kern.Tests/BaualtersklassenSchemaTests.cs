@@ -208,7 +208,8 @@ namespace EPOS.Kern.Tests
             // J2: dazu die Gebäudekopie des Referenzprojekts Vorheizen 1065 (Vorlage 1051).
             // B25: dazu die sechs Gebäudekopien der Referenzprojekte der Zapfprofil-Optionen 1066 bis 1071 (Vorlage 1045, ZB12).
             // E12: dazu die Gebäudekopie des Referenzprojekts Kältebedarf dezentral 1072 (Vorlage 1055, K6c).
-            Assert.Equal(new[] { "B25", "E12", "G5", "H6", "I2", "J2" }, kopien);
+            // H7: dazu die Gebäudekopie des Referenzprojekts Schnellaufheizung 1073 (Vorlage 1054, SA4).
+            Assert.Equal(new[] { "B25", "E12", "G5", "H7", "I2", "J2" }, kopien);
         }
 
         /// <summary>
